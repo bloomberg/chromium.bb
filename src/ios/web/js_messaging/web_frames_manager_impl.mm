@@ -82,8 +82,9 @@ void WebFramesManagerImpl::OnWebViewUpdated(
                         webView:new_web_view];
     [message_router
         setScriptMessageHandler:^(WKScriptMessage* message) {
-          DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
           if (weak_ptr) {
+            DCHECK(weak_ptr->delegate_.GetWebState() &&
+                   !weak_ptr->delegate_.GetWebState()->IsBeingDestroyed());
             weak_ptr->OnFrameBecameUnavailable(message);
           }
         }
@@ -186,8 +187,8 @@ void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
     }
 
     auto new_frame = std::make_unique<web::WebFrameImpl>(
-        frame_id, message.frameInfo.mainFrame, message_frame_origin,
-        delegate_.GetWebState());
+        message.frameInfo, frame_id, message.frameInfo.mainFrame,
+        message_frame_origin, delegate_.GetWebState());
     if (frame_key) {
       new_frame->SetEncryptionKey(std::move(frame_key));
     }

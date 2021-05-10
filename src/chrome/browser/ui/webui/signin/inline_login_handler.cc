@@ -15,13 +15,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -37,9 +38,9 @@
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
 
-InlineLoginHandler::InlineLoginHandler() {}
+InlineLoginHandler::InlineLoginHandler() = default;
 
-InlineLoginHandler::~InlineLoginHandler() {}
+InlineLoginHandler::~InlineLoginHandler() = default;
 
 void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -61,6 +62,10 @@ void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "dialogClose", base::BindRepeating(&InlineLoginHandler::HandleDialogClose,
                                          base::Unretained(this)));
+}
+
+void InlineLoginHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
@@ -229,10 +234,10 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
-#if !defined(OS_CHROMEOS)
-  // Does nothing if user manager is not showing.
-  UserManagerProfileDialog::HideDialog();
-#endif  // !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Does nothing if profile picker is not showing.
+  ProfilePickerForceSigninDialog::HideDialog();
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void InlineLoginHandler::CloseDialogFromJavascript() {

@@ -6,12 +6,9 @@ source_set("msgs") {
   sources = [
     target_gen_dir + "/osp_messages.cc",
     target_gen_dir + "/osp_messages.h",
-    "request_response_handler.h",
   ]
 
-  public_deps = [
-    ":cddl_gen",
-  ]
+  public_deps = [ ":cddl_gen" ]
   deps = [
     "../../third_party/abseil",
     "../../third_party/tinycbor",
@@ -29,9 +26,7 @@ config("cddl_gen_config") {
 
 action("cddl_gen") {
   script = "../../tools/cddl/cddl.py"
-  sources = [
-    "osp_messages.cddl",
-  ]
+  sources = [ "osp_messages.cddl" ]
   outputs_src = rebase_path([
                               "osp_messages.h",
                               "osp_messages.cc",
@@ -61,17 +56,13 @@ action("cddl_gen") {
         rebase_path("cddl.log", "//"),
       ] + rebase_path(sources, root_build_dir)
 
-  deps = [
-    cddl_label,
-  ]
+  deps = [ cddl_label ]
 }
 
 source_set("unittests") {
   testonly = true
 
-  sources = [
-    "messages_unittest.cc",
-  ]
+  sources = [ "messages_unittest.cc" ]
 
   deps = [
     ":msgs",

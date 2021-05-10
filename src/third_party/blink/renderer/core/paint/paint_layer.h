@@ -461,12 +461,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                             const PhysicalRect& damage_rect,
                             const PhysicalOffset& offset_from_root) const;
 
-  // MaybeIncludeTransformForAncestorLayer means that a transform on
-  // |ancestorLayer| may be applied to the bounding box, in particular if
-  // paintsWithTransform() is true.
   enum CalculateBoundsOptions {
-    kIncludeClipsAndMaybeIncludeTransformForAncestorLayer,
-    kIncludeTransformsAndCompositedChildLayers,
+    // Include clips between this layer and its ancestor layer (inclusive).
+    kIncludeAncestorClips = 0x1,
+    // Include transforms, irrespective of if they are applied via composition
+    // or painting.
+    kIncludeTransforms = 0x2,
+    // Include child layers (recursive) whether composited or not.
+    kIncludeCompositedChildLayers = 0x4,
+    // Include transform for the ancestor layer (|composited_layer| in the
+    // initial call) if |PaintsWithTransform|
+    kMaybeIncludeTransformForAncestorLayer = 0x8
   };
 
   // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
@@ -475,9 +480,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
   PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
-  PhysicalRect BoundingBoxForCompositingOverlapTest() const;
+  PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
+  IntRect ExpandedBoundingBoxForCompositingOverlapTest(
+      bool use_clipped_bounding_rect) const;
   PhysicalRect BoundingBoxForCompositing() const;
-
 
   // Static position is set in parent's coordinate space.
   LayoutUnit StaticInlinePosition() const { return static_inline_position_; }
@@ -804,7 +810,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     const PaintLayer* nearest_contained_layout_layer = nullptr;
 
     // These two boxes do not include any applicable scroll offset of the
-    // root PaintLayer.
+    // root PaintLayer. Note that 'absolute' here is potentially misleading as
+    // the actual coordinate system depends on if this layer is affected by the
+    // viewport's scroll offset or not. For content that is not affected by the
+    // viewport scroll offsets, this ends up being a rect in viewport coords.
+    // For content that is affected by the viewport's scroll offset this
+    // coordinate system is in absolute coords.
+    // Note: This stores LocalBoundingBoxForCompositingOverlapTest and not the
+    // expanded bounds (ExpandedBoundingBoxForCompositingOverlapTest).
     IntRect clipped_absolute_bounding_box;
     IntRect unclipped_absolute_bounding_box;
 
@@ -1009,13 +1022,37 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetDescendantNeedsRepaint();
   void ClearNeedsRepaintRecursively();
 
+  bool NeedsCullRectUpdate() const {
+    DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
+    return needs_cull_rect_update_;
+  }
+  bool ForcesChildrenCullRectUpdate() const {
+    DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
+    return forces_children_cull_rect_update_;
+  }
+  bool DescendantNeedsCullRectUpdate() const {
+    DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
+    return descendant_needs_cull_rect_update_;
+  }
+  void SetNeedsCullRectUpdate();
+  void SetForcesChildrenCullRectUpdate();
+  void MarkCompositingContainerChainForNeedsCullRectUpdate();
+  void ClearNeedsCullRectUpdate() {
+    DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
+    needs_cull_rect_update_ = false;
+    forces_children_cull_rect_update_ = false;
+    descendant_needs_cull_rect_update_ = false;
+  }
+
   // These previousXXX() functions are for subsequence caching. They save the
   // painting status of the layer during the previous painting with subsequence.
   // A painting without subsequence [1] doesn't change this status.  [1] See
   // shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use
   // subsequence when painting a PaintLayer.
 
-  CullRect PreviousCullRect() const { return previous_cull_rect_; }
+  // TODO(wangxianzhu): Remove these functions when we use the cull rects
+  // in FragmentData updated during PrePaint.
+  const CullRect& PreviousCullRect() const { return previous_cull_rect_; }
   void SetPreviousCullRect(const CullRect& rect) { previous_cull_rect_ = rect; }
 
   PaintResult PreviousPaintResult() const {
@@ -1147,10 +1184,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Bounding box in the coordinates of this layer.
   PhysicalRect LocalBoundingBox() const;
+  PhysicalRect ClippedLocalBoundingBox(const PaintLayer& ancestor_layer) const;
 
   bool HasOverflowControls() const;
 
-  void UpdateLayerPositionRecursive();
+  void UpdateLayerPositionRecursive(const PaintLayer* enclosing_scroller);
 
   void SetNextSibling(PaintLayer* next) { next_ = next; }
   void SetPreviousSibling(PaintLayer* prev) { previous_ = prev; }
@@ -1275,18 +1313,20 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_paint_phase_float_ |= layer.needs_paint_phase_float_;
   }
 
-  void ExpandRectForStackingChildren(const PaintLayer& composited_layer,
-                                     PhysicalRect& result,
-                                     PaintLayer::CalculateBoundsOptions) const;
+  bool IsTopMostNotAffectedByScrollOf(const PaintLayer* ancestor) const;
+
+  void ExpandRectForSelfPaintingDescendants(const PaintLayer& composited_layer,
+                                            PhysicalRect& result,
+                                            unsigned options) const;
 
   // The return value is in the space of |stackingParent|, if non-null, or
   // |this| otherwise.
   PhysicalRect BoundingBoxForCompositingInternal(
       const PaintLayer& composited_layer,
       const PaintLayer* stacking_parent,
-      CalculateBoundsOptions) const;
+      unsigned options) const;
   bool ShouldApplyTransformToBoundingBox(const PaintLayer& composited_layer,
-                                         CalculateBoundsOptions) const;
+                                         unsigned options) const;
 
   AncestorDependentCompositingInputs& EnsureAncestorDependentCompositingInputs()
       const {
@@ -1346,8 +1386,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned self_needs_repaint_ : 1;
   unsigned descendant_needs_repaint_ : 1;
+
+  unsigned needs_cull_rect_update_ : 1;
+  unsigned forces_children_cull_rect_update_ : 1;
+  // True if any descendant needs cull rect update.
+  unsigned descendant_needs_cull_rect_update_ : 1;
+
   unsigned previous_paint_result_ : 1;  // PaintResult
-  static_assert(kMaxPaintResult <= 2,
+  static_assert(kMaxPaintResult < 2,
                 "Should update number of bits of previous_paint_result_");
 
   unsigned needs_paint_phase_descendant_outlines_ : 1;

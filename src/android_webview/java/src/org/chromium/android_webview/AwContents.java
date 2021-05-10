@@ -58,7 +58,6 @@ import org.chromium.android_webview.gfx.RectUtils;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -190,16 +189,6 @@ public class AwContents implements SmartClipProvider {
         private static boolean lazyCheck() {
             return !AwContentsJni.get().hasRequiredHardwareExtensions();
         }
-    }
-
-    // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.HistoryUrl. Since these
-    // values are persisted to logs, they should never be renumbered or reused.
-    @IntDef({HistoryUrl.EMPTY, HistoryUrl.BASEURL, HistoryUrl.DIFFERENT, HistoryUrl.COUNT})
-    @interface HistoryUrl {
-        int EMPTY = 0;
-        int BASEURL = 1;
-        int DIFFERENT = 2;
-        int COUNT = 3;
     }
 
     // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.UrlScheme. Since these
@@ -495,6 +484,10 @@ public class AwContents implements SmartClipProvider {
     private JavascriptInjector mJavascriptInjector;
 
     private ContentCaptureConsumer mContentCaptureConsumer;
+
+    private AwDisplayCutoutController mDisplayCutoutController;
+    private final AwDisplayModeController mDisplayModeController;
+    private final Rect mCachedSafeAreaRect = new Rect();
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -944,6 +937,39 @@ public class AwContents implements SmartClipProvider {
             AwSettings settings, DependencyFactory dependencyFactory) {
         assert browserContext != null;
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
+            mDisplayModeController =
+                    new AwDisplayModeController(new AwDisplayModeController.Delegate() {
+                        @Override
+                        public int getDisplayWidth() {
+                            WindowAndroid windowAndroid = mWindowAndroid.getWindowAndroid();
+                            return windowAndroid.getDisplay().getDisplayWidth();
+                        }
+
+                        @Override
+                        public int getDisplayHeight() {
+                            WindowAndroid windowAndroid = mWindowAndroid.getWindowAndroid();
+                            return windowAndroid.getDisplay().getDisplayHeight();
+                        }
+                    }, containerView);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                    && AwFeatureList.isEnabled(AwFeatures.WEBVIEW_DISPLAY_CUTOUT)) {
+                mDisplayCutoutController =
+                        new AwDisplayCutoutController(new AwDisplayCutoutController.Delegate() {
+                            @Override
+                            public float getDipScale() {
+                                WindowAndroid windowAndroid = mWindowAndroid.getWindowAndroid();
+                                return windowAndroid.getDisplay().getDipScale();
+                            }
+
+                            @Override
+                            public void setDisplayCutoutSafeArea(
+                                    AwDisplayCutoutController.Insets insets) {
+                                if (mWebContents == null) return;
+                                mWebContents.setDisplayCutoutSafeArea(
+                                        insets.toRect(mCachedSafeAreaRect));
+                            }
+                        }, containerView);
+            }
             mRendererPriority = RendererPriority.HIGH;
             mSettings = settings;
             updateDefaultLocale();
@@ -1188,6 +1214,10 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
         mContainerView.requestLayout();
         if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
+        mDisplayModeController.setCurrentContainerView(mContainerView);
+        if (mDisplayCutoutController != null) {
+            mDisplayCutoutController.setCurrentContainerView(mContainerView);
+        }
     }
 
     // This class destroys the WindowAndroid when after it is gc-ed.
@@ -1472,7 +1502,8 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector getJavascriptInjector() {
         if (mJavascriptInjector == null) {
-            mJavascriptInjector = JavascriptInjector.fromWebContents(mWebContents);
+            mJavascriptInjector = JavascriptInjector.fromWebContents(
+                    mWebContents, AwFeatureList.isEnabled(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO));
         }
         return mJavascriptInjector;
     }
@@ -1780,7 +1811,9 @@ public class AwContents implements SmartClipProvider {
         mContentsClient.getVisitedHistory(callback);
     }
 
-    private static final Pattern BAD_HEADER_CHAR = Pattern.compile("[\u0000\r\n]");
+    /* package */ static final Pattern BAD_HEADER_CHAR = Pattern.compile("[\u0000\r\n]");
+    /* package */ static final String BAD_HEADER_MSG =
+            "HTTP headers must not contain null, CR, or NL characters. ";
 
     /**
      * WebView.loadUrl.
@@ -1806,17 +1839,18 @@ public class AwContents implements SmartClipProvider {
 
         LoadUrlParams params = new LoadUrlParams(url, PageTransition.TYPED);
         if (additionalHttpHeaders != null) {
-            boolean valid = true;
             for (Map.Entry<String, String> header : additionalHttpHeaders.entrySet()) {
                 String headerName = header.getKey();
                 String headerValue = header.getValue();
-                if ((headerName != null && BAD_HEADER_CHAR.matcher(headerName).find())
-                        || (headerValue != null && BAD_HEADER_CHAR.matcher(headerValue).find())) {
-                    valid = false;
-                    break;
+                if (headerName != null && BAD_HEADER_CHAR.matcher(headerName).find()) {
+                    throw new IllegalArgumentException(
+                            BAD_HEADER_MSG + "Invalid header name '" + headerName + "'.");
+                }
+                if (headerValue != null && BAD_HEADER_CHAR.matcher(headerValue).find()) {
+                    throw new IllegalArgumentException(BAD_HEADER_MSG + "Header '" + headerName
+                            + "' has invalid value '" + headerValue + "'");
                 }
             }
-            RecordHistogram.recordBooleanHistogram("Android.WebView.ExtraHeaders.Valid", valid);
             params.setExtraHeaders(new HashMap<String, String>(additionalHttpHeaders));
         }
 
@@ -1869,11 +1903,6 @@ public class AwContents implements SmartClipProvider {
         return "base64".equals(encoding);
     }
 
-    private static void recordHistoryUrl(@HistoryUrl int value) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.WebView.LoadDataWithBaseUrl.HistoryUrl", value, HistoryUrl.COUNT);
-    }
-
     private static void recordBaseUrl(@UrlScheme int value) {
         RecordHistogram.recordEnumeratedHistogram(
                 DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
@@ -1891,7 +1920,9 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s loadData", this);
         if (isDestroyed(WARN)) return;
         if (data != null && data.contains("#")) {
-            if (!BuildInfo.targetsAtLeastQ() && !isBase64Encoded(encoding)) {
+            if (ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion
+                            < Build.VERSION_CODES.Q
+                    && !isBase64Encoded(encoding)) {
                 // As of Chromium M72, data URI parsing strictly enforces encoding of '#'. To
                 // support WebView applications which were not expecting this change, we do it for
                 // them.
@@ -1971,14 +2002,6 @@ public class AwContents implements SmartClipProvider {
         baseUrl = fixupBase(baseUrl);
         historyUrl = fixupHistory(historyUrl);
 
-        if (historyUrl.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-            recordHistoryUrl(HistoryUrl.EMPTY);
-        } else if (historyUrl.equals(baseUrl)) {
-            recordHistoryUrl(HistoryUrl.BASEURL);
-        } else {
-            recordHistoryUrl(HistoryUrl.DIFFERENT);
-        }
-
         recordBaseUrl(schemeForUrl(baseUrl));
 
         if (baseUrl.startsWith("data:")) {
@@ -2037,7 +2060,8 @@ public class AwContents implements SmartClipProvider {
         }
 
         // If we are reloading the same url, then set transition type as reload.
-        if (params.getUrl() != null && params.getUrl().equals(mWebContents.getLastCommittedUrl())
+        if (params.getUrl() != null
+                && params.getUrl().equals(mWebContents.getLastCommittedUrl().getSpec())
                 && params.getTransitionType() == PageTransition.TYPED) {
             params.setTransitionType(PageTransition.RELOAD);
         }
@@ -2109,9 +2133,9 @@ public class AwContents implements SmartClipProvider {
      */
     public String getLastCommittedUrl() {
         if (isDestroyed(NO_WARN)) return null;
-        String url = mWebContents.getLastCommittedUrl();
-        if (url == null || url.trim().isEmpty()) return null;
-        return url;
+        GURL url = mWebContents.getLastCommittedUrl();
+        if (url == null || url.isEmpty()) return null;
+        return url.getSpec();
     }
 
     public void requestFocus() {
@@ -2493,7 +2517,7 @@ public class AwContents implements SmartClipProvider {
         NavigationHistory history = mNavigationController.getNavigationHistory();
         int currentIndex = history.getCurrentEntryIndex();
         if (currentIndex >= 0 && currentIndex < history.getEntryCount()) {
-            return history.getEntryAtIndex(currentIndex).getOriginalUrl();
+            return history.getEntryAtIndex(currentIndex).getOriginalUrl().getSpec();
         }
         return null;
     }
@@ -2987,6 +3011,8 @@ public class AwContents implements SmartClipProvider {
             AwOnPreDrawListener listener = getOrCreateOnPreDrawListener(mContainerView);
             listener.trackContents(this);
         }
+
+        if (mDisplayCutoutController != null) mDisplayCutoutController.onAttachedToWindow();
     }
 
     private AwOnPreDrawListener getOrCreateOnPreDrawListener(ViewGroup viewGroup) {
@@ -3068,6 +3094,7 @@ public class AwContents implements SmartClipProvider {
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
         mAwViewMethods.onSizeChanged(w, h, ow, oh);
+        if (mDisplayCutoutController != null) mDisplayCutoutController.onSizeChanged();
     }
 
     /**
@@ -3359,6 +3386,15 @@ public class AwContents implements SmartClipProvider {
             return null;
         }
         return AwContentsJni.get().getRenderProcess(mNativeAwContents, AwContents.this);
+    }
+
+    @VisibleForTesting
+    public AwDisplayCutoutController getDisplayCutoutController() {
+        return mDisplayCutoutController;
+    }
+
+    public int getDisplayMode() {
+        return mDisplayModeController.getDisplayMode();
     }
 
     //--------------------------------------------------------------------------------------------

@@ -65,10 +65,9 @@ GrD3DGpu::GrD3DGpu(GrDirectContext* direct, const GrContextOptions& contextOptio
         , fStagingBufferManager(this)
         , fConstantsRingBuffer(this, 128 * 1024, kConstantAlignment, GrGpuBufferType::kVertex)
         , fOutstandingCommandLists(sizeof(OutstandingCommandList), kDefaultOutstandingAllocCnt) {
-    fCaps.reset(new GrD3DCaps(contextOptions,
-                              backendContext.fAdapter.get(),
-                              backendContext.fDevice.get()));
-    fCompiler.reset(new SkSL::Compiler(fCaps->shaderCaps()));
+    this->initCapsAndCompiler(sk_make_sp<GrD3DCaps>(contextOptions,
+                                                    backendContext.fAdapter.get(),
+                                                    backendContext.fDevice.get()));
 
     fCurrentDirectCommandList = fResourceProvider.findOrCreateDirectCommandList();
     SkASSERT(fCurrentDirectCommandList);
@@ -1014,8 +1013,6 @@ GrBackendTexture GrD3DGpu::onCreateBackendTexture(SkISize dimensions,
                                                   GrRenderable renderable,
                                                   GrMipmapped mipMapped,
                                                   GrProtected isProtected) {
-    this->handleDirtyContext();
-
     const GrD3DCaps& caps = this->d3dCaps();
 
     if (this->protectedContext() != (isProtected == GrProtected::kYes)) {
@@ -1042,9 +1039,11 @@ GrBackendTexture GrD3DGpu::onCreateBackendTexture(SkISize dimensions,
     return GrBackendTexture(dimensions.width(), dimensions.height(), info);
 }
 
-static void copy_src_data(char* mapPtr, DXGI_FORMAT dxgiFormat,
+static void copy_src_data(char* mapPtr,
+                          DXGI_FORMAT dxgiFormat,
                           D3D12_PLACED_SUBRESOURCE_FOOTPRINT* placedFootprints,
-                          const SkPixmap srcData[], int numMipLevels) {
+                          const GrPixmap srcData[],
+                          int numMipLevels) {
     SkASSERT(srcData && numMipLevels);
     SkASSERT(!GrDxgiFormatIsCompressed(dxgiFormat));
     SkASSERT(mapPtr);
@@ -1221,8 +1220,6 @@ GrBackendRenderTarget GrD3DGpu::createTestingOnlyBackendRenderTarget(SkISize dim
                                                                      GrColorType colorType,
                                                                      int sampleCnt,
                                                                      GrProtected isProtected) {
-    this->handleDirtyContext();
-
     if (dimensions.width()  > this->caps()->maxRenderTargetSize() ||
         dimensions.height() > this->caps()->maxRenderTargetSize()) {
         return {};
@@ -1245,14 +1242,10 @@ void GrD3DGpu::deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&
 
     GrD3DTextureResourceInfo info;
     if (rt.getD3DTextureResourceInfo(&info)) {
-        this->testingOnly_flushGpuAndSync();
+        this->submitToGpu(true);
         // Nothing else to do here, will get cleaned up when the GrBackendRenderTarget
         // is deleted.
     }
-}
-
-void GrD3DGpu::testingOnly_flushGpuAndSync() {
-    SkAssertResult(this->submitDirectCommandList(SyncQueue::kForce));
 }
 
 void GrD3DGpu::testingOnly_startCapture() {
@@ -1359,4 +1352,8 @@ GrFence SK_WARN_UNUSED_RESULT GrD3DGpu::insertFence() {
 
 bool GrD3DGpu::waitFence(GrFence fence) {
     return (fFence->GetCompletedValue() >= fence);
+}
+
+void GrD3DGpu::finishOutstandingGpuWork() {
+    this->waitForQueueCompletion();
 }

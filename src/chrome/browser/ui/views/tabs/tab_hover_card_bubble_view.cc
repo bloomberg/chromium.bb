@@ -37,12 +37,15 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/animation/bubble_slide_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -50,16 +53,11 @@
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/metrics_util.h"
-#include "base/optional.h"
-#endif
-
 namespace {
 // Maximum number of lines that a title label occupies.
 constexpr int kHoverCardTitleMaxLines = 2;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // UMA histograms that record animation smoothness for fade-in and fade-out
 // animations of tab hover card.
 constexpr char kHoverCardFadeInSmoothnessHistogramName[] =
@@ -165,202 +163,6 @@ gfx::Size GetPreviewImageSize(gfx::Size preview_size,
 // static
 bool TabHoverCardBubbleView::disable_animations_for_testing_ = false;
 
-// TODO(corising): Move this to a place where it could be used for all widgets.
-class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
-    : public views::AnimationDelegateViews {
- public:
-  explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
-      : AnimationDelegateViews(hover_card->GetRootView()),
-        widget_(hover_card),
-        fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
-  }
-  WidgetFadeAnimationDelegate(const WidgetFadeAnimationDelegate&) = delete;
-  WidgetFadeAnimationDelegate& operator=(const WidgetFadeAnimationDelegate&) =
-      delete;
-  ~WidgetFadeAnimationDelegate() override = default;
-
-  enum class FadeAnimationState {
-    // No animation is running.
-    IDLE,
-    FADE_IN,
-    FADE_OUT,
-  };
-
-  void set_animation_state(FadeAnimationState state) {
-    animation_state_ = state;
-  }
-
-  bool IsFadingIn() const {
-    return animation_state_ == FadeAnimationState::FADE_IN;
-  }
-
-  bool IsFadingOut() const {
-    return animation_state_ == FadeAnimationState::FADE_OUT;
-  }
-
-  void FadeIn() {
-    if (IsFadingIn())
-      return;
-    constexpr base::TimeDelta kFadeInDuration =
-        base::TimeDelta::FromMilliseconds(200);
-    set_animation_state(FadeAnimationState::FADE_IN);
-    // Widgets cannot be shown when visible and fully transparent.
-    widget_->SetOpacity(0.01f);
-    widget_->Show();
-    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
-    fade_animation_->SetDuration(kFadeInDuration);
-#if defined(OS_CHROMEOS)
-    throughput_tracker_.emplace(
-        widget_->GetCompositor()->RequestNewThroughputTracker());
-    throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
-        base::BindRepeating(&RecordFadeInSmoothness)));
-#endif
-    fade_animation_->Start();
-  }
-
-  void FadeOut() {
-    if (IsFadingOut())
-      return;
-    constexpr base::TimeDelta kFadeOutDuration =
-        base::TimeDelta::FromMilliseconds(150);
-    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
-    set_animation_state(FadeAnimationState::FADE_OUT);
-    fade_animation_->SetDuration(kFadeOutDuration);
-#if defined(OS_CHROMEOS)
-    throughput_tracker_.emplace(
-        widget_->GetCompositor()->RequestNewThroughputTracker());
-    throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
-        base::BindRepeating(&RecordFadeOutSmoothness)));
-#endif
-    fade_animation_->Start();
-  }
-
-  void CancelFadeOut() {
-    if (!IsFadingOut())
-      return;
-
-    fade_animation_->Stop();
-#if defined(OS_CHROMEOS)
-    throughput_tracker_->Cancel();
-#endif
-    set_animation_state(FadeAnimationState::IDLE);
-    widget_->SetOpacity(1.0f);
-  }
-
- private:
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    // Get the value of the animation with a material ease applied.
-    double value = gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
-                                              animation->GetCurrentValue());
-    float opaqueness = 0.0f;
-    if (IsFadingOut()) {
-      opaqueness = gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f);
-    } else if (animation_state_ == FadeAnimationState::FADE_IN) {
-      opaqueness = gfx::Tween::FloatValueBetween(value, 0.0f, 1.0f);
-    }
-
-    if (IsFadingOut() && opaqueness == 0.0f) {
-      widget_->Hide();
-    } else {
-      widget_->SetOpacity(opaqueness);
-    }
-  }
-
-  void AnimationEnded(const gfx::Animation* animation) override {
-    AnimationProgressed(animation);
-#if defined(OS_CHROMEOS)
-    throughput_tracker_->Stop();
-#endif
-    set_animation_state(FadeAnimationState::IDLE);
-  }
-
-  views::Widget* const widget_;
-#if defined(OS_CHROMEOS)
-  base::Optional<ui::ThroughputTracker> throughput_tracker_;
-#endif
-  std::unique_ptr<gfx::LinearAnimation> fade_animation_;
-  FadeAnimationState animation_state_ = FadeAnimationState::IDLE;
-};
-
-class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
-    : public views::AnimationDelegateViews {
- public:
-  explicit WidgetSlideAnimationDelegate(
-      TabHoverCardBubbleView* hover_card_delegate)
-      : AnimationDelegateViews(hover_card_delegate),
-        bubble_delegate_(hover_card_delegate),
-        slide_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
-    slide_animation_->SetDuration(base::TimeDelta::FromMilliseconds(75));
-  }
-  WidgetSlideAnimationDelegate(const WidgetSlideAnimationDelegate&) = delete;
-  WidgetSlideAnimationDelegate& operator=(const WidgetSlideAnimationDelegate&) =
-      delete;
-  ~WidgetSlideAnimationDelegate() override = default;
-
-  void AnimateToAnchorView(views::View* desired_anchor_view) {
-    DCHECK(!current_bubble_bounds_.IsEmpty());
-    desired_anchor_view_ = desired_anchor_view;
-    starting_bubble_bounds_ = current_bubble_bounds_;
-    target_bubble_bounds_ = CalculateTargetBounds(desired_anchor_view);
-    slide_animation_->SetCurrentValue(0);
-    slide_animation_->Start();
-  }
-
-  void StopAnimation() { AnimationCanceled(slide_animation_.get()); }
-
-  // Stores the current bubble bounds now to be used when animating to a new
-  // view. We do this now since the anchor view is needed to get bubble bounds
-  // and could be deleting later when using the bounds to animate.
-  void SetCurrentBounds() {
-    current_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
-  }
-
-  gfx::Rect CalculateTargetBounds(views::View* desired_anchor_view) const {
-    gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
-    anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
-    return bubble_delegate_->GetBubbleFrameView()->GetUpdatedWindowBounds(
-        anchor_bounds, bubble_delegate_->arrow(),
-        bubble_delegate_->GetWidget()->client_view()->GetPreferredSize(), true);
-  }
-
-  bool is_animating() const { return slide_animation_->is_animating(); }
-  views::View* desired_anchor_view() { return desired_anchor_view_; }
-  const views::View* desired_anchor_view() const {
-    return desired_anchor_view_;
-  }
-
- private:
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    double value = gfx::Tween::CalculateValue(
-        gfx::Tween::FAST_OUT_SLOW_IN, slide_animation_->GetCurrentValue());
-    current_bubble_bounds_ = gfx::Tween::RectValueBetween(
-        value, starting_bubble_bounds_, target_bubble_bounds_);
-
-    if (current_bubble_bounds_ == target_bubble_bounds_) {
-      if (desired_anchor_view_)
-        bubble_delegate_->SetAnchorView(desired_anchor_view_);
-    }
-    bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
-    bubble_delegate_->UpdateTextFade(value);
-  }
-
-  void AnimationEnded(const gfx::Animation* animation) override {
-    desired_anchor_view_ = nullptr;
-    bubble_delegate_->OnHoverCardLanded();
-  }
-
-  void AnimationCanceled(const gfx::Animation* animation) override {
-    AnimationEnded(animation);
-  }
-
-  TabHoverCardBubbleView* const bubble_delegate_;
-  std::unique_ptr<gfx::LinearAnimation> slide_animation_;
-  views::View* desired_anchor_view_ = nullptr;
-  gfx::Rect starting_bubble_bounds_;
-  gfx::Rect target_bubble_bounds_;
-  gfx::Rect current_bubble_bounds_;
-};
-
 // This is a label with two tweaks:
 // - a solid background color, which can have alpha
 // - a function to make the foreground and background color fade away (via
@@ -371,6 +173,10 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 class TabHoverCardBubbleView::FadeLabel : public views::Label {
  public:
   using Label::Label;
+
+  METADATA_HEADER(FadeLabel);
+
+  FadeLabel() = default;
   ~FadeLabel() override = default;
 
   // Sets the fade-out of the label as |percent| in the range [0, 1]. Since
@@ -392,15 +198,17 @@ class TabHoverCardBubbleView::FadeLabel : public views::Label {
   }
 };
 
+BEGIN_METADATA(TabHoverCardBubbleView, FadeLabel, views::Label)
+END_METADATA
+
 // Maintains a set of thumbnails to watch, ensuring the capture count on the
 // associated WebContents stays nonzero until a valid thumbnail has been
 // captured.
-class TabHoverCardBubbleView::ThumbnailObserver
-    : public ThumbnailImage::Observer {
+class TabHoverCardBubbleView::ThumbnailObserver {
  public:
   explicit ThumbnailObserver(TabHoverCardBubbleView* hover_card)
       : hover_card_(hover_card) {}
-  ~ThumbnailObserver() override = default;
+  ~ThumbnailObserver() = default;
 
   // Begin watching the specified thumbnail image for updates. Ideally, should
   // trigger the associated WebContents to load (if not loaded already) and
@@ -410,13 +218,17 @@ class TabHoverCardBubbleView::ThumbnailObserver
     if (current_image_ == thumbnail_image)
       return;
 
-    scoped_observer_.RemoveAll();
+    subscription_.reset();
     current_image_ = std::move(thumbnail_image);
+    if (!current_image_)
+      return;
 
-    if (current_image_) {
-      scoped_observer_.Add(current_image_.get());
-      current_image_->RequestThumbnailImage();
-    }
+    subscription_ = current_image_->Subscribe();
+    subscription_->SetSizeHint(TabStyle::GetPreviewImageSize());
+    subscription_->SetUncompressedImageCallback(base::BindRepeating(
+        &ThumbnailObserver::ThumbnailImageCallback, base::Unretained(this)));
+
+    current_image_->RequestThumbnailImage();
   }
 
   // Returns the current (most recent) thumbnail being watched.
@@ -424,22 +236,19 @@ class TabHoverCardBubbleView::ThumbnailObserver
     return current_image_;
   }
 
-  base::Optional<gfx::Size> GetThumbnailSizeHint() const override {
-    return TabStyle::GetPreviewImageSize();
-  }
-
-  void OnThumbnailImageAvailable(gfx::ImageSkia preview_image) override {
+  void ThumbnailImageCallback(gfx::ImageSkia preview_image) {
     hover_card_->OnThumbnailImageAvailable(std::move(preview_image));
   }
 
   scoped_refptr<ThumbnailImage> current_image_;
+  std::unique_ptr<ThumbnailImage::Subscription> subscription_;
   TabHoverCardBubbleView* const hover_card_;
-  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> scoped_observer_{
-      this};
 };
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
-    : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT),
+    : BubbleDialogDelegateView(tab,
+                               views::BubbleBorder::TOP_LEFT,
+                               views::BubbleBorder::STANDARD_SHADOW),
       using_rounded_corners_(CustomShadowsSupported()) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
@@ -543,17 +352,26 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);
 
-  slide_animation_delegate_ =
-      std::make_unique<WidgetSlideAnimationDelegate>(this);
-  fade_animation_delegate_ =
-      std::make_unique<WidgetFadeAnimationDelegate>(GetWidget());
-  thumbnail_observer_ = std::make_unique<ThumbnailObserver>(this);
+  slide_animator_ = std::make_unique<views::BubbleSlideAnimator>(this);
+  slide_progressed_subscription_ = slide_animator_->AddSlideProgressedCallback(
+      base::BindRepeating(&TabHoverCardBubbleView::OnSlideAnimationProgressed,
+                          base::Unretained(this)));
+  slide_complete_subscription_ = slide_animator_->AddSlideCompleteCallback(
+      base::BindRepeating(&TabHoverCardBubbleView::OnSlideAnimationComplete,
+                          base::Unretained(this)));
+  fade_animator_ = std::make_unique<views::WidgetFadeAnimator>(GetWidget());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  fade_complete_subscription_ = fade_animator_->AddFadeCompleteCallback(
+      base::BindRepeating(&TabHoverCardBubbleView::OnFadeAnimationComplete,
+                          base::Unretained(this)));
+#endif
+  thumbnail_observation_ = std::make_unique<ThumbnailObserver>(this);
 
   constexpr int kFootnoteVerticalMargin = 8;
-  GetBubbleFrameView()->set_footnote_margins(
+  GetBubbleFrameView()->SetFootnoteMargins(
       gfx::Insets(kFootnoteVerticalMargin, kHorizontalMargin,
                   kFootnoteVerticalMargin, kHorizontalMargin));
-  GetBubbleFrameView()->set_preferred_arrow_adjustment(
+  GetBubbleFrameView()->SetPreferredArrowAdjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
   GetBubbleFrameView()->set_hit_test_transparent(true);
 
@@ -587,7 +405,13 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
       within_delay_time_buffer || tab->HasFocus() ||
       (tab_focus_manager && tab->Contains(tab_focus_manager->GetFocusedView()));
 
-  fade_animation_delegate_->CancelFadeOut();
+  if (fade_animator_->IsFadingOut()) {
+    fade_animator_->CancelFadeOut();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (throughput_tracker_.has_value())
+      throughput_tracker_->Cancel();
+#endif
+  }
 
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
@@ -603,31 +427,26 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
-  if (GetWidget()->IsVisible() && GetAnchorView() == tab &&
-      !slide_animation_delegate_->is_animating()) {
-    GetWidget()->SetBounds(
-        slide_animation_delegate_->CalculateTargetBounds(tab));
-    slide_animation_delegate_->SetCurrentBounds();
-    OnHoverCardLanded();
+  if (GetWidgetVisible() && GetAnchorView() == tab &&
+      !slide_animator_->is_animating()) {
+    slide_animator_->SnapToAnchorView(tab);
     return;
   }
 
-  if (GetWidget()->IsVisible())
+  if (GetWidgetVisible())
     ++hover_cards_seen_count_;
 
-  if (GetWidget()->IsVisible() && !disable_animations_for_testing_) {
-    slide_animation_delegate_->AnimateToAnchorView(tab);
+  const bool animations_enabled = gfx::Animation::ShouldRenderRichAnimation();
+  if (GetWidgetVisible() && !disable_animations_for_testing_ &&
+      animations_enabled) {
+    slide_animator_->AnimateToAnchorView(tab);
   } else {
-    if (!anchor_view_set)
-      SetAnchorView(tab);
-    GetWidget()->SetBounds(
-        slide_animation_delegate_->CalculateTargetBounds(tab));
-    slide_animation_delegate_->SetCurrentBounds();
-    OnHoverCardLanded();
+    slide_animator_->SnapToAnchorView(tab);
   }
 
-  if (!GetWidget()->IsVisible()) {
-    if (disable_animations_for_testing_ || show_immediately) {
+  if (!GetWidgetVisible()) {
+    if (disable_animations_for_testing_ || show_immediately ||
+        !animations_enabled) {
       GetWidget()->SetOpacity(1.0f);
       GetWidget()->Show();
     } else {
@@ -640,31 +459,38 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   }
 }
 
-bool TabHoverCardBubbleView::IsVisible() {
+bool TabHoverCardBubbleView::GetWidgetVisible() const {
   return GetWidget()->IsVisible();
 }
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
-  if (!GetWidget()->IsVisible())
+  if (!GetWidgetVisible())
     return;
-  thumbnail_observer_->Observe(nullptr);
-  slide_animation_delegate_->StopAnimation();
+  thumbnail_observation_->Observe(nullptr);
+  slide_animator_->StopAnimation();
   last_visible_timestamp_ = base::TimeTicks::Now();
-  if (disable_animations_for_testing_) {
+  if (disable_animations_for_testing_ ||
+      !gfx::Animation::ShouldRenderRichAnimation()) {
     GetWidget()->Hide();
-  } else {
-    fade_animation_delegate_->FadeOut();
+  } else if (!fade_animator_->IsFadingOut()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    throughput_tracker_.emplace(
+        GetWidget()->GetCompositor()->RequestNewThroughputTracker());
+    throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
+        base::BindRepeating(&RecordFadeOutSmoothness)));
+#endif
+    fade_animator_->FadeOut();
   }
 }
 
-bool TabHoverCardBubbleView::IsFadingOut() const {
-  return fade_animation_delegate_->IsFadingOut();
+bool TabHoverCardBubbleView::GetFadingOut() const {
+  return fade_animator_->IsFadingOut();
 }
 
 views::View* TabHoverCardBubbleView::GetDesiredAnchorView() {
-  return slide_animation_delegate_->is_animating()
-             ? slide_animation_delegate_->desired_anchor_view()
+  return slide_animator_->is_animating()
+             ? slide_animator_->desired_anchor_view()
              : GetAnchorView();
 }
 
@@ -746,7 +572,17 @@ void TabHoverCardBubbleView::FadeInToShow() {
   // Make sure the hover card isn't accidentally shown if the anchor is gone.
   if (!GetAnchorView())
     return;
-  fade_animation_delegate_->FadeIn();
+  if (fade_animator_->IsFadingIn())
+    return;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  throughput_tracker_.emplace(
+      GetWidget()->GetCompositor()->RequestNewThroughputTracker());
+  throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
+      base::BindRepeating(&RecordFadeInSmoothness)));
+#endif
+
+  fade_animator_->FadeIn();
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
@@ -804,12 +640,12 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
       auto thumbnail = tab->data().thumbnail;
       if (!thumbnail) {
         ClearPreviewImage();
-      } else if (thumbnail != thumbnail_observer_->current_image()) {
+      } else if (thumbnail != thumbnail_observation_->current_image()) {
         waiting_for_decompress_ = true;
-        thumbnail_observer_->Observe(thumbnail);
+        thumbnail_observation_->Observe(thumbnail);
       }
     } else {
-      thumbnail_observer_->Observe(nullptr);
+      thumbnail_observation_->Observe(nullptr);
     }
   }
 }
@@ -859,19 +695,6 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
   waiting_for_decompress_ = false;
 }
 
-void TabHoverCardBubbleView::OnHoverCardLanded() {
-  // Make sure we're displaying the new text at 100% opacity, and none of the
-  // old text.
-  UpdateTextFade(1.0);
-
-  // If we were waiting for a preview image with data to load, we don't want to
-  // keep showing the old image while hovering on the new tab, so clear it. This
-  // shouldn't happen very often for slide animations, but could on slower
-  // computers.
-  if (waiting_for_decompress_)
-    ClearPreviewImage();
-}
-
 void TabHoverCardBubbleView::OnThumbnailImageAvailable(
     gfx::ImageSkia preview_image) {
   const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
@@ -910,7 +733,7 @@ void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
     base::TimeDelta elapsed_time) {
   constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
       base::TimeDelta::FromSeconds(5);
-  if ((!GetWidget()->IsVisible() || IsFadingOut()) &&
+  if ((!GetWidgetVisible() || GetFadingOut()) &&
       elapsed_time <= kMaxHoverCardReshowTimeDelta) {
     constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
         base::TimeDelta::FromMilliseconds(1);
@@ -921,3 +744,37 @@ void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
                                kHoverCardHistogramBucketCount);
   }
 }
+
+void TabHoverCardBubbleView::OnSlideAnimationProgressed(
+    views::BubbleSlideAnimator* animator,
+    double value) {
+  UpdateTextFade(value);
+}
+
+void TabHoverCardBubbleView::OnSlideAnimationComplete(
+    views::BubbleSlideAnimator* animator) {
+  // Make sure we're displaying the new text at 100% opacity, and none of the
+  // old text.
+  UpdateTextFade(1.0);
+
+  // If we were waiting for a preview image with data to load, we don't want to
+  // keep showing the old image while hovering on the new tab, so clear it. This
+  // shouldn't happen very often for slide animations, but could on slower
+  // computers.
+  if (waiting_for_decompress_)
+    ClearPreviewImage();
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void TabHoverCardBubbleView::OnFadeAnimationComplete(
+    views::WidgetFadeAnimator* animator,
+    views::WidgetFadeAnimator::FadeType fade_type) {
+  if (throughput_tracker_.has_value())
+    throughput_tracker_->Stop();
+}
+#endif
+
+BEGIN_METADATA(TabHoverCardBubbleView, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(bool, WidgetVisible)
+ADD_READONLY_PROPERTY_METADATA(bool, FadingOut)
+END_METADATA

@@ -112,6 +112,12 @@ void MediaAppUI::CreatePageHandler(
       std::make_unique<MediaAppPageHandler>(this, std::move(receiver));
 }
 
+bool MediaAppUI::IsJavascriptErrorReportingEnabled() {
+  // JavaScript errors are reported via CrashReportPrivate.reportError. Don't
+  // send duplicate reports via WebUI.
+  return false;
+}
+
 WEB_UI_CONTROLLER_TYPE_IMPL(MediaAppUI)
 
 }  // namespace chromeos

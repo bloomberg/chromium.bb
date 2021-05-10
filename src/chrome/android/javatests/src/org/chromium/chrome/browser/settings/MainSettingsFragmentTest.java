@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
+import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -65,8 +66,9 @@ import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
-import org.chromium.chrome.browser.sync.settings.SignInPreference.State;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
+import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -100,7 +102,7 @@ public class MainSettingsFragmentTest {
     private final SyncTestRule mSyncTestRule = new SyncTestRule();
 
     private final SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
-            new SettingsActivityTestRule<>(MainSettings.class, true);
+            new SettingsActivityTestRule<>(MainSettings.class);
 
     // SettingsActivity needs to be initialized and destroyed with the mock
     // signin environment setup in SyncTestRule
@@ -132,6 +134,7 @@ public class MainSettingsFragmentTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        InstrumentationRegistry.getInstrumentation().setInTouchMode(true);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         SigninActivityLauncherImpl.setLauncherForTest(mMockSigninActivityLauncherImpl);
         DeveloperSettings.setIsEnabledForTests(true);
@@ -183,7 +186,7 @@ public class MainSettingsFragmentTest {
 
         // Sign in and render changes.
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         mRenderTestRule.render(view, "main_settings_signed_in");
     }
 
@@ -211,7 +214,7 @@ public class MainSettingsFragmentTest {
 
         // Sign in and render changes.
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         mRenderTestRule.render(view, "main_settings_signed_in_mobile_identity_consistency");
     }
 
@@ -231,7 +234,7 @@ public class MainSettingsFragmentTest {
 
         // Sign in and render changes.
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         mRenderTestRule.render(view, "main_settings_signed_in_safety_check");
     }
 
@@ -261,7 +264,7 @@ public class MainSettingsFragmentTest {
 
         // Sign in and render changes.
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         mRenderTestRule.render(
                 view, "main_settings_signed_in_safety_check_mobile_identity_consistency");
     }
@@ -274,7 +277,7 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORD_CHECK, ChromeFeatureList.SAFETY_CHECK_ANDROID})
+    @EnableFeatures(ChromeFeatureList.SAFETY_CHECK_ANDROID)
     @DisableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testStartup() {
         launchSettingsActivity();
@@ -323,8 +326,8 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY,
-            ChromeFeatureList.PASSWORD_CHECK, ChromeFeatureList.SAFETY_CHECK_ANDROID})
+    @EnableFeatures(
+            {ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY, ChromeFeatureList.SAFETY_CHECK_ANDROID})
     public void
     testStartupWithMobileIdentityConsistency() {
         launchSettingsActivity();
@@ -398,16 +401,6 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SAFETY_CHECK_ANDROID)
-    @DisableFeatures(ChromeFeatureList.PASSWORD_CHECK)
-    public void testSafetyCheckWithoutPasswordCheck() {
-        launchSettingsActivity();
-        Assert.assertNull("Safety check section should be hidden",
-                mMainSettings.findPreference(MainSettings.PREF_SAFETY_CHECK));
-    }
-
-    @Test
-    @SmallTest
     @EnableFeatures(ChromeFeatureList.SAFE_BROWSING_SECTION_UI)
     public void testSafeBrowsingSecuritySectionUiFlagOn() {
         launchSettingsActivity();
@@ -453,18 +446,21 @@ public class MainSettingsFragmentTest {
     public void testAccountSignIn() {
         launchSettingsActivity();
 
-        SignInPreference signInPreference =
-                (SignInPreference) assertSettingsExists(MainSettings.PREF_SIGN_IN, null);
-        Assert.assertEquals("SignInPreference should be at the personalized promo state. ",
-                signInPreference.getState(), State.PERSONALIZED_PROMO);
+        SyncPromoPreference syncPromoPreference =
+                (SyncPromoPreference) mMainSettings.findPreference(MainSettings.PREF_SYNC_PROMO);
+        Assert.assertEquals(
+                "SyncPromoPreference should be at the personalized signin promo state. ",
+                syncPromoPreference.getState(), State.PERSONALIZED_SIGNIN_PROMO);
         Assert.assertFalse("Account section header should be hidden when promo is shown.",
                 mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_SECTION).isVisible());
 
         // SignIn to see the changes
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
+        SignInPreference signInPreference =
+                (SignInPreference) assertSettingsExists(MainSettings.PREF_SIGN_IN, null);
         Assert.assertEquals("SignInPreference should be at the signed in state. ",
-                signInPreference.getState(), State.SIGNED_IN);
+                signInPreference.getState(), SignInPreference.State.SIGNED_IN);
         Assert.assertNotNull("Account section header should appear when user signed in.",
                 mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_SECTION));
     }
@@ -478,10 +474,11 @@ public class MainSettingsFragmentTest {
     public void testAccountSignInWithMobileIdentityConsistency() throws InterruptedException {
         launchSettingsActivity();
 
-        SignInPreference signInPreference =
-                (SignInPreference) assertSettingsExists(MainSettings.PREF_SIGN_IN, null);
-        Assert.assertEquals("SignInPreference should be at the personalized promo state. ",
-                signInPreference.getState(), State.PERSONALIZED_PROMO);
+        SyncPromoPreference syncPromoPreference =
+                (SyncPromoPreference) mMainSettings.findPreference(MainSettings.PREF_SYNC_PROMO);
+        Assert.assertEquals(
+                "SyncPromoPreference should be at the personalized signin promo state. ",
+                syncPromoPreference.getState(), State.PERSONALIZED_SIGNIN_PROMO);
         Assert.assertFalse("Account section header should be hidden when promo is shown.",
                 mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
                         .isVisible());
@@ -490,9 +487,11 @@ public class MainSettingsFragmentTest {
 
         // SignIn to see the changes
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
+        SignInPreference signInPreference =
+                (SignInPreference) assertSettingsExists(MainSettings.PREF_SIGN_IN, null);
         Assert.assertEquals("SignInPreference should be at the signed in state. ",
-                signInPreference.getState(), State.SIGNED_IN);
+                signInPreference.getState(), SignInPreference.State.SIGNED_IN);
         Assert.assertTrue("Account section header should appear when user signed in.",
                 mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
                         .isVisible());
@@ -533,7 +532,6 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
     @DisabledTest(message = "crbug.com/1110965")
     public void testDestroysPasswordCheck() {
         launchSettingsActivity();

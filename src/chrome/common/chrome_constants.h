@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace chrome {
 
@@ -19,10 +20,6 @@ extern const base::FilePath::CharType kBrowserProcessExecutableName[];
 extern const base::FilePath::CharType kHelperProcessExecutableName[];
 extern const base::FilePath::CharType kBrowserProcessExecutablePath[];
 extern const base::FilePath::CharType kHelperProcessExecutablePath[];
-extern const base::FilePath::CharType kBrowserProcessExecutableNameChromium[];
-extern const base::FilePath::CharType kHelperProcessExecutableNameChromium[];
-extern const base::FilePath::CharType kBrowserProcessExecutablePathChromium[];
-extern const base::FilePath::CharType kHelperProcessExecutablePathChromium[];
 #if defined(OS_MAC)
 // NOTE: if you change the value of kFrameworkName, please don't forget to
 // update components/test/run_all_unittests.cc as well.
@@ -95,7 +92,7 @@ extern const wchar_t kUserDataDirname[];
 // installed.
 extern const float kMaxShareOfExtensionProcesses;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Chrome OS profile directories have custom prefix.
 // Profile path format: [user_data_dir]/u-[$hash]
 // Ex.: /home/chronos/u-0123456789
@@ -107,14 +104,15 @@ extern const char kLegacyProfileDir[];
 // This must be kept in sync with TestingProfile::kTestUserProfileDir.
 extern const char kTestUserProfileDir[];
 
+// An anonymous profile that is used for lock screen apps.
 extern const char kLockScreenAppProfile[];
+
+// An incognito profile that is used for user authentication on lock screen.
+extern const char kLockScreenProfile[];
 #endif
 
 // Used to identify the application to the system AV function in Windows.
 extern const char kApplicationClientIDStringForAVScanning[];
-
-// The largest reasonable length we'd assume for a meta tag attribute.
-extern const size_t kMaxMetaTagAttributeLength;
 
 }  // namespace chrome
 

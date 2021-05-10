@@ -106,10 +106,13 @@ void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
 
 void MimeHandlerViewEmbedder::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  if (frame_tree_node_id_ != handle->GetFrameTreeNodeId())
+  if (!handle->HasCommitted() ||
+      frame_tree_node_id_ != handle->GetFrameTreeNodeId()) {
     return;
+  }
   // We should've deleted the MimeHandlerViewEmbedder at this point if the frame
   // is sandboxed.
+  DCHECK(render_frame_host_);
   DCHECK(!render_frame_host_->IsSandboxed(
       network::mojom::WebSandboxFlags::kPlugins));
 }

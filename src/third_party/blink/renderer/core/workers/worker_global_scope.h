@@ -85,6 +85,7 @@ class CORE_EXPORT WorkerGlobalScope
   void Dispose() override;
   WorkerThread* GetThread() const final { return thread_; }
   const base::UnguessableToken& GetDevToolsToken() const override;
+  bool IsInitialized() const final { return !url_.IsNull(); }
 
   void ExceptionUnhandled(int exception_id);
 
@@ -116,14 +117,16 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
-  const UserAgentMetadata& GetUserAgentMetadata() const { return ua_metadata_; }
+  UserAgentMetadata GetUserAgentMetadata() const override {
+    return ua_metadata_;
+  }
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
   ukm::UkmRecorder* UkmRecorder() final;
   ScriptWrappable* ToScriptWrappable() final { return this; }
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
+  const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
@@ -145,7 +148,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
       network::mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens,
       int64_t appcache_id) = 0;
 
@@ -223,11 +226,17 @@ class CORE_EXPORT WorkerGlobalScope
   // successful and not successful) by the worker.
   FontMatchingMetrics* GetFontMatchingMetrics();
 
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetAgentGroupSchedulerCompositorTaskRunner() {
+    return agent_group_scheduler_compositor_task_runner_;
+  }
+
+  bool IsUrlValid() { return url_.IsValid(); }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
-                    base::TimeTicks time_origin,
-                    ukm::SourceId);
+                    base::TimeTicks time_origin);
 
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
@@ -277,6 +286,11 @@ class CORE_EXPORT WorkerGlobalScope
   mutable Member<TrustedTypePolicyFactory> trusted_types_;
 
   WorkerThread* thread_;
+
+  // The compositor task runner associated with the |AgentGroupScheduler| this
+  // worker belongs to.
+  scoped_refptr<base::SingleThreadTaskRunner>
+      agent_group_scheduler_compositor_task_runner_;
 
   bool closing_ = false;
 

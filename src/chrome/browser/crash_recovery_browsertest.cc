@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -39,18 +40,18 @@ using content::Referrer;
 using content::WebContents;
 
 // TODO(jam): http://crbug.com/350550
-#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
+#if !(BUILDFLAG(IS_CHROMEOS_ASH) && defined(ADDRESS_SANITIZER))
 
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher crash_observer(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   browser->OpenURL(OpenURLParams(GURL(content::kChromeUICrashURL), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_TYPED, false));
-  observer.Wait();
+  crash_observer.Wait();
 }
 
 // A request handler which returns a different result each time but stays fresh

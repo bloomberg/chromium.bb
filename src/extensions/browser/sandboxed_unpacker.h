@@ -183,6 +183,16 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                  const base::FilePath& unzip_dir,
                  const std::string& error);
 
+  // Callback which is called after the verified contents are uncompressed.
+  void OnVerifiedContentsUncompressed(
+      const base::FilePath& unzip_dir,
+      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
+
+  // Verifies the decompressed verified contents fetched from the header of CRX
+  // and stores them if the verification of these contents is successful.
+  bool StoreVerifiedContentsInExtensionDir(
+      base::span<const uint8_t> verified_contents);
+
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
   void ReadManifestDone(base::Optional<base::Value> manifest,
@@ -270,6 +280,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;
+
+  // The compressed verified contents extracted from the CRX header.
+  std::vector<uint8_t> compressed_verified_contents_;
 
   // The public key that was extracted from the CRX header.
   std::string public_key_;

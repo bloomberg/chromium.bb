@@ -8,6 +8,9 @@
 #include "base/optional.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/account_addition_result.h"
+
+class GoogleServiceAuthError;
 
 namespace account_manager {
 
@@ -20,6 +23,15 @@ COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
 crosapi::mojom::AccountPtr ToMojoAccount(
     const account_manager::Account& account);
 
+// Returns `base::nullopt` if `mojom_account_key` cannot be parsed.
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+base::Optional<account_manager::AccountKey> FromMojoAccountKey(
+    const crosapi::mojom::AccountKeyPtr& mojom_account_key);
+
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+crosapi::mojom::AccountKeyPtr ToMojoAccountKey(
+    const account_manager::AccountKey& account_key);
+
 // Returns `base::nullopt` if `account_type` cannot be parsed.
 COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
 base::Optional<account_manager::AccountType> FromMojoAccountType(
@@ -29,6 +41,25 @@ COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
 crosapi::mojom::AccountType ToMojoAccountType(
     const account_manager::AccountType& account_type);
 
+// Returns `base::nullopt` if `mojo_error` cannot be parsed. This probably means
+// that a new error type was added, so it should be considered a persistent
+// error.
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+base::Optional<GoogleServiceAuthError> FromMojoGoogleServiceAuthError(
+    const crosapi::mojom::GoogleServiceAuthErrorPtr& mojo_error);
+
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+crosapi::mojom::GoogleServiceAuthErrorPtr ToMojoGoogleServiceAuthError(
+    GoogleServiceAuthError error);
+
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+base::Optional<account_manager::AccountAdditionResult>
+FromMojoAccountAdditionResult(
+    const crosapi::mojom::AccountAdditionResultPtr& mojo_result);
+
+COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE)
+crosapi::mojom::AccountAdditionResultPtr ToMojoAccountAdditionResult(
+    account_manager::AccountAdditionResult result);
 }  // namespace account_manager
 
 #endif  // COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_MANAGER_UTIL_H_

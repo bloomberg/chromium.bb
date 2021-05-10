@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frame.h"
+#include "quic/core/frames/quic_ack_frame.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_interval.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
 
 namespace quic {
 
@@ -20,7 +20,7 @@ const QuicPacketCount kMaxPrintRange = 128;
 bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
                       QuicPacketNumber packet_number,
                       QuicPacketNumber peer_least_packet_awaiting_ack) {
-  DCHECK(packet_number.IsInitialized());
+  QUICHE_DCHECK(packet_number.IsInitialized());
   return (!peer_least_packet_awaiting_ack.IsInitialized() ||
           packet_number >= peer_least_packet_awaiting_ack) &&
          !ack_frame.packets.Contains(packet_number);
@@ -118,12 +118,12 @@ bool PacketNumberQueue::Empty() const {
 }
 
 QuicPacketNumber PacketNumberQueue::Min() const {
-  DCHECK(!Empty());
+  QUICHE_DCHECK(!Empty());
   return packet_number_intervals_.begin()->min();
 }
 
 QuicPacketNumber PacketNumberQueue::Max() const {
-  DCHECK(!Empty());
+  QUICHE_DCHECK(!Empty());
   return packet_number_intervals_.rbegin()->max() - 1;
 }
 
@@ -156,7 +156,7 @@ PacketNumberQueue::const_reverse_iterator PacketNumberQueue::rend() const {
 }
 
 QuicPacketCount PacketNumberQueue::LastIntervalLength() const {
-  DCHECK(!Empty());
+  QUICHE_DCHECK(!Empty());
   return packet_number_intervals_.rbegin()->Length();
 }
 

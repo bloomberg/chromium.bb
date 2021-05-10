@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 
+#include "src/program.h"
 #include "src/writer/text.h"
 #include "src/writer/wgsl/generator_impl.h"
 
@@ -29,12 +30,11 @@ namespace wgsl {
 class Generator : public Text {
  public:
   /// Constructor
-  /// @param module the module to convert
-  explicit Generator(ast::Module module);
-  ~Generator() override;
+  /// @param program the program to convert
+  explicit Generator(const Program* program);
 
-  /// Resets the generator
-  void Reset() override;
+  /// Destructor
+  ~Generator() override;
 
   /// Generates the result data
   /// @returns true on successful generation; false otherwise

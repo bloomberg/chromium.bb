@@ -89,7 +89,6 @@ WindowEventDispatcher::ObserverNotifier::~ObserverNotifier() {
 
 WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
     : host_(host),
-      observer_manager_(this),
       event_targeter_(std::make_unique<WindowTargeter>()) {
   Env::GetInstance()->gesture_recognizer()->AddGestureEventHelper(this);
   Env::GetInstance()->AddObserver(this);
@@ -519,6 +518,8 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
         event->time_stamp());
   }
 
+  WindowTracker target_window_tracker;
+  target_window_tracker.Add(target_window);
   if (!dispatching_held_event_) {
     bool can_be_held = IsEventCandidateForHold(*event);
     if (!move_hold_count_ || !can_be_held) {
@@ -528,6 +529,12 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
       if (details.dispatcher_destroyed || details.target_destroyed)
         return details;
     }
+  }
+  if (target_window_tracker.windows().empty()) {
+    // The event target is destroyed while processing the held event.
+    DispatchDetails details;
+    details.target_destroyed = true;
+    return details;
   }
 
   DispatchDetails details;
@@ -620,7 +627,7 @@ void WindowEventDispatcher::OnWindowDestroying(Window* window) {
 void WindowEventDispatcher::OnWindowDestroyed(Window* window) {
   // We observe all windows regardless of what root Window (if any) they're
   // attached to.
-  observer_manager_.Remove(window);
+  observation_manager_.RemoveObservation(window);
 
   // In theory this should be cleaned up by other checks, but we are getting
   // crashes that seem to indicate otherwise. See https://crbug.com/942552 for
@@ -630,8 +637,8 @@ void WindowEventDispatcher::OnWindowDestroyed(Window* window) {
 }
 
 void WindowEventDispatcher::OnWindowAddedToRootWindow(Window* attached) {
-  if (!observer_manager_.IsObserving(attached))
-    observer_manager_.Add(attached);
+  if (!observation_manager_.IsObservingSource(attached))
+    observation_manager_.AddObservation(attached);
 
   if (!host_->window()->Contains(attached))
     return;
@@ -738,7 +745,7 @@ void WindowEventDispatcher::OnWindowTransformed(
 // WindowEventDispatcher, EnvObserver implementation:
 
 void WindowEventDispatcher::OnWindowInitialized(Window* window) {
-  observer_manager_.Add(window);
+  observation_manager_.AddObservation(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

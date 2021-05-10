@@ -246,6 +246,11 @@ std::string OSCrypt::GetRawEncryptionKey() {
 }
 
 // static
+bool OSCrypt::IsEncryptionAvailable() {
+  return !GetEncryptionKeyFactory().empty();
+}
+
+// static
 void OSCrypt::UseMockKeyForTesting(bool use_mock) {
   g_use_mock_key = use_mock;
 }

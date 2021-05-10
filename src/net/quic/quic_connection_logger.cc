@@ -162,6 +162,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::PATH_CHALLENGE_FRAME:
       break;
     case quic::STOP_SENDING_FRAME:
+      base::UmaHistogramSparse("Net.QuicSession.StopSendingErrorCodeClient",
+                               frame.stop_sending_frame->error_code);
       break;
     case quic::MESSAGE_FRAME:
       break;
@@ -228,18 +230,6 @@ void QuicConnectionLogger::OnPacketSent(
                              transmission_type, encryption_level,
                              retransmittable_frames, nonretransmittable_frames,
                              sent_time);
-}
-
-void QuicConnectionLogger::OnPacketSent(
-    const quic::SerializedPacket& serialized_packet,
-    quic::TransmissionType transmission_type,
-    quic::QuicTime sent_time) {
-  OnPacketSent(serialized_packet.packet_number,
-               serialized_packet.encrypted_length,
-               serialized_packet.has_crypto_handshake != quic::NOT_HANDSHAKE,
-               transmission_type, serialized_packet.encryption_level,
-               serialized_packet.retransmittable_frames,
-               serialized_packet.nonretransmittable_frames, sent_time);
 }
 
 void QuicConnectionLogger::OnPacketLoss(
@@ -377,6 +367,8 @@ void QuicConnectionLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {
 
 void QuicConnectionLogger::OnStopSendingFrame(
     const quic::QuicStopSendingFrame& frame) {
+  base::UmaHistogramSparse("Net.QuicSession.StopSendingErrorCodeServer",
+                           frame.error_code);
   event_logger_.OnStopSendingFrame(frame);
 }
 

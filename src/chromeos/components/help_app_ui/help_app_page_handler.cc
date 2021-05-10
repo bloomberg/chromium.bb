@@ -6,18 +6,21 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "chromeos/components/help_app_ui/help_app_ui.h"
 #include "chromeos/components/help_app_ui/help_app_ui_delegate.h"
-#include "chromeos/constants/chromeos_features.h"
 
 HelpAppPageHandler::HelpAppPageHandler(
     chromeos::HelpAppUI* help_app_ui,
     mojo::PendingReceiver<help_app_ui::mojom::PageHandler> receiver)
     : receiver_(this, std::move(receiver)),
       help_app_ui_(help_app_ui),
-      is_lss_enabled_(base::FeatureList::IsEnabled(
-          chromeos::features::kHelpAppSearchServiceIntegration)) {}
+      is_lss_enabled_(
+          base::FeatureList::IsEnabled(
+              chromeos::features::kHelpAppSearchServiceIntegration) &&
+          base::FeatureList::IsEnabled(
+              chromeos::features::kEnableLocalSearchService)) {}
 
 HelpAppPageHandler::~HelpAppPageHandler() = default;
 

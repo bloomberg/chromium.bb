@@ -60,9 +60,6 @@
 # crbug.com/1061201
 -org.chromium.chrome.browser.history.HistoryActivityTest.testOpenSelectedItems
 
-# crbug.com/1061208
--org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
-
 # crbug.com/1061212
 -org.chromium.chrome.browser.metrics.UkmTest.testRegularPlusIncognitoCheck
 
@@ -118,3 +115,12 @@
 
 # crbug.com/1067673
 -org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerViewTest.testDismissArticleWithContextMenu
+
+# crbug.com/1153888
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyName
+
+# crbug.com/1159805
+-org.chromium.chrome.browser.customtabs.DetachedResourceRequestTest.testRepeatedIntents
+
+# crbug.com/1163913
+-org.chromium.chrome.browser.autofill_assistant.AutofillAssistantTriggerScriptIntegrationTest.dontShowOnboardingIfAcceptedInDifferentTab

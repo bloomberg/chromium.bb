@@ -17,12 +17,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,6 +33,7 @@ namespace {
 
 class HomePageUndoBubble : public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(HomePageUndoBubble);
   HomePageUndoBubble(const HomePageUndoBubble&) = delete;
   HomePageUndoBubble& operator=(const HomePageUndoBubble&) = delete;
 
@@ -139,6 +141,9 @@ void HomePageUndoBubble::WindowClosing() {
   home_page_undo_bubble_ = nullptr;
 }
 
+BEGIN_METADATA(HomePageUndoBubble, views::BubbleDialogDelegateView)
+END_METADATA
+
 }  // namespace
 
 
@@ -172,9 +177,10 @@ int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {
   return event.source_operations();
 }
 
-int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
+ui::mojom::DragOperation HomeButton::OnPerformDrop(
+    const ui::DropTargetEvent& event) {
   if (!browser_)
-    return ui::DragDropTypes::DRAG_NONE;
+    return ui::mojom::DragOperation::kNone;
 
   GURL new_homepage_url;
   base::string16 title;
@@ -190,7 +196,7 @@ int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
 
     HomePageUndoBubble::ShowBubble(browser_, old_is_ntp, old_homepage, this);
   }
-  return ui::DragDropTypes::DRAG_NONE;
+  return ui::mojom::DragOperation::kNone;
 }
 
 void HomeButton::UpdateIcon() {

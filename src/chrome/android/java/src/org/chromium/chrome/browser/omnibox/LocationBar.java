@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -21,9 +20,6 @@ import org.chromium.chrome.browser.tab.Tab;
 public interface LocationBar extends Destroyable {
     /** Handle all necessary tasks that can be delayed until initialization completes. */
     default void onDeferredStartup() {}
-
-    /** Triggered when the current tab has changed to a {@link NewTabPage}. */
-    default void onTabLoadingNTP(NewTabPage ntp) {}
 
     /**
      * Call to force the UI to update the state of various buttons based on whether or not the
@@ -37,13 +33,6 @@ public interface LocationBar extends Destroyable {
      * @param showTitle Whether the title should be shown.
      */
     void setShowTitle(boolean showTitle);
-
-    /**
-     * Update the visuals based on a loading state change.
-     *
-     * @param updateUrl Whether to update the URL as a result of the this call.
-     */
-    void updateLoadingState(boolean updateUrl);
 
     /**
      * Triggers the cursor to be visible in the UrlBar without triggering any of the focus animation
@@ -62,9 +51,6 @@ public interface LocationBar extends Destroyable {
      */
     void revertChanges();
 
-    /** Updates the security icon displayed in the LocationBar. */
-    void updateStatusIcon();
-
     /** Returns {@link ViewGroup} that this container holds. */
     View getContainerView();
 
@@ -76,15 +62,12 @@ public interface LocationBar extends Destroyable {
      */
     View getSecurityIconView();
 
-    /** Updates the state of the mic button if there is one. */
-    void updateMicButtonState();
 
     /** Returns the {@link VoiceRecognitionHandler} associated with this LocationBar. */
     @Nullable
     default VoiceRecognitionHandler getVoiceRecognitionHandler() {
         return null;
     }
-
     /**
      * Returns a (@link FakeboxDelegate}.
      *

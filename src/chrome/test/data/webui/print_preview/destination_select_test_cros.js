@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, NativeLayer, NativeLayerImpl, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, NativeLayer, NativeLayerCros, NativeLayerCrosImpl, NativeLayerImpl, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -10,6 +10,7 @@ import {Base, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundl
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {waitBeforeNextRender} from '../test_util.m.js';
 
+import {NativeLayerCrosStub} from './native_layer_cros_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
 import {getGoogleDriveDestination, getSaveAsPdfDestination, selectOption} from './print_preview_test_utils.js';
 
@@ -30,18 +31,17 @@ suite(printer_status_test_cros.suiteName, function() {
 
   const account = 'foo@chromium.org';
 
-  /** @type {?NativeLayerStub} */
-  let nativeLayer = null;
+  /** @type {?NativeLayerCrosStub} */
+  let nativeLayerCros = null;
 
   function setNativeLayerPrinterStatusMap() {
-    [
-     {
-       printerId: 'ID1',
-       statusReasons: [{
-         reason: PrinterStatusReason.NO_ERROR,
-         severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
-       }],
-     },
+    [{
+      printerId: 'ID1',
+      statusReasons: [{
+        reason: PrinterStatusReason.NO_ERROR,
+        severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
+      }],
+    },
      {
        printerId: 'ID2',
        statusReasons: [
@@ -119,8 +119,10 @@ suite(printer_status_test_cros.suiteName, function() {
            severity: PrinterStatusSeverity.REPORT
          }
        ],
-     }].forEach(status =>
-                  nativeLayer.addPrinterStatusToMap(status.printerId, status));
+     }]
+        .forEach(
+            status => nativeLayerCros.addPrinterStatusToMap(
+                status.printerId, status));
   }
 
   /**
@@ -147,8 +149,9 @@ suite(printer_status_test_cros.suiteName, function() {
     document.body.innerHTML = '';
 
     // Stub out native layer.
-    nativeLayer = new NativeLayerStub();
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.instance_ = new NativeLayerStub();
+    nativeLayerCros = new NativeLayerCrosStub();
+    NativeLayerCrosImpl.instance_ = nativeLayerCros;
     setNativeLayerPrinterStatusMap();
 
     destinationSelect =
@@ -179,7 +182,7 @@ suite(printer_status_test_cros.suiteName, function() {
         return waitBeforeNextRender(destinationSelect)
             .then(() => {
               const whenStatusRequestsDone =
-                  nativeLayer.waitForMultiplePrinterStatusRequests(7);
+                  nativeLayerCros.waitForMultiplePrinterStatusRequests(7);
 
               destinationSelect.recentDestinationList = [
                 destination1,
@@ -245,7 +248,7 @@ suite(printer_status_test_cros.suiteName, function() {
             createDestination('ID4', 'Four', DestinationOrigin.EXTENSION),
           ];
           assertEquals(
-              2, nativeLayer.getCallCount('requestPrinterStatusUpdate'));
+              2, nativeLayerCros.getCallCount('requestPrinterStatusUpdate'));
 
           // Update list with 2 existing destinations and one new destination.
           // Make sure the requestPrinterStatusUpdate only gets called for the
@@ -256,7 +259,7 @@ suite(printer_status_test_cros.suiteName, function() {
             createDestination('ID5', 'Five', DestinationOrigin.CROS),
           ];
           assertEquals(
-              3, nativeLayer.getCallCount('requestPrinterStatusUpdate'));
+              3, nativeLayerCros.getCallCount('requestPrinterStatusUpdate'));
         });
       });
 
@@ -297,7 +300,7 @@ suite(printer_status_test_cros.suiteName, function() {
           assertFalse(destinationEulaWrapper.hidden);
 
           destinationSelect.destination = destinationWithErrorStatus;
-          return nativeLayer.whenCalled('requestPrinterStatusUpdate');
+          return nativeLayerCros.whenCalled('requestPrinterStatusUpdate');
         })
         .then(() => {
           return waitBeforeNextRender(destinationSelect);
@@ -313,6 +316,19 @@ suite(printer_status_test_cros.suiteName, function() {
           createDestination('ID1', 'One', DestinationOrigin.CROS);
       const localNonCrosPrinter =
           createDestination('ID2', 'Two', DestinationOrigin.LOCAL);
+      const cloudPrintDestination = new Destination(
+          'ID3', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Three',
+          DestinationConnectionStatus.ONLINE, {account: account});
+      const ownedCloudPrintDestination = new Destination(
+          'ID4', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Four',
+          DestinationConnectionStatus.ONLINE,
+          {account: account, isOwned: true});
+      const crosEnterprisePrinter = new Destination(
+          'ID5', DestinationType.LOCAL, DestinationOrigin.CROS, 'Five',
+          DestinationConnectionStatus.ONLINE, {isEnterprisePrinter: true});
+      const mobilePrinter = new Destination(
+          'ID7', DestinationType.MOBILE, DestinationOrigin.COOKIES, 'Seven',
+          DestinationConnectionStatus.ONLINE);
       const saveToDrive = getGoogleDriveDestination('account');
       const saveAsPdf = getSaveAsPdfDestination();
 
@@ -331,6 +347,24 @@ suite(printer_status_test_cros.suiteName, function() {
       destinationSelect.destination = localNonCrosPrinter;
       destinationSelect.updateDestination();
       assertEquals('print-preview:print', dropdown.destinationIcon);
+
+      destinationSelect.destination = cloudPrintDestination;
+      destinationSelect.updateDestination();
+      assertEquals('print-preview:printer-shared', dropdown.destinationIcon);
+
+      destinationSelect.destination = ownedCloudPrintDestination;
+      destinationSelect.updateDestination();
+      assertEquals('print-preview:print', dropdown.destinationIcon);
+
+      destinationSelect.destination = crosEnterprisePrinter;
+      destinationSelect.updateDestination();
+      assertEquals(
+          'print-preview:business-printer-status-grey',
+          dropdown.destinationIcon);
+
+      destinationSelect.destination = mobilePrinter;
+      destinationSelect.updateDestination();
+      assertEquals('print-preview:smartphone', dropdown.destinationIcon);
 
       destinationSelect.destination = saveToDrive;
       destinationSelect.updateDestination();
@@ -517,12 +551,6 @@ suite(destination_select_test_cros.suiteName, function() {
   }
 
   test(assert(destination_select_test_cros.TestNames.UpdateStatus), function() {
-    loadTimeData.overrideValues(
-        {cloudPrintDeprecationWarningsSuppressed: true});
-
-    // Repopulate |recentDestinationList| to have
-    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
-    // new Destinations.
     populateRecentDestinationList();
     destinationSelect.recentDestinationList = recentDestinationList;
 
@@ -532,12 +560,6 @@ suite(destination_select_test_cros.suiteName, function() {
   });
 
   test(assert(destination_select_test_cros.TestNames.ChangeIcon), function() {
-    loadTimeData.overrideValues(
-        {cloudPrintDeprecationWarningsSuppressed: true});
-
-    // Repopulate |recentDestinationList| to have
-    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
-    // new Destinations.
     populateRecentDestinationList();
     destinationSelect.recentDestinationList = recentDestinationList;
 

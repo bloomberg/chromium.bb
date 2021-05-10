@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -33,7 +34,9 @@
 
 class ProfileAttributesStorage;
 class ProfileInfoCache;
+enum class ProfileKeepAliveOrigin;
 class ProfileManagerObserver;
+class ScopedProfileKeepAlive;
 
 // Manages the lifecycle of Profile objects.
 //
@@ -64,7 +67,14 @@ class ProfileManager : public content::NotificationObserver,
   // GetLastUsedProfileAllowedByPolicy() instead.
   // Except in ChromeOS guest sessions, the returned profile is always a regular
   // profile (non-OffTheRecord).
+  // WARNING: if the profile does not exist, this function creates it
+  // synchronously, causing blocking file I/O. Use GetLastUsedProfileIfExists()
+  // to avoid creating the profile synchronously.
   static Profile* GetLastUsedProfile();
+
+  // Same as GetLastUsedProfile() but returns nullptr if the profile is not
+  // loaded. Does not block.
+  static Profile* GetLastUsedProfileIfLoaded();
 
   // Same as GetLastUsedProfile() but returns the incognito Profile if
   // incognito mode is forced. This should be used if the last used Profile
@@ -262,6 +272,11 @@ class ProfileManager : public content::NotificationObserver,
                         bool success,
                         bool is_new_profile) override;
 
+  // Used for testing. Returns true if |profile| has at least one ref of type
+  // |origin|.
+  bool HasKeepAliveForTesting(const Profile* profile,
+                              ProfileKeepAliveOrigin origin);
+
  protected:
   // Creates a new profile by calling into the profile's profile creation
   // method. Virtual so that unittests can return a TestingProfile instead
@@ -284,6 +299,10 @@ class ProfileManager : public content::NotificationObserver,
   friend class TestingProfileManager;
   FRIEND_TEST_ALL_PREFIXES(ProfileManagerBrowserTest, DeleteAllProfiles);
   FRIEND_TEST_ALL_PREFIXES(ProfileManagerBrowserTest, SwitchToProfile);
+  FRIEND_TEST_ALL_PREFIXES(ProfileManagerTest, ScopedProfileKeepAlive);
+
+  // For AddKeepAlive() and RemoveKeepAlive().
+  friend class ScopedProfileKeepAlive;
 
   // This struct contains information about profiles which are being loaded or
   // were loaded.
@@ -294,12 +313,20 @@ class ProfileManager : public content::NotificationObserver,
     ~ProfileInfo();
 
     std::unique_ptr<Profile> profile;
+    // Strong references to this Profile once it's been created (e.g. a Browser
+    // object, a BackgroundModeManager, ...)
+    std::map<ProfileKeepAliveOrigin, int> keep_alives;
     // Whether profile has been fully loaded (created and initialized).
     bool created;
     // List of callbacks to run when profile initialization is done. Note, when
     // profile is fully loaded this vector will be empty.
     std::vector<CreateCallback> callbacks;
   };
+
+  // Increments/decrements the refcount on a |profile|. (it must not be an
+  // off-the-record profile)
+  void AddKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
+  void RemoveKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
 
   // Does final initial actions.
   void DoFinalInit(ProfileInfo* profile_info, bool go_off_the_record);
@@ -320,7 +347,7 @@ class ProfileManager : public content::NotificationObserver,
   // Returns true if the profile was added, false otherwise.
   bool AddProfile(std::unique_ptr<Profile> profile);
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Removes the Profile at |profile_dir| from the manager and destroys it. If
   // it's an ephemeral profile, also nuke the |profile_dir| directory from disk
   // afterwards.

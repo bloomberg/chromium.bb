@@ -129,7 +129,7 @@ class TestObserver : public PowerManagerClient::Observer {
     if (run_unblock_suspend_immediately_)
       CHECK(UnblockSuspend());
   }
-  void SuspendDone(const base::TimeDelta& sleep_duration) override {
+  void SuspendDone(base::TimeDelta sleep_duration) override {
     num_suspend_done_++;
   }
   void DarkSuspendImminent() override {
@@ -270,6 +270,10 @@ class PowerManagerClientTest : public testing::Test {
                      _, _))
         .WillRepeatedly(
             Invoke(this, &PowerManagerClientTest::RegisterSuspendDelay));
+    // Init should request the current thermal state
+    EXPECT_CALL(
+        *proxy_,
+        DoCallMethod(HasMember(power_manager::kGetThermalStateMethod), _, _));
     // Init should also request a fresh power status.
     EXPECT_CALL(
         *proxy_,
@@ -683,6 +687,7 @@ TEST_F(PowerManagerClientTest, ChangeThermalState) {
   }
 
   base::PowerMonitor::RemoveObserver(&observer);
+  base::PowerMonitor::ShutdownForTesting();
 }
 
 }  // namespace chromeos

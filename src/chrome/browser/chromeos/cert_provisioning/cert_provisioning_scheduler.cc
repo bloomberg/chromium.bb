@@ -10,6 +10,7 @@
 #include <unordered_set>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/location.h"
@@ -17,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
@@ -52,27 +51,6 @@ void EraseByKey(Container& container, const Value& value) {
 
 const base::TimeDelta kInconsistentDataErrorRetryDelay =
     base::TimeDelta::FromSeconds(30);
-
-policy::CloudPolicyClient* GetCloudPolicyClientForDevice() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector) {
-    return nullptr;
-  }
-
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      connector->GetDeviceCloudPolicyManager();
-  if (!policy_manager) {
-    return nullptr;
-  }
-
-  policy::CloudPolicyCore* core = policy_manager->core();
-  if (!core) {
-    return nullptr;
-  }
-
-  return core->client();
-}
 
 policy::CloudPolicyClient* GetCloudPolicyClientForUser(Profile* profile) {
   policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
@@ -125,11 +103,10 @@ CertProvisioningSchedulerImpl::CreateUserCertProvisioningScheduler(
 // static
 std::unique_ptr<CertProvisioningScheduler>
 CertProvisioningSchedulerImpl::CreateDeviceCertProvisioningScheduler(
+    policy::CloudPolicyClient* cloud_policy_client,
     policy::AffiliatedInvalidationServiceProvider*
         invalidation_service_provider) {
   PrefService* pref_service = g_browser_process->local_state();
-  policy::CloudPolicyClient* cloud_policy_client =
-      GetCloudPolicyClientForDevice();
   platform_keys::PlatformKeysService* platform_keys_service =
       GetPlatformKeysService(CertScope::kDevice, /*profile=*/nullptr);
   NetworkStateHandler* network_state_handler = GetNetworkStateHandler();
@@ -192,8 +169,9 @@ void CertProvisioningSchedulerImpl::ScheduleInitialUpdate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CertProvisioningSchedulerImpl::InitialUpdateCerts,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&CertProvisioningSchedulerImpl::InitialUpdateCerts,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CertProvisioningSchedulerImpl::ScheduleDailyUpdate() {
@@ -201,8 +179,8 @@ void CertProvisioningSchedulerImpl::ScheduleDailyUpdate() {
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningSchedulerImpl::DailyUpdateCerts,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CertProvisioningSchedulerImpl::DailyUpdateCerts,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromDays(1));
 }
 
@@ -212,8 +190,8 @@ void CertProvisioningSchedulerImpl::ScheduleRetry(
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningSchedulerImpl::UpdateOneCertImpl,
-                 weak_factory_.GetWeakPtr(), profile_id),
+      base::BindOnce(&CertProvisioningSchedulerImpl::UpdateOneCertImpl,
+                     weak_factory_.GetWeakPtr(), profile_id),
       kInconsistentDataErrorRetryDelay);
 }
 
@@ -228,8 +206,8 @@ void CertProvisioningSchedulerImpl::ScheduleRenewal(
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningSchedulerImpl::InitiateRenewal,
-                 weak_factory_.GetWeakPtr(), profile_id),
+      base::BindOnce(&CertProvisioningSchedulerImpl::InitiateRenewal,
+                     weak_factory_.GetWeakPtr(), profile_id),
       delay);
 }
 
@@ -713,6 +691,7 @@ void CertProvisioningSchedulerImpl::UpdateFailedCertProfiles(
 
   FailedWorkerInfo info;
   info.state_before_failure = worker.GetPreviousState();
+  info.cert_profile_name = worker.GetCertProfile().name;
   info.public_key = worker.GetPublicKey();
   info.last_update_time = worker.GetLastUpdateTime();
 
@@ -768,7 +747,7 @@ void CertProvisioningSchedulerImpl::OnVisibleStateChanged() {
   notify_observers_pending_ = true;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &CertProvisioningSchedulerImpl::NotifyObserversVisibleStateChanged,
           weak_factory_.GetWeakPtr()));
 }

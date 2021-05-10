@@ -11,12 +11,12 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.app.appmenu.AppMenuIconRowFooter;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -41,10 +41,10 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
             AppMenuDelegate appMenuDelegate,
             OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
-            ModalDialogManager modalDialogManager) {
+            ModalDialogManager modalDialogManager, WebFeedBridge webFeedBridge) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
                 toolbarManager, decorView, overviewModeBehaviorSupplier, bookmarkBridgeSupplier,
-                modalDialogManager);
+                modalDialogManager, webFeedBridge);
         mAppMenuDelegate = appMenuDelegate;
     }
 
@@ -59,13 +59,7 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
     }
 
     @Override
-    public void onFooterViewInflated(AppMenuHandler appMenuHandler, View view) {
-        if (view instanceof AppMenuIconRowFooter) {
-            ((AppMenuIconRowFooter) view)
-                    .initialize(appMenuHandler, mBookmarkBridge, mActivityTabProvider.get(),
-                            mAppMenuDelegate);
-        }
-    }
+    public void onFooterViewInflated(AppMenuHandler appMenuHandler, View view) {}
 
     @Override
     public int getHeaderResourceId() {

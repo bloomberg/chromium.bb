@@ -15,7 +15,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -28,14 +27,13 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeLocalizationUtils;
 import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.app.flags.ChromeCachedFlags;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.SigninHelperProvider;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
@@ -47,7 +45,6 @@ import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.resources.ResourceExtractor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -171,7 +168,7 @@ public class ChromeBrowserInitializer {
      */
     private void onInflationComplete(final BrowserParts parts) {
         if (parts.isActivityFinishingOrDestroyed()) return;
-        postInflationStartup();
+        mPostInflationStartupComplete = true;
         parts.postInflationStartup();
     }
 
@@ -225,20 +222,6 @@ public class ChromeBrowserInitializer {
         mPreInflationStartupComplete = true;
     }
 
-    private void postInflationStartup() {
-        ThreadUtils.assertOnUiThread();
-        if (mPostInflationStartupComplete) return;
-
-        // Check to see if we need to extract any new resources from the APK. This could
-        // be on first run when we need to extract all the .pak files we need, or after
-        // the user has switched locale, in which case we want new locale resources.
-        ResourceExtractor.get().setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
-        ResourceExtractor.get().startExtractingResources(LocaleUtils.toLanguage(
-                ChromeLocalizationUtils.getUiLocaleStringForCompressedPak()));
-
-        mPostInflationStartupComplete = true;
-    }
-
     /**
      * Execute startup tasks that require native libraries to be loaded. See {@link BrowserParts}
      * for a list of calls to be implemented.
@@ -257,7 +240,7 @@ public class ChromeBrowserInitializer {
         final ChainedTasks tasks = new ChainedTasks();
         // If full browser process is not going to be launched, it is up to individual service to
         // launch its required components.
-        if (!delegate.startServiceManagerOnly()
+        if (!delegate.startMinimalBrowser()
                 && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
             tasks.add(UiThreadTaskTraits.BOOTSTRAP,
                     () -> ProcessInitializationHandler.getInstance().initializePostNative());
@@ -300,12 +283,12 @@ public class ChromeBrowserInitializer {
             tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishNativeInitialization);
         }
 
-        if (!delegate.startServiceManagerOnly()) {
+        if (!delegate.startMinimalBrowser()) {
             tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishFullBrowserInitialization);
         }
 
         int startupMode =
-                getBrowserStartupController().getStartupMode(delegate.startServiceManagerOnly());
+                getBrowserStartupController().getStartupMode(delegate.startMinimalBrowser());
         tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             BackgroundTaskSchedulerFactory.getUmaReporter().reportStartupMode(startupMode);
         });
@@ -315,8 +298,7 @@ public class ChromeBrowserInitializer {
             // C++ startup to run asynchonously, and set it up to start the Java queue once
             // it has finished.
             startChromeBrowserProcessesAsync(delegate.shouldStartGpuProcess(),
-                    delegate.startServiceManagerOnly(),
-                    new BrowserStartupController.StartupCallback() {
+                    delegate.startMinimalBrowser(), new BrowserStartupController.StartupCallback() {
                         @Override
                         public void onFailure() {
                             delegate.onStartupFailure(null);
@@ -334,11 +316,11 @@ public class ChromeBrowserInitializer {
     }
 
     private void startChromeBrowserProcessesAsync(boolean startGpuProcess,
-            boolean startServiceManagerOnly, BrowserStartupController.StartupCallback callback) {
+            boolean startMinimalBrowser, BrowserStartupController.StartupCallback callback) {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
             getBrowserStartupController().startBrowserProcessesAsync(
-                    LibraryProcessType.PROCESS_BROWSER, startGpuProcess, startServiceManagerOnly,
+                    LibraryProcessType.PROCESS_BROWSER, startGpuProcess, startMinimalBrowser,
                     callback);
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
@@ -355,7 +337,7 @@ public class ChromeBrowserInitializer {
             LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
             getBrowserStartupController().startBrowserProcessesSync(
                     LibraryProcessType.PROCESS_BROWSER, /*singleProcess=*/false);
-            SigninHelper.get();
+            SigninHelperProvider.get();
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
         }
@@ -428,8 +410,8 @@ public class ChromeBrowserInitializer {
 
         MemoryPressureUma.initializeForBrowser();
 
-        // Needed for field trial metrics to be properly collected in ServiceManager only mode.
-        ChromeCachedFlags.getInstance().cacheServiceManagerOnlyFlags();
+        // Needed for field trial metrics to be properly collected in minimal browser mode.
+        ChromeCachedFlags.getInstance().cacheMinimalBrowserFlags();
 
         ModuleUtil.recordStartupTime();
 

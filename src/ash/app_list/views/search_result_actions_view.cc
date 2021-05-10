@@ -34,6 +34,8 @@ namespace {
 // Image buttons.
 constexpr int kImageButtonSizeDip = 40;
 constexpr int kActionButtonBetweenSpacing = 8;
+// The width of the focus ring.
+constexpr int kFocusRingWidth = 2;
 
 }  // namespace
 
@@ -62,7 +64,7 @@ class SearchResultImageButton : public views::ImageButton {
 
   void SetButtonImage(const gfx::ImageSkia& source, int icon_dimension);
 
-  int GetInkDropRadius() const;
+  int GetButtonRadius() const;
   const char* GetClassName() const override;
 
   SearchResultActionsView* parent_;
@@ -121,23 +123,27 @@ void SearchResultImageButton::OnGestureEvent(ui::GestureEvent* event) {
 std::unique_ptr<views::InkDropRipple>
 SearchResultImageButton::CreateInkDropRipple() const {
   const gfx::Point center = GetLocalBounds().CenterPoint();
-  const int ripple_radius = GetInkDropRadius();
+  const int ripple_radius = GetButtonRadius();
   gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
                    2 * ripple_radius, 2 * ripple_radius);
-  SkColor ripple_color =
-      AppListColorProvider::Get()->GetSearchResultViewInkDropColor();
+  const AppListColorProvider* color_provider = AppListColorProvider::Get();
+  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), ripple_color, 1.0f);
+      GetInkDropCenterBasedOnLastEvent(),
+      color_provider->GetRippleAttributesBaseColor(bg_color),
+      color_provider->GetRippleAttributesInkDropOpacity(bg_color));
 }
 
 std::unique_ptr<views::InkDropHighlight>
 SearchResultImageButton::CreateInkDropHighlight() const {
-  SkColor ripple_color =
-      AppListColorProvider::Get()->GetSearchResultViewHighlightColor();
-  auto highlight = std::make_unique<views::InkDropHighlight>(gfx::SizeF(size()),
-                                                             ripple_color);
-  highlight->set_visible_opacity(1.f);
+  const AppListColorProvider* color_provider = AppListColorProvider::Get();
+  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(size()),
+      color_provider->GetRippleAttributesBaseColor(bg_color));
+  highlight->set_visible_opacity(
+      color_provider->GetRippleAttributesHighlightOpacity(bg_color));
   return highlight;
 }
 
@@ -152,11 +158,11 @@ void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
   if (HasFocus() || parent_->GetSelectedAction() == tag()) {
     cc::PaintFlags circle_flags;
     circle_flags.setAntiAlias(true);
-    circle_flags.setColor(
-        AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
-    circle_flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawCircle(GetLocalBounds().CenterPoint(), GetInkDropRadius(),
-                       circle_flags);
+    circle_flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+    circle_flags.setStyle(cc::PaintFlags::kStroke_Style);
+    circle_flags.setStrokeWidth(kFocusRingWidth);
+    canvas->DrawCircle(GetLocalBounds().CenterPoint(),
+                       GetButtonRadius() - kFocusRingWidth, circle_flags);
   }
 }
 
@@ -168,7 +174,7 @@ void SearchResultImageButton::SetButtonImage(const gfx::ImageSkia& source,
                gfx::Size(icon_dimension, icon_dimension)));
 }
 
-int SearchResultImageButton::GetInkDropRadius() const {
+int SearchResultImageButton::GetButtonRadius() const {
   return width() / 2;
 }
 

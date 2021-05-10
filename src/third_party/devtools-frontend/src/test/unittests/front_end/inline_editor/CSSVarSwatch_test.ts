@@ -3,18 +3,17 @@
 // found in the LICENSE file.
 
 import * as InlineEditor from '../../../../front_end/inline_editor/inline_editor.js';
-import type {CSSVarSwatch} from '../../../../front_end/inline_editor/CSSVarSwatch.js';
-import {assertNotNull, assertShadowRoot, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
+import {assertNotNull} from '../../../../front_end/platform/platform.js';
+import {assertShadowRoot, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
 const {assert} = chai;
 
-function assertSwatch(swatch: CSSVarSwatch, expected: {
+function assertSwatch(swatch: InlineEditor.CSSVarSwatchImpl.CSSVarSwatch, expected: {
   valueTooltip: string|null,
   linkTooltip: string,
   isDefined: boolean,
   varText: string,
-  hasColorSwatch: boolean,
-  parsedColor?: string
+  parsedColor?: string,
 }) {
   assertShadowRoot(swatch.shadowRoot);
   const container = swatch.shadowRoot.querySelector('span');
@@ -22,7 +21,6 @@ function assertSwatch(swatch: CSSVarSwatch, expected: {
 
   const link = container.querySelector('.css-var-link');
   assertNotNull(link);
-  const colorSwatch = container.querySelector('.color-swatch');
 
   assert.strictEqual(
       container.getAttribute('title'), expected.valueTooltip || '', 'The computed values appears as a tooltip');
@@ -31,13 +29,6 @@ function assertSwatch(swatch: CSSVarSwatch, expected: {
       'The link only has the class undefined when the property is undefined');
   assert.strictEqual(link.getAttribute('title'), expected.linkTooltip, 'The link has the right tooltip');
   assert.strictEqual(link.textContent, expected.varText, 'The link has the right text content');
-  assert.strictEqual(!!colorSwatch, expected.hasColorSwatch, 'The color swatch state is correct');
-
-  if (expected.hasColorSwatch) {
-    const innerColorSwatch = container.querySelector('.color-swatch-inner') as HTMLSpanElement;
-    assertNotNull(innerColorSwatch);
-    assert.strictEqual(innerColorSwatch.style.backgroundColor, expected.parsedColor, 'The color is correct');
-  }
 }
 
 describe('CSSVarSwatch', () => {
@@ -60,10 +51,9 @@ describe('CSSVarSwatch', () => {
 
     assertSwatch(component, {
       valueTooltip: '2px',
-      linkTooltip: 'Jump to definition',
+      linkTooltip: '2px',
       isDefined: true,
       varText: '--test',
-      hasColorSwatch: false,
     });
   });
 
@@ -82,7 +72,6 @@ describe('CSSVarSwatch', () => {
       linkTooltip: '--undefined is not defined',
       isDefined: false,
       varText: '--undefined',
-      hasColorSwatch: false,
     });
   });
 
@@ -101,7 +90,78 @@ describe('CSSVarSwatch', () => {
       linkTooltip: '--undefined is not defined',
       isDefined: false,
       varText: '--undefined',
-      hasColorSwatch: false,
+    });
+  });
+
+  it('renders a var() function with an color property but a fallback value', () => {
+    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    renderElementIntoDOM(component);
+    component.data = {
+      text: 'var(--undefined-color, green)',
+      computedValue: 'green',
+      fromFallback: true,
+      onLinkClick: () => {},
+    };
+
+    assertSwatch(component, {
+      valueTooltip: 'green',
+      linkTooltip: '--undefined-color is not defined',
+      isDefined: false,
+      varText: '--undefined-color',
+    });
+  });
+
+  it('render the var() function and the fallback value contains spaces', () => {
+    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    renderElementIntoDOM(component);
+    component.data = {
+      text: 'var(--undefined-color,    green   )',
+      computedValue: 'green',
+      fromFallback: true,
+      onLinkClick: () => {},
+    };
+
+    assertSwatch(component, {
+      valueTooltip: 'green',
+      linkTooltip: '--undefined-color is not defined',
+      isDefined: false,
+      varText: '--undefined-color',
+    });
+  });
+
+  it('renders a var() function with an color property', () => {
+    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    renderElementIntoDOM(component);
+    component.data = {
+      text: 'var(--test, green)',
+      computedValue: 'red',
+      fromFallback: false,
+      onLinkClick: () => {},
+    };
+
+    assertSwatch(component, {
+      valueTooltip: 'red',
+      linkTooltip: 'red',
+      isDefined: true,
+      varText: '--test',
+    });
+  });
+
+  it('renders a var() function with spaces', () => {
+    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    renderElementIntoDOM(component);
+    component.data = {
+      text: 'var( --test     )',
+      computedValue: 'red',
+      fromFallback: false,
+      onLinkClick: () => {},
+    };
+
+    assertSwatch(component, {
+      valueTooltip: 'red',
+      linkTooltip: 'red',
+      isDefined: true,
+      varText: ' --test ',
     });
   });
 });

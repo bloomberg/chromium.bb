@@ -28,6 +28,7 @@
 #include "src/gpu/text/GrAtlasManager.h"
 #include "src/gpu/text/GrStrikeCache.h"
 #ifdef SK_METAL
+#include "include/gpu/mtl/GrMtlBackendContext.h"
 #include "src/gpu/mtl/GrMtlTrampoline.h"
 #endif
 #ifdef SK_VULKAN
@@ -62,13 +63,18 @@ GrDirectContext::~GrDirectContext() {
         this->flushAndSubmit();
     }
 
+    // We need to make sure all work is finished on the gpu before we start releasing resources.
+    this->syncAllOutstandingGpuWork(/*shouldExecuteWhileAbandoned=*/false);
+
     this->destroyDrawingManager();
-    fMappedBufferManager.reset();
 
     // Ideally we could just let the ptr drop, but resource cache queries this ptr in releaseAll.
     if (fResourceCache) {
         fResourceCache->releaseAll();
     }
+    // This has to be after GrResourceCache::releaseAll so that other threads that are holding
+    // async pixel result don't try to destroy buffers off thread.
+    fMappedBufferManager.reset();
 }
 
 sk_sp<GrContextThreadSafeProxy> GrDirectContext::threadSafeProxy() {
@@ -94,6 +100,9 @@ void GrDirectContext::abandonContext() {
 
     INHERITED::abandonContext();
 
+    // We need to make sure all work is finished on the gpu before we start releasing resources.
+    this->syncAllOutstandingGpuWork(this->caps()->mustSyncGpuDuringAbandon());
+
     fStrikeCache->freeAll();
 
     fMappedBufferManager->abandon();
@@ -105,7 +114,9 @@ void GrDirectContext::abandonContext() {
 
     fGpu->disconnect(GrGpu::DisconnectType::kAbandon);
 
+    // Must be after GrResourceCache::abandonAll().
     fMappedBufferManager.reset();
+
     if (fSmallPathAtlasMgr) {
         fSmallPathAtlasMgr->reset();
     }
@@ -133,12 +144,16 @@ void GrDirectContext::releaseResourcesAndAbandonContext() {
 
     INHERITED::abandonContext();
 
-    fMappedBufferManager.reset();
+    // We need to make sure all work is finished on the gpu before we start releasing resources.
+    this->syncAllOutstandingGpuWork(/*shouldExecuteWhileAbandoned=*/true);
 
     fResourceProvider->abandon();
 
     // Release all resources in the backend 3D API.
     fResourceCache->releaseAll();
+
+    // Must be after GrResourceCache::releaseAll().
+    fMappedBufferManager.reset();
 
     fGpu->disconnect(GrGpu::DisconnectType::kCleanup);
     if (fSmallPathAtlasMgr) {
@@ -184,8 +199,7 @@ bool GrDirectContext::init() {
     SkASSERT(this->threadSafeCache());
 
     fStrikeCache = std::make_unique<GrStrikeCache>();
-    fResourceCache = std::make_unique<GrResourceCache>(this->caps(), this->singleOwner(),
-                                                       this->contextID());
+    fResourceCache = std::make_unique<GrResourceCache>(this->singleOwner(), this->contextID());
     fResourceCache->setProxyProvider(this->proxyProvider());
     fResourceCache->setThreadSafeCache(this->threadSafeCache());
     fResourceProvider = std::make_unique<GrResourceProvider>(fGpu.get(), fResourceCache.get(),
@@ -365,13 +379,8 @@ GrSemaphoresSubmitted GrDirectContext::flush(const GrFlushInfo& info) {
         return GrSemaphoresSubmitted::kNo;
     }
 
-    bool flushed = this->drawingManager()->flush(
-            {}, SkSurface::BackendSurfaceAccess::kNoAccess, info, nullptr);
-
-    if (!flushed || (!this->priv().caps()->semaphoreSupport() && info.fNumSemaphores)) {
-        return GrSemaphoresSubmitted::kNo;
-    }
-    return GrSemaphoresSubmitted::kYes;
+    return this->drawingManager()->flushSurfaces({}, SkSurface::BackendSurfaceAccess::kNoAccess,
+                                                 info, nullptr);
 }
 
 bool GrDirectContext::submit(bool syncCpu) {
@@ -392,6 +401,13 @@ bool GrDirectContext::submit(bool syncCpu) {
 void GrDirectContext::checkAsyncWorkCompletion() {
     if (fGpu) {
         fGpu->checkFinishProcs();
+    }
+}
+
+void GrDirectContext::syncAllOutstandingGpuWork(bool shouldExecuteWhileAbandoned) {
+    if (fGpu && (!this->abandoned() || shouldExecuteWhileAbandoned)) {
+        fGpu->finishOutstandingGpuWork();
+        this->checkAsyncWorkCompletion();
     }
 }
 
@@ -416,22 +432,6 @@ void GrDirectContext::dumpMemoryStatistics(SkTraceMemoryDump* traceMemoryDump) c
     fResourceCache->dumpMemoryStatistics(traceMemoryDump);
     traceMemoryDump->dumpNumericValue("skia/gr_text_blob_cache", "size", "bytes",
                                       this->getTextBlobCache()->usedBytes());
-}
-
-size_t GrDirectContext::ComputeImageSize(sk_sp<SkImage> image, GrMipmapped mipMapped,
-                                         bool useNextPow2) {
-    if (!image->isTextureBacked()) {
-        return 0;
-    }
-    SkImage_GpuBase* gpuImage = static_cast<SkImage_GpuBase*>(as_IB(image.get()));
-    GrTextureProxy* proxy = gpuImage->peekProxy();
-    if (!proxy) {
-        return 0;
-    }
-
-    int colorSamplesPerPixel = 1;
-    return GrSurface::ComputeSize(proxy->backendFormat(), image->dimensions(),
-                                  colorSamplesPerPixel, mipMapped, useNextPow2);
 }
 
 GrBackendTexture GrDirectContext::createBackendTexture(int width, int height,
@@ -488,6 +488,44 @@ static GrBackendTexture create_and_update_backend_texture(
     return beTex;
 }
 
+static bool update_texture_with_pixmaps(GrGpu* gpu,
+                                        const SkPixmap* srcData,
+                                        int numLevels,
+                                        const GrBackendTexture& backendTexture,
+                                        GrSurfaceOrigin textureOrigin,
+                                        sk_sp<GrRefCntedCallback> finishedCallback) {
+    bool flip = textureOrigin == kBottomLeft_GrSurfaceOrigin;
+    bool mustBeTight = !gpu->caps()->writePixelsRowBytesSupport();
+
+    size_t size = 0;
+    for (int i = 0; i < numLevels; ++i) {
+        size_t minRowBytes = srcData[i].info().minRowBytes();
+        if (flip || (mustBeTight && srcData[i].rowBytes() != minRowBytes)) {
+            size += minRowBytes * srcData[i].height();
+        }
+    }
+
+    std::unique_ptr<char[]> tempStorage;
+    if (size) {
+        tempStorage.reset(new char[size]);
+    }
+    size = 0;
+    SkAutoSTArray<15, GrPixmap> tempPixmaps(numLevels);
+    for (int i = 0; i < numLevels; ++i) {
+        size_t minRowBytes = srcData[i].info().minRowBytes();
+        if (flip || (mustBeTight && srcData[i].rowBytes() != minRowBytes)) {
+            tempPixmaps[i] = {srcData[i].info(), tempStorage.get() + size, minRowBytes};
+            SkAssertResult(GrConvertPixels(tempPixmaps[i], srcData[i], flip));
+            size += minRowBytes*srcData[i].height();
+        } else {
+            tempPixmaps[i] = srcData[i];
+        }
+    }
+
+    GrGpu::BackendTextureData data(tempPixmaps.get());
+    return gpu->updateBackendTexture(backendTexture, std::move(finishedCallback), &data);
+}
+
 GrBackendTexture GrDirectContext::createBackendTexture(int width, int height,
                                                        const GrBackendFormat& backendFormat,
                                                        const SkColor4f& color,
@@ -539,6 +577,7 @@ GrBackendTexture GrDirectContext::createBackendTexture(int width, int height,
 
 GrBackendTexture GrDirectContext::createBackendTexture(const SkPixmap srcData[],
                                                        int numProvidedLevels,
+                                                       GrSurfaceOrigin textureOrigin,
                                                        GrRenderable renderable,
                                                        GrProtected isProtected,
                                                        GrGpuFinishedProc finishedProc,
@@ -571,11 +610,25 @@ GrBackendTexture GrDirectContext::createBackendTexture(const SkPixmap srcData[],
     }
 
     GrBackendFormat backendFormat = this->defaultBackendFormat(colorType, renderable);
-
-    GrGpu::BackendTextureData data(srcData);
-    return create_and_update_backend_texture(this, {baseWidth, baseHeight},
-                                             backendFormat, mipMapped, renderable, isProtected,
-                                             std::move(finishedCallback), &data);
+    GrBackendTexture beTex = this->createBackendTexture(srcData[0].width(),
+                                                        srcData[0].height(),
+                                                        backendFormat,
+                                                        mipMapped,
+                                                        renderable,
+                                                        isProtected);
+    if (!beTex.isValid()) {
+        return {};
+    }
+    if (!update_texture_with_pixmaps(this->priv().getGpu(),
+                                     srcData,
+                                     numProvidedLevels,
+                                     beTex,
+                                     textureOrigin,
+                                     std::move(finishedCallback))) {
+        this->deleteBackendTexture(beTex);
+        return {};
+    }
+    return beTex;
 }
 
 bool GrDirectContext::updateBackendTexture(const GrBackendTexture& backendTexture,
@@ -619,6 +672,7 @@ bool GrDirectContext::updateBackendTexture(const GrBackendTexture& backendTextur
 bool GrDirectContext::updateBackendTexture(const GrBackendTexture& backendTexture,
                                            const SkPixmap srcData[],
                                            int numLevels,
+                                           GrSurfaceOrigin textureOrigin,
                                            GrGpuFinishedProc finishedProc,
                                            GrGpuFinishedContext finishedContext) {
     auto finishedCallback = GrRefCntedCallback::Make(finishedProc, finishedContext);
@@ -639,9 +693,12 @@ bool GrDirectContext::updateBackendTexture(const GrBackendTexture& backendTextur
     if (numLevels != numExpectedLevels) {
         return false;
     }
-
-    GrGpu::BackendTextureData data(srcData);
-    return fGpu->updateBackendTexture(backendTexture, std::move(finishedCallback), &data);
+    return update_texture_with_pixmaps(fGpu.get(),
+                                       srcData,
+                                       numLevels,
+                                       backendTexture,
+                                       textureOrigin,
+                                       std::move(finishedCallback));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -963,21 +1020,39 @@ sk_sp<GrDirectContext> GrDirectContext::MakeVulkan(const GrVkBackendContext& bac
 
 #ifdef SK_METAL
 /*************************************************************************************************/
-sk_sp<GrDirectContext> GrDirectContext::MakeMetal(void* device, void* queue) {
+sk_sp<GrDirectContext> GrDirectContext::MakeMetal(const GrMtlBackendContext& backendContext) {
     GrContextOptions defaultOptions;
-    return MakeMetal(device, queue, defaultOptions);
+    return MakeMetal(backendContext, defaultOptions);
 }
 
-sk_sp<GrDirectContext> GrDirectContext::MakeMetal(void* device, void* queue,
-                                                  const GrContextOptions& options) {
+sk_sp<GrDirectContext> GrDirectContext::MakeMetal(const GrMtlBackendContext& backendContext,
+                                                     const GrContextOptions& options) {
     sk_sp<GrDirectContext> direct(new GrDirectContext(GrBackendApi::kMetal, options));
 
-    direct->fGpu = GrMtlTrampoline::MakeGpu(direct.get(), options, device, queue);
+    direct->fGpu = GrMtlTrampoline::MakeGpu(backendContext, options, direct.get());
     if (!direct->init()) {
         return nullptr;
     }
 
     return direct;
+}
+
+// deprecated
+sk_sp<GrDirectContext> GrDirectContext::MakeMetal(void* device, void* queue) {
+    GrContextOptions defaultOptions;
+    return MakeMetal(device, queue, defaultOptions);
+}
+
+// deprecated
+// remove include/gpu/mtl/GrMtlBackendContext.h, above, when removed
+sk_sp<GrDirectContext> GrDirectContext::MakeMetal(void* device, void* queue,
+                                                  const GrContextOptions& options) {
+    sk_sp<GrDirectContext> direct(new GrDirectContext(GrBackendApi::kMetal, options));
+    GrMtlBackendContext backendContext = {};
+    backendContext.fDevice.reset(device);
+    backendContext.fQueue.reset(queue);
+
+    return GrDirectContext::MakeMetal(backendContext, options);
 }
 #endif
 

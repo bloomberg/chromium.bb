@@ -116,6 +116,14 @@ void TouchSelectionController::OnSelectionBoundsChanged(
       start_selection_handle_.swap(end_selection_handle_);
   }
 
+  // Update |anchor_drag_to_selection_start_| for long press drag selector.
+  // Since selection can be updated with only one end at a time, if one end is
+  // equal to the previous value, the updated end is the other.
+  if (start_ == start)
+    anchor_drag_to_selection_start_ = false;
+  else if (end_ == end)
+    anchor_drag_to_selection_start_ = true;
+
   start_ = start;
   end_ = end;
   start_orientation_ = ToTouchHandleOrientation(start_.type());
@@ -446,11 +454,20 @@ void TouchSelectionController::OnDragUpdate(
   else
     client_->MoveRangeSelectionExtent(line_position);
 
-  // We use the bound middle point to restrict the ability to move up and down,
-  // but let user move it more freely in horizontal direction.
-  if (&draggable != &longpress_drag_selector_) {
-    float y = GetActiveHandleMiddleY();
-    client_->OnDragUpdate(gfx::PointF(drag_position.x(), y));
+  // We use the bound middle point to restrict the ability to move up and
+  // down, but let user move it more freely in horizontal direction.
+  if (&draggable == &longpress_drag_selector_) {
+    // Show magnifier at the selection edge.
+    const gfx::SelectionBound* bound =
+        anchor_drag_to_selection_start_ ? &start_ : &end_;
+    const float x = bound->edge_start().x();
+    const float y = (bound->edge_start().y() + bound->edge_end().y()) / 2.f;
+    client_->OnDragUpdate(TouchSelectionDraggable::Type::kLongpress,
+                          gfx::PointF(x, y));
+  } else {
+    const float y = GetActiveHandleMiddleY();
+    client_->OnDragUpdate(TouchSelectionDraggable::Type::kTouchHandle,
+                          gfx::PointF(drag_position.x(), y));
   }
 }
 

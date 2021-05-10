@@ -42,9 +42,6 @@ export class WidgetElement extends HTMLDivElement {  // eslint-disable-line no-u
   }
 }
 
-/**
- * @unrestricted
- */
 export class Widget extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {boolean=} isWebComponent
@@ -191,14 +188,14 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   _inNotification() {
-    return !!this._notificationDepth || !!(this._parentWidget && this._parentWidget._inNotification());
+    return Boolean(this._notificationDepth) || Boolean(this._parentWidget && this._parentWidget._inNotification());
   }
 
   _parentIsShowing() {
     if (this._isRoot) {
       return true;
     }
-    return !!this._parentWidget && this._parentWidget.isShowing();
+    return this._parentWidget !== null && this._parentWidget.isShowing();
   }
 
   /**
@@ -641,7 +638,7 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
    */
   _hasNonZeroConstraints() {
     const constraints = this.constraints();
-    return !!(
+    return Boolean(
         constraints.minimum.width || constraints.minimum.height || constraints.preferred.width ||
         constraints.preferred.height);
   }
@@ -692,9 +689,6 @@ export class Widget extends Common.ObjectWrapper.ObjectWrapper {
  */
 const storedScrollPositions = new WeakMap();
 
-/**
- * @unrestricted
- */
 export class VBox extends Widget {
   /**
    * @param {boolean=} isWebComponent
@@ -714,7 +708,6 @@ export class VBox extends Widget {
 
     /**
      * @this {!Widget}
-     * @suppressReceiverCheck
      */
     function updateForChild() {
       const child = this.constraints();
@@ -727,9 +720,6 @@ export class VBox extends Widget {
   }
 }
 
-/**
- * @unrestricted
- */
 export class HBox extends Widget {
   /**
    * @param {boolean=} isWebComponent
@@ -748,7 +738,6 @@ export class HBox extends Widget {
 
     /**
      * @this {!Widget}
-     * @suppressReceiverCheck
      */
     function updateForChild() {
       const child = this.constraints();
@@ -761,9 +750,6 @@ export class HBox extends Widget {
   }
 }
 
-/**
- * @unrestricted
- */
 export class VBoxWithResizeCallback extends VBox {
   /**
    * @param {function():void} resizeCallback
@@ -781,9 +767,6 @@ export class VBoxWithResizeCallback extends VBox {
   }
 }
 
-/**
- * @unrestricted
- */
 export class WidgetFocusRestorer {
   /**
    * @param {!Widget} widget

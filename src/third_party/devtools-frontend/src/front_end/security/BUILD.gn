@@ -7,13 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("security") {
   sources = [
-    "SecurityModel.js",
-    "SecurityPanel.js",
+    "SecurityModel.ts",
+    "SecurityPanel.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../network:bundle",
     "../sdk:bundle",
     "../ui:bundle",
@@ -27,7 +28,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "security-legacy.js"
+  entrypoint = "security-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "security-meta.ts"
 
   deps = [ ":bundle" ]
 }

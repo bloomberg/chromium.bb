@@ -14,6 +14,7 @@
 #include <memory>
 #include <vector>
 
+#include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/units/timestamp.h"
 #include "api/video/recordable_encoded_frame.h"
@@ -24,7 +25,7 @@
 #include "modules/rtp_rtcp/source/source_tracker.h"
 #include "modules/video_coding/frame_buffer2.h"
 #include "modules/video_coding/video_receiver2.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/task_queue.h"
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "system_wrappers/include/clock.h"
@@ -109,9 +110,6 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
 
   webrtc::VideoReceiveStream::Stats GetStats() const override;
 
-  void AddSecondarySink(RtpPacketSinkInterface* sink) override;
-  void RemoveSecondarySink(const RtpPacketSinkInterface* sink) override;
-
   // SetBaseMinimumPlayoutDelayMs and GetBaseMinimumPlayoutDelayMs are called
   // from webrtc/api level and requested by user code. For e.g. blink/js layer
   // in Chromium.
@@ -157,6 +155,7 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
   void GenerateKeyFrame() override;
 
  private:
+  void CreateAndRegisterExternalDecoder(const Decoder& decoder);
   int64_t GetMaxWaitMs() const RTC_RUN_ON(decode_queue_);
   void StartNextDecode() RTC_RUN_ON(decode_queue_);
   void HandleEncodedFrame(std::unique_ptr<video_coding::EncodedFrame> frame)
@@ -177,8 +176,8 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
 
   void UpdateHistograms();
 
-  SequenceChecker worker_sequence_checker_;
-  SequenceChecker module_process_sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker worker_sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker module_process_sequence_checker_;
 
   TaskQueueFactory* const task_queue_factory_;
 
@@ -266,6 +265,11 @@ class VideoReceiveStream2 : public webrtc::VideoReceiveStream,
   // taken into account when calculating maximum number of frames in composition
   // queue.
   FieldTrialParameter<bool> low_latency_renderer_include_predecode_buffer_;
+
+  // Set by the field trial WebRTC-PreStreamDecoders. The parameter |max|
+  // determines the maximum number of decoders that are created up front before
+  // any video frame has been received.
+  FieldTrialParameter<int> maximum_pre_stream_decoders_;
 
   // Defined last so they are destroyed before all other members.
   rtc::TaskQueue decode_queue_;

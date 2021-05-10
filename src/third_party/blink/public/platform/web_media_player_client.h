@@ -43,6 +43,10 @@ namespace cc {
 class Layer;
 }
 
+namespace media {
+enum class MediaContentType;
+}  // namespace media
+
 namespace blink {
 
 class WebInbandTextTrack;
@@ -95,7 +99,6 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void AddTextTrack(WebInbandTextTrack*) = 0;
   virtual void RemoveTextTrack(WebInbandTextTrack*) = 0;
   virtual void MediaSourceOpened(WebMediaSource*) = 0;
-  virtual void RequestSeek(double) = 0;
   virtual void RemotePlaybackCompatibilityChanged(const WebURL&,
                                                   bool is_compatible) = 0;
 
@@ -161,20 +164,45 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // behavior as regular Picture-in-Picture.
   virtual bool IsInAutoPIP() const = 0;
 
-  // Requests the player to start playback.
-  virtual void RequestPlay() = 0;
+  // Requests the player to resume playback.
+  virtual void ResumePlayback() = 0;
 
   // Request the player to pause playback.
-  virtual void RequestPause() = 0;
+  virtual void PausePlayback() = 0;
 
-  // Request the player to mute/unmute.
-  virtual void RequestMuted(bool muted) = 0;
+  // Notify the client that the media player started playing content.
+  virtual void DidPlayerStartPlaying() = 0;
 
-  // Request the player to enter picture-in-picture.
-  virtual void RequestEnterPictureInPicture() = 0;
+  // Notify the client that the media player stopped playing content, indicating
+  // in |stream_ended| if playback has reached the end of the stream.
+  virtual void DidPlayerPaused(bool stream_ended) = 0;
 
-  // Request the player to exit picture-in-picture.
-  virtual void RequestExitPictureInPicture() = 0;
+  // Notify the client that the muted status of the media player has changed.
+  virtual void DidPlayerMutedStatusChange(bool muted) = 0;
+
+  // Notify the client that the media metadata of the media player has changed.
+  virtual void DidMediaMetadataChange(
+      bool has_audio,
+      bool has_video,
+      media::MediaContentType media_content_type) = 0;
+
+  // Notify the client that the playback position has changed.
+  virtual void DidPlayerMediaPositionStateChange(double playback_rate,
+                                                 base::TimeDelta duration,
+                                                 base::TimeDelta position) = 0;
+
+  // Notify the client that the audio sink cannot be changed.
+  virtual void DidDisableAudioOutputSinkChanges() = 0;
+
+  // Notify the client that the size of the media player has changed.
+  // TODO(crbug.com/1039252): Remove by merging this method into SizeChanged().
+  virtual void DidPlayerSizeChange(const gfx::Size& size) = 0;
+
+  // Notify the client that a buffer underflow happened for the media player.
+  virtual void DidBufferUnderflow() = 0;
+
+  // Notify that a playback seek event happened for the media player.
+  virtual void DidSeek() = 0;
 
   // Notify the client that one of the state used by Picture-in-Picture has
   // changed. The client will then have to poll the states from the associated

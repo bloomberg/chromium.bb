@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -158,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
 
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
   manager->Enable();
-  auto* tree = manager->current_tree_.get();
+  auto* tree = manager->tree_.get();
 
   ui_test_utils::NavigateToURL(
       browser(),
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, ScrollView) {
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
   manager->set_ax_aura_obj_cache_for_testing(std::move(cache));
   manager->Enable();
-  auto* tree = manager->current_tree_.get();
+  auto* tree = manager->tree_.get();
 
   // Create a widget with size 200, 200.
   views::Widget* widget = new views::Widget;
@@ -370,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
   // accessibility event that shows this view is focused.
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
-  action_data.target_tree_id = manager->current_tree_.get()->tree_id_for_test();
+  action_data.target_tree_id = manager->tree_.get()->tree_id_for_test();
   action_data.target_node_id = wrapper2->GetUniqueId();
 
   manager->PerformAction(action_data);
@@ -381,4 +382,28 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
   cache_ptr->set_focused_widget_for_testing(nullptr);
 
   AddFailureOnWidgetAccessibilityError(widget);
+}
+
+// Verify that re-enabling AutomationManagerAura after disable will not cause
+// crash.  See https://crbug.com/1177042.
+IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
+                       ReenableDoesNotCauseCrash) {
+  AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
+  manager->Enable();
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = {0, 0, 200, 200};
+  widget->Init(std::move(params));
+  widget->Show();
+  widget->Activate();
+
+  manager->Disable();
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
+
+  manager->Enable();
 }

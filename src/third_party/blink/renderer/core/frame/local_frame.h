@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/frame/transient_allow_fullscreen.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
@@ -49,11 +50,12 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/media/fullscreen_video_element.mojom-blink.h"
 #include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -63,6 +65,7 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -127,6 +130,7 @@ class LayoutView;
 class LocalDOMWindow;
 class LocalWindowProxy;
 class LocalFrameClient;
+class BackgroundColorPaintImageGenerator;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
@@ -151,11 +155,10 @@ class CORE_EXPORT LocalFrame final
       public Supplementable<LocalFrame>,
       public mojom::blink::LocalFrame,
       public mojom::blink::LocalMainFrame,
+      public mojom::blink::FullscreenVideoElementHandler,
       public mojom::blink::HighPriorityLocalFrame {
  public:
   // Returns the LocalFrame instance for the given |frame_token|.
-  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
-  static LocalFrame* FromFrameToken(const base::UnguessableToken& frame_token);
   static LocalFrame* FromFrameToken(const LocalFrameToken& frame_token);
 
   // For a description of |inheriting_agent_factory| go see the comment on the
@@ -167,7 +170,7 @@ class CORE_EXPORT LocalFrame final
       Frame* parent,
       Frame* previous_sibling,
       FrameInsertType insert_type,
-      const base::UnguessableToken& frame_token,
+      const LocalFrameToken& frame_token,
       WindowAgentFactory* inheriting_agent_factory,
       InterfaceRegistry*,
       std::unique_ptr<blink::PolicyContainer> policy_container,
@@ -202,12 +205,24 @@ class CORE_EXPORT LocalFrame final
       Frame* child) override;
   void DidFocus() override;
 
+  // Triggers eviction of this frame by notifying the browser side.
   void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason reason);
+  // Called when a network request buffered an additional `num_bytes` while the
+  // frame is in back-forward cache. Updates the total amount of bytes buffered
+  // for back-forward cache in the frame and in the process. Note that
+  // `num_bytes` is the amount of additional bytes that are newly buffered, on
+  // top of any previously buffered bytes for this frame.
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes);
+  // Returns true if the total amount of bytes buffered while in back-forward
+  // cache in the whole renderer process is still under the per-process limit,
+  // false otherwise.
+  bool CanContinueBufferingWhileInBackForwardCache();
 
   void DidChangeThemeColor();
   void DidChangeBackgroundColor(SkColor background_color, bool color_adjust);
 
-  void DetachChildren();
+  // Returns false if detaching child frames reentrantly detached `this`.
+  bool DetachChildren();
   // After Document is attached, resets state related to document, and sets
   // context to the current document.
   void DidAttachDocument();
@@ -218,7 +233,8 @@ class CORE_EXPORT LocalFrame final
   // corresponding method in the Frame base class to return the
   // LocalFrame-specific subclass.
   LocalWindowProxy* WindowProxy(DOMWrapperWorld&);
-  LocalDOMWindow* DomWindow() const;
+  LocalDOMWindow* DomWindow();
+  const LocalDOMWindow* DomWindow() const;
   void SetDOMWindow(LocalDOMWindow*);
   LocalFrameView* View() const override;
   Document* GetDocument() const;
@@ -237,6 +253,7 @@ class CORE_EXPORT LocalFrame final
   TextSuggestionController& GetTextSuggestionController() const;
   SpellChecker& GetSpellChecker() const;
   FrameConsole& Console() const;
+  BackgroundColorPaintImageGenerator* GetBackgroundColorPaintImageGenerator();
 
   // A local root is the root of a connected subtree that contains only
   // LocalFrames. The local root is responsible for coordinating input, layout,
@@ -329,9 +346,9 @@ class CORE_EXPORT LocalFrame final
   // media query value changed.
   void MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange);
 
-  void WindowSegmentsChanged(const WebVector<WebRect>& window_segments);
+  void WindowSegmentsChanged(const WebVector<gfx::Rect>& window_segments);
   void UpdateCSSFoldEnvironmentVariables(
-      const WebVector<WebRect>& window_segments);
+      const WebVector<gfx::Rect>& window_segments);
 
   String SelectedText() const;
   String SelectedTextForClipboard() const;
@@ -361,6 +378,8 @@ class CORE_EXPORT LocalFrame final
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
+  // Return this frame's BrowserInterfaceBroker. Must not be called on detached
+  // frames (that is, frames where `Client()` returns nullptr).
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
 
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
@@ -452,7 +471,7 @@ class CORE_EXPORT LocalFrame final
   // |mime_type| and populated with the contents of |data|. Only intended for
   // use in internal-implementation LocalFrames that aren't in the frame tree.
   void ForceSynchronousDocumentInstall(const AtomicString& mime_type,
-                                       scoped_refptr<SharedBuffer> data);
+                                       scoped_refptr<const SharedBuffer> data);
 
   bool should_send_resource_timing_info_to_parent() const {
     return should_send_resource_timing_info_to_parent_;
@@ -480,10 +499,15 @@ class CORE_EXPORT LocalFrame final
   // be removed.
   bool IsProvisional() const;
 
-  // Called in the constructor if AdTracker heuristics have determined that this
-  // frame is an ad; LocalFrames created on behalf of OOPIF aren't set until
-  // just before commit (ReadyToCommitNavigation time) by the embedder.
+  // Called by the embedder if the evidence indicates the frame is an ad
+  // subframe. Called on creation of the initial empty document or, for
+  // LocalFrames created on behalf of OOPIF, just before commit
+  // (ReadyToCommitNavigation time).
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
+
+  bool IsSubframeCreatedByAdScript() const {
+    return is_subframe_created_by_ad_script_;
+  }
 
   // Updates the frame color overlay to match the highlight ad setting.
   void UpdateAdHighlight();
@@ -603,6 +627,7 @@ class CORE_EXPORT LocalFrame final
                            const WTF::String& message,
                            bool discard_duplicates) final;
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
+  void SwapInImmediately() final;
   void StopLoading() final;
   void Collapse(bool collapsed) final;
   void EnableViewSourceMode() final;
@@ -624,7 +649,7 @@ class CORE_EXPORT LocalFrame final
       blink::mojom::blink::MediaPlayerActionPtr action) final;
   void AdvanceFocusInFrame(
       mojom::blink::FocusType focus_type,
-      const base::Optional<base::UnguessableToken>& source_frame_token) final;
+      const base::Optional<RemoteFrameToken>& source_frame_token) final;
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;
@@ -636,14 +661,14 @@ class CORE_EXPORT LocalFrame final
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
   void OnScreensChange() final;
   void PostMessageEvent(
-      const base::Optional<base::UnguessableToken>& source_frame_token,
+      const base::Optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
       const String& target_origin,
       BlinkTransferableMessage message) final;
   void BindReportingObserver(
       mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
   void UpdateOpener(
-      const base::Optional<base::UnguessableToken>& opener_routing_id) final;
+      const base::Optional<blink::FrameToken>& opener_routing_id) final;
   void GetSavableResourceLinks(GetSavableResourceLinksCallback callback) final;
   void MixedContentFound(
       const KURL& main_resource_url,
@@ -660,7 +685,6 @@ class CORE_EXPORT LocalFrame final
   void SetScaleFactor(float scale) override;
   void ClosePage(
       mojom::blink::LocalMainFrame::ClosePageCallback callback) override;
-  // Performs the specified plugin action on the node at the given location.
   void PluginActionAt(const gfx::Point& location,
                       mojom::blink::PluginActionType action) override;
   void SetInitialFocus(bool reverse) override;
@@ -674,7 +698,7 @@ class CORE_EXPORT LocalFrame final
 #endif
   void InstallCoopAccessMonitor(
       network::mojom::blink::CoopAccessReportType report_type,
-      const base::UnguessableToken& accessed_window,
+      const FrameToken& accessed_window,
       mojo::PendingRemote<
           network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter,
       bool endpoint_defined,
@@ -689,6 +713,15 @@ class CORE_EXPORT LocalFrame final
   void ForwardMessageFromHost(
       BlinkTransferableMessage message,
       const scoped_refptr<const SecurityOrigin>& source_origin) final;
+  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                  cc::BrowserControlsState current,
+                                  bool animate) override;
+  void UpdateWindowControlsOverlay(
+      const gfx::Rect& window_controls_overlay_rect,
+      const gfx::Insets& insets) override;
+
+  // mojom::FullscreenVideoElementHandler implementation:
+  void RequestFullscreenVideoElement() final;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();
@@ -704,6 +737,12 @@ class CORE_EXPORT LocalFrame final
   // Return true if the frame has a transient affordance to enter fullscreen.
   bool IsTransientAllowFullscreenActive() const;
 
+  // Returns the state of the |PaymentRequestToken| in the current |Frame|.
+  bool IsPaymentRequestTokenActive() const;
+
+  // Consumes the |PaymentRequestToken| of the current |Frame| if it was active.
+  bool ConsumePaymentRequestToken();
+
   void SetOptimizationGuideHints(
       mojom::blink::BlinkOptimizationGuideHintsPtr hints);
   mojom::blink::BlinkOptimizationGuideHints* GetOptimizationGuideHints() {
@@ -711,7 +750,7 @@ class CORE_EXPORT LocalFrame final
   }
 
   LocalFrameToken GetLocalFrameToken() const {
-    return LocalFrameToken(GetFrameToken());
+    return GetFrameToken().GetAs<LocalFrameToken>();
   }
 
   TextFragmentSelectorGenerator* GetTextFragmentSelectorGenerator() const {
@@ -724,12 +763,24 @@ class CORE_EXPORT LocalFrame final
   WebURLLoader::DeferType GetLoadDeferType();
   bool IsLoadDeferred();
 
+  bool SwapIn();
+
+  // For PWAs with display_overrides, these getters are information about the
+  // titlebar bounds sent over from the browser via UpdateWindowControlsOverlay
+  // in LocalMainFrame that are needed to persist the lifetime of the frame.
+  bool IsWindowControlsOverlayVisible() const {
+    return is_window_controls_overlay_visible_;
+  }
+  const gfx::Rect& GetWindowControlsOverlayRect() const {
+    return window_controls_overlay_rect_;
+  }
+
  private:
   friend class FrameNavigationDisabler;
   FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
 
   // Frame protected overrides:
-  void DetachImpl(FrameDetachType) override;
+  bool DetachImpl(FrameDetachType) override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.
@@ -738,8 +789,6 @@ class CORE_EXPORT LocalFrame final
 
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
-
-  void SetIsAdSubframeIfNecessary();
 
   void PropagateInertToChildFrames();
 
@@ -785,6 +834,10 @@ class CORE_EXPORT LocalFrame final
   mojom::blink::TextInputHost& GetTextInputHost();
 #endif
 
+  // Returns the `Frame` for which `provisional_frame_ == this`. May only be
+  // called on a provisional frame.
+  Frame* GetProvisionalOwnerFrame();
+
   static void BindToReceiver(
       blink::LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver);
@@ -793,7 +846,9 @@ class CORE_EXPORT LocalFrame final
       mojo::PendingAssociatedReceiver<mojom::blink::LocalMainFrame> receiver);
   void BindToHighPriorityReceiver(
       mojo::PendingReceiver<mojom::blink::HighPriorityLocalFrame> receiver);
-
+  void BindFullscreenVideoElementReceiver(
+      mojo::PendingAssociatedReceiver<
+          mojom::blink::FullscreenVideoElementHandler> receiver);
   void BindTextFragmentSelectorProducer(
       mojo::PendingReceiver<mojom::blink::TextFragmentSelectorProducer>
           receiver);
@@ -848,6 +903,11 @@ class CORE_EXPORT LocalFrame final
 
   float page_zoom_factor_;
   float text_zoom_factor_;
+
+  // The total bytes buffered by all network requests in this frame while frozen
+  // due to back-forward cache. This number gets reset when the frame gets out
+  // of the back-forward cache.
+  size_t total_bytes_buffered_while_in_back_forward_cache_ = 0;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
@@ -927,6 +987,11 @@ class CORE_EXPORT LocalFrame final
                    LocalFrame,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       high_priority_frame_receiver_{this, nullptr};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoAssociatedReceiver<mojom::blink::FullscreenVideoElementHandler,
+                             LocalFrame,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      fullscreen_video_receiver_{this, nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;
@@ -936,6 +1001,9 @@ class CORE_EXPORT LocalFrame final
   Member<SystemClipboard> system_clipboard_;
   // Access to the global raw/unsanitized system clipboard
   Member<RawSystemClipboard> raw_system_clipboard_;
+
+  Member<BackgroundColorPaintImageGenerator>
+      background_color_paint_image_generator_;
 
   using SavedScrollOffsets = HeapHashMap<Member<Node>, ScrollOffset>;
   Member<SavedScrollOffsets> saved_scroll_offsets_;
@@ -947,7 +1015,19 @@ class CORE_EXPORT LocalFrame final
   // Manages a transient affordance for this frame to enter fullscreen.
   TransientAllowFullscreen transient_allow_fullscreen_;
 
+  PaymentRequestToken payment_request_token_;
+
   std::unique_ptr<PolicyContainer> policy_container_;
+
+  bool is_window_controls_overlay_visible_ = false;
+  gfx::Rect window_controls_overlay_rect_;
+
+  // True if this frame is a subframe that had a script tagged as an ad on the
+  // v8 stack at the time of creation. This is not currently propagated when a
+  // frame navigates cross-origin.
+  // TODO(crbug.com/1145634): propagate this bit for a frame that navigates
+  // cross-origin.
+  bool is_subframe_created_by_ad_script_ = false;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

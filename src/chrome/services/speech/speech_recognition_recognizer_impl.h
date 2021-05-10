@@ -36,6 +36,9 @@ class SpeechRecognitionRecognizerImpl
       const base::FilePath& config_path);
   ~SpeechRecognitionRecognizerImpl() override;
 
+  static const char kCaptionBubbleVisibleHistogramName[];
+  static const char kCaptionBubbleHiddenHistogramName[];
+
   static void Create(
       mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
@@ -51,15 +54,25 @@ class SpeechRecognitionRecognizerImpl
     return recognition_event_callback_;
   }
 
+ protected:
+  virtual void SendAudioToSpeechRecognitionServiceInternal(
+      media::mojom::AudioDataS16Ptr buffer);
+
+  // Return the transcribed audio from the recognition event back to the caller
+  // via the recognition event client.
+  void OnRecognitionEvent(const std::string& result, const bool is_final);
+
  private:
   // Convert the audio buffer into the appropriate format and feed the raw audio
   // into the speech recognition instance.
   void SendAudioToSpeechRecognitionService(
       media::mojom::AudioDataS16Ptr buffer) final;
 
-  // Return the transcribed audio from the recognition event back to the caller
-  // via the recognition event client.
-  void OnRecognitionEvent(const std::string& result, const bool is_final);
+  void OnCaptionBubbleClosed() final;
+
+  void AudioReceivedAfterBubbleClosed(base::TimeDelta duration) final;
+
+  void RecordDuration();
 
   // The remote endpoint for the mojo pipe used to return transcribed audio from
   // the speech recognition service back to the renderer.
@@ -76,6 +89,10 @@ class SpeechRecognitionRecognizerImpl
   OnRecognitionEventCallback recognition_event_callback_;
 
   base::FilePath config_path_;
+
+  base::TimeDelta caption_bubble_visible_duration_;
+  base::TimeDelta caption_bubble_hidden_duration_;
+  bool caption_bubble_closed_ = false;
 
   base::WeakPtrFactory<SpeechRecognitionRecognizerImpl> weak_factory_{this};
 

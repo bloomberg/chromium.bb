@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/ppapi_test_utils.h"
@@ -20,8 +21,8 @@
 #include "net/base/filename_util.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #endif
 
@@ -139,17 +140,17 @@ OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
 }
 
 void OutOfProcessPPAPITest::SetUp() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::CrasAudioClient::InitializeFake();
-  chromeos::CrasAudioHandler::InitializeForTesting();
+  ash::CrasAudioHandler::InitializeForTesting();
 #endif
   ContentBrowserTest::SetUp();
 }
 
 void OutOfProcessPPAPITest::TearDown() {
   ContentBrowserTest::TearDown();
-#if defined(OS_CHROMEOS)
-  chromeos::CrasAudioHandler::Shutdown();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::CrasAudioHandler::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
 #endif
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -12,7 +13,7 @@
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/resources/grit/webui_resources_map.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -22,9 +23,7 @@
 
 namespace webui {
 
-namespace {
-
-void SetupPolymer3Defaults(content::WebUIDataSource* source) {
+void SetJSModuleDefaults(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
@@ -33,50 +32,21 @@ void SetupPolymer3Defaults(content::WebUIDataSource* source) {
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader_util.js",
+                          IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
 }
 
-}  // namespace
-
 void SetupWebUIDataSource(content::WebUIDataSource* source,
-                          base::span<const GritResourceMap> resources,
-                          const std::string& generated_path,
+                          base::span<const ResourcePath> resources,
                           int default_resource) {
-  SetupPolymer3Defaults(source);
-  // TODO (crbug.com/1132403): Replace usages of |generated_path| with the new
-  // |resource_path| GRD property, and remove from here.
-  bool has_gen_path = !generated_path.empty();
-  for (const GritResourceMap& resource : resources) {
-    std::string path = resource.name;
-    if (has_gen_path && path.rfind(generated_path, 0) == 0) {
-      path = path.substr(generated_path.size());
-    }
-
-    source->AddResourcePath(path, resource.value);
-  }
+  SetJSModuleDefaults(source);
+  source->AddResourcePaths(resources);
   source->AddResourcePath("", default_resource);
 }
 
-void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
-                             base::span<const LocalizedString> strings) {
-  for (const auto& str : strings)
-    html_source->AddLocalizedString(str.name, str.id);
-}
-
-void AddResourcePathsBulk(content::WebUIDataSource* source,
-                          base::span<const ResourcePath> paths) {
-  for (const auto& path : paths)
-    source->AddResourcePath(path.path, path.id);
-}
-
-void AddResourcePathsBulk(content::WebUIDataSource* source,
-                          base::span<const GritResourceMap> resources) {
-  for (const auto& resource : resources)
-    source->AddResourcePath(resource.name, resource.value);
-}
-
 bool IsEnterpriseManaged() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->IsEnterpriseManaged();

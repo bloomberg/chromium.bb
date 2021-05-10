@@ -19,7 +19,6 @@
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -30,7 +29,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
@@ -281,7 +280,7 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     LocalFrame* frame = window->GetFrame();
     if (frame) {
-      WebFrameWidgetBase* widget =
+      WebFrameWidgetImpl* widget =
           WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
       begin_frame_provider_params.parent_frame_sink_id =
           widget->GetFrameSinkId();
@@ -309,9 +308,12 @@ bool DedicatedWorker::HasPendingActivity() const {
 
 void DedicatedWorker::OnWorkerHostCreated(
     CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
-        browser_interface_broker) {
+        browser_interface_broker,
+    CrossVariantMojoRemote<mojom::blink::DedicatedWorkerHostInterfaceBase>
+        dedicated_worker_host) {
   DCHECK(!browser_interface_broker_);
   browser_interface_broker_ = std::move(browser_interface_broker);
+  pending_dedicated_worker_host_ = std::move(dedicated_worker_host);
 }
 
 void DedicatedWorker::OnScriptLoadStarted(
@@ -400,7 +402,8 @@ void DedicatedWorker::ContinueStart(
                                       response_address_space),
       std::move(worker_main_script_load_params), options_, script_url,
       *outside_fetch_client_settings_object_, v8_stack_trace_id_, source_code,
-      reject_coep_unsafe_none, token_);
+      reject_coep_unsafe_none, token_,
+      std::move(pending_dedicated_worker_host_));
 }
 
 std::unique_ptr<GlobalScopeCreationParams>
@@ -410,23 +413,31 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     base::Optional<network::mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
-  UserAgentMetadata ua_metadata;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      agent_group_scheduler_compositor_task_runner;
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    // When the main thread creates a new DedicatedWorker.
     auto* frame = window->GetFrame();
-    if (frame) {
+    if (frame)
       parent_devtools_token = frame->GetDevToolsFrameToken();
-      ua_metadata = frame->Loader().UserAgentMetadata().value_or(
-          blink::UserAgentMetadata());
-    }
     settings = std::make_unique<WorkerSettings>(frame->GetSettings());
+    agent_group_scheduler_compositor_task_runner =
+        GetExecutionContext()
+            ->GetScheduler()
+            ->ToFrameScheduler()
+            ->GetAgentGroupScheduler()
+            ->CompositorTaskRunner();
   } else {
+    // When a DedicatedWorker creates another DedicatedWorker (nested worker).
     WorkerGlobalScope* worker_global_scope =
         To<WorkerGlobalScope>(GetExecutionContext());
     parent_devtools_token =
         worker_global_scope->GetThread()->GetDevToolsWorkerToken();
-    ua_metadata = worker_global_scope->GetUserAgentMetadata();
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
+    agent_group_scheduler_compositor_task_runner =
+        worker_global_scope->GetAgentGroupSchedulerCompositorTaskRunner();
   }
+  DCHECK(agent_group_scheduler_compositor_task_runner);
 
   mojom::blink::ScriptType script_type =
       (options_->type() == "classic") ? mojom::blink::ScriptType::kClassic
@@ -434,9 +445,12 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
 
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, options_->name(),
-      GetExecutionContext()->UserAgent(), ua_metadata,
+      GetExecutionContext()->UserAgent(),
+      GetExecutionContext()->GetUserAgentMetadata(),
       CreateWebWorkerFetchContext(),
-      GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
+      mojo::Clone(GetExecutionContext()
+                      ->GetContentSecurityPolicy()
+                      ->GetParsedPolicies()),
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),
       GetExecutionContext()->GetHttpsState(),
@@ -449,8 +463,10 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       std::move(browser_interface_broker_), CreateBeginFrameProviderParams(),
       GetExecutionContext()->GetSecurityContext().GetFeaturePolicy(),
       GetExecutionContext()->GetAgentClusterID(),
+      GetExecutionContext()->UkmSourceID(),
       GetExecutionContext()->GetExecutionContextToken(),
-      GetExecutionContext()->CrossOriginIsolatedCapability());
+      GetExecutionContext()->CrossOriginIsolatedCapability(),
+      std::move(agent_group_scheduler_compositor_task_runner));
 }
 
 scoped_refptr<WebWorkerFetchContext>

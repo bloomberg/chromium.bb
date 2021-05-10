@@ -11,12 +11,13 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/scoped_observer.h"
-#include "base/stl_util.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -26,7 +27,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
@@ -54,8 +55,8 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/layout/layout_manager.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/views_features.h"
@@ -80,6 +81,13 @@ constexpr bool kContextMenuOnMousePress = false;
 constexpr bool kContextMenuOnMousePress = true;
 #endif
 
+// Having UseDefaultFillLayout true by default wreaks a bit of havoc right now,
+// so it is false for the time being. Once the various sites which currently use
+// FillLayout are converted to using this and the other places that either
+// override Layout() or do nothing are also validated, this can be switched to
+// true.
+constexpr bool kUseDefaultFillLayout = false;
+
 // Default horizontal drag threshold in pixels.
 // Same as what gtk uses.
 constexpr int kDefaultHorizontalDragThreshold = 8;
@@ -87,6 +95,13 @@ constexpr int kDefaultHorizontalDragThreshold = 8;
 // Default vertical drag threshold in pixels.
 // Same as what gtk uses.
 constexpr int kDefaultVerticalDragThreshold = 8;
+
+// The following are used to offset the keys for the callbacks associated with
+// the bounds element callbacks.
+constexpr int kXChangedKey = sizeof(int) * 0;
+constexpr int kYChangedKey = sizeof(int) * 1;
+constexpr int kWidthChangedKey = sizeof(int) * 2;
+constexpr int kHeightChangedKey = sizeof(int) * 3;
 
 // Returns the top view in |view|'s hierarchy.
 const View* GetHierarchyRoot(const View* view) {
@@ -145,7 +160,7 @@ class VIEWS_EXPORT ViewMaskLayer : public ui::LayerDelegate,
   // views::ViewObserver:
   void OnViewBoundsChanged(View* observed_view) override;
 
-  ScopedObserver<View, ViewObserver> observed_view_{this};
+  base::ScopedObservation<View, ViewObserver> observed_view_{this};
 
   SkPath path_;
   ui::Layer layer_;
@@ -156,7 +171,7 @@ ViewMaskLayer::ViewMaskLayer(const SkPath& path, View* observed_view)
   layer_.set_delegate(this);
   layer_.SetFillsBoundsOpaquely(false);
   layer_.SetName("ViewMaskLayer");
-  observed_view_.Add(observed_view);
+  observed_view_.Observe(observed_view);
   OnViewBoundsChanged(observed_view);
 }
 
@@ -188,6 +203,8 @@ void ViewMaskLayer::OnViewBoundsChanged(View* observed_view) {
 
 View::View() {
   SetTargetHandler(this);
+  if (kUseDefaultFillLayout)
+    default_fill_layout_.emplace(DefaultFillLayout());
 }
 
 View::~View() {
@@ -232,6 +249,8 @@ View::~View() {
   // called at the end so observers can examine properties inside
   // OnViewIsDeleting(), for instance.
   ClearProperties();
+
+  life_cycle_state_ = LifeCycleState::kDestroyed;
 }
 
 // Tree operations -------------------------------------------------------------
@@ -362,8 +381,7 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
   }
 
   OnBoundsChanged(prev);
-  if (bounds_ != prev)
-    NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
+  NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
 
   if (needs_layout_ || is_size_changed) {
     needs_layout_ = false;
@@ -385,6 +403,17 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
 
   for (ViewObserver& observer : observers_)
     observer.OnViewBoundsChanged(this);
+
+  // The property effects have already been taken into account above. No need to
+  // redo them here.
+  if (prev.x() != bounds_.x())
+    OnPropertyChanged(&bounds_ + kXChangedKey, kPropertyEffectsNone);
+  if (prev.y() != bounds_.y())
+    OnPropertyChanged(&bounds_ + kYChangedKey, kPropertyEffectsNone);
+  if (prev.width() != bounds_.width())
+    OnPropertyChanged(&bounds_ + kWidthChangedKey, kPropertyEffectsNone);
+  if (prev.height() != bounds_.height())
+    OnPropertyChanged(&bounds_ + kHeightChangedKey, kPropertyEffectsNone);
 }
 
 void View::SetSize(const gfx::Size& size) {
@@ -485,8 +514,8 @@ void View::SizeToPreferredSize() {
 }
 
 gfx::Size View::GetMinimumSize() const {
-  if (layout_manager_)
-    return layout_manager_->GetMinimumSize(this);
+  if (HasLayoutManager())
+    return GetLayoutManager()->GetMinimumSize(this);
 
   return GetPreferredSize();
 }
@@ -496,14 +525,14 @@ gfx::Size View::GetMaximumSize() const {
 }
 
 int View::GetHeightForWidth(int w) const {
-  if (layout_manager_)
-    return layout_manager_->GetPreferredHeightForWidth(this, w);
+  if (HasLayoutManager())
+    return GetLayoutManager()->GetPreferredHeightForWidth(this, w);
   return GetPreferredSize().height();
 }
 
 SizeBounds View::GetAvailableSize(const View* child) const {
-  if (layout_manager_)
-    return layout_manager_->GetAvailableSize(this, child);
+  if (HasLayoutManager())
+    return GetLayoutManager()->GetAvailableSize(this, child);
   return SizeBounds();
 }
 
@@ -546,13 +575,17 @@ void View::SetVisible(bool visible) {
   }
 }
 
-PropertyChangedSubscription View::AddVisibleChangedCallback(
+base::CallbackListSubscription View::AddVisibleChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&visible_, std::move(callback));
 }
 
 bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
+}
+
+bool View::GetIsDrawn() const {
+  return IsDrawn();
 }
 
 bool View::GetEnabled() const {
@@ -569,14 +602,14 @@ void View::SetEnabled(bool enabled) {
   OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
 }
 
-PropertyChangedSubscription View::AddEnabledChangedCallback(
+base::CallbackListSubscription View::AddEnabledChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&enabled_, std::move(callback));
 }
 
 View::Views View::GetChildrenInZOrder() {
-  if (layout_manager_) {
-    const auto result = layout_manager_->GetChildViewsInPaintOrder(this);
+  if (HasLayoutManager()) {
+    const auto result = GetLayoutManager()->GetChildViewsInPaintOrder(this);
     DCHECK_EQ(children_.size(), result.size());
     return result;
   }
@@ -771,8 +804,8 @@ void View::Layout() {
   needs_layout_ = false;
 
   // If we have a layout manager, let it handle the layout for us.
-  if (layout_manager_)
-    layout_manager_->Layout(this);
+  if (HasLayoutManager())
+    GetLayoutManager()->Layout(this);
 
   // Make sure to propagate the Layout() call to any children that haven't
   // received it yet through the layout manager and need to be laid out. This
@@ -782,8 +815,9 @@ void View::Layout() {
   // the call can take appropriate action.
   internal::ScopedChildrenLock lock(this);
   for (auto* child : children_) {
-    if (child->needs_layout_ || !layout_manager_) {
-      TRACE_EVENT1("views", "View::Layout", "class", child->GetClassName());
+    if (child->needs_layout_ || !HasLayoutManager()) {
+      TRACE_EVENT1("views", "View::LayoutChildren", "class",
+                   child->GetClassName());
       child->needs_layout_ = false;
       child->Layout();
     }
@@ -794,8 +828,8 @@ void View::InvalidateLayout() {
   // Always invalidate up. This is needed to handle the case of us already being
   // valid, but not our parent.
   needs_layout_ = true;
-  if (layout_manager_)
-    layout_manager_->InvalidateLayout();
+  if (HasLayoutManager())
+    GetLayoutManager()->InvalidateLayout();
 
   if (parent_) {
     parent_->InvalidateLayout();
@@ -807,11 +841,35 @@ void View::InvalidateLayout() {
 }
 
 LayoutManager* View::GetLayoutManager() const {
-  return layout_manager_.get();
+  if (layout_manager_)
+    return layout_manager_.get();
+  if (default_fill_layout_.has_value())
+    return &const_cast<View*>(this)->default_fill_layout_.value();
+  return nullptr;
 }
 
 void View::SetLayoutManager(std::nullptr_t) {
   SetLayoutManagerImpl(nullptr);
+}
+
+bool View::GetUseDefaultFillLayout() const {
+  if (layout_manager_)
+    return false;
+  return default_fill_layout_.has_value();
+}
+
+void View::SetUseDefaultFillLayout(bool value) {
+  if (value == default_fill_layout_.has_value())
+    return;
+
+  if (value) {
+    default_fill_layout_.emplace(DefaultFillLayout());
+    // Kill the currently assigned layout manager if one had been assigned.
+    layout_manager_.reset();
+  } else {
+    default_fill_layout_.reset();
+  }
+  OnPropertyChanged(&default_fill_layout_, kPropertyEffectsLayout);
 }
 
 // Attributes ------------------------------------------------------------------
@@ -842,7 +900,7 @@ void View::SetID(int id) {
   OnPropertyChanged(&id_, kPropertyEffectsNone);
 }
 
-PropertyChangedSubscription View::AddIDChangedCallback(
+base::CallbackListSubscription View::AddIDChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&id_, callback);
 }
@@ -860,7 +918,7 @@ int View::GetGroup() const {
   return group_;
 }
 
-PropertyChangedSubscription View::AddGroupChangedCallback(
+base::CallbackListSubscription View::AddGroupChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&group_, callback);
 }
@@ -1002,6 +1060,8 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(const PaintInfo& parent_paint_info) {
+  CHECK_EQ(life_cycle_state_, LifeCycleState::kAlive);
+
   if (!ShouldPaint())
     return;
 
@@ -1101,6 +1161,8 @@ void View::Paint(const PaintInfo& parent_paint_info) {
     OnPaint(canvas);
   }
 
+  CHECK_EQ(life_cycle_state_, LifeCycleState::kAlive);
+
   // View::Paint() recursion over the subtree.
   PaintChildren(paint_info);
 }
@@ -1108,6 +1170,10 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 void View::SetBackground(std::unique_ptr<Background> b) {
   background_ = std::move(b);
   SchedulePaint();
+}
+
+Background* View::GetBackground() const {
+  return background_.get();
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {
@@ -1125,6 +1191,10 @@ void View::SetBorder(std::unique_ptr<Border> b) {
     InvalidateLayout();
 
   SchedulePaint();
+}
+
+Border* View::GetBorder() const {
+  return border_.get();
 }
 
 const ui::ThemeProvider* View::GetThemeProvider() const {
@@ -1167,7 +1237,8 @@ void View::SetFlipCanvasOnPaintForRTLUI(bool enable) {
   OnPropertyChanged(&flip_canvas_on_paint_for_rtl_ui_, kPropertyEffectsPaint);
 }
 
-PropertyChangedSubscription View::AddFlipCanvasOnPaintForRTLUIChangedCallback(
+base::CallbackListSubscription
+View::AddFlipCanvasOnPaintForRTLUIChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&flip_canvas_on_paint_for_rtl_ui_,
                                     std::move(callback));
@@ -1229,14 +1300,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
 }
 
 gfx::NativeCursor View::GetCursor(const ui::MouseEvent& event) {
-#if defined(OS_WIN)
-  static ui::Cursor arrow;
-  if (!arrow.platform())
-    arrow.SetPlatformCursor(LoadCursor(nullptr, IDC_ARROW));
-  return arrow;
-#else
   return gfx::kNullCursor;
-#endif
 }
 
 bool View::HitTestPoint(const gfx::Point& point) const {
@@ -1281,10 +1345,10 @@ void View::OnMouseEntered(const ui::MouseEvent& event) {}
 
 void View::OnMouseExited(const ui::MouseEvent& event) {}
 
-void View::SetMouseHandler(View* new_mouse_handler) {
-  // |new_mouse_handler| may be nullptr.
+void View::SetMouseAndGestureHandler(View* new_handler) {
+  // |new_handler| may be nullptr.
   if (parent_)
-    parent_->SetMouseHandler(new_mouse_handler);
+    parent_->SetMouseAndGestureHandler(new_handler);
 }
 
 bool View::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1356,6 +1420,10 @@ void View::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void View::OnGestureEvent(ui::GestureEvent* event) {}
+
+base::StringPiece View::GetLogContext() const {
+  return GetClassName();
+}
 
 void View::SetNotifyEnterExitOnChild(bool notify) {
   notify_enter_exit_on_child_ = notify;
@@ -1561,7 +1629,7 @@ View::FocusBehavior View::GetFocusBehavior() const {
 }
 
 void View::SetFocusBehavior(FocusBehavior focus_behavior) {
-  if (focus_behavior_ == focus_behavior)
+  if (GetFocusBehavior() == focus_behavior)
     return;
 
   focus_behavior_ = focus_behavior;
@@ -1571,11 +1639,12 @@ void View::SetFocusBehavior(FocusBehavior focus_behavior) {
 }
 
 bool View::IsFocusable() const {
-  return focus_behavior_ == FocusBehavior::ALWAYS && GetEnabled() && IsDrawn();
+  return GetFocusBehavior() == FocusBehavior::ALWAYS && GetEnabled() &&
+         IsDrawn();
 }
 
 bool View::IsAccessibilityFocusable() const {
-  return focus_behavior_ != FocusBehavior::NEVER && GetEnabled() && IsDrawn();
+  return GetViewAccessibility().IsAccessibilityFocusable();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -1659,8 +1728,8 @@ int View::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 void View::OnDragExited() {}
 
-int View::OnPerformDrop(const ui::DropTargetEvent& event) {
-  return ui::DragDropTypes::DRAG_NONE;
+ui::mojom::DragOperation View::OnPerformDrop(const ui::DropTargetEvent& event) {
+  return ui::mojom::DragOperation::kNone;
 }
 
 void View::OnDragDone() {}
@@ -1673,9 +1742,9 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
 
 // Accessibility----------------------------------------------------------------
 
-ViewAccessibility& View::GetViewAccessibility() {
+ViewAccessibility& View::GetViewAccessibility() const {
   if (!view_accessibility_)
-    view_accessibility_ = ViewAccessibility::Create(this);
+    view_accessibility_ = ViewAccessibility::Create(const_cast<View*>(this));
   return *view_accessibility_;
 }
 
@@ -1726,6 +1795,12 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
 
 void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
                                     bool send_native_event) {
+  // If it belongs to a widget but its native widget is already destructed, do
+  // not send such accessibility event as it's unexpected to send such events
+  // during destruction, and is likely to lead to crashes/problems.
+  if (GetWidget() && !GetWidget()->GetNativeView())
+    return;
+
   AXEventManager::Get()->NotifyViewEvent(this, event_type);
 
   if (send_native_event && GetWidget())
@@ -1766,8 +1841,8 @@ bool View::HasObserver(const ViewObserver* observer) const {
 // Size and disposition --------------------------------------------------------
 
 gfx::Size View::CalculatePreferredSize() const {
-  if (layout_manager_)
-    return layout_manager_->GetPreferredSize(this);
+  if (HasLayoutManager())
+    return GetLayoutManager()->GetPreferredSize(this);
   return gfx::Size();
 }
 
@@ -2177,7 +2252,7 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
     SchedulePaint();
 }
 
-PropertyChangedSubscription View::AddPropertyChangedCallback(
+base::CallbackListSubscription View::AddPropertyChangedCallback(
     PropertyKey property,
     PropertyChangedCallback callback) {
   auto entry = property_changed_vectors_.find(property);
@@ -2202,6 +2277,34 @@ void View::OnPropertyChanged(PropertyKey property,
 
   PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
   property_changed_callbacks->Notify();
+}
+
+int View::GetX() const {
+  return x();
+}
+
+int View::GetY() const {
+  return y();
+}
+
+int View::GetWidth() const {
+  return width();
+}
+
+int View::GetHeight() const {
+  return height();
+}
+
+void View::SetWidth(int width) {
+  SetBounds(x(), y(), width, height());
+}
+
+void View::SetHeight(int height) {
+  SetBounds(x(), y(), width(), height);
+}
+
+base::string16 View::GetTooltip() const {
+  return GetTooltipText(gfx::Point());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2388,16 +2491,16 @@ void View::AddChildViewAtImpl(View* view, int index) {
   // inherit the visibility of the owner View.
   view->UpdateLayerVisibility();
 
+  // Need to notify the layout manager because one of the callbacks below might
+  // want to know the view's new preferred size, minimum size, etc.
+  if (HasLayoutManager())
+    GetLayoutManager()->ViewAdded(this, view);
+
   if (widget) {
     const ui::NativeTheme* new_theme = view->GetNativeTheme();
     if (new_theme != old_theme)
       view->PropagateThemeChanged();
   }
-
-  // Need to notify the layout manager because one of the callbacks below might
-  // want to know the view's new preferred size, minimum size, etc.
-  if (layout_manager_)
-    layout_manager_->ViewAdded(this, view);
 
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
@@ -2452,8 +2555,8 @@ void View::DoRemoveChildView(View* view,
 
   // Need to notify the layout manager because one of the callbacks below might
   // want to know the view's new preferred size, minimum size, etc.
-  if (layout_manager_)
-    layout_manager_->ViewRemoved(this, view);
+  if (HasLayoutManager())
+    GetLayoutManager()->ViewRemoved(this, view);
 
   view->PropagateRemoveNotifications(this, new_parent, is_removed_from_widget);
   view->parent_ = nullptr;
@@ -2641,6 +2744,12 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
   layout_manager_ = std::move(layout_manager);
   if (layout_manager_)
     layout_manager_->Installed(this);
+  // Only reset |default_fill_layout_| if it's already been set and there is a
+  // layout manager.
+  if (default_fill_layout_.has_value() && layout_manager_)
+    default_fill_layout_.reset();
+  else if (kUseDefaultFillLayout)
+    default_fill_layout_.emplace(DefaultFillLayout());
 }
 
 void View::SetLayerBounds(const gfx::Size& size,
@@ -2816,6 +2925,13 @@ void View::CreateMaskLayer() {
   DCHECK(layer());
   mask_layer_ = std::make_unique<views::ViewMaskLayer>(clip_path_, this);
   layer()->SetMaskLayer(mask_layer_->layer());
+}
+
+// Layout ----------------------------------------------------------------------
+
+bool View::HasLayoutManager() const {
+  return ((default_fill_layout_.has_value() && !children_.empty()) ||
+          layout_manager_);
 }
 
 // Input -----------------------------------------------------------------------
@@ -3068,6 +3184,41 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   return true;
 }
 
+View::DefaultFillLayout::DefaultFillLayout() = default;
+
+View::DefaultFillLayout::~DefaultFillLayout() = default;
+
+void View::DefaultFillLayout::Layout(View* host) {
+  const gfx::Rect contents_bounds = host->GetContentsBounds();
+  for (auto* child : host->children()) {
+    if (!child->GetProperty(kViewIgnoredByLayoutKey))
+      child->SetBoundsRect(contents_bounds);
+  }
+}
+
+gfx::Size View::DefaultFillLayout::GetPreferredSize(const View* host) const {
+  gfx::Size preferred_size;
+  for (auto* child : host->children()) {
+    if (!child->GetProperty(kViewIgnoredByLayoutKey))
+      preferred_size.SetToMax(child->GetPreferredSize());
+  }
+  return preferred_size;
+}
+
+int View::DefaultFillLayout::GetPreferredHeightForWidth(const View* host,
+                                                        int width) const {
+  const gfx::Insets insets = host->GetInsets();
+  int preferred_height = 0;
+  for (auto* child : host->children()) {
+    if (!child->GetProperty(kViewIgnoredByLayoutKey)) {
+      preferred_height = std::max(
+          preferred_height,
+          child->GetHeightForWidth(width - insets.width()) + insets.height());
+    }
+  }
+  return preferred_height;
+}
+
 DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
                        {View::FocusBehavior::ACCESSIBLE_ONLY,
                         base::ASCIIToUTF16("ACCESSIBLE_ONLY")},
@@ -3079,18 +3230,31 @@ DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
 BEGIN_METADATA_BASE(View)
+ADD_PROPERTY_METADATA(std::unique_ptr<Background>, Background)
+ADD_PROPERTY_METADATA(std::unique_ptr<Border>, Border)
 ADD_READONLY_PROPERTY_METADATA(const char*, ClassName)
 ADD_PROPERTY_METADATA(bool, Enabled)
 ADD_PROPERTY_METADATA(View::FocusBehavior, FocusBehavior)
 ADD_PROPERTY_METADATA(bool, FlipCanvasOnPaintForRTLUI)
 ADD_PROPERTY_METADATA(int, Group)
+ADD_PROPERTY_METADATA(int, Height)
 ADD_PROPERTY_METADATA(int, ID)
+ADD_READONLY_PROPERTY_METADATA(bool, IsDrawn);
 ADD_READONLY_PROPERTY_METADATA(gfx::Size, MaximumSize)
 ADD_READONLY_PROPERTY_METADATA(gfx::Size, MinimumSize)
 ADD_PROPERTY_METADATA(bool, Mirrored)
 ADD_PROPERTY_METADATA(bool, NotifyEnterExitOnChild)
+ADD_READONLY_PROPERTY_METADATA(base::string16, Tooltip)
 ADD_PROPERTY_METADATA(bool, Visible)
 ADD_PROPERTY_METADATA(bool, CanProcessEventsWithinSubtree)
+ADD_PROPERTY_METADATA(bool, UseDefaultFillLayout)
+ADD_PROPERTY_METADATA(int, Width)
+ADD_PROPERTY_METADATA(int, X)
+ADD_PROPERTY_METADATA(int, Y)
+ADD_CLASS_PROPERTY_METADATA(gfx::Insets, kMarginsKey)
+ADD_CLASS_PROPERTY_METADATA(gfx::Insets, kInternalPaddingKey)
+ADD_CLASS_PROPERTY_METADATA(LayoutAlignment, kCrossAxisAlignmentKey)
+ADD_CLASS_PROPERTY_METADATA(bool, kViewIgnoredByLayoutKey)
 END_METADATA
 
 }  // namespace views

@@ -10,10 +10,13 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "content/browser/webid/idp_network_request_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -33,18 +36,70 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   static void Create(RenderFrameHost*,
                      mojo::PendingReceiver<blink::mojom::FederatedAuthRequest>);
 
-  ~FederatedAuthRequestImpl() override;
+  FederatedAuthRequestImpl(
+      RenderFrameHost*,
+      mojo::PendingReceiver<blink::mojom::FederatedAuthRequest>);
 
   FederatedAuthRequestImpl(const FederatedAuthRequestImpl&) = delete;
   FederatedAuthRequestImpl& operator=(const FederatedAuthRequestImpl&) = delete;
 
+  ~FederatedAuthRequestImpl() override;
+
   // blink::mojom::FederatedAuthRequest:
-  void RequestIdToken(const ::GURL& provider, RequestIdTokenCallback) override;
+  void RequestIdToken(const GURL& provider,
+                      const std::string& id_request,
+                      RequestIdTokenCallback) override;
+
+  void SetNetworkManagerForTests(
+      std::unique_ptr<IdpNetworkRequestManager> manager);
+  void SetDialogControllerForTests(
+      std::unique_ptr<IdentityRequestDialogController> controller);
 
  private:
-  FederatedAuthRequestImpl(
-      RenderFrameHost*,
-      mojo::PendingReceiver<blink::mojom::FederatedAuthRequest>);
+
+  void OnWellKnownFetched(IdpNetworkRequestManager::FetchStatus status,
+                          const std::string& idp_endpoint);
+
+  void OnSigninApproved(IdentityRequestDialogController::UserApproval approval);
+  void OnSigninResponseReceived(IdpNetworkRequestManager::SigninResponse status,
+                                const std::string& response);
+  void OnTokenProvided(const std::string& id_token);
+  void OnIdpPageClosed();
+  void OnTokenProvisionApproved(
+      IdentityRequestDialogController::UserApproval approval);
+
+  std::unique_ptr<WebContents> CreateIdpWebContents();
+  void CompleteRequest(blink::mojom::RequestIdTokenStatus,
+                       const std::string& id_token);
+
+  std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager(
+      const GURL& provider);
+  std::unique_ptr<IdentityRequestDialogController> CreateDialogController();
+
+  std::unique_ptr<IdpNetworkRequestManager> network_manager_;
+  std::unique_ptr<IdentityRequestDialogController> request_dialog_controller_;
+
+  // Replacements for testing.
+  std::unique_ptr<IdpNetworkRequestManager> mock_network_manager_;
+  std::unique_ptr<IdentityRequestDialogController> mock_dialog_controller_;
+
+  // Parameters of auth request.
+  GURL provider_;
+  std::string id_request_;
+
+  // Fetched from the IDP well-known configuration.
+  // TODO(kenrb): This will expand to multiple fields at some point, and
+  // should be wrapped in a struct at that time.
+  GURL idp_endpoint_url_;
+
+  // The WebContents that is used to load the IDP sign-up page. This is created
+  // here to allow us to setup proper callbacks on it using
+  // |IdTokenRequestCallbackData|. It is then passed along to chrome/browser/ui
+  // machinery to be used to load IDP sign-in content.
+  std::unique_ptr<WebContents> idp_web_contents_;
+
+  std::string id_token_;
+  RequestIdTokenCallback callback_;
 
   base::WeakPtrFactory<FederatedAuthRequestImpl> weak_ptr_factory_{this};
 };

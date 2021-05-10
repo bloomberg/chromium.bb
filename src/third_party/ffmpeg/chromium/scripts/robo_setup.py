@@ -163,8 +163,7 @@ def FetchMacSDKs(robo_configuration):
   log("Installing Mac OSX 11.0 beta sdk for arm64")
   robo_configuration.chdir_to_chrome_src()
   if robo_configuration.Call(
-      "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py "
-      "--xcode-version xcode_12_beta",
+      "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py",
       shell=True):
     raise Exception("Cannot download and extract Mac beta SDK")
 

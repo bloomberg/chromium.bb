@@ -24,7 +24,20 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/bluetooth/bluez/metrics_recorder.h"
+#endif
+
 namespace bluetooth {
+namespace {
+
+const char kMojoReceivingPipeError[] = "Failed to create receiving DataPipe.";
+const char kMojoSendingPipeError[] = "Failed to create sending DataPipe.";
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+const char kCannotConnectToDeviceError[] = "Cannot connect to device.";
+#endif
+
+}  // namespace
 
 Adapter::Adapter(scoped_refptr<device::BluetoothAdapter> adapter)
     : adapter_(std::move(adapter)) {
@@ -175,6 +188,11 @@ void Adapter::ConnectToServiceInsecurely(
     const std::string& address,
     const device::BluetoothUUID& service_uuid,
     ConnectToServiceInsecurelyCallback callback) {
+  if (!base::Contains(allowed_uuids_, service_uuid)) {
+    std::move(callback).Run(/*result=*/nullptr);
+    return;
+  }
+
   auto* device = adapter_->GetDevice(address);
   if (device) {
     OnDeviceFetchedForInsecureServiceConnection(service_uuid,
@@ -193,7 +211,7 @@ void Adapter::ConnectToServiceInsecurely(
                      copyable_callback),
       base::BindOnce(&Adapter::OnConnectToServiceError,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback,
-                     "Cannot connect to device."));
+                     kCannotConnectToDeviceError));
 #else
   OnConnectToServiceError(std::move(callback), "Device does not exist.");
 #endif
@@ -203,6 +221,11 @@ void Adapter::CreateRfcommServiceInsecurely(
     const std::string& service_name,
     const device::BluetoothUUID& service_uuid,
     CreateRfcommServiceInsecurelyCallback callback) {
+  if (!base::Contains(allowed_uuids_, service_uuid)) {
+    std::move(callback).Run(/*server_socket=*/mojo::NullRemote());
+    return;
+  }
+
   device::BluetoothAdapter::ServiceOptions service_options;
   service_options.name = service_name;
   service_options.require_authentication = false;
@@ -249,6 +272,14 @@ void Adapter::DeviceAdded(device::BluetoothAdapter* adapter,
 
 void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device) {
+  // Because paired Bluetooth devices never fire device-removed events, we also
+  // consider a null RSSI indicative of a device no longer being discoverable.
+  // In this scenario, we fail any pending connection requests.
+  if (!device->GetInquiryRSSI()) {
+    ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
+                                                   /*device=*/nullptr);
+  }
+
   auto device_info = Device::ConstructDeviceInfoStruct(device);
   for (auto& observer : observers_)
     observer->DeviceChanged(device_info->Clone());
@@ -256,6 +287,9 @@ void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
 
 void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device) {
+  ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
+                                                 /*device=*/nullptr);
+
   auto device_info = Device::ConstructDeviceInfoStruct(device);
   for (auto& observer : observers_)
     observer->DeviceRemoved(device_info->Clone());
@@ -268,29 +302,28 @@ void Adapter::GattServicesDiscovered(device::BluetoothAdapter* adapter,
   // resolved. Once service probing for a device within a cached request (in
   // |pending_connect_to_service_args_|) concludes, attempt socket creation
   // again via OnDeviceFetchedForInsecureServiceConnection().
-  if (!device->IsGattServicesDiscoveryComplete())
-    return;
-
-  const std::string& address = device->GetAddress();
-
-  auto it = pending_connect_to_service_args_.begin();
-  while (it != pending_connect_to_service_args_.end()) {
-    if (address == std::get<0>(*it)) {
-      OnDeviceFetchedForInsecureServiceConnection(
-          /*service_uuid=*/std::get<1>(*it),
-          /*callback=*/std::move(std::get<2>(*it)), device);
-      it = pending_connect_to_service_args_.erase(it);
-    } else {
-      ++it;
-    }
+  if (device->IsGattServicesDiscoveryComplete()) {
+    ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
+                                                   device);
   }
+}
+
+void Adapter::AllowConnectionsForUuid(
+    const device::BluetoothUUID& service_uuid) {
+  allowed_uuids_.emplace(service_uuid);
 }
 
 void Adapter::OnDeviceFetchedForInsecureServiceConnection(
     const device::BluetoothUUID& service_uuid,
     ConnectToServiceInsecurelyCallback callback,
     device::BluetoothDevice* device) {
-  if (device->IsConnected() && !device->IsGattServicesDiscoveryComplete()) {
+  if (!device) {
+    std::move(callback).Run(/*result=*/nullptr);
+    return;
+  }
+
+  if (!device->IsPaired() && device->IsConnected() &&
+      !device->IsGattServicesDiscoveryComplete()) {
     // This provided device is most likely a result of calling ConnectDevice():
     // it's connected, but the remote device's services are still being probed
     // (IsGattServicesDiscoveryComplete() refers to all services, not just GATT
@@ -309,6 +342,22 @@ void Adapter::OnDeviceFetchedForInsecureServiceConnection(
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback),
       base::BindOnce(&Adapter::OnConnectToServiceError,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+}
+
+void Adapter::ProcessPendingInsecureServiceConnectionRequest(
+    const std::string& address,
+    device::BluetoothDevice* device) {
+  auto it = pending_connect_to_service_args_.begin();
+  while (it != pending_connect_to_service_args_.end()) {
+    if (address == std::get<0>(*it)) {
+      OnDeviceFetchedForInsecureServiceConnection(
+          /*service_uuid=*/std::get<1>(*it),
+          /*callback=*/std::move(std::get<2>(*it)), device);
+      it = pending_connect_to_service_args_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void Adapter::OnGattConnected(
@@ -380,23 +429,23 @@ void Adapter::OnConnectToService(
   mojo::ScopedDataPipeProducerHandle receive_pipe_producer_handle;
   mojo::ScopedDataPipeConsumerHandle receive_pipe_consumer_handle;
   MojoResult result =
-      mojo::CreateDataPipe(/*options=*/nullptr, &receive_pipe_producer_handle,
-                           &receive_pipe_consumer_handle);
+      mojo::CreateDataPipe(/*options=*/nullptr, receive_pipe_producer_handle,
+                           receive_pipe_consumer_handle);
   if (result != MOJO_RESULT_OK) {
-    socket->Close();
-    OnConnectToServiceError(std::move(callback),
-                            "Failed to create receiving DataPipe.");
+    socket->Disconnect(base::BindOnce(
+        &Adapter::OnConnectToServiceError, weak_ptr_factory_.GetWeakPtr(),
+        std::move(callback), kMojoReceivingPipeError));
     return;
   }
 
   mojo::ScopedDataPipeProducerHandle send_pipe_producer_handle;
   mojo::ScopedDataPipeConsumerHandle send_pipe_consumer_handle;
-  result = mojo::CreateDataPipe(/*options=*/nullptr, &send_pipe_producer_handle,
-                                &send_pipe_consumer_handle);
+  result = mojo::CreateDataPipe(/*options=*/nullptr, send_pipe_producer_handle,
+                                send_pipe_consumer_handle);
   if (result != MOJO_RESULT_OK) {
-    socket->Close();
-    OnConnectToServiceError(std::move(callback),
-                            "Failed to create sending DataPipe.");
+    socket->Disconnect(base::BindOnce(
+        &Adapter::OnConnectToServiceError, weak_ptr_factory_.GetWeakPtr(),
+        std::move(callback), kMojoSendingPipeError));
     return;
   }
 
@@ -414,6 +463,11 @@ void Adapter::OnConnectToService(
       std::move(receive_pipe_consumer_handle);
   connect_to_service_result->send_stream = std::move(send_pipe_producer_handle);
   std::move(callback).Run(std::move(connect_to_service_result));
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  RecordConnectToServiceInsecurelyResult(
+      ConnectToServiceInsecurelyResult::kSuccess);
+#endif
 }
 
 void Adapter::OnConnectToServiceError(
@@ -421,6 +475,26 @@ void Adapter::OnConnectToServiceError(
     const std::string& message) {
   DLOG(ERROR) << "Failed to connect to service: '" << message << "'";
   std::move(callback).Run(/*result=*/nullptr);
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  base::Optional<ConnectToServiceInsecurelyResult> result =
+      ExtractResultFromErrorString(message);
+  if (result) {
+    RecordConnectToServiceInsecurelyResult(*result);
+  } else if (message == kMojoSendingPipeError) {
+    RecordConnectToServiceInsecurelyResult(
+        ConnectToServiceInsecurelyResult::kMojoSendingPipeError);
+  } else if (message == kMojoReceivingPipeError) {
+    RecordConnectToServiceInsecurelyResult(
+        ConnectToServiceInsecurelyResult::kMojoReceivingPipeError);
+  } else if (message == kCannotConnectToDeviceError) {
+    RecordConnectToServiceInsecurelyResult(
+        ConnectToServiceInsecurelyResult::kCouldNotConnectError);
+  } else {
+    RecordConnectToServiceInsecurelyResult(
+        ConnectToServiceInsecurelyResult::kUnknownError);
+  }
+#endif
 }
 
 void Adapter::OnCreateRfcommServiceInsecurely(

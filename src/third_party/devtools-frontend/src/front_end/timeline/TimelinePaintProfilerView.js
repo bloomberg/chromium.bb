@@ -77,7 +77,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
 
     this._updateWhenVisible();
     if (this._event.name === TimelineModel.TimelineModel.RecordType.Paint) {
-      return !!TimelineModel.TimelineModel.TimelineData.forEvent(event).picture;
+      return Boolean(TimelineModel.TimelineModel.TimelineData.forEvent(event).picture);
     }
     if (this._event.name === TimelineModel.TimelineModel.RecordType.RasterTask) {
       return this._frameModel.hasRasterTile(this._event);
@@ -153,9 +153,6 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelinePaintImageView extends UI.Widget.Widget {
   constructor() {
     super(true);

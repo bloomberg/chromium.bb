@@ -9,21 +9,23 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,8 +38,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -828,12 +828,31 @@ bool ArcAppListPrefs::IsControlledByPolicy(
   return packages_by_policy_.count(package_name);
 }
 
+base::Time ArcAppListPrefs::PollLaunchRequestTime(const std::string& app_id) {
+  if (!launch_request_times_.count(app_id))
+    return base::Time();
+
+  const base::Time last_launch_time = launch_request_times_[app_id];
+  // This value should only be used once per launch.
+  launch_request_times_.erase(app_id);
+  return last_launch_time;
+}
+
+void ArcAppListPrefs::SetLaunchRequestTimeForTesting(const std::string& app_id,
+                                                     base::Time timestamp) {
+  launch_request_times_[app_id] = timestamp;
+}
 void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id) {
   if (!IsRegistered(app_id)) {
     NOTREACHED();
     return;
   }
 
+  launch_request_times_[app_id] = base::Time::Now();
+  SetLastLaunchTimeInternal(app_id);
+}
+
+void ArcAppListPrefs::SetLastLaunchTimeInternal(const std::string& app_id) {
   // Usage time on hidden should not be tracked.
   if (!arc::ShouldShowInLauncher(app_id))
     return;
@@ -1089,7 +1108,7 @@ void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::string app_id = GetAppId(package_name, activity);
   if (IsRegistered(app_id)) {
-    SetLastLaunchTime(app_id);
+    SetLastLaunchTimeInternal(app_id);
   } else {
     // Create runtime app entry that is valid for the current user session. This
     // entry is not shown in App Launcher and only required for shelf

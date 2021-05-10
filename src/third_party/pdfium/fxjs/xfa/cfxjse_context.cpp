@@ -15,6 +15,7 @@
 #include "fxjs/xfa/cfxjse_runtimedata.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "third_party/base/check.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_thisproxy.h"
 
@@ -108,8 +109,8 @@ v8::Local<v8::Object> CreateReturnValue(v8::Isolate* pIsolate,
 }
 
 void FXJSE_UpdateProxyBinding(v8::Local<v8::Object> hObject) {
-  ASSERT(!hObject.IsEmpty());
-  ASSERT(hObject->InternalFieldCount() == 2);
+  DCHECK(!hObject.IsEmpty());
+  DCHECK(hObject->InternalFieldCount() == 2);
   hObject->SetAlignedPointerInInternalField(
       0, const_cast<char*>(kFXJSEProxyObjectTag));
   hObject->SetAlignedPointerInInternalField(1, nullptr);
@@ -119,27 +120,25 @@ void FXJSE_UpdateProxyBinding(v8::Local<v8::Object> hObject) {
 
 void FXJSE_UpdateObjectBinding(v8::Local<v8::Object> hObject,
                                CFXJSE_HostObject* lpNewBinding) {
-  ASSERT(!hObject.IsEmpty());
-  ASSERT(hObject->InternalFieldCount() == 2);
+  DCHECK(!hObject.IsEmpty());
+  DCHECK(hObject->InternalFieldCount() == 2);
   hObject->SetAlignedPointerInInternalField(
       0, const_cast<char*>(kFXJSEHostObjectTag));
   hObject->SetAlignedPointerInInternalField(1, lpNewBinding);
 }
 
 void FXJSE_ClearObjectBinding(v8::Local<v8::Object> hObject) {
-  ASSERT(!hObject.IsEmpty());
-  ASSERT(hObject->InternalFieldCount() == 2);
+  DCHECK(!hObject.IsEmpty());
+  DCHECK(hObject->InternalFieldCount() == 2);
   hObject->SetAlignedPointerInInternalField(0, nullptr);
   hObject->SetAlignedPointerInInternalField(1, nullptr);
 }
 
-CFXJSE_HostObject* FXJSE_RetrieveObjectBinding(
-    v8::Local<v8::Object> hJSObject) {
-  ASSERT(!hJSObject.IsEmpty());
-  if (!hJSObject->IsObject())
+CFXJSE_HostObject* FXJSE_RetrieveObjectBinding(v8::Local<v8::Value> hValue) {
+  if (!fxv8::IsObject(hValue))
     return nullptr;
 
-  v8::Local<v8::Object> hObject = hJSObject;
+  v8::Local<v8::Object> hObject = hValue.As<v8::Object>();
   if (hObject->InternalFieldCount() != 2 ||
       hObject->GetAlignedPointerFromInternalField(0) == kFXJSEProxyObjectTag) {
     v8::Local<v8::Value> hProtoObject = hObject->GetPrototype();
@@ -243,10 +242,10 @@ bool CFXJSE_Context::ExecuteScript(const char* szScript,
   if (hNewThis.IsEmpty()) {
     v8::Local<v8::Script> hScript;
     if (v8::Script::Compile(hContext, hScriptString).ToLocal(&hScript)) {
-      ASSERT(!trycatch.HasCaught());
+      DCHECK(!trycatch.HasCaught());
       v8::Local<v8::Value> hValue;
       if (hScript->Run(hContext).ToLocal(&hValue)) {
-        ASSERT(!trycatch.HasCaught());
+        DCHECK(!trycatch.HasCaught());
         if (lpRetValue)
           lpRetValue->ForceSetValue(GetIsolate(), hValue);
         return true;
@@ -264,13 +263,13 @@ bool CFXJSE_Context::ExecuteScript(const char* szScript,
       v8::Script::Compile(hContext, hEval).ToLocalChecked();
   v8::Local<v8::Value> hWrapperValue;
   if (hWrapper->Run(hContext).ToLocal(&hWrapperValue)) {
-    ASSERT(!trycatch.HasCaught());
+    DCHECK(!trycatch.HasCaught());
     v8::Local<v8::Function> hWrapperFn = hWrapperValue.As<v8::Function>();
     v8::Local<v8::Value> rgArgs[] = {hScriptString};
     v8::Local<v8::Value> hValue;
     if (hWrapperFn->Call(hContext, hNewThis.As<v8::Object>(), 1, rgArgs)
             .ToLocal(&hValue)) {
-      ASSERT(!trycatch.HasCaught());
+      DCHECK(!trycatch.HasCaught());
       if (lpRetValue)
         lpRetValue->ForceSetValue(GetIsolate(), hValue);
       return true;

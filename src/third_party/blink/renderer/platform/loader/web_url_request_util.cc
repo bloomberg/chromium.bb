@@ -15,15 +15,17 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-blink.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
-#include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/loader/mixed_content.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -75,29 +77,31 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
   http_body.SetContainsPasswordData(input.contains_sensitive_info());
   for (auto& element : *input.elements()) {
     switch (element.type()) {
-      case network::mojom::blink::DataElementType::kBytes:
+      case network::DataElement::Tag::kBytes: {
+        const auto& bytes = element.As<network::DataElementBytes>().bytes();
         http_body.AppendData(
-            WebData(element.bytes(), SafeCast<size_t>(element.length())));
+            WebData(reinterpret_cast<const char*>(bytes.data()), bytes.size()));
         break;
-      case network::mojom::blink::DataElementType::kFile: {
+      }
+      case network::DataElement::Tag::kFile: {
+        const auto& file = element.As<network::DataElementFile>();
         base::Optional<base::Time> modification_time;
-        if (!element.expected_modification_time().is_null())
-          modification_time = element.expected_modification_time();
+        if (!file.expected_modification_time().is_null())
+          modification_time = file.expected_modification_time();
         http_body.AppendFileRange(
-            FilePathToWebString(element.path()), element.offset(),
-            (element.length() != std::numeric_limits<uint64_t>::max())
-                ? element.length()
+            FilePathToWebString(file.path()), file.offset(),
+            (file.length() != std::numeric_limits<uint64_t>::max())
+                ? file.length()
                 : -1,
             modification_time);
         break;
       }
-      case network::mojom::blink::DataElementType::kDataPipe: {
-        http_body.AppendDataPipe(element.CloneDataPipeGetter());
+      case network::DataElement::Tag::kDataPipe: {
+        http_body.AppendDataPipe(
+            element.As<network::DataElementDataPipe>().CloneDataPipeGetter());
         break;
       }
-      case network::mojom::blink::DataElementType::kUnknown:
-      case network::mojom::blink::DataElementType::kChunkedDataPipe:
-      case network::mojom::blink::DataElementType::kReadOnceStream:
+      case network::DataElement::Tag::kChunkedDataPipe:
         NOTREACHED();
         break;
     }
@@ -148,24 +152,19 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
       case HTTPBodyElementType::kTypeBlob: {
         DCHECK(element.optional_blob);
         mojo::Remote<mojom::blink::Blob> blob_remote(
-            mojo::PendingRemote<mojom::blink::Blob>(
-                std::move(element.optional_blob)));
+            std::move(element.optional_blob));
 
         mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
             data_pipe_getter_remote;
         blob_remote->AsDataPipeGetter(
             data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
         request_body->AppendDataPipe(
-            mojo::PendingRemote<network::mojom::DataPipeGetter>(
-                data_pipe_getter_remote.PassPipe(), 0u));
+            ToCrossVariantMojoType(std::move(data_pipe_getter_remote)));
         break;
       }
       case HTTPBodyElementType::kTypeDataPipe: {
-        // Convert the raw message pipe to
-        // mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter.
         mojo::Remote<network::mojom::blink::DataPipeGetter> data_pipe_getter(
-            mojo::PendingRemote<network::mojom::blink::DataPipeGetter>(
-                std::move(element.data_pipe_getter)));
+            std::move(element.data_pipe_getter));
 
         // Set the cloned DataPipeGetter to the output |request_body|, while
         // keeping the original message pipe back in the input |httpBody|. This
@@ -175,8 +174,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
             cloned_getter;
         data_pipe_getter->Clone(cloned_getter.InitWithNewPipeAndPassReceiver());
         request_body->AppendDataPipe(
-            mojo::PendingRemote<network::mojom::DataPipeGetter>(
-                cloned_getter.PassPipe(), 0u));
+            ToCrossVariantMojoType(std::move(cloned_getter)));
         element.data_pipe_getter = data_pipe_getter.Unbind();
         break;
       }
@@ -199,10 +197,10 @@ network::mojom::blink::RequestDestination GetRequestDestinationForWebURLRequest(
       request.GetRequestDestination());
 }
 
-WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
-    const WebURLRequest& request) {
-  return WebMixedContent::ContextTypeFromRequestContext(
-      request.GetRequestContext(), WebMixedContent::CheckModeForPlugin::kLax);
+mojom::blink::MixedContentContextType
+GetMixedContentContextTypeForWebURLRequest(const WebURLRequest& request) {
+  return MixedContent::ContextTypeFromRequestContext(
+      request.GetRequestContext(), MixedContent::CheckModeForPlugin::kLax);
 }
 
 }  // namespace blink

@@ -45,7 +45,9 @@ class NearbySharingService : public KeyedService {
     // register Receive Surface when
     // sending a file.)
     kTransferAlreadyInProgress = 4,
-    kMaxValue = kTransferAlreadyInProgress
+    // There is no available connection medium to use.
+    kNoAvailableConnectionMedium = 5,
+    kMaxValue = kNoAvailableConnectionMedium
   };
 
   enum class ReceiveSurfaceState {
@@ -68,7 +70,12 @@ class NearbySharingService : public KeyedService {
 
   class Observer : public base::CheckedObserver {
    public:
+    virtual void OnHighVisibilityChangeRequested() {}
     virtual void OnHighVisibilityChanged(bool in_high_visibility) = 0;
+
+    virtual void OnNearbyProcessStopped() {}
+    virtual void OnStartAdvertisingResult(bool success) {}
+    virtual void OnStartDiscoveryResult(bool success) {}
 
     // Called during the |KeyedService| shutdown, but before everything has been
     // cleaned up. It is safe to remove any observers on this event.
@@ -109,7 +116,23 @@ class NearbySharingService : public KeyedService {
   virtual StatusCodes ClearForegroundReceiveSurfaces() = 0;
 
   // Returns true if a foreground receive surface is registered.
-  virtual bool IsInHighVisibility() = 0;
+  virtual bool IsInHighVisibility() const = 0;
+
+  // Returns true if there is an ongoing file transfer.
+  virtual bool IsTransferring() const = 0;
+
+  // Returns true if we're currently receiving a file.
+  virtual bool IsReceivingFile() const = 0;
+
+  // Returns true if we're currently sending a file.
+  virtual bool IsSendingFile() const = 0;
+
+  // Returns true if we're currently attempting to connect to a
+  // remote device.
+  virtual bool IsConnecting() const = 0;
+
+  // Returns true if we are currently scanning for remote devices.
+  virtual bool IsScanning() const = 0;
 
   // Sends |attachments| to the remote |share_target|.
   virtual StatusCodes SendAttachments(
@@ -131,6 +154,9 @@ class NearbySharingService : public KeyedService {
   // Opens attachments from the remote |share_target|.
   virtual void Open(const ShareTarget& share_target,
                     StatusCodesCallback status_codes_callback) = 0;
+
+  // Opens an url target on a browser instance.
+  virtual void OpenURL(GURL url) = 0;
 
   // Gets a delegate to handle events for |notification_id| or nullptr.
   virtual NearbyNotificationDelegate* GetNotificationDelegate(

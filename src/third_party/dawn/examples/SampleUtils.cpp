@@ -17,6 +17,7 @@
 #include "common/Assert.h"
 #include "common/Log.h"
 #include "common/Platform.h"
+#include "common/SystemUtils.h"
 #include "utils/BackendBinding.h"
 #include "utils/GLFWUtils.h"
 #include "utils/TerribleCommandBuffer.h"
@@ -89,6 +90,10 @@ static utils::TerribleCommandBuffer* c2sBuf = nullptr;
 static utils::TerribleCommandBuffer* s2cBuf = nullptr;
 
 wgpu::Device CreateCppDawnDevice() {
+    if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").empty()) {
+        SetEnvironmentVar("ANGLE_DEFAULT_PLATFORM", "swiftshader");
+    }
+
     glfwSetErrorCallback(PrintGLFWError);
     if (!glfwInit()) {
         return wgpu::Device();
@@ -142,7 +147,6 @@ wgpu::Device CreateCppDawnDevice() {
             s2cBuf = new utils::TerribleCommandBuffer();
 
             dawn_wire::WireServerDescriptor serverDesc = {};
-            serverDesc.device = backendDevice;
             serverDesc.procs = &backendProcs;
             serverDesc.serializer = s2cBuf;
 
@@ -153,9 +157,14 @@ wgpu::Device CreateCppDawnDevice() {
             clientDesc.serializer = c2sBuf;
 
             wireClient = new dawn_wire::WireClient(clientDesc);
-            cDevice = wireClient->GetDevice();
             procs = dawn_wire::client::GetProcs();
             s2cBuf->SetHandler(wireClient);
+
+            auto deviceReservation = wireClient->ReserveDevice();
+            wireServer->InjectDevice(backendDevice, deviceReservation.id,
+                                     deviceReservation.generation);
+
+            cDevice = deviceReservation.device;
         } break;
     }
 
@@ -213,12 +222,17 @@ bool InitSample(int argc, const char** argv) {
                 backendType = wgpu::BackendType::OpenGL;
                 continue;
             }
+            if (i < argc && std::string("opengles") == argv[i]) {
+                backendType = wgpu::BackendType::OpenGLES;
+                continue;
+            }
             if (i < argc && std::string("vulkan") == argv[i]) {
                 backendType = wgpu::BackendType::Vulkan;
                 continue;
             }
             fprintf(stderr,
-                    "--backend expects a backend name (opengl, metal, d3d12, null, vulkan)\n");
+                    "--backend expects a backend name (opengl, opengles, metal, d3d12, null, "
+                    "vulkan)\n");
             return false;
         }
         if (std::string("-c") == argv[i] || std::string("--command-buffer") == argv[i]) {

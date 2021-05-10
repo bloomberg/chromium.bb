@@ -2,29 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as TextEditor from '../text_editor/text_editor.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+/** @type {!WeakSet<!Document>} */
+const whitespaceStyleInjectedSet = new WeakSet();
+
 export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor {
   /**
    * @param {!SourcesTextEditorDelegate} delegate
    * @param {!UI.TextEditor.Options=} codeMirrorOptions
    */
   constructor(delegate, codeMirrorOptions) {
+    /** @type {!UI.TextEditor.Options} */
     const defaultCodeMirrorOptions = {
       lineNumbers: true,
       lineWrapping: false,
       bracketMatchingSetting: Common.Settings.Settings.instance().moduleSetting('textEditorBracketMatching'),
       padBottom: Common.Settings.Settings.instance().moduleSetting('allowScrollPastEof').get(),
       lineWiseCopyCut: true,
+      devtoolsAccessibleName: undefined,
+      mimeType: undefined,
+      autoHeight: undefined,
+      maxHighlightLength: undefined,
+      placeholder: undefined,
+      inputStyle: undefined,
     };
     if (codeMirrorOptions) {
       Object.assign(defaultCodeMirrorOptions, codeMirrorOptions);
@@ -42,19 +46,24 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     this.codeMirror().on('focus', this._focus.bind(this));
     this.codeMirror().on('blur', this._blur.bind(this));
     this.codeMirror().on('beforeSelectionChange', this._fireBeforeSelectionChanged.bind(this));
-    this.element.addEventListener('contextmenu', this._contextMenu.bind(this), false);
-
+    this.codeMirror().on('gutterContextMenu', this._gutterContextMenu.bind(this));
+    this.codeMirror().on('contextmenu', this._textAreaContextMenu.bind(this));
+    /**
+     * @param {!Event} event
+     */
     this._gutterMouseMove = event => {
+      const mouseEvent = /** @type {!MouseEvent} */ (event);
       this.element.classList.toggle(
           'CodeMirror-gutter-hovered',
-          event.clientX < this.codeMirror().getGutterElement().getBoundingClientRect().right);
+          mouseEvent.clientX < this.codeMirror().getGutterElement().getBoundingClientRect().right);
     };
-    this._gutterMouseOut = event => {
+    this._gutterMouseOut = () => {
       this.element.classList.toggle('CodeMirror-gutter-hovered', false);
     };
 
     this.codeMirror().addKeyMap(_BlockIndentController);
-    this._tokenHighlighter = new TokenHighlighter(this, this.codeMirror());
+    // @ts-ignore https://crbug.com/1151919 CodeMirror types are incorrect
+    this._tokenHighlighter = new TokenHighlighter(this, /** @type {!CodeMirror.Editor} */ (this.codeMirror()));
 
     /** @type {!Array<string>} */
     this._gutters = [lineNumbersGutterType];
@@ -63,8 +72,10 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     this.codeMirror().setOption('electricChars', false);
     this.codeMirror().setOption('smartIndent', false);
 
+    this._isHandlingMouseDownEvent = false;
     /**
      * @this {SourcesTextEditor}
+     * @param {boolean} value
      */
     function updateAnticipateJumpFlag(value) {
       this._isHandlingMouseDownEvent = value;
@@ -90,7 +101,13 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     this._updateCodeFolding();
 
     /** @type {?UI.TextEditor.AutocompleteConfig} */
-    this._autocompleteConfig = {isWordChar: TextUtils.TextUtils.Utils.isWordChar};
+    this._autocompleteConfig = {
+      isWordChar: TextUtils.TextUtils.Utils.isWordChar,
+      substituteRangeCallback: undefined,
+      tooltipCallback: undefined,
+      suggestionsCallback: undefined,
+      anchorBehavior: undefined
+    };
     Common.Settings.Settings.instance()
         .moduleSetting('textEditorAutocompletion')
         .addChangeListener(this._updateAutocomplete, this);
@@ -101,6 +118,17 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
 
     /** @type {?Element} */
     this._infoBarDiv = null;
+  }
+
+  // https://crbug.com/1151919 * = CodeMirror.Editor
+  /**
+   * @override
+   * @param {*} codeMirrorEditor
+   * @return {!SourcesTextEditor}
+   */
+  static getForCodeMirror(codeMirrorEditor) {
+    return /** @type {!SourcesTextEditor} */ (
+        TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor.getForCodeMirror(codeMirrorEditor));
   }
 
   /**
@@ -124,7 +152,11 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
   static _guessIndentationLevel(lines) {
     const tabRegex = /^\t+/;
     let tabLines = 0;
-    const indents = {};
+    /**
+     * Maps the indentation level to its frequency in |lines|.
+     * @type {!Map<number, number>}
+     * */
+    const indents = new Map();
     for (let lineNumber = 0; lineNumber < lines.length; ++lineNumber) {
       const text = lines[lineNumber];
       if (text.length === 0 || !TextUtils.TextUtils.Utils.isSpaceChar(text[0])) {
@@ -141,18 +173,17 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
       if (i % 2 !== 0) {
         continue;
       }
-      indents[i] = 1 + (indents[i] || 0);
+      indents.set(i, 1 + (indents.get(i) || 0));
     }
     const linesCountPerIndentThreshold = 3 * lines.length / 100;
     if (tabLines && tabLines > linesCountPerIndentThreshold) {
       return '\t';
     }
     let minimumIndent = Infinity;
-    for (const i in indents) {
-      if (indents[i] < linesCountPerIndentThreshold) {
+    for (const [indent, frequency] of indents) {
+      if (frequency < linesCountPerIndentThreshold) {
         continue;
       }
-      const indent = parseInt(i, 10);
       if (minimumIndent > indent) {
         minimumIndent = indent;
       }
@@ -167,7 +198,7 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
    * @return {boolean}
    */
   _isSearchActive() {
-    return !!this._tokenHighlighter.highlightedRegex();
+    return Boolean(this._tokenHighlighter.highlightedRegex());
   }
 
   /**
@@ -185,7 +216,7 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
    */
   highlightSearchResults(regex, range) {
     /**
-     * @this {TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor}
+     * @this {SourcesTextEditor}
      */
     function innerHighlightRegex() {
       if (range) {
@@ -215,17 +246,19 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     }
   }
 
+  // https://crbug.com/1151919 * = CodeMirror.TextMarker
   /**
-   * @param {!Object} highlightDescriptor
+   * @param {*} highlightDescriptor
    */
   removeHighlight(highlightDescriptor) {
     highlightDescriptor.clear();
   }
 
+  // https://crbug.com/1151919 * = CodeMirror.TextMarker<CodeMirror.MarkerRange>
   /**
    * @param {!TextUtils.TextRange.TextRange} range
    * @param {string} cssClass
-   * @return {!CodeMirror.TextMarker}
+   * @return {*}
    */
   highlightRange(range, cssClass) {
     cssClass = 'CodeMirror-persist-highlight ' + cssClass;
@@ -381,32 +414,49 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     return classNames.indexOf(className) !== -1;
   }
 
+  /**
+   * |instance| is actually a CodeMirror.Editor
+   * @param {!Object} instance
+   * @param {number} lineNumber
+   * @param {string} gutterType
+   * @param {!MouseEvent} event
+   */
   _gutterClick(instance, lineNumber, gutterType, event) {
     this.dispatchEventToListeners(Events.GutterClick, {gutterType, lineNumber, event});
   }
 
-  _contextMenu(event) {
+  /**
+   * |instance| is actually a CodeMirror.Editor
+   * @param {!Object} instance
+   * @param {!MouseEvent} event
+   */
+  _textAreaContextMenu(instance, event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     event.consume(true);  // Consume event now to prevent document from handling the async menu
-    const wrapper = event.target.enclosingNodeOrSelfWithClass('CodeMirror-gutter-wrapper');
-    const target = wrapper ? wrapper.querySelector('.CodeMirror-linenumber') : null;
-    let promise;
-    if (target) {
-      promise = this._delegate.populateLineGutterContextMenu(contextMenu, parseInt(target.textContent, 10) - 1);
-    } else {
-      const textSelection = this.selection();
-      promise =
-          this._delegate.populateTextAreaContextMenu(contextMenu, textSelection.startLine, textSelection.startColumn);
-    }
-    promise.then(showAsync.bind(this));
 
-    /**
-     * @this {SourcesTextEditor}
-     */
-    function showAsync() {
+    const textSelection = this.selection();
+    this._delegate.populateTextAreaContextMenu(contextMenu, textSelection.startLine, textSelection.startColumn)
+        .then(() => {
+          contextMenu.appendApplicableItems(this);
+          contextMenu.show();
+        });
+  }
+
+  /**
+   * |instance| is actually a CodeMirror.Editor
+   * @param {!Object} instance
+   * @param {number} lineNumber
+   * @param {string} gutterType
+   * @param {!MouseEvent} event
+   */
+  _gutterContextMenu(instance, lineNumber, gutterType, event) {
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
+    event.consume(true);  // Consume event now to prevent document from handling the async menu
+
+    this._delegate.populateLineGutterContextMenu(contextMenu, lineNumber).then(() => {
       contextMenu.appendApplicableItems(this);
       contextMenu.show();
-    }
+    });
   }
 
   /**
@@ -426,8 +476,8 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
   }
 
   _onUpdateEditorIndentation() {
-    this._setEditorIndentation(
-        TextEditor.CodeMirrorUtils.pullLines(this.codeMirror(), LinesToScanForIndentationGuessing));
+    this._setEditorIndentation(TextEditor.CodeMirrorUtils.pullLines(
+        /** @type {!CodeMirror} */ (this.codeMirror()), LinesToScanForIndentationGuessing));
   }
 
   /**
@@ -440,12 +490,17 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
       indent = SourcesTextEditor._guessIndentationLevel(lines);
     }
 
-    if (indent === TextUtils.TextUtils.Utils.Indent.TabCharacter) {
+    if (indent === '\t') {
       this.codeMirror().setOption('indentWithTabs', true);
       this.codeMirror().setOption('indentUnit', 4);
     } else {
       this.codeMirror().setOption('indentWithTabs', false);
       this.codeMirror().setOption('indentUnit', indent.length);
+      /**
+       * TODO: |codeMirror| is really a CodeMirror.Editor
+       * @param {*} codeMirror
+       * @returns {void|*}
+       */
       extraKeys.Tab = function(codeMirror) {
         if (codeMirror.somethingSelected()) {
           return CodeMirror.Pass;
@@ -482,6 +537,7 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
       }
     }
 
+    /** @type {!Array<!TextEditor.CodeMirrorTextEditor.TextEditorPositionHandle>} */
     this._autoAppendedSpaces = [];
     const selections = this.selections();
     for (let i = 0; i < selections.length; ++i) {
@@ -524,9 +580,10 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
     this.dispatchEventToListeners(Events.EditorBlurred);
   }
 
+  // https://crbug.com/1151919 * = {ranges: !Array.<{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>}
   /**
    * @param {!CodeMirror} codeMirror
-   * @param {{ranges: !Array.<{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>}} selection
+   * @param {*} selection
    */
   _fireBeforeSelectionChanged(codeMirror, selection) {
     if (!this._isHandlingMouseDownEvent) {
@@ -629,7 +686,15 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
       return modeName;
     }
 
+    /**
+     * TODO: |config| is really a CodeMirror.EditorConfiguration
+     * @param {!Object} config
+     * @param {*} parserConfig
+     */
     function modeConstructor(config, parserConfig) {
+      /**
+       * @param {*} stream
+       */
       function nextToken(stream) {
         if (stream.peek() === ' ') {
           let spaces = 0;
@@ -664,7 +729,15 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
       return modeName;
     }
 
+    /**
+     * TODO: |config| is really a CodeMirror.EditorConfiguration
+     * @param {!Object} config
+     * @param {*} parserConfig
+     */
     function modeConstructor(config, parserConfig) {
+      /**
+       * @param {*} stream
+       */
       function nextToken(stream) {
         if (stream.match(/^\s+$/, true)) {
           return true ? 'trailing-whitespace' : null;
@@ -682,12 +755,12 @@ export class SourcesTextEditor extends TextEditor.CodeMirrorTextEditor.CodeMirro
   }
 
   _setupWhitespaceHighlight() {
-    const doc = this.element.ownerDocument;
-    if (doc._codeMirrorWhitespaceStyleInjected ||
+    const doc = /** @type {!Document} */ (this.element.ownerDocument);
+    if (whitespaceStyleInjectedSet.has(doc) ||
         !Common.Settings.Settings.instance().moduleSetting('showWhitespacesInEditor').get()) {
       return;
     }
-    doc._codeMirrorWhitespaceStyleInjected = true;
+    whitespaceStyleInjectedSet.add(doc);
     const classBase = '.show-whitespaces .CodeMirror .cm-whitespace-';
     const spaceChar = '·';
     let spaceChars = '';
@@ -735,26 +808,34 @@ export class SourcesTextEditorDelegate {
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateLineGutterContextMenu(contextMenu, lineNumber) {
+    throw new Error('Not implemented');
   }
 
   /**
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
+    throw new Error('Not implemented');
   }
 }
 
+// https://crbug.com/1151919 * = !CodeMirror.Editor
 /**
- * @param {!CodeMirror} codeMirror
+ * @param {*} codeMirror
  */
+// @ts-ignore https://crbug.com/1151919 CodeMirror types are incorrect
 CodeMirror.commands.smartNewlineAndIndent = function(codeMirror) {
   codeMirror.operation(innerSmartNewlineAndIndent.bind(null, codeMirror));
+  // https://crbug.com/1151919 * = !CodeMirror.Editor
+  /**
+   * @param {*} codeMirror
+   */
   function innerSmartNewlineAndIndent(codeMirror) {
     const selections = codeMirror.listSelections();
     const replacements = [];
@@ -765,25 +846,32 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror) {
       const indent = TextUtils.TextUtils.Utils.lineIndent(line);
       replacements.push('\n' + indent.substring(0, Math.min(cur.ch, indent.length)));
     }
+    // @ts-ignore replaceSelection has not been added to the types yet.
     codeMirror.replaceSelections(replacements);
-    codeMirror._codeMirrorTextEditor._onAutoAppendedSpaces();
+    SourcesTextEditor.getForCodeMirror(codeMirror)._onAutoAppendedSpaces();
   }
 };
 
+// https://crbug.com/1151919 * = !CodeMirror.Editor
 /**
+ * @param {*} codeMirror
  * @return {!Object|undefined}
  */
-CodeMirror.commands.sourcesDismiss = function(codemirror) {
-  if (codemirror.listSelections().length === 1 && codemirror._codeMirrorTextEditor._isSearchActive()) {
+// @ts-ignore https://crbug.com/1151919 CodeMirror types are incorrect
+CodeMirror.commands.sourcesDismiss = function(codeMirror) {
+  if (codeMirror.listSelections().length === 1 && SourcesTextEditor.getForCodeMirror(codeMirror)._isSearchActive()) {
     return CodeMirror.Pass;
   }
-  return CodeMirror.commands.dismiss(codemirror);
+  // @ts-ignore https://crbug.com/1151919 CodeMirror types are incorrect
+  return CodeMirror.commands.dismiss(codeMirror);
 };
 
 export const _BlockIndentController = {
   name: 'blockIndentKeymap',
 
+  // https://crbug.com/1151919 * = !CodeMirror.Editor
   /**
+   * @param {*} codeMirror
    * @return {*}
    */
   Enter: function(codeMirror) {
@@ -795,7 +883,7 @@ export const _BlockIndentController = {
       const start = CodeMirror.cmpPos(selection.head, selection.anchor) < 0 ? selection.head : selection.anchor;
       const line = codeMirror.getLine(start.line);
       const indent = TextUtils.TextUtils.Utils.lineIndent(line);
-      let indentToInsert = '\n' + indent + codeMirror._codeMirrorTextEditor.indent();
+      let indentToInsert = '\n' + indent + SourcesTextEditor.getForCodeMirror(codeMirror).indent();
       let isCollapsedBlock = false;
       if (selection.head.ch === 0) {
         return CodeMirror.Pass;
@@ -814,7 +902,7 @@ export const _BlockIndentController = {
     }
     codeMirror.replaceSelections(replacements);
     if (!allSelectionsAreCollapsedBlocks) {
-      codeMirror._codeMirrorTextEditor._onAutoAppendedSpaces();
+      SourcesTextEditor.getForCodeMirror(codeMirror)._onAutoAppendedSpaces();
       return;
     }
     selections = codeMirror.listSelections();
@@ -826,10 +914,12 @@ export const _BlockIndentController = {
       updatedSelections.push({head: position, anchor: position});
     }
     codeMirror.setSelections(updatedSelections);
-    codeMirror._codeMirrorTextEditor._onAutoAppendedSpaces();
+    SourcesTextEditor.getForCodeMirror(codeMirror)._onAutoAppendedSpaces();
   },
 
+  // https://crbug.com/1151919 * = !CodeMirror.Editor
   /**
+   * @param {*} codeMirror
    * @return {*}
    */
   '\'}\'': function(codeMirror) {
@@ -867,17 +957,20 @@ export const _BlockIndentController = {
 };
 
 
-/**
- * @unrestricted
- */
 export class TokenHighlighter {
+  // https://crbug.com/1151919 * = !CodeMirror.Editor
   /**
    * @param {!SourcesTextEditor} textEditor
-   * @param {!CodeMirror} codeMirror
+   * @param {*} codeMirror
    */
   constructor(textEditor, codeMirror) {
     this._textEditor = textEditor;
     this._codeMirror = codeMirror;
+    // https://crbug.com/1151919 * = !CodeMirror.StringStream, ?CodeMirror.Position
+    /**
+     * @type {!{overlay: {token: function(*): ?string}, selectionStart: *}|undefined}
+     */
+    this._highlightDescriptor;
   }
 
   /**
@@ -971,9 +1064,11 @@ export class TokenHighlighter {
     }
   }
 
+  // https://crbug.com/1151919 * = !CodeMirror.StringStream
   /**
    * @param {!RegExp} regex
-   * @param {!CodeMirror.StringStream} stream
+   * @param {*} stream
+   * @return {?string}
    */
   _searchHighlighter(regex, stream) {
     if (stream.column() === 0) {
@@ -991,39 +1086,51 @@ export class TokenHighlighter {
       delete this._searchMatchLength;
       return 'search-highlight search-highlight-end';
     }
-    const match = stream.match(regex, false);
+    const match = stream.string.slice(stream.pos).match(regex);
     if (match) {
-      stream.next();
-      const matchLength = match[0].length;
-      if (matchLength === 1) {
-        return 'search-highlight search-highlight-full';
+      if (match.index === 0) {
+        stream.next();
+        const matchLength = match[0].length;
+        if (matchLength === 1) {
+          return 'search-highlight search-highlight-full';
+        }
+        this._searchMatchLength = matchLength;
+        return 'search-highlight search-highlight-start';
       }
-      this._searchMatchLength = matchLength;
-      return 'search-highlight search-highlight-start';
+      stream.pos += /** @type {number} */ (match.index);
+    } else {
+      stream.skipToEnd();
     }
-    while (!stream.match(regex, false) && stream.next()) {
-    }
+    return null;
   }
 
+
+  // https://crbug.com/1151919 * = !CodeMirror.Position selectionStart
+  // https://crbug.com/1151919 * = !CodeMirror.StringStream stream
   /**
    * @param {string} token
-   * @param {!CodeMirror.Pos} selectionStart
-   * @param {!CodeMirror.StringStream} stream
+   * @param {*} selectionStart
+   * @param {*} stream
+   * @return {?string}
    */
   _tokenHighlighter(token, selectionStart, stream) {
     const tokenFirstChar = token.charAt(0);
-    if (stream.match(token) && (stream.eol() || !TextUtils.TextUtils.Utils.isWordChar(stream.peek()))) {
+    if (stream.match(token) &&
+        (stream.eol() || !TextUtils.TextUtils.Utils.isWordChar(/** @type {string} */ (stream.peek())))) {
       return stream.column() === selectionStart.ch ? 'token-highlight column-with-selection' : 'token-highlight';
     }
     let eatenChar;
     do {
       eatenChar = stream.next();
     } while (eatenChar && (TextUtils.TextUtils.Utils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
+    return null;
   }
 
+  // https://crbug.com/1151919 * = !CodeMirror.StringStream
+  // https://crbug.com/1151919 * = ?CodeMirror.Position
   /**
-   * @param {function(!CodeMirror.StringStream)} highlighter
-   * @param {?CodeMirror.Pos} selectionStart
+   * @param {function(*): ?string} highlighter
+   * @param {*} selectionStart
    */
   _setHighlighter(highlighter, selectionStart) {
     const overlayMode = {token: highlighter};
@@ -1037,4 +1144,5 @@ const MaximumNumberOfWhitespacesPerSingleSpan = 16;
 export const lineNumbersGutterType = 'CodeMirror-linenumbers';
 
 /** @typedef {{gutterType: string, lineNumber: number, event: !MouseEvent}} */
+// @ts-ignore typedef
 export let GutterClickEventData;

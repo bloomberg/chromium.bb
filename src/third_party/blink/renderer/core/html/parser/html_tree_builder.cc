@@ -233,13 +233,13 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
                                  Document& document,
                                  ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options,
-                                 bool allow_shadow_root)
+                                 bool include_shadow_roots)
     : frameset_ok_(true),
       tree_(parser->ReentryPermit(), document, parser_content_policy),
       insertion_mode_(kInitialMode),
       original_insertion_mode_(kInitialMode),
       should_skip_leading_newline_(false),
-      allow_shadow_root_(allow_shadow_root),
+      include_shadow_roots_(include_shadow_roots),
       parser_(parser),
       script_to_process_start_position_(UninitializedPositionValue1()),
       options_(options) {}
@@ -249,12 +249,12 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
                                  Element* context_element,
                                  ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options,
-                                 bool allow_shadow_root)
+                                 bool include_shadow_roots)
     : HTMLTreeBuilder(parser,
                       fragment->GetDocument(),
                       parser_content_policy,
                       options,
-                      allow_shadow_root) {
+                      include_shadow_roots) {
   DCHECK(IsMainThread());
   DCHECK(context_element);
   tree_.InitFragmentParsing(fragment, context_element);
@@ -898,33 +898,50 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
   tree_.InsertHTMLElement(token);
 }
 
+namespace {
+DeclarativeShadowRootType DeclarativeShadowRootTypeFromToken(
+    AtomicHTMLToken* token,
+    const Document& document,
+    bool include_shadow_roots) {
+  if (!RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+          document.GetExecutionContext())) {
+    return DeclarativeShadowRootType::kNone;
+  }
+  Attribute* type_attribute =
+      token->GetAttributeItem(html_names::kShadowrootAttr);
+  if (!type_attribute)
+    return DeclarativeShadowRootType::kNone;
+
+  if (!include_shadow_roots) {
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "Found declarative shadowroot attribute on a template, but declarative "
+        "Shadow DOM has not been enabled by includeShadowRoots."));
+    return DeclarativeShadowRootType::kNone;
+  }
+
+  String shadow_mode = type_attribute->Value();
+  if (EqualIgnoringASCIICase(shadow_mode, "open"))
+    return DeclarativeShadowRootType::kOpen;
+  if (EqualIgnoringASCIICase(shadow_mode, "closed"))
+    return DeclarativeShadowRootType::kClosed;
+
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kOther,
+      mojom::blink::ConsoleMessageLevel::kWarning,
+      "Invalid declarative shadowroot attribute value \"" + shadow_mode +
+          "\". Valid values include \"open\" and \"closed\"."));
+  return DeclarativeShadowRootType::kNone;
+}
+}  // namespace
+
 void HTMLTreeBuilder::ProcessTemplateStartTag(AtomicHTMLToken* token) {
   tree_.ActiveFormattingElements()->AppendMarker();
-
-  DeclarativeShadowRootType declarative_shadow_root_type(
-      DeclarativeShadowRootType::kNone);
-  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
-          tree_.CurrentNode()->GetExecutionContext()) &&
-      allow_shadow_root_) {
-    if (Attribute* type_attribute =
-            token->GetAttributeItem(html_names::kShadowrootAttr)) {
-      String shadow_mode = type_attribute->Value();
-      if (EqualIgnoringASCIICase(shadow_mode, "open")) {
-        declarative_shadow_root_type = DeclarativeShadowRootType::kOpen;
-      } else if (EqualIgnoringASCIICase(shadow_mode, "closed")) {
-        declarative_shadow_root_type = DeclarativeShadowRootType::kClosed;
-      } else {
-        tree_.OwnerDocumentForCurrentNode().AddConsoleMessage(
-            MakeGarbageCollected<ConsoleMessage>(
-                mojom::blink::ConsoleMessageSource::kOther,
-                mojom::blink::ConsoleMessageLevel::kWarning,
-                "Invalid declarative shadowroot attribute value \"" +
-                    shadow_mode +
-                    "\". Valid values include \"open\" and \"closed\"."));
-      }
-    }
-  }
-  tree_.InsertHTMLTemplateElement(token, declarative_shadow_root_type);
+  tree_.InsertHTMLTemplateElement(
+      token,
+      DeclarativeShadowRootTypeFromToken(
+          token, tree_.OwnerDocumentForCurrentNode(), include_shadow_roots_));
   frameset_ok_ = false;
   template_insertion_modes_.push_back(kTemplateContentsMode);
   SetInsertionMode(kTemplateContentsMode);

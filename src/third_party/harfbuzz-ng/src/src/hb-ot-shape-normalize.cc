@@ -373,7 +373,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
   /* Second round, reorder (inplace) */
 
-  if (!all_simple)
+  if (!all_simple && buffer->message(font, "start reorder"))
   {
     count = buffer->len;
     for (unsigned int i = 0; i < count; i++)
@@ -399,6 +399,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
       i = end;
     }
+    (void) buffer->message(font, "end reorder");
   }
   if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_CGJ)
   {
@@ -418,6 +419,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
   /* Third round, recompose */
 
   if (!all_simple &&
+      buffer->successful &&
       (mode == HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS ||
        mode == HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT))
   {

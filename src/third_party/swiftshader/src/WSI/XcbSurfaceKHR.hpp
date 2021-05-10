@@ -34,11 +34,13 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkXcbSurfaceCreateInfoKHR *pCreateInfo);
 
-	void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
+	VkResult getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
 
 	virtual void attachImage(PresentImage *image) override;
 	virtual void detachImage(PresentImage *image) override;
 	VkResult present(PresentImage *image) override;
+
+	static bool hasLibXCB();
 
 private:
 	xcb_connection_t *connection;

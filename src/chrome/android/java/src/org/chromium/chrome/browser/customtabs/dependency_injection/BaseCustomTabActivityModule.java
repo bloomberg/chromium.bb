@@ -12,12 +12,15 @@ import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.webapps.AddToHomescreenVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.webapps.WebApkVerifier;
+import org.chromium.chrome.browser.browserservices.verification.OriginVerifierFactory;
+import org.chromium.chrome.browser.browserservices.verification.OriginVerifierFactoryImpl;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
+import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 
 import dagger.Lazy;
@@ -35,16 +38,19 @@ public class BaseCustomTabActivityModule {
     private final @ActivityType int mActivityType;
     private final CustomTabNightModeStateController mNightModeController;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
+    private final TopUiThemeColorProvider mTopUiThemeColorProvider;
 
     public BaseCustomTabActivityModule(BrowserServicesIntentDataProvider intentDataProvider,
             StartupTabPreloader startupTabPreloader,
             CustomTabNightModeStateController nightModeController,
-            IntentIgnoringCriterion intentIgnoringCriterion) {
+            IntentIgnoringCriterion intentIgnoringCriterion,
+            TopUiThemeColorProvider topUiThemeColorProvider) {
         mIntentDataProvider = intentDataProvider;
         mStartupTabPreloader = startupTabPreloader;
         mActivityType = intentDataProvider.getActivityType();
         mNightModeController = nightModeController;
         mIntentIgnoringCriterion = intentIgnoringCriterion;
+        mTopUiThemeColorProvider = topUiThemeColorProvider;
     }
 
     @Provides
@@ -89,6 +95,11 @@ public class BaseCustomTabActivityModule {
     }
 
     @Provides
+    public TopUiThemeColorProvider provideTopUiThemeColorProvider() {
+        return mTopUiThemeColorProvider;
+    }
+
+    @Provides
     public CustomTabNightModeStateController provideNightModeController() {
         return mNightModeController;
     }
@@ -102,5 +113,11 @@ public class BaseCustomTabActivityModule {
     @Provides
     public ClientAppDataRegister provideClientAppDataRegister() {
         return new ClientAppDataRegister();
+    }
+
+    @Provides
+    @Reusable
+    public OriginVerifierFactory providesOriginVerifierFactory() {
+        return new OriginVerifierFactoryImpl();
     }
 }

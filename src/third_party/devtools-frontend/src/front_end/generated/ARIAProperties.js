@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,7 @@ export const config = {
     {'default': 'undefined', 'enum': ['true', 'false', 'undefined'], 'type': 'token', 'name': 'aria-selected'},
     {'type': 'integer', 'name': 'aria-setsize'},
     {'default': 'none', 'enum': ['ascending', 'descending', 'none', 'other'], 'type': 'token', 'name': 'aria-sort'},
+    {'runtimeEnabled': 'AriaTouchPassthrough', 'type': 'boolean', 'name': 'aria-touchpassthrough'},
     {'type': 'decimal', 'name': 'aria-valuemax'},
     {'type': 'decimal', 'name': 'aria-valuemin'},
     {'type': 'decimal', 'name': 'aria-valuenow'},

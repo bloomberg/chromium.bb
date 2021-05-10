@@ -26,12 +26,15 @@ namespace {
 using HlslGeneratorImplTest_Block = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Block, Emit_Block) {
-  ast::BlockStatement b;
-  b.append(std::make_unique<ast::DiscardStatement>());
+  auto* b = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &b)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, b)) << gen.error();
   EXPECT_EQ(result(), R"(  {
     discard;
   }
@@ -39,12 +42,15 @@ TEST_F(HlslGeneratorImplTest_Block, Emit_Block) {
 }
 
 TEST_F(HlslGeneratorImplTest_Block, Emit_Block_WithoutNewline) {
-  ast::BlockStatement b;
-  b.append(std::make_unique<ast::DiscardStatement>());
+  auto* b = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitBlock(out(), &b)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitBlock(out, b)) << gen.error();
   EXPECT_EQ(result(), R"({
     discard;
   })");

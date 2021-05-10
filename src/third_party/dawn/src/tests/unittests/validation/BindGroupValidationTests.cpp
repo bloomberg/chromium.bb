@@ -51,10 +51,7 @@ class BindGroupValidationTest : public ValidationTest {
             descriptor.usage = wgpu::BufferUsage::Storage;
             mSSBO = device.CreateBuffer(&descriptor);
         }
-        {
-            wgpu::SamplerDescriptor descriptor = utils::GetDefaultSamplerDescriptor();
-            mSampler = device.CreateSampler(&descriptor);
-        }
+        { mSampler = device.CreateSampler(); }
         {
             mSampledTexture =
                 CreateTexture(wgpu::TextureUsage::Sampled, wgpu::TextureFormat::RGBA8Unorm, 1);
@@ -85,6 +82,7 @@ TEST_F(BindGroupValidationTest, NextInChainNullptr) {
 
     // Check that nextInChain != nullptr is an error.
     wgpu::ChainedStruct chainedDescriptor;
+    chainedDescriptor.sType = wgpu::SType::Invalid;
     descriptor.nextInChain = &chainedDescriptor;
     ASSERT_DEVICE_ERROR(device.CreateBindGroup(&descriptor));
 }
@@ -92,7 +90,7 @@ TEST_F(BindGroupValidationTest, NextInChainNullptr) {
 // Check constraints on entryCount
 TEST_F(BindGroupValidationTest, EntryCountMismatch) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
     // Control case: check that a descriptor with one binding is ok
     utils::MakeBindGroup(device, layout, {{0, mSampler}});
@@ -104,7 +102,7 @@ TEST_F(BindGroupValidationTest, EntryCountMismatch) {
 // Check constraints on BindGroupEntry::binding
 TEST_F(BindGroupValidationTest, WrongBindings) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
     // Control case: check that a descriptor with a binding matching the layout's is ok
     utils::MakeBindGroup(device, layout, {{0, mSampler}});
@@ -116,8 +114,8 @@ TEST_F(BindGroupValidationTest, WrongBindings) {
 // Check that the same binding cannot be set twice
 TEST_F(BindGroupValidationTest, BindingSetTwice) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler},
-                 {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering},
+                 {1, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
     // Control case: check that different bindings work
     utils::MakeBindGroup(device, layout, {{0, mSampler}, {1, mSampler}});
@@ -129,7 +127,7 @@ TEST_F(BindGroupValidationTest, BindingSetTwice) {
 // Check that a sampler binding must contain exactly one sampler
 TEST_F(BindGroupValidationTest, SamplerBindingType) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
     wgpu::BindGroupEntry binding;
     binding.binding = 0;
@@ -163,7 +161,7 @@ TEST_F(BindGroupValidationTest, SamplerBindingType) {
 
     // Setting the sampler to an error sampler is an error.
     {
-        wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
+        wgpu::SamplerDescriptor samplerDesc;
         samplerDesc.minFilter = static_cast<wgpu::FilterMode>(0xFFFFFFFF);
 
         wgpu::Sampler errorSampler;
@@ -178,7 +176,7 @@ TEST_F(BindGroupValidationTest, SamplerBindingType) {
 // Check that a texture binding must contain exactly a texture view
 TEST_F(BindGroupValidationTest, TextureBindingType) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     wgpu::BindGroupEntry binding;
     binding.binding = 0;
@@ -232,7 +230,7 @@ TEST_F(BindGroupValidationTest, TextureBindingType) {
 // Check that a buffer binding must contain exactly a buffer
 TEST_F(BindGroupValidationTest, BufferBindingType) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform}});
 
     wgpu::BindGroupEntry binding;
     binding.binding = 0;
@@ -282,12 +280,12 @@ TEST_F(BindGroupValidationTest, BufferBindingType) {
 // Check that a texture must have the correct usage
 TEST_F(BindGroupValidationTest, TextureUsage) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     // Control case: setting a sampleable texture view works.
     utils::MakeBindGroup(device, layout, {{0, mSampledTextureView}});
 
-    // Make an output attachment texture and try to set it for a SampledTexture binding
+    // Make an render attachment texture and try to set it for a SampledTexture binding
     wgpu::Texture outputTexture =
         CreateTexture(wgpu::TextureUsage::RenderAttachment, wgpu::TextureFormat::RGBA8Unorm, 1);
     wgpu::TextureView outputTextureView = outputTexture.CreateView();
@@ -297,8 +295,7 @@ TEST_F(BindGroupValidationTest, TextureUsage) {
 // Check that a texture must have the correct component type
 TEST_F(BindGroupValidationTest, TextureComponentType) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                  false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     // Control case: setting a Float typed texture view works.
     utils::MakeBindGroup(device, layout, {{0, mSampledTextureView}});
@@ -314,7 +311,7 @@ TEST_F(BindGroupValidationTest, TextureComponentType) {
 // Test which depth-stencil formats are allowed to be sampled (all).
 TEST_F(BindGroupValidationTest, SamplingDepthStencilTexture) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     wgpu::TextureDescriptor desc;
     desc.size = {1, 1, 1};
@@ -345,10 +342,8 @@ TEST_F(BindGroupValidationTest, SamplingDepthStencilTexture) {
         viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
         utils::MakeBindGroup(device, layout, {{0, texture.CreateView(&viewDesc)}});
 
-        wgpu::BindGroupLayoutEntry entry = {0, wgpu::ShaderStage::Fragment,
-                                            wgpu::BindingType::SampledTexture};
-        entry.textureComponentType = wgpu::TextureComponentType::Uint;
-        layout = utils::MakeBindGroupLayout(device, {entry});
+        layout = utils::MakeBindGroupLayout(
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Uint}});
 
         viewDesc.aspect = wgpu::TextureAspect::StencilOnly;
         utils::MakeBindGroup(device, layout, {{0, texture.CreateView(&viewDesc)}});
@@ -358,9 +353,7 @@ TEST_F(BindGroupValidationTest, SamplingDepthStencilTexture) {
 // Check that a texture must have a correct format for DepthComparison
 TEST_F(BindGroupValidationTest, TextureComponentTypeDepthComparison) {
     wgpu::BindGroupLayout depthLayout = utils::MakeBindGroupLayout(
-        device,
-        {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0, false,
-          wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::DepthComparison}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Depth}});
 
     // Control case: setting a depth texture works.
     wgpu::Texture depthTexture =
@@ -375,13 +368,10 @@ TEST_F(BindGroupValidationTest, TextureComponentTypeDepthComparison) {
 // ::DepthComparison
 TEST_F(BindGroupValidationTest, TextureComponentTypeForDepthTexture) {
     wgpu::BindGroupLayout depthLayout = utils::MakeBindGroupLayout(
-        device,
-        {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0, false,
-          wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::DepthComparison}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Depth}});
 
     wgpu::BindGroupLayout floatLayout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                  false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     wgpu::Texture depthTexture =
         CreateTexture(wgpu::TextureUsage::Sampled, wgpu::TextureFormat::Depth32Float, 1);
@@ -393,8 +383,7 @@ TEST_F(BindGroupValidationTest, TextureComponentTypeForDepthTexture) {
 // Check that a texture must have the correct dimension
 TEST_F(BindGroupValidationTest, TextureDimension) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                  false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}});
 
     // Control case: setting a 2D texture view works.
     utils::MakeBindGroup(device, layout, {{0, mSampledTextureView}});
@@ -410,7 +399,7 @@ TEST_F(BindGroupValidationTest, TextureDimension) {
 // Check that a UBO must have the correct usage
 TEST_F(BindGroupValidationTest, BufferUsageUBO) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform}});
 
     // Control case: using a buffer with the uniform usage works
     utils::MakeBindGroup(device, layout, {{0, mUBO, 0, 256}});
@@ -422,7 +411,7 @@ TEST_F(BindGroupValidationTest, BufferUsageUBO) {
 // Check that a SSBO must have the correct usage
 TEST_F(BindGroupValidationTest, BufferUsageSSBO) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage}});
 
     // Control case: using a buffer with the storage usage works
     utils::MakeBindGroup(device, layout, {{0, mSSBO, 0, 256}});
@@ -434,7 +423,7 @@ TEST_F(BindGroupValidationTest, BufferUsageSSBO) {
 // Check that a readonly SSBO must have the correct usage
 TEST_F(BindGroupValidationTest, BufferUsageReadonlySSBO) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::ReadOnlyStorage}});
 
     // Control case: using a buffer with the storage usage works
     utils::MakeBindGroup(device, layout, {{0, mSSBO, 0, 256}});
@@ -443,11 +432,28 @@ TEST_F(BindGroupValidationTest, BufferUsageReadonlySSBO) {
     ASSERT_DEVICE_ERROR(utils::MakeBindGroup(device, layout, {{0, mUBO, 0, 256}}));
 }
 
+// Check that a resolve buffer with internal storge usage cannot be used as SSBO
+// TODO(hao.x.li@intel.com): Disable until internal storage usage is implemented
+TEST_F(BindGroupValidationTest, DISABLED_BufferUsageQueryResolve) {
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage}});
+
+    // Control case: using a buffer with the storage usage works
+    utils::MakeBindGroup(device, layout, {{0, mSSBO, 0, 256}});
+
+    // Using a resolve buffer with the internal storage usage fails
+    wgpu::BufferDescriptor descriptor;
+    descriptor.size = 1024;
+    descriptor.usage = wgpu::BufferUsage::QueryResolve;
+    wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
+    ASSERT_DEVICE_ERROR(utils::MakeBindGroup(device, layout, {{0, buffer, 0, 256}}));
+}
+
 // Tests constraints on the buffer offset for bind groups.
 TEST_F(BindGroupValidationTest, BufferOffsetAlignment) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                 });
 
     // Check that offset 0 is valid
@@ -465,8 +471,8 @@ TEST_F(BindGroupValidationTest, BufferOffsetAlignment) {
 // Tests constraints on the texture for MultisampledTexture bindings
 TEST_F(BindGroupValidationTest, MultisampledTexture) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::MultisampledTexture, false, 0,
-                  false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                  wgpu::TextureViewDimension::e2D, true}});
 
     wgpu::BindGroupEntry binding;
     binding.binding = 0;
@@ -507,7 +513,7 @@ TEST_F(BindGroupValidationTest, MultisampledTexture) {
 TEST_F(BindGroupValidationTest, BufferBindingOOB) {
     wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                 });
 
     wgpu::BufferDescriptor descriptor;
@@ -553,14 +559,14 @@ TEST_F(BindGroupValidationTest, MaxUniformBufferBindingSize) {
     wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
 
     wgpu::BindGroupLayout uniformLayout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform}});
 
     // Success case, this is exactly the limit
     utils::MakeBindGroup(device, uniformLayout, {{0, buffer, 0, kMaxUniformBufferBindingSize}});
 
     wgpu::BindGroupLayout doubleUniformLayout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
-                 {1, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                 {1, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform}});
 
     // Success case, individual bindings don't exceed the limit
     utils::MakeBindGroup(device, doubleUniformLayout,
@@ -573,9 +579,9 @@ TEST_F(BindGroupValidationTest, MaxUniformBufferBindingSize) {
 
     // Making sure the constraint doesn't apply to storage buffers
     wgpu::BindGroupLayout readonlyStorageLayout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::ReadOnlyStorage}});
     wgpu::BindGroupLayout storageLayout = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage}});
 
     // Success case, storage buffer can still be created.
     utils::MakeBindGroup(device, readonlyStorageLayout,
@@ -587,15 +593,15 @@ TEST_F(BindGroupValidationTest, MaxUniformBufferBindingSize) {
 TEST_F(BindGroupValidationTest, ErrorLayout) {
     wgpu::BindGroupLayout goodLayout = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                 });
 
     wgpu::BindGroupLayout errorLayout;
     ASSERT_DEVICE_ERROR(
         errorLayout = utils::MakeBindGroupLayout(
             device, {
-                        {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
-                        {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                        {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                        {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                     }));
 
     // Control case, creating with the good layout works
@@ -647,16 +653,16 @@ class BindGroupLayoutValidationTest : public ValidationTest {
 TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutStorageBindingsInVertexShader) {
     // Checks that storage buffer binding is not supported in vertex shader.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::StorageBuffer}}));
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Storage}}));
 
     utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::ReadonlyStorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::ReadOnlyStorage}});
 
     utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage}});
 
     utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageBuffer}});
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::ReadOnlyStorage}});
 }
 
 // Tests setting that bind group layout bindings numbers may be very large.
@@ -664,7 +670,7 @@ TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutEntryNumberLarge) {
     // Checks that uint32_t max is valid.
     utils::MakeBindGroupLayout(device,
                                {{std::numeric_limits<uint32_t>::max(), wgpu::ShaderStage::Vertex,
-                                 wgpu::BindingType::UniformBuffer}});
+                                 wgpu::BufferBindingType::Uniform}});
 }
 
 // This test verifies that the BindGroupLayout bindings are correctly validated, even if the
@@ -672,51 +678,43 @@ TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutEntryNumberLarge) {
 TEST_F(BindGroupLayoutValidationTest, BindGroupEntry) {
     utils::MakeBindGroupLayout(device,
                                {
-                                   {1, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
-                                   {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                                   {1, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                                   {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                                });
 }
 
-// Check that dynamic = true is only allowed with buffer bindings.
+// Check that dynamic = true is only allowed buffer bindings.
 TEST_F(BindGroupLayoutValidationTest, DynamicAndTypeCompatibility) {
     utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer, true},
+                    {0, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Uniform, true},
                 });
 
     utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::StorageBuffer, true},
+                    {0, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Storage, true},
                 });
 
     utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageBuffer, true},
+                    {0, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::ReadOnlyStorage, true},
                 });
-
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, true},
-                }));
-
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::Sampler, true},
-                }));
 }
 
 // This test verifies that visibility of bindings in BindGroupLayout can be none
 TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutVisibilityNone) {
     utils::MakeBindGroupLayout(device,
                                {
-                                   {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                                   {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                                });
 
-    wgpu::BindGroupLayoutEntry binding = {0, wgpu::ShaderStage::None,
-                                          wgpu::BindingType::UniformBuffer};
+    wgpu::BindGroupLayoutEntry entry;
+    entry.binding = 0;
+    entry.visibility = wgpu::ShaderStage::None;
+    entry.buffer.type = wgpu::BufferBindingType::Uniform;
     wgpu::BindGroupLayoutDescriptor descriptor;
     descriptor.entryCount = 1;
-    descriptor.entries = &binding;
+    descriptor.entries = &entry;
     device.CreateBindGroupLayout(&descriptor);
 }
 
@@ -725,8 +723,8 @@ TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutVisibilityNone) {
 TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutVisibilityNoneExpectsBindGroupEntry) {
     wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
-                    {1, wgpu::ShaderStage::None, wgpu::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                    {1, wgpu::ShaderStage::None, wgpu::BufferBindingType::Uniform},
                 });
     wgpu::BufferDescriptor descriptor;
     descriptor.size = 4;
@@ -763,17 +761,45 @@ TEST_F(BindGroupLayoutValidationTest, PerStageLimits) {
 
     for (TestInfo info : kTestInfos) {
         wgpu::BindGroupLayout bgl[2];
-        std::vector<wgpu::BindGroupLayoutEntry> maxBindings;
+        std::vector<utils::BindingLayoutEntryInitializationHelper> maxBindings;
 
-        auto PopulateEntry = [](wgpu::BindGroupLayoutEntry entry) {
+        auto PopulateEntry = [](utils::BindingLayoutEntryInitializationHelper entry) {
             switch (entry.type) {
+                case wgpu::BindingType::UniformBuffer:
+                    entry.buffer.type = wgpu::BufferBindingType::Uniform;
+                    break;
+                case wgpu::BindingType::StorageBuffer:
+                    entry.buffer.type = wgpu::BufferBindingType::Storage;
+                    break;
+                case wgpu::BindingType::ReadonlyStorageBuffer:
+                    entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+                    break;
+
+                case wgpu::BindingType::Sampler:
+                    entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+                    break;
+                case wgpu::BindingType::ComparisonSampler:
+                    entry.sampler.type = wgpu::SamplerBindingType::Comparison;
+                    break;
+
+                case wgpu::BindingType::SampledTexture:
+                    entry.texture.sampleType = wgpu::TextureSampleType::Float;
+                    break;
+
                 case wgpu::BindingType::ReadonlyStorageTexture:
+                    entry.storageTexture.access = wgpu::StorageTextureAccess::ReadOnly;
+                    entry.storageTexture.format = wgpu::TextureFormat::RGBA8Unorm;
+                    break;
                 case wgpu::BindingType::WriteonlyStorageTexture:
-                    entry.storageTextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+                    entry.storageTexture.access = wgpu::StorageTextureAccess::WriteOnly;
+                    entry.storageTexture.format = wgpu::TextureFormat::RGBA8Unorm;
                     break;
                 default:
-                    break;
+                    return entry;
             }
+
+            entry.type = wgpu::BindingType::Undefined;
+
             return entry;
         };
 
@@ -786,7 +812,7 @@ TEST_F(BindGroupLayoutValidationTest, PerStageLimits) {
 
         // Adding an extra binding of a different type works.
         {
-            std::vector<wgpu::BindGroupLayoutEntry> bindings = maxBindings;
+            std::vector<utils::BindingLayoutEntryInitializationHelper> bindings = maxBindings;
             bindings.push_back(
                 PopulateEntry({info.maxCount, wgpu::ShaderStage::Compute, info.otherBindingType}));
             MakeBindGroupLayout(bindings.data(), bindings.size());
@@ -794,7 +820,7 @@ TEST_F(BindGroupLayoutValidationTest, PerStageLimits) {
 
         // Adding an extra binding of the maxed type in a different stage works
         {
-            std::vector<wgpu::BindGroupLayoutEntry> bindings = maxBindings;
+            std::vector<utils::BindingLayoutEntryInitializationHelper> bindings = maxBindings;
             bindings.push_back(
                 PopulateEntry({info.maxCount, wgpu::ShaderStage::Fragment, info.bindingType}));
             MakeBindGroupLayout(bindings.data(), bindings.size());
@@ -802,7 +828,7 @@ TEST_F(BindGroupLayoutValidationTest, PerStageLimits) {
 
         // Adding an extra binding of the maxed type and stage exceeds the per stage limit.
         {
-            std::vector<wgpu::BindGroupLayoutEntry> bindings = maxBindings;
+            std::vector<utils::BindingLayoutEntryInitializationHelper> bindings = maxBindings;
             bindings.push_back(
                 PopulateEntry({info.maxCount, wgpu::ShaderStage::Compute, info.bindingType}));
             ASSERT_DEVICE_ERROR(MakeBindGroupLayout(bindings.data(), bindings.size()));
@@ -843,18 +869,18 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
                   "");
 
     for (uint32_t i = 0; i < kMaxDynamicUniformBuffersPerPipelineLayout; ++i) {
-        maxUniformDB.push_back(
-            {i, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer, true});
+        maxUniformDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            i, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Uniform, true));
     }
 
     for (uint32_t i = 0; i < kMaxDynamicStorageBuffersPerPipelineLayout; ++i) {
-        maxStorageDB.push_back(
-            {i, wgpu::ShaderStage::Compute, wgpu::BindingType::StorageBuffer, true});
+        maxStorageDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            i, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Storage, true));
     }
 
     for (uint32_t i = 0; i < kMaxDynamicStorageBuffersPerPipelineLayout; ++i) {
-        maxReadonlyStorageDB.push_back(
-            {i, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageBuffer, true});
+        maxReadonlyStorageDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            i, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::ReadOnlyStorage, true));
     }
 
     // Test creating with the maxes works
@@ -877,7 +903,7 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
         bgl[0] = MakeBindGroupLayout(maxUniformDB.data(), maxUniformDB.size());
         bgl[1] = utils::MakeBindGroupLayout(
             device, {
-                        {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, true},
+                        {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform, true},
                     });
 
         TestCreatePipelineLayout(bgl, 2, false);
@@ -888,7 +914,7 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
         bgl[0] = MakeBindGroupLayout(maxStorageDB.data(), maxStorageDB.size());
         bgl[1] = utils::MakeBindGroupLayout(
             device, {
-                        {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer, true},
+                        {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage, true},
                     });
 
         TestCreatePipelineLayout(bgl, 2, false);
@@ -900,7 +926,7 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
         bgl[1] = utils::MakeBindGroupLayout(
             device,
             {
-                {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageBuffer, true},
+                {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::ReadOnlyStorage, true},
             });
 
         TestCreatePipelineLayout(bgl, 2, false);
@@ -913,7 +939,7 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
         bgl[1] = utils::MakeBindGroupLayout(
             device,
             {
-                {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ReadonlyStorageBuffer, true},
+                {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::ReadOnlyStorage, true},
             });
 
         TestCreatePipelineLayout(bgl, 2, false);
@@ -921,25 +947,25 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
 
     // Check dynamic uniform buffers exceed maximum in bind group layout.
     {
-        maxUniformDB.push_back({kMaxDynamicUniformBuffersPerPipelineLayout,
-                                wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer,
-                                true});
+        maxUniformDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            kMaxDynamicUniformBuffersPerPipelineLayout, wgpu::ShaderStage::Fragment,
+            wgpu::BufferBindingType::Uniform, true));
         TestCreateBindGroupLayout(maxUniformDB.data(), maxUniformDB.size(), false);
     }
 
     // Check dynamic storage buffers exceed maximum in bind group layout.
     {
-        maxStorageDB.push_back({kMaxDynamicStorageBuffersPerPipelineLayout,
-                                wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer,
-                                true});
+        maxStorageDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            kMaxDynamicStorageBuffersPerPipelineLayout, wgpu::ShaderStage::Fragment,
+            wgpu::BufferBindingType::Storage, true));
         TestCreateBindGroupLayout(maxStorageDB.data(), maxStorageDB.size(), false);
     }
 
     // Check dynamic readonly storage buffers exceed maximum in bind group layout.
     {
-        maxReadonlyStorageDB.push_back({kMaxDynamicStorageBuffersPerPipelineLayout,
-                                        wgpu::ShaderStage::Fragment,
-                                        wgpu::BindingType::ReadonlyStorageBuffer, true});
+        maxReadonlyStorageDB.push_back(utils::BindingLayoutEntryInitializationHelper(
+            kMaxDynamicStorageBuffersPerPipelineLayout, wgpu::ShaderStage::Fragment,
+            wgpu::BufferBindingType::ReadOnlyStorage, true));
         TestCreateBindGroupLayout(maxReadonlyStorageDB.data(), maxReadonlyStorageDB.size(), false);
     }
 }
@@ -947,129 +973,83 @@ TEST_F(BindGroupLayoutValidationTest, DynamicBufferNumberLimit) {
 // Test that multisampled textures must be 2D sampled textures
 TEST_F(BindGroupLayoutValidationTest, MultisampledTextureViewDimension) {
     // Multisampled 2D texture works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2D},
-                });
+    utils::MakeBindGroupLayout(device,
+                               {
+                                   {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                    wgpu::TextureViewDimension::e2D, true},
+                               });
 
     // Multisampled 2D (defaulted) texture works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::Undefined},
-                });
+    utils::MakeBindGroupLayout(device,
+                               {
+                                   {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                    wgpu::TextureViewDimension::Undefined, true},
+                               });
 
     // Multisampled 2D array texture is invalid.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2DArray},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                     wgpu::TextureViewDimension::e2DArray, true},
                 }));
 
     // Multisampled cube texture is invalid.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::Cube},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                     wgpu::TextureViewDimension::Cube, true},
                 }));
 
     // Multisampled cube array texture is invalid.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::CubeArray},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                     wgpu::TextureViewDimension::CubeArray, true},
                 }));
 
     // Multisampled 3D texture is invalid.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e3D},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                     wgpu::TextureViewDimension::e3D, true},
                 }));
 
     // Multisampled 1D texture is invalid.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e1D},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                     wgpu::TextureViewDimension::e1D, true},
                 }));
 }
 
 // Test that multisampled textures cannot be DepthComparison
 TEST_F(BindGroupLayoutValidationTest, MultisampledTextureComponentType) {
     // Multisampled float component type works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float},
-                });
-
-    // Multisampled float (defaulted) component type works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2D},
-                });
+    utils::MakeBindGroupLayout(device,
+                               {
+                                   {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                    wgpu::TextureViewDimension::e2D, true},
+                               });
 
     // Multisampled uint component type works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Uint},
-                });
+    utils::MakeBindGroupLayout(device,
+                               {
+                                   {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Uint,
+                                    wgpu::TextureViewDimension::e2D, true},
+                               });
 
     // Multisampled sint component type works.
-    utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false,
-                     0, false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Sint},
-                });
+    utils::MakeBindGroupLayout(device,
+                               {
+                                   {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Sint,
+                                    wgpu::TextureViewDimension::e2D, true},
+                               });
 
     // Multisampled depth comparison component typeworks.
     ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device,
-        {
-            {0, wgpu::ShaderStage::Compute, wgpu::BindingType::MultisampledTexture, false, 0, false,
-             wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::DepthComparison},
-        }));
-}
-
-// Test that it is an error to pass multisampled=true for non-texture bindings.
-// TODO(crbug.com/dawn/527): Remove this test when multisampled=true is removed.
-TEST_F(BindGroupLayoutValidationTest, MultisampledMustBeSampledTexture) {
-    // Base: Multisampled 2D texture works.
-    EXPECT_DEPRECATION_WARNING(utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                     true, wgpu::TextureViewDimension::e2D},
-                }));
-
-    // Multisampled uniform buffer binding is invalid
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device,
-        {
-            {0, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer, false, 0, true},
-        }));
-
-    // Multisampled storage buffer binding is invalid
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device,
-        {
-            {0, wgpu::ShaderStage::Compute, wgpu::BindingType::StorageBuffer, false, 0, true},
-        }));
-
-    // Multisampled sampler binding is invalid
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::Sampler, false, 0, true},
-                }));
-
-    // Multisampled 2D storage texture is invalid.
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroupLayout(
-        device, {
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageTexture,
-                     false, 0, true, wgpu::TextureViewDimension::e2D},
+                    {0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Depth,
+                     wgpu::TextureViewDimension::e2D, true},
                 }));
 }
 
@@ -1083,13 +1063,13 @@ class SetBindGroupValidationTest : public ValidationTest {
 
         mBindGroupLayout = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer, true},
+                      wgpu::BufferBindingType::Uniform, true},
                      {1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer, false},
+                      wgpu::BufferBindingType::Uniform, false},
                      {2, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::StorageBuffer, true},
+                      wgpu::BufferBindingType::Storage, true},
                      {3, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::ReadonlyStorageBuffer, true}});
+                      wgpu::BufferBindingType::ReadOnlyStorage, true}});
     }
 
     wgpu::Buffer CreateBuffer(uint64_t bufferSize, wgpu::BufferUsage usage) {
@@ -1103,29 +1083,21 @@ class SetBindGroupValidationTest : public ValidationTest {
     wgpu::BindGroupLayout mBindGroupLayout;
 
     wgpu::RenderPipeline CreateRenderPipeline() {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[stage(vertex)]] fn main() -> void {
                 })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(std140, set = 0, binding = 0) uniform uBufferDynamic {
-                    vec2 value0;
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[block]] struct S {
+                    [[offset(0)]] value : vec2<f32>;
                 };
-                layout(std140, set = 0, binding = 1) uniform uBuffer {
-                    vec2 value1;
-                };
-                layout(std140, set = 0, binding = 2) buffer SBufferDynamic {
-                    vec2 value2;
-                } sBuffer;
-                layout(std140, set = 0, binding = 3) readonly buffer RBufferDynamic {
-                    vec2 value3;
-                } rBuffer;
-                layout(location = 0) out vec4 fragColor;
-                void main() {
+
+                [[group(0), binding(0)]] var<uniform> uBufferDynamic : S;
+                [[group(0), binding(1)]] var<uniform> uBuffer : S;
+                [[group(0), binding(2)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
+                [[group(0), binding(3)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+
+                [[stage(fragment)]] fn main() -> void {
                 })");
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
@@ -1138,26 +1110,17 @@ class SetBindGroupValidationTest : public ValidationTest {
     }
 
     wgpu::ComputePipeline CreateComputePipeline() {
-        wgpu::ShaderModule csModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
-                #version 450
-                const uint kTileSize = 4;
-                const uint kInstances = 11;
+        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[block]] struct S {
+                    [[offset(0)]] value : vec2<f32>;
+                };
 
-                layout(local_size_x = kTileSize, local_size_y = kTileSize, local_size_z = 1) in;
-                layout(std140, set = 0, binding = 0) uniform UniformBufferDynamic {
-                    float value0;
-                };
-                layout(std140, set = 0, binding = 1) uniform UniformBuffer {
-                    float value1;
-                };
-                layout(std140, set = 0, binding = 2) buffer SBufferDynamic {
-                    float value2;
-                } dst;
-                layout(std140, set = 0, binding = 3) readonly buffer RBufferDynamic {
-                    readonly float value3;
-                } rdst;
-                void main() {
+                [[group(0), binding(0)]] var<uniform> uBufferDynamic : S;
+                [[group(0), binding(1)]] var<uniform> uBuffer : S;
+                [[group(0), binding(2)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
+                [[group(0), binding(3)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+
+                [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
                 })");
 
         wgpu::PipelineLayout pipelineLayout =
@@ -1257,7 +1220,7 @@ TEST_F(SetBindGroupValidationTest, VerifyGroupIfChangedAfterAction) {
     // Set up bind group that is incompatible
     wgpu::BindGroupLayout invalidLayout = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer}});
+                  wgpu::BufferBindingType::Storage}});
     wgpu::BindGroup invalidGroup =
         utils::MakeBindGroup(device, invalidLayout, {{0, storageBuffer, 0, kBindingSize}});
 
@@ -1422,9 +1385,9 @@ TEST_F(SetBindGroupValidationTest, DynamicOffsetOrder) {
     // binding number before type.
     wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {3, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageBuffer, true},
-                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::ReadonlyStorageBuffer, true},
-                    {2, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer, true},
+                    {3, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::ReadOnlyStorage, true},
+                    {0, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::ReadOnlyStorage, true},
+                    {2, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Uniform, true},
                 });
 
     // Create buffers which are 3x, 2x, and 1x the size of the minimum buffer offset, plus 4 bytes
@@ -1523,10 +1486,9 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        mVsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            void main() {
-            })");
+        mVsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[stage(vertex)]] fn main() -> void {
+                })");
     }
 
     wgpu::Buffer CreateBuffer(uint64_t bufferSize, wgpu::BufferUsage usage) {
@@ -1539,7 +1501,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
 
     // Generates bind group layouts and a pipeline from a 2D list of binding types.
     std::tuple<std::vector<wgpu::BindGroupLayout>, wgpu::RenderPipeline> SetUpLayoutsAndPipeline(
-        std::vector<std::vector<wgpu::BindingType>> layouts) {
+        std::vector<std::vector<wgpu::BufferBindingType>> layouts) {
         std::vector<wgpu::BindGroupLayout> bindGroupLayouts(layouts.size());
 
         // Iterate through the desired bind group layouts.
@@ -1549,7 +1511,8 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
 
             // Iterate through binding types and populate a list of BindGroupLayoutEntrys.
             for (uint32_t b = 0; b < layout.size(); ++b) {
-                bindings[b] = {b, wgpu::ShaderStage::Fragment, layout[b], false};
+                bindings[b] = utils::BindingLayoutEntryInitializationHelper(
+                    b, wgpu::ShaderStage::Fragment, layout[b]);
             }
 
             // Create the bind group layout.
@@ -1569,34 +1532,32 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
             device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 
         std::stringstream ss;
-        ss << "#version 450\n";
+        ss << "[[block]] struct S { [[offset(0)]] value : vec2<f32>; };";
 
         // Build a shader which has bindings that match the pipeline layout.
         for (uint32_t l = 0; l < layouts.size(); ++l) {
             const auto& layout = layouts[l];
 
             for (uint32_t b = 0; b < layout.size(); ++b) {
-                wgpu::BindingType binding = layout[b];
-                ss << "layout(std140, set = " << l << ", binding = " << b << ") ";
+                wgpu::BufferBindingType binding = layout[b];
+                ss << "[[group(" << l << "), binding(" << b << ")]] ";
                 switch (binding) {
-                    case wgpu::BindingType::StorageBuffer:
-                        ss << "buffer SBuffer";
+                    case wgpu::BufferBindingType::Storage:
+                        ss << "var<storage_buffer> set" << l << "_binding" << b
+                           << " : [[access(read_write)]] S;";
                         break;
-                    case wgpu::BindingType::UniformBuffer:
-                        ss << "uniform UBuffer";
+                    case wgpu::BufferBindingType::Uniform:
+                        ss << "var<uniform> set" << l << "_binding" << b << " : S;";
                         break;
                     default:
                         UNREACHABLE();
                 }
-                ss << l << "_" << b << " { vec2 set" << l << "_binding" << b << "; };\n";
             }
         }
 
-        ss << "layout(location = 0) out vec4 fragColor;\n";
-        ss << "void main() { fragColor = vec4(0.0, 1.0, 0.0, 1.0); }\n";
+        ss << "[[stage(fragment)]] fn main() -> void {}";
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, ss.str().c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, ss.str().c_str());
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
         pipelineDescriptor.vertexStage.module = mVsModule;
@@ -1617,12 +1578,12 @@ TEST_F(SetBindGroupPersistenceValidationTest, BindGroupBeforePipeline) {
     wgpu::RenderPipeline pipeline;
     std::tie(bindGroupLayouts, pipeline) = SetUpLayoutsAndPipeline({{
         {{
-            wgpu::BindingType::UniformBuffer,
-            wgpu::BindingType::UniformBuffer,
+            wgpu::BufferBindingType::Uniform,
+            wgpu::BufferBindingType::Uniform,
         }},
         {{
-            wgpu::BindingType::StorageBuffer,
-            wgpu::BindingType::UniformBuffer,
+            wgpu::BufferBindingType::Storage,
+            wgpu::BufferBindingType::Uniform,
         }},
     }});
 
@@ -1658,12 +1619,12 @@ TEST_F(SetBindGroupPersistenceValidationTest, NotVulkanInheritance) {
     wgpu::RenderPipeline pipelineA;
     std::tie(bindGroupLayoutsA, pipelineA) = SetUpLayoutsAndPipeline({{
         {{
-            wgpu::BindingType::UniformBuffer,
-            wgpu::BindingType::StorageBuffer,
+            wgpu::BufferBindingType::Uniform,
+            wgpu::BufferBindingType::Storage,
         }},
         {{
-            wgpu::BindingType::UniformBuffer,
-            wgpu::BindingType::UniformBuffer,
+            wgpu::BufferBindingType::Uniform,
+            wgpu::BufferBindingType::Uniform,
         }},
     }});
 
@@ -1671,12 +1632,12 @@ TEST_F(SetBindGroupPersistenceValidationTest, NotVulkanInheritance) {
     wgpu::RenderPipeline pipelineB;
     std::tie(bindGroupLayoutsB, pipelineB) = SetUpLayoutsAndPipeline({{
         {{
-            wgpu::BindingType::StorageBuffer,
-            wgpu::BindingType::UniformBuffer,
+            wgpu::BufferBindingType::Storage,
+            wgpu::BufferBindingType::Uniform,
         }},
         {{
-            wgpu::BindingType::UniformBuffer,
-            wgpu::BindingType::UniformBuffer,
+            wgpu::BufferBindingType::Uniform,
+            wgpu::BufferBindingType::Uniform,
         }},
     }});
 
@@ -1727,14 +1688,11 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     wgpu::RenderPipeline CreateFSRenderPipeline(
         const char* fsShader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[stage(vertex)]] fn main() -> void {
                 })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fsShader);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fsShader);
 
         wgpu::PipelineLayoutDescriptor descriptor;
         descriptor.bindGroupLayoutCount = bindGroupLayout.size();
@@ -1747,26 +1705,24 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
         return device.CreateRenderPipeline(&pipelineDescriptor);
     }
 
-    wgpu::RenderPipeline CreateRenderPipeline(std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
+    wgpu::RenderPipeline CreateRenderPipeline(std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateFSRenderPipeline(R"(
-                #version 450
-                layout(std140, set = 0, binding = 0) buffer SBuffer {
-                    vec2 value2;
-                } sBuffer;
-                layout(std140, set = 1, binding = 0) readonly buffer RBuffer {
-                    vec2 value3;
-                } rBuffer;
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                })",
-                                      std::move(bindGroupLayout));
+            [[block]] struct S {
+                [[offset(0)]] value : vec2<f32>;
+            };
+
+            [[group(0), binding(0)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
+            [[group(1), binding(0)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+
+            [[stage(fragment)]] fn main() -> void {
+            })",
+                                      std::move(bindGroupLayouts));
     }
 
     wgpu::ComputePipeline CreateComputePipeline(
         const char* shader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
-        wgpu::ShaderModule csModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shader);
+        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, shader);
 
         wgpu::PipelineLayoutDescriptor descriptor;
         descriptor.bindGroupLayoutCount = bindGroupLayout.size();
@@ -1782,22 +1738,18 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     }
 
     wgpu::ComputePipeline CreateComputePipeline(
-        std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
+        std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateComputePipeline(R"(
-                #version 450
-                const uint kTileSize = 4;
-                const uint kInstances = 11;
+            [[block]] struct S {
+                [[offset(0)]] value : vec2<f32>;
+            };
 
-                layout(local_size_x = kTileSize, local_size_y = kTileSize, local_size_z = 1) in;
-                layout(std140, set = 0, binding = 0) buffer SBuffer {
-                    float value2;
-                } dst;
-                layout(std140, set = 1, binding = 0) readonly buffer RBuffer {
-                    readonly float value3;
-                } rdst;
-                void main() {
-                })",
-                                     std::move(bindGroupLayout));
+            [[group(0), binding(0)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
+            [[group(1), binding(0)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+
+            [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
+            })",
+                                     std::move(bindGroupLayouts));
     }
 };
 
@@ -1807,10 +1759,10 @@ TEST_F(BindGroupLayoutCompatibilityTest, RWStorageInBGLWithROStorageInShader) {
     // Set up the bind group layout.
     wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer}});
+                  wgpu::BufferBindingType::Storage}});
     wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer}});
+                  wgpu::BufferBindingType::Storage}});
 
     CreateRenderPipeline({bgl0, bgl1});
 
@@ -1823,10 +1775,10 @@ TEST_F(BindGroupLayoutCompatibilityTest, ROStorageInBGLWithRWStorageInShader) {
     // Set up the bind group layout.
     wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::ReadonlyStorageBuffer}});
+                  wgpu::BufferBindingType::ReadOnlyStorage}});
     wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::ReadonlyStorageBuffer}});
+                  wgpu::BufferBindingType::ReadOnlyStorage}});
 
     ASSERT_DEVICE_ERROR(CreateRenderPipeline({bgl0, bgl1}));
 
@@ -1834,73 +1786,79 @@ TEST_F(BindGroupLayoutCompatibilityTest, ROStorageInBGLWithRWStorageInShader) {
 }
 
 TEST_F(BindGroupLayoutCompatibilityTest, TextureViewDimension) {
-    constexpr char kTexture2DShader[] = R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform texture2D texture;
-        void main() {
+    constexpr char kTexture2DShaderFS[] = R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[stage(fragment)]] fn main() -> void {
+        })";
+    constexpr char kTexture2DShaderCS[] = R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[stage(compute)]] fn main() -> void {
         })";
 
     // Render: Test that 2D texture with 2D view dimension works
     CreateFSRenderPipeline(
-        kTexture2DShader,
+        kTexture2DShaderFS,
         {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2D}})});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                      wgpu::TextureViewDimension::e2D}})});
 
     // Render: Test that 2D texture with 2D array view dimension is invalid
     ASSERT_DEVICE_ERROR(CreateFSRenderPipeline(
-        kTexture2DShader,
+        kTexture2DShaderFS,
         {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2DArray}})}));
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                      wgpu::TextureViewDimension::e2DArray}})}));
 
     // Compute: Test that 2D texture with 2D view dimension works
     CreateComputePipeline(
-        kTexture2DShader,
-        {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2D}})});
+        kTexture2DShaderCS,
+        {utils::MakeBindGroupLayout(device,
+                                    {{0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                      wgpu::TextureViewDimension::e2D}})});
 
     // Compute: Test that 2D texture with 2D array view dimension is invalid
     ASSERT_DEVICE_ERROR(CreateComputePipeline(
-        kTexture2DShader,
-        {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2DArray}})}));
+        kTexture2DShaderCS,
+        {utils::MakeBindGroupLayout(device,
+                                    {{0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                      wgpu::TextureViewDimension::e2DArray}})}));
 
-    constexpr char kTexture2DArrayShader[] = R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform texture2DArray texture;
-        void main() {
+    constexpr char kTexture2DArrayShaderFS[] = R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d_array<f32>;
+        [[stage(fragment)]] fn main() -> void {
+        })";
+    constexpr char kTexture2DArrayShaderCS[] = R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d_array<f32>;
+        [[stage(compute)]] fn main() -> void {
         })";
 
     // Render: Test that 2D texture array with 2D array view dimension works
     CreateFSRenderPipeline(
-        kTexture2DArrayShader,
+        kTexture2DArrayShaderFS,
         {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2DArray}})});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                      wgpu::TextureViewDimension::e2DArray}})});
 
     // Render: Test that 2D texture array with 2D view dimension is invalid
     ASSERT_DEVICE_ERROR(CreateFSRenderPipeline(
-        kTexture2DArrayShader,
+        kTexture2DArrayShaderFS,
         {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2D}})}));
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                      wgpu::TextureViewDimension::e2D}})}));
 
     // Compute: Test that 2D texture array with 2D array view dimension works
     CreateComputePipeline(
-        kTexture2DArrayShader,
-        {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2DArray}})});
+        kTexture2DArrayShaderCS,
+        {utils::MakeBindGroupLayout(device,
+                                    {{0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                      wgpu::TextureViewDimension::e2DArray}})});
 
     // Compute: Test that 2D texture array with 2D view dimension is invalid
     ASSERT_DEVICE_ERROR(CreateComputePipeline(
-        kTexture2DArrayShader,
-        {utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2D}})}));
+        kTexture2DArrayShaderCS,
+        {utils::MakeBindGroupLayout(device,
+                                    {{0, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Float,
+                                      wgpu::TextureViewDimension::e2D}})}));
 }
 
 class BindingsValidationTest : public BindGroupLayoutCompatibilityTest {
@@ -1952,15 +1910,15 @@ TEST_F(BindingsValidationTest, PipelineLayoutWithMoreBindingsThanPipeline) {
     // Set up bind group layouts.
     wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer},
+                  wgpu::BufferBindingType::Storage},
                  {1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::UniformBuffer}});
+                  wgpu::BufferBindingType::Uniform}});
     wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::ReadonlyStorageBuffer}});
+                  wgpu::BufferBindingType::ReadOnlyStorage}});
     wgpu::BindGroupLayout bgl2 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer}});
+                  wgpu::BufferBindingType::Storage}});
 
     // pipelineLayout has unused binding set (bgl2) and unused entry in a binding set (bgl0).
     CreateRenderPipeline({bgl0, bgl1, bgl2});
@@ -1974,7 +1932,7 @@ TEST_F(BindingsValidationTest, PipelineLayoutWithLessBindingsThanPipeline) {
     // Set up bind group layout.
     wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::StorageBuffer}});
+                  wgpu::BufferBindingType::Storage}});
 
     // missing a binding set (bgl1) in pipeline layout
     {
@@ -1996,7 +1954,7 @@ TEST_F(BindingsValidationTest, PipelineLayoutWithLessBindingsThanPipeline) {
     {
         wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
             device, {{1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::UniformBuffer}});
+                      wgpu::BufferBindingType::Uniform}});
 
         ASSERT_DEVICE_ERROR(CreateRenderPipeline({bgl0, bgl1}));
 
@@ -2015,7 +1973,7 @@ TEST_F(BindingsValidationTest, BindGroupsWithMoreBindingsThanPipelineLayout) {
     for (uint32_t i = 0; i < kBindingNum + 1; ++i) {
         bgl[i] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::StorageBuffer}});
+                      wgpu::BufferBindingType::Storage}});
         buffer[i] = CreateBuffer(kBufferSize, wgpu::BufferUsage::Storage);
         bg[i] = utils::MakeBindGroup(device, bgl[i], {{0, buffer[i]}});
     }
@@ -2034,9 +1992,9 @@ TEST_F(BindingsValidationTest, BindGroupsWithMoreBindingsThanPipelineLayout) {
     // set in pipeline layout.
     bgl[1] = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::ReadonlyStorageBuffer},
+                  wgpu::BufferBindingType::ReadOnlyStorage},
                  {1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::UniformBuffer}});
+                  wgpu::BufferBindingType::Uniform}});
     buffer[1] = CreateBuffer(kBufferSize, wgpu::BufferUsage::Storage | wgpu::BufferUsage::Uniform);
     bg[1] = utils::MakeBindGroup(device, bgl[1], {{0, buffer[1]}, {1, buffer[1]}});
 
@@ -2056,7 +2014,7 @@ TEST_F(BindingsValidationTest, BindGroupsWithLessBindingsThanPipelineLayout) {
     for (uint32_t i = 0; i < kBindingNum; ++i) {
         bgl[i] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BindingType::StorageBuffer}});
+                      wgpu::BufferBindingType::Storage}});
         buffer[i] = CreateBuffer(kBufferSize, wgpu::BufferUsage::Storage);
         bg[i] = utils::MakeBindGroup(device, bgl[i], {{0, buffer[i]}});
     }
@@ -2081,7 +2039,7 @@ TEST_F(BindingsValidationTest, BindGroupsWithLessBindingsThanPipelineLayout) {
     // binding
     bgl[2] = utils::MakeBindGroupLayout(
         device, {{1, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                  wgpu::BindingType::UniformBuffer}});
+                  wgpu::BufferBindingType::Uniform}});
     buffer[2] = CreateBuffer(kBufferSize, wgpu::BufferUsage::Uniform);
     bg[2] = utils::MakeBindGroup(device, bgl[2], {{1, buffer[2]}});
 
@@ -2094,14 +2052,11 @@ class ComparisonSamplerBindingTest : public ValidationTest {
   protected:
     wgpu::RenderPipeline CreateFragmentPipeline(wgpu::BindGroupLayout* bindGroupLayout,
                                                 const char* fragmentSource) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[stage(vertex)]] fn main() -> void {
+            })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fragmentSource);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fragmentSource);
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
         pipelineDescriptor.vertexStage.module = vsModule;
@@ -2119,53 +2074,45 @@ TEST_F(ComparisonSamplerBindingTest, DISABLED_ShaderAndBGLMatches) {
     // Test that sampler binding works with normal sampler in the shader.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform sampler samp;
-
-        void main() {
-        })");
+            [[group(0), binding(0)]] var mySampler: sampler;
+            [[stage(fragment)]] fn main() -> void {
+            })");
     }
 
     // Test that comparison sampler binding works with shadow sampler in the shader.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ComparisonSampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Comparison}});
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform samplerShadow samp;
-
-        void main() {
-        })");
+            [[group(0), binding(0)]] var mySampler: sampler_comparison;
+            [[stage(fragment)]] fn main() -> void {
+            })");
     }
 
     // Test that sampler binding does not work with comparison sampler in the shader.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform samplerShadow samp;
-
-        void main() {
-        })"));
+            [[group(0), binding(0)]] var mySampler: sampler_comparison;
+            [[stage(fragment)]] fn main() -> void {
+            })"));
     }
 
     // Test that comparison sampler binding does not work with normal sampler in the shader.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ComparisonSampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Comparison}});
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform sampler samp;
-
-        void main() {
-        })"));
+            [[group(0), binding(0)]] var mySampler: sampler;
+            [[stage(fragment)]] fn main() -> void {
+            })"));
     }
 }
 
@@ -2173,16 +2120,15 @@ TEST_F(ComparisonSamplerBindingTest, SamplerAndBindGroupMatches) {
     // Test that sampler binding works with normal sampler.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
-        wgpu::SamplerDescriptor desc = {};
-        utils::MakeBindGroup(device, bindGroupLayout, {{0, device.CreateSampler(&desc)}});
+        utils::MakeBindGroup(device, bindGroupLayout, {{0, device.CreateSampler()}});
     }
 
     // Test that comparison sampler binding works with sampler w/ compare function.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ComparisonSampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Comparison}});
 
         wgpu::SamplerDescriptor desc = {};
         desc.compare = wgpu::CompareFunction::Never;
@@ -2192,7 +2138,7 @@ TEST_F(ComparisonSamplerBindingTest, SamplerAndBindGroupMatches) {
     // Test that sampler binding does not work with sampler w/ compare function.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
 
         wgpu::SamplerDescriptor desc;
         desc.compare = wgpu::CompareFunction::Never;
@@ -2203,7 +2149,7 @@ TEST_F(ComparisonSamplerBindingTest, SamplerAndBindGroupMatches) {
     // Test that comparison sampler binding does not work with normal sampler.
     {
         wgpu::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::ComparisonSampler}});
+            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Comparison}});
 
         wgpu::SamplerDescriptor desc = {};
         ASSERT_DEVICE_ERROR(

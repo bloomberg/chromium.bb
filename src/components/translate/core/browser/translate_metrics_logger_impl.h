@@ -6,20 +6,40 @@
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_METRICS_LOGGER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace translate {
 
+// Translation frequency UMA histograms.
+extern const char kTranslateTranslationSourceLanguage[];
+extern const char kTranslateTranslationTargetLanguage[];
+extern const char kTranslateTranslationStatus[];
+extern const char kTranslateTranslationType[];
+
+// Page-load frequency UMA histograms.
 extern const char kTranslatePageLoadAutofillAssistantDeferredTriggerDecision[];
+extern const char kTranslatePageLoadFinalSourceLanguage[];
 extern const char kTranslatePageLoadFinalState[];
+extern const char kTranslatePageLoadFinalTargetLanguage[];
+extern const char kTranslatePageLoadInitialSourceLanguage[];
 extern const char kTranslatePageLoadInitialState[];
+extern const char kTranslatePageLoadInitialTargetLanguage[];
+extern const char
+    kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages[];
+extern const char kTranslatePageLoadNumTargetLanguageChanges[];
 extern const char kTranslatePageLoadNumTranslations[];
 extern const char kTranslatePageLoadNumReversions[];
 extern const char kTranslatePageLoadRankerDecision[];
 extern const char kTranslatePageLoadRankerVersion[];
 extern const char kTranslatePageLoadTriggerDecision[];
+extern const char kTranslatePageLoadHrefTriggerDecision[];
 
 class NullTranslateMetricsLogger : public TranslateMetricsLogger {
  public:
@@ -29,19 +49,38 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void OnPageLoadStart(bool is_foreground) override {}
   void OnForegroundChange(bool is_foreground) override {}
   void RecordMetrics(bool is_final) override {}
+  void SetUkmSourceId(ukm::SourceId ukm_source_id) override {}
   void LogRankerMetrics(RankerDecision ranker_decision,
                         uint32_t ranker_version) override {}
   void LogTriggerDecision(TriggerDecision trigger_decision) override {}
   void LogAutofillAssistantDeferredTriggerDecision() override {}
   void LogInitialState() override {}
-  void LogTranslationStarted() override {}
-  void LogTranslationFinished(bool was_sucessful) override {}
+  void LogTranslationStarted(TranslationType translation_type) override {}
+  void LogTranslationFinished(bool was_successful,
+                              TranslateErrors::Type error_type) override {}
   void LogReversion() override {}
   void LogUIChange(bool is_ui_shown) override {}
   void LogOmniboxIconChange(bool is_omnibox_icon_shown) override {}
+  void LogInitialSourceLanguage(const std::string& source_language_code,
+                                bool is_in_users_content_languages) override {}
+  void LogSourceLanguage(const std::string& source_language_code) override {}
+  void LogTargetLanguage(const std::string& target_language_code) override {}
+  void LogHTMLDocumentLanguage(const std::string& html_doc_language) override {}
+  void LogHTMLContentLanguage(
+      const std::string& html_content_language) override {}
+  void LogDetectedLanguage(const std::string& detected_language) override {}
+  void LogDetectionReliabilityScore(
+      const float& model_detection_reliability_score) override {}
+  void LogUIInteraction(UIInteraction ui_interaction) override {}
+  TranslationType GetNextManualTranslationType() override;
+  void SetHasHrefTranslateTarget(bool has_href_translate_target) override {}
 };
 
 class TranslateManager;
+
+namespace testing {
+class TranslateMetricsLoggerImplTest;
+}  // namespace testing
 
 // TranslateMetricsLogger tracks and logs various UKM and UMA metrics for Chrome
 // Translate over the course of a page load.
@@ -55,32 +94,78 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   TranslateMetricsLoggerImpl& operator=(const TranslateMetricsLoggerImpl&) =
       delete;
 
+  // Overrides the clock used to track the time of certain actions. Should only
+  // be used for testing purposes.
+  void SetInternalClockForTesting(base::TickClock* clock);
+
   // TranslateMetricsLogger
   void OnPageLoadStart(bool is_foreground) override;
   void OnForegroundChange(bool is_foreground) override;
   void RecordMetrics(bool is_final) override;
+  void SetUkmSourceId(ukm::SourceId ukm_source_id) override;
   void LogRankerMetrics(RankerDecision ranker_decision,
                         uint32_t ranker_version) override;
   void LogTriggerDecision(TriggerDecision trigger_decision) override;
   void LogAutofillAssistantDeferredTriggerDecision() override;
   void LogInitialState() override;
-  void LogTranslationStarted() override;
-  void LogTranslationFinished(bool was_sucessful) override;
+  void LogTranslationStarted(TranslationType translation_type) override;
+  void LogTranslationFinished(bool was_successful,
+                              TranslateErrors::Type error_type) override;
   void LogReversion() override;
   void LogUIChange(bool is_ui_shown) override;
   void LogOmniboxIconChange(bool is_omnibox_icon_shown) override;
+  void LogInitialSourceLanguage(const std::string& source_language_code,
+                                bool is_in_users_content_languages) override;
+  void LogSourceLanguage(const std::string& source_language_code) override;
+  void LogTargetLanguage(const std::string& target_language_code) override;
+  void LogHTMLDocumentLanguage(const std::string& html_doc_language) override;
+  void LogHTMLContentLanguage(
+      const std::string& html_content_language) override;
+  void LogDetectedLanguage(const std::string& detected_language) override;
+  void LogDetectionReliabilityScore(
+      const float& model_detection_reliability_score) override;
+  void LogUIInteraction(UIInteraction ui_interaction) override;
+  TranslationType GetNextManualTranslationType() override;
+  void SetHasHrefTranslateTarget(bool has_href_translate_target) override;
 
   // TODO(curranmax): Add appropriate functions for the Translate code to log
   // relevant events. https://crbug.com/1114868.
  private:
-  // Logs all page load frequency UMA metrics based on the stored state.
-  void RecordPageLoadUmaMetrics();
+  friend class testing::TranslateMetricsLoggerImplTest;
 
-  // Helpter function to get the correct |TranslateState| value based on the
+  // Logs all page load frequency UMA metrics based on the stored state.
+  void RecordPageLoadUmaMetrics(bool initial_state_is_translated,
+                                bool current_stat_is_translated);
+
+  // Logs all relevant information about a translation.
+  void RecordTranslationHistograms(TranslationType translation_type,
+                                   const std::string& source_language,
+                                   const std::string& target_language);
+
+  // Logs the final status of the translation.
+  void RecordTranslationStatus(TranslationStatus translation_status);
+
+  // Helper function to convert the given |TranslationType| to the appropriate
+  // |TranslationStatus| on a successful translation.
+  TranslationStatus ConvertTranslationTypeToRevertedTranslationStatus(
+      TranslationType translation_type);
+  TranslationStatus ConvertTranslationTypeToFailedTranslationStatus(
+      TranslationType translation_type,
+      bool was_translate_error);
+  TranslationStatus ConvertTranslationTypeToSuccessfulTranslationStatus(
+      bool is_translation_in_progress,
+      TranslationType translation_type);
+
+  // Helper function to get the correct |TranslateState| value based on the
   // different dimensions we care about.
   TranslateState ConvertToTranslateState(bool is_translated,
                                          bool is_ui_shown,
                                          bool is_omnibox_shown) const;
+
+  // Updates |total_time_translated_| and |total_time_not_translated_|. This
+  // function is only called immediately before the translated or foreground
+  // state is changed, and the input must be the state before the change.
+  void UpdateTimeTranslated(bool was_translated, bool was_foreground);
 
   base::WeakPtr<TranslateManager> translate_manager_;
 
@@ -88,6 +173,9 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   // is backgrounded and reopened, we use |sequence_no_| to differentiate the
   // recorded UKM protos.
   unsigned int sequence_no_ = 0;
+
+  // The UKM source ID for the current page load.
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   // Tracks if the associated page is in the foreground (|true|) or the
   // background (|false|)
@@ -122,6 +210,58 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   // reverted.
   int num_translations_ = 0;
   int num_reversions_ = 0;
+
+  // Used to track the time it takes to translate. Specifically this will be the
+  // time between when LogTranslationStarted is called and
+  // LogTranslationFinished is called. It will therefore include all aspects of
+  // translation include: loading the translate script, loading dependent
+  // libraries, and running the translate script.
+  base::TimeTicks time_of_last_translation_start_;
+  base::TimeDelta max_time_to_translate_;
+
+  // Tracks the amount of time the page is in the foreground and either
+  // translated or not translated.
+  const base::TickClock* clock_;
+  base::TimeTicks time_of_last_state_change_;
+  base::TimeDelta total_time_translated_;
+  base::TimeDelta total_time_not_translated_;
+
+  // Tracks the source and target language over the course of the page load.
+  std::string initial_source_language_;
+  std::string current_source_language_;
+  bool is_initial_source_language_in_users_content_languages_ = false;
+
+  std::string initial_target_language_;
+  std::string current_target_language_;
+  int num_target_language_changes_ = 0;
+
+  // Tracks this record's HTML language attributes.
+  std::string html_doc_language_;
+  std::string html_content_language_;
+
+  // Tracks this record's language model's prediction and reliability.
+  std::string model_detected_language_;
+  float model_detection_reliability_score_ = 0.0;
+
+  // Tracks any translation errors that occur over the course of the page load.
+  TranslateErrors::Type first_translate_error_type_ = TranslateErrors::NONE;
+  int num_translate_errors_ = 0;
+
+  // Tracks the user's high level interaction with the Translate UI over the
+  // course of a page load.
+  UIInteraction first_ui_interaction_ = UIInteraction::kUninitialized;
+  int num_ui_interactions_ = 0;
+
+  // Tracks the status of the most recent translation.
+  bool is_translation_status_pending_ = false;
+  TranslationType current_translation_type_ = TranslationType::kUninitialized;
+
+  // Tracks if any translations has started on this page load.
+  bool has_any_translation_started_ = false;
+
+  // Tracks if this page load has an href translate target language on a link
+  // from Google Search.
+  bool has_href_translate_target_ = false;
 
   base::WeakPtrFactory<TranslateMetricsLoggerImpl> weak_method_factory_{this};
 };

@@ -17,8 +17,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.BaseOnboardingCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.trigger_scripts.AssistantTriggerScriptBridge;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -76,6 +77,13 @@ public class AutofillAssistantClient {
         return AutofillAssistantClientJni.get().fromWebContents(webContents);
     }
 
+    /**
+     * Notifies that an onboarding UI is shown or hidden.
+     */
+    public static void onOnboardingUiChange(WebContents webContents, boolean shown) {
+        AutofillAssistantClientJni.get().onOnboardingUiChange(webContents, shown);
+    }
+
     private AutofillAssistantClient(long nativeClientAndroid) {
         mNativeClientAndroid = nativeClientAndroid;
     }
@@ -121,7 +129,7 @@ public class AutofillAssistantClient {
                 onboardingCoordinator,
                 /* onboardingShown= */
                 onboardingCoordinator != null && onboardingCoordinator.getOnboardingShown(),
-                AutofillAssistantServiceInjector.getServiceToInject());
+                AutofillAssistantServiceInjector.getServiceToInject(mNativeClientAndroid));
     }
 
     public void startTriggerScript(AssistantTriggerScriptBridge delegate, String initialUrl,
@@ -396,6 +404,7 @@ public class AutofillAssistantClient {
     @NativeMethods
     interface Natives {
         AutofillAssistantClient fromWebContents(WebContents webContents);
+        void onOnboardingUiChange(WebContents webContents, boolean shown);
         boolean start(long nativeClientAndroid, AutofillAssistantClient caller, String initialUrl,
                 String experimentIds, String callerAccount, String[] parameterNames,
                 String[] parameterValues, boolean isChromeCustomTab,

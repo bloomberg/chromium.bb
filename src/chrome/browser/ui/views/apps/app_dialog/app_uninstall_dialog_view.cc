@@ -10,6 +10,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -36,7 +38,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
@@ -44,7 +46,7 @@ namespace {
 
 AppUninstallDialogView* g_app_uninstall_dialog_view = nullptr;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool IsArcShortcutApp(Profile* profile, const std::string& app_id) {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_prefs);
@@ -61,7 +63,7 @@ base::string16 GetWindowTitleForApp(Profile* profile,
                                     const std::string& app_id,
                                     const std::string& app_name) {
   using apps::mojom::AppType;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, all app types exist, but Arc shortcut apps get the regular
   // extension uninstall title.
   if (app_type == AppType::kArc && IsArcShortcutApp(profile, app_id))
@@ -102,6 +104,7 @@ AppUninstallDialogView::AppUninstallDialogView(
     : apps::UninstallDialog::UiBase(uninstall_dialog),
       AppDialogView(image),
       profile_(profile) {
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetTitle(GetWindowTitleForApp(profile, app_type, app_id, app_name));
 
   SetCloseCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
@@ -127,10 +130,6 @@ AppUninstallDialogView* AppUninstallDialogView::GetActiveViewForTesting() {
   return g_app_uninstall_dialog_view;
 }
 
-ui::ModalType AppUninstallDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
 void AppUninstallDialogView::InitializeView(Profile* profile,
                                             apps::mojom::AppType app_type,
                                             const std::string& app_id,
@@ -150,26 +149,28 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kLacros:
     case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
       NOTREACHED();
       break;
     case apps::mojom::AppType::kArc:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewForArcApp(profile, app_id);
 #else
       NOTREACHED();
 #endif
       break;
     case apps::mojom::AppType::kPluginVm:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewWithMessage(l10n_util::GetStringFUTF16(
           IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name)));
 #else
       NOTREACHED();
 #endif
       break;
+    case apps::mojom::AppType::kBorealis:
+      // TODO(b/178741230): Borealis' uninstaller needs custom text.  For now
+      // just use Crostini's.
     case apps::mojom::AppType::kCrostini:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewWithMessage(l10n_util::GetStringUTF16(
           IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY));
 #else
@@ -275,7 +276,9 @@ void AppUninstallDialogView::InitializeViewForExtension(
           app_id);
   DCHECK(extension);
 
-  if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
+  extensions::ExtensionManagement* extension_management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile);
+  if (extension_management->UpdatesFromWebstore(*extension)) {
     auto report_abuse_checkbox = std::make_unique<views::Checkbox>(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
     report_abuse_checkbox->SetMultiLine(true);
@@ -297,7 +300,7 @@ void AppUninstallDialogView::InitializeViewForWebApp(
   InitializeCheckbox(app_start_url);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void AppUninstallDialogView::InitializeViewForArcApp(
     Profile* profile,
     const std::string& app_id) {

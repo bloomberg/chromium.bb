@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "cc/input/layer_selection_bound.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
@@ -99,6 +101,10 @@ class PLATFORM_EXPORT PaintController {
 
   void EnsureChunk();
 
+  void SetShouldComputeContentsOpaque(bool should_compute) {
+    paint_chunker_.SetShouldComputeContentsOpaque(should_compute);
+  }
+
   void RecordHitTestData(const DisplayItemClient&,
                          const IntRect&,
                          TouchAction,
@@ -109,6 +115,10 @@ class PLATFORM_EXPORT PaintController {
       DisplayItem::Type,
       const TransformPaintPropertyNode* scroll_translation,
       const IntRect&);
+
+  void RecordSelection(base::Optional<PaintedSelectionBound> start,
+                       base::Optional<PaintedSelectionBound> end);
+
   void SetPossibleBackgroundColor(const DisplayItemClient&,
                                   Color,
                                   uint64_t area);

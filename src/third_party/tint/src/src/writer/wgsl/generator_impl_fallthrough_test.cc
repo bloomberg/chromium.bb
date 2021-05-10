@@ -15,22 +15,24 @@
 #include "gtest/gtest.h"
 #include "src/ast/fallthrough_statement.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Fallthrough) {
-  ast::FallthroughStatement f;
+  auto* f = create<ast::FallthroughStatement>();
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&f)) << g.error();
-  EXPECT_EQ(g.result(), "  fallthrough;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), "  fallthrough;\n");
 }
 
 }  // namespace

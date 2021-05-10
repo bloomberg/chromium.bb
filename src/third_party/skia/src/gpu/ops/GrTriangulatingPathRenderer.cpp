@@ -9,6 +9,7 @@
 
 #include "include/private/SkIDChangeListener.h"
 #include "src/core/SkGeometry.h"
+#include "src/gpu/GrAATriangulator.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
@@ -17,11 +18,11 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSimpleMesh.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrThreadSafeCache.h"
 #include "src/gpu/GrTriangulator.h"
 #include "src/gpu/geometry/GrPathUtils.h"
@@ -116,8 +117,10 @@ public:
         }
         if (fCanMapVB) {
             fVertices = fVertexBuffer->map();
-        } else {
+        }
+        if (!fVertices) {
             fVertices = sk_malloc_throw(eagerCount * stride);
+            fCanMapVB = false;
         }
         fLockStride = stride;
         return fVertices;
@@ -356,8 +359,7 @@ private:
         SkPath path;
         shape.asPath(&path);
 
-        return GrTriangulator::PathToTriangles(path, tol, clipBounds, allocator,
-                                               GrTriangulator::Mode::kNormal, isLinear);
+        return GrTriangulator::PathToTriangles(path, tol, clipBounds, allocator, isLinear);
     }
 
     void createNonAAMesh(Target* target) {
@@ -439,11 +441,8 @@ private:
         SkScalar tol = GrPathUtils::kDefaultTolerance;
         sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex;
-        bool isLinear;
         GrEagerDynamicVertexAllocator allocator(target, &vertexBuffer, &firstVertex);
-        int vertexCount = GrTriangulator::PathToTriangles(path, tol, clipBounds, &allocator,
-                                                          GrTriangulator::Mode::kEdgeAntialias,
-                                                          &isLinear);
+        int vertexCount = GrAATriangulator::PathToAATriangles(path, tol, clipBounds, &allocator);
         if (vertexCount == 0) {
             return;
         }
@@ -454,10 +453,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
         {
             using namespace GrDefaultGeoProcFactory;
@@ -489,9 +489,11 @@ private:
         }
 
 #ifdef SK_DEBUG
-        auto mode = (fAntiAlias) ? GrTriangulator::Mode::kEdgeAntialias
-                                 : GrTriangulator::Mode::kNormal;
-        SkASSERT(GrTriangulator::GetVertexStride(mode) == gp->vertexStride());
+        auto vertexStride = sizeof(SkPoint);
+        if (fAntiAlias) {
+            vertexStride += sizeof(float);
+        }
+        SkASSERT(vertexStride == gp->vertexStride());
 #endif
 
         GrPrimitiveType primitiveType = TRIANGULATOR_WIREFRAME ? GrPrimitiveType::kLines
@@ -500,18 +502,19 @@ private:
         fProgramInfo =  fHelper.createProgramInfoWithStencil(caps, arena, writeView,
                                                              std::move(appliedClip), dstProxyView,
                                                              gp, primitiveType,
-                                                             renderPassXferBarriers);
+                                                             renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrePrepareDraws(GrRecordingContext* rContext,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
                            const GrXferProcessor::DstProxyView& dstProxyView,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         INHERITED::onPrePrepareDraws(rContext, writeView, clip, dstProxyView,
-                                     renderPassXferBarriers);
+                                     renderPassXferBarriers, colorLoadOp);
 
         if (fAntiAlias) {
             // TODO: pull the triangulation work forward to the recording thread for the AA case

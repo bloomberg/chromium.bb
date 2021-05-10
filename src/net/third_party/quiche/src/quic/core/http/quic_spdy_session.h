@@ -9,26 +9,27 @@
 #include <memory>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/http/http_frames.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_headers_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_send_control_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_sender.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_send_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
+#include "quic/core/http/http_frames.h"
+#include "quic/core/http/quic_header_list.h"
+#include "quic/core/http/quic_headers_stream.h"
+#include "quic/core/http/quic_receive_control_stream.h"
+#include "quic/core/http/quic_send_control_stream.h"
+#include "quic/core/http/quic_spdy_stream.h"
+#include "quic/core/qpack/qpack_decoder.h"
+#include "quic/core/qpack/qpack_decoder_stream_sender.h"
+#include "quic/core/qpack/qpack_encoder.h"
+#include "quic/core/qpack/qpack_encoder_stream_sender.h"
+#include "quic/core/qpack/qpack_receive_stream.h"
+#include "quic/core/qpack/qpack_send_stream.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_export.h"
+#include "spdy/core/http2_frame_decoder_adapter.h"
 
 namespace quic {
 
@@ -83,6 +84,9 @@ class QUIC_EXPORT_PRIVATE Http3DebugVisitor {
   // Called when peer's QPACK decoder stream type is received.
   virtual void OnPeerQpackDecoderStreamCreated(QuicStreamId /*stream_id*/) = 0;
 
+  // Incoming HTTP/3 frames in ALPS TLS extension.
+  virtual void OnAcceptChFrameReceivedViaAlps(const AcceptChFrame& /*frame*/) {}
+
   // Incoming HTTP/3 frames on the control stream.
   virtual void OnCancelPushFrameReceived(const CancelPushFrame& /*frame*/) {}
   virtual void OnSettingsFrameReceived(const SettingsFrame& /*frame*/) = 0;
@@ -90,6 +94,7 @@ class QUIC_EXPORT_PRIVATE Http3DebugVisitor {
   virtual void OnMaxPushIdFrameReceived(const MaxPushIdFrame& /*frame*/) {}
   virtual void OnPriorityUpdateFrameReceived(
       const PriorityUpdateFrame& /*frame*/) {}
+  virtual void OnAcceptChFrameReceived(const AcceptChFrame& /*frame*/) {}
 
   // Incoming HTTP/3 frames on request or push streams.
   virtual void OnDataFrameReceived(QuicStreamId /*stream_id*/,
@@ -196,6 +201,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // stream.  Returns false and closes connection if |push_id| is invalid.
   bool OnPriorityUpdateForPushStream(QuicStreamId push_id, int urgency);
 
+  // Called when an HTTP/3 ACCEPT_CH frame has been received.
+  // This method will only be called for client sessions.
+  virtual void OnAcceptChFrame(const AcceptChFrame& /*frame*/) {}
+
   // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov);
 
@@ -230,8 +239,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Write GOAWAY frame with maximum stream ID on the control stream.  Called to
   // initite graceful connection shutdown.  Do not use smaller stream ID, in
   // case client does not implement retry on GOAWAY.  Do not send GOAWAY if one
-  // has already been sent.
-  void SendHttp3GoAway();
+  // has already been sent. Send connection close with |error_code| and |reason|
+  // before encryption gets established.
+  void SendHttp3GoAway(QuicErrorCode error_code, const std::string& reason);
 
   // Same as SendHttp3GoAway().  TODO(bnc): remove when
   // gfe2_reloadable_flag_quic_goaway_with_max_stream_id flag is deprecated.
@@ -399,6 +409,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // Decode SETTINGS from |cached_state| and apply it to the session.
   bool ResumeApplicationState(ApplicationState* cached_state) override;
+
+  absl::optional<std::string> OnAlpsData(const uint8_t* alps_data,
+                                         size_t alps_length) override;
+
+  // Called when ACCEPT_CH frame is parsed out of data received in TLS ALPS
+  // extension.
+  virtual void OnAcceptChFrameReceivedViaAlps(const AcceptChFrame& /*frame*/);
 
  protected:
   // Override CreateIncomingStream(), CreateOutgoingBidirectionalStream() and
@@ -575,7 +592,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // Priority values received in PRIORITY_UPDATE frames for streams that are not
   // open yet.
-  QuicHashMap<QuicStreamId, int> buffered_stream_priorities_;
+  absl::flat_hash_map<QuicStreamId, int> buffered_stream_priorities_;
 
   // An integer used for live check. The indicator is assigned a value in
   // constructor. As long as it is not the assigned value, that would indicate
@@ -602,9 +619,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // has been sent, in which case |max_push_id_| has the value sent in the most
   // recent MAX_PUSH_ID frame.  Once true, never goes back to false.
   bool http3_max_push_id_sent_;
-
-  // Latched value of reloadable flag quic_reject_spdy_settings.
-  const bool reject_spdy_settings_;
 
   // Latched value of reloadable flag quic_goaway_with_max_stream_id.
   const bool goaway_with_max_stream_id_;

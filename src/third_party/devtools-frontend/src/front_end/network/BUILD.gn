@@ -30,6 +30,7 @@ devtools_module("network") {
     "RequestPreviewView.js",
     "RequestResponseView.js",
     "RequestTimingView.js",
+    "RequestTrustTokensView.ts",
     "ResourceWebSocketFrameView.js",
     "SignedExchangeInfoView.js",
   ]
@@ -37,13 +38,14 @@ devtools_module("network") {
   deps = [
     "../bindings:bundle",
     "../browser_sdk:bundle",
-    "../client_variations:bundle",
     "../common:bundle",
     "../components:bundle",
     "../cookie_table:bundle",
     "../data_grid:bundle",
+    "../elements:bundle",
     "../har_importer:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../mobile_throttling:bundle",
     "../object_ui:bundle",
     "../perf_ui:bundle",
@@ -54,13 +56,15 @@ devtools_module("network") {
     "../source_frame:bundle",
     "../text_utils:bundle",
     "../theme_support:bundle",
+    "../third_party/chromium/client-variations:bundle",
     "../ui:bundle",
+    "../ui/components:bundle",
     "../workspace:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "network.js"
+  entrypoint = "network.ts"
 
   deps = [ ":network" ]
 }
@@ -69,4 +73,14 @@ devtools_entrypoint("legacy") {
   entrypoint = "network-legacy.js"
 
   deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "network-meta.ts"
+
+  deps = [
+    ":bundle",
+    "../root:bundle",
+    "../ui:bundle",
+  ]
 }

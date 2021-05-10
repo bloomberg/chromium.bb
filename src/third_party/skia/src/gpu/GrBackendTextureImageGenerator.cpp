@@ -13,11 +13,11 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrResourceProviderPriv.h"
 #include "src/gpu/GrSemaphore.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/SkGr.h"
@@ -219,8 +219,13 @@ GrSurfaceProxyView GrBackendTextureImageGenerator::onGenerateTexture(
                                       ? SkBudgeted::kNo
                                       : SkBudgeted::kYes;
 
-        auto copy = GrSurfaceProxy::Copy(context, proxy.get(), fSurfaceOrigin, mipMapped, subset,
-                                         SkBackingFit::kExact, budgeted);
+        auto copy = GrSurfaceProxy::Copy(context,
+                                         std::move(proxy),
+                                         fSurfaceOrigin,
+                                         mipMapped,
+                                         subset,
+                                         SkBackingFit::kExact,
+                                         budgeted);
         return {std::move(copy), fSurfaceOrigin, readSwizzle};
     }
 }

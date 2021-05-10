@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -29,6 +30,17 @@ void SetManagedDefaultSearchPreferences(const TemplateURLData& managed_data,
 
 // Removes all the managed preferences for the default search provider.
 void RemoveManagedDefaultSearchPreferences(TestingProfile* profile);
+
+// Creates a TemplateURL with some test values. The caller owns the returned
+// TemplateURL*.
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    const base::string16& keyword,
+    const std::string& url,
+    const std::string& guid = std::string(),
+    base::Time last_modified = base::Time::FromTimeT(100),
+    bool safe_for_autoreplace = false,
+    bool created_by_policy = false,
+    int prepopulate_id = 999999);
 
 class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
  public:

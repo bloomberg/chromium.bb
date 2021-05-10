@@ -110,13 +110,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2021-04-11">
+<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2021-08-15">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>The time elapsed for booting up the ARC instance.</summary>
 </histogram>
 
-<histogram name="Arc.AppCount" units="units" expires_after="2021-04-11">
+<histogram name="Arc.AppCount" units="units" expires_after="2021-08-15">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>
@@ -127,7 +127,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>robsc@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -138,7 +138,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppListRecommendedImp.AllImpression" units="count"
-    expires_after="2021-03-28">
+    expires_after="2021-08-09">
   <owner>robsc@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -157,7 +157,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.AppShortcuts.BuildMenuTime" units="ms" expires_after="M92">
+<histogram name="Arc.AppShortcuts.BuildMenuTime" units="ms"
+    expires_after="2021-08-09">
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -179,7 +180,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppUninstallReason" enum="UninstallCounterReasonEnum"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
   <owner>robsc@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -277,6 +278,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Code installation result for ARC boot continue.</summary>
 </histogram>
 
+<histogram name="Arc.ClipboardDragDrop" enum="ArcClipboardDragDropEvent"
+    expires_after="M95">
+  <owner>tetsui@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>The number of clipboard and drag-and-drop events.</summary>
+</histogram>
+
 <histogram name="Arc.CodeIntegrityCheckingTotalTime" units="ms"
     expires_after="M81">
   <owner>elijahtaylor@google.com</owner>
@@ -323,7 +331,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.CompanionLibraryApisCounter"
-    enum="CompanionLibraryApisList" expires_after="M88">
+    enum="CompanionLibraryApisList" expires_after="M93">
   <owner>sstan@google.com</owner>
   <owner>bartfab@chromium.org</owner>
   <owner>giovax@google.com</owner>
@@ -344,7 +352,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.ContainerLifetimeEvent" enum="ArcContainerLifetimeEvent"
-    expires_after="2021-03-21">
+    expires_after="2021-07-27">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -355,7 +363,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.ContainerRestartAfterCrashCount" units="units"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -365,7 +373,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Arc.CpuRestrictionDisabled" units="ms"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
   <owner>wvk@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -431,7 +439,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.ArcTotal" units="ms"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -445,7 +453,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Background" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -457,7 +465,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Foreground" units="ms"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -468,7 +476,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Total" units="ms"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -504,7 +512,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.FirstAppLaunchDelay.TimeDelta" units="ms"
-    expires_after="2021-03-11">
+    expires_after="2021-07-18">
   <owner>yusukes@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -650,9 +658,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.NativeBridge" enum="ArcNativeBridgeType"
-    expires_after="2021-09-06">
+    expires_after="never">
+<!-- expires-never: used internally for filtering -->
+
   <owner>elijahtaylor@google.com</owner>
   <owner>levarum@google.com</owner>
+  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     Native bridge used for ARC. Can be unknown and none. This is collected along
     with Arc.State during every metrics recording interval, so it is in every
@@ -673,28 +684,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction"
-    expires_after="2021-02-28">
+    expires_after="2021-08-15">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>Arc OptIn action taken by user.</summary>
 </histogram>
 
 <histogram name="Arc.OptInCancel" enum="ArcOptInCancel"
-    expires_after="2021-03-21">
+    expires_after="2021-08-09">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
 <histogram name="Arc.OptInResult" enum="ArcOptInResult"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>elijahtaylor@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>Arc OptIn flow result.</summary>
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode" enum="ArcOptInSilentAuthCode"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>elijahtaylor@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the ARC OptIn flow.
@@ -711,7 +722,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode.SecondaryAccount"
-    enum="ArcOptInSilentAuthCode" expires_after="2021-04-04">
+    enum="ArcOptInSilentAuthCode" expires_after="2021-08-09">
   <owner>khmel@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the minting of an
@@ -721,7 +732,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.State"
-    enum="ArcPlayAutoInstallRequestState" expires_after="2021-03-11">
+    enum="ArcPlayAutoInstallRequestState" expires_after="2022-02-01">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>jhorwich@google.com</owner>
@@ -730,7 +741,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.TimeDelta" units="ms"
-    expires_after="2021-03-11">
+    expires_after="2022-02-01">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>jhorwich@google.com</owner>
@@ -752,7 +763,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.DefaultResultClickLatency" units="ms"
-    expires_after="2020-12-31">
+    expires_after="2021-12-31">
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -762,7 +773,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-06-27">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -771,7 +782,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.ResultClickLatency" units="ms"
-    expires_after="2020-12-31">
+    expires_after="2021-12-31">
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -780,7 +791,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.ReturnedAppsTotal" units="apps"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>hejq@chromium.org</owner>
   <summary>
     The total number of returned apps of a Play Store app discovery query.
@@ -816,7 +827,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents"
-    expires_after="2021-01-01">
+    expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>jschettler@chromium.org</owner>
   <summary>
@@ -826,7 +837,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RenderAndGeneratePDFTime" units="ms"
-    expires_after="2021-01-01">
+    expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>jschettler@chromium.org</owner>
   <summary>
@@ -837,7 +848,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RenderAndGeneratePDFTimeAvgPerPage"
-    units="ms" expires_after="2021-01-01">
+    units="ms" expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>jschettler@chromium.org</owner>
   <summary>
@@ -848,7 +859,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RendererError" enum="PrintPreviewFailureType"
-    expires_after="2021-03-15">
+    expires_after="2021-08-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>jschettler@chromium.org</owner>
   <summary>
@@ -858,14 +869,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RenderToPDFTime" units="ms"
-    expires_after="2021-01-01">
+    expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>jschettler@chromium.org</owner>
   <summary>Time taken for ARC to render a PDF for print preview.</summary>
 </histogram>
 
+<histogram base="true" name="Arc.Provisioning.CheckInError"
+    enum="ArcProvisioningCheckInError" expires_after="2021-12-01">
+<!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
+
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    The error that occurred during GMS check-in operation. Recorded when ARC++
+    provisioning flow fails.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Arc.Provisioning.CloudFlowError"
-    enum="ArcProvisioningCloudFlowError" expires_after="2021-07-01">
+    enum="ArcProvisioningCloudFlowError" expires_after="2021-12-01">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>mhasank@google.com</owner>
@@ -878,6 +901,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="Arc.Provisioning.Result"
     enum="ArcProvisioningResult" expires_after="2021-07-01">
+  <obsolete>
+    Removed in Dec 2020. Now reported as Arc.Provisioning.Status.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>alexchau@google.com</owner>
@@ -888,8 +914,29 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram base="true" name="Arc.Provisioning.SignInError"
+    enum="ArcProvisioningSignInError" expires_after="2021-12-01">
+<!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
+
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    The error that occured during GMS sign-in operation. Recorded when ARC++
+    provisioning flow fails.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Arc.Provisioning.Status"
+    enum="ArcProvisioningStatus" expires_after="2021-12-01">
+<!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
+
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>The status (success or error) of ARC++ provisioning.</summary>
+</histogram>
+
 <histogram name="Arc.Provisioning.TimeDelta.Failure" units="ms"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>alexchau@google.com</owner>
@@ -900,7 +947,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.TimeDelta.Success" units="ms"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>alexchau@google.com</owner>
@@ -911,18 +958,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.Reauthorization.Result" enum="ArcProvisioningResult"
-    expires_after="2021-02-07">
+<histogram name="Arc.Reauthorization.Result" enum="ArcProvisioningStatus"
+    expires_after="2022-01-12">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
-  <owner>khmel@google.com</owner>
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@gmail.com</owner>
   <summary>
     The result (success or the type of failure) of ARC reauthorization.
   </summary>
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.CommitDeviation" units="microseconds"
-    expires_after="2021-03-11">
+    expires_after="2021-08-09">
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
@@ -931,12 +979,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.FPS" units="fps"
-    expires_after="2021-03-11">
+    expires_after="2021-07-18">
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
   <owner>camurcu@google.com</owner>
   <summary>Render frames per second.</summary>
+</histogram>
+
+<histogram name="Arc.Runtime.Performance.Generic.FirstFrameRendered" units="ms"
+    expires_after="2021-11-28">
+  <owner>camurcu@google.com</owner>
+  <owner>khmel@google.com</owner>
+  <summary>
+    Time (in ms) between an app launch request and the detection of the first
+    rendered frame. Recorded when the frame is detected by the first commit to
+    the Exo surface.
+  </summary>
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.Generic.FrameTime" units="ms"
@@ -960,7 +1019,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.RenderQuality" units="%"
-    expires_after="2021-03-11">
+    expires_after="2021-07-18">
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
@@ -969,7 +1028,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>niwa@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -978,8 +1037,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.Secondary.Signin.Result" enum="ArcProvisioningResult"
-    expires_after="2021-03-15">
+<histogram name="Arc.Secondary.Signin.Result" enum="ArcProvisioningStatus"
+    expires_after="2021-07-18">
   <owner>sinhak@google.com</owner>
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
@@ -990,12 +1049,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Session.MojoDisconnection" enum="ArcMojoConnectionType"
-    expires_after="2020-12-05">
+    expires_after="2021-11-11">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>shaochuan@google.com</owner>
   <owner>khmel@google.com</owner>
-  <owner>mmatena@google.com</owner>
+  <owner>ttylenda@google.com</owner>
   <summary>
     This is updated when the mojo connections to processes in detailing in
     ArcMojoConnectionType are closed for reasons other than the ARC container
@@ -1004,7 +1063,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Session.StopReason" enum="ArcStopReason"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>shaochuan@google.com</owner>
@@ -1037,9 +1096,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.State" enum="BooleanEnabled" expires_after="2021-05-09">
+<histogram name="Arc.State" enum="BooleanEnabled" expires_after="never">
+<!-- expires-never: used internally for filtering -->
+
   <owner>elijahtaylor@google.com</owner>
   <owner>ttylenda@google.com</owner>
+  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     Whether ARC is enabled or not. Before M56 this was collected only on login
     and when ARC was enabled or disabled. From M56 forward this is collected
@@ -1054,7 +1116,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.StateByUserType" enum="ArcEnableState"
-    expires_after="2021-03-15">
+    expires_after="2021-08-22">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>elijahtaylor@google.com</owner>
@@ -1138,7 +1200,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.UserInteraction" enum="ArcUserInteraction"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>jhorwich@chromium.org</owner>
   <owner>elijahtaylor@chromium.org</owner>
   <owner>shihuis@google.com</owner>

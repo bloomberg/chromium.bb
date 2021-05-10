@@ -14,12 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/media_router_extension_access_logger_impl.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace base {
 class CommandLine;
@@ -58,7 +60,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) override;
   content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) override;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string GetUserIdHashFromContext(
       content::BrowserContext* context) override;
 #endif
@@ -81,14 +83,15 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       const std::string& content_security_policy,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) override;
-  bool AllowCrossRendererResourceLoad(const GURL& url,
-                                      blink::mojom::ResourceType resource_type,
-                                      ui::PageTransition page_transition,
-                                      int child_id,
-                                      bool is_incognito,
-                                      const Extension* extension,
-                                      const ExtensionSet& extensions,
-                                      const ProcessMap& process_map) override;
+  bool AllowCrossRendererResourceLoad(
+      const network::ResourceRequest& request,
+      network::mojom::RequestDestination destination,
+      ui::PageTransition page_transition,
+      int child_id,
+      bool is_incognito,
+      const Extension* extension,
+      const ExtensionSet& extensions,
+      const ProcessMap& process_map) override;
   PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) override;
   void GetEarlyExtensionPrefsObservers(
@@ -158,6 +161,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                           content::BrowserContext* context) override;
   bool IsScreenshotRestricted(
       content::WebContents* web_contents) const override;
+  bool IsValidTabId(content::BrowserContext* context,
+                    int tab_id) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 

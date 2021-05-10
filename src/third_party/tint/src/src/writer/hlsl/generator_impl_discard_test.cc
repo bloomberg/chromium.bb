@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "src/ast/discard_statement.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -24,11 +24,13 @@ namespace {
 using HlslGeneratorImplTest_Discard = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Discard, Emit_Discard) {
-  ast::DiscardStatement stmt;
+  auto* stmt = create<ast::DiscardStatement>();
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &stmt)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, stmt)) << gen.error();
   EXPECT_EQ(result(), "  discard;\n");
 }
 

@@ -116,6 +116,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView {
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WebContentsTiedToBubble);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WindowTitle);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ButtonLabels);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTest,
+                           DoubleClickOpensApp);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
                            BubblePopOut);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
@@ -128,6 +130,12 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView {
                            DismissBubble);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
                            ShowBubbleTwice);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
+                           PushStateLoadingTest);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
+                           PushStateURLChangeTest);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewBrowserTestChromeOS,
+                           ReloadAfterInstall);
 
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleViewForTesting(
       views::View* anchor_view,

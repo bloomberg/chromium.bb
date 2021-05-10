@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/connectors_manager.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
@@ -21,6 +21,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/file_analysis_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "chrome/browser/safe_browsing/download_protection/download_request_maker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/safe_browsing/deep_scanning_failure_modal_dialog.h"
@@ -32,6 +33,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -115,7 +117,7 @@ EventResult GetEventResult(DownloadCheckResult download_result,
   switch (download_result) {
     case DownloadCheckResult::UNKNOWN:
     case DownloadCheckResult::SAFE:
-    case DownloadCheckResult::WHITELISTED_BY_POLICY:
+    case DownloadCheckResult::ALLOWLISTED_BY_POLICY:
     case DownloadCheckResult::DEEP_SCANNED_SAFE:
       return EventResult::ALLOWED;
 
@@ -167,18 +169,21 @@ std::string GetTriggerName(DeepScanningRequest::DeepScanTrigger trigger) {
 /* static */
 base::Optional<enterprise_connectors::AnalysisSettings>
 DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
-  auto* connectors_manager =
-      enterprise_connectors::ConnectorsManager::GetInstance();
+  auto* service =
+      enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+          content::DownloadItemUtils::GetBrowserContext(item));
 
   // If the download Connector is not enabled, don't scan.
-  if (!connectors_manager->IsConnectorEnabled(
-          enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED))
+  if (!service ||
+      !service->IsConnectorEnabled(
+          enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED)) {
     return base::nullopt;
+  }
 
   // Check that item->GetURL() matches the appropriate URL patterns by getting
   // settings. No settings means no matches were found and that the downloaded
   // file shouldn't be uploaded.
-  return connectors_manager->GetAnalysisSettings(
+  return service->GetAnalysisSettings(
       item->GetURL(),
       enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
 }
@@ -220,25 +225,16 @@ void DeepScanningRequest::Start() {
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));
 
-  PrepareRequest(request.get(), profile);
-
-  upload_start_time_ = base::TimeTicks::Now();
-  BinaryUploadService* binary_upload_service =
-      download_service_->GetBinaryUploadService(profile);
-  if (binary_upload_service) {
-    binary_upload_service->MaybeUploadForDeepScanning(std::move(request));
-  } else {
-    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
-                   enterprise_connectors::ContentAnalysisResponse());
-  }
-
   base::UmaHistogramEnumeration("SBClientDownload.DeepScanTrigger", trigger_);
+
+  PrepareRequest(std::move(request), profile);
 }
 
-void DeepScanningRequest::PrepareRequest(BinaryUploadService::Request* request,
-                                         Profile* profile) {
+void DeepScanningRequest::PrepareRequest(
+    std::unique_ptr<FileAnalysisRequest> request,
+    Profile* profile) {
   if (trigger_ == DeepScanTrigger::TRIGGER_POLICY)
-    request->set_device_token(policy::GetDMToken(profile).value());
+    request->set_device_token(analysis_settings_.dm_token);
 
   request->set_analysis_connector(enterprise_connectors::FILE_DOWNLOADED);
   request->set_email(GetProfileEmail(profile));
@@ -251,6 +247,38 @@ void DeepScanningRequest::PrepareRequest(BinaryUploadService::Request* request,
 
   for (const std::string& tag : analysis_settings_.tags)
     request->add_tag(tag);
+
+  if (base::FeatureList::IsEnabled(kSafeBrowsingEnterpriseCsd) &&
+      trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
+    download_request_maker_ = DownloadRequestMaker::CreateFromDownloadItem(
+        new BinaryFeatureExtractor(), item_);
+    download_request_maker_->Start(
+        base::BindOnce(&DeepScanningRequest::OnDownloadRequestReady,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request)));
+  } else {
+    OnDownloadRequestReady(std::move(request), nullptr);
+  }
+}
+
+void DeepScanningRequest::OnDownloadRequestReady(
+    std::unique_ptr<FileAnalysisRequest> deep_scan_request,
+    std::unique_ptr<ClientDownloadRequest> download_request) {
+  if (download_request) {
+    deep_scan_request->set_csd(*download_request);
+  }
+
+  upload_start_time_ = base::TimeTicks::Now();
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+  BinaryUploadService* binary_upload_service =
+      download_service_->GetBinaryUploadService(profile);
+  if (binary_upload_service) {
+    binary_upload_service->MaybeUploadForDeepScanning(
+        std::move(deep_scan_request));
+  } else {
+    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
+                   enterprise_connectors::ContentAnalysisResponse());
+  }
 }
 
 void DeepScanningRequest::OnScanComplete(

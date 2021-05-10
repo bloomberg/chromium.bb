@@ -4,17 +4,93 @@
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
+export const UIStrings = {
+  /**
+  *@description Text to indicate there are no breakpoints
+  */
+  noBreakpoints: 'No breakpoints',
+  /**
+  *@description Text exposed to screen readers on checked items.
+  */
+  checked: 'checked',
+  /**
+  *@description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
+  */
+  unchecked: 'unchecked',
+  /**
+  *@description Accessible text for a breakpoint collection with a combination of checked states.
+  */
+  mixed: 'mixed',
+  /**
+  *@description Accessibility label for hit breakpoints in the Sources panel.
+  *@example {checked} PH1
+  */
+  sBreakpointHit: '{PH1} breakpoint hit',
+  /**
+  *@description Text in Debugger Plugin of the Sources panel
+  */
+  removeAllBreakpointsInLine: 'Remove all breakpoints in line',
+  /**
+  *@description Text to remove a breakpoint
+  */
+  removeBreakpoint: 'Remove breakpoint',
+  /**
+  *@description Context menu item that reveals the source code location of a breakpoint in the Sources panel.
+  */
+  revealLocation: 'Reveal location',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  deactivateBreakpoints: 'Deactivate breakpoints',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  activateBreakpoints: 'Activate breakpoints',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  enableAllBreakpoints: 'Enable all breakpoints',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  enableBreakpointsInFile: 'Enable breakpoints in file',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  disableAllBreakpoints: 'Disable all breakpoints',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  disableBreakpointsInFile: 'Disable breakpoints in file',
+  /**
+  *@description Text to remove all breakpoints
+  */
+  removeAllBreakpoints: 'Remove all breakpoints',
+  /**
+  *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+  */
+  removeOtherBreakpoints: 'Remove other breakpoints',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/JavaScriptBreakpointsSidebarPane.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/** @type {!JavaScriptBreakpointsSidebarPane} */
+let javaScriptBreakpointsSidebarPaneInstance;
+
 /**
  * @implements {UI.ContextFlavorListener.ContextFlavorListener}
  * @implements {UI.ListControl.ListDelegate<!BreakpointItem>}
  */
 export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.ThrottledWidget {
+  /**
+   * @private
+   */
   constructor() {
     super(true);
     this.registerRequiredCSS('sources/javaScriptBreakpointsSidebarPane.css', {enableLegacyPatching: true});
@@ -32,10 +108,17 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     this.contentElement.appendChild(this._list.element);
 
     this._emptyElement = this.contentElement.createChild('div', 'gray-info-message');
-    this._emptyElement.textContent = ls`No breakpoints`;
+    this._emptyElement.textContent = i18nString(UIStrings.noBreakpoints);
     this._emptyElement.tabIndex = -1;
 
     this.update();
+  }
+
+  static instance() {
+    if (!javaScriptBreakpointsSidebarPaneInstance) {
+      javaScriptBreakpointsSidebarPaneInstance = new JavaScriptBreakpointsSidebarPane();
+    }
+    return javaScriptBreakpointsSidebarPaneInstance;
   }
 
   /**
@@ -76,8 +159,8 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
    * @return {!Array<!Array<!BreakpointLocation>>}
    */
   _groupBreakpointLocationsById(breakpointLocations) {
-    /** @type {!Platform.Multimap<string, !BreakpointLocation>} */
-    const map = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<string, !BreakpointLocation>} */
+    const map = new Platform.MapUtilities.Multimap();
     for (const breakpointLocation of breakpointLocations) {
       const uiLocation = breakpointLocation.uiLocation;
       map.set(uiLocation.id(), breakpointLocation);
@@ -95,11 +178,11 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
 
   /**
    * @param {!Array<!BreakpointLocation>} breakpointLocations
-   * @return {!Platform.Multimap<string, string>}
+   * @return {!Platform.MapUtilities.Multimap<string, string>}
    */
   _getLocationIdsByLineId(breakpointLocations) {
-    /** @type {!Platform.Multimap<string, string>} */
-    const result = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<string, string>} */
+    const result = new Platform.MapUtilities.Multimap();
 
     for (const breakpointLocation of breakpointLocations) {
       const uiLocation = breakpointLocation.uiLocation;
@@ -179,9 +262,12 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
       const locations = locationsGroupedById[idx];
       const breakpointLocation = locations[0];
       const uiLocation = breakpointLocation.uiLocation;
-      const isSelected =
-          !!selectedUILocation && locations.some(location => location.uiLocation.id() === selectedUILocation.id());
-      const showColumn = locationIdsByLineId.get(uiLocation.lineId()).size > 1;
+      const isSelected = selectedUILocation !== null &&
+          locations.some(location => location.uiLocation.id() === selectedUILocation.id());
+      // Wasm disassembly bytecode offsets are stored as column numbers,
+      // so this showColumn setting doesn't make sense for WebAssembly.
+      const showColumn = uiLocation.uiSourceCode.mimeType() !== 'application/wasm' &&
+          locationIdsByLineId.get(uiLocation.lineId()).size > 1;
       const text = /** @type {!TextUtils.Text.Text} */ (content[idx]);
       breakpoints.push(new BreakpointItem(locations, text, isSelected, showColumn));
     }
@@ -213,11 +299,14 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     if (this._breakpoints.length === breakpointItems.length) {
       for (let i = 0; i < this._breakpoints.length; i++) {
         if (!this._breakpoints.at(i).isSimilar(breakpointItems[i])) {
-          this._breakpoints.replace(i, breakpointItems[i]);
+          this._breakpoints.replace(i, breakpointItems[i], /** keepSelectedIndex= */ true);
         }
       }
     } else {
       this._breakpoints.replaceAll(breakpointItems);
+    }
+    if (!this._list.selectedItem() && this._breakpoints.at(0)) {
+      this._list.selectItem(this._breakpoints.at(0));
     }
   }
 
@@ -238,19 +327,19 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     const uiLocation = item.locations[0].uiLocation;
     const hasEnabled = item.locations.some(location => location.breakpoint.enabled());
     const hasDisabled = item.locations.some(location => !location.breakpoint.enabled());
-    checkboxLabel.textElement.textContent =
-        uiLocation.linkText() + (item.showColumn ? ':' + (uiLocation.columnNumber + 1) : '');
+    checkboxLabel.textElement.textContent = uiLocation.linkText() +
+        (item.showColumn && typeof uiLocation.columnNumber === 'number' ? ':' + (uiLocation.columnNumber + 1) : '');
     checkboxLabel.checkboxElement.checked = hasEnabled;
     checkboxLabel.checkboxElement.indeterminate = hasEnabled && hasDisabled;
     checkboxLabel.checkboxElement.tabIndex = -1;
     checkboxLabel.addEventListener('click', this._breakpointCheckboxClicked.bind(this), false);
     element.appendChild(checkboxLabel);
-    let checkedDescription = hasEnabled ? ls`checked` : ls`unchecked`;
+    let checkedDescription = hasEnabled ? i18nString(UIStrings.checked) : i18nString(UIStrings.unchecked);
     if (hasEnabled && hasDisabled) {
-      checkedDescription = ls`mixed`;
+      checkedDescription = i18nString(UIStrings.mixed);
     }
     if (item.isSelected) {
-      UI.ARIAUtils.setDescription(element, ls`${checkedDescription} breakpoint hit`);
+      UI.ARIAUtils.setDescription(element, i18nString(UIStrings.sBreakpointHit, {PH1: checkedDescription}));
       element.classList.add('breakpoint-hit');
       this.setDefaultFocusedElement(element);
     } else {
@@ -270,8 +359,8 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     if (item.text && lineNumber < item.text.lineCount()) {
       const lineText = item.text.lineAt(lineNumber);
       const maxSnippetLength = 200;
-      snippetElement.textContent =
-          lineText.substring(item.showColumn ? uiLocation.columnNumber : 0).trimEndWithMaxLength(maxSnippetLength);
+      snippetElement.textContent = Platform.StringUtilities.trimEndWithMaxLength(
+          lineText.substring(item.showColumn ? (uiLocation.columnNumber || 0) : 0), maxSnippetLength);
     }
 
     elementToBreakpointMap.set(element, item.locations);
@@ -379,7 +468,7 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
         this._breakpointLocationsForElement(element).map(breakpointLocation => breakpointLocation.uiLocation);
     let uiLocation = null;
     for (const uiLocationCandidate of uiLocations) {
-      if (!uiLocation || uiLocationCandidate.columnNumber < uiLocation.columnNumber) {
+      if (!uiLocation || uiLocationCandidate.compareTo(uiLocation) < 0) {
         uiLocation = uiLocationCandidate;
       }
     }
@@ -395,43 +484,44 @@ export class JavaScriptBreakpointsSidebarPane extends UI.ThrottledWidget.Throttl
     const breakpoints = this._breakpointLocations(event).map(breakpointLocation => breakpointLocation.breakpoint);
 
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    const removeEntryTitle = breakpoints.length > 1 ? Common.UIString.UIString('Remove all breakpoints in line') :
-                                                      Common.UIString.UIString('Remove breakpoint');
+    const removeEntryTitle = breakpoints.length > 1 ? i18nString(UIStrings.removeAllBreakpointsInLine) :
+                                                      i18nString(UIStrings.removeBreakpoint);
     contextMenu.defaultSection().appendItem(
         removeEntryTitle, () => breakpoints.map(breakpoint => breakpoint.remove(false /* keepInStorage */)));
     if (event.target instanceof Element) {
-      contextMenu.defaultSection().appendItem(ls`Reveal location`, this._revealLocation.bind(this, event.target));
+      contextMenu.defaultSection().appendItem(
+          i18nString(UIStrings.revealLocation), this._revealLocation.bind(this, event.target));
     }
 
     const breakpointActive = Common.Settings.Settings.instance().moduleSetting('breakpointsActive').get();
-    const breakpointActiveTitle = breakpointActive ? Common.UIString.UIString('Deactivate breakpoints') :
-                                                     Common.UIString.UIString('Activate breakpoints');
+    const breakpointActiveTitle =
+        breakpointActive ? i18nString(UIStrings.deactivateBreakpoints) : i18nString(UIStrings.activateBreakpoints);
     contextMenu.defaultSection().appendItem(
         breakpointActiveTitle,
         () => Common.Settings.Settings.instance().moduleSetting('breakpointsActive').set(!breakpointActive));
 
     if (breakpoints.some(breakpoint => !breakpoint.enabled())) {
-      const enableTitle = Common.UIString.UIString('Enable all breakpoints');
+      const enableTitle = i18nString(UIStrings.enableAllBreakpoints);
       contextMenu.defaultSection().appendItem(enableTitle, this._toggleAllBreakpoints.bind(this, true));
       if (event.target instanceof Element) {
-        const enableInFileTitle = Common.UIString.UIString('Enable breakpoints in file');
+        const enableInFileTitle = i18nString(UIStrings.enableBreakpointsInFile);
         contextMenu.defaultSection().appendItem(
             enableInFileTitle, this._toggleAllBreakpointsInFile.bind(this, event.target, true));
       }
     }
     if (breakpoints.some(breakpoint => breakpoint.enabled())) {
-      const disableTitle = Common.UIString.UIString('Disable all breakpoints');
+      const disableTitle = i18nString(UIStrings.disableAllBreakpoints);
       contextMenu.defaultSection().appendItem(disableTitle, this._toggleAllBreakpoints.bind(this, false));
       if (event.target instanceof Element) {
-        const disableInFileTitle = Common.UIString.UIString('Disable breakpoints in file');
+        const disableInFileTitle = i18nString(UIStrings.disableBreakpointsInFile);
         contextMenu.defaultSection().appendItem(
             disableInFileTitle, this._toggleAllBreakpointsInFile.bind(this, event.target, false));
       }
     }
 
-    const removeAllTitle = Common.UIString.UIString('Remove all breakpoints');
+    const removeAllTitle = i18nString(UIStrings.removeAllBreakpoints);
     contextMenu.defaultSection().appendItem(removeAllTitle, this._removeAllBreakpoints.bind(this));
-    const removeOtherTitle = Common.UIString.UIString('Remove other breakpoints');
+    const removeOtherTitle = i18nString(UIStrings.removeOtherBreakpoints);
     contextMenu.defaultSection().appendItem(
         removeOtherTitle, this._removeOtherBreakpoints.bind(this, new Set(breakpoints)));
     contextMenu.show();

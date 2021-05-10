@@ -82,6 +82,7 @@ cast_test_group("cast_tests") {
     "//chromecast/media:cast_media_unittests",
     "//chromecast/metrics:cast_metrics_unittest",
     "//chromecast/net:cast_net_unittests",
+    "//chromecast/ui/display_settings:cast_display_settings_unittests",
     "//chromecast/system/reboot:cast_reboot_unittests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
@@ -105,10 +106,6 @@ cast_test_group("cast_tests") {
     if (use_aura) {
       tests += [ "//chromecast/graphics:cast_graphics_unittests" ]
     }
-  }
-
-  if (use_v4l2_codec && enable_video_capture_service) {
-    tests += [ "//media/gpu:video_encode_accelerator_unittest" ]
   }
 
   if (use_v4l2_codec) {
@@ -328,15 +325,12 @@ cast_test_group("cast_tests") {
       gtest_excludes += [ "NavigationEntryTest.NavigationEntryURLs" ]
     }
     if (enable_assistant && !is_cast_desktop_build) {
-      # Temporarily disable InvalidUUID and DefaultConstructor on assistant
-      # device builds. Cause of failure is unclear, but it's highly likely it's
-      # related to them being DEATH tests. These were passing until the
-      # is_official_build flag was enabled. These tests are considered
-      # non-critical in this context. (b/62469368)
-      gtest_excludes += [
-        "BluetoothBlocklistTest.InvalidUUID",
-        "WebBluetoothDeviceIdTest.DefaultConstructor",
-      ]
+      # Temporarily disable DefaultConstructor on assistant device builds. Cause
+      # of failure is unclear, but it's highly likely it's related to them being
+      # DEATH tests. These were passing until the is_official_build flag was
+      # enabled. These tests are considered non-critical in this context.
+      # (b/62469368)
+      gtest_excludes += [ "WebBluetoothDeviceIdTest.DefaultConstructor" ]
     }
   }
   filters += [ content_unittests_filter ]
@@ -610,7 +604,6 @@ buildflag_header("chromecast_buildflags") {
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
     "IS_SINGLE_VOLUME=$is_single_volume",
-    "SUPPORTS_MULTIZONE=$supports_multizone",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
     "ENABLE_CHROMIUM_RUNTIME_CAST_RENDERER=$enable_chromium_runtime_cast_renderer",

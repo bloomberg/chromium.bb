@@ -82,7 +82,7 @@ DEF_GM(return new SimpleRT;)
 static sk_sp<SkShader> make_shader(sk_sp<SkImage> img, SkISize size) {
     SkMatrix scale = SkMatrix::Scale(size.width()  / (float)img->width(),
                                      size.height() / (float)img->height());
-    return img->makeShader(SkTileMode::kClamp, SkTileMode::kClamp, &scale);
+    return img->makeShader(SkSamplingOptions(), scale);
 }
 
 static sk_sp<SkShader> make_threshold(SkISize size) {
@@ -114,7 +114,7 @@ static sk_sp<SkShader> make_threshold(SkISize size) {
 
     canvas->restore();  // apply the blur
 
-    return surf->makeImageSnapshot()->makeShader();
+    return surf->makeImageSnapshot()->makeShader(SkSamplingOptions());
 }
 
 class ThresholdRT : public RuntimeShaderGM {
@@ -268,29 +268,28 @@ public:
         // LUT dimensions should be (kSize^2, kSize)
         constexpr float kSize = 16.0f;
 
+        const SkSamplingOptions sampling(SkFilterMode::kLinear);
+
         builder.uniform("rg_scale")     = (kSize - 1) / kSize;
         builder.uniform("rg_bias")      = 0.5f / kSize;
         builder.uniform("b_scale")      = kSize - 1;
         builder.uniform("inv_size")     = 1.0f / kSize;
 
-        builder.child("input")        = fMandrill->makeShader();
+        builder.child("input")        = fMandrill->makeShader(sampling);
 
-        // TODO: Move filter quality to the shader itself. We need to enforce at least kLow here
-        // so that we bilerp the color cube image.
         SkPaint paint;
-        paint.setFilterQuality(kLow_SkFilterQuality);
 
         // TODO: Should we add SkImage::makeNormalizedShader() to handle this automatically?
         SkMatrix normalize = SkMatrix::Scale(1.0f / (kSize * kSize), 1.0f / kSize);
 
         // Now draw the image with an identity color cube - it should look like the original
-        builder.child("color_cube") = fIdentityCube->makeShader(normalize);
+        builder.child("color_cube") = fIdentityCube->makeShader(sampling, normalize);
         paint.setShader(builder.makeShader(nullptr, true));
         canvas->translate(256, 0);
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
 
         // ... and with a sepia-tone color cube. This should match the sepia-toned image.
-        builder.child("color_cube") = fSepiaCube->makeShader(normalize);
+        builder.child("color_cube") = fSepiaCube->makeShader(sampling, normalize);
         paint.setShader(builder.makeShader(nullptr, true));
         canvas->translate(0, 256);
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
@@ -326,7 +325,7 @@ public:
         canvas->drawRect({ 0, 0, 256, 256 }, paint);
 
         // Now we bind an image shader as the child. This (by convention) scales by the paint alpha
-        builder.child("input") = fMandrill->makeShader();
+        builder.child("input") = fMandrill->makeShader(SkSamplingOptions());
         paint.setColor4f({ 1.0f, 1.0f, 1.0f, 0.5f });
         paint.setShader(builder.makeShader(nullptr, false));
         canvas->translate(256, 0);
@@ -335,3 +334,28 @@ public:
     }
 };
 DEF_GM(return new DefaultColorRT;)
+
+
+DEF_SIMPLE_GM(child_sampling_rt, canvas, 256,256) {
+    static constexpr char scale[] =
+        "uniform shader child;"
+        "half4 main(float2 xy) {"
+        "    return sample(child, xy*0.1);"
+        "}";
+
+    SkPaint p;
+    p.setColor(SK_ColorRED);
+    p.setAntiAlias(true);
+    p.setStyle(SkPaint::kStroke_Style);
+    p.setStrokeWidth(1);
+
+    auto surf = SkSurface::MakeRasterN32Premul(100,100);
+    surf->getCanvas()->drawLine(0, 0, 100, 100, p);
+    auto shader = surf->makeImageSnapshot()->makeShader(SkSamplingOptions(SkFilterMode::kLinear));
+
+    SkRuntimeShaderBuilder builder(SkRuntimeEffect::Make(SkString(scale)).effect);
+    builder.child("child") = shader;
+    p.setShader(builder.makeShader(nullptr, false));
+
+    canvas->drawPaint(p);
+}

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/hang_watcher.h"
+#include "build/build_config.h"
 
 // -----------------------------------------------------------------------------
 // Usage documentation
@@ -97,11 +98,15 @@
 // that's okay.
 
 class BrowserProcessImpl;
+class ChromeJsErrorReportProcessor;
 class ChromeNSSCryptoModuleDelegate;
 class HistogramSynchronizer;
 class KeyStorageLinux;
 class NativeBackendKWallet;
 class NativeDesktopMediaList;
+class Profile;
+
+Profile* GetLastProfileMac();
 
 namespace android_webview {
 class AwFormDatabaseService;
@@ -118,6 +123,7 @@ class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
 class SourceStream;
 class VideoFrameResourceProvider;
+class WebRtcVideoFrameAdapter;
 class WorkerThread;
 namespace scheduler {
 class WorkerThread;
@@ -149,13 +155,14 @@ class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class DesktopCaptureDevice;
+class EmergencyTraceFinalisationCoordinator;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class NetworkServiceInstancePrivate;
 class PepperPrintSettingsManagerImpl;
+class RTCVideoDecoder;
 class RenderProcessHostImpl;
 class RenderWidgetHostViewMac;
-class RTCVideoDecoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
 class ServiceWorkerContextClient;
@@ -173,6 +180,9 @@ class CronetURLRequestContext;
 }  // namespace cronet
 namespace dbus {
 class Bus;
+}
+namespace device {
+class UsbContext;
 }
 namespace disk_cache {
 class BackendImpl;
@@ -225,6 +235,9 @@ class ScopedIPCSupport;
 }
 namespace printing {
 class LocalPrinterHandlerDefault;
+#if defined(OS_MAC)
+class PrintBackendServiceImpl;
+#endif
 class PrintJobWorker;
 class PrinterQuery;
 }
@@ -263,6 +276,7 @@ class ScopedAllowThreadJoinForProxyResolverV8Tracing;
 
 namespace remoting {
 class AutoThread;
+class ScopedBypassIOThreadRestrictions;
 namespace protocol {
 class ScopedAllowThreadJoinForWebRtcTransport;
 }
@@ -314,6 +328,7 @@ class JavaHandlerThread;
 }
 
 namespace internal {
+class GetAppOutputScopedAllowBaseSyncPrimitives;
 class JobTaskSource;
 class TaskTracker;
 }
@@ -321,7 +336,6 @@ class TaskTracker;
 class AdjustOOMScoreHelper;
 class FileDescriptorWatcher;
 class FilePath;
-class GetAppOutputScopedAllowBaseSyncPrimitives;
 class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
@@ -396,7 +410,11 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
   friend class printing::LocalPrinterHandlerDefault;
+#if defined(OS_MAC)
+  friend class printing::PrintBackendServiceImpl;
+#endif
   friend class printing::PrintJobWorker;
+  friend class remoting::ScopedBypassIOThreadRestrictions;  // crbug.com/1144161
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class web::WebSubThread;
   friend class weblayer::BrowserContextImpl;
@@ -405,6 +423,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class weblayer::WebLayerPathProvider;
 
   friend bool PathProviderWin(int, FilePath*);
+  friend Profile* ::GetLastProfileMac();  // crbug.com/1176734
 
   ScopedAllowBlocking(const Location& from_here = Location::Current());
   ~ScopedAllowBlocking();
@@ -447,15 +466,17 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   // Allowed usage:
   friend class SimpleThread;
   friend class ::ChromeNSSCryptoModuleDelegate;
-  friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
+  friend class base::internal::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class blink::SourceStream;
   friend class blink::WorkerThread;
   friend class blink::scheduler::WorkerThread;
   friend class chrome_cleaner::ResetShortcutsComponent;
   friend class chrome_cleaner::SystemReportComponent;
+  friend class ::ChromeJsErrorReportProcessor;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
   friend class content::ServiceWorkerContextClient;
+  friend class device::UsbContext;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;
@@ -516,9 +537,11 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::StackSamplingProfiler;
   friend class blink::RTCVideoDecoderAdapter;
   friend class blink::RTCVideoEncoder;
+  friend class blink::WebRtcVideoFrameAdapter;
   friend class cc::TileTaskManagerImpl;
   friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;
+  friend class content::EmergencyTraceFinalisationCoordinator;
   friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
   friend class content::SandboxHostLinux;

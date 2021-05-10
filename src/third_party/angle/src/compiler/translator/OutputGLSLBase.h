@@ -96,8 +96,8 @@ class TOutputGLSLBase : public TIntermTraverser
     sh::GLenum getShaderType() { return mShaderType; }
 
   private:
-    void declareInterfaceBlockLayout(const TInterfaceBlock *interfaceBlock);
-    void declareInterfaceBlock(const TInterfaceBlock *interfaceBlock);
+    void declareInterfaceBlockLayout(const TType &type);
+    void declareInterfaceBlock(const TType &type);
 
     void writeBuiltInFunctionTriplet(Visit visit, TOperator op, bool useEmulatedFunction);
 
@@ -128,6 +128,14 @@ void WriteGeometryShaderLayoutQualifiers(TInfoSinkBase &out,
                                          int invocations,
                                          sh::TLayoutPrimitiveType outputPrimitive,
                                          int maxVertices);
+
+void WriteTessControlShaderLayoutQualifiers(TInfoSinkBase &out, int inputVertices);
+
+void WriteTessEvaluationShaderLayoutQualifiers(TInfoSinkBase &out,
+                                               sh::TLayoutTessEvaluationType inputPrimitive,
+                                               sh::TLayoutTessEvaluationType inputVertexSpacing,
+                                               sh::TLayoutTessEvaluationType inputOrdering,
+                                               sh::TLayoutTessEvaluationType inputPoint);
 
 bool NeedsToWriteLayoutQualifier(const TType &type);
 

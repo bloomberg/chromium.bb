@@ -15,24 +15,16 @@
 #ifndef DAWNNATIVE_D3D12_DEVICED3D12_H_
 #define DAWNNATIVE_D3D12_DEVICED3D12_H_
 
-#include "dawn_native/dawn_platform.h"
-
-#include "common/Constants.h"
 #include "common/SerialQueue.h"
-#include "dawn_native/BindingInfo.h"
-#include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/d3d12/CommandRecordingContext.h"
 #include "dawn_native/d3d12/D3D12Info.h"
 #include "dawn_native/d3d12/Forward.h"
-#include "dawn_native/d3d12/ResourceHeapAllocationD3D12.h"
-
-#include <memory>
+#include "dawn_native/d3d12/TextureD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
 
     class CommandAllocatorManager;
-    class DescriptorHeapAllocator;
     class PlatformFunctions;
     class ResidencyManager;
     class ResourceAllocatorManager;
@@ -74,6 +66,7 @@ namespace dawn_native { namespace d3d12 {
         ComPtr<IDXGIFactory4> GetFactory() const;
         ResultOrError<IDxcLibrary*> GetOrCreateDxcLibrary() const;
         ResultOrError<IDxcCompiler*> GetOrCreateDxcCompiler() const;
+        ResultOrError<IDxcValidator*> GetOrCreateDxcValidator() const;
 
         ResultOrError<CommandRecordingContext*> GetPendingCommandContext();
 
@@ -141,6 +134,8 @@ namespace dawn_native { namespace d3d12 {
         uint32_t GetOptimalBytesPerRowAlignment() const override;
         uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
 
+        float GetTimestampPeriodInNS() const override;
+
       private:
         using DeviceBase::DeviceBase;
 
@@ -160,7 +155,8 @@ namespace dawn_native { namespace d3d12 {
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
         ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
-            const ShaderModuleDescriptor* descriptor) override;
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult) override;
         ResultOrError<SwapChainBase*> CreateSwapChainImpl(
             const SwapChainDescriptor* descriptor) override;
         ResultOrError<NewSwapChainBase*> CreateSwapChainImpl(
@@ -177,6 +173,8 @@ namespace dawn_native { namespace d3d12 {
         MaybeError WaitForIdleForDestruction() override;
 
         MaybeError CheckDebugLayerAndGenerateErrors();
+
+        void ApplyUseDxcToggle();
 
         ComPtr<ID3D12Fence> mFence;
         HANDLE mFenceEvent = nullptr;
@@ -233,6 +231,9 @@ namespace dawn_native { namespace d3d12 {
         // Sampler cache needs to be destroyed before the CPU sampler allocator to ensure the final
         // release is called.
         std::unique_ptr<SamplerHeapCache> mSamplerHeapCache;
+
+        // The number of nanoseconds required for a timestamp query to be incremented by 1
+        float mTimestampPeriod = 1.0f;
     };
 
 }}  // namespace dawn_native::d3d12

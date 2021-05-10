@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -275,8 +276,8 @@ TEST(JsonSchemaCompilerSimpleTest, ManifestKeyParsing_ArrayParseError) {
   std::string error;
   ASSERT_NO_FATAL_FAILURE(GetManifestParseError(kPartialManifestJson, &error));
   EXPECT_EQ(
-      "Error at key 'key_ref.array'. Parsing array failed: expected string, "
-      "got integer.",
+      "Error at key 'key_ref.array'. Parsing array failed at index 2: expected "
+      "string, got integer",
       error);
 }
 

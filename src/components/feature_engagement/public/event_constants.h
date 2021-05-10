@@ -17,8 +17,8 @@ namespace events {
 // The user has explicitly opened a new tab via an entry point from inside of
 // Chrome.
 extern const char kNewTabOpened[];
-#endif  // defined(OS_WIN) || defined(OS_APPLE) ||
-        // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 // Desktop
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
@@ -27,6 +27,11 @@ extern const char kNewTabOpened[];
 extern const char kSixthTabOpened[];
 // The user made a new tab group.
 extern const char kTabGroupCreated[];
+
+// A tab was added to reading list.
+extern const char kReadingListItemAdded[];
+// Reading list was opened.
+extern const char kReadingListMenuOpened[];
 
 // All conditions for reopen closed tab IPH were met. Since this IPH needs to
 // track user events (opening/closing tabs, focusing the omnibox, etc) on the

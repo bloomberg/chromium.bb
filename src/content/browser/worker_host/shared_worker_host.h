@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/network_isolation_key.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -64,7 +65,9 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
                    const SharedWorkerInstance& instance,
-                   scoped_refptr<SiteInstanceImpl> site_instance);
+                   scoped_refptr<SiteInstanceImpl> site_instance,
+                   std::vector<network::mojom::ContentSecurityPolicyPtr>
+                       content_security_policies);
   ~SharedWorkerHost() override;
 
   // Returns the RenderProcessHost where this shared worker lives.
@@ -145,6 +148,11 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   const SharedWorkerInstance& instance() const { return instance_; }
 
+  const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+  content_security_policies() const {
+    return content_security_policies_;
+  }
+
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
   const base::UnguessableToken& GetDevToolsToken() const;
@@ -155,6 +163,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   mojo::Remote<blink::mojom::SharedWorker> TerminateRemoteWorkerForTesting();
 
   base::WeakPtr<SharedWorkerHost> AsWeakPtr();
+
+  net::NetworkIsolationKey GetNetworkIsolationKey() const;
 
   void ReportNoBinderForInterface(const std::string& error);
 
@@ -219,6 +229,9 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   // this shared worker.
   SharedWorkerInstance instance_;
   ClientList clients_;
+
+  std::vector<network::mojom::ContentSecurityPolicyPtr>
+      content_security_policies_;
 
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver_;
   mojo::Remote<blink::mojom::SharedWorker> worker_;

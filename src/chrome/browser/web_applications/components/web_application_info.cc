@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_application_info.h"
 
-#include "chrome/common/web_page_metadata.mojom.h"
+#include "components/webapps/common/web_page_metadata.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 // WebApplicationIconInfo
@@ -74,7 +74,7 @@ WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =
     default;
 
 WebApplicationInfo::WebApplicationInfo(
-    const chrome::mojom::WebPageMetadata& metadata)
+    const webapps::mojom::WebPageMetadata& metadata)
     : title(metadata.application_name),
       description(metadata.description),
       start_url(metadata.application_url) {
@@ -86,13 +86,13 @@ WebApplicationInfo::WebApplicationInfo(
     icon_infos.push_back(icon_info);
   }
   switch (metadata.mobile_capable) {
-    case chrome::mojom::WebPageMobileCapable::UNSPECIFIED:
+    case webapps::mojom::WebPageMobileCapable::UNSPECIFIED:
       mobile_capable = MOBILE_CAPABLE_UNSPECIFIED;
       break;
-    case chrome::mojom::WebPageMobileCapable::ENABLED:
+    case webapps::mojom::WebPageMobileCapable::ENABLED:
       mobile_capable = MOBILE_CAPABLE;
       break;
-    case chrome::mojom::WebPageMobileCapable::ENABLED_APPLE:
+    case webapps::mojom::WebPageMobileCapable::ENABLED_APPLE:
       mobile_capable = MOBILE_CAPABLE_APPLE;
       break;
   }
@@ -131,4 +131,17 @@ bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
                   shortcut_info1.shortcut_icon_infos) ==
          std::tie(shortcut_info2.name, shortcut_info2.url,
                   shortcut_info2.shortcut_icon_infos);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApplicationShortcutsMenuItemInfo& info) {
+  out << "    name: " << info.name << std::endl
+      << "    url: " << info.url << std::endl
+      << "    shortcut_icon_infos:" << std::endl;
+  for (WebApplicationShortcutsMenuItemInfo::Icon icon :
+       info.shortcut_icon_infos) {
+    out << "      icon url: " << icon.url << std::endl
+        << "      icon square_size_px" << icon.square_size_px << std::endl;
+  }
+  return out;
 }

@@ -9,22 +9,26 @@
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_replication_state.mojom-forward.h"
+#include "content/public/common/content_features.h"
+#include "ipc/ipc.mojom.h"
+#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 
 namespace IPC {
-class Listener;
 class Message;
+class SyncChannel;
 }  // namespace IPC
 
 namespace content {
-
 class RenderThread;
 
 // Renderer-side representation of AgentSchedulingGroup, used for communication
@@ -33,98 +37,67 @@ class RenderThread;
 // to obtain ordering guarantees between different Mojo (associated) interfaces
 // and legacy IPC messages.
 class CONTENT_EXPORT AgentSchedulingGroup
-    : public mojom::AgentSchedulingGroup,
+    : public IPC::Listener,
+      public mojom::AgentSchedulingGroup,
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider {
  public:
   AgentSchedulingGroup(
       RenderThread& render_thread,
-      mojo::PendingRemote<mojom::AgentSchedulingGroupHost> host_remote,
-      mojo::PendingReceiver<mojom::AgentSchedulingGroup> receiver);
+      mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote);
   AgentSchedulingGroup(
       RenderThread& render_thread,
-      mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost>
-          host_remote,
-      mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver);
+      mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote);
   ~AgentSchedulingGroup() override;
 
   AgentSchedulingGroup(const AgentSchedulingGroup&) = delete;
-  AgentSchedulingGroup(const AgentSchedulingGroup&&) = delete;
   AgentSchedulingGroup& operator=(const AgentSchedulingGroup&) = delete;
-  AgentSchedulingGroup& operator=(const AgentSchedulingGroup&&) = delete;
 
   bool Send(IPC::Message* message);
   void AddRoute(int32_t routing_id, IPC::Listener* listener);
+  void AddFrameRoute(int32_t routing_id,
+                     IPC::Listener* listener,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void RemoveRoute(int32_t routing_id);
+  void DidUnloadRenderFrame(const blink::LocalFrameToken& frame_token);
 
-  // This is virtual only for unit tests.
-  virtual mojom::RouteProvider* GetRemoteRouteProvider();
+  mojom::RouteProvider* GetRemoteRouteProvider();
 
   blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler() {
     return *agent_group_scheduler_;
   }
 
+ protected:
+  // mojom::AgentSchedulingGroup:
+  void BindAssociatedInterfaces(
+      mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost>
+          remote_host,
+      mojo::PendingAssociatedRemote<mojom::RouteProvider> remote_route_provider,
+      mojo::PendingAssociatedReceiver<mojom::RouteProvider>
+          route_provider_receiever) override;
+
  private:
-  // `MaybeAssociatedReceiver` and `MaybeAssociatedRemote` are temporary helper
-  // classes that allow us to switch between using associated and non-associated
-  // mojo interfaces. This behavior is controlled by the
-  // `kMbiDetachAgentSchedulingGroupFromChannel` feature flag.
-  // Associated interfaces are associated with the IPC channel (transitively,
-  // via the `Renderer` interface), thus preserving cross-agent scheduling group
-  // message order. Non-associated interfaces are independent from each other
-  // and do not preserve message order between agent scheduling groups.
-  // TODO(crbug.com/1111231): Remove these once we can remove the flag.
-  class MaybeAssociatedReceiver {
-   public:
-    MaybeAssociatedReceiver(
-        AgentSchedulingGroup& impl,
-        mojo::PendingReceiver<mojom::AgentSchedulingGroup> receiver,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    MaybeAssociatedReceiver(
-        AgentSchedulingGroup& impl,
-        mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    ~MaybeAssociatedReceiver();
-
-   private:
-    absl::variant<mojo::Receiver<mojom::AgentSchedulingGroup>,
-                  mojo::AssociatedReceiver<mojom::AgentSchedulingGroup>>
-        receiver_;
-  };
-
-  class MaybeAssociatedRemote {
-   public:
-    explicit MaybeAssociatedRemote(
-        mojo::PendingRemote<mojom::AgentSchedulingGroupHost> host_remote,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    explicit MaybeAssociatedRemote(
-        mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost>
-            host_remote,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    ~MaybeAssociatedRemote();
-    mojom::AgentSchedulingGroupHost* get();
-
-   private:
-    absl::variant<mojo::Remote<mojom::AgentSchedulingGroupHost>,
-                  mojo::AssociatedRemote<mojom::AgentSchedulingGroupHost>>
-        remote_;
-  };
+  // IPC::Listener:
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnBadMessageReceived(const IPC::Message& message) override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // mojom::AgentSchedulingGroup:
   void CreateView(mojom::CreateViewParamsPtr params) override;
   void DestroyView(int32_t view_id, DestroyViewCallback callback) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
+      const blink::RemoteFrameToken& token,
       int32_t routing_id,
-      int32_t render_view_routing_id,
-      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      const base::Optional<blink::FrameToken>& opener_frame_token,
+      int32_t view_routing_id,
       int32_t parent_routing_id,
-      const FrameReplicationState& replicated_state,
-      const base::UnguessableToken& frame_token,
+      mojom::FrameReplicationStatePtr replicated_state,
       const base::UnguessableToken& devtools_frame_token) override;
-  void BindAssociatedRouteProvider(
-      mojo::PendingAssociatedRemote<mojom::RouteProvider> remote,
-      mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiever) override;
 
   // mojom::RouteProvider
   void GetRoute(
@@ -140,6 +113,11 @@ class CONTENT_EXPORT AgentSchedulingGroup
 
   IPC::Listener* GetListener(int32_t routing_id);
 
+  // This AgentSchedulingGroup's legacy IPC channel. Will only be used in
+  // `features::MBIMode::kEnabledPerRenderProcessHost` or
+  // `features::MBIMode::kEnabledPerSiteInstance` mode.
+  std::unique_ptr<IPC::SyncChannel> channel_;
+
   // Map of registered IPC listeners.
   base::IDMap<IPC::Listener*> listener_map_;
 
@@ -151,11 +129,11 @@ class CONTENT_EXPORT AgentSchedulingGroup
 
   // Implementation of `mojom::AgentSchedulingGroup`, used for responding to
   // calls from the (browser-side) `AgentSchedulingGroupHost`.
-  MaybeAssociatedReceiver receiver_;
+  mojo::AssociatedReceiver<mojom::AgentSchedulingGroup> receiver_;
 
   // Remote stub of mojom::AgentSchedulingGroupHost, used for sending calls to
   // the (browser-side) AgentSchedulingGroupHost.
-  MaybeAssociatedRemote host_remote_;
+  mojo::AssociatedRemote<mojom::AgentSchedulingGroupHost> host_remote_;
 
   // The |mojom::RouteProvider| mojo pair to setup
   // |blink::AssociatedInterfaceProvider| routes between us and the browser-side

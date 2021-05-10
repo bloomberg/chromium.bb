@@ -7,9 +7,22 @@ import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
 
 import {SourcesSearchScope} from './SourcesSearchScope.js';
 
+/** @type {!SearchSourcesView} */
+let searchSourcesViewInstance;
+
 export class SearchSourcesView extends Search.SearchView.SearchView {
+  /**
+   * @private
+   */
   constructor() {
     super('sources');
+  }
+
+  static instance() {
+    if (!searchSourcesViewInstance) {
+      searchSourcesViewInstance = new SearchSourcesView();
+    }
+    return searchSourcesViewInstance;
   }
 
   /**
@@ -27,7 +40,7 @@ export class SearchSourcesView extends Search.SearchView.SearchView {
     location.appendView(view);
     await UI.ViewManager.ViewManager.instance().revealView(/** @type {!UI.View.View} */ (view));
     const widget = /** @type {!Search.SearchView.SearchView} */ (await view.widget());
-    widget.toggle(query, !!searchImmediately);
+    widget.toggle(query, Boolean(searchImmediately));
     return widget;
   }
 
@@ -40,10 +53,25 @@ export class SearchSourcesView extends Search.SearchView.SearchView {
   }
 }
 
+/** @type {!ActionDelegate} */
+let actionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!ActionDelegate}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
+    }
+
+    return actionDelegateInstance;
+  }
   /**
    * @override
    * @param {!UI.Context.Context} context

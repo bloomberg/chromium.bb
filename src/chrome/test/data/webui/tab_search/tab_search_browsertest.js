@@ -15,13 +15,6 @@ class TabSearchBrowserTest extends PolymerTest {
     throw 'this is abstract and should be overriden by subclasses';
   }
 
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
-
   /** @override */
   get featureList() {
     return {
@@ -36,7 +29,7 @@ class TabSearchBrowserTest extends PolymerTest {
 var TabSearchAppTest = class extends TabSearchBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://tab-search/test_loader.html?module=tab_search/tab_search_app_test.js';
+    return 'chrome://tab-search.top-chrome/test_loader.html?module=tab_search/tab_search_app_test.js';
   }
 };
 
@@ -48,7 +41,7 @@ TEST_F('TabSearchAppTest', 'All', function() {
 var FuzzySearchTest = class extends TabSearchBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://tab-search/test_loader.html?module=tab_search/fuzzy_search_test.js';
+    return 'chrome://tab-search.top-chrome/test_loader.html?module=tab_search/fuzzy_search_test.js';
   }
 };
 
@@ -60,7 +53,7 @@ TEST_F('FuzzySearchTest', 'All', function() {
 var InfiniteListTest = class extends TabSearchBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://tab-search/test_loader.html?module=tab_search/infinite_list_test.js';
+    return 'chrome://tab-search.top-chrome/test_loader.html?module=tab_search/infinite_list_test.js';
   }
 };
 
@@ -72,7 +65,7 @@ TEST_F('InfiniteListTest', 'All', function() {
 var TabSearchItemTest = class extends TabSearchBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://tab-search/test_loader.html?module=tab_search/tab_search_item_test.js';
+    return 'chrome://tab-search.top-chrome/test_loader.html?module=tab_search/tab_search_item_test.js';
   }
 };
 

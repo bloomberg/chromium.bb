@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
 
   // 6) Re-initialize RenderFrame, now RDHUD should be cleared on new
   // RenderFrame creation after crash when
-  // RenderFrameHostImpl::SetRenderFrameCreated was called.
+  // RenderFrameHostImpl::RenderFrameDeleted was called.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   root->render_manager()->InitializeMainRenderFrameForImmediateUse();
   EXPECT_TRUE(did_clear_user_data);
@@ -938,14 +938,14 @@ class RenderDocumentHostUserDataWithBackForwardCacheTest
     : public RenderDocumentHostUserDataTest {
  public:
   RenderDocumentHostUserDataWithBackForwardCacheTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache,
-        {
-            // Set a very long TTL before expiration (longer than the test
-            // timeout) so tests that are expecting deletion don't pass when
-            // they shouldn't.
-            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-        });
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          // Set a very long TTL before expiration (longer than the test
+          // timeout) so tests that are expecting deletion don't pass when
+          // they shouldn't.
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
   }
 
  private:

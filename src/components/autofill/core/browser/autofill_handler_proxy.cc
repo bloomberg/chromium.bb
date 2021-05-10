@@ -10,10 +10,16 @@ namespace autofill {
 
 using base::TimeTicks;
 
-AutofillHandlerProxy::AutofillHandlerProxy(AutofillDriver* driver,
-                                           LogManager* log_manager,
-                                           AutofillProvider* provider)
-    : AutofillHandler(driver, log_manager), provider_(provider) {}
+AutofillHandlerProxy::AutofillHandlerProxy(
+    AutofillDriver* driver,
+    AutofillClient* client,
+    AutofillProvider* provider,
+    AutofillHandler::AutofillDownloadManagerState enable_download_manager)
+    : AutofillHandler(driver,
+                      client,
+                      enable_download_manager,
+                      version_info::Channel::UNKNOWN),
+      provider_(provider) {}
 
 AutofillHandlerProxy::~AutofillHandlerProxy() {}
 
@@ -62,17 +68,13 @@ void AutofillHandlerProxy::OnSelectControlDidChangeImpl(
   provider_->OnSelectControlDidChange(this, form, field, bounding_box);
 }
 
-bool AutofillHandlerProxy::ShouldParseForms(const std::vector<FormData>& forms,
-                                            const base::TimeTicks timestamp) {
-  provider_->OnFormsSeen(this, forms, timestamp);
+bool AutofillHandlerProxy::ShouldParseForms(
+    const std::vector<FormData>& forms) {
+  provider_->OnFormsSeen(this, forms);
   // Need to parse the |forms| to FormStructure, so heuristic_type can be
   // retrieved later.
   return true;
 }
-
-void AutofillHandlerProxy::OnFormsParsed(
-    const std::vector<const FormData*>& form_structures,
-    const base::TimeTicks timestamp) {}
 
 void AutofillHandlerProxy::OnFocusNoLongerOnForm(bool had_interacted_form) {
   provider_->OnFocusNoLongerOnForm(this, had_interacted_form);
@@ -84,17 +86,29 @@ void AutofillHandlerProxy::OnDidFillAutofillFormData(
   provider_->OnDidFillAutofillFormData(this, form, timestamp);
 }
 
-void AutofillHandlerProxy::OnDidPreviewAutofillFormData() {}
-
-void AutofillHandlerProxy::OnDidEndTextFieldEditing() {}
-
 void AutofillHandlerProxy::OnHidePopup() {
   provider_->OnHidePopup(this);
 }
 
 void AutofillHandlerProxy::SelectFieldOptionsDidChange(const FormData& form) {}
 
+void AutofillHandlerProxy::PropagateAutofillPredictions(
+    content::RenderFrameHost* rfh,
+    const std::vector<FormStructure*>& forms) {
+  has_server_prediction_ = true;
+  provider_->OnServerPredictionsAvailable(this);
+}
+
+void AutofillHandlerProxy::OnServerRequestError(
+    FormSignature form_signature,
+    AutofillDownloadManager::RequestType request_type,
+    int http_error) {
+  provider_->OnServerQueryRequestError(this, form_signature);
+}
+
 void AutofillHandlerProxy::Reset() {
+  AutofillHandler::Reset();
+  has_server_prediction_ = false;
   provider_->Reset(this);
 }
 

@@ -26,7 +26,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
@@ -39,6 +38,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.GURL;
 
 import java.io.IOException;
 import java.util.List;
@@ -380,8 +380,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      * Copy the specified URL to the clipboard and show a toast indicating the action occurred.
      * @param url The URL to copy to the clipboard.
      */
-    public void copyUrlToClipboard(String url) {
-        ClipData clip = ClipData.newPlainText("url", url);
+    public void copyUrlToClipboard(GURL url) {
+        ClipData clip = ClipData.newPlainText("url", url.getSpec());
         if (setPrimaryClipNoException(clip)) {
             Toast.makeText(mContext, R.string.link_copied, Toast.LENGTH_SHORT).show();
         }
@@ -393,7 +393,9 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      * @param hasFocus Whether or not {@code activity} gained or lost focus.
      */
     public void onWindowFocusChanged(boolean hasFocus) {
-        if (mNativeClipboard == 0 || !hasFocus || !BuildInfo.isAtLeastQ()) return;
+        if (mNativeClipboard == 0 || !hasFocus || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return;
+        }
         onPrimaryClipTimestampInvalidated();
     }
 

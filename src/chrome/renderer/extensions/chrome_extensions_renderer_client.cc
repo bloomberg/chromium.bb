@@ -11,6 +11,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
+#include "base/stl_util.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -28,7 +30,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -36,9 +37,7 @@
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
 #include "extensions/renderer/extensions_renderer_client.h"
-#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
@@ -74,16 +73,6 @@ enum class GoogleDocsExtensionAvailablity {
   kNotAvailableIncognito = 3,
   kMaxValue = kNotAvailableIncognito
 };
-
-bool ExtensionHasAccessToUrl(const Extension* extension,
-                             int tab_id,
-                             const GURL& url) {
-  return extension->permissions_data()->GetPageAccess(url, tab_id, nullptr) ==
-             extensions::PermissionsData::PageAccess::kAllowed ||
-         extension->permissions_data()->GetContentScriptAccess(url, tab_id,
-                                                               nullptr) ==
-             extensions::PermissionsData::PageAccess::kAllowed;
-}
 
 }  // namespace
 
@@ -124,10 +113,6 @@ bool ChromeExtensionsRendererClient::ExtensionAPIEnabledForServiceWorkerScript(
     const GURL& scope,
     const GURL& script_url) const {
   if (!script_url.SchemeIs(extensions::kExtensionScheme))
-    return false;
-
-  if (!extensions::ExtensionsClient::Get()
-           ->ExtensionAPIEnabledInExtensionServiceWorkers())
     return false;
 
   const Extension* extension =
@@ -234,7 +219,7 @@ ChromeExtensionsRendererClient::GetProtocolHandlerSecurityLevel() {
     case extensions::Feature::WEB_PAGE_CONTEXT:
       return blink::ProtocolHandlerSecurityLevel::kStrict;
     case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
-      return blink::ProtocolHandlerSecurityLevel::kUntrustedOrigins;
+      return blink::ProtocolHandlerSecurityLevel::kExtensionFeatures;
   }
 }
 
@@ -244,8 +229,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     const blink::WebURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
-    GURL* new_url,
-    bool* force_ignore_site_for_cookies) {
+    GURL* new_url) {
   std::string extension_id;
   GURL request_url(url);
   if (initiator_origin &&
@@ -261,40 +245,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     const extensions::RendererExtensionRegistry* extension_registry =
         extensions::RendererExtensionRegistry::Get();
     const Extension* extension = extension_registry->GetByID(extension_id);
-    if (extension) {
-      int tab_id = extensions::ExtensionFrameHelper::Get(
-                       content::RenderFrame::FromWebFrame(frame))
-                       ->tab_id();
-      bool extension_has_access_to_request_url =
-          ExtensionHasAccessToUrl(extension, tab_id, request_url);
-
-      bool initiator_ok = true;
-      // In the case where the site_for_cookies is an extension URL, we also
-      // want to check that the initiator and the requested URL are same-site,
-      // and that the extension has permission for both the requested URL and
-      // the initiator origin.
-      // Ideally we would walk up the frame tree and check that each ancestor is
-      // first-party to the main frame (treating the extension as "first-party"
-      // to any URLs it has permission for). But for now we make do with just
-      // checking the direct initiator of the request.
-      // We also want to check same-siteness between the initiator and the
-      // requested URL, because setting |force_ignore_site_for_cookies| to true
-      // causes Strict cookies to be attached, and having the initiator be
-      // same-site to the request URL is a requirement for Strict cookies
-      // (see net::cookie_util::ComputeSameSiteContext).
-      if (initiator_origin &&
-          initiator_origin->scheme() != extensions::kExtensionScheme) {
-        initiator_ok =
-            ExtensionHasAccessToUrl(extension, tab_id,
-                                    initiator_origin->GetURL()) &&
-            net::registry_controlled_domains::SameDomainOrHost(
-                request_url, *initiator_origin,
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-      }
-
-      *force_ignore_site_for_cookies =
-          extension_has_access_to_request_url && initiator_ok;
-    } else {
+    if (!extension) {
       // If there is no extension installed for the origin, it may be from a
       // recently uninstalled extension.  The tabs of such extensions are
       // automatically closed, but subframes and content scripts may stick
@@ -304,8 +255,9 @@ void ChromeExtensionsRendererClient::WillSendRequest(
   }
 
   if (url.ProtocolIs(extensions::kExtensionScheme) &&
-      !resource_request_policy_->CanRequestResource(GURL(url), frame,
-                                                    transition_type)) {
+      !resource_request_policy_->CanRequestResource(
+          GURL(url), frame, transition_type,
+          base::OptionalFromPtr(initiator_origin))) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
   }
 
@@ -354,19 +306,6 @@ void ChromeExtensionsRendererClient::SetExtensionDispatcherForTest(
 extensions::Dispatcher*
 ChromeExtensionsRendererClient::GetExtensionDispatcherForTest() {
   return extension_dispatcher();
-}
-
-// static
-guest_view::GuestViewContainer*
-ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
-    content::RenderFrame* render_frame,
-    const content::WebPluginInfo& info,
-    const std::string& mime_type,
-    const GURL& original_url) {
-  if (mime_type == content::kBrowserPluginMimeType)
-    return new extensions::ExtensionsGuestViewContainer(render_frame);
-  return new extensions::MimeHandlerViewContainer(render_frame, info, mime_type,
-                                                  original_url);
 }
 
 // static

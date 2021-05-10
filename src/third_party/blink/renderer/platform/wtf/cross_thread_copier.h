@@ -67,6 +67,7 @@ struct SyncToken;
 }
 
 namespace media {
+class VideoFrame;
 struct VideoFrameFeedback;
 }
 
@@ -261,15 +262,6 @@ struct CrossThreadCopier<base::WeakPtr<T>>
   STATIC_ONLY(CrossThreadCopier);
 };
 
-template <typename T>
-struct CrossThreadCopier<PassedWrapper<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = PassedWrapper<typename CrossThreadCopier<T>::Type>;
-  static Type Copy(PassedWrapper<T>&& value) {
-    return WTF::Passed(CrossThreadCopier<T>::Copy(value.MoveOut()));
-  }
-};
-
 template <typename Signature>
 struct CrossThreadCopier<CrossThreadFunction<Signature>> {
   STATIC_ONLY(CrossThreadCopier);
@@ -347,6 +339,13 @@ struct CrossThreadCopier<gfx::Size>
 template <>
 struct CrossThreadCopier<media::VideoFrameFeedback>
     : public CrossThreadCopierPassThrough<media::VideoFrameFeedback> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<std::vector<scoped_refptr<media::VideoFrame>>>
+    : public CrossThreadCopierPassThrough<
+          std::vector<scoped_refptr<media::VideoFrame>>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

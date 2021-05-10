@@ -2,11 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Diff from '../diff/diff.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
+
+export const UIStrings = {
+  /**
+  * @description Aria label for quick open dialog prompt
+  */
+  quickOpenPrompt: 'Quick open prompt',
+  /**
+  * @description Title of quick open dialog
+  */
+  quickOpen: 'Quick open',
+  /**
+  * @description Text to show no results have been found
+  */
+  noResultsFound: 'No results found',
+};
+const str_ = i18n.i18n.registerUIStrings('quick_open/FilteredListWidget.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /**
  * @implements {UI.ListControl.ListDelegate<number>}
@@ -38,7 +55,7 @@ export class FilteredListWidget extends UI.Widget.VBox {
     this.registerRequiredCSS('quick_open/filteredListWidget.css', {enableLegacyPatching: true});
 
     this._promptElement = this.contentElement.createChild('div', 'filtered-list-widget-input');
-    UI.ARIAUtils.setAccessibleName(this._promptElement, ls`Quick open prompt`);
+    UI.ARIAUtils.setAccessibleName(this._promptElement, i18nString(UIStrings.quickOpenPrompt));
     this._promptElement.setAttribute('spellcheck', 'false');
     this._promptElement.setAttribute('contenteditable', 'plaintext-only');
     this._prompt = new UI.TextPrompt.TextPrompt();
@@ -139,7 +156,11 @@ export class FilteredListWidget extends UI.Widget.VBox {
   /**
    * @param {string=} dialogTitle
    */
-  showAsDialog(dialogTitle = ls`Quick open`) {
+  showAsDialog(dialogTitle) {
+    if (!dialogTitle) {
+      dialogTitle = i18nString(UIStrings.quickOpen);
+    }
+
     this._dialog = new UI.Dialog.Dialog();
     UI.ARIAUtils.setAccessibleName(this._dialog.contentElement, dialogTitle);
     this._dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
@@ -259,7 +280,7 @@ export class FilteredListWidget extends UI.Widget.VBox {
     if (this._loadTimeout || provider !== this._provider) {
       return;
     }
-    this._loadTimeout = setTimeout(this._updateAfterItemsLoaded.bind(this), 0);
+    this._loadTimeout = window.setTimeout(this._updateAfterItemsLoaded.bind(this), 0);
   }
 
   _updateAfterItemsLoaded() {
@@ -454,19 +475,19 @@ export class FilteredListWidget extends UI.Widget.VBox {
 
         // Find its index in the scores array (earlier elements have bigger scores).
         if (score > minBestScore || bestScores.length < bestItemsToCollect) {
-          const index = bestScores.upperBound(score, compareIntegers);
+          const index = Platform.ArrayUtilities.upperBound(bestScores, score, compareIntegers);
           bestScores.splice(index, 0, score);
           bestItems.splice(index, 0, i);
           if (bestScores.length > bestItemsToCollect) {
             // Best list is too large -> drop last elements.
-            const bestItemLast = bestItems.peekLast();
+            const bestItemLast = bestItems[bestItems.length - 1];
             if (bestItemLast) {
               overflowItems.push(bestItemLast);
             }
             bestScores.length = bestItemsToCollect;
             bestItems.length = bestItemsToCollect;
           }
-          const bestScoreLast = bestScores.peekLast();
+          const bestScoreLast = bestScores[bestScores.length - 1];
           if (bestScoreLast) {
             minBestScore = bestScoreLast;
           }
@@ -479,7 +500,7 @@ export class FilteredListWidget extends UI.Widget.VBox {
 
       // Process everything in chunks.
       if (i < this._provider.itemCount()) {
-        this._scoringTimer = setTimeout(scoreItems.bind(this, i), 0);
+        this._scoringTimer = window.setTimeout(scoreItems.bind(this, i), 0);
         if (window.performance.now() - scoreStartTime > 50) {
           this._progressBarElement.style.transform = 'scaleX(' + i / this._provider.itemCount() + ')';
         }
@@ -503,7 +524,7 @@ export class FilteredListWidget extends UI.Widget.VBox {
   _refreshList(bestItems, overflowItems, filteredItems) {
     this._refreshListWithCurrentResult = undefined;
     filteredItems = [...bestItems, ...overflowItems, ...filteredItems];
-    this._updateNotFoundMessage(!!filteredItems.length);
+    this._updateNotFoundMessage(Boolean(filteredItems.length));
     const oldHeight = this._list.element.offsetHeight;
     this._items.replaceAll(filteredItems);
     if (filteredItems.length) {
@@ -585,7 +606,7 @@ export class FilteredListWidget extends UI.Widget.VBox {
     if (this._filterTimer) {
       return;
     }
-    this._filterTimer = setTimeout(this._filterItems.bind(this), 0);
+    this._filterTimer = window.setTimeout(this._filterItems.bind(this), 0);
   }
 
   /**
@@ -691,9 +712,35 @@ export class Provider {
    * @return {string}
    */
   notFoundText(query) {
-    return Common.UIString.UIString('No results found');
+    return i18nString(UIStrings.noResultsFound);
   }
 
   detach() {
   }
 }
+
+/** @type {!Array<!ProviderRegistration>} */
+const registeredProviders = [];
+
+/**
+ * @param {!ProviderRegistration} registration
+ */
+export function registerProvider(registration) {
+  registeredProviders.push(registration);
+}
+/**
+ * @return {!Array<!ProviderRegistration>}
+ */
+export function getRegisteredProviders() {
+  return registeredProviders;
+}
+
+/**
+  * @typedef {{
+  *  provider: function(): !Provider,
+  *  title: (undefined|function():string),
+  *  prefix: string,
+  * }}
+  */
+// @ts-ignore typedef
+export let ProviderRegistration;

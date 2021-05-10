@@ -30,26 +30,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Icon} from './Icon.js';                            // eslint-disable-line no-unused-vars
 import {Config, InplaceEditor} from './InplaceEditor.js';  // eslint-disable-line no-unused-vars
 import {Keys} from './KeyboardShortcut.js';
+import {Tooltip} from './Tooltip.js';
 import {deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing} from './UIUtils.js';
 import {appendStyle} from './utils/append-style.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 
-/**
- * @unrestricted
- */
+/** @type {!WeakMap<!Node, !TreeElement>} */
+const nodeToParentTreeElementMap = new WeakMap();
+
 export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
-    this._createRootElement();
+    this._rootElement = this._createRootElement();
+    this._renderSelection = false;
 
     /** @type {?TreeElement} */
     this.selectedTreeElement = null;
@@ -62,9 +62,15 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
 
     this._preventTabOrder = false;
     this._showSelectionOnKeyboardFocus = false;
+    this._focusable = true;
     this.setFocusable(true);
+    /** @type {!HTMLElement} */
     this.element = this.contentElement;
     ARIAUtils.markAsTree(this.element);
+    this._useLightSelectionColor = false;
+    /** @type {?TreeElement} */
+    this._treeElementToScrollIntoView = null;
+    this._centerUponScrollIntoView = false;
   }
 
   /**
@@ -73,20 +79,24 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
    */
   setShowSelectionOnKeyboardFocus(show, preventTabOrder) {
     this.contentElement.classList.toggle('hide-selection-when-blurred', show);
-    this._preventTabOrder = !!preventTabOrder;
+    this._preventTabOrder = Boolean(preventTabOrder);
     if (this._focusable) {
-      this.contentElement.tabIndex = !!preventTabOrder ? -1 : 0;
+      this.contentElement.tabIndex = Boolean(preventTabOrder) ? -1 : 0;
     }
     this._showSelectionOnKeyboardFocus = show;
   }
 
+  /**
+   * @return {!TreeElement}
+   */
   _createRootElement() {
-    this._rootElement = new TreeElement();
-    this._rootElement.treeOutline = this;
-    this._rootElement.root = true;
-    this._rootElement.selectable = false;
-    this._rootElement.expanded = true;
-    this._rootElement._childrenListNode.classList.remove('children');
+    const rootElement = new TreeElement();
+    rootElement.treeOutline = this;
+    rootElement.root = true;
+    rootElement.selectable = false;
+    rootElement.expanded = true;
+    rootElement._childrenListNode.classList.remove('children');
+    return rootElement;
   }
 
   /**
@@ -108,7 +118,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
    */
   _lastDescendent() {
     let last = this._rootElement.lastChild();
-    while (last.expanded && last.childCount()) {
+    while (last && last.expanded && last.childCount()) {
       last = last.lastChild();
     }
     return last;
@@ -154,13 +164,13 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
 
     const listNode = enclosingNodeOrSelfWithNodeNameInArray(node, ['ol', 'li']);
     if (listNode) {
-      return listNode.parentTreeElement || listNode.treeElement;
+      return nodeToParentTreeElementMap.get(listNode) || treeElementBylistItemNode.get(listNode) || null;
     }
     return null;
   }
 
   /**
-   * @param {?Event} event
+   * @param {?MouseEvent} event
    * @return {?TreeElement}
    */
   treeElementFromEvent(event) {
@@ -184,7 +194,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
 
   updateFocusable() {
     if (this._focusable) {
-      this.contentElement.tabIndex = (this._preventTabOrder || !!this.selectedTreeElement) ? -1 : 0;
+      this.contentElement.tabIndex = (this._preventTabOrder || Boolean(this.selectedTreeElement)) ? -1 : 0;
       if (this.selectedTreeElement) {
         this.selectedTreeElement._setFocusable(true);
       }
@@ -236,7 +246,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   selectPrevious() {
-    let nextSelectedElement = this.selectedTreeElement.traversePreviousTreeElement(true);
+    let nextSelectedElement = this.selectedTreeElement && this.selectedTreeElement.traversePreviousTreeElement(true);
     while (nextSelectedElement && !nextSelectedElement.selectable) {
       nextSelectedElement = nextSelectedElement.traversePreviousTreeElement(!this.expandTreeElementsWhenArrowing);
     }
@@ -251,7 +261,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   selectNext() {
-    let nextSelectedElement = this.selectedTreeElement.traverseNextTreeElement(true);
+    let nextSelectedElement = this.selectedTreeElement && this.selectedTreeElement.traverseNextTreeElement(true);
     while (nextSelectedElement && !nextSelectedElement.selectable) {
       nextSelectedElement = nextSelectedElement.traverseNextTreeElement(!this.expandTreeElementsWhenArrowing);
     }
@@ -306,7 +316,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!KeyboardEvent} event
    */
   _treeKeyDown(event) {
     if (event.shiftKey || event.metaKey || event.ctrlKey || isEditing()) {
@@ -335,7 +345,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
       }
     } else if (event.keyCode === 8 /* Backspace */ || event.keyCode === 46 /* Delete */) {
       handled = this.selectedTreeElement.ondelete();
-    } else if (isEnterKey(event)) {
+    } else if (event.key === 'Enter') {
       handled = this.selectedTreeElement.onenter();
     } else if (event.keyCode === Keys.Space.code) {
       handled = this.selectedTreeElement.onspace();
@@ -355,15 +365,10 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
    * @param {boolean} center
    */
   _deferredScrollIntoView(treeElement, center) {
-    if (!this._treeElementToScrollIntoView) {
-      this.element.window().requestAnimationFrame(deferredScrollIntoView.bind(this));
-    }
-    this._treeElementToScrollIntoView = treeElement;
-    this._centerUponScrollIntoView = center;
-    /**
-     * @this {TreeOutline}
-     */
-    function deferredScrollIntoView() {
+    const deferredScrollIntoView = () => {
+      if (!this._treeElementToScrollIntoView) {
+        return;
+      }
       // This function no longer uses scrollIntoViewIfNeeded because users were bothered
       // by the fact that it always scrolls in both direction even if only one is necessary
       // to bring the item into view.
@@ -391,9 +396,20 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         deltaTop = deltaTop - viewRect.height / 2;
       }
       this.element.scrollTo(deltaLeft, deltaTop);
-      delete this._treeElementToScrollIntoView;
-      delete this._centerUponScrollIntoView;
+      this._treeElementToScrollIntoView = null;
+    };
+
+    if (!this._treeElementToScrollIntoView) {
+      this.element.window().requestAnimationFrame(deferredScrollIntoView);
     }
+    this._treeElementToScrollIntoView = treeElement;
+    this._centerUponScrollIntoView = center;
+  }
+
+  /**
+   * @param {!TreeElement} treeElement
+   */
+  onStartedEditingTitle(treeElement) {
   }
 }
 
@@ -406,16 +422,13 @@ export const Events = {
   ElementSelected: Symbol('ElementSelected')
 };
 
-/**
- * @unrestricted
- */
 export class TreeOutlineInShadow extends TreeOutline {
   constructor() {
     super();
     this.contentElement.classList.add('tree-outline');
 
     // Redefine element to the external one.
-    this.element = createElement('div');
+    this.element = /** @type {!HTMLElement} */ (document.createElement('div'));
     this._shadowRoot = createShadowRootWithCoreStyles(
         this.element, {cssFile: 'ui/treeoutline.css', enableLegacyPatching: true, delegatesFocus: undefined});
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
@@ -425,7 +438,7 @@ export class TreeOutlineInShadow extends TreeOutline {
 
   /**
    * @param {string} cssFile
-  * @param {!{enableLegacyPatching:boolean}} options
+   * @param {!{enableLegacyPatching:boolean}} options
    */
   registerRequiredCSS(cssFile, options) {
     appendStyle(this._shadowRoot, cssFile, options);
@@ -438,11 +451,21 @@ export class TreeOutlineInShadow extends TreeOutline {
   makeDense() {
     this.contentElement.classList.add('tree-outline-dense');
   }
+
+  /**
+   * @param {!TreeElement} treeElement
+   * @override
+   */
+  onStartedEditingTitle(treeElement) {
+    const selection = this._shadowRoot.getSelection();
+    if (selection) {
+      selection.selectAllChildren(treeElement.titleElement);
+    }
+  }
 }
 
-/**
- * @unrestricted
- */
+/** @type {!WeakMap<!Node, !TreeElement>} */
+export const treeElementBylistItemNode = new WeakMap();
 export class TreeElement {
   /**
    * @param {(string|!Node)=} title
@@ -451,26 +474,36 @@ export class TreeElement {
   constructor(title, expandable) {
     /** @type {?TreeOutline} */
     this.treeOutline = null;
+    /** @type {?TreeElement} */
     this.parent = null;
+    /** @type {?TreeElement} */
     this.previousSibling = null;
+    /** @type {?TreeElement} */
     this.nextSibling = null;
     this._boundOnFocus = this._onFocus.bind(this);
     this._boundOnBlur = this._onBlur.bind(this);
 
-    this._listItemNode = /** @type {!HTMLLIElement} */ (createElement('li'));
+    this._listItemNode = /** @type {!HTMLLIElement} */ (document.createElement('li'));
 
+    /** @type {!Node} */
     this.titleElement = this._listItemNode.createChild('span', 'tree-element-title');
-    this._listItemNode.treeElement = this;
+    treeElementBylistItemNode.set(this._listItemNode, this);
+    /** @type {string|!Node} */
+    this._title = '';
     if (title) {
       this.title = title;
     }
-    this._listItemNode.addEventListener('mousedown', this._handleMouseDown.bind(this), false);
-    this._listItemNode.addEventListener('click', this._treeElementToggled.bind(this), false);
+    this._listItemNode.addEventListener(
+        'mousedown', /** @type {!EventListener} */ (this._handleMouseDown.bind(this)), false);
+    this._listItemNode.addEventListener(
+        'click', /** @type {!EventListener} */ (this._treeElementToggled.bind(this)), false);
     this._listItemNode.addEventListener('dblclick', this._handleDoubleClick.bind(this), false);
     ARIAUtils.markAsTreeitem(this._listItemNode);
 
-    this._childrenListNode = createElement('ol');
-    this._childrenListNode.parentTreeElement = this;
+    /** @type {?Array<!TreeElement>} */
+    this._children = null;
+    this._childrenListNode = document.createElement('ol');
+    nodeToParentTreeElementMap.set(this._childrenListNode, this);
     this._childrenListNode.classList.add('children');
     ARIAUtils.markAsGroup(this._childrenListNode);
 
@@ -478,9 +511,30 @@ export class TreeElement {
     this._selectable = true;
     this.expanded = false;
     this.selected = false;
+    /** @type {boolean} */
+    this._expandable;
     this.setExpandable(expandable || false);
     this._collapsible = true;
     this.toggleOnClick = false;
+    /** @type {?HTMLButtonElement} */
+    this.button = null;
+    this.root = false;
+    /** @type {string} */
+    this._tooltip = '';
+    /** @type {?HTMLElement} */
+    this._leadingIconsElement = null;
+    /** @type {?HTMLElement} */
+    this._trailingIconsElement = null;
+    /** @type {?HTMLElement} */
+    this._selectionElement = null;
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {!TreeElement|undefined}
+   */
+  static getTreeElementBylistItemNode(node) {
+    return treeElementBylistItemNode.get(node);
   }
 
   /**
@@ -585,9 +639,9 @@ export class TreeElement {
 
     let insertionIndex;
     if (comparator) {
-      insertionIndex = this._children.lowerBound(child, comparator);
+      insertionIndex = Platform.ArrayUtilities.lowerBound(this._children, child, comparator);
     } else if (this.treeOutline && this.treeOutline._comparator) {
-      insertionIndex = this._children.lowerBound(child, this.treeOutline._comparator);
+      insertionIndex = Platform.ArrayUtilities.lowerBound(this._children, child, this.treeOutline._comparator);
     } else {
       insertionIndex = this._children.length;
     }
@@ -658,7 +712,7 @@ export class TreeElement {
    * @param {number} childIndex
    */
   removeChildAtIndex(childIndex) {
-    if (childIndex < 0 || childIndex >= this._children.length) {
+    if (!this._children || childIndex < 0 || childIndex >= this._children.length) {
       throw 'childIndex out of range';
     }
 
@@ -710,7 +764,7 @@ export class TreeElement {
       return;
     }
 
-    const childIndex = this._children.indexOf(child);
+    const childIndex = this._children ? this._children.indexOf(child) : -1;
     if (childIndex === -1) {
       throw 'child not found in this node\'s children';
     }
@@ -724,20 +778,21 @@ export class TreeElement {
       this.select(true);
     }
 
-    for (let i = 0; this._children && i < this._children.length; ++i) {
-      const child = this._children[i];
-      child.previousSibling = null;
-      child.nextSibling = null;
-      child.parent = null;
+    if (this._children) {
+      for (const child of this._children) {
+        child.previousSibling = null;
+        child.nextSibling = null;
+        child.parent = null;
 
-      if (this.treeOutline) {
-        this.treeOutline._unbindTreeElement(child);
+        if (this.treeOutline) {
+          this.treeOutline._unbindTreeElement(child);
+        }
+        for (let current = child.firstChild(); this.treeOutline && current;
+             current = current.traverseNextTreeElement(false, child, true)) {
+          this.treeOutline._unbindTreeElement(current);
+        }
+        child._detach();
       }
-      for (let current = child.firstChild(); this.treeOutline && current;
-           current = current.traverseNextTreeElement(false, child, true)) {
-        this.treeOutline._unbindTreeElement(current);
-      }
-      child._detach();
     }
     this._children = [];
     if (this.treeOutline) {
@@ -809,7 +864,7 @@ export class TreeElement {
     if (typeof this._title === 'string') {
       return this._title;
     }
-    return this._title.textContent;
+    return this._title.textContent || '';
   }
 
   /**
@@ -817,7 +872,9 @@ export class TreeElement {
    */
   startEditingTitle(editingConfig) {
     InplaceEditor.startEditing(/** @type {!Element} */ (this.titleElement), editingConfig);
-    this.treeOutline._shadowRoot.getSelection().selectAllChildren(this.titleElement);
+    if (this.treeOutline) {
+      this.treeOutline.onStartedEditingTitle(this);
+    }
   }
 
   /**
@@ -828,7 +885,7 @@ export class TreeElement {
       return;
     }
     if (!this._leadingIconsElement) {
-      this._leadingIconsElement = document.createElement('div');
+      this._leadingIconsElement = /** @type {!HTMLElement} */ (document.createElement('div'));
       this._leadingIconsElement.classList.add('leading-icons');
       this._leadingIconsElement.classList.add('icons-container');
       this._listItemNode.insertBefore(this._leadingIconsElement, this.titleElement);
@@ -848,7 +905,7 @@ export class TreeElement {
       return;
     }
     if (!this._trailingIconsElement) {
-      this._trailingIconsElement = document.createElement('div');
+      this._trailingIconsElement = /** @type {!HTMLElement} */ (document.createElement('div'));
       this._trailingIconsElement.classList.add('trailing-icons');
       this._trailingIconsElement.classList.add('icons-container');
       this._listItemNode.appendChild(this._trailingIconsElement);
@@ -865,7 +922,7 @@ export class TreeElement {
    * @return {string}
    */
   get tooltip() {
-    return this._tooltip || '';
+    return this._tooltip;
   }
 
   /**
@@ -876,7 +933,7 @@ export class TreeElement {
       return;
     }
     this._tooltip = x;
-    this._listItemNode.title = x;
+    Tooltip.install(this._listItemNode, x);
   }
 
   /**
@@ -955,7 +1012,7 @@ export class TreeElement {
       return;
     }
     if (!this._selectionElement) {
-      this._selectionElement = document.createElement('div');
+      this._selectionElement = /** @type {!HTMLElement} */ (document.createElement('div'));
       this._selectionElement.classList.add('selection');
       this._selectionElement.classList.add('fill');
     }
@@ -963,15 +1020,15 @@ export class TreeElement {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _treeElementToggled(event) {
-    const element = event.currentTarget;
-    if (element.treeElement !== this || element.hasSelection()) {
+    const element = /** @type {?Node} */ (event.currentTarget);
+    if (!element || treeElementBylistItemNode.get(element) !== this || element.hasSelection()) {
       return;
     }
 
-    console.assert(!!this.treeOutline);
+    console.assert(Boolean(this.treeOutline));
     const showSelectionOnKeyboardFocus = this.treeOutline ? this.treeOutline._showSelectionOnKeyboardFocus : false;
     const toggleOnClick = this.toggleOnClick && (showSelectionOnKeyboardFocus || !this.selectable);
     const isInTriangle = this.isEventWithinDisclosureTriangle(event);
@@ -996,17 +1053,17 @@ export class TreeElement {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _handleMouseDown(event) {
-    const element = event.currentTarget;
+    const element = /** @type {?Node}*/ (event.currentTarget);
     if (!element) {
       return;
     }
     if (!this.selectable) {
       return;
     }
-    if (element.treeElement !== this) {
+    if (treeElementBylistItemNode.get(element) !== this) {
       return;
     }
 
@@ -1021,8 +1078,8 @@ export class TreeElement {
    * @param {!Event} event
    */
   _handleDoubleClick(event) {
-    const element = event.currentTarget;
-    if (!element || element.treeElement !== this) {
+    const element = /** @type {?Node} */ (event.currentTarget);
+    if (!element || treeElementBylistItemNode.get(element) !== this) {
       return;
     }
 
@@ -1053,13 +1110,14 @@ export class TreeElement {
       this.treeOutline.dispatchEventToListeners(Events.ElementCollapsed, this);
     }
 
-    const selectedTreeElement = this.treeOutline.selectedTreeElement;
+    const selectedTreeElement = this.treeOutline && this.treeOutline.selectedTreeElement;
     if (selectedTreeElement && selectedTreeElement.hasAncestor(this)) {
       this.select(/* omitFocus */ true, /* selectedByUser */ true);
     }
   }
 
   collapseRecursively() {
+    /** @type {?TreeElement} */
     let item = this;
     while (item) {
       if (item.expanded) {
@@ -1105,14 +1163,15 @@ export class TreeElement {
    * @returns {!Promise<void>}
    */
   async expandRecursively(maxDepth) {
+    /** @type {?TreeElement} */
     let item = this;
-    const info = {};
+    const info = {depthChange: 0};
     let depth = 0;
 
     // The Inspector uses TreeOutlines to represents object properties, so recursive expansion
     // in some case can be infinite, since JavaScript objects can hold circular references.
     // So default to a recursion cap of 3 levels, since that gives fairly good results.
-    if (isNaN(maxDepth)) {
+    if (maxDepth === undefined || isNaN(maxDepth)) {
       maxDepth = 3;
     }
 
@@ -1151,6 +1210,7 @@ export class TreeElement {
       return true;
     }
 
+    /** @type {?TreeElement} */
     let nextSelectedElement = this.parent;
     while (nextSelectedElement && !nextSelectedElement.selectable) {
       nextSelectedElement = nextSelectedElement.parent;
@@ -1205,7 +1265,9 @@ export class TreeElement {
       currentAncestor = currentAncestor.parent;
     }
 
-    this.treeOutline._deferredScrollIntoView(this, !!center);
+    if (this.treeOutline) {
+      this.treeOutline._deferredScrollIntoView(this, Boolean(center));
+    }
   }
 
   /**
@@ -1223,12 +1285,15 @@ export class TreeElement {
     return true;
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   selectOnMouseDown(event) {
     if (this.select(false, true)) {
       event.consume(true);
     }
 
-    if (this._listItemNode.draggable && this._selectionElement) {
+    if (this._listItemNode.draggable && this._selectionElement && this.treeOutline) {
       const marginLeft =
           this.treeOutline.element.getBoundingClientRect().left - this._listItemNode.getBoundingClientRect().left;
       // By default the left margin extends far off screen. This is not a problem except when dragging an element.
@@ -1285,7 +1350,7 @@ export class TreeElement {
    */
   _setFocusable(focusable) {
     if (focusable) {
-      this._listItemNode.setAttribute('tabIndex', this.treeOutline && this.treeOutline._preventTabOrder ? -1 : 0);
+      this._listItemNode.setAttribute('tabIndex', (this.treeOutline && this.treeOutline._preventTabOrder) ? '-1' : '0');
       this._listItemNode.addEventListener('focus', this._boundOnFocus, false);
       this._listItemNode.addEventListener('blur', this._boundOnBlur, false);
     } else {
@@ -1296,7 +1361,7 @@ export class TreeElement {
   }
 
   _onFocus() {
-    if (this.treeOutline._useLightSelectionColor) {
+    if (!this.treeOutline || this.treeOutline._useLightSelectionColor) {
       return;
     }
     if (!this.treeOutline.contentElement.classList.contains('hide-selection-when-blurred')) {
@@ -1305,7 +1370,7 @@ export class TreeElement {
   }
 
   _onBlur() {
-    if (this.treeOutline._useLightSelectionColor) {
+    if (!this.treeOutline || this.treeOutline._useLightSelectionColor) {
       return;
     }
     if (!this.treeOutline.contentElement.classList.contains('hide-selection-when-blurred')) {
@@ -1410,7 +1475,7 @@ export class TreeElement {
    * @param {boolean} skipUnrevealed
    * @param {?TreeElement=} stayWithin
    * @param {boolean=} dontPopulate
-   * @param {!Object=} info
+   * @param {!{depthChange:number}=} info
    * @return {?TreeElement}
    */
   traverseNextTreeElement(skipUnrevealed, stayWithin, dontPopulate, info) {
@@ -1490,23 +1555,16 @@ export class TreeElement {
   }
 
   /**
+   * @param {!MouseEvent} event
    * @return {boolean}
    */
   isEventWithinDisclosureTriangle(event) {
+    const arrowToggleWidth = 10;
     // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446)
     const paddingLeftValue = window.getComputedStyle(this._listItemNode).paddingLeft;
     console.assert(paddingLeftValue.endsWith('px'));
     const computedLeftPadding = parseFloat(paddingLeftValue);
     const left = this._listItemNode.totalOffsetLeft() + computedLeftPadding;
-    return event.pageX >= left && event.pageX <= left + TreeElement._ArrowToggleWidth && this._expandable;
+    return event.pageX >= left && event.pageX <= left + arrowToggleWidth && this._expandable;
   }
 }
-
-/** @const */
-TreeElement._ArrowToggleWidth = 10;
-
-(function() {
-const img = new Image();
-img.src = 'Images/treeoutlineTriangles.svg';
-TreeElement._imagePreload = img;
-})();

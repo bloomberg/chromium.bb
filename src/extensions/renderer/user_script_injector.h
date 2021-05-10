@@ -39,7 +39,7 @@ class UserScriptInjector : public ScriptInjector,
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
   bool IsUserGesture() const override;
-  base::Optional<CSSOrigin> GetCssOrigin() const override;
+  CSSOrigin GetCssOrigin() const override;
   bool IsRemovingCSS() const override;
   bool IsAddingCSS() const override;
   const base::Optional<std::string> GetInjectionKey() const override;
@@ -68,8 +68,8 @@ class UserScriptInjector : public ScriptInjector,
   void OnWillNotInject(InjectFailureReason reason,
                        content::RenderFrame* render_frame) override;
 
-  // The associated user script. Owned by the UserScriptInjector that created
-  // this object.
+  // The associated user script. Owned by the UserScriptSet that created this
+  // object.
   const UserScript* script_;
 
   // The UserScriptSet that eventually owns the UserScript this
@@ -80,7 +80,7 @@ class UserScriptInjector : public ScriptInjector,
   // The id of the associated user script. We cache this because when we update
   // the |script_| associated with this injection, the old referance may be
   // deleted.
-  int script_id_;
+  std::string script_id_;
 
   // The associated host id, preserved for the same reason as |script_id|.
   HostID host_id_;

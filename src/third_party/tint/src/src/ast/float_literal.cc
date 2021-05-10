@@ -17,19 +17,20 @@
 #include <limits>
 #include <sstream>
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::FloatLiteral);
+
 namespace tint {
 namespace ast {
 
-FloatLiteral::FloatLiteral(ast::type::Type* type, float value)
-    : Literal(type), value_(value) {}
+FloatLiteral::FloatLiteral(const Source& source, type::Type* type, float value)
+    : Base(source, type), value_(value) {}
 
 FloatLiteral::~FloatLiteral() = default;
 
-bool FloatLiteral::IsFloat() const {
-  return true;
-}
-
-std::string FloatLiteral::to_str() const {
+std::string FloatLiteral::to_str(const semantic::Info&) const {
   return std::to_string(value_);
 }
 
@@ -39,6 +40,13 @@ std::string FloatLiteral::name() const {
   out.precision(std::numeric_limits<float>::max_digits10);
   out << "__float" << value_;
   return out.str();
+}
+
+FloatLiteral* FloatLiteral::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type());
+  return ctx->dst->create<FloatLiteral>(src, ty, value_);
 }
 
 }  // namespace ast

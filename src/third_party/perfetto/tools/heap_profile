@@ -32,8 +32,8 @@ import uuid
 
 
 TRACE_TO_TEXT_SHAS = {
-    'linux': '1ba3c2af9acc307ad924759b857c4024392916f1',
-    'mac': '09570bc9bd2697ae785c907dbfc296e8abe70c28',
+    'linux': '0df4f571099135a29659caf35fd5e343ef59bdc3',
+    'mac': '71b86dfd10409fd9ad9c41cc06cd8533bd2ffa85',
 }
 TRACE_TO_TEXT_PATH = tempfile.gettempdir()
 TRACE_TO_TEXT_BASE_URL = ('https://storage.googleapis.com/perfetto/')
@@ -47,10 +47,14 @@ NOOUT = {
 UUID = str(uuid.uuid4())[-6:]
 
 def check_hash(file_name, sha_value):
+  file_hash = hashlib.sha1()
   with open(file_name, 'rb') as fd:
-    # TODO(fmayer): Chunking.
-    file_hash = hashlib.sha1(fd.read()).hexdigest()
-    return file_hash == sha_value
+    while True:
+      chunk = fd.read(4096)
+      if not chunk:
+        break
+      file_hash.update(chunk)
+    return file_hash.hexdigest() == sha_value
 
 
 def load_trace_to_text(platform):
@@ -82,7 +86,7 @@ PACKAGES_LIST_CFG = '''data_sources {
 
 CFG_INDENT = '      '
 CFG = '''buffers {{
-  size_kb: 32768
+  size_kb: 63488
 }}
 
 data_sources {{
@@ -126,6 +130,23 @@ def print_no_profile_error():
     "If this is unexpected, check "
     "https://perfetto.dev/docs/data-sources/native-heap-profiler#troubleshooting.",
     file=sys.stderr)
+
+def known_issues_url(number):
+  return ('https://perfetto.dev/docs/data-sources/native-heap-profiler'
+          '#known-issues-android{}'.format(number))
+
+KNOWN_ISSUES = {
+  '10': known_issues_url(10),
+  'Q': known_issues_url(10),
+  '11': known_issues_url(11),
+  'R': known_issues_url(11),
+}
+
+def maybe_known_issues():
+  release_or_codename = subprocess.check_output(
+    ['adb', 'shell', 'getprop', 'ro.build.version.release_or_codename']
+  ).decode('utf-8').strip()
+  return KNOWN_ISSUES.get(release_or_codename, None)
 
 SDK = {
     'R': 30,
@@ -189,6 +210,12 @@ def main(argv):
       "--all-heaps",
       action="store_true",
       help="Collect allocations from all heaps registered by target."
+  )
+  parser.add_argument(
+      "--no-android-tree-symbolization",
+      action="store_true",
+      help="Do not symbolize using currently lunched target in the "
+      "Android tree."
   )
   parser.add_argument(
       "--disable-selinux",
@@ -362,6 +389,11 @@ def main(argv):
     if has_trace_to_text:
       trace_to_text_binary = load_trace_to_text(platform)
 
+  known_issues = maybe_known_issues()
+  if known_issues:
+    print('If you are experiencing problems, please see the known issues for '
+          'your release: {}.'.format(known_issues))
+
   # TODO(fmayer): Maybe feature detect whether we can remove traces instead of
   # this.
   uuid_trace = release_or_newer('R')
@@ -460,10 +492,63 @@ def main(argv):
     print('This file can be opened using the Perfetto UI, https://ui.perfetto.dev')
     return 0
 
-  trace_to_text_output = subprocess.check_output(
-      [trace_to_text_binary, 'profile',
+  binary_path = os.getenv('PERFETTO_BINARY_PATH')
+  if not args.no_android_tree_symbolization:
+    product_out = os.getenv('ANDROID_PRODUCT_OUT')
+    if product_out:
+      product_out_symbols = product_out + '/symbols'
+    else:
+      product_out_symbols = None
+
+    if binary_path is None:
+      binary_path = product_out_symbols
+    elif product_out_symbols is not None:
+      binary_path += ":" + product_out_symbols
+
+  trace_file = os.path.join(profile_target, 'raw-trace')
+  concat_files = [trace_file]
+
+  if binary_path is not None:
+    with open(os.path.join(profile_target, 'symbols'), 'w') as fd:
+      ret = subprocess.call([
+          trace_to_text_binary, 'symbolize',
           os.path.join(profile_target, 'raw-trace')],
-      env=os.environ)
+          env=dict(os.environ, PERFETTO_BINARY_PATH=binary_path),
+          stdout=fd)
+    if ret == 0:
+      concat_files.append(os.path.join(profile_target, 'symbols'))
+    else:
+      print("Failed to symbolize. Continuing without symbols.",
+      file=sys.stderr)
+
+  proguard_map = os.getenv('PERFETTO_PROGUARD_MAP')
+  if proguard_map is not None:
+    with open(os.path.join(profile_target, 'deobfuscation-packets'), 'w') as fd:
+      ret = subprocess.call([
+          trace_to_text_binary, 'deobfuscate',
+          os.path.join(profile_target, 'raw-trace')],
+          env=dict(os.environ, PERFETTO_PROGUARD_MAP=proguard_map),
+          stdout=fd)
+    if ret == 0:
+      concat_files.append(
+        os.path.join(profile_target, 'deobfuscation-packets'))
+    else:
+      print("Failed to deobfuscate. Continuing without deobfuscated.",
+      file=sys.stderr)
+
+  if len(concat_files) > 1:
+    with open(os.path.join(profile_target, 'symbolized-trace'), 'w') as out:
+      for fn in concat_files:
+        with open(fn, 'r') as inp:
+          while True:
+            buf = inp.read(4096)
+            if not buf:
+              break
+            out.write(buf)
+    trace_file = os.path.join(profile_target, 'symbolized-trace')
+
+  trace_to_text_output = subprocess.check_output(
+      [trace_to_text_binary, 'profile', trace_file])
   profile_path = None
   for word in trace_to_text_output.decode('utf-8').split():
     if 'heap_profile-' in word:
@@ -491,32 +576,6 @@ def main(argv):
     if os.path.lexists(symlink_path):
       os.unlink(symlink_path)
     os.symlink(profile_target, symlink_path)
-
-  binary_path = os.getenv('PERFETTO_BINARY_PATH')
-  if binary_path is not None:
-    with open(os.path.join(profile_target, 'symbols'), 'w') as fd:
-      ret = subprocess.call([
-          trace_to_text_binary, 'symbolize',
-          os.path.join(profile_target, 'raw-trace')],
-          env=os.environ,
-          stdout=fd)
-      if ret != 0:
-        print("Failed to symbolize. Continuing without symbols.",
-              file=sys.stderr)
-    if ret == 0:
-      with open(os.path.join(profile_target, 'symbolized-trace'), 'w') as out,\
-           open(os.path.join(profile_target, 'raw-trace'), 'r') as in1,\
-           open(os.path.join(profile_target, 'symbols'), 'r') as in2:
-        while True:
-          buf = in1.read(4096)
-          if not buf:
-            break
-          out.write(buf)
-        while True:
-          buf = in2.read(4096)
-          if not buf:
-            break
-          out.write(buf)
 
   if symlink_path is not None:
     print("Wrote profiles to {} (symlink {})".format(

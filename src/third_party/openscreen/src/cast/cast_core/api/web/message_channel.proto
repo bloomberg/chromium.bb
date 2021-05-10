@@ -2,15 +2,13 @@ syntax = "proto3";
 
 package cast.web;
 
-import "google/protobuf/empty.proto";
-
 option optimize_for = LITE_RUNTIME;
 
 message Message {
   oneof message_type {
     MessageRequest request = 1;
     MessageResponse response = 2;
-    ChannelStatus error = 3;
+    MessagePortStatus status = 3;
   }
 
   MessageChannelDescriptor channel = 4;
@@ -37,13 +35,15 @@ message MessageResponse {
 // at 0x0 and increment by one to avoid collisions.
 message MessagePortDescriptor {
   MessageChannelDescriptor channel = 1;
-  uint32 sequence_number = 2;
+  MessagePortStatus peer_status = 2;
+  uint32 sequence_number = 3;
 }
 
-message ChannelStatus {
+message MessagePortStatus {
   enum Status {
     OK = 0;
     ERROR = 1;
+    STARTED = 2;
   }
 
   Status status = 1;

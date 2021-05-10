@@ -46,6 +46,9 @@ class ASH_EXPORT HoldingSpaceTestApi {
   // otherwise.
   bool IsShowingInShelf();
 
+  // Returns the header of the downloads section in holding space UI.
+  views::View* GetDownloadsSectionHeader();
+
   // Returns the collection of download chips in holding space UI.
   // If holding space UI is not visible, an empty collection is returned.
   std::vector<views::View*> GetDownloadChips();
@@ -61,14 +64,26 @@ class ASH_EXPORT HoldingSpaceTestApi {
   // Returns the holding space tray in the shelf.
   views::View* GetTray();
 
-  // Returns the holding space tray icon in the shelf.
-  views::View* GetTrayIcon();
+  // Returns the view drawn on top of the holding space tray to indicate that
+  // it is a drop target capable of handling the current drag payload.
+  views::View* GetTrayDropTargetOverlay();
 
-  // Returns whether the pinned files container is shown.
-  bool PinnedFilesContainerShown() const;
+  // Returns the holding space tray icon view for the default, non content
+  // forward  icon.
+  views::View* GetDefaultTrayIcon();
 
-  // Returns whether the recent files container is shown.
-  bool RecentFilesContainerShown() const;
+  // Returns the holding space tray icon view for the content forward icon,
+  // which displays previews of most recent items added to holding space.
+  views::View* GetPreviewsTrayIcon();
+
+  // Returns the pinned files bubble.
+  views::View* GetPinnedFilesBubble();
+
+  // Returns whether the pinned files bubble is shown.
+  bool PinnedFilesBubbleShown() const;
+
+  // Returns whether the recent files bubble is shown.
+  bool RecentFilesBubbleShown() const;
 
  private:
   HoldingSpaceTray* holding_space_tray_ = nullptr;

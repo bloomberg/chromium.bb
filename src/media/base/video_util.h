@@ -7,13 +7,26 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/base/status.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+class GrDirectContext;
+
+namespace gpu {
+namespace raster {
+class RasterInterface;
+}  // namespace raster
+}  // namespace gpu
+
 namespace media {
 
+class VideoFramePool;
 class VideoFrame;
 
 // Computes the pixel aspect ratio of a given |visible_rect| from its
@@ -134,14 +147,26 @@ MEDIA_EXPORT gfx::Size GetRectSizeFromOrigin(const gfx::Rect& rect);
 MEDIA_EXPORT gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
                                              const gfx::Size& target);
 
-// Copy an RGB bitmap into the specified |region_in_frame| of a YUV video frame.
-// Fills the regions outside |region_in_frame| with black.
-MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8_t* source,
-                                      int stride,
-                                      const gfx::Rect& region_in_frame,
-                                      VideoFrame* frame);
+// A helper function to map GpuMemoryBuffer-based VideoFrame. This function
+// maps the given GpuMemoryBuffer of |frame| as-is without converting pixel
+// format. The returned VideoFrame owns the |frame|.
+MEDIA_EXPORT scoped_refptr<VideoFrame> ConvertToMemoryMappedFrame(
+    scoped_refptr<VideoFrame> frame);
 
-// Converts a frame with YV12A format into I420 by dropping alpha channel.
+// This function synchronously reads pixel data from textures associated with
+// |txt_frame| and creates a new CPU memory backed frame. It's needed because
+// existing video encoders can't handle texture backed frames.
+//
+// TODO(crbug.com/1162530): Combine this function with
+// media::ConvertAndScaleFrame and put it into a new class
+// media:FrameSizeAndFormatConverter.
+MEDIA_EXPORT scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
+    const VideoFrame& txt_frame,
+    gpu::raster::RasterInterface* ri,
+    GrDirectContext* gr_context,
+    VideoFramePool* pool = nullptr);
+
+// Converts a frame with I420A format into I420 by dropping alpha channel.
 MEDIA_EXPORT scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
     scoped_refptr<VideoFrame> frame);
 
@@ -163,6 +188,23 @@ MEDIA_EXPORT scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
 // identical.
 MEDIA_EXPORT bool I420CopyWithPadding(const VideoFrame& src_frame,
                                       VideoFrame* dst_frame) WARN_UNUSED_RESULT;
+
+// Copy pixel data from |src_frame| to |dst_frame| applying scaling and pixel
+// format conversion as needed. Both frames need to be mappabale and have either
+// I420 or NV12 pixel format.
+MEDIA_EXPORT Status ConvertAndScaleFrame(const VideoFrame& src_frame,
+                                         VideoFrame& dst_frame,
+                                         std::vector<uint8_t>& tmp_buf)
+    WARN_UNUSED_RESULT;
+
+// Backs a VideoFrame with a SkImage. The created frame takes a ref on the
+// provided SkImage to make this operation zero copy. Only works with CPU
+// backed images.
+MEDIA_EXPORT scoped_refptr<VideoFrame> CreateFromSkImage(
+    sk_sp<SkImage> sk_image,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp);
 
 }  // namespace media
 

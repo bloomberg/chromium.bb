@@ -86,12 +86,15 @@ class MockAutocompleteProviderClient
   }
   OmniboxTriggeredFeatureService* GetOmniboxTriggeredFeatureService()
       const override {
-    return nullptr;
+    return omnibox_triggered_feature_service_.get();
   }
-
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override {
     return nullptr;
+  }
+
+  signin::IdentityManager* GetIdentityManager() const override {
+    return identity_manager_;
   }
 
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
@@ -125,27 +128,25 @@ class MockAutocompleteProviderClient
     template_url_service_ = std::move(service);
   }
 
+  void set_identity_manager(signin::IdentityManager* identity_manager) {
+    identity_manager_ = identity_manager;
+  }
+
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
-  }
-
-  bool IsIncognitoModeAvailable() const override {
-    return incognito_mode_available_;
-  }
-
-  void set_incognito_mode_available(bool incognito_mode_available) {
-    incognito_mode_available_ = incognito_mode_available;
   }
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
+  std::unique_ptr<TemplateURLService> template_url_service_;
   std::unique_ptr<RemoteSuggestionsService> remote_suggestions_service_;
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
-  std::unique_ptr<TemplateURLService> template_url_service_;
-  bool incognito_mode_available_;
+  std::unique_ptr<OmniboxTriggeredFeatureService>
+      omnibox_triggered_feature_service_;
+  signin::IdentityManager* identity_manager_ = nullptr;  // Not owned.
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_

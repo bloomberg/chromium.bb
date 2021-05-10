@@ -15,21 +15,19 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/vr/android/arcore/arcore_gl.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace vr {
-class ArCoreSessionUtils;
-}  // namespace vr
-
 namespace device {
 
 class ArImageTransportFactory;
 class ArCoreFactory;
 class ArCoreGlThread;
+class ArCoreSessionUtils;
 class MailboxToSurfaceBridge;
 class MailboxToSurfaceBridgeFactory;
 
@@ -40,7 +38,7 @@ class COMPONENT_EXPORT(VR_ARCORE) ArCoreDevice : public VRDeviceBase {
       std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
       std::unique_ptr<MailboxToSurfaceBridgeFactory>
           mailbox_to_surface_bridge_factory,
-      std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils);
+      std::unique_ptr<ArCoreSessionUtils> arcore_session_utils);
   ~ArCoreDevice() override;
 
   // VRDeviceBase implementation.
@@ -93,8 +91,7 @@ class COMPONENT_EXPORT(VR_ARCORE) ArCoreDevice : public VRDeviceBase {
 
   // Replies to the pending mojo RequestSession request.
   void CallDeferredRequestSessionCallback(
-      base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>
-          enabled_features);
+      base::Optional<ArCoreGlInitializeResult> arcore_initialization_result);
 
   // Tells the GL thread to initialize a GL context and other resources,
   // using the supplied window as a drawing surface.
@@ -104,23 +101,18 @@ class COMPONENT_EXPORT(VR_ARCORE) ArCoreDevice : public VRDeviceBase {
 
   // Called when the GL thread's GL context initialization completes.
   void OnArCoreGlInitializationComplete(
-      base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>
-          enabled_features);
+      base::Optional<ArCoreGlInitializeResult> arcore_initialization_result);
 
   void OnCreateSessionCallback(
       mojom::XRRuntime::RequestSessionCallback deferred_callback,
-      const std::unordered_set<device::mojom::XRSessionFeature>&
-          enabled_features,
-      mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
-      mojom::VRDisplayInfoPtr display_info,
-      mojo::PendingRemote<mojom::XRSessionController> session_controller,
-      mojom::XRPresentationConnectionPtr presentation_connection);
+      ArCoreGlInitializeResult initialize_result,
+      ArCoreGlCreateSessionResult create_session_result);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<ArCoreFactory> arcore_factory_;
   std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory_;
   std::unique_ptr<MailboxToSurfaceBridgeFactory> mailbox_bridge_factory_;
-  std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils_;
+  std::unique_ptr<ArCoreSessionUtils> arcore_session_utils_;
 
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
 
@@ -143,9 +135,13 @@ class COMPONENT_EXPORT(VR_ARCORE) ArCoreDevice : public VRDeviceBase {
     std::unordered_set<device::mojom::XRSessionFeature> required_features_;
     std::unordered_set<device::mojom::XRSessionFeature> optional_features_;
 
+    device::mojom::XRDepthOptionsPtr depth_options_;
+
     // Collection of features that have been enabled on the session. Initially
     // empty, will be set only once the ArCoreGl has been initialized.
     std::unordered_set<device::mojom::XRSessionFeature> enabled_features_;
+
+    base::Optional<device::mojom::XRDepthConfig> depth_configuration_;
 
     std::vector<device::mojom::XRTrackedImagePtr> tracked_images_;
   };

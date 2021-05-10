@@ -51,6 +51,8 @@ void UpdateAnimationFlagsForEffect(const KeyframeEffect& effect,
     style.SetHasCurrentFilterAnimation(true);
   if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
     style.SetHasCurrentBackdropFilterAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor())))
+    style.SetHasCurrentBackgroundColorAnimation(true);
 }
 
 }  // namespace
@@ -149,6 +151,18 @@ bool ElementAnimations::UpdateBoxSizeAndCheckTransformAxisAlignment(
     }
   }
   return preserves_axis_alignment;
+}
+
+bool ElementAnimations::IsIdentityOrTranslation() const {
+  for (auto& entry : animations_) {
+    if (auto* effect = DynamicTo<KeyframeEffect>(entry.key->effect())) {
+      if (!effect->IsCurrent() && !effect->IsInEffect())
+        continue;
+      if (!effect->IsIdentityOrTranslation())
+        return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace blink

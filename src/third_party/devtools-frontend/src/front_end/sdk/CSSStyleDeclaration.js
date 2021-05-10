@@ -206,7 +206,7 @@ export class CSSStyleDeclaration {
         }  // Never generate synthetic shorthands when no value is available.
 
         // Generate synthetic shorthand we have a value for.
-        const shorthandImportance = !!this._shorthandIsImportant.has(shorthand);
+        const shorthandImportance = Boolean(this._shorthandIsImportant.has(shorthand));
         const shorthandProperty = new CSSProperty(
             this, this.allProperties().length, shorthand, shorthandValue, shorthandImportance, false, true, false);
         generatedProperties.push(shorthandProperty);
@@ -225,7 +225,7 @@ export class CSSStyleDeclaration {
      * @return {boolean}
      */
     function propertyHasRange(property) {
-      return !!property.range;
+      return Boolean(property.range);
     }
 
     if (this.range) {
@@ -287,6 +287,16 @@ export class CSSStyleDeclaration {
       const activeProperty = activeProperties.get(canonicalName);
       if (!activeProperty) {
         activeProperties.set(canonicalName, property);
+      } else if (!this.leadingProperties().find(prop => prop === property)) {
+        // For some -webkit- properties, the backend returns also the canonical
+        // property. e.g. if you set in the css only the property
+        // -webkit-background-clip, the backend will return
+        // -webkit-background-clip and background-clip.
+        // This behavior will invalidate -webkit-background-clip (only visually,
+        // the property will be correctly applied)
+        // So this is checking if the property is visible or not in the
+        // styles panel and if not, it will not deactivate the "activeProperty".
+        property.setActive(false);
       } else if (!activeProperty.important || property.important) {
         activeProperty.setActive(false);
         activeProperties.set(canonicalName, property);

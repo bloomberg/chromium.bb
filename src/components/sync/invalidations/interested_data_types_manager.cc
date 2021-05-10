@@ -24,14 +24,16 @@ void InterestedDataTypesManager::SetInterestedDataTypesHandler(
   interested_data_types_handler_ = handler;
 }
 
-const ModelTypeSet& InterestedDataTypesManager::GetInterestedDataTypes() const {
+base::Optional<ModelTypeSet>
+InterestedDataTypesManager::GetInterestedDataTypes() const {
   return data_types_;
 }
 
 void InterestedDataTypesManager::SetInterestedDataTypes(
     const ModelTypeSet& data_types,
     SyncInvalidationsService::InterestedDataTypesAppliedCallback callback) {
-  ModelTypeSet new_data_types = Difference(data_types, data_types_);
+  ModelTypeSet new_data_types =
+      Difference(data_types, data_types_.value_or(ModelTypeSet()));
   data_types_ = data_types;
   if (interested_data_types_handler_) {
     interested_data_types_handler_->OnInterestedDataTypesChanged(

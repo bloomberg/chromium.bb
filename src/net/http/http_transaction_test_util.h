@@ -83,6 +83,10 @@ struct MockTransaction {
   // If |response_time| is unspecified, the current time will be used.
   base::Time response_time;
   const char* data;
+  // Any aliases for the requested URL, as read from DNS records. The alias
+  // chain order is preserved in reverse, from canonical name (i.e. address
+  // record name) through to query name.
+  std::vector<std::string> dns_aliases;
   int test_mode;
   MockTransactionHandler handler;
   MockTransactionReadHandler read_handler;
@@ -249,6 +253,8 @@ class MockNetworkTransaction
   int ResumeNetworkStart() override;
 
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
+
+  void CloseConnectionOnDestruction() override;
 
   CreateHelper* websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;

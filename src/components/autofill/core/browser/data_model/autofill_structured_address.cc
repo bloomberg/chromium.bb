@@ -38,7 +38,6 @@ base::string16 AddressComponentWithRewriter::ValueForComparison() const {
 StreetName::StreetName(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_STREET_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 StreetName::~StreetName() = default;
@@ -46,7 +45,6 @@ StreetName::~StreetName() = default;
 DependentStreetName::DependentStreetName(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_DEPENDENT_STREET_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 DependentStreetName::~DependentStreetName() = default;
@@ -55,7 +53,6 @@ StreetAndDependentStreetName::StreetAndDependentStreetName(
     AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
                        parent,
-                       {&thoroughfare_name_, &dependent_thoroughfare_name_},
                        MergeMode::kDefault) {}
 
 StreetAndDependentStreetName::~StreetAndDependentStreetName() = default;
@@ -63,7 +60,6 @@ StreetAndDependentStreetName::~StreetAndDependentStreetName() = default;
 HouseNumber::HouseNumber(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_HOUSE_NUMBER,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 HouseNumber::~HouseNumber() = default;
@@ -71,25 +67,23 @@ HouseNumber::~HouseNumber() = default;
 Premise::Premise(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_PREMISE_NAME,
                        parent,
-                       {},
                        MergeMode::kDefault) {}
 
 Premise::~Premise() = default;
 
 Floor::Floor(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_FLOOR, parent, {}, MergeMode::kDefault) {}
+    : AddressComponent(ADDRESS_HOME_FLOOR, parent, MergeMode::kDefault) {}
 
 Floor::~Floor() = default;
 
 Apartment::Apartment(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_APT_NUM, parent, {}, MergeMode::kDefault) {}
+    : AddressComponent(ADDRESS_HOME_APT_NUM, parent, MergeMode::kDefault) {}
 
 Apartment::~Apartment() = default;
 
 SubPremise::SubPremise(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_SUBPREMISE,
                        parent,
-                       {&floor_, &apartment_},
                        MergeMode::kDefault) {}
 
 SubPremise::~SubPremise() = default;
@@ -101,7 +95,6 @@ StreetAddress::StreetAddress(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_STREET_ADDRESS,
           parent,
-          {&streets_, &number_, &premise_, &sub_premise_},
           MergeMode::kReplaceEmpty | MergeMode::kReplaceSubset |
               MergeMode::kDefault) {}
 
@@ -114,7 +107,9 @@ StreetAddress::GetParseRegularExpressionsByRelevance() const {
   return {pattern_provider->GetRegEx(RegEx::kParseHouseNumberStreetName),
           pattern_provider->GetRegEx(RegEx::kParseStreetNameHouseNumber),
           pattern_provider->GetRegEx(
-              RegEx::kParseStreetNameHouseNumberSuffixedFloor)};
+              RegEx::kParseStreetNameHouseNumberSuffixedFloor),
+          pattern_provider->GetRegEx(
+              RegEx::kParseStreetNameHouseNumberSuffixedFloorAndAppartmentRe)};
 }
 
 void StreetAddress::ParseValueAndAssignSubcomponentsByFallbackMethod() {
@@ -167,6 +162,16 @@ base::string16 StreetAddress::GetBestFormatString() const {
         "${ADDRESS_HOME_FLOOR;, ;. Stock}${ADDRESS_HOME_APT_NUM;, ;. Wohnung}");
   }
 
+  if (country_code == "MX") {
+    return base::ASCIIToUTF16(
+        "${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+        "${ADDRESS_HOME_FLOOR; - Piso ;}${ADDRESS_HOME_APT_NUM; - ;}");
+  }
+  if (country_code == "ES") {
+    return base::UTF8ToUTF16(
+        "${ADDRESS_HOME_STREET_NAME} ${ADDRESS_HOME_HOUSE_NUMBER}"
+        "${ADDRESS_HOME_FLOOR;, ;º}${ADDRESS_HOME_APT_NUM;, ;ª}");
+  }
   // Use the format for US/UK as the default.
   return base::ASCIIToUTF16(
       "${ADDRESS_HOME_HOUSE_NUMBER} ${ADDRESS_HOME_STREET_NAME} "
@@ -209,21 +214,21 @@ bool StreetAddress::IsValueValid() const {
 bool StreetAddress::ConvertAndGetTheValueForAdditionalFieldTypeName(
     const std::string& type_name,
     base::string16* value) const {
-  if (type_name == AutofillType(ADDRESS_HOME_LINE1).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE1)) {
     if (value) {
       *value =
           address_lines_.size() > 0 ? address_lines_.at(0) : base::string16();
     }
     return true;
   }
-  if (type_name == AutofillType(ADDRESS_HOME_LINE2).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE2)) {
     if (value) {
       *value =
           address_lines_.size() > 1 ? address_lines_.at(1) : base::string16();
     }
     return true;
   }
-  if (type_name == AutofillType(ADDRESS_HOME_LINE3).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE3)) {
     if (value) {
       *value =
           address_lines_.size() > 2 ? address_lines_.at(2) : base::string16();
@@ -240,11 +245,13 @@ bool StreetAddress::ConvertAndSetValueForAdditionalFieldTypeName(
     const base::string16& value,
     const VerificationStatus& status) {
   size_t index = 0;
-  if (type_name == AutofillType(ADDRESS_HOME_LINE1).ToString()) {
+  if (type_name == AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE1)) {
     index = 0;
-  } else if (type_name == AutofillType(ADDRESS_HOME_LINE2).ToString()) {
+  } else if (type_name ==
+             AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE2)) {
     index = 1;
-  } else if (type_name == AutofillType(ADDRESS_HOME_LINE3).ToString()) {
+  } else if (type_name ==
+             AutofillType::ServerFieldTypeToString(ADDRESS_HOME_LINE3)) {
     index = 2;
   } else {
     return false;
@@ -287,7 +294,6 @@ void StreetAddress::GetAdditionalSupportedFieldTypes(
 CountryCode::CountryCode(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_COUNTRY,
                        parent,
-                       {},
                        MergeMode::kReplaceEmpty |
                            MergeMode::kUseBetterOrNewerForSameValue) {}
 
@@ -298,7 +304,6 @@ CountryCode::~CountryCode() = default;
 DependentLocality::DependentLocality(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_DEPENDENT_LOCALITY,
                        parent,
-                       {},
                        MergeMode::kReplaceSubset | MergeMode::kReplaceEmpty) {}
 
 DependentLocality::~DependentLocality() = default;
@@ -308,7 +313,6 @@ DependentLocality::~DependentLocality() = default;
 City::City(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_CITY,
                        parent,
-                       {},
                        MergeMode::kReplaceSubset | MergeMode::kReplaceEmpty) {}
 
 City::~City() = default;
@@ -319,7 +323,6 @@ State::State(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_STATE,
           parent,
-          {},
           MergeMode::kPickShorterIfOneContainsTheOther | kReplaceEmpty) {}
 
 State::~State() = default;
@@ -330,7 +333,6 @@ PostalCode::PostalCode(AddressComponent* parent)
     : AddressComponentWithRewriter(
           ADDRESS_HOME_ZIP,
           parent,
-          {},
           MergeMode::kUseMostRecentSubstring | kReplaceEmpty) {}
 
 PostalCode::~PostalCode() = default;
@@ -342,16 +344,29 @@ base::string16 PostalCode::NormalizedValue() const {
 SortingCode::SortingCode(AddressComponent* parent)
     : AddressComponent(ADDRESS_HOME_SORTING_CODE,
                        parent,
-                       {},
                        MergeMode::kReplaceEmpty | kUseMostRecentSubstring) {}
 
 SortingCode::~SortingCode() = default;
 
-Address::Address() : Address{nullptr} {}
+Address::Address() : Address(nullptr) {}
 
 Address::Address(const Address& other) : Address() {
-  *this = other;
+  CopyFrom(other);
 }
+
+Address& Address::operator=(const Address& other) {
+  CopyFrom(other);
+  return *this;
+}
+
+// Addresses are mergeable when all of their children are mergeable.
+// Reformat the address from the children after merge if it changed.
+Address::Address(AddressComponent* parent)
+    : AddressComponent(ADDRESS_HOME_ADDRESS,
+                       parent,
+                       MergeMode::kMergeChildrenAndReformatIfNeeded) {}
+
+Address::~Address() = default;
 
 bool Address::WipeInvalidStructure() {
   // For structured addresses, currently it is sufficient to wipe the structure
@@ -359,17 +374,6 @@ bool Address::WipeInvalidStructure() {
   // that has a substructure.
   return street_address_.WipeInvalidStructure();
 }
-
-// Addresses are mergeable when all of their children are mergeable.
-// Reformat the address from their children after merge.
-Address::Address(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_ADDRESS,
-                       parent,
-                       {&street_address_, &postal_code_, &sorting_code_,
-                        &dependent_locality_, &city_, &state_, &country_code_},
-                       MergeMode::kMergeChildrenAndReformat) {}
-
-Address::~Address() = default;
 
 void Address::MigrateLegacyStructure(bool is_verified_profile) {
   // If this component already has a verification status, no profile is regarded

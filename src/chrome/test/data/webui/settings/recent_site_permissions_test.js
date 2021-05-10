@@ -4,7 +4,7 @@
 
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ContentSetting, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {ContentSetting, ContentSettingsTypes, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {Router, routes} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
@@ -54,22 +54,55 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
       {
         origin: 'https://bar.com',
         incognito: true,
-        recentPermissions:
-            [{setting: ContentSetting.BLOCK, displayName: 'location'}]
+        recentPermissions: [
+          {
+            setting: ContentSetting.BLOCK,
+            type: ContentSettingsTypes.GEOLOCATION,
+          },
+          {
+            setting: ContentSetting.BLOCK,
+            type: ContentSettingsTypes.NOTIFICATIONS,
+          },
+          {
+            setting: ContentSetting.BLOCK,
+            type: ContentSettingsTypes.MIC,
+          },
+          {
+            setting: ContentSetting.ALLOW,
+            type: ContentSettingsTypes.CAMERA,
+          },
+          {
+            setting: ContentSetting.ALLOW,
+            type: ContentSettingsTypes.ADS,
+          },
+          {
+            setting: ContentSetting.BLOCK,
+            source: SiteSettingSource.EMBARGO,
+            type: ContentSettingsTypes.MIDI_DEVICES,
+          },
+        ],
       },
       {
         origin: 'https://bar.com',
-        recentPermissions:
-            [{setting: ContentSetting.ALLOW, displayName: 'notifications'}]
+        recentPermissions: [
+          {
+            setting: ContentSetting.ALLOW,
+            type: ContentSettingsTypes.PROTOCOL_HANDLERS,
+          },
+        ]
       },
       {
         origin: 'http://foo.com',
         recentPermissions: [
-          {setting: ContentSetting.BLOCK, displayName: 'popups'}, {
+          {
             setting: ContentSetting.BLOCK,
-            displayName: 'clipboard',
-            source: SiteSettingSource.EMBARGO
-          }
+            type: ContentSettingsTypes.POPUPS,
+          },
+          {
+            setting: ContentSetting.BLOCK,
+            source: SiteSettingSource.EMBARGO,
+            type: ContentSettingsTypes.CLIPBOARD,
+          },
         ]
       },
     ];
@@ -89,5 +122,46 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
     assertTrue(isVisible(incognitoIcons[0]));
     assertFalse(isVisible(incognitoIcons[1]));
     assertFalse(isVisible(incognitoIcons[2]));
+
+    // Check that the text describing the changed permissions is correct.
+    const i18n = testElement.i18n.bind(testElement);
+
+    let allowed = i18n(
+        'recentPermissionAllowedTwoItems',
+        i18n('siteSettingsCameraMidSentence'),
+        i18n('siteSettingsAdsMidSentence'));
+    const autoBlocked = i18n(
+        'recentPermissionAutoBlockedOneItem',
+        i18n('siteSettingsMidiDevicesMidSentence'));
+    let blocked = i18n(
+        'recentPermissionBlockedMoreThanTwoItems',
+        i18n('siteSettingsLocationMidSentence'), 2);
+
+    const expectedPermissionString1 = `${allowed}${i18n('sentenceEnd')} ${
+        autoBlocked}${i18n('sentenceEnd')} ${blocked}${i18n('sentenceEnd')}`;
+
+    const expectedPermissionString2 = i18n(
+        'recentPermissionAllowedOneItem',
+        i18n('siteSettingsHandlersMidSentence'));
+
+    allowed = i18n(
+        'recentPermissionAutoBlockedOneItem',
+        i18n('siteSettingsClipboardMidSentence'));
+    blocked = i18n(
+        'recentPermissionBlockedOneItem',
+        i18n('siteSettingsPopupsMidSentence'));
+
+    const expectedPermissionString3 =
+        `${allowed}${i18n('sentenceEnd')} ${blocked}${i18n('sentenceEnd')}`;
+
+    assertEquals(
+        expectedPermissionString1,
+        siteEntries[0].querySelector('.second-line').textContent.trim());
+    assertEquals(
+        expectedPermissionString2,
+        siteEntries[1].querySelector('.second-line').textContent.trim());
+    assertEquals(
+        expectedPermissionString3,
+        siteEntries[2].querySelector('.second-line').textContent.trim());
   });
 });

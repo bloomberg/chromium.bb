@@ -27,6 +27,7 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/media/cdm_manifest.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
@@ -76,9 +77,9 @@ const char kWidevineCdmPlatform[] =
     "mac";
 #elif defined(OS_WIN)
     "win";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
     "cros";
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     "linux";
 #else
 #error This file should only be included for supported platforms.
@@ -196,7 +197,6 @@ class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
-  std::vector<std::string> GetMimeTypes() const override;
 
   // Updates CDM path if necessary.
   void UpdateCdmPath(const base::Version& cdm_version,
@@ -243,7 +243,7 @@ void WidevineCdmComponentInstallerPolicy::ComponentReady(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&WidevineCdmComponentInstallerPolicy::UpdateCdmPath,
                      base::Unretained(this), version, path,
-                     base::Passed(&manifest)));
+                     std::move(manifest)));
 }
 
 bool WidevineCdmComponentInstallerPolicy::VerifyInstallation(
@@ -292,11 +292,6 @@ std::string WidevineCdmComponentInstallerPolicy::GetName() const {
 update_client::InstallerAttributes
 WidevineCdmComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
-}
-
-std::vector<std::string> WidevineCdmComponentInstallerPolicy::GetMimeTypes()
-    const {
-  return std::vector<std::string>();
 }
 
 void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
@@ -380,7 +375,7 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
 #if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
                      launch_x86_64,
 #endif  // OS_MAC && ARCH_CPU_ARM64
-                     base::Passed(&manifest)));
+                     std::move(manifest)));
 #endif
 }
 

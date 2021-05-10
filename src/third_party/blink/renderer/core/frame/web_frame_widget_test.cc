@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
@@ -52,7 +53,7 @@ class TouchMoveEventListener final : public NativeEventListener {
 class WebFrameWidgetSimTest : public SimTest {};
 
 // Tests that if a WebView is auto-resized, the associated
-// WebViewFrameWidget requests a new viz::LocalSurfaceId to be allocated on the
+// WebFrameWidgetImpl requests a new viz::LocalSurfaceId to be allocated on the
 // impl thread.
 TEST_F(WebFrameWidgetSimTest, AutoResizeAllocatedLocalSurfaceId) {
   viz::ParentLocalSurfaceIdAllocator allocator;
@@ -74,17 +75,16 @@ TEST_F(WebFrameWidgetSimTest, AutoResizeAllocatedLocalSurfaceId) {
             WebView().MainFrameViewWidget()->LocalSurfaceIdFromParent());
   EXPECT_FALSE(WebView()
                    .MainFrameViewWidget()
-                   ->LayerTreeHost()
+                   ->LayerTreeHostForTesting()
                    ->new_local_surface_id_request_for_testing());
 
   constexpr gfx::Size size(200, 200);
-  static_cast<WebViewFrameWidget*>(WebView().MainFrameViewWidget())
-      ->DidAutoResize(size);
+  WebView().MainFrameViewWidget()->DidAutoResize(size);
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
             WebView().MainFrameViewWidget()->LocalSurfaceIdFromParent());
   EXPECT_TRUE(WebView()
                   .MainFrameViewWidget()
-                  ->LayerTreeHost()
+                  ->LayerTreeHostForTesting()
                   ->new_local_surface_id_request_for_testing());
 }
 
@@ -129,7 +129,7 @@ TEST_F(WebFrameWidgetSimTest, FrameSinkIdHitTestAPI) {
 #if defined(OS_ANDROID)
 TEST_F(WebFrameWidgetSimTest, ForceSendMetadataOnInput) {
   cc::LayerTreeHost* layer_tree_host =
-      WebView().MainFrameViewWidget()->LayerTreeHost();
+      WebView().MainFrameViewWidget()->LayerTreeHostForTesting();
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());
   // ShowVirtualKeyboard will trigger a text input state update.
@@ -139,14 +139,13 @@ TEST_F(WebFrameWidgetSimTest, ForceSendMetadataOnInput) {
 }
 #endif  // defined(OS_ANDROID)
 
-// A test that forces a RemoteMainFrame to be created and the LocalFrameRoot
-// to be a WebFrameWidgetImpl.
-class WebFrameWidgetImplSimTest : public SimTest {
+// A test that forces a RemoteMainFrame to be created.
+class WebFrameWidgetImplRemoteFrameSimTest : public SimTest {
  public:
   void SetUp() override {
     SimTest::SetUp();
     InitializeRemote();
-    CHECK(static_cast<WebFrameWidgetBase*>(LocalFrameRoot().FrameWidget())
+    CHECK(static_cast<WebFrameWidgetImpl*>(LocalFrameRoot().FrameWidget())
               ->ForSubframe());
   }
 
@@ -158,9 +157,10 @@ class WebFrameWidgetImplSimTest : public SimTest {
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
 // propagated to the LayerTreeHost when properties are synced for child local
 // roots.
-TEST_F(WebFrameWidgetImplSimTest,
+TEST_F(WebFrameWidgetImplRemoteFrameSimTest,
        ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
-  cc::LayerTreeHost* layer_tree_host = LocalFrameRootWidget()->LayerTreeHost();
+  cc::LayerTreeHost* layer_tree_host =
+      LocalFrameRootWidget()->LayerTreeHostForTesting();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   blink::VisualProperties visual_properties;
 
@@ -223,11 +223,11 @@ class MockHandledEventCallback {
   DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
 };
 
-class MockWebViewFrameWidget : public WebViewFrameWidget {
+class MockWebFrameWidgetImpl : public SimWebFrameWidget {
  public:
   template <typename... Args>
-  explicit MockWebViewFrameWidget(Args&&... args)
-      : WebViewFrameWidget(std::forward<Args>(args)...) {}
+  explicit MockWebFrameWidgetImpl(Args&&... args)
+      : SimWebFrameWidget(std::forward<Args>(args)...) {}
 
   MOCK_METHOD1(HandleInputEvent,
                WebInputEventResult(const WebCoalescedInputEvent&));
@@ -240,40 +240,39 @@ class MockWebViewFrameWidget : public WebViewFrameWidget {
                     bool event_processed));
 
   MOCK_METHOD1(WillHandleGestureEvent, bool(const WebGestureEvent& event));
+
+  // mojom::blink::WidgetHost overrides:
+  using SimWebFrameWidget::SetCursor;
 };
 
-WebViewFrameWidget* CreateWebViewFrameWidget(
-    util::PassKey<WebFrameWidget> pass_key,
-    WebWidgetClient& client,
-    WebViewImpl& web_view_impl,
-    CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
-        frame_widget_host,
-    CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
-        frame_widget,
-    CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
-        widget_host,
-    CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const viz::FrameSinkId& frame_sink_id,
-    bool is_for_nested_main_frame,
-    bool hidden,
-    bool never_composited) {
-  return MakeGarbageCollected<MockWebViewFrameWidget>(
-      pass_key, client, web_view_impl, std::move(frame_widget_host),
-      std::move(frame_widget), std::move(widget_host), std::move(widget),
-      std::move(task_runner), frame_sink_id, is_for_nested_main_frame, hidden,
-      never_composited);
-}
-
-class WebViewFrameWidgetSimTest : public SimTest {
+class WebFrameWidgetImplSimTest : public SimTest {
  public:
-  void SetUp() override {
-    InstallCreateWebViewFrameWidgetHook(CreateWebViewFrameWidget);
-    SimTest::SetUp();
+  SimWebFrameWidget* CreateSimWebFrameWidget(
+      base::PassKey<WebLocalFrame> pass_key,
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const viz::FrameSinkId& frame_sink_id,
+      bool hidden,
+      bool never_composited,
+      bool is_for_child_local_root,
+      bool is_for_nested_main_frame,
+      SimCompositor* compositor) override {
+    return MakeGarbageCollected<MockWebFrameWidgetImpl>(
+        compositor, pass_key, std::move(frame_widget_host),
+        std::move(frame_widget), std::move(widget_host), std::move(widget),
+        std::move(task_runner), frame_sink_id, hidden, never_composited,
+        is_for_child_local_root, is_for_nested_main_frame);
   }
 
-  MockWebViewFrameWidget* MockMainFrameWidget() {
-    return static_cast<MockWebViewFrameWidget*>(MainFrame().FrameWidget());
+  MockWebFrameWidgetImpl* MockMainFrameWidget() {
+    return static_cast<MockWebFrameWidgetImpl*>(MainFrame().FrameWidget());
   }
 
   void SendInputEvent(const WebInputEvent& event,
@@ -305,16 +304,19 @@ class WebViewFrameWidgetSimTest : public SimTest {
   base::HistogramTester histogram_tester_;
 };
 
-TEST_F(WebViewFrameWidgetSimTest, CursorChange) {
+TEST_F(WebFrameWidgetImplSimTest, CursorChange) {
   ui::Cursor cursor;
 
-  MockMainFrameWidget()->SetCursor(cursor);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(WebWidgetClient().CursorSetCount(), 1u);
+  frame_test_helpers::TestWebFrameWidgetHost& widget_host =
+      MockMainFrameWidget()->WidgetHost();
 
   MockMainFrameWidget()->SetCursor(cursor);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(WebWidgetClient().CursorSetCount(), 1u);
+  EXPECT_EQ(widget_host.CursorSetCount(), 1u);
+
+  MockMainFrameWidget()->SetCursor(cursor);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(widget_host.CursorSetCount(), 1u);
 
   EXPECT_CALL(*MockMainFrameWidget(), HandleInputEvent(_))
       .WillOnce(::testing::Return(WebInputEventResult::kNotHandled));
@@ -322,17 +324,17 @@ TEST_F(WebViewFrameWidgetSimTest, CursorChange) {
       SyntheticWebMouseEventBuilder::Build(WebInputEvent::Type::kMouseLeave),
       base::DoNothing());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(WebWidgetClient().CursorSetCount(), 1u);
+  EXPECT_EQ(widget_host.CursorSetCount(), 1u);
 
   MockMainFrameWidget()->SetCursor(cursor);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(WebWidgetClient().CursorSetCount(), 2u);
+  EXPECT_EQ(widget_host.CursorSetCount(), 2u);
 }
 
-TEST_F(WebViewFrameWidgetSimTest, EventOverscroll) {
+TEST_F(WebFrameWidgetImplSimTest, EventOverscroll) {
   ON_CALL(*MockMainFrameWidget(), WillHandleGestureEvent(_))
       .WillByDefault(testing::Invoke(
-          this, &WebViewFrameWidgetSimTest::OverscrollGestureEvent));
+          this, &WebFrameWidgetImplSimTest::OverscrollGestureEvent));
   EXPECT_CALL(*MockMainFrameWidget(), HandleInputEvent(_))
       .WillRepeatedly(::testing::Return(WebInputEventResult::kNotHandled));
 
@@ -356,7 +358,7 @@ TEST_F(WebViewFrameWidgetSimTest, EventOverscroll) {
   SendInputEvent(scroll, handled_event.GetCallback());
 }
 
-TEST_F(WebViewFrameWidgetSimTest, RenderWidgetInputEventUmaMetrics) {
+TEST_F(WebFrameWidgetImplSimTest, RenderWidgetInputEventUmaMetrics) {
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
   touch.touch_start_or_first_touch_move = true;
@@ -421,7 +423,7 @@ TEST_F(WebViewFrameWidgetSimTest, RenderWidgetInputEventUmaMetrics) {
 
 // Ensures that the compositor thread gets sent the gesture event & overscroll
 // amount for an overscroll initiated by a touchpad.
-TEST_F(WebViewFrameWidgetSimTest, SendElasticOverscrollForTouchpad) {
+TEST_F(WebFrameWidgetImplSimTest, SendElasticOverscrollForTouchpad) {
   WebGestureEvent scroll(WebInputEvent::Type::kGestureScrollUpdate,
                          WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                          WebGestureDevice::kTouchpad);
@@ -441,7 +443,7 @@ TEST_F(WebViewFrameWidgetSimTest, SendElasticOverscrollForTouchpad) {
 
 // Ensures that the compositor thread gets sent the gesture event & overscroll
 // amount for an overscroll initiated by a touchscreen.
-TEST_F(WebViewFrameWidgetSimTest, SendElasticOverscrollForTouchscreen) {
+TEST_F(WebFrameWidgetImplSimTest, SendElasticOverscrollForTouchscreen) {
   WebGestureEvent scroll(WebInputEvent::Type::kGestureScrollUpdate,
                          WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                          WebGestureDevice::kTouchscreen);
@@ -467,19 +469,17 @@ class NotifySwapTimesWebFrameWidgetTest : public SimTest {
     WebView().StopDeferringMainFrameUpdate();
     FrameWidgetBase()->UpdateCompositorViewportRect(gfx::Rect(200, 100));
 
-    auto root_layer = cc::SolidColorLayer::Create();
-    root_layer->SetBounds(gfx::Size(200, 100));
-    root_layer->SetBackgroundColor(SK_ColorGREEN);
-    FrameWidgetBase()->LayerTreeHost()->SetRootLayer(root_layer);
-
+    auto* root_layer =
+        FrameWidgetBase()->LayerTreeHostForTesting()->root_layer();
     auto color_layer = cc::SolidColorLayer::Create();
     color_layer->SetBounds(gfx::Size(100, 100));
-    root_layer->AddChild(color_layer);
+    cc::CopyProperties(root_layer, color_layer.get());
+    root_layer->SetChildLayerList(cc::LayerList({color_layer}));
     color_layer->SetBackgroundColor(SK_ColorRED);
   }
 
-  WebViewFrameWidget* FrameWidgetBase() {
-    return static_cast<WebViewFrameWidget*>(MainFrame().FrameWidget());
+  WebFrameWidgetImpl* FrameWidgetBase() {
+    return static_cast<WebFrameWidgetImpl*>(MainFrame().FrameWidget());
   }
 
   // |swap_to_presentation| determines how long after swap should presentation
@@ -489,7 +489,7 @@ class NotifySwapTimesWebFrameWidgetTest : public SimTest {
     base::RunLoop swap_run_loop;
     base::RunLoop presentation_run_loop;
 
-    // Register callbacks for swap time and presentation time.
+    // Register callbacks for presentation time.
     base::TimeTicks swap_time;
     MainFrame().FrameWidget()->NotifySwapAndPresentationTime(
         base::BindOnce(
@@ -519,7 +519,7 @@ class NotifySwapTimesWebFrameWidgetTest : public SimTest {
           /*presentation_time=*/swap_time + swap_to_presentation,
           base::TimeDelta::FromMilliseconds(16), 0);
     }
-    auto* last_frame_sink = WebWidgetClient().LastCreatedFrameSink();
+    auto* last_frame_sink = GetWebFrameWidget().LastCreatedFrameSink();
     last_frame_sink->NotifyDidPresentCompositorFrame(1, timing_details);
     presentation_run_loop.Run();
   }
@@ -572,7 +572,8 @@ TEST_F(NotifySwapTimesWebFrameWidgetTest,
 // not propagated to the LayerTreeHost when properties are synced for main
 // frame.
 TEST_F(WebFrameWidgetSimTest, ActivePinchGestureUpdatesLayerTreeHost) {
-  auto* layer_tree_host = WebView().MainFrameViewWidget()->LayerTreeHost();
+  auto* layer_tree_host =
+      WebView().MainFrameViewWidget()->LayerTreeHostForTesting();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   blink::VisualProperties visual_properties;
 
@@ -615,13 +616,13 @@ TEST_F(WebFrameWidgetSimTest, DispatchBufferedTouchEvents) {
 
   // Expect listener does not get called, due to devtools flag.
   touch.MovePoint(0, 12, 12);
-  WebFrameWidgetBase::SetIgnoreInputEvents(true);
+  WebFrameWidgetImpl::SetIgnoreInputEvents(true);
   widget->ProcessInputEventSynchronouslyForTesting(
       WebCoalescedInputEvent(touch.Clone(), {}, {}, ui::LatencyInfo()),
       base::DoNothing());
-  EXPECT_TRUE(WebFrameWidgetBase::IgnoreInputEvents());
+  EXPECT_TRUE(WebFrameWidgetImpl::IgnoreInputEvents());
   EXPECT_FALSE(listener->GetInvokedStateAndReset());
-  WebFrameWidgetBase::SetIgnoreInputEvents(false);
+  WebFrameWidgetImpl::SetIgnoreInputEvents(false);
 
   // Expect listener does not get called, due to drag.
   touch.MovePoint(0, 14, 14);
@@ -631,7 +632,7 @@ TEST_F(WebFrameWidgetSimTest, DispatchBufferedTouchEvents) {
       WebCoalescedInputEvent(touch.Clone(), {}, {}, ui::LatencyInfo()),
       base::DoNothing());
   EXPECT_TRUE(widget->DoingDragAndDrop());
-  EXPECT_FALSE(WebFrameWidgetBase::IgnoreInputEvents());
+  EXPECT_FALSE(WebFrameWidgetImpl::IgnoreInputEvents());
   EXPECT_FALSE(listener->GetInvokedStateAndReset());
 }
 
@@ -648,28 +649,21 @@ TEST_F(WebFrameWidgetSimTest, PropagateScaleToRemoteFrames) {
 
       )HTML");
   base::RunLoop().RunUntilIdle();
-  class PageScaleRemoteFrameClient
-      : public frame_test_helpers::TestWebRemoteFrameClient {
-   public:
-    void PageScaleFactorChanged(float page_scale_factor,
-                                bool is_pinch_gesture_active) override {
-      page_scale_factor_changed_ = true;
-    }
-    bool page_scale_factor_changed_ = false;
-  };
-
-  PageScaleRemoteFrameClient page_scale_remote_frame_client;
   EXPECT_TRUE(WebView().MainFrame()->FirstChild());
   {
     WebFrame* grandchild = WebView().MainFrame()->FirstChild()->FirstChild();
     EXPECT_TRUE(grandchild);
     EXPECT_TRUE(grandchild->IsWebLocalFrame());
-    grandchild->Swap(
-        frame_test_helpers::CreateRemote(&page_scale_remote_frame_client));
+    grandchild->Swap(frame_test_helpers::CreateRemote());
   }
   auto* widget = WebView().MainFrameViewWidget();
   widget->SetPageScaleStateAndLimits(1.3f, true, 1.0f, 3.0f);
-  EXPECT_TRUE(page_scale_remote_frame_client.page_scale_factor_changed_);
+  EXPECT_EQ(
+      To<WebRemoteFrameImpl>(WebView().MainFrame()->FirstChild()->FirstChild())
+          ->GetFrame()
+          ->GetPendingVisualPropertiesForTesting()
+          .page_scale_factor,
+      1.3f);
   WebView().MainFrame()->FirstChild()->FirstChild()->Detach();
 }
 

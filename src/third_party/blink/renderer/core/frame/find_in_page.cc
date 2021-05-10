@@ -36,7 +36,6 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -277,15 +276,15 @@ void FindInPage::ClearActiveFindMatch() {
 }
 
 void WebLocalFrameImpl::SetTickmarks(const WebElement& target,
-                                     const WebVector<WebRect>& tickmarks) {
+                                     const WebVector<gfx::Rect>& tickmarks) {
   find_in_page_->SetTickmarks(target, tickmarks);
 }
 
 void FindInPage::SetTickmarks(const WebElement& target,
-                              const WebVector<WebRect>& tickmarks) {
+                              const WebVector<gfx::Rect>& tickmarks) {
   Vector<IntRect> tickmarks_converted(SafeCast<wtf_size_t>(tickmarks.size()));
   for (wtf_size_t i = 0; i < tickmarks.size(); ++i)
-    tickmarks_converted[i] = tickmarks[i];
+    tickmarks_converted[i] = IntRect(tickmarks[i]);
 
   LayoutBox* box;
   if (target.IsNull())

@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/printing/print_servers_policy_provider.h"
+#include "chrome/browser/chromeos/printing/print_servers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/uri.h"
@@ -31,7 +31,6 @@ class PpdProvider;
 class PrinterConfigurer;
 class PrinterDetector;
 class PrinterEventTracker;
-class ServerPrintersProvider;
 class SyncedPrintersManager;
 class UsbPrinterNotificationController;
 
@@ -73,8 +72,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<PrinterConfigurer> printer_configurer,
       std::unique_ptr<UsbPrinterNotificationController>
           usb_notification_controller,
-      std::unique_ptr<ServerPrintersProvider> server_printers_provider,
-      std::unique_ptr<PrintServersPolicyProvider> print_servers_provider,
+      std::unique_ptr<PrintServersManager> print_servers_manager,
       std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
@@ -105,15 +103,10 @@ class CupsPrintersManager : public PrinterInstallationManager,
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Record that the given printers has been installed in CUPS for usage.
-  // Parameter |is_automatic| should be set to true if the printer was
-  // saved automatically (without requesting additional information
-  // from the user).
+  // Implementation of PrinterInstallationManager interface.
   void PrinterInstalled(const Printer& printer, bool is_automatic) override = 0;
-
-  // Returns true if |printer| is currently installed in CUPS with this
-  // configuration.
   bool IsPrinterInstalled(const Printer& printer) const override = 0;
+  void PrinterIsNotAutoconfigurable(const Printer& printer) override = 0;
 
   // Look for a printer with the given id in any class.  Returns a copy of the
   // printer if found, base::nullopt if not found.
@@ -132,13 +125,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
   // number of detected network printers that have not been saved.
   virtual void RecordNearbyNetworkPrinterCounts() const = 0;
 
-  // Selects a print server from all the available print servers. Returns true on
-  // successfully selecting the requested print server.
-  virtual bool ChoosePrintServer(
-      const base::Optional<std::string>& selected_print_server_id) = 0;
-
-  // Returns the current fetching mode strategy for print servers.
-  virtual ServerPrintersFetchingMode GetServerPrintersFetchingMode() const = 0;
+  virtual PrintServersManager* GetPrintServersManager() const = 0;
 };
 
 }  // namespace chromeos

@@ -296,23 +296,23 @@ bool HasOccludingQuads(
 
 gfx::Rect CalculateOccludingDamageRect(
     const SharedQuadState* shared_quad_state,
-    SurfaceDamageRectList* surface_damage_rect_list,
+    const SurfaceDamageRectList& surface_damage_rect_list,
     const gfx::Rect& quad_rect_in_root_target_space) {
   if (!shared_quad_state->overlay_damage_index.has_value())
     return quad_rect_in_root_target_space;
 
   size_t overlay_damage_index = shared_quad_state->overlay_damage_index.value();
-  if (overlay_damage_index >= surface_damage_rect_list->size()) {
+  if (overlay_damage_index >= surface_damage_rect_list.size()) {
     DCHECK(false);
   }
 
   // Damage rects in surface_damage_rect_list are arranged from top to bottom.
-  // (*surface_damage_rect_list)[0] is the one on the very top.
-  // (*surface_damage_rect_list)[overlay_damage_index] is the damage rect of
+  // surface_damage_rect_list[0] is the one on the very top.
+  // surface_damage_rect_list[overlay_damage_index] is the damage rect of
   // this overlay surface.
   gfx::Rect occluding_damage_rect;
   for (size_t i = 0; i < overlay_damage_index; ++i) {
-    occluding_damage_rect.Union((*surface_damage_rect_list)[i]);
+    occluding_damage_rect.Union(surface_damage_rect_list[i]);
   }
   occluding_damage_rect.Intersect(quad_rect_in_root_target_space);
 
@@ -446,10 +446,10 @@ void DCLayerOverlayProcessor::RemoveOverlayDamageRect(
     if (it->shared_quad_state->overlay_damage_index.has_value()) {
       size_t overlay_damage_index =
           it->shared_quad_state->overlay_damage_index.value();
-      if (overlay_damage_index >= surface_damage_rect_list_->size())
+      if (overlay_damage_index >= surface_damage_rect_list_.size())
         DCHECK(false);
       else
-        (*surface_damage_rect_list_)[overlay_damage_index] = gfx::Rect();
+        damages_to_be_removed_.push_back(overlay_damage_index);
     }
   } else {
     // This is done by subtract the overlay rect fromt the root damage rect.
@@ -490,12 +490,33 @@ void DCLayerOverlayProcessor::UpdateRootDamageRect(
         // if no changes in overlays.
         previous_frame_overlay_rect_union_ = gfx::Rect();
 
-        // Overlay rects have been previously removed from
-        // |surface_damage_rect_list_|. The union is the result of non-overlay
-        // rects.
+        // The final root damage rect is computed by add up all surface damages
+        // except for the overlay surface damages and the damages right below
+        // the overlays.
         gfx::Rect root_damage_rect;
-        for (const auto& damage_rect : *surface_damage_rect_list_)
-          root_damage_rect.Union(damage_rect);
+        size_t surface_index = 0;
+        for (auto surface_damage_rect : surface_damage_rect_list_) {
+          // We only support at most two overlays. The size of
+          // damages_to_be_removed_ will not be bigger than 2. We should
+          // revisit this damages_to_be_removed_ for-loop if we try to support
+          // many overlays.
+          // See capabilities.supports_two_yuv_hardware_overlays.
+          for (const auto index_to_be_removed : damages_to_be_removed_) {
+            // The overlay damages and the damages right below them will not be
+            // added to the root damage rect.
+            if (surface_index == index_to_be_removed) {
+              // This is the overlay surface.
+              surface_damage_rect = gfx::Rect();
+              break;
+            } else if (surface_index > index_to_be_removed) {
+              // This is the surface below the overlays.
+              surface_damage_rect.Subtract(
+                  surface_damage_rect_list_[index_to_be_removed]);
+            }
+          }
+          root_damage_rect.Union(surface_damage_rect);
+          ++surface_index;
+        }
 
         *damage_rect = root_damage_rect;
       }
@@ -523,7 +544,20 @@ void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
     const gfx::RectF& display_rect,
     gfx::Rect* damage_rect) {
   auto* shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
+  auto& quad_list = render_pass->quad_list;
 
+  // Add debug borders for the root damage rect after overlay promotion.
+  SkColor border_color = SK_ColorGREEN;
+  auto it = quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
+      quad_list.begin(), 1u);
+  auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it);
+
+  gfx::Rect rect = *damage_rect;
+  rect.Inset(kDCLayerDebugBorderInsets);
+  debug_quad->SetNew(shared_quad_state, rect, rect, border_color,
+                     kDCLayerDebugBorderWidth);
+
+  // Add debug borders for overlays/underlays
   for (const auto& dc_layer : *dc_layer_overlays) {
     gfx::RectF overlay_rect(dc_layer.quad_rect);
     dc_layer.transform.TransformRect(&overlay_rect);
@@ -532,13 +566,11 @@ void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
 
     // Overlay:red, Underlay:blue.
     SkColor border_color = dc_layer.z_order > 0 ? SK_ColorRED : SK_ColorBLUE;
-
-    auto& quad_list = render_pass->quad_list;
     auto it =
         quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
             quad_list.begin(), 1u);
-
     auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it);
+
     gfx::Rect rect = gfx::ToEnclosingRect(overlay_rect);
     rect.Inset(kDCLayerDebugBorderInsets);
     debug_quad->SetNew(shared_quad_state, rect, rect, border_color,
@@ -580,12 +612,12 @@ void DCLayerOverlayProcessor::Process(
     const FilterOperationsMap& render_pass_backdrop_filters,
     AggregatedRenderPassList* render_pass_list,
     gfx::Rect* damage_rect,
-    SurfaceDamageRectList* surface_damage_rect_list,
+    SurfaceDamageRectList surface_damage_rect_list,
     DCLayerOverlayList* dc_layer_overlays) {
   gfx::Rect this_frame_underlay_rect;
   bool this_frame_has_occluding_damage_rect = false;
   processed_yuv_overlay_count_ = 0;
-  surface_damage_rect_list_ = surface_damage_rect_list;
+  surface_damage_rect_list_ = std::move(surface_damage_rect_list);
 
   // Output rects of child render passes that have backdrop filters in target
   // space. These rects are used to determine if the overlay rect could be read
@@ -660,22 +692,20 @@ void DCLayerOverlayProcessor::Process(
 
     candidate_index_list.push_back(index);
   }
+
+  // We might not save power if there are more than one videos and only part of
+  // them are promoted to overlay. Skip overlays for this frame unless there are
+  // protected video or texture overlays.
+  bool reject_overlays = false;
+  if (yuv_quads_in_quad_list != processed_yuv_overlay_count_ &&
+      !has_protected_video_or_texture_overlays) {
+    reject_overlays = true;
+  }
+
   // A YUV quad might be rejected later due to not allowed as an underlay.
   // Recount the YUV overlays when they are added to the overlay list
   // successfully.
   processed_yuv_overlay_count_ = 0;
-
-  // TODO(magchen@): Revisit this code if allowed_yuv_overlay_count_ > 1.
-  // We might not save power if there are more than one videos and only one is
-  // promoted to overlay. Skip overlays for this frame unless there are
-  // protected video or texture overlays.
-  if (candidate_index_list.size() > 0 &&
-      yuv_quads_in_quad_list > allowed_yuv_overlay_count_ &&
-      !has_protected_video_or_texture_overlays) {
-    candidate_index_list.clear();
-    // In this case, there is only one candidate in the list.
-    RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS, prev_it);
-  }
 
   // Copy the overlay quad info to dc_layer_overlays and replace/delete overlay
   // quads in quad_list.
@@ -684,6 +714,10 @@ void DCLayerOverlayProcessor::Process(
     prev_it = it;
     prev_index = index;
 
+    if (reject_overlays) {
+      RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS, it);
+      continue;
+    }
     gfx::Rect quad_rectangle_in_target_space =
         gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
 
@@ -716,7 +750,7 @@ void DCLayerOverlayProcessor::Process(
     gfx::Rect occluding_damage_rect;
     if (!is_overlay) {
       occluding_damage_rect = CalculateOccludingDamageRect(
-          it->shared_quad_state, surface_damage_rect_list,
+          it->shared_quad_state, surface_damage_rect_list_,
           quad_rectangle_in_target_space);
 
       // Used by a histogram.
@@ -738,6 +772,7 @@ void DCLayerOverlayProcessor::Process(
   // above and |previous_frame_overlay_rect_union_| becomes empty.
   UpdateRootDamageRect(display_rect, damage_rect);
 
+  damages_to_be_removed_.clear();
   previous_frame_overlay_rect_union_ = current_frame_overlay_rect_union_;
   current_frame_overlay_rect_union_ = gfx::Rect();
   previous_frame_processed_overlay_count_ =
@@ -758,8 +793,7 @@ void DCLayerOverlayProcessor::Process(
                             this_frame_has_occluding_damage_rect, damage_rect);
   }
 
-  if (debug_settings_->show_dc_layer_debug_borders &&
-      dc_layer_overlays->size() > 0) {
+  if (debug_settings_->show_dc_layer_debug_borders) {
     InsertDebugBorderDrawQuad(dc_layer_overlays, root_render_pass, display_rect,
                               damage_rect);
   }
@@ -916,7 +950,7 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
   } else {
     // Entire replacement quad must be redrawn.
     damage_rect->Union(quad_rectangle);
-    surface_damage_rect_list_->push_back(quad_rectangle);
+    surface_damage_rect_list_.push_back(quad_rectangle);
   }
 
   // We only compare current frame's first underlay with the previous frame's

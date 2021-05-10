@@ -2,27 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+// @ts-nocheck This file is not checked by TypeScript as it has a lot of legacy code.
 
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Platform from '../platform/platform.js';
 import * as ProtocolClientModule from '../protocol_client/protocol_client.js';
+import * as TextEditor from '../text_editor/text_editor.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 
 /* eslint-disable no-console */
+
+self.Platform = self.Platform || {};
+self.Platform.StringUtilities = Platform.StringUtilities;
+self.Platform.MapUtilities = Platform.MapUtilities;
+self.Platform.ArrayUtilities = Platform.ArrayUtilities;
 
 /**
  * @return {boolean}
  */
 export function isDebugTest() {
-  return !self.testRunner || !!Root.Runtime.queryParam('debugFrontend');
+  return !self.testRunner || Boolean(Root.Runtime.queryParam('debugFrontend'));
 }
 
 /**
@@ -54,7 +59,6 @@ self['onerror'] = (message, source, lineno, colno, error) => {
   addResult('TEST ENDED IN ERROR: ' + error.stack);
   completeTest();
 };
-/** @suppressGlobalPropertiesCheck @suppress {checkTypes} */
 (() => {
   self.addEventListener('unhandledrejection', event => {
     addResult(`PROMISE FAILURE: ${event.reason.stack}`);
@@ -107,10 +111,6 @@ export function completeTest() {
 }
 
 self.TestRunner = self.TestRunner || {};
-
-/**
- * @suppressGlobalPropertiesCheck
- */
 export function flushResults() {
   Array.prototype.forEach.call(document.documentElement.childNodes, x => x.remove());
   const outputElement = document.createElement('div');
@@ -247,6 +247,14 @@ export async function loadModule(module) {
 }
 
 /**
+ * @param {string} module
+ * @return {!Promise<void>}
+ */
+export async function loadLegacyModule(module) {
+  await import(`../${module}/${module}-legacy.js`);
+}
+
+/**
  * @param {string} panel
  * @return {!Promise.<?UI.Panel.Panel>}
  */
@@ -267,10 +275,10 @@ export function createKeyEvent(key, ctrlKey, altKey, shiftKey, metaKey) {
     key: key,
     bubbles: true,
     cancelable: true,
-    ctrlKey: !!ctrlKey,
-    altKey: !!altKey,
-    shiftKey: !!shiftKey,
-    metaKey: !!metaKey
+    ctrlKey: Boolean(ctrlKey),
+    altKey: Boolean(altKey),
+    shiftKey: Boolean(shiftKey),
+    metaKey: Boolean(metaKey)
   });
 }
 
@@ -884,21 +892,6 @@ export function dump(value, customFormatters, prefix, prefixWithName) {
 }
 
 /**
- * @param {!UI.TreeOutline.TreeElement} treeElement
- */
-export function dumpObjectPropertyTreeElement(treeElement) {
-  const expandedSubstring = treeElement.expanded ? '[expanded]' : '[collapsed]';
-  addResult(expandedSubstring + ' ' + treeElement.listItemElement.deepTextContent());
-
-  for (let i = 0; i < treeElement.childCount(); ++i) {
-    const property = treeElement.childAt(i).property;
-    const key = property.name;
-    const value = property.value._description;
-    addResult('    ' + key + ': ' + value);
-  }
-}
-
-/**
  * @param {symbol} eventName
  * @param {!Common.ObjectWrapper.ObjectWrapper} obj
  * @param {function(?):boolean=} condition
@@ -1171,7 +1164,7 @@ export function assertEquals(expected, found, message) {
  * @param {string} message
  */
 export function assertTrue(found, message) {
-  assertEquals(true, !!found, message);
+  assertEquals(true, Boolean(found), message);
 }
 
 /**
@@ -1299,7 +1292,7 @@ export function loadedModules() {
 export function dumpLoadedModules(relativeTo) {
   const previous = new Set(relativeTo || []);
   function moduleSorter(left, right) {
-    return String.naturalOrderComparator(left._descriptor.name, right._descriptor.name);
+    return Platform.StringUtilities.naturalOrderComparator(left._descriptor.name, right._descriptor.name);
   }
 
   addResult('Loaded modules:');
@@ -1368,12 +1361,11 @@ export function url(url = '') {
  * @param {string} str
  * @param {string} mimeType
  * @return {!Promise.<undefined>}
- * @suppressGlobalPropertiesCheck
  */
 export function dumpSyntaxHighlight(str, mimeType) {
   const node = document.createElement('span');
   node.textContent = str;
-  const javascriptSyntaxHighlighter = new UI.SyntaxHighlighter.SyntaxHighlighter(mimeType, false);
+  const javascriptSyntaxHighlighter = new TextEditor.SyntaxHighlighter.SyntaxHighlighter(mimeType, false);
   return javascriptSyntaxHighlighter.syntaxHighlightNode(node).then(dumpSyntax);
 
   function dumpSyntax() {
@@ -1486,7 +1478,6 @@ TestRunner.addArray = addArray;
 TestRunner.dumpDeepInnerHTML = dumpDeepInnerHTML;
 TestRunner.deepTextContent = deepTextContent;
 TestRunner.dump = dump;
-TestRunner.dumpObjectPropertyTreeElement = dumpObjectPropertyTreeElement;
 TestRunner.waitForEvent = waitForEvent;
 TestRunner.waitForTarget = waitForTarget;
 TestRunner.waitForTargetRemoved = waitForTargetRemoved;
@@ -1516,6 +1507,7 @@ TestRunner.waitForUISourceCodeRemoved = waitForUISourceCodeRemoved;
 TestRunner.url = url;
 TestRunner.dumpSyntaxHighlight = dumpSyntaxHighlight;
 TestRunner.loadModule = loadModule;
+TestRunner.loadLegacyModule = loadLegacyModule;
 TestRunner.evaluateInPageRemoteObject = evaluateInPageRemoteObject;
 TestRunner.evaluateInPage = evaluateInPage;
 TestRunner.evaluateInPageAnonymously = evaluateInPageAnonymously;

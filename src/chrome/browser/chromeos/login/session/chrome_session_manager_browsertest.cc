@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -279,10 +279,13 @@ class GuestSessionRlzTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {
-  base::RunLoop loop;
-  UserSessionInitializer::Get()->set_init_rlz_impl_closure_for_testing(
-      loop.QuitClosure());
-  loop.Run();
+  if (!UserSessionInitializer::Get()->get_inited_for_testing()) {
+    // Wait for initialization.
+    base::RunLoop loop;
+    UserSessionInitializer::Get()->set_init_rlz_impl_closure_for_testing(
+        loop.QuitClosure());
+    loop.Run();
+  }
   const char* const expected_brand =
       stub_install_attributes()->IsDeviceLocked() ? "TEST" : "";
   EXPECT_EQ(expected_brand, google_brand::chromeos::GetBrand());

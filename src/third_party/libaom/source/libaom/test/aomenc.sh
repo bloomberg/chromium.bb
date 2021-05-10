@@ -98,6 +98,25 @@ aomenc_av1_ivf() {
   fi
 }
 
+aomenc_av1_ivf_use_16bit_internal() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local output="${AV1_IVF_FILE}"
+    if [ -e "${AV1_IVF_FILE}" ]; then
+      output="${AOM_TEST_OUTPUT_DIR}/av1_test_16bit.ivf"
+    fi
+    aomenc $(yuv_raw_input) \
+      $(aomenc_encode_test_fast_params) \
+      --ivf \
+      --use-16bit-internal \
+      --output="${output}" || return 1
+
+    if [ ! -e "${output}" ]; then
+      elog "Output file does not exist."
+      return 1
+    fi
+  fi
+}
+
 aomenc_av1_obu_annexb() {
    if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
     local output="${AV1_OBU_ANNEXB_FILE}"
@@ -262,6 +281,7 @@ aomenc_tests="aomenc_av1_ivf
               aomenc_av1_webm_1pass
               aomenc_av1_ivf_lossless
               aomenc_av1_ivf_minq0_maxq0
+              aomenc_av1_ivf_use_16bit_internal
               aomenc_av1_webm_lag5_frames10
               aomenc_av1_webm_non_square_par
               aomenc_av1_webm_cdf_update_mode"

@@ -17,6 +17,11 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_array.h"
+#include "base/android/scoped_java_ref.h"
+#endif
+
 class AutocompleteInput;
 class AutocompleteProvider;
 class AutocompleteProviderClient;
@@ -45,6 +50,26 @@ class AutocompleteResult {
   ~AutocompleteResult();
   AutocompleteResult(const AutocompleteResult&) = delete;
   AutocompleteResult& operator=(const AutocompleteResult&) = delete;
+
+#if defined(OS_ANDROID)
+  // Returns a corresponding Java object, creating it if necessary.
+  // NOTE: Android specific methods are defined in autocomplete_match_android.cc
+  base::android::ScopedJavaLocalRef<jobject> GetOrCreateJavaObject(
+      JNIEnv* env) const;
+
+  // Construct an array of AutocompleteMatch objects arranged in the exact same
+  // order as |matches_|.
+  base::android::ScopedJavaLocalRef<jobjectArray> BuildJavaMatches(
+      JNIEnv* env) const;
+
+  // Group suggestions in specified range by search vs url.
+  // The range used is [first_index, last_index), which contains all the
+  // elements between first_index and last_index, including the element pointed
+  // by first_index, but not the element pointed by last_index.
+  void GroupSuggestionsBySearchVsURL(JNIEnv* env,
+                                     int firstIndex,
+                                     int lastIndex);
+#endif
 
   // Moves matches from |old_matches| to provide a consistent result set.
   // |old_matches| is mutated during this, and should not be used afterwards.
@@ -119,11 +144,6 @@ class AutocompleteResult {
 
   // Returns the default match if it exists, or nullptr otherwise.
   const AutocompleteMatch* default_match() const;
-
-  // Returns true if the top match is a verbatim search or URL match (see
-  // IsVerbatimType() in autocomplete_match.h), and the next match is not also
-  // some kind of verbatim match.
-  bool TopMatchIsStandaloneVerbatimMatch() const;
 
   // Returns the first match in |matches| which might be chosen as default.
   // If the page is not the fake box, the scores are not demoted by type.
@@ -208,12 +228,6 @@ class AutocompleteResult {
       const std::vector<MatchDedupComparator>& old_result,
       const AutocompleteResult& new_result);
 
-  // Group suggestions in specified range by search vs url.
-  // The range used is [first_index, last_index), which contains all the
-  // elements between first_index and last_index, including the element pointed
-  // by first_index, but not the element pointed by last_index.
-  void GroupSuggestionsBySearchVsURL(int first_index, int last_index) const;
-
   // This value should be comfortably larger than any max-autocomplete-matches
   // under consideration.
   static constexpr size_t kMaxAutocompletePositionValue = 30;
@@ -227,6 +241,8 @@ class AutocompleteResult {
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            DemoteOnDeviceSearchSuggestions);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, BubbleURLSuggestions);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           SortAndCullKeepGroupedSuggestionsLast);
   friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
@@ -316,6 +332,18 @@ class AutocompleteResult {
 
   // The server supplied list of group IDs that should be hidden-by-default.
   std::set<int> hidden_group_ids_;
+
+#if defined(OS_ANDROID)
+  // Corresponding Java object.
+  // This object should be ignored when AutocompleteResult is copied or moved.
+  // This object should never be accessed directly. To acquire a reference to
+  // java object, call the GetOrCreateJavaObject().
+  // Note that this object is lazily constructed to avoid creating Java matches
+  // for throw away AutocompleteMatch objects, eg. during Classify() or
+  // QualifyPartialUrlQuery() calls.
+  // See AutocompleteControllerAndroid for more details.
+  mutable base::android::ScopedJavaGlobalRef<jobject> java_result_;
+#endif
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_RESULT_H_

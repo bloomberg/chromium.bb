@@ -44,7 +44,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   ScrollTimeline(Document*,
                  Element*,
                  ScrollDirection,
-                 HeapVector<Member<ScrollTimelineOffset>>*,
+                 HeapVector<Member<ScrollTimelineOffset>>,
                  base::Optional<double>);
 
   bool IsScrollTimeline() const override { return true; }
@@ -53,7 +53,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // https://github.com/WICG/scroll-animations/issues/31
   bool IsActive() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
-  double ZeroTimeInSeconds() override { return 0; }
+  AnimationTimeDelta ZeroTime() override { return AnimationTimeDelta(); }
 
   void ServiceAnimations(TimingUpdateReason) override;
   void ScheduleNextService() override;
@@ -95,6 +95,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // for style recalc.
   void InvalidateEffectTargetStyle();
 
+  // See DocumentAnimations::ValidateTimelines
+  void ValidateState();
+
   CompositorAnimationTimeline* EnsureCompositorTimeline() override;
   void UpdateCompositorTimeline() override;
 
@@ -126,6 +129,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   size_t AttachedAnimationsCount() const { return scroll_animations_.size(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScrollTimelineTest, MultipleScrollOffsetsClamping);
   // https://wicg.github.io/scroll-animations/#avoiding-cycles
   // Snapshots scroll timeline current time and phase.
   // Called once per animation frame.
@@ -166,7 +170,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   Member<Element> scroll_source_;
   Member<Node> resolved_scroll_source_;
   ScrollDirection orientation_;
-  Member<HeapVector<Member<ScrollTimelineOffset>>> scroll_offsets_;
+  HeapVector<Member<ScrollTimelineOffset>> scroll_offsets_;
 
   base::Optional<double> time_range_;
 

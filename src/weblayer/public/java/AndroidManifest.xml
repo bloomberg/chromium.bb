@@ -56,8 +56,13 @@
                 android:resource="@xml/weblayer_file_paths" />
         </provider>
 
+        <activity android:name="org.chromium.weblayer.SettingsActivity"
+            android:theme="@style/Theme.WebLayer.Settings"
+            android:exported="false">
+        </activity>
+
         <activity android:name="org.chromium.weblayer.SiteSettingsActivity"
-            android:theme="@style/Theme.WebLayer.SiteSettings"
+            android:theme="@style/Theme.WebLayer.Settings"
             android:exported="false">
         </activity>
 
@@ -98,5 +103,26 @@
             android:exported="false"
             android:isolatedProcess="true"
             android:process=":decoder_service" />
+
+        <!-- Used for GPay Dynamic Update -->
+        <service
+            android:name="org.chromium.weblayer.GooglePayDataCallbacksServiceWrapper"
+            android:permission="com.google.android.gms.permission.BIND_PAYMENTS_CALLBACK_SERVICE"
+            android:exported="true">
+            <intent-filter>
+              <action android:name="com.google.android.gms.wallet.callback.PAYMENT_DATA_CALLBACKS"/>
+            </intent-filter>
+        </service>
+
+        <!-- Cast support -->
+        <!-- TODO(crbug.com/1148410): remove this. -->
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="org.chromium.components.media_router.caf.CastOptionsProvider"/>
+
+        <!-- GooglePay payment app support -->
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
     </application>
 </manifest>

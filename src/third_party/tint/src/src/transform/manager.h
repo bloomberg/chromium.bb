@@ -20,37 +20,35 @@
 #include <utility>
 #include <vector>
 
-#include "src/transform/transformer.h"
+#include "src/diagnostic/diagnostic.h"
+#include "src/transform/transform.h"
 
 namespace tint {
 namespace transform {
 
-/// Manager for the provided passes. The passes will be execute in the
-/// appended order. If any pass fails the manager will return immediately and
-/// the error can be retrieved with the |error| method.
-class Manager {
+/// A collection of Transforms that act as a single Transform.
+/// The inner transforms will execute in the appended order.
+/// If any inner transform fails the manager will return immediately and
+/// the error can be retrieved with the Output's diagnostics.
+class Manager : public Transform {
  public:
   /// Constructor
   Manager();
-  ~Manager();
+  ~Manager() override;
 
   /// Add pass to the manager
   /// @param transform the transform to append
-  void append(std::unique_ptr<Transformer> transform) {
+  void append(std::unique_ptr<Transform> transform) {
     transforms_.push_back(std::move(transform));
   }
 
-  /// Runs the transforms
-  /// @returns true on success; false otherwise
-  bool Run();
-
-  /// @returns the error, or blank if none set
-  std::string error() const { return error_; }
+  /// Runs the transforms on `program`, returning the transformation result.
+  /// @param program the source program to transform
+  /// @returns the transformed program and diagnostics
+  Output Run(const Program* program) override;
 
  private:
-  std::vector<std::unique_ptr<Transformer>> transforms_;
-
-  std::string error_;
+  std::vector<std::unique_ptr<Transform>> transforms_;
 };
 
 }  // namespace transform

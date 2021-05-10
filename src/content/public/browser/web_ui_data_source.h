@@ -12,16 +12,23 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
 class RefCountedMemory;
 }  // namespace base
+
+namespace webui {
+struct LocalizedString;
+struct ResourcePath;
+}  // namespace webui
 
 namespace content {
 class BrowserContext;
@@ -57,6 +64,11 @@ class WebUIDataSource {
   // dictionary.
   virtual void AddLocalizedString(base::StringPiece name, int ids) = 0;
 
+  // Calls AddLocalizedString() in a for-loop for |strings|. Reduces code size
+  // vs. reimplementing the same for-loop.
+  virtual void AddLocalizedStrings(
+      base::span<const webui::LocalizedString> strings) = 0;
+
   // Add strings from |localized_strings| to our dictionary.
   virtual void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) = 0;
@@ -78,6 +90,11 @@ class WebUIDataSource {
 
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(base::StringPiece path, int resource_id) = 0;
+
+  // Calls AddResourcePath() in a for-loop for |paths|. Reduces code size vs.
+  // reimplementing the same for-loop.
+  virtual void AddResourcePaths(
+      base::span<const webui::ResourcePath> paths) = 0;
 
   // Sets the resource to returned when no other paths match.
   virtual void SetDefaultResource(int resource_id) = 0;

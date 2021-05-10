@@ -18,6 +18,8 @@
 
 #include <grpc/support/port_platform.h>
 
+#include "src/core/lib/surface/init.h"
+
 #include <limits.h>
 #include <memory.h>
 
@@ -26,6 +28,7 @@
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/time.h>
+
 #include "src/core/lib/channel/channel_stack.h"
 #include "src/core/lib/channel/channelz_registry.h"
 #include "src/core/lib/channel/connected_channel.h"
@@ -37,6 +40,7 @@
 #include "src/core/lib/http/parser.h"
 #include "src/core/lib/iomgr/call_combiner.h"
 #include "src/core/lib/iomgr/combiner.h"
+#include "src/core/lib/iomgr/exec_ctx.h"
 #include "src/core/lib/iomgr/executor.h"
 #include "src/core/lib/iomgr/iomgr.h"
 #include "src/core/lib/iomgr/resource_quota.h"
@@ -47,7 +51,6 @@
 #include "src/core/lib/surface/call.h"
 #include "src/core/lib/surface/channel_init.h"
 #include "src/core/lib/surface/completion_queue.h"
-#include "src/core/lib/surface/init.h"
 #include "src/core/lib/surface/lame_client.h"
 #include "src/core/lib/surface/server.h"
 #include "src/core/lib/transport/bdp_estimator.h"
@@ -73,6 +76,7 @@ static void do_basic_init(void) {
   g_shutting_down = false;
   grpc_register_built_in_plugins();
   grpc_cq_global_init();
+  grpc_core::grpc_executor_global_init();
   gpr_time_init();
   g_initializations = 0;
 }
@@ -101,7 +105,7 @@ static void register_builtin_channel_init() {
                                    GRPC_CHANNEL_INIT_BUILTIN_PRIORITY,
                                    append_filter, (void*)&grpc_lame_filter);
   grpc_channel_init_register_stage(GRPC_SERVER_CHANNEL, INT_MAX, prepend_filter,
-                                   (void*)&grpc_server_top_filter);
+                                   (void*)&grpc_core::Server::kServerTopFilter);
 }
 
 typedef struct grpc_plugin {
@@ -134,6 +138,7 @@ void grpc_init(void) {
     grpc_core::Fork::GlobalInit();
     grpc_fork_handlers_auto_register();
     grpc_stats_init();
+    grpc_init_static_metadata_ctx();
     grpc_slice_intern_init();
     grpc_mdctx_global_init();
     grpc_channel_init_init();
@@ -191,9 +196,11 @@ void grpc_shutdown_internal_locked(void) {
   grpc_core::ApplicationCallbackExecCtx::GlobalShutdown();
   g_shutting_down = false;
   gpr_cv_broadcast(g_shutting_down_cv);
+  // Absolute last action will be to delete static metadata context.
+  grpc_destroy_static_metadata_ctx();
 }
 
-void grpc_shutdown_internal(void* ignored) {
+void grpc_shutdown_internal(void* /*ignored*/) {
   GRPC_API_TRACE("grpc_shutdown_internal", 0, ());
   grpc_core::MutexLock lock(&g_init_mu);
   // We have released lock from the shutdown thread and it is possible that
@@ -207,15 +214,29 @@ void grpc_shutdown_internal(void* ignored) {
 void grpc_shutdown(void) {
   GRPC_API_TRACE("grpc_shutdown(void)", 0, ());
   grpc_core::MutexLock lock(&g_init_mu);
+
   if (--g_initializations == 0) {
-    g_initializations++;
-    g_shutting_down = true;
-    // spawn a detached thread to do the actual clean up in case we are
-    // currently in an executor thread.
-    grpc_core::Thread cleanup_thread(
-        "grpc_shutdown", grpc_shutdown_internal, nullptr, nullptr,
-        grpc_core::Thread::Options().set_joinable(false).set_tracked(false));
-    cleanup_thread.Start();
+    grpc_core::ApplicationCallbackExecCtx* acec =
+        grpc_core::ApplicationCallbackExecCtx::Get();
+    if (!grpc_iomgr_is_any_background_poller_thread() &&
+        (acec == nullptr ||
+         (acec->Flags() & GRPC_APP_CALLBACK_EXEC_CTX_FLAG_IS_INTERNAL_THREAD) ==
+             0)) {
+      // just run clean-up when this is called on non-executor thread.
+      gpr_log(GPR_DEBUG, "grpc_shutdown starts clean-up now");
+      g_shutting_down = true;
+      grpc_shutdown_internal_locked();
+    } else {
+      // spawn a detached thread to do the actual clean up in case we are
+      // currently in an executor thread.
+      gpr_log(GPR_DEBUG, "grpc_shutdown spawns clean-up thread");
+      g_initializations++;
+      g_shutting_down = true;
+      grpc_core::Thread cleanup_thread(
+          "grpc_shutdown", grpc_shutdown_internal, nullptr, nullptr,
+          grpc_core::Thread::Options().set_joinable(false).set_tracked(false));
+      cleanup_thread.Start();
+    }
   }
 }
 

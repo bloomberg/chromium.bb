@@ -2,34 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as DataGrid from '../data_grid/data_grid.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text in Event Source Messages View of the Network panel
+  */
+  id: 'Id',
+  /**
+  *@description Text that refers to some types
+  */
+  type: 'Type',
+  /**
+  *@description Text in Event Source Messages View of the Network panel
+  */
+  data: 'Data',
+  /**
+  *@description Text that refers to the time
+  */
+  time: 'Time',
+  /**
+  *@description Data grid name for Event Source data grids
+  */
+  eventSource: 'Event Source',
+  /**
+  *@description A context menu item in the Resource Web Socket Frame View of the Network panel
+  */
+  copyMessage: 'Copy message',
+};
+const str_ = i18n.i18n.registerUIStrings('network/EventSourceMessagesView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EventSourceMessagesView extends UI.Widget.VBox {
   /**
    * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   constructor(request) {
     super();
-    this.registerRequiredCSS('network/eventSourceMessagesView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('network/eventSourceMessagesView.css', {enableLegacyPatching: false});
     this.element.classList.add('event-source-messages-view');
     this._request = request;
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'id', title: Common.UIString.UIString('Id'), sortable: true, weight: 8},
-      {id: 'type', title: Common.UIString.UIString('Type'), sortable: true, weight: 8},
-      {id: 'data', title: Common.UIString.UIString('Data'), sortable: false, weight: 88},
-      {id: 'time', title: Common.UIString.UIString('Time'), sortable: true, weight: 8}
+      {id: 'id', title: i18nString(UIStrings.id), sortable: true, weight: 8},
+      {id: 'type', title: i18nString(UIStrings.type), sortable: true, weight: 8},
+      {id: 'data', title: i18nString(UIStrings.data), sortable: false, weight: 88},
+      {id: 'time', title: i18nString(UIStrings.time), sortable: true, weight: 8}
     ]);
 
     this._dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
-      displayName: ls`Event Source`,
+      displayName: i18nString(UIStrings.eventSource),
       columns,
       editCallback: undefined,
       deleteCallback: undefined,
@@ -94,14 +120,13 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
    */
   _onRowContextMenu(contextMenu, node) {
     contextMenu.clipboardSection().appendItem(
-        Common.UIString.UIString('Copy message'),
+        i18nString(UIStrings.copyMessage),
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
             Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data));
   }
 }
 
 /**
- * @unrestricted
  * @extends {DataGrid.SortableDataGrid.SortableDataGridNode<EventSourceMessageNode>}
  */
 export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
@@ -114,7 +139,7 @@ export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDa
         ('0' + time.getSeconds()).substr(-2) + '.' + ('00' + time.getMilliseconds()).substr(-3);
     const timeNode = document.createElement('div');
     UI.UIUtils.createTextChild(timeNode, timeText);
-    timeNode.title = time.toLocaleString();
+    UI.Tooltip.Tooltip.install(timeNode, time.toLocaleString());
     super({id: message.eventId, type: message.eventName, data: message.data, time: timeNode});
     this._message = message;
   }

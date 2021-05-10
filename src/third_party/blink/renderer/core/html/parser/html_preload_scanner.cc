@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/html/link_web_bundle.h"
 #include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
@@ -69,20 +70,22 @@
 
 namespace blink {
 
-static bool Match(const StringImpl* impl, const QualifiedName& q_name) {
+namespace {
+
+bool Match(const StringImpl* impl, const QualifiedName& q_name) {
   return impl == q_name.LocalName().Impl();
 }
 
-static bool Match(const AtomicString& name, const QualifiedName& q_name) {
+bool Match(const AtomicString& name, const QualifiedName& q_name) {
   DCHECK(IsMainThread());
   return q_name.LocalName() == name;
 }
 
-static bool Match(const String& name, const QualifiedName& q_name) {
+bool Match(const String& name, const QualifiedName& q_name) {
   return ThreadSafeMatch(name, q_name);
 }
 
-static const StringImpl* TagImplFor(const HTMLToken::DataVector& data) {
+const StringImpl* TagImplFor(const HTMLToken::DataVector& data) {
   AtomicString tag_name(data);
   const StringImpl* result = tag_name.Impl();
   if (result->IsStatic())
@@ -90,14 +93,14 @@ static const StringImpl* TagImplFor(const HTMLToken::DataVector& data) {
   return nullptr;
 }
 
-static const StringImpl* TagImplFor(const String& tag_name) {
+const StringImpl* TagImplFor(const String& tag_name) {
   const StringImpl* result = tag_name.Impl();
   if (result->IsStatic())
     return result;
   return nullptr;
 }
 
-static String InitiatorFor(const StringImpl* tag_impl) {
+String InitiatorFor(const StringImpl* tag_impl) {
   DCHECK(tag_impl);
   if (Match(tag_impl, html_names::kImgTag))
     return html_names::kImgTag.LocalName();
@@ -113,8 +116,8 @@ static String InitiatorFor(const StringImpl* tag_impl) {
   return g_empty_string;
 }
 
-static bool MediaAttributeMatches(const MediaValuesCached& media_values,
-                                  const String& attribute_value) {
+bool MediaAttributeMatches(const MediaValuesCached& media_values,
+                           const String& attribute_value) {
   // Since this is for preload scanning only, ExecutionContext-based origin
   // trials for media queries are not needed.
   scoped_refptr<MediaQuerySet> media_queries =
@@ -122,6 +125,20 @@ static bool MediaAttributeMatches(const MediaValuesCached& media_values,
   MediaQueryEvaluator media_query_evaluator(media_values);
   return media_query_evaluator.Eval(*media_queries);
 }
+
+void ParseWebBundleUrlsAndFillHash(const AtomicString& value,
+                                   HashSet<KURL>& url_hash) {
+  // Parse the attribute value as a space-separated list of urls
+  SpaceSplitString urls(value);
+  for (wtf_size_t i = 0; i < urls.size(); ++i) {
+    KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+    if (url.IsValid()) {
+      url_hash.insert(std::move(url));
+    }
+  }
+}
+
+}  // namespace
 
 class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
@@ -139,6 +156,7 @@ class TokenPreloadScanner::StartTagScanner {
         link_is_preload_(false),
         link_is_modulepreload_(false),
         link_is_import_(false),
+        link_is_webbundle_(false),
         matched_(true),
         input_is_image_(false),
         nomodule_attribute_value_(false),
@@ -152,6 +170,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_set_(false),
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
+        is_async_(false),
         integrity_features_(features),
         loading_attr_value_(LoadingAttributeValue::kAuto),
         width_attr_dimension_type_(
@@ -226,12 +245,32 @@ class TokenPreloadScanner::StartTagScanner {
     }
   }
 
+  bool MaybeUpdateExclusionInfo(
+      const KURL& document_url,
+      scoped_refptr<const PreloadRequest::ExclusionInfo>& exclusion_info) {
+    if (!IsLinkRelWebBundle())
+      return false;
+    HashSet<KURL> scopes;
+    HashSet<KURL> resources;
+    if (exclusion_info) {
+      scopes = exclusion_info->scopes();
+      resources = exclusion_info->resources();
+    }
+    ParseWebBundleUrlsAndFillHash(scopes_attribute_value_, scopes);
+    ParseWebBundleUrlsAndFillHash(resources_attribute_value_, resources);
+    exclusion_info = base::MakeRefCounted<PreloadRequest::ExclusionInfo>(
+        document_url, std::move(scopes), std::move(resources));
+    return true;
+  }
+
   std::unique_ptr<PreloadRequest> CreatePreloadRequest(
       const KURL& predicted_base_url,
       const SegmentedString& source,
       const ClientHintsPreferences& client_hints_preferences,
       const PictureData& picture_data,
-      const CachedDocumentParameters& document_parameters) {
+      const CachedDocumentParameters& document_parameters,
+      const PreloadRequest::ExclusionInfo* exclusion_info,
+      bool treat_links_as_in_body) {
     PreloadRequest::RequestType request_type =
         PreloadRequest::kRequestTypePreload;
     base::Optional<ResourceType> type;
@@ -283,13 +322,15 @@ class TokenPreloadScanner::StartTagScanner {
     auto request = PreloadRequest::CreateIfNeeded(
         InitiatorFor(tag_impl_), position, url_to_load_, predicted_base_url,
         type.value(), referrer_policy, PreloadRequest::kDocumentIsReferrer,
-        is_image_set, resource_width, client_hints_preferences, request_type);
+        is_image_set, exclusion_info, resource_width, client_hints_preferences,
+        request_type);
     if (!request)
       return nullptr;
 
-    if ((Match(tag_impl_, html_names::kScriptTag) &&
-         type_attribute_value_ == "module") ||
-        IsLinkRelModulePreload()) {
+    bool is_module = (type_attribute_value_ == "module");
+    bool is_script = Match(tag_impl_, html_names::kScriptTag);
+    if ((is_script && is_module) || IsLinkRelModulePreload()) {
+      is_module = true;
       request->SetScriptType(mojom::blink::ScriptType::kModule);
     }
 
@@ -298,6 +339,22 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetNonce(nonce_);
     request->SetCharset(Charset());
     request->SetDefer(defer_);
+
+    RenderBlockingBehavior render_blocking_behavior =
+        RenderBlockingBehavior::kUnset;
+    if (is_script && (is_module || defer_ == FetchParameters::kLazyLoad)) {
+      render_blocking_behavior =
+          is_async_ ? RenderBlockingBehavior::kPotentiallyBlocking
+                    : RenderBlockingBehavior::kNonBlocking;
+    } else if (is_script || type == ResourceType::kCSSStyleSheet) {
+      // CSS here is render blocking, as non blocking doesn't get preloaded.
+      // JS here is a blocking one, as others would've been caught by the
+      // previous condition.
+      render_blocking_behavior =
+          treat_links_as_in_body ? RenderBlockingBehavior::kInBodyParserBlocking
+                                 : RenderBlockingBehavior::kBlocking;
+    }
+    request->SetRenderBlockingBehavior(render_blocking_behavior);
 
     if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
         IsLazyLoadImageDeferable(document_parameters)) {
@@ -332,6 +389,7 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (Match(attribute_name, html_names::kNonceAttr)) {
       SetNonce(attribute_value);
     } else if (Match(attribute_name, html_names::kAsyncAttr)) {
+      is_async_ = true;
       SetDefer(FetchParameters::kLazyLoad);
     } else if (Match(attribute_name, html_names::kDeferAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
@@ -437,6 +495,7 @@ class TokenPreloadScanner::StartTagScanner {
       link_is_preload_ = rel.IsLinkPreload();
       link_is_modulepreload_ = rel.IsModulePreload();
       link_is_import_ = rel.IsImport();
+      link_is_webbundle_ = rel.IsWebBundle();
     } else if (Match(attribute_name, html_names::kMediaAttr)) {
       matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
     } else if (Match(attribute_name, html_names::kCrossoriginAttr)) {
@@ -467,6 +526,10 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, html_names::kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
+    } else if (Match(attribute_name, html_names::kScopesAttr)) {
+      scopes_attribute_value_ = AtomicString(attribute_value);
+    } else if (Match(attribute_name, html_names::kResourcesAttr)) {
+      resources_attribute_value_ = AtomicString(attribute_value);
     }
   }
 
@@ -630,6 +693,10 @@ class TokenPreloadScanner::StartTagScanner {
            !url_to_load_.IsEmpty();
   }
 
+  bool IsLinkRelWebBundle() const {
+    return Match(tag_impl_, html_names::kLinkTag) && link_is_webbundle_;
+  }
+
   bool ShouldPreloadLink(base::Optional<ResourceType>& type) const {
     if (link_is_style_sheet_) {
       return type_attribute_value_.IsEmpty() ||
@@ -669,21 +736,24 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(tag_impl_, html_names::kInputTag) && !input_is_image_)
       return false;
     if (Match(tag_impl_, html_names::kScriptTag)) {
-      mojom::blink::ScriptType script_type = mojom::blink::ScriptType::kClassic;
-      bool is_import_map = false;
-      if (!ScriptLoader::IsValidScriptTypeAndLanguage(
+      ScriptLoader::ScriptTypeAtPrepare script_type =
+          ScriptLoader::GetScriptTypeAtPrepare(
               type_attribute_value_, language_attribute_value_,
-              ScriptLoader::kAllowLegacyTypeInTypeAttribute, &script_type,
-              &is_import_map)) {
-        return false;
-      }
-      if (is_import_map) {
-        // External import maps are not yet supported. https://crbug.com/922212
-        return false;
-      }
-      if (ScriptLoader::BlockForNoModule(script_type,
-                                         nomodule_attribute_value_)) {
-        return false;
+              ScriptLoader::kAllowLegacyTypeInTypeAttribute);
+      switch (script_type) {
+        case ScriptLoader::ScriptTypeAtPrepare::kInvalid:
+          return false;
+
+        case ScriptLoader::ScriptTypeAtPrepare::kImportMap:
+          // TODO(crbug.com/922212): External import maps are not yet supported.
+          return false;
+
+        case ScriptLoader::ScriptTypeAtPrepare::kClassic:
+        case ScriptLoader::ScriptTypeAtPrepare::kModule:
+          if (ScriptLoader::BlockForNoModule(script_type,
+                                             nomodule_attribute_value_)) {
+            return false;
+          }
       }
     }
     return true;
@@ -717,7 +787,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
 
-  bool Defer() const { return defer_; }
+  bool Defer() const { return defer_ != FetchParameters::kNoDefer; }
 
   const StringImpl* tag_impl_;
   String url_to_load_;
@@ -728,6 +798,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool link_is_preload_;
   bool link_is_modulepreload_;
   bool link_is_import_;
+  bool link_is_webbundle_;
   bool matched_;
   bool input_is_image_;
   String img_src_url_;
@@ -735,6 +806,8 @@ class TokenPreloadScanner::StartTagScanner {
   String as_attribute_value_;
   String type_attribute_value_;
   String language_attribute_value_;
+  AtomicString scopes_attribute_value_;
+  AtomicString resources_attribute_value_;
   bool nomodule_attribute_value_;
   float source_size_;
   bool source_size_set_;
@@ -747,6 +820,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool referrer_policy_set_;
   network::mojom::ReferrerPolicy referrer_policy_;
   bool integrity_attr_set_;
+  bool is_async_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   LoadingAttributeValue loading_attr_value_;
@@ -769,6 +843,8 @@ TokenPreloadScanner::TokenPreloadScanner(
       in_style_(false),
       in_picture_(false),
       in_script_(false),
+      seen_body_(false),
+      seen_img_(false),
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
       media_values_(
@@ -787,7 +863,8 @@ TokenPreloadScanner::~TokenPreloadScanner() = default;
 TokenPreloadScannerCheckpoint TokenPreloadScanner::CreateCheckpoint() {
   TokenPreloadScannerCheckpoint checkpoint = checkpoints_.size();
   checkpoints_.push_back(Checkpoint(predicted_base_element_url_, in_style_,
-                                    in_script_, template_count_));
+                                    in_script_, template_count_,
+                                    exclusion_info_));
   return checkpoint;
 }
 
@@ -799,6 +876,7 @@ void TokenPreloadScanner::RewindTo(
   predicted_base_element_url_ = checkpoint.predicted_base_element_url;
   in_style_ = checkpoint.in_style;
   template_count_ = checkpoint.template_count;
+  exclusion_info_ = checkpoint.exclusion_info;
 
   did_rewind_ = true;
   in_script_ = checkpoint.in_script;
@@ -903,7 +981,7 @@ void TokenPreloadScanner::ScanCommon(
     case HTMLToken::kCharacter: {
       if (in_style_) {
         css_scanner_.Scan(token.Data(), source, requests,
-                          predicted_base_element_url_);
+                          predicted_base_element_url_, exclusion_info_.get());
       }
       return;
     }
@@ -931,13 +1009,13 @@ void TokenPreloadScanner::ScanCommon(
       return;
     }
     case HTMLToken::kStartTag: {
-      if (template_count_)
-        return;
       const StringImpl* tag_impl = TagImplFor(token.Data());
       if (Match(tag_impl, html_names::kTemplateTag)) {
         ++template_count_;
         return;
       }
+      if (template_count_)
+        return;
       if (Match(tag_impl, html_names::kStyleTag)) {
         in_style_ = true;
         return;
@@ -978,7 +1056,11 @@ void TokenPreloadScanner::ScanCommon(
                                 media_values_.Get(), &css_scanner_, viewport);
       }
 
-      if (Match(tag_impl, html_names::kPictureTag)) {
+      if (Match(tag_impl, html_names::kBodyTag)) {
+        seen_body_ = true;
+      } else if (Match(tag_impl, html_names::kImgTag)) {
+        seen_img_ = true;
+      } else if (Match(tag_impl, html_names::kPictureTag)) {
         in_picture_ = true;
         picture_data_ = PictureData();
         return;
@@ -995,6 +1077,13 @@ void TokenPreloadScanner::ScanCommon(
           scanner_type_, priority_hints_origin_trial_enabled_,
           &document_parameters_->disabled_image_types);
       scanner.ProcessAttributes(token.Attributes());
+
+      if (scanner.MaybeUpdateExclusionInfo(document_url_, exclusion_info_)) {
+        // This means the tag is <link rel=webbundle>. We don't preload the
+        // web bundle request.
+        return;
+      }
+
       // TODO(yoav): ViewportWidth is currently racy and might be zero in some
       // cases, at least in tests. That problem will go away once
       // ParseHTMLOnMainThread lands and MediaValuesCached is eliminated.
@@ -1002,7 +1091,8 @@ void TokenPreloadScanner::ScanCommon(
         scanner.HandlePictureSourceURL(picture_data_);
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, source, client_hints_preferences_,
-          picture_data_, *document_parameters_);
+          picture_data_, *document_parameters_, exclusion_info_.get(),
+          seen_img_ || seen_body_);
       if (request) {
         requests.push_back(std::move(request));
       }

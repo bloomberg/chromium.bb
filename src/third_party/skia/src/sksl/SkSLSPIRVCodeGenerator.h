@@ -12,6 +12,7 @@
 #include <tuple>
 #include <unordered_map>
 
+#include "src/core/SkOpts.h"
 #include "src/sksl/SkSLCodeGenerator.h"
 #include "src/sksl/SkSLMemoryLayout.h"
 #include "src/sksl/SkSLStringStream.h"
@@ -29,6 +30,7 @@
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLIntLiteral.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLModifiers.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 #include "src/sksl/ir/SkSLProgramElement.h"
@@ -39,52 +41,52 @@
 #include "src/sksl/ir/SkSLTernaryExpression.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
-#include "src/sksl/ir/SkSLWhileStatement.h"
 #include "src/sksl/spirv.h"
 
-union ConstantValue {
-    ConstantValue(int64_t i)
-        : fInt(i) {
-        SkASSERT(sizeof(*this) == sizeof(int64_t));
-    }
+namespace SkSL {
 
-    ConstantValue(SKSL_FLOAT f) {
-        memset(this, 0, sizeof(*this));
-        fFloat = f;
+struct SPIRVNumberConstant {
+    bool operator==(const SPIRVNumberConstant& that) const {
+        return fValueBits == that.fValueBits &&
+               fKind      == that.fKind;
     }
-
-    bool operator==(const ConstantValue& other) const {
-        return fInt == other.fInt;
-    }
-
-    int64_t fInt;
-    SKSL_FLOAT fFloat;
+    int64_t fValueBits;  // contains either an SKSL_INT or zero-padded bits from an SKSL_FLOAT
+    SkSL::Type::NumberKind fKind;
 };
 
-enum class ConstantType {
-    kInt,
-    kUInt,
-    kShort,
-    kUShort,
-    kFloat,
-    kDouble,
-    kHalf,
+struct SPIRVVectorConstant {
+    bool operator==(const SPIRVVectorConstant& that) const {
+        return fTypeId     == that.fTypeId &&
+               fValueId[0] == that.fValueId[0] &&
+               fValueId[1] == that.fValueId[1] &&
+               fValueId[2] == that.fValueId[2] &&
+               fValueId[3] == that.fValueId[3];
+    }
+    SpvId fTypeId;
+    SpvId fValueId[4];
 };
+
+}  // namespace SkSL
 
 namespace std {
 
 template <>
-struct hash<std::pair<ConstantValue, ConstantType>> {
-    size_t operator()(const std::pair<ConstantValue, ConstantType>& key) const {
-        return key.first.fInt ^ (int) key.second;
+struct hash<SkSL::SPIRVNumberConstant> {
+    size_t operator()(const SkSL::SPIRVNumberConstant& key) const {
+        return key.fValueBits ^ (int)key.fKind;
+    }
+};
+
+template <>
+struct hash<SkSL::SPIRVVectorConstant> {
+    size_t operator()(const SkSL::SPIRVVectorConstant& key) const {
+        return SkOpts::hash(&key, sizeof(key));
     }
 };
 
 }  // namespace std
 
 namespace SkSL {
-
-#define kLast_Capability SpvCapabilityMultiViewport
 
 /**
  * Converts a Program into a SPIR-V binary.
@@ -96,8 +98,14 @@ public:
         virtual ~LValue() {}
 
         // returns a pointer to the lvalue, if possible. If the lvalue cannot be directly referenced
-        // by a pointer (e.g. vector swizzles), returns 0.
-        virtual SpvId getPointer() = 0;
+        // by a pointer (e.g. vector swizzles), returns -1.
+        virtual SpvId getPointer() { return -1; }
+
+        // Applies a swizzle to the components of the LValue, if possible. This is used to create
+        // LValues that are swizzes-of-swizzles. Non-swizzle LValues can just return false.
+        virtual bool applySwizzle(const ComponentArray& components, const Type& newType) {
+            return false;
+        }
 
         virtual SpvId load(OutputStream& out) = 0;
 
@@ -133,6 +141,7 @@ private:
     enum SpecialIntrinsic {
         kAtan_SpecialIntrinsic,
         kClamp_SpecialIntrinsic,
+        kMatrixCompMult_SpecialIntrinsic,
         kMax_SpecialIntrinsic,
         kMin_SpecialIntrinsic,
         kMix_SpecialIntrinsic,
@@ -140,6 +149,8 @@ private:
         kDFdy_SpecialIntrinsic,
         kSaturate_SpecialIntrinsic,
         kSampledImage_SpecialIntrinsic,
+        kSmoothStep_SpecialIntrinsic,
+        kStep_SpecialIntrinsic,
         kSubpassLoad_SpecialIntrinsic,
         kTexture_SpecialIntrinsic,
     };
@@ -190,11 +201,13 @@ private:
 
     SpvId writeFunction(const FunctionDefinition& f, OutputStream& out);
 
-    void writeGlobalVar(Program::Kind kind, const VarDeclaration& v, OutputStream& out);
+    void writeGlobalVar(ProgramKind kind, const VarDeclaration& v);
 
     void writeVarDeclaration(const VarDeclaration& var, OutputStream& out);
 
     SpvId writeVariableReference(const VariableReference& ref, OutputStream& out);
+
+    int findUniformFieldIndex(const Variable& var) const;
 
     std::unique_ptr<LValue> getLValue(const Expression& value, OutputStream& out);
 
@@ -223,9 +236,23 @@ private:
 
     SpvId writeFloatConstructor(const Constructor& c, OutputStream& out);
 
+    SpvId castScalarToFloat(SpvId inputId, const Type& inputType, const Type& outputType,
+                            OutputStream& out);
+
     SpvId writeIntConstructor(const Constructor& c, OutputStream& out);
 
+    SpvId castScalarToSignedInt(SpvId inputId, const Type& inputType, const Type& outputType,
+                                OutputStream& out);
+
     SpvId writeUIntConstructor(const Constructor& c, OutputStream& out);
+
+    SpvId castScalarToUnsignedInt(SpvId inputId, const Type& inputType, const Type& outputType,
+                                  OutputStream& out);
+
+    SpvId writeBooleanConstructor(const Constructor& c, OutputStream& out);
+
+    SpvId castScalarToBoolean(SpvId inputId, const Type& inputType, const Type& outputType,
+                              OutputStream& out);
 
     /**
      * Writes a matrix with the diagonal entries all equal to the provided expression, and all other
@@ -280,7 +307,7 @@ private:
     SpvId writeBinaryOperation(const BinaryExpression& expr, SpvOp_ ifFloat, SpvOp_ ifInt,
                                SpvOp_ ifUInt, OutputStream& out);
 
-    SpvId writeBinaryExpression(const Type& leftType, SpvId lhs, Token::Kind op,
+    SpvId writeBinaryExpression(const Type& leftType, SpvId lhs, Operator op,
                                 const Type& rightType, SpvId rhs, const Type& resultType,
                                 OutputStream& out);
 
@@ -311,8 +338,6 @@ private:
     void writeIfStatement(const IfStatement& stmt, OutputStream& out);
 
     void writeForStatement(const ForStatement& f, OutputStream& out);
-
-    void writeWhileStatement(const WhileStatement& w, OutputStream& out);
 
     void writeDoStatement(const DoStatement& d, OutputStream& out);
 
@@ -366,6 +391,25 @@ private:
 
     void writeGeometryShaderExecutionMode(SpvId entryPoint, OutputStream& out);
 
+    MemoryLayout memoryLayoutForVariable(const Variable&) const;
+
+    struct EntrypointAdapter {
+        std::unique_ptr<FunctionDefinition> entrypointDef;
+        std::unique_ptr<FunctionDeclaration> entrypointDecl;
+        Layout fLayout;
+        Modifiers fModifiers;
+    };
+
+    EntrypointAdapter writeEntrypointAdapter(const FunctionDeclaration& main);
+
+    struct UniformBuffer {
+        std::unique_ptr<InterfaceBlock> fInterfaceBlock;
+        std::unique_ptr<Variable> fInnerVariable;
+        std::unique_ptr<Type> fStruct;
+    };
+
+    void writeUniformBuffer(std::shared_ptr<SymbolTable> topLevelSymbolTable);
+
     const Context& fContext;
     const MemoryLayout fDefaultLayout;
 
@@ -390,7 +434,8 @@ private:
 
     SpvId fBoolTrue;
     SpvId fBoolFalse;
-    std::unordered_map<std::pair<ConstantValue, ConstantType>, SpvId> fNumberConstants;
+    std::unordered_map<SPIRVNumberConstant, SpvId> fNumberConstants;
+    std::unordered_map<SPIRVVectorConstant, SpvId> fVectorConstants;
     bool fSetupFragPosition;
     // label of the current block, or 0 if we are not in a block
     SpvId fCurrentBlock;
@@ -402,6 +447,12 @@ private:
     // holds variables synthesized during output, for lifetime purposes
     SymbolTable fSynthetics;
     int fSkInCount = 1;
+    // Holds a list of uniforms that were declared as globals at the top-level instead of in an
+    // interface block.
+    UniformBuffer fUniformBuffer;
+    std::vector<const VarDeclaration*> fTopLevelUniforms;
+    std::unordered_map<const Variable*, int> fTopLevelUniformMap; //<var, UniformBuffer field index>
+    SpvId fUniformBufferId = -1;
 
     friend class PointerLValue;
     friend class SwizzleLValue;

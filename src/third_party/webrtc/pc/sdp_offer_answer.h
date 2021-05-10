@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -33,6 +34,7 @@
 #include "api/rtp_transceiver_direction.h"
 #include "api/rtp_transceiver_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
 #include "api/set_local_description_observer_interface.h"
 #include "api/set_remote_description_observer_interface.h"
 #include "api/transport/data_channel_transport_interface.h"
@@ -69,7 +71,6 @@
 #include "rtc_base/race_checker.h"
 #include "rtc_base/rtc_certificate.h"
 #include "rtc_base/ssl_stream_adapter.h"
-#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
@@ -493,8 +494,6 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   bool ReadyToUseRemoteCandidate(const IceCandidateInterface* candidate,
                                  const SessionDescriptionInterface* remote_desc,
                                  bool* valid);
-  void ReportRemoteIceCandidateAdded(const cricket::Candidate& candidate)
-      RTC_RUN_ON(signaling_thread());
 
   RTCErrorOr<const cricket::ContentInfo*> FindContentInfo(
       const SessionDescriptionInterface* description,

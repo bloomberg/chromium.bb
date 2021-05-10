@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1175958423215084756">Esteka bat hauteman da. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galeriako irudiak</translation>
 <translation id="1430915738399379752">Inprimatu</translation>
 <translation id="1473110567575736769">Hiru segundoko tenporizadorea</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">PAUSATUTA</translation>
 <translation id="1862930711583847113">Ezin da esportatu <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Argazkiaren bereizmena</translation>
+<translation id="2022953316617983419">QR kodea</translation>
 <translation id="2036868001356139588">Tenporizadorearen iraupena</translation>
 <translation id="2050339315714019657">Bertikala</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktibo dago</translation>
+<translation id="2144806332417375165">Pertsonalizatu bideoaren parametroak</translation>
 <translation id="229579744168541441">Esportatu diskora</translation>
 <translation id="2501278716633472235">Egin atzera</translation>
 <translation id="2501853267655415902">Grabatzeari utzi zaio</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Sareta mota</translation>
 <translation id="3227137524299004712">Mikrofonoa</translation>
+<translation id="3240426699337459095">Esteka kopiatu da</translation>
 <translation id="3259149966178251584">Kameraren bereizmena</translation>
 <translation id="3517926952904427380">Ezin da atera erretratu-argazkia</translation>
 <translation id="3569311554794739032">Ziur zaude <ph name="FILE" /> kendu nahi duzula?</translation>
-<translation id="3750315947605636967">Beste aplikazio bat kamera erabiltzen ari da</translation>
 <translation id="3810838688059735925">Bideoa</translation>
+<translation id="3838931309141338733">Eskaneatu barra-kodea</translation>
+<translation id="3892148308691398805">Kopiatu testua</translation>
 <translation id="4000398125663085899">Orain, Fitxategiak aplikazioko karpeta honetan gordeko dira argazki eta bideo berriak: Nire fitxategiak &gt; Kamera</translation>
 <translation id="4118525110028899586">Pausatu grabaketa</translation>
+<translation id="4269820728363426813">Kopiatu estekaren helbidea</translation>
 <translation id="4279490309300973883">Islatzen</translation>
 <translation id="4329152592498422850">Aldatu argazki karratuak ateratzeko modura</translation>
 <translation id="4383571725254449280">Inprimatu errendimendu-erregistroak</translation>
@@ -68,11 +74,15 @@ Irudi edo bideoaren kalitateari buruzko iritzia eman nahi baduzu, erantsi argazk
 <translation id="7134221860976209830">Hamar segundoko tenporizadorea</translation>
 <translation id="7243947652761655814">Bideoaren bereizmena</translation>
 <translation id="7337660886763914220">Errore batzuk gertatu dira fitxategi-sisteman.</translation>
+<translation id="7450541714075000668">Kopiatu da testua</translation>
 <translation id="7557677699350329807">Aldatu hurrengo kamerara</translation>
+<translation id="7607002721634913082">Pausatuta</translation>
 <translation id="7608223098072244877">4 × 4</translation>
 <translation id="7649070708921625228">Laguntza</translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">Erakutsi mugitzeko, okertzeko eta zooma aplikatzeko aukerak</translation>
+<translation id="7983668134180549431">Testua hauteman da.</translation>
 <translation id="8067883171444229417">Erreproduzitu bideoa</translation>
 <translation id="8131740175452115882">Berretsi</translation>
 <translation id="8145038249676204903">Aldatu argazkiak ateratzeko modura</translation>

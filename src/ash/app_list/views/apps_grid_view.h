@@ -261,7 +261,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Passes scroll information from AppListView to the PaginationController,
   // returns true if this scroll would change pages.
-  bool HandleScrollFromAppListView(const gfx::Vector2d& offset,
+  bool HandleScrollFromAppListView(const gfx::Point& location,
+                                   const gfx::Vector2d& offset,
                                    ui::EventType type);
 
   // Moves |reparented_item| from its folder to the root AppsGridView in the
@@ -833,6 +834,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   base::OneShotTimer host_drag_start_timer_;
 
   // An application target drag and drop host which accepts dnd operations.
+  // Usually the shelf (e.g. ShelfView or ScrollableShelfView).
   ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;
 
   // The drag operation is currently inside the dnd host and events get

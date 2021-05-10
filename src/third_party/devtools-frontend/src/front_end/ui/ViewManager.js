@@ -2,58 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
-import * as Root from '../root/root.js';
+import * as i18n from '../i18n/i18n.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu} from './ContextMenu.js';  // eslint-disable-line no-unused-vars
 import {Icon} from './Icon.js';
 import {Events as TabbedPaneEvents, TabbedPane} from './TabbedPane.js';
-import {Toolbar, ToolbarItem, ToolbarMenuButton} from './Toolbar.js';  // eslint-disable-line no-unused-vars
+import {ItemsProvider, Toolbar, ToolbarItem, ToolbarMenuButton} from './Toolbar.js';  // eslint-disable-line no-unused-vars
 import {createTextChild} from './UIUtils.js';
-import {ProvidedView, TabbedViewLocation, View, ViewLocation, ViewLocationResolver, widgetSymbol,} from './View.js';  // eslint-disable-line no-unused-vars
+import {ProvidedView, TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js';  // eslint-disable-line no-unused-vars
+import {getRegisteredLocationResolvers, getRegisteredViewExtensions, registerLocationResolver, registerViewExtension, ViewLocationCategoryValues, ViewLocationValues, ViewPersistence, ViewRegistration} from './ViewRegistration.js';
 import {VBox, Widget} from './Widget.js';  // eslint-disable-line no-unused-vars
 
-/** @type {!Array<!PreRegisteredView>} */
-const registeredViewExtensions = [];
-
-/** @enum {string} */
-export const ViewPersistence = {
-  CLOSEABLE: 'closeable',
-  PERMANENT: 'permanent',
-  TRANSIENT: 'transient',
+export const UIStrings = {
+  /**
+  *@description Aria label for the tab panel view container
+  *@example {Sensors} PH1
+  */
+  sPanel: '{PH1} panel',
 };
-
-/** @enum {string} */
-export const ViewLocationValues = {
-  PANEL: 'panel',
-  SETTINGS_VIEW: 'settings-view',
-};
-
-/**
- * @typedef {{
- *  title: string,
- *  persistence: !ViewPersistence,
- *  id: string,
- *  location: !ViewLocationValues,
- *  hasToolbar: boolean,
- *  loadView: function():!Promise<!Widget>,
- *  order: number,
- *  settings: !Array<string>,
- *  tags: string,
- * }}
- */
-// @ts-ignore typedef
-export let ViewRegistration;
-
+const str_ = i18n.i18n.registerUIStrings('ui/ViewManager.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {View}
  */
-class PreRegisteredView {
+export class PreRegisteredView {
   /**
    * @param {!ViewRegistration} viewRegistration
    */
@@ -67,9 +42,12 @@ class PreRegisteredView {
    * @override
    */
   title() {
-    return this._viewRegistration.title;
+    return this._viewRegistration.title();
   }
 
+  commandPrompt() {
+    return this._viewRegistration.commandPrompt();
+  }
   /**
    * @override
    */
@@ -104,13 +82,24 @@ class PreRegisteredView {
   }
 
   tags() {
-    return this._viewRegistration.tags;
+    if (this._viewRegistration.tags) {
+      // Get localized keys and separate by null character to prevent fuzzy matching from matching across them.
+      return this._viewRegistration.tags.map(tag => tag()).join('\0');
+    }
+    return undefined;
+  }
+
+  persistence() {
+    return this._viewRegistration.persistence;
   }
 
   /**
    * @override
    */
   async toolbarItems() {
+    if (this._viewRegistration.hasToolbar) {
+      return this.widget().then(widget => /** @type {!ItemsProvider} */ (/** @type {*} */ (widget)).toolbarItems());
+    }
     return [];
   }
 
@@ -133,20 +122,14 @@ class PreRegisteredView {
     const widget = await this.widget();
     await widget.ownerViewDisposed();
   }
-}
 
-/**
- * @param {!ViewRegistration} registration
- */
-export function registerViewExtension(registration) {
-  registeredViewExtensions.push(new PreRegisteredView(registration));
-}
+  experiment() {
+    return this._viewRegistration.experiment;
+  }
 
-/**
- * @return {!Array<!PreRegisteredView>}
- */
-export function getRegisteredViewExtensions() {
-  return registeredViewExtensions;
+  condition() {
+    return this._viewRegistration.condition;
+  }
 }
 
 /**
@@ -154,9 +137,6 @@ export function getRegisteredViewExtensions() {
  */
 let viewManagerInstance;
 
-/**
- * @unrestricted
- */
 export class ViewManager {
   /**
    * @private
@@ -171,30 +151,38 @@ export class ViewManager {
     this._locationOverrideSetting = Common.Settings.Settings.instance().createSetting('viewsLocationOverride', {});
     const preferredExtensionLocations = this._locationOverrideSetting.get();
 
-    /** @type {!Array<{viewId: string, view: (!ProvidedView|!PreRegisteredView), location: string}>} */
-    const unionOfViewExtensions = [
-      // TODO(crbug.com/1134103): Remove this call when all views are migrated
-      ...Root.Runtime.Runtime.instance().extensions('view').map(extension => {
-        return {
-          viewId: extension.descriptor().id,
-          location: extension.descriptor()['location'],
-          view: new ProvidedView(extension),
-        };
-      }),
-      ...registeredViewExtensions.map(registeredView => {
-        return {
-          viewId: registeredView.viewId(),
-          location: registeredView.location(),
-          view: registeredView,
-        };
-      }),
-    ];
-
-    // All views define their initial ordering. When the user has not reordered, we use the
+    // Views may define their initial ordering within a location. When the user has not reordered, we use the
     // default ordering as defined by the views themselves.
-    unionOfViewExtensions.sort((firstView, secondView) => firstView.view.order() - secondView.view.order());
 
-    for (const {viewId, view, location} of unionOfViewExtensions) {
+    /** @type {!Map<string, !Array<!PreRegisteredView>>} */
+    const viewsByLocation = new Map();
+    for (const view of getRegisteredViewExtensions()) {
+      const location = view.location() || 'none';
+      const views = viewsByLocation.get(location) || [];
+      views.push(view);
+      viewsByLocation.set(location, views);
+    }
+
+    /** @type {!Array<!PreRegisteredView>} */
+    let sortedViewExtensions = [];
+    for (const views of viewsByLocation.values()) {
+      views.sort((firstView, secondView) => {
+        const firstViewOrder = firstView.order();
+        const secondViewOrder = secondView.order();
+        if (firstViewOrder && secondViewOrder) {
+          return firstViewOrder - secondViewOrder;
+        }
+        return 0;
+      });
+      sortedViewExtensions = sortedViewExtensions.concat(views);
+    }
+
+    for (const view of sortedViewExtensions) {
+      const viewId = view.viewId();
+      const location = view.location();
+      if (this._views.has(viewId)) {
+        throw new Error(`Duplicate view id '${viewId}'`);
+      }
       this._views.set(viewId, view);
       // Use the preferred user location if available
       const locationName = preferredExtensionLocations[viewId] || location;
@@ -234,7 +222,11 @@ export class ViewManager {
    * @returns {string}
    */
   locationNameForViewId(viewId) {
-    return this._locationNameByViewId.get(viewId);
+    const locationName = this._locationNameByViewId.get(viewId);
+    if (!locationName) {
+      throw new Error(`No location name for view with id ${viewId}`);
+    }
+    return locationName;
   }
 
   /**
@@ -280,7 +272,7 @@ export class ViewManager {
    * @return {!Promise<void>}
    */
   revealView(view) {
-    const location = /** @type {?_Location} */ (view[_Location.symbol]);
+    const location = locationForView.get(view);
     if (!location) {
       return Promise.resolve();
     }
@@ -303,10 +295,14 @@ export class ViewManager {
 
   /**
    * @param {string} viewId
-   * @return {?View}
+   * @return {View}
    */
   view(viewId) {
-    return this._views.get(viewId);
+    const view = this._views.get(viewId);
+    if (!view) {
+      throw new Error(`No view with id ${viewId} found!`);
+    }
+    return view;
   }
 
   /**
@@ -315,7 +311,10 @@ export class ViewManager {
    */
   materializedWidget(viewId) {
     const view = this.view(viewId);
-    return view ? view[widgetSymbol] : null;
+    if (!view) {
+      return null;
+    }
+    return widgetForView.get(view) || null;
   }
 
   /**
@@ -333,7 +332,7 @@ export class ViewManager {
 
     const locationName = this._locationNameByViewId.get(viewId);
 
-    const location = view[_Location.symbol];
+    const location = locationForView.get(view);
     if (location) {
       location._reveal();
       return location.showView(view, undefined, userGesture, omitFocus);
@@ -352,20 +351,20 @@ export class ViewManager {
    * @param {string=} location
    * @return {!Promise<?_Location>}
    */
-  resolveLocation(location) {
+  async resolveLocation(location) {
     if (!location) {
       return /** @type {!Promise<?_Location>} */ (Promise.resolve(null));
     }
+    const registeredResolvers = getRegisteredLocationResolvers().filter(resolver => resolver.name === location);
 
-    const resolverExtensions = Root.Runtime.Runtime.instance()
-                                   .extensions(ViewLocationResolver)
-                                   .filter(extension => extension.descriptor()['name'] === location);
-    if (!resolverExtensions.length) {
-      throw new Error('Unresolved location: ' + location);
+    if (registeredResolvers.length > 1) {
+      throw new Error('Duplicate resolver for location: ' + location);
     }
-    const resolverExtension = resolverExtensions[0];
-    return resolverExtension.instance().then(
-        resolver => /** @type {?_Location} */ (resolver.resolveLocation(location)));
+    if (registeredResolvers.length) {
+      const resolver = /** @type {!ViewLocationResolver} */ (await registeredResolvers[0].loadResolver());
+      return /** @type {?_Location} */ (resolver.resolveLocation(location));
+    }
+    throw new Error('Unresolved location: ' + location);
   }
 
   /**
@@ -394,7 +393,7 @@ export class ViewManager {
    * @return {boolean}
    */
   hasViewsForLocation(location) {
-    return !!this._viewsForLocation(location).length;
+    return Boolean(this._viewsForLocation(location).length);
   }
 
   /**
@@ -403,19 +402,18 @@ export class ViewManager {
    */
   _viewsForLocation(location) {
     const result = [];
-    for (const id of this._views.keys()) {
+    for (const [id, view] of this._views.entries()) {
       if (this._locationNameByViewId.get(id) === location) {
-        result.push(this._views.get(id));
+        result.push(view);
       }
     }
     return result;
   }
 }
 
+/** @type {!WeakMap<!View, !Widget>} */
+const widgetForView = new WeakMap();
 
-/**
- * @unrestricted
- */
 export class ContainerWidget extends VBox {
   /**
    * @param {!View} view
@@ -426,7 +424,7 @@ export class ContainerWidget extends VBox {
     this._view = view;
     this.element.tabIndex = -1;
     ARIAUtils.markAsTabpanel(this.element);
-    ARIAUtils.setAccessibleName(this.element, ls`${view.title()} panel`);
+    ARIAUtils.setAccessibleName(this.element, i18nString(UIStrings.sPanel, {PH1: view.title()}));
     this.setDefaultFocusedElement(this.element);
   }
 
@@ -449,7 +447,7 @@ export class ContainerWidget extends VBox {
       // Move focus from |this| to loaded |widget| if any.
       const shouldFocus = this.element.hasFocus();
       this.setDefaultFocusedElement(null);
-      this._view[widgetSymbol] = widget;
+      widgetForView.set(this._view, widget);
       widget.show(this.element);
       if (shouldFocus) {
         widget.focus();
@@ -464,8 +462,11 @@ export class ContainerWidget extends VBox {
    */
   wasShown() {
     this._materialize().then(() => {
-      this._view[widgetSymbol].show(this.element);
-      this._wasShownForTest();
+      const widget = widgetForView.get(this._view);
+      if (widget) {
+        widget.show(this.element);
+        this._wasShownForTest();
+      }
     });
   }
 
@@ -474,9 +475,6 @@ export class ContainerWidget extends VBox {
   }
 }
 
-/**
- * @unrestricted
- */
 export class _ExpandableContainerWidget extends VBox {
   /**
    * @param {!View} view
@@ -502,16 +500,16 @@ export class _ExpandableContainerWidget extends VBox {
 
     ARIAUtils.setControls(this._titleElement, this.contentElement.createChild('slot'));
     this._view = view;
-    view[_ExpandableContainerWidget._symbol] = this;
+    expandableContainerForView.set(view, this);
   }
 
   /**
    * @override
    */
   wasShown() {
-    if (this._widget) {
+    if (this._widget && this._materializePromise) {
       this._materializePromise.then(() => {
-        if (this._titleElement.classList.contains('expanded')) {
+        if (this._titleElement.classList.contains('expanded') && this._widget) {
           this._widget.show(this.element);
         }
       });
@@ -535,7 +533,7 @@ export class _ExpandableContainerWidget extends VBox {
     }));
     promises.push(this._view.widget().then(widget => {
       this._widget = widget;
-      this._view[widgetSymbol] = widget;
+      widgetForView.set(this._view, widget);
       widget.show(this.element);
     }));
     this._materializePromise = Promise.all(promises);
@@ -552,7 +550,11 @@ export class _ExpandableContainerWidget extends VBox {
     this._titleElement.classList.add('expanded');
     ARIAUtils.setExpanded(this._titleElement, true);
     this._titleExpandIcon.setIconType('smallicon-triangle-down');
-    return this._materialize().then(() => this._widget.show(this.element));
+    return this._materialize().then(() => {
+      if (this._widget) {
+        this._widget.show(this.element);
+      }
+    });
   }
 
   _collapse() {
@@ -562,7 +564,11 @@ export class _ExpandableContainerWidget extends VBox {
     this._titleElement.classList.remove('expanded');
     ARIAUtils.setExpanded(this._titleElement, false);
     this._titleExpandIcon.setIconType('smallicon-triangle-right');
-    this._materialize().then(() => this._widget.detach());
+    this._materialize().then(() => {
+      if (this._widget) {
+        this._widget.detach();
+      }
+    });
   }
 
   /**
@@ -586,9 +592,10 @@ export class _ExpandableContainerWidget extends VBox {
     if (event.target !== this._titleElement) {
       return;
     }
-    if (event.key === 'ArrowLeft') {
+    const keyEvent = /** @type {!KeyboardEvent} */ (event);
+    if (keyEvent.key === 'ArrowLeft') {
       this._collapse();
-    } else if (event.key === 'ArrowRight') {
+    } else if (keyEvent.key === 'ArrowRight') {
       if (!this._titleElement.classList.contains('expanded')) {
         this._expand();
       } else if (this._widget) {
@@ -598,11 +605,9 @@ export class _ExpandableContainerWidget extends VBox {
   }
 }
 
-_ExpandableContainerWidget._symbol = Symbol('container');
+/** @type {!WeakMap<!View, !_ExpandableContainerWidget>} */
+const expandableContainerForView = new WeakMap();
 
-/**
- * @unrestricted
- */
 class _Location {
   /**
    * @param {!ViewManager} manager
@@ -627,13 +632,32 @@ class _Location {
       this._revealCallback();
     }
   }
+
+  /**
+   * @param {!View} view
+   * @param {?View=} insertBefore
+   * @param {boolean=} userGesture
+   * @param {boolean=} omitFocus
+   * @param {boolean=} shouldSelectTab
+   * @return {!Promise<void>}
+   */
+  showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab) {
+    throw new Error('not implemented');
+  }
+
+  /**
+   * @param {!View} view
+   */
+  removeView(view) {
+    throw new Error('not implemented');
+  }
 }
 
-_Location.symbol = Symbol('location');
+/** @type {!WeakMap<!View, !_Location>} */
+const locationForView = new WeakMap();
 
 /**
  * @implements {TabbedViewLocation}
- * @unrestricted
  */
 export class _TabbedLocation extends _Location {
   /**
@@ -732,7 +756,7 @@ export class _TabbedLocation extends _Location {
     for (const view of views) {
       const id = view.viewId();
       this._views.set(id, view);
-      view[_Location.symbol] = this;
+      locationForView.set(view, this);
       if (view.isTransient()) {
         continue;
       }
@@ -770,7 +794,7 @@ export class _TabbedLocation extends _Location {
     const views = Array.from(this._views.values());
     views.sort((viewa, viewb) => viewa.title().localeCompare(viewb.title()));
     for (const view of views) {
-      const title = Common.UIString.UIString(view.title());
+      const title = view.title();
 
       if (view.viewId() === 'issues-pane') {
         contextMenu.defaultSection().appendItem(title, () => {
@@ -803,11 +827,11 @@ export class _TabbedLocation extends _Location {
     if (this._tabbedPane.hasTab(view.viewId())) {
       return;
     }
-    const oldLocation = view[_Location.symbol];
+    const oldLocation = locationForView.get(view);
     if (oldLocation && oldLocation !== this) {
       oldLocation.removeView(view);
     }
-    view[_Location.symbol] = this;
+    locationForView.set(view, this);
     this._manager._views.set(view.viewId(), view);
     this._views.set(view.viewId(), view);
     let index = undefined;
@@ -849,9 +873,9 @@ export class _TabbedLocation extends _Location {
    * @param {boolean=} userGesture
    * @param {boolean=} omitFocus
    * @param {boolean=} shouldSelectTab
-   * @return {!Promise<*>}
+   * @return {!Promise<void>}
    */
-  showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
+  async showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
     this.appendView(view, insertBefore);
     if (shouldSelectTab) {
       this._tabbedPane.selectTab(view.viewId(), userGesture);
@@ -860,7 +884,7 @@ export class _TabbedLocation extends _Location {
       this._tabbedPane.focus();
     }
     const widget = /** @type {!ContainerWidget} */ (this._tabbedPane.tabView(view.viewId()));
-    return widget._materialize();
+    await widget._materialize();
   }
 
   /**
@@ -872,7 +896,7 @@ export class _TabbedLocation extends _Location {
       return;
     }
 
-    delete view[_Location.symbol];
+    locationForView.delete(view);
     this._manager._views.delete(view.viewId());
     this._tabbedPane.closeTab(view.viewId());
     this._views.delete(view.viewId());
@@ -898,11 +922,15 @@ export class _TabbedLocation extends _Location {
       tabs[id] = false;
       this._closeableTabSetting.set(tabs);
     }
-    this._views.get(id).disposeView();
+    const view = this._views.get(id);
+    if (view) {
+      view.disposeView();
+    }
   }
 
   _persistTabOrder() {
     const tabIds = this._tabbedPane.tabIds();
+    /** @type {!Object<string, number>} */
     const tabOrders = {};
     for (let i = 0; i < tabIds.length; i++) {
       tabOrders[tabIds[i]] = (i + 1) * _TabbedLocation.orderStep;
@@ -927,7 +955,6 @@ _TabbedLocation.orderStep = 10;  // Keep in sync with descriptors.
 
 /**
  * @implements {ViewLocation}
- * @unrestricted
  */
 class _StackLocation extends _Location {
   /**
@@ -954,19 +981,19 @@ class _StackLocation extends _Location {
    * @param {?View=} insertBefore
    */
   appendView(view, insertBefore) {
-    const oldLocation = view[_Location.symbol];
+    const oldLocation = locationForView.get(view);
     if (oldLocation && oldLocation !== this) {
       oldLocation.removeView(view);
     }
 
     let container = this._expandableContainers.get(view.viewId());
     if (!container) {
-      view[_Location.symbol] = this;
+      locationForView.set(view, this);
       this._manager._views.set(view.viewId(), view);
       container = new _ExpandableContainerWidget(view);
       let beforeElement = null;
       if (insertBefore) {
-        const beforeContainer = insertBefore[_ExpandableContainerWidget._symbol];
+        const beforeContainer = expandableContainerForView.get(insertBefore);
         beforeElement = beforeContainer ? beforeContainer.element : null;
       }
       container.show(this._vbox.contentElement, beforeElement);
@@ -978,12 +1005,14 @@ class _StackLocation extends _Location {
    * @override
    * @param {!View} view
    * @param {?View=} insertBefore
-   * @return {!Promise<*>}
+   * @return {!Promise<void>}
    */
-  showView(view, insertBefore) {
+  async showView(view, insertBefore) {
     this.appendView(view, insertBefore);
     const container = this._expandableContainers.get(view.viewId());
-    return container._expand();
+    if (container) {
+      await container._expand();
+    }
   }
 
   /**
@@ -998,7 +1027,7 @@ class _StackLocation extends _Location {
 
     container.detach();
     this._expandableContainers.delete(view.viewId());
-    delete view[_Location.symbol];
+    locationForView.delete(view);
     this._manager._views.delete(view.viewId());
   }
 
@@ -1012,3 +1041,20 @@ class _StackLocation extends _Location {
     }
   }
 }
+
+/**
+ * @typedef {{viewId: string, view: (!ProvidedView|!PreRegisteredView), location: (string|null)}}
+ */
+// @ts-ignore typedef
+export let ViewRegistry;
+
+export {
+  ViewRegistration,
+  ViewPersistence,
+  getRegisteredViewExtensions,
+  registerViewExtension,
+  ViewLocationValues,
+  getRegisteredLocationResolvers,
+  registerLocationResolver,
+  ViewLocationCategoryValues
+};

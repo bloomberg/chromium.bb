@@ -28,7 +28,6 @@ public:
     GrDitherEffect(const GrDitherEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "DitherEffect"; }
-    bool usesExplicitReturn() const override;
     float range;
 
 private:
@@ -38,10 +37,9 @@ private:
                                                     : kAll_OptimizationFlags) &
                                 kPreservesOpaqueInput_OptimizationFlag)
             , range(range) {
-        SkASSERT(inputFP);
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

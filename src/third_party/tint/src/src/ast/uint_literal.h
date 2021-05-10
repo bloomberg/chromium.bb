@@ -23,31 +23,33 @@ namespace tint {
 namespace ast {
 
 /// A uint literal
-class UintLiteral : public IntLiteral {
+class UintLiteral : public Castable<UintLiteral, IntLiteral> {
  public:
   /// Constructor
+  /// @param source the input source
   /// @param type the type of the literal
   /// @param value the uint literals value
-  UintLiteral(ast::type::Type* type, uint32_t value);
+  UintLiteral(const Source& source, type::Type* type, uint32_t value);
   ~UintLiteral() override;
 
-  /// @returns true if this is a uint literal
-  bool IsUint() const override;
-
-  /// Updates the literals value
-  /// @param val the value to set
-  void set_value(uint32_t val) { value_ = val; }
   /// @returns the uint literal value
   uint32_t value() const { return value_; }
 
   /// @returns the name for this literal. This name is unique to this value.
   std::string name() const override;
 
+  /// @param sem the semantic info for the program
   /// @returns the literal as a string
-  std::string to_str() const override;
+  std::string to_str(const semantic::Info& sem) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  UintLiteral* Clone(CloneContext* ctx) const override;
 
  private:
-  uint32_t value_;
+  uint32_t const value_;
 };
 
 }  // namespace ast

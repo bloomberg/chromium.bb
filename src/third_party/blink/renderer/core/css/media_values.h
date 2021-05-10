@@ -8,6 +8,7 @@
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/css/preferred_contrast.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -22,7 +23,8 @@ enum class CSSValueID;
 enum class ColorSpaceGamut;
 enum class ForcedColors;
 enum class NavigationControls;
-enum class ScreenSpanning;
+enum class ScreenSpanning { kNone, kSingleFoldHorizontal, kSingleFoldVertical };
+enum class ScreenFoldPosture { kNoFold, kLaptop, kFlat, kTent, kTablet, kBook };
 
 mojom::blink::PreferredColorScheme CSSValueIDToPreferredColorScheme(
     CSSValueID id);
@@ -69,9 +71,9 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual float DevicePixelRatio() const = 0;
   virtual int ColorBitsPerComponent() const = 0;
   virtual int MonochromeBitsPerComponent() const = 0;
-  virtual ui::PointerType PrimaryPointerType() const = 0;
+  virtual mojom::blink::PointerType PrimaryPointerType() const = 0;
   virtual int AvailablePointerTypes() const = 0;
-  virtual ui::HoverType PrimaryHoverType() const = 0;
+  virtual mojom::blink::HoverType PrimaryHoverType() const = 0;
   virtual int AvailableHoverTypes() const = 0;
   virtual bool ThreeDEnabled() const = 0;
   virtual bool InImmersiveMode() const = 0;
@@ -91,6 +93,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual ForcedColors GetForcedColors() const = 0;
   virtual NavigationControls GetNavigationControls() const = 0;
   virtual ScreenSpanning GetScreenSpanning() const = 0;
+  virtual ScreenFoldPosture GetScreenFoldPosture() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -106,9 +109,9 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static blink::mojom::DisplayMode CalculateDisplayMode(LocalFrame*);
   static bool CalculateThreeDEnabled(LocalFrame*);
   static bool CalculateInImmersiveMode(LocalFrame*);
-  static ui::PointerType CalculatePrimaryPointerType(LocalFrame*);
+  static mojom::blink::PointerType CalculatePrimaryPointerType(LocalFrame*);
   static int CalculateAvailablePointerTypes(LocalFrame*);
-  static ui::HoverType CalculatePrimaryHoverType(LocalFrame*);
+  static mojom::blink::HoverType CalculatePrimaryHoverType(LocalFrame*);
   static int CalculateAvailableHoverTypes(LocalFrame*);
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static mojom::blink::PreferredColorScheme CalculatePreferredColorScheme(
@@ -120,6 +123,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static ForcedColors CalculateForcedColors();
   static NavigationControls CalculateNavigationControls(LocalFrame*);
   static ScreenSpanning CalculateScreenSpanning(LocalFrame*);
+  static ScreenFoldPosture CalculateScreenFoldPosture(LocalFrame*);
 };
 
 }  // namespace blink

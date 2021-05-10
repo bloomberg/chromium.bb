@@ -34,7 +34,7 @@ CSSParserTokenRange ConsumeNestedArgument(CSSParserTokenRange& range) {
   return range.MakeSubRange(&first, &range.Peek());
 }
 
-bool AtEndIgnoringWhitepace(CSSParserTokenRange range) {
+bool AtEndIgnoringWhitespace(CSSParserTokenRange range) {
   range.ConsumeWhitespace();
   return range.AtEnd();
 }
@@ -228,16 +228,11 @@ namespace {
 
 enum CompoundSelectorFlags {
   kHasPseudoElementForRightmostCompound = 1 << 0,
-  kHasContentPseudoElement = 1 << 1
 };
 
 unsigned ExtractCompoundFlags(const CSSParserSelector& simple_selector,
                               CSSParserMode parser_mode) {
   if (simple_selector.Match() != CSSSelector::kPseudoElement)
-    return 0;
-  if (simple_selector.GetPseudoType() == CSSSelector::kPseudoContent)
-    return kHasContentPseudoElement;
-  if (simple_selector.GetPseudoType() == CSSSelector::kPseudoShadow)
     return 0;
   // We don't restrict what follows custom ::-webkit-* pseudo elements in UA
   // sheets. We currently use selectors in mediaControls.css like this:
@@ -279,8 +274,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeComplexSelector(
       compound_flags |= ExtractCompoundFlags(*end, context_->Mode());
     }
     end->SetRelation(combinator);
-    if (previous_compound_flags & kHasContentPseudoElement)
-      end->SetRelationIsAffectedByPseudoContent();
     previous_compound_flags = compound_flags;
     end->SetTagHistory(std::move(selector));
 
@@ -365,8 +358,6 @@ bool IsSimpleSelectorValidAfterPseudoElement(
           RuntimeEnabledFeatures::CSSMarkerNestedPseudoElementEnabled())
         return true;
       break;
-    case CSSSelector::kPseudoContent:
-      return simple_selector.Match() != CSSSelector::kPseudoElement;
     case CSSSelector::kPseudoSlotted:
       return simple_selector.IsTreeAbidingPseudoElement();
     case CSSSelector::kPseudoPart:
@@ -436,8 +427,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
   // [1] https://drafts.csswg.org/selectors/#matches
   // [2] https://drafts.csswg.org/selectors/#selector-subject
   base::AutoReset<bool> ignore_namespace(
-      &ignore_default_namespace_, resist_default_namespace_ && !has_q_name &&
-                                      AtEndIgnoringWhitepace(range));
+      &ignore_default_namespace_,
+      ignore_default_namespace_ || (resist_default_namespace_ && !has_q_name &&
+                                    AtEndIgnoringWhitespace(range)));
 
   if (!compound_selector) {
     AtomicString namespace_uri = DetermineNamespace(namespace_prefix);
@@ -636,7 +628,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   selector->SetMatch(colons == 1 ? CSSSelector::kPseudoClass
                                  : CSSSelector::kPseudoElement);
 
-  AtomicString value = token.Value().ToAtomicString().LowerASCII();
+  AtomicString value = token.Value().ToAtomicString();
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, *context_, has_arguments, context_->Mode());
 
@@ -647,17 +639,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
         context_->Count(WebFeature::kHasBeforeOrAfterPseudoElement);
         break;
       case CSSSelector::kPseudoMarker:
-        if (context_->Mode() != kUASheetMode) {
+        if (context_->Mode() != kUASheetMode)
           context_->Count(WebFeature::kHasMarkerPseudoElement);
-          if (!RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
-            return nullptr;
-        }
-        break;
-      case CSSSelector::kPseudoShadow:
-      case CSSSelector::kPseudoContent:
-        if (disallow_shadow_dom_v0_)
-          return nullptr;
-        disallow_nested_complex_ = true;
         break;
       default:
         break;
@@ -684,9 +667,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoIs: {
       if (!RuntimeEnabledFeatures::CSSPseudoIsEnabled())
         break;
-      if (disallow_nested_complex_)
-        return nullptr;
-      disallow_shadow_dom_v0_ = true;
 
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> resist_namespace(&resist_default_namespace_, true);
@@ -702,9 +682,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoWhere: {
       if (!RuntimeEnabledFeatures::CSSPseudoWhereEnabled())
         break;
-      if (disallow_nested_complex_)
-        return nullptr;
-      disallow_shadow_dom_v0_ = true;
 
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> resist_namespace(&resist_default_namespace_, true);
@@ -723,6 +700,10 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoCue: {
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> inside_compound(&inside_compound_pseudo_, true);
+      base::AutoReset<bool> ignore_namespace(
+          &ignore_default_namespace_,
+          ignore_default_namespace_ ||
+              selector->GetPseudoType() == CSSSelector::kPseudoCue);
 
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();
@@ -750,19 +731,10 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       if (!selector_list->IsValid() || !block.AtEnd())
         return nullptr;
 
-      // The initial implementation of :not() supported a single "simple"
-      // compound selector. For backwards compatibility, we still support
-      // ShadowDOM v0 features in this case.
-      if (!selector_list->TreatAsNonComplexArgumentToNot()) {
-        if (disallow_nested_complex_)
-          return nullptr;
-        disallow_shadow_dom_v0_ = true;
-      }
-
       selector->SetSelectorList(std::move(selector_list));
       return selector;
     }
-    case CSSSelector::kPseudoState: {
+    case CSSSelector::kPseudoDir: {
       const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
       if (ident.GetType() != kIdentToken || !block.AtEnd())
         return nullptr;
@@ -846,24 +818,6 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
       range.ConsumeIncludingWhitespace();
       return CSSSelector::kChild;
 
-    case '/': {
-      // Match /deep/
-      range.Consume();
-      const CSSParserToken& ident = range.Consume();
-      if (ident.GetType() != kIdentToken ||
-          !EqualIgnoringASCIICase(ident.Value(), "deep"))
-        failed_parsing_ = true;
-      const CSSParserToken& slash = range.ConsumeIncludingWhitespace();
-      if (slash.GetType() != kDelimiterToken || slash.Delimiter() != '/')
-        failed_parsing_ = true;
-      if (disallow_shadow_dom_v0_)
-        failed_parsing_ = true;
-      else
-        disallow_nested_complex_ = true;
-      return context_->IsLiveProfile() ? CSSSelector::kShadowDeepAsDescendant
-                                       : CSSSelector::kShadowDeep;
-    }
-
     default:
       break;
   }
@@ -901,6 +855,9 @@ CSSSelector::AttributeMatchType CSSSelectorParser::ConsumeAttributeFlags(
   const CSSParserToken& flag = range.ConsumeIncludingWhitespace();
   if (EqualIgnoringASCIICase(flag.Value(), "i"))
     return CSSSelector::AttributeMatchType::kCaseInsensitive;
+  else if (EqualIgnoringASCIICase(flag.Value(), "s") &&
+           RuntimeEnabledFeatures::CSSCaseSensitiveSelectorEnabled())
+    return CSSSelector::AttributeMatchType::kCaseSensitiveAlways;
   failed_parsing_ = true;
   return CSSSelector::AttributeMatchType::kCaseSensitive;
 }
@@ -1282,18 +1239,11 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           DCHECK(RuntimeEnabledFeatures::CSSPseudoWhereEnabled());
           feature = WebFeature::kCSSSelectorPseudoWhere;
           break;
-        case CSSSelector::kPseudoUnresolved:
-          DCHECK(context_->CustomElementsV0Enabled());
-          feature = WebFeature::kCSSSelectorPseudoUnresolved;
-          break;
         case CSSSelector::kPseudoDefined:
           feature = WebFeature::kCSSSelectorPseudoDefined;
           break;
         case CSSSelector::kPseudoSlotted:
           feature = WebFeature::kCSSSelectorPseudoSlotted;
-          break;
-        case CSSSelector::kPseudoContent:
-          feature = WebFeature::kCSSSelectorPseudoContent;
           break;
         case CSSSelector::kPseudoHost:
           feature = WebFeature::kCSSSelectorPseudoHost;
@@ -1322,6 +1272,10 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           break;
         case CSSSelector::kPseudoReadWrite:
           feature = WebFeature::kCSSSelectorPseudoReadWrite;
+          break;
+        case CSSSelector::kPseudoDir:
+          DCHECK(RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+          feature = WebFeature::kCSSSelectorPseudoDir;
           break;
         default:
           break;

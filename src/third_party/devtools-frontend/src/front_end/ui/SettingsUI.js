@@ -29,12 +29,27 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Root from '../root/root.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {InspectorView} from './InspectorView.js';
+import {Tooltip} from './Tooltip.js';
 import {CheckboxLabel} from './UIUtils.js';
 
+export const UIStrings = {
+  /**
+  *@description Note when a setting change will require the user to reload DevTools
+  *@example {*} PH1
+  */
+  srequiresReload: '{PH1}Requires reload',
+  /**
+  *@description Message to display if a setting change requires a reload of DevTools
+  */
+  oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect.',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/SettingsUI.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @param {string} name
  * @param {!Common.Settings.Setting<boolean>} setting
@@ -45,7 +60,7 @@ import {CheckboxLabel} from './UIUtils.js';
 export const createSettingCheckbox = function(name, setting, omitParagraphElement, tooltip) {
   const label = CheckboxLabel.create(name);
   if (tooltip) {
-    label.title = tooltip;
+    Tooltip.install(label, tooltip);
   }
 
   const input = label.checkboxElement;
@@ -63,8 +78,8 @@ export const createSettingCheckbox = function(name, setting, omitParagraphElemen
 
 /**
  * @param {string} name
- * @param {!Array<!{text: string, value: *, raw: (boolean|undefined)}>} options
- * @param {boolean|undefined} requiresReload
+ * @param {!Array<!Common.Settings.SimpleSettingOption>} options
+ * @param {boolean|null} requiresReload
  * @param {!Common.Settings.Setting<*>} setting
  * @param {string=} subtitle
  * @return {!Element}
@@ -82,15 +97,15 @@ const createSettingSelect = function(name, options, requiresReload, setting, sub
   ARIAUtils.bindLabelToControl(label, select);
 
   for (const option of options) {
-    // The "raw" flag indicates text is non-i18n-izable.
-    const optionName = option.raw ? option.text : Common.UIString.UIString(option.text);
-    select.add(new Option(optionName, option.value));
+    if (option.text && typeof option.value === 'string') {
+      select.add(new Option(option.text, option.value));
+    }
   }
 
   let reloadWarning = /** @type {?Element} */ (null);
   if (requiresReload) {
     reloadWarning = settingSelectElement.createChild('span', 'reload-warning hidden');
-    reloadWarning.textContent = ls`${'*'}Requires reload`;
+    reloadWarning.textContent = i18nString(UIStrings.srequiresReload, {PH1: '*'});
     ARIAUtils.markAsAlert(reloadWarning);
   }
 
@@ -113,8 +128,7 @@ const createSettingSelect = function(name, options, requiresReload, setting, sub
     setting.set(options[select.selectedIndex].value);
     if (reloadWarning) {
       reloadWarning.classList.remove('hidden');
-      InspectorView.instance().displayReloadRequiredWarning(
-          ls`One or more settings have changed which requires a reload to take effect.`);
+      InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
     }
   }
 };
@@ -182,23 +196,18 @@ class SettingsRuntimeExtensionDescriptor extends  // eslint-disable-line no-unus
  * @return {?Element}
  */
 export const createControlForSetting = function(setting, subtitle) {
-  const extension = setting.extension();
-  if (!extension) {
-    return null;
-  }
-  const descriptor = /** @type {!SettingsRuntimeExtensionDescriptor} */ (extension.descriptor());
-  const uiTitle = Common.UIString.UIString(setting.title() || '');
-  switch (descriptor.settingType) {
-    case 'boolean':
+  const uiTitle = setting.title();
+  switch (setting.type()) {
+    case Common.Settings.SettingType.BOOLEAN:
       return createSettingCheckbox(uiTitle, /** @type {!Common.Settings.Setting<boolean>} */ (setting));
-    case 'enum':
-      if (Array.isArray(descriptor.options)) {
-        return createSettingSelect(uiTitle, descriptor.options, descriptor.reloadRequired, setting, subtitle);
+    case Common.Settings.SettingType.ENUM:
+      if (Array.isArray(setting.options())) {
+        return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
       }
       console.error('Enum setting defined without options');
       return null;
     default:
-      console.error('Invalid setting type: ' + descriptor.settingType);
+      console.error('Invalid setting type: ' + setting.type());
       return null;
   }
 };

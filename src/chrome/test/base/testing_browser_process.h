@@ -17,6 +17,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
@@ -80,7 +81,6 @@ class TestingBrowserProcess : public BrowserProcess {
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
       override;
   metrics::MetricsService* metrics_service() override;
-  rappor::RapporServiceImpl* rappor_service() override;
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
@@ -94,16 +94,16 @@ class TestingBrowserProcess : public BrowserProcess {
   IconManager* icon_manager() override;
   GpuModeManager* gpu_mode_manager() override;
   BackgroundModeManager* background_mode_manager() override;
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   void set_background_mode_manager_for_test(
       std::unique_ptr<BackgroundModeManager> manager) override;
+#endif
   StatusTray* status_tray() override;
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   subresource_filter::RulesetService* subresource_filter_ruleset_service()
       override;
   federated_learning::FlocSortingLshClustersService*
   floc_sorting_lsh_clusters_service() override;
-  optimization_guide::OptimizationGuideService* optimization_guide_service()
-      override;
   BrowserProcessPlatformPart* platform_part() override;
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
@@ -125,15 +125,13 @@ class TestingBrowserProcess : public BrowserProcess {
   DownloadRequestLimiter* download_request_limiter() override;
   StartupData* startup_data() override;
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void StartAutoupdateTimer() override {}
 #endif
 
   component_updater::ComponentUpdateService* component_updater() override;
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  component_updater::SupervisedUserWhitelistInstaller*
-  supervised_user_whitelist_installer() override;
-#endif
   MediaFileSystemRegistry* media_file_system_registry() override;
 
   WebRtcLogUploader* webrtc_log_uploader() override;
@@ -158,9 +156,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetFlocSortingLshClustersService(
       std::unique_ptr<federated_learning::FlocSortingLshClustersService>
           service);
-  void SetOptimizationGuideService(
-      std::unique_ptr<optimization_guide::OptimizationGuideService>
-          optimization_guide_service);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   void SetNotificationUIManager(
@@ -169,7 +164,6 @@ class TestingBrowserProcess : public BrowserProcess {
       std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
   void SetSystemNotificationHelper(
       std::unique_ptr<SystemNotificationHelper> system_notification_helper);
-  void SetRapporServiceImpl(rappor::RapporServiceImpl* rappor_service);
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
   TestingBrowserProcessPlatformPart* GetTestPlatformPart();
@@ -212,15 +206,12 @@ class TestingBrowserProcess : public BrowserProcess {
       subresource_filter_ruleset_service_;
   std::unique_ptr<federated_learning::FlocSortingLshClustersService>
       floc_sorting_lsh_clusters_service_;
-  std::unique_ptr<optimization_guide::OptimizationGuideService>
-      optimization_guide_service_;
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_ = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  rappor::RapporServiceImpl* rappor_service_ = nullptr;
 
   std::unique_ptr<TestingBrowserProcessPlatformPart> platform_part_;
   std::unique_ptr<network::TestNetworkConnectionTracker>

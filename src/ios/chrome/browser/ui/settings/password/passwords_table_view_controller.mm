@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -246,10 +247,8 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
 - (instancetype)initWithBrowser:(Browser*)browser {
   DCHECK(browser);
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  self = [super initWithStyle:style];
+
+  self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     _browser = browser;
     _browserState = browser->GetBrowserState();
@@ -447,7 +446,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
         forSectionWithIdentifier:SectionIdentifierSavedPasswords];
   }
 
-  // Blacklisted passwords.
+  // Blocked passwords.
   if (!_blockedForms.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierBlocked];
     TableViewTextHeaderFooterItem* headerItem =
@@ -1167,7 +1166,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     _exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];
     _exportPasswordsItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    _exportPasswordsItem.textColor = UIColor.cr_labelColor;
+    _exportPasswordsItem.textColor = UIColor.cr_secondaryLabelColor;
     _exportPasswordsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
   [self reconfigureCellsForItems:@[ _exportPasswordsItem ]];
@@ -1400,6 +1399,8 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     case ItemTypeCheckForProblemsButton:
       return self.passwordCheckState != PasswordCheckStateRunning &&
              self.passwordCheckState != PasswordCheckStateDisabled;
+    case ItemTypeExportPasswordsButton:
+      return _exportReady;
   }
   return YES;
 }
@@ -1593,15 +1594,15 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 #pragma mark Helper methods
 
 - (void)presentViewController:(UIViewController*)viewController {
-  if (self.presentedViewController == _preparingPasswordsAlert &&
-      !_preparingPasswordsAlert.beingDismissed) {
+  if (_preparingPasswordsAlert.beingPresented) {
     __weak PasswordsTableViewController* weakSelf = self;
-    [self dismissViewControllerAnimated:YES
-                             completion:^{
-                               [weakSelf presentViewController:viewController
-                                                      animated:YES
-                                                    completion:nil];
-                             }];
+    [_preparingPasswordsAlert
+        dismissViewControllerAnimated:YES
+                           completion:^{
+                             [weakSelf presentViewController:viewController
+                                                    animated:YES
+                                                  completion:nil];
+                           }];
   } else {
     [self presentViewController:viewController animated:YES completion:nil];
   }

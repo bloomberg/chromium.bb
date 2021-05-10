@@ -1,4 +1,4 @@
-<style>
+<style include="read-later-shared-style">
   /* TODO(corising): Add dark mode support for buttons and hover/focus states
    * (crbug/1147457).*/
   :host(:focus) {
@@ -16,6 +16,15 @@
   :host(:focus-within) .button-container {
     overflow: visible;
     width: auto;
+  }
+
+  .favicon {
+    background-repeat: no-repeat;
+    background-size: var(--mwb-icon-size);
+    flex-shrink: 0;
+    height: var(--mwb-icon-size);
+    margin-inline-end: var(--mwb-list-item-horizontal-margin);
+    width: var(--mwb-icon-size);
   }
 
   .text-container {
@@ -43,25 +52,21 @@
   }
 
   cr-icon-button {
-    border-radius: 50%;
     --cr-icon-button-fill-color: transparent;
-    --cr-icon-button-icon-size: var(--mwb-icon-size);
-    --cr-icon-button-size: 24px;
     --cr-icon-button-margin-start: 0;
     --cr-icon-button-margin-end: 0;
   }
 
   :host(:hover) cr-icon-button,
   :host(:focus-within) cr-icon-button {
-    --cr-icon-button-fill-color: var(--google-grey-refresh-700);
+    --cr-icon-button-fill-color: var(--mwb-icon-button-fill-color);
   }
 
-  cr-icon-button:hover {
-    background-color: rgba(var(--google-grey-900-rgb), .1);
-  }
-
-  cr-icon-button:focus {
-    box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), 0.4);
+  @media (prefers-color-scheme: dark) {
+    :host(:hover) cr-icon-button,
+    :host(:focus-within) cr-icon-button {
+      --cr-icon-button-ripple-opacity: 0.15;
+    }
   }
 
   #deleteButton {
@@ -69,6 +74,8 @@
   }
 </style>
 
+<div class="favicon" style="background-image:[[getFaviconUrl_(data.url.url)]]">
+</div>
 <div class="text-container">
   <div class="primary-text">[[data.title]]</div>
   <div class="secondary-text">
@@ -81,12 +88,13 @@
           '$i18n{tooltipMarkAsRead}', data.read)]]"
       iron-icon="[[getUpdateStatusButtonIcon_('cr:check-circle',
           'read-later:check-circle-outline', data.read)]]"
+      noink="[[!buttonRipples]]" no-ripple-on-focus
+      on-click="onUpdateStatusClick_"
       title="[[getUpdateStatusButtonTooltip_('$i18n{tooltipMarkAsUnread}',
-          '$i18n{tooltipMarkAsRead}', data.read)]]"
-      on-click="onUpdateStatusClick_">
+          '$i18n{tooltipMarkAsRead}', data.read)]]">
   </cr-icon-button>
   <cr-icon-button id="deleteButton" aria-label="$i18n{tooltipDelete}"
-      disable-ripple iron-icon="cr:close" title="$i18n{tooltipDelete}"
-      on-click="onItemDeleteClick_">
+      iron-icon="cr:close" noink="[[!buttonRipples]]" no-ripple-on-focus
+      on-click="onItemDeleteClick_" title="$i18n{tooltipDelete}">
   </cr-icon-button>
 </div>

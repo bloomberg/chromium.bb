@@ -107,10 +107,13 @@ class SharedWorkerHost::ScopedProcessHostRef {
 SharedWorkerHost::SharedWorkerHost(
     SharedWorkerServiceImpl* service,
     const SharedWorkerInstance& instance,
-    scoped_refptr<SiteInstanceImpl> site_instance)
+    scoped_refptr<SiteInstanceImpl> site_instance,
+    std::vector<network::mojom::ContentSecurityPolicyPtr>
+        content_security_policies)
     : service_(service),
       token_(blink::SharedWorkerToken()),
       instance_(instance),
+      content_security_policies_(std::move(content_security_policies)),
       site_instance_(std::move(site_instance)),
       scoped_process_host_ref_(
           std::make_unique<ScopedProcessHostRef>(site_instance_->GetProcess())),
@@ -182,8 +185,8 @@ void SharedWorkerHost::Start(
   auto options = blink::mojom::WorkerOptions::New(
       instance_.script_type(), instance_.credentials_mode(), instance_.name());
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
-      instance_.url(), std::move(options), instance_.content_security_policy(),
-      instance_.content_security_policy_type(),
+      instance_.url(), std::move(options),
+      mojo::Clone(content_security_policies_),
       instance_.creation_address_space(),
       std::move(outside_fetch_client_settings_object)));
 
@@ -318,7 +321,9 @@ SharedWorkerHost::CreateNetworkFactoryParamsForSubresources() {
           net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
                                      origin, origin,
                                      net::SiteForCookies::FromOrigin(origin)),
-          /*coep_reporter=*/mojo::NullRemote());
+          /*coep_reporter=*/mojo::NullRemote(),
+          /*auth_cert_observer=*/mojo::NullRemote(),
+          /*debug_tag=*/"SharedWorkerHost::CreateNetworkFactoryForSubresource");
   return factory_params;
 }
 
@@ -371,11 +376,10 @@ void SharedWorkerHost::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const url::Origin origin = url::Origin::Create(instance().url());
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<QuicTransportConnectorImpl>(
-          GetProcessHost()->GetID(), /*frame=*/nullptr, origin,
-          net::NetworkIsolationKey(origin, origin)),
-      std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
+                                  GetProcessHost()->GetID(), /*frame=*/nullptr,
+                                  origin, GetNetworkIsolationKey()),
+                              std::move(receiver));
 }
 
 void SharedWorkerHost::BindCacheStorage(
@@ -466,6 +470,14 @@ SharedWorkerHost::GetRenderFrameIDsForWorker() {
 
 base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+net::NetworkIsolationKey SharedWorkerHost::GetNetworkIsolationKey() const {
+  const url::Origin origin = url::Origin::Create(instance().url());
+  // TODO(https://crbug.com/1147281): This is the NetworkIsolationKey of a
+  // top-level browsing context, which shouldn't be use for SharedWorkers used
+  // in iframes.
+  return net::NetworkIsolationKey::ToDoUseTopFrameOriginAsWell(origin);
 }
 
 void SharedWorkerHost::ReportNoBinderForInterface(const std::string& error) {

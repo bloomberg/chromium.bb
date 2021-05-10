@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/discard_statement.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -22,17 +23,17 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, ContinuingStmt) {
-  auto* p = parser("continuing { discard; }");
+  auto p = parser("continuing { discard; }");
   auto e = p->continuing_stmt();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_EQ(e->size(), 1u);
-  ASSERT_TRUE(e->get(0)->IsDiscard());
+  ASSERT_TRUE(e->get(0)->Is<ast::DiscardStatement>());
 }
 
 TEST_F(ParserImplTest, ContinuingStmt_InvalidBody) {
-  auto* p = parser("continuing { discard }");
+  auto p = parser("continuing { discard }");
   auto e = p->continuing_stmt();
   EXPECT_FALSE(e.matched);
   EXPECT_TRUE(e.errored);

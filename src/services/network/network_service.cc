@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
@@ -18,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
@@ -38,6 +38,7 @@
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert/signed_tree_head.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/public/dns_config_overrides.h"
@@ -51,11 +52,9 @@
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/crl_set_distributor.h"
-#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/dns_config_change_manager.h"
-#include "services/network/first_party_sets/preloaded_first_party_sets.h"
+#include "services/network/first_party_sets/first_party_sets.h"
 #include "services/network/http_auth_cache_copier.h"
-#include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
@@ -73,7 +72,8 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_LACROS)) && !BUILDFLAG(IS_CHROMECAST)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
@@ -324,14 +324,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-#if defined(OS_MAC)
-  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService) &&
-      base::FeatureList::IsEnabled(
-          net::features::kCertVerifierBuiltinFeature)) {
-    net::InitializeTrustStoreMacCache();
-  }
-#endif
-
   // Set-up the global port overrides.
   if (command_line->HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
@@ -377,16 +369,14 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
-  legacy_tls_config_distributor_ =
-      std::make_unique<LegacyTLSConfigDistributor>();
-
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
 
-  preloaded_first_party_sets_ = std::make_unique<PreloadedFirstPartySets>();
-  if (command_line->HasSwitch(switches::kUseFirstPartySet)) {
-    preloaded_first_party_sets_->SetManuallySpecifiedSet(
+  first_party_sets_ = std::make_unique<FirstPartySets>();
+  if (net::cookie_util::IsFirstPartySetsEnabled() &&
+      command_line->HasSwitch(switches::kUseFirstPartySet)) {
+    first_party_sets_->SetManuallySpecifiedSet(
         command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
   }
 
@@ -457,7 +447,7 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.erase(network_context);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = settings->logging_dest;
@@ -667,18 +657,11 @@ void NetworkService::UpdateCRLSet(
   crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
 }
 
-void NetworkService::UpdateLegacyTLSConfig(
-    base::span<const uint8_t> config,
-    mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) {
-  legacy_tls_config_distributor_->OnNewLegacyTLSConfig(config,
-                                                       std::move(callback));
-}
-
 void NetworkService::OnCertDBChanged() {
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #if !BUILDFLAG(IS_CHROMECAST)
   DCHECK(!os_crypt_config_set_);
@@ -700,11 +683,6 @@ void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
 }
 #endif
 
-void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
-  DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlockingExceptionForPlugin::AddExceptionForPlugin(process_id);
-}
-
 void NetworkService::AddAllowedRequestInitiatorForPlugin(
     int32_t process_id,
     const url::Origin& allowed_request_initiator) {
@@ -715,9 +693,6 @@ void NetworkService::AddAllowedRequestInitiatorForPlugin(
 
 void NetworkService::RemoveSecurityExceptionsForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
-
-  CrossOriginReadBlockingExceptionForPlugin::RemoveExceptionForPlugin(
-      process_id);
 
   std::map<int, std::set<url::Origin>>& map = plugin_origins_;
   map.erase(process_id);
@@ -807,7 +782,7 @@ void NetworkService::BindTestInterface(
 }
 
 void NetworkService::SetPreloadedFirstPartySets(const std::string& raw_sets) {
-  preloaded_first_party_sets_->ParseAndSet(raw_sets);
+  first_party_sets_->ParseAndSet(raw_sets);
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>

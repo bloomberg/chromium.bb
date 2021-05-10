@@ -14,26 +14,29 @@
 
 #include "src/ast/return_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ReturnStatement);
+
 namespace tint {
 namespace ast {
 
-ReturnStatement::ReturnStatement() : Statement() {}
+ReturnStatement::ReturnStatement(const Source& source)
+    : Base(source), value_(nullptr) {}
 
-ReturnStatement::ReturnStatement(const Source& source) : Statement(source) {}
-
-ReturnStatement::ReturnStatement(std::unique_ptr<Expression> value)
-    : Statement(), value_(std::move(value)) {}
-
-ReturnStatement::ReturnStatement(const Source& source,
-                                 std::unique_ptr<Expression> value)
-    : Statement(source), value_(std::move(value)) {}
+ReturnStatement::ReturnStatement(const Source& source, Expression* value)
+    : Base(source), value_(value) {}
 
 ReturnStatement::ReturnStatement(ReturnStatement&&) = default;
 
 ReturnStatement::~ReturnStatement() = default;
 
-bool ReturnStatement::IsReturn() const {
-  return true;
+ReturnStatement* ReturnStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ret = ctx->Clone(value());
+  return ctx->dst->create<ReturnStatement>(src, ret);
 }
 
 bool ReturnStatement::IsValid() const {
@@ -43,7 +46,9 @@ bool ReturnStatement::IsValid() const {
   return true;
 }
 
-void ReturnStatement::to_str(std::ostream& out, size_t indent) const {
+void ReturnStatement::to_str(const semantic::Info& sem,
+                             std::ostream& out,
+                             size_t indent) const {
   make_indent(out, indent);
   out << "Return{";
 
@@ -53,7 +58,7 @@ void ReturnStatement::to_str(std::ostream& out, size_t indent) const {
     make_indent(out, indent + 2);
     out << "{" << std::endl;
 
-    value_->to_str(out, indent + 4);
+    value_->to_str(sem, out, indent + 4);
 
     make_indent(out, indent + 2);
     out << "}" << std::endl;

@@ -129,11 +129,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     // Reset the input view URL to the default url of the current input method.
     void ResetInputViewUrl();
 
-    // Connect to an InputEngineManager instance in an IME Mojo service.
-    void ConnectMojoManager(
-        mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager>
-            receiver);
-
     // ------------------------- Data members.
     Profile* const profile;
 
@@ -153,9 +148,9 @@ class InputMethodManagerImpl : public InputMethodManager,
     // The list of enabled extension IMEs.
     std::vector<std::string> enabled_extension_imes;
 
-    // Extra input methods that have been explicitly added to the menu, such as
-    // those created by extension.
-    std::map<std::string, InputMethodDescriptor> extra_input_methods;
+    // All input methods that have been registered by InputMethodEngines.
+    // The key is the input method ID.
+    std::map<std::string, InputMethodDescriptor> available_input_methods;
 
     InputMethodManagerImpl* const manager_;
 
@@ -188,8 +183,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     InputMethodManager::UIStyle ui_style_ =
         InputMethodManager::UIStyle::kNormal;
 
-    std::unique_ptr<ImeServiceConnector> ime_service_connector_;
-
     // Do not forget to update StateImpl::InitFrom(const StateImpl& other) and
     // StateImpl::Dump() when adding new data members!!!
   };
@@ -198,6 +191,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // calling |SetUISessionState| in response to relevant changes in browser
   // state.
   InputMethodManagerImpl(std::unique_ptr<InputMethodDelegate> delegate,
+                         std::unique_ptr<ComponentExtensionIMEManagerDelegate>
+                             component_extension_ime_manager_delegate,
                          bool enable_extension_loading);
   ~InputMethodManagerImpl() override;
 
@@ -212,8 +207,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       InputMethodManager::CandidateWindowObserver* observer) override;
   void RemoveImeMenuObserver(
       InputMethodManager::ImeMenuObserver* observer) override;
-  std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
-      const override;
   void ActivateInputMethodMenuItem(const std::string& key) override;
   void ConnectInputEngineManager(
       mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver)
@@ -229,8 +222,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
   bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
   void NotifyObserversImeExtraInputStateChange() override;
-  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
-      override;
+  ui::VirtualKeyboardController* GetVirtualKeyboardController() override;
   void NotifyInputMethodExtensionAdded(
       const std::string& extension_id) override;
   void NotifyInputMethodExtensionRemoved(
@@ -256,9 +248,6 @@ class InputMethodManagerImpl : public InputMethodManager,
       CandidateWindowController* candidate_window_controller);
   // Sets |keyboard_|.
   void SetImeKeyboardForTesting(ImeKeyboard* keyboard);
-  // Initialize |component_extension_manager_|.
-  void InitializeComponentExtensionForTesting(
-      std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
   // content::NotificationObserver overrides:
   void Observe(int type,
@@ -266,8 +255,6 @@ class InputMethodManagerImpl : public InputMethodManager,
                const content::NotificationDetails& details) override;
 
  private:
-  friend class InputMethodManagerImplTest;
-
   // CandidateWindowController::Observer overrides:
   void CandidateClicked(int index) override;
   void CandidateWindowOpened() override;
@@ -351,9 +338,15 @@ class InputMethodManagerImpl : public InputMethodManager,
   uint32_t features_enabled_state_;
 
   // The engine map from extension_id to an engine.
-  typedef std::map<std::string, ui::IMEEngineHandlerInterface*> EngineMap;
-  typedef std::map<Profile*, EngineMap, ProfileCompare> ProfileEngineMap;
+  using EngineMap = std::map<std::string, ui::IMEEngineHandlerInterface*>;
+  using ProfileEngineMap = std::map<Profile*, EngineMap, ProfileCompare>;
   ProfileEngineMap engine_map_;
+
+  // Map a profile to the IME service connector.
+  typedef std::
+      map<Profile*, std::unique_ptr<ImeServiceConnector>, ProfileCompare>
+          ImeServiceConnectorMap;
+  ImeServiceConnectorMap ime_service_connectors_;
 
   content::NotificationRegistrar notification_registrar_;
 

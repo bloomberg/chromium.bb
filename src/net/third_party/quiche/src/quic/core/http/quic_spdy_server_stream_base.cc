@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base.h"
+#include "quic/core/http/quic_spdy_server_stream_base.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_session.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -25,14 +25,10 @@ void QuicSpdyServerStreamBase::CloseWriteSide() {
       !rst_sent()) {
     // Early cancel the stream if it has stopped reading before receiving FIN
     // or RST.
-    DCHECK(fin_sent() || !session()->connection()->connected());
+    QUICHE_DCHECK(fin_sent() || !session()->connection()->connected());
     // Tell the peer to stop sending further data.
     QUIC_DVLOG(1) << " Server: Send QUIC_STREAM_NO_ERROR on stream " << id();
-    if (session()->split_up_send_rst()) {
-      MaybeSendStopSending(QUIC_STREAM_NO_ERROR);
-    } else {
-      Reset(QUIC_STREAM_NO_ERROR);
-    }
+    MaybeSendStopSending(QUIC_STREAM_NO_ERROR);
   }
 
   QuicSpdyStream::CloseWriteSide();
@@ -41,14 +37,10 @@ void QuicSpdyServerStreamBase::CloseWriteSide() {
 void QuicSpdyServerStreamBase::StopReading() {
   if (!fin_received() && !rst_received() && write_side_closed() &&
       !rst_sent()) {
-    DCHECK(fin_sent());
+    QUICHE_DCHECK(fin_sent());
     // Tell the peer to stop sending further data.
     QUIC_DVLOG(1) << " Server: Send QUIC_STREAM_NO_ERROR on stream " << id();
-    if (session()->split_up_send_rst()) {
-      MaybeSendStopSending(QUIC_STREAM_NO_ERROR);
-    } else {
-      Reset(QUIC_STREAM_NO_ERROR);
-    }
+    MaybeSendStopSending(QUIC_STREAM_NO_ERROR);
   }
   QuicSpdyStream::StopReading();
 }

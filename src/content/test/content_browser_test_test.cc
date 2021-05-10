@@ -145,9 +145,16 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   }
 }
 
+#ifdef __clang__
+// Don't optimize this out of stack traces in ThinLTO builds.
+#pragma clang optimize off
+#endif
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_BrowserCrash) {
   CHECK(false);
 }
+#ifdef __clang__
+#pragma clang optimize on
+#endif
 
 // Tests that browser tests print the callstack on asserts.
 // Disabled on Windows crbug.com/1034784
@@ -346,9 +353,12 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunTimeoutInstalled) {
   EXPECT_TRUE(run_timeout);
   EXPECT_LT(run_timeout->timeout, TestTimeouts::test_launcher_timeout());
 
-  static const base::RepeatingClosure& static_on_timeout =
-      run_timeout->on_timeout;
-  EXPECT_FATAL_FAILURE(static_on_timeout.Run(), "RunLoop::Run() timed out");
+  static auto& static_on_timeout_cb = run_timeout->on_timeout;
+  EXPECT_FATAL_FAILURE(static_on_timeout_cb.Run(FROM_HERE),
+                       "RunLoop::Run() timed out. Timeout set at "
+                       // We don't test the line number but it would be present.
+                       "ProxyRunTestOnMainThreadLoop@../../content/public/test/"
+                       "browser_test_base.cc:");
 }
 
 }  // namespace content

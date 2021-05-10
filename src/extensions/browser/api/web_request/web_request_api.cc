@@ -1780,8 +1780,8 @@ void ExtensionWebRequestEventRouter::OnOTRBrowserContextDestroyed(
 }
 
 void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
-    const base::Closure& callback) {
-  callbacks_for_page_load_.push_back(callback);
+    base::OnceClosure callback) {
+  callbacks_for_page_load_.push_back(std::move(callback));
 }
 
 bool ExtensionWebRequestEventRouter::HasExtraHeadersListenerForRequest(
@@ -1861,8 +1861,8 @@ bool ExtensionWebRequestEventRouter::IsPageLoad(
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {
-  for (const auto& callback : callbacks_for_page_load_)
-    callback.Run();
+  for (auto& callback : callbacks_for_page_load_)
+    std::move(callback).Run();
   callbacks_for_page_load_.clear();
 }
 
@@ -2537,9 +2537,8 @@ bool ClearCacheQuotaHeuristic::Apply(Bucket* bucket,
   // webRequest.handlerBehaviorChanged() clears the cache.
   if (!callback_registered_) {
     ExtensionWebRequestEventRouter::GetInstance()->AddCallbackForPageLoad(
-        base::Bind(&ClearCacheQuotaHeuristic::OnPageLoad,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   bucket));
+        base::BindOnce(&ClearCacheQuotaHeuristic::OnPageLoad,
+                       weak_ptr_factory_.GetWeakPtr(), bucket));
     callback_registered_ = true;
   }
 
@@ -2612,9 +2611,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
     // webRequests initiated by a regular extension.
     if (!(ArePublicSessionRestrictionsEnabled() && extension->is_extension()) &&
         extension->permissions_data()
-            ->GetEffectiveHostPermissions(
-                PermissionsData::EffectiveHostPermissionsMode::
-                    kIncludeTabSpecific)
+            ->GetEffectiveHostPermissions()
             .is_empty() &&
         extension->permissions_data()
             ->withheld_permissions()

@@ -7,20 +7,23 @@ package org.chromium.weblayer_private.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.InvalidPaymentRequest;
+import org.chromium.components.payments.MojoPaymentRequestGateKeeper;
+import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestServiceUtil;
 import org.chromium.components.payments.PrefsStrings;
+import org.chromium.components.payments.SslValidityChecker;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.mojo.system.MojoException;
-import org.chromium.mojo.system.MojoResult;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.services.service_manager.InterfaceFactory;
+import org.chromium.url.GURL;
 import org.chromium.weblayer_private.ProfileImpl;
 import org.chromium.weblayer_private.TabImpl;
 
@@ -41,6 +44,12 @@ public class WebLayerPaymentRequestFactory implements InterfaceFactory<PaymentRe
         }
 
         @Override
+        public BrowserPaymentRequest createBrowserPaymentRequest(
+                PaymentRequestService paymentRequestService) {
+            return new WebLayerPaymentRequestService(paymentRequestService, this);
+        }
+
+        @Override
         public boolean isOffTheRecord() {
             ProfileImpl profile = getProfile();
             if (profile == null) return true;
@@ -49,8 +58,15 @@ public class WebLayerPaymentRequestFactory implements InterfaceFactory<PaymentRe
 
         @Override
         public String getInvalidSslCertificateErrorMessage() {
-            assert false : "Not implemented yet";
-            return "";
+            WebContents webContents =
+                    PaymentRequestServiceUtil.getLiveWebContents(mRenderFrameHost);
+            if (webContents == null || webContents.isDestroyed()) return null;
+
+            GURL url = webContents.getLastCommittedUrl();
+            if (url == null || !OriginSecurityChecker.isSchemeCryptographic(url)) {
+                return null;
+            }
+            return SslValidityChecker.getInvalidSslCertificateErrorMessage(webContents);
         }
 
         @Override
@@ -89,8 +105,7 @@ public class WebLayerPaymentRequestFactory implements InterfaceFactory<PaymentRe
     public PaymentRequest createImpl() {
         if (mRenderFrameHost == null) return new InvalidPaymentRequest();
         if (!mRenderFrameHost.isFeatureEnabled(FeaturePolicyFeature.PAYMENT)) {
-            mRenderFrameHost.getRemoteInterfaces().onConnectionError(
-                    new MojoException(MojoResult.PERMISSION_DENIED));
+            mRenderFrameHost.terminateRendererDueToBadMessage(241 /*PAYMENTS_WITHOUT_PERMISSION*/);
             return null;
         }
 
@@ -103,10 +118,8 @@ public class WebLayerPaymentRequestFactory implements InterfaceFactory<PaymentRe
 
         WebContents webContents = WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
         if (webContents == null || webContents.isDestroyed()) return new InvalidPaymentRequest();
-
-        return PaymentRequestService.createPaymentRequest(mRenderFrameHost,
-                /*isOffTheRecord=*/delegate.isOffTheRecord(), delegate,
-                (paymentRequestService)
-                        -> new WebLayerPaymentRequestService(paymentRequestService, delegate));
+        return new MojoPaymentRequestGateKeeper(
+                (client, onClosed)
+                        -> new PaymentRequestService(mRenderFrameHost, client, onClosed, delegate));
     }
 }

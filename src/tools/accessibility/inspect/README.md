@@ -44,15 +44,14 @@ At your convenience the number of pre-defined application selectors are availabl
 You can also specify an application by its title:
 `ax_dump_tree --pattern=title`
 
-Alternatively you can dump a tree by HWDN on Windows:
-`--window=HWDN`
+Alternatively you can dump a tree by HWND on Windows:
+`--pid=HWND`
 Note, to use a hex window handle prefix it with `0x`.
 
 Or by application PID on Mac and Linux:
 `--pid=process_id`
 
 Other options:
-`--json` to output a tree in JSON format
 `--filters=absolute_path_to_filters.txt` to filter properties, use where the filters text file has a series of `@ALLOW` and/or `@DENY` lines. See example-tree-filters.txt in tools/accessibility/inspect.
 `--help` for help
 

@@ -5,6 +5,7 @@
 package org.chromium.components.autofill;
 
 import android.graphics.RectF;
+import android.view.autofill.AutofillId;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -63,10 +64,18 @@ public class FormFieldData {
     // Indicates whether this fields was autofilled, but changed by user.
     private boolean mPreviouslyAutofilled;
 
+    // Provides the field type along with mHeuristicType, but could be changed
+    // after the object instantiated.
+    private String mServerType;
+    private String mComputedType;
+    private String[] mServerPredictions;
+    private AutofillId mAutofillId;
+
     private FormFieldData(String name, String label, String value, String autocompleteAttr,
             boolean shouldAutocomplete, String placeholder, String type, String id,
             String[] optionValues, String[] optionContents, boolean isCheckField, boolean isChecked,
-            int maxLength, String heuristicType, float left, float top, float right, float bottom,
+            int maxLength, String heuristicType, String serverType, String computedType,
+            String[] serverPredictions, float left, float top, float right, float bottom,
             String[] datalistValues, String[] datalistLabels, boolean visible) {
         mName = name;
         mLabel = label;
@@ -92,6 +101,9 @@ public class FormFieldData {
         }
         mMaxLength = maxLength;
         mHeuristicType = heuristicType;
+        mServerType = serverType;
+        mServerPredictions = serverPredictions;
+        mComputedType = computedType;
         mBounds = new RectF(left, top, right, bottom);
         mVisible = visible;
     }
@@ -137,6 +149,26 @@ public class FormFieldData {
     }
 
     @CalledByNative
+    private void updateFieldTypes(
+            String serverType, String computedType, String[] serverPredictions) {
+        mServerType = serverType;
+        mComputedType = computedType;
+        mServerPredictions = serverPredictions;
+    }
+
+    public String getServerType() {
+        return mServerType;
+    }
+
+    public String getComputedType() {
+        return mComputedType;
+    }
+
+    public String[] getServerPredictions() {
+        return mServerPredictions;
+    }
+
+    @CalledByNative
     public boolean isChecked() {
         return mIsChecked;
     }
@@ -150,17 +182,25 @@ public class FormFieldData {
         mAutofilled = autofilled;
     }
 
+    public void setAutofillId(AutofillId id) {
+        mAutofillId = id;
+    }
+
+    public AutofillId getAutofillId() {
+        return mAutofillId;
+    }
+
     @CalledByNative
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public static FormFieldData createFormFieldData(String name, String label, String value,
             String autocompleteAttr, boolean shouldAutocomplete, String placeholder, String type,
             String id, String[] optionValues, String[] optionContents, boolean isCheckField,
-            boolean isChecked, int maxLength, String heuristicType, float left, float top,
-            float right, float bottom, String[] datalistValues, String[] datalistLabels,
-            boolean visible) {
+            boolean isChecked, int maxLength, String heuristicType, String serverType,
+            String computedType, String[] serverPredictions, float left, float top, float right,
+            float bottom, String[] datalistValues, String[] datalistLabels, boolean visible) {
         return new FormFieldData(name, label, value, autocompleteAttr, shouldAutocomplete,
                 placeholder, type, id, optionValues, optionContents, isCheckField, isChecked,
-                maxLength, heuristicType, left, top, right, bottom, datalistValues, datalistLabels,
-                visible);
+                maxLength, heuristicType, serverType, computedType, serverPredictions, left, top,
+                right, bottom, datalistValues, datalistLabels, visible);
     }
 }

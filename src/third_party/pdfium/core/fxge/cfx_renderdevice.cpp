@@ -29,6 +29,8 @@
 #include "core/fxge/renderdevicedriver_iface.h"
 #include "core/fxge/text_char_pos.h"
 #include "core/fxge/text_glyph_pos.h"
+#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
 
@@ -39,7 +41,7 @@
 namespace {
 
 void AdjustGlyphSpace(std::vector<TextGlyphPos>* pGlyphAndPos) {
-  ASSERT(pGlyphAndPos->size() > 1);
+  DCHECK(pGlyphAndPos->size() > 1);
   std::vector<TextGlyphPos>& glyphs = *pGlyphAndPos;
   bool bVertical = glyphs.back().m_Origin.x == glyphs.front().m_Origin.x;
   if (!bVertical && (glyphs.back().m_Origin.y != glyphs.front().m_Origin.y))
@@ -98,8 +100,8 @@ const uint8_t g_TextGammaAdjust[256] = {
 };
 
 int TextGammaAdjust(int value) {
-  ASSERT(value >= 0);
-  ASSERT(value <= 255);
+  DCHECK(value >= 0);
+  DCHECK(value <= 255);
   return g_TextGammaAdjust[value];
 }
 
@@ -313,6 +315,171 @@ bool ShouldDrawDeviceText(const CFX_Font* pFont,
   return true;
 }
 
+// Returns true if the simple path contains 3 points which draw a line from
+// A->B->A and form a zero area.
+bool CheckSimpleLinePath(pdfium::span<const FX_PATHPOINT> points,
+                         const CFX_Matrix* matrix,
+                         bool adjust,
+                         CFX_PathData* new_path,
+                         bool* thin,
+                         bool* set_identity) {
+  if (points.size() != 3)
+    return false;
+
+  if (points[0].m_Type != FXPT_TYPE::MoveTo ||
+      points[1].m_Type != FXPT_TYPE::LineTo ||
+      points[2].m_Type != FXPT_TYPE::LineTo ||
+      points[0].m_Point != points[2].m_Point) {
+    return false;
+  }
+
+  // A special case that all points are identical, zero area is formed and no
+  // thin line needs to be drawn.
+  if (points[0].m_Point == points[1].m_Point)
+    return true;
+
+  for (size_t i = 0; i < 2; i++) {
+    CFX_PointF point = points[i].m_Point;
+    if (adjust) {
+      if (matrix)
+        point = matrix->Transform(point);
+
+      point = CFX_PointF(static_cast<int>(point.x) + 0.5f,
+                         static_cast<int>(point.y) + 0.5f);
+    }
+    new_path->AppendPoint(point,
+                          i == 0 ? FXPT_TYPE::MoveTo : FXPT_TYPE::LineTo);
+  }
+  if (adjust && matrix)
+    *set_identity = true;
+
+  // Note, both x and y coordinates of the end points need to be different.
+  if (points[0].m_Point.x != points[1].m_Point.x &&
+      points[0].m_Point.y != points[1].m_Point.y) {
+    *thin = true;
+  }
+  return true;
+}
+
+// Returns true if `points` is palindromic and forms zero area. Otherwise,
+// returns false.
+bool CheckPalindromicPath(pdfium::span<const FX_PATHPOINT> points,
+                          CFX_PathData* new_path,
+                          bool* thin) {
+  if (points.size() <= 3 || !(points.size() % 2))
+    return false;
+
+  const int mid = points.size() / 2;
+  bool zero_area = true;
+  CFX_PathData temp_path;
+  for (int i = 0; i < mid; i++) {
+    if (!(points[mid - i - 1].m_Point == points[mid + i + 1].m_Point &&
+          points[mid - i - 1].m_Type != FXPT_TYPE::BezierTo &&
+          points[mid + i + 1].m_Type != FXPT_TYPE::BezierTo)) {
+      zero_area = false;
+      break;
+    }
+
+    temp_path.AppendPoint(points[mid - i].m_Point, FXPT_TYPE::MoveTo);
+    temp_path.AppendPoint(points[mid - i - 1].m_Point, FXPT_TYPE::LineTo);
+  }
+  if (!zero_area)
+    return false;
+
+  new_path->Append(&temp_path, nullptr);
+  *thin = true;
+  return true;
+}
+
+bool IsFoldingVerticalLine(const CFX_PointF& a,
+                           const CFX_PointF& b,
+                           const CFX_PointF& c) {
+  return a.x == b.x && b.x == c.x && (b.y - a.y) * (b.y - c.y) > 0;
+}
+
+bool IsFoldingHorizontalLine(const CFX_PointF& a,
+                             const CFX_PointF& b,
+                             const CFX_PointF& c) {
+  return a.y == b.y && b.y == c.y && (b.x - a.x) * (b.x - c.x) > 0;
+}
+
+bool IsFoldingDiagonalLine(const CFX_PointF& a,
+                           const CFX_PointF& b,
+                           const CFX_PointF& c) {
+  return a.x != b.x && c.x != b.x && a.y != b.y && c.y != b.y &&
+         (a.y - b.y) * (c.x - b.x) == (c.y - b.y) * (a.x - b.x);
+}
+
+bool GetZeroAreaPath(pdfium::span<const FX_PATHPOINT> points,
+                     const CFX_Matrix* matrix,
+                     bool adjust,
+                     CFX_PathData* new_path,
+                     bool* thin,
+                     bool* set_identity) {
+  *set_identity = false;
+
+  // TODO(crbug.com/pdfium/1639): Need to handle the case when there are
+  // only 2 points in the path that forms a zero area.
+  if (points.size() < 3)
+    return false;
+
+  if (CheckSimpleLinePath(points, matrix, adjust, new_path, thin,
+                          set_identity)) {
+    return true;
+  }
+
+  if (CheckPalindromicPath(points, new_path, thin))
+    return true;
+
+  for (size_t i = 0; i < points.size(); i++) {
+    FXPT_TYPE point_type = points[i].m_Type;
+    if (point_type == FXPT_TYPE::MoveTo) {
+      DCHECK_EQ(0, i);
+      continue;
+    }
+
+    if (point_type == FXPT_TYPE::BezierTo) {
+      i += 2;
+      DCHECK(i < points.size());
+      continue;
+    }
+
+    DCHECK(point_type == FXPT_TYPE::LineTo);
+    int next_index = (i + 1) % (points.size());
+    const FX_PATHPOINT& next = points[next_index];
+    if (next.m_Type == FXPT_TYPE::BezierTo || next.m_Type == FXPT_TYPE::MoveTo)
+      continue;
+
+    const FX_PATHPOINT& prev = points[i - 1];
+    const FX_PATHPOINT& cur = points[i];
+    if (IsFoldingVerticalLine(prev.m_Point, cur.m_Point, next.m_Point)) {
+      bool use_prev = fabs(cur.m_Point.y - prev.m_Point.y) <
+                      fabs(cur.m_Point.y - next.m_Point.y);
+      const FX_PATHPOINT& start = use_prev ? prev : cur;
+      const FX_PATHPOINT& end = use_prev ? points[next_index - 1] : next;
+      new_path->AppendPoint(start.m_Point, FXPT_TYPE::MoveTo);
+      new_path->AppendPoint(end.m_Point, FXPT_TYPE::LineTo);
+      continue;
+    }
+
+    if (IsFoldingHorizontalLine(prev.m_Point, cur.m_Point, next.m_Point) ||
+        IsFoldingDiagonalLine(prev.m_Point, cur.m_Point, next.m_Point)) {
+      bool use_prev = fabs(cur.m_Point.x - prev.m_Point.x) <
+                      fabs(cur.m_Point.x - next.m_Point.x);
+      const FX_PATHPOINT& start = use_prev ? prev : cur;
+      const FX_PATHPOINT& end = use_prev ? points[next_index - 1] : next;
+      new_path->AppendPoint(start.m_Point, FXPT_TYPE::MoveTo);
+      new_path->AppendPoint(end.m_Point, FXPT_TYPE::LineTo);
+      continue;
+    }
+  }
+
+  size_t new_path_size = new_path->GetPoints().size();
+  if (points.size() > 3 && new_path_size > 0)
+    *thin = true;
+  return new_path_size != 0;
+}
+
 }  // namespace
 
 CFX_RenderDevice::CFX_RenderDevice() = default;
@@ -343,8 +510,8 @@ void CFX_RenderDevice::Flush(bool release) {
 
 void CFX_RenderDevice::SetDeviceDriver(
     std::unique_ptr<RenderDeviceDriverIface> pDriver) {
-  ASSERT(pDriver);
-  ASSERT(!m_pDeviceDriver);
+  DCHECK(pDriver);
+  DCHECK(!m_pDeviceDriver);
   m_pDeviceDriver = std::move(pDriver);
   InitDeviceInfo();
 }
@@ -529,33 +696,41 @@ bool CFX_RenderDevice::DrawPathWithBlend(
         return true;
     }
   }
+
   if (fill && stroke_alpha == 0 && !fill_options.stroke &&
       !fill_options.text_mode) {
-    CFX_PathData newPath;
-    bool bThin = false;
-    bool setIdentity = false;
-    if (pPathData->GetZeroAreaPath(pObject2Device,
-                                   !!m_pDeviceDriver->GetDriverType(), &newPath,
-                                   &bThin, &setIdentity)) {
-      CFX_GraphStateData graphState;
-      graphState.m_LineWidth = 0.0f;
+    bool adjust = !!m_pDeviceDriver->GetDriverType();
+    std::vector<FX_PATHPOINT> sub_path;
+    for (size_t i = 0; i < points.size(); i++) {
+      FXPT_TYPE point_type = points[i].m_Type;
+      if (point_type == FXPT_TYPE::MoveTo) {
+        // Process the exisitng sub path.
+        DrawZeroAreaPath(sub_path, pObject2Device, adjust,
+                         fill_options.aliased_path, fill_color, fill_alpha,
+                         blend_type);
+        sub_path.clear();
 
-      uint32_t strokecolor = fill_color;
-      if (bThin)
-        strokecolor = (((fill_alpha >> 2) << 24) | (strokecolor & 0x00ffffff));
+        // Start forming the next sub path.
+        sub_path.push_back(points[i]);
+        continue;
+      }
 
-      const CFX_Matrix* pMatrix = nullptr;
-      if (pObject2Device && !pObject2Device->IsIdentity() && !setIdentity)
-        pMatrix = pObject2Device;
+      if (point_type == FXPT_TYPE::BezierTo) {
+        sub_path.push_back(points[i]);
+        sub_path.push_back(points[i + 1]);
+        sub_path.push_back(points[i + 2]);
+        i += 2;
+        continue;
+      }
 
-      CFX_FillRenderOptions path_options;
-      path_options.zero_area = true;
-      if (fill_options.aliased_path)
-        path_options.aliased_path = true;
-
-      m_pDeviceDriver->DrawPath(&newPath, pMatrix, &graphState, 0, strokecolor,
-                                path_options, blend_type);
+      DCHECK(point_type == FXPT_TYPE::LineTo);
+      sub_path.push_back(points[i]);
+      continue;
     }
+    // Process the last sub paths.
+    DrawZeroAreaPath(sub_path, pObject2Device, adjust,
+                     fill_options.aliased_path, fill_color, fill_alpha,
+                     blend_type);
   }
 
   if (fill && fill_alpha && stroke_alpha < 0xff && fill_options.stroke) {
@@ -674,6 +849,43 @@ bool CFX_RenderDevice::DrawCosmeticLine(
                                    fill_options, blend_type);
 }
 
+void CFX_RenderDevice::DrawZeroAreaPath(const std::vector<FX_PATHPOINT>& path,
+                                        const CFX_Matrix* matrix,
+                                        bool adjust,
+                                        bool aliased_path,
+                                        uint32_t fill_color,
+                                        uint8_t fill_alpha,
+                                        BlendMode blend_type) {
+  if (path.empty())
+    return;
+
+  CFX_PathData new_path;
+  bool thin = false;
+  bool set_identity = false;
+
+  if (!GetZeroAreaPath(path, matrix, adjust, &new_path, &thin, &set_identity))
+    return;
+
+  CFX_GraphStateData graph_state;
+  graph_state.m_LineWidth = 0.0f;
+
+  uint32_t stroke_color = fill_color;
+  if (thin)
+    stroke_color = (((fill_alpha >> 2) << 24) | (stroke_color & 0x00ffffff));
+
+  const CFX_Matrix* new_matrix = nullptr;
+  if (matrix && !matrix->IsIdentity() && !set_identity)
+    new_matrix = matrix;
+
+  CFX_FillRenderOptions path_options;
+  path_options.zero_area = true;
+  if (aliased_path)
+    path_options.aliased_path = true;
+
+  m_pDeviceDriver->DrawPath(&new_path, new_matrix, &graph_state, 0,
+                            stroke_color, path_options, blend_type);
+}
+
 bool CFX_RenderDevice::GetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap,
                                  int left,
                                  int top) {
@@ -689,7 +901,7 @@ bool CFX_RenderDevice::SetDIBitsWithBlend(const RetainPtr<CFX_DIBBase>& pBitmap,
                                           int left,
                                           int top,
                                           BlendMode blend_mode) {
-  ASSERT(!pBitmap->IsMask());
+  DCHECK(!pBitmap->IsMask());
   FX_RECT dest_rect(left, top, left + pBitmap->GetWidth(),
                     top + pBitmap->GetHeight());
   dest_rect.Intersect(m_ClipBox);
@@ -1075,7 +1287,7 @@ void CFX_RenderDevice::DrawFillRect(const CFX_Matrix* pUser2Device,
 void CFX_RenderDevice::DrawFillArea(const CFX_Matrix& mtUser2Device,
                                     const std::vector<CFX_PointF>& points,
                                     const FX_COLORREF& color) {
-  ASSERT(!points.empty());
+  DCHECK(!points.empty());
   CFX_PathData path;
   path.AppendPoint(points[0], FXPT_TYPE::MoveTo);
   for (size_t i = 1; i < points.size(); ++i)

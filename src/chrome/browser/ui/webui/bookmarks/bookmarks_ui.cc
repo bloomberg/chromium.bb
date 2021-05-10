@@ -47,7 +47,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
   webui::SetupWebUIDataSource(
-      source, base::make_span(kBookmarksResources, kBookmarksResourcesSize), "",
+      source, base::make_span(kBookmarksResources, kBookmarksResourcesSize),
       IDR_BOOKMARKS_BOOKMARKS_HTML);
 
   // Build an Accelerator to describe undo shortcut
@@ -74,6 +74,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"emptyUnmodifiableList", IDS_BOOKMARK_MANAGER_EMPTY_UNMODIFIABLE_LIST},
       {"folderLabel", IDS_BOOKMARK_MANAGER_FOLDER_LABEL},
       {"itemsSelected", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
+      {"itemsUnselected", IDS_BOOKMARK_MANAGER_ITEMS_UNSELECTED},
       {"listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL},
       {"menu", IDS_MENU},
       {"menuAddBookmark", IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK},

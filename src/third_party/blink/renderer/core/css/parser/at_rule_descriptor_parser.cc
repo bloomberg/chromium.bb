@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -179,6 +180,7 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kScrollTimeline:
       return Parser::ParseAtScrollTimelineDescriptor(id, range, context);
     case StyleRule::kCharset:
+    case StyleRule::kContainer:
     case StyleRule::kStyle:
     case StyleRule::kImport:
     case StyleRule::kMedia:
@@ -210,14 +212,21 @@ CSSValue* ConsumeAdvanceOverride(CSSParserTokenRange& range,
                                  const CSSParserContext& context) {
   if (!RuntimeEnabledFeatures::CSSFontFaceAdvanceOverrideEnabled())
     return nullptr;
-  return css_parsing_utils::ConsumeNumber(range, context, kValueRangeAll);
-}
-
-CSSValue* ConsumeAdvanceProportionalOverride(CSSParserTokenRange& range,
-                                             const CSSParserContext& context) {
-  if (!RuntimeEnabledFeatures::CSSFontFaceAdvanceProportionalOverrideEnabled())
+  if (CSSIdentifierValue* normal =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kNormal>(range)) {
+    return normal;
+  }
+  CSSValue* override_horizontal =
+      css_parsing_utils::ConsumePercent(range, context, kValueRangeNonNegative);
+  if (!override_horizontal)
     return nullptr;
-  return ConsumeFontMetricOverride(range, context);
+  CSSValue* override_vertical_upright =
+      css_parsing_utils::ConsumePercent(range, context, kValueRangeNonNegative);
+  if (!override_vertical_upright)
+    override_vertical_upright = override_horizontal;
+  return MakeGarbageCollected<CSSValuePair>(override_horizontal,
+                                            override_vertical_upright,
+                                            CSSValuePair::kDropIdenticalValues);
 }
 
 }  // namespace
@@ -276,9 +285,6 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
       break;
     case AtRuleDescriptorID::AdvanceOverride:
       parsed_value = ConsumeAdvanceOverride(range, context);
-      break;
-    case AtRuleDescriptorID::AdvanceProportionalOverride:
-      parsed_value = ConsumeAdvanceProportionalOverride(range, context);
       break;
     default:
       break;

@@ -28,7 +28,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.toolbar.ToolbarColors;
+import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.Toast;
@@ -246,13 +246,14 @@ public class CustomButtonParams {
         int id = CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID;
         String description = context.getResources().getString(R.string.share);
         Intent shareIntent = new Intent(context, CustomTabsShareBroadcastReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context, 0, shareIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, shareIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+                        | IntentUtils.getPendingIntentMutabilityFlag(true));
 
         TintedDrawable drawable =
                 TintedDrawable.constructTintedDrawable(context, R.drawable.ic_share_white_24dp);
         boolean useLightTint = ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor);
-        drawable.setTint(ToolbarColors.getThemedToolbarIconTint(context, useLightTint));
+        drawable.setTint(ThemeUtils.getThemedToolbarIconTint(context, useLightTint));
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
 
         return new CustomButtonParams(

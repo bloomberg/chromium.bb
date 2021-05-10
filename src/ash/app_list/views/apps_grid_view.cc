@@ -1825,10 +1825,8 @@ void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
 
   // Calculate if the drag_view_ is dragged out of the folder's container
   // ink bubble.
-  gfx::Rect bounds_to_folder_view = ConvertRectToParent(drag_view_->bounds());
-  gfx::Point pt = bounds_to_folder_view.CenterPoint();
   bool is_item_dragged_out_of_folder =
-      folder_delegate_->IsPointOutsideOfFolderBoundary(pt);
+      folder_delegate_->IsViewOutsideOfFolder(drag_view_);
   if (is_item_dragged_out_of_folder) {
     if (!drag_out_of_folder_container_) {
       folder_item_reparent_timer_.Start(
@@ -2193,11 +2191,19 @@ void AppsGridView::UpdateOpacity(bool restore_opacity) {
   }
 }
 
-bool AppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
+bool AppsGridView::HandleScrollFromAppListView(const gfx::Point& location,
+                                               const gfx::Vector2d& offset,
                                                ui::EventType type) {
+  const auto* root_apps_grid_view =
+      contents_view_->apps_container_view()->apps_grid_view();
+  gfx::Point root_apps_grid_view_location(location);
+  views::View::ConvertPointToTarget(this, root_apps_grid_view,
+                                    &root_apps_grid_view_location);
+
   // Scroll up at first page in top level apps grid should close the launcher.
   if (!folder_delegate_ && offset.y() > 0 &&
-      !pagination_model()->IsValidPageRelative(-1)) {
+      !pagination_model()->IsValidPageRelative(-1) &&
+      !root_apps_grid_view->bounds().Contains(root_apps_grid_view_location)) {
     return false;
   }
 
@@ -2549,9 +2555,11 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
                                    const GridIndex& target,
                                    bool clear_overflow) {
   int current_model_index = view_model_.GetIndexOfView(item_view);
-  size_t current_item_list_index;
-  item_list_->FindItemIndex(item_view->item()->id(), &current_item_list_index);
-  DCHECK_GE(current_model_index, 0);
+  CHECK_GE(current_model_index, 0);
+  size_t current_item_list_index = 0;
+  bool found = item_list_->FindItemIndex(item_view->item()->id(),
+                                         &current_item_list_index);
+  CHECK(found);
 
   int target_model_index = GetTargetModelIndexForMove(item_view, target);
   size_t target_item_list_index = GetTargetItemIndexForMove(item_view, target);
@@ -2559,6 +2567,10 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
   // item visual index here.
   if (!folder_delegate_)
     view_structure_.Move(item_view, target, clear_overflow);
+
+  DVLOG(1) << "MoveItemInModel: view model: " << current_model_index << " -> "
+           << target_model_index << ", item list: " << current_item_list_index
+           << " -> " << target_item_list_index;
 
   // Reorder the app list item views in accordance with |view_model_|.
   items_container_->ReorderChildView(item_view, target_model_index);

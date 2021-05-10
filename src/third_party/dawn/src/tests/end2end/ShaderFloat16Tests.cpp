@@ -38,6 +38,9 @@ class ShaderFloat16Tests : public DawnTest {
 // Test basic 16bit float arithmetic and 16bit storage features.
 TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     DAWN_SKIP_TEST_IF(!IsShaderFloat16Supported());
+    DAWN_SKIP_TEST_IF(IsD3D12() && IsIntel());  // Flaky crashes. crbug.com/dawn/586
+    // TODO(crbug.com/tint/404): Implement float16 in Tint.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator"));
 
     uint16_t uniformData[] = {Float32ToFloat16(1.23), Float32ToFloat16(0.0)};  // 0.0 is a padding.
     wgpu::Buffer uniformBuffer = utils::CreateBufferFromData(
@@ -108,4 +111,9 @@ TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     EXPECT_BUFFER_U16_RANGE_EQ(expected, bufferOut, 0, 2);
 }
 
-DAWN_INSTANTIATE_TEST(ShaderFloat16Tests, MetalBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(ShaderFloat16Tests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

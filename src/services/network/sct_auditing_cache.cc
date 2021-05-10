@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "components/version_info/version_info.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -19,6 +20,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/ct_serialization.h"
+#include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
@@ -41,45 +43,6 @@ namespace network {
 namespace {
 
 constexpr int kSendSCTReportTimeoutSeconds = 30;
-
-sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus
-MapSCTVerifyStatusToProtoStatus(net::ct::SCTVerifyStatus status) {
-  switch (status) {
-    case net::ct::SCTVerifyStatus::SCT_STATUS_NONE:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus::
-          SCTWithSourceAndVerifyStatus_SctVerifyStatus_NONE;
-    case net::ct::SCTVerifyStatus::SCT_STATUS_LOG_UNKNOWN:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus::
-          SCTWithSourceAndVerifyStatus_SctVerifyStatus_LOG_UNKNOWN;
-    case net::ct::SCTVerifyStatus::SCT_STATUS_OK:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus::
-          SCTWithSourceAndVerifyStatus_SctVerifyStatus_OK;
-    case net::ct::SCTVerifyStatus::SCT_STATUS_INVALID_SIGNATURE:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus::
-          SCTWithSourceAndVerifyStatus_SctVerifyStatus_INVALID_SIGNATURE;
-    case net::ct::SCTVerifyStatus::SCT_STATUS_INVALID_TIMESTAMP:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::SctVerifyStatus::
-          SCTWithSourceAndVerifyStatus_SctVerifyStatus_INVALID_TIMESTAMP;
-  }
-}
-
-sct_auditing::SCTWithSourceAndVerifyStatus::Source MapSCTOriginToSource(
-    net::ct::SignedCertificateTimestamp::Origin origin) {
-  switch (origin) {
-    case net::ct::SignedCertificateTimestamp::Origin::SCT_EMBEDDED:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::Source::
-          SCTWithSourceAndVerifyStatus_Source_EMBEDDED;
-    case net::ct::SignedCertificateTimestamp::Origin::SCT_FROM_TLS_EXTENSION:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::Source::
-          SCTWithSourceAndVerifyStatus_Source_TLS_EXTENSION;
-    case net::ct::SignedCertificateTimestamp::Origin::SCT_FROM_OCSP_RESPONSE:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::Source::
-          SCTWithSourceAndVerifyStatus_Source_OCSP_RESPONSE;
-    default:
-      return sct_auditing::SCTWithSourceAndVerifyStatus::Source::
-          SCTWithSourceAndVerifyStatus_Source_SOURCE_UNSPECIFIED;
-  }
-}
 
 // Records the high-water mark of the cache size (in number of reports).
 void RecordSCTAuditingCacheHighWaterMarkMetrics(size_t hwm) {
@@ -173,16 +136,39 @@ void SCTAuditingCache::MaybeEnqueueReport(
   if (!enabled_ || !context->is_sct_auditing_enabled())
     return;
 
-  // Generate the cache key for this report. In order to have the cache
-  // deduplicate reports for the same SCTs, we compute the cache key as the
-  // hash of the SCTs.
+  auto report = std::make_unique<sct_auditing::SCTClientReport>();
+  auto* tls_report = report->add_certificate_report();
+
+  // Encode the SCTs in the report and generate the cache key. The hash of the
+  // SCTs is used as the cache key to deduplicate reports with the same SCTs.
+  // Constructing the report in parallel with computing the hash avoids
+  // encoding the SCTs multiple times and avoids extra copies.
   SHA256_CTX ctx;
   SHA256_Init(&ctx);
   for (const auto& sct : signed_certificate_timestamps) {
-    std::string serialized_sct;
-    net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct);
-    SHA256_Update(&ctx, serialized_sct.data(), serialized_sct.size());
+    // Only audit valid SCTs. This ensures that they come from a known log, have
+    // a valid signature, and thus are expected to be public certificates. If
+    // there are no valid SCTs, there's no need to report anything.
+    if (sct.status != net::ct::SCT_STATUS_OK)
+      continue;
+
+    auto* sct_source_and_status = tls_report->add_included_sct();
+    // TODO(crbug.com/1082860): Update the proto to remove the status entirely
+    // since only valid SCTs are reported now.
+    sct_source_and_status->set_status(
+        sct_auditing::SCTWithVerifyStatus::SctVerifyStatus::
+            SCTWithVerifyStatus_SctVerifyStatus_OK);
+
+    net::ct::EncodeSignedCertificateTimestamp(
+        sct.sct, sct_source_and_status->mutable_serialized_sct());
+
+    SHA256_Update(&ctx, sct_source_and_status->serialized_sct().data(),
+                  sct_source_and_status->serialized_sct().size());
   }
+  // Don't handle reports if there were no valid SCTs.
+  if (tls_report->included_sct().empty())
+    return;
+
   net::SHA256HashValue cache_key;
   SHA256_Final(reinterpret_cast<uint8_t*>(&cache_key), &ctx);
 
@@ -194,6 +180,8 @@ void SCTAuditingCache::MaybeEnqueueReport(
     return;
   }
   RecordSCTAuditingReportDeduplicatedMetrics(false);
+
+  report->set_user_agent(version_info::GetProductNameAndVersionForUserAgent());
 
   // Set the `cache_key` with an null report. If we don't choose to sample these
   // SCTs, then we don't need to store a report as we won't reference it again
@@ -207,10 +195,7 @@ void SCTAuditingCache::MaybeEnqueueReport(
   }
   RecordSCTAuditingReportSampledMetrics(true);
 
-  // Insert SCTs into cache.
-  auto report = std::make_unique<sct_auditing::TLSConnectionReport>();
-  auto* connection_context = report->mutable_context();
-
+  auto* connection_context = tls_report->mutable_context();
   base::TimeDelta time_since_unix_epoch =
       base::Time::Now() - base::Time::UnixEpoch();
   connection_context->set_time_seen(time_since_unix_epoch.InSeconds());
@@ -228,16 +213,6 @@ void SCTAuditingCache::MaybeEnqueueReport(
   *connection_context->mutable_certificate_chain() = {certificate_chain.begin(),
                                                       certificate_chain.end()};
 
-  for (const auto& sct : signed_certificate_timestamps) {
-    auto* sct_source_and_status = report->add_included_scts();
-    sct_source_and_status->set_status(
-        MapSCTVerifyStatusToProtoStatus(sct.status));
-    sct_source_and_status->set_source(MapSCTOriginToSource(sct.sct->origin));
-    std::string serialized_sct;
-    net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct);
-    sct_source_and_status->set_sct(serialized_sct);
-  }
-
   // Log the size of the report. This only tracks reports that are not dropped
   // due to sampling (as those reports will just be empty).
   RecordSCTAuditingReportSizeMetrics(report->ByteSizeLong());
@@ -251,7 +226,7 @@ void SCTAuditingCache::MaybeEnqueueReport(
   SendReport(cache_key);
 }
 
-sct_auditing::TLSConnectionReport* SCTAuditingCache::GetPendingReport(
+sct_auditing::SCTClientReport* SCTAuditingCache::GetPendingReport(
     const net::SHA256HashValue& cache_key) {
   auto it = cache_.Get(cache_key);
   if (it == cache_.end())

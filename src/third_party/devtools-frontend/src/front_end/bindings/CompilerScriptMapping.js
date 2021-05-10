@@ -33,14 +33,13 @@ import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
-import {BlackboxManager} from './BlackboxManager.js';
 import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
 import {DebuggerSourceMapping, DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
+import {IgnoreListManager} from './IgnoreListManager.js';
 import {NetworkProject} from './NetworkProject.js';
 
 /**
  * @implements {DebuggerSourceMapping}
- * @unrestricted
  */
 export class CompilerScriptMapping {
   /**
@@ -151,7 +150,8 @@ export class CompilerScriptMapping {
       return true;
     }
     const entry = sourceMap.findEntry(rawLocation.lineNumber, rawLocation.columnNumber);
-    return !!entry && entry.lineNumber === rawLocation.lineNumber && entry.columnNumber === rawLocation.columnNumber;
+    return entry !== null && entry.lineNumber === rawLocation.lineNumber &&
+        entry.columnNumber === rawLocation.columnNumber;
   }
 
   /**
@@ -254,7 +254,7 @@ export class CompilerScriptMapping {
     const sourceMap = /** @type {!SDK.SourceMap.SourceMap} */ (event.data.sourceMap);
     await this._removeStubUISourceCode(script);
 
-    if (BlackboxManager.instance().isBlackboxedURL(script.sourceURL, script.isContentScript())) {
+    if (IgnoreListManager.instance().isIgnoreListedURL(script.sourceURL, script.isContentScript())) {
       this._sourceMapAttachedForTest(sourceMap);
       return;
     }
@@ -333,7 +333,7 @@ export class CompilerScriptMapping {
     if (!sourceMap) {
       return true;
     }
-    return !!sourceMap.sourceLineMapping(uiSourceCode.url(), lineNumber, 0);
+    return Boolean(sourceMap.sourceLineMapping(uiSourceCode.url(), lineNumber, 0));
   }
 
   dispose() {
@@ -367,7 +367,7 @@ class Binding {
    * @param {!Protocol.Page.FrameId} frameId
    */
   _recreateUISourceCodeIfNeeded(frameId) {
-    const sourceMap = this._referringSourceMaps.peekLast();
+    const sourceMap = this._referringSourceMaps[this._referringSourceMaps.length - 1];
     if (!sourceMap || this._activeSourceMap === sourceMap) {
       return;
     }

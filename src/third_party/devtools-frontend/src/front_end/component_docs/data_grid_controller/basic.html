@@ -23,31 +23,8 @@
     <div id="container">
     </div>
 
-    <script type="module">
-      import * as ComponentHelpers from '../../component_helpers/component_helpers.js';
-      import * as Components from '../../ui/components/components.js';
+    <button id="add">add new row</button>
 
-      ComponentHelpers.ComponentServerSetup.setup().then(() => renderComponent())
-
-      const renderComponent = () => {
-        const component = new Components.DataGridController.DataGridController();
-
-        component.data = {
-          columns: [
-            { id: 'key', title: 'Key', sortable: true, widthWeighting: 1 },
-            { id: 'value', title: 'Value', sortable: false, widthWeighting: 1 },
-          ],
-          rows: [
-            // Each key is the ID of a column, and the value is the value for that column
-            {cells: [{ columnId: 'key', value: 'Bravo'}, { columnId: 'value', value: 'foobar'}] },
-            {cells: [{ columnId: 'key', value: 'Alpha'}, { columnId: 'value', value: 'bazbar'}] },
-            {cells: [{ columnId: 'key', value: 'Charlie'}, { columnId: 'value', value: 'bazbar'}] },
-          ]
-        }
-
-        document.getElementById('container').appendChild(component)
-      }
-
-    </script>
+    <script type="module" src="./basic.js"></script>
   </body>
 </html>

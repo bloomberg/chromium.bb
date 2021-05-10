@@ -16,6 +16,7 @@
 #include "components/favicon_base/favicon_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -44,8 +45,9 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
 
   {
     SkCanvas canvas(bitmap, SkSurfaceProps{});
-    canvas.drawBitmapRect(contents, SkRect::MakeIWH(desired_size, desired_size),
-                          nullptr);
+    canvas.drawImageRect(contents.asImage(),
+                         SkRect::MakeIWH(desired_size, desired_size),
+                         SkSamplingOptions());
   }
 
   return bitmap;
@@ -240,7 +242,7 @@ gfx::ImageSkia CreateFaviconImageSkia(
 
   if (desired_size_in_dip == 0) {
     size_t index = results[0].index;
-    return gfx::ImageSkia(gfx::ImageSkiaRep(bitmaps[index], 1.0f));
+    return gfx::ImageSkia::CreateFromBitmap(bitmaps[index], 1.0f);
   }
 
   auto image_source = std::make_unique<FaviconImageSource>();

@@ -60,6 +60,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
+  bool SupportsPlaneGpuFences() const override;
+  bool SupportsOverridePlatformSize() const override;
   gfx::SurfaceOrigin GetOrigin() const override;
 
  private:
@@ -87,9 +89,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     void Flush();
 
     bool ready = false;
-
-    // The id of the buffer, which represents this frame.
-    BufferId buffer_id = 0;
 
     // A region of the updated content in a corresponding frame. It's used to
     // advice Wayland which part of a buffer is going to be updated. Passing {0,
@@ -119,6 +118,12 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void SetNoGLFlushForTests();
 
   WaylandBufferManagerGpu* const buffer_manager_;
+
+  // |background_buffer_id| is sent to WaylandBufferManagerHost once per
+  // background_buffer allocation. However WaylandBufferManagerHost may commit
+  // this buffer more often b/c buffers needs to be re-attached when wl_surface
+  // is reshown.
+  BufferId background_buffer_id_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;

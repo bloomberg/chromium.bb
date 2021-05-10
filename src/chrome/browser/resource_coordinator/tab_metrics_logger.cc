@@ -8,11 +8,10 @@
 #include <string>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -99,7 +99,7 @@ void PopulateTabFeaturesFromWebContents(content::WebContents* web_contents,
   tab_features->navigation_entry_count =
       web_contents->GetController().GetEntryCount();
 
-  if (SiteEngagementService::IsEnabled()) {
+  if (site_engagement::SiteEngagementService::IsEnabled()) {
     tab_features->site_engagement_score =
         TabMetricsLogger::GetSiteEngagementScore(web_contents);
   }
@@ -141,11 +141,12 @@ TabMetricsLogger::~TabMetricsLogger() = default;
 // static
 int TabMetricsLogger::GetSiteEngagementScore(
     content::WebContents* web_contents) {
-  if (!SiteEngagementService::IsEnabled())
+  if (!site_engagement::SiteEngagementService::IsEnabled())
     return -1;
 
-  SiteEngagementService* service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  site_engagement::SiteEngagementService* service =
+      site_engagement::SiteEngagementService::Get(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   DCHECK(service);
 
   // Scores range from 0 to 100. Round down to a multiple of 10 to conform to

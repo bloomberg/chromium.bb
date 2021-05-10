@@ -24,6 +24,7 @@ import("//third_party/blink/renderer/core/context_features/build.gni")
 import("//third_party/blink/renderer/core/core.gni")
 import("//third_party/blink/renderer/core/css/build.gni")
 import("//third_party/blink/renderer/core/display_lock/build.gni")
+import("//third_party/blink/renderer/core/document_transition/build.gni")
 import("//third_party/blink/renderer/core/dom/build.gni")
 import("//third_party/blink/renderer/core/editing/build.gni")
 import("//third_party/blink/renderer/core/events/build.gni")
@@ -193,6 +194,9 @@ component("core") {
       rebase_path(blink_core_sources_context_features, "", "context_features")
   sources += rebase_path(blink_core_sources_css, "", "css")
   sources += rebase_path(blink_core_sources_display_lock, "", "display_lock")
+  sources += rebase_path(blink_core_sources_document_transition,
+                         "",
+                         "document_transition")
   sources += rebase_path(blink_core_sources_dom, "", "dom")
   sources += rebase_path(blink_core_sources_editing, "", "editing")
   sources += rebase_path(blink_core_sources_events, "", "events")
@@ -255,14 +259,21 @@ component("core") {
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
     "//third_party/blink/renderer/core/typed_arrays",
+    "//third_party/blink/renderer/core/xml:xpath_generated",
     "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform/wtf",
+    "//ui/accessibility:ax_base",
     "//ui/base/cursor:cursor_base",
+    "//ui/base/dragdrop/mojom:mojom_blink_headers",
+    "//ui/base/dragdrop/mojom:mojom_shared",
     "//url",
     "//v8",
   ]
+
   deps = [
     "//build:chromeos_buildflags",
     "//components/paint_preview/common",
+    "//components/performance_manager/public/mojom:mojom_blink",
     "//components/shared_highlighting/core/common",
     "//gpu/config",
     "//mojo/public/cpp/bindings:bindings",
@@ -274,16 +285,13 @@ component("core") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//skia:skcms",
+    "//storage/common",
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public:image_resources_grit",
     "//third_party/blink/public:resources",
     "//third_party/blink/public/common",
     "//third_party/blink/public/strings",
     "//third_party/blink/renderer/core/typed_arrays:typed_arrays",
-    "//third_party/blink/renderer/core/xml:xpath_generated",
-    "//third_party/blink/renderer/platform",
-    "//third_party/blink/renderer/platform/wtf",
-    "//ui/accessibility:ax_base",
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
@@ -400,8 +408,11 @@ source_set("testing") {
     "testing/internal_settings.h",
     "testing/internals.cc",
     "testing/internals.h",
+    "testing/intersection_observer_test_helper.h",
     "testing/mock_clipboard_host.cc",
     "testing/mock_clipboard_host.h",
+    "testing/mock_function_scope.cc",
+    "testing/mock_function_scope.h",
     "testing/mock_hyphenation.cc",
     "testing/mock_hyphenation.h",
     "testing/mock_policy_container_host.cc",
@@ -413,6 +424,8 @@ source_set("testing") {
     "testing/origin_trials_test_partial.h",
     "testing/record_test.cc",
     "testing/record_test.h",
+    "testing/scoped_fake_ukm_recorder.cc",
+    "testing/scoped_fake_ukm_recorder.h",
     "testing/scoped_mock_overlay_scrollbars.h",
     "testing/sequence_test.cc",
     "testing/sequence_test.h",
@@ -923,22 +936,16 @@ blink_python_runner("make_core_generated_css_tokenizer_codepoints") {
 blink_python_runner("make_core_generated_css_primitive_value_unit_trie") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
-
-  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-  script = "//build/util/python2_action.py"
+  script = "../build/scripts/core/css/make_css_primitive_value_unit_trie.py"
 
   input_file = "css/css_primitive_value_units.json5"
   inputs = make_trie_helpers_files + [
              input_file,
-             "../build/scripts/core/css/make_css_primitive_value_unit_trie.py",
              "../build/scripts/core/css/templates/css_primitive_value_unit_trie.cc.tmpl",
            ]
   outputs = [ "$blink_core_output_dir/css/css_primitive_value_unit_trie.cc" ]
 
   args = [
-    rebase_path(
-        "../build/scripts/core/css/make_css_primitive_value_unit_trie.py",
-        root_build_dir),
     rebase_path(input_file, root_build_dir),
     "--output_dir",
     "$rel_blink_core_gen_dir/css",
@@ -1186,45 +1193,17 @@ source_set("unit_tests") {
     "css/mock_css_paint_image_generator.h",
     "display_lock/display_lock_context_test.cc",
     "display_lock/display_lock_utilities_test.cc",
-    "dom/attr_test.cc",
-    "dom/document_statistics_collector_test.cc",
-    "dom/document_test.cc",
-    "dom/dom_node_ids_test.cc",
-    "dom/element_test.cc",
-    "dom/events/event_path_test.cc",
-    "dom/events/event_target_test.cc",
-    "dom/events/listener_leak_test.cc",
-    "dom/first_letter_pseudo_element_test.cc",
-    "dom/flat_tree_traversal_test.cc",
-    "dom/idle_deadline_test.cc",
-    "dom/layout_tree_builder_traversal_test.cc",
-    "dom/live_node_list_registry_test.cc",
-    "dom/mutation_observer_test.cc",
-    "dom/names_map_test.cc",
-    "dom/node_test.cc",
-    "dom/nth_index_cache_test.cc",
-    "dom/range_test.cc",
-    "dom/scripted_animation_controller_test.cc",
-    "dom/scripted_idle_task_controller_test.cc",
-    "dom/shadow_dom_v0_test.cc",
-    "dom/slot_assignment_test.cc",
-    "dom/space_split_string_test.cc",
-    "dom/static_range_test.cc",
-    "dom/text_test.cc",
-    "dom/tree_scope_adopter_test.cc",
-    "dom/tree_scope_test.cc",
-    "dom/weak_identifier_map_test.cc",
-    "dom/whitespace_attacher_test.cc",
+    "document_transition/document_transition_test.cc",
     "editing/caret_display_item_client_test.cc",
     "editing/finder/text_finder_test.cc",
     "editing/keyboard_test.cc",
     "editing/link_selection_test.cc",
     "events/message_event_test.cc",
+    "events/mouse_event_test.cc",
     "events/pointer_event_factory_test.cc",
     "events/pointer_event_util_test.cc",
     "events/touch_event_test.cc",
     "events/web_input_event_conversion_test.cc",
-    "execution_context/agent_metrics_collector_test.cc",
     "execution_context/execution_context_lifecycle_state_observer_test.cc",
     "exported/web_document_subresource_filter_test.cc",
     "exported/web_document_test.cc",
@@ -1245,6 +1224,8 @@ source_set("unit_tests") {
     "exported/web_selector_test.cc",
     "exported/web_view_test.cc",
     "feature_policy/document_policy_parser_test.cc",
+    "feature_policy/document_policy_sim_test.cc",
+    "feature_policy/feature_policy_devtools_support_test.cc",
     "feature_policy/feature_policy_test.cc",
     "feature_policy/policy_test.cc",
     "fetch/blob_bytes_consumer_test.cc",
@@ -1266,17 +1247,18 @@ source_set("unit_tests") {
     "frame/ad_tracker_test.cc",
     "frame/browser_controls_test.cc",
     "frame/csp/content_security_policy_test.cc",
+    "frame/csp/conversion_util_test.cc",
     "frame/csp/csp_directive_list_test.cc",
     "frame/csp/csp_source_test.cc",
-    "frame/csp/media_list_directive_test.cc",
     "frame/csp/require_trusted_types_for_directive_test.cc",
     "frame/csp/source_list_directive_test.cc",
-    "frame/csp/string_list_directive_test.cc",
+    "frame/csp/trusted_types_directive_test.cc",
     "frame/deprecation_report_body_test.cc",
     "frame/document_loading_rendering_test.cc",
     "frame/document_policy_violation_report_body_test.cc",
     "frame/dom_timer_test.cc",
     "frame/find_in_page_test.cc",
+    "frame/frame_content_as_text_test.cc",
     "frame/frame_overlay_test.cc",
     "frame/frame_serializer_test.cc",
     "frame/frame_test.cc",
@@ -1311,8 +1293,10 @@ source_set("unit_tests") {
     "input/scroll_snap_test.cc",
     "input/touch_action_test.cc",
     "input/touch_event_manager_test.cc",
+    "inspector/inspector_contrast_test.cc",
     "inspector/inspector_emulation_agent_test.cc",
     "inspector/inspector_history_test.cc",
+    "inspector/inspector_media_context_impl_unittest.cc",
     "inspector/inspector_session_state_test.cc",
     "inspector/inspector_style_resolver_test.cc",
     "inspector/main_thread_debugger_test.cc",
@@ -1322,6 +1306,7 @@ source_set("unit_tests") {
     "layout/api/selection_state_test.cc",
     "layout/collapsed_border_value_test.cc",
     "layout/force_legacy_layout_test.cc",
+    "layout/geometry/axis_test.cc",
     "layout/geometry/logical_rect_test.cc",
     "layout/geometry/physical_rect_test.cc",
     "layout/geometry/physical_size_test.cc",
@@ -1337,6 +1322,7 @@ source_set("unit_tests") {
     "layout/layout_grid_test.cc",
     "layout/layout_image_test.cc",
     "layout/layout_inline_test.cc",
+    "layout/layout_list_marker_test.cc",
     "layout/layout_media_test.cc",
     "layout/layout_multi_column_flow_thread_test.cc",
     "layout/layout_object_test.cc",
@@ -1359,6 +1345,7 @@ source_set("unit_tests") {
     "layout/line/abstract_inline_text_box_test.cc",
     "layout/line/inline_text_box_test.cc",
     "layout/line/line_orientation_utils_test.cc",
+    "layout/list_marker_test.cc",
     "layout/map_coordinates_test.cc",
     "layout/min_max_size_test.cc",
     "layout/multi_column_fragmentainer_group_test.cc",
@@ -1376,14 +1363,12 @@ source_set("unit_tests") {
     "layout/ng/inline/ng_fragment_items_builder_test.cc",
     "layout/ng/inline/ng_fragment_items_test.cc",
     "layout/ng/inline/ng_inline_cursor_test.cc",
-    "layout/ng/inline/ng_inline_fragment_traversal_test.cc",
     "layout/ng/inline/ng_inline_items_builder_test.cc",
     "layout/ng/inline/ng_inline_layout_algorithm_test.cc",
     "layout/ng/inline/ng_inline_node_test.cc",
     "layout/ng/inline/ng_line_breaker_test.cc",
     "layout/ng/inline/ng_offset_mapping_test.cc",
     "layout/ng/inline/ng_physical_line_box_fragment_test.cc",
-    "layout/ng/inline/ng_physical_text_fragment_test.cc",
     "layout/ng/list/layout_ng_list_item_test.cc",
     "layout/ng/ng_absolute_utils_test.cc",
     "layout/ng/ng_base_layout_algorithm_test.cc",
@@ -1404,7 +1389,9 @@ source_set("unit_tests") {
     "layout/ng/ng_length_utils_test.cc",
     "layout/ng/ng_out_of_flow_layout_part_test.cc",
     "layout/ng/ng_physical_box_fragment_test.cc",
+    "layout/ng/ng_physical_fragment_test.cc",
     "layout/ng/ng_relative_utils_test.cc",
+    "layout/ng/table/ng_table_layout_algorithm_helpers_test.cc",
     "layout/overflow_model_test.cc",
     "layout/paint_containment_test.cc",
     "layout/scroll_anchor_test.cc",
@@ -1438,7 +1425,6 @@ source_set("unit_tests") {
     "loader/navigation_policy_test.cc",
     "loader/ping_loader_test.cc",
     "loader/prerender_test.cc",
-    "loader/previews_resource_loading_hints_test.cc",
     "loader/programmatic_scroll_test.cc",
     "loader/progress_tracker_test.cc",
     "loader/resource/css_style_sheet_resource_test.cc",
@@ -1449,6 +1435,7 @@ source_set("unit_tests") {
     "loader/resource/mock_image_resource_observer.cc",
     "loader/resource/mock_image_resource_observer.h",
     "loader/resource/multipart_image_resource_parser_test.cc",
+    "loader/resource/script_resource_test.cc",
     "loader/resource_load_observer_for_frame_test.cc",
     "loader/threadable_loader_test.cc",
     "loader/threaded_icon_loader_test.cc",
@@ -1479,6 +1466,7 @@ source_set("unit_tests") {
     "page/scrolling/snap_coordinator_test.cc",
     "page/scrolling/text_fragment_anchor_metrics_test.cc",
     "page/scrolling/text_fragment_anchor_test.cc",
+    "page/scrolling/text_fragment_finder_test.cc",
     "page/scrolling/text_fragment_selector_generator_test.cc",
     "page/scrolling/text_fragment_selector_test.cc",
     "page/slot_scoped_traversal_test.cc",
@@ -1511,8 +1499,6 @@ source_set("unit_tests") {
     "paint/largest_contentful_paint_calculator_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_box_fragment_painter_test.cc",
-    "paint/ng/ng_paint_fragment_test.cc",
-    "paint/ng/ng_paint_fragment_traversal_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
     "paint/nine_piece_image_grid_test.cc",
     "paint/object_paint_invalidator_test.cc",
@@ -1564,10 +1550,10 @@ source_set("unit_tests") {
     "svg/animation/smil_time_container_test.cc",
     "svg/animation/svg_smil_element_test.cc",
     "svg/graphics/svg_image_test.cc",
-    "svg/svg_external_document_cache_test.cc",
     "svg/svg_foreign_object_element_test.cc",
     "svg/svg_path_parser_test.cc",
     "svg/svg_path_query_test.cc",
+    "svg/svg_resource_document_content_test.cc",
     "svg/svg_text_content_element_test.cc",
     "svg/svg_use_element_test.cc",
     "svg/unsafe_svg_attribute_sanitization_test.cc",
@@ -1595,13 +1581,14 @@ source_set("unit_tests") {
     "xml/xpath_functions_test.cc",
   ]
 
-  # If you create a new subdirectory 'foo' that contains unit tets, list them in
+  # If you create a new subdirectory 'foo' that contains unit tests, list them in
   # 'foo/build.gni' to define blink_core_tests_foo, and add any dependencies in
   # the deps section below.
   sources += rebase_path(blink_core_tests_accessibility, "", "accessibility")
   sources += rebase_path(blink_core_tests_animation, "", "animation")
   sources += rebase_path(blink_core_tests_clipboard, "", "clipboard")
   sources += rebase_path(blink_core_tests_css, "", "css")
+  sources += rebase_path(blink_core_tests_dom, "", "dom")
   sources += rebase_path(blink_core_tests_editing, "", "editing")
   sources += rebase_path(blink_core_tests_fileapi, "", "fileapi")
   sources += rebase_path(blink_core_tests_html, "", "html")
@@ -1643,15 +1630,10 @@ source_set("unit_tests") {
     "//ui/accessibility:ax_base",
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
+    "//ui/base/dragdrop/mojom:mojom_blink",
   ]
 
   data_deps = [ ":unit_tests_data" ]
-
-  # FIXME: Enable mojo unittests on Android after fixing data dependency.
-  # crbug.com/741925
-  if (!is_android) {
-    deps += [ "//third_party/blink/renderer/core/mojo:unit_tests" ]
-  }
 
   if (!is_mac) {
     sources += [
@@ -1691,7 +1673,10 @@ group("js_files_for_form_controls_web_tests") {
 
 source_set("perf_tests") {
   testonly = true
-  sources = [ "layout/visual_rect_mapping_perftest.cc" ]
+  sources = [
+    "layout/svg/svg_hit_test_perftest.cc",
+    "layout/visual_rect_mapping_perftest.cc",
+  ]
 
   configs += [
     ":blink_core_pch",
@@ -1716,6 +1701,7 @@ source_set("unit_test_support") {
     "frame/frame_test_helpers.h",
     "html/media/html_media_test_helper.cc",
     "html/media/html_media_test_helper.h",
+    "mobile_metrics/mobile_metrics_test_helpers.h",
     "script/mock_script_element_base.h",
     "testing/core_unit_test_helper.cc",
     "testing/core_unit_test_helper.h",
@@ -1739,6 +1725,8 @@ source_set("unit_test_support") {
     "testing/sim/sim_request.h",
     "testing/sim/sim_test.cc",
     "testing/sim/sim_test.h",
+    "testing/sim/sim_web_frame_widget.cc",
+    "testing/sim/sim_web_frame_widget.h",
     "workers/worker_thread_test_helper.h",
   ]
 
@@ -1797,6 +1785,17 @@ fuzzer_test("html_preload_scanner_fuzzer") {
 # Fuzzer for blink::ContentSecurityPolicy.
 fuzzer_test("content_security_policy_fuzzer") {
   sources = [ "frame/csp/content_security_policy_fuzzer.cc" ]
+  deps = [
+    ":core",
+    "//third_party/blink/renderer/core:testing",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"
+  seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
+}
+
+fuzzer_test("content_security_policy_conversion_util_fuzzer") {
+  sources = [ "frame/csp/conversion_util_fuzzer.cc" ]
   deps = [
     ":core",
     "//third_party/blink/renderer/core:testing",

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 
 namespace blink {
@@ -14,6 +15,14 @@ LayoutNGListItem::LayoutNGListItem(Element* element)
 
   SetConsumesSubtreeChangeNotification();
   RegisterSubtreeChangeListenerOnDescendants(true);
+  View()->AddLayoutListItem();
+}
+
+void LayoutNGListItem::WillBeDestroyed() {
+  NOT_DESTROYED();
+  if (View())
+    View()->RemoveLayoutListItem();
+  LayoutNGBlockFlow::WillBeDestroyed();
 }
 
 bool LayoutNGListItem::IsOfType(LayoutObjectType type) const {
@@ -43,11 +52,34 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
 
   list_marker->UpdateMarkerContentIfNeeded(*marker);
 
-  if (old_style && (old_style->ListStyleType() != StyleRef().ListStyleType() ||
-                    (StyleRef().ListStyleType() == EListStyleType::kString &&
-                     old_style->ListStyleStringValue() !=
-                         StyleRef().ListStyleStringValue())))
-    list_marker->ListStyleTypeChanged(*marker);
+  if (old_style) {
+    const ListStyleTypeData* old_list_style_type =
+        old_style->GetListStyleType();
+    const ListStyleTypeData* new_list_style_type =
+        StyleRef().GetListStyleType();
+    if (old_list_style_type != new_list_style_type &&
+        (!old_list_style_type || !new_list_style_type ||
+         *old_list_style_type != *new_list_style_type))
+      list_marker->ListStyleTypeChanged(*marker);
+  }
+}
+
+void LayoutNGListItem::UpdateCounterStyle() {
+  if (!RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled())
+    return;
+
+  if (!StyleRef().GetListStyleType() ||
+      StyleRef().GetListStyleType()->IsCounterStyleReferenceValid(
+          GetDocument())) {
+    return;
+  }
+
+  LayoutObject* marker = Marker();
+  ListMarker* list_marker = ListMarker::Get(marker);
+  if (!list_marker)
+    return;
+
+  list_marker->CounterStyleChanged(*marker);
 }
 
 void LayoutNGListItem::OrdinalValueChanged() {

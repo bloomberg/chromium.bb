@@ -203,10 +203,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         const VertexSpec vertexSpec = this->vertexSpec();
 
         GrGeometryProcessor* gp = GrQuadPerEdgeAA::MakeProcessor(arena, vertexSpec);
@@ -216,20 +217,21 @@ private:
                                                             std::move(appliedClip),
                                                             dstProxyView, gp,
                                                             vertexSpec.primitiveType(),
-                                                            renderPassXferBarriers);
+                                                            renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrePrepareDraws(GrRecordingContext* rContext,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
                            const GrXferProcessor::DstProxyView& dstProxyView,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         SkASSERT(!fPrePreparedVertices);
 
         INHERITED::onPrePrepareDraws(rContext, writeView, clip, dstProxyView,
-                                     renderPassXferBarriers);
+                                     renderPassXferBarriers, colorLoadOp);
 
         SkArenaAlloc* arena = rContext->priv().recordTimeAllocator();
 
@@ -480,7 +482,7 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
                                  GrPaint&& paint,
                                  GrAAType aaType,
                                  const SkMatrix& viewMatrix,
-                                 const GrRenderTargetContext::QuadSetEntry quads[],
+                                 const GrSurfaceDrawContext::QuadSetEntry quads[],
                                  int cnt,
                                  const GrUserStencilSettings* stencilSettings,
                                  int* numConsumed) {
@@ -516,13 +518,13 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
     return op;
 }
 
-void GrFillRectOp::AddFillRectOps(GrRenderTargetContext* rtc,
+void GrFillRectOp::AddFillRectOps(GrSurfaceDrawContext* rtc,
                                   const GrClip* clip,
                                   GrRecordingContext* context,
                                   GrPaint&& paint,
                                   GrAAType aaType,
                                   const SkMatrix& viewMatrix,
-                                  const GrRenderTargetContext::QuadSetEntry quads[],
+                                  const GrSurfaceDrawContext::QuadSetEntry quads[],
                                   int cnt,
                                   const GrUserStencilSettings* stencilSettings) {
 

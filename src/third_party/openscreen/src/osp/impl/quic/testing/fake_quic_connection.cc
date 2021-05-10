@@ -5,6 +5,7 @@
 #include "osp/impl/quic/testing/fake_quic_connection.h"
 
 #include <memory>
+#include <utility>
 
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "util/osp_logging.h"
@@ -62,16 +63,15 @@ std::unique_ptr<FakeQuicStream> FakeQuicConnection::MakeIncomingStream() {
 }
 
 void FakeQuicConnection::OnRead(UdpSocket* socket, ErrorOr<UdpPacket> data) {
-  OSP_NOTREACHED() << "data should go directly to fake streams";
+  OSP_NOTREACHED();
 }
 
 void FakeQuicConnection::OnSendError(UdpSocket* socket, Error error) {
-  OSP_NOTREACHED() << "data should go directly to fake streams";
+  OSP_NOTREACHED();
 }
 
-void FakeQuicConnection::OnError(UdpSocket* socket, Error error) {
-  OSP_NOTREACHED() << "data should go directly to fake streams";
-}
+void FakeQuicConnection::OnError(UdpSocket* socket,
+                                 Error error){OSP_NOTREACHED()}
 
 std::unique_ptr<QuicStream> FakeQuicConnection::MakeOutgoingStream(
     QuicStream::Delegate* delegate) {

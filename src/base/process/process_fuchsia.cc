@@ -12,7 +12,10 @@
 #include "base/debug/activity_tracker.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/trace_event/base_tracing.h"
 
 #if BUILDFLAG(CLANG_PROFILING)
 #include "base/test/clang_profiling.h"
@@ -117,20 +120,6 @@ Process Process::OpenWithExtraPrivileges(ProcessId pid) {
 }
 
 // static
-Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
-  DCHECK_NE(handle, GetCurrentProcessHandle());
-  zx::process out;
-  zx_status_t result =
-      zx::unowned_process(handle)->duplicate(ZX_RIGHT_SAME_RIGHTS, &out);
-  if (result != ZX_OK) {
-    ZX_DLOG(ERROR, result) << "zx_handle_duplicate(from_handle)";
-    return Process();
-  }
-
-  return Process(out.release());
-}
-
-// static
 bool Process::CanBackgroundProcesses() {
   return false;
 }
@@ -166,6 +155,21 @@ Process Process::Duplicate() const {
   }
 
   return Process(out.release());
+}
+
+ProcessHandle Process::Release() {
+  if (is_current()) {
+    // Caller expects to own the reference, so duplicate the self handle.
+    zx::process handle;
+    zx_status_t result =
+        zx::process::self()->duplicate(ZX_RIGHT_SAME_RIGHTS, &handle);
+    if (result != ZX_OK) {
+      return kNullProcessHandle;
+    }
+    is_current_process_ = false;
+    return handle.release();
+  }
+  return process_.release();
 }
 
 ProcessId Process::Pid() const {
@@ -215,8 +219,18 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   if (is_current_process_)
     return false;
 
+  TRACE_EVENT0("base", "Process::WaitForExitWithTimeout");
+
   // Record the event that this thread is blocking upon (for hang diagnosis).
-  base::debug::ScopedProcessWaitActivity process_activity(this);
+  Optional<debug::ScopedProcessWaitActivity> process_activity;
+  if (!timeout.is_zero()) {
+    process_activity.emplace(this);
+    // Assert that this thread is allowed to wait below. This intentionally
+    // doesn't use ScopedBlockingCallWithBaseSyncPrimitives because the process
+    // being waited upon tends to itself be using the CPU and considering this
+    // thread non-busy causes more issue than it fixes: http://crbug.com/905788
+    internal::AssertBaseSyncPrimitivesAllowed();
+  }
 
   zx_time_t deadline = timeout == TimeDelta::Max()
                            ? ZX_TIME_INFINITE

@@ -6,6 +6,7 @@
 
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
+#include "content/test/test_render_widget_host.h"
 
 namespace content {
 
@@ -38,25 +39,26 @@ void MockRenderWidgetHost::SetupForInputRouterTest() {
 }
 
 // static
-MockRenderWidgetHost* MockRenderWidgetHost::Create(
+std::unique_ptr<MockRenderWidgetHost> MockRenderWidgetHost::Create(
+    FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
     AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id) {
-  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
-  auto blink_widget_receiver =
-      blink_widget.BindNewEndpointAndPassDedicatedReceiver();
-  return new MockRenderWidgetHost(delegate, agent_scheduling_group, routing_id,
-                                  blink_widget.Unbind());
+  return Create(frame_tree, delegate, agent_scheduling_group, routing_id,
+                TestRenderWidgetHost::CreateStubWidgetRemote());
 }
 
-MockRenderWidgetHost* MockRenderWidgetHost::Create(
+// static
+std::unique_ptr<MockRenderWidgetHost> MockRenderWidgetHost::Create(
+    FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
     AgentSchedulingGroupHost& agent_scheduling_group,
     int32_t routing_id,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget) {
   DCHECK(pending_blink_widget);
-  return new MockRenderWidgetHost(delegate, agent_scheduling_group, routing_id,
-                                  std::move(pending_blink_widget));
+  return base::WrapUnique(
+      new MockRenderWidgetHost(frame_tree, delegate, agent_scheduling_group,
+                               routing_id, std::move(pending_blink_widget)));
 }
 
 blink::mojom::WidgetInputHandler*
@@ -69,14 +71,18 @@ void MockRenderWidgetHost::NotifyNewContentRenderingTimeoutForTesting() {
 }
 
 MockRenderWidgetHost::MockRenderWidgetHost(
+    FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
     AgentSchedulingGroupHost& agent_scheduling_group,
     int routing_id,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget)
-    : RenderWidgetHostImpl(delegate,
+    : RenderWidgetHostImpl(frame_tree,
+                           /*self_owned=*/false,
+                           delegate,
                            agent_scheduling_group,
                            routing_id,
                            /*hidden=*/false,
+                           /*renderer_initiated_creation=*/false,
                            std::make_unique<FrameTokenMessageQueue>()),
       new_content_rendering_timeout_fired_(false),
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {

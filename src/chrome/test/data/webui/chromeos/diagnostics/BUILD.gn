@@ -18,6 +18,7 @@ js_type_check("closure_compile") {
     ":diagnostics_app_test",
     ":diagnostics_app_unified_test",
     ":diagnostics_test_utils",
+    ":diagnostics_utils_test",
     ":fake_method_provider_test",
     ":fake_observables_test",
     ":fake_system_data_provider_test",
@@ -31,6 +32,7 @@ js_type_check("closure_compile") {
     ":routine_result_entry_test",
     ":routine_result_list_test",
     ":routine_section_test",
+    ":test_diagnostics_browser_proxy",
     ":text_badge_test",
   ]
 }
@@ -42,6 +44,8 @@ js_library("battery_status_card_test") {
     "//chromeos/components/diagnostics_ui/resources:battery_status_card",
     "//chromeos/components/diagnostics_ui/resources:diagnostics_types",
     "//chromeos/components/diagnostics_ui/resources:fake_data",
+    "//chromeos/components/diagnostics_ui/resources:routine_section",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -53,6 +57,7 @@ js_library("cpu_card_test") {
     "//chromeos/components/diagnostics_ui/resources:cpu_card",
     "//chromeos/components/diagnostics_ui/resources:diagnostics_types",
     "//chromeos/components/diagnostics_ui/resources:routine_section",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -68,6 +73,7 @@ js_library("data_point_test") {
 
 js_library("diagnostics_app_test") {
   deps = [
+    ":test_diagnostics_browser_proxy",
     "../..:chai_assert",
     "../..:test_util.m",
     "//chromeos/components/diagnostics_ui/resources:diagnostics_app",
@@ -91,6 +97,7 @@ js_library("diagnostics_test_utils") {
     "//chromeos/components/diagnostics_ui/resources:battery_status_card",
     "//chromeos/components/diagnostics_ui/resources:cpu_card",
     "//chromeos/components/diagnostics_ui/resources:data_point",
+    "//chromeos/components/diagnostics_ui/resources:fake_data",
     "//chromeos/components/diagnostics_ui/resources:memory_card",
     "//chromeos/components/diagnostics_ui/resources:percent_bar_chart",
     "//chromeos/components/diagnostics_ui/resources:realtime_cpu_chart",
@@ -98,6 +105,13 @@ js_library("diagnostics_test_utils") {
     "//chromeos/components/diagnostics_ui/resources:routine_result_list",
     "//chromeos/components/diagnostics_ui/resources:routine_section",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+}
+
+js_library("diagnostics_utils_test") {
+  deps = [
+    "../..:chai_assert",
+    "//chromeos/components/diagnostics_ui/resources:diagnostics_utils",
   ]
 }
 
@@ -137,6 +151,7 @@ js_library("memory_card_test") {
     "../..:chai_assert",
     "../..:test_util.m",
     "//chromeos/components/diagnostics_ui/resources:diagnostics_types",
+    "//chromeos/components/diagnostics_ui/resources:diagnostics_utils",
     "//chromeos/components/diagnostics_ui/resources:fake_data",
     "//chromeos/components/diagnostics_ui/resources:fake_system_data_provider",
     "//chromeos/components/diagnostics_ui/resources:memory_card",
@@ -225,10 +240,18 @@ js_library("routine_section_test") {
     "//chromeos/components/diagnostics_ui/resources:fake_system_routine_controller",
     "//chromeos/components/diagnostics_ui/resources:mojo_interface_provider",
     "//chromeos/components/diagnostics_ui/resources:routine_list_executor",
-    "//chromeos/components/diagnostics_ui/resources:routine_list_executor",
     "//chromeos/components/diagnostics_ui/resources:routine_result_entry",
     "//chromeos/components/diagnostics_ui/resources:routine_section",
+    "//chromeos/components/diagnostics_ui/resources:text_badge",
+    "//third_party/polymer/v3_0/components-chromium/iron-collapse:iron-collapse",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+}
+
+js_library("test_diagnostics_browser_proxy") {
+  deps = [
+    "../..:test_browser_proxy.m",
+    "//chromeos/components/diagnostics_ui/resources:diagnostics_browser_proxy",
   ]
 }
 

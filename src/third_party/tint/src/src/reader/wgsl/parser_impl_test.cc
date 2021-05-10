@@ -15,8 +15,8 @@
 #include "src/reader/wgsl/parser_impl.h"
 
 #include "gtest/gtest.h"
-#include "src/ast/type/i32_type.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/i32_type.h"
 
 namespace tint {
 namespace reader {
@@ -24,12 +24,12 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, Empty) {
-  auto* p = parser("");
+  auto p = parser("");
   ASSERT_TRUE(p->Parse()) << p->error();
 }
 
 TEST_F(ParserImplTest, Parses) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 [[location(0)]] var<out> gl_FragColor : vec4<f32>;
 
 [[stage(vertex)]]
@@ -39,14 +39,14 @@ fn main() -> void {
 )");
   ASSERT_TRUE(p->Parse()) << p->error();
 
-  auto m = p->module();
-  ASSERT_EQ(1u, m.functions().size());
-  ASSERT_EQ(1u, m.global_variables().size());
+  Program program = p->program();
+  ASSERT_EQ(1u, program.AST().Functions().size());
+  ASSERT_EQ(1u, program.AST().GlobalVariables().size());
 }
 
 TEST_F(ParserImplTest, HandlesError) {
-  auto* p = parser(R"(
-fn main() ->  {  # missing return type
+  auto p = parser(R"(
+fn main() ->  {  // missing return type
   return;
 })");
 
@@ -56,17 +56,16 @@ fn main() ->  {  # missing return type
 }
 
 TEST_F(ParserImplTest, GetRegisteredType) {
-  auto* p = parser("");
-  ast::type::I32Type i32;
-  p->register_constructed("my_alias", &i32);
+  auto p = parser("");
+  p->register_constructed("my_alias", ty.i32());
 
   auto* alias = p->get_constructed("my_alias");
   ASSERT_NE(alias, nullptr);
-  ASSERT_EQ(alias, &i32);
+  ASSERT_EQ(alias, ty.i32());
 }
 
 TEST_F(ParserImplTest, GetUnregisteredType) {
-  auto* p = parser("");
+  auto p = parser("");
   auto* alias = p->get_constructed("my_alias");
   ASSERT_EQ(alias, nullptr);
 }

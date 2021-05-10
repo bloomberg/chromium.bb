@@ -69,6 +69,8 @@ component("compositor") {
     "throughput_tracker.cc",
     "throughput_tracker.h",
     "throughput_tracker_host.h",
+    "total_animation_throughput_reporter.cc",
+    "total_animation_throughput_reporter.h",
     "transform_animation_curve_adapter.cc",
     "transform_animation_curve_adapter.h",
     "transform_recorder.cc",
@@ -88,6 +90,7 @@ component("compositor") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//cc/animation",
     "//cc/paint",
     "//components/viz/host",
@@ -98,6 +101,7 @@ component("compositor") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/animation",
+    "//ui/gfx/animation/keyframe",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
@@ -116,6 +120,8 @@ component("compositor") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "test/animation_throughput_reporter_test_base.cc",
+    "test/animation_throughput_reporter_test_base.h",
     "test/direct_layer_tree_frame_sink.cc",
     "test/direct_layer_tree_frame_sink.h",
     "test/draw_waiter_for_test.cc",
@@ -146,6 +152,8 @@ static_library("test_support") {
     "test/test_suite.h",
     "test/test_utils.cc",
     "test/test_utils.h",
+    "test/throughput_report_checker.cc",
+    "test/throughput_report_checker.h",
   ]
 
   if (is_android) {
@@ -163,6 +171,7 @@ static_library("test_support") {
   public_deps = [ ":compositor" ]
   deps = [
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//cc",
     "//cc:test_support",
     "//components/viz/host",
@@ -235,6 +244,8 @@ test("compositor_unittests") {
     "layer_owner_unittest.cc",
     "layer_unittest.cc",
     "run_all_unittests.cc",
+    "throughput_tracker_unittest.cc",
+    "total_animation_throughput_reporter_unittest.cc",
     "transform_animation_curve_adapter_unittest.cc",
   ]
 
@@ -245,6 +256,7 @@ test("compositor_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//cc",
     "//cc:test_support",
     "//components/viz/common",

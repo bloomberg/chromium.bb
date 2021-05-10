@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
-#include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
@@ -73,7 +72,6 @@ constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"installed_webapp_provider",
      content_settings::SETTING_SOURCE_INSTALLED_WEBAPP},
     {"notification_android", content_settings::SETTING_SOURCE_USER},
-    {"ephemeral", content_settings::SETTING_SOURCE_USER},
     {"one_time", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
     {"default", content_settings::SETTING_SOURCE_USER},
@@ -263,15 +261,6 @@ HostContentSettingsMap::HostContentSettingsMap(
   user_modifiable_providers_.push_back(pref_provider_);
   pref_provider_->AddObserver(this);
 
-  auto ephemeral_provider_ptr =
-      std::make_unique<content_settings::EphemeralProvider>(
-          store_last_modified_);
-  auto* ephemeral_provider = ephemeral_provider_ptr.get();
-  content_settings_providers_[EPHEMERAL_PROVIDER] =
-      std::move(ephemeral_provider_ptr);
-  user_modifiable_providers_.push_back(ephemeral_provider);
-  ephemeral_provider->AddObserver(this);
-
   auto default_provider = std::make_unique<content_settings::DefaultProvider>(
       prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
@@ -417,27 +406,6 @@ void HostContentSettingsMap::GetSettingsForOneType(
     }
     AddSettingsForOneType(provider_pair.second.get(), provider_pair.first,
                           content_type, settings, false, session_model);
-  }
-}
-
-void HostContentSettingsMap::GetDiscardedSettingsForOneType(
-    ContentSettingsType content_type,
-    ContentSettingsForOneType* settings) const {
-  DCHECK(settings);
-  UsedContentSettingsProviders();
-
-  for (const auto& provider_pair : content_settings_providers_) {
-    std::unique_ptr<content_settings::RuleIterator> discarded_rule_iterator(
-        provider_pair.second->GetDiscardedRuleIterator(content_type,
-                                                       is_off_the_record_));
-    while (discarded_rule_iterator->HasNext()) {
-      content_settings::Rule discarded_rule = discarded_rule_iterator->Next();
-      settings->emplace_back(
-          discarded_rule.primary_pattern, discarded_rule.secondary_pattern,
-          std::move(discarded_rule.value),
-          kProviderNamesSourceMap[provider_pair.first].provider_name,
-          is_off_the_record_, discarded_rule.expiration);
-    }
   }
 }
 

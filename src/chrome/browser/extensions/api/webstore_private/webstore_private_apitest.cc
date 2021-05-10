@@ -12,12 +12,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,10 +48,8 @@
 // flag to #if defined(OS_CHROMEOS)
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
+#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
@@ -60,8 +59,8 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "extensions/common/extension_builder.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -128,20 +127,20 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 }  // namespace
 
 // A base class for tests below.
-class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
+class ExtensionWebstorePrivateApiTest : public MixinBasedExtensionApiTest {
  public:
   ExtensionWebstorePrivateApiTest() {}
   ~ExtensionWebstorePrivateApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    MixinBasedExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryURL,
         "http://www.example.com/extensions/api_test");
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    MixinBasedExtensionApiTest::SetUpOnMainThread();
 
     // Start up the test server and get us ready for calling the install
     // API functions.
@@ -365,11 +364,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
 static constexpr char kTestChildEmail[] = "test_child_user@google.com";
 static constexpr char kTestChildGaiaId[] = "8u8tuw09sufncmnaos";
 
+static constexpr char kTestAppId[] = "iladmdjkfniedhfhcfoefgojhgaiaccc";
+static constexpr char kTestAppVersion[] = "0.1";
+
+// Test fixture for various cases of installation for child accounts.
 class ExtensionWebstorePrivateApiTestChild
-    : public ExtensionWebstorePrivateApiTest {
+    : public ExtensionWebstorePrivateApiTest,
+      public TestParentPermissionDialogViewObserver {
  public:
+  // The next dialog action to take.
+  enum class NextDialogAction {
+    kCancel,
+    kAccept,
+  };
+
   ExtensionWebstorePrivateApiTestChild()
-      : embedded_test_server_(std::make_unique<net::EmbeddedTestServer>()),
+      : TestParentPermissionDialogViewObserver(this),
+        embedded_test_server_(std::make_unique<net::EmbeddedTestServer>()),
         logged_in_user_mixin_(
             &mixin_host_,
             chromeos::LoggedInUserMixin::LogInType::kChild,
@@ -381,41 +392,13 @@ class ExtensionWebstorePrivateApiTestChild
     set_chromeos_user_ = false;
   }
 
-  void SetUp() override {
-    mixin_host_.SetUp();
-    ExtensionWebstorePrivateApiTest::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    mixin_host_.SetUpCommandLine(command_line);
     ExtensionWebstorePrivateApiTest::SetUpCommandLine(command_line);
     // Shortens the merge session timeout from 20 to 1 seconds to speed up the
     // test by about 19 seconds.
     // TODO (crbug.com/995575): figure out why this switch speeds up the test,
     // and fix the test setup so this is not required.
     command_line->AppendSwitch(switches::kShortMergeSessionTimeoutForTest);
-  }
-
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    mixin_host_.SetUpDefaultCommandLine(command_line);
-    ExtensionWebstorePrivateApiTest::SetUpDefaultCommandLine(command_line);
-  }
-
-  bool SetUpUserDataDirectory() override {
-    return mixin_host_.SetUpUserDataDirectory() &&
-           ExtensionWebstorePrivateApiTest::SetUpUserDataDirectory();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    mixin_host_.SetUpInProcessBrowserTestFixture();
-    ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override {
-    mixin_host_.CreatedBrowserMainParts(browser_main_parts);
-    ExtensionWebstorePrivateApiTest::CreatedBrowserMainParts(
-        browser_main_parts);
   }
 
   void InitializeFamilyData() {
@@ -433,7 +416,6 @@ class ExtensionWebstorePrivateApiTestChild
   }
 
   void SetUpOnMainThread() override {
-    mixin_host_.SetUpOnMainThread();
     logged_in_user_mixin_.LogInUser(true /* issue_any_scope_token */);
     ExtensionWebstorePrivateApiTest::SetUpOnMainThread();
 
@@ -442,21 +424,6 @@ class ExtensionWebstorePrivateApiTestChild
         SupervisedUserServiceFactory::GetForProfile(profile());
     service->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
         true);
-  }
-
-  void TearDownOnMainThread() override {
-    mixin_host_.TearDownOnMainThread();
-    ExtensionWebstorePrivateApiTest::TearDownOnMainThread();
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    mixin_host_.TearDownInProcessBrowserTestFixture();
-    ExtensionWebstorePrivateApiTest::TearDownInProcessBrowserTestFixture();
-  }
-
-  void TearDown() override {
-    mixin_host_.TearDown();
-    ExtensionWebstorePrivateApiTest::TearDown();
   }
 
   chromeos::LoggedInUserMixin* GetLoggedInUserMixin() {
@@ -469,70 +436,6 @@ class ExtensionWebstorePrivateApiTestChild
         ->GetFakeGaiaMixin()
         ->fake_gaia()
         ->SetNextReAuthStatus(next_status);
-  }
-
- protected:
-  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
-
- private:
-  // Replicate what MixinBasedInProcessBrowserTest does since inheriting from
-  // that class is inconvenient here.
-  InProcessBrowserTestMixinHost mixin_host_;
-  // Create another embedded test server to avoid starting the same one twice.
-  std::unique_ptr<net::EmbeddedTestServer> embedded_test_server_;
-  chromeos::LoggedInUserMixin logged_in_user_mixin_;
-};
-
-class ExtensionWebstorePrivateApiTestChildInstallDisabled
-    : public ExtensionWebstorePrivateApiTestChild {
- public:
-  ExtensionWebstorePrivateApiTestChildInstallDisabled() {
-    feature_list_.InitWithFeatures(
-        {}, {supervised_users::kSupervisedUserInitiatedExtensionInstall});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests that extension installation is blocked for child accounts when
-// the feature flag is disabled.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallDisabled,
-                       InstallBlocked) {
-  base::HistogramTester histogram_tester;
-  base::UserActionTester user_action_tester;
-  ASSERT_TRUE(RunInstallTest("install_blocked_child.html", "app.crx"));
-  histogram_tester.ExpectUniqueSample(
-      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
-      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
-      1);
-  histogram_tester.ExpectTotalCount(
-      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
-  EXPECT_EQ(
-      1,
-      user_action_tester.GetActionCount(
-          SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName));
-}
-
-static constexpr char kTestAppId[] = "iladmdjkfniedhfhcfoefgojhgaiaccc";
-static constexpr char kTestAppVersion[] = "0.1";
-
-// Test fixture for various cases of installation for child accounts
-// when the feature flag is enabled.
-class ExtensionWebstorePrivateApiTestChildInstallEnabled
-    : public ExtensionWebstorePrivateApiTestChild,
-      public TestParentPermissionDialogViewObserver {
- public:
-  // The next dialog action to take.
-  enum class NextDialogAction {
-    kCancel,
-    kAccept,
-  };
-
-  ExtensionWebstorePrivateApiTestChildInstallEnabled()
-      : TestParentPermissionDialogViewObserver(this) {
-    feature_list_.InitWithFeatures(
-        {supervised_users::kSupervisedUserInitiatedExtensionInstall}, {});
   }
 
   // TestParentPermissionDialogViewObserver override:
@@ -557,13 +460,18 @@ class ExtensionWebstorePrivateApiTestChildInstallEnabled
     next_dialog_action_ = action;
   }
 
+ protected:
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
+
  private:
-  base::test::ScopedFeatureList feature_list_;
+  // Create another embedded test server to avoid starting the same one twice.
+  std::unique_ptr<net::EmbeddedTestServer> embedded_test_server_;
+  chromeos::LoggedInUserMixin logged_in_user_mixin_;
   base::Optional<NextDialogAction> next_dialog_action_;
 };
 
 // Tests install for a child when parent permission is granted.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild,
                        ParentPermissionGranted) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
@@ -589,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
 
 // Tests no install occurs for a child when the parent permission
 // dialog is canceled.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild,
                        ParentPermissionCanceled) {
   WebstoreInstallListener listener;
   set_next_dialog_action(NextDialogAction::kCancel);
@@ -611,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
 }
 
 // Tests that no parent permission is required for a child to install a theme.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild,
                        NoParentPermissionRequiredForTheme) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
@@ -624,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
 // Tests that even if the kSupervisedUserInitiatedExtensionInstall feature flag
 // is enabled, supervised user extension installs are blocked if the
 // "Permissions for sites, apps and extensions" toggle is off.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild,
                        InstallBlockedWhenPermissionsToggleOff) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;

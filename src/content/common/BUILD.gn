@@ -22,10 +22,15 @@ if (is_mac) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
 
+  _mbi_mode_per_render_process_host = mbi_mode == "per_render_process_host"
+  _mbi_mode_per_site_instance = mbi_mode == "per_site_instance"
+
   flags = [
     "USE_EXTERNAL_POPUP_MENU=$use_external_popup_menu",
     "ALLOW_CRITICAL_MEMORY_PRESSURE_HANDLING_IN_FOREGROUND=$allow_critical_memory_pressure_handling_in_foreground",
     "ENABLE_SCREEN_CAPTURE=$enable_screen_capture",
+    "MBI_MODE_PER_RENDER_PROCESS_HOST=$_mbi_mode_per_render_process_host",
+    "MBI_MODE_PER_SITE_INSTANCE=$_mbi_mode_per_site_instance",
   ]
 }
 
@@ -69,7 +74,6 @@ source_set("common") {
     "cursors/webcursor.cc",
     "cursors/webcursor.h",
     "cursors/webcursor_aura.cc",
-    "cursors/webcursor_aurawin.cc",
     "cursors/webcursor_ozone.cc",
     "fetch/fetch_api_request_proto.cc",
     "fetch/fetch_api_request_proto.h",
@@ -78,11 +82,7 @@ source_set("common") {
     "font_list.cc",
     "font_list.h",
     "font_list_fontconfig.cc",
-    "frame_delete_intention.h",
     "frame_messages.h",
-    "frame_messages_forward.h",
-    "frame_replication_state.cc",
-    "frame_replication_state.h",
     "gin_java_bridge_messages.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",
@@ -94,6 +94,7 @@ source_set("common") {
     "input/input_event_ack_state.cc",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
+    "input/input_injector_mojom_traits.cc",
     "input/synthetic_gesture_params.cc",
     "input/synthetic_gesture_params.h",
     "input/synthetic_pinch_gesture_params.cc",
@@ -112,9 +113,6 @@ source_set("common") {
     "input/touch_event_stream_validator.h",
     "input/web_touch_event_traits.cc",
     "input/web_touch_event_traits.h",
-    "input_messages.h",
-    "inter_process_time_ticks_converter.cc",
-    "inter_process_time_ticks_converter.h",
     "media/cdm_info.cc",
     "media/media_player_delegate_messages.h",
     "mojo_core_library_support.cc",
@@ -132,9 +130,8 @@ source_set("common") {
     "pepper_renderer_instance_data.cc",
     "pepper_renderer_instance_data.h",
     "process_type.cc",
-    "resource_messages.h",
-    "service_manager/service_manager_connection_impl.cc",
-    "service_manager/service_manager_connection_impl.h",
+    "process_visibility_tracker.cc",
+    "process_visibility_tracker.h",
     "service_worker/service_worker_loader_helpers.cc",
     "service_worker/service_worker_loader_helpers.h",
     "service_worker/service_worker_utils.cc",
@@ -149,7 +146,6 @@ source_set("common") {
     "thread_pool_util.cc",
     "thread_pool_util.h",
     "trace_utils.h",
-    "unfreezable_frame_messages.h",
     "url_schemes.cc",
     "url_schemes.h",
     "user_agent.cc",
@@ -177,7 +173,6 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/accessibility/mojom",
     "//ui/base/cursor:cursor_base",
-    "//ui/base/cursor/mojom:cursor_type",
     "//ui/events/ipc",
   ]
   deps = [
@@ -195,7 +190,6 @@ source_set("common") {
     "//content/app/resources",
     "//content/common/fetch:fetch_api_request_proto",
     "//content/public/common:interfaces",
-    "//content/public/common:service_names",
     "//content/public/common/zygote:buildflags",
     "//device/base/synchronization",
     "//device/bluetooth",
@@ -233,6 +227,7 @@ source_set("common") {
     "//third_party/boringssl",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events/blink",
@@ -384,10 +379,6 @@ source_set("common") {
     ]
   }
 
-  if (!is_win || !use_aura) {
-    sources -= [ "cursors/webcursor_aurawin.cc" ]
-  }
-
   if (is_mac) {
     deps += [ "//media/gpu" ]
   }
@@ -441,13 +432,13 @@ mojom("mojo_bindings") {
     "agent_scheduling_group.mojom",
     "associated_interfaces.mojom",
     "child_process.mojom",
-    "document_scoped_interface_bundle.mojom",
     "dom_automation_controller.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_messages.mojom",
     "frame_proxy.mojom",
+    "frame_replication_state.mojom",
     "histogram_fetcher.mojom",
     "input/input_injector.mojom",
     "media/media_log_records.mojom",
@@ -473,20 +464,15 @@ mojom("mojo_bindings") {
   if (use_clang_profiling_inside_sandbox) {
     enabled_features += [ "clang_profiling_inside_sandbox" ]
   }
+  if (is_posix && !is_android) {
+    enabled_features += [ "is_non_android_posix" ]
+  }
+
+  if (enable_plugins) {
+    sources += [ "pepper_plugin.mojom" ]
+  }
 
   cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "content.mojom.DidCommitProvisionalLoadParams"
-          cpp = "::std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params>"
-          move_only = true
-          nullable_is_same_type = true
-        },
-      ]
-      traits_headers = [ "//content/common/frame_messages_forward.h" ]
-      traits_private_headers = [ "//content/common/frame_messages.h" ]
-    },
     {
       types = [
         {
@@ -494,12 +480,12 @@ mojom("mojo_bindings") {
           cpp = "::content::ContentSecurityPolicy"
         },
         {
-          mojom = "content.mojom.FrameReplicationState"
-          cpp = "::content::FrameReplicationState"
+          mojom = "content.mojom.NavigationDownloadPolicy"
+          cpp = "::blink::NavigationDownloadPolicy"
         },
         {
-          mojom = "content.mojom.NavigationDownloadPolicy"
-          cpp = "::content::NavigationDownloadPolicy"
+          mojom = "content.mojom.NavigationGesture"
+          cpp = "::content::NavigationGesture"
         },
         {
           mojom = "content.mojom.NetworkConnectionType"
@@ -507,7 +493,7 @@ mojom("mojo_bindings") {
         },
         {
           mojom = "content.mojom.Impression"
-          cpp = "::content::Impression"
+          cpp = "::blink::Impression"
         },
         {
           mojom = "content.mojom.ScrollGranularity"
@@ -538,16 +524,8 @@ mojom("mojo_bindings") {
           cpp = "::ui::NativeTheme::SystemThemeColor"
         },
         {
-          mojom = "content.mojom.TriggeringEventInfo"
-          cpp = "::blink::TriggeringEventInfo"
-        },
-        {
           mojom = "content.mojom.VisualProperties"
           cpp = "::blink::VisualProperties"
-        },
-        {
-          mojom = "content.mojom.WebCursor"
-          cpp = "::content::WebCursor"
         },
         {
           mojom = "content.mojom.WebPopupType"
@@ -557,8 +535,7 @@ mojom("mojo_bindings") {
 
       traits_headers = [
         "//cc/input/touch_action.h",
-        "//content/common/cursors/webcursor.h",
-        "//content/common/frame_replication_state.h",
+        "//content/common/input/input_injector_mojom_traits.h",
         "//content/common/input/synthetic_pinch_gesture_params.h",
         "//content/common/input/synthetic_pointer_action_list_params.h",
         "//content/common/input/synthetic_smooth_drag_gesture_params.h",
@@ -572,7 +549,6 @@ mojom("mojo_bindings") {
         "//third_party/blink/public/common/input/web_mouse_wheel_event.h",
         "//third_party/blink/public/common/input/web_pointer_properties.h",
         "//third_party/blink/public/common/input/web_touch_point.h",
-        "//third_party/blink/public/common/navigation/triggering_event_info.h",
         "//ui/events/blink/did_overscroll_params.h",
         "//ui/events/blink/web_input_event_traits.h",
         "//ui/latency/ipc/latency_info_param_traits.h",
@@ -581,7 +557,6 @@ mojom("mojo_bindings") {
 
       traits_private_headers = [
         "//content/common/frame_messages.h",
-        "//content/common/input_messages.h",
         "//content/public/common/common_param_traits.h",
         "//services/network/public/cpp/p2p_param_traits.h",
       ]
@@ -601,7 +576,6 @@ mojom("mojo_bindings") {
         "//services/network/public/cpp",
         "//third_party/blink/public/common",
         "//ui/accessibility",
-        "//ui/base/cursor:cursor_base",
         "//ui/base/ime:text_input_types",
         "//ui/events/blink",
         "//ui/gfx/ipc",
@@ -615,15 +589,11 @@ mojom("mojo_bindings") {
       types = [
         {
           mojom = "content.mojom.Impression"
-          cpp = "::content::Impression"
-        },
-        {
-          mojom = "content.mojom.MixedContentContextType"
-          cpp = "::blink::WebMixedContentContextType"
+          cpp = "::blink::Impression"
         },
         {
           mojom = "content.mojom.NavigationDownloadPolicy"
-          cpp = "::content::NavigationDownloadPolicy"
+          cpp = "::blink::NavigationDownloadPolicy"
         },
         {
           mojom = "content.mojom.PageState"
@@ -641,16 +611,12 @@ mojom("mojo_bindings") {
       traits_headers = [
         "//content/common/content_param_traits.h",
         "//content/common/navigation_params.h",
-        "//content/public/common/impression.h",
-        "//content/public/common/navigation_policy.h",
+        "//third_party/blink/public/common/navigation/impression.h",
+        "//third_party/blink/public/common/navigation/navigation_policy.h",
         "//third_party/blink/public/common/page_state/page_state.h",
-        "//third_party/blink/public/platform/web_mixed_content_context_type.h",
         "//ui/base/page_transition_types.h",
       ]
-      traits_private_headers = [
-        "//content/common/frame_messages.h",
-        "//content/common/resource_messages.h",
-      ]
+      traits_private_headers = [ "//content/common/frame_messages.h" ]
     },
   ]
 

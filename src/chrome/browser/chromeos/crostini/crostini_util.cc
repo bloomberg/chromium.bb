@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -16,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -27,7 +29,6 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
@@ -40,10 +41,10 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -106,11 +107,6 @@ void OnApplicationLaunched(const std::string& app_id,
                            const crostini::CrostiniResult failure_result,
                            bool success,
                            const std::string& failure_reason) {
-  // Remove the spinner. Controller doesn't exist in tests.
-  // TODO(timloh): Consider also displaying a notification for failure.
-  if (auto* chrome_controller = ChromeLauncherController::instance()) {
-    chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
-  }
   RecordAppLaunchResultHistogram(success ? crostini::CrostiniResult::SUCCESS
                                          : failure_result);
   std::move(callback).Run(success, failure_reason);
@@ -121,6 +117,11 @@ void OnLaunchFailed(
     crostini::CrostiniSuccessCallback callback,
     const std::string& failure_reason,
     crostini::CrostiniResult result = crostini::CrostiniResult::UNKNOWN_ERROR) {
+  // Remove the spinner and icon. Controller doesn't exist in tests.
+  // TODO(timloh): Consider also displaying a notification for failure.
+  if (auto* chrome_controller = ChromeLauncherController::instance()) {
+    chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+  }
   OnApplicationLaunched(app_id, std::move(callback), result, false,
                         failure_reason);
 }
@@ -144,10 +145,7 @@ void OnSharePathForLaunchApplication(
   if (app_id == kCrostiniTerminalSystemAppId) {
     // Use first file as 'cwd'.
     std::string cwd = !args.empty() ? args[0] : "";
-    if (!LaunchTerminal(profile, display_id, container_id, cwd)) {
-      return OnLaunchFailed(app_id, std::move(callback),
-                            "failed to launch terminal");
-    }
+    LaunchTerminal(profile, display_id, container_id, cwd);
     return OnApplicationLaunched(app_id, std::move(callback),
                                  crostini::CrostiniResult::SUCCESS, true, "");
   }
@@ -171,8 +169,15 @@ void LaunchApplication(
   AppServiceAppWindowLauncherController* app_service_controller =
       chrome_launcher_controller->app_service_app_window_controller();
   DCHECK(app_service_controller);
-  app_service_controller->app_service_crostini_tracker()->OnAppLaunchRequested(
-      app_id, display_id);
+
+  AppServiceAppWindowCrostiniTracker* crostini_tracker =
+      app_service_controller->app_service_crostini_tracker();
+  DCHECK(crostini_tracker);
+
+  crostini_tracker->OnAppLaunchRequested(app_id, display_id);
+
+  auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
+  const auto vm_name = registration.VmName();
 
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.
@@ -193,7 +198,8 @@ void LaunchApplication(
           "Cannot share file with crostini: " + url.DebugString());
     }
     if (url.mount_filesystem_id() !=
-        file_manager::util::GetCrostiniMountPointName(profile)) {
+            file_manager::util::GetCrostiniMountPointName(profile) &&
+        !share_path->IsPathShared(vm_name, url.path())) {
       paths_to_share.push_back(url.path());
     }
     launch_args.push_back(path.value());
@@ -204,8 +210,8 @@ void LaunchApplication(
                                     display_id, std::move(launch_args),
                                     std::move(callback), true, "");
   } else {
-    guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
-        registration.VmName(), std::move(paths_to_share), /*persist=*/false,
+    share_path->SharePaths(
+        vm_name, std::move(paths_to_share), /*persist=*/false,
         base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
                        std::move(registration), display_id,
                        std::move(launch_args), std::move(callback)));
@@ -331,10 +337,7 @@ void LaunchCrostiniAppImpl(
 
     if (!requires_share) {
       RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
-      if (!LaunchTerminal(profile, display_id, container_id, cwd.value())) {
-        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
-        return std::move(callback).Run(false, "failed to launch terminal");
-      }
+      LaunchTerminal(profile, display_id, container_id, cwd.value());
       RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
       return std::move(callback).Run(true, "");
     }
@@ -384,7 +387,9 @@ void LaunchCrostiniApp(Profile* profile,
                        const std::vector<LaunchArg>& args,
                        CrostiniSuccessCallback callback) {
   // Policies can change under us, and crostini may now be forbidden.
-  if (!CrostiniFeatures::Get()->IsUIAllowed(profile)) {
+  std::string reason;
+  if (!CrostiniFeatures::Get()->IsAllowedNow(profile, &reason)) {
+    LOG(ERROR) << "Crostini not allowed: " << reason;
     return std::move(callback).Run(false, "Crostini UI not allowed");
   }
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
@@ -570,4 +575,15 @@ const ContainerId& DefaultContainerId() {
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
   return *container_id;
 }
+
+bool IsCrostiniWindow(const aura::Window* window) {
+  // TODO(crbug/1158644): Non-Crostini apps (borealis, ...) have also been
+  // identifying as Crostini. For now they're less common, and as they become
+  // more productionised they get their own app type (e.g. lacros), but at some
+  // point we'll want to untangle these different types to e.g. avoid double
+  // counting in usage metrics.
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::CROSTINI_APP);
+}
+
 }  // namespace crostini

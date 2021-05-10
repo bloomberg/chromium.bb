@@ -21,11 +21,15 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -44,6 +48,7 @@
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/half_float.h"
 #include "url/origin.h"
@@ -109,9 +114,13 @@ class MockPolicyController : public DataTransferPolicyController {
   MockPolicyController();
   ~MockPolicyController() override;
 
-  MOCK_CONST_METHOD2(IsDataReadAllowed,
-                     bool(const DataTransferEndpoint* const data_src,
-                          const DataTransferEndpoint* const data_dst));
+  MOCK_METHOD2(IsClipboardReadAllowed,
+               bool(const DataTransferEndpoint* const data_src,
+                    const DataTransferEndpoint* const data_dst));
+  MOCK_METHOD3(IsDragDropAllowed,
+               bool(const DataTransferEndpoint* const data_src,
+                    const DataTransferEndpoint* const data_dst,
+                    const bool is_drop));
 };
 
 MockPolicyController::MockPolicyController() = default;
@@ -157,8 +166,9 @@ TYPED_TEST(ClipboardTest, TextTest) {
 
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
-#if defined(USE_OZONE) && !defined(OS_CHROMEOS) && !defined(OS_FUCHSIA) && \
-    !BUILDFLAG(IS_CHROMECAST) && !BUILDFLAG(IS_LACROS)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !defined(OS_FUCHSIA) && !BUILDFLAG(IS_CHROMECAST) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(https://crbug.com/1096425): remove this if condition. It seems like
   // we have this condition working for Ozone/Linux, but not for X11/Linux.
   if (features::IsUsingOzonePlatform()) {
@@ -260,7 +270,9 @@ TYPED_TEST(ClipboardTest, RTFTest) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 TYPED_TEST(ClipboardTest, MultipleBufferTest) {
   if (!ui::Clipboard::IsSupportedClipboardBuffer(
           ui::ClipboardBuffer::kSelection)) {
@@ -403,6 +415,41 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
 }
 #endif  // !defined(OS_POSIX) || defined(OS_APPLE)
 
+#if !defined(OS_ANDROID)
+// Filenames is not implemented in ClipboardAndroid.
+TYPED_TEST(ClipboardTest, FilenamesTest) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures({features::kClipboardFilenames}, {});
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file));
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteFilenames(
+        ui::FileInfosToURIList({ui::FileInfo(file, base::FilePath())}));
+  }
+
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetFilenamesType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
+
+  std::vector<base::string16> types;
+  this->clipboard().ReadAvailableTypes(ClipboardBuffer::kCopyPaste,
+                                       /* data_dst = */ nullptr, &types);
+  EXPECT_EQ(1u, types.size());
+  EXPECT_EQ("text/uri-list", base::UTF16ToUTF8(types[0]));
+
+  std::vector<ui::FileInfo> filenames;
+  this->clipboard().ReadFilenames(ClipboardBuffer::kCopyPaste,
+                                  /* data_dst = */ nullptr, &filenames);
+  EXPECT_EQ(1u, filenames.size());
+  EXPECT_EQ(file, filenames[0].path);
+}
+#endif  // !defined(OS_ANDROID)
+
 TYPED_TEST(ClipboardTest, MultiFormatTest) {
   base::string16 text(ASCIIToUTF16("Hi!")), text_result;
   base::string16 markup(ASCIIToUTF16("<strong>Hi!</string>")), markup_result;
@@ -483,7 +530,7 @@ TYPED_TEST(ClipboardTest, URLTest) {
 // TODO(tonikitoo, msisov): enable back for ClipboardOzone implements
 // selection support. https://crbug.com/911992
 #if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID) && \
-    !defined(OS_CHROMEOS) && !defined(USE_OZONE)
+    !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(USE_OZONE)
   ascii_text.clear();
   this->clipboard().ReadAsciiText(ClipboardBuffer::kSelection,
                                   /* data_dst = */ nullptr, &ascii_text);
@@ -683,7 +730,7 @@ TYPED_TEST(ClipboardTest, DataTest) {
 // because ClipboardInternal only supports one raw type.
 #if (!defined(USE_AURA) || defined(OS_WIN) || defined(USE_OZONE) || \
      defined(USE_X11)) &&                                           \
-    !defined(OS_CHROMEOS)
+    !BUILDFLAG(IS_CHROMEOS_ASH)
 TYPED_TEST(ClipboardTest, MultipleDataTest) {
   const std::string kFormatString1 = "chromium/x-test-format1";
   const ClipboardFormatType kFormat1 =
@@ -745,8 +792,10 @@ TYPED_TEST(ClipboardTest, ReadAvailablePlatformSpecificFormatNamesTest) {
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("public.utf8-plain-text")));
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("NSStringPboardType")));
   EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(2));
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMECAST) && !BUILDFLAG(IS_LACROS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#elif defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMECAST) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("TEXT")));
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("STRING")));
@@ -1021,7 +1070,7 @@ TYPED_TEST(ClipboardTest, WriteImageEmptyParams) {
 
 // Policy controller is only intended to be used in Chrome OS, so the following
 // policy related tests are only run on Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Test that copy/paste would work normally if the policy controller didn't
 // restrict the clipboard data.
 TYPED_TEST(ClipboardTest, PolicyAllowDataRead) {
@@ -1033,7 +1082,7 @@ TYPED_TEST(ClipboardTest, PolicyAllowDataRead) {
         std::make_unique<DataTransferEndpoint>(url::Origin()));
     writer.WriteText(kTestText);
   }
-  EXPECT_CALL(*policy_controller, IsDataReadAllowed)
+  EXPECT_CALL(*policy_controller, IsClipboardReadAllowed)
       .WillRepeatedly(testing::Return(true));
   base::string16 read_result;
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
@@ -1053,7 +1102,7 @@ TYPED_TEST(ClipboardTest, PolicyDisallow_ReadText) {
         std::make_unique<DataTransferEndpoint>(url::Origin()));
     writer.WriteText(kTestText);
   }
-  EXPECT_CALL(*policy_controller, IsDataReadAllowed)
+  EXPECT_CALL(*policy_controller, IsClipboardReadAllowed)
       .WillRepeatedly(testing::Return(false));
   base::string16 read_result;
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
@@ -1064,14 +1113,14 @@ TYPED_TEST(ClipboardTest, PolicyDisallow_ReadText) {
 
 TYPED_TEST(ClipboardTest, PolicyDisallow_ReadImage) {
   auto policy_controller = std::make_unique<MockPolicyController>();
-  EXPECT_CALL(*policy_controller, IsDataReadAllowed)
+  EXPECT_CALL(*policy_controller, IsClipboardReadAllowed)
       .WillRepeatedly(testing::Return(false));
   const SkBitmap& image = clipboard_test_util::ReadImage(&this->clipboard());
   ::testing::Mock::VerifyAndClearExpectations(policy_controller.get());
   EXPECT_EQ(true, image.empty());
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace ui
 

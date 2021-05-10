@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
@@ -213,7 +213,8 @@ void ServiceWorkerPaymentApp::OnCanMakePaymentEventResponded(
       base::BindOnce(std::move(callback), this, can_make_payment_result_));
 }
 
-void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
+void ServiceWorkerPaymentApp::InvokePaymentApp(
+    base::WeakPtr<Delegate> delegate) {
   delegate_ = delegate;
   auto* payment_app_provider = GetPaymentAppProvider();
   if (!payment_app_provider)

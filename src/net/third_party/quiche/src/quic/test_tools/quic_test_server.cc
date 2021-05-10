@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_server.h"
+#include "quic/test_tools/quic_test_server.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/tools/quic_simple_crypto_server_stream_helper.h"
+#include "quic/tools/quic_simple_dispatcher.h"
+#include "quic/tools/quic_simple_server_session.h"
 
 namespace quic {
 
@@ -127,23 +127,23 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
 
   void SetSessionFactory(QuicTestServer::SessionFactory* factory) {
     QuicWriterMutexLock lock(&factory_lock_);
-    DCHECK(session_factory_ == nullptr);
-    DCHECK(stream_factory_ == nullptr);
-    DCHECK(crypto_stream_factory_ == nullptr);
+    QUICHE_DCHECK(session_factory_ == nullptr);
+    QUICHE_DCHECK(stream_factory_ == nullptr);
+    QUICHE_DCHECK(crypto_stream_factory_ == nullptr);
     session_factory_ = factory;
   }
 
   void SetStreamFactory(QuicTestServer::StreamFactory* factory) {
     QuicWriterMutexLock lock(&factory_lock_);
-    DCHECK(session_factory_ == nullptr);
-    DCHECK(stream_factory_ == nullptr);
+    QUICHE_DCHECK(session_factory_ == nullptr);
+    QUICHE_DCHECK(stream_factory_ == nullptr);
     stream_factory_ = factory;
   }
 
   void SetCryptoStreamFactory(QuicTestServer::CryptoStreamFactory* factory) {
     QuicWriterMutexLock lock(&factory_lock_);
-    DCHECK(session_factory_ == nullptr);
-    DCHECK(crypto_stream_factory_ == nullptr);
+    QUICHE_DCHECK(session_factory_ == nullptr);
+    QUICHE_DCHECK(crypto_stream_factory_ == nullptr);
     crypto_stream_factory_ = factory;
   }
 
@@ -195,7 +195,7 @@ QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
 }
 
 void QuicTestServer::SetSessionFactory(SessionFactory* factory) {
-  DCHECK(dispatcher());
+  QUICHE_DCHECK(dispatcher());
   static_cast<QuicTestDispatcher*>(dispatcher())->SetSessionFactory(factory);
 }
 
@@ -229,7 +229,7 @@ ImmediateGoAwaySession::ImmediateGoAwaySession(
 
 void ImmediateGoAwaySession::OnStreamFrame(const QuicStreamFrame& frame) {
   if (VersionUsesHttp3(transport_version())) {
-    SendHttp3GoAway();
+    SendHttp3GoAway(QUIC_PEER_GOING_AWAY, "");
   } else {
     SendGoAway(QUIC_PEER_GOING_AWAY, "");
   }
@@ -253,7 +253,7 @@ void ImmediateGoAwaySession::OnNewEncryptionKeyAvailable(
                                                        std::move(encrypter));
   if (VersionUsesHttp3(transport_version())) {
     if (IsEncryptionEstablished() && !goaway_sent()) {
-      SendHttp3GoAway();
+      SendHttp3GoAway(QUIC_PEER_GOING_AWAY, "");
     }
   }
 }

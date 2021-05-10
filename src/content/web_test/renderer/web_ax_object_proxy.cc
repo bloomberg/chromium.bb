@@ -13,12 +13,12 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "gin/handle.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -99,8 +99,8 @@ gfx::RectF BoundsForObject(const blink::WebAXObject& object) {
   return computed_bounds;
 }
 
-blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
-                                  int character_index) {
+gfx::Rect BoundsForCharacter(const blink::WebAXObject& object,
+                             int character_index) {
   DCHECK_EQ(object.Role(), ax::mojom::Role::kStaticText);
   int end = 0;
   for (unsigned i = 0; i < object.ChildCount(); i++) {
@@ -118,7 +118,7 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     blink::WebVector<int> character_offsets;
     inline_text_box.CharacterOffsets(character_offsets);
     if (character_offsets.size() != name.length())
-      return blink::WebRect();
+      return gfx::Rect();
 
     switch (inline_text_box.GetTextDirection()) {
       case ax::mojom::WritingDirection::kLtr: {
@@ -127,12 +127,11 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
               inline_text_box_rect.x() + character_offsets[local_index - 1];
           int width = character_offsets[local_index] -
                       character_offsets[local_index - 1];
-          return blink::WebRect(left, inline_text_box_rect.y(), width,
-                                inline_text_box_rect.height());
+          return gfx::Rect(left, inline_text_box_rect.y(), width,
+                           inline_text_box_rect.height());
         }
-        return blink::WebRect(inline_text_box_rect.x(),
-                              inline_text_box_rect.y(), character_offsets[0],
-                              inline_text_box_rect.height());
+        return gfx::Rect(inline_text_box_rect.x(), inline_text_box_rect.y(),
+                         character_offsets[0], inline_text_box_rect.height());
       }
       case ax::mojom::WritingDirection::kRtl: {
         int right = inline_text_box_rect.x() + inline_text_box_rect.width();
@@ -141,13 +140,12 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
           int left = right - character_offsets[local_index];
           int width = character_offsets[local_index] -
                       character_offsets[local_index - 1];
-          return blink::WebRect(left, inline_text_box_rect.y(), width,
-                                inline_text_box_rect.height());
+          return gfx::Rect(left, inline_text_box_rect.y(), width,
+                           inline_text_box_rect.height());
         }
         int left = right - character_offsets[0];
-        return blink::WebRect(left, inline_text_box_rect.y(),
-                              character_offsets[0],
-                              inline_text_box_rect.height());
+        return gfx::Rect(left, inline_text_box_rect.y(), character_offsets[0],
+                         inline_text_box_rect.height());
       }
       case ax::mojom::WritingDirection::kTtb: {
         if (local_index) {
@@ -155,12 +153,11 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
               inline_text_box_rect.y() + character_offsets[local_index - 1];
           int height = character_offsets[local_index] -
                        character_offsets[local_index - 1];
-          return blink::WebRect(inline_text_box_rect.x(), top,
-                                inline_text_box_rect.width(), height);
+          return gfx::Rect(inline_text_box_rect.x(), top,
+                           inline_text_box_rect.width(), height);
         }
-        return blink::WebRect(
-            inline_text_box_rect.x(), inline_text_box_rect.y(),
-            inline_text_box_rect.width(), character_offsets[0]);
+        return gfx::Rect(inline_text_box_rect.x(), inline_text_box_rect.y(),
+                         inline_text_box_rect.width(), character_offsets[0]);
       }
       case ax::mojom::WritingDirection::kBtt: {
         int bottom = inline_text_box_rect.y() + inline_text_box_rect.height();
@@ -169,43 +166,21 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
           int top = bottom - character_offsets[local_index];
           int height = character_offsets[local_index] -
                        character_offsets[local_index - 1];
-          return blink::WebRect(inline_text_box_rect.x(), top,
-                                inline_text_box_rect.width(), height);
+          return gfx::Rect(inline_text_box_rect.x(), top,
+                           inline_text_box_rect.width(), height);
         }
         int top = bottom - character_offsets[0];
-        return blink::WebRect(inline_text_box_rect.x(), top,
-                              inline_text_box_rect.width(),
-                              character_offsets[0]);
+        return gfx::Rect(inline_text_box_rect.x(), top,
+                         inline_text_box_rect.width(), character_offsets[0]);
       }
       default:
         NOTREACHED();
-        return blink::WebRect();
+        return gfx::Rect();
     }
   }
 
   DCHECK(false);
-  return blink::WebRect();
-}
-
-std::vector<std::string> GetMisspellings(const blink::WebAXObject& object) {
-  std::vector<std::string> misspellings;
-  std::string text(object.GetName().Utf8());
-
-  blink::WebVector<ax::mojom::MarkerType> marker_types;
-  blink::WebVector<int> marker_starts;
-  blink::WebVector<int> marker_ends;
-  object.Markers(marker_types, marker_starts, marker_ends);
-  DCHECK_EQ(marker_types.size(), marker_starts.size());
-  DCHECK_EQ(marker_starts.size(), marker_ends.size());
-
-  for (size_t i = 0; i < marker_types.size(); ++i) {
-    if (marker_types[i] == ax::mojom::MarkerType::kSpelling) {
-      misspellings.push_back(
-          text.substr(marker_starts[i], marker_ends[i] - marker_starts[i]));
-    }
-  }
-
-  return misspellings;
+  return gfx::Rect();
 }
 
 void GetBoundariesForOneWord(const blink::WebAXObject& object,
@@ -271,29 +246,6 @@ class AttributesCollector {
   std::string attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(AttributesCollector);
-};
-
-class SparseAttributeAdapter : public blink::WebAXSparseAttributeClient {
- public:
-  SparseAttributeAdapter() {}
-  ~SparseAttributeAdapter() override {}
-
-  std::map<blink::WebAXObjectAttribute, blink::WebAXObject> object_attributes;
-  std::map<blink::WebAXObjectVectorAttribute,
-           blink::WebVector<blink::WebAXObject>>
-      object_vector_attributes;
-
- private:
-  void AddObjectAttribute(blink::WebAXObjectAttribute attribute,
-                          const blink::WebAXObject& value) override {
-    object_attributes[attribute] = value;
-  }
-
-  void AddObjectVectorAttribute(
-      blink::WebAXObjectVectorAttribute attribute,
-      const blink::WebVector<blink::WebAXObject>& value) override {
-    object_vector_attributes[attribute] = value;
-  }
 };
 
 }  // namespace
@@ -1118,12 +1070,12 @@ int WebAXObjectProxy::HierarchicalLevel() {
 
 int WebAXObjectProxy::PosInSet() {
   UpdateLayout();
-  return accessibility_object_.PosInSet();
+  return GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
 }
 
 int WebAXObjectProxy::SetSize() {
   UpdateLayout();
-  return accessibility_object_.SetSize();
+  return GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
 }
 
 int WebAXObjectProxy::ClickPointX() {
@@ -1169,67 +1121,76 @@ bool WebAXObjectProxy::IsClickable() {
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaActiveDescendantElement() {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebAXObject element =
-      attribute_adapter.object_attributes
-          [blink::WebAXObjectAttribute::kAriaActiveDescendant];
-  return factory_->GetOrCreate(element);
+  int ax_id = GetAXNodeData().GetIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId);
+
+  if (!ax_id)
+    return v8::Local<v8::Object>();
+
+  blink::WebAXObject web_ax_object = blink::WebAXObject::FromWebDocumentByID(
+      accessibility_object_.GetDocument(), ax_id);
+  return factory_->GetOrCreate(web_ax_object);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
     unsigned index) {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebVector<blink::WebAXObject> elements =
-      attribute_adapter.object_vector_attributes
-          [blink::WebAXObjectVectorAttribute::kAriaControls];
-  size_t element_count = elements.size();
+  auto ax_ids = GetAXNodeData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds);
+  size_t element_count = ax_ids.size();
+
   if (index >= element_count)
     return v8::Local<v8::Object>();
 
-  return factory_->GetOrCreate(elements[index]);
+  blink::WebAXObject web_ax_object = blink::WebAXObject::FromWebDocumentByID(
+      accessibility_object_.GetDocument(), ax_ids[index]);
+
+  return factory_->GetOrCreate(web_ax_object);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaDetailsElementAtIndex(
     unsigned index) {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebVector<blink::WebAXObject> elements =
-      attribute_adapter.object_vector_attributes
-          [blink::WebAXObjectVectorAttribute::kAriaDetails];
-  size_t element_count = elements.size();
+  auto ax_ids = GetAXNodeData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kDetailsIds);
+  size_t element_count = ax_ids.size();
+
   if (index >= element_count)
     return v8::Local<v8::Object>();
 
-  return factory_->GetOrCreate(elements[index]);
+  blink::WebAXObject web_ax_object = blink::WebAXObject::FromWebDocumentByID(
+      accessibility_object_.GetDocument(), ax_ids[index]);
+
+  return factory_->GetOrCreate(web_ax_object);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaErrorMessageElement() {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebAXObject element =
-      attribute_adapter
-          .object_attributes[blink::WebAXObjectAttribute::kAriaErrorMessage];
-  return factory_->GetOrCreate(element);
+  int ax_id =
+      GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kErrormessageId);
+
+  if (!ax_id)
+    return v8::Local<v8::Object>();
+
+  blink::WebAXObject web_ax_object = blink::WebAXObject::FromWebDocumentByID(
+      accessibility_object_.GetDocument(), ax_id);
+  return factory_->GetOrCreate(web_ax_object);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
     unsigned index) {
   UpdateLayout();
-  SparseAttributeAdapter attribute_adapter;
-  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebVector<blink::WebAXObject> elements =
-      attribute_adapter.object_vector_attributes
-          [blink::WebAXObjectVectorAttribute::kAriaFlowTo];
-  size_t element_count = elements.size();
+  auto ax_ids = GetAXNodeData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kFlowtoIds);
+  size_t element_count = ax_ids.size();
+
   if (index >= element_count)
     return v8::Local<v8::Object>();
 
-  return factory_->GetOrCreate(elements[index]);
+  blink::WebAXObject web_ax_object = blink::WebAXObject::FromWebDocumentByID(
+      accessibility_object_.GetDocument(), ax_ids[index]);
+
+  return factory_->GetOrCreate(web_ax_object);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaOwnsElementAtIndex(unsigned index) {
@@ -1269,22 +1230,30 @@ std::string WebAXObjectProxy::BoundsForRange(int start, int end) {
 
   // Get the bounds for each character and union them into one large rectangle.
   // This is just for testing so it doesn't need to be efficient.
-  blink::WebRect bounds = BoundsForCharacter(accessibility_object_, start);
+  gfx::Rect bounds = BoundsForCharacter(accessibility_object_, start);
   for (int i = 1; i < len; i++) {
-    blink::WebRect next = BoundsForCharacter(accessibility_object_, start + i);
-    int right = std::max(bounds.x + bounds.width, next.x + next.width);
-    int bottom = std::max(bounds.y + bounds.height, next.y + next.height);
-    bounds.x = std::min(bounds.x, next.x);
-    bounds.y = std::min(bounds.y, next.y);
-    bounds.width = right - bounds.x;
-    bounds.height = bottom - bounds.y;
+    gfx::Rect next = BoundsForCharacter(accessibility_object_, start + i);
+    int right = std::max(bounds.x() + bounds.width(), next.x() + next.width());
+    int bottom =
+        std::max(bounds.y() + bounds.height(), next.y() + next.height());
+    bounds.set_x(std::min(bounds.x(), next.x()));
+    bounds.set_y(std::min(bounds.y(), next.y()));
+    bounds.set_width(right - bounds.x());
+    bounds.set_height(bottom - bounds.y());
   }
 
-  return base::StringPrintf("{x: %d, y: %d, width: %d, height: %d}", bounds.x,
-                            bounds.y, bounds.width, bounds.height);
+  return base::StringPrintf("{x: %d, y: %d, width: %d, height: %d}", bounds.x(),
+                            bounds.y(), bounds.width(), bounds.height());
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::ChildAtIndex(int index) {
+  // Scripts can sometimes provide bad input.
+  // Return undefined object in case of range error, rather than passing a bad
+  // index into the a11y core, where it would trigger a DCHECK.
+  int num_children = ChildrenCount();
+  if (index < 0 || index >= num_children)
+    return v8::Local<v8::Object>();
+
   return GetChildAtIndex(index);
 }
 
@@ -1403,21 +1372,30 @@ v8::Local<v8::Object> WebAXObjectProxy::ParentElement() {
 
 void WebAXObjectProxy::Increment() {
   UpdateLayout();
-  accessibility_object_.Increment();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kIncrement;
+  accessibility_object_.PerformAction(action_data);
 }
 
 void WebAXObjectProxy::Decrement() {
   UpdateLayout();
-  accessibility_object_.Decrement();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDecrement;
+  accessibility_object_.PerformAction(action_data);
 }
 
 void WebAXObjectProxy::ShowMenu() {
-  accessibility_object_.ShowContextMenu();
+  UpdateLayout();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kShowContextMenu;
+  accessibility_object_.PerformAction(action_data);
 }
 
 void WebAXObjectProxy::Press() {
   UpdateLayout();
-  accessibility_object_.Click();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+  accessibility_object_.PerformAction(action_data);
 }
 
 bool WebAXObjectProxy::SetValue(const std::string& value) {
@@ -1426,8 +1404,10 @@ bool WebAXObjectProxy::SetValue(const std::string& value) {
       accessibility_object_.StringValue().IsEmpty())
     return false;
 
-  accessibility_object_.SetValue(blink::WebString::FromUTF8(value));
-  return true;
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetValue;
+  action_data.value = value;
+  return accessibility_object_.PerformAction(action_data);
 }
 
 bool WebAXObjectProxy::IsEqual(v8::Local<v8::Object> proxy) {
@@ -1449,7 +1429,9 @@ void WebAXObjectProxy::UnsetNotificationListener() {
 
 void WebAXObjectProxy::TakeFocus() {
   UpdateLayout();
-  accessibility_object_.Focus();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  accessibility_object_.PerformAction(action_data);
 }
 
 void WebAXObjectProxy::ScrollToMakeVisible() {
@@ -1463,22 +1445,25 @@ void WebAXObjectProxy::ScrollToMakeVisibleWithSubFocus(int x,
                                                        int height) {
   UpdateLayout();
   accessibility_object_.ScrollToMakeVisibleWithSubFocus(
-      blink::WebRect(x, y, width, height));
+      gfx::Rect(x, y, width, height));
 }
 
 void WebAXObjectProxy::ScrollToGlobalPoint(int x, int y) {
   UpdateLayout();
-  accessibility_object_.ScrollToGlobalPoint(gfx::Point(x, y));
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kScrollToPoint;
+  action_data.target_point = gfx::Point(x, y);
+  accessibility_object_.PerformAction(action_data);
 }
 
 int WebAXObjectProxy::ScrollX() {
   UpdateLayout();
-  return accessibility_object_.GetScrollOffset().x();
+  return GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
 }
 
 int WebAXObjectProxy::ScrollY() {
   UpdateLayout();
-  return accessibility_object_.GetScrollOffset().y();
+  return GetAXNodeData().GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
 }
 
 std::string WebAXObjectProxy::ToString() {
@@ -1546,11 +1531,45 @@ v8::Local<v8::Object> WebAXObjectProxy::PreviousOnLine() {
   return factory_->GetOrCreate(obj);
 }
 
+std::vector<std::string> WebAXObjectProxy::GetMisspellings() const {
+  std::vector<std::string> misspellings;
+  std::string text(accessibility_object_.GetName().Utf8());
+  if (text.empty())
+    return {};
+
+  const ui::AXNodeData& node_data = GetAXNodeData();
+  std::vector<int32_t> marker_types;
+  std::vector<int32_t> marker_starts;
+  std::vector<int32_t> marker_ends;
+  if (node_data.GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                                    &marker_types) &&
+      node_data.GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                                    &marker_starts) &&
+      node_data.GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                                    &marker_ends)) {
+    DCHECK_EQ(marker_types.size(), marker_starts.size());
+    DCHECK_EQ(marker_types.size(), marker_ends.size());
+    for (size_t i = 0; i < marker_types.size(); ++i) {
+      if (marker_types[i] == int32_t(ax::mojom::MarkerType::kSpelling)) {
+        DCHECK_LE(marker_starts[i], marker_ends[i]);
+        misspellings.push_back(
+            text.substr(marker_starts[i], marker_ends[i] - marker_starts[i]));
+      }
+    }
+
+    return misspellings;
+  }
+
+  return {};
+}
+
 std::string WebAXObjectProxy::MisspellingAtIndex(int index) {
   UpdateLayout();
-  if (index < 0 || index >= MisspellingsCount())
+
+  std::vector<std::string> misspellings = GetMisspellings();
+  if (index < 0 || index >= int{misspellings.size()})
     return std::string();
-  return GetMisspellings(accessibility_object_)[index];
+  return misspellings[index];
 }
 
 std::string WebAXObjectProxy::Name() {
@@ -1657,7 +1676,7 @@ std::string WebAXObjectProxy::Placeholder() {
 
 int WebAXObjectProxy::MisspellingsCount() {
   UpdateLayout();
-  return GetMisspellings(accessibility_object_).size();
+  return GetMisspellings().size();
 }
 
 int WebAXObjectProxy::DescriptionElementCount() {

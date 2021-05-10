@@ -10,6 +10,9 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/touch_exploration_controller.h"
+#include "ash/components/audio/cras_audio_handler.h"
+#include "ash/components/audio/sounds.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/app_types.h"
@@ -18,9 +21,6 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "extensions/common/constants.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -40,7 +40,7 @@ AccessibilityControllerImpl* GetA11yController() {
 TouchExplorationManager::TouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
-      audio_handler_(chromeos::CrasAudioHandler::Get()),
+      audio_handler_(CrasAudioHandler::Get()),
       observing_window_(nullptr) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
@@ -110,21 +110,21 @@ void TouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    GetA11yController()->PlayEarcon(chromeos::SOUND_VOLUME_ADJUST);
+    GetA11yController()->PlayEarcon(Sound::kVolumeAdjust);
   }
 }
 
 void TouchExplorationManager::PlayPassthroughEarcon() {
-  GetA11yController()->PlayEarcon(chromeos::SOUND_PASSTHROUGH);
+  GetA11yController()->PlayEarcon(Sound::kPassthrough);
 }
 
 void TouchExplorationManager::PlayLongPressRightClickEarcon() {
   // TODO: Rename this sound to SOUND_LONG_PRESS_RIGHT_CLICK.
-  GetA11yController()->PlayEarcon(chromeos::SOUND_EXIT_SCREEN);
+  GetA11yController()->PlayEarcon(Sound::kExitScreen);
 }
 
 void TouchExplorationManager::PlayEnterScreenEarcon() {
-  GetA11yController()->PlayEarcon(chromeos::SOUND_ENTER_SCREEN);
+  GetA11yController()->PlayEarcon(Sound::kEnterScreen);
 }
 
 void TouchExplorationManager::HandleAccessibilityGesture(
@@ -162,7 +162,7 @@ void TouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
 }
 
 void TouchExplorationManager::PlayTouchTypeEarcon() {
-  GetA11yController()->PlayEarcon(chromeos::SOUND_TOUCH_TYPE);
+  GetA11yController()->PlayEarcon(Sound::kTouchType);
 }
 
 void TouchExplorationManager::ToggleSpokenFeedback() {

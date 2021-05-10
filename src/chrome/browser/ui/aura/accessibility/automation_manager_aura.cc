@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -29,7 +30,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -45,7 +46,7 @@ void AutomationManagerAura::Enable() {
   enabled_ = true;
   Reset(false);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Seed the views::AXAuraObjCache with per-display root windows so
   // GetTopLevelWindows() returns the correct values when automation is enabled
   // with multiple displays connected.
@@ -54,7 +55,7 @@ void AutomationManagerAura::Enable() {
 #endif
 
   // Send this event immediately to push the initial desktop tree state.
-  pending_events_.push_back({current_tree_->GetRoot()->GetUniqueId(),
+  pending_events_.push_back({tree_->GetRoot()->GetUniqueId(),
                              ax::mojom::Event::kLoadComplete, -1,
                              is_performing_action_});
   SendPendingEvents();
@@ -62,7 +63,7 @@ void AutomationManagerAura::Enable() {
   // ordering of two base::Singletons.
   cache_->SetDelegate(this);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* active_window = ash::window_util::GetActiveWindow();
   if (active_window) {
     views::AXAuraObjWrapper* focus = cache_->GetOrCreate(active_window);
@@ -70,11 +71,22 @@ void AutomationManagerAura::Enable() {
       PostEvent(focus->GetUniqueId(), ax::mojom::Event::kChildrenChanged);
   }
 #endif
+
+  if (!automation_event_router_observer_.IsObserving()) {
+    automation_event_router_observer_.Observe(
+        extensions::AutomationEventRouter::GetInstance());
+  }
 }
 
 void AutomationManagerAura::Disable() {
   enabled_ = false;
-  Reset(true);
+  cache_ = std::make_unique<views::AXAuraObjCache>();
+  tree_.reset();
+  tree_serializer_.reset();
+  alert_window_.reset();
+
+  if (automation_event_router_observer_.IsObserving())
+    automation_event_router_observer_.Reset();
 }
 
 void AutomationManagerAura::OnViewEvent(views::View* view,
@@ -91,8 +103,12 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   PostEvent(obj->GetUniqueId(), event_type);
 }
 
+void AutomationManagerAura::AllAutomationExtensionsGone() {
+  Disable();
+}
+
 void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
-  views::AXAuraObjWrapper* obj = current_tree_->GetRoot();
+  views::AXAuraObjWrapper* obj = tree_->GetRoot();
   if (!obj)
     return;
 
@@ -122,7 +138,12 @@ void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
     return;
   }
 
-  current_tree_->HandleAccessibleAction(data);
+  tree_->HandleAccessibleAction(data);
+}
+
+void AutomationManagerAura::SetA11yOverrideWindow(
+    aura::Window* a11y_override_window) {
+  cache_->SetA11yOverrideWindow(a11y_override_window);
 }
 
 void AutomationManagerAura::OnChildWindowRemoved(
@@ -131,7 +152,7 @@ void AutomationManagerAura::OnChildWindowRemoved(
     return;
 
   if (!parent)
-    parent = current_tree_->GetRoot();
+    parent = tree_->GetRoot();
 
   PostEvent(parent->GetUniqueId(), ax::mojom::Event::kChildrenChanged);
 }
@@ -150,19 +171,18 @@ AutomationManagerAura::AutomationManagerAura()
 AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
-  if (!current_tree_) {
+  if (!tree_) {
     auto desktop_root = std::make_unique<AXRootObjWrapper>(this, cache_.get());
-    current_tree_ = std::make_unique<views::AXTreeSourceViews>(
+    tree_ = std::make_unique<views::AXTreeSourceViews>(
         desktop_root.get(), ax_tree_id(), cache_.get());
     cache_->CreateOrReplace(std::move(desktop_root));
   }
   if (reset_serializer) {
-    current_tree_serializer_.reset();
+    tree_serializer_.reset();
     alert_window_.reset();
   } else {
-    current_tree_serializer_ =
-        std::make_unique<AuraAXTreeSerializer>(current_tree_.get());
-#if defined(OS_CHROMEOS)
+    tree_serializer_ = std::make_unique<AuraAXTreeSerializer>(tree_.get());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::Shell* shell = ash::Shell::Get();
     // Windows within the overlay container get moved to the new monitor when
     // the primary display gets swapped.
@@ -170,7 +190,7 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
         shell->GetContainer(shell->GetPrimaryRootWindow(),
                             ash::kShellWindowId_OverlayContainer),
         cache_.get());
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 }
 
@@ -194,7 +214,7 @@ void AutomationManagerAura::SendPendingEvents() {
   if (!enabled_)
     return;
 
-  if (!current_tree_serializer_)
+  if (!tree_serializer_)
     return;
 
   std::vector<ui::AXTreeUpdate> tree_updates;
@@ -205,11 +225,17 @@ void AutomationManagerAura::SendPendingEvents() {
     int id = event_copy.id;
     ax::mojom::Event event_type = event_copy.event_type;
     auto* aura_obj = cache_->Get(id);
+
+    // Some events are important enough where even if their ax obj was
+    // destroyed, they still need to be fired.
+    if (event_type == ax::mojom::Event::kMenuEnd && !aura_obj)
+      aura_obj = tree_->GetRoot();
+
     if (!aura_obj)
       continue;
 
     ui::AXTreeUpdate update;
-    if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
+    if (!tree_serializer_->SerializeChanges(aura_obj, &update)) {
       OnSerializeFailure(event_type, update);
       return;
     }
@@ -220,7 +246,7 @@ void AutomationManagerAura::SendPendingEvents() {
     // marked invisible, for example. In those cases we should still
     // call SerializeChanges (because the change may have affected the
     // ancestor) but we shouldn't fire the event on the node not in the tree.
-    if (current_tree_serializer_->IsInClientTree(aura_obj)) {
+    if (tree_serializer_->IsInClientTree(aura_obj)) {
       ui::AXEvent event;
       event.id = aura_obj->GetUniqueId();
       event.event_type = event_type;
@@ -235,7 +261,7 @@ void AutomationManagerAura::SendPendingEvents() {
   views::AXAuraObjWrapper* focus = cache_->GetFocus();
   if (focus) {
     ui::AXTreeUpdate focused_node_update;
-    current_tree_serializer_->SerializeChanges(focus, &focused_node_update);
+    tree_serializer_->SerializeChanges(focus, &focused_node_update);
     tree_updates.push_back(focused_node_update);
   }
 
@@ -248,7 +274,7 @@ void AutomationManagerAura::SendPendingEvents() {
 
 void AutomationManagerAura::PerformHitTest(
     const ui::AXActionData& original_action) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ui::AXActionData action = original_action;
   aura::Window* root_window = ash::Shell::Get()->GetPrimaryRootWindow();
   if (!root_window)
@@ -313,9 +339,7 @@ void AutomationManagerAura::PerformHitTest(
 void AutomationManagerAura::OnSerializeFailure(ax::mojom::Event event_type,
                                                const ui::AXTreeUpdate& update) {
   std::string error_string;
-  ui::AXTreeSourceChecker<views::AXAuraObjWrapper*, ui::AXNodeData,
-                          ui::AXTreeData>
-      checker(current_tree_.get());
+  ui::AXTreeSourceChecker<views::AXAuraObjWrapper*> checker(tree_.get());
   checker.CheckAndGetErrorString(&error_string);
 
   // Add a crash key so we can figure out why this is happening.

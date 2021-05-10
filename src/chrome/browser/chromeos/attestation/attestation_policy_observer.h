@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 
 namespace chromeos {
@@ -40,7 +40,7 @@ class AttestationPolicyObserver {
   CrosSettings* cros_settings_;
   MachineCertificateUploader* certificate_uploader_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
+  base::CallbackListSubscription attestation_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AttestationPolicyObserver);
 };

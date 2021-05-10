@@ -176,8 +176,6 @@ private:
         return fMode == cs.fMode;
     }
 
-    bool usesExplicitReturn() const override { return true; }
-
     SkPMColor4f constantOutputForConstantInput(const SkPMColor4f& input) const override {
         const auto* src = this->childProcessor(0);
         const auto* dst = this->childProcessor(1);
@@ -213,7 +211,7 @@ private:
         }
     }
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     SkBlendMode fMode;
     BlendBehavior fBlendBehavior;
@@ -262,8 +260,8 @@ std::unique_ptr<GrFragmentProcessor> BlendFragmentProcessor::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new BlendFragmentProcessor(*this));
 }
 
-GrGLSLFragmentProcessor* BlendFragmentProcessor::onCreateGLSLInstance() const{
-    return new GLBlendFragmentProcessor;
+std::unique_ptr<GrGLSLFragmentProcessor> BlendFragmentProcessor::onMakeProgramImpl() const {
+    return std::make_unique<GLBlendFragmentProcessor>();
 }
 
 /////////////////////////////////////////////////////////////////////

@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
@@ -53,7 +54,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/render_widget.h"
 #include "content/renderer/sad_plugin.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
@@ -98,7 +98,6 @@
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/url_conversion.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -134,7 +133,7 @@
 #include "printing/metafile_skia.h"          // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #endif
 
@@ -323,7 +322,7 @@ std::unique_ptr<const char* []> StringVectorToArgArray(
 // all keys sent to them. This can prevent keystrokes from working for things
 // like screen brightness and volume control.
 bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (event.GetType() != WebInputEvent::Type::kKeyDown &&
       event.GetType() != WebInputEvent::Type::kKeyUp)
     return false;
@@ -341,7 +340,7 @@ bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
     default:
       return false;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 }
 
@@ -542,9 +541,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   module_->InstanceCreated(this);
 
   if (render_frame_) {  // NULL in tests or if the frame has been destroyed.
-    render_frame_->PepperInstanceCreated(this);
+    render_frame_->PepperInstanceCreated(
+        this, pepper_receiver_.BindNewEndpointAndPassRemote(),
+        pepper_host_remote_.BindNewEndpointAndPassReceiver());
     view_data_.is_page_visible =
-        !render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->IsHidden();
+        !render_frame_->GetLocalRootWebFrameWidget()->IsHidden();
 
     if (!module_->IsProxied()) {
       created_in_process_instance_ = true;
@@ -785,8 +786,8 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
 
-  if (render_frame_)
-    render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
+  if (auto* host = GetPepperPluginInstanceHost())
+    host->InstanceCrashed(module_->path(), module_->GetPeerProcessId());
 }
 
 bool PepperPluginInstanceImpl::Initialize(
@@ -1199,8 +1200,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale =
       container_->PageZoomFactor() * container_->PageScaleFactor();
   if (IsUseZoomForDSFEnabled()) {
-    WebWidget* widget =
-        render_frame()->GetLocalRootRenderWidget()->GetWebWidget();
+    WebWidget* widget = render_frame()->GetLocalRootWebFrameWidget();
 
     viewport_to_dip_scale_ =
         1.0f / widget->GetOriginalScreenInfo().device_scale_factor;
@@ -2040,7 +2040,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   }
 
   if (texture_layer_) {
-    container_->SetCcLayer(nullptr, false);
+    container_->SetCcLayer(nullptr);
     texture_layer_->ClearClient();
     texture_layer_ = nullptr;
   }
@@ -2066,7 +2066,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   }
 
   if (texture_layer_) {
-    container_->SetCcLayer(texture_layer_.get(), true);
+    container_->SetCcLayer(texture_layer_.get());
   }
 
   layer_is_hardware_ = want_3d_layer;
@@ -2381,8 +2381,10 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
   if (!render_frame_)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(
-      render_frame_->render_view()->GetBlinkPreferences().default_encoding);
+  return StringVar::StringToPPVar(render_frame_->GetWebFrame()
+                                      ->View()
+                                      ->GetWebPreferences()
+                                      .default_encoding);
 }
 
 void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
@@ -2427,15 +2429,14 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
   if (!render_frame_ || !render_frame_->GetWebFrame())
     return;
 
-  blink::WebVector<blink::WebRect> tickmarks_converted(
-      static_cast<size_t>(count));
+  blink::WebVector<gfx::Rect> tickmarks_converted(static_cast<size_t>(count));
   for (uint32_t i = 0; i < count; ++i) {
     gfx::RectF tickmark(tickmarks[i].point.x,
                         tickmarks[i].point.y,
                         tickmarks[i].size.width,
                         tickmarks[i].size.height);
     tickmark.Scale(1 / viewport_to_dip_scale_);
-    tickmarks_converted[i] = blink::WebRect(gfx::ToEnclosedRect(tickmark));
+    tickmarks_converted[i] = gfx::ToEnclosedRect(tickmark);
   }
 
   WebLocalFrame* frame = render_frame_->GetWebFrame();
@@ -2459,9 +2460,8 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
   // All other cases: Report the screen size.
   if (!render_frame_)
     return PP_FALSE;
-  blink::ScreenInfo info = render_frame_->GetLocalRootRenderWidget()
-                               ->GetWebWidget()
-                               ->GetScreenInfo();
+  blink::ScreenInfo info =
+      render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   *size = PP_MakeSize(info.rect.width(), info.rect.height());
   return PP_TRUE;
 }
@@ -2885,8 +2885,7 @@ void PepperPluginInstanceImpl::DoSetCursor(std::unique_ptr<ui::Cursor> cursor) {
     // e.g., the plugin would like to set an invisible cursor when there isn't
     // any user input for a while.
     if (container()->WasTargetForLastMouseEvent()) {
-      render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->SetCursor(
-          *cursor_);
+      render_frame_->GetLocalRootWebFrameWidget()->SetCursor(*cursor_);
     }
   }
 }
@@ -2954,9 +2953,8 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   // behavior, the width and height should probably be set to 100%, rather than
   // a fixed screen size.
 
-  blink::ScreenInfo info = render_frame_->GetLocalRootRenderWidget()
-                               ->GetWebWidget()
-                               ->GetScreenInfo();
+  blink::ScreenInfo info =
+      render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   screen_size_for_fullscreen_ = info.rect.size();
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
   std::string height =
@@ -3173,6 +3171,10 @@ void PepperPluginInstanceImpl::HandlePepperImeCommit(
     HandleTextInput(text);
   }
   composition_text_.clear();
+}
+
+void PepperPluginInstanceImpl::SetVolume(double volume) {
+  audio_controller().SetVolume(volume);
 }
 
 }  // namespace content

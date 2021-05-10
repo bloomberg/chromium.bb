@@ -7,12 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("snippets") {
   sources = [
-    "ScriptSnippetFileSystem.js",
-    "SnippetsQuickOpen.js",
+    "ModuleUIStrings.ts",
+    "ScriptSnippetFileSystem.ts",
+    "SnippetsQuickOpen.ts",
   ]
 
   deps = [
     "../common:bundle",
+    "../i18n:bundle",
     "../persistence:bundle",
     "../quick_open:bundle",
     "../sdk:bundle",
@@ -22,13 +24,13 @@ devtools_module("snippets") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "snippets.js"
+  entrypoint = "snippets.ts"
 
   deps = [ ":snippets" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "snippets-legacy.js"
+  entrypoint = "snippets-legacy.ts"
 
   deps = [ ":bundle" ]
 }

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
@@ -29,6 +30,7 @@ static_library("utility") {
   public_deps = []
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
@@ -45,6 +47,7 @@ static_library("utility") {
     "//components/services/unzip:lib",
     "//components/strings",
     "//components/url_formatter",
+    "//components/webapps/services/web_app_origin_association:lib",
     "//content/public/child",
     "//content/public/common",
     "//content/public/utility",
@@ -58,6 +61,7 @@ static_library("utility") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
+    "//third_party/blink/public/common",
     "//third_party/zlib/google:zip",
     "//ui/base:buildflags",
   ]
@@ -67,6 +71,10 @@ static_library("utility") {
       "//components/services/quarantine",
       "//components/services/quarantine/public/mojom",
     ]
+  }
+
+  if (is_mac) {
+    deps += [ "//chrome/services/mac_notifications" ]
   }
 
   if (!is_android) {
@@ -85,19 +93,21 @@ static_library("utility") {
       "importer/importer.h",
       "importer/importer_creator.cc",
       "importer/importer_creator.h",
-      "importer/nss_decryptor.cc",
-      "importer/nss_decryptor.h",
       "importer/profile_import_impl.cc",
       "importer/profile_import_impl.h",
     ]
     if (is_mac) {
       sources += [
-        "importer/nss_decryptor_mac.h",
-        "importer/nss_decryptor_mac.mm",
         "importer/safari_importer.h",
         "importer/safari_importer.mm",
       ]
-    } else if (is_win) {
+    } else {
+      sources += [
+        "importer/nss_decryptor.cc",
+        "importer/nss_decryptor.h",
+      ]
+    }
+    if (is_win) {
       sources += [
         "importer/edge_database_reader_win.cc",
         "importer/edge_database_reader_win.h",
@@ -119,27 +129,10 @@ static_library("utility") {
   }
 
   if (enable_extensions) {
-    sources += [
-      "image_writer/error_message_strings.cc",
-      "image_writer/error_message_strings.h",
-      "image_writer/image_writer.cc",
-      "image_writer/image_writer.h",
-      "image_writer/image_writer_handler.cc",
-      "image_writer/image_writer_handler.h",
-    ]
-    if (is_mac) {
-      sources += [
-        "image_writer/disk_unmounter_mac.cc",
-        "image_writer/disk_unmounter_mac.h",
-        "image_writer/image_writer_mac.cc",
-      ]
-    } else if (is_win) {
-      sources += [ "image_writer/image_writer_win.cc" ]
-    }
-
     deps += [
       "//chrome/common/extensions/api",
       "//chrome/services/removable_storage_writer:lib",
+      "//chrome/utility/image_writer",
     ]
 
     public_deps += [
@@ -161,17 +154,17 @@ static_library("utility") {
 
     if (is_win || is_mac) {
       deps += [ "//components/wifi" ]
-    } else {
-      sources += [ "image_writer/image_writer_stub.cc" ]
     }
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [
       "//ash/services/recording",
       "//chrome/services/file_util",
       "//chrome/services/sharing",
       "//chromeos/assistant:buildflags",
+      "//chromeos/components/local_search_service:local_search_service",
+      "//chromeos/components/local_search_service/public/mojom",
       "//chromeos/services/ime:lib",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/nearby/public/mojom:mojom",
@@ -204,7 +197,7 @@ static_library("utility") {
       "//components/services/print_compositor/public/mojom",
     ]
 
-    if (is_chromeos) {
+    if (is_chromeos_ash) {
       deps += [
         "//chrome/services/ipp_parser",
         "//chrome/services/ipp_parser/public/mojom",

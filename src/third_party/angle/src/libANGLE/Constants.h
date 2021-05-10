@@ -38,7 +38,9 @@ enum
     IMPLEMENTATION_MAX_FRAGMENT_SHADER_UNIFORM_BUFFERS = 16,
     IMPLEMENTATION_MAX_COMPUTE_SHADER_UNIFORM_BUFFERS  = 16,
     // GL_EXT_geometry_shader increases the minimum value of GL_MAX_COMBINED_UNIFORM_BLOCKS to 36.
-    IMPLEMENTATION_MAX_COMBINED_SHADER_UNIFORM_BUFFERS = 36,
+    // GL_EXT_tessellation_shader increases the minimum value of GL_MAX_COMBINED_UNIFORM_BLOCKS
+    // to 60.
+    IMPLEMENTATION_MAX_COMBINED_SHADER_UNIFORM_BUFFERS = 60,
 
     // GL_EXT_geometry_shader increases the minimum value of GL_MAX_UNIFORM_BUFFER_BINDINGS to 48.
     // Vulkan's minimum value for maxDescriptorSetUniformBuffers is 72 so allow exposing up to that
@@ -65,9 +67,13 @@ enum
     // 1+log2 of max of MAX_*_TEXTURE_SIZE
     IMPLEMENTATION_MAX_TEXTURE_LEVELS = 16,
 
-    // Limit active textures so we can use fast bitsets.
     IMPLEMENTATION_MAX_SHADER_TEXTURES = 32,
-    IMPLEMENTATION_MAX_ACTIVE_TEXTURES = IMPLEMENTATION_MAX_SHADER_TEXTURES * 2,
+
+    // In ES 3.1 and below, the limit for active textures is 64.
+    IMPLEMENTATION_MAX_ES31_ACTIVE_TEXTURES = 64,
+
+    // In ES 3.2 we need to support a minimum of 96 maximum textures.
+    IMPLEMENTATION_MAX_ACTIVE_TEXTURES = 96,
     IMPLEMENTATION_MAX_IMAGE_UNITS     = IMPLEMENTATION_MAX_ACTIVE_TEXTURES,
 
     // Maximum number of slots allocated for atomic counter buffers.
@@ -78,6 +84,9 @@ enum
 
     // Implementation upper limits of max number of clip distances
     IMPLEMENTATION_MAX_CLIP_DISTANCES = 32,
+
+    // Implementation upper limit for layered framebuffer layer count
+    IMPLEMENTATION_MAX_FRAMEBUFFER_LAYERS = 256,
 };
 
 namespace limits

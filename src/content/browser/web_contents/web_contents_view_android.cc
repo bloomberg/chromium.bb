@@ -26,11 +26,11 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/drop_data.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/gesture_event_android.h"
@@ -53,7 +53,6 @@ namespace {
 // compositor event queue.
 bool ShouldRequestUnbufferedDispatch() {
   static bool should_request_unbuffered_dispatch =
-      base::FeatureList::IsEnabled(features::kRequestUnbufferedDispatch) &&
       base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_LOLLIPOP &&
       !content::GetContentClient()->UsingSynchronousCompositing();
@@ -349,7 +348,7 @@ void WebContentsViewAndroid::StartDragging(
   }
 }
 
-void WebContentsViewAndroid::UpdateDragCursor(blink::DragOperation op) {
+void WebContentsViewAndroid::UpdateDragCursor(ui::mojom::DragOperation op) {
   // Intentional no-op because Android does not have cursor.
 }
 
@@ -455,7 +454,7 @@ void WebContentsViewAndroid::OnSystemDragEnded() {
 
 void WebContentsViewAndroid::OnDragEnded() {
   web_contents_->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
-      drag_location_, drag_screen_location_, blink::kDragOperationNone);
+      drag_location_, drag_screen_location_, ui::mojom::DragOperation::kNone);
   OnSystemDragEnded();
 
   drag_location_ = gfx::PointF();

@@ -11,6 +11,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_service.h"
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -32,9 +33,9 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/test/test_windows.h"
@@ -111,7 +112,7 @@ AshTestHelper::AshTestHelper(ConfigType config_type,
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
-  chromeos::CrasAudioHandler::InitializeForTesting();
+  CrasAudioHandler::InitializeForTesting();
 
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
@@ -153,7 +154,9 @@ void AshTestHelper::TearDown() {
   // CompositorFrameSinkClient::ReclaimResources()
   base::RunLoop().RunUntilIdle();
 
-  chromeos::CrasAudioHandler::Shutdown();
+  chromeos::LoginState::Shutdown();
+
+  CrasAudioHandler::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
 
   // The PowerPolicyController holds a pointer to the PowerManagementClient, so
@@ -227,6 +230,8 @@ void AshTestHelper::SetUp(InitParams init_params) {
     new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
   if (!views::ViewsDelegate::GetInstance())
     test_views_delegate_ = MakeTestViewsDelegate();
+
+  chromeos::LoginState::Initialize();
 
   ambient_ash_test_helper_ = std::make_unique<AmbientAshTestHelper>();
 

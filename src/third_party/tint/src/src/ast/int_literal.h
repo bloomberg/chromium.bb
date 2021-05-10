@@ -15,25 +15,21 @@
 #ifndef SRC_AST_INT_LITERAL_H_
 #define SRC_AST_INT_LITERAL_H_
 
-#include <string>
-
 #include "src/ast/literal.h"
 
 namespace tint {
 namespace ast {
 
 /// An integer literal. This could be either signed or unsigned.
-class IntLiteral : public Literal {
+class IntLiteral : public Castable<IntLiteral, Literal> {
  public:
   ~IntLiteral() override;
 
-  /// @returns true if this is a signed or unsigned integer.
-  bool IsInt() const override;
-
  protected:
   /// Constructor
+  /// @param source the input source
   /// @param type the type of the literal
-  explicit IntLiteral(ast::type::Type* type);
+  IntLiteral(const Source& source, type::Type* type);
 };
 
 }  // namespace ast

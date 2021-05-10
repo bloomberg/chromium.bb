@@ -67,6 +67,19 @@ const char* tsi_result_to_string(tsi_result result) {
   }
 }
 
+const char* tsi_security_level_to_string(tsi_security_level security_level) {
+  switch (security_level) {
+    case TSI_SECURITY_NONE:
+      return "TSI_SECURITY_NONE";
+    case TSI_INTEGRITY_ONLY:
+      return "TSI_INTEGRITY_ONLY";
+    case TSI_PRIVACY_AND_INTEGRITY:
+      return "TSI_PRIVACY_AND_INTEGRITY";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 /* --- tsi_frame_protector common implementation. ---
 
    Calls specific implementation after state/input validation. */
@@ -137,8 +150,9 @@ tsi_result tsi_handshaker_get_bytes_to_send_to_peer(tsi_handshaker* self,
   }
   if (self->frame_protector_created) return TSI_FAILED_PRECONDITION;
   if (self->handshake_shutdown) return TSI_HANDSHAKE_SHUTDOWN;
-  if (self->vtable->get_bytes_to_send_to_peer == nullptr)
+  if (self->vtable->get_bytes_to_send_to_peer == nullptr) {
     return TSI_UNIMPLEMENTED;
+  }
   return self->vtable->get_bytes_to_send_to_peer(self, bytes, bytes_size);
 }
 
@@ -151,8 +165,9 @@ tsi_result tsi_handshaker_process_bytes_from_peer(tsi_handshaker* self,
   }
   if (self->frame_protector_created) return TSI_FAILED_PRECONDITION;
   if (self->handshake_shutdown) return TSI_HANDSHAKE_SHUTDOWN;
-  if (self->vtable->process_bytes_from_peer == nullptr)
+  if (self->vtable->process_bytes_from_peer == nullptr) {
     return TSI_UNIMPLEMENTED;
+  }
   return self->vtable->process_bytes_from_peer(self, bytes, bytes_size);
 }
 

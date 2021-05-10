@@ -120,8 +120,18 @@ feedwire::Request CreateFeedQueryRequest(
   feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
   feed_request.add_client_capability(feedwire::Capability::BASE_UI);
   feed_request.add_client_capability(feedwire::Capability::CARD_MENU);
+  feed_request.add_client_capability(feedwire::Capability::LOTTIE_ANIMATIONS);
+  feed_request.add_client_capability(
+      feedwire::Capability::LONG_PRESS_CARD_MENU);
+  // Add Share capability if sharing is turned on.
+  if (base::FeatureList::IsEnabled(kFeedShare)) {
+    feed_request.add_client_capability(feedwire::Capability::SHARE);
+  }
   for (auto capability : GetFeedConfig().experimental_capabilities)
     feed_request.add_client_capability(capability);
+  if (base::FeatureList::IsEnabled(kInterestFeedV2Hearts)) {
+    feed_request.add_client_capability(feedwire::Capability::HEART);
+  }
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();

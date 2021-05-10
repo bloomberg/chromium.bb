@@ -7,14 +7,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -104,7 +107,7 @@ void SetCookies(BasicHttpResponse* http_response,
 }
 
 std::string FormatCookieForMultilogin(std::string name, std::string value) {
-  std::string format = R"(
+  const char format[] = R"(
     {
       "name":"%s",
       "value":"%s",
@@ -116,7 +119,39 @@ std::string FormatCookieForMultilogin(std::string name, std::string value) {
       "maxAge":63070000
     }
   )";
-  return base::StringPrintf(format.c_str(), name.c_str(), value.c_str());
+  return base::StringPrintf(format, name.c_str(), value.c_str());
+}
+
+std::string FormatSyncTrustedPublicKeys(
+    const std::vector<std::vector<uint8_t>>& public_keys) {
+  std::string result;
+  for (const std::vector<uint8_t>& public_key : public_keys) {
+    if (!result.empty()) {
+      base::StrAppend(&result, {","});
+    }
+    base::StrAppend(&result, {"\"", base::Base64Encode(public_key), "\""});
+  }
+  return result;
+}
+
+std::string FormatSyncTrustedVaultKeysHeader(
+    const FakeGaia::SyncTrustedVaultKeys& sync_trusted_vault_keys) {
+  // Single line used because this string populates HTTP headers. Similarly,
+  // base64 encoding is used to avoid line breaks and meanwhile adopt JSON
+  // format (which doesn't support binary blobs). This base64 encoding is undone
+  // embedded_setup_chromeos.html.
+  const char format[] =
+      "{"
+      "\"fakeEncryptionKeyMaterial\":\"%s\","
+      "\"fakeEncryptionKeyVersion\":%d,"
+      "\"fakeTrustedPublicKeys\":[%s]"
+      "}";
+  return base::StringPrintf(
+      format,
+      base::Base64Encode(sync_trusted_vault_keys.encryption_key).c_str(),
+      sync_trusted_vault_keys.encryption_key_version,
+      FormatSyncTrustedPublicKeys(sync_trusted_vault_keys.trusted_public_keys)
+          .c_str());
 }
 
 }  // namespace
@@ -151,6 +186,10 @@ void FakeGaia::MergeSessionParams::Update(const MergeSessionParams& update) {
   maybe_update_field(&MergeSessionParams::session_lsid_cookie);
   maybe_update_field(&MergeSessionParams::email);
 }
+
+FakeGaia::SyncTrustedVaultKeys::SyncTrustedVaultKeys() = default;
+
+FakeGaia::SyncTrustedVaultKeys::~SyncTrustedVaultKeys() = default;
 
 FakeGaia::FakeGaia() : issue_oauth_code_cookie_(false) {
   base::FilePath source_root_dir;
@@ -195,6 +234,13 @@ void FakeGaia::MapEmailToGaiaId(const std::string& email,
   email_to_gaia_id_map_[email] = gaia_id;
 }
 
+void FakeGaia::SetSyncTrustedVaultKeys(
+    const std::string& email,
+    const SyncTrustedVaultKeys& sync_trusted_vault_keys) {
+  DCHECK(!email.empty());
+  email_to_sync_trusted_vault_keys_map_[email] = sync_trusted_vault_keys;
+}
+
 std::string FakeGaia::GetGaiaIdOfEmail(const std::string& email) const {
   const auto it = email_to_gaia_id_map_.find(email);
   return it == email_to_gaia_id_map_.end() ? std::string(kDefaultGaiaId) :
@@ -203,6 +249,7 @@ std::string FakeGaia::GetGaiaIdOfEmail(const std::string& email) const {
 
 void FakeGaia::AddGoogleAccountsSigninHeader(BasicHttpResponse* http_response,
                                              const std::string& email) const {
+  DCHECK(http_response);
   http_response->AddCustomHeader("google-accounts-signin",
       base::StringPrintf(
           "email=\"%s\", obfuscatedid=\"%s\", sessionindex=0",
@@ -210,10 +257,21 @@ void FakeGaia::AddGoogleAccountsSigninHeader(BasicHttpResponse* http_response,
 }
 
 void FakeGaia::SetOAuthCodeCookie(BasicHttpResponse* http_response) const {
+  DCHECK(http_response);
   http_response->AddCustomHeader(
       "Set-Cookie", base::StringPrintf("oauth_code=%s%s",
                                        merge_session_params_.auth_code.c_str(),
                                        kTestCookieAttributes));
+}
+
+void FakeGaia::AddSyncTrustedKeysHeader(BasicHttpResponse* http_response,
+                                        const std::string& email) const {
+  DCHECK(http_response);
+  DCHECK(base::Contains(email_to_sync_trusted_vault_keys_map_, email));
+  http_response->AddCustomHeader(
+      "fake-sync-trusted-vault-keys",
+      FormatSyncTrustedVaultKeysHeader(
+          email_to_sync_trusted_vault_keys_map_.at(email)));
 }
 
 void FakeGaia::Initialize() {
@@ -237,6 +295,10 @@ void FakeGaia::Initialize() {
   // Handles /embedded/setup/kidsignin/chromeos GAIA call.
   REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_kid_signin_url(),
                             HandleEmbeddedSetupChromeos);
+
+  // Handles /embedded/reauth/chromeos GAIA call.
+  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_reauth_chromeos_url(),
+                            HandleEmbeddedReauthChromeos);
 
   // Handles /OAuthLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(
@@ -496,6 +558,33 @@ void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
   http_response->set_content_type("text/html");
 }
 
+void FakeGaia::HandleEmbeddedReauthChromeos(const HttpRequest& request,
+                                            BasicHttpResponse* http_response) {
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+
+  std::string client_id;
+  if (!GetQueryParameter(request_url.query(), "client_id", &client_id) ||
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id() != client_id) {
+    LOG(ERROR) << "Missing or invalid param 'client_id' in "
+                  "/embedded/reauth/chromeos call";
+    return;
+  }
+
+  if (!GetQueryParameter(request_url.query(), "is_supervised",
+                         &is_supervised_)) {
+    LOG(ERROR) << "Missing param 'is_supervised' in "
+                  "/embedded/reauth/chromeos call";
+    return;
+  }
+
+  GetQueryParameter(request_url.query(), "is_device_owner", &is_device_owner_);
+  GetQueryParameter(request_url.query(), "Email", &prefilled_email_);
+
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(GetEmbeddedSetupChromeosResponseContent());
+  http_response->set_content_type("text/html");
+}
+
 void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
                                 BasicHttpResponse* http_response) {
   http_response->set_code(net::HTTP_UNAUTHORIZED);
@@ -613,6 +702,10 @@ void FakeGaia::HandleEmbeddedSigninChallenge(const HttpRequest& request,
 
   if (issue_oauth_code_cookie_)
     SetOAuthCodeCookie(http_response);
+
+  if (base::Contains(email_to_sync_trusted_vault_keys_map_, email)) {
+    AddSyncTrustedKeysHeader(http_response, email);
+  }
 }
 
 void FakeGaia::HandleSSO(const HttpRequest& request,

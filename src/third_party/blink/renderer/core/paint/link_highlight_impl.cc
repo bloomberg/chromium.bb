@@ -33,7 +33,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -42,7 +41,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -154,7 +153,7 @@ LinkHighlightImpl::LinkHighlightFragment::~LinkHighlightFragment() {
   layer_->ClearClient();
 }
 
-gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() {
+gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() const {
   return gfx::Rect(layer_->bounds());
 }
 
@@ -295,8 +294,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // NGFragmentItem to renderer rounded rect even if nested inline, e.g.
     // <a>ABC<b>DEF</b>GHI</a>.
     // See gesture-tapHighlight-simple-nested.html
-    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
-        use_rounded_rects && object->IsLayoutInline() &&
+    if (use_rounded_rects && object->IsLayoutInline() &&
         object->IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;
       cursor.MoveTo(*object);

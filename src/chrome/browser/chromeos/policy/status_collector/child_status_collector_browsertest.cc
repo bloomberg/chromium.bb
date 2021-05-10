@@ -25,6 +25,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
@@ -35,9 +37,6 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/status_collector/child_status_collector.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -142,28 +141,29 @@ int64_t GetActiveMilliseconds(const em::ChildStatusReportRequest& status) {
 }
 
 void CallAndroidStatusReceiver(
-    const policy::ChildStatusCollector::AndroidStatusReceiver& receiver,
+    policy::ChildStatusCollector::AndroidStatusReceiver receiver,
     const std::string& status,
     const std::string& droid_guard_info) {
-  receiver.Run(status, droid_guard_info);
+  std::move(receiver).Run(status, droid_guard_info);
 }
 
 bool GetEmptyAndroidStatus(
-    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
+    policy::StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
+      FROM_HERE,
+      base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver), "", ""));
   return true;
 }
 
 bool GetFakeAndroidStatus(
     const std::string& status,
     const std::string& droid_guard_info,
-    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
+    policy::StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, status,
-                                droid_guard_info));
+      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
+                                status, droid_guard_info));
   return true;
 }
 

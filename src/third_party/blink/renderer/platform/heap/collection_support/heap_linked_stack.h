@@ -32,9 +32,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_STACK_H_
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator_impl.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 
@@ -47,12 +48,7 @@ namespace blink {
 template <typename T>
 class HeapLinkedStack final : public GarbageCollected<HeapLinkedStack<T>> {
  public:
-  static void CheckType() {
-    static_assert(internal::IsMember<T>,
-                  "HeapLinkedStack supports only Member.");
-  }
-
-  HeapLinkedStack() { CheckType(); }
+  HeapLinkedStack() = default;
 
   inline size_t size() const;
   inline bool IsEmpty() const;
@@ -61,7 +57,10 @@ class HeapLinkedStack final : public GarbageCollected<HeapLinkedStack<T>> {
   inline const T& Peek() const;
   inline void Pop();
 
-  void Trace(Visitor* visitor) const { visitor->Trace(head_); }
+  void Trace(Visitor* visitor) const {
+    CheckType();
+    visitor->Trace(head_);
+  }
 
  private:
   class Node final : public GarbageCollected<Node> {
@@ -76,6 +75,11 @@ class HeapLinkedStack final : public GarbageCollected<HeapLinkedStack<T>> {
     T data_;
     Member<Node> next_;
   };
+
+  static void CheckType() {
+    static_assert(WTF::IsMemberType<T>::value,
+                  "HeapLinkedStack supports only Member.");
+  }
 
   Member<Node> head_;
   size_t size_ = 0;

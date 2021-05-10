@@ -14,13 +14,13 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_headers_handler_interface.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/core/zero_copy_output_buffer.h"
+#include "common/platform/api/quiche_export.h"
+#include "spdy/core/hpack/hpack_encoder.h"
+#include "spdy/core/spdy_alt_svc_wire_format.h"
+#include "spdy/core/spdy_header_block.h"
+#include "spdy/core/spdy_headers_handler_interface.h"
+#include "spdy/core/spdy_protocol.h"
+#include "spdy/core/zero_copy_output_buffer.h"
 
 namespace spdy {
 
@@ -124,6 +124,15 @@ class QUICHE_EXPORT_PRIVATE SpdyFramer {
   // the relative priority of the given stream.
   SpdySerializedFrame SerializePriority(const SpdyPriorityIR& priority) const;
 
+  // Serializes a PRIORITY_UPDATE frame.
+  // See https://httpwg.org/http-extensions/draft-ietf-httpbis-priority.html.
+  SpdySerializedFrame SerializePriorityUpdate(
+      const SpdyPriorityUpdateIR& priority_update) const;
+
+  // Serializes an ACCEPT_CH frame.  See
+  // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02.
+  SpdySerializedFrame SerializeAcceptCh(const SpdyAcceptChIR& accept_ch) const;
+
   // Serializes an unknown frame given a frame header and payload.
   SpdySerializedFrame SerializeUnknown(const SpdyUnknownIR& unknown) const;
 
@@ -190,6 +199,16 @@ class QUICHE_EXPORT_PRIVATE SpdyFramer {
   // Serializes a PRIORITY frame. The PRIORITY frame advises a change in
   // the relative priority of the given stream.
   bool SerializePriority(const SpdyPriorityIR& priority,
+                         ZeroCopyOutputBuffer* output) const;
+
+  // Serializes a PRIORITY_UPDATE frame.
+  // See https://httpwg.org/http-extensions/draft-ietf-httpbis-priority.html.
+  bool SerializePriorityUpdate(const SpdyPriorityUpdateIR& priority_update,
+                               ZeroCopyOutputBuffer* output) const;
+
+  // Serializes an ACCEPT_CH frame.  See
+  // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02.
+  bool SerializeAcceptCh(const SpdyAcceptChIR& accept_ch,
                          ZeroCopyOutputBuffer* output) const;
 
   // Serializes an unknown frame given a frame header and payload.

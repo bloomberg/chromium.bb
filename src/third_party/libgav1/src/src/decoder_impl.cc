@@ -31,7 +31,6 @@
 #include "src/obu_parser.h"
 #include "src/post_filter.h"
 #include "src/prediction_mask.h"
-#include "src/quantizer.h"
 #include "src/threading_strategy.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/common.h"
@@ -854,6 +853,10 @@ StatusCode DecoderImpl::ParseAndSchedule(const uint8_t* data, size_t size,
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
+    if (!MaybeInitializeQuantizerMatrix(obu->frame_header())) {
+      LIBGAV1_DLOG(ERROR, "InitializeQuantizerMatrix() failed.");
+      return kStatusOutOfMemory;
+    }
     if (IsNewSequenceHeader(*obu)) {
       const ObuSequenceHeader& sequence_header = obu->sequence_header();
       const Libgav1ImageFormat image_format =
@@ -1042,6 +1045,10 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
     if (status != kStatusOk) {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
+    }
+    if (!MaybeInitializeQuantizerMatrix(obu->frame_header())) {
+      LIBGAV1_DLOG(ERROR, "InitializeQuantizerMatrix() failed.");
+      return kStatusOutOfMemory;
     }
     if (IsNewSequenceHeader(*obu)) {
       const ObuSequenceHeader& sequence_header = obu->sequence_header();
@@ -1475,9 +1482,9 @@ StatusCode DecoderImpl::DecodeTiles(
         tile_number, tile_buffers[tile_number].data,
         tile_buffers[tile_number].size, sequence_header, frame_header,
         current_frame, state, frame_scratch_buffer, wedge_masks_,
-        &saved_symbol_decoder_context, prev_segment_ids, &post_filter, dsp,
-        threading_strategy.row_thread_pool(tile_number), &pending_tiles,
-        is_frame_parallel_, use_intra_prediction_buffer);
+        quantizer_matrix_, &saved_symbol_decoder_context, prev_segment_ids,
+        &post_filter, dsp, threading_strategy.row_thread_pool(tile_number),
+        &pending_tiles, is_frame_parallel_, use_intra_prediction_buffer);
     if (tile == nullptr) {
       LIBGAV1_DLOG(ERROR, "Failed to create tile.");
       return kStatusOutOfMemory;
@@ -1637,6 +1644,18 @@ bool DecoderImpl::IsNewSequenceHeader(const ObuParser& obu) {
   sequence_header_ = sequence_header;
   has_sequence_header_ = true;
   return sequence_header_changed;
+}
+
+bool DecoderImpl::MaybeInitializeQuantizerMatrix(
+    const ObuFrameHeader& frame_header) {
+  if (quantizer_matrix_initialized_ || !frame_header.quantizer.use_matrix) {
+    return true;
+  }
+  if (!InitializeQuantizerMatrix(&quantizer_matrix_)) {
+    return false;
+  }
+  quantizer_matrix_initialized_ = true;
+  return true;
 }
 
 }  // namespace libgav1

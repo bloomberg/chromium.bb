@@ -10,6 +10,7 @@
 #include <psapi.h>
 #endif  // OS_WIN
 
+#include <vulkan/vulkan.h>
 #include <memory>
 #include <set>
 #include <string>
@@ -20,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,7 +41,6 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/vulkan/buildflags.h"
-#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
@@ -285,17 +286,6 @@ GpuFeatureStatus GetGLFeatureStatus(const std::set<int>& blocklisted_features,
   return kGpuFeatureStatusEnabled;
 }
 
-GpuFeatureStatus GetProtectedVideoDecodeFeatureStatus(
-    const std::set<int>& blocklisted_features,
-    const GPUInfo& gpu_info,
-    bool use_swift_shader) {
-  if (use_swift_shader)
-    return kGpuFeatureStatusDisabled;
-  if (blocklisted_features.count(GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE))
-    return kGpuFeatureStatusBlocklisted;
-  return kGpuFeatureStatusEnabled;
-}
-
 void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
                                     base::CommandLine* command_line) {
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_D3D11)) {
@@ -365,6 +355,25 @@ uint32_t EstimateAmountOfTotalDiskSpaceMB() {
   return sum;
 }
 
+// Only record Nvidia and AMD GPUs.
+void RecordGpuHistogram(uint32_t vendor_id, uint32_t device_id) {
+  switch (vendor_id) {
+    case 0x10de:
+      base::SparseHistogram::FactoryGet(
+          "GPU.MultiGpu.Nvidia", base::HistogramBase::kUmaTargetedHistogramFlag)
+          ->Add(device_id);
+      break;
+    case 0x1002:
+      base::SparseHistogram::FactoryGet(
+          "GPU.MultiGpu.AMD", base::HistogramBase::kUmaTargetedHistogramFlag)
+          ->Add(device_id);
+      break;
+    default:
+      // Do nothing if it's not Nvidia/AMD.
+      break;
+  }
+}
+
 #if defined(OS_WIN)
 uint32_t GetSystemCommitLimitMb() {
   PERFORMANCE_INFORMATION perf_info = {sizeof(perf_info)};
@@ -395,8 +404,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
@@ -426,8 +433,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
-      kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
@@ -459,8 +464,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
@@ -539,9 +542,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       GetAcceleratedVideoDecodeFeatureStatus(blocklisted_features,
                                              use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
-      GetProtectedVideoDecodeFeatureStatus(blocklisted_features, gpu_info,
-                                           use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       GetOopRasterizationFeatureStatus(blocklisted_features, *command_line,
                                        gpu_preferences, gpu_info);
@@ -941,6 +941,16 @@ void RecordDevicePerfInfoHistograms() {
                             device_perf_info->intel_gpu_generation);
   UMA_HISTOGRAM_BOOLEAN("GPU.SoftwareRendering",
                         device_perf_info->software_rendering);
+}
+
+void RecordDiscreteGpuHistograms(const GPUInfo& gpu_info) {
+  if (gpu_info.GpuCount() < 2)
+    return;
+  // To simplify logic, if there are multiple GPUs identified on a device,
+  // assume AMD or Nvidia is the discrete GPU.
+  RecordGpuHistogram(gpu_info.gpu.vendor_id, gpu_info.gpu.device_id);
+  for (const auto& gpu : gpu_info.secondary_gpus)
+    RecordGpuHistogram(gpu.vendor_id, gpu.device_id);
 }
 
 #if defined(OS_WIN)

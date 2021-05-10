@@ -80,25 +80,12 @@ config("compiler") {
   ]
 
   if (is_clang) {
-    # Don't look for includes in %INCLUDE%.
-    cflags += [ "/X" ]
-
     # Required to make the 19041 SDK compatible with clang-cl.
     # See https://crbug.com/1089996 issue #2 for details.
     cflags += [ "/D__WRL_ENABLE_FUNCTION_STATICS__" ]
 
     # Tell clang which version of MSVC to emulate.
     cflags += [ "-fmsc-version=1916" ]
-
-    # Emit table of address-taken functions for Control-Flow Guard (CFG).
-    # This is needed to allow functions to be called by code that is built
-    # with CFG enabled, such as system libraries.
-    # The CFG guards are only emitted if |win_enable_cfg_guards| is enabled.
-    if (win_enable_cfg_guards) {
-      cflags += [ "/guard:cf" ]
-    } else {
-      cflags += [ "/guard:cf,nochecks" ]
-    }
 
     if (is_component_build) {
       cflags += [
@@ -116,6 +103,13 @@ config("compiler") {
       cflags += [ "--target=arm64-windows" ]
     } else {
       assert(false, "unknown current_cpu " + current_cpu)
+    }
+
+    # Chrome currently requires SSE3. Clang supports targeting any Intel
+    # microarchitecture. MSVC only supports a subset of architectures, and the
+    # next step after SSE2 will be AVX.
+    if (current_cpu == "x86" || current_cpu == "x64") {
+      cflags += [ "-msse3" ]
     }
 
     if (exec_script("//build/win/use_ansi_codes.py", [], "trim string") ==
@@ -346,6 +340,31 @@ config("common_linker_setup") {
   }
 }
 
+config("default_cfg_compiler") {
+  # Emit table of address-taken functions for Control-Flow Guard (CFG).
+  # This is needed to allow functions to be called by code that is built
+  # with CFG enabled, such as system libraries.
+  # The CFG guards are only emitted if |win_enable_cfg_guards| is enabled.
+  if (is_clang) {
+    if (win_enable_cfg_guards) {
+      cflags = [ "/guard:cf" ]
+    } else {
+      cflags = [ "/guard:cf,nochecks" ]
+    }
+  }
+}
+
+# To disable CFG guards for a target, remove the "default_cfg_compiler"
+# config, and add "disable_guards_cfg_compiler" config.
+config("disable_guards_cfg_compiler") {
+  # Emit table of address-taken functions for Control-Flow Guard (CFG).
+  # This is needed to allow functions to be called by code that is built
+  # with CFG enabled, such as system libraries.
+  if (is_clang) {
+    cflags = [ "/guard:cf,nochecks" ]
+  }
+}
+
 config("cfi_linker") {
   # Control Flow Guard (CFG)
   # https://msdn.microsoft.com/en-us/library/windows/desktop/mt637065.aspx
@@ -354,9 +373,7 @@ config("cfi_linker") {
   # ASan and CFG leads to slow process startup. Chromium's test runner uses
   # lots of child processes, so this means things are really slow. Disable CFG
   # for now. https://crbug.com/846966
-  # TODO(thakis): Re-enable in release component builds once they work again,
-  # https://crbug.com/1147194
-  if (!is_debug && !is_asan && !is_component_build) {
+  if (!is_debug && !is_asan) {
     # Turn on CFG bitmap generation and CFG load config.
     if (target_cpu == "arm64") {
       # longjmp protection is temporarily disabled on Windows on Arm64 due to
@@ -573,22 +590,4 @@ config("lean_and_mean") {
 
 config("nominmax") {
   defines = [ "NOMINMAX" ]
-}
-
-# Generating order files -------------------------------------------------------
-
-config("default_cygprofile_instrumentation") {
-  if (generate_order_files) {
-    assert(is_clang, "cygprofile instrumentation only works with clang")
-    assert(is_official_build, "order files should be made w/ official builds")
-    assert(!is_chrome_branded, "order files could leak internal symbol names")
-    configs = [ ":cygprofile_instrumentation" ]
-  }
-}
-
-config("cygprofile_instrumentation") {
-  cflags = [
-    "-Xclang",
-    "-finstrument-functions-after-inlining",
-  ]
 }

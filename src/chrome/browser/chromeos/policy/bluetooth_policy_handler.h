@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace policy {
@@ -35,8 +35,7 @@ class BluetoothPolicyHandler {
   void SetBluetoothPolicy(scoped_refptr<device::BluetoothAdapter> adapter);
 
   chromeos::CrosSettings* cros_settings_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      bluetooth_policy_subscription_;
+  base::CallbackListSubscription bluetooth_policy_subscription_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   base::WeakPtrFactory<BluetoothPolicyHandler> weak_factory_{this};
 

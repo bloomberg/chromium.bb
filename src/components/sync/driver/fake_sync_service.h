@@ -34,12 +34,12 @@ class FakeSyncService : public SyncService {
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;
-  ModelTypeSet GetBackedOffDataTypes() const override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void StopAndClear() override;
+  void SetSyncAllowedByPlatform(bool allowed) override;
   ModelTypeSet GetPreferredDataTypes() const override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;

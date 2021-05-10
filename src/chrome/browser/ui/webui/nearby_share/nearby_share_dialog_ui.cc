@@ -17,6 +17,7 @@
 #include "chrome/browser/nearby_sharing/text_attachment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,8 +38,8 @@ namespace nearby_share {
 NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  // Nearby Share is not available to incognito or guest profiles.
-  DCHECK(profile->IsRegularProfile());
+  DCHECK(NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+      profile));
 
   nearby_service_ = NearbySharingServiceFactory::GetForBrowserContext(profile);
 
@@ -48,7 +49,6 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(html_source,
                               base::make_span(kNearbyShareDialogResources,
                                               kNearbyShareDialogResourcesSize),
-                              /*generated_path=*/std::string(),
                               IDR_NEARBY_SHARE_DIALOG_NEARBY_SHARE_DIALOG_HTML);
 
   // To use lottie, the worker-src CSP needs to be updated for the web ui that
@@ -65,6 +65,12 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
   web_ui->RegisterMessageCallback(
       "close", base::BindRepeating(&NearbyShareDialogUI::HandleClose,
                                    base::Unretained(this)));
+
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString(
+      "nearbyShareContactVisibilityNumUnreachable",
+      IDS_NEARBY_CONTACT_VISIBILITY_NUM_UNREACHABLE);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   content::WebUIDataSource::Add(profile, html_source);
 
@@ -128,8 +134,9 @@ void NearbyShareDialogUI::SetAttachmentFromQueryParameter(const GURL& url) {
            {"phone", TextAttachment::Type::kPhoneNumber},
            {"text", TextAttachment::Type::kText}}) {
     if (net::GetValueForKeyInQuery(url, text_type.first, &value)) {
-      attachments.push_back(
-          std::make_unique<TextAttachment>(text_type.second, value));
+      attachments.push_back(std::make_unique<TextAttachment>(
+          text_type.second, value, /*title=*/base::nullopt,
+          /*mime_type=*/base::nullopt));
       SetAttachments(std::move(attachments));
       return;
     }

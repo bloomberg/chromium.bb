@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
@@ -20,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
+#include "ui/views/view_utils.h"
 
 // The param indicates if the feature showing password icon in the new toolbar
 // status chip is enabled.
@@ -52,7 +54,7 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
             ->GetPageActionIconView(PageActionIconType::kManagePasswords);
-    DCHECK_EQ(view->GetClassName(), ManagePasswordsIconViews::kClassName);
+    DCHECK(views::IsViewClass<ManagePasswordsIconViews>(view));
     return static_cast<ManagePasswordsIconViews*>(view);
   }
 
@@ -132,10 +134,10 @@ IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, CloseOnClick) {
 
 // TODO(crbug.com/932818): Remove the condition once the experiment is enabled
 // on ChromeOS. For now, on ChromeOS, we only test the non-experimental branch.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 INSTANTIATE_TEST_SUITE_P(All,
                          ManagePasswordsIconViewTest,
                          ::testing::Values(false));
 #else
 INSTANTIATE_TEST_SUITE_P(All, ManagePasswordsIconViewTest, ::testing::Bool());
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

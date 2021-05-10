@@ -44,7 +44,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/url_constants.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,6 +114,25 @@ TabAndroid* TabAndroid::FromWebContents(
 
 TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, const JavaRef<jobject>& obj) {
   return reinterpret_cast<TabAndroid*>(Java_TabImpl_getNativePtr(env, obj));
+}
+
+std::vector<TabAndroid*> TabAndroid::GetAllNativeTabs(
+    JNIEnv* env,
+    const ScopedJavaLocalRef<jobjectArray>& obj_array) {
+  std::vector<TabAndroid*> tab_native_ptrs;
+  ScopedJavaLocalRef<jlongArray> j_tabs_ptr =
+      Java_TabImpl_getAllNativePtrs(env, obj_array);
+  if (j_tabs_ptr.is_null())
+    return tab_native_ptrs;
+
+  std::vector<jlong> tab_ptr;
+  base::android::JavaLongArrayToLongVector(env, j_tabs_ptr, &tab_ptr);
+
+  for (size_t i = 0; i < tab_ptr.size(); ++i) {
+    tab_native_ptrs.push_back(reinterpret_cast<TabAndroid*>(tab_ptr[i]));
+  }
+
+  return tab_native_ptrs;
 }
 
 void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
@@ -241,13 +260,12 @@ void TabAndroid::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void TabAndroid::Destroy(JNIEnv* env) {
   delete this;
 }
 
 void TabAndroid::InitWebContents(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     jboolean incognito,
     jboolean is_background_tab,
     const JavaParamRef<jobject>& jweb_contents,
@@ -294,7 +312,6 @@ void TabAndroid::InitWebContents(
 
 void TabAndroid::UpdateDelegates(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator_factory) {
   ContextMenuHelper::FromWebContents(web_contents())
@@ -316,8 +333,7 @@ void WillRemoveWebContentsFromTab(content::WebContents* contents) {
 }
 }  // namespace
 
-void TabAndroid::DestroyWebContents(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
+void TabAndroid::DestroyWebContents(JNIEnv* env) {
   WillRemoveWebContentsFromTab(web_contents());
 
   // Terminate the renderer process if this is the last tab.
@@ -337,8 +353,7 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   synced_tab_delegate_->ResetWebContents();
 }
 
-void TabAndroid::ReleaseWebContents(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
+void TabAndroid::ReleaseWebContents(JNIEnv* env) {
   WillRemoveWebContentsFromTab(web_contents());
 
   // Ownership of |released_contents| is assumed by the code that initiated the
@@ -354,7 +369,6 @@ void TabAndroid::ReleaseWebContents(JNIEnv* env,
 
 void TabAndroid::OnPhysicalBackingSizeChanged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
@@ -366,7 +380,6 @@ void TabAndroid::OnPhysicalBackingSizeChanged(
 
 TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jobject>& j_initiator_origin,
     const JavaParamRef<jstring>& j_extra_headers,
@@ -379,7 +392,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     jboolean has_user_gesture,
     jboolean should_clear_history_list,
     jlong input_start_timestamp,
-    jlong intent_received_timestamp) {
+    jlong intent_received_timestamp,
+    jint ua_override_option) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -436,6 +450,9 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
       load_params.input_start =
           base::TimeTicks::FromUptimeMillis(intent_received_timestamp);
     }
+    load_params.override_user_agent =
+        static_cast<NavigationController::UserAgentOverrideOption>(
+            ua_override_option);
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;
@@ -443,7 +460,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
 
 void TabAndroid::SetActiveNavigationEntryTitleForUrl(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jurl,
     const JavaParamRef<jstring>& jtitle) {
   DCHECK(web_contents());
@@ -462,8 +478,7 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
     entry->SetTitle(title);
 }
 
-void TabAndroid::LoadOriginalImage(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
+void TabAndroid::LoadOriginalImage(JNIEnv* env) {
   content::RenderFrameHost* render_frame_host =
       web_contents()->GetFocusedFrame();
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> renderer;

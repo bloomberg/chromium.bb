@@ -27,7 +27,7 @@ EMAR=`which emar`
 
 RELEASE_CONF="-Oz --closure 1 --llvm-lto 1 -DSK_RELEASE --pre-js $BASE_DIR/release.js \
               -DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0 -DSK_DISABLE_TRACING"
-EXTRA_CFLAGS="\"-DSK_RELEASE\", \"-DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0\",\"-DSK_DISABLE_TRACING\""
+EXTRA_CFLAGS="\"-DSK_RELEASE\", \"-DSK_DISABLE_TRACING\""
 IS_OFFICIAL_BUILD="true"
 
 if [[ $@ == *full-build* ]]; then
@@ -159,7 +159,6 @@ echo "Compiling bitcode"
   skia_use_system_libjpeg_turbo=false \
   skia_use_vulkan=false \
   skia_enable_fontmgr_custom_directory=false \
-  skia_enable_sksl_interpreter=false \
   \
   ${GN_GPU} \
   \

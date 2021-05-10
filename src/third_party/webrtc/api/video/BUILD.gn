@@ -142,7 +142,6 @@ rtc_library("encoded_image") {
     "..:rtp_packet_info",
     "..:scoped_refptr",
     "../../rtc_base:checks",
-    "../../rtc_base:deprecation",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base/system:rtc_export",
   ]
@@ -296,24 +295,6 @@ rtc_source_set("video_frame_metadata") {
   absl_deps = [
     "//third_party/abseil-cpp/absl/container:inlined_vector",
     "//third_party/abseil-cpp/absl/types:optional",
-  ]
-}
-
-rtc_library("video_stream_encoder_create") {
-  visibility = [ "*" ]
-  sources = [
-    "video_stream_encoder_create.cc",
-    "video_stream_encoder_create.h",
-  ]
-
-  deps = [
-    ":video_frame",
-    ":video_stream_encoder",
-    "../../api:scoped_refptr",
-    "../../video:video_stream_encoder_impl",
-    "../../video/adaptation:video_adaptation",
-    "../task_queue",
-    "../video_codecs:video_codecs_api",
   ]
 }
 

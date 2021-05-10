@@ -11,6 +11,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
+#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_proxy_configurator.h"
+#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service.h"
+#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service_factory.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -365,10 +368,33 @@ void PrefetchProxyProxyingURLLoaderFactory::CreateLoaderAndStart(
   // If this request is happening during a prerender then check if it is
   // eligible for caching before putting it on the network.
   if (ShouldHandleRequestForPrerender()) {
+    // Do not allow insecure resources to be fetched due to risk of privacy
+    // leaks in an HSTS setting.
+    if (!request.url.SchemeIs(url::kHttpsScheme)) {
+      std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
+          std::move(loader_receiver), std::move(client));
+      // The request will manage its own lifecycle based on the mojo pipes.
+      request.release();
+      return;
+    }
+
     // Check if this prerender has exceeded its max number of subresources.
     request_count_++;
     if (request_count_ > PrefetchProxyMaxSubresourcesPerPrerender()) {
       metrics_observer_->OnResourceThrottled(request.url);
+      std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
+          std::move(loader_receiver), std::move(client));
+      // The request will manage its own lifecycle based on the mojo pipes.
+      request.release();
+      return;
+    }
+
+    // Check that the proxy server is available. If not, fast abort the request.
+    PrefetchProxyService* prefetch_proxy_service =
+        PrefetchProxyServiceFactory::GetForProfile(profile);
+    if (prefetch_proxy_service && !prefetch_proxy_service->proxy_configurator()
+                                       ->IsPrefetchProxyAvailable()) {
+      metrics_observer_->OnProxyUnavailableForResource(request.url);
       std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
           std::move(loader_receiver), std::move(client));
       // The request will manage its own lifecycle based on the mojo pipes.
@@ -487,10 +513,10 @@ void PrefetchProxyProxyingURLLoaderFactory::
         const GURL& url,
         network::mojom::URLResponseHeadPtr head,
         const network::URLLoaderCompletionStatus& status) {
-  base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Subresources.NetError",
+  base::UmaHistogramSparse("PrefetchProxy.Prefetch.Subresources.NetError",
                            std::abs(status.error_code));
   if (head && head->headers) {
-    base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Subresources.RespCode",
+    base::UmaHistogramSparse("PrefetchProxy.Prefetch.Subresources.RespCode",
                              head->headers->response_code());
   }
 
@@ -501,7 +527,7 @@ void PrefetchProxyProxyingURLLoaderFactory::RecordSubresourceMetricsAfterClick(
     const GURL& url,
     network::mojom::URLResponseHeadPtr head,
     const network::URLLoaderCompletionStatus& status) {
-  UMA_HISTOGRAM_BOOLEAN("IsolatedPrerender.AfterClick.Subresources.UsedCache",
+  UMA_HISTOGRAM_BOOLEAN("PrefetchProxy.AfterClick.Subresources.UsedCache",
                         status.exists_in_cache);
   metrics_observer_->OnResourceUsedFromCache(url);
 }

@@ -115,8 +115,8 @@ constexpr char kAbortErrorMessage[] =
 
 constexpr char kGetFeaturePolicyMissingMessage[] =
     "webauth: NotAllowedError: The 'publickey-credentials-get' feature is "
-    "not enabled in this document. Feature Policy may be used to delegate Web "
-    "Authentication capabilities to cross-origin child frames.";
+    "not enabled in this document. Permissions Policy may be used to delegate "
+    "Web Authentication capabilities to cross-origin child frames.";
 
 constexpr char kCrossOriginAncestorMessage[] =
     "webauth: NotAllowedError: The following credential operations can only "
@@ -289,7 +289,7 @@ class ClosureExecutorBeforeNavigationCommit
   bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
       NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
     if (closure_)
@@ -521,7 +521,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         /*hmac_create_secret=*/false, /*prf_enable=*/false,
         blink::mojom::ProtectionPolicy::UNSPECIFIED,
         /*enforce_protection_policy=*/false, /*appid_exclude=*/base::nullopt,
-        /*cred_props=*/false, device::LargeBlobSupport::kNotRequested);
+        /*cred_props=*/false, device::LargeBlobSupport::kNotRequested,
+        /*is_payment_credential_creation=*/false);
 
     return mojo_options;
   }
@@ -540,9 +541,10 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New(
-        kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
-        std::move(credentials), device::UserVerificationRequirement::kPreferred,
-        base::nullopt, std::vector<device::CableDiscoveryData>(), /*prf=*/false,
+        /*is_conditional=*/false, kTestChallenge,
+        base::TimeDelta::FromSeconds(30), "acme.com", std::move(credentials),
+        device::UserVerificationRequirement::kPreferred, base::nullopt,
+        std::vector<device::CableDiscoveryData>(), /*prf=*/false,
         /*prf_inputs=*/std::vector<blink::mojom::PRFValuesPtr>(),
         /*large_blob_read=*/false, /*large_blob_write=*/base::nullopt);
     return mojo_options;
@@ -660,6 +662,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
 
           if (behavior == AttestationCallbackBehavior::BEFORE_NAVIGATION) {
             std::move(callback).Run(false);
+            // Silence the erroneous bugprone-use-after-move.
+            callback = base::OnceCallback<void(bool)>();
           }
           EXPECT_TRUE(NavigateToURL(
               shell(), GetHttpsURL("www.acme.com", "/title2.html")));
@@ -994,7 +998,17 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // signal's aborted flag set after sending request, we get an AbortError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithAbortSetAfterCreate) {
-  InjectVirtualFidoDeviceFactory();
+  // This test sends the abort signal after making the WebAuthn call. However,
+  // the WebAuthn call could complete before the abort signal is sent, leading
+  // to a flakey test. Thus the |simulate_press_callback| is installed and
+  // always returns false, to ensure that the VirtualFidoDevice stalls the
+  // WebAuthn call and the abort signal will happen in time.
+  device::test::VirtualFidoDeviceFactory* virtual_device_factory =
+      InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->mutable_state()->simulate_press_callback =
+      base::BindRepeating(
+          [](device::VirtualFidoDevice*) -> bool { return false; });
+
   CreateParameters parameters;
   parameters.signal = "authAbortSignal";
   std::string result;
@@ -1110,7 +1124,17 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // signal's aborted flag set after sending request, we get an AbortError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialWithAbortSetAfterGet) {
-  InjectVirtualFidoDeviceFactory();
+  // This test sends the abort signal after making the WebAuthn call. However,
+  // the WebAuthn call could complete before the abort signal is sent, leading
+  // to a flakey test. Thus the |simulate_press_callback| is installed and
+  // always returns false, to ensure that the VirtualFidoDevice stalls the
+  // WebAuthn call and the abort signal will happen in time.
+  device::test::VirtualFidoDeviceFactory* virtual_device_factory =
+      InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->mutable_state()->simulate_press_callback =
+      base::BindRepeating(
+          [](device::VirtualFidoDevice*) -> bool { return false; });
+
   GetParameters parameters;
   parameters.signal = "authAbortSignal";
   std::string result;
@@ -1299,6 +1323,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
           if (behavior == AttestationCallbackBehavior::BEFORE_NAVIGATION) {
             std::move(callback).Run(true);
+            // Silence the erroneous bugprone-use-after-move.
+            callback = base::OnceCallback<void(bool)>();
           }
           // Can't use NavigateIframeToURL here because in the
           // BEFORE_NAVIGATION case we are racing AuthenticatorImpl and

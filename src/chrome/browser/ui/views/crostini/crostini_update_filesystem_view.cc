@@ -22,6 +22,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -80,7 +81,10 @@ void CloseCrostiniUpdateFilesystemView() {
 }  // namespace crostini
 
 void CrostiniUpdateFilesystemView::Show(Profile* profile) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   if (!g_crostini_update_filesystem_view_dialog) {
     g_crostini_update_filesystem_view_dialog =
         new CrostiniUpdateFilesystemView();
@@ -126,3 +130,6 @@ CrostiniUpdateFilesystemView::CrostiniUpdateFilesystemView() {
 CrostiniUpdateFilesystemView::~CrostiniUpdateFilesystemView() {
   g_crostini_update_filesystem_view_dialog = nullptr;
 }
+
+BEGIN_METADATA(CrostiniUpdateFilesystemView, views::BubbleDialogDelegateView)
+END_METADATA

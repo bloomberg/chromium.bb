@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
+#include "third_party/blink/renderer/core/loader/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -97,16 +97,18 @@ void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
     const AtomicString& content) {
   if (!window || !window->GetFrame())
     return;
-  if (window->GetFrame()->GetSettings()->BypassCSP())
+  if (window->GetFrame()->GetSettings()->GetBypassCSP())
     return;
   if (EqualIgnoringASCIICase(equiv, "content-security-policy")) {
     window->GetContentSecurityPolicy()->DidReceiveHeader(
-        content, network::mojom::ContentSecurityPolicyType::kEnforce,
+        content, *(window->GetSecurityOrigin()),
+        network::mojom::ContentSecurityPolicyType::kEnforce,
         network::mojom::ContentSecurityPolicySource::kMeta);
   } else if (EqualIgnoringASCIICase(equiv,
                                     "content-security-policy-report-only")) {
     window->GetContentSecurityPolicy()->DidReceiveHeader(
-        content, network::mojom::ContentSecurityPolicyType::kReport,
+        content, *(window->GetSecurityOrigin()),
+        network::mojom::ContentSecurityPolicyType::kReport,
         network::mojom::ContentSecurityPolicySource::kMeta);
   } else {
     NOTREACHED();

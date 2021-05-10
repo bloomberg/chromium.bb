@@ -64,6 +64,7 @@ class LocalFrameView;
 class Node;
 struct PhysicalRect;
 class QualifiedName;
+enum class RenderBlockingBehavior : uint8_t;
 class Resource;
 class ResourceError;
 class ResourceRequest;
@@ -91,7 +92,8 @@ class CORE_EXPORT InspectorTraceEvents
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       ResourceType);
+                       ResourceType,
+                       RenderBlockingBehavior);
   void WillSendNavigationRequest(uint64_t identifier,
                                  DocumentLoader*,
                                  const KURL&,
@@ -137,6 +139,13 @@ class CORE_EXPORT InspectorTraceEvents
  private:
   DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);
 };
+
+#define DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(event_name, function_name, ...) \
+  TRACE_EVENT_INSTANT1("devtools.timeline", event_name,                       \
+                       TRACE_EVENT_SCOPE_THREAD, "data",                      \
+                       [&](perfetto::TracedValue ctx) {                       \
+                         function_name(std::move(ctx), __VA_ARGS__);          \
+                       })
 
 namespace inspector_layout_event {
 std::unique_ptr<TracedValue> BeginData(LocalFrameView*);
@@ -238,6 +247,7 @@ extern const char kFullscreen[];
 extern const char kChildChanged[];
 extern const char kListValueChange[];
 extern const char kListStyleTypeChange[];
+extern const char kCounterStyleChange[];
 extern const char kImageChanged[];
 extern const char kLineBoxesChanged[];
 extern const char kSliderValueChanged[];
@@ -259,6 +269,7 @@ extern const char kTextControlChanged[];
 extern const char kSvgChanged[];
 extern const char kScrollbarChanged[];
 extern const char kDisplayLock[];
+extern CORE_EXPORT const char kCanvasFormattedTextRunChange[];
 }  // namespace layout_invalidation_reason
 
 // LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
@@ -277,10 +288,12 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
 }
 
 namespace inspector_send_request_event {
-std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
-                                  LocalFrame*,
-                                  const ResourceRequest&);
+void Data(perfetto::TracedValue context,
+          DocumentLoader*,
+          uint64_t identifier,
+          LocalFrame*,
+          const ResourceRequest&,
+          RenderBlockingBehavior);
 }
 
 namespace inspector_send_navigation_request_event {

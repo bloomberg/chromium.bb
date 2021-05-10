@@ -78,13 +78,8 @@
   DCHECK(self.positioner);
 
   // Creates the LegacyInfobarContainerVC.
-  FullscreenController* controller;
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
-    controller = FullscreenController::FromBrowser(self.browser);
-  } else {
-    controller =
-        FullscreenController::FromBrowserState(self.browser->GetBrowserState());
-  }
+  FullscreenController* controller =
+      FullscreenController::FromBrowser(self.browser);
   LegacyInfobarContainerViewController* legacyContainer =
       [[LegacyInfobarContainerViewController alloc]
           initWithFullscreenController:controller];
@@ -161,8 +156,6 @@
 
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion {
-  DCHECK(IsInfobarUIRebootEnabled());
-
   for (InfobarCoordinator* infobarCoordinator in self.infobarCoordinators) {
     if (infobarCoordinator.infobarBannerState !=
         InfobarBannerPresentationState::NotPresented) {
@@ -198,7 +191,6 @@
 #pragma mark - Accessors
 
 - (InfobarBannerPresentationState)infobarBannerState {
-  DCHECK(IsInfobarUIRebootEnabled());
   for (InfobarCoordinator* infobarCoordinator in self.infobarCoordinators) {
     if (infobarCoordinator.infobarBannerState !=
         InfobarBannerPresentationState::NotPresented) {
@@ -215,7 +207,6 @@
 
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
                     skipBanner:(BOOL)skipBanner {
-  DCHECK(IsInfobarUIRebootEnabled());
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(infoBarDelegate);
 
@@ -243,9 +234,7 @@
 }
 
 - (void)infobarManagerWillChange {
-  if (IsInfobarUIRebootEnabled()) {
-    [self dismissInfobarBannerAnimated:NO completion:nil];
-  }
+  [self dismissInfobarBannerAnimated:NO completion:nil];
   self.infobarCoordinators = [NSMutableArray array];
   self.infobarCoordinatorsToPresent = [NSMutableArray array];
 }
@@ -255,7 +244,6 @@
 }
 
 - (void)updateLayoutAnimated:(BOOL)animated {
-  DCHECK(IsInfobarUIRebootEnabled());
   // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
   // since we use autolayout for the contained Infobars.
 }

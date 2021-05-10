@@ -10,6 +10,7 @@
 #include "src/heap/heap.h"
 #include "src/heap/local-heap-inl.h"
 #include "src/heap/local-heap.h"
+#include "src/heap/parked-scope.h"
 #include "test/cctest/cctest.h"
 #include "test/cctest/heap/heap-utils.h"
 
@@ -67,7 +68,6 @@ class ConcurrentSearchThread final : public v8::base::Thread {
 
 // Test to search on a background thread, while the main thread is idle.
 TEST(ProtoWalkBackground) {
-  heap::EnsureFlagLocalHeapsEnabled();
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
 
@@ -78,7 +78,7 @@ TEST(ProtoWalkBackground) {
   HandleScope handle_scope(isolate);
 
   Handle<JSFunction> function =
-      factory->NewFunctionForTest(factory->empty_string());
+      factory->NewFunctionForTesting(factory->empty_string());
   Handle<JSObject> js_object = factory->NewJSObject(function);
   Handle<String> name = CcTest::MakeString("property");
   Handle<Object> value = CcTest::MakeString("dummy_value");
@@ -107,7 +107,6 @@ TEST(ProtoWalkBackground) {
 // Test to search on a background thread, while the main thread modifies the
 // descriptor array.
 TEST(ProtoWalkBackground_DescriptorArrayWrite) {
-  heap::EnsureFlagLocalHeapsEnabled();
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
 
@@ -118,7 +117,7 @@ TEST(ProtoWalkBackground_DescriptorArrayWrite) {
   HandleScope handle_scope(isolate);
 
   Handle<JSFunction> function =
-      factory->NewFunctionForTest(factory->empty_string());
+      factory->NewFunctionForTesting(factory->empty_string());
   Handle<JSObject> js_object = factory->NewJSObject(function);
   Handle<String> name = CcTest::MakeString("property");
   Handle<Object> value = CcTest::MakeString("dummy_value");
@@ -154,7 +153,6 @@ TEST(ProtoWalkBackground_DescriptorArrayWrite) {
 }
 
 TEST(ProtoWalkBackground_PrototypeChainWrite) {
-  heap::EnsureFlagLocalHeapsEnabled();
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
 
@@ -165,7 +163,7 @@ TEST(ProtoWalkBackground_PrototypeChainWrite) {
   HandleScope handle_scope(isolate);
 
   Handle<JSFunction> function =
-      factory->NewFunctionForTest(factory->empty_string());
+      factory->NewFunctionForTesting(factory->empty_string());
   Handle<JSObject> js_object = factory->NewJSObject(function);
 
   for (int i = 0; i < kNumHandles; i++) {

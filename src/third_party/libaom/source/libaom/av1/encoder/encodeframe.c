@@ -442,6 +442,7 @@ static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
 }
 #endif  // !CONFIG_REALTIME_ONLY
 
+#if CONFIG_RT_ML_PARTITIONING
 // Get a prediction(stored in x->est_pred) for the whole superblock.
 static void get_estimated_pred(AV1_COMP *cpi, const TileInfo *const tile,
                                MACROBLOCK *x, int mi_row, int mi_col) {
@@ -489,6 +490,7 @@ static void get_estimated_pred(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_VP9_HIGHBITDEPTH
   }
 }
+#endif  // CONFIG_RT_ML_PARTITIONING
 
 #define AVG_CDF_WEIGHT_LEFT 3
 #define AVG_CDF_WEIGHT_TOP_RIGHT 1
@@ -520,7 +522,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
     int offset = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
     av1_source_content_sb(cpi, x, offset);
   }
-
+#if CONFIG_RT_ML_PARTITIONING
   if (sf->part_sf.partition_search_type == ML_BASED_PARTITION) {
     PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
     RD_STATS dummy_rdc;
@@ -530,7 +532,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
     av1_free_pc_tree_recursive(pc_root, av1_num_planes(cm), 0, 0);
     return;
   }
-
+#endif
   // Set the partition
   if (sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip) {
     // set a fixed-size partition
@@ -775,7 +777,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   const int use_nonrd_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
-  start_timing(cpi, encode_sb_time);
+  start_timing(cpi, encode_sb_row_time);
 #endif
 
   // Initialize the left context for the new SB row
@@ -803,15 +805,20 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         // restore frame context at the 1st column sb
         memcpy(xd->tile_ctx, x->row_ctx, sizeof(*xd->tile_ctx));
       } else {
-        // update context
-        int wt_left = AVG_CDF_WEIGHT_LEFT;
-        int wt_tr = AVG_CDF_WEIGHT_TOP_RIGHT;
-        if (tile_info->mi_col_end > (mi_col + mib_size))
-          av1_avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile,
-                              wt_left, wt_tr);
-        else
-          av1_avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile - 1,
-                              wt_left, wt_tr);
+        if (!cpi->sf.rt_sf.use_nonrd_pick_mode ||
+            cpi->oxcf.cost_upd_freq.coeff < 2 ||
+            cpi->oxcf.cost_upd_freq.mode < 2 ||
+            cpi->oxcf.cost_upd_freq.mv < 2) {
+          // update context
+          int wt_left = AVG_CDF_WEIGHT_LEFT;
+          int wt_tr = AVG_CDF_WEIGHT_TOP_RIGHT;
+          if (tile_info->mi_col_end > (mi_col + mib_size))
+            av1_avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile,
+                                wt_left, wt_tr);
+          else
+            av1_avg_cdf_symbols(xd->tile_ctx, x->row_ctx + sb_col_in_tile - 1,
+                                wt_left, wt_tr);
+        }
       }
     }
 
@@ -821,7 +828,9 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     // Reset color coding related parameters
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
-    x->content_state_sb = 0;
+    x->content_state_sb.source_sad = kMedSad;
+    x->content_state_sb.lighting_change = 0;
+    x->content_state_sb.low_sumdiff = 0;
 
     xd->cur_frame_force_integer_mv = cm->features.cur_frame_force_integer_mv;
     x->source_variance = UINT_MAX;
@@ -859,7 +868,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
                                     sb_cols_in_tile);
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
-  end_timing(cpi, encode_sb_time);
+  end_timing(cpi, encode_sb_row_time);
 #endif
 }
 
@@ -987,8 +996,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   if (cpi->oxcf.intra_mode_cfg.enable_cfl_intra)
     cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
-  av1_crc32c_calculator_init(
-      &td->mb.txfm_search_info.mb_rd_record.crc_calculator);
+  if (td->mb.txfm_search_info.txb_rd_records != NULL) {
+    av1_crc32c_calculator_init(
+        &td->mb.txfm_search_info.txb_rd_records->mb_rd_record.crc_calculator);
+  }
 
   for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params.mib_size) {
@@ -1013,6 +1024,10 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
   if (cpi->allocated_tiles < tile_cols * tile_rows) av1_alloc_tile_data(cpi);
 
   av1_init_tile_data(cpi);
+  if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
+    cpi->td.mb.txfm_search_info.txb_rd_records =
+        (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords));
+  }
 
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
@@ -1026,6 +1041,11 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
       cpi->intrabc_used |= cpi->td.intrabc_used;
       cpi->deltaq_used |= cpi->td.deltaq_used;
     }
+  }
+
+  if (cpi->td.mb.txfm_search_info.txb_rd_records) {
+    aom_free(cpi->td.mb.txfm_search_info.txb_rd_records);
+    cpi->td.mb.txfm_search_info.txb_rd_records = NULL;
   }
 }
 
@@ -1360,8 +1380,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   }
 
   av1_frame_init_quantizer(cpi);
-  av1_initialize_rd_consts(cpi);
-  av1_set_sad_per_bit(cpi, &x->mv_costs, quant_params->base_qindex);
 
   init_encode_frame_mb_context(cpi);
   set_default_interp_skip_flags(cm, &cpi->interp_search_flags);
@@ -1411,6 +1429,14 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   cm->current_frame.skip_mode_info.skip_mode_flag =
       check_skip_mode_enabled(cpi);
+
+  // Initialization of skip mode cost depends on the value of
+  // 'skip_mode_flag'. This initialization happens in the function
+  // av1_fill_mode_rates(), which is in turn called in
+  // av1_initialize_rd_consts(). Thus, av1_initialize_rd_consts()
+  // has to be called after 'skip_mode_flag' is initialized.
+  av1_initialize_rd_consts(cpi);
+  av1_set_sad_per_bit(cpi, &x->sadperbit, quant_params->base_qindex);
 
   enc_row_mt->sync_read_ptr = av1_row_mt_sync_read_dummy;
   enc_row_mt->sync_write_ptr = av1_row_mt_sync_write_dummy;
@@ -1474,8 +1500,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (!cpi->sf.inter_sf.disable_obmc &&
-      cpi->sf.inter_sf.prune_obmc_prob_thresh > 0) {
+  if (cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
+      cpi->sf.inter_sf.prune_obmc_prob_thresh < INT_MAX) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < BLOCK_SIZES_ALL; i++) {
@@ -1526,7 +1552,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
     }
   }
-
   if (hash_table_created) {
     av1_hash_table_destroy(&intrabc_hash_info->intrabc_hash_table);
   }

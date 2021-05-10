@@ -230,7 +230,16 @@ IntSize ImageResourceContent::IntrinsicSize(
     RespectImageOrientationEnum should_respect_image_orientation) const {
   if (!image_)
     return IntSize();
-  return image_->Size(should_respect_image_orientation);
+  RespectImageOrientationEnum respect_orientation =
+      ForceOrientationIfNecessary(should_respect_image_orientation);
+  return image_->Size(respect_orientation);
+}
+
+RespectImageOrientationEnum ImageResourceContent::ForceOrientationIfNecessary(
+    RespectImageOrientationEnum default_orientation) const {
+  if (image_ && image_->IsBitmapImage() && !IsAccessAllowed())
+    return kRespectImageOrientation;
+  return default_orientation;
 }
 
 void ImageResourceContent::NotifyObservers(
@@ -580,7 +589,7 @@ void ImageResourceContent::Changed(const blink::Image* image) {
   NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes);
 }
 
-bool ImageResourceContent::IsAccessAllowed() {
+bool ImageResourceContent::IsAccessAllowed() const {
   return info_->IsAccessAllowed(
       GetImage()->CurrentFrameHasSingleSecurityOrigin()
           ? ImageResourceInfo::kHasSingleSecurityOrigin
@@ -655,6 +664,11 @@ void ImageResourceContent::LoadDeferredImage(ResourceFetcher* fetcher) {
 
 bool ImageResourceContent::IsAdResource() const {
   return info_->IsAdResource();
+}
+
+void ImageResourceContent::RecordDecodedImageType(UseCounter* use_counter) {
+  if (auto* bitmap_image = DynamicTo<BitmapImage>(image_.get()))
+    bitmap_image->RecordDecodedImageType(use_counter);
 }
 
 }  // namespace blink

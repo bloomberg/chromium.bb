@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -37,9 +38,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -179,7 +180,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   TestingPrefStoreWithCustomReadError* user_prefs_;
   BookmarkModel* model_;
 
-#if defined OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
@@ -246,8 +247,8 @@ TEST_F(ProfileSigninConfirmationHelperTest,
   char buf[18];
   for (int i = 0; i < 10; i++) {
     base::snprintf(buf, base::size(buf), "http://foo.com/%d", i);
-    history->AddPage(GURL(std::string(buf)), base::Time::Now(), NULL, 1, GURL(),
-                     history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+    history->AddPage(GURL(std::string(buf)), base::Time::Now(), nullptr, 1,
+                     GURL(), history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                      history::SOURCE_BROWSED, false, false);
   }
   EXPECT_TRUE(GetCallbackResult(
@@ -263,7 +264,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 
   // Profile is new but has a typed URL.
   profile_->SetIsNewProfile(true);
-  history->AddPage(GURL("http://example.com"), base::Time::Now(), NULL, 1,
+  history->AddPage(GURL("http://example.com"), base::Time::Now(), nullptr, 1,
                    GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
                    history::SOURCE_BROWSED, false, false);
   EXPECT_TRUE(GetCallbackResult(

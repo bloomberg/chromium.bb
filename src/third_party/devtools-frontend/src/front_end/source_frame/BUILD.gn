@@ -24,6 +24,7 @@ devtools_module("source_frame") {
     "../diff:bundle",
     "../formatter:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../object_ui:bundle",
     "../platform:bundle",
     "../sdk:bundle",
@@ -42,6 +43,12 @@ devtools_entrypoint("bundle") {
 
 devtools_entrypoint("legacy") {
   entrypoint = "source_frame-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "source_frame-meta.ts"
 
   deps = [ ":bundle" ]
 }

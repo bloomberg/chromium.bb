@@ -28,14 +28,31 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
  private:
   friend class PrintBackendServiceTestImpl;
 
+  using EnumeratePrintersCallback =
+      base::OnceCallback<void(const base::Optional<PrinterList>& printer_list)>;
   using GetDefaultPrinterCallback =
       base::OnceCallback<void(const base::Optional<std::string>& printer_name)>;
+  using GetPrinterSemanticCapsAndDefaultsCallback = base::OnceCallback<void(
+      base::Optional<PrinterSemanticCapsAndDefaults> printer_caps)>;
+  using FetchCapabilitiesCallback = base::OnceCallback<void(
+      base::Optional<PrinterBasicInfo>,
+      base::Optional<PrinterSemanticCapsAndDefaults::Papers>,
+      base::Optional<PrinterSemanticCapsAndDefaults>)>;
 
   // mojom::PrintBackendService implementation:
   void Init(const std::string& locale) override;
+  void EnumeratePrinters(
+      mojom::PrintBackendService::EnumeratePrintersCallback callback) override;
   void GetDefaultPrinterName(
       mojom::PrintBackendService::GetDefaultPrinterNameCallback callback)
       override;
+  void GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
+          callback) override;
+  void FetchCapabilities(
+      const std::string& printer_name,
+      mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
 
   scoped_refptr<PrintBackend> print_backend_;
 

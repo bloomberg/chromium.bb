@@ -6,10 +6,14 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,18 +39,20 @@ class InProcessTFLitePredictorTest : public ::testing::Test {
   InProcessTFLitePredictorTest() = default;
   ~InProcessTFLitePredictorTest() override = default;
 
-  // Returns TFLite test model path
+  // Returns TFLite test model path.
   std::string GetTFLiteTestPath() {
-    // Location of generated test data (<(PROGRAM_DIR)/test_data).
-    base::FilePath g_gen_test_data_directory;
+    base::FilePath model_file_path;
 
-    base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
-                           &g_gen_test_data_directory);
-    g_gen_test_data_directory =
-        g_gen_test_data_directory.Append("simple_test.tflite");
-    std::string model_path =
-        static_cast<std::string>(g_gen_test_data_directory.value());
-    return model_path;
+    EXPECT_TRUE(
+        base::PathService::Get(base::DIR_SOURCE_ROOT, &model_file_path));
+
+    model_file_path = model_file_path.Append(FILE_PATH_LITERAL("components"))
+                          .Append(FILE_PATH_LITERAL("test"))
+                          .Append(FILE_PATH_LITERAL("data"))
+                          .Append(FILE_PATH_LITERAL("optimization_guide"))
+                          .Append(FILE_PATH_LITERAL("simple_test.tflite"));
+    EXPECT_TRUE(base::PathExists(model_file_path));
+    return model_file_path.AsUTF8Unsafe();
   }
 };
 
@@ -76,24 +82,21 @@ TEST_F(InProcessTFLitePredictorTest, TFLiteTensorsTest) {
   TfLiteStatus status = predictor.Initialize();
   EXPECT_EQ(status, kTfLiteOk);
 
-  TfLiteTensor* inputTensor = predictor.GetInputTensor(0);
-  const TfLiteTensor* outputTensor = predictor.GetOutputTensor(0);
+  EXPECT_EQ(predictor.GetInputTensorNumDims(0), kInputTensorDims);
+  EXPECT_EQ(predictor.GetOutputTensorNumDims(0), kOutputTensorDims);
 
-  EXPECT_EQ(TfLiteTensorNumDims(inputTensor), kInputTensorDims);
-  EXPECT_EQ(TfLiteTensorNumDims(outputTensor), kOutputTensorDims);
+  EXPECT_EQ(predictor.GetInputTensorDim(0, 0), kInputTensorDim0);
+  EXPECT_EQ(predictor.GetInputTensorDim(0, 1), kInputTensorDim1);
+  EXPECT_EQ(predictor.GetInputTensorDim(0, 2), kInputTensorDim2);
+  EXPECT_EQ(predictor.GetInputTensorDim(0, 3), kInputTensorDim3);
 
-  EXPECT_EQ(TfLiteTensorDim(inputTensor, 0), kInputTensorDim0);
-  EXPECT_EQ(TfLiteTensorDim(inputTensor, 1), kInputTensorDim1);
-  EXPECT_EQ(TfLiteTensorDim(inputTensor, 2), kInputTensorDim2);
-  EXPECT_EQ(TfLiteTensorDim(inputTensor, 3), kInputTensorDim3);
-
-  EXPECT_EQ(TfLiteTensorDim(outputTensor, 0), kOutputTensorDim0);
-  EXPECT_EQ(TfLiteTensorDim(outputTensor, 1), kOutputTensorDim1);
+  EXPECT_EQ(predictor.GetOutputTensorDim(0, 0), kOutputTensorDim0);
+  EXPECT_EQ(predictor.GetOutputTensorDim(0, 1), kOutputTensorDim1);
 }
 
 TEST_F(InProcessTFLitePredictorTest, TFLiteEvaluationTest) {
-  int const kOutpuSize = 10;
-  float expectedOutput[kOutpuSize] = {
+  int const kOutputSize = 10;
+  float expectedOutput[kOutputSize] = {
       -0.4936581, -0.32497078, -0.1705023, -0.38193324, 0.36136785,
       0.2177353,  0.32200375,  0.28686714, -0.21846706, -0.4200018};
 
@@ -105,23 +108,23 @@ TEST_F(InProcessTFLitePredictorTest, TFLiteEvaluationTest) {
   // Initialize model input tensor
   TfLiteTensor* inputTensor = predictor.GetInputTensor(0);
   EXPECT_TRUE(inputTensor);
-  EXPECT_EQ(TfLiteTensorNumDims(inputTensor), kInputTensorDims);
 
   int32_t tensorTotalDims = 1;
-  for (int i = 0; i < TfLiteTensorNumDims(inputTensor); i++)
-    tensorTotalDims = tensorTotalDims * TfLiteTensorDim(inputTensor, i);
+  for (int i = 0; i < predictor.GetInputTensorNumDims(0); i++)
+    tensorTotalDims = tensorTotalDims * predictor.GetInputTensorDim(0, i);
 
-  float* tensorData = static_cast<float*>(TfLiteTensorData(inputTensor));
+  // Assign the input data to be constants.
+  float* tensorData = static_cast<float*>(predictor.GetInputTensorData(0));
   for (int i = 0; i < tensorTotalDims; i++)
     tensorData[i] = 1.0;
 
   // Evaluate model and check output
   TfLiteStatus status = predictor.Evaluate();
   EXPECT_EQ(status, kTfLiteOk);
-  const TfLiteTensor* outputTensor = predictor.GetOutputTensor(0);
-  float* outputData = (float*)TfLiteTensorData(outputTensor);
-  EXPECT_EQ(TfLiteTensorDim(outputTensor, 1), kOutpuSize);
-  for (int i = 0; i < TfLiteTensorDim(outputTensor, 1); i++)
+  float* outputData = (float*)predictor.GetOutputTensorData(0);
+  int output_tensor_dim = predictor.GetOutputTensorDim(0, 1);
+  EXPECT_EQ(output_tensor_dim, kOutputSize);
+  for (int i = 0; i < output_tensor_dim; i++)
     EXPECT_NEAR(expectedOutput[i], outputData[i], 1e-5);
 }
 

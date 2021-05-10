@@ -32,6 +32,7 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
@@ -52,10 +53,10 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/file_system_access/native_file_system_manager_impl.h"
+#include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/native_io/native_io_context.h"
+#include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/quota/quota_context.h"
@@ -74,8 +75,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/file_system_access_entry_factory.h"
+#include "content/public/browser/font_access_context.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/service_process_host.h"
@@ -115,7 +117,9 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 #if defined(OS_ANDROID)
+#include "content/public/browser/android/java_interfaces.h"
 #include "net/android/http_auth_negotiate_android.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #else
 #include "content/browser/host_zoom_map_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -536,14 +540,14 @@ class LoginHandlerDelegate {
 };
 
 void OnAuthRequiredContinuation(
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     uint32_t request_id,
     const GURL& url,
     bool is_request_for_main_frame,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    network::mojom::URLResponseHeadPtr head,
+    const scoped_refptr<net::HttpResponseHeaders>& head_headers,
     mojo::PendingRemote<network::mojom::AuthChallengeResponder>
         auth_challenge_responder,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
@@ -556,7 +560,7 @@ void OnAuthRequiredContinuation(
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
                            std::move(web_contents_getter), auth_info,
                            is_request_for_main_frame, process_id, routing_id,
-                           request_id, url, head ? head->headers : nullptr,
+                           request_id, url, head_headers,
                            first_auth_attempt);  // deletes self
 }
 
@@ -635,9 +639,6 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
 };
 
 void OnCertificateRequestedContinuation(
-    uint32_t process_id,
-    uint32_t routing_id,
-    uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
         client_cert_responder_remote,
@@ -663,8 +664,8 @@ void OnCertificateRequestedContinuation(
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {
  public:
   explicit SSLErrorDelegate(
-      network::mojom::NetworkContextClient::OnSSLCertificateErrorCallback
-          response)
+      network::mojom::AuthenticationAndCertificateObserver::
+          OnSSLCertificateErrorCallback response)
       : response_(std::move(response)) {}
   ~SSLErrorDelegate() override = default;
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
@@ -680,7 +681,8 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   }
 
  private:
-  network::mojom::NetworkContextClient::OnSSLCertificateErrorCallback response_;
+  network::mojom::AuthenticationAndCertificateObserver::
+      OnSSLCertificateErrorCallback response_;
   base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
 
@@ -798,8 +800,13 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
     uint32_t remove_mask) {
   storage::QuotaClientTypes quota_client_types;
 
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS) {
     quota_client_types.insert(storage::QuotaClientType::kFileSystem);
+
+    // TODO(crbug.com/1137788): Add a removal mask for NativeIO after adopting a
+    // more inclusive name.
+    quota_client_types.insert(storage::QuotaClientType::kNativeIO);
+  }
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
     quota_client_types.insert(storage::QuotaClientType::kDatabase);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_APPCACHE)
@@ -812,7 +819,6 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
     quota_client_types.insert(storage::QuotaClientType::kServiceWorkerCache);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH)
     quota_client_types.insert(storage::QuotaClientType::kBackgroundFetch);
-
   return quota_client_types;
 }
 
@@ -1087,12 +1093,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetServiceWorkerContext())
     GetServiceWorkerContext()->Shutdown();
 
-  if (GetIndexedDBContextInternal())
-    GetIndexedDBContextInternal()->Shutdown();
-
-  if (GetCacheStorageContext())
-    GetCacheStorageContext()->Shutdown();
-
   if (GetPlatformNotificationContext())
     GetPlatformNotificationContext()->Shutdown();
 
@@ -1194,27 +1194,28 @@ void StoragePartitionImpl::Initialize(
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(browser_context_);
 
-  native_file_system_manager_ =
-      base::MakeRefCounted<NativeFileSystemManagerImpl>(
+  file_system_access_manager_ =
+      base::MakeRefCounted<FileSystemAccessManagerImpl>(
           filesystem_context_, blob_context,
-          browser_context_->GetNativeFileSystemPermissionContext(),
+          browser_context_->GetFileSystemAccessPermissionContext(),
           browser_context_->IsOffTheRecord());
 
-  mojo::PendingRemote<storage::mojom::NativeFileSystemContext>
-      native_file_system_context;
-  native_file_system_manager_->BindInternalsReceiver(
-      native_file_system_context.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<storage::mojom::FileSystemAccessContext>
+      file_system_access_context;
+  file_system_access_manager_->BindInternalsReceiver(
+      file_system_access_context.InitWithNewPipeAndPassReceiver());
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
   indexed_db_control_wrapper_ = std::make_unique<IndexedDBControlWrapper>(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
-      std::move(native_file_system_context), GetIOThreadTaskRunner({}),
+      std::move(file_system_access_context), GetIOThreadTaskRunner({}),
       /*task_runner=*/nullptr);
 
-  cache_storage_context_ = new CacheStorageContextImpl();
-  cache_storage_context_->Init(
-      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
+  cache_storage_control_wrapper_ = std::make_unique<CacheStorageControlWrapper>(
+      GetIOThreadTaskRunner({}), path,
+      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
+      ChromeBlobStorageContext::GetRemoteFor(browser_context_));
 
   service_worker_context_ = new ServiceWorkerContextWrapper(browser_context_);
   service_worker_context_->set_storage_partition(this);
@@ -1225,7 +1226,10 @@ void StoragePartitionImpl::Initialize(
   }
 
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
-  native_io_context_ = std::make_unique<NativeIOContext>(path);
+
+  native_io_context_ = base::MakeRefCounted<NativeIOContextImpl>();
+  native_io_context_->Initialize(
+      path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 
   shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
       this, service_worker_context_, appcache_service_);
@@ -1250,8 +1254,8 @@ void StoragePartitionImpl::Initialize(
       browser_context_, service_worker_context_);
 
   background_fetch_context_ = base::MakeRefCounted<BackgroundFetchContext>(
-      browser_context_, service_worker_context_, cache_storage_context_,
-      quota_manager_proxy, devtools_background_services_context_);
+      browser_context_, this, service_worker_context_, quota_manager_proxy,
+      devtools_background_services_context_);
 
   background_sync_context_ = base::MakeRefCounted<BackgroundSyncContextImpl>();
   background_sync_context_->Init(service_worker_context_,
@@ -1289,10 +1293,14 @@ void StoragePartitionImpl::Initialize(
   // restoring the state fails.
   cookie_store_context_->Initialize(service_worker_context_, base::DoNothing());
 
+  bucket_context_ = base::MakeRefCounted<BucketContext>();
+  bucket_context_->Initialize();
+
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&
       base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
-    conversion_manager_ = std::make_unique<ConversionManagerImpl>(this, path);
+    conversion_manager_ = std::make_unique<ConversionManagerImpl>(
+        this, path, special_storage_policy_);
   }
 
   GeneratedCodeCacheSettings settings =
@@ -1322,8 +1330,9 @@ void StoragePartitionImpl::Initialize(
 
   font_access_manager_ = std::make_unique<FontAccessManagerImpl>();
 
-  if (base::FeatureList::IsEnabled(blink::features::kPrerender2))
+  if (blink::features::IsPrerender2Enabled()) {
     prerender_host_registry_ = std::make_unique<PrerenderHostRegistry>();
+  }
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1393,8 +1402,7 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
 void StoragePartitionImpl::CreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
-    const net::SiteForCookies& site_for_cookies,
-    const url::Origin& top_frame_origin,
+    const net::IsolationInfo& isolation_info,
     bool is_service_worker,
     int process_id,
     int routing_id,
@@ -1402,11 +1410,11 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer) {
   DCHECK(initialized_);
   if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
-          role, browser_context_, origin, site_for_cookies, top_frame_origin,
-          is_service_worker, process_id, routing_id, &receiver)) {
-    GetNetworkContext()->GetRestrictedCookieManager(
-        std::move(receiver), role, origin, site_for_cookies, top_frame_origin,
-        std::move(cookie_observer));
+          role, browser_context_, origin, isolation_info, is_service_worker,
+          process_id, routing_id, &receiver)) {
+    GetNetworkContext()->GetRestrictedCookieManager(std::move(receiver), role,
+                                                    origin, isolation_info,
+                                                    std::move(cookie_observer));
   }
 }
 
@@ -1438,6 +1446,11 @@ storage::FileSystemContext* StoragePartitionImpl::GetFileSystemContext() {
   return filesystem_context_.get();
 }
 
+FontAccessContext* StoragePartitionImpl::GetFontAccessContext() {
+  DCHECK(initialized_);
+  return font_access_manager_.get();
+}
+
 storage::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
   DCHECK(initialized_);
   return database_tracker_.get();
@@ -1458,15 +1471,10 @@ storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   return *indexed_db_control_wrapper_.get();
 }
 
-IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContextInternal() {
+FileSystemAccessEntryFactory*
+StoragePartitionImpl::GetFileSystemAccessEntryFactory() {
   DCHECK(initialized_);
-  return indexed_db_control_wrapper_->GetIndexedDBContextInternal();
-}
-
-NativeFileSystemEntryFactory*
-StoragePartitionImpl::GetNativeFileSystemEntryFactory() {
-  DCHECK(initialized_);
-  return native_file_system_manager_.get();
+  return file_system_access_manager_.get();
 }
 
 QuotaContext* StoragePartitionImpl::GetQuotaContext() {
@@ -1474,9 +1482,10 @@ QuotaContext* StoragePartitionImpl::GetQuotaContext() {
   return quota_context_.get();
 }
 
-CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {
+storage::mojom::CacheStorageControl*
+StoragePartitionImpl::GetCacheStorageControl() {
   DCHECK(initialized_);
-  return cache_storage_context_.get();
+  return cache_storage_control_wrapper_.get();
 }
 
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
@@ -1555,6 +1564,11 @@ CookieStoreContext* StoragePartitionImpl::GetCookieStoreContext() {
   return cookie_store_context_.get();
 }
 
+BucketContext* StoragePartitionImpl::GetBucketContext() {
+  DCHECK(initialized_);
+  return bucket_context_.get();
+}
+
 GeneratedCodeCacheContext*
 StoragePartitionImpl::GetGeneratedCodeCacheContext() {
   DCHECK(initialized_);
@@ -1567,10 +1581,10 @@ StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
   return devtools_background_services_context_.get();
 }
 
-NativeFileSystemManagerImpl*
-StoragePartitionImpl::GetNativeFileSystemManager() {
+FileSystemAccessManagerImpl*
+StoragePartitionImpl::GetFileSystemAccessManager() {
   DCHECK(initialized_);
-  return native_file_system_manager_.get();
+  return file_system_access_manager_.get();
 }
 
 ConversionManagerImpl* StoragePartitionImpl::GetConversionManager() {
@@ -1584,7 +1598,7 @@ FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
 }
 
 PrerenderHostRegistry* StoragePartitionImpl::GetPrerenderHostRegistry() {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK(blink::features::IsPrerender2Enabled());
   DCHECK(initialized_);
   return prerender_host_registry_.get();
 }
@@ -1657,18 +1671,20 @@ void StoragePartitionImpl::BindSessionStorageArea(
 
 void StoragePartitionImpl::OnAuthRequired(
     const base::Optional<base::UnguessableToken>& window_id,
-    int32_t process_id,
-    int32_t routing_id,
     uint32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    network::mojom::URLResponseHeadPtr head,
+    const scoped_refptr<net::HttpResponseHeaders>& head_headers,
     mojo::PendingRemote<network::mojom::AuthChallengeResponder>
         auth_challenge_responder) {
+  bool is_main_frame = false;
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter;
+  int process_id = auth_cert_observers_.current_context().process_id;
+  int routing_id = auth_cert_observers_.current_context().routing_id;
   if (window_id) {
-    bool is_main_frame = false;
-    base::RepeatingCallback<WebContents*(void)> web_contents_getter;
+    DCHECK_EQ(network::mojom::kBrowserProcessId, process_id);
+    DCHECK_EQ(routing_id, RenderFrameHost::kNoFrameTreeNodeId);
     if (service_worker_context_->context()) {
       auto* container_host =
           service_worker_context_->context()->GetContainerHostByWindowId(
@@ -1683,30 +1699,29 @@ void StoragePartitionImpl::OnAuthRequired(
         }
       }
     }
-    OnAuthRequiredContinuation(
-        process_id, routing_id, request_id, url, is_main_frame,
-        first_auth_attempt, auth_info, std::move(head),
-        std::move(auth_challenge_responder), web_contents_getter);
-    return;
+  } else {
+    is_main_frame = IsMainFrameRequest(process_id, routing_id);
+    web_contents_getter =
+        base::BindRepeating(GetWebContents, process_id, routing_id);
   }
-  OnAuthRequiredContinuation(
-      process_id, routing_id, request_id, url,
-      IsMainFrameRequest(process_id, routing_id), first_auth_attempt, auth_info,
-      std::move(head), std::move(auth_challenge_responder),
-      base::BindRepeating(GetWebContents, process_id, routing_id));
+  OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
+                             is_main_frame, first_auth_attempt, auth_info,
+                             head_headers, std::move(auth_challenge_responder),
+                             web_contents_getter);
 }
 
 void StoragePartitionImpl::OnCertificateRequested(
     const base::Optional<base::UnguessableToken>& window_id,
-    int32_t process_id,
-    int32_t routing_id,
-    uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
         cert_responder) {
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter;
+  int process_id = auth_cert_observers_.current_context().process_id;
+  int routing_id = auth_cert_observers_.current_context().routing_id;
   // Use |window_id| if it's provided.
   if (window_id) {
-    base::RepeatingCallback<WebContents*(void)> web_contents_getter;
+    DCHECK_EQ(process_id, network::mojom::kBrowserProcessId);
+    DCHECK_EQ(routing_id, RenderFrameHost::kNoFrameTreeNodeId);
     if (service_worker_context_->context()) {
       auto* container_host =
           service_worker_context_->context()->GetContainerHostByWindowId(
@@ -1717,31 +1732,66 @@ void StoragePartitionImpl::OnCertificateRequested(
             &WebContents::FromFrameTreeNodeId, frame_tree_node_id);
       }
     }
-    OnCertificateRequestedContinuation(process_id, routing_id, request_id,
-                                       cert_info, std::move(cert_responder),
-                                       web_contents_getter);
-    return;
+  } else {
+    web_contents_getter =
+        base::BindRepeating(GetWebContents, process_id, routing_id);
   }
-
-  OnCertificateRequestedContinuation(
-      process_id, routing_id, request_id, cert_info, std::move(cert_responder),
-      base::BindRepeating(GetWebContents, process_id, routing_id));
+  OnCertificateRequestedContinuation(cert_info, std::move(cert_responder),
+                                     std::move(web_contents_getter));
 }
 
 void StoragePartitionImpl::OnSSLCertificateError(
-    int32_t process_id,
-    int32_t routing_id,
     const GURL& url,
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {
+  int process_id = auth_cert_observers_.current_context().process_id;
+  int routing_id = auth_cert_observers_.current_context().routing_id;
+
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
   bool is_main_frame_request = IsMainFrameRequest(process_id, routing_id);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), is_main_frame_request, url,
       GetWebContents(process_id, routing_id), net_error, ssl_info, fatal);
+}
+
+void StoragePartitionImpl::Clone(
+    mojo::PendingReceiver<network::mojom::AuthenticationAndCertificateObserver>
+        observer) {
+  auth_cert_observers_.Add(this, std::move(observer),
+                           auth_cert_observers_.current_context());
+}
+
+mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+StoragePartitionImpl::CreateAuthAndCertObserverForFrame(int process_id,
+                                                        int routing_id) {
+  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+      remote;
+  auth_cert_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver(),
+                           {process_id, routing_id});
+  return remote;
+}
+
+mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+StoragePartitionImpl::CreateAuthAndCertObserverForNavigationRequest(
+    int frame_tree_id) {
+  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+      remote;
+  auth_cert_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver(),
+                           {network::mojom::kBrowserProcessId, frame_tree_id});
+  return remote;
+}
+
+mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+StoragePartitionImpl::CreateAuthCertObserverForServiceWorker() {
+  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+      remote;
+  auth_cert_observers_.Add(
+      this, remote.InitWithNewPipeAndPassReceiver(),
+      {network::mojom::kBrowserProcessId, RenderFrameHost::kNoFrameTreeNodeId});
+  return remote;
 }
 
 void StoragePartitionImpl::OnFileUploadRequested(
@@ -1831,7 +1881,7 @@ void StoragePartitionImpl::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void StoragePartitionImpl::OnTrustAnchorUsed() {
   GetContentClient()->browser()->OnTrustAnchorUsed(browser_context_);
 }
@@ -1840,12 +1890,45 @@ void StoragePartitionImpl::OnTrustAnchorUsed() {
 void StoragePartitionImpl::OnTrustTokenIssuanceDivertedToSystem(
     network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
     OnTrustTokenIssuanceDivertedToSystemCallback callback) {
-  // TODO(crbug.com/1130272): Implement logic that allows executing Trust
-  // Tokens operations when available, rather than failing unconditionally.
-  auto response = network::mojom::FulfillTrustTokenIssuanceAnswer::New();
-  response->status =
-      network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
-  std::move(callback).Run(std::move(response));
+  if (!local_trust_token_fulfiller_ &&
+      !attempted_to_bind_local_trust_token_fulfiller_) {
+    attempted_to_bind_local_trust_token_fulfiller_ = true;
+    ProvisionallyBindUnboundLocalTrustTokenFulfillerIfSupportedBySystem();
+  }
+
+  if (!local_trust_token_fulfiller_) {
+    auto response = network::mojom::FulfillTrustTokenIssuanceAnswer::New();
+    response->status =
+        network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  int callback_key = next_pending_trust_token_issuance_callback_key_++;
+  pending_trust_token_issuance_callbacks_.emplace(callback_key,
+                                                  std::move(callback));
+
+  local_trust_token_fulfiller_->FulfillTrustTokenIssuance(
+      std::move(request),
+      base::BindOnce(
+          [](int callback_key, base::WeakPtr<StoragePartitionImpl> partition,
+             network::mojom::FulfillTrustTokenIssuanceAnswerPtr answer) {
+            if (!partition)
+              return;
+
+            if (!base::Contains(
+                    partition->pending_trust_token_issuance_callbacks_,
+                    callback_key)) {
+              return;
+            }
+            auto callback =
+                std::move(partition->pending_trust_token_issuance_callbacks_.at(
+                    callback_key));
+            partition->pending_trust_token_issuance_callbacks_.erase(
+                callback_key);
+            std::move(callback).Run(std::move(answer));
+          },
+          callback_key, weak_factory_.GetWeakPtr()));
 }
 
 void StoragePartitionImpl::ClearDataImpl(
@@ -2404,18 +2487,18 @@ void StoragePartitionImpl::GetQuotaSettings(
 void StoragePartitionImpl::InitNetworkContext() {
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params =
-      network::mojom::CertVerifierCreationParams::New();
+  cert_verifier::mojom::CertVerifierCreationParamsPtr
+      cert_verifier_creation_params =
+          cert_verifier::mojom::CertVerifierCreationParams::New();
   GetContentClient()->browser()->ConfigureNetworkContextParams(
       browser_context_, is_in_memory_, relative_partition_path_,
       context_params.get(), cert_verifier_creation_params.get());
   devtools_instrumentation::ApplyNetworkContextParamsOverrides(
       browser_context_, context_params.get());
   DCHECK(!context_params->cert_verifier_params)
-      << "|cert_verifier_params| should not be set in the NetworkContextParams,"
-         "as they will be replaced with either the newly configured "
-         "|cert_verifier_creation_params| or with a new pipe to the "
-         "CertVerifierService.";
+      << "|cert_verifier_params| should not be set in the "
+         "NetworkContextParams, as they will be replaced with a new pipe to "
+         "the CertVerifierService.";
 
   context_params->cert_verifier_params =
       GetCertVerifierParams(std::move(cert_verifier_creation_params));
@@ -2530,6 +2613,36 @@ StoragePartitionImpl::CreateCookieAccessObserverForServiceWorker() {
       std::make_unique<ServiceWorkerCookieAccessObserver>(this),
       remote.InitWithNewPipeAndPassReceiver());
   return remote;
+}
+
+void StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError() {
+  auto not_found_answer =
+      network::mojom::FulfillTrustTokenIssuanceAnswer::New();
+  // kNotFound represents a case where the local system was unable to provide an
+  // answer to the request.
+  not_found_answer->status =
+      network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
+
+  for (auto& key_and_callback : pending_trust_token_issuance_callbacks_)
+    std::move(key_and_callback.second).Run(not_found_answer.Clone());
+  pending_trust_token_issuance_callbacks_.clear();
+}
+
+void StoragePartitionImpl::
+    ProvisionallyBindUnboundLocalTrustTokenFulfillerIfSupportedBySystem() {
+  if (local_trust_token_fulfiller_)
+    return;
+
+#if defined(OS_ANDROID)
+  GetGlobalJavaInterfaces()->GetInterface(
+      local_trust_token_fulfiller_.BindNewPipeAndPassReceiver());
+#endif  // defined(OS_ANDROID)
+
+  if (local_trust_token_fulfiller_) {
+    local_trust_token_fulfiller_.set_disconnect_handler(base::BindOnce(
+        &StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError,
+        weak_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace content

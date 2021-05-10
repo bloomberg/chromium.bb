@@ -208,6 +208,15 @@ Polymer({
   },
 
   /**
+   * Returns the Live Caption toggle element.
+   * @return {?CrToggleElement}
+   */
+  getLiveCaptionToggle() {
+    return /** @type {?CrToggleElement} */ (
+        this.$$('#liveCaptionToggleButton'));
+  },
+
+  /**
    * @param {!FontsData} response A list of fonts.
    * @private
    */
@@ -303,7 +312,7 @@ Polymer({
   onA11yLiveCaptionChange_(event) {
     const a11yLiveCaptionOn = event.target.checked;
     chrome.metricsPrivate.recordBoolean(
-        'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+        'Accessibility.LiveCaption.EnableFromSettings', a11yLiveCaptionOn);
   },
 
   /**

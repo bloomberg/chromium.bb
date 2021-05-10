@@ -42,7 +42,7 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
       const gfx::PointF& screen_point,
       blink::DragOperationsMask operations_allowed,
       uint32_t key_modifiers,
-      base::OnceCallback<void(blink::DragOperation)> callback) override {}
+      base::OnceCallback<void(ui::mojom::DragOperation)> callback) override {}
   void DragTargetDragOver(const gfx::PointF& point_in_viewport,
                           const gfx::PointF& screen_point,
                           blink::DragOperationsMask operations_allowed,
@@ -56,16 +56,16 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
                       uint32_t key_modifiers) override {}
   void DragSourceEndedAt(const gfx::PointF& client_point,
                          const gfx::PointF& screen_point,
-                         blink::DragOperation operation) override {}
+                         ui::mojom::DragOperation operation) override {}
   void DragSourceSystemDragEnded() override {}
   void SetBackgroundOpaque(bool value) override {}
   void SetTextDirection(base::i18n::TextDirection direction) override;
   void SetActive(bool active) override;
   void SetInheritedEffectiveTouchActionForSubFrame(
       const cc::TouchAction touch_action) override {}
-  void UpdateRenderThrottlingStatusForSubFrame(
-      bool is_throttled,
-      bool subtree_throttled) override {}
+  void UpdateRenderThrottlingStatusForSubFrame(bool is_throttled,
+                                               bool subtree_throttled,
+                                               bool display_locked) override {}
   void SetIsInertForSubFrame(bool inert) override {}
 #if defined(OS_MAC)
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
@@ -82,7 +82,9 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void BindInputTargetClient(
       mojo::PendingReceiver<viz::mojom::InputTargetClient> receiver) override {}
   void SetViewportIntersection(
-      blink::mojom::ViewportIntersectionStatePtr intersection_state) override;
+      blink::mojom::ViewportIntersectionStatePtr intersection_state,
+      const base::Optional<blink::VisualProperties>& visual_properties)
+      override;
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   base::i18n::TextDirection text_direction_ =

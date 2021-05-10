@@ -20,12 +20,12 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_bitmasks.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "common/platform/api/quiche_export.h"
+#include "spdy/core/spdy_alt_svc_wire_format.h"
+#include "spdy/core/spdy_bitmasks.h"
+#include "spdy/core/spdy_header_block.h"
+#include "spdy/platform/api/spdy_bug_tracker.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -99,13 +99,8 @@ enum class SpdyFrameType : uint8_t {
   CONTINUATION = 0x09,
   // ALTSVC is a public extension.
   ALTSVC = 0x0a,
-  MAX_FRAME_TYPE = ALTSVC,
-  // The specific value of EXTENSION is meaningless; it is a placeholder used
-  // within SpdyFramer's state machine when handling unknown frames via an
-  // extension API.
-  // TODO(birenroy): Remove the fake EXTENSION value from the SpdyFrameType
-  // enum.
-  EXTENSION = 0xff
+  PRIORITY_UPDATE = 0x10,
+  ACCEPT_CH = 0x89,
 };
 
 // Flags on data packets.
@@ -157,9 +152,12 @@ enum SpdyKnownSettingsId : SpdySettingsId {
   // The maximum size of header list that the sender is prepared to accept.
   SETTINGS_MAX_HEADER_LIST_SIZE = 0x6,
   // Enable Websockets over HTTP/2, see
-  // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
+  // https://httpwg.org/specs/rfc8441.html
   SETTINGS_ENABLE_CONNECT_PROTOCOL = 0x8,
-  SETTINGS_MAX = SETTINGS_ENABLE_CONNECT_PROTOCOL,
+  // Disable HTTP/2 priorities, see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-priority-02.
+  SETTINGS_DEPRECATE_HTTP2_PRIORITIES = 0x9,
+  SETTINGS_MAX = SETTINGS_DEPRECATE_HTTP2_PRIORITIES,
   // Experimental setting used to configure an alternative write scheduler.
   SETTINGS_EXPERIMENT_SCHEDULER = 0xFF45,
 };
@@ -314,6 +312,13 @@ const size_t kWindowUpdateFrameSize = kFrameHeaderSize + 4;
 const size_t kContinuationFrameMinimumSize = kFrameHeaderSize;
 // ALTSVC frame has origin_len (2 octets) field.
 const size_t kGetAltSvcFrameMinimumSize = kFrameHeaderSize + 2;
+// PRIORITY_UPDATE frame has prioritized_stream_id (4 octets) field.
+const size_t kPriorityUpdateFrameMinimumSize = kFrameHeaderSize + 4;
+// ACCEPT_CH frame may have empty payload.
+const size_t kAcceptChFrameMinimumSize = kFrameHeaderSize;
+// Each ACCEPT_CH frame entry has a 16-bit origin length and a 16-bit value
+// length.
+const size_t kAcceptChFramePerEntryOverhead = 4;
 
 // Maximum possible configurable size of a frame in octets.
 const size_t kMaxFrameSizeLimit = kSpdyMaxFrameSizeLimit + kFrameHeaderSize;
@@ -538,8 +543,8 @@ class QUICHE_EXPORT_PRIVATE SpdyDataIR : public SpdyFrameWithFinIR {
   int padding_payload_len() const { return padding_payload_len_; }
 
   void set_padding_len(int padding_len) {
-    DCHECK_GT(padding_len, 0);
-    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    QUICHE_DCHECK_GT(padding_len, 0);
+    QUICHE_DCHECK_LE(padding_len, kPaddingSizePerFrame);
     padded_ = true;
     // The pad field takes one octet on the wire.
     padding_payload_len_ = padding_len - 1;
@@ -679,7 +684,7 @@ class QUICHE_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 
   SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
   void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {
-    DCHECK_EQ(0u, last_good_stream_id & ~kStreamIdMask);
+    QUICHE_DCHECK_EQ(0u, last_good_stream_id & ~kStreamIdMask);
     last_good_stream_id_ = last_good_stream_id;
   }
   SpdyErrorCode error_code() const { return error_code_; }
@@ -729,8 +734,8 @@ class QUICHE_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
   bool padded() const { return padded_; }
   int padding_payload_len() const { return padding_payload_len_; }
   void set_padding_len(int padding_len) {
-    DCHECK_GT(padding_len, 0);
-    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    QUICHE_DCHECK_GT(padding_len, 0);
+    QUICHE_DCHECK_LE(padding_len, kPaddingSizePerFrame);
     padded_ = true;
     // The pad field takes one octet on the wire.
     padding_payload_len_ = padding_len - 1;
@@ -756,8 +761,8 @@ class QUICHE_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
 
   int32_t delta() const { return delta_; }
   void set_delta(int32_t delta) {
-    DCHECK_LE(0, delta);
-    DCHECK_LE(delta, kSpdyMaximumWindowSize);
+    QUICHE_DCHECK_LE(0, delta);
+    QUICHE_DCHECK_LE(delta, kSpdyMaximumWindowSize);
     delta_ = delta;
   }
 
@@ -796,8 +801,8 @@ class QUICHE_EXPORT_PRIVATE SpdyPushPromiseIR
   bool padded() const { return padded_; }
   int padding_payload_len() const { return padding_payload_len_; }
   void set_padding_len(int padding_len) {
-    DCHECK_GT(padding_len, 0);
-    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    QUICHE_DCHECK_GT(padding_len, 0);
+    QUICHE_DCHECK_LE(padding_len, kPaddingSizePerFrame);
     padded_ = true;
     // The pad field takes one octet on the wire.
     padding_payload_len_ = padding_len - 1;
@@ -888,6 +893,61 @@ class QUICHE_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
   SpdyStreamId parent_stream_id_;
   int weight_;
   bool exclusive_;
+};
+
+class QUICHE_EXPORT_PRIVATE SpdyPriorityUpdateIR : public SpdyFrameIR {
+ public:
+  SpdyPriorityUpdateIR(SpdyStreamId stream_id,
+                       SpdyStreamId prioritized_stream_id,
+                       std::string priority_field_value)
+      : SpdyFrameIR(stream_id),
+        prioritized_stream_id_(prioritized_stream_id),
+        priority_field_value_(std::move(priority_field_value)) {}
+  SpdyPriorityUpdateIR(const SpdyPriorityUpdateIR&) = delete;
+  SpdyPriorityUpdateIR& operator=(const SpdyPriorityUpdateIR&) = delete;
+  SpdyStreamId prioritized_stream_id() const { return prioritized_stream_id_; }
+  const std::string& priority_field_value() const {
+    return priority_field_value_;
+  }
+
+  void Visit(SpdyFrameVisitor* visitor) const override;
+
+  SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
+
+ private:
+  SpdyStreamId prioritized_stream_id_;
+  std::string priority_field_value_;
+};
+
+struct AcceptChOriginValuePair {
+  std::string origin;
+  std::string value;
+  bool operator==(const AcceptChOriginValuePair& rhs) const {
+    return origin == rhs.origin && value == rhs.value;
+  }
+};
+
+class QUICHE_EXPORT_PRIVATE SpdyAcceptChIR : public SpdyFrameIR {
+ public:
+  SpdyAcceptChIR(std::vector<AcceptChOriginValuePair> entries)
+      : entries_(std::move(entries)) {}
+  SpdyAcceptChIR(const SpdyAcceptChIR&) = delete;
+  SpdyAcceptChIR& operator=(const SpdyAcceptChIR&) = delete;
+
+  void Visit(SpdyFrameVisitor* visitor) const override;
+
+  SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
+
+  const std::vector<AcceptChOriginValuePair>& entries() const {
+    return entries_;
+  }
+
+ private:
+  std::vector<AcceptChOriginValuePair> entries_;
 };
 
 // Represents a frame of unrecognized type.
@@ -1013,6 +1073,11 @@ class QUICHE_EXPORT_PRIVATE SpdySerializedFrame {
 // method of this class will be called.
 class QUICHE_EXPORT_PRIVATE SpdyFrameVisitor {
  public:
+  SpdyFrameVisitor() {}
+  SpdyFrameVisitor(const SpdyFrameVisitor&) = delete;
+  SpdyFrameVisitor& operator=(const SpdyFrameVisitor&) = delete;
+  virtual ~SpdyFrameVisitor() {}
+
   virtual void VisitRstStream(const SpdyRstStreamIR& rst_stream) = 0;
   virtual void VisitSettings(const SpdySettingsIR& settings) = 0;
   virtual void VisitPing(const SpdyPingIR& ping) = 0;
@@ -1024,15 +1089,12 @@ class QUICHE_EXPORT_PRIVATE SpdyFrameVisitor {
   virtual void VisitAltSvc(const SpdyAltSvcIR& altsvc) = 0;
   virtual void VisitPriority(const SpdyPriorityIR& priority) = 0;
   virtual void VisitData(const SpdyDataIR& data) = 0;
+  virtual void VisitPriorityUpdate(
+      const SpdyPriorityUpdateIR& priority_update) = 0;
+  virtual void VisitAcceptCh(const SpdyAcceptChIR& accept_ch) = 0;
   virtual void VisitUnknown(const SpdyUnknownIR& /*unknown*/) {
     // TODO(birenroy): make abstract.
   }
-
- protected:
-  SpdyFrameVisitor() {}
-  SpdyFrameVisitor(const SpdyFrameVisitor&) = delete;
-  SpdyFrameVisitor& operator=(const SpdyFrameVisitor&) = delete;
-  virtual ~SpdyFrameVisitor() {}
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting

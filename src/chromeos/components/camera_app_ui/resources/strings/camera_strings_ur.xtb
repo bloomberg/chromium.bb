@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
+<translation id="1175958423215084756">لنک کا پتہ چلا۔ <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">گیلری کی تصاویر</translation>
 <translation id="1430915738399379752">پرنٹ کریں</translation>
 <translation id="1473110567575736769">3 سیکنڈ کا ٹائمر</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">موقوف</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> کو برآمد کرنے سے قاصر</translation>
 <translation id="1899697626337024495">تصویری ریزولیوشن</translation>
+<translation id="2022953316617983419">‏QR کوڈ</translation>
 <translation id="2036868001356139588">ٹائمر کا دورانیہ</translation>
 <translation id="2050339315714019657">پورٹریٹ</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> فعال ہے</translation>
+<translation id="2144806332417375165">حسب ضرورت ویڈیو پیرامیٹرز</translation>
 <translation id="229579744168541441">ڈسک میں برآمد کریں</translation>
 <translation id="2501278716633472235">پیچھے جائیں</translation>
 <translation id="2501853267655415902">ریکارڈنگ رک گئی</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">‎30 FPS</translation>
 <translation id="3183731565330012717">گرڈ کی قسم</translation>
 <translation id="3227137524299004712">مائیکروفون</translation>
+<translation id="3240426699337459095">لنک کاپی ہوگیا</translation>
 <translation id="3259149966178251584">کیمرہ ریزولیوشن</translation>
 <translation id="3517926952904427380">پورٹریٹ تصویر لینے سے قاصر</translation>
 <translation id="3569311554794739032">کیا آپ واقعی <ph name="FILE" /> کو ہٹانا چاہتے ہیں؟</translation>
-<translation id="3750315947605636967">کوئی دوسری ایپ آپ کا کیمرا استعمال کر رہی ہے</translation>
 <translation id="3810838688059735925">ویڈیو</translation>
+<translation id="3838931309141338733">بارکوڈ اسکین کریں</translation>
+<translation id="3892148308691398805">ٹیکسٹ کاپی کریں</translation>
 <translation id="4000398125663085899">نئی تصاویر اور ویڈیوز کو فائلز ایپ میں ایک فولڈر میں محفوظ کیا جائے گا: میری فائلیں &gt; کیمرا۔</translation>
 <translation id="4118525110028899586">ریکارڈنگ موقوف کریں</translation>
+<translation id="4269820728363426813">لنک کا پتہ کاپی کریں</translation>
 <translation id="4279490309300973883">مررنگ</translation>
 <translation id="4329152592498422850">مربع تصویر لینے کی وضع پر سوئچ کریں</translation>
 <translation id="4383571725254449280">کارکردگی کے لاگز پرنٹ کریں</translation>
@@ -68,11 +74,15 @@
 <translation id="7134221860976209830">10 سیکنڈ کا ٹائمر</translation>
 <translation id="7243947652761655814">ویڈیو ریزولیوشن</translation>
 <translation id="7337660886763914220">فائل سسٹم کی خرابیاں۔</translation>
+<translation id="7450541714075000668">متن کاپی ہو گیا</translation>
 <translation id="7557677699350329807">اگلے کیمرے پر سوئچ کريں</translation>
+<translation id="7607002721634913082">موقوف</translation>
 <translation id="7608223098072244877">4 ضرب 4</translation>
 <translation id="7649070708921625228">مدد</translation>
 <translation id="7658239707568436148">منسوخ کریں</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">پین جھکاؤ زوم کے اختیارات دکھائیں</translation>
+<translation id="7983668134180549431">ٹیکسٹ کا پتہ چلا۔</translation>
 <translation id="8067883171444229417">ویڈیو چلائیں</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
 <translation id="8145038249676204903">تصویر لینے کی وضع پر سوئچ کریں</translation>

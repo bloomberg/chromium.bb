@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.browserservices.TestTrustedWebActivity
 import static org.chromium.chrome.browser.browserservices.digitalgoods.AcknowledgeConverter.RESPONSE_ACKNOWLEDGE;
 
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
@@ -45,6 +46,7 @@ import org.chromium.net.test.ServerCertificate;
 import org.chromium.payments.mojom.DigitalGoods.GetDetailsResponse;
 import org.chromium.payments.mojom.ItemDetails;
 import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
 
@@ -143,7 +145,11 @@ public class DigitalGoodsTest {
      */
     @Test
     @MediumTest
-    public void jsToTwaConnected() throws TimeoutException {
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP_MR1,
+            sdk_is_less_than = Build.VERSION_CODES.N)
+    @DisableIf.Device(type = {UiDisableIf.TABLET})
+    public void
+    jsToTwaConnected() throws TimeoutException {
         DigitalGoodsFactoryImpl.setDigitalGoodsForTesting(createFixedDigitalGoods());
 
         // Note: The response code much be 0 for success otherwise it doesn't propagate through to
@@ -201,7 +207,7 @@ public class DigitalGoodsTest {
 
         // To work around this, we create our own DigitalGoodsImpl with a custom Delegate that
         // provides the URL we want to see.
-        DigitalGoodsImpl.Delegate delegate = () -> TWA_SERVICE_SCOPE;
+        DigitalGoodsImpl.Delegate delegate = () -> new GURL(TWA_SERVICE_SCOPE);
         DigitalGoodsAdapter adapter = new DigitalGoodsAdapter(mClient);
         return new DigitalGoodsImpl(adapter, delegate);
     }

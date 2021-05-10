@@ -28,7 +28,7 @@ namespace chrome_test_util {
 // error resulting from the execution, if one occurs. The return value is the
 // result of the JavaScript execution. If the request is timed out, then nil is
 // returned.
-id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
+id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 
 }  // namespace chrome_test_util
 
@@ -129,6 +129,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for the matcher to return an element that is sufficiently visible.
 - (void)waitForSufficientlyVisibleElementWithMatcher:(id<GREYMatcher>)matcher;
 
+// Waits for the matcher to return an element.
+- (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher;
+
+// Waits for the matcher to not return any elements.
+- (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher;
+
 // Waits for there to be |count| number of non-incognito tabs within a timeout,
 // or a GREYAssert is induced.
 - (void)waitForMainTabCount:(NSUInteger)count;
@@ -150,7 +156,7 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Sync Utilities (EG2)
 
-// Clears fake sync server data.
+// Clears fake sync server data if the server is running.
 - (void)clearSyncServerData;
 
 // Starts the sync server. The server should not be running when calling this.
@@ -240,6 +246,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (void)waitForTypedURL:(const GURL&)URL
           expectPresent:(BOOL)expectPresent
                 timeout:(NSTimeInterval)timeout;
+
+// Waits for sync invalidation field presence in the DeviceInfo data type on the
+// server.
+- (void)waitForSyncInvalidationFields;
 
 #pragma mark - Tab Utilities (EG2)
 
@@ -339,6 +349,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Window utilities (EG2)
 
+// Returns screen position of the given |windowNumber|
+- (CGRect)screenPositionOfScreenWithNumber:(int)windowNumber;
+
 // Returns the number of windows, including background and disconnected or
 // archived windows.
 - (NSUInteger)windowCount WARN_UNUSED_RESULT;
@@ -350,12 +363,72 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // or a GREYAssert is induced.
 - (void)waitForForegroundWindowCount:(NSUInteger)count;
 
-// Closes all but one window, including all non-foreground windows. Then kills
-// and relaunches app with launch args specified in |appConfig|. No-op if only
-// one window presents.
-// TODO(crbug.com/1143708): Remove the relaunch when EG2 slowness is fixed.
-- (void)closeAllExtraWindowsAndForceRelaunchWithAppConfig:
-    (AppLaunchConfiguration)appConfig;
+// Closes all but one window, including all non-foreground windows. No-op if
+// only one window presents.
+- (void)closeAllExtraWindows;
+
+// Opens a new window.
+- (void)openNewWindow;
+
+// Opens a new tab in window with given number and waits for the new tab
+// animation to complete within a timeout, or a GREYAssert is induced.
+- (void)openNewTabInWindowWithNumber:(int)windowNumber;
+
+// Closes the window with given number. Note that numbering doesn't change and
+// if a new window is to be added in a test, a renumbering might be needed.
+- (void)closeWindowWithNumber:(int)windowNumber;
+
+// Renumbers given window with current number to new number. For example, if
+// you have windows 0 and 1, close window 0, the add new window, then both
+// windows would be 1. Therefore you should renumber the remaining ones
+// before adding new ones.
+- (void)changeWindowWithNumber:(int)windowNumber
+                   toNewNumber:(int)newWindowNumber;
+
+// Loads |URL| in the current WebState for window with given number, with
+// transition type ui::PAGE_TRANSITION_TYPED, and if waitForCompletion is YES
+// waits for the loading to complete within a timeout.
+// Returns nil on success, or else an NSError indicating why the operation
+// failed.
+- (void)loadURL:(const GURL&)URL
+    inWindowWithNumber:(int)windowNumber
+     waitForCompletion:(BOOL)wait;
+
+// Loads |URL| in the current WebState for window with given number, with
+// transition type ui::PAGE_TRANSITION_TYPED, and waits for the loading to
+// complete within a timeout. If the condition is not met within a timeout
+// returns an NSError indicating why the operation failed, otherwise nil.
+- (void)loadURL:(const GURL&)URL inWindowWithNumber:(int)windowNumber;
+
+// Waits for the page to finish loading for window with given number, within a
+// timeout, or a GREYAssert is induced.
+- (void)waitForPageToFinishLoadingInWindowWithNumber:(int)windowNumber;
+
+// Returns YES if the window with given number's current WebState is loading.
+- (BOOL)isLoadingInWindowWithNumber:(int)windowNumber WARN_UNUSED_RESULT;
+
+// Waits for the current web state for window with given number, to contain
+// |UTF8Text|. If the condition is not met within a timeout a GREYAssert is
+// induced.
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text
+                   inWindowWithNumber:(int)windowNumber;
+
+// Waits for the current web state for window with given number, to contain
+// |UTF8Text|. If the condition is not met within the given |timeout| a
+// GREYAssert is induced.
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text
+                              timeout:(NSTimeInterval)timeout
+                   inWindowWithNumber:(int)windowNumber;
+
+// Waits for there to be |count| number of non-incognito tabs within a timeout,
+// or a GREYAssert is induced.
+- (void)waitForMainTabCount:(NSUInteger)count
+         inWindowWithNumber:(int)windowNumber;
+
+// Waits for there to be |count| number of incognito tabs within a timeout, or a
+// GREYAssert is induced.
+- (void)waitForIncognitoTabCount:(NSUInteger)count
+              inWindowWithNumber:(int)windowNumber;
 
 #pragma mark - SignIn Utilities (EG2)
 
@@ -451,6 +524,13 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns the size of the current WebState's web view.
 - (CGSize)webStateWebViewSize;
 
+// Stops any pending navigations in all WebStates which are loading.
+- (void)stopAllWebStatesLoading;
+
+// Clears all web state browsing data. A GREYAssert is induced if the data
+// cannot be cleared.
+- (void)clearAllWebStateBrowsingData;
+
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
@@ -510,9 +590,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns YES if kTestFeature is enabled.
 - (BOOL)isTestFeatureEnabled;
-
-// Returns YES if CreditCardScanner feature is enabled.
-- (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if DemographicMetricsReporting feature is enabled.
 - (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;
@@ -588,6 +665,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Verifies that |text| was copied to the pasteboard.
 - (void)verifyStringCopied:(NSString*)text;
 
+// Retrieves the GURL stored in the Pasteboard. Returns an empty GURL if no
+// URL is currently in the pasteboard.
+- (GURL)pasteboardURL;
+
 #pragma mark - Context Menus Utilities (EG2)
 
 // Taps on the Copy Link context menu action and verifies that the |text| has
@@ -599,6 +680,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Taps on the Open in New Tab context menu action and waits for the |URL| to be
 // present in the omnibox.
 - (void)verifyOpenInNewTabActionWithURL:(const std::string&)URL;
+
+// Taps on the Open in New Window context menu action and waits for the
+// |content| to be present in webview.
+- (void)verifyOpenInNewWindowActionWithContent:(const std::string&)content;
 
 // Taps on the Open in Incognito context menu action and waits for the |URL| to
 // be present in the omnibox. |useNewString| determines which action string
@@ -614,6 +699,23 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Enables or disables URL-keyed anonymized data collection.
 - (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled;
+
+#pragma mark - Watcher utilities
+
+// Starts monitoring for buttons (based on traits) with the given
+// (accessibility) |labels|. Monitoring will stop once all are found, or if
+// timeout expires. If a previous set is currently being watched for it gets
+// replaced with this set. Note that timeout is best effort and can be a bit
+// longer than specified. This method returns immediately.
+- (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
+                          timeout:(NSTimeInterval)timeout;
+
+// Returns YES is the button with given (accessibility) |label| was observed at
+// some point since |watchForButtonsWithLabels:timeout:| was called.
+- (BOOL)watcherDetectedButtonWithLabel:(NSString*)label;
+
+// Clear the watcher list, stopping monitoring.
+- (void)stopWatcher;
 
 @end
 

@@ -59,6 +59,12 @@ declare_args() {
   # provided.
   rtc_exclude_metrics_default = build_with_chromium
 
+  # Setting this to true will define WEBRTC_EXCLUDE_SYSTEM_TIME which
+  # will tell the pre-processor to remove the default definition of the
+  # SystemTimeNanos() which is defined in rtc_base/system_time.cc. In
+  # that case a new implementation needs to be provided.
+  rtc_exclude_system_time = build_with_chromium
+
   # Setting this to false will require the API user to pass in their own
   # SSLCertificateVerifier to verify the certificates presented from a
   # TLS-TURN server. In return disabling this saves around 100kb in the binary.
@@ -116,6 +122,10 @@ declare_args() {
 
   # Set this to link PipeWire directly instead of using the dlopen.
   rtc_link_pipewire = false
+
+  # Set this to use certain PipeWire version
+  # Currently WebRTC supports PipeWire 0.2 and PipeWire 0.3 (default)
+  rtc_pipewire_version = "0.3"
 
   # Enable to use the Mozilla internal settings.
   build_with_mozilla = false
@@ -421,12 +431,20 @@ absl_define_config = "//third_party/abseil-cpp:absl_define_config"
 # that are testonly.
 absl_flags_config = webrtc_root + ":absl_flags_configs"
 
+# WebRTC wrapper of Chromium's test() template. This template just adds some
+# WebRTC only configuration in order to avoid to duplicate it for every WebRTC
+# target.
+# The parameter `is_xctest` is different from the one in the Chromium's test()
+# template (and it is not forwarded to it). In rtc_test(), the argument
+# `is_xctest` is used to avoid to take dependencies that are not needed
+# in case the test is a real XCTest (using the XCTest framework).
 template("rtc_test") {
   test(target_name) {
     forward_variables_from(invoker,
                            "*",
                            [
                              "configs",
+                             "is_xctest",
                              "public_configs",
                              "suppressed_configs",
                              "visibility",
@@ -453,6 +471,39 @@ template("rtc_test") {
       min_sdk_version = 21
       target_sdk_version = 23
       deps += [ webrtc_root + "test:native_test_java" ]
+    }
+
+    # When not targeting a simulator, building //base/test:google_test_runner
+    # fails, so it is added only when the test is not a real XCTest and when
+    # targeting a simulator.
+    if (is_ios && target_cpu == "x64" && rtc_include_tests) {
+      if (!defined(invoker.is_xctest) || !invoker.is_xctest) {
+        xctest_module_target = "//base/test:google_test_runner"
+      }
+    }
+
+    # If absl_deps is [], no action is needed. If not [], then it needs to be
+    # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
+    # otherwise it just needs to be added to deps.
+    if (defined(absl_deps) && absl_deps != []) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (build_with_chromium) {
+        deps += [ "//third_party/abseil-cpp:absl" ]
+      } else {
+        deps += absl_deps
+      }
+    }
+
+    if (using_sanitizer) {
+      if (is_linux) {
+        if (!defined(invoker.data)) {
+          data = []
+        }
+        data +=
+            [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
+      }
     }
   }
 }

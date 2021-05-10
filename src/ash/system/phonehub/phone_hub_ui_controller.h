@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_UI_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/phonehub/onboarding_view.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_status_view.h"
@@ -13,6 +14,7 @@
 #include "base/observer_list_types.h"
 #include "chromeos/components/phonehub/feature_status_provider.h"
 #include "chromeos/components/phonehub/onboarding_ui_tracker.h"
+#include "chromeos/components/phonehub/phone_model.h"
 
 namespace chromeos {
 namespace phonehub {
@@ -30,7 +32,9 @@ namespace ash {
 // corresponding main content view to be displayed in the tray bubble.
 class ASH_EXPORT PhoneHubUiController
     : public chromeos::phonehub::FeatureStatusProvider::Observer,
-      public chromeos::phonehub::OnboardingUiTracker::Observer {
+      public chromeos::phonehub::OnboardingUiTracker::Observer,
+      public chromeos::phonehub::PhoneModel::Observer,
+      public SessionObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -46,10 +50,10 @@ class ASH_EXPORT PhoneHubUiController
     kOnboardingWithoutPhone,
     kOnboardingWithPhone,
     kBluetoothDisabled,
-    kInitialConnecting,
     kPhoneConnecting,
-    kConnectionError,
+    kPhoneDisconnected,
     kPhoneConnected,
+    kTetherConnectionPending,
   };
 
   PhoneHubUiController();
@@ -87,6 +91,12 @@ class ASH_EXPORT PhoneHubUiController
   // chromeos::phonehub::OnboardingUiTracker::Observer:
   void OnShouldShowOnboardingUiChanged() override;
 
+  // chromeos::phonehub::PhoneModel::Observer:
+  void OnModelChanged() override;
+
+  // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
   // Updates the current UI state and notifies observers.
   void UpdateUiState(PhoneHubUiController::UiState new_state);
 
@@ -101,6 +111,11 @@ class ASH_EXPORT PhoneHubUiController
 
   // The current UI state.
   UiState ui_state_ = UiState::kHidden;
+
+  // This value becomes true the first time the user opens the PhoneHub UI
+  // when the feature is in the enabled state, and a tether scan request is
+  // made.
+  bool has_requested_tether_scan_during_session_ = false;
 
   // Registered observers.
   base::ObserverList<Observer> observer_list_;

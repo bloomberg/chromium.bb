@@ -17,8 +17,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
-struct InstallableData;
 struct WebApplicationInfo;
+
+namespace webapps {
+struct InstallableData;
+}
 
 namespace web_app {
 
@@ -42,7 +45,8 @@ enum ManifestUpdateResult {
   kAppIsSystemWebApp = 9,
   kIconDownloadFailed = 10,
   kIconReadFromDiskFailed = 11,
-  kMaxValue = kIconReadFromDiskFailed,
+  kAppIdMismatch = 12,
+  kMaxValue = kAppIdMismatch,
 };
 
 // Checks whether the installed web app associated with a given WebContents has
@@ -97,7 +101,7 @@ class ManifestUpdateTask final
     kPendingInstallation,
   };
 
-  void OnDidGetInstallableData(const InstallableData& data);
+  void OnDidGetInstallableData(const webapps::InstallableData& data);
   bool IsUpdateNeededForManifest() const;
   void LoadAndCheckIconContents();
   void OnIconsDownloaded(bool success, IconsMap icons_map);

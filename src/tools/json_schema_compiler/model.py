@@ -83,14 +83,14 @@ class SimpleFeature(object):
   - |unix_name| the unix_name of the feature
   - |channel| the channel where the feature is released
   - |extension_types| the types which can use the feature
-  - |whitelist| a list of extensions allowed to use the feature
+  - |allowlist| a list of extensions allowed to use the feature
   """
   def __init__(self, feature_name, feature_def):
     self.name = feature_name
     self.unix_name = UnixName(self.name)
     self.channel = feature_def['channel']
     self.extension_types = feature_def['extension_types']
-    self.whitelist = feature_def.get('whitelist')
+    self.allowlist = feature_def.get('allowlist')
 
 
 class Namespace(object):
@@ -127,6 +127,7 @@ class Namespace(object):
                        'on the API summary page.' % self.name)
       json['description'] = ''
     self.description = json['description']
+    self.nodoc = json.get('nodoc', False)
     self.deprecated = json.get('deprecated', None)
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
@@ -217,6 +218,7 @@ class Type(object):
     self.unix_name = UnixName(self.name)
     self.description = json.get('description', None)
     self.jsexterns = json.get('jsexterns', None)
+    self.nodoc = json.get('nodoc', False)
 
     # Copy the Origin and override the |from_manifest_keys| value as necessary.
     # We need to do this to ensure types reference by manifest types have the
@@ -364,6 +366,7 @@ class Function(object):
     self.supports_listeners = options.get('supportsListeners', True)
     self.supports_rules = options.get('supportsRules', False)
     self.supports_dom = options.get('supportsDom', False)
+    self.nodoc = json.get('nodoc', False)
 
     def GeneratePropertyFromParam(p):
       return Property(self, p['name'], p, namespace, origin)
@@ -377,7 +380,7 @@ class Function(object):
         raise ValueError('Only a single parameter can be specific on '
                          'returns_async: %s.%s' % (namespace.name, name))
       self.returns_async = ReturnsAsync(self, returns_async, namespace,
-                                        Origin(from_client=True))
+                                        Origin(from_client=True), True)
       # TODO(https://crbug.com/1143032): Returning a synchronous value is
       # incompatible with returning a promise. There are APIs that specify this,
       # though. Some appear to be incorrectly specified (i.e., don't return a
@@ -403,8 +406,12 @@ class Function(object):
         self.params.append(GeneratePropertyFromParam(param))
 
     if callback_param:
+      # Even though we are creating a ReturnsAsync type here, this does not
+      # support being returned via a Promise, as this is implied by
+      # "returns_async" being found in the JSON.
+      # This is just a holder type for the callback.
       self.returns_async = ReturnsAsync(self, callback_param, namespace,
-                                        Origin(from_client=True))
+                                        Origin(from_client=True), False)
 
     self.returns = None
     if 'returns' in json:
@@ -429,14 +436,17 @@ class ReturnsAsync(object):
   - |params| a list of parameters supplied to the function in the case of using
              callbacks, or the list of properties on the returned object in the
              case of using promises
+  - |can_return_promise| whether this can be treated as a Promise as well as
+                         callback
   """
-  def __init__(self, parent, json, namespace, origin):
+  def __init__(self, parent, json, namespace, origin, can_return_promise):
     self.name = json.get('name')
     self.simple_name = _StripNamespace(self.name, namespace)
     self.description = json.get('description')
     self.optional = json.get('optional', False)
     self.nocompile = json.get('nocompile')
     self.parent = parent
+    self.can_return_promise = can_return_promise
 
     if json.get('returns') is not None:
       raise ValueError('Cannot return a value from an asynchronous return: '
@@ -479,6 +489,7 @@ class Property(object):
     self.optional = json.get('optional', None)
     self.instance_of = json.get('isInstanceOf', None)
     self.deprecated = json.get('deprecated')
+    self.nodoc = json.get('nodoc', False)
 
     # HACK: only support very specific value types.
     is_allowed_value = (
@@ -603,11 +614,124 @@ class PropertyType(object):
   REF = _PropertyTypeInfo(False, "ref")
   STRING = _PropertyTypeInfo(True, "string")
 
+def IsCPlusPlusKeyword(name):
+  """Returns true if `name` is a C++ reserved keyword.
+  """
+  # Obtained from https://en.cppreference.com/w/cpp/keyword.
+  keywords = {
+    "alignas",
+    "alignof",
+    "and",
+    "and_eq",
+    "asm",
+    "atomic_cancel",
+    "atomic_commit",
+    "atomic_noexcept",
+    "auto",
+    "bitand",
+    "bitor",
+    "bool",
+    "break",
+    "case",
+    "catch",
+    "char",
+    "char8_t",
+    "char16_t",
+    "char32_t",
+    "class",
+    "compl",
+    "concept",
+    "const",
+    "consteval",
+    "constexpr",
+    "constinit",
+    "const_cast",
+    "continue",
+    "co_await",
+    "co_return",
+    "co_yield",
+    "decltype",
+    "default",
+    "delete",
+    "do",
+    "double",
+    "dynamic_cast",
+    "else",
+    "enum",
+    "explicit",
+    "export",
+    "extern",
+    "false",
+    "float",
+    "for",
+    "friend",
+    "goto",
+    "if",
+    "inline",
+    "int",
+    "long",
+    "mutable",
+    "namespace",
+    "new",
+    "noexcept",
+    "not",
+    "not_eq",
+    "nullptr",
+    "operator",
+    "or",
+    "or_eq",
+    "private",
+    "protected",
+    "public",
+    "reflexpr",
+    "register",
+    "reinterpret_cast",
+    "requires",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "static_assert",
+    "static_cast",
+    "struct",
+    "switch",
+    "synchronized",
+    "template",
+    "this",
+    "thread_local",
+    "throw",
+    "true",
+    "try",
+    "typedef",
+    "typeid",
+    "typename",
+    "union",
+    "unsigned",
+    "using",
+    "virtual",
+    "void",
+    "volatile",
+    "wchar_t",
+    "while",
+    "xor",
+    "xor_eq"
+  }
+  return name in keywords
 
 @memoize
 def UnixName(name):
   '''Returns the unix_style name for a given lowerCamelCase string.
   '''
+  # Append an extra underscore to the |name|'s end if it's a reserved C++
+  # keyword in order to avoid compilation errors in generated code.
+  # Note: In some cases, this is overly greedy, because the unix name is
+  # appended to another string (such as in choices, where it becomes
+  # "as_double_"). We can fix this if this situation becomes common, but for now
+  # it's only hit in tests, and not worth the complexity.
+  if IsCPlusPlusKeyword(name):
+    name = name + '_'
+
   unix_name = []
   for i, c in enumerate(name):
     if c.isupper() and i > 0 and name[i - 1] != '_':

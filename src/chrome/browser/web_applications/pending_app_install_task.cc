@@ -12,10 +12,8 @@
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -23,30 +21,24 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/webapps/browser/installable/installable_manager.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/installable/installable_params.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 
-PendingAppInstallTask::Result::Result(InstallResultCode code,
-                                      base::Optional<AppId> app_id)
-    : code(code), app_id(std::move(app_id)) {
-  DCHECK_EQ(IsNewInstall(code), app_id.has_value());
-}
-
-PendingAppInstallTask::Result::Result(Result&&) = default;
-
-PendingAppInstallTask::Result::~Result() = default;
-
 // static
 void PendingAppInstallTask::CreateTabHelpers(
     content::WebContents* web_contents) {
-  InstallableManager::CreateForWebContents(web_contents);
+  webapps::InstallableManager::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 }
 
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
+    WebAppUrlLoader* url_loader,
     AppRegistrar* registrar,
     OsIntegrationManager* os_integration_manager,
     WebAppUiManager* ui_manager,
@@ -54,6 +46,7 @@ PendingAppInstallTask::PendingAppInstallTask(
     InstallManager* install_manager,
     ExternalInstallOptions install_options)
     : profile_(profile),
+      url_loader_(url_loader),
       registrar_(registrar),
       os_integration_manager_(os_integration_manager),
       install_finalizer_(install_finalizer),
@@ -65,8 +58,37 @@ PendingAppInstallTask::PendingAppInstallTask(
 PendingAppInstallTask::~PendingAppInstallTask() = default;
 
 void PendingAppInstallTask::Install(content::WebContents* web_contents,
-                                    WebAppUrlLoader::Result load_url_result,
                                     ResultCallback result_callback) {
+  if (install_options_.only_use_app_info_factory) {
+    DCHECK(install_options_.app_info_factory);
+    InstallFromInfo(std::move(result_callback));
+    return;
+  }
+
+  url_loader_->PrepareForLoad(
+      web_contents, base::BindOnce(&PendingAppInstallTask::OnWebContentsReady,
+                                   weak_ptr_factory_.GetWeakPtr(), web_contents,
+                                   std::move(result_callback)));
+}
+
+void PendingAppInstallTask::OnWebContentsReady(
+    content::WebContents* web_contents,
+    ResultCallback result_callback,
+    WebAppUrlLoader::Result prepare_for_load_result) {
+  // TODO(crbug.com/1098139): Handle the scenario where WebAppUrlLoader fails to
+  // load about:blank and flush WebContents states.
+  url_loader_->LoadUrl(
+      install_options_.install_url, web_contents,
+      WebAppUrlLoader::UrlComparison::kSameOrigin,
+      base::BindOnce(&PendingAppInstallTask::OnUrlLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), web_contents,
+                     std::move(result_callback)));
+}
+
+void PendingAppInstallTask::OnUrlLoaded(
+    content::WebContents* web_contents,
+    ResultCallback result_callback,
+    WebAppUrlLoader::Result load_url_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
 
@@ -123,7 +145,8 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(retry_on_failure), Result(code, base::nullopt)));
+      base::BindOnce(std::move(retry_on_failure), /*app_id=*/base::nullopt,
+                     PendingAppManager::InstallResult{.code = code}));
 }
 
 void PendingAppInstallTask::InstallFromInfo(ResultCallback result_callback) {
@@ -172,8 +195,8 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
     LOG(ERROR) << "Failed to uninstall placeholder for: "
                << install_options_.install_url;
     std::move(result_callback)
-        .Run(Result(InstallResultCode::kFailedPlaceholderUninstall,
-                    base::nullopt));
+        .Run(/*app_id=*/base::nullopt,
+             {.code = InstallResultCode::kFailedPlaceholderUninstall});
     return;
   }
   ContinueWebAppInstall(web_contents, std::move(result_callback));
@@ -203,13 +226,17 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
     // No need to install a placeholder app again.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback),
-                       Result(InstallResultCode::kSuccessNewInstall, app_id)));
+        base::BindOnce(std::move(callback), app_id,
+                       PendingAppManager::InstallResult{
+                           .code = InstallResultCode::kSuccessNewInstall}));
     return;
   }
 
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::UTF8ToUTF16(install_options_.install_url.spec());
+  web_app_info.title =
+      install_options_.fallback_app_name
+          ? base::UTF8ToUTF16(install_options_.fallback_app_name.value())
+          : base::UTF8ToUTF16(install_options_.install_url.spec());
   web_app_info.start_url = install_options_.install_url;
 
   switch (install_options_.user_display_mode) {
@@ -226,7 +253,7 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   }
 
   InstallFinalizer::FinalizeOptions options;
-  options.install_source = WebappInstallSource::EXTERNAL_POLICY;
+  options.install_source = webapps::WebappInstallSource::EXTERNAL_POLICY;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
@@ -241,11 +268,11 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
                                               const AppId& app_id,
                                               InstallResultCode code) {
   if (!IsNewInstall(code)) {
-    std::move(result_callback).Run(Result(code, base::nullopt));
+    std::move(result_callback).Run(/*app_id=*/base::nullopt, {.code = code});
     return;
   }
 
-  ui_manager_->UninstallAndReplaceIfExists(
+  bool did_uninstall_and_replace = ui_manager_->UninstallAndReplaceIfExists(
       install_options().uninstall_and_replace, app_id);
 
   externally_installed_app_prefs_.Insert(install_options_.install_url, app_id,
@@ -258,8 +285,11 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
                ? InstallResultCode::kSuccessOfflineOnlyInstall
                : InstallResultCode::kSuccessOfflineFallbackInstall;
   }
-  base::ScopedClosureRunner scoped_closure(
-      base::BindOnce(std::move(result_callback), Result(code, app_id)));
+  base::ScopedClosureRunner scoped_closure(base::BindOnce(
+      std::move(result_callback), app_id,
+      PendingAppManager::InstallResult{
+          .code = code,
+          .did_uninstall_and_replace = did_uninstall_and_replace}));
 
   if (!is_placeholder) {
     return;
@@ -277,6 +307,14 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   // TODO(crbug.com/1087219): Determine if |register_file_handlers| should be
   // configured from somewhere else rather than always true.
   options.os_hooks[OsHookType::kFileHandlers] = true;
+  options.os_hooks[OsHookType::kProtocolHandlers] = true;
+  options.os_hooks[OsHookType::kUninstallationViaOsSettings] = true;
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+  options.os_hooks[web_app::OsHookType::kUrlHandlers] = true;
+#else
+  options.os_hooks[web_app::OsHookType::kUrlHandlers] = false;
+#endif
 
   os_integration_manager_->InstallOsHooks(
       app_id,
@@ -296,12 +334,13 @@ void PendingAppInstallTask::OnOsHooksCreated(
 
 void PendingAppInstallTask::TryAppInfoFactoryOnFailure(
     ResultCallback result_callback,
-    Result result) {
+    base::Optional<AppId> app_id,
+    PendingAppManager::InstallResult result) {
   if (!IsSuccess(result.code) && install_options().app_info_factory) {
     InstallFromInfo(std::move(result_callback));
     return;
   }
-  std::move(result_callback).Run(std::move(result));
+  std::move(result_callback).Run(std::move(app_id), std::move(result));
 }
 
 }  // namespace web_app

@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "chrome/android/chrome_jni_headers/WebApkInstallService_jni.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk_install_service_factory.h"
 #include "chrome/browser/android/webapk/webapk_installer.h"
+#include "components/webapps/browser/android/shortcut_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 // static
@@ -33,18 +33,19 @@ bool WebApkInstallService::IsInstallInProgress(const GURL& web_manifest_url) {
   return installs_.count(web_manifest_url);
 }
 
-void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
-                                        const ShortcutInfo& shortcut_info,
-                                        const SkBitmap& primary_icon,
-                                        bool is_primary_icon_maskable,
-                                        WebappInstallSource install_source) {
+void WebApkInstallService::InstallAsync(
+    content::WebContents* web_contents,
+    const webapps::ShortcutInfo& shortcut_info,
+    const SkBitmap& primary_icon,
+    bool is_primary_icon_maskable,
+    webapps::WebappInstallSource install_source) {
   if (IsInstallInProgress(shortcut_info.manifest_url)) {
     ShortcutHelper::ShowWebApkInstallInProgressToast();
     return;
   }
 
   installs_.insert(shortcut_info.manifest_url);
-  InstallableMetrics::TrackInstallEvent(install_source);
+  webapps::InstallableMetrics::TrackInstallEvent(install_source);
 
   ShowInstallInProgressNotification(shortcut_info, primary_icon,
                                     is_primary_icon_maskable);
@@ -69,7 +70,7 @@ void WebApkInstallService::UpdateAsync(
 
 void WebApkInstallService::OnFinishedInstall(
     std::unique_ptr<LifetimeObserver> observer,
-    const ShortcutInfo& shortcut_info,
+    const webapps::ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
     WebApkInstallResult result,
@@ -106,7 +107,7 @@ void WebApkInstallService::OnFinishedInstall(
 
 // static
 void WebApkInstallService::ShowInstallInProgressNotification(
-    const ShortcutInfo& shortcut_info,
+    const webapps::ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -127,7 +128,7 @@ void WebApkInstallService::ShowInstallInProgressNotification(
 
 // static
 void WebApkInstallService::ShowInstalledNotification(
-    const ShortcutInfo& shortcut_info,
+    const webapps::ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
     const std::string& webapk_package_name) {

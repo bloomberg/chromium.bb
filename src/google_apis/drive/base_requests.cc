@@ -446,7 +446,8 @@ void UrlFetchRequestBase::OnDataReceived(base::StringPiece string_piece,
                                          base::OnceClosure resume) {
   if (!download_data_->get_content_callback.is_null()) {
     download_data_->get_content_callback.Run(
-        HTTP_SUCCESS, std::make_unique<std::string>(string_piece));
+        HTTP_SUCCESS, std::make_unique<std::string>(string_piece),
+        download_data_->response_body.empty());
   }
 
   if (!download_data_->output_file_path.empty()) {
@@ -612,11 +613,11 @@ void EntryActionRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
 
 InitiateUploadRequestBase::InitiateUploadRequestBase(
     RequestSender* sender,
-    const InitiateUploadCallback& callback,
+    InitiateUploadCallback callback,
     const std::string& content_type,
     int64_t content_length)
     : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()),
-      callback_(callback),
+      callback_(std::move(callback)),
       content_type_(content_type),
       content_length_(content_length) {
   DCHECK(!callback_.is_null());
@@ -637,13 +638,13 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
                                             &upload_location);
   }
 
-  callback_.Run(GetErrorCode(), GURL(upload_location));
+  std::move(callback_).Run(GetErrorCode(), GURL(upload_location));
   OnProcessURLFetchResultsComplete();
 }
 
 void InitiateUploadRequestBase::RunCallbackOnPrematureFailure(
     DriveApiErrorCode code) {
-  callback_.Run(code, GURL());
+  std::move(callback_).Run(code, GURL());
 }
 
 std::vector<std::string>
@@ -980,13 +981,13 @@ void MultipartUploadRequestBase::OnDataParsed(
 
 DownloadFileRequestBase::DownloadFileRequestBase(
     RequestSender* sender,
-    const DownloadActionCallback& download_action_callback,
+    DownloadActionCallback download_action_callback,
     const GetContentCallback& get_content_callback,
     ProgressCallback progress_callback,
     const GURL& download_url,
     const base::FilePath& output_file_path)
     : UrlFetchRequestBase(sender, ProgressCallback(), progress_callback),
-      download_action_callback_(download_action_callback),
+      download_action_callback_(std::move(download_action_callback)),
       get_content_callback_(get_content_callback),
       download_url_(download_url),
       output_file_path_(output_file_path) {
@@ -1014,13 +1015,13 @@ void DownloadFileRequestBase::ProcessURLFetchResults(
     const network::mojom::URLResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
-  download_action_callback_.Run(GetErrorCode(), response_file);
+  std::move(download_action_callback_).Run(GetErrorCode(), response_file);
   OnProcessURLFetchResultsComplete();
 }
 
 void DownloadFileRequestBase::RunCallbackOnPrematureFailure(
     DriveApiErrorCode code) {
-  download_action_callback_.Run(code, base::FilePath());
+  std::move(download_action_callback_).Run(code, base::FilePath());
 }
 
 }  // namespace google_apis

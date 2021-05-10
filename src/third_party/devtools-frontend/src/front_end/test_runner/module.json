@@ -1,9 +1,6 @@
 {
   "dependencies": [
-    "sdk",
-    "workspace",
     "ui",
-    "host",
     "main"
   ],
   "modules": [

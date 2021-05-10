@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_received_packet_manager.h"
+#include "quic/core/quic_received_packet_manager.h"
 
 #include <algorithm>
 #include <limits>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/congestion_control/rtt_stats.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_stats.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -72,7 +72,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     const QuicPacketHeader& header,
     QuicTime receipt_time) {
   const QuicPacketNumber packet_number = header.packet_number;
-  DCHECK(IsAwaitingPacket(packet_number)) << " packet_number:" << packet_number;
+  QUICHE_DCHECK(IsAwaitingPacket(packet_number))
+      << " packet_number:" << packet_number;
   was_last_packet_missing_ = IsMissing(packet_number);
   if (!ack_frame_updated_) {
     ack_frame_.received_packet_times.clear();
@@ -174,8 +175,8 @@ void QuicReceivedPacketManager::DontWaitForPacketsBefore(
     return;
   }
   // ValidateAck() should fail if peer_least_packet_awaiting_ack shrinks.
-  DCHECK(!peer_least_packet_awaiting_ack_.IsInitialized() ||
-         peer_least_packet_awaiting_ack_ <= least_unacked);
+  QUICHE_DCHECK(!peer_least_packet_awaiting_ack_.IsInitialized() ||
+                peer_least_packet_awaiting_ack_ <= least_unacked);
   if (!peer_least_packet_awaiting_ack_.IsInitialized() ||
       least_unacked > peer_least_packet_awaiting_ack_) {
     peer_least_packet_awaiting_ack_ = least_unacked;
@@ -186,9 +187,9 @@ void QuicReceivedPacketManager::DontWaitForPacketsBefore(
       ack_frame_updated_ = true;
     }
   }
-  DCHECK(ack_frame_.packets.Empty() ||
-         !peer_least_packet_awaiting_ack_.IsInitialized() ||
-         ack_frame_.packets.Min() >= peer_least_packet_awaiting_ack_);
+  QUICHE_DCHECK(ack_frame_.packets.Empty() ||
+                !peer_least_packet_awaiting_ack_.IsInitialized() ||
+                ack_frame_.packets.Min() >= peer_least_packet_awaiting_ack_);
 }
 
 QuicTime::Delta QuicReceivedPacketManager::GetMaxAckDelay(

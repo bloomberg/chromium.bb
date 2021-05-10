@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
@@ -80,9 +81,9 @@ SupervisedUserGoogleAuthNavigationThrottle::WillStartOrRedirectRequest() {
   if (result.action() == content::NavigationThrottle::DEFER) {
     google_auth_state_subscription_ =
         child_account_service_->ObserveGoogleAuthState(
-            base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::
-                           OnGoogleAuthStateChanged,
-                       base::Unretained(this)));
+            base::BindRepeating(&SupervisedUserGoogleAuthNavigationThrottle::
+                                    OnGoogleAuthStateChanged,
+                                base::Unretained(this)));
   }
 
   return result;
@@ -93,7 +94,7 @@ void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged() {
 
   switch (result.action()) {
     case content::NavigationThrottle::PROCEED: {
-      google_auth_state_subscription_.reset();
+      google_auth_state_subscription_ = {};
       Resume();
       break;
     }
@@ -123,7 +124,7 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
   if (authStatus == ChildAccountService::AuthState::PENDING)
     return content::NavigationThrottle::DEFER;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // A credentials re-mint is already underway when we reach here (Mirror
   // account reconciliation). Nothing to do here except block the navigation
   // while re-minting is underway.
@@ -146,9 +147,9 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
 
     ReauthenticateChildAccount(
         web_contents, account_info.email,
-        base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::
-                       OnReauthenticationResult,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&SupervisedUserGoogleAuthNavigationThrottle::
+                                OnReauthenticationFailed,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
   return content::NavigationThrottle::DEFER;
 #else
@@ -160,14 +161,7 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
 #endif
 }
 
-void SupervisedUserGoogleAuthNavigationThrottle::OnReauthenticationResult(
-    bool reauth_successful) {
-  if (reauth_successful) {
-    // If reauthentication was not successful, wait until the cookies are
-    // refreshed, which will call us back separately.
-    return;
-  }
-
-  // Otherwise cancel immediately.
+void SupervisedUserGoogleAuthNavigationThrottle::OnReauthenticationFailed() {
+  // Cancel the navifation if reauthentication failed.
   CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
 }

@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as Host from '../host/host.js';
+import {ls} from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
@@ -16,7 +17,6 @@ let deviceModeModelInstance;
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.EmulationModel.EmulationModel>}
  * @extends {Common.ObjectWrapper.ObjectWrapper}
- * @unrestricted
  */
 export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
   /**
@@ -33,7 +33,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     this._appliedDeviceScaleFactor = window.devicePixelRatio;
     this._appliedUserAgentType = UA.Desktop;
     this._experimentDualScreenSupport = Root.Runtime.experiments.isEnabled('dualScreenSupport');
-    this._webPlatformExperimentalFeaturesEnabled = !!eval('window.getWindowSegments');
+    this._webPlatformExperimentalFeaturesEnabled = Boolean(eval('window.getWindowSegments'));
 
     this._scaleSetting = Common.Settings.Settings.instance().createSetting('emulation.deviceScale', 1);
     // We've used to allow zero before.
@@ -187,7 +187,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     this._type = type;
 
     if (type === Type.Device && device && mode) {
-      console.assert(!!device && !!mode, 'Must pass device and mode for device emulation');
+      console.assert(Boolean(device) && Boolean(mode), 'Must pass device and mode for device emulation');
       this._mode = mode;
       this._device = device;
       if (this._initialized) {
@@ -796,7 +796,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
       overlayModel.setShowViewportSizeOnResize(false);
     }
 
-    // Emulate full size device if necessary.
+    // Define the right clipping area for fullsize screenshots.
     if (fullSize) {
       const metrics = await screenCaptureModel.fetchLayoutMetrics();
       if (!metrics) {
@@ -805,35 +805,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
 
       // Cap the height to not hit the GPU limit.
       const contentHeight = Math.min((1 << 14) / this._appliedDeviceScaleFactor, metrics.contentHeight);
-      /** @type {!Protocol.Emulation.SetDeviceMetricsOverrideRequest} */
-      const deviceMetrics = {
-        width: Math.floor(metrics.contentWidth),
-        height: Math.floor(contentHeight),
-        deviceScaleFactor: this._appliedDeviceScaleFactor,
-        mobile: this._isMobile(),
-        displayFeature: undefined,
-        screenOrientation: undefined,
-      };
-
-      const displayFeature = this._getDisplayFeature();
-      if (displayFeature) {
-        deviceMetrics.displayFeature = displayFeature;
-      }
-
-      clip = {x: 0, y: 0, width: deviceMetrics.width, height: deviceMetrics.height, scale: 1};
-
-      if (this._device && this._mode) {
-        const screenOrientation = this._mode.orientation === Horizontal ?
-            Protocol.Emulation.ScreenOrientationType.LandscapePrimary :
-            Protocol.Emulation.ScreenOrientationType.PortraitPrimary;
-        const screenOrientationAngle =
-            screenOrientation === Protocol.Emulation.ScreenOrientationType.LandscapePrimary ? 90 : 0;
-        deviceMetrics.screenOrientation = {type: screenOrientation, angle: screenOrientationAngle};
-      }
-      if (this._emulationModel) {
-        await this._emulationModel.resetPageScaleFactor();
-        await this._emulationModel.emulateDevice(deviceMetrics);
-      }
+      clip = {x: 0, y: 0, width: Math.floor(metrics.contentWidth), height: Math.floor(contentHeight), scale: 1};
     }
     const screenshot =
         await screenCaptureModel.captureScreenshot(Protocol.Page.CaptureScreenshotRequestFormat.Png, 100, clip);
@@ -969,8 +941,6 @@ export const _defaultMobileUserAgent =
     SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(_mobileUserAgent);
 
 export const _defaultMobileUserAgentMetadata = {
-  brands: SDK.NetworkManager.MultitargetNetworkManager.getChromeBrands(),
-  fullVersion: SDK.NetworkManager.MultitargetNetworkManager.getChromeVersion(),
   platform: 'Android',
   platformVersion: '6.0',
   architecture: '',

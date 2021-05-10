@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
 #include "chrome/browser/ui/app_list/search/files/item_suggest_cache.h"
+#include "chrome/browser/ui/app_list/search/score_normalizer/score_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 
@@ -66,8 +68,12 @@ class DriveZeroStateProvider : public SearchProvider,
 
   base::TimeTicks query_start_time_;
 
-  // Whether the suggested files experiment is enabled.
+  // Whether suggested files feature is enabled. True if both the experiment is
+  // enabled, and the suggested content toggle is enabled.
   const bool suggested_files_enabled_;
+
+  // The normalizer normalizes the relevance scores of Results
+  base::Optional<ScoreNormalizer> normalizer_;
 
   // Whether we have sent at least one request to ItemSuggest to warm up the
   // results cache.

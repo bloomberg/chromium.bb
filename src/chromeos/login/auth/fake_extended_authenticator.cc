@@ -11,43 +11,14 @@
 namespace chromeos {
 
 FakeExtendedAuthenticator::FakeExtendedAuthenticator(
-    NewAuthStatusConsumer* consumer,
-    const UserContext& expected_user_context)
-    : consumer_(consumer),
-      old_consumer_(NULL),
-      expected_user_context_(expected_user_context) {
-}
-
-FakeExtendedAuthenticator::FakeExtendedAuthenticator(
     AuthStatusConsumer* consumer,
     const UserContext& expected_user_context)
-    : consumer_(NULL),
-      old_consumer_(consumer),
-      expected_user_context_(expected_user_context) {
-}
+    : consumer_(consumer), expected_user_context_(expected_user_context) {}
 
 FakeExtendedAuthenticator::~FakeExtendedAuthenticator() = default;
 
 void FakeExtendedAuthenticator::SetConsumer(AuthStatusConsumer* consumer) {
-  old_consumer_ = consumer;
-}
-
-void FakeExtendedAuthenticator::AuthenticateToMount(
-    const UserContext& context,
-    ResultCallback success_callback) {
-  if (expected_user_context_ == context) {
-    UserContext reported_user_context(context);
-    const std::string mount_hash =
-        reported_user_context.GetAccountId().GetUserEmail() + "-hash";
-    reported_user_context.SetUserIDHash(mount_hash);
-    if (success_callback)
-      std::move(success_callback).Run(mount_hash);
-    OnAuthSuccess(reported_user_context);
-    return;
-  }
-
-  OnAuthFailure(FAILED_MOUNT,
-                AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME));
+  consumer_ = consumer;
 }
 
 void FakeExtendedAuthenticator::AuthenticateToCheck(
@@ -92,14 +63,6 @@ void FakeExtendedAuthenticator::AddKey(const UserContext& context,
   NOTREACHED();
 }
 
-void FakeExtendedAuthenticator::UpdateKeyAuthorized(
-    const UserContext& context,
-    const cryptohome::KeyDefinition& key,
-    const std::string& signature,
-    base::OnceClosure success_callback) {
-  NOTREACHED();
-}
-
 void FakeExtendedAuthenticator::RemoveKey(const UserContext& context,
                                           const std::string& key_to_remove,
                                           base::OnceClosure success_callback) {
@@ -114,16 +77,14 @@ void FakeExtendedAuthenticator::TransformKeyIfNeeded(
 }
 
 void FakeExtendedAuthenticator::OnAuthSuccess(const UserContext& context) {
-  if (old_consumer_)
-    old_consumer_->OnAuthSuccess(context);
+  if (consumer_)
+    consumer_->OnAuthSuccess(context);
 }
 
 void FakeExtendedAuthenticator::OnAuthFailure(AuthState state,
                                               const AuthFailure& error) {
   if (consumer_)
-    consumer_->OnAuthenticationFailure(state);
-  if (old_consumer_)
-    old_consumer_->OnAuthFailure(error);
+    consumer_->OnAuthFailure(error);
 }
 
 }  // namespace chromeos

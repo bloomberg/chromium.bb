@@ -60,11 +60,6 @@ struct BLINK_COMMON_EXPORT
     return internal::TruncateOptionalString16(manifest.description);
   }
 
-  static const std::vector<base::string16>& categories(
-      const ::blink::Manifest& manifest) {
-    return manifest.categories;
-  }
-
   static base::Optional<base::StringPiece16> gcm_sender_id(
       const ::blink::Manifest& manifest) {
     return internal::TruncateOptionalString16(manifest.gcm_sender_id);
@@ -150,6 +145,11 @@ struct BLINK_COMMON_EXPORT
 
   static bool prefer_related_applications(const ::blink::Manifest& manifest) {
     return manifest.prefer_related_applications;
+  }
+
+  static blink::mojom::CaptureLinks capture_links(
+      const ::blink::Manifest& manifest) {
+    return manifest.capture_links;
   }
 
   static bool Read(blink::mojom::ManifestDataView data, ::blink::Manifest* out);

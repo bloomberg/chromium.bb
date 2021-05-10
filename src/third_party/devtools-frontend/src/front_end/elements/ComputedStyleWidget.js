@@ -29,25 +29,67 @@
 
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
+import * as i18n from '../i18n/i18n.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {ComputedStyle, ComputedStyleModel, Events} from './ComputedStyleModel.js';  // eslint-disable-line no-unused-vars
-import {ComputedStylePropertyClosureInterface, ComputedStylePropertyData, createComputedStyleProperty} from './ComputedStyleProperty_bridge.js';  // eslint-disable-line no-unused-vars
-import {createComputedStyleTrace} from './ComputedStyleTrace_bridge.js';
+import {ComputedStyleProperty} from './ComputedStyleProperty.js';
+import {ComputedStyleTrace} from './ComputedStyleTrace.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {PlatformFontsWidget} from './PlatformFontsWidget.js';
 import {categorizePropertyName, Category, DefaultCategoryOrder} from './PropertyNameCategories.js';  // eslint-disable-line no-unused-vars
 import {IdleCallbackManager, StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer} from './StylesSidebarPane.js';
 
+export const UIStrings = {
+  /**
+  * @description Placeholder text for a text input used to filter which CSS properties show up in
+  * the list of computed properties. In the Computed Style Widget of the Elements panel.
+  */
+  filter: 'Filter',
+  /**
+  * @description ARIA accessible name for the text input used to filter which CSS properties show up
+  * in the list of computed properties. In the Computed Style Widget of the Elements panel.
+  */
+  filterComputedStyles: 'Filter Computed Styles',
+  /**
+  * @description Text for a checkbox setting that controls whether the user-supplied filter text
+  * excludes all CSS propreties which are filtered out, or just greys them out. In Computed Style
+  * Widget of the Elements panel
+  */
+  showAll: 'Show all',
+  /**
+  * @description Text for a checkbox setting that controls whether similar CSS properties should be
+  * grouped together or not. In Computed Style Widget of the Elements panel.
+  */
+  group: 'Group',
+  /**
+  * @description Text shown to the user when a filter is applied to the computed CSS properties, but
+  * no properties matched the filter and thus no results were returned.
+  */
+  noMatchingProperty: 'No matching property',
+  /**
+  * @description Context menu item in Elements panel to navigate to the source code location of the
+  * CSS selector that was clicked on.
+  */
+  navigateToSelectorSource: 'Navigate to selector source',
+  /**
+  * @description Context menu item in Elements panel to navigate to the corresponding CSS style rule
+  * for this computed property.
+  */
+  navigateToStyle: 'Navigate to style',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/ComputedStyleWidget.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @param {!SDK.DOMModel.DOMNode} node
  * @param {string} propertyName
  * @param {string} propertyValue
  */
 const createPropertyElement = (node, propertyName, propertyValue) => {
-  const propertyElement = createComputedStyleProperty();
+  const propertyElement = new ComputedStyleProperty();
 
   const renderer = new StylesSidebarPropertyRenderer(null, node, propertyName, propertyValue);
   renderer.setColorHandler(processComputedColor);
@@ -71,7 +113,7 @@ const createPropertyElement = (node, propertyName, propertyValue) => {
  * @param {!Components.Linkifier.Linkifier} linkifier
  */
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
-  const trace = createComputedStyleTrace();
+  const trace = new ComputedStyleTrace();
 
   const renderer = new StylesSidebarPropertyRenderer(null, node, property.name, /** @type {string} */ (property.value));
   renderer.setColorHandler(processColor);
@@ -101,7 +143,7 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
  * @return {!Node}
  */
 const processColor = text => {
-  const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+  const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
   swatch.renderColor(text, true);
   swatch.createChild('span').textContent = text;
   return swatch;
@@ -112,7 +154,7 @@ const processColor = text => {
  * @return {!Node}
  */
 const processComputedColor = text => {
-  const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+  const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
   // Computed styles don't provide the original format, so switch to RGB.
   swatch.renderColor(text, Common.Color.Format.RGB);
   swatch.createChild('span').textContent = text;
@@ -142,12 +184,9 @@ const propertySorter = (propA, propB) => {
   }
   const canonicalA = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propA);
   const canonicalB = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propB);
-  return canonicalA.compareTo(canonicalB);
+  return Platform.StringUtilities.compare(canonicalA, canonicalB);
 };
 
-/**
- * @unrestricted
- */
 export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true);
@@ -167,21 +206,21 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
 
     const hbox = this.contentElement.createChild('div', 'hbox styles-sidebar-pane-toolbar');
     const filterContainerElement = hbox.createChild('div', 'styles-sidebar-pane-filter-box');
-    const filterInput = StylesSidebarPane.createPropertyFilterElement(ls`Filter`, hbox, filterCallback.bind(this));
-    UI.ARIAUtils.setAccessibleName(filterInput, Common.UIString.UIString('Filter Computed Styles'));
+    const filterInput =
+        StylesSidebarPane.createPropertyFilterElement(i18nString(UIStrings.filter), hbox, filterCallback.bind(this));
+    UI.ARIAUtils.setAccessibleName(filterInput, i18nString(UIStrings.filterComputedStyles));
     filterContainerElement.appendChild(filterInput);
-    this.setDefaultFocusedElement(filterInput);
     /** @type {?RegExp} */
     this._filterRegex = null;
 
     const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
     toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(
-        this._showInheritedComputedStylePropertiesSetting, undefined, Common.UIString.UIString('Show all')));
+        this._showInheritedComputedStylePropertiesSetting, undefined, i18nString(UIStrings.showAll)));
     toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(
-        this._groupComputedStylesSetting, undefined, Common.UIString.UIString('Group')));
+        this._groupComputedStylesSetting, undefined, i18nString(UIStrings.group)));
 
     this._noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
-    this._noMatchesElement.textContent = ls`No matching property`;
+    this._noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
 
     this._propertiesOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._propertiesOutline.hideOverflow();
@@ -276,15 +315,15 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
   /**
    * @return {!Promise.<?SDK.CSSMatchedStyles.CSSMatchedStyles>}
    */
-  _fetchMatchedCascade() {
+  async _fetchMatchedCascade() {
     const node = this._computedStyleModel.node();
     if (!node || !this._computedStyleModel.cssModel()) {
-      return Promise.resolve(/** @type {?SDK.CSSMatchedStyles.CSSMatchedStyles} */ (null));
+      return /** @type {?SDK.CSSMatchedStyles.CSSMatchedStyles} */ (null);
     }
 
     const cssModel = this._computedStyleModel.cssModel();
     if (!cssModel) {
-      return Promise.resolve(null);
+      return null;
     }
 
     return cssModel.cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
@@ -339,6 +378,8 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
       computedStyleQueue.push({propertyName, propertyValue, isInherited});
     }
 
+    this._propertiesOutline.contentElement.classList.add('render-flash');
+
     // Render computed style properties in batches via idle callbacks to avoid a
     // very long task. The batchSize and timeoutInterval should be tweaked in
     // pair. Currently, updating, laying-out, rendering, and painting 20 items
@@ -365,6 +406,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     await this._idleCallbackManager.awaitDone();
+    this._propertiesOutline.contentElement.classList.remove('render-flash');
   }
 
   /**
@@ -542,13 +584,14 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     if (rule) {
       const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
       if (header && !header.isAnonymousInlineStyleSheet()) {
-        contextMenu.defaultSection().appendItem(ls`Navigate to selector source`, () => {
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.navigateToSelectorSource), () => {
           StylePropertiesSection.tryNavigateToRuleLocation(matchedStyles, rule);
         });
       }
     }
 
-    contextMenu.defaultSection().appendItem(ls`Navigate to style`, () => Common.Revealer.reveal(property));
+    contextMenu.defaultSection().appendItem(
+        i18nString(UIStrings.navigateToStyle), () => Common.Revealer.reveal(property));
     contextMenu.show();
   }
 
@@ -603,7 +646,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
       child.hidden = !matched;
       hasMatch = hasMatch || matched;
     }
-    this._noMatchesElement.classList.toggle('hidden', !!hasMatch);
+    this._noMatchesElement.classList.toggle('hidden', Boolean(hasMatch));
   }
 
   _filterGroupLists() {

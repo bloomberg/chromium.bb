@@ -22,7 +22,6 @@
 #include "src/gpu/mtl/GrMtlTexture.h"
 #include "src/gpu/mtl/GrMtlTextureRenderTarget.h"
 #include "src/gpu/mtl/GrMtlUtil.h"
-#include "src/sksl/SkSLCompiler.h"
 
 #import <simd/simd.h>
 
@@ -100,28 +99,31 @@ static bool get_feature_set(id<MTLDevice> device, MTLFeatureSet* featureSet) {
     return false;
 }
 
-sk_sp<GrGpu> GrMtlGpu::Make(GrDirectContext* direct, const GrContextOptions& options,
-                            id<MTLDevice> device, id<MTLCommandQueue> queue) {
-    if (!device || !queue) {
+sk_sp<GrGpu> GrMtlGpu::Make(const GrMtlBackendContext& context, const GrContextOptions& options,
+                            GrDirectContext* direct) {
+    if (!context.fDevice || !context.fQueue) {
         return nullptr;
     }
-    if (@available(macOS 10.14, iOS 9.0, *)) {
+    if (@available(macOS 10.14, iOS 10.0, *)) {
         // no warning needed
     } else {
         SkDebugf("*** Warning ***: this OS version is deprecated and will no longer be supported " \
                  "in future releases.\n");
 #ifdef SK_BUILD_FOR_IOS
-        SkDebugf("Minimum recommended version is iOS 9.0.\n");
+        SkDebugf("Minimum recommended version is iOS 10.0.\n");
 #else
         SkDebugf("Minimum recommended version is MacOS 10.14.\n");
 #endif
     }
 
+    id<MTLDevice> device = (__bridge id<MTLDevice>)(context.fDevice.get());
+    id<MTLCommandQueue> queue = (__bridge id<MTLCommandQueue>)(context.fQueue.get());
     MTLFeatureSet featureSet;
     if (!get_feature_set(device, &featureSet)) {
         return nullptr;
     }
-    return sk_sp<GrGpu>(new GrMtlGpu(direct, options, device, queue, featureSet));
+    return sk_sp<GrGpu>(new GrMtlGpu(direct, options, device, queue, context.fBinaryArchive.get(),
+                                     featureSet));
 }
 
 // This constant determines how many OutstandingCommandBuffers are allocated together as a block in
@@ -131,7 +133,8 @@ sk_sp<GrGpu> GrMtlGpu::Make(GrDirectContext* direct, const GrContextOptions& opt
 static const int kDefaultOutstandingAllocCnt = 8;
 
 GrMtlGpu::GrMtlGpu(GrDirectContext* direct, const GrContextOptions& options,
-                   id<MTLDevice> device, id<MTLCommandQueue> queue, MTLFeatureSet featureSet)
+                   id<MTLDevice> device, id<MTLCommandQueue> queue, GrMTLHandle binaryArchive,
+                   MTLFeatureSet featureSet)
         : INHERITED(direct)
         , fDevice(device)
         , fQueue(queue)
@@ -140,9 +143,13 @@ GrMtlGpu::GrMtlGpu(GrDirectContext* direct, const GrContextOptions& options,
         , fStagingBufferManager(this)
         , fDisconnected(false) {
     fMtlCaps.reset(new GrMtlCaps(options, fDevice, featureSet));
-    fCaps = fMtlCaps;
-    fCompiler.reset(new SkSL::Compiler(fMtlCaps->shaderCaps()));
+    this->initCapsAndCompiler(fMtlCaps);
     fCurrentCmdBuffer = GrMtlCommandBuffer::Make(fQueue);
+#if GR_METAL_SDK_VERSION >= 230
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        fBinaryArchive = (__bridge id<MTLBinaryArchive>)(binaryArchive);
+    }
+#endif
 }
 
 GrMtlGpu::~GrMtlGpu() {
@@ -170,7 +177,6 @@ void GrMtlGpu::destroyResources() {
                 (OutstandingCommandBuffer*)fOutstandingCommandBuffers.front();
         // make sure we remove before deleting as deletion might try to kick off another submit
         fOutstandingCommandBuffers.pop_front();
-        this->deleteFence(buffer->fFence);
         buffer->~OutstandingCommandBuffer();
     }
 
@@ -216,12 +222,7 @@ void GrMtlGpu::submit(GrOpsRenderPass* renderPass) {
 bool GrMtlGpu::submitCommandBuffer(SyncQueue sync) {
     if (!fCurrentCmdBuffer || !fCurrentCmdBuffer->hasWork()) {
         if (sync == SyncQueue::kForce_SyncQueue) {
-            // wait for the last command buffer we've submitted to finish
-            OutstandingCommandBuffer* back =
-                    (OutstandingCommandBuffer*)fOutstandingCommandBuffers.back();
-            if (back) {
-                back->fCommandBuffer->waitUntilCompleted();
-            }
+            this->finishOutstandingGpuWork();
             this->checkForFinishedCommandBuffers();
         }
         // We need to manually call the finishedCallbacks since we don't add this
@@ -233,9 +234,7 @@ bool GrMtlGpu::submitCommandBuffer(SyncQueue sync) {
     }
 
     SkASSERT(fCurrentCmdBuffer);
-    GrFence fence = this->insertFence();
-    new (fOutstandingCommandBuffers.push_back()) OutstandingCommandBuffer(
-            fCurrentCmdBuffer, fence);
+    new (fOutstandingCommandBuffers.push_back()) OutstandingCommandBuffer(fCurrentCmdBuffer);
 
     if (!fCurrentCmdBuffer->commit(sync == SyncQueue::kForce_SyncQueue)) {
         return false;
@@ -261,13 +260,21 @@ void GrMtlGpu::checkForFinishedCommandBuffers() {
     // Repeat till we find a command list that has not finished yet (and all others afterwards are
     // also guaranteed to not have finished).
     OutstandingCommandBuffer* front = (OutstandingCommandBuffer*)fOutstandingCommandBuffers.front();
-    while (front && this->waitFence(front->fFence)) {
+    while (front && (*front)->isCompleted()) {
         // Make sure we remove before deleting as deletion might try to kick off another submit
         fOutstandingCommandBuffers.pop_front();
         // Since we used placement new we are responsible for calling the destructor manually.
-        this->deleteFence(front->fFence);
         front->~OutstandingCommandBuffer();
         front = (OutstandingCommandBuffer*)fOutstandingCommandBuffers.front();
+    }
+}
+
+void GrMtlGpu::finishOutstandingGpuWork() {
+    // wait for the last command buffer we've submitted to finish
+    OutstandingCommandBuffer* back =
+            (OutstandingCommandBuffer*)fOutstandingCommandBuffers.back();
+    if (back) {
+        (*back)->waitUntilCompleted();
     }
 }
 
@@ -287,7 +294,7 @@ void GrMtlGpu::addFinishedCallback(sk_sp<GrRefCntedCallback> finishedCallback) {
     // must finish after all previously submitted command buffers.
     OutstandingCommandBuffer* back = (OutstandingCommandBuffer*)fOutstandingCommandBuffers.back();
     if (back) {
-        back->fCommandBuffer->addFinishedCallback(finishedCallback);
+        (*back)->addFinishedCallback(finishedCallback);
     }
     commandBuffer()->addFinishedCallback(std::move(finishedCallback));
 }
@@ -841,8 +848,12 @@ static GrColorType mtl_format_to_backend_tex_clear_colortype(MTLPixelFormat form
     SkUNREACHABLE;
 }
 
-void copy_src_data(char* dst, size_t bytesPerPixel, const SkTArray<size_t>& individualMipOffsets,
-                   const SkPixmap srcData[], int numMipLevels, size_t bufferSize) {
+void copy_src_data(char* dst,
+                   size_t bytesPerPixel,
+                   const SkTArray<size_t>& individualMipOffsets,
+                   const GrPixmap srcData[],
+                   int numMipLevels,
+                   size_t bufferSize) {
     SkASSERT(srcData && numMipLevels);
     SkASSERT(individualMipOffsets.count() == numMipLevels);
 
@@ -1117,14 +1128,10 @@ void GrMtlGpu::deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&
 
     GrMtlTextureInfo info;
     if (rt.getMtlTextureInfo(&info)) {
-        this->testingOnly_flushGpuAndSync();
+        this->submitToGpu(true);
         // Nothing else to do here, will get cleaned up when the GrBackendRenderTarget
         // is deleted.
     }
-}
-
-void GrMtlGpu::testingOnly_flushGpuAndSync() {
-    this->submitCommandBuffer(kForce_SyncQueue);
 }
 #endif // GR_TEST_UTILS
 
@@ -1248,7 +1255,8 @@ bool GrMtlGpu::onReadPixels(GrSurface* surface, int left, int top, int width, in
 
 bool GrMtlGpu::onTransferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
                                   GrColorType textureColorType, GrColorType bufferColorType,
-                                  GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) {
+                                  sk_sp<GrGpuBuffer> transferBuffer, size_t offset,
+                                  size_t rowBytes) {
     SkASSERT(texture);
     SkASSERT(transferBuffer);
     if (textureColorType != bufferColorType) {
@@ -1259,7 +1267,7 @@ bool GrMtlGpu::onTransferPixelsTo(GrTexture* texture, int left, int top, int wid
     id<MTLTexture> mtlTexture = grMtlTexture->mtlTexture();
     SkASSERT(mtlTexture);
 
-    GrMtlBuffer* grMtlBuffer = static_cast<GrMtlBuffer*>(transferBuffer);
+    GrMtlBuffer* grMtlBuffer = static_cast<GrMtlBuffer*>(transferBuffer.get());
     id<MTLBuffer> mtlBuffer = grMtlBuffer->mtlBuffer();
     SkASSERT(mtlBuffer);
 
@@ -1289,7 +1297,7 @@ bool GrMtlGpu::onTransferPixelsTo(GrTexture* texture, int left, int top, int wid
 
 bool GrMtlGpu::onTransferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                                     GrColorType surfaceColorType, GrColorType bufferColorType,
-                                    GrGpuBuffer* transferBuffer, size_t offset) {
+                                    sk_sp<GrGpuBuffer> transferBuffer, size_t offset) {
     SkASSERT(surface);
     SkASSERT(transferBuffer);
 
@@ -1306,7 +1314,7 @@ bool GrMtlGpu::onTransferPixelsFrom(GrSurface* surface, int left, int top, int w
         return false;
     }
 
-    GrMtlBuffer* grMtlBuffer = static_cast<GrMtlBuffer*>(transferBuffer);
+    GrMtlBuffer* grMtlBuffer = static_cast<GrMtlBuffer*>(transferBuffer.get());
 
     size_t transBufferRowBytes = bpp * width;
     size_t transBufferImageBytes = transBufferRowBytes * height;

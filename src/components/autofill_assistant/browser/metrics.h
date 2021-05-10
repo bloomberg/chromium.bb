@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_METRICS_H_
 
 #include <ostream>
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -332,7 +333,7 @@ class Metrics {
     kMaxValue = LITE_SCRIPT_ONBOARDING_SEEN_AND_INTERRUPTED_BY_NAVIGATION
   };
 
-  static void RecordDropOut(DropOutReason reason);
+  static void RecordDropOut(DropOutReason reason, const std::string& intent);
   static void RecordPaymentRequestPrefilledSuccess(bool initially_complete,
                                                    bool success);
   static void RecordPaymentRequestAutofillChanged(bool changed, bool success);
@@ -342,12 +343,15 @@ class Metrics {
                                                       bool success);
   static void RecordLiteScriptFinished(ukm::UkmRecorder* ukm_recorder,
                                        content::WebContents* web_contents,
+                                       TriggerUIType trigger_ui_type,
                                        LiteScriptFinishedState event);
   static void RecordLiteScriptShownToUser(ukm::UkmRecorder* ukm_recorder,
                                           content::WebContents* web_contents,
+                                          TriggerUIType trigger_ui_type,
                                           LiteScriptShownToUser event);
   static void RecordLiteScriptOnboarding(ukm::UkmRecorder* ukm_recorder,
                                          content::WebContents* web_contents,
+                                         TriggerUIType trigger_ui_type,
                                          LiteScriptOnboarding event);
 
   // Intended for debugging: writes string representation of |reason| to |out|.

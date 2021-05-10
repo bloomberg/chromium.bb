@@ -23,9 +23,11 @@
 #include "base/test/test_switches.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -77,6 +79,7 @@
 #if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
+#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
 #endif
 
 #if defined(OS_WIN)
@@ -93,21 +96,22 @@
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_X11)
 #include "ui/views/test/test_desktop_screen_x11.h"
 #endif
 
@@ -120,14 +124,14 @@
 #include "ui/views/widget/widget.h"
 #endif
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls.h"
 #endif
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class FakeDeviceSyncImplFactory
     : public chromeos::device_sync::DeviceSyncImpl::Factory {
  public:
@@ -153,7 +157,7 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
   static base::NoDestructor<FakeDeviceSyncImplFactory> factory;
   return factory.get();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 // An observer that returns back to test code after a new profile is
@@ -165,6 +169,34 @@ void UnblockOnProfileCreation(base::RunLoop* run_loop,
     run_loop->Quit();
 }
 #endif
+
+#if defined(OS_MAC)
+class ChromeBrowserMainExtraPartsBrowserProcessInjection
+    : public ChromeBrowserMainExtraParts {
+ public:
+  ChromeBrowserMainExtraPartsBrowserProcessInjection() = default;
+
+  // ChromeBrowserMainExtraParts implementation
+  void PreMainMessageLoopStart() override {
+    // The real SystemGeolocationPermissionsManager initializes a
+    // CLLocationManager. It has been observed that when thousands of instances
+    // of this object are created, as happens when running browser tests, the
+    // CoreLocationAgent process uses lots of CPU. This makes test execution
+    // slower and causes jobs to time out. We therefore insert a fake.
+    auto fake_geolocation_manager =
+        std::make_unique<FakeSystemGeolocationPermissionsManager>();
+    fake_geolocation_manager->set_status(
+        device::LocationSystemPermissionStatus::kAllowed);
+    g_browser_process->platform_part()->SetGeolocationManagerForTesting(
+        std::move(fake_geolocation_manager));
+  }
+
+  ChromeBrowserMainExtraPartsBrowserProcessInjection(
+      const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
+  ChromeBrowserMainExtraPartsBrowserProcessInjection& operator=(
+      const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
+};
+#endif  // defined(OS_MAC)
 
 }  // namespace
 
@@ -191,14 +223,14 @@ void InProcessBrowserTest::RunScheduledLayouts() {
 #if defined(TOOLKIT_VIEWS)
   views::Widget::Widgets widgets_to_layout;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // WidgetTest::GetAllWidgets() doesn't work for ChromeOS in a production
   // environment. We must get the Widgets ourself.
   for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
     views::Widget::GetAllChildWidgets(root_window, &widgets_to_layout);
 #else
   widgets_to_layout = views::test::WidgetTest::GetAllWidgets();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   for (views::Widget* widget : widgets_to_layout)
     widget->LayoutRootViewIfNecessary();
@@ -259,7 +291,7 @@ void InProcessBrowserTest::SetUp() {
   ASSERT_TRUE(SetUpUserDataDirectory())
       << "Could not set up user data directory.";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // No need to redirect log for test.
   command_line->AppendSwitch(switches::kDisableLoggingRedirect);
 
@@ -291,10 +323,6 @@ void InProcessBrowserTest::SetUp() {
                                       chrome::kTestUserProfileDir);
     }
   }
-
-  // By default, OS settings are not opened in a browser tab but in settings
-  // app. OS browsertests require OS settings to be opened in a browser tab.
-  SetAllowOsSettingsInTabForTesting(true);
 #endif
 
   SetScreenInstance();
@@ -316,19 +344,22 @@ void InProcessBrowserTest::SetUp() {
   chrome_browser_net::NetErrorTabHelper::set_state_for_testing(
       chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
-#if defined(OS_CHROMEOS)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
-      GetFakeDeviceSyncImplFactory());
-
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Chrome OS, access to files via file: scheme is restricted. Enable
   // access to all files here since browser_tests and interactive_ui_tests
   // rely on the ability to open any files via file: scheme.
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Device sync (for multidevice "Better Together") is ash specific.
+  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
+      GetFakeDeviceSyncImplFactory());
 
   // Using a screenshot for clamshell to tablet mode transitions makes the flow
   // async which we want to disable for most tests.
   ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Redirect the default download directory to a temporary directory.
   ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
@@ -368,10 +399,31 @@ void InProcessBrowserTest::TearDown() {
   OSCryptMocker::TearDown();
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
 #endif
 }
+
+// static
+size_t InProcessBrowserTest::GetTestPreCount() {
+  constexpr base::StringPiece kPreTestPrefix = "PRE_";
+  base::StringPiece test_name =
+      testing::UnitTest::GetInstance()->current_test_info()->name();
+  size_t count = 0;
+  while (base::StartsWith(test_name, kPreTestPrefix)) {
+    ++count;
+    test_name = test_name.substr(kPreTestPrefix.size());
+  }
+  return count;
+}
+
+#if defined(OS_MAC)
+void InProcessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* parts) {
+  static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsBrowserProcessInjection>());
+}
+#endif
 
 void InProcessBrowserTest::SelectFirstBrowser() {
   const BrowserList* browser_list = BrowserList::GetInstance();
@@ -439,7 +491,7 @@ bool InProcessBrowserTest::SetUpUserDataDirectory() {
 }
 
 void InProcessBrowserTest::SetScreenInstance() {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!features::IsUsingOzonePlatform()) {
     DCHECK(!display::Screen::GetScreen());
     display::Screen::SetScreenInstance(
@@ -536,7 +588,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   browser->window()->Show();
 }
 
-#if !defined(OS_MAC)
+#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   base::CommandLine new_command_line(
       base::CommandLine::ForCurrentProcess()->GetProgram());
@@ -557,7 +609,7 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   }
   return new_command_line;
 }
-#endif
+#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
   return base::FilePath(FILE_PATH_LITERAL("chrome/test/data"));
@@ -565,6 +617,17 @@ base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
 
 void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // ChromeOS does not create a browser by default when the full restore feature
+  // is enabled. Nearly all existing tests assume a browser is created. This
+  // call triggers creating a browser.
+  auto* full_restore_service =
+      chromeos::full_restore::FullRestoreService::GetForProfile(
+          ProfileManager::GetPrimaryUserProfile());
+  if (!skip_initial_restore_ && full_restore_service)
+    full_restore_service->RestoreForTesting();
+#endif
 
   // Take the ChromeBrowserMainParts' RunLoop to run ourself, when we
   // want to wait for the browser to exit.
@@ -575,7 +638,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
 
   SelectFirstBrowser();
   if (browser_) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();
@@ -590,7 +653,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     // The ozone implementation of CreateUIControlsAura differs from other
     // implementation in that it requires a WindowTreeHost. Thus, it must be
     // initialized here rather than earlier.
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
     BrowserWindow* window = browser_->window();
     CHECK(window);
     ui_controls::InstallUIControlsAura(

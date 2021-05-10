@@ -86,26 +86,6 @@ public class TabCallbackTest {
         callback.visibleUriChangedCallback.waitUntilValueObserved(url);
     }
 
-    @Test
-    @SmallTest
-    public void testOnRenderProcessGone() throws TimeoutException {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        CallbackHelper callbackHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab tab = activity.getTab();
-            activity.setIgnoreRendererCrashes();
-            TabCallback callback = new TabCallback() {
-                @Override
-                public void onRenderProcessGone() {
-                    callbackHelper.notifyCalled();
-                }
-            };
-            tab.registerTabCallback(callback);
-            tab.getNavigationController().navigate(Uri.parse("chrome://crash"));
-        });
-        callbackHelper.waitForFirst();
-    }
-
     private ContextMenuParams runContextMenuTest(String file) throws TimeoutException {
         String pageUrl = mActivityTestRule.getTestDataURL(file);
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
@@ -131,7 +111,6 @@ public class TabCallbackTest {
         return params[0];
     }
 
-    // Requires implementation M82.
     @Test
     @SmallTest
     public void testShowContextMenu() throws TimeoutException {
@@ -141,7 +120,6 @@ public class TabCallbackTest {
         Assert.assertEquals("anchor text", params.linkText);
     }
 
-    // Requires implementation M82.
     @Test
     @SmallTest
     public void testShowContextMenuImg() throws TimeoutException {
@@ -365,7 +343,6 @@ public class TabCallbackTest {
         CriteriaHelper.pollUiThread(() -> Criteria.checkThat(titles[0], Matchers.is("foobar")));
     }
 
-    @MinWebLayerVersion(85)
     @Test
     @SmallTest
     public void testOnBackgroundColorChanged() throws TimeoutException {
@@ -394,7 +371,6 @@ public class TabCallbackTest {
         Assert.assertEquals(0xffff0000, (int) backgroundColors[0]);
     }
 
-    @MinWebLayerVersion(85)
     @Test
     @SmallTest
     public void testScrollNotificationDirectionChange() throws TimeoutException {

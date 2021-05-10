@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Žádný předchozí ovládací prvek není</translation>
 <translation id="2045606329038304310">Ovládání polí formuláře</translation>
 <translation id="2063539687800151747">Nápis</translation>
+<translation id="2074531330963286860">Jsou k dispozici akce. Zobrazíte je stisknutím vyhledávacího tlačítka a tečky</translation>
 <translation id="2086961585857038472">Další slovo</translation>
 <translation id="2087981446621639008">podr seznpopisů</translation>
 <translation id="2089387485033699258">cs</translation>
@@ -913,6 +914,7 @@
 <translation id="7810781339813764006">Další skupina</translation>
 <translation id="7813616274030162878">Nabídka přístupu pomocí přepínačů</translation>
 <translation id="7839679365527550018">Předchozí slovo</translation>
+<translation id="7842115774595115751">Aktivovat navigaci</translation>
 <translation id="7846634333498149051">Klávesnice</translation>
 <translation id="7851816175263618915">Část interpunkce</translation>
 <translation id="7871691770940645922">Virtuální hmatový displej</translation>
@@ -1056,6 +1058,7 @@
 <translation id="8978496506222343566">popisek</translation>
 <translation id="8986362086234534611">Odstranit</translation>
 <translation id="8989104346085848538">Aktuální hlasovou odezvu čtečky ChromeVox můžete kdykoliv zastavit stisknutím klávesy Control.</translation>
+<translation id="8993737615451556423">Poskytuje ovládací prvky ke zrychlení, zpomalení a pozastavení hlasového čtení</translation>
 <translation id="9014206344398081366">Výukový program čtečky ChromeVox</translation>
 <translation id="9040132695316389094">Nadpis 1</translation>
 <translation id="9061884144798498064">Vyberte osmibodovou Braillovu tabulku:</translation>

@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <random>
 #include <set>
 #include <utility>
 #include <vector>
@@ -42,6 +43,7 @@
 #include "perfetto/tracing/core/data_source_descriptor.h"
 #include "perfetto/tracing/core/forward_decls.h"
 #include "perfetto/tracing/core/trace_config.h"
+#include "src/android_stats/perfetto_atoms.h"
 #include "src/tracing/core/id_allocator.h"
 
 namespace perfetto {
@@ -182,7 +184,6 @@ class TracingServiceImpl : public TracingService {
     ~ConsumerEndpointImpl() override;
 
     void NotifyOnTracingDisabled(const std::string& error);
-    base::WeakPtr<ConsumerEndpointImpl> GetWeakPtr();
 
     // TracingService::ConsumerEndpoint implementation.
     void EnableTracing(const TraceConfig&, base::ScopedFile) override;
@@ -198,6 +199,7 @@ class TracingServiceImpl : public TracingService {
     void ObserveEvents(uint32_t enabled_event_types) override;
     void QueryServiceState(QueryServiceStateCallback) override;
     void QueryCapabilities(QueryCapabilitiesCallback) override;
+    void SaveTraceForBugreport(SaveTraceForBugreportCallback) override;
 
     // Will queue a task to notify the consumer about the state change.
     void OnDataSourceInstanceStateChange(const ProducerEndpointImpl&,
@@ -303,6 +305,17 @@ class TracingServiceImpl : public TracingService {
  private:
   friend class TracingServiceImplTest;
   friend class TracingIntegrationTest;
+
+  static constexpr int64_t kOneDayInNs = 24ll * 60 * 60 * 1000 * 1000 * 1000;
+
+  struct TriggerHistory {
+    int64_t timestamp_ns;
+    uint64_t name_hash;
+
+    bool operator<(const TriggerHistory& other) const {
+      return timestamp_ns < other.timestamp_ns;
+    }
+  };
 
   struct RegisteredDataSource {
     ProducerID producer_id;
@@ -546,6 +559,11 @@ class TracingServiceImpl : public TracingService {
     uint32_t write_period_ms = 0;
     uint64_t max_file_size_bytes = 0;
     uint64_t bytes_written_into_file = 0;
+
+    // Set when using SaveTraceForBugreport(). This callback will be called
+    // when the tracing session ends and the data has been saved into the file.
+    std::function<void()> on_disable_callback_for_bugreport;
+    bool seized_for_bugreport = false;
   };
 
   TracingServiceImpl(const TracingServiceImpl&) = delete;
@@ -571,30 +589,32 @@ class TracingServiceImpl : public TracingService {
   // shared memory and trace buffers.
   void UpdateMemoryGuardrail();
 
-  void StartDataSourceInstance(ProducerEndpointImpl* producer,
-                               TracingSession* tracing_session,
-                               DataSourceInstance* instance);
-  void StopDataSourceInstance(ProducerEndpointImpl* producer,
-                              TracingSession* tracing_session,
-                              DataSourceInstance* instance,
+  void StartDataSourceInstance(ProducerEndpointImpl*,
+                               TracingSession*,
+                               DataSourceInstance*);
+  void StopDataSourceInstance(ProducerEndpointImpl*,
+                              TracingSession*,
+                              DataSourceInstance*,
                               bool disable_immediately);
-  void PeriodicSnapshotTask(TracingSession* tracing_session);
+  void PeriodicSnapshotTask(TracingSession*);
   void MaybeSnapshotClocksIntoRingBuffer(TracingSession*);
   bool SnapshotClocks(TracingSession::ClockSnapshotData*);
   void SnapshotLifecyleEvent(TracingSession*,
                              uint32_t field_id,
                              bool snapshot_clocks);
-  void EmitClockSnapshot(TracingSession* tracing_session,
+  void EmitClockSnapshot(TracingSession*,
                          TracingSession::ClockSnapshotData,
                          std::vector<TracePacket>*);
   void EmitSyncMarker(std::vector<TracePacket>*);
   void EmitStats(TracingSession*, std::vector<TracePacket>*);
-  TraceStats GetTraceStats(TracingSession* tracing_session);
-  void EmitLifecycleEvents(TracingSession*, std::vector<TracePacket>* packets);
+  TraceStats GetTraceStats(TracingSession*);
+  void EmitLifecycleEvents(TracingSession*, std::vector<TracePacket>*);
+  void EmitSeizedForBugreportLifecycleEvent(std::vector<TracePacket>*);
   void MaybeEmitTraceConfig(TracingSession*, std::vector<TracePacket>*);
   void MaybeEmitSystemInfo(TracingSession*, std::vector<TracePacket>*);
   void MaybeEmitReceivedTriggers(TracingSession*, std::vector<TracePacket>*);
   void MaybeNotifyAllDataSourcesStarted(TracingSession*);
+  bool MaybeSaveTraceForBugreport(std::function<void()> callback);
   void OnFlushTimeout(TracingSessionID, FlushRequestID);
   void OnDisableTracingTimeout(TracingSessionID);
   void DisableTracingNotifyConsumerAndFlushFile(TracingSession*);
@@ -602,11 +622,15 @@ class TracingServiceImpl : public TracingService {
   void CompleteFlush(TracingSessionID tsid,
                      ConsumerEndpoint::FlushCallback callback,
                      bool success);
-  void ScrapeSharedMemoryBuffers(TracingSession* tracing_session,
-                                 ProducerEndpointImpl* producer);
+  void ScrapeSharedMemoryBuffers(TracingSession*, ProducerEndpointImpl*);
   void PeriodicClearIncrementalStateTask(TracingSessionID, bool post_next_only);
   TraceBuffer* GetBufferByID(BufferID);
   void OnStartTriggersTimeout(TracingSessionID tsid);
+  void MaybeLogUploadEvent(const TraceConfig&,
+                           PerfettoStatsdAtom atom,
+                           const std::string& trigger_name = "");
+  size_t PurgeExpiredAndCountTriggerInWindow(int64_t now_ns,
+                                             uint64_t trigger_name_hash);
 
   base::TaskRunner* const task_runner_;
   std::unique_ptr<SharedMemory::Factory> shm_factory_;
@@ -627,9 +651,19 @@ class TracingServiceImpl : public TracingService {
   std::map<BufferID, std::unique_ptr<TraceBuffer>> buffers_;
   std::map<std::string, int64_t> session_to_last_trace_s_;
 
+  // Contains timestamps of triggers.
+  // The queue is sorted by timestamp and invocations older than
+  // |trigger_window_ns_| are purged when a trigger happens.
+  base::CircularQueue<TriggerHistory> trigger_history_;
+
   bool smb_scraping_enabled_ = false;
   bool lockdown_mode_ = false;
   uint32_t min_write_period_ms_ = 100;  // Overridable for testing.
+  int64_t trigger_window_ns_ = kOneDayInNs;  // Overridable for testing.
+
+  std::minstd_rand trigger_probability_rand_;
+  std::uniform_real_distribution<> trigger_probability_dist_;
+  double trigger_rnd_override_for_testing_ = 0;  // Overridable for testing.
 
   uint8_t sync_marker_packet_[32];  // Lazily initialized.
   size_t sync_marker_packet_size_ = 0;

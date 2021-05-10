@@ -116,8 +116,8 @@ class InputMethodEngineBrowserTest
       case kTestTypeNormal:
         return LoadExtension(test_data_dir_.AppendASCII(extension_name));
       case kTestTypeIncognito:
-        return LoadExtensionIncognito(
-            test_data_dir_.AppendASCII(extension_name));
+        return LoadExtension(test_data_dir_.AppendASCII(extension_name),
+                             {.allow_in_incognito = true});
       case kTestTypeComponent:
         return LoadExtensionAsComponent(
             test_data_dir_.AppendASCII(extension_name));
@@ -136,7 +136,7 @@ class KeyEventDoneCallback {
  public:
   explicit KeyEventDoneCallback(bool expected_argument)
       : expected_argument_(expected_argument) {}
-  ~KeyEventDoneCallback() {}
+  ~KeyEventDoneCallback() = default;
 
   void Run(bool consumed) {
     if (consumed == expected_argument_)
@@ -165,7 +165,8 @@ class TestTextInputClient : public ui::DummyTextInputClient {
  private:
   // ui::DummyTextInputClient:
   bool ShouldDoLearning() override { return true; }
-  void InsertText(const base::string16& text) override {
+  void InsertText(const base::string16& text,
+                  InsertTextCursorBehavior cursor_behavior) override {
     inserted_text_ = text;
     run_loop_.Quit();
   }

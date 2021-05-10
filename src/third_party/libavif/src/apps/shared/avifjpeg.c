@@ -39,7 +39,7 @@ static void my_error_exit(j_common_ptr cinfo)
 // longjmp. But GCC's -Wclobbered warning may have trouble figuring that out, so
 // we preemptively declare it as volatile.
 
-avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFormat requestedFormat, uint32_t requestedDepth)
+avifBool avifJPEGRead(const char * inputFilename, avifImage * avif, avifPixelFormat requestedFormat, uint32_t requestedDepth)
 {
     volatile avifBool ret = AVIF_FALSE;
     uint8_t * volatile iccData = NULL;
@@ -66,6 +66,7 @@ avifBool avifJPEGRead(avifImage * avif, const char * inputFilename, avifPixelFor
     setup_read_icc_profile(&cinfo);
     jpeg_stdio_src(&cinfo, f);
     jpeg_read_header(&cinfo, TRUE);
+    cinfo.out_color_space = JCS_RGB;
     jpeg_start_decompress(&cinfo);
 
     int row_stride = cinfo.output_width * cinfo.output_components;
@@ -111,7 +112,7 @@ cleanup:
     return ret;
 }
 
-avifBool avifJPEGWrite(avifImage * avif, const char * outputFilename, int jpegQuality, avifChromaUpsampling chromaUpsampling)
+avifBool avifJPEGWrite(const char * outputFilename, const avifImage * avif, int jpegQuality, avifChromaUpsampling chromaUpsampling)
 {
     avifBool ret = AVIF_FALSE;
     FILE * f = NULL;

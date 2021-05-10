@@ -2,26 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text in Add Source Map URLDialog of the Sources panel
+  */
+  sourceMapUrl: 'Source map URL: ',
+  /**
+  *@description Text to add something
+  */
+  add: 'Add',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/AddSourceMapURLDialog.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AddSourceMapURLDialog extends UI.Widget.HBox {
   /**
    * @param {function(string):void} callback
    */
   constructor(callback) {
     super(/* isWebComponent */ true);
-    this.registerRequiredCSS('sources/dialog.css', {enableLegacyPatching: true});
-    this.contentElement.createChild('label').textContent = Common.UIString.UIString('Source map URL: ');
+    this.registerRequiredCSS('sources/dialog.css', {enableLegacyPatching: false});
+    this.contentElement.createChild('label').textContent = i18nString(UIStrings.sourceMapUrl);
 
     this._input = UI.UIUtils.createInput('add-source-map', 'text');
     this._input.addEventListener('keydown', this._onKeyDown.bind(this), false);
     this.contentElement.appendChild(this._input);
 
-    const addButton = UI.UIUtils.createTextButton(ls`Add`, this._apply.bind(this));
+    const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.add), this._apply.bind(this));
     this.contentElement.appendChild(addButton);
 
     this._dialog = new UI.Dialog.Dialog();
@@ -56,10 +65,10 @@ export class AddSourceMapURLDialog extends UI.Widget.HBox {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!KeyboardEvent} event
    */
   _onKeyDown(event) {
-    if (isEnterKey(event)) {
+    if (event.key === 'Enter') {
       event.consume(true);
       this._apply();
     }

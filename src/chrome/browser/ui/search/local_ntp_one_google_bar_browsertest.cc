@@ -69,9 +69,9 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
     create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterCreateServicesCallbackForTesting(
-                base::Bind(&LocalNTPOneGoogleBarSmokeTest::
-                               OnWillCreateBrowserContextServices,
-                           base::Unretained(this)));
+                base::BindRepeating(&LocalNTPOneGoogleBarSmokeTest::
+                                        OnWillCreateBrowserContextServices,
+                                    base::Unretained(this)));
   }
 
   static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
@@ -90,9 +90,7 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
             &LocalNTPOneGoogleBarSmokeTest::CreateOneGoogleBarService));
   }
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
@@ -112,8 +110,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
             active_tab->GetController().GetVisibleEntry()->GetURL());
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.messages().empty())
-      << console_observer.GetMessageAt(0u);
+  for (const auto& message : console_observer.messages()) {
+    if (message.log_level == blink::mojom::ConsoleMessageLevel::kError) {
+      FAIL() << message.message;
+    }
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,

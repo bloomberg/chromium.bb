@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/ip_address.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -252,7 +252,7 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
 #define PORT DIGIT "*"
 
 // This is a diversion of RFC 3987
-#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android|rtsp")
+#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android|rtsp|file")
 
 #define IPRIVATE            \
   "["                       \
@@ -564,7 +564,7 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
   // We only use this on Chrome OS and there's differences in the API for
   // FilePath on Windows which prevents this from compiling, so only enable this
   // code for Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string result;
   result.reserve(input.size());
 
@@ -612,7 +612,7 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
   return result;
 #else
   return input;
-#endif  //  defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 std::string RedactionTool::RedactCustomPatterns(std::string input) {

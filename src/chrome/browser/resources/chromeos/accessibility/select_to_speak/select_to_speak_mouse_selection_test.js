@@ -16,24 +16,33 @@ SelectToSpeakMouseSelectionTest = class extends SelectToSpeakE2ETest {
     chrome.tts = this.mockTts;
   }
 
-  /**
-   * Triggers speech using the search key and clicking with the mouse.
-   * @param {Object} downEvent The mouse-down event.
-   * @param {Object} upEvent The mouse-up event.
-   */
-  selectRangeForSpeech(downEvent, upEvent) {
-    selectToSpeak.fireMockKeyDownEvent(
-        {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
-    selectToSpeak.fireMockMouseDownEvent(downEvent);
-    selectToSpeak.fireMockMouseUpEvent(upEvent);
-    selectToSpeak.fireMockKeyUpEvent({keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+  /** @override */
+  setUp() {
+    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+
+    window.EventType = chrome.automation.EventType;
+    window.SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
+
+    (async function() {
+      let module = await import('/select_to_speak/select_to_speak_main.js');
+      window.selectToSpeak = module.selectToSpeak;
+
+      module = await import('/select_to_speak/select_to_speak.js');
+      window.SELECT_TO_SPEAK_TRAY_CLASS_NAME =
+          module.SELECT_TO_SPEAK_TRAY_CLASS_NAME;
+
+      module = await import('/select_to_speak/select_to_speak_constants.js');
+      window.SelectToSpeakConstants = module.SelectToSpeakConstants;
+
+      runTest();
+    })();
   }
 
   tapTrayButton(desktop, callback) {
     const button = desktop.find({
-      roleType: 'button',
       attributes: {className: SELECT_TO_SPEAK_TRAY_CLASS_NAME}
     });
+
     callback = this.newCallback(callback);
     selectToSpeak.onStateChangeRequestedCallbackForTest_ =
         this.newCallback(() => {
@@ -64,7 +73,7 @@ TEST_F('SelectToSpeakMouseSelectionTest', 'SpeaksNodeWhenClicked', function() {
           screenX: textNode.location.left + 1,
           screenY: textNode.location.top + 1
         };
-        this.selectRangeForSpeech(event, event);
+        this.triggerReadMouseSelectedText(event, event);
       });
 });
 
@@ -83,6 +92,7 @@ TEST_F(
                 assertEquals(this.mockTts.pendingUtterances().length, 1);
                 this.assertEqualsCollapseWhitespace(
                     utterance, 'This is some text');
+                this.mockTts.finishPendingUtterance();
               }),
               this.newCallback(function(utterance) {
                 this.assertEqualsCollapseWhitespace(
@@ -99,7 +109,7 @@ TEST_F(
               screenX: lastNode.location.left + lastNode.location.width,
               screenY: lastNode.location.top + lastNode.location.height
             };
-            this.selectRangeForSpeech(downEvent, upEvent);
+            this.triggerReadMouseSelectedText(downEvent, upEvent);
           });
     });
 
@@ -133,7 +143,7 @@ TEST_F(
               screenX: lastNode.location.left + lastNode.location.width,
               screenY: lastNode.location.top + lastNode.location.height
             };
-            this.selectRangeForSpeech(downEvent, upEvent);
+            this.triggerReadMouseSelectedText(downEvent, upEvent);
           });
     });
 
@@ -226,12 +236,13 @@ TEST_F(
               screenX: textNode.location.left + 1,
               screenY: textNode.location.top + 1
             };
-            this.selectRangeForSpeech(event, event);
+            this.triggerReadMouseSelectedText(event, event);
           });
     });
 
+// TODO(crbug.com/1177140) Re-enable test
 TEST_F(
-    'SelectToSpeakMouseSelectionTest', 'DoesNotSpeakOnlyTheTrayButton',
+    'SelectToSpeakMouseSelectionTest', 'DISABLED_DoesNotSpeakOnlyTheTrayButton',
     function() {
       // The tray button itself should not be spoken when clicked in selection
       // mode per UI review (but if more elements are being verbalized than just
@@ -243,7 +254,6 @@ TEST_F(
         this.tapTrayButton(desktop, () => {
           assertEquals(selectToSpeak.state_, SelectToSpeakState.SELECTING);
           const button = desktop.find({
-            roleType: 'button',
             attributes: {className: SELECT_TO_SPEAK_TRAY_CLASS_NAME}
           });
 

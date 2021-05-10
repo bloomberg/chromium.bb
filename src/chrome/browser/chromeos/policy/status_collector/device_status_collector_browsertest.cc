@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/audio/cras_audio_handler.h"
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
@@ -32,12 +33,14 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_data.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
@@ -46,9 +49,6 @@
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -56,7 +56,7 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -66,6 +66,7 @@
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -147,6 +148,7 @@ const char kFakeFirstPowerDate[] = "2020-40";
 const char kFakeManufactureDate[] = "2019-01-01";
 const char kFakeSkuNumber[] = "ABCD&^A";
 const char kFakeSerialNumber[] = "8607G03EDF";
+constexpr char kFakeSystemModelName[] = "XX ModelName 007 XY";
 constexpr char kFakeMarketingName[] = "Latitude 1234 Chromebook Enterprise";
 constexpr char kFakeBiosVersion[] = "Google_BoardName.12200.68.0";
 constexpr char kFakeBoardName[] = "BoardName";
@@ -279,7 +281,6 @@ class TestingDeviceStatusCollectorOptions {
   policy::DeviceStatusCollector::CPUStatisticsFetcher cpu_fetcher;
   policy::DeviceStatusCollector::CPUTempFetcher cpu_temp_fetcher;
   policy::StatusCollector::AndroidStatusFetcher android_status_fetcher;
-  policy::DeviceStatusCollector::TpmStatusFetcher tpm_status_fetcher;
   policy::DeviceStatusCollector::EMMCLifetimeFetcher emmc_lifetime_fetcher;
   policy::DeviceStatusCollector::StatefulPartitionInfoFetcher
       stateful_partition_info_fetcher;
@@ -293,24 +294,27 @@ class TestingDeviceStatusCollectorOptions {
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
+  // Note that that TpmStatusFetcher is null so the test exercises the
+  // production logic with fake tpm manager and attestation clients.
   TestingDeviceStatusCollector(
       PrefService* pref_service,
       chromeos::system::StatisticsProvider* provider,
       std::unique_ptr<TestingDeviceStatusCollectorOptions> options,
       base::SimpleTestClock* clock)
-      : policy::DeviceStatusCollector(pref_service,
-                                      provider,
-                                      options->volume_info_fetcher,
-                                      options->cpu_fetcher,
-                                      options->cpu_temp_fetcher,
-                                      options->android_status_fetcher,
-                                      options->tpm_status_fetcher,
-                                      options->emmc_lifetime_fetcher,
-                                      options->stateful_partition_info_fetcher,
-                                      options->cros_healthd_data_fetcher,
-                                      options->graphics_status_fetcher,
-                                      options->crash_report_info_fetcher,
-                                      clock),
+      : policy::DeviceStatusCollector(
+            pref_service,
+            provider,
+            options->volume_info_fetcher,
+            options->cpu_fetcher,
+            options->cpu_temp_fetcher,
+            options->android_status_fetcher,
+            policy::DeviceStatusCollector::TpmStatusFetcher(),
+            options->emmc_lifetime_fetcher,
+            options->stateful_partition_info_fetcher,
+            options->cros_healthd_data_fetcher,
+            options->graphics_status_fetcher,
+            options->crash_report_info_fetcher,
+            clock),
         test_clock_(*clock) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
@@ -428,40 +432,30 @@ std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
 }
 
 void CallAndroidStatusReceiver(
-    const policy::StatusCollector::AndroidStatusReceiver& receiver,
+    policy::StatusCollector::AndroidStatusReceiver receiver,
     const std::string& status,
     const std::string& droid_guard_info) {
-  receiver.Run(status, droid_guard_info);
+  std::move(receiver).Run(status, droid_guard_info);
 }
 
 bool GetEmptyAndroidStatus(
-    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
+    policy::StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
+      FROM_HERE,
+      base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver), "", ""));
   return true;
 }
 
 bool GetFakeAndroidStatus(
     const std::string& status,
     const std::string& droid_guard_info,
-    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
+    policy::StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, status,
-                                droid_guard_info));
+      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
+                                status, droid_guard_info));
   return true;
-}
-
-void GetEmptyTpmStatus(
-    policy::DeviceStatusCollector::TpmStatusReceiver receiver) {
-  std::move(receiver).Run(policy::TpmStatusInfo());
-}
-
-void GetFakeTpmStatus(
-    const policy::TpmStatusInfo& tpm_status_info,
-    policy::DeviceStatusCollector::TpmStatusReceiver receiver) {
-  std::move(receiver).Run(tpm_status_info);
 }
 
 em::DiskLifetimeEstimation GetEmptyEMMCLifetimeEstimation() {
@@ -529,8 +523,8 @@ cros_healthd::SystemResultPtr CreateSystemResult() {
   return cros_healthd::SystemResult::NewSystemInfo(
       cros_healthd::SystemInfo::New(
           kFakeFirstPowerDate, kFakeManufactureDate, kFakeSkuNumber,
-          kFakeSerialNumber, kFakeMarketingName, kFakeBiosVersion,
-          kFakeBoardName, kFakeBoardVersion,
+          kFakeSerialNumber, kFakeSystemModelName, kFakeMarketingName,
+          kFakeBiosVersion, kFakeBoardName, kFakeBoardVersion,
           cros_healthd::NullableUint64::New(kFakeChassisType), kFakeProductName,
           cros_healthd::OsVersion::New(
               kFakeVersionMilestone, kFakeVersionBuildNumber,
@@ -817,8 +811,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     // Setup a fake file system that should show up in mount points.
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        "c", storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), base::FilePath(kExternalMountPoint));
+        "c", storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
+        base::FilePath(kExternalMountPoint));
 
     // Just verify that we are properly setting the mount points.
     std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
@@ -834,7 +828,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     // Set up a fake local state for KioskAppManager and KioskCryptohomeRemover.
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    chromeos::KioskAppManager::RegisterPrefs(local_state_.registry());
+    ash::KioskAppManager::RegisterPrefs(local_state_.registry());
     chromeos::KioskCryptohomeRemover::RegisterPrefs(local_state_.registry());
 
     // Use FakeUpdateEngineClient.
@@ -846,15 +840,19 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::CrasAudioHandler::InitializeForTesting();
     chromeos::CryptohomeClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
+    chromeos::AttestationClient::InitializeFake();
+    chromeos::TpmManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
   }
 
   ~DeviceStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
+    chromeos::TpmManagerClient::Shutdown();
+    chromeos::AttestationClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     chromeos::CryptohomeClient::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
-    chromeos::KioskAppManager::Shutdown();
+    ash::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     // Finish pending tasks.
@@ -911,7 +909,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     options->cpu_temp_fetcher = base::BindRepeating(&GetEmptyCPUTempInfo);
     options->android_status_fetcher =
         base::BindRepeating(&GetEmptyAndroidStatus);
-    options->tpm_status_fetcher = base::BindRepeating(&GetEmptyTpmStatus);
+
     options->emmc_lifetime_fetcher =
         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation);
     options->stateful_partition_info_fetcher =
@@ -1013,7 +1011,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   void MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       const DeviceLocalAccount& auto_launch_app_account,
       const std::string& required_platform_version) {
-    chromeos::KioskAppManager* manager = chromeos::KioskAppManager::Get();
+    ash::KioskAppManager* manager = ash::KioskAppManager::Get();
     manager->AddAppForTest(
         auto_launch_app_account.kiosk_app_id,
         AccountId::FromUserEmail(auto_launch_app_account.user_id),
@@ -1056,7 +1054,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   void MockAutoLaunchWebKioskApp(
       const DeviceLocalAccount& auto_launch_app_account) {
-    web_kiosk_app_manager_.reset(new chromeos::WebKioskAppManager());
+    web_kiosk_app_manager_ = std::make_unique<ash::WebKioskAppManager>();
     web_kiosk_app_manager_->AddAppForTesting(
         AccountId::FromUserEmail(auto_launch_app_account.user_id),
         GURL(auto_launch_app_account.web_kiosk_app_info.url()));
@@ -1097,7 +1095,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   // Only set after MockAutoLaunchArcKioskApp was called.
   std::unique_ptr<chromeos::ArcKioskAppManager> arc_kiosk_app_manager_;
   // Only set after MockAutoLaunchWebKioskApp was called.
-  std::unique_ptr<chromeos::WebKioskAppManager> web_kiosk_app_manager_;
+  std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
   chromeos::MockUserManager* const user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   em::DeviceStatusReportRequest device_status_;
@@ -1576,6 +1574,24 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
   EXPECT_TRUE(device_status_.has_tpm_version_info());
+
+  // Expect tpm version info is still set (with an empty one) regardless of
+  // D-Bus error.
+  chromeos::TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->mutable_version_info_reply()
+      ->set_status(::tpm_manager::STATUS_DBUS_ERROR);
+  GetStatus();
+  EXPECT_TRUE(device_status_.has_browser_version());
+  EXPECT_TRUE(device_status_.has_channel());
+  EXPECT_TRUE(device_status_.has_os_version());
+  EXPECT_TRUE(device_status_.has_firmware_version());
+  EXPECT_TRUE(device_status_.has_tpm_version_info());
+  // Reset the version info reply just in case the rest of tests get affected.
+  chromeos::TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->mutable_version_info_reply()
+      ->clear_status();
 
   // When the pref to collect this data is not enabled, expect that none of
   // the fields are present in the protobuf.
@@ -2256,47 +2272,95 @@ TEST_F(DeviceStatusCollectorTest,
 }
 
 TEST_F(DeviceStatusCollectorTest, TpmStatusReporting) {
-  // Create a fake TPM status info and populate it with some random values.
-  const policy::TpmStatusInfo kFakeTpmStatus{
-      true,  /* enabled */
-      false, /* owned */
-      true,  /* initialized */
-      false, /* attestation_prepared */
-      true,  /* attestation_enrolled */
-      5,     /* dictionary_attack_counter */
-      10,    /* dictionary_attack_threshold */
-      false, /* dictionary_attack_lockout_in_effect */
-      0,     /* dictionary_attack_lockout_seconds_remaining */
-      true   /* boot_lockbox_finalized */
-  };
-  auto options = CreateEmptyDeviceStatusCollectorOptions();
-  options->tpm_status_fetcher =
-      base::BindRepeating(&GetFakeTpmStatus, kFakeTpmStatus);
-  RestartStatusCollector(std::move(options));
+  auto* tpm_status_reply = chromeos::TpmManagerClient::Get()
+                               ->GetTestInterface()
+                               ->mutable_nonsensitive_status_reply();
+  tpm_status_reply->set_is_enabled(true);
+  tpm_status_reply->set_is_owned(true);
+  tpm_status_reply->set_is_owner_password_present(false);
+  auto* enrollment_status_reply = chromeos::AttestationClient::Get()
+                                      ->GetTestInterface()
+                                      ->mutable_status_reply();
+  enrollment_status_reply->set_prepared_for_enrollment(true);
+  enrollment_status_reply->set_enrolled(false);
+  auto* da_info_reply = chromeos::TpmManagerClient::Get()
+                            ->GetTestInterface()
+                            ->mutable_dictionary_attack_info_reply();
+  da_info_reply->set_dictionary_attack_counter(5);
+  da_info_reply->set_dictionary_attack_threshold(10);
+  da_info_reply->set_dictionary_attack_lockout_in_effect(false);
+  da_info_reply->set_dictionary_attack_lockout_seconds_remaining(0);
 
   GetStatus();
 
   EXPECT_TRUE(device_status_.has_tpm_status_info());
-  EXPECT_EQ(kFakeTpmStatus.enabled, device_status_.tpm_status_info().enabled());
-  EXPECT_EQ(kFakeTpmStatus.owned, device_status_.tpm_status_info().owned());
-  EXPECT_EQ(kFakeTpmStatus.initialized,
+  EXPECT_EQ(tpm_status_reply->is_enabled(),
+            device_status_.tpm_status_info().enabled());
+  EXPECT_EQ(tpm_status_reply->is_owned(),
+            device_status_.tpm_status_info().owned());
+  EXPECT_EQ(tpm_status_reply->is_owned() &&
+                !tpm_status_reply->is_owner_password_present(),
             device_status_.tpm_status_info().tpm_initialized());
-  EXPECT_EQ(kFakeTpmStatus.attestation_prepared,
+  EXPECT_EQ(enrollment_status_reply->prepared_for_enrollment(),
             device_status_.tpm_status_info().attestation_prepared());
-  EXPECT_EQ(kFakeTpmStatus.attestation_enrolled,
+  EXPECT_EQ(enrollment_status_reply->enrolled(),
             device_status_.tpm_status_info().attestation_enrolled());
-  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_counter,
+  EXPECT_EQ(static_cast<int32_t>(da_info_reply->dictionary_attack_counter()),
             device_status_.tpm_status_info().dictionary_attack_counter());
-  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_threshold,
+  EXPECT_EQ(static_cast<int32_t>(da_info_reply->dictionary_attack_threshold()),
             device_status_.tpm_status_info().dictionary_attack_threshold());
   EXPECT_EQ(
-      kFakeTpmStatus.dictionary_attack_lockout_in_effect,
+      da_info_reply->dictionary_attack_lockout_in_effect(),
       device_status_.tpm_status_info().dictionary_attack_lockout_in_effect());
-  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_lockout_seconds_remaining,
+  EXPECT_EQ(static_cast<int32_t>(
+                da_info_reply->dictionary_attack_lockout_seconds_remaining()),
             device_status_.tpm_status_info()
                 .dictionary_attack_lockout_seconds_remaining());
-  EXPECT_EQ(kFakeTpmStatus.boot_lockbox_finalized,
-            device_status_.tpm_status_info().boot_lockbox_finalized());
+  EXPECT_EQ(false, device_status_.tpm_status_info().boot_lockbox_finalized());
+}
+
+// Checks if tpm status is partially reported even if any error happens
+// among the multiple D-Bus calls.
+TEST_F(DeviceStatusCollectorTest, TpmStatusReportingAnyDBusError) {
+  auto* tpm_status_reply = chromeos::TpmManagerClient::Get()
+                               ->GetTestInterface()
+                               ->mutable_nonsensitive_status_reply();
+  auto* enrollment_status_reply = chromeos::AttestationClient::Get()
+                                      ->GetTestInterface()
+                                      ->mutable_status_reply();
+  auto* da_info_reply = chromeos::TpmManagerClient::Get()
+                            ->GetTestInterface()
+                            ->mutable_dictionary_attack_info_reply();
+
+  tpm_status_reply->set_status(::tpm_manager::STATUS_DBUS_ERROR);
+  enrollment_status_reply->set_prepared_for_enrollment(true);
+  GetStatus();
+  EXPECT_EQ(enrollment_status_reply->prepared_for_enrollment(),
+            device_status_.tpm_status_info().attestation_prepared());
+  // Reset the error status.
+  tpm_status_reply->set_status(::tpm_manager::STATUS_SUCCESS);
+
+  RestartStatusCollector();
+
+  enrollment_status_reply->set_status(::attestation::STATUS_DBUS_ERROR);
+  da_info_reply->set_dictionary_attack_counter(5);
+  GetStatus();
+  // Reset the error status.
+  EXPECT_EQ(static_cast<int32_t>(da_info_reply->dictionary_attack_counter()),
+            device_status_.tpm_status_info().dictionary_attack_counter());
+  // Reset the error status.
+  enrollment_status_reply->set_status(::attestation::STATUS_SUCCESS);
+
+  RestartStatusCollector();
+
+  da_info_reply->set_status(::tpm_manager::STATUS_DBUS_ERROR);
+  tpm_status_reply->set_is_enabled(true);
+  GetStatus();
+  EXPECT_TRUE(device_status_.has_tpm_status_info());
+  EXPECT_EQ(tpm_status_reply->is_enabled(),
+            device_status_.tpm_status_info().enabled());
+  // Reset the error status (for symmetry).
+  da_info_reply->set_status(::tpm_manager::STATUS_SUCCESS);
 }
 
 TEST_F(DeviceStatusCollectorTest, NoTimeZoneReporting) {
@@ -3457,7 +3521,9 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
   std::vector<apps::mojom::AppPtr> apps;
   apps.push_back(std::move(app1));
   apps.push_back(std::move(app2));
-  app_proxy->AppRegistryCache().OnApps(std::move(apps));
+  app_proxy->AppRegistryCache().OnApps(std::move(apps),
+                                       apps::mojom::AppType::kUnknown,
+                                       false /* should_notify_initialized */);
 
   // Start app instance
   base::Time start_time;

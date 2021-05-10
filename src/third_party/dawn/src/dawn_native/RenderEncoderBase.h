@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_RENDERENCODERBASE_H_
 #define DAWNNATIVE_RENDERENCODERBASE_H_
 
+#include "dawn_native/AttachmentState.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/ProgrammablePassEncoder.h"
 
@@ -22,7 +23,9 @@ namespace dawn_native {
 
     class RenderEncoderBase : public ProgrammablePassEncoder {
       public:
-        RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext);
+        RenderEncoderBase(DeviceBase* device,
+                          EncodingContext* encodingContext,
+                          Ref<AttachmentState> attachmentState);
 
         void Draw(uint32_t vertexCount,
                   uint32_t instanceCount = 1,
@@ -40,18 +43,22 @@ namespace dawn_native {
         void SetPipeline(RenderPipelineBase* pipeline);
 
         void SetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset, uint64_t size);
-        void SetIndexBuffer(BufferBase* buffer, uint64_t offset, uint64_t size);
+        void SetIndexBuffer(BufferBase* buffer,
+                            wgpu::IndexFormat format,
+                            uint64_t offset,
+                            uint64_t size);
         void SetIndexBufferWithFormat(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
                                       uint64_t size);
+
+        const AttachmentState* GetAttachmentState() const;
+        Ref<AttachmentState> AcquireAttachmentState();
 
       protected:
         // Construct an "error" render encoder base.
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext, ErrorTag errorTag);
 
       private:
-        void SetIndexBufferCommon(BufferBase* buffer, wgpu::IndexFormat format, uint64_t offset,
-                                  uint64_t size, bool requireFormat);
-
+        Ref<AttachmentState> mAttachmentState;
         const bool mDisableBaseVertex;
         const bool mDisableBaseInstance;
     };

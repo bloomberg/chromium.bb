@@ -182,7 +182,7 @@ void FillScriptFileResourceIds(const UserScript::FileList& script_files,
 void LoadUserScripts(UserScriptList* user_scripts,
                      ScriptResourceIds script_resource_ids,
                      const ExtensionUserScriptLoader::HostsInfo& hosts_info,
-                     const std::set<int>& added_script_ids,
+                     const std::set<std::string>& added_script_ids,
                      const scoped_refptr<ContentVerifier>& verifier) {
   for (const std::unique_ptr<UserScript>& script : *user_scripts) {
     if (added_script_ids.count(script->id()) == 0)
@@ -213,7 +213,7 @@ void LoadScriptsOnFileTaskRunner(
     std::unique_ptr<UserScriptList> user_scripts,
     ScriptResourceIds script_resource_ids,
     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
-    const std::set<int>& added_script_ids,
+    const std::set<std::string>& added_script_ids,
     const scoped_refptr<ContentVerifier>& verifier,
     UserScriptLoader::LoadScriptsCallback callback) {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
@@ -233,20 +233,21 @@ void LoadScriptsOnFileTaskRunner(
 
 ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     BrowserContext* browser_context,
-    const HostID& host_id,
+    const ExtensionId& extension_id,
     bool listen_for_extension_system_loaded)
     : ExtensionUserScriptLoader(
           browser_context,
-          host_id,
+          extension_id,
           listen_for_extension_system_loaded,
           ExtensionSystem::Get(browser_context)->content_verifier()) {}
 
 ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     BrowserContext* browser_context,
-    const HostID& host_id,
+    const ExtensionId& extension_id,
     bool listen_for_extension_system_loaded,
     scoped_refptr<ContentVerifier> content_verifier)
-    : UserScriptLoader(browser_context, host_id),
+    : UserScriptLoader(browser_context,
+                       HostID(HostID::EXTENSIONS, extension_id)),
       content_verifier_(std::move(content_verifier)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
@@ -265,7 +266,7 @@ ExtensionUserScriptLoader::~ExtensionUserScriptLoader() {
 
 std::unique_ptr<UserScriptList> ExtensionUserScriptLoader::LoadScriptsForTest(
     std::unique_ptr<UserScriptList> user_scripts) {
-  std::set<int> added_script_ids;
+  std::set<std::string> added_script_ids;
   for (const std::unique_ptr<UserScript>& script : *user_scripts)
     added_script_ids.insert(script->id());
 
@@ -293,7 +294,7 @@ std::unique_ptr<UserScriptList> ExtensionUserScriptLoader::LoadScriptsForTest(
 void ExtensionUserScriptLoader::LoadScripts(
     std::unique_ptr<UserScriptList> user_scripts,
     const std::set<HostID>& changed_hosts,
-    const std::set<int>& added_script_ids,
+    const std::set<std::string>& added_script_ids,
     LoadScriptsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

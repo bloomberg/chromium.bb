@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
@@ -316,8 +318,17 @@ TEST_F(SignedExchangePageLoadMetricsObserverTest, WithCachedSignedExchange) {
       internal::kHistogramNotCachedSignedExchangePrefix);
 }
 
+// Test is flaky on linux_tsan: crbug.com:1082135.
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    defined(THREAD_SANITIZER)
+#define MAYBE_WithSignedExchangeBackground DISABLED_WithSignedExchangeBackground
+#else
+#define MAYBE_WithSignedExchangeBackground WithSignedExchangeBackground
+#endif
 TEST_F(SignedExchangePageLoadMetricsObserverTest,
-       WithSignedExchangeBackground) {
+       MAYBE_WithSignedExchangeBackground) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   PopulateRequiredTimingFields(&timing);

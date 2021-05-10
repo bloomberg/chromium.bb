@@ -1,0 +1,60 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module optimization_guide.mojom;
+
+import "mojo/public/mojom/base/string16.mojom";
+
+// The events at which taking a text dump are supported.
+enum TextDumpEvent {
+  // The first layout on the page. Equal to
+  // blink::WebMeaningfulLayout::kFinishedParsing, only supported for
+  // mainframes.
+  kFirstLayout,
+
+  // The page is finished loading. Equal to
+  // blink::WebMeaningfulLayout::kFinishedLoading on mainframes or
+  // |DidFinishLoad| in subframes.
+  kFinishedLoad,
+};
+
+// A request for a page text dump.
+struct PageTextDumpRequest {
+  // The maximum size of the requested text dump, in bytes. Note that the actual
+  // dump size may be less than this value on pages with little text.
+  uint32 max_size;
+
+  // The event at which the text dump should be taken.
+  TextDumpEvent event;
+
+  // The minimum area that a subframe needs to be for the text dump to be taken.
+  // The area of the frame is checked when the TextDumpEvent occurs, and if the
+  // frame is too small the event is ignored. This can be 0, in which case all
+  // subframes are included.
+  // This check is only done on subframes.
+  uint64 min_frame_pixel_area;
+};
+
+// Implemented by the browser process to consume the text dumped from the
+// webpage. The page text is sent in chunks since the total length of the
+// webpage's text may exceed the mojo pipe size. Chunks are sent in order until
+// OnChunksEnd is called, after which no further calls will be made on the
+// instance.
+interface PageTextConsumer {
+  // Called for each chunk of page text.
+  OnTextDumpChunk(mojo_base.mojom.String16 chunk);
+
+  // Called when no more chunks will be sent.
+  OnChunksEnd();
+};
+
+
+// Implemented by the renderer process to provide a way to request dumps of the
+// text from the webpage at specific events.
+interface PageTextService {
+  // Requests a page text dump with the given request parameters. The dumped
+  // page text will be sent in chunks to consumer.
+  RequestPageTextDump(PageTextDumpRequest request,
+                      pending_remote<PageTextConsumer> consumer);
+};

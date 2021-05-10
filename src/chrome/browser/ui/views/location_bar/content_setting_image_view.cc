@@ -26,6 +26,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -42,8 +43,6 @@ base::Optional<ViewID> GetViewID(
 
     case ImageType::COOKIES:
     case ImageType::IMAGES:
-    case ImageType::PPAPI_BROKER:
-    case ImageType::PLUGINS:
     case ImageType::GEOLOCATION:
     case ImageType::MIXEDSCRIPT:
     case ImageType::PROTOCOL_HANDLERS:
@@ -137,14 +136,17 @@ void ContentSettingImageView::Update() {
   content_setting_image_model_->SetAnimationHasRun(web_contents);
 }
 
-void ContentSettingImageView::SetIconColor(SkColor color) {
+void ContentSettingImageView::SetIconColor(base::Optional<SkColor> color) {
+  if (icon_color_ == color)
+    return;
   icon_color_ = color;
   if (content_setting_image_model_->is_visible())
     UpdateImage();
+  OnPropertyChanged(&icon_color_, views::kPropertyEffectsNone);
 }
 
-const char* ContentSettingImageView::GetClassName() const {
-  return "ContentSettingsImageView";
+base::Optional<SkColor> ContentSettingImageView::GetIconColor() const {
+  return icon_color_;
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -189,7 +191,7 @@ bool ContentSettingImageView::ShowBubbleImpl() {
     bubble_view_->SetHighlightedButton(this);
     views::Widget* bubble_widget =
         views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
-    observer_.Add(bubble_widget);
+    observation_.Observe(bubble_widget);
     bubble_widget->Show();
     delegate_->OnContentSettingImageBubbleShown(
         content_setting_image_model_->image_type());
@@ -211,7 +213,8 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   if (!bubble_view_ || bubble_view_->GetWidget() != widget)
     return;
 
-  observer_.Remove(widget);
+  DCHECK(observation_.IsObservingSource(widget));
+  observation_.Reset();
   bubble_view_ = nullptr;
   UnpauseAnimation();
 }
@@ -247,3 +250,7 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
     promo_controller->ShowCriticalPromo(bubble_params);
   }
 }
+
+BEGIN_METADATA(ContentSettingImageView, IconLabelBubbleView)
+ADD_PROPERTY_METADATA(base::Optional<SkColor>, IconColor)
+END_METADATA

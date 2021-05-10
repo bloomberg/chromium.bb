@@ -15,14 +15,11 @@
   <message name="IDS_DEVTOOLS_0a0afb342478f201b92cbc89d19bf14d" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Switch to dark theme
   </message>
+  <message name="IDS_DEVTOOLS_0b484cfcf50c8fabff48c0aad426f544" desc="Text to dock the DevTools to the left of the browser tab">
+    Dock to left
+  </message>
   <message name="IDS_DEVTOOLS_15fa1acc2a998159c4ed2a950c5c231d" desc="Text in the Shortcuts page in settings to explain a keyboard shortcut">
     Toggle drawer
-  </message>
-  <message name="IDS_DEVTOOLS_1b1ac1c7a54457ce73ddd25a5b51c47d" desc="A title of the 'Drawer sidebar' @UI.ViewLocationResolver category">
-    Drawer sidebar
-  </message>
-  <message name="IDS_DEVTOOLS_1bbf48778926222bae025707b1c4f070" desc="A drop-down menu option to set the color format to rgb">
-    RGB: rgb(128 255 255)
   </message>
   <message name="IDS_DEVTOOLS_2ac43aa43bf473f9a9c09b4b608619d3" desc="A tag of theme preference settings that can be searched in the command menu">
     light
@@ -48,6 +45,9 @@
   <message name="IDS_DEVTOOLS_51f30f4743bd8f0e7141781bd2d93abb" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Set color format as authored
   </message>
+  <message name="IDS_DEVTOOLS_52ebc26c2921d5b84fc670dff9891821" desc="Text in the Shortcuts page to explain a keyboard shortcut (zoom out)">
+    Zoom out
+  </message>
   <message name="IDS_DEVTOOLS_55e1bbb4e00add64284ed28f15d40b25" desc="Title of a setting under the Appearance category in Settings">
     Color format:
   </message>
@@ -57,11 +57,17 @@
   <message name="IDS_DEVTOOLS_586740a88e6502850bc64f9f2d04d380" desc="Title element title in Main">
     Placement of <ph name="LOCKED_1">DevTools</ph> relative to the page. (<ph name="TOGGLEDOCKSIDESHORCUTS____NAME">$1s<ex>Ctrl+Shift+D</ex></ph> to restore last position)
   </message>
-  <message name="IDS_DEVTOOLS_5e2f5f3c24ae8c6ab3eca618826b0e23" desc="A title of the 'Extensions' @UI.SettingUI category">
-    Extensions
-  </message>
   <message name="IDS_DEVTOOLS_60737985de866df2b4fee4562844ce8a" desc="A message to display prompting the user to reload DevTools if the OS color scheme changes.">
     The system-preferred color scheme has changed. To apply this change to DevTools, reload.
+  </message>
+  <message name="IDS_DEVTOOLS_6a26f548831e6a8c26bfbbd9f6ec61e0" desc="Text for the viewing the help options">
+    Help
+  </message>
+  <message name="IDS_DEVTOOLS_72507d307327a430052f9fcd914dfaee" desc="Title of an action that reloads the DevTools">
+    Reload DevTools
+  </message>
+  <message name="IDS_DEVTOOLS_7b91156d64b76a5dda815937fce9119d" desc="Text in the Shortcuts page to explain a keyboard shortcut (zoom in)">
+    Zoom in
   </message>
   <message name="IDS_DEVTOOLS_8645bf45e76c3f958ae99c114c419743" desc="Text in Main">
     Hide console drawer
@@ -84,8 +90,8 @@
   <message name="IDS_DEVTOOLS_9914a0ce04a7b7b6a8e39bec55064b82" desc="A drop-down menu option to switch to light theme">
     Light
   </message>
-  <message name="IDS_DEVTOOLS_9b1ed2cbe56f7a315f0a365d2b97cb59" desc="A title of the 'Drawer' @UI.ViewLocationResolver category">
-    Drawer
+  <message name="IDS_DEVTOOLS_9df22f196a33acd0b372fe502de51211" desc="Text short for automatic">
+    auto
   </message>
   <message name="IDS_DEVTOOLS_a18366b217ebf811ad1886e4f4f865b2" desc="A drop-down menu option to switch to dark theme">
     Dark
@@ -99,14 +105,11 @@
   <message name="IDS_DEVTOOLS_b3bf148a3dc8b3367191419e52380982" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Use vertical panel layout
   </message>
-  <message name="IDS_DEVTOOLS_b5109d1d6943a47dc1feff4e0680fb2f" desc="A drop-down menu option to set the color format to hsl">
-    HSL: hsl(300deg 80% 90%)
-  </message>
-  <message name="IDS_DEVTOOLS_b8da6df14bf06283cbf588df6998722e" desc="A title of the 'Panel' @UI.ViewLocationResolver category">
-    Panel
-  </message>
   <message name="IDS_DEVTOOLS_b9cd538a753713464d2ea17d7e975041" desc="A context menu item in the Main">
     More tools
+  </message>
+  <message name="IDS_DEVTOOLS_b9dee6bade160c89fb7f0e539d453513" desc="Text to dock the DevTools to the bottom of the browser tab">
+    Dock to bottom
   </message>
   <message name="IDS_DEVTOOLS_c0fef4f5cd015e4b1e5477f511dc3939" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Use automatic panel layout
@@ -119,9 +122,6 @@
   </message>
   <message name="IDS_DEVTOOLS_d51a768a01445deddc409dc4b3c07517" desc="Name of a set of keyboard shortcuts from Visual Studio Code">
     Visual Studio Code
-  </message>
-  <message name="IDS_DEVTOOLS_d838bef326860912aa08d977cf3a5f8b" desc="A drop-down menu option to set color format to hex">
-    HEX: #dac0de
   </message>
   <message name="IDS_DEVTOOLS_d981fcf0c74837202331700aca88c801" desc="A drop-down menu option to set color format as authored">
     As authored
@@ -153,10 +153,16 @@
   <message name="IDS_DEVTOOLS_f52a9fce93c15e9340054e40f837a7ef" desc="Title of an action that navigates to the next panel">
     Next panel
   </message>
+  <message name="IDS_DEVTOOLS_f53944c3a55bdb5ad65c6226e358a626" desc="Text to undock the DevTools">
+    Undock into separate window
+  </message>
   <message name="IDS_DEVTOOLS_fa480abba67730dd6bd15aa40308d78a" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Set color format to HSL
   </message>
   <message name="IDS_DEVTOOLS_fa4ab936aaa8ad819e491af0ec0b674b" desc="Title of a setting under the Appearance category that can be invoked through the Command Menu">
     Switch to system preferred color theme
+  </message>
+  <message name="IDS_DEVTOOLS_fe7fb037b290768d6a6be30b237e183d" desc="Text to dock the DevTools to the right of the browser tab">
+    Dock to right
   </message>
 </grit-part>

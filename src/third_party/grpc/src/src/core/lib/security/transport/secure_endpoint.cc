@@ -104,7 +104,7 @@ struct secure_endpoint {
 
 grpc_core::TraceFlag grpc_trace_secure_endpoint(false, "secure_endpoint");
 
-static void destroy(secure_endpoint* ep) { grpc_core::Delete(ep); }
+static void destroy(secure_endpoint* ep) { delete ep; }
 
 #ifndef NDEBUG
 #define SECURE_ENDPOINT_UNREF(ep, reason) \
@@ -165,7 +165,7 @@ static void call_read_cb(secure_endpoint* ep, grpc_error* error) {
     }
   }
   ep->read_buffer = nullptr;
-  GRPC_CLOSURE_SCHED(ep->read_cb, error);
+  grpc_core::ExecCtx::Run(DEBUG_LOCATION, ep->read_cb, error);
   SECURE_ENDPOINT_UNREF(ep, "read");
 }
 
@@ -363,9 +363,10 @@ static void endpoint_write(grpc_endpoint* secure_ep, grpc_slice_buffer* slices,
   if (result != TSI_OK) {
     /* TODO(yangg) do different things according to the error type? */
     grpc_slice_buffer_reset_and_unref_internal(&ep->output_buffer);
-    GRPC_CLOSURE_SCHED(
-        cb, grpc_set_tsi_error_result(
-                GRPC_ERROR_CREATE_FROM_STATIC_STRING("Wrap failed"), result));
+    grpc_core::ExecCtx::Run(
+        DEBUG_LOCATION, cb,
+        grpc_set_tsi_error_result(
+            GRPC_ERROR_CREATE_FROM_STATIC_STRING("Wrap failed"), result));
     return;
   }
 
@@ -400,9 +401,14 @@ static void endpoint_delete_from_pollset_set(grpc_endpoint* secure_ep,
   grpc_endpoint_delete_from_pollset_set(ep->wrapped_ep, pollset_set);
 }
 
-static char* endpoint_get_peer(grpc_endpoint* secure_ep) {
+static absl::string_view endpoint_get_peer(grpc_endpoint* secure_ep) {
   secure_endpoint* ep = reinterpret_cast<secure_endpoint*>(secure_ep);
   return grpc_endpoint_get_peer(ep->wrapped_ep);
+}
+
+static absl::string_view endpoint_get_local_address(grpc_endpoint* secure_ep) {
+  secure_endpoint* ep = reinterpret_cast<secure_endpoint*>(secure_ep);
+  return grpc_endpoint_get_local_address(ep->wrapped_ep);
 }
 
 static int endpoint_get_fd(grpc_endpoint* secure_ep) {
@@ -430,6 +436,7 @@ static const grpc_endpoint_vtable vtable = {endpoint_read,
                                             endpoint_destroy,
                                             endpoint_get_resource_user,
                                             endpoint_get_peer,
+                                            endpoint_get_local_address,
                                             endpoint_get_fd,
                                             endpoint_can_track_err};
 
@@ -438,8 +445,8 @@ grpc_endpoint* grpc_secure_endpoint_create(
     struct tsi_zero_copy_grpc_protector* zero_copy_protector,
     grpc_endpoint* transport, grpc_slice* leftover_slices,
     size_t leftover_nslices) {
-  secure_endpoint* ep = grpc_core::New<secure_endpoint>(
-      &vtable, protector, zero_copy_protector, transport, leftover_slices,
-      leftover_nslices);
+  secure_endpoint* ep =
+      new secure_endpoint(&vtable, protector, zero_copy_protector, transport,
+                          leftover_slices, leftover_nslices);
   return &ep->base;
 }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
+#include "quic/core/http/http_encoder.h"
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -134,31 +134,12 @@ TEST(HttpEncoderTest, SerializeMaxPushIdFrame) {
 }
 
 TEST(HttpEncoderTest, SerializePriorityUpdateFrame) {
-  if (GetQuicReloadableFlag(quic_new_priority_update_frame)) {
-    PriorityUpdateFrame priority_update1;
-    priority_update1.prioritized_element_type = REQUEST_STREAM;
-    priority_update1.prioritized_element_id = 0x03;
-    char output1[] = {0x80, 0x0f, 0x07, 0x00,  // type (PRIORITY_UPDATE)
-                      0x01,                    // length
-                      0x03};                   // prioritized element id
-
-    std::unique_ptr<char[]> buffer;
-    uint64_t length =
-        HttpEncoder::SerializePriorityUpdateFrame(priority_update1, &buffer);
-    EXPECT_EQ(ABSL_ARRAYSIZE(output1), length);
-    quiche::test::CompareCharArraysWithHexError("PRIORITY_UPDATE", buffer.get(),
-                                                length, output1,
-                                                ABSL_ARRAYSIZE(output1));
-    return;
-  }
-
   PriorityUpdateFrame priority_update1;
   priority_update1.prioritized_element_type = REQUEST_STREAM;
   priority_update1.prioritized_element_id = 0x03;
-  char output1[] = {0x0f,   // type (PRIORITY_UPDATE)
-                    0x02,   // length
-                    0x00,   // prioritized element type: REQUEST_STREAM
-                    0x03};  // prioritized element id
+  char output1[] = {0x80, 0x0f, 0x07, 0x00,  // type (PRIORITY_UPDATE)
+                    0x01,                    // length
+                    0x03};                   // prioritized element id
 
   std::unique_ptr<char[]> buffer;
   uint64_t length =
@@ -167,21 +148,29 @@ TEST(HttpEncoderTest, SerializePriorityUpdateFrame) {
   quiche::test::CompareCharArraysWithHexError("PRIORITY_UPDATE", buffer.get(),
                                               length, output1,
                                               ABSL_ARRAYSIZE(output1));
+}
 
-  PriorityUpdateFrame priority_update2;
-  priority_update2.prioritized_element_type = PUSH_STREAM;
-  priority_update2.prioritized_element_id = 0x05;
-  priority_update2.priority_field_value = "foo";
-  char output2[] = {0x0f,             // type (PRIORIRTY)
-                    0x05,             // length
-                    0x80,             // prioritized element type: PUSH_STREAM
-                    0x05,             // prioritized element id
-                    'f',  'o', 'o'};  // priority field value
-  length = HttpEncoder::SerializePriorityUpdateFrame(priority_update2, &buffer);
+TEST(HttpEncoderTest, SerializeAcceptChFrame) {
+  AcceptChFrame accept_ch;
+  char output1[] = {0x40, 0x89,  // type (ACCEPT_CH)
+                    0x00};       // length
+
+  std::unique_ptr<char[]> buffer;
+  uint64_t length = HttpEncoder::SerializeAcceptChFrame(accept_ch, &buffer);
+  EXPECT_EQ(ABSL_ARRAYSIZE(output1), length);
+  quiche::test::CompareCharArraysWithHexError("ACCEPT_CH", buffer.get(), length,
+                                              output1, ABSL_ARRAYSIZE(output1));
+
+  accept_ch.entries.push_back({"foo", "bar"});
+  char output2[] = {0x40, 0x89,               // type (ACCEPT_CH)
+                    0x08,                     // payload length
+                    0x03, 0x66, 0x6f, 0x6f,   // length of "foo"; "foo"
+                    0x03, 0x62, 0x61, 0x72};  // length of "bar"; "bar"
+
+  length = HttpEncoder::SerializeAcceptChFrame(accept_ch, &buffer);
   EXPECT_EQ(ABSL_ARRAYSIZE(output2), length);
-  quiche::test::CompareCharArraysWithHexError("PRIORITY_UPDATE", buffer.get(),
-                                              length, output2,
-                                              ABSL_ARRAYSIZE(output2));
+  quiche::test::CompareCharArraysWithHexError("ACCEPT_CH", buffer.get(), length,
+                                              output2, ABSL_ARRAYSIZE(output2));
 }
 
 }  // namespace test

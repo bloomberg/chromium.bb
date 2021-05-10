@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
+    ":cdd",
     ":cloud_parsers",
     ":coordinate2d",
     ":destination",
@@ -28,6 +30,13 @@ js_type_check("closure_compile_module") {
     ":state",
     ":user_manager",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [ ":print_server_store" ]
+  }
+}
+
+js_library("cdd") {
 }
 
 js_library("destination_policies") {
@@ -35,12 +44,14 @@ js_library("destination_policies") {
 
 js_library("destination_store") {
   deps = [
+    ":cdd",
     ":destination",
     ":destination_match",
     ":local_parsers",
     "..:cloud_print_interface",
     "..:metrics",
     "..:native_layer",
+    "..:native_layer_cros",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:event_tracker.m",
@@ -58,10 +69,21 @@ js_library("invitation_store") {
   ]
 }
 
+if (is_chromeos_ash) {
+  js_library("print_server_store") {
+    deps = [
+      ":destination_store",
+      "..:native_layer_cros",
+      "//ui/webui/resources/js/cr:event_target.m",
+    ]
+  }
+}
+
 js_library("local_parsers") {
   deps = [
     ":destination",
     ":destination_match",
+    ":destination_policies",
     "..:native_layer",
     "//ui/webui/resources/js:cr.m",
   ]
@@ -93,8 +115,11 @@ js_library("destination") {
     "//ui/webui/resources/js:load_time_data.m",
   ]
 
-  if (is_chromeos) {
-    deps += [ ":destination_policies" ]
+  if (is_chromeos_ash) {
+    deps += [
+      ":destination_policies",
+      "..:native_layer_cros",
+    ]
   }
 }
 

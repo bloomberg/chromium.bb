@@ -72,6 +72,7 @@ class MockVideoDecoder : public VideoDecoder {
               (DecodedImageCallback*),
               (override));
   MOCK_METHOD(int32_t, Release, (), (override));
+  MOCK_METHOD(VideoDecoder::DecoderInfo, GetDetcoderInfo, (), (const override));
   const char* ImplementationName() const { return "MockVideoDecoder"; }
 };
 
@@ -169,7 +170,7 @@ TEST_F(VideoReceiveStreamTest, CreateFrameFromH264FmtpSpropAndIdr) {
 TEST_F(VideoReceiveStreamTest, PlayoutDelay) {
   const VideoPlayoutDelay kPlayoutDelayMs = {123, 321};
   std::unique_ptr<FrameObjectFake> test_frame(new FrameObjectFake());
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   test_frame->SetPlayoutDelay(kPlayoutDelayMs);
 
   video_receive_stream_->OnCompleteFrame(std::move(test_frame));
@@ -200,7 +201,7 @@ TEST_F(VideoReceiveStreamTest, PlayoutDelayPreservesDefaultMaxValue) {
   const VideoPlayoutDelay kPlayoutDelayMs = {123, -1};
 
   std::unique_ptr<FrameObjectFake> test_frame(new FrameObjectFake());
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   test_frame->SetPlayoutDelay(kPlayoutDelayMs);
 
   video_receive_stream_->OnCompleteFrame(std::move(test_frame));
@@ -216,7 +217,7 @@ TEST_F(VideoReceiveStreamTest, PlayoutDelayPreservesDefaultMinValue) {
   const VideoPlayoutDelay kPlayoutDelayMs = {-1, 321};
 
   std::unique_ptr<FrameObjectFake> test_frame(new FrameObjectFake());
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   test_frame->SetPlayoutDelay(kPlayoutDelayMs);
 
   video_receive_stream_->OnCompleteFrame(std::move(test_frame));
@@ -280,7 +281,7 @@ TEST_F(VideoReceiveStreamTestWithFakeDecoder, PassesNtpTime) {
   const int64_t kNtpTimestamp = 12345;
   auto test_frame = std::make_unique<FrameObjectFake>();
   test_frame->SetPayloadType(99);
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   test_frame->SetNtpTime(kNtpTimestamp);
 
   video_receive_stream_->Start();
@@ -293,7 +294,7 @@ TEST_F(VideoReceiveStreamTestWithFakeDecoder, PassesRotation) {
   const webrtc::VideoRotation kRotation = webrtc::kVideoRotation_180;
   auto test_frame = std::make_unique<FrameObjectFake>();
   test_frame->SetPayloadType(99);
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   test_frame->SetRotation(kRotation);
 
   video_receive_stream_->Start();
@@ -306,7 +307,7 @@ TEST_F(VideoReceiveStreamTestWithFakeDecoder, PassesRotation) {
 TEST_F(VideoReceiveStreamTestWithFakeDecoder, PassesPacketInfos) {
   auto test_frame = std::make_unique<FrameObjectFake>();
   test_frame->SetPayloadType(99);
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   RtpPacketInfos packet_infos = CreatePacketInfos(3);
   test_frame->SetPacketInfos(packet_infos);
 
@@ -325,7 +326,7 @@ TEST_F(VideoReceiveStreamTestWithFakeDecoder, RenderedFrameUpdatesGetSources) {
   // Prepare one video frame with per-packet information.
   auto test_frame = std::make_unique<FrameObjectFake>();
   test_frame->SetPayloadType(99);
-  test_frame->id.picture_id = 0;
+  test_frame->SetId(0);
   RtpPacketInfos packet_infos;
   {
     RtpPacketInfos::vector_type infos;
@@ -399,7 +400,7 @@ std::unique_ptr<FrameObjectFake> MakeFrame(VideoFrameType frame_type,
                                            int picture_id) {
   auto frame = std::make_unique<FrameObjectFake>();
   frame->SetPayloadType(99);
-  frame->id.picture_id = picture_id;
+  frame->SetId(picture_id);
   frame->SetFrameType(frame_type);
   return frame;
 }

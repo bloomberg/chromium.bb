@@ -108,16 +108,9 @@
   }
 
   // Make sure to display the Toolbar/s before presenting the Banner.
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
     _animatedFullscreenDisabler =
         std::make_unique<AnimatedScopedFullscreenDisabler>(
             FullscreenController::FromBrowser(self.browser));
-  } else {
-    _animatedFullscreenDisabler =
-        std::make_unique<AnimatedScopedFullscreenDisabler>(
-            FullscreenController::FromBrowserState(
-                self.browser->GetBrowserState()));
-  }
   _animatedFullscreenDisabler->StartAnimation();
 
   [self.bannerViewController
@@ -296,7 +289,7 @@
   UIView* omniboxView = omniboxGuide.owningView;
   CGRect omniboxFrame = [omniboxView convertRect:omniboxGuide.layoutFrame
                                           toView:omniboxView.window];
-  return CGRectGetMaxY(omniboxFrame) - kInfobarBannerOverlapWithOmnibox;
+  return CGRectGetMaxY(omniboxFrame);
 }
 
 - (UIView*)bannerView {

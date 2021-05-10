@@ -17,6 +17,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/render_process.h"
+#include "media/base/media_content_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -42,17 +43,9 @@ class MockWebMediaPlayerDelegateObserver
   MOCK_METHOD0(OnFrameClosed, void());
   MOCK_METHOD0(OnFrameShown, void());
   MOCK_METHOD0(OnIdleTimeout, void());
-  MOCK_METHOD0(OnPlay, void());
-  MOCK_METHOD0(OnPause, void());
-  MOCK_METHOD1(OnMuted, void(bool));
-  MOCK_METHOD1(OnSeekForward, void(double));
-  MOCK_METHOD1(OnSeekBackward, void(double));
-  MOCK_METHOD0(OnEnterPictureInPicture, void());
-  MOCK_METHOD0(OnExitPictureInPicture, void());
   MOCK_METHOD1(OnVolumeMultiplierUpdate, void(double));
   MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
   MOCK_METHOD0(OnPictureInPictureModeEnded, void());
-  MOCK_METHOD1(OnSetAudioSink, void(const std::string&));
 };
 
 class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
@@ -77,15 +70,6 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
 
  protected:
   IPC::TestSink& test_sink() { return render_thread_->sink(); }
-
-  void CallOnMediaDelegatePlay(int delegate_id) {
-    delegate_manager_->OnMediaDelegatePlay(delegate_id);
-  }
-
-  void CallOnMediaDelegatePause(int delegate_id) {
-    delegate_manager_->OnMediaDelegatePause(delegate_id,
-                                            true /* triggered_by_user */);
-  }
 
   void SetIsLowEndDeviceForTesting() {
     delegate_manager_->SetIdleCleanupParamsForTesting(
@@ -113,108 +97,6 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegateTest);
 };
 
-TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
-  StrictMock<MockWebMediaPlayerDelegateObserver> observer;
-  const int delegate_id = delegate_manager_->AddObserver(&observer);
-
-  // Verify the metadata message.
-  {
-    const bool kHasAudio = false;
-    const bool kHasVideo = true;
-    const media::MediaContentType kMediaContentType =
-        media::MediaContentType::Transient;
-    delegate_manager_->DidMediaMetadataChange(delegate_id, kHasAudio, kHasVideo,
-                                              kMediaContentType);
-
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMediaMetadataChanged::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int, bool, bool, media::MediaContentType> result;
-    ASSERT_TRUE(
-        MediaPlayerDelegateHostMsg_OnMediaMetadataChanged::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-    EXPECT_EQ(kHasAudio, std::get<1>(result));
-    EXPECT_EQ(kHasVideo, std::get<2>(result));
-    EXPECT_EQ(kMediaContentType, std::get<3>(result));
-  }
-
-  // Verify the playing message.
-  {
-    test_sink().ClearMessages();
-    delegate_manager_->DidPlay(delegate_id);
-
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMediaPlaying::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int> result;
-    ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPlaying::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-  }
-
-  // Verify the paused message.
-  {
-    test_sink().ClearMessages();
-    const bool kReachedEndOfStream = false;
-    delegate_manager_->DidPause(delegate_id, kReachedEndOfStream);
-
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMediaPaused::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int, bool> result;
-    ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPaused::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-    EXPECT_EQ(kReachedEndOfStream, std::get<1>(result));
-  }
-
-  // Verify the destruction message.
-  {
-    test_sink().ClearMessages();
-    delegate_manager_->PlayerGone(delegate_id);
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMediaDestroyed::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int> result;
-    ASSERT_TRUE(
-        MediaPlayerDelegateHostMsg_OnMediaDestroyed::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-  }
-
-  // Verify the resize message.
-  {
-    test_sink().ClearMessages();
-    delegate_manager_->DidPlayerSizeChange(delegate_id, gfx::Size(16, 9));
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMediaSizeChanged::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int, gfx::Size> result;
-    ASSERT_TRUE(
-        MediaPlayerDelegateHostMsg_OnMediaSizeChanged::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-    EXPECT_EQ(16, std::get<1>(result).width());
-    EXPECT_EQ(9, std::get<1>(result).height());
-  }
-
-  // Verify the muted status message.
-  {
-    test_sink().ClearMessages();
-    delegate_manager_->DidPlayerMutedStatusChange(delegate_id, true);
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
-        MediaPlayerDelegateHostMsg_OnMutedStatusChanged::ID);
-    ASSERT_TRUE(msg);
-
-    std::tuple<int, bool> result;
-    ASSERT_TRUE(
-        MediaPlayerDelegateHostMsg_OnMutedStatusChanged::Read(msg, &result));
-    EXPECT_EQ(delegate_id, std::get<0>(result));
-    EXPECT_TRUE(std::get<1>(result));
-  }
-}
-
 TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
   const int delegate_id = delegate_manager_->AddObserver(&observer_1_);
 
@@ -223,27 +105,6 @@ TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
 
   EXPECT_CALL(observer_1_, OnFrameShown());
   delegate_manager_->WasShown();
-
-  EXPECT_CALL(observer_1_, OnPause());
-  MediaPlayerDelegateMsg_Pause pause_msg(0, delegate_id,
-                                         true /* triggered_by_user */);
-  delegate_manager_->OnMessageReceived(pause_msg);
-
-  EXPECT_CALL(observer_1_, OnPlay());
-  MediaPlayerDelegateMsg_Play play_msg(0, delegate_id);
-  delegate_manager_->OnMessageReceived(play_msg);
-
-  const double kTestSeekForwardSeconds = 1.0;
-  EXPECT_CALL(observer_1_, OnSeekForward(kTestSeekForwardSeconds));
-  MediaPlayerDelegateMsg_SeekForward seek_forward_msg(
-      0, delegate_id, base::TimeDelta::FromSeconds(kTestSeekForwardSeconds));
-  delegate_manager_->OnMessageReceived(seek_forward_msg);
-
-  const double kTestSeekBackwardSeconds = 2.0;
-  EXPECT_CALL(observer_1_, OnSeekBackward(kTestSeekBackwardSeconds));
-  MediaPlayerDelegateMsg_SeekBackward seek_backward_msg(
-      0, delegate_id, base::TimeDelta::FromSeconds(kTestSeekBackwardSeconds));
-  delegate_manager_->OnMessageReceived(seek_backward_msg);
 
   const double kTestMultiplier = 0.5;
   EXPECT_CALL(observer_1_, OnVolumeMultiplierUpdate(kTestMultiplier));
@@ -358,6 +219,20 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
     tick_clock_.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
     RunLoopOnce();
   }
+}
+
+TEST_F(RendererWebMediaPlayerDelegateTest, PeakPlayerHistogram) {
+  NiceMock<MockWebMediaPlayerDelegateObserver> observer;
+  NiceMock<MockWebMediaPlayerDelegateObserver> observer2;
+  delegate_manager_->AddObserver(&observer);
+  delegate_manager_->AddObserver(&observer2);
+
+  base::HistogramTester histogram_tester;
+
+  constexpr char kHistogramName[] = "Media.PeakWebMediaPlayerCount";
+  histogram_tester.ExpectTotalCount(kHistogramName, 0);
+  delegate_manager_.reset();
+  histogram_tester.ExpectUniqueSample(kHistogramName, 2, 1);
 }
 
 #if defined(OS_ANDROID)

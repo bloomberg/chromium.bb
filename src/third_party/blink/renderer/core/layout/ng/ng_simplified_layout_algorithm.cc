@@ -27,10 +27,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     : NGLayoutAlgorithm(params),
       previous_result_(result),
       writing_direction_(Style().GetWritingDirection()) {
-  // Currently this only supports block-flow layout due to the static-position
-  // calculations. If support for other layout types is added this logic will
-  // need to be changed.
-  bool is_block_flow = Node().IsBlockFlow();
+  const bool is_block_flow = Node().IsBlockFlow();
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
 
@@ -71,8 +68,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
       container_builder_.SetLastBaseline(*physical_fragment.LastBaseline());
 
     if (ConstraintSpace().IsTableCell()) {
-      if (physical_fragment.HasCollapsedBorders())
-        container_builder_.SetHasCollapsedBorders(true);
+      container_builder_.SetHasCollapsedBorders(
+          physical_fragment.HasCollapsedBorders());
 
       if (!ConstraintSpace().IsLegacyTableCell()) {
         container_builder_.SetTableCellColumnIndex(
@@ -114,11 +111,28 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     container_builder_.SetCustomLayoutData(result.CustomLayoutData());
   }
 
-  // TODO(atotic,ikilpatrick): Copy across table related data for table,
-  // table-row, table-section.
-  DCHECK(!physical_fragment.IsTable());
-  DCHECK(!physical_fragment.IsTableNGRow());
-  DCHECK(!physical_fragment.IsTableNGSection());
+  if (physical_fragment.IsTableNG()) {
+    container_builder_.SetTableColumnCount(result.TableColumnCount());
+    container_builder_.SetTableGridRect(physical_fragment.TableGridRect());
+
+    container_builder_.SetHasCollapsedBorders(
+        physical_fragment.HasCollapsedBorders());
+
+    if (const auto* table_column_geometries =
+            physical_fragment.TableColumnGeometries())
+      container_builder_.SetTableColumnGeometries(*table_column_geometries);
+
+    if (const auto* table_collapsed_borders =
+            physical_fragment.TableCollapsedBorders())
+      container_builder_.SetTableCollapsedBorders(*table_collapsed_borders);
+
+    if (const auto* table_collapsed_borders_geometry =
+            physical_fragment.TableCollapsedBordersGeometry()) {
+      container_builder_.SetTableCollapsedBordersGeometry(
+          std::make_unique<NGTableFragmentData::CollapsedBordersGeometry>(
+              *table_collapsed_borders_geometry));
+    }
+  }
 
   if (physical_fragment.IsHiddenForPaint())
     container_builder_.SetIsHiddenForPaint(true);
@@ -133,7 +147,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
 
   LayoutUnit new_block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), result.IntrinsicBlockSize(),
-      container_builder_.InitialBorderBoxSize().inline_size);
+      container_builder_.InitialBorderBoxSize().inline_size,
+      Node().ShouldBeConsideredAsReplaced());
 
   // Only block-flow is allowed to change its block-size during "simplified"
   // layout, all other layout types must remain the same size.
@@ -142,7 +157,11 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   } else {
     LayoutUnit old_block_size =
         NGFragment(writing_direction_, physical_fragment).BlockSize();
-    DCHECK_EQ(old_block_size, new_block_size);
+#if DCHECK_IS_ON()
+    // Tables don't respect the typical block-sizing rules.
+    if (!physical_fragment.IsTableNG())
+      DCHECK_EQ(old_block_size, new_block_size);
+#endif
     container_builder_.SetFragmentBlockSize(old_block_size);
   }
 
@@ -213,13 +232,11 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
 
   // We add both items and line-box fragments for existing mechanisms to work.
   // We may revisit this in future. See also |NGBoxFragmentBuilder::AddResult|.
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    if (const NGFragmentItems* previous_items = previous_fragment.Items()) {
-      auto* items_builder = container_builder_.ItemsBuilder();
-      DCHECK(items_builder);
-      DCHECK_EQ(items_builder->GetWritingDirection(), writing_direction_);
-      items_builder->AddPreviousItems(previous_fragment, *previous_items);
-    }
+  if (const NGFragmentItems* previous_items = previous_fragment.Items()) {
+    auto* items_builder = container_builder_.ItemsBuilder();
+    DCHECK(items_builder);
+    DCHECK_EQ(items_builder->GetWritingDirection(), writing_direction_);
+    items_builder->AddPreviousItems(previous_fragment, *previous_items);
   }
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -259,14 +276,7 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
                            previous_physical_container_size_)
           .ToLogical(old_fragment.Offset(), new_fragment.Size());
 
-  // Un-apply the relative position offset.
-  if (const auto* box_child = DynamicTo<NGPhysicalBoxFragment>(*old_fragment)) {
-    if (box_child->Style().GetPosition() == EPosition::kRelative) {
-      child_offset -= ComputeRelativeOffsetForBoxFragment(
-          *box_child, ConstraintSpace().GetWritingDirection(),
-          container_builder_.ChildAvailableSize());
-    }
-  }
+  RemoveRelativeOffset(container_builder_, *old_fragment, &child_offset);
 
   // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset,

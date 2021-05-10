@@ -170,6 +170,13 @@ Sender::EnqueueFrameResult Sender::EnqueueFrame(const EncodedFrame& frame) {
   return OK;
 }
 
+void Sender::CancelInFlightData() {
+  while (checkpoint_frame_id_ <= last_enqueued_frame_id_) {
+    ++checkpoint_frame_id_;
+    CancelPendingFrame(checkpoint_frame_id_);
+  }
+}
+
 void Sender::OnReceivedRtcpPacket(Clock::time_point arrival_time,
                                   absl::Span<const uint8_t> packet) {
   rtcp_packet_arrival_time_ = arrival_time;

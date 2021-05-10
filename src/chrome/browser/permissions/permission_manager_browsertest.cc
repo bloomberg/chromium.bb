@@ -49,13 +49,13 @@ class SubscriptionInterceptingPermissionManager
     callback_ = std::move(callback);
   }
 
-  int SubscribePermissionStatusChange(
+  SubscriptionId SubscribePermissionStatusChange(
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
       override {
-    int result =
+    SubscriptionId result =
         permissions::PermissionManager::SubscribePermissionStatusChange(
             permission, render_frame_host, requesting_origin, callback);
     std::move(callback_).Run();
@@ -131,9 +131,9 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
                        MAYBE_ServiceWorkerPermissionAfterRendererCrash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 
-  content::WindowedNotificationObserver crash_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher crash_observer(
+      incognito_browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   incognito_browser()->OpenURL(content::OpenURLParams(
       GURL(content::kChromeUICrashURL), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));

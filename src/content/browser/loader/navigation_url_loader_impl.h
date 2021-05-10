@@ -56,6 +56,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
           prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
       mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
+      mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+          auth_cert_observer,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors);
   ~NavigationURLLoaderImpl() override;
@@ -161,7 +163,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
       blink::PreviewsState new_previews_state) override;
 
-  void NotifyRequestStarted(base::TimeTicks timestamp);
   void NotifyResponseStarted(
       network::mojom::URLResponseHeadPtr response_head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -191,9 +192,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       StoragePartitionImpl* partition);
 
  private:
-  // TODO(kinuko): This can be a file-local private anonymous function.
-  static uint32_t GetURLLoaderOptions(bool is_main_frame);
-
   void BindNonNetworkURLLoaderFactoryReceiver(
       const GURL& url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
@@ -291,7 +289,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   network::mojom::URLResponseHeadPtr head_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
 
-  NavigationDownloadPolicy download_policy_;
+  blink::NavigationDownloadPolicy download_policy_;
 
   // Factories to handle navigation requests for non-network resources.
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap

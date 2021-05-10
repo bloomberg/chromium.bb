@@ -24,67 +24,67 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup) {
-  auto* p = parser("workgroup_size(4)");
+  auto p = parser("workgroup_size(4)");
   auto deco = p->decoration();
   EXPECT_TRUE(deco.matched);
   EXPECT_FALSE(deco.errored);
   ASSERT_NE(deco.value, nullptr) << p->error();
   ASSERT_FALSE(p->has_error());
-  auto func_deco = ast::As<ast::FunctionDecoration>(std::move(deco.value));
+  auto* func_deco = deco.value->As<ast::FunctionDecoration>();
   ASSERT_NE(func_deco, nullptr);
-  ASSERT_TRUE(func_deco->IsWorkgroup());
+  ASSERT_TRUE(func_deco->Is<ast::WorkgroupDecoration>());
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = func_deco->AsWorkgroup()->values();
+  std::tie(x, y, z) = func_deco->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 4u);
   EXPECT_EQ(y, 1u);
   EXPECT_EQ(z, 1u);
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_2Param) {
-  auto* p = parser("workgroup_size(4, 5)");
+  auto p = parser("workgroup_size(4, 5)");
   auto deco = p->decoration();
   EXPECT_TRUE(deco.matched);
   EXPECT_FALSE(deco.errored);
   ASSERT_NE(deco.value, nullptr) << p->error();
   ASSERT_FALSE(p->has_error());
-  auto func_deco = ast::As<ast::FunctionDecoration>(std::move(deco.value));
+  auto* func_deco = deco.value->As<ast::FunctionDecoration>();
   ASSERT_NE(func_deco, nullptr) << p->error();
-  ASSERT_TRUE(func_deco->IsWorkgroup());
+  ASSERT_TRUE(func_deco->Is<ast::WorkgroupDecoration>());
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = func_deco->AsWorkgroup()->values();
+  std::tie(x, y, z) = func_deco->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 4u);
   EXPECT_EQ(y, 5u);
   EXPECT_EQ(z, 1u);
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_3Param) {
-  auto* p = parser("workgroup_size(4, 5, 6)");
+  auto p = parser("workgroup_size(4, 5, 6)");
   auto deco = p->decoration();
   EXPECT_TRUE(deco.matched);
   EXPECT_FALSE(deco.errored);
   ASSERT_NE(deco.value, nullptr) << p->error();
   ASSERT_FALSE(p->has_error());
-  auto func_deco = ast::As<ast::FunctionDecoration>(std::move(deco.value));
+  auto* func_deco = deco.value->As<ast::FunctionDecoration>();
   ASSERT_NE(func_deco, nullptr);
-  ASSERT_TRUE(func_deco->IsWorkgroup());
+  ASSERT_TRUE(func_deco->Is<ast::WorkgroupDecoration>());
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = func_deco->AsWorkgroup()->values();
+  std::tie(x, y, z) = func_deco->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 4u);
   EXPECT_EQ(y, 5u);
   EXPECT_EQ(z, 6u);
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_TooManyValues) {
-  auto* p = parser("workgroup_size(1, 2, 3, 4)");
+  auto p = parser("workgroup_size(1, 2, 3, 4)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -94,7 +94,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_TooManyValues) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_X_Value) {
-  auto* p = parser("workgroup_size(-2, 5, 6)");
+  auto p = parser("workgroup_size(-2, 5, 6)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -105,7 +105,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_X_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_Y_Value) {
-  auto* p = parser("workgroup_size(4, 0, 6)");
+  auto p = parser("workgroup_size(4, 0, 6)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -116,7 +116,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_Y_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_Z_Value) {
-  auto* p = parser("workgroup_size(4, 5, -3)");
+  auto p = parser("workgroup_size(4, 5, -3)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -127,7 +127,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Invalid_Z_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingLeftParam) {
-  auto* p = parser("workgroup_size 4, 5, 6)");
+  auto p = parser("workgroup_size 4, 5, 6)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -137,7 +137,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingLeftParam) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingRightParam) {
-  auto* p = parser("workgroup_size(4, 5, 6");
+  auto p = parser("workgroup_size(4, 5, 6");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -147,7 +147,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingRightParam) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingValues) {
-  auto* p = parser("workgroup_size()");
+  auto p = parser("workgroup_size()");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -159,7 +159,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_MissingValues) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_X_Value) {
-  auto* p = parser("workgroup_size(, 2, 3)");
+  auto p = parser("workgroup_size(, 2, 3)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -171,7 +171,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_X_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Comma) {
-  auto* p = parser("workgroup_size(1 2, 3)");
+  auto p = parser("workgroup_size(1 2, 3)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -181,7 +181,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Comma) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Value) {
-  auto* p = parser("workgroup_size(1, , 3)");
+  auto p = parser("workgroup_size(1, , 3)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -193,7 +193,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Comma) {
-  auto* p = parser("workgroup_size(1, 2 3)");
+  auto p = parser("workgroup_size(1, 2 3)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -203,7 +203,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Comma) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Value) {
-  auto* p = parser("workgroup_size(1, 2, )");
+  auto p = parser("workgroup_size(1, 2, )");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -215,7 +215,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Value) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_X_Invalid) {
-  auto* p = parser("workgroup_size(nan)");
+  auto p = parser("workgroup_size(nan)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -227,7 +227,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_X_Invalid) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Invalid) {
-  auto* p = parser("workgroup_size(2, nan)");
+  auto p = parser("workgroup_size(2, nan)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -239,7 +239,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Y_Invalid) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Invalid) {
-  auto* p = parser("workgroup_size(2, 3, nan)");
+  auto p = parser("workgroup_size(2, 3, nan)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -251,20 +251,21 @@ TEST_F(ParserImplTest, FunctionDecoration_Workgroup_Missing_Z_Invalid) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Stage) {
-  auto* p = parser("stage(compute)");
+  auto p = parser("stage(compute)");
   auto deco = p->decoration();
   EXPECT_TRUE(deco.matched);
   EXPECT_FALSE(deco.errored);
   ASSERT_NE(deco.value, nullptr) << p->error();
   ASSERT_FALSE(p->has_error());
-  auto func_deco = ast::As<ast::FunctionDecoration>(std::move(deco.value));
+  auto* func_deco = deco.value->As<ast::FunctionDecoration>();
   ASSERT_NE(func_deco, nullptr);
-  ASSERT_TRUE(func_deco->IsStage());
-  EXPECT_EQ(func_deco->AsStage()->value(), ast::PipelineStage::kCompute);
+  ASSERT_TRUE(func_deco->Is<ast::StageDecoration>());
+  EXPECT_EQ(func_deco->As<ast::StageDecoration>()->value(),
+            ast::PipelineStage::kCompute);
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingValue) {
-  auto* p = parser("stage()");
+  auto p = parser("stage()");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -274,7 +275,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingValue) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingInvalid) {
-  auto* p = parser("stage(nan)");
+  auto p = parser("stage(nan)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -284,7 +285,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingInvalid) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingLeftParen) {
-  auto* p = parser("stage compute)");
+  auto p = parser("stage compute)");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);
@@ -294,7 +295,7 @@ TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingLeftParen) {
 }
 
 TEST_F(ParserImplTest, FunctionDecoration_Stage_MissingRightParen) {
-  auto* p = parser("stage(compute");
+  auto p = parser("stage(compute");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_TRUE(deco.errored);

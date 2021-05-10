@@ -19,11 +19,10 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,30 +47,30 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -97,6 +96,11 @@
 #include "extensions/common/constants.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#include "chrome/browser/lacros/client_cert_store_lacros.h"
+#endif
+
 namespace {
 
 bool* g_discard_domain_reliability_uploads_for_testing = nullptr;
@@ -119,7 +123,7 @@ std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
   return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 network::mojom::AdditionalCertificatesPtr GetAdditionalCertificates(
     const policy::PolicyCertService* policy_cert_service,
     const base::FilePath& storage_partition_path) {
@@ -275,7 +279,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   ConfigureNetworkContextParamsInternal(in_memory, relative_partition_path,
                                         network_context_params,
                                         cert_verifier_creation_params);
@@ -297,7 +302,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParams(
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ProfileNetworkContextService::UpdateAdditionalCertificates() {
   const policy::PolicyCertService* policy_cert_service =
       policy::PolicyCertServiceFactory::GetForProfile(profile_);
@@ -532,7 +537,7 @@ ProfileNetworkContextService::CreateClientCertStore() {
   if (!client_cert_store_factory_.is_null())
     return client_cert_store_factory_.Run();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool use_system_key_slot = false;
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
   // is not disabled by a flag.
@@ -575,9 +580,24 @@ ProfileNetworkContextService::CreateClientCertStore() {
       base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                           kCryptoModulePasswordClientAuth));
 #elif defined(USE_NSS_CERTS)
-  return std::make_unique<net::ClientCertStoreNSS>(
-      base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
-                          kCryptoModulePasswordClientAuth));
+  std::unique_ptr<net::ClientCertStore> store =
+      std::make_unique<net::ClientCertStoreNSS>(
+          base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
+                              kCryptoModulePasswordClientAuth));
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  CertDbInitializer* cert_db_initializer =
+      CertDbInitializerFactory::GetForProfileIfExists(profile_);
+  if (!cert_db_initializer || !profile_->IsMainProfile()) {
+    // TODO(crbug.com/1148298): return some cert store for secondary profiles in
+    // Lacros-Chrome.
+    return nullptr;
+  }
+
+  store = std::make_unique<ClientCertStoreLacros>(cert_db_initializer,
+                                                  std::move(store));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  return store;
 #elif defined(OS_WIN)
   return std::make_unique<net::ClientCertStoreWin>();
 #elif defined(OS_MAC)
@@ -621,7 +641,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   if (profile_->IsOffTheRecord())
     in_memory = true;
   base::FilePath path(GetPartitionPath(relative_partition_path));
@@ -748,12 +769,12 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   // using the TrialComparisonCertVerifier requires knowing whether Chrome is
   // using the system verifier.
   DCHECK(cert_verifier_creation_params);
-  DCHECK_NE(
-      cert_verifier_creation_params->use_builtin_cert_verifier,
-      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kDefault);
+  DCHECK_NE(cert_verifier_creation_params->use_builtin_cert_verifier,
+            cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kDefault);
   if (!in_memory &&
       cert_verifier_creation_params->use_builtin_cert_verifier ==
-          network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+          cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
               kSystem &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
     mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
@@ -793,16 +814,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
                   metrics::prefs::kMetricsReportingEnabled);
   }
 
-  auto* drp_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
-  if (drp_settings) {
-    mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
-    network_context_params->custom_proxy_config_client_receiver =
-        config_client.BindNewPipeAndPassReceiver();
-    drp_settings->AddCustomProxyConfigClient(std::move(config_client));
-  }
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool profile_supports_policy_certs = false;
   if (chromeos::ProfileHelper::IsSigninProfile(profile_))
     profile_supports_policy_certs = true;

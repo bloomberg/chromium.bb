@@ -37,7 +37,6 @@ using ::testing::_;
 using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::InSequence;
-using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -62,6 +61,8 @@ class UseCreditCardActionTest : public testing::Test {
         credit_card_.guid());
     user_model_.SetValue(kModelIdentifier, card_value);
 
+    ON_CALL(mock_action_delegate_, GetWebController)
+        .WillByDefault(Return(&mock_web_controller_));
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
     ON_CALL(mock_action_delegate_, GetUserModel)
@@ -69,22 +70,26 @@ class UseCreditCardActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker) {
+        .WillByDefault([this](BatchElementChecker* checker) {
           checker->Run(&mock_web_controller_);
-        }));
+        });
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
         .WillByDefault(RunOnceCallback<1>(OkClientStatus(),
                                           base::TimeDelta::FromSeconds(0)));
-    ON_CALL(mock_action_delegate_, OnGetFullCard)
-        .WillByDefault(Invoke([](const autofill::CreditCard* credit_card,
-                                 base::OnceCallback<void(
-                                     std::unique_ptr<autofill::CreditCard> card,
-                                     const base::string16& cvc)>& callback) {
-          std::move(callback).Run(
-              credit_card ? std::make_unique<autofill::CreditCard>(*credit_card)
-                          : nullptr,
-              base::UTF8ToUTF16(kFakeCvc));
-        }));
+    ON_CALL(mock_action_delegate_, GetFullCard)
+        .WillByDefault(
+            [](const autofill::CreditCard* credit_card,
+               base::OnceCallback<void(const ClientStatus&,
+                                       std::unique_ptr<autofill::CreditCard>,
+                                       const base::string16&)> callback) {
+              std::move(callback).Run(
+                  credit_card ? OkClientStatus()
+                              : ClientStatus(GET_FULL_CARD_FAILED),
+                  credit_card
+                      ? std::make_unique<autofill::CreditCard>(*credit_card)
+                      : nullptr,
+                  base::UTF8ToUTF16(kFakeCvc));
+            });
     test_util::MockFindAnyElement(mock_web_controller_);
   }
 
@@ -248,7 +253,7 @@ TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
 TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   InSequence sequence;
 
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action = CreateUseCreditCardAction();
@@ -380,7 +385,7 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
 TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
   InSequence sequence;
 
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action = CreateUseCreditCardAction();
@@ -414,12 +419,14 @@ TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
   EXPECT_CALL(mock_action_delegate_,
               WaitUntilDocumentIsInReadyState(
                   _, DOCUMENT_INTERACTIVE, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
-  EXPECT_CALL(mock_action_delegate_,
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
+                                   base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(mock_web_controller_,
               ScrollIntoView(EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_action_delegate_, WaitUntilElementIsStable(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
+                                   base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(
       mock_action_delegate_,
       ClickOrTapElement(ClickType::CLICK, EqualsElement(expected_element), _))
@@ -442,7 +449,7 @@ TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
 TEST_F(UseCreditCardActionTest, SkippingAutofill) {
   InSequence sequence;
 
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action;
@@ -507,7 +514,7 @@ TEST_F(UseCreditCardActionTest,
        AutofillFailureWithRequiredFieldsLaunchesFallback) {
   InSequence sequence;
 
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();
@@ -565,7 +572,7 @@ TEST_F(UseCreditCardActionTest,
 TEST_F(UseCreditCardActionTest, FallbackForCardExpirationSucceeds) {
   InSequence sequence;
 
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();
@@ -609,7 +616,7 @@ TEST_F(UseCreditCardActionTest, FallbackForCardExpirationSucceeds) {
 }
 
 TEST_F(UseCreditCardActionTest, FallbackFails) {
-  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+  ON_CALL(mock_web_controller_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();

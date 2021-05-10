@@ -16,7 +16,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -866,7 +866,7 @@ public class ContextualSearchUma {
     public static void logTapResultsSeen(boolean wasPanelSeen) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.Tap.ResultsSeen", wasPanelSeen);
-        if (AndroidSyncSettings.get().isSyncEnabled()) {
+        if (ProfileSyncService.get() != null && ProfileSyncService.get().isSyncRequested()) {
             RecordHistogram.recordBooleanHistogram(
                     "Search.ContextualSearch.Tap.SyncEnabled.ResultsSeen", wasPanelSeen);
         }
@@ -879,6 +879,11 @@ public class ContextualSearchUma {
     public static void logAllResultsSeen(boolean wasPanelSeen) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.All.ResultsSeen", wasPanelSeen);
+        // Log a user action for the wasPanelSeen case. This value is used as part of a high-level
+        // guiding metric, which is being migrated to user actions.
+        if (wasPanelSeen) {
+            RecordUserAction.record("Search.ContextualSearch.All.ResultsSeen.true");
+        }
     }
 
     /**

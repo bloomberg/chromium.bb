@@ -36,6 +36,8 @@ public:
 
     GrD3DGpu* gpu() const { return fGpu; }
 
+    SkSL::Compiler* shaderCompiler() const override;
+
     void finalizeFragmentOutputColor(GrShaderVar& outputColor) override;
     void finalizeFragmentSecondaryColor(GrShaderVar& outputColor) override;
 
@@ -47,7 +49,7 @@ private:
 
     bool loadHLSLFromCache(SkReadBuffer* reader, gr_cp<ID3DBlob> shaders[]);
 
-    gr_cp<ID3DBlob> compileD3DProgram(SkSL::Program::Kind kind,
+    gr_cp<ID3DBlob> compileD3DProgram(SkSL::ProgramKind kind,
                                       const SkSL::String& sksl,
                                       const SkSL::Program::Settings& settings,
                                       SkSL::Program::Inputs* outInputs,

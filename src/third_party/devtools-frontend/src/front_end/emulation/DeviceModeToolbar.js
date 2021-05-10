@@ -5,6 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import {ls} from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import * as UI from '../ui/ui.js';
 
@@ -12,8 +13,19 @@ import {defaultMobileScaleFactor, DeviceModeModel, Type, UA} from './DeviceModeM
 import {EmulatedDevice, EmulatedDevicesList, Events, Horizontal, HorizontalSpanned, Mode, Vertical, VerticalSpanned} from './EmulatedDevices.js';  // eslint-disable-line no-unused-vars
 
 /**
- * @unrestricted
+ * Even though the emulation panel uses all UI elements, the tooltips are not supported.
+ * That's because the emulation elements are rendered around the page context, rather
+ * than in the DevTools panel itself. Therefore, we need to fall back to using the
+ * built-in tooltip by setting the title attribute on the button's element.
+ *
+ * @param {!UI.Toolbar.ToolbarButton} button
+ * @param {string} title
  */
+function setTitleForButton(button, title) {
+  button.setTitle(title);
+  button.element.title = title;
+}
+
 export class DeviceModeToolbar {
   /**
    * @param {!DeviceModeModel} model
@@ -51,7 +63,6 @@ export class DeviceModeToolbar {
     const leftContainer = this._element.createChild('div', 'device-mode-toolbar-spacer');
     leftContainer.createChild('div', 'device-mode-toolbar-spacer');
     const leftToolbar = new UI.Toolbar.Toolbar('', leftContainer);
-    leftToolbar.makeWrappable();
     this._fillLeftToolbar(leftToolbar);
 
     const mainToolbar = new UI.Toolbar.Toolbar('', this._element);
@@ -143,7 +154,7 @@ export class DeviceModeToolbar {
     toolbar.appendToolbarItem(this._wrapToolbarItem(this._createEmptyToolbarElement()));
     this._deviceSelectItem = new UI.Toolbar.ToolbarMenuButton(this._appendDeviceMenuItems.bind(this));
     this._deviceSelectItem.setGlyph('');
-    this._deviceSelectItem.turnIntoSelect();
+    this._deviceSelectItem.turnIntoSelect(true);
     this._deviceSelectItem.setDarkText();
     toolbar.appendToolbarItem(this._deviceSelectItem);
   }
@@ -209,7 +220,7 @@ export class DeviceModeToolbar {
   _fillRightToolbar(toolbar) {
     toolbar.appendToolbarItem(this._wrapToolbarItem(this._createEmptyToolbarElement()));
     this._scaleItem = new UI.Toolbar.ToolbarMenuButton(this._appendScaleMenuItems.bind(this));
-    this._scaleItem.setTitle(Common.UIString.UIString('Zoom'));
+    setTitleForButton(this._scaleItem, Common.UIString.UIString('Zoom'));
     this._scaleItem.setGlyph('');
     this._scaleItem.turnIntoSelect();
     this._scaleItem.setDarkText();
@@ -219,7 +230,7 @@ export class DeviceModeToolbar {
 
     this._deviceScaleItem = new UI.Toolbar.ToolbarMenuButton(this._appendDeviceScaleMenuItems.bind(this));
     this._deviceScaleItem.setVisible(this._showDeviceScaleFactorSetting.get());
-    this._deviceScaleItem.setTitle(Common.UIString.UIString('Device pixel ratio'));
+    setTitleForButton(this._deviceScaleItem, Common.UIString.UIString('Device pixel ratio'));
     this._deviceScaleItem.setGlyph('');
     this._deviceScaleItem.turnIntoSelect();
     this._deviceScaleItem.setDarkText();
@@ -228,7 +239,7 @@ export class DeviceModeToolbar {
     toolbar.appendToolbarItem(this._wrapToolbarItem(this._createEmptyToolbarElement()));
     this._uaItem = new UI.Toolbar.ToolbarMenuButton(this._appendUserAgentMenuItems.bind(this));
     this._uaItem.setVisible(this._showUserAgentTypeSetting.get());
-    this._uaItem.setTitle(Common.UIString.UIString('Device type'));
+    setTitleForButton(this._uaItem, Common.UIString.UIString('Device type'));
     this._uaItem.setGlyph('');
     this._uaItem.turnIntoSelect();
     this._uaItem.setDarkText();
@@ -285,7 +296,7 @@ export class DeviceModeToolbar {
   _fillOptionsToolbar(toolbar) {
     toolbar.appendToolbarItem(this._wrapToolbarItem(this._createEmptyToolbarElement()));
     const moreOptionsButton = new UI.Toolbar.ToolbarMenuButton(this._appendOptionsMenuItems.bind(this));
-    moreOptionsButton.setTitle(Common.UIString.UIString('More options'));
+    setTitleForButton(moreOptionsButton, Common.UIString.UIString('More options'));
     toolbar.appendToolbarItem(moreOptionsButton);
   }
 
@@ -530,6 +541,8 @@ export class DeviceModeToolbar {
       } else {
         this._model.emulate(Type.Responsive, null, null);
       }
+    } else {
+      this._emulateDevice(device);
     }
   }
 
@@ -678,7 +691,7 @@ export class DeviceModeToolbar {
 
       if (this._model.type() === Type.Responsive) {
         this._modeButton.setEnabled(true);
-        this._modeButton.setTitle(ls`Rotate`);
+        setTitleForButton(this._modeButton, ls`Rotate`);
       } else {
         this._modeButton.setEnabled(false);
       }
@@ -709,6 +722,7 @@ export class DeviceModeToolbar {
       this._cachedUaType = uaType;
     }
 
+    /** @type {string} */
     let deviceItemTitle = Common.UIString.UIString('None');
     if (this._model.type() === Type.Responsive) {
       deviceItemTitle = Common.UIString.UIString('Responsive');
@@ -724,7 +738,8 @@ export class DeviceModeToolbar {
       if (device) {
         const modeCount = device ? device.modes.length : 0;
         this._modeButton.setEnabled(modeCount >= 2);
-        this._modeButton.setTitle(
+        setTitleForButton(
+            this._modeButton,
             modeCount === 2 ? Common.UIString.UIString('Rotate') :
                               Common.UIString.UIString('Screen orientation options'));
       }
@@ -734,13 +749,13 @@ export class DeviceModeToolbar {
     if (this._experimentDualScreenSupport && this._experimentalButton) {
       const device = this._model.device();
       if (device && device.isDualScreen) {
-        this._spanButton.setEnabled(true);
+        this._spanButton.setVisible(true);
         this._experimentalButton.setVisible(true);
       } else {
-        this._spanButton.setEnabled(false);
+        this._spanButton.setVisible(false);
         this._experimentalButton.setVisible(false);
       }
-      this._spanButton.setTitle(Common.UIString.UIString('Toggle dual-screen mode'));
+      setTitleForButton(this._spanButton, Common.UIString.UIString('Toggle dual-screen mode'));
     }
 
     if (this._model.type() === Type.Device) {

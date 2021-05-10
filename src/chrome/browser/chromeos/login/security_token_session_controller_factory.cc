@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/login/security_token_session_controller_factory.h"
 
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/security_token_session_controller.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 namespace login {
@@ -46,7 +49,26 @@ KeyedService* SecurityTokenSessionControllerFactory::BuildServiceInstanceFor(
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return nullptr;
 
-  return new SecurityTokenSessionController(profile->GetPrefs());
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state) {
+    // This can happen in tests that do not have local state.
+    return nullptr;
+  }
+
+  // The service is only relevant for users who authenticate with a security
+  // token used for a challenge-response flow.
+  // TODO(crbug.com/1164373): This check produces false negatives for ephemeral
+  // users.
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(
+      Profile::FromBrowserContext(context));
+  if (!ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
+          user->GetAccountId()))
+    return nullptr;
+
+  CertificateProviderService* certificate_provider_service =
+      CertificateProviderServiceFactory::GetForBrowserContext(context);
+  return new SecurityTokenSessionController(local_state, profile->GetPrefs(),
+                                            user, certificate_provider_service);
 }
 
 content::BrowserContext*

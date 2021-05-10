@@ -6,13 +6,8 @@
 #define UI_BASE_X_X11_UTIL_H_
 
 // This file declares utility functions for X11 (Linux only).
-//
-// These functions do not require the Xlib headers to be included (which is why
-// we use a void* for Visual*). The Xlib headers are highly polluting so we try
-// hard to limit their spread into the rest of the code.
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -33,6 +28,8 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/future.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_types.h"
 
 typedef unsigned long Cursor;
@@ -127,77 +124,6 @@ struct WmHints {
 // These functions use the default display and this /must/ be called from
 // the UI thread. Thus, they don't support multiple displays.
 
-template <typename T>
-bool GetArrayProperty(x11::Window window,
-                      x11::Atom name,
-                      std::vector<T>* value,
-                      x11::Atom* out_type = nullptr,
-                      size_t amount = 0) {
-  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
-
-  size_t bytes = amount * sizeof(T);
-  // The length field specifies the maximum amount of data we would like the
-  // server to give us.  It's specified in units of 4 bytes, so divide by 4.
-  // Add 3 before division to round up.
-  size_t length = (bytes + 3) / 4;
-  using lentype = decltype(x11::GetPropertyRequest::long_length);
-  auto response =
-      x11::Connection::Get()
-          ->GetProperty(x11::GetPropertyRequest{
-              .window = static_cast<x11::Window>(window),
-              .property = name,
-              .long_length =
-                  amount ? length : std::numeric_limits<lentype>::max()})
-          .Sync();
-  if (!response || response->format != CHAR_BIT * sizeof(T))
-    return false;
-
-  DCHECK_EQ(response->format / CHAR_BIT * response->value_len,
-            response->value->size());
-  value->resize(response->value_len);
-  memcpy(value->data(), response->value->data(), response->value->size());
-  if (out_type)
-    *out_type = response->type;
-  return true;
-}
-
-template <typename T>
-bool GetProperty(x11::Window window, const x11::Atom name, T* value) {
-  std::vector<T> values;
-  if (!GetArrayProperty(window, name, &values, nullptr, 1) || values.empty())
-    return false;
-  *value = values[0];
-  return true;
-}
-
-template <typename T>
-void SetArrayProperty(x11::Window window,
-                      x11::Atom name,
-                      x11::Atom type,
-                      const std::vector<T>& values) {
-  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
-  std::vector<uint8_t> data(sizeof(T) * values.size());
-  memcpy(data.data(), values.data(), sizeof(T) * values.size());
-  x11::Connection::Get()->ChangeProperty(x11::ChangePropertyRequest{
-      .window = static_cast<x11::Window>(window),
-      .property = name,
-      .type = type,
-      .format = CHAR_BIT * sizeof(T),
-      .data_len = values.size(),
-      .data = base::RefCountedBytes::TakeVector(&data)});
-}
-
-template <typename T>
-void SetProperty(x11::Window window,
-                 x11::Atom name,
-                 x11::Atom type,
-                 const T& value) {
-  SetArrayProperty(window, name, type, std::vector<T>{value});
-}
-
-COMPONENT_EXPORT(UI_BASE_X)
-void DeleteProperty(x11::Window window, x11::Atom name);
-
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetWmNormalHints(x11::Window window, SizeHints* hints);
 
@@ -223,7 +149,8 @@ COMPONENT_EXPORT(UI_BASE_X)
 void DefineCursor(x11::Window window, x11::Cursor cursor);
 
 COMPONENT_EXPORT(UI_BASE_X)
-x11::Window CreateDummyWindow(const std::string& name = "");
+size_t RowBytesForVisualWidth(const x11::Connection::VisualInfo& visual_info,
+                              int width);
 
 // Draws an SkPixmap on |drawable| using the given |gc|, converting to the
 // server side visual as needed.
@@ -252,7 +179,7 @@ COMPONENT_EXPORT(UI_BASE_X) bool QueryShmSupport();
 // the queue, and return the number eliminated, storing the last one in
 // |last_event|.
 COMPONENT_EXPORT(UI_BASE_X)
-int CoalescePendingMotionEvents(const x11::Event* xev, x11::Event* last_event);
+int CoalescePendingMotionEvents(const x11::Event& xev, x11::Event* last_event);
 
 // Sets whether |window| should use the OS window frame.
 COMPONENT_EXPORT(UI_BASE_X)
@@ -267,7 +194,7 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsShapeExtensionAvailable();
 COMPONENT_EXPORT(UI_BASE_X) x11::Window GetX11RootWindow();
 
 // Returns the user's current desktop.
-COMPONENT_EXPORT(UI_BASE_X) bool GetCurrentDesktop(int* desktop);
+COMPONENT_EXPORT(UI_BASE_X) bool GetCurrentDesktop(int32_t* desktop);
 
 enum HideTitlebarWhenMaximized : uint32_t {
   SHOW_TITLEBAR_WHEN_MAXIMIZED = 0,
@@ -302,7 +229,7 @@ bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc);
 
 // Return true if |window| has any property with |property_name|.
 COMPONENT_EXPORT(UI_BASE_X)
-bool PropertyExists(x11::Window window, const std::string& property_name);
+bool PropertyExists(x11::Window window, x11::Atom property);
 
 // Returns the raw bytes from a property with minimal
 // interpretation. |out_data| should be freed by XFree() after use.
@@ -311,54 +238,6 @@ bool GetRawBytesOfProperty(x11::Window window,
                            x11::Atom property,
                            scoped_refptr<base::RefCountedMemory>* out_data,
                            x11::Atom* out_type);
-
-// Get the value of an int, int array, atom array or string property.  On
-// success, true is returned and the value is stored in |value|.
-//
-// These functions should no longer be used.  TODO(thomasanderson): migrate
-// existing callers to {Set,Get}{,Array}Property<> instead.
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetIntProperty(x11::Window window,
-                    const std::string& property_name,
-                    int32_t* value);
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetIntArrayProperty(x11::Window window,
-                         const std::string& property_name,
-                         std::vector<int32_t>* value);
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetAtomArrayProperty(x11::Window window,
-                          const std::string& property_name,
-                          std::vector<x11::Atom>* value);
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetStringProperty(x11::Window window,
-                       const std::string& property_name,
-                       std::string* value);
-
-COMPONENT_EXPORT(UI_BASE_X)
-void SetIntProperty(x11::Window window,
-                    const std::string& name,
-                    const std::string& type,
-                    int32_t value);
-COMPONENT_EXPORT(UI_BASE_X)
-void SetIntArrayProperty(x11::Window window,
-                         const std::string& name,
-                         const std::string& type,
-                         const std::vector<int32_t>& value);
-COMPONENT_EXPORT(UI_BASE_X)
-void SetAtomProperty(x11::Window window,
-                     const std::string& name,
-                     const std::string& type,
-                     x11::Atom value);
-COMPONENT_EXPORT(UI_BASE_X)
-void SetAtomArrayProperty(x11::Window window,
-                          const std::string& name,
-                          const std::string& type,
-                          const std::vector<x11::Atom>& value);
-COMPONENT_EXPORT(UI_BASE_X)
-void SetStringProperty(x11::Window window,
-                       x11::Atom property,
-                       x11::Atom type,
-                       const std::string& value);
 
 // Sets the WM_CLASS attribute for a given X11 window.
 COMPONENT_EXPORT(UI_BASE_X)
@@ -400,11 +279,11 @@ bool HasWMSpecProperty(const base::flat_set<x11::Atom>& properties,
 // frame based on the currently-running window manager.
 COMPONENT_EXPORT(UI_BASE_X) bool GetCustomFramePrefDefault();
 
-static const int kAllDesktops = -1;
+static const int32_t kAllDesktops = -1;
 // Queries the desktop |window| is on, kAllDesktops if sticky. Returns false if
 // property not found.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetWindowDesktop(x11::Window window, int* desktop);
+bool GetWindowDesktop(x11::Window window, int32_t* desktop);
 
 // Implementers of this interface receive a notification for every X window of
 // the main display.
@@ -520,8 +399,8 @@ COMPONENT_EXPORT(UI_BASE_X) void SuspendX11ScreenSaver(bool suspend);
 // Returns human readable description of the window manager, desktop, and
 // other system properties related to the compositing.
 COMPONENT_EXPORT(UI_BASE_X)
-base::Value GpuExtraInfoAsListValue(unsigned long system_visual,
-                                    unsigned long rgba_visual);
+base::Value GpuExtraInfoAsListValue(x11::VisualId system_visual,
+                                    x11::VisualId rgba_visual);
 
 // Returns true if the window manager supports the given hint.
 COMPONENT_EXPORT(UI_BASE_X) bool WmSupportsHint(x11::Atom atom);
@@ -577,9 +456,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   // necessary for the GPU process to find out which visuals are best for GL
   // because we don't want to load GL in the browser process.  Returns false iff
   // |default_visual_id| or |transparent_visual_id| are invalid.
-  bool OnGPUInfoChanged(bool software_rendering,
-                        x11::VisualId default_visual_id,
-                        x11::VisualId transparent_visual_id);
+  bool UpdateVisualsOnGpuInfoChanged(bool software_rendering,
+                                     x11::VisualId default_visual_id,
+                                     x11::VisualId transparent_visual_id);
 
   // Are all of the system requirements met for using transparent visuals?
   bool ArgbVisualAvailable() const;

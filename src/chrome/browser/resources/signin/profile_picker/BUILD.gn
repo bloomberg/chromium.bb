@@ -5,10 +5,10 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("../../optimize_webui.gni")
+import("../../tools/optimize_webui.gni")
 
 preprocess_folder = "preprocessed"
 preprocess_manifest = "preprocessed_manifest.json"
@@ -38,8 +38,8 @@ if (optimize_webui) {
     ]
     excludes = [
       "chrome://resources/js/cr.m.js",
-      "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
-      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/js/bindings.js",
+      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js",
     ]
   }
 }
@@ -77,7 +77,7 @@ generate_grd("build_grd") {
   }
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -92,7 +92,7 @@ preprocess_grit("preprocess") {
   ]
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":web_components" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -109,7 +109,7 @@ preprocess_grit("preprocess_generated") {
   ]
 }
 
-grit("profile_picker_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -136,7 +136,7 @@ group("closure_compile") {
 js_type_check("profile_picker_files") {
   is_polymer3 = true
   closure_flags =
-      default_closure_args + [
+      default_closure_args + mojom_js_args + [
         "js_module_root=../../chrome/browser/resources/signin/profile_picker/",
         "js_module_root=./gen/chrome/browser/resources/signin/profile_picker/",
       ]
@@ -211,8 +211,10 @@ js_library("profile_card") {
   deps = [
     ":manage_profiles_browser_proxy",
     ":profile_card_menu",
+    "//third_party/polymer/v3_0/components-chromium/paper-tooltip:paper-tooltip",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -221,6 +223,7 @@ js_library("profile_card_menu") {
     ":manage_profiles_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -236,10 +239,7 @@ js_library("manage_profiles_browser_proxy") {
 }
 
 js_library("policy_helper") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:load_time_data.m",
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
 }
 
 group("web_components") {

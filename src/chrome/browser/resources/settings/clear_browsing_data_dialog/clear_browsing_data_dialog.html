@@ -95,6 +95,11 @@
         color: var(--cr-secondary-text-color);
         padding: 16px;
       }
+
+      #clearingDataAlert {
+        clip: rect(0, 0, 0, 0);
+        position: fixed;
+      }
     </style>
 
     <cr-dialog id="clearBrowsingDataDialog"
@@ -235,6 +240,12 @@
                                                clearButtonDisabled_)]]">
             $i18n{clearData}
         </cr-button>
+
+        <!-- The alert must be inside the dialog for it to be read while the
+             dialog is open. -->
+        <div id="clearingDataAlert" role="alert">
+          [[clearingDataAlertString_]]
+        </div>
       </div>
       <template is="dom-if" if="[[shouldShowFooter_(syncStatus.signedIn)]]"
           restamp>
@@ -264,7 +275,7 @@
 
     <cr-dialog id="installedAppsDialog" close-text="$i18n{close}"
                ignore-popstate show-scroll-borders
-               on-close="hideInstalledApps_">
+               on-cancel="hideInstalledApps_">
       <div slot="title">
         $i18n{installedAppsTitle}
       </div>
@@ -282,7 +293,7 @@
         <paper-spinner-lite active="[[clearingInProgress_]]">
         </paper-spinner-lite>
         <cr-button class="cancel-button" disabled="[[clearingInProgress_]]"
-            on-click="hideInstalledApps_">
+            on-click="onCancelInstalledApps_">
           $i18n{cancel}
         </cr-button>
         <cr-button id="installedAppsConfirm" class="action-button"

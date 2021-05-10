@@ -8,11 +8,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -34,8 +33,7 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
                         public crostini::CrostiniMicSharingEnabledObserver,
                         public crostini::CrostiniPortForwarder::Observer,
                         public crostini::ContainerStartedObserver,
-                        public crostini::ContainerShutdownObserver,
-                        public chromeos::CrosUsbDeviceObserver {
+                        public crostini::ContainerShutdownObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
   ~CrostiniHandler() override;
@@ -48,23 +46,6 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
  private:
   void HandleRequestCrostiniInstallerView(const base::ListValue* args);
   void HandleRequestRemoveCrostini(const base::ListValue* args);
-  // Callback for the "getSharedPathsDisplayText" message.  Converts actual
-  // paths in chromeos to values suitable to display to users.
-  // E.g. /home/chronos/u-<hash>/Downloads/foo => "Downloads > foo".
-  void HandleGetCrostiniSharedPathsDisplayText(const base::ListValue* args);
-  // Remove a specified path from being shared.
-  void HandleRemoveCrostiniSharedPath(const base::ListValue* args);
-  void OnCrostiniSharedPathRemoved(const std::string& callback_id,
-                                   const std::string& path,
-                                   bool result,
-                                   const std::string& failure_reason);
-  // Called when the shared USB devices page is ready.
-  void HandleNotifyCrostiniSharedUsbDevicesPageReady(
-      const base::ListValue* args);
-  // Set the share state of a USB device.
-  void HandleSetCrostiniUsbDeviceShared(const base::ListValue* args);
-  // chromeos::SharedUsbDeviceObserver.
-  void OnUsbDevicesChanged() override;
   // Export the crostini container.
   void HandleExportCrostiniContainer(const base::ListValue* args);
   // Import the crostini container.
@@ -156,8 +137,7 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void OnCanChangeArcAdbSideloading(bool can_change_arc_adb_sideloading);
 
   Profile* profile_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      adb_sideloading_device_policy_subscription_;
+  base::CallbackListSubscription adb_sideloading_device_policy_subscription_;
   PrefChangeRegistrar pref_change_registrar_;
   // weak_ptr_factory_ should always be last member.
   base::WeakPtrFactory<CrostiniHandler> weak_ptr_factory_{this};

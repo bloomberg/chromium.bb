@@ -39,7 +39,6 @@ perfetto_host_executable("trace_to_text_lite") {
 source_set("utils") {
   deps = [
     "../../gn:default_deps",
-    "../../include/perfetto/profiling:deobfuscator",
     "../../include/perfetto/protozero",
     "../../include/perfetto/trace_processor",
     "../../protos/perfetto/trace:zero",
@@ -49,10 +48,7 @@ source_set("utils") {
     "../../src/profiling/symbolizer",
     "../../src/profiling/symbolizer:symbolize_database",
   ]
-  public_deps = [
-    "../../include/perfetto/ext/base",
-    "../../include/perfetto/profiling:deobfuscator",
-  ]
+  public_deps = [ "../../include/perfetto/ext/base" ]
   if (enable_perfetto_zlib) {
     public_deps += [ "../../gn:zlib" ]
   }
@@ -94,9 +90,9 @@ source_set("common") {
     "../../gn:default_deps",
     "../../include/perfetto/base",
     "../../include/perfetto/ext/traced:sys_stats_counters",
-    "../../include/perfetto/profiling:deobfuscator",
     "../../include/perfetto/protozero",
     "../../protos/perfetto/trace:zero",
+    "../../src/profiling:deobfuscator",
     "../../src/profiling/symbolizer",
     "../../src/profiling/symbolizer:symbolize_database",
     "../../src/trace_processor:lib",
@@ -117,9 +113,6 @@ source_set("common") {
     "trace_to_systrace.h",
     "trace_to_text.h",
   ]
-  if (enable_perfetto_version_gen) {
-    deps += [ "//gn/standalone:gen_git_revision" ]
-  }
 }
 
 # Lite target for the WASM UI. Doesn't have any dependency on libprotobuf-full.
@@ -152,10 +145,12 @@ source_set("full") {
   ]
 }
 
-wasm_lib("trace_to_text_wasm") {
-  name = "trace_to_text"
-  deps = [
-    ":lite",
-    "../../gn:default_deps",
-  ]
+if (enable_perfetto_ui) {
+  wasm_lib("trace_to_text_wasm") {
+    name = "trace_to_text"
+    deps = [
+      ":lite",
+      "../../gn:default_deps",
+    ]
+  }
 }

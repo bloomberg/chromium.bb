@@ -22,26 +22,33 @@ namespace tint {
 namespace ast {
 
 /// A workgroup decoration
-class StageDecoration : public FunctionDecoration {
+class StageDecoration : public Castable<StageDecoration, FunctionDecoration> {
  public:
   /// constructor
   /// @param stage the pipeline stage
   /// @param source the source of this decoration
-  StageDecoration(ast::PipelineStage stage, const Source& source);
+  StageDecoration(const Source& source, PipelineStage stage);
   ~StageDecoration() override;
 
-  /// @returns true if this is a stage decoration
-  bool IsStage() const override;
-
   /// @returns the stage
-  ast::PipelineStage value() const { return stage_; }
+  PipelineStage value() const { return stage_; }
 
   /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  void to_str(std::ostream& out) const override;
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  StageDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  ast::PipelineStage stage_ = ast::PipelineStage::kNone;
+  PipelineStage const stage_;
 };
 
 }  // namespace ast

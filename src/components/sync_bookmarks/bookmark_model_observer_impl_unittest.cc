@@ -14,15 +14,12 @@
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
-#include "components/sync_bookmarks/switches.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -228,7 +225,7 @@ TEST_F(BookmarkModelObserverImplTest,
   ASSERT_THAT(local_changes.size(), 1U);
   EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node));
   EXPECT_THAT(local_changes[0]->metadata()->server_id(),
-              Eq(bookmark_node->guid()));
+              Eq(bookmark_node->guid().AsLowercaseString()));
 }
 
 TEST_F(BookmarkModelObserverImplTest,
@@ -799,10 +796,6 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
 
 TEST_F(BookmarkModelObserverImplTest,
        ShouldNudgeForCommitOnFaviconLoadAfterRestart) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      switches::kSyncDoNotCommitBookmarksWithoutFavicon);
-
   const GURL kBookmarkUrl("http://www.url.com");
   const GURL kIconUrl("http://www.url.com/favicon.ico");
   const SkColor kColor = SK_ColorRED;
@@ -820,8 +813,7 @@ TEST_F(BookmarkModelObserverImplTest,
 
   sync_pb::EntitySpecifics specifics =
       CreateSpecificsFromBookmarkNode(bookmark_node, bookmark_model(),
-                                      /*force_favicon_load=*/false,
-                                      /*include_guid=*/true);
+                                      /*force_favicon_load=*/false);
   const gfx::Image favicon_image = CreateTestImage(kColor);
   scoped_refptr<base::RefCountedMemory> favicon_bytes =
       favicon_image.As1xPNGBytes();
@@ -856,6 +848,8 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark_model()->bookmark_bar_node();
   const bookmarks::BookmarkNode* folder = bookmark_model()->AddFolder(
       bookmark_bar_node, 0, base::UTF8ToUTF16("Title"));
+  const syncer::ClientTagHash folder_client_tag_hash =
+      SyncedBookmarkTracker::GetClientTagHashFromGUID(folder->guid());
   // Check that the bookmark was added by observer.
   const SyncedBookmarkTracker::Entity* folder_entity =
       bookmark_tracker()->GetEntityForBookmarkNode(folder);
@@ -876,11 +870,11 @@ TEST_F(BookmarkModelObserverImplTest,
   // Check that the entity is a tombstone now.
   const std::vector<const SyncedBookmarkTracker::Entity*> local_changes =
       bookmark_tracker()->GetEntitiesWithLocalChanges(/*max_entries=*/2);
-  ASSERT_EQ(local_changes.size(), 1u);
-  ASSERT_EQ(local_changes.front(), folder_entity);
-  ASSERT_TRUE(local_changes.front()->metadata()->is_deleted());
-  ASSERT_EQ(bookmark_tracker()->GetTombstoneEntityForGuid(folder->guid()),
-            folder_entity);
+  ASSERT_THAT(local_changes, ElementsAre(folder_entity));
+  ASSERT_TRUE(folder_entity->metadata()->is_deleted());
+  ASSERT_EQ(
+      bookmark_tracker()->GetEntityForClientTagHash(folder_client_tag_hash),
+      folder_entity);
 
   // Restore the removed bookmark.
   undo_service.undo_manager()->Undo();
@@ -888,10 +882,11 @@ TEST_F(BookmarkModelObserverImplTest,
 
   EXPECT_EQ(folder_entity,
             bookmark_tracker()->GetEntityForBookmarkNode(folder));
+  EXPECT_EQ(
+      bookmark_tracker()->GetEntityForClientTagHash(folder_client_tag_hash),
+      folder_entity);
   EXPECT_TRUE(folder_entity->IsUnsynced());
   EXPECT_FALSE(folder_entity->metadata()->is_deleted());
-  EXPECT_THAT(bookmark_tracker()->GetTombstoneEntityForGuid(folder->guid()),
-              IsNull());
   EXPECT_EQ(folder_entity->bookmark_node(), folder);
 }
 

@@ -17,12 +17,11 @@
  * fill the view.
  */
 
-/* TODO(crbug.com/1147535): Decouple MWB style from component */
-import 'chrome://resources/cr_elements/mwb_shared_style.js';
-import 'chrome://resources/cr_elements/mwb_shared_vars.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+import {updateListProperty} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {afterNextRender, DomRepeat, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /** @type {number} */
@@ -51,15 +50,6 @@ export class InfiniteList extends PolymerElement {
         value: 10,
       },
 
-      /**
-       * Controls the number of scrolled items in the currently fetched item
-       * chunk after which a new chunk of items should be added on demand.
-       */
-      chunkItemThreshold: {
-        type: Number,
-        value: 5,
-      },
-
       /** @type {?Array<!Object>} */
       items: {
         type: Array,
@@ -84,14 +74,19 @@ export class InfiniteList extends PolymerElement {
   /** @override */
   ready() {
     super.ready();
-    this.ensureTemplatized_();
+
+    this.domRepeat_ = assertInstanceof(
+        this.firstChild, DomRepeat,
+        'infinite-list requires a dom-repeat child to be provided in light-dom');
+
+    this.addEventListener('scroll', () => this.onScroll_());
   }
 
   /** @private */
   getDomItems_() {
-    const selectorChildren = this.$.selector.children;
+    const selector = /** @type {!IronSelectorElement} */ (this.$.selector);
     return Array.prototype.slice.call(
-        selectorChildren, 0, selectorChildren.length - 1);
+        selector.children, 0, selector.children.length - 1);
   }
 
   /**
@@ -125,27 +120,15 @@ export class InfiniteList extends PolymerElement {
         this.domRepeat_.items.length,
         Math.min(idx + this.chunkItemCount, this.items.length));
     if (newItems.length > 0) {
+      const startTime = performance.now();
       this.domRepeat_.push('items', ...newItems);
+      listenOnce(this, 'dom-change', () => {
+        afterNextRender(this, () => {
+          performance.mark(`infinite_list_updated:${
+              performance.now() - startTime}:benchmark_value`);
+        });
+      });
     }
-  }
-
-  /**
-   * Verifies a light-dom template has been provided and initializes a DomRepeat
-   * component with the given template.
-   * @private
-   */
-  ensureTemplatized_() {
-    // The user provided light-dom template to use when stamping DOM items.
-    const template =
-        /** @type {!HTMLTemplateElement} */ (this.querySelector('template'));
-
-    assert(
-        template,
-        'infinite-list requires a template to be provided in light-dom');
-
-    this.domRepeat_ = new DomRepeat();
-    this.domRepeat_.appendChild(template);
-    this.$.selector.appendChild(this.domRepeat_);
   }
 
   /**
@@ -154,16 +137,17 @@ export class InfiniteList extends PolymerElement {
    * @private
    */
   onScroll_() {
-    if (this.$.container.scrollTop > 0 &&
+    if (this.scrollTop > 0 &&
         this.domRepeat_.items.length !== this.items.length) {
       const aboveScrollTopItemCount =
-          Math.round(this.$.container.scrollTop / this.domItemAverageHeight_());
+          Math.round(this.scrollTop / this.domItemAverageHeight_());
 
       // Ensure we have sufficient items to fill the current scroll position and
       // a full view following our current position.
-      if (aboveScrollTopItemCount + this.chunkItemThreshold >
+      if (aboveScrollTopItemCount + this.chunkItemCount >
           this.domRepeat_.items.length) {
         this.ensureDomItemsAvailableStartingAt_(aboveScrollTopItemCount);
+        this.updateScrollerSize_();
       }
     }
   }
@@ -198,12 +182,13 @@ export class InfiniteList extends PolymerElement {
    * @private
    */
   domItemAverageHeight_() {
-    if (!this.$.selector.items || this.$.selector.items.length === 0) {
+    const selector = /** @type {!IronSelectorElement} */ (this.$.selector);
+    if (!selector.items || selector.items.length === 0) {
       return 0;
     }
 
-    const domItemCount = this.$.selector.items.length;
-    const lastDomItem = this.$.selector.items[domItemCount - 1];
+    const domItemCount = selector.items.length;
+    const lastDomItem = selector.items[domItemCount - 1];
     return (lastDomItem.offsetTop + lastDomItem.offsetHeight) / domItemCount;
   }
 
@@ -211,17 +196,36 @@ export class InfiniteList extends PolymerElement {
    * Ensures that when the items property changes, only a chunk of the items
    * needed to fill the current scroll position view are added to the DOM, thus
    * improving rendering performance.
+   *
+   * @param {!Array} newItems
+   * @param {!Array} oldItems
    * @private
    */
-  onItemsChanged_() {
-    if (this.domRepeat_ && this.items) {
-      const domItemAvgHeight = this.domItemAverageHeight_();
-      const aboveScrollTopItemCount = domItemAvgHeight !== 0 ?
-          Math.round(this.$.container.scrollTop / domItemAvgHeight) :
-          0;
+  onItemsChanged_(newItems, oldItems) {
+    if (!this.domRepeat_) {
+      return;
+    }
 
+    if (!oldItems || oldItems.length === 0) {
       this.domRepeat_.set('items', []);
-      this.ensureDomItemsAvailableStartingAt_(aboveScrollTopItemCount);
+      this.ensureDomItemsAvailableStartingAt_(0);
+      listenOnce(this.$.selector, 'iron-items-changed', () => {
+        this.updateScrollerSize_();
+      });
+
+      return;
+    }
+
+    updateListProperty(
+        this.domRepeat_, 'items', tabData => tabData,
+        newItems.slice(
+            0,
+            Math.min(
+                Math.max(this.domRepeat_.items.length, this.chunkItemCount),
+                newItems.length)),
+        true /* identityBasedUpdate= */);
+
+    if (newItems.length !== oldItems.length) {
       this.updateScrollerSize_();
     }
   }
@@ -266,7 +270,7 @@ export class InfiniteList extends PolymerElement {
       }
 
       const previousItem = selector.items[selector.selected - 1];
-      if (previousItem.offsetTop < this.$.container.scrollTop) {
+      if (previousItem.offsetTop < this.scrollTop) {
         /** @type {!Element} */ (previousItem)
             .scrollIntoView({behavior: 'smooth', block: 'nearest'});
         return;
@@ -275,7 +279,7 @@ export class InfiniteList extends PolymerElement {
       const nextItem =
           selector.items[/** @type {number} */ (selector.selected) + 1];
       if (nextItem.offsetTop + nextItem.offsetHeight >
-          this.$.container.scrollTop + this.offsetHeight) {
+          this.scrollTop + this.offsetHeight) {
         /** @type {!Element} */ (nextItem).scrollIntoView(
             {behavior: 'smooth', block: 'nearest'});
       }

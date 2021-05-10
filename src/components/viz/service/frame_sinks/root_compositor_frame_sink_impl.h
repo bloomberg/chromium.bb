@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/display/display_client.h"
@@ -68,6 +69,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void UpdateRefreshRate(float refresh_rate) override;
   void SetSupportedRefreshRates(
       const std::vector<float>& supported_refresh_rates) override;
+  void PreserveChildSurfaceControls() override;
 #endif
   void AddVSyncParameterObserver(
       mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
@@ -112,8 +114,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
       std::unique_ptr<Display> display,
       bool use_preferred_interval_for_video,
-      bool hw_support_for_multiple_refresh_rates,
-      size_t num_of_frames_to_toggle_interval);
+      bool hw_support_for_multiple_refresh_rates);
 
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
@@ -163,7 +164,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   base::TimeDelta preferred_frame_interval_ =
       FrameRateDecider::UnspecifiedFrameInterval();
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   gfx::Size last_swap_pixel_size_;
 #endif
 

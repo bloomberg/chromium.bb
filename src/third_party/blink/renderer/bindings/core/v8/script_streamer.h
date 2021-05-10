@@ -6,11 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_STREAMER_H_
 
 #include <memory>
+#include <tuple>
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/script_scheduling_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -58,6 +60,7 @@ class CORE_EXPORT ScriptStreamer final
     kModuleScript,
     kNoDataPipe,
     kLoadingCancelled,
+    kNonJavascriptModule,
     kDisabledByFeatureList,
 
     // Pseudo values that should never be seen in reported metrics
@@ -69,10 +72,15 @@ class CORE_EXPORT ScriptStreamer final
       ScriptResource* resource,
       mojo::ScopedDataPipeConsumerHandle data_pipe,
       ResponseBodyLoaderClient* response_body_loader_client,
-      v8::ScriptCompiler::CompileOptions compile_options,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
   ~ScriptStreamer();
   void Trace(Visitor*) const;
+
+  static std::tuple<ScriptStreamer*, NotStreamingReason> TakeFrom(
+      ScriptResource*);
+  static void RecordStreamingHistogram(ScriptSchedulingType type,
+                                       bool can_use_streamer,
+                                       ScriptStreamer::NotStreamingReason);
 
   // Returns false if we cannot stream the given encoding.
   static bool ConvertEncoding(const char* encoding_name,
@@ -200,9 +208,6 @@ class CORE_EXPORT ScriptStreamer final
 
   // The reason that streaming is disabled
   NotStreamingReason suppressed_reason_ = NotStreamingReason::kInvalid;
-
-  // What kind of cached data V8 produces during streaming.
-  v8::ScriptCompiler::CompileOptions compile_options_;
 
   // Keep the script URL string for event tracing.
   const String script_url_string_;

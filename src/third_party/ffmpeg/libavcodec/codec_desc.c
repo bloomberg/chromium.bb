@@ -1413,6 +1413,20 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSLESS,
     },
     {
+        .id        = AV_CODEC_ID_AVS3,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "avs3",
+        .long_name = NULL_IF_CONFIG_SMALL("AVS3-P2/IEEE1857.10"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_MSP2,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "msp2",
+        .long_name = NULL_IF_CONFIG_SMALL("Microsoft Paint (MSP) version 2"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSLESS,
+    },
+    {
         .id        = AV_CODEC_ID_Y41P,
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "y41p",
@@ -1505,6 +1519,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .id        = AV_CODEC_ID_SMVJPEG,
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "smvjpeg",
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
         .long_name = NULL_IF_CONFIG_SMALL("Sigmatel Motion Video"),
     },
     {
@@ -1811,6 +1826,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "argo",
         .long_name = NULL_IF_CONFIG_SMALL("Argonaut Games Video"),
         .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_CRI,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "cri",
+        .long_name = NULL_IF_CONFIG_SMALL("Cintel RAW"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_LOSSLESS,
     },
 
     /* various PCM "codecs" */

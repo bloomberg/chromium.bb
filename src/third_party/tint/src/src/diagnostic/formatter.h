@@ -36,6 +36,8 @@ class Formatter {
     bool print_severity = true;
     /// include the source line(s) for the diagnostic
     bool print_line = true;
+    /// print a newline at the end of a diagnostic list
+    bool print_newline_at_end = true;
   };
 
   /// Constructor for the formatter using a default style.
@@ -51,7 +53,7 @@ class Formatter {
   /// @param printer the printer used to display the formatted diagnostics
   void format(const List& list, Printer* printer) const;
 
-  /// @return the list of diagnostics |list| formatted to a string.
+  /// @return the list of diagnostics `list` formatted to a string.
   /// @param list the list of diagnostic messages to format
   std::string format(const List& list) const;
 

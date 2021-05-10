@@ -51,13 +51,13 @@ class CallDescriptor;
 //
 //  slot      JS frame
 //       +-----------------+--------------------------------
-//  -n-1 |   parameter 0   |                            ^
+//  -n-1 |  parameter n    |                            ^
 //       |- - - - - - - - -|                            |
-//  -n   |                 |                          Caller
+//  -n   |  parameter n-1  |                          Caller
 //  ...  |       ...       |                       frame slots
-//  -2   |  parameter n-1  |                       (slot < 0)
+//  -2   |  parameter 1    |                       (slot < 0)
 //       |- - - - - - - - -|                            |
-//  -1   |   parameter n   |                            v
+//  -1   |  parameter 0    |                            v
 //  -----+-----------------+--------------------------------
 //   0   |   return addr   |   ^                        ^
 //       |- - - - - - - - -|   |                        |
@@ -146,7 +146,7 @@ class V8_EXPORT_PRIVATE Frame : public ZoneObject {
     }
   }
 
-  int AlignFrame(int alignment = kDoubleSize);
+  void AlignFrame(int alignment = kDoubleSize);
 
   int ReserveSpillSlots(size_t slot_count) {
     DCHECK_EQ(0, spill_slot_count_);

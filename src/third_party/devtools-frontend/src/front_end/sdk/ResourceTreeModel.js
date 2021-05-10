@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 
 import {DeferredDOMNode, DOMModel, DOMNode} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {Events as NetworkManagerEvents, NetworkManager, RequestUpdateDroppedEventData} from './NetworkManager.js';  // eslint-disable-line no-unused-vars
@@ -38,6 +39,18 @@ import {ExecutionContext, RuntimeModel} from './RuntimeModel.js';
 import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {SecurityOriginManager} from './SecurityOriginManager.js';
 
+export const UIStrings = {
+  /**
+  *@description Title of Javascript context
+  */
+  top: '`top`',
+  /**
+  *@description Title of Javascript context
+  */
+  iframe: '`<iframe>`',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/ResourceTreeModel.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ResourceTreeModel extends SDKModel {
   /**
    * @param {!Target} target
@@ -220,7 +233,7 @@ export class ResourceTreeModel extends SDKModel {
     if (!frame) {
       // Simulate missed "frameAttached" for a main frame navigation to the new backend process.
       frame = this._frameAttached(framePayload.id, framePayload.parentId || '');
-      console.assert(!!frame);
+      console.assert(Boolean(frame));
       if (!frame) {
         return;
       }
@@ -244,6 +257,21 @@ export class ResourceTreeModel extends SDKModel {
       this.target().setInspectedURL(frame.url);
     }
     this._updateSecurityOrigins();
+  }
+
+  /**
+   * @param {!Protocol.Page.Frame} framePayload
+   */
+  _documentOpened(framePayload) {
+    this._frameNavigated(framePayload);
+    const frame = this._frames.get(framePayload.id);
+    if (frame && !frame._resourcesMap.get(framePayload.url)) {
+      const frameResource = this._createResourceFromFramePayload(
+          framePayload, framePayload.url, Common.ResourceType.resourceTypes.Document, framePayload.mimeType, null,
+          null);
+      frameResource.isGenerated = true;
+      frame.addResource(frameResource);
+    }
   }
 
   /**
@@ -645,7 +673,7 @@ export class ResourceTreeFrame {
    * @returns {boolean}
    */
   isSecureContext() {
-    return !!this._secureContextType && this._secureContextType.startsWith('Secure');
+    return this._secureContextType !== null && this._secureContextType.startsWith('Secure');
   }
 
   /**
@@ -659,7 +687,7 @@ export class ResourceTreeFrame {
    * @returns {boolean}
    */
   isCrossOriginIsolated() {
-    return !!this._crossOriginIsolatedContextType && this._crossOriginIsolatedContextType.startsWith('Isolated');
+    return this._crossOriginIsolatedContextType !== null && this._crossOriginIsolatedContextType.startsWith('Isolated');
   }
 
   /**
@@ -813,22 +841,6 @@ export class ResourceTreeFrame {
   }
 
   /**
-   * @param {function(!Protocol.Runtime.CallFrame):boolean} searchFn
-   * @return {?Protocol.Runtime.CallFrame}
-   */
-  findCreationCallFrame(searchFn) {
-    let stackTrace = this._creationStackTrace;
-    while (stackTrace) {
-      const foundEntry = stackTrace.callFrames.find(searchFn);
-      if (foundEntry) {
-        return foundEntry;
-      }
-      stackTrace = stackTrace.parent || null;
-    }
-    return null;
-  }
-
-  /**
    * Returns true if this is the main frame of its target. For example, this returns true for the main frame
    * of an out-of-process iframe (OOPIF).
    * @return {boolean}
@@ -945,7 +957,7 @@ export class ResourceTreeFrame {
    */
   displayName() {
     if (this.isTopFrame()) {
-      return Common.UIString.UIString('top');
+      return i18nString(UIStrings.top);
     }
     const subtitle = new Common.ParsedURL.ParsedURL(this._url).displayName;
     if (subtitle) {
@@ -954,7 +966,7 @@ export class ResourceTreeFrame {
       }
       return this._name + ' (' + subtitle + ')';
     }
-    return Common.UIString.UIString('<iframe>');
+    return i18nString(UIStrings.iframe);
   }
 
   /**
@@ -1017,6 +1029,18 @@ export class ResourceTreeFrame {
           {node: document, selectorList: ''}, 'all', true);
     }
   }
+
+  /**
+   * @returns {Promise<Array<Protocol.Page.PermissionsPolicyFeatureState>|null>}
+   */
+  async getPermissionsPolicyState() {
+    const response =
+        await this.resourceTreeModel().target().pageAgent().invoke_getPermissionsPolicyState({frameId: this._id});
+    if (response.getError()) {
+      return null;
+    }
+    return response.states;
+  }
 }
 
 /**
@@ -1069,6 +1093,14 @@ export class PageDispatcher {
    */
   frameNavigated({frame}) {
     this._resourceTreeModel._frameNavigated(frame);
+  }
+
+  /**
+ * @override
+ * @param {!Protocol.Page.DocumentOpenedEvent} event
+ */
+  documentOpened({frame}) {
+    this._resourceTreeModel._documentOpened(frame);
   }
 
   /**

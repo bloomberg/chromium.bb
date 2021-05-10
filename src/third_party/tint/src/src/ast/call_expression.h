@@ -25,53 +25,44 @@ namespace tint {
 namespace ast {
 
 /// A call expression
-class CallExpression : public Expression {
+class CallExpression : public Castable<CallExpression, Expression> {
  public:
-  /// Constructor
-  CallExpression();
-  /// Constructor
-  /// @param func the function
-  /// @param params the parameters
-  CallExpression(std::unique_ptr<Expression> func, ExpressionList params);
   /// Constructor
   /// @param source the call expression source
   /// @param func the function
   /// @param params the parameters
-  CallExpression(const Source& source,
-                 std::unique_ptr<Expression> func,
-                 ExpressionList params);
+  CallExpression(const Source& source, Expression* func, ExpressionList params);
   /// Move constructor
   CallExpression(CallExpression&&);
   ~CallExpression() override;
 
-  /// Sets the func
-  /// @param func the func
-  void set_func(std::unique_ptr<Expression> func) { func_ = std::move(func); }
   /// @returns the func
-  Expression* func() const { return func_.get(); }
-
-  /// Sets the parameters
-  /// @param params the parameters
-  void set_params(ExpressionList params) { params_ = std::move(params); }
+  Expression* func() const { return func_; }
   /// @returns the parameters
   const ExpressionList& params() const { return params_; }
 
-  /// @returns true if this is a call expression
-  bool IsCall() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  CallExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   CallExpression(const CallExpression&) = delete;
 
-  std::unique_ptr<Expression> func_;
-  ExpressionList params_;
+  Expression* const func_;
+  ExpressionList const params_;
 };
 
 }  // namespace ast

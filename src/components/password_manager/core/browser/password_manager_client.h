@@ -12,8 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/language_code.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -25,6 +26,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -90,10 +92,10 @@ enum SyncState {
 class PasswordManagerClient {
  public:
   using CredentialsCallback = base::OnceCallback<void(const PasswordForm*)>;
-  using ReauthSucceeded = util::StrongAlias<class ReauthSucceededTag, bool>;
+  using ReauthSucceeded = base::StrongAlias<class ReauthSucceededTag, bool>;
 
-  PasswordManagerClient() {}
-  virtual ~PasswordManagerClient() {}
+  PasswordManagerClient() = default;
+  virtual ~PasswordManagerClient() = default;
 
   // Is saving new data for password autofill and filling of saved data enabled
   // for the current profile and page? For example, saving is disabled in
@@ -213,7 +215,7 @@ class PasswordManagerClient {
   virtual void UpdateCredentialCache(
       const url::Origin& origin,
       const std::vector<const PasswordForm*>& best_matches,
-      bool is_blacklisted);
+      bool is_blocklisted);
 
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occurred.
@@ -288,6 +290,9 @@ class PasswordManagerClient {
   // If this browsing session should not be persisted.
   virtual bool IsIncognito() const;
 
+  // Returns the profile type of the session.
+  virtual profile_metrics::BrowserProfileType GetProfileType() const;
+
   // Returns the PasswordManager associated with this client. The non-const
   // version calls the const one.
   PasswordManager* GetPasswordManager();
@@ -323,7 +328,7 @@ class PasswordManagerClient {
   virtual void AnnotateNavigationEntry(bool has_password_field);
 
   // Returns the current best guess as to the page's display language.
-  virtual std::string GetPageLanguage() const;
+  virtual autofill::LanguageCode GetPageLanguage() const;
 
   // Return the PasswordProtectionService associated with this instance.
   virtual safe_browsing::PasswordProtectionService*
@@ -350,10 +355,8 @@ class PasswordManagerClient {
       const std::vector<MatchingReusedCredential>& matching_reused_credentials,
       bool password_field_exists) = 0;
 
-#if defined(PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
-#endif
 
   // Gets a ukm::SourceId that is associated with the WebContents object
   // and its last committed main frame navigation.

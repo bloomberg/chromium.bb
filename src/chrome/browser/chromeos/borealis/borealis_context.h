@@ -12,7 +12,12 @@
 
 class Profile;
 
+namespace guest_os {
+class GuestOsStabilityMonitor;
+}
 namespace borealis {
+
+class BorealisLifetimeObserver;
 
 // An object to track information about the state of the Borealis VM.
 // BorealisContext objects should only be created by the Borealis Context
@@ -36,11 +41,12 @@ class BorealisContext {
     container_name_ = std::move(container_name);
   }
 
-  const std::string& root_path() const { return root_path_; }
-  void set_root_path(std::string path) { root_path_ = std::move(path); }
-
   const base::FilePath& disk_path() const { return disk_path_; }
   void set_disk_path(base::FilePath path) { disk_path_ = std::move(path); }
+
+  // Called to signal that this Borealis VM is being unexpectedly shut down.
+  // Not to be called during intentional shutdowns.
+  void NotifyUnexpectedVmShutdown();
 
  private:
   friend class BorealisContextManagerImpl;
@@ -48,11 +54,15 @@ class BorealisContext {
   explicit BorealisContext(Profile* profile);
 
   Profile* const profile_;
-  bool borealis_running_ = false;
   std::string vm_name_;
   std::string container_name_;
-  std::string root_path_;
   base::FilePath disk_path_;
+  // This instance listens for the session to finish and issues an automatic
+  // shutdown when it does.
+  std::unique_ptr<BorealisLifetimeObserver> lifetime_observer_;
+
+  std::unique_ptr<guest_os::GuestOsStabilityMonitor>
+      guest_os_stability_monitor_;
 };
 
 }  // namespace borealis

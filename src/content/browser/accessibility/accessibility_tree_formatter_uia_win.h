@@ -4,7 +4,7 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
 
-#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
+#include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
 
 #include <ole2.h>
 #include <stdint.h>
@@ -19,33 +19,31 @@
 
 namespace content {
 
-class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
+class AccessibilityTreeFormatterUia : public ui::AXTreeFormatterBase {
  public:
   AccessibilityTreeFormatterUia();
   ~AccessibilityTreeFormatterUia() override;
 
-  static std::unique_ptr<ui::AXTreeFormatter> CreateUia();
-
-  static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
-
   // AccessibilityTreeFormatterBase:
-  void AddDefaultFilters(
-      std::vector<AXPropertyFilter>* property_filters) override;
-  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      BrowserAccessibility* start) override;
+  base::Value BuildTree(ui::AXPlatformNodeDelegate* start) const override;
   base::Value BuildTreeForWindow(gfx::AcceleratedWidget hwnd) const override;
   base::Value BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
+
+ protected:
+  void AddDefaultFilters(
+      std::vector<AXPropertyFilter>* property_filters) override;
 
  private:
   static const long properties_[];
   static const long patterns_[];
   static const long pattern_properties_[];
-  void RecursiveBuildAccessibilityTree(IUIAutomationElement* node,
-                                       int root_x,
-                                       int root_y,
-                                       base::DictionaryValue* dict) const;
+  void RecursiveBuildTree(IUIAutomationElement* node,
+                          int root_x,
+                          int root_y,
+                          base::DictionaryValue* dict) const;
   void BuildCacheRequests();
+  void BuildCustomPropertiesMap();
   void AddProperties(IUIAutomationElement* node,
                      int root_x,
                      int root_y,
@@ -72,11 +70,14 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
                           base::DictionaryValue* dict) const;
   void AddWindowProperties(IUIAutomationElement* node,
                            base::DictionaryValue* dict) const;
+  void AddCustomProperties(IUIAutomationElement* node,
+                           base::DictionaryValue* dict) const;
+  std::string GetPropertyName(long property_id) const;
   void WriteProperty(long propertyId,
                      const base::win::ScopedVariant& var,
-                     int root_x,
-                     int root_y,
-                     base::DictionaryValue* dict) const;
+                     base::DictionaryValue* dict,
+                     int root_x = 0,
+                     int root_y = 0) const;
   // UIA enums have type I4, print formatted string for these when possible
   void WriteI4Property(long propertyId,
                        long lval,
@@ -94,16 +95,13 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
                          base::DictionaryValue* dict) const;
   base::string16 GetNodeName(IUIAutomationElement* node) const;
   std::string ProcessTreeForOutput(
-      const base::DictionaryValue& node,
-      base::DictionaryValue* filtered_result = nullptr) override;
+      const base::DictionaryValue& node) const override;
   void ProcessPropertyForOutput(const std::string& property_name,
                                 const base::DictionaryValue& dict,
-                                std::string& line,
-                                base::DictionaryValue* filtered_result);
+                                std::string& line) const;
   void ProcessValueForOutput(const std::string& name,
                              const base::Value* value,
-                             std::string& line,
-                             base::DictionaryValue* filtered_result);
+                             std::string& line) const;
   Microsoft::WRL::ComPtr<IUIAutomation> uia_;
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> element_cache_request_;
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> children_cache_request_;

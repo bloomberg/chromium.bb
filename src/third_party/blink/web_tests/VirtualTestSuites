@@ -4,6 +4,7 @@
     "bases": [
       "external/wpt/html/webappapis/dynamic-markup-insertion/document-write",
       "external/wpt/html/semantics/scripting-1/the-script-element/module",
+      "external/wpt/html/semantics/scripting-1/the-script-element/json-module",
       "external/wpt/service-workers/service-worker/registration-script-module.https.html",
       "external/wpt/service-workers/service-worker/update-registration-with-type.https.html",
       "external/wpt/workers/Worker-terminate-forever-during-evaluation.html",
@@ -14,7 +15,7 @@
       "fast/loader/invalid-module-specifier.html",
       "http/tests/devtools/isolated-code-cache/"
     ],
-    "args": ["--enable-features=TopLevelAwait"]
+    "args": ["--enable-features=TopLevelAwait,JSONModules", "--js-flags=--harmony-import-assertions"]
   },
   {
     "prefix": "disable-accept-language-header",
@@ -91,23 +92,31 @@
   {
     "prefix": "threaded-prefer-compositing",
     "bases": ["fast/scroll-behavior",
-              "fast/scrolling"],
+              "fast/scrolling",
+              "external/wpt/css/cssom-view"],
     "args": ["--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "gpu-rasterization",
     "bases": ["images"],
-    "args": ["--enable-gpu-rasterization",
-             "--enable-features=DecodeLossyWebPImagesToYUV",
-             "--enable-features=DecodeJpeg420ImagesToYUV"]
+    "args": ["--enable-gpu-rasterization"]
   },
   {
     "prefix": "gpu-rasterization-disable-yuv",
     "bases": ["images/yuv-decode-eligible"],
     "args": ["--enable-gpu-rasterization",
-             "--disable-features=DecodeLossyWebPImagesToYUV",
-             "--disable-features=DecodeJpeg420ImagesToYUV"]
+             "--disable-blink-features=DecodeLossyWebPImagesToYUV",
+             "--disable-blink-features=DecodeJpeg420ImagesToYUV"]
+  },
+  {
+    "prefix": "v8-off-thread-finalization",
+    "bases": [
+      "external/wpt/html/semantics/scripting-1",
+      "fast/dom",
+      "http/tests/devtools/isolated-code-cache/"
+    ],
+    "args": ["--enable-features=V8OffThreadFinalization,SmallScriptStreaming"]
   },
   {
     "prefix": "exotic-color-space",
@@ -120,13 +129,11 @@
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
               "http/tests/navigation",
-              "http/tests/origin_trials/feature-policy-reporting",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
               "inspector-protocol/dom-snapshot",
               "media/stable",
               "webexposed",
-              "wpt_internal/origin-isolation",
               "compositing/filters"
               ],
     "args": ["--stable-release-mode",
@@ -164,16 +171,23 @@
   },
   {
     "prefix": "synchronous_html_parser",
-    "bases": ["fast/css",
+    "bases": ["custom-elements",
+              "fast/css",
               "fast/parser",
               "http/tests/devtools/sources/debugger-breakpoints",
               "http/tests/inspector-protocol",
               "http/tests/preload",
               "external/wpt/custom-elements/parser",
+              "external/wpt/content-security-policy",
               "external/wpt/domparsing",
+              "external/wpt/dom",
+              "external/wpt/html/semantics",
               "external/wpt/html/syntax/parsing",
               "external/wpt/html/the-xhtml-syntax",
+              "external/wpt/preload",
               "external/wpt/signed-exchange",
+              "media",
+              "svg",
               "scrollingcoordinator"],
     "args": ["--enable-blink-features=ForceSynchronousHTMLParsing"]
   },
@@ -186,8 +200,15 @@
   {
     "prefix": "composite-bgcolor-animation",
     "bases": ["external/wpt/css/css-backgrounds"],
-    "args": ["--enable-threaded-compositing",
-             "--enable-blink-features=CompositeBGColorAnimation"]
+    "args": ["--enable-blink-features=CompositeBGColorAnimation",
+             "--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "composite-bgcolor-animation-hidpi",
+    "bases": ["external/wpt/css/css-backgrounds/hidpi"],
+    "args": ["--enable-blink-features=CompositeBGColorAnimation",
+             "--enable-threaded-compositing",
+             "--force-device-scale-factor=2"]
   },
   {
     "prefix": "composite-after-paint",
@@ -202,14 +223,9 @@
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
   },
   {
-    "prefix": "font-access",
+    "prefix": "font-access-persistent",
     "bases": ["external/wpt/font-access"],
-    "args": ["--enable-features=FontAccess"]
-  },
-  {
-    "prefix": "font-access-chooser",
-    "bases": ["external/wpt/font-access"],
-    "args": ["--enable-features=FontAccess,FontAccessChooser"]
+    "args": ["--enable-features=FontAccess,FontAccessPersistent"]
   },
   {
     "prefix": "highdpi-threaded",
@@ -228,7 +244,8 @@
               "external/wpt/largest-contentful-paint",
               "fast/hidpi/static",
               "http/tests/csspaint/hidpi",
-              "http/tests/images/document-policy"],
+              "http/tests/images/document-policy",
+              "http/tests/inspector-protocol/page/page-captureScreenshot-clip-emulation.js"],
     "args": ["--force-device-scale-factor=2"]
   },
   {
@@ -260,7 +277,6 @@
     "bases": ["external/wpt/css/css-break",
               "external/wpt/css/css-contain",
               "external/wpt/css/css-multicol",
-              "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",
               "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
               "fast/forms/fieldset",
               "fast/multicol",
@@ -331,11 +347,6 @@
     "args": ["--enable-features=Reporting"]
   },
   {
-    "prefix": "network-error-logging",
-    "bases": ["external/wpt/network-error-logging"],
-    "args": ["--enable-features=Reporting,NetworkErrorLogging"]
-  },
-  {
     "prefix": "compositor_threaded_scrollbar_scrolling",
     "bases": ["fast/scrolling/scrollbars",
               "paint/invalidation/scroll/sticky"],
@@ -368,6 +379,15 @@
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",
              "--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "compositor-threaded-percent-based-scrolling-dsf-2-highdpi",
+    "bases": ["virtual/percent-based-scrolling"],
+    "args": ["--enable-features=PercentBasedScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--force-device-scale-factor=2",
+             "--enable-use-zoom-for-dsf=false"]
   },
   {
     "prefix": "smooth_compositor_threaded_scrollbar_scrolling",
@@ -413,11 +433,12 @@
     "args": ["--enable-features=WebBundlesFromNetwork"]
   },
   {
-    "prefix": "omt-worker-fetch",
+    "prefix": "plz-dedicated-worker",
     "bases": ["external/wpt/content-security-policy/inside-worker",
               "external/wpt/content-security-policy/worker-src",
               "external/wpt/fetch/",
               "external/wpt/html/browsers/offline/appcache/workers/",
+              "external/wpt/html/cross-origin-embedder-policy",
               "external/wpt/referrer-policy",
               "external/wpt/resource-timing",
               "external/wpt/service-workers",
@@ -430,10 +451,15 @@
     "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
-    "prefix": "omt-worker-fetch-cors-rfc1918",
+    "prefix": "plz-dedicated-worker-cors-rfc1918",
     "bases": ["http/tests/security/cors-rfc1918"],
     "args": ["--enable-features=PlzDedicatedWorker",
              "--enable-blink-features=CorsRFC1918"]
+  },
+  {
+    "prefix": "direct-sockets",
+    "bases": ["external/wpt/raw-sockets"],
+    "args": ["--enable-features=DirectSockets"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
@@ -490,6 +516,7 @@
       "external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
       "external/wpt/dom/events/EventListener-incumbent-global-2.sub.html",
+      "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "http/tests/dom/EventListener-incumbent-global-1.html",
       "http/tests/dom/EventListener-incumbent-global-2.html",
       "external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html",
@@ -505,8 +532,7 @@
   },
   {
     "prefix": "no-auto-wpt-origin-isolation",
-    "bases": ["external/wpt/origin-isolation",
-              "wpt_internal/origin-isolation"],
+    "bases": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters"],
     "args": ["--disable-auto-wpt-origin-isolation"]
   },
   {
@@ -534,7 +560,9 @@
   },
   {
     "prefix": "eye-dropper",
-    "bases": ["fast/forms/color-scheme/color"],
+    "bases": [
+      "fast/forms/color-scheme/color",
+      "http/tests/eye-dropper"],
     "args": ["--enable-features=EyeDropper"]
   },
   {
@@ -547,11 +575,6 @@
     "bases": ["external/wpt/cookies/samesite"],
     "args": ["--disable-features=SameSiteByDefaultCookies",
              "--disable-features=CookiesWithoutSameSiteMustBeSecure"]
-  },
-  {
-    "prefix": "forced-colors",
-    "bases": ["external/wpt/css/css-forced-color-adjust"],
-    "args": ["--enable-blink-features=ForcedColors"]
   },
   {
     "prefix": "forced-high-contrast-colors",
@@ -569,15 +592,22 @@
     "prefix": "dark-color-scheme",
     "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
               "fast/forms/color-scheme",
-              "virtual/eye-dropper"],
+              "http/tests/eye-dropper"],
     "args": ["--force-dark-mode",
              "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering",
              "--enable-features=EyeDropper"]
   },
   {
+    "prefix": "container-queries",
+    "bases": ["wpt_internal/css/css-conditional/container-queries",
+              "wpt_internal/css/css-contain"],
+    "args": ["--enable-blink-features=CSSContainerQueries"]
+  },
+  {
     "prefix": "appcache-origin-trial",
     "bases": ["http/tests/appcache"],
-    "args": ["--enable-features=AppCacheRequireOriginTrial"]
+    "args": ["--enable-features=AppCacheRequireOriginTrial",
+             "--disable-features=AppCacheAlwaysFallbackToNetwork"]
   },
   {
     "prefix": "async-script-scheduling-finished-parsing",
@@ -612,17 +642,22 @@
   {
     "prefix": "json-modules",
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/json-module"],
-    "args": ["--enable-features=JSONModules"]
+    "args": ["--enable-features=JSONModules", "--js-flags=--harmony-import-assertions"]
   },
   {
     "prefix": "css-modules",
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
-    "args": ["--enable-blink-features=CSSModules"]
+    "args": ["--enable-blink-features=CSSModules", "--js-flags=--harmony-import-assertions"]
+  },
+  {
+    "prefix": "import-assertions",
+    "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/import-assertions"],
+    "args": ["--js-flags=--harmony-import-assertions"]
   },
   {
     "prefix": "import-maps-disabled",
     "bases": ["external/wpt/import-maps/not-as-classic-script.html"],
-    "args": ["--disable-blink-features=ExperimentalProductivityFeatures"]
+    "args": ["--disable-blink-features=ImportMaps"]
   },
   {
     "prefix": "overlay-scrollbar",
@@ -689,7 +724,7 @@
   },
   {
     "prefix": "web-bluetooth-new-permissions-backend",
-    "bases": ["bluetooth", "external/wpt/bluetooth"],
+    "bases": ["wpt_internal/bluetooth", "external/wpt/bluetooth"],
     "args": ["--enable-features=WebBluetoothNewPermissionsBackend"]
   },
   {
@@ -708,15 +743,17 @@
     "args": ["--disable-features=LinkDisabledNewSpecBehavior"]
   },
   {
-    "prefix": "out-of-blink-cspee",
-    "bases": [ "external/wpt/content-security-policy/embedded-enforcement" ],
-    "args": [ "--disable-features=OutOfBlinkCSPEE" ]
-  },
-  {
     "prefix": "policy-container",
     "bases": [ "external/wpt/referrer-policy",
                "fast/dom/DOMImplementation" ],
-    "args": [ "--enable-features=PolicyContainer" ]
+    "args": [ "--disable-features=PolicyContainer" ]
+  },
+  {
+    "prefix": "document-domain-disabled-by-default",
+    "bases": [
+      "external/wpt/document-policy/experimental-features/document-domain"
+    ],
+    "args": [ "--enable-features=DisableDocumentDomainByDefault" ]
   },
   {
     "prefix": "subresource-web-bundles-disabled",
@@ -749,10 +786,14 @@
     "args": [ "--enable-features=BackForwardCacheABExperimentControl" ]
   },
   {
+    "prefix": "interest-cohort-api-origin-trial",
+    "bases": [ "http/tests/origin_trials/webexposed/interest-cohort-origin-trial-interfaces.html" ],
+    "args": [ "--enable-features=InterestCohortAPIOriginTrial" ]
+  },
+  {
     "prefix": "threaded-composited-iframes",
     "bases": ["external/wpt/is-input-pending"],
     "args": ["--enable-threaded-compositing",
-             "--enable-features=CompositeCrossOriginIframes",
              "--disable-auto-wpt-origin-isolation"]
   },
   {
@@ -765,9 +806,16 @@
   },
   {
     "prefix": "scroll-unification",
-    "bases": ["fast/scrolling/scrollbars"],
+    "bases": ["fast/scrolling/scrollbars",
+              "fast/forms/select-popup",
+              "fast/forms/suggestion-picker"],
     "args": ["--enable-features=ScrollUnification",
              "--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "disable-frequency-capping-for-overlay-popup-detection",
+    "bases": ["http/tests/subresource_filter/overlay_popup_ad"],
+    "args": ["--disable-features=FrequencyCappingForOverlayPopupDetection"]
   },
   {
     "prefix": "wheel-event-regions",
@@ -787,6 +835,7 @@
               "fast/events/wheel",
               "fast/scrolling/document-level-wheel-event-listener-passive-by-default.html",
               "http/tests/devtools/layers/layer-scroll-rects-get.js",
+              "http/tests/devtools/layers/wheel-hit-rects-update-svg.js",
               "pointer-lock/wheel-event-cancelable.html",
               "pointer-lock/wheel-event-target.html",
               "scrollbars/scrollevent-iframe-no-scrolling-wheel.html",
@@ -794,5 +843,31 @@
               "scrollingcoordinator/plugin-with-wheel-handler.html",
               "scrollingcoordinator/non-fast-scrollable-region-nested.html"],
     "args": ["--enable-features=WheelEventRegions"]
+  },
+  {
+    "prefix": "web-app-window-controls-overlay",
+    "bases": ["external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/navigator-window-controls-overlay.html"],
+    "args": [ "--enable-features=WebAppWindowControlsOverlay"]
+  },
+  {
+    "prefix": "first-party-sets",
+    "bases": ["http/tests/inspector-protocol/network"],
+    "args": ["--use-first-party-set=https://firstparty.test,https://cookie.test"]
+  },
+  {
+    "prefix": "prerender",
+    "bases": [ "wpt_internal/prerender" ],
+    "args": [ "--enable-features=Prerender2" ]
+  },
+  {
+    "prefix": "no-different-origin-dialogs",
+    "bases": ["external/wpt/html/webappapis/user-prompts/cannot-show-simple-dialogs/confirm-different-origin-frame.sub.html",
+              "external/wpt/html/webappapis/user-prompts/cannot-show-simple-dialogs/prompt-different-origin-frame.sub.html"],
+    "args": [ "--enable-features=SuppressDifferentOriginSubframeJSDialogs"]
+  },
+  {
+    "prefix": "force-renderer-accessibility",
+    "bases": ["accessibility/slot-poison.html"],
+    "args": ["--force-renderer-accessibility"]
   }
 ]

@@ -783,6 +783,36 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.onMove(mRecyclerView, mMockViewHolder1, mMockViewHolder2);
     }
 
+    @Test
+    public void largeMessageItemNotDraggable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.LARGE_MESSAGE);
+        setupItemTouchHelperCallback(false);
+        assertFalse(
+                mItemTouchHelperCallback.hasDragFlagForTesting(mRecyclerView, mMockViewHolder1));
+    }
+
+    @Test
+    public void largeMessageItemSwipeable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.LARGE_MESSAGE);
+        setupItemTouchHelperCallback(false);
+        assertTrue(mItemTouchHelperCallback.hasSwipeFlag(mRecyclerView, mMockViewHolder1));
+    }
+
+    @Test
+    public void largeMessageItemNotDropable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.LARGE_MESSAGE);
+        setupItemTouchHelperCallback(false);
+        assertFalse(mItemTouchHelperCallback.canDropOver(
+                mRecyclerView, mMockViewHolder2, mMockViewHolder1));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void largeMessageItemOnMoveFail() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.LARGE_MESSAGE);
+        setupItemTouchHelperCallback(false);
+        mItemTouchHelperCallback.onMove(mRecyclerView, mMockViewHolder1, mMockViewHolder2);
+    }
+
     private void verifyDrag(
             RecyclerView.ViewHolder viewHolder, float dX, float dY, int targetIndex, int status) {
         // Simulate the process of dragging one card to a position.

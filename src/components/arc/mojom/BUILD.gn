@@ -2,16 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # This needs to be conditionally-compiled since the typemaps are
 # unconditionally-included from //mojo/public/tools/bindings/mojom.gni. The
 # inclusion is done through read_file(), which does not respect the global
 # defines for GN, so it itself cannot use the "is_chromeos" variable.
-if (is_chromeos) {
+if (is_chromeos_ash) {
   mojom("mojom") {
     sources = [
       "accessibility_helper.mojom",
+      "adbd.mojom",
       "app.mojom",
       "app_permissions.mojom",
       "appfuse.mojom",
@@ -30,6 +32,7 @@ if (is_chromeos) {
       "disk_quota.mojom",
       "enterprise_reporting.mojom",
       "file_system.mojom",
+      "iio_sensor.mojom",
       "ime.mojom",
       "input_method_manager.mojom",
       "intent_common.mojom",
@@ -73,6 +76,7 @@ if (is_chromeos) {
       ":media",
       ":notifications",
       ":oemcrypto",
+      "//chromeos/components/sensors/mojom:mojom",
       "//components/payments/mojom:mojom",
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//mojo/public/mojom/base",
@@ -272,7 +276,6 @@ if (is_chromeos) {
   mojom("media") {
     sources = [
       "gfx.mojom",
-      "protected_buffer_manager.mojom",
       "video.mojom",
       "video_common.mojom",
       "video_decode_accelerator.mojom",
@@ -280,7 +283,10 @@ if (is_chromeos) {
       "video_protected_buffer_allocator.mojom",
     ]
 
-    public_deps = [ "//ui/gfx/geometry/mojom" ]
+    public_deps = [
+      ":protected_buffer_manager",
+      "//ui/gfx/geometry/mojom",
+    ]
 
     cpp_typemaps = [
       {
@@ -373,6 +379,10 @@ if (is_chromeos) {
     sources = [ "oemcrypto.mojom" ]
   }
 
+  mojom("protected_buffer_manager") {
+    sources = [ "protected_buffer_manager.mojom" ]
+  }
+
   source_set("mojom_traits") {
     sources = [
       "ime_mojom_traits.cc",
@@ -383,6 +393,7 @@ if (is_chromeos) {
       ":mojom",
       "//ui/base/ime:text_input_types",
       "//ui/events",
+      "//ui/events/ozone/layout",
     ]
   }
 

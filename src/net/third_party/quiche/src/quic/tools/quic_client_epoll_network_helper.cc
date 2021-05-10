@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_client_epoll_network_helper.h"
+#include "quic/tools/quic_client_epoll_network_helper.h"
 
 #include <errno.h>
 #include <netinet/in.h>
@@ -11,18 +11,18 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_udp_socket.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_udp_socket.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_system_event_loop.h"
 
 namespace quic {
 
@@ -110,7 +110,7 @@ void QuicClientEpollNetworkHelper::CleanUpUDPSocketImpl(int fd) {
   if (fd > -1) {
     epoll_server_->UnregisterFD(fd);
     int rc = close(fd);
-    DCHECK_EQ(0, rc);
+    QUICHE_DCHECK_EQ(0, rc);
   }
 }
 
@@ -129,7 +129,7 @@ void QuicClientEpollNetworkHelper::OnUnregistration(int /*fd*/,
 void QuicClientEpollNetworkHelper::OnShutdown(QuicEpollServer* /*eps*/,
                                               int /*fd*/) {}
 
-void QuicClientEpollNetworkHelper::OnEvent(int /*fd*/, QuicEpollEvent* event) {
+void QuicClientEpollNetworkHelper::OnEvent(int fd, QuicEpollEvent* event) {
   if (event->in_events & EPOLLIN) {
     QUIC_DVLOG(1) << "Read packets on EPOLLIN";
     int times_to_read = max_reads_per_epoll_loop_;
@@ -137,9 +137,8 @@ void QuicClientEpollNetworkHelper::OnEvent(int /*fd*/, QuicEpollEvent* event) {
     QuicPacketCount packets_dropped = 0;
     while (client_->connected() && more_to_read && times_to_read > 0) {
       more_to_read = packet_reader_->ReadAndDispatchPackets(
-          GetLatestFD(), GetLatestClientAddress().port(),
-          *client_->helper()->GetClock(), this,
-          overflow_supported_ ? &packets_dropped : nullptr);
+          fd, GetLatestClientAddress().port(), *client_->helper()->GetClock(),
+          this, overflow_supported_ ? &packets_dropped : nullptr);
       --times_to_read;
     }
     if (packets_dropped_ < packets_dropped) {

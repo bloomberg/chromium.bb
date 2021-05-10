@@ -217,9 +217,7 @@ class TranslateBrowserTest : public WebLayerBrowserTest {
 
   translate::TranslateErrors::Type error_type_ =
       translate::TranslateErrors::NONE;
-  std::unique_ptr<
-      translate::TranslateManager::TranslateErrorCallbackList::Subscription>
-      error_subscription_;
+  base::CallbackListSubscription error_subscription_;
   std::string script_;
 };
 
@@ -420,7 +418,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Autotranslation) {
   EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
 
   // Before browsing, set autotranslate from French to Chinese.
-  translate_client->GetTranslatePrefs()->WhitelistLanguagePair("fr", "zh-CN");
+  translate_client->GetTranslatePrefs()->AddLanguagePairToAlwaysTranslateList(
+      "fr", "zh-CN");
 
   // Navigate to a page in French.
   ResetLanguageDeterminationWaiter();

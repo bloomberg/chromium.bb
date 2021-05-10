@@ -589,14 +589,14 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       agc2_properties = blink::AdaptiveGainController2Properties{};
       agc2_properties->vad_probability_attack =
           base::GetFieldTrialParamByFeatureAsDouble(
-              features::kWebRtcHybridAgc, "vad_probability_attack", 1.0);
+              features::kWebRtcHybridAgc, "vad_probability_attack", 0.3);
       agc2_properties->use_peaks_not_rms =
           base::GetFieldTrialParamByFeatureAsBool(features::kWebRtcHybridAgc,
                                                   "use_peaks_not_rms", false);
       agc2_properties->level_estimator_speech_frames_threshold =
           base::GetFieldTrialParamByFeatureAsInt(
               features::kWebRtcHybridAgc,
-              "level_estimator_speech_frames_threshold", 1);
+              "level_estimator_speech_frames_threshold", 6);
       agc2_properties->initial_saturation_margin_db =
           base::GetFieldTrialParamByFeatureAsInt(
               features::kWebRtcHybridAgc, "initial_saturation_margin", 20);
@@ -606,13 +606,19 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       agc2_properties->gain_applier_speech_frames_threshold =
           base::GetFieldTrialParamByFeatureAsInt(
               features::kWebRtcHybridAgc,
-              "gain_applier_speech_frames_threshold", 1);
+              "gain_applier_speech_frames_threshold", 6);
       agc2_properties->max_gain_change_db_per_second =
           base::GetFieldTrialParamByFeatureAsInt(
               features::kWebRtcHybridAgc, "max_gain_change_db_per_second", 3);
       agc2_properties->max_output_noise_level_dbfs =
           base::GetFieldTrialParamByFeatureAsInt(
-              features::kWebRtcHybridAgc, "max_output_noise_level_dbfs", -50);
+              features::kWebRtcHybridAgc, "max_output_noise_level_dbfs", -55);
+      agc2_properties->sse2_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          features::kWebRtcHybridAgc, "sse2_allowed", true);
+      agc2_properties->avx2_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          features::kWebRtcHybridAgc, "avx2_allowed", true);
+      agc2_properties->neon_allowed = base::GetFieldTrialParamByFeatureAsBool(
+          features::kWebRtcHybridAgc, "neon_allowed", true);
     }
     blink::ConfigAutomaticGainControl(
         properties.goog_auto_gain_control,
@@ -700,6 +706,10 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   output_format_ = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, output_channel_layout,
       output_sample_rate, output_frames);
+  if (output_channel_layout == media::CHANNEL_LAYOUT_DISCRETE) {
+    // Explicitly set number of channels for discrete channel layouts.
+    output_format_.set_channels_for_discrete(input_format.channels());
+  }
 
   capture_fifo_.reset(
       new MediaStreamAudioFifo(input_format.channels(), fifo_output_channels,

@@ -12,8 +12,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/media_start_stop_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/media_session/public/cpp/features.h"
@@ -125,6 +127,18 @@ class PictureInPictureContentBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::TearDownOnMainThread();
   }
 
+  void WaitForPlaybackState(OverlayWindow::PlaybackState playback_state) {
+    // Make sure to wait if not yet in the |playback_state| state.
+    if (overlay_window()->playback_state() != playback_state) {
+      MediaStartStopObserver observer(
+          shell()->web_contents(),
+          playback_state == OverlayWindow::PlaybackState::kPlaying
+              ? MediaStartStopObserver::Type::kStart
+              : MediaStartStopObserver::Type::kStop);
+      observer.Wait();
+    }
+  }
+
   TestWebContentsDelegate* web_contents_delegate() {
     return web_contents_delegate_.get();
   }
@@ -153,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       shell(), GetTestUrl("media/picture_in_picture", "two-videos.html")));
 
   // Play first video.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "videos[0].play();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[0].play();"));
 
   base::string16 expected_title = base::ASCIIToUTF16("videos[0] playing");
   EXPECT_EQ(
@@ -161,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
 
   // Play second video.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "videos[1].play();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[1].play();"));
 
   expected_title = base::ASCIIToUTF16("videos[1] playing");
   EXPECT_EQ(
@@ -171,8 +185,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send first video in Picture-in-Picture.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "videos[0].requestPictureInPicture();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[0].requestPictureInPicture();"));
 
   expected_title = base::ASCIIToUTF16("videos[0] entered picture-in-picture");
   EXPECT_EQ(
@@ -181,8 +194,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   EXPECT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send second video in Picture-in-Picture.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "videos[1].requestPictureInPicture();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[1].requestPictureInPicture();"));
 
   expected_title = base::ASCIIToUTF16("videos[1] entered picture-in-picture");
   EXPECT_EQ(
@@ -209,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
 
   // Play first video.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "videos[0].play();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[0].play();"));
 
   expected_title = base::ASCIIToUTF16("videos[0] playing");
   EXPECT_EQ(
@@ -217,8 +229,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
 
   // Play second video (in iframe).
-  ASSERT_TRUE(
-      ExecuteScript(shell()->web_contents(), "iframeVideos[0].play();"));
+  ASSERT_TRUE(ExecJs(shell(), "iframeVideos[0].play();"));
 
   expected_title = base::ASCIIToUTF16("iframeVideos[0] playing");
   EXPECT_EQ(
@@ -228,8 +239,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send first video in Picture-in-Picture.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "videos[0].requestPictureInPicture();"));
+  ASSERT_TRUE(ExecJs(shell(), "videos[0].requestPictureInPicture();"));
 
   expected_title = base::ASCIIToUTF16("videos[0] entered picture-in-picture");
   EXPECT_EQ(
@@ -238,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   EXPECT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send second video in Picture-in-Picture.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "iframeVideos[0].requestPictureInPicture();"));
+  ASSERT_TRUE(ExecJs(shell(), "iframeVideos[0].requestPictureInPicture();"));
 
   expected_title =
       base::ASCIIToUTF16("iframeVideos[0] entered picture-in-picture");
@@ -257,17 +266,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_TRUE(NavigateToURL(
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
-  bool result = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterPictureInPictureAndGetResult();",
-      &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
   ASSERT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
 
   // The Picture-in-Picture window should be closed upon entering fullscreen.
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterFullscreenAndGetResult();", &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterFullscreen();"));
 
   EXPECT_TRUE(shell()->web_contents()->IsFullscreen());
   EXPECT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
@@ -278,17 +281,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_TRUE(NavigateToURL(
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
-  bool result = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterFullscreenAndGetResult();", &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterFullscreen();"));
   ASSERT_TRUE(shell()->web_contents()->IsFullscreen());
 
   // We should leave fullscreen upon entering Picture-in-Picture.
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterPictureInPictureAndGetResult();",
-      &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
 
   EXPECT_FALSE(shell()->web_contents()->IsFullscreen());
   EXPECT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
@@ -302,43 +299,32 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
   // Play and pause the player from script.
-  bool result = false;
-  ASSERT_TRUE(
-      ExecuteScriptAndExtractBool(shell()->web_contents(), "play();", &result));
-  ASSERT_TRUE(result);
-
+  ASSERT_EQ(true, EvalJs(shell(), "play();"));
   ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "video.pause();"));
 
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterPictureInPictureAndGetResult();",
-      &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
   EXPECT_EQ(overlay_window()->playback_state(),
             OverlayWindow::PlaybackState::kPaused);
 
   // Simulate resuming playback by interacting with the PiP window.
-  ASSERT_TRUE(
-      ExecuteScript(shell()->web_contents(), "addPlayEventListener();"));
+  ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   window_controller()->TogglePlayPause();
 
   base::string16 expected_title = base::ASCIIToUTF16("play");
   EXPECT_EQ(
       expected_title,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
-  EXPECT_EQ(overlay_window()->playback_state(),
-            OverlayWindow::PlaybackState::kPlaying);
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
 
   // Simulate pausing playback by interacting with the PiP window.
-  ASSERT_TRUE(
-      ExecuteScript(shell()->web_contents(), "addPauseEventListener();"));
+  ASSERT_TRUE(ExecJs(shell(), "addPauseEventListener();"));
   window_controller()->TogglePlayPause();
 
   expected_title = base::ASCIIToUTF16("pause");
   EXPECT_EQ(
       expected_title,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
-  EXPECT_EQ(overlay_window()->playback_state(),
-            OverlayWindow::PlaybackState::kPaused);
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
 }
 
 class MediaSessionPictureInPictureContentBrowserTest
@@ -365,49 +351,36 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
   // Play and pause the player from script.
-  bool result = false;
-  ASSERT_TRUE(
-      ExecuteScriptAndExtractBool(shell()->web_contents(), "play();", &result));
-  ASSERT_TRUE(result);
-
+  ASSERT_EQ(true, EvalJs(shell(), "play();"));
   ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "video.pause();"));
 
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterPictureInPictureAndGetResult();",
-      &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
   EXPECT_EQ(overlay_window()->playback_state(),
             OverlayWindow::PlaybackState::kPaused);
 
   // Simulate resuming playback by invoking the Media Session "play" action
   // through interaction with the PiP window.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "setMediaSessionPlayActionHandler();"));
-  ASSERT_TRUE(
-      ExecuteScript(shell()->web_contents(), "addPlayEventListener();"));
+  ASSERT_TRUE(ExecJs(shell(), "setMediaSessionPlayActionHandler();"));
+  ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   window_controller()->TogglePlayPause();
 
   base::string16 expected_title = base::ASCIIToUTF16("play");
   EXPECT_EQ(
       expected_title,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
-  EXPECT_EQ(overlay_window()->playback_state(),
-            OverlayWindow::PlaybackState::kPlaying);
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
 
   // Simulate pausing playback by invoking the Media Session "pause" action
   // through interaction with the PiP window.
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "setMediaSessionPauseActionHandler();"));
-  ASSERT_TRUE(
-      ExecuteScript(shell()->web_contents(), "addPauseEventListener();"));
+  ASSERT_TRUE(ExecJs(shell(), "setMediaSessionPauseActionHandler();"));
+  ASSERT_TRUE(ExecJs(shell(), "addPauseEventListener();"));
   window_controller()->TogglePlayPause();
 
   expected_title = base::ASCIIToUTF16("pause");
   EXPECT_EQ(
       expected_title,
       TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
-  EXPECT_EQ(overlay_window()->playback_state(),
-            OverlayWindow::PlaybackState::kPaused);
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
 }
 
 class AutoPictureInPictureContentBrowserTest
@@ -429,18 +402,11 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureContentBrowserTest,
   ASSERT_TRUE(NavigateToURL(
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
-  bool result = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(), "enterFullscreenAndGetResult();", &result));
-  ASSERT_TRUE(result);
+  ASSERT_EQ(true, EvalJs(shell(), "enterFullscreen();"));
 
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "video.autoPictureInPicture = true;"));
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "addPictureInPictureEventListeners();"));
-  ASSERT_TRUE(
-      ExecuteScriptAndExtractBool(shell()->web_contents(), "play();", &result));
-  ASSERT_TRUE(result);
+  ASSERT_TRUE(ExecJs(shell(), "video.autoPictureInPicture = true;"));
+  ASSERT_TRUE(ExecJs(shell(), "addPictureInPictureEventListeners();"));
+  ASSERT_EQ(true, EvalJs(shell(), "play();"));
 
   // Hide page and check that video entered Picture-in-Picture automatically.
   shell()->web_contents()->WasHidden();

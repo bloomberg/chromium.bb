@@ -11,10 +11,15 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,8 +56,9 @@ void EventReportValidator::ExpectUnscannedFileEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
         if (!done_closure_.is_null())
@@ -80,8 +86,9 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
         if (!done_closure_.is_null())
@@ -110,8 +117,9 @@ void EventReportValidator::ExpectSensitiveDataEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
         if (!done_closure_.is_null())
@@ -142,21 +150,23 @@ void EventReportValidator::
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
       })
-      .WillOnce(
-          [this, expected_dlp_verdict](
-              base::Value& report, base::OnceCallback<void(bool)>& callback) {
-            event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
-            threat_type_ = base::nullopt;
-            dlp_verdict_ = expected_dlp_verdict;
-            ValidateReport(&report);
-            if (!done_closure_.is_null())
-              done_closure_.Run();
-          });
+      .WillOnce([this, expected_dlp_verdict](
+                    content::BrowserContext* context, bool include_device_info,
+                    base::Value& report,
+                    base::OnceCallback<void(bool)>& callback) {
+        event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
+        threat_type_ = base::nullopt;
+        dlp_verdict_ = expected_dlp_verdict;
+        ValidateReport(&report);
+        if (!done_closure_.is_null())
+          done_closure_.Run();
+      });
 }
 
 void EventReportValidator::
@@ -182,12 +192,14 @@ void EventReportValidator::
   result_ = expected_result;
   dlp_verdict_ = expected_dlp_verdict;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
       })
       .WillOnce([this, expected_threat_type](
+                    content::BrowserContext* context, bool include_device_info,
                     base::Value& report,
                     base::OnceCallback<void(bool)>& callback) {
         event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
@@ -219,8 +231,9 @@ void EventReportValidator::ExpectDangerousDownloadEvent(
   content_size_ = expected_content_size;
   result_ = expected_result;
   username_ = expected_username;
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _))
-      .WillOnce([this](base::Value& report,
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _))
+      .WillOnce([this](content::BrowserContext* context,
+                       bool include_device_info, base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
         if (!done_closure_.is_null())
@@ -333,26 +346,34 @@ void EventReportValidator::ValidateField(
 }
 
 void EventReportValidator::ExpectNoReport() {
-  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _)).Times(0);
+  EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _)).Times(0);
 }
 
 void EventReportValidator::SetDoneClosure(base::RepeatingClosure closure) {
   done_closure_ = std::move(closure);
 }
 
-void SetAnalysisConnector(enterprise_connectors::AnalysisConnector connector,
-                          const std::string& pref_value) {
-  ListPrefUpdate settings_list(g_browser_process->local_state(),
-                               ConnectorPref(connector));
+void SetAnalysisConnector(PrefService* prefs,
+                          enterprise_connectors::AnalysisConnector connector,
+                          const std::string& pref_value,
+                          bool machine_scope) {
+  ListPrefUpdate settings_list(prefs, ConnectorPref(connector));
   DCHECK(settings_list.Get());
   if (!settings_list->empty())
     settings_list->Clear();
 
   settings_list->Append(*base::JSONReader::Read(pref_value));
+  prefs->SetInteger(
+      ConnectorScopePref(connector),
+      machine_scope ? policy::POLICY_SCOPE_MACHINE : policy::POLICY_SCOPE_USER);
 }
 
-void SetOnSecurityEventReporting(bool enabled) {
-  ListPrefUpdate settings_list(g_browser_process->local_state(),
+void SetOnSecurityEventReporting(
+    PrefService* prefs,
+    bool enabled,
+    const std::set<std::string>& enabled_event_names,
+    bool machine_scope) {
+  ListPrefUpdate settings_list(prefs,
                                enterprise_connectors::kOnSecurityEventPref);
   DCHECK(settings_list.Get());
   if (enabled) {
@@ -361,19 +382,41 @@ void SetOnSecurityEventReporting(bool enabled) {
 
       settings.SetKey(enterprise_connectors::kKeyServiceProvider,
                       base::Value("google"));
+      if (!enabled_event_names.empty()) {
+        base::Value enabled_event_name_list(base::Value::Type::LIST);
+        for (const auto& enabled_event_name : enabled_event_names) {
+          enabled_event_name_list.Append(enabled_event_name);
+        }
+        settings.SetKey(enterprise_connectors::kKeyEnabledEventNames,
+                        std::move(enabled_event_name_list));
+      }
       settings_list->Append(std::move(settings));
     }
+    prefs->SetInteger(enterprise_connectors::kOnSecurityEventScopePref,
+                      machine_scope ? policy::POLICY_SCOPE_MACHINE
+                                    : policy::POLICY_SCOPE_USER);
   } else {
     settings_list->ClearList();
+    prefs->ClearPref(enterprise_connectors::kOnSecurityEventScopePref);
   }
 }
 
 void ClearAnalysisConnector(
+    PrefService* prefs,
     enterprise_connectors::AnalysisConnector connector) {
-  ListPrefUpdate settings_list(g_browser_process->local_state(),
-                               ConnectorPref(connector));
+  ListPrefUpdate settings_list(prefs, ConnectorPref(connector));
   DCHECK(settings_list.Get());
   settings_list->Clear();
+  prefs->ClearPref(ConnectorScopePref(connector));
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+void SetProfileDMToken(Profile* profile, const std::string& dm_token) {
+  auto client = std::make_unique<policy::MockCloudPolicyClient>();
+  client->SetDMToken(dm_token);
+  profile->GetUserCloudPolicyManager()->Connect(
+      g_browser_process->local_state(), std::move(client));
+}
+#endif
 
 }  // namespace safe_browsing

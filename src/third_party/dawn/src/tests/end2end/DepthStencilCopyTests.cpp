@@ -28,13 +28,20 @@ class DepthStencilCopyTests : public DawnTest {
         DawnTest::SetUp();
 
         // Draw a square in the bottom left quarter of the screen.
-        mVertexModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-    #version 450
-    void main() {
-        const vec2 pos[6] = vec2[6](vec2(-1.f, -1.f), vec2(0.f, -1.f), vec2(-1.f,  0.f),
-                                    vec2(-1.f,  0.f), vec2(0.f, -1.f), vec2( 0.f,  0.f));
-        gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-    })");
+        mVertexModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 0.0, -1.0),
+                    vec2<f32>(-1.0,  0.0),
+                    vec2<f32>(-1.0,  0.0),
+                    vec2<f32>( 0.0, -1.0),
+                    vec2<f32>( 0.0,  0.0));
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
     }
 
     wgpu::Texture CreateDepthStencilTexture(uint32_t width,
@@ -67,13 +74,12 @@ class DepthStencilCopyTests : public DawnTest {
         desc->vertexStage.module = mVertexModule;
 
         std::string fsSource = R"(
-    #version 450
-    void main() {
-        gl_FragDepth = )" + std::to_string(regionDepth) +
+        [[builtin(frag_depth)]] var<out> FragDepth : f32;
+        [[stage(fragment)]] fn main() -> void {
+            FragDepth = )" + std::to_string(regionDepth) +
                                ";\n}";
 
-        desc->cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fsSource.c_str());
+        desc->cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, fsSource.c_str());
         desc->cDepthStencilState.format = format;
         desc->cDepthStencilState.depthWriteEnabled = true;
         desc->depthStencilState = &desc->cDepthStencilState;
@@ -232,28 +238,31 @@ class DepthStencilCopyTests : public DawnTest {
         // Pipeline for a full screen quad.
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
 
-        pipelineDescriptor.vertexStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(3.f, -1.f), vec2(-1.f, 3.f));
-                        gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-            gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-        })");
+        pipelineDescriptor.vertexStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 3.0, -1.0),
+                    vec2<f32>(-1.0,  3.0));
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
 
         // Sample the input texture and write out depth. |result| will only be set to 1 if we
         // pass the depth test.
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform sampler sampler0;
-        layout(set = 0, binding = 1) uniform texture2D texture0;
+        pipelineDescriptor.cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[group(0), binding(0)]] var texture0 : texture_2d<f32>;
+            [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
 
-        layout(location = 0) out uint result;
-        void main() {
-            result = 1u;
-            gl_FragDepth = texelFetch(sampler2D(texture0, sampler0), ivec2(gl_FragCoord), 0)[0];
-        })");
+            [[location(0)]] var<out> result : u32;
+            [[builtin(frag_depth)]] var<out> FragDepth : f32;
+
+            [[stage(fragment)]] fn main() -> void {
+                result = 1u;
+                FragDepth = textureLoad(texture0, vec2<i32>(FragCoord.xy), 0)[0];
+            })");
 
         // Pass the depth test only if the depth is equal.
         pipelineDescriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
@@ -278,11 +287,9 @@ class DepthStencilCopyTests : public DawnTest {
 
         wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
-        // Bind a sampler and the depth data texture.
-        wgpu::SamplerDescriptor samplerDesc = {};
-        wgpu::BindGroup bindGroup = utils::MakeBindGroup(
-            device, pipeline.GetBindGroupLayout(0),
-            {{0, device.CreateSampler(&samplerDesc)}, {1, depthDataTexture.CreateView()}});
+        // Bind the depth data texture.
+        wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                                         {{0, depthDataTexture.CreateView()}});
 
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&passDescriptor);
         pass.SetPipeline(pipeline);
@@ -323,6 +330,10 @@ TEST_P(DepthStencilCopyTests, FromDepthAspect) {
 
 // Test copying the stencil-only aspect into a buffer.
 TEST_P(DepthStencilCopyTests, FromStencilAspect) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms are unable to read
+    // stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
+
     constexpr uint32_t kWidth = 4;
     constexpr uint32_t kHeight = 4;
 
@@ -347,6 +358,9 @@ TEST_P(DepthStencilCopyTests, FromNonZeroMipStencilAspect) {
     // TODO(enga): Figure out why this fails on MacOS Intel Iris.
     // It passes on AMD Radeon Pro and Intel HD Graphics 630.
     DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+
+    // TODO(crbug.com/dawn/667): Work around some platforms' inability to read back stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
 
     wgpu::Texture depthStencilTexture = CreateDepthStencilTexture(
         9, 9, wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc, 2);
@@ -390,6 +404,9 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyStencil) {
     // T2TBothAspectsThenCopyNonRenderableStencil does not use RenderAttachment and works correctly.
     DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
 
+    // TODO(crbug.com/dawn/667): Work around some platforms' inability to read back stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
+
     constexpr uint32_t kWidth = 4;
     constexpr uint32_t kHeight = 4;
 
@@ -411,6 +428,9 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyStencil) {
 // Test that part of a non-renderable stencil aspect can be copied. Notably,
 // this test has different behavior on some platforms than T2TBothAspectsThenCopyStencil.
 TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyNonRenderableStencil) {
+    // TODO(crbug.com/dawn/667): Work around some platforms' inability to read back stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
+
     constexpr uint32_t kWidth = 4;
     constexpr uint32_t kHeight = 4;
 
@@ -436,6 +456,9 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyNonRenderableNonZeroMipStenc
     // Maybe has to do with the non-zero mip. Notably, a previous test
     // T2TBothAspectsThenCopyNonRenderableStencil works correctly.
     DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+
+    // TODO(crbug.com/dawn/667): Work around some platforms' inability to read back stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
 
     wgpu::Texture texture = CreateInitializeDepthStencilTextureAndCopyT2T(
         0.1f, 0.3f, 1u, 3u, 9, 9, wgpu::TextureUsage::CopySrc, 1);
@@ -486,6 +509,9 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyNonZeroMipDepth) {
 
 // Test copying both aspects in a T2T copy, then copying stencil, then copying depth
 TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyStencilThenDepth) {
+    // TODO(crbug.com/dawn/667): Work around some platforms' inability to read back stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
+
     constexpr uint32_t kWidth = 4;
     constexpr uint32_t kHeight = 4;
 
@@ -522,6 +548,10 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyDepthThenStencil) {
     // T2TBothAspectsThenCopyStencilThenDepth which checks stencil first also passes.
     DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
 
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms are unable to read
+    // stencil.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_depth_stencil_read"));
+
     constexpr uint32_t kWidth = 4;
     constexpr uint32_t kHeight = 4;
 
@@ -553,6 +583,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyDepthThenStencil) {
 TEST_P(DepthStencilCopyTests, ToStencilAspect) {
     // Copies to a single aspect are unsupported on OpenGL.
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // TODO(enga): Figure out why this fails on MacOS Intel Iris.
     // It passes on AMD Radeon Pro and Intel HD Graphics 630.
@@ -619,11 +650,9 @@ TEST_P(DepthStencilCopyTests, ToStencilAspect) {
         // A quad is drawn in the bottom left.
         utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
         renderPipelineDesc.vertexStage.module = mVertexModule;
-        renderPipelineDesc.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-    #version 450
-    void main() {
-    })");
+        renderPipelineDesc.cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[stage(fragment)]] fn main() -> void {
+            })");
         renderPipelineDesc.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
         renderPipelineDesc.cDepthStencilState.stencilFront.passOp =
             wgpu::StencilOperation::DecrementClamp;
@@ -666,4 +695,5 @@ DAWN_INSTANTIATE_TEST(DepthStencilCopyTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

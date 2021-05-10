@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/browser/content_autofill_driver.h"
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -12,12 +13,14 @@
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/profile_metrics/browser_profile_type.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -36,13 +39,31 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "url/origin.h"
 
+namespace {
+
+bool ShouldEnableHeavyFormDataScraping(const version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::CANARY:
+    case version_info::Channel::DEV:
+      return true;
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+    case version_info::Channel::UNKNOWN:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
+
 namespace autofill {
 
 ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
+    AutofillHandler::AutofillDownloadManagerState enable_download_manager,
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       autofill_manager_(nullptr),
@@ -51,10 +72,13 @@ ContentAutofillDriver::ContentAutofillDriver(
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
-    SetAutofillProvider(provider);
+    SetAutofillProvider(provider, client, enable_download_manager);
   } else {
     SetAutofillManager(std::make_unique<AutofillManager>(
         this, client, app_locale, enable_download_manager));
+  }
+  if (client && ShouldEnableHeavyFormDataScraping(client->GetChannel())) {
+    GetAutofillAgent()->EnableHeavyFormDataScraping();
   }
 }
 
@@ -75,6 +99,17 @@ void ContentAutofillDriver::BindPendingReceiver(
 }
 
 bool ContentAutofillDriver::IsIncognito() const {
+  // TODO(https://crbug.com/1125474): Enable Autofill for Ephemeral Guest
+  // profiles.
+  // TODO(https://crbug.com/1125474): Consider renaming this function to
+  // |IsOffTheRecord| after deprecation of off-the-record or ephemeral Guest
+  // profiles.
+  if (autofill_manager_ &&
+      autofill_manager_->client()->GetProfileType() ==
+          profile_metrics::BrowserProfileType::kEphemeralGuest) {
+    return true;
+  }
+
   return render_frame_host_->GetSiteInstance()
       ->GetBrowserContext()
       ->IsOffTheRecord();
@@ -136,8 +171,10 @@ void ContentAutofillDriver::SendFormDataToRenderer(
 
 void ContentAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
-  autofill_manager_->client()->PropagateAutofillPredictions(render_frame_host_,
-                                                            forms);
+  AutofillHandler* handler =
+      autofill_manager_ ? autofill_manager_ : autofill_handler_.get();
+  DCHECK(handler);
+  handler->PropagateAutofillPredictions(render_frame_host_, forms);
 }
 
 void ContentAutofillDriver::HandleParsedForms(
@@ -216,12 +253,11 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
 }
 
 net::IsolationInfo ContentAutofillDriver::IsolationInfo() {
-  return render_frame_host_->GetIsolationInfoForSubresources();
+  return render_frame_host_->GetPendingIsolationInfoForSubresources();
 }
 
-void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
-                                      base::TimeTicks timestamp) {
-  autofill_handler_->OnFormsSeen(forms, timestamp);
+void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms) {
+  autofill_handler_->OnFormsSeen(forms);
 }
 
 void ContentAutofillDriver::SetFormToBeProbablySubmitted(
@@ -326,6 +362,14 @@ void ContentAutofillDriver::DidNavigateFrame(
     return;
   }
 
+  ShowOfferNotificationIfApplicable(navigation_handle);
+
+  // When IsServedFromBackForwardCache, the form data is not parsed
+  // again. So, we should keep and use the autofill handler's
+  // form_structures from BFCache for form submit.
+  if (navigation_handle->IsServedFromBackForwardCache())
+    return;
+
   submitted_forms_.clear();
   autofill_handler_->Reset();
 }
@@ -334,9 +378,6 @@ void ContentAutofillDriver::SetAutofillManager(
     std::unique_ptr<AutofillManager> manager) {
   autofill_handler_ = std::move(manager);
   autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
-  autofill_external_delegate_ =
-      std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
-  autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
 
 ContentAutofillDriver::ContentAutofillDriver()
@@ -381,9 +422,12 @@ void ContentAutofillDriver::RemoveHandler(
   view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(handler);
 }
 
-void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
-  autofill_handler_ =
-      std::make_unique<AutofillHandlerProxy>(this, log_manager_, provider);
+void ContentAutofillDriver::SetAutofillProvider(
+    AutofillProvider* provider,
+    AutofillClient* client,
+    AutofillHandler::AutofillDownloadManagerState enable_download_manager) {
+  autofill_handler_ = std::make_unique<AutofillHandlerProxy>(
+      this, client, provider, enable_download_manager);
   GetAutofillAgent()->SetUserGestureRequired(false);
   GetAutofillAgent()->SetSecureContextRequired(true);
   GetAutofillAgent()->SetFocusRequiresScroll(false);
@@ -428,10 +472,51 @@ void ContentAutofillDriver::ReportAutofillWebOTPMetrics(
 }
 
 void ContentAutofillDriver::SetAutofillProviderForTesting(
-    AutofillProvider* provider) {
-  SetAutofillProvider(provider);
+    AutofillProvider* provider,
+    AutofillClient* client) {
+  SetAutofillProvider(provider, client,
+                      AutofillHandler::AutofillDownloadManagerState::
+                          DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   // AutofillManager isn't used if provider is valid.
   autofill_manager_ = nullptr;
+}
+
+void ContentAutofillDriver::ShowOfferNotificationIfApplicable(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  // TODO(crbug.com/1093057): Android webview does not have |autofill_manager_|,
+  // so flow is not enabled in Android Webview.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableOfferNotification) ||
+      !autofill_manager_) {
+    return;
+  }
+
+  AutofillOfferManager* offer_manager = autofill_manager_->offer_manager();
+  // This happens in the Incognito mode.
+  if (!offer_manager)
+    return;
+
+  GURL url = autofill_manager_->client()->GetLastCommittedURL();
+  if (!offer_manager->IsUrlEligible(url))
+    return;
+
+  // Try to show offer notification when the last committed URL has the domain
+  // that an offer is applicable for.
+  std::tuple<std::vector<GURL>, GURL, CreditCard*> result =
+      offer_manager->GetEligibleDomainsAndCardForOfferForUrl(url);
+  std::vector<GURL>& domains = std::get<0>(result);
+  GURL offer_details_url = std::get<1>(result);
+  CreditCard* card = std::get<2>(result);
+  // TODO(crbug.com/1093057): Update return condition once we introduce the
+  // promo offers.
+  if (domains.empty() || !card)
+    return;
+
+  autofill_manager_->client()->ShowOfferNotificationIfApplicable(
+      domains, offer_details_url, card);
 }
 
 }  // namespace autofill

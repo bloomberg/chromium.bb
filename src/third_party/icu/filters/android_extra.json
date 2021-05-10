@@ -7,7 +7,7 @@
   "localeFilter": {
 // We cannot include root here so we cannot use filterType language
     "filterType": "regex",
-    "whitelist": [
+    "includelist": [
       "^(af|az|bn|et|eu|gl|gu|hy|is|ka|kk|km|kn|ky|lo|mk|ml|mn|mr|ms|my|ne|pa|si|sq|ta|te|ur|uz|zu)(_.*)?$"
     ]
   },

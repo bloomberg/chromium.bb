@@ -8,11 +8,11 @@
 #include <cstdint>
 #include <ostream>
 
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_time_accumulator.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_time_accumulator.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -178,6 +178,37 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   // Counts the number of undecryptable packets received across all keys. Does
   // not include packets where a decryption key for that level was absent.
   QuicPacketCount num_failed_authentication_packets_received = 0;
+
+  // Counts the number of QUIC+TLS 0-RTT packets received after 0-RTT decrypter
+  // was discarded, only on server connections.
+  QuicPacketCount
+      num_tls_server_zero_rtt_packets_received_after_discarding_decrypter = 0;
+
+  // True if address is validated via decrypting HANDSHAKE or 1-RTT packet.
+  bool address_validated_via_decrypting_packet = false;
+
+  // True if address is validated via validating token received in INITIAL
+  // packet.
+  bool address_validated_via_token = false;
+
+  size_t ping_frames_sent = 0;
+
+  // Number of detected peer address changes which changes to a peer address
+  // validated by earlier path validation.
+  size_t num_peer_migration_to_proactively_validated_address = 0;
+  // Number of detected peer address changes which triggers reverse path
+  // validation.
+  size_t num_reverse_path_validtion_upon_migration = 0;
+  // Number of detected peer migrations which either succeed reverse path
+  // validation or no need to be validated.
+  size_t num_validated_peer_migration = 0;
+  // Number of detected peer migrations which triggered reverse path validation
+  // and failed and fell back to the old path.
+  size_t num_invalid_peer_migration = 0;
+  // Number of detected peer migrations which triggered reverse path validation
+  // which was canceled because the peer migrated again. Such migration is also
+  // counted as invalid peer migration.
+  size_t num_peer_migration_while_validating_default_path = 0;
 };
 
 }  // namespace quic

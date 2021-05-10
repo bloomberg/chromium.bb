@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../test_runner/test_runner.js';
+import '../console/console-legacy.js';
+import '../object_ui/object_ui-legacy.js';
+import '../console_counters/console_counters-legacy.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 
 self.ConsoleTestRunner = self.ConsoleTestRunner || {};
@@ -361,8 +365,8 @@ ConsoleTestRunner.dumpConsoleCounters = async function() {
   if (counter._updatingForTest) {
     await TestRunner.addSnifferPromise(counter, '_updatedForTest');
   }
-  if (counter._titles) {
-    TestRunner.addResult(counter._titles);
+  if (counter.titlesForTesting) {
+    TestRunner.addResult(counter.titlesForTesting);
   }
   await ConsoleTestRunner.dumpConsoleClassesBrief();
 };
@@ -393,18 +397,19 @@ ConsoleTestRunner.expandConsoleMessages = function(callback, deepFilter, section
         if (node._expandStackTraceForTest) {
           node._expandStackTraceForTest();
         }
-        if (!node._section) {
+        const section = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(node);
+        if (!section) {
           continue;
         }
-        if (sectionFilter && !sectionFilter(node._section)) {
+        if (sectionFilter && !sectionFilter(section)) {
           continue;
         }
-        node._section.expand();
+        section.expand();
 
         if (!deepFilter) {
           continue;
         }
-        const treeElements = node._section.rootElement().children();
+        const treeElements = section.rootElement().children();
         for (let j = 0; j < treeElements.length; ++j) {
           for (let treeElement = treeElements[j]; treeElement;
                treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
@@ -592,7 +597,6 @@ ConsoleTestRunner.waitForConsoleMessagesPromise = async function(expectedCount) 
  * @param {number} fromTextOffset
  * @param {number} toMessage
  * @param {number} toTextOffset
- * @suppressGlobalPropertiesCheck
  */
 ConsoleTestRunner.selectConsoleMessages = async function(fromMessage, fromTextOffset, toMessage, toTextOffset) {
   const consoleView = Console.ConsoleView.instance();

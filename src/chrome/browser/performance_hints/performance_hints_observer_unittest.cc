@@ -17,10 +17,11 @@
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using optimization_guide::OptimizationGuideDecision;
@@ -66,10 +67,14 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
   }
   ~PerformanceHintsObserverTest() override = default;
 
-  void SetUp() override {
+  virtual void SetUpCommandLine() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         optimization_guide::switches::
             kDisableCheckingUserPermissionsForTesting);
+  }
+
+  void SetUp() override {
+    SetUpCommandLine();
 
     ChromeRenderViewHostTestHarness::SetUp();
     content::RenderFrameHostTester::For(main_rfh())
@@ -80,6 +85,17 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
             OptimizationGuideKeyedServiceFactory::GetInstance()
                 ->SetTestingFactoryAndUse(
                     profile(),
+                    base::BindRepeating([](content::BrowserContext* context)
+                                            -> std::unique_ptr<KeyedService> {
+                      return std::make_unique<
+                          MockOptimizationGuideKeyedService>(context);
+                    })));
+
+    mock_otr_optimization_guide_keyed_service_ =
+        static_cast<MockOptimizationGuideKeyedService*>(
+            OptimizationGuideKeyedServiceFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    profile()->GetPrimaryOTRProfile(),
                     base::BindRepeating([](content::BrowserContext* context)
                                             -> std::unique_ptr<KeyedService> {
                       return std::make_unique<
@@ -123,9 +139,25 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
   MockOptimizationGuideKeyedService* mock_optimization_guide_keyed_service_ =
       nullptr;
+  MockOptimizationGuideKeyedService*
+      mock_otr_optimization_guide_keyed_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceHintsObserverTest);
 };
+
+TEST_F(PerformanceHintsObserverTest, IncognitoDoesNotRegisterPerformanceHints) {
+  std::unique_ptr<content::WebContents> incognito_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          profile()->GetPrimaryOTRProfile(), nullptr));
+
+  EXPECT_CALL(*mock_otr_optimization_guide_keyed_service_,
+              RegisterOptimizationTypes(testing::UnorderedElementsAre(
+                  optimization_guide::proto::PERFORMANCE_HINTS,
+                  optimization_guide::proto::FAST_HOST_HINTS)))
+      .Times(0);
+
+  PerformanceHintsObserver::CreateForWebContents(incognito_web_contents.get());
+}
 
 TEST_F(PerformanceHintsObserverTest, RegisterPerformanceHints) {
   EXPECT_CALL(*mock_optimization_guide_keyed_service_,
@@ -941,12 +973,20 @@ TEST_F(OverrideUnknownPerformanceHintsObserverTest,
       "PerformanceHints.Observer.PerformanceClassForURL", /*kUnknown*/ 0, 2);
 }
 
+class OverrideUnknownPerformanceHintsObserverFetchingNotEnabledTest
+    : public OverrideUnknownPerformanceHintsObserverTest {
+ public:
+  void SetUpCommandLine() override {
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        optimization_guide::switches::
+            kDisableCheckingUserPermissionsForTesting);
+  }
+};
+
 // Uses OverrideUnknownPerformanceHintsObserverTest to ensure
 // PERFORMANCE_UNKNOWN is not overridden to FAST when fetching is disabled.
-TEST_F(OverrideUnknownPerformanceHintsObserverTest, HintFetchingNotEnabled) {
-  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
-
+TEST_F(OverrideUnknownPerformanceHintsObserverFetchingNotEnabledTest,
+       HintFetchingNotEnabled) {
   PerformanceHintsObserver::CreateForWebContents(web_contents());
   CallDidFinishNavigation(web_contents());
 

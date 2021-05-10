@@ -116,9 +116,10 @@ class EmptyUndoDelegate : public BookmarkUndoDelegate {
 
 BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
-      owned_root_(std::make_unique<BookmarkNode>(/*id=*/0,
-                                                 BookmarkNode::kRootNodeGuid,
-                                                 GURL())),
+      owned_root_(std::make_unique<BookmarkNode>(
+          /*id=*/0,
+          base::GUID::ParseLowercase(BookmarkNode::kRootNodeGuid),
+          GURL())),
       root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
       empty_undo_delegate_(std::make_unique<EmptyUndoDelegate>()) {
@@ -578,21 +579,18 @@ const BookmarkNode* BookmarkModel::AddFolder(
     size_t index,
     const base::string16& title,
     const BookmarkNode::MetaInfoMap* meta_info,
-    base::Optional<std::string> guid) {
+    base::Optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(parent);
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
+  DCHECK(!guid || guid->is_valid());
 
-  if (guid)
-    DCHECK(base::IsValidGUIDOutputString(*guid));
-  else
-    guid = base::GenerateGUID();
-
-  auto new_node =
-      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, GURL());
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      GURL());
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
@@ -609,7 +607,7 @@ const BookmarkNode* BookmarkModel::AddURL(
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info,
     base::Optional<base::Time> creation_time,
-    base::Optional<std::string> guid) {
+    base::Optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(url.is_valid());
@@ -617,11 +615,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
-
-  if (guid)
-    DCHECK(base::IsValidGUIDOutputString(*guid));
-  else
-    guid = base::GenerateGUID();
+  DCHECK(!guid || guid->is_valid());
 
   if (!creation_time)
     creation_time = Time::Now();
@@ -630,8 +624,9 @@ const BookmarkNode* BookmarkModel::AddURL(
   if (*creation_time > parent->date_folder_modified())
     SetDateFolderModified(parent, *creation_time);
 
-  auto new_node =
-      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, url);
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      url);
   new_node->SetTitle(title);
   new_node->set_date_added(*creation_time);
   if (meta_info)

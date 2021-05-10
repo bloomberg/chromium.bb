@@ -106,6 +106,7 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   bool GetSyncValues(int64_t* system_time,
                      int64_t* media_stream_counter,
                      int64_t* swap_buffer_counter) override {
+    x11::Connection::Get()->Flush();
     return glXGetSyncValuesOML(x11::Connection::Get()->GetXlibDisplay(),
                                glx_window_, system_time, media_stream_counter,
                                swap_buffer_counter);
@@ -600,7 +601,7 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 
   auto parent = static_cast<x11::Window>(parent_window_);
   auto attributes_req = conn->GetWindowAttributes({parent});
-  auto geometry_req = conn->GetGeometry({parent});
+  auto geometry_req = conn->GetGeometry(parent);
   conn->Flush();
   auto attributes = attributes_req.Sync();
   auto geometry = geometry_req.Sync();
@@ -808,16 +809,16 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
   Destroy();
 }
 
-void NativeViewGLSurfaceGLX::ForwardExposeEvent(x11::Event* event) {
-  auto forwarded_event = *event->As<x11::ExposeEvent>();
+void NativeViewGLSurfaceGLX::ForwardExposeEvent(const x11::Event& event) {
+  auto forwarded_event = *event.As<x11::ExposeEvent>();
   auto window = static_cast<x11::Window>(parent_window_);
   forwarded_event.window = window;
   x11::SendEvent(forwarded_event, window, x11::EventMask::Exposure);
   x11::Connection::Get()->Flush();
 }
 
-bool NativeViewGLSurfaceGLX::CanHandleEvent(x11::Event* x11_event) {
-  auto* expose = x11_event->As<x11::ExposeEvent>();
+bool NativeViewGLSurfaceGLX::CanHandleEvent(const x11::Event& x11_event) {
+  auto* expose = x11_event.As<x11::ExposeEvent>();
   return expose && expose->window == static_cast<x11::Window>(window_);
 }
 

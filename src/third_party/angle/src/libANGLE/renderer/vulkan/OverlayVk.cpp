@@ -122,10 +122,12 @@ angle::Result OverlayVk::createFont(ContextVk *contextVk)
                                        &mFontImageView, vk::LevelIndex(0), 1));
 
     // Copy font data from staging buffer.
-    ANGLE_TRY(contextVk->onBufferTransferRead(&fontDataBuffer.get()));
-    ANGLE_TRY(contextVk->onImageTransferWrite(gl::LevelIndex(0), 1, 0, gl::overlay::kFontCount,
-                                              VK_IMAGE_ASPECT_COLOR_BIT, &mFontImage));
-    vk::CommandBuffer &fontDataUpload = contextVk->getOutsideRenderPassCommandBuffer();
+    vk::CommandBufferAccess access;
+    access.onBufferTransferRead(&fontDataBuffer.get());
+    access.onImageTransferWrite(gl::LevelIndex(0), 1, 0, gl::overlay::kFontCount,
+                                VK_IMAGE_ASPECT_COLOR_BIT, &mFontImage);
+    vk::CommandBuffer *fontDataUpload;
+    ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer(access, &fontDataUpload));
 
     VkBufferImageCopy copy           = {};
     copy.bufferRowLength             = gl::overlay::kFontImageWidth;
@@ -136,9 +138,9 @@ angle::Result OverlayVk::createFont(ContextVk *contextVk)
     copy.imageExtent.height          = gl::overlay::kFontImageHeight;
     copy.imageExtent.depth           = 1;
 
-    fontDataUpload.copyBufferToImage(fontDataBuffer.get().getBuffer().getHandle(),
-                                     mFontImage.getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                                     &copy);
+    fontDataUpload->copyBufferToImage(fontDataBuffer.get().getBuffer().getHandle(),
+                                      mFontImage.getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                      1, &copy);
 
     return angle::Result::Continue;
 }
@@ -215,7 +217,7 @@ angle::Result OverlayVk::onPresent(ContextVk *contextVk,
 
     // If the swapchain image doesn't support storage image, we can't output to it.
     VkFormatFeatureFlags featureBits = renderer->getImageFormatFeatureBits(
-        imageToPresent->getFormat().vkImageFormat, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT);
+        imageToPresent->getFormat().actualImageFormatID, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT);
     if ((featureBits & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == 0)
     {
         return angle::Result::Continue;

@@ -62,7 +62,6 @@ class HostContentSettingsMap : public content_settings::Observer,
     CUSTOM_EXTENSION_PROVIDER,
     INSTALLED_WEBAPP_PROVIDER,
     NOTIFICATION_ANDROID_PROVIDER,
-    EPHEMERAL_PROVIDER,
     ONE_TIME_GEOLOCATION_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
@@ -157,13 +156,6 @@ class HostContentSettingsMap : public content_settings::Observer,
                              ContentSettingsForOneType* settings,
                              base::Optional<content_settings::SessionModel>
                                  session_model = base::nullopt) const;
-
-  // Returns settings that are not applied.
-  // Example: Pattern for flash that are still set through enterprise policy but
-  // won't have any effect because they are deprecated.
-  void GetDiscardedSettingsForOneType(
-      ContentSettingsType content_type,
-      ContentSettingsForOneType* settings) const;
 
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.

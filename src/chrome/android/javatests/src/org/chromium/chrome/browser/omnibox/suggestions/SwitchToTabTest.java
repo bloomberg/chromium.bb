@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -39,6 +40,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
@@ -50,11 +52,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -118,7 +122,7 @@ public class SwitchToTabTest {
         // waitForOmniboxSuggestions only wait until one suggestion shows up, we need to wait util
         // autocomplete return more suggestions.
         CriteriaHelper.pollUiThread(() -> {
-            OmniboxSuggestion matchSuggestion =
+            AutocompleteMatch matchSuggestion =
                     findTabMatchOmniboxSuggestion(locationBarLayout, tab);
             Criteria.checkThat(matchSuggestion, Matchers.notNullValue());
 
@@ -142,17 +146,17 @@ public class SwitchToTabTest {
      * suggestion. This method needs to run on the UI thread.
      *
      * @param locationBarLayout The layout which omnibox suggestions will show in.
-     * @param tab The tab which the OmniboxSuggestion should suggest.
+     * @param tab The tab which the AutocompleteMatch should suggest.
      * @return The suggesstion which suggests the |tab|.
      */
-    private OmniboxSuggestion findTabMatchOmniboxSuggestion(
+    private AutocompleteMatch findTabMatchOmniboxSuggestion(
             LocationBarLayout locationBarLayout, Tab tab) {
         ThreadUtils.assertOnUiThread();
 
         AutocompleteCoordinator coordinator = locationBarLayout.getAutocompleteCoordinator();
         // Find the first matching suggestion.
         for (int i = 0; i < coordinator.getSuggestionCount(); ++i) {
-            OmniboxSuggestion suggestion = coordinator.getSuggestionAt(i);
+            AutocompleteMatch suggestion = coordinator.getSuggestionAt(i);
             if (suggestion != null && suggestion.hasTabMatch()
                     && TextUtils.equals(
                             suggestion.getDescription(), ChromeTabUtils.getTitleOnUiThread(tab))
@@ -168,11 +172,11 @@ public class SwitchToTabTest {
      * to run on the UI thread.
      *
      * @param suggestionsDropdown The OmniboxSuggestionsDropdown contains all the suggestions.
-     * @param suggestion The OmniboxSuggestion we are looking for in the view.
+     * @param suggestion The AutocompleteMatch we are looking for in the view.
      * @return The matching suggestion's index.
      */
     private int findIndexOfTabMatchSuggestionView(
-            OmniboxSuggestionsDropdown suggestionsDropdown, OmniboxSuggestion suggestion) {
+            OmniboxSuggestionsDropdown suggestionsDropdown, AutocompleteMatch suggestion) {
         ThreadUtils.assertOnUiThread();
 
         ViewGroup viewGroup = suggestionsDropdown.getViewGroup();
@@ -254,8 +258,7 @@ public class SwitchToTabTest {
     @Test
     @MediumTest
     @EnableFeatures("OmniboxTabSwitchSuggestions")
-    public void
-    testSwitchToTabSuggestion() throws InterruptedException {
+    public void testSwitchToTabSuggestion() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
@@ -341,7 +344,7 @@ public class SwitchToTabTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
 
         CriteriaHelper.pollUiThread(() -> {
-            OmniboxSuggestion matchSuggestion =
+            AutocompleteMatch matchSuggestion =
                     findTabMatchOmniboxSuggestion(locationBarLayout, aboutTab);
             Criteria.checkThat(matchSuggestion, Matchers.nullValue());
         });
@@ -361,6 +364,10 @@ public class SwitchToTabTest {
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl2);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl3);
         Assert.assertNotEquals(mActivityTestRule.getActivity().getActivityTab(), aboutTab);
+
+        // Send Chrome to the background so Launch Cause Metrics are gathered (and this is more
+        // realistic).
+        ChromeApplicationTestUtils.fireHomeScreenIntent(mActivityTestRule.getActivity());
 
         final SearchActivity searchActivity = startSearchActivity();
         CriteriaHelper.pollUiThread(() -> {
@@ -385,6 +392,10 @@ public class SwitchToTabTest {
             Criteria.checkThat(
                     tab.getWindowAndroid().getActivityState(), Matchers.is(ActivityState.RESUMED));
             Assert.assertEquals(tab, aboutTab);
+            Criteria.checkThat(RecordHistogram.getHistogramValueCountForTesting(
+                                       LaunchCauseMetrics.LAUNCH_CAUSE_HISTOGRAM,
+                                       LaunchCauseMetrics.LaunchCause.HOME_SCREEN_WIDGET),
+                    Matchers.is(1));
         }, SEARCH_ACTIVITY_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 }

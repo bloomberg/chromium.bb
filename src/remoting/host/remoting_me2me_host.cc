@@ -67,6 +67,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/host_power_save_blocker.h"
+#include "remoting/host/host_settings.h"
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/ipc_desktop_environment.h"
@@ -114,6 +115,7 @@
 #if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "remoting/host/audio_capturer_mac.h"
 #include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
 #endif  // defined(OS_APPLE)
@@ -176,12 +178,6 @@ const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
 // when it is successfully started.
 const char kSignalParentSwitchName[] = "signal-parent";
 
-// Command line switch used to enable VP9 encoding.
-const char kEnableVp9SwitchName[] = "enable-vp9";
-
-// Command line switch used to enable hardware H264 encoding.
-const char kEnableH264SwitchName[] = "enable-h264";
-
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
@@ -198,7 +194,6 @@ const int kHostOfflineReasonTimeoutSeconds = 10;
 const char kHostOfflineReasonPolicyReadError[] = "POLICY_READ_ERROR";
 const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
     "POLICY_CHANGE_REQUIRES_RESTART";
-const char kHostOfflineReasonRemoteRestartHost[] = "REMOTE_RESTART_HOST";
 const char kHostOfflineReasonZombieStateDetected[] = "ZOMBIE_STATE_DETECTED";
 
 // The default email domain for Googlers. Used to determine whether the host's
@@ -312,6 +307,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void ReportPolicyErrorAndRestartHost();
   void ApplyHostDomainListPolicy();
   void ApplyUsernamePolicy();
+  void ApplyAllowRemoteAccessConnections();
   bool OnClientDomainListPolicyUpdate(base::DictionaryValue* policies);
   bool OnHostDomainListPolicyUpdate(base::DictionaryValue* policies);
   bool OnUsernamePolicyUpdate(base::DictionaryValue* policies);
@@ -324,17 +320,18 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
   bool OnFileTransferPolicyUpdate(base::DictionaryValue* policies);
   bool OnEnableUserInterfacePolicyUpdate(base::DictionaryValue* policies);
+  bool OnAllowRemoteAccessConnections(base::DictionaryValue* policies);
+  bool OnMaxSessionDurationPolicyUpdate(base::DictionaryValue* policies);
 
   void InitializeSignaling();
 
   void StartHostIfReady();
   void StartHost();
 
-  // HeartbeatSender::Delegate implementations.
+  // HeartbeatSender::Delegate implementation.
   void OnFirstHeartbeatSuccessful() override;
   void OnHostNotFound() override;
   void OnAuthFailed() override;
-  void OnRemoteRestartHost() override;
 
   void OnZombieStateDetected();
 
@@ -385,8 +382,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::string serialized_config_;
   std::string host_owner_;
   bool is_googler_ = false;
-  bool enable_vp9_ = false;
-  bool enable_h264_ = false;
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_ = POLICY_INITIALIZING;
@@ -398,11 +393,13 @@ class HostProcess : public ConfigWatcher::Delegate,
   PortRange udp_port_range_;
   bool allow_pairing_ = true;
   bool enable_user_interface_ = true;
+  bool allow_remote_access_connections_ = true;
 
   DesktopEnvironmentOptions desktop_environment_options_;
   ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
+  int max_session_duration_minutes_ = 0;
 
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
@@ -519,6 +516,17 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     permission_granted_ = mac::CanRecordScreen();
     return false;
   }
+  if (cmd_line->HasSwitch(kListAudioDevicesSwitchName)) {
+    std::vector<AudioCapturerMac::AudioDeviceInfo> audio_devices =
+        AudioCapturerMac::GetAudioDevices();
+    printf("Audio devices:\n");
+    for (const auto& audio_device : audio_devices) {
+      printf("\n");
+      printf("  Device name: %s\n", audio_device.device_name.c_str());
+      printf("  Device UID: %s\n", audio_device.device_uid.c_str());
+    }
+    return false;
+  }
 #endif  // defined(OS_APPLE)
 
 #if defined(REMOTING_MULTI_PROCESS)
@@ -623,6 +631,7 @@ void HostProcess::OnConfigUpdated(
     DCHECK_EQ(policy_state_, POLICY_LOADED);
     ApplyHostDomainListPolicy();
     ApplyUsernamePolicy();
+    ApplyAllowRemoteAccessConnections();
 
     // TODO(sergeyu): Here we assume that PIN is the only part of the config
     // that may change while the service is running. Change ApplyConfig() to
@@ -837,6 +846,8 @@ void HostProcess::StartOnUiThread() {
     return;
   }
 
+  HostSettings::Initialize();
+
   if (!report_offline_reason_.empty()) {
     // Don't need to do any UI initialization.
     context_->network_task_runner()->PostTask(
@@ -1037,22 +1048,6 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   is_googler_ = base::EndsWith(host_owner_, kGooglerEmailDomain,
                                base::CompareCase::INSENSITIVE_ASCII);
 
-  // Allow offering of VP9 encoding to be overridden by the command-line.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
-    enable_vp9_ = true;
-  } else {
-    config.GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
-  }
-
-  // Allow offering of hardware H264 encoding to be overridden by the command
-  // line.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableH264SwitchName)) {
-    enable_h264_ = true;
-  } else {
-    config.GetBoolean(kEnableH264ConfigPath, &enable_h264_);
-  }
-
   return true;
 }
 
@@ -1079,6 +1074,8 @@ void HostProcess::OnPolicyUpdate(
   restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
   restart_required |= OnFileTransferPolicyUpdate(policies.get());
   restart_required |= OnEnableUserInterfacePolicyUpdate(policies.get());
+  restart_required |= OnAllowRemoteAccessConnections(policies.get());
+  restart_required |= OnMaxSessionDurationPolicyUpdate(policies.get());
 
   policy_state_ = POLICY_LOADED;
 
@@ -1139,9 +1136,21 @@ void HostProcess::ApplyHostDomainListPolicy() {
   }
 }
 
+void HostProcess::ApplyAllowRemoteAccessConnections() {
+  if (state_ != HOST_STARTED)
+    return;
+
+  HOST_LOG << "Policy allows remote access connections: "
+           << allow_remote_access_connections_;
+
+  if (!allow_remote_access_connections_) {
+    ShutdownHost(kRemoteAccessDisallowedExitCode);
+  }
+}
+
 bool HostProcess::OnHostDomainListPolicyUpdate(
     base::DictionaryValue* policies) {
-  // Returns true if the host has to be restarted after this policy update.
+  // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   const base::ListValue* list;
@@ -1416,6 +1425,45 @@ bool HostProcess::OnEnableUserInterfacePolicyUpdate(
   return true;
 }
 
+bool HostProcess::OnMaxSessionDurationPolicyUpdate(
+    base::DictionaryValue* policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!policies->GetInteger(
+          policy::key::kRemoteAccessHostMaximumSessionDurationMinutes,
+          &max_session_duration_minutes_)) {
+    return false;
+  }
+
+  if (max_session_duration_minutes_ > 0) {
+    HOST_LOG << "Policy sets maximum session duration to "
+             << max_session_duration_minutes_ << " minutes.";
+  } else {
+    HOST_LOG << "Policy does not set a maximum session duration.";
+  }
+
+  // Restart required.
+  return true;
+}
+
+bool HostProcess::OnAllowRemoteAccessConnections(
+    base::DictionaryValue* policies) {
+  // Returns false: never restart the host after this policy update.
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  bool allow_remote_access_connections;
+  if (!policies->GetBoolean(
+          policy::key::kRemoteAccessHostAllowRemoteAccessConnections,
+          &allow_remote_access_connections)) {
+    return false;
+  }
+
+  // Update the value if the policy was set and retrieval was successful.
+  allow_remote_access_connections_ = allow_remote_access_connections;
+  ApplyAllowRemoteAccessConnections();
+  return false;
+}
+
 void HostProcess::InitializeSignaling() {
   DCHECK(!host_id_.empty());  // ApplyConfig() should already have been run.
 
@@ -1517,10 +1565,6 @@ void HostProcess::StartHost() {
       protocol::CandidateSessionConfig::CreateDefault();
   if (!desktop_environment_factory_->SupportsAudioCapture())
     protocol_config->DisableAudioChannel();
-  if (enable_vp9_)
-    protocol_config->set_vp9_experiment_enabled(true);
-  if (enable_h264_)
-    protocol_config->set_h264_experiment_enabled(true);
   protocol_config->set_webrtc_supported(true);
   session_manager->set_protocol_config(std::move(protocol_config));
 
@@ -1546,10 +1590,10 @@ void HostProcess::StartHost() {
 
   host_->AddExtension(std::make_unique<TestEchoExtension>());
 
-  // TODO(simonmorris): Get the maximum session duration from a policy.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  host_->SetMaximumSessionDuration(base::TimeDelta::FromHours(20));
-#endif
+  if (max_session_duration_minutes_ > 0) {
+    host_->SetMaximumSessionDuration(
+        base::TimeDelta::FromMinutes(max_session_duration_minutes_));
+  }
 
   host_status_logger_ = std::make_unique<HostStatusLogger>(
       host_->status_monitor(), log_to_server_.get());
@@ -1591,14 +1635,11 @@ void HostProcess::StartHost() {
 
   ApplyHostDomainListPolicy();
   ApplyUsernamePolicy();
+  ApplyAllowRemoteAccessConnections();
 }
 
 void HostProcess::OnAuthFailed() {
   ShutdownHost(kInvalidOauthCredentialsExitCode);
-}
-
-void HostProcess::OnRemoteRestartHost() {
-  RestartHost(kHostOfflineReasonRemoteRestartHost);
 }
 
 void HostProcess::OnZombieStateDetected() {

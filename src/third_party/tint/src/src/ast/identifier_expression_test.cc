@@ -14,48 +14,41 @@
 
 #include "src/ast/identifier_expression.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using IdentifierExpressionTest = testing::Test;
+using IdentifierExpressionTest = TestHelper;
 
 TEST_F(IdentifierExpressionTest, Creation) {
-  IdentifierExpression i("ident");
-  EXPECT_EQ(i.name(), "ident");
+  auto* i = Expr("ident");
+  EXPECT_EQ(i->symbol(), Symbol(1));
 }
 
 TEST_F(IdentifierExpressionTest, Creation_WithSource) {
-  IdentifierExpression i(Source{Source::Location{20, 2}}, "ident");
-  EXPECT_EQ(i.name(), "ident");
+  auto* i = Expr(Source{Source::Location{20, 2}}, "ident");
+  EXPECT_EQ(i->symbol(), Symbol(1));
 
-  auto src = i.source();
+  auto src = i->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(IdentifierExpressionTest, IsIdentifier) {
-  IdentifierExpression i("ident");
-  EXPECT_TRUE(i.IsIdentifier());
+  auto* i = Expr("ident");
+  EXPECT_TRUE(i->Is<IdentifierExpression>());
 }
 
 TEST_F(IdentifierExpressionTest, IsValid) {
-  IdentifierExpression i("ident");
-  EXPECT_TRUE(i.IsValid());
-}
-
-TEST_F(IdentifierExpressionTest, IsValid_BlankName) {
-  IdentifierExpression i("");
-  EXPECT_FALSE(i.IsValid());
+  auto* i = Expr("ident");
+  EXPECT_TRUE(i->IsValid());
 }
 
 TEST_F(IdentifierExpressionTest, ToStr) {
-  IdentifierExpression i("ident");
-  std::ostringstream out;
-  i.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Identifier{ident}
+  auto* i = Expr("ident");
+  EXPECT_EQ(str(i), R"(Identifier[not set]{ident}
 )");
 }
 

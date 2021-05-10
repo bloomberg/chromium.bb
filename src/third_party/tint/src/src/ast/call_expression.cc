@@ -14,26 +14,29 @@
 
 #include "src/ast/call_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::CallExpression);
+
 namespace tint {
 namespace ast {
 
-CallExpression::CallExpression() : Expression() {}
-
-CallExpression::CallExpression(std::unique_ptr<Expression> func,
-                               ExpressionList params)
-    : Expression(), func_(std::move(func)), params_(std::move(params)) {}
-
 CallExpression::CallExpression(const Source& source,
-                               std::unique_ptr<Expression> func,
+                               Expression* func,
                                ExpressionList params)
-    : Expression(source), func_(std::move(func)), params_(std::move(params)) {}
+    : Base(source), func_(func), params_(params) {}
 
 CallExpression::CallExpression(CallExpression&&) = default;
 
 CallExpression::~CallExpression() = default;
 
-bool CallExpression::IsCall() const {
-  return true;
+CallExpression* CallExpression::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* fn = ctx->Clone(func_);
+  auto p = ctx->Clone(params_);
+  return ctx->dst->create<CallExpression>(src, fn, p);
 }
 
 bool CallExpression::IsValid() const {
@@ -41,22 +44,24 @@ bool CallExpression::IsValid() const {
     return false;
 
   // All params must be valid
-  for (const auto& param : params_) {
+  for (auto* param : params_) {
     if (param == nullptr || !param->IsValid())
       return false;
   }
   return true;
 }
 
-void CallExpression::to_str(std::ostream& out, size_t indent) const {
+void CallExpression::to_str(const semantic::Info& sem,
+                            std::ostream& out,
+                            size_t indent) const {
   make_indent(out, indent);
-  out << "Call{" << std::endl;
-  func_->to_str(out, indent + 2);
+  out << "Call[" << result_type_str(sem) << "]{" << std::endl;
+  func_->to_str(sem, out, indent + 2);
 
   make_indent(out, indent + 2);
   out << "(" << std::endl;
-  for (const auto& param : params_)
-    param->to_str(out, indent + 4);
+  for (auto* param : params_)
+    param->to_str(sem, out, indent + 4);
 
   make_indent(out, indent + 2);
   out << ")" << std::endl;

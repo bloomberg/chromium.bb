@@ -5,6 +5,8 @@
 #include "cc/layers/heads_up_display_layer.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -37,13 +39,21 @@ void HeadsUpDisplayLayer::UpdateLocationAndSize(
 
   gfx::Size bounds;
 
-  if (layer_tree_host()->GetDebugState().ShowHudRects()) {
+  // If the HUD is not displaying full-viewport rects (e.g., it is showing the
+  // Frame Rendering Stats), use a fixed size.
+  constexpr int kDefaultHUDSize = 256;
+  bounds.SetSize(kDefaultHUDSize, kDefaultHUDSize);
+
+  if (layer_tree_host()->GetDebugState().ShowDebugRects()) {
     bounds = device_viewport_in_layout_pixels;
-  } else {
-    // If the HUD is not displaying full-viewport rects (e.g., it is showing the
-    // Frame Rendering Stats), use a fixed size.
-    constexpr int kDefaultHUDSize = 256;
-    bounds.SetSize(kDefaultHUDSize, kDefaultHUDSize);
+  } else if (layer_tree_host()->GetDebugState().show_web_vital_metrics ||
+             layer_tree_host()->GetDebugState().show_smoothness_metrics) {
+    // If the HUD is used to display performance metrics (which is on the right
+    // hand side_, make sure the bounds has the correct width, with a fixed
+    // height.
+    bounds.set_width(device_viewport_in_layout_pixels.width());
+    // Increase HUD layer height to make sure all the metrics are showing.
+    bounds.set_height(kDefaultHUDSize * 2);
   }
 
   SetBounds(bounds);
@@ -67,6 +77,11 @@ void HeadsUpDisplayLayer::SetLayoutShiftRects(
   layout_shift_rects_ = rects;
 }
 
+void HeadsUpDisplayLayer::UpdateWebVitalMetrics(
+    std::unique_ptr<WebVitalMetrics> web_vital_metrics) {
+  web_vital_metrics_ = std::move(web_vital_metrics);
+}
+
 void HeadsUpDisplayLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "HeadsUpDisplayLayer::PushPropertiesTo");
@@ -76,6 +91,8 @@ void HeadsUpDisplayLayer::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetHUDTypeface(typeface_);
   layer_impl->SetLayoutShiftRects(layout_shift_rects_);
   layout_shift_rects_.clear();
+  if (web_vital_metrics_ && web_vital_metrics_->HasValue())
+    layer_impl->SetWebVitalMetrics(std::move(web_vital_metrics_));
 }
 
 }  // namespace cc

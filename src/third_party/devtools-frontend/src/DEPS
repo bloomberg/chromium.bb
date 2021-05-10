@@ -5,33 +5,39 @@
 use_relative_paths = True
 
 vars = {
+  # By default, do not checkout the re-client binaries.
+  'checkout_reclient': False,
+
   'build_url': 'https://chromium.googlesource.com/chromium/src/build.git',
-  'build_revision': '66cce8c900eca238847d4ae42d52a8c060808192',
+  'build_revision': '57f6815458fa0e1730b808d2f6af972fce9bf47b',
 
   'buildtools_url': 'https://chromium.googlesource.com/chromium/src/buildtools.git',
-  'buildtools_revision': '6302c1175607a436e18947a5abe9df2209e845fc',
+  'buildtools_revision': '80d14c91e9cf416cdd4faba4b9265191fd6f5a5b',
 
   'depot_tools_url': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-  'depot_tools_revision': '26cd974abfad06add50e162a3ebf03e6bc4f793e',
+  'depot_tools_revision': 'e71d0282d1d2ac6702c317e0d4eab83d57d4ae9d',
 
   'inspector_protocol_url': 'https://chromium.googlesource.com/deps/inspector_protocol',
-  'inspector_protocol_revision': '351a2b717e7cd0e59c3d81505c1a803673667dac',
+  'inspector_protocol_revision': '62c7be86bf5728a7b18a74408d77c07bd40ef383',
 
-  'clang_format_url': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git',
-  'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
+  'clang_format_url': 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project/clang/tools/clang-format.git',
+  'clang_format_revision': '99803d74e35962f63a775f29477882afd4d57d94',
 
-  'emscripten_tag': '14e286e65c0e4d287564f90f3db8b31faa8673a4',
+  'emscripten_tag': 'fc5562126762ab26c4757147a3b4c24e85a7289e',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:53d92014bf94c3893886470a1c7c1289f8818db0',
+  'gn_version': 'git_revision:dfcbc6fed0a8352696f92d67ccad54048ad182b3',
+
+  # reclient CIPD package version
+  'reclient_version': 're_client_version:0.19.2.319f839',
 
   # Chromium build number for unit tests. It should be regularly updated to
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/LAST_CHANGE
-  'chromium_linux': '826658',
+  'chromium_linux': '856180',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/LAST_CHANGE
-  'chromium_win': '826653',
+  'chromium_win': '856177',
   # the content of https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/LAST_CHANGE
-  'chromium_mac': '826646',
+  'chromium_mac': '856177',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -75,6 +81,16 @@ deps = {
     'dep_type': 'cipd',
     'condition': 'host_os == "win"',
   },
+  'buildtools/reclient': {
+    'packages': [
+      {
+        'package': 'infra/rbe/client/${{platform}}',
+        'version': Var('reclient_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': '(host_os == "linux" or host_os == "win") and checkout_reclient',
+  },
   'build':
     Var('build_url') + '@' + Var('build_revision'),
   'third_party/depot_tools':
@@ -94,7 +110,7 @@ hooks = [
                 '--no_resume',
                 '--extract',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/12.14.1',
+                '--bucket', 'chromium-nodejs/14.15.4',
                 '-s', 'third_party/node/linux/node-linux-x64.tar.gz.sha1',
     ],
   },
@@ -107,7 +123,7 @@ hooks = [
                 '--no_resume',
                 '--extract',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/12.14.1',
+                '--bucket', 'chromium-nodejs/14.15.4',
                 '-s', 'third_party/node/mac/node-darwin-x64.tar.gz.sha1',
     ],
   },
@@ -119,7 +135,7 @@ hooks = [
                 'third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
-                '--bucket', 'chromium-nodejs/12.14.1',
+                '--bucket', 'chromium-nodejs/14.15.4',
                 '-s', 'third_party/node/win/node.exe.sha1',
     ],
   },

@@ -657,7 +657,7 @@ void PaymentRequestBrowserTestBase::PayWithCreditCard(
 void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const std::string& validation_errors,
     PaymentRequestDialogView* dialog_view) {
-  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->size());
+  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->GetSize());
   ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_HIDDEN,
                                DialogEvent::SPEC_DONE_UPDATING,
                                DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -673,7 +673,7 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const std::string& validation_errors,
     const DialogEvent& dialog_event,
     PaymentRequestDialogView* dialog_view) {
-  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->size());
+  EXPECT_EQ(2U, dialog_view->view_stack_for_testing()->GetSize());
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
        DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -708,7 +708,9 @@ void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
   textfield->SetText(base::string16());
-  textfield->InsertText(value);
+  textfield->InsertText(
+      value,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   textfield->OnBlur();
 }
 

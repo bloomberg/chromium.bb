@@ -7,13 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("layers") {
   sources = [
-    "LayerPaintProfilerView.js",
-    "LayerTreeModel.js",
-    "LayersPanel.js",
+    "LayerPaintProfilerView.ts",
+    "LayerTreeModel.ts",
+    "LayersPanel.ts",
   ]
 
   deps = [
     "../common:bundle",
+    "../i18n:bundle",
     "../layer_viewer:bundle",
     "../sdk:bundle",
     "../ui:bundle",
@@ -27,7 +28,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "layers-legacy.js"
+  entrypoint = "layers-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "layers-meta.ts"
 
   deps = [ ":bundle" ]
 }

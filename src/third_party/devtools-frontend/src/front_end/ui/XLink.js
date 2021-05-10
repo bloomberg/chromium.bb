@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {ContextMenu, Provider} from './ContextMenu.js';  // eslint-disable-line no-unused-vars
 import {html} from './Fragment.js';
+import {Tooltip} from './Tooltip.js';
 import {addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayedURLs, openLinkExternallyLabel} from './UIUtils.js';
 import {XElement} from './XElement.js';
 
@@ -19,20 +21,20 @@ export class XLink extends XElement {
    * @param {string=} linkText
    * @param {string=} className
    * @param {boolean=} preventClick
-   * @return {!Element}
+   * @return {!HTMLElement}
    */
   static create(url, linkText, className, preventClick) {
     if (!linkText) {
       linkText = url;
     }
     className = className || '';
-    url = addReferrerToURLIfNecessary(url);
     // clang-format off
     // TODO(dgozman): migrate css from 'devtools-link' to 'x-link'.
-    return html`
+    const element = html`
         <x-link href='${url}' class='${className} devtools-link' ${preventClick ? 'no-click' : ''}
-        >${linkText.trimMiddle(MaxLengthForDisplayedURLs)}</x-link>`;
+        >${Platform.StringUtilities.trimMiddle(linkText, MaxLengthForDisplayedURLs)}</x-link>`;
     // clang-format on
+    return /** @type {!HTMLElement} */ (element);
   }
 
   constructor() {
@@ -71,6 +73,10 @@ export class XLink extends XElement {
     return XElement.observedAttributes.concat(['href', 'no-click']);
   }
 
+  get href() {
+    return this._href;
+  }
+
   /**
    * @param {string} attr
    * @param {?string} oldValue
@@ -92,16 +98,16 @@ export class XLink extends XElement {
       let href = null;
       let url = null;
       try {
-        url = new URL(newValue);
+        url = new URL(addReferrerToURLIfNecessary(newValue));
         href = url.toString();
-      } catch (error) {
+      } catch {
       }
       if (url && url.protocol === 'javascript:') {
         href = null;
       }
 
       this._href = href;
-      this.title = newValue;
+      Tooltip.install(this, newValue);
       this._updateClick();
       return;
     }
@@ -123,9 +129,26 @@ export class XLink extends XElement {
 }
 
 /**
+ * @type {ContextMenuProvider}
+ */
+let contextMenuProviderInstance;
+
+/**
  * @implements {Provider}
  */
 export class ContextMenuProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!contextMenuProviderInstance || forceNew) {
+      contextMenuProviderInstance = new ContextMenuProvider();
+    }
+
+    return contextMenuProviderInstance;
+  }
+
   /**
    * @override
    * @param {!Event} event

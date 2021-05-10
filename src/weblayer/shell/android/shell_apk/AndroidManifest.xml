@@ -29,6 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:name="InstrumentationActivity"
+                  android:theme="@style/Theme.AppCompat.DayNight"
                   android:windowSoftInputMode="adjustResize">
             <!-- Add these intent filters so tests can resolve these intents. -->
             <intent-filter>
@@ -52,14 +53,6 @@
               <data android:host="weblayertest" android:scheme="weblayer" />
           </intent-filter>
       </activity>
-
-      <!-- Cast support -->
-      <meta-data
-          android:name="org.chromium.weblayer.ENABLE_REMOTE_MEDIA" android:value="true"/>
-      <meta-data
-          android:name=
-          "com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-          android:value="org.chromium.components.media_router.caf.CastOptionsProvider"/>
 
       {% if weblayer_package is defined %}
             <meta-data android:name="org.chromium.weblayer.WebLayerPackage"

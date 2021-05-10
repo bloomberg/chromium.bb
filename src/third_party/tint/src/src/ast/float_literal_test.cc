@@ -14,44 +14,43 @@
 
 #include "src/ast/float_literal.h"
 
-#include "gtest/gtest.h"
-#include "src/ast/type/f32_type.h"
+#include "src/ast/bool_literal.h"
+#include "src/ast/null_literal.h"
+#include "src/ast/sint_literal.h"
+#include "src/ast/test_helper.h"
+#include "src/ast/uint_literal.h"
+#include "src/type/f32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using FloatLiteralTest = testing::Test;
+using FloatLiteralTest = TestHelper;
 
 TEST_F(FloatLiteralTest, Value) {
-  ast::type::F32Type f32;
-  FloatLiteral f{&f32, 47.2f};
-  ASSERT_TRUE(f.IsFloat());
-  EXPECT_EQ(f.value(), 47.2f);
+  auto* f = create<FloatLiteral>(ty.f32(), 47.2f);
+  ASSERT_TRUE(f->Is<FloatLiteral>());
+  EXPECT_EQ(f->value(), 47.2f);
 }
 
 TEST_F(FloatLiteralTest, Is) {
-  ast::type::F32Type f32;
-  FloatLiteral f{&f32, 42.f};
-  EXPECT_FALSE(f.IsBool());
-  EXPECT_FALSE(f.IsSint());
-  EXPECT_FALSE(f.IsInt());
-  EXPECT_TRUE(f.IsFloat());
-  EXPECT_FALSE(f.IsUint());
-  EXPECT_FALSE(f.IsNull());
+  ast::Literal* l = create<FloatLiteral>(ty.f32(), 42.f);
+  EXPECT_FALSE(l->Is<BoolLiteral>());
+  EXPECT_FALSE(l->Is<SintLiteral>());
+  EXPECT_FALSE(l->Is<IntLiteral>());
+  EXPECT_TRUE(l->Is<FloatLiteral>());
+  EXPECT_FALSE(l->Is<UintLiteral>());
+  EXPECT_FALSE(l->Is<NullLiteral>());
 }
 
 TEST_F(FloatLiteralTest, ToStr) {
-  ast::type::F32Type f32;
-  FloatLiteral f{&f32, 42.1f};
-
-  EXPECT_EQ(f.to_str(), "42.099998");
+  auto* f = create<FloatLiteral>(ty.f32(), 42.1f);
+  EXPECT_EQ(str(f), "42.099998");
 }
 
 TEST_F(FloatLiteralTest, ToName) {
-  ast::type::F32Type f32;
-  FloatLiteral f{&f32, 42.1f};
-  EXPECT_EQ(f.name(), "__float42.0999985");
+  auto* f = create<FloatLiteral>(ty.f32(), 42.1f);
+  EXPECT_EQ(f->name(), "__float42.0999985");
 }
 
 }  // namespace

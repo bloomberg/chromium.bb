@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
@@ -244,12 +245,21 @@ TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
 }
 
 TEST_F(HTMLMetaElementTest, ReferrerPolicyWithoutContent) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPolicyContainer);
+
+  MockPolicyContainerHost policy_container_host;
+  GetFrame().SetPolicyContainer(std::make_unique<PolicyContainer>(
+      policy_container_host.BindNewEndpointAndPassDedicatedRemote(),
+      mojom::blink::PolicyContainerPolicies::New()));
+  EXPECT_CALL(policy_container_host,
+              SetReferrerPolicy(network::mojom::ReferrerPolicy::kStrictOrigin));
+
   GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="referrer" content="strict-origin">
     <meta name="referrer" >
   )HTML");
-  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
-            GetDocument().GetReferrerPolicy());
+  policy_container_host.FlushForTesting();
 }
 
 TEST_F(HTMLMetaElementTest, ReferrerPolicyUpdatesPolicyContainer) {
@@ -262,7 +272,7 @@ TEST_F(HTMLMetaElementTest, ReferrerPolicyUpdatesPolicyContainer) {
           policy_container_host.BindNewEndpointAndPassDedicatedRemote();
   auto policy_container = std::make_unique<PolicyContainer>(
       std::move(stub_policy_container_remote),
-      mojom::blink::PolicyContainerDocumentPolicies::New());
+      mojom::blink::PolicyContainerPolicies::New());
 
   GetFrame().SetPolicyContainer(std::move(policy_container));
   EXPECT_CALL(policy_container_host,

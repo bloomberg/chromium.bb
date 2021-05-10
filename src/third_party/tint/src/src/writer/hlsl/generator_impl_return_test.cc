@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -28,19 +28,24 @@ namespace {
 using HlslGeneratorImplTest_Return = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Return, Emit_Return) {
-  ast::ReturnStatement r;
-  gen().increment_indent();
+  auto* r = create<ast::ReturnStatement>();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &r)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, r)) << gen.error();
   EXPECT_EQ(result(), "  return;\n");
 }
 
 TEST_F(HlslGeneratorImplTest_Return, Emit_ReturnWithValue) {
-  auto expr = std::make_unique<ast::IdentifierExpression>("expr");
-  ast::ReturnStatement r(std::move(expr));
-  gen().increment_indent();
+  auto* r = create<ast::ReturnStatement>(Expr("expr"));
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &r)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, r)) << gen.error();
   EXPECT_EQ(result(), "  return expr;\n");
 }
 

@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/cookie_reminter.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -44,10 +47,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/signin/signin_utils.h"
+#include "chrome/browser/android/signin/signin_bridge.h"
 #include "ui/android/view_android.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
@@ -56,7 +58,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -134,12 +136,12 @@ class AccountReconcilorLockWrapper
 // * Main frame  requests.
 // * XHR requests having Gaia URL as referrer.
 bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
-  blink::mojom::ResourceType resource_type = request->GetResourceType();
-
-  if (resource_type == blink::mojom::ResourceType::kMainFrame)
+  if (request->GetRequestDestination() ==
+      network::mojom::RequestDestination::kDocument) {
     return true;
+  }
 
-  return (resource_type == blink::mojom::ResourceType::kXhr) &&
+  return request->IsFetchLikeAPI() &&
          gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
 }
 
@@ -170,7 +172,7 @@ class ManageAccountsHeaderReceivedUserData
 void ProcessMirrorHeader(
     ManageAccountsParams manage_accounts_params,
     const content::WebContents::Getter& web_contents_getter) {
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
@@ -188,7 +190,7 @@ void ProcessMirrorHeader(
   AccountReconcilor* account_reconcilor =
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
@@ -257,7 +259,7 @@ void ProcessMirrorHeader(
                             manage_accounts_params.email)) {
       identity_manager->GetAccountsCookieMutator()->LogOutAllAccounts(
           gaia::GaiaSource::kChromeOS,
-          signin::AccountsCookieMutator::LogOutFromCookieCompletedCallback());
+          base::DoNothing::Once<const GoogleServiceAuthError&>());
       return;
     }
 
@@ -281,9 +283,10 @@ void ProcessMirrorHeader(
     }
 
     // Display a re-authentication dialog.
-    chromeos::InlineLoginDialogChromeOS::Show(
-        manage_accounts_params.email,
-        chromeos::InlineLoginDialogChromeOS::Source::kContentArea);
+    ::GetAccountManagerFacade(profile->GetPath().value())
+        ->ShowReauthAccountDialog(account_manager::AccountManagerFacade::
+                                      AccountAdditionSource::kContentArea,
+                                  manage_accounts_params.email);
     return;
   }
 
@@ -292,7 +295,7 @@ void ProcessMirrorHeader(
       profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
   return;
 
-#else   // !defined(OS_CHROMEOS)
+#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
   if (manage_accounts_params.show_consistency_promo &&
       base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
@@ -301,7 +304,7 @@ void ProcessMirrorHeader(
       // See https://crbug.com/1145031#c5 for details.
       return;
     }
-    SigninUtils::OpenAccountPickerBottomSheet(
+    SigninBridge::OpenAccountPickerBottomSheet(
         window, manage_accounts_params.continue_url.empty()
                     ? chrome::kChromeUINativeNewTabURL
                     : manage_accounts_params.continue_url);
@@ -320,11 +323,10 @@ void ProcessMirrorHeader(
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
     if (!window)
       return;
-    SigninUtils::OpenAccountManagementScreen(window, service_type,
-                                             manage_accounts_params.email);
+    SigninBridge::OpenAccountManagementScreen(window, service_type);
   }
-#endif  // defined(OS_CHROMEOS)
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -506,7 +508,7 @@ void FixAccountConsistencyRequestHeader(
     AccountConsistencyMethod account_consistency,
     std::string gaia_id,
     const base::Optional<bool>& is_child_account,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     bool is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -523,7 +525,7 @@ void FixAccountConsistencyRequestHeader(
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!is_secondary_account_addition_allowed) {
     account_consistency = AccountConsistencyMethod::kMirror;
     // Can't add new accounts.

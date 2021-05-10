@@ -46,12 +46,13 @@ class ExecutionContextRegistryImpl
       const blink::LocalFrameToken& token) override;
   const WorkerNode* GetWorkerNodeByWorkerToken(
       const blink::WorkerToken& token) override;
-  const ExecutionContext* GetExecutionContextForFrameNode(
+  const ExecutionContext* GetExecutionContextForFrameNodeImpl(
       const FrameNode* frame_node) override;
-  const ExecutionContext* GetExecutionContextForWorkerNode(
+  const ExecutionContext* GetExecutionContextForWorkerNodeImpl(
       const WorkerNode* worker_node) override;
 
   size_t GetExecutionContextCountForTesting() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return execution_contexts_.size();
   }
 
@@ -89,12 +90,12 @@ class ExecutionContextRegistryImpl
   std::unordered_set<const ExecutionContext*,
                      ExecutionContextHash,
                      ExecutionContextKeyEqual>
-      execution_contexts_;
+      execution_contexts_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   base::ObserverList<ExecutionContextObserver,
                      /* check_empty = */ true,
                      /* allow_reentrancy */ false>
-      observers_;
+      observers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

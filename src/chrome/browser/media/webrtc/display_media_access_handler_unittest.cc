@@ -13,12 +13,11 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +28,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #endif
 
@@ -53,7 +52,7 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
       bool request_audio) {
     FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
         {true /* expect_screens */, true /* expect_windows*/,
-         true /* expect_tabs */, request_audio,
+         true /* expect_tabs */, /* expect_current_tab, */ false, request_audio,
          fake_desktop_media_id_response /* selected_source */}};
     picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
     content::MediaStreamRequest request(
@@ -88,10 +87,7 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void NotifyWebContentsDestroyed() {
-    access_handler_->Observe(
-        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-        content::Source<content::WebContents>(web_contents()),
-        content::NotificationDetails());
+    access_handler_->WebContentsDestroyed(web_contents());
   }
 
   DesktopMediaPicker::Params GetParams() {
@@ -165,14 +161,14 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionDenied) {
   EXPECT_EQ(0u, devices.size());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(DisplayMediaAccessHandlerTest, DlpRestricted) {
   const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId);
 
   // Setup Data Leak Prevention restriction.
   policy::MockDlpContentManager mock_dlp_content_manager;
-  policy::DlpContentManager::SetDlpContentManagerForTesting(
+  policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager_(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, IsScreenCaptureRestricted(media_id))
       .Times(1)
@@ -184,8 +180,6 @@ TEST_F(DisplayMediaAccessHandlerTest, DlpRestricted) {
 
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, result);
   EXPECT_EQ(0u, devices.size());
-
-  policy::DlpContentManager::ResetDlpContentManagerForTesting();
 }
 #endif
 
@@ -199,8 +193,9 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, true /* expect_audio */,
-       content::DesktopMediaID(), true /* cancelled */}};
+       true /* expect_tabs */, false /* expect_current_tab */,
+       true /* expect_audio */, content::DesktopMediaID(),
+       true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       render_process_id, render_frame_id, page_request_id,
@@ -237,8 +232,9 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissions) {
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, true /* expect_audio */,
-       content::DesktopMediaID(), true /* cancelled */}};
+       true /* expect_tabs */, false /* expect_current_tab */,
+       true /* expect_audio */, content::DesktopMediaID(),
+       true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       render_process_id, render_frame_id, page_request_id,
@@ -271,8 +267,9 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissionsNormalURLs) {
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, true /* expect_audio */,
-       content::DesktopMediaID(), true /* cancelled */}};
+       true /* expect_tabs */, false /* expect_current_tab */,
+       true /* expect_audio */, content::DesktopMediaID(),
+       true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       render_process_id, render_frame_id, page_request_id,
@@ -297,8 +294,9 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissionsNormalURLs) {
 TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, false /* expect_audio */,
-       content::DesktopMediaID(), true /* cancelled */}};
+       true /* expect_tabs */, false /* expect_current_tab */,
+       false /* expect_audio */, content::DesktopMediaID(),
+       true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
@@ -322,12 +320,14 @@ TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
 TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, false /* expect_audio */,
+       true /* expect_tabs */, false /* expect_current_tab */,
+       false /* expect_audio */,
        content::DesktopMediaID(
            content::DesktopMediaID::TYPE_SCREEN,
            content::DesktopMediaID::kFakeId) /* selected_source */},
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, false /* expect_audio */,
+       true /* expect_tabs */, false /* expect_current_tab */,
+       false /* expect_audio */,
        content::DesktopMediaID(
            content::DesktopMediaID::TYPE_WINDOW,
            content::DesktopMediaID::kNullId) /* selected_source */}};

@@ -1,6 +1,8 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "build/chromeos_buildflags.h"
+
 #if defined(USE_AURA)
 
 #include <stddef.h>
@@ -241,7 +243,9 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest,
 }
 
 // https://crbug.com/863241
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_DontLogInIncognito DISABLED_DontLogInIncognito
 #else
 #define MAYBE_DontLogInIncognito DontLogInIncognito
@@ -296,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTestWithTranslateRecentTarget,
   InitInIncognitoMode(false);
 
   // Before browsing: set auto translate from French to Chinese.
-  GetTranslatePrefs()->WhitelistLanguagePair("fr", "zh-CN");
+  GetTranslatePrefs()->AddLanguagePairToAlwaysTranslateList("fr", "zh-CN");
   EXPECT_EQ("", GetTranslatePrefs()->GetRecentTargetLanguage());
 
   // Load an Italian page and translate to Spanish. After this, Spanish should

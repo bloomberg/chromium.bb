@@ -55,10 +55,11 @@ protected:
 
 private:
     void onPrePrepare(GrRecordingContext*,
-                      const GrSurfaceProxyView* writeView,
+                      const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
                       const GrXferProcessor::DstProxyView&,
-                      GrXferBarrierFlags renderPassXferBarriers) final {}
+                      GrXferBarrierFlags renderPassXferBarriers,
+                      GrLoadOp colorLoadOp) final {}
 
     void onPrepare(GrOpFlushState*) final {}
 

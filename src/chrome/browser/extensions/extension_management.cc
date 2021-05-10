@@ -8,15 +8,16 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -36,13 +37,14 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #else
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #endif
@@ -55,19 +57,17 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
       is_child_(profile_->IsChild()) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   is_signin_profile_ = chromeos::ProfileHelper::IsSigninProfile(profile);
 #endif
   pref_change_registrar_.Init(pref_service_);
-  base::Closure pref_change_callback = base::BindRepeating(
+  base::RepeatingClosure pref_change_callback = base::BindRepeating(
       &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
   pref_change_registrar_.Add(pref_names::kInstallAllowList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallDenyList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallForceList,
-                             pref_change_callback);
-  pref_change_registrar_.Add(pref_names::kLoginScreenExtensions,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
                              pref_change_callback);
@@ -76,7 +76,7 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
                              pref_change_callback);
   pref_change_registrar_.Add(prefs::kCloudExtensionRequestEnabled,
                              pref_change_callback);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   pref_change_registrar_.Add(enterprise_reporting::kCloudReportingEnabled,
                              pref_change_callback);
 #endif
@@ -167,6 +167,44 @@ bool ExtensionManagement::HasAllowlistedExtension() const {
       return true;
   }
   return false;
+}
+
+bool ExtensionManagement::IsUpdateUrlOverridden(const ExtensionId& id) const {
+  auto it = settings_by_id_.find(id);
+  // No settings explicitly specified for |id|.
+  if (it == settings_by_id_.end())
+    return false;
+  return it->second->override_update_url;
+}
+
+GURL ExtensionManagement::GetEffectiveUpdateURL(
+    const Extension& extension) const {
+  if (IsUpdateUrlOverridden(extension.id())) {
+    DCHECK(!extension.was_installed_by_default())
+        << "Update URL should not be overridden for default-installed "
+           "extensions!";
+    auto iter_id = settings_by_id_.find(extension.id());
+    const GURL update_url(iter_id->second->update_url);
+    // It's important that we never override a non-webstore update URL to be
+    // the webstore URL. Otherwise, a policy may inadvertently cause
+    // non-webstore extensions to be treated as from-webstore (including content
+    // verification, report abuse options, etc).
+    DCHECK(!extension_urls::IsWebstoreUpdateUrl(update_url))
+        << "Update URL cannot be overridden to be the webstore URL!";
+    return update_url;
+  }
+  return ManifestURL::GetUpdateURL(&extension);
+}
+
+bool ExtensionManagement::UpdatesFromWebstore(
+    const Extension& extension) const {
+  const bool is_webstore_url = extension_urls::IsWebstoreUpdateUrl(
+      GURL(GetEffectiveUpdateURL(extension)));
+  if (is_webstore_url) {
+    DCHECK(!IsUpdateUrlOverridden(extension.id()))
+        << "An extension's update URL cannot be overridden to the webstore.";
+  }
+  return is_webstore_url;
 }
 
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
@@ -370,12 +408,6 @@ void ExtensionManagement::Refresh() {
   const base::DictionaryValue* forced_list_pref =
       static_cast<const base::DictionaryValue*>(LoadPreference(
           pref_names::kInstallForceList, true, base::Value::Type::DICTIONARY));
-  const base::DictionaryValue* login_screen_extensions_pref = nullptr;
-  if (is_signin_profile_) {
-    login_screen_extensions_pref = static_cast<const base::DictionaryValue*>(
-        LoadPreference(pref_names::kLoginScreenExtensions, true,
-                       base::Value::Type::DICTIONARY));
-  }
   const base::ListValue* install_sources_pref =
       static_cast<const base::ListValue*>(LoadPreference(
           pref_names::kAllowedInstallSites, true, base::Value::Type::LIST));
@@ -440,7 +472,6 @@ void ExtensionManagement::Refresh() {
   }
 
   UpdateForcedExtensions(forced_list_pref);
-  UpdateForcedExtensions(login_screen_extensions_pref);
 
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;

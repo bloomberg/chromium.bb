@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "components/exo/data_source.h"
@@ -13,9 +14,10 @@
 #include "components/exo/seat_observer.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
-#include "components/exo/test/exo_test_file_helper.h"
+#include "components/exo/test/exo_test_data_exchange_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/events/event.h"
@@ -86,8 +88,24 @@ void RunReadingTask() {
   base::RunLoop().RunUntilIdle();
 }
 
+class TestSeat : public Seat {
+ public:
+  TestSeat() : Seat(std::make_unique<TestDataExchangeDelegate>()) {}
+
+  TestSeat(const TestSeat&) = delete;
+  void operator=(const TestSeat&) = delete;
+
+  void set_focused_surface(Surface* surface) { surface_ = surface; }
+
+  // Seat:
+  Surface* GetFocusedSurface() override { return surface_; }
+
+ private:
+  Surface* surface_ = nullptr;
+};
+
 TEST_F(SeatTest, OnSurfaceFocused) {
-  Seat seat;
+  TestSeat seat;
   MockSeatObserver observer;
 
   seat.AddObserver(&observer);
@@ -100,7 +118,9 @@ TEST_F(SeatTest, OnSurfaceFocused) {
 }
 
 TEST_F(SeatTest, SetSelection) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
@@ -111,13 +131,15 @@ TEST_F(SeatTest, SetSelection) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
 
   EXPECT_EQ(clipboard, std::string("TestData"));
 }
 
 TEST_F(SeatTest, SetSelectionTextUTF8) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   // UTF8 encoded data
   const uint8_t data[] = {
@@ -139,19 +161,21 @@ TEST_F(SeatTest, SetSelectionTextUTF8) {
 
   base::string16 clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, converted_data);
 
   std::string url;
   uint32_t start, end;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard,
-      &url, &start, &end);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard, &url,
+      &start, &end);
   EXPECT_EQ(clipboard, converted_data);
 }
 
 TEST_F(SeatTest, SetSelectionTextUTF8Legacy) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   // UTF8 encoded data
   const uint8_t data[] = {
@@ -172,12 +196,14 @@ TEST_F(SeatTest, SetSelectionTextUTF8Legacy) {
 
   base::string16 clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, converted_data);
 }
 
 TEST_F(SeatTest, SetSelectionTextUTF16LE) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   // UTF16 little endian encoded data
   const uint8_t data[] = {
@@ -201,19 +227,21 @@ TEST_F(SeatTest, SetSelectionTextUTF16LE) {
 
   base::string16 clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, converted_data);
 
   std::string url;
   uint32_t start, end;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard,
-      &url, &start, &end);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard, &url,
+      &start, &end);
   EXPECT_EQ(clipboard, converted_data);
 }
 
 TEST_F(SeatTest, SetSelectionTextUTF16BE) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   // UTF16 big endian encoded data
   const uint8_t data[] = {
@@ -237,19 +265,21 @@ TEST_F(SeatTest, SetSelectionTextUTF16BE) {
 
   base::string16 clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, converted_data);
 
   std::string url;
   uint32_t start, end;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard,
-      &url, &start, &end);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard, &url,
+      &start, &end);
   EXPECT_EQ(clipboard, converted_data);
 }
 
 TEST_F(SeatTest, SetSelectionTextEmptyString) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   const uint8_t data[] = {};
 
@@ -264,19 +294,21 @@ TEST_F(SeatTest, SetSelectionTextEmptyString) {
 
   base::string16 clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard.size(), 0u);
 
   std::string url;
   uint32_t start, end;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard,
-      &url, &start, &end);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard, &url,
+      &start, &end);
   EXPECT_EQ(clipboard.size(), 0u);
 }
 
 TEST_F(SeatTest, SetSelectionRTF) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
@@ -287,17 +319,42 @@ TEST_F(SeatTest, SetSelectionRTF) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadRTF(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
+
+  EXPECT_EQ(clipboard, std::string("TestData"));
+}
+
+TEST_F(SeatTest, SetSelectionFilenames) {
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/uri-list");
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  std::string data;
+  ui::Clipboard::GetForCurrentThread()->ReadData(
+      ui::ClipboardFormatType::GetWebCustomDataType(),
+      /*data_dst=*/nullptr, &data);
+  base::Pickle pickle(data.c_str(), data.size());
+  std::string clipboard;
+  base::PickleIterator iter(pickle);
+  EXPECT_TRUE(iter.ReadString(&clipboard));
 
   EXPECT_EQ(clipboard, std::string("TestData"));
 }
 
 TEST_F(SeatTest, SetSelection_TwiceSame) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
-
   seat.SetSelection(&source);
   RunReadingTask();
   seat.SetSelection(&source);
@@ -307,7 +364,9 @@ TEST_F(SeatTest, SetSelection_TwiceSame) {
 }
 
 TEST_F(SeatTest, SetSelection_TwiceDifferent) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate1;
   DataSource source1(&delegate1);
@@ -325,7 +384,9 @@ TEST_F(SeatTest, SetSelection_TwiceDifferent) {
 }
 
 TEST_F(SeatTest, SetSelection_ClipboardChangedDuringSetSelection) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
@@ -343,12 +404,14 @@ TEST_F(SeatTest, SetSelection_ClipboardChangedDuringSetSelection) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, "New data");
 }
 
 TEST_F(SeatTest, SetSelection_ClipboardChangedAfterSetSelection) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
@@ -365,12 +428,14 @@ TEST_F(SeatTest, SetSelection_ClipboardChangedAfterSetSelection) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, "New data");
 }
 
 TEST_F(SeatTest, SetSelection_SourceDestroyedDuringSetSelection) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
@@ -388,12 +453,14 @@ TEST_F(SeatTest, SetSelection_SourceDestroyedDuringSetSelection) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, "Original data");
 }
 
 TEST_F(SeatTest, SetSelection_SourceDestroyedAfterSetSelection) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate1;
   {
@@ -421,7 +488,9 @@ TEST_F(SeatTest, SetSelection_SourceDestroyedAfterSetSelection) {
 }
 
 TEST_F(SeatTest, SetSelection_NullSource) {
-  Seat seat;
+  TestSeat seat;
+  Surface focused_surface;
+  seat.set_focused_surface(&focused_surface);
 
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
@@ -442,12 +511,12 @@ TEST_F(SeatTest, SetSelection_NullSource) {
 
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard);
   EXPECT_EQ(clipboard, "Golden data");
 }
 
 TEST_F(SeatTest, PressedKeys) {
-  Seat seat;
+  TestSeat seat;
   ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0);
   ui::KeyEvent release_a(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::DomCode::US_A, 0);
   ui::KeyEvent press_b(ui::ET_KEY_PRESSED, ui::VKEY_B, ui::DomCode::US_B, 0);
@@ -485,17 +554,15 @@ TEST_F(SeatTest, PressedKeys) {
 }
 
 TEST_F(SeatTest, DragDropAbort) {
-  Seat seat;
+  TestSeat seat;
   TestDataSourceDelegate delegate;
   DataSource source(&delegate);
   Surface origin, icon;
-  TestFileHelper file_helper;
 
   // Give origin a root window for DragDropOperation.
   GetContext()->AddChild(origin.window());
 
-  seat.StartDrag(&file_helper, &source, &origin, &icon,
-                 ui::mojom::DragEventSource::kMouse);
+  seat.StartDrag(&source, &origin, &icon, ui::mojom::DragEventSource::kMouse);
   EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
   seat.AbortPendingDragOperation();
   EXPECT_FALSE(seat.get_drag_drop_operation_for_testing());

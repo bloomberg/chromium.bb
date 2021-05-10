@@ -17,93 +17,69 @@
 #include <sstream>
 #include <utility>
 
-#include "gtest/gtest.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/i32_type.h"
+#include "src/ast/test_helper.h"
+#include "src/type/i32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using StructMemberTest = testing::Test;
+using StructMemberTest = TestHelper;
 
 TEST_F(StructMemberTest, Creation) {
-  type::I32Type i32;
-  StructMemberDecorationList decorations;
-  decorations.emplace_back(
-      std::make_unique<StructMemberOffsetDecoration>(4, Source{}));
-
-  StructMember st{"a", &i32, std::move(decorations)};
-  EXPECT_EQ(st.name(), "a");
-  EXPECT_EQ(st.type(), &i32);
-  EXPECT_EQ(st.decorations().size(), 1u);
-  EXPECT_TRUE(st.decorations()[0]->IsOffset());
-  EXPECT_EQ(st.source().range.begin.line, 0u);
-  EXPECT_EQ(st.source().range.begin.column, 0u);
-  EXPECT_EQ(st.source().range.end.line, 0u);
-  EXPECT_EQ(st.source().range.end.column, 0u);
+  auto* st = Member("a", ty.i32(), {MemberOffset(4)});
+  EXPECT_EQ(st->symbol(), Symbol(1));
+  EXPECT_EQ(st->type(), ty.i32());
+  EXPECT_EQ(st->decorations().size(), 1u);
+  EXPECT_TRUE(st->decorations()[0]->Is<StructMemberOffsetDecoration>());
+  EXPECT_EQ(st->source().range.begin.line, 0u);
+  EXPECT_EQ(st->source().range.begin.column, 0u);
+  EXPECT_EQ(st->source().range.end.line, 0u);
+  EXPECT_EQ(st->source().range.end.column, 0u);
 }
 
 TEST_F(StructMemberTest, CreationWithSource) {
-  type::I32Type i32;
-  Source s{Source::Range{Source::Location{27, 4}, Source::Location{27, 8}}};
-
-  StructMember st{s, "a", &i32, {}};
-  EXPECT_EQ(st.name(), "a");
-  EXPECT_EQ(st.type(), &i32);
-  EXPECT_EQ(st.decorations().size(), 0u);
-  EXPECT_EQ(st.source().range.begin.line, 27u);
-  EXPECT_EQ(st.source().range.begin.column, 4u);
-  EXPECT_EQ(st.source().range.end.line, 27u);
-  EXPECT_EQ(st.source().range.end.column, 8u);
+  auto* st = Member(
+      Source{Source::Range{Source::Location{27, 4}, Source::Location{27, 8}}},
+      "a", ty.i32());
+  EXPECT_EQ(st->symbol(), Symbol(1));
+  EXPECT_EQ(st->type(), ty.i32());
+  EXPECT_EQ(st->decorations().size(), 0u);
+  EXPECT_EQ(st->source().range.begin.line, 27u);
+  EXPECT_EQ(st->source().range.begin.column, 4u);
+  EXPECT_EQ(st->source().range.end.line, 27u);
+  EXPECT_EQ(st->source().range.end.column, 8u);
 }
 
 TEST_F(StructMemberTest, IsValid) {
-  type::I32Type i32;
-  StructMember st{"a", &i32, {}};
-  EXPECT_TRUE(st.IsValid());
+  auto* st = Member("a", ty.i32());
+  EXPECT_TRUE(st->IsValid());
 }
 
-TEST_F(StructMemberTest, IsValid_EmptyName) {
-  type::I32Type i32;
-  StructMember st{"", &i32, {}};
-  EXPECT_FALSE(st.IsValid());
+TEST_F(StructMemberTest, IsValid_EmptySymbol) {
+  auto* st = Member("", ty.i32());
+  EXPECT_FALSE(st->IsValid());
 }
 
 TEST_F(StructMemberTest, IsValid_NullType) {
-  StructMember st{"a", nullptr, {}};
-  EXPECT_FALSE(st.IsValid());
+  auto* st = Member("a", nullptr);
+  EXPECT_FALSE(st->IsValid());
 }
 
 TEST_F(StructMemberTest, IsValid_Null_Decoration) {
-  type::I32Type i32;
-  StructMemberDecorationList decorations;
-  decorations.emplace_back(
-      std::make_unique<StructMemberOffsetDecoration>(4, Source{}));
-  decorations.push_back(nullptr);
-
-  StructMember st{"a", &i32, std::move(decorations)};
-  EXPECT_FALSE(st.IsValid());
+  auto* st = Member("a", ty.i32(), {MemberOffset(4), nullptr});
+  EXPECT_FALSE(st->IsValid());
 }
 
 TEST_F(StructMemberTest, ToStr) {
-  type::I32Type i32;
-  StructMemberDecorationList decorations;
-  decorations.emplace_back(
-      std::make_unique<StructMemberOffsetDecoration>(4, Source{}));
-
-  StructMember st{"a", &i32, std::move(decorations)};
-  std::ostringstream out;
-  st.to_str(out, 2);
-  EXPECT_EQ(out.str(), "  StructMember{[[ offset 4 ]] a: __i32}\n");
+  auto* st = Member("a", ty.i32(), {MemberOffset(4)});
+  EXPECT_EQ(str(st), "StructMember{[[ offset 4 ]] a: __i32}\n");
 }
 
 TEST_F(StructMemberTest, ToStrNoDecorations) {
-  type::I32Type i32;
-  StructMember st{"a", &i32, {}};
-  std::ostringstream out;
-  st.to_str(out, 2);
-  EXPECT_EQ(out.str(), "  StructMember{a: __i32}\n");
+  auto* st = Member("a", ty.i32());
+  EXPECT_EQ(str(st), "StructMember{a: __i32}\n");
 }
 
 }  // namespace

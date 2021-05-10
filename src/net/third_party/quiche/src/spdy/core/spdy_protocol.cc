@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "spdy/core/spdy_protocol.h"
 
 #include <limits>
 #include <ostream>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
+#include "absl/strings/str_cat.h"
+#include "spdy/platform/api/spdy_bug_tracker.h"
+#include "spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
 
@@ -60,7 +60,35 @@ SpdyPriority Http2WeightToSpdy3Priority(int weight) {
 }
 
 bool IsDefinedFrameType(uint8_t frame_type_field) {
-  return frame_type_field <= SerializeFrameType(SpdyFrameType::MAX_FRAME_TYPE);
+  switch (static_cast<SpdyFrameType>(frame_type_field)) {
+    case SpdyFrameType::DATA:
+      return true;
+    case SpdyFrameType::HEADERS:
+      return true;
+    case SpdyFrameType::PRIORITY:
+      return true;
+    case SpdyFrameType::RST_STREAM:
+      return true;
+    case SpdyFrameType::SETTINGS:
+      return true;
+    case SpdyFrameType::PUSH_PROMISE:
+      return true;
+    case SpdyFrameType::PING:
+      return true;
+    case SpdyFrameType::GOAWAY:
+      return true;
+    case SpdyFrameType::WINDOW_UPDATE:
+      return true;
+    case SpdyFrameType::CONTINUATION:
+      return true;
+    case SpdyFrameType::ALTSVC:
+      return true;
+    case SpdyFrameType::PRIORITY_UPDATE:
+      return true;
+    case SpdyFrameType::ACCEPT_CH:
+      return true;
+  }
+  return false;
 }
 
 SpdyFrameType ParseFrameType(uint8_t frame_type_field) {
@@ -125,8 +153,10 @@ const char* FrameTypeToString(SpdyFrameType frame_type) {
       return "PRIORITY";
     case SpdyFrameType::ALTSVC:
       return "ALTSVC";
-    case SpdyFrameType::EXTENSION:
-      return "EXTENSION (unspecified)";
+    case SpdyFrameType::PRIORITY_UPDATE:
+      return "PRIORITY_UPDATE";
+    case SpdyFrameType::ACCEPT_CH:
+      return "ACCEPT_CH";
   }
   return "UNKNOWN_FRAME_TYPE";
 }
@@ -150,6 +180,7 @@ bool ParseSettingsId(SpdySettingsId wire_setting_id,
     case SETTINGS_MAX_FRAME_SIZE:
     case SETTINGS_MAX_HEADER_LIST_SIZE:
     case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+    case SETTINGS_DEPRECATE_HTTP2_PRIORITIES:
     case SETTINGS_EXPERIMENT_SCHEDULER:
       // FALLTHROUGH_INTENDED
       return true;
@@ -160,8 +191,8 @@ bool ParseSettingsId(SpdySettingsId wire_setting_id,
 std::string SettingsIdToString(SpdySettingsId id) {
   SpdyKnownSettingsId known_id;
   if (!ParseSettingsId(id, &known_id)) {
-    return quiche::QuicheStrCat("SETTINGS_UNKNOWN_",
-                                SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+    return absl::StrCat("SETTINGS_UNKNOWN_",
+                        SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
   }
 
   switch (known_id) {
@@ -179,12 +210,14 @@ std::string SettingsIdToString(SpdySettingsId id) {
       return "SETTINGS_MAX_HEADER_LIST_SIZE";
     case SETTINGS_ENABLE_CONNECT_PROTOCOL:
       return "SETTINGS_ENABLE_CONNECT_PROTOCOL";
+    case SETTINGS_DEPRECATE_HTTP2_PRIORITIES:
+      return "SETTINGS_DEPRECATE_HTTP2_PRIORITIES";
     case SETTINGS_EXPERIMENT_SCHEDULER:
       return "SETTINGS_EXPERIMENT_SCHEDULER";
   }
 
-  return quiche::QuicheStrCat("SETTINGS_UNKNOWN_",
-                              SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+  return absl::StrCat("SETTINGS_UNKNOWN_",
+                      SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
 }
 
 SpdyErrorCode ParseErrorCode(uint32_t wire_error_code) {
@@ -244,7 +277,7 @@ const char* WriteSchedulerTypeToString(WriteSchedulerType type) {
 }
 
 size_t GetNumberRequiredContinuationFrames(size_t size) {
-  DCHECK_GT(size, kHttp2MaxControlFrameSendSize);
+  QUICHE_DCHECK_GT(size, kHttp2MaxControlFrameSendSize);
   size_t overflow = size - kHttp2MaxControlFrameSendSize;
   int payload_size =
       kHttp2MaxControlFrameSendSize - kContinuationFrameMinimumSize;
@@ -535,6 +568,35 @@ SpdyFrameType SpdyPriorityIR::frame_type() const {
 
 size_t SpdyPriorityIR::size() const {
   return kPriorityFrameSize;
+}
+
+void SpdyPriorityUpdateIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitPriorityUpdate(*this);
+}
+
+SpdyFrameType SpdyPriorityUpdateIR::frame_type() const {
+  return SpdyFrameType::PRIORITY_UPDATE;
+}
+
+size_t SpdyPriorityUpdateIR::size() const {
+  return kPriorityUpdateFrameMinimumSize + priority_field_value_.size();
+}
+
+void SpdyAcceptChIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitAcceptCh(*this);
+}
+
+SpdyFrameType SpdyAcceptChIR::frame_type() const {
+  return SpdyFrameType::ACCEPT_CH;
+}
+
+size_t SpdyAcceptChIR::size() const {
+  size_t total_size = kAcceptChFrameMinimumSize;
+  for (const AcceptChOriginValuePair& entry : entries_) {
+    total_size += entry.origin.size() + entry.value.size() +
+                  kAcceptChFramePerEntryOverhead;
+  }
+  return total_size;
 }
 
 void SpdyUnknownIR::Visit(SpdyFrameVisitor* visitor) const {

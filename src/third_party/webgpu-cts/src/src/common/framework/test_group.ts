@@ -125,12 +125,18 @@ class TestBuilder<F extends Fixture, P extends {}> {
   }
 
   fn(fn: TestFn<F, P>): void {
+    // TODO: add TODO if there's no description? (and make sure it only ends up on actual tests,
+    // not on test parents in the tree, which is what happens if you do it here, not sure why)
     assert(this.testFn === undefined);
     this.testFn = fn;
   }
 
   unimplemented(): void {
     assert(this.testFn === undefined);
+
+    this.description =
+      (this.description ? this.description + '\n\n' : '') + 'TODO: .unimplemented()';
+
     this.testFn = () => {
       throw new SkipTestCase('test unimplemented');
     };

@@ -18,8 +18,8 @@
 #include "src/ast/call_statement.h"
 #include "src/ast/function.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/type/void_type.h"
+#include "src/program.h"
+#include "src/type/void_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -30,51 +30,46 @@ namespace {
 using HlslGeneratorImplTest_Call = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Call, EmitExpression_Call_WithoutParams) {
-  ast::type::VoidType void_type;
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
 
-  auto id = std::make_unique<ast::IdentifierExpression>("my_func");
-  ast::CallExpression call(std::move(id), {});
+  auto* call = Call("my_func");
+  WrapInFunction(call);
 
-  auto func = std::make_unique<ast::Function>("my_func", ast::VariableList{},
-                                              &void_type);
-  mod()->AddFunction(std::move(func));
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &call)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
   EXPECT_EQ(result(), "my_func()");
 }
 
 TEST_F(HlslGeneratorImplTest_Call, EmitExpression_Call_WithParams) {
-  ast::type::VoidType void_type;
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
+  Global("param1", ty.f32(), ast::StorageClass::kNone);
+  Global("param2", ty.f32(), ast::StorageClass::kNone);
 
-  auto id = std::make_unique<ast::IdentifierExpression>("my_func");
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param1"));
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param2"));
-  ast::CallExpression call(std::move(id), std::move(params));
+  auto* call = Call("my_func", "param1", "param2");
+  WrapInFunction(call);
 
-  auto func = std::make_unique<ast::Function>("my_func", ast::VariableList{},
-                                              &void_type);
-  mod()->AddFunction(std::move(func));
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &call)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
   EXPECT_EQ(result(), "my_func(param1, param2)");
 }
 
 TEST_F(HlslGeneratorImplTest_Call, EmitStatement_Call) {
-  ast::type::VoidType void_type;
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
+  Global("param1", ty.f32(), ast::StorageClass::kNone);
+  Global("param2", ty.f32(), ast::StorageClass::kNone);
 
-  auto id = std::make_unique<ast::IdentifierExpression>("my_func");
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param1"));
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param2"));
-  ast::CallStatement call(
-      std::make_unique<ast::CallExpression>(std::move(id), std::move(params)));
+  auto* call = create<ast::CallStatement>(Call("my_func", "param1", "param2"));
+  WrapInFunction(call);
 
-  auto func = std::make_unique<ast::Function>("my_func", ast::VariableList{},
-                                              &void_type);
-  mod()->AddFunction(std::move(func));
-  gen().increment_indent();
-  ASSERT_TRUE(gen().EmitStatement(out(), &call)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitStatement(out, call)) << gen.error();
   EXPECT_EQ(result(), "  my_func(param1, param2);\n");
 }
 

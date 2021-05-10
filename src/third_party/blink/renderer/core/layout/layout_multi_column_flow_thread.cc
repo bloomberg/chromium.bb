@@ -734,13 +734,8 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::PendingColumnSetForNG()
 
 void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupFromNG() {
   NOT_DESTROYED();
-  // TODO(mstensho): This nullptr check shouldn't be here, but we need it for
-  // now. If we have no column set at this point, something has gone wrong, but
-  // NG nested column balancing sometimes acts up when doubly nested (or more),
-  // making the legacy write-back machinery call FinishLayoutFromNG()
-  // prematurely. See e.g. fast/multicol/client-rect-nested.html
-  if (last_set_worked_on_)
-    last_set_worked_on_->AppendNewFragmentainerGroup();
+  DCHECK(last_set_worked_on_);
+  last_set_worked_on_->AppendNewFragmentainerGroup();
 }
 
 void LayoutMultiColumnFlowThread::SetCurrentColumnBlockSizeFromNG(
@@ -1521,9 +1516,6 @@ void LayoutMultiColumnFlowThread::UpdateLayout() {
       // will generate additional columns and pages to hold that overflow,
       // since people do write bad content like <body style="height:0px"> in
       // multi-column layouts.
-      // TODO(mstensho): Once we support nested multicol, adding in overflow
-      // here may result in the need for creating additional rows, since there
-      // may not be enough space remaining in the currently last row.
       LayoutRect layout_rect = LayoutOverflowRect();
       LayoutUnit logical_bottom_in_flow_thread =
           IsHorizontalWritingMode() ? layout_rect.MaxY() : layout_rect.MaxX();

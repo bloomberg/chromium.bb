@@ -130,6 +130,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     PaintLayerCompositor* inner_compositor =
         PaintLayerCompositor::FrameContentsCompositor(*embedded);
     if (inner_compositor) {
+      // Disabler required because inner frame might be throttled.
+      DisableCompositingQueryAsserts disabler;
       if (GraphicsLayer* inner_root_graphics_layer =
               inner_compositor->RootGraphicsLayer()) {
         // If inner_root_graphics_layer is non-null, then either the inner frame
@@ -141,6 +143,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
                    ->ShouldThrottleRendering() ||
                inner_compositor->InCompositingMode());
         layer_vector_for_children->push_back(inner_root_graphics_layer);
+        CHECK(layer.Compositor()->RootLayer()->GetCompositingReasons() &
+              CompositingReason::kRoot);
       }
       inner_compositor->ClearRootLayerAttachmentDirty();
     }

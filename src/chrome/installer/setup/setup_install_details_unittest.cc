@@ -453,12 +453,12 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
         command_line_(base::CommandLine::NO_PROGRAM) {
     // Prepare the inputs from the process command line.
     command_line_.ParseFromString(test_data_.command_line);
-    master_preferences_ =
+    initial_preferences_ =
         std::make_unique<installer::InitialPreferences>(command_line_);
   }
 
   void SetUp() override {
-    base::string16 path;
+    std::wstring path;
     ASSERT_NO_FATAL_FAILURE(
         override_manager_.OverrideRegistry(root_key_, &path));
     nt::SetTestingOverride(nt_root_key_, path);
@@ -475,15 +475,15 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
   }
 
   void TearDown() override {
-    nt::SetTestingOverride(nt_root_key_, base::string16());
+    nt::SetTestingOverride(nt_root_key_, std::wstring());
   }
 
   const TestData& test_data() const { return test_data_; }
 
   const base::CommandLine& command_line() const { return command_line_; }
 
-  const installer::InitialPreferences& master_preferences() const {
-    return *master_preferences_;
+  const installer::InitialPreferences& initial_preferences() const {
+    return *initial_preferences_;
   }
 
  private:
@@ -528,14 +528,14 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
   HKEY root_key_;
   nt::ROOT_KEY nt_root_key_;
   base::CommandLine command_line_;
-  std::unique_ptr<installer::InitialPreferences> master_preferences_;
+  std::unique_ptr<installer::InitialPreferences> initial_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(MakeInstallDetailsTest);
 };
 
 TEST_P(MakeInstallDetailsTest, Test) {
   std::unique_ptr<install_static::PrimaryInstallDetails> details(
-      MakeInstallDetails(command_line(), master_preferences()));
+      MakeInstallDetails(command_line(), initial_preferences()));
   EXPECT_THAT(details->install_mode_index(), Eq(test_data().index));
   EXPECT_THAT(details->system_level(), Eq(test_data().system_level));
   EXPECT_THAT(details->channel(), Eq(test_data().channel));

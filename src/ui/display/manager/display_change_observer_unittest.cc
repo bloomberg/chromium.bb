@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/math_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_features.h"
@@ -190,8 +191,9 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 
 TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
-      123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
-      false, PrivacyScreenState::kNotSupported, false, false, std::string(), {},
+      123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN,
+      /*base_connector_id=*/1u, /*path_topology=*/{}, false, false,
+      PrivacyScreenState::kNotSupported, false, false, std::string(), {},
       nullptr, nullptr, 0, gfx::Size(), gfx::ColorSpace(),
       /*bits_per_channel=*/8u);
 
@@ -419,7 +421,7 @@ TEST_P(DisplayChangeObserverTest, WCGDisplayColorSpaces) {
             gfx::ColorSpace::TransferID::IEC61966_2_1);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_P(DisplayChangeObserverTest, HDRDisplayColorSpaces) {
   // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
   // supported on ChromeOS.
@@ -481,7 +483,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          DisplayChangeObserverTest,
                          ::testing::Values(false, true));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 using DisplayResolutionTest = testing::Test;
 
 TEST_F(DisplayResolutionTest, CheckEffectiveResoutionUMAIndex) {

@@ -40,7 +40,10 @@ std::vector<OverlaySurfaceCandidate> ToCacheKey(
 
 }  // namespace
 
-DrmOverlayManager::DrmOverlayManager() {
+DrmOverlayManager::DrmOverlayManager(
+    bool allow_sync_and_real_buffer_page_flip_testing) {
+  allow_sync_and_real_buffer_page_flip_testing_ =
+      allow_sync_and_real_buffer_page_flip_testing;
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -79,7 +82,8 @@ void DrmOverlayManager::CheckOverlaySupport(
     result_candidates.back().overlay_handled = can_handle;
   }
 
-  if (features::IsSynchronousPageFlipTestingEnabled()) {
+  if (allow_sync_and_real_buffer_page_flip_testing_ &&
+      features::IsSynchronousPageFlipTestingEnabled()) {
     std::vector<OverlayStatus> status =
         SendOverlayValidationRequestSync(result_candidates, widget);
     size_t size = candidates->size();
@@ -144,6 +148,11 @@ bool DrmOverlayManager::CanHandleCandidate(
 
   if (candidate.transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
+
+  // The remaining checks are for ensuring consistency between GL compositing
+  // and overlays. If we must use an overlay, then skip the remaining checks.
+  if (candidate.requires_overlay)
+    return true;
 
   // Reject candidates that don't fall on a pixel boundary.
   if (!gfx::IsNearestRectWithinDistance(candidate.display_rect, 0.01f))

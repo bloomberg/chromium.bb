@@ -7,13 +7,12 @@
 #import <MaterialComponents/MaterialRipple.h>
 
 #include "base/check.h"
-#include "base/feature_list.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
@@ -49,7 +48,7 @@ const CGFloat kArrowDownMargin = 12.;
   if (self) {
     self.accessibilityIdentifier = kIdentityPickerViewIdentifier;
     self.layer.cornerRadius = kIdentityPickerViewRadius;
-    self.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;
+    self.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
     // Adding view elements inside.
     // Ink view.
     _rippleView = [[MDCRippleView alloc] initWithFrame:CGRectZero];
@@ -93,13 +92,9 @@ const CGFloat kArrowDownMargin = 12.;
     AddSameCenterYConstraint(self, _arrowDownImageView);
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         [self addInteraction:[[ViewPointerInteraction alloc] init]];
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     // Accessibility.
     self.isAccessibilityElement = YES;

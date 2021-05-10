@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/public/base/test_signin_client.h"
@@ -20,9 +21,9 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/account_manager/account_manager.h"
+#include "ash/components/account_manager/account_manager_factory.h"
 #endif
 
 #if defined(OS_IOS)
@@ -46,8 +47,8 @@ class IdentityManagerBuilderTest : public testing::Test {
     return &pref_service_;
   }
 
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManagerFactory* GetAccountManagerFactory() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::AccountManagerFactory* GetAccountManagerFactory() {
     return &account_manager_factory_;
   }
 #endif
@@ -62,8 +63,8 @@ class IdentityManagerBuilderTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestSigninClient signin_client_;
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManagerFactory account_manager_factory_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::AccountManagerFactory account_manager_factory_;
 #endif
 };
 
@@ -93,8 +94,8 @@ TEST_F(IdentityManagerBuilderTest, BuildIdentityManagerInitParameters) {
       std::make_unique<FakeDeviceAccountsProvider>();
 #endif
 
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManager* account_manager =
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* account_manager =
       GetAccountManagerFactory()->GetAccountManager(dest_path.value());
   account_manager->Initialize(
       dest_path, GetSigninClient()->GetURLLoaderFactory(),
@@ -122,8 +123,8 @@ TEST_F(IdentityManagerBuilderTest, BuildIdentityManagerInitParameters) {
   EXPECT_EQ(init_params.device_accounts_synchronizer, nullptr);
   EXPECT_NE(init_params.accounts_mutator, nullptr);
 #endif
-#if defined(OS_CHROMEOS)
-  EXPECT_NE(init_params.chromeos_account_manager, nullptr);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_NE(init_params.ash_account_manager, nullptr);
 #endif
 
   // Manually shut down AccountFetcherService to avoid DCHECK failure inside its

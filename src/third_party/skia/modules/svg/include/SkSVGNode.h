@@ -25,13 +25,25 @@ enum class SkSVGTag {
     kClipPath,
     kDefs,
     kEllipse,
+    kFeBlend,
     kFeColorMatrix,
     kFeComposite,
+    kFeDisplacementMap,
+    kFeDistantLight,
+    kFeFlood,
+    kFeGaussianBlur,
+    kFeMorphology,
+    kFeOffset,
+    kFePointLight,
+    kFeSpecularLighting,
+    kFeSpotLight,
     kFeTurbulence,
     kFilter,
     kG,
+    kImage,
     kLine,
     kLinearGradient,
+    kMask,
     kPath,
     kPattern,
     kPolygon,
@@ -41,35 +53,40 @@ enum class SkSVGTag {
     kStop,
     kSvg,
     kText,
+    kTextLiteral,
+    kTextPath,
+    kTSpan,
     kUse
 };
 
 #define SVG_PRES_ATTR(attr_name, attr_type, attr_inherited)                  \
 private:                                                                     \
-    bool set##attr_name(SkSVGAttributeParser::ParseResult<attr_type>&& pr) { \
+    bool set##attr_name(SkSVGAttributeParser::ParseResult<                   \
+                            SkSVGProperty<attr_type, attr_inherited>>&& pr) {\
         if (pr.isValid()) { this->set##attr_name(std::move(*pr)); }          \
         return pr.isValid();                                                 \
     }                                                                        \
+                                                                             \
 public:                                                                      \
-    const attr_type* get##attr_name() const {                                \
-        return fPresentationAttributes.f##attr_name.getMaybeNull();          \
+    const SkSVGProperty<attr_type, attr_inherited>& get##attr_name() const { \
+        return fPresentationAttributes.f##attr_name;                         \
     }                                                                        \
-    void set##attr_name(const attr_type& v) {                                \
-        if (!attr_inherited || v.type() != attr_type::Type::kInherit) {      \
-            fPresentationAttributes.f##attr_name.set(v);                     \
+    void set##attr_name(const SkSVGProperty<attr_type, attr_inherited>& v) { \
+        auto* dest = &fPresentationAttributes.f##attr_name;                  \
+        if (!dest->isInheritable() || v.isValue()) {                         \
+            /* TODO: If dest is not inheritable, handle v == "inherit" */    \
+            *dest = v;                                                       \
         } else {                                                             \
-            /* kInherited values are semantically equivalent to              \
-               the absence of a local presentation attribute.*/              \
-            fPresentationAttributes.f##attr_name.reset();                    \
+            dest->set(SkSVGPropertyState::kInherit);                         \
         }                                                                    \
     }                                                                        \
-    void set##attr_name(attr_type&& v) {                                     \
-        if (!attr_inherited || v.type() != attr_type::Type::kInherit) {      \
-            fPresentationAttributes.f##attr_name.set(std::move(v));          \
+    void set##attr_name(SkSVGProperty<attr_type, attr_inherited>&& v) {      \
+        auto* dest = &fPresentationAttributes.f##attr_name;                  \
+        if (!dest->isInheritable() || v.isValue()) {                         \
+            /* TODO: If dest is not inheritable, handle v == "inherit" */    \
+            *dest = std::move(v);                                            \
         } else {                                                             \
-            /* kInherited values are semantically equivalent to              \
-               the absence of a local presentation attribute.*/              \
-            fPresentationAttributes.f##attr_name.reset();                    \
+            dest->set(SkSVGPropertyState::kInherit);                         \
         }                                                                    \
     }
 
@@ -92,35 +109,44 @@ public:
     // TODO: consolidate with existing setAttribute
     virtual bool parseAndSetAttribute(const char* name, const char* value);
 
-    void setColor(const SkSVGColorType&);
-    void setFillOpacity(const SkSVGNumberType&);
-    void setOpacity(const SkSVGNumberType&);
-    void setStrokeDashOffset(const SkSVGLength&);
-    void setStrokeOpacity(const SkSVGNumberType&);
-    void setStrokeMiterLimit(const SkSVGNumberType&);
-    void setStrokeWidth(const SkSVGLength&);
-
     // inherited
-    SVG_PRES_ATTR(ClipRule       , SkSVGFillRule  , true)
-    SVG_PRES_ATTR(FillRule       , SkSVGFillRule  , true)
-    SVG_PRES_ATTR(Fill           , SkSVGPaint     , true)
-    SVG_PRES_ATTR(FontFamily     , SkSVGFontFamily, true)
-    SVG_PRES_ATTR(FontSize       , SkSVGFontSize  , true)
-    SVG_PRES_ATTR(FontStyle      , SkSVGFontStyle , true)
-    SVG_PRES_ATTR(FontWeight     , SkSVGFontWeight, true)
-    SVG_PRES_ATTR(Stroke         , SkSVGPaint     , true)
-    SVG_PRES_ATTR(StrokeDashArray, SkSVGDashArray , true)
-    SVG_PRES_ATTR(StrokeLineCap  , SkSVGLineCap   , true)
-    SVG_PRES_ATTR(StrokeLineJoin , SkSVGLineJoin  , true)
-    SVG_PRES_ATTR(TextAnchor     , SkSVGTextAnchor, true)
-    SVG_PRES_ATTR(Visibility     , SkSVGVisibility, true)
+    SVG_PRES_ATTR(ClipRule                 , SkSVGFillRule  , true)
+    SVG_PRES_ATTR(Color                    , SkSVGColorType , true)
+    SVG_PRES_ATTR(ColorInterpolation       , SkSVGColorspace, true)
+    SVG_PRES_ATTR(ColorInterpolationFilters, SkSVGColorspace, true)
+    SVG_PRES_ATTR(FillRule                 , SkSVGFillRule  , true)
+    SVG_PRES_ATTR(Fill                     , SkSVGPaint     , true)
+    SVG_PRES_ATTR(FillOpacity              , SkSVGNumberType, true)
+    SVG_PRES_ATTR(FontFamily               , SkSVGFontFamily, true)
+    SVG_PRES_ATTR(FontSize                 , SkSVGFontSize  , true)
+    SVG_PRES_ATTR(FontStyle                , SkSVGFontStyle , true)
+    SVG_PRES_ATTR(FontWeight               , SkSVGFontWeight, true)
+    SVG_PRES_ATTR(Stroke                   , SkSVGPaint     , true)
+    SVG_PRES_ATTR(StrokeDashArray          , SkSVGDashArray , true)
+    SVG_PRES_ATTR(StrokeDashOffset         , SkSVGLength    , true)
+    SVG_PRES_ATTR(StrokeLineCap            , SkSVGLineCap   , true)
+    SVG_PRES_ATTR(StrokeLineJoin           , SkSVGLineJoin  , true)
+    SVG_PRES_ATTR(StrokeMiterLimit         , SkSVGNumberType, true)
+    SVG_PRES_ATTR(StrokeOpacity            , SkSVGNumberType, true)
+    SVG_PRES_ATTR(StrokeWidth              , SkSVGLength    , true)
+    SVG_PRES_ATTR(TextAnchor               , SkSVGTextAnchor, true)
+    SVG_PRES_ATTR(Visibility               , SkSVGVisibility, true)
 
     // not inherited
-    SVG_PRES_ATTR(ClipPath       , SkSVGClip      , false)
-    SVG_PRES_ATTR(Filter         , SkSVGFilterType, false)
+    SVG_PRES_ATTR(ClipPath                 , SkSVGFuncIRI   , false)
+    SVG_PRES_ATTR(Mask                     , SkSVGFuncIRI   , false)
+    SVG_PRES_ATTR(Filter                   , SkSVGFuncIRI   , false)
+    SVG_PRES_ATTR(Opacity                  , SkSVGNumberType, false)
+    SVG_PRES_ATTR(StopColor                , SkSVGColor     , false)
+    SVG_PRES_ATTR(StopOpacity              , SkSVGNumberType, false)
+    SVG_PRES_ATTR(FloodColor               , SkSVGColor     , false)
+    SVG_PRES_ATTR(FloodOpacity             , SkSVGNumberType, false)
+    SVG_PRES_ATTR(LightingColor            , SkSVGColor     , false)
 
 protected:
     SkSVGNode(SkSVGTag);
+
+    static SkMatrix ComputeViewboxMatrix(const SkRect&, const SkRect&, SkSVGPreserveAspectRatio);
 
     // Called before onRender(), to apply local attributes to the context.  Unlike onRender(),
     // onPrepareToRender() bubbles up the inheritance chain: overriders should always call
@@ -136,7 +162,7 @@ protected:
 
     virtual SkPath onAsPath(const SkSVGRenderContext&) const = 0;
 
-    virtual void onSetAttribute(SkSVGAttribute, const SkSVGValue&);
+    virtual void onSetAttribute(SkSVGAttribute, const SkSVGValue&) {}
 
     virtual bool hasChildren() const { return false; }
 

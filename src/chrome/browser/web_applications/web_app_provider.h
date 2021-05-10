@@ -43,7 +43,7 @@ class OsIntegrationManager;
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
 class WebAppMigrationManager;
-class WebAppMigrationUserDisplayModeCleanUp;
+class WebAppMover;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -59,6 +59,11 @@ class WebAppProvider : public WebAppProviderBase {
  public:
   static WebAppProvider* Get(Profile* profile);
   static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
+
+  using OsIntegrationManagerFactory =
+      std::unique_ptr<OsIntegrationManager> (*)(Profile*);
+  static void SetOsIntegrationManagerFactoryForTesting(
+      OsIntegrationManagerFactory factory);
 
   explicit WebAppProvider(Profile* profile);
   WebAppProvider(const WebAppProvider&) = delete;
@@ -92,7 +97,7 @@ class WebAppProvider : public WebAppProviderBase {
     return on_registry_ready_;
   }
 
-  ExternalWebAppManager& external_web_app_manager_for_testing() {
+  ExternalWebAppManager& external_web_app_manager() {
     return *external_web_app_manager_;
   }
 
@@ -123,9 +128,7 @@ class WebAppProvider : public WebAppProviderBase {
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   // migration_manager_ can be nullptr if no migration needed.
   std::unique_ptr<WebAppMigrationManager> migration_manager_;
-  // user_display_mode_migration_issue_ can be nullptr if no clean up needed.
-  std::unique_ptr<WebAppMigrationUserDisplayModeCleanUp>
-      migration_user_display_mode_clean_up_;
+  std::unique_ptr<WebAppMover> web_app_mover_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;

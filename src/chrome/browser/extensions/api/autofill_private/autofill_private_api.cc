@@ -136,6 +136,12 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
         kUserVerified);
   }
 
+  if (address->honorific) {
+    profile.SetRawInfoWithVerificationStatus(
+        autofill::NAME_HONORIFIC_PREFIX, base::UTF8ToUTF16(*address->honorific),
+        kUserVerified);
+  }
+
   if (address->company_name) {
     profile.SetRawInfoWithVerificationStatus(
         autofill::COMPANY_NAME, base::UTF8ToUTF16(*address->company_name),
@@ -208,6 +214,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
     profile.set_origin(kSettingsOrigin);
     personal_data->UpdateProfile(profile);
   } else {
+    profile.FinalizeAfterImport();
     personal_data->AddProfile(profile);
   }
 

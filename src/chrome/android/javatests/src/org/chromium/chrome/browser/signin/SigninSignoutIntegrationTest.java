@@ -38,6 +38,10 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
+import org.chromium.chrome.browser.signin.services.SigninMetricsUtilsJni;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -50,6 +54,7 @@ import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.url.GURL;
 
 /**
  * Test the lifecycle of sign-in and sign-out.
@@ -79,7 +84,7 @@ public class SigninSignoutIntegrationTest {
     public final JniMocker mocker = new JniMocker();
 
     @Mock
-    private SigninUtils.Natives mSigninUtilsNativeMock;
+    private SigninMetricsUtils.Natives mSigninMetricsUtilsNativeMock;
 
     @Mock
     private SigninManager.SignInStateObserver mSignInStateObserverMock;
@@ -91,7 +96,7 @@ public class SigninSignoutIntegrationTest {
     @Before
     public void setUp() {
         initMocks(this);
-        mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
+        mocker.mock(SigninMetricsUtilsJni.TEST_HOOKS, mSigninMetricsUtilsNativeMock);
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSigninManager = IdentityServicesProvider.get().getSigninManager(
@@ -130,58 +135,58 @@ public class SigninSignoutIntegrationTest {
     @Test
     @LargeTest
     public void testSignOut() {
-        signIn();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
         onView(withText(R.string.continue_button)).inRoot(isDialog()).perform(click());
         assertSignedOut();
         verify(mSignInStateObserverMock).onSignedOut();
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
     }
 
     @Test
     @LargeTest
     public void testSignOutDismissedByPressingBack() {
-        signIn();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
         onView(isRoot()).perform(pressBack());
         verify(mSignInStateObserverMock, never()).onSignedOut();
         assertSignedIn();
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
     }
 
     @Test
     @LargeTest
     public void testSignOutCancelled() {
-        signIn();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
         onView(withText(R.string.cancel)).inRoot(isDialog()).perform(click());
         verify(mSignInStateObserverMock, never()).onSignedOut();
         assertSignedIn();
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.TOGGLE_SIGNOUT,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
-        verify(mSigninUtilsNativeMock)
-                .logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
+        verify(mSigninMetricsUtilsNativeMock)
+                .logProfileAccountManagementMenu(ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
                         GAIAServiceType.GAIA_SERVICE_TYPE_NONE);
     }
 
     @Test
     @LargeTest
     public void testSignOutNonManagedAccountWithDataWiped() {
-        signIn();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         addOneTestBookmark();
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
@@ -196,7 +201,7 @@ public class SigninSignoutIntegrationTest {
     @Test
     @LargeTest
     public void testSignOutNonManagedAccountWithoutWipingData() {
-        signIn();
+        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         addOneTestBookmark();
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(R.string.sign_out_and_turn_off_sync)).perform(click());
@@ -217,19 +222,10 @@ public class SigninSignoutIntegrationTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
-            mBookmarkModel.addBookmark(
-                    mBookmarkModel.getDefaultFolder(), 0, "Test Bookmark", "http://google.com");
+            mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, "Test Bookmark",
+                    new GURL("http://google.com"));
             Assert.assertEquals(1, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));
         });
-    }
-
-    private void signIn() {
-        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccountAndWaitForSeeding(
-                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mSigninManager.signinAndEnableSync(SigninAccessPoint.SETTINGS, coreAccountInfo, null);
-        });
-        assertSignedIn();
     }
 
     private void assertSignedIn() {

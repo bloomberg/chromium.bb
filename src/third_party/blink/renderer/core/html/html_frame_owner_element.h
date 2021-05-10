@@ -74,7 +74,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return embedded_content_view_;
   }
 
-  void SetColorScheme(mojom::ColorScheme);
+  void SetColorScheme(mojom::blink::ColorScheme);
 
   class PluginDisposeSuspendScope {
     STACK_ALLOCATED();
@@ -118,7 +118,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowFullscreen() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
-  mojom::ColorScheme GetColorScheme() const override;
+  mojom::blink::ColorScheme GetColorScheme() const override;
   AtomicString RequiredCsp() const override { return g_null_atom; }
   bool ShouldLazyLoadChildren() const final;
 
@@ -138,9 +138,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
   void SetSandboxFlags(network::mojom::blink::WebSandboxFlags);
-  void SetAllowedToDownload(bool allowed) {
-    frame_policy_.allowed_to_download = allowed;
-  }
   void SetDisallowDocumentAccesss(bool disallowed);
 
   bool LoadOrRedirectSubframe(const KURL&,

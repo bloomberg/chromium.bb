@@ -38,8 +38,7 @@ class MdnsService {
       TaskRunner* task_runner,
       ReportingClient* reporting_client,
       const Config& config,
-      NetworkInterfaceIndex network_interface,
-      Config::NetworkInfo::AddressFamilies supported_address_types);
+      const Config::NetworkInfo& network_info);
 
   // Starts an mDNS query with the given properties. Updated records are passed
   // to |callback|.  The caller must ensure |callback| remains alive while it is

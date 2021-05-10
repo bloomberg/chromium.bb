@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "mojo/public/cpp/bindings/union_traits.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
@@ -24,12 +25,14 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
+#include "services/network/public/mojom/auth_and_certificate_observer.mojom.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "services/network/public/mojom/web_bundle_handle.mojom-shared.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
@@ -76,6 +79,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
         const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
             .cookie_observer);
   }
+  static mojo::PendingRemote<
+      network::mojom::AuthenticationAndCertificateObserver>
+  auth_cert_observer(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    if (!trusted_params.auth_cert_observer)
+      return mojo::NullRemote();
+    return std::move(
+        const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
+            .auth_cert_observer);
+  }
   static const network::mojom::ClientSecurityStatePtr& client_security_state(
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.client_security_state;
@@ -83,6 +96,35 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
                    network::ResourceRequest::TrustedParams* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::WebBundleTokenParamsDataView,
+                 network::ResourceRequest::WebBundleTokenParams> {
+  static const GURL& bundle_url(
+      const network::ResourceRequest::WebBundleTokenParams& params) {
+    return params.bundle_url;
+  }
+  static const base::UnguessableToken& token(
+      const network::ResourceRequest::WebBundleTokenParams& params) {
+    return params.token;
+  }
+  static mojo::PendingRemote<network::mojom::WebBundleHandle> web_bundle_handle(
+      const network::ResourceRequest::WebBundleTokenParams& params) {
+    if (!params.handle)
+      return mojo::NullRemote();
+    return std::move(
+        const_cast<network::ResourceRequest::WebBundleTokenParams&>(params)
+            .handle);
+  }
+  static int32_t render_process_id(
+      const network::ResourceRequest::WebBundleTokenParams& params) {
+    return params.render_process_id;
+  }
+
+  static bool Read(network::mojom::WebBundleTokenParamsDataView data,
+                   network::ResourceRequest::WebBundleTokenParams* out);
 };
 
 template <>
@@ -97,10 +139,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const net::SiteForCookies& site_for_cookies(
       const network::ResourceRequest& request) {
     return request.site_for_cookies;
-  }
-  static bool force_ignore_site_for_cookies(
-      const network::ResourceRequest& request) {
-    return request.force_ignore_site_for_cookies;
   }
   static bool update_first_party_url_on_redirect(
       const network::ResourceRequest& request) {
@@ -158,9 +196,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static bool corb_detachable(const network::ResourceRequest& request) {
     return request.corb_detachable;
-  }
-  static bool corb_excluded(const network::ResourceRequest& request) {
-    return request.corb_excluded;
   }
   static network::mojom::RequestMode mode(
       const network::ResourceRequest& request) {
@@ -253,6 +288,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool is_fetch_like_api(const network::ResourceRequest& request) {
     return request.is_fetch_like_api;
   }
+  static bool is_favicon(const network::ResourceRequest& request) {
+    return request.is_favicon;
+  }
   static bool obey_origin_policy(const network::ResourceRequest& request) {
     return request.obey_origin_policy;
   }
@@ -267,6 +305,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const network::mojom::TrustTokenParamsPtr& trust_token_params(
       const network::ResourceRequest& request) {
     return request.trust_token_params.as_ptr();
+  }
+  static const base::Optional<network::ResourceRequest::WebBundleTokenParams>&
+  web_bundle_token_params(const network::ResourceRequest& request) {
+    return request.web_bundle_token_params;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,
@@ -311,40 +353,91 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    StructTraits<network::mojom::DataElementDataView, network::DataElement> {
-  static const network::mojom::DataElementType& type(
-      const network::DataElement& element) {
-    return element.type_;
+    StructTraits<network::mojom::DataElementBytesDataView,
+                 network::DataElementBytes> {
+  static mojo_base::BigBufferView data(const network::DataElementBytes& data) {
+    return mojo_base::BigBufferView(data.bytes());
   }
-  static mojo_base::BigBufferView buf(const network::DataElement& element) {
-    return mojo_base::BigBufferView(element.buf_);
-  }
-  static const base::FilePath& path(const network::DataElement& element) {
-    return element.path_;
-  }
+
+  static bool Read(network::mojom::DataElementBytesDataView data,
+                   network::DataElementBytes* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::DataElementDataPipeDataView,
+                 network::DataElementDataPipe> {
   static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
-      const network::DataElement& element) {
-    if (element.type_ != network::mojom::DataElementType::kDataPipe)
-      return mojo::NullRemote();
-    return element.CloneDataPipeGetter();
+      const network::DataElementDataPipe& data) {
+    return data.CloneDataPipeGetter();
   }
+
+  static bool Read(network::mojom::DataElementDataPipeDataView data,
+                   network::DataElementDataPipe* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::DataElementChunkedDataPipeDataView,
+                 network::DataElementChunkedDataPipe> {
   static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
-  chunked_data_pipe_getter(const network::DataElement& element) {
-    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe &&
-        element.type_ != network::mojom::DataElementType::kReadOnceStream)
-      return mojo::NullRemote();
-    return const_cast<network::DataElement&>(element)
+  data_pipe_getter(const network::DataElementChunkedDataPipe& data) {
+    return const_cast<network::DataElementChunkedDataPipe&>(data)
         .ReleaseChunkedDataPipeGetter();
   }
-  static uint64_t offset(const network::DataElement& element) {
-    return element.offset_;
+  static bool read_only_once(const network::DataElementChunkedDataPipe& data) {
+    return static_cast<bool>(data.read_only_once());
   }
-  static uint64_t length(const network::DataElement& element) {
-    return element.length_;
+
+  static bool Read(network::mojom::DataElementChunkedDataPipeDataView data,
+                   network::DataElementChunkedDataPipe* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::DataElementFileDataView,
+                 network::DataElementFile> {
+  static base::FilePath path(const network::DataElementFile& data) {
+    return data.path();
   }
-  static const base::Time& expected_modification_time(
-      const network::DataElement& element) {
-    return element.expected_modification_time_;
+  static uint64_t offset(const network::DataElementFile& data) {
+    return data.offset();
+  }
+  static uint64_t length(const network::DataElementFile& data) {
+    return data.length();
+  }
+  static base::Time expected_modification_time(
+      const network::DataElementFile& data) {
+    return data.expected_modification_time();
+  }
+
+  static bool Read(network::mojom::DataElementFileDataView data,
+                   network::DataElementFile* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    UnionTraits<network::mojom::DataElementDataView, network::DataElement> {
+  static network::mojom::DataElementDataView::Tag GetTag(
+      const network::DataElement& data) {
+    return data.type();
+  }
+
+  static const network::DataElementBytes& bytes(
+      const network::DataElement& data) {
+    return data.As<network::DataElementBytes>();
+  }
+  static const network::DataElementDataPipe& data_pipe(
+      const network::DataElement& data) {
+    return data.As<network::DataElementDataPipe>();
+  }
+  static const network::DataElementChunkedDataPipe& chunked_data_pipe(
+      const network::DataElement& data) {
+    return data.As<network::DataElementChunkedDataPipe>();
+  }
+  static const network::DataElementFile& file(
+      const network::DataElement& data) {
+    return data.As<network::DataElementFile>();
   }
 
   static bool Read(network::mojom::DataElementDataView data,

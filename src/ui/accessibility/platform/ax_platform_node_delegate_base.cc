@@ -160,6 +160,14 @@ bool AXPlatformNodeDelegateBase::IsLeaf() const {
   return !GetChildCount();
 }
 
+bool AXPlatformNodeDelegateBase::IsFocused() const {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsInvisibleOrIgnored() const {
+  return false;
+}
+
 bool AXPlatformNodeDelegateBase::IsToplevelBrowserWindow() {
   return false;
 }
@@ -168,9 +176,38 @@ bool AXPlatformNodeDelegateBase::IsDescendantOfPlainTextField() const {
   return false;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetClosestPlatformObject()
-    const {
-  return nullptr;
+gfx::NativeViewAccessible
+AXPlatformNodeDelegateBase::GetLowestPlatformAncestor() const {
+  AXPlatformNodeDelegateBase* current_delegate =
+      const_cast<AXPlatformNodeDelegateBase*>(this);
+  AXPlatformNodeDelegateBase* lowest_unignored_delegate = current_delegate;
+  if (lowest_unignored_delegate->IsInvisibleOrIgnored()) {
+    lowest_unignored_delegate = static_cast<AXPlatformNodeDelegateBase*>(
+        lowest_unignored_delegate->GetParentDelegate());
+  }
+  DCHECK(!lowest_unignored_delegate ||
+         !lowest_unignored_delegate->IsInvisibleOrIgnored())
+      << "`AXPlatformNodeDelegateBase::GetParentDelegate()` should return "
+         "either an unignored object or nullptr.";
+
+  // `highest_leaf_delegate` could be nullptr.
+  AXPlatformNodeDelegateBase* highest_leaf_delegate = lowest_unignored_delegate;
+  // For the purposes of this method, a leaf node does not include leaves in the
+  // internal accessibility tree, only in the platform exposed tree.
+  for (AXPlatformNodeDelegateBase* ancestor_delegate =
+           lowest_unignored_delegate;
+       ancestor_delegate;
+       ancestor_delegate = static_cast<AXPlatformNodeDelegateBase*>(
+           ancestor_delegate->GetParentDelegate())) {
+    if (ancestor_delegate->IsLeaf())
+      highest_leaf_delegate = ancestor_delegate;
+  }
+  if (highest_leaf_delegate)
+    return highest_leaf_delegate->GetNativeViewAccessible();
+
+  if (lowest_unignored_delegate)
+    return lowest_unignored_delegate->GetNativeViewAccessible();
+  return current_delegate->GetNativeViewAccessible();
 }
 
 AXPlatformNodeDelegateBase::ChildIteratorBase::ChildIteratorBase(
@@ -313,7 +350,7 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetFocus() {
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetFocus() const {
   return nullptr;
 }
 
@@ -439,13 +476,23 @@ base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellRowSpan() const {
 
 base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellAriaColIndex()
     const {
-  return GetData().GetIntAttribute(
-      ax::mojom::IntAttribute::kAriaCellColumnIndex);
+  if (GetData().HasIntAttribute(
+          ax::mojom::IntAttribute::kAriaCellColumnIndex)) {
+    return GetData().GetIntAttribute(
+        ax::mojom::IntAttribute::kAriaCellColumnIndex);
+  }
+
+  return base::nullopt;
 }
 
 base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellAriaRowIndex()
     const {
-  return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex);
+  if (GetData().HasIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex)) {
+    return GetData().GetIntAttribute(
+        ax::mojom::IntAttribute::kAriaCellRowIndex);
+  }
+
+  return base::nullopt;
 }
 
 base::Optional<int32_t> AXPlatformNodeDelegateBase::GetCellId(
@@ -485,6 +532,14 @@ base::Optional<int> AXPlatformNodeDelegateBase::GetPosInSet() const {
 
 base::Optional<int> AXPlatformNodeDelegateBase::GetSetSize() const {
   return base::nullopt;
+}
+
+SkColor AXPlatformNodeDelegateBase::GetColor() const {
+  return SK_ColorBLACK;
+}
+
+SkColor AXPlatformNodeDelegateBase::GetBackgroundColor() const {
+  return SK_ColorWHITE;
 }
 
 bool AXPlatformNodeDelegateBase::AccessibilityPerformAction(
@@ -553,7 +608,7 @@ bool AXPlatformNodeDelegateBase::IsWebContent() const {
 }
 
 bool AXPlatformNodeDelegateBase::HasVisibleCaretOrSelection() const {
-  return false;
+  return IsDescendantOfPlainTextField();
 }
 
 AXPlatformNode* AXPlatformNodeDelegateBase::GetTargetNodeForRelation(

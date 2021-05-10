@@ -6,8 +6,10 @@
 
 .service-worker-cache-data-view .data-view-toolbar {
   position: relative;
-  background-color: #eee;
-  border-bottom: 1px solid #ccc;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-bottom: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   padding-right: 10px;
 }
 
@@ -20,17 +22,20 @@
 }
 
 .service-worker-cache-data-view .data-grid .data-container tr:nth-last-child(2) td {
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid #aaa; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .service-worker-cache-data-view .data-grid .data-container tr.selected {
-  background-color: rgb(212 212 212);
+  background-color: rgb(212 212 212); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   color: inherit;
 }
 
 .service-worker-cache-data-view .data-grid:focus .data-container tr.selected {
   background-color: var(--selection-bg-color);
-  color: white;
+  color: #fff; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .service-worker-cache-data-view .section,
@@ -48,17 +53,21 @@
 }
 
 .cache-preview-panel-resizer {
-  background-color: #eee;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   height: 4px;
-  border-bottom: 1px solid rgb(64% 64% 64%);
+  border-bottom: 1px solid rgb(64% 64% 64%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .cache-storage-summary-bar {
   flex: 0 0 27px;
   line-height: 27px;
   padding-left: 5px;
-  background-color: #eee;
-  border-top: 1px solid #ccc;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-top: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

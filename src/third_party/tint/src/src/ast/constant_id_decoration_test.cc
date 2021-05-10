@@ -14,33 +14,31 @@
 
 #include "src/ast/constant_id_decoration.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ConstantIdDecorationTest = testing::Test;
+using ConstantIdDecorationTest = TestHelper;
 
 TEST_F(ConstantIdDecorationTest, Creation) {
-  ConstantIdDecoration d{12, Source{}};
-  EXPECT_EQ(12u, d.value());
+  auto* d = create<ConstantIdDecoration>(12);
+  EXPECT_EQ(12u, d->value());
 }
 
 TEST_F(ConstantIdDecorationTest, Is) {
-  ConstantIdDecoration d{27, Source{}};
-  EXPECT_FALSE(d.IsBinding());
-  EXPECT_FALSE(d.IsBuiltin());
-  EXPECT_TRUE(d.IsConstantId());
-  EXPECT_FALSE(d.IsLocation());
-  EXPECT_FALSE(d.IsSet());
+  Decoration* d = create<ConstantIdDecoration>(27);
+  EXPECT_FALSE(d->Is<BindingDecoration>());
+  EXPECT_FALSE(d->Is<BuiltinDecoration>());
+  EXPECT_TRUE(d->Is<ConstantIdDecoration>());
+  EXPECT_FALSE(d->Is<LocationDecoration>());
+  EXPECT_FALSE(d->Is<GroupDecoration>());
 }
 
 TEST_F(ConstantIdDecorationTest, ToStr) {
-  ConstantIdDecoration d{1200, Source{}};
-  std::ostringstream out;
-  d.to_str(out);
-  EXPECT_EQ(out.str(), R"(ConstantIdDecoration{1200}
+  auto* d = create<ConstantIdDecoration>(1200);
+  EXPECT_EQ(str(d), R"(ConstantIdDecoration{1200}
 )");
 }
 

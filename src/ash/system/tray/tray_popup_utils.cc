@@ -219,15 +219,6 @@ views::ImageView* TrayPopupUtils::CreateMainImageView() {
 views::ToggleButton* TrayPopupUtils::CreateToggleButton(
     views::Button::PressedCallback callback,
     int accessible_name_id) {
-  constexpr SkColor kTrackAlpha = 0x66;
-  auto GetColor = [](bool is_on, SkAlpha alpha = SK_AlphaOPAQUE) {
-    AshColorProvider::ContentLayerType type =
-        is_on ? AshColorProvider::ContentLayerType::kIconColorProminent
-              : AshColorProvider::ContentLayerType::kTextColorPrimary;
-
-    return SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(type),
-                       alpha);
-  };
   views::ToggleButton* toggle = new views::ToggleButton(std::move(callback));
   const gfx::Size toggle_size(toggle->GetPreferredSize());
   const int vertical_padding = (kMenuButtonSize - toggle_size.height()) / 2;
@@ -236,10 +227,7 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
   toggle->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
   toggle->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
-  toggle->SetThumbOnColor(GetColor(true));
-  toggle->SetThumbOffColor(GetColor(false));
-  toggle->SetTrackOnColor(GetColor(true, kTrackAlpha));
-  toggle->SetTrackOffColor(GetColor(false, kTrackAlpha));
+  UpdateToggleButtonColors(toggle);
   return toggle;
 }
 
@@ -367,23 +355,44 @@ void TrayPopupUtils::UpdateCheckMarkVisibility(HoverHighlightView* container,
               : HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
 }
 
+void TrayPopupUtils::UpdateToggleButtonColors(views::ToggleButton* toggle) {
+  auto* ash_color_provider = AshColorProvider::Get();
+  toggle->SetThumbOnColor(ash_color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchKnobColorActive));
+  toggle->SetThumbOffColor(ash_color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchKnobColorInactive));
+  toggle->SetTrackOnColor(ash_color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchTrackColorActive));
+  toggle->SetTrackOffColor(ash_color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchTrackColorInactive));
+}
+
 void TrayPopupUtils::SetLabelFontList(views::Label* label, FontStyle style) {
   label->SetAutoColorReadabilityEnabled(false);
-  const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+  const gfx::FontList google_sans_font_list({"Google Sans"}, gfx::Font::NORMAL,
+                                            16, gfx::Font::Weight::MEDIUM);
+  const gfx::FontList roboto_font_list({"Roboto"}, gfx::Font::NORMAL, 16,
+                                       gfx::Font::Weight::MEDIUM);
+
   switch (style) {
     case FontStyle::kTitle:
-      label->SetFontList(base_font_list.Derive(8, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::MEDIUM));
+      label->SetFontList(google_sans_font_list);
+      break;
+    case FontStyle::kPodMenuHeader:
+      label->SetFontList(roboto_font_list);
       break;
     case FontStyle::kSubHeader:
-      label->SetFontList(base_font_list.Derive(4, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::MEDIUM));
+      label->SetFontList(roboto_font_list.Derive(-1, gfx::Font::NORMAL,
+                                                 gfx::Font::Weight::MEDIUM));
       break;
     case FontStyle::kSmallTitle:
+      label->SetFontList(roboto_font_list.Derive(-3, gfx::Font::NORMAL,
+                                                 gfx::Font::Weight::MEDIUM));
+      break;
     case FontStyle::kDetailedViewLabel:
     case FontStyle::kSystemInfo:
-      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::NORMAL));
+      label->SetFontList(roboto_font_list.Derive(-4, gfx::Font::NORMAL,
+                                                 gfx::Font::Weight::NORMAL));
       break;
   }
 }

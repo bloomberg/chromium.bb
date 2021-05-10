@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../test_runner/test_runner.js';
+import '../layers/layers-legacy.js';
+import '../elements/elements-legacy.js';
+import '../components/components-legacy.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.LayersTestRunner = self.LayersTestRunner || {};
 
@@ -133,14 +137,14 @@ LayersTestRunner.dispatchMouseEvent = function(eventType, button, element, offse
 };
 
 LayersTestRunner.findLayerTreeElement = function(layer) {
-  const element = layer[LayerViewer.LayerTreeElement._symbol];
+  const element = LayerViewer.LayerTreeElement.layerToTreeElement.get(layer);
   element.reveal();
   return element.listItemElement;
 };
 
 LayersTestRunner.dispatchMouseEventToLayerTree = function(eventType, button, layer) {
   const element = LayersTestRunner.findLayerTreeElement(layer);
-  TestRunner.assertTrue(!!element);
+  TestRunner.assertTrue(Boolean(element));
   LayersTestRunner.dispatchMouseEvent(eventType, button, element, element.clientWidth >> 1, element.clientHeight >> 1);
 };
 

@@ -4,34 +4,42 @@
 
 #include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
+#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_metrics_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/prefs/pref_service.h"
@@ -203,14 +211,39 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
 }
 
 void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+
+  // Ensure that the `HoldingSpaceKeyedService` for `profile` is created.
+  ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
+
   if (is_primary_user) {
-    DCHECK_NE(primary_profile_, nullptr);
+    DCHECK_EQ(primary_profile_, profile);
+
+    // Ensure that PhoneHubManager and EcheAppManager are created for the
+    // primary profile.
+    phonehub::PhoneHubManagerFactory::GetForProfile(profile);
+    eche_app::EcheAppManagerFactory::GetForProfile(profile);
 
     plugin_vm::PluginVmManager* plugin_vm_manager =
         plugin_vm::PluginVmManagerFactory::GetForProfile(primary_profile_);
     if (plugin_vm_manager)
       plugin_vm_manager->OnPrimaryUserSessionStarted();
+
+    VmCameraMicManager::Get()->OnPrimaryUserSessionStarted(primary_profile_);
+
+    bool pcie_tunneling_allowed = false;
+    CrosSettings::Get()->GetBoolean(
+        chromeos::kDevicePeripheralDataAccessEnabled, &pcie_tunneling_allowed);
+    // Pciguard can only be set by non-guest, primary users. By default,
+    // Pciguard is turned on.
+    PciguardClient::Get()->SendExternalPciDevicesPermissionState(
+        pcie_tunneling_allowed);
   }
+}
+
+void UserSessionInitializer::PreStartSession() {
+  NetworkCertLoader::Get()->MarkUserNSSDBWillBeInitialized();
 }
 
 void UserSessionInitializer::InitRlzImpl(Profile* profile,
@@ -266,6 +299,7 @@ void UserSessionInitializer::InitRlzImpl(Profile* profile,
 #endif
   if (init_rlz_impl_closure_for_testing_)
     std::move(init_rlz_impl_closure_for_testing_).Run();
+  inited_for_testing_ = true;
 }
 
 }  // namespace chromeos

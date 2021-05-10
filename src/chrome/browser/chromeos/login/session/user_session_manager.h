@@ -29,9 +29,9 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_notification.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/arc/net/always_on_vpn_manager.h"
@@ -244,11 +244,13 @@ class UserSessionManager
   bool RespectLocalePreference(
       Profile* profile,
       const user_manager::User* user,
-      const locale_util::SwitchLanguageCallback& callback) const;
+      locale_util::SwitchLanguageCallback callback) const;
 
   // Switch to the locale that `profile` wishes to use and invoke `callback`.
   void RespectLocalePreferenceWrapper(Profile* profile,
-                                      const base::Closure& callback);
+                                      base::OnceClosure callback);
+
+  void LaunchBrowser(Profile* profile);
 
   // Restarts Chrome if needed. This happens when user session has custom
   // flags/switches enabled. Another case when owner has setup custom flags,
@@ -268,9 +270,6 @@ class UserSessionManager
   void RemoveSessionStateObserver(chromeos::UserSessionStateObserver* observer);
 
   void ActiveUserChanged(user_manager::User* active_user) override;
-
-  // This method will be called when user have obtained oauth2 tokens.
-  void OnOAuth2TokensFetched(UserContext context);
 
   // Returns default IME state for user session.
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
@@ -345,6 +344,8 @@ class UserSessionManager
   ~UserSessionManager() override;
 
  private:
+  // Observes the Device Account's LST and informs UserSessionManager about it.
+  class DeviceAccountGaiaTokenObserver;
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;
 
@@ -419,13 +420,6 @@ class UserSessionManager
   // the authentication profile.
   void CompleteProfileCreateAfterAuthTransfer(Profile* profile);
 
-  // Asynchronously prepares TPM devices and calls FinalizePrepareProfile on UI
-  // thread.
-  void PrepareTpmDeviceAndFinalizeProfile(Profile* profile);
-
-  // Called on UI thread once Cryptohome operation completes.
-  void OnCryptohomeOperationCompleted(Profile* profile, bool result);
-
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);
 
@@ -491,7 +485,7 @@ class UserSessionManager
                                bool locale_pref_checked);
 
   static void RunCallbackOnLocaleLoaded(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       InputEventsBlocker* input_events_blocker,
       const locale_util::LanguageSwitchResult& result);
 
@@ -503,9 +497,16 @@ class UserSessionManager
 
   void CreateTokenUtilIfMissing();
 
+  // Update token handle if the existing token handle is missing/invalid.
+  void UpdateTokenHandleIfRequired(Profile* const profile,
+                                   const AccountId& account_id);
+
+  // Force update token handle.
+  void UpdateTokenHandle(Profile* const profile, const AccountId& account_id);
+
   // Test API methods.
   void InjectAuthenticatorBuilder(
-      std::unique_ptr<StubAuthenticatorBuilder> builer);
+      std::unique_ptr<StubAuthenticatorBuilder> builder);
 
   // Controls whether browser instance should be launched after sign in
   // (used in tests).
@@ -521,6 +522,8 @@ class UserSessionManager
       const base::RepeatingClosure& attempt_restart_closure);
 
   void NotifyEasyUnlockKeyOpsFinished();
+
+  bool IsFullRestoreEnabled(Profile* profile);
 
   UserSessionManagerDelegate* delegate_;
 
@@ -603,6 +606,8 @@ class UserSessionManager
 
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
   std::unique_ptr<TokenHandleFetcher> token_handle_fetcher_;
+  std::map<Profile*, std::unique_ptr<DeviceAccountGaiaTokenObserver>>
+      token_observers_;
 
   // Whether should launch browser, tests may override this value.
   bool should_launch_browser_;
@@ -640,5 +645,12 @@ class UserSessionManager
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::UserSessionManager;
+using ::chromeos::UserSessionManagerDelegate;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_

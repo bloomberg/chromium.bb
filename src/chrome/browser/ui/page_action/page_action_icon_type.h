@@ -13,14 +13,17 @@ enum class PageActionIconType {
   kIntentPicker,
   kLocalCardMigration,
   kManagePasswords,
-  kNativeFileSystemAccess,
+  kFileSystemAccess,
+  kPaymentsOfferNotification,
   kPwaInstall,
   kQRCodeGenerator,
   kReaderMode,
+  kSaveAutofillAddress,
   kSaveCard,
   kSendTabToSelf,
   kSharedClipboard,
   kTranslate,
+  kWebAuthn,
   kZoom,
 };
 

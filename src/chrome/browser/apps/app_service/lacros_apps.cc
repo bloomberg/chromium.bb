@@ -12,9 +12,9 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/crosapi/browser_manager.h"
+#include "chrome/browser/chromeos/crosapi/browser_util.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
@@ -22,7 +22,7 @@ namespace apps {
 
 LacrosApps::LacrosApps(
     const mojo::Remote<apps::mojom::AppService>& app_service) {
-  DCHECK(chromeos::features::IsLacrosSupportEnabled());
+  DCHECK(crosapi::browser_util::IsLacrosEnabled());
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kLacros);
 }
 
@@ -84,7 +84,8 @@ void LacrosApps::Connect(
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kLacros,
+                     true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
 }
 
@@ -109,7 +110,7 @@ void LacrosApps::LoadIcon(const std::string& app_id,
 void LacrosApps::Launch(const std::string& app_id,
                         int32_t event_flags,
                         apps::mojom::LaunchSource launch_source,
-                        int64_t display_id) {
+                        apps::mojom::WindowInfoPtr window_info) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
   crosapi::BrowserManager::Get()->NewWindow();
 }

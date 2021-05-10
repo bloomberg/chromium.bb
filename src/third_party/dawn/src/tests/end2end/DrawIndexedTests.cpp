@@ -26,21 +26,18 @@ class DrawIndexedTest : public DawnTest {
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                layout(location = 0) in vec4 pos;
-                void main() {
-                    gl_Position = pos;
-                })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<in> pos : vec4<f32>;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[stage(vertex)]] fn main() -> void {
+                Position = pos;
+            })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            })");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = vsModule;
@@ -89,7 +86,7 @@ class DrawIndexedTest : public DawnTest {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
             pass.SetPipeline(pipeline);
             pass.SetVertexBuffer(0, vertexBuffer);
-            pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32, bufferOffset);
+            pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, bufferOffset);
             pass.DrawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
             pass.EndPass();
         }
@@ -117,8 +114,38 @@ TEST_P(DrawIndexedTest, Uint32) {
     Test(6, 1, 0, 0, 0, 0, filled, filled);
 }
 
+// Out of bounds drawIndexed are treated as no-ops instead of invalid operations
+// Some agreements: https://github.com/gpuweb/gpuweb/issues/955
+TEST_P(DrawIndexedTest, OutOfBounds) {
+    RGBA8 filled(0, 255, 0, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+
+    // a valid draw.
+    Test(6, 1, 0, 0, 0, 0, filled, filled);
+    // indexCount is 0 but firstIndex out of bound
+    Test(0, 1, 20, 0, 0, 0, notFilled, notFilled);
+    // indexCount + firstIndex out of bound
+    Test(6, 1, 7, 0, 0, 0, notFilled, notFilled);
+    // only firstIndex out of bound
+    Test(6, 1, 20, 0, 0, 0, notFilled, notFilled);
+    // firstIndex much larger than the bound
+    Test(6, 1, 10000, 0, 0, 0, notFilled, notFilled);
+    // only indexCount out of bound
+    Test(20, 1, 0, 0, 0, 0, notFilled, notFilled);
+    // indexCount much larger than the bound
+    Test(10000, 1, 0, 0, 0, 0, notFilled, notFilled);
+    // max uint32_t indexCount and firstIndex
+    Test(std::numeric_limits<uint32_t>::max(), 1, std::numeric_limits<uint32_t>::max(), 0, 0, 0,
+         notFilled, notFilled);
+    // max uint32_t indexCount and small firstIndex
+    Test(std::numeric_limits<uint32_t>::max(), 1, 2, 0, 0, 0, notFilled, notFilled);
+    // small indexCount and max uint32_t firstIndex
+    Test(2, 1, std::numeric_limits<uint32_t>::max(), 0, 0, 0, notFilled, notFilled);
+}
+
 // Test the parameter 'baseVertex' of DrawIndexed() works.
 TEST_P(DrawIndexedTest, BaseVertex) {
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_base_vertex"));
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 
@@ -138,4 +165,5 @@ DAWN_INSTANTIATE_TEST(DrawIndexedTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

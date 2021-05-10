@@ -16,6 +16,7 @@
 #include "base/task/task_observer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
@@ -256,6 +257,11 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // Can be called on any thread.
   virtual const char* GetName() const;
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+  // Serialise this object into a trace.
+  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+#endif
+
   // Set the priority of the queue to |priority|. NOTE this must be called on
   // the thread this TaskQueue was created by.
   void SetQueuePriority(QueuePriority priority);
@@ -371,6 +377,10 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // ScopedDeferTaskPosting::PostOrDefer should be used instead.
   void SetOnTaskPostedHandler(OnTaskPostedHandler handler);
 
+  base::WeakPtr<TaskQueue> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   virtual ~TaskQueue();
 
@@ -411,6 +421,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   int enabled_voter_count_ = 0;
   int voter_count_ = 0;
   const char* name_;
+
+  base::WeakPtrFactory<TaskQueue> weak_ptr_factory_{this};
 };
 
 }  // namespace sequence_manager

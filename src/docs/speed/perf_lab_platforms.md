@@ -13,18 +13,26 @@
  * [android-pixel2-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2-perf): Android OPM1.171019.021.
  * [android-pixel2_weblayer-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_weblayer-perf): Android OPM1.171019.021.
  * [android-pixel2_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_webview-perf): Android OPM1.171019.021.
+ * [android-pixel4-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel4-perf): Android R.
+ * [android-pixel4_weblayer-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel4_weblayer-perf): Android R.
+ * [android-pixel4_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel4_webview-perf): Android R.
  * [android-pixel4a_power-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel4a_power-perf): Android QD4A.200102.001.A1.
+
+## Chromeos
+
+ * [lacros-eve-perf](https://ci.chromium.org/p/chrome/builders/ci/lacros-eve-perf): .
 
 ## Linux
 
- * [linux-perf](https://ci.chromium.org/p/chrome/builders/ci/linux-perf): Ubuntu-14.04, 8 core, NVIDIA Quadro P400.
+ * [linux-perf](https://ci.chromium.org/p/chrome/builders/ci/linux-perf): Ubuntu-18.04, 8 core, NVIDIA Quadro P400.
+ * [linux-perf-rel](https://ci.chromium.org/p/chrome/builders/ci/linux-perf-rel): Ubuntu-18.04, 8 core, NVIDIA Quadro P400.
 
 ## Mac
 
  * [mac-10_12_laptop_low_end-perf](https://ci.chromium.org/p/chrome/builders/ci/mac-10_12_laptop_low_end-perf): MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics.
  * [mac-10_13_laptop_high_end-perf](https://ci.chromium.org/p/chrome/builders/ci/mac-10_13_laptop_high_end-perf): MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55.
  * [mac-arm_dtk_arm-perf](https://ci.chromium.org/p/chrome/builders/ci/mac-arm_dtk_arm-perf): Mac ARM DTK (ARM Chrome).
- * [mac-arm_dtk_x86-perf](https://ci.chromium.org/p/chrome/builders/ci/mac-arm_dtk_x86-perf): Mac ARM DTK (X86 Chrome).
+ * [mac-m1_mini_2020-perf](https://ci.chromium.org/p/chrome/builders/ci/mac-m1_mini_2020-perf): Mac M1 Mini 2020.
 
 ## Win
 

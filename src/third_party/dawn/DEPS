@@ -1,9 +1,6 @@
 use_relative_paths = True
 
 gclient_gn_args_file = 'build/config/gclient_args.gni'
-gclient_gn_args = [
-  'mac_xcode_version',
-]
 
 vars = {
   'chromium_git': 'https://chromium.googlesource.com',
@@ -12,25 +9,20 @@ vars = {
   'swiftshader_git': 'https://swiftshader.googlesource.com',
 
   'dawn_standalone': True,
-
-  # This can be overridden, e.g. with custom_vars, to download a nonstandard
-  # Xcode version in build/mac_toolchain.py instead of downloading the
-  # prebuilt pinned revision.
-  'mac_xcode_version': 'default',
 }
 
 deps = {
   # Dependencies required to use GN/Clang in standalone
   'build': {
-    'url': '{chromium_git}/chromium/src/build@787a783b9651465a131c564103b8533394f0f949',
+    'url': '{chromium_git}/chromium/src/build@6fa63e6b1506d6dce6c8e86c4dc2b70e4e6f1e6b',
     'condition': 'dawn_standalone',
   },
   'buildtools': {
-    'url': '{chromium_git}/chromium/src/buildtools@98881a1297863de584fad20fb671e8c44ad1a7d0',
+    'url': '{chromium_git}/chromium/src/buildtools@fc5af1ac75d8a249d692fb3cbf707dd9f791ec3c',
     'condition': 'dawn_standalone',
   },
   'tools/clang': {
-    'url': '{chromium_git}/chromium/src/tools/clang@eb065289a4d96151ad9065f0234cb6754512faaf',
+    'url': '{chromium_git}/chromium/src/tools/clang@aecd85e062e006f47665ed6347e0cc1e9a116421',
     'condition': 'dawn_standalone',
   },
   'tools/clang/dsymutil': {
@@ -64,39 +56,21 @@ deps = {
     'condition': 'dawn_standalone',
   },
 
-  # SPIRV-Cross
-  'third_party/spirv-cross': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Cross@8891bd35120ca91c252a66ccfdc3f9a9d03c70cd',
-    'condition': 'dawn_standalone',
-  },
-
-  # SPIRV compiler dependencies: SPIRV-Tools, SPIRV-headers, glslang and shaderc
-  'third_party/SPIRV-Tools': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Tools@60ce96e2ff10677c52ee5892519cb74d078d1592',
-    'condition': 'dawn_standalone',
-  },
-  'third_party/spirv-headers': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Headers@060627f0b0d2fa8581b5acb939f46e3b9e500593',
-    'condition': 'dawn_standalone',
-  },
-  'third_party/glslang': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/glslang@4dcc12d1a441b29d5901bc708bb1343d29d6459f',
-    'condition': 'dawn_standalone',
-  },
+  # SPIRV compiler dependencies: shaderc
   'third_party/shaderc': {
-    'url': '{chromium_git}/external/github.com/google/shaderc@011139094ec790ff7f32ea2d80286255fc9ed18b',
+    'url': '{chromium_git}/external/github.com/google/shaderc@8d081127ee28ff5df8123c994c00bc66a57e9e9c',
     'condition': 'dawn_standalone',
   },
 
   # WGSL support
   'third_party/tint': {
-    'url': '{dawn_git}/tint@1980095da7f4325ab474166ab84ebe953afe80c3',
+    'url': '{dawn_git}/tint@c1f7e904176d02369405b64e251391f9e9758428',
     'condition': 'dawn_standalone',
   },
 
   # GLFW for tests and samples
   'third_party/glfw': {
-    'url': '{chromium_git}/external/github.com/glfw/glfw@d973acc123826666ecc9e6fd475682e3d84c54a6',
+    'url': '{chromium_git}/external/github.com/glfw/glfw@94773111300fee0453844a4c9407af7e880b4df8',
     'condition': 'dawn_standalone',
   },
 
@@ -106,17 +80,13 @@ deps = {
     'condition': 'dawn_standalone',
   },
 
-  # Khronos Vulkan headers, validation layers and loader.
-  'third_party/vulkan-headers': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/Vulkan-Headers@ced848d699b5673a7df900bcfe0b1a6ba9e989ce',
+  'third_party/vulkan_memory_allocator': {
+    'url': '{chromium_git}/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@065e739079d9d58bef28ccd793cbf512261f09ed',
     'condition': 'dawn_standalone',
   },
-  'third_party/vulkan-validation-layers': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/Vulkan-ValidationLayers@e8b96e86fe2edfaee274b98fbbe1bd65579b0904',
-    'condition': 'dawn_standalone',
-  },
-  'third_party/vulkan-loader': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/Vulkan-Loader@d846ea5a2427eb0119cf98288aa337eced10edbd',
+
+  'third_party/angle': {
+    'url': '{chromium_git}/angle/angle@f4cd17472aca1939277b145ef0f72b0946b83716',
     'condition': 'dawn_standalone',
   },
 
@@ -125,6 +95,14 @@ deps = {
     'condition': 'dawn_standalone',
   },
 
+  'third_party/vulkan-deps': {
+    'url': '{chromium_git}/vulkan-deps@23a4efc36ed9e649fc650ce9dd26df5cac2c26ab',
+  },
+
+  'third_party/zlib': {
+    'url': '{chromium_git}/chromium/src/third_party/zlib@c29ee8c9c3824ca013479bf8115035527967fe02',
+    'condition': 'dawn_standalone',
+  },
 }
 
 hooks = [
@@ -142,6 +120,14 @@ hooks = [
     'condition': 'checkout_linux and (checkout_x64 and dawn_standalone)',
     'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x64'],
+  },
+  {
+    # Update the Mac toolchain if possible, this makes builders use "hermetic XCode" which is
+    # is more consistent (only changes when rolling build/) and is cached.
+    'name': 'mac_toolchain',
+    'pattern': '.',
+    'condition': 'checkout_mac',
+    'action': ['python', 'build/mac_toolchain.py'],
   },
   {
     # Update the Windows toolchain if necessary. Must run before 'clang' below.
@@ -216,4 +202,5 @@ hooks = [
 recursedeps = [
   # buildtools provides clang_format, libc++, and libc++abi
   'buildtools',
+  'third_party/vulkan-deps',
 ]

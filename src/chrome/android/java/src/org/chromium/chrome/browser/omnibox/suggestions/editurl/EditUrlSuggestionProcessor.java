@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
@@ -21,12 +19,12 @@ import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewPr
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareOrigin;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -78,7 +76,7 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
+    public boolean doesProcessSuggestion(AutocompleteMatch suggestion, int position) {
         // The what-you-typed suggestion can potentially appear as the second suggestion in some
         // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
         if (position != 0) return false;
@@ -94,7 +92,8 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
             return false;
         }
 
-        if (!isSuggestionEquivalentToCurrentPage(suggestion, activeTab.getUrl())) {
+        if (suggestion.getType() != OmniboxSuggestionType.URL_WHAT_YOU_TYPED
+                || !suggestion.getUrl().equals(activeTab.getUrl())) {
             return false;
         }
 
@@ -118,7 +117,7 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
+    public void populateModel(AutocompleteMatch suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
 
         if (mOriginalTitle == null) {
@@ -174,7 +173,7 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    protected void onSuggestionClicked(OmniboxSuggestion suggestion, int position) {
+    protected void onSuggestionClicked(AutocompleteMatch suggestion, int position) {
         super.onSuggestionClicked(suggestion, position);
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Tap");
     }
@@ -191,30 +190,12 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     /** Invoked when user interacts with Copy action button. */
     private void onCopyLink() {
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Copy");
-        Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestionURL.getSpec());
+        Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestionURL);
     }
 
     /** Invoked when user interacts with Edit action button. */
     private void onEditLink() {
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
         mUrlBarDelegate.setOmniboxEditingText(mLastProcessedSuggestionURL.getSpec());
-    }
-
-    /**
-     * @return true if the suggestion is effectively the same as the current page, either because:
-     * 1. It's a search suggestion for the same search terms as the current SERP.
-     * 2. It's a URL suggestion for the current URL.
-     */
-    private boolean isSuggestionEquivalentToCurrentPage(
-            OmniboxSuggestion suggestion, GURL pageUrl) {
-        switch (suggestion.getType()) {
-            case OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED:
-                return TextUtils.equals(suggestion.getFillIntoEdit(),
-                        TemplateUrlServiceFactory.get().getSearchQueryForUrl(pageUrl));
-            case OmniboxSuggestionType.URL_WHAT_YOU_TYPED:
-                return suggestion.getUrl().equals(pageUrl);
-            default:
-                return false;
-        }
     }
 }

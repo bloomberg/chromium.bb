@@ -39,17 +39,17 @@ half factor = 1.0 - inputAlpha;
         factor = smoothstep(1.0, 0.0, factor);
         break;
 }
-%s = half4(factor);
+return half4(factor);
 )SkSL",
-                _sample0.c_str(), (int)_outer.mode, args.fOutputColor);
+                _sample0.c_str(), (int)_outer.mode);
     }
 
 private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {}
 };
-GrGLSLFragmentProcessor* GrBlurredEdgeFragmentProcessor::onCreateGLSLInstance() const {
-    return new GrGLSLBlurredEdgeFragmentProcessor();
+std::unique_ptr<GrGLSLFragmentProcessor> GrBlurredEdgeFragmentProcessor::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLBlurredEdgeFragmentProcessor>();
 }
 void GrBlurredEdgeFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                            GrProcessorKeyBuilder* b) const {
@@ -61,7 +61,6 @@ bool GrBlurredEdgeFragmentProcessor::onIsEqual(const GrFragmentProcessor& other)
     if (mode != that.mode) return false;
     return true;
 }
-bool GrBlurredEdgeFragmentProcessor::usesExplicitReturn() const { return false; }
 GrBlurredEdgeFragmentProcessor::GrBlurredEdgeFragmentProcessor(
         const GrBlurredEdgeFragmentProcessor& src)
         : INHERITED(kGrBlurredEdgeFragmentProcessor_ClassID, src.optimizationFlags())

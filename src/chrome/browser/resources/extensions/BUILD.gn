@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("../optimize_webui.gni")
+import("../tools/optimize_webui.gni")
+
+assert(enable_extensions, "enable extensions check failed")
 
 preprocess_folder = "preprocessed"
 preprocess_manifest = "preprocessed_manifest.json"
@@ -59,7 +63,7 @@ generate_grd("build_grd") {
   }
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -74,12 +78,12 @@ preprocess_grit("preprocess") {
     "shortcut_util.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [ "kiosk_browser_proxy.js" ]
   }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":web_components" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -116,7 +120,7 @@ preprocess_grit("preprocess_generated") {
     "toolbar.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [ "kiosk_dialog.js" ]
   }
 }
@@ -163,12 +167,12 @@ html_to_js("web_components_local") {
     "toolbar.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     js_files += [ "kiosk_dialog.js" ]
   }
 }
 
-grit("extensions_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -218,7 +222,7 @@ js_type_check("extensions_module_resources") {
     ":toggle_row",
     ":toolbar",
   ]
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [ ":kiosk_dialog" ]
   }
 }
@@ -301,7 +305,6 @@ js_library("item") {
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
@@ -356,7 +359,7 @@ js_library("kiosk_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
-if (is_chromeos) {
+if (is_chromeos_ash) {
   js_library("kiosk_dialog") {
     deps = [
       ":item_behavior",

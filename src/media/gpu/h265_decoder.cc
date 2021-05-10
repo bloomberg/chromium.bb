@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "media/base/limits.h"
 #include "media/gpu/h265_decoder.h"
 
@@ -19,6 +20,35 @@ struct POCAscCompare {
   }
 };
 
+bool ParseBitDepth(const H265SPS& sps, uint8_t& bit_depth) {
+  // Spec 7.4.3.2.1
+  if (sps.bit_depth_y != sps.bit_depth_c) {
+    DVLOG(1) << "Different bit depths among planes is not supported";
+    return false;
+  }
+  bit_depth = base::checked_cast<uint8_t>(sps.bit_depth_y);
+  return true;
+}
+
+bool IsValidBitDepth(uint8_t bit_depth, VideoCodecProfile profile) {
+  // Spec A.3.
+  switch (profile) {
+    case HEVCPROFILE_MAIN:
+      return bit_depth == 8u;
+    case HEVCPROFILE_MAIN10:
+      return bit_depth == 8u || bit_depth == 10u;
+    case HEVCPROFILE_MAIN_STILL_PICTURE:
+      return bit_depth == 8u;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool IsYUV420Sequence(const H265SPS& sps) {
+  // Spec 6.2
+  return sps.chroma_format_idc == 1;
+}
 }  // namespace
 
 H265Decoder::H265Accelerator::H265Accelerator() = default;
@@ -185,16 +215,8 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
       case H265NALU::CRA_NUT:
         if (!curr_slice_hdr_) {
           curr_slice_hdr_.reset(new H265SliceHeader());
-          if (last_slice_hdr_) {
-            // This is a multi-slice picture, so we should copy all of the prior
-            // slice header data to the new slice and use those as the default
-            // values that don't have syntax elements present.
-            memcpy(curr_slice_hdr_.get(), last_slice_hdr_.get(),
-                   sizeof(H265SliceHeader));
-            last_slice_hdr_.reset();
-          }
-          par_res =
-              parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get());
+          par_res = parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get(),
+                                             last_slice_hdr_.get());
           if (par_res == H265Parser::kMissingParameterSet) {
             // We may still be able to recover if we skip until we find the
             // SPS/PPS.
@@ -318,6 +340,10 @@ VideoCodecProfile H265Decoder::GetProfile() const {
   return profile_;
 }
 
+uint8_t H265Decoder::GetBitDepth() const {
+  return bit_depth_;
+}
+
 size_t H265Decoder::GetRequiredNumOfPictures() const {
   constexpr size_t kPicsInPipeline = limits::kMaxVideoFrames + 1;
   return GetNumReferenceFrames() + kPicsInPipeline;
@@ -348,6 +374,10 @@ bool H265Decoder::ProcessPPS(int pps_id, bool* need_new_buffers) {
     DVLOG(2) << "New visible rect: " << new_visible_rect.ToString();
     visible_rect_ = new_visible_rect;
   }
+  if (!IsYUV420Sequence(*sps)) {
+    DVLOG(1) << "Only YUV 4:2:0 is supported";
+    return false;
+  }
 
   // Equation 7-8
   max_pic_order_cnt_lsb_ =
@@ -355,16 +385,25 @@ bool H265Decoder::ProcessPPS(int pps_id, bool* need_new_buffers) {
 
   VideoCodecProfile new_profile = H265Parser::ProfileIDCToVideoCodecProfile(
       sps->profile_tier_level.general_profile_idc);
-
+  uint8_t new_bit_depth = 0;
+  if (!ParseBitDepth(*sps, new_bit_depth))
+    return false;
+  if (!IsValidBitDepth(new_bit_depth, new_profile)) {
+    DVLOG(1) << "Invalid bit depth=" << base::strict_cast<int>(new_bit_depth)
+             << ", profile=" << GetProfileName(new_profile);
+    return false;
+  }
   if (pic_size_ != new_pic_size || dpb_.max_num_pics() != sps->max_dpb_size ||
-      profile_ != new_profile) {
+      profile_ != new_profile || bit_depth_ != new_bit_depth) {
     if (!Flush())
       return false;
     DVLOG(1) << "Codec profile: " << GetProfileName(new_profile)
              << ", level(x30): " << sps->profile_tier_level.general_level_idc
              << ", DPB size: " << sps->max_dpb_size
-             << ", Picture size: " << new_pic_size.ToString();
+             << ", Picture size: " << new_pic_size.ToString()
+             << ", bit_depth: " << base::strict_cast<int>(new_bit_depth);
     profile_ = new_profile;
+    bit_depth_ = new_bit_depth;
     pic_size_ = new_pic_size;
     dpb_.set_max_num_pics(sps->max_dpb_size);
     if (need_new_buffers)
@@ -486,41 +525,57 @@ bool H265Decoder::CalcRefPicPocs(const H265SPS* sps,
   // Equation 8-5.
   int i, j, k;
   for (i = 0, j = 0, k = 0; i < curr_st_ref_pic_set.num_negative_pics; ++i) {
-    if (curr_st_ref_pic_set.used_by_curr_pic_s0[i]) {
-      poc_st_curr_before_[j++] =
-          curr_pic_->pic_order_cnt_val_ + curr_st_ref_pic_set.delta_poc_s0[i];
-    } else {
-      poc_st_foll_[k++] =
-          curr_pic_->pic_order_cnt_val_ + curr_st_ref_pic_set.delta_poc_s0[i];
+    base::CheckedNumeric<int> poc = curr_pic_->pic_order_cnt_val_;
+    poc += curr_st_ref_pic_set.delta_poc_s0[i];
+    if (!poc.IsValid()) {
+      DVLOG(1) << "Invalid POC";
+      return false;
     }
+    if (curr_st_ref_pic_set.used_by_curr_pic_s0[i])
+      poc_st_curr_before_[j++] = poc.ValueOrDefault(0);
+    else
+      poc_st_foll_[k++] = poc.ValueOrDefault(0);
   }
   num_poc_st_curr_before_ = j;
   for (i = 0, j = 0; i < curr_st_ref_pic_set.num_positive_pics; ++i) {
-    if (curr_st_ref_pic_set.used_by_curr_pic_s1[i]) {
-      poc_st_curr_after_[j++] =
-          curr_pic_->pic_order_cnt_val_ + curr_st_ref_pic_set.delta_poc_s1[i];
-    } else {
-      poc_st_foll_[k++] =
-          curr_pic_->pic_order_cnt_val_ + curr_st_ref_pic_set.delta_poc_s1[i];
+    base::CheckedNumeric<int> poc = curr_pic_->pic_order_cnt_val_;
+    poc += curr_st_ref_pic_set.delta_poc_s1[i];
+    if (!poc.IsValid()) {
+      DVLOG(1) << "Invalid POC";
+      return false;
     }
+    if (curr_st_ref_pic_set.used_by_curr_pic_s1[i])
+      poc_st_curr_after_[j++] = poc.ValueOrDefault(0);
+    else
+      poc_st_foll_[k++] = poc.ValueOrDefault(0);
   }
   num_poc_st_curr_after_ = j;
   num_poc_st_foll_ = k;
   for (i = 0, j = 0, k = 0;
        i < slice_hdr->num_long_term_sps + slice_hdr->num_long_term_pics; ++i) {
-    int poc_lt = slice_hdr->poc_lsb_lt[i];
+    base::CheckedNumeric<int> poc_lt = slice_hdr->poc_lsb_lt[i];
     if (slice_hdr->delta_poc_msb_present_flag[i]) {
-      poc_lt +=
-          curr_pic_->pic_order_cnt_val_ -
-          (slice_hdr->delta_poc_msb_cycle_lt[i] * max_pic_order_cnt_lsb_) -
-          (curr_pic_->pic_order_cnt_val_ & (max_pic_order_cnt_lsb_ - 1));
+      poc_lt += curr_pic_->pic_order_cnt_val_;
+      base::CheckedNumeric<int> poc_delta =
+          slice_hdr->delta_poc_msb_cycle_lt[i];
+      poc_delta *= max_pic_order_cnt_lsb_;
+      if (!poc_delta.IsValid()) {
+        DVLOG(1) << "Invalid POC";
+        return false;
+      }
+      poc_lt -= poc_delta.ValueOrDefault(0);
+      poc_lt -= curr_pic_->pic_order_cnt_val_ & (max_pic_order_cnt_lsb_ - 1);
+    }
+    if (!poc_lt.IsValid()) {
+      DVLOG(1) << "Invalid POC";
+      return false;
     }
     if (slice_hdr->used_by_curr_pic_lt[i]) {
-      poc_lt_curr_[j] = poc_lt;
+      poc_lt_curr_[j] = poc_lt.ValueOrDefault(0);
       curr_delta_poc_msb_present_flag_[j++] =
           slice_hdr->delta_poc_msb_present_flag[i];
     } else {
-      poc_lt_foll_[k] = poc_lt;
+      poc_lt_foll_[k] = poc_lt.ValueOrDefault(0);
       foll_delta_poc_msb_present_flag_[k++] =
           slice_hdr->delta_poc_msb_present_flag[i];
     }

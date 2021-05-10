@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_service.h"
@@ -28,10 +28,9 @@ LoginScreenExtensionsStorageCleaner::LoginScreenExtensionsStorageCleaner() {
   prefs_ = ProfileHelper::GetSigninProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(
-      extensions::pref_names::kLoginScreenExtensions,
+      extensions::pref_names::kInstallForceList,
       base::BindRepeating(&LoginScreenExtensionsStorageCleaner::OnPolicyUpdated,
                           base::Unretained(this)));
-  ClearPersistentDataForUninstalledExtensions();
 }
 
 LoginScreenExtensionsStorageCleaner::~LoginScreenExtensionsStorageCleaner() =
@@ -45,7 +44,7 @@ void LoginScreenExtensionsStorageCleaner::
     ClearPersistentDataForUninstalledExtensions() {
   std::vector<std::string> installed_extension_ids;
   const PrefService::Preference* const pref =
-      prefs_->FindPreference(extensions::pref_names::kLoginScreenExtensions);
+      prefs_->FindPreference(extensions::pref_names::kInstallForceList);
   if (pref && pref->IsManaged() &&
       pref->GetType() == base::Value::Type::DICTIONARY) {
     // Each `item` contains a pair of extension ID and update URL.

@@ -13,10 +13,13 @@
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/web_test/common/web_test.mojom.h"
+#include "content/web_test/renderer/accessibility_controller.h"
+#include "content/web_test/renderer/text_input_controller.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/test/frame_widget_test_helper.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "ui/accessibility/ax_event.h"
@@ -25,8 +28,6 @@
 namespace content {
 class SpellCheckClient;
 class TestRunner;
-class WebViewTestProxy;
-class WebWidgetTestProxy;
 
 // WebFrameTestProxy is used during running web tests instead of a
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
@@ -34,7 +35,8 @@ class WebWidgetTestProxy;
 class WebFrameTestProxy : public RenderFrameImpl,
                           public mojom::WebTestRenderFrame {
  public:
-  explicit WebFrameTestProxy(RenderFrameImpl::CreateParams params);
+  WebFrameTestProxy(RenderFrameImpl::CreateParams params,
+                    TestRunner* test_runner);
   ~WebFrameTestProxy() override;
 
   // RenderFrameImpl overrides.
@@ -51,11 +53,8 @@ class WebFrameTestProxy : public RenderFrameImpl,
   // tests.
   std::string GetFrameDescriptionForWebTests();
 
-  // Returns the test-subclass of RenderWidget for the local root of this frame.
-  WebWidgetTestProxy* GetLocalRootWebWidgetTestProxy();
-  // Returns the test-subclass of RenderViewImpl that is hosting this frame's
-  // frame tree fragment.
-  WebViewTestProxy* GetWebViewTestProxy();
+  // Returns the test helper of WebFrameWidget for the local root of this frame.
+  blink::FrameWidgetTestHelper* GetLocalRootFrameWidgetTestHelper();
 
   // WebLocalFrameClient implementation.
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
@@ -68,15 +67,18 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void DidChangeSelection(bool is_selection_empty) override;
   void DidChangeContents() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
-  void ShowContextMenu(const blink::WebContextMenuData& context_menu_data,
-                       const base::Optional<gfx::Point>&) override;
+  void UpdateContextMenuDataForTesting(
+      const blink::ContextMenuData& context_menu_data,
+      const base::Optional<gfx::Point>&) override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request,
                        ForRedirect for_redirect) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void PostAccessibilityEvent(const ui::AXEvent& event) override;
-  void MarkWebAXObjectDirty(const blink::WebAXObject& object,
-                            bool subtree) override;
+  void MarkWebAXObjectDirty(
+      const blink::WebAXObject& object,
+      bool subtree,
+      ax::mojom::Action event_from_action = ax::mojom::Action::kNone) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback completion_callback) override;
@@ -102,9 +104,13 @@ class WebFrameTestProxy : public RenderFrameImpl,
 
   TestRunner* test_runner();
 
-  WebViewTestProxy* const web_view_test_proxy_;
+  TestRunner* const test_runner_;
 
   std::unique_ptr<SpellCheckClient> spell_check_;
+
+  TextInputController text_input_controller_{this};
+
+  AccessibilityController accessibility_controller_{this};
 
   mojo::AssociatedReceiver<mojom::WebTestRenderFrame>
       web_test_render_frame_receiver_{this};

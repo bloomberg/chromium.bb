@@ -10,16 +10,22 @@
 
 #include "pc/rtp_transceiver.h"
 
+#include <iterator>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/algorithm/container.h"
 #include "api/rtp_parameters.h"
+#include "api/sequence_checker.h"
+#include "media/base/codec.h"
+#include "media/base/media_constants.h"
 #include "pc/channel_manager.h"
 #include "pc/rtp_media_utils.h"
-#include "pc/rtp_parameters_conversion.h"
+#include "pc/session_description.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/thread.h"
 
 namespace webrtc {
 namespace {
@@ -455,6 +461,17 @@ RtpTransceiver::HeaderExtensionsToOffer() const {
   return header_extensions_to_offer_;
 }
 
+std::vector<RtpHeaderExtensionCapability>
+RtpTransceiver::HeaderExtensionsNegotiated() const {
+  if (!channel_)
+    return {};
+  std::vector<RtpHeaderExtensionCapability> result;
+  for (const auto& ext : channel_->GetNegotiatedRtpHeaderExtensions()) {
+    result.emplace_back(ext.uri, ext.id, RtpTransceiverDirection::kSendRecv);
+  }
+  return result;
+}
+
 RTCError RtpTransceiver::SetOfferedRtpHeaderExtensions(
     rtc::ArrayView<const RtpHeaderExtensionCapability>
         header_extensions_to_offer) {
@@ -472,7 +489,7 @@ RTCError RtpTransceiver::SetOfferedRtpHeaderExtensions(
         header_extensions_to_offer_.begin(), header_extensions_to_offer_.end(),
         [&entry](const auto& offered) { return entry.uri == offered.uri; });
     if (it == header_extensions_to_offer_.end()) {
-      return RTCError(RTCErrorType::INVALID_PARAMETER,
+      return RTCError(RTCErrorType::UNSUPPORTED_PARAMETER,
                       "Attempted to modify an unoffered extension.");
     }
 

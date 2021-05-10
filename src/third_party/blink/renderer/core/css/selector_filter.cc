@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 
 namespace blink {
 
@@ -65,8 +66,9 @@ static inline void CollectElementIdentifierHashes(
 void SelectorFilter::PushParentStackFrame(Element& parent) {
   DCHECK(ancestor_identifier_filter_);
   DCHECK(parent_stack_.IsEmpty() ||
-         parent_stack_.back().element == parent.ParentOrShadowHostElement());
-  DCHECK(!parent_stack_.IsEmpty() || !parent.ParentOrShadowHostElement());
+         parent_stack_.back().element ==
+             FlatTreeTraversal::ParentElement(parent));
+  DCHECK(!parent_stack_.IsEmpty() || !FlatTreeTraversal::ParentElement(parent));
   parent_stack_.push_back(ParentStackFrame(parent));
   ParentStackFrame& parent_frame = parent_stack_.back();
   // Mix tags, class names and ids into some sort of weird bouillabaisse.
@@ -106,7 +108,7 @@ void SelectorFilter::PushParent(Element& parent) {
   DCHECK(ancestor_identifier_filter_);
   // We may get invoked for some random elements in some wacky cases during
   // style resolve. Pause maintaining the stack in this case.
-  if (parent_stack_.back().element != parent.ParentOrShadowHostElement())
+  if (parent_stack_.back().element != FlatTreeTraversal::ParentElement(parent))
     return;
   PushParentStackFrame(parent);
 }
@@ -152,12 +154,6 @@ void SelectorFilter::CollectIdentifierHashes(
   unsigned* hash = identifier_hashes;
   unsigned* end = identifier_hashes + maximum_identifier_count;
   CSSSelector::RelationType relation = selector.Relation();
-  if (selector.RelationIsAffectedByPseudoContent()) {
-    // Disable fastRejectSelector.
-    *identifier_hashes = 0;
-    return;
-  }
-
   // Skip the rightmost compound. It is handled quickly by the rule hashes.
   bool skip_over_subselectors = true;
   for (const CSSSelector* current = selector.TagHistory(); current;
@@ -173,15 +169,10 @@ void SelectorFilter::CollectIdentifierHashes(
         skip_over_subselectors = true;
         break;
       case CSSSelector::kShadowSlot:
-        // Disable fastRejectSelector.
-        *identifier_hashes = 0;
-        return;
       case CSSSelector::kDescendant:
-      case CSSSelector::kShadowDeepAsDescendant:
       case CSSSelector::kChild:
-      case CSSSelector::kShadowPseudo:
+      case CSSSelector::kUAShadow:
       case CSSSelector::kShadowPart:
-      case CSSSelector::kShadowDeep:
         skip_over_subselectors = false;
         CollectDescendantSelectorIdentifierHashes(*current, hash);
         break;
@@ -189,11 +180,6 @@ void SelectorFilter::CollectIdentifierHashes(
     if (hash == end)
       return;
     relation = current->Relation();
-    if (current->RelationIsAffectedByPseudoContent()) {
-      // Disable fastRejectSelector.
-      *identifier_hashes = 0;
-      return;
-    }
   }
   *hash = 0;
 }

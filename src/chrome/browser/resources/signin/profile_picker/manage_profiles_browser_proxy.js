@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.m.js';
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 /**
@@ -10,6 +11,7 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  *   profilePath: string,
  *   localProfileName: string,
  *   isSyncing: boolean,
+ *   needsSignin: boolean,
  *   gaiaName: string,
  *   userName: string,
  *   isManaged: boolean,
@@ -106,21 +108,35 @@ export class ManageProfilesBrowserProxy {
 
   /**
    * Loads Google sign in page (and silently creates a profile with the
-   * specified color).
-   * @param {number} profileColor
+   * specified color, if specified).
+   * @param {?number} profileColor
    */
   loadSignInProfileCreationFlow(profileColor) {}
+
+  /**
+   * Retrieves custom avatar list for the select avatar dialog.
+   * * @return {!Promise<!Array<!AvatarIcon>>}
+   */
+  getAvailableIcons() {}
 
   /**
    * Creates local profile
    * @param {string} profileName
    * @param {number} profileColor
-   * @param {string} avatarUrl
-   * @param {boolean} isGeneric
+   * @param {number} avatarIndex
    * @param {boolean} createShortcut
    */
-  createProfile(
-      profileName, profileColor, avatarUrl, isGeneric, createShortcut) {}
+  createProfile(profileName, profileColor, avatarIndex, createShortcut) {}
+
+  /**
+   * Sets the local profile name.
+   * @param {string} profilePath
+   * @param {string} profileName
+   */
+  setProfileName(profilePath, profileName) {}
+
+  /** Records impression of a sign-in promo to metrics. */
+  recordSignInPromoImpression() {}
 }
 
 /** @implements {ManageProfilesBrowserProxy} */
@@ -176,11 +192,25 @@ export class ManageProfilesBrowserProxyImpl {
   }
 
   /** @override */
-  createProfile(
-      profileName, profileColor, avatarUrl, isGeneric, createShortcut) {
+  getAvailableIcons() {
+    return sendWithPromise('getAvailableIcons');
+  }
+
+  /** @override */
+  createProfile(profileName, profileColor, avatarIndex, createShortcut) {
     chrome.send(
         'createProfile',
-        [profileName, profileColor, avatarUrl, isGeneric, createShortcut]);
+        [profileName, profileColor, avatarIndex, createShortcut]);
+  }
+
+  /** @override */
+  setProfileName(profilePath, profileName) {
+    chrome.send('setProfileName', [profilePath, profileName]);
+  }
+
+  /** @override */
+  recordSignInPromoImpression() {
+    chrome.send('recordSignInPromoImpression');
   }
 }
 

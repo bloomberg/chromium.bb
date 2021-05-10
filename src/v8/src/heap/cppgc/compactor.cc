@@ -16,6 +16,7 @@
 #include "src/heap/cppgc/heap-page.h"
 #include "src/heap/cppgc/heap-space.h"
 #include "src/heap/cppgc/raw-heap.h"
+#include "src/heap/cppgc/stats-collector.h"
 
 namespace cppgc {
 namespace internal {
@@ -434,7 +435,7 @@ Compactor::Compactor(RawHeap& heap) : heap_(heap) {
 
 bool Compactor::ShouldCompact(
     GarbageCollector::Config::MarkingType marking_type,
-    GarbageCollector::Config::StackState stack_state) {
+    GarbageCollector::Config::StackState stack_state) const {
   if (compactable_spaces_.empty() ||
       (marking_type == GarbageCollector::Config::MarkingType::kAtomic &&
        stack_state ==
@@ -482,6 +483,9 @@ bool Compactor::CancelIfShouldNotCompact(
 
 Compactor::CompactableSpaceHandling Compactor::CompactSpacesIfEnabled() {
   if (!is_enabled_) return CompactableSpaceHandling::kSweep;
+
+  StatsCollector::EnabledScope stats_scope(heap_.heap()->stats_collector(),
+                                           StatsCollector::kAtomicCompact);
 
   MovableReferences movable_references(*heap_.heap());
 

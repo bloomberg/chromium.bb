@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -604,7 +605,9 @@ TEST_F(LabelTest, TooltipProperty) {
 }
 
 TEST_F(LabelTest, Accessibility) {
-  label()->SetText(ASCIIToUTF16("My special text."));
+  const base::string16 accessible_name = ASCIIToUTF16("A11y text.");
+
+  label()->SetText(ASCIIToUTF16("Displayed text."));
 
   ui::AXNodeData node_data;
   label()->GetAccessibleNodeData(&node_data);
@@ -613,6 +616,33 @@ TEST_F(LabelTest, Accessibility) {
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
   EXPECT_FALSE(
       node_data.HasIntAttribute(ax::mojom::IntAttribute::kRestriction));
+
+  // Setting a custom accessible name overrides the displayed text in
+  // screen reader announcements.
+  label()->SetAccessibleName(accessible_name);
+
+  label()->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(accessible_name,
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_NE(label()->GetText(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+
+  // Changing the displayed text will not impact the non-empty accessible name.
+  label()->SetText(ASCIIToUTF16("Different displayed Text."));
+
+  label()->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(accessible_name,
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_NE(label()->GetText(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+
+  // Clearing the accessible name will cause the screen reader to default to
+  // verbalizing the displayed text.
+  label()->SetAccessibleName(ASCIIToUTF16(""));
+
+  label()->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(label()->GetText(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
 TEST_F(LabelTest, TextChangeWithoutLayout) {
@@ -1083,7 +1113,7 @@ TEST_F(LabelTest, GetSubstringBounds) {
 }
 
 // TODO(crbug.com/1139395): Enable on ChromeOS along with the DCHECK in Label.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Ensures DCHECK for subpixel rendering on transparent layer is working.
 TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
   View view;
@@ -1115,7 +1145,7 @@ TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
   view.SetBackground(CreateSolidBackground(SK_ColorWHITE));
   label->OnPaint(&canvas);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.
@@ -1413,7 +1443,9 @@ TEST_F(LabelSelectionTest, MouseDragWord) {
   EXPECT_STR_EQ("drag word", GetSelectedText());
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Verify selection clipboard behavior on text selection.
 TEST_F(LabelSelectionTest, SelectionClipboard) {
   label()->SetText(ASCIIToUTF16("Label selection clipboard"));

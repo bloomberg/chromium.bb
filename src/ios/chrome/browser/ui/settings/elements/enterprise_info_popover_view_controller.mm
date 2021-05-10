@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/elements_constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -22,11 +23,8 @@ namespace {
 
 NSString* const kEnterpriseIconName = @"enterprise_icon";
 
-NSString* const kChromeManagementURL = @"chrome://management";
-
-NSAttributedString* PrimaryMessage() {
-  NSString* fullText =
-      l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE);
+NSAttributedString* PrimaryMessage(NSString* fullText) {
+  DCHECK(fullText);
   NSDictionary* generalAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextPrimaryColor],
     NSFontAttributeName : [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
@@ -66,7 +64,8 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName) {
     NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
     NSFontAttributeName :
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
-    NSLinkAttributeName : kChromeManagementURL,
+    NSLinkAttributeName :
+        [NSString stringWithUTF8String:kChromeUIManagementURL],
   };
   [attributedString setAttributes:linkAttributes range:range];
 
@@ -98,8 +97,15 @@ NSAttributedString* SecondaryMessage(NSString* enterpriseName) {
 @implementation EnterpriseInfoPopoverViewController
 
 - (instancetype)initWithEnterpriseName:(NSString*)enterpriseName {
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE);
+  return [self initWithMessage:message enterpriseName:enterpriseName];
+}
+
+- (instancetype)initWithMessage:(NSString*)message
+                 enterpriseName:(NSString*)enterpriseName {
   return
-      [super initWithPrimaryAttributedString:PrimaryMessage()
+      [super initWithPrimaryAttributedString:PrimaryMessage(message)
                    secondaryAttributedString:SecondaryMessage(enterpriseName)];
 }
 

@@ -16,6 +16,7 @@
 #include "src/core/SkRasterClip.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkScan.h"
+#include "src/core/SkVM.h"
 #include "src/core/SkVertState.h"
 #include "src/core/SkVerticesPriv.h"
 #include "src/shaders/SkComposeShader.h"
@@ -147,6 +148,15 @@ protected:
         return true;
     }
 
+    skvm::Color onProgram(skvm::Builder*,
+                          skvm::Coord, skvm::Coord, skvm::Color,
+                          const SkMatrixProvider&, const SkMatrix*,
+                          SkFilterQuality, const SkColorInfo&,
+                          skvm::Uniforms*, SkArenaAlloc*) const override {
+        // TODO?
+        return {};
+    }
+
 private:
     bool isOpaque() const override { return fIsOpaque; }
     // For serialization.  This will never be called.
@@ -210,7 +220,7 @@ static SkPMColor4f* convert_colors(const SkColor src[], int count, SkColorSpace*
                                             kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
     SkImageInfo dstInfo = SkImageInfo::Make(count, 1, kRGBA_F32_SkColorType,
                                             kPremul_SkAlphaType, sk_ref_sp(deviceCS));
-    SkConvertPixels(dstInfo, dst, 0, srcInfo, src, 0);
+    SkAssertResult(SkConvertPixels(dstInfo, dst, 0, srcInfo, src, 0));
     return dst;
 }
 

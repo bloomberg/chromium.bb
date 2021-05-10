@@ -12,11 +12,10 @@
 #include "base/callback_helpers.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/cros_platform_api.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service_context.h"
+#include "chromeos/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 
 using SpeakerIdEnrollmentState =
@@ -44,6 +43,13 @@ AssistantSettingsImpl::AssistantSettingsImpl(
       assistant_manager_service_(assistant_manager_service) {}
 
 AssistantSettingsImpl::~AssistantSettingsImpl() = default;
+
+void AssistantSettingsImpl::Initialize(
+    mojo::PendingRemote<
+        ::chromeos::libassistant::mojom::SpeakerIdEnrollmentController>
+        remote) {
+  speaker_id_enrollment_remote_.Bind(std::move(remote));
+}
 
 void AssistantSettingsImpl::GetSettings(const std::string& selector,
                                         GetSettingsCallback callback) {
@@ -121,75 +127,34 @@ void AssistantSettingsImpl::StartSpeakerIdEnrollment(
     bool skip_cloud_enrollment,
     base::WeakPtr<SpeakerIdEnrollmentClient> client) {
   DCHECK(HasStarted(assistant_manager_service_));
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK(!speaker_id_enrollment_client_);
+  DCHECK(speaker_id_enrollment_remote_.is_bound());
 
-  assistant_manager_service_->platform_api()->SetMicState(true);
-
-  if (!assistant_manager_service_->assistant_manager_internal())
-    return;
-
-  speaker_id_enrollment_client_ = std::move(client);
-
-  assistant_client::SpeakerIdEnrollmentConfig client_config;
-  client_config.user_id = context_->primary_account_gaia_id();
-  client_config.skip_cloud_enrollment = skip_cloud_enrollment;
-
-  assistant_manager_service_->assistant_manager_internal()
-      ->StartSpeakerIdEnrollment(
-          client_config,
-          [weak_ptr = weak_factory_.GetWeakPtr(),
-           task_runner = main_task_runner()](
-              const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-            task_runner->PostTask(
-                FROM_HERE,
-                base::BindOnce(
-                    &AssistantSettingsImpl::HandleSpeakerIdEnrollmentUpdate,
-                    weak_ptr, update));
-          });
+  speaker_id_enrollment_remote_->StartSpeakerIdEnrollment(
+      context_->primary_account_gaia_id(), skip_cloud_enrollment,
+      client->BindNewPipeAndPassRemote());
 }
 
 void AssistantSettingsImpl::StopSpeakerIdEnrollment() {
   DCHECK(HasStarted(assistant_manager_service_));
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(speaker_id_enrollment_remote_.is_bound());
 
-  assistant_manager_service_->platform_api()->SetMicState(false);
-
-  if (!assistant_manager_service_->assistant_manager_internal())
-    return;
-
-  assistant_manager_service_->assistant_manager_internal()
-      ->StopSpeakerIdEnrollment([task_runner = main_task_runner(),
-                                 weak_ptr = weak_factory_.GetWeakPtr()]() {
-        task_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                &AssistantSettingsImpl::HandleStopSpeakerIdEnrollment,
-                std::move(weak_ptr)));
-      });
+  speaker_id_enrollment_remote_->StopSpeakerIdEnrollment();
 }
 
 void AssistantSettingsImpl::SyncSpeakerIdEnrollmentStatus() {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-
   if (assistant_state()->allowed_state() !=
           chromeos::assistant::AssistantAllowedState::ALLOWED ||
       features::IsVoiceMatchDisabled()) {
     return;
   }
 
-  assistant_manager_service_->assistant_manager_internal()
-      ->GetSpeakerIdEnrollmentStatus(
-          context_->primary_account_gaia_id(),
-          [weak_ptr = weak_factory_.GetWeakPtr(),
-           task_runner = main_task_runner()](
-              const assistant_client::SpeakerIdEnrollmentStatus& status) {
-            task_runner->PostTask(
-                FROM_HERE,
-                base::BindOnce(
-                    &AssistantSettingsImpl::HandleSpeakerIdEnrollmentStatusSync,
-                    weak_ptr, status));
-          });
+  DCHECK(speaker_id_enrollment_remote_.is_bound());
+
+  speaker_id_enrollment_remote_->GetSpeakerIdEnrollmentStatus(
+      context_->primary_account_gaia_id(),
+      base::BindOnce(
+          &AssistantSettingsImpl::HandleSpeakerIdEnrollmentStatusSync,
+          weak_factory_.GetWeakPtr()));
 }
 
 void AssistantSettingsImpl::SyncDeviceAppsStatus(
@@ -207,88 +172,14 @@ void AssistantSettingsImpl::SyncDeviceAppsStatus(
                              weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AssistantSettingsImpl::UpdateServerDeviceSettings() {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-
-  const std::string device_id =
-      assistant_manager_service_->assistant_manager()->GetDeviceId();
-  if (device_id.empty())
-    return;
-
-  // Update device id and device type.
-  assistant::SettingsUiUpdate update;
-  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
-      update.mutable_assistant_device_settings_update()
-          ->add_assistant_device_settings_update();
-  device_settings_update->set_device_id(device_id);
-  device_settings_update->set_assistant_device_type(
-      assistant::AssistantDevice::CROS);
-
-  if (assistant_state()->hotword_enabled().value()) {
-    device_settings_update->mutable_device_settings()->set_speaker_id_enabled(
-        true);
-  }
-
-  VLOG(1) << "Update assistant device locale: "
-          << assistant_state()->locale().value();
-  device_settings_update->mutable_device_settings()->set_locale(
-      assistant_state()->locale().value());
-
-  // Enable personal readout to grant permission for personal features.
-  device_settings_update->mutable_device_settings()->set_personal_readout(
-      assistant::AssistantDeviceSettings::PERSONAL_READOUT_ENABLED);
-
-  // Device settings update result is not handled because it is not included in
-  // the SettingsUiUpdateResult.
-  UpdateSettings(update.SerializeAsString(), base::DoNothing());
-}
-
-void AssistantSettingsImpl::HandleSpeakerIdEnrollmentUpdate(
-    const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-  if (!speaker_id_enrollment_client_)
-    return;
-
-  switch (update.state) {
-    case SpeakerIdEnrollmentState::LISTEN:
-      speaker_id_enrollment_client_->OnListeningHotword();
-      break;
-    case SpeakerIdEnrollmentState::PROCESS:
-      speaker_id_enrollment_client_->OnProcessingHotword();
-      break;
-    case SpeakerIdEnrollmentState::DONE:
-      speaker_id_enrollment_client_->OnSpeakerIdEnrollmentDone();
-      if (!speaker_id_enrollment_done_)
-        speaker_id_enrollment_done_ = true;
-      break;
-    case SpeakerIdEnrollmentState::FAILURE:
-      speaker_id_enrollment_client_->OnSpeakerIdEnrollmentFailure();
-      break;
-    case SpeakerIdEnrollmentState::INIT:
-    case SpeakerIdEnrollmentState::CHECK:
-    case SpeakerIdEnrollmentState::UPLOAD:
-    case SpeakerIdEnrollmentState::FETCH:
-      break;
-  }
-}
-
 void AssistantSettingsImpl::HandleSpeakerIdEnrollmentStatusSync(
-    const assistant_client::SpeakerIdEnrollmentStatus& status) {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-
-  speaker_id_enrollment_done_ = status.user_model_exists;
-
-  if (!speaker_id_enrollment_done_) {
+    libassistant::mojom::SpeakerIdEnrollmentStatusPtr status) {
+  if (!status->user_model_exists) {
     // If hotword is enabled but there is no voice model found, launch the
     // enrollment flow.
     if (assistant_state()->hotword_enabled().value())
       assistant_controller()->StartSpeakerIdEnrollmentFlow();
   }
-}
-
-void AssistantSettingsImpl::HandleStopSpeakerIdEnrollment() {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-  speaker_id_enrollment_client_.reset();
 }
 
 void AssistantSettingsImpl::HandleDeviceAppsStatusSync(

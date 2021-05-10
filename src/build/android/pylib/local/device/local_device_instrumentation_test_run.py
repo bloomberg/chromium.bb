@@ -17,6 +17,7 @@ import tempfile
 import time
 
 from devil import base_error
+from devil.android import apk_helper
 from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
@@ -271,10 +272,18 @@ class LocalDeviceInstrumentationTestRun(
       steps.extend(
           install_helper(apk) for apk in self._test_instance.additional_apks)
 
+      # We'll potentially need the package names later for setting app
+      # compatibility workarounds.
+      for apk in (self._test_instance.additional_apks +
+                  [self._test_instance.test_apk]):
+        self._installed_packages.append(apk_helper.GetPackageName(apk))
+
       # The apk under test needs to be installed last since installing other
       # apks after will unintentionally clear the fake module directory.
       # TODO(wnwen): Make this more robust, fix crbug.com/1010954.
       if self._test_instance.apk_under_test:
+        self._installed_packages.append(
+            apk_helper.GetPackageName(self._test_instance.apk_under_test))
         permissions = self._test_instance.apk_under_test.GetPermissions()
         if self._test_instance.apk_under_test_incremental_install_json:
           steps.append(
@@ -480,11 +489,23 @@ class LocalDeviceInstrumentationTestRun(
     batched_tests = dict()
     other_tests = []
     for test in tests:
-      if 'Batch' in test['annotations'] and 'RequiresRestart' not in test[
-          'annotations']:
-        batch_name = test['annotations']['Batch']['value']
+      annotations = test['annotations']
+      if 'Batch' in annotations and 'RequiresRestart' not in annotations:
+        batch_name = annotations['Batch']['value']
         if not batch_name:
           batch_name = test['class']
+
+        # Feature flags won't work in instrumentation tests unless the activity
+        # is restarted.
+        # Tests with identical features are grouped to minimize restarts.
+        if 'Batch$SplitByFeature' in annotations:
+          if 'Features$EnableFeatures' in annotations:
+            batch_name += '|enabled:' + ','.join(
+                sorted(annotations['Features$EnableFeatures']['value']))
+          if 'Features$DisableFeatures' in annotations:
+            batch_name += '|disabled:' + ','.join(
+                sorted(annotations['Features$DisableFeatures']['value']))
+
         if not batch_name in batched_tests:
           batched_tests[batch_name] = []
         batched_tests[batch_name].append(test)
@@ -851,9 +872,12 @@ class LocalDeviceInstrumentationTestRun(
                  self._test_instance.junit4_runner_class)
     def list_tests(d):
       def _run(dev):
+        # We need to use GetAppWritablePath instead of GetExternalStoragePath
+        # here because we will not have applied legacy storage workarounds on R+
+        # yet.
         with device_temp_file.DeviceTempFile(
             dev.adb, suffix='.json',
-            dir=dev.GetExternalStoragePath()) as dev_test_list_json:
+            dir=dev.GetAppWritablePath()) as dev_test_list_json:
           junit4_runner_class = self._test_instance.junit4_runner_class
           test_package = self._test_instance.test_package
           extras = {
@@ -1193,6 +1217,9 @@ class LocalDeviceInstrumentationTestRun(
     # We've tried to disable retries in the past with mixed results.
     # See crbug.com/619055 for historical context and crbug.com/797002
     # for ongoing efforts.
+    if 'Batch' in test['annotations'] and test['annotations']['Batch'][
+        'value'] == 'UnitTests':
+      return False
     del test, result
     return True
 

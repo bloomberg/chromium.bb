@@ -78,6 +78,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return search_tile_badge_icon_offset_;
   }
   int search_list_icon_dimension() const { return search_list_icon_dimension_; }
+  int search_list_answer_icon_dimension() const {
+    return search_list_answer_icon_dimension_;
+  }
+  int search_list_image_icon_dimension() const {
+    return search_list_image_icon_dimension_;
+  }
   int search_list_icon_vertical_bar_dimension() const {
     return search_list_icon_vertical_bar_dimension_;
   }
@@ -132,7 +138,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   int folder_icon_radius() const { return folder_icon_radius_; }
   int folder_background_radius() const { return folder_background_radius_; }
-  int folder_bubble_color() const { return folder_bubble_color_; }
   int item_icon_in_folder_icon_dimension() const {
     return item_icon_in_folder_icon_dimension_;
   }
@@ -149,7 +154,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return grid_tile_spacing_in_folder_;
   }
   int blur_radius() const { return blur_radius_; }
-  SkColor grid_selected_color() const { return grid_selected_color_; }
   base::TimeDelta page_transition_duration() const {
     return page_transition_duration_;
   }
@@ -213,6 +217,16 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   gfx::Size search_list_icon_size() const {
     return gfx::Size(search_list_icon_dimension_, search_list_icon_dimension_);
+  }
+
+  gfx::Size search_list_answer_icon_size() const {
+    return gfx::Size(search_list_answer_icon_dimension_,
+                     search_list_answer_icon_dimension_);
+  }
+
+  gfx::Size search_list_image_icon_size() const {
+    return gfx::Size(search_list_image_icon_dimension_,
+                     search_list_image_icon_dimension_);
   }
 
   gfx::Size search_list_badge_icon_size() const {
@@ -321,6 +335,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The icon dimension of list views in search result page view.
   const int search_list_icon_dimension_;
 
+  // The icon dimension of answer list views in search result page view.
+  const int search_list_answer_icon_dimension_;
+
+  // The dimension of image icons for list views in search result page view.
+  const int search_list_image_icon_dimension_;
+
   // The vertical bar icon dimension of list views in search result page view.
   const int search_list_icon_vertical_bar_dimension_;
 
@@ -409,9 +429,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The corner radius of folder background.
   const int folder_background_radius_;
 
-  // The color of folder bubble.
-  const int folder_bubble_color_;
-
   // The dimension of the item icon in folder icon.
   const int item_icon_in_folder_icon_dimension_;
 
@@ -436,10 +453,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The blur radius used in the app list.
   const int blur_radius_;
-
-  // The keyboard select color for grid views, which are on top of a black
-  // shield view for new design (12% white).
-  const SkColor grid_selected_color_;
 
   // Duration for page transition.
   const base::TimeDelta page_transition_duration_;

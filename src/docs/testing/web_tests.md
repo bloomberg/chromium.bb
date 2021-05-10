@@ -23,6 +23,15 @@ Chrome-specific tests only.
 
 ## Running Web Tests
 
+### Supported Platforms
+
+* Linux
+* MacOS
+* Windows
+* Fuchsia
+
+Android is [not supported](https://crbug.com/567947).
+
 ### Initial Setup
 
 Before you can run the web tests, you need to build the `blink_tests` target
@@ -30,16 +39,6 @@ to get `content_shell` and all of the other needed binaries.
 
 ```bash
 autoninja -C out/Default blink_tests
-```
-
-On **Android** (web test support
-[currently limited to KitKat and earlier](https://crbug.com/567947)) you need to
-build and install `content_shell_apk` instead. See also:
-[Android Build Instructions](../android_build_instructions.md).
-
-```bash
-autoninja -C out/Default content_shell_apk
-adb install -r out/Default/apks/ContentShell.apk
 ```
 
 On **Mac**, you probably want to strip the content_shell binary before starting
@@ -53,8 +52,6 @@ strip ./xcodebuild/{Debug,Release}/content_shell.app/Contents/MacOS/content_shel
 
 ### Running the Tests
 
-TODO: mention `testing/xvfb.py`
-
 The test runner script is in `third_party/blink/tools/run_web_tests.py`.
 
 To specify which build directory to use (e.g. out/Default, out/Release,
@@ -65,14 +62,10 @@ use the build in `out/Default`, use:
 third_party/blink/tools/run_web_tests.py -t Default
 ```
 
-For Android (if your build directory is `out/android`):
-
-```bash
-third_party/blink/tools/run_web_tests.py -t android --android
-```
-
 *** promo
-Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+* Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+* Linux users should not use `testing/xvfb.py`; `run_web_tests.py` manages Xvfb
+  itself.
 ***
 
 Tests marked as `[ Skip ]` in
@@ -86,12 +79,11 @@ learn more about TestExpectations and related files.
 
 *** promo
 Currently only the tests listed in
-[SmokeTests](../../third_party/blink/web_tests/SmokeTests)
-are run on the Android bots, since running all web tests takes too long on
-Android (and may still have some infrastructure issues). Most developers focus
-their Blink testing on Linux. We rely on the fact that the Linux and Android
-behavior is nearly identical for scenarios outside those covered by the smoke
-tests.
+[SmokeTests](../../third_party/blink/web_tests/SmokeTests) are run on the
+Fuchsia bots, since running all web tests takes too long on Fuchshia. Most
+developers focus their Blink testing on Linux. We rely on the fact that the
+Linux and Fuchsia behavior is nearly identical for scenarios outside those
+covered by the smoke tests.
 ***
 
 To run only some of the tests, specify their directories or filenames as

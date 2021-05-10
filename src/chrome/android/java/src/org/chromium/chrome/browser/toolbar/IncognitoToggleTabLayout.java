@@ -15,7 +15,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -91,7 +90,7 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
         if (mTabModelSelector == null) return;
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 setStateBasedOnModel();
@@ -100,8 +99,10 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
         setStateBasedOnModel();
 
-        assert mTabCountProvider != null;
-        mTabSwitcherDrawable.updateForTabCount(mTabCountProvider.getTabCount(false), false);
+        assert mTabModelSelector.isTabStateInitialized();
+        mTabSwitcherDrawable.updateForTabCount(
+                mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false).getCount(),
+                false);
     }
 
     public void setTabCountProvider(TabCountProvider tabCountProvider) {

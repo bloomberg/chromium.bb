@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
+#include "spdy/core/spdy_alt_svc_wire_format.h"
 
 #include <algorithm>
 #include <cctype>
 #include <limits>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
+#include "absl/strings/str_cat.h"
+#include "spdy/platform/api/spdy_logging.h"
+#include "spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
 
@@ -85,7 +85,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
       return false;
     }
     // Parse alt-authority.
-    DCHECK_EQ('=', *c);
+    QUICHE_DCHECK_EQ('=', *c);
     ++c;
     if (c == value.end() || *c != '"') {
       return false;
@@ -105,7 +105,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     if (c == alt_authority_begin || c == value.end()) {
       return false;
     }
-    DCHECK_EQ('"', *c);
+    QUICHE_DCHECK_EQ('"', *c);
     std::string host;
     uint16_t port;
     if (!ParseAltAuthority(alt_authority_begin, c, &host, &port)) {
@@ -265,9 +265,9 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       }
       value.push_back(c);
     }
-    value.append(quiche::QuicheStrCat(":", altsvc.port, "\""));
+    value.append(absl::StrCat(":", altsvc.port, "\""));
     if (altsvc.max_age != 86400) {
-      value.append(quiche::QuicheStrCat("; ma=", altsvc.max_age));
+      value.append(absl::StrCat("; ma=", altsvc.max_age));
     }
     if (!altsvc.version.empty()) {
       if (is_ietf_format_quic) {
@@ -282,7 +282,7 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
           if (it != altsvc.version.begin()) {
             value.append(",");
           }
-          value.append(quiche::QuicheStrCat(*it));
+          value.append(absl::StrCat(*it));
         }
         value.append("\"");
       }
@@ -309,7 +309,7 @@ bool SpdyAltSvcWireFormat::PercentDecode(absl::string_view::const_iterator c,
       output->push_back(*c);
       continue;
     }
-    DCHECK_EQ('%', *c);
+    QUICHE_DCHECK_EQ('%', *c);
     ++c;
     if (c == end || !std::isxdigit(*c)) {
       return false;
@@ -347,7 +347,7 @@ bool SpdyAltSvcWireFormat::ParseAltAuthority(
     if (c == end) {
       return false;
     }
-    DCHECK_EQ(']', *c);
+    QUICHE_DCHECK_EQ(']', *c);
     host->push_back(*c);
     ++c;
   } else {
@@ -368,7 +368,7 @@ bool SpdyAltSvcWireFormat::ParseAltAuthority(
   if (c == end || *c != ':') {
     return false;
   }
-  DCHECK_EQ(':', *c);
+  QUICHE_DCHECK_EQ(':', *c);
   ++c;
   return ParsePositiveInteger16(c, end, port);
 }

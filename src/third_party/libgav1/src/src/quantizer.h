@@ -20,10 +20,16 @@
 #include <cstdint>
 
 #include "src/utils/constants.h"
+#include "src/utils/dynamic_buffer.h"
 #include "src/utils/segmentation.h"
 #include "src/utils/types.h"
 
 namespace libgav1 {
+
+using QuantizerMatrix = std::array<
+    std::array<std::array<DynamicBuffer<uint8_t>, kNumTransformSizes>,
+               kNumPlaneTypes>,
+    kNumQuantizerLevelsForQuantizerMatrix>;
 
 // Implements the dequantization functions of Section 7.12.2.
 class Quantizer {
@@ -47,6 +53,9 @@ class Quantizer {
   const int16_t* dc_lookup_;
   const int16_t* ac_lookup_;
 };
+
+// Initialize the quantizer matrix.
+bool InitializeQuantizerMatrix(QuantizerMatrix* quantizer_matrix);
 
 // Get the quantizer index for the |index|th segment.
 //

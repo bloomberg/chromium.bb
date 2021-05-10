@@ -35,7 +35,7 @@ import {
   kSizedDepthStencilFormats,
 } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
-import { PerTexelComponent } from '../../../util/texture/texelData.js';
+import { PerTexelComponent } from '../../../util/texture/texel_data.js';
 
 // Test with a zero and non-zero mip.
 const kMipLevel: number[] = [0, 1];
@@ -144,7 +144,10 @@ g.test('render_pass_store_op,color_attachment_only')
     params()
       .combine(poptions('colorFormat', kEncodableTextureFormats))
       // Filter out any non-renderable formats
-      .filter(({ colorFormat }) => kEncodableTextureFormatInfo[colorFormat].renderable)
+      .filter(({ colorFormat }) => {
+        const info = kEncodableTextureFormatInfo[colorFormat];
+        return info.color && info.renderable;
+      })
       .combine(poptions('storeOperation', kStoreOps))
       .combine(poptions('mipLevel', kMipLevel))
       .combine(poptions('arrayLayer', kArrayLayers))
@@ -257,13 +260,20 @@ g.test('render_pass_store_op,multiple_color_attachments')
     }
   });
 
-// Tests that render pass depth stencil store operations work correctly for all renderable color
-// formats, mip levels and array layers.
 g.test('render_pass_store_op,depth_stencil_attachment_only')
+  .desc(
+    `
+Tests that render pass depth stencil store operations work correctly for all renderable color
+formats, mip levels and array layers.
+
+- x= all (sized) depth stencil formats, all store ops, multiple mip levels, multiple array layers
+
+TODO: Also test unsized depth/stencil formats
+  `
+  )
   .params(
     params()
-      // TODO: Also test unsized depth/stencil formats
-      .combine(poptions('depthStencilFormat', kSizedDepthStencilFormats))
+      .combine(poptions('depthStencilFormat', kSizedDepthStencilFormats)) // TODO
       .combine(poptions('storeOperation', kStoreOps))
       .combine(poptions('mipLevel', kMipLevel))
       .combine(poptions('arrayLayer', kArrayLayers))

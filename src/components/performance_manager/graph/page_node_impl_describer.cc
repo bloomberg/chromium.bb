@@ -4,8 +4,10 @@
 
 #include "components/performance_manager/graph/page_node_impl_describer.h"
 
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/graph/node_data_describer_util.h"
 
@@ -14,6 +16,14 @@ namespace performance_manager {
 namespace {
 
 const char kDescriberName[] = "PageNodeImpl";
+
+const char* FreezingVoteToString(
+    base::Optional<freezing::FreezingVote> freezing_vote) {
+  if (!freezing_vote)
+    return "None";
+
+  return freezing::FreezingVoteValueToString(freezing_vote->value());
+}
 
 }  // namespace
 
@@ -32,6 +42,7 @@ void PageNodeImplDescriber::OnTakenFromGraph(Graph* graph) {
 base::Value PageNodeImplDescriber::DescribePageNodeData(
     const PageNode* page_node) const {
   const PageNodeImpl* page_node_impl = PageNodeImpl::FromNode(page_node);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(page_node_impl->sequence_checker_);
 
   base::Value result(base::Value::Type::DICTIONARY);
 
@@ -60,16 +71,15 @@ base::Value PageNodeImplDescriber::DescribePageNodeData(
                       page_node_impl->browser_context_id_);
   result.SetBoolKey("is_visible", page_node_impl->is_visible_.value());
   result.SetBoolKey("is_audible", page_node_impl->is_audible_.value());
-  result.SetBoolKey("is_loading", page_node_impl->is_loading_.value());
+  result.SetStringKey(
+      "loading_state",
+      PageNode::ToString(page_node_impl->loading_state_.value()));
   result.SetStringKey(
       "ukm_source_id",
       base::NumberToString(page_node_impl->ukm_source_id_.value()));
   result.SetStringKey(
       "lifecycle_state",
       MojoEnumToString(page_node_impl->lifecycle_state_.value()));
-  result.SetStringKey(
-      "origin_trial_freeze_policy",
-      MojoEnumToString(page_node_impl->origin_trial_freeze_policy_.value()));
   result.SetBoolKey("is_holding_weblock",
                     page_node_impl->is_holding_weblock_.value());
   result.SetBoolKey("is_holding_indexeddb_lock",
@@ -80,6 +90,8 @@ base::Value PageNodeImplDescriber::DescribePageNodeData(
     result.SetStringKey("opened_type",
                         PageNode::ToString(page_node_impl->opened_type_));
   }
+  result.SetStringKey("freezing_vote",
+                      FreezingVoteToString(page_node_impl->freezing_vote()));
 
   return result;
 }

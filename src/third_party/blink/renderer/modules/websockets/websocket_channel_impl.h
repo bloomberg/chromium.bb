@@ -180,7 +180,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
    public:
     using DidCallSendMessage =
-        util::StrongAlias<class DidCallSendMessageTag, bool>;
+        base::StrongAlias<class DidCallSendMessageTag, bool>;
 
     // Initializes message as a string
     Message(const std::string&,
@@ -316,6 +316,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
+  WTF::String failure_message_;
 
   const std::unique_ptr<const SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;

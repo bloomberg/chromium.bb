@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef QUICHE_QUIC_CORE_QUIC_SEEKER_H_
-#define QUICHE_QUIC_CORE_QUIC_SEEKER_H_
+#ifndef QUICHE_QUIC_CORE_QUIC_INTERVAL_DEQUE_H_
+#define QUICHE_QUIC_CORE_QUIC_INTERVAL_DEQUE_H_
 
 #include <algorithm>
 
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_interval.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -198,12 +198,12 @@ class QUIC_NO_EXPORT QuicIntervalDeque {
     Iterator operator+(difference_type amount) const {
       Iterator copy = *this;
       copy.index_ += amount;
-      DCHECK(copy.index_ < copy.deque_->size());
+      QUICHE_DCHECK(copy.index_ < copy.deque_->size());
       return copy;
     }
     Iterator& operator+=(difference_type amount) {
       index_ += amount;
-      DCHECK(index_ < deque_->size());
+      QUICHE_DCHECK(index_ < deque_->size());
       return *this;
     }
     difference_type operator-(const Iterator& rhs) const {
@@ -311,7 +311,7 @@ typename QuicIntervalDeque<T, C>::Iterator QuicIntervalDeque<T, C>::DataAt(
   }
 
   const std::size_t cached_index = cached_index_.value();
-  DCHECK(cached_index < container_.size());
+  QUICHE_DCHECK(cached_index < container_.size());
 
   const QuicInterval<size_t> cached_interval =
       container_[cached_index].interval();
@@ -389,4 +389,4 @@ typename QuicIntervalDeque<T, C>::Iterator QuicIntervalDeque<T, C>::Search(
 
 }  // namespace quic
 
-#endif  // QUICHE_QUIC_CORE_QUIC_SEEKER_H_
+#endif  // QUICHE_QUIC_CORE_QUIC_INTERVAL_DEQUE_H_

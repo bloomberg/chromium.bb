@@ -176,22 +176,16 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
           ? normalized_match->description_class
           : normalized_match->description_class_for_shortcuts;
 
-  auto fill_into_edit = normalized_match->swapped_fill_into_edit
-                            ? normalized_match->fill_into_edit_additional_text
-                            : normalized_match->fill_into_edit;
-
   return ShortcutsDatabase::Shortcut::MatchCore(
-      fill_into_edit, normalized_match->destination_url,
-      static_cast<int>(normalized_match->document_type),
-      normalized_match->contents,
+      normalized_match->fill_into_edit, normalized_match->destination_url,
+      normalized_match->document_type, normalized_match->contents,
       StripMatchMarkers(normalized_match->contents_class), description,
       StripMatchMarkers(description_class), normalized_match->transition,
       match_type, normalized_match->keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
-  if (history_service_observation_.IsObserving())
-    history_service_observation_.RemoveObservation();
+  history_service_observation_.Reset();
 }
 
 void ShortcutsBackend::OnURLsDeleted(

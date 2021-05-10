@@ -8,6 +8,16 @@ import("//pdf/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
+grit("chrome_test_resources") {
+  source = "chrome_test_resources.grd"
+  defines = chrome_grit_defines
+  outputs = [
+    "test/data/grit/chrome_test_resources.h",
+    "chrome_test_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+}
+
 grit("webui_test_resources") {
   source = "webui_test_resources.grd"
   defines = chrome_grit_defines
@@ -59,7 +69,6 @@ js_type_check("closure_compile_local") {
 js_library("test_api_js") {
   sources = [ "webui/test_api.js" ]
   externs_list = [
-    "webui/mock4js_externs.js",
     "//third_party/chaijs/externs/chai-3.5.js",
     "//ui/webui/resources/js/dom_automation_controller.js",
   ]

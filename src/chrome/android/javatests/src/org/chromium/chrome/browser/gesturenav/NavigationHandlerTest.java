@@ -24,7 +24,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -48,11 +47,7 @@ import org.chromium.ui.test.util.UiRestriction;
  * Tests {@link NavigationHandler} navigating back/forward using overscroll history navigation.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=OverscrollHistoryNavigation<GestureNavigation",
-        "force-fieldtrials=GestureNavigation/Enabled",
-        "force-fieldtrial-params=GestureNavigation.Enabled:"
-                + "gesture_navigation_triggering_area_width/36"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NavigationHandlerTest {
     private static final String RENDERED_PAGE = "/chrome/test/data/android/navigate/simple.html";
     private static final boolean LEFT_EDGE = true;
@@ -74,7 +69,7 @@ public class NavigationHandlerTest {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         mActivityTestRule.getActivity().getWindowManager().getDefaultDisplay().getMetrics(
                 displayMetrics);
-        mEdgeWidthPx = displayMetrics.density * NavigationHandler.DEFAULT_EDGE_WIDTH_DP;
+        mEdgeWidthPx = displayMetrics.density * NavigationHandler.EDGE_WIDTH_DP;
         HistoryNavigationCoordinator coordinator = getNavigationCoordinator();
         mNavigationLayout = coordinator.getLayoutForTesting();
         mNavigationHandler = coordinator.getNavigationHandlerForTesting();
@@ -227,7 +222,8 @@ public class NavigationHandlerTest {
     @SmallTest
     public void testLeftEdgeSwipeClosesTabLaunchedFromLink() {
         Tab oldTab = currentTab();
-        TabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
+        TabCreator tabCreator = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getTabCreator(false));
         Tab newTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             return tabCreator.createNewTab(
                     new LoadUrlParams(UrlConstants.RECENT_TABS_URL, PageTransition.LINK),
@@ -245,21 +241,33 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1147553")
     public void testSwipeAfterDestroy() {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mActivityTestRule.loadUrl(mTestServer.getURL(RENDERED_PAGE));
-        getNavigationCoordinator().destroy();
+        mNavigationHandler.destroy();
 
         // |triggerUi| can be invoked by SwipeRefreshHandler on the rendered
-        // page. Make sure this won't crash after the coordinator (and also
+        // page. Make sure this won't crash after the handler(and also
         // handler action delegate) is destroyed.
         Assert.assertFalse(mNavigationHandler.triggerUi(LEFT_EDGE, 0, 0));
 
         // Just check we're still on the same URL.
         Assert.assertEquals(mTestServer.getURL(RENDERED_PAGE),
                 ChromeTabUtils.getUrlStringOnUiThread(currentTab()));
+    }
+
+    @Test
+    @SmallTest
+    public void testSwipeAfterTabDestroy() {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        mActivityTestRule.loadUrl(mTestServer.getURL(RENDERED_PAGE));
+        TestThreadUtils.runOnUiThreadBlocking(currentTab()::destroy);
+
+        // |triggerUi| can be invoked by SwipeRefreshHandler on the rendered
+        // page. Make sure this won't crash after the current tab is destroyed.
+        Assert.assertFalse(mNavigationHandler.triggerUi(/*forward=*/false, 0, 0));
     }
 
     @Test

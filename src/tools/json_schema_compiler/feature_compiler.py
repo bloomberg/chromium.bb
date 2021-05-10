@@ -10,6 +10,7 @@ from datetime import datetime
 from functools import partial
 import json
 import os
+import posixpath
 import re
 import sys
 
@@ -55,6 +56,7 @@ CC_FILE_BEGIN = """
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/permission_feature.h"
+#include "extensions/common/mojom/feature_session_type.mojom.h"
 
 namespace extensions {
 
@@ -68,9 +70,12 @@ CC_FILE_END = """
 }  // namespace extensions
 """
 
-# Legacy keys for the allow and blocklists.
-LEGACY_ALLOWLIST_KEY = 'whitelist'
-LEGACY_BLOCKLIST_KEY = 'blacklist'
+def ToPosixPath(path):
+  """Returns |path| with separator converted to POSIX style.
+
+  This is needed to generate C++ #include paths.
+  """
+  return path.replace(os.path.sep, posixpath.sep)
 
 # Returns true if the list 'l' only contains strings that are a hex-encoded SHA1
 # hashes.
@@ -124,7 +129,16 @@ FEATURE_GRAMMAR = ({
         str: {},
         'shared': True
     },
-    LEGACY_BLOCKLIST_KEY: {
+    'allowlist': {
+        list: {
+            'subtype':
+            str,
+            'validators':
+            [(ListContainsOnlySha1Hashes,
+              'list should only have hex-encoded SHA1 hashes of extension ids')]
+        }
+    },
+    'blocklist': {
         list: {
             'subtype':
             str,
@@ -251,24 +265,16 @@ FEATURE_GRAMMAR = ({
     'session_types': {
         list: {
             'enum_map': {
-                'regular': 'FeatureSessionType::REGULAR',
-                'kiosk': 'FeatureSessionType::KIOSK',
-                'kiosk.autolaunched': 'FeatureSessionType::AUTOLAUNCHED_KIOSK',
+                'regular': 'mojom::FeatureSessionType::kRegular',
+                'kiosk': 'mojom::FeatureSessionType::kKiosk',
+                'kiosk.autolaunched':
+                  'mojom::FeatureSessionType::kAutolaunchedKiosk',
             }
         }
     },
     'source': {
         str: {},
         'shared': True
-    },
-    LEGACY_ALLOWLIST_KEY: {
-        list: {
-            'subtype':
-            str,
-            'validators':
-            [(ListContainsOnlySha1Hashes,
-              'list should only have hex-encoded SHA1 hashes of extension ids')]
-        }
     },
 })
 
@@ -341,7 +347,7 @@ def IsFeatureCrossReference(property_name, reverse_property_name, feature,
 # Verifies that a feature with an allowlist is not available to hosted apps,
 # returning true on success.
 def DoesNotHaveAllowlistForHostedApps(value):
-  if not LEGACY_ALLOWLIST_KEY in value:
+  if not 'allowlist' in value:
     return True
 
   # Hack Alert: |value| here has the code for the generated C++ feature. Since
@@ -380,12 +386,11 @@ def DoesNotHaveAllowlistForHostedApps(value):
   # Exceptions (see the feature files).
   # DO NOT ADD MORE.
   HOSTED_APP_EXCEPTIONS = [
-      '99060B01DE911EB85FD630C8BA6320C9186CA3AB',
       'B44D08FD98F1523ED5837D78D0A606EA9D6206E5',
       '2653F6F6C39BC6EEBD36A09AFB92A19782FF7EB4',
   ]
 
-  allowlist = cpp_list_to_list(value[LEGACY_ALLOWLIST_KEY])
+  allowlist = cpp_list_to_list(value['allowlist'])
   for entry in allowlist:
     if entry not in HOSTED_APP_EXCEPTIONS:
       return False
@@ -473,14 +478,7 @@ def GetCodeForFeatureValues(feature_values):
     if key in IGNORED_KEYS:
       continue;
 
-    # TODO(devlin): Remove this hack as part of 842387.
-    set_key = key
-    if key == LEGACY_ALLOWLIST_KEY:
-      set_key = 'allowlist'
-    elif key == LEGACY_BLOCKLIST_KEY:
-      set_key = 'blocklist'
-
-    c.Append('feature->set_%s(%s);' % (set_key, feature_values[key]))
+    c.Append('feature->set_%s(%s);' % (key, feature_values[key]))
   return c
 
 class Feature(object):
@@ -892,7 +890,7 @@ class FeatureCompiler(object):
         'header_guard': (header_file_path.replace('/', '_').
                              replace('.', '_').upper()),
         'method_name': self._method_name,
-        'source_files': str(self._source_files),
+        'source_files': str([ToPosixPath(f) for f in self._source_files]),
         'year': str(datetime.now().year)
     })
     if not os.path.exists(self._out_root):

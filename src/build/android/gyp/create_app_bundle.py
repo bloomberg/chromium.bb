@@ -106,9 +106,6 @@ def _ParseArgs(args):
                       action='store_true',
                       help='Treat all warnings as errors.')
 
-  parser.add_argument('--keystore-path', help='Keystore path')
-  parser.add_argument('--keystore-password', help='Keystore password')
-  parser.add_argument('--key-name', help='Keystore key name')
   parser.add_argument(
       '--validate-services',
       action='store_true',
@@ -121,13 +118,6 @@ def _ParseArgs(args):
 
   if len(options.module_zips) == 0:
     raise Exception('The module zip list cannot be empty.')
-
-  # Signing is optional, but all --keyXX parameters should be set.
-  if options.keystore_path or options.keystore_password or options.key_name:
-    if not options.keystore_path or not options.keystore_password or \
-        not options.key_name:
-      raise Exception('When signing the bundle, use --keystore-path, '
-                      '--keystore-password and --key-name.')
 
   # Merge all uncompressed assets into a set.
   uncompressed_list = []
@@ -400,16 +390,18 @@ def _GetManifestForModule(bundle_path, module_name):
       ]))
 
 
-def _GetServiceNames(manifest):
+def _GetComponentNames(manifest, tag_name):
   android_name = '{%s}name' % manifest_utils.ANDROID_NAMESPACE
-  return [s.attrib.get(android_name) for s in manifest.iter('service')]
+  return [s.attrib.get(android_name) for s in manifest.iter(tag_name)]
 
 
-def _MaybeCheckServicesPresentInBase(bundle_path, module_zips):
+def _MaybeCheckServicesAndProvidersPresentInBase(bundle_path, module_zips):
   """Checks bundles with isolated splits define all services in the base module.
 
   Due to b/169196314, service classes are not found if they are not present in
-  the base module.
+  the base module. Providers are also checked because they are loaded early in
+  startup, and keeping them in the base module gives more time for the chrome
+  split to load.
   """
   base_manifest = _GetManifestForModule(bundle_path, 'base')
   isolated_splits = base_manifest.get('{%s}isolatedSplits' %
@@ -419,14 +411,21 @@ def _MaybeCheckServicesPresentInBase(bundle_path, module_zips):
 
   # Collect service names from all split manifests.
   base_zip = None
-  service_names = _GetServiceNames(base_manifest)
+  service_names = _GetComponentNames(base_manifest, 'service')
+  provider_names = _GetComponentNames(base_manifest, 'provider')
   for module_zip in module_zips:
     name = os.path.basename(module_zip)[:-len('.zip')]
     if name == 'base':
       base_zip = module_zip
     else:
       service_names.extend(
-          _GetServiceNames(_GetManifestForModule(bundle_path, name)))
+          _GetComponentNames(_GetManifestForModule(bundle_path, name),
+                             'service'))
+      module_providers = _GetComponentNames(
+          _GetManifestForModule(bundle_path, name), 'provider')
+      if module_providers:
+        raise Exception("Providers should all be declared in the base manifest."
+                        " '%s' module declared: %s" % (name, module_providers))
 
   # Extract classes from the base module's dex.
   classes = set()
@@ -458,6 +457,13 @@ def _MaybeCheckServicesPresentInBase(bundle_path, module_zips):
       raise Exception("Service %s should be present in the base module's dex."
                       " See b/169196314 for more details." % service_name)
 
+  # Ensure all providers are present in base module.
+  for provider_name in provider_names:
+    if provider_name not in classes:
+      raise Exception(
+          "Provider %s should be present in the base module's dex." %
+          provider_name)
+
 
 def main(args):
   args = build_utils.ExpandFileArgs(args)
@@ -484,10 +490,6 @@ def main(args):
 
     tmp_bundle = os.path.join(tmp_dir, 'tmp_bundle')
 
-    tmp_unsigned_bundle = tmp_bundle
-    if options.keystore_path:
-      tmp_unsigned_bundle = tmp_bundle + '.unsigned'
-
     # Important: bundletool requires that the bundle config file is
     # named with a .pb.json extension.
     tmp_bundle_config = tmp_bundle + '.BundleConfig.pb.json'
@@ -500,7 +502,7 @@ def main(args):
         bundletool.BUNDLETOOL_JAR_PATH,
         'build-bundle',
         '--modules=' + ','.join(module_zips),
-        '--output=' + tmp_unsigned_bundle,
+        '--output=' + tmp_bundle,
         '--config=' + tmp_bundle_config,
     ]
 
@@ -516,24 +518,7 @@ def main(args):
       # isolated splits disabled and 2s for bundles with isolated splits
       # enabled.  Consider making this run in parallel or move into a separate
       # step before enabling isolated splits by default.
-      _MaybeCheckServicesPresentInBase(tmp_unsigned_bundle, module_zips)
-
-    if options.keystore_path:
-      # NOTE: As stated by the public documentation, apksigner cannot be used
-      # to sign the bundle (because it rejects anything that isn't an APK).
-      # The signature and digest algorithm selection come from the internal
-      # App Bundle documentation. There is no corresponding public doc :-(
-      signing_cmd_args = [
-          'jarsigner', '-sigalg', 'SHA256withRSA', '-digestalg', 'SHA-256',
-          '-keystore', 'file:' + options.keystore_path,
-          '-storepass' , options.keystore_password,
-          '-signedjar', tmp_bundle,
-          tmp_unsigned_bundle,
-          options.key_name,
-      ]
-      build_utils.CheckOutput(signing_cmd_args,
-                              print_stderr=True,
-                              fail_on_output=options.warnings_as_errors)
+      _MaybeCheckServicesAndProvidersPresentInBase(tmp_bundle, module_zips)
 
     shutil.move(tmp_bundle, options.out_bundle)
 

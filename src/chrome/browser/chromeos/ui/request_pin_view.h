@@ -11,12 +11,13 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
+#include "chrome/browser/ash/certificate_provider/security_token_pin_dialog_host.h"
 #include "chromeos/components/security_token_pin/constants.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -31,6 +32,8 @@ namespace chromeos {
 class RequestPinView final : public views::DialogDelegateView,
                              public views::TextfieldController {
  public:
+  METADATA_HEADER(RequestPinView);
+
   using PinEnteredCallback =
       base::RepeatingCallback<void(const std::string& user_input)>;
   using ViewDestructionCallback = base::OnceClosure;
@@ -111,5 +114,10 @@ class RequestPinView final : public views::DialogDelegateView,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::RequestPinView;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_UI_REQUEST_PIN_VIEW_H_

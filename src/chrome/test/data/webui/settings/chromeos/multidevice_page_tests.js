@@ -11,7 +11,8 @@
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestMultideviceBrowserProxy, createFakePageContentData, HOST_DEVICE} from './test_multidevice_browser_proxy.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {isChildVisible, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
@@ -140,10 +141,27 @@ suite('Multidevice', function() {
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
 
+    loadTimeData.overrideValues({
+      isNearbyShareSupported: true,
+    });
+
     multidevicePage = document.createElement('settings-multidevice-page');
     assertTrue(!!multidevicePage);
 
+    multidevicePage.prefs = {
+      'nearby_sharing': {
+        'onboarding_complete': {
+          value: false,
+        },
+        'enabled': {
+          value: false,
+        },
+      },
+    };
+
     document.body.appendChild(multidevicePage);
+    Polymer.dom.flush();
+
     return browserProxy.whenCalled('getPageContentData');
   });
 
@@ -373,5 +391,70 @@ suite('Multidevice', function() {
           // SMART_LOCK always requires authentication.
           return enableFeatureWithAuthFn(Feature.SMART_LOCK);
         });
+  });
+
+  test('Nearby setup button visibility', async () => {
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+
+    multidevicePage.setPrefValue('nearby_sharing.onboarding_complete', true);
+    Polymer.dom.flush();
+
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Nearby description shown before onboarding is completed', async () => {
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+
+    multidevicePage.setPrefValue('nearby_sharing.onboarding_complete', true);
+    Polymer.dom.flush();
+
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+
+    assertEquals(
+        multidevicePage.$$('#nearbyShareSecondary').textContent.trim(), 'Off');
+  });
+
+  test('Better Together Suite icon visible when there is no host set', () => {
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon visible when there is a host set', () => {
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon remains visible when host added', () => {
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
+
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon remains visible when host removed', () => {
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
+
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon', /*checkLightDom=*/ false));
   });
 });

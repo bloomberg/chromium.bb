@@ -1,7 +1,7 @@
 # vpython VirtualEnv protobuf for "gsutil".
 #
 # See:
-# https://chromium.googlesource.com/infra/luci/luci-go/+/master/vpython/api/vpython/spec.proto
+# https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/vpython/api/vpython/spec.proto
 #
 # This is a "vpython" VirtualEnv specification applied to invocations of "gsutil"
 # by the bootstrap wrapper, "gsutil.py". It ensures that any Python distribution
@@ -35,8 +35,8 @@ wheel: <
 ##
 
 wheel: <
-  name: "infra/python/wheels/cryptography/${platform}_${py_python}_${py_abi}"
-  version: "version:2.0.3"
+  name: "infra/python/wheels/cryptography/${vpython_platform}"
+  version: "version:2.9.2"
 >
 
 wheel: <
@@ -45,17 +45,12 @@ wheel: <
 >
 
 wheel: <
-  name: "infra/python/wheels/asn1crypto-py2_py3"
-  version: "version:1.0.1"
->
-
-wheel: <
   name: "infra/python/wheels/enum34-py2"
   version: "version:1.1.6"
 >
 
 wheel: <
-  name: "infra/python/wheels/cffi/${platform}_${py_python}_${py_abi}"
+  name: "infra/python/wheels/cffi/${vpython_platform}"
   version: "version:1.10.0"
 >
 

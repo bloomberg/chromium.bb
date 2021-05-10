@@ -11,6 +11,7 @@
 #include "base/supports_user_data.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -573,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, PopupInWindow_IsWindowTrue) {
 }
 
 // TODO(crbug.com/1146598): Test is flaky on Lacros.
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_PopupNoRedirect_RedirectCountZero DISABLED_PopupNoRedirect_RedirectCountZero
 #else
 #define MAYBE_PopupNoRedirect_RedirectCountZero PopupNoRedirect_RedirectCountZero
@@ -610,8 +611,16 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmRedirectCount, 0);
 }
 
+// TODO(crbug.com/1179235): Test is flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PopupRedirectsTwice_RedirectCountTwo \
+  DISABLED_PopupRedirectsTwice_RedirectCountTwo
+#else
+#define MAYBE_PopupRedirectsTwice_RedirectCountTwo \
+  PopupRedirectsTwice_RedirectCountTwo
+#endif
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
-                       PopupRedirectsTwice_RedirectCountTwo) {
+                       MAYBE_PopupRedirectsTwice_RedirectCountTwo) {
   const GURL first_url = embedded_test_server()->GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(), first_url);
 
@@ -645,8 +654,16 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmRedirectCount, 2);
 }
 
+// TODO(crbug.com/1179859): Test is flaky on Windows, Linux and Lacros.
+#if defined(OS_LINUX) || defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PopupJavascriptRenavigation_RedirectCountZero \
+  DISABLED_PopupJavascriptRenavigation_RedirectCountZero
+#else
+#define MAYBE_PopupJavascriptRenavigation_RedirectCountZero \
+  PopupJavascriptRenavigation_RedirectCountZero
+#endif
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
-                       PopupJavascriptRenavigation_RedirectCountZero) {
+                       MAYBE_PopupJavascriptRenavigation_RedirectCountZero) {
   const GURL first_url = embedded_test_server()->GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(), first_url);
 

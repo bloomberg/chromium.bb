@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -26,23 +27,31 @@ namespace blink {
 using mojom::blink::PermissionService;
 using mojom::blink::PermissionStatus;
 
-WakeLock::WakeLock(LocalDOMWindow& window)
-    : ExecutionContextLifecycleObserver(&window),
-      PageVisibilityObserver(window.GetFrame()->GetPage()),
-      permission_service_(&window),
-      managers_{
-          MakeGarbageCollected<WakeLockManager>(&window, WakeLockType::kScreen),
-          MakeGarbageCollected<WakeLockManager>(&window,
-                                                WakeLockType::kSystem)} {}
+// static
+const char WakeLock::kSupplementName[] = "WakeLock";
 
-WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
-    : ExecutionContextLifecycleObserver(&worker_scope),
-      PageVisibilityObserver(nullptr),
-      permission_service_(&worker_scope),
-      managers_{MakeGarbageCollected<WakeLockManager>(&worker_scope,
-                                                      WakeLockType::kScreen),
-                MakeGarbageCollected<WakeLockManager>(&worker_scope,
-                                                      WakeLockType::kSystem)} {}
+// static
+WakeLock* WakeLock::wakeLock(NavigatorBase& navigator) {
+  WakeLock* supplement = Supplement<NavigatorBase>::From<WakeLock>(navigator);
+  if (!supplement && navigator.GetExecutionContext()) {
+    supplement = MakeGarbageCollected<WakeLock>(navigator);
+    ProvideTo(navigator, supplement);
+  }
+  return supplement;
+}
+
+WakeLock::WakeLock(NavigatorBase& navigator)
+    : Supplement<NavigatorBase>(navigator),
+      ExecutionContextLifecycleObserver(navigator.GetExecutionContext()),
+      PageVisibilityObserver(navigator.DomWindow()
+                                 ? navigator.DomWindow()->GetFrame()->GetPage()
+                                 : nullptr),
+      permission_service_(navigator.GetExecutionContext()),
+      managers_{
+          MakeGarbageCollected<WakeLockManager>(navigator.GetExecutionContext(),
+                                                WakeLockType::kScreen),
+          MakeGarbageCollected<WakeLockManager>(navigator.GetExecutionContext(),
+                                                WakeLockType::kSystem)} {}
 
 ScriptPromise WakeLock::request(ScriptState* script_state,
                                 const String& type,
@@ -88,9 +97,9 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
       !context->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kScreenWakeLock,
           ReportOptions::kReportOnFailure)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotAllowedError,
-        "Access to Screen Wake Lock features is disallowed by feature policy");
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Access to Screen Wake Lock features is "
+                                      "disallowed by permissions policy");
     return ScriptPromise();
   }
 
@@ -269,7 +278,7 @@ PermissionService* WakeLock::GetPermissionService() {
     ConnectToPermissionService(
         GetExecutionContext(),
         permission_service_.BindNewPipeAndPassReceiver(
-            GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+            GetExecutionContext()->GetTaskRunner(TaskType::kWakeLock)));
   }
   return permission_service_.get();
 }
@@ -278,6 +287,7 @@ void WakeLock::Trace(Visitor* visitor) const {
   for (const WakeLockManager* manager : managers_)
     visitor->Trace(manager);
   visitor->Trace(permission_service_);
+  Supplement<NavigatorBase>::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);

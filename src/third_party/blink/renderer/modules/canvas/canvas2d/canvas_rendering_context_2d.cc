@@ -38,8 +38,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
-#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
-#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
@@ -245,6 +243,9 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 
 void CanvasRenderingContext2D::Trace(Visitor* visitor) const {
   visitor->Trace(hit_region_manager_);
+  visitor->Trace(dispatch_context_lost_event_timer_);
+  visitor->Trace(dispatch_context_restored_event_timer_);
+  visitor->Trace(try_restore_context_event_timer_);
   visitor->Trace(filter_operations_);
   CanvasRenderingContext::Trace(visitor);
   BaseRenderingContext2D::Trace(visitor);
@@ -307,12 +308,8 @@ void CanvasRenderingContext2D::WillDrawImage(CanvasImageSource* source) const {
   canvas()->WillDrawImageTo2DContext(source);
 }
 
-String CanvasRenderingContext2D::ColorSpaceAsString() const {
-  return CanvasRenderingContext::ColorSpaceAsString();
-}
-
-CanvasColorParams CanvasRenderingContext2D::ColorParams() const {
-  return CanvasRenderingContext::ColorParams();
+CanvasColorParams CanvasRenderingContext2D::GetCanvas2DColorParams() const {
+  return CanvasRenderingContext::CanvasRenderingContextColorParams();
 }
 
 bool CanvasRenderingContext2D::WritePixels(const SkImageInfo& orig_info,
@@ -328,10 +325,6 @@ bool CanvasRenderingContext2D::WritePixels(const SkImageInfo& orig_info,
 void CanvasRenderingContext2D::WillOverwriteCanvas() {
   if (IsPaintable())
     canvas()->GetCanvas2DLayerBridge()->WillOverwriteCanvas();
-}
-
-CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
-  return ColorParams().PixelFormat();
 }
 
 void CanvasRenderingContext2D::Reset() {
@@ -655,11 +648,7 @@ void CanvasRenderingContext2D::UpdateFilterReferences(
   filter_operations_ = filters;
 }
 
-void CanvasRenderingContext2D::ResourceContentChanged(InvalidationModeMask) {
-  ResourceElementChanged();
-}
-
-void CanvasRenderingContext2D::ResourceElementChanged() {
+void CanvasRenderingContext2D::ResourceContentChanged(SVGResource*) {
   ClearFilterReferences();
   GetState().ClearResolvedFilter();
 }
@@ -690,20 +679,15 @@ scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage() {
   return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot();
 }
 
-ImageData* CanvasRenderingContext2D::getImageData(
+ImageData* CanvasRenderingContext2D::getImageDataInternal(
     int sx,
     int sy,
     int sw,
     int sh,
+    ImageDataSettings* image_data_settings,
     ExceptionState& exception_state) {
-  const IdentifiableSurface surface = IdentifiableSurface::FromTypeAndToken(
-      IdentifiableSurface::Type::kCanvasReadback, GetContextType());
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(surface)) {
-    blink::IdentifiabilityMetricBuilder(ukm_source_id_)
-        .Set(surface, 0)
-        .Record(ukm_recorder_);
-  }
-  return BaseRenderingContext2D::getImageData(sx, sy, sw, sh, exception_state);
+  return BaseRenderingContext2D::getImageDataInternal(
+      sx, sy, sw, sh, image_data_settings, exception_state);
 }
 
 void CanvasRenderingContext2D::FinalizeFrame() {
@@ -873,6 +857,39 @@ void CanvasRenderingContext2D::setFontKerning(
   ModifiableState().SetFontKerning(kerning, Host()->GetFontSelector());
 }
 
+void CanvasRenderingContext2D::setFontStretch(const String& font_stretch) {
+  if (!GetState().HasRealizedFont())
+    setFont(font());
+
+  String font_stretch_string = font_stretch.LowerASCII();
+  FontSelectionValue stretch_vale;
+  if (font_stretch_string == kUltraCondensedString)
+    stretch_vale = UltraCondensedWidthValue();
+  else if (font_stretch_string == kExtraCondensedString)
+    stretch_vale = ExtraCondensedWidthValue();
+  else if (font_stretch_string == kCondensedString)
+    stretch_vale = CondensedWidthValue();
+  else if (font_stretch_string == kSemiCondensedString)
+    stretch_vale = SemiCondensedWidthValue();
+  else if (font_stretch_string == kNormalStretchString)
+    stretch_vale = NormalWidthValue();
+  else if (font_stretch_string == kSemiExpandedString)
+    stretch_vale = SemiExpandedWidthValue();
+  else if (font_stretch_string == kExpandedString)
+    stretch_vale = ExpandedWidthValue();
+  else if (font_stretch_string == kExtraExpandedString)
+    stretch_vale = ExtraExpandedWidthValue();
+  else if (font_stretch_string == kUltraExpandedString)
+    stretch_vale = UltraExpandedWidthValue();
+  else
+    return;
+
+  if (GetState().GetFontStretch() == stretch_vale)
+    return;
+
+  ModifiableState().SetFontStretch(stretch_vale, Host()->GetFontSelector());
+}
+
 void CanvasRenderingContext2D::setFontVariantCaps(
     const String& font_variant_caps_string) {
   if (!GetState().HasRealizedFont())
@@ -950,6 +967,28 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   return MakeGarbageCollected<TextMetrics>(font, direction,
                                            GetState().GetTextBaseline(),
                                            GetState().GetTextAlign(), text);
+}
+
+void CanvasRenderingContext2D::fillFormattedText(
+    CanvasFormattedText* formatted_text,
+    double x,
+    double y,
+    double wrap_width) {
+  if (!formatted_text)
+    return;
+
+  if (!GetState().HasRealizedFont())
+    setFont(font());
+
+  FloatRect bounds;
+  sk_sp<PaintRecord> recording = formatted_text->PaintFormattedText(
+      canvas()->GetDocument(), GetState().GetFontDescription(), x, y,
+      wrap_width, bounds);
+  Draw([recording](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+       { c->drawPicture(recording); },
+       [](const SkIRect& rect) { return false; }, bounds,
+       CanvasRenderingContext2DState::PaintType::kFillPaintType,
+       CanvasRenderingContext2DState::kNoImage);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -1099,8 +1138,8 @@ CanvasRenderingContext2D::getContextAttributes() const {
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
   if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
-    settings->setColorSpace(ColorSpaceAsString());
-    settings->setPixelFormat(PixelFormatAsString());
+    settings->setColorSpace(GetCanvas2DColorParams().GetColorSpaceAsString());
+    settings->setPixelFormat(GetCanvas2DColorParams().GetPixelFormatAsString());
   }
   settings->setDesynchronized(Host()->LowLatencyEnabled());
   if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
@@ -1151,7 +1190,11 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
   if (!GetOrCreatePaintCanvas())
     return;
 
-  SkColor color = LayoutTheme::GetTheme().FocusRingColor().Rgb();
+  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+  SkColor color =
+      LayoutTheme::GetTheme()
+          .FocusRingColor(ComputedStyle::InitialStyle().UsedColorScheme())
+          .Rgb();
   const int kFocusRingWidth = 5;
   DrawPlatformFocusRing(path.GetSkPath(), GetPaintCanvas(), color,
                         /*width=*/kFocusRingWidth, /*radius=*/kFocusRingWidth);

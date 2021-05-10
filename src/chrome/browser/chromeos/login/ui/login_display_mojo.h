@@ -42,9 +42,6 @@ class LoginDisplayMojo : public LoginDisplay,
   void ShowError(int error_msg_id,
                  int login_attempts,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ShowPasswordChangedDialog(bool show_password_error,
-                                 const AccountId& account_id) override;
-  void ShowSigninUI(const std::string& email) override;
   void ShowAllowlistCheckFailedError() override;
 
   // SigninScreenHandlerDelegate:
@@ -53,20 +50,17 @@ class LoginDisplayMojo : public LoginDisplay,
   bool IsSigninInProgress() const override;
   void OnSigninScreenReady() override;
   void ShowEnterpriseEnrollmentScreen() override;
-  void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
   void CancelUserAdding() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  bool IsShowUsers() const override;
-  bool ShowUsersHasChanged() const override;
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
-  void HandleGetUsers() override;
-  void CheckUserStatus(const AccountId& account_id) override;
 
   // user_manager::UserManager::Observer:
   void OnUserImageChanged(const user_manager::User& user) override;
+
+  void ShowOwnerPod(const AccountId& owner);
 
  private:
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);

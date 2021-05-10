@@ -247,7 +247,7 @@ using Cmake.
 
 Requirements:
 - Visual Studio (2015 or newer recommended) or Windows SDK
-- CMake 2.8.x Windows native version (i.e. not Cygwin version)
+- CMake 3.10.2 Windows native version (i.e. not Cygwin version)
 - For GL/ES2/ES3.x tests: OpengGL, OpenGL ES 2 or ES 3.x libraries and headers
 
 To choose the backend build system for CMake, choose one of the following Generator Names for the
@@ -294,7 +294,7 @@ function wcmake () {
 
 Required tools:
 - Standard build utilities (make, gcc, etc.)
-- CMake 2.8.x
+- CMake 3.10.2
 - Necessary API libraries (OpenGL, GLES, EGL depending on configuration)
 
 Building ES2 or ES3.x conformance tests:
@@ -399,14 +399,20 @@ Most of the tests require at least 256x256 pixels resolution in order to run pro
 and produce stable results. It is, therefore, important to ensure that a port to a
 new platform can support surfaces that fulfill width and height requirements.
 
-### Other Allowable Porting Changes
+### Other Allowable Changes
 
-Other than changes needed for porting, the only changes that are permitted are
-changes to fix bugs in the conformance test. A bug in the conformance test is
-a behavior which causes clearly incorrect execution (e.g., hanging, crashing,
+Changes to fix bugs in the conformance test are allowed. A bug in the conformance
+test is a behavior which causes clearly incorrect execution (e.g., hanging, crashing,
 or memory corruption), OR which requires behavior which contradicts or exceeds
-the requirements of the relevant OpenGL or OpenGL ES Specification. Changes
-required to address either of these issues typically require [waivers](#waivers).
+the requirements of the relevant OpenGL or OpenGL ES Specification. Before
+being used for a submission, bugfixes must be accepted and merged into
+the CTS repository. `git cherry-pick` is strongly recommended as a method of
+applying bug fixes.
+
+Other changes must be accompanied by a [waiver](#waivers).
+
+NOTE: When cherry-picking patches on top of release tag, please use `git cherry-pick -x`
+to include original commit hash in the commit message.
 
 Running the Tests
 ------------------------

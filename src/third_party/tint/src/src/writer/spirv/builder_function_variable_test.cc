@@ -19,41 +19,39 @@
 #include "src/ast/binding_decoration.h"
 #include "src/ast/builtin.h"
 #include "src/ast/builtin_decoration.h"
-#include "src/ast/decorated_variable.h"
 #include "src/ast/float_literal.h"
+#include "src/ast/group_decoration.h"
 #include "src/ast/location_decoration.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/set_decoration.h"
 #include "src/ast/storage_class.h"
 #include "src/ast/struct.h"
-#include "src/ast/type/access_control_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decoration.h"
-#include "src/context.h"
+#include "src/type/access_control_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, FunctionVar_NoStorageClass) {
-  ast::type::F32Type f32;
-  ast::Variable v("var", ast::StorageClass::kNone, &f32);
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kNone);
 
-  ast::Module mod;
-  Builder b(&mod);
+  spirv::Builder& b = Build();
+
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "tint_766172"
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "var"
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeFloat 32
 %2 = OpTypePointer Function %3
@@ -67,36 +65,17 @@ TEST_F(BuilderTest, FunctionVar_NoStorageClass) {
 }
 
 TEST_F(BuilderTest, FunctionVar_WithConstantConstructor) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kOutput, init);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(init.get())) << td.error();
-
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
-  v.set_constructor(std::move(init));
-
-  td.RegisterVariableForTesting(&v);
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %6 "tint_766172"
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %6 "var"
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
 %1 = OpTypeVector %2 3
@@ -109,44 +88,23 @@ TEST_F(BuilderTest, FunctionVar_WithConstantConstructor) {
   EXPECT_EQ(DumpInstructions(b.functions()[0].variables()),
             R"(%6 = OpVariable %7 Function %8
 )");
-  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpStore %6 %5
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %6 %5
 )");
 }
 
 TEST_F(BuilderTest, FunctionVar_WithNonConstantConstructor) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 2);
+  auto* init = vec2<f32>(1.f, Add(3.f, 3.f));
 
-  auto rel = std::make_unique<ast::BinaryExpression>(
-      ast::BinaryOp::kAdd,
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::FloatLiteral>(&f32, 3.0f)),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = Global("var", ty.vec2<f32>(), ast::StorageClass::kFunction, init);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::move(rel));
+  spirv::Builder& b = Build();
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(init.get())) << td.error();
-
-  ast::Variable v("var", ast::StorageClass::kFunction, &vec);
-  v.set_constructor(std::move(init));
-
-  td.RegisterVariableForTesting(&v);
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %7 "tint_766172"
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %7 "var"
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
 %1 = OpTypeVector %2 2
@@ -165,43 +123,84 @@ OpStore %7 %6
 )");
 }
 
-TEST_F(BuilderTest,
-       DISABLED_FunctionVar_WithNonConstantConstructorLoadedFromVar) {
-  // fn main() -> void {
-  //   var v : f32 = 1.0;
-  //   var v2 : f32 = v; // Should generate the load automatically.
-  // }
-  FAIL();
+TEST_F(BuilderTest, FunctionVar_WithNonConstantConstructorLoadedFromVar) {
+  // var v : f32 = 1.0;
+  // var v2 : f32 = v; // Should generate the load and store automatically.
+
+  auto* v = Global("v", ty.f32(), ast::StorageClass::kFunction, Expr(1.f));
+
+  auto* v2 = Global("v2", ty.f32(), ast::StorageClass::kFunction, Expr("v"));
+
+  spirv::Builder& b = Build();
+
+  b.push_function(Function{});
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v2)) << b.error();
+  ASSERT_FALSE(b.has_error()) << b.error();
+
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %3 "v"
+OpName %7 "v2"
+)");
+  EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeFloat 32
+%2 = OpConstant %1 1
+%4 = OpTypePointer Function %1
+%5 = OpConstantNull %1
+)");
+  EXPECT_EQ(DumpInstructions(b.functions()[0].variables()),
+            R"(%3 = OpVariable %4 Function %5
+%7 = OpVariable %4 Function %5
+)");
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %3 %2
+%6 = OpLoad %1 %3
+OpStore %7 %6
+)");
+}
+
+TEST_F(BuilderTest, FunctionVar_ConstWithVarInitializer) {
+  // var v : f32 = 1.0;
+  // const v2 : f32 = v; // Should generate the load
+
+  auto* v = Global("v", ty.f32(), ast::StorageClass::kFunction, Expr(1.f));
+
+  auto* v2 = Global("v2", ty.f32(), ast::StorageClass::kFunction, Expr("v"));
+
+  spirv::Builder& b = Build();
+
+  b.push_function(Function{});
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v2)) << b.error();
+  ASSERT_FALSE(b.has_error()) << b.error();
+
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %3 "v"
+OpName %7 "v2"
+)");
+  EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeFloat 32
+%2 = OpConstant %1 1
+%4 = OpTypePointer Function %1
+%5 = OpConstantNull %1
+)");
+  EXPECT_EQ(DumpInstructions(b.functions()[0].variables()),
+            R"(%3 = OpVariable %4 Function %5
+%7 = OpVariable %4 Function %5
+)");
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %3 %2
+%6 = OpLoad %1 %3
+OpStore %7 %6
+)");
 }
 
 TEST_F(BuilderTest, FunctionVar_Const) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = Const("var", ty.f32(), init);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  WrapInFunction(v);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(init.get())) << td.error();
+  spirv::Builder& b = Build();
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
-  v.set_constructor(std::move(init));
-  v.set_is_const(true);
-
-  td.RegisterVariableForTesting(&v);
-
-  Builder b(&mod);
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32

@@ -5,6 +5,8 @@
 #include <stddef.h>
 
 #include "base/values.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -66,7 +68,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetLastFocusedWindow) {
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
+// Flaky on LaCrOS: crbug.com/1179817
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_QueryLastFocusedWindowTabs DISABLED_QueryLastFocusedWindowTabs
+#else
+#define MAYBE_QueryLastFocusedWindowTabs QueryLastFocusedWindowTabs
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
   const size_t kExtraWindows = 2;
   for (size_t i = 0; i < kExtraWindows; ++i)
     CreateBrowser(browser()->profile());
@@ -124,23 +132,29 @@ class NonPersistentExtensionTabsTest
       public testing::WithParamInterface<ContextType> {
  protected:
   const Extension* LoadNonPersistentExtension(const char* relative_path) {
-    return LoadExtensionWithFlags(test_data_dir_.AppendASCII(relative_path),
-                                  GetParam() == ContextType::kEventPage
-                                      ? kFlagNone
-                                      : kFlagRunAsServiceWorkerBasedExtension);
+    return LoadExtension(
+        test_data_dir_.AppendASCII(relative_path),
+        {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };
 
-// Tests chrome.windows.create.
+// Crashes on Lacros only. http://crbug.com/1150133
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
+// Flakes on Linux Tests (Release Only). http://crbug.com/1162432
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
+#else
+#define MAYBE_TabCurrentWindow TabCurrentWindow
+#endif
+
+// Tests chrome.windows.create and chrome.windows.getCurrent.
 // TODO(crbug.com/984350): Expand the test to verify that setSelfAsOpener
 // param is ignored from Service Worker extension scripts.
-IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest, TabCurrentWindow) {
-  ASSERT_TRUE(
-      RunExtensionTestWithFlags("tabs/current_window",
-                                GetParam() == ContextType::kServiceWorker
-                                    ? kFlagRunAsServiceWorkerBasedExtension
-                                    : kFlagNone,
-                                kFlagNone))
+IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest, MAYBE_TabCurrentWindow) {
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "tabs/current_window"},
+      {.load_as_service_worker = GetParam() == ContextType::kServiceWorker}))
       << message_;
 }
 

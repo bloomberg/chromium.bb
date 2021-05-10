@@ -4,38 +4,56 @@
 
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_controller.h"
 
-#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
-
+#include <algorithm>
+#include "base/rand_util.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution_container.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_memory_breakdown_entry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_memory_measurement.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
+using performance_manager::mojom::blink::WebMemoryAttribution;
+using performance_manager::mojom::blink::WebMemoryAttributionPtr;
+using performance_manager::mojom::blink::WebMemoryBreakdownEntryPtr;
+using performance_manager::mojom::blink::WebMemoryMeasurement;
+using performance_manager::mojom::blink::WebMemoryMeasurementPtr;
+using performance_manager::mojom::blink::WebMemoryUsagePtr;
+
 namespace blink {
 
-static MeasureMemoryController::V8MemoryReporter*
-    g_dedicated_worker_memory_reporter_ = nullptr;
+namespace {
 
-void MeasureMemoryController::SetDedicatedWorkerMemoryReporter(
-    V8MemoryReporter* reporter) {
-  g_dedicated_worker_memory_reporter_ = reporter;
-}
+// String constants used for building the result.
+constexpr const char* kCrossOriginUrl = "cross-origin-url";
+constexpr const char* kMemoryTypeDom = "DOM";
+constexpr const char* kMemoryTypeJavaScript = "JavaScript";
+constexpr const char* kMemoryTypeShared = "Shared";
+constexpr const char* kScopeCrossOriginAggregated = "cross-origin-aggregated";
+constexpr const char* kScopeDedicatedWorker = "DedicatedWorker";
+constexpr const char* kScopeWindow = "Window";
+
+}  // anonymous namespace
 
 MeasureMemoryController::MeasureMemoryController(
-    util::PassKey<MeasureMemoryController>,
+    base::PassKey<MeasureMemoryController>,
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
     v8::Local<v8::Promise::Resolver> promise_resolver)
@@ -51,17 +69,77 @@ MeasureMemoryController::MeasureMemoryController(
 
 void MeasureMemoryController::Trace(Visitor* visitor) const {
   visitor->Trace(promise_resolver_);
-  visitor->Trace(main_result_);
-  visitor->Trace(worker_result_);
 }
+
+namespace {
+
+enum class ApiStatus {
+  kAvailable,
+  kNotAvailableDueToFlag,
+  kNotAvailableDueToDetachedContext,
+  kNotAvailableDueToCrossOriginContext,
+  kNotAvailableDueToCrossOriginIsolation,
+  kNotAvailableDueToResourceCoordinator,
+};
+
+ApiStatus CheckMeasureMemoryAvailability(LocalDOMWindow* window) {
+  if (!base::FeatureList::IsEnabled(
+          features::kWebMeasureMemoryViaPerformanceManager)) {
+    return ApiStatus::kNotAvailableDueToFlag;
+  }
+  if (!window) {
+    return ApiStatus::kNotAvailableDueToDetachedContext;
+  }
+  LocalFrame* local_frame = window->GetFrame();
+  if (!local_frame) {
+    return ApiStatus::kNotAvailableDueToDetachedContext;
+  }
+  if (!window->CrossOriginIsolatedCapability() &&
+      local_frame->GetSettings()->GetWebSecurityEnabled()) {
+    return ApiStatus::kNotAvailableDueToCrossOriginIsolation;
+  }
+
+  // We need DocumentResourceCoordinator to query PerformanceManager.
+  if (!window->document()) {
+    return ApiStatus::kNotAvailableDueToDetachedContext;
+  }
+
+  if (!window->document()->GetResourceCoordinator()) {
+    return ApiStatus::kNotAvailableDueToResourceCoordinator;
+  }
+
+  return ApiStatus::kAvailable;
+}
+
+}  // anonymous namespace
 
 ScriptPromise MeasureMemoryController::StartMeasurement(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  if (!IsMeasureMemoryAvailable(LocalDOMWindow::From(script_state))) {
-    exception_state.ThrowSecurityError(
-        "performance.measureMemory is not available in this context");
-    return ScriptPromise();
+  switch (auto status = CheckMeasureMemoryAvailability(
+              LocalDOMWindow::From(script_state))) {
+    case ApiStatus::kAvailable:
+      break;
+    case ApiStatus::kNotAvailableDueToFlag:
+    case ApiStatus::kNotAvailableDueToResourceCoordinator:
+      exception_state.ThrowSecurityError(
+          "performance.measureUserAgentSpecificMemory is not available.");
+      return ScriptPromise();
+    case ApiStatus::kNotAvailableDueToDetachedContext:
+      exception_state.ThrowSecurityError(
+          "performance.measureUserAgentSpecificMemory is not supported"
+          " in detached iframes.");
+      return ScriptPromise();
+    case ApiStatus::kNotAvailableDueToCrossOriginContext:
+      exception_state.ThrowSecurityError(
+          "performance.measureUserAgentSpecificMemory is not supported"
+          " in cross-origin iframes.");
+      return ScriptPromise();
+    case ApiStatus::kNotAvailableDueToCrossOriginIsolation:
+      exception_state.ThrowSecurityError(
+          "performance.measureUserAgentSpecificMemory requires"
+          " cross-origin isolation.");
+      return ScriptPromise();
   }
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
@@ -71,73 +149,143 @@ ScriptPromise MeasureMemoryController::StartMeasurement(
     exception_state.RethrowV8Exception(try_catch.Exception());
     return ScriptPromise();
   }
-  v8::MeasureMemoryExecution execution =
+  auto measurement_mode =
       RuntimeEnabledFeatures::ForceEagerMeasureMemoryEnabled(
           ExecutionContext::From(script_state))
-          ? v8::MeasureMemoryExecution::kEager
-          : v8::MeasureMemoryExecution::kDefault;
+          ? WebMemoryMeasurement::Mode::kEager
+          : WebMemoryMeasurement::Mode::kDefault;
 
   auto* impl = MakeGarbageCollected<MeasureMemoryController>(
-      util::PassKey<MeasureMemoryController>(), isolate, context,
+      base::PassKey<MeasureMemoryController>(), isolate, context,
       promise_resolver);
+  Document* document = LocalDOMWindow::From(script_state)->document();
+  document->GetResourceCoordinator()->OnWebMemoryMeasurementRequested(
+      measurement_mode, WTF::Bind(&MeasureMemoryController::MeasurementComplete,
+                                  WrapPersistent(impl)));
 
-  isolate->MeasureMemory(
-      std::make_unique<MeasureMemoryDelegate>(
-          isolate, context,
-          WTF::Bind(&MeasureMemoryController::MainMeasurementComplete,
-                    WrapPersistent(impl))),
-      execution);
-  if (g_dedicated_worker_memory_reporter_) {
-    g_dedicated_worker_memory_reporter_->GetMemoryUsage(
-        WTF::Bind(&MeasureMemoryController::WorkerMeasurementComplete,
-                  WrapPersistent(impl)),
-
-        execution);
-  } else {
-    HeapVector<Member<MeasureMemoryBreakdown>> result;
-    impl->WorkerMeasurementComplete(result);
-  }
   return ScriptPromise(script_state, promise_resolver->GetPromise());
 }
 
-bool MeasureMemoryController::IsMeasureMemoryAvailable(LocalDOMWindow* window) {
-  // TODO(ulan): We should check for window.crossOriginIsolated when it ships.
-  // Until then we enable the API only for processes locked to a site
-  // similar to the precise mode of the legacy performance.memory API.
-  if (!Platform::Current()->IsLockedToSite()) {
-    return false;
+
+namespace {
+
+// Satisfies the requirements of UniformRandomBitGenerator from C++ standard.
+// It is used in std::shuffle calls below.
+struct RandomBitGenerator {
+  using result_type = size_t;
+  static constexpr size_t min() { return 0; }
+  static constexpr size_t max() {
+    return static_cast<size_t>(std::numeric_limits<int>::max());
   }
-  // The window.crossOriginIsolated will be true only for the top-level frame.
-  // Until the flag is available we check for the top-level condition manually.
-  if (!window) {
-    return false;
+  size_t operator()() {
+    return static_cast<size_t>(base::RandInt(min(), max()));
   }
-  LocalFrame* local_frame = window->GetFrame();
-  if (!local_frame || !local_frame->IsMainFrame()) {
-    return false;
+};
+
+// These functions convert WebMemory* mojo structs to IDL and JS values.
+WTF::AtomicString ConvertScope(WebMemoryAttribution::Scope scope) {
+  using Scope = WebMemoryAttribution::Scope;
+  switch (scope) {
+    case Scope::kDedicatedWorker:
+      return kScopeDedicatedWorker;
+    case Scope::kWindow:
+      return kScopeWindow;
+    case Scope::kCrossOriginAggregated:
+      return kScopeCrossOriginAggregated;
   }
-  return true;
 }
 
-void MeasureMemoryController::MainMeasurementComplete(Result result) {
-  DCHECK(!main_measurement_completed_);
-  main_result_ = result;
-  main_measurement_completed_ = true;
-  MaybeResolvePromise();
-}
-
-void MeasureMemoryController::WorkerMeasurementComplete(Result result) {
-  DCHECK(!worker_measurement_completed_);
-  worker_result_ = result;
-  worker_measurement_completed_ = true;
-  MaybeResolvePromise();
-}
-
-void MeasureMemoryController::MaybeResolvePromise() {
-  if (!main_measurement_completed_ || !worker_measurement_completed_) {
-    // Wait until we have all results.
-    return;
+MemoryAttributionContainer* ConvertContainer(
+    const WebMemoryAttributionPtr& attribution) {
+  if (!attribution->src && !attribution->id) {
+    return nullptr;
   }
+  auto* result = MemoryAttributionContainer::Create();
+  result->setSrc(attribution->src);
+  result->setId(attribution->id);
+  return result;
+}
+
+MemoryAttribution* ConvertAttribution(
+    const WebMemoryAttributionPtr& attribution) {
+  auto* result = MemoryAttribution::Create();
+  if (attribution->url) {
+    result->setUrl(attribution->url);
+  } else {
+    result->setUrl(kCrossOriginUrl);
+  }
+  result->setScope(ConvertScope(attribution->scope));
+  result->setContainer(ConvertContainer(attribution));
+  return result;
+}
+
+MemoryBreakdownEntry* ConvertBreakdown(
+    const WebMemoryBreakdownEntryPtr& breakdown_entry) {
+  auto* result = MemoryBreakdownEntry::Create();
+  DCHECK(breakdown_entry->memory);
+  result->setBytes(breakdown_entry->memory->bytes);
+  HeapVector<Member<MemoryAttribution>> attribution;
+  for (const auto& entry : breakdown_entry->attribution) {
+    attribution.push_back(ConvertAttribution(entry));
+  }
+  result->setAttribution(attribution);
+  result->setTypes({WTF::AtomicString(kMemoryTypeJavaScript)});
+  return result;
+}
+
+MemoryBreakdownEntry* CreateUnattributedBreakdown(
+    const WebMemoryUsagePtr& memory,
+    const WTF::String& memory_type) {
+  auto* result = MemoryBreakdownEntry::Create();
+  DCHECK(memory);
+  result->setBytes(memory->bytes);
+  result->setAttribution({});
+  Vector<String> types;
+  types.push_back(memory_type);
+  result->setTypes(types);
+  return result;
+}
+
+MemoryBreakdownEntry* EmptyBreakdown() {
+  auto* result = MemoryBreakdownEntry::Create();
+  result->setBytes(0);
+  result->setAttribution({});
+  result->setTypes({});
+  return result;
+}
+
+MemoryMeasurement* ConvertResult(const WebMemoryMeasurementPtr& measurement) {
+  HeapVector<Member<MemoryBreakdownEntry>> breakdown;
+  for (const auto& entry : measurement->breakdown) {
+    // Skip breakdowns that didn't get a measurement.
+    if (entry->memory)
+      breakdown.push_back(ConvertBreakdown(entry));
+  }
+  // Add breakdowns for memory that isn't attributed to an execution context.
+  breakdown.push_back(CreateUnattributedBreakdown(measurement->shared_memory,
+                                                  kMemoryTypeShared));
+  breakdown.push_back(
+      CreateUnattributedBreakdown(measurement->blink_memory, kMemoryTypeDom));
+  // TODO(1085129): Report memory usage of detached frames once implemented.
+  // Add an empty breakdown entry as required by the spec.
+  // See https://github.com/WICG/performance-measure-memory/issues/10.
+  breakdown.push_back(EmptyBreakdown());
+  // Randomize the order of the entries as required by the spec.
+  std::shuffle(breakdown.begin(), breakdown.end(), RandomBitGenerator{});
+  size_t bytes = 0;
+  for (auto entry : breakdown) {
+    bytes += entry->bytes();
+  }
+  auto* result = MemoryMeasurement::Create();
+  result->setBreakdown(breakdown);
+  result->setBytes(bytes);
+  return result;
+}
+
+}  // anonymous namespace
+
+void MeasureMemoryController::MeasurementComplete(
+    WebMemoryMeasurementPtr measurement) {
   if (context_.IsEmpty()) {
     // The context was garbage collected in the meantime.
     return;
@@ -145,15 +293,7 @@ void MeasureMemoryController::MaybeResolvePromise() {
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context = context_.NewLocal(isolate_);
   v8::Context::Scope context_scope(context);
-  MeasureMemory* result = MeasureMemory::Create();
-  auto breakdown = main_result_;
-  breakdown.AppendVector(worker_result_);
-  size_t total_size = 0;
-  for (auto entry : breakdown) {
-    total_size += entry->bytes();
-  }
-  result->setBytes(total_size);
-  result->setBreakdown(breakdown);
+  auto* result = ConvertResult(measurement);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);
   promise_resolver->Resolve(context, ToV8(result, promise_resolver, isolate_))

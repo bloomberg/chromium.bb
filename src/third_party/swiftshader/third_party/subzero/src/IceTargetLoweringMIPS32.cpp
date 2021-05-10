@@ -580,18 +580,12 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
     }
     llvm::report_fatal_error("Control flow should never have reached here.");
   }
-  case Inst::IntrinsicCall: {
-    auto *IntrinsicCall = llvm::cast<InstIntrinsicCall>(Instr);
-    Intrinsics::IntrinsicID ID = IntrinsicCall->getIntrinsicInfo().ID;
+  case Inst::Intrinsic: {
+    auto *Intrinsic = llvm::cast<InstIntrinsic>(Instr);
+    Intrinsics::IntrinsicID ID = Intrinsic->getIntrinsicID();
     if (isVectorType(DestTy) && ID == Intrinsics::Fabs) {
-      Operand *Src0 = IntrinsicCall->getArg(0);
-      GlobalString FabsFloat = Ctx->getGlobalString("llvm.fabs.f32");
-      Operand *CallTarget = Ctx->getConstantExternSym(FabsFloat);
-      GlobalString FabsVec = Ctx->getGlobalString("llvm.fabs.v4f32");
-      bool BadIntrinsic = false;
-      const Intrinsics::FullIntrinsicInfo *FullInfo =
-          Ctx->getIntrinsicsInfo().find(FabsVec, BadIntrinsic);
-      Intrinsics::IntrinsicInfo Info = FullInfo->Info;
+      Operand *Src0 = Intrinsic->getArg(0);
+      Intrinsics::IntrinsicInfo Info = Intrinsic->getIntrinsicInfo();
 
       Variable *T = Func->makeVariable(IceType_v4f32);
       auto *Undef = ConstantUndef::create(Ctx, IceType_v4f32);
@@ -605,9 +599,8 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
         Context.insert<InstExtractElement>(Op, Src0, Index);
         auto *Res = Func->makeVariable(IceType_f32);
         Variable *DestT = Func->makeVariable(IceType_v4f32);
-        auto *Call =
-            Context.insert<InstIntrinsicCall>(1, Res, CallTarget, Info);
-        Call->addArg(Op);
+        auto *Intrinsic = Context.insert<InstIntrinsic>(1, Res, Info);
+        Intrinsic->addArg(Op);
         Context.insert<InstInsertElement>(DestT, T, Res, Index);
         T = DestT;
       }
@@ -624,11 +617,11 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
       if (DestTy != IceType_i64)
         return;
       if (!Intrinsics::isMemoryOrderValid(
-              ID, getConstantMemoryOrder(IntrinsicCall->getArg(1)))) {
+              ID, getConstantMemoryOrder(Intrinsic->getArg(1)))) {
         Func->setError("Unexpected memory ordering for AtomicLoad");
         return;
       }
-      Operand *Addr = IntrinsicCall->getArg(0);
+      Operand *Addr = Intrinsic->getArg(0);
       Operand *TargetHelper = Ctx->getConstantExternSym(
           Ctx->getGlobalString("__sync_val_compare_and_swap_8"));
       static constexpr SizeT MaxArgs = 3;
@@ -643,15 +636,15 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
       return;
     }
     case Intrinsics::AtomicStore: {
-      Operand *Val = IntrinsicCall->getArg(0);
+      Operand *Val = Intrinsic->getArg(0);
       if (Val->getType() != IceType_i64)
         return;
       if (!Intrinsics::isMemoryOrderValid(
-              ID, getConstantMemoryOrder(IntrinsicCall->getArg(2)))) {
+              ID, getConstantMemoryOrder(Intrinsic->getArg(2)))) {
         Func->setError("Unexpected memory ordering for AtomicStore");
         return;
       }
-      Operand *Addr = IntrinsicCall->getArg(1);
+      Operand *Addr = Intrinsic->getArg(1);
       Variable *NoDest = nullptr;
       Operand *TargetHelper = Ctx->getConstantExternSym(
           Ctx->getGlobalString("__sync_lock_test_and_set_8"));
@@ -669,14 +662,14 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
       if (DestTy != IceType_i64)
         return;
       if (!Intrinsics::isMemoryOrderValid(
-              ID, getConstantMemoryOrder(IntrinsicCall->getArg(3)),
-              getConstantMemoryOrder(IntrinsicCall->getArg(4)))) {
+              ID, getConstantMemoryOrder(Intrinsic->getArg(3)),
+              getConstantMemoryOrder(Intrinsic->getArg(4)))) {
         Func->setError("Unexpected memory ordering for AtomicCmpxchg");
         return;
       }
-      Operand *Addr = IntrinsicCall->getArg(0);
-      Operand *Oldval = IntrinsicCall->getArg(1);
-      Operand *Newval = IntrinsicCall->getArg(2);
+      Operand *Addr = Intrinsic->getArg(0);
+      Operand *Oldval = Intrinsic->getArg(1);
+      Operand *Newval = Intrinsic->getArg(2);
       Operand *TargetHelper = Ctx->getConstantExternSym(
           Ctx->getGlobalString("__sync_val_compare_and_swap_8"));
       Context.insert<InstMIPS32Sync>();
@@ -694,14 +687,14 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
       if (DestTy != IceType_i64)
         return;
       if (!Intrinsics::isMemoryOrderValid(
-              ID, getConstantMemoryOrder(IntrinsicCall->getArg(3)))) {
+              ID, getConstantMemoryOrder(Intrinsic->getArg(3)))) {
         Func->setError("Unexpected memory ordering for AtomicRMW");
         return;
       }
       auto Operation = static_cast<Intrinsics::AtomicRMWOperation>(
-          llvm::cast<ConstantInteger32>(IntrinsicCall->getArg(0))->getValue());
-      auto *Addr = IntrinsicCall->getArg(1);
-      auto *Newval = IntrinsicCall->getArg(2);
+          llvm::cast<ConstantInteger32>(Intrinsic->getArg(0))->getValue());
+      auto *Addr = Intrinsic->getArg(1);
+      auto *Newval = Intrinsic->getArg(2);
       Operand *TargetHelper;
       switch (Operation) {
       case Intrinsics::AtomicAdd:
@@ -743,7 +736,7 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
       return;
     }
     case Intrinsics::Ctpop: {
-      Operand *Src0 = IntrinsicCall->getArg(0);
+      Operand *Src0 = Intrinsic->getArg(0);
       Operand *TargetHelper =
           Ctx->getRuntimeHelperFunc(isInt32Asserting32Or64(Src0->getType())
                                         ? RuntimeHelper::H_call_ctpop_i32
@@ -762,8 +755,8 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_longjmp);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
       Instr->setDeleted();
       return;
     }
@@ -774,9 +767,9 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memcpy);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
@@ -787,14 +780,14 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memmove);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
     case Intrinsics::Memset: {
-      Operand *ValOp = IntrinsicCall->getArg(1);
+      Operand *ValOp = Intrinsic->getArg(1);
       assert(ValOp->getType() == IceType_i8);
       Variable *ValExt = Func->makeVariable(stackSlotType());
       Context.insert<InstCast>(InstCast::Zext, ValExt, ValOp);
@@ -805,9 +798,9 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memset);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
+      Call->addArg(Intrinsic->getArg(0));
       Call->addArg(ValExt);
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
@@ -830,7 +823,7 @@ void TargetMIPS32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_setjmp);
       auto *Call = Context.insert<InstCall>(MaxArgs, Dest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
+      Call->addArg(Intrinsic->getArg(0));
       Instr->setDeleted();
       return;
     }
@@ -965,11 +958,6 @@ void TargetMIPS32::translateO2() {
   // to reduce the amount of work needed for searching for opportunities.
   Func->doBranchOpt();
   Func->dump("After branch optimization");
-
-  // Nop insertion
-  if (getFlags().getShouldDoNopInsertion()) {
-    Func->doNopInsertion();
-  }
 }
 
 void TargetMIPS32::translateOm1() {
@@ -1019,11 +1007,6 @@ void TargetMIPS32::translateOm1() {
   if (Func->hasError())
     return;
   Func->dump("After postLowerLegalization");
-
-  // Nop insertion
-  if (getFlags().getShouldDoNopInsertion()) {
-    Func->doNopInsertion();
-  }
 }
 
 bool TargetMIPS32::doBranchOpt(Inst *Instr, const CfgNode *NextNode) {
@@ -4563,11 +4546,11 @@ void TargetMIPS32::createArithInst(Intrinsics::AtomicRMWOperation Operation,
   }
 }
 
-void TargetMIPS32::lowerIntrinsicCall(const InstIntrinsicCall *Instr) {
+void TargetMIPS32::lowerIntrinsic(const InstIntrinsic *Instr) {
   Variable *Dest = Instr->getDest();
   Type DestTy = (Dest == nullptr) ? IceType_void : Dest->getType();
 
-  Intrinsics::IntrinsicID ID = Instr->getIntrinsicInfo().ID;
+  Intrinsics::IntrinsicID ID = Instr->getIntrinsicID();
   switch (ID) {
   case Intrinsics::AtomicLoad: {
     assert(isScalarIntegerType(DestTy));
@@ -5212,7 +5195,7 @@ void TargetMIPS32::lowerLoad(const InstLoad *Instr) {
   // A Load instruction can be treated the same as an Assign instruction, after
   // the source operand is transformed into an OperandMIPS32Mem operand.
   Type Ty = Instr->getDest()->getType();
-  Operand *Src0 = formMemoryOperand(Instr->getSourceAddress(), Ty);
+  Operand *Src0 = formMemoryOperand(Instr->getLoadAddress(), Ty);
   Variable *DestLoad = Instr->getDest();
   auto *Assign = InstAssign::create(Func, DestLoad, Src0);
   lowerAssign(Assign);
@@ -5446,14 +5429,6 @@ void TargetMIPS32::doAddressOptLoad() {
   }
 }
 
-void TargetMIPS32::randomlyInsertNop(float Probability,
-                                     RandomNumberGenerator &RNG) {
-  RandomNumberGeneratorWrapper RNGW(RNG);
-  if (RNGW.getTrueWithProbability(Probability)) {
-    _nop();
-  }
-}
-
 void TargetMIPS32::lowerPhi(const InstPhi * /*Instr*/) {
   Func->setError("Phi found in regular instruction list");
 }
@@ -5604,7 +5579,7 @@ void TargetMIPS32::lowerShuffleVector(const InstShuffleVector *Instr) {
 
 void TargetMIPS32::lowerStore(const InstStore *Instr) {
   Operand *Value = Instr->getData();
-  Operand *Addr = Instr->getAddr();
+  Operand *Addr = Instr->getStoreAddress();
   OperandMIPS32Mem *NewAddr = formMemoryOperand(Addr, Value->getType());
   Type Ty = NewAddr->getType();
 
@@ -5704,15 +5679,6 @@ void TargetMIPS32::postLower() {
     return;
   markRedefinitions();
   Context.availabilityUpdate();
-}
-
-void TargetMIPS32::makeRandomRegisterPermutation(
-    llvm::SmallVectorImpl<RegNumT> &Permutation,
-    const SmallBitVector &ExcludeRegisters, uint64_t Salt) const {
-  (void)Permutation;
-  (void)ExcludeRegisters;
-  (void)Salt;
-  UnimplementedError(getFlags());
 }
 
 /* TODO(jvoung): avoid duplicate symbols with multiple targets.
@@ -5832,10 +5798,6 @@ template <typename T> void emitConstantPool(GlobalContext *Ctx) {
   Str << "\t.section\t.rodata.cst" << Align << ",\"aM\",%progbits," << Align
       << "\n"
       << "\t.align\t" << (Align == 4 ? 2 : 3) << "\n";
-  if (getFlags().getReorderPooledConstants()) {
-    // TODO(jaydeep.patil): add constant pooling.
-    UnimplementedError(getFlags());
-  }
   for (Constant *C : Pool) {
     if (!C->getShouldBePooled()) {
       continue;

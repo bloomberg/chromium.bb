@@ -34,6 +34,14 @@ namespace dawn_wire {
         WGPUTexture texture;
         uint32_t id;
         uint32_t generation;
+        uint32_t deviceId;
+        uint32_t deviceGeneration;
+    };
+
+    struct ReservedDevice {
+        WGPUDevice device;
+        uint32_t id;
+        uint32_t generation;
     };
 
     struct DAWN_WIRE_EXPORT WireClientDescriptor {
@@ -46,11 +54,14 @@ namespace dawn_wire {
         WireClient(const WireClientDescriptor& descriptor);
         ~WireClient() override;
 
-        WGPUDevice GetDevice() const;
         const volatile char* HandleCommands(const volatile char* commands,
                                             size_t size) override final;
 
         ReservedTexture ReserveTexture(WGPUDevice device);
+        ReservedDevice ReserveDevice();
+
+        void ReclaimTextureReservation(const ReservedTexture& reservation);
+        void ReclaimDeviceReservation(const ReservedDevice& reservation);
 
         // Disconnects the client.
         // Commands allocated after this point will not be sent.

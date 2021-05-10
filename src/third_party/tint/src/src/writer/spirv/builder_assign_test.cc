@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/float_literal.h"
@@ -24,47 +24,37 @@
 #include "src/ast/sint_literal.h"
 #include "src/ast/struct.h"
 #include "src/ast/struct_member.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
-#include "src/context.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Assign_Var) {
-  ast::type::F32Type f32;
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kOutput);
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), Expr(1.f));
 
-  auto ident = std::make_unique<ast::IdentifierExpression>("var");
-  auto val = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f));
+  WrapInFunction(assign);
 
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeFloat 32
@@ -74,36 +64,45 @@ TEST_F(BuilderTest, Assign_Var) {
 %5 = OpConstant %3 1
 )");
 
-  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpStore %1 %5
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %1 %5
 )");
 }
 
-TEST_F(BuilderTest, Assign_Var_ZeroConstructor) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+TEST_F(BuilderTest, Assign_Var_OutsideFunction_IsError) {
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kOutput);
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec);
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), Expr(1.f));
 
-  auto ident = std::make_unique<ast::IdentifierExpression>("var");
-  ast::ExpressionList vals;
-  auto val =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  WrapInFunction(assign);
 
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
-  b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_FALSE(b.GenerateAssignStatement(assign)) << b.error();
+  EXPECT_TRUE(b.has_error());
+  EXPECT_EQ(b.error(),
+            "Internal error: trying to add SPIR-V instruction 62 outside a "
+            "function");
+}
+
+TEST_F(BuilderTest, Assign_Var_ZeroConstructor) {
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
+
+  auto* val = vec3<f32>();
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), val);
+
+  WrapInFunction(assign);
+
+  spirv::Builder& b = Build();
+
+  b.push_function(Function{});
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_FALSE(b.has_error()) << b.error();
+
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -113,47 +112,27 @@ TEST_F(BuilderTest, Assign_Var_ZeroConstructor) {
 %1 = OpVariable %2 Output %5
 )");
 
-  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpStore %1 %5
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %1 %5
 )");
 }
 
 TEST_F(BuilderTest, Assign_Var_Complex_ConstructorWithExtract) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec3(&f32, 3);
-  ast::type::VectorType vec2(&f32, 2);
+  auto* init = vec3<f32>(vec2<f32>(1.f, 2.f), 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.0f)));
-  auto first =
-      std::make_unique<ast::TypeConstructorExpression>(&vec2, std::move(vals));
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
 
-  vals.push_back(std::move(first));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), init);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec3, std::move(vals));
+  WrapInFunction(assign);
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec3);
+  spirv::Builder& b = Build();
 
-  ast::AssignmentStatement assign(
-      std::make_unique<ast::IdentifierExpression>("var"), std::move(init));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -176,37 +155,21 @@ OpStore %1 %13
 }
 
 TEST_F(BuilderTest, Assign_Var_Complex_Constructor) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec3(&f32, 3);
+  auto* init = vec3<f32>(1.f, 2.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec3, std::move(vals));
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), init);
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec3);
+  WrapInFunction(assign);
 
-  ast::AssignmentStatement assign(
-      std::make_unique<ast::IdentifierExpression>("var"), std::move(init));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -219,13 +182,12 @@ TEST_F(BuilderTest, Assign_Var_Complex_Constructor) {
 %8 = OpConstant %4 3
 %9 = OpConstantComposite %3 %6 %7 %8
 )");
-  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpStore %1 %9
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %1 %9
 )");
 }
 
 TEST_F(BuilderTest, Assign_StructMember) {
-  ast::type::F32Type f32;
-
   // my_struct {
   //   a : f32
   //   b : f32
@@ -233,40 +195,25 @@ TEST_F(BuilderTest, Assign_StructMember) {
   // var ident : my_struct
   // ident.b = 4.0;
 
-  ast::StructMemberDecorationList decos;
-  ast::StructMemberList members;
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &f32, std::move(decos)));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(decos)));
+  auto* s = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.f32()), Member("b", ty.f32())},
+      ast::StructDecorationList{});
 
-  auto s = std::make_unique<ast::Struct>(std::move(members));
-  ast::type::StructType s_type("my_struct", std::move(s));
+  auto* s_type = ty.struct_("my_struct", s);
+  auto* v = Global("ident", s_type, ast::StorageClass::kFunction);
 
-  ast::Variable v("ident", ast::StorageClass::kFunction, &s_type);
+  auto* assign =
+      create<ast::AssignmentStatement>(MemberAccessor("ident", "b"), Expr(4.f));
 
-  auto ident = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("ident"),
-      std::make_unique<ast::IdentifierExpression>("b"));
+  WrapInFunction(assign);
 
-  auto val = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 4.0f));
+  spirv::Builder& b = Build();
 
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -286,39 +233,20 @@ OpStore %8 %9
 }
 
 TEST_F(BuilderTest, Assign_Vector) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec3(&f32, 3);
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec3);
+  auto* val = vec3<f32>(1.f, 1.f, 3.f);
+  auto* assign = create<ast::AssignmentStatement>(Expr("var"), val);
 
-  auto ident = std::make_unique<ast::IdentifierExpression>("var");
+  WrapInFunction(assign);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  spirv::Builder& b = Build();
 
-  auto val =
-      std::make_unique<ast::TypeConstructorExpression>(&vec3, std::move(vals));
-
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
-
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -331,39 +259,28 @@ TEST_F(BuilderTest, Assign_Vector) {
 %8 = OpConstantComposite %3 %6 %6 %7
 )");
 
-  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpStore %1 %8
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpStore %1 %8
 )");
 }
 
 TEST_F(BuilderTest, Assign_Vector_MemberByName) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec3(&f32, 3);
-
   // var.y = 1
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec3);
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
 
-  auto ident = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("var"),
-      std::make_unique<ast::IdentifierExpression>("y"));
-  auto val = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f));
+  auto* assign =
+      create<ast::AssignmentStatement>(MemberAccessor("var", "y"), Expr(1.f));
 
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
+  WrapInFunction(assign);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
+  spirv::Builder& b = Build();
 
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
@@ -384,36 +301,22 @@ OpStore %9 %10
 }
 
 TEST_F(BuilderTest, Assign_Vector_MemberByIndex) {
-  ast::type::I32Type i32;
-  ast::type::F32Type f32;
-  ast::type::VectorType vec3(&f32, 3);
-
   // var[1] = 1
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &vec3);
+  auto* v = Global("var", ty.vec3<f32>(), ast::StorageClass::kOutput);
 
-  auto ident = std::make_unique<ast::ArrayAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("var"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1)));
-  auto val = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f));
+  auto* assign =
+      create<ast::AssignmentStatement>(IndexAccessor("var", 1), Expr(1.f));
 
-  ast::AssignmentStatement assign(std::move(ident), std::move(val));
+  WrapInFunction(assign);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
+  spirv::Builder& b = Build();
 
-  ASSERT_TRUE(td.DetermineResultType(&assign)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
-  EXPECT_TRUE(b.GenerateAssignStatement(&assign)) << b.error();
+  EXPECT_TRUE(b.GenerateAssignStatement(assign)) << b.error();
   EXPECT_FALSE(b.has_error());
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32

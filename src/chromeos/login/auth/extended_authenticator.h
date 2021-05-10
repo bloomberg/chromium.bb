@@ -39,32 +39,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   using ResultCallback = base::OnceCallback<void(const std::string& result)>;
   using ContextCallback = base::OnceCallback<void(const UserContext& context)>;
 
-  class NewAuthStatusConsumer {
-   public:
-    virtual ~NewAuthStatusConsumer() {}
-    // The current login attempt has ended in failure, with error.
-    virtual void OnAuthenticationFailure(AuthState state) = 0;
-  };
-
-  static scoped_refptr<ExtendedAuthenticator> Create(
-      NewAuthStatusConsumer* consumer);
   static scoped_refptr<ExtendedAuthenticator> Create(
       AuthStatusConsumer* consumer);
 
   // Updates consumer of the class.
   virtual void SetConsumer(AuthStatusConsumer* consumer) = 0;
-
-  // TODO(crbug.com/866790): Following method was only used for supervised
-  // users authentication. Check if there is a reason to keep it and remove it.
-
-  // This call will attempt to mount the home dir for the user, key (and key
-  // label) in |context|. If the key is of type KEY_TYPE_PASSWORD_PLAIN, it will
-  // be hashed with the system salt before being passed to cryptohomed. This
-  // call assumes that the home dir already exist for the user and will return
-  // an error otherwise. On success, the user ID hash (used as the mount point)
-  // will be passed to |success_callback|.
-  virtual void AuthenticateToMount(const UserContext& context,
-                                   ResultCallback success_callback) = 0;
 
   // This call will attempt to authenticate the user with the key (and key
   // label) in |context|. No further actions are taken after authentication.
@@ -99,16 +78,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
                       const cryptohome::KeyDefinition& key,
                       bool replace_existing,
                       base::OnceClosure success_callback) = 0;
-
-  // Attempts to perform an authorized update of the key in |context| with the
-  // new |key|. The update is authorized by providing the |signature| of the
-  // key. The original key must have the |PRIV_AUTHORIZED_UPDATE| privilege to
-  // perform this operation. The key labels in |context| and in |key| should be
-  // the same.
-  virtual void UpdateKeyAuthorized(const UserContext& context,
-                                   const cryptohome::KeyDefinition& key,
-                                   const std::string& signature,
-                                   base::OnceClosure success_callback) = 0;
 
   // Attempts to remove the key labeled |key_to_remove| for the user identified/
   // authorized by |context|. It is possible to remove the key used for

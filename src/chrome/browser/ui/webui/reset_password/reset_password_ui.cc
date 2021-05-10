@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/content/password_protection/password_protection_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
@@ -89,10 +89,13 @@ PasswordType GetPasswordType(content::WebContents* web_contents) {
   if (!nav_entry || !nav_entry->GetHasPostData())
     return PasswordType::PASSWORD_TYPE_UNKNOWN;
   auto& post_data = nav_entry->GetPostData()->elements()->at(0);
-  int post_data_int = -1;
-  if (base::StringToInt(std::string(post_data.bytes(), post_data.length()),
-                        &post_data_int)) {
-    return static_cast<PasswordType>(post_data_int);
+  if (post_data.type() == network::DataElement::Tag::kBytes) {
+    int post_data_int = -1;
+    if (base::StringToInt(
+            post_data.As<network::DataElementBytes>().AsStringPiece(),
+            &post_data_int)) {
+      return static_cast<PasswordType>(post_data_int);
+    }
   }
 
   return PasswordType::PASSWORD_TYPE_UNKNOWN;
@@ -115,8 +118,8 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIResetPasswordHost));
   html_source->DisableTrustedTypesCSP();
   html_source->AddResourcePath("reset_password.js", IDR_RESET_PASSWORD_JS);
-  html_source->AddResourcePath("reset_password.mojom-lite.js",
-                               IDR_RESET_PASSWORD_MOJOM_LITE_JS);
+  html_source->AddResourcePath("reset_password.mojom-webui.js",
+                               IDR_RESET_PASSWORD_MOJOM_WEBUI_JS);
   html_source->SetDefaultResource(IDR_RESET_PASSWORD_HTML);
   html_source->AddLocalizedStrings(PopulateStrings());
 

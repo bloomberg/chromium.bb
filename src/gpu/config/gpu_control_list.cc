@@ -274,9 +274,10 @@ bool GpuControlList::More::GLVersionInfoMismatch(
 
 // static
 GpuControlList::GLType GpuControlList::More::GetDefaultGLType() {
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return kGLTypeGL;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_OPENBSD)
   return kGLTypeGL;
 #elif defined(OS_MAC)
   return kGLTypeGL;
@@ -468,17 +469,17 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
       } else {
         for (size_t ii = 0; !found && ii < device_size; ++ii) {
           uint32_t device_id = devices[ii].device_id;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
           uint32_t revision = devices[ii].revision;
-#endif  // OS_WIN
+#endif  // OS_WIN || OS_CHROMEOS
           for (auto& candidate : candidates) {
             if (vendor_id != candidate.vendor_id ||
                 device_id != candidate.device_id)
               continue;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
             if (revision && revision != candidate.revision)
               continue;
-#endif  // OS_WIN
+#endif  // OS_WIN || OS_CHROMEOS
             found = true;
             break;
           }
@@ -774,7 +775,7 @@ uint32_t GpuControlList::max_entry_id() const {
 
 // static
 GpuControlList::OsType GpuControlList::GetOsType() {
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
@@ -782,7 +783,8 @@ GpuControlList::OsType GpuControlList::GetOsType() {
   return kOsAndroid;
 #elif defined(OS_FUCHSIA)
   return kOsFuchsia;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_OPENBSD)
   return kOsLinux;
 #elif defined(OS_MAC)
   return kOsMacosx;

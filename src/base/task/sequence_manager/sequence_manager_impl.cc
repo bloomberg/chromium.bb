@@ -460,9 +460,18 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
     // While we were nested some non-nestable tasks may have been deferred.
     // We push them back onto the *front* of their original work queues,
     // that's why we iterate |non_nestable_task_queue| in FIFO order.
+    LazyNow exited_nested_now(controller_->GetClock());
     while (!main_thread_only().non_nestable_task_queue.empty()) {
       internal::TaskQueueImpl::DeferredNonNestableTask& non_nestable_task =
           main_thread_only().non_nestable_task_queue.back();
+      if (!non_nestable_task.task.queue_time.is_null()) {
+        // Adjust the deferred tasks' queue time to now so that intentionally
+        // deferred tasks are not unfairly considered as having been stuck in
+        // the queue for a while. Note: this does not affect task ordering as
+        // |enqueue_order| is untouched and deferred tasks will still be pushed
+        // back to the front of the queue.
+        non_nestable_task.task.queue_time = exited_nested_now.Now();
+      }
       auto* const task_queue = non_nestable_task.task_queue;
       task_queue->RequeueDeferredNonNestableTask(std::move(non_nestable_task));
       main_thread_only().non_nestable_task_queue.pop_back();
@@ -765,7 +774,7 @@ TimeRecordingPolicy SequenceManagerImpl::ShouldRecordTaskTiming(
   if (task_queue->RequiresTaskTiming())
     return TimeRecordingPolicy::DoRecord;
   if (main_thread_only().nesting_depth == 0 &&
-      main_thread_only().task_time_observers.might_have_observers()) {
+      !main_thread_only().task_time_observers.empty()) {
     return TimeRecordingPolicy::DoRecord;
   }
   return TimeRecordingPolicy::DoNotRecord;
@@ -845,13 +854,17 @@ void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
     }
   }
 
+  bool has_valid_start =
+      task_timing.state() != TaskQueue::TaskTiming::State::NotStarted;
   TimeRecordingPolicy recording_policy =
       ShouldRecordTaskTiming(executing_task->task_queue);
   // Record end time ASAP to avoid bias due to the overhead of observers.
-  if (recording_policy == TimeRecordingPolicy::DoRecord)
+  if (recording_policy == TimeRecordingPolicy::DoRecord && has_valid_start) {
     task_timing.RecordTaskEnd(time_after_task);
+  }
 
-  if (task_timing.has_wall_time() && main_thread_only().nesting_depth == 0) {
+  if (has_valid_start && task_timing.has_wall_time() &&
+      main_thread_only().nesting_depth == 0) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.DidProcessTaskTimeObservers");
     for (auto& observer : main_thread_only().task_time_observers) {

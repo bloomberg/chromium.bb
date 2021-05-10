@@ -16,10 +16,12 @@
 #include "base/feature_list.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/process/process_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
+#include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -66,7 +68,8 @@ class PresenterImageFuchsia : public OutputPresenter::Image {
 
   void BeginPresent() final;
   void EndPresent() final;
-  int present_count() const final;
+  int GetPresentCount() const final;
+  void OnContextLost() final;
 
   uint32_t image_id() const { return image_id_; }
 
@@ -112,8 +115,12 @@ void PresenterImageFuchsia::EndPresent() {
     read_access_.reset();
 }
 
-int PresenterImageFuchsia::present_count() const {
+int PresenterImageFuchsia::GetPresentCount() const {
   return present_count_;
+}
+
+void PresenterImageFuchsia::OnContextLost() {
+  // Nothing to do here.
 }
 
 void PresenterImageFuchsia::TakeSemaphores(
@@ -191,6 +198,9 @@ OutputPresenterFuchsia::OutputPresenterFuchsia(
                           ->svc()
                           ->Connect<fuchsia::sysmem::Allocator>();
 
+  sysmem_allocator_->SetDebugClientInfo("CrOutputPresenter",
+                                        base::GetCurrentProcId());
+
   image_pipe_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "ImagePipe disconnected";
 
@@ -258,7 +268,7 @@ OutputPresenterFuchsia::AllocateImages(gfx::ColorSpace color_space,
   // the ImagePipe.
   fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token;
   sysmem_allocator_->AllocateSharedCollection(collection_token.NewRequest());
-  collection_token->SetName(100u, "ChromiumOutput");
+  collection_token->SetName(100u, "ChromiumPrimaryPlaneOutput");
   collection_token->SetDebugClientInfo("vulkan", 0u);
 
   fuchsia::sysmem::BufferCollectionTokenSyncPtr token_for_scenic;
@@ -417,8 +427,17 @@ void OutputPresenterFuchsia::ScheduleOverlays(
     next_frame_ = PendingFrame(next_frame_ordinal_++);
 
   for (size_t i = 0; i < overlays.size(); ++i) {
+    auto semaphore = dependency_->GetSharedContextState()
+                         ->external_semaphore_pool()
+                         ->GetOrCreateSemaphore();
+    gfx::GpuFenceHandle fence_handle;
+    fence_handle.owned_event = semaphore.handle().TakeHandle();
+
+    accesses[i]->SetReleaseFence(fence_handle.Clone());
+    std::vector<gfx::GpuFence> release_fences;
+    release_fences.emplace_back(std::move(fence_handle));
     next_frame_->overlays.emplace_back(std::move(overlays[i]),
-                                       accesses[i]->TakeReleaseFences());
+                                       std::move(release_fences));
     // TODO(crbug.com/1144890): Enqueue overlay plane's acquire fences
     // after |supports_commit_overlay_planes| is supported. Overlay plane might
     // display the same Image more than once, which can create a fence
@@ -473,6 +492,11 @@ void OutputPresenterFuchsia::PresentNextFrame() {
                    base::TimeDelta::FromMilliseconds(1);
     present_time = std::max(present_time, now);
   }
+
+  // Ensure that the target timestamp is not decreasing from the previous frame,
+  // since Scenic doesn't allow it (see crbug.com/1181528).
+  present_time = std::max(present_time, last_frame_present_time_);
+  last_frame_present_time_ = present_time;
 
   image_pipe_->PresentImage(
       frame.image_id, present_time.ToZxTime(), std::move(frame.acquire_fences),

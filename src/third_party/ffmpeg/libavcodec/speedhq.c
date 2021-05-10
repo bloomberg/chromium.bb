@@ -132,7 +132,7 @@ static const uint8_t speedhq_run[121] = {
     31,
 };
 
-static RLTable ff_rl_speedhq = {
+RLTable ff_rl_speedhq = {
     121,
     121,
     (const uint16_t (*)[])speedhq_vlc,
@@ -152,25 +152,21 @@ static const uint8_t unscaled_quant_matrix[64] = {
     27, 29, 35, 38, 46, 56, 69, 83
 };
 
-static uint8_t ff_speedhq_static_rl_table_store[2][2*MAX_RUN + MAX_LEVEL + 3];
+static uint8_t speedhq_static_rl_table_store[2][2*MAX_RUN + MAX_LEVEL + 3];
 
-static VLC ff_dc_lum_vlc_le;
-static VLC ff_dc_chroma_vlc_le;
-static VLC ff_dc_alpha_run_vlc_le;
-static VLC ff_dc_alpha_level_vlc_le;
+static VLC dc_lum_vlc_le;
+static VLC dc_chroma_vlc_le;
+static VLC dc_alpha_run_vlc_le;
+static VLC dc_alpha_level_vlc_le;
 
 static inline int decode_dc_le(GetBitContext *gb, int component)
 {
     int code, diff;
 
     if (component == 0 || component == 3) {
-        code = get_vlc2(gb, ff_dc_lum_vlc_le.table, DC_VLC_BITS, 2);
+        code = get_vlc2(gb, dc_lum_vlc_le.table, DC_VLC_BITS, 2);
     } else {
-        code = get_vlc2(gb, ff_dc_chroma_vlc_le.table, DC_VLC_BITS, 2);
-    }
-    if (code < 0) {
-        av_log(NULL, AV_LOG_ERROR, "invalid dc code at\n");
-        return 0xffff;
+        code = get_vlc2(gb, dc_chroma_vlc_le.table, DC_VLC_BITS, 2);
     }
     if (!code) {
         diff = 0;
@@ -194,7 +190,7 @@ static inline int decode_alpha_block(const SHQContext *s, GetBitContext *gb, uin
             int run, level;
 
             UPDATE_CACHE_LE(re, gb);
-            GET_VLC(run, re, gb, ff_dc_alpha_run_vlc_le.table, ALPHA_VLC_BITS, 2);
+            GET_VLC(run, re, gb, dc_alpha_run_vlc_le.table, ALPHA_VLC_BITS, 2);
 
             if (run < 0) break;
             i += run;
@@ -202,7 +198,7 @@ static inline int decode_alpha_block(const SHQContext *s, GetBitContext *gb, uin
                 return AVERROR_INVALIDDATA;
 
             UPDATE_CACHE_LE(re, gb);
-            GET_VLC(level, re, gb, ff_dc_alpha_level_vlc_le.table, ALPHA_VLC_BITS, 2);
+            GET_VLC(level, re, gb, dc_alpha_level_vlc_le.table, ALPHA_VLC_BITS, 2);
             block[i++] = level;
         }
 
@@ -515,7 +511,7 @@ static av_cold void compute_alpha_vlcs(void)
 
     av_assert0(entry == FF_ARRAY_ELEMS(run_code));
 
-    INIT_LE_VLC_SPARSE_STATIC(&ff_dc_alpha_run_vlc_le, ALPHA_VLC_BITS,
+    INIT_LE_VLC_SPARSE_STATIC(&dc_alpha_run_vlc_le, ALPHA_VLC_BITS,
                               FF_ARRAY_ELEMS(run_code),
                               run_bits, 1, 1,
                               run_code, 2, 2,
@@ -555,49 +551,26 @@ static av_cold void compute_alpha_vlcs(void)
 
     av_assert0(entry == FF_ARRAY_ELEMS(level_code));
 
-    INIT_LE_VLC_SPARSE_STATIC(&ff_dc_alpha_level_vlc_le, ALPHA_VLC_BITS,
+    INIT_LE_VLC_SPARSE_STATIC(&dc_alpha_level_vlc_le, ALPHA_VLC_BITS,
                               FF_ARRAY_ELEMS(level_code),
                               level_bits, 1, 1,
                               level_code, 2, 2,
                               level_symbols, 2, 2, 288);
 }
 
-static uint32_t reverse(uint32_t num, int bits)
-{
-    return bitswap_32(num) >> (32 - bits);
-}
-
-static void reverse_code(const uint16_t *code, const uint8_t *bits,
-                         uint16_t *reversed_code, int num_entries)
-{
-    int i;
-    for (i = 0; i < num_entries; i++) {
-        reversed_code[i] = reverse(code[i], bits[i]);
-    }
-}
-
 static av_cold void speedhq_static_init(void)
 {
-    uint16_t ff_mpeg12_vlc_dc_lum_code_reversed[12];
-    uint16_t ff_mpeg12_vlc_dc_chroma_code_reversed[12];
+    /* Exactly the same as MPEG-2, except for a little-endian reader. */
+    INIT_CUSTOM_VLC_STATIC(&dc_lum_vlc_le, DC_VLC_BITS, 12,
+                           ff_mpeg12_vlc_dc_lum_bits, 1, 1,
+                           ff_mpeg12_vlc_dc_lum_code, 2, 2,
+                           INIT_VLC_OUTPUT_LE, 512);
+    INIT_CUSTOM_VLC_STATIC(&dc_chroma_vlc_le, DC_VLC_BITS, 12,
+                           ff_mpeg12_vlc_dc_chroma_bits, 1, 1,
+                           ff_mpeg12_vlc_dc_chroma_code, 2, 2,
+                           INIT_VLC_OUTPUT_LE, 514);
 
-    /* Exactly the same as MPEG-2, except little-endian. */
-    reverse_code(ff_mpeg12_vlc_dc_lum_code,
-                 ff_mpeg12_vlc_dc_lum_bits,
-                 ff_mpeg12_vlc_dc_lum_code_reversed,
-                 12);
-    INIT_LE_VLC_STATIC(&ff_dc_lum_vlc_le, DC_VLC_BITS, 12,
-                       ff_mpeg12_vlc_dc_lum_bits, 1, 1,
-                       ff_mpeg12_vlc_dc_lum_code_reversed, 2, 2, 512);
-    reverse_code(ff_mpeg12_vlc_dc_chroma_code,
-                 ff_mpeg12_vlc_dc_chroma_bits,
-                 ff_mpeg12_vlc_dc_chroma_code_reversed,
-                 12);
-    INIT_LE_VLC_STATIC(&ff_dc_chroma_vlc_le, DC_VLC_BITS, 12,
-                       ff_mpeg12_vlc_dc_chroma_bits, 1, 1,
-                       ff_mpeg12_vlc_dc_chroma_code_reversed, 2, 2, 514);
-
-    ff_rl_init(&ff_rl_speedhq, ff_speedhq_static_rl_table_store);
+    ff_rl_init(&ff_rl_speedhq, speedhq_static_rl_table_store);
     INIT_2D_VLC_RL(ff_rl_speedhq, 674, INIT_VLC_LE);
 
     compute_alpha_vlcs();

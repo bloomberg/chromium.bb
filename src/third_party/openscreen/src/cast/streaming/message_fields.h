@@ -9,6 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "cast/streaming/constants.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace cast {
@@ -18,6 +19,9 @@ namespace cast {
 
 // Namespace for OFFER/ANSWER messages.
 constexpr char kCastWebrtcNamespace[] = "urn:x-cast:com.google.cast.webrtc";
+constexpr char kCastRemotingNamespace[] = "urn:x-cast:com.google.cast.remoting";
+
+// JSON message field values specific to the Sender Session.
 constexpr char kMessageType[] = "type";
 
 // List of OFFER message fields.
@@ -35,12 +39,17 @@ constexpr char kErrorMessageBody[] = "error";
 constexpr char kErrorCode[] = "code";
 constexpr char kErrorDescription[] = "description";
 
+// Other message fields.
+constexpr char kRpcMessageBody[] = "rpc";
+constexpr char kCapabilitiesMessageBody[] = "capabilities";
+constexpr char kStatusMessageBody[] = "status";
+
 // Conversion methods for codec message fields.
 const char* CodecToString(AudioCodec codec);
-AudioCodec StringToAudioCodec(absl::string_view name);
+ErrorOr<AudioCodec> StringToAudioCodec(absl::string_view name);
 
 const char* CodecToString(VideoCodec codec);
-VideoCodec StringToVideoCodec(absl::string_view name);
+ErrorOr<VideoCodec> StringToVideoCodec(absl::string_view name);
 
 }  // namespace cast
 }  // namespace openscreen

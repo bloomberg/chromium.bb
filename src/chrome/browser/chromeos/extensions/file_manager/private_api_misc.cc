@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -19,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
@@ -34,8 +36,6 @@
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/file_util_service.h"
@@ -188,7 +188,7 @@ bool IsAllowedSource(storage::FileSystemType type,
       return true;
 
     case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_SOURCE:
-      return type == storage::kFileSystemTypeNativeLocal;
+      return type == storage::kFileSystemTypeLocal;
   }
 }
 
@@ -800,11 +800,11 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       continue;
     }
     auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString(
-        "fileSystemRoot",
-        storage::GetExternalFileSystemRootURIString(
-            extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
-            mount_name));
+    entry->SetString("fileSystemRoot",
+                     storage::GetExternalFileSystemRootURIString(
+                         extensions::Extension::GetBaseURLFromExtensionId(
+                             extension_id_or_file_app_id()),
+                         mount_name));
     entry->SetString("fileSystemName", file_system_name);
     entry->SetString("fileFullPath", full_path);
     // All shared paths should be directories.  Even if this is not true,
@@ -932,7 +932,7 @@ FileManagerPrivateInternalGetCustomActionsFunction::Run() {
   DCHECK(file_system);
   file_system->GetActions(
       paths,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted,
           this));
   return RespondLater();
@@ -1042,7 +1042,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 
   model->GetRecentFiles(
       file_system_context.get(),
-      Extension::GetBaseURLFromExtensionId(extension_id()), file_type,
+      Extension::GetBaseURLFromExtensionId(extension_id_or_file_app_id()),
+      file_type,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));
@@ -1052,6 +1053,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
     api::file_manager_private::SourceRestriction restriction,
     const std::vector<chromeos::RecentFile>& files) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const std::string& origin_id = extension_id_or_file_app_id();
   file_manager::util::FileDefinitionList file_definition_list;
   for (const auto& file : files) {
     // Filter out files from non-allowed sources.
@@ -1066,14 +1069,17 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
     // Recent file system only lists regular files, not directories.
     file_definition.is_directory = false;
     if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            chrome_details_.GetProfile(), extension_id(), file.url().path(),
+            profile, origin_id, file.url().path(),
             &file_definition.virtual_path)) {
       file_definition_list.emplace_back(std::move(file_definition));
     }
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      chrome_details_.GetProfile(), extension_id(),
+      file_manager::util::GetFileSystemContextForExtensionId(profile,
+                                                             origin_id),
+      url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(origin_id)),
       file_definition_list,  // Safe, since copied internally.
       base::BindOnce(&FileManagerPrivateInternalGetRecentFilesFunction::
                          OnConvertFileDefinitionListToEntryDefinitionList,
@@ -1105,6 +1111,13 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
   bool success = base::DetectEncoding(input, &encoding);
   return RespondNow(
       OneArgument(base::Value(success ? std::move(encoding) : std::string())));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateIsTabletModeEnabledFunction::Run() {
+  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
+  return RespondNow(OneArgument(
+      base::Value(tablet_mode ? tablet_mode->InTabletMode() : false)));
 }
 
 }  // namespace extensions

@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -260,9 +261,6 @@ class PageSpecificContentSettings
     return weak_factory_.GetWeakPtr();
   }
 
-  // Notifies that a Flash download has been blocked.
-  void FlashDownloadBlocked();
-
   // Changes the |content_blocked_| entry for popups.
   void ClearPopupsBlocked();
 
@@ -333,11 +331,6 @@ class PageSpecificContentSettings
     return blocked_local_shared_objects_;
   }
 
-  bool load_plugins_link_enabled() { return load_plugins_link_enabled_; }
-  void set_load_plugins_link_enabled(bool enabled) {
-    load_plugins_link_enabled_ = enabled;
-  }
-
   // Called to indicate whether access to the Pepper broker was allowed or
   // blocked.
   void SetPepperBrokerAllowed(bool allowed);
@@ -361,7 +354,7 @@ class PageSpecificContentSettings
                               const url::Origin& constructor_origin,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
                                                bool allowed);
 #endif
@@ -401,9 +394,6 @@ class PageSpecificContentSettings
       : public content::WebContentsObserver,
         public content::WebContentsUserData<WebContentsHandler> {
    public:
-    static void CreateForWebContents(content::WebContents* web_contents,
-                                     std::unique_ptr<Delegate> delegate);
-
     explicit WebContentsHandler(content::WebContents* web_contents,
                                 std::unique_ptr<Delegate> delegate);
     ~WebContentsHandler() override;
@@ -532,9 +522,6 @@ class PageSpecificContentSettings
   // Stores the blocked/allowed cookies.
   browsing_data::LocalSharedObjectsContainer allowed_local_shared_objects_;
   browsing_data::LocalSharedObjectsContainer blocked_local_shared_objects_;
-
-  // Stores whether the user can load blocked plugins on this page.
-  bool load_plugins_link_enabled_;
 
   // The origin of the media stream request. Note that we only support handling
   // settings for one request per tab. The latest request's origin will be

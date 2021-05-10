@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "api/crypto/crypto_options.h"
+#include "api/sequence_checker.h"
 #include "p2p/base/dtls_transport_internal.h"
 #include "p2p/base/ice_transport_internal.h"
 #include "rtc_base/buffer.h"
@@ -24,8 +25,7 @@
 #include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/stream.h"
 #include "rtc_base/strings/string_builder.h"
-#include "rtc_base/synchronization/sequence_checker.h"
-#include "rtc_base/thread_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 
 namespace rtc {
 class PacketTransportInternal;
@@ -55,7 +55,7 @@ class StreamInterfaceChannel : public rtc::StreamInterface {
                           int* error) override;
 
  private:
-  webrtc::SequenceChecker sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS webrtc::SequenceChecker sequence_checker_;
   IceTransportInternal* const ice_transport_;  // owned by DtlsTransport
   rtc::StreamState state_ RTC_GUARDED_BY(sequence_checker_);
   rtc::BufferQueue packets_ RTC_GUARDED_BY(sequence_checker_);
@@ -222,7 +222,7 @@ class DtlsTransport : public DtlsTransportInternal {
   // Sets the DTLS state, signaling if necessary.
   void set_dtls_state(DtlsTransportState state);
 
-  rtc::ThreadChecker thread_checker_;
+  webrtc::SequenceChecker thread_checker_;
 
   std::string transport_name_;
   int component_;

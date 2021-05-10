@@ -1,26 +1,9 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "panel",
-      "id": "security",
-      "title": "Security",
-      "order": 80,
-      "persistence": "closeable",
-      "className": "Security.SecurityPanel"
-    }
-  ],
-  "dependencies": [
-    "network",
-    "platform",
-    "ui",
-    "sdk"
-  ],
   "modules": [
     "security-legacy.js"
   ],
-  "skip_compilation": [
-    "security-legacy.js"
+  "dependencies": [
+    "network"
   ],
   "resources": [
     "lockIcon.css",

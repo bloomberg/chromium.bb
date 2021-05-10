@@ -11,16 +11,16 @@ import android.os.Bundle;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.GURLUtils;
+import org.chromium.url.GURL;
 
 /**
  * This class contains helper methods for determining site settings availability and showing the
@@ -37,12 +37,8 @@ public class SiteSettingsHelper {
                 PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(webContents);
         // TODO(crbug.com/1033178): dedupe the DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
         // calls.
-        String url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                webContents.getVisibleUrlString());
-        String scheme = GURLUtils.getScheme(url);
-        return !isOfflinePage && !isPreviewPage
-                && (UrlConstants.HTTP_SCHEME.equals(scheme)
-                        || UrlConstants.HTTPS_SCHEME.equals(scheme));
+        GURL url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(webContents.getVisibleUrl());
+        return !isOfflinePage && !isPreviewPage && url != null && UrlUtilities.isHttpOrHttps(url);
     }
 
     /**

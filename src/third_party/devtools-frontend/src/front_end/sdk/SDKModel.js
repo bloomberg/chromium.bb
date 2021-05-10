@@ -10,7 +10,6 @@ import * as ProtocolClient from '../protocol_client/protocol_client.js';
 /** @type {!Map<function(new:SDKModel, !Target), !{capabilities: number, autostart: boolean}>} */
 const _registeredModels = new Map();
 
-
 export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Target} target
@@ -33,23 +32,20 @@ export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string=} reason - optionally provide a reason, the model can respond accordingly
    * @return {!Promise<void>}
    */
-  preSuspendModel(reason) {
-    return Promise.resolve();
+  async preSuspendModel(reason) {
   }
 
   /**
    * @param {string=} reason - optionally provide a reason, the model can respond accordingly
    * @return {!Promise<void>}
    */
-  suspendModel(reason) {
-    return Promise.resolve();
+  async suspendModel(reason) {
   }
 
   /**
    * @return {!Promise<void>}
    */
-  resumeModel() {
-    return Promise.resolve();
+  async resumeModel() {
   }
 
   /**
@@ -57,8 +53,7 @@ export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
    * the model and that require all models already in an unsuspended state.
    * @return {!Promise<void>}
    */
-  postResumeModel() {
-    return Promise.resolve();
+  async postResumeModel() {
   }
 
   dispose() {
@@ -78,9 +73,6 @@ export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Target extends ProtocolClient.InspectorBackend.TargetBase {
   /**
    * @param {!TargetManager} targetManager
@@ -91,8 +83,9 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
    * @param {string} sessionId
    * @param {boolean} suspended
    * @param {?ProtocolClient.InspectorBackend.Connection} connection
+   * @param {!Protocol.Target.TargetInfo=} targetInfo
    */
-  constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection) {
+  constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection, targetInfo) {
     const needsNodeJSPatching = type === Type.Node;
     super(needsNodeJSPatching, parentTarget, sessionId, connection);
     this._targetManager = targetManager;
@@ -134,13 +127,14 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     this._type = type;
     this._parentTarget = parentTarget;
     this._id = id;
+    /** @type {Map<function(new:SDKModel, Target), SDKModel>}} */
     this._modelByConstructor = new Map();
     this._isSuspended = suspended;
+    this._targetInfo = targetInfo;
   }
 
   /**
-   * TODO(1011811): Replace type with !Set<function(new:SDKModel, !Target)> once we no longer type-check with closure.
-   * @param {*} required
+   * @param {Set<function(new:SDKModel, !Target)>} required
    */
   createModels(required) {
     this._creatingModels = true;
@@ -250,7 +244,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         }
       }
     }
-    return this._modelByConstructor.get(modelClass) || null;
+    return /** @type {T} */ (this._modelByConstructor.get(modelClass)) || null;
   }
 
   /**
@@ -289,7 +283,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
    */
   async suspend(reason) {
     if (this._isSuspended) {
-      return Promise.resolve();
+      return;
     }
     this._isSuspended = true;
 
@@ -302,7 +296,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
    */
   async resume() {
     if (!this._isSuspended) {
-      return Promise.resolve();
+      return;
     }
     this._isSuspended = false;
 
@@ -315,6 +309,17 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
    */
   suspended() {
     return this._isSuspended;
+  }
+
+  /**
+   * @param {!Protocol.Target.TargetInfo} targetInfo
+   */
+  updateTargetInfo(targetInfo) {
+    this._targetInfo = targetInfo;
+  }
+
+  targetInfo() {
+    return this._targetInfo;
   }
 }
 
@@ -370,10 +375,10 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     this._targets = new Set();
     /** @type {!Set.<!Observer>} */
     this._observers = new Set();
-    /** @type {!Platform.Multimap<symbol, !{modelClass: function(new:SDKModel, !Target), thisObject: (!Object|undefined), listener: function(!Common.EventTarget.EventTargetEvent):void}>} */
-    this._modelListeners = new Platform.Multimap();
-    /** @type {!Platform.Multimap<function(new:SDKModel, !Target), !SDKModelObserver<?>>} */
-    this._modelObservers = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<symbol, !{modelClass: function(new:SDKModel, !Target), thisObject: (!Object|undefined), listener: function(!Common.EventTarget.EventTargetEvent):void}>} */
+    this._modelListeners = new Platform.MapUtilities.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<function(new:SDKModel, !Target), !SDKModelObserver<?>>} */
+    this._modelObservers = new Platform.MapUtilities.Multimap();
     this._isSuspended = false;
   }
 
@@ -452,7 +457,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {function(new:T,!Target)} modelClass
-   * @param {!SDKModelObserver<?>} observer
+   * @param {!SDKModelObserver<T>} observer
    * @template {!SDKModel} T
    */
   observeModels(modelClass, observer) {
@@ -557,11 +562,12 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
    * @param {string=} sessionId
    * @param {boolean=} waitForDebuggerInPage
    * @param {!ProtocolClient.InspectorBackend.Connection=} connection
+   * @param {!Protocol.Target.TargetInfo=} targetInfo
    * @return {!Target}
    */
-  createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection) {
-    const target =
-        new Target(this, id, name, type, parentTarget, sessionId || '', this._isSuspended, connection || null);
+  createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection, targetInfo) {
+    const target = new Target(
+        this, id, name, type, parentTarget, sessionId || '', this._isSuspended, connection || null, targetInfo);
     if (waitForDebuggerInPage) {
       // @ts-ignore TODO(1063322): Find out where pageAgent() is set on Target/TargetBase.
       target.pageAgent().waitForDebugger();

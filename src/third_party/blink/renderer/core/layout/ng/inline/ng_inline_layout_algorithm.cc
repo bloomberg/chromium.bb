@@ -18,9 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -345,12 +343,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     }
   }
 
-  if (has_logical_text_items &&
-      !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    line_box->CreateTextFragments(ConstraintSpace().GetWritingMode(),
-                                  line_info->ItemsData().text_content);
-  }
-
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
   inline_size = inline_size.ClampNegativeToZero();
@@ -395,14 +387,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Apply any relative positioned offsets to any boxes (and their children).
   box_states_->ApplyRelativePositioning(ConstraintSpace(), line_box);
 
-  NGAnnotationMetrics annotation_metrics;
-  if (Node().HasRuby() &&
-      !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    annotation_metrics = ComputeAnnotationOverflow(*line_box, line_box_metrics,
-                                                   -line_box_metrics.ascent,
-                                                   line_info->LineStyle());
-  }
-
   // Create box fragments if needed. After this point forward, |line_box| is a
   // tree structure.
   // The individual children don't move position within the |line_box|, rather
@@ -431,44 +415,51 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // the line box to the line top.
   line_box->MoveInBlockDirection(line_box_metrics.ascent);
 
-  if (Node().HasRuby() &&
-      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    annotation_metrics = ComputeAnnotationOverflow(
+  LayoutUnit block_offset = line_info->BfcOffset().block_offset;
+  if (Node().HasRuby()) {
+    NGAnnotationMetrics annotation_metrics = ComputeAnnotationOverflow(
         *line_box, line_box_metrics, LayoutUnit(), line_info->LineStyle());
-  }
-  LayoutUnit annotation_overflow_block_start;
-  LayoutUnit annotation_overflow_block_end;
-  LayoutUnit annotation_space_block_start;
-  LayoutUnit annotation_space_block_end;
-  if (!IsFlippedLinesWritingMode(line_info->LineStyle().GetWritingMode())) {
-    annotation_overflow_block_start = annotation_metrics.overflow_over;
-    annotation_overflow_block_end = annotation_metrics.overflow_under;
-    annotation_space_block_start = annotation_metrics.space_over;
-    annotation_space_block_end = annotation_metrics.space_under;
-  } else {
-    annotation_overflow_block_start = annotation_metrics.overflow_under;
-    annotation_overflow_block_end = annotation_metrics.overflow_over;
-    annotation_space_block_start = annotation_metrics.space_under;
-    annotation_space_block_end = annotation_metrics.space_over;
-  }
+    LayoutUnit annotation_overflow_block_start;
+    LayoutUnit annotation_overflow_block_end;
+    LayoutUnit annotation_space_block_start;
+    LayoutUnit annotation_space_block_end;
+    if (!IsFlippedLinesWritingMode(line_info->LineStyle().GetWritingMode())) {
+      annotation_overflow_block_start = annotation_metrics.overflow_over;
+      annotation_overflow_block_end = annotation_metrics.overflow_under;
+      annotation_space_block_start = annotation_metrics.space_over;
+      annotation_space_block_end = annotation_metrics.space_under;
+    } else {
+      annotation_overflow_block_start = annotation_metrics.overflow_under;
+      annotation_overflow_block_end = annotation_metrics.overflow_over;
+      annotation_space_block_start = annotation_metrics.space_under;
+      annotation_space_block_end = annotation_metrics.space_over;
+    }
 
-  LayoutUnit block_offset_shift = annotation_overflow_block_start;
-  // If the previous line has block-end annotation overflow and this line has
-  // block-start annotation space, shift up the block offset of this line.
-  if (ConstraintSpace().BlockStartAnnotationSpace() < LayoutUnit() &&
-      annotation_space_block_start) {
-    const LayoutUnit overflow = -ConstraintSpace().BlockStartAnnotationSpace();
-    block_offset_shift = -std::min(annotation_space_block_start, overflow);
-  }
+    LayoutUnit block_offset_shift = annotation_overflow_block_start;
+    // If the previous line has block-end annotation overflow and this line has
+    // block-start annotation space, shift up the block offset of this line.
+    if (ConstraintSpace().BlockStartAnnotationSpace() < LayoutUnit() &&
+        annotation_space_block_start) {
+      const LayoutUnit overflow =
+          -ConstraintSpace().BlockStartAnnotationSpace();
+      block_offset_shift = -std::min(annotation_space_block_start, overflow);
+    }
 
-  // If this line has block-start annotation overflow and the previous line has
-  // block-end annotation space, borrow the block-end space of the previous line
-  // and shift down the block offset by |overflow - space|.
-  if (annotation_overflow_block_start &&
-      ConstraintSpace().BlockStartAnnotationSpace() > LayoutUnit()) {
-    block_offset_shift = (annotation_overflow_block_start -
-                          ConstraintSpace().BlockStartAnnotationSpace())
-                             .ClampNegativeToZero();
+    // If this line has block-start annotation overflow and the previous line
+    // has block-end annotation space, borrow the block-end space of the
+    // previous line and shift down the block offset by |overflow - space|.
+    if (annotation_overflow_block_start &&
+        ConstraintSpace().BlockStartAnnotationSpace() > LayoutUnit()) {
+      block_offset_shift = (annotation_overflow_block_start -
+                            ConstraintSpace().BlockStartAnnotationSpace())
+                               .ClampNegativeToZero();
+    }
+    block_offset += block_offset_shift;
+
+    if (annotation_overflow_block_end)
+      container_builder_.SetAnnotationOverflow(annotation_overflow_block_end);
+    else if (annotation_space_block_end)
+      container_builder_.SetBlockEndAnnotationSpace(annotation_space_block_end);
   }
 
   if (line_info->UseFirstLineStyle())
@@ -476,12 +467,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
-  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset +
-                                       block_offset_shift);
-  if (annotation_overflow_block_end)
-    container_builder_.SetAnnotationOverflow(annotation_overflow_block_end);
-  else if (annotation_space_block_end)
-    container_builder_.SetBlockEndAnnotationSpace(annotation_space_block_end);
+  container_builder_.SetBfcBlockOffset(block_offset);
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
@@ -769,9 +755,6 @@ void NGInlineLayoutAlgorithm::PlaceRelativePositionedItems(
     const auto* physical_fragment = child.PhysicalFragment();
     if (!physical_fragment)
       continue;
-    if (physical_fragment->IsText())
-      continue;
-
     child.rect.offset += ComputeRelativeOffsetForInline(
         ConstraintSpace(), physical_fragment->Style());
   }
@@ -1140,20 +1123,13 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   CHECK(is_line_created);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
 
-  if (items_builder) {
-    DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-    container_builder_.PropagateChildrenData(*line_box);
-    scoped_refptr<const NGLayoutResult> layout_result =
-        container_builder_.ToLineBoxFragment();
-    items_builder->AssociateLogicalLineItems(line_box,
-                                             layout_result->PhysicalFragment());
-    return layout_result;
-  }
-
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-  container_builder_.AddChildren(*line_box);
-  container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
-  return container_builder_.ToLineBoxFragment();
+  DCHECK(items_builder);
+  container_builder_.PropagateChildrenData(*line_box);
+  scoped_refptr<const NGLayoutResult> layout_result =
+      container_builder_.ToLineBoxFragment();
+  items_builder->AssociateLogicalLineItems(line_box,
+                                           layout_result->PhysicalFragment());
+  return layout_result;
 }
 
 // This positions any "leading" floats within the given exclusion space.

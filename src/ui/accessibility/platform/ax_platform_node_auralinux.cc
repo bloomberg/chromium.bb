@@ -2380,7 +2380,7 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
   if (data.IsRangeValueSupported())
     interface_mask.Add(ImplementedAtkInterfaces::Value::kValue);
 
-  if (ui::IsDocument(data.role))
+  if (ui::IsPlatformDocument(data.role))
     interface_mask.Add(ImplementedAtkInterfaces::Value::kDocument);
 
   if (IsImage(data.role))
@@ -2545,8 +2545,9 @@ bool AXPlatformNodeAuraLinux::IsWebDocumentForRelations() {
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   if (GetData().role != ax::mojom::Role::kApplication &&
       !GetDelegate()->IsToplevelBrowserWindow() &&
-      !GetAccessibilityMode().has_mode(AXMode::kNativeAPIs))
+      !GetAccessibilityMode().has_mode(AXMode::kNativeAPIs)) {
     return nullptr;
+  }
   if (GetDelegate()->IsChildOfLeaf())
     return nullptr;
   EnsureGTypeInit();
@@ -2782,6 +2783,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kGenericContainer:
     case ax::mojom::Role::kFooterAsNonLandmark:
     case ax::mojom::Role::kHeaderAsNonLandmark:
+    case ax::mojom::Role::kRuby:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kGraphicsDocument:
       return ATK_ROLE_DOCUMENT_FRAME;
@@ -2883,6 +2885,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_PARAGRAPH;
     case ax::mojom::Role::kPdfActionableHighlight:
       return ATK_ROLE_PUSH_BUTTON;
+    case ax::mojom::Role::kPdfRoot:
+      return ATK_ROLE_DOCUMENT_FRAME;
     case ax::mojom::Role::kPluginObject:
       return ATK_ROLE_EMBEDDED;
     case ax::mojom::Role::kPopUpButton: {
@@ -2912,12 +2916,15 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kRowHeader:
       return ATK_ROLE_ROW_HEADER;
-    case ax::mojom::Role::kRuby:
-      return kStaticRole;
     case ax::mojom::Role::kRubyAnnotation:
-      // TODO(accessibility) Panels are generally for containers of widgets.
-      // This should probably be a section (if a container) or static if text.
-      return ATK_ROLE_PANEL;
+      // Generally exposed as description on <ruby> (Role::kRuby) element, not
+      // as its own object in the tree.
+      // However, it's possible to make a kRubyAnnotation element show up in the
+      // AX tree, for example by adding tabindex="0" to the source <rp> or <rt>
+      // element or making the source element the target of an aria-owns.
+      // Therefore, browser side needs to gracefully handle it if it actually
+      // shows up in the tree.
+      return kStaticRole;
     case ax::mojom::Role::kSection: {
       if (GetName().empty()) {
         // Do not use ARIA mapping for nameless <section>.
@@ -2932,7 +2939,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kSearch:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSliderThumb:
       return ATK_ROLE_SLIDER;
     case ax::mojom::Role::kSpinButton:
       return ATK_ROLE_SPIN_BUTTON;
@@ -3002,9 +3008,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_TREE_TABLE;
     case ax::mojom::Role::kVideo:
       return ATK_ROLE_VIDEO;
-    case ax::mojom::Role::kWebArea:
-    case ax::mojom::Role::kWebView:
-      return ATK_ROLE_DOCUMENT_WEB;
     case ax::mojom::Role::kWindow:
       // In ATK elements with ATK_ROLE_FRAME are windows with titles and
       // buttons, while those with ATK_ROLE_WINDOW are windows without those
@@ -3012,6 +3015,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_FRAME;
     case ax::mojom::Role::kClient:
     case ax::mojom::Role::kDesktop:
+    case ax::mojom::Role::kWebView:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kFigcaption:
       return ATK_ROLE_CAPTION;
@@ -3062,7 +3066,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
   if (data.HasState(ax::mojom::State::kHorizontal))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HORIZONTAL);
-  if (!data.HasState(ax::mojom::State::kInvisible)) {
+  if (!IsInvisibleOrIgnored()) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_VISIBLE);
     if (!delegate_->IsOffscreen() && !is_minimized)
       atk_state_set_add_state(atk_state_set, ATK_STATE_SHOWING);
@@ -3079,6 +3083,11 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       data.GetIntAttribute(ax::mojom::IntAttribute::kInvalidState) !=
           static_cast<int32_t>(ax::mojom::InvalidState::kFalse))
     atk_state_set_add_state(atk_state_set, ATK_STATE_INVALID_ENTRY);
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState) &&
+      data.GetIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState) !=
+          static_cast<int32_t>(ax::mojom::AriaCurrentState::kFalse)) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
+  }
 #if defined(ATK_216)
   if (IsPlatformCheckable())
     atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKABLE);
@@ -3693,7 +3702,7 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   // on the select element and not the newly-selected descendant.
   if (AXPlatformNodeBase* parent = FromAtkObject(GetParent())) {
     if (parent->GetData().role == ax::mojom::Role::kMenuListPopup)
-      return !parent->GetData().HasState(ax::mojom::State::kInvisible);
+      return !parent->IsInvisibleOrIgnored();
   }
 
   return false;
@@ -3800,7 +3809,12 @@ void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
     return;
   }
 
-  DCHECK(HasCaret());
+#if DCHECK_IS_ON()
+  AXTree::Selection unignored_selection =
+      GetDelegate()->GetUnignoredSelection();
+  DCHECK(HasCaret(&unignored_selection));
+#endif
+
   std::pair<int, int> selection = GetSelectionOffsetsForAtk();
 
   AtkObject* atk_object = GetOrCreateAtkObject();
@@ -4004,6 +4018,20 @@ void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
   atk_object_notify_state_change(
       ATK_OBJECT(atk_object), ATK_STATE_INVALID_ENTRY,
       GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse);
+}
+
+void AXPlatformNodeAuraLinux::OnAriaCurrentChanged() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
+  ax::mojom::AriaCurrentState aria_current =
+      static_cast<ax::mojom::AriaCurrentState>(GetData().GetIntAttribute(
+          ax::mojom::IntAttribute::kAriaCurrentState));
+  atk_object_notify_state_change(
+      ATK_OBJECT(atk_object), ATK_STATE_ACTIVE,
+      aria_current != ax::mojom::AriaCurrentState::kNone &&
+          aria_current != ax::mojom::AriaCurrentState::kFalse);
 }
 
 void AXPlatformNodeAuraLinux::OnAlertShown() {
@@ -4590,7 +4618,9 @@ bool AXPlatformNodeAuraLinux::IsNameExposed() {
 }
 
 int AXPlatformNodeAuraLinux::GetCaretOffset() {
-  if (!HasCaret()) {
+  AXTree::Selection unignored_selection =
+      GetDelegate()->GetUnignoredSelection();
+  if (!HasCaret(&unignored_selection)) {
     base::Optional<FindInPageResultInfo> result =
         GetSelectionOffsetsFromFindInPage();
     AtkObject* atk_object = GetOrCreateAtkObject();

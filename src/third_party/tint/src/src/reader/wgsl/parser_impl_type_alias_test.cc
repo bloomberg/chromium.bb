@@ -13,13 +13,12 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "src/ast/type/alias_type.h"
-#include "src/ast/type/array_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/struct_type.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type_manager.h"
+#include "src/type/alias_type.h"
+#include "src/type/array_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/struct_type.h"
 
 namespace tint {
 namespace reader {
@@ -27,24 +26,25 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, TypeDecl_ParsesType) {
-  auto* i32 = tm()->Get(std::make_unique<ast::type::I32Type>());
+  auto p = parser("type a = i32");
 
-  auto* p = parser("type a = i32");
+  auto* i32 = p->builder().create<type::I32>();
+
   auto t = p->type_alias();
   EXPECT_FALSE(p->has_error());
   EXPECT_FALSE(t.errored);
   EXPECT_TRUE(t.matched);
   ASSERT_NE(t.value, nullptr);
-  ASSERT_TRUE(t->IsAlias());
-  auto* alias = t->AsAlias();
-  ASSERT_TRUE(alias->type()->IsI32());
+  ASSERT_TRUE(t->Is<type::Alias>());
+  auto* alias = t->As<type::Alias>();
+  ASSERT_TRUE(alias->type()->Is<type::I32>());
   ASSERT_EQ(alias->type(), i32);
 }
 
 TEST_F(ParserImplTest, TypeDecl_ParsesStruct_Ident) {
-  ast::type::StructType str("B", {});
+  auto p = parser("type a = B");
 
-  auto* p = parser("type a = B");
+  type::Struct str(p->builder().Symbols().Get("B"), {});
   p->register_constructed("B", &str);
 
   auto t = p->type_alias();
@@ -52,17 +52,18 @@ TEST_F(ParserImplTest, TypeDecl_ParsesStruct_Ident) {
   EXPECT_FALSE(t.errored);
   EXPECT_TRUE(t.matched);
   ASSERT_NE(t.value, nullptr);
-  ASSERT_TRUE(t->IsAlias());
-  auto* alias = t->AsAlias();
-  EXPECT_EQ(alias->name(), "a");
-  ASSERT_TRUE(alias->type()->IsStruct());
+  ASSERT_TRUE(t->Is<type::Alias>());
+  auto* alias = t->As<type::Alias>();
+  EXPECT_EQ(p->builder().Symbols().NameFor(alias->symbol()), "a");
+  ASSERT_TRUE(alias->type()->Is<type::Struct>());
 
-  auto* s = alias->type()->AsStruct();
-  EXPECT_EQ(s->name(), "B");
+  auto* s = alias->type()->As<type::Struct>();
+  EXPECT_EQ(s->symbol(), p->builder().Symbols().Get("B"));
+  EXPECT_EQ(s->symbol(), p->builder().Symbols().Get("B"));
 }
 
 TEST_F(ParserImplTest, TypeDecl_MissingIdent) {
-  auto* p = parser("type = i32");
+  auto p = parser("type = i32");
   auto t = p->type_alias();
   EXPECT_TRUE(t.errored);
   EXPECT_FALSE(t.matched);
@@ -72,7 +73,7 @@ TEST_F(ParserImplTest, TypeDecl_MissingIdent) {
 }
 
 TEST_F(ParserImplTest, TypeDecl_InvalidIdent) {
-  auto* p = parser("type 123 = i32");
+  auto p = parser("type 123 = i32");
   auto t = p->type_alias();
   EXPECT_TRUE(t.errored);
   EXPECT_FALSE(t.matched);
@@ -82,7 +83,7 @@ TEST_F(ParserImplTest, TypeDecl_InvalidIdent) {
 }
 
 TEST_F(ParserImplTest, TypeDecl_MissingEqual) {
-  auto* p = parser("type a i32");
+  auto p = parser("type a i32");
   auto t = p->type_alias();
   EXPECT_TRUE(t.errored);
   EXPECT_FALSE(t.matched);
@@ -92,7 +93,7 @@ TEST_F(ParserImplTest, TypeDecl_MissingEqual) {
 }
 
 TEST_F(ParserImplTest, TypeDecl_InvalidType) {
-  auto* p = parser("type a = B");
+  auto p = parser("type a = B");
   auto t = p->type_alias();
   EXPECT_TRUE(t.errored);
   EXPECT_FALSE(t.matched);

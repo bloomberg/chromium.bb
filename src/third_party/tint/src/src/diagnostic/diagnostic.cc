@@ -14,6 +14,8 @@
 
 #include "src/diagnostic/diagnostic.h"
 
+#include "src/diagnostic/formatter.h"
+
 namespace tint {
 namespace diag {
 
@@ -26,6 +28,12 @@ List::~List() = default;
 
 List& List::operator=(const List&) = default;
 List& List::operator=(List&&) = default;
+
+std::string List::str() const {
+  diag::Formatter::Style style;
+  style.print_newline_at_end = false;
+  return Formatter{style}.format(*this);
+}
 
 }  // namespace diag
 }  // namespace tint

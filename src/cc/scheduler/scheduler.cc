@@ -163,7 +163,6 @@ void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token,
 
 void Scheduler::DidReceiveCompositorFrameAck() {
   DCHECK_GT(state_machine_.pending_submit_frames(), 0);
-  compositor_timing_history_->DidReceiveCompositorFrameAck();
   state_machine_.DidReceiveCompositorFrameAck();
   ProcessScheduledActions();
 }
@@ -225,7 +224,6 @@ void Scheduler::DidCreateAndInitializeLayerTreeFrameSink() {
   DCHECK(!observing_begin_frame_source_);
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
   state_machine_.DidCreateAndInitializeLayerTreeFrameSink();
-  compositor_timing_history_->DidCreateAndInitializeLayerTreeFrameSink();
   UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
 }
@@ -356,9 +354,9 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   }
 
   // Trace this begin frame time through the Chrome stack
-  TRACE_EVENT_FLOW_BEGIN0(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-      "viz::BeginFrameArgs", args.frame_time.since_origin().InMicroseconds());
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
+                         "viz::BeginFrameArgs", TRACE_EVENT_FLAG_FLOW_OUT,
+                         args.frame_time.since_origin().InMicroseconds());
 
   if (settings_.using_synchronous_renderer_compositor) {
     BeginImplFrameSynchronous(args);
@@ -600,10 +598,11 @@ void Scheduler::FinishImplFrame() {
   // ack for any pending begin frame if we are going idle after this. This
   // ensures that the acks are sent in order.
   if (!state_machine_.did_submit_in_last_frame()) {
+    bool has_pending_tree = state_machine_.has_pending_tree();
     bool is_waiting_on_main = state_machine_.begin_main_frame_state() !=
                               SchedulerStateMachine::BeginMainFrameState::IDLE;
     SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(),
-                           is_waiting_on_main
+                           is_waiting_on_main || has_pending_tree
                                ? FrameSkippedReason::kWaitingOnMain
                                : FrameSkippedReason::kNoDamage);
   }

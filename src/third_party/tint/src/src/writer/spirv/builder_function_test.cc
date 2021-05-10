@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include "spirv/unified1/spirv.h"
 #include "spirv/unified1/spirv.hpp11"
-#include "src/ast/decorated_variable.h"
+#include "src/ast/discard_statement.h"
 #include "src/ast/function.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/member_accessor_expression.h"
@@ -26,79 +26,130 @@
 #include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/access_control_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/void_type.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/context.h"
+#include "src/type/access_control_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/void_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Function_Empty) {
-  ast::type::VoidType void_type;
-  ast::Function func("a_func", {}, &void_type);
+  Func("a_func", {}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
 
-  ast::Module mod;
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateFunction(&func));
+  spirv::Builder& b = Build();
 
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %3 "tint_615f66756e63"
-)");
-  EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeVoid
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "a_func"
+%2 = OpTypeVoid
 %1 = OpTypeFunction %2
+%3 = OpFunction %2 None %1
+%4 = OpLabel
+OpReturn
+OpFunctionEnd
 )");
+}
 
-  ASSERT_GE(b.functions().size(), 1u);
-  const auto& ret = b.functions()[0];
-  EXPECT_EQ(DumpInstruction(ret.declaration()), R"(%3 = OpFunction %2 None %1
+TEST_F(BuilderTest, Function_Terminator_Return) {
+  Func("a_func", {}, ty.void_(),
+       ast::StatementList{
+           create<ast::ReturnStatement>(),
+       },
+       ast::FunctionDecorationList{});
+
+  spirv::Builder& b = Build();
+
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "a_func"
+%2 = OpTypeVoid
+%1 = OpTypeFunction %2
+%3 = OpFunction %2 None %1
+%4 = OpLabel
+OpReturn
+OpFunctionEnd
+)");
+}
+
+TEST_F(BuilderTest, Function_Terminator_ReturnValue) {
+  Global("a", ty.f32(), ast::StorageClass::kPrivate);
+
+  Func("a_func", {}, ty.void_(),
+       ast::StatementList{create<ast::ReturnStatement>(Expr("a"))},
+       ast::FunctionDecorationList{});
+
+  spirv::Builder& b = Build();
+
+  auto* var_a = program->AST().GlobalVariables()[0];
+  auto* func = program->AST().Functions()[0];
+
+  ASSERT_TRUE(b.GenerateGlobalVariable(var_a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "a"
+OpName %7 "a_func"
+%3 = OpTypeFloat 32
+%2 = OpTypePointer Private %3
+%4 = OpConstantNull %3
+%1 = OpVariable %2 Private %4
+%6 = OpTypeVoid
+%5 = OpTypeFunction %6
+%7 = OpFunction %6 None %5
+%8 = OpLabel
+%9 = OpLoad %3 %1
+OpReturnValue %9
+OpFunctionEnd
+)");
+}
+
+TEST_F(BuilderTest, Function_Terminator_Discard) {
+  Func("a_func", {}, ty.void_(),
+       ast::StatementList{
+           create<ast::DiscardStatement>(),
+       },
+       ast::FunctionDecorationList{});
+
+  spirv::Builder& b = Build();
+
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "a_func"
+%2 = OpTypeVoid
+%1 = OpTypeFunction %2
+%3 = OpFunction %2 None %1
+%4 = OpLabel
+OpKill
+OpFunctionEnd
 )");
 }
 
 TEST_F(BuilderTest, Function_WithParams) {
-  ast::type::VoidType void_type;
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
+  ast::VariableList params = {Var("a", ty.f32(), ast::StorageClass::kFunction),
+                              Var("b", ty.i32(), ast::StorageClass::kFunction)};
 
-  ast::VariableList params;
-  auto var_a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kFunction, &f32);
-  var_a->set_is_const(true);
-  params.push_back(std::move(var_a));
-  auto var_b =
-      std::make_unique<ast::Variable>("b", ast::StorageClass::kFunction, &i32);
-  var_b->set_is_const(true);
-  params.push_back(std::move(var_b));
+  Func("a_func", params, ty.f32(),
+       ast::StatementList{create<ast::ReturnStatement>(Expr("a"))},
+       ast::FunctionDecorationList{});
 
-  ast::Function func("a_func", std::move(params), &f32);
+  spirv::Builder& b = Build();
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>(
-      std::make_unique<ast::IdentifierExpression>("a")));
-  func.set_body(std::move(body));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(func.params()[0].get());
-  td.RegisterVariableForTesting(func.params()[1].get());
-  EXPECT_TRUE(td.DetermineFunction(&func));
-
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateFunction(&func));
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %4 "tint_615f66756e63"
-OpName %5 "tint_61"
-OpName %6 "tint_62"
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %4 "a_func"
+OpName %5 "a"
+OpName %6 "b"
 %2 = OpTypeFloat 32
 %3 = OpTypeInt 32 1
 %1 = OpTypeFunction %2 %2 %3
@@ -106,24 +157,24 @@ OpName %6 "tint_62"
 %5 = OpFunctionParameter %2
 %6 = OpFunctionParameter %3
 %7 = OpLabel
-OpReturnValue %5
+%8 = OpLoad %2 %5
+OpReturnValue %8
 OpFunctionEnd
 )") << DumpBuilder(b);
 }
 
 TEST_F(BuilderTest, Function_WithBody) {
-  ast::type::VoidType void_type;
+  Func("a_func", {}, ty.void_(),
+       ast::StatementList{
+           create<ast::ReturnStatement>(),
+       },
+       ast::FunctionDecorationList{});
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>());
+  spirv::Builder& b = Build();
 
-  ast::Function func("a_func", {}, &void_type);
-  func.set_body(std::move(body));
-
-  ast::Module mod;
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateFunction(&func));
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "tint_615f66756e63"
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "a_func"
 %2 = OpTypeVoid
 %1 = OpTypeFunction %2
 %3 = OpFunction %2 None %1
@@ -134,26 +185,28 @@ OpFunctionEnd
 }
 
 TEST_F(BuilderTest, FunctionType) {
-  ast::type::VoidType void_type;
-  ast::Function func("a_func", {}, &void_type);
+  Func("a_func", {}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
 
-  ast::Module mod;
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateFunction(&func));
+  spirv::Builder& b = Build();
+
+  auto* func = program->AST().Functions()[0];
+  ASSERT_TRUE(b.GenerateFunction(func));
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeVoid
 %1 = OpTypeFunction %2
 )");
 }
 
 TEST_F(BuilderTest, FunctionType_DeDuplicate) {
-  ast::type::VoidType void_type;
-  ast::Function func1("a_func", {}, &void_type);
-  ast::Function func2("b_func", {}, &void_type);
+  auto* func1 = Func("a_func", {}, ty.void_(), ast::StatementList{},
+                     ast::FunctionDecorationList{});
+  auto* func2 = Func("b_func", {}, ty.void_(), ast::StatementList{},
+                     ast::FunctionDecorationList{});
 
-  ast::Module mod;
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateFunction(&func1));
-  ASSERT_TRUE(b.GenerateFunction(&func2));
+  spirv::Builder& b = Build();
+
+  ASSERT_TRUE(b.GenerateFunction(func1));
+  ASSERT_TRUE(b.GenerateFunction(func2));
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeVoid
 %1 = OpTypeFunction %2
 )");
@@ -164,7 +217,7 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   // [[block]] struct Data {
   //   [[offset(0)]] d : f32;
   // };
-  // [[binding(0), set(0)]] var<storage_buffer> data : Data;
+  // [[binding(0), group(0)]] var<storage> data : Data;
   //
   // [[stage(compute)]]
   // fn a() -> void {
@@ -176,88 +229,53 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   //   return;
   // }
 
-  ast::type::VoidType void_type;
-  ast::type::F32Type f32;
-
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("d", &f32, std::move(a_deco)));
-
   ast::StructDecorationList s_decos;
-  s_decos.push_back(std::make_unique<ast::StructBlockDecoration>(Source{}));
+  s_decos.push_back(create<ast::StructBlockDecoration>());
 
-  auto str =
-      std::make_unique<ast::Struct>(std::move(s_decos), std::move(members));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("d", ty.f32(), {MemberOffset(0)})}, s_decos);
 
-  ast::type::StructType s("Data", std::move(str));
-  ast::type::AccessControlType ac(ast::AccessControl::kReadWrite, &s);
+  auto* s = ty.struct_("Data", str);
+  type::AccessControl ac(ast::AccessControl::kReadWrite, s);
 
-  auto data_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &ac));
+  Global("data", &ac, ast::StorageClass::kStorage, nullptr,
+         ast::VariableDecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
-  ast::VariableDecorationList decos;
-  decos.push_back(std::make_unique<ast::BindingDecoration>(0, Source{}));
-  decos.push_back(std::make_unique<ast::SetDecoration>(0, Source{}));
-  data_var->set_decorations(std::move(decos));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-
-  mod.AddConstructedType(&s);
-
-  td.RegisterVariableForTesting(data_var.get());
-  mod.AddGlobalVariable(std::move(data_var));
+  AST().AddConstructedType(s);
 
   {
-    ast::VariableList params;
-    auto func =
-        std::make_unique<ast::Function>("a", std::move(params), &void_type);
-    func->add_decoration(std::make_unique<ast::StageDecoration>(
-        ast::PipelineStage::kCompute, Source{}));
+    auto* var = Var("v", ty.f32(), ast::StorageClass::kFunction,
+                    MemberAccessor("data", "d"));
 
-    auto var = std::make_unique<ast::Variable>(
-        "v", ast::StorageClass::kFunction, &f32);
-    var->set_constructor(std::make_unique<ast::MemberAccessorExpression>(
-        std::make_unique<ast::IdentifierExpression>("data"),
-        std::make_unique<ast::IdentifierExpression>("d")));
-
-    auto body = std::make_unique<ast::BlockStatement>();
-    body->append(std::make_unique<ast::VariableDeclStatement>(std::move(var)));
-    body->append(std::make_unique<ast::ReturnStatement>());
-    func->set_body(std::move(body));
-
-    mod.AddFunction(std::move(func));
+    Func("a", ast::VariableList{}, ty.void_(),
+         ast::StatementList{
+             create<ast::VariableDeclStatement>(var),
+             create<ast::ReturnStatement>(),
+         },
+         ast::FunctionDecorationList{
+             create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+         });
   }
 
   {
-    ast::VariableList params;
-    auto func =
-        std::make_unique<ast::Function>("b", std::move(params), &void_type);
-    func->add_decoration(std::make_unique<ast::StageDecoration>(
-        ast::PipelineStage::kCompute, Source{}));
+    auto* var = Var("v", ty.f32(), ast::StorageClass::kFunction,
+                    MemberAccessor("data", "d"));
 
-    auto var = std::make_unique<ast::Variable>(
-        "v", ast::StorageClass::kFunction, &f32);
-    var->set_constructor(std::make_unique<ast::MemberAccessorExpression>(
-        std::make_unique<ast::IdentifierExpression>("data"),
-        std::make_unique<ast::IdentifierExpression>("d")));
-
-    auto body = std::make_unique<ast::BlockStatement>();
-    body->append(std::make_unique<ast::VariableDeclStatement>(std::move(var)));
-    body->append(std::make_unique<ast::ReturnStatement>());
-    func->set_body(std::move(body));
-
-    mod.AddFunction(std::move(func));
+    Func("b", ast::VariableList{}, ty.void_(),
+         ast::StatementList{
+             create<ast::VariableDeclStatement>(var),
+             create<ast::ReturnStatement>(),
+         },
+         ast::FunctionDecorationList{
+             create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+         });
   }
 
-  ASSERT_TRUE(td.Determine()) << td.error();
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   ASSERT_TRUE(b.Build());
   EXPECT_EQ(DumpBuilder(b), R"(OpCapability Shader
 OpMemoryModel Logical GLSL450
@@ -265,13 +283,13 @@ OpEntryPoint GLCompute %7 "a"
 OpEntryPoint GLCompute %17 "b"
 OpExecutionMode %7 LocalSize 1 1 1
 OpExecutionMode %17 LocalSize 1 1 1
-OpName %3 "tint_44617461"
-OpMemberName %3 0 "tint_64"
-OpName %1 "tint_64617461"
-OpName %7 "tint_61"
-OpName %13 "tint_76"
-OpName %17 "tint_62"
-OpName %20 "tint_76"
+OpName %3 "Data"
+OpMemberName %3 0 "d"
+OpName %1 "data"
+OpName %7 "a"
+OpName %14 "v"
+OpName %17 "b"
+OpName %21 "v"
 OpDecorate %3 Block
 OpMemberDecorate %3 0 Offset 0
 OpDecorate %1 Binding 0
@@ -285,22 +303,22 @@ OpDecorate %1 DescriptorSet 0
 %9 = OpTypeInt 32 0
 %10 = OpConstant %9 0
 %11 = OpTypePointer StorageBuffer %4
-%14 = OpTypePointer Function %4
-%15 = OpConstantNull %4
+%15 = OpTypePointer Function %4
+%16 = OpConstantNull %4
 %7 = OpFunction %6 None %5
 %8 = OpLabel
-%13 = OpVariable %14 Function %15
+%14 = OpVariable %15 Function %16
 %12 = OpAccessChain %11 %1 %10
-%16 = OpLoad %4 %12
-OpStore %13 %16
+%13 = OpLoad %4 %12
+OpStore %14 %13
 OpReturn
 OpFunctionEnd
 %17 = OpFunction %6 None %5
 %18 = OpLabel
-%20 = OpVariable %14 Function %15
+%21 = OpVariable %15 Function %16
 %19 = OpAccessChain %11 %1 %10
-%21 = OpLoad %4 %19
-OpStore %20 %21
+%20 = OpLoad %4 %19
+OpStore %21 %20
 OpReturn
 OpFunctionEnd
 )");

@@ -1,14 +1,13 @@
 // Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "net/third_party/quiche/src/quic/core/legacy_quic_stream_id_manager.h"
+#include "quic/core/legacy_quic_stream_id_manager.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_map_util.h"
 
 namespace quic {
 
@@ -36,7 +35,7 @@ LegacyQuicStreamIdManager::LegacyQuicStreamIdManager(
 LegacyQuicStreamIdManager::~LegacyQuicStreamIdManager() {}
 
 bool LegacyQuicStreamIdManager::CanOpenNextOutgoingStream() const {
-  DCHECK_LE(num_open_outgoing_streams_, max_open_outgoing_streams_);
+  QUICHE_DCHECK_LE(num_open_outgoing_streams_, max_open_outgoing_streams_);
   QUIC_DLOG_IF(INFO, num_open_outgoing_streams_ == max_open_outgoing_streams_)
       << "Failed to create a new outgoing stream. "
       << "Already " << num_open_outgoing_streams_ << " open.";

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
+#include "http2/decoder/http2_frame_decoder.h"
 
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_decoder.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_bug_tracker.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
+#include "http2/decoder/decode_status.h"
+#include "http2/hpack/varint/hpack_varint_decoder.h"
+#include "http2/http2_constants.h"
+#include "http2/platform/api/http2_bug_tracker.h"
+#include "http2/platform/api/http2_flag_utils.h"
+#include "http2/platform/api/http2_flags.h"
+#include "http2/platform/api/http2_macros.h"
 
 namespace http2 {
 
@@ -155,6 +157,15 @@ DecodeStatus Http2FrameDecoder::StartDecodingPayload(DecodeBuffer* db) {
       status = StartDecodingAltSvcPayload(&subset);
       break;
 
+    case Http2FrameType::PRIORITY_UPDATE:
+      if (GetHttp2RestartFlag(http2_parse_priority_update_frame)) {
+        HTTP2_RESTART_FLAG_COUNT_N(http2_parse_priority_update_frame, 1, 2);
+        status = StartDecodingPriorityUpdatePayload(&subset);
+      } else {
+        status = StartDecodingUnknownPayload(&subset);
+      }
+      break;
+
     default:
       status = StartDecodingUnknownPayload(&subset);
       break;
@@ -177,7 +188,7 @@ DecodeStatus Http2FrameDecoder::ResumeDecodingPayload(DecodeBuffer* db) {
   // buffer we pass to the start method that is specific to the frame type
   // does not exend beyond this frame.
   size_t remaining = frame_decoder_state_.remaining_total_payload();
-  DCHECK_LE(remaining, frame_header().payload_length);
+  QUICHE_DCHECK_LE(remaining, frame_header().payload_length);
   DecodeBufferSubset subset(db, remaining);
   DecodeStatus status;
   switch (frame_header().type) {
@@ -225,6 +236,15 @@ DecodeStatus Http2FrameDecoder::ResumeDecodingPayload(DecodeBuffer* db) {
       status = ResumeDecodingAltSvcPayload(&subset);
       break;
 
+    case Http2FrameType::PRIORITY_UPDATE:
+      if (GetHttp2RestartFlag(http2_parse_priority_update_frame)) {
+        HTTP2_RESTART_FLAG_COUNT_N(http2_parse_priority_update_frame, 2, 2);
+        status = ResumeDecodingPriorityUpdatePayload(&subset);
+      } else {
+        status = ResumeDecodingUnknownPayload(&subset);
+      }
+      break;
+
     default:
       status = ResumeDecodingUnknownPayload(&subset);
       break;
@@ -259,8 +279,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingAltSvcPayload(DecodeBuffer* db) {
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingAltSvcPayload(DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return altsvc_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                        db);
 }
@@ -274,8 +294,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingContinuationPayload(
 DecodeStatus Http2FrameDecoder::ResumeDecodingContinuationPayload(
     DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return continuation_payload_decoder_.ResumeDecodingPayload(
       &frame_decoder_state_, db);
 }
@@ -295,8 +315,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingGoAwayPayload(DecodeBuffer* db) {
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingGoAwayPayload(DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return goaway_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                        db);
 }
@@ -308,8 +328,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingHeadersPayload(DecodeBuffer* db) {
                                                        db);
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingHeadersPayload(DecodeBuffer* db) {
-  DCHECK_LE(frame_decoder_state_.remaining_payload_and_padding(),
-            frame_header().payload_length);
+  QUICHE_DCHECK_LE(frame_decoder_state_.remaining_payload_and_padding(),
+                   frame_header().payload_length);
   return headers_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                         db);
 }
@@ -320,8 +340,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingPingPayload(DecodeBuffer* db) {
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingPingPayload(DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return ping_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_, db);
 }
 
@@ -333,10 +353,25 @@ DecodeStatus Http2FrameDecoder::StartDecodingPriorityPayload(DecodeBuffer* db) {
 DecodeStatus Http2FrameDecoder::ResumeDecodingPriorityPayload(
     DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return priority_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                          db);
+}
+
+DecodeStatus Http2FrameDecoder::StartDecodingPriorityUpdatePayload(
+    DecodeBuffer* db) {
+  ClearFlags();
+  return priority_payload_update_decoder_.StartDecodingPayload(
+      &frame_decoder_state_, db);
+}
+DecodeStatus Http2FrameDecoder::ResumeDecodingPriorityUpdatePayload(
+    DecodeBuffer* db) {
+  // The frame is not paddable.
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
+  return priority_payload_update_decoder_.ResumeDecodingPayload(
+      &frame_decoder_state_, db);
 }
 
 DecodeStatus Http2FrameDecoder::StartDecodingPushPromisePayload(
@@ -347,8 +382,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingPushPromisePayload(
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingPushPromisePayload(
     DecodeBuffer* db) {
-  DCHECK_LE(frame_decoder_state_.remaining_payload_and_padding(),
-            frame_header().payload_length);
+  QUICHE_DCHECK_LE(frame_decoder_state_.remaining_payload_and_padding(),
+                   frame_header().payload_length);
   return push_promise_payload_decoder_.ResumeDecodingPayload(
       &frame_decoder_state_, db);
 }
@@ -362,8 +397,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingRstStreamPayload(
 DecodeStatus Http2FrameDecoder::ResumeDecodingRstStreamPayload(
     DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return rst_stream_payload_decoder_.ResumeDecodingPayload(
       &frame_decoder_state_, db);
 }
@@ -376,8 +411,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingSettingsPayload(DecodeBuffer* db) {
 DecodeStatus Http2FrameDecoder::ResumeDecodingSettingsPayload(
     DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return settings_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                          db);
 }
@@ -390,8 +425,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingUnknownPayload(DecodeBuffer* db) {
 }
 DecodeStatus Http2FrameDecoder::ResumeDecodingUnknownPayload(DecodeBuffer* db) {
   // We don't known what type of frame this is, so we treat it as not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return unknown_payload_decoder_.ResumeDecodingPayload(&frame_decoder_state_,
                                                         db);
 }
@@ -405,8 +440,8 @@ DecodeStatus Http2FrameDecoder::StartDecodingWindowUpdatePayload(
 DecodeStatus Http2FrameDecoder::ResumeDecodingWindowUpdatePayload(
     DecodeBuffer* db) {
   // The frame is not paddable.
-  DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
-            frame_decoder_state_.remaining_payload());
+  QUICHE_DCHECK_EQ(frame_decoder_state_.remaining_total_payload(),
+                   frame_decoder_state_.remaining_payload());
   return window_update_payload_decoder_.ResumeDecodingPayload(
       &frame_decoder_state_, db);
 }

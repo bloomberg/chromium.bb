@@ -8,6 +8,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -28,6 +29,13 @@ VideoTrackReader::VideoTrackReader(ScriptState* script_state,
       track_(track) {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kWebCodecs);
+
+  ExecutionContext::From(script_state)
+      ->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kDeprecation,
+          mojom::blink::ConsoleMessageLevel::kWarning,
+          "VideoTrackReader is deprecated; use MediaStreamTrackProcessor "
+          "instead."));
 }
 
 void VideoTrackReader::start(V8VideoFrameOutputCallback* callback,
@@ -72,6 +80,7 @@ void VideoTrackReader::StopInternal() {
 
 void VideoTrackReader::OnFrameFromVideoTrack(
     scoped_refptr<media::VideoFrame> media_frame,
+    std::vector<scoped_refptr<media::VideoFrame>> scaled_media_frames,
     base::TimeTicks estimated_capture_time) {
   // The value of estimated_capture_time here seems to almost always be the
   // system clock and most implementations of this callback ignore it.
@@ -81,11 +90,13 @@ void VideoTrackReader::OnFrameFromVideoTrack(
       *real_time_media_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&VideoTrackReader::ExecuteCallbackOnMainThread,
                           WrapCrossThreadPersistent(this),
-                          std::move(media_frame)));
+                          std::move(media_frame),
+                          std::move(scaled_media_frames)));
 }
 
 void VideoTrackReader::ExecuteCallbackOnMainThread(
-    scoped_refptr<media::VideoFrame> media_frame) {
+    scoped_refptr<media::VideoFrame> media_frame,
+    std::vector<scoped_refptr<media::VideoFrame>> /*scaled_media_frames*/) {
   DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
 
   if (!callback_) {
@@ -99,8 +110,14 @@ void VideoTrackReader::ExecuteCallbackOnMainThread(
   // We may want to invalidate |media_frames| when constraints change, but it's
   // unclear whether this is a problem for now.
 
+  auto* context = GetExecutionContext();
+  if (!context)
+    return;
+
+  // Scaled media frames are currently ignored.
   callback_->InvokeAndReportException(
-      nullptr, MakeGarbageCollected<VideoFrame>(std::move(media_frame)));
+      nullptr,
+      MakeGarbageCollected<VideoFrame>(std::move(media_frame), context));
 }
 
 void VideoTrackReader::OnReadyStateChanged(

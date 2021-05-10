@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 804 tests; 796 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 803 tests; 795 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -418,7 +418,6 @@ PASS PopStateEvent interface: existence and properties of interface object
 PASS HashChangeEvent interface: existence and properties of interface object
 PASS PageTransitionEvent interface: existence and properties of interface object
 PASS BeforeUnloadEvent interface: existence and properties of interface object
-PASS ApplicationCache interface: existence and properties of interface object
 PASS ErrorEvent interface: existence and properties of interface object
 PASS ErrorEvent interface object length
 PASS ErrorEvent interface object name
@@ -440,10 +439,6 @@ PASS PromiseRejectionEvent interface: attribute promise
 PASS PromiseRejectionEvent interface: attribute reason
 PASS DOMParser interface: existence and properties of interface object
 PASS Navigator interface: existence and properties of interface object
-PASS PluginArray interface: existence and properties of interface object
-PASS MimeTypeArray interface: existence and properties of interface object
-PASS Plugin interface: existence and properties of interface object
-PASS MimeType interface: existence and properties of interface object
 PASS ImageBitmap interface: existence and properties of interface object
 PASS ImageBitmap interface object length
 PASS ImageBitmap interface object name
@@ -794,6 +789,10 @@ PASS HTMLFrameElement interface: existence and properties of interface object
 PASS HTMLDirectoryElement interface: existence and properties of interface object
 PASS HTMLFontElement interface: existence and properties of interface object
 PASS External interface: existence and properties of interface object
+PASS PluginArray interface: existence and properties of interface object
+PASS MimeTypeArray interface: existence and properties of interface object
+PASS Plugin interface: existence and properties of interface object
+PASS MimeType interface: existence and properties of interface object
 PASS NodeList interface: existence and properties of interface object
 PASS HTMLCollection interface: existence and properties of interface object
 PASS Node interface: existence and properties of interface object

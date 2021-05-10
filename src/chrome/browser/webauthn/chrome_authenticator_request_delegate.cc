@@ -18,16 +18,23 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +43,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
@@ -46,7 +54,7 @@
 #include "device/fido/win/authenticator.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/webauthn_request_registrar.h"
 #include "ui/aura/window.h"
 #endif
@@ -145,6 +153,20 @@ const char kPairingPrefSecret[] = "secret";
 const char kPairingPrefPublicKey[] = "pub_key";
 const char kPairingPrefTime[] = "time";
 
+// DeleteCablePairingByPublicKey erases any pairing with the given public key
+// from |list|.
+void DeleteCablePairingByPublicKey(base::ListValue* list,
+                                   const std::string& public_key_base64) {
+  list->EraseListValueIf([&public_key_base64](const auto& value) {
+    if (!value.is_dict()) {
+      return false;
+    }
+    const base::Value* pref_public_key = value.FindKey(kPairingPrefPublicKey);
+    return pref_public_key && pref_public_key->is_string() &&
+           pref_public_key->GetString() == public_key_base64;
+  });
+}
+
 }  // namespace
 
 // static
@@ -181,11 +203,6 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
 ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-AuthenticatorRequestDialogModel*
-ChromeAuthenticatorRequestDelegate::WeakDialogModelForTesting() const {
-  return weak_dialog_model_;
 }
 
 content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
@@ -318,13 +335,6 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     return;
   }
 
-  if (is_enterprise_attestation) {
-    // This will require additional UI that is not yet ready. Therefore, at this
-    // stage, it is always rejected.
-    std::move(callback).Run(false);
-    return;
-  }
-
   // Cryptotoken displays its own attestation consent prompt.
   // AuthenticatorCommon does not invoke ShouldReturnAttestation() for those
   // requests.
@@ -344,7 +354,8 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
   }
 #endif  // defined(OS_WIN)
 
-  weak_dialog_model_->RequestAttestationPermission(std::move(callback));
+  weak_dialog_model_->RequestAttestationPermission(is_enterprise_attestation,
+                                                   std::move(callback));
 }
 
 bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
@@ -361,6 +372,11 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
                     pairings_from_extension.end());
   }
   const bool cable_extension_provided = !pairings.empty();
+  const bool cablev2_extension_provided =
+      std::any_of(pairings.begin(), pairings.end(),
+                  [](const device::CableDiscoveryData& v) -> bool {
+                    return v.version == device::CableDiscoveryData::Version::V2;
+                  });
 
   base::Optional<std::array<uint8_t, device::cablev2::kQRKeySize>>
       qr_generator_key;
@@ -371,18 +387,31 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     qr_generator_key.emplace();
     crypto::RandBytes(*qr_generator_key);
     qr_string = device::cablev2::qr::Encode(*qr_generator_key);
-    paired_phones = GetCablePairings();
+
+    if (!cable_extension_provided) {
+      paired_phones = GetCablePairings();
+    }
     have_paired_phones = !paired_phones.empty();
 
+    discovery_factory->set_cable_pairing_callback(base::BindRepeating(
+        &ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
+      (cablev2_extension_provided &&
+       base::FeatureList::IsEnabled(device::kWebAuthCableServerLink))) {
     mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
     content::GetDeviceService().BindUsbDeviceManager(
         usb_device_manager.BindNewPipeAndPassReceiver());
-    discovery_factory->set_usb_device_manager(std::move(usb_device_manager));
+    discovery_factory->set_android_accessory_params(
+        std::move(usb_device_manager),
+        l10n_util::GetStringUTF8(IDS_WEBAUTHN_CABLEV2_AOA_REQUEST_DESCRIPTION));
     discovery_factory->set_network_context(
         SystemNetworkContextManager::GetInstance()->GetContext());
   }
 
-  if (pairings.empty() && !qr_generator_key) {
+  if (!cable_extension_provided && !qr_generator_key) {
     return;
   }
 
@@ -390,10 +419,6 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
                                                have_paired_phones, qr_string);
   discovery_factory->set_cable_data(std::move(pairings), qr_generator_key,
                                     std::move(paired_phones));
-
-  discovery_factory->set_cable_pairing_callback(base::BindRepeating(
-      &ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs,
-      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeAuthenticatorRequestDelegate::SelectAccount(
@@ -420,6 +445,17 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
       content::WebContents::FromRenderFrameHost(render_frame_host());
   DCHECK(web_contents);
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
+}
+
+base::Optional<bool> ChromeAuthenticatorRequestDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  // Platform authenticators are never available in Guest sessions. They may be
+  // available (behind an additional interstitial) in Incognito mode.
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) {
+    return false;
+  }
+  return base::nullopt;
 }
 
 #if defined(OS_MAC)
@@ -451,15 +487,16 @@ ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfigForProfile(
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 ChromeAuthenticatorRequestDelegate::ChromeOSGenerateRequestIdCallback
 ChromeAuthenticatorRequestDelegate::GetGenerateRequestIdCallback(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   aura::Window* window =
       render_frame_host->GetNativeView()->GetToplevelWindow();
   return ash::WebAuthnRequestRegistrar::Get()->GetRegisterCallback(window);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
     device::FidoTransportProtocol transport) {
@@ -474,21 +511,24 @@ void ChromeAuthenticatorRequestDelegate::DisableUI() {
 }
 
 bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
-  // The UI is fully disabled for the entire request duration only if the
-  // request originates from cryptotoken. The UI may be hidden in other
+  // The UI is fully disabled for the entire request duration if either:
+  // 1) The request originates from cryptotoken. The UI may be hidden in other
   // circumstances (e.g. while showing the native Windows WebAuthn UI). But in
   // those cases the UI is still enabled and can be shown e.g. for an
   // attestation consent prompt.
+  // 2) A specialized UI is replacing the default WebAuthn UI, such as
+  // Secure Payment Confirmation or Autofill.
   return !disable_ui_;
+}
+
+void ChromeAuthenticatorRequestDelegate::SetConditionalRequest(
+    bool is_conditional) {
+  is_conditional_ = is_conditional;
 }
 
 #if defined(OS_MAC)
 base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
 ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
-  // Touch ID is available in Incognito but not Guest windows.
-  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
-    return base::nullopt;
-
   return TouchIdAuthenticatorConfigForProfile(
       Profile::FromBrowserContext(browser_context()));
 }
@@ -501,14 +541,19 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   }
 
   weak_dialog_model_->AddObserver(this);
-  weak_dialog_model_->set_incognito_mode(
-      Profile::FromBrowserContext(browser_context())->IsIncognitoProfile());
 
-  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed());
+  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
+                                is_conditional_);
 
-  ShowAuthenticatorRequestDialog(
-      content::WebContents::FromRenderFrameHost(render_frame_host()),
-      std::move(transient_dialog_model_holder_));
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser) {
+    browser->window()->UpdatePageActionIcon(PageActionIconType::kWebAuthn);
+  }
+
+  ShowAuthenticatorRequestDialog(web_contents,
+                                 std::move(transient_dialog_model_holder_));
 }
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
@@ -518,7 +563,7 @@ bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
   // discovered, or whether the embedder/UI takes charge of that by
   // invoking its RequestCallback.
   auto transport = authenticator.AuthenticatorTransport();
-  return IsWebAuthnUIEnabled() &&
+  return (is_conditional_ || IsWebAuthnUIEnabled()) &&
          (!transport ||  // Windows
           *transport == device::FidoTransportProtocol::kInternal);
 }
@@ -558,12 +603,14 @@ bool ChromeAuthenticatorRequestDelegate::SupportsPIN() const {
 }
 
 void ChromeAuthenticatorRequestDelegate::CollectPIN(
-    base::Optional<int> attempts,
-    base::OnceCallback<void(std::string)> provide_pin_cb) {
+    CollectPINOptions options,
+    base::OnceCallback<void(base::string16)> provide_pin_cb) {
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->CollectPIN(attempts, std::move(provide_pin_cb));
+  weak_dialog_model_->CollectPIN(options.reason, options.error,
+                                 options.min_pin_length, options.attempts,
+                                 std::move(provide_pin_cb));
 }
 
 void ChromeAuthenticatorRequestDelegate::StartBioEnrollment(
@@ -597,28 +644,14 @@ void ChromeAuthenticatorRequestDelegate::OnRetryUserVerification(int attempts) {
   weak_dialog_model_->OnRetryUserVerification(attempts);
 }
 
-void ChromeAuthenticatorRequestDelegate::OnInternalUserVerificationLocked() {
-  if (!weak_dialog_model_)
-    return;
-
-  weak_dialog_model_->set_internal_uv_locked();
-}
-
-void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(
-    bool v) {
-  if (!weak_dialog_model_) {
-    return;
-  }
-  weak_dialog_model_->set_might_create_resident_credential(v);
-}
-
 void ChromeAuthenticatorRequestDelegate::OnStartOver() {
   DCHECK(start_over_callback_);
   start_over_callback_.Run();
 }
 
-void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
-  DCHECK(weak_dialog_model_);
+void ChromeAuthenticatorRequestDelegate::OnModelDestroyed(
+    AuthenticatorRequestDialogModel* model) {
+  DCHECK(weak_dialog_model_ && weak_dialog_model_ == model);
   weak_dialog_model_ = nullptr;
 }
 
@@ -639,6 +672,10 @@ ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
     const url::Origin& origin) {
+  if (base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) {
+    return true;
+  }
+
   // Because the future of the caBLE extension might be that we transition
   // everything to QR-code or sync-based pairing, we don't want use of the
   // extension to spread without consideration. Therefore it's limited to
@@ -690,8 +727,8 @@ ChromeAuthenticatorRequestDelegate::GetCablePairings() {
   return ret;
 }
 
-void ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs(
-    std::unique_ptr<device::cablev2::Pairing> pairing) {
+void ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent(
+    device::cablev2::PairingEvent event) {
   // This is called when doing a QR-code pairing with a phone and the phone
   // sends long-term pairing information during the handshake. The pairing
   // information is saved in preferences for future operations.
@@ -707,18 +744,21 @@ void ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       kWebAuthnCablePairingsPrefName);
 
+  if (auto* disabled_public_key =
+          absl::get_if<std::array<uint8_t, device::kP256X962Length>>(&event)) {
+    // A pairing was reported to be invalid. Delete it.
+    DeleteCablePairingByPublicKey(update.Get(), Base64(*disabled_public_key));
+    return;
+  }
+
+  // Otherwise the event is a new pairing.
+  auto& pairing =
+      *absl::get_if<std::unique_ptr<device::cablev2::Pairing>>(&event);
   // Find any existing entries with the same public key and replace them. The
   // handshake protocol requires the phone to prove possession of the public key
   // so it's not possible for an evil phone to displace another's pairing.
-  const std::string public_key_base64 = Base64(pairing->peer_public_key_x962);
-  update->EraseListValueIf([&public_key_base64](const auto& value) {
-    if (!value.is_dict()) {
-      return false;
-    }
-    const base::Value* pref_public_key = value.FindKey(kPairingPrefPublicKey);
-    return pref_public_key && pref_public_key->is_string() &&
-           pref_public_key->GetString() == public_key_base64;
-  });
+  std::string public_key_base64 = Base64(pairing->peer_public_key_x962);
+  DeleteCablePairingByPublicKey(update.Get(), public_key_base64);
 
   auto dict = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   dict->SetKey(kPairingPrefPublicKey,

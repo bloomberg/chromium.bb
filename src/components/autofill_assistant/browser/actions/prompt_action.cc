@@ -11,9 +11,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
+#include "components/autofill_assistant/browser/web/element.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
@@ -52,6 +54,7 @@ void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
       proto_.prompt().allow_interrupt()) {
     delegate_->WaitForDom(
         base::TimeDelta::Max(), proto_.prompt().allow_interrupt(),
+        /* observer= */ nullptr,
         base::BindRepeating(&PromptAction::RegisterChecks,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&PromptAction::OnWaitForElementTimed,
@@ -133,7 +136,8 @@ bool PromptAction::HasNonemptyPreconditions() {
 void PromptAction::OnPreconditionResult(
     size_t choice_index,
     const ClientStatus& status,
-    const std::vector<std::string>& ignored_payloads) {
+    const std::vector<std::string>& ignored_payloads,
+    const base::flat_map<std::string, DomObjectFrameStack>& ignored_elements) {
   bool precondition_is_met = status.ok();
   if (precondition_results_[choice_index] == precondition_is_met)
     return;
@@ -195,7 +199,8 @@ void PromptAction::UpdateTimings() {
 
 void PromptAction::OnAutoSelectCondition(
     const ClientStatus& status,
-    const std::vector<std::string>& payloads) {
+    const std::vector<std::string>& payloads,
+    const base::flat_map<std::string, DomObjectFrameStack>& ignored_elements) {
   if (payloads.empty())
     return;
 

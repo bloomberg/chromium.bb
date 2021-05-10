@@ -23,10 +23,16 @@
 #include "perfetto/ext/base/utils.h"
 
 namespace {
+constexpr bool IsPowerOfTwo(size_t v) {
+  return (v != 0 && ((v & (v - 1)) == 0));
+}
 // Wait for ~1s before timing out (+- spurious wakeups from the sleeps).
 constexpr unsigned kSleepAttempts = 1000;
-constexpr unsigned kLockAttemptsPerSleep = 1000;
+constexpr unsigned kLockAttemptsPerSleep = 1024;
 constexpr unsigned kSleepDurationUs = 1000;
+
+static_assert(IsPowerOfTwo(kLockAttemptsPerSleep),
+              "lock attempts of power of 2 produce faster code.");
 }  // namespace
 
 namespace perfetto {
@@ -44,7 +50,7 @@ void ScopedSpinlock::LockSlow(Mode mode) {
       locked_ = true;
       break;
     }
-    if (attempt && attempt % kLockAttemptsPerSleep == 0) {
+    if (attempt % kLockAttemptsPerSleep == 0) {
       usleep(kSleepDurationUs);
       sleeps++;
     }

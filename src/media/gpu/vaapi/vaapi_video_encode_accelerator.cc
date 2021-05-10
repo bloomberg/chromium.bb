@@ -28,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
@@ -67,13 +66,11 @@ constexpr unsigned int kTargetBitratePercentage = 90;
 // requirements.
 gfx::Size GetInputFrameSize(VideoPixelFormat format,
                             const gfx::Size& visible_size) {
-  std::unique_ptr<::gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory =
-      ::gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
   // Get a VideoFrameLayout of a graphic buffer with the same gfx::BufferUsage
   // as camera stack.
   base::Optional<VideoFrameLayout> layout = GetPlatformVideoFrameLayout(
-      gpu_memory_buffer_factory.get(), format, visible_size,
-      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+      /*gpu_memory_buffer_factory=*/nullptr, format, visible_size,
+      gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE);
   if (!layout || layout->planes().empty()) {
     VLOGF(1) << "Failed to allocate VideoFrameLayout";
     return gfx::Size();
@@ -234,7 +231,7 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
       // TODO(akahuang): Change to use SequencedTaskRunner to see if the
       // performance is affected.
       encoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
-          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
@@ -294,7 +291,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
   }
 
   if (config.storage_type.value_or(Config::StorageType::kShmem) ==
-      Config::StorageType::kDmabuf) {
+      Config::StorageType::kGpuMemoryBuffer) {
 #if !defined(USE_OZONE)
     VLOGF(1) << "Native mode is only available on OZONE platform.";
     return false;
@@ -338,7 +335,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
         codec == kCodecVP9 ? VaapiWrapper::kEncodeConstantQuantizationParameter
                            : VaapiWrapper::kEncode;
     vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-        mode, config.output_profile,
+        mode, config.output_profile, EncryptionScheme::kUnencrypted,
         base::BindRepeating(&ReportVaapiErrorToUMA,
                             "Media.VaapiVideoEncodeAccelerator.VAAPIError"));
     if (!vaapi_wrapper_) {
@@ -731,6 +728,7 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     if (!vpp_vaapi_wrapper_) {
       vpp_vaapi_wrapper_ = VaapiWrapper::Create(
           VaapiWrapper::kVideoProcess, VAProfileNone,
+          EncryptionScheme::kUnencrypted,
           base::BindRepeating(
               &ReportVaapiErrorToUMA,
               "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"));
@@ -831,12 +829,11 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
 
     input_queue_.pop();
 
-    if (job) {
-      if (!encoder_->PrepareEncodeJob(job.get())) {
-        NOTIFY_ERROR(kPlatformFailureError, "Failed preparing an encode job.");
-        return;
-      }
+    if (job && !encoder_->PrepareEncodeJob(job.get())) {
+      NOTIFY_ERROR(kPlatformFailureError, "Failed preparing an encode job.");
+      return;
     }
+
     TRACE_EVENT0("media,gpu", "VAVEA::FromExecuteToReturn");
     if (job) {
       TRACE_EVENT0("media,gpu", "VAVEA::Execute");

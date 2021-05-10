@@ -90,6 +90,12 @@ class VIEWS_EXPORT Label : public View,
   const base::string16& GetText() const;
   virtual void SetText(const base::string16& text);
 
+  // Set the accessibility name that will be announced by the screen reader.
+  // If this function is not called, the screen reader defaults to verbalizing
+  // the text value.
+  void SetAccessibleName(const base::string16& name);
+  const base::string16& GetAccessibleName() const;
+
   // Where the label appears in the UI. Passed in from the constructor. This is
   // a value from views::style::TextContext or an enum that extends it.
   int GetTextContext() const;
@@ -99,6 +105,10 @@ class VIEWS_EXPORT Label : public View,
   // enum that extends it.
   int GetTextStyle() const;
   void SetTextStyle(int style);
+
+  // Applies |style| to a specific |range|.  This is unimplemented for styles
+  // that vary from the global text style by anything besides weight.
+  void SetTextStyleRange(int style, const gfx::Range& range);
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
@@ -176,6 +186,10 @@ class VIEWS_EXPORT Label : public View,
   // elide the rest (currently only ELIDE_TAIL supported). See gfx::RenderText.
   int GetMaxLines() const;
   void SetMaxLines(int max_lines);
+
+  // If single-line, a non-zero value will help determine the amount of space
+  // needed *after* elision, which may be less than the passed |max_width|.
+  void SetMaximumWidthSingleLine(int max_width);
 
   // Returns the number of lines required to render all text. The actual number
   // of rendered lines might be limited by |max_lines_| which elides the rest.
@@ -280,7 +294,7 @@ class VIEWS_EXPORT Label : public View,
   // within the |range|. See gfx::RenderText.
   std::vector<gfx::Rect> GetSubstringBounds(const gfx::Range& range);
 
-  views::PropertyChangedSubscription AddTextChangedCallback(
+  base::CallbackListSubscription AddTextChangedCallback(
       views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // View:
@@ -409,6 +423,9 @@ class VIEWS_EXPORT Label : public View,
   // Builds |context_menu_contents_|.
   void BuildContextMenuContents();
 
+  // Updates the elide behavior used by |full_text_|.
+  void UpdateFullTextElideBehavior();
+
   int text_context_;
   int text_style_;
   base::Optional<int> line_height_;
@@ -450,9 +467,15 @@ class VIEWS_EXPORT Label : public View,
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_ = false;
   int fixed_width_ = 0;
+  // This is used only for multi-line mode.
   int max_width_ = 0;
+  // This is used in single-line mode.
+  int max_width_single_line_ = 0;
 
   std::unique_ptr<SelectionController> selection_controller_;
+
+  // Accessibility data.
+  base::string16 accessible_name_;
 
   // Context menu related members.
   ui::SimpleMenuModel context_menu_contents_;

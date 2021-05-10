@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 
+#include <utility>
+
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
@@ -53,6 +55,23 @@
 
 namespace blink {
 
+namespace {
+
+void ParseUrlsListValue(const AtomicString& value, HashSet<KURL>& url_hash) {
+  // Parse the attribute value as a space-separated list of urls
+  SpaceSplitString urls(value);
+  url_hash.clear();
+  url_hash.ReserveCapacityForSize(SafeCast<wtf_size_t>(urls.size()));
+  for (wtf_size_t i = 0; i < urls.size(); ++i) {
+    KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+    if (url.IsValid()) {
+      url_hash.insert(std::move(url));
+    }
+  }
+}
+
+}  // namespace
+
 HTMLLinkElement::HTMLLinkElement(Document& document,
                                  const CreateElementFlags flags)
     : HTMLElement(html_names::kLinkTag, document),
@@ -64,6 +83,8 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
       resources_(
           MakeGarbageCollected<DOMTokenList>(*this,
                                              html_names::kResourcesAttr)),
+      scopes_(
+          MakeGarbageCollected<DOMTokenList>(*this, html_names::kScopesAttr)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement::~HTMLLinkElement() = default;
@@ -134,9 +155,6 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == html_names::kMediaAttr) {
     media_ = value.LowerASCII();
     Process();
-  } else if (name == html_names::kScopeAttr) {
-    scope_ = value;
-    Process();
   } else if (name == html_names::kIntegrityAttr) {
     integrity_ = value;
   } else if (name == html_names::kImportanceAttr &&
@@ -145,21 +163,14 @@ void HTMLLinkElement::ParseAttribute(
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
   } else if (name == html_names::kResourcesAttr &&
-             RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-                 GetExecutionContext())) {
+             LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
     resources_->DidUpdateAttributeValue(params.old_value, value);
-
-    // Parse the attribute value as a space-separated list of urls
-    SpaceSplitString urls(value);
-    valid_resource_urls_.clear();
-    valid_resource_urls_.ReserveCapacityForSize(
-        SafeCast<wtf_size_t>(urls.size()));
-    for (wtf_size_t i = 0; i < urls.size(); ++i) {
-      KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
-      if (url.IsValid()) {
-        valid_resource_urls_.insert(std::move(url));
-      }
-    }
+    ParseUrlsListValue(value, valid_resource_urls_);
+    Process();
+  } else if (name == html_names::kScopesAttr &&
+             LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
+    scopes_->DidUpdateAttributeValue(params.old_value, value);
+    ParseUrlsListValue(value, valid_scope_urls_);
     Process();
   } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
@@ -220,9 +231,11 @@ bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
 void HTMLLinkElement::LoadStylesheet(const LinkLoadParameters& params,
                                      const WTF::TextEncoding& charset,
                                      FetchParameters::DeferOption defer_option,
-                                     ResourceClient* link_client) {
+                                     ResourceClient* link_client,
+                                     RenderBlockingBehavior render_blocking) {
   return link_loader_->LoadStylesheet(params, localName(), charset,
-                                      defer_option, GetDocument(), link_client);
+                                      defer_option, GetDocument(), link_client,
+                                      render_blocking);
 }
 
 LinkResource* HTMLLinkElement::LinkResourceToProcess() {
@@ -245,8 +258,7 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
       link_ = MakeGarbageCollected<LinkImport>(this);
     } else if (rel_attribute_.IsWebBundle()) {
       // Only create a webbundle link when SubresourceWebBundles are enabled.
-      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-              GetExecutionContext())) {
+      if (!LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
         return nullptr;
       }
       link_ = MakeGarbageCollected<LinkWebBundle>(this);
@@ -363,23 +375,6 @@ void HTMLLinkElement::LinkLoadingErrored() {
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
-void HTMLLinkElement::DidStartLinkPrerender() {
-  DispatchEvent(*Event::Create(event_type_names::kWebkitprerenderstart));
-}
-
-void HTMLLinkElement::DidStopLinkPrerender() {
-  DispatchEvent(*Event::Create(event_type_names::kWebkitprerenderstop));
-}
-
-void HTMLLinkElement::DidSendLoadForLinkPrerender() {
-  DispatchEvent(*Event::Create(event_type_names::kWebkitprerenderload));
-}
-
-void HTMLLinkElement::DidSendDOMContentLoadedForLinkPrerender() {
-  DispatchEvent(
-      *Event::Create(event_type_names::kWebkitprerenderdomcontentloaded));
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 HTMLLinkElement::GetLoadingTaskRunner() {
   return GetDocument().GetTaskRunner(TaskType::kNetworking);
@@ -414,10 +409,9 @@ void HTMLLinkElement::ScheduleEvent() {
       .GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(&HTMLLinkElement::DispatchPendingEvent,
-                    WrapPersistent(this),
-                    WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
-                        GetDocument()))));
+          WTF::Bind(
+              &HTMLLinkElement::DispatchPendingEvent, WrapPersistent(this),
+              std::make_unique<IncrementLoadEventDelayCount>(GetDocument())));
 }
 
 void HTMLLinkElement::StartLoadingDynamicSheet() {
@@ -481,12 +475,17 @@ DOMTokenList* HTMLLinkElement::resources() const {
   return resources_.Get();
 }
 
+DOMTokenList* HTMLLinkElement::scopes() const {
+  return scopes_.Get();
+}
+
 void HTMLLinkElement::Trace(Visitor* visitor) const {
   visitor->Trace(link_);
   visitor->Trace(sizes_);
   visitor->Trace(link_loader_);
   visitor->Trace(rel_list_);
   visitor->Trace(resources_);
+  visitor->Trace(scopes_);
   HTMLElement::Trace(visitor);
   LinkLoaderClient::Trace(visitor);
 }

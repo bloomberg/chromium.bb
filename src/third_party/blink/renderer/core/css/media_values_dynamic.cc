@@ -99,7 +99,7 @@ int MediaValuesDynamic::MonochromeBitsPerComponent() const {
   return CalculateMonochromeBitsPerComponent(frame_);
 }
 
-ui::PointerType MediaValuesDynamic::PrimaryPointerType() const {
+mojom::blink::PointerType MediaValuesDynamic::PrimaryPointerType() const {
   return CalculatePrimaryPointerType(frame_);
 }
 
@@ -107,7 +107,7 @@ int MediaValuesDynamic::AvailablePointerTypes() const {
   return CalculateAvailablePointerTypes(frame_);
 }
 
-ui::HoverType MediaValuesDynamic::PrimaryHoverType() const {
+mojom::blink::HoverType MediaValuesDynamic::PrimaryHoverType() const {
   return CalculatePrimaryHoverType(frame_);
 }
 
@@ -167,6 +167,10 @@ NavigationControls MediaValuesDynamic::GetNavigationControls() const {
 
 ScreenSpanning MediaValuesDynamic::GetScreenSpanning() const {
   return CalculateScreenSpanning(frame_);
+}
+
+ScreenFoldPosture MediaValuesDynamic::GetScreenFoldPosture() const {
+  return CalculateScreenFoldPosture(frame_);
 }
 
 Document* MediaValuesDynamic::GetDocument() const {

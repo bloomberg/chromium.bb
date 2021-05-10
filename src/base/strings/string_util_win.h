@@ -107,18 +107,6 @@ inline string16 AsString16(WStringPiece str) {
   return string16(as_u16cstr(str.data()), str.size());
 }
 
-// Compatibility shim for cross-platform code that passes a StringPieceType to a
-// cross platform string utility function. Most of these functions are only
-// implemented for base::StringPiece and base::StringPiece16, which is why
-// base::WStringPieces need to be converted on API boundaries.
-inline StringPiece16 AsCrossPlatformPiece(WStringPiece str) {
-  return AsStringPiece16(str);
-}
-
-inline WStringPiece AsNativeStringPiece(StringPiece16 str) {
-  return AsWStringPiece(str);
-}
-
 // The following section contains overloads of the cross-platform APIs for
 // std::wstring and base::WStringPiece. These are only enabled if std::wstring
 // and base::string16 are distinct types, as otherwise this would result in an
@@ -167,7 +155,7 @@ BASE_EXPORT std::wstring CollapseWhitespace(
 BASE_EXPORT bool ContainsOnlyChars(WStringPiece input, WStringPiece characters);
 
 BASE_EXPORT bool LowerCaseEqualsASCII(WStringPiece str,
-                                      StringPiece lowecase_ascii);
+                                      StringPiece lowercase_ascii);
 
 BASE_EXPORT bool EqualsASCII(StringPiece16 str, StringPiece ascii);
 
@@ -204,7 +192,7 @@ BASE_EXPORT std::wstring JoinString(std::initializer_list<WStringPiece> parts,
 
 BASE_EXPORT std::wstring ReplaceStringPlaceholders(
     WStringPiece format_string,
-    const std::vector<string16>& subst,
+    const std::vector<std::wstring>& subst,
     std::vector<size_t>* offsets);
 #endif
 

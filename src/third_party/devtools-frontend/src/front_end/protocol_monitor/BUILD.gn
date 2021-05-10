@@ -6,16 +6,18 @@ import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("protocol_monitor") {
-  sources = [ "ProtocolMonitor.js" ]
+  sources = [ "ProtocolMonitor.ts" ]
 
   deps = [
-    "../data_grid:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../protocol_client:bundle",
     "../sdk:bundle",
     "../source_frame:bundle",
     "../text_utils:bundle",
+    "../third_party/lit-html:bundle",
     "../ui:bundle",
+    "../ui/components:bundle",
   ]
 }
 
@@ -26,7 +28,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "protocol_monitor-legacy.js"
+  entrypoint = "protocol_monitor-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "protocol_monitor-meta.ts"
 
   deps = [ ":bundle" ]
 }

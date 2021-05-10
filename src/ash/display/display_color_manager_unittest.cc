@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -13,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "components/quirks/quirks_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -471,6 +471,45 @@ TEST_F(DisplayColorManagerTest, NoVCGT) {
   // there is no vcgt table.
   EXPECT_TRUE(
       base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
+}
+
+TEST_F(DisplayColorManagerTest, VpdCalibration) {
+  // Set the VPD-written ICC data of |product_id| to be the contents in
+  // |icc_path|.
+  int64_t product_id = 0x4c834a42;
+  const base::FilePath& icc_path = color_path_.Append("06af5c10.icc");
+  std::unique_ptr<base::ScopedPathOverride> vpd_dir_override;
+  vpd_dir_override.reset(
+      new base::ScopedPathOverride(chromeos::DIR_DEVICE_DISPLAY_PROFILES_VPD));
+  base::FilePath vpd_dir;
+  EXPECT_TRUE(base::PathService::Get(chromeos::DIR_DEVICE_DISPLAY_PROFILES_VPD,
+                                     &vpd_dir));
+  EXPECT_TRUE(base::CopyFile(icc_path,
+                             vpd_dir.Append(quirks::IdToFileName(product_id))));
+
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(123)
+          .SetNativeMode(kDisplaySize)
+          .SetCurrentMode(kDisplaySize)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetHasColorCorrectionMatrix(false)
+          .SetProductCode(product_id)
+          .Build();
+
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
+  native_display_delegate_->set_outputs(outputs);
+
+  configurator_.OnConfigurationChanged();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  // Clear initial configuration log.
+  log_->GetActionsAndClear();
+
+  WaitOnColorCalibration();
+  // The Quirks-fetched ICC has no vcgt table and would call
+  // DisplayColorManager::ResetDisplayColorCalibration().
+  // Confirm that the VPD-written ICC, which does, is what is applied.
+  EXPECT_TRUE(base::MatchPattern(log_->GetActionsAndClear(), kSetGammaAction));
 }
 
 }  // namespace ash

@@ -14,26 +14,33 @@
 
 #include "src/ast/break_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BreakStatement);
+
 namespace tint {
 namespace ast {
 
-BreakStatement::BreakStatement() : Statement() {}
-
-BreakStatement::BreakStatement(const Source& source) : Statement(source) {}
+BreakStatement::BreakStatement(const Source& source) : Base(source) {}
 
 BreakStatement::BreakStatement(BreakStatement&&) = default;
 
 BreakStatement::~BreakStatement() = default;
 
-bool BreakStatement::IsBreak() const {
-  return true;
+BreakStatement* BreakStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<BreakStatement>(src);
 }
 
 bool BreakStatement::IsValid() const {
   return true;
 }
 
-void BreakStatement::to_str(std::ostream& out, size_t indent) const {
+void BreakStatement::to_str(const semantic::Info&,
+                            std::ostream& out,
+                            size_t indent) const {
   make_indent(out, indent);
   out << "Break{}" << std::endl;
 }

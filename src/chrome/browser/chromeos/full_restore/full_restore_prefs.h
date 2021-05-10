@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FULL_RESTORE_FULL_RESTORE_PREFS_H_
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace chromeos {
 namespace full_restore {
@@ -19,8 +20,34 @@ enum class RestoreOption {
 };
 
 extern const char kRestoreAppsAndPagesPrefName[];
+extern const char kRestoreSelectedCountPrefName[];
 
+// Registers the restore pref |kRestoreAppsAndPagesPrefName| and
+// |kRestoreSelectedCountPrefName|.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+// Returns true if the pref has |kRestoreAppsAndPagesPrefName|. Otherwise,
+// return false.
+bool HasRestorePref(PrefService* prefs);
+
+// Sets the default restore pref |kRestoreAppsAndPagesPrefName| based on the
+// current browser restore settings. If it is the first time to run Chrome OS,
+// or the browser restore settings doesn't exist, set the restore pref setting
+// as |kAskEveryTime|.
+//
+// This function should be called only when |kRestoreAppsAndPagesPrefName|
+// doesn't exist.
+void SetDefaultRestorePrefIfNecessary(PrefService* prefs);
+
+// Updates the restore pref |kRestoreAppsAndPagesPrefName| when the browser
+// restore settings is synced.
+void UpdateRestorePrefIfNecessary(PrefService* prefs);
+
+// Returns the value of the pref |kRestoreSelectedCountPrefName|.
+int GetRestoreSelectedCountPref(PrefService* prefs);
+
+// Sets the pref |kRestoreSelectedCountPrefName| as |count|.
+void SetRestoreSelectedCountPref(PrefService* prefs, int count);
 
 }  // namespace full_restore
 }  // namespace chromeos

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "gmock/gmock.h"
+#include "src/ast/identifier_expression.h"
 #include "src/reader/spirv/function.h"
 #include "src/reader/spirv/parser_impl.h"
 #include "src/reader/spirv/parser_impl_test_helper.h"
@@ -63,17 +64,18 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Scalar) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_11
     none
     __bool
     {
-      ScalarConstructor{false}
+      ScalarConstructor[not set]{false}
     }
   }
 }
@@ -83,7 +85,7 @@ VariableDeclStatement{
     none
     __u32
     {
-      ScalarConstructor{0}
+      ScalarConstructor[not set]{0}
     }
   }
 }
@@ -93,7 +95,7 @@ VariableDeclStatement{
     none
     __i32
     {
-      ScalarConstructor{0}
+      ScalarConstructor[not set]{0}
     }
   }
 }
@@ -103,10 +105,10 @@ VariableDeclStatement{
     none
     __f32
     {
-      ScalarConstructor{0.000000}
+      ScalarConstructor[not set]{0.000000}
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Vector) {
@@ -123,20 +125,21 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Vector) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_11
     none
     __vec_2__u32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __vec_2__u32
-        ScalarConstructor{0}
-        ScalarConstructor{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
       }
     }
   }
@@ -147,10 +150,10 @@ VariableDeclStatement{
     none
     __vec_2__i32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __vec_2__i32
-        ScalarConstructor{0}
-        ScalarConstructor{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
       }
     }
   }
@@ -161,14 +164,14 @@ VariableDeclStatement{
     none
     __vec_2__f32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __vec_2__f32
-        ScalarConstructor{0.000000}
-        ScalarConstructor{0.000000}
+        ScalarConstructor[not set]{0.000000}
+        ScalarConstructor[not set]{0.000000}
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Matrix) {
@@ -183,32 +186,33 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Matrix) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_11
     none
     __mat_2_2__f32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __mat_2_2__f32
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{0.000000}
-          ScalarConstructor{0.000000}
+          ScalarConstructor[not set]{0.000000}
+          ScalarConstructor[not set]{0.000000}
         }
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{0.000000}
-          ScalarConstructor{0.000000}
+          ScalarConstructor[not set]{0.000000}
+          ScalarConstructor[not set]{0.000000}
         }
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Array) {
@@ -224,24 +228,25 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Array) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_11
     none
     __array__u32_2
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __array__u32_2
-        ScalarConstructor{0}
-        ScalarConstructor{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Struct) {
@@ -256,26 +261,27 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Struct) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_11
     none
     __struct_S
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __struct_S
-        ScalarConstructor{false}
-        ScalarConstructor{0}
-        ScalarConstructor{0}
-        ScalarConstructor{0.000000}
+        ScalarConstructor[not set]{false}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0.000000}
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTestMiscInstruction, OpNop) {
@@ -286,14 +292,61 @@ TEST_F(SpvParserTestMiscInstruction, OpNop) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(Return{}
-)")) << ToString(fe.ast_body());
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), Eq(R"(Return{}
+)")) << ToString(p->builder(), fe.ast_body());
 }
+
+// Test swizzle generation.
+
+struct SwizzleCase {
+  uint32_t index;
+  std::string expected_expr;
+  std::string expected_error;
+};
+using SpvParserSwizzleTest =
+    SpvParserTestBase<::testing::TestWithParam<SwizzleCase>>;
+
+TEST_P(SpvParserSwizzleTest, Sample) {
+  // We need a function so we can get a FunctionEmitter.
+  const auto assembly = CommonTypes() + R"(
+     %100 = OpFunction %void None %voidfn
+     %entry = OpLabel
+     OpReturn
+     OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+
+  auto* result = fe.Swizzle(GetParam().index);
+  if (GetParam().expected_error.empty()) {
+    Program program(p->program());
+    EXPECT_TRUE(fe.success());
+    ASSERT_NE(result, nullptr);
+    auto got = program.str(result);
+    EXPECT_EQ(got, GetParam().expected_expr);
+  } else {
+    EXPECT_EQ(result, nullptr);
+    EXPECT_FALSE(fe.success());
+    EXPECT_EQ(p->error(), GetParam().expected_error);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ValidIndex,
+    SpvParserSwizzleTest,
+    ::testing::ValuesIn(std::vector<SwizzleCase>{
+        {0, "Identifier[not set]{x}\n", ""},
+        {1, "Identifier[not set]{y}\n", ""},
+        {2, "Identifier[not set]{z}\n", ""},
+        {3, "Identifier[not set]{w}\n", ""},
+        {4, "", "vector component index is larger than 3: 4"},
+        {99999, "", "vector component index is larger than 3: 99999"}}));
 
 // TODO(dneto): OpSizeof : requires Kernel (OpenCL)
 

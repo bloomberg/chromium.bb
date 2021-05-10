@@ -16,7 +16,7 @@ rootWebArea
 ++++++definition
 ++++++contentDeletion
 ++++++dialog
-++++++list
+++++++directory
 ++++++document
 ++++++emphasis
 ++++++feed
@@ -49,11 +49,9 @@ rootWebArea
 ++++++menuItemRadio expanded
 ++++++meter
 ++++++navigation
-++++++none
 ++++++note
 ++++++listBoxOption
 ++++++paragraph
-++++++presentational
 ++++++progressIndicator
 ++++++radioButton
 ++++++radioGroup

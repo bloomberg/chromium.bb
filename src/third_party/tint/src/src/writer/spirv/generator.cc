@@ -20,17 +20,11 @@ namespace tint {
 namespace writer {
 namespace spirv {
 
-Generator::Generator(ast::Module module)
-    : writer::Writer(std::move(module)),
-      builder_(std::make_unique<Builder>(&module_)),
+Generator::Generator(const Program* program)
+    : builder_(std::make_unique<Builder>(program)),
       writer_(std::make_unique<BinaryWriter>()) {}
 
 Generator::~Generator() = default;
-
-void Generator::Reset() {
-  builder_ = std::make_unique<Builder>(&module_);
-  writer_ = std::make_unique<BinaryWriter>();
-}
 
 bool Generator::Generate() {
   if (!builder_->Build()) {

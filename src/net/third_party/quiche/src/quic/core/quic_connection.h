@@ -26,35 +26,36 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_max_streams_frame.h"
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_blocked_writer_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_idle_network_detector.h"
-#include "net/third_party/quiche/src/quic/core/quic_mtu_discovery.h"
-#include "net/third_party/quiche/src/quic/core/quic_network_blackhole_detector.h"
-#include "net/third_party/quiche/src/quic/core/quic_one_block_arena.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_creator.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_sent_packet_manager.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/uber_received_packet_manager.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/frames/quic_max_streams_frame.h"
+#include "quic/core/proto/cached_network_parameters_proto.h"
+#include "quic/core/quic_alarm.h"
+#include "quic/core/quic_alarm_factory.h"
+#include "quic/core/quic_blocked_writer_interface.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_connection_stats.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_idle_network_detector.h"
+#include "quic/core/quic_mtu_discovery.h"
+#include "quic/core/quic_network_blackhole_detector.h"
+#include "quic/core/quic_one_block_arena.h"
+#include "quic/core/quic_packet_creator.h"
+#include "quic/core/quic_packet_writer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_path_validator.h"
+#include "quic/core/quic_sent_packet_manager.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/uber_received_packet_manager.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -98,6 +99,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when a HANDSHAKE_DONE frame has been received.
   virtual void OnHandshakeDoneReceived() = 0;
+
+  // Called when a NEW_TOKEN frame has been received.
+  virtual void OnNewTokenReceived(absl::string_view token) = 0;
 
   // Called when a MAX_STREAMS frame has been received from the peer.
   virtual bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) = 0;
@@ -157,9 +161,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // retransmittable frame needs to be added.
   virtual void OnAckNeedsRetransmittableFrame() = 0;
 
-  // Called when a ping needs to be sent.
-  virtual void SendPing() = 0;
-
   // Called when an AckFrequency frame need to be sent.
   virtual void SendAckFrequency(const QuicAckFrequencyFrame& frame) = 0;
 
@@ -213,6 +214,15 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // frame is serialized, but only on the server and only if forward secure
   // encryption has already been established.
   virtual void BeforeConnectionCloseSent() = 0;
+
+  // Called by the server to validate |token| in received INITIAL packets.
+  // Consider the client address gets validated (and therefore remove
+  // amplification factor) once the |token| gets successfully validated.
+  virtual bool ValidateToken(absl::string_view token) const = 0;
+
+  // Called by the server to send another token.
+  // Return false if the crypto stream fail to generate one.
+  virtual void MaybeSendAddressToken() = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
@@ -224,12 +234,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   ~QuicConnectionDebugVisitor() override {}
 
   // Called when a packet has been sent.
-  // TODO(wub): Delete when deprecating
-  // --quic_give_sent_packet_to_debug_visitor_after_sent.
-  virtual void OnPacketSent(const SerializedPacket& /*serialized_packet*/,
-                            TransmissionType /*transmission_type*/,
-                            QuicTime /*sent_time*/) {}
-
   virtual void OnPacketSent(QuicPacketNumber /*packet_number*/,
                             QuicPacketLength /*packet_length*/,
                             bool /*has_crypto_handshake*/,
@@ -432,7 +436,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       public QuicPacketCreator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor,
       public QuicNetworkBlackholeDetector::Delegate,
-      public QuicIdleNetworkDetector::Delegate {
+      public QuicIdleNetworkDetector::Delegate,
+      public QuicPathValidator::SendDelegate {
  public:
   // Constructs a new QuicConnection for |connection_id| and
   // |initial_peer_address| using |writer| to write packets. |owns_writer|
@@ -524,6 +529,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       QuicErrorCode error,
       const std::string& details,
       ConnectionCloseBehavior connection_close_behavior);
+  // Closes the connection, specifying the wire error code |ietf_error|
+  // explicitly.
+  virtual void CloseConnection(
+      QuicErrorCode error,
+      QuicIetfTransportErrorCodes ietf_error,
+      const std::string& details,
+      ConnectionCloseBehavior connection_close_behavior);
 
   QuicConnectionStats& mutable_stats() { return stats_; }
 
@@ -570,7 +582,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Set the packet writer.
   void SetQuicPacketWriter(QuicPacketWriter* writer, bool owns_writer) {
-    DCHECK(writer != nullptr);
+    QUICHE_DCHECK(writer != nullptr);
     if (writer_ != nullptr && owns_writer_) {
       delete writer_;
     }
@@ -579,7 +591,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   // Set self address.
-  void SetSelfAddress(QuicSocketAddress address) { self_address_ = address; }
+  void SetSelfAddress(QuicSocketAddress address) {
+    default_path_.self_address = address;
+  }
 
   // The version of the protocol this connection is using.
   QuicTransportVersion transport_version() const {
@@ -616,7 +630,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                      absl::string_view retry_without_tag) override;
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
-  void OnDecryptedPacket(EncryptionLevel level) override;
+  void OnDecryptedPacket(size_t length, EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
   void OnUndecryptablePacket(const QuicEncryptedPacket& packet,
@@ -706,16 +720,15 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Used in Chromium, but not internally.
   // Must only be called before ping_alarm_ is set.
   void set_ping_timeout(QuicTime::Delta ping_timeout) {
-    DCHECK(!ping_alarm_->IsSet());
+    QUICHE_DCHECK(!ping_alarm_->IsSet());
     ping_timeout_ = ping_timeout;
   }
   const QuicTime::Delta ping_timeout() const { return ping_timeout_; }
-  // Used in Chromium, but not internally.
   // Sets an initial timeout for the ping alarm when there is no retransmittable
   // data in flight, allowing for a more aggressive ping alarm in that case.
   void set_initial_retransmittable_on_wire_timeout(
       QuicTime::Delta retransmittable_on_wire_timeout) {
-    DCHECK(!ping_alarm_->IsSet());
+    QUICHE_DCHECK(!ping_alarm_->IsSet());
     initial_retransmittable_on_wire_timeout_ = retransmittable_on_wire_timeout;
   }
   const QuicTime::Delta initial_retransmittable_on_wire_timeout() const {
@@ -725,10 +738,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void set_creator_debug_delegate(QuicPacketCreator::DebugDelegate* visitor) {
     packet_creator_.set_debug_delegate(visitor);
   }
-  const QuicSocketAddress& self_address() const { return self_address_; }
+  const QuicSocketAddress& self_address() const {
+    return default_path_.self_address;
+  }
   const QuicSocketAddress& peer_address() const { return direct_peer_address_; }
   const QuicSocketAddress& effective_peer_address() const {
-    return effective_peer_address_;
+    return default_path_.peer_address;
   }
   QuicConnectionId connection_id() const { return server_connection_id_; }
   QuicConnectionId client_connection_id() const {
@@ -746,7 +761,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Must only be called on client connections.
   const ParsedQuicVersionVector& server_supported_versions() const {
-    DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
+    QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
     return server_supported_versions_;
   }
 
@@ -798,10 +813,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetDefaultEncryptionLevel(EncryptionLevel level);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists.
-  // If an alternative decrypter is in place then the function DCHECKs. This is
-  // intended for cases where one knows that future packets will be using the
-  // new decrypter and the previous decrypter is now obsolete. |level| indicates
-  // the encryption level of the new decrypter.
+  // If an alternative decrypter is in place then the function QUICHE_DCHECKs.
+  // This is intended for cases where one knows that future packets will be
+  // using the new decrypter and the previous decrypter is now obsolete. |level|
+  // indicates the encryption level of the new decrypter.
   void SetDecrypter(EncryptionLevel level,
                     std::unique_ptr<QuicDecrypter> decrypter);
 
@@ -950,6 +965,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // connection ID lengths do not change.
   QuicPacketLength GetGuaranteedLargestMessagePayload() const;
 
+  void SetUnackedMapInitialCapacity();
+
   virtual int GetUnackedMapInitialCapacity() const {
     return kDefaultUnackedPacketsInitialCapacity;
   }
@@ -1078,7 +1095,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void OnSuccessfulVersionNegotiation();
 
   // Called when self migration succeeds after probing.
-  void OnSuccessfulMigrationAfterProbing();
+  void OnSuccessfulMigration(bool is_port_change);
 
   // Called for QUIC+TLS versions when we send transport parameters.
   void OnTransportParametersSent(
@@ -1104,21 +1121,40 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool send_path_response() const { return send_path_response_; }
 
+  bool use_path_validator() const { return use_path_validator_; }
+
   // If now is close to idle timeout, returns true and sends a connectivity
   // probing packet to test the connection for liveness. Otherwise, returns
   // false.
   bool MaybeTestLiveness();
 
+  // QuicPathValidator::SendDelegate
   // Send PATH_CHALLENGE using the given path information. If |writer| is the
   // default writer, PATH_CHALLENGE can be bundled with other frames, and the
   // containing packet can be buffered if the writer is blocked. Otherwise,
   // PATH_CHALLENGE will be written in an individual packet and it will be
   // dropped if write fails. |data_buffer| will be populated with the payload
   // for future validation.
-  void SendPathChallenge(QuicPathFrameBuffer* data_buffer,
+  // Return false if the connection is closed thus the caller will not continue
+  // the validation, otherwise return true.
+  bool SendPathChallenge(const QuicPathFrameBuffer& data_buffer,
                          const QuicSocketAddress& self_address,
                          const QuicSocketAddress& peer_address,
-                         QuicPacketWriter* writer);
+                         const QuicSocketAddress& effective_peer_address,
+                         QuicPacketWriter* writer) override;
+  // If |writer| is the default writer and |peer_address| is the same as
+  // peer_address(), return the PTO of this connection. Otherwise, return 3 *
+  // kInitialRtt.
+  QuicTime GetRetryTimeout(const QuicSocketAddress& peer_address_to_use,
+                           QuicPacketWriter* writer_to_use) const override;
+
+  // Start vaildating the path defined by |context| asynchronously and call the
+  // |result_delegate| after validation finishes. If the connection is
+  // validating another path, cancel and fail that validation before starting
+  // this one.
+  void ValidatePath(
+      std::unique_ptr<QuicPathValidationContext> context,
+      std::unique_ptr<QuicPathValidator::ResultDelegate> result_delegate);
 
   bool can_receive_ack_frequency_frame() const {
     return can_receive_ack_frequency_frame_;
@@ -1128,8 +1164,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     can_receive_ack_frequency_frame_ = true;
   }
 
-  bool check_keys_before_writing() const { return check_keys_before_writing_; }
-
   bool is_processing_packet() const { return framer_.is_processing_packet(); }
 
   bool encrypted_control_frames() const { return encrypted_control_frames_; }
@@ -1137,6 +1171,29 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool use_encryption_level_context() const {
     return use_encryption_level_context_;
   }
+
+  bool HasPendingPathValidation() const;
+
+  QuicPathValidationContext* GetPathValidationContext() const;
+
+  void CancelPathValidation();
+
+  void MigratePath(const QuicSocketAddress& self_address,
+                   const QuicSocketAddress& peer_address,
+                   QuicPacketWriter* writer,
+                   bool owns_writer);
+
+  void SetSourceAddressTokenToSend(absl::string_view token);
+
+  void SendPing() {
+    SendPingAtLevel(use_encryption_level_context_
+                        ? framer().GetEncryptionLevelToSendApplicationData()
+                        : encryption_level_);
+  }
+
+  virtual std::vector<QuicConnectionId> GetActiveServerConnectionIds() const;
+
+  bool validate_client_address() const { return validate_client_addresses_; }
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -1187,7 +1244,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Sends a connection close packet to the peer and includes an ACK if the ACK
   // is not empty, the |error| is not PACKET_WRITE_ERROR, and it fits.
+  // |ietf_error| may optionally be be used to directly specify the wire
+  // error code. Otherwise if |ietf_error| is NO_IETF_QUIC_ERROR, the
+  // QuicErrorCodeToTransportErrorCode mapping of |error| will be used.
   virtual void SendConnectionClosePacket(QuicErrorCode error,
+                                         QuicIetfTransportErrorCodes ietf_error,
                                          const std::string& details);
 
   // Returns true if the packet should be discarded and not sent.
@@ -1200,9 +1261,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Decides whether to send probing retransmissions, and does so if required.
   void MaybeSendProbingRetransmissions();
 
-  // Notify various components(SendPacketManager, Session etc.) that this
-  // connection has been migrated.
-  virtual void OnConnectionMigration(AddressChangeType addr_change_type);
+  // Notify various components(Session etc.) that this connection has been
+  // migrated.
+  virtual void OnConnectionMigration();
 
   // Return whether the packet being processed is a connectivity probing.
   // A packet is a connectivity probing if it is a padded ping packet with self
@@ -1214,8 +1275,51 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // list.
   bool HandleWriteBlocked();
 
+  // Whether connection enforces anti-amplification limit.
+  bool EnforceAntiAmplificationLimit() const;
+
+  void AddBytesReceivedBeforeAddressValidation(size_t length) {
+    default_path_.bytes_received_before_address_validation += length;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
+
+  struct QUIC_EXPORT_PRIVATE PendingPathChallenge {
+    QuicPathFrameBuffer received_path_challenge;
+    QuicSocketAddress peer_address;
+  };
+
+  struct QUIC_EXPORT_PRIVATE PathState {
+    PathState(const QuicSocketAddress& alternative_self_address,
+              const QuicSocketAddress& alternative_peer_address)
+        : self_address(alternative_self_address),
+          peer_address(alternative_peer_address) {}
+
+    PathState(PathState&& other);
+
+    PathState& operator=(PathState&& other);
+
+    // Reset all the members.
+    void Clear();
+
+    QuicSocketAddress self_address;
+    // The actual peer address behind the proxy if there is any.
+    QuicSocketAddress peer_address;
+    // True if the peer address has been validated. Address is considered
+    // validated when 1) an address token of the peer address is received and
+    // validated, or 2) a HANDSHAKE packet has been successfully processed on
+    // this path, or 3) a path validation on this path has succeeded.
+    bool validated = false;
+    // Used by the sever to apply anti-amplification limit after this path
+    // becomes the default path if |peer_address| hasn't been validated.
+    QuicByteCount bytes_received_before_address_validation = 0;
+    QuicByteCount bytes_sent_before_address_validation = 0;
+    // Points to the send algorithm on the old default path while connection is
+    // validating migrated peer address. Nullptr otherwise.
+    std::unique_ptr<SendAlgorithmInterface> send_algorithm;
+    absl::optional<RttStats> rtt_stats;
+  };
 
   using QueuedPacketList = std::list<SerializedPacket>;
 
@@ -1248,25 +1352,42 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   struct QUIC_EXPORT_PRIVATE UndecryptablePacket {
     UndecryptablePacket(const QuicEncryptedPacket& packet,
                         EncryptionLevel encryption_level)
-        : packet(packet.Clone()),
-          encryption_level(encryption_level),
-          processed(false) {}
+        : packet(packet.Clone()), encryption_level(encryption_level) {}
 
     std::unique_ptr<QuicEncryptedPacket> packet;
     EncryptionLevel encryption_level;
-    // This gets set to true if 1) connection sucessfully processed the packet
-    // or 2) connection failed to process the packet and will not try to process
-    // it later.
-    // TODO(fayang): Remove this when deprecating
-    // quic_fix_undecryptable_packets2.
-    bool processed;
+  };
+
+  // Handles the reverse path validation result depending on connection state:
+  // whether the connection is validating a migrated peer address or is
+  // validating an alternative path.
+  class ReversePathValidationResultDelegate
+      : public QuicPathValidator::ResultDelegate {
+   public:
+    ReversePathValidationResultDelegate(
+        QuicConnection* connection,
+        const QuicSocketAddress& direct_peer_address);
+
+    void OnPathValidationSuccess(
+        std::unique_ptr<QuicPathValidationContext> context) override;
+
+    void OnPathValidationFailure(
+        std::unique_ptr<QuicPathValidationContext> context) override;
+
+   private:
+    QuicConnection* connection_;
+    QuicSocketAddress original_direct_peer_address_;
   };
 
   // Notifies the visitor of the close and marks the connection as disconnected.
   // Does not send a connection close frame to the peer. It should only be
   // called by CloseConnection or OnConnectionCloseFrame, OnPublicResetPacket,
   // and OnAuthenticatedIetfStatelessResetPacket.
+  // |ietf_error| may optionally be be used to directly specify the wire
+  // error code. Otherwise if |ietf_error| is NO_IETF_QUIC_ERROR, the
+  // QuicErrorCodeToTransportErrorCode mapping of |error| will be used.
   void TearDownLocalConnectionState(QuicErrorCode error,
+                                    QuicIetfTransportErrorCodes ietf_error,
                                     const std::string& details,
                                     ConnectionCloseSource source);
   void TearDownLocalConnectionState(const QuicConnectionCloseFrame& frame,
@@ -1370,7 +1491,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // starts effective peer migration if current packet is confirmed not a
   // connectivity probe and |current_effective_peer_migration_type_| indicates
   // effective peer address change.
-  void UpdatePacketContent(QuicFrameType type);
+  // Returns true if connection is still alive.
+  ABSL_MUST_USE_RESULT bool UpdatePacketContent(QuicFrameType type);
 
   // Called when last received ack frame has been processed.
   // |send_stop_waiting| indicates whether a stop waiting needs to be sent.
@@ -1436,9 +1558,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Whether incoming_connection_ids_ contains connection_id.
   bool HasIncomingConnectionId(QuicConnectionId connection_id);
 
-  // Whether connection enforces anti-amplification limit.
-  bool EnforceAntiAmplificationLimit() const;
-
   // Whether connection is limited by amplification factor.
   bool LimitedByAmplificationFactor() const;
 
@@ -1476,7 +1595,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Validate connection IDs used during the handshake. Closes the connection
   // on validation failure.
   bool ValidateConfigConnectionIds(const QuicConfig& config);
-  bool ValidateConfigConnectionIdsOld(const QuicConfig& config);
 
   // Called when ACK alarm goes off. Try to bundle crypto data with ACKs.
   void MaybeBundleCryptoDataWithAcks();
@@ -1507,7 +1625,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Called in IETF QUIC. Start peer migration if a non-probing frame is
   // received and the current packet number is largest received so far.
-  void MaybeStartIetfPeerMigration(QuicFrameType type);
+  void MaybeStartIetfPeerMigration();
 
   // Send PATH_RESPONSE to the given peer address.
   bool SendPathResponse(const QuicPathFrameBuffer& data_buffer,
@@ -1526,6 +1644,42 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                               const QuicSocketAddress& self_address,
                               const QuicSocketAddress& peer_address,
                               bool measure_rtt);
+
+  // Increment bytes sent/received on the alternative path if the current packet
+  // is sent/received on that path.
+  void MaybeUpdateBytesSentToAlternativeAddress(
+      const QuicSocketAddress& peer_address,
+      QuicByteCount sent_packet_size);
+  void MaybeUpdateBytesReceivedFromAlternativeAddress(
+      QuicByteCount received_packet_size);
+
+  // TODO(danzh) pass in PathState of the incoming packet or the packet sent
+  // once PathState is used in packet creator. Return true if the given self
+  // address and peer address is the same as the self address and peer address
+  // of the default path.
+  bool IsDefaultPath(const QuicSocketAddress& self_address,
+                     const QuicSocketAddress& peer_address) const;
+
+  // Return true if the |self_address| and |peer_address| is the same as the
+  // self address and peer address of the alternative path.
+  bool IsAlternativePath(const QuicSocketAddress& self_address,
+                         const QuicSocketAddress& peer_address) const;
+
+  // Restore connection default path and congestion control state to the last
+  // validated path and its state. Called after fail to validate peer address
+  // upon detecting a peer migration.
+  void RestoreToLastValidatedPath(
+      QuicSocketAddress original_direct_peer_address);
+
+  // Return true if the current incoming packet is from a peer address that is
+  // validated.
+  bool IsReceivedPeerAddressValidated() const;
+
+  // Called after receiving PATH_CHALLENGE. Update packet content and
+  // alternative path state if the current packet is from a non-default path.
+  // Return true if framer should continue processing the packet.
+  bool OnPathChallengeFrameInternal(const QuicPathChallengeFrame& frame);
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -1560,19 +1714,14 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool client_connection_id_is_set_;
   // Address on the last successfully processed packet received from the
   // direct peer.
-  QuicSocketAddress self_address_;
-  QuicSocketAddress peer_address_;
 
   // Other than initialization, do not modify it directly, use
   // UpdatePeerAddress() instead.
   QuicSocketAddress direct_peer_address_;
-  // Address of the endpoint behind the proxy if the connection is proxied.
-  // Otherwise it is the same as |peer_address_|.
-  // NOTE: Currently |effective_peer_address_| and |peer_address_| are always
-  // the same(the address of the direct peer), but soon we'll change
-  // |effective_peer_address_| to be the address of the endpoint behind the
-  // proxy if the connection is proxied.
-  QuicSocketAddress effective_peer_address_;
+  // The default path on which the endpoint sends non-probing packets.
+  // The send algorithm and RTT stats of this path are stored in
+  // |sent_packet_manager_| instead of in this object.
+  PathState default_path_;
 
   // Records change type when the effective peer initiates migration to a new
   // address. Reset to NO_CHANGE after effective peer migration is validated.
@@ -1589,10 +1738,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // uninitialized before the first one-RTT packet has been sent or after a
   // key update but before the first packet has been sent.
   QuicPacketNumber lowest_packet_sent_in_current_key_phase_;
-
-  // Honor the AEAD confidentiality and integrity limits by initiating key
-  // update (if allowed) and/or closing the connection, as necessary.
-  bool enable_aead_limits_;
 
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.
@@ -1697,6 +1842,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // An alarm that fires to discard keys for the previous key phase some time
   // after a key update has completed.
   QuicArenaScopedPtr<QuicAlarm> discard_previous_one_rtt_keys_alarm_;
+  // An alarm that fires to discard 0-RTT decryption keys some time after the
+  // first 1-RTT packet has been decrypted. Only used on server connections with
+  // TLS handshaker.
+  QuicArenaScopedPtr<QuicAlarm> discard_zero_rtt_decryption_keys_alarm_;
   // Neither visitor is owned by this class.
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitor* debug_visitor_;
@@ -1831,8 +1980,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Buffer outstanding PATH_CHALLENGEs if socket write is blocked, future
   // OnCanWrite will attempt to respond with PATH_RESPONSEs using the retained
   // payload and peer addresses.
-  QuicCircularDeque<std::pair<QuicPathFrameBuffer, QuicSocketAddress>>
-      pending_path_challenge_payloads_;
+  QuicCircularDeque<PendingPathChallenge> pending_path_challenge_payloads_;
 
   // Set of connection IDs that should be accepted as destination on
   // received packets. This is conceptually a set but is implemented as a
@@ -1848,23 +1996,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // After we receive a RETRY packet, |retry_source_connection_id_| contains
   // the source connection ID from that packet.
   absl::optional<QuicConnectionId> retry_source_connection_id_;
-
-  // Indicates whether received RETRY packets should be dropped.
-  bool drop_incoming_retry_packets_;
-
-  // Bytes received before address validation. Only used when
-  // EnforceAntiAmplificationLimit returns true.
-  size_t bytes_received_before_address_validation_;
-
-  // Bytes sent before address validation. Only used when
-  // EnforceAntiAmplificationLimit returns true.
-  size_t bytes_sent_before_address_validation_;
-
-  // True if peer address has been validated. Address is considered validated
-  // when 1) an address token is received and validated, or 2) a HANDSHAKE
-  // packet has been successfully processed. Only used when
-  // EnforceAntiAmplificationLimit returns true.
-  bool address_validated_;
 
   // Used to store content of packets which cannot be sent because of write
   // blocked. Packets' encrypted buffers are copied and owned by
@@ -1884,9 +2015,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicIdleNetworkDetector idle_network_detector_;
 
   bool blackhole_detection_disabled_ = false;
-
-  // True if this connection supports handshake done frame.
-  bool support_handshake_done_;
 
   const bool default_enable_5rto_blackhole_detection_ =
       GetQuicReloadableFlag(quic_default_enable_5rto_blackhole_detection2);
@@ -1912,6 +2040,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // --gfe2_reloadable_flag_quic_start_peer_migration_earlier.
   bool send_path_response_ = start_peer_migration_earlier_ &&
                              GetQuicReloadableFlag(quic_send_path_response);
+
+  bool use_path_validator_ =
+      send_path_response_ &&
+      GetQuicReloadableFlag(quic_pass_path_response_to_validator);
+
   // True if AckFrequencyFrame is supported.
   bool can_receive_ack_frequency_frame_ = false;
 
@@ -1929,18 +2062,44 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Indicate whether AckFrequency frame has been sent.
   bool ack_frequency_sent_ = false;
 
-  const bool fix_missing_initial_keys_ =
-      GetQuicReloadableFlag(quic_fix_missing_initial_keys2);
+  // True if a 0-RTT decrypter was or is installed at some point in the
+  // connection's lifetime.
+  bool had_zero_rtt_decrypter_ = false;
 
-  const bool fix_out_of_order_sending_ =
-      GetQuicReloadableFlag(quic_fix_out_of_order_sending2);
-
-  const bool check_keys_before_writing_ =
-      GetQuicReloadableFlag(quic_check_keys_before_writing);
+  // True after the first 1-RTT packet has successfully decrypted.
+  bool have_decrypted_first_one_rtt_packet_ = false;
 
   const bool encrypted_control_frames_;
 
   const bool use_encryption_level_context_;
+
+  QuicPathValidator path_validator_;
+
+  // Stores information of a path which maybe used as default path in the
+  // future. On the client side, it gets created when the client starts
+  // validating a new path and gets cleared once it becomes the default path or
+  // the path validation fails or replaced by a newer path of interest. On the
+  // server side, alternative_path gets created when server: 1) receives
+  // PATH_CHALLENGE on non-default path, or 2) switches to a not yet validated
+  // default path such that it needs to store the previous validated default
+  // path.
+  // Note that if alternative_path_ stores a validated path information (case
+  // 2), do not override it on receiving PATH_CHALLENGE (case 1).
+  PathState alternative_path_;
+
+  // This field is used to debug b/177312785.
+  QuicFrameType most_recent_frame_type_;
+
+  bool current_incoming_packet_received_bytes_counted_ = false;
+
+  bool count_bytes_on_alternative_path_separately_ =
+      GetQuicReloadableFlag(quic_count_bytes_on_alternative_path_seperately);
+
+  bool update_packet_content_returns_connected_ =
+      GetQuicReloadableFlag(quic_update_packet_content_returns_connected);
+
+  // If true, upon seeing a new client address, validate the client address.
+  const bool validate_client_addresses_;
 };
 
 }  // namespace quic

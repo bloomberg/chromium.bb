@@ -13,6 +13,9 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/power_scheduler/power_mode.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
+#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -22,6 +25,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_reference.h"
+#include "components/viz/service/transitions/surface_animation_manager.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace viz {
@@ -58,7 +62,10 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       frame_sink_id_(frame_sink_id),
       surface_resource_holder_(this),
       is_root_(is_root),
-      allow_copy_output_requests_(is_root) {
+      allow_copy_output_requests_(is_root),
+      animation_power_mode_voter_(
+          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
+              "PowerModeVoter.Animation")) {
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }
@@ -139,6 +146,32 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
 
   pending_surfaces_.erase(surface);
   if (pending_surfaces_.empty())
+    UpdateNeedsBeginFramesInternal();
+
+  // Let the animation manager process any new directives on the surface.
+  // TODO(vmpstr): Figure out if `last_frame_time_` is correct here.
+  // SurfaceAcitvation may have happened some time after we sent the last
+  // BeginFrame to the client (which is when the frame time is updated). We may
+  // need to keep track of a separate time that updates when OnBeginFrame
+  // happens whether or not it is sent to the client.
+  bool started_animation =
+      surface_animation_manager_.ProcessTransitionDirectives(
+          last_frame_time_,
+          surface->GetActiveFrameMetadata().transition_directives,
+          surface->GetSurfaceSavedFrameStorage());
+  // If processing the new directives caused us to start an animation, then
+  // interpoate the frame immediately. This is needed since if we wait until the
+  // next BeginFrame to do the first interpolation, then we maybe have already
+  // drawn this destination frame.
+  if (started_animation)
+    surface_animation_manager_.InterpolateFrame(surface);
+
+  // The above call can cause us to start an animation, meaning we need begin
+  // frames. If that's the case, make sure to update the begin frame
+  // observation.
+  // TODO(vmpstr): Note that if we need to produce an interpolation to the
+  // latest frame, then this is where we would do that.
+  if (surface_animation_manager_.NeedsBeginFrame())
     UpdateNeedsBeginFramesInternal();
 
   if (surface->surface_id() == last_activated_surface_id_)
@@ -230,11 +263,13 @@ void CompositorFrameSinkSupport::OnSurfacePresented(
 
 void CompositorFrameSinkSupport::RefResources(
     const std::vector<TransferableResource>& resources) {
+  surface_animation_manager_.RefResources(resources);
   surface_resource_holder_.RefResources(resources);
 }
 
 void CompositorFrameSinkSupport::UnrefResources(
     const std::vector<ReturnedResource>& resources) {
+  surface_animation_manager_.UnrefResources(resources);
   surface_resource_holder_.UnrefResources(resources);
 }
 
@@ -256,16 +291,17 @@ void CompositorFrameSinkSupport::ReceiveFromChild(
   surface_resource_holder_.ReceiveFromChild(resources);
 }
 
-std::vector<std::unique_ptr<CopyOutputRequest>>
+std::vector<PendingCopyOutputRequest>
 CompositorFrameSinkSupport::TakeCopyOutputRequests(
     const LocalSurfaceId& latest_local_id) {
-  std::vector<std::unique_ptr<CopyOutputRequest>> results;
+  std::vector<PendingCopyOutputRequest> results;
   for (auto it = copy_output_requests_.begin();
        it != copy_output_requests_.end();) {
     // Requests with a non-valid local id should be satisfied as soon as
     // possible.
-    if (!it->first.is_valid() || it->first <= latest_local_id) {
-      results.push_back(std::move(it->second));
+    if (!it->local_surface_id.is_valid() ||
+        it->local_surface_id <= latest_local_id) {
+      results.push_back(std::move(*it));
       it = copy_output_requests_.erase(it);
     } else {
       ++it;
@@ -703,6 +739,25 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     frame_timing_details_.clear();
     UpdateNeedsBeginFramesInternal();
   }
+
+  // Notify surface animation manager if it needs a begin frame.
+  if (surface_animation_manager_.NeedsBeginFrame()) {
+    surface_animation_manager_.NotifyFrameAdvanced(args.frame_time);
+
+    // Interpolate the frame here, since it is a reliable spot during the
+    // animation.
+    if (surface_animation_manager_.NeedsBeginFrame()) {
+      if (last_activated_surface_id_.is_valid()) {
+        auto* surface =
+            surface_manager_->GetSurfaceForId(last_activated_surface_id_);
+        surface_animation_manager_.InterpolateFrame(surface);
+      }
+    } else {
+      // If notifying causes us to stop needing frames, then update needs begin
+      // frames, in case we no longer are interested in receiving begin frames.
+      UpdateNeedsBeginFramesInternal();
+    }
+  }
 }
 
 const BeginFrameArgs& CompositorFrameSinkSupport::LastUsedBeginFrameArgs()
@@ -724,16 +779,22 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
   bool needs_begin_frame =
       client_needs_begin_frame_ || !frame_timing_details_.empty() ||
       !pending_surfaces_.empty() ||
-      (compositor_frame_callback_ && !callback_received_begin_frame_);
+      (compositor_frame_callback_ && !callback_received_begin_frame_) ||
+      surface_animation_manager_.NeedsBeginFrame();
 
   if (needs_begin_frame == added_frame_observer_)
     return;
 
   added_frame_observer_ = needs_begin_frame;
-  if (needs_begin_frame)
+  if (needs_begin_frame) {
     begin_frame_source_->AddObserver(this);
-  else
+    animation_power_mode_voter_->VoteFor(
+        power_scheduler::PowerMode::kAnimation);
+  } else {
     begin_frame_source_->RemoveObserver(this);
+    animation_power_mode_voter_->ResetVoteAfterTimeout(
+        power_scheduler::PowerModeVoter::kAnimationTimeout);
+  }
 }
 
 void CompositorFrameSinkSupport::AttachCaptureClient(
@@ -765,10 +826,8 @@ gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {
 }
 
 void CompositorFrameSinkSupport::RequestCopyOfOutput(
-    const LocalSurfaceId& local_surface_id,
-    std::unique_ptr<CopyOutputRequest> copy_request) {
-  copy_output_requests_.push_back(
-      std::make_pair(local_surface_id, std::move(copy_request)));
+    PendingCopyOutputRequest pending_copy_output_request) {
+  copy_output_requests_.push_back(std::move(pending_copy_output_request));
   if (last_activated_surface_id_.is_valid()) {
     BeginFrameAck ack;
     ack.has_damage = true;
@@ -783,7 +842,7 @@ CompositorFrameSinkSupport::GetLastActivatedFrameMetadata() {
   Surface* surface =
       surface_manager_->GetSurfaceForId(last_activated_surface_id_);
   DCHECK(surface);
-  return &surface->GetActiveFrame().metadata;
+  return &surface->GetActiveFrameMetadata();
 }
 
 HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {

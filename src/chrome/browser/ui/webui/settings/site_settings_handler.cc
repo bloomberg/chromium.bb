@@ -11,18 +11,18 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -56,6 +56,7 @@
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -64,12 +65,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -234,8 +235,8 @@ void ConvertSiteGroupMapToListValue(
   DCHECK(profile);
   base::flat_set<std::string> installed_origins =
       GetInstalledAppOrigins(profile, registrar);
-  SiteEngagementService* engagement_service =
-      SiteEngagementService::Get(profile);
+  site_engagement::SiteEngagementService* engagement_service =
+      site_engagement::SiteEngagementService::Get(profile);
   for (const auto& entry : site_group_map) {
     // eTLD+1 is the effective top level domain + 1.
     base::Value site_group(base::Value::Type::DICTIONARY);
@@ -313,7 +314,7 @@ bool IsPatternValidForType(const std::string& pattern_string,
   // return false with a string saying why.
   GURL url(pattern_string);
   if (url.is_valid() && map->IsRestrictedToSecureOrigins(content_type) &&
-      !blink::network_utils::IsOriginSecure(url)) {
+      !network::IsUrlPotentiallyTrustworthy(url)) {
     *out_error = l10n_util::GetStringUTF8(
         IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE);
     return false;
@@ -520,33 +521,33 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
   // If the block autoplay pref changes send the new status.
   pref_change_registrar_->Add(
       prefs::kBlockAutoplayEnabled,
-      base::Bind(&SiteSettingsHandler::SendBlockAutoplayStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::SendBlockAutoplayStatus,
+                          base::Unretained(this)));
 
   // Listen for prefs that impact the effective cookie setting
   pref_change_registrar_->Add(
       prefs::kCookieControlsMode,
-      base::Bind(&SiteSettingsHandler::SendCookieSettingDescription,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::SendCookieSettingDescription,
+                          base::Unretained(this)));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   pref_change_registrar_->Add(
       prefs::kEnableDRM,
-      base::Bind(&SiteSettingsHandler::OnPrefEnableDrmChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::OnPrefEnableDrmChanged,
+                          base::Unretained(this)));
 #endif
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
-  observer_.RemoveAll();
-  chooser_observer_.RemoveAll();
-  host_zoom_map_subscription_.reset();
+  observations_.RemoveAllObservations();
+  chooser_observations_.RemoveAllObservations();
+  host_zoom_map_subscription_ = {};
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
   pref_change_registrar_->Remove(prefs::kCookieControlsMode);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   pref_change_registrar_->Remove(prefs::kEnableDRM);
 #endif
-  observed_profiles_.RemoveAll();
+  observed_profiles_.RemoveAllObservations();
 }
 
 void SiteSettingsHandler::OnGetUsageInfo() {
@@ -573,7 +574,7 @@ void SiteSettingsHandler::OnGetUsageInfo() {
                     base::Value(usage_string), base::Value(cookie_string));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void SiteSettingsHandler::OnPrefEnableDrmChanged() {
   FireWebUIListener("prefEnableDrmChanged");
 }
@@ -692,7 +693,7 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
       site_settings::ContentSettingsTypeFromGroupName(content_type);
 
   Profile* profile = profile_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS special case: in Guest mode, settings are opened in Incognito
   // mode so we need the original profile to actually modify settings.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
@@ -1435,58 +1436,58 @@ void SiteSettingsHandler::EnsureCookiesTreeModelCreated() {
 
 void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
-  if (!observer_.IsObserving(map))
-    observer_.Add(map);
+  if (!observations_.IsObservingSource(map))
+    observations_.AddObservation(map);
 
   auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
-  if (!chooser_observer_.IsObserving(usb_context))
-    chooser_observer_.Add(usb_context);
+  if (!chooser_observations_.IsObservingSource(usb_context))
+    chooser_observations_.AddObservation(usb_context);
 
   auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
-  if (!chooser_observer_.IsObserving(serial_context))
-    chooser_observer_.Add(serial_context);
+  if (!chooser_observations_.IsObservingSource(serial_context))
+    chooser_observations_.AddObservation(serial_context);
 
   auto* hid_context = HidChooserContextFactory::GetForProfile(profile);
-  if (!chooser_observer_.IsObserving(hid_context))
-    chooser_observer_.Add(hid_context);
+  if (!chooser_observations_.IsObservingSource(hid_context))
+    chooser_observations_.AddObservation(hid_context);
 
   if (base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     auto* bluetooth_context =
         BluetoothChooserContextFactory::GetForProfile(profile);
-    if (!chooser_observer_.IsObserving(bluetooth_context))
-      chooser_observer_.Add(bluetooth_context);
+    if (!chooser_observations_.IsObservingSource(bluetooth_context))
+      chooser_observations_.AddObservation(bluetooth_context);
   }
 
-  observed_profiles_.Add(profile);
+  observed_profiles_.AddObservation(profile);
 }
 
 void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
-  if (observer_.IsObserving(map))
-    observer_.Remove(map);
+  if (observations_.IsObservingSource(map))
+    observations_.RemoveObservation(map);
 
   auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
-  if (chooser_observer_.IsObserving(usb_context))
-    chooser_observer_.Remove(usb_context);
+  if (chooser_observations_.IsObservingSource(usb_context))
+    chooser_observations_.RemoveObservation(usb_context);
 
   auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
-  if (chooser_observer_.IsObserving(serial_context))
-    chooser_observer_.Remove(serial_context);
+  if (chooser_observations_.IsObservingSource(serial_context))
+    chooser_observations_.RemoveObservation(serial_context);
 
   auto* hid_context = HidChooserContextFactory::GetForProfile(profile);
-  if (chooser_observer_.IsObserving(hid_context))
-    chooser_observer_.Remove(hid_context);
+  if (chooser_observations_.IsObservingSource(hid_context))
+    chooser_observations_.RemoveObservation(hid_context);
 
   if (base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     auto* bluetooth_context =
         BluetoothChooserContextFactory::GetForProfile(profile);
-    if (chooser_observer_.IsObserving(bluetooth_context))
-      chooser_observer_.Remove(bluetooth_context);
+    if (chooser_observations_.IsObservingSource(bluetooth_context))
+      chooser_observations_.RemoveObservation(bluetooth_context);
   }
 
-  observed_profiles_.Remove(profile);
+  observed_profiles_.RemoveObservation(profile);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,

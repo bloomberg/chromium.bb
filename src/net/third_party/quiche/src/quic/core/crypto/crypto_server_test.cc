@@ -14,26 +14,26 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
-#include "net/third_party/quiche/src/quic/core/crypto/cert_compressor.h"
-#include "net/third_party/quiche/src/quic/core/crypto/common_cert_set.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
-#include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/failing_proof_source.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_crypto_server_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/crypto/cert_compressor.h"
+#include "quic/core/crypto/common_cert_set.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_utils.h"
+#include "quic/core/crypto/proof_source.h"
+#include "quic/core/crypto/quic_crypto_server_config.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/proto/crypto_server_config_proto.h"
+#include "quic/core/quic_socket_address_coder.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/failing_proof_source.h"
+#include "quic/test_tools/mock_clock.h"
+#include "quic/test_tools/mock_random.h"
+#include "quic/test_tools/quic_crypto_server_config_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 namespace test {
@@ -48,7 +48,7 @@ class DummyProofVerifierCallback : public ProofVerifierCallback {
   void Run(bool /*ok*/,
            const std::string& /*error_details*/,
            std::unique_ptr<ProofVerifyDetails>* /*details*/) override {
-    DCHECK(false);
+    QUICHE_DCHECK(false);
   }
 };
 
@@ -129,8 +129,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         config_.AddConfig(primary_config, clock_.WallNow()));
 
     absl::string_view orbit;
-    CHECK(msg->GetStringPiece(kORBT, &orbit));
-    CHECK_EQ(sizeof(orbit_), orbit.size());
+    QUICHE_CHECK(msg->GetStringPiece(kORBT, &orbit));
+    QUICHE_CHECK_EQ(sizeof(orbit_), orbit.size());
     memcpy(orbit_, orbit.data(), orbit.size());
 
     char public_value[32];
@@ -171,7 +171,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
 
     signed_config_ = QuicReferenceCountedPointer<QuicSignedServerConfig>(
         new QuicSignedServerConfig());
-    DCHECK(signed_config_->chain.get() == nullptr);
+    QUICHE_DCHECK(signed_config_->chain.get() == nullptr);
   }
 
   // Helper used to accept the result of ValidateClientHello and pass
@@ -454,7 +454,7 @@ TEST_P(CryptoServerTest, RejectTooLarge) {
 
 TEST_P(CryptoServerTest, RejectNotTooLarge) {
   // When the CHLO packet is large enough, ensure that a full REJ is sent.
-  chlo_packet_size_ *= 2;
+  chlo_packet_size_ *= 5;
 
   CryptoHandshakeMessage msg =
       crypto_test_utils::CreateCHLO({{"PDMD", "X509"},

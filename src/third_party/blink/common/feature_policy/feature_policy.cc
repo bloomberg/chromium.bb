@@ -4,10 +4,10 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
@@ -16,17 +16,16 @@ namespace blink {
 namespace {
 
 // Extracts an Allowlist from a ParsedFeaturePolicyDeclaration.
-std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
+FeaturePolicy::Allowlist AllowlistFromDeclaration(
     const ParsedFeaturePolicyDeclaration& parsed_declaration,
     const FeaturePolicyFeatureList& feature_list) {
-  std::unique_ptr<FeaturePolicy::Allowlist> result =
-      base::WrapUnique(new FeaturePolicy::Allowlist());
+  auto result = FeaturePolicy::Allowlist();
   if (parsed_declaration.matches_all_origins)
-    result->AddAll();
+    result.AddAll();
   if (parsed_declaration.matches_opaque_src)
-    result->AddOpaqueSrc();
+    result.AddOpaqueSrc();
   for (const auto& value : parsed_declaration.allowed_origins)
-    result->Add(value);
+    result.Add(value);
 
   return result;
 }
@@ -111,13 +110,24 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
 }
 
 // static
-std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateWithOpenerPolicy(
-    const FeaturePolicyFeatureState& inherited_policies,
-    const url::Origin& origin) {
+std::unique_ptr<FeaturePolicy> FeaturePolicy::CopyStateFrom(
+    const FeaturePolicy* source) {
+  if (!source)
+    return nullptr;
+
   std::unique_ptr<FeaturePolicy> new_policy = base::WrapUnique(
-      new FeaturePolicy(origin, GetFeaturePolicyFeatureList()));
-  new_policy->inherited_policies_ = inherited_policies;
+      new FeaturePolicy(source->origin_, GetFeaturePolicyFeatureList()));
+
+  new_policy->inherited_policies_ = source->inherited_policies_;
+  new_policy->allowlists_ = source->allowlists_;
+
   return new_policy;
+}
+
+bool FeaturePolicy::IsFeatureEnabledByInheritedPolicy(
+    mojom::FeaturePolicyFeature feature) const {
+  DCHECK(base::Contains(inherited_policies_, feature));
+  return inherited_policies_.at(feature);
 }
 
 bool FeaturePolicy::IsFeatureEnabled(
@@ -134,7 +144,7 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end()) {
-    return inherited_value && allowlist->second->Contains(origin);
+    return inherited_value && allowlist->second.Contains(origin);
   }
 
   // If no "allowlist" is specified, return default feature value.
@@ -155,12 +165,34 @@ bool FeaturePolicy::GetFeatureValueForOrigin(
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end()) {
-    return inherited_value && allowlist->second->Contains(origin);
+    return inherited_value && allowlist->second.Contains(origin);
   }
 
   return inherited_value;
 }
 
+const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForDevTools(
+    mojom::FeaturePolicyFeature feature) const {
+  // Return an empty allowlist when disabled through inheritance.
+  if (!IsFeatureEnabledByInheritedPolicy(feature))
+    return FeaturePolicy::Allowlist();
+
+  // Return defined policy if exists; otherwise return default policy.
+  auto allowlist = allowlists_.find(feature);
+  if (allowlist != allowlists_.end())
+    return allowlist->second;
+
+  // Note: |allowlists_| purely comes from HTTP header. If a feature is not
+  // declared in HTTP header, all origins are implicitly allowed.
+  FeaturePolicy::Allowlist default_allowlist;
+  default_allowlist.AddAll();
+
+  return default_allowlist;
+}
+
+// TODO(crbug.com/937131): Use |FeaturePolicy::GetAllowlistForDevTools|
+// to replace this method. This method uses legacy |default_allowlist|
+// calculation method.
 const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
     mojom::FeaturePolicyFeature feature) const {
   DCHECK(base::Contains(feature_list_, feature));
@@ -172,7 +204,7 @@ const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
   // Return defined policy if exists; otherwise return default policy.
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end())
-    return FeaturePolicy::Allowlist(*(allowlist->second));
+    return allowlist->second;
 
   const FeaturePolicyFeatureDefault default_policy = feature_list_.at(feature);
   FeaturePolicy::Allowlist default_allowlist;
@@ -192,8 +224,8 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
        parsed_header) {
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
     DCHECK(feature != mojom::FeaturePolicyFeature::kNotFound);
-    allowlists_[feature] =
-        AllowlistFromDeclaration(parsed_declaration, feature_list_);
+    allowlists_.emplace(
+        feature, AllowlistFromDeclaration(parsed_declaration, feature_list_));
   }
 }
 
@@ -259,7 +291,7 @@ bool FeaturePolicy::InheritedValueForFeature(
       // 9.8 5.1: If the allowlist for feature in container policy matches
       // origin, return "Enabled".
       // 9.8 5.2: Otherwise return "Disabled".
-      return AllowlistFromDeclaration(decl, feature_list_)->Contains(origin_);
+      return AllowlistFromDeclaration(decl, feature_list_).Contains(origin_);
     }
   }
   // 9.8 6: If feature’s default allowlist is *, return "Enabled".
@@ -274,49 +306,6 @@ bool FeaturePolicy::InheritedValueForFeature(
 
 const FeaturePolicyFeatureList& FeaturePolicy::GetFeatureList() const {
   return feature_list_;
-}
-
-// static
-mojom::FeaturePolicyFeature FeaturePolicy::FeatureForSandboxFlag(
-    network::mojom::WebSandboxFlags flag) {
-  switch (flag) {
-    case network::mojom::WebSandboxFlags::kAll:
-      NOTREACHED();
-      break;
-    case network::mojom::WebSandboxFlags::kTopNavigation:
-      return mojom::FeaturePolicyFeature::kTopNavigation;
-    case network::mojom::WebSandboxFlags::kForms:
-      return mojom::FeaturePolicyFeature::kFormSubmission;
-    case network::mojom::WebSandboxFlags::kAutomaticFeatures:
-    case network::mojom::WebSandboxFlags::kScripts:
-      return mojom::FeaturePolicyFeature::kScript;
-    case network::mojom::WebSandboxFlags::kPopups:
-      return mojom::FeaturePolicyFeature::kPopups;
-    case network::mojom::WebSandboxFlags::kPointerLock:
-      return mojom::FeaturePolicyFeature::kPointerLock;
-    case network::mojom::WebSandboxFlags::kOrientationLock:
-      return mojom::FeaturePolicyFeature::kOrientationLock;
-    case network::mojom::WebSandboxFlags::kModals:
-      return mojom::FeaturePolicyFeature::kModals;
-    case network::mojom::WebSandboxFlags::kPresentationController:
-      return mojom::FeaturePolicyFeature::kPresentation;
-    case network::mojom::WebSandboxFlags::kDownloads:
-      return mojom::FeaturePolicyFeature::kDownloads;
-    // Other flags fall through to the bitmask test below. They are named
-    // specifically here so that authors introducing new flags must consider
-    // this method when adding them.
-    case network::mojom::WebSandboxFlags::kDocumentDomain:
-    case network::mojom::WebSandboxFlags::kNavigation:
-    case network::mojom::WebSandboxFlags::kNone:
-    case network::mojom::WebSandboxFlags::kOrigin:
-    case network::mojom::WebSandboxFlags::kPlugins:
-    case network::mojom::WebSandboxFlags::
-        kPropagatesToAuxiliaryBrowsingContexts:
-    case network::mojom::WebSandboxFlags::kTopNavigationByUserActivation:
-    case network::mojom::WebSandboxFlags::kStorageAccessByUserActivation:
-      break;
-  }
-  return mojom::FeaturePolicyFeature::kNotFound;
 }
 
 }  // namespace blink

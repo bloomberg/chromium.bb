@@ -8,7 +8,7 @@
 # License 1.0 was not distributed with this source code in the PATENTS file, you
 # can obtain it at www.aomedia.org/license/patent.
 #
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -35,7 +35,7 @@ endif()
 # Updating version info.
 # https://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
 set(SO_VERSION 2)
-set(SO_FILE_VERSION 2.0.0)
+set(SO_FILE_VERSION 2.0.2)
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
@@ -104,7 +104,8 @@ list(APPEND AOM_LIBYUV_SOURCES
             "${AOM_ROOT}/third_party/libyuv/source/scale_mips.cc"
             "${AOM_ROOT}/third_party/libyuv/source/scale_neon.cc"
             "${AOM_ROOT}/third_party/libyuv/source/scale_neon64.cc"
-            "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc")
+            "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc"
+            "${AOM_ROOT}/third_party/libyuv/source/scale_uv.cc")
 
 list(APPEND AOM_SOURCES
             "${AOM_CONFIG_DIR}/config/aom_config.c"
@@ -127,6 +128,10 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/src/aom_integer.c")
 
 list(APPEND AOM_COMMON_APP_UTIL_SOURCES
+            "${AOM_ROOT}/av1/arg_defs.h"
+            "${AOM_ROOT}/av1/arg_defs.c"
+            "${AOM_ROOT}/common/args_helper.c"
+            "${AOM_ROOT}/common/args_helper.h"
             "${AOM_ROOT}/common/args.c"
             "${AOM_ROOT}/common/args.h"
             "${AOM_ROOT}/common/av1_config.c"
@@ -749,6 +754,10 @@ foreach(var ${all_cmake_vars})
   endif()
 endforeach()
 
+if(NOT CONFIG_AV1_DECODER)
+  list(FILTER aom_source_vars EXCLUDE REGEX "_DECODER_")
+endif()
+
 # Libaom_srcs.txt generation.
 set(libaom_srcs_txt_file "${AOM_CONFIG_DIR}/libaom_srcs.txt")
 file(WRITE "${libaom_srcs_txt_file}" "# This file is generated. DO NOT EDIT.\n")
@@ -758,6 +767,9 @@ foreach(aom_source_var ${aom_source_vars})
   foreach(file ${${aom_source_var}})
     if(NOT "${file}" MATCHES "${AOM_CONFIG_DIR}")
       string(REPLACE "${AOM_ROOT}/" "" file "${file}")
+      if(NOT CONFIG_AV1_DECODER AND "${file}" MATCHES "aom_decoder")
+        continue()
+      endif()
       file(APPEND "${libaom_srcs_txt_file}" "${file}\n")
     endif()
   endforeach()
@@ -788,6 +800,9 @@ foreach(aom_source_var ${aom_source_vars})
     if(NOT "${file}" MATCHES "${AOM_CONFIG_DIR}")
       string(REPLACE "${AOM_ROOT}" "//third_party/libaom/source/libaom" file
                      "${file}")
+      if(NOT CONFIG_AV1_DECODER AND "${file}" MATCHES "aom_decoder")
+        continue()
+      endif()
       file(APPEND "${libaom_srcs_gni_file}" "  \"${file}\",\n")
     endif()
   endforeach()

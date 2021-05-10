@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
+#include "quic/core/crypto/tls_server_connection.h"
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/crypto/proof_source.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -21,7 +22,7 @@ bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx(
   bssl::UniquePtr<SSL_CTX> ssl_ctx =
       TlsConnection::CreateSslCtx(SSL_VERIFY_NONE);
   SSL_CTX_set_tlsext_servername_callback(ssl_ctx.get(),
-                                         &SelectCertificateCallback);
+                                         &TlsExtServernameCallback);
   SSL_CTX_set_alpn_select_cb(ssl_ctx.get(), &SelectAlpnCallback, nullptr);
   // We don't actually need the TicketCrypter here, but we need to know
   // whether it's set.
@@ -39,6 +40,12 @@ bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx(
       (proof_source->GetTicketCrypter() ||
        GetQuicRestartFlag(quic_session_tickets_always_enabled))) {
     SSL_CTX_set_early_data_enabled(ssl_ctx.get(), 1);
+  }
+  SSL_CTX_set_select_certificate_cb(
+      ssl_ctx.get(), &TlsServerConnection::EarlySelectCertCallback);
+  if (GetQuicRestartFlag(quic_tls_prefer_server_cipher_and_curve_list)) {
+    QUIC_RESTART_FLAG_COUNT(quic_tls_prefer_server_cipher_and_curve_list);
+    SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
   }
   return ssl_ctx;
 }
@@ -62,10 +69,17 @@ TlsServerConnection* TlsServerConnection::ConnectionFromSsl(SSL* ssl) {
 }
 
 // static
-int TlsServerConnection::SelectCertificateCallback(SSL* ssl,
-                                                   int* out_alert,
-                                                   void* /*arg*/) {
-  return ConnectionFromSsl(ssl)->delegate_->SelectCertificate(out_alert);
+ssl_select_cert_result_t TlsServerConnection::EarlySelectCertCallback(
+    const SSL_CLIENT_HELLO* client_hello) {
+  return ConnectionFromSsl(client_hello->ssl)
+      ->delegate_->EarlySelectCertCallback(client_hello);
+}
+
+// static
+int TlsServerConnection::TlsExtServernameCallback(SSL* ssl,
+                                                  int* out_alert,
+                                                  void* /*arg*/) {
+  return ConnectionFromSsl(ssl)->delegate_->TlsExtServernameCallback(out_alert);
 }
 
 // static

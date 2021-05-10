@@ -31,7 +31,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
-#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_strike_database.h"
@@ -51,7 +50,6 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -132,6 +130,7 @@ class CreditCardSaveManagerTest : public testing::Test {
     personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
                         /*pref_service=*/autofill_client_.GetPrefs(),
+                        /*local_state=*/autofill_client_.GetPrefs(),
                         /*identity_manager=*/nullptr,
                         /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
@@ -175,7 +174,7 @@ class CreditCardSaveManagerTest : public testing::Test {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+    autofill_manager_->OnFormsSeen(forms);
   }
 
   void FormSubmitted(const FormData& form) {
@@ -349,8 +348,6 @@ class CreditCardSaveManagerTest : public testing::Test {
   MockPersonalDataManager personal_data_;
   MockAutocompleteHistoryManager autocomplete_history_manager_;
   syncer::TestSyncService sync_service_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestPatternProvider test_pattern_provider_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   TestCreditCardSaveManager* credit_card_save_manager_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
@@ -517,7 +514,6 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
   EXPECT_EQ(1U, personal_data_.GetProfiles().size());
   AutofillProfile only_country;
   only_country.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"), "en-US");
-  only_country.FinalizeAfterImport();
   EXPECT_EQ(1U, payments_client_->addresses_in_upload_details().size());
   // AutofillProfile::Compare will ignore the difference in guid between our
   // actual profile being sent and the expected one constructed here.
@@ -2961,9 +2957,8 @@ TEST_F(CreditCardSaveManagerTest,
   // iOS should always provide a valid expiration date when attempting to
   // upload a Saved Card due to the Messages SaveCard modal. The manager
   // shouldn't handle expired dates.
-  if ((base::FeatureList::IsEnabled(
-           features::kAutofillSaveCardInfobarEditSupport) &&
-       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardInfobarEditSupport)) {
     return;
   }
 #endif
@@ -3013,9 +3008,8 @@ TEST_F(CreditCardSaveManagerTest,
   // iOS should always provide a valid expiration date when attempting to
   // upload a Saved Card due to the Messages SaveCard modal. The manager
   // shouldn't handle expired dates.
-  if ((base::FeatureList::IsEnabled(
-           features::kAutofillSaveCardInfobarEditSupport) &&
-       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardInfobarEditSupport)) {
     return;
   }
 #endif
@@ -3065,9 +3059,8 @@ TEST_F(CreditCardSaveManagerTest,
   // iOS should always provide a valid expiration date when attempting to
   // upload a Saved Card due to the Messages SaveCard modal. The manager
   // shouldn't handle expired dates.
-  if ((base::FeatureList::IsEnabled(
-           features::kAutofillSaveCardInfobarEditSupport) &&
-       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardInfobarEditSupport)) {
     return;
   }
 #endif
@@ -3117,9 +3110,8 @@ TEST_F(CreditCardSaveManagerTest,
   // iOS should always provide a valid expiration date when attempting to
   // upload a Saved Card due to the Messages SaveCard modal. The manager
   // shouldn't handle expired dates.
-  if ((base::FeatureList::IsEnabled(
-           features::kAutofillSaveCardInfobarEditSupport) &&
-       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardInfobarEditSupport)) {
     return;
   }
 #endif
@@ -3170,9 +3162,8 @@ TEST_F(
   // iOS should always provide a valid expiration date when attempting to
   // upload a Saved Card due to the Messages SaveCard modal. The manager
   // shouldn't handle expired dates.
-  if ((base::FeatureList::IsEnabled(
-           features::kAutofillSaveCardInfobarEditSupport) &&
-       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardInfobarEditSupport)) {
     return;
   }
 #endif

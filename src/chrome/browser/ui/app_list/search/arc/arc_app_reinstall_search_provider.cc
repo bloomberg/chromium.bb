@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/metrics/field_trial_params.h"
@@ -22,8 +24,6 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -265,9 +265,6 @@ void ArcAppReinstallSearchProvider::Start(const base::string16& query) {
   if (pref_service &&
       !pref_service->GetBoolean(chromeos::prefs::kSuggestedContentEnabled))
     should_show_arc_app_reinstall_result = false;
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kSuggestedContentToggle))
-    should_show_arc_app_reinstall_result = false;
 
   if (!should_show_arc_app_reinstall_result) {
     ClearResults();
@@ -393,9 +390,8 @@ void ArcAppReinstallSearchProvider::UpdateResults() {
         // this icon is not loaded, nor is it in the loading set. Add it.
         loading_icon_urls_[icon_url] = gfx::ImageSkia(
             std::make_unique<UrlIconSource>(
-                base::BindRepeating(
-                    &ArcAppReinstallSearchProvider::OnIconLoaded,
-                    weak_ptr_factory_.GetWeakPtr(), icon_url),
+                base::BindOnce(&ArcAppReinstallSearchProvider::OnIconLoaded,
+                               weak_ptr_factory_.GetWeakPtr(), icon_url),
                 profile_,
                 GURL(LimitIconSizeWithFife(icon_url, icon_dimension_)),
                 icon_dimension_, IDR_APP_DEFAULT_ICON),

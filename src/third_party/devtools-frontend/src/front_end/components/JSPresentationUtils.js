@@ -30,11 +30,37 @@
  */
 
 import * as Bindings from '../bindings/bindings.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
 
 import {Linkifier} from './Linkifier.js';
 
+export const UIStrings = {
+  /**
+  *@description Text to stop preventing the debugger from stepping into library code
+  */
+  removeFromIgnore: 'Remove from ignore list',
+  /**
+  *@description Text for scripts that should not be stepped into when debugging
+  */
+  addToIgnore: 'Add script to ignore list',
+  /**
+  *@description Show all link text content in JSPresentation Utils
+  */
+  showMoreFrame: 'Show 1 more frame',
+  /**
+  *@description Show all link text content in JSPresentation Utils
+  *@example {2} PH1
+  */
+  showSMoreFrames: 'Show {PH1} more frames',
+  /**
+   *@description Text indicating that source url of a link is currently unknown
+   */
+  unknownSource: 'unknown',
+};
+const str_ = i18n.i18n.registerUIStrings('components/JSPresentationUtils.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @param {?SDK.SDKModel.Target} target
  * @param {!Linkifier} linkifier
@@ -51,7 +77,7 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
   element.classList.add('monospace');
   element.style.display = 'inline-block';
   const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-      element, {cssFile: 'components/jsUtils.css', enableLegacyPatching: true, delegatesFocus: undefined});
+      element, {cssFile: 'components/jsUtils.css', enableLegacyPatching: false, delegatesFocus: undefined});
   const contentElement = shadowRoot.createChild('table', 'stack-preview-container');
   let totalHiddenCallFramesCount = 0;
   let totalCallFramesCount = 0;
@@ -71,20 +97,26 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
       row.createChild('td').textContent = '\n';
       row.createChild('td', 'function-name').textContent = UI.UIUtils.beautifyFunctionName(stackFrame.functionName);
       const link = linkifier.maybeLinkifyConsoleCallFrame(
-          target, stackFrame, {tabStop: !!tabStops, className: undefined, columnNumber: undefined});
+          target, stackFrame, {tabStop: Boolean(tabStops), className: undefined, columnNumber: undefined});
       if (link) {
         link.addEventListener('contextmenu', populateContextMenu.bind(null, link));
         const uiLocation = Linkifier.uiLocation(link);
         if (uiLocation &&
-            Bindings.BlackboxManager.BlackboxManager.instance().isBlackboxedUISourceCode(uiLocation.uiSourceCode)) {
+            Bindings.IgnoreListManager.IgnoreListManager.instance().isIgnoreListedUISourceCode(
+                uiLocation.uiSourceCode)) {
           shouldHide = true;
         }
         row.createChild('td').textContent = ' @ ';
         row.createChild('td').appendChild(link);
+        // Linkifier is using a workaround with the 'zero width space' (\u200b).
+        // TODO(szuend): Remove once the Linkfier is no longer using the workaround.
+        if (!link.textContent || link.textContent === '\u200b') {
+          link.textContent = i18nString(UIStrings.unknownSource);
+        }
         links.push(link);
       }
       if (shouldHide) {
-        row.classList.add('blackboxed');
+        row.classList.add('ignore-listed');
         ++hiddenCallFrames;
       }
       contentElement.appendChild(row);
@@ -102,15 +134,17 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
     event.consume(true);
     const uiLocation = Linkifier.uiLocation(link);
     if (uiLocation &&
-        Bindings.BlackboxManager.BlackboxManager.instance().canBlackboxUISourceCode(uiLocation.uiSourceCode)) {
-      if (Bindings.BlackboxManager.BlackboxManager.instance().isBlackboxedUISourceCode(uiLocation.uiSourceCode)) {
+        Bindings.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
+      if (Bindings.IgnoreListManager.IgnoreListManager.instance().isIgnoreListedUISourceCode(uiLocation.uiSourceCode)) {
         contextMenu.debugSection().appendItem(
-            ls`Stop blackboxing`,
-            () => Bindings.BlackboxManager.BlackboxManager.instance().unblackboxUISourceCode(uiLocation.uiSourceCode));
+            i18nString(UIStrings.removeFromIgnore),
+            () => Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(
+                uiLocation.uiSourceCode));
       } else {
         contextMenu.debugSection().appendItem(
-            ls`Blackbox script`,
-            () => Bindings.BlackboxManager.BlackboxManager.instance().blackboxUISourceCode(uiLocation.uiSourceCode));
+            i18nString(UIStrings.addToIgnore),
+            () => Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(
+                uiLocation.uiSourceCode));
       }
     }
     contextMenu.appendApplicableItems(event);
@@ -136,24 +170,24 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
     row.createChild('td');
     row.createChild('td');
     if (appendStackTrace(asyncStackTrace)) {
-      row.classList.add('blackboxed');
+      row.classList.add('ignore-listed');
     }
     asyncStackTrace = asyncStackTrace.parent;
   }
 
   if (totalHiddenCallFramesCount) {
-    const row = contentElement.createChild('tr', 'show-blackboxed-link');
+    const row = contentElement.createChild('tr', 'show-ignore-listed-link');
     row.createChild('td').textContent = '\n';
     const cell = /** @type {!HTMLTableCellElement} */ (row.createChild('td'));
     cell.colSpan = 4;
     const showAllLink = cell.createChild('span', 'link');
     if (totalHiddenCallFramesCount === 1) {
-      showAllLink.textContent = ls`Show 1 more frame`;
+      showAllLink.textContent = i18nString(UIStrings.showMoreFrame);
     } else {
-      showAllLink.textContent = ls`Show ${totalHiddenCallFramesCount} more frames`;
+      showAllLink.textContent = i18nString(UIStrings.showSMoreFrames, {PH1: totalHiddenCallFramesCount});
     }
     showAllLink.addEventListener('click', () => {
-      contentElement.classList.add('show-blackboxed');
+      contentElement.classList.add('show-ignore-listed');
       if (contentUpdated) {
         contentUpdated();
       }

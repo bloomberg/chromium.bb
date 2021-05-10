@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/drivefs_native_message_host.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/message_service.h"
@@ -64,7 +64,9 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
     DCHECK(client_);
 
     if (UseBidirectionalNativeMessaging()) {
-      drivefs_remote_->HandleMessageFromExtension(message);
+      if (drivefs_remote_) {
+        drivefs_remote_->HandleMessageFromExtension(message);
+      }
     } else {
       if (!drive_service_ || !drive_service_->GetDriveFsInterface()) {
         OnDriveFsResponse(FILE_ERROR_SERVICE_UNAVAILABLE, "");
@@ -98,7 +100,7 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
           std::move(extension_port));
     }
     receiver_.Bind(std::move(std::move(pending_receiver_)));
-    receiver_.set_disconnect_with_reason_handler(base::Bind(
+    receiver_.set_disconnect_with_reason_handler(base::BindOnce(
         &DriveFsNativeMessageHost::OnDisconnect, base::Unretained(this)));
   }
 

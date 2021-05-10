@@ -789,6 +789,52 @@ static int64_t get_pkt_pts(IDeckLinkVideoInputFrame *videoFrame,
     return pts;
 }
 
+int get_bmd_timecode(AVFormatContext *avctx, AVTimecode *tc, AVRational frame_rate, BMDTimecodeFormat tc_format, IDeckLinkVideoInputFrame *videoFrame)
+{
+    IDeckLinkTimecode *timecode;
+    int ret = AVERROR(ENOENT);
+#if BLACKMAGIC_DECKLINK_API_VERSION >= 0x0b000000
+    int hfr = (tc_format == bmdTimecodeRP188HighFrameRate);
+#else
+    int hfr = 0;
+#endif
+    if (videoFrame->GetTimecode(tc_format, &timecode) == S_OK) {
+        uint8_t hh, mm, ss, ff;
+        if (timecode->GetComponents(&hh, &mm, &ss, &ff) == S_OK) {
+            int flags = (timecode->GetFlags() & bmdTimecodeIsDropFrame) ? AV_TIMECODE_FLAG_DROPFRAME : 0;
+            if (!hfr && av_cmp_q(frame_rate, av_make_q(30, 1)) == 1)
+                ff = ff << 1 | !!(timecode->GetFlags() & bmdTimecodeFieldMark);
+            ret = av_timecode_init_from_components(tc, frame_rate, flags, hh, mm, ss, ff, avctx);
+        }
+        timecode->Release();
+    }
+    return ret;
+}
+
+int get_frame_timecode(AVFormatContext *avctx, decklink_ctx *ctx, AVTimecode *tc, IDeckLinkVideoInputFrame *videoFrame)
+{
+    AVRational frame_rate = ctx->video_st->r_frame_rate;
+    int ret;
+    /* 50/60 fps content has alternating VITC1 and VITC2 timecode (see SMPTE ST
+     * 12-2, section 7), so the native ordering of RP188Any (HFR, VITC1, LTC,
+     * VITC2) would not work because LTC might not contain the field flag.
+     * Therefore we query the types manually. */
+    if (ctx->tc_format == bmdTimecodeRP188Any && av_cmp_q(frame_rate, av_make_q(30, 1)) == 1) {
+#if BLACKMAGIC_DECKLINK_API_VERSION >= 0x0b000000
+       ret = get_bmd_timecode(avctx, tc, frame_rate, bmdTimecodeRP188HighFrameRate, videoFrame);
+       if (ret == AVERROR(ENOENT))
+#endif
+           ret = get_bmd_timecode(avctx, tc, frame_rate, bmdTimecodeRP188VITC1, videoFrame);
+       if (ret == AVERROR(ENOENT))
+           ret = get_bmd_timecode(avctx, tc, frame_rate, bmdTimecodeRP188VITC2, videoFrame);
+       if (ret == AVERROR(ENOENT))
+           ret = get_bmd_timecode(avctx, tc, frame_rate, bmdTimecodeRP188LTC, videoFrame);
+    } else {
+       ret = get_bmd_timecode(avctx, tc, frame_rate, ctx->tc_format, videoFrame);
+    }
+    return ret;
+}
+
 HRESULT decklink_input_callback::VideoInputFrameArrived(
     IDeckLinkVideoInputFrame *videoFrame, IDeckLinkAudioInputPacket *audioFrame)
 {
@@ -870,22 +916,16 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
 
             // Handle Timecode (if requested)
             if (ctx->tc_format) {
-                IDeckLinkTimecode *timecode;
-                if (videoFrame->GetTimecode(ctx->tc_format, &timecode) == S_OK) {
-                    const char *tc = NULL;
-                    DECKLINK_STR decklink_tc;
-                    if (timecode->GetString(&decklink_tc) == S_OK) {
-                        tc = DECKLINK_STRDUP(decklink_tc);
-                        DECKLINK_FREE(decklink_tc);
-                    }
-                    timecode->Release();
+                AVTimecode tcr;
+                if (get_frame_timecode(avctx, ctx, &tcr, videoFrame) >= 0) {
+                    char tcstr[AV_TIMECODE_STR_SIZE];
+                    const char *tc = av_timecode_make_string(&tcr, tcstr, 0);
                     if (tc) {
                         AVDictionary* metadata_dict = NULL;
                         int metadata_len;
                         uint8_t* packed_metadata;
-                        AVTimecode tcr;
 
-                        if (av_timecode_init_from_string(&tcr, ctx->video_st->r_frame_rate, tc, ctx) >= 0) {
+                        if (av_cmp_q(ctx->video_st->r_frame_rate, av_make_q(60, 1)) < 1) {
                             uint32_t tc_data = av_timecode_get_smpte_from_framenum(&tcr, 0);
                             int size = sizeof(uint32_t) * 4;
                             uint32_t *sd = (uint32_t *)av_packet_new_side_data(&pkt, AV_PKT_DATA_S12M_TIMECODE, size);
@@ -896,7 +936,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                             }
                         }
 
-                        if (av_dict_set(&metadata_dict, "timecode", tc, AV_DICT_DONT_STRDUP_VAL) >= 0) {
+                        if (av_dict_set(&metadata_dict, "timecode", tc, 0) >= 0) {
                             packed_metadata = av_packet_pack_dictionary(metadata_dict, &metadata_len);
                             av_dict_free(&metadata_dict);
                             if (packed_metadata) {
@@ -945,13 +985,13 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
 
             if (videoFrame->GetAncillaryData(&vanc) == S_OK) {
                 int i;
-                int64_t line_mask = 1;
                 BMDPixelFormat vanc_format = vanc->GetPixelFormat();
                 txt_buf[0] = 0x10;    // data_identifier - EBU_data
                 txt_buf++;
 #if CONFIG_LIBZVBI
                 if (ctx->bmd_mode == bmdModePAL && ctx->teletext_lines &&
                     (vanc_format == bmdFormat8BitYUV || vanc_format == bmdFormat10BitYUV)) {
+                    int64_t line_mask = 1;
                     av_assert0(videoFrame->GetWidth() == 720);
                     for (i = 6; i < 336; i++, line_mask <<= 1) {
                         uint8_t *buf;
@@ -1152,7 +1192,8 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     ctx->video_pts_source = cctx->video_pts_source;
     ctx->draw_bars = cctx->draw_bars;
     ctx->audio_depth = cctx->audio_depth;
-    ctx->raw_format = (BMDPixelFormat)cctx->raw_format;
+    if (cctx->raw_format > 0 && (unsigned int)cctx->raw_format < FF_ARRAY_ELEMS(decklink_raw_format_map))
+        ctx->raw_format = decklink_raw_format_map[cctx->raw_format];
     cctx->ctx = ctx;
 
     /* Check audio channel option for valid values: 2, 8 or 16 */
@@ -1178,7 +1219,6 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
 
     /* List available devices. */
     if (ctx->list_devices) {
-        av_log(avctx, AV_LOG_WARNING, "The -list_devices option is deprecated and will be removed. Please use ffmpeg -sources decklink instead.\n");
         ff_decklink_list_devices_legacy(avctx, 1, 0);
         return AVERROR_EXIT;
     }

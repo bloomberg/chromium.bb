@@ -308,6 +308,8 @@ class Mirror(object):
                            tempdir)
       if code:
         return False
+      # A quick validation that all references are valid.
+      self.RunGit(['for-each-ref'], cwd=tempdir)
     except Exception as e:
       self.print('Encountered error: %s' % str(e), file=sys.stderr)
       gclient_utils.rmtree(tempdir)
@@ -360,10 +362,11 @@ class Mirror(object):
       for fetchspec in config_fetchspecs.splitlines():
         self.fetch_specs.add(self.parse_fetch_spec(fetchspec))
     except subprocess.CalledProcessError:
-      logging.warn('Tried and failed to preserve remote.origin.fetch from the '
-                   'existing cache directory.  You may need to manually edit '
-                   '%s and "git cache fetch" again.'
-                   % os.path.join(self.mirror_path, 'config'))
+      logging.warning(
+          'Tried and failed to preserve remote.origin.fetch from the '
+          'existing cache directory.  You may need to manually edit '
+          '%s and "git cache fetch" again.' %
+          os.path.join(self.mirror_path, 'config'))
 
   def _ensure_bootstrapped(
       self, depth, bootstrap, reset_fetch_config, force=False):
@@ -381,7 +384,7 @@ class Mirror(object):
 
     if not should_bootstrap:
       if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
-        logging.warn(
+        logging.warning(
             'Shallow fetch requested, but repo cache already exists.')
       return
 
@@ -408,10 +411,10 @@ class Mirror(object):
         self.RunGit(['init', '--bare'], cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
-        logging.warn(
+        logging.warning(
             'Git cache has a lot of pack files (%d). Tried to re-bootstrap '
-            'but failed. Continuing with non-optimized repository.'
-            % len(pack_files))
+            'but failed. Continuing with non-optimized repository.' %
+            len(pack_files))
 
   def _fetch(self,
              rundir,
@@ -444,7 +447,7 @@ class Mirror(object):
       except subprocess.CalledProcessError:
         if spec == '+refs/heads/*:refs/heads/*':
           raise ClobberNeeded()  # Corrupted cache.
-        logging.warn('Fetch of %s failed' % spec)
+        logging.warning('Fetch of %s failed' % spec)
 
   def populate(self,
                depth=None,
@@ -475,10 +478,10 @@ class Mirror(object):
         self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
                     reset_fetch_config)
 
-  def update_bootstrap(self, prune=False, gc_aggressive=False):
+  def update_bootstrap(self, prune=False, gc_aggressive=False, branch='master'):
     # The folder is <git number>
     gen_number = subprocess.check_output(
-        [self.git_exe, 'number', 'master'],
+        [self.git_exe, 'number', branch],
         cwd=self.mirror_path).decode('utf-8', 'ignore').strip()
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
@@ -565,9 +568,9 @@ class Mirror(object):
       f = os.path.join(pack_dir, f)
       try:
         os.remove(f)
-        logging.warn('Deleted stale temporary pack file %s' % f)
+        logging.warning('Deleted stale temporary pack file %s' % f)
       except OSError:
-        logging.warn('Unable to delete temporary pack file %s' % f)
+        logging.warning('Unable to delete temporary pack file %s' % f)
 
 
 @subcommand.usage('[url of repo to check for caching]')
@@ -598,6 +601,8 @@ def CMDupdate_bootstrap(parser, args):
                     help='Run aggressive repacking of the repo.')
   parser.add_option('--prune', action='store_true',
                     help='Prune all other cached bundles of the same repo.')
+  parser.add_option('--branch', default='master',
+                    help='Branch to use for bootstrap. (Default \'master\')')
 
   populate_args = args[:]
   options, args = parser.parse_args(args)
@@ -612,7 +617,7 @@ def CMDupdate_bootstrap(parser, args):
   _, args2 = parser.parse_args(args)
   url = args2[0]
   mirror = Mirror(url)
-  mirror.update_bootstrap(options.prune, options.gc_aggressive)
+  mirror.update_bootstrap(options.prune, options.gc_aggressive, options.branch)
   return 0
 
 
@@ -770,7 +775,7 @@ class OptionParser(optparse.OptionParser):
       if global_cache_dir and (
           os.path.abspath(options.cache_dir) !=
           os.path.abspath(global_cache_dir)):
-        logging.warn('Overriding globally-configured cache directory.')
+        logging.warning('Overriding globally-configured cache directory.')
       Mirror.SetCachePath(options.cache_dir)
 
     return options, args

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_packet_reader.h"
+#include "quic/core/quic_packet_reader.h"
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_process_packet_interface.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_server_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_process_packet_interface.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_server_stats.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
 QuicPacketReader::QuicPacketReader()
     : read_buffers_(kNumPacketsPerReadMmsgCall),
       read_results_(kNumPacketsPerReadMmsgCall) {
-  DCHECK_EQ(read_buffers_.size(), read_results_.size());
+  QUICHE_DCHECK_EQ(read_buffers_.size(), read_results_.size());
   for (size_t i = 0; i < read_results_.size(); ++i) {
     read_results_[i].packet_buffer.buffer = read_buffers_[i].packet_buffer;
     read_results_[i].packet_buffer.buffer_len =

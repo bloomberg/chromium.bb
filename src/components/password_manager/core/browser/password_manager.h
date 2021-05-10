@@ -80,6 +80,8 @@ class PasswordManager : public PasswordManagerInterface {
       bool did_stop_loading) override;
   void OnPasswordFormSubmitted(PasswordManagerDriver* driver,
                                const autofill::FormData& form_data) override;
+  void OnPasswordFormCleared(PasswordManagerDriver* driver,
+                             const autofill::FormData& form_data) override;
 #if defined(OS_IOS)
   void OnPasswordFormSubmittedNoChecksForiOS(
       PasswordManagerDriver* driver,
@@ -133,7 +135,7 @@ class PasswordManager : public PasswordManagerInterface {
   // Called upon navigation to persist the state from |CredentialCache|
   // used to decide when to record
   // |PasswordManager.ResultOfSavingFlowAfterUnblacklistin|.
-  void MarkWasUnblacklistedInFormManagers(CredentialCache* credential_cache);
+  void MarkWasUnblocklistedInFormManagers(CredentialCache* credential_cache);
 
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission. For
@@ -208,10 +210,6 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Resets pending credentials.
   void ResetPendingCredentials();
-
-  // Notification that password form was cleared by the website.
-  void OnPasswordFormCleared(PasswordManagerDriver* driver,
-                             const autofill::FormData& form_data);
 
   // Returns true if a form manager is processing a password update.
   bool IsFormManagerPendingPasswordUpdate() const;

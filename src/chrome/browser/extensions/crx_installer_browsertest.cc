@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -54,6 +55,7 @@
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
@@ -67,10 +69,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -310,6 +312,9 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     const Extension* extension = GetInstalledExtension(extension_id);
     ASSERT_NE(nullptr, extension);
     ASSERT_EQ(version, extension->VersionString());
+
+    RendererStartupHelperFactory::GetForBrowserContext(browser()->profile())
+        ->OnExtensionLoaded(*extension);
   }
 
   static void InstallerCallback(base::OnceClosure quit_closure,
@@ -1032,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
             *installation_failure.install_error_detail);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
   base::ScopedAllowBlockingForTesting allow_io;
   // kiosk_only is allowlisted from non-chromeos.

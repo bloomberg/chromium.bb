@@ -9,7 +9,7 @@
 // Includes the items from GENRB_ALIAS_SOURCE and GENRB_SOURCE
   "localeFilter": {
     "filterType": "language",
-    "whitelist": [
+    "includelist": [
 // Need to explicitly add "root"
       "root",
 
@@ -131,7 +131,7 @@
   "featureFilters": {
 // "brkitr_dictionaries": { everything }
     "brkitr_rules": {
-      "blacklist": [
+      "excludelist": [
 // Exclude line_cj till we upgrade to 68.1 due to size impact.
         "line_cj",
         "title",
@@ -140,14 +140,14 @@
       ]
     },
     "brkitr_tree": {
-      "blacklist": [
+      "excludelist": [
 	"en_US_POSIX"
       ]
     },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/mappings/ucmlocal.mk?rcl=797b7c
     "conversion_mappings": {
-      "whitelist": [
+      "includelist": [
 // UCM_SOURCE_CORE=...
         "iso-8859-2-html",
         "iso-8859-3-html",
@@ -189,7 +189,7 @@
 // Includes the items from CURR_ALIAS_SOURCE and CURR_SOURCE
     "curr_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -257,14 +257,14 @@
       "filterType": "union",
       "unionOf": [
 	{
-          "whitelist": [
+          "includelist": [
             "en",
             "en_US"
 	  ]
 	},
 	{
           "filterType": "language",
-          "whitelist": [
+          "includelist": [
 // Need to explicitly add "root"
             "root",
 
@@ -327,7 +327,7 @@
       ]
     },
     "rbnf_tree": {
-      "whitelist": [
+      "includelist": [
 // Needed by "y=jpanyear" in locales/ja.txt for calendar="japanese"
         "ja",
 // Needed by "d=hanidays" in locales/zh*.txt for calendar="chinese"
@@ -339,7 +339,7 @@
 // Includes the items from REGION_ALIAS_SOURCE and REGION_SOURCE
     "region_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -409,7 +409,7 @@
 // Includes the items from UNIT_ALIAS_SOURCE and UNIT_SOURCE
     "unit_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -475,7 +475,7 @@
 // Includes the items from ZONE_ALIAS_SOURCE and ZONE_SOURCE
     "zone_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -765,6 +765,7 @@
         "+/*/xx",
         "+/*/yi",
         "+/*/yo",
+        "+/*/yue",
         "+/*/zh",
         "+/*/zu",
         "+/*/ar_001",
@@ -823,7 +824,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
           "ach",
           "af",
@@ -942,108 +943,108 @@
       ]
     },
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
-    {"categories":["lang_tree"],"files":{"whitelist":["ach"]},"rules":["-/*","+/%%ALIAS","+/Languages/ach"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["af"]},"rules":["-/*","+/%%ALIAS","+/Languages/af"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ak"]},"rules":["-/*","+/%%ALIAS","+/Languages/ak"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["an"]},"rules":["-/*","+/%%ALIAS","+/Languages/an"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ast"]},"rules":["-/*","+/%%ALIAS","+/Languages/ast"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["az"]},"rules":["-/*","+/%%ALIAS","+/Languages/az"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ban"]},"rules":["-/*","+/%%ALIAS","+/Languages/ban"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["be"]},"rules":["-/*","+/%%ALIAS","+/Languages/be"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["bem"]},"rules":["-/*","+/%%ALIAS","+/Languages/bem"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["bh"]},"rules":["-/*","+/%%ALIAS","+/Languages/bh"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["br"]},"rules":["-/*","+/%%ALIAS","+/Languages/br"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["bs"]},"rules":["-/*","+/%%ALIAS","+/Languages/bs"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ccp"]},"rules":["-/*","+/%%ALIAS","+/Languages/ccp"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ceb"]},"rules":["-/*","+/%%ALIAS","+/Languages/ceb"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["chr"]},"rules":["-/*","+/%%ALIAS","+/Languages/chr"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ckb"]},"rules":["-/*","+/%%ALIAS","+/Languages/ckb"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["co"]},"rules":["-/*","+/%%ALIAS","+/Languages/co"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["crs"]},"rules":["-/*","+/%%ALIAS","+/Languages/crs"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["cy"]},"rules":["-/*","+/%%ALIAS","+/Languages/cy"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ee"]},"rules":["-/*","+/%%ALIAS","+/Languages/ee"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["eu"]},"rules":["-/*","+/%%ALIAS","+/Languages/eu"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["fo"]},"rules":["-/*","+/%%ALIAS","+/Languages/fo"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["fy"]},"rules":["-/*","+/%%ALIAS","+/Languages/fy"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ga"]},"rules":["-/*","+/%%ALIAS","+/Languages/ga"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["gaa"]},"rules":["-/*","+/%%ALIAS","+/Languages/gaa"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["gd"]},"rules":["-/*","+/%%ALIAS","+/Languages/gd"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["gl"]},"rules":["-/*","+/%%ALIAS","+/Languages/gl"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["gn"]},"rules":["-/*","+/%%ALIAS","+/Languages/gn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ha"]},"rules":["-/*","+/%%ALIAS","+/Languages/ha"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["haw"]},"rules":["-/*","+/%%ALIAS","+/Languages/haw"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["hmn"]},"rules":["-/*","+/%%ALIAS","+/Languages/hmn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ht"]},"rules":["-/*","+/%%ALIAS","+/Languages/ht"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["hy"]},"rules":["-/*","+/%%ALIAS","+/Languages/hy"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ia"]},"rules":["-/*","+/%%ALIAS","+/Languages/ia"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ig"]},"rules":["-/*","+/%%ALIAS","+/Languages/ig"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["is"]},"rules":["-/*","+/%%ALIAS","+/Languages/is"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["jv"]},"rules":["-/*","+/%%ALIAS","+/Languages/jv"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["jw"]},"rules":["-/*","+/%%ALIAS","+/Languages/jw"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ka"]},"rules":["-/*","+/%%ALIAS","+/Languages/ka"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["kg"]},"rules":["-/*","+/%%ALIAS","+/Languages/kg"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["kk"]},"rules":["-/*","+/%%ALIAS","+/Languages/kk"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["km"]},"rules":["-/*","+/%%ALIAS","+/Languages/km"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["kri"]},"rules":["-/*","+/%%ALIAS","+/Languages/kri"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ku"]},"rules":["-/*","+/%%ALIAS","+/Languages/ku"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ky"]},"rules":["-/*","+/%%ALIAS","+/Languages/ky"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["la"]},"rules":["-/*","+/%%ALIAS","+/Languages/la"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["lb"]},"rules":["-/*","+/%%ALIAS","+/Languages/lb"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["lg"]},"rules":["-/*","+/%%ALIAS","+/Languages/lg"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ln"]},"rules":["-/*","+/%%ALIAS","+/Languages/ln"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["lo"]},"rules":["-/*","+/%%ALIAS","+/Languages/lo"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["loz"]},"rules":["-/*","+/%%ALIAS","+/Languages/loz"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["lua"]},"rules":["-/*","+/%%ALIAS","+/Languages/lua"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mfe"]},"rules":["-/*","+/%%ALIAS","+/Languages/mfe"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mg"]},"rules":["-/*","+/%%ALIAS","+/Languages/mg"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mi"]},"rules":["-/*","+/%%ALIAS","+/Languages/mi"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mk"]},"rules":["-/*","+/%%ALIAS","+/Languages/mk"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mn"]},"rules":["-/*","+/%%ALIAS","+/Languages/mn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["mt"]},"rules":["-/*","+/%%ALIAS","+/Languages/mt"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["my"]},"rules":["-/*","+/%%ALIAS","+/Languages/my"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ne"]},"rules":["-/*","+/%%ALIAS","+/Languages/ne"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["nn"]},"rules":["-/*","+/%%ALIAS","+/Languages/nn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["no"]},"rules":["-/*","+/%%ALIAS","+/Languages/no"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["nso"]},"rules":["-/*","+/%%ALIAS","+/Languages/nso"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ny"]},"rules":["-/*","+/%%ALIAS","+/Languages/ny"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["nyn"]},"rules":["-/*","+/%%ALIAS","+/Languages/nyn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["oc"]},"rules":["-/*","+/%%ALIAS","+/Languages/oc"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["om"]},"rules":["-/*","+/%%ALIAS","+/Languages/om"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["or"]},"rules":["-/*","+/%%ALIAS","+/Languages/or"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["osa"]},"rules":["-/*","+/%%ALIAS","+/Languages/osa"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["pa"]},"rules":["-/*","+/%%ALIAS","+/Languages/pa"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["pcm"]},"rules":["-/*","+/%%ALIAS","+/Languages/pcm"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ps"]},"rules":["-/*","+/%%ALIAS","+/Languages/ps"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["qu"]},"rules":["-/*","+/%%ALIAS","+/Languages/qu"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["rm"]},"rules":["-/*","+/%%ALIAS","+/Languages/rm"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["rn"]},"rules":["-/*","+/%%ALIAS","+/Languages/rn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["rw"]},"rules":["-/*","+/%%ALIAS","+/Languages/rw"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["sd"]},"rules":["-/*","+/%%ALIAS","+/Languages/sd"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["si"]},"rules":["-/*","+/%%ALIAS","+/Languages/si"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["sm"]},"rules":["-/*","+/%%ALIAS","+/Languages/sm"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["sn"]},"rules":["-/*","+/%%ALIAS","+/Languages/sn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["so"]},"rules":["-/*","+/%%ALIAS","+/Languages/so"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["sq"]},"rules":["-/*","+/%%ALIAS","+/Languages/sq"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["st"]},"rules":["-/*","+/%%ALIAS","+/Languages/st"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["su"]},"rules":["-/*","+/%%ALIAS","+/Languages/su"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tg"]},"rules":["-/*","+/%%ALIAS","+/Languages/tg"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ti"]},"rules":["-/*","+/%%ALIAS","+/Languages/ti"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tk"]},"rules":["-/*","+/%%ALIAS","+/Languages/tk"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tn"]},"rules":["-/*","+/%%ALIAS","+/Languages/tn"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["to"]},"rules":["-/*","+/%%ALIAS","+/Languages/to"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tt"]},"rules":["-/*","+/%%ALIAS","+/Languages/tt"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tum"]},"rules":["-/*","+/%%ALIAS","+/Languages/tum"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["tw"]},"rules":["-/*","+/%%ALIAS","+/Languages/tw"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ug"]},"rules":["-/*","+/%%ALIAS","+/Languages/ug"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["ur"]},"rules":["-/*","+/%%ALIAS","+/Languages/ur"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["uz"]},"rules":["-/*","+/%%ALIAS","+/Languages/uz"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["wa"]},"rules":["-/*","+/%%ALIAS","+/Languages/wa"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["wo"]},"rules":["-/*","+/%%ALIAS","+/Languages/wo"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["xh"]},"rules":["-/*","+/%%ALIAS","+/Languages/xh"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["xx"]},"rules":["-/*","+/%%ALIAS","+/Languages/xx"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["yi"]},"rules":["-/*","+/%%ALIAS","+/Languages/yi"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["yo"]},"rules":["-/*","+/%%ALIAS","+/Languages/yo"] },
-    {"categories":["lang_tree"],"files":{"whitelist":["zu"]},"rules":["-/*","+/%%ALIAS","+/Languages/zu"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ach"]},"rules":["-/*","+/%%ALIAS","+/Languages/ach"] },
+    {"categories":["lang_tree"],"files":{"includelist":["af"]},"rules":["-/*","+/%%ALIAS","+/Languages/af"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ak"]},"rules":["-/*","+/%%ALIAS","+/Languages/ak"] },
+    {"categories":["lang_tree"],"files":{"includelist":["an"]},"rules":["-/*","+/%%ALIAS","+/Languages/an"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ast"]},"rules":["-/*","+/%%ALIAS","+/Languages/ast"] },
+    {"categories":["lang_tree"],"files":{"includelist":["az"]},"rules":["-/*","+/%%ALIAS","+/Languages/az"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ban"]},"rules":["-/*","+/%%ALIAS","+/Languages/ban"] },
+    {"categories":["lang_tree"],"files":{"includelist":["be"]},"rules":["-/*","+/%%ALIAS","+/Languages/be"] },
+    {"categories":["lang_tree"],"files":{"includelist":["bem"]},"rules":["-/*","+/%%ALIAS","+/Languages/bem"] },
+    {"categories":["lang_tree"],"files":{"includelist":["bh"]},"rules":["-/*","+/%%ALIAS","+/Languages/bh"] },
+    {"categories":["lang_tree"],"files":{"includelist":["br"]},"rules":["-/*","+/%%ALIAS","+/Languages/br"] },
+    {"categories":["lang_tree"],"files":{"includelist":["bs"]},"rules":["-/*","+/%%ALIAS","+/Languages/bs"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ccp"]},"rules":["-/*","+/%%ALIAS","+/Languages/ccp"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ceb"]},"rules":["-/*","+/%%ALIAS","+/Languages/ceb"] },
+    {"categories":["lang_tree"],"files":{"includelist":["chr"]},"rules":["-/*","+/%%ALIAS","+/Languages/chr"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ckb"]},"rules":["-/*","+/%%ALIAS","+/Languages/ckb"] },
+    {"categories":["lang_tree"],"files":{"includelist":["co"]},"rules":["-/*","+/%%ALIAS","+/Languages/co"] },
+    {"categories":["lang_tree"],"files":{"includelist":["crs"]},"rules":["-/*","+/%%ALIAS","+/Languages/crs"] },
+    {"categories":["lang_tree"],"files":{"includelist":["cy"]},"rules":["-/*","+/%%ALIAS","+/Languages/cy"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ee"]},"rules":["-/*","+/%%ALIAS","+/Languages/ee"] },
+    {"categories":["lang_tree"],"files":{"includelist":["eu"]},"rules":["-/*","+/%%ALIAS","+/Languages/eu"] },
+    {"categories":["lang_tree"],"files":{"includelist":["fo"]},"rules":["-/*","+/%%ALIAS","+/Languages/fo"] },
+    {"categories":["lang_tree"],"files":{"includelist":["fy"]},"rules":["-/*","+/%%ALIAS","+/Languages/fy"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ga"]},"rules":["-/*","+/%%ALIAS","+/Languages/ga"] },
+    {"categories":["lang_tree"],"files":{"includelist":["gaa"]},"rules":["-/*","+/%%ALIAS","+/Languages/gaa"] },
+    {"categories":["lang_tree"],"files":{"includelist":["gd"]},"rules":["-/*","+/%%ALIAS","+/Languages/gd"] },
+    {"categories":["lang_tree"],"files":{"includelist":["gl"]},"rules":["-/*","+/%%ALIAS","+/Languages/gl"] },
+    {"categories":["lang_tree"],"files":{"includelist":["gn"]},"rules":["-/*","+/%%ALIAS","+/Languages/gn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ha"]},"rules":["-/*","+/%%ALIAS","+/Languages/ha"] },
+    {"categories":["lang_tree"],"files":{"includelist":["haw"]},"rules":["-/*","+/%%ALIAS","+/Languages/haw"] },
+    {"categories":["lang_tree"],"files":{"includelist":["hmn"]},"rules":["-/*","+/%%ALIAS","+/Languages/hmn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ht"]},"rules":["-/*","+/%%ALIAS","+/Languages/ht"] },
+    {"categories":["lang_tree"],"files":{"includelist":["hy"]},"rules":["-/*","+/%%ALIAS","+/Languages/hy"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ia"]},"rules":["-/*","+/%%ALIAS","+/Languages/ia"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ig"]},"rules":["-/*","+/%%ALIAS","+/Languages/ig"] },
+    {"categories":["lang_tree"],"files":{"includelist":["is"]},"rules":["-/*","+/%%ALIAS","+/Languages/is"] },
+    {"categories":["lang_tree"],"files":{"includelist":["jv"]},"rules":["-/*","+/%%ALIAS","+/Languages/jv"] },
+    {"categories":["lang_tree"],"files":{"includelist":["jw"]},"rules":["-/*","+/%%ALIAS","+/Languages/jw"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ka"]},"rules":["-/*","+/%%ALIAS","+/Languages/ka"] },
+    {"categories":["lang_tree"],"files":{"includelist":["kg"]},"rules":["-/*","+/%%ALIAS","+/Languages/kg"] },
+    {"categories":["lang_tree"],"files":{"includelist":["kk"]},"rules":["-/*","+/%%ALIAS","+/Languages/kk"] },
+    {"categories":["lang_tree"],"files":{"includelist":["km"]},"rules":["-/*","+/%%ALIAS","+/Languages/km"] },
+    {"categories":["lang_tree"],"files":{"includelist":["kri"]},"rules":["-/*","+/%%ALIAS","+/Languages/kri"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ku"]},"rules":["-/*","+/%%ALIAS","+/Languages/ku"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ky"]},"rules":["-/*","+/%%ALIAS","+/Languages/ky"] },
+    {"categories":["lang_tree"],"files":{"includelist":["la"]},"rules":["-/*","+/%%ALIAS","+/Languages/la"] },
+    {"categories":["lang_tree"],"files":{"includelist":["lb"]},"rules":["-/*","+/%%ALIAS","+/Languages/lb"] },
+    {"categories":["lang_tree"],"files":{"includelist":["lg"]},"rules":["-/*","+/%%ALIAS","+/Languages/lg"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ln"]},"rules":["-/*","+/%%ALIAS","+/Languages/ln"] },
+    {"categories":["lang_tree"],"files":{"includelist":["lo"]},"rules":["-/*","+/%%ALIAS","+/Languages/lo"] },
+    {"categories":["lang_tree"],"files":{"includelist":["loz"]},"rules":["-/*","+/%%ALIAS","+/Languages/loz"] },
+    {"categories":["lang_tree"],"files":{"includelist":["lua"]},"rules":["-/*","+/%%ALIAS","+/Languages/lua"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mfe"]},"rules":["-/*","+/%%ALIAS","+/Languages/mfe"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mg"]},"rules":["-/*","+/%%ALIAS","+/Languages/mg"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mi"]},"rules":["-/*","+/%%ALIAS","+/Languages/mi"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mk"]},"rules":["-/*","+/%%ALIAS","+/Languages/mk"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mn"]},"rules":["-/*","+/%%ALIAS","+/Languages/mn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["mt"]},"rules":["-/*","+/%%ALIAS","+/Languages/mt"] },
+    {"categories":["lang_tree"],"files":{"includelist":["my"]},"rules":["-/*","+/%%ALIAS","+/Languages/my"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ne"]},"rules":["-/*","+/%%ALIAS","+/Languages/ne"] },
+    {"categories":["lang_tree"],"files":{"includelist":["nn"]},"rules":["-/*","+/%%ALIAS","+/Languages/nn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["no"]},"rules":["-/*","+/%%ALIAS","+/Languages/no"] },
+    {"categories":["lang_tree"],"files":{"includelist":["nso"]},"rules":["-/*","+/%%ALIAS","+/Languages/nso"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ny"]},"rules":["-/*","+/%%ALIAS","+/Languages/ny"] },
+    {"categories":["lang_tree"],"files":{"includelist":["nyn"]},"rules":["-/*","+/%%ALIAS","+/Languages/nyn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["oc"]},"rules":["-/*","+/%%ALIAS","+/Languages/oc"] },
+    {"categories":["lang_tree"],"files":{"includelist":["om"]},"rules":["-/*","+/%%ALIAS","+/Languages/om"] },
+    {"categories":["lang_tree"],"files":{"includelist":["or"]},"rules":["-/*","+/%%ALIAS","+/Languages/or"] },
+    {"categories":["lang_tree"],"files":{"includelist":["osa"]},"rules":["-/*","+/%%ALIAS","+/Languages/osa"] },
+    {"categories":["lang_tree"],"files":{"includelist":["pa"]},"rules":["-/*","+/%%ALIAS","+/Languages/pa"] },
+    {"categories":["lang_tree"],"files":{"includelist":["pcm"]},"rules":["-/*","+/%%ALIAS","+/Languages/pcm"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ps"]},"rules":["-/*","+/%%ALIAS","+/Languages/ps"] },
+    {"categories":["lang_tree"],"files":{"includelist":["qu"]},"rules":["-/*","+/%%ALIAS","+/Languages/qu"] },
+    {"categories":["lang_tree"],"files":{"includelist":["rm"]},"rules":["-/*","+/%%ALIAS","+/Languages/rm"] },
+    {"categories":["lang_tree"],"files":{"includelist":["rn"]},"rules":["-/*","+/%%ALIAS","+/Languages/rn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["rw"]},"rules":["-/*","+/%%ALIAS","+/Languages/rw"] },
+    {"categories":["lang_tree"],"files":{"includelist":["sd"]},"rules":["-/*","+/%%ALIAS","+/Languages/sd"] },
+    {"categories":["lang_tree"],"files":{"includelist":["si"]},"rules":["-/*","+/%%ALIAS","+/Languages/si"] },
+    {"categories":["lang_tree"],"files":{"includelist":["sm"]},"rules":["-/*","+/%%ALIAS","+/Languages/sm"] },
+    {"categories":["lang_tree"],"files":{"includelist":["sn"]},"rules":["-/*","+/%%ALIAS","+/Languages/sn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["so"]},"rules":["-/*","+/%%ALIAS","+/Languages/so"] },
+    {"categories":["lang_tree"],"files":{"includelist":["sq"]},"rules":["-/*","+/%%ALIAS","+/Languages/sq"] },
+    {"categories":["lang_tree"],"files":{"includelist":["st"]},"rules":["-/*","+/%%ALIAS","+/Languages/st"] },
+    {"categories":["lang_tree"],"files":{"includelist":["su"]},"rules":["-/*","+/%%ALIAS","+/Languages/su"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tg"]},"rules":["-/*","+/%%ALIAS","+/Languages/tg"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ti"]},"rules":["-/*","+/%%ALIAS","+/Languages/ti"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tk"]},"rules":["-/*","+/%%ALIAS","+/Languages/tk"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tn"]},"rules":["-/*","+/%%ALIAS","+/Languages/tn"] },
+    {"categories":["lang_tree"],"files":{"includelist":["to"]},"rules":["-/*","+/%%ALIAS","+/Languages/to"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tt"]},"rules":["-/*","+/%%ALIAS","+/Languages/tt"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tum"]},"rules":["-/*","+/%%ALIAS","+/Languages/tum"] },
+    {"categories":["lang_tree"],"files":{"includelist":["tw"]},"rules":["-/*","+/%%ALIAS","+/Languages/tw"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ug"]},"rules":["-/*","+/%%ALIAS","+/Languages/ug"] },
+    {"categories":["lang_tree"],"files":{"includelist":["ur"]},"rules":["-/*","+/%%ALIAS","+/Languages/ur"] },
+    {"categories":["lang_tree"],"files":{"includelist":["uz"]},"rules":["-/*","+/%%ALIAS","+/Languages/uz"] },
+    {"categories":["lang_tree"],"files":{"includelist":["wa"]},"rules":["-/*","+/%%ALIAS","+/Languages/wa"] },
+    {"categories":["lang_tree"],"files":{"includelist":["wo"]},"rules":["-/*","+/%%ALIAS","+/Languages/wo"] },
+    {"categories":["lang_tree"],"files":{"includelist":["xh"]},"rules":["-/*","+/%%ALIAS","+/Languages/xh"] },
+    {"categories":["lang_tree"],"files":{"includelist":["xx"]},"rules":["-/*","+/%%ALIAS","+/Languages/xx"] },
+    {"categories":["lang_tree"],"files":{"includelist":["yi"]},"rules":["-/*","+/%%ALIAS","+/Languages/yi"] },
+    {"categories":["lang_tree"],"files":{"includelist":["yo"]},"rules":["-/*","+/%%ALIAS","+/Languages/yo"] },
+    {"categories":["lang_tree"],"files":{"includelist":["zu"]},"rules":["-/*","+/%%ALIAS","+/Languages/zu"] },
 // Based on filter_currency_data
 // # Keep only the currencies used by the larget 150 economies in terms of GDP.
 // # TODO(jshin): Use ucurr_isAvailable in ICU to drop more currencies.
@@ -1290,7 +1291,7 @@
         "coll_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "zh"
 	]
       },
@@ -1318,7 +1319,7 @@
         "misc"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
           "supplementalData"
 	]
       },

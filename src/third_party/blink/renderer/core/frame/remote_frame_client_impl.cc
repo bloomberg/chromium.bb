@@ -73,22 +73,24 @@ base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
 
 void RemoteFrameClientImpl::Navigate(
     const ResourceRequest& request,
-    blink::WebLocalFrame* initiator_frame,
     bool should_replace_current_entry,
     bool is_opener_navigation,
     bool initiator_frame_has_download_sandbox_flag,
     bool initiator_frame_is_ad,
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
-    const base::Optional<WebImpression>& impression) {
+    const base::Optional<WebImpression>& impression,
+    const LocalFrameToken* initiator_frame_token,
+    mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+        initiator_policy_container_keep_alive_handle) {
   bool blocking_downloads_in_sandbox_enabled =
       RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
   if (web_frame_->Client()) {
     web_frame_->Client()->Navigate(
-        WrappedResourceRequest(request), initiator_frame,
-        should_replace_current_entry, is_opener_navigation,
-        initiator_frame_has_download_sandbox_flag,
+        WrappedResourceRequest(request), should_replace_current_entry,
+        is_opener_navigation, initiator_frame_has_download_sandbox_flag,
         blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
-        std::move(blob_url_token), impression);
+        std::move(blob_url_token), impression, initiator_frame_token,
+        std::move(initiator_policy_container_keep_alive_handle));
   }
 }
 
@@ -100,59 +102,26 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
   return 2;
 }
 
-void RemoteFrameClientImpl::FrameRectsChanged(
-    const IntRect& local_frame_rect,
-    const IntRect& screen_space_rect) {
-  web_frame_->Client()->FrameRectsChanged(local_frame_rect, screen_space_rect);
+void RemoteFrameClientImpl::WillSynchronizeVisualProperties(
+    bool capture_sequence_number_changed,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& compositor_viewport_size) {
+  web_frame_->Client()->WillSynchronizeVisualProperties(
+      capture_sequence_number_changed, surface_id,
+      compositor_viewport_size);
 }
 
-void RemoteFrameClientImpl::ZoomLevelChanged(double zoom_level) {
-  web_frame_->Client()->ZoomLevelChanged(zoom_level);
+bool RemoteFrameClientImpl::RemoteProcessGone() const {
+  return web_frame_->Client()->RemoteProcessGone();
 }
 
-void RemoteFrameClientImpl::UpdateCaptureSequenceNumber(
-    uint32_t sequence_number) {
-  web_frame_->Client()->UpdateCaptureSequenceNumber(sequence_number);
-}
-
-void RemoteFrameClientImpl::PageScaleFactorChanged(
-    float page_scale_factor,
-    bool is_pinch_gesture_active) {
-  web_frame_->Client()->PageScaleFactorChanged(page_scale_factor,
-                                               is_pinch_gesture_active);
-}
-
-void RemoteFrameClientImpl::DidChangeScreenInfo(
-    const ScreenInfo& original_screen_info) {
-  web_frame_->Client()->DidChangeScreenInfo(original_screen_info);
-}
-
-void RemoteFrameClientImpl::DidChangeRootWindowSegments(
-    const std::vector<gfx::Rect>& root_widget_window_segments) {
-  web_frame_->Client()->DidChangeRootWindowSegments(
-      root_widget_window_segments);
-}
-
-void RemoteFrameClientImpl::DidChangeVisibleViewportSize(
-    const gfx::Size& visible_viewport_size) {
-  web_frame_->Client()->DidChangeVisibleViewportSize(visible_viewport_size);
-}
-
-void RemoteFrameClientImpl::SynchronizeVisualProperties() {
-  web_frame_->Client()->SynchronizeVisualProperties();
+void RemoteFrameClientImpl::DidSetFrameSinkId() {
+  web_frame_->Client()->DidSetFrameSinkId();
 }
 
 AssociatedInterfaceProvider*
 RemoteFrameClientImpl::GetRemoteAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteAssociatedInterfaces();
-}
-
-viz::FrameSinkId RemoteFrameClientImpl::GetFrameSinkId() {
-  return web_frame_->Client()->GetFrameSinkId();
-}
-
-void RemoteFrameClientImpl::WasEvicted() {
-  return web_frame_->Client()->WasEvicted();
 }
 
 }  // namespace blink

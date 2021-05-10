@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_table_cell_paint_invalidator.h"
 
 namespace blink {
 
@@ -37,8 +38,13 @@ void LayoutNGTableCell::InvalidateLayoutResultCacheAfterMeasure() const {
 
 LayoutRectOutsets LayoutNGTableCell::BorderBoxOutsets() const {
   NOT_DESTROYED();
-  DCHECK_GE(PhysicalFragmentCount(), 0u);
-  return GetPhysicalFragment(0)->Borders().ToLayoutRectOutsets();
+  // TODO(1061423) This function should not be called before layout.
+  // ScrollAnchor::Examine does. Example trigger:
+  // ScrollTimelineTest.TimelineInvalidationWhenScrollerDisplayPropertyChanges
+  // DCHECK_GE(PhysicalFragmentCount(), 0u);
+  if (PhysicalFragmentCount() > 0)
+    return GetPhysicalFragment(0)->Borders().ToLayoutRectOutsets();
+  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderBoxOutsets();
 }
 
 LayoutUnit LayoutNGTableCell::BorderTop() const {
@@ -115,18 +121,38 @@ void LayoutNGTableCell::StyleDidChange(StyleDifference diff,
   LayoutNGBlockFlowMixin<LayoutBlockFlow>::StyleDidChange(diff, old_style);
 }
 
-void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
+void LayoutNGTableCell::WillBeRemovedFromTree() {
   NOT_DESTROYED();
-  // TODO(atotic) Invalidate layout?
-  UpdateColAndRowSpanFlags();
   if (LayoutNGTable* table = Table())
     table->TableGridStructureChanged();
+  LayoutNGMixin<LayoutBlockFlow>::WillBeRemovedFromTree();
+}
+
+void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
+  NOT_DESTROYED();
+  UpdateColAndRowSpanFlags();
+  if (LayoutNGTable* table = Table()) {
+    table->SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kTableChanged);
+    table->TableGridStructureChanged();
+  }
 }
 
 LayoutBox* LayoutNGTableCell::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   NOT_DESTROYED();
   return LayoutObjectFactory::CreateAnonymousTableCellWithParent(*parent);
+}
+
+LayoutBlock* LayoutNGTableCell::StickyContainer() const {
+  NOT_DESTROYED();
+  return Table();
+}
+
+void LayoutNGTableCell::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  NOT_DESTROYED();
+  NGTableCellPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 bool LayoutNGTableCell::BackgroundIsKnownToBeOpaqueInRect(

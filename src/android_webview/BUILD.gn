@@ -65,7 +65,7 @@ standalone_system_webview_apk_tmpl("system_webview_no_weblayer_apk") {
   # TODO(b/165810905): Use per-feature -keep rules in R8 once supported, then
   # this can be removed.
   assert_no_deps =
-      [ "//third_party/android_deps:androidx_recyclerview_recyclerview_java" ]
+      [ "//third_party/androidx:androidx_recyclerview_recyclerview_java" ]
 }
 
 if (enable_webview_bundles) {
@@ -445,6 +445,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwDisplayCutoutController.java",
+    "java/src/org/chromium/android_webview/AwDisplayModeController.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
@@ -521,6 +522,7 @@ android_library("browser_java") {
     ":common_platform_services_java",
     ":common_variations_java",
     ":resources",
+    "//android_webview:common_platform_services_java",
     "//android_webview/nonembedded:system_webview_manifest",
     "//android_webview/proto:metrics_bridge_records_proto_java",
     "//base:base_java",
@@ -550,9 +552,10 @@ android_library("browser_java") {
     "//mojo/public/java/system:system_impl_java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public:blink_headers_java",
+    "//third_party/blink/public/mojom:mojom_platform_java",
     "//ui/android:ui_no_recycler_view_java",
     "//url:gurl_java",
   ]
@@ -579,8 +582,8 @@ android_library("common_variations_java") {
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
     "//components/variations/android:variations_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 }
 
@@ -596,7 +599,8 @@ android_library("common_platform_services_java") {
   deps = [
     "//base:base_java",
     "//components/embedder_support/android/metrics:java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//content/public/android:content_full_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 
   # The appropriate .class file will be loaded via a dependency to a library
@@ -625,7 +629,7 @@ android_library("common_crash_java") {
     "//base:jni_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -660,7 +664,7 @@ android_library("common_java") {
     "//components/metrics:metrics_java",
     "//components/viz:viz_java",
     "//gpu/config:config_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public/common:common_java",
     "//ui/android:ui_features_java",
   ]
@@ -892,7 +896,7 @@ grit("generate_aw_resources") {
 grit("generate_aw_strings") {
   source = "ui/aw_strings.grd"
   outputs = [ "grit/aw_strings.h" ]
-  foreach(_locale, locales) {
+  foreach(_locale, locales_with_fake_bidi) {
     outputs += [ "aw_strings_${_locale}.pak" ]
   }
 }

@@ -8,7 +8,7 @@
 #include "gm/gm.h"
 
 #include "include/effects/SkGradientShader.h"
-#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkGpuBlurUtils.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrStyle.h"
@@ -32,16 +32,9 @@ static GrSurfaceProxyView blur(GrRecordingContext* ctx,
     return resultRTC->readSurfaceView();
 };
 
-static void run(GrRecordingContext* ctx, GrRenderTargetContext* rtc, bool subsetSrc, bool ref) {
-    // TODO: once MakeRenderTarget can take a GrRecordingContext this family of tests no
-    // longer needs to be disabled for the OOPR configs
-    auto direct = ctx->asDirectContext();
-    if (!direct) {
-        return;
-    }
-
+static void run(GrRecordingContext* rContext, GrSurfaceDrawContext* rtc, bool subsetSrc, bool ref) {
     auto srcII = SkImageInfo::Make(60, 60, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
-    auto surf = SkSurface::MakeRenderTarget(direct, SkBudgeted::kYes, srcII);
+    auto surf = SkSurface::MakeRenderTarget(rContext, SkBudgeted::kYes, srcII);
     GrSurfaceProxyView src;
     if (surf) {
         SkScalar w = surf->width();
@@ -73,9 +66,7 @@ static void run(GrRecordingContext* ctx, GrRenderTargetContext* rtc, bool subset
         surf->getCanvas()->drawLine({7.f*w/8.f, 0.f}, {7.f*h/8.f, h}, paint);
 
         auto img = surf->makeImageSnapshot();
-        if (auto v = as_IB(img)->view(direct)) {
-            src = *v;
-        }
+        std::tie(src, std::ignore) = as_IB(img)->asView(rContext, GrMipmapped::kNo);
     }
     if (!src) {
         return;
@@ -137,7 +128,7 @@ static void run(GrRecordingContext* ctx, GrRenderTargetContext* rtc, bool subset
             },
     };
 
-    const auto& caps = *ctx->priv().caps();
+    const auto& caps = *rContext->priv().caps();
 
     static constexpr SkScalar kPad = 10;
     SkVector trans = {kPad, kPad};
@@ -166,14 +157,14 @@ static void run(GrRecordingContext* ctx, GrRenderTargetContext* rtc, bool subset
             // If we're in ref mode we will create a temp image that has the original image
             // tiled into it and then do a clamp blur with adjusted params that should produce
             // the same result as the original params.
-            std::unique_ptr<GrRenderTargetContext> refSrc;
+            std::unique_ptr<GrSurfaceDrawContext> refSrc;
             SkIRect refRect;
             if (ref) {
                 // Blow up testArea into a much larger rect so that our clamp blur will not
                 // reach anywhere near the edge of our temp surface.
                 refRect = testArea.makeOutset(testArea.width(), testArea.height());
-                refSrc = GrRenderTargetContext::Make(ctx, GrColorType::kRGBA_8888, nullptr,
-                                                     SkBackingFit::kApprox, refRect.size());
+                refSrc = GrSurfaceDrawContext::Make(rContext, GrColorType::kRGBA_8888, nullptr,
+                                                    SkBackingFit::kApprox, refRect.size());
                 refSrc->clear(SK_PMColor4fWHITE);
                 // Setup an effect to put the original src rect at the correct logical place
                 // in the temp where the temp's origin is at the top left of refRect.
@@ -206,8 +197,8 @@ static void run(GrRecordingContext* ctx, GrRenderTargetContext* rtc, bool subset
                     blurSrc = refSrc->readSurfaceView();
                 }
                 // Blur using the rect and draw on top.
-                if (auto blurView = blur(ctx, blurSrc, blurDstRect, blurSrcRect, sigmaX, sigmaY,
-                                         blurMode)) {
+                if (auto blurView = blur(rContext, blurSrc, blurDstRect, blurSrcRect,
+                                         sigmaX, sigmaY, blurMode)) {
                     auto fp = GrTextureEffect::Make(blurView, kPremul_SkAlphaType, SkMatrix::I(),
                                                     sampler, caps);
                     GrPaint paint;

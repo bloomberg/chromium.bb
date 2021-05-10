@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class ExclusiveAccessBubbleViews;
@@ -25,7 +27,7 @@ class PresentationReceiverWindowDelegate;
 class PresentationReceiverWindowFrame;
 class LocationBarModelImpl;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class FullscreenWindowObserver;
 #endif
 
@@ -42,8 +44,13 @@ class PresentationReceiverWindowView final
       public ExclusiveAccessBubbleViewsContext,
       public ui::AcceleratorProvider {
  public:
+  METADATA_HEADER(PresentationReceiverWindowView);
   PresentationReceiverWindowView(PresentationReceiverWindowFrame* frame,
                                  PresentationReceiverWindowDelegate* delegate);
+  PresentationReceiverWindowView(const PresentationReceiverWindowView&) =
+      delete;
+  PresentationReceiverWindowView& operator=(
+      const PresentationReceiverWindowView&) = delete;
   ~PresentationReceiverWindowView() final;
 
   void Init();
@@ -126,11 +133,9 @@ class PresentationReceiverWindowView final
   ui::Accelerator fullscreen_accelerator_;
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<FullscreenWindowObserver> window_observer_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(PresentationReceiverWindowView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_PRESENTATION_RECEIVER_WINDOW_VIEW_H_

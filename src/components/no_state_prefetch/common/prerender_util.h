@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "components/no_state_prefetch/common/prerender_types.mojom.h"
-
 class GURL;
 
 namespace prerender {
@@ -21,9 +19,8 @@ bool DoesURLHaveValidScheme(const GURL& url);
 // prerendering.
 bool DoesSubresourceURLHaveValidScheme(const GURL& url);
 
-// Returns true iff the method given is valid for prerendering.
-bool IsValidHttpMethod(prerender::mojom::PrerenderMode prerender_mode,
-                       const std::string& method);
+// Returns true iff the method given is valid for NoStatePrefetch.
+bool IsValidHttpMethod(const std::string& method);
 
 std::string ComposeHistogramName(const std::string& prefix_type,
                                  const std::string& name);

@@ -1468,9 +1468,10 @@ static AOM_INLINE void setup_segmentation(AV1_COMMON *const cm,
 
   seg->enabled = aom_rb_read_bit(rb);
   if (!seg->enabled) {
-    if (cm->cur_frame->seg_map)
+    if (cm->cur_frame->seg_map) {
       memset(cm->cur_frame->seg_map, 0,
-             (cm->mi_params.mi_rows * cm->mi_params.mi_cols));
+             (cm->cur_frame->mi_rows * cm->cur_frame->mi_cols));
+    }
 
     memset(seg, 0, sizeof(*seg));
     segfeatures_copy(&cm->cur_frame->seg, seg);
@@ -1692,7 +1693,7 @@ static AOM_INLINE void loop_restoration_read_sb_coeffs(
     int runit_idx) {
   const RestorationInfo *rsi = &cm->rst_info[plane];
   RestorationUnitInfo *rui = &rsi->unit_info[runit_idx];
-  if (rsi->frame_restoration_type == RESTORE_NONE) return;
+  assert(rsi->frame_restoration_type != RESTORE_NONE);
 
   assert(!cm->features.all_lossless);
 
@@ -3431,14 +3432,14 @@ static AOM_INLINE void launch_dec_workers(AV1Decoder *pbi,
                                           int num_workers) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
-  for (int worker_idx = 0; worker_idx < num_workers; ++worker_idx) {
+  for (int worker_idx = num_workers - 1; worker_idx >= 0; --worker_idx) {
     AVxWorker *const worker = &pbi->tile_workers[worker_idx];
     DecWorkerData *const thread_data = (DecWorkerData *)worker->data1;
 
     thread_data->data_end = data_end;
 
     worker->had_error = 0;
-    if (worker_idx == num_workers - 1) {
+    if (worker_idx == 0) {
       winterface->execute(worker);
     } else {
       winterface->launch(worker);
@@ -3478,12 +3479,12 @@ static AOM_INLINE void decode_mt_init(AV1Decoder *pbi) {
 
       winterface->init(worker);
       worker->thread_name = "aom tile worker";
-      if (worker_idx < num_threads - 1 && !winterface->reset(worker)) {
+      if (worker_idx != 0 && !winterface->reset(worker)) {
         aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                            "Tile decoder thread creation failed");
       }
 
-      if (worker_idx < num_threads - 1) {
+      if (worker_idx != 0) {
         // Allocate thread data.
         CHECK_MEM_ERROR(cm, thread_data->td,
                         aom_memalign(32, sizeof(*thread_data->td)));
@@ -3498,7 +3499,7 @@ static AOM_INLINE void decode_mt_init(AV1Decoder *pbi) {
   }
   const int use_highbd = cm->seq_params.use_highbitdepth;
   const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
-  for (worker_idx = 0; worker_idx < pbi->max_threads - 1; ++worker_idx) {
+  for (worker_idx = 1; worker_idx < pbi->max_threads; ++worker_idx) {
     DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
     if (thread_data->td->mc_buf_size != buf_size) {
       av1_free_mc_tmp_buf(thread_data->td);
@@ -4130,7 +4131,7 @@ void av1_read_timing_info_header(aom_timing_info_t *timing_info,
     if (num_ticks_per_picture_minus_1 == UINT32_MAX) {
       aom_internal_error(
           error, AOM_CODEC_UNSUP_BITSTREAM,
-          "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
+          "num_ticks_per_picture_minus_1 cannot be (1 << 32) - 1.");
     }
     timing_info->num_ticks_per_picture = num_ticks_per_picture_minus_1 + 1;
   }
@@ -5123,8 +5124,6 @@ static AOM_INLINE void superres_post_decode(AV1Decoder *pbi) {
 
 uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                                             struct aom_read_bit_buffer *rb,
-                                            const uint8_t *data,
-                                            const uint8_t **p_data_end,
                                             int trailing_bits_present) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
@@ -5164,9 +5163,8 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
         xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);
   }
 
+  // Showing a frame directly.
   if (cm->show_existing_frame) {
-    // showing a frame directly
-    *p_data_end = data + uncomp_hdr_size;
     if (pbi->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = *cm->default_frame_context;

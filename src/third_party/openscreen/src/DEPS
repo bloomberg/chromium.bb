@@ -39,20 +39,21 @@ deps = {
   # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/master.
   'buildtools': {
     'url': Var('chromium_git')+ '/chromium/src/buildtools' +
-      '@' + '204a35a2a64f7179f8b76d7a0385653690839e21',
+      '@' + '6302c1175607a436e18947a5abe9df2209e845fc',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/protobuf/src': {
     'url': Var('chromium_git') +
       '/external/github.com/protocolbuffers/protobuf.git' +
-      '@' + 'd0bfd5221182da1a7cc280f3337b5e41a89539cf', # version 3.11.4
+      '@' + '2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10', # version 3.14
     'condition': 'not build_with_chromium',
   },
 
   'third_party/libprotobuf-mutator/src': {
     'url': Var('chromium_git') +
-      '/external/github.com/google/libprotobuf-mutator.git' + '@' '439e81f8f4847ec6e2bf11b3aa634a5d8485633d',
+      '/external/github.com/google/libprotobuf-mutator.git' +
+      '@' + 'e5869dd9690c3f4dfb842fb90bd07a5a9ee32172',
     'condition': 'not build_with_chromium',
   },
 
@@ -73,11 +74,13 @@ deps = {
   'third_party/googletest/src': {
     'url': Var('chromium_git') +
       '/external/github.com/google/googletest.git' +
-      '@' + '0eea2e9fc63461761dea5f2f517bd6af2ca024fa',
+      '@' + '36d8eb532022d3b543bf55aa8ffa01b6e9f03490',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/mDNSResponder/src': {
+    # NOTE: this fork of mDNSResponder is ancient (9 years old), but since
+    # we are moving away from mDNSResponder we will not be updating this.
     'url': Var('github') + '/jevinskie/mDNSResponder.git' +
       '@' + '2942dde61f920fbbf96ff9a3840567ebbe7cb1b6',
     'condition': 'not build_with_chromium',
@@ -95,21 +98,21 @@ deps = {
 
   'third_party/chromium_quic/src': {
     'url': Var('chromium_git') + '/openscreen/quic.git' +
-      '@' + '1bd3640a8eeb9d7c36e4ecb48f6ebab5d9694002',
+      '@' + '444faf6e3ae0dcade48438144f7e8ea2f8b3436d',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/tinycbor/src':
     Var('chromium_git') + '/external/github.com/intel/tinycbor.git' +
-    '@' + '755f9ef932f9830a63a712fd2ac971d838b131f1',
+    '@' + 'fc42a049853b802e45f49588f8148fc29d7b4d9c',
 
   # Abseil recommends living at head.  Chromium takes an Abseil snapshot
-  # irregularly, every 1-2 months.  When rolling, roll manually to the current
-  # Chromium snapshot since it's pretty close to head.
+  # irregularly, every 1-2 months. It's OK for us to come out slightly ahead
+  # of Chrome's copy here.
   'third_party/abseil/src': {
     'url': Var('chromium_git') +
-      '/external/github.com/abseil/abseil-cpp.git' +
-      '@' + 'cde2e2410e58c884b3bf5f67c6511e6266036249',
+      '/external/github.com/abseil/abseil-cpp.git' + '@' +
+      'e19260fd7dbef881492fd73891e0be5bd4a09b95',
     'condition': 'not build_with_chromium',
   },
 
@@ -119,6 +122,18 @@ deps = {
       '@' + 'debe7d2d1982e540fbd6bd78604bf001753f9e74',
     'condition': 'not build_with_chromium',
   },
+
+  'third_party/modp_b64': {
+    'url': Var('chromium_git') + '/chromium/src/third_party/modp_b64'
+    '@' + '85754265d3847383704d19232e1ab873547cda9d',
+    'condition': 'not build_with_chromium',
+  },
+
+  'third_party/valijson/src': {
+    'url': Var('github') + '/tristanpenman/valijson.git' +
+      '@' + 'cf648930313655b19dc07ebae2f9c3fc37966a33', # Tip-of-tree
+    'condition': 'not build_with_chromium'
+  }
 }
 
 hooks = [
@@ -170,6 +185,7 @@ hooks = [
 
 recursedeps = [
   'third_party/chromium_quic/src',
+  'cast',
   'buildtools',
 ]
 

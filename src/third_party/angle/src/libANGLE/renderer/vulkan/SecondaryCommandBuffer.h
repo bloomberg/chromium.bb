@@ -670,9 +670,6 @@ class SecondaryCommandBuffer final : angle::NonCopyable
 
     // Parse the cmds in this cmd buffer into given primary cmd buffer for execution
     void executeCommands(VkCommandBuffer cmdBuffer);
-    // If resetQueryPoolCommands are queued, call this to execute them all
-    //  This should only be called on a cmdBuffer without an active renderPass
-    void executeQueuedResetQueryPoolCommands(VkCommandBuffer cmdBuffer);
 
     // Calculate memory usage of this command buffer for diagnostics.
     void getMemoryUsageStats(size_t *usedMemoryOut, size_t *allocatedMemoryOut) const;
@@ -704,7 +701,6 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     {
         mCommands.clear();
         initialize(mAllocator);
-        mResetQueryQueue.clear();
     }
 
     // This will cause the SecondaryCommandBuffer to become invalid by clearing its allocator
@@ -811,7 +807,7 @@ class SecondaryCommandBuffer final : angle::NonCopyable
         return writePointer + sizeInBytes;
     }
 
-    // flag to indicate that commandBuffer is open for new commands
+    // Flag to indicate that commandBuffer is open for new commands. Initially open.
     bool mIsOpen;
 
     std::vector<CommandHeader *> mCommands;
@@ -821,14 +817,12 @@ class SecondaryCommandBuffer final : angle::NonCopyable
 
     uint8_t *mCurrentWritePointer;
     size_t mCurrentBytesRemaining;
-    // resetQueryPool command must be executed outside RP so we queue them up for
-    //  an inside RenderPass command buffer and pre-prend them to the commands
-    std::vector<ResetQueryPoolParams> mResetQueryQueue;
 };
 
 ANGLE_INLINE SecondaryCommandBuffer::SecondaryCommandBuffer()
-    : mAllocator(nullptr), mCurrentWritePointer(nullptr), mCurrentBytesRemaining(0)
+    : mIsOpen(true), mAllocator(nullptr), mCurrentWritePointer(nullptr), mCurrentBytesRemaining(0)
 {}
+
 ANGLE_INLINE SecondaryCommandBuffer::~SecondaryCommandBuffer() {}
 
 // begin and insert DebugUtilsLabelEXT funcs share this same function body
@@ -1354,13 +1348,6 @@ ANGLE_INLINE void SecondaryCommandBuffer::resetEvent(VkEvent event, VkPipelineSt
     ResetEventParams *paramStruct = initCommand<ResetEventParams>(CommandID::ResetEvent);
     paramStruct->event            = event;
     paramStruct->stageMask        = stageMask;
-}
-
-ANGLE_INLINE void SecondaryCommandBuffer::queueResetQueryPool(VkQueryPool queryPool,
-                                                              uint32_t firstQuery,
-                                                              uint32_t queryCount)
-{
-    mResetQueryQueue.push_back({queryPool, firstQuery, queryCount});
 }
 
 ANGLE_INLINE void SecondaryCommandBuffer::resetQueryPool(VkQueryPool queryPool,

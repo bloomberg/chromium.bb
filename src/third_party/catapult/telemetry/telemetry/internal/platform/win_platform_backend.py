@@ -5,6 +5,7 @@
 import contextlib
 import ctypes
 import logging
+import os
 import platform
 import re
 import subprocess
@@ -31,7 +32,8 @@ try:
     import _winreg as winreg  # pylint: disable=import-error,wrong-import-order
   import win32security  # pylint: disable=import-error
 except ImportError as e:
-  logging.warning('import error in win_platform_backend: %s', e)
+  if platform.system() == 'Windows':
+    logging.warning('import error in win_platform_backend: %s', e)
   pywintypes = None
   shell = None
   shellcon = None
@@ -334,3 +336,18 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
     else:
       logging.info('Did not find any windows owned by target process')
     return False
+
+  def GetIntelPowerGadgetPath(self):
+    ipg_dir = os.getenv('IPG_Dir')
+    if not ipg_dir:
+      logging.debug('No env IPG_Dir')
+      return None
+    gadget_path = os.path.join(ipg_dir, 'PowerLog3.0.exe')
+    if not os.path.isfile(gadget_path):
+      logging.debug('Cannot locate Intel Power Gadget at ' + gadget_path)
+      return None
+    return gadget_path
+
+  def SupportsIntelPowerGadget(self):
+    gadget_path = self.GetIntelPowerGadgetPath()
+    return gadget_path is not None

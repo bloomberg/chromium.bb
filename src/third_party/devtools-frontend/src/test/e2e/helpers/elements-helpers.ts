@@ -8,6 +8,7 @@ import * as puppeteer from 'puppeteer';
 import {$, $$, click, getBrowserAndPages, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
+const EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR = '.selected.expanded[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
 const CSS_PROPERTY_VALUE_SELECTOR = '.value';
 const COLOR_SWATCH_SELECTOR = '.color-swatch-inner';
@@ -17,6 +18,8 @@ const COMPUTED_STYLES_PANEL_SELECTOR = '[aria-label="Computed panel"]';
 const COMPUTED_STYLES_SHOW_ALL_SELECTOR = '[aria-label="Show all"]';
 const COMPUTED_STYLES_GROUP_SELECTOR = '[aria-label="Group"]';
 const ELEMENTS_PANEL_SELECTOR = '.panel[aria-label="elements"]';
+const FONT_EDITOR_SELECTOR = '[aria-label="Font Editor"]';
+const HIDDEN_FONT_EDITOR_SELECTOR = '.font-toolbar-hidden';
 const SECTION_SUBTITLE_SELECTOR = '.styles-section-subtitle';
 const CLS_PANE_SELECTOR = '.styles-sidebar-toolbar-pane';
 const CLS_BUTTON_SELECTOR = '[aria-label="Element Classes"]';
@@ -96,10 +99,19 @@ export const waitForSomeGridsInLayoutPane = async (minimumGridCount: number) => 
 
 export const waitForContentOfSelectedElementsNode = async (expectedTextContent: string) => {
   await waitForFunction(async () => {
-    const selectedNode = await waitFor(SELECTED_TREE_ELEMENT_SELECTOR);
+    const selectedTextContent = await getContentOfSelectedNode();
+    return selectedTextContent === expectedTextContent;
+  });
+};
+
+export const waitForContentOfExpandedSelectedElementsNode = async (expectedTextContent: string) => {
+  await waitForFunction(async () => {
+    const selectedNode = await waitFor(EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR);
     const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
     return selectedTextContent === expectedTextContent;
   });
+  // Make sure that the element is focused and can receive keyboard events.
+  await click(EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR);
 };
 
 /**
@@ -197,7 +209,7 @@ export const getAllPropertiesFromComputedPane = async () => {
              value: value.textContent ? value.textContent.trim().replace(/;$/, '') : '',
            };
          }))))
-      .filter(prop => !!prop);
+      .filter(prop => Boolean(prop));
 };
 
 export const getPropertyFromComputedPane = async (name: string) => {
@@ -212,7 +224,7 @@ export const getPropertyFromComputedPane = async (name: string) => {
     }, name);
     // Note that evaluateHandle always returns a handle, even if it points to an undefined remote object, so we need to
     // check it's defined here or continue iterating.
-    if (await matchingProperty.evaluate(n => !!n)) {
+    if (await matchingProperty.evaluate(n => Boolean(n))) {
       return matchingProperty as puppeteer.ElementHandle;
     }
   }
@@ -338,7 +350,7 @@ export const getDisplayedCSSPropertyNames = async (propertiesSection: puppeteer.
   const propertyNamesText = (await Promise.all(cssPropertyNames.map(
                                  node => node.evaluate(n => n.textContent),
                                  )))
-                                .filter(c => !!c);
+                                .filter(c => Boolean(c));
   return propertyNamesText;
 };
 
@@ -364,6 +376,16 @@ export const shiftClickColorSwatch = async (ruleSection: puppeteer.ElementHandle
   await frontend.keyboard.up('Shift');
 };
 
+export const getFontEditorButtons = async () => {
+  const buttons = await $$(FONT_EDITOR_SELECTOR);
+  return buttons;
+};
+
+export const getHiddenFontEditorButtons = async () => {
+  const buttons = await $$(HIDDEN_FONT_EDITOR_SELECTOR);
+  return buttons;
+};
+
 export const getStyleSectionSubtitles = async () => {
   const subtitles = await $$(SECTION_SUBTITLE_SELECTOR);
   return Promise.all(subtitles.map(node => node.evaluate(n => n.textContent)));
@@ -380,7 +402,7 @@ export const getCSSPropertyInRule = async (ruleSection: puppeteer.ElementHandle<
         await node.evaluateHandle((node, name) => (name === node.textContent) ? node.parentNode : undefined, name);
     // Note that evaluateHandle always returns a handle, even if it points to an undefined remote object, so we need to
     // check it's defined here or continue iterating.
-    if (await parent.evaluate(n => !!n)) {
+    if (await parent.evaluate(n => Boolean(n))) {
       return parent as puppeteer.ElementHandle;
     }
   }
@@ -453,16 +475,22 @@ export async function waitForPropertyToHighlight(ruleSelector: string, propertyN
 export const getBreadcrumbsTextContent = async () => {
   const crumbs = await $$('li.crumb > a > devtools-node-text');
 
-  const crumbsAsText: string[] = await Promise.all(crumbs.map(node => node.evaluate(node => {
-    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  const crumbsAsText: string[] = await Promise.all(crumbs.map(node => node.evaluate((node: Element) => {
+    if (!node.shadowRoot) {
+      assert.fail('Found breadcrumbs node that unexpectedly has no shadowRoot.');
+    }
+    return Array.from(node.shadowRoot.querySelectorAll('span') || []).map(span => span.textContent).join('');
   })));
   return crumbsAsText;
 };
 
 export const getSelectedBreadcrumbTextContent = async () => {
   const selectedCrumb = await waitFor('li.crumb.selected > a > devtools-node-text');
-  const text = selectedCrumb.evaluate(node => {
-    return Array.from(node.shadowRoot!.querySelectorAll('span')).map(span => span.textContent).join('');
+  const text = selectedCrumb.evaluate((node: Element) => {
+    if (!node.shadowRoot) {
+      assert.fail('Found breadcrumbs node that unexpectedly has no shadowRoot.');
+    }
+    return Array.from(node.shadowRoot.querySelectorAll('span') || []).map(span => span.textContent).join('');
   });
   return text;
 };
@@ -483,7 +511,7 @@ export const toggleClassesPane = async () => {
 };
 
 export const typeInClassesPaneInput =
-    async (text: string, commitWith: string = 'Enter', waitForNodeChange: Boolean = true) => {
+    async (text: string, commitWith: puppeteer.KeyInput = 'Enter', waitForNodeChange: Boolean = true) => {
   await step(`Typing in new class names ${text}`, async () => {
     const clsInput = await waitFor(CLS_INPUT_SELECTOR);
     await clsInput.type(text, {delay: 50});

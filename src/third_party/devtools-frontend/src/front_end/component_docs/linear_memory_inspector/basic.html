@@ -11,7 +11,7 @@
     <title>Linear Memory Inspector Example</title>
     <style>
       #container {
-        width: 800px;
+        width: 850px;
         height: 400px;
         border: 1px solid black;
         display: flex;
@@ -21,34 +21,6 @@
   <body>
     <div id="container">
     </div>
-    <script type="module">
-      import * as ComponentHelpers from '../../component_helpers/component_helpers.js';
-      import {LinearMemoryInspector} from '../../linear_memory_inspector/LinearMemoryInspector.js';
-
-      ComponentHelpers.ComponentServerSetup.setup().then(() => renderComponent())
-
-      const renderComponent = () => {
-        const array = [];
-        const string = "Hello this is a string from the memory buffer!";
-
-        for (var i = 0; i < string.length; ++i) {
-          array.push(string.charCodeAt(i));
-        }
-
-        for (var i = 0; i < 1000; ++i) {
-          array.push(i);
-        }
-
-        const memory = new Uint8Array(array);
-        const memoryInspector = new LinearMemoryInspector();
-        document.getElementById('container').appendChild(memoryInspector);
-
-        memoryInspector.data = {
-          memory: memory,
-          address: 0,
-          memoryOffset: 0
-        };
-      }
-    </script>
+    <script type="module" src="./basic.js"></script>
   </body>
 </html>

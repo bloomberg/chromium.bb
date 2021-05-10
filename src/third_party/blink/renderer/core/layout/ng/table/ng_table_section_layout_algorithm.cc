@@ -50,12 +50,12 @@ scoped_refptr<const NGLayoutResult> NGTableSectionLayoutAlgorithm::Layout() {
         table_data.table_writing_direction.GetWritingMode(),
         table_data.table_writing_direction,
         /* is_new_fc */ true);
-    row_space_builder.SetAvailableSize(
-        {container_builder_.InlineSize(), kIndefiniteSize});
+    row_space_builder.SetAvailableSize({container_builder_.InlineSize(),
+                                        table_data.rows[row_index].block_size});
     row_space_builder.SetIsFixedInlineSize(true);
+    row_space_builder.SetIsFixedBlockSize(true);
     row_space_builder.SetPercentageResolutionSize(
         {container_builder_.InlineSize(), kIndefiniteSize});
-    row_space_builder.SetNeedsBaseline(true);
     row_space_builder.SetTableRowData(&table_data, row_index);
     NGConstraintSpace row_space = row_space_builder.ToConstraintSpace();
     scoped_refptr<const NGLayoutResult> row_result = row.Layout(row_space);

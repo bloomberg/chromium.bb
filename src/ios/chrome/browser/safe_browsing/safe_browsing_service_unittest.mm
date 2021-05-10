@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #import "ios/chrome/test/testing_application_context.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -82,7 +82,7 @@ class TestUrlCheckerClient {
   void CheckUrl(const GURL& url) {
     result_pending_ = true;
     url_checker_ = safe_browsing_service_->CreateUrlChecker(
-        safe_browsing::ResourceType::kMainFrame, &web_state_);
+        network::mojom::RequestDestination::kDocument, &web_state_);
     base::PostTask(FROM_HERE, {web::WebThread::IO},
                    base::BindOnce(&TestUrlCheckerClient::CheckUrlOnIOThread,
                                   base::Unretained(this), url));
@@ -125,7 +125,7 @@ class TestUrlCheckerClient {
   bool result_pending_ = false;
   bool url_is_unsafe_ = false;
   SafeBrowsingService* safe_browsing_service_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker_;
 };
 

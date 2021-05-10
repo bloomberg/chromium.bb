@@ -21,6 +21,7 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
+#include "third_party/base/check.h"
 #include "xfa/fxfa/cxfa_ffdocview.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/cxfa_ffwidgethandler.h"
@@ -45,7 +46,7 @@
 
 CPDFXFA_DocEnvironment::CPDFXFA_DocEnvironment(CPDFXFA_Context* pContext)
     : m_pContext(pContext) {
-  ASSERT(m_pContext);
+  DCHECK(m_pContext);
 }
 
 CPDFXFA_DocEnvironment::~CPDFXFA_DocEnvironment() = default;
@@ -288,14 +289,13 @@ void CPDFXFA_DocEnvironment::PageViewEvent(CXFA_FFPageView* pPageView,
   if (!pXFADocView)
     return;
 
-  for (int iPageIter = 0; iPageIter < m_pContext->GetOriginalPageCount();
-       iPageIter++) {
-    RetainPtr<CPDFXFA_Page> pPage = (*m_pContext->GetXFAPageList())[iPageIter];
+  for (int i = 0; i < m_pContext->GetOriginalPageCount(); ++i) {
+    RetainPtr<CPDFXFA_Page> pPage = m_pContext->GetXFAPage(i);
     if (!pPage)
       continue;
 
     m_pContext->GetFormFillEnv()->RemovePageView(pPage.Get());
-    pPage->SetXFAPageViewIndex(iPageIter);
+    pPage->SetXFAPageViewIndex(i);
   }
 
   int flag = (nNewCount < m_pContext->GetOriginalPageCount())

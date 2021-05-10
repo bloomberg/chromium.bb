@@ -30,13 +30,21 @@ static_library("esim_manager") {
   sources = [
     "esim_manager.cc",
     "esim_manager.h",
+    "esim_mojo_utils.cc",
+    "esim_mojo_utils.h",
+    "esim_profile.cc",
+    "esim_profile.h",
+    "euicc.cc",
+    "euicc.h",
   ]
 
   deps = [
     "//base",
     "//chromeos/dbus/hermes",
+    "//chromeos/network",
     "//chromeos/services/cellular_setup/public/mojom",
     "//components/device_event_log",
+    "//components/qr_code_generator",
     "//dbus",
   ]
 }
@@ -66,6 +74,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "esim_test_utils.cc",
+    "esim_test_utils.h",
     "fake_ota_activator.cc",
     "fake_ota_activator.h",
   ]
@@ -84,6 +94,10 @@ source_set("unit_tests") {
     "cellular_setup_impl_unittest.cc",
     "cellular_setup_service_unittest.cc",
     "esim_manager_unittest.cc",
+    "esim_profile_unittest.cc",
+    "esim_test_base.cc",
+    "esim_test_base.h",
+    "euicc_unittest.cc",
     "ota_activator_impl_unittest.cc",
   ]
 

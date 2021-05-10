@@ -72,7 +72,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnBufferingStateChange(BufferingState state,
                               BufferingStateChangeReason reason) override;
   void OnEnded() override;
-  void OnError() override;
+  void OnError(const Status& status) override;
   void OnAudioConfigChange(const AudioDecoderConfig& config) override;
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
@@ -128,7 +128,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
 
   // Mojo demuxer streams.
   // Owned by MojoRenderer instead of remote mojom::Renderer
-  // becuase these demuxer streams need to be destroyed as soon as |this| is
+  // because these demuxer streams need to be destroyed as soon as |this| is
   // destroyed. The local demuxer streams returned by MediaResource cannot be
   // used after |this| is destroyed.
   // TODO(alokp): Add tests for MojoDemuxerStreamImpl.

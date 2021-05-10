@@ -14,7 +14,7 @@ const {assert} = chai;
 const TEST_CONTAINER_ID = '__devtools-test-container-id';
 
 interface RenderOptions {
-  allowMultipleChildren?: boolean
+  allowMultipleChildren?: boolean;
 }
 
 /**
@@ -28,7 +28,7 @@ export const renderElementIntoDOM = (element: HTMLElement, renderOptions: Render
     return;
   }
 
-  const allowMultipleChildren = !!renderOptions.allowMultipleChildren;
+  const allowMultipleChildren = Boolean(renderOptions.allowMultipleChildren);
 
   if (container.childNodes.length !== 0 && !allowMultipleChildren) {
     assert.fail('renderIntoDOM expects the container to be empty');
@@ -56,15 +56,6 @@ export const resetTestDOM = () => {
 };
 
 /**
- * This is useful to keep TypeScript happy in a test - if you have a value that's potentially `null` you can use this function to assert that it isn't, and satisfy TypeScript that the value is present.
- */
-export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
-  if (val === null) {
-    assert.fail('Expected thing to be not null but it was');
-  }
-}
-
-/**
  * An easy way to assert the component's shadowRoot exists so you're able to assert on its contents.
  */
 export function assertShadowRoot(shadowRoot: ShadowRoot|null): asserts shadowRoot is ShadowRoot {
@@ -72,7 +63,7 @@ export function assertShadowRoot(shadowRoot: ShadowRoot|null): asserts shadowRoo
 }
 
 type Constructor<T> = {
-  new (...args: unknown[]): T
+  new (...args: unknown[]): T,
 };
 
 /**
@@ -137,14 +128,11 @@ export function waitForScrollLeft<T extends Element>(element: T, desiredScrollLe
 }
 
 /**
- * Dispatches a mouse click event. Errors if the event was not dispatched successfully.
+ * Dispatches a mouse click event.
  */
 export function dispatchClickEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
   const clickEvent = new MouseEvent('click', options);
-  const success = element.dispatchEvent(clickEvent);
-  if (!success) {
-    assert.fail('Failed to trigger click event successfully.');
-  }
+  element.dispatchEvent(clickEvent);
 }
 
 /**
@@ -156,6 +144,30 @@ export function dispatchKeyDownEvent<T extends Element>(element: T, options: Key
   if (!success) {
     assert.fail('Failed to trigger keydown event successfully.');
   }
+}
+
+/**
+ * Dispatches a mouse over event.
+ */
+export function dispatchMouseOverEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
+  const moveEvent = new MouseEvent('mouseover', options);
+  element.dispatchEvent(moveEvent);
+}
+
+/**
+ * Dispatches a mouse move event.
+ */
+export function dispatchMouseMoveEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
+  const moveEvent = new MouseEvent('mousemove', options);
+  element.dispatchEvent(moveEvent);
+}
+
+/**
+ * Dispatches a mouse leave event.
+ */
+export function dispatchMouseLeaveEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
+  const leaveEvent = new MouseEvent('mouseleave', options);
+  element.dispatchEvent(leaveEvent);
 }
 
 /**
@@ -171,5 +183,19 @@ export function getEventPromise<T extends Event>(element: HTMLElement, eventName
 }
 
 export async function doubleRaf() {
-  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+export async function raf() {
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+/**
+  * It's useful to use innerHTML in the tests to have full confidence in the
+  * renderer output, but LitHtml uses comment nodes to split dynamic from
+  * static parts of a template, and we don't want our tests full of noise
+  * from those.
+  */
+export function stripLitHtmlCommentNodes(text: string) {
+  return text.replaceAll('<!---->', '');
 }

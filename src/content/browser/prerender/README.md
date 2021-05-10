@@ -2,6 +2,9 @@ This directory contains the experimental Prerender2 implementation
 (https://crbug.com/1126305). This feature is now behind the
 `blink::features::kPrerender2` flag.
 
+If you're interested in relevant code changes, join the
+prerendering-reviews@chromium.org group.
+
 # Summary
 
 Prerendering is "pre"-rendering, it's about pre-loading and rendering a page
@@ -12,6 +15,8 @@ The Prerender2 is the new implementation of prerendering.
 
 # Terminology
 
+- **Trigger**: "Trigger" is an entry point to start prerendering. Currently,
+  `<link rel=prerender>` is the only trigger.
 - **Activate**: The Prerender2 runs navigation code twice: navigation for
   prerendering a page, and navigation for displaying the prerendered page.
   "Activate" indicates the latter navigation.
@@ -31,4 +36,4 @@ The Prerender2 is the new implementation of prerendering.
 
 The date is the publication date, not the last updated date.
 
-- [Prerender2](https://docs.google.com/document/d/1P2VKCLpmnNm_cRAjUeE-bqLL0bslL_zKqiNeCzNom_w/edit?usp=sharing) (Oct, 2020)
+- [Prerender2](https://docs.google.com/document/d/1P2VKCLpmnNm_cRAjUeE-bqLL0bslL_zKqiNeCzNom_w/edit?usp=sharing) (Oct, 2020): Introduces how Prerender2 works and more detailed designs such as Mojo Capability Control.

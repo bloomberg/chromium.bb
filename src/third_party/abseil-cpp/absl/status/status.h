@@ -57,6 +57,7 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/status/internal/status_internal.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
 namespace absl {
@@ -370,10 +371,10 @@ class ABSL_MUST_USE_RESULT Status final {
   Status();
 
   // Creates a status in the canonical error space with the specified
-  // `absl::StatusCode` and error message.  If `code == absl::StatusCode::kOk`,
+  // `absl::StatusCode` and error message.  If `code == absl::StatusCode::kOk`,  // NOLINT
   // `msg` is ignored and an object identical to an OK status is constructed.
   //
-  // The `msg` string must be in UTF-8. The implementation may complain (e.g.,
+  // The `msg` string must be in UTF-8. The implementation may complain (e.g.,  // NOLINT
   // by printing a warning) if it is not.
   Status(absl::StatusCode code, absl::string_view msg);
 
@@ -550,8 +551,9 @@ class ABSL_MUST_USE_RESULT Status final {
   status_internal::Payloads* GetPayloads();
 
   // Takes ownership of payload.
-  static uintptr_t NewRep(absl::StatusCode code, absl::string_view msg,
-                          std::unique_ptr<status_internal::Payloads> payload);
+  static uintptr_t NewRep(
+      absl::StatusCode code, absl::string_view msg,
+      std::unique_ptr<status_internal::Payloads> payload);
   static bool EqualsSlow(const absl::Status& a, const absl::Status& b);
 
   // MSVC 14.0 limitation requires the const.
@@ -704,9 +706,11 @@ inline Status::Status(Status&& x) noexcept : rep_(x.rep_) {
 
 inline Status& Status::operator=(Status&& x) {
   uintptr_t old_rep = rep_;
-  rep_ = x.rep_;
-  x.rep_ = MovedFromRep();
-  Unref(old_rep);
+  if (x.rep_ != old_rep) {
+    rep_ = x.rep_;
+    x.rep_ = MovedFromRep();
+    Unref(old_rep);
+  }
   return *this;
 }
 

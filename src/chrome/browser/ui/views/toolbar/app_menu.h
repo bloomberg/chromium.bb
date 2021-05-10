@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/global_error/global_error_observer.h"
@@ -69,12 +69,13 @@ class AppMenu : public views::MenuDelegate,
   bool AreDropTypesRequired(views::MenuItemView* menu) override;
   bool CanDrop(views::MenuItemView* menu,
                const ui::OSExchangeData& data) override;
-  int GetDropOperation(views::MenuItemView* item,
-                       const ui::DropTargetEvent& event,
-                       DropPosition* position) override;
-  int OnPerformDrop(views::MenuItemView* menu,
-                    DropPosition position,
-                    const ui::DropTargetEvent& event) override;
+  ui::mojom::DragOperation GetDropOperation(views::MenuItemView* item,
+                                            const ui::DropTargetEvent& event,
+                                            DropPosition* position) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      views::MenuItemView* menu,
+      DropPosition position,
+      const ui::DropTargetEvent& event) override;
   bool ShowContextMenu(views::MenuItemView* source,
                        int command_id,
                        const gfx::Point& p,
@@ -182,8 +183,8 @@ class AppMenu : public views::MenuDelegate,
   // Used for managing "Recent tabs" menu items.
   std::unique_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
 
-  ScopedObserver<GlobalErrorService, GlobalErrorObserver>
-      global_error_observer_{this};
+  base::ScopedObservation<GlobalErrorService, GlobalErrorObserver>
+      global_error_observation_{this};
 
   // The bit mask of views::MenuRunner::RunTypes.
   const int run_types_;

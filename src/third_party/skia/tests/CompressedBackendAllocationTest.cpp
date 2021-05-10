@@ -11,6 +11,7 @@
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkCompressedDataUtils.h"
 #include "src/core/SkMipmap.h"
+#include "src/core/SkPaintPriv.h"
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/image/SkImage_Base.h"
@@ -72,8 +73,10 @@ static void check_compressed_mipmaps(GrRecordingContext* rContext, sk_sp<SkImage
 
     SkCanvas* canvas = surf->getCanvas();
 
+    const SkSamplingOptions sampling(SkFilterMode::kLinear,
+                                     SkMipmapMode::kLinear);
     SkPaint p;
-    p.setFilterQuality(kHigh_SkFilterQuality); // to force mipMapping
+    SkPaintPriv::SetFQ(&p, kMedium_SkFilterQuality); // to force mipMapping
     p.setBlendMode(SkBlendMode::kSrc);
 
     int numMipLevels = 1;
@@ -87,7 +90,7 @@ static void check_compressed_mipmaps(GrRecordingContext* rContext, sk_sp<SkImage
         canvas->clear(SK_ColorTRANSPARENT);
 
         SkRect r = SkRect::MakeWH(rectSize, rectSize);
-        canvas->drawImageRect(img, r, &p);
+        canvas->drawImageRect(img, r, sampling, &p);
 
         SkImageInfo readbackII = SkImageInfo::Make(rectSize, rectSize,
                                                    kRGBA_8888_SkColorType,

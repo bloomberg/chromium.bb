@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simple_quic_framer.h"
+#include "quic/test_tools/simple_quic_framer.h"
 
 #include <memory>
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 namespace test {
@@ -52,7 +52,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   bool OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {
+  void OnDecryptedPacket(size_t /*length*/, EncryptionLevel level) override {
     last_decrypted_level_ = level;
   }
   bool OnPacketHeader(const QuicPacketHeader& header) override {
@@ -101,7 +101,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
-    DCHECK(!ack_frames_.empty());
+    QUICHE_DCHECK(!ack_frames_.empty());
     ack_frames_[ack_frames_.size() - 1].packets.AddRange(start, end);
     return true;
   }

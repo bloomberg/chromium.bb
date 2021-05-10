@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CloseableOnMainThread;
@@ -46,8 +47,8 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -89,6 +90,24 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     private static final String FILENAME_WEBM = "test.webm";
     private static final String TEST_GIF_IMAGE_FILE_EXTENSION = ".gif";
     private static final String TEST_JPG_IMAGE_FILE_EXTENSION = ".jpg";
+
+    // Test chip delegate that always returns valid chip render params.
+    private static final ChipDelegate FAKE_CHIP_DELEGATE = new ChipDelegate() {
+        @Override
+        public void getChipRenderParams(Callback<ChipRenderParams> callback) {
+            // Do nothing.
+        }
+
+        @Override
+        public void onMenuClosed() {
+            // Do nothing.
+        }
+
+        @Override
+        public boolean isValidChipRenderParams(ChipRenderParams chipRenderParams) {
+            return true;
+        }
+    };
 
     private static final String[] TEST_FILES =
             new String[] {FILENAME_GIF, FILENAME_PNG, FILENAME_WEBM};
@@ -354,11 +373,9 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         final CallbackHelper newTabCallback = new CallbackHelper();
         final AtomicReference<Tab> newTab = new AtomicReference<>();
         mDownloadTestRule.getActivity().getTabModelSelector().addObserver(
-                new EmptyTabModelSelectorObserver() {
+                new TabModelSelectorObserver() {
                     @Override
                     public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
-                        super.onNewTabCreated(tab, creationState);
-
                         if (CriticalPersistedTabData.from(tab).getParentId()
                                 != activityTab.getId()) {
                             return;
@@ -410,8 +427,134 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @Test
     @MediumTest
     @Feature({"Browser"})
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS})
+    public void testLensTranslateChipNotShowingIfNotEnabled() throws Throwable {
+        // Required to avoid runtime error.
+        Looper.prepare();
+
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menuCoordinator =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        // Needs to run on UI thread so creation happens on same thread as dismissal.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull("Chip popoup was initialized.",
+                    menuCoordinator.getCurrentPopupWindowForTesting());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS})
+    public void testSelectLensTranslateChip() throws Throwable {
+        // Required to avoid runtime error.
+        Looper.prepare();
+
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menuCoordinator =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        // Needs to run on UI thread so creation happens on same thread as dismissal.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            menuCoordinator.simulateTranslateImageClassificationForTesting();
+            Assert.assertTrue("Chip popoup not showing.",
+                    menuCoordinator.getCurrentPopupWindowForTesting().isShowing());
+            menuCoordinator.clickChipForTesting();
+        });
+
+        Assert.assertEquals("Selection histogram pings not equal to one", 1,
+                RecordHistogram.getHistogramValueCountForTesting("ContextMenu.LensChip.Event",
+                        RevampedContextMenuChipController.ChipEvent.CLICKED));
+        Assert.assertFalse("Chip popoup still showing.",
+                menuCoordinator.getCurrentPopupWindowForTesting().isShowing());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS})
+    public void testLensChipNotShowingAfterMenuDismissed() throws Throwable {
+        // Required to avoid runtime error.
+        Looper.prepare();
+
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menuCoordinator =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        // Dismiss context menu.
+        TestTouchUtils.singleClickView(InstrumentationRegistry.getInstrumentation(), tab.getView(),
+                tab.getView().getWidth() - 5, tab.getView().getHeight() - 5);
+        // Needs to run on UI thread so creation happens on same thread as dismissal.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChipRenderParams chipRenderParams =
+                    menuCoordinator.simulateImageClassificationForTesting();
+            menuCoordinator.getChipRenderParamsCallbackForTesting(FAKE_CHIP_DELEGATE)
+                    .bind(chipRenderParams)
+                    .run();
+            Assert.assertNull("Chip popoup was initialized.",
+                    menuCoordinator.getCurrentPopupWindowForTesting());
+        });
+    }
+
+    // Assert that focus is unchanged and that the chip popup does not block the dismissal of the
+    // context menu.
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS})
+    public void testDismissContextMenuOnClickLensTranslateChipEnabled() throws TimeoutException {
+        // Required to avoid runtime error.
+        Looper.prepare();
+
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        RevampedContextMenuCoordinator menuCoordinator =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        // Needs to run on UI thread so creation happens on same thread as dismissal.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> menuCoordinator.simulateTranslateImageClassificationForTesting());
+        Assert.assertNotNull("Context menu was not properly created", menuCoordinator);
+        CriteriaHelper.pollUiThread(() -> {
+            return !mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Context menu did not have window focus");
+
+        TestTouchUtils.singleClickView(InstrumentationRegistry.getInstrumentation(), tab.getView(),
+                tab.getView().getWidth() - 5, tab.getView().getHeight() - 5);
+
+        CriteriaHelper.pollUiThread(() -> {
+            return mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Activity did not regain focus.");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
     @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
-    public void testSelectLensChip() throws Throwable {
+    public void testLensShoppingChipNotShowingIfNotEnabled() throws Throwable {
+        // Required to avoid runtime error.
+        Looper.prepare();
+
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menuCoordinator =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        // Needs to run on UI thread so creation happens on same thread as dismissal.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull("Chip popoup was initialized.",
+                    menuCoordinator.getCurrentPopupWindowForTesting());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
+    public void testSelectLensShoppingChip() throws Throwable {
         // Required to avoid runtime error.
         Looper.prepare();
 
@@ -441,7 +584,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @Test
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
-    public void testDismissContextMenuOnClickLensChipEnabled() throws TimeoutException {
+    public void testDismissContextMenuOnClickShoppingLensChipEnabled() throws TimeoutException {
         // Required to avoid runtime error.
         Looper.prepare();
 
@@ -600,9 +743,10 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_save_link_as,
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_share_link};
-        Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab};
-        expectedItems =
-                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems,
+                new Integer[] {R.id.contextmenu_open_in_ephemeral_tab});
+        expectedItems = addItemsIf(ChromeFeatureList.isEnabled(ChromeFeatureList.READ_LATER),
+                expectedItems, new Integer[] {R.id.contextmenu_read_later});
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -977,6 +1121,61 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
+    @CommandLineFlags.Add({"enable-features="
+                    + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled"})
+    public void
+    testSearchWithGoogleLensMenuItemName() throws Throwable {
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
+        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menu =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        Integer[] expectedItems = {R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
+                R.id.contextmenu_copy_image, R.id.contextmenu_search_with_google_lens};
+        expectedItems = addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems,
+                new Integer[] {R.id.contextmenu_open_in_ephemeral_tab});
+        String title = getMenuTitleFromItem(menu, R.id.contextmenu_search_with_google_lens);
+        Assert.assertTrue("Context menu item name should be \'Search with Google Lens\'.",
+                title.startsWith("Search with Google Lens"));
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @CommandLineFlags.Add({"enable-features="
+                    + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:useSearchImageWithGoogleLensItemName/true"})
+    public void
+    testSearchImageWithGoogleLensMenuItemName() throws Throwable {
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
+        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        RevampedContextMenuCoordinator menu =
+                RevampedContextMenuUtils.openContextMenu(tab, "testImage");
+        Integer[] expectedItems = {R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
+                R.id.contextmenu_copy_image, R.id.contextmenu_search_with_google_lens};
+        expectedItems = addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems,
+                new Integer[] {R.id.contextmenu_open_in_ephemeral_tab});
+        String title = getMenuTitleFromItem(menu, R.id.contextmenu_search_with_google_lens);
+        Assert.assertTrue("Context menu item name should be \'Search image with Google Lens\'.",
+                title.startsWith("Search image with Google Lens"));
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
     public void testCopyImage() throws Throwable {
         // Clear the clipboard.
         Clipboard.getInstance().setText("");
@@ -1038,6 +1237,21 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
             }
         }
         return items.toString();
+    }
+
+    private String getMenuTitleFromItem(RevampedContextMenuCoordinator menu, int itemId) {
+        StringBuilder itemName = new StringBuilder();
+        for (int i = 0; i < menu.getCount(); i++) {
+            if (menu.getItem(i).type >= CONTEXT_MENU_ITEM) {
+                if (menu.getItem(i).model.get(RevampedContextMenuItemProperties.MENU_ID)
+                        == itemId) {
+                    itemName.append(
+                            menu.getItem(i).model.get(RevampedContextMenuItemProperties.TEXT));
+                    return itemName.toString();
+                }
+            }
+        }
+        return null;
     }
 
     /**

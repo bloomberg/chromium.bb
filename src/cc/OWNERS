@@ -5,6 +5,7 @@
 # Folks listed as unofficial can't do OWNERS approvals but are good people to
 # ask for informal reviews.
 
+set noparent
 # layers
 danakj@chromium.org
 pdr@chromium.org
@@ -36,7 +37,6 @@ flackr@chromium.org
 smcgruer@chromium.org
 
 # images
-khushalsagar@chromium.org
 vmpstr@chromium.org
 
 # surfaces
@@ -51,6 +51,10 @@ majidvp@chromium.org
 
 # metrics
 sadrul@chromium.org
+
+# paint
+sunnyps@chromium.org
+vasilyt@chromium.org
 
 # general
 danakj@chromium.org

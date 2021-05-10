@@ -248,7 +248,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
  public:
   explicit AutoDimEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
-    shelf_observer_.Add(shelf_);
+    shelf_observation_.Observe(shelf_);
     UndimShelf();
   }
 
@@ -312,7 +312,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
   base::OneShotTimer dim_shelf_timer_;
   // An observer that notifies the AutoDimHandler that shelf visibility has
   // changed.
-  ScopedObserver<Shelf, ShelfObserver> shelf_observer_{this};
+  base::ScopedObservation<Shelf, ShelfObserver> shelf_observation_{this};
 
   // Delay before dimming the shelf.
   const base::TimeDelta kDimDelay = base::TimeDelta::FromSeconds(5);
@@ -582,7 +582,7 @@ void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event,
   // If the App List is not visible, send MouseWheel events to the
   // |shelf_layout_manager_| because these events are used to show the App List.
   if (app_list_controller->IsVisible(shelf_layout_manager_->display_.id())) {
-    app_list_controller->ProcessMouseWheelEvent(*event);
+    app_list_controller->ProcessMouseWheelEvent(*event, from_touchpad);
   } else {
     shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event,
                                                            from_touchpad);

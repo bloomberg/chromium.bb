@@ -66,6 +66,16 @@ int DebugPrintf(const char *format, ...);
 
 namespace rr {
 
+// These generally map to the precision types as specified by the Vulkan specification.
+// See https://www.khronos.org/registry/vulkan/specs/1.2/html/chap37.html#spirvenv-precision-operation
+enum class Precision
+{
+	/*Exact,*/  // 0 ULP with correct rounding (i.e. Math.h)
+	Full,       // Single precision, but not relaxed
+	Relaxed,    // Single precision, relaxed
+	/*Half,*/   // Half precision
+};
+
 std::string BackendName();
 
 struct Capabilities
@@ -119,6 +129,7 @@ class Variable
 {
 	friend class Nucleus;
 
+	Variable() = delete;
 	Variable &operator=(const Variable &) = delete;
 
 public:
@@ -130,22 +141,21 @@ public:
 	Value *getBaseAddress() const;
 	Value *getElementPointer(Value *index, bool unsignedIndex) const;
 
-	virtual Type *getType() const = 0;
+	Type *getType() const { return type; }
+	int getArraySize() const { return arraySize; }
 
 	// This function is only public for testing purposes, as it affects performance.
 	// It is not considered part of Reactor's public API.
 	static void materializeAll();
 
 protected:
-	Variable();
+	Variable(Type *type, int arraySize);
 	Variable(const Variable &) = default;
 
 	virtual ~Variable();
 
 private:
 	static void killUnmaterialized();
-
-	virtual Value *allocate() const;
 
 	// Set of variables that do not have a stack location yet.
 	class UnmaterializedVariables
@@ -165,6 +175,8 @@ private:
 	// for destructing objects at exit. See crbug.com/1074222
 	static thread_local UnmaterializedVariables *unmaterializedVariables;
 
+	Type *const type;
+	const int arraySize;
 	mutable Value *rvalue = nullptr;
 	mutable Value *address = nullptr;
 };
@@ -173,7 +185,7 @@ template<class T>
 class LValue : public Variable
 {
 public:
-	LValue();
+	LValue(int arraySize = 0);
 
 	RValue<Pointer<T>> operator&();
 
@@ -187,11 +199,6 @@ public:
 		this->storeValue(rvalue.value());
 
 		return rvalue;
-	}
-
-	Type *getType() const override
-	{
-		return T::type();
 	}
 
 	// self() returns the this pointer to this LValue<T> object.
@@ -2000,7 +2007,14 @@ inline RValue<Int4> CmpGE(RValue<Int4> x, RValue<Int4> y)
 }
 RValue<Int4> Max(RValue<Int4> x, RValue<Int4> y);
 RValue<Int4> Min(RValue<Int4> x, RValue<Int4> y);
+// Convert to nearest integer. If a converted value is outside of the integer
+// range, the returned result is undefined.
 RValue<Int4> RoundInt(RValue<Float4> cast);
+// Rounds to the nearest integer, but clamps very large values to an
+// implementation-dependent range.
+// Specifically, on x86, values larger than 2147483583.0 are converted to
+// 2147483583 (0x7FFFFFBF) instead of producing 0x80000000.
+RValue<Int4> RoundIntClamped(RValue<Float4> cast);
 RValue<Short8> PackSigned(RValue<Int4> x, RValue<Int4> y);
 RValue<UShort8> PackUnsigned(RValue<Int4> x, RValue<Int4> y);
 RValue<Int> Extract(RValue<Int4> val, int i);
@@ -2158,8 +2172,14 @@ RValue<Bool> operator==(RValue<Float> lhs, RValue<Float> rhs);
 RValue<Float> Abs(RValue<Float> x);
 RValue<Float> Max(RValue<Float> x, RValue<Float> y);
 RValue<Float> Min(RValue<Float> x, RValue<Float> y);
+// Deprecated: use Rcp
+// TODO(b/147516027): Remove when GLES frontend is removed
 RValue<Float> Rcp_pp(RValue<Float> val, bool exactAtPow2 = false);
+// Deprecated: use RcpSqrt
+// TODO(b/147516027): Remove when GLES frontend is removed
 RValue<Float> RcpSqrt_pp(RValue<Float> val);
+RValue<Float> Rcp(RValue<Float> x, Precision p = Precision::Full, bool finite = false, bool exactAtPow2 = false);
+RValue<Float> RcpSqrt(RValue<Float> x, Precision p = Precision::Full);
 RValue<Float> Sqrt(RValue<Float> x);
 
 //	RValue<Int4> IsInf(RValue<Float> x);
@@ -2322,8 +2342,15 @@ RValue<Float4> operator-(RValue<Float4> val);
 RValue<Float4> Abs(RValue<Float4> x);
 RValue<Float4> Max(RValue<Float4> x, RValue<Float4> y);
 RValue<Float4> Min(RValue<Float4> x, RValue<Float4> y);
+
+// Deprecated: use Rcp
+// TODO(b/147516027): Remove when GLES frontend is removed
 RValue<Float4> Rcp_pp(RValue<Float4> val, bool exactAtPow2 = false);
+// Deprecated: use RcpSqrt
+// TODO(b/147516027): Remove when GLES frontend is removed
 RValue<Float4> RcpSqrt_pp(RValue<Float4> val);
+RValue<Float4> Rcp(RValue<Float4> x, Precision p = Precision::Full, bool finite = false, bool exactAtPow2 = false);
+RValue<Float4> RcpSqrt(RValue<Float4> x, Precision p = Precision::Full);
 RValue<Float4> Sqrt(RValue<Float4> x);
 RValue<Float4> Insert(RValue<Float4> val, RValue<Float> element, int i);
 RValue<Float> Extract(RValue<Float4> x, int i);
@@ -2374,13 +2401,6 @@ RValue<Float4> Trunc(RValue<Float4> x);
 RValue<Float4> Frac(RValue<Float4> x);
 RValue<Float4> Floor(RValue<Float4> x);
 RValue<Float4> Ceil(RValue<Float4> x);
-
-enum class Precision
-{
-	Full,
-	Relaxed,
-	//Half,
-};
 
 // Trigonometric functions
 // TODO: Currently unimplemented for Subzero.
@@ -2484,7 +2504,13 @@ RValue<Pointer<Byte>> operator-=(Pointer<Byte> &lhs, RValue<UInt> offset);
 template<typename T>
 RValue<Bool> operator==(const Pointer<T> &lhs, const Pointer<T> &rhs)
 {
-	return RValue<Bool>(Nucleus::createPtrEQ(lhs.loadValue(), rhs.loadValue()));
+	return RValue<Bool>(Nucleus::createICmpEQ(lhs.loadValue(), rhs.loadValue()));
+}
+
+template<typename T>
+RValue<Bool> operator!=(const Pointer<T> &lhs, const Pointer<T> &rhs)
+{
+	return RValue<Bool>(Nucleus::createICmpNE(lhs.loadValue(), rhs.loadValue()));
 }
 
 template<typename T>
@@ -2548,11 +2574,6 @@ public:
 	// self() returns the this pointer to this Array object.
 	// This function exists because operator&() is overloaded by LValue<T>.
 	inline Array *self() { return this; }
-
-private:
-	Value *allocate() const override;
-
-	const int arraySize;
 };
 
 //	RValue<Array<T>> operator++(Array<T> &val, int);   // Post-increment
@@ -2595,8 +2616,6 @@ class Function<Return(Arguments...)>
 public:
 	Function();
 
-	virtual ~Function();
-
 	template<int index>
 	Argument<typename std::tuple_element<index, std::tuple<Arguments...>>::type> Arg() const
 	{
@@ -2608,7 +2627,7 @@ public:
 	std::shared_ptr<Routine> operator()(const Config::Edit &cfg, const char *name, ...);
 
 protected:
-	Nucleus *core;
+	std::unique_ptr<Nucleus> core;
 	std::vector<Type *> arguments;
 };
 
@@ -2639,14 +2658,16 @@ public:
 
 	// Hide base implementations of operator()
 
-	RoutineType operator()(const char *name, ...)
+	template<typename... VarArgs>
+	RoutineType operator()(const char *name, VarArgs... varArgs)
 	{
-		return RoutineType(BaseType::operator()(name));
+		return RoutineType(BaseType::operator()(name, std::forward<VarArgs>(varArgs)...));
 	}
 
-	RoutineType operator()(const Config::Edit &cfg, const char *name, ...)
+	template<typename... VarArgs>
+	RoutineType operator()(const Config::Edit &cfg, const char *name, VarArgs... varArgs)
 	{
-		return RoutineType(BaseType::operator()(cfg, name));
+		return RoutineType(BaseType::operator()(cfg, name, std::forward<VarArgs>(varArgs)...));
 	}
 };
 
@@ -2659,7 +2680,8 @@ RValue<Long> Ticks();
 namespace rr {
 
 template<class T>
-LValue<T>::LValue()
+LValue<T>::LValue(int arraySize)
+    : Variable(T::type(), arraySize)
 {
 #ifdef ENABLE_RR_DEBUG_INFO
 	materialize();
@@ -3058,20 +3080,14 @@ Type *Pointer<T>::type()
 
 template<class T, int S>
 Array<T, S>::Array(int size)
-    : arraySize(size)
+    : LValue<T>(size)
 {
-}
-
-template<class T, int S>
-Value *Array<T, S>::allocate() const
-{
-	return Nucleus::allocateStackVariable(T::type(), arraySize);
 }
 
 template<class T, int S>
 Reference<T> Array<T, S>::operator[](int index)
 {
-	assert(index < arraySize);
+	assert(index < Variable::getArraySize());
 	Value *element = this->getElementPointer(Nucleus::createConstantInt(index), false);
 
 	return Reference<T>(element);
@@ -3080,7 +3096,7 @@ Reference<T> Array<T, S>::operator[](int index)
 template<class T, int S>
 Reference<T> Array<T, S>::operator[](unsigned int index)
 {
-	assert(index < static_cast<unsigned int>(arraySize));
+	assert(index < static_cast<unsigned int>(Variable::getArraySize()));
 	Value *element = this->getElementPointer(Nucleus::createConstantInt(index), true);
 
 	return Reference<T>(element);
@@ -3163,9 +3179,8 @@ RValue<T> IfThenElse(RValue<Bool> condition, const T &ifTrue, const T &ifFalse)
 
 template<typename Return, typename... Arguments>
 Function<Return(Arguments...)>::Function()
+    : core(new Nucleus())
 {
-	core = new Nucleus();
-
 	Type *types[] = { Arguments::type()... };
 	for(Type *type : types)
 	{
@@ -3179,12 +3194,6 @@ Function<Return(Arguments...)>::Function()
 }
 
 template<typename Return, typename... Arguments>
-Function<Return(Arguments...)>::~Function()
-{
-	delete core;
-}
-
-template<typename Return, typename... Arguments>
 std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const char *name, ...)
 {
 	char fullName[1024 + 1];
@@ -3194,7 +3203,10 @@ std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const char *
 	vsnprintf(fullName, 1024, name, vararg);
 	va_end(vararg);
 
-	return core->acquireRoutine(fullName, Config::Edit::None);
+	auto routine = core->acquireRoutine(fullName, Config::Edit::None);
+	core.reset(nullptr);
+
+	return routine;
 }
 
 template<typename Return, typename... Arguments>
@@ -3207,7 +3219,10 @@ std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const Config
 	vsnprintf(fullName, 1024, name, vararg);
 	va_end(vararg);
 
-	return core->acquireRoutine(fullName, cfg);
+	auto routine = core->acquireRoutine(fullName, cfg);
+	core.reset(nullptr);
+
+	return routine;
 }
 
 template<class T, class S>
@@ -3380,10 +3395,52 @@ inline void Call(void (Class::*fptr)(CArgs...), C &&object, RArgs &&... args)
 	             CastToReactor(std::forward<RArgs>(args))...);
 }
 
-// Calls the Reactor function pointer fptr with the signature
-// FUNCTION_SIGNATURE and arguments.
+// NonVoidFunction<F> and VoidFunction<F> are helper classes which define ReturnType
+// when F matches a non-void fuction signature or void function signature, respectively,
+// as the function's return type.
+template<typename F>
+struct NonVoidFunction
+{};
+
+template<typename Return, typename... Arguments>
+struct NonVoidFunction<Return(Arguments...)>
+{
+	using ReturnType = Return;
+};
+
+template<typename... Arguments>
+struct NonVoidFunction<void(Arguments...)>
+{
+};
+
+template<typename F>
+using NonVoidFunctionReturnType = typename NonVoidFunction<F>::ReturnType;
+
+template<typename F>
+struct VoidFunction
+{};
+
+template<typename... Arguments>
+struct VoidFunction<void(Arguments...)>
+{
+	using ReturnType = void;
+};
+
+template<typename F>
+using VoidFunctionReturnType = typename VoidFunction<F>::ReturnType;
+
+// Calls the Reactor function pointer fptr with the signature FUNCTION_SIGNATURE and arguments.
+// Overload for calling functions with non-void return type.
 template<typename FUNCTION_SIGNATURE, typename... RArgs>
-inline void Call(Pointer<Byte> fptr, RArgs &&... args)
+inline CToReactorT<NonVoidFunctionReturnType<FUNCTION_SIGNATURE>> Call(Pointer<Byte> fptr, RArgs &&... args)
+{
+	return CallHelper<FUNCTION_SIGNATURE>::Call(fptr, CastToReactor(std::forward<RArgs>(args))...);
+}
+
+// Calls the Reactor function pointer fptr with the signature FUNCTION_SIGNATURE and arguments.
+// Overload for calling functions with void return type.
+template<typename FUNCTION_SIGNATURE, typename... RArgs>
+inline VoidFunctionReturnType<FUNCTION_SIGNATURE> Call(Pointer<Byte> fptr, RArgs &&... args)
 {
 	CallHelper<FUNCTION_SIGNATURE>::Call(fptr, CastToReactor(std::forward<RArgs>(args))...);
 }
@@ -3453,25 +3510,18 @@ class IfElseData
 {
 public:
 	IfElseData(RValue<Bool> cmp)
-	    : iteration(0)
 	{
-		condition = cmp.value();
-
-		beginBB = Nucleus::getInsertBlock();
 		trueBB = Nucleus::createBasicBlock();
-		falseBB = nullptr;
-		endBB = Nucleus::createBasicBlock();
+		falseBB = Nucleus::createBasicBlock();
+		endBB = falseBB;  // Until we encounter an Else statement, these are the same.
 
+		Nucleus::createCondBr(cmp.value(), trueBB, falseBB);
 		Nucleus::setInsertBlock(trueBB);
 	}
 
 	~IfElseData()
 	{
 		Nucleus::createBr(endBB);
-
-		Nucleus::setInsertBlock(beginBB);
-		Nucleus::createCondBr(condition, trueBB, falseBB ? falseBB : endBB);
-
 		Nucleus::setInsertBlock(endBB);
 	}
 
@@ -3489,19 +3539,17 @@ public:
 
 	void elseClause()
 	{
+		endBB = Nucleus::createBasicBlock();
 		Nucleus::createBr(endBB);
 
-		falseBB = Nucleus::createBasicBlock();
 		Nucleus::setInsertBlock(falseBB);
 	}
 
 private:
-	Value *condition;
-	BasicBlock *beginBB;
-	BasicBlock *trueBB;
-	BasicBlock *falseBB;
-	BasicBlock *endBB;
-	int iteration;
+	BasicBlock *trueBB = nullptr;
+	BasicBlock *falseBB = nullptr;
+	BasicBlock *endBB = nullptr;
+	int iteration = 0;
 };
 
 #define For(init, cond, inc)                        \

@@ -15,7 +15,7 @@ const base::Feature kUseDownloadOfflineContentProvider{
 const base::Feature kDownloadAutoResumptionNative {
   "DownloadsAutoResumptionNative",
 #if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
@@ -66,6 +66,9 @@ const base::Feature kUseParallelRequestsForQUIC{
 
 const base::Feature kDeleteExpiredDownloads{"DeleteExpiredDownloads",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDeleteOverwrittenDownloads{
+    "DeleteOverwrittenDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 

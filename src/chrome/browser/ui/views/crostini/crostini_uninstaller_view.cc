@@ -22,6 +22,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -41,7 +42,10 @@ void crostini::ShowCrostiniUninstallerView(
 }
 
 void CrostiniUninstallerView::Show(Profile* profile) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   if (!g_crostini_uninstaller_view) {
     g_crostini_uninstaller_view = new CrostiniUninstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_crostini_uninstaller_view,
@@ -150,3 +154,6 @@ void CrostiniUninstallerView::RecordUninstallResultHistogram(
                                 UninstallResult::kCount);
   has_logged_result_ = true;
 }
+
+BEGIN_METADATA(CrostiniUninstallerView, views::BubbleDialogDelegateView)
+END_METADATA

@@ -234,8 +234,12 @@
      *  Starts active video.
      */
     play() {
-      if (this.getActiveVideo_())
+      let activeVideo = this.getActiveVideo_();
+      if (activeVideo) {
+        // The active video could be paused, even if it hasn't changed
+        activeVideo.play();
         return;
+      }
 
       let key = this.calcKey_(this.device, this.orientation, this.type);
       let video = this.videos.get(key);
@@ -245,12 +249,21 @@
         video.play();
       }
     }
+    /**
+     *  Pauses active video.
+     */
+    pause() {
+      let video = this.getActiveVideo_();
+      if (video) {
+        video.pause();
+      }
+    }
   }
 
   Polymer({
     is: 'oobe-welcome-dialog',
 
-    behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+    behaviors: [OobeI18nBehavior],
 
     properties: {
       /**
@@ -289,6 +302,34 @@
       isInPortraitMode: {
         type: Boolean,
         observer: 'updateVideoMode_',
+      },
+
+      /**
+       * Observer for when this screen is hidden, or shown.
+       */
+      hidden: {
+        type: Boolean,
+        observer: 'updateHidden_',
+        reflectToAttribute: true,
+      },
+
+      isNewLayout_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('newLayoutEnabled') &&
+              loadTimeData.getBoolean('newLayoutEnabled');
+        },
+        readOnly: true,
+        reflectToAttribute: true,
+      }
+    },
+
+    onBeforeShow() {
+      if (this.isNewLayout_) {
+        document.documentElement.setAttribute('new-layout', '');
+        this.$.newWelcomeAnimation.setPlay(true);
+      } else {
+        this.$.oldDialog.onBeforeShow();
       }
     },
 
@@ -328,25 +369,30 @@
      * This is stored ID of currently focused element to restore id on returns
      * to this dialog from Language / Timezone Selection dialogs.
      */
-    focusedElement_: 'welcomeNextButton',
+    focusedElement_: null,
 
-    onLanguageClicked_() {
-      this.focusedElement_ = 'languageSelectionButton';
+    onLanguageClicked_(e) {
+      this.focusedElement_ = this.isNewLayout_ ? 'newLanguageSelectionButton' :
+                                                 'languageSelectionButton';
       this.fire('language-button-clicked');
     },
 
     onAccessibilityClicked_() {
-      this.focusedElement_ = 'accessibilitySettingsButton';
+      this.focusedElement_ = this.isNewLayout_ ?
+          'newAccessibilitySettingsButton' :
+          'accessibilitySettingsButton';
       this.fire('accessibility-button-clicked');
     },
 
     onTimezoneClicked_() {
-      this.focusedElement_ = 'timezoneSettingsButton';
+      this.focusedElement_ = this.isNewLayout_ ? 'newTimezoneSettingsButton' :
+                                                 'timezoneSettingsButton';
       this.fire('timezone-button-clicked');
     },
 
     onNextClicked_() {
-      this.focusedElement_ = 'welcomeNextButton';
+      this.focusedElement_ =
+          this.isNewLayout_ ? 'getStarted' : 'welcomeNextButton';
       this.fire('next-button-clicked');
     },
 
@@ -371,23 +417,49 @@
         this.welcomeVideoController_.add(video);
 
       this.titleLongTouchDetector_ = new TitleLongTouchDetector(
-          this.$.title, this.onTitleLongTouch_.bind(this));
+          this.isNewLayout_ ? this.$.newTitle : this.$.title,
+          this.onTitleLongTouch_.bind(this));
+      this.$.chromeVoxHint.addEventListener('keydown', (event) => {
+        // When the ChromeVox hint dialog is open, allow users to press the
+        // space bar to activate ChromeVox. This is intended to help first time
+        // users easily activate ChromeVox.
+        if (this.$.chromeVoxHint.open && event.key === ' ') {
+          this.activateChromeVox_();
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
       this.focus();
     },
 
     focus() {
+      if (!this.focusedElement_) {
+        this.focusedElement_ =
+            this.isNewLayout_ ? 'getStarted' : 'welcomeNextButton';
+      }
       this.onWindowResize();
       let focusedElement = this.$[this.focusedElement_];
       if (focusedElement)
         focusedElement.focus();
     },
 
-    /**
-     * This is called from oobe_welcome when this dialog is shown.
+    /*
+     * Observer method for changes to the hidden property.
+     * This replaces the show() function, in this class.
      */
-    show() {
-      this.focus();
-      this.welcomeVideoController_.play();
+    updateHidden_(newValue, oldValue) {
+      let visible = !newValue;
+      if (visible) {
+        this.focus();
+        this.welcomeVideoController_.play();
+      } else {
+        // Pause the welcome video to avoid using resources while
+        // this page is not visible
+        this.welcomeVideoController_.pause();
+      }
+
+      if (this.isNewLayout_)
+        this.$.newWelcomeAnimation.setPlay(visible);
     },
 
     /**
@@ -406,5 +478,38 @@
     onWindowResize() {
       this.isInPortraitMode = window.innerHeight > window.innerWidth;
     },
+
+    // ChromeVox hint section.
+
+    /**
+     * Called to show the ChromeVox hint dialog.
+     */
+    showChromeVoxHint() {
+      this.$.chromeVoxHint.showDialog();
+      this.welcomeVideoController_.pause();
+    },
+
+    /**
+     * Called to close the ChromeVox hint dialog.
+     */
+    closeChromeVoxHint() {
+      this.welcomeVideoController_.play();
+      this.$.chromeVoxHint.hideDialog();
+    },
+
+    /**
+     * Called when the 'Continue without ChromeVox' button is clicked.
+     * @private
+     */
+    dismissChromeVoxHint_() {
+      this.fire('chromevox-hint-dismissed');
+      this.closeChromeVoxHint();
+    },
+
+    /** @private */
+    activateChromeVox_() {
+      this.closeChromeVoxHint();
+      this.fire('chromevox-hint-accepted');
+    }
   });
 }

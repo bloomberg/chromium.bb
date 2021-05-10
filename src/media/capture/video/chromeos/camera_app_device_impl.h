@@ -66,6 +66,12 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   void BindReceiver(
       mojo::PendingReceiver<cros::mojom::CameraAppDevice> receiver);
 
+  // All the weak pointers should be dereferenced and invalidated on the camera
+  // device ipc thread.
+  base::WeakPtr<CameraAppDeviceImpl> GetWeakPtr();
+
+  void InvalidatePtrs(base::OnceClosure callback);
+
   // Consumes all the pending reprocess tasks if there is any and eventually
   // generates a ReprocessTaskQueue which contains:
   //   1. A regular capture task with |take_photo_callback|.
@@ -121,9 +127,13 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
  private:
   static void DisableEeNr(ReprocessTask* task);
 
-  void SetReprocessResult(SetReprocessOptionCallback callback,
-                          const int32_t status,
-                          media::mojom::BlobPtr blob);
+  void OnMojoConnectionError();
+
+  void SetReprocessResultOnMojoThread(SetReprocessOptionCallback callback,
+                                      const int32_t status,
+                                      media::mojom::BlobPtr blob);
+
+  void NotifyShutterDoneOnMojoThread();
 
   std::string device_id_;
 
@@ -131,7 +141,8 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
 
   cros::mojom::CameraInfoPtr camera_info_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // It is used for calls which should run on the mojo thread.
+  scoped_refptr<base::SingleThreadTaskRunner> mojo_task_runner_;
 
   // The queue will be enqueued and dequeued from different threads.
   base::Lock reprocess_tasks_lock_;
@@ -159,14 +170,17 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   base::flat_map<cros::mojom::StreamType, base::flat_set<uint32_t>>
       stream_metadata_observer_ids_ GUARDED_BY(metadata_observers_lock_);
 
-  // Those maps will be changed and used from different threads.
-  base::Lock camera_event_observers_lock_;
-  uint32_t next_camera_event_observer_id_
-      GUARDED_BY(camera_event_observers_lock_);
+  uint32_t next_camera_event_observer_id_;
   base::flat_map<uint32_t, mojo::Remote<cros::mojom::CameraEventObserver>>
-      camera_event_observers_ GUARDED_BY(camera_event_observers_lock_);
+      camera_event_observers_;
 
-  std::unique_ptr<base::WeakPtrFactory<CameraAppDeviceImpl>> weak_ptr_factory_;
+  // The weak pointers should be dereferenced and invalidated on camera device
+  // ipc thread.
+  base::WeakPtrFactory<CameraAppDeviceImpl> weak_ptr_factory_{this};
+
+  // The weak pointers should be dereferenced and invalidated on the Mojo
+  // thread.
+  base::WeakPtrFactory<CameraAppDeviceImpl> weak_ptr_factory_for_mojo_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CameraAppDeviceImpl);
 };

@@ -31,19 +31,16 @@
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
-#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -115,40 +112,45 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
     return;
   }
-  // ExecutionContext::CanExecuteScripts() relies on the current context to
-  // determine if it is allowed. Enter the scope here.
-  ScriptState::Scope scope(script_state_->Get());
-  if (!context->CanExecuteScripts(kAboutToExecuteScript)) {
-    DVLOG(1) << "ScheduledAction::execute " << this
-             << ": window can not execute scripts";
-    return;
-  }
 
-  // https://html.spec.whatwg.org/C/#timer-initialisation-steps
-  if (function_) {
-    DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
-    function_->InvokeAndReportException(context->ToScriptWrappable(),
-                                        arguments_);
-    return;
+  {
+    // ExecutionContext::CanExecuteScripts() relies on the current context to
+    // determine if it is allowed. Enter the scope here.
+    // TODO(crbug.com/1151165): Consider merging CanExecuteScripts() calls,
+    // because once crbug.com/1111134 is done, CanExecuteScripts() will be
+    // always called below inside
+    // - InvokeAndReportException() => V8Function::Invoke() =>
+    //   IsCallbackFunctionRunnable() and
+    // - V8ScriptRunner::CompileAndRunScript().
+    ScriptState::Scope scope(script_state_->Get());
+    if (!context->CanExecuteScripts(kAboutToExecuteScript)) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": window can not execute scripts";
+      return;
+    }
+
+    // https://html.spec.whatwg.org/C/#timer-initialisation-steps
+    if (function_) {
+      DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
+      function_->InvokeAndReportException(context->ToScriptWrappable(),
+                                          arguments_);
+      return;
+    }
+
+    // We exit the scope here, because we enter v8::Context during the main
+    // evaluation below.
   }
 
   // We use |SanitizeScriptErrors::kDoNotSanitize| because muted errors flag is
   // not set in https://html.spec.whatwg.org/C/#timer-initialisation-steps
+  // TODO(crbug.com/1133238): Plumb base URL etc. from the initializing script.
   DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
-  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
-    window->GetScriptController().ExecuteScriptAndReturnValue(
-        script_state_->GetContext(),
-        ScriptSourceCode(code_,
-                         ScriptSourceLocationType::kEvalForScheduledAction),
-        KURL(), SanitizeScriptErrors::kDoNotSanitize);
-  } else {
-    WorkerGlobalScope* worker = To<WorkerGlobalScope>(context);
-    DCHECK(worker->GetThread()->IsCurrentThread());
-    worker->ScriptController()->EvaluateAndReturnValue(
-        ScriptSourceCode(code_,
-                         ScriptSourceLocationType::kEvalForScheduledAction),
-        SanitizeScriptErrors::kDoNotSanitize);
-  }
+  v8::HandleScope scope(script_state_->GetIsolate());
+  ClassicScript* script = MakeGarbageCollected<ClassicScript>(
+      ScriptSourceCode(code_,
+                       ScriptSourceLocationType::kEvalForScheduledAction),
+      KURL(), ScriptFetchOptions(), SanitizeScriptErrors::kDoNotSanitize);
+  script->RunScriptOnScriptStateAndReturnValue(script_state_->Get());
 }
 
 void ScheduledAction::Trace(Visitor* visitor) const {

@@ -123,6 +123,22 @@ typedef struct {
    * Index of the last set of saved stats in the interp_filter_stats array.
    */
   int interp_filter_stats_idx;
+  /*!
+   * Estimated wedge index.
+   */
+  int wedge_index;
+  /*!
+   * Estimated wedge sign.
+   */
+  int wedge_sign;
+  /*!
+   * Estimated diff wtd index.
+   */
+  int diffwtd_index;
+  /*!
+   * Estimated cmp mode.
+   */
+  int cmp_mode[MODE_CTX_REF_FRAMES];
 } HandleInterModeArgs;
 
 /*!\cond */

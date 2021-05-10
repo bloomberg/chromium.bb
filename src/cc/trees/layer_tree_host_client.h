@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
+#include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -24,7 +25,7 @@ struct BeginFrameArgs;
 
 namespace cc {
 struct BeginMainFrameMetrics;
-struct ElementId;
+struct WebVitalMetrics;
 
 struct ApplyViewportChangesArgs {
   // Scroll offset delta of the inner (visual) viewport.
@@ -65,6 +66,7 @@ constexpr ManipulationInfo kManipulationInfoWheel = 1 << 0;
 constexpr ManipulationInfo kManipulationInfoTouch = 1 << 1;
 constexpr ManipulationInfo kManipulationInfoPrecisionTouchPad = 1 << 2;
 constexpr ManipulationInfo kManipulationInfoPinchZoom = 1 << 3;
+constexpr ManipulationInfo kManipulationInfoScrollbar = 1 << 4;
 
 struct PaintBenchmarkResult {
   double record_time_ms = 0;
@@ -136,17 +138,10 @@ class LayerTreeHostClient {
   // related to pinch-zoom, browser controls (aka URL bar), overscroll, etc.
   virtual void ApplyViewportChanges(const ApplyViewportChangesArgs& args) = 0;
 
-  // Record use counts of different methods of scrolling (e.g. wheel, touch,
-  // precision touchpad, etc.).
-  virtual void RecordManipulationTypeCounts(ManipulationInfo info) = 0;
-
-  // Notifies the client when an overscroll has happened.
-  virtual void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      ElementId scroll_latched_element_id) = 0;
-  // Notifies the client when a gesture scroll has ended.
-  virtual void SendScrollEndEventFromImplSide(
-      ElementId scroll_latched_element_id) = 0;
+  // Notifies the client about scroll and input related changes that occurred in
+  // the LayerTreeHost since the last commit.
+  virtual void UpdateCompositorScrollState(
+      const CompositorCommitData& commit_data) = 0;
 
   // Request a LayerTreeFrameSink from the client. When the client has one it
   // should call LayerTreeHost::SetLayerTreeFrameSink. This will result in
@@ -181,6 +176,9 @@ class LayerTreeHostClient {
   // RecordEndOfFrameMetrics.
   virtual std::unique_ptr<BeginMainFrameMetrics> GetBeginMainFrameMetrics() = 0;
   virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
+
+  // Should only be implemented by Blink.
+  virtual std::unique_ptr<WebVitalMetrics> GetWebVitalMetrics() = 0;
 
   virtual void RunPaintBenchmark(int repeat_count,
                                  PaintBenchmarkResult& result) {}

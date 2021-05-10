@@ -65,6 +65,12 @@ class TabAndroid : public base::SupportsUserData {
   static TabAndroid* GetNativeTab(JNIEnv* env,
                                   const base::android::JavaRef<jobject>& obj);
 
+  // Returns the a vector of native TabAndroid stored in the Java Tab array
+  // represented by |obj_array|.
+  static std::vector<TabAndroid*> GetAllNativeTabs(
+      JNIEnv* env,
+      const base::android::ScopedJavaLocalRef<jobjectArray>& obj_array);
+
   // Function to attach helpers to the contentView.
   static void AttachTabHelpers(content::WebContents* web_contents);
 
@@ -131,10 +137,9 @@ class TabAndroid : public base::SupportsUserData {
 
   // Methods called from Java via JNI -----------------------------------------
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env);
   void InitWebContents(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       jboolean incognito,
       jboolean is_background_tab,
       const base::android::JavaParamRef<jobject>& jweb_contents,
@@ -144,23 +149,18 @@ class TabAndroid : public base::SupportsUserData {
           jcontext_menu_populator_factory);
   void UpdateDelegates(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>&
           jcontext_menu_populator_factory);
-  void DestroyWebContents(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
-  void ReleaseWebContents(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
+  void DestroyWebContents(JNIEnv* env);
+  void ReleaseWebContents(JNIEnv* env);
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents,
       jint width,
       jint height);
   TabLoadStatus LoadUrl(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& url,
       const base::android::JavaParamRef<jobject>& j_initiator_origin,
       const base::android::JavaParamRef<jstring>& j_extra_headers,
@@ -173,15 +173,14 @@ class TabAndroid : public base::SupportsUserData {
       jboolean has_user_gesture,
       jboolean should_clear_history_list,
       jlong omnibox_input_received_timestamp,
-      jlong intent_received_timestamp);
+      jlong intent_received_timestamp,
+      jint ua_override_option);
   void SetActiveNavigationEntryTitleForUrl(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jurl,
       const base::android::JavaParamRef<jstring>& jtitle);
 
-  void LoadOriginalImage(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
+  void LoadOriginalImage(JNIEnv* env);
   void SetAddApi2TransitionToFutureNavigations(JNIEnv* env,
                                                jboolean should_add);
   jboolean GetAddApi2TransitionToFutureNavigations(JNIEnv* env) {

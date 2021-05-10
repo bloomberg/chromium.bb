@@ -28,7 +28,8 @@
  */
 
 .network-details-view {
-  background: rgb(203 203 203);
+  background: rgb(203 203 203); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-details-view-tall-header {
@@ -37,18 +38,21 @@
 
 .network-item-view {
   display: flex;
-  background: white;
+  background: var(--color-background);
 }
 
 .network-item-preview-toolbar {
-  border-top: 1px solid #ccc;
-  background-color: #eee;
+  border-top: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .resource-timing-view {
   display: block;
   margin: 6px;
-  color: rgb(30% 30% 30%);
+  color: rgb(30% 30% 30%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   overflow: auto;
 }
 
@@ -67,7 +71,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border-bottom: 1px solid #cdcdcd;
+  border-bottom: 1px solid #cdcdcd; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 #network-overview-container canvas {
@@ -76,7 +81,8 @@
 }
 
 .network-overview .resources-dividers-label-bar {
-  background-color: rgb(255 255 255 / 95%);
+  background-color: rgb(255 255 255 / 95%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 #network-overview-grid .resources-dividers-label-bar {
@@ -102,7 +108,8 @@
 }
 
 .network-film-strip {
-  border-bottom: solid 1px #cdcdcd;
+  border-bottom: solid 1px #cdcdcd; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   flex: none !important;
 }
 

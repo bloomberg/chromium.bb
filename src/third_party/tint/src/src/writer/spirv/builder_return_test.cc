@@ -19,28 +19,28 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
-#include "src/context.h"
+#include "src/type/f32_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Return) {
-  ast::ReturnStatement ret;
+  auto* ret = create<ast::ReturnStatement>();
 
-  ast::Module mod;
-  Builder b(&mod);
+  spirv::Builder& b = Build();
+
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateReturnStatement(&ret));
+  EXPECT_TRUE(b.GenerateReturnStatement(ret));
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpReturn
@@ -48,30 +48,15 @@ TEST_F(BuilderTest, Return) {
 }
 
 TEST_F(BuilderTest, Return_WithValue) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* val = vec3<f32>(1.f, 1.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* ret = create<ast::ReturnStatement>(val);
+  WrapInFunction(ret);
 
-  auto val =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  spirv::Builder& b = Build();
 
-  ast::ReturnStatement ret(std::move(val));
-
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(&ret)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateReturnStatement(&ret));
+  EXPECT_TRUE(b.GenerateReturnStatement(ret));
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
@@ -86,23 +71,16 @@ TEST_F(BuilderTest, Return_WithValue) {
 }
 
 TEST_F(BuilderTest, Return_WithValue_GeneratesLoad) {
-  ast::type::F32Type f32;
+  auto* var = Global("param", ty.f32(), ast::StorageClass::kFunction);
 
-  ast::Variable var("param", ast::StorageClass::kFunction, &f32);
+  auto* ret = create<ast::ReturnStatement>(Expr("param"));
+  WrapInFunction(ret);
 
-  ast::ReturnStatement ret(
-      std::make_unique<ast::IdentifierExpression>("param"));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&var);
-  EXPECT_TRUE(td.DetermineResultType(&ret)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&var)) << b.error();
-  EXPECT_TRUE(b.GenerateReturnStatement(&ret)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(var)) << b.error();
+  EXPECT_TRUE(b.GenerateReturnStatement(ret)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeFloat 32

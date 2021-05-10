@@ -12,7 +12,7 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkUtils.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/text/GrTextBlob.h"
 #include "src/utils/SkUTF.h"
@@ -50,26 +50,32 @@ class DirectMaskGlyphVertexFillBenchmark : public Benchmark {
                                       colorSpace.get(), SkStrikeCache::GlobalStrikeCache()};
 
         GrSDFTOptions options{256, 256};
-        painter.processGlyphRunList(
-                glyphRunList, view, props, false, options, fBlob.get());
+        const SkPoint drawOrigin = glyphRunList.origin();
+        const SkPaint& drawPaint = glyphRunList.paint();
+        for (auto& glyphRun : glyphRunList) {
+            painter.processGlyphRun(
+                    glyphRun, view, drawOrigin, drawPaint, props, false, options, fBlob.get());
+        }
 
-
-        SkASSERT(fBlob->subRunList().head() != nullptr);
-        GrAtlasSubRun* subRun = static_cast<GrAtlasSubRun*>(fBlob->subRunList().head());
+        SkASSERT(!fBlob->subRunList().isEmpty());
+        GrAtlasSubRun* subRun = fBlob->subRunList().front().testingOnly_atlasSubRun();
+        SkASSERT(subRun);
         subRun->testingOnly_packedGlyphIDToGrGlyph(&fCache);
-        fVertices.reset(new char[subRun->vertexStride() * subRun->glyphCount() * 4]);
+        fVertices.reset(new char[subRun->vertexStride(view) * subRun->glyphCount() * 4]);
     }
 
     void onDraw(int loops, SkCanvas* canvas) override {
-        GrAtlasSubRun* subRun = static_cast<GrAtlasSubRun*>(fBlob->subRunList().head());
+        GrAtlasSubRun* subRun = fBlob->subRunList().front().testingOnly_atlasSubRun();
+        SkASSERT(subRun);
 
         SkIRect clip = SkIRect::MakeEmpty();
         SkPaint paint;
         GrColor grColor = SkColorToPremulGrColor(paint.getColor());
+        SkMatrix positionMatrix = SkMatrix::Translate(100, 100);
 
         for (int loop = 0; loop < loops; loop++) {
             subRun->fillVertexData(fVertices.get(), 0, subRun->glyphCount(),
-                                   grColor, SkMatrix::I(), {100, 100}, clip);
+                                   grColor, positionMatrix, clip);
         }
     }
 

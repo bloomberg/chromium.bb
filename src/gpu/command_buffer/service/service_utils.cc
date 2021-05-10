@@ -9,7 +9,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -64,10 +66,7 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     attribs.robust_buffer_access = true;
 
     // Request a specific context version instead of always 3.0
-    if (IsWebGL2ComputeContextType(attribs_helper.context_type)) {
-      attribs.client_major_es_version = 3;
-      attribs.client_minor_es_version = 1;
-    } else if (IsWebGL2OrES3ContextType(attribs_helper.context_type)) {
+    if (IsWebGL2OrES3ContextType(attribs_helper.context_type)) {
       attribs.client_major_es_version = 3;
       attribs.client_minor_es_version = 0;
     } else {
@@ -83,6 +82,13 @@ gl::GLContextAttribs GenerateGLContextAttribs(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableES3GLContext)) {
     // Forcefully disable ES3 contexts
+    attribs.client_major_es_version = 2;
+    attribs.client_minor_es_version = 0;
+  }
+
+  if (IsES31ForTestingContextType(attribs_helper.context_type)) {
+    // Forcefully disable ES 3.1 contexts. Tests create contexts by initializing
+    // the attributes directly.
     attribs.client_major_es_version = 2;
     attribs.client_minor_es_version = 0;
   }
@@ -150,21 +156,21 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
   gpu_preferences.ignore_gpu_blocklist =
-      command_line->HasSwitch(switches::kIgnoreGpuBlacklist) ||
       command_line->HasSwitch(switches::kIgnoreGpuBlocklist);
-
-  if (command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
-    LOG(ERROR) << "--" << switches::kIgnoreGpuBlacklist
-               << " is deprecated and will be removed in 2020Q4, use --"
-               << switches::kIgnoreGpuBlocklist << " instead.";
-  }
-
   gpu_preferences.enable_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
   gpu_preferences.enable_dawn_backend_validation =
       command_line->HasSwitch(switches::kEnableDawnBackendValidation);
-  gpu_preferences.disable_dawn_robustness =
-      command_line->HasSwitch(switches::kDisableDawnRobustness);
+  if (command_line->HasSwitch(switches::kEnableDawnFeatures)) {
+    gpu_preferences.enabled_dawn_features_list = base::SplitString(
+        command_line->GetSwitchValueASCII(switches::kEnableDawnFeatures), ",",
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  if (command_line->HasSwitch(switches::kDisableDawnFeatures)) {
+    gpu_preferences.disabled_dawn_features_list = base::SplitString(
+        command_line->GetSwitchValueASCII(switches::kDisableDawnFeatures), ",",
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
   gpu_preferences.gr_context_type = ParseGrContextType();
   gpu_preferences.use_vulkan = ParseVulkanImplementationName(command_line);
   gpu_preferences.disable_vulkan_surface =
@@ -199,6 +205,13 @@ VulkanImplementationName ParseVulkanImplementationName(
   }
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // LACROS doesn't support Vulkan right now, to avoid LACROS picking up Linux
+  // finch, kNone is returned for LACROS.
+  // TODO(https://crbug.com/1155622): When LACROS is separated from Linux finch
+  // config.
+  return VulkanImplementationName::kNone;
+#else
   if (command_line->HasSwitch(switches::kUseVulkan)) {
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
@@ -208,16 +221,19 @@ VulkanImplementationName ParseVulkanImplementationName(
     }
   }
 
-  // GrContext is not going to use Vulkan.
-  if (!base::FeatureList::IsEnabled(features::kVulkan))
-    return VulkanImplementationName::kNone;
+  if (features::IsUsingVulkan()) {
+    // If the vulkan feature is enabled from command line, we will force to use
+    // vulkan even if it is blocklisted.
+    return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+               features::kVulkan.name,
+               base::FeatureList::OVERRIDE_ENABLE_FEATURE)
+               ? VulkanImplementationName::kForcedNative
+               : VulkanImplementationName::kNative;
+  }
 
-  // If the vulkan feature is enabled from command line, we will force to use
-  // vulkan even if it is blocklisted.
-  return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-             features::kVulkan.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE)
-             ? VulkanImplementationName::kForcedNative
-             : VulkanImplementationName::kNative;
+  // GrContext is not going to use Vulkan.
+  return VulkanImplementationName::kNone;
+#endif
 }
 
 }  // namespace gles2

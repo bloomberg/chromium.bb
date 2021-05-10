@@ -209,6 +209,8 @@ static_library("browser") {
     "url_prefix.h",
     "verbatim_match.cc",
     "verbatim_match.h",
+    "voice_suggest_provider.cc",
+    "voice_suggest_provider.h",
     "zero_suggest_provider.cc",
     "zero_suggest_provider.h",
     "zero_suggest_verbatim_match_provider.cc",
@@ -271,7 +273,14 @@ static_library("browser") {
   }
 
   if (is_android) {
-    deps += [ ":jni_headers" ]
+    sources += [
+      "autocomplete_match_android.cc",
+      "autocomplete_result_android.cc",
+    ]
+    deps += [
+      ":jni_headers",
+      "//url:gurl_android",
+    ]
   }
 }
 
@@ -354,6 +363,8 @@ if (is_android) {
 
   android_library("browser_java") {
     sources = [
+      "android/java/src/org/chromium/components/omnibox/AutocompleteMatch.java",
+      "android/java/src/org/chromium/components/omnibox/AutocompleteResult.java",
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SecurityButtonAnimationDelegate.java",
@@ -368,11 +379,14 @@ if (is_android) {
       "//base:jni_java",
       "//components/browser_ui/widget/android:java",
       "//components/embedder_support/android:util_java",
+      "//components/query_tiles:query_tile_java",
       "//components/security_state/core:security_state_enums_java",
       "//content/public/android:content_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
-      "//third_party/android_deps:androidx_core_core_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_collection_collection_java",
+      "//third_party/androidx:androidx_core_core_java",
       "//ui/android:ui_full_java",
+      "//url:gurl_java",
     ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]
@@ -389,6 +403,8 @@ if (is_android) {
 
   generate_jni("jni_headers") {
     sources = [
+      "android/java/src/org/chromium/components/omnibox/AutocompleteMatch.java",
+      "android/java/src/org/chromium/components/omnibox/AutocompleteResult.java",
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
@@ -523,6 +539,7 @@ source_set("unit_tests") {
     "tailored_word_break_iterator_unittest.cc",
     "titled_url_match_utils_unittest.cc",
     "url_prefix_unittest.cc",
+    "voice_suggest_provider_unittest.cc",
     "zero_suggest_provider_unittest.cc",
     "zero_suggest_verbatim_match_provider_unittest.cc",
   ]

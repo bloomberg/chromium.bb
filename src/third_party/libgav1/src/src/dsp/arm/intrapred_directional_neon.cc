@@ -19,11 +19,11 @@
 
 #include <arm_neon.h>
 
-#include <algorithm>  // std::min
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>  // memset
+#include <cstring>
 
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/constants.h"
@@ -915,7 +915,7 @@ void IntraPredDirectionalInit_NEON() { low_bitdepth::Init8bpp(); }
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

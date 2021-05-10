@@ -18,6 +18,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
-#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -75,7 +75,7 @@ const char kSwitchTargetContainer[] = "target_container";
 const char kSwitchStartupId[] = "startup_id";
 const char kSwitchCurrentWorkingDir[] = "cwd";
 
-int32_t g_last_active_pid = 0;
+const char kCwdTerminalIdPrefix[] = "terminal_id:";
 
 class TerminalTabHelper
     : public content::WebContentsUserData<TerminalTabHelper> {
@@ -169,10 +169,6 @@ void PreferenceChanged(Profile* profile,
   }
 }
 
-void SetLastActiveTerminal(const std::string& terminal_id) {
-  // TODO(crbug.com/1113207): disable this until we have a better cwd solution.
-}
-
 }  // namespace
 
 namespace extensions {
@@ -253,7 +249,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
   } else if (process_name == kVmShellName) {
     // Ensure crostini is allowed before starting terminal.
     Profile* profile = Profile::FromBrowserContext(browser_context());
-    if (!crostini::CrostiniFeatures::Get()->IsAllowed(profile))
+    if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile))
       return RespondNow(Error("vmshell not allowed"));
 
     // command=vmshell: ensure --owner_id, --vm_name, --target_container, --cwd
@@ -323,30 +319,36 @@ void TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted(
 void TerminalPrivateOpenTerminalProcessFunction::OpenVmshellProcess(
     const std::string& user_id_hash,
     base::CommandLine cmdline) {
-  // If cwd is already set in cmdline, or this is the first terminal, open now.
-  if (cmdline.HasSwitch(kSwitchCurrentWorkingDir) || !g_last_active_pid) {
+  const std::string cwd = cmdline.GetSwitchValueASCII(kSwitchCurrentWorkingDir);
+
+  if (!base::StartsWith(cwd, kCwdTerminalIdPrefix)) {
     return OpenProcess(user_id_hash, std::move(cmdline));
   }
+
+  // The cwd has this format `terminal_id:<terminal_id>`. We need to convert the
+  // terminal id to the pid of the shell process inside the container.
+  int host_pid = chromeos::ProcessProxyRegistry::ConvertToSystemPID(
+      cwd.substr(sizeof(kCwdTerminalIdPrefix) - 1));
 
   // Lookup container shell pid from cicierone to use for cwd.
   crostini::CrostiniManager::GetForProfile(
       Profile::FromBrowserContext(browser_context()))
       ->GetVshSession(
-          crostini::ContainerId::GetDefault(), g_last_active_pid,
+          crostini::ContainerId::GetDefault(), host_pid,
           base::BindOnce(
               &TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession,
-              this, user_id_hash, std::move(cmdline), g_last_active_pid));
+              this, user_id_hash, std::move(cmdline), /*terminal_id=*/cwd));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OnGetVshSession(
     const std::string& user_id_hash,
     base::CommandLine cmdline,
-    int32_t vsh_pid,
+    const std::string& terminal_id,
     bool success,
     const std::string& failure_reason,
     int32_t container_shell_pid) {
   if (!success) {
-    LOG(WARNING) << "Failed to get vsh session for " << vsh_pid << ". "
+    LOG(WARNING) << "Failed to get vsh session for " << terminal_id << ". "
                  << failure_reason;
   } else {
     cmdline.AppendSwitchASCII(kSwitchCurrentWorkingDir,
@@ -364,26 +366,27 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
       FROM_HERE,
       base::BindOnce(
           &TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner,
-          this, base::Bind(&NotifyProcessOutput, browser_context()),
-          base::Bind(
+          this, base::BindRepeating(&NotifyProcessOutput, browser_context()),
+          base::BindOnce(
               &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
               this),
           std::move(cmdline), user_id_hash));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
-    const ProcessOutputCallback& output_callback,
-    const OpenProcessCallback& callback,
+    ProcessOutputCallback output_callback,
+    OpenProcessCallback callback,
     base::CommandLine cmdline,
     const std::string& user_id_hash) {
   chromeos::ProcessProxyRegistry* registry =
       chromeos::ProcessProxyRegistry::Get();
   std::string terminal_id;
-  bool success = registry->OpenProcess(std::move(cmdline), user_id_hash,
-                                       output_callback, &terminal_id);
+  bool success =
+      registry->OpenProcess(std::move(cmdline), user_id_hash,
+                            std::move(output_callback), &terminal_id);
 
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(callback, success, terminal_id));
+      FROM_HERE, base::BindOnce(std::move(callback), success, terminal_id));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
@@ -409,7 +412,6 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
     Respond(Error("Failed to open process."));
     return;
   }
-  SetLastActiveTerminal(terminal_id);
   Respond(OneArgument(base::Value(terminal_id)));
 
   TerminalTabHelper::CreateForWebContents(contents);
@@ -441,7 +443,6 @@ ExtensionFunction::ResponseAction TerminalPrivateSendInputFunction::Run() {
     return RespondNow(Error("invalid terminal id"));
   }
 
-  SetLastActiveTerminal(params->id);
 
   // Registry lives on its own task runner.
   chromeos::ProcessProxyRegistry::GetTaskRunner()->PostTask(
@@ -525,8 +526,6 @@ TerminalPrivateOnTerminalResizeFunction::Run() {
     LOG(ERROR) << "invalid terminal id " << params->id;
     return RespondNow(Error("invalid terminal id"));
   }
-
-  SetLastActiveTerminal(params->id);
 
   // Registry lives on its own task runner.
   chromeos::ProcessProxyRegistry::GetTaskRunner()->PostTask(

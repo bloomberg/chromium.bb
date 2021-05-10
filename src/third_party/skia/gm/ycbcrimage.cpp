@@ -91,14 +91,11 @@ protected:
         fYCbCrImage = nullptr;
     }
 
-    DrawResult onDraw(GrRecordingContext*, GrRenderTargetContext*,
+    DrawResult onDraw(GrRecordingContext*, GrSurfaceDrawContext*,
                       SkCanvas* canvas, SkString*) override {
         SkASSERT(fYCbCrImage);
 
-        SkPaint paint;
-        paint.setFilterQuality(kLow_SkFilterQuality);
-
-        canvas->drawImage(fYCbCrImage, kPad, kPad, &paint);
+        canvas->drawImage(fYCbCrImage, kPad, kPad, SkSamplingOptions(SkFilterMode::kLinear));
         return DrawResult::kOk;
     }
 

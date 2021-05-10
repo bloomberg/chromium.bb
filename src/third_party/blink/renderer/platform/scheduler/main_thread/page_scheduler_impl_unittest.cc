@@ -21,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -82,6 +83,7 @@ class MockPageSchedulerDelegate : public PageScheduler::Delegate {
 
   void SetLocalMainFrameNetworkIsAlmostIdle(bool idle) { idle_ = idle; }
   bool LocalMainFrameNetworkIsAlmostIdle() const override { return idle_; }
+  bool IsFocused() const override { return true; }
 
  private:
   void ReportIntervention(const WTF::String&) override {}
@@ -283,17 +285,6 @@ class PageSchedulerImplTest : public testing::Test {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-};
-
-class PageSchedulerImplStopNonTimersInBackgroundEnabledTest
-    : public PageSchedulerImplTest {
- public:
-  PageSchedulerImplStopNonTimersInBackgroundEnabledTest()
-      : PageSchedulerImplTest({blink::features::kStopInBackground,
-                               blink::features::kStopNonTimersInBackground},
-                              {}) {}
-
-  ~PageSchedulerImplStopNonTimersInBackgroundEnabledTest() override = default;
 };
 
 TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {
@@ -1318,15 +1309,13 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
 // Verify that freezing a page prevents tasks in its task queues from running.
 // Then, verify that making the page visible unfreezes it and allows tasks in
 // its task queues to run.
-TEST_F(PageSchedulerImplStopNonTimersInBackgroundEnabledTest,
-       PageFreezeAndSetVisible) {
+TEST_F(PageSchedulerImplTest, PageFreezeAndSetVisible) {
   TestFreeze(true);
 }
 
 // Same as before, but unfreeze the page explicitly instead of making it
 // visible.
-TEST_F(PageSchedulerImplStopNonTimersInBackgroundEnabledTest,
-       PageFreezeAndUnfreeze) {
+TEST_F(PageSchedulerImplTest, PageFreezeAndUnfreeze) {
   TestFreeze(false);
 }
 
@@ -1363,23 +1352,19 @@ TEST_F(PageSchedulerImplTest, PageSchedulerDestroyedWhileAudioChangePending) {
 
 TEST_F(PageSchedulerImplTest, AudiblePagesAreNotThrottled) {
   page_scheduler_->SetPageVisible(false);
-  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
-      ThrottleableTaskQueue()->GetTaskQueue()));
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsThrottled());
 
   // No throttling when the page is audible.
   page_scheduler_->AudioStateChanged(true);
-  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
-      ThrottleableTaskQueue()->GetTaskQueue()));
+  EXPECT_FALSE(ThrottleableTaskQueue()->IsThrottled());
 
   // No throttling for some time after audio signal disappears.
   page_scheduler_->AudioStateChanged(false);
-  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
-      ThrottleableTaskQueue()->GetTaskQueue()));
+  EXPECT_FALSE(ThrottleableTaskQueue()->IsThrottled());
 
   // Eventually throttling is reenabled again.
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
-      ThrottleableTaskQueue()->GetTaskQueue()));
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsThrottled());
 }
 
 TEST_F(PageSchedulerImplTest, BudgetBasedThrottlingForPageScheduler) {
@@ -1760,6 +1745,88 @@ TEST_F(PageSchedulerImplPageTransitionTest,
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
               UnorderedElementsAreArray(GetExpectedBuckets()));
+}
+
+class PageSchedulerImplThrottleVisibleNotFocusedTimersEnabledTest
+    : public PageSchedulerImplTest {
+ public:
+  PageSchedulerImplThrottleVisibleNotFocusedTimersEnabledTest()
+      : PageSchedulerImplTest(
+            {blink::features::kStopInBackground,
+             blink::scheduler::kThrottleVisibleNotFocusedTimers},
+            {}) {}
+};
+
+TEST_F(PageSchedulerImplThrottleVisibleNotFocusedTimersEnabledTest,
+       PageVisibleWithFocus) {
+  page_scheduler_->SetPageVisible(true);
+  if (!page_scheduler_->IsPageFocused())
+    page_scheduler_->OnFocusChanged(true);
+
+  int run_count = 0;
+  ThrottleableTaskQueue()->GetTaskRunnerWithDefaultTaskType()->PostDelayedTask(
+      FROM_HERE,
+      MakeRepeatingTask(
+          ThrottleableTaskQueue()->GetTaskRunnerWithDefaultTaskType(),
+          &run_count, base::TimeDelta::FromMilliseconds(20)),
+      base::TimeDelta::FromMilliseconds(20));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(50, run_count);
+
+  // Create a new frame when the page has focus
+  int frame_run_count = 0;
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
+      CreateFrameScheduler(page_scheduler_.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kSubframe);
+  ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
+      ->GetTaskRunnerWithDefaultTaskType()
+      ->PostDelayedTask(
+          FROM_HERE,
+          MakeRepeatingTask(
+              ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
+                  ->GetTaskRunnerWithDefaultTaskType(),
+              &frame_run_count, base::TimeDelta::FromMilliseconds(20)),
+          base::TimeDelta::FromMilliseconds(20));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(50, frame_run_count);
+}
+
+TEST_F(PageSchedulerImplThrottleVisibleNotFocusedTimersEnabledTest,
+       PageVisibleWithoutFocus) {
+  page_scheduler_->SetPageVisible(true);
+  if (page_scheduler_->IsPageFocused())
+    page_scheduler_->OnFocusChanged(false);
+
+  int run_count = 0;
+  ThrottleableTaskQueue()->GetTaskRunnerWithDefaultTaskType()->PostDelayedTask(
+      FROM_HERE,
+      MakeRepeatingTask(
+          ThrottleableTaskQueue()->GetTaskRunnerWithDefaultTaskType(),
+          &run_count, base::TimeDelta::FromMilliseconds(20)),
+      base::TimeDelta::FromMilliseconds(20));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(1, run_count);
+
+  // Create a new frame when the page doesn't have focus
+  int frame_run_count = 0;
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
+      CreateFrameScheduler(page_scheduler_.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kSubframe);
+  ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
+      ->GetTaskRunnerWithDefaultTaskType()
+      ->PostDelayedTask(
+          FROM_HERE,
+          MakeRepeatingTask(
+              ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
+                  ->GetTaskRunnerWithDefaultTaskType(),
+              &frame_run_count, base::TimeDelta::FromMilliseconds(20)),
+          base::TimeDelta::FromMilliseconds(20));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(1, frame_run_count);
 }
 
 }  // namespace page_scheduler_impl_unittest

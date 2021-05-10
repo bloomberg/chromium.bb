@@ -13,15 +13,16 @@
 <translation id="1272079795634619415">停止</translation>
 <translation id="1289742167380433257">为节省您的流量，Google 已优化了此网页中的图片。</translation>
 <translation id="129382876167171263">网站保存的文件会显示在这里</translation>
+<translation id="1317194122196776028">移除此网站</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
 <translation id="1415402041810619267">网址被截断了</translation>
-<translation id="1431402976894535801">禁止网站了解您何时处于活跃状态</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
 <translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="1620510694547887537">摄像头</translation>
+<translation id="1644574205037202324">历史记录</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
 <translation id="1677097821151855053">系统会使用 Cookie 和其他网站数据来记住您，以便实现某些功能或目的（例如帮您登录或向您展示个性化广告）。如需管理所有网站的 Cookie，请参阅<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
 <translation id="1688867105868176567">要清除网站数据吗？</translation>
@@ -39,7 +40,6 @@
 <translation id="1994173015038366702">网站网址</translation>
 <translation id="2025115093177348061">增强现实</translation>
 <translation id="2030769033451695672">点按即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2054665754582400095">您的状态</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2107397443965016585">需先询问，得到许可后才允许网站播放受保护的内容 （推荐）</translation>
@@ -82,7 +82,6 @@
 <translation id="3114012059975132928">视频播放器</translation>
 <translation id="3115898365077584848">显示信息</translation>
 <translation id="3123473560110926937">已禁止部分网站显示广告</translation>
-<translation id="3165371858310906303">在网站想知道您何时处于活跃状态时询问您</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
 <translation id="321187648315454507">若要允许 <ph name="APP_NAME" /> 向您发送通知，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启通知。</translation>
 <translation id="3227137524299004712">麦克风</translation>
@@ -101,6 +100,7 @@
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3763247130972274048">在视频左侧或右侧点按两次即可跳过 10 秒</translation>
 <translation id="381841723434055211">电话号码</translation>
+<translation id="3835233591525155343">您的设备使用情况</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3859306556332390985">前进</translation>
 <translation id="3955193568934677022">允许网站播放受保护的内容（推荐）</translation>
@@ -117,6 +117,7 @@
 <translation id="429312253194641664">某个网站正在播放媒体内容</translation>
 <translation id="42981349822642051">展开</translation>
 <translation id="4336434711095810371">清除所有数据</translation>
+<translation id="4402755511846832236">禁止网站了解您何时在主动使用此设备</translation>
 <translation id="4433925000917964731">由 Google 提供的精简版网页</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="445467742685312942">允许网站播放受保护内容。</translation>
@@ -129,6 +130,7 @@
 <translation id="4670064810192446073">虚拟实境</translation>
 <translation id="4708011789095599544">确定要清除此网站的 Cookie 和其他网站数据吗？</translation>
 <translation id="4751476147751820511">动态传感器或光传感器</translation>
+<translation id="4836046166855586901">在网站想了解您何时在主动使用此设备时询问您</translation>
 <translation id="4883854917563148705">无法重置托管设置</translation>
 <translation id="4887024562049524730">需先询问，得到许可后才允许网站使用您的虚拟实境设备和数据（推荐）</translation>
 <translation id="4962975101802056554">撤消设备的所有权限</translation>
@@ -140,6 +142,7 @@
 <translation id="5063480226653192405">空间占用量</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5123685120097942451">无痕式标签页</translation>
+<translation id="5186036860380548585">选项位于屏幕顶部附近</translation>
 <translation id="5197729504361054390">系统会将您所选联系人的详细信息分享给 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5300589172476337783">显示</translation>
@@ -278,6 +281,7 @@
 <translation id="8447861592752582886">撤消设备权限</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{正在使用 1 个 Cookie}other{正在使用 # 个 Cookie}}</translation>
 <translation id="8463851957836045671">网站加载速度很快</translation>
+<translation id="8487700953926739672">可离线使用</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="857943718398505171">允许（推荐）</translation>

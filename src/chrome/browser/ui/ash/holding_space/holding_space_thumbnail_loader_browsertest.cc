@@ -35,11 +35,15 @@ enum class TestPath { kNonExistent, kEmptyDir, kJpg, kBrokenJpg, kPng };
 // Copies |bitmap| into |copy| and runs |callback|.
 void CopyBitmapAndRunClosure(base::OnceClosure callback,
                              SkBitmap* copy,
-                             const SkBitmap* bitmap) {
-  if (bitmap)
+                             const SkBitmap* bitmap,
+                             base::File::Error error) {
+  if (bitmap) {
+    EXPECT_EQ(base::File::FILE_OK, error);
     *copy = *bitmap;
-  else
+  } else {
+    EXPECT_NE(base::File::FILE_OK, error);
     ADD_FAILURE() << "Got null bitmap";
+  }
   std::move(callback).Run();
 }
 
@@ -53,8 +57,8 @@ class ScopedExternalMountPoint {
       return;
 
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        name_, storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), temp_dir_.GetPath());
+        name_, storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
+        temp_dir_.GetPath());
     file_manager::util::GetFileSystemContextForExtensionId(
         profile, file_manager::kImageLoaderExtensionId)
         ->external_backend()
@@ -168,8 +172,10 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceThumbnailLoaderTest, LoadNonExistentItem) {
   ash::HoldingSpaceThumbnailLoader::ThumbnailRequest request(
       GetTestPath(TestPath::kNonExistent), gfx::Size(48, 48));
   loader->Load(request,
-               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap) {
+               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap,
+                                                      base::File::Error error) {
                  EXPECT_FALSE(bitmap);
+                 EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
                  run_loop.Quit();
                }));
   run_loop.Run();
@@ -183,8 +189,10 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceThumbnailLoaderTest, LoadFolder) {
   ash::HoldingSpaceThumbnailLoader::ThumbnailRequest request(
       GetTestPath(TestPath::kEmptyDir), gfx::Size(48, 48));
   loader->Load(request,
-               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap) {
+               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap,
+                                                      base::File::Error error) {
                  EXPECT_FALSE(bitmap);
+                 EXPECT_EQ(base::File::FILE_ERROR_NOT_A_FILE, error);
                  run_loop.Quit();
                }));
   run_loop.Run();
@@ -215,8 +223,10 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceThumbnailLoaderTest, LoadBrokenJpg) {
   ash::HoldingSpaceThumbnailLoader::ThumbnailRequest request(
       GetTestPath(TestPath::kBrokenJpg), gfx::Size(48, 48));
   loader->Load(request,
-               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap) {
+               base::BindLambdaForTesting([&run_loop](const SkBitmap* bitmap,
+                                                      base::File::Error error) {
                  EXPECT_FALSE(bitmap);
+                 EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
                  run_loop.Quit();
                }));
   run_loop.Run();

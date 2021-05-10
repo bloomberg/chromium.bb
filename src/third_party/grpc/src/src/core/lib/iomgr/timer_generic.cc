@@ -22,12 +22,15 @@
 
 #include <inttypes.h>
 
+#include <string>
+
+#include "absl/strings/str_cat.h"
+
 #include "src/core/lib/iomgr/timer.h"
 
 #include <grpc/support/alloc.h>
 #include <grpc/support/cpu.h>
 #include <grpc/support/log.h>
-#include <grpc/support/string_util.h>
 #include <grpc/support/sync.h>
 
 #include "src/core/lib/debug/trace.h"
@@ -56,7 +59,7 @@ grpc_core::TraceFlag grpc_timer_check_trace(false, "timer_check");
  * stats maintained in 'stats' and the relevant timers are then moved from the
  * 'list' to 'heap'.
  */
-typedef struct {
+struct timer_shard {
   gpr_mu mu;
   grpc_time_averaged_stats stats;
   /* All and only timers with deadlines < this will be in the heap. */
@@ -70,8 +73,7 @@ typedef struct {
   grpc_timer_heap heap;
   /* This holds timers whose deadline is >= queue_deadline_cap. */
   grpc_timer list;
-} timer_shard;
-
+};
 static size_t g_num_shards;
 
 /* Array of timer shards. Whenever a timer (grpc_timer *) is added, its address
@@ -369,9 +371,10 @@ static void timer_init(grpc_timer* timer, grpc_millis deadline,
 
   if (!g_shared_mutables.initialized) {
     timer->pending = false;
-    GRPC_CLOSURE_SCHED(timer->closure,
-                       GRPC_ERROR_CREATE_FROM_STATIC_STRING(
-                           "Attempt to create timer before initialization"));
+    grpc_core::ExecCtx::Run(
+        DEBUG_LOCATION, timer->closure,
+        GRPC_ERROR_CREATE_FROM_STATIC_STRING(
+            "Attempt to create timer before initialization"));
     return;
   }
 
@@ -380,7 +383,7 @@ static void timer_init(grpc_timer* timer, grpc_millis deadline,
   grpc_millis now = grpc_core::ExecCtx::Get()->Now();
   if (deadline <= now) {
     timer->pending = false;
-    GRPC_CLOSURE_SCHED(timer->closure, GRPC_ERROR_NONE);
+    grpc_core::ExecCtx::Run(DEBUG_LOCATION, timer->closure, GRPC_ERROR_NONE);
     gpr_mu_unlock(&shard->mu);
     /* early out */
     return;
@@ -471,7 +474,8 @@ static void timer_cancel(grpc_timer* timer) {
   if (timer->pending) {
     REMOVE_FROM_HASH_TABLE(timer);
 
-    GRPC_CLOSURE_SCHED(timer->closure, GRPC_ERROR_CANCELLED);
+    grpc_core::ExecCtx::Run(DEBUG_LOCATION, timer->closure,
+                            GRPC_ERROR_CANCELLED);
     timer->pending = false;
     if (timer->heap_index == INVALID_HEAP_INDEX) {
       list_remove(timer);
@@ -546,9 +550,8 @@ static grpc_timer* pop_one(timer_shard* shard, grpc_millis now) {
     }
     if (timer->deadline > now) return nullptr;
     if (GRPC_TRACE_FLAG_ENABLED(grpc_timer_trace)) {
-      gpr_log(GPR_INFO, "TIMER %p: FIRE %" PRId64 "ms late via %s scheduler",
-              timer, now - timer->deadline,
-              timer->closure->scheduler->vtable->name);
+      gpr_log(GPR_INFO, "TIMER %p: FIRE %" PRId64 "ms late", timer,
+              now - timer->deadline);
     }
     timer->pending = false;
     grpc_timer_heap_pop(&shard->heap);
@@ -564,7 +567,8 @@ static size_t pop_timers(timer_shard* shard, grpc_millis now,
   gpr_mu_lock(&shard->mu);
   while ((timer = pop_one(shard, now))) {
     REMOVE_FROM_HASH_TABLE(timer);
-    GRPC_CLOSURE_SCHED(timer->closure, GRPC_ERROR_REF(error));
+    grpc_core::ExecCtx::Run(DEBUG_LOCATION, timer->closure,
+                            GRPC_ERROR_REF(error));
     n++;
   }
   *new_min_deadline = compute_min_deadline(shard);
@@ -705,38 +709,36 @@ static grpc_timer_check_result timer_check(grpc_millis* next) {
 
   // tracing
   if (GRPC_TRACE_FLAG_ENABLED(grpc_timer_check_trace)) {
-    char* next_str;
+    std::string next_str;
     if (next == nullptr) {
-      next_str = gpr_strdup("NULL");
+      next_str = "NULL";
     } else {
-      gpr_asprintf(&next_str, "%" PRId64, *next);
+      next_str = absl::StrCat(*next);
     }
 #if GPR_ARCH_64
     gpr_log(GPR_INFO,
             "TIMER CHECK BEGIN: now=%" PRId64 " next=%s tls_min=%" PRId64
             " glob_min=%" PRId64,
-            now, next_str, min_timer,
+            now, next_str.c_str(), min_timer,
             static_cast<grpc_millis>(gpr_atm_no_barrier_load(
                 (gpr_atm*)(&g_shared_mutables.min_timer))));
 #else
     gpr_log(GPR_INFO, "TIMER CHECK BEGIN: now=%" PRId64 " next=%s min=%" PRId64,
-            now, next_str, min_timer);
+            now, next_str.c_str(), min_timer);
 #endif
-    gpr_free(next_str);
   }
   // actual code
   grpc_timer_check_result r =
       run_some_expired_timers(now, next, shutdown_error);
   // tracing
   if (GRPC_TRACE_FLAG_ENABLED(grpc_timer_check_trace)) {
-    char* next_str;
+    std::string next_str;
     if (next == nullptr) {
-      next_str = gpr_strdup("NULL");
+      next_str = "NULL";
     } else {
-      gpr_asprintf(&next_str, "%" PRId64, *next);
+      next_str = absl::StrCat(*next);
     }
-    gpr_log(GPR_INFO, "TIMER CHECK END: r=%d; next=%s", r, next_str);
-    gpr_free(next_str);
+    gpr_log(GPR_INFO, "TIMER CHECK END: r=%d; next=%s", r, next_str.c_str());
   }
   return r;
 }

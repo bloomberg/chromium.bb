@@ -37,7 +37,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom-blink-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
@@ -98,8 +97,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin,
-      const ServiceWorkerToken& service_worker_token,
-      ukm::SourceId ukm_source_id);
+      const ServiceWorkerToken& service_worker_token);
 
   ServiceWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>,
@@ -107,8 +105,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin,
-      const ServiceWorkerToken& service_worker_token,
-      ukm::SourceId ukm_source_id);
+      const ServiceWorkerToken& service_worker_token);
   ~ServiceWorkerGlobalScope() override;
 
   // ExecutionContext overrides:
@@ -116,12 +113,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope:
-  void Initialize(const KURL& response_url,
-                  network::mojom::ReferrerPolicy response_referrer_policy,
-                  network::mojom::IPAddressSpace response_address_space,
-                  const Vector<CSPHeaderAndType>& response_csp_headers,
-                  const Vector<String>* response_origin_trial_tokens,
-                  int64_t appcache_id) override;
+  void Initialize(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy,
+      network::mojom::IPAddressSpace response_address_space,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
+      const Vector<String>* response_origin_trial_tokens,
+      int64_t appcache_id) override;
   // Fetches and runs the top-level classic worker script.
   void FetchAndRunClassicScript(
       const KURL& script_url,
@@ -357,14 +355,15 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const v8_inspector::V8StackTraceId& stack_id);
 
   // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
-  void RunClassicScript(const KURL& response_url,
-                        network::mojom::ReferrerPolicy response_referrer_policy,
-                        network::mojom::IPAddressSpace response_address_space,
-                        const Vector<CSPHeaderAndType> response_csp_headers,
-                        const Vector<String>* response_origin_trial_tokens,
-                        const String& source_code,
-                        std::unique_ptr<Vector<uint8_t>> cached_meta_data,
-                        const v8_inspector::V8StackTraceId&);
+  void RunClassicScript(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy,
+      network::mojom::IPAddressSpace response_address_space,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
+      const Vector<String>* response_origin_trial_tokens,
+      const String& source_code,
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data,
+      const v8_inspector::V8StackTraceId&);
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.

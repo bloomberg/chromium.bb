@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_UTIL_H_
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -71,15 +72,31 @@ void TakeElementAndGetProperty(
     return;
   }
 
+  const ElementFinder::Result* element_result_ptr = element_result.get();
   std::move(perform_and_get)
-      .Run(*element_result,
+      .Run(*element_result_ptr,
            base::BindOnce(&RetainElementAndExecuteGetCallback<R>,
                           std::move(element_result), std::move(done)));
 }
 
+// Run all |perform_actions| sequentially. Breaks the execution on any error
+// and executes the |done| callback with the final status.
 void PerformAll(std::unique_ptr<ElementActionVector> perform_actions,
                 const ElementFinder::Result& element,
                 base::OnceCallback<void(const ClientStatus&)> done);
+
+// Resolve the |text_value| and run the |perform| callback. Run the |done|
+// callback with an error status if the |text_value| could not be resolved.
+// Run the |done| callback with the result status of |perform| otherwise.
+void PerformWithTextValue(
+    const ActionDelegate* delegate,
+    const TextValue& text_value,
+    base::OnceCallback<void(const std::string&,
+                            const ElementFinder::Result&,
+                            base::OnceCallback<void(const ClientStatus&)>)>
+        perform,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> done);
 
 // Adds an optional step to the |actions|. If the step is |SKIP_STEP|, it does
 // not add it. For |REPORT_STEP_RESULT| it adds the step ignoring a potential
@@ -87,6 +104,13 @@ void PerformAll(std::unique_ptr<ElementActionVector> perform_actions,
 void AddOptionalStep(OptionalStep optional_step,
                      ElementActionCallback step,
                      ElementActionVector* actions);
+
+// Adds a step to the |actions| and ignores its timing results.
+void AddStepIgnoreTiming(
+    base::OnceCallback<void(
+        const ElementFinder::Result&,
+        base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>)> step,
+    ElementActionVector* actions);
 
 void ClickOrTapElement(const ActionDelegate* delegate,
                        const Selector& selector,

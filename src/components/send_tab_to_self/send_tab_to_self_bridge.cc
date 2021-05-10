@@ -98,7 +98,7 @@ SendTabToSelfBridge::SendTabToSelfBridge(
   DCHECK(clock_);
   DCHECK(device_info_tracker_);
   if (history_service) {
-    history_service->AddObserver(this);
+    history_service_observation_.Observe(history_service);
   }
 
   std::move(create_store_callback)
@@ -109,7 +109,7 @@ SendTabToSelfBridge::SendTabToSelfBridge(
 
 SendTabToSelfBridge::~SendTabToSelfBridge() {
   if (history_service_) {
-    history_service_->RemoveObserver(this);
+    history_service_observation_.Reset();
   }
 }
 
@@ -637,11 +637,6 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
 
 void SendTabToSelfBridge::SetTargetDeviceInfoList() {
   DCHECK(device_info_tracker_->IsSyncing());
-  // Verify that the current TrackedCacheGuid() is the local GUID without
-  // enforcing that tracked cache GUID is set.
-  DCHECK(device_info_tracker_->IsRecentLocalCacheGuid(
-             change_processor()->TrackedCacheGuid()) ||
-         change_processor()->TrackedCacheGuid().empty());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();

@@ -40,16 +40,26 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
 
   void RemoveChild(LayoutObject*) override;
 
+  void WillBeRemovedFromTree() override;
+
   void StyleDidChange(StyleDifference diff,
                       const ComputedStyle* old_style) override;
 
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;
 
+  LayoutBlock* StickyContainer() const override;
+
   // Whether a row has opaque background depends on many factors, e.g. border
   // spacing, border collapsing, missing cells, etc.
   // For simplicity, just conservatively assume all table rows are not opaque.
   // Copied from Legacy's LayoutTableRow
+  bool ForegroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
+                                         unsigned) const override {
+    NOT_DESTROYED();
+    return false;
+  }
+
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {
     NOT_DESTROYED();
     return false;
@@ -66,6 +76,8 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutNGMixin<LayoutBlock>,
     NOT_DESTROYED();
     return false;
   }
+
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   // LayoutBlock methods end.
 

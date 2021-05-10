@@ -21,17 +21,17 @@ void DownloadInProgressDialogView::Show(
     gfx::NativeWindow parent,
     int download_count,
     Browser::DownloadCloseType dialog_type,
-    const base::Callback<void(bool)>& callback) {
-  DownloadInProgressDialogView* window =
-      new DownloadInProgressDialogView(download_count, dialog_type, callback);
+    base::OnceCallback<void(bool)> callback) {
+  DownloadInProgressDialogView* window = new DownloadInProgressDialogView(
+      download_count, dialog_type, std::move(callback));
   constrained_window::CreateBrowserModalDialogViews(window, parent)->Show();
 }
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(
     int download_count,
     Browser::DownloadCloseType dialog_type,
-    const base::Callback<void(bool)>& callback)
-    : callback_(callback) {
+    base::OnceCallback<void(bool)> callback)
+    : callback_(std::move(callback)) {
   SetTitle(l10n_util::GetPluralStringFUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_TITLE,
                                             download_count));
   SetShowCloseButton(false);
@@ -46,11 +46,13 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   auto run_callback = [](DownloadInProgressDialogView* dialog, bool accept) {
     // Note that accepting this dialog means "cancel the download", while cancel
     // means "continue the download".
-    dialog->callback_.Run(accept);
+    std::move(dialog->callback_).Run(accept);
   };
   SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this), true));
   SetCancelCallback(
@@ -85,13 +87,6 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
 }
 
 DownloadInProgressDialogView::~DownloadInProgressDialogView() = default;
-
-gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
 
 BEGIN_METADATA(DownloadInProgressDialogView, views::DialogDelegateView)
 END_METADATA

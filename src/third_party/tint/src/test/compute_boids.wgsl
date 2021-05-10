@@ -1,18 +1,18 @@
-# Copyright 2020 The Tint Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 The Tint Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-# vertex shader
+// vertex shader
 
 [[location(0)]] var<in> a_particlePos : vec2<f32>;
 [[location(1)]] var<in> a_particleVel : vec2<f32>;
@@ -26,19 +26,17 @@ fn vert_main() -> void {
       (a_pos.x * cos(angle)) - (a_pos.y * sin(angle)),
       (a_pos.x * sin(angle)) + (a_pos.y * cos(angle)));
   gl_Position = vec4<f32>(pos + a_particlePos, 0.0, 1.0);
-  return;
 }
 
-# fragment shader
+// fragment shader
 [[location(0)]] var<out> fragColor : vec4<f32>;
 
 [[stage(fragment)]]
 fn frag_main() -> void {
   fragColor = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  return;
 }
 
-# compute shader
+// compute shader
 [[block]] struct Particle {
   [[offset(0)]] pos : vec2<f32>;
   [[offset(8)]] vel : vec2<f32>;
@@ -58,13 +56,13 @@ fn frag_main() -> void {
   [[offset(0)]] particles : [[stride(16)]] array<Particle, 5>;
 };
 
-[[binding(0), set(0)]] var<uniform> params : SimParams;
-[[binding(1), set(0)]] var<storage_buffer> particlesA : Particles;
-[[binding(2), set(0)]] var<storage_buffer> particlesB : Particles;
+[[binding(0), group(0)]] var<uniform> params : [[access(read)]] SimParams;
+[[binding(1), group(0)]] var<storage> particlesA : [[access(read_write)]] Particles;
+[[binding(2), group(0)]] var<storage> particlesB : [[access(read_write)]] Particles;
 
 [[builtin(global_invocation_id)]] var<in> gl_GlobalInvocationID : vec3<u32>;
 
-# https://github.com/austinEng/Project6-Vulkan-Flocking/blob/master/data/shaders/computeparticles/particle.comp
+// https://github.com/austinEng/Project6-Vulkan-Flocking/blob/master/data/shaders/computeparticles/particle.comp
 [[stage(compute)]]
 fn comp_main() -> void {
   var index : u32 = gl_GlobalInvocationID.x;
@@ -114,13 +112,13 @@ fn comp_main() -> void {
   vVel = vVel + (cMass * params.rule1Scale) + (colVel * params.rule2Scale) +
       (cVel * params.rule3Scale);
 
-  # clamp velocity for a more pleasing simulation
+  // clamp velocity for a more pleasing simulation
   vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);
 
-  # kinematic update
+  // kinematic update
   vPos = vPos + (vVel * params.deltaT);
 
-  # Wrap around boundary
+  // Wrap around boundary
   if (vPos.x < -1.0) {
     vPos.x = 1.0;
   }
@@ -134,9 +132,7 @@ fn comp_main() -> void {
     vPos.y = -1.0;
   }
 
-  # Write back
+  // Write back
   particlesB.particles[index].pos = vPos;
   particlesB.particles[index].vel = vVel;
-
-  return;
 }

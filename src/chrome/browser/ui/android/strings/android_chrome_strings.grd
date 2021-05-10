@@ -196,7 +196,7 @@ CHAR-LIMIT guidelines:
     <file lang="zh-TW" path="translations/android_chrome_strings_zh-TW.xtb" />
     <file lang="zu" path="translations/android_chrome_strings_zu.xtb" />
   </translations>
-  <release allow_pseudo="false" seq="1">
+  <release seq="1">
     <messages fallback_to_english="true">
       <!-- NOTE: Generic strings used across multiple features belong in //components/browser_ui/strings/android. -->
 
@@ -254,6 +254,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_PRICE_DROP" desc="Label for notification that indicates there is a lower price in an open tab, within a list of notification categories. [CHAR-LIMIT=32]">
+        Price drop alerts
+      </message>
 
       <message name="IDS_UNSUPPORTED" desc="Message displayed to the user when an attempted action is not supported.">
         Unsupported
@@ -274,6 +277,9 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_PREFS_SYNC_AND_SERVICES_CONTENT_DESCRIPTION" desc="The accessibility text to read when the 'Sync and Google services' Settings page is opened from the sign-in page. This text is attached to the 'Navigate Up' button shown at the top of the screen. The first two sentences describe the screen that is currently shown to the user, while 'Navigate up' is a description for the button this text is attached to. 'Navigate up' should match TC ID 6794660482873516081.">
         You are currently customizing your Sync and Google service settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up
+      </message>
+      <message name="IDS_PREFS_MANAGE_SYNC_SETTINGS_CONTENT_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessibility text to read when the 'Manage Sync Settings' page is opened from the sign-in page. This text is attached to the 'Navigate Up' button shown at the top of the screen. The first two sentences describe the screen that is currently shown to the user, while 'Navigate up' is a description for the button this text is attached to. 'Navigate up' should match TC ID 6794660482873516081.">
+        You are currently customizing your Sync settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up
       </message>
       <message name="IDS_SIGNIN_PREF_DISALLOWED_TITLE" desc="Title for the signin entry in Settings when signin is disallowed.">
         Not signed in
@@ -452,9 +458,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREATE_PROFILE" desc="Button that allows the user to create a new profile (which contains the user's name, address, etc) that will be automatically filled into web page forms. [CHAR-LIMIT=32]">
         Add address
       </message>
-      <message name="IDS_AUTOFILL_EDIT_PROFILE" desc="Button that allows the user to edit a profile (which contains the user's name, address, etc) that can be automatically filled into web page forms. [CHAR-LIMIT=32]">
-        Edit address
-      </message>
       <message name="IDS_AUTOFILL_CREATE_CREDIT_CARD" desc="Button that allows the user to add a new card that will be automatically filled into web page forms. This can be either credit, debit, or prepaid card. [CHAR-LIMIT=32]">
         Add card
       </message>
@@ -463,6 +466,9 @@ CHAR-LIMIT guidelines:
       </message>
      <message name="IDS_AUTOFILL_PROFILE_EDITOR_COUNTRY" desc="Label for a spinner input field containing a list of countries or regions [CHAR-LIMIT=32]">
         Country/Region
+      </message>
+      <message name="IDS_AUTOFILL_PROFILE_EDITOR_HONORIFIC_PREFIX" desc="Label for text input field containing a title that can be auto-filled by Chrome. [CHAR-LIMIT=32]" meaning="A 'Title' field in a web form could be a prefix like Ms., Mx., or Dr. or a position held, like Captain or Rabbi.">
+        Title
       </message>
       <message name="IDS_AUTOFILL_PROFILE_EDITOR_EMAIL_ADDRESS" desc="Label for text input field containing an e-mail address. [CHAR-LIMIT=32]">
         Email
@@ -561,6 +567,15 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_EDIT_HINT" desc="Small hint on the editing screens that advises users to store the same password as they use on the currently edited site.">
         Make sure the password you are saving matches your password for <ph name="SITE">%1$s<ex>example.com</ex></ph>
       </message>
+      <message name="IDS_PASSWORD_ENTRY_EDIT_DELETION_DIALOG_BODY" desc="Text explaining the user that deleting the credential that they are viewing will not remove their account on the reaspective website.">
+        Deleting this password will not delete your account on <ph name="SITE">%1$s<ex>example.com</ex></ph>
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDIT_DELETE_CREDENTIAL_DIALOG_TITLE" desc="The title of a prompt to confirm that the user intends to delete the stored password.">
+        Delete password?
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDIT_DELETE_CREDENTIAL_DIALOG_CONFIRM" desc="The caption the button confirming that the user intends to delete the stored password.">
+        Delete password
+      </message>
       <message name="IDS_PASSWORD_ENTRY_VIEWER_TITLE" desc='Title of the overview screen for a saved password.'>
         Saved password
       </message>
@@ -609,11 +624,20 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_VIEWER_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
         To view or copy your password here, set screen lock on this device.
       </message>
+      <message name="IDS_PASSWORD_ENTRY_VIEW_SET_SCREEN_LOCK" desc='Text prompting user to set up screen lock on their device in order to view passwords'>
+        To view passwords, first set a screen lock on your device
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_COPY_SET_SCREEN_LOCK" desc='Text prompting user to set up screen lock on their device in order to copy passwords'>
+        To copy passwords, first set a screen lock on your device
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDIT_DUPLICATE_USERNAME_ERROR" desc='Error text displayed when the user changes the username in the editor to another username that they already saved for the same site.'>
+        You already saved this username for this site
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDIT_EMPTY_PASSWORD_ERROR" desc='Error text displayed when the user has left the password field empty in the credential editor.'>
+        Enter password
+      </message>
       <message name="IDS_PASSWORD_EXPORT_SET_LOCK_SCREEN" desc="Text prompting user to set device lock in order to be able to export passwords">
         Turn on screen lock in Settings to export your passwords from this device
-      </message>
-      <message name="IDS_PASSWORD_ENTRY_VIEW_SET_SCREEN_LOCK" desc="Text prompting the user to set up a screen lock on their device in order to be able to view passwords">
-        To view passwords, first set a screen lock on your device
       </message>
       <message name="IDS_PASSWORD_GENERATION_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password generation popup is shown.">
         Showing password generation popup
@@ -653,6 +677,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_LOCKSCREEN_DESCRIPTION_VIEW" desc="When a user attempts to view a password for a particular website in Chrome's settings, Chrome launches a lock screen to verify the user's identity and displays the following explanation.">
         Unlock to view your password
       </message>
+      <message name="IDS_LOCKSCREEN_DESCRIPTION_EDIT" desc="When a user attempts to edit a password for a particular website in Chrome's settings, Chrome launches a lock screen to verify the user's identity and displays the following explanation.">
+        Unlock to edit your password
+      </message>
       <message name="IDS_LOCKSCREEN_DESCRIPTION_EXPORT" desc="When a user attempts to export saved passwords in Chrome's settings, Chrome launches a lock screen to verify the user's identity and displays the following explanation.">
         Unlock to export your passwords
       </message>
@@ -672,26 +699,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_CHROME_HOMEPAGE" desc="The option that allows user to set Chrome's new tab page as the homepage." >
         Chrome’s homepage
-      </message>
-
-      <!-- Homepage Promo card -->
-      <message name="IDS_HOMEPAGE_PROMO_TITLE" desc="The title displayed on homepage promo card, which guide user set chrome's new tab page as their new homepage.">
-        Get here quicker
-      </message>
-      <message name="IDS_HOMEPAGE_PROMO_TITLE_SLIM" desc="The title displayed on homepage promo card, which guide user set chrome's new tab page as their new homepage. Used for the one liner variation.">
-        Make this page your homepage
-      </message>
-      <message name="IDS_HOMEPAGE_PROMO_DESCRIPTION" desc="The description displayed on homepage promo card, which guide user set chrome's new tab page as their new homepage.">
-        See your top sites and recent stories whenever you tap the Home button
-      </message>
-      <message name="IDS_HOMEPAGE_PROMO_PRIMARY_BUTTON" desc="The text displayed on homepage promo card's primary button compat, which will change the user's homepage to new tab page when they tab.">
-        Change homepage
-      </message>
-      <message name="IDS_HOMEPAGE_PROMO_PRIMARY_BUTTON_SLIM" desc="The text displayed on homepage promo card's primary button compat, which will change the user's homepage to new tab page when they tab. Used for the slim variation that has a smaller space for the button.">
-        Change
-      </message>
-      <message name="IDS_HOMEPAGE_PROMO_SNACKBAR_MESSAGE" desc="The text displayed on the snackbar that appears after setting homepage by click on homepage promo card's primary button, which will change the user's homepage to new tab page.">
-        Homepage changed
       </message>
 
       <!-- Enhanced Protection Promo card -->
@@ -777,6 +784,15 @@ Touch &amp; hold any word to search. To refine your search, select more or fewer
       <message name="IDS_CONTEXTUAL_SEARCH_NO_THANKS_BUTTON" desc="A button to confirm and dismiss opt out promo">
         No thanks
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_HELP_BODY" desc="Some help text that is shown in the body of a paragraph. The text tells the user what gesture to use instead of a previous gesture in order to search.">
+        To search from this page, touch &amp; hold words instead of tapping them
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_HELP_HEADER" desc="Summary help text that is shown at the top of a paragraph. The text tells the user what gesture to use in order to search.">
+        Touch &amp; hold for more relevant info
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_DEFAULT_CAPTION" desc="Summary help text that is shown as a second line in the Contextual Search peeking bottom sheet telling the user that they can tap the text in order to open the sheet and see search results there.">
+        Tap to see search results
+      </message>
       <message name="IDS_DO_NOT_TRACK_TITLE" desc="Title for 'Do Not Track' preference">
         “Do Not Track”
       </message>
@@ -787,6 +803,42 @@ For example, some websites may respond to this request by showing you ads that a
       </message>
       <message name="IDS_CAN_MAKE_PAYMENT_TITLE" desc="Title for preference to allow websites to know whether you have payment methods available through PaymentRequest.CanMakePayment interface">
         Access payment methods
+      </message>
+
+      <!-- Privacy Sandbox Settings. Used by //chrome/browser/privacy_sandbox. -->
+      <message name="IDS_PREFS_PRIVACY_SANDBOX" desc="Title for the 'Privacy Sandbox' page. 'Privacy Sandbox' is a noun phrase (title case).">
+        Privacy Sandbox
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_STATUS_ENABLED" desc="Status text, displayed when the Privacy sandbox APIs are enabled.">
+        Trial features are on
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_STATUS_DISABLED" desc="Status text, displayed when the Privacy sandbox APIs are disabled.">
+        Trial features are off
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_DESCRIPTION_TITLE" desc="Title for the description text of 'Privacy Sandbox'.">
+        About Privacy Sandbox
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_DESCRIPTION" desc="Description of the 'Privacy Sandbox'.">
+        Privacy Sandbox is an ongoing initiative to preserve the open web that will help safeguard you from tracking mechanisms.
+
+Today, websites rely on many technologies, like third-party cookies, for important services like showing relevant ads and measuring a site’s performance.
+
+Privacy Sandbox preserves the vitality of the open web by creating better ways to perform these services – without breaking sites, and while preventing you from being surreptitiously tracked across the web.
+
+Privacy Sandbox is still in active development and is available in selected regions. For now, sites may try out Privacy Sandbox while continuing to use current web technologies like third-party cookies. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_TOGGLE" desc="Title for the Privacy Sandbox toggle.">
+        Privacy Sandbox trials
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_TOGGLE_DESCRIPTION" desc="Description for the Privacy Sandbox toggle.">
+        When enabled, sites may use the privacy-preserving techniques shown here to provide their content and services. These include alternatives to cross-site tracking. More trials may be added over time.
+
+<ph name="BEGIN_LIST_ITEM1">&lt;li1&gt;</ph>Advertisers can learn when thousands of users share a similar interest – like a crowd at a concert — and select ads for the crowd, rather than an individual person.<ph name="END_LIST_ITEM1">&lt;/li1&gt;</ph>
+
+<ph name="BEGIN_LIST_ITEM2">&lt;li2&gt;</ph>Advertisers can study the effectiveness of ads in a way that does not track you across sites.<ph name="END_LIST_ITEM2">&lt;/li2&gt;</ph>
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_SNACKBAR_MESSAGE" desc="The text displayed in the snackbar, which gives the user an option to navigate to the Privacy Sandbox settings page. 'Privacy sandbox' has TC ID 5753235213964358658.">
+        Learn about and control new technologies that aim to replace third-party cookies
       </message>
 
       <!-- Secure DNS Settings.  Used by //chrome/browser/privacy. -->
@@ -936,8 +988,8 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Safety check -->
-      <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. The NEW label is displayed when the number of times the user ran the check is less than 3. [CHAR-LIMIT=32]">
-        Safety check <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR-LIMIT=32]">
+        Safety check
       </message>
       <message name="IDS_SAFETY_CHECK_DESCRIPTION" desc="Introduces the safety check categories to the user. Followed by several items, such as 'Safe Browsing', 'Updates', 'Passwords'.">
         Chrome can help keep you safe from data breaches, unsafe websites, and more
@@ -1181,12 +1233,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_ITEM_OPTION_OFFER_TO_TRANSLATE" desc="Option in language item menu. User can click the 'Offer to translate' option to toggle whether they want Chrome to translate pages in this language. [CHAR-LIMIT=32]">
         Offer to translate
       </message>
-      <message name="IDS_LANGUAGES_SET_APPLICATION_LANGUAGE_PROMPT" desc="Option in language item menu. User can click the 'App Language' option to toggle whether or not the Chrome user interface should be displayed in this language. [CHAR-LIMIT=32]">
-        Use as Chrome’s language
-      </message>
-      <message name="IDS_LANGUAGES_SET_AS_APPLICATION_LANGUAGE" desc="Toast to display after selecting language to use for Chrome's user interface.">
-        <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> will use <ph name="language">%2$s<ex>Hindi</ex></ph> on restart.
-      </message>
       <message name="IDS_LANGUAGES_EXPLICIT_ASK_TITLE" desc="Title of the dialog that explicitly asks the user which languages they can read.">
         What languages do you read?
       </message>
@@ -1214,11 +1260,20 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_SETTINGS_AUTOMATIC" desc="Title of Translation settings that lists languages that should be automatically translated.">
         Automatically translate these languages
       </message>
-      <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_LANG" desc="Title of Translation settings that lists languages where no prompt to translate will be shown.">
+      <message name="IDS_LANGUAGES_SETTINGS_AUTOMATIC_TITLE" desc="Short title for Translation settings page showing a list of languages that should be automatically translated.">
+        Automatically translate
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_LANGS" desc="Title of Translation settings that lists languages where no prompt to translate will be shown.">
         Don’t offer to translate these languages
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_NEVER_LANGS_TITLE" desc="Short title for Translation settings page showing a list of languages that should never be translated">
+        Never translate
       </message>
       <message name="IDS_LANGUAGES_SETTINGS_DONT_OFFER_SITES" desc="Title of Translation settings that lists websites where no prompt to translate will be shown.">
         Don’t offer to translate these sites
+      </message>
+      <message name="IDS_LANGUAGES_SETTINGS_NEVER_SITES_TITLE" desc="Short title for Translation settings page showing a list of sites that should never be translated">
+        Never translate sites
       </message>
 
       <!-- Lite Mode-->
@@ -1546,7 +1601,7 @@ Your Google account may have other forms of browsing history like searches and a
         Google Terms of Service
       </message>
       <message name="IDS_GOOGLE_TERMS_OF_SERVICE_URL" desc="URL for Google terms of service" translateable="false">
-        https://policies.google.com/terms
+        https://policies.google.com/terms/embedded
       </message>
       <message name="IDS_CHROME_ADDITIONAL_TERMS_OF_SERVICE_TITLE" desc="Title for Chrome and Chrome OS addtional terms of service">
         Chrome &amp; Chrome OS Additional Terms of Service
@@ -1781,7 +1836,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_SYNC_ERROR_CARD_TITLE" desc="Title of the Sync Error Card. [CHAR-LIMIT=32]">
         Sync isn't working
       </message>
-      <message name="IDS_SYNC_PASSWORDS_ERROR_CARD_TITLE" desc="Title of the Sync Error Card when it affects passwords only. [CHAR-LIMIT=32]">
+      <message name="IDS_PASSWORD_SYNC_ERROR_SUMMARY" desc="Short message shown in various UIs (e.g. Sync Error Card body) to inform that passwords can't be synced (due to missing trusted vault keys). [CHAR-LIMIT=32]">
         Error syncing passwords
       </message>
       <message name="IDS_SYNC_SETTINGS_NOT_CONFIRMED_TITLE" desc="Title of the error message shown when sync setup was not complete. [CHAR-LIMIT=60]">
@@ -1793,11 +1848,8 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_HINT_SYNC_AUTH_ERROR" desc="Hint message to resolve sync auth error.">
         Sign in again to start sync
       </message>
-      <message name="IDS_HINT_SYNC_RETRIEVE_KEYS_LEGACY" desc="Hint message to resolve sync encryption error.">
-        Fix now
-      </message>
       <message name="IDS_HINT_SYNC_RETRIEVE_KEYS" desc="Hint message to resolve sync encryption error.">
-        Error syncing passwords
+        Fix now
       </message>
       <message name="IDS_HINT_PASSPHRASE_REQUIRED" desc="Hint message to resolve passphrase required error.">
         Enter your passphrase to start sync
@@ -1827,9 +1879,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_AUTH_ERROR_CARD_BUTTON" desc="Button text for auth error in sync error cards.">
         Sign in again
-      </message>
-      <message name="IDS_TRUSTED_VAULT_ERROR_CARD_BUTTON" desc="Button text for trusted vault error in sync error cards.">
-        Unlock with Screen Lock
       </message>
 
       <!-- Sync error strings -->
@@ -2099,6 +2148,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CONTEXTMENU_SEARCH_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
         Search with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
+      <message name="IDS_CONTEXTMENU_SEARCH_IMAGE_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
+        Search image with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
+      <message name="IDS_CONTEXTMENU_TRANSLATE_IMAGE_WITH_GOOGLE_LENS" desc="Context sensitive chip for deep linking into google lens for translate results. [CHAR-LIMIT=30]">
+          Translate image with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
       <message name="IDS_CONTEXTMENU_SHOP_SIMILAR_PRODUCTS" desc="Context sensitive menu item for deep linking into google lens for shopping results. [CHAR-LIMIT=30]">
         Shop similar products <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
@@ -2141,11 +2196,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Refreshing page
       </message>
 
-      <!-- App banner accessibility strings, used for touch exploration -->
-      <message name="IDS_APP_BANNER_VIEW_NATIVE_APP_INSTALL_ACCESSIBILITY" desc="Accessibility text: Indicates that clicking on the button will either purchase the app or install it.">
-        Get the app from the Google Play Store: <ph name="APP_ACTION">%s<ex>Install</ex></ph>
-      </message>
-
       <!-- DOM Distiller strings -->
       <message name="IDS_DARK_MODE" desc="Title of button that will change theme of distilled pages to dark mode.">
         Dark
@@ -2170,26 +2220,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Add to Home screen strings -->
-      <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the Home screen (default title). [CHAR-LIMIT=27]">
-        Add to Home screen
-      </message>
       <message name="IDS_MENU_OPEN_WEBAPK" desc="Menu item for opening the installed WebAPK associated with the current PWA. [CHAR-LIMIT=27]">
         Open <ph name="WEBAPK_NAME">%1$s<ex>Telegram</ex></ph>
       </message>
       <message name="IDS_OPEN_WEBAPK_FAILED" desc="Opening of a WebAPK failed.">
         Could not open app
       </message>
-      <message name="IDS_MENU_ADD_TO_HOMESCREEN_INSTALL" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
-        Install app
-      </message>
       <message name="IDS_APP_BANNER_ADD" desc="A button in an app banner to confirm adding a site to homescreen">
         Add
-      </message>
-      <message name="IDS_APP_BANNER_INSTALL" desc="A button in an app banner to confirm adding a site to homescreen">
-        Install
-      </message>
-      <message name="IDS_ADDED_TO_HOMESCREEN" desc="Indicates that the website with the specified name was added to the user's Home screen.">
-        <ph name="NAME">%1$s<ex>Google</ex></ph> was added to your Home screen
       </message>
       <message name="IDS_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that an installation for the WebAPK for the specific website is already in progress.">
         Still adding previous site
@@ -2218,6 +2256,15 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_IPH_INFOBAR_ADD_TO_HOME_SCREEN_DESCRIPTION_TABLET" desc="The description of in-product-help infobar encouraging users to add a commonly visited webpage to the home screen. Shown on tablets.">
         Add this site to your tablet’s Home screen so you can get here more easily
       </message>
+      <message name="IDS_PWA_INSTALL_BOTTOM_SHEET_ACCESSIBILITY" desc="The content description for the bottom sheet install UI.">
+        Install this app
+      </message>
+      <message name="IDS_PWA_INSTALL_BOTTOM_SHEET_SCREENSHOT" desc="The content description string for a screenshot in the bottom sheet install UI.">
+        Screenshot
+      </message>
+      <message name="IDS_IMAGE_ZOOM_CONTENT_DESCRIPTION" desc="The content description string for the screenshot in the image zoom view.">
+        Screenshot. Tap to close.
+      </message>
 
       <!-- Page info popup -->
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display in the page info bubble when viewing and offline page.">
@@ -2234,6 +2281,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PAGE_INFO_CONNECTION_PAINT_PREVIEW" desc="Message to display in the page info bubble when viewing a preview of a page.">
         You are viewing a preview of this page
+      </message>
+
+<message name="IDS_PAGE_INFO_IPH" desc="Message to in InProductHelp bubble to make users aware of changing permissions in PageInfo.">
+        Change your site settings here
       </message>
 
       <!-- Sad tab page -->
@@ -2579,6 +2630,12 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks the user to select one of these accounts. [CHAR-LIMIT=27]">
         Choose an account
       </message>
+      <message name="IDS_ACCOUNT_PICKER_BOTTOM_SHEET_ACCESSIBILITY_OPENED" is_accessibility_with_no_ui="true" desc="The accessibility text to read when account picker bottom sheet is opened.">
+        Sign in to Chrome, opened.
+      </message>
+      <message name="IDS_ACCOUNT_PICKER_BOTTOM_SHEET_ACCESSIBILITY_CLOSED" is_accessibility_with_no_ui="true" desc="The accessibility text to read when account picker bottom sheet is closed.">
+        Sign in to Chrome, closed.
+      </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_BOTTOM_SHEET_SUBTITLE" desc="The subtitle for the account picker bottom sheet that tells the user what happens if the button 'Continue as John Doe' is clicked">
         Sign in to this site and Chrome with your Google Account. You can turn on sync later.
       </message>
@@ -2593,6 +2650,9 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_AUTH_ERROR_SUBTITLE" desc="The subtitle of the account picker bottom sheet when there is an authentication error with the credentials of the account selected.">
         Sorry, we couldn’t validate your credentials
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DISMISS_BUTTON" desc="Dismiss button text of the account picker bottom sheet">
+        Skip
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_GENERAL_ERROR_BUTTON" desc="Button text of the account picker bottom sheet when something went wrong in the sign-in process. User can try again if they click it.">
         Try again
@@ -2693,27 +2753,17 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_REMOVE_ALL" desc="Context menu option to clear the list of recently closed tabs">
         Remove all
       </message>
-      <message name="IDS_ACCESSIBILITY_NTP_OFFLINE_BADGE" desc="Content description for the badge that indicates offline availability of a most visited item or content suggestion on the new tab page.">
-        Available offline
-      </message>
       <message name="IDS_NTP_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph> about suggested content
       </message>
-      <if expr="enable_feed_v1">
-        <message name="IDS_NTP_SUGGESTIONS_FETCH_FAILED" desc="Snackbar text shown when the user presses the More button to get more suggestions, but this fails (eg, no internet connectivity).">
-          Can’t get suggestions
-        </message>
-      </if>
-      <if expr="enable_feed_v1">
-        <message name="IDS_NTP_SUGGESTIONS_FETCH_NO_NEW_SUGGESTIONS" desc="Snackbar text shown when the user presses the More button to get more suggestions, the fetch succeeds but provides no new suggestions.">
-          No new suggestions
-        </message>
-      </if>
       <message name="IDS_NTP_MANAGE_MY_ACTIVITY" desc="Content description to manage my activity from the feed header overflow menu.">
         Manage activity
       </message>
       <message name="IDS_NTP_MANAGE_INTERESTS" desc="Content description to manage settings from the feed header overflow menu.">
         Manage interests
+      </message>
+      <message name="IDS_NTP_MANAGE_REACTIONS" desc="Content description to manage feed reactions from the feed header overflow menu.">
+        Manage reactions
       </message>
       <message name="IDS_NTP_TURN_OFF_FEED" desc="Content description to turn off the feed from the feed header overflow menu.">
         Turn off
@@ -2922,6 +2972,12 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_MENU_FIND_IN_PAGE" desc="Menu item allowing users to find text within the current page. [CHAR-LIMIT=27]">
         Find in page
       </message>
+      <message name="IDS_MENU_FOLLOW" desc="Menu item allowing users to follow the current website. [CHAR-LIMIT=27]">
+        Follow
+      </message>
+      <message name="IDS_MENU_FOLLOWING" desc="Menu item indicating the current website is followed, allowing users to unfollow the current website. [CHAR-LIMIT=27]">
+        Following
+      </message>
       <message name="IDS_MENU_PAINT_PREVIEW_SHOW" desc="Menu item allowing users to capture and show a paint preview of a page. [CHAR-LIMIT=27]" translateable="false">
         Show Paint Preview
       </message>
@@ -3081,14 +3137,14 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_READING_LIST_TITLE" desc="The title for the reading list page in main bookmark UI.">
         Reading list
       </message>
+      <message name="IDS_READING_LIST_TITLE_NEW" desc="The title for the reading list with a new text.">
+        Reading list <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
       <message name="IDS_READING_LIST_READ" desc="The header for the read section in the reading list UI.">
         Read
       </message>
       <message name="IDS_READING_LIST_UNREAD" desc="The header for the unread section in the reading list UI.">
-        Unread
-      </message>
-      <message name="IDS_READING_LIST_READY_FOR_OFFLINE" desc="The string to inform the user that the reading list has offline page ready.">
-        Ready for offline
+        Unread - Available offline
       </message>
       <message name="IDS_READING_LIST_SAVED" desc="App-based message shown after user adds a new link to the reading list. [CHAR-LIMIT=32]">
         Added to reading list
@@ -3096,16 +3152,13 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_READING_LIST_MARK_AS_READ" desc="The text for the action to mark the reading list as read.">
         Mark as read
       </message>
-      <message name="IDS_READING_LIST_SHARE" desc="The text for the action to share the reading list item.">
-        Share
-      </message>
       <message name="IDS_READING_LIST_REMINDER_NOTIFICATION_TITLE" desc="The title of the reminder notification for reading list.">
         Catch up on your reading list
       </message>
       <message name="IDS_READING_LIST_REMINDER_NOTIFICATION_SUBTITLE" desc="The subtitle of the reminder notification for reading list.">
           {READING_LIST_REMINDER_NOTIFICATION_SUBTITLE, plural,
-          =1 {You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_ONE">%1$d<ex>1</ex></ph> page}
-          other {You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY">%1$d<ex>8</ex></ph> pages}}
+          =1 {You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_ONE">%1$d<ex>1</ex></ph> unread page}
+          other {You have <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY">%1$d<ex>8</ex></ph> unread pages}}
       </message>
       <message name="IDS_READING_LIST_UNREAD_PAGE_COUNT" desc="Inform the user about the number of unread reading list items.">
           {READING_LIST_UNREAD_PAGE_COUNT, plural,
@@ -3119,19 +3172,13 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
         Save this page for later and get a reminder
       </message>
       <message name="IDS_READING_LIST_SAVE_PAGES_FOR_LATER" desc="The text on the reading list in product help bubble to introduce the feature to the user.">
-        Save pages for later and get a reminder
+        Add pages to your Reading List to get a reminder
       </message>
       <message name="IDS_READING_LIST_FIND_IN_BOOKMARKS" desc="The text to inform the user to find the reading list in bookmarks UI.">
         Find your reading list in Bookmarks
       </message>
       <message name="IDS_READING_LIST_EMPTY_LIST_TITLE" desc="The text on reading list page when there are no reading list items informing user that reading list is supposed to appear on this surface.">
         You’ll find your reading list here
-      </message>
-      <message name="IDS_READING_LIST_EMPTY_LIST_DESCRIPTION" desc="The description text on reading list page when there are no reading list items informing user that they can save articles to read later which will appear on this surface.">
-        You can save pages to your reading list to find them again
-      </message>
-      <message name="IDS_READING_LIST_EMPTY_LIST_DESCRIPTION_OFFLINE" desc="The description text on reading list page when there are no reading list items informing user that they can save articles to read later offline which will appear on this surface.">
-        You can save pages to your reading list to find them again or read offline
       </message>
 
       <!-- Offline pages -->
@@ -3239,6 +3286,9 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MIC" desc="Content description for the voice search button.">
         Start voice search
+      </message>
+      <message name="IDS_ACCESSIBILITY_BTN_LENS_CAMERA" desc="Content description for the Lens button. When the user taps the button, they can perform a 'search with your camera or photos', which opens the Google Lens app.">
+        Search with your camera using Google Lens
       </message>
       <message name="IDS_ACCESSIBILITY_NEW_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new tab view.">
         New tab
@@ -3594,7 +3644,7 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
         You can clear the data in Chrome Settings
       </message>
       <message name="IDS_TWA_CLEAR_DATA_DIALOG_KEEP_DATA" desc="Text on the negative button of the clear data dialog">
-        Keep data
+        Keep Data
       </message>
       <message name="IDS_TWA_CLEAR_DATA_SITE_SELECTION_TITLE" desc="Title of screen showing the sites linked to TWA, allowing the user to clean data in any of them.">
         Linked sites
@@ -3991,13 +4041,13 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_PREFS_WEB_ASSISTANCE_SECTION_TITLE" desc="Title for the web assistance section">
         Web Assistance
       </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_GET_HELP_TITLE" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
+      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_GET_HELP_TITLE" desc="Title for the switch toggling whether Autofill Assistant is enabled.">
         Get help with tasks on the web
       </message>
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_GET_HELP_SUMMARY" desc="Description for the Autofill Assistant toggle.">
         To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information you submit through Assistant
       </message>
-      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_PROACTIVE_HELP_TITLE" desc="Title for the switch toggling whether proactive help is enabled. When turned on, the Assistant will be able to proactively show up (without explicit user prompt) and offer to help. [CHAR-LIMIT=32]">
+      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_PROACTIVE_HELP_TITLE" desc="Title for the switch toggling whether proactive help is enabled. When turned on, the Assistant will be able to proactively show up (without explicit user prompt) and offer to help.">
         Proactive Help
       </message>
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_PROACTIVE_HELP_SUMMARY" desc="Description for the proactive help toggle. It explains that the Assistant may appear proactively when it detects that it can help the user. ">
@@ -4082,6 +4132,50 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
          Google Chrome as a Security Key
       </message>
 
+      <message name="IDS_CABLEV2_REGISTRATION_SUCCEEDED"
+        desc="The text of a small pop-up, that appears at the bottom of the screen on Android, informing the user that their attempt to register their phone as an authentication device was successful. The translation of the verb should hopefully match that in TC ID 1295743531323106866. (The attached image doesn't show the pop-up at the bottom because it's too fleeting to screenshot, so I've drawn in roughly what it looks like.)">
+         Registration succeeded
+      </message>
+
+      <message name="IDS_CABLEV2_REGISTRATION_FAILED"
+        desc="The text of a small pop-up, that appears at the bottom of the screen on Android, informing the user that their attempt to register their phone as an authentication device was unsuccessful. The translation of the verb should hopefully match that in TC ID 1295743531323106866. (The attached image doesn't show the pop-up at the bottom because it's too fleeting to screenshot, so I've drawn in roughly what it looks like.)">
+         Registration failed
+      </message>
+
+      <message name="IDS_CABLEV2_SIGN_IN_SUCCEEDED"
+        desc="The text of a small pop-up, that appears at the bottom of the screen on Android, informing the user that their attempt to sign-in using their phone as an authentication device was successful. The translation of 'sign-in' should hopefully match that in TC ID 6840924527405570820. (The attached image doesn't show the pop-up at the bottom because it's too fleeting to screenshot, so I've drawn in roughly what it looks like.)">
+         Sign-in succeeded
+      </message>
+
+      <message name="IDS_CABLEV2_SIGN_IN_FAILED"
+        desc="The text of a small pop-up, that appears at the bottom of the screen on Android, informing the user that their attempt to sign-in using their phone as an authentication device was unsuccessful. The translation of 'sign-in' should hopefully match that in TC ID 6840924527405570820. (The attached image doesn't show the pop-up at the bottom because it's too fleeting to screenshot, so I've drawn in roughly what it looks like.)">
+         Sign-in failed
+      </message>
+
+      <message name="IDS_CABLEV2_USB_DISCON_TITLE" desc="The title of a screen that advises the user to disconnect their phone. This shows when the user has connected their phone to their computer using a USB cable and needs to disconnect it once they have finished their current actions.">
+         Connected with USB cable
+      </message>
+
+      <message name="IDS_CABLEV2_USB_DISCON_BODY" desc="The body of a screen that advises the user to disconnect their phone. This shows when the user has connected their phone to their computer using a USB cable and needs to disconnect it once they have finished their current actions.">
+         Disconnect when you’re done
+      </message>
+
+      <message name="IDS_CABLEV2_SERVERLINK_CONNECTING_TO_YOUR_DEVICE" desc="The title of a screen that is shown when a user is connecting their phone to a desktop or laptop computer in order to sign in with it.">
+         Connecting to your device…
+      </message>
+
+      <message name="IDS_CABLEV2_SERVERLINK_STATUS_CONNECTING" desc="A small subheader on a screen that is shown when a user is connecting their phone to a desktop or laptop computer in order to sign in with it.">
+        This may take a minute
+      </message>
+
+      <message name="IDS_CABLEV2_SERVERLINK_STATUS_CONNECTED" desc="A small subheader on a screen that is shown when a user is connecting their phone to a desktop or laptop computer in order to sign in with it. (In the attached image, this text will appear in place of the text 'This may take a minute'.) This text is shown once the connection to the desktop/laptop has completed and the phone is awaiting instructions.">
+        Connected to device
+      </message>
+
+      <message name="IDS_CABLEV2_SERVERLINK_STATUS_PROCESSING" desc="A small subheader on a screen that is shown when a user is connecting their phone to a desktop or laptop computer in order to sign in with it. (In the attached image, this text will appear in place of the text 'This may take a minute'.) This text is shown once a challenge from the desktop/laptop has been received.">
+        Processing request
+      </message>
+
       <!-- QR Code -->
       <message name="IDS_QR_CODE_SHARE_ICON_LABEL" desc="Icon label for sharing with QR Code activity.">
         QR Code
@@ -4139,8 +4233,12 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
         Screenshot
       </message>
 
+      <message name="IDS_SHARING_LONG_SCREENSHOT" desc="Label for Long Screenshot button in the sharing hub.">
+        Long Screenshot
+      </message>
+
       <message name="IDS_SHARING_HIGHLIGHTS" desc="Label for Link-to-text button in the sharing hub.">
-        Link to text
+        Link to highlight
       </message>
 
       <message name="IDS_SHARING_COPIED" desc="Text shown in the toast notification when Copy is selected in the sharing hub.">
@@ -4200,7 +4298,23 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
 
       <message name="IDS_LINK_TO_TEXT_FAILURE_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">
-        Can't create link to text. Share link to page.
+        Can’t create link to highlight. Share link to page.
+      </message>
+
+      <message name="IDS_LINK_TO_TEXT_FAILURE_TOAST_MESSAGE_V2" desc="Toast displayed when link to highlighted text was not possible to create.">
+        Can’t create link to highlight
+      </message>
+
+      <message name="IDS_LINK_TO_TEXT_SUCCESS_LINK_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">
+        Include link to highlight
+      </message>
+
+      <message name="IDS_LINK_TO_TEXT_SUCCESS_TEXT_TOAST_MESSAGE" desc="Toast displayed when link to highlighted text was not possible to create.">
+        Share text only
+      </message>
+
+      <message name="IDS_NEW_BADGE" desc="Notification displayed to indicate that there is a new sharing feature.">
+        New
       </message>
 
       <!-- Share Screenshot strings -->
@@ -4264,31 +4378,6 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
         Viewing live page
       </message>
 
-      <!-- Default Browser Promo Strings-->
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_TITLE" desc="Title of the default browser promo dialog">
-        Set <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> as your default?
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_DESC" desc="Description in the default browser promo dialog, which is concatenated with one of the following steps strings">
-        <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> has the smarts and speed you need to safely do, create, and explore online
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_DISAMBIGUATION_SHEET_STEPS" desc="Description of the steps to set the default browser throught disambiguation sheet. 'Always' should match TC ID 5575222334666843269.">
-        1. Choose <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>\n2. Tap “Always”
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_SYSTEM_SETTINGS_STEPS"
-        desc="Description of the steps to set the default browser throught system settings.
-        'Go to Settings' should match TC ID 4431460803004659888. 'Browser App' should match TC ID 6222206565850006894.">
-        1. Go to Settings\n2. Tap “Browser App”\n3. Choose <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_ROLE_MANAGER_STEPS" desc="Description of the steps to set the default browser throught role manager. 'Set as default' should match TC ID 5706081295230541240.">
-        1. Choose <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>\n2. Tap “Set as default”
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_CHOOSE_CHROME_BUTTON" desc="A button in the default browser promo dialog to choose chrome as default">
-        Choose <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_DEFAULT_BROWSER_PROMO_DIALOG_GO_TO_SETTINGS_BUTTON" desc="A button in the default browser promo to navigate users to systen settings. 'Go to Settings' should match TC ID 4431460803004659888.">
-        Go to Settings
-      </message>
-
       <!-- HTTPS image compression InfoBar -->
       <message name="IDS_LITE_MODE_HTTPS_IMAGE_COMPRESSION_MESSAGE" desc="The text of the infobar notifying the user that Chrome's Lite mode will now also compresses HTTPS images.">
         Lite mode now saves you more data by optimizing images on HTTPS pages.
@@ -4345,6 +4434,18 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_IMAGE_DESCRIPTIONS_SETTINGS_USE_MOBILE_DATA_CONTENT" desc="Content of radio button to allow user to specify getting accessibility image descriptions while on mobile data.">
         Wi-Fi is used when available
       </message>
+      <message name="IDS_IMAGE_DESCRIPTIONS_TOAST_OFF" desc="Content for a toast that will appear when a user disables the image descriptions feature to confirm to the user it is now off.">
+        Image descriptions are off
+      </message>
+      <message name="IDS_IMAGE_DESCRIPTIONS_TOAST_JUST_ONCE" desc="Content for a toast that will appear when a user chooses to get image descriptions just once for the current page.">
+        Image descriptions added for this page
+      </message>
+      <message name="IDS_IMAGE_DESCRIPTIONS_TOAST_ON" desc="Content for a toast that will appear when a user enables the image descriptions feature to confirm to the user it is now on.">
+        Image descriptions are on
+      </message>
+      <message name="IDS_IMAGE_DESCRIPTIONS_TOAST_ON_NO_WIFI" desc="Content for a toast that will appear when a user enables the image descriptions feature with the wifi only requirement while the user is not currently on a wifi connection.">
+        Image descriptions will resume when you connect to Wi-Fi
+      </message>
 
       <!-- Assistant voice search consent ui. -->
       <message name="IDS_AVS_CONSENT_UI_TITLE" desc="Title for a dialog asking the user's permission to use Assistant for voice search.">
@@ -4378,6 +4479,11 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_AVS_SETTING_ENABLED_DESCRIPTION" desc="Description of the Assistant voice search setting.">
       Google Assistant provides a better voice experience for searching the web and engaging with sites you have open. Google Assistant will receive the URL and contents of sites you use with it.
+      </message>
+
+      <!-- Continuous Search Navigation strings -->
+      <message name="IDS_CSN_AD_LABEL" desc="Label for identifying an ad in search results." translateable="false">
+      Ad
       </message>
     </messages>
   </release>

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/timer/timer.h"
 #include "chromeos/components/file_manager/mojom/file_manager.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -17,10 +16,13 @@
 namespace chromeos {
 namespace file_manager {
 
+class FileManagerUI;
+
 // Class backing the page's functionality.
 class FileManagerPageHandler : public mojom::PageHandler {
  public:
   FileManagerPageHandler(
+      FileManagerUI* file_manager_ui,
       mojo::PendingReceiver<mojom::PageHandler> pending_receiver,
       mojo::PendingRemote<mojom::Page> pending_page);
   ~FileManagerPageHandler() override;
@@ -29,20 +31,9 @@ class FileManagerPageHandler : public mojom::PageHandler {
   FileManagerPageHandler& operator=(const FileManagerPageHandler&) = delete;
 
  private:
-  // mojom::PageHandler:
-  void GetFoo(GetFooCallback callback) override;
-  void SetFoo(const std::string& foo) override;
-  void DoABarrelRoll() override;
-
-  void OnBarrelRollDone();
-  void OnBarReceived(const std::string& bar);
-
+  FileManagerUI* file_manager_ui_;  // Owns |this|.
   mojo::Receiver<mojom::PageHandler> receiver_;
   mojo::Remote<mojom::Page> page_;
-
-  std::string foo_;
-  base::OneShotTimer barrel_roll_timer_;
-
 };
 
 }  // namespace file_manager

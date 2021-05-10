@@ -3,38 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
-]);
+GEN_INCLUDE(['panel_test_base.js']);
 
 /**
  * Test fixture for Panel.
  */
-ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
-  /** @override */
-  testGenCppIncludes() {
-    ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
-  }
-
-  getPanelWindow() {
-    let panelWindow = null;
-    while (!panelWindow) {
-      panelWindow = chrome.extension.getViews().find(function(view) {
-        return view.location.href.indexOf('chromevox/panel/panel.html') > 0;
-      });
-    }
-    return panelWindow;
-  }
-
-  /**
-   * Gets the Panel object in the panel.html window. Note that the extension
-   * system destroys our reference to this object unpredictably so always ask
-   * chrome.extension.getViews for it.
-   */
-  getPanel() {
-    return this.getPanelWindow().Panel;
-  }
-
+ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
   fireMockEvent(key) {
     return function() {
       const obj = {};
@@ -144,17 +118,33 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
 });
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, async function(root) {
     new PanelCommand(PanelCommandType.OPEN_MENUS).send();
     await this.waitForMenu('panel_search_menu');
-    this.fireMockQuery('jump')();
-    this.assertActiveSearchMenuItem('Jump To Details');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To The Bottom Of The Page');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To Details');
+    await mockFeedback
+        .expectSpeech('Search the menus', /Type to search the menus/)
+        .call(() => {
+          this.fireMockQuery('jump')();
+          this.assertActiveSearchMenuItem('Jump To Details');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To The Bottom Of The Page');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To Details');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .replay();
   });
 });
 

@@ -173,8 +173,6 @@ public final class EventConstants {
     public static final String EPHEMERAL_TAB_USED = "ephemeral_tab_used";
 
     /** HomepagePromo has been accepted. */
-    public static final String HOMEPAGE_PROMO_ACCEPTED = "homepage_promo_accepted";
-    public static final String HOMEPAGE_PROMO_SEEN = "homepage_promo_seen";
     public static final String NTP_SHOWN = "ntp_shown";
     public static final String NTP_HOME_BUTTON_CLICKED = "ntp_homebutton_clicked";
 
@@ -216,6 +214,15 @@ public final class EventConstants {
 
     /** PWA install events. */
     public static final String PWA_INSTALL_MENU_SELECTED = "pwa_install_menu_clicked";
+
+    /** PageInfo events. */
+    public static final String PAGE_INFO_OPENED = "page_info_opened";
+
+    /** Permission events. */
+    public static final String PERMISSION_REQUEST_SHOWN = "permission_request_shown";
+
+    /** Screenshot events */
+    public static final String SHARE_SCREENSHOT_SELECTED = "share_screenshot_clicked";
 
     /**
      * Do not instantiate.

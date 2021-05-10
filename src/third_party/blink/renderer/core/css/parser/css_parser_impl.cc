@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
@@ -123,7 +124,7 @@ static inline void FilterProperties(
     const HeapVector<CSSPropertyValue, 256>& input,
     HeapVector<CSSPropertyValue, 256>& output,
     wtf_size_t& unused_entries,
-    std::bitset<numCSSProperties>& seen_properties,
+    std::bitset<kNumCSSProperties>& seen_properties,
     HashSet<AtomicString>& seen_custom_properties) {
   // Add properties in reverse order so that highest priority definitions are
   // reached first. Duplicate definitions can then be ignored when found.
@@ -150,7 +151,7 @@ static inline void FilterProperties(
 static ImmutableCSSPropertyValueSet* CreateCSSPropertyValueSet(
     HeapVector<CSSPropertyValue, 256>& parsed_properties,
     CSSParserMode mode) {
-  std::bitset<numCSSProperties> seen_properties;
+  std::bitset<kNumCSSProperties> seen_properties;
   wtf_size_t unused_entries = parsed_properties.size();
   HeapVector<CSSPropertyValue, 256> results(unused_entries);
   HashSet<AtomicString> seen_custom_properties;
@@ -210,7 +211,7 @@ bool CSSParserImpl::ParseDeclarationList(
   if (parser.parsed_properties_.IsEmpty())
     return false;
 
-  std::bitset<numCSSProperties> seen_properties;
+  std::bitset<kNumCSSProperties> seen_properties;
   wtf_size_t unused_entries = parser.parsed_properties_.size();
   HeapVector<CSSPropertyValue, 256> results(unused_entries);
   HashSet<AtomicString> seen_custom_properties;
@@ -545,6 +546,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
     DCHECK_LE(allowed_rules, kRegularRules);
 
     switch (id) {
+      case kCSSAtRuleContainer:
+        return ConsumeContainerRule(stream);
       case kCSSAtRuleMedia:
         return ConsumeMediaRule(stream);
       case kCSSAtRuleSupports:
@@ -939,14 +942,10 @@ StyleRuleCounterStyle* CSSParserImpl::ConsumeCounterStyleRule(
     return nullptr;
   CSSParserTokenStream::BlockGuard guard(stream);
 
-  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
-  if (!prelude.AtEnd())
+  AtomicString name = css_parsing_utils::ConsumeCounterStyleNameInPrelude(
+      prelude, *GetContext());
+  if (!name)
     return nullptr;
-
-  // TODO(crbug.com/687225): If the name is invalid (none, decimal, disc and
-  // CSS-wide keywords), should the entire rule be invalid, or does it simply
-  // not define a counter style?
-  AtomicString name(name_token.Value().ToString());
 
   if (observer_) {
     observer_->StartRuleHeader(StyleRule::kCounterStyle, prelude_offset_start);
@@ -986,6 +985,40 @@ StyleRuleScrollTimeline* CSSParserImpl::ConsumeScrollTimelineRule(
   ConsumeDeclarationList(stream, StyleRule::kScrollTimeline);
   return MakeGarbageCollected<StyleRuleScrollTimeline>(
       name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
+StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
+    CSSParserTokenStream& stream) {
+  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
+  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream))
+    return nullptr;
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kContainer, prelude_offset_start);
+    observer_->EndRuleHeader(prelude_offset_end);
+    observer_->StartRuleBody(stream.Offset());
+  }
+
+  // TODO(crbug.com/1145970): Restrict what is allowed by @container.
+  scoped_refptr<MediaQuerySet> media_queries =
+      MediaQueryParser::ParseMediaQuerySet(prelude,
+                                           context_->GetExecutionContext());
+  if (!media_queries)
+    return nullptr;
+  ContainerQuery* container_query =
+      MakeGarbageCollected<ContainerQuery>(media_queries);
+
+  HeapVector<Member<StyleRuleBase>> rules;
+  ConsumeRuleList(stream, kRegularRuleList,
+                  [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
+
+  if (observer_)
+    observer_->EndRuleBody(stream.Offset());
+
+  return MakeGarbageCollected<StyleRuleContainer>(*container_query, rules);
 }
 
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
@@ -1057,6 +1090,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
 
   bool use_observer = observer_ && (rule_type == StyleRule::kStyle ||
                                     rule_type == StyleRule::kProperty ||
+                                    rule_type == StyleRule::kContainer ||
                                     rule_type == StyleRule::kCounterStyle ||
                                     rule_type == StyleRule::kScrollTimeline ||
                                     rule_type == StyleRule::kKeyframe);

@@ -200,7 +200,7 @@ GpuTerminationStatus ConvertToGpuTerminationStatus(
       return GpuTerminationStatus::PROCESS_CRASHED;
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return GpuTerminationStatus::STILL_RUNNING;
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       return GpuTerminationStatus::PROCESS_WAS_KILLED_BY_OOM;
 #endif
@@ -228,7 +228,10 @@ static const char* const kSwitchNames[] = {
     sandbox::policy::switches::kGpuSandboxFailuresFatal,
     sandbox::policy::switches::kDisableGpuSandbox,
     sandbox::policy::switches::kNoSandbox,
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
     switches::kDisableDevShmUsage,
 #endif
 #if defined(OS_WIN)
@@ -269,8 +272,12 @@ static const char* const kSwitchNames[] = {
     switches::kVModule,
     switches::kUseAdapterLuid,
     switches::kWebViewDrawFunctorUsesVulkan,
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+    switches::kEnableClearHevcForTesting,
+#endif
 #if defined(OS_MAC)
     sandbox::policy::switches::kEnableSandboxLogging,
+    sandbox::policy::switches::kDisableMetalShaderCache,
     switches::kDisableAVFoundationOverlays,
     switches::kDisableMacOverlays,
     switches::kDisableMetalTestShaders,
@@ -282,6 +289,7 @@ static const char* const kSwitchNames[] = {
     switches::kOzonePlatform,
     switches::kDisableExplicitDmaFences,
     switches::kOzoneDumpFile,
+    switches::kDisableBufferBWCompression,
 #endif
 #if defined(USE_X11)
     switches::kX11Display,
@@ -295,8 +303,11 @@ static const char* const kSwitchNames[] = {
     switches::kEnableReachedCodeProfiler,
     switches::kReachedCodeSamplingIntervalUs,
 #endif
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     switches::kPlatformDisallowsChromeOSDirectVideoDecoder,
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    switches::kSchedulerBoostUrgent,
 #endif
 };
 
@@ -424,7 +435,7 @@ class GpuSandboxedProcessLauncherDelegate
     policy->AddDllToUnload(L"cmsetac.dll");
 
     if (cmd_line_.HasSwitch(switches::kEnableLogging)) {
-      base::string16 log_file_path = logging::GetLogFileFullPath();
+      std::wstring log_file_path = logging::GetLogFileFullPath();
       if (!log_file_path.empty()) {
         sandbox::ResultCode result = policy->AddRule(
             sandbox::TargetPolicy::SUBSYS_FILES,
@@ -471,7 +482,7 @@ class GpuSandboxedProcessLauncherDelegate
     if (UseOpenGLRenderer())
       return true;
 
-    return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
+    return base::win::IsRunningUnderDesktopName(L"winlogon");
   }
 
   bool enable_appcontainer_;
@@ -626,12 +637,6 @@ void GpuProcessHost::BindInterface(
       mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
-void GpuProcessHost::RunService(
-    const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  process_->GetHost()->RunService(service_name, std::move(receiver));
-}
-
 #if defined(USE_OZONE)
 void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   // At the moment, this path is only used by Ozone/Wayland. Once others start
@@ -775,6 +780,7 @@ GpuProcessHost::~GpuProcessHost() {
       message = "The info collection GPU process ";
     }
 
+    bool unexpected_exit = false;
     switch (info.status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
         // Don't block offscreen contexts (and force page reload for webgl)
@@ -785,6 +791,7 @@ GpuProcessHost::~GpuProcessHost() {
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
         message += base::StringPrintf("exited with code %d.", info.exit_code);
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
@@ -794,34 +801,45 @@ GpuProcessHost::~GpuProcessHost() {
         break;
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
         message += "crashed!";
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_STILL_RUNNING:
         message += "hasn't exited yet.";
         break;
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
         message += "was killed due to out of memory.";
+        unexpected_exit = true;
         break;
-#endif  // OS_CHROMEOS || BUILDFLAG(IS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #if defined(OS_ANDROID)
       case base::TERMINATION_STATUS_OOM_PROTECTED:
         message += "was protected from out of memory kill.";
+        unexpected_exit = true;
         break;
 #endif  // OS_ANDROID
       case base::TERMINATION_STATUS_LAUNCH_FAILED:
         message += "failed to start!";
+        unexpected_exit = true;
         break;
       case base::TERMINATION_STATUS_OOM:
         message += "died due to out of memory.";
+        unexpected_exit = true;
         break;
 #if defined(OS_WIN)
       case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
         message += "failed integrity checks.";
+        unexpected_exit = true;
         break;
 #endif
       case base::TERMINATION_STATUS_MAX_ENUM:
         NOTREACHED();
         break;
+    }
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceBrowserCrashOnGpuCrash)) {
+      CHECK(!unexpected_exit)
+          << "Force Chrome to crash due to unexpected GPU process crash";
     }
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -1043,6 +1061,10 @@ void GpuProcessHost::MaybeShutdownGpuProcess() {
   }
 }
 
+void GpuProcessHost::DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) {
+  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info, base::nullopt);
+}
+
 #if defined(OS_WIN)
 void GpuProcessHost::DidUpdateOverlayInfo(
     const gpu::OverlayInfo& overlay_info) {
@@ -1064,7 +1086,7 @@ bool GpuProcessHost::GpuAccessAllowed() const {
 }
 
 void GpuProcessHost::DisableGpuCompositing() {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   DLOG(ERROR) << "Can't disable GPU compositing";
 #else
   // TODO(crbug.com/819474): The switch from GPU to software compositing should
@@ -1252,7 +1274,7 @@ void GpuProcessHost::SendOutstandingReplies() {
 }
 
 void GpuProcessHost::RecordProcessCrash() {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Maximum number of times the GPU process can crash before we try something
   // different, like disabling hardware acceleration or all GL.
   constexpr int kGpuFallbackCrashCount = 3;

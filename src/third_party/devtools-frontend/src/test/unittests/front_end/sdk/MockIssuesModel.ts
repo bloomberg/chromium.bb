@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 import * as Common from '../../../../front_end/common/common.js';
-import {Issue} from '../../../../front_end/sdk/Issue.js';
+import type * as SDKModule from '../../../../front_end/sdk/sdk.js';
 
 export class MockIssuesModel extends Common.ObjectWrapper.ObjectWrapper {
-  private _issues: Iterable<Issue>;
+  private mockIssues: Iterable<SDKModule.Issue.Issue>;
 
-  constructor(issues: Iterable<Issue>) {
+  constructor(issues: Iterable<SDKModule.Issue.Issue>) {
     super();
-    this._issues = issues;
+    this.mockIssues = issues;
   }
   issues() {
-    return this._issues;
+    return this.mockIssues;
   }
   target() {
     return {id: () => 'fake-id'};

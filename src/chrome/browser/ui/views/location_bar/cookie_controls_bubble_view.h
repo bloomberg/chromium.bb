@@ -65,8 +65,6 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   void CloseBubble() override;
   void Init() override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
@@ -95,11 +93,11 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   views::View* extra_view_ = nullptr;
   views::View* show_cookies_link_ = nullptr;
 
-  ScopedObserver<content_settings::CookieControlsController,
-                 content_settings::CookieControlsView>
-      controller_observer_{this};
-  ScopedObserver<views::TooltipIcon, views::TooltipIcon::Observer>
-      tooltip_observer_{this};
+  base::ScopedObservation<content_settings::CookieControlsController,
+                          content_settings::CookieControlsView>
+      controller_observation_{this};
+  base::ScopedObservation<views::TooltipIcon, views::TooltipIcon::Observer>
+      tooltip_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieControlsBubbleView);
 };

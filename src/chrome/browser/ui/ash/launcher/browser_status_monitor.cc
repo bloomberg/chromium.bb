@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -197,8 +198,8 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
     UpdateBrowserItemState();
   } else if (change.type() == TabStripModelChange::kRemoved) {
     auto* remove = change.GetRemove();
-    if (remove->will_be_deleted) {
-      for (const auto& contents : remove->contents)
+    for (const auto& contents : remove->contents) {
+      if (contents.will_be_deleted)
         OnTabClosing(contents.contents);
     }
   } else if (change.type() == TabStripModelChange::kReplaced) {
@@ -227,8 +228,12 @@ void BrowserStatusMonitor::AddV1AppToShelf(Browser* browser) {
   std::string app_id =
       web_app::GetAppIdFromApplicationName(browser->app_name());
   DCHECK(!app_id.empty());
-  if (!IsV1AppInShelfWithAppId(app_id))
+  if (!IsV1AppInShelfWithAppId(app_id)) {
+    if (auto* chrome_controller = ChromeLauncherController::instance()) {
+      chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+    }
     launcher_controller_->SetV1AppStatus(app_id, ash::STATUS_RUNNING);
+  }
   browser_to_app_id_map_[browser] = app_id;
 }
 

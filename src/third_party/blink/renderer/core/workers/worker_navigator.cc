@@ -36,19 +36,10 @@
 
 namespace blink {
 
-WorkerNavigator::WorkerNavigator(const String& user_agent,
-                                 const UserAgentMetadata& ua_metadata,
-                                 ExecutionContext* execution_context)
-    : ExecutionContextClient(execution_context),
-      NavigatorLanguage(execution_context),
-      user_agent_(user_agent),
-      ua_metadata_(ua_metadata) {}
+WorkerNavigator::WorkerNavigator(ExecutionContext* execution_context)
+    : NavigatorBase(execution_context) {}
 
 WorkerNavigator::~WorkerNavigator() = default;
-
-String WorkerNavigator::userAgent() const {
-  return user_agent_;
-}
 
 String WorkerNavigator::GetAcceptLanguages() {
   WorkerOrWorkletGlobalScope* global_scope =
@@ -66,13 +57,6 @@ void WorkerNavigator::NotifyUpdate() {
       To<WorkerOrWorkletGlobalScope>(GetExecutionContext());
   global_scope->DispatchEvent(
       *Event::Create(event_type_names::kLanguagechange));
-}
-
-void WorkerNavigator::Trace(Visitor* visitor) const {
-  ScriptWrappable::Trace(visitor);
-  ExecutionContextClient::Trace(visitor);
-  NavigatorLanguage::Trace(visitor);
-  Supplementable<WorkerNavigator>::Trace(visitor);
 }
 
 }  // namespace blink

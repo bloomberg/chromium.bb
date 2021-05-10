@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -56,7 +57,7 @@ class ExtensionDialog : public views::DialogDelegate,
     // Text for the dialog title, it should be already localized.
     base::string16 title;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // |title_color| customizes the color of the window title.
     base::Optional<SkColor> title_color;
     // |title_inactive_color| customizes the color of the window title when
@@ -79,8 +80,8 @@ class ExtensionDialog : public views::DialogDelegate,
   // be sent notifications.
   void ObserverDestroyed();
 
-  // Focus to the render view if possible.
-  void MaybeFocusRenderView();
+  // Focus to the renderer if possible.
+  void MaybeFocusRenderer();
 
   // Sets minimum contents size in pixels and makes the window resizable.
   void SetMinimumContentsSize(int width, int height);
@@ -88,7 +89,6 @@ class ExtensionDialog : public views::DialogDelegate,
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
   // views::DialogDelegate:
-  ui::ModalType GetModalType() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
   views::Widget* GetWidget() override;

@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">No hi ha cap control anterior</translation>
 <translation id="2045606329038304310">Control del camp de formulari</translation>
 <translation id="2063539687800151747">Epígraf</translation>
+<translation id="2074531330963286860">Hi ha accions disponibles. Prem Cerca+punt per veure-ho.</translation>
 <translation id="2086961585857038472">Paraula següent</translation>
 <translation id="2087981446621639008">dtll llistdscrip</translation>
 <translation id="2089387485033699258">ca</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Grup següent</translation>
 <translation id="7813616274030162878">Menú d'accés amb interruptors</translation>
 <translation id="7839679365527550018">Paraula anterior</translation>
+<translation id="7842115774595115751">Activa els controls de navegació</translation>
 <translation id="7846634333498149051">Teclat</translation>
 <translation id="7851816175263618915">Alguns signes de puntuació</translation>
 <translation id="7871691770940645922">Pantalla Braille virtual</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Oblida</translation>
 <translation id="8989104346085848538">Per aturar totes les entrades de veu en curs de ChromeVox, prem la tecla de control.</translation>
+<translation id="8993737615451556423">Proporciona controls per augmentar i reduir la velocitat de la veu de lectura o per posar-la en pausa</translation>
 <translation id="9014206344398081366">Tutorial de ChromeVox</translation>
 <translation id="9040132695316389094">Capçalera 1</translation>
 <translation id="9061884144798498064">Selecciona una taula de braille de vuit punts:</translation>

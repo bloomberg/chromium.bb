@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -22,9 +23,6 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EmptyEdgeSwipeHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -39,10 +37,12 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.ScrollDirection;
+import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.SwipeHandler;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -63,7 +63,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
     protected Layout mOverviewLayout;
 
     // Event Filter Handlers
-    private final EdgeSwipeHandler mToolbarSwipeHandler;
+    private final SwipeHandler mToolbarSwipeHandler;
 
     // Internal State
     /** A {@link TitleCache} instance that stores all title/favicon bitmaps as CC resources. */
@@ -84,18 +84,24 @@ public class LayoutManagerChrome extends LayoutManagerImpl
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host         A {@link LayoutManagerHost} instance.
      * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
+     * @param createOverviewLayout Whether overview layout should be created or not.
      * @param startSurface An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
      *                     should be used, otherwise GTS should be used.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
+     * @param layerTitleCacheSupplier Supplier of the {@link LayerTitleCache}.
+     * @param overviewModeBehaviorSupplier Supplier of the {@link OverviewModeBehavior}.
+     * @param layoutStateProviderOneshotSupplier Supplier of the {@link LayoutStateProvider}.
+     * @param topUiThemeColorProvider {@link ThemeColorProvider} for top UI.
      */
     public LayoutManagerChrome(LayoutManagerHost host, ViewGroup contentContainer,
             boolean createOverviewLayout, @Nullable StartSurface startSurface,
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
             Supplier<LayerTitleCache> layerTitleCacheSupplier,
             OneshotSupplierImpl<OverviewModeBehavior> overviewModeBehaviorSupplier,
-            OneshotSupplierImpl<LayoutStateProvider> layoutStateProviderOneshotSupplier) {
+            OneshotSupplierImpl<LayoutStateProvider> layoutStateProviderOneshotSupplier,
+            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider) {
         super(host, contentContainer, tabContentManagerSupplier, layerTitleCacheSupplier,
-                layoutStateProviderOneshotSupplier);
+                layoutStateProviderOneshotSupplier, topUiThemeColorProvider);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
@@ -117,17 +123,15 @@ public class LayoutManagerChrome extends LayoutManagerImpl
 
         if (createOverviewLayout) {
             if (startSurface != null) {
-                assert TabUiFeatureUtilities.isGridTabSwitcherEnabled()
-                        || StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled();
+                assert TabUiFeatureUtilities.isGridTabSwitcherEnabled();
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 assert tabManagementDelegate != null;
 
                 final ObservableSupplier<? extends BrowserControlsStateProvider>
                         browserControlsSupplier = mHost.getBrowserControlsManagerSupplier();
-                mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(context, this,
-                        renderHost, startSurface,
-                        (ObservableSupplier<BrowserControlsStateProvider>) browserControlsSupplier);
+                mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(
+                        context, this, renderHost, startSurface);
             } else {
                 mCreateOverviewLayout = true;
             }
@@ -150,15 +154,15 @@ public class LayoutManagerChrome extends LayoutManagerImpl
     }
 
     /**
-     * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the toolbar.
+     * @return The {@link SwipeHandler} responsible for processing swipe events for the toolbar.
      */
     @Override
-    public EdgeSwipeHandler getToolbarSwipeHandler() {
+    public SwipeHandler getToolbarSwipeHandler() {
         return mToolbarSwipeHandler;
     }
 
     @Override
-    public EdgeSwipeHandler createToolbarSwipeHandler(boolean supportSwipeDown) {
+    public SwipeHandler createToolbarSwipeHandler(boolean supportSwipeDown) {
         return new ToolbarSwipeHandler(supportSwipeDown);
     }
 
@@ -322,7 +326,8 @@ public class LayoutManagerChrome extends LayoutManagerImpl
 
     @Override
     protected boolean shouldDelayHideAnimation(Layout layoutBeingHidden) {
-        return mEnableAnimations && layoutBeingHidden == mOverviewLayout && mCreatingNtp;
+        return mEnableAnimations && layoutBeingHidden == mOverviewLayout && mCreatingNtp
+                && !TabUiFeatureUtilities.isGridTabSwitcherEnabled();
     }
 
     @Override
@@ -475,9 +480,9 @@ public class LayoutManagerChrome extends LayoutManagerImpl
     }
 
     /**
-     * A {@link EdgeSwipeHandler} meant to respond to edge events for the toolbar.
+     * A {@link SwipeHandler} meant to respond to edge events for the toolbar.
      */
-    protected class ToolbarSwipeHandler extends EmptyEdgeSwipeHandler {
+    protected class ToolbarSwipeHandler implements SwipeHandler {
         /** The scroll direction of the current gesture. */
         private @ScrollDirection int mScrollDirection;
 
@@ -494,13 +499,20 @@ public class LayoutManagerChrome extends LayoutManagerImpl
         }
 
         @Override
-        public void swipeStarted(@ScrollDirection int direction, float x, float y) {
+        public void onSwipeStarted(@ScrollDirection int direction, MotionEvent ev) {
             mScrollDirection = ScrollDirection.UNKNOWN;
         }
 
         @Override
-        public void swipeUpdated(float x, float y, float dx, float dy, float tx, float ty) {
+        public void onSwipeUpdated(MotionEvent current, float tx, float ty, float dx, float dy) {
             if (mToolbarSwipeLayout == null) return;
+
+            float x = current.getRawX() * mPxToDp;
+            float y = current.getRawY() * mPxToDp;
+            dx *= mPxToDp;
+            dy *= mPxToDp;
+            tx *= mPxToDp;
+            ty *= mPxToDp;
 
             // If scroll direction has been computed, send the event to super.
             if (mScrollDirection != ScrollDirection.UNKNOWN) {
@@ -524,14 +536,21 @@ public class LayoutManagerChrome extends LayoutManagerImpl
         }
 
         @Override
-        public void swipeFinished() {
+        public void onSwipeFinished() {
             if (mToolbarSwipeLayout == null || !mToolbarSwipeLayout.isActive()) return;
             mToolbarSwipeLayout.swipeFinished(time());
         }
 
         @Override
-        public void swipeFlingOccurred(float x, float y, float tx, float ty, float vx, float vy) {
+        public void onFling(@ScrollDirection int direction, MotionEvent current, float tx, float ty,
+                float vx, float vy) {
             if (mToolbarSwipeLayout == null || !mToolbarSwipeLayout.isActive()) return;
+            float x = current.getRawX() * mPxToDp;
+            float y = current.getRawX() * mPxToDp;
+            tx *= mPxToDp;
+            ty *= mPxToDp;
+            vx *= mPxToDp;
+            vy *= mPxToDp;
             mToolbarSwipeLayout.swipeFlingOccurred(time(), x, y, tx, ty, vx, vy);
         }
 

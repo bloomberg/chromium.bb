@@ -17,33 +17,39 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "src/ast/array_decoration.h"
 
 namespace tint {
 namespace ast {
 
 /// A stride decoration
-class StrideDecoration : public ArrayDecoration {
+class StrideDecoration : public Castable<StrideDecoration, ArrayDecoration> {
  public:
   /// constructor
   /// @param stride the stride value
   /// @param source the source of this decoration
-  StrideDecoration(uint32_t stride, const Source& source);
+  StrideDecoration(const Source& source, uint32_t stride);
   ~StrideDecoration() override;
-
-  /// @returns true if this is a stride decoration
-  bool IsStride() const override;
 
   /// @returns the stride value
   uint32_t stride() const { return stride_; }
 
-  /// @returns the decoration as a string
-  std::string to_str() const override;
+  /// Outputs the decoration to the given stream
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  StrideDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  uint32_t stride_;
+  uint32_t const stride_;
 };
 
 }  // namespace ast

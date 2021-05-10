@@ -6,7 +6,6 @@
 
 header {
   padding: 0 0 6px;
-  border-bottom: 1px solid #eee;
 }
 
 header > h1 {
@@ -67,7 +66,8 @@ p.folder-exclude-pattern > input {
 }
 
 .settings-tab .file-system-container {
-  border-top: 1px solid #aaa;
+  border-top: 1px solid #aaa; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   padding: 19px 0 10px;
   margin: 20px 0;
 }
@@ -96,7 +96,8 @@ p.folder-exclude-pattern > input {
 }
 
 .settings-info-message {
-  background-color: #eee;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   padding: 10px;
   margin: 20px 0;
 }
@@ -106,7 +107,6 @@ p.folder-exclude-pattern > input {
   overflow: hidden;
   padding-right: 10px;
 }
-
 /*
  * Always show an outline. Needed because we have a white background here.
  */

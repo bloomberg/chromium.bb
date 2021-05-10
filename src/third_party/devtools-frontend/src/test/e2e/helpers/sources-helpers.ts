@@ -5,11 +5,11 @@
 import {assert} from 'chai';
 import * as puppeteer from 'puppeteer';
 
-import {$$, click, getBrowserAndPages, getHostedModeServerPort, getPendingEvents, goToResource, pressKey, step, timeout, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$$, click, getBrowserAndPages, getPendingEvents, getTestServerPort, goToResource, pressKey, step, timeout, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
 import {AsyncScope} from '../../shared/mocha-extensions.js';
 
 export const ACTIVE_LINE = '.CodeMirror-activeline > pre > span';
-export const PAUSE_ON_EXCEPTION_BUTTON = '[aria-label="Pause on exceptions"]';
+export const PAUSE_ON_EXCEPTION_BUTTON = '[aria-label="Don\'t pause on exceptions"]';
 export const PAUSE_BUTTON = '[aria-label="Pause script execution"]';
 export const RESUME_BUTTON = '[aria-label="Resume script execution"]';
 export const SOURCES_LINES_SELECTOR = '.CodeMirror-code > div';
@@ -38,6 +38,29 @@ export async function openFileInSourcesPanel(testInput: string) {
   await goToResource(`sources/${testInput}`);
 
   await openSourcesPanel();
+}
+
+export async function openRecorderSubPane() {
+  const root = await waitFor('.navigator-tabbed-pane');
+
+  await waitFor('[aria-label="More tabs"]', root);
+  await click('[aria-label="More tabs"]', {root});
+
+  await waitFor('[aria-label="Recordings"]');
+
+  await click('[aria-label="Recordings"]');
+  await waitFor('[aria-label="Add recording"]');
+}
+
+export async function createNewRecording(recordingName: string) {
+  const {frontend} = getBrowserAndPages();
+
+  await click('[aria-label="Add recording"]');
+  await waitFor('[aria-label^="Recording"]');
+
+  await typeText(recordingName);
+
+  await frontend.keyboard.press('Enter');
 }
 
 export async function openSnippetsSubPane() {
@@ -84,17 +107,19 @@ export async function getOpenSources() {
   return openSources;
 }
 
-export async function waitForhighlightedLineWhichIncludesText(expectedTextContent: string) {
-  const selectedLine = await waitFor(ACTIVE_LINE);
-  const text = await selectedLine.evaluate(node => node.textContent);
-  assert.deepInclude(text, expectedTextContent);
+export async function waitForHighlightedLineWhichIncludesText(expectedTextContent: string) {
+  await waitForFunction(async () => {
+    const selectedLine = await waitFor(ACTIVE_LINE);
+    const text = await selectedLine.evaluate(node => node.textContent);
+    return (text && text.includes(expectedTextContent)) ? text : undefined;
+  });
 }
 
 // We can't use the click helper, as it is not possible to select a particular
 // line number element in CodeMirror.
 export async function addBreakpointForLine(frontend: puppeteer.Page, index: number, expectedFail: boolean = false) {
   const asyncScope = new AsyncScope();
-  await asyncScope.exec(() => frontend.waitForFunction((index, CODE_LINE_SELECTOR) => {
+  await asyncScope.exec(() => frontend.waitForFunction((index: number, CODE_LINE_SELECTOR: string) => {
     return document.querySelectorAll(CODE_LINE_SELECTOR).length >= (index - 1);
   }, {timeout: 0}, index, CODE_LINE_SELECTOR));
   const breakpointLineNumber = await frontend.evaluate((index, CODE_LINE_SELECTOR) => {
@@ -115,7 +140,7 @@ export async function addBreakpointForLine(frontend: puppeteer.Page, index: numb
     return;
   }
 
-  await asyncScope.exec(() => frontend.waitForFunction(bpCount => {
+  await asyncScope.exec(() => frontend.waitForFunction((bpCount: number) => {
     return document.querySelectorAll('.cm-breakpoint').length > bpCount &&
         document.querySelectorAll('.cm-breakpoint-unbound').length === 0;
   }, {timeout: 0}, currentBreakpointCount));
@@ -167,13 +192,13 @@ export async function checkBreakpointDidNotActivate() {
 
 export async function getBreakpointDecorators(frontend: puppeteer.Page, disabledOnly = false) {
   const selector = `.cm-breakpoint${disabledOnly ? '-disabled' : ''} .CodeMirror-linenumber`;
-  return await frontend.$$eval(selector, nodes => nodes.map(n => parseInt(n.textContent as string, 0)));
+  return await frontend.$$eval(selector, nodes => nodes.map(n => Number(n.textContent)));
 }
 
 export async function getNonBreakableLines(frontend: puppeteer.Page) {
   const selector = '.cm-non-breakable-line .CodeMirror-linenumber';
   await waitFor(selector);
-  return await frontend.$$eval(selector, nodes => nodes.map(n => parseInt(n.textContent as string, 0)));
+  return await frontend.$$eval(selector, nodes => nodes.map(n => Number(n.textContent)));
 }
 
 export async function getExecutionLine() {
@@ -221,11 +246,8 @@ export async function retrieveTopCallFrameScriptLocation(script: string, target:
   const scriptEvaluation = target.evaluate(script);
 
   // Wait for the evaluation to be paused and shown in the UI
-  await waitFor(PAUSE_INDICATOR_SELECTOR);
-
-  // Retrieve the top level call frame script location name
-  const locationHandle = await waitFor('.call-frame-location');
-  const scriptLocation = await locationHandle.evaluate(location => location.textContent);
+  // and retrieve the top level call frame script location name
+  const scriptLocation = await retrieveTopCallFrameWithoutResuming();
 
   // Resume the evaluation
   await click(RESUME_BUTTON);
@@ -250,7 +272,9 @@ export async function retrieveTopCallFrameWithoutResuming() {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    /* eslint-disable @typescript-eslint/naming-convention */
     __sourceFilesAddedEvents: string[];
   }
 }
@@ -268,7 +292,7 @@ export function listenForSourceFilesAdded(frontend: puppeteer.Page) {
 }
 
 export function waitForAdditionalSourceFiles(frontend: puppeteer.Page, count = 1) {
-  return frontend.waitForFunction(count => {
+  return frontend.waitForFunction((count: number) => {
     return window.__sourceFilesAddedEvents.length >= count;
   }, undefined, count);
 }
@@ -281,7 +305,7 @@ export function clearSourceFilesAdded(frontend: puppeteer.Page) {
 
 export function retrieveSourceFilesAdded(frontend: puppeteer.Page) {
   // Strip hostname, to make it agnostic of which server port we use
-  return frontend.evaluate(() => window.__sourceFilesAddedEvents.map(file => new URL(`http://${file}`).pathname));
+  return frontend.evaluate(() => window.__sourceFilesAddedEvents.map(file => new URL(`https://${file}`).pathname));
 }
 
 // Helpers for navigating the file tree.
@@ -295,7 +319,7 @@ export type NestedFileSelector = {
 export function createSelectorsForWorkerFile(
     workerName: string, folderName: string, fileName: string, workerIndex = 1): NestedFileSelector {
   const rootSelector = new Array(workerIndex).fill(`[aria-label="${workerName}, worker"]`).join(' ~ ');
-  const domainSelector = `${rootSelector} + ol > [aria-label="localhost:${getHostedModeServerPort()}, domain"]`;
+  const domainSelector = `${rootSelector} + ol > [aria-label="localhost:${getTestServerPort()}, domain"]`;
   const folderSelector = `${domainSelector} + ol > [aria-label^="${folderName}, "]`;
   const fileSelector = `${folderSelector} + ol > [aria-label="${fileName}, file"]`;
 
@@ -355,6 +379,11 @@ export async function clickOnContextMenu(selector: string, label: string) {
   await click(labelSelector);
 }
 
+export async function inspectMemory(variableName: string) {
+  await clickOnContextMenu(
+      `[data-object-property-name-for-test="${variableName}"]`, 'Reveal in Memory Inspector panel');
+}
+
 export async function typeIntoSourcesAndSave(text: string) {
   const pane = await waitFor('.sources');
   await pane.type(text);
@@ -368,7 +397,7 @@ export async function getScopeNames() {
   return scopeNames;
 }
 
-export async function getValuesForScope(scope: string, expandCount = 0, waitForNoOfValues = 0) {
+export async function getValuesForScope(scope: string, expandCount: number, waitForNoOfValues: number) {
   const scopeSelector = `[aria-label="${scope}"]`;
   await waitFor(scopeSelector);
   for (let i = 0; i < expandCount; i++) {
@@ -386,4 +415,18 @@ export async function getValuesForScope(scope: string, expandCount = 0, waitForN
   });
   const values = await Promise.all(valueSelectorElements.map(elem => elem.evaluate(n => n.textContent as string)));
   return values;
+}
+
+export async function getPausedMessages() {
+  const {frontend} = getBrowserAndPages();
+  const messageElement = await frontend.waitForSelector('.paused-message');
+  if (!messageElement) {
+    assert.fail('getPausedMessages: did not find .paused-message element.');
+  }
+  const statusMain = await waitFor('.status-main', messageElement);
+  const statusSub = await waitFor('.status-sub', messageElement);
+  return {
+    statusMain: await statusMain.evaluate(x => x.textContent),
+    statusSub: await statusSub.evaluate(x => x.textContent),
+  };
 }

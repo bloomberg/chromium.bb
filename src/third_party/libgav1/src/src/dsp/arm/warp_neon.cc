@@ -289,7 +289,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             const int16x8_t sum = vld1q_s16(tmp);
             vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
           }
-#else  // !defined(__aarch64__)
+#else   // !defined(__aarch64__)
           int16x8_t filter[8];
           for (int x = 0; x < 8; ++x) {
             const int offset =
@@ -442,7 +442,7 @@ void WarpInit_NEON() { low_bitdepth::Init8bpp(); }
 
 }  // namespace dsp
 }  // namespace libgav1
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

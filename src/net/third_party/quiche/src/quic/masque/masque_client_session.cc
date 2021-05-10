@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/masque/masque_client_session.h"
+#include "quic/masque/masque_client_session.h"
 
 namespace quic {
 
@@ -74,10 +74,11 @@ void MasqueClientSession::RegisterConnectionId(
     EncapsulatedClientSession* encapsulated_client_session) {
   QUIC_DLOG(INFO) << "Registering " << client_connection_id
                   << " to encapsulated client";
-  DCHECK(client_connection_id_registrations_.find(client_connection_id) ==
-             client_connection_id_registrations_.end() ||
-         client_connection_id_registrations_[client_connection_id] ==
-             encapsulated_client_session);
+  QUICHE_DCHECK(
+      client_connection_id_registrations_.find(client_connection_id) ==
+          client_connection_id_registrations_.end() ||
+      client_connection_id_registrations_[client_connection_id] ==
+          encapsulated_client_session);
   client_connection_id_registrations_[client_connection_id] =
       encapsulated_client_session;
 }

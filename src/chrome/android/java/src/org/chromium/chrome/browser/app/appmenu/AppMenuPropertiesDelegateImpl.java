@@ -33,13 +33,13 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppMenuVerbiage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsControlle
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
@@ -63,6 +65,9 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
+import org.chromium.components.webapps.AppBannerManager;
+import org.chromium.components.webapps.WebappsUtils;
+import org.chromium.net.ConnectionType;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -106,6 +111,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     // Keeps track of which menu item was shown when installable app is detected.
     private int mAddAppTitleShown;
     private final ModalDialogManager mModalDialogManager;
+    private final WebFeedBridge mWebFeedBridge;
 
     // The keys of the Map are menuitem ids, the first elements in the Pair are menuitem ids,
     // and the second elements in the Pair are AppMenuSimilarSelectionType. If users first
@@ -178,13 +184,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      *         associated with the containing activity.
      * @param modalDialogManager The {@link ModalDialogManager} that should be used to show "Add To"
      *         dialog.
+     * @param webFeedBridge The {@link WebFeedBridge} used to show the Web Feed follow option.
      */
     public AppMenuPropertiesDelegateImpl(Context context, ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
             @Nullable OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
-            ModalDialogManager modalDialogManager) {
+            ModalDialogManager modalDialogManager, WebFeedBridge webFeedBridge) {
         mContext = context;
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         mActivityTabProvider = activityTabProvider;
@@ -193,6 +200,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         mToolbarManager = toolbarManager;
         mDecorView = decorView;
         mModalDialogManager = modalDialogManager;
+        mWebFeedBridge = webFeedBridge;
 
         if (overviewModeBehaviorSupplier != null) {
             overviewModeBehaviorSupplier.onAvailable(mCallbackController.makeCancelable(
@@ -445,6 +453,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                         addToMenuItem.getSubMenu().findItem(R.id.add_to_reading_list_menu_id);
                 addToReadingListMenuItem.setVisible(
                         CachedFeatureFlags.isEnabled(ChromeFeatureList.READ_LATER));
+                addToReadingListMenuItem.setEnabled(ReadingListUtils.isReadingListSupported(url));
 
                 MenuItem addToDownloadsMenuItem =
                         addToMenuItem.getSubMenu().findItem(R.id.add_to_downloads_menu_id);
@@ -477,12 +486,37 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // is currently running.
         if (ImageDescriptionsController.getInstance().shouldShowImageDescriptionsMenuItem()) {
             menu.findItem(R.id.get_image_descriptions_id).setVisible(true);
-            menu.findItem(R.id.get_image_descriptions_id)
-                    .setTitle(ImageDescriptionsController.getInstance().imageDescriptionsEnabled()
-                                    ? R.string.menu_stop_image_descriptions
-                                    : R.string.menu_get_image_descriptions);
+
+            int titleId = R.string.menu_stop_image_descriptions;
+            Profile profile = Profile.getLastUsedRegularProfile();
+            // If image descriptions are not enabled, then we want the menu item to be "Get".
+            if (!ImageDescriptionsController.getInstance().imageDescriptionsEnabled(profile)) {
+                titleId = R.string.menu_get_image_descriptions;
+            } else if (ImageDescriptionsController.getInstance().onlyOnWifiEnabled(profile)
+                    && DeviceConditions.getCurrentNetConnectionType(mContext)
+                            != ConnectionType.CONNECTION_WIFI) {
+                // If image descriptions are enabled, then we want "Stop", except in the special
+                // case that the user specified only on Wifi, and we are not currently on Wifi.
+                titleId = R.string.menu_get_image_descriptions;
+            }
+
+            menu.findItem(R.id.get_image_descriptions_id).setTitle(titleId);
         } else {
             menu.findItem(R.id.get_image_descriptions_id).setVisible(false);
+        }
+
+        // Enable web feed follow menu item if WebFeed feature is enabled.
+        MenuItem followMenuItem = menu.findItem(R.id.feed_follow_id);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
+            followMenuItem.setVisible(true);
+            WebFeedBridge.FollowedIds followedIds =
+                    mWebFeedBridge.getFollowedIds(currentTab.getUrl());
+            if (followedIds != null) {
+                followMenuItem.setIcon(R.drawable.ic_checkmark_24dp);
+                followMenuItem.setTitle(R.string.menu_following);
+            }
+        } else {
+            followMenuItem.setVisible(false);
         }
 
         // Disable find in page on the native NTP.
@@ -533,8 +567,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                                 .getTabsWithNoOtherRelatedTabs()
                                 .size()
                         > 1;
-        boolean isPriceTrackingVisible = TabUiFeatureUtilities.isPriceTrackingEnabled()
-                && !DeviceClassManager.enableAccessibilityLayout();
+        boolean isPriceTrackingVisible = PriceTrackingUtilities.isPriceTrackingEligible()
+                && !DeviceClassManager.enableAccessibilityLayout() && !isIncognito;
         boolean isPriceTrackingEnabled = isPriceTrackingVisible;
 
         for (int i = 0; i < menu.size(); ++i) {
@@ -587,10 +621,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             if (item.getItemId() == R.id.track_prices_row_menu_id) {
                 item.setVisible(isPriceTrackingVisible);
                 item.setEnabled(isPriceTrackingEnabled);
-                if (isPriceTrackingVisible) {
-                    menu.findItem(R.id.track_prices_check_id)
-                            .setChecked(PriceTrackingUtilities.isTrackPricesOnTabsEnabled());
-                }
             }
             if (item.getItemId() == R.id.close_all_tabs_menu_id) {
                 boolean hasTabs = mTabModelSelector.getTotalTabCount() > 0;
@@ -710,7 +740,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         //                access to the resource via FLAG_GRANT_READ_URI_PERMISSION, and that
         //                is not persisted when adding to the homescreen.
         // * If creating shortcuts it not supported by the current home screen.
-        return ShortcutHelper.isAddToHomeIntentSupported() && !isChromeScheme && !isFileScheme
+        return WebappsUtils.isAddToHomeIntentSupported() && !isChromeScheme && !isFileScheme
                 && !isContentScheme && !isIncognito && !TextUtils.isEmpty(url);
     }
 
@@ -787,8 +817,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    public AppBannerManager.InstallStringPair getAddToHomeScreenTitle(Tab currentTab) {
-        return AppBannerManager.getHomescreenLanguageOption(currentTab);
+    public AppBannerManager.InstallStringPair getAddToHomeScreenTitle(@NonNull Tab currentTab) {
+        return AppBannerManager.getHomescreenLanguageOption(currentTab.getWebContents());
     }
 
     @Override

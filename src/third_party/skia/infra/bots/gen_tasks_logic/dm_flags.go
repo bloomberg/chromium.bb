@@ -454,7 +454,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		// Test GPU tessellation path renderer.
 		if b.extraConfig("GpuTess") {
 			configs = []string{glPrefix + "msaa4"}
-			args = append(args, "--pr", "tess")
+			args = append(args, "--hwtess", "--pr", "tess")
 		}
 
 		// Test non-nvpr on NVIDIA.
@@ -743,6 +743,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	badSerializeGMs = append(badSerializeGMs, "draw_image_set_alpha_only")
 	badSerializeGMs = append(badSerializeGMs, "compositor_quads_shader")
 	badSerializeGMs = append(badSerializeGMs, "wacky_yuv_formats_qtr")
+	badSerializeGMs = append(badSerializeGMs, "runtime_effect_image")
 
 	// This GM forces a path to be convex. That property doesn't survive
 	// serialization.
@@ -783,7 +784,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		"async_rescale_and_read_dog_up",
 		"async_rescale_and_read_dog_down",
 		"async_rescale_and_read_rose",
-		"async_rescale_and_read_no_bleed"} {
+		"async_rescale_and_read_no_bleed",
+		"async_rescale_and_read_alpha_type"} {
 		skip("pic-8888", "gm", "_", test)
 		skip("serialize-8888", "gm", "_", test)
 
@@ -829,7 +831,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("_", "gm", "_", "encode-platform")
 	}
 
-	if b.model("AndroidOne") && b.gpu() { // skia:4697, skia:4704, skia:4694, skia:4705
+	if b.model("AndroidOne") && b.gpu() { // skia:4697, skia:4704, skia:4694, skia:4705, skia:11133
 		skip("_", "gm", "_", "bigblurs")
 		skip("_", "gm", "_", "strict_constraint_no_red_allowed")
 		skip("_", "gm", "_", "fast_constraint_red_is_allowed")
@@ -841,11 +843,16 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("_", "gm", "_", "imageresizetiled")
 		skip("_", "gm", "_", "matrixconvolution")
 		skip("_", "gm", "_", "strokedlines")
+		skip("_", "gm", "_", "runtime_intrinsics_matrix")
 		if sampleCount > 0 {
 			glMsaaConfig := fmt.Sprintf("%smsaa%d", glPrefix, sampleCount)
 			skip(glMsaaConfig, "gm", "_", "imageblurtiled")
 			skip(glMsaaConfig, "gm", "_", "imagefiltersbase")
 		}
+	}
+
+	if b.matchGpu("Adreno[56][0-9][0-9]") { // skia:11308 - disable on Adreno 5xx/6xx
+		skip("_", "tests", "_", "SkSLMatrixEquality_GPU")
 	}
 
 	match := []string{}
@@ -872,12 +879,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	if b.extraConfig("MSAN") {
 		match = append(match, "~Once", "~Shared") // Not sure what's up with these tests.
-	}
-
-	if b.extraConfig("TSAN") {
-		match = append(match, "~ReadWriteAlpha")      // Flaky on TSAN-covered on nvidia bots.
-		match = append(match, "~RGBA4444TextureTest", // Flakier than they are important.
-			"~RGB565TextureTest")
 	}
 
 	// By default, we test with GPU threading enabled, unless specifically

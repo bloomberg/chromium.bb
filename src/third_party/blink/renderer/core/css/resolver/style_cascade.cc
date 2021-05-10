@@ -195,7 +195,6 @@ void StyleCascade::Apply(CascadeFilter filter) {
     if (resolver.AuthorFlags() & CSSProperty::kBorder)
       state_.Style()->SetHasAuthorBorder();
   }
-  ForceColors();
 }
 
 std::unique_ptr<CSSBitset> StyleCascade::GetImportantSet() {
@@ -287,8 +286,6 @@ void StyleCascade::AnalyzeMatchResult() {
       map_.Add(property.GetCSSPropertyName(), e.Priority());
     }
   }
-
-  MaybeUseCountSummaryDisplayBlock();
 }
 
 void StyleCascade::AnalyzeInterpolations() {
@@ -339,11 +336,6 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
   LookupAndApply(GetCSSPropertyWritingMode(), resolver);
 
   if (depends_on_cascade_affecting_property_) {
-    // We could avoid marking these if this cascade provided a value, but
-    // marking them unconditionally keeps it simple. See also note about
-    // over-marking in StyleResolverState::Dependencies.
-    MarkDependency(GetCSSPropertyDirection());
-    MarkDependency(GetCSSPropertyWritingMode());
     if (direction != state_.Style()->Direction() ||
         writing_mode != state_.Style()->GetWritingMode()) {
       Reanalyze();
@@ -359,7 +351,7 @@ void StyleCascade::ApplyHighPriority(CascadeResolver& resolver) {
     int last = static_cast<int>(kLastHighPriorityCSSProperty);
     for (int i = first; i <= last; ++i) {
       if (bits & (static_cast<uint64_t>(1) << i))
-        LookupAndApply(CSSProperty::Get(convertToCSSPropertyID(i)), resolver);
+        LookupAndApply(CSSProperty::Get(ConvertToCSSPropertyID(i)), resolver);
     }
   }
 
@@ -566,109 +558,6 @@ void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,
   const auto& entry = map.find(handle);
   DCHECK_NE(entry, map.end());
   ApplyInterpolation(property, priority, *entry->value, resolver);
-}
-
-void StyleCascade::ForceColors() {
-  ComputedStyle* style = state_.Style();
-  if (!GetDocument().InForcedColorsMode() ||
-      style->ForcedColorAdjust() == EForcedColorAdjust::kNone)
-    return;
-
-  int bg_color_alpha =
-      style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha();
-  int visited_bg_color_alpha =
-      style->ResolvedColor(style->InternalVisitedBackgroundColor()).Alpha();
-  const SVGComputedStyle& svg_style = style->SvgStyle();
-
-  MaybeForceColor(GetCSSPropertyColor(), style->GetColor());
-  MaybeForceColor(GetCSSPropertyBackgroundColor(), style->BackgroundColor());
-  MaybeForceColor(GetCSSPropertyBorderBottomColor(),
-                  style->BorderBottomColor());
-  MaybeForceColor(GetCSSPropertyBorderLeftColor(), style->BorderLeftColor());
-  MaybeForceColor(GetCSSPropertyBorderRightColor(), style->BorderRightColor());
-  MaybeForceColor(GetCSSPropertyBorderTopColor(), style->BorderTopColor());
-  MaybeForceColor(GetCSSPropertyFill(), svg_style.FillPaint().GetColor());
-  MaybeForceColor(GetCSSPropertyOutlineColor(), style->OutlineColor());
-  MaybeForceColor(GetCSSPropertyStroke(), svg_style.StrokePaint().GetColor());
-  MaybeForceColor(GetCSSPropertyTextDecorationColor(),
-                  style->TextDecorationColor());
-  MaybeForceColor(GetCSSPropertyColumnRuleColor(), style->ColumnRuleColor());
-  MaybeForceColor(GetCSSPropertyWebkitTapHighlightColor(),
-                  style->TapHighlightColor());
-  MaybeForceColor(GetCSSPropertyWebkitTextEmphasisColor(),
-                  style->TextEmphasisColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedColor(),
-                  style->InternalVisitedColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBackgroundColor(),
-                  style->InternalVisitedBackgroundColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderBottomColor(),
-                  style->InternalVisitedBorderBottomColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderLeftColor(),
-                  style->InternalVisitedBorderLeftColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderRightColor(),
-                  style->InternalVisitedBorderRightColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedBorderTopColor(),
-                  style->InternalVisitedBorderTopColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedFill(),
-                  svg_style.InternalVisitedFillPaint().GetColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedOutlineColor(),
-                  style->InternalVisitedOutlineColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedStroke(),
-                  svg_style.InternalVisitedStrokePaint().GetColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedTextDecorationColor(),
-                  style->InternalVisitedTextDecorationColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedColumnRuleColor(),
-                  style->InternalVisitedColumnRuleColor());
-  MaybeForceColor(GetCSSPropertyInternalVisitedTextEmphasisColor(),
-                  style->InternalVisitedTextEmphasisColor());
-
-  ScopedCSSValue scoped_none(*CSSIdentifierValue::Create(CSSValueID::kNone),
-                             nullptr);
-  StyleBuilder::ApplyProperty(GetCSSPropertyTextShadow(), state_, scoped_none);
-  StyleBuilder::ApplyProperty(GetCSSPropertyBoxShadow(), state_, scoped_none);
-  if (!style->HasUrlBackgroundImage()) {
-    StyleBuilder::ApplyProperty(GetCSSPropertyBackgroundImage(), state_,
-                                scoped_none);
-  }
-
-  // Preserve the author/user defined background alpha channel.
-  style->SetBackgroundColor(
-      StyleColor(style->BackgroundColor().ResolveWithAlpha(
-          style->GetCurrentColor(), mojom::blink::ColorScheme::kLight,
-          bg_color_alpha)));
-  style->SetInternalVisitedBackgroundColor(
-      StyleColor(style->InternalVisitedBackgroundColor().ResolveWithAlpha(
-          style->GetCurrentColor(), mojom::blink::ColorScheme::kLight,
-          visited_bg_color_alpha)));
-}
-
-void StyleCascade::MaybeForceColor(const CSSProperty& property,
-                                   const StyleColor& color) {
-  DCHECK(GetDocument().InForcedColorsMode() &&
-         state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone);
-
-  // Preserve the author/user color if it computes to a system color.
-  if (color.IsSystemColor())
-    return;
-
-  StyleBuilder::ApplyProperty(
-      property, state_,
-      ScopedCSSValue(*GetForcedColorValue(property.GetCSSPropertyName()),
-                     nullptr));
-}
-
-const CSSValue* StyleCascade::GetForcedColorValue(CSSPropertyName name) {
-  DCHECK(GetDocument().InForcedColorsMode() &&
-         state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone);
-
-  CascadePriority* p = map_.Find(name, CascadeOrigin::kUserAgent);
-  if (p)
-    return ValueAt(match_result_, p->GetPosition());
-  if (name.Id() == CSSPropertyID::kBackgroundColor ||
-      name.Id() == CSSPropertyID::kInternalVisitedBackgroundColor) {
-    return CSSIdentifierValue::Create(CSSValueID::kCanvas);
-  }
-  return cssvalue::CSSUnsetValue::Create();
 }
 
 bool StyleCascade::IsRootElement() const {
@@ -1008,7 +897,7 @@ CSSVariableData* StyleCascade::GetVariableData(
 CSSVariableData* StyleCascade::GetEnvironmentVariable(
     const AtomicString& name) const {
   // If we are in a User Agent Shadow DOM then we should not record metrics.
-  ContainerNode& scope_root = state_.GetTreeScope().RootNode();
+  ContainerNode& scope_root = state_.GetElement().GetTreeScope().RootNode();
   auto* shadow_root = DynamicTo<ShadowRoot>(&scope_root);
   bool is_ua_scope = shadow_root && shadow_root->IsUserAgent();
 
@@ -1053,11 +942,6 @@ bool StyleCascade::ValidateFallback(const CustomProperty& property,
 
 void StyleCascade::MarkIsReferenced(const CSSProperty& referencer,
                                     const CustomProperty& referenced) {
-  // For simplicity, we mark all inherited custom property references as
-  // dependencies, even though it might not be a dependency if this cascade
-  // defines a value for that property.
-  if (!referencer.IsInherited() && referenced.IsInherited())
-    MarkDependency(referenced);
   if (!referenced.IsRegistered())
     return;
   const AtomicString& name = referenced.GetPropertyNameAtomicString();
@@ -1068,10 +952,6 @@ void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {
   if (!property.IsInherited())
     state_.Style()->SetHasVariableReferenceFromNonInheritedProperty();
   state_.Style()->SetHasVariableReference();
-}
-
-void StyleCascade::MarkDependency(const CSSProperty& property) {
-  state_.MarkDependency(property);
 }
 
 const Document& StyleCascade::GetDocument() const {
@@ -1097,25 +977,8 @@ void StyleCascade::CountUse(WebFeature feature) {
 }
 
 void StyleCascade::MaybeUseCountRevert(const CSSValue& value) {
-  // In forced colors mode, any value can behave like 'revert' [1], but we
-  // should only use-count the true uses of 'revert'.
-  // [1] https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
   if (IsRevert(value))
     CountUse(WebFeature::kCSSKeywordRevert);
-}
-
-// TODO(crbug.com/590014): Remove this when display type of <summary> is fixed
-void StyleCascade::MaybeUseCountSummaryDisplayBlock() {
-  if (!state_.GetElement().HasTagName(html_names::kSummaryTag))
-    return;
-  CascadePriority priority = map_.At(CSSPropertyName(CSSPropertyID::kDisplay));
-  if (priority.GetOrigin() <= CascadeOrigin::kUserAgent)
-    return;
-  const CSSValue* value = ValueAt(match_result_, priority.GetPosition());
-  if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {
-    if (identifier->GetValueID() == CSSValueID::kBlock)
-      CountUse(WebFeature::kSummaryElementWithDisplayBlockAuthorRule);
-  }
 }
 
 void StyleCascade::MaybeUseCountInvalidVariableUnset(

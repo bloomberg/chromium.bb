@@ -27,7 +27,6 @@
 #include "base/bind.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/components/phonehub/phone_model.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -48,7 +47,7 @@ constexpr gfx::Insets kBubblePadding(0, 0, kBubbleBottomPaddingDip, 0);
 
 PhoneHubTray::PhoneHubTray(Shelf* shelf)
     : TrayBackgroundView(shelf), ui_controller_(new PhoneHubUiController()) {
-  observed_phone_hub_ui_controller_.Add(ui_controller_.get());
+  observed_phone_hub_ui_controller_.Observe(ui_controller_.get());
 
   auto icon = std::make_unique<views::ImageView>();
   icon->SetTooltipText(
@@ -117,8 +116,11 @@ void PhoneHubTray::OnPhoneHubUiStateChanged() {
     return;
   }
 
-  if (content_view_)
+  if (content_view_) {
     bubble_view->RemoveChildView(content_view_);
+    delete content_view_;
+  }
+
   content_view_ = content_view.get();
   bubble_view->AddChildView(std::move(content_view));
 
@@ -153,7 +155,9 @@ void PhoneHubTray::ShowBubble(bool show_by_click) {
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_view = GetBubbleAnchor();
+  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
+  init_params.anchor_rect = shelf()->GetSystemTrayAnchorRect();
+  init_params.insets = GetTrayBubbleInsets();
   init_params.shelf_alignment = shelf()->alignment();
   init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
@@ -163,8 +167,6 @@ void PhoneHubTray::ShowBubble(bool show_by_click) {
   init_params.show_by_click = show_by_click;
 
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
-  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
-  bubble_view->set_margins(GetSecondaryBubbleInsets());
   bubble_view->SetBorder(views::CreateEmptyBorder(kBubblePadding));
 
   // Creates header view on top for displaying phone status and settings icon.

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/fallthrough_statement.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -22,7 +23,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, CaseBody_Empty) {
-  auto* p = parser("");
+  auto p = parser("");
   auto e = p->case_body();
   ASSERT_FALSE(p->has_error()) << p->error();
   EXPECT_FALSE(e.errored);
@@ -31,7 +32,7 @@ TEST_F(ParserImplTest, CaseBody_Empty) {
 }
 
 TEST_F(ParserImplTest, CaseBody_Statements) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
   var a: i32;
   a = 2;)");
 
@@ -40,12 +41,12 @@ TEST_F(ParserImplTest, CaseBody_Statements) {
   EXPECT_FALSE(e.errored);
   EXPECT_TRUE(e.matched);
   ASSERT_EQ(e->size(), 2u);
-  EXPECT_TRUE(e->get(0)->IsVariableDecl());
-  EXPECT_TRUE(e->get(1)->IsAssign());
+  EXPECT_TRUE(e->get(0)->Is<ast::VariableDeclStatement>());
+  EXPECT_TRUE(e->get(1)->Is<ast::AssignmentStatement>());
 }
 
 TEST_F(ParserImplTest, CaseBody_InvalidStatement) {
-  auto* p = parser("a =");
+  auto p = parser("a =");
   auto e = p->case_body();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(e.errored);
@@ -54,17 +55,17 @@ TEST_F(ParserImplTest, CaseBody_InvalidStatement) {
 }
 
 TEST_F(ParserImplTest, CaseBody_Fallthrough) {
-  auto* p = parser("fallthrough;");
+  auto p = parser("fallthrough;");
   auto e = p->case_body();
   ASSERT_FALSE(p->has_error()) << p->error();
   EXPECT_FALSE(e.errored);
   EXPECT_TRUE(e.matched);
   ASSERT_EQ(e->size(), 1u);
-  EXPECT_TRUE(e->get(0)->IsFallthrough());
+  EXPECT_TRUE(e->get(0)->Is<ast::FallthroughStatement>());
 }
 
 TEST_F(ParserImplTest, CaseBody_Fallthrough_MissingSemicolon) {
-  auto* p = parser("fallthrough");
+  auto p = parser("fallthrough");
   auto e = p->case_body();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(e.errored);

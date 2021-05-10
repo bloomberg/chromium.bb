@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
+<translation id="1175958423215084756">Шилтеме аныкталды. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Галерея сүрөттөрү</translation>
 <translation id="1430915738399379752">Басып чыгаруу</translation>
 <translation id="1473110567575736769">3 секунддук таймер</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">ТЫНДЫРЫЛДЫ</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> файлын экспорттоо мүмкүн болбой жатат</translation>
 <translation id="1899697626337024495">Сүрөттүн дааналыгы</translation>
+<translation id="2022953316617983419">QR коду</translation>
 <translation id="2036868001356139588">Таймердин узактыгы</translation>
 <translation id="2050339315714019657">Тигинен</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> жигердүү</translation>
+<translation id="2144806332417375165">Жеке видеонун параметрлери</translation>
 <translation id="229579744168541441">Дискке өткөрүү</translation>
 <translation id="2501278716633472235">Артка кайтуу</translation>
 <translation id="2501853267655415902">Жаздыруу токтотулду</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 кадр/сек</translation>
 <translation id="3183731565330012717">Торчонун түрү</translation>
 <translation id="3227137524299004712">Микрофон</translation>
+<translation id="3240426699337459095">Шилтеме көчүрүлдү</translation>
 <translation id="3259149966178251584">Камеранын дааналыгы</translation>
 <translation id="3517926952904427380">Сүрөткө тигинен тартылбай жатат</translation>
 <translation id="3569311554794739032">"<ph name="FILE" />" файлын чын эле өчүрөсүзбү?</translation>
-<translation id="3750315947605636967">Камераңызды башка колдонмо иштетип жатат</translation>
 <translation id="3810838688059735925">Видео</translation>
+<translation id="3838931309141338733">Штрихкодду скандоо</translation>
+<translation id="3892148308691398805">Текстти көчүрүү</translation>
 <translation id="4000398125663085899">Жаңы сүрөттөр менен видеолор эми Файлдар колдонмосундагы папкага сакталат: Менин файлдарым &gt; Камера</translation>
 <translation id="4118525110028899586">Видео жаздырууну тындыруу</translation>
+<translation id="4269820728363426813">Шилтеме дарегин көчүрүү</translation>
 <translation id="4279490309300973883">Чагылыштыруу</translation>
 <translation id="4329152592498422850">Чарчы сүрөт тартуу режимине которулуу</translation>
 <translation id="4383571725254449280">Басып чыгаруу майнаптуулугунун таржымалы</translation>
@@ -68,11 +74,15 @@
 <translation id="7134221860976209830">10 секунддук таймер</translation>
 <translation id="7243947652761655814">Видеонун дааналыгы</translation>
 <translation id="7337660886763914220">Файл тутумунда ката кетти.</translation>
+<translation id="7450541714075000668">Текст көчүрүлдү</translation>
 <translation id="7557677699350329807">Кийинки камераны иштетүү</translation>
+<translation id="7607002721634913082">Бир азга токтотулду</translation>
 <translation id="7608223098072244877">4 x 4</translation>
 <translation id="7649070708921625228">Жардам</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="7670511624014457267">60 кадр/сек</translation>
+<translation id="7974782136796202581">Жылдырып кароо, кыйшайтуу, чоңойтуп/кичирейтүү параметрлерин көрсөтүү</translation>
+<translation id="7983668134180549431">Текст аныкталды.</translation>
 <translation id="8067883171444229417">Видеону ойнотуу</translation>
 <translation id="8131740175452115882">Ырастоо</translation>
 <translation id="8145038249676204903">Сүрөт режимине которулуу</translation>

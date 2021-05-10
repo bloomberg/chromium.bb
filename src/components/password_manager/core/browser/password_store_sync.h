@@ -21,8 +21,13 @@ class MetadataBatch;
 namespace password_manager {
 
 struct PasswordForm;
+struct CompromisedCredentials;
 
-using PrimaryKeyToFormMap = std::map<int, std::unique_ptr<PasswordForm>>;
+using InsecureCredential = CompromisedCredentials;
+using ForceInitialSyncCycle =
+    base::StrongAlias<class ForceInitialSyncCycleTag, bool>;
+using PrimaryKeyToFormMap =
+    std::map<FormPrimaryKey, std::unique_ptr<PasswordForm>>;
 
 // This enum is used to determine result status when deleting undecryptable
 // logins from database.
@@ -122,6 +127,10 @@ class PasswordStoreSync {
   virtual FormRetrievalResult ReadAllLogins(
       PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT = 0;
 
+  // Returns insecure credentials for the provided |parent_key|.
+  virtual std::vector<InsecureCredential> ReadSecurityIssues(
+      FormPrimaryKey parent_key) = 0;
+
   // Deletes logins that cannot be decrypted.
   virtual DatabaseCleanupResult DeleteUndecryptableLogins() = 0;
 
@@ -130,20 +139,35 @@ class PasswordStoreSync {
       const PasswordForm& form,
       AddLoginError* error = nullptr) = 0;
 
+  // Synchronous implementation to add insecure credentials. Operation will
+  // be terminated if any insertion into the database fails. Returns whether
+  // operation was successful.
+  virtual bool AddInsecureCredentialsSync(
+      base::span<const InsecureCredential> credentials) = 0;
+
   // Synchronous implementation to update the given login.
   virtual PasswordStoreChangeList UpdateLoginSync(
       const PasswordForm& form,
       UpdateLoginError* error = nullptr) = 0;
+
+  // Synchronous implementation to replace existing insecure credentials for
+  // the |form| with |credentials|.
+  virtual bool UpdateInsecureCredentialsSync(
+      const PasswordForm& form,
+      base::span<const InsecureCredential> credentials) = 0;
 
   // Synchronous implementation to remove the given login.
   virtual PasswordStoreChangeList RemoveLoginSync(const PasswordForm& form) = 0;
 
   // Synchronous implementation to remove the login with the given primary key.
   virtual PasswordStoreChangeList RemoveLoginByPrimaryKeySync(
-      int primary_key) = 0;
+      FormPrimaryKey primary_key) = 0;
 
   // Notifies observers that password store data may have been changed.
   virtual void NotifyLoginsChanged(const PasswordStoreChangeList& changes) = 0;
+
+  // Notifies observers that local list of insecure credentials changed.
+  virtual void NotifyInsecureCredentialsChanged() = 0;
 
   // Notifies any waiting callback that all pending deletions have been
   // committed to the Sync server now, or that Sync definitely won't commit

@@ -19,9 +19,11 @@ MockIMEInputContextHandler::MockIMEInputContextHandler()
       update_preedit_text_call_count_(0),
       delete_surrounding_text_call_count_(0) {}
 
-MockIMEInputContextHandler::~MockIMEInputContextHandler() {}
+MockIMEInputContextHandler::~MockIMEInputContextHandler() = default;
 
-void MockIMEInputContextHandler::CommitText(const std::string& text) {
+void MockIMEInputContextHandler::CommitText(
+    const std::string& text,
+    TextInputClient::InsertTextCursorBehavior cursor_behavior) {
   ++commit_text_call_count_;
   last_commit_text_ = text;
 }
@@ -57,19 +59,16 @@ bool MockIMEInputContextHandler::SetComposingRange(
 }
 
 gfx::Range MockIMEInputContextHandler::GetAutocorrectRange() {
-  return gfx::Range();
+  return autocorrect_range_;
 }
 
 gfx::Rect MockIMEInputContextHandler::GetAutocorrectCharacterBounds() {
   return gfx::Rect();
 }
 
-bool MockIMEInputContextHandler::SetAutocorrectRange(
-    const base::string16& autocorrect_text,
-    uint32_t start,
-    uint32_t end) {
-  // TODO(crbug.com/1091088): Implement function.
-  return false;
+bool MockIMEInputContextHandler::SetAutocorrectRange(const gfx::Range& range) {
+  autocorrect_range_ = range;
+  return true;
 }
 
 bool MockIMEInputContextHandler::SetSelectionRange(uint32_t start,
@@ -118,7 +117,8 @@ void MockIMEInputContextHandler::ConfirmCompositionText(bool reset_engine,
     return;
 
   CommitText(
-      base::UTF16ToUTF8(last_update_composition_arg_.composition_text.text));
+      base::UTF16ToUTF8(last_update_composition_arg_.composition_text.text),
+      TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   last_update_composition_arg_.composition_text.text = base::string16();
 }
 

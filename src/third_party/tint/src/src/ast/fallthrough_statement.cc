@@ -14,25 +14,34 @@
 
 #include "src/ast/fallthrough_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::FallthroughStatement);
+
 namespace tint {
 namespace ast {
 
-FallthroughStatement::FallthroughStatement() : Statement() {}
-
 FallthroughStatement::FallthroughStatement(const Source& source)
-    : Statement(source) {}
+    : Base(source) {}
+
+FallthroughStatement::FallthroughStatement(FallthroughStatement&&) = default;
 
 FallthroughStatement::~FallthroughStatement() = default;
 
-bool FallthroughStatement::IsFallthrough() const {
-  return true;
+FallthroughStatement* FallthroughStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<FallthroughStatement>(src);
 }
 
 bool FallthroughStatement::IsValid() const {
   return true;
 }
 
-void FallthroughStatement::to_str(std::ostream& out, size_t indent) const {
+void FallthroughStatement::to_str(const semantic::Info&,
+                                  std::ostream& out,
+                                  size_t indent) const {
   make_indent(out, indent);
   out << "Fallthrough{}" << std::endl;
 }

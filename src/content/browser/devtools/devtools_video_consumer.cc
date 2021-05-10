@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/optional.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "media/base/limits.h"
@@ -19,15 +21,19 @@ namespace content {
 
 namespace {
 
-// Frame capture period is 10 frames per second by default.
 constexpr base::TimeDelta kDefaultMinCapturePeriod =
-    base::TimeDelta::FromMilliseconds(100);
+    base::TimeDelta::FromMilliseconds(10);
 
 // Frame size can change every frame.
 constexpr base::TimeDelta kDefaultMinPeriod = base::TimeDelta();
 
 // Allow variable aspect ratio.
 const bool kDefaultUseFixedAspectRatio = false;
+
+constexpr media::VideoPixelFormat kDefaultPixelFormat =
+    media::PIXEL_FORMAT_I420;
+
+constexpr gfx::ColorSpace kDefaultColorSpace = gfx::ColorSpace::CreateREC709();
 
 // Creates a ClientFrameSinkVideoCapturer via HostFrameSinkManager.
 std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateCapturer() {
@@ -46,7 +52,9 @@ DevToolsVideoConsumer::DevToolsVideoConsumer(OnFrameCapturedCallback callback)
     : callback_(std::move(callback)),
       min_capture_period_(kDefaultMinCapturePeriod),
       min_frame_size_(kDefaultMinFrameSize),
-      max_frame_size_(kDefaultMaxFrameSize) {}
+      max_frame_size_(kDefaultMaxFrameSize),
+      pixel_format_(kDefaultPixelFormat),
+      color_space_(kDefaultColorSpace) {}
 
 DevToolsVideoConsumer::~DevToolsVideoConsumer() = default;
 
@@ -78,10 +86,11 @@ void DevToolsVideoConsumer::SetFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
   if (capturer_) {
-    if (frame_sink_id_.is_valid())
-      capturer_->ChangeTarget(frame_sink_id_);
-    else
-      capturer_->ChangeTarget(base::nullopt);
+    capturer_->ChangeTarget(
+        frame_sink_id_.is_valid()
+            ? base::make_optional<viz::FrameSinkId>(frame_sink_id_)
+            : base::nullopt,
+        viz::SubtreeCaptureId());
   }
 }
 
@@ -103,6 +112,15 @@ void DevToolsVideoConsumer::SetMinAndMaxFrameSize(gfx::Size min_frame_size,
   }
 }
 
+void DevToolsVideoConsumer::SetFormat(media::VideoPixelFormat format,
+                                      gfx::ColorSpace color_space) {
+  pixel_format_ = format;
+  color_space_ = color_space;
+  if (capturer_) {
+    capturer_->SetFormat(pixel_format_, color_space_);
+  }
+}
+
 void DevToolsVideoConsumer::InnerStartCapture(
     std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer) {
   capturer_ = std::move(capturer);
@@ -112,8 +130,9 @@ void DevToolsVideoConsumer::InnerStartCapture(
   capturer_->SetMinSizeChangePeriod(kDefaultMinPeriod);
   capturer_->SetResolutionConstraints(min_frame_size_, max_frame_size_,
                                       kDefaultUseFixedAspectRatio);
+  capturer_->SetFormat(pixel_format_, color_space_);
   if (frame_sink_id_.is_valid())
-    capturer_->ChangeTarget(frame_sink_id_);
+    capturer_->ChangeTarget(frame_sink_id_, viz::SubtreeCaptureId());
 
   capturer_->Start(this);
 }

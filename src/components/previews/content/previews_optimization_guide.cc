@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "components/optimization_guide/hints_processing_util.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/hints_processing_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/previews/content/previews_user_data.h"
@@ -37,9 +37,6 @@ bool ShouldApplyPreviewWithDecision(
   }
 }
 
-// The default max size of the cache holding resource loading hints by URL.
-size_t kDefaultMaxResourceLoadingHintsCacheSize = 10;
-
 // The max size of the cache holding painful page load decisions by the
 // navigation ID of the navigation handle.
 size_t kDefaultPainfulPageLoadDecisionsCacheSize = 10;
@@ -48,14 +45,8 @@ size_t kDefaultPainfulPageLoadDecisionsCacheSize = 10;
 base::Optional<optimization_guide::proto::OptimizationType>
 ConvertPreviewsTypeToOptimizationType(PreviewsType previews_type) {
   switch (previews_type) {
-    case PreviewsType::NONE:
-      return optimization_guide::proto::OPTIMIZATION_NONE;
-    case PreviewsType::NOSCRIPT:
-      return optimization_guide::proto::NOSCRIPT;
     case PreviewsType::UNSPECIFIED:
       return optimization_guide::proto::TYPE_UNSPECIFIED;
-    case PreviewsType::RESOURCE_LOADING_HINTS:
-      return optimization_guide::proto::RESOURCE_LOADING;
     case PreviewsType::DEFER_ALL_SCRIPT:
       return optimization_guide::proto::DEFER_ALL_SCRIPT;
     default:
@@ -70,40 +61,18 @@ GetOptimizationTypesToRegister() {
   base::flat_set<optimization_guide::proto::OptimizationType>
       optimization_types;
 
-  if (params::IsNoScriptPreviewsEnabled())
-    optimization_types.insert(optimization_guide::proto::NOSCRIPT);
-  if (params::IsResourceLoadingHintsEnabled())
-    optimization_types.insert(optimization_guide::proto::RESOURCE_LOADING);
   if (params::IsDeferAllScriptPreviewsEnabled())
     optimization_types.insert(optimization_guide::proto::DEFER_ALL_SCRIPT);
 
   return optimization_types;
 }
 
-// Parses |resource_loading_hints| and returns a vector of resource patterns
-// that can be blocked.
-std::vector<std::string> GetResourcePatternsToBlock(
-    const google::protobuf::RepeatedPtrField<
-        optimization_guide::proto::ResourceLoadingHint>&
-        resource_loading_hints) {
-  std::vector<std::string> resource_patterns_to_block;
-  for (const auto& resource_loading_hint : resource_loading_hints) {
-    if (!resource_loading_hint.resource_pattern().empty() &&
-        resource_loading_hint.loading_optimization_type() ==
-            optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
-      resource_patterns_to_block.push_back(
-          resource_loading_hint.resource_pattern());
-    }
-  }
-  return resource_patterns_to_block;
-}
 
 }  // namespace
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideDecider* optimization_guide_decider)
     : optimization_guide_decider_(optimization_guide_decider),
-      resource_loading_hints_cache_(kDefaultMaxResourceLoadingHintsCacheSize),
       painful_page_load_decisions_(kDefaultPainfulPageLoadDecisionsCacheSize),
       registered_optimization_types_(GetOptimizationTypesToRegister()) {
   DCHECK(optimization_guide_decider_);
@@ -185,35 +154,7 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
   if (!ShouldApplyPreviewWithDecision(type, decision))
     return false;
 
-  // Previews metadata is mostly best effort and not actually required for all
-  // previews, so just return early if it's not populated.
-  if (!optimization_metadata.previews_metadata())
-    return true;
 
-  // If we have metadata, populate information from metadata.
-  const optimization_guide::proto::PreviewsMetadata previews_metadata =
-      optimization_metadata.previews_metadata().value();
-  if (previews_data && previews_metadata.has_inflation_percent()) {
-    previews_data->set_data_savings_inflation_percent(
-        previews_metadata.inflation_percent());
-  }
-  if (previews_metadata.resource_loading_hints_size() > 0) {
-    resource_loading_hints_cache_.Put(
-        navigation_handle->GetURL(),
-        GetResourcePatternsToBlock(previews_metadata.resource_loading_hints()));
-  }
-
-  return true;
-}
-
-bool PreviewsOptimizationGuide::GetResourceLoadingHints(
-    const GURL& url,
-    std::vector<std::string>* out_resource_patterns_to_block) {
-  auto rlh_it = resource_loading_hints_cache_.Get(url);
-  if (rlh_it == resource_loading_hints_cache_.end())
-    return false;
-
-  *out_resource_patterns_to_block = rlh_it->second;
   return true;
 }
 

@@ -266,7 +266,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
     SkColor color = palette_.button_enabled_color;
     if (!GetEnabled()) {
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-      color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
+      color = AshColorProvider::GetDisabledColor(color);
       CancelRepeat();
     }
 
@@ -356,7 +356,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
       std::make_unique<base::RepeatingTimer>();
 
   views::ImageView* image_ = nullptr;
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
+  base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(base::BindRepeating(
           &LoginPinView::BackspacePinButton::OnEnabledChanged,
           base::Unretained(this)));
@@ -392,14 +392,14 @@ class LoginPinView::SubmitPinButton : public BasePinButton {
   void OnEnabledChanged() {
     SkColor color = palette_.button_enabled_color;
     if (!GetEnabled())
-      color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
+      color = AshColorProvider::GetDisabledColor(color);
 
     image_->SetImage(gfx::CreateVectorIcon(kLockScreenArrowIcon, color));
   }
 
  private:
   views::ImageView* image_ = nullptr;
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
+  base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
           base::BindRepeating(&LoginPinView::SubmitPinButton::OnEnabledChanged,
                               base::Unretained(this)));

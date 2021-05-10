@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_CONTEXT_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_CONTEXT_H_
 
+#include <memory>
+
 #include "base/values.h"
 
 namespace chromeos {
+
+class UserContext;
 
 // Structure that defines data that need to be passed between screens during
 // WizardController flows.
@@ -55,9 +59,16 @@ class WizardContext {
   bool skip_to_update_for_tests = false;
 
   // Whether user creation screen is enabled (could be disabled due to disabled
-  // feature or on managed device). Set by UserCreationScreen::MaybeSkip and
-  // will be flipped to true when screen is shown.
+  // feature or on managed device). It determines the behavior of back button
+  // for GaiaScreen and OfflineLoginScreen. Value is set to true in
+  // UserCreationScreen::MaybeSkip when screen is shown and will be set to false
+  // when screen is skipped or when cancel action is called.
   bool is_user_creation_enabled = false;
+
+  // Authorization data that is required by PinSetup screen to add PIN as
+  // another possible auth factor. Can be empty (if PIN is not supported).
+  // In future will be replaced by AuthSession.
+  std::unique_ptr<UserContext> extra_factors_auth_session;
 };
 
 }  // namespace chromeos

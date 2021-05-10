@@ -46,6 +46,7 @@ int CheckPDFiumCApi() {
     CHK(FPDFAnnot_CountAttachmentPoints);
     CHK(FPDFAnnot_GetAP);
     CHK(FPDFAnnot_GetAttachmentPoints);
+    CHK(FPDFAnnot_GetBorder);
     CHK(FPDFAnnot_GetColor);
     CHK(FPDFAnnot_GetFlags);
     CHK(FPDFAnnot_GetFocusableSubtypes);
@@ -59,6 +60,9 @@ int CheckPDFiumCApi() {
     CHK(FPDFAnnot_GetFormFieldName);
     CHK(FPDFAnnot_GetFormFieldType);
     CHK(FPDFAnnot_GetFormFieldValue);
+    CHK(FPDFAnnot_GetInkListCount);
+    CHK(FPDFAnnot_GetInkListPath);
+    CHK(FPDFAnnot_GetLine);
     CHK(FPDFAnnot_GetLink);
     CHK(FPDFAnnot_GetLinkedAnnot);
     CHK(FPDFAnnot_GetNumberValue);

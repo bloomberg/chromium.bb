@@ -50,7 +50,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame, int plane, int dir) {
   MultiThreadInfo *const mt_info = &cpi->mt_info;
-  int num_workers = mt_info->num_workers;
+  int num_workers = mt_info->num_mod_workers[MOD_LPF];
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 

@@ -7,18 +7,23 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/read_later/read_later_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/read_later_resources.h"
 #include "chrome/grit/read_later_resources_map.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/views/style/platform_style.h"
 
 namespace {
 void AddLocalizedString(content::WebUIDataSource* source,
@@ -31,10 +36,15 @@ void AddLocalizedString(content::WebUIDataSource* source,
 }  // namespace
 
 ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
-    : ui::MojoBubbleWebUIController(web_ui) {
+    : ui::MojoBubbleWebUIController(web_ui),
+      webui_load_timer_(web_ui->GetWebContents(),
+                        "ReadingList.WebUI.LoadDocumentTime",
+                        "ReadingList.WebUI.LoadCompletedTime") {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIReadLaterHost);
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"emptyStateHeader", IDS_READ_LATER_MENU_EMPTY_STATE_HEADER},
+      {"emptyStateSubheader", IDS_READ_LATER_MENU_EMPTY_STATE_SUBHEADER},
       {"readHeader", IDS_READ_LATER_MENU_READ_HEADER},
       {"title", IDS_READ_LATER_TITLE},
       {"tooltipClose", IDS_CLOSE},
@@ -46,9 +56,18 @@ ReadLaterUI::ReadLaterUI(content::WebUI* web_ui)
   for (const auto& str : kLocalizedStrings)
     AddLocalizedString(source, str.name, str.id);
 
+  source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
+
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
+
   webui::SetupWebUIDataSource(
       source, base::make_span(kReadLaterResources, kReadLaterResourcesSize),
-      /*generated_path=*/std::string(), IDR_READ_LATER_READ_LATER_HTML);
+      base::FeatureList::IsEnabled(features::kSidePanel)
+          ? IDR_READ_LATER_SIDE_PANEL_SIDE_PANEL_HTML
+          : IDR_READ_LATER_READ_LATER_HTML);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);
 }
@@ -67,6 +86,6 @@ void ReadLaterUI::CreatePageHandler(
     mojo::PendingRemote<read_later::mojom::Page> page,
     mojo::PendingReceiver<read_later::mojom::PageHandler> receiver) {
   DCHECK(page);
-  page_handler_ = std::make_unique<ReadLaterPageHandler>(std::move(receiver),
-                                                         std::move(page), this);
+  page_handler_ = std::make_unique<ReadLaterPageHandler>(
+      std::move(receiver), std::move(page), this, web_ui());
 }

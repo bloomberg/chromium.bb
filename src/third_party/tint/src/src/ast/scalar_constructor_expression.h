@@ -25,45 +25,41 @@ namespace tint {
 namespace ast {
 
 /// A scalar constructor
-class ScalarConstructorExpression : public ConstructorExpression {
+class ScalarConstructorExpression
+    : public Castable<ScalarConstructorExpression, ConstructorExpression> {
  public:
-  /// Constructor
-  ScalarConstructorExpression();
-  /// Constructor
-  /// @param literal the const literal
-  explicit ScalarConstructorExpression(std::unique_ptr<Literal> literal);
   /// Constructor
   /// @param source the constructor source
   /// @param literal the const literal
-  ScalarConstructorExpression(const Source& source,
-                              std::unique_ptr<Literal> literal);
+  ScalarConstructorExpression(const Source& source, Literal* literal);
   /// Move constructor
   ScalarConstructorExpression(ScalarConstructorExpression&&);
   ~ScalarConstructorExpression() override;
 
-  /// @returns true if this is a scalar constructor
-  bool IsScalarConstructor() const override;
-
-  /// Set the literal value
-  /// @param literal the literal
-  void set_literal(std::unique_ptr<Literal> literal) {
-    literal_ = std::move(literal);
-  }
   /// @returns the literal value
-  Literal* literal() const { return literal_.get(); }
+  Literal* literal() const { return literal_; }
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ScalarConstructorExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   ScalarConstructorExpression(const ScalarConstructorExpression&) = delete;
 
-  std::unique_ptr<Literal> literal_;
+  Literal* const literal_;
 };
 
 }  // namespace ast

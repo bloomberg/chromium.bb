@@ -50,7 +50,7 @@ class IconCacher;
 // Shim interface for SupervisedUserService.
 class MostVisitedSitesSupervisor {
  public:
-  struct Whitelist {
+  struct Allowlist {
     base::string16 title;
     GURL entry_point;
     base::FilePath large_icon_path;
@@ -75,8 +75,9 @@ class MostVisitedSitesSupervisor {
   // If true, |url| should not be shown on the NTP.
   virtual bool IsBlocked(const GURL& url) = 0;
 
+  // TODO(crbug.com/1149782): Remove the allowlists from New Tab Page.
   // Explicitly-specified sites to show on NTP.
-  virtual std::vector<Whitelist> GetWhitelists() = 0;
+  virtual std::vector<Allowlist> GetAllowlists() = 0;
 
   // If true, be conservative about suggesting sites from outside sources.
   virtual bool IsChildProfile() = 0;
@@ -214,6 +215,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // must be enabled.
   void UndoCustomLinkAction();
 
+  size_t GetCustomLinkNum();
+
   void AddOrRemoveBlockedUrl(const GURL& url, bool add_url);
   void ClearBlockedUrls();
 
@@ -225,7 +228,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Workhorse for SaveNewTilesAndNotify. Implemented as a separate static and
   // public method for ease of testing.
   static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
-                                   NTPTilesVector whitelist_tiles,
+                                   NTPTilesVector allowlist_tiles,
                                    NTPTilesVector popular_tiles,
                                    base::Optional<NTPTile> explore_tile);
 
@@ -257,8 +260,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // returned no data.
   void InitiateTopSitesQuery();
 
-  // If there's a whitelist entry point for the URL, return the large icon path.
-  base::FilePath GetWhitelistLargeIconPath(const GURL& url);
+  // If there's a allowlist entry point for the URL, return the large icon path.
+  base::FilePath GetAllowlistLargeIconPath(const GURL& url);
 
   // Callback for when data is available from TopSites.
   void OnMostVisitedURLsAvailable(
@@ -278,8 +281,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   void BuildCurrentTilesGivenSuggestionsProfile(
       const suggestions::SuggestionsProfile& suggestions_profile);
 
-  // Creates whitelist entry point suggestions whose hosts weren't used yet.
-  NTPTilesVector CreateWhitelistEntryPointTiles(
+  // Creates allowlist entry point suggestions whose hosts weren't used yet.
+  NTPTilesVector CreateAllowlistEntryPointTiles(
       const std::set<std::string>& used_hosts,
       size_t num_actual_tiles);
 
@@ -307,7 +310,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // |SaveTilesAndNotify| in the end.
   void InitiateNotificationForNewTiles(NTPTilesVector new_tiles);
 
-  // Takes the personal tiles, creates and merges in whitelist and popular tiles
+  // Takes the personal tiles, creates and merges in allowlist and popular tiles
   // if appropriate. Calls |SaveTilesAndNotify| at the end.
   void MergeMostVisitedTiles(NTPTilesVector personal_tiles);
 
@@ -375,9 +378,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // incremented if custom links was not initialized during this session.
   int custom_links_action_count_ = -1;
 
-  std::unique_ptr<
-      suggestions::SuggestionsService::ResponseCallbackList::Subscription>
-      suggestions_subscription_;
+  base::CallbackListSubscription suggestions_subscription_;
 
   base::ScopedObservation<history::TopSites, history::TopSitesObserver>
       top_sites_observation_{this};
@@ -386,8 +387,7 @@ class MostVisitedSites : public history::TopSitesObserver,
                           RepeatableQueriesServiceObserver>
       repeatable_queries_observation_{this};
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      custom_links_subscription_;
+  base::CallbackListSubscription custom_links_subscription_;
 
   // The main source of personal tiles - either TOP_SITES or SUGGESTIONS_SEVICE.
   TileSource mv_source_;

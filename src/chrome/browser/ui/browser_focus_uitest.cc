@@ -625,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   controller->OnAutocompleteAccept(
       url2, nullptr, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      base::TimeTicks());
+      base::TimeTicks(), false);
 
   // Make sure the second tab is selected.
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
@@ -659,11 +659,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
 
   // Navigate back.  Should focus the location bar.
   {
-    content::WindowedNotificationObserver back_nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
     chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-    back_nav_observer.Wait();
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
@@ -671,11 +669,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
   // Navigate forward.  Shouldn't focus the location bar.
   ClickOnView(VIEW_ID_TAB_CONTAINER);
   {
-    content::WindowedNotificationObserver forward_nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
     chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
-    forward_nav_observer.Wait();
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));

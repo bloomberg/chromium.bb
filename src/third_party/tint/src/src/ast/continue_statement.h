@@ -24,10 +24,8 @@ namespace tint {
 namespace ast {
 
 /// An continue statement
-class ContinueStatement : public Statement {
+class ContinueStatement : public Castable<ContinueStatement, Statement> {
  public:
-  /// Constructor
-  ContinueStatement();
   /// Constructor
   /// @param source the continue statement source
   explicit ContinueStatement(const Source& source);
@@ -35,16 +33,22 @@ class ContinueStatement : public Statement {
   ContinueStatement(ContinueStatement&&);
   ~ContinueStatement() override;
 
-  /// @returns true if this is an continue statement
-  bool IsContinue() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ContinueStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   ContinueStatement(const ContinueStatement&) = delete;

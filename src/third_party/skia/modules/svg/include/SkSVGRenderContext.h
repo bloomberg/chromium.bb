@@ -14,6 +14,7 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkTypes.h"
+#include "modules/skresources/include/SkResources.h"
 #include "modules/svg/include/SkSVGAttribute.h"
 #include "modules/svg/include/SkSVGIDMapper.h"
 #include "src/core/SkTLazy.h"
@@ -51,15 +52,12 @@ struct SkSVGPresentationContext {
 
     // Inherited presentation attributes, computed for the current node.
     SkSVGPresentationAttributes fInherited;
-
-    // Cached paints, reflecting the current presentation attributes.
-    SkPaint fFillPaint;
-    SkPaint fStrokePaint;
 };
 
 class SkSVGRenderContext {
 public:
-    SkSVGRenderContext(SkCanvas*, const sk_sp<SkFontMgr>&, const SkSVGIDMapper&,
+    SkSVGRenderContext(SkCanvas*, const sk_sp<SkFontMgr>&,
+                       const sk_sp<skresources::ResourceProvider>&, const SkSVGIDMapper&,
                        const SkSVGLengthContext&, const SkSVGPresentationContext&,
                        const SkSVGNode*);
     SkSVGRenderContext(const SkSVGRenderContext&);
@@ -114,10 +112,12 @@ public:
 
     // Note: the id->node association is cleared for the lifetime of the returned value
     // (effectively breaks reference cycles, assuming appropriate return value scoping).
-    BorrowedNode findNodeById(const SkString&) const;
+    BorrowedNode findNodeById(const SkSVGIRI&) const;
 
-    const SkPaint* fillPaint() const;
-    const SkPaint* strokePaint() const;
+    SkTLazy<SkPaint> fillPaint() const;
+    SkTLazy<SkPaint> strokePaint() const;
+
+    SkSVGColorType resolveSvgColor(const SkSVGColor&) const;
 
     // The local computed clip path (not inherited).
     const SkPath* clipPath() const { return fClipPath.getMaybeNull(); }
@@ -125,9 +125,17 @@ public:
     // The node being rendered (may be null).
     const SkSVGNode* node() const { return fNode; }
 
+    const sk_sp<skresources::ResourceProvider>& resourceProvider() const {
+        return fResourceProvider;
+    }
+
     sk_sp<SkFontMgr> fontMgr() const {
         return fFontMgr ? fFontMgr : SkFontMgr::RefDefault();
     }
+
+    SkRect resolveOBBRect(const SkSVGLength& x, const SkSVGLength& y,
+                          const SkSVGLength& w, const SkSVGLength& h,
+                          SkSVGObjectBoundingBoxUnits) const;
 
 private:
     // Stack-only
@@ -135,12 +143,15 @@ private:
     void* operator new(size_t, void*)                        = delete;
     SkSVGRenderContext& operator=(const SkSVGRenderContext&) = delete;
 
-    void applyOpacity(SkScalar opacity, uint32_t flags);
-    void applyFilter(const SkSVGFilterType&);
-    void applyClip(const SkSVGClip&);
-    void updatePaintsWithCurrentColor(const SkSVGPresentationAttributes&);
+    void applyOpacity(SkScalar opacity, uint32_t flags, bool hasFilter);
+    void applyFilter(const SkSVGFuncIRI&);
+    void applyClip(const SkSVGFuncIRI&);
+    void applyMask(const SkSVGFuncIRI&);
+
+    SkTLazy<SkPaint> commonPaint(const SkSVGPaint&, float opacity) const;
 
     const sk_sp<SkFontMgr>&                       fFontMgr;
+    const sk_sp<skresources::ResourceProvider>&   fResourceProvider;
     const SkSVGIDMapper&                          fIDMapper;
     SkTCopyOnFirstWrite<SkSVGLengthContext>       fLengthContext;
     SkTCopyOnFirstWrite<SkSVGPresentationContext> fPresentationContext;
@@ -151,6 +162,9 @@ private:
 
     // clipPath, if present for the current context (not inherited).
     SkTLazy<SkPath>                               fClipPath;
+
+    // Deferred opacity optimization for leaf nodes.
+    float                                         fDeferredPaintOpacity = 1;
 
     const SkSVGNode* fNode;
 };

@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/scoped_observer.h"
+#include "base/test/bind.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -195,10 +196,12 @@ HoldingSpaceItem* HoldingSpaceBrowserTestBase::AddItem(
   auto item = HoldingSpaceItem::CreateFileBackedItem(
       type, file_path,
       holding_space_util::ResolveFileSystemUrl(profile, file_path),
-      /*image=*/
-      std::make_unique<HoldingSpaceImage>(
-          /*placeholder=*/gfx::ImageSkia(),
-          /*async_bitmap_resolver=*/base::DoNothing()));
+      base::BindLambdaForTesting(
+          [&](HoldingSpaceItem::Type type, const base::FilePath& path) {
+            return std::make_unique<HoldingSpaceImage>(
+                HoldingSpaceImage::GetMaxSizeForType(type), path,
+                /*async_bitmap_resolver=*/base::DoNothing());
+          }));
 
   auto* item_ptr = item.get();
 
@@ -216,6 +219,11 @@ void HoldingSpaceBrowserTestBase::RemoveItem(const HoldingSpaceItem* item) {
   HoldingSpaceController::Get()->model()->RemoveItem(item->id());
 }
 
+base::FilePath HoldingSpaceBrowserTestBase::CreateFile(
+    const base::Optional<std::string>& extension) {
+  return ::ash::CreateFile(GetProfile(), extension.value_or("txt"));
+}
+
 std::vector<views::View*> HoldingSpaceBrowserTestBase::GetDownloadChips() {
   return test_api_->GetDownloadChips();
 }
@@ -228,8 +236,24 @@ std::vector<views::View*> HoldingSpaceBrowserTestBase::GetScreenCaptureViews() {
   return test_api_->GetScreenCaptureViews();
 }
 
-views::View* HoldingSpaceBrowserTestBase::GetTrayIcon() {
-  return test_api_->GetTrayIcon();
+views::View* HoldingSpaceBrowserTestBase::GetTray() {
+  return test_api_->GetTray();
+}
+
+views::View* HoldingSpaceBrowserTestBase::GetTrayDropTargetOverlay() {
+  return test_api_->GetTrayDropTargetOverlay();
+}
+
+views::View* HoldingSpaceBrowserTestBase::GetDefaultTrayIcon() {
+  return test_api_->GetDefaultTrayIcon();
+}
+
+views::View* HoldingSpaceBrowserTestBase::GetPreviewsTrayIcon() {
+  return test_api_->GetPreviewsTrayIcon();
+}
+
+bool HoldingSpaceBrowserTestBase::RecentFilesBubbleShown() const {
+  return test_api_->RecentFilesBubbleShown();
 }
 
 void HoldingSpaceBrowserTestBase::RequestAndAwaitLockScreen() {

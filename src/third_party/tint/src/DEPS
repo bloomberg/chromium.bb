@@ -1,27 +1,19 @@
 use_relative_paths = True
 
 gclient_gn_args_file = 'build/config/gclient_args.gni'
-gclient_gn_args = [
-  'mac_xcode_version',
-]
 
 vars = {
-  # This can be overridden, e.g. with custom_vars, to download a nonstandard
-  # Xcode version in build/mac_toolchain.py
-  # instead of downloading the prebuilt pinned revision.
-  'mac_xcode_version': 'default',
-
   'chromium_git':  'https://chromium.googlesource.com',
   'github': '/external/github.com',
 
-  'build_revision': 'b1d8cdddd35b2ccf16a4945748b1661b19201785',
-  'buildtools_revision': 'ff93f3ea1a7f033d3caf8f60ec1937cc71351419',
-  'clang_revision': 'fcef86e30a0ab061b982b5c9d91bb060df8f5269',
+  'build_revision': 'c6c4a4c3ae890f2c020a087c90fb8c0b8be2816a',
+  'buildtools_revision': 'e3db55b4639f2a331af6f3708ca1fbd22322aac3',
+  'clang_revision': 'eb5ab41f3801e2085208204fd71a490573d72dfd',
   'cpplint_revision': '305ac8725a166ed42e3f5dd3f80d6de2cf840ef1',
-  'googletest_revision': '3c95bf552405fd0cc63cea0ca2f6c4cd89c8d356',
-  'gpuweb_cts_revision': '2a53a9bd3d45444e1d101ca535367ba6fa15150a',
-  'spirv_headers_revision': 'c43a43c7cc3af55910b9bec2a71e3e8a622443cf',
-  'spirv_tools_revision': '7e1825a59619f3decd9b46f25d457b1a8878ca89',
+  'googletest_revision': 'f3ef7e173fd0853069f16c4b5afc7e80a350604b',
+  'gpuweb_cts_revision': 'd836e71f29a606a428c6dca9a205fd61fa7a4ed8',
+  'spirv_headers_revision': '75b30a659c8a4979104986652c54cc421fc51129',
+  'spirv_tools_revision': 'cfa1dadb1e62312655531de3cb97cecb0b21a737',
   'testing_revision': '2691851e49de541c3fe42fa8692ddcdee938162f',
 }
 
@@ -109,6 +101,13 @@ hooks = [
     'condition': 'checkout_linux and (checkout_x64)',
     'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x64'],
+  },
+  {
+    # Update the Mac toolchain if necessary.
+    'name': 'mac_toolchain',
+    'pattern': '.',
+    'condition': 'checkout_mac',
+    'action': ['python', 'build/mac_toolchain.py'],
   },
   {
     # Update the Windows toolchain if necessary. Must run before 'clang' below.

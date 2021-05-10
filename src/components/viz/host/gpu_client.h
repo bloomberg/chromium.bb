@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 #define COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/viz_host_export.h"
@@ -50,17 +53,19 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
       override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
-
+  void CopyGpuMemoryBuffer(gfx::GpuMemoryBufferHandle buffer_handle,
+                           base::UnsafeSharedMemoryRegion shared_memory,
+                           CopyGpuMemoryBufferCallback callback) override;
   // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
       mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateJpegDecodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           jda_receiver) override;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
           vea_provider_receiver) override;

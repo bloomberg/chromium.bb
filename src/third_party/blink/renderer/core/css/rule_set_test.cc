@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -58,7 +59,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements) {
   RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("-webkit-details-marker");
   const HeapVector<Member<const RuleData>>* rules =
-      rule_set.ShadowPseudoElementRules(str);
+      rule_set.UAShadowPseudoElementRules(str);
   ASSERT_EQ(1u, rules->size());
   ASSERT_EQ(str, rules->at(0)->Selector().Value());
 }
@@ -131,18 +132,6 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId) {
   ASSERT_EQ(1u, rules->size());
   AtomicString tag_str("div");
   ASSERT_EQ(tag_str, rules->at(0)->Selector().TagQName().LocalName());
-}
-
-TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent) {
-  css_test_helpers::TestStyleSheet sheet;
-
-  sheet.AddCSSRules("div::content { }");
-  RuleSet& rule_set = sheet.GetRuleSet();
-  AtomicString str("div");
-  const HeapVector<Member<const RuleData>>* rules = rule_set.TagRules(str);
-  ASSERT_EQ(1u, rules->size());
-  AtomicString value_str("content");
-  ASSERT_EQ(value_str, rules->at(0)->Selector().TagHistory()->Value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Host) {
@@ -256,7 +245,8 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
   sheet.AddCSSRules("::placeholder { }");
   sheet.AddCSSRules("input::placeholder { }");
   RuleSet& rule_set = sheet.GetRuleSet();
-  auto* rules = rule_set.ShadowPseudoElementRules("-webkit-input-placeholder");
+  auto* rules =
+      rule_set.UAShadowPseudoElementRules("-webkit-input-placeholder");
   ASSERT_EQ(2u, rules->size());
 }
 
@@ -300,22 +290,28 @@ TEST(RuleSetTest, RuleDataSelectorIndexLimit) {
   StyleRule* rule = CreateDummyStyleRule();
   AddRuleFlags flags = kRuleHasNoSpecialState;
   const unsigned position = 0;
-  EXPECT_TRUE(RuleData::MaybeCreate(rule, 0, position, flags));
+  EXPECT_TRUE(RuleData::MaybeCreate(rule, 0, position, flags,
+                                    nullptr /* container_query */));
   EXPECT_FALSE(RuleData::MaybeCreate(rule, (1 << RuleData::kSelectorIndexBits),
-                                     position, flags));
-  EXPECT_FALSE(RuleData::MaybeCreate(
-      rule, (1 << RuleData::kSelectorIndexBits) + 1, position, flags));
+                                     position, flags,
+                                     nullptr /* container_query */));
+  EXPECT_FALSE(
+      RuleData::MaybeCreate(rule, (1 << RuleData::kSelectorIndexBits) + 1,
+                            position, flags, nullptr /* container_query */));
 }
 
 TEST(RuleSetTest, RuleDataPositionLimit) {
   StyleRule* rule = CreateDummyStyleRule();
   AddRuleFlags flags = kRuleHasNoSpecialState;
   const unsigned selector_index = 0;
-  EXPECT_TRUE(RuleData::MaybeCreate(rule, selector_index, 0, flags));
+  EXPECT_TRUE(RuleData::MaybeCreate(rule, selector_index, 0, flags,
+                                    nullptr /* container_query */));
   EXPECT_FALSE(RuleData::MaybeCreate(rule, selector_index,
-                                     (1 << RuleData::kPositionBits), flags));
-  EXPECT_FALSE(RuleData::MaybeCreate(
-      rule, selector_index, (1 << RuleData::kPositionBits) + 1, flags));
+                                     (1 << RuleData::kPositionBits), flags,
+                                     nullptr /* container_query */));
+  EXPECT_FALSE(RuleData::MaybeCreate(rule, selector_index,
+                                     (1 << RuleData::kPositionBits) + 1, flags,
+                                     nullptr /* container_query */));
 }
 
 TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
@@ -326,69 +322,23 @@ TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
   StyleRule* rule = CreateDummyStyleRule();
 
   // Add with valid selector_index=0.
-  rule_set->AddRule(rule, 0, flags);
+  rule_set->AddRule(rule, 0, flags, nullptr /* container_query */);
   EXPECT_EQ(1u, rule_set->RuleCount());
 
   // Adding with invalid selector_index should not lead to a change in count.
-  rule_set->AddRule(rule, 1 << RuleData::kSelectorIndexBits, flags);
+  rule_set->AddRule(rule, 1 << RuleData::kSelectorIndexBits, flags,
+                    nullptr /* container_query */);
   EXPECT_EQ(1u, rule_set->RuleCount());
 }
 
-TEST(RuleSetTest, KeyframesRulesBasic) {
-  ScopedCSSKeyframesMemoryReductionForTest enabled_scope(true);
+TEST(RuleSetTest, UACounterStyleRules) {
+  ScopedCSSAtRuleCounterStyleForTest enabled_scope(true);
 
-  css_test_helpers::TestStyleSheet sheet;
-  sheet.AddCSSRules("@keyframes foo { from {top: 0;} to {top: 100px;} }");
-  sheet.AddCSSRules("@keyframes bar { from {top: 100px;} to {top: 0;} }");
+  RuleSet* default_rule_set = CSSDefaultStyleSheets::Instance().DefaultStyle();
+  ASSERT_TRUE(default_rule_set);
+  ASSERT_FALSE(default_rule_set->CounterStyleRules().IsEmpty());
 
-  RuleSet& rule_set = sheet.GetRuleSet();
-
-  StyleRuleKeyframes* foo = rule_set.KeyframeStylesForAnimation("foo");
-  EXPECT_TRUE(foo);
-  EXPECT_EQ("foo", foo->GetName());
-
-  StyleRuleKeyframes* bar = rule_set.KeyframeStylesForAnimation("bar");
-  EXPECT_TRUE(bar);
-  EXPECT_EQ("bar", bar->GetName());
-
-  StyleRuleKeyframes* nonexist =
-      rule_set.KeyframeStylesForAnimation("nonexist");
-  EXPECT_FALSE(nonexist);
-}
-
-TEST(RuleSetTest, KeyframesRulesOverriding) {
-  ScopedCSSKeyframesMemoryReductionForTest enabled_scope(true);
-
-  // Among multiple @keyframes rules with the same name, the last one wins.
-  css_test_helpers::TestStyleSheet sheet;
-  sheet.AddCSSRules("@keyframes foo { from1 {top: 0;} to1 {top: 100px;} }");
-  sheet.AddCSSRules("@keyframes foo { from2 {top: 100px;} to2 {top: 0;} }");
-
-  RuleSet& rule_set = sheet.GetRuleSet();
-
-  StyleRuleKeyframes* rule = rule_set.KeyframeStylesForAnimation("foo");
-  EXPECT_TRUE(rule);
-  EXPECT_EQ("foo", rule->GetName());
-
-  CSSKeyframesRule* css_rule = To<CSSKeyframesRule>(sheet.CssRules()->item(1));
-  EXPECT_EQ(rule, css_rule->Keyframes());
-}
-
-TEST(RuleSetTest, KeyframesRulesVendorPrefixed) {
-  ScopedCSSKeyframesMemoryReductionForTest enabled_scope(true);
-
-  // Non-vendor-prefixed keyframes rules win against vendor-prefixed ones.
-  css_test_helpers::TestStyleSheet sheet;
-  sheet.AddCSSRules("@keyframes foo { from1 {top: 0;} to1 {top: 100px;} }");
-  sheet.AddCSSRules(
-      "@-webkit-keyframes foo { from2 {top: 100px;} to2 {top: 0;} }");
-
-  RuleSet& rule_set = sheet.GetRuleSet();
-
-  StyleRuleKeyframes* rule = rule_set.KeyframeStylesForAnimation("foo");
-  EXPECT_TRUE(rule);
-  EXPECT_EQ("foo", rule->GetName());
-  EXPECT_FALSE(rule->IsVendorPrefixed());
+  EXPECT_EQ("decimal", default_rule_set->CounterStyleRules()[0]->GetName());
 }
 
 }  // namespace blink

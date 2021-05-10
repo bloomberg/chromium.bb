@@ -12,6 +12,7 @@
 #include <ostream>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace {
@@ -24,8 +25,7 @@ namespace {
 // the possible values of an unsigned char.  Thus it should be be declared
 // as follows:
 //   bool table[UCHAR_MAX + 1]
-inline void BuildLookupTable(const StringPiece& characters_wanted,
-                             bool* table) {
+inline void BuildLookupTable(StringPiece characters_wanted, bool* table) {
   const size_t length = characters_wanted.length();
   const char* const data = characters_wanted.data();
   for (size_t i = 0; i < length; ++i) {
@@ -41,39 +41,25 @@ template class BasicStringPiece<std::string>;
 template class BasicStringPiece<string16>;
 #endif
 
-std::ostream& operator<<(std::ostream& o, const StringPiece& piece) {
+std::ostream& operator<<(std::ostream& o, StringPiece piece) {
   o.write(piece.data(), static_cast<std::streamsize>(piece.size()));
   return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const StringPiece16& piece) {
+std::ostream& operator<<(std::ostream& o, StringPiece16 piece) {
   return o << UTF16ToUTF8(piece);
 }
 
+#if !defined(WCHAR_T_IS_UTF16)
+std::ostream& operator<<(std::ostream& o, WStringPiece piece) {
+  return o << WideToUTF8(piece);
+}
+#endif
+
 namespace internal {
 
-template<typename STR>
-size_t copyT(const BasicStringPiece<STR>& self,
-             typename STR::value_type* buf,
-             size_t n,
-             size_t pos) {
-  size_t ret = std::min(self.size() - pos, n);
-  memcpy(buf, self.data() + pos, ret * sizeof(typename STR::value_type));
-  return ret;
-}
-
-size_t copy(const StringPiece& self, char* buf, size_t n, size_t pos) {
-  return copyT(self, buf, n, pos);
-}
-
-size_t copy(const StringPiece16& self, char16* buf, size_t n, size_t pos) {
-  return copyT(self, buf, n, pos);
-}
-
-template<typename STR>
-size_t findT(const BasicStringPiece<STR>& self,
-             const BasicStringPiece<STR>& s,
-             size_t pos) {
+template <typename STR>
+size_t findT(BasicStringPiece<STR> self, BasicStringPiece<STR> s, size_t pos) {
   if (pos > self.size())
     return BasicStringPiece<STR>::npos;
 
@@ -84,39 +70,16 @@ size_t findT(const BasicStringPiece<STR>& self,
   return xpos + s.size() <= self.size() ? xpos : BasicStringPiece<STR>::npos;
 }
 
-size_t find(const StringPiece& self, const StringPiece& s, size_t pos) {
+size_t find(StringPiece self, StringPiece s, size_t pos) {
   return findT(self, s, pos);
 }
 
-size_t find(const StringPiece16& self, const StringPiece16& s, size_t pos) {
+size_t find(StringPiece16 self, StringPiece16 s, size_t pos) {
   return findT(self, s, pos);
 }
 
-template<typename STR>
-size_t findT(const BasicStringPiece<STR>& self,
-             typename STR::value_type c,
-             size_t pos) {
-  if (pos >= self.size())
-    return BasicStringPiece<STR>::npos;
-
-  typename BasicStringPiece<STR>::const_iterator result =
-      std::find(self.begin() + pos, self.end(), c);
-  return result != self.end() ?
-      static_cast<size_t>(result - self.begin()) : BasicStringPiece<STR>::npos;
-}
-
-size_t find(const StringPiece& self, char c, size_t pos) {
-  return findT(self, c, pos);
-}
-
-size_t find(const StringPiece16& self, char16 c, size_t pos) {
-  return findT(self, c, pos);
-}
-
-template<typename STR>
-size_t rfindT(const BasicStringPiece<STR>& self,
-              const BasicStringPiece<STR>& s,
-              size_t pos) {
+template <typename STR>
+size_t rfindT(BasicStringPiece<STR> self, BasicStringPiece<STR> s, size_t pos) {
   if (self.size() < s.size())
     return BasicStringPiece<STR>::npos;
 
@@ -131,49 +94,22 @@ size_t rfindT(const BasicStringPiece<STR>& self,
       static_cast<size_t>(result - self.begin()) : BasicStringPiece<STR>::npos;
 }
 
-size_t rfind(const StringPiece& self, const StringPiece& s, size_t pos) {
+size_t rfind(StringPiece self, StringPiece s, size_t pos) {
   return rfindT(self, s, pos);
 }
 
-size_t rfind(const StringPiece16& self, const StringPiece16& s, size_t pos) {
+size_t rfind(StringPiece16 self, StringPiece16 s, size_t pos) {
   return rfindT(self, s, pos);
-}
-
-template<typename STR>
-size_t rfindT(const BasicStringPiece<STR>& self,
-              typename STR::value_type c,
-              size_t pos) {
-  if (self.size() == 0)
-    return BasicStringPiece<STR>::npos;
-
-  for (size_t i = std::min(pos, self.size() - 1); ;
-       --i) {
-    if (self.data()[i] == c)
-      return i;
-    if (i == 0)
-      break;
-  }
-  return BasicStringPiece<STR>::npos;
-}
-
-size_t rfind(const StringPiece& self, char c, size_t pos) {
-  return rfindT(self, c, pos);
-}
-
-size_t rfind(const StringPiece16& self, char16 c, size_t pos) {
-  return rfindT(self, c, pos);
 }
 
 // 8-bit version using lookup table.
-size_t find_first_of(const StringPiece& self,
-                     const StringPiece& s,
-                     size_t pos) {
+size_t find_first_of(StringPiece self, StringPiece s, size_t pos) {
   if (self.size() == 0 || s.size() == 0)
     return StringPiece::npos;
 
   // Avoid the cost of BuildLookupTable() for a single-character search.
   if (s.size() == 1)
-    return find(self, s.data()[0], pos);
+    return self.find(s.data()[0], pos);
 
   bool lookup[UCHAR_MAX + 1] = { false };
   BuildLookupTable(s, lookup);
@@ -185,24 +121,27 @@ size_t find_first_of(const StringPiece& self,
   return StringPiece::npos;
 }
 
-// 16-bit brute force version.
-size_t find_first_of(const StringPiece16& self,
-                     const StringPiece16& s,
-                     size_t pos) {
+// Generic brute force version.
+template <typename STR>
+size_t find_first_ofT(BasicStringPiece<STR> self,
+                      BasicStringPiece<STR> s,
+                      size_t pos) {
   // Use the faster std::find() if searching for a single character.
-  StringPiece16::const_iterator found =
+  typename BasicStringPiece<STR>::const_iterator found =
       s.size() == 1 ? std::find(self.begin() + pos, self.end(), s[0])
                     : std::find_first_of(self.begin() + pos, self.end(),
                                          s.begin(), s.end());
   if (found == self.end())
-    return StringPiece16::npos;
+    return BasicStringPiece<STR>::npos;
   return found - self.begin();
 }
 
+size_t find_first_of(StringPiece16 self, StringPiece16 s, size_t pos) {
+  return find_first_ofT(self, s, pos);
+}
+
 // 8-bit version using lookup table.
-size_t find_first_not_of(const StringPiece& self,
-                         const StringPiece& s,
-                         size_t pos) {
+size_t find_first_not_of(StringPiece self, StringPiece s, size_t pos) {
   if (self.size() == 0)
     return StringPiece::npos;
 
@@ -211,7 +150,7 @@ size_t find_first_not_of(const StringPiece& self,
 
   // Avoid the cost of BuildLookupTable() for a single-character search.
   if (s.size() == 1)
-    return find_first_not_of(self, s.data()[0], pos);
+    return self.find_first_not_of(s.data()[0], pos);
 
   bool lookup[UCHAR_MAX + 1] = { false };
   BuildLookupTable(s, lookup);
@@ -223,12 +162,13 @@ size_t find_first_not_of(const StringPiece& self,
   return StringPiece::npos;
 }
 
-// 16-bit brute-force version.
-BASE_EXPORT size_t find_first_not_of(const StringPiece16& self,
-                                     const StringPiece16& s,
-                                     size_t pos) {
+// Generic brute-force version.
+template <typename STR>
+size_t find_first_not_ofT(BasicStringPiece<STR> self,
+                          BasicStringPiece<STR> s,
+                          size_t pos) {
   if (self.size() == 0)
-    return StringPiece16::npos;
+    return BasicStringPiece<STR>::npos;
 
   for (size_t self_i = pos; self_i < self.size(); ++self_i) {
     bool found = false;
@@ -241,44 +181,21 @@ BASE_EXPORT size_t find_first_not_of(const StringPiece16& self,
     if (!found)
       return self_i;
   }
-  return StringPiece16::npos;
-}
-
-template<typename STR>
-size_t find_first_not_ofT(const BasicStringPiece<STR>& self,
-                          typename STR::value_type c,
-                          size_t pos) {
-  if (self.size() == 0)
-    return BasicStringPiece<STR>::npos;
-
-  for (; pos < self.size(); ++pos) {
-    if (self.data()[pos] != c) {
-      return pos;
-    }
-  }
   return BasicStringPiece<STR>::npos;
 }
 
-size_t find_first_not_of(const StringPiece& self,
-                         char c,
-                         size_t pos) {
-  return find_first_not_ofT(self, c, pos);
-}
-
-size_t find_first_not_of(const StringPiece16& self,
-                         char16 c,
-                         size_t pos) {
-  return find_first_not_ofT(self, c, pos);
+size_t find_first_not_of(StringPiece16 self, StringPiece16 s, size_t pos) {
+  return find_first_not_ofT(self, s, pos);
 }
 
 // 8-bit version using lookup table.
-size_t find_last_of(const StringPiece& self, const StringPiece& s, size_t pos) {
+size_t find_last_of(StringPiece self, StringPiece s, size_t pos) {
   if (self.size() == 0 || s.size() == 0)
     return StringPiece::npos;
 
   // Avoid the cost of BuildLookupTable() for a single-character search.
   if (s.size() == 1)
-    return rfind(self, s.data()[0], pos);
+    return self.rfind(s.data()[0], pos);
 
   bool lookup[UCHAR_MAX + 1] = { false };
   BuildLookupTable(s, lookup);
@@ -291,12 +208,13 @@ size_t find_last_of(const StringPiece& self, const StringPiece& s, size_t pos) {
   return StringPiece::npos;
 }
 
-// 16-bit brute-force version.
-size_t find_last_of(const StringPiece16& self,
-                    const StringPiece16& s,
-                    size_t pos) {
+// Generic brute-force version.
+template <typename STR>
+size_t find_last_ofT(BasicStringPiece<STR> self,
+                     BasicStringPiece<STR> s,
+                     size_t pos) {
   if (self.size() == 0)
-    return StringPiece16::npos;
+    return BasicStringPiece<STR>::npos;
 
   for (size_t self_i = std::min(pos, self.size() - 1); ;
        --self_i) {
@@ -307,13 +225,15 @@ size_t find_last_of(const StringPiece16& self,
     if (self_i == 0)
       break;
   }
-  return StringPiece16::npos;
+  return BasicStringPiece<STR>::npos;
+}
+
+size_t find_last_of(StringPiece16 self, StringPiece16 s, size_t pos) {
+  return find_last_ofT(self, s, pos);
 }
 
 // 8-bit version using lookup table.
-size_t find_last_not_of(const StringPiece& self,
-                        const StringPiece& s,
-                        size_t pos) {
+size_t find_last_not_of(StringPiece self, StringPiece s, size_t pos) {
   if (self.size() == 0)
     return StringPiece::npos;
 
@@ -323,7 +243,7 @@ size_t find_last_not_of(const StringPiece& self,
 
   // Avoid the cost of BuildLookupTable() for a single-character search.
   if (s.size() == 1)
-    return find_last_not_of(self, s.data()[0], pos);
+    return self.find_last_not_of(s.data()[0], pos);
 
   bool lookup[UCHAR_MAX + 1] = { false };
   BuildLookupTable(s, lookup);
@@ -336,10 +256,11 @@ size_t find_last_not_of(const StringPiece& self,
   return StringPiece::npos;
 }
 
-// 16-bit brute-force version.
-size_t find_last_not_of(const StringPiece16& self,
-                        const StringPiece16& s,
-                        size_t pos) {
+// Generic brute-force version.
+template <typename STR>
+size_t find_last_not_ofT(BasicStringPiece<STR> self,
+                         BasicStringPiece<STR> s,
+                         size_t pos) {
   if (self.size() == 0)
     return StringPiece::npos;
 
@@ -356,36 +277,38 @@ size_t find_last_not_of(const StringPiece16& self,
     if (self_i == 0)
       break;
   }
-  return StringPiece16::npos;
-}
-
-template<typename STR>
-size_t find_last_not_ofT(const BasicStringPiece<STR>& self,
-                         typename STR::value_type c,
-                         size_t pos) {
-  if (self.size() == 0)
-    return BasicStringPiece<STR>::npos;
-
-  for (size_t i = std::min(pos, self.size() - 1); ; --i) {
-    if (self.data()[i] != c)
-      return i;
-    if (i == 0)
-      break;
-  }
   return BasicStringPiece<STR>::npos;
 }
 
-size_t find_last_not_of(const StringPiece& self,
-                        char c,
-                        size_t pos) {
-  return find_last_not_ofT(self, c, pos);
+size_t find_last_not_of(StringPiece16 self, StringPiece16 s, size_t pos) {
+  return find_last_not_ofT(self, s, pos);
 }
 
-size_t find_last_not_of(const StringPiece16& self,
-                        char16 c,
-                        size_t pos) {
-  return find_last_not_ofT(self, c, pos);
+#if !defined(WCHAR_T_IS_UTF16)
+size_t find(WStringPiece self, WStringPiece s, size_t pos) {
+  return findT(self, s, pos);
 }
+
+size_t rfind(WStringPiece self, WStringPiece s, size_t pos) {
+  return rfindT(self, s, pos);
+}
+
+size_t find_first_of(WStringPiece self, WStringPiece s, size_t pos) {
+  return find_first_ofT(self, s, pos);
+}
+
+size_t find_first_not_of(WStringPiece self, WStringPiece s, size_t pos) {
+  return find_first_not_ofT(self, s, pos);
+}
+
+size_t find_last_of(WStringPiece self, WStringPiece s, size_t pos) {
+  return find_last_ofT(self, s, pos);
+}
+
+size_t find_last_not_of(WStringPiece self, WStringPiece s, size_t pos) {
+  return find_last_not_ofT(self, s, pos);
+}
+#endif
 
 }  // namespace internal
 }  // namespace base

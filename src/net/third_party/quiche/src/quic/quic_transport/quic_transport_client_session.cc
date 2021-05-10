@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h"
+#include "quic/quic_transport/quic_transport_client_session.h"
 
 #include <cstdint>
 #include <limits>
@@ -12,17 +12,17 @@
 
 #include "absl/strings/string_view.h"
 #include "url/gurl.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_crypto_client_stream.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/quic_transport/quic_transport_protocol.h"
+#include "quic/quic_transport/quic_transport_stream.h"
 
 namespace quic {
 
@@ -34,12 +34,14 @@ QuicTransportClientSession::QuicTransportClientSession(
     const GURL& url,
     QuicCryptoClientConfig* crypto_config,
     url::Origin origin,
-    ClientVisitor* visitor)
+    ClientVisitor* visitor,
+    std::unique_ptr<QuicDatagramQueue::Observer> datagram_observer)
     : QuicSession(connection,
                   owner,
                   config,
                   supported_versions,
-                  /*num_expected_unidirectional_static_streams*/ 0),
+                  /*num_expected_unidirectional_static_streams*/ 0,
+                  std::move(datagram_observer)),
       url_(url),
       origin_(origin),
       visitor_(visitor) {

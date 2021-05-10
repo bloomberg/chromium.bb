@@ -27,48 +27,48 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, UnaryExpression_Postix) {
-  auto* p = parser("a[2]");
+  auto p = parser("a[2]");
   auto e = p->unary_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  ASSERT_TRUE(e->IsArrayAccessor());
-  auto* ary = e->AsArrayAccessor();
-  ASSERT_TRUE(ary->array()->IsIdentifier());
-  auto* ident = ary->array()->AsIdentifier();
-  EXPECT_EQ(ident->name(), "a");
+  ASSERT_TRUE(e->Is<ast::ArrayAccessorExpression>());
+  auto* ary = e->As<ast::ArrayAccessorExpression>();
+  ASSERT_TRUE(ary->array()->Is<ast::IdentifierExpression>());
+  auto* ident = ary->array()->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(ary->idx_expr()->IsConstructor());
-  ASSERT_TRUE(ary->idx_expr()->AsConstructor()->IsScalarConstructor());
-  auto* init = ary->idx_expr()->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(init->literal()->IsSint());
-  ASSERT_EQ(init->literal()->AsSint()->value(), 2);
+  ASSERT_TRUE(ary->idx_expr()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(ary->idx_expr()->Is<ast::ScalarConstructorExpression>());
+  auto* init = ary->idx_expr()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::SintLiteral>());
+  ASSERT_EQ(init->literal()->As<ast::SintLiteral>()->value(), 2);
 }
 
 TEST_F(ParserImplTest, UnaryExpression_Minus) {
-  auto* p = parser("- 1");
+  auto p = parser("- 1");
   auto e = p->unary_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
-  ASSERT_TRUE(e->IsUnaryOp());
+  ASSERT_TRUE(e->Is<ast::UnaryOpExpression>());
 
-  auto* u = e->AsUnaryOp();
+  auto* u = e->As<ast::UnaryOpExpression>();
   ASSERT_EQ(u->op(), ast::UnaryOp::kNegation);
 
-  ASSERT_TRUE(u->expr()->IsConstructor());
-  ASSERT_TRUE(u->expr()->AsConstructor()->IsScalarConstructor());
+  ASSERT_TRUE(u->expr()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(u->expr()->Is<ast::ScalarConstructorExpression>());
 
-  auto* init = u->expr()->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(init->literal()->IsSint());
-  EXPECT_EQ(init->literal()->AsSint()->value(), 1);
+  auto* init = u->expr()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::SintLiteral>());
+  EXPECT_EQ(init->literal()->As<ast::SintLiteral>()->value(), 1);
 }
 
 TEST_F(ParserImplTest, UnaryExpression_Minus_InvalidRHS) {
-  auto* p = parser("-if(a) {}");
+  auto p = parser("-if(a) {}");
   auto e = p->unary_expression();
   EXPECT_FALSE(e.matched);
   EXPECT_TRUE(e.errored);
@@ -78,27 +78,27 @@ TEST_F(ParserImplTest, UnaryExpression_Minus_InvalidRHS) {
 }
 
 TEST_F(ParserImplTest, UnaryExpression_Bang) {
-  auto* p = parser("!1");
+  auto p = parser("!1");
   auto e = p->unary_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
-  ASSERT_TRUE(e->IsUnaryOp());
+  ASSERT_TRUE(e->Is<ast::UnaryOpExpression>());
 
-  auto* u = e->AsUnaryOp();
+  auto* u = e->As<ast::UnaryOpExpression>();
   ASSERT_EQ(u->op(), ast::UnaryOp::kNot);
 
-  ASSERT_TRUE(u->expr()->IsConstructor());
-  ASSERT_TRUE(u->expr()->AsConstructor()->IsScalarConstructor());
+  ASSERT_TRUE(u->expr()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(u->expr()->Is<ast::ScalarConstructorExpression>());
 
-  auto* init = u->expr()->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(init->literal()->IsSint());
-  EXPECT_EQ(init->literal()->AsSint()->value(), 1);
+  auto* init = u->expr()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::SintLiteral>());
+  EXPECT_EQ(init->literal()->As<ast::SintLiteral>()->value(), 1);
 }
 
 TEST_F(ParserImplTest, UnaryExpression_Bang_InvalidRHS) {
-  auto* p = parser("!if (a) {}");
+  auto p = parser("!if (a) {}");
   auto e = p->unary_expression();
   EXPECT_FALSE(e.matched);
   EXPECT_TRUE(e.errored);

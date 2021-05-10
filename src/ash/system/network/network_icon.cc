@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -78,6 +79,7 @@ class NetworkIconImpl {
   Badge technology_badge_ = {};
   bool show_vpn_badge_ = false;
   bool is_roaming_ = false;
+  bool is_dark_themed_ = false;
 
   // Generated icon image.
   gfx::ImageSkia image_;
@@ -299,7 +301,8 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
 NetworkIconImpl::NetworkIconImpl(const std::string& guid,
                                  IconType icon_type,
                                  NetworkType network_type)
-    : icon_type_(icon_type) {
+    : icon_type_(icon_type),
+      is_dark_themed_(AshColorProvider::Get()->IsDarkModeEnabled()) {
   // Default image is null.
 }
 
@@ -328,6 +331,11 @@ void NetworkIconImpl::Update(const NetworkStateProperties* network,
   if (new_show_vpn_badge != show_vpn_badge_) {
     VLOG(2) << "Update VPN badge: " << new_show_vpn_badge;
     show_vpn_badge_ = new_show_vpn_badge;
+    dirty = true;
+  }
+
+  if (is_dark_themed_ != AshColorProvider::Get()->IsDarkModeEnabled()) {
+    is_dark_themed_ = AshColorProvider::Get()->IsDarkModeEnabled();
     dirty = true;
   }
 
@@ -433,20 +441,23 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 // Public interface
 
 SkColor GetDefaultColorForIconType(IconType icon_type) {
+  auto* ash_color_provider = AshColorProvider::Get();
   switch (icon_type) {
     case ICON_TYPE_TRAY_OOBE:
       return kIconColorInOobe;
     case ICON_TYPE_FEATURE_POD:
-      return AshColorProvider::Get()->GetContentLayerColor(
+      return ash_color_provider->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kButtonIconColor);
     case ICON_TYPE_FEATURE_POD_TOGGLED:
-      return AshColorProvider::Get()->GetContentLayerColor(
+      return ash_color_provider->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kButtonIconColorPrimary);
     case ICON_TYPE_FEATURE_POD_DISABLED:
-      return AshColorProvider::GetDisabledColor(
-          GetDefaultColorForIconType(ICON_TYPE_FEATURE_POD));
+      return color_utils::GetResultingPaintColor(
+          AshColorProvider::GetDisabledColor(
+              GetDefaultColorForIconType(ICON_TYPE_FEATURE_POD)),
+          ash_color_provider->GetBackgroundColor());
     default:
-      return AshColorProvider::Get()->GetContentLayerColor(
+      return ash_color_provider->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary);
   }
 }
@@ -556,6 +567,9 @@ base::string16 GetLabelForNetworkList(const NetworkStateProperties* network) {
     }
     if (activation_state == ActivationStateType::kNotActivated ||
         activation_state == ActivationStateType::kPartiallyActivated) {
+      if (chromeos::features::IsCellularActivationUiEnabled())
+        return base::UTF8ToUTF16(network->name);
+
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
           base::UTF8ToUTF16(network->name));

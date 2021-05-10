@@ -474,7 +474,9 @@ class TabStripModel : public TabGroupController {
   void CreateTabGroup(const tab_groups::TabGroupId& group) override;
   void OpenTabGroupEditor(const tab_groups::TabGroupId& group) override;
   void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
-  void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) override;
+  void ChangeTabGroupVisuals(
+      const tab_groups::TabGroupId& group,
+      const TabGroupChange::VisualsChange& visuals) override;
   void MoveTabGroup(const tab_groups::TabGroupId& group) override;
   void CloseTabGroup(const tab_groups::TabGroupId& group) override;
   // The same as count(), but overridden for TabGroup to access.
@@ -592,8 +594,7 @@ class TabStripModel : public TabGroupController {
   // that TabDetachedAt() is called.
   std::unique_ptr<content::WebContents> DetachWebContentsImpl(
       int index,
-      bool create_historical_tab,
-      bool will_delete);
+      bool create_historical_tab);
 
   // We batch send notifications. This has two benefits:
   //   1) This allows us to send the minimal number of necessary notifications.
@@ -669,7 +670,8 @@ class TabStripModel : public TabGroupController {
   // UI for the WebContents. See UnloadController for details on how unload
   // handlers are processed.
   bool CloseWebContentses(base::span<content::WebContents* const> items,
-                          uint32_t close_types);
+                          uint32_t close_types,
+                          DetachNotifications* notifications);
 
   // Gets the WebContents at an index. Does no bounds checking.
   content::WebContents* GetWebContentsAtImpl(int index) const;

@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/fake_bluetooth_helper.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 
 namespace chromeos {
 
@@ -66,6 +66,12 @@ FakeBluetoothHelper::PerformIdentifyRemoteDevice(
 std::string FakeBluetoothHelper::GetBluetoothPublicAddress(
     const std::string& device_id) {
   return device_id_to_bluetooth_public_address_map_[device_id];
+}
+
+std::string FakeBluetoothHelper::ExpectedServiceDataToString(
+    const DeviceIdPairSet& device_id_pair_set) {
+  // Stub implementation.
+  return std::string();
 }
 
 }  // namespace secure_channel

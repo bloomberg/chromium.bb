@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -161,18 +162,18 @@ void SetCurrentDiceTurnSyncOnHelper(Profile* profile,
 
 // static
 void DiceTurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
-    const std::string& email,
-    const std::string& error_message,
+    const base::string16& email,
+    const base::string16& error_message,
     Browser* browser) {
   LoginUIServiceFactory::GetForProfile(browser->profile())
-      ->DisplayLoginResult(browser, base::UTF8ToUTF16(error_message),
-                           base::UTF8ToUTF16(email));
+      ->DisplayLoginResult(browser, error_message, email);
 }
 
 // static
 void DiceTurnSyncOnHelper::Delegate::
     ShowEnterpriseAccountConfirmationForBrowser(
         const std::string& email,
+        bool prompt_for_new_profile,
         DiceTurnSyncOnHelper::SigninChoiceCallback callback,
         Browser* browser) {
   DCHECK(callback);
@@ -187,7 +188,7 @@ void DiceTurnSyncOnHelper::Delegate::
       base::UserMetricsAction("Signin_Show_EnterpriseAccountPrompt"));
   TabDialogs::FromWebContents(web_contents)
       ->ShowProfileSigninConfirmation(
-          browser, browser->profile(), email,
+          browser, email, prompt_for_new_profile,
           std::make_unique<SigninDialogDelegate>(std::move(callback)));
 }
 
@@ -212,12 +213,13 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       shutdown_subscription_(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
-              ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                     base::Unretained(this)))) {
+              ->Subscribe(base::AdaptCallbackForRepeating(
+                  base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                 base::Unretained(this))))) {
   DCHECK(delegate_);
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
-  DCHECK(!identity_manager_->HasPrimaryAccount());
+  DCHECK(!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
 
   // Cancel any existing helper.
   AttachToProfile();
@@ -280,15 +282,14 @@ DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {
 }
 
 bool DiceTurnSyncOnHelper::HasCanOfferSigninError() {
-  std::string error_msg;
-  bool can_offer =
+  SigninUIError can_offer_error =
       CanOfferSignin(profile_, CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS,
-                     account_info_.gaia, account_info_.email, &error_msg);
-  if (can_offer)
+                     account_info_.gaia, account_info_.email);
+  if (can_offer_error.IsOk())
     return false;
 
   // Display the error message
-  delegate_->ShowLoginError(account_info_.email, error_msg);
+  delegate_->ShowLoginError(can_offer_error);
   return true;
 }
 
@@ -442,6 +443,7 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_info_.account_id,
           /*local_profile_name=*/base::string16(), /*icon_index=*/base::nullopt,
+          /*use_guest=*/false,
           base::BindOnce(&DiceTurnSyncOnHelper::OnNewSignedInProfileCreated,
                          base::Unretained(this)));
 }
@@ -552,7 +554,17 @@ void DiceTurnSyncOnHelper::ShowSyncConfirmationUI() {
         base::BindOnce(&DiceTurnSyncOnHelper::FinishSyncSetupAndDelete,
                        weak_pointer_factory_.GetWeakPtr()));
   } else {
+    // The sync disabled dialog has an explicit "sign-out" label for the
+    // LoginUIService::ABORT_SYNC action, force the mode to remove the account.
+    signin_aborted_mode_ = SigninAbortedMode::REMOVE_ACCOUNT;
+    // Use the email-based heuristic if `account_info_` isn't fully initialized.
+    const bool is_managed_account =
+        account_info_.IsValid()
+            ? account_info_.IsManaged()
+            : !policy::BrowserPolicyConnector::IsNonEnterpriseUser(
+                  account_info_.email);
     delegate_->ShowSyncDisabledConfirmation(
+        is_managed_account,
         base::BindOnce(&DiceTurnSyncOnHelper::FinishSyncSetupAndDelete,
                        weak_pointer_factory_.GetWeakPtr()));
   }
@@ -578,16 +590,21 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;
     }
-    case LoginUIService::ABORT_SIGNIN:
+    case LoginUIService::ABORT_SYNC: {
       auto* primary_account_mutator =
           identity_manager_->GetPrimaryAccountMutator();
       DCHECK(primary_account_mutator);
-      primary_account_mutator->ClearPrimaryAccount(
-          signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+      primary_account_mutator->RevokeSyncConsent(
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       AbortAndDelete();
       return;
+    }
+    // No explicit action when the ui gets closed. If the embedder wants the
+    // helper to abort sync in this case, it must redirect this action to
+    // ABORT_SYNC.
+    case LoginUIService::UI_CLOSED:
+      break;
   }
   delete this;
 }
@@ -606,8 +623,8 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   shutdown_subscription_ =
       DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
           ->Get(profile_)
-          ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                 base::Unretained(this)));
+          ->Subscribe(base::AdaptCallbackForRepeating(base::BindOnce(
+              &DiceTurnSyncOnHelper::AbortAndDelete, base::Unretained(this))));
   delegate_->SwitchToProfile(new_profile);
   // Since this is a fresh profile, it's better to remove the token if the user
   // aborts the signin.

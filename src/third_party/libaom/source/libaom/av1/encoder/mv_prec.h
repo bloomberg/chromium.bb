@@ -32,7 +32,7 @@ static AOM_INLINE int av1_frame_allows_smart_mv(const AV1_COMP *cpi) {
 static AOM_INLINE void av1_set_high_precision_mv(
     AV1_COMP *cpi, int allow_high_precision_mv,
     int cur_frame_force_integer_mv) {
-  MvCosts *const mv_costs = &cpi->td.mb.mv_costs;
+  MvCosts *const mv_costs = cpi->td.mb.mv_costs;
   const int copy_hp = cpi->common.features.allow_high_precision_mv =
       allow_high_precision_mv && !cur_frame_force_integer_mv;
 

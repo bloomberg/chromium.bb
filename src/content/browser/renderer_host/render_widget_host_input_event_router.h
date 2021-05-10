@@ -195,10 +195,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);
 
-  using FrameSinkIdOwnerMap = std::unordered_map<viz::FrameSinkId,
-                                                 RenderWidgetHostViewBase*,
-                                                 viz::FrameSinkIdHash>;
-  using TargetMap = std::map<uint32_t, RenderWidgetHostViewBase*>;
+  using FrameSinkIdOwnerMap =
+      std::unordered_map<viz::FrameSinkId,
+                         base::WeakPtr<RenderWidgetHostViewBase>,
+                         viz::FrameSinkIdHash>;
+  using TargetMap = std::map<uint32_t, base::WeakPtr<RenderWidgetHostViewBase>>;
 
   void ClearAllObserverRegistrations();
   RenderWidgetTargetResult FindViewAtLocation(
@@ -331,6 +332,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
 
   void SetTouchscreenGestureTarget(RenderWidgetHostViewBase* target,
                                    bool moved_recently = false);
+
+  // TODO(crbug.com/1155297): Remove when bug investigation is complete.
+  void LogTouchscreenGestureTargetCrashKeys(const std::string& log_message);
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;

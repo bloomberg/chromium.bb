@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -213,7 +213,8 @@ void TurnSyncOnHelper::FinishSyncSetup(
           account_id);
       break;
     }
-    case LoginUIService::ABORT_SIGNIN:
+    case LoginUIService::ABORT_SYNC:
+    case LoginUIService::UI_CLOSED:
       // Chrome OS users stay signed in even if sync setup is cancelled.
       break;
   }

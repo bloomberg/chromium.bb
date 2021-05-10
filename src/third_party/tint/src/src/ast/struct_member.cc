@@ -15,23 +15,20 @@
 #include "src/ast/struct_member.h"
 
 #include "src/ast/struct_member_offset_decoration.h"
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StructMember);
 
 namespace tint {
 namespace ast {
 
-StructMember::StructMember() = default;
-
-StructMember::StructMember(const std::string& name,
-                           type::Type* type,
-                           StructMemberDecorationList decorations)
-    : Node(), name_(name), type_(type), decorations_(std::move(decorations)) {}
-
 StructMember::StructMember(const Source& source,
-                           const std::string& name,
+                           const Symbol& sym,
                            type::Type* type,
                            StructMemberDecorationList decorations)
-    : Node(source),
-      name_(name),
+    : Base(source),
+      symbol_(sym),
       type_(type),
       decorations_(std::move(decorations)) {}
 
@@ -40,8 +37,8 @@ StructMember::StructMember(StructMember&&) = default;
 StructMember::~StructMember() = default;
 
 bool StructMember::has_offset_decoration() const {
-  for (const auto& deco : decorations_) {
-    if (deco->IsOffset()) {
+  for (auto* deco : decorations_) {
+    if (deco->Is<StructMemberOffsetDecoration>()) {
       return true;
     }
   }
@@ -49,19 +46,28 @@ bool StructMember::has_offset_decoration() const {
 }
 
 uint32_t StructMember::offset() const {
-  for (const auto& deco : decorations_) {
-    if (deco->IsOffset()) {
-      return deco->AsOffset()->offset();
+  for (auto* deco : decorations_) {
+    if (auto* offset = deco->As<StructMemberOffsetDecoration>()) {
+      return offset->offset();
     }
   }
   return 0;
 }
 
+StructMember* StructMember::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto sym = ctx->Clone(symbol_);
+  auto* ty = ctx->Clone(type_);
+  auto decos = ctx->Clone(decorations_);
+  return ctx->dst->create<StructMember>(src, sym, ty, decos);
+}
+
 bool StructMember::IsValid() const {
-  if (name_.empty() || type_ == nullptr) {
+  if (type_ == nullptr || !symbol_.IsValid()) {
     return false;
   }
-  for (const auto& deco : decorations_) {
+  for (auto* deco : decorations_) {
     if (deco == nullptr) {
       return false;
     }
@@ -69,17 +75,19 @@ bool StructMember::IsValid() const {
   return true;
 }
 
-void StructMember::to_str(std::ostream& out, size_t indent) const {
+void StructMember::to_str(const semantic::Info& sem,
+                          std::ostream& out,
+                          size_t indent) const {
   make_indent(out, indent);
   out << "StructMember{";
   if (decorations_.size() > 0) {
     out << "[[ ";
-    for (const auto& deco : decorations_)
-      out << deco->to_str() << " ";
+    for (auto* deco : decorations_)
+      out << deco->str(sem) << " ";
     out << "]] ";
   }
 
-  out << name_ << ": " << type_->type_name() << "}" << std::endl;
+  out << symbol_.to_str() << ": " << type_->type_name() << "}" << std::endl;
 }
 
 }  // namespace ast

@@ -14,7 +14,7 @@ namespace content {
 class WebContents;
 }
 
-namespace banners {
+namespace webapps {
 
 // Provides the ability to await the results of the installability check that
 // happens for every page load.
@@ -61,6 +61,8 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   void OnInstall(blink::mojom::DisplayMode display) override;
   void DidFinishCreatingWebApp(const web_app::AppId& app_id,
                                web_app::InstallResultCode code) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
   void UpdateState(AppBannerManager::State state) override;
 
  private:
@@ -76,6 +78,6 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   DISALLOW_COPY_AND_ASSIGN(TestAppBannerManagerDesktop);
 };
 
-}  // namespace banners
+}  // namespace webapps
 
 #endif  // CHROME_BROWSER_BANNERS_TEST_APP_BANNER_MANAGER_DESKTOP_H_

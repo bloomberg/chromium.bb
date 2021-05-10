@@ -4,23 +4,25 @@
  * found in the LICENSE file.
  */
 
-.blackboxed-message {
+.ignore-listed-message {
   text-align: center;
   font-style: italic;
   padding: 4px;
-  color: #888;
-  background-color: #ffffc2;
+  color: #888; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: #ffffc2; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .show-more-message > .link {
   margin-left: 5px;
 }
 
-.blackboxed-message > .link {
+.ignore-listed-message > .link {
   margin-left: 5px;
 }
 
-.blackboxed-message > .link:focus {
+.ignore-listed-message > .link:focus {
   outline-width: unset;
 }
 
@@ -28,7 +30,8 @@
   text-align: center;
   font-style: italic;
   padding: 4px;
-  border-top: 1px solid #d8d8d8;
+  border-top: 1px solid #d8d8d8; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .call-frame-item {
@@ -50,7 +53,8 @@
 }
 
 .call-frame-item:not(.async-header) {
-  border-top: 1px solid #efefef;
+  border-top: 1px solid #efefef; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .call-frame-item-title,
@@ -61,8 +65,9 @@
 
 .async-header .call-frame-item-title {
   font-weight: bold;
-  color: #999;
-  background-color: white;
+  color: #999; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   margin-left: -5px;
   padding: 0 5px;
   z-index: 1;
@@ -74,11 +79,13 @@
 }
 
 .call-frame-item:not(.async-header):hover {
-  background-color: #eee;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .call-frame-location {
-  color: #888;
+  color: #888; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   margin-left: auto;
   padding: 0 10px 0 10px;
 }
@@ -86,13 +93,14 @@
 .async-header::before {
   content: " ";
   width: 100%;
-  border-top: 1px solid #d8d8d8;
+  border-top: 1px solid #d8d8d8; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   margin-top: 8px;
   position: absolute;
   left: 0;
 }
 
-.blackboxed-call-frame {
+.ignore-listed-call-frame {
   opacity: 60%;
   font-style: italic;
 }
@@ -108,12 +116,12 @@
   display: block;
 }
 
-:host-context(.-theme-with-dark-background) .blackboxed-message {
+:host-context(.-theme-with-dark-background) .ignore-listed-message {
   background-color: hsl(46deg 98% 22%);
   color: #aaa;
 }
 
-:host-context(.-theme-with-dark-background) .blackboxed-message > .link {
+:host-context(.-theme-with-dark-background) .ignore-listed-message > .link {
   color: hsl(0deg 0% 67%);
 }
 

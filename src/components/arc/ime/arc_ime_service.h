@@ -114,7 +114,8 @@ class ArcImeService : public KeyedService,
   void SetCompositionText(const ui::CompositionText& composition) override;
   uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
-  void InsertText(const base::string16& text) override;
+  void InsertText(const base::string16& text,
+                  InsertTextCursorBehavior cursor_behavior) override;
   void InsertChar(const ui::KeyEvent& event) override;
   ui::TextInputType GetTextInputType() const override;
   gfx::Rect GetCaretBounds() const override;
@@ -152,10 +153,8 @@ class ArcImeService : public KeyedService,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           const gfx::Range& range) override;
+  bool SetAutocorrectRange(const gfx::Range& range) override;
   void OnDispatchingKeyEventPostIME(ui::KeyEvent* event) override;
-  void ClearAutocorrectRange() override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.
@@ -187,6 +186,9 @@ class ArcImeService : public KeyedService,
   // Returns true if this TextInputClient is active and incoming input state
   // from Android is valid.
   bool ShouldSendUpdateToInputMethod() const;
+
+  double GetDeviceScaleFactorForKeyboard() const;
+  double GetDeviceScaleFactorForFocusedWindow() const;
 
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;

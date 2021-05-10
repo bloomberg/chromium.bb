@@ -9,15 +9,15 @@
 #include <memory>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/proof_verifier.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/quic_config.h"
+#include "quic/core/quic_crypto_handshaker.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -179,6 +179,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Called when handshake done has been received.
     virtual void OnHandshakeDoneReceived() = 0;
 
+    // Called when new token has been received.
+    virtual void OnNewTokenReceived(absl::string_view token) = 0;
+
     // Called when application state is received.
     virtual void SetServerApplicationStateForResumption(
         std::unique_ptr<ApplicationState> application_state) = 0;
@@ -236,6 +239,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   void OnConnectionClosed(QuicErrorCode error,
                           ConnectionCloseSource source) override;
   void OnHandshakeDoneReceived() override;
+  void OnNewTokenReceived(absl::string_view token) override;
+  std::string GetAddressToken() const override;
+  bool ValidateAddressToken(absl::string_view token) const override;
   HandshakeState GetHandshakeState() const override;
   void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> application_state) override;

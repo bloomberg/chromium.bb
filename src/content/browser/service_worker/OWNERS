@@ -23,10 +23,8 @@ kinuko@chromium.org
 mek@chromium.org
 nhiroki@chromium.org
 shimazu@chromium.org
+wanderview@chromium.org
 
 # per-file rules:
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
-
-# TEAM: worker-dev@chromium.org
-# COMPONENT: Blink>ServiceWorker

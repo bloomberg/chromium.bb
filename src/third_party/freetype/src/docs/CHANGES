@@ -2,10 +2,77 @@ CHANGES BETWEEN 2.10.4 and 2.11.0
 
   I. IMPORTANT CHANGES
 
+  - The legacy Type 1 and CFF  engines are further demoted due to lack
+    of CFF2 charstring support.  You now need to use `FT_Property_Set`
+    to  enable   it  besides  the   `T1_CONFIG_OPTION_OLD_ENGINE`  and
+    `CFF_CONFIG_OPTION_OLD_ENGINE` options.
+
+  - A  new rendering  module has  been added  to create  16-bit Signed
+    Distance Field (SDF)  bitmaps for both outline  and bitmap glyphs.
+    The new  rendering mode is called  `FT_RENDER_MODE_SDF`, the pixel
+    mode is `FT_PIXEL_MODE_GRAY16`, and  the corresponding raster flag
+    is `FT_RASTER_FLAG_SDF`.
+
+    This work was Anuj Verma's GSoC 2020 project.
+
+  - A new, experimental API is  now available for surfacing properties
+    of 'COLR' v1  color fonts (as the name says,  this is an extension
+    to  the  'COLR' table  for  outline  color  fonts using  the  SFNT
+    container  format).   'COLR'  v1  fonts are  a  recently  proposed
+    addition to OFF and OpenType; specification work currently happens
+    in
+
+      https://github.com/googlefonts/colr-gradients-spec/
+
+    'COLR'  v1  is  expected  to   be  merged  to  OpenType;  the  ISO
+    standardisation process  for adding 'COLR'  v1 as an  amendment to
+    OFF is underway.
+
+    Functions similar  to the  already existing  'COLR' API  have been
+    added to access the corresponding data.
+
+      FT_Get_Color_Glyph_Paint
+        Retrieve the root paint for a given glyph ID.
+
+      FT_Get_Paint_Layers
+        Access the layers of a `PaintColrLayers` table.
+
+      FT_Get_Colorline_Stops
+        Retrieve the  'color stops' on a  color line.  As an  input, a
+        color stop iterator gets used, which in turn is retrieved from
+        a paint.
+
+      FT_Get_Paint
+        Dereference  an  `FT_OpaquePaint`   object  and  retrieve  the
+        corresponding `FT_COLR_Paint`  object, which  contains details
+        on how to draw the respective 'COLR' v1 `Paint` table.
+
 
   II. MISCELLANEOUS
 
-  - `ttdebug' didn't show changed point coordinates (bug introduced in
+  - FreeType has moved its infrastructure to
+
+      https://gitlab.freedesktop.org/freetype
+
+    A  side  effect  is  that  the git  repositories  are  now  called
+    `freetype.git` and  `freetype-demos.git`, which by  default expand
+    to the directories  `freetype` and `freetype-demos`, respectively.
+    The documentation has been updated accordingly.
+
+    FreeType's Savannah  repositories will stay; they  are now mirrors
+    of the 'freedesktop.org' repositories.
+
+  - A  new  function  `FT_Get_Transform`  returns  the  values set  by
+    `FT_Set_Transform`.
+
+  - A  new configuration  macro `FT_DEBUG_LOGGING`  is available.   It
+    provides extended debugging capabilities for FreeType, for example
+    showing a time stamp or displaying the component a tracing message
+    comes from.  See file `docs/DEBUG` for more information.
+
+    This work was Priyesh Kumar's GSoC 2020 project.
+
+  - `ttdebug` didn't show changed point coordinates (bug introduced in
     version 2.10.3).
 
 
@@ -5312,7 +5379,7 @@ Extensions support:
 
 ------------------------------------------------------------------------
 
-Copyright (C) 2000-2020 by
+Copyright (C) 2000-2021 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This  file  is  part  of the  FreeType  project, and may  only be  used,

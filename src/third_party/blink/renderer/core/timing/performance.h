@@ -97,8 +97,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual PerformanceTiming* timing() const;
   virtual PerformanceNavigation* navigation() const;
   virtual MemoryInfo* memory() const;
-  virtual ScriptPromise measureMemory(ScriptState*,
-                                      ExceptionState& exception_state) const;
+  virtual ScriptPromise measureUserAgentSpecificMemory(
+      ScriptState*,
+      ExceptionState& exception_state) const;
   virtual EventCounts* eventCounts();
 
   // Reduce the resolution to prevent timing attacks. See:
@@ -159,9 +160,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                          base::TimeTicks end_time,
                          const AtomicString& name,
                          const AtomicString& container_type,
-                         const String& container_src,
-                         const String& container_id,
-                         const String& container_name);
+                         const AtomicString& container_src,
+                         const AtomicString& container_id,
+                         const AtomicString& container_name);
 
   // Generates and add a performance entry for the given ResourceTimingInfo.
   // |overridden_initiator_type| allows the initiator type to be overridden to
@@ -388,8 +389,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   HeapLinkedHashSet<Member<PerformanceObserver>> active_observers_;
   HeapLinkedHashSet<Member<PerformanceObserver>> suspended_observers_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  TaskRunnerTimer<Performance> deliver_observations_timer_;
-  TaskRunnerTimer<Performance> resource_timing_buffer_full_timer_;
+  HeapTaskRunnerTimer<Performance> deliver_observations_timer_;
+  HeapTaskRunnerTimer<Performance> resource_timing_buffer_full_timer_;
 };
 
 }  // namespace blink

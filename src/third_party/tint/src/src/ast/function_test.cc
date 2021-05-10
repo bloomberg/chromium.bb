@@ -14,15 +14,12 @@
 
 #include "src/ast/function.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/builtin_decoration.h"
-#include "src/ast/decorated_variable.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/location_decoration.h"
 #include "src/ast/pipeline_stage.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/void_type.h"
+#include "src/ast/stage_decoration.h"
+#include "src/ast/test_helper.h"
 #include "src/ast/variable.h"
 #include "src/ast/workgroup_decoration.h"
 
@@ -30,398 +27,272 @@ namespace tint {
 namespace ast {
 namespace {
 
-using FunctionTest = testing::Test;
+using FunctionTest = TestHelper;
 
 TEST_F(FunctionTest, Creation) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
-  auto* var_ptr = params[0].get();
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
+  auto* var = params[0];
 
-  Function f("func", std::move(params), &void_type);
-  EXPECT_EQ(f.name(), "func");
-  ASSERT_EQ(f.params().size(), 1u);
-  EXPECT_EQ(f.return_type(), &void_type);
-  EXPECT_EQ(f.params()[0].get(), var_ptr);
+  auto* f = Func("func", params, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
+  EXPECT_EQ(f->symbol(), Symbols().Get("func"));
+  ASSERT_EQ(f->params().size(), 1u);
+  EXPECT_EQ(f->return_type(), ty.void_());
+  EXPECT_EQ(f->params()[0], var);
 }
 
 TEST_F(FunctionTest, Creation_WithSource) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  Function f(Source{Source::Location{20, 2}}, "func", std::move(params),
-             &void_type);
-  auto src = f.source();
+  auto* f = Func(Source{Source::Location{20, 2}}, "func", params, ty.void_(),
+                 StatementList{}, FunctionDecorationList{});
+  auto src = f->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
-TEST_F(FunctionTest, AddDuplicateReferencedVariables) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
-  Variable v("var", StorageClass::kInput, &i32);
-  Function f("func", VariableList{}, &void_type);
-
-  f.add_referenced_module_variable(&v);
-  ASSERT_EQ(f.referenced_module_variables().size(), 1u);
-  EXPECT_EQ(f.referenced_module_variables()[0], &v);
-
-  f.add_referenced_module_variable(&v);
-  ASSERT_EQ(f.referenced_module_variables().size(), 1u);
-
-  Variable v2("var2", StorageClass::kOutput, &i32);
-  f.add_referenced_module_variable(&v2);
-  ASSERT_EQ(f.referenced_module_variables().size(), 2u);
-  EXPECT_EQ(f.referenced_module_variables()[1], &v2);
-}
-
-TEST_F(FunctionTest, GetReferenceLocations) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
-  VariableDecorationList decos;
-  DecoratedVariable loc1(
-      std::make_unique<ast::Variable>("loc1", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::LocationDecoration>(0, Source{}));
-  loc1.set_decorations(std::move(decos));
-
-  DecoratedVariable loc2(
-      std::make_unique<ast::Variable>("loc2", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::LocationDecoration>(1, Source{}));
-  loc2.set_decorations(std::move(decos));
-
-  DecoratedVariable builtin1(
-      std::make_unique<ast::Variable>("builtin1", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::BuiltinDecoration>(
-      ast::Builtin::kPosition, Source{}));
-  builtin1.set_decorations(std::move(decos));
-
-  DecoratedVariable builtin2(
-      std::make_unique<ast::Variable>("builtin2", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::BuiltinDecoration>(
-      ast::Builtin::kFragDepth, Source{}));
-  builtin2.set_decorations(std::move(decos));
-
-  Function f("func", VariableList{}, &void_type);
-
-  f.add_referenced_module_variable(&loc1);
-  f.add_referenced_module_variable(&builtin1);
-  f.add_referenced_module_variable(&loc2);
-  f.add_referenced_module_variable(&builtin2);
-  ASSERT_EQ(f.referenced_module_variables().size(), 4u);
-
-  auto ref_locs = f.referenced_location_variables();
-  ASSERT_EQ(ref_locs.size(), 2u);
-  EXPECT_EQ(ref_locs[0].first, &loc1);
-  EXPECT_EQ(ref_locs[0].second->value(), 0u);
-  EXPECT_EQ(ref_locs[1].first, &loc2);
-  EXPECT_EQ(ref_locs[1].second->value(), 1u);
-}
-
-TEST_F(FunctionTest, GetReferenceBuiltins) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
-  VariableDecorationList decos;
-  DecoratedVariable loc1(
-      std::make_unique<ast::Variable>("loc1", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::LocationDecoration>(0, Source{}));
-  loc1.set_decorations(std::move(decos));
-
-  DecoratedVariable loc2(
-      std::make_unique<ast::Variable>("loc2", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::LocationDecoration>(1, Source{}));
-  loc2.set_decorations(std::move(decos));
-
-  DecoratedVariable builtin1(
-      std::make_unique<ast::Variable>("builtin1", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::BuiltinDecoration>(
-      ast::Builtin::kPosition, Source{}));
-  builtin1.set_decorations(std::move(decos));
-
-  DecoratedVariable builtin2(
-      std::make_unique<ast::Variable>("builtin2", StorageClass::kInput, &i32));
-  decos.push_back(std::make_unique<ast::BuiltinDecoration>(
-      ast::Builtin::kFragDepth, Source{}));
-  builtin2.set_decorations(std::move(decos));
-
-  Function f("func", VariableList{}, &void_type);
-
-  f.add_referenced_module_variable(&loc1);
-  f.add_referenced_module_variable(&builtin1);
-  f.add_referenced_module_variable(&loc2);
-  f.add_referenced_module_variable(&builtin2);
-  ASSERT_EQ(f.referenced_module_variables().size(), 4u);
-
-  auto ref_locs = f.referenced_builtin_variables();
-  ASSERT_EQ(ref_locs.size(), 2u);
-  EXPECT_EQ(ref_locs[0].first, &builtin1);
-  EXPECT_EQ(ref_locs[0].second->value(), ast::Builtin::kPosition);
-  EXPECT_EQ(ref_locs[1].first, &builtin2);
-  EXPECT_EQ(ref_locs[1].second->value(), ast::Builtin::kFragDepth);
-}
-
-TEST_F(FunctionTest, AddDuplicateEntryPoints) {
-  ast::type::VoidType void_type;
-  Function f("func", VariableList{}, &void_type);
-
-  f.add_ancestor_entry_point("main");
-  ASSERT_EQ(1u, f.ancestor_entry_points().size());
-  EXPECT_EQ("main", f.ancestor_entry_points()[0]);
-
-  f.add_ancestor_entry_point("main");
-  ASSERT_EQ(1u, f.ancestor_entry_points().size());
-  EXPECT_EQ("main", f.ancestor_entry_points()[0]);
-}
-
 TEST_F(FunctionTest, IsValid) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
-
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(block));
-  EXPECT_TRUE(f.IsValid());
+  auto* f = Func("func", params, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                 },
+                 FunctionDecorationList{});
+  EXPECT_TRUE(f->IsValid());
 }
 
-TEST_F(FunctionTest, IsValid_EmptyName) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
+TEST_F(FunctionTest, IsValid_InvalidName) {
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  Function f("", std::move(params), &void_type);
-  EXPECT_FALSE(f.IsValid());
+  auto* f =
+      Func("", params, ty.void_(), StatementList{}, FunctionDecorationList{});
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, IsValid_MissingReturnType) {
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  Function f("func", std::move(params), nullptr);
-  EXPECT_FALSE(f.IsValid());
+  auto* f =
+      Func("func", params, nullptr, StatementList{}, FunctionDecorationList{});
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, IsValid_NullParam) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
   params.push_back(nullptr);
 
-  Function f("func", std::move(params), &void_type);
-  EXPECT_FALSE(f.IsValid());
+  auto* f = Func("func", params, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, IsValid_InvalidParam) {
-  type::VoidType void_type;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, nullptr));
+  params.push_back(Var("var", nullptr, StorageClass::kNone));
 
-  Function f("func", std::move(params), &void_type);
-  EXPECT_FALSE(f.IsValid());
+  auto* f = Func("func", params, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, IsValid_NullBodyStatement) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
-  block->append(nullptr);
+  auto* f = Func("func", params, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                     nullptr,
+                 },
+                 FunctionDecorationList{});
 
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(block));
-  EXPECT_FALSE(f.IsValid());
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, IsValid_InvalidBodyStatement) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
-  block->append(nullptr);
-
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(block));
-  EXPECT_FALSE(f.IsValid());
+  auto* f = Func("func", params, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                     nullptr,
+                 },
+                 FunctionDecorationList{});
+  EXPECT_FALSE(f->IsValid());
 }
 
 TEST_F(FunctionTest, ToStr) {
-  type::VoidType void_type;
-  type::I32Type i32;
+  auto* f = Func("func", VariableList{}, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                 },
+                 FunctionDecorationList{});
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
-
-  Function f("func", {}, &void_type);
-  f.set_body(std::move(block));
-
-  std::ostringstream out;
-  f.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Function func -> __void
-  ()
-  {
-    Discard{}
-  }
+  EXPECT_EQ(str(f), R"(Function func -> __void
+()
+{
+  Discard{}
+}
 )");
 }
 
 TEST_F(FunctionTest, ToStr_WithDecoration) {
-  type::VoidType void_type;
-  type::I32Type i32;
+  auto* f = Func("func", VariableList{}, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                 },
+                 FunctionDecorationList{create<WorkgroupDecoration>(2, 4, 6)});
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
-
-  Function f("func", {}, &void_type);
-  f.set_body(std::move(block));
-  f.add_decoration(std::make_unique<WorkgroupDecoration>(2, 4, 6, Source{}));
-
-  std::ostringstream out;
-  f.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Function func -> __void
-  WorkgroupDecoration{2 4 6}
-  ()
-  {
-    Discard{}
-  }
+  EXPECT_EQ(str(f), R"(Function func -> __void
+WorkgroupDecoration{2 4 6}
+()
+{
+  Discard{}
+}
 )");
 }
 
 TEST_F(FunctionTest, ToStr_WithParams) {
-  type::VoidType void_type;
-  type::I32Type i32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var", StorageClass::kNone, &i32));
+  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
-  auto block = std::make_unique<ast::BlockStatement>();
-  block->append(std::make_unique<DiscardStatement>());
+  auto* f = Func("func", params, ty.void_(),
+                 StatementList{
+                     create<DiscardStatement>(),
+                 },
+                 FunctionDecorationList{});
 
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(block));
-
-  std::ostringstream out;
-  f.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Function func -> __void
-  (
-    Variable{
-      var
-      none
-      __i32
-    }
-  )
-  {
-    Discard{}
+  EXPECT_EQ(str(f), R"(Function func -> __void
+(
+  Variable{
+    var
+    none
+    __i32
   }
+)
+{
+  Discard{}
+}
 )");
 }
 
 TEST_F(FunctionTest, TypeName) {
-  type::VoidType void_type;
-
-  Function f("func", {}, &void_type);
-  EXPECT_EQ(f.type_name(), "__func__void");
+  auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
+  EXPECT_EQ(f->type_name(), "__func__void");
 }
 
 TEST_F(FunctionTest, TypeName_WithParams) {
-  type::VoidType void_type;
-  type::I32Type i32;
-  type::F32Type f32;
-
   VariableList params;
-  params.push_back(
-      std::make_unique<Variable>("var1", StorageClass::kNone, &i32));
-  params.push_back(
-      std::make_unique<Variable>("var2", StorageClass::kNone, &f32));
+  params.push_back(Var("var1", ty.i32(), StorageClass::kNone));
+  params.push_back(Var("var2", ty.f32(), StorageClass::kNone));
 
-  Function f("func", std::move(params), &void_type);
-  EXPECT_EQ(f.type_name(), "__func__void__i32__f32");
+  auto* f = Func("func", params, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
+  EXPECT_EQ(f->type_name(), "__func__void__i32__f32");
 }
 
 TEST_F(FunctionTest, GetLastStatement) {
-  type::VoidType void_type;
-
   VariableList params;
-  auto body = std::make_unique<ast::BlockStatement>();
-  auto stmt = std::make_unique<DiscardStatement>();
-  auto* stmt_ptr = stmt.get();
-  body->append(std::move(stmt));
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(body));
+  auto* stmt = create<DiscardStatement>();
+  auto* f = Func("func", params, ty.void_(), StatementList{stmt},
+                 FunctionDecorationList{});
 
-  EXPECT_EQ(f.get_last_statement(), stmt_ptr);
+  EXPECT_EQ(f->get_last_statement(), stmt);
 }
 
 TEST_F(FunctionTest, GetLastStatement_nullptr) {
-  type::VoidType void_type;
-
   VariableList params;
-  auto body = std::make_unique<ast::BlockStatement>();
-  Function f("func", std::move(params), &void_type);
-  f.set_body(std::move(body));
+  auto* f = Func("func", params, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
 
-  EXPECT_EQ(f.get_last_statement(), nullptr);
+  EXPECT_EQ(f->get_last_statement(), nullptr);
 }
 
 TEST_F(FunctionTest, WorkgroupSize_NoneSet) {
-  type::VoidType void_type;
-  Function f("f", {}, &void_type);
+  auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
+                 FunctionDecorationList{});
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = f.workgroup_size();
+  std::tie(x, y, z) = f->workgroup_size();
   EXPECT_EQ(x, 1u);
   EXPECT_EQ(y, 1u);
   EXPECT_EQ(z, 1u);
 }
 
 TEST_F(FunctionTest, WorkgroupSize) {
-  type::VoidType void_type;
-  Function f("f", {}, &void_type);
-  f.add_decoration(std::make_unique<WorkgroupDecoration>(2u, 4u, 6u, Source{}));
+  auto* f =
+      Func("func", VariableList{}, ty.void_(), StatementList{},
+           FunctionDecorationList{create<WorkgroupDecoration>(2u, 4u, 6u)});
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = f.workgroup_size();
+  std::tie(x, y, z) = f->workgroup_size();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 4u);
   EXPECT_EQ(z, 6u);
+}
+
+using FunctionListTest = TestHelper;
+
+TEST_F(FunctionListTest, FindSymbol) {
+  auto* func = Func("main", VariableList{}, ty.f32(), StatementList{},
+                    ast::FunctionDecorationList{});
+  FunctionList list;
+  list.Add(func);
+  EXPECT_EQ(func, list.Find(Symbols().Register("main")));
+}
+
+TEST_F(FunctionListTest, FindSymbolMissing) {
+  FunctionList list;
+  EXPECT_EQ(nullptr, list.Find(Symbols().Register("Missing")));
+}
+
+TEST_F(FunctionListTest, FindSymbolStage) {
+  auto* fs = Func("main", VariableList{}, ty.f32(), StatementList{},
+                  ast::FunctionDecorationList{
+                      create<ast::StageDecoration>(PipelineStage::kFragment),
+                  });
+  auto* vs = Func("main", VariableList{}, ty.f32(), StatementList{},
+                  ast::FunctionDecorationList{
+                      create<ast::StageDecoration>(PipelineStage::kVertex),
+                  });
+  FunctionList list;
+  list.Add(fs);
+  list.Add(vs);
+  EXPECT_EQ(fs,
+            list.Find(Symbols().Register("main"), PipelineStage::kFragment));
+  EXPECT_EQ(vs, list.Find(Symbols().Register("main"), PipelineStage::kVertex));
+}
+
+TEST_F(FunctionListTest, FindSymbolStageMissing) {
+  FunctionList list;
+  list.Add(Func("main", VariableList{}, ty.f32(), StatementList{},
+                ast::FunctionDecorationList{
+                    create<ast::StageDecoration>(PipelineStage::kFragment),
+                }));
+  EXPECT_EQ(nullptr,
+            list.Find(Symbols().Register("main"), PipelineStage::kVertex));
+}
+
+TEST_F(FunctionListTest, HasStage) {
+  FunctionList list;
+  list.Add(Func("main", VariableList{}, ty.f32(), StatementList{},
+                ast::FunctionDecorationList{
+                    create<ast::StageDecoration>(PipelineStage::kFragment),
+                }));
+  EXPECT_TRUE(list.HasStage(PipelineStage::kFragment));
+  EXPECT_FALSE(list.HasStage(PipelineStage::kVertex));
 }
 
 }  // namespace

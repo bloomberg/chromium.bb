@@ -16,14 +16,6 @@ const HistoryFocusTest = class extends PolymerInteractiveUITest {
   get browsePreload() {
     return 'chrome://history/';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 };
 
 // eslint-disable-next-line no-var

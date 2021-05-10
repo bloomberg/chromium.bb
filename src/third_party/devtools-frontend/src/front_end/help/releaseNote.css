@@ -22,7 +22,7 @@
 }
 
 :host-context(.-theme-with-dark-background) .release-note-top-section {
-  color: white;
+  color: #fff;
 }
 
 .release-note-container {
@@ -48,11 +48,13 @@
 }
 
 .release-note-container li:hover {
-  color: #039be5;
+  color: #039be5; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .release-note-container .release-note-link {
-  border: 1px solid rgb(0 0 0 / 20%);
+  border: 1px solid rgb(0 0 0 / 20%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   padding-left: 8px;
   padding-right: 8px;
   margin-bottom: 4px;
@@ -60,7 +62,8 @@
 }
 
 .release-note-container .release-note-link:hover {
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 50%) inset;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 50%) inset; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .release-note-title,
@@ -76,12 +79,14 @@
 }
 
 .release-note-container li:not(:hover) .release-note-subtitle {
-  color: #999;
+  color: #999; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .release-note-action-container > button {
   margin: 10px 0 20px 20px;
-  color: #757575;
+  color: #757575; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .release-note-action-container {
@@ -97,11 +102,13 @@ img {
   width: 260px;
   height: 200px;
   flex: none;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 30%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 img:hover {
-  box-shadow: 0 2px 4px rgb(0 0 0 / 50%);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 50%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 @media (forced-colors: active) {

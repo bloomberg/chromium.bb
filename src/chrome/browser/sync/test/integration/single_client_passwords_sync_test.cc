@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -197,11 +198,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_EQ(1, GetPasswordCount(0));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   // After restart, the last sync cycle snapshot should be empty. Once a sync
@@ -231,14 +232,14 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
   ~SingleClientPasswordsWithAccountStorageSyncTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    test_signin_client_factory_ =
+    test_signin_client_subscription_ =
         secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
   }
 
   void SetUpOnMainThread() override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     secondary_account_helper::InitNetwork();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     SyncTest::SetUpOnMainThread();
 
     fake_server::SetKeystoreNigoriInFakeServer(GetFakeServer());
@@ -262,8 +263,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
  private:
   base::test::ScopedFeatureList feature_list_;
 
-  secondary_account_helper::ScopedSigninClientFactory
-      test_signin_client_factory_;
+  base::CallbackListSubscription test_signin_client_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsWithAccountStorageSyncTest);
 };
@@ -303,12 +303,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, Sync-the-feature gets started automatically once a primary
   // account is signed in. To prevent that, explicitly set SyncRequested to
   // false.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Setup a primary account, but don't actually enable Sync-the-feature (so
   // that Sync will start in transport mode).
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 // The unconsented primary account isn't supported on ChromeOS (see
 // IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
 // up for a secondary account.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        StoresDataForSecondaryAccountInAccountDB) {
   AddTestPasswordToFakeServer();
@@ -365,10 +365,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
       passwords_helper::GetAccountPasswordStore(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // ChromeOS does not support signing out of a primary account.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Sanity check: The profile database should *not* get cleared on signout.
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        DoesNotClearProfileDBOnSignout) {
@@ -397,12 +397,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Make sure the password is still in the store.
   ASSERT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The unconsented primary account isn't supported on ChromeOS (see
 // IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
 // up for a secondary account.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        ClearsAccountDBOnSignout) {
   AddTestPasswordToFakeServer();
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Make sure the password is gone from the store.
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        SwitchesStoresOnEnablingSync) {
@@ -443,9 +443,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // On ChromeOS, Sync-the-feature starts automatically as soon as a primary
   // account is signed in. To prevent that, explicitly set SyncRequested to
   // false on ChromeOS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Sign in to a primary account, but don't enable Sync-the-feature.
   // Note: This state shouldn't actually be reachable (the flow for setting a
@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 // The unconsented primary account isn't supported on ChromeOS (see
 // IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
 // up for a secondary account.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
                        SwitchesStoresOnMakingAccountPrimary) {
   AddTestPasswordToFakeServer();
@@ -535,9 +535,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Clear the primary account to put Sync into transport mode again.
   // Note: Clearing the primary account without also signing out isn't exposed
   // to the user, so this shouldn't happen. Still best to cover it here.
-  signin::ClearPrimaryAccount(
-      IdentityManagerFactory::GetForProfile(GetProfile(0)),
-      signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+  signin::RevokeSyncConsent(
+      IdentityManagerFactory::GetForProfile(GetProfile(0)));
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
@@ -580,6 +579,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   // Now password sync should be active.
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace

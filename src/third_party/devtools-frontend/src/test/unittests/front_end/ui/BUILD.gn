@@ -10,10 +10,14 @@ ts_library("ui") {
     "KeyboardShortcut_test.ts",
     "ListModel_test.ts",
     "ShortcutRegistry_test.ts",
-    "SyntaxHighlighter_test.ts",
+    "Treeoutline-keyboard_test.ts",
     "UIUtils_test.ts",
+    "ViewLocation_test.ts",
     "utils/measured-scrollbar-width_test.ts",
   ]
 
-  deps = [ "../../../../front_end/ui:bundle" ]
+  deps = [
+    "../../../../front_end/platform:bundle",
+    "../helpers",
+  ]
 }

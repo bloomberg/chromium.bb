@@ -15,6 +15,24 @@ libavutil:     2017-10-21
 
 API changes, most recent first:
 
+2020-12-03 - xxxxxxxxxx - lavu 56.62.100 - timecode.h
+  Add av_timecode_init_from_components.
+
+2020-xx-xx - xxxxxxxxxx - lavc 58.114.100 - avcodec.h
+  Deprecate AVCodecContext.thread_safe_callbacks. Starting with
+  LIBAVCODEC_VERSION_MAJOR=60, user callbacks must always be
+  thread-safe when frame threading is used.
+
+2020-11-25 - xxxxxxxxxx - lavc 58.113.100 - avcodec.h
+  Adds a new flag AV_CODEC_EXPORT_DATA_FILM_GRAIN for export_side_data.
+
+2020-11-25 - xxxxxxxxxx - lavu 56.61.100 - film_grain_params.h
+  Adds a new API for extracting codec film grain parameters as side data.
+  Adds a new AVFrameSideDataType entry AV_FRAME_DATA_FILM_GRAIN_PARAMS for it.
+
+2020-xx-xx - xxxxxxxxxx - lavf 58.64.100 - avformat.h
+  Add AVSTREAM_EVENT_FLAG_NEW_PACKETS.
+
 2020-xx-xx - xxxxxxxxxx - lavu 56.60.100 - buffer.h
   Add a av_buffer_replace() convenience function.
 
@@ -47,6 +65,8 @@ API changes, most recent first:
 2020-06-xx - xxxxxxxxxx - lavu 56.53.100 - log.h opt.h
   Add av_opt_child_class_iterate() and AVClass.child_class_iterate().
   Deprecate av_opt_child_class_next() and AVClass.child_class_next().
+
+-------- 8< --------- FFmpeg 4.3 was cut here -------- 8< ---------
 
 2020-06-05 - ec39c2276a - lavu 56.50.100 - buffer.h
   Passing NULL as alloc argument to av_buffer_pool_init2() is now allowed.

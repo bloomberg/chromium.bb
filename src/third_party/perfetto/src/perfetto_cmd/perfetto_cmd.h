@@ -30,7 +30,7 @@
 #include "perfetto/ext/base/unix_task_runner.h"
 #include "perfetto/ext/tracing/core/consumer.h"
 #include "perfetto/ext/tracing/ipc/consumer_ipc_client.h"
-#include "src/perfetto_cmd/perfetto_atoms.h"
+#include "src/android_stats/perfetto_atoms.h"
 #include "src/perfetto_cmd/rate_limiter.h"
 
 namespace perfetto {
@@ -79,9 +79,10 @@ class PerfettoCmd : public Consumer {
   static base::ScopedFile OpenDropboxTmpFile();
   void SaveTraceIntoDropboxAndIncidentOrCrash();
   void SaveOutputToIncidentTraceOrCrash();
-  void LogUploadEventAndroid(PerfettoStatsdAtom atom);
 #endif
   void LogUploadEvent(PerfettoStatsdAtom atom);
+  void LogTriggerEvents(PerfettoTriggerAtom atom,
+                        const std::vector<std::string>& trigger_names);
 
   base::UnixTaskRunner task_runner_;
 
@@ -95,7 +96,7 @@ class PerfettoCmd : public Consumer {
   std::string trace_out_path_;
   base::EventFd ctrl_c_evt_;
   bool is_uploading_ = false;
-  bool did_process_full_trace_ = false;
+  bool update_guardrail_state_ = false;
   uint64_t bytes_written_ = 0;
   std::string detach_key_;
   std::string attach_key_;
@@ -103,6 +104,7 @@ class PerfettoCmd : public Consumer {
   bool redetach_once_attached_ = false;
   bool query_service_ = false;
   bool query_service_output_raw_ = false;
+  bool bugreport_ = false;
   std::string uuid_;
 
   // How long we expect to trace for or 0 if the trace is indefinite.

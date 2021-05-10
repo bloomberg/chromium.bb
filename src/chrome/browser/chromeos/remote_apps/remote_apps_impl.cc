@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_manager.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,7 +48,7 @@ bool RemoteAppsImpl::IsAllowed(content::RenderFrameHost* render_frame_host,
 
   const extensions::Feature* feature =
       extensions::FeatureProvider::GetBehaviorFeature(
-          extensions::behavior_feature::kKeyImprivataInSessionExtension);
+          extensions::behavior_feature::kImprivataInSessionExtension);
   DCHECK(feature);
   return feature->IsAvailableToExtension(extension).is_available();
 }
@@ -75,17 +75,19 @@ void RemoteAppsImpl::Bind(
 }
 
 void RemoteAppsImpl::AddFolder(const std::string& name,
+                               bool add_to_front,
                                AddFolderCallback callback) {
-  const std::string& folder_id = manager_->AddFolder(name);
+  const std::string& folder_id = manager_->AddFolder(name, add_to_front);
   std::move(callback).Run(folder_id, base::nullopt);
 }
 
 void RemoteAppsImpl::AddApp(const std::string& name,
                             const std::string& folder_id,
                             const GURL& icon_url,
+                            bool add_to_front,
                             AddAppCallback callback) {
   manager_->AddApp(
-      name, folder_id, icon_url,
+      name, folder_id, icon_url, add_to_front,
       base::BindOnce(&RemoteAppsImpl::OnAppAdded, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
 }

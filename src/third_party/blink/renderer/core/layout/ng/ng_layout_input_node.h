@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/layout/geometry/axis.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
@@ -23,7 +24,6 @@ class Document;
 class LayoutObject;
 class LayoutBox;
 class NGConstraintSpace;
-class NGPaintFragment;
 struct MinMaxSizes;
 struct PhysicalSize;
 
@@ -56,6 +56,11 @@ struct MinMaxSizesInput {
 // min/max sizes, and if this calculation will change if the
 // |MinMaxSizesInput::percentage_resolution_block_size| value changes.
 struct MinMaxSizesResult {
+  MinMaxSizesResult() = default;
+  MinMaxSizesResult(MinMaxSizes sizes, bool depends_on_percentage_block_size)
+      : sizes(sizes),
+        depends_on_percentage_block_size(depends_on_percentage_block_size) {}
+
   MinMaxSizes sizes;
   bool depends_on_percentage_block_size = false;
 };
@@ -112,6 +117,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsFlexibleBox() const {
     return IsBlock() && box_->IsFlexibleBoxIncludingNG();
   }
+  bool IsGrid() const { return IsBlock() && box_->IsLayoutGridIncludingNG(); }
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
@@ -237,6 +243,29 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
+  // Return true if we should apply at least inline-size containment
+  // (i.e. "contain" is "size" or "inline-size").
+  bool ShouldApplyInlineSizeContainment() const {
+    return box_->ShouldApplyInlineSizeContainment();
+  }
+  // Return true if we should apply at least block-size containment
+  // (i.e. "contain" is "size" or "block-size").
+  bool ShouldApplyBlockSizeContainment() const {
+    return box_->ShouldApplyBlockSizeContainment();
+  }
+
+  bool IsContainerForContainerQueries() const {
+    return box_->IsContainerForContainerQueries();
+  }
+
+  LogicalAxes ContainedAxes() const {
+    LogicalAxes axes(kLogicalAxisNone);
+    if (ShouldApplyInlineSizeContainment())
+      axes |= LogicalAxes(kLogicalAxisInline);
+    if (ShouldApplyBlockSizeContainment())
+      axes |= LogicalAxes(kLogicalAxisBlock);
+    return axes;
+  }
 
   // CSS defines certain cases to synthesize inline block baselines from box.
   // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
@@ -277,14 +306,17 @@ class CORE_EXPORT NGLayoutInputNode {
     return box_->ChildLayoutBlockedByDisplayLock();
   }
 
-  // Returns the first NGPaintFragment for this node. When block fragmentation
-  // occurs, there will be multiple NGPaintFragment for a node.
-  const NGPaintFragment* PaintFragment() const;
-
   CustomLayoutChild* GetCustomLayoutChild() const {
     // TODO(ikilpatrick): Support NGInlineNode.
     DCHECK(IsBlock());
     return box_->GetCustomLayoutChild();
+  }
+
+  // Return whether we can directly traverse fragments generated from this node
+  // (for painting, hit-testing and other layout read operations). If false is
+  // returned, we need to traverse the layout object tree instead.
+  bool CanTraversePhysicalFragments() const {
+    return box_->CanTraversePhysicalFragments();
   }
 
   String ToString() const;

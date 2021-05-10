@@ -14,11 +14,14 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/sanitizer_buildflags.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_logging_settings.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,12 +124,6 @@ TEST_F(LoggingTest, BasicLogging) {
 }
 
 TEST_F(LoggingTest, LogIsOn) {
-#if defined(NDEBUG)
-  const bool kDfatalIsFatal = false;
-#else  // defined(NDEBUG)
-  const bool kDfatalIsFatal = true;
-#endif  // defined(NDEBUG)
-
   SetMinLogLevel(LOGGING_INFO);
   EXPECT_TRUE(LOG_IS_ON(INFO));
   EXPECT_TRUE(LOG_IS_ON(WARNING));
@@ -148,13 +145,14 @@ TEST_F(LoggingTest, LogIsOn) {
   EXPECT_TRUE(LOG_IS_ON(FATAL));
   EXPECT_TRUE(LOG_IS_ON(DFATAL));
 
-  // LOG_IS_ON(FATAL) should always be true.
   SetMinLogLevel(LOGGING_FATAL + 1);
   EXPECT_FALSE(LOG_IS_ON(INFO));
   EXPECT_FALSE(LOG_IS_ON(WARNING));
   EXPECT_FALSE(LOG_IS_ON(ERROR));
+  // LOG_IS_ON(FATAL) should always be true.
   EXPECT_TRUE(LOG_IS_ON(FATAL));
-  EXPECT_EQ(kDfatalIsFatal, LOG_IS_ON(DFATAL));
+  // If DCHECK_IS_ON() then DFATAL is FATAL.
+  EXPECT_EQ(DCHECK_IS_ON(), LOG_IS_ON(DFATAL));
 }
 
 TEST_F(LoggingTest, LoggingIsLazyBySeverity) {
@@ -295,7 +293,7 @@ TEST_F(LoggingTest, AlwaysLogErrorsToStderr) {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(LoggingTest, InitWithFileDescriptor) {
   const char kErrorLogMessage[] = "something bad happened";
 
@@ -351,7 +349,7 @@ TEST_F(LoggingTest, DuplicateLogFile) {
   ASSERT_NE(written_logs.find(kErrorLogMessage2), std::string::npos);
   fclose(log_file_dup);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OFFICIAL_BUILD) && defined(OS_WIN)
 NOINLINE void CheckContainingFunc(int death_location) {
@@ -716,56 +714,34 @@ namespace nested_test {
 
 // Verifies that calling the log macro goes to the Fuchsia system logs.
 TEST_F(LoggingTest, FuchsiaSystemLogging) {
-  const char kLogMessage[] = "system log!";
+  constexpr char kLogMessage[] = "system log!";
+
+  base::SimpleTestLogListener listener;
+
+  // Connect the test LogListenerSafe to the Log.
+  std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
+      std::make_unique<fuchsia::logger::LogFilterOptions>();
+  options->tags = {"base_unittests__exec"};
+  fuchsia::logger::LogPtr log = base::ComponentContextForProcess()
+                                    ->svc()
+                                    ->Connect<fuchsia::logger::Log>();
+  listener.ListenToLog(log.get(), std::move(options));
+
+  // Emit the test log message, and spin the loop until it is reported to the
+  // test listener.
   LOG(ERROR) << kLogMessage;
 
-  base::TestLogListenerSafe listener;
-  fidl::Binding<fuchsia::logger::LogListenerSafe> binding(&listener);
+  base::Optional<fuchsia::logger::LogMessage> logged_message =
+      listener.RunUntilMessageReceived(kLogMessage);
 
-  fuchsia::logger::LogMessage logged_message;
-
-  base::RunLoop wait_for_message_loop;
-
-  fuchsia::logger::LogPtr logger = base::ComponentContextForProcess()
-                                       ->svc()
-                                       ->Connect<fuchsia::logger::Log>();
-  logger.set_error_handler([&wait_for_message_loop](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "fuchsia.logger.Log disconnected";
-    ADD_FAILURE();
-    wait_for_message_loop.Quit();
-  });
-
-  // |dump_logs| checks whether the expected log line has been received yet,
-  // and invokes DumpLogsSafe() if not. It passes itself as the completion
-  // callback, so that when the call completes it can check again for the
-  // expected message and re-invoke DumpLogsSafe(), or quit the loop, as
-  // appropriate.
-  base::RepeatingClosure dump_logs = base::BindLambdaForTesting([&]() {
-    if (listener.DidReceiveString(kLogMessage, &logged_message)) {
-      wait_for_message_loop.Quit();
-      return;
-    }
-
-    std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
-        std::make_unique<fuchsia::logger::LogFilterOptions>();
-    options->tags = {"base_unittests__exec"};
-    listener.set_on_dump_logs_done(dump_logs);
-    logger->DumpLogsSafe(binding.NewBinding(), std::move(options));
-  });
-
-  // Start the first DumpLogs() call.
-  dump_logs.Run();
-
-  // Run until kLogMessage is received.
-  wait_for_message_loop.Run();
-
-  EXPECT_EQ(logged_message.severity,
+  ASSERT_TRUE(logged_message.has_value());
+  EXPECT_EQ(logged_message->severity,
             static_cast<int32_t>(fuchsia::logger::LogLevelFilter::ERROR));
-  ASSERT_EQ(logged_message.tags.size(), 1u);
-  EXPECT_EQ(logged_message.tags[0], base::CommandLine::ForCurrentProcess()
-                                        ->GetProgram()
-                                        .BaseName()
-                                        .AsUTF8Unsafe());
+  ASSERT_EQ(logged_message->tags.size(), 1u);
+  EXPECT_EQ(logged_message->tags[0], base::CommandLine::ForCurrentProcess()
+                                         ->GetProgram()
+                                         .BaseName()
+                                         .AsUTF8Unsafe());
 }
 
 TEST_F(LoggingTest, FuchsiaLogging) {
@@ -785,6 +761,7 @@ TEST_F(LoggingTest, FuchsiaLogging) {
   ZX_CHECK(true, ZX_ERR_INTERNAL);
   ZX_DCHECK(true, ZX_ERR_INTERNAL);
 }
+
 #endif  // defined(OS_FUCHSIA)
 
 TEST_F(LoggingTest, LogPrefix) {
@@ -808,7 +785,7 @@ TEST_F(LoggingTest, LogPrefix) {
   EXPECT_EQ(std::string::npos, log_string->find(kPrefix));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(LoggingTest, LogCrosSyslogFormat) {
   // Set log format to syslog format.
   scoped_logging_settings().SetLogFormat(LogFormat::LOG_FORMAT_SYSLOG);
@@ -881,7 +858,46 @@ TEST_F(LoggingTest, LogCrosSyslogFormat) {
     EXPECT_THAT(*log_string, ::testing::MatchesRegex(kExpected));
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// We define a custom operator<< for string16 so we can use it with logging.
+// This tests that conversion.
+TEST_F(LoggingTest, String16) {
+  // Basic stream test.
+  {
+    std::ostringstream stream;
+    stream << "Empty '" << base::string16() << "' standard '"
+           << base::string16(base::ASCIIToUTF16("Hello, world")) << "'";
+    EXPECT_STREQ("Empty '' standard 'Hello, world'", stream.str().c_str());
+  }
+
+  // Interesting edge cases.
+  {
+    // These should each get converted to the invalid character: EF BF BD.
+    base::string16 initial_surrogate;
+    initial_surrogate.push_back(0xd800);
+    base::string16 final_surrogate;
+    final_surrogate.push_back(0xdc00);
+
+    // Old italic A = U+10300, will get converted to: F0 90 8C 80 'z'.
+    base::string16 surrogate_pair;
+    surrogate_pair.push_back(0xd800);
+    surrogate_pair.push_back(0xdf00);
+    surrogate_pair.push_back('z');
+
+    // Will get converted to the invalid char + 's': EF BF BD 's'.
+    base::string16 unterminated_surrogate;
+    unterminated_surrogate.push_back(0xd800);
+    unterminated_surrogate.push_back('s');
+
+    std::ostringstream stream;
+    stream << initial_surrogate << "," << final_surrogate << ","
+           << surrogate_pair << "," << unterminated_surrogate;
+
+    EXPECT_STREQ("\xef\xbf\xbd,\xef\xbf\xbd,\xf0\x90\x8c\x80z,\xef\xbf\xbds",
+                 stream.str().c_str());
+  }
+}
 
 }  // namespace
 

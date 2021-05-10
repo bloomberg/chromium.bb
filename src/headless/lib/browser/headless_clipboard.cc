@@ -19,6 +19,12 @@ HeadlessClipboard::~HeadlessClipboard() = default;
 
 void HeadlessClipboard::OnPreShutdown() {}
 
+// DataTransferEndpoint is not used on this platform.
+ui::DataTransferEndpoint* HeadlessClipboard::GetSource(
+    ui::ClipboardBuffer buffer) const {
+  return nullptr;
+}
+
 uint64_t HeadlessClipboard::GetSequenceNumber(
     ui::ClipboardBuffer buffer) const {
   return GetStore(buffer).sequence_number;
@@ -160,6 +166,14 @@ void HeadlessClipboard::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
 
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
+void HeadlessClipboard::ReadFilenames(ui::ClipboardBuffer buffer,
+                                      const ui::DataTransferEndpoint* data_dst,
+                                      std::vector<ui::FileInfo>* result) const {
+  *result = GetStore(buffer).filenames;
+}
+
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void HeadlessClipboard::ReadBookmark(const ui::DataTransferEndpoint* data_dst,
                                      base::string16* title,
                                      std::string* url) const {
@@ -241,6 +255,10 @@ void HeadlessClipboard::WriteSvg(const char* markup_data, size_t markup_len) {
 void HeadlessClipboard::WriteRTF(const char* rtf_data, size_t data_len) {
   GetDefaultStore().data[ui::ClipboardFormatType::GetRtfType()] =
       std::string(rtf_data, data_len);
+}
+
+void HeadlessClipboard::WriteFilenames(std::vector<ui::FileInfo> filenames) {
+  GetDefaultStore().filenames = std::move(filenames);
 }
 
 void HeadlessClipboard::WriteBookmark(const char* title_data,

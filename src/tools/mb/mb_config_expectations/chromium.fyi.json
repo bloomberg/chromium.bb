@@ -45,6 +45,21 @@
       "use_libfuzzer": true
     }
   },
+  "Libfuzzer Upload Linux ASan (reclient)": {
+    "gn_args": {
+      "enable_mojom_fuzzer": true,
+      "enable_nacl": false,
+      "ffmpeg_branding": "ChromeOS",
+      "is_asan": true,
+      "is_component_build": true,
+      "is_debug": false,
+      "optimize_for_fuzzing": true,
+      "pdf_enable_xfa": true,
+      "proprietary_codecs": true,
+      "use_libfuzzer": true,
+      "use_rbe": true
+    }
+  },
   "Libfuzzer Upload Linux ASan Debug": {
     "gn_args": {
       "archive_seed_corpus": false,
@@ -121,26 +136,39 @@
       "use_libfuzzer": true
     }
   },
+  "Linux Builder (reclient)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_rbe": true
+    }
+  },
+  "Linux TSan Builder (goma cache silo)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_goma": true
+    }
+  },
+  "Linux TSan Builder (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
   "Linux Viz": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "Linux remote_run Builder": {
-    "gn_args": {
-      "is_component_build": false,
-      "is_debug": false,
-      "use_goma": true
-    }
-  },
-  "Linux remote_run Tester": {
-    "gn_args": {
-      "is_component_build": false,
-      "is_debug": false,
       "use_goma": true
     }
   },
@@ -184,6 +212,25 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_goma": true
+    }
+  },
+  "TSAN Debug (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": true,
+      "is_debug": true,
+      "is_tsan": true,
+      "symbol_level": 1,
+      "use_rbe": true
+    }
+  },
+  "TSAN Release (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
     }
   },
   "VR Linux": {
@@ -231,7 +278,6 @@
       "is_debug": false,
       "is_java_debug": true,
       "proprietary_codecs": true,
-      "symbol_level": 1,
       "system_webview_package_name": "com.google.android.webview",
       "target_cpu": "arm64",
       "target_os": "android",
@@ -287,32 +333,15 @@
       "use_goma": true
     }
   },
-  "chromeos-amd64-generic-lacros-rel": {
-    "args_file": "//build/args/chromeos/amd64-generic.gni",
+  "fuchsia-code-coverage": {
     "gn_args": {
-      "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "enable_linux_installer": false,
-      "is_chromeos_device": true,
-      "ozone_platform_headless": true,
-      "ozone_platform_wayland": true,
-      "ozone_platform_x11": false,
-      "rtc_use_pipewire": false,
-      "target_os": "linux",
-      "use_custom_libcxx": false,
-      "use_custom_libcxx_for_host": true,
-      "use_evdev_gestures": false,
-      "use_gio": false,
-      "use_glib": false,
-      "use_goma": true,
-      "use_gtk": false,
-      "use_ozone": true,
-      "use_pangocairo": false,
-      "use_pulseaudio": false,
-      "use_system_libsync": false,
-      "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "is_clang": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_os": "fuchsia",
+      "use_clang_coverage": true,
+      "use_goma": true
     }
   },
   "fuchsia-fyi-arm64-dbg": {
@@ -329,6 +358,16 @@
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
+  "fuchsia-fyi-arm64-size": {
+    "gn_args": {
+      "is_component_build": false,
+      "is_debug": false,
+      "is_official_build": true,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "use_goma": true
@@ -354,6 +393,7 @@
   "ios-asan": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
@@ -366,7 +406,7 @@
   "ios-simulator-code-coverage": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_use_goma_rbe": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -379,6 +419,7 @@
   "ios-simulator-cr-recipe": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -401,6 +442,7 @@
       "enable_websockets": false,
       "include_transport_security_state_preload_list": false,
       "ios_deployment_target": "10.0",
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_cronet_build": true,
       "is_debug": true,
@@ -418,6 +460,7 @@
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
       "ios_enable_multi_window": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -430,7 +473,7 @@
   "ios-webkit-tot": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_use_goma_rbe": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -443,6 +486,7 @@
   "ios13-beta-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -456,7 +500,7 @@
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
       "ios_enable_code_signing": false,
-      "ios_use_goma_rbe": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": false,
       "target_cpu": "arm64",
@@ -468,7 +512,7 @@
   "ios13-sdk-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_use_goma_rbe": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -481,6 +525,7 @@
   "ios14-beta-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -493,7 +538,7 @@
   "ios14-sdk-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_use_goma_rbe": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -501,6 +546,34 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
+    }
+  },
+  "lacros-amd64-generic-rel-fyi": {
+    "args_file": "//build/args/chromeos/amd64-generic.gni",
+    "gn_args": {
+      "chromeos_is_browser_only": true,
+      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "enable_linux_installer": false,
+      "is_chromeos_device": true,
+      "ozone_platform_headless": true,
+      "ozone_platform_wayland": true,
+      "ozone_platform_x11": false,
+      "rtc_use_pipewire": false,
+      "target_os": "chromeos",
+      "use_custom_libcxx": false,
+      "use_custom_libcxx_for_host": true,
+      "use_evdev_gestures": false,
+      "use_gio": false,
+      "use_glib": false,
+      "use_goma": true,
+      "use_gtk": false,
+      "use_ozone": true,
+      "use_pangocairo": false,
+      "use_pulseaudio": false,
+      "use_system_libsync": false,
+      "use_v8_context_snapshot": false,
+      "use_vaapi": false
     }
   },
   "linux-annotator-rel": {
@@ -550,6 +623,17 @@
       "use_goma": true
     }
   },
+  "linux-blink-v8-oilpan": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_blink_heap_use_v8_oilpan": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_goma": true
+    }
+  },
   "linux-chromeos-code-coverage": {
     "gn_args": {
       "ffmpeg_branding": "ChromeOS",
@@ -568,7 +652,8 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_goma": true,
+      "use_javascript_coverage": true
     }
   },
   "linux-chromium-tests-staging-builder": {
@@ -588,21 +673,17 @@
       "use_goma": true
     }
   },
+  "linux-example-builder": {
+    "gn_args": {
+      "is_component_build": false,
+      "is_debug": false,
+      "use_goma": true
+    }
+  },
   "linux-fieldtrial-rel": {
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "linux-inverse-fieldtrials-fyi-rel": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "invert_fieldtrials": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
     }
@@ -615,6 +696,7 @@
       "is_debug": false,
       "ozone_platform": "wayland",
       "ozone_platform_wayland": true,
+      "target_os": "chromeos",
       "use_goma": true,
       "use_gtk": false,
       "use_ozone": true
@@ -628,9 +710,31 @@
       "is_debug": false,
       "ozone_platform": "wayland",
       "ozone_platform_wayland": true,
+      "target_os": "chromeos",
       "use_goma": true,
       "use_gtk": false,
       "use_ozone": true
+    }
+  },
+  "linux-paeverywhere-x64-fyi-dbg": {
+    "gn_args": {
+      "is_component_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_goma": true
+    }
+  },
+  "linux-paeverywhere-x64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_goma": true
     }
   },
   "linux-perfetto-rel": {
@@ -664,7 +768,7 @@
       "use_goma": true
     }
   },
-  "linux-wpt-payments-fyi-rel": {
+  "linux-wpt-input-fyi-rel": {
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
@@ -686,6 +790,27 @@
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
+      "use_goma": true
+    }
+  },
+  "mac-paeverywhere-x64-fyi-dbg": {
+    "gn_args": {
+      "is_component_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_goma": true
+    }
+  },
+  "mac-paeverywhere-x64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
       "use_goma": true
     }
   },
@@ -774,17 +899,6 @@
       "is_debug": false,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_goma": true
-    }
-  },
-  "win10-inverse-fieldtrials-fyi-rel": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "invert_fieldtrials": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
       "use_goma": true
     }
   },

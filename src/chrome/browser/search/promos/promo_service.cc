@@ -24,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search/ntp_features.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/common/extension_features.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -260,7 +259,7 @@ void PromoService::Shutdown() {
     observer.OnPromoServiceShuttingDown();
   }
 
-  DCHECK(!observers_.might_have_observers());
+  DCHECK(observers_.empty());
 }
 
 // static

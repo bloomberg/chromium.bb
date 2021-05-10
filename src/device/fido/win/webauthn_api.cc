@@ -8,14 +8,18 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/strings/string_util_win.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/fido/features.h"
 #include "device/fido/win/logging.h"
 #include "device/fido/win/type_conversions.h"
 
@@ -35,6 +39,10 @@ constexpr uint32_t kWinWebAuthnTimeoutMilliseconds = 1000 * 60 * 5;
 class WinWebAuthnApiImpl : public WinWebAuthnApi {
  public:
   WinWebAuthnApiImpl() : WinWebAuthnApi(), is_bound_(false) {
+    if (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
+      FIDO_LOG(DEBUG) << "Windows WebAuthn API deactivated via feature flag";
+      return;
+    }
     {
       // Mitigate the issues caused by loading DLLs on a background thread
       // (http://crbug/973868).
@@ -43,6 +51,7 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
           LoadLibraryExA("webauthn.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
     }
     if (!webauthn_dll_) {
+      FIDO_LOG(ERROR) << "Windows WebAuthn API failed to load";
       return;
     }
 
@@ -98,6 +107,8 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
     SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     return is_user_verifying_platform_authenticator_available_(available);
   }
 
@@ -110,6 +121,8 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
       PCWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
       PWEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr) override {
     DCHECK(is_bound_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     return authenticator_make_credential_(
         h_wnd, rp, user, cose_credential_parameters, client_data, options,
         credential_attestation_ptr);
@@ -122,6 +135,8 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
       PCWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
       PWEBAUTHN_ASSERTION* assertion_ptr) override {
     DCHECK(is_bound_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     return authenticator_get_assertion_(h_wnd, rp_id, client_data, options,
                                         assertion_ptr);
   }
@@ -268,9 +283,12 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   if (request.is_u2f_only) {
     authenticator_attachment =
         WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
-  } else if (request.is_incognito_mode) {
-    // Disable all platform authenticators in incognito mode. We are going to
-    // revisit this in crbug/908622.
+  } else if (request.is_off_the_record_context) {
+    // Disable all platform authenticators in off-the-record contexts.
+    //
+    // TODO(crbug.com/908622): Revisit this if the Windows WebAuthn API supports
+    // showing an equivalent dialog to what Chrome is displaying before creating
+    // a platform credential in Incognito mode.
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
   } else {
     authenticator_attachment =
@@ -378,9 +396,12 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   if (request.is_u2f_only) {
     authenticator_attachment =
         WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
-  } else if (request.is_incognito_mode) {
-    // Disable all platform authenticators in incognito mode. We are going to
-    // revisit this in crbug/908622.
+  } else if (request.is_off_the_record_context) {
+    // Disable all platform authenticators in off-the-record contexts.
+    //
+    // TODO(crbug.com/908622): Revisit this if the Windows WebAuthn API supports
+    // showing an equivalent dialog to what Chrome is displaying before creating
+    // a platform credential in Incognito mode.
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
   } else {
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;

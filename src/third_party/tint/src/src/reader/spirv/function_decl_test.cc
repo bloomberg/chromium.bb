@@ -49,25 +49,30 @@ std::string CommonTypes() {
   )";
 }
 
-TEST_F(SpvParserTest, EmitFunctionDeclaration_VoidFunctionWithoutParams) {
-  auto* p = parser(test::Assemble(CommonTypes() + R"(
+TEST_F(SpvParserTest, Emit_VoidFunctionWithoutParams) {
+  auto p = parser(test::Assemble(CommonTypes() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      OpReturn
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
-  EXPECT_TRUE(fe.EmitFunctionDeclaration());
-  EXPECT_THAT(p->module().to_str(), HasSubstr(R"(
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.Emit());
+  auto got = p->program().to_str();
+  std::string expect = R"(Module{
   Function x_100 -> __void
   ()
   {
-  })"));
+    Return{}
+  }
+}
+)";
+  EXPECT_EQ(got, expect);
 }
 
-TEST_F(SpvParserTest, EmitFunctionDeclaration_NonVoidResultType) {
-  auto* p = parser(test::Assemble(CommonTypes() + R"(
+TEST_F(SpvParserTest, Emit_NonVoidResultType) {
+  auto p = parser(test::Assemble(CommonTypes() + R"(
      %fn_ret_float = OpTypeFunction %float
      %100 = OpFunction %float None %fn_ret_float
      %entry = OpLabel
@@ -75,18 +80,27 @@ TEST_F(SpvParserTest, EmitFunctionDeclaration_NonVoidResultType) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
-  EXPECT_TRUE(fe.EmitFunctionDeclaration());
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.Emit());
 
-  EXPECT_THAT(p->module().to_str(), HasSubstr(R"(
+  auto got = p->program().to_str();
+  std::string expect = R"(Module{
   Function x_100 -> __f32
   ()
   {
-  })"));
+    Return{
+      {
+        ScalarConstructor[not set]{0.000000}
+      }
+    }
+  }
+}
+)";
+  EXPECT_EQ(got, expect);
 }
 
-TEST_F(SpvParserTest, EmitFunctionDeclaration_MixedParamTypes) {
-  auto* p = parser(test::Assemble(Names({"a", "b", "c"}) + CommonTypes() + R"(
+TEST_F(SpvParserTest, Emit_MixedParamTypes) {
+  auto p = parser(test::Assemble(Names({"a", "b", "c"}) + CommonTypes() + R"(
      %fn_mixed_params = OpTypeFunction %float %uint %float %int
 
      %100 = OpFunction %void None %fn_mixed_params
@@ -98,10 +112,11 @@ TEST_F(SpvParserTest, EmitFunctionDeclaration_MixedParamTypes) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
-  EXPECT_TRUE(fe.EmitFunctionDeclaration());
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.Emit());
 
-  EXPECT_THAT(p->module().to_str(), HasSubstr(R"(
+  auto got = p->program().to_str();
+  std::string expect = R"(Module{
   Function x_100 -> __void
   (
     VariableConst{
@@ -121,11 +136,15 @@ TEST_F(SpvParserTest, EmitFunctionDeclaration_MixedParamTypes) {
     }
   )
   {
-  })"));
+    Return{}
+  }
+}
+)";
+  EXPECT_EQ(got, expect);
 }
 
-TEST_F(SpvParserTest, EmitFunctionDeclaration_GenerateParamNames) {
-  auto* p = parser(test::Assemble(CommonTypes() + R"(
+TEST_F(SpvParserTest, Emit_GenerateParamNames) {
+  auto p = parser(test::Assemble(CommonTypes() + R"(
      %fn_mixed_params = OpTypeFunction %float %uint %float %int
 
      %100 = OpFunction %void None %fn_mixed_params
@@ -137,10 +156,11 @@ TEST_F(SpvParserTest, EmitFunctionDeclaration_GenerateParamNames) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
-  EXPECT_TRUE(fe.EmitFunctionDeclaration());
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.Emit());
 
-  EXPECT_THAT(p->module().to_str(), HasSubstr(R"(
+  auto got = p->program().to_str();
+  std::string expect = R"(Module{
   Function x_100 -> __void
   (
     VariableConst{
@@ -160,7 +180,11 @@ TEST_F(SpvParserTest, EmitFunctionDeclaration_GenerateParamNames) {
     }
   )
   {
-  })"));
+    Return{}
+  }
+}
+)";
+  EXPECT_EQ(got, expect);
 }
 
 }  // namespace

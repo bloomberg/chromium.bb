@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/congestion_control/bandwidth_sampler.h"
 
 #include <algorithm>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -168,15 +168,34 @@ void BandwidthSampler::OnPacketSent(
   if (!connection_state_map_.IsEmpty() &&
       packet_number >
           connection_state_map_.last_packet() + max_tracked_packets_) {
-    if (unacked_packet_map_ != nullptr) {
+    if (unacked_packet_map_ != nullptr && !unacked_packet_map_->empty()) {
+      QuicPacketNumber maybe_least_unacked =
+          unacked_packet_map_->GetLeastUnacked();
       QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
                   "number of tracked packets("
                << max_tracked_packets_
                << ").  First tracked: " << connection_state_map_.first_packet()
                << "; last tracked: " << connection_state_map_.last_packet()
-               << "; least unacked: " << unacked_packet_map_->GetLeastUnacked()
-               << "; packet number: " << packet_number << "; largest observed: "
-               << unacked_packet_map_->largest_acked();
+               << "; entry_slots_used: "
+               << connection_state_map_.entry_slots_used()
+               << "; number_of_present_entries: "
+               << connection_state_map_.number_of_present_entries()
+               << "; packet number: " << packet_number
+               << "; unacked_map: " << unacked_packet_map_->DebugString()
+               << "; total_bytes_sent: " << total_bytes_sent_
+               << "; total_bytes_acked: " << total_bytes_acked_
+               << "; total_bytes_lost: " << total_bytes_lost_
+               << "; total_bytes_neutered: " << total_bytes_neutered_
+               << "; last_acked_packet_sent_time: "
+               << last_acked_packet_sent_time_
+               << "; total_bytes_sent_at_last_acked_packet: "
+               << total_bytes_sent_at_last_acked_packet_
+               << "; least_unacked_packet_info: "
+               << (unacked_packet_map_->IsUnacked(maybe_least_unacked)
+                       ? unacked_packet_map_
+                             ->GetTransmissionInfo(maybe_least_unacked)
+                             .DebugString()
+                       : "n/a");
     } else {
       QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
                   "number of tracked packets.";

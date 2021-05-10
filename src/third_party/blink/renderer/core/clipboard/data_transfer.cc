@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 
 namespace blink {
 
@@ -147,7 +148,6 @@ class DraggedNodeImageBuilder {
 
     return DataTransfer::CreateDragImageForFrame(
         *local_frame_, 1.0f,
-        LayoutObject::ShouldRespectImageOrientation(dragged_layout_object),
         bounding_box.Size(), paint_offset, builder, border_box_properties);
   }
 
@@ -159,10 +159,8 @@ class DraggedNodeImageBuilder {
 #endif
 };
 
-}  // namespace
-
-static base::Optional<DragOperation> ConvertEffectAllowedToDragOperation(
-    const String& op) {
+base::Optional<DragOperationsMask> ConvertEffectAllowedToDragOperationsMask(
+    const AtomicString& op) {
   // Values specified in
   // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-effectallowed
   if (op == "uninitialized")
@@ -175,18 +173,24 @@ static base::Optional<DragOperation> ConvertEffectAllowedToDragOperation(
     return kDragOperationLink;
   if (op == "move")
     return kDragOperationMove;
-  if (op == "copyLink")
-    return static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink);
-  if (op == "copyMove")
-    return static_cast<DragOperation>(kDragOperationCopy | kDragOperationMove);
-  if (op == "linkMove")
-    return static_cast<DragOperation>(kDragOperationLink | kDragOperationMove);
+  if (op == "copyLink") {
+    return static_cast<DragOperationsMask>(kDragOperationCopy |
+                                           kDragOperationLink);
+  }
+  if (op == "copyMove") {
+    return static_cast<DragOperationsMask>(kDragOperationCopy |
+                                           kDragOperationMove);
+  }
+  if (op == "linkMove") {
+    return static_cast<DragOperationsMask>(kDragOperationLink |
+                                           kDragOperationMove);
+  }
   if (op == "all")
     return kDragOperationEvery;
   return base::nullopt;
 }
 
-static String ConvertDragOperationToEffectAllowed(DragOperation op) {
+AtomicString ConvertDragOperationsMaskToEffectAllowed(DragOperationsMask op) {
   if (((op & kDragOperationMove) && (op & kDragOperationCopy) &&
        (op & kDragOperationLink)) ||
       (op == kDragOperationEvery))
@@ -209,8 +213,7 @@ static String ConvertDragOperationToEffectAllowed(DragOperation op) {
 // We provide the IE clipboard types (URL and Text), and the clipboard types
 // specified in the HTML spec. See
 // https://html.spec.whatwg.org/multipage/dnd.html#the-datatransfer-interface
-static String NormalizeType(const String& type,
-                            bool* convert_to_url = nullptr) {
+String NormalizeType(const String& type, bool* convert_to_url = nullptr) {
   String clean_type = type.StripWhiteSpace().LowerASCII();
   if (clean_type == kMimeTypeText ||
       clean_type.StartsWith(kMimeTypeTextPlainEtc))
@@ -222,6 +225,8 @@ static String NormalizeType(const String& type,
   }
   return clean_type;
 }
+
+}  // namespace
 
 // static
 DataTransfer* DataTransfer::Create() {
@@ -241,7 +246,7 @@ DataTransfer* DataTransfer::Create(DataTransferType type,
 
 DataTransfer::~DataTransfer() = default;
 
-void DataTransfer::setDropEffect(const String& effect) {
+void DataTransfer::setDropEffect(const AtomicString& effect) {
   if (!IsForDragAndDrop())
     return;
 
@@ -253,18 +258,14 @@ void DataTransfer::setDropEffect(const String& effect) {
 
   // The specification states that dropEffect can be changed at all times, even
   // if the DataTransfer instance is protected or neutered.
-  //
-  // Allowing these changes seems inconsequential, but findDropZone() in
-  // EventHandler.cpp relies on being able to call setDropEffect during
-  // dragenter, when the DataTransfer policy is DataTransferTypesReadable.
   drop_effect_ = effect;
 }
 
-void DataTransfer::setEffectAllowed(const String& effect) {
+void DataTransfer::setEffectAllowed(const AtomicString& effect) {
   if (!IsForDragAndDrop())
     return;
 
-  if (!ConvertEffectAllowedToDragOperation(effect)) {
+  if (!ConvertEffectAllowedToDragOperationsMask(effect)) {
     // This means that there was no conversion, and the effectAllowed that
     // we are passed isn't a valid effectAllowed, so we should ignore it,
     // and not set |effect_allowed_|.
@@ -392,7 +393,6 @@ FloatSize DataTransfer::DeviceSpaceSize(const FloatSize& css_size,
 std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
     LocalFrame& frame,
     float opacity,
-    RespectImageOrientationEnum image_orientation,
     const FloatSize& css_size,
     const FloatPoint& paint_offset,
     PaintRecordBuilder& builder,
@@ -425,7 +425,10 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
   float screen_device_scale_factor =
       chrome_client.GetScreenInfo(frame).device_scale_factor;
 
-  return DragImage::Create(image.get(), image_orientation,
+  // There is no orientation information in the image, so pass
+  // kDoNotRespectImageOrientation in order to avoid wasted work looking
+  // at orientation.
+  return DragImage::Create(image.get(), kDoNotRespectImageOrientation,
                            screen_device_scale_factor, kInterpolationDefault,
                            opacity);
 }
@@ -559,41 +562,27 @@ bool DataTransfer::CanSetDragImage() const {
          policy_ == DataTransferAccessPolicy::kWritable;
 }
 
-DragOperation DataTransfer::SourceOperation() const {
-  base::Optional<DragOperation> op =
-      ConvertEffectAllowedToDragOperation(effect_allowed_);
+DragOperationsMask DataTransfer::SourceOperation() const {
+  base::Optional<DragOperationsMask> op =
+      ConvertEffectAllowedToDragOperationsMask(effect_allowed_);
   DCHECK(op);
   return *op;
 }
 
-DragOperation DataTransfer::DestinationOperation() const {
-  base::Optional<DragOperation> op =
-      ConvertEffectAllowedToDragOperation(drop_effect_);
-  DCHECK(op == kDragOperationCopy || op == kDragOperationNone ||
-         op == kDragOperationLink || op == kDragOperationMove ||
-         op == kDragOperationEvery);
-  return *op;
+ui::mojom::blink::DragOperation DataTransfer::DestinationOperation() const {
+  DCHECK(DropEffectIsInitialized());
+  base::Optional<DragOperationsMask> op =
+      ConvertEffectAllowedToDragOperationsMask(drop_effect_);
+  return static_cast<ui::mojom::blink::DragOperation>(*op);
 }
 
-void DataTransfer::SetSourceOperation(DragOperation op) {
-  DCHECK_NE(op, kDragOperationPrivate);
-  effect_allowed_ = ConvertDragOperationToEffectAllowed(op);
+void DataTransfer::SetSourceOperation(DragOperationsMask op) {
+  effect_allowed_ = ConvertDragOperationsMaskToEffectAllowed(op);
 }
 
-void DataTransfer::SetDestinationOperation(DragOperation op) {
-  DCHECK(op == kDragOperationCopy || op == kDragOperationNone ||
-         op == kDragOperationLink || op == kDragOperationMove);
-  drop_effect_ = ConvertDragOperationToEffectAllowed(op);
-}
-
-bool DataTransfer::HasDropZoneType(const String& keyword) {
-  if (keyword.StartsWith("file:"))
-    return HasFileOfType(keyword.Substring(5));
-
-  if (keyword.StartsWith("string:"))
-    return HasStringOfType(keyword.Substring(7));
-
-  return false;
+void DataTransfer::SetDestinationOperation(ui::mojom::blink::DragOperation op) {
+  drop_effect_ = ConvertDragOperationsMaskToEffectAllowed(
+      static_cast<DragOperationsMask>(op));
 }
 
 DataTransferItemList* DataTransfer::items() {
@@ -612,7 +601,6 @@ DataTransfer::DataTransfer(DataTransferType type,
                            DataTransferAccessPolicy policy,
                            DataObject* data_object)
     : policy_(policy),
-      drop_effect_("uninitialized"),
       effect_allowed_("uninitialized"),
       transfer_type_(type),
       data_object_(data_object),
@@ -651,30 +639,6 @@ bool DataTransfer::HasStringOfType(const String& type) const {
     return false;
 
   return data_object_->Types().Contains(type);
-}
-
-DragOperation ConvertDropZoneOperationToDragOperation(
-    const String& drag_operation) {
-  if (drag_operation == "copy")
-    return kDragOperationCopy;
-  if (drag_operation == "move")
-    return kDragOperationMove;
-  if (drag_operation == "link")
-    return kDragOperationLink;
-  return kDragOperationNone;
-}
-
-String ConvertDragOperationToDropZoneOperation(DragOperation operation) {
-  switch (operation) {
-    case kDragOperationCopy:
-      return String("copy");
-    case kDragOperationMove:
-      return String("move");
-    case kDragOperationLink:
-      return String("link");
-    default:
-      return String("copy");
-  }
 }
 
 void DataTransfer::Trace(Visitor* visitor) const {

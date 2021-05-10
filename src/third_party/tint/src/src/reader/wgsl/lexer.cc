@@ -32,9 +32,10 @@ bool is_whitespace(char c) {
 
 }  // namespace
 
-Lexer::Lexer(Source::File const* file)
-    : file_(file),
-      len_(static_cast<uint32_t>(file->content.size())),
+Lexer::Lexer(const std::string& file_path, const Source::FileContent* content)
+    : file_path_(file_path),
+      content_(content),
+      len_(static_cast<uint32_t>(content->data.size())),
       location_{1, 1} {}
 
 Lexer::~Lexer() = default;
@@ -62,11 +63,6 @@ Token Lexer::next() {
     return t;
   }
 
-  t = try_string();
-  if (!t.IsUninitialized()) {
-    return t;
-  }
-
   t = try_punctuation();
   if (!t.IsUninitialized()) {
     return t;
@@ -82,7 +78,8 @@ Token Lexer::next() {
 
 Source Lexer::begin_source() const {
   Source src{};
-  src.file = file_;
+  src.file_path = file_path_;
+  src.file_content = content_;
   src.range.begin = location_;
   src.range.end = location_;
   return src;
@@ -115,13 +112,13 @@ bool Lexer::is_hex(char ch) const {
 bool Lexer::matches(size_t pos, const std::string& substr) {
   if (pos >= len_)
     return false;
-  return file_->content.substr(pos, substr.size()) == substr;
+  return content_->data.substr(pos, substr.size()) == substr;
 }
 
 void Lexer::skip_whitespace() {
   for (;;) {
     auto pos = pos_;
-    while (!is_eof() && is_whitespace(file_->content[pos_])) {
+    while (!is_eof() && is_whitespace(content_->data[pos_])) {
       if (matches(pos_, "\n")) {
         pos_++;
         location_.line++;
@@ -143,7 +140,7 @@ void Lexer::skip_whitespace() {
 }
 
 void Lexer::skip_comments() {
-  if (!matches(pos_, "#")) {
+  if (!matches(pos_, "//")) {
     return;
   }
 
@@ -162,7 +159,7 @@ Token Lexer::try_float() {
   if (matches(end, "-")) {
     end++;
   }
-  while (end < len_ && is_digit(file_->content[end])) {
+  while (end < len_ && is_digit(content_->data[end])) {
     end++;
   }
 
@@ -171,7 +168,7 @@ Token Lexer::try_float() {
   }
   end++;
 
-  while (end < len_ && is_digit(file_->content[end])) {
+  while (end < len_ && is_digit(content_->data[end])) {
     end++;
   }
 
@@ -183,7 +180,7 @@ Token Lexer::try_float() {
     }
 
     auto exp_start = end;
-    while (end < len_ && isdigit(file_->content[end])) {
+    while (end < len_ && isdigit(content_->data[end])) {
       end++;
     }
 
@@ -192,7 +189,7 @@ Token Lexer::try_float() {
       return {};
   }
 
-  auto str = file_->content.substr(start, end - start);
+  auto str = content_->data.substr(start, end - start);
   if (str == "." || str == "-.")
     return {};
 
@@ -201,7 +198,7 @@ Token Lexer::try_float() {
 
   end_source(source);
 
-  auto res = strtod(file_->content.c_str() + start, nullptr);
+  auto res = strtod(content_->data.c_str() + start, nullptr);
   // This handles if the number is a really small in the exponent
   if (res > 0 && res < static_cast<double>(std::numeric_limits<float>::min())) {
     return {Token::Type::kError, source, "f32 (" + str + " too small"};
@@ -221,13 +218,13 @@ Token Lexer::build_token_from_int_if_possible(Source source,
                                               size_t start,
                                               size_t end,
                                               int32_t base) {
-  auto res = strtoll(file_->content.c_str() + start, nullptr, base);
+  auto res = strtoll(content_->data.c_str() + start, nullptr, base);
   if (matches(pos_, "u")) {
     if (static_cast<uint64_t>(res) >
         static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
       return {
           Token::Type::kError, source,
-          "u32 (" + file_->content.substr(start, end - start) + ") too large"};
+          "u32 (" + content_->data.substr(start, end - start) + ") too large"};
     }
     pos_ += 1;
     location_.column += 1;
@@ -238,12 +235,12 @@ Token Lexer::build_token_from_int_if_possible(Source source,
   if (res < static_cast<int64_t>(std::numeric_limits<int32_t>::min())) {
     return {
         Token::Type::kError, source,
-        "i32 (" + file_->content.substr(start, end - start) + ") too small"};
+        "i32 (" + content_->data.substr(start, end - start) + ") too small"};
   }
   if (res > static_cast<int64_t>(std::numeric_limits<int32_t>::max())) {
     return {
         Token::Type::kError, source,
-        "i32 (" + file_->content.substr(start, end - start) + ") too large"};
+        "i32 (" + content_->data.substr(start, end - start) + ") too large"};
   }
   end_source(source);
   return {source, static_cast<int32_t>(res)};
@@ -263,7 +260,7 @@ Token Lexer::try_hex_integer() {
   }
   end += 2;
 
-  while (!is_eof() && is_hex(file_->content[end])) {
+  while (!is_eof() && is_hex(content_->data[end])) {
     end += 1;
   }
 
@@ -282,18 +279,18 @@ Token Lexer::try_integer() {
   if (matches(end, "-")) {
     end++;
   }
-  if (end >= len_ || !is_digit(file_->content[end])) {
+  if (end >= len_ || !is_digit(content_->data[end])) {
     return {};
   }
 
   auto first = end;
-  while (end < len_ && is_digit(file_->content[end])) {
+  while (end < len_ && is_digit(content_->data[end])) {
     end++;
   }
 
   // If the first digit is a zero this must only be zero as leading zeros
   // are not allowed.
-  if (file_->content[first] == '0' && (end - first != 1))
+  if (content_->data[first] == '0' && (end - first != 1))
     return {};
 
   pos_ = end;
@@ -304,19 +301,19 @@ Token Lexer::try_integer() {
 
 Token Lexer::try_ident() {
   // Must begin with an a-zA-Z_
-  if (!is_alpha(file_->content[pos_])) {
+  if (!is_alpha(content_->data[pos_])) {
     return {};
   }
 
   auto source = begin_source();
 
   auto s = pos_;
-  while (!is_eof() && is_alphanum(file_->content[pos_])) {
+  while (!is_eof() && is_alphanum(content_->data[pos_])) {
     pos_++;
     location_.column++;
   }
 
-  auto str = file_->content.substr(s, pos_ - s);
+  auto str = content_->data.substr(s, pos_ - s);
   auto t = check_reserved(source, str);
   if (!t.IsUninitialized()) {
     return t;
@@ -330,29 +327,6 @@ Token Lexer::try_ident() {
   }
 
   return {Token::Type::kIdentifier, source, str};
-}
-
-Token Lexer::try_string() {
-  if (!matches(pos_, R"(")"))
-    return {};
-
-  auto source = begin_source();
-
-  pos_++;
-  auto start = pos_;
-  while (pos_ < len_ && !matches(pos_, R"(")")) {
-    pos_++;
-  }
-  auto end = pos_;
-  if (matches(pos_, R"(")")) {
-    pos_++;
-  }
-  location_.column += (pos_ - start) + 1;
-
-  end_source(source);
-
-  return {Token::Type::kStringLiteral, source,
-          file_->content.substr(start, end - start)};
 }
 
 Token Lexer::try_punctuation() {
@@ -411,10 +385,6 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kBang;
     pos_ += 1;
     location_.column += 1;
-  } else if (matches(pos_, "::")) {
-    type = Token::Type::kNamespace;
-    pos_ += 2;
-    location_.column += 2;
   } else if (matches(pos_, ":")) {
     type = Token::Type::kColon;
     pos_ += 1;
@@ -435,12 +405,20 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kGreaterThanEqual;
     pos_ += 2;
     location_.column += 2;
+  } else if (matches(pos_, ">>")) {
+    type = Token::Type::kShiftRight;
+    pos_ += 2;
+    location_.column += 2;
   } else if (matches(pos_, ">")) {
     type = Token::Type::kGreaterThan;
     pos_ += 1;
     location_.column += 1;
   } else if (matches(pos_, "<=")) {
     type = Token::Type::kLessThanEqual;
+    pos_ += 2;
+    location_.column += 2;
+  } else if (matches(pos_, "<<")) {
+    type = Token::Type::kShiftLeft;
     pos_ += 2;
     location_.column += 2;
   } else if (matches(pos_, "<")) {
@@ -497,22 +475,14 @@ Token Lexer::try_punctuation() {
 Token Lexer::check_keyword(const Source& source, const std::string& str) {
   if (str == "array")
     return {Token::Type::kArray, source, "array"};
-  if (str == "binding")
-    return {Token::Type::kBinding, source, "binding"};
   if (str == "bitcast")
     return {Token::Type::kBitcast, source, "bitcast"};
-  if (str == "block")
-    return {Token::Type::kBlock, source, "block"};
   if (str == "bool")
     return {Token::Type::kBool, source, "bool"};
   if (str == "break")
     return {Token::Type::kBreak, source, "break"};
-  if (str == "builtin")
-    return {Token::Type::kBuiltin, source, "builtin"};
   if (str == "case")
     return {Token::Type::kCase, source, "case"};
-  if (str == "compute")
-    return {Token::Type::kCompute, source, "compute"};
   if (str == "const")
     return {Token::Type::kConst, source, "const"};
   if (str == "continue")
@@ -607,8 +577,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kFormatRgba8Unorm, source, "rgba8unorm"};
   if (str == "rgba8unorm_srgb")
     return {Token::Type::kFormatRgba8UnormSrgb, source, "rgba8unorm_srgb"};
-  if (str == "fragment")
-    return {Token::Type::kFragment, source, "fragment"};
   if (str == "function")
     return {Token::Type::kFunction, source, "function"};
   if (str == "i32")
@@ -621,8 +589,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kImport, source, "import"};
   if (str == "in")
     return {Token::Type::kIn, source, "in"};
-  if (str == "location")
-    return {Token::Type::kLocation, source, "location"};
   if (str == "loop")
     return {Token::Type::kLoop, source, "loop"};
   if (str == "mat2x2")
@@ -643,8 +609,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kMat4x3, source, "mat4x3"};
   if (str == "mat4x4")
     return {Token::Type::kMat4x4, source, "mat4x4"};
-  if (str == "offset")
-    return {Token::Type::kOffset, source, "offset"};
   if (str == "out")
     return {Token::Type::kOut, source, "out"};
   if (str == "private")
@@ -657,22 +621,14 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kSampler, source, "sampler"};
   if (str == "sampler_comparison")
     return {Token::Type::kComparisonSampler, source, "sampler_comparison"};
-  if (str == "set")
-    return {Token::Type::kSet, source, "set"};
-  if (str == "stage")
-    return {Token::Type::kStage, source, "stage"};
-  if (str == "storage_buffer")
-    return {Token::Type::kStorageBuffer, source, "storage_buffer"};
-  if (str == "stride")
-    return {Token::Type::kStride, source, "stride"};
+  if (str == "storage_buffer" || str == "storage")
+    return {Token::Type::kStorage, source, "storage"};
   if (str == "struct")
     return {Token::Type::kStruct, source, "struct"};
   if (str == "switch")
     return {Token::Type::kSwitch, source, "switch"};
   if (str == "texture_1d")
     return {Token::Type::kTextureSampled1d, source, "texture_1d"};
-  if (str == "texture_1d_array")
-    return {Token::Type::kTextureSampled1dArray, source, "texture_1d_array"};
   if (str == "texture_2d")
     return {Token::Type::kTextureSampled2d, source, "texture_2d"};
   if (str == "texture_2d_array")
@@ -701,94 +657,19 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kTextureMultisampled2d, source,
             "texture_multisampled_2d"};
   }
-  if (str == "texture_ro_1d")
-    return {Token::Type::kTextureStorageReadonly1d, source, "texture_ro_1d"};
-  if (str == "texture_ro_1d_array") {
-    return {Token::Type::kTextureStorageReadonly1dArray, source,
-            "texture_ro_1d_array"};
+  if (str == "texture_storage_1d") {
+    return {Token::Type::kTextureStorage1d, source, "texture_storage_1d"};
   }
-  if (str == "texture_ro_2d")
-    return {Token::Type::kTextureStorageReadonly2d, source, "texture_ro_2d"};
-  if (str == "texture_ro_2d_array") {
-    return {Token::Type::kTextureStorageReadonly2dArray, source,
-            "texture_ro_2d_array"};
+  if (str == "texture_storage_2d") {
+    return {Token::Type::kTextureStorage2d, source, "texture_storage_2d"};
   }
-  if (str == "texture_ro_3d")
-    return {Token::Type::kTextureStorageReadonly3d, source, "texture_ro_3d"};
-  if (str == "texture_sampled_1d")
-    return {Token::Type::kTextureSampled1d, source, "texture_sampled_1d"};
-  if (str == "texture_sampled_1d_array") {
-    return {Token::Type::kTextureSampled1dArray, source,
-            "texture_sampled_1d_array"};
+  if (str == "texture_storage_2d_array") {
+    return {Token::Type::kTextureStorage2dArray, source,
+            "texture_storage_2d_array"};
   }
-  if (str == "texture_sampled_2d")
-    return {Token::Type::kTextureSampled2d, source, "texture_sampled_2d"};
-  if (str == "texture_sampled_2d_array") {
-    return {Token::Type::kTextureSampled2dArray, source,
-            "texture_sampled_2d_array"};
+  if (str == "texture_storage_3d") {
+    return {Token::Type::kTextureStorage3d, source, "texture_storage_3d"};
   }
-  if (str == "texture_sampled_3d")
-    return {Token::Type::kTextureSampled3d, source, "texture_sampled_3d"};
-  if (str == "texture_sampled_cube")
-    return {Token::Type::kTextureSampledCube, source, "texture_sampled_cube"};
-  if (str == "texture_sampled_cube_array") {
-    return {Token::Type::kTextureSampledCubeArray, source,
-            "texture_sampled_cube_array"};
-  }
-  if (str == "texture_storage_ro_1d") {
-    return {Token::Type::kTextureStorageReadonly1d, source,
-            "texture_storage_ro_1d"};
-  }
-  if (str == "texture_storage_ro_1d_array") {
-    return {Token::Type::kTextureStorageReadonly1dArray, source,
-            "texture_storage_ro_1d_array"};
-  }
-  if (str == "texture_storage_ro_2d") {
-    return {Token::Type::kTextureStorageReadonly2d, source,
-            "texture_storage_ro_2d"};
-  }
-  if (str == "texture_storage_ro_2d_array") {
-    return {Token::Type::kTextureStorageReadonly2dArray, source,
-            "texture_storage_ro_2d_array"};
-  }
-  if (str == "texture_storage_ro_3d") {
-    return {Token::Type::kTextureStorageReadonly3d, source,
-            "texture_storage_ro_3d"};
-  }
-  if (str == "texture_storage_wo_1d") {
-    return {Token::Type::kTextureStorageWriteonly1d, source,
-            "texture_storage_wo_1d"};
-  }
-  if (str == "texture_storage_wo_1d_array") {
-    return {Token::Type::kTextureStorageWriteonly1dArray, source,
-            "texture_storage_wo_1d_array"};
-  }
-  if (str == "texture_storage_wo_2d") {
-    return {Token::Type::kTextureStorageWriteonly2d, source,
-            "texture_storage_wo_2d"};
-  }
-  if (str == "texture_storage_wo_2d_array") {
-    return {Token::Type::kTextureStorageWriteonly2dArray, source,
-            "texture_storage_wo_2d_array"};
-  }
-  if (str == "texture_storage_wo_3d") {
-    return {Token::Type::kTextureStorageWriteonly3d, source,
-            "texture_storage_wo_3d"};
-  }
-  if (str == "texture_wo_1d")
-    return {Token::Type::kTextureStorageWriteonly1d, source, "texture_wo_1d"};
-  if (str == "texture_wo_1d_array") {
-    return {Token::Type::kTextureStorageWriteonly1dArray, source,
-            "texture_wo_1d_array"};
-  }
-  if (str == "texture_wo_2d")
-    return {Token::Type::kTextureStorageWriteonly2d, source, "texture_wo_2d"};
-  if (str == "texture_wo_2d_array") {
-    return {Token::Type::kTextureStorageWriteonly2dArray, source,
-            "texture_wo_2d_array"};
-  }
-  if (str == "texture_wo_3d")
-    return {Token::Type::kTextureStorageWriteonly3d, source, "texture_wo_3d"};
   if (str == "true")
     return {Token::Type::kTrue, source, "true"};
   if (str == "type")
@@ -807,14 +688,10 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kVec3, source, "vec3"};
   if (str == "vec4")
     return {Token::Type::kVec4, source, "vec4"};
-  if (str == "vertex")
-    return {Token::Type::kVertex, source, "vertex"};
   if (str == "void")
     return {Token::Type::kVoid, source, "void"};
   if (str == "workgroup")
     return {Token::Type::kWorkgroup, source, "workgroup"};
-  if (str == "workgroup_size")
-    return {Token::Type::kWorkgroupSize, source, "workgroup_size"};
   return {};
 }
 
@@ -831,6 +708,8 @@ Token Lexer::check_reserved(const Source& source, const std::string& str) {
     return {Token::Type::kReservedKeyword, source, "f16"};
   if (str == "f64")
     return {Token::Type::kReservedKeyword, source, "f64"};
+  if (str == "handle")
+    return {Token::Type::kReservedKeyword, source, "handle"};
   if (str == "i8")
     return {Token::Type::kReservedKeyword, source, "i8"};
   if (str == "i16")

@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
@@ -51,8 +52,8 @@ public class AutofillAssistantFacade {
      */
     private static final String LITE_SCRIPT_EXPERIMENT_TRIAL =
             "AutofillAssistantLiteScriptExperiment";
-    private static final String LITE_SCRIPT_EXPERIMENT_TRIAL_CONTROL = "Control";
-    private static final String LITE_SCRIPT_EXPERIMENT_TRIAL_EXPERIMENT = "Experiment";
+    private static final String TRIGGER_SCRIPT_EXPERIMENT_TRIAL_CONTROL = "Control";
+    private static final String TRIGGER_SCRIPT_EXPERIMENT_TRIAL_EXPERIMENT = "Experiment";
 
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     private static boolean isConfigured(AutofillAssistantArguments arguments) {
@@ -74,15 +75,17 @@ public class AutofillAssistantFacade {
 
     /**
      * Starts Autofill Assistant.
-     * @param activity {@link ChromeActivity} the activity on which the Autofill Assistant is being
+     * @param activity {@link Activity} the activity on which the Autofill Assistant is being
      *         started.
      * @param bundleExtras {@link Bundle} the extras which were used to start the Autofill
      *         Assistant.
      * @param initialUrl the initial URL the Autofill Assistant should be started on.
      */
-    public static void start(
-            ChromeActivity activity, @Nullable Bundle bundleExtras, String initialUrl) {
-        start(activity,
+    public static void start(Activity activity, @Nullable Bundle bundleExtras, String initialUrl) {
+        // TODO(crbug.com/1155809): Remove ChromeActivity reference.
+        assert activity instanceof ChromeActivity;
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        start(chromeActivity,
                 AutofillAssistantArguments.newBuilder()
                         .fromBundle(bundleExtras)
                         .withInitialUrl(initialUrl)
@@ -108,33 +111,21 @@ public class AutofillAssistantFacade {
             }
         }
 
+        String intent = arguments.getParameters().get("INTENT");
         // Have an "attempted starts" baseline for the drop out histogram.
-        AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
+        AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START, intent);
         waitForTabWithWebContents(activity, tab -> {
             if (arguments.containsTriggerScript()) {
                 // Create a field trial and assign experiment arm based on script parameter. This
                 // is needed to tag UKM data to allow for A/B experiment comparisons.
                 FieldTrialList.createFieldTrial(LITE_SCRIPT_EXPERIMENT_TRIAL,
-                        arguments.isLiteScriptExperiment() ? LITE_SCRIPT_EXPERIMENT_TRIAL_EXPERIMENT
-                                                           : LITE_SCRIPT_EXPERIMENT_TRIAL_CONTROL);
+                        arguments.isTriggerScriptExperiment()
+                                ? TRIGGER_SCRIPT_EXPERIMENT_TRIAL_EXPERIMENT
+                                : TRIGGER_SCRIPT_EXPERIMENT_TRIAL_CONTROL);
 
                 // Record this as soon as possible, to establish a baseline.
                 AutofillAssistantMetrics.recordLiteScriptStarted(
                         tab.getWebContents(), LiteScriptStarted.LITE_SCRIPT_INTENT_RECEIVED);
-
-                // Legacy, remove as soon as possible. Trigger scripts before M-88 were tied to the
-                // regular autofill assistant Chrome setting. Since M-88, they also respect the new
-                // proactive help setting.
-                if (arguments.containsLegacyTriggerScripts()
-                        && (!AutofillAssistantPreferencesUtil.isProactiveHelpOn())) {
-                    if (AutofillAssistantPreferencesUtil
-                                    .isAutofillAssistantLiteScriptCancelThresholdReached()) {
-                        AutofillAssistantMetrics.recordLiteScriptStarted(tab.getWebContents(),
-                                LiteScriptStarted.LITE_SCRIPT_CANCELED_TWO_TIMES);
-                    }
-                    Log.v(TAG, "TriggerScript stopping: proactive help setting is turned off");
-                    return;
-                }
 
                 if (AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled()
                                 == null
@@ -152,7 +143,8 @@ public class AutofillAssistantFacade {
             if (AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled() == null) {
                 AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntry(tab, (moduleEntry) -> {
                     if (moduleEntry == null || activity.isActivityFinishingOrDestroyed()) {
-                        AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_INSTALL_FAILED);
+                        AutofillAssistantMetrics.recordDropOut(
+                                DropOutReason.DFM_INSTALL_FAILED, intent);
                         if (arguments.containsTriggerScript()) {
                             AutofillAssistantMetrics.recordLiteScriptFinished(tab.getWebContents(),
                                     LiteScriptStarted.LITE_SCRIPT_DFM_UNAVAILABLE);
@@ -186,7 +178,7 @@ public class AutofillAssistantFacade {
      * that direct actions are available at all.
      */
     public static boolean areDirectActionsAvailable(@ActivityType int activityType) {
-        return BuildInfo.isAtLeastQ()
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                 && (activityType == ActivityType.CUSTOM_TAB || activityType == ActivityType.TABBED)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);

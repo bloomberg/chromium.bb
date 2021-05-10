@@ -20,6 +20,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -27,7 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -40,7 +41,7 @@
 #else
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using ::testing::_;
 using ::testing::Eq;
@@ -766,7 +767,50 @@ TEST_F(RelaunchNotificationControllerTest, OverriddenToRequired) {
   ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
 }
 
-#if defined(OS_CHROMEOS)
+// Tests that the required notification is shown all three times when the clock
+// moves along with the elevations.
+TEST_F(RelaunchNotificationControllerTest, NotifyAllWithShortestPeriod) {
+  SetNotificationPref(2);
+
+  ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
+  FakeRelaunchNotificationController controller(
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
+
+  // Advance to the low threshold and raise the annoyance level.
+  const auto delta = fake_upgrade_detector().high_threshold() / 3;
+  FastForwardBy(delta);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+
+  // Advance to the elevated threshold and raise the annoyance level.
+  FastForwardBy(fake_upgrade_detector().high_threshold() - delta * 2);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+
+  // Advance to the deadline and raise the annoyance level.
+  FastForwardBy(delta);
+  ASSERT_EQ(GetMockClock()->Now(),
+            upgrade_detector()->GetHighAnnoyanceDeadline());
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
+  fake_upgrade_detector().BroadcastLevelChange(
+      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+
+  // Advance past the grace period to the restart.
+  EXPECT_CALL(mock_controller_delegate, OnRelaunchDeadlineExpired());
+  FastForwardBy(FakeRelaunchNotificationController::kRelaunchGracePeriod);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 class RelaunchNotificationControllerPlatformImplTest : public ::testing::Test {
  protected:
@@ -915,7 +959,7 @@ TEST_F(RelaunchNotificationControllerPlatformImplTest,
   ::testing::Mock::VerifyAndClearExpectations(&callback);
 }
 
-#else  // (!OS_CHROMEOS)
+#else  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class RelaunchNotificationControllerPlatformImplTest
     : public TestWithBrowserView {
@@ -997,4 +1041,4 @@ TEST_F(RelaunchNotificationControllerPlatformImplTest, DeferredDeadline) {
   ::testing::Mock::VerifyAndClearExpectations(&callback);
 }
 
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

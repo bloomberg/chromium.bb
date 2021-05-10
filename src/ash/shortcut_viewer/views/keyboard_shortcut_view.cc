@@ -92,8 +92,7 @@ std::unique_ptr<views::View> CreateNoSearchResultView() {
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  text->SetFontList(rb.GetFontListWithDelta(
-      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
+  text->SetFontList(rb.GetFontListWithDelta(kLabelFontSizeDelta));
   illustration_view->AddChildView(std::move(text));
   return illustration_view;
 }
@@ -213,6 +212,8 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
 
     g_ksv_view->AddAccelerator(
         ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+    g_ksv_view->AddAccelerator(
+        ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
 
     g_ksv_view->needs_init_all_categories_ = false;
     g_ksv_view->did_first_paint_ = false;
@@ -244,8 +245,12 @@ base::string16 KeyboardShortcutView::GetAccessibleWindowTitle() const {
 
 bool KeyboardShortcutView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
+  const bool is_valid_modifier =
+      accelerator.modifiers() == ui::EF_CONTROL_DOWN ||
+      accelerator.modifiers() == (ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  DCHECK(is_valid_modifier);
   DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
-  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+
   GetWidget()->Close();
   return true;
 }

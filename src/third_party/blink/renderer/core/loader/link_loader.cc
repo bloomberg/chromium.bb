@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
-#include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
+#include "third_party/blink/renderer/core/loader/prerender_handle.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
@@ -149,22 +149,6 @@ void LinkLoader::NotifyModuleLoadFinished(ModuleScript* module) {
     client_->LinkLoaded();
 }
 
-void LinkLoader::DidStartPrerender() {
-  client_->DidStartLinkPrerender();
-}
-
-void LinkLoader::DidStopPrerender() {
-  client_->DidStopLinkPrerender();
-}
-
-void LinkLoader::DidSendLoadForPrerender() {
-  client_->DidSendLoadForLinkPrerender();
-}
-
-void LinkLoader::DidSendDOMContentLoadedForPrerender() {
-  client_->DidSendDOMContentLoadedForLinkPrerender();
-}
-
 Resource* LinkLoader::GetResourceForTesting() {
   return finish_observer_ ? finish_observer_->GetResource() : nullptr;
 }
@@ -201,18 +185,20 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
   if (prerender_rel_type) {
     // The previous prerender should already be aborted by Abort().
     DCHECK(!prerender_);
-    prerender_ = PrerenderHandle::Create(document, this, params.href,
-                                         *prerender_rel_type);
+    prerender_ =
+        PrerenderHandle::Create(document, params.href, *prerender_rel_type);
   }
   return true;
 }
 
-void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
-                                const AtomicString& local_name,
-                                const WTF::TextEncoding& charset,
-                                FetchParameters::DeferOption defer_option,
-                                Document& document,
-                                ResourceClient* link_client) {
+void LinkLoader::LoadStylesheet(
+    const LinkLoadParameters& params,
+    const AtomicString& local_name,
+    const WTF::TextEncoding& charset,
+    FetchParameters::DeferOption defer_option,
+    Document& document,
+    ResourceClient* link_client,
+    RenderBlockingBehavior render_blocking_behavior) {
   ExecutionContext* context = document.GetExecutionContext();
   ResourceRequest resource_request(context->CompleteURL(params.href));
   resource_request.SetReferrerPolicy(params.referrer_policy);
@@ -225,11 +211,11 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
 
   ResourceLoaderOptions options(context->GetCurrentWorld());
   options.initiator_info.name = local_name;
+
   FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(charset);
-
   link_fetch_params.SetDefer(defer_option);
-
+  link_fetch_params.SetRenderBlockingBehavior(render_blocking_behavior);
   link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);
 
   CrossOriginAttributeValue cross_origin = params.cross_origin;
@@ -269,7 +255,6 @@ void LinkLoader::Trace(Visitor* visitor) const {
   visitor->Trace(client_);
   visitor->Trace(prerender_);
   SingleModuleClient::Trace(visitor);
-  PrerenderClient::Trace(visitor);
 }
 
 }  // namespace blink

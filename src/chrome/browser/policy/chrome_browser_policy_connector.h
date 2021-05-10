@@ -13,14 +13,19 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+
+#if defined(OS_ANDROID)
+#include "components/policy/core/browser/android/policy_cache_updater_android.h"
+#endif
 
 class PrefService;
 
 namespace policy {
 class ConfigurationPolicyProvider;
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 class ChromeBrowserCloudManagementController;
 class MachineLevelUserCloudPolicyManager;
 #endif
@@ -55,7 +60,7 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   ConfigurationPolicyProvider* GetPlatformProvider();
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   ChromeBrowserCloudManagementController*
   chrome_browser_cloud_management_controller() {
     return chrome_browser_cloud_management_controller_.get();
@@ -84,7 +89,7 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   // Owned by base class.
   ConfigurationPolicyProvider* platform_provider_ = nullptr;
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ChromeBrowserCloudManagementController>
       chrome_browser_cloud_management_controller_;
   // Owned by base class.
@@ -93,6 +98,10 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 #endif
 
   ConfigurationPolicyProvider* command_line_provider_ = nullptr;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<android::PolicyCacheUpdater> pollicy_cache_updater_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);
 };

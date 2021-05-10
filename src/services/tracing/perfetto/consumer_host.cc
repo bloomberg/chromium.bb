@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -25,6 +26,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/perfetto/privacy_filtering_check.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_session.h"
 #include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 #include "third_party/perfetto/include/perfetto/ext/trace_processor/export_json.h"
@@ -150,6 +152,7 @@ ConsumerHost::TracingSession::TracingSession(
     mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
     mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
     const perfetto::TraceConfig& trace_config,
+    perfetto::base::ScopedFile output_file,
     mojom::TracingClientPriority priority)
     : host_(host),
       tracing_session_client_(std::move(tracing_session_client)),
@@ -215,7 +218,8 @@ ConsumerHost::TracingSession::TracingSession(
     }
   }
 
-  host_->consumer_endpoint()->EnableTracing(effective_config);
+  host_->consumer_endpoint()->EnableTracing(effective_config,
+                                            std::move(output_file));
   MaybeSendEnableTracingAck();
 
   if (pending_enable_tracing_ack_pids_) {
@@ -516,6 +520,7 @@ void ConsumerHost::TracingSession::OnTraceData(
     max_size += packet.size();
   }
 
+  // If |trace_processor_| was initialized, then export trace as JSON.
   if (trace_processor_) {
     // Copy packets into a trace file chunk.
     size_t position = 0;
@@ -560,6 +565,11 @@ void ConsumerHost::TracingSession::OnTraceData(
       chunk->append(static_cast<const char*>(slice.start), slice.size);
     }
   }
+
+  if (privacy_filtering_enabled_) {
+    tracing::PrivacyFilteringCheck::RemoveBlockedFields(*chunk);
+  }
+
   read_buffers_stream_writer_.AsyncCall(&StreamWriter::WriteToStream)
       .WithArgs(std::move(chunk), has_more);
   if (!has_more) {
@@ -626,7 +636,8 @@ ConsumerHost::~ConsumerHost() {
 void ConsumerHost::EnableTracing(
     mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
     mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
-    const perfetto::TraceConfig& trace_config) {
+    const perfetto::TraceConfig& trace_config,
+    base::File output_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!tracing_session_);
 
@@ -651,6 +662,15 @@ void ConsumerHost::EnableTracing(
     }
   }
 
+#if defined(OS_WIN)
+  // TODO(crbug.com/1158482): Support writing to a file directly on Windows.
+  DCHECK(!output_file.IsValid())
+      << "Tracing directly to a file isn't supported yet on Windows";
+  perfetto::base::ScopedFile file;
+#else
+  perfetto::base::ScopedFile file(output_file.TakePlatformFile());
+#endif
+
   // We create our new TracingSession async, if the PerfettoService allows
   // us to, after it's stopped any currently running lower or equal priority
   // tracing sessions.
@@ -662,6 +682,7 @@ void ConsumerHost::EnableTracing(
                        mojo::PendingRemote<mojom::TracingSessionClient>
                            tracing_session_client,
                        const perfetto::TraceConfig& trace_config,
+                       perfetto::base::ScopedFile output_file,
                        mojom::TracingClientPriority priority) {
                       if (!weak_this) {
                         return;
@@ -671,10 +692,11 @@ void ConsumerHost::EnableTracing(
                           std::make_unique<TracingSession>(
                               weak_this.get(), std::move(tracing_session_host),
                               std::move(tracing_session_client), trace_config,
-                              priority);
+                              std::move(output_file), priority);
                     },
                     weak_factory_.GetWeakPtr(), std::move(tracing_session_host),
-                    std::move(tracing_session_client), trace_config, priority));
+                    std::move(tracing_session_client), trace_config,
+                    std::move(file), priority));
 }
 
 void ConsumerHost::OnConnect() {}

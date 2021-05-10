@@ -32,7 +32,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
@@ -81,21 +83,17 @@ class ColorSpace;
 }
 
 namespace gpu {
+class GpuChannelHost;
 class GpuMemoryBufferManager;
 }
 
 namespace media {
 struct AudioSinkParameters;
 struct AudioSourceParameters;
+class DecoderFactory;
 class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }  // namespace media
-
-namespace network {
-namespace mojom {
-class URLResponseHead;
-}  // namespace mojom
-}  // namespace network
 
 namespace v8 {
 class Context;
@@ -114,6 +112,7 @@ class MediaInspectorContext;
 class ThreadSafeBrowserInterfaceBrokerProxy;
 class Thread;
 struct ThreadCreationParams;
+class URLLoaderThrottle;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebCrypto;
@@ -122,11 +121,10 @@ class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPublicSuffixList;
+class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
-class WebURLResponse;
-class WebURLResponse;
 class WebVideoCaptureImplManager;
 
 namespace scheduler {
@@ -330,13 +328,22 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
 
-  // Converts network::mojom::URLResponseHead to WebURLResponse.
-  // TODO(crbug.com/860403): Remove this once it's moved into Blink.
-  virtual void PopulateURLResponse(const WebURL& url,
-                                   const network::mojom::URLResponseHead& head,
-                                   WebURLResponse* response,
-                                   bool report_security_info,
-                                   int request_id) {}
+  // Determines whether it is safe to redirect from |from_url| to |to_url|.
+  virtual bool IsRedirectSafe(const GURL& from_url, const GURL& to_url) {
+    return false;
+  }
+
+  // Returns the WebResourceRequestSenderDelegate of this renderer.
+  virtual WebResourceRequestSenderDelegate* GetResourceRequestSenderDelegate() {
+    return nullptr;
+  }
+
+  // Appends throttles if the browser has sent a variations header to the
+  // renderer.
+  virtual void AppendVariationsThrottles(
+      int routing_id,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {}
+
   // Public Suffix List --------------------------------------------------
 
   // May return null on some platforms.
@@ -378,12 +385,20 @@ class BLINK_PLATFORM_EXPORT Platform {
   // once CreateAndSetCompositorThread() is called.
   scoped_refptr<base::SingleThreadTaskRunner> CompositorThreadTaskRunner();
 
+  // Returns the task runner of the media thread.
+  // This method should only be called on the main thread, or it crashes.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> MediaThreadTaskRunner() {
+    return nullptr;
+  }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // This is called after the compositor thread is created, so the embedder
   // can initiate an IPC to change its thread priority (on Linux we can't
   // increase the nice value, so we need to ask the browser process). This
   // function is only called from the main thread (where InitializeCompositor-
   // Thread() is called).
   virtual void SetDisplayThreadPriority(base::PlatformThreadId) {}
+#endif
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
@@ -733,6 +748,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::GpuVideoAcceleratorFactories* GetGpuFactories() {
     return nullptr;
   }
+
+  virtual media::DecoderFactory* GetMediaDecoderFactory() { return nullptr; }
 
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) {}
 

@@ -25,6 +25,7 @@
 #include "fxjs/cjs_runtime.h"
 #include "fxjs/ijs_runtime.h"
 #include "public/fpdf_formfill.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 #include "v8/include/cppgc/allocation.h"
@@ -101,7 +102,7 @@ CPDFXFA_Context::CPDFXFA_Context(CPDF_Document* pPDFDoc)
     : m_pPDFDoc(pPDFDoc),
       m_pDocEnv(std::make_unique<CPDFXFA_DocEnvironment>(this)),
       m_pGCHeap(FXGC_CreateHeap()) {
-  ASSERT(m_pPDFDoc);
+  DCHECK(m_pPDFDoc);
 
   // There might not be a heap when JS not initialized.
   if (m_pGCHeap) {
@@ -207,7 +208,7 @@ int CPDFXFA_Context::GetPageCount() const {
   return 0;
 }
 
-RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetXFAPage(int page_index) {
+RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetOrCreateXFAPage(int page_index) {
   if (page_index < 0)
     return nullptr;
 
@@ -227,6 +228,13 @@ RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetXFAPage(int page_index) {
     m_XFAPageList[page_index] = pPage;
 
   return pPage;
+}
+
+RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetXFAPage(int page_index) {
+  if (!pdfium::IndexInBounds(m_XFAPageList, page_index))
+    return nullptr;
+
+  return m_XFAPageList[page_index];
 }
 
 RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetXFAPage(

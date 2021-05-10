@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
@@ -229,8 +229,8 @@ class ChromeRuntimeAPIDelegateTest : public ExtensionServiceTestWithInstall {
                      const std::string& expected_version) {
     UpdateCheckResultCatcher catcher;
     EXPECT_TRUE(runtime_delegate_->CheckForUpdates(
-        id, base::Bind(&UpdateCheckResultCatcher::OnResult,
-                       base::Unretained(&catcher))));
+        id, base::BindOnce(&UpdateCheckResultCatcher::OnResult,
+                           base::Unretained(&catcher))));
     std::unique_ptr<RuntimeAPIDelegate::UpdateCheckResult> result =
         catcher.WaitForResult();
     ASSERT_NE(nullptr, result.get());

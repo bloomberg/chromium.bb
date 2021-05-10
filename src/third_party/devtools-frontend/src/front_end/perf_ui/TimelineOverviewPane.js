@@ -35,9 +35,6 @@ import * as UI from '../ui/ui.js';
 import {Events as OverviewGridEvents, OverviewGrid} from './OverviewGrid.js';
 import {Calculator} from './TimelineGrid.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class TimelineOverviewPane extends UI.Widget.VBox {
   /**
    * @param {string} prefix
@@ -287,7 +284,6 @@ export const Events = {
 
 /**
  * @implements {Calculator}
- * @unrestricted
  */
 export class TimelineOverviewCalculator {
   constructor() {
@@ -446,7 +442,6 @@ export class TimelineOverview {
 
 /**
  * @implements {TimelineOverview}
- * @unrestricted
  */
 export class TimelineOverviewBase extends UI.Widget.VBox {
   constructor() {
@@ -561,7 +556,7 @@ export class OverviewInfo {
         UI.Utils
             .createShadowRootWithCoreStyles(
                 this._glassPane.contentElement,
-                {cssFile: 'perf_ui/timelineOverviewInfo.css', enableLegacyPatching: true, delegatesFocus: undefined})
+                {cssFile: 'perf_ui/timelineOverviewInfo.css', enableLegacyPatching: false, delegatesFocus: undefined})
             .createChild('div', 'overview-info');
   }
 

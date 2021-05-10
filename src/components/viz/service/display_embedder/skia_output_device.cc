@@ -15,6 +15,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "third_party/skia/include/core/SkDeferredDisplayList.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
@@ -24,6 +25,8 @@
 
 namespace viz {
 namespace {
+
+using ::perfetto::protos::pbzero::ChromeLatencyInfo;
 
 scoped_refptr<base::SequencedTaskRunner> CreateLatencyTracerRunner() {
   if (!base::ThreadPoolInstance::Get())
@@ -35,20 +38,28 @@ scoped_refptr<base::SequencedTaskRunner> CreateLatencyTracerRunner() {
 
 void ReportLatency(const gfx::SwapTimings& timings,
                    ui::LatencyTracker* tracker,
-                   std::vector<ui::LatencyInfo> latency_info) {
+                   std::vector<ui::LatencyInfo> latency_info,
+                   bool top_controls_visible_height_changed) {
   for (auto& latency : latency_info) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, timings.swap_start);
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, timings.swap_end);
   }
-  tracker->OnGpuSwapBuffersCompleted(std::move(latency_info));
+  tracker->OnGpuSwapBuffersCompleted(std::move(latency_info),
+                                     top_controls_visible_height_changed);
 }
 
 }  // namespace
 
-SkiaOutputDevice::ScopedPaint::ScopedPaint(SkiaOutputDevice* device)
-    : device_(device), sk_surface_(device->BeginPaint(&end_semaphores_)) {}
+SkiaOutputDevice::ScopedPaint::ScopedPaint(
+    std::vector<GrBackendSemaphore> end_semaphores,
+    SkiaOutputDevice* device,
+    SkSurface* sk_surface)
+    : end_semaphores_(std::move(end_semaphores)),
+      device_(device),
+      sk_surface_(sk_surface) {}
+
 SkiaOutputDevice::ScopedPaint::~ScopedPaint() {
   DCHECK(end_semaphores_.empty());
   device_->EndPaint();
@@ -99,21 +110,30 @@ SkiaOutputDevice::~SkiaOutputDevice() {
     latency_tracker_runner_->DeleteSoon(FROM_HERE, std::move(latency_tracker_));
 }
 
+std::unique_ptr<SkiaOutputDevice::ScopedPaint>
+SkiaOutputDevice::BeginScopedPaint() {
+  std::vector<GrBackendSemaphore> end_semaphores;
+  SkSurface* sk_surface = BeginPaint(&end_semaphores);
+  if (!sk_surface) {
+    return nullptr;
+  }
+  return std::make_unique<SkiaOutputDevice::ScopedPaint>(
+      std::move(end_semaphores), this, sk_surface);
+}
+
 void SkiaOutputDevice::Submit(bool sync_cpu, base::OnceClosure callback) {
   gr_context_->submit(sync_cpu);
   std::move(callback).Run();
 }
 
-void SkiaOutputDevice::CommitOverlayPlanes(
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDevice::CommitOverlayPlanes(BufferPresentedCallback feedback,
+                                           OutputSurfaceFrame frame) {
   NOTREACHED();
 }
 
-void SkiaOutputDevice::PostSubBuffer(
-    const gfx::Rect& rect,
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDevice::PostSubBuffer(const gfx::Rect& rect,
+                                     BufferPresentedCallback feedback,
+                                     OutputSurfaceFrame frame) {
   NOTREACHED();
 }
 
@@ -168,28 +188,35 @@ void SkiaOutputDevice::StartSwapBuffers(BufferPresentedCallback feedback) {
 void SkiaOutputDevice::FinishSwapBuffers(
     gfx::SwapCompletionResult result,
     const gfx::Size& size,
-    std::vector<ui::LatencyInfo> latency_info,
+    OutputSurfaceFrame frame,
     const base::Optional<gfx::Rect>& damage_area,
-    std::vector<gpu::Mailbox> released_overlays) {
+    std::vector<gpu::Mailbox> released_overlays,
+    const gpu::Mailbox& primary_plane_mailbox) {
   DCHECK(!pending_swaps_.empty());
 
   const gpu::SwapBuffersCompleteParams& params =
       pending_swaps_.front().Complete(std::move(result), damage_area,
-                                      std::move(released_overlays));
+                                      std::move(released_overlays),
+                                      primary_plane_mailbox);
 
   did_swap_buffer_complete_callback_.Run(params, size);
 
   pending_swaps_.front().CallFeedback();
 
   if (latency_tracker_runner_) {
-    // Report latency off GPU main thread.
+    // Report latency off GPU main thread, but we still want this to be counted
+    // as part of the critical flow so emit a flow step.
+    ui::LatencyInfo::TraceIntermediateFlowEvents(
+        frame.latency_info, ChromeLatencyInfo::STEP_FINISHED_SWAP_BUFFERS);
     latency_tracker_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&ReportLatency, params.swap_response.timings,
-                       latency_tracker_.get(), std::move(latency_info)));
+                       latency_tracker_.get(), std::move(frame.latency_info),
+                       frame.top_controls_visible_height_changed));
   } else {
     ReportLatency(params.swap_response.timings, latency_tracker_.get(),
-                  std::move(latency_info));
+                  std::move(frame.latency_info),
+                  frame.top_controls_visible_height_changed);
   }
 
   pending_swaps_.pop();
@@ -214,13 +241,15 @@ SkiaOutputDevice::SwapInfo::~SwapInfo() = default;
 const gpu::SwapBuffersCompleteParams& SkiaOutputDevice::SwapInfo::Complete(
     gfx::SwapCompletionResult result,
     const base::Optional<gfx::Rect>& damage_rect,
-    std::vector<gpu::Mailbox> released_overlays) {
+    std::vector<gpu::Mailbox> released_overlays,
+    const gpu::Mailbox& primary_plane_mailbox) {
   params_.swap_response.result = result.swap_result;
   params_.swap_response.timings.swap_end = base::TimeTicks::Now();
   params_.frame_buffer_damage_area = damage_rect;
   if (result.ca_layer_params)
     params_.ca_layer_params = *result.ca_layer_params;
 
+  params_.primary_plane_mailbox = primary_plane_mailbox;
   params_.released_overlays = std::move(released_overlays);
   return params_;
 }
@@ -266,6 +295,27 @@ bool SkiaOutputDevice::Wait(SkSurface* sk_surface,
 
 bool SkiaOutputDevice::Draw(SkSurface* sk_surface,
                             sk_sp<const SkDeferredDisplayList> ddl) {
+#if DCHECK_IS_ON()
+  const auto& characterization = ddl->characterization();
+  if (!sk_surface->isCompatible(characterization)) {
+    SkSurfaceCharacterization surface_characterization;
+    DCHECK(sk_surface->characterize(&surface_characterization));
+#define CHECK_PROPERTY(name) \
+  DCHECK_EQ(characterization.name(), surface_characterization.name());
+    CHECK_PROPERTY(cacheMaxResourceBytes);
+    CHECK_PROPERTY(origin);
+    CHECK_PROPERTY(width);
+    CHECK_PROPERTY(height);
+    CHECK_PROPERTY(colorType);
+    CHECK_PROPERTY(sampleCount);
+    CHECK_PROPERTY(isTextureable);
+    CHECK_PROPERTY(isMipMapped);
+    CHECK_PROPERTY(usesGLFBO0);
+    CHECK_PROPERTY(vkRTSupportsInputAttachment);
+    CHECK_PROPERTY(vulkanSecondaryCBCompatible);
+    CHECK_PROPERTY(isProtected);
+  }
+#endif
   return sk_surface->draw(ddl);
 }
 

@@ -82,10 +82,10 @@ inline uint8x8_t SuperRes(const uint8x8_t src[kSuperResFilterTaps],
 }
 
 void SuperRes_NEON(const void* const coefficients, void* const source,
-                   const ptrdiff_t stride, const int height,
+                   const ptrdiff_t source_stride, const int height,
                    const int downscaled_width, const int upscaled_width,
                    const int initial_subpixel_x, const int step,
-                   void* const dest) {
+                   void* const dest, const ptrdiff_t dest_stride) {
   auto* src = static_cast<uint8_t*>(source) - DivideBy2(kSuperResFilterTaps);
   auto* dst = static_cast<uint8_t*>(dest);
   int y = height;
@@ -100,7 +100,7 @@ void SuperRes_NEON(const void* const coefficients, void* const source,
     int x = RightShiftWithCeiling(upscaled_width, 4);
     // The below code calculates up to 15 extra upscaled
     // pixels which will over-read up to 15 downscaled pixels in the end of each
-    // row. kSuperResHorizontalBorder accounts for this.
+    // row. kSuperResHorizontalPadding accounts for this.
     do {
       for (int i = 0; i < 8; ++i, subpixel_x += step) {
         sr[i] = vld1_u8(&src[subpixel_x >> kSuperResScaleBits]);
@@ -135,8 +135,8 @@ void SuperRes_NEON(const void* const coefficients, void* const source,
       vst1q_u8(dst_ptr, vcombine_u8(d0, d1));
       dst_ptr += 16;
     } while (--x != 0);
-    src += stride;
-    dst += stride;
+    src += source_stride;
+    dst += dest_stride;
   } while (--y != 0);
 }
 
@@ -149,12 +149,147 @@ void Init8bpp() {
 }  // namespace
 }  // namespace low_bitdepth
 
-void SuperResInit_NEON() { low_bitdepth::Init8bpp(); }
+//------------------------------------------------------------------------------
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
 
+void SuperResCoefficients_NEON(const int upscaled_width,
+                               const int initial_subpixel_x, const int step,
+                               void* const coefficients) {
+  auto* dst = static_cast<uint16_t*>(coefficients);
+  int subpixel_x = initial_subpixel_x;
+  int x = RightShiftWithCeiling(upscaled_width, 3);
+  do {
+    uint16x8_t filter[8];
+    for (int i = 0; i < 8; ++i, subpixel_x += step) {
+      const uint8x8_t filter_8 =
+          vld1_u8(kUpscaleFilterUnsigned[(subpixel_x & kSuperResScaleMask) >>
+                                         kSuperResExtraBits]);
+      // uint8_t -> uint16_t
+      filter[i] = vmovl_u8(filter_8);
+    }
+
+    Transpose8x8(filter);
+
+    vst1q_u16(dst, filter[0]);
+    dst += 8;
+    vst1q_u16(dst, filter[1]);
+    dst += 8;
+    vst1q_u16(dst, filter[2]);
+    dst += 8;
+    vst1q_u16(dst, filter[3]);
+    dst += 8;
+    vst1q_u16(dst, filter[4]);
+    dst += 8;
+    vst1q_u16(dst, filter[5]);
+    dst += 8;
+    vst1q_u16(dst, filter[6]);
+    dst += 8;
+    vst1q_u16(dst, filter[7]);
+    dst += 8;
+  } while (--x != 0);
+}
+
+// The sum is clipped to [0, ((1 << bitdepth) -1)]. Adding all positive and then
+// subtracting all negative with saturation will clip to zero.
+//           0 1 2 3 4 5 6 7
+// tap sign: - + - + + - + -
+inline uint16x8_t SuperRes(const uint16x8_t src[kSuperResFilterTaps],
+                           const uint16_t** coefficients, int bitdepth) {
+  uint16x8_t f[kSuperResFilterTaps];
+  for (int i = 0; i < kSuperResFilterTaps; ++i, *coefficients += 8) {
+    f[i] = vld1q_u16(*coefficients);
+  }
+
+  uint32x4_t res_lo = vmull_u16(vget_low_u16(src[1]), vget_low_u16(f[1]));
+  res_lo = vmlal_u16(res_lo, vget_low_u16(src[3]), vget_low_u16(f[3]));
+  res_lo = vmlal_u16(res_lo, vget_low_u16(src[4]), vget_low_u16(f[4]));
+  res_lo = vmlal_u16(res_lo, vget_low_u16(src[6]), vget_low_u16(f[6]));
+
+  uint32x4_t temp_lo = vmull_u16(vget_low_u16(src[0]), vget_low_u16(f[0]));
+  temp_lo = vmlal_u16(temp_lo, vget_low_u16(src[2]), vget_low_u16(f[2]));
+  temp_lo = vmlal_u16(temp_lo, vget_low_u16(src[5]), vget_low_u16(f[5]));
+  temp_lo = vmlal_u16(temp_lo, vget_low_u16(src[7]), vget_low_u16(f[7]));
+
+  res_lo = vqsubq_u32(res_lo, temp_lo);
+
+  uint32x4_t res_hi = vmull_u16(vget_high_u16(src[1]), vget_high_u16(f[1]));
+  res_hi = vmlal_u16(res_hi, vget_high_u16(src[3]), vget_high_u16(f[3]));
+  res_hi = vmlal_u16(res_hi, vget_high_u16(src[4]), vget_high_u16(f[4]));
+  res_hi = vmlal_u16(res_hi, vget_high_u16(src[6]), vget_high_u16(f[6]));
+
+  uint32x4_t temp_hi = vmull_u16(vget_high_u16(src[0]), vget_high_u16(f[0]));
+  temp_hi = vmlal_u16(temp_hi, vget_high_u16(src[2]), vget_high_u16(f[2]));
+  temp_hi = vmlal_u16(temp_hi, vget_high_u16(src[5]), vget_high_u16(f[5]));
+  temp_hi = vmlal_u16(temp_hi, vget_high_u16(src[7]), vget_high_u16(f[7]));
+
+  res_hi = vqsubq_u32(res_hi, temp_hi);
+
+  const uint16x8_t res = vcombine_u16(vqrshrn_n_u32(res_lo, kFilterBits),
+                                      vqrshrn_n_u32(res_hi, kFilterBits));
+
+  // Clip the result at (1 << bd) - 1.
+  return vminq_u16(res, vdupq_n_u16((1 << bitdepth) - 1));
+}
+
+template <int bitdepth>
+void SuperRes_NEON(const void* const coefficients, void* const source,
+                   const ptrdiff_t source_stride, const int height,
+                   const int downscaled_width, const int upscaled_width,
+                   const int initial_subpixel_x, const int step,
+                   void* const dest, const ptrdiff_t dest_stride) {
+  auto* src = static_cast<uint16_t*>(source) - DivideBy2(kSuperResFilterTaps);
+  auto* dst = static_cast<uint16_t*>(dest);
+  int y = height;
+  do {
+    const auto* filter = static_cast<const uint16_t*>(coefficients);
+    uint16_t* dst_ptr = dst;
+    ExtendLine<uint16_t>(src + DivideBy2(kSuperResFilterTaps), downscaled_width,
+                         kSuperResHorizontalBorder, kSuperResHorizontalBorder);
+    int subpixel_x = initial_subpixel_x;
+    uint16x8_t sr[8];
+    int x = RightShiftWithCeiling(upscaled_width, 3);
+    // The below code calculates up to 7 extra upscaled
+    // pixels which will over-read up to 7 downscaled pixels in the end of each
+    // row. kSuperResHorizontalBorder accounts for this.
+    do {
+      for (int i = 0; i < 8; ++i, subpixel_x += step) {
+        sr[i] = vld1q_u16(&src[subpixel_x >> kSuperResScaleBits]);
+      }
+
+      Transpose8x8(sr);
+
+      const uint16x8_t d0 = SuperRes(sr, &filter, bitdepth);
+      vst1q_u16(dst_ptr, d0);
+      dst_ptr += 8;
+    } while (--x != 0);
+    src += source_stride;
+    dst += dest_stride;
+  } while (--y != 0);
+}
+
+void Init10bpp() {
+  Dsp* dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+  dsp->super_res_coefficients = SuperResCoefficients_NEON;
+  dsp->super_res = SuperRes_NEON<10>;
+}
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+void SuperResInit_NEON() {
+  low_bitdepth::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif
+}
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 
 namespace libgav1 {
 namespace dsp {

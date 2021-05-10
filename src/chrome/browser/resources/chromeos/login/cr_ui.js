@@ -32,12 +32,35 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Called when focus is returned from ash::SystemTray.
+   * OOBE initialization coordination. Used by tests to wait for OOBE
+   * to fully load when using the HTLImports polyfill.
+   * TODO(crbug.com/1111387) - Remove once migrated to JS modules.
+   * Remove spammy logging when closer to M89 branch point.
    */
-  Oobe.focusReturned = function() {
+  Oobe.initializationComplete = false;
+  Oobe.initCallbacks = [];
+  Oobe.waitForOobeToLoad = function() {
+    return new Promise(function(resolve, reject) {
+      if (cr.ui.Oobe.initializationComplete) {
+        // TODO(crbug.com/1111387) - Remove excessive logging.
+        console.warn('OOBE is already initialized. Continuing...');
+        resolve();
+      } else {
+        // TODO(crbug.com/1111387) - Remove excessive logging.
+        console.warn('OOBE not loaded yet. Waiting...');
+        cr.ui.Oobe.initCallbacks.push(resolve);
+      }
+    });
+  };
+
+  /**
+   * Called when focus is returned from ash::SystemTray.
+   * @param {boolean} reverse Is focus returned in reverse order?
+   */
+  Oobe.focusReturned = function(reverse) {
     if (Oobe.getInstance().currentScreen &&
         Oobe.getInstance().currentScreen.onFocusReturned) {
-      Oobe.getInstance().currentScreen.onFocusReturned();
+      Oobe.getInstance().currentScreen.onFocusReturned(reverse);
     }
   };
 
@@ -134,10 +157,11 @@ cr.define('cr.ui', function() {
    * Show user-pods.
    */
   Oobe.showUserPods = function() {
-    $('pod-row').maybePreselectPod();
-    Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-    if (Oobe.getInstance().showingViewsLogin)
+    if (Oobe.getInstance().showingViewsLogin) {
+      chrome.send('hideOobeDialog');
       return;
+    }
+    Oobe.showSigninUI();
     Oobe.resetSigninUI(true);
   };
 
@@ -175,20 +199,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Clears password field in user-pod.
-   */
-  Oobe.clearUserPodPassword = function() {
-    DisplayManager.clearUserPodPassword();
-  };
-
-  /**
-   * Restores input focus to currently selected pod.
-   */
-  Oobe.refocusCurrentPod = function() {
-    DisplayManager.refocusCurrentPod();
-  };
-
-  /**
    * Some ForTesting APIs directly access to DOM. Because this script is loaded
    * in header, DOM tree may not be available at beginning.
    * In DOMContentLoaded, after Oobe.initialize() is done, this is marked to
@@ -202,7 +212,6 @@ cr.define('cr.ui', function() {
    * Skip to login screen for telemetry.
    */
   Oobe.skipToLoginForTesting = function() {
-    Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting');
   };
 
@@ -210,7 +219,6 @@ cr.define('cr.ui', function() {
    * Skip to update screen for telemetry.
    */
   Oobe.skipToUpdateForTesting = function() {
-    Oobe.disableSigninUI();
     chrome.send('skipToUpdateForTesting');
   };
 
@@ -237,13 +245,13 @@ cr.define('cr.ui', function() {
       }
     }
 
-    Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting');
 
     if (!enterpriseEnroll) {
       chrome.send('completeLogin', [gaia_id, username, password, false]);
     } else {
       waitForOobeScreen('gaia-signin', function() {
+        // TODO(crbug.com/1100910): migrate logic to dedicated test api.
         chrome.send('toggleEnrollmentScreen');
         chrome.send('toggleFakeEnrollment');
       });
@@ -268,7 +276,6 @@ cr.define('cr.ui', function() {
    * @param {string} password Login password.
    */
   Oobe.authenticateForTesting = function(username, password) {
-    Oobe.disableSigninUI();
     chrome.send('authenticateUser', [username, password, false]);
   };
 
@@ -298,6 +305,7 @@ cr.define('cr.ui', function() {
    * Begin enterprise enrollment for telemetry.
    */
   Oobe.switchToEnterpriseEnrollmentForTesting = function() {
+    // TODO(crbug.com/1100910): migrate logic to dedicated test api.
     chrome.send('toggleEnrollmentScreen');
   };
 
@@ -311,15 +319,22 @@ cr.define('cr.ui', function() {
   /**
    * Returns true if enrollment was successful. Dismisses the enrollment
    * attribute screen if it's present.
+   *
+   *  TODO(crbug.com/1111387) - Remove inline values from
+   *  ENROLLMENT_STEP once fully migrated to JS modules.
    */
   Oobe.isEnrollmentSuccessfulForTest = function() {
     const step = $('enterprise-enrollment').uiStep;
-    if (step === ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
+    // See [ENROLLMENT_STEP.ATTRIBUTE_PROMPT]
+    // from c/b/r/chromeos/login/enterprise_enrollment.js
+    if (step === 'attribute-prompt') {
       chrome.send('oauthEnrollAttributes', ['', '']);
       return true;
     }
 
-    return step === ENROLLMENT_STEP.SUCCESS;
+    // See [ENROLLMENT_STEP.SUCCESS]
+    // from c/b/r/chromeos/login/enterprise_enrollment.js
+    return step === 'success';
   };
 
   /**
@@ -334,7 +349,6 @@ cr.define('cr.ui', function() {
    */
   Oobe.setVirtualKeyboardShown = function(shown) {
     Oobe.getInstance().virtualKeyboardShown = shown;
-    $('pod-row').setFocusedPodPinVisibility(!shown);
   };
 
   /**
@@ -352,6 +366,19 @@ cr.define('cr.ui', function() {
    */
   Oobe.setShelfHeight = function(height) {
     Oobe.getInstance().setShelfHeight(height);
+  };
+
+  Oobe.setOrientation = function(isHorizontal) {
+    Oobe.getInstance().setOrientation(isHorizontal);
+  };
+
+  /**
+   * Sets the required size of the oobe dialog.
+   * @param {number} width oobe dialog width
+   * @param {number} height oobe dialog height
+   */
+  Oobe.setDialogSize = function(width, height) {
+    Oobe.getInstance().setDialogSize(width, height);
   };
 
   /**
@@ -403,48 +430,3 @@ disableTextSelectAndDrag(function(e) {
   return src instanceof HTMLTextAreaElement ||
       src instanceof HTMLInputElement && /text|password|search/.test(src.type);
 });
-
-
-(function() {
-'use strict';
-
-function initializeOobe() {
-  if (document.readyState === 'loading')
-    return;
-  document.removeEventListener('DOMContentLoaded', initializeOobe);
-
-  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
-  console.warn('1082670 : initializing OOBE');
-
-  try {
-    Oobe.initialize();
-  } finally {
-    // TODO(crbug.com/712078): Do not set readyForTesting in case of that
-    // initialize() is failed. Currently, in some situation, initialize()
-    // raises an exception unexpectedly. It means testing APIs should not
-    // be called then. However, checking it here now causes bots failures
-    // unfortunately. So, as a short term workaround, here set
-    // readyForTesting even on failures, just to make test bots happy.
-    Oobe.readyForTesting = true;
-  }
-}
-
-// Install a global error handler so stack traces are included in logs.
-window.onerror = function(message, file, line, column, error) {
-  if (error && error.stack)
-    console.error(error.stack);
-};
-
-// TODO(crbug.com/1082670): Remove excessive logging after investigation.
-console.warn('1082670 : cr_ui loaded');
-
-/**
- * Final initialization performed after DOM and all scripts have loaded.
- */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeOobe);
-} else {
-  initializeOobe();
-}
-
-})();

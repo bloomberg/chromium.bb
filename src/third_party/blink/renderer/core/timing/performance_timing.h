@@ -97,12 +97,13 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   uint64_t loadEventStart() const;
   uint64_t loadEventEnd() const;
 
-  // The below are non-spec timings, for Page Load UMA metrics.
+  // The below are non-spec timings, for Page Load UMA metrics. Not to be
+  // exposed to JavaScript.
 
   // The time immediately after the user agent finishes prompting to unload the
   // previous document, or if there is no previous document, the same value as
   // fetchStart.  Intended to be used for correlation with other events internal
-  // to blink. Not to be exposed to JavaScript.
+  // to blink.
   base::TimeTicks NavigationStartAsMonotonicTime() const;
   // The timings after the page is restored from back-forward cache.
   BackForwardCacheRestoreTimings BackForwardCacheRestore() const;
@@ -114,8 +115,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // that includes content of some kind (for example, text or image content).
   uint64_t FirstContentfulPaint() const;
   // The first 'contentful' paint as full-resolution monotonic time. Intended to
-  // be used for correlation with other events internal to blink. Not to be
-  // exposed to JavaScript.
+  // be used for correlation with other events internal to blink.
   base::TimeTicks FirstContentfulPaintAsMonotonicTime() const;
   // The time of the first 'meaningful' paint, A meaningful paint is a paint
   // where the page's primary content is visible.
@@ -138,6 +138,9 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
+  // Largest Contentful Paint is the either the largest text paint time or the
+  // largest image paint time, whichever has the larger size.
+  base::TimeTicks LargestContentfulPaintAsMonotonicTime() const;
   // Experimental versions of the above metrics. Currently these are computed by
   // considering the largest content seen so far, regardless of DOM node
   // removal.
@@ -169,6 +172,11 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   base::Optional<base::TimeDelta> FirstScrollDelay() const;
   // The hardware timestamp of the first scroll.
   base::Optional<base::TimeDelta> FirstScrollTimestamp() const;
+  // TimeTicks for unload start and end.
+  base::Optional<base::TimeTicks> UnloadStart() const;
+  base::Optional<base::TimeTicks> UnloadEnd() const;
+  // The timestamp of when the commit navigation finished in the frame loader.
+  base::Optional<base::TimeTicks> CommitNavigationEnd() const;
 
   uint64_t ParseStart() const;
   uint64_t ParseStop() const;

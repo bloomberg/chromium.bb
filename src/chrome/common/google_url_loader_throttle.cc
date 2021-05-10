@@ -12,6 +12,11 @@
 #include "components/google/core/common/google_util.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/public/mojom/x_frame_options.mojom.h"
+
+#if defined(OS_ANDROID)
+#include "ui/base/device_form_factor.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_urls.h"
@@ -21,6 +26,7 @@ namespace {
 
 #if defined(OS_ANDROID)
 const char kCCTClientDataHeader[] = "X-CCT-Client-Data";
+const char kRequestDesktopDataHeader[] = "X-Eligible-Tablet";
 #endif
 
 }  // namespace
@@ -41,12 +47,14 @@ GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
 #if defined(OS_ANDROID)
     const std::string& client_data_header,
     bool night_mode_enabled,
+    bool is_tab_large_enough,
 #endif
     chrome::mojom::DynamicParams dynamic_params)
     :
 #if defined(OS_ANDROID)
       client_data_header_(client_data_header),
       night_mode_enabled_(night_mode_enabled),
+      is_tab_large_enough_(is_tab_large_enough),
 #endif
       dynamic_params_(std::move(dynamic_params)) {
 }
@@ -103,6 +111,14 @@ void GoogleURLLoaderThrottle::WillStartRequest(
     }
     base::UmaHistogramBoolean("Android.DarkTheme.DarkSearchRequested",
                               night_mode_enabled_);
+
+    if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteForTablets) &&
+        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+      request->headers.SetHeader(kRequestDesktopDataHeader,
+                                 is_tab_large_enough_ ? "1" : "0");
+      base::UmaHistogramBoolean("Android.RequestDesktopSite.TabletEligible",
+                                is_tab_large_enough_);
+    }
   }
 #endif
 }
@@ -152,15 +168,21 @@ void GoogleURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     network::mojom::URLResponseHead* response_head,
     bool* defer) {
-  // Built-in additional protection for the chrome web store origin.
+  // Built-in additional protection for the chrome web store origin by ensuring
+  // that the X-Frame-Options protection mechanism is set to either DENY or
+  // SAMEORIGIN.
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
   if (response_url.SchemeIsHTTPOrHTTPS() &&
       response_url.DomainIs(webstore_url.host_piece())) {
-    if (response_head && response_head->headers &&
-        !response_head->headers->HasHeaderValue("x-frame-options", "deny") &&
-        !response_head->headers->HasHeaderValue("x-frame-options",
-                                                "sameorigin")) {
-      response_head->headers->AddHeader("x-frame-options", "sameorigin");
+    // TODO(mkwst): Consider shifting this to a NavigationThrottle rather than
+    // relying on implicit ordering between this check and the time at which
+    // ParsedHeaders is created.
+    CHECK(response_head);
+    CHECK(response_head->parsed_headers);
+    if (response_head->parsed_headers->xfo !=
+        network::mojom::XFrameOptionsValue::kDeny) {
+      response_head->parsed_headers->xfo =
+          network::mojom::XFrameOptionsValue::kSameOrigin;
     }
   }
 }

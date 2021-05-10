@@ -27,7 +27,6 @@ public:
     GrComposeLerpEffect(const GrComposeLerpEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "ComposeLerpEffect"; }
-    bool usesExplicitReturn() const override;
     float weight;
 
 private:
@@ -38,7 +37,7 @@ private:
         this->registerChild(std::move(child1), SkSL::SampleUsage::PassThrough());
         this->registerChild(std::move(child2), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

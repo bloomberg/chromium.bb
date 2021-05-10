@@ -50,7 +50,7 @@ AutofillPaymentApp::AutofillPaymentApp(
 
 AutofillPaymentApp::~AutofillPaymentApp() {}
 
-void AutofillPaymentApp::InvokePaymentApp(PaymentApp::Delegate* delegate) {
+void AutofillPaymentApp::InvokePaymentApp(base::WeakPtr<Delegate> delegate) {
   DCHECK(delegate);
   // There can be only one FullCardRequest going on at a time. If |delegate_| is
   // not null, there's already an active request, which shouldn't happen.
@@ -119,7 +119,7 @@ bool AutofillPaymentApp::HasEnrolledInstrument() const {
 void AutofillPaymentApp::RecordUse() {
   // Record the use of the credit card.
   payment_request_delegate_->GetPersonalDataManager()->RecordUseOf(
-      credit_card_);
+      &credit_card_);
 }
 
 bool AutofillPaymentApp::NeedsInstallation() const {
@@ -184,7 +184,6 @@ void AutofillPaymentApp::OnFullCardRequestSucceeded(
     const autofill::payments::FullCardRequest& /* full_card_request */,
     const autofill::CreditCard& card,
     const base::string16& cvc) {
-  DCHECK(delegate_);
   credit_card_ = card;
   cvc_ = cvc;
   is_waiting_for_card_unmask_ = false;
@@ -193,7 +192,8 @@ void AutofillPaymentApp::OnFullCardRequestSucceeded(
     GenerateBasicCardResponse();
 }
 
-void AutofillPaymentApp::OnFullCardRequestFailed() {
+void AutofillPaymentApp::OnFullCardRequestFailed(
+    autofill::payments::FullCardRequest::FailureType failure_type) {
   // The user may have cancelled the unmask or something has gone wrong (e.g.,
   // the network request failed). In all cases, reset the |delegate_| so another
   // request can start.
@@ -214,18 +214,19 @@ void AutofillPaymentApp::RecordMissingFieldsForApp() const {
 void AutofillPaymentApp::GenerateBasicCardResponse() {
   DCHECK(!is_waiting_for_billing_address_normalization_);
   DCHECK(!is_waiting_for_card_unmask_);
-  DCHECK(delegate_);
 
-  std::unique_ptr<base::DictionaryValue> response_value =
-      payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
-          credit_card_, cvc_, billing_address_, app_locale_)
-          ->ToDictionaryValue();
-  std::string stringified_details;
-  base::JSONWriter::Write(*response_value, &stringified_details);
-  delegate_->OnInstrumentDetailsReady(method_name_, stringified_details,
-                                      PayerData());
+  if (delegate_) {
+    std::unique_ptr<base::DictionaryValue> response_value =
+        payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
+            credit_card_, cvc_, billing_address_, app_locale_)
+            ->ToDictionaryValue();
+    std::string stringified_details;
+    base::JSONWriter::Write(*response_value, &stringified_details);
+    delegate_->OnInstrumentDetailsReady(method_name_, stringified_details,
+                                        PayerData());
+    delegate_ = nullptr;
+  }
 
-  delegate_ = nullptr;
   cvc_ = base::UTF8ToUTF16("");
 }
 

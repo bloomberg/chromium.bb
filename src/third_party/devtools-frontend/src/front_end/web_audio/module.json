@@ -1,25 +1,9 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "drawer-view",
-      "id": "web-audio",
-      "title": "WebAudio",
-      "persistence": "closeable",
-      "order": 100,
-      "className": "WebAudio.WebAudioView",
-      "tags": "audio"
-    }
-  ],
   "dependencies": [
     "components",
-    "sdk",
     "ui"
   ],
   "modules": [
-    "web_audio-legacy.js"
-  ],
-  "skip_compilation": [
     "web_audio-legacy.js"
   ],
   "resources": [

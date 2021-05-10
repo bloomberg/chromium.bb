@@ -8,13 +8,13 @@
 
 // This file defines a list of UseCounter WebFeature measured in the
 // UKM-based UseCounter. Features must all satisfy UKM privacy requirements
-// (see go/ukm). In addition, features should only be added if it's shown
-// (or highly likely be) rare, e.g. <1% of page views as measured by UMA.
+// (see go/ukm). In addition, features should only be added if it's shown to be
+// (or highly likely to be) rare, e.g. <1% of page views as measured by UMA.
 //
 // UKM-based UseCounter should be used to cover the case when UMA UseCounter
 // data shows a behaviour that is rare but too common to blindly change.
-// UKM-based UseCounter would allow use to find specific pages to reason about
-// either a breaking change is acceptable or not.
+// UKM-based UseCounter would allow us to find specific pages to reason about
+// whether a breaking change is acceptable or not.
 
 using WebFeature = blink::mojom::WebFeature;
 
@@ -47,20 +47,12 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kPaymentHandler,
           WebFeature::kPaymentRequestShowWithoutGesture,
           WebFeature::kHTMLImports,
-          WebFeature::kElementCreateShadowRoot,
-          WebFeature::kDocumentRegisterElement,
           WebFeature::kCredentialManagerCreatePublicKeyCredential,
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
           WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess,
           WebFeature::kU2FCryptotokenRegister,
           WebFeature::kU2FCryptotokenSign,
-          // TODO(crbug.com/1129465): The below four use counters have high
-          // usage, but are expected to be deprecated in several milestones.
-          WebFeature::kElementAttachShadow,
-          WebFeature::kElementAttachShadowOpen,
-          WebFeature::kElementAttachShadowClosed,
-          WebFeature::kCustomElementRegistryDefine,
           WebFeature::kTextToSpeech_Speak,
           WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay,
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop,
@@ -164,16 +156,26 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kSchemelesslySameSitePostMessage,
           WebFeature::kSchemelesslySameSitePostMessageSecureToInsecure,
           WebFeature::kSchemelesslySameSitePostMessageInsecureToSecure,
-          WebFeature::kAddressSpaceLocalEmbeddedInPrivateSecureContext,
-          WebFeature::kAddressSpaceLocalEmbeddedInPrivateNonSecureContext,
-          WebFeature::kAddressSpaceLocalEmbeddedInPublicSecureContext,
-          WebFeature::kAddressSpaceLocalEmbeddedInPublicNonSecureContext,
-          WebFeature::kAddressSpaceLocalEmbeddedInUnknownSecureContext,
-          WebFeature::kAddressSpaceLocalEmbeddedInUnknownNonSecureContext,
-          WebFeature::kAddressSpacePrivateEmbeddedInPublicSecureContext,
-          WebFeature::kAddressSpacePrivateEmbeddedInPublicNonSecureContext,
-          WebFeature::kAddressSpacePrivateEmbeddedInUnknownSecureContext,
-          WebFeature::kAddressSpacePrivateEmbeddedInUnknownNonSecureContext,
+          WebFeature::kAddressSpacePrivateSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpacePrivateNonSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpacePublicSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpacePublicNonSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpacePublicSecureContextEmbeddedPrivate,
+          WebFeature::kAddressSpacePublicNonSecureContextEmbeddedPrivate,
+          WebFeature::kAddressSpaceUnknownSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedLocal,
+          WebFeature::kAddressSpaceUnknownSecureContextEmbeddedPrivate,
+          WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedPrivate,
+          WebFeature::kAddressSpacePrivateSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpacePrivateNonSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpacePublicSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpacePublicNonSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpacePublicSecureContextNavigatedToPrivate,
+          WebFeature::kAddressSpacePublicNonSecureContextNavigatedToPrivate,
+          WebFeature::kAddressSpaceUnknownSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpaceUnknownNonSecureContextNavigatedToLocal,
+          WebFeature::kAddressSpaceUnknownSecureContextNavigatedToPrivate,
+          WebFeature::kAddressSpaceUnknownNonSecureContextNavigatedToPrivate,
           WebFeature::kFileSystemPickerMethod,
           WebFeature::kV8Window_ShowOpenFilePicker_Method,
           WebFeature::kV8Window_ShowSaveFilePicker_Method,
@@ -184,6 +186,13 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kTextDetectorDetect,
           WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation,
           WebFeature::kV8HTMLVideoElement_GetVideoPlaybackQuality_Method,
+          WebFeature::kRTCPeerConnectionConstructedWithPlanB,
+          WebFeature::kRTCPeerConnectionConstructedWithUnifiedPlan,
+          WebFeature::kRTCPeerConnectionUsingComplexPlanB,
+          WebFeature::kRTCPeerConnectionUsingComplexUnifiedPlan,
+          WebFeature::kWebPImage,
+          WebFeature::kAVIFImage,
+          WebFeature::kPaymentRequestCSPViolation,
       }));
   return *opt_in_features;
 }

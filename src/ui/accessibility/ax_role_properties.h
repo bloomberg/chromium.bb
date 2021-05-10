@@ -15,6 +15,13 @@ namespace ui {
 //
 // Please keep these functions in alphabetic order.
 
+// When using these functions in Blink, it's necessary to add the function names
+// to third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py, in
+// order to pass presubmit.
+
+// Returns true for text parents that can have inline text box children.
+AX_BASE_EXPORT bool CanHaveInlineTextBoxChildren(ax::mojom::Role role);
+
 // Returns true for object roles that have the attribute "Children
 // Presentational: True" as defined in the ARIA Specification.
 // https://www.w3.org/TR/wai-aria-1.1/#childrenArePresentational.
@@ -57,9 +64,6 @@ AX_BASE_EXPORT bool IsControl(const ax::mojom::Role role);
 AX_BASE_EXPORT bool IsControlOnAndroid(const ax::mojom::Role role,
                                        bool isFocusable);
 
-// Returns true if the provided role belongs to a document.
-AX_BASE_EXPORT bool IsDocument(const ax::mojom::Role role);
-
 // Returns true if the provided role represents a dialog.
 AX_BASE_EXPORT bool IsDialog(const ax::mojom::Role role);
 
@@ -86,7 +90,7 @@ AX_BASE_EXPORT bool IsImage(const ax::mojom::Role role);
 AX_BASE_EXPORT bool IsImageOrVideo(const ax::mojom::Role role);
 
 // Returns true if the provided role is item-like, specifically if it can hold
-// pos_in_set and set_size values.
+// pos_in_set and set_size values. Roles that are item-like are not set-like.
 AX_BASE_EXPORT bool IsItemLike(const ax::mojom::Role role);
 
 // Returns true if the role is a subclass of the ARIA Landmark abstract role.
@@ -108,6 +112,11 @@ AX_BASE_EXPORT bool IsMenuItem(ax::mojom::Role role);
 // Returns true if the provided role belongs to a menu or related control.
 AX_BASE_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a node that is at the root of
+// what most accessibility APIs consider to be a document, such as the root of a
+// webpage, an iframe, or a PDF.
+AX_BASE_EXPORT bool IsPlatformDocument(const ax::mojom::Role role);
+
 // Returns true if the provided role is presentational in nature, i.e. a node
 // whose implicit native role semantics will not be mapped to the accessibility
 // API.
@@ -127,6 +136,11 @@ AX_BASE_EXPORT bool IsRangeValueSupported(const ax::mojom::Role role);
 //       ARIA-1.1+ role='grid' or 'treegrid', and not role='table'.
 AX_BASE_EXPORT bool IsReadOnlySupported(const ax::mojom::Role role);
 
+// Returns true if the provided role is at the root of a window-like container,
+// (AKA a widget in Views terminology), such as the root of the web contents, a
+// window, a dialog or the whole desktop.
+AX_BASE_EXPORT bool IsRootLike(ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a widget that can contain a
 // table or grid row.
 AX_BASE_EXPORT bool IsRowContainer(const ax::mojom::Role role);
@@ -145,7 +159,7 @@ AX_BASE_EXPORT bool IsSelect(const ax::mojom::Role role);
 AX_BASE_EXPORT bool IsSelectElement(const ax::mojom::Role role);
 
 // Returns true if the provided role is ordered-set like, specifically if it
-// can hold set_size values.
+// can hold set_size values. Roles that are set-like are not item-like.
 AX_BASE_EXPORT bool IsSetLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a non-interactive list.
@@ -171,6 +185,9 @@ AX_BASE_EXPORT bool IsTableRow(ax::mojom::Role role);
 // Returns true if the provided role is text-related, e.g., static text, line
 // break, or inline text box.
 AX_BASE_EXPORT bool IsText(ax::mojom::Role role);
+
+// Returns true if the provided role is any of the combobox-related roles.
+AX_BASE_EXPORT bool IsComboBox(ax::mojom::Role role);
 
 // Returns true if the node should be read only by default
 AX_BASE_EXPORT bool ShouldHaveReadonlyStateByDefault(

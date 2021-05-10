@@ -337,7 +337,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -371,7 +371,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
         mock.call.results.Fail(
@@ -398,7 +398,8 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
       self.assertListEqual(root_mock.method_calls, [
           mock.call.results.CreateArtifact('logs.txt'),
-          mock.call.test.WillRunStory(root_mock.state.platform),
+          mock.call.test.WillRunStory(
+              root_mock.state.platform, root_mock.story),
           mock.call.state.WillRunStory(root_mock.story),
           mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
           mock.call.results.Fail(
@@ -421,7 +422,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
@@ -440,7 +441,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -460,7 +461,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
         mock.call.results.Fail(
             'Exception raised running %s' % root_mock.story.name),
@@ -480,7 +481,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -501,7 +502,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -524,7 +525,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
         mock.call.results.Fail(
@@ -544,7 +545,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.results.Skip('Unsupported page action: foo'),
         mock.call.test.DidRunStory(
             root_mock.state.platform, root_mock.results),
@@ -563,7 +564,7 @@ class RunStoryAndProcessErrorIfNeededTest(unittest.TestCase):
 
     self.assertEquals(root_mock.method_calls, [
         mock.call.results.CreateArtifact('logs.txt'),
-        mock.call.test.WillRunStory(root_mock.state.platform),
+        mock.call.test.WillRunStory(root_mock.state.platform, root_mock.story),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -936,3 +937,23 @@ class RunBenchmarkTest(unittest.TestCase):
     for (story, status), result in zip(expected, test_results):
       self.assertEqual(result['testPath'], 'fake_benchmark/%s' % story)
       self.assertEqual(result['status'], status)
+
+
+  def testRangeIndexSingles(self):
+    fake_benchmark = FakeBenchmark(stories=(
+        test_stories.DummyStory('story_%i' % i) for i in range(100)))
+    options = self.GetFakeBrowserOptions({
+        'story_shard_indexes': "2,50,90"})
+    story_runner.RunBenchmark(fake_benchmark, options)
+    test_results = self.ReadTestResults()
+    self.assertEqual(len(test_results), 3)
+
+
+  def testRangeIndexRanges(self):
+    fake_benchmark = FakeBenchmark(stories=(
+        test_stories.DummyStory('story_%i' % i) for i in range(100)))
+    options = self.GetFakeBrowserOptions({
+        'story_shard_indexes': "-10, 20-30, 90-"})
+    story_runner.RunBenchmark(fake_benchmark, options)
+    test_results = self.ReadTestResults()
+    self.assertEqual(len(test_results), 30)

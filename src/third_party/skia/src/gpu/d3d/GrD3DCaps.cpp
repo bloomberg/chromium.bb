@@ -395,8 +395,8 @@ void GrD3DCaps::initFormatTable(const DXGI_ADAPTER_DESC& adapterDesc, ID3D12Devi
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle("rrrr");
-                ctInfo.fWriteSwizzle = GrSwizzle("aaaa");
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
             // Format: DXGI_FORMAT_R8_UNORM, Surface: kGray_8
             {
@@ -488,8 +488,8 @@ void GrD3DCaps::initFormatTable(const DXGI_ADAPTER_DESC& adapterDesc, ID3D12Devi
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle("rrrr");
-                ctInfo.fWriteSwizzle = GrSwizzle("aaaa");
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
         }
     }
@@ -587,8 +587,8 @@ void GrD3DCaps::initFormatTable(const DXGI_ADAPTER_DESC& adapterDesc, ID3D12Devi
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle("rrrr");
-                ctInfo.fWriteSwizzle = GrSwizzle("aaaa");
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
         }
     }
@@ -1031,7 +1031,10 @@ void GrD3DCaps::addExtraSamplerKey(GrProcessorKeyBuilder* b,
 /**
  * TODO: Determine what goes in the ProgramDesc
  */
-GrProgramDesc GrD3DCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& programInfo) const {
+GrProgramDesc GrD3DCaps::makeDesc(GrRenderTarget* rt,
+                                  const GrProgramInfo& programInfo,
+                                  ProgramDescOverrideFlags overrideFlags) const {
+    SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
     if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
         SkASSERT(!desc.isValid());

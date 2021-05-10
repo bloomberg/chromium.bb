@@ -5,9 +5,9 @@
 cr.define('cellularSetup', function() {
   /** @enum{string} */
   /* #export */ const PSimPageName = {
-    SIM_DETECT: 'sim-detect-page',
-    PROVISIONING: 'provisioning-page',
-    FINAL: 'final-page',
+    SIM_DETECT: 'simDetectPage',
+    PROVISIONING: 'provisioningPage',
+    FINAL: 'finalPage',
   };
 
   /** @enum{string} */
@@ -82,6 +82,11 @@ cr.define('cellularSetup', function() {
             'selectedPSimPageName_, cellularMetadata_.*)',
       },
 
+      forwardButtonLabel: {
+        type: String,
+        notify: true,
+      },
+
       /**
        * @type {!cellularSetup.PSimUIState}
        * @private
@@ -104,7 +109,7 @@ cr.define('cellularSetup', function() {
 
       /**
        * DOM Element for the current selected sub-page.
-       * @private {!SimDetectPageElement|!ProvisioningPageElement|
+       * @private {!SetupLoadingPageElement|!ProvisioningPageElement|
        *           !FinalPageElement}
        */
       selectedPage_: Object,
@@ -181,10 +186,21 @@ cr.define('cellularSetup', function() {
     },
 
     navigateForward() {
-      // Navigate forward is only called by clicking next button
-      // from the provisioning page.
-      assert(this.selectedPSimPageName_ === PSimPageName.PROVISIONING);
-      this.state_ = PSimUIState.WAITING_FOR_ACTIVATION_TO_FINISH;
+      switch (this.state_) {
+        case PSimUIState.WAITING_FOR_PORTAL_TO_LOAD:
+        case PSimUIState.TIMEOUT_PORTAL_LOAD:
+        case PSimUIState.WAITING_FOR_USER_PAYMENT:
+        case PSimUIState.ACTIVATION_SUCCESS:
+          this.state_ = PSimUIState.WAITING_FOR_ACTIVATION_TO_FINISH;
+          break;
+        case PSimUIState.WAITING_FOR_ACTIVATION_TO_FINISH:
+        case PSimUIState.TIMEOUT_FINISH_ACTIVATION:
+          this.fire('exit-cellular-setup');
+          break;
+        default:
+          assertNotReached();
+          break;
+      }
     },
 
     /**
@@ -207,35 +223,25 @@ cr.define('cellularSetup', function() {
         case PSimUIState.TIMEOUT_PORTAL_LOAD:
         case PSimUIState.WAITING_FOR_USER_PAYMENT:
           buttonState = {
-            backward: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            cancel: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            done: cellularSetup.ButtonState.HIDDEN,
-            next: cellularSetup.ButtonState.SHOWN_BUT_DISABLED,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+            backward: cellularSetup.ButtonState.ENABLED,
+            cancel: cellularSetup.ButtonState.ENABLED,
+            forward: cellularSetup.ButtonState.DISABLED,
           };
           break;
         case PSimUIState.ACTIVATION_SUCCESS:
         case PSimUIState.ALREADY_ACTIVATED:
         case PSimUIState.ACTIVATION_FAILURE:
           buttonState = {
-            backward: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            cancel: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            done: cellularSetup.ButtonState.HIDDEN,
-            next: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+            backward: cellularSetup.ButtonState.ENABLED,
+            cancel: cellularSetup.ButtonState.ENABLED,
+            forward: cellularSetup.ButtonState.ENABLED,
           };
           break;
         case PSimUIState.WAITING_FOR_ACTIVATION_TO_FINISH:
         case PSimUIState.TIMEOUT_FINISH_ACTIVATION:
+          this.forwardButtonLabel = this.i18n('done');
           buttonState = {
-            backward: cellularSetup.ButtonState.HIDDEN,
-            cancel: cellularSetup.ButtonState.HIDDEN,
-            done: cellularSetup.ButtonState.SHOWN_AND_ENABLED,
-            next: cellularSetup.ButtonState.HIDDEN,
-            tryAgain: cellularSetup.ButtonState.HIDDEN,
-            skipDiscovery: cellularSetup.ButtonState.HIDDEN,
+            forward: cellularSetup.ButtonState.ENABLED,
           };
           break;
         default:
@@ -415,6 +421,15 @@ cr.define('cellularSetup', function() {
       const success = event.detail;
       this.state_ = success ? PSimUIState.ACTIVATION_SUCCESS :
                               PSimUIState.ACTIVATION_FAILURE;
+    },
+
+    /**
+     * @param {boolean} showError
+     * @private
+     */
+    getLoadingPageState_(showError) {
+      return showError ? LoadingPageState.SIM_DETECT_ERROR :
+                         LoadingPageState.LOADING;
     },
   });
 

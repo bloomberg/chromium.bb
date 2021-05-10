@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package cast.runtime;
 
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 import "cast/cast_core/api/common/service_info.proto";
 
 option optimize_for = LITE_RUNTIME;
@@ -10,7 +12,7 @@ option optimize_for = LITE_RUNTIME;
 //
 // This service is called by CastCore after Runtime starts up.
 service RuntimeService {
-  // Launch a Cast application. The application must connect to the
+  // Launches a Cast application. The application must connect to the
   // CoreApplicationService based on cast_protocol and
   // core_application_endpoint, and provide its endpoint.
   rpc LaunchApplication(LaunchApplicationRequest)
@@ -20,6 +22,27 @@ service RuntimeService {
   // If both app_id and cast_session_id are omitted, the current, "foreground"
   // application is stopped.
   rpc StopApplication(StopApplicationRequest) returns (StopApplicationResponse);
+
+  // Requests runtime to send a heartbeat in a stream. The use of server-side
+  // streaming allows Core to know for sure that runtime is still running. In
+  // case of a crash, the gRPC stream will error with UNAVAILABLE error. Cast
+  // Core calls this API if the runtime supports heartbeat in
+  // RuntimeCapabilities.
+  rpc Heartbeat(HeartbeatRequest) returns (stream HeartbeatResponse);
+
+  // Provides information need by the runtime to start recording metrics via
+  // the core.
+  rpc StartMetricsRecorder(StartMetricsRecorderRequest)
+      returns (google.protobuf.Empty);
+
+  // Stops the metrics recorder, which may also attempt to flush.
+  rpc StopMetricsRecorder(google.protobuf.Empty)
+      returns (google.protobuf.Empty);
+}
+
+message StartMetricsRecorderRequest {
+  // Metrics service info.
+  cast.common.ServiceInfo metrics_recorder_service_info = 1;
 }
 
 message LaunchApplicationRequest {
@@ -46,3 +69,11 @@ message StopApplicationResponse {
   // If stop application was successful, the Cast session ID that was stopped.
   string cast_session_id = 2;
 }
+
+message HeartbeatRequest {
+  // Period between two heartbeat responses. The Core will wait for double of
+  // this time to avoid network glitches. The minimum value is 5 seconds.
+  google.protobuf.Duration heartbeat_period = 1;
+}
+
+message HeartbeatResponse {}

@@ -12,9 +12,6 @@ import {DeviceModeToolbar} from './DeviceModeToolbar.js';
 import {MediaQueryInspector} from './MediaQueryInspector.js';
 
 
-/**
- * @unrestricted
- */
 export class DeviceModeView extends UI.Widget.VBox {
   constructor() {
     super(true);
@@ -131,7 +128,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     this._bottomResizerElement.createChild('div', '');
     this._createResizer(this._bottomResizerElement, 0, 1);
     this._bottomResizerElement.addEventListener('dblclick', this._model.setHeight.bind(this._model, 0), false);
-    this._bottomResizerElement.title = Common.UIString.UIString('Double-click for full height');
+    UI.Tooltip.Tooltip.install(this._bottomResizerElement, Common.UIString.UIString('Double-click for full height'));
 
     this._pageArea = /** @type {!HTMLElement} */ (this._screenArea.createChild('div', 'device-mode-page-area'));
     this._pageArea.createChild('slot');
@@ -206,7 +203,7 @@ export class DeviceModeView extends UI.Widget.VBox {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onResizeUpdate(widthFactor, heightFactor, event) {
-    if (event.data.shiftKey !== !!this._slowPositionStart) {
+    if (event.data.shiftKey !== Boolean(this._slowPositionStart)) {
       this._slowPositionStart = event.data.shiftKey ? {x: event.data.currentX, y: event.data.currentY} : null;
     }
 
@@ -298,7 +295,7 @@ export class DeviceModeView extends UI.Widget.VBox {
         this._cachedOutlineRect = outlineRect;
       }
     }
-    this._contentClip.classList.toggle('device-mode-outline-visible', !!this._model.outlineImage());
+    this._contentClip.classList.toggle('device-mode-outline-visible', Boolean(this._model.outlineImage()));
 
     const resizable = this._model.type() === Type.Responsive;
     if (resizable !== this._cachedResizable) {
@@ -590,9 +587,6 @@ export class DeviceModeView extends UI.Widget.VBox {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Ruler extends UI.Widget.VBox {
   /**
    * @param {boolean} horizontal

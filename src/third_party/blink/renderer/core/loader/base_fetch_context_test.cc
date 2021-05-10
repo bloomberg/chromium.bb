@@ -63,10 +63,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   bool AllowScriptFromSource(const KURL&) const override { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
-  PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
-      const override {
-    return nullptr;
-  }
   bool ShouldBlockRequestByInspector(const KURL&) const override {
     return false;
   }
@@ -74,7 +70,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
                                ResourceType) const override {}
-  const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
       const DOMWrapperWorld* world) const override {
     return GetContentSecurityPolicy();
   }
@@ -105,7 +101,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
   }
-  const ContentSecurityPolicy* GetContentSecurityPolicy() const override {
+  ContentSecurityPolicy* GetContentSecurityPolicy() const override {
     return execution_context_->GetContentSecurityPolicy();
   }
   void AddConsoleMessage(ConsoleMessage*) const override {}
@@ -123,6 +119,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
 
 class BaseFetchContextTest : public testing::Test {
  protected:
+  ~BaseFetchContextTest() override {
+    execution_context_->NotifyContextDestroyed();
+  }
+
   void SetUp() override {
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     static_cast<NullExecutionContext*>(execution_context_.Get())
@@ -139,7 +139,8 @@ class BaseFetchContextTest : public testing::Test {
             properties, fetch_context_,
             base::MakeRefCounted<scheduler::FakeTaskRunner>(),
             base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-            MakeGarbageCollected<TestLoaderFactory>(), execution_context_));
+            MakeGarbageCollected<TestLoaderFactory>(), execution_context_,
+            nullptr /* back_forward_cache_loader_helper */));
   }
 
   const FetchClientSettingsObject& GetFetchClientSettingsObject() const {
@@ -160,9 +161,11 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
+                           *(execution_context_->GetSecurityOrigin()),
                            network::mojom::ContentSecurityPolicyType::kEnforce,
                            network::mojom::ContentSecurityPolicySource::kHTTP);
   policy->DidReceiveHeader("script-src https://bar.test",
+                           *(execution_context_->GetSecurityOrigin()),
                            network::mojom::ContentSecurityPolicyType::kReport,
                            network::mojom::ContentSecurityPolicySource::kHTTP);
 
@@ -185,9 +188,11 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
+                           *(execution_context_->GetSecurityOrigin()),
                            network::mojom::ContentSecurityPolicyType::kEnforce,
                            network::mojom::ContentSecurityPolicySource::kHTTP);
   policy->DidReceiveHeader("script-src https://bar.test",
+                           *(execution_context_->GetSecurityOrigin()),
                            network::mojom::ContentSecurityPolicyType::kReport,
                            network::mojom::ContentSecurityPolicySource::kHTTP);
 
@@ -301,6 +306,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("default-src 'self'",
+                           *(execution_context_->GetSecurityOrigin()),
                            network::mojom::ContentSecurityPolicyType::kEnforce,
                            network::mojom::ContentSecurityPolicySource::kHTTP);
 

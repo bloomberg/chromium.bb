@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom-forward.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -41,7 +42,7 @@ namespace content {
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
 
 // Only on ChromeOS since it's only used there.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Returns the global NetworkChangeNotifier instance.
 CONTENT_EXPORT net::NetworkChangeNotifier* GetNetworkChangeNotifier();
 #endif
@@ -89,9 +90,9 @@ GetNetworkTaskRunner();
 //
 // Otherwise, |cert_verifier_creation_params| will just be placed directly into
 // the CertVerifierParams to configure an in-network-service CertVerifier.
-CONTENT_EXPORT network::mojom::CertVerifierParamsPtr GetCertVerifierParams(
-    network::mojom::CertVerifierCreationParamsPtr
-        cert_verifier_creation_params);
+CONTENT_EXPORT network::mojom::CertVerifierServiceRemoteParamsPtr
+GetCertVerifierParams(cert_verifier::mojom::CertVerifierCreationParamsPtr
+                          cert_verifier_creation_params);
 
 // Sets the CertVerifierServiceFactory used to instantiate
 // CertVerifierServices.

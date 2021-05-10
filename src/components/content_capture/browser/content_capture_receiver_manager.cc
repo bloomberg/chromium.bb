@@ -8,6 +8,7 @@
 
 #include "components/content_capture/browser/content_capture_receiver.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -108,9 +109,20 @@ void ContentCaptureReceiverManager::ReadyToCommitNavigation(
   }
 }
 
+void ContentCaptureReceiverManager::TitleWasSet(
+    content::NavigationEntry* entry) {
+  // Set the title to the mainframe.
+  if (auto* receiver =
+          ContentCaptureReceiverForFrame(web_contents()->GetMainFrame())) {
+    // To match what the user sees, intentionally get the title from WebContents
+    // instead of NavigationEntry, though they might be same.
+    receiver->SetTitle(web_contents()->GetTitle());
+  }
+}
+
 void ContentCaptureReceiverManager::DidCaptureContent(
     ContentCaptureReceiver* content_capture_receiver,
-    const ContentCaptureData& data) {
+    const ContentCaptureFrame& data) {
   // The root of |data| is frame, we need get its ancestor only.
   ContentCaptureSession parent_session;
   BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
@@ -120,7 +132,7 @@ void ContentCaptureReceiverManager::DidCaptureContent(
 
 void ContentCaptureReceiverManager::DidUpdateContent(
     ContentCaptureReceiver* content_capture_receiver,
-    const ContentCaptureData& data) {
+    const ContentCaptureFrame& data) {
   ContentCaptureSession parent_session;
   BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
                              &parent_session);
@@ -155,12 +167,23 @@ void ContentCaptureReceiverManager::DidRemoveSession(
   DidRemoveSession(session);
 }
 
+void ContentCaptureReceiverManager::DidUpdateTitle(
+    ContentCaptureReceiver* content_capture_receiver) {
+  ContentCaptureSession session;
+  BuildContentCaptureSession(content_capture_receiver,
+                             /*ancestor_only=*/false, &session);
+
+  // Shall only update mainframe's title.
+  DCHECK(session.size() == 1);
+  DidUpdateTitle(*session.begin());
+}
+
 void ContentCaptureReceiverManager::BuildContentCaptureSession(
     ContentCaptureReceiver* content_capture_receiver,
     bool ancestor_only,
     ContentCaptureSession* session) {
   if (!ancestor_only)
-    session->push_back(content_capture_receiver->GetFrameContentCaptureData());
+    session->push_back(content_capture_receiver->GetContentCaptureFrame());
 
   content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
   while (rfh) {
@@ -172,7 +195,7 @@ void ContentCaptureReceiverManager::BuildContentCaptureSession(
       receiver = ContentCaptureReceiverForFrame(rfh);
       DCHECK(receiver);
     }
-    session->push_back(receiver->GetFrameContentCaptureData());
+    session->push_back(receiver->GetContentCaptureFrame());
     rfh = receiver->rfh()->GetParent();
   }
 }
@@ -181,13 +204,13 @@ bool ContentCaptureReceiverManager::BuildContentCaptureSessionLastSeen(
     ContentCaptureReceiver* content_capture_receiver,
     ContentCaptureSession* session) {
   session->push_back(
-      content_capture_receiver->GetFrameContentCaptureDataLastSeen());
+      content_capture_receiver->GetContentCaptureFrameLastSeen());
   content::RenderFrameHost* rfh = content_capture_receiver->rfh()->GetParent();
   while (rfh) {
     ContentCaptureReceiver* receiver = ContentCaptureReceiverForFrame(rfh);
     if (!receiver)
       return false;
-    session->push_back(receiver->GetFrameContentCaptureDataLastSeen());
+    session->push_back(receiver->GetContentCaptureFrameLastSeen());
     rfh = receiver->rfh()->GetParent();
   }
   return true;

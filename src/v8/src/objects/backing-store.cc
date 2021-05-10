@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+#include "src/base/platform/wrappers.h"
 #include "src/execution/isolate.h"
 #include "src/handles/global-handles.h"
 #include "src/logging/counters.h"
@@ -28,6 +29,9 @@ namespace {
 // MIPS64 has a user space of 2^40 bytes on most processors,
 // address space limits needs to be smaller.
 constexpr size_t kAddressSpaceLimit = 0x8000000000L;  // 512 GiB
+#elif V8_TARGET_ARCH_RISCV64
+// RISC-V64 has a user space of 256GB on the Sv39 scheme.
+constexpr size_t kAddressSpaceLimit = 0x4000000000L;  // 256 GiB
 #elif V8_TARGET_ARCH_64_BIT
 constexpr size_t kAddressSpaceLimit = 0x10100000000L;  // 1 TiB + 4 GiB
 #else
@@ -464,7 +468,8 @@ std::unique_ptr<BackingStore> BackingStore::CopyWasmMemory(Isolate* isolate,
     // If the allocation was successful, then the new buffer must be at least
     // as big as the old one.
     DCHECK_GE(new_pages * wasm::kWasmPageSize, byte_length_);
-    memcpy(new_backing_store->buffer_start(), buffer_start_, byte_length_);
+    base::Memcpy(new_backing_store->buffer_start(), buffer_start_,
+                 byte_length_);
   }
 
   return new_backing_store;

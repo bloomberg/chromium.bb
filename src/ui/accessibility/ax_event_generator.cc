@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -73,16 +73,16 @@ void RemoveEventsDueToIgnoredChanged(
 // Add a particular AXEventGenerator::IgnoredChangedState to
 // |ignored_changed_states|.
 void AddIgnoredChangedState(
-    AXEventGenerator::IgnoredChangedStatesBitset& ignored_changed_states,
-    AXEventGenerator::IgnoredChangedState state) {
-  ignored_changed_states.set(static_cast<size_t>(state));
+    const AXEventGenerator::IgnoredChangedState& state,
+    AXEventGenerator::IgnoredChangedStatesBitset* ignored_changed_states) {
+  ignored_changed_states->set(static_cast<size_t>(state));
 }
 
 // Returns true if |ignored_changed_states| contains a particular
 // AXEventGenerator::IgnoredChangedState.
 bool HasIgnoredChangedState(
-    AXEventGenerator::IgnoredChangedStatesBitset& ignored_changed_states,
-    AXEventGenerator::IgnoredChangedState state) {
+    const AXEventGenerator::IgnoredChangedStatesBitset& ignored_changed_states,
+    const AXEventGenerator::IgnoredChangedState& state) {
   return ignored_changed_states[static_cast<size_t>(state)];
 }
 
@@ -91,8 +91,12 @@ bool HasIgnoredChangedState(
 AXEventGenerator::EventParams::EventParams(
     const Event event,
     const ax::mojom::EventFrom event_from,
+    const ax::mojom::Action event_from_action,
     const std::vector<AXEventIntent>& event_intents)
-    : event(event), event_from(event_from), event_intents(event_intents) {}
+    : event(event),
+      event_from(event_from),
+      event_from_action(event_from_action),
+      event_intents(event_intents) {}
 
 AXEventGenerator::EventParams::EventParams(const EventParams& other) = default;
 
@@ -159,21 +163,23 @@ AXEventGenerator::AXEventGenerator() = default;
 
 AXEventGenerator::AXEventGenerator(AXTree* tree) : tree_(tree) {
   if (tree_)
-    tree_event_observer_.Add(tree_);
+    tree_event_observation_.Observe(tree_);
 }
 
 AXEventGenerator::~AXEventGenerator() = default;
 
 void AXEventGenerator::SetTree(AXTree* new_tree) {
-  if (tree_)
-    tree_event_observer_.Remove(tree_);
+  if (tree_) {
+    DCHECK(tree_event_observation_.IsObservingSource(tree_));
+    tree_event_observation_.Reset();
+  }
   tree_ = new_tree;
   if (tree_)
-    tree_event_observer_.Add(tree_);
+    tree_event_observation_.Observe(tree_);
 }
 
 void AXEventGenerator::ReleaseTree() {
-  tree_event_observer_.RemoveAll();
+  tree_event_observation_.Reset();
   tree_ = nullptr;
 }
 
@@ -221,7 +227,7 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
 
   std::set<EventParams>& node_events = tree_events_[node];
   node_events.emplace(event, ax::mojom::EventFrom::kNone,
-                      tree_->event_intents());
+                      ax::mojom::Action::kNone, tree_->event_intents());
 }
 
 void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
@@ -423,6 +429,9 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kAriaCurrentState:
+      AddEvent(node, Event::ARIA_CURRENT_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kDropeffect:
       AddEvent(node, Event::DROPEFFECT_CHANGED);
       break;
@@ -596,8 +605,8 @@ void AXEventGenerator::OnIntListAttributeChanged(
       AddEvent(node, Event::FLOW_TO_CHANGED);
 
       // Fire FLOW_FROM_CHANGED for all nodes added or removed
-      for (int32_t id : ComputeIntListDifference(old_value, new_value)) {
-        if (auto* target_node = tree->GetFromId(id))
+      for (AXNodeID id : ComputeIntListDifference(old_value, new_value)) {
+        if (AXNode* target_node = tree->GetFromId(id))
           AddEvent(target_node, Event::FLOW_FROM_CHANGED);
       }
       break;
@@ -783,7 +792,7 @@ void AXEventGenerator::FireValueInTextFieldChangedEvent(AXTree* tree,
 
 void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
                                                 AXNode* target_node) {
-  int32_t target_id = target_node->id();
+  AXNodeID target_id = target_node->id();
   std::set<AXNode*> source_nodes;
   auto callback = [&](const auto& entry) {
     const auto& target_to_sources = entry.second;
@@ -792,7 +801,7 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
       return;
 
     auto sources = sources_it->second;
-    std::for_each(sources.begin(), sources.end(), [&](int32_t source_id) {
+    std::for_each(sources.begin(), sources.end(), [&](AXNodeID source_id) {
       AXNode* source_node = tree->GetFromId(source_id);
 
       if (!source_node || source_nodes.count(source_node) > 0)
@@ -870,13 +879,13 @@ void AXEventGenerator::TrimEventsDueToAncestorIgnoredChanged(
     // Propagate ancestor's show/hide states to |node|'s entry in the map.
     if (HasIgnoredChangedState(parent_map_iter->second,
                                IgnoredChangedState::kHide)) {
-      AddIgnoredChangedState(ancestor_ignored_changed_states,
-                             IgnoredChangedState::kHide);
+      AddIgnoredChangedState(IgnoredChangedState::kHide,
+                             &ancestor_ignored_changed_states);
     }
     if (HasIgnoredChangedState(parent_map_iter->second,
                                IgnoredChangedState::kShow)) {
-      AddIgnoredChangedState(ancestor_ignored_changed_states,
-                             IgnoredChangedState::kShow);
+      AddIgnoredChangedState(IgnoredChangedState::kShow,
+                             &ancestor_ignored_changed_states);
     }
 
     // If |node| has IGNORED changed with show/hide state that matches one of
@@ -895,11 +904,11 @@ void AXEventGenerator::TrimEventsDueToAncestorIgnoredChanged(
       }
 
       if (node->IsIgnored()) {
-        AddIgnoredChangedState(ancestor_ignored_changed_states,
-                               IgnoredChangedState::kHide);
+        AddIgnoredChangedState(IgnoredChangedState::kHide,
+                               &ancestor_ignored_changed_states);
       } else {
-        AddIgnoredChangedState(ancestor_ignored_changed_states,
-                               IgnoredChangedState::kShow);
+        AddIgnoredChangedState(IgnoredChangedState::kShow,
+                               &ancestor_ignored_changed_states);
       }
     }
 
@@ -912,11 +921,11 @@ void AXEventGenerator::TrimEventsDueToAncestorIgnoredChanged(
   if (curr_events_iter != tree_events_.end() &&
       HasEvent(curr_events_iter->second, Event::IGNORED_CHANGED)) {
     if (node->IsIgnored()) {
-      AddIgnoredChangedState(ancestor_ignored_changed_states,
-                             IgnoredChangedState::kHide);
+      AddIgnoredChangedState(IgnoredChangedState::kHide,
+                             &ancestor_ignored_changed_states);
     } else {
-      AddIgnoredChangedState(ancestor_ignored_changed_states,
-                             IgnoredChangedState::kShow);
+      AddIgnoredChangedState(IgnoredChangedState::kShow,
+                             &ancestor_ignored_changed_states);
     }
 
     return;
@@ -1070,6 +1079,8 @@ const char* ToString(AXEventGenerator::Event event) {
       return "activeDescendantChanged";
     case AXEventGenerator::Event::ALERT:
       return "alert";
+    case AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
+      return "ariaCurrentChanged";
     case AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
       return "atkTextObjectAttributeChanged";
     case AXEventGenerator::Event::ATOMIC_CHANGED:

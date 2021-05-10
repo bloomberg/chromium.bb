@@ -48,10 +48,9 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
-  base::span<const CompromisedCredentials> GetCompromisedCredentials()
-      const override;
-  bool IsBlacklisted() const override;
-  bool WasUnblacklisted() const override;
+  base::span<const InsecureCredential> GetInsecureCredentials() const override;
+  bool IsBlocklisted() const override;
+  bool WasUnblocklisted() const override;
   bool IsMovableToAccountStore() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
@@ -60,7 +59,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   void OnNopeUpdateClicked() override;
   void OnNeverClicked() override;
   void OnNoInteraction(bool is_update) override;
-  void PermanentlyBlacklist() override;
+  void Blocklist() override;
   void OnPasswordsRevealed() override;
   void MoveCredentialsToAccountStore() override;
   void BlockMovingCredentialsToAccountStore() override;
@@ -127,17 +126,17 @@ base::span<const InteractionsStats> PasswordDataForUI::GetInteractionsStats()
   return {};
 }
 
-base::span<const CompromisedCredentials>
-PasswordDataForUI::GetCompromisedCredentials() const {
+base::span<const InsecureCredential> PasswordDataForUI::GetInsecureCredentials()
+    const {
   return {};
 }
 
-bool PasswordDataForUI::IsBlacklisted() const {
+bool PasswordDataForUI::IsBlocklisted() const {
   // 'true' would suppress the bubble.
   return false;
 }
 
-bool PasswordDataForUI::WasUnblacklisted() const {
+bool PasswordDataForUI::WasUnblocklisted() const {
   // This information should not be relevant hereconst.
   return false;
 }
@@ -178,7 +177,7 @@ void PasswordDataForUI::OnNoInteraction(bool is_update) {
   bubble_interaction_cb_.Run(false, pending_form_);
 }
 
-void PasswordDataForUI::PermanentlyBlacklist() {}
+void PasswordDataForUI::Blocklist() {}
 
 void PasswordDataForUI::OnPasswordsRevealed() {}
 

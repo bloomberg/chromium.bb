@@ -4,31 +4,67 @@
 
 import './diagnostics_card.js';
 import './diagnostics_shared_css.js';
+import './text_badge.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {RoutineName, RoutineResult, StandardRoutineResult} from './diagnostics_types.js';
+
+import {RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
 import {ExecutionProgress, ResultStatusItem} from './routine_list_executor.js';
+import {BadgeType} from './text_badge.js';
 
 /**
- * Resolves an enum value to the string name. This is used temporarily to
- * provide a human readable string until the final mapping of enum values to
- * localized strings is finalized.
- * TODO(zentaro): Remove this function when strings are finalized.
- * @param {!Object} enumType
- * @param {number} enumValue
+ * Resolves a routine name to its corresponding localized string name.
+ * @param {!RoutineType} routineType
  * @return {string}
  */
-function lookupEnumValueName(enumType, enumValue) {
-  for (const [key, value] of Object.entries(enumType)) {
-    if (value === enumValue) {
-      return key;
-    }
+export function getRoutineType(routineType) {
+  switch (routineType) {
+    case chromeos.diagnostics.mojom.RoutineType.kBatteryCharge:
+      return loadTimeData.getString('batteryChargeRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kBatteryDischarge:
+      return loadTimeData.getString('batteryDischargeRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kCpuCache:
+      return loadTimeData.getString('cpuCacheRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kCpuStress:
+      return loadTimeData.getString('cpuStressRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kCpuFloatingPoint:
+      return loadTimeData.getString('cpuFloatingPointAccuracyRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kCpuPrime:
+      return loadTimeData.getString('cpuPrimeSearchRoutineText');
+    case chromeos.diagnostics.mojom.RoutineType.kMemory:
+      return loadTimeData.getString('memoryRoutineText');
+    default:
+      // Values should always be found in the enum.
+      assert(false);
+      return '';
+  }
+}
+
+/**
+ * @param {!RoutineResult} result
+ * @return {?StandardRoutineResult}
+ */
+export function getSimpleResult(result) {
+  if (!result) {
+    return null;
   }
 
-  // Values should always be found in the enum.
-  assert(false);
-  return '';
+  if (result.hasOwnProperty('simpleResult')) {
+    // Ideally we would just return assert(result.simpleResult) but enum
+    // value 0 fails assert.
+    return /** @type {!StandardRoutineResult} */ (result.simpleResult);
+  }
+
+  if (result.hasOwnProperty('powerResult')) {
+    return /** @type {!StandardRoutineResult} */ (
+        result.powerResult.simpleResult);
+  }
+
+  assertNotReached();
+  return null;
 }
 
 /**
@@ -47,50 +83,89 @@ Polymer({
     },
 
     /** @private */
-    routineName_: {
+    routineType_: {
       type: String,
-      computed: 'getRoutineName_(item.routine)',
+      computed: 'getRunningRoutineString_(item.routine)',
     },
 
-    /** @private */
-    status_: {
+    /** @private {!BadgeType} */
+    badgeType_: {
       type: String,
-      computed: 'getRoutineStatus_(item.progress, item.result)',
+      value: BadgeType.QUEUED,
+    },
+
+    /** @private {string} */
+    badgeText_: {
+      type: String,
+      value: '',
     },
   },
 
-  /**
-   * Get the string name for the routine.
-   * TODO(zentaro): Replace with a mapping to localized string when they are
-   * finalized.
-   * @param {!RoutineName} routine
-   * @return {string}
-   */
-  getRoutineName_(routine) {
-    return lookupEnumValueName(RoutineName, routine);
+  observers: ['entryStatusChanged_(item.progress, item.result)'],
+
+  /** @override */
+  attached() {
+    IronA11yAnnouncer.requestAvailability();
   },
 
   /**
-   * Get the status for the routine. This is a combination of progress and
-   * result.
-   * TODO(zentaro): Replace with a mapping to localized string when they are
-   * finalized.
-   * @param {!ExecutionProgress} progress
-   * @param {!RoutineResult} result
+   * Get the localized string name for the routine.
+   * @param {!RoutineType} routine
    * @return {string}
    */
-  getRoutineStatus_(progress, result) {
-    if (progress === ExecutionProgress.kNotStarted) {
-      return '';
-    }
+  getRunningRoutineString_(routine) {
+    return loadTimeData.getStringF('routineEntryText', getRoutineType(routine));
+  },
 
-    if (progress === ExecutionProgress.kRunning) {
-      return lookupEnumValueName(ExecutionProgress, ExecutionProgress.kRunning);
+  /**
+   * @private
+   */
+  entryStatusChanged_() {
+    switch (this.item.progress) {
+      case ExecutionProgress.kNotStarted:
+        this.setBadgeTypeAndText_(
+            BadgeType.QUEUED, loadTimeData.getString('testQueuedBadgeText'));
+        break;
+      case ExecutionProgress.kRunning:
+        this.setBadgeTypeAndText_(
+            BadgeType.RUNNING, loadTimeData.getString('testRunningBadgeText'));
+        this.announceRoutineStatus_();
+        break;
+      case ExecutionProgress.kCancelled:
+        this.setBadgeTypeAndText_(
+            BadgeType.STOPPED, loadTimeData.getString('testStoppedBadgeText'));
+        this.announceRoutineStatus_();
+        break;
+      case ExecutionProgress.kCompleted:
+        const testPassed = this.item.result &&
+            getSimpleResult(this.item.result) ===
+                chromeos.diagnostics.mojom.StandardRoutineResult.kTestPassed;
+        const badgeType = testPassed ? BadgeType.SUCCESS : BadgeType.ERROR;
+        const badgeText = loadTimeData.getString(
+            testPassed ? 'testSucceededBadgeText' : 'testFailedBadgeText');
+        this.setBadgeTypeAndText_(badgeType, badgeText);
+        this.announceRoutineStatus_();
+        break;
+      default:
+        assertNotReached();
     }
+  },
 
-    return lookupEnumValueName(StandardRoutineResult, result.simpleResult);
+  /**
+   * @param {!BadgeType} badgeType
+   * @param {string} badgeText
+   * @private
+   */
+  setBadgeTypeAndText_(badgeType, badgeText) {
+    this.setProperties({badgeType_: badgeType, badgeText_: badgeText});
   },
 
   /** @override */
   created() {},
+
+  /** @private */
+  announceRoutineStatus_() {
+    this.fire(
+        'iron-announce', {text: this.routineType_ + ' - ' + this.badgeText_});
+  },
 });

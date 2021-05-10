@@ -30,7 +30,10 @@
 
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -358,8 +361,17 @@ TEST(SecurityPolicyTest, TrustworthySafelist) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(url);
     EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginToTrustworthySafelist(origin->ToString());
-    EXPECT_TRUE(origin->IsPotentiallyTrustworthy());
+
+    {
+      base::test::ScopedCommandLine scoped_command_line;
+      base::CommandLine* command_line =
+          scoped_command_line.GetProcessCommandLine();
+      command_line->AppendSwitchASCII(
+          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+          origin->ToString().Latin1());
+      network::SecureOriginAllowlist::GetInstance().ResetForTesting();
+      EXPECT_TRUE(origin->IsPotentiallyTrustworthy());
+    }
   }
 
   // Tests that adding URLs that have inner-urls to the safelist
@@ -385,9 +397,17 @@ TEST(SecurityPolicyTest, TrustworthySafelist) {
 
     EXPECT_FALSE(origin1->IsPotentiallyTrustworthy());
     EXPECT_FALSE(origin2->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginToTrustworthySafelist(origin1->ToString());
-    EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
-    EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
+    {
+      base::test::ScopedCommandLine scoped_command_line;
+      base::CommandLine* command_line =
+          scoped_command_line.GetProcessCommandLine();
+      command_line->AppendSwitchASCII(
+          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+          origin1->ToString().Latin1());
+      network::SecureOriginAllowlist::GetInstance().ResetForTesting();
+      EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
+      EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
+    }
   }
 }
 
@@ -616,35 +636,20 @@ TEST(SecurityPolicyTest, ReferrerForCustomScheme) {
   String kFullReferrer = "my-new-scheme://com.foo.me/this-should-be-truncated";
   String kTruncatedReferrer = "my-new-scheme://com.foo.me/";
 
-  {
-    // With the feature off, the old default policy of
-    // no-referrer-when-downgrade should preserve the entire URL.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        features::kReducedReferrerGranularity);
+  // The default policy of strict-origin-when-cross-origin should truncate the
+  // referrer.
+  EXPECT_EQ(SecurityPolicy::GenerateReferrer(
+                network::mojom::ReferrerPolicy::kDefault,
+                KURL("https://www.example.com/"), kFullReferrer)
+                .referrer,
+            kTruncatedReferrer);
 
-    EXPECT_EQ(SecurityPolicy::GenerateReferrer(
-                  network::mojom::ReferrerPolicy::kDefault,
-                  KURL("https://www.example.com/"), kFullReferrer)
-                  .referrer,
-              kFullReferrer);
-  }
-
-  {
-    // With the feature on, the new default policy of
-    // strict-origin-when-cross-origin should truncate the referrer.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kReducedReferrerGranularity);
-
-    ASSERT_TRUE(ReferrerUtils::IsReducedReferrerGranularityEnabled());
-
-    EXPECT_EQ(SecurityPolicy::GenerateReferrer(
-                  network::mojom::ReferrerPolicy::kDefault,
-                  KURL("https://www.example.com/"), kFullReferrer)
-                  .referrer,
-              kTruncatedReferrer);
-  }
+  // no-referrer-when-downgrade shouldn't truncate the referrer.
+  EXPECT_EQ(SecurityPolicy::GenerateReferrer(
+                network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+                KURL("https://www.example.com/"), kFullReferrer)
+                .referrer,
+            kFullReferrer);
 }
 
 }  // namespace blink

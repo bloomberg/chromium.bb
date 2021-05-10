@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_fence.h"
+#include "ui/gl/gl_image_memory.h"
 
 namespace gpu {
 
@@ -101,6 +102,10 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override;
+  sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphore,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
@@ -131,12 +136,28 @@ class SharedImageRepresentationOverlayImpl
   ~SharedImageRepresentationOverlayImpl() override;
 
  private:
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences,
-                       std::vector<gfx::GpuFence>* release_fences) override;
-  void EndReadAccess() override;
+  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override;
+  void EndReadAccess(gfx::GpuFenceHandle release_fence) override;
   gl::GLImage* GetGLImage() override;
 
   scoped_refptr<gl::GLImage> gl_image_;
+};
+
+class SharedImageRepresentationMemoryImpl
+    : public SharedImageRepresentationMemory {
+ public:
+  SharedImageRepresentationMemoryImpl(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gl::GLImageMemory> image_memory);
+  ~SharedImageRepresentationMemoryImpl() override;
+
+ protected:
+  SkPixmap BeginReadAccess() override;
+
+ private:
+  scoped_refptr<gl::GLImageMemory> image_memory_;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture that is backed
@@ -196,6 +217,9 @@ class GPU_GLES2_EXPORT SharedImageBackingGLImage
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
+  std::unique_ptr<SharedImageRepresentationMemory> ProduceMemory(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override;
   std::unique_ptr<SharedImageRepresentationGLTexture>
   ProduceRGBEmulationGLTexture(SharedImageManager* manager,
                                MemoryTypeTracker* tracker) override;

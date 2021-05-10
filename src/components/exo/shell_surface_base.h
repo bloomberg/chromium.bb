@@ -58,7 +58,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // specified as part of the geometry is relative to the shell surface.
   ShellSurfaceBase(Surface* surface,
                    const gfx::Point& origin,
-                   bool activatable,
                    bool can_minimize,
                    int container);
   ~ShellSurfaceBase() override;
@@ -145,7 +144,14 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
   void SetUseImmersiveForFullscreen(bool value) override;
+  void ShowSnapPreviewToLeft() override;
+  void ShowSnapPreviewToRight() override;
+  void HideSnapPreview() override;
+  void SetSnappedToLeft() override;
+  void SetSnappedToRight() override;
+  void UnsetSnap() override;
   void OnActivationRequested() override;
+  void OnSetServerStartResize() override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -200,10 +206,16 @@ class ShellSurfaceBase : public SurfaceTreeHost,
     return shadow_bounds_changed_;
   }
 
+  bool server_side_resize() const { return server_side_resize_; }
+
  protected:
   // Creates the |widget_| for |surface_|. |show_state| is the initial state
   // of the widget (e.g. maximized).
   void CreateShellSurfaceWidget(ui::WindowShowState show_state);
+
+  // Lets subclasses modify Widget parameters immediately before widget
+  // creation.
+  virtual void OverrideInitParams(views::Widget::InitParams* params) {}
 
   // Returns true if surface is currently being resized.
   bool IsResizing() const;
@@ -246,8 +258,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Creates a NonClientFrameView for shell surface.
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameViewInternal(
-      views::Widget* widget,
-      bool client_controlled);
+      views::Widget* widget);
 
   virtual void OnPostWidgetCommit();
 
@@ -269,6 +280,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
   bool is_popup_ = false;
   bool has_grab_ = false;
+  bool server_side_resize_ = false;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShellSurfaceTest,
@@ -290,6 +302,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   virtual bool OnPreWidgetCommit() = 0;
 
   void CommitWidget();
+
+  bool IsFrameDecorationSupported(SurfaceFrameType frame_type);
 
   aura::Window* parent_ = nullptr;
   bool activatable_ = true;

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_output_callback.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -77,44 +77,47 @@ DEFINE_TEXT_PROTO_FUZZER(
     Persistent<VideoEncoder> video_encoder = VideoEncoder::Create(
         script_state, video_encoder_init, IGNORE_EXCEPTION_FOR_TESTING);
 
-    for (auto& invocation : proto.invocations()) {
-      switch (invocation.Api_case()) {
-        case wc_fuzzer::VideoEncoderApiInvocation::kConfigure:
-          video_encoder->configure(MakeEncoderConfig(invocation.configure()),
-                                   IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoEncoderApiInvocation::kEncode: {
-          VideoFrame* frame = MakeVideoFrame(invocation.encode().frame());
-          // Often the fuzzer input will be too crazy to produce a valid frame
-          // (e.g. bitmap width > bitmap length). In these cases, return early
-          // to discourage this sort of fuzzer input. WebIDL doesn't allow
-          // callers to pass null, so this is not a real concern.
-          if (!frame)
-            return;
+    if (video_encoder) {
+      for (auto& invocation : proto.invocations()) {
+        switch (invocation.Api_case()) {
+          case wc_fuzzer::VideoEncoderApiInvocation::kConfigure:
+            video_encoder->configure(MakeEncoderConfig(invocation.configure()),
+                                     IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoEncoderApiInvocation::kEncode: {
+            VideoFrame* frame =
+                MakeVideoFrame(script_state, invocation.encode().frame());
+            // Often the fuzzer input will be too crazy to produce a valid frame
+            // (e.g. bitmap width > bitmap length). In these cases, return early
+            // to discourage this sort of fuzzer input. WebIDL doesn't allow
+            // callers to pass null, so this is not a real concern.
+            if (!frame)
+              return;
 
-          video_encoder->encode(
-              frame, MakeEncodeOptions(invocation.encode().options()),
-              IGNORE_EXCEPTION_FOR_TESTING);
-          break;
+            video_encoder->encode(
+                frame, MakeEncodeOptions(invocation.encode().options()),
+                IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          }
+          case wc_fuzzer::VideoEncoderApiInvocation::kFlush: {
+            // TODO(https://crbug.com/1119253): Fuzz whether to await resolution
+            // of the flush promise.
+            video_encoder->flush(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          }
+          case wc_fuzzer::VideoEncoderApiInvocation::kReset:
+            video_encoder->reset(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoEncoderApiInvocation::kClose:
+            video_encoder->close(IGNORE_EXCEPTION_FOR_TESTING);
+            break;
+          case wc_fuzzer::VideoEncoderApiInvocation::API_NOT_SET:
+            break;
         }
-        case wc_fuzzer::VideoEncoderApiInvocation::kFlush: {
-          // TODO(https://crbug.com/1119253): Fuzz whether to await resolution
-          // of the flush promise.
-          video_encoder->flush(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        }
-        case wc_fuzzer::VideoEncoderApiInvocation::kReset:
-          video_encoder->reset(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoEncoderApiInvocation::kClose:
-          video_encoder->close(IGNORE_EXCEPTION_FOR_TESTING);
-          break;
-        case wc_fuzzer::VideoEncoderApiInvocation::API_NOT_SET:
-          break;
+
+        // Give other tasks a chance to run (e.g. calling our output callback).
+        base::RunLoop().RunUntilIdle();
       }
-
-      // Give other tasks a chance to run (e.g. calling our output callback).
-      base::RunLoop().RunUntilIdle();
     }
   }
 

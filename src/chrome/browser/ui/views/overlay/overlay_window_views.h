@@ -7,11 +7,13 @@
 
 #include "content/public/browser/overlay_window.h"
 
+#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/rounded_corner_decorator.h"
 #endif
 
@@ -29,7 +31,7 @@ class TrackImageButton;
 class OverlayWindowViews : public content::OverlayWindow,
                            public views::Widget {
  public:
-  static std::unique_ptr<content::OverlayWindow> Create(
+  static std::unique_ptr<OverlayWindowViews> Create(
       content::PictureInPictureWindowController* controller);
 
   ~OverlayWindowViews() override;
@@ -83,22 +85,26 @@ class OverlayWindowViews : public content::OverlayWindow,
   // visible.
   bool AreControlsVisible() const;
 
+  void ForceControlsVisibleForTesting(bool visible);
+
+  // Determines whether a layout of the window controls has been scheduled but
+  // is not done yet.
+  bool IsLayoutPendingForTesting() const;
+
   views::PlaybackImageButton* play_pause_controls_view_for_testing() const;
   views::TrackImageButton* next_track_controls_view_for_testing() const;
   views::TrackImageButton* previous_track_controls_view_for_testing() const;
   views::SkipAdLabelButton* skip_ad_controls_view_for_testing() const;
-  gfx::Point back_to_tab_image_position_for_testing() const;
+  views::View* back_to_tab_controls_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
   ui::Layer* video_layer_for_testing() const;
   cc::Layer* GetLayerForTesting() override;
 
-  // Update the max size of the widget based on |work_area| and |window_size|.
-  // The return value is the new size of the window if it was resized and is
-  // only used for testing.
-  gfx::Size UpdateMaxSize(const gfx::Rect& work_area,
-                          const gfx::Size& window_size);
+  void set_minimum_size_for_testing(const gfx::Size& min_size) {
+    min_size_ = min_size;
+  }
 
  private:
   explicit OverlayWindowViews(
@@ -109,8 +115,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
-  // playing a new video (i.e. different aspect ratio). This also updates
-  // |min_size_| and |max_size_|.
+  // playing a new video (i.e. different aspect ratio).
   gfx::Rect CalculateAndUpdateWindowBounds();
 
   // Set up the views::Views that will be shown on the window.
@@ -118,6 +123,9 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Finish initialization by performing the steps that require the root View.
   void OnRootViewReady();
+
+  // Update the max size of the widget based on |work_area| and window size.
+  void UpdateMaxSize(const gfx::Rect& work_area);
 
   // Update the bounds of the layers on the window. This may introduce
   // letterboxing.
@@ -138,12 +146,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Calculate and set the bounds of the controls.
   gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
   void UpdateControlsPositions();
-
-  ui::Layer* GetControlsScrimLayer();
-  ui::Layer* GetBackToTabControlsLayer();
-  ui::Layer* GetCloseControlsLayer();
-  ui::Layer* GetResizeHandleLayer();
-  ui::Layer* GetControlsParentLayer();
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -207,6 +209,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   views::View* window_background_view_ = nullptr;
   views::View* video_view_ = nullptr;
   views::View* controls_scrim_view_ = nullptr;
+  views::View* controls_container_view_ = nullptr;
   views::CloseImageButton* close_controls_view_ = nullptr;
   views::BackToTabImageButton* back_to_tab_controls_view_ = nullptr;
   views::TrackImageButton* previous_track_controls_view_ = nullptr;
@@ -214,7 +217,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   views::TrackImageButton* next_track_controls_view_ = nullptr;
   views::SkipAdLabelButton* skip_ad_controls_view_ = nullptr;
   views::ResizeHandleButton* resize_handle_view_ = nullptr;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
 #endif
 
@@ -239,6 +242,11 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Whether or not the previous track button will be shown. This is the
   // case when Media Session "previoustrack" action is handled by the website.
   bool show_previous_track_button_ = false;
+
+  // If set, controls will always either be shown or hidden, instead of showing
+  // and hiding automatically. Only used for testing via
+  // ForceControlsVisibleForTesting().
+  base::Optional<bool> force_controls_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };

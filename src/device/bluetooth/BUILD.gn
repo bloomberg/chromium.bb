@@ -7,7 +7,7 @@ import("//build/config/features.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
-if (is_ash) {
+if (is_chromeos_ash) {
   import("//chromeos/dbus/use_real_dbus_clients.gni")
 } else if (use_dbus) {
   use_real_dbus_clients = false
@@ -48,6 +48,13 @@ source_set("deprecated_experimental_mojo") {
     "socket.cc",
     "socket.h",
   ]
+
+  if (is_chromeos || is_linux) {
+    sources += [
+      "bluez/metrics_recorder.cc",
+      "bluez/metrics_recorder.h",
+    ]
+  }
 
   deps = [
     ":bluetooth",
@@ -188,8 +195,8 @@ component("bluetooth") {
     deps += [ ":jni_headers" ]
   }
 
-  if (is_ash) {
-    deps += [ "//chromeos/constants" ]
+  if (is_chromeos_ash) {
+    deps += [ "//ash/constants" ]
   }
 
   if (is_mac) {
@@ -399,7 +406,7 @@ component("bluetooth") {
         "dbus/dbus_bluez_manager_wrapper_linux.cc",
         "dbus/dbus_bluez_manager_wrapper_linux.h",
       ]
-      if (is_ash) {
+      if (is_chromeos_ash) {
         configs += [ "//chromeos/dbus:use_real_dbus_clients_config" ]
         sources += [
           "chromeos/bluetooth_utils.cc",

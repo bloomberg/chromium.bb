@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 
 #include <memory>
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -28,7 +29,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
-#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 static const char defaultFont[] = "10px sans-serif";
 static const char defaultFilter[] = "none";
@@ -105,6 +105,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       word_spacing_(other.word_spacing_),
       text_rendering_mode_(other.text_rendering_mode_),
       font_kerning_(other.font_kerning_),
+      font_stretch_(other.font_stretch_),
       font_variant_caps_(other.font_variant_caps_),
       realized_font_(other.realized_font_),
       is_transform_invertible_(other.is_transform_invertible_),
@@ -288,6 +289,16 @@ void CanvasRenderingContext2DState::SetFontKerning(
   FontDescription font_description(GetFontDescription());
   font_description.SetKerning(font_kerning);
   font_kerning_ = font_kerning;
+  SetFont(font_description, selector);
+}
+
+void CanvasRenderingContext2DState::SetFontStretch(
+    FontSelectionValue font_stretch,
+    FontSelector* selector) {
+  DCHECK(realized_font_);
+  FontDescription font_description(GetFontDescription());
+  font_description.SetStretch(font_stretch);
+  font_stretch_ = font_stretch;
   SetFont(font_description, selector);
 }
 
@@ -486,24 +497,24 @@ SkDrawLooper* CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper()
 
 sk_sp<PaintFilter> CanvasRenderingContext2DState::ShadowOnlyImageFilter()
     const {
+  using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_only_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_only_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
         shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
-        shadow_color_, SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode,
-        nullptr);
+        shadow_color_, ShadowMode::kDrawShadowOnly, nullptr);
   }
   return shadow_only_image_filter_;
 }
 
 sk_sp<PaintFilter>
 CanvasRenderingContext2DState::ShadowAndForegroundImageFilter() const {
+  using ShadowMode = DropShadowPaintFilter::ShadowMode;
   if (!shadow_and_foreground_image_filter_) {
     const auto sigma = BlurRadiusToStdDev(shadow_blur_);
     shadow_and_foreground_image_filter_ = sk_make_sp<DropShadowPaintFilter>(
         shadow_offset_.Width(), shadow_offset_.Height(), sigma, sigma,
-        shadow_color_,
-        SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, nullptr);
+        shadow_color_, ShadowMode::kDrawShadowAndForeground, nullptr);
   }
   return shadow_and_foreground_image_filter_;
 }
@@ -591,6 +602,9 @@ void CanvasRenderingContext2DState::UpdateFilterQuality() const {
   if (!image_smoothing_enabled_) {
     UpdateFilterQualityWithSkFilterQuality(kNone_SkFilterQuality);
   } else {
+    base::UmaHistogramExactLinear("Blink.Canvas.ImageSmoothingQuality",
+                                  static_cast<int>(image_smoothing_quality_),
+                                  static_cast<int>(kLast_SkFilterQuality) + 1);
     UpdateFilterQualityWithSkFilterQuality(image_smoothing_quality_);
   }
 }

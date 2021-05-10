@@ -35,6 +35,15 @@ namespace payments {
 
 class PaymentRequestSpec;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Keep in sync with
+// src/tools/metrics/histograms/enums.xml.
+enum class SecurePaymentConfirmationSystemPromptResult {
+  kCanceled = 0,
+  kAccepted = 1,
+  kMaxValue = kAccepted,
+};
+
 class SecurePaymentConfirmationApp : public PaymentApp,
                                      public content::WebContentsObserver {
  public:
@@ -58,7 +67,7 @@ class SecurePaymentConfirmationApp : public PaymentApp,
       const SecurePaymentConfirmationApp& other) = delete;
 
   // PaymentApp implementation.
-  void InvokePaymentApp(Delegate* delegate) override;
+  void InvokePaymentApp(base::WeakPtr<Delegate> delegate) override;
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
@@ -90,7 +99,7 @@ class SecurePaymentConfirmationApp : public PaymentApp,
 
  private:
   void OnGetAssertion(
-      Delegate* delegate,
+      base::WeakPtr<Delegate> delegate,
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::GetAssertionAuthenticatorResponsePtr response);
 

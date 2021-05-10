@@ -30,6 +30,7 @@ namespace dawn_native {
         struct TaskInFlight {
             virtual ~TaskInFlight();
             virtual void Finish() = 0;
+            virtual void HandleDeviceLoss() = 0;
         };
 
         static QueueBase* MakeError(DeviceBase* device);
@@ -39,6 +40,9 @@ namespace dawn_native {
         void Submit(uint32_t commandCount, CommandBufferBase* const* commands);
         void Signal(Fence* fence, uint64_t signalValue);
         Fence* CreateFence(const FenceDescriptor* descriptor);
+        void OnSubmittedWorkDone(uint64_t signalValue,
+                                 WGPUQueueWorkDoneCallback callback,
+                                 void* userdata);
         void WriteBuffer(BufferBase* buffer, uint64_t bufferOffset, const void* data, size_t size);
         void WriteTexture(const TextureCopyView* destination,
                           const void* data,
@@ -47,10 +51,12 @@ namespace dawn_native {
                           const Extent3D* writeSize);
         void CopyTextureForBrowser(const TextureCopyView* source,
                                    const TextureCopyView* destination,
-                                   const Extent3D* copySize);
+                                   const Extent3D* copySize,
+                                   const CopyTextureForBrowserOptions* options);
 
         void TrackTask(std::unique_ptr<TaskInFlight> task, ExecutionSerial serial);
         void Tick(ExecutionSerial finishedSerial);
+        void HandleDeviceLoss();
 
       protected:
         QueueBase(DeviceBase* device);
@@ -68,7 +74,8 @@ namespace dawn_native {
                                         const Extent3D* writeSize);
         MaybeError CopyTextureForBrowserInternal(const TextureCopyView* source,
                                                  const TextureCopyView* destination,
-                                                 const Extent3D* copySize);
+                                                 const Extent3D* copySize,
+                                                 const CopyTextureForBrowserOptions* options);
 
         virtual MaybeError SubmitImpl(uint32_t commandCount,
                                       CommandBufferBase* const* commands) = 0;
@@ -83,6 +90,8 @@ namespace dawn_native {
 
         MaybeError ValidateSubmit(uint32_t commandCount, CommandBufferBase* const* commands) const;
         MaybeError ValidateSignal(const Fence* fence, FenceAPISerial signalValue) const;
+        MaybeError ValidateOnSubmittedWorkDone(uint64_t signalValue,
+                                               WGPUQueueWorkDoneStatus* status) const;
         MaybeError ValidateCreateFence(const FenceDescriptor* descriptor) const;
         MaybeError ValidateWriteBuffer(const BufferBase* buffer,
                                        uint64_t bufferOffset,

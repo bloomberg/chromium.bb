@@ -19,6 +19,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace lock_screen_apps {
 
@@ -40,10 +41,13 @@ constexpr int kDialogTitleMarginEndDp = 0;
 }  // namespace
 
 ToastDialogView::ToastDialogView(const base::string16& app_name,
-                                 base::OnceClosure dismissed_callback)
-    : app_name_(app_name) {
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::SetCloseCallback(std::move(dismissed_callback));
+                                 base::OnceClosure dismissed_callback) {
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetCloseCallback(std::move(dismissed_callback));
+  SetModalType(ui::MODAL_TYPE_NONE);
+  SetShowCloseButton(true);
+  SetTitle(l10n_util::GetStringFUTF16(
+      IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_TITLE, app_name));
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::LOCK_SCREEN_NOTE_APP_TOAST);
@@ -55,11 +59,11 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
   set_title_margins(
       gfx::Insets(kDialogTitleMarginTopDp, kDialogTitleMarginStartDp,
                   kDialogTitleMarginBottomDp, kDialogTitleMarginEndDp));
-  set_shadow(views::BubbleBorder::SMALL_SHADOW);
+  set_shadow(views::BubbleBorder::STANDARD_SHADOW);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto* label = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_MESSAGE, app_name_));
+      IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_MESSAGE, app_name));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(138, 0, 0, 0));
@@ -75,15 +79,6 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
 
 ToastDialogView::~ToastDialogView() = default;
 
-ui::ModalType ToastDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
-}
-
-base::string16 ToastDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_TITLE,
-                                    app_name_);
-}
-
 void ToastDialogView::AddedToWidget() {
   std::unique_ptr<views::Label> title =
       views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
@@ -92,15 +87,14 @@ void ToastDialogView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title));
 }
 
-bool ToastDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
 void ToastDialogView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
   ash_util::SetupWidgetInitParamsForContainer(
       params, ash::kShellWindowId_SettingBubbleContainer);
 }
+
+BEGIN_METADATA(ToastDialogView, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace lock_screen_apps

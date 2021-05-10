@@ -11,10 +11,12 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
@@ -25,14 +27,15 @@
 #include "content/public/browser/resource_context.h"
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chromeos/network/onc/certificate_scope.h"
@@ -76,12 +79,12 @@ std::string GetCertificateOrg(CERTCertificate* cert) {
   return org;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Log message for an operation that can not be performed on a certificate of a
 // given source.
 constexpr char kOperationNotPermitted[] =
     "Operation not permitted on a certificate. Source: ";
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -177,13 +180,23 @@ class CertificateManagerModel::CertsSource {
 
 namespace {
 // Provides certificates enumerable from a NSSCertDatabase.
-class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
+class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource,
+                               net::CertDatabase::Observer {
  public:
   CertsSourcePlatformNSS(base::RepeatingClosure certs_source_updated_callback,
                          net::NSSCertDatabase* nss_cert_database)
       : CertsSource(certs_source_updated_callback),
-        cert_db_(nss_cert_database) {}
+        cert_db_(nss_cert_database) {
+    // Observe CertDatabase changes to refresh when it's updated.
+    cert_database_observation_.Observe(net::CertDatabase::GetInstance());
+  }
   ~CertsSourcePlatformNSS() override = default;
+
+  // net::CertDatabase::Observer
+  void OnCertDBChanged() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    Refresh();
+  }
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -209,10 +222,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
 
   bool Delete(CERTCertificate* cert) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    bool result = cert_db_->DeleteCertAndKey(cert);
-    if (result)
-      Refresh();
-    return result;
+    return cert_db_->DeleteCertAndKey(cert);
   }
 
  private:
@@ -263,12 +273,16 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
   // The source NSSCertDatabase used for listing certificates.
   net::NSSCertDatabase* cert_db_;
 
+  // ScopedObservation to keep track of the observer for net::CertDatabase.
+  base::ScopedObservation<net::CertDatabase, net::CertDatabase::Observer>
+      cert_database_observation_{this};
+
   base::WeakPtrFactory<CertsSourcePlatformNSS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertsSourcePlatformNSS);
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Provides certificates installed through enterprise policy.
 class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
                           chromeos::PolicyCertificateProvider::Observer {
@@ -436,7 +450,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
   DISALLOW_COPY_AND_ASSIGN(CertsSourceExtensions);
 };
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -483,7 +497,7 @@ void CertificateManagerModel::Create(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<Params> params = std::make_unique<Params>();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::UserNetworkConfigurationUpdater* user_network_configuration_updater =
       policy::UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(
           browser_context);
@@ -521,7 +535,7 @@ CertificateManagerModel::CertificateManagerModel(
   base::RepeatingClosure certs_source_updated_callback = base::BindRepeating(
       &CertificateManagerModel::OnCertsSourceUpdated, base::Unretained(this));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Certificates installed and web trusted by enterprise policy is the highest
   // priority CertsSource.
   // UserNetworkConfigurationUpdater is only available for the primary user's
@@ -537,7 +551,7 @@ CertificateManagerModel::CertificateManagerModel(
   certs_sources_.push_back(std::make_unique<CertsSourcePlatformNSS>(
       certs_source_updated_callback, nss_cert_database));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Certificates installed by enterprise policy without web trust are lower
   // priority than the main NSS DB based CertsSource.
   // Rationale: The user should be able to add trust to policy-provided
@@ -614,29 +628,19 @@ int CertificateManagerModel::ImportFromPKCS12(PK11SlotInfo* slot_info,
                                               const std::string& data,
                                               const base::string16& password,
                                               bool is_extractable) {
-  int result = cert_db_->ImportFromPKCS12(slot_info, data, password,
-                                          is_extractable, nullptr);
-  if (result == net::OK)
-    Refresh();
-  return result;
+  return cert_db_->ImportFromPKCS12(slot_info, data, password, is_extractable,
+                                    nullptr);
 }
 
 int CertificateManagerModel::ImportUserCert(const std::string& data) {
-  int result = cert_db_->ImportUserCert(data);
-  if (result == net::OK)
-    Refresh();
-  return result;
+  return cert_db_->ImportUserCert(data);
 }
 
 bool CertificateManagerModel::ImportCACerts(
     const net::ScopedCERTCertificateList& certificates,
     net::NSSCertDatabase::TrustBits trust_bits,
     net::NSSCertDatabase::ImportCertFailureList* not_imported) {
-  const size_t num_certs = certificates.size();
-  bool result = cert_db_->ImportCACerts(certificates, trust_bits, not_imported);
-  if (result && not_imported->size() != num_certs)
-    Refresh();
-  return result;
+  return cert_db_->ImportCACerts(certificates, trust_bits, not_imported);
 }
 
 bool CertificateManagerModel::ImportServerCert(
@@ -695,7 +699,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
 
   bool is_user_db_available = !!cert_db->GetPublicSlot();
   bool is_tpm_available = false;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
 #endif
   content::GetUIThreadTaskRunner({})->PostTask(

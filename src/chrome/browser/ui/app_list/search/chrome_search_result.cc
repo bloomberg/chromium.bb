@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
@@ -94,6 +95,11 @@ void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetOmniboxType(OmniboxType omnibox_type) {
+  metadata_->omnibox_type = omnibox_type;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetPositionPriority(float position_priority) {
   metadata_->position_priority = position_priority;
   SetSearchResultMetadata();
@@ -106,11 +112,6 @@ void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
 
 void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
   metadata_->is_recommendation = is_recommendation;
-  SetSearchResultMetadata();
-}
-
-void ChromeSearchResult::SetIsAnswer(bool is_answer) {
-  metadata_->is_answer = is_answer;
   SetSearchResultMetadata();
 }
 

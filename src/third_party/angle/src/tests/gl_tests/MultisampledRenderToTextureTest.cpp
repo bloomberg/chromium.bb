@@ -583,10 +583,158 @@ TEST_P(MultisampledRenderToTextureTest, RenderbufferColorAttachmentMultisampleDr
     colorAttachmentMultisampleDrawTestCommon(true);
 }
 
+// Test draw with a scissored region.
+TEST_P(MultisampledRenderToTextureTest, ScissoredDrawTest)
+{
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    GLFramebuffer FBO;
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    // Set up color attachment and bind to FBO
+    constexpr GLsizei kSize = 1024;
+    GLTexture texture;
+    GLRenderbuffer renderbuffer;
+    createAndAttachColorAttachment(false, kSize, GL_COLOR_ATTACHMENT0, nullptr, &texture,
+                                   &renderbuffer);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Set viewport and clear to black
+    glViewport(0, 0, kSize, kSize);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Set up Green square program
+    ANGLE_GL_PROGRAM(drawGreen, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
+    glUseProgram(drawGreen);
+
+    // Draw green square
+    drawQuad(drawGreen, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(0, kSize - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, kSize - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize / 2, kSize / 2, GLColor::green);
+
+    // Set up Red square program
+    ANGLE_GL_PROGRAM(drawRed, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    glUseProgram(drawRed);
+
+    // Draw a scissored red square
+
+    constexpr GLint kScissorStartX = 1;
+    constexpr GLint kScissorStartY = 103;
+    constexpr GLint kScissorEndX   = 285;
+    constexpr GLint kScissorEndY   = 402;
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(kScissorStartX, kScissorStartY, kScissorEndX - kScissorStartX + 1,
+              kScissorEndY - kScissorStartY + 1);
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(0, kSize - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, kSize - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kSize / 2, kSize / 2, GLColor::green);
+
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX, kScissorStartY, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX, kScissorStartY, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX, kScissorEndY, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX, kScissorEndY, GLColor::red);
+
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX - 1, kScissorStartY, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX, kScissorStartY - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX + 1, kScissorStartY, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX, kScissorStartY - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX - 1, kScissorEndY, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorStartX, kScissorEndY + 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX + 1, kScissorEndY, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(kScissorEndX, kScissorEndY + 1, GLColor::green);
+}
+
+// Test transform feedback with state change.  In the Vulkan backend, this results in an implicit
+// break of the render pass, and must work correctly with respect to the subpass index that's used.
+TEST_P(MultisampledRenderToTextureES3Test, TransformFeedbackTest)
+{
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    GLFramebuffer FBO;
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    // Set up color attachment and bind to FBO
+    constexpr GLsizei kSize = 1024;
+    GLTexture texture;
+    GLRenderbuffer renderbuffer;
+    createAndAttachColorAttachment(false, kSize, GL_COLOR_ATTACHMENT0, nullptr, &texture,
+                                   &renderbuffer);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Set up transform feedback.
+    GLTransformFeedback xfb;
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, xfb);
+
+    constexpr size_t kXfbBufferSize = 1024;  // arbitrary number
+    GLBuffer xfbBuffer;
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, xfbBuffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, kXfbBufferSize, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, xfbBuffer);
+
+    // Set up program with transform feedback
+    std::vector<std::string> tfVaryings = {"gl_Position"};
+    ANGLE_GL_PROGRAM_TRANSFORM_FEEDBACK(drawColor, essl1_shaders::vs::Simple(),
+                                        essl1_shaders::fs::UniformColor(), tfVaryings,
+                                        GL_INTERLEAVED_ATTRIBS);
+    glUseProgram(drawColor);
+    GLint colorUniformLocation =
+        glGetUniformLocation(drawColor, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorUniformLocation, -1);
+
+    // Start transform feedback
+    glBeginTransformFeedback(GL_TRIANGLES);
+
+    // Set viewport and clear to black
+    glViewport(0, 0, kSize, kSize);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw green.  There's no unresolve operation as the framebuffer has just been cleared.
+    glUniform4f(colorUniformLocation, 0.0f, 1.0f, 0.0f, 1.0f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    // Incur a state change while transform feedback is active.  This will result in a pipeline
+    // rebind in the Vulkan backend, which should necessarily break the render pass when
+    // VK_EXT_transform_feedback is used.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    // Draw red.  The implicit render pass break means that there's an unresolve operation.
+    glUniform4f(colorUniformLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.0f);
+
+    // End transform feedback
+    glEndTransformFeedback();
+
+    // Expect yellow.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, 0, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(0, kSize - 1, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(kSize - 1, kSize - 1, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(kSize / 2, kSize / 2, GLColor::yellow);
+}
+
 // Draw test using both color and depth attachments.
 TEST_P(MultisampledRenderToTextureTest, 2DColorDepthMultisampleDrawTest)
 {
     ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kSize = 6;
     // create complete framebuffer with depth buffer
     GLTexture texture;
@@ -902,18 +1050,12 @@ void MultisampledRenderToTextureES3Test::blitFramebufferTestCommon(bool useRende
 // BlitFramebuffer functionality test. ES3+.
 TEST_P(MultisampledRenderToTextureES3Test, BlitFramebufferTest)
 {
-    // TODO: http://anglebug.com/5331: Generates VVL errors
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     blitFramebufferTestCommon(false);
 }
 
 // BlitFramebuffer functionality test with renderbuffer. ES3+.
 TEST_P(MultisampledRenderToTextureES3Test, RenderbufferBlitFramebufferTest)
 {
-    // TODO: http://anglebug.com/5331: Generates VVL errors
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     blitFramebufferTestCommon(true);
 }
 
@@ -1145,6 +1287,10 @@ TEST_P(MultisampledRenderToTextureES3Test,
        RenderbufferClearDrawCopyThenBlendWithDepthStencilSameProgram)
 {
     ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kSize = 64;
 
     setupCopyTexProgram();
@@ -1852,6 +1998,9 @@ TEST_P(MultisampledRenderToTextureES3Test, RenderbufferDepthStencilClearDrawCopy
     // http://anglebug.com/5096
     ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
 
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kSize = 64;
 
     setupCopyTexProgram();
@@ -1943,6 +2092,9 @@ TEST_P(MultisampledRenderToTextureES3Test, RenderbufferDepthStencilDrawCopyClear
 
     // http://anglebug.com/5096
     ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
 
     constexpr GLsizei kSize = 64;
 
@@ -2439,6 +2591,10 @@ TEST_P(MultisampledRenderToTextureES3Test, RenderbufferDrawThenBlitDepthStencilO
 TEST_P(MultisampledRenderToTextureTest, DepthReadWriteToggleWithStartedRenderPass)
 {
     ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kSize = 64;
 
     setupCopyTexProgram();
@@ -3405,6 +3561,9 @@ void MultisampledRenderToTextureES3Test::renderbufferUnresolveColorAndDepthStenc
     // http://anglebug.com/5096
     ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
 
+    // http://anglebug.com/5380
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kSize = 64;
 
     setupCopyTexProgram();
@@ -3573,18 +3732,12 @@ void MultisampledRenderToTextureES3Test::renderbufferUnresolveColorAndDepthStenc
 // depth/stencil textures as they are explicitly autoinvalidated between render passes.
 TEST_P(MultisampledRenderToTextureES3Test, RenderbufferUnresolveColorAndDepthThenTwoColors)
 {
-    // TODO: http://anglebug.com/5331: Generates VVL errors
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     renderbufferUnresolveColorAndDepthStencilThenTwoColors(true, false);
 }
 
 // Similar to RenderbufferUnresolveColorAndDepthThenTwoColors, but with stencil.
 TEST_P(MultisampledRenderToTextureES3Test, RenderbufferUnresolveColorAndStencilThenTwoColors)
 {
-    // TODO: http://anglebug.com/5331: Generates VVL errors
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     renderbufferUnresolveColorAndDepthStencilThenTwoColors(false, true);
 }
 
@@ -3592,6 +3745,67 @@ TEST_P(MultisampledRenderToTextureES3Test, RenderbufferUnresolveColorAndStencilT
 TEST_P(MultisampledRenderToTextureES3Test, RenderbufferUnresolveColorAndDepthStencilThenTwoColors)
 {
     renderbufferUnresolveColorAndDepthStencilThenTwoColors(true, true);
+}
+
+// Make sure deferred clears are flushed correctly when the framebuffer switches between
+// needing unresolve and not needing it.
+TEST_P(MultisampledRenderToTextureES3Test, ClearThenMaskedClearFramebufferTest)
+{
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_multisampled_render_to_texture"));
+
+    // TODO(anglebug:5655): This test is failing on Linux AMD Vulkan since it was added.
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsVulkan());
+
+    constexpr GLsizei kSize = 16;
+
+    GLFramebuffer fboMS;
+    glBindFramebuffer(GL_FRAMEBUFFER, fboMS);
+
+    // Create multisampled framebuffer to use as source.
+    GLRenderbuffer depthMS;
+    glBindRenderbuffer(GL_RENDERBUFFER, depthMS);
+    glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT24, kSize, kSize);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthMS);
+    ASSERT_GL_NO_ERROR();
+
+    GLTexture textureMS;
+    GLRenderbuffer renderbufferMS;
+    createAndAttachColorAttachment(false, kSize, GL_COLOR_ATTACHMENT0, nullptr, &textureMS,
+                                   &renderbufferMS);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Clear depth to 0.5 and color to green.
+    glClearDepthf(0.5f);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    // Break the render pass.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Draw red into the multisampled color buffer.  An unresolve operation is needed.
+    ANGLE_GL_PROGRAM(drawRed, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_EQUAL);
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    // Break the render pass.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    // Clear color to transparent blue.
+    glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Clear both color and depth, with color masked.
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_TRUE);
+    glClearDepthf(0.3f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Make sure the result is blue.
+    EXPECT_PIXEL_RECT_EQ(0, 0, kSize - 1, kSize - 1, GLColor::blue);
+    ASSERT_GL_NO_ERROR();
 }
 
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND_ES31(MultisampledRenderToTextureTest);

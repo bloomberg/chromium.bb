@@ -174,7 +174,7 @@ RTCPReceiver::RTCPReceiver(const RtpRtcpInterface::Configuration& config,
       // TODO(bugs.webrtc.org/10774): Remove fallback.
       remote_ssrc_(0),
       remote_sender_rtp_time_(0),
-      xr_rrtr_status_(false),
+      xr_rrtr_status_(config.non_sender_rtt_measurement),
       xr_rr_rtt_ms_(0),
       oldest_tmmbr_info_ms_(0),
       stats_callback_(config.rtcp_statistics_callback),
@@ -254,11 +254,6 @@ int32_t RTCPReceiver::RTT(uint32_t remote_ssrc,
     *max_rtt_ms = report_block_data->max_rtt_ms();
 
   return 0;
-}
-
-void RTCPReceiver::SetRtcpXrRrtrStatus(bool enable) {
-  MutexLock lock(&rtcp_receiver_lock_);
-  xr_rrtr_status_ = enable;
 }
 
 bool RTCPReceiver::GetAndResetXrRrRtt(int64_t* rtt_ms) {
@@ -719,7 +714,6 @@ void RTCPReceiver::HandleSdes(const CommonHeader& rtcp_block,
   }
 
   for (const rtcp::Sdes::Chunk& chunk : sdes.chunks()) {
-    received_cnames_[chunk.ssrc] = chunk.cname;
     if (cname_callback_)
       cname_callback_->OnCname(chunk.ssrc, chunk.cname);
   }
@@ -783,7 +777,6 @@ void RTCPReceiver::HandleBye(const CommonHeader& rtcp_block) {
     tmmbr_info->ready_for_delete = true;
 
   last_fir_.erase(bye.sender_ssrc());
-  received_cnames_.erase(bye.sender_ssrc());
   auto it = received_rrtrs_ssrc_it_.find(bye.sender_ssrc());
   if (it != received_rrtrs_ssrc_it_.end()) {
     received_rrtrs_.erase(it->second);
@@ -1172,20 +1165,6 @@ void RTCPReceiver::TriggerCallbacksFromRtcpPacket(
       }
     }
   }
-}
-
-int32_t RTCPReceiver::CNAME(uint32_t remoteSSRC,
-                            char cName[RTCP_CNAME_SIZE]) const {
-  RTC_DCHECK(cName);
-
-  MutexLock lock(&rtcp_receiver_lock_);
-  auto received_cname_it = received_cnames_.find(remoteSSRC);
-  if (received_cname_it == received_cnames_.end())
-    return -1;
-
-  size_t length = received_cname_it->second.copy(cName, RTCP_CNAME_SIZE - 1);
-  cName[length] = 0;
-  return 0;
 }
 
 std::vector<rtcp::TmmbItem> RTCPReceiver::TmmbrReceived() {

@@ -19,6 +19,7 @@ class GrOnFlushCallbackObject;
 class GrMemoryPool;
 class GrProgramDesc;
 class GrProgramInfo;
+class GrProxyProvider;
 class GrRecordingContextPriv;
 class GrSurfaceContext;
 class GrSurfaceProxy;
@@ -144,6 +145,9 @@ protected:
     // match that of the DDL.
     OwnedArenas&& detachArenas();
 
+    GrProxyProvider* proxyProvider() { return fProxyProvider.get(); }
+    const GrProxyProvider* proxyProvider() const { return fProxyProvider.get(); }
+
     struct ProgramData {
         ProgramData(std::unique_ptr<const GrProgramDesc>, const GrProgramInfo*);
         ProgramData(ProgramData&&);                     // for SkTArray
@@ -228,11 +232,13 @@ protected:
     void dumpJSON(SkJSONWriter*) const;
 
 private:
+    // Delete last in case other objects call it during destruction.
+    std::unique_ptr<GrAuditTrail>     fAuditTrail;
+
     OwnedArenas                       fArenas;
 
     std::unique_ptr<GrDrawingManager> fDrawingManager;
-
-    std::unique_ptr<GrAuditTrail>     fAuditTrail;
+    std::unique_ptr<GrProxyProvider>  fProxyProvider;
 
 #if GR_TEST_UTILS
     int fSuppressWarningMessages = 0;

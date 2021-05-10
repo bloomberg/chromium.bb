@@ -37,17 +37,20 @@ SmsFetchRequestHandler::Request::Request(
     SharingMessageHandler::DoneCallback respond_callback)
     : handler_(handler),
       fetcher_(fetcher),
-      origin_(origin),
+      origin_list_(content::OriginList{origin}),
       respond_callback_(std::move(respond_callback)) {
-  fetcher_->Subscribe(origin_, this);
+  // TODO(1015645): Support iframe in cross-device WebOTP.
+  fetcher_->Subscribe(origin_list_, this);
 }
 
 SmsFetchRequestHandler::Request::~Request() {
-  fetcher_->Unsubscribe(origin_, this);
+  // TODO(1015645): Support iframe in cross-device WebOTP.
+  fetcher_->Unsubscribe(origin_list_, this);
 }
 
 void SmsFetchRequestHandler::Request::OnReceive(
-    const std::string& one_time_code) {
+    const std::string& one_time_code,
+    content::SmsFetcher::UserConsent consent_requirement) {
   auto response = std::make_unique<chrome_browser_sharing::ResponseMessage>();
   response->mutable_sms_fetch_response()->set_one_time_code(one_time_code);
 

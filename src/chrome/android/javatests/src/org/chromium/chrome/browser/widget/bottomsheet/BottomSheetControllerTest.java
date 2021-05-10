@@ -49,6 +49,7 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -145,10 +146,13 @@ public class BottomSheetControllerTest {
         });
         requestContentInSheet(mLowPriorityContent, true);
         int callCount = hideCallbackHelper.getCallCount();
+        int lowPriorityDestroyCalls = mLowPriorityContent.destroyCallbackHelper.getCallCount();
         requestContentInSheet(mHighPriorityContent, true);
         hideCallbackHelper.waitForCallback(callCount);
         assertEquals("The bottom sheet is showing incorrect content.", mHighPriorityContent,
                 mSheetController.getCurrentSheetContent());
+        assertEquals("The low priority content should not have been destroyed!",
+                lowPriorityDestroyCalls, mLowPriorityContent.destroyCallbackHelper.getCallCount());
     }
 
     @Test
@@ -352,7 +356,7 @@ public class BottomSheetControllerTest {
         Tab tab = mActivity.getActivityTab();
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
+            public void onPageLoadStarted(Tab tab, GURL url) {
                 pageLoadStartedHelper.notifyCalled();
             }
         });

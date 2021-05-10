@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
@@ -246,6 +247,11 @@ void ToggleImageButton::SetToggledImage(ButtonState image_state,
   }
 }
 
+void ToggleImageButton::SetToggledBackground(std::unique_ptr<Background> b) {
+  toggled_background_ = std::move(b);
+  SchedulePaint();
+}
+
 base::string16 ToggleImageButton::GetToggledTooltipText() const {
   return toggled_tooltip_text_;
 }
@@ -288,6 +294,15 @@ void ToggleImageButton::SetImage(ButtonState image_state,
       SchedulePaint();
   }
   PreferredSizeChanged();
+}
+
+void ToggleImageButton::OnPaintBackground(gfx::Canvas* canvas) {
+  if (toggled_ && toggled_background_) {
+    TRACE_EVENT0("views", "View::OnPaintBackground");
+    toggled_background_->Paint(canvas, this);
+  } else {
+    ImageButton::OnPaintBackground(canvas);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,6 +357,7 @@ END_METADATA
 
 BEGIN_METADATA(ToggleImageButton, ImageButton)
 ADD_PROPERTY_METADATA(bool, Toggled)
+ADD_PROPERTY_METADATA(std::unique_ptr<Background>, ToggledBackground)
 ADD_PROPERTY_METADATA(base::string16, ToggledTooltipText)
 ADD_PROPERTY_METADATA(base::string16, ToggledAccessibleName)
 END_METADATA

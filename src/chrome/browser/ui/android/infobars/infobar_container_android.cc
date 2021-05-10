@@ -7,8 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "chrome/android/chrome_jni_headers/InfoBarContainer_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/infobar.h"
@@ -45,24 +45,15 @@ void InfoBarContainerAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
+// Creates the Java equivalent of |android_bar| and add it to the java
+// container.
 void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(
     infobars::InfoBar* infobar,
     size_t position) {
   DCHECK(infobar);
   infobars::InfoBarAndroid* android_bar =
       static_cast<infobars::InfoBarAndroid*>(infobar);
-  if (!android_bar) {
-    // TODO(bulach): CLANK: implement other types of InfoBars.
-    NOTIMPLEMENTED() << "CLANK: infobar identifier "
-                     << infobar->delegate()->GetIdentifier();
-    return;
-  }
 
-  AttachJavaInfoBar(android_bar);
-}
-
-void InfoBarContainerAndroid::AttachJavaInfoBar(
-    infobars::InfoBarAndroid* android_bar) {
   if (android_bar->HasSetJavaInfoBar())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -84,7 +75,8 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(
   }
 
   base::android::ScopedJavaLocalRef<jobject> java_infobar =
-      android_bar->CreateRenderInfoBar(env);
+      android_bar->CreateRenderInfoBar(
+          env, base::BindRepeating(&ResourceMapper::MapToJavaDrawableId));
   android_bar->SetJavaInfoBar(java_infobar);
   Java_InfoBarContainer_addInfoBar(env, weak_java_infobar_container_.get(env),
                                    java_infobar);

@@ -29,17 +29,6 @@
 
 #include <vector>
 
-namespace grpc_impl {
-namespace internal {
-
-template <class RequestType, class ResponseType>
-class CallbackUnaryHandler;
-template <class RequestType, class ResponseType>
-class CallbackServerStreamingHandler;
-
-}  // namespace internal
-}  // namespace grpc_impl
-
 namespace grpc {
 
 class ServerInterface;
@@ -47,25 +36,25 @@ class ByteBuffer;
 class ServerInterface;
 
 namespace internal {
+template <class RequestType, class ResponseType>
+class CallbackUnaryHandler;
+template <class RequestType, class ResponseType>
+class CallbackServerStreamingHandler;
+template <class RequestType>
+void* UnaryDeserializeHelper(grpc_call*, grpc_byte_buffer*, ::grpc::Status*,
+                             RequestType*);
+template <class ServiceType, class RequestType, class ResponseType>
+class ServerStreamingHandler;
+template <::grpc::StatusCode code>
+class ErrorMethodHandler;
 class CallOpSendMessage;
 template <class R>
 class CallOpRecvMessage;
 class CallOpGenericRecvMessage;
-class MethodHandler;
-template <class ServiceType, class RequestType, class ResponseType>
-class RpcMethodHandler;
-template <class ServiceType, class RequestType, class ResponseType>
-class ServerStreamingHandler;
-template <StatusCode code>
-class ErrorMethodHandler;
 class ExternalConnectionAcceptorImpl;
 template <class R>
 class DeserializeFuncType;
 class GrpcByteBufferPeer;
-template <class ServiceType, class RequestType, class ResponseType>
-class RpcMethodHandler;
-template <class ServiceType, class RequestType, class ResponseType>
-class ServerStreamingHandler;
 
 }  // namespace internal
 /// A sequence of bytes.
@@ -174,18 +163,15 @@ class ByteBuffer final {
   template <class R>
   friend class internal::CallOpRecvMessage;
   friend class internal::CallOpGenericRecvMessage;
-  template <class ServiceType, class RequestType, class ResponseType>
-  friend class RpcMethodHandler;
-  template <class ServiceType, class RequestType, class ResponseType>
-  friend class ServerStreamingHandler;
-  template <class ServiceType, class RequestType, class ResponseType>
-  friend class internal::RpcMethodHandler;
+  template <class RequestType>
+  friend void* internal::UnaryDeserializeHelper(grpc_call*, grpc_byte_buffer*,
+                                                ::grpc::Status*, RequestType*);
   template <class ServiceType, class RequestType, class ResponseType>
   friend class internal::ServerStreamingHandler;
   template <class RequestType, class ResponseType>
-  friend class ::grpc_impl::internal::CallbackUnaryHandler;
+  friend class internal::CallbackUnaryHandler;
   template <class RequestType, class ResponseType>
-  friend class ::grpc_impl::internal::CallbackServerStreamingHandler;
+  friend class internal::CallbackServerStreamingHandler;
   template <StatusCode code>
   friend class internal::ErrorMethodHandler;
   template <class R>

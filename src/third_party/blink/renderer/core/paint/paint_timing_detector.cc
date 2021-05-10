@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -104,16 +104,13 @@ void PaintTimingDetector::NotifyPaintFinished() {
 
 // static
 void PaintTimingDetector::NotifyBackgroundImagePaint(
-    const Node* node,
-    const Image* image,
-    const StyleFetchedImage* style_image,
+    const Node& node,
+    const Image& image,
+    const StyleFetchedImage& style_image,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const IntRect& image_border) {
-  DCHECK(image);
-  DCHECK(style_image->CachedImage());
-  if (!node)
-    return;
-  LayoutObject* object = node->GetLayoutObject();
+  DCHECK(style_image.CachedImage());
+  LayoutObject* object = node.GetLayoutObject();
   if (!object)
     return;
   LocalFrameView* frame_view = object->GetFrameView();
@@ -122,18 +119,18 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (!detector.GetImagePaintTimingDetector())
     return;
-  if (!IsBackgroundImageContentful(*object, *image))
+  if (!IsBackgroundImageContentful(*object, image))
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
-      *object, image->Size(), *style_image->CachedImage(),
-      current_paint_chunk_properties, style_image, image_border);
+      *object, image.Size(), *style_image.CachedImage(),
+      current_paint_chunk_properties, &style_image, image_border);
 }
 
 // static
 void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
-    const ImageResourceContent* cached_image,
+    const ImageResourceContent& cached_image,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const IntRect& image_border) {
   if (IgnorePaintTimingScope::ShouldIgnore())
@@ -141,13 +138,11 @@ void PaintTimingDetector::NotifyImagePaint(
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
-  if (!cached_image)
-    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (!detector.GetImagePaintTimingDetector())
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
-      object, intrinsic_size, *cached_image, current_paint_chunk_properties,
+      object, intrinsic_size, cached_image, current_paint_chunk_properties,
       nullptr, image_border);
 }
 
@@ -264,6 +259,7 @@ bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
           std::min(image_paint_time, removed_image_paint_time);
     }
   }
+  UpdateLargestContentfulPaintTime();
   DidChangePerformanceTiming();
   return true;
 }
@@ -282,8 +278,21 @@ bool PaintTimingDetector::NotifyIfChangedLargestTextPaint(
     largest_text_paint_time_ = text_paint_time;
     largest_text_paint_size_ = text_paint_size;
   }
+  UpdateLargestContentfulPaintTime();
   DidChangePerformanceTiming();
   return true;
+}
+
+void PaintTimingDetector::UpdateLargestContentfulPaintTime() {
+  if (largest_text_paint_size_ > largest_image_paint_size_) {
+    largest_contentful_paint_time_ = largest_text_paint_time_;
+  } else if (largest_text_paint_size_ < largest_image_paint_size_) {
+    largest_contentful_paint_time_ = largest_image_paint_time_;
+  } else {
+    // Size is the same, take the shorter time.
+    largest_contentful_paint_time_ =
+        std::min(largest_text_paint_time_, largest_image_paint_time_);
+  }
 }
 
 bool PaintTimingDetector::HasLargestImagePaintChanged(
@@ -431,7 +440,6 @@ void PaintTimingDetector::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
   visitor->Trace(largest_contentful_paint_calculator_);
   visitor->Trace(callback_manager_);
-  visitor->Trace(visualizer_);
 }
 
 void PaintTimingCallbackManagerImpl::
@@ -447,10 +455,10 @@ void PaintTimingCallbackManagerImpl::
   frame_callbacks_ =
       std::make_unique<PaintTimingCallbackManager::CallbackQueue>();
 
-  // |ReportPaintTime| on |layerTreeView| will queue a swap-promise, the
-  // callback is called when the swap for current render frame completes or
-  // fails to happen.
-  frame.GetPage()->GetChromeClient().NotifySwapTime(
+  // |ReportPaintTime| on |layerTreeView| will queue a presentation-promise, the
+  // callback is called when the presentation for current render frame completes
+  // or fails to happen.
+  frame.GetPage()->GetChromeClient().NotifyPresentationTime(
       frame, std::move(combined_callback));
 }
 

@@ -17,61 +17,96 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/type/f32_type.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
+#include "src/type/access_control_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/sampled_texture_type.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_VariableDeclStatement) {
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &f32);
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kNone);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  var a : f32;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  var a : f32;\n");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_VariableDeclStatement_Function) {
   // Variable declarations with Function storage class don't mention their
   // storage class.  Rely on defaulting.
   // https://github.com/gpuweb/gpuweb/issues/654
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kFunction, &f32);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kFunction);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  var a : f32;\n");
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  var a : f32;\n");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_VariableDeclStatement_Private) {
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &f32);
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kPrivate);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  var<private> a : f32;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  var<private> a : f32;\n");
+}
+
+TEST_F(WgslGeneratorImplTest, Emit_VariableDeclStatement_Sampler) {
+  auto* var = Global("s", create<type::Sampler>(type::SamplerKind::kSampler),
+                     ast::StorageClass::kUniformConstant);
+
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  var s : sampler;\n");
+}
+
+TEST_F(WgslGeneratorImplTest, Emit_VariableDeclStatement_Texture) {
+  auto* st =
+      create<type::SampledTexture>(type::TextureDimension::k1d, ty.f32());
+  auto* var = Global(
+      "t", create<type::AccessControl>(ast::AccessControl::kReadOnly, st),
+      ast::StorageClass::kUniformConstant);
+
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  var t : [[access(read)]]\ntexture_1d<f32>;\n");
 }
 
 }  // namespace

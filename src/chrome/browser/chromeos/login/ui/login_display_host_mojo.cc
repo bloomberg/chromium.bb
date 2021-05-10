@@ -15,19 +15,20 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/ash/login/screens/chrome_user_selection_screen.h"
+#include "chrome/browser/ash/login/screens/gaia_screen.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
-#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
+#include "chrome/browser/chromeos/login/security_token_session_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -42,6 +43,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
@@ -127,8 +129,8 @@ void LoginDisplayHostMojo::SetUserCount(int user_count) {
 }
 
 void LoginDisplayHostMojo::ShowPasswordChangedDialog(
-    bool show_password_error,
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    bool show_password_error) {
   DCHECK(GetOobeUI());
   wizard_controller_->ShowGaiaPasswordChangedScreen(account_id,
                                                     show_password_error);
@@ -138,12 +140,6 @@ void LoginDisplayHostMojo::ShowPasswordChangedDialog(
 void LoginDisplayHostMojo::ShowAllowlistCheckFailedError() {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowAllowlistCheckFailedError();
-  ShowDialog();
-}
-
-void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);
   ShowDialog();
 }
 
@@ -284,6 +280,8 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
   UpdateAddUserButtonStatus();
 
   OnStartSignInScreenCommon();
+
+  login::SecurityTokenSessionController::MaybeDisplayLoginScreenNotification();
 }
 
 void LoginDisplayHostMojo::OnPreferencesChanged() {
@@ -340,6 +338,11 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   HideDialog();
 }
 
+void LoginDisplayHostMojo::SetShelfButtonsEnabled(bool enabled) {
+  // Do nothing as we do not need to disable the shelf buttons on lock/login
+  // screen.
+}
+
 void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
   if (dialog_)
     dialog_->SetState(state);
@@ -359,6 +362,20 @@ bool LoginDisplayHostMojo::HasUserPods() {
   return user_count_ > 0;
 }
 
+void LoginDisplayHostMojo::VerifyOwnerForKiosk(base::OnceClosure on_success) {
+  // This UI is specific fo the consumer kiosk. We hide all the pods except for
+  // the owner. User can't go back to the normal user screen from this. App
+  // launch cancellation results in the Chrome restart (see
+  // KioskLaunchController::OnCancelAppLaunch).
+  CHECK(GetKioskLaunchController());
+  DCHECK(!owner_verified_callback_);
+  owner_verified_callback_ = std::move(on_success);
+  owner_account_id_ = user_manager::UserManager::Get()->GetOwnerAccountId();
+  CHECK(owner_account_id_.is_valid());
+  login_display_->ShowOwnerPod(owner_account_id_);
+  HideOobeDialog();
+}
+
 void LoginDisplayHostMojo::AddObserver(LoginDisplayHost::Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -370,6 +387,10 @@ void LoginDisplayHostMojo::RemoveObserver(
 
 void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
   HideOobeDialog();
+}
+
+void LoginDisplayHostMojo::ShowEnableConsumerKioskScreen() {
+  NOTREACHED();
 }
 
 void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
@@ -404,6 +425,11 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
                  << user_context.GetUserType();
     }
     user_context.SetIsUsingOAuth(false);
+  }
+
+  if (owner_verified_callback_) {
+    CheckOwnerCredentials(user_context);
+    return;
   }
 
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
@@ -617,6 +643,27 @@ void LoginDisplayHostMojo::CreateExistingUserController() {
 
   // We need auth attempt results to notify views-based login screen.
   existing_user_controller_->AddLoginStatusConsumer(this);
+}
+
+void LoginDisplayHostMojo::CheckOwnerCredentials(
+    const UserContext& user_context) {
+  CHECK_EQ(owner_account_id_, user_context.GetAccountId());
+  if (!extended_authenticator_)
+    extended_authenticator_ = ExtendedAuthenticator::Create(this);
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExtendedAuthenticator::AuthenticateToCheck,
+                     extended_authenticator_.get(), user_context,
+                     base::BindOnce(&LoginDisplayHostMojo::OnOwnerSigninSuccess,
+                                    base::Unretained(this))));
+}
+
+void LoginDisplayHostMojo::OnOwnerSigninSuccess() {
+  DCHECK(owner_verified_callback_);
+  std::move(owner_verified_callback_).Run();
+  extended_authenticator_.reset();
+  ShowFullScreen();
 }
 
 }  // namespace chromeos

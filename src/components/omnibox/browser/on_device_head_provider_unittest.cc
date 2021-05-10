@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/on_device_head_model.h"
+#include "components/omnibox/browser/on_device_model_update_listener.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -32,7 +33,6 @@ class OnDeviceHeadProviderTest : public testing::Test,
     client_.reset(new FakeAutocompleteProviderClient());
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
-    provider_->AddModelUpdateCallback();
     task_environment_.RunUntilIdle();
   }
 
@@ -60,9 +60,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
   }
 
   void ResetModelInstance() {
-    if (provider_) {
-      provider_->model_filename_.clear();
-    }
+    auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
+    if (update_listener)
+      update_listener->ResetListenerForTest();
   }
 
   bool IsOnDeviceHeadProviderAllowed(const AutocompleteInput& input) {
@@ -121,19 +121,9 @@ TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
 
-  // By default incognito request will be accepted.
+  // By default Incognito request will be accepted.
   {
     ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input));
-  }
-
-  // Disable omnibox::kNewSearchFeatures and now all modes should be disabled.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {omnibox::kOnDeviceHeadProviderNonIncognito,
-         omnibox::kOnDeviceHeadProviderIncognito},
-        {omnibox::kNewSearchFeatures});
-    ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input));
   }
 }
 

@@ -12,6 +12,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/http/http_response_headers.h"
 
 class PrefService;
 class Profile;
@@ -29,8 +30,12 @@ class DataReductionProxyData;
 class DataStore;
 }  // namespace data_reduction_proxy
 
-class HttpsImageCompressionBypassDecider;
+namespace subresource_redirect {
+class OriginRobotsRulesCache;
+}
+
 class HttpsImageCompressionInfoBarDecider;
+class LitePagesServiceBypassDecider;
 class PrefService;
 
 // Data reduction proxy settings class suitable for use with a Chrome browser.
@@ -87,9 +92,13 @@ class DataReductionProxyChromeSettings
     return https_image_compression_infobar_decider_.get();
   }
 
-  HttpsImageCompressionBypassDecider* https_image_compression_bypass_decider()
+  LitePagesServiceBypassDecider* litepages_service_bypass_decider() const {
+    return litepages_service_bypass_decider_.get();
+  }
+
+  subresource_redirect::OriginRobotsRulesCache* origin_robots_rules_cache()
       const {
-    return https_image_compression_bypass_decider_.get();
+    return origin_robots_rules_cache_.get();
   }
 
  private:
@@ -104,10 +113,14 @@ class DataReductionProxyChromeSettings
   std::unique_ptr<HttpsImageCompressionInfoBarDecider>
       https_image_compression_infobar_decider_;
 
-  // Maintains the decider for this profile to contain logic for https image
-  // compression bypass.
-  std::unique_ptr<HttpsImageCompressionBypassDecider>
-      https_image_compression_bypass_decider_;
+  // Maintains the decider for this profile to contain logic for LitePages
+  // service bypass.
+  std::unique_ptr<LitePagesServiceBypassDecider>
+      litepages_service_bypass_decider_;
+
+  // Maintains the cache of robots rules.
+  std::unique_ptr<subresource_redirect::OriginRobotsRulesCache>
+      origin_robots_rules_cache_;
 
   // Null before InitDataReductionProxySettings is called.
   Profile* profile_;

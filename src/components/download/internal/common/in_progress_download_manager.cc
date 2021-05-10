@@ -476,7 +476,7 @@ void InProgressDownloadManager::StartDownload(
     if (delegate_ && delegate_->InterceptDownload(*info)) {
       if (cancel_request_callback)
         std::move(cancel_request_callback).Run(false);
-      GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+      GetIOTaskRunner()->DeleteSoon(FROM_HERE, std::move(stream));
       return;
     }
   }
@@ -534,7 +534,7 @@ void InProgressDownloadManager::StartDownloadWithItem(
       std::move(cancel_request_callback).Run(false);
     // The ByteStreamReader lives and dies on the download sequence.
     if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE)
-      GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+      GetIOTaskRunner()->DeleteSoon(FROM_HERE, std::move(stream));
     return;
   }
 
@@ -576,7 +576,8 @@ void InProgressDownloadManager::OnDBInitialized(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
   // Retrieve display names for all downloads from media store if needed.
-  if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_Q) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(entries));
@@ -679,6 +680,7 @@ void InProgressDownloadManager::NotifyDownloadsInitialized() {
 void InProgressDownloadManager::AddInProgressDownloadForTest(
     std::unique_ptr<download::DownloadItemImpl> download) {
   in_progress_downloads_.push_back(std::move(download));
+  NotifyDownloadsInitialized();
 }
 
 void InProgressDownloadManager::CancelUrlDownload(

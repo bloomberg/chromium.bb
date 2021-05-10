@@ -13,15 +13,16 @@
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1289742167380433257">Google optimalizoval obrázky tejto stránky, aby vám ušetril dáta.</translation>
 <translation id="129382876167171263">Tu sa zobrazia súbory uložené webmi</translation>
+<translation id="1317194122196776028">Zabudnúť tento web</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Boli pridané stránky <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
 <translation id="1415402041810619267">Skrátená webová adresa</translation>
-<translation id="1431402976894535801">Brániť webom overovať si vašu prítomnosť</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
 <translation id="1509960214886564027">Funkcie na mnohých weboch môžu zlyhávať</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1644574205037202324">História</translation>
 <translation id="1660204651932907780">Povoliť webom prehrávať zvuk (odporúčané)</translation>
 <translation id="1677097821151855053">Stránky si vás pomocou súborov cookie a ďalších údajov webov zapamätajú, napríklad vás pomocou nich prihlásia alebo prispôsobia reklamy. Ak chcete spravovať súbory cookie pre všetky weby, prejdite do <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vymazať dáta webu?</translation>
@@ -39,7 +40,6 @@
 <translation id="1994173015038366702">Webová adresa</translation>
 <translation id="2025115093177348061">Rozšírená realita</translation>
 <translation id="2030769033451695672">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2054665754582400095">Vaša prítomnosť</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2107397443965016585">Pýtať sa, či chcete povoliť webu prehrávať chránený obsah (odporúčané)</translation>
@@ -82,7 +82,6 @@
 <translation id="3114012059975132928">Prehrávač videa</translation>
 <translation id="3115898365077584848">Zobraziť informácie</translation>
 <translation id="3123473560110926937">Blokované na niektorých weboch</translation>
-<translation id="3165371858310906303">Opýtať sa, keď chce web vedieť, či ste prítomný/-á</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených dát</translation>
 <translation id="321187648315454507">Ak chcete povoliť aplikácii <ph name="APP_NAME" /> odosielať vám upozornenia, zapnite ich aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofón</translation>
@@ -101,6 +100,7 @@
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
 <translation id="3763247130972274048">Dvojitým klepnutím doľava alebo doprava preskočíte vo videu o 10 s</translation>
 <translation id="381841723434055211">Telefónne čísla</translation>
+<translation id="3835233591525155343">Používanie vášho zariadenia</translation>
 <translation id="385051799172605136">Späť</translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="3955193568934677022">Povoliť webom prehrávať chránený obsah (odporúčané)</translation>
@@ -117,6 +117,7 @@
 <translation id="429312253194641664">Web prehráva médiá</translation>
 <translation id="42981349822642051">Rozbaliť</translation>
 <translation id="4336434711095810371">Vymazať všetky dáta</translation>
+<translation id="4402755511846832236">Neumožniť webom zistiť, či aktívne používate toto zariadenie</translation>
 <translation id="4433925000917964731">Zjednodušenú verziu stránky poskytol Google</translation>
 <translation id="4434045419905280838">Vyskakovacie okná a presmerovania</translation>
 <translation id="445467742685312942">Povoliť webom prehrávať chránený obsah</translation>
@@ -129,6 +130,7 @@
 <translation id="4670064810192446073">Virtuálna realita</translation>
 <translation id="4708011789095599544">Naozaj chcete vymazať súbory cookie a ďalšie údaje tohto webu?</translation>
 <translation id="4751476147751820511">Senzory pohybu alebo svetla</translation>
+<translation id="4836046166855586901">Opýtať sa, keď chce web zistiť, či aktívne používate toto zariadenie</translation>
 <translation id="4883854917563148705">Spravované nastavenia sa nedajú resetovať</translation>
 <translation id="4887024562049524730">Pýtať sa, či chcete povoliť webu používať zariadenie a dáta pre virtuálnu realitu (odporúčané)</translation>
 <translation id="4962975101802056554">Odvolať všetky povolenia pre zariadenie</translation>
@@ -140,6 +142,7 @@
 <translation id="5063480226653192405">Použitie</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
 <translation id="5123685120097942451">Karta inkognito</translation>
+<translation id="5186036860380548585">Možnosť je k dispozícii v hornej časti obrazovky</translation>
 <translation id="5197729504361054390">Vybrané kontakty budú zdieľané s webom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
@@ -198,7 +201,7 @@
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Sú blokované povolenia: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie}few{Sú blokované povolenia <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie}many{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more blocked}other{Sú blokované povolenia <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalších}}</translation>
-<translation id="6561560012278703671">Použiť tichšie správy (blokovanie vyrušovania upozorneniami)</translation>
+<translation id="6561560012278703671">Používať tichší režim (blokovať rušivé výzvy na odber upozornení)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="662080504995468778">Zostať</translation>
@@ -278,6 +281,7 @@
 <translation id="8447861592752582886">Odvolať povolenie pre zariadenie</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Používa sa 1 súbor cookie}few{Používajú sa # súbory cookie}many{# cookies in use}other{Používa sa # súborov cookie}}</translation>
 <translation id="8463851957836045671">Web je rýchly</translation>
+<translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="851751545965956758">Brániť webom pripájať sa k zariadeniam</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="857943718398505171">Povolené (odporúčané)</translation>

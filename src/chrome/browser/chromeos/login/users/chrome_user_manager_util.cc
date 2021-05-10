@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_provider.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -62,13 +62,13 @@ bool IsUserAllowed(const user_manager::User& user,
                    bool is_user_allowlisted) {
   DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
          user.GetType() == user_manager::USER_TYPE_GUEST ||
-         user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
+         user.GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          user.GetType() == user_manager::USER_TYPE_CHILD);
 
   if (user.GetType() == user_manager::USER_TYPE_GUEST && !is_guest_allowed) {
     return false;
   }
-  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED) {
+  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED) {
     return false;
   }
   if (user.HasGaiaAccount() && !is_user_allowlisted) {

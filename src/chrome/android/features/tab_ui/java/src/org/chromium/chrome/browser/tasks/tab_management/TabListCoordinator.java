@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.tab_management.PriceWelcomeMessageService.PriceTabData;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.tab_ui.R;
@@ -50,7 +49,7 @@ import java.util.List;
  * Coordinator for showing UI for a list of tabs. Can be used in GRID or STRIP modes.
  */
 public class TabListCoordinator
-        implements PriceWelcomeMessageService.PriceWelcomeMessageProvider, Destroyable {
+        implements PriceMessageService.PriceWelcomeMessageProvider, Destroyable {
     /**
      * Modes of showing the list of tabs.
      *
@@ -79,6 +78,7 @@ public class TabListCoordinator
     private final Context mContext;
     private final TabListModel mModel;
     private final @UiType int mItemType;
+    private final TabModelSelector mTabModelSelector;
 
     private boolean mIsInitialized;
     private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
@@ -99,6 +99,7 @@ public class TabListCoordinator
      * @param itemType The item type to put in the list of tabs.
      * @param selectionDelegateProvider Provider to provide selected Tabs for a selectable tab list.
      *                                  It's NULL when selection is not possible.
+     * @param priceWelcomeMessageController A controller to show PriceWelcomeMessage.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param attachToParent Whether the UI should attach to root view.
      * @param componentName A unique string uses to identify different components for UMA recording.
@@ -112,22 +113,21 @@ public class TabListCoordinator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler, @UiType int itemType,
             @Nullable TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
+            @Nullable TabSwitcherMediator
+                    .PriceWelcomeMessageController priceWelcomeMessageController,
             @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
         mMode = mode;
         mItemType = itemType;
         mContext = context;
         mModel = new TabListModel();
         mAdapter = new SimpleRecyclerViewAdapter(mModel);
+        mTabModelSelector = tabModelSelector;
         RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
             mAdapter.registerType(UiType.SELECTABLE, parent -> {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.selectable_tab_grid_card_item, parentView, false);
                 group.setClickable(true);
-
-                if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
-                    setThumbnailViewAspectRatio(group);
-                }
 
                 return group;
             }, TabGridViewBinder::bindSelectableTab);
@@ -138,10 +138,6 @@ public class TabListCoordinator
                 if (mMode == TabListMode.CAROUSEL) {
                     group.getLayoutParams().width = context.getResources().getDimensionPixelSize(
                             R.dimen.tab_carousel_card_width);
-                }
-
-                if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
-                    setThumbnailViewAspectRatio(group);
                 }
 
                 group.setClickable(true);
@@ -233,16 +229,13 @@ public class TabListCoordinator
         mRecyclerView.setHasFixedSize(true);
         if (recyclerListener != null) mRecyclerView.setRecyclerListener(recyclerListener);
 
-        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
         TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(mContext, mMode == TabListMode.STRIP);
 
         mMediator = new TabListMediator(context, mModel, mMode, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
                 selectionDelegateProvider, gridCardOnClickListenerProvider, dialogHandler,
-                componentName, itemType);
+                priceWelcomeMessageController, componentName, itemType);
 
         if (mMode == TabListMode.GRID) {
             GridLayoutManager gridLayoutManager =
@@ -267,15 +260,6 @@ public class TabListCoordinator
         }
     }
 
-    private static void setThumbnailViewAspectRatio(View view) {
-        float mExpectedThumbnailAspectRatio =
-                (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
-        mExpectedThumbnailAspectRatio = MathUtils.clamp(mExpectedThumbnailAspectRatio, 0.5f, 2.0f);
-        TabGridThumbnailView thumbnailView =
-                (TabGridThumbnailView) view.findViewById(R.id.tab_thumbnail);
-        thumbnailView.setAspectRatio(mExpectedThumbnailAspectRatio);
-    }
-
     @NonNull
     Rect getThumbnailLocationOfCurrentTab() {
         // TODO(crbug.com/964406): calculate the location before the real one is ready.
@@ -294,7 +278,7 @@ public class TabListCoordinator
 
         mIsInitialized = true;
 
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = mTabModelSelector.getCurrentModel().getProfile();
         mMediator.initWithNative(profile);
         if (dynamicResourceLoader != null) {
             mRecyclerView.createDynamicView(dynamicResourceLoader);
@@ -342,10 +326,10 @@ public class TabListCoordinator
     }
 
     /**
-     * @return The index of the model list where the PriceWelcomeMessage should be inserted.
+     * @see TabListMediator#getPriceWelcomeMessageInsertionIndex().
      */
-    int getPriceWelcomeMessageIndex() {
-        return mModel.size();
+    int getPriceWelcomeMessageInsertionIndex() {
+        return mMediator.getPriceWelcomeMessageInsertionIndex();
     }
 
     /**
@@ -457,12 +441,12 @@ public class TabListCoordinator
 
     // PriceWelcomeMessageService.PriceWelcomeMessageProvider implementation.
     @Override
-    public PriceTabData getFirstTabShowingPriceCard() {
-        return mModel.getFirstTabShowingPriceCard();
+    public int getTabIndexFromTabId(int tabId) {
+        return mModel.indexFromId(tabId);
     }
 
     @Override
-    public int getTabIndexFromTabId(int tabId) {
-        return mModel.indexFromId(tabId);
+    public void showPriceDropTooltip(int index) {
+        mModel.get(index).model.set(TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP, true);
     }
 }

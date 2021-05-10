@@ -15,37 +15,73 @@
 #ifndef SRC_VALIDATOR_VALIDATOR_TEST_HELPER_H_
 #define SRC_VALIDATOR_VALIDATOR_TEST_HELPER_H_
 
+#include <functional>
 #include <memory>
+#include <utility>
+#include <vector>
 
-#include "src/ast/type/void_type.h"
+#include "gtest/gtest.h"
+#include "src/program_builder.h"
+#include "src/semantic/expression.h"
+#include "src/type/void_type.h"
 #include "src/type_determiner.h"
 #include "src/validator/validator_impl.h"
 
 namespace tint {
 
 /// A helper for testing validation
-class ValidatorTestHelper {
+class ValidatorTestHelper : public ProgramBuilder {
  public:
   /// Constructor
   ValidatorTestHelper();
-  ~ValidatorTestHelper();
+  ~ValidatorTestHelper() override;
 
-  /// A handle to validator
-  /// @returns a pointer to the validator
-  ValidatorImpl* v() const { return v_.get(); }
+  /// Builds and returns a validator from the program.
+  /// @note The validator is only built once. Multiple calls to Build() will
+  /// return the same ValidatorImpl without rebuilding.
+  /// @return the built validator
+  ValidatorImpl& Build() {
+    if (val_) {
+      return *val_;
+    }
+    program_ = std::make_unique<Program>(std::move(*this));
+    [&]() {
+      ASSERT_TRUE(program_->IsValid())
+          << diag::Formatter().format(program_->Diagnostics());
+    }();
+    val_ = std::make_unique<ValidatorImpl>(program_.get());
+    for (auto* var : vars_for_testing_) {
+      val_->RegisterVariableForTesting(var);
+    }
+    return *val_;
+  }
+
   /// A handle to type_determiner
   /// @returns a pointer to the type_determiner object
   TypeDeterminer* td() const { return td_.get(); }
-  /// A handle to the created module
-  /// @return a pointer to the test module
-  ast::Module* mod() { return &mod_; }
+
+  /// Inserts a variable into the current scope.
+  /// @param var the variable to register.
+  void RegisterVariable(ast::Variable* var) {
+    AST().AddGlobalVariable(var);
+    vars_for_testing_.emplace_back(var);
+  }
+
+  /// Helper for returning the resolved semantic type of the expression `expr`
+  /// from the built program.
+  /// @param expr the AST expression
+  /// @return the resolved semantic type for the expression, or nullptr if the
+  /// expression has no resolved type.
+  type::Type* TypeOf(ast::Expression* expr) const {
+    auto* sem = program_->Sem().Get(expr);
+    return sem ? sem->Type() : nullptr;
+  }
 
  private:
-  std::unique_ptr<ValidatorImpl> v_;
-  Context ctx_;
-  ast::Module mod_;
   std::unique_ptr<TypeDeterminer> td_;
-  ast::type::VoidType void_type_;
+  std::unique_ptr<Program> program_;
+  std::unique_ptr<ValidatorImpl> val_;
+  std::vector<ast::Variable*> vars_for_testing_;
 };
 
 }  // namespace tint

@@ -12,6 +12,7 @@
 #include "base/observer_list_types.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
+#include "components/feed/core/v2/common_enums.h"
 #include "components/feed/core/v2/public/types.h"
 #include "url/gurl.h"
 
@@ -23,27 +24,76 @@ class DataOperation;
 }  // namespace feedstore
 
 namespace feed {
+class PersistentKeyValueStore;
 
-// This is the public access point for interacting with the Feed stream
-// contents.
+// Selects the stream type.
+// TODO(crbug.com/1152592): Need to use StreamType in several places:
+// - Stream loading/saving
+// - Metrics
+// Note: currently there are two options, but this leaves room for more
+// parameters.
+class StreamType {
+ public:
+  enum class Type {
+    // An unspecified stream type. Used only to represent an uninitialized
+    // stream type value.
+    kUnspecified,
+    // The For-You feed stream.
+    kInterest,
+    // The Web Feed stream.
+    kWebFeed,
+  };
+  constexpr StreamType() = default;
+  constexpr explicit StreamType(Type t) : type_(t) {}
+  bool operator<(const StreamType& rhs) const { return type_ < rhs.type_; }
+  bool operator==(const StreamType& rhs) const { return type_ == rhs.type_; }
+
+  bool IsInterest() const { return type_ == Type::kInterest; }
+  bool IsWebFeed() const { return type_ == Type::kWebFeed; }
+
+  // Returns a human-readable value, for debugging/DCHECK prints.
+  std::string ToString() const;
+
+ private:
+  Type type_ = Type::kUnspecified;
+};
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const StreamType& stream_type) {
+  return os << stream_type.ToString();
+}
+
+constexpr StreamType kInterestStream(StreamType::Type::kInterest);
+constexpr StreamType kWebFeedStream(StreamType::Type::kWebFeed);
+
+// This is the public access point for interacting with the Feed contents.
+// FeedStreamApi serves multiple streams of data, one for each StreamType.
 class FeedStreamApi {
  public:
+  // Consumes stream data for a single `StreamType` and displays it to the user.
   class SurfaceInterface : public base::CheckedObserver {
    public:
-    SurfaceInterface();
+    explicit SurfaceInterface(StreamType type);
     ~SurfaceInterface() override;
-    // Called after registering the observer to provide the full stream state.
-    // Also called whenever the stream changes.
-    virtual void StreamUpdate(const feedui::StreamUpdate&) = 0;
+
     // Returns a unique ID for the surface. The ID will not be reused until
     // after the Chrome process is closed.
     SurfaceId GetSurfaceId() const;
 
+    // Returns the `StreamType` this `SurfaceInterface` requests.
+    StreamType GetStreamType() const { return stream_type_; }
+
+    // Called after registering the observer to provide the full stream state.
+    // Also called whenever the stream changes.
+    virtual void StreamUpdate(const feedui::StreamUpdate&) = 0;
+
+    // Access to the xsurface data store.
     virtual void ReplaceDataStoreEntry(base::StringPiece key,
                                        base::StringPiece data) = 0;
     virtual void RemoveDataStoreEntry(base::StringPiece key) = 0;
 
    private:
+    StreamType stream_type_;
     SurfaceId surface_id_;
   };
 
@@ -52,10 +102,11 @@ class FeedStreamApi {
   FeedStreamApi(const FeedStreamApi&) = delete;
   FeedStreamApi& operator=(const FeedStreamApi&) = delete;
 
+  // Attach/detach a surface. Surfaces should be attached when content is
+  // required for display, and detached when content is no longer shown.
   virtual void AttachSurface(SurfaceInterface*) = 0;
   virtual void DetachSurface(SurfaceInterface*) = 0;
 
-  virtual void SetArticlesListVisible(bool is_visible) = 0;
   virtual bool IsArticlesListVisible() = 0;
 
   // Returns true if activity logging is enabled. The returned value is
@@ -79,7 +130,7 @@ class FeedStreamApi {
   // Calls |callback| when complete. If no content could be added, the parameter
   // is false, and the caller should expect |LoadMore| to fail if called
   // further.
-  virtual void LoadMore(SurfaceId surface,
+  virtual void LoadMore(const SurfaceInterface& surface,
                         base::OnceCallback<void(bool)> callback) = 0;
 
   // Request to fetch and image for use in the feed. Calls |callback|
@@ -93,23 +144,30 @@ class FeedStreamApi {
   // |id| doesn't match an active fetch, nothing happens.
   virtual void CancelImageFetch(ImageFetchId id) = 0;
 
+  virtual PersistentKeyValueStore* GetPersistentKeyValueStore() = 0;
+
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.
   virtual void ExecuteOperations(
+      const StreamType& stream_type,
       std::vector<feedstore::DataOperation> operations) = 0;
 
   // Create a temporary change that may be undone or committed later. Does
   // nothing if the model is not yet loaded.
   virtual EphemeralChangeId CreateEphemeralChange(
+      const StreamType& stream_type,
       std::vector<feedstore::DataOperation> operations) = 0;
   // Same as |CreateEphemeralChange()|, but data is a serialized
   // |feedpacking::DismissData| message.
   virtual EphemeralChangeId CreateEphemeralChangeFromPackedData(
+      const StreamType& stream_type,
       base::StringPiece data) = 0;
   // Commits a change. Returns false if the change does not exist.
-  virtual bool CommitEphemeralChange(EphemeralChangeId id) = 0;
+  virtual bool CommitEphemeralChange(const StreamType& stream_type,
+                                     EphemeralChangeId id) = 0;
   // Rejects a change. Returns false if the change does not exist.
-  virtual bool RejectEphemeralChange(EphemeralChangeId id) = 0;
+  virtual bool RejectEphemeralChange(const StreamType& stream_type,
+                                     EphemeralChangeId id) = 0;
 
   // Sends 'ThereAndBackAgainData' back to the server. |data| is a serialized
   // |feedwire::ThereAndBackAgainData| message.
@@ -124,49 +182,31 @@ class FeedStreamApi {
   // A slice was viewed (2/3rds of it is in the viewport). Should be called
   // once for each viewed slice in the stream.
   virtual void ReportSliceViewed(SurfaceId surface_id,
+                                 const StreamType& stream_type,
                                  const std::string& slice_id) = 0;
   // Some feed content has been loaded and is now available to the user on the
   // feed surface. Reported only once after a surface is attached.
   virtual void ReportFeedViewed(SurfaceId surface_id) = 0;
-  // Navigation was started in response to a link in the Feed. This event
-  // eventually leads to |ReportPageLoaded()| if a page is loaded successfully.
-  virtual void ReportNavigationStarted() = 0;
   // A web page was loaded in response to opening a link from the Feed.
   virtual void ReportPageLoaded() = 0;
   // The user triggered the default open action, usually by tapping the card.
-  virtual void ReportOpenAction(const std::string& slice_id) = 0;
+  virtual void ReportOpenAction(const StreamType& stream_type,
+                                const std::string& slice_id) = 0;
   // The user triggered an open action, visited a web page, and then navigated
   // away or backgrouded the tab. |visit_time| is a measure of how long the
   // visited page was foregrounded.
   virtual void ReportOpenVisitComplete(base::TimeDelta visit_time) = 0;
   // The user triggered the 'open in new tab' action.
-  virtual void ReportOpenInNewTabAction(const std::string& slice_id) = 0;
-  // The user triggered the 'open in new incognito tab' action.
-  virtual void ReportOpenInNewIncognitoTabAction() = 0;
-  // The user pressed the 'send feedback' context menu option, but may have not
-  // completed the feedback process.
-  virtual void ReportSendFeedbackAction() = 0;
-  // The user selected the 'learn more' option on the context menu.
-  virtual void ReportLearnMoreAction() = 0;
-  // The user selected the 'download' option on the context menu.
-  virtual void ReportDownloadAction() = 0;
-  // A piece of content was removed or dismissed explicitly by the user.
-  virtual void ReportRemoveAction() = 0;
-  // The 'Not Interested In' menu item was selected.
-  virtual void ReportNotInterestedInAction() = 0;
-  // The 'Manage Interests' menu item was selected.
-  virtual void ReportManageInterestsAction() = 0;
-  // The user opened the context menu (three dot, or long press).
-  virtual void ReportContextMenuOpened() = 0;
+  virtual void ReportOpenInNewTabAction(const StreamType& stream_type,
+                                        const std::string& slice_id) = 0;
   // The user scrolled the feed by |distance_dp| and then stopped.
   virtual void ReportStreamScrolled(int distance_dp) = 0;
   // The user started scrolling the feed. Typically followed by a call to
   // |ReportStreamScrolled()|.
   virtual void ReportStreamScrollStart() = 0;
-  // The user selected the 'Turn on' option in the control menu.
-  virtual void ReportTurnOnAction() = 0;
-  // The user selected the 'Turn off' option in the control menu.
-  virtual void ReportTurnOffAction() = 0;
+  // Report that some user action occurred which does not have a specific
+  // reporting function above..
+  virtual void ReportOtherUserAction(FeedUserActionType action_type) = 0;
 
   // The following methods are used for the internals page.
 

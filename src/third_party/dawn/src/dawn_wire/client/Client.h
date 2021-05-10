@@ -39,13 +39,15 @@ namespace dawn_wire { namespace client {
         const volatile char* HandleCommandsImpl(const volatile char* commands,
                                                 size_t size) override;
 
-        WGPUDevice GetDevice();
-
         MemoryTransferService* GetMemoryTransferService() const {
             return mMemoryTransferService;
         }
 
         ReservedTexture ReserveTexture(WGPUDevice device);
+        ReservedDevice ReserveDevice();
+
+        void ReclaimTextureReservation(const ReservedTexture& reservation);
+        void ReclaimDeviceReservation(const ReservedDevice& reservation);
 
         template <typename Cmd>
         void SerializeCommand(const Cmd& cmd) {
@@ -62,20 +64,22 @@ namespace dawn_wire { namespace client {
         void Disconnect();
         bool IsDisconnected() const;
 
-        void TrackObject(Device* device);
+        template <typename T>
+        void TrackObject(T* object) {
+            mObjects[ObjectTypeToTypeEnum<T>::value].Append(object);
+        }
 
       private:
         void DestroyAllObjects();
 
 #include "dawn_wire/client/ClientPrototypes_autogen.inc"
 
-        Device* mDevice = nullptr;
         ChunkedCommandSerializer mSerializer;
         WireDeserializeAllocator mAllocator;
         MemoryTransferService* mMemoryTransferService = nullptr;
         std::unique_ptr<MemoryTransferService> mOwnedMemoryTransferService = nullptr;
 
-        LinkedList<ObjectBase> mDevices;
+        PerObjectType<LinkedList<ObjectBase>> mObjects;
         bool mDisconnected = false;
     };
 

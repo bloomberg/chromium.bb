@@ -335,7 +335,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
 
   // Remove this view from the owner_map.
   for (auto entry : owner_map_) {
-    if (entry.second == view) {
+    if (entry.second.get() == view) {
       owner_map_.erase(entry.first);
       // There will only be one instance of a particular view in the map.
       break;
@@ -358,7 +358,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   // replace it with nullptr so that we maintain the 1:1 correspondence between
   // map entries and the touch sequences that underly them.
   for (auto it : touchscreen_gesture_target_map_) {
-    if (it.second == view)
+    if (it.second.get() == view)
       it.second = nullptr;
   }
 
@@ -407,8 +407,10 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
 void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
   // Since we're shutting down, it's safe to call RenderWidgetHostViewBase::
   // RemoveObserver() directly here.
-  for (auto entry : owner_map_)
-    entry.second->RemoveObserver(this);
+  for (auto entry : owner_map_) {
+    if (entry.second)
+      entry.second->RemoveObserver(this);
+  }
   owner_map_.clear();
   viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
   if (manager)
@@ -830,7 +832,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
                touch_event.unique_touch_event_id) ==
            touchscreen_gesture_target_map_.end());
     touchscreen_gesture_target_map_[touch_event.unique_touch_event_id] =
-        touch_target_;
+        touch_target_->GetWeakPtr();
   } else if (touch_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
     active_touches_ += CountChangedTouchPoints(touch_event);
   }
@@ -1342,7 +1344,7 @@ void RenderWidgetHostInputEventRouter::AddFrameSinkIdOwner(
   // We want to be notified if the owner is destroyed so we can remove it from
   // our map.
   owner->AddObserver(this);
-  owner_map_.insert(std::make_pair(id, owner));
+  owner_map_.insert(std::make_pair(id, owner->GetWeakPtr()));
 }
 
 void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
@@ -1354,7 +1356,8 @@ void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
     // stale values if the view destructs and isn't an observer anymore.
     // Note: the view the iterator points at will be deleted in the following
     // call, and shouldn't be used after this point.
-    OnRenderWidgetHostViewBaseDestroyed(it_to_remove->second);
+    if (it_to_remove->second)
+      OnRenderWidgetHostViewBaseDestroyed(it_to_remove->second.get());
   }
 }
 
@@ -1405,7 +1408,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
 bool RenderWidgetHostInputEventRouter::IsViewInMap(
     const RenderWidgetHostViewBase* view) const {
   DCHECK(!is_registered(view->GetFrameSinkId()) ||
-         owner_map_.find(view->GetFrameSinkId())->second == view);
+         owner_map_.find(view->GetFrameSinkId())->second.get() == view);
   return is_registered(view->GetFrameSinkId());
 }
 
@@ -1512,6 +1515,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
 
   base::Optional<gfx::PointF> fallback_target_location;
 
+  // Adding crash logs to track the reason of stale pointer value of |target|.
+  LogTouchscreenGestureTargetCrashKeys(
+      "RWHIER::DispatchTouchscreenGestureEvent target set from caller");
+
   if (gesture_event.unique_touch_event_id == 0) {
     // On Android it is possible for touchscreen gesture events to arrive that
     // are not associated with touch events, because non-synthetic events can be
@@ -1538,9 +1545,19 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
     target = result.view;
+
+    // Adding crash logs to track the reason of stale pointer value of |target|.
+    LogTouchscreenGestureTargetCrashKeys(
+        "RWHIER::DispatchTouchscreenGestureEvent target from "
+        "FindViewAtLocation");
     fallback_target_location = transformed_point;
   } else if (is_gesture_start) {
-    target = gesture_target_it->second;
+    target = gesture_target_it->second.get();
+
+    // Adding crash logs to track the reason of stale pointer value of |target|.
+    LogTouchscreenGestureTargetCrashKeys(
+        "RWHIER::DispatchTouchscreenGestureEvent target from "
+        "touchscreen_gesture_target_map_");
     touchscreen_gesture_target_map_.erase(gesture_target_it);
 
     // Abort any scroll bubbling in progress to avoid double entry.
@@ -1726,7 +1743,7 @@ RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
   // If the point hit a Surface whose namspace is no longer in the map, then
   // it likely means the RenderWidgetHostView has been destroyed but its
   // parent frame has not sent a new compositor frame since that happened.
-  return iter == owner_map_.end() ? nullptr : iter->second;
+  return iter == owner_map_.end() ? nullptr : iter->second.get();
 }
 
 bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
@@ -1746,8 +1763,10 @@ bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
 std::vector<RenderWidgetHostView*>
 RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
   std::vector<RenderWidgetHostView*> hosts;
-  for (auto entry : owner_map_)
-    hosts.push_back(entry.second);
+  for (auto entry : owner_map_) {
+    DCHECK(entry.second);
+    hosts.push_back(entry.second.get());
+  }
 
   return hosts;
 }
@@ -1916,8 +1935,10 @@ void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
   last_device_scale_factor_ =
       last_mouse_move_root_view_->current_device_scale_factor();
   if (auto* cursor_manager = last_mouse_move_root_view_->GetCursorManager()) {
-    for (auto it : owner_map_)
-      cursor_manager->UpdateCursor(it.second, cursor);
+    for (auto it : owner_map_) {
+      if (it.second)
+        cursor_manager->UpdateCursor(it.second.get(), cursor);
+    }
   }
 }
 
@@ -1937,7 +1958,7 @@ void RenderWidgetHostInputEventRouter::OnAggregatedHitTestRegionListUpdated(
     const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) {
   for (auto& region : hit_test_data) {
     auto iter = owner_map_.find(region.frame_sink_id);
-    if (iter != owner_map_.end())
+    if (iter != owner_map_.end() && iter->second)
       iter->second->NotifyHitTestRegionUpdated(region);
   }
 }
@@ -1967,6 +1988,13 @@ RenderWidgetHostInputEventRouter::GetMouseCaptureWidgetForTests() const {
 void RenderWidgetHostInputEventRouter::SetAutoScrollInProgress(
     bool is_autoscroll_in_progress) {
   event_targeter_->SetIsAutoScrollInProgress(is_autoscroll_in_progress);
+}
+
+void RenderWidgetHostInputEventRouter::LogTouchscreenGestureTargetCrashKeys(
+    const std::string& log_message) {
+  static auto* target_crash_key = base::debug::AllocateCrashKeyString(
+      "target_crash_key", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(target_crash_key, log_message);
 }
 
 }  // namespace content

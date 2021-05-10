@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
+#include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
@@ -36,8 +37,8 @@
 #include "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/error_test_util.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "net/base/net_errors.h"
@@ -45,6 +46,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -186,8 +188,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
         callback_called = true;
         page = error_html;
       });
-  web::TestWebState test_web_state;
-  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
+  web::FakeWebState web_state;
+  ErrorPageControllerBridge::CreateForWebState(&web_state);
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
                               /*is_off_the_record=*/false,
                               /*info=*/base::nullopt,
@@ -212,8 +215,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
         callback_called = true;
         page = error_html;
       });
-  web::TestWebState test_web_state;
-  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
+  web::FakeWebState web_state;
+  ErrorPageControllerBridge::CreateForWebState(&web_state);
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
                               /*is_off_the_record=*/false,
                               /*info=*/base::nullopt,
@@ -238,8 +242,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
         callback_called = true;
         page = error_html;
       });
-  web::TestWebState test_web_state;
-  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
+  web::FakeWebState web_state;
+  ErrorPageControllerBridge::CreateForWebState(&web_state);
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
                               /*is_off_the_record=*/true,
                               /*info=*/base::nullopt,
@@ -264,8 +269,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
         callback_called = true;
         page = error_html;
       });
-  web::TestWebState test_web_state;
-  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
+  web::FakeWebState web_state;
+  ErrorPageControllerBridge::CreateForWebState(&web_state);
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
                               /*is_off_the_record=*/true,
                               /*info=*/base::nullopt,
@@ -301,9 +307,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
         callback_called = true;
         page = error_html;
       });
-  web::TestWebState test_web_state;
+  web::FakeWebState web_state;
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
-      &test_web_state);
+      &web_state);
 
   // Use a test URLLoaderFactory so that the captive portal detector doesn't
   // make an actual network request.
@@ -314,11 +320,11 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
   id captive_portal_detector_tab_helper_delegate = [OCMockObject
       mockForProtocol:@protocol(CaptivePortalDetectorTabHelperDelegate)];
   CaptivePortalDetectorTabHelper::CreateForWebState(
-      &test_web_state, captive_portal_detector_tab_helper_delegate,
+      &web_state, captive_portal_detector_tab_helper_delegate,
       &test_loader_factory);
 
-  test_web_state.SetBrowserState(browser_state());
-  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
+  web_state.SetBrowserState(browser_state());
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
                               /*is_off_the_record=*/false,
                               /*info=*/ssl_info,
@@ -336,7 +342,7 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
 // committed safe browsing interstitial.
 TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   // Store an unsafe resource in |web_state|'s container.
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.SetBrowserState(browser_state());
   SafeBrowsingUrlAllowList::CreateForWebState(&web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state);
@@ -346,7 +352,7 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   security_interstitials::UnsafeResource resource;
   resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   resource.url = GURL("http://www.chromium.test");
-  resource.resource_type = safe_browsing::ResourceType::kMainFrame;
+  resource.request_destination = network::mojom::RequestDestination::kDocument;
   resource.web_state_getter = web_state.CreateDefaultGetter();
   SafeBrowsingUrlAllowList::FromWebState(&web_state)
       ->AddPendingUnsafeNavigationDecision(resource.url, resource.threat_type);
@@ -379,12 +385,12 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
 // Tests PrepareErrorPage for a lookalike error, which results in a
 // committed lookalike interstitial.
 TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlError) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.SetBrowserState(browser_state());
   LookalikeUrlContainer::CreateForWebState(&web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       &web_state);
-  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
   web_state.SetNavigationManager(std::move(navigation_manager));
 
   LookalikeUrlContainer::FromWebState(&web_state)
@@ -420,12 +426,12 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlError) {
 // which results in a committed lookalike interstitial that has a 'Close page'
 // button instead of 'Back to safety' (when there is no back item).
 TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlErrorNoSuggestion) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.SetBrowserState(browser_state());
   LookalikeUrlContainer::CreateForWebState(&web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       &web_state);
-  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
   web_state.SetNavigationManager(std::move(navigation_manager));
 
   LookalikeUrlContainer::FromWebState(&web_state)
@@ -464,11 +470,11 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlErrorNoSuggestion) {
 // Tests PrepareErrorPage for a legacy TLS error, which results in a
 // committed legacy TLS interstitial.
 TEST_F(ChromeWebClientTest, PrepareErrorPageForLegacyTLSError) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.SetBrowserState(browser_state());
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       &web_state);
-  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
   web_state.SetNavigationManager(std::move(navigation_manager));
 
   NSError* error = [NSError errorWithDomain:net::kNSErrorDomain

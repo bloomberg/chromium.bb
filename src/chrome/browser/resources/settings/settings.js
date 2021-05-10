@@ -10,11 +10,12 @@ export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_p
 export {MultiStoreExceptionEntry} from './autofill_page/multi_store_exception_entry.js';
 export {MultiStorePasswordUiEntry} from './autofill_page/multi_store_password_ui_entry.js';
 export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
-// <if expr="not chromeos">
+// <if expr="not chromeos and not lacros">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.js';
 // </if>
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {HatsBrowserProxy, HatsBrowserProxyImpl} from './hats_browser_proxy.js';
+export {loadTimeData} from './i18n_setup.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions, SafetyCheckInteractions} from './metrics_browser_proxy.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
@@ -29,6 +30,7 @@ export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_pr
 export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './people_page/sync_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
+export {PrefsBehavior} from './prefs/prefs_behavior.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';
 export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';

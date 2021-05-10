@@ -37,6 +37,7 @@
 #if V8_TARGET_ARCH_MIPS64
 
 #include "src/base/cpu.h"
+#include "src/codegen/machine-type.h"
 #include "src/codegen/mips64/assembler-mips64-inl.h"
 #include "src/codegen/safepoint-table.h"
 #include "src/codegen/string-constants.h"
@@ -90,6 +91,12 @@ void CpuFeatures::ProbeImpl(bool cross_compile) {
   if (cpu.has_msa()) supported_ |= 1u << MIPS_SIMD;
 #endif
 #endif
+
+  // Set a static value on whether Simd is supported.
+  // This variable is only used for certain archs to query SupportWasmSimd128()
+  // at runtime in builtins using an extern ref. Other callers should use
+  // CpuFeatures::SupportWasmSimd128().
+  CpuFeatures::supports_wasm_simd_128_ = CpuFeatures::SupportsWasmSimd128();
 }
 
 void CpuFeatures::PrintTarget() {}
@@ -3779,14 +3786,22 @@ void Assembler::db(uint8_t data) {
   pc_ += sizeof(uint8_t);
 }
 
-void Assembler::dd(uint32_t data) {
+void Assembler::dd(uint32_t data, RelocInfo::Mode rmode) {
   CheckForEmitInForbiddenSlot();
+  if (!RelocInfo::IsNone(rmode)) {
+    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+    RecordRelocInfo(rmode);
+  }
   *reinterpret_cast<uint32_t*>(pc_) = data;
   pc_ += sizeof(uint32_t);
 }
 
-void Assembler::dq(uint64_t data) {
+void Assembler::dq(uint64_t data, RelocInfo::Mode rmode) {
   CheckForEmitInForbiddenSlot();
+  if (!RelocInfo::IsNone(rmode)) {
+    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+    RecordRelocInfo(rmode);
+  }
   *reinterpret_cast<uint64_t*>(pc_) = data;
   pc_ += sizeof(uint64_t);
 }
@@ -3980,6 +3995,26 @@ Register UseScratchRegisterScope::Acquire() {
 }
 
 bool UseScratchRegisterScope::hasAvailable() const { return *available_ != 0; }
+
+LoadStoreLaneParams::LoadStoreLaneParams(MachineRepresentation rep,
+                                         uint8_t laneidx) {
+  switch (rep) {
+    case MachineRepresentation::kWord8:
+      *this = LoadStoreLaneParams(laneidx, MSA_B, 16);
+      break;
+    case MachineRepresentation::kWord16:
+      *this = LoadStoreLaneParams(laneidx, MSA_H, 8);
+      break;
+    case MachineRepresentation::kWord32:
+      *this = LoadStoreLaneParams(laneidx, MSA_W, 4);
+      break;
+    case MachineRepresentation::kWord64:
+      *this = LoadStoreLaneParams(laneidx, MSA_D, 2);
+      break;
+    default:
+      UNREACHABLE();
+  }
+}
 
 }  // namespace internal
 }  // namespace v8

@@ -74,8 +74,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   bool IsChildOfLeaf() const override;
   bool IsDescendantOfPlainTextField() const override;
   bool IsLeaf() const override;
+  bool IsFocused() const override;
   bool IsToplevelBrowserWindow() override;
-  gfx::NativeViewAccessible GetClosestPlatformObject() const override;
+  gfx::NativeViewAccessible GetLowestPlatformAncestor() const override;
 
   class ChildIteratorBase : public ChildIterator {
    public:
@@ -149,10 +150,13 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   // Return the node within this node's subtree (inclusive) that currently
   // has focus.
-  gfx::NativeViewAccessible GetFocus() override;
+  gfx::NativeViewAccessible GetFocus() const override;
 
   // Get whether this node is offscreen.
   bool IsOffscreen() const override;
+
+  // Returns true if this node is invisible or ignored.
+  bool IsInvisibleOrIgnored() const override;
 
   // Get whether this node is a minimized window.
   bool IsMinimized() const override;
@@ -255,6 +259,10 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   bool IsOrderedSet() const override;
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
+
+  // Computed colors, taking blending into account.
+  SkColor GetColor() const override;
+  SkColor GetBackgroundColor() const override;
 
   //
   // Events.

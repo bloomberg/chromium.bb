@@ -17,6 +17,11 @@
 namespace SkSL {
 
 class Expression;
+class VarDeclaration;
+
+namespace dsl {
+class DSLCore;
+} // namespace dsl
 
 enum class VariableStorage : int8_t {
     kGlobal,
@@ -36,20 +41,15 @@ public:
 
     static constexpr Kind kSymbolKind = Kind::kVariable;
 
-    Variable(int offset, ModifiersPool::Handle modifiers, StringFragment name, const Type* type,
-             bool builtin, Storage storage, const Expression* initialValue = nullptr)
+    Variable(int offset, const Modifiers* modifiers, StringFragment name, const Type* type,
+             bool builtin, Storage storage)
     : INHERITED(offset, kSymbolKind, name, type)
-    , fInitialValue(initialValue)
-    , fModifiersHandle(modifiers)
+    , fModifiers(modifiers)
     , fStorage(storage)
     , fBuiltin(builtin) {}
 
     const Modifiers& modifiers() const {
-        return *fModifiersHandle;
-    }
-
-    const ModifiersPool::Handle& modifiersHandle() const {
-        return fModifiersHandle;
+        return *fModifiers;
     }
 
     bool isBuiltin() const {
@@ -60,13 +60,11 @@ public:
         return (Storage) fStorage;
     }
 
-    const Expression* initialValue() const {
-        return fInitialValue;
-    }
+    const Expression* initialValue() const;
 
-    void setInitialValue(const Expression* initialValue) {
-        SkASSERT(!this->initialValue());
-        fInitialValue = initialValue;
+    void setDeclaration(VarDeclaration* declaration) {
+        SkASSERT(!fDeclaration);
+        fDeclaration = declaration;
     }
 
     String description() const override {
@@ -74,13 +72,14 @@ public:
     }
 
 private:
-    const Expression* fInitialValue = nullptr;
-    ModifiersPool::Handle fModifiersHandle;
+    VarDeclaration* fDeclaration = nullptr;
+    const Modifiers* fModifiers;
     VariableStorage fStorage;
     bool fBuiltin;
 
     using INHERITED = Symbol;
 
+    friend class dsl::DSLCore;
     friend class VariableReference;
 };
 

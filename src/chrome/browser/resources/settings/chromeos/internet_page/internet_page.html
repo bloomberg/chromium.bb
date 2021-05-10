@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/cellular_utils.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
@@ -8,6 +9,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -28,6 +30,8 @@
 <link rel="import" href="internet_page_browser_proxy.html">
 <link rel="import" href="internet_subpage.html">
 <link rel="import" href="network_summary.html">
+<link rel="import" href="esim_rename_dialog.html">
+<link rel="import" href="esim_remove_profile_dialog.html">
 
 <dom-module id="settings-internet-page">
   <template>
@@ -49,7 +53,7 @@
         <template is="dom-if" if="[[allowAddConnection_(globalPolicy_,
             managedNetworkAvailable)]]">
           <cr-expand-button
-              alt="$i18n{internetAddConnectionExpandA11yLabel}"
+              aria-label="$i18n{internetAddConnectionExpandA11yLabel}"
               class="settings-box two-line"
               expanded="{{addConnectionExpanded_}}"
               id="expandAddConnections">
@@ -69,13 +73,13 @@
                       aria-labelledby="add-wifi-label"></cr-icon-button>
                 </div>
               </template>
-              <div actionable$="[[vpnIsEnabled_]]" class="list-item"
+              <div actionable$="[[!vpnIsProhibited_]]" class="list-item"
                   on-click="onAddVPNTap_">
                 <div class="start settings-box-text"
                     id="add-vpn-label" aria-hidden="true">
                   $i18n{internetAddVPN}
                 </div>
-                <template is="dom-if" if="[[!vpnIsEnabled_]]">
+                <template is="dom-if" if="[[vpnIsProhibited_]]">
                   <cr-policy-indicator id="vpnPolicyIndicator"
                       icon-aria-label="$i18n{networkVpnBuiltin}"
                       indicator-type="devicePolicy"
@@ -84,7 +88,7 @@
                 </template>
                 <cr-icon-button class="icon-add-circle"
                     aria-labelledby="add-vpn-label"
-                    disabled="[[!vpnIsEnabled_]]">
+                    disabled="[[vpnIsProhibited_]]">
                 </cr-icon-button>
               </div>
               <template is="dom-repeat" items="[[vpnProviders_]]">
@@ -114,7 +118,8 @@
 
       <template is="dom-if" route-path="/networkDetail" no-search restamp>
         <settings-subpage page-title="$i18n{internetDetailPageTitle}">
-          <settings-internet-detail-menu slot="subpage-title-extra">
+          <settings-internet-detail-menu
+              slot="subpage-title-extra">
           </settings-internet-detail-menu>
           <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
@@ -159,6 +164,22 @@
           on-close="onCloseCellularSetupDialog_"
           page-name="[[cellularSetupDialogPageName_]]">
       </os-settings-cellular-setup-dialog>
+    </template>
+
+    <template is="dom-if" if="[[showESimProfileRenameDialog_]]" restamp>
+      <esim-rename-dialog id="esimRenameDialog"
+          on-close="onCloseESimProfileRenameDialog_"
+          iccid="[[esimProfileIccid_]]"
+          show-cellular-disconnect-warning="[[hasActivePSimNetwork_]]">
+      </esim-rename-dialog>
+    </template>
+
+    <template is="dom-if" if="[[showESimRemoveProfileDialog_]]" restamp>
+      <esim-remove-profile-dialog id="esimRemoveProfileDialog"
+          on-close="onCloseESimRemoveProfileDialog_"
+          iccid="[[esimProfileIccid_]]"
+          show-cellular-disconnect-warning="[[hasActivePSimNetwork_]]">
+      </esim-remove-profile-dialog>
     </template>
   </template>
   <script src="internet_page.js"></script>

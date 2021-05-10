@@ -14,50 +14,49 @@
 
 #include "src/ast/sint_literal.h"
 
-#include "gtest/gtest.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/u32_type.h"
+#include "src/ast/bool_literal.h"
+#include "src/ast/float_literal.h"
+#include "src/ast/null_literal.h"
+#include "src/ast/test_helper.h"
+#include "src/ast/uint_literal.h"
+#include "src/type/i32_type.h"
+#include "src/type/u32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using SintLiteralTest = testing::Test;
+using SintLiteralTest = TestHelper;
 
 TEST_F(SintLiteralTest, Value) {
-  ast::type::I32Type i32;
-  SintLiteral i{&i32, 47};
-  ASSERT_TRUE(i.IsSint());
-  EXPECT_EQ(i.value(), 47);
+  auto* i = create<SintLiteral>(ty.i32(), 47);
+  ASSERT_TRUE(i->Is<SintLiteral>());
+  EXPECT_EQ(i->value(), 47);
 }
 
 TEST_F(SintLiteralTest, Is) {
-  ast::type::I32Type i32;
-  SintLiteral i{&i32, 42};
-  EXPECT_FALSE(i.IsBool());
-  EXPECT_TRUE(i.IsSint());
-  EXPECT_FALSE(i.IsFloat());
-  EXPECT_FALSE(i.IsUint());
-  EXPECT_FALSE(i.IsNull());
+  ast::Literal* l = create<SintLiteral>(ty.i32(), 42);
+  EXPECT_FALSE(l->Is<BoolLiteral>());
+  EXPECT_TRUE(l->Is<SintLiteral>());
+  EXPECT_FALSE(l->Is<FloatLiteral>());
+  EXPECT_FALSE(l->Is<UintLiteral>());
+  EXPECT_FALSE(l->Is<NullLiteral>());
 }
 
 TEST_F(SintLiteralTest, ToStr) {
-  ast::type::I32Type i32;
-  SintLiteral i{&i32, -42};
-
-  EXPECT_EQ(i.to_str(), "-42");
+  auto* i = create<SintLiteral>(ty.i32(), -42);
+  EXPECT_EQ(str(i), "-42");
 }
 
 TEST_F(SintLiteralTest, Name_I32) {
-  ast::type::I32Type i32;
-  SintLiteral i{&i32, 2};
-  EXPECT_EQ("__sint__i32_2", i.name());
+  auto* i = create<SintLiteral>(ty.i32(), 2);
+  EXPECT_EQ("__sint__i32_2", i->name());
 }
 
 TEST_F(SintLiteralTest, Name_U32) {
-  ast::type::U32Type u32;
-  SintLiteral i{&u32, 2};
-  EXPECT_EQ("__sint__u32_2", i.name());
+  type::U32 u32;
+  auto* i = create<SintLiteral>(&u32, 2);
+  EXPECT_EQ("__sint__u32_2", i->name());
 }
 
 }  // namespace

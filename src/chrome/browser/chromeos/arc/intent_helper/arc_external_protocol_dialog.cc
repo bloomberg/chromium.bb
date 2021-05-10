@@ -11,10 +11,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
-#include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -34,8 +32,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
@@ -65,13 +63,13 @@ using IntentPickerResponseWithDevices = base::OnceCallback<void(
     bool should_persist)>;
 
 // Creates an icon for a specific |device_type|.
-gfx::Image CreateDeviceIcon(const sync_pb::SyncEnums::DeviceType device_type) {
-  SkColor color = ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
+ui::ImageModel CreateDeviceIcon(
+    const sync_pb::SyncEnums::DeviceType device_type) {
   const gfx::VectorIcon& icon = device_type == sync_pb::SyncEnums::TYPE_TABLET
                                     ? kTabletIcon
                                     : kHardwareSmartphoneIcon;
-  return gfx::Image(gfx::CreateVectorIcon(icon, kDeviceIconSize, color));
+  return ui::ImageModel::FromVectorIcon(
+      icon, ui::NativeTheme::kColorId_DefaultIconColor, kDeviceIconSize);
 }
 
 // Adds |devices| to |picker_entries| and returns the new list. The devices are
@@ -452,6 +450,16 @@ void OnIntentPickerDialogDeactivated(
     OpenUrlInChrome(render_process_host_id, routing_id, url_to_open_in_chrome);
 }
 
+size_t GetAppIndex(
+    const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates,
+    const std::string& selected_app_package) {
+  for (size_t i = 0; i < app_candidates.size(); ++i) {
+    if (app_candidates[i]->package_name == selected_app_package)
+      return i;
+  }
+  return app_candidates.size();
+}
+
 // Called when the dialog is closed. Note that once we show the UI, we should
 // never show the Chrome OS' fallback dialog.
 void OnIntentPickerClosed(
@@ -491,8 +499,7 @@ void OnIntentPickerClosed(
 
   // If the user selected an app to continue the navigation, confirm that the
   // |package_name| matches a valid option and return the index.
-  const size_t selected_app_index =
-      ArcIntentPickerAppFetcher::GetAppIndex(handlers, selected_app_package);
+  const size_t selected_app_index = GetAppIndex(handlers, selected_app_package);
 
   // Make sure that the instance at least supports HandleUrl.
   auto* arc_service_manager = ArcServiceManager::Get();
@@ -604,7 +611,9 @@ void OnAppIconsReceived(
                                                        handler->activity_name);
     const auto it = icons->find(activity);
     app_info.emplace_back(apps::PickerEntryType::kArc,
-                          it != icons->end() ? it->second.icon16 : gfx::Image(),
+                          it != icons->end()
+                              ? ui::ImageModel::FromImage(it->second.icon16)
+                              : ui::ImageModel(),
                           handler->package_name, handler->name);
   }
 

@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_info_source_list.h"
 #include "net/base/network_isolation_key.h"
@@ -47,7 +48,9 @@
 #elif defined(OS_MAC)
 #include "net/proxy_resolution/proxy_config_service_mac.h"
 #include "net/proxy_resolution/proxy_resolver_mac.h"
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "net/proxy_resolution/proxy_config_service_linux.h"
 #elif defined(OS_ANDROID)
 #include "net/proxy_resolution/proxy_config_service_android.h"
@@ -60,8 +63,10 @@ namespace net {
 
 namespace {
 
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
 #if defined(OS_WIN) || defined(OS_APPLE) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 constexpr net::NetworkTrafficAnnotationTag kSystemProxyConfigTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("proxy_config_system", R"(
       semantics {
@@ -344,7 +349,7 @@ base::Value NetLogFinishedResolvingProxyParams(const ProxyInfo* result) {
   return dict;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class UnsetProxyConfigService : public ProxyConfigService {
  public:
   UnsetProxyConfigService() = default;
@@ -1180,8 +1185,9 @@ void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
         const ProxyRetryInfo& proxy_retry_info = iter.second;
         proxy_delegate_->OnFallback(bad_proxy, proxy_retry_info.net_error);
       }
-    } else if (existing->second.bad_until < iter.second.bad_until)
+    } else if (existing->second.bad_until < iter.second.bad_until) {
       existing->second.bad_until = iter.second.bad_until;
+    }
   }
   if (net_log_) {
     net_log_->AddGlobalEntry(NetLogEventType::BAD_PROXY_LIST_REPORTED, [&] {
@@ -1403,12 +1409,12 @@ ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
 #elif defined(OS_MAC)
   return std::make_unique<ProxyConfigServiceMac>(
       main_task_runner, kSystemProxyConfigTrafficAnnotation);
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
              << "be used only for examples.";
   return std::make_unique<UnsetProxyConfigService>();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<ProxyConfigServiceLinux> linux_config_service(
       new ProxyConfigServiceLinux());
 
@@ -1557,13 +1563,27 @@ void ConfiguredProxyResolutionService::OnIPAddressChanged() {
   stall_proxy_autoconfig_until_ =
       TimeTicks::Now() + stall_proxy_auto_config_delay_;
 
+  // With a new network connection, using the proper proxy configuration for the
+  // new connection may be essential for URL requests to work properly. Reset
+  // the config to ensure new URL requests are blocked until the potential new
+  // proxy configuration is loaded.
   State previous_state = ResetProxyConfig(false);
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();
 }
 
 void ConfiguredProxyResolutionService::OnDNSChanged() {
-  OnIPAddressChanged();
+  // Do not fully reset proxy config on DNS change notifications. Instead,
+  // inform the poller that it would be a good time to check for changes.
+  //
+  // While a change to DNS servers in use could lead to different WPAD results,
+  // and thus a different proxy configuration, it is extremely unlikely to ever
+  // be essential for that changed proxy configuration to be picked up
+  // immediately. Either URL requests on the connection are generally working
+  // fine without the proxy, or requests are already broken, leaving little harm
+  // in letting a couple more requests fail until Chrome picks up the new proxy.
+  if (script_poller_.get())
+    script_poller_->OnLazyPoll();
 }
 
 }  // namespace net

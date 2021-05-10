@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -30,8 +32,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -128,6 +130,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kPpapiInProcess,
     ::switches::kRemoteDebuggingPort,
     ::switches::kRendererStartupDialog,
+    ::switches::kSchedulerBoostUrgent,
     ::switches::kSchedulerConfigurationDefault,
     ::switches::kTouchDevices,
     ::switches::kTouchEventFeatureDetection,
@@ -150,13 +153,14 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebRtcHWEncoding,
     ::switches::kOzonePlatform,
     ash::switches::kAshClearFastInkBuffer,
+    ash::switches::kAshEnablePaletteOnAllDisplays,
     ash::switches::kAshEnableTabletMode,
     ash::switches::kAshEnableWaylandServer,
     ash::switches::kAshForceEnableStylusTools,
-    ash::switches::kAshEnablePaletteOnAllDisplays,
     ash::switches::kAshTouchHud,
     ash::switches::kAuraLegacyPowerButton,
     ash::switches::kEnableDimShelf,
+    ash::switches::kSupportsClamshellAutoRotation,
     ash::switches::kShowTaps,
     blink::switches::kBlinkSettings,
     blink::switches::kDarkModeSettings,
@@ -205,7 +209,11 @@ void DeriveCommandLine(const GURL& start_url,
     chromeos::switches::kEnableArc,
     chromeos::switches::kEnterpriseDisableArc,
     chromeos::switches::kEnterpriseEnableForcedReEnrollment,
+    chromeos::switches::kFormFactor,
     chromeos::switches::kHasChromeOSKeyboard,
+    chromeos::switches::kLacrosChromeAdditionalArgs,
+    chromeos::switches::kLacrosChromeAdditionalEnv,
+    chromeos::switches::kLacrosChromePath,
     chromeos::switches::kLoginProfile,
     chromeos::switches::kNaturalScrollDefault,
     chromeos::switches::kRlzPingDelay,
@@ -232,6 +240,7 @@ void DeriveCommandLine(const GURL& start_url,
 void DeriveEnabledFeatures(base::CommandLine* out_command_line) {
   static const base::Feature* kForwardEnabledFeatures[] = {
       &ash::features::kAutoNightLight,
+      &chromeos::features::kLacrosSupport,
   };
 
   std::vector<std::string> enabled_features;
@@ -348,6 +357,9 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
   otr_switches.SetString(
       switches::kLoginUser,
       cryptohome::Identification(user_manager::GuestAccountId()).id());
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    otr_switches.SetString(switches::kLoginProfile, chrome::kLegacyProfileDir);
+  }
 
   // Override the home page.
   otr_switches.SetString(::switches::kHomePage,

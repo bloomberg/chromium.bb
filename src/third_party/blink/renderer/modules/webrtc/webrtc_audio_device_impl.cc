@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"
@@ -97,7 +97,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   int64_t ntp_time_ms = -1;
   int16_t* audio_data = render_buffer_.data();
 
-  TRACE_EVENT_BEGIN0("audio", "VoE::PullRenderData");
+  TRACE_EVENT_BEGIN1("audio", "VoE::PullRenderData", "frames",
+                     frames_per_10_ms);
   audio_transport_callback_->PullRenderData(
       kBytesPerSample * 8, sample_rate, audio_bus->channels(), frames_per_10_ms,
       audio_data, &elapsed_time_ms, &ntp_time_ms);

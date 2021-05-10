@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "url/origin.h"
 
 namespace password_manager {
@@ -21,18 +21,18 @@ class CredentialCache {
  public:
   // TODO(crbug.com/1051553): Consider reusing this alias for other password
   // manager code as well.
-  using IsOriginBlacklisted =
-      util::StrongAlias<class IsOriginBlacklistedTag, bool>;
+  using IsOriginBlocklisted =
+      base::StrongAlias<class IsOriginBlocklistedTag, bool>;
   CredentialCache();
   CredentialCache(const CredentialCache&) = delete;
   CredentialCache& operator=(const CredentialCache&) = delete;
   ~CredentialCache();
 
-  // Saves credentials and blacklisted status for an origin so that they can be
+  // Saves credentials and blocklisted status for an origin so that they can be
   // used in the sheet.
-  void SaveCredentialsAndBlacklistedForOrigin(
+  void SaveCredentialsAndBlocklistedForOrigin(
       const std::vector<const PasswordForm*>& matches,
-      IsOriginBlacklisted is_blacklisted,
+      IsOriginBlocklisted is_blocklisted,
       const url::Origin& origin);
 
   // Returns the credential store for a given origin. If it does not exist, an

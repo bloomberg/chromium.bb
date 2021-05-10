@@ -14,7 +14,6 @@
 
 class SkSVGFeColorMatrix final : public SkSVGFe {
 public:
-    ~SkSVGFeColorMatrix() override = default;
     static sk_sp<SkSVGFeColorMatrix> Make() {
         return sk_sp<SkSVGFeColorMatrix>(new SkSVGFeColorMatrix());
     }
@@ -25,6 +24,8 @@ public:
 protected:
     sk_sp<SkImageFilter> onMakeImageFilter(const SkSVGRenderContext&,
                                            const SkSVGFilterContext&) const override;
+
+    std::vector<SkSVGFeInputType> getInputs() const override { return {this->getIn()}; }
 
     bool parseAndSetAttribute(const char*, const char*) override;
 
@@ -42,4 +43,4 @@ private:
     using INHERITED = SkSVGFe;
 };
 
-#endif  // SkSVGStop_DEFINED
+#endif  // SkSVGFeColorMatrix_DEFINED

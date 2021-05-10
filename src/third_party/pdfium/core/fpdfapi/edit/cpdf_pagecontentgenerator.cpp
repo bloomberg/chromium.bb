@@ -34,6 +34,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
@@ -66,12 +67,8 @@ CPDF_PageContentGenerator::CPDF_PageContentGenerator(
 CPDF_PageContentGenerator::~CPDF_PageContentGenerator() = default;
 
 void CPDF_PageContentGenerator::GenerateContent() {
-  ASSERT(m_pObjHolder->IsPage());
-
-  std::map<int32_t, std::unique_ptr<std::ostringstream>> stream =
-      GenerateModifiedStreams();
-
-  UpdateContentStreams(&stream);
+  DCHECK(m_pObjHolder->IsPage());
+  UpdateContentStreams(GenerateModifiedStreams());
 }
 
 std::map<int32_t, std::unique_ptr<std::ostringstream>>
@@ -144,14 +141,15 @@ CPDF_PageContentGenerator::GenerateModifiedStreams() {
 }
 
 void CPDF_PageContentGenerator::UpdateContentStreams(
-    std::map<int32_t, std::unique_ptr<std::ostringstream>>* new_stream_data) {
+    const std::map<int32_t, std::unique_ptr<std::ostringstream>>&
+        new_stream_data) {
   // If no streams were regenerated or removed, nothing to do here.
-  if (new_stream_data->empty())
+  if (new_stream_data.empty())
     return;
 
   CPDF_PageContentManager page_content_manager(m_pObjHolder.Get());
 
-  for (auto& pair : *new_stream_data) {
+  for (auto& pair : new_stream_data) {
     int32_t stream_index = pair.first;
     std::ostringstream* buf = pair.second.get();
 
@@ -163,7 +161,7 @@ void CPDF_PageContentGenerator::UpdateContentStreams(
 
     CPDF_Stream* old_stream =
         page_content_manager.GetStreamByIndex(stream_index);
-    ASSERT(old_stream);
+    DCHECK(old_stream);
 
     // If buf is now empty, remove the stream instead of setting the data.
     if (buf->tellp() <= 0)
@@ -178,7 +176,7 @@ void CPDF_PageContentGenerator::UpdateContentStreams(
 ByteString CPDF_PageContentGenerator::RealizeResource(
     const CPDF_Object* pResource,
     const ByteString& bsType) const {
-  ASSERT(pResource);
+  DCHECK(pResource);
   if (!m_pObjHolder->m_pResources) {
     m_pObjHolder->m_pResources.Reset(
         m_pDocument->NewIndirect<CPDF_Dictionary>());
@@ -450,7 +448,7 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
 
       // Use a no-op path-painting operator to terminate the path without
       // causing any marks to be placed on the page.
-      *buf << "n 0 g ";
+      *buf << "n ";
     }
   }
 

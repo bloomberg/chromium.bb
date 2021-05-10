@@ -10,12 +10,20 @@
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_source_view.h"
+#include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -26,9 +34,7 @@ namespace ash {
 
 namespace {
 
-// TODO(crbug.com/1144254): Change this back to {328, 64} when removing the
-// feedback button.
-constexpr gfx::Size kBarSize{392, 64};
+constexpr gfx::Size kBarSize{376, 64};
 
 constexpr gfx::Insets kBarPadding{/*vertical=*/14, /*horizontal=*/16};
 
@@ -36,28 +42,27 @@ constexpr gfx::RoundedCornersF kBorderRadius{20.f};
 
 constexpr int kSeparatorHeight = 20;
 
-constexpr float kBlurQuality = 0.33f;
-
-// TODO(afakhry): Change this to depend on the height of the Shelf.
-constexpr int kDistanceFromScreenBottom = 56;
+// Distance from the bottom of the bar to the bottom of the display, top of the
+// hotseat or top of the shelf depending on the shelf alignment or hotseat
+// visibility.
+constexpr int kDistanceFromShelfOrHotseatTopDp = 16;
 
 }  // namespace
 
 CaptureModeBarView::CaptureModeBarView()
-    : feedback_button_(AddChildView(std::make_unique<CaptureModeButton>(
-          base::BindRepeating(&CaptureModeBarView::OnFeedbackButtonPressed,
-                              base::Unretained(this)),
-          kCaptureModeFeedbackIcon))),
-      separator_0_(AddChildView(std::make_unique<views::Separator>())),
-      capture_type_view_(AddChildView(std::make_unique<CaptureModeTypeView>())),
+    : capture_type_view_(AddChildView(std::make_unique<CaptureModeTypeView>())),
       separator_1_(AddChildView(std::make_unique<views::Separator>())),
       capture_source_view_(
           AddChildView(std::make_unique<CaptureModeSourceView>())),
       separator_2_(AddChildView(std::make_unique<views::Separator>())),
+      settings_button_(AddChildView(std::make_unique<CaptureModeToggleButton>(
+          base::BindRepeating(&CaptureModeBarView::OnSettingsButtonPressed,
+                              base::Unretained(this)),
+          kCaptureModeSettingsIcon))),
       close_button_(AddChildView(std::make_unique<CaptureModeButton>(
           base::BindRepeating(&CaptureModeBarView::OnCloseButtonPressed,
                               base::Unretained(this)),
-          kCloseButtonIcon))) {
+          kCaptureModeCloseIcon))) {
   SetPaintToLayer();
   auto* color_provider = AshColorProvider::Get();
   SkColor background_color = color_provider->GetBaseLayerColor(
@@ -67,21 +72,37 @@ CaptureModeBarView::CaptureModeBarView()
   layer()->SetRoundedCornerRadius(kBorderRadius);
   layer()->SetBackgroundBlur(
       static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
-  layer()->SetBackdropFilterQuality(kBlurQuality);
+  layer()->SetBackdropFilterQuality(capture_mode::kBlurQuality);
+
   auto* box_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, kBarPadding,
       capture_mode::kBetweenChildSpacing));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
+  // Custom styling for the settings button, which has a dark background and a
+  // light colored icon when selected.
+  const auto normal_icon = gfx::CreateVectorIcon(
+      kCaptureModeSettingsIcon,
+      color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor));
+  settings_button_->SetToggledImage(views::Button::STATE_NORMAL, &normal_icon);
+  settings_button_->set_toggled_background_color(
+      color_provider->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::
+              kControlBackgroundColorInactive));
+  settings_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_TOOLTIP_SETTINGS));
+
   const SkColor separator_color = color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor);
-  separator_0_->SetColor(separator_color);
-  separator_0_->SetPreferredHeight(kSeparatorHeight);
   separator_1_->SetColor(separator_color);
   separator_1_->SetPreferredHeight(kSeparatorHeight);
   separator_2_->SetColor(separator_color);
   separator_2_->SetPreferredHeight(kSeparatorHeight);
+
+  close_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 }
 
 CaptureModeBarView::~CaptureModeBarView() = default;
@@ -91,16 +112,24 @@ gfx::Rect CaptureModeBarView::GetBounds(aura::Window* root) {
   DCHECK(root);
 
   auto bounds = root->GetBoundsInScreen();
-  const int y = bounds.bottom() - kDistanceFromScreenBottom - kBarSize.height();
-  bounds.ClampToCenteredSize(kBarSize);
-  bounds.set_y(y);
-  return bounds;
-}
+  int bar_y = bounds.bottom();
+  Shelf* shelf = Shelf::ForWindow(root);
+  if (shelf->IsHorizontalAlignment()) {
+    // Get the widget which has the shelf icons. This is the hotseat widget if
+    // the hotseat is extended, shelf widget otherwise.
+    const bool hotseat_extended =
+        shelf->shelf_layout_manager()->hotseat_state() ==
+        HotseatState::kExtended;
+    views::Widget* shelf_widget =
+        hotseat_extended ? static_cast<views::Widget*>(shelf->hotseat_widget())
+                         : static_cast<views::Widget*>(shelf->shelf_widget());
+    bar_y = shelf_widget->GetWindowBoundsInScreen().y();
+  }
 
-void CaptureModeBarView::OnFeedbackButtonPressed() {
-  auto* controller = CaptureModeController::Get();
-  controller->OpenFeedbackDialog();
-  controller->Stop();
+  bar_y -= (kDistanceFromShelfOrHotseatTopDp + kBarSize.height());
+  bounds.ClampToCenteredSize(kBarSize);
+  bounds.set_y(bar_y);
+  return bounds;
 }
 
 void CaptureModeBarView::OnCaptureSourceChanged(CaptureModeSource new_source) {
@@ -110,6 +139,15 @@ void CaptureModeBarView::OnCaptureSourceChanged(CaptureModeSource new_source) {
 void CaptureModeBarView::OnCaptureTypeChanged(CaptureModeType new_type) {
   capture_type_view_->OnCaptureTypeChanged(new_type);
   capture_source_view_->OnCaptureTypeChanged(new_type);
+}
+
+void CaptureModeBarView::SetSettingsMenuShown(bool shown) {
+  settings_button_->SetToggled(shown);
+}
+
+void CaptureModeBarView::OnSettingsButtonPressed() {
+  CaptureModeController::Get()->capture_mode_session()->SetSettingsMenuShown(
+      !settings_button_->GetToggled());
 }
 
 void CaptureModeBarView::OnCloseButtonPressed() {

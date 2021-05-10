@@ -31,10 +31,10 @@ namespace {
 
 struct RoutingInfoKey {
   int routing_id;
-  int script_id;
+  std::string script_id;
 
-  RoutingInfoKey(int routing_id, int script_id)
-      : routing_id(routing_id), script_id(script_id) {}
+  RoutingInfoKey(int routing_id, std::string script_id)
+      : routing_id(routing_id), script_id(std::move(script_id)) {}
 
   bool operator<(const RoutingInfoKey& other) const {
     return std::tie(routing_id, script_id) <
@@ -140,8 +140,8 @@ bool UserScriptInjector::ExpectsResults() const {
   return false;
 }
 
-base::Optional<CSSOrigin> UserScriptInjector::GetCssOrigin() const {
-  return base::nullopt;
+CSSOrigin UserScriptInjector::GetCssOrigin() const {
+  return CSSOrigin::kAuthor;
 }
 
 bool UserScriptInjector::IsRemovingCSS() const {

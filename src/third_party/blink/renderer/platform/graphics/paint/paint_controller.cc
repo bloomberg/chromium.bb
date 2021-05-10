@@ -79,6 +79,14 @@ void PaintController::RecordScrollHitTestData(
   CheckNewChunk();
 }
 
+void PaintController::RecordSelection(
+    base::Optional<PaintedSelectionBound> start,
+    base::Optional<PaintedSelectionBound> end) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  DCHECK(start.has_value() || end.has_value());
+  paint_chunker_.AddSelectionToCurrentChunk(start, end);
+}
+
 void PaintController::SetPossibleBackgroundColor(
     const DisplayItemClient& client,
     Color color,
@@ -548,7 +556,8 @@ void PaintController::CommitNewDisplayItems() {
   current_paint_artifact_ = std::move(new_paint_artifact_);
   if (usage_ == kMultiplePaints) {
     new_paint_artifact_ = base::MakeRefCounted<PaintArtifact>(
-        current_paint_artifact_->GetDisplayItemList().UsedCapacityInBytes());
+        current_paint_artifact_->GetDisplayItemList().UsedCapacityInBytes(),
+        current_paint_artifact_->PaintChunks().size());
     paint_chunker_.ResetChunks(&new_paint_artifact_->PaintChunks());
   } else {
     new_paint_artifact_ = nullptr;

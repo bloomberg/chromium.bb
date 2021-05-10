@@ -378,59 +378,6 @@ std::unique_ptr<AXProperty> CreateRelatedNodeListProperty(
   return CreateProperty(key, std::move(node_list_value));
 }
 
-class SparseAttributeAXPropertyAdapter
-    : public GarbageCollected<SparseAttributeAXPropertyAdapter>,
-      public AXSparseAttributeClient {
- public:
-  SparseAttributeAXPropertyAdapter(AXObject& ax_object,
-                                   protocol::Array<AXProperty>& properties)
-      : ax_object_(&ax_object), properties_(properties) {}
-
-  void Trace(Visitor* visitor) const { visitor->Trace(ax_object_); }
-
- private:
-  Member<AXObject> ax_object_;
-  protocol::Array<AXProperty>& properties_;
-
-  void AddObjectAttribute(AXObjectAttribute attribute,
-                          AXObject& object) override {
-    switch (attribute) {
-      case AXObjectAttribute::kAriaActiveDescendant:
-        properties_.emplace_back(
-            CreateProperty(AXPropertyNameEnum::Activedescendant,
-                           CreateRelatedNodeListValue(object)));
-        break;
-      case AXObjectAttribute::kAriaErrorMessage:
-        properties_.emplace_back(
-            CreateProperty(AXPropertyNameEnum::Errormessage,
-                           CreateRelatedNodeListValue(object)));
-        break;
-    }
-  }
-
-  void AddObjectVectorAttribute(
-      AXObjectVectorAttribute attribute,
-      HeapVector<Member<AXObject>>* objects) override {
-    switch (attribute) {
-      case AXObjectVectorAttribute::kAriaControls:
-        properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Controls, *objects,
-            html_names::kAriaControlsAttr, *ax_object_));
-        break;
-      case AXObjectVectorAttribute::kAriaDetails:
-        properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Details, *objects, html_names::kAriaDetailsAttr,
-            *ax_object_));
-        break;
-      case AXObjectVectorAttribute::kAriaFlowTo:
-        properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, *objects, html_names::kAriaFlowtoAttr,
-            *ax_object_));
-        break;
-    }
-  }
-};
-
 void FillRelationships(AXObject& ax_object,
                        protocol::Array<AXProperty>& properties) {
   AXObject::AXObjectVector results;
@@ -451,11 +398,19 @@ void FillRelationships(AXObject& ax_object,
   results.clear();
 }
 
+void GetObjectsFromAXIDs(const AXObjectCacheImpl& cache,
+                         const std::vector<int32_t>& ax_ids,
+                         AXObject::AXObjectVector* ax_objects) {
+  for (const auto& ax_id : ax_ids) {
+    AXObject* ax_object = cache.ObjectFromAXID(ax_id);
+    if (!ax_object)
+      continue;
+    ax_objects->push_back(ax_object);
+  }
+}
+
 void FillSparseAttributes(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
-  SparseAttributeAXPropertyAdapter adapter(ax_object, properties);
-  ax_object.GetSparseAXAttributes(adapter);
-
   ui::AXNodeData node_data;
   ax_object.Serialize(&node_data, ui::kAXModeComplete);
 
@@ -485,6 +440,58 @@ void FillSparseAttributes(AXObject& ax_object,
         CreateProperty(AXPropertyNameEnum::Roledescription,
                        CreateValue(WTF::String(role_description.c_str()),
                                    AXValueTypeEnum::String)));
+  }
+
+  if (node_data.HasIntAttribute(
+          ax::mojom::blink::IntAttribute::kActivedescendantId)) {
+    AXObject* target =
+        ax_object.AXObjectCache().ObjectFromAXID(node_data.GetIntAttribute(
+            ax::mojom::blink::IntAttribute::kActivedescendantId));
+    properties.emplace_back(
+        CreateProperty(AXPropertyNameEnum::Activedescendant,
+                       CreateRelatedNodeListValue(*target)));
+  }
+
+  if (node_data.HasIntAttribute(
+          ax::mojom::blink::IntAttribute::kErrormessageId)) {
+    AXObject* target =
+        ax_object.AXObjectCache().ObjectFromAXID(node_data.GetIntAttribute(
+            ax::mojom::blink::IntAttribute::kErrormessageId));
+    properties.emplace_back(CreateProperty(
+        AXPropertyNameEnum::Errormessage, CreateRelatedNodeListValue(*target)));
+  }
+
+  if (node_data.HasIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kControlsIds)) {
+    const auto ax_ids = node_data.GetIntListAttribute(
+        ax::mojom::blink::IntListAttribute::kControlsIds);
+    AXObject::AXObjectVector ax_objects;
+    GetObjectsFromAXIDs(ax_object.AXObjectCache(), ax_ids, &ax_objects);
+    properties.emplace_back(CreateRelatedNodeListProperty(
+        AXPropertyNameEnum::Controls, ax_objects, html_names::kAriaControlsAttr,
+        ax_object));
+  }
+
+  if (node_data.HasIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kDetailsIds)) {
+    const auto ax_ids = node_data.GetIntListAttribute(
+        ax::mojom::blink::IntListAttribute::kDetailsIds);
+    AXObject::AXObjectVector ax_objects;
+    GetObjectsFromAXIDs(ax_object.AXObjectCache(), ax_ids, &ax_objects);
+    properties.emplace_back(
+        CreateRelatedNodeListProperty(AXPropertyNameEnum::Details, ax_objects,
+                                      html_names::kAriaDetailsAttr, ax_object));
+  }
+
+  if (node_data.HasIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kFlowtoIds)) {
+    const auto ax_ids = node_data.GetIntListAttribute(
+        ax::mojom::blink::IntListAttribute::kFlowtoIds);
+    AXObject::AXObjectVector ax_objects;
+    GetObjectsFromAXIDs(ax_object.AXObjectCache(), ax_ids, &ax_objects);
+    properties.emplace_back(
+        CreateRelatedNodeListProperty(AXPropertyNameEnum::Flowto, ax_objects,
+                                      html_names::kAriaFlowtoAttr, ax_object));
   }
   return;
 }
@@ -686,8 +693,8 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
   FillWidgetProperties(ax_object, *(properties.get()));
   FillWidgetStates(ax_object, *(properties.get()));
   FillRelationships(ax_object, *(properties.get()));
+  FillSparseAttributes(ax_object, *(properties.get()));
 
-  FillSparseAttributes(ax_object, *properties);
   AXObject::NameSources name_sources;
   String computed_name = ax_object.GetName(&name_sources);
   if (!name_sources.IsEmpty()) {
@@ -719,35 +726,98 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
 }
 
 Response InspectorAccessibilityAgent::getFullAXTree(
+    protocol::Maybe<int> max_depth,
     std::unique_ptr<protocol::Array<AXNode>>* nodes) {
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::ServerError("No document.");
   if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
     document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
-  *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
+
+  *nodes = WalkAXNodesToDepth(document, max_depth.fromMaybe(-1));
+
+  return Response::Success();
+}
+
+std::unique_ptr<protocol::Array<AXNode>>
+InspectorAccessibilityAgent::WalkAXNodesToDepth(Document* document,
+                                                int max_depth) {
+  std::unique_ptr<protocol::Array<AXNode>> nodes =
+      std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
+
   AXContext ax_context(*document);
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
-  Deque<AXID> ids;
-  ids.emplace_back(cache.Root()->AXObjectID());
-  while (!ids.empty()) {
-    AXID ax_id = ids.front();
-    ids.pop_front();
-    AXObject* ax_object = cache.ObjectFromAXID(ax_id);
+
+  Deque<std::pair<AXID, int>> id_depths;
+  id_depths.emplace_back(cache.Root()->AXObjectID(), 0);
+
+  while (!id_depths.empty()) {
+    std::pair<AXID, int> id_depth = id_depths.front();
+    id_depths.pop_front();
+    AXObject* ax_object = cache.ObjectFromAXID(id_depth.first);
     std::unique_ptr<AXNode> node =
-        BuildProtocolAXObject(*ax_object, nullptr, false, *nodes, cache);
+        BuildProtocolAXObject(*ax_object, nullptr, false, nodes, cache);
 
     auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
-    const AXObject::AXObjectVector& children =
-        ax_object->ChildrenIncludingIgnored();
-    for (unsigned i = 0; i < children.size(); i++) {
-      AXObject& child_ax_object = *children[i].Get();
-      child_ids->emplace_back(String::Number(child_ax_object.AXObjectID()));
-      ids.emplace_back(child_ax_object.AXObjectID());
+    const AXObject::AXObjectVector& children = ax_object->UnignoredChildren();
+
+    for (auto& child_ax_object : children) {
+      child_ids->emplace_back(String::Number(child_ax_object->AXObjectID()));
+
+      int depth = id_depth.second;
+      if (max_depth == -1 || depth < max_depth)
+        id_depths.emplace_back(child_ax_object->AXObjectID(), depth + 1);
     }
     node->setChildIds(std::move(child_ids));
-    (*nodes)->emplace_back(std::move(node));
+    nodes->emplace_back(std::move(node));
   }
+
+  return nodes;
+}
+
+protocol::Response InspectorAccessibilityAgent::getChildAXNodes(
+    const String& in_id,
+    std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*
+        out_nodes) {
+  if (!enabled_.Get())
+    return Response::ServerError("Accessibility has not been enabled.");
+
+  // FIXME(aboxhall): specify a document to this and getRootAXNode()
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (!document)
+    return Response::ServerError("No document.");
+
+  if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
+
+  // Since we called enable(), this should exist.
+  AXObjectCacheImpl* cache =
+      To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
+  if (!cache)
+    return Response::ServerError("No AXObjectCache.");
+
+  AXID ax_id = in_id.ToUInt();
+  AXObject* ax_object = cache->ObjectFromAXID(ax_id);
+
+  if (!ax_object)
+    return Response::InvalidParams("Invalid ID");
+
+  *out_nodes =
+      std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
+
+  const AXObject::AXObjectVector& children = ax_object->UnignoredChildren();
+  for (auto& child_ax_object : children) {
+    std::unique_ptr<AXNode> child_node = BuildProtocolAXObject(
+        *child_ax_object, nullptr, false, *out_nodes, *cache);
+    auto grandchild_ids = std::make_unique<protocol::Array<AXNodeId>>();
+    const AXObject::AXObjectVector& grandchildren =
+        child_ax_object->UnignoredChildren();
+    for (AXObject* grandchild : grandchildren)
+      grandchild_ids->emplace_back(String::Number(grandchild->AXObjectID()));
+    child_node->setChildIds(std::move(grandchild_ids));
+    (*out_nodes)->emplace_back(std::move(child_node));
+  }
+
   return Response::Success();
 }
 
@@ -822,8 +892,7 @@ void InspectorAccessibilityAgent::AddChildren(
     return;
   }
 
-  const AXObject::AXObjectVector& children =
-      ax_object.ChildrenIncludingIgnored();
+  const AXObject::AXObjectVector& children = ax_object.UnignoredChildren();
   for (unsigned i = 0; i < children.size(); i++) {
     AXObject& child_ax_object = *children[i].Get();
     child_ids->emplace_back(String::Number(child_ax_object.AXObjectID()));
@@ -893,8 +962,7 @@ Response InspectorAccessibilityAgent::queryAXTree(
   while (!reachable.IsEmpty()) {
     AXObject* ax_object = reachable.back();
     reachable.pop_back();
-    const AXObject::AXObjectVector& children =
-        ax_object->ChildrenIncludingIgnored();
+    const AXObject::AXObjectVector& children = ax_object->UnignoredChildren();
     reachable.AppendRange(children.rbegin(), children.rend());
 
     // if querying by name: skip if name of current object does not match.

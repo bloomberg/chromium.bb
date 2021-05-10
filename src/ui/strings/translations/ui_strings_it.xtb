@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Display incorporato</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3389286852084373014">Il testo è troppo grande</translation>
+<translation id="3406306243914553062">Contenuti HTML</translation>
 <translation id="348799646910989694">Shelf nascosto in automatico</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> è stato bloccato</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 giorno rimanente}other{# giorni rimanenti}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Numero</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Continua a leggere dal tuo dispositivo mobile <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3889424535448813030">Freccia destra</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mese fa}other{# mesi fa}}</translation>
 <translation id="4289300219472526559">Avvia comandi vocali</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> spostata nella cartella <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Rimuovi dagli appunti.</translation>
 <translation id="4316910396681052118">TUTTE LE APP</translation>
 <translation id="4491109536499578614">Immagine</translation>
 <translation id="4588090240171750605">Scorri a destra</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Eliminare questa ricerca dalla cronologia?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">Voce rimossa.</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
 <translation id="8134065097954893699">Ricaricare questa pagina</translation>
-<translation id="8144660977431427332">Le tue ricerche sono basate sulla tecnologia dell'Assistente Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completamento automatico</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8210608804940886430">Pagina giù</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tabulazione</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Valore del colore esadecimale</translation>

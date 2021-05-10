@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include <set>
 #include <string>
 #include <utility>
 
@@ -11,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -61,6 +63,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -88,8 +91,6 @@
 
 namespace content {
 namespace {
-
-using ::testing::NotNull;
 
 // Implementation of ContentBrowserClient that overrides
 // OverridePageVisibilityState() and allows consumers to set a value.
@@ -202,7 +203,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
     path = path.Append(GetTestDataFilePath());
     path = path.Append(file_path);
-    return GURL(FILE_PATH_LITERAL("file:") + path.value());
+    return GURL("file:" + path.AsUTF8Unsafe());
   }
 
  protected:
@@ -210,7 +211,9 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(https://crbug.com/794320): Remove this when the new Java Bridge code
     // is integrated into WebView.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -219,6 +222,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "WebOTP");
   }
+
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
   WebContentsImpl* web_contents() const {
@@ -536,13 +540,14 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
-      const base::UnguessableToken& frame_token,
+      mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
+      const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleState lifecycle_state) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
-        frame_tree_node, routing_id, frame_token, renderer_initiated_creation,
-        lifecycle_state));
+        frame_tree_node, routing_id, std::move(frame_remote), frame_token,
+        renderer_initiated_creation, lifecycle_state));
   }
 };
 
@@ -788,14 +793,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   EXPECT_EQ(main_frame, child->GetBeforeUnloadInitiator());
   EXPECT_EQ(main_frame, main_frame->GetBeforeUnloadInitiator());
 
-  // When in --site-per-process mode, LoadURL() should trigger two beforeunload
-  // IPCs for subframe and the main frame: the subframe has a beforeunload
-  // handler, and while the main frame does not, we always send the IPC to
-  // navigating frames, regardless of whether or not they have a handler.
+  // When in a strict SiteInstances mode, LoadURL() should trigger two
+  // beforeunload IPCs for subframe and the main frame: the subframe has a
+  // beforeunload handler, and while the main frame does not, we always send the
+  // IPC to navigating frames, regardless of whether or not they have a handler.
   //
-  // Without --site-per-process, only one beforeunload IPC should be sent to
+  // Without strict SiteInstances, only one beforeunload IPC should be sent to
   // the main frame, which will handle both (same-process) frames.
-  EXPECT_EQ(AreAllSitesIsolatedForTesting() ? 2u : 1u,
+  EXPECT_EQ(AreStrictSiteInstancesEnabled() ? 2u : 1u,
             main_frame->beforeunload_pending_replies_.size());
 
   // Wait for the beforeunload dialog to be shown from the subframe.
@@ -808,12 +813,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
   EXPECT_FALSE(child->is_waiting_for_beforeunload_completion());
 
-  // In --site-per-process mode, the beforeunload completion callback should
-  // happen on the child RFH.  Without --site-per-process, it will come from the
-  // main frame RFH, which processes beforeunload for both main frame and child
-  // frame, since they are in the same process.
+  // In a strict SiteInstances mode, the beforeunload completion callback should
+  // happen on the child RFH.  Without strict SiteInstances, it will come from
+  // the main frame RFH, which processes beforeunload for both main frame and
+  // child frame, since they are in the same process and SiteInstance.
   RenderFrameHostImpl* frame_that_sent_beforeunload_ipc =
-      AreAllSitesIsolatedForTesting() ? child : main_frame;
+      AreStrictSiteInstancesEnabled() ? child : main_frame;
   EXPECT_TRUE(main_frame->beforeunload_pending_replies_.count(
       frame_that_sent_beforeunload_ipc));
 
@@ -1761,10 +1766,10 @@ class ScopedFakeInterfaceBrokerRequestInjector
   bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
       NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    url_of_last_commit_ = params->url;
+    url_of_last_commit_ = (**params).url;
     if (*interface_params) {
       original_receiver_of_last_commit_ =
           std::move((*interface_params)->browser_interface_broker_receiver);
@@ -2303,13 +2308,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   ASSERT_EQ(1u, root->child_count());
   CheckURLOriginAndNetworkIsolationKey(root->child_at(0), GURL("about:blank"),
                                        origin, expected_network_isolation_key);
-  // Site-for-cookies should be consistent with the NetworkIsolationKey.
-  EXPECT_TRUE(
-      root->child_at(0)
-          ->current_frame_host()
-          ->ComputeSiteForCookies()
-          .IsFirstParty(
-              expected_network_isolation_key.GetTopFrameSite()->GetURL()));
+  // The iframe's SiteForCookies should first party with respect to
+  // |main_frame_url|.
+  EXPECT_TRUE(root->child_at(0)
+                  ->current_frame_host()
+                  ->ComputeSiteForCookies()
+                  .IsFirstParty(main_frame_url));
 }
 
 // An iframe that starts at about:blank and is itself nested in a cross-site
@@ -3021,9 +3025,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   crash_observer.Wait();
 
   // Call RequestAXSnapshotTree method. The browser process should not crash.
+  auto params = mojom::SnapshotAccessibilityTreeParams::New();
   rfh->RequestAXTreeSnapshot(
       base::BindOnce([](const ui::AXTreeUpdate& snapshot) { NOTREACHED(); }),
-      ui::AXMode::kWebContents);
+      std::move(params));
 
   base::RunLoop().RunUntilIdle();
 
@@ -3099,6 +3104,580 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
   main_frame = web_contents()->GetMainFrame();
   main_frame->DidChangeActiveSchedulerTrackedFeatures(0b0u);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeIsolationInfoForNavigationPartyContext) {
+  // Start second server for HTTPS.
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url = https_server()->GetURL(
+      "a.test",
+      "/cross_site_iframe_factory.html?a.test(a.test, b.test(a.test(c.test), "
+      "b.test(b.test), c.test(d.test)))");
+
+  GURL b_url = https_server()->GetURL("b.test", "/");
+  GURL c_url = https_server()->GetURL("c.test", "/");
+  GURL d_url = https_server()->GetURL("d.test", "/");
+  net::SchemefulSite b_site(b_url);
+  net::SchemefulSite c_site(c_url);
+  net::SchemefulSite d_site(d_url);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // main frame
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ("https", main_frame->frame_tree_node()->current_origin().scheme());
+  EXPECT_EQ("a.test", main_frame->GetLastCommittedURL().host());
+  ASSERT_EQ(2u, main_frame->child_count());
+  std::set<net::SchemefulSite> expected_main_frame_party_context;
+  std::set<net::SchemefulSite> expected_main_frame_subresource_party_context;
+  // frame subresource
+  EXPECT_EQ(expected_main_frame_subresource_party_context,
+            main_frame->GetIsolationInfoForSubresources().party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_main_frame_party_context,
+            main_frame->ComputeIsolationInfoForNavigation(url).party_context());
+  EXPECT_EQ(
+      expected_main_frame_party_context,
+      main_frame->ComputeIsolationInfoForNavigation(b_url).party_context());
+
+  // a.test -> a.test
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  EXPECT_EQ("a.test", child_a->current_url().host());
+  ASSERT_EQ(0u, child_a->child_count());
+  std::set<net::SchemefulSite> expected_child_a_party_context;
+  std::set<net::SchemefulSite> expected_child_a_subresource_party_context;
+  // frame subresource
+  EXPECT_EQ(expected_child_a_subresource_party_context,
+            child_a->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_a_party_context,
+            child_a->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_a_party_context,
+            child_a->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+
+  // a.test -> b.test
+  FrameTreeNode* child_b = main_frame->child_at(1);
+  EXPECT_EQ("b.test", child_b->current_url().host());
+  ASSERT_EQ(3u, child_b->child_count());
+  std::set<net::SchemefulSite> expected_child_b_party_context;
+  std::set<net::SchemefulSite> expected_child_b_subresource_party_context{
+      b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_b_subresource_party_context,
+            child_b->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_b_party_context,
+            child_b->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_b_party_context,
+            child_b->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_b_party_context,
+            child_b->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> a.test
+  FrameTreeNode* child_ba = child_b->child_at(0);
+  EXPECT_EQ("a.test", child_ba->current_url().host());
+  ASSERT_EQ(1u, child_ba->child_count());
+  std::set<net::SchemefulSite> expected_child_ba_subresource_party_context{
+      b_site};
+  std::set<net::SchemefulSite> expected_child_ba_party_context{b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_ba_subresource_party_context,
+            child_ba->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_ba_party_context,
+            child_ba->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_ba_party_context,
+            child_ba->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_ba_party_context,
+            child_ba->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> b.test
+  FrameTreeNode* child_bb = child_b->child_at(1);
+  EXPECT_EQ("b.test", child_bb->current_url().host());
+  ASSERT_EQ(1u, child_bb->child_count());
+  std::set<net::SchemefulSite> expected_child_bb_subresource_party_context{
+      b_site};
+  std::set<net::SchemefulSite> expected_child_bb_party_context{b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_bb_subresource_party_context,
+            child_bb->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_bb_party_context,
+            child_bb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_bb_party_context,
+            child_bb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bb_party_context,
+            child_bb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> c.test
+  FrameTreeNode* child_bc = child_b->child_at(2);
+  EXPECT_EQ("c.test", child_bc->current_url().host());
+  ASSERT_EQ(1u, child_bc->child_count());
+  std::set<net::SchemefulSite> expected_child_bc_subresource_party_context{
+      b_site, c_site};
+  std::set<net::SchemefulSite> expected_child_bc_party_context{b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_bc_subresource_party_context,
+            child_bc->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_bc_party_context,
+            child_bc->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_bc_party_context,
+            child_bc->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bc_party_context,
+            child_bc->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> a.test -> c.test
+  FrameTreeNode* child_bac = child_ba->child_at(0);
+  EXPECT_EQ("c.test", child_bac->current_url().host());
+  std::set<net::SchemefulSite> expected_child_bac_subresource_party_context{
+      b_site, c_site};
+  std::set<net::SchemefulSite> expected_child_bac_party_context{b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_bac_subresource_party_context,
+            child_bac->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_bac_party_context,
+            child_bac->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_bac_party_context,
+            child_bac->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bac_party_context,
+            child_bac->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> b.test -> b.test
+  FrameTreeNode* child_bbb = child_bb->child_at(0);
+  EXPECT_EQ("b.test", child_bbb->current_url().host());
+  std::set<net::SchemefulSite> expected_child_bbb_subresource_party_context{
+      b_site};
+  std::set<net::SchemefulSite> expected_child_bbb_party_context{b_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_bbb_subresource_party_context,
+            child_bbb->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_bbb_party_context,
+            child_bbb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_bbb_party_context,
+            child_bbb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bbb_party_context,
+            child_bbb->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+
+  // a.test -> b.test -> c.test ->d.test
+  FrameTreeNode* child_bcd = child_bc->child_at(0);
+  EXPECT_EQ("d.test", child_bcd->current_url().host());
+  std::set<net::SchemefulSite> expected_child_bcd_subresource_party_context{
+      b_site, c_site, d_site};
+  std::set<net::SchemefulSite> expected_child_bcd_party_context{b_site, c_site};
+  // frame subresource
+  EXPECT_EQ(expected_child_bcd_subresource_party_context,
+            child_bcd->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  EXPECT_EQ(expected_child_bcd_party_context,
+            child_bcd->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+  EXPECT_EQ(expected_child_bcd_party_context,
+            child_bcd->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(b_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bcd_party_context,
+            child_bcd->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(c_url)
+                .party_context());
+  EXPECT_EQ(expected_child_bcd_party_context,
+            child_bcd->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(d_url)
+                .party_context());
+}
+
+// Ensure that http(s) schemes are distinct.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    ComputeIsolationInfoForNavigationPartyContextCrossScheme) {
+  // Start second server for HTTPS.
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL http_url =
+      embedded_test_server()->GetURL("a.test", "/page_with_blank_iframe.html");
+  GURL https_url = https_server()->GetURL("a.test", "/title1.com");
+  EXPECT_TRUE(NavigateToURL(shell(), http_url));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ(http_url, main_frame->GetLastCommittedURL());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_frame = main_frame->child_at(0);
+
+  // http://a.test -> https://a.test
+  const auto script = base::StringPrintf("window.location.href=\"%s\"; ",
+                                         https_url.spec().c_str());
+  TestNavigationObserver observer(web_contents());
+  ASSERT_TRUE(ExecuteScript(child_frame, script));
+  observer.Wait();
+  EXPECT_EQ(https_url, child_frame->current_url());
+  // frame subresource
+  std::set<net::SchemefulSite> expected_child_subresource_party_context{
+      net::SchemefulSite(https_url)};
+  EXPECT_EQ(expected_child_subresource_party_context,
+            child_frame->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  std::set<net::SchemefulSite> expected_child_party_context;
+  EXPECT_EQ(expected_child_party_context,
+            child_frame->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(http_url)
+                .party_context());
+}
+
+class RenderFrameHostImplSchemefulEnabledBrowserTest
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplSchemefulEnabledBrowserTest() {
+    scope_feature_list_.InitAndEnableFeature(net::features::kSchemefulSameSite);
+  }
+
+ protected:
+  base::test::ScopedFeatureList scope_feature_list_;
+};
+
+// Similar to
+// RenderFrameHostImplBrowserTest_ComputeIsolationInfoForNavigationPartyContextCrossScheme
+// with net::features::kSchemefulSameSite enabled.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplSchemefulEnabledBrowserTest,
+    ComputeIsolationInfoForNavigationPartyContextCrossScheme) {
+  // Start second server for HTTPS.
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL http_url =
+      embedded_test_server()->GetURL("a.test", "/page_with_blank_iframe.html");
+  GURL https_url = https_server()->GetURL("a.test", "/");
+
+  EXPECT_TRUE(NavigateToURL(shell(), http_url));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ(http_url, main_frame->GetLastCommittedURL());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_frame = main_frame->child_at(0);
+
+  // http://a.test -> https://a.test
+  const auto script = base::StringPrintf("window.location.href=\"%s\"; ",
+                                         https_url.spec().c_str());
+  TestNavigationObserver observer(web_contents());
+  ASSERT_TRUE(ExecuteScript(child_frame, script));
+  observer.Wait();
+  EXPECT_EQ(https_url, child_frame->current_url());
+  // frame subresource
+  std::set<net::SchemefulSite> expected_child_subresource_party_context{
+      net::SchemefulSite(https_url)};
+  EXPECT_EQ(expected_child_subresource_party_context,
+            child_frame->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+
+  // frame being navigated
+  std::set<net::SchemefulSite> expected_child_party_context;
+  EXPECT_EQ(expected_child_party_context,
+            child_frame->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(http_url)
+                .party_context());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    ComputeIsolationInfoForNavigationPartyContextExceedMaxSize) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(a1(a2(a3(a4(a5(a6(a7(a8(a9(a10(a11("
+      "a12(a13(a14(a15(a16(a17(a18(a19("
+      "a20(a21(a2))))))))))))))))))))))");
+  static_assert(net::IsolationInfo::kPartyContextMaxSize == 20,
+                "kPartyContextMaxSize should have value 20.");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ("http", main_frame->frame_tree_node()->current_origin().scheme());
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_a1 = main_frame->child_at(0);
+  FrameTreeNode* child = child_a1;
+  int child_count = 1;
+  for (; child->child_count() > 0; child = child->child_at(0)) {
+    ASSERT_EQ(1u, child->child_count());
+    child_count++;
+  }
+  ASSERT_EQ(22, child_count);
+
+  // innermost frame navigation.
+  EXPECT_EQ(base::nullopt, child->current_frame_host()
+                               ->ComputeIsolationInfoForNavigation(b_url)
+                               .party_context());
+  // innermost frame subresource.
+  EXPECT_EQ(base::nullopt, child->current_frame_host()
+                               ->GetIsolationInfoForSubresources()
+                               .party_context());
+
+  // parent of innermost frame navigation.
+  EXPECT_EQ(20u, child->parent()
+                     ->ComputeIsolationInfoForNavigation(b_url)
+                     .party_context()
+                     ->size());
+  // parent of innermost frame subresource.
+  EXPECT_EQ(base::nullopt,
+            child->parent()->GetIsolationInfoForSubresources().party_context());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    ComputeIsolationInfoForNavigationPartyContextAboutBlank) {
+  GURL url =
+      embedded_test_server()->GetURL("a.com", "/page_with_blank_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  // a.com -> about:blank
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_blank = main_frame->child_at(0);
+  EXPECT_TRUE(child_blank->current_url().IsAboutBlank());
+  EXPECT_EQ("a.com",
+            child_blank->current_frame_host()->GetLastCommittedOrigin().host());
+  // frame being navigated.
+  std::set<net::SchemefulSite> expected_child_blank_party_context;
+  EXPECT_EQ(expected_child_blank_party_context,
+            child_blank->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+
+  // Add another iframe under about:blank frame.
+  // a.com -> about:blank ->b.com
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  TestNavigationObserver observer(web_contents());
+  const auto script = base::StringPrintf(
+      "let f = document.createElement(\"iframe\");"
+      "f.src=\"%s\"; "
+      "document.body.appendChild(f);",
+      b_url.spec().c_str());
+  ASSERT_TRUE(ExecuteScript(child_blank->current_frame_host(), script));
+  observer.Wait();
+
+  ASSERT_EQ(1u, child_blank->child_count());
+  FrameTreeNode* child_b = child_blank->child_at(0u);
+  EXPECT_EQ("b.com", child_b->current_url().host());
+  // frame subresource
+  std::set<net::SchemefulSite> expected_child_b_subresource_party_context{
+      net::SchemefulSite(b_url)};
+  EXPECT_EQ(expected_child_b_subresource_party_context,
+            child_b->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated.
+  std::set<net::SchemefulSite> expected_child_b_party_context;
+  EXPECT_EQ(expected_child_b_party_context,
+            child_b->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeIsolationInfoForNavigationPartyContextDataUrl) {
+  GURL url =
+      embedded_test_server()->GetURL("a.com", "/page_with_blank_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  // a.com -> data url
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_data = main_frame->child_at(0);
+  TestNavigationObserver observer1(web_contents());
+  EXPECT_TRUE(ExecuteScript(child_data->current_frame_host(),
+                            "window.location='data:text/html,foo'"));
+  observer1.Wait();
+  EXPECT_EQ("data", child_data->current_url().scheme());
+  // frame being navigated.
+  std::set<net::SchemefulSite> expected_child_data_party_context;
+  EXPECT_EQ(expected_child_data_party_context,
+            child_data->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(url)
+                .party_context());
+
+  // Add another iframe under data url frame.
+  // a.com -> data url ->b.com
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  const auto script = base::StringPrintf(
+      "let f = document.createElement(\"iframe\");"
+      "f.src=\"%s\"; "
+      "document.body.appendChild(f);",
+      b_url.spec().c_str());
+  TestNavigationObserver observer2(web_contents());
+  ASSERT_TRUE(ExecuteScript(child_data->current_frame_host(), script));
+  observer2.Wait();
+
+  ASSERT_EQ(1u, child_data->child_count());
+  FrameTreeNode* child_b = child_data->child_at(0u);
+  EXPECT_EQ("b.com", child_b->current_url().host());
+
+  // frame being navigated.
+  std::set<net::SchemefulSite> child_b_party_context =
+      child_b->current_frame_host()
+          ->ComputeIsolationInfoForNavigation(url)
+          .party_context()
+          .value();
+
+  EXPECT_EQ(1u, child_b_party_context.size());
+  for (net::SchemefulSite site : child_b_party_context) {
+    // check it's opaque instead of comparing the value of opaque site.
+    EXPECT_TRUE(site.opaque());
+  }
+
+  // frame subresource
+  net::SchemefulSite b_site(b_url);
+  std::set<net::SchemefulSite> child_b_subresource_party_context =
+      child_b->current_frame_host()
+          ->GetIsolationInfoForSubresources()
+          .party_context()
+          .value();
+
+  EXPECT_EQ(2u, child_b_subresource_party_context.size());
+  for (net::SchemefulSite site : child_b_subresource_party_context) {
+    if (!site.opaque()) {
+      EXPECT_EQ(b_site, site);
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeIsolationInfoForNavigationPartyContextFileUrl) {
+  GURL file_url = GetFileURL(FILE_PATH_LITERAL("page_with_blank_iframe.html"));
+  GURL a_url = embedded_test_server()->GetURL("a.com", "/");
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  EXPECT_TRUE(NavigateToURL(shell(), file_url));
+
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  EXPECT_EQ(file_url, main_frame->GetLastCommittedURL());
+
+  // file url -> a.com
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  const auto script1 =
+      base::StringPrintf("window.location=\"%s\"; ", a_url.spec().c_str());
+  TestNavigationObserver observer1(web_contents());
+  ASSERT_TRUE(ExecuteScript(child_a->current_frame_host(), script1));
+  observer1.Wait();
+  EXPECT_EQ(a_url, child_a->current_url());
+  // frame subresource
+  std::set<net::SchemefulSite> expected_child_a_subresource_party_context{
+      net::SchemefulSite(a_url)};
+  EXPECT_EQ(expected_child_a_subresource_party_context,
+            child_a->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  std::set<net::SchemefulSite> expected_child_a_party_context;
+  EXPECT_EQ(expected_child_a_party_context,
+            child_a->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(file_url)
+                .party_context());
+
+  // file url -> a.com -> b.com
+  const auto script2 = base::StringPrintf(
+      "let f = document.createElement(\"iframe\");"
+      "f.src=\"%s\"; "
+      "document.body.appendChild(f);",
+      b_url.spec().c_str());
+  TestNavigationObserver observer2(web_contents());
+  ASSERT_TRUE(ExecuteScript(child_a->current_frame_host(), script2));
+  observer2.Wait();
+
+  ASSERT_EQ(1u, child_a->child_count());
+  FrameTreeNode* child_ab = child_a->child_at(0);
+  EXPECT_EQ(b_url, child_ab->current_url());
+
+  // frame subresource
+  std::set<net::SchemefulSite> expected_child_ab_subresource_party_context{
+      net::SchemefulSite(a_url), net::SchemefulSite(b_url)};
+  EXPECT_EQ(expected_child_ab_subresource_party_context,
+            child_ab->current_frame_host()
+                ->GetIsolationInfoForSubresources()
+                .party_context());
+  // frame being navigated
+  std::set<net::SchemefulSite> expected_child_ab_party_context{
+      net::SchemefulSite(a_url)};
+  EXPECT_EQ(expected_child_ab_party_context,
+            child_ab->current_frame_host()
+                ->ComputeIsolationInfoForNavigation(a_url)
+                .party_context());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -3620,9 +4199,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Disable the unload ACK and the unload timer. Also pretend the child frame
   // has an unload handler, so it doesn't get cleaned up synchronously, and
   // block its detach handler.
-  auto filter = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
-  main_frame->GetProcess()->AddFilter(filter.get());
+  auto unload_ack_filter = base::BindRepeating([] { return true; });
+  main_frame->SetUnloadACKCallbackForTesting(unload_ack_filter);
   main_frame->DisableUnloadTimerForTesting();
   child_rfh->SuddenTerminationDisablerChanged(
       true, blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
@@ -3931,8 +4509,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(testing::_))
       .WillOnce(testing::Invoke([&]() {
-        mock_provider_ptr->NotifyReceive(url::Origin::Create(first_url),
-                                         "hello");
+        mock_provider_ptr->NotifyReceive(
+            std::vector<url::Origin>{url::Origin::Create(first_url)}, "hello",
+            SmsFetcher::UserConsent::kObtained);
       }));
 
   // EvalJs waits for the promise being resolved. This ensures that the browser
@@ -3946,729 +4525,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
   ASSERT_TRUE(NavigateToURL(shell(), second_url));
   EXPECT_FALSE(web_contents()->GetMainFrame()->DocumentUsedWebOTP());
-}
-
-// It is hard to test this feature fully at the integration test level. Indeed,
-// there is no good way to inject a fake endpoint value into the URLLoader code
-// that performs the CORS-RFC1918 checks. The most intrusive injection
-// primitive, URLLoaderInterceptor, cannot be made to work as it bypasses the
-// network service entirely. Intercepted subresource requests therefore do not
-// execute the code under test and are never blocked.
-//
-// We are able to intercept top-level navigations, which allows us to test that
-// the correct address space is committed in the client security state for
-// local, private and public IP addresses.
-//
-// We further test that given a client security state with each IP address
-// space, subresource requests served by local IP addresses fail unless
-// initiated from the same address space. This provides integration testing
-// coverage for both success and failure cases of the code under test.
-//
-// Finally, we have unit tests that test all possible combinations of source and
-// destination IP address spaces in services/network/url_loader_unittest.cc.
-// Those cover fetches to other address spaces than local.
-class RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked
-    : public RenderFrameHostImplBrowserTest {
- public:
-  RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked() {
-    feature_list_.InitAndEnableFeature(
-        features::kBlockInsecurePrivateNetworkRequests);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    ComputeIFrameLoopbackIPAddressSpace) {
-  {
-    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
-    TitleWatcher title_watcher(web_contents(), expected_title);
-    EXPECT_TRUE(
-        NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                   "/do-not-treat-as-public-address.html")));
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-
-    std::vector<RenderFrameHost*> frames =
-        shell()->web_contents()->GetAllFrames();
-    for (auto* frame : frames) {
-      SCOPED_TRACE(::testing::Message()
-                   << "URL: " << frame->GetLastCommittedURL());
-      auto* rfhi = static_cast<RenderFrameHostImpl*>(frame);
-
-      if (frame->GetLastCommittedURL().IsAboutBlank()) {
-        // TODO(986744): `about:blank` is not navigated via
-        // `RenderFrameHostImpl::CommitNavigation`, but handled in the renderer
-        // via `RenderFrameImpl::CommitSyncNavigation`. This means that we don't
-        // calculate the value correctly on the browser-side, but do correctly
-        // inherit from the initiator on the Blink-side.
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kUnknown,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("local", EvalJs(rfhi, "document.addressSpace"));
-      } else if (frame->GetLastCommittedURL().SchemeIsFileSystem() ||
-                 frame->GetLastCommittedURL().SchemeIsBlob() ||
-                 frame->GetLastCommittedURL().IsAboutSrcdoc() ||
-                 frame->GetLastCommittedURL().SchemeIs(url::kDataScheme)) {
-        // TODO(986744): `data:`, `blob:`, `filesystem:`, and `about:srcdoc`
-        // should all inherit the IPAddressSpace from the document
-        // that initiated a navigation. Right now, we treat them as `kPublic`.
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kUnknown,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
-      } else {
-        // TODO(mkwst): Once the above two TODOs are resolved, this branch will
-        // be the correct expectation for all the frames in this test.
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kLocal,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("local", EvalJs(rfhi, "document.addressSpace"));
-      }
-    }
-  }
-
-  // Loading from loopback that asserts publicness: `data:`, `blob:`,
-  // `filesystem:`, `about:blank`, and `about:srcdoc` all inherit the assertion.
-  {
-    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
-    TitleWatcher title_watcher(web_contents(), expected_title);
-    EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                           "/treat-as-public-address.html")));
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-
-    std::vector<RenderFrameHost*> frames = web_contents()->GetAllFrames();
-    for (auto* frame : frames) {
-      auto* rfhi = static_cast<RenderFrameHostImpl*>(frame);
-      if (frame->GetLastCommittedURL().IsAboutBlank()) {
-        // TODO(986744): `about:blank` is not navigated via `NavigationRequest`,
-        // but handled in the renderer via
-        // `RenderFrameImpl::CommitSyncNavigation`. This means that we don't
-        // calculate the value correctly on the browser-side, but do correctly
-        // inherit from the initiator on the Blink-side.
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kUnknown,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
-      } else if (frame->GetLastCommittedURL().SchemeIsFileSystem() ||
-                 frame->GetLastCommittedURL().SchemeIsBlob() ||
-                 frame->GetLastCommittedURL().IsAboutSrcdoc() ||
-                 frame->GetLastCommittedURL().SchemeIs(url::kDataScheme)) {
-        // TODO(986744): `data:`, `blob:`, `filesystem:`, and `about:srcdoc`
-        // should all inherit the IPAddressSpace from the document
-        // that initiated a navigation. Right now, we treat them as `kUnknown`.
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kUnknown,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
-      } else {
-        EXPECT_EQ(
-            network::mojom::IPAddressSpace::kPublic,
-            rfhi->last_committed_client_security_state()->ip_address_space);
-        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
-      }
-    }
-  }
-}
-
-namespace {
-
-constexpr char kDefaultPath[] = "/defaultresponse";
-
-constexpr char kTreatAsPublicAddressPath[] =
-    "/set-header?Content-Security-Policy: treat-as-public-address";
-
-GURL SecureURL(const net::EmbeddedTestServer& server, const std::string& path) {
-  // http://localhost is considered secure. Relying on this is easier than using
-  // the HTTPS test server, since that server cannot lie about its domain name,
-  // so we have to use localhost anyway.
-  return server.GetURL(path);
-}
-
-GURL InsecureURL(const net::EmbeddedTestServer& server,
-                 const std::string& path) {
-  // The mock resolver is set to resolve anything to 127.0.0.1, so we use
-  // http://foo.test as an insecure origin.
-  return server.GetURL("foo.test", path);
-}
-
-GURL SecureDefaultURL(const net::EmbeddedTestServer& server) {
-  return SecureURL(server, kDefaultPath);
-}
-
-GURL InsecureDefaultURL(const net::EmbeddedTestServer& server) {
-  return InsecureURL(server, kDefaultPath);
-}
-
-GURL SecureTreatAsPublicAddressURL(const net::EmbeddedTestServer& server) {
-  return SecureURL(server, kTreatAsPublicAddressPath);
-}
-
-GURL InsecureTreatAsPublicAddressURL(const net::EmbeddedTestServer& server) {
-  return InsecureURL(server, kTreatAsPublicAddressPath);
-}
-
-// Returns a snippet of Javascript that fetch()es the given URL.
-//
-// The snippet evaluates to a boolean promise which resolves to true iff the
-// fetch was successful. The promise never rejects, as doing so makes it hard
-// to assert failure.
-std::string FetchSubresourceScript(const std::string& url_spec) {
-  return base::ReplaceStringPlaceholders(
-      R"(fetch("$1").then(
-           response => response.ok,
-           error => {
-             console.log('Error fetching "$1"', error);
-             return false;
-           });
-      )",
-      {url_spec}, nullptr);
-}
-
-// Returns an IP address in the private address space.
-net::IPAddress PrivateAddress() {
-  return net::IPAddress(10, 0, 1, 2);
-}
-
-// Returns an IP address in the public address space.
-net::IPAddress PublicAddress() {
-  return net::IPAddress(40, 0, 1, 2);
-}
-
-// Minimal response headers for an intercepted response to be successful.
-constexpr base::StringPiece kMinimalResponseHeaders =  // force line break
-    R"(HTTP/1.0 200 OK
-Content-type: text/html
-
-)";
-
-// Minimal response body containing an HTML document.
-constexpr base::StringPiece kMinimalHtmlBody = R"(
-<html>
-<head></head>
-<body></body>
-</html>
-)";
-
-// Wraps the URLLoaderInterceptor method of the same name, asserts success.
-//
-// NOTE: ASSERT_* macros can only be used in functions returning void.
-void WriteResponseBody(base::StringPiece body,
-                       network::mojom::URLLoaderClient* client) {
-  ASSERT_EQ(content::URLLoaderInterceptor::WriteResponseBody(body, client),
-            MOJO_RESULT_OK);
-}
-
-// Helper for InterceptorWithFakeEndpoint.
-bool MaybeInterceptWithFakeEndpoint(
-    const GURL& intercepted_url,
-    const net::IPEndPoint& endpoint,
-    content::URLLoaderInterceptor::RequestParams* params) {
-  const GURL& request_url = params->url_request.url;
-  if (request_url != intercepted_url) {
-    LOG(INFO) << "MaybeInterceptWithFakeEndpoint: ignoring request to "
-              << request_url;
-    return false;
-  }
-
-  LOG(INFO) << "MaybeInterceptWithFakeEndpoint: intercepting request to "
-            << request_url;
-
-  auto response = network::mojom::URLResponseHead::New();
-  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(kMinimalResponseHeaders));
-  response->headers->GetMimeType(&response->mime_type);
-  response->remote_endpoint = endpoint;
-  params->client->OnReceiveResponse(std::move(response));
-
-  WriteResponseBody(kMinimalHtmlBody, params->client.get());
-  return true;
-}
-
-// The returned interceptor intercepts requests to |url|, fakes its network
-// endpoint to reflect the value of |endpoint|, and responds OK with a minimal
-// HTML body.
-std::unique_ptr<content::URLLoaderInterceptor> InterceptorWithFakeEndpoint(
-    const GURL& url,
-    const net::IPEndPoint& endpoint) {
-  LOG(INFO) << "Starting to intercept requests to " << url
-            << " with fake endpoint " << endpoint.ToString();
-  return std::make_unique<content::URLLoaderInterceptor>(
-      base::BindRepeating(&MaybeInterceptWithFakeEndpoint, url, endpoint));
-}
-
-}  // namespace
-
-// This test verifies that when the right feature is enabled, iframe requests:
-//  - from an insecure page with the "treat-as-public-address" CSP directive
-//  - to a local IP address
-// are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    IframeFromInsecureTreatAsPublicToLocalIsBlocked) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  GURL url = InsecureURL(*embedded_test_server(), "/empty.html");
-
-  content::TestNavigationManager child_navigation_manager(web_contents(), url);
-
-  EXPECT_TRUE(ExecJs(root_frame_host(), R"(
-    const iframe = document.createElement("iframe");
-    iframe.src = "/empty.html";
-    document.body.appendChild(iframe);
-  )"));
-
-  child_navigation_manager.WaitForNavigationFinished();
-
-  // Check that the child iframe failed to fetch.
-  EXPECT_FALSE(child_navigation_manager.was_successful());
-
-  ASSERT_EQ(1ul, root_frame_host()->child_count());
-  auto* child_frame = root_frame_host()->child_at(0)->current_frame_host();
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            EvalJs(child_frame, "document.location.href"));
-
-  // The frame committed an error page but retains the original URL so that
-  // reloading the page does the right thing. The committed origin on the other
-  // hand is opaque, which it would not be if the navigation had succeeded.
-  EXPECT_EQ(url, child_frame->GetLastCommittedURL());
-  EXPECT_TRUE(child_frame->GetLastCommittedOrigin().opaque());
-}
-
-// Similar to IframeFromInsecureTreatAsPublicToLocalIsBlocked, but in
-// report-only mode. As a result "treat-as-public-address" must be ignored.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CspReportOnlyTreatAsPublicAddressIgnored) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureURL(*embedded_test_server(),
-                           "/set-header?Content-Security-Policy-Report-Only: "
-                           "treat-as-public-address")));
-
-  GURL url = InsecureURL(*embedded_test_server(), "/empty.html");
-
-  content::TestNavigationManager child_navigation_manager(web_contents(), url);
-
-  EXPECT_TRUE(ExecJs(root_frame_host(), R"(
-    const iframe = document.createElement("iframe");
-    iframe.src = "/empty.html";
-    document.body.appendChild(iframe);
-  )"));
-
-  child_navigation_manager.WaitForNavigationFinished();
-
-  // Check that the child iframe was not blocked.
-  EXPECT_TRUE(child_navigation_manager.was_successful());
-
-  ASSERT_EQ(1ul, root_frame_host()->child_count());
-  auto* child_frame = root_frame_host()->child_at(0)->current_frame_host();
-  EXPECT_EQ(url, EvalJs(child_frame, "document.location.href"));
-  EXPECT_EQ(url, child_frame->GetLastCommittedURL());
-  EXPECT_FALSE(child_frame->GetLastCommittedOrigin().opaque());
-}
-
-// TODO(https://crbug.com/1134601): `about:` URLs are all treated as `kUnknown`
-// today. This is ~incorrect, but safe, as their web-facing behavior will be
-// equivalent to "public".
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForAboutURL) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("public", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-// TODO(https://crbug.com/1134601): `data:` URLs are all treated as `kUnknown`
-// today. This is ~incorrect, but safe, as their web-facing behavior will be
-// equivalent to "public".
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForDataURL) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("public", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForFileURL) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "empty.html")));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("local", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForInsecureLocalAddress) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), InsecureDefaultURL(*embedded_test_server())));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("local", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForSecureLocalAddress) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), SecureDefaultURL(*embedded_test_server())));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("local", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForTreatAsPublicAddress) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), SecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("public", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForPrivateAddress) {
-  // Intercept the page load and pretend it came from a public IP.
-
-  const GURL url = InsecureDefaultURL(*embedded_test_server());
-
-  // Use the same port as the server, so that the fetch is not cross-origin.
-  auto interceptor = InterceptorWithFakeEndpoint(
-      url, net::IPEndPoint(PrivateAddress(), embedded_test_server()->port()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("private", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    CommitsClientSecurityStateForPublicAddress) {
-  // Intercept the page load and pretend it came from a public IP.
-
-  const GURL url = InsecureDefaultURL(*embedded_test_server());
-
-  // Use the same port as the server, so that the fetch is not cross-origin.
-  auto interceptor = InterceptorWithFakeEndpoint(
-      url, net::IPEndPoint(PublicAddress(), embedded_test_server()->port()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  const auto& security_state =
-      root_frame_host()->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-  EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
-            security_state->ip_address_space);
-
-  EXPECT_EQ("public", EvalJs(root_frame_host(), "document.addressSpace"));
-}
-
-// This test verifies that even with the blocking feature disabled, an insecure
-// page in the `local` address space cannot fetch a `file:` URL.
-//
-// This is relevant to CORS-RFC1918, since `file:` URLs are considered `local`.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       InsecurePageCannotRequestFile) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), InsecureDefaultURL(*embedded_test_server())));
-
-  // Check that the page cannot load a `file:` URL.
-  EXPECT_EQ(
-      false,
-      EvalJs(root_frame_host(),
-             FetchSubresourceScript(GetTestUrl("", "empty.html").spec())));
-}
-
-// This test verifies that even with the blocking feature disabled, a secure
-// page in the `local` address space cannot fetch a `file:` URL.
-//
-// This is relevant to CORS-RFC1918, since `file:` URLs are considered `local`.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       SecurePageCannotRequestFile) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), SecureDefaultURL(*embedded_test_server())));
-
-  // Check that the page cannot load a `file:` URL.
-  EXPECT_EQ(
-      false,
-      EvalJs(root_frame_host(),
-             FetchSubresourceScript(GetTestUrl("", "empty.html").spec())));
-}
-
-// This test mimics the tests below, with the blocking feature disabled. It
-// verifies that by default requests:
-//  - from an insecure page with the "treat-as-public-address" CSP directive
-//  - to a local IP address
-// are not blocked.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       PrivateNetworkRequestIsNotBlockedByDefault) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  // Check that the page can load a local resource.
-  EXPECT_EQ(true,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled but the policy
-// disables it, requests:
-//  - from an insecure page with the "treat-as-public-address" CSP directive
-//  - to a local IP address
-// are not blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromInsecureTreatAsPublicToLocalWithPolicySetToAllowIsNotBlocked) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  // TODO(crbug.com/986744): Disable policy and fix test expectation once
-  // policies are correctly wired up to the code under test.
-
-  // Check that the page can load a local resource.
-  // TODO(crbug.com/986744): Expect true once policy wiring is fixed.
-  EXPECT_EQ(false,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from a secure page with the "treat-as-public-address" CSP directive
-//  - to a local IP address
-// are not blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromSecureTreatAsPublicToLocalIsNotBlocked) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), SecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  // Check that the page can load a local resource.
-  EXPECT_EQ(true,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from an insecure page with the "treat-as-public-address" CSP directive
-//  - to a local IP address
-// are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromInsecureTreatAsPublicToLocalIsBlocked) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), InsecureTreatAsPublicAddressURL(*embedded_test_server())));
-
-  // Check that the page cannot load a local resource.
-  EXPECT_EQ(false,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from an insecure page served by a public IP address
-//  - to local IP addresses
-//  are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromInsecurePublicToLocalIsBlocked) {
-  // Intercept the page load and pretend it came from a public IP.
-
-  const GURL url = InsecureDefaultURL(*embedded_test_server());
-
-  // Use the same port as the server, so that the fetch is not cross-origin.
-  auto interceptor = InterceptorWithFakeEndpoint(
-      url, net::IPEndPoint(PublicAddress(), embedded_test_server()->port()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  // Check that the page cannot load a local resource.
-  EXPECT_EQ(false,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from an insecure page served by a private IP address
-//  - to local IP addresses
-//  are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromInsecurePrivateToLocalIsBlocked) {
-  // Intercept the page load and pretend it came from a private IP.
-
-  const GURL url = InsecureDefaultURL(*embedded_test_server());
-
-  // Use the same port as the server, so that the fetch is not cross-origin.
-  auto interceptor = InterceptorWithFakeEndpoint(
-      url, net::IPEndPoint(PrivateAddress(), embedded_test_server()->port()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  // Check that the page cannot load a local resource.
-  EXPECT_EQ(false,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from an insecure page served by a local IP address
-//  - to local IP addresses
-//  are not blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromInsecureLocalToLocalIsNotBlocked) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), InsecureDefaultURL(*embedded_test_server())));
-
-  // Check that the page can load a local resource.
-  EXPECT_EQ(true,
-            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from a secure page with the "treat-as-public-address" CSP directive
-//  - embedded in an insecure page served from a local IP address
-//  - to local IP addresses
-//  are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromSecurePublicEmbeddedInInsecureLocalToLocalIsBlocked) {
-  // First navigate to an insecure page served by a local IP address.
-  EXPECT_TRUE(
-      NavigateToURL(shell(), InsecureDefaultURL(*embedded_test_server())));
-
-  // Then embed a secure public iframe.
-  auto iframe_url = SecureTreatAsPublicAddressURL(*embedded_test_server());
-  std::string script = base::ReplaceStringPlaceholders(
-      R"(
-        const iframe = document.createElement("iframe");
-        iframe.src = "$1";
-        document.body.appendChild(iframe);
-      )",
-      {iframe_url.spec()}, nullptr);
-  EXPECT_TRUE(ExecJs(root_frame_host(), script));
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
-
-  ASSERT_EQ(1ul, root_frame_host()->child_count());
-  auto* child_frame = root_frame_host()->child_at(0)->current_frame_host();
-
-  const auto& security_state =
-      child_frame->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-
-  // Even though the iframe document was loaded from a secure connection, the
-  // context is deemed insecure because it was embedded by an insecure context.
-  EXPECT_FALSE(security_state->is_web_secure_context);
-
-  // The address space of the document, however, is not influenced by the
-  // parent's address space.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
-            security_state->ip_address_space);
-
-  // Check that the iframe cannot load a local resource.
-  EXPECT_EQ(false, EvalJs(child_frame, FetchSubresourceScript("image.jpg")));
-}
-
-// This test verifies that when the right feature is enabled, requests:
-//  - from a secure page with the "treat-as-public-address" CSP directive
-//  - embedded in a frame with no committed navigation
-//  - to local IP addresses
-//  are blocked.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
-    FromSecurePublicEmbeddedInNotCommittedFrameToLocalIsBlocked) {
-  // Start a navigation. This forces the RenderFrameHost to initialize its
-  // RenderFrame (1). The navigation is then cancelled by a HTTP 204 code (2).
-  //
-  // (1) Allows Javascript to be executed in the frame, otherwise ExecJs()
-  // fails.
-  // (2) Thus the RenderFrameHost does not commit a client security state.
-  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(
-      shell(), embedded_test_server()->GetURL("/nocontent")));
-
-  // This results in the frame not having a security state.
-  EXPECT_TRUE(
-      root_frame_host()->last_committed_client_security_state().is_null());
-
-  // Then embed a secure public iframe.
-  auto iframe_url = SecureTreatAsPublicAddressURL(*embedded_test_server());
-  std::string script = base::ReplaceStringPlaceholders(
-      R"(
-        const iframe = document.createElement("iframe");
-        iframe.src = "$1";
-        document.body.appendChild(iframe);
-      )",
-      {iframe_url.spec()}, nullptr);
-  EXPECT_TRUE(ExecJs(root_frame_host(), script));
-  EXPECT_FALSE(WaitForLoadStop(web_contents()));
-
-  ASSERT_EQ(1ul, root_frame_host()->child_count());
-  auto* child_frame = root_frame_host()->child_at(0)->current_frame_host();
-
-  const auto& security_state =
-      child_frame->last_committed_client_security_state();
-  ASSERT_FALSE(security_state.is_null());
-
-  // The context is deemed secure because the parent frame had no client
-  // security state, and the child frame loaded a secure page.
-  //
-  // TODO(crbug.com/1124346): Determine if this is correct, fix it if not.
-  EXPECT_TRUE(security_state->is_web_secure_context);
-
-  // The address space of the document, however, is not influenced by the
-  // parent's address space.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
-            security_state->ip_address_space);
-
-  // Check that the iframe can load a local resource.
-  //
-  // TODO(crbug.com/1124346): Determine if this is correct, fix it if not.
-  EXPECT_EQ(true, EvalJs(child_frame, FetchSubresourceScript("image.jpg")));
 }
 
 namespace {
@@ -4875,7 +4731,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetUkmSourceIds) {
 
   const auto& document_created_entries =
       recorder.GetEntriesByName("DocumentCreated");
-  // There should one DocumentCreated entry for each of the two frames.
+  // There should be one DocumentCreated entry for each of the two frames.
   ASSERT_EQ(2u, document_created_entries.size());
 
   auto* main_frame_document_created_entry =
@@ -4891,6 +4747,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetUkmSourceIds) {
                                        "IsMainFrame"));
   EXPECT_FALSE(*recorder.GetEntryMetric(main_frame_document_created_entry,
                                         "IsCrossOriginFrame"));
+  EXPECT_FALSE(*recorder.GetEntryMetric(main_frame_document_created_entry,
+                                        "IsCrossSiteFrame"));
 
   EXPECT_EQ(page_ukm_source_id,
             *recorder.GetEntryMetric(sub_frame_document_created_entry,
@@ -4899,6 +4757,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetUkmSourceIds) {
                                         "IsMainFrame"));
   EXPECT_TRUE(*recorder.GetEntryMetric(sub_frame_document_created_entry,
                                        "IsCrossOriginFrame"));
+  EXPECT_TRUE(*recorder.GetEntryMetric(sub_frame_document_created_entry,
+                                       "IsCrossSiteFrame"));
 
   // Verify source creations. Main frame document source should have the URL;
   // no source should have been created for the sub-frame document.
@@ -4912,6 +4772,29 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetUkmSourceIds) {
   for (const auto* entry : blink_entries) {
     EXPECT_EQ(main_frame_doc_ukm_source_id, entry->source_id);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, CrossSiteFrame) {
+  ukm::TestAutoSetUkmRecorder recorder;
+  // This test site has one cross-origin but same-site iframe (b.x.com).
+  GURL main_frame_url(embedded_test_server()->GetURL(
+      "a.x.com", "/frame_tree/page_with_cross_origin_same_site_iframe.html"));
+  WebContents* web_contents = shell()->web_contents();
+  DocumentUkmSourceIdObserver observer(web_contents);
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  auto* sub_frame_document_created_entry =
+      recorder.GetDocumentCreatedEntryForSourceId(
+          observer.GetSubFrameDocumentUkmSourceId());
+
+  // Verify the recorded values on the sub frame's DocumentCreated entry.
+  EXPECT_FALSE(*recorder.GetEntryMetric(sub_frame_document_created_entry,
+                                        "IsMainFrame"));
+  EXPECT_TRUE(*recorder.GetEntryMetric(sub_frame_document_created_entry,
+                                       "IsCrossOriginFrame"));
+  EXPECT_FALSE(*recorder.GetEntryMetric(sub_frame_document_created_entry,
+                                        "IsCrossSiteFrame"));
 }
 
 // TODO(https://crbug.com/794320): the code below is temporary and will be
@@ -4949,6 +4832,7 @@ class MockInnerObject : public blink::mojom::RemoteObject {
         kInnerObject.id);
     std::move(callback).Run(std::move(result));
   }
+  void NotifyReleasedObject() override {}
 };
 
 class MockObject : public blink::mojom::RemoteObject {
@@ -4988,6 +4872,8 @@ class MockObject : public blink::mojom::RemoteObject {
     }
     std::move(callback).Run(std::move(result));
   }
+
+  void NotifyReleasedObject() override {}
 
   int get_num_elements_received() const { return num_elements_received_; }
 
@@ -5243,6 +5129,23 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(1u, web_contents()->GetFaviconURLs().size());
   EXPECT_EQ("/favicon.ico",
             web_contents()->GetFaviconURLs()[0]->icon_url.path());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       GetCrossOriginIsolationStatus) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html")));
+  EXPECT_EQ(RenderFrameHost::CrossOriginIsolationStatus::kNotIsolated,
+            root_frame_host()->GetCrossOriginIsolationStatus());
+
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/set-header?"
+                                "Cross-Origin-Opener-Policy: same-origin&"
+                                "Cross-Origin-Embedder-Policy: require-corp")));
+  // Status can be kIsolated or kMaybeIsolated.
+  EXPECT_NE(RenderFrameHost::CrossOriginIsolationStatus::kNotIsolated,
+            root_frame_host()->GetCrossOriginIsolationStatus());
 }
 
 }  // namespace content

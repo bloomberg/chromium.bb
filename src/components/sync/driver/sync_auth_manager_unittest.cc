@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -64,7 +65,6 @@ TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
   auto auth_manager = CreateAuthManagerForLocalSync();
   EXPECT_TRUE(auth_manager->GetActiveAccountInfo().account_info.IsEmpty());
   syncer::SyncCredentials credentials = auth_manager->GetCredentials();
-  EXPECT_TRUE(credentials.account_id.empty());
   EXPECT_TRUE(credentials.email.empty());
   EXPECT_TRUE(credentials.access_token.empty());
   EXPECT_TRUE(auth_manager->access_token().empty());
@@ -93,15 +93,15 @@ TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 
 // ChromeOS doesn't support sign-out.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   identity_env()->ClearPrimaryAccount();
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // ChromeOS doesn't support sign-out.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   // Start out already signed in before the SyncAuthManager is created.
   CoreAccountId account_id =
@@ -169,11 +169,11 @@ TEST_F(SyncAuthManagerTest, NotifiesOfSignoutBeforeAccessTokenIsGone) {
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Unconsented primary accounts (aka secondary accounts) are only supported on
 // Win/Mac/Linux.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
   base::MockCallback<CredentialsChangedCallback> credentials_changed;
@@ -203,10 +203,11 @@ TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
 
   EXPECT_TRUE(auth_manager->GetActiveAccountInfo().is_primary);
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) &&
+        // !defined(OS_IOS)
 
 // ChromeOS doesn't support sign-out.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
   // Start out already signed in before the SyncAuthManager is created.
   CoreAccountId account_id =
@@ -236,7 +237,7 @@ TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
   EXPECT_EQ(auth_manager->GetLastAuthError().state(),
             GoogleServiceAuthError::NONE);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(SyncAuthManagerTest, DoesNotClearAuthErrorOnSyncDisable) {
   // Start out already signed in before the SyncAuthManager is created.
@@ -778,7 +779,7 @@ TEST_F(SyncAuthManagerTest, PrimaryAccountWithNoSyncConsent) {
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // Primary account with no sync consent is not supported on Android and iOS.
 // On crOS the unconsented primary account can't be changed or removed, but can
 // be granted sync consent.
@@ -818,7 +819,31 @@ TEST_F(SyncAuthManagerTest,
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) &&
+        // !defined(OS_IOS)
+
+TEST_F(SyncAuthManagerTest, DetectsInvalidRefreshTokenAtStartup) {
+  // There is a primary account, but it has an invalid refresh token (with a
+  // persistent auth error).
+  CoreAccountId account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
+
+  // On initialization, SyncAuthManager should pick up the auth error. This
+  // should not result in a notification.
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  EXPECT_CALL(account_state_changed, Run()).Times(0);
+  EXPECT_CALL(credentials_changed, Run()).Times(0);
+
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), credentials_changed.Get());
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  EXPECT_TRUE(auth_manager->GetLastAuthError().IsPersistentError());
+}
 
 }  // namespace
 

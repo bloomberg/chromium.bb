@@ -42,10 +42,10 @@ class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
  public:
-  explicit CSSFontSelector(Document*);
+  explicit CSSFontSelector(const TreeScope&);
   ~CSSFontSelector() override;
 
-  unsigned Version() const override { return font_face_cache_.Version(); }
+  unsigned Version() const override { return font_face_cache_->Version(); }
 
   void ReportNotDefGlyph() const override;
 
@@ -100,14 +100,20 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override;
 
   ExecutionContext* GetExecutionContext() const override {
-    return document_ ? document_->GetExecutionContext() : nullptr;
+    return tree_scope_ ? GetDocument().GetExecutionContext() : nullptr;
   }
-  FontFaceCache* GetFontFaceCache() override { return &font_face_cache_; }
+  FontFaceCache* GetFontFaceCache() override { return font_face_cache_; }
 
   const GenericFontFamilySettings& GetGenericFontFamilySettings() const {
     return generic_font_family_settings_;
   }
   void UpdateGenericFontFamilySettings(Document&);
+
+  const TreeScope* GetTreeScope() const { return tree_scope_; }
+  Document& GetDocument() const {
+    DCHECK(tree_scope_);
+    return tree_scope_->GetDocument();
+  }
 
   void Trace(Visitor*) const override;
 
@@ -118,9 +124,8 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   // TODO(Oilpan): Ideally this should just be a traced Member but that will
   // currently leak because ComputedStyle and its data are not on the heap.
   // See crbug.com/383860 for details.
-  WeakMember<Document> document_;
-  // FIXME: Move to Document or StyleEngine.
-  FontFaceCache font_face_cache_;
+  WeakMember<const TreeScope> tree_scope_;
+  Member<FontFaceCache> font_face_cache_;
   HeapHashSet<WeakMember<FontSelectorClient>> clients_;
   GenericFontFamilySettings generic_font_family_settings_;
 };

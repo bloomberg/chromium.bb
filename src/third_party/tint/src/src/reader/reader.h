@@ -16,11 +16,11 @@
 #define SRC_READER_READER_H_
 
 #include <string>
+#include <utility>
 
-#include "src/ast/module.h"
-#include "src/context.h"
 #include "src/diagnostic/diagnostic.h"
 #include "src/diagnostic/formatter.h"
+#include "src/program.h"
 
 namespace tint {
 namespace reader {
@@ -39,27 +39,24 @@ class Reader {
 
   /// @returns the parser error string
   std::string error() const {
-    diag::Formatter formatter{{false, false, false}};
+    diag::Formatter formatter{{false, false, false, false}};
     return formatter.format(diags_);
   }
 
   /// @returns the full list of diagnostic messages.
   const diag::List& diagnostics() const { return diags_; }
 
-  /// @returns the module. The module in the parser will be reset after this.
-  virtual ast::Module module() = 0;
+  /// @returns the program. The program builder in the parser will be reset
+  /// after this.
+  virtual Program program() = 0;
 
  protected:
   /// Constructor
-  /// @param ctx the context object, must be non-null
-  explicit Reader(Context* ctx);
+  Reader();
 
   /// Sets the diagnostic messages
   /// @param diags the list of diagnostic messages
   void set_diagnostics(const diag::List& diags) { diags_ = diags; }
-
-  /// The Tint context object
-  Context& ctx_;
 
   /// All diagnostic messages from the reader.
   diag::List diags_;

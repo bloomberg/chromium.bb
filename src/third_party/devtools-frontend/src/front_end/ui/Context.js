@@ -5,7 +5,7 @@
 import * as Common from '../common/common.js';
 import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
 
-import {ContextFlavorListener} from './ContextFlavorListener.js';
+import {ContextFlavorListener} from './ContextFlavorListener.js';  // eslint-disable-line no-unused-vars
 
 /** @type {!Context} */
 let contextInstance;
@@ -61,10 +61,9 @@ export class Context {
    * @template T
    */
   _dispatchFlavorChange(flavorType, flavorValue) {
-    for (const extension of Root.Runtime.Runtime.instance().extensions(ContextFlavorListener)) {
-      if (extension.hasContextType(flavorType)) {
-        extension.instance().then(
-            instance => /** @type {!ContextFlavorListener} */ (instance).flavorChanged(flavorValue));
+    for (const extension of getRegisteredListeners()) {
+      if (extension.contextTypes().includes(flavorType)) {
+        extension.loadListener().then(instance => instance.flavorChanged(flavorValue));
       }
     }
     const dispatcher = this._eventDispatchers.get(flavorType);
@@ -142,3 +141,26 @@ export class Context {
 const Events = {
   FlavorChanged: Symbol('FlavorChanged')
 };
+
+/** @type {!Array<!ContextFlavorListenerRegistration>} */
+const registeredListeners = [];
+
+/**
+ * @param {!ContextFlavorListenerRegistration} registration
+ */
+export function registerListener(registration) {
+  registeredListeners.push(registration);
+}
+
+function getRegisteredListeners() {
+  return registeredListeners;
+}
+
+/**
+ * @typedef {{
+  *  contextTypes: function(): !Array<?>,
+  *  loadListener: function(): !Promise<!ContextFlavorListener>,
+  * }}
+  */
+// @ts-ignore typedef
+export let ContextFlavorListenerRegistration;

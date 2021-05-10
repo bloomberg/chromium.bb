@@ -47,7 +47,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/mock_client_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
@@ -358,7 +357,6 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
         cert_verifier_(new MockCertVerifier()),
         client_cert_verifier_(new MockClientCertVerifier()),
         transport_security_state_(new TransportSecurityState),
-        ct_verifier_(new DoNothingCTVerifier),
         ct_policy_enforcer_(new MockCTPolicyEnforcer),
         ssl_client_session_cache_(
             new SSLClientSessionCache(SSLClientSessionCache::Config())) {}
@@ -386,8 +384,8 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
 
     client_context_ = std::make_unique<SSLClientContext>(
         ssl_config_service_.get(), cert_verifier_.get(),
-        transport_security_state_.get(), ct_verifier_.get(),
-        ct_policy_enforcer_.get(), ssl_client_session_cache_.get(), nullptr);
+        transport_security_state_.get(), ct_policy_enforcer_.get(),
+        ssl_client_session_cache_.get(), nullptr);
   }
 
  protected:
@@ -513,7 +511,6 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<MockClientCertVerifier> client_cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
-  std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   std::unique_ptr<SSLClientContext> client_context_;
@@ -1302,6 +1299,71 @@ TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKeyRequireEcdhe) {
 
   ASSERT_THAT(client_ret, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
   ASSERT_THAT(server_ret, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+class SSLServerSocketAlpsTest
+    : public SSLServerSocketTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  SSLServerSocketAlpsTest()
+      : client_alps_enabled_(std::get<0>(GetParam())),
+        server_alps_enabled_(std::get<1>(GetParam())) {}
+  ~SSLServerSocketAlpsTest() override = default;
+  const bool client_alps_enabled_;
+  const bool server_alps_enabled_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SSLServerSocketAlpsTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
+
+TEST_P(SSLServerSocketAlpsTest, Alps) {
+  const std::string server_data = "server sends some test data";
+  const std::string client_data = "client also sends some data";
+
+  server_ssl_config_.alpn_protos = {kProtoHTTP2};
+  if (server_alps_enabled_) {
+    server_ssl_config_.application_settings[kProtoHTTP2] =
+        std::vector<uint8_t>(server_data.begin(), server_data.end());
+  }
+
+  client_ssl_config_.alpn_protos = {kProtoHTTP2};
+  if (client_alps_enabled_) {
+    client_ssl_config_.application_settings[kProtoHTTP2] =
+        std::vector<uint8_t>(client_data.begin(), client_data.end());
+  }
+
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
+
+  TestCompletionCallback handshake_callback;
+  int server_ret = server_socket_->Handshake(handshake_callback.callback());
+
+  TestCompletionCallback connect_callback;
+  int client_ret = client_socket_->Connect(connect_callback.callback());
+
+  client_ret = connect_callback.GetResult(client_ret);
+  server_ret = handshake_callback.GetResult(server_ret);
+
+  ASSERT_THAT(client_ret, IsOk());
+  ASSERT_THAT(server_ret, IsOk());
+
+  // ALPS is negotiated only if ALPS is enabled both on client and server.
+  const auto alps_data_received_by_client =
+      client_socket_->GetPeerApplicationSettings();
+  const auto alps_data_received_by_server =
+      server_socket_->GetPeerApplicationSettings();
+
+  if (client_alps_enabled_ && server_alps_enabled_) {
+    ASSERT_TRUE(alps_data_received_by_client.has_value());
+    EXPECT_EQ(server_data, alps_data_received_by_client.value());
+    ASSERT_TRUE(alps_data_received_by_server.has_value());
+    EXPECT_EQ(client_data, alps_data_received_by_server.value());
+  } else {
+    EXPECT_FALSE(alps_data_received_by_client.has_value());
+    EXPECT_FALSE(alps_data_received_by_server.has_value());
+  }
 }
 
 }  // namespace net

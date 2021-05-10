@@ -33,6 +33,16 @@ enum AuthenticationType {
   k8021x,
 };
 
+// Tri-state status of hidden_ssid.
+enum HiddenSsidMode {
+  // Let the platform decide based on the presence of the SSID in current scan.
+  kAutomatic,
+  // HiddenSSID = false
+  kDisabled,
+  // HiddenSSID = true
+  kEnabled,
+};
+
 enum ProxyMode {
   // Direct connection to the network.
   kDirect,
@@ -68,7 +78,9 @@ enum VpnType {
 
 // Filter used for requesting lists of network states.
 enum FilterType {
-  // Return active (Connected or Connecting) networks.
+  // Return active networks. A network is active when its ConnectionStateType
+  // != kNotConnected. The ConnectionStateType is defined in
+  // network_types.mojom.
   kActive,
   // Return visible (active, physically connected or in-range) networks.
   // Active networks will be listed first.
@@ -114,7 +126,26 @@ struct SIMLockStatus {
   int32 retries_left;
 };
 
+// Details about a sim slot available on the device.
+struct SIMInfo {
+  // Slot identifier.
+  int32 slot_id;
+  // EID of EUICC at this slot. Empty if this is a physical SIM slot.
+  string eid;
+  // ICCID of the eSIM profile or the physical SIM
+  // card active on this slot when available from Shill.
+  string iccid;
+  // True when this slot is currently active.
+  bool is_primary;
+};
+
 struct CellularStateProperties {
+  // ICCID of the eSIM profile or the physical SIM that corresponds to this
+  // network.
+  string iccid;
+  // The EID of EUICC that this network is installed on. Empty if this network
+  // corresponds to a physical SIM.
+  string eid;
   // Enumerated ONC activation state.
   ActivationStateType activation_state = kUnknown;
   // ONC NetworkTechnology value.
@@ -164,6 +195,8 @@ struct WiFiStateProperties {
   int32 signal_strength;
   // The network SSID.
   string ssid;
+  // Whether the AP has a hidden SSID.
+  bool hidden_ssid;
 };
 
 union NetworkTypeStateProperties {
@@ -217,6 +250,9 @@ struct DeviceStateProperties {
   bool scanning = false;
   // The SIM lock status if Type = Cellular and a SIM is present.
   SIMLockStatus? sim_lock_status;
+  // Details about the physical SIM and eSIM available on the device if Type =
+  // Cellular. Note that the array will be ordered by the |slot_id|.
+  array<SIMInfo>? sim_infos;
   // True when a SIM is required and not present.
   bool sim_absent = false;
   DeviceStateType device_state;
@@ -476,16 +512,16 @@ struct ManagedOpenVPNProperties {
 // Managed NetworkType specific dictionaries.
 
 struct ManagedCellularProperties {
-  ManagedBoolean? auto_connect;
-  // The current user selected APN. This corresponds to APN field
-  // in ONC.
-  ManagedApnProperties? selected_apn;
+  ActivationStateType activation_state;
+  // Note: |sim_locked| field is not part of ONC spec.
+  bool sim_locked = false;
+  bool allow_roaming = false;
   ManagedApnList? apn_list;
+  ManagedBoolean? auto_connect;
   // List of user-entered custom APN entries. Note: This field is not
   // part of ONC spec.
   array<ApnProperties>? custom_apn_list;
-  ActivationStateType activation_state;
-  bool allow_roaming = false;
+  string? eid;
   string? esn;
   string? family;
   string? firmware_revision;
@@ -503,6 +539,8 @@ struct ManagedCellularProperties {
   string? network_technology;
   PaymentPortalProperties? payment_portal;
   string? roaming_state;
+  // The current user selected APN. This corresponds to APN field in ONC.
+  ManagedApnProperties? selected_apn;
   CellularProviderProperties? serving_operator;
   int32 signal_strength = 0;
   bool support_network_scan = false;
@@ -542,7 +580,6 @@ struct ManagedWiFiProperties {
   ManagedString ssid;
   SecurityType security;
   int32 signal_strength = 0;
-  string? tethering_state;
   // Indicates whether the network is eligible to be included in Chrome Sync.
   bool is_syncable;
   // True for unshared networks and for shared networks configured by the
@@ -714,6 +751,8 @@ struct WiFiConfigProperties {
   // |ssid| is required for new configurations, optional otherwise.
   string? ssid;
   SecurityType security = kNone;
+  // Whether the AP has a hidden SSID.
+  HiddenSsidMode hidden_ssid = kAutomatic;
 };
 
 union NetworkTypeConfigProperties {

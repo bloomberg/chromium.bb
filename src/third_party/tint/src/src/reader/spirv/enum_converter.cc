@@ -51,7 +51,7 @@ ast::StorageClass EnumConverter::ToStorageClass(const SpvStorageClass sc) {
     case SpvStorageClassUniformConstant:
       return ast::StorageClass::kUniformConstant;
     case SpvStorageClassStorageBuffer:
-      return ast::StorageClass::kStorageBuffer;
+      return ast::StorageClass::kStorage;
     case SpvStorageClassImage:
       return ast::StorageClass::kImage;
     case SpvStorageClassPrivate:
@@ -66,14 +66,14 @@ ast::StorageClass EnumConverter::ToStorageClass(const SpvStorageClass sc) {
   return ast::StorageClass::kNone;
 }
 
-ast::Builtin EnumConverter::ToBuiltin(SpvBuiltIn b) {
+ast::Builtin EnumConverter::ToBuiltin(SpvBuiltIn b, ast::StorageClass sc) {
   switch (b) {
     case SpvBuiltInPosition:
       return ast::Builtin::kPosition;
     case SpvBuiltInVertexIndex:
-      return ast::Builtin::kVertexIdx;
+      return ast::Builtin::kVertexIndex;
     case SpvBuiltInInstanceIndex:
-      return ast::Builtin::kInstanceIdx;
+      return ast::Builtin::kInstanceIndex;
     case SpvBuiltInFrontFacing:
       return ast::Builtin::kFrontFacing;
     case SpvBuiltInFragCoord:
@@ -83,15 +83,99 @@ ast::Builtin EnumConverter::ToBuiltin(SpvBuiltIn b) {
     case SpvBuiltInLocalInvocationId:
       return ast::Builtin::kLocalInvocationId;
     case SpvBuiltInLocalInvocationIndex:
-      return ast::Builtin::kLocalInvocationIdx;
+      return ast::Builtin::kLocalInvocationIndex;
     case SpvBuiltInGlobalInvocationId:
       return ast::Builtin::kGlobalInvocationId;
+    case SpvBuiltInSampleId:
+      return ast::Builtin::kSampleIndex;
+    case SpvBuiltInSampleMask:
+      return sc == ast::StorageClass::kInput ? ast::Builtin::kSampleMaskIn
+                                             : ast::Builtin::kSampleMaskOut;
     default:
       break;
   }
 
   Fail() << "unknown SPIR-V builtin: " << uint32_t(b);
   return ast::Builtin::kNone;
+}
+
+type::TextureDimension EnumConverter::ToDim(SpvDim dim, bool arrayed) {
+  if (arrayed) {
+    switch (dim) {
+      case SpvDim2D:
+        return type::TextureDimension::k2dArray;
+      case SpvDimCube:
+        return type::TextureDimension::kCubeArray;
+      default:
+        break;
+    }
+    Fail() << "arrayed dimension must be 1D, 2D, or Cube. Got " << int(dim);
+    return type::TextureDimension::kNone;
+  }
+  // Assume non-arrayed
+  switch (dim) {
+    case SpvDim1D:
+      return type::TextureDimension::k1d;
+    case SpvDim2D:
+      return type::TextureDimension::k2d;
+    case SpvDim3D:
+      return type::TextureDimension::k3d;
+    case SpvDimCube:
+      return type::TextureDimension::kCube;
+    default:
+      break;
+  }
+  Fail() << "invalid dimension: " << int(dim);
+  return type::TextureDimension::kNone;
+}
+
+type::ImageFormat EnumConverter::ToImageFormat(SpvImageFormat fmt) {
+  switch (fmt) {
+    case SpvImageFormatUnknown:
+      return type::ImageFormat::kNone;
+
+    // 8 bit channels
+    case SpvImageFormatRgba8:
+      return type::ImageFormat::kRgba8Unorm;
+    case SpvImageFormatRgba8Snorm:
+      return type::ImageFormat::kRgba8Snorm;
+    case SpvImageFormatRgba8ui:
+      return type::ImageFormat::kRgba8Uint;
+    case SpvImageFormatRgba8i:
+      return type::ImageFormat::kRgba8Sint;
+
+    // 16 bit channels
+    case SpvImageFormatRgba16ui:
+      return type::ImageFormat::kRgba16Uint;
+    case SpvImageFormatRgba16i:
+      return type::ImageFormat::kRgba16Sint;
+    case SpvImageFormatRgba16f:
+      return type::ImageFormat::kRgba16Float;
+
+    // 32 bit channels
+    case SpvImageFormatR32ui:
+      return type::ImageFormat::kR32Uint;
+    case SpvImageFormatR32i:
+      return type::ImageFormat::kR32Sint;
+    case SpvImageFormatR32f:
+      return type::ImageFormat::kR32Float;
+    case SpvImageFormatRg32ui:
+      return type::ImageFormat::kRg32Uint;
+    case SpvImageFormatRg32i:
+      return type::ImageFormat::kRg32Sint;
+    case SpvImageFormatRg32f:
+      return type::ImageFormat::kRg32Float;
+    case SpvImageFormatRgba32ui:
+      return type::ImageFormat::kRgba32Uint;
+    case SpvImageFormatRgba32i:
+      return type::ImageFormat::kRgba32Sint;
+    case SpvImageFormatRgba32f:
+      return type::ImageFormat::kRgba32Float;
+    default:
+      break;
+  }
+  Fail() << "invalid image format: " << int(fmt);
+  return type::ImageFormat::kNone;
 }
 
 }  // namespace spirv

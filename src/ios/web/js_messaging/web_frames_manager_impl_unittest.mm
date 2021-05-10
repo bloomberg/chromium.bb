@@ -9,7 +9,7 @@
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #include "ios/web/js_messaging/web_frame_impl.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -37,7 +37,7 @@ class WebFramesManagerImplTest : public PlatformTest,
  protected:
   WebFramesManagerImplTest()
       : frames_manager_(*this),
-        user_content_controller_(OCMClassMock([WKUserContentController class])),
+        user_content_controller_([[WKUserContentController alloc] init]),
         router_([[CRWWKScriptMessageRouter alloc]
             initWithUserContentController:user_content_controller_]),
         web_view_(OCMClassMock([WKWebView class])),
@@ -126,9 +126,9 @@ class WebFramesManagerImplTest : public PlatformTest,
   // WebFramesManagerDelegate.
   void OnWebFrameAvailable(WebFrame* frame) override {}
   void OnWebFrameUnavailable(WebFrame* frame) override {}
-  WebState* GetWebState() override { return &test_web_state_; }
+  WebState* GetWebState() override { return &fake_web_state_; }
 
-  TestWebState test_web_state_;
+  FakeWebState fake_web_state_;
   WebFramesManagerImpl frames_manager_;
   WKUserContentController* user_content_controller_ = nil;
   CRWWKScriptMessageRouter* router_ = nil;

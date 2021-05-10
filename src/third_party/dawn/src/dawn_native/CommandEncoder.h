@@ -27,9 +27,7 @@
 
 namespace dawn_native {
 
-    struct BeginRenderPassCmd;
-
-    using UsedQueryMap = std::map<QuerySetBase*, std::vector<bool>>;
+    using QueryAvailabilityMap = std::map<QuerySetBase*, std::vector<bool>>;
 
     class CommandEncoder final : public ObjectBase {
       public:
@@ -39,8 +37,8 @@ namespace dawn_native {
         CommandBufferResourceUsage AcquireResourceUsages();
 
         void TrackUsedQuerySet(QuerySetBase* querySet);
-        void TrackUsedQueryIndex(QuerySetBase* querySet, uint32_t queryIndex);
-        const UsedQueryMap& GetUsedQueryIndices() const;
+        void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
+        const QueryAvailabilityMap& GetQueryAvailabilityMap() const;
 
         // Dawn API
         ComputePassEncoder* BeginComputePass(const ComputePassDescriptor* descriptor);
@@ -61,6 +59,7 @@ namespace dawn_native {
                                   const TextureCopyView* destination,
                                   const Extent3D* copySize);
 
+        void InjectValidationError(const char* message);
         void InsertDebugMarker(const char* groupLabel);
         void PopDebugGroup();
         void PushDebugGroup(const char* groupLabel);
@@ -82,7 +81,9 @@ namespace dawn_native {
         std::set<BufferBase*> mTopLevelBuffers;
         std::set<TextureBase*> mTopLevelTextures;
         std::set<QuerySetBase*> mUsedQuerySets;
-        UsedQueryMap mUsedQueryIndices;
+        QueryAvailabilityMap mQueryAvailabilityMap;
+
+        uint64_t mDebugGroupStackSize = 0;
     };
 
 }  // namespace dawn_native

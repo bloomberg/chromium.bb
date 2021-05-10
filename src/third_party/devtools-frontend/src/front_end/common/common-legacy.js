@@ -106,9 +106,6 @@ Common.Settings = CommonModule.Settings.Settings;
 
 Common.Settings.detectColorFormat = CommonModule.Settings.detectColorFormat;
 
-/**
- * @constructor
- */
 Common.Setting = CommonModule.Settings.Setting;
 
 Common.settingForTest = CommonModule.Settings.settingForTest;
@@ -134,7 +131,7 @@ Common.localize = CommonModule.UIString.localize;
 Common.settings;
 
 /**
- * @param {!ITemplateArray|string} strings
+ * @param {!TemplateStringsArray|string} strings
  * @param {...*} vararg
  * @return {string}
  */

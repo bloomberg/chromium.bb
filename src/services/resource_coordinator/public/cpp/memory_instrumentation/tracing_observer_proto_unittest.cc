@@ -43,7 +43,10 @@ class TracingObserverProtoTest : public testing::Test {
         std::make_unique<TestProducerClient>(std::move(perfetto_wrapper));
   }
 
-  void TearDown() override { producer_client_.reset(); }
+  void TearDown() override {
+    producer_client_.reset();
+    DisableTraceLog();
+  }
 
   TestProducerClient* GetProducerClient() { return producer_client_.get(); }
 
@@ -366,8 +369,10 @@ TEST_F(TracingObserverProtoTest, AddOsDumpToTraceIfEnabled) {
   const ::perfetto::protos::SmapsPacket& smaps_packet =
       smaps_trace_packet->smaps_packet();
 
-  EXPECT_EQ(kRegionsCount, smaps_packet.entries_size());
+  EXPECT_TRUE(smaps_packet.has_pid());
+  EXPECT_EQ(static_cast<uint32_t>(kTestPid), smaps_packet.pid());
 
+  EXPECT_EQ(kRegionsCount, smaps_packet.entries_size());
   for (int i = 0; i < kRegionsCount; i++) {
     const ::perfetto::protos::SmapsEntry& entry = smaps_packet.entries(i);
 

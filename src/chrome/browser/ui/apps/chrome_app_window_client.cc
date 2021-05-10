@@ -9,6 +9,7 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -16,7 +17,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #endif
 
@@ -45,8 +46,9 @@ extensions::AppWindow* ChromeAppWindowClient::CreateAppWindow(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return new extensions::AppWindow(context, new ChromeAppDelegate(true),
-                                   extension);
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new extensions::AppWindow(
+      context, new ChromeAppDelegate(profile, true), extension);
 #endif
 }
 
@@ -55,8 +57,9 @@ ChromeAppWindowClient::CreateAppWindowForLockScreenAction(
     content::BrowserContext* context,
     const extensions::Extension* extension,
     extensions::api::app_runtime::ActionType action) {
-#if defined(OS_CHROMEOS)
-  auto app_delegate = std::make_unique<ChromeAppDelegate>(true /*keep_alive*/);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto app_delegate = std::make_unique<ChromeAppDelegate>(
+      Profile::FromBrowserContext(context), true /*keep_alive*/);
   app_delegate->set_for_lock_screen_app(true);
 
   return lock_screen_apps::StateController::Get()

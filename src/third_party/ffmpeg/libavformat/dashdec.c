@@ -771,7 +771,7 @@ static int resolve_content_path(AVFormatContext *s, const char *url, int *max_ur
     size = strlen(root_url);
     isRootHttp = ishttp(root_url);
 
-    if (root_url[size - 1] != token) {
+    if (size > 0 && root_url[size - 1] != token) {
         av_strlcat(root_url, "/", size + 2);
         size += 2;
     }
@@ -1145,7 +1145,8 @@ static int parse_manifest_adaptationset(AVFormatContext *s, const char *url,
     }
 
 err:
-    av_freep(&c->adaptionset_lang);
+    xmlFree(c->adaptionset_lang);
+    c->adaptionset_lang = NULL;
     return ret;
 }
 

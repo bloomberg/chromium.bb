@@ -14,32 +14,42 @@
 
 #include "src/ast/workgroup_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::WorkgroupDecoration);
+
 namespace tint {
 namespace ast {
 
-WorkgroupDecoration::WorkgroupDecoration(uint32_t x, const Source& source)
-    : FunctionDecoration(source), x_(x) {}
+WorkgroupDecoration::WorkgroupDecoration(const Source& source, uint32_t x)
+    : WorkgroupDecoration(source, x, 1, 1) {}
 
-WorkgroupDecoration::WorkgroupDecoration(uint32_t x,
-                                         uint32_t y,
-                                         const Source& source)
-    : FunctionDecoration(source), x_(x), y_(y) {}
+WorkgroupDecoration::WorkgroupDecoration(const Source& source,
+                                         uint32_t x,
+                                         uint32_t y)
+    : WorkgroupDecoration(source, x, y, 1) {}
 
-WorkgroupDecoration::WorkgroupDecoration(uint32_t x,
+WorkgroupDecoration::WorkgroupDecoration(const Source& source,
+                                         uint32_t x,
                                          uint32_t y,
-                                         uint32_t z,
-                                         const Source& source)
-    : FunctionDecoration(source), x_(x), y_(y), z_(z) {}
+                                         uint32_t z)
+    : Base(source), x_(x), y_(y), z_(z) {}
 
 WorkgroupDecoration::~WorkgroupDecoration() = default;
 
-bool WorkgroupDecoration::IsWorkgroup() const {
-  return true;
-}
-
-void WorkgroupDecoration::to_str(std::ostream& out) const {
+void WorkgroupDecoration::to_str(const semantic::Info&,
+                                 std::ostream& out,
+                                 size_t indent) const {
+  make_indent(out, indent);
   out << "WorkgroupDecoration{" << x_ << " " << y_ << " " << z_ << "}"
       << std::endl;
+}
+
+WorkgroupDecoration* WorkgroupDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<WorkgroupDecoration>(src, x_, y_, z_);
 }
 
 }  // namespace ast

@@ -19,47 +19,50 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "src/ast/intrinsic.h"
+#include "src/ast/array_accessor_expression.h"
+#include "src/ast/assignment_statement.h"
+#include "src/ast/binary_expression.h"
+#include "src/ast/bitcast_expression.h"
+#include "src/ast/break_statement.h"
+#include "src/ast/call_expression.h"
+#include "src/ast/case_statement.h"
+#include "src/ast/continue_statement.h"
+#include "src/ast/discard_statement.h"
+#include "src/ast/identifier_expression.h"
+#include "src/ast/if_statement.h"
 #include "src/ast/literal.h"
-#include "src/ast/module.h"
+#include "src/ast/loop_statement.h"
+#include "src/ast/member_accessor_expression.h"
+#include "src/ast/return_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/struct_type.h"
+#include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
+#include "src/ast/unary_op_expression.h"
+#include "src/program_builder.h"
 #include "src/scope_stack.h"
+#include "src/semantic/intrinsic.h"
+#include "src/type/struct_type.h"
 #include "src/writer/hlsl/namer.h"
+#include "src/writer/text_generator.h"
 
 namespace tint {
+
+// Forward declarations
+namespace semantic {
+class Call;
+class Intrinsic;
+}  // namespace semantic
+
 namespace writer {
 namespace hlsl {
 
 /// Implementation class for HLSL generator
-class GeneratorImpl {
+class GeneratorImpl : public TextGenerator {
  public:
   /// Constructor
-  /// @param module the module to generate
-  explicit GeneratorImpl(ast::Module* module);
+  /// @param program the program to generate
+  explicit GeneratorImpl(const Program* program);
   ~GeneratorImpl();
-
-  /// Increment the emitter indent level
-  void increment_indent() { indent_ += 2; }
-  /// Decrement the emiter indent level
-  void decrement_indent() {
-    if (indent_ < 2) {
-      indent_ = 0;
-      return;
-    }
-    indent_ -= 2;
-  }
-
-  /// Writes the current indent to the output stream
-  /// @param out the output stream
-  void make_indent(std::ostream& out);
-
-  /// @returns the error
-  std::string error() const { return error_; }
-
-  /// Resets the generator
-  void Reset();
 
   /// @param out the output stream
   /// @returns true on successful generation; false otherwise
@@ -69,7 +72,7 @@ class GeneratorImpl {
   /// @param out the output stream
   /// @param ty the constructed type to generate
   /// @returns true if the constructed type was emitted
-  bool EmitConstructedType(std::ostream& out, const ast::type::Type* ty);
+  bool EmitConstructedType(std::ostream& out, const type::Type* ty);
   /// Handles an array accessor expression
   /// @param pre the preamble for the expression stream
   /// @param out the output of the expression stream
@@ -128,6 +131,37 @@ class GeneratorImpl {
   bool EmitCall(std::ostream& pre,
                 std::ostream& out,
                 ast::CallExpression* expr);
+  /// Handles generating a call to a texture function (`textureSample`,
+  /// `textureSampleGrad`, etc)
+  /// @param pre the preamble for the expression stream
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the texture intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitTextureCall(std::ostream& pre,
+                       std::ostream& out,
+                       ast::CallExpression* expr,
+                       const semantic::Intrinsic* intrinsic);
+  /// Handles generating a call to data packing intrinsic
+  /// @param pre the preamble of the expression stream
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the texture intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitDataPackingCall(std::ostream& pre,
+                           std::ostream& out,
+                           ast::CallExpression* expr,
+                           const semantic::Intrinsic* intrinsic);
+  /// Handles generating a call to data unpacking intrinsic
+  /// @param pre the preamble of the expression stream
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the texture intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitDataUnpackingCall(std::ostream& pre,
+                             std::ostream& out,
+                             ast::CallExpression* expr,
+                             const semantic::Intrinsic* intrinsic);
   /// Handles a case statement
   /// @param out the output stream
   /// @param stmt the statement
@@ -185,12 +219,12 @@ class GeneratorImpl {
   /// @param func the function to emit
   /// @param emit_duplicate_functions set true if we need to duplicate per entry
   /// point
-  /// @param ep_name the current entry point or blank if none set
+  /// @param ep_sym the current entry point or symbol::kInvalid if none set
   /// @returns true if the function was emitted.
   bool EmitFunctionInternal(std::ostream& out,
                             ast::Function* func,
                             bool emit_duplicate_functions,
-                            const std::string& ep_name);
+                            Symbol ep_sym);
   /// Handles emitting information for an entry point
   /// @param out the output stream
   /// @param func the entry point
@@ -198,7 +232,7 @@ class GeneratorImpl {
   /// @returns true if the entry point data was emitted
   bool EmitEntryPointData(std::ostream& out,
                           ast::Function* func,
-                          std::unordered_set<std::string>& emitted_globals);
+                          std::unordered_set<Symbol>& emitted_globals);
   /// Handles emitting the entry point function
   /// @param out the output stream
   /// @param func the entry point
@@ -265,16 +299,14 @@ class GeneratorImpl {
   /// @param type the type to generate
   /// @param name the name of the variable, only used for array emission
   /// @returns true if the type is emitted
-  bool EmitType(std::ostream& out,
-                ast::type::Type* type,
-                const std::string& name);
+  bool EmitType(std::ostream& out, type::Type* type, const std::string& name);
   /// Handles generating a structure declaration
   /// @param out the output stream
   /// @param ty the struct to generate
   /// @param name the struct name
   /// @returns true if the struct is emitted
   bool EmitStructType(std::ostream& out,
-                      const ast::type::StructType* ty,
+                      const type::Struct* ty,
                       const std::string& name);
   /// Handles a unary op expression
   /// @param pre the preamble for the expression stream
@@ -288,7 +320,7 @@ class GeneratorImpl {
   /// @param out the output stream
   /// @param type the type to emit the value for
   /// @returns true if the zero value was successfully emitted.
-  bool EmitZeroValue(std::ostream& out, ast::type::Type* type);
+  bool EmitZeroValue(std::ostream& out, type::Type* type);
   /// Handles generating a variable
   /// @param out the output stream
   /// @param var the variable to generate
@@ -318,25 +350,17 @@ class GeneratorImpl {
   /// Checks if the global variable is in an input or output struct
   /// @param var the variable to check
   /// @returns true if the global is in an input or output struct
-  bool global_is_in_struct(ast::Variable* var) const;
+  bool global_is_in_struct(const semantic::Variable* var) const;
   /// Creates a text string representing the index into a storage buffer
   /// @param pre the pre stream
   /// @param expr the expression to use as the index
   /// @returns the index string, or blank if unable to generate
   std::string generate_storage_buffer_index_expression(std::ostream& pre,
                                                        ast::Expression* expr);
-  /// Generates a name for the prefix
-  /// @param prefix the prefix of the name to generate
-  /// @returns the name
-  std::string generate_name(const std::string& prefix);
-  /// Generates an intrinsic name from the given name
-  /// @param intrinsic the intrinsic to convert to a name
-  /// @returns the intrinsic name or blank on error
-  std::string generate_intrinsic_name(ast::Intrinsic intrinsic);
   /// Handles generating a builtin method name
-  /// @param expr the expression
+  /// @param intrinsic the semantic info for the intrinsic
   /// @returns the name or "" if not valid
-  std::string generate_builtin_name(ast::CallExpression* expr);
+  std::string generate_builtin_name(const semantic::Intrinsic* intrinsic);
   /// Converts a builtin to an attribute name
   /// @param builtin the builtin to convert
   /// @returns the string name of the builtin or blank on error
@@ -344,18 +368,24 @@ class GeneratorImpl {
   /// Determines if the function needs the input struct passed to it.
   /// @param func the function to check
   /// @returns true if there are input struct variables used in the function
-  bool has_referenced_in_var_needing_struct(ast::Function* func);
+  bool has_referenced_in_var_needing_struct(const semantic::Function* func);
   /// Determines if the function needs the output struct passed to it.
   /// @param func the function to check
   /// @returns true if there are output struct variables used in the function
-  bool has_referenced_out_var_needing_struct(ast::Function* func);
-  /// Determines if any used module variable requires an input or output struct.
+  bool has_referenced_out_var_needing_struct(const semantic::Function* func);
+  /// Determines if any used program variable requires an input or output
+  /// struct.
   /// @param func the function to check
   /// @returns true if an input or output struct is required.
-  bool has_referenced_var_needing_struct(ast::Function* func);
+  bool has_referenced_var_needing_struct(const semantic::Function* func);
 
   /// @returns the namer for testing
   Namer* namer_for_testing() { return &namer_; }
+
+  /// Generate a unique name
+  /// @param prefix the name prefix
+  /// @returns a unique name
+  std::string generate_name(const std::string& prefix);
 
  private:
   enum class VarType { kIn, kOut };
@@ -366,18 +396,22 @@ class GeneratorImpl {
   };
 
   std::string current_ep_var_name(VarType type);
+  std::string get_buffer_name(ast::Expression* expr);
 
-  std::string error_;
-  size_t indent_ = 0;
+  /// @returns the resolved type of the ast::Expression `expr`
+  /// @param expr the expression
+  type::Type* TypeOf(ast::Expression* expr) const {
+    return builder_.TypeOf(expr);
+  }
 
   Namer namer_;
-  ast::Module* module_ = nullptr;
-  std::string current_ep_name_;
+  ProgramBuilder builder_;
+  Symbol current_ep_sym_;
   bool generating_entry_point_ = false;
   uint32_t loop_emission_counter_ = 0;
-  ScopeStack<ast::Variable*> global_variables_;
-  std::unordered_map<std::string, EntryPointData> ep_name_to_in_data_;
-  std::unordered_map<std::string, EntryPointData> ep_name_to_out_data_;
+  ScopeStack<const semantic::Variable*> global_variables_;
+  std::unordered_map<Symbol, EntryPointData> ep_sym_to_in_data_;
+  std::unordered_map<Symbol, EntryPointData> ep_sym_to_out_data_;
 
   // This maps an input of "<entry_point_name>_<function_name>" to a remapped
   // function name. If there is no entry for a given key then function did

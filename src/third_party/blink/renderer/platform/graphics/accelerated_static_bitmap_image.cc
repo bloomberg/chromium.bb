@@ -171,6 +171,7 @@ void AcceleratedStaticBitmapImage::Draw(
     const cc::PaintFlags& flags,
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
+    const SkSamplingOptions& sampling,
     RespectImageOrientationEnum should_respect_image_orientation,
     ImageClampingMode image_clamping_mode,
     ImageDecodingMode decode_mode) {
@@ -184,7 +185,7 @@ void AcceleratedStaticBitmapImage::Draw(
                       .set_decoding_mode(paint_image_decoding_mode)
                       .TakePaintImage();
   }
-  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect,
+  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, sampling,
                                 image_clamping_mode,
                                 should_respect_image_orientation, paint_image);
 }
@@ -266,7 +267,7 @@ void AcceleratedStaticBitmapImage::InitializeTextureBacking(
   texture_info.fTarget = texture_target_;
   texture_info.fID = shared_context_texture_id;
   texture_info.fFormat =
-      CanvasColorParams(sk_image_info_).GLSizedInternalFormat();
+      CanvasResourceParams(sk_image_info_).GLSizedInternalFormat();
   GrBackendTexture backend_texture(sk_image_info_.width(),
                                    sk_image_info_.height(), GrMipMapped::kNo,
                                    texture_info);
@@ -361,14 +362,17 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
                          ->SharedImageInterface()
                          ->UsageForMailbox(mailbox_);
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
-      Size(), kLow_SkFilterQuality, CanvasColorParams(image_info),
+      Size(), kLow_SkFilterQuality, CanvasResourceParams(image_info),
       CanvasResourceProvider::ShouldInitialize::kNo, ContextProviderWrapper(),
       RasterMode::kGPU, IsOriginTopLeft(), usage_flags);
   if (!provider) {
     return nullptr;
   }
 
-  provider->Canvas()->drawImage(PaintImageForCurrentFrame(), 0, 0, nullptr);
+  cc::PaintFlags paint;
+  paint.setBlendMode(SkBlendMode::kSrc);
+  provider->Canvas()->drawImage(PaintImageForCurrentFrame(), 0, 0,
+                                SkSamplingOptions(), &paint);
   return provider->Snapshot(orientation_);
 }
 

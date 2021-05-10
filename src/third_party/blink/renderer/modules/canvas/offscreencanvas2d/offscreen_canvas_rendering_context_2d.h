@@ -82,6 +82,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void setTextWordSpacing(const double word_spacing);
   void setTextRendering(const String&);
   void setFontKerning(const String&);
+  void setFontStretch(const String&);
   void setFontVariantCaps(const String&);
 
   void fillText(const String& text, double x, double y);
@@ -122,6 +123,9 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   bool HasAlpha() const final { return CreationAttributes().alpha; }
+  bool IsDesynchronized() const final {
+    return CreationAttributes().desynchronized;
+  }
   bool isContextLost() const override;
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
@@ -143,7 +147,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   }
 
  protected:
-  CanvasColorParams ColorParams() const override;
+  CanvasColorParams GetCanvas2DColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
                    size_t row_bytes,
@@ -167,8 +171,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   scoped_refptr<CanvasResource> ProduceCanvasResource();
 
-  String ColorSpaceAsString() const override;
-  CanvasPixelFormat PixelFormat() const override;
   SkIRect dirty_rect_for_commit_;
 
   bool is_valid_size_ = false;

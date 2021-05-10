@@ -7,7 +7,6 @@
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
-#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -109,12 +108,6 @@ BOOL WaitForKeyboardToAppear() {
 @end
 
 @implementation CreditCardViewControllerTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(kCreditCardScanner);
-  return config;
-}
 
 - (void)setUp {
   [super setUp];
@@ -289,6 +282,16 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the "Add Credit Cards..." action works on OTR.
 - (void)testOTRAddCreditCardsActionOpensAddCreditCardSettings {
+#if TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/1163116): Fails for ios14-beta/sdk-simulator.
+  EARL_GREY_TEST_DISABLED(@"Test disabled on simulator.");
+#endif
+  // TODO(crbug.com/1162354): Re-enable this test for iPad after fixing this
+  // issue.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
   [AutofillAppInterface saveLocalCreditCard];
 
   // Open a tab in incognito.

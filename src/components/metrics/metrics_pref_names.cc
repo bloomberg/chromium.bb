@@ -9,6 +9,7 @@ namespace prefs {
 
 // Set once, to the current epoch time, on the first run of chrome on this
 // machine. Attached to metrics reports forever thereafter.
+// Note: the 'uninstall_metrics' name is a legacy name and doesn't mean much.
 const char kInstallDate[] = "uninstall_metrics.installation_date2";
 
 // The metrics client GUID.
@@ -87,13 +88,6 @@ const char kMetricsLastSeenPrefix[] =
 const char kMetricsFileMetricsMetadata[] =
     "user_experience_metrics.file_metrics_metadata";
 
-// Number of times the browser has been able to register crash reporting.
-const char kStabilityBreakpadRegistrationSuccess[] =
-    "user_experience_metrics.stability.breakpad_registration_ok";
-
-// Number of times the browser has failed to register crash reporting.
-const char kStabilityBreakpadRegistrationFail[] =
-    "user_experience_metrics.stability.breakpad_registration_fail";
 
 // A time stamp at which time the browser was known to be alive. Used to
 // evaluate whether the browser crash was due to a whole system crash.
@@ -118,13 +112,6 @@ const char kStabilityCrashCount[] =
 const char kStabilityCrashCountDueToGmsCoreUpdate[] =
     "user_experience_metrics.stability.crash_count_due_to_gms_core_update";
 
-// Number of times the browser has been run under a debugger.
-const char kStabilityDebuggerPresent[] =
-    "user_experience_metrics.stability.debugger_present";
-
-// Number of times the browser has not been run under a debugger.
-const char kStabilityDebuggerNotPresent[] =
-    "user_experience_metrics.stability.debugger_not_present";
 
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =
@@ -222,14 +209,6 @@ const char kStabilityStatsVersion[] =
 // Windows only.
 const char kStabilitySystemCrashCount[] =
     "user_experience_metrics.stability.system_crash_count";
-
-// The keys below are strictly increasing counters over the lifetime of
-// a chrome installation. They are (optionally) sent up to the uninstall
-// survey in the event of uninstallation.
-const char kUninstallLaunchCount[] = "uninstall_metrics.launch_count";
-const char kUninstallMetricsPageLoadCount[] =
-    "uninstall_metrics.page_load_count";
-const char kUninstallMetricsUptimeSec[] = "uninstall_metrics.uptime_sec";
 
 // Dictionary for measuring cellular data used by UKM service during last 7
 // days.

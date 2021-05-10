@@ -5,11 +5,15 @@
 #include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/language_code.h"
 #include "components/grit/components_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -19,7 +23,6 @@ namespace field_type_parsing {
 
 namespace {
 
-const char kPatternIdentifierKey[] = "pattern_identifier";
 const char kPositivePatternKey[] = "positive_pattern";
 const char kNegativePatternKey[] = "negative_pattern";
 const char kPositiveScoreKey[] = "positive_score";
@@ -29,13 +32,11 @@ const char kVersionKey[] = "version";
 
 bool ParseMatchingPattern(PatternProvider::Map& patterns,
                           const std::string& field_type,
-                          const std::string& language,
+                          const LanguageCode& language,
                           const base::Value& value) {
   if (!value.is_dict())
     return false;
 
-  const std::string* pattern_identifier =
-      value.FindStringKey(kPatternIdentifierKey);
   const std::string* positive_pattern =
       value.FindStringKey(kPositivePatternKey);
   const std::string* negative_pattern =
@@ -47,18 +48,17 @@ bool ParseMatchingPattern(PatternProvider::Map& patterns,
   base::Optional<int> match_field_input_types =
       value.FindIntKey(kMatchFieldInputTypesKey);
 
-  if (!pattern_identifier || !positive_pattern || !positive_score ||
-      !match_field_attributes || !match_field_input_types)
+  if (!positive_pattern || !positive_score || !match_field_attributes ||
+      !match_field_input_types)
     return false;
 
   autofill::MatchingPattern new_pattern;
-  new_pattern.pattern_identifier = *pattern_identifier;
   new_pattern.positive_pattern = *positive_pattern;
   new_pattern.positive_score = *positive_score;
   if (negative_pattern != nullptr) {
     new_pattern.negative_pattern = *negative_pattern;
   } else {
-    new_pattern.negative_pattern = base::nullopt;
+    new_pattern.negative_pattern = "";
   }
   new_pattern.match_field_attributes = match_field_attributes.value();
   new_pattern.match_field_input_types = match_field_input_types.value();
@@ -71,24 +71,25 @@ bool ParseMatchingPattern(PatternProvider::Map& patterns,
   std::vector<MatchingPattern>* pattern_list = &patterns[field_type][language];
   pattern_list->push_back(new_pattern);
 
-  DVLOG(2) << "Correctly parsed MatchingPattern with identifier |"
-           << new_pattern.pattern_identifier << "|.";
+  DVLOG(2) << "Correctly parsed MatchingPattern with with type " << field_type
+           << ", language " << language.value() << ", pattern "
+           << new_pattern.positive_pattern << ".";
 
   return true;
 }
 
-// Callback which is used once the JSON is parsed.
-// |overwrite_equal_version| should be true when loading a remote
-// configuration. If the configuration versions are equal or
-// both unspecified (i.e. set to 0) this prioritizes the remote
+// Callback which is used once the JSON is parsed. If the configuration versions
+// are equal or both unspecified (i.e. set to 0) this prioritizes the remote
 // configuration over the local one.
-void OnJsonParsed(bool overwrite_equal_version,
-                  base::OnceClosure done_callback,
-                  data_decoder::DataDecoder::ValueOrError result) {
-  // Skip any processing in case of an error.
+void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillParsingPatternsFromRemote)) {
+    DVLOG(1) << "Remote patterns are disabled.";
+    return;
+  }
+
   if (!result.value) {
     DVLOG(1) << "Failed to parse PatternProvider configuration JSON string.";
-    std::move(done_callback).Run();
     return;
   }
 
@@ -98,15 +99,12 @@ void OnJsonParsed(bool overwrite_equal_version,
 
   if (patterns && version.IsValid()) {
     DVLOG(1) << "Successfully parsed PatternProvider configuration.";
-
     PatternProvider& pattern_provider = PatternProvider::GetInstance();
     pattern_provider.SetPatterns(std::move(patterns.value()),
-                                 std::move(version), overwrite_equal_version);
+                                 std::move(version));
   } else {
     DVLOG(1) << "Failed to parse PatternProvider configuration JSON object.";
   }
-
-  std::move(done_callback).Run();
 }
 
 }  // namespace
@@ -130,7 +128,7 @@ base::Optional<PatternProvider::Map> GetConfigurationFromJsonObject(
     }
 
     for (const auto& value : field_type_dict->DictItems()) {
-      const std::string& language = value.first;
+      LanguageCode language(value.first);
       const base::Value* inner_list = &value.second;
 
       if (!inner_list->is_list()) {
@@ -144,7 +142,7 @@ base::Optional<PatternProvider::Map> GetConfigurationFromJsonObject(
                                             matchingPatternObj);
         if (!success) {
           DVLOG(1) << "Found incorrect |MatchingPattern| object in list |"
-                   << field_type << "|, language |" << language << "|.";
+                   << field_type << "|, language |" << language.value() << "|.";
           return base::nullopt;
         }
       }
@@ -170,35 +168,8 @@ base::Version ExtractVersionFromJsonObject(base::Value& root) {
 }
 
 void PopulateFromJsonString(std::string json_string) {
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      std::move(json_string),
-      base::BindOnce(&OnJsonParsed, true, base::DoNothing::Once()));
-}
-
-void PopulateFromResourceBundle(base::OnceClosure done_callback) {
-  if (!ui::ResourceBundle::HasSharedInstance()) {
-    VLOG(1) << "Resource Bundle unavailable to load Autofill Matching Pattern "
-               "definitions.";
-    std::move(done_callback).Run();
-    return;
-  }
-
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
-  // Load the string from the Resource Bundle on a worker thread, then
-  // securely parse the JSON in a separate process and call |OnJsonParsed|
-  // with the result.
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&ui::ResourceBundle::LoadDataResourceString,
-                     base::Unretained(&bundle), IDR_AUTOFILL_REGEX_JSON),
-      base::BindOnce(
-          [](base::OnceClosure done_callback, std::string resource_string) {
-            data_decoder::DataDecoder::ParseJsonIsolated(
-                std::move(resource_string),
-                base::BindOnce(&OnJsonParsed, false, std::move(done_callback)));
-          },
-          std::move(done_callback)));
+  data_decoder::DataDecoder::ParseJsonIsolated(std::move(json_string),
+                                               base::BindOnce(&OnJsonParsed));
 }
 
 base::Optional<PatternProvider::Map>

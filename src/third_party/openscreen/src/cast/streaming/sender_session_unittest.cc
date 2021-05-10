@@ -82,6 +82,20 @@ constexpr char kInvalidTypeMessage[] = R"({
   "seqNum": 1
 })";
 
+constexpr char kInvalidTypeMessageWithNoSeqNum[] = R"({
+  "type": 39
+})";
+
+constexpr char kErrorAnswerMessage[] = R"({
+  "seqNum": 1,
+  "type": "ANSWER",
+  "result": "error",
+  "error": {
+    "code": 123,
+    "description": "something bad happened"
+  }
+})";
+
 const AudioCaptureConfig kAudioCaptureConfigInvalidChannels{
     AudioCodec::kAac, -1 /* channels */, 44000 /* bit_rate */,
     96000 /* sample_rate */
@@ -137,11 +151,11 @@ class SenderSessionTest : public ::testing::Test {
   }
 
   void SetUp() {
-    message_port_ = std::make_unique<SimpleMessagePort>();
+    message_port_ = std::make_unique<SimpleMessagePort>("receiver-12345");
     environment_ = MakeEnvironment();
-    session_ = std::make_unique<SenderSession>(IPAddress::kV4LoopbackAddress(),
-                                               &client_, environment_.get(),
-                                               message_port_.get());
+    session_ = std::make_unique<SenderSession>(
+        IPAddress::kV4LoopbackAddress(), &client_, environment_.get(),
+        message_port_.get(), "sender-12345", "receiver-12345");
   }
 
   std::string NegotiateOfferAndConstructAnswer() {
@@ -184,6 +198,7 @@ class SenderSessionTest : public ::testing::Test {
     constexpr char kAnswerTemplate[] = R"({
         "type": "ANSWER",
         "seqNum": %d,
+        "result": "ok",
         "answer": {
           "castMode": "mirroring",
           "udpPort": 1234,
@@ -389,13 +404,26 @@ TEST_F(SenderSessionTest, HandlesInvalidSequenceNumber) {
   message_port_->ReceiveMessage(kInvalidSequenceNumberMessage);
 }
 
-TEST_F(SenderSessionTest, HandlesUnknownTypeMessage) {
+TEST_F(SenderSessionTest, HandlesUnknownTypeMessageWithValidSeqNum) {
   session_->Negotiate(
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
 
-  // We should just discard messages with an unknown message type.
+  // If a message is of unknown type but has an expected seqnum, it's
+  // probably a malformed response.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
   message_port_->ReceiveMessage(kUnknownTypeMessage);
+}
+
+TEST_F(SenderSessionTest, HandlesInvalidTypeMessageWithValidSeqNum) {
+  session_->Negotiate(
+      std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
+      std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
+
+  // If a message is of unknown type but has an expected seqnum, it's
+  // probably a malformed response.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  message_port_->ReceiveMessage(kInvalidTypeMessage);
 }
 
 TEST_F(SenderSessionTest, HandlesInvalidTypeMessage) {
@@ -403,11 +431,22 @@ TEST_F(SenderSessionTest, HandlesInvalidTypeMessage) {
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
 
-  // We should just discard messages with an invalid message type.
-  message_port_->ReceiveMessage(kInvalidTypeMessage);
+  // We should just discard messages with an invalid message type and
+  // no sequence number.
+  message_port_->ReceiveMessage(kInvalidTypeMessageWithNoSeqNum);
 }
 
-TEST_F(SenderSessionTest, DoesntCrashOnMessagePortError) {
+TEST_F(SenderSessionTest, HandlesErrorMessage) {
+  session_->Negotiate(
+      std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
+      std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
+
+  // We should report error answers.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  message_port_->ReceiveMessage(kErrorAnswerMessage);
+}
+
+TEST_F(SenderSessionTest, DoesNotCrashOnMessagePortError) {
   session_->Negotiate(
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});

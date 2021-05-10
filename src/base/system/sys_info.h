@@ -85,16 +85,6 @@ class BASE_EXPORT SysInfo {
   struct HardwareInfo {
     std::string manufacturer;
     std::string model;
-    // On Windows, this is the BIOS serial number. Unsupported platforms will be
-    // set to an empty string.
-    // Note: validate any new usage with the privacy team.
-    // TODO(crbug.com/907518): Implement support on other platforms.
-    std::string serial_number;
-
-    bool operator==(const HardwareInfo& rhs) const {
-      return manufacturer == rhs.manufacturer && model == rhs.model &&
-             serial_number == rhs.serial_number;
-    }
   };
   // Returns via |callback| a struct containing descriptive UTF-8 strings for
   // the current machine manufacturer and model, or empty strings if the
@@ -124,6 +114,13 @@ class BASE_EXPORT SysInfo {
   //      whereas a x86-64 kernel on the same CPU will return "x86_64"
   static std::string OperatingSystemArchitecture();
 
+  // Returns the architecture of the running process, which might be different
+  // than the architecture returned by OperatingSystemArchitecture() (e.g.
+  // macOS Rosetta, a 32-bit binary on a 64-bit OS, etc).
+  // Will return one of: "x86", "x86_64", "ARM", "ARM_64", or an empty string if
+  // none of the above.
+  static std::string ProcessCPUArchitecture();
+
   // Avoid using this. Use base/cpu.h to get information about the CPU instead.
   // http://crbug.com/148884
   // Returns the CPU model name of the system. If it can not be figured out,
@@ -134,7 +131,7 @@ class BASE_EXPORT SysInfo {
   // allocate.
   static size_t VMAllocationGranularity();
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Set |value| and return true if LsbRelease contains information about |key|.
   static bool GetLsbReleaseValue(const std::string& key, std::string* value);
 
@@ -161,9 +158,13 @@ class BASE_EXPORT SysInfo {
   // Returns true when actually running in a Chrome OS environment.
   static bool IsRunningOnChromeOS();
 
-  // Test method to force re-parsing of lsb-release.
+  // Overrides |lsb_release| and |lsb_release_time|. Overrides cannot be nested.
+  // Call ResetChromeOSVersionInfoForTest() to restore the previous values.
   static void SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time);
+
+  // Undoes the function above.
+  static void ResetChromeOSVersionInfoForTest();
 
   // Returns the kernel version of the host operating system.
   static std::string KernelVersion();
@@ -171,7 +172,7 @@ class BASE_EXPORT SysInfo {
   // Crashes if running on Chrome OS non-test image. Use only for really
   // sensitive and risky use cases.
   static void CrashIfChromeOSNonTestImage();
-#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_ANDROID)
   // Returns the Android build's codename.

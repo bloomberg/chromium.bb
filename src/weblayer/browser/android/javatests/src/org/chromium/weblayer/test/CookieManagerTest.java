@@ -47,7 +47,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testSetCookie() throws Exception {
         Assert.assertTrue(setCookie("foo=bar"));
 
@@ -59,7 +58,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testSetCookieInvalid() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
@@ -73,14 +71,16 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testSetCookieNotSet() throws Exception {
-        Assert.assertFalse(setCookie("foo=bar; Secure"));
+        // Attempting to set a Secure cookie from an insecure origin is rejected.
+        // A different hostname must be used because non-cryptographic localhost origins such as
+        // http://127.0.0.1 are considered trustworthy and are allowed to set Secure cookies.
+        Assert.assertFalse(mActivityTestRule.setCookie(
+                mCookieManager, Uri.parse("http://a.test/path"), "foo=bar; Secure"));
     }
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testSetCookieNullCallback() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mCookieManager.setCookie(mBaseUri, "foo=bar", null); });
@@ -96,7 +96,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testGetCookie() throws Exception {
         Assert.assertEquals(getCookie(), "");
         Assert.assertTrue(setCookie("foo="));
@@ -107,7 +106,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testCookieChanged() throws Exception {
         CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -128,7 +126,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testCookieChangedRemoveCallback() throws Exception {
         CookieChangedCallbackHelper helper = new CookieChangedCallbackHelper();
         Runnable remove = TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -151,7 +148,6 @@ public class CookieManagerTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(83)
     public void testCookieChangedRemoveCallbackAfterProfileDestroyed() throws Exception {
         // Removing change callback should be a no-op after the profile is destroyed.
         TestThreadUtils.runOnUiThreadBlocking(() -> {

@@ -27,6 +27,8 @@
 // on systems without case-sensitive file systems.
 
 #include <iosfwd>
+#include <type_traits>
+
 #include "base/containers/span.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -35,6 +37,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 #ifdef __OBJC__
 #include <objc/objc.h>
@@ -80,6 +83,10 @@ class WTF_EXPORT String {
 
   // Construct a string with UTF-16 data, from a null-terminated source.
   String(const UChar*);
+  // TODO(crbug.com/911896): Remove this constructor once `UChar` is `char16_t`
+  // on all platforms.
+  template <typename UCharT = UChar,
+            typename = std::enable_if_t<!std::is_same<UCharT, char16_t>::value>>
   String(const char16_t* chars)
       : String(reinterpret_cast<const UChar*>(chars)) {}
 
@@ -532,6 +539,8 @@ class WTF_EXPORT String {
                                       length);
   }
 
+  bool IsLowerASCII() const { return !impl_ || impl_->IsLowerASCII(); }
+
   bool ContainsOnlyASCIIOrEmpty() const {
     return !impl_ || impl_->ContainsOnlyASCIIOrEmpty();
   }
@@ -548,6 +557,8 @@ class WTF_EXPORT String {
   // For use in the debugger.
   void Show() const;
 #endif
+
+  void WriteIntoTracedValue(perfetto::TracedValue context) const;
 
  private:
   friend struct HashTraits<String>;
@@ -644,6 +655,11 @@ inline bool CodeUnitCompareLessThan(const String& a, const String& b) {
 }
 
 WTF_EXPORT int CodeUnitCompareIgnoringASCIICase(const String&, const char*);
+
+inline bool CodeUnitCompareIgnoringASCIICaseLessThan(const String& a,
+                                                     const String& b) {
+  return CodeUnitCompareIgnoringASCIICase(a.Impl(), b.Impl()) < 0;
+}
 
 template <bool isSpecialCharacter(UChar)>
 inline bool String::IsAllSpecialCharacters() const {

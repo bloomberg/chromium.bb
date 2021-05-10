@@ -54,6 +54,7 @@ if (angle_build_all) {
       ":translator_fuzzer",
       ":xxhash_fuzzer",
       "$angle_root/samples:angle_samples",
+      "$angle_root/src/libOpenCL:angle_cl",
       "$angle_root/src/tests:angle_tests",
     ]
   }
@@ -128,12 +129,19 @@ config("internal_config") {
   }
 
   if (angle_use_vulkan_display) {
-    defines += [ "ANGLE_USE_VULKAN_DISPLAY" ]
+    defines += [
+      "ANGLE_USE_VULKAN_DISPLAY",
+      "EGL_NO_X11",
+    ]
     if (angle_vulkan_display_mode == "simple") {
       defines += [ "ANGLE_VULKAN_DISPLAY_MODE_SIMPLE" ]
     } else if (angle_vulkan_display_mode == "headless") {
       defines += [ "ANGLE_VULKAN_DISPLAY_MODE_HEADLESS" ]
     }
+  }
+
+  if (is_lsan) {
+    defines += [ "ANGLE_WITH_LSAN" ]
   }
 }
 
@@ -148,6 +156,11 @@ config("constructor_and_destructor_warnings") {
 
 config("extra_warnings") {
   cflags = []
+
+  # Avoid failing builds for warnings enabled by Skia build.
+  if (defined(is_skia_standalone)) {
+    cflags += [ "-w" ]
+  }
 
   # Enable more default warnings on Windows.
   if (is_win) {
@@ -165,7 +178,6 @@ config("extra_warnings") {
     cflags += [
       "-Wbad-function-cast",
       "-Wconditional-uninitialized",
-      "-Wdeprecated-copy",
       "-Wextra-semi-stmt",
       "-Wfloat-conversion",
       "-Winconsistent-missing-destructor-override",
@@ -173,10 +185,8 @@ config("extra_warnings") {
       "-Wnewline-eof",
       "-Wnon-virtual-dtor",
       "-Wredundant-parens",
-      "-Wreturn-std-move-in-c++11",
+      "-Wreturn-std-move",
       "-Wshadow-field",
-      "-Wsuggest-destructor-override",
-      "-Wsuggest-override",
       "-Wtautological-type-limit-compare",
       "-Wundefined-reinterpret-cast",
       "-Wunneeded-internal-declaration",
@@ -190,6 +200,14 @@ config("extra_warnings") {
       "-Wunreachable-code",
       "-Wshorten-64-to-32",
     ]
+    if (!use_xcode_clang) {
+      # Mac catalyst uses a clang version that doesn't have these.
+      cflags += [
+        "-Wdeprecated-copy",
+        "-Wsuggest-destructor-override",
+        "-Wsuggest-override",
+      ]
+    }
   }
 
   if (angle_is_winuwp) {
@@ -289,13 +307,6 @@ config("angle_no_cfi_unrelated_cast") {
   }
 }
 
-angle_source_set("angle_system_utils") {
-  sources = angle_system_utils_sources
-  if (is_linux || is_chromeos) {
-    libs = [ "dl" ]
-  }
-}
-
 angle_source_set("xxhash") {
   sources = xxhash_sources
   if (is_clang) {
@@ -322,13 +333,16 @@ angle_static_library("angle_common") {
 
   public_deps = [
     ":angle_abseil",
-    ":angle_system_utils",
     ":angle_version",
     ":includes",
   ]
   public_configs += [ ":angle_common_config" ]
   if (angle_has_build && use_fuzzing_engine) {
     all_dependent_configs = [ ":angle_disable_pool_alloc" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    libs = [ "dl" ]
   }
 
   if (is_android && (angle_enable_gl || angle_enable_vulkan)) {
@@ -394,7 +408,7 @@ angle_static_library("angle_gpu_info_util") {
 
   if (!is_chromeos && angle_has_build) {
     sources += libangle_gpu_info_util_vulkan_sources
-    deps += [ "$angle_root/third_party/vulkan-headers/src:vulkan_headers" ]
+    deps += [ "$angle_vulkan_headers_dir:vulkan_headers" ]
   }
 
   if (is_android) {
@@ -435,14 +449,23 @@ angle_static_library("angle_gpu_info_util") {
     libs += [ "pci" ]
   }
 
-  if (is_mac) {
-    sources += libangle_gpu_info_util_mac_sources
+  if (is_apple) {
     frameworks = [
       "IOKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
-      "OpenGL.framework",
     ]
+    if (angle_enable_eagl) {
+      frameworks += [ "OpenGLES.framework" ]
+    } else if (angle_enable_cgl) {
+      frameworks += [ "OpenGL.framework" ]
+    }
+    if (is_mac || angle_enable_cgl) {
+      sources += libangle_gpu_info_util_mac_sources
+    }
+    if (is_ios && !angle_enable_cgl) {
+      sources += libangle_gpu_info_util_ios_sources
+    }
   }
 }
 
@@ -455,13 +478,22 @@ angle_static_library("translator") {
   sources = angle_translator_sources
   defines = []
 
+  _needs_glsl_base = false
+  needs_glsl_and_vulkan_base = false
+
   if (angle_enable_essl || use_fuzzing_engine) {
+    _needs_glsl_base = true
     sources += angle_translator_essl_sources
     defines += [ "ANGLE_ENABLE_ESSL" ]
   }
 
   if (angle_enable_glsl || use_fuzzing_engine) {
+    _needs_glsl_base = true
+    needs_glsl_and_vulkan_base = true
     sources += angle_translator_glsl_sources
+    if (is_apple) {
+      sources += angle_translator_glsl_mac_sources
+    }
     defines += [ "ANGLE_ENABLE_GLSL" ]
   }
 
@@ -471,8 +503,18 @@ angle_static_library("translator") {
   }
 
   if (angle_enable_vulkan || use_fuzzing_engine || angle_enable_metal) {
+    _needs_glsl_base = true
+    needs_glsl_and_vulkan_base = true
+
     # This translator is needed by metal backend also.
     sources += angle_translator_lib_vulkan_sources
+  }
+
+  if (_needs_glsl_base) {
+    sources += angle_translator_glsl_base_sources
+  }
+  if (needs_glsl_and_vulkan_base) {
+    sources += angle_translator_glsl_and_vulkan_base_sources
   }
 
   if (angle_enable_vulkan || use_fuzzing_engine) {
@@ -573,6 +615,7 @@ config("angle_backend_config") {
 
   if (angle_enable_d3d11) {
     configs += [ "src/libANGLE/renderer/d3d:angle_d3d11_backend_config" ]
+    defines += [ "ANGLE_FORCE_CONTEXT_CHECK_EVERY_CALL=1" ]
   }
 
   if (angle_enable_d3d9) {
@@ -648,6 +691,8 @@ if (angle_enable_vulkan || angle_enable_metal) {
     ]
     deps = [
       ":libANGLE_headers",
+      "$angle_root/src/common/spirv:angle_spirv_builder",
+      "$angle_root/src/common/spirv:angle_spirv_parser",
       "${angle_glslang_dir}:glslang_default_resource_limits_sources",
       "${angle_glslang_dir}:glslang_lib_sources",
       "${angle_spirv_headers_dir}:spv_headers",
@@ -732,11 +777,11 @@ angle_source_set("libANGLE_base") {
   }
 
   # Enable extra Chromium style warnings for libANGLE.
-  if (is_clang && angle_has_build) {
+  if (is_clang && angle_has_build && !use_xcode_clang) {
     suppressed_configs -= [ "//build/config/clang:find_bad_constructs" ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     sources += libangle_mac_sources
   }
 
@@ -768,7 +813,7 @@ config("angle_frame_capture_enabled") {
 angle_source_set("libANGLE") {
   public_deps = [ ":libANGLE_base" ]
   public_configs = [ ":angle_frame_capture_disabled" ]
-  sources = [ "src/libANGLE/FrameCapture_mock.cpp" ]
+  sources = [ "src/libANGLE/capture/FrameCapture_mock.cpp" ]
 
   # gl_enum_utils defaults included in with_capture build
   deps = []
@@ -780,8 +825,8 @@ angle_source_set("libANGLE") {
 angle_source_set("angle_gl_enum_utils") {
   public_deps = [ ":libANGLE_base" ]
   sources = [
-    "src/libANGLE/gl_enum_utils.cpp",
-    "src/libANGLE/gl_enum_utils_autogen.cpp",
+    "src/libANGLE/capture/gl_enum_utils.cpp",
+    "src/libANGLE/capture/gl_enum_utils_autogen.cpp",
   ]
 }
 
@@ -883,6 +928,7 @@ config("library_name_config") {
 config("angle_static") {
   defines = [
     "ANGLE_EXPORT=",
+    "ANGLE_STATIC=1",
     "ANGLE_UTIL_EXPORT=",
     "EGLAPI=",
     "GL_APICALL=",
@@ -1048,12 +1094,11 @@ angle_shared_library("libEGL") {
   }
 
   if (is_win) {
-    sources += [ "src/libEGL/libEGL.def" ]
+    sources += [ "src/libEGL/libEGL_autogen.def" ]
   }
 
   deps = [
     ":angle_common",
-    ":angle_system_utils",
     ":angle_version",
     ":libEGL_egl_loader",
   ]
@@ -1102,7 +1147,7 @@ angle_executable("angle_shader_translator") {
   deps = [ ":translator" ]
 }
 
-if (angle_has_build) {
+if (angle_standalone || build_with_chromium) {
   config("angle_feature_support_config") {
     include_dirs = [
       "include",
@@ -1121,12 +1166,12 @@ if (angle_has_build) {
       libs = [ "log" ]
     }
 
-    public_configs += [
+    configs += [
       ":angle_feature_support_config",
       "${angle_jsoncpp_dir}:jsoncpp_config",
     ]
 
-    if (is_mac && !is_component_build) {
+    if (is_apple && !is_component_build) {
       ldflags = [
         "-install_name",
         "@rpath/${target_name}.dylib",
@@ -1167,9 +1212,7 @@ if (!is_component_build && is_android && symbol_level != 0) {
 
     if (angle_enable_vulkan_validation_layers) {
       foreach(_layer, vulkan_validation_layers) {
-        deps += [
-          "${angle_root}/third_party/vulkan-validation-layers/src:${_layer}",
-        ]
+        deps += [ "$angle_vulkan_validation_layers_dir:${_layer}" ]
       }
     }
 
@@ -1195,22 +1238,33 @@ if (!is_component_build && is_android && symbol_level != 0) {
 
 if (build_with_chromium && !is_component_build && is_android &&
     current_toolchain == default_toolchain) {
-  # Package ANGLE libraries
+  apk_version_code = "0"
+  if (angle_enable_commit_id) {
+    apk_version_code =
+        exec_script("src/commit_id.py", [ "position" ], "trim string")
+  }
+
+  # Package ANGLE libraries for normal use on Android
   angle_apk("angle_chromium_apk") {
     package_name = "org.chromium.angle"
     apk_name = "AngleLibraries"
     version_name = "ANGLE Developer Build"
+    version_code = apk_version_code
+  }
 
-    if (angle_enable_commit_id) {
-      version_code =
-          exec_script("src/commit_id.py", [ "position" ], "trim string")
-    } else {
-      version_code = "0"
-    }
+  # Package ANGLE libraries for AGI use on Android
+  angle_apk("angle_agi_chromium_apk") {
+    package_name = "org.chromium.angle.agi"
+    apk_name = "AngleAgiLibraries"
+    version_name = "ANGLE AGI Build"
+    version_code = apk_version_code
   }
 
   group("angle_apks") {
-    deps = [ ":angle_chromium_apk" ]
+    deps = [
+      ":angle_agi_chromium_apk",
+      ":angle_chromium_apk",
+    ]
   }
 }
 

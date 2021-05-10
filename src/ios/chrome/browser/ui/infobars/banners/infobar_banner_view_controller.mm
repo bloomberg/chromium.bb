@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
-#include "base/feature_list.h"
 #import "base/ios/block_types.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -13,7 +12,6 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_container.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -233,9 +231,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                forControlEvents:UIControlEventTouchUpInside];
   self.infobarButton.accessibilityIdentifier =
       kInfobarBannerAcceptButtonIdentifier;
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.infobarButton.pointerInteractionEnabled = YES;
       self.infobarButton.pointerStyleProvider =
           ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
@@ -245,9 +241,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                                     cornerRadius:kBannerViewCornerRadius];
         return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
       };
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   UIView* buttonSeparator = [[UIView alloc] init];
   buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
@@ -282,15 +276,11 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [containerStack addArrangedSubview:self.openModalButton];
   // Hide open modal button if user shouldn't be allowed to open the modal.
   self.openModalButton.hidden = !self.presentsModal;
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.openModalButton.pointerInteractionEnabled = YES;
       self.openModalButton.pointerStyleProvider =
           CreateDefaultEffectCirclePointerStyleProvider();
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   // Add accept button.
   [containerStack addArrangedSubview:self.infobarButton];

@@ -26,7 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /* Profiler Style */
 
 #profile-views {
@@ -35,15 +34,17 @@
 }
 
 .profile-view .data-grid table.data {
-  background: white;
+  background: var(--color-background);
 }
 
 .profile-view .data-grid tr:not(.selected) .highlight {
-  background-color: rgb(255 230 179);
+  background-color: rgb(255 230 179); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
-  background-color: rgb(0 0 0 / 10%);
+  background-color: rgb(0 0 0 / 10%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .profile-view .data-grid td.numeric-column {
@@ -55,7 +56,8 @@
 }
 
 .profile-view .data-grid span.percent-column {
-  color: #999;
+  color: #999; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   width: 50px;
   display: inline-block;
 }
@@ -66,7 +68,8 @@
 
 .profiles-toolbar {
   background-color: var(--toolbar-bg-color);
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   flex-shrink: 0;
 }
 
@@ -96,7 +99,8 @@
 
 .profile-node-file {
   float: right;
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .profile-warn-marker {
@@ -105,11 +109,13 @@
 }
 
 .data-grid tr.selected .profile-node-file {
-  color: rgb(33% 33% 33%);
+  color: rgb(33% 33% 33%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid:focus tr.selected .profile-node-file {
-  color: white;
+  color: #fff; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .highlighted-row {
@@ -117,8 +123,13 @@
 }
 
 @keyframes row_highlight {
-  from { background-color: rgb(255 255 120 / 100%); }
-  to { background-color: rgb(255 255 120 / 0%); }
+  from {
+    background-color: rgb(255 255 120 / 100%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
+
+  to {
+    background-color: rgb(255 255 120 / 0%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
 }
 
 .cpu-profile-flame-chart-overview-container {
@@ -130,7 +141,8 @@
 }
 
 #cpu-profile-flame-chart-overview-container {
-  border-bottom: 1px solid rgb(0 0 0 / 30%);
+  border-bottom: 1px solid rgb(0 0 0 / 30%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   overflow: hidden;
 }
 

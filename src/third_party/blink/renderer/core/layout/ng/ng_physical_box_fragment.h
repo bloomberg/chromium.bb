@@ -34,7 +34,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                                const base::Optional<PhysicalRect>
                                    updated_layout_overflow = base::nullopt);
 
-  using PassKey = util::PassKey<NGPhysicalBoxFragment>;
+  using MulticolCollection = NGContainerFragmentBuilder::MulticolCollection;
+  using PassKey = base::PassKey<NGPhysicalBoxFragment>;
   NGPhysicalBoxFragment(PassKey,
                         NGBoxFragmentBuilder* builder,
                         bool has_layout_overflow,
@@ -98,11 +99,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   const NGTableFragmentData::CollapsedBordersGeometry*
   TableCollapsedBordersGeometry() const {
-    auto& table_collapsed_borders_geometry =
-        ComputeRareDataAddress()->table_collapsed_borders_geometry;
-    if (!table_collapsed_borders_geometry)
-      return nullptr;
-    return table_collapsed_borders_geometry.get();
+    return ComputeRareDataAddress()->table_collapsed_borders_geometry.get();
   }
 
   wtf_size_t TableCellColumnIndex() const {
@@ -158,6 +155,20 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return {descendants.data(), descendants.size()};
   }
 
+  bool HasMulticolsWithPendingOOFs() const {
+    if (!has_rare_data_)
+      return false;
+
+    return !ComputeRareDataAddress()->multicols_with_pending_oofs.IsEmpty();
+  }
+
+  MulticolCollection MulticolsWithPendingOOFs() const {
+    if (!has_rare_data_)
+      return MulticolCollection();
+    return const_cast<MulticolCollection&>(
+        ComputeRareDataAddress()->multicols_with_pending_oofs);
+  }
+
   NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
     if (!has_padding_)
       return NGPixelSnappedPhysicalBoxStrut();
@@ -195,8 +206,22 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return is_inline_formatting_context_;
   }
 
+  // The |LayoutBox| whose |PhysicalFragments()| contains |this|. This is
+  // different from |GetLayoutObject()| if |this.IsColumnBox()|.
+  const LayoutBox* OwnerLayoutBox() const;
+  LayoutBox* MutableOwnerLayoutBox() const;
+
+  // Returns the offset in the |OwnerLayoutBox| coordinate system.
+  PhysicalOffset OffsetFromOwnerLayoutBox() const;
+
   PhysicalRect ScrollableOverflow(TextHeightType height_type) const;
   PhysicalRect ScrollableOverflowFromChildren(TextHeightType height_type) const;
+
+  OverflowClipAxes GetOverflowClipAxes() const {
+    if (const auto* layout_object = GetLayoutObject())
+      return layout_object->GetOverflowClipAxes();
+    return kNoOverflowClip;
+  }
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment
@@ -224,11 +249,32 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                     const HitTestLocation& hit_test_location,
                     const PhysicalOffset& accumulated_offset) const;
 
+  // In order to paint united outline rectangles, the "owner" fragment paints
+  // outlines for non-owner fragments.
+  bool IsOutlineOwner() const {
+    return !IsInlineBox() || InlineContainerFragmentIfOutlineOwner();
+  }
+  const NGPhysicalBoxFragment* InlineContainerFragmentIfOutlineOwner() const;
+
+  // Returns the |ComputedStyle| to use for painting outlines. When |this| is
+  // a block in a continuation-chain, it may need to paint outlines if its
+  // ancestor inline boxes in the DOM tree has outlines.
+  const ComputedStyle* StyleForContinuationOutline() const {
+    if (const auto* layout_object = GetLayoutObject())
+      return layout_object->StyleForContinuationOutline();
+    return nullptr;
+  }
+
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
   void AddSelfOutlineRects(const PhysicalOffset& additional_offset,
                            NGOutlineType include_block_overflows,
                            Vector<PhysicalRect>* outline_rects) const;
+  // Same as |AddSelfOutlineRects|, except when |this.IsInlineBox()|, in which
+  // case the coordinate system is relative to the inline formatting context.
+  void AddOutlineRects(const PhysicalOffset& additional_offset,
+                       NGOutlineType include_block_overflows,
+                       Vector<PhysicalRect>* outline_rects) const;
 
   PositionWithAffinity PositionForPoint(PhysicalOffset) const;
 
@@ -267,12 +313,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return *ComputeRareDataAddress()->mathml_paint_info;
   }
 
-  // Temporary while stabilizing PositionForPoint support in
-  // NGPhysicalBoxFragment.
-  static bool SupportsPositionForPoint() {
-    return RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
-  }
-
  private:
   static size_t ByteSize(wtf_size_t num_fragment_items,
                          wtf_size_t num_children,
@@ -288,6 +328,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
     Vector<NGPhysicalOutOfFlowPositionedNode>
         oof_positioned_fragmentainer_descendants;
+    MulticolCollection multicols_with_pending_oofs;
     const std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
 
     // TablesNG rare data.
@@ -346,6 +387,15 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return has_inflow_bounds_ ? reinterpret_cast<RareData*>(address + 1)
                               : reinterpret_cast<RareData*>(address);
   }
+
+  void AddOutlineRects(const PhysicalOffset& additional_offset,
+                       NGOutlineType include_block_overflows,
+                       bool inline_container_relative,
+                       Vector<PhysicalRect>* outline_rects) const;
+  void AddOutlineRectsForInlineBox(PhysicalOffset additional_offset,
+                                   NGOutlineType include_block_overflows,
+                                   bool inline_container_relative,
+                                   Vector<PhysicalRect>* outline_rects) const;
 
 #if DCHECK_IS_ON()
   void CheckIntegrity() const;

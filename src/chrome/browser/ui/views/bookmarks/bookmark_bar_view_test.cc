@@ -9,6 +9,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -123,7 +125,7 @@ class DialogWaiter : public aura::EnvObserver,
 
   bool dialog_created_ = false;
   views::Widget* dialog_ = nullptr;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogWaiter);
 };
@@ -158,7 +160,7 @@ class DialogCloseWaiter : public views::WidgetObserver {
   }
 
   bool dialog_closed_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogCloseWaiter);
 };
@@ -197,7 +199,7 @@ class TabKeyWaiter : public ui::EventHandler {
 
   views::Widget* widget_;
   bool received_tab_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TabKeyWaiter);
 };
@@ -316,6 +318,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // to the hierarchy.
     ViewEventTestBase::SetUp();
     ASSERT_TRUE(bb_view_);
+
+    static_cast<TestBrowserWindow*>(browser_->window())
+        ->SetNativeWindow(window()->GetNativeWindow());
 
     // Verify the layout triggered by the initial size preserves the overflow
     // state calculated in GetPreferredSizeForContents().
@@ -455,19 +460,21 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   }
 
   void OnWidgetDestroying(views::Widget* widget) override {
-    if (widget == window())
-      bookmark_bar_observer_.RemoveAll();
+    if (widget == window()) {
+      DCHECK(bookmark_bar_observation_.IsObserving());
+      bookmark_bar_observation_.Reset();
+    }
   }
 
   void OnWidgetDestroyed(views::Widget* widget) override {
-    widget_observer_.Remove(widget);
+    widget_observations_.RemoveObservation(widget);
   }
 
  protected:
   // BookmarkBarViewEventTestBase:
   void DoTestOnMessageLoop() override {
-    widget_observer_.Add(window());
-    bookmark_bar_observer_.Add(bb_view_);
+    widget_observations_.AddObservation(window());
+    bookmark_bar_observation_.Observe(bb_view_);
 
     // Record the URL for node f1a.
     const auto& f1 = model_->bookmark_bar_node()->children().front();
@@ -489,7 +496,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
     ASSERT_TRUE(submenu->IsShowing());
 
     // The menu is showing, so it has a widget we can observe now.
-    widget_observer_.Add(submenu->GetWidget());
+    widget_observations_.AddObservation(submenu->GetWidget());
 
     // Move mouse to center of node f1a and press button.
     views::View* f1a = submenu->GetMenuItemAt(0);
@@ -533,9 +540,10 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   }
 
   GURL f1a_url_;
-  ScopedObserver<BookmarkBarView, BookmarkBarViewObserver>
-      bookmark_bar_observer_{this};
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+  base::ScopedObservation<BookmarkBarView, BookmarkBarViewObserver>
+      bookmark_bar_observation_{this};
+  base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
+      widget_observations_{this};
 };
 
 #if !defined(OS_MAC)
@@ -1629,7 +1637,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     observer_ = std::make_unique<BookmarkContextMenuNotificationObserver>(
         CreateEventTask(this, &BookmarkBarViewTest17::Step4));
     MoveMouseAndPress(clickable_rect.CenterPoint(), ui_controls::RIGHT,
-        ui_controls::DOWN | ui_controls::UP, base::Closure());
+                      ui_controls::DOWN | ui_controls::UP, base::OnceClosure());
     // Step4 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
@@ -2286,4 +2294,13 @@ class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest28, ClickWithModifierOnFolderOpensAllBookmarks)
+// Flaky on Windows, see crbug.com/1156666
+#if defined(OS_WIN)
+#define MAYBE_ClickWithModifierOnFolderOpensAllBookmarks \
+  DISABLED_ClickWithModifierOnFolderOpensAllBookmarks
+#else
+#define MAYBE_ClickWithModifierOnFolderOpensAllBookmarks \
+  ClickWithModifierOnFolderOpensAllBookmarks
+#endif
+VIEW_TEST(BookmarkBarViewTest28,
+          MAYBE_ClickWithModifierOnFolderOpensAllBookmarks)

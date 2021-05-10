@@ -85,6 +85,13 @@
       keywords: ["not-inside-link", "inside-unvisited-link", "inside-visited-link"],
       inherited: true,
     },
+    {
+      name: "InForcedColorsMode",
+      field_template: "primitive",
+      default_value: "false",
+      type_name: "bool",
+      inherited: true,
+    },
     // Whether we're inside an NG block fragmentation context.
     {
       name: "InsideNGFragmentationContext",
@@ -207,6 +214,14 @@
       default_value: "false",
       custom_compare: true,
     },
+    // True if this ComputedStyle is the result of CustomStyleForLayoutObject()
+    // that uses font metrics in its calculation.
+    {
+      name: "CustomStyleCallbackDependsOnFont",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
     // These properties only have generated storage, and their methods are handwritten in ComputedStyle.
     {
       name: "StyleType",
@@ -221,7 +236,7 @@
     {
       name: "PseudoBits",
       field_template: "primitive",
-      field_size: 9,
+      field_size: 11,
       default_value: "kPseudoIdNone",
       type_name: "unsigned",
       custom_copy: true,
@@ -274,6 +289,13 @@
       default_value: "FillLayer(EFillLayerType::kBackground, true)",
       field_group: "background",
       computed_style_custom_functions: ["getter", "setter"],
+    },
+    {
+      name: "HasClipPath",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      field_group: "visual",
     },
     {
       name: "HasAutoClip",
@@ -371,14 +393,6 @@
     // expressed by 'will-change: contents' includes descendants.
     {
       name: "SubtreeWillChangeContents",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "bool",
-      default_value: "false",
-      field_group: "*",
-    },
-    {
-      name: "SelfOrAncestorHasDirAutoAttribute",
       inherited: true,
       field_template: "primitive",
       type_name: "bool",
@@ -609,6 +623,13 @@
     },
     {
       name: "HasCurrentBackdropFilterAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "HasCurrentBackgroundColorAnimation",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
@@ -926,38 +947,6 @@
       custom_compare: true,
     },
     {
-      name: "ListStyleType",
-      inherited: true,
-      field_template: "keyword",
-      type_name: "EListStyleType",
-      keywords: [
-        "disc", "circle", "square", "decimal", "decimal-leading-zero",
-        "arabic-indic", "bengali", "cambodian", "khmer", "devanagari",
-        "gujarati", "gurmukhi", "kannada", "lao", "malayalam", "mongolian",
-        "myanmar", "oriya", "persian", "urdu", "telugu", "tibetan", "thai",
-        "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
-        "lower-latin", "upper-alpha", "upper-latin", "cjk-earthly-branch",
-        "cjk-heavenly-stem", "ethiopic-halehame", "ethiopic-halehame-am",
-        "ethiopic-halehame-ti-er", "ethiopic-halehame-ti-et", "hangul",
-        "hangul-consonant", "korean-hangul-formal", "korean-hanja-formal",
-        "korean-hanja-informal", "hebrew", "armenian", "lower-armenian",
-        "upper-armenian", "georgian", "cjk-ideographic", "simp-chinese-formal",
-        "simp-chinese-informal", "trad-chinese-formal", "trad-chinese-informal",
-        "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "none",
-        "string",
-      ],
-      default_value: "disc",
-    },
-    {
-      name: "ListStyleStringValue",
-      inherited: true,
-      field_template: "external",
-      field_group: "*",
-      type_name: "AtomicString",
-      include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
-      default_value: "g_null_atom",
-    },
-    {
       name: "IsEnsuredOutsideFlatTree",
       field_template: "monotonic_flag",
       default_value: "false",
@@ -1057,6 +1046,22 @@
     },
     {
       name: "EffectiveZIndexZero",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
+      name: "BaselineShiftType",
+      field_group: "svg->misc",
+      // Use a keyword?
+      field_template: "primitive",
+      field_size: 2,
+      type_name: "EBaselineShiftType",
+      default_value: "EBaselineShiftType::kLength",
+    },
+    {
+      name: "DependsOnContainerQueries",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",

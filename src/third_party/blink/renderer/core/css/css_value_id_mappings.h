@@ -185,6 +185,10 @@ inline EListStyleType CssValueIDToPlatformEnum(CSSValueID v) {
       return EListStyleType::kCircle;
     case CSSValueID::kSquare:
       return EListStyleType::kSquare;
+    case CSSValueID::kDisclosureOpen:
+      return EListStyleType::kDisclosureOpen;
+    case CSSValueID::kDisclosureClosed:
+      return EListStyleType::kDisclosureClosed;
     case CSSValueID::kDecimal:
       return EListStyleType::kDecimal;
     case CSSValueID::kDecimalLeadingZero:
@@ -292,12 +296,10 @@ inline EListStyleType CssValueIDToPlatformEnum(CSSValueID v) {
     case CSSValueID::kNone:
       return EListStyleType::kNone;
     default:
-      NOTREACHED();
       break;
   }
 
-  NOTREACHED();
-  return EListStyleType::kDisc;
+  return EListStyleType::kNone;
 }
 
 template <>
@@ -371,6 +373,10 @@ inline CSSValueID PlatformEnumToCSSValueID(EListStyleType v) {
       return CSSValueID::kCircle;
     case EListStyleType::kSquare:
       return CSSValueID::kSquare;
+    case EListStyleType::kDisclosureOpen:
+      return CSSValueID::kDisclosureOpen;
+    case EListStyleType::kDisclosureClosed:
+      return CSSValueID::kDisclosureClosed;
     case EListStyleType::kDecimal:
       return CSSValueID::kDecimal;
     case EListStyleType::kDecimalLeadingZero:

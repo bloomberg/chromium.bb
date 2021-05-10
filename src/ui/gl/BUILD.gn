@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
@@ -30,6 +31,7 @@ buildflag_header("buildflags") {
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
     "USE_DAWN=$use_dawn",
     "USE_STATIC_ANGLE=$use_static_angle",
+    "USE_OPENGL_APITRACE=$enable_opengl_apitrace",
   ]
 }
 
@@ -165,6 +167,7 @@ component("gl") {
   deps = [
     ":buildflags",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
 
     # ANGLE includes are used cross-platform.
     "//third_party/angle:includes",
@@ -510,6 +513,14 @@ static_library("test_support") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+
+  # If the run-time search path isn't set properly when we use ANGLE with its
+  # Vulkan backend, it may end up finding the system libvulkan.so rather than
+  # the one built in the output directory
+  if ((is_linux || is_chromeos) && !is_component_build) {
+    all_dependent_configs =
+        [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }
 
 source_set("run_all_unittests") {
@@ -579,7 +590,7 @@ test("gl_unittests") {
     sources += [ "gl_image_ahardwarebuffer_unittest.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos_lacros) {
     sources += [ "gl_image_native_pixmap_unittest.cc" ]
   }
 

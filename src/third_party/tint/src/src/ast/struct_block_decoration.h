@@ -25,23 +25,31 @@ namespace tint {
 namespace ast {
 
 /// The struct decorations
-class StructBlockDecoration : public StructDecoration {
+class StructBlockDecoration
+    : public Castable<StructBlockDecoration, StructDecoration> {
  public:
   /// constructor
   /// @param source the source of this decoration
   explicit StructBlockDecoration(const Source& source);
   ~StructBlockDecoration() override;
 
-  /// @returns true if this is a block struct
-  bool IsBlock() const override;
-
   /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  void to_str(std::ostream& out) const override;
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  StructBlockDecoration* Clone(CloneContext* ctx) const override;
 };
 
 /// List of struct decorations
-using StructDecorationList = std::vector<std::unique_ptr<StructDecoration>>;
+using StructDecorationList = std::vector<StructDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

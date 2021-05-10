@@ -17,7 +17,6 @@
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLInliner.h"
-#include "src/sksl/SkSLLexer.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 
@@ -27,7 +26,6 @@
 
 #define SK_FRAGCOLOR_BUILTIN           10001
 #define SK_IN_BUILTIN                  10002
-#define SK_OUTCOLOR_BUILTIN            10004
 #define SK_OUT_BUILTIN                 10007
 #define SK_LASTFRAGCOLOR_BUILTIN       10008
 #define SK_MAIN_COORDS_BUILTIN         10009
@@ -46,14 +44,18 @@ class SkSLCompileBench;
 
 namespace SkSL {
 
-class ByteCode;
-class ExternalValue;
+namespace dsl {
+    class DSLWriter;
+}
+
+class ExternalFunction;
+class FunctionDeclaration;
 class IRGenerator;
 class IRIntrinsicMap;
-struct PipelineStageArgs;
 class ProgramUsage;
 
 struct LoadedModule {
+    ProgramKind                                  fKind;
     std::shared_ptr<SymbolTable>                 fSymbols;
     std::vector<std::unique_ptr<ProgramElement>> fElements;
 };
@@ -76,39 +78,6 @@ public:
     static constexpr const char* RTADJUST_NAME  = "sk_RTAdjust";
     static constexpr const char* PERVERTEX_NAME = "sk_PerVertex";
 
-    enum Flags {
-        kNone_Flags = 0,
-        // permits static if/switch statements to be used with non-constant tests. This is used when
-        // producing H and CPP code; the static tests don't have to have constant values *yet*, but
-        // the generated code will contain a static test which then does have to be a constant.
-        kPermitInvalidStaticTests_Flag = 1,
-    };
-
-    // An invalid (otherwise unused) character to mark where FormatArgs are inserted
-    static constexpr       char  kFormatArgPlaceholder    = '\001';
-    static constexpr const char* kFormatArgPlaceholderStr = "\001";
-
-    struct FormatArg {
-        enum class Kind {
-            kCoords,
-            kUniform,
-            kChildProcessor,
-            kChildProcessorWithMatrix,
-            kFunctionName
-        };
-
-        FormatArg(Kind kind)
-                : fKind(kind) {}
-
-        FormatArg(Kind kind, int index)
-                : fKind(kind)
-                , fIndex(index) {}
-
-        Kind fKind;
-        int fIndex;
-        String fCoords;
-    };
-
     struct OptimizationContext {
         // nodes we have already reported errors for and should not error on again
         std::unordered_set<const IRNode*> fSilences;
@@ -118,22 +87,11 @@ public:
         bool fNeedsRescan = false;
         // Metadata about function and variable usage within the program
         ProgramUsage* fUsage = nullptr;
+        // Nodes which we can't throw away until the end of optimization
+        StatementArray fOwnedStatements;
     };
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    /**
-     * Represents the arguments to GrGLSLShaderBuilder::emitFunction.
-     */
-    struct GLSLFunction {
-        GrSLType fReturnType;
-        SkString fName;
-        std::vector<GrShaderVar> fParameters;
-        String fBody;
-        std::vector<Compiler::FormatArg> fFormatArgs;
-    };
-#endif
-
-    Compiler(const ShaderCapsClass* caps, Flags flags = kNone_Flags);
+    Compiler(const ShaderCapsClass* caps);
 
     ~Compiler() override;
 
@@ -141,14 +99,14 @@ public:
     Compiler& operator=(const Compiler&) = delete;
 
     /**
-     * If externalValues is supplied, those values are registered in the symbol table of the
+     * If externalFunctions is supplied, those values are registered in the symbol table of the
      * Program, but ownership is *not* transferred. It is up to the caller to keep them alive.
      */
     std::unique_ptr<Program> convertProgram(
-            Program::Kind kind,
+            ProgramKind kind,
             String text,
             const Program::Settings& settings,
-            const std::vector<std::unique_ptr<ExternalValue>>* externalValues = nullptr);
+            const std::vector<std::unique_ptr<ExternalFunction>>* externalFunctions = nullptr);
 
     bool toSPIRV(Program& program, OutputStream& out);
 
@@ -170,15 +128,9 @@ public:
     bool toH(Program& program, String name, OutputStream& out);
 #endif
 
-    std::unique_ptr<ByteCode> toByteCode(Program& program);
-
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    bool toPipelineStage(Program& program, PipelineStageArgs* outArgs);
-#endif
-
     void error(int offset, String msg) override;
 
-    String errorText();
+    String errorText(bool showCount = true);
 
     void writeErrorCount();
 
@@ -186,18 +138,11 @@ public:
         return fErrorCount;
     }
 
+    void setErrorCount(int c) override;
+
     Context& context() {
         return *fContext;
     }
-
-    static const char* OperatorName(Token::Kind op);
-
-    // Returns true if op is '=' or any compound assignment operator ('+=', '-=', etc.)
-    static bool IsAssignment(Token::Kind op);
-
-    // Given a compound assignment operator, returns the non-assignment version of the operator
-    // (e.g. '+=' becomes '+')
-    static Token::Kind RemoveAssignment(Token::Kind op);
 
     // When  SKSL_STANDALONE, fPath is used. (fData, fSize) will be (nullptr, 0)
     // When !SKSL_STANDALONE, fData and fSize are used. fPath will be nullptr.
@@ -215,28 +160,29 @@ public:
         return ModuleData{/*fPath=*/nullptr, data, size};
     }
 
-    LoadedModule loadModule(Program::Kind kind, ModuleData data, std::shared_ptr<SymbolTable> base);
-    ParsedModule parseModule(Program::Kind kind, ModuleData data, const ParsedModule& base);
+    LoadedModule loadModule(ProgramKind kind, ModuleData data, std::shared_ptr<SymbolTable> base);
+    ParsedModule parseModule(ProgramKind kind, ModuleData data, const ParsedModule& base);
 
     IRGenerator& irGenerator() {
         return *fIRGenerator;
     }
 
-    const ParsedModule& moduleForProgramKind(Program::Kind kind);
+    const ParsedModule& moduleForProgramKind(ProgramKind kind);
 
 private:
+    const ParsedModule& loadGPUModule();
+    const ParsedModule& loadFragmentModule();
+    const ParsedModule& loadVertexModule();
     const ParsedModule& loadFPModule();
     const ParsedModule& loadGeometryModule();
     const ParsedModule& loadPublicModule();
-    const ParsedModule& loadInterpreterModule();
-    const ParsedModule& loadPipelineModule();
-
-    void addDefinition(const Expression* lvalue, std::unique_ptr<Expression>* expr,
-                       DefinitionMap* definitions);
-    void addDefinitions(const BasicBlock::Node& node, DefinitionMap* definitions);
+    const ParsedModule& loadRuntimeEffectModule();
 
     void scanCFG(CFG* cfg, BlockId block, SkBitSet* processedSet);
     void computeDataFlow(CFG* cfg);
+
+    /** Verifies that @if and @switch statements were actually optimized away. */
+    void verifyStaticTests(const Program& program);
 
     /**
      * Simplifies the expression pointed to by iter (in both the IR and CFG structures), if
@@ -266,49 +212,42 @@ private:
      */
     bool optimize(Program& program);
 
+    bool optimize(LoadedModule& module);
+
     Position position(int offset);
 
-    const ShaderCapsClass* fCaps = nullptr;
+    std::shared_ptr<Context> fContext;
 
     std::shared_ptr<SymbolTable> fRootSymbolTable;
     std::shared_ptr<SymbolTable> fPrivateSymbolTable;
 
-    ParsedModule fRootModule;         // Core types
+    ParsedModule fRootModule;           // Core types
 
-    ParsedModule fPrivateModule;      // [Root] + Internal types
-    ParsedModule fGPUModule;          // [Private] + GPU intrinsics, helper functions
-    ParsedModule fVertexModule;       // [GPU] + Vertex stage decls
-    ParsedModule fFragmentModule;     // [GPU] + Fragment stage decls
-    ParsedModule fGeometryModule;     // [GPU] + Geometry stage decls
-    ParsedModule fFPModule;           // [GPU] + FP features
+    ParsedModule fPrivateModule;        // [Root] + Internal types
+    ParsedModule fGPUModule;            // [Private] + GPU intrinsics, helper functions
+    ParsedModule fVertexModule;         // [GPU] + Vertex stage decls
+    ParsedModule fFragmentModule;       // [GPU] + Fragment stage decls
+    ParsedModule fGeometryModule;       // [GPU] + Geometry stage decls
+    ParsedModule fFPModule;             // [GPU] + FP features
 
-    ParsedModule fPublicModule;       // [Root] + Public features
-    ParsedModule fInterpreterModule;  // [Public] + Interpreter-only decls
-    ParsedModule fPipelineModule;     // [Public] + Runtime effect decls
+    ParsedModule fPublicModule;         // [Root] + Public features
+    ParsedModule fRuntimeEffectModule;  // [Public] + Runtime effect decls
 
     // holds ModifiersPools belonging to the core includes for lifetime purposes
     std::vector<std::unique_ptr<ModifiersPool>> fModifiers;
 
     Inliner fInliner;
     std::unique_ptr<IRGenerator> fIRGenerator;
-    int fFlags;
 
     const String* fSource;
-    std::shared_ptr<Context> fContext;
     int fErrorCount;
     String fErrorText;
+    std::vector<size_t> fErrorTextLength;
 
     friend class AutoSource;
     friend class ::SkSLCompileBench;
+    friend class dsl::DSLWriter;
 };
-
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-struct PipelineStageArgs {
-    String fCode;
-    std::vector<Compiler::FormatArg>    fFormatArgs;
-    std::vector<Compiler::GLSLFunction> fFunctions;
-};
-#endif
 
 }  // namespace SkSL
 

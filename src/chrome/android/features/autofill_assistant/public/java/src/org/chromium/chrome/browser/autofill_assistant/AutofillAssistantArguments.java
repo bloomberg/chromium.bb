@@ -9,6 +9,8 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Log;
+
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +72,9 @@ public class AutofillAssistantArguments {
         }
     }
 
+    /** Used for logging. */
+    private static final String TAG = "AutofillAssistant";
+
     private static final String UTF8 = "UTF-8";
 
     /**
@@ -101,18 +106,8 @@ public class AutofillAssistantArguments {
     /** Special parameter for user email. */
     private static final String PARAMETER_USER_EMAIL = "USER_EMAIL";
 
-    /** Special parameter for first time user script path. */
-    static final String PARAMETER_TRIGGER_FIRST_TIME_USER = "TRIGGER_FIRST_TIME_USER";
-
-    /** Special parameter for returning user script path. */
-    static final String PARAMETER_TRIGGER_RETURNING_TIME_USER = "TRIGGER_RETURNING_USER";
-
-    // Deprecated, remove as soon as possible.
-    /** Special output parameter that should hold which of the trigger scripts was used, if any. */
-    static final String PARAMETER_TRIGGER_SCRIPT_USED = "TRIGGER_SCRIPT_USED";
-
     /** Special parameter for declaring a user to be in a lite script experiment. */
-    static final String PARAMETER_LITE_SCRIPT_EXPERIMENT = "TRIGGER_SCRIPT_EXPERIMENT";
+    static final String PARAMETER_TRIGGER_SCRIPT_EXPERIMENT = "TRIGGER_SCRIPT_EXPERIMENT";
 
     /**
      * Special parameter for instructing the client to request and run a trigger script prior to
@@ -178,6 +173,9 @@ public class AutofillAssistantArguments {
     private boolean getBooleanParameter(String key) {
         Object value = mAutofillAssistantParameters.get(key);
         if (!(value instanceof Boolean)) { // Also catches null.
+            if (value != null) {
+                Log.v(TAG, "Expected " + key + " to be boolean, but was " + value.toString());
+            }
             return false;
         }
 
@@ -188,6 +186,9 @@ public class AutofillAssistantArguments {
     private String getStringParameter(String key) {
         Object value = mAutofillAssistantParameters.get(key);
         if (!(value instanceof String)) { // Also catches null.
+            if (value != null) {
+                Log.v(TAG, "Expected " + key + " to be string, but was " + value.toString());
+            }
             return null;
         }
 
@@ -235,9 +236,9 @@ public class AutofillAssistantArguments {
         return mExperimentIds.toString();
     }
 
-    /** Returns whether the lite-script experiment flag is set to true. */
-    public boolean isLiteScriptExperiment() {
-        return getBooleanParameter(PARAMETER_LITE_SCRIPT_EXPERIMENT);
+    /** Returns whether the trigger-script experiment flag is set to true. */
+    public boolean isTriggerScriptExperiment() {
+        return getBooleanParameter(PARAMETER_TRIGGER_SCRIPT_EXPERIMENT);
     }
 
     /**
@@ -287,15 +288,8 @@ public class AutofillAssistantArguments {
         return !TextUtils.isEmpty(getStringParameter(PARAMETER_TRIGGER_SCRIPTS_BASE64));
     }
 
-    /** Deprecated. Whether the caller provides script paths for lite scripts to execute. */
-    public boolean containsLegacyTriggerScripts() {
-        return !TextUtils.isEmpty(getStringParameter(PARAMETER_TRIGGER_FIRST_TIME_USER))
-                && !TextUtils.isEmpty(getStringParameter(PARAMETER_TRIGGER_RETURNING_TIME_USER));
-    }
-
     /** Whether the caller requested a trigger script to start in any of the supported ways. */
     public boolean containsTriggerScript() {
-        return requestsTriggerScript() || containsBase64TriggerScripts()
-                || containsLegacyTriggerScripts();
+        return requestsTriggerScript() || containsBase64TriggerScripts();
     }
 }

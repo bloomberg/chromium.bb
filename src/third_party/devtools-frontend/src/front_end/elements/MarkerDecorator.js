@@ -2,10 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
-import * as SDK from '../sdk/sdk.js';     // eslint-disable-line no-unused-vars
+import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';                 // eslint-disable-line no-unused-vars
 
+import {PseudoStateMarkerDecorator} from './ElementsPanel.js';  // eslint-disable-line no-unused-vars
+
+export const UIStrings = {
+  /**
+  *@description Title of the Marker Decorator of Elements
+  */
+  domBreakpoint: 'DOM Breakpoint',
+  /**
+  *@description Title of the Marker Decorator of Elements
+  */
+  elementIsHidden: 'Element is hidden',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/MarkerDecorator.js', UIStrings);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 /**
  * @interface
  */
@@ -21,15 +35,17 @@ export class MarkerDecorator {
 
 /**
  * @implements {MarkerDecorator}
- * @unrestricted
  */
 export class GenericDecorator {
   /**
-   * @param {!Root.Runtime.Extension} extension
+   * @param {{marker: string, title: ()=>string, color: string}} extension
    */
   constructor(extension) {
-    this._title = Common.UIString.UIString(extension.title());
-    this._color = /** @type {string} */ (extension.descriptor()['color']);
+    if (!extension.title || !extension.color) {
+      throw new Error(`Generic decorator requires a color and a title: ${extension.marker}`);
+    }
+    this._title = extension.title();
+    this._color = /** @type {string} */ (extension.color);
   }
 
   /**
@@ -41,3 +57,48 @@ export class GenericDecorator {
     return {title: this._title, color: this._color};
   }
 }
+
+const domBreakpointData = {
+  marker: 'breakpoint-marker',
+  title: i18nLazyString(UIStrings.domBreakpoint),
+  color: 'rgb(105, 140, 254)',
+};
+
+const elementIsHiddenData = {
+  marker: 'hidden-marker',
+  title: i18nLazyString(UIStrings.elementIsHidden),
+  color: '#555',
+};
+
+/**
+ * @return {!Array<!MarkerDecoratorRegistration>}
+ */
+export function getRegisteredDecorators() {
+  return [
+    {
+      ...domBreakpointData,
+      decorator: () => new GenericDecorator(domBreakpointData),
+    },
+    {
+      ...elementIsHiddenData,
+      decorator: () => new GenericDecorator(elementIsHiddenData),
+    },
+    {
+      decorator: PseudoStateMarkerDecorator.instance,
+      marker: 'pseudo-state-marker',
+      title: undefined,
+      color: undefined,
+    },
+  ];
+}
+
+/**
+  * @typedef {{
+  *   decorator: function(): !MarkerDecorator,
+  *   marker: string,
+  *   color: string|undefined,
+  *   title: (()=>Platform.UIString.LocalizedString)|undefined
+  * }}
+  */
+// @ts-ignore typedef
+export let MarkerDecoratorRegistration;

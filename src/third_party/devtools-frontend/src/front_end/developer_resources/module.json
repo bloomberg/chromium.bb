@@ -1,34 +1,11 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "drawer-view",
-      "id": "resource-loading-pane",
-      "title": "Developer Resources",
-      "order": 100,
-      "persistence": "closeable",
-      "className": "DeveloperResources.DeveloperResourcesView",
-      "experiment": "developerResourcesView"
-    }
-  ],
-  "dependencies": [
-    "common",
-    "platform",
-    "ui",
-    "host",
-    "components",
-    "sdk",
-    "network",
-    "browser_sdk"
-  ],
-  "modules": [
-    "developer_resources-legacy.js"
-  ],
-  "skip_compilation": [
-    "developer_resources-legacy.js"
-  ],
+  "modules": [],
   "resources": [
     "developerResourcesView.css",
     "developerResourcesListView.css"
+  ],
+  "dependencies": [
+    "ui",
+    "data_grid"
   ]
 }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 
+#include "components/shared_highlighting/core/common/text_fragments_constants.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -11,7 +12,6 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/text_paint_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -106,6 +107,9 @@ Color HighlightThemeBackgroundColor(const Document& document,
                  : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor(
                        style.UsedColorScheme());
     case kPseudoIdTargetText:
+      if (RuntimeEnabledFeatures::TextFragmentColorChangeEnabled())
+        return Color(shared_highlighting::kFragmentTextBackgroundColorARGB);
+
       return LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
           false /* active match */, document.InForcedColorsMode(),
           style.UsedColorScheme());
@@ -140,13 +144,8 @@ scoped_refptr<const ComputedStyle> HighlightPseudoStyle(Node* node,
   if (!element)
     element = Traversal<Element>::FirstAncestorOrSelf(*node);
 
-  // <content> and <shadow> elements do not have ComputedStyle, hence they will
-  // return null for StyleForPseudoElement(). Return early to avoid DCHECK
-  // failure for GetComputedStyle() inside StyleForPseudoElement() below.
-  if (!element || element->IsPseudoElement() ||
-      IsActiveV0InsertionPoint(*element)) {
+  if (!element || element->IsPseudoElement())
     return nullptr;
-  }
 
   PseudoElementStyleRequest request(pseudo);
 
@@ -156,7 +155,8 @@ scoped_refptr<const ComputedStyle> HighlightPseudoStyle(Node* node,
     // ::selection and ::selection:window-inactive styles may be different. Only
     // cache the styles for ::selection if there are no :window-inactive
     // selector, or if the page is active.
-    return element->StyleForPseudoElement(request, element->GetComputedStyle());
+    return element->UncachedStyleForPseudoElement(request,
+                                                  element->GetComputedStyle());
   }
 
   return element->CachedStyleForPseudoElement(request);
@@ -288,6 +288,10 @@ TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
   bool uses_text_as_clip = paint_info.phase == PaintPhase::kTextClip;
   const GlobalPaintFlags global_paint_flags = paint_info.GetGlobalPaintFlags();
 
+  // Each highlight overlay’s shadows are completely independent of any shadows
+  // specified on the originating element (or the other highlight overlays).
+  highlight_style.shadow = nullptr;
+
   if (!uses_text_as_clip) {
     highlight_style.fill_color = HighlightForegroundColor(
         document, style, node, pseudo, global_paint_flags);
@@ -309,7 +313,7 @@ TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
   }
 
   // Text shadows are disabled when printing. http://crbug.com/258321
-  if (paint_info.IsPrinting())
+  if (document.Printing())
     highlight_style.shadow = nullptr;
 
   return highlight_style;

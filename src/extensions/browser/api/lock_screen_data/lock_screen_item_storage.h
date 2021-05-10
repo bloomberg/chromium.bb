@@ -50,9 +50,9 @@ enum class OperationResult;
 class LockScreenItemStorage : public ExtensionRegistryObserver {
  public:
   using CreateCallback =
-      base::Callback<void(OperationResult result, const DataItem* item)>;
+      base::OnceCallback<void(OperationResult result, const DataItem* item)>;
   using DataItemListCallback =
-      base::Callback<void(const std::vector<const DataItem*>& items)>;
+      base::OnceCallback<void(const std::vector<const DataItem*>& items)>;
   using WriteCallback = DataItem::WriteCallback;
   using ReadCallback = DataItem::ReadCallback;
 
@@ -96,30 +96,29 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void SetSessionLocked(bool session_locked);
 
   // Creates a new data item for the extension.
-  void CreateItem(const std::string& extension_id,
-                  const CreateCallback& callback);
+  void CreateItem(const std::string& extension_id, CreateCallback callback);
 
   // Returns all existing data items associated with the extension.
   void GetAllForExtension(const std::string& extension_id,
-                          const DataItemListCallback& callback);
+                          DataItemListCallback callback);
 
   // Updates the content of the item identified by |item_id| that is associated
   // with the provided extension.
   void SetItemContent(const std::string& extension_id,
                       const std::string& item_id,
                       const std::vector<char>& data,
-                      const WriteCallback& callback);
+                      WriteCallback callback);
 
   // Retrieves the content of the item identified by |item_id| that is
   // associated with the provided extension.
   void GetItemContent(const std::string& extension_id,
                       const std::string& item_id,
-                      const ReadCallback& callback);
+                      ReadCallback callback);
 
   // Deletes the data item associated with the extension.
   void DeleteItem(const std::string& extension_id,
                   const std::string& item_id,
-                  const WriteCallback& callback);
+                  WriteCallback callback);
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
@@ -128,27 +127,28 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
 
   // Used in tests to inject fake/stub data value store.
   using ValueStoreCacheFactoryCallback =
-      base::Callback<std::unique_ptr<LocalValueStoreCache>(
+      base::RepeatingCallback<std::unique_ptr<LocalValueStoreCache>(
           const base::FilePath& root)>;
   static void SetValueStoreCacheFactoryForTesting(
       ValueStoreCacheFactoryCallback* factory_callback);
 
   // Used in tests to inject fake value store migrator implementation.
   using ValueStoreMigratorFactoryCallback =
-      base::Callback<std::unique_ptr<LockScreenValueStoreMigrator>()>;
+      base::RepeatingCallback<std::unique_ptr<LockScreenValueStoreMigrator>()>;
   static void SetValueStoreMigratorFactoryForTesting(
       ValueStoreMigratorFactoryCallback* factory_callback);
 
   // Used in tests to inject fake data items implementations.
-  using ItemFactoryCallback =
-      base::Callback<std::unique_ptr<DataItem>(const std::string& id,
-                                               const std::string& extension_id,
-                                               const std::string& crypto_key)>;
-  using RegisteredItemsGetter =
-      base::Callback<void(const std::string& extension_id,
-                          const DataItem::RegisteredValuesCallback& callback)>;
-  using ItemStoreDeleter = base::Callback<void(const std::string& extension_id,
-                                               const base::Closure& callback)>;
+  using ItemFactoryCallback = base::RepeatingCallback<std::unique_ptr<DataItem>(
+      const std::string& id,
+      const std::string& extension_id,
+      const std::string& crypto_key)>;
+  using RegisteredItemsGetter = base::RepeatingCallback<void(
+      const std::string& extension_id,
+      DataItem::RegisteredValuesCallback callback)>;
+  using ItemStoreDeleter =
+      base::RepeatingCallback<void(const std::string& extension_id,
+                                   base::OnceClosure callback)>;
   static void SetItemProvidersForTesting(
       RegisteredItemsGetter* item_fetch_callback,
       ItemFactoryCallback* factory_callback,
@@ -185,7 +185,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
     // When the initial data item list is being loaded, contains the callback
     // waiting for the load to finish. When the initial data item set is loaded,
     // all of the callbacks in this list will be run.
-    std::vector<base::Closure> load_callbacks;
+    std::vector<base::OnceClosure> load_callbacks;
   };
 
   // Maps an extension ID to data items associated with the extension.
@@ -206,26 +206,25 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
 
   // Implementations for data item management methods - called when the data
   // cache for the associated extension was initialized:
-  void CreateItemImpl(const std::string& extension_id,
-                      const CreateCallback& callback);
+  void CreateItemImpl(const std::string& extension_id, CreateCallback callback);
   void GetAllForExtensionImpl(const std::string& extension_id,
-                              const DataItemListCallback& callback);
+                              DataItemListCallback callback);
   void SetItemContentImpl(const std::string& extension_id,
                           const std::string& item_id,
                           const std::vector<char>& data,
-                          const WriteCallback& callback);
+                          WriteCallback callback);
   void GetItemContentImpl(const std::string& extension_id,
                           const std::string& item_id,
-                          const ReadCallback& callback);
+                          ReadCallback callback);
   void DeleteItemImpl(const std::string& extension_id,
                       const std::string& item_id,
-                      const WriteCallback& callback);
+                      WriteCallback callback);
 
   // Defers |callback| until the cached data item set is loaded for the
   // extension. If the data is already loaded, |callback| will be run
   // immediately.
   void EnsureCacheForExtensionLoaded(const std::string& extension_id,
-                                     const base::Closure& callback);
+                                     base::OnceClosure callback);
 
   // Callback for loading initial set of known data items for an extension.
   void OnGotExtensionItems(const std::string& extension_id,
@@ -238,19 +237,19 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void OnItemRegistered(std::unique_ptr<DataItem> item,
                         const std::string& extension_id,
                         const base::TimeTicks& start_time,
-                        const CreateCallback& callback,
+                        CreateCallback callback,
                         OperationResult result);
 
   // Callback for data item write operation - it invokes the callback with the
   // operation result.
   void OnItemWritten(const base::TimeTicks& start_time,
-                     const WriteCallback& callback,
+                     WriteCallback callback,
                      OperationResult result);
 
   // Callback for data item read operation - it invokes the callback with the
   // operation result.
   void OnItemRead(const base::TimeTicks& start_time,
-                  const ReadCallback& callback,
+                  ReadCallback callback,
                   OperationResult result,
                   std::unique_ptr<std::vector<char>> data);
 
@@ -259,7 +258,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   void OnItemDeleted(const std::string& extension_id,
                      const std::string& item_id,
                      const base::TimeTicks& start_time,
-                     const WriteCallback& callback,
+                     WriteCallback callback,
                      OperationResult result);
 
   // Finds a data item associated with the extension.

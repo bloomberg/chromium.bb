@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,28 +30,26 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #endif
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(
     signin::IdentityManager* identity_manager,
     ProfileAttributesStorage* profile_attributes_storage,
-    const base::FilePath& profile_path,
-    PrefService* profile_prefs)
+    const base::FilePath& profile_path)
     : identity_manager_(identity_manager),
       profile_attributes_storage_(profile_attributes_storage),
-      profile_path_(profile_path),
-      profile_prefs_(profile_prefs) {
+      profile_path_(profile_path) {
   identity_manager_->AddObserver(this);
 
   if (!ShouldUpdatePrimaryAccount()) {
     ClearProfileEntry();
     return;
   }
-  ProfileAttributesEntry* entry;
-  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
-                                                                 &entry)) {
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_);
+  if (!entry) {
     return;
   }
 
@@ -85,19 +84,15 @@ void GAIAInfoUpdateService::UpdatePrimaryAccount(const AccountInfo& info) {
   if (!info.IsValid())
     return;
 
-  ProfileAttributesEntry* entry;
-  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
-                                                                 &entry)) {
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_);
+  if (!entry) {
     return;
   }
   gaia_id_of_profile_attribute_entry_ = info.gaia;
   entry->SetGAIAGivenName(base::UTF8ToUTF16(info.given_name));
   entry->SetGAIAName(base::UTF8ToUTF16(info.full_name));
-
   entry->SetHostedDomain(info.hosted_domain);
-  const base::string16 hosted_domain = base::UTF8ToUTF16(info.hosted_domain);
-  profile_prefs_->SetString(prefs::kGoogleServicesHostedDomain,
-                            base::UTF16ToUTF8(hosted_domain));
 
   if (info.picture_url == kNoPictureURLFound) {
     entry->SetGAIAPicture(std::string(), gfx::Image());
@@ -111,7 +106,7 @@ void GAIAInfoUpdateService::UpdatePrimaryAccount(const AccountInfo& info) {
 
 // static
 bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return base::FeatureList::IsEnabled(chromeos::features::kAvatarToolbarButton);
 #endif
   return true;
@@ -121,9 +116,9 @@ void GAIAInfoUpdateService::UpdateAnyAccount(const AccountInfo& info) {
   if (!info.IsValid())
     return;
 
-  ProfileAttributesEntry* entry;
-  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
-                                                                 &entry)) {
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_);
+  if (!entry) {
     return;
   }
 
@@ -136,9 +131,9 @@ void GAIAInfoUpdateService::UpdateAnyAccount(const AccountInfo& info) {
 }
 
 void GAIAInfoUpdateService::ClearProfileEntry() {
-  ProfileAttributesEntry* entry;
-  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
-                                                                 &entry)) {
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_);
+  if (!entry) {
     return;
   }
   gaia_id_of_profile_attribute_entry_ = "";
@@ -146,20 +141,23 @@ void GAIAInfoUpdateService::ClearProfileEntry() {
   entry->SetGAIAGivenName(base::string16());
   entry->SetGAIAPicture(std::string(), gfx::Image());
   entry->SetHostedDomain(std::string());
-  // Unset the cached URL.
-  profile_prefs_->ClearPref(prefs::kGoogleServicesHostedDomain);
 }
 
 void GAIAInfoUpdateService::Shutdown() {
   identity_manager_->RemoveObserver(this);
 }
 
-void GAIAInfoUpdateService::OnUnconsentedPrimaryAccountChanged(
-    const CoreAccountInfo& unconsented_primary_account_info) {
-  if (unconsented_primary_account_info.gaia.empty()) {
-    ClearProfileEntry();
-  } else {
-    UpdatePrimaryAccount();
+void GAIAInfoUpdateService::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
+  switch (event.GetEventTypeFor(signin::ConsentLevel::kNotRequired)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+      UpdatePrimaryAccount();
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      ClearProfileEntry();
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      break;
   }
 }
 
@@ -182,9 +180,9 @@ void GAIAInfoUpdateService::OnExtendedAccountInfoUpdated(
 void GAIAInfoUpdateService::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
-  ProfileAttributesEntry* entry;
-  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
-                                                                 &entry)) {
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_);
+  if (!entry) {
     return;
   }
 

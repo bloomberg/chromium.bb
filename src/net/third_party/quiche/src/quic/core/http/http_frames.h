@@ -5,16 +5,17 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_HTTP_FRAMES_H_
 #define QUICHE_QUIC_CORE_HTTP_HTTP_FRAMES_H_
 
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <ostream>
+#include <sstream>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/quic_types.h"
 
 namespace quic {
 
@@ -28,6 +29,8 @@ enum class HttpFrameType {
   MAX_PUSH_ID = 0xD,
   // https://tools.ietf.org/html/draft-ietf-httpbis-priority-01
   PRIORITY_UPDATE = 0XF,
+  // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02
+  ACCEPT_CH = 0x89,
   // https://tools.ietf.org/html/draft-ietf-httpbis-priority-02
   PRIORITY_UPDATE_REQUEST_STREAM = 0xF0700,
 };
@@ -68,7 +71,7 @@ struct QUIC_EXPORT_PRIVATE CancelPushFrame {
 //   affect how endpoints communicate, such as preferences and constraints
 //   on peer behavior
 
-using SettingsMap = QuicHashMap<uint64_t, uint64_t>;
+using SettingsMap = absl::flat_hash_map<uint64_t, uint64_t>;
 
 struct QUIC_EXPORT_PRIVATE SettingsFrame {
   SettingsMap values;
@@ -80,11 +83,11 @@ struct QUIC_EXPORT_PRIVATE SettingsFrame {
   std::string ToString() const {
     std::string s;
     for (auto it : values) {
-      std::string setting = quiche::QuicheStrCat(
-          SpdyUtils::H3SettingsToString(
+      std::string setting = absl::StrCat(
+          H3SettingsToString(
               static_cast<Http3AndQpackSettingsIdentifiers>(it.first)),
           " = ", it.second, "; ");
-      QuicStrAppend(&s, setting);
+      absl::StrAppend(&s, setting);
     }
     return s;
   }
@@ -161,17 +164,52 @@ struct QUIC_EXPORT_PRIVATE PriorityUpdateFrame {
                     rhs.priority_field_value);
   }
   std::string ToString() const {
-    return quiche::QuicheStrCat(
-        "Priority Frame : {prioritized_element_type: ",
-        static_cast<int>(prioritized_element_type),
-        ", prioritized_element_id: ", prioritized_element_id,
-        ", priority_field_value: ", priority_field_value, "}");
+    return absl::StrCat("Priority Frame : {prioritized_element_type: ",
+                        static_cast<int>(prioritized_element_type),
+                        ", prioritized_element_id: ", prioritized_element_id,
+                        ", priority_field_value: ", priority_field_value, "}");
   }
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
       const PriorityUpdateFrame& s) {
     os << s.ToString();
+    return os;
+  }
+};
+
+// ACCEPT_CH
+// https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02
+//
+struct QUIC_EXPORT_PRIVATE AcceptChFrame {
+  struct QUIC_EXPORT_PRIVATE OriginValuePair {
+    std::string origin;
+    std::string value;
+    bool operator==(const OriginValuePair& rhs) const {
+      return origin == rhs.origin && value == rhs.value;
+    }
+  };
+
+  std::vector<OriginValuePair> entries;
+
+  bool operator==(const AcceptChFrame& rhs) const {
+    return entries.size() == rhs.entries.size() &&
+           std::equal(entries.begin(), entries.end(), rhs.entries.begin());
+  }
+
+  std::string ToString() const {
+    std::stringstream s;
+    s << *this;
+    return s.str();
+  }
+
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+      std::ostream& os,
+      const AcceptChFrame& frame) {
+    os << "ACCEPT_CH frame with " << frame.entries.size() << " entries: ";
+    for (auto& entry : frame.entries) {
+      os << "origin: " << entry.origin << "; value: " << entry.value;
+    }
     return os;
   }
 };

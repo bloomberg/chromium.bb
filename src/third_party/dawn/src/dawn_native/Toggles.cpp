@@ -120,13 +120,34 @@ namespace dawn_native {
               "Disables the use of non-zero base instance which is unsupported on some "
               "platforms.",
               "https://crbug.com/dawn/343"}},
+            {Toggle::DisableIndexedDrawBuffers,
+             {"disable_indexed_draw_buffers",
+              "Disables the use of indexed draw buffer state which is unsupported on some "
+              "platforms.",
+              "https://crbug.com/dawn/582"}},
+            {Toggle::DisableSnormRead,
+             {"disable_snorm_read",
+              "Disables reading from Snorm textures which is unsupported on some platforms.",
+              "https://crbug.com/dawn/667"}},
+            {Toggle::DisableDepthStencilRead,
+             {"disable_depth_stencil_read",
+              "Disables reading from depth/stencil textures which is unsupported on some "
+              "platforms.",
+              "https://crbug.com/dawn/667"}},
+            {Toggle::DisableSampleVariables,
+             {"disable_sample_variables",
+              "Disables gl_SampleMask and related functionality which is unsupported on some "
+              "platforms.",
+              "https://crbug.com/dawn/673"}},
             {Toggle::UseD3D12SmallShaderVisibleHeapForTesting,
              {"use_d3d12_small_shader_visible_heap",
               "Enable use of a small D3D12 shader visible heap, instead of using a large one by "
               "default. This setting is used to test bindgroup encoding.",
               "https://crbug.com/dawn/155"}},
             {Toggle::UseDXC,
-             {"use_dxc", "Use DXC instead of FXC for compiling HLSL",
+             {"use_dxc",
+              "Use DXC instead of FXC for compiling HLSL when both dxcompiler.dll and dxil.dll "
+              "is available.",
               "https://crbug.com/dawn/402"}},
             {Toggle::DisableRobustness,
              {"disable_robustness", "Disable robust buffer access", "https://crbug.com/dawn/480"}},
@@ -141,7 +162,17 @@ namespace dawn_native {
               "http://crbug.com/1138528"}},
             {Toggle::UseTintGenerator,
              {"use_tint_generator", "Use Tint instead of SPRIV-cross to generate shaders.",
-              "https://crbug.com/dawn/548"}},
+              "https://crbug.com/dawn/571"}},
+            {Toggle::FlushBeforeClientWaitSync,
+             {"flush_before_client_wait_sync",
+              "Call glFlush before glClientWaitSync to work around bugs in the latter",
+              "https://crbug.com/dawn/633"}},
+            {Toggle::ConvertTimestampsToNanoseconds,
+             {"convert_timestamps_to_nanoseconds",
+              "If needed, use a compute shader to transform timestamp queries from ticks to "
+              "nanoseconds. This is temporarily needed to avoid requiring Tint to use timestamp "
+              "queries",
+              "https://crbug.com/dawn/686"}}
             // Dummy comment to separate the }} so it is clearer what to copy-paste to add a toggle.
         }};
 

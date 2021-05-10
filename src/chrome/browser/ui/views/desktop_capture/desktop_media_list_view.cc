@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/numerics/ranges.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
@@ -20,8 +21,9 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/view_utils.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/aura/window.h"
 #endif
 
@@ -31,7 +33,7 @@ namespace {
 
 const int kDesktopMediaSourceViewGroupId = 1;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Here we are going to display default app icon for app windows without an
 // icon, and display product logo for chrome browser windows.
 gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
@@ -53,8 +55,7 @@ gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
 #endif
 
 DesktopMediaSourceView* AsDesktopMediaSourceView(views::View* view) {
-  DCHECK_EQ(DesktopMediaSourceView::kDesktopMediaSourceViewClassName,
-            view->GetClassName());
+  DCHECK(views::IsViewClass<DesktopMediaSourceView>(view));
   return static_cast<DesktopMediaSourceView*>(view);
 }
 
@@ -168,7 +169,7 @@ void DesktopMediaListView::OnSourceAdded(size_t index) {
   source_view->SetGroup(kDesktopMediaSourceViewGroupId);
   if (source.id.type == DesktopMediaID::TYPE_WINDOW) {
     gfx::ImageSkia icon_image = GetWindowIcon(source.id);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Empty icons are used to represent default icon for aura windows. By
     // detecting this, we load the default icon from resource.
     if (icon_image.isNull()) {
@@ -191,7 +192,7 @@ void DesktopMediaListView::OnSourceRemoved(size_t index) {
   DesktopMediaSourceView* view = AsDesktopMediaSourceView(children()[index]);
   DCHECK(view);
 
-  bool was_selected = view->is_selected();
+  bool was_selected = view->GetSelected();
   RemoveChildView(view);
   delete view;
 
@@ -238,7 +239,7 @@ void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
 DesktopMediaSourceView* DesktopMediaListView::GetSelectedView() {
   const auto i = std::find_if(
       children().cbegin(), children().cend(),
-      [](View* v) { return AsDesktopMediaSourceView(v)->is_selected(); });
+      [](View* v) { return AsDesktopMediaSourceView(v)->GetSelected(); });
   return (i == children().cend()) ? nullptr : AsDesktopMediaSourceView(*i);
 }
 

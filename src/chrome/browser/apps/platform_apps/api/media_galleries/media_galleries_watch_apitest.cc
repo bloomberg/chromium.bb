@@ -8,11 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -73,9 +72,12 @@ const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 
 class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
  public:
-  MediaGalleriesGalleryWatchApiTest()
-      : extension_(nullptr), background_host_(nullptr) {}
-  ~MediaGalleriesGalleryWatchApiTest() override {}
+  MediaGalleriesGalleryWatchApiTest() = default;
+  MediaGalleriesGalleryWatchApiTest(const MediaGalleriesGalleryWatchApiTest&) =
+      delete;
+  MediaGalleriesGalleryWatchApiTest& operator=(
+      const MediaGalleriesGalleryWatchApiTest&) = delete;
+  ~MediaGalleriesGalleryWatchApiTest() override = default;
 
  protected:
   // ExtensionApiTest overrides.
@@ -94,7 +96,7 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
   }
   void TearDownOnMainThread() override {
     extension_ = nullptr;
-    background_host_ = nullptr;
+    background_main_frame_ = nullptr;
     ensure_media_directories_exists_.reset();
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
@@ -106,7 +108,7 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
   void ExecuteCmdAndCheckReply(const std::string& js_command,
                                const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
-    background_host_->GetMainFrame()->ExecuteJavaScriptForTests(
+    background_main_frame_->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16(js_command), base::NullCallback());
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
@@ -132,10 +134,11 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
  private:
   void GetBackgroundHostForTestExtension() {
     ASSERT_TRUE(extension_);
-    background_host_ = extensions::ProcessManager::Get(browser()->profile())
-                           ->GetBackgroundHostForExtension(extension_->id())
-                           ->render_view_host();
-    ASSERT_TRUE(background_host_);
+    background_main_frame_ =
+        extensions::ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(extension_->id())
+            ->main_frame_host();
+    ASSERT_TRUE(background_main_frame_);
   }
 
   void CreateTestGallery() {
@@ -172,11 +175,9 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
 
   base::ScopedTempDir test_gallery_;
 
-  const extensions::Extension* extension_;
+  const extensions::Extension* extension_ = nullptr;
 
-  content::RenderViewHost* background_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesGalleryWatchApiTest);
+  content::RenderFrameHost* background_main_frame_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest, BasicGalleryWatch) {
@@ -220,8 +221,17 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
   EXPECT_TRUE(got_correct_details.WaitUntilSatisfied());
 }
 
+// Test is flaky on windows and linux: crbug.com/1150017.
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#define MAYBE_RemoveListenerAndModifyGallery \
+  DISABLED_RemoveListenerAndModifyGallery
+#else
+#define MAYBE_RemoveListenerAndModifyGallery RemoveListenerAndModifyGallery
+#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
-                       RemoveListenerAndModifyGallery) {
+                       MAYBE_RemoveListenerAndModifyGallery) {
   if (!GalleryWatchesSupported())
     return;
 

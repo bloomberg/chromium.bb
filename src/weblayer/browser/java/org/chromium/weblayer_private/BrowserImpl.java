@@ -15,6 +15,7 @@ import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
@@ -24,6 +25,8 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.BrowserEmbeddabilityMode;
+import org.chromium.weblayer_private.interfaces.DarkModeStrategy;
 import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -82,12 +85,17 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
+    @DarkModeStrategy
+    private int mDarkModeStrategy = DarkModeStrategy.WEB_THEME_DARKENING_ONLY;
     private Float mFontScale;
     private boolean mViewAttachedToWindow;
     private boolean mNotifyOnBrowserControlsOffsetsChanged;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
+
+    private int mMinimumSurfaceWidth;
+    private int mMinimumSurfaceHeight;
 
     private static final class PersistenceInfo {
         String mPersistenceId;
@@ -165,6 +173,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
         mEmbedderActivityContext = embedderAppContext;
         mViewController = new BrowserViewController(
                 windowAndroid, this, mViewControllerState, mInConfigurationChangeAndWasAttached);
+        mViewController.setMinimumSurfaceSize(mMinimumSurfaceWidth, mMinimumSurfaceHeight);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
@@ -249,8 +258,27 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     @Override
     public void setSupportsEmbedding(boolean enable, IObjectWrapper valueCallback) {
         StrictModeWorkaround.apply();
-        getViewController().setSupportsEmbedding(enable,
+        getViewController().setEmbeddabilityMode(
+                enable ? BrowserEmbeddabilityMode.SUPPORTED : BrowserEmbeddabilityMode.UNSUPPORTED,
                 (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
+    }
+
+    @Override
+    public void setEmbeddabilityMode(
+            @BrowserEmbeddabilityMode int mode, IObjectWrapper valueCallback) {
+        StrictModeWorkaround.apply();
+        getViewController().setEmbeddabilityMode(mode,
+                (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
+    }
+
+    @Override
+    public void setMinimumSurfaceSize(int width, int height) {
+        StrictModeWorkaround.apply();
+        mMinimumSurfaceWidth = width;
+        mMinimumSurfaceHeight = height;
+        BrowserViewController viewController = getPossiblyNullViewController();
+        if (viewController == null) return;
+        viewController.setMinimumSurfaceSize(width, height);
     }
 
     // Only call this if it's guaranteed that Browser is attached to an activity.
@@ -465,6 +493,20 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
     }
 
     @Override
+    public void setDarkModeStrategy(@DarkModeStrategy int strategy) {
+        if (mDarkModeStrategy == strategy) {
+            return;
+        }
+        mDarkModeStrategy = strategy;
+        BrowserImplJni.get().webPreferencesChanged(mNativeBrowser);
+    }
+
+    @CalledByNative
+    int getDarkModeStrategy() {
+        return mDarkModeStrategy;
+    }
+
+    @Override
     public IUrlBarController getUrlBarController() {
         StrictModeWorkaround.apply();
         return mUrlBarController;
@@ -492,7 +534,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     @CalledByNative
     private void onRestoreCompleted() throws RemoteException {
-        if (WebLayerFactoryImpl.getClientMajorVersion() >= 87) mClient.onRestoreCompleted();
+        mClient.onRestoreCompleted();
     }
 
     public View getFragmentView() {
@@ -555,6 +597,10 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     public boolean isInConfigurationChangeAndWasAttached() {
         return mInConfigurationChangeAndWasAttached;
+    }
+
+    public FragmentManager getFragmentManager() {
+        return mWindowAndroid.getFragmentManager();
     }
 
     public boolean isViewAttachedToWindow() {

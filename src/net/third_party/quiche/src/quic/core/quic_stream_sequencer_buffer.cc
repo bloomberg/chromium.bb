@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
+#include "quic/core/quic_stream_sequencer_buffer.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_interval.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 namespace {
@@ -47,7 +47,7 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
       total_bytes_read_(0),
       blocks_(nullptr) {
   if (allocate_blocks_on_demand_) {
-    DCHECK_GE(max_blocks_count_, kInitialBlockCount);
+    QUICHE_DCHECK_GE(max_blocks_count_, kInitialBlockCount);
   }
   Clear();
 }
@@ -82,11 +82,12 @@ bool QuicStreamSequencerBuffer::RetireBlock(size_t index) {
   return true;
 }
 
-void QuicStreamSequencerBuffer::MaybeAddMoreBlocks(size_t next_expected_byte) {
+void QuicStreamSequencerBuffer::MaybeAddMoreBlocks(
+    QuicStreamOffset next_expected_byte) {
   if (current_blocks_count_ == max_blocks_count_) {
     return;
   }
-  size_t last_byte = next_expected_byte - 1;
+  QuicStreamOffset last_byte = next_expected_byte - 1;
   size_t num_of_blocks_needed;
   // As long as last_byte does not wrap around, its index plus one blocks are
   // needed. Otherwise, block_count_ blocks are needed.
@@ -203,7 +204,7 @@ bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
     const size_t write_block_offset = GetInBlockOffset(offset);
     size_t current_blocks_count =
         allocate_blocks_on_demand_ ? current_blocks_count_ : max_blocks_count_;
-    DCHECK_GT(current_blocks_count, write_block_num);
+    QUICHE_DCHECK_GT(current_blocks_count, write_block_num);
 
     size_t block_capacity = GetBlockCapacity(write_block_num);
     size_t bytes_avail = block_capacity - write_block_offset;
@@ -224,7 +225,7 @@ bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
     }
 
     if (write_block_num >= current_blocks_count) {
-      *error_details = quiche::QuicheStrCat(
+      *error_details = absl::StrCat(
           "QuicStreamSequencerBuffer error: OnStreamData() exceed array bounds."
           "write offset = ",
           offset, " write_block_num = ", write_block_num,
@@ -249,7 +250,7 @@ bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
                   << " length: " << bytes_to_copy;
 
     if (dest == nullptr || source == nullptr) {
-      *error_details = quiche::QuicheStrCat(
+      *error_details = absl::StrCat(
           "QuicStreamSequencerBuffer error: OnStreamData()"
           " dest == nullptr: ",
           (dest == nullptr), " source == nullptr: ", (source == nullptr),
@@ -274,7 +275,7 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
   *bytes_read = 0;
   for (size_t i = 0; i < dest_count && ReadableBytes() > 0; ++i) {
     char* dest = reinterpret_cast<char*>(dest_iov[i].iov_base);
-    DCHECK(dest != nullptr);
+    QUICHE_DCHECK(dest != nullptr);
     size_t dest_remaining = dest_iov[i].iov_len;
     while (dest_remaining > 0 && ReadableBytes() > 0) {
       size_t block_idx = NextBlockToRead();
@@ -284,9 +285,9 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
           ReadableBytes(), block_capacity - start_offset_in_block);
       size_t bytes_to_copy =
           std::min<size_t>(bytes_available_in_block, dest_remaining);
-      DCHECK_GT(bytes_to_copy, 0u);
+      QUICHE_DCHECK_GT(bytes_to_copy, 0u);
       if (blocks_[block_idx] == nullptr || dest == nullptr) {
-        *error_details = quiche::QuicheStrCat(
+        *error_details = absl::StrCat(
             "QuicStreamSequencerBuffer error:"
             " Readv() dest == nullptr: ",
             (dest == nullptr), " blocks_[", block_idx,
@@ -310,7 +311,7 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
       if (bytes_to_copy == bytes_available_in_block) {
         bool retire_successfully = RetireBlockIfEmpty(block_idx);
         if (!retire_successfully) {
-          *error_details = quiche::QuicheStrCat(
+          *error_details = absl::StrCat(
               "QuicStreamSequencerBuffer error: fail to retire block ",
               block_idx,
               " as the block is already released, total_bytes_read_ = ",
@@ -327,8 +328,8 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
 
 int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
                                                   int iov_len) const {
-  DCHECK(iov != nullptr);
-  DCHECK_GT(iov_len, 0);
+  QUICHE_DCHECK(iov != nullptr);
+  QUICHE_DCHECK_GT(iov_len, 0);
 
   if (ReadableBytes() == 0) {
     iov[0].iov_base = nullptr;
@@ -338,7 +339,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
 
   size_t start_block_idx = NextBlockToRead();
   QuicStreamOffset readable_offset_end = FirstMissingByte() - 1;
-  DCHECK_GE(readable_offset_end + 1, total_bytes_read_);
+  QUICHE_DCHECK_GE(readable_offset_end + 1, total_bytes_read_);
   size_t end_block_offset = GetInBlockOffset(readable_offset_end);
   size_t end_block_idx = GetBlockIndex(readable_offset_end);
 
@@ -355,7 +356,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
   iov[0].iov_len = GetBlockCapacity(start_block_idx) - ReadOffset();
   QUIC_DVLOG(1) << "Got first block " << start_block_idx << " with len "
                 << iov[0].iov_len;
-  DCHECK_GT(readable_offset_end + 1, total_bytes_read_ + iov[0].iov_len)
+  QUICHE_DCHECK_GT(readable_offset_end + 1, total_bytes_read_ + iov[0].iov_len)
       << "there should be more available data";
 
   // Get readable regions of the rest blocks till either 2nd to last block
@@ -364,7 +365,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
   int iov_used = 1;
   size_t block_idx = (start_block_idx + iov_used) % max_blocks_count_;
   while (block_idx != end_block_idx && iov_used < iov_len) {
-    DCHECK(nullptr != blocks_[block_idx]);
+    QUICHE_DCHECK(nullptr != blocks_[block_idx]);
     iov[iov_used].iov_base = blocks_[block_idx]->buffer;
     iov[iov_used].iov_len = GetBlockCapacity(block_idx);
     QUIC_DVLOG(1) << "Got block with index: " << block_idx;
@@ -374,7 +375,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
 
   // Deal with last block if |iov| can hold more.
   if (iov_used < iov_len) {
-    DCHECK(nullptr != blocks_[block_idx]);
+    QUICHE_DCHECK(nullptr != blocks_[block_idx]);
     iov[iov_used].iov_base = blocks_[end_block_idx]->buffer;
     iov[iov_used].iov_len = end_block_offset + 1;
     QUIC_DVLOG(1) << "Got last block with index: " << end_block_idx;
@@ -389,7 +390,7 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov) const {
 
 bool QuicStreamSequencerBuffer::PeekRegion(QuicStreamOffset offset,
                                            iovec* iov) const {
-  DCHECK(iov);
+  QUICHE_DCHECK(iov);
 
   if (offset < total_bytes_read_) {
     // Data at |offset| has already been consumed.
@@ -490,7 +491,8 @@ size_t QuicStreamSequencerBuffer::NextBlockToRead() const {
 }
 
 bool QuicStreamSequencerBuffer::RetireBlockIfEmpty(size_t block_index) {
-  DCHECK(ReadableBytes() == 0 || GetInBlockOffset(total_bytes_read_) == 0)
+  QUICHE_DCHECK(ReadableBytes() == 0 ||
+                GetInBlockOffset(total_bytes_read_) == 0)
       << "RetireBlockIfEmpty() should only be called when advancing to next "
       << "block or a gap has been reached.";
   // If the whole buffer becomes empty, the last piece of data has been read.

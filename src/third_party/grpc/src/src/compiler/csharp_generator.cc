@@ -35,11 +35,11 @@ using grpc::protobuf::ServiceDescriptor;
 using grpc::protobuf::io::Printer;
 using grpc::protobuf::io::StringOutputStream;
 using grpc_generator::GetMethodType;
+using grpc_generator::MethodType;
 using grpc_generator::METHODTYPE_BIDI_STREAMING;
 using grpc_generator::METHODTYPE_CLIENT_STREAMING;
 using grpc_generator::METHODTYPE_NO_STREAMING;
 using grpc_generator::METHODTYPE_SERVER_STREAMING;
-using grpc_generator::MethodType;
 using grpc_generator::StringReplace;
 using std::map;
 using std::vector;
@@ -54,9 +54,9 @@ namespace {
 // TODO(jtattermusch): reuse the functionality from google/protobuf.
 bool GenerateDocCommentBodyImpl(grpc::protobuf::io::Printer* printer,
                                 grpc::protobuf::SourceLocation location) {
-  grpc::string comments = location.leading_comments.empty()
-                              ? location.trailing_comments
-                              : location.leading_comments;
+  std::string comments = location.leading_comments.empty()
+                             ? location.trailing_comments
+                             : location.leading_comments;
   if (comments.empty()) {
     return false;
   }
@@ -66,7 +66,7 @@ bool GenerateDocCommentBodyImpl(grpc::protobuf::io::Printer* printer,
   comments = grpc_generator::StringReplace(comments, "&", "&amp;", true);
   comments = grpc_generator::StringReplace(comments, "<", "&lt;", true);
 
-  std::vector<grpc::string> lines;
+  std::vector<std::string> lines;
   grpc_generator::Split(comments, '\n', &lines);
   // TODO: We really should work out which part to put in the summary and which
   // to put in the remarks...
@@ -81,9 +81,9 @@ bool GenerateDocCommentBodyImpl(grpc::protobuf::io::Printer* printer,
   // Note that we can't remove leading or trailing whitespace as *that's*
   // relevant in markdown too.
   // (We don't skip "just whitespace" lines, either.)
-  for (std::vector<grpc::string>::iterator it = lines.begin();
-       it != lines.end(); ++it) {
-    grpc::string line = *it;
+  for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end();
+       ++it) {
+    std::string line = *it;
     if (line.empty()) {
       last_was_empty = true;
     } else {
@@ -325,13 +325,76 @@ std::vector<const Descriptor*> GetUsedMessages(
 
 void GenerateMarshallerFields(Printer* out, const ServiceDescriptor* service) {
   std::vector<const Descriptor*> used_messages = GetUsedMessages(service);
+  if (used_messages.size() != 0) {
+    // Generate static helper methods for serialization/deserialization
+    out->Print(
+        "static void __Helper_SerializeMessage("
+        "global::Google.Protobuf.IMessage message, "
+        "grpc::SerializationContext context)\n"
+        "{\n");
+    out->Indent();
+    out->Print(
+        "#if !GRPC_DISABLE_PROTOBUF_BUFFER_SERIALIZATION\n"
+        "if (message is global::Google.Protobuf.IBufferMessage)\n"
+        "{\n");
+    out->Indent();
+    out->Print(
+        "context.SetPayloadLength(message.CalculateSize());\n"
+        "global::Google.Protobuf.MessageExtensions.WriteTo(message, "
+        "context.GetBufferWriter());\n"
+        "context.Complete();\n"
+        "return;\n");
+    out->Outdent();
+    out->Print(
+        "}\n"
+        "#endif\n");
+    out->Print(
+        "context.Complete("
+        "global::Google.Protobuf.MessageExtensions.ToByteArray(message));\n");
+    out->Outdent();
+    out->Print("}\n\n");
+
+    out->Print(
+        "static class __Helper_MessageCache<T>\n"
+        "{\n");
+    out->Indent();
+    out->Print(
+        "public static readonly bool IsBufferMessage = "
+        "global::System.Reflection.IntrospectionExtensions.GetTypeInfo(typeof("
+        "global::Google.Protobuf.IBufferMessage)).IsAssignableFrom(typeof(T));"
+        "\n");
+    out->Outdent();
+    out->Print("}\n\n");
+
+    out->Print(
+        "static T __Helper_DeserializeMessage<T>("
+        "grpc::DeserializationContext context, "
+        "global::Google.Protobuf.MessageParser<T> parser) "
+        "where T : global::Google.Protobuf.IMessage<T>\n"
+        "{\n");
+    out->Indent();
+    out->Print(
+        "#if !GRPC_DISABLE_PROTOBUF_BUFFER_SERIALIZATION\n"
+        "if (__Helper_MessageCache<T>.IsBufferMessage)\n"
+        "{\n");
+    out->Indent();
+    out->Print(
+        "return parser.ParseFrom(context.PayloadAsReadOnlySequence());\n");
+    out->Outdent();
+    out->Print(
+        "}\n"
+        "#endif\n");
+    out->Print("return parser.ParseFrom(context.PayloadAsNewBuffer());\n");
+    out->Outdent();
+    out->Print("}\n\n");
+  }
+
   for (size_t i = 0; i < used_messages.size(); i++) {
     const Descriptor* message = used_messages[i];
     out->Print(
         "static readonly grpc::Marshaller<$type$> $fieldname$ = "
-        "grpc::Marshallers.Create((arg) => "
-        "global::Google.Protobuf.MessageExtensions.ToByteArray(arg), "
-        "$type$.Parser.ParseFrom);\n",
+        "grpc::Marshallers.Create(__Helper_SerializeMessage, "
+        "context => __Helper_DeserializeMessage(context, $type$.Parser));\n",
         "fieldname", GetMarshallerFieldName(message), "type",
         GetClassName(message));
   }
@@ -414,34 +477,24 @@ void GenerateServerClass(Printer* out, const ServiceDescriptor* service) {
   out->Print("\n");
 }
 
-void GenerateClientStub(Printer* out, const ServiceDescriptor* service,
-                        bool lite_client) {
-  if (!lite_client) {
-    out->Print("/// <summary>Client for $servicename$</summary>\n",
-               "servicename", GetServiceClassName(service));
-    out->Print("public partial class $name$ : grpc::ClientBase<$name$>\n",
-               "name", GetClientClassName(service));
-  } else {
-    out->Print("/// <summary>Lite client for $servicename$</summary>\n",
-               "servicename", GetServiceClassName(service));
-    out->Print("public partial class $name$ : grpc::LiteClientBase\n", "name",
-               GetClientClassName(service));
-  }
+void GenerateClientStub(Printer* out, const ServiceDescriptor* service) {
+  out->Print("/// <summary>Client for $servicename$</summary>\n", "servicename",
+             GetServiceClassName(service));
+  out->Print("public partial class $name$ : grpc::ClientBase<$name$>\n", "name",
+             GetClientClassName(service));
   out->Print("{\n");
   out->Indent();
 
   // constructors
-  if (!lite_client) {
-    out->Print(
-        "/// <summary>Creates a new client for $servicename$</summary>\n"
-        "/// <param name=\"channel\">The channel to use to make remote "
-        "calls.</param>\n",
-        "servicename", GetServiceClassName(service));
-    out->Print("public $name$(grpc::Channel channel) : base(channel)\n", "name",
-               GetClientClassName(service));
-    out->Print("{\n");
-    out->Print("}\n");
-  }
+  out->Print(
+      "/// <summary>Creates a new client for $servicename$</summary>\n"
+      "/// <param name=\"channel\">The channel to use to make remote "
+      "calls.</param>\n",
+      "servicename", GetServiceClassName(service));
+  out->Print("public $name$(grpc::ChannelBase channel) : base(channel)\n",
+             "name", GetClientClassName(service));
+  out->Print("{\n");
+  out->Print("}\n");
   out->Print(
       "/// <summary>Creates a new client for $servicename$ that uses a custom "
       "<c>CallInvoker</c>.</summary>\n"
@@ -460,20 +513,16 @@ void GenerateClientStub(Printer* out, const ServiceDescriptor* service,
              GetClientClassName(service));
   out->Print("{\n");
   out->Print("}\n");
-  if (!lite_client) {
-    out->Print(
-        "/// <summary>Protected constructor to allow creation of configured "
-        "clients.</summary>\n"
-        "/// <param name=\"configuration\">The client "
-        "configuration.</param>\n");
-    out->Print(
-        "protected $name$(ClientBaseConfiguration configuration)"
-        " : base(configuration)\n",
-        "name", GetClientClassName(service));
-    out->Print("{\n");
-    out->Print("}\n");
-  }
-  out->Print("\n");
+  out->Print(
+      "/// <summary>Protected constructor to allow creation of configured "
+      "clients.</summary>\n"
+      "/// <param name=\"configuration\">The client configuration.</param>\n");
+  out->Print(
+      "protected $name$(ClientBaseConfiguration configuration)"
+      " : base(configuration)\n",
+      "name", GetClientClassName(service));
+  out->Print("{\n");
+  out->Print("}\n\n");
 
   for (int i = 0; i < service->method_count(); i++) {
     const MethodDescriptor* method = service->method(i);
@@ -591,21 +640,19 @@ void GenerateClientStub(Printer* out, const ServiceDescriptor* service,
   }
 
   // override NewInstance method
-  if (!lite_client) {
-    out->Print(
-        "/// <summary>Creates a new instance of client from given "
-        "<c>ClientBaseConfiguration</c>.</summary>\n");
-    out->Print(
-        "protected override $name$ NewInstance(ClientBaseConfiguration "
-        "configuration)\n",
-        "name", GetClientClassName(service));
-    out->Print("{\n");
-    out->Indent();
-    out->Print("return new $name$(configuration);\n", "name",
-               GetClientClassName(service));
-    out->Outdent();
-    out->Print("}\n");
-  }
+  out->Print(
+      "/// <summary>Creates a new instance of client from given "
+      "<c>ClientBaseConfiguration</c>.</summary>\n");
+  out->Print(
+      "protected override $name$ NewInstance(ClientBaseConfiguration "
+      "configuration)\n",
+      "name", GetClientClassName(service));
+  out->Print("{\n");
+  out->Indent();
+  out->Print("return new $name$(configuration);\n", "name",
+             GetClientClassName(service));
+  out->Outdent();
+  out->Print("}\n");
 
   out->Outdent();
   out->Print("}\n");
@@ -687,7 +734,7 @@ void GenerateBindServiceWithBinderMethod(Printer* out,
 
 void GenerateService(Printer* out, const ServiceDescriptor* service,
                      bool generate_client, bool generate_server,
-                     bool internal_access, bool lite_client) {
+                     bool internal_access) {
   GenerateDocCommentBody(out, service);
   out->Print("$access_level$ static partial class $classname$\n",
              "access_level", GetAccessLevel(internal_access), "classname",
@@ -709,9 +756,8 @@ void GenerateService(Printer* out, const ServiceDescriptor* service,
     GenerateServerClass(out, service);
   }
   if (generate_client) {
-    GenerateClientStub(out, service, lite_client);
+    GenerateClientStub(out, service);
   }
-
   if (generate_server) {
     GenerateBindServiceMethod(out, service);
     GenerateBindServiceWithBinderMethod(out, service);
@@ -723,10 +769,9 @@ void GenerateService(Printer* out, const ServiceDescriptor* service,
 
 }  // anonymous namespace
 
-grpc::string GetServices(const FileDescriptor* file, bool generate_client,
-                         bool generate_server, bool internal_access,
-                         bool lite_client) {
-  grpc::string output;
+std::string GetServices(const FileDescriptor* file, bool generate_client,
+                        bool generate_server, bool internal_access) {
+  std::string output;
   {
     // Scope the output stream so it closes and finalizes output to the string.
 
@@ -747,7 +792,7 @@ grpc::string GetServices(const FileDescriptor* file, bool generate_client,
     out.Print("// </auto-generated>\n");
 
     // use C++ style as there are no file-level XML comments in .NET
-    grpc::string leading_comments = GetCsharpComments(file, true);
+    std::string leading_comments = GetCsharpComments(file, true);
     if (!leading_comments.empty()) {
       out.Print("// Original file comments:\n");
       out.PrintRaw(leading_comments.c_str());
@@ -760,14 +805,14 @@ grpc::string GetServices(const FileDescriptor* file, bool generate_client,
     out.Print("using grpc = global::Grpc.Core;\n");
     out.Print("\n");
 
-    grpc::string file_namespace = GetFileNamespace(file);
+    std::string file_namespace = GetFileNamespace(file);
     if (file_namespace != "") {
       out.Print("namespace $namespace$ {\n", "namespace", file_namespace);
       out.Indent();
     }
     for (int i = 0; i < file->service_count(); i++) {
       GenerateService(&out, file->service(i), generate_client, generate_server,
-                      internal_access, lite_client);
+                      internal_access);
     }
     if (file_namespace != "") {
       out.Outdent();

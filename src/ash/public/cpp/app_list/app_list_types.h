@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/sync/model/string_ordinal.h"
@@ -64,7 +65,10 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   std::string name;        // Corresponding app/folder's name of the item.
   std::string short_name;  // Corresponding app's short name of the item. Empty
                            // if the app doesn't have one or it's a folder.
-  std::string folder_id;   // Id of folder where the item resides.
+
+  AppStatus app_status = AppStatus::kReady;  // App status.
+
+  std::string folder_id;           // Id of folder where the item resides.
   syncer::StringOrdinal position;  // Position of the item.
   bool is_folder = false;          // Whether this item is a folder.
   bool is_persistent = false;  // Whether this folder is allowed to contain only
@@ -180,6 +184,14 @@ enum SearchResultDisplayIndex {
   kUndefined,
 };
 
+// The rich entity subtype of Omnibox results.
+enum SearchResultOmniboxType {
+  kDefault,
+  kAnswer,
+  kRichImage,
+  kOmniboxTypeMax,  // Do not use.
+};
+
 // Actions for OmniBox zero state suggestion.
 enum OmniBoxZeroStateAction {
   // Removes the zero state suggestion.
@@ -289,6 +301,9 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // Which index in the UI container should the result be placed in.
   SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
 
+  // The rich entity subtype of Omnibox results.
+  SearchResultOmniboxType omnibox_type = SearchResultOmniboxType::kDefault;
+
   // A score to settle conflicts between two apps with the same requested
   // |display_index|.
   float position_priority = 0.0f;
@@ -304,10 +319,6 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Whether this result is a recommendation.
   bool is_recommendation = false;
-
-  // Whether this result is an answer. Answer results should originate from
-  // base::SuggestionAnswer.
-  bool is_answer = false;
 
   // A query URL associated with this result. The meaning and treatment of the
   // URL (e.g. displaying inline web contents) is dependent on the result type.

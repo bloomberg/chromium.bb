@@ -19,69 +19,68 @@
 #include "src/ast/case_statement.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
+#include "src/type/i32_type.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Case) {
-  ast::type::I32Type i32;
-
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  ast::CaseStatement c(std::move(lit), std::move(body));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  auto* c = create<ast::CaseStatement>(lit, body);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5: {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5: {
     break;
   }
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_Case_MultipleSelectors) {
-  ast::type::I32Type i32;
-
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 6));
-  ast::CaseStatement c(std::move(lit), std::move(body));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 6));
+  auto* c = create<ast::CaseStatement>(lit, body);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5, 6: {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5, 6: {
     break;
   }
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_Case_Default) {
-  ast::CaseStatement c;
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
+  auto* c = create<ast::CaseStatement>(ast::CaseSelectorList{}, body);
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-  c.set_body(std::move(body));
+  GeneratorImpl& gen = Build();
 
-  GeneratorImpl g;
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  default: {
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  default: {
     break;
   }
 )");

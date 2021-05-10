@@ -18,22 +18,6 @@ namespace chromeos {
 
 namespace tpm_util {
 
-// Blocking call. Returns whether the TPM is presented and enabled.
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool TpmIsEnabled();
-
-// Blocking call. Returns whether the device has already been owned.
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool TpmIsOwned();
-
-// Blocking call. Returns whether the device is being owned (Tpm password is
-// generating).
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT) bool TpmIsBeingOwned();
-
-// Asynchronous. Provides the TPM version information in |callback|.
-using GetTpmVersionCallback = base::OnceCallback<void(
-    const CryptohomeClient::TpmVersionInfo& tpm_version_info)>;
-COMPONENT_EXPORT(CRYPTOHOME_CLIENT)
-void GetTpmVersion(GetTpmVersionCallback callback);
-
 // Blocking calls to CryptohomeClient methods.
 COMPONENT_EXPORT(CRYPTOHOME_CLIENT)
 bool InstallAttributesGet(const std::string& name, std::string* value);

@@ -36,6 +36,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -45,7 +46,7 @@ namespace {
 // zones.
 class FadeoutLayerDelegate : public ui::LayerDelegate {
  public:
-  explicit FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
+  FadeoutLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
   }
@@ -123,10 +124,6 @@ MediaStringView::MediaStringView() {
 }
 
 MediaStringView::~MediaStringView() = default;
-
-const char* MediaStringView::GetClassName() const {
-  return "MediaStringView";
-}
 
 void MediaStringView::OnViewBoundsChanged(views::View* observed_view) {
   UpdateMaskLayer();
@@ -210,8 +207,10 @@ void MediaStringView::InitLayout() {
   icon_ = AddChildView(std::make_unique<views::ImageView>());
   icon_->SetPreferredSize(
       gfx::Size(kMusicNoteIconSizeDip, kMusicNoteIconSizeDip));
-  icon_->SetImage(gfx::CreateVectorIcon(kMusicNoteIcon, kMusicNoteIconSizeDip,
-                                        SK_ColorWHITE));
+  icon_->SetImage(gfx::CreateVectorIcon(
+      kMusicNoteIcon, kMusicNoteIconSizeDip,
+      ambient::util::GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary)));
 
   media_text_container_ = AddChildView(std::make_unique<views::View>());
   media_text_container_->SetPaintToLayer();
@@ -222,7 +221,7 @@ void MediaStringView::InitLayout() {
   text_layout->SetOrientation(views::LayoutOrientation::kHorizontal);
   text_layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   text_layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-  observed_view_.Add(media_text_container_);
+  observed_view_.Observe(media_text_container_);
 
   media_text_ =
       media_text_container_->AddChildView(std::make_unique<views::Label>());
@@ -230,13 +229,13 @@ void MediaStringView::InitLayout() {
   media_text_->layer()->SetFillsBoundsOpaquely(false);
 
   // Defines the appearance.
-  constexpr SkColor kTextColor = SK_ColorWHITE;
   constexpr int kDefaultFontSizeDip = 64;
   constexpr int kMediaStringFontSizeDip = 18;
   media_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_TO_HEAD);
   media_text_->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_MIDDLE);
   media_text_->SetAutoColorReadabilityEnabled(false);
-  media_text_->SetEnabledColor(kTextColor);
+  media_text_->SetEnabledColor(ambient::util::GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
   media_text_->SetFontList(
       ambient::util::GetDefaultFontlist()
           .DeriveWithSizeDelta(kMediaStringFontSizeDip - kDefaultFontSizeDip)
@@ -343,5 +342,8 @@ void MediaStringView::StartScrolling(bool is_initial) {
     text_layer->SetTransform(transform);
   }
 }
+
+BEGIN_METADATA(MediaStringView, views::View)
+END_METADATA
 
 }  // namespace ash

@@ -283,7 +283,7 @@ bool FormHasFieldWithValue(const autofill::FormData& form,
   for (const auto& field : form.fields) {
     if (field.value == value_16)
       return true;
-    if (field.typed_value == value_16)
+    if (field.user_input == value_16)
       return true;
   }
   return false;
@@ -323,7 +323,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // Autofill uses the system font to render suggestion previews. On Windows
     // an extra step is required to ensure that the system font is configured.
     blink::WebFontRendering::SetMenuFontMetrics(
-        base::ASCIIToUTF16("Arial").c_str(), 12);
+        blink::WebString::FromASCII("Arial"), 12);
 #endif
 
     // TODO(crbug/862989): Remove workaround preventing non-test classes to bind

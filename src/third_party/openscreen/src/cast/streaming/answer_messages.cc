@@ -83,7 +83,7 @@ static constexpr char kAspectRatioDelimiter[] = ":";
 // Sets the aspect ratio constraints. Value must be either "sender" or
 // "receiver", see kScalingSender and kScalingReceiver below.
 static constexpr char kScaling[] = "scaling";
-// sclaing = "sender" means that the sender must provide video frames of a fixed
+// scaling = "sender" means that the sender must provide video frames of a fixed
 // aspect ratio. In this case, the dimensions object must be passed or an error
 // case will occur.
 static constexpr char kScalingSender[] = "sender";

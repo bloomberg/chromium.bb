@@ -28,112 +28,140 @@ class DeprecationTests : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
         // Skip when validation is off because warnings might be emitted during validation calls
-        DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
+        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
     }
 };
 
-// Test that using BGLEntry.multisampled = true emits a deprecation warning.
-TEST_P(DeprecationTests, BGLEntryMultisampledDeprecated) {
-    wgpu::BindGroupLayoutEntry entry{};
-    entry.visibility = wgpu::ShaderStage::Fragment;
-    entry.type = wgpu::BindingType::SampledTexture;
-    entry.multisampled = true;
-    entry.binding = 0;
+// Test that SetIndexBufferWithFormat is deprecated.
+TEST_P(DeprecationTests, SetIndexBufferWithFormat) {
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = 4;
+    bufferDesc.usage = wgpu::BufferUsage::Index;
+    wgpu::Buffer indexBuffer = device.CreateBuffer(&bufferDesc);
 
-    wgpu::BindGroupLayoutDescriptor desc;
-    desc.entryCount = 1;
-    desc.entries = &entry;
-    EXPECT_DEPRECATION_WARNING(device.CreateBindGroupLayout(&desc));
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    EXPECT_DEPRECATION_WARNING(
+        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32));
+    pass.EndPass();
 }
 
-// Test that using BGLEntry.multisampled = true with MultisampledTexture is an error.
-TEST_P(DeprecationTests, BGLEntryMultisampledBooleanAndTypeIsAnError) {
-    wgpu::BindGroupLayoutEntry entry{};
-    entry.visibility = wgpu::ShaderStage::Fragment;
-    entry.type = wgpu::BindingType::MultisampledTexture;
-    entry.multisampled = true;
-    entry.binding = 0;
+// Test that BindGroupLayoutEntry cannot have a type if buffer, sampler, texture, or storageTexture
+// are defined.
+TEST_P(DeprecationTests, BindGroupLayoutEntryTypeConflict) {
+    wgpu::BindGroupLayoutEntry binding;
+    binding.binding = 0;
+    binding.visibility = wgpu::ShaderStage::Vertex;
 
-    wgpu::BindGroupLayoutDescriptor desc;
-    desc.entryCount = 1;
-    desc.entries = &entry;
-    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&desc));
+    wgpu::BindGroupLayoutDescriptor descriptor;
+    descriptor.entryCount = 1;
+    descriptor.entries = &binding;
+
+    // Succeeds with only a type.
+    binding.type = wgpu::BindingType::UniformBuffer;
+    EXPECT_DEPRECATION_WARNING(device.CreateBindGroupLayout(&descriptor));
+
+    binding.type = wgpu::BindingType::Undefined;
+
+    // Succeeds with only a buffer.type.
+    binding.buffer.type = wgpu::BufferBindingType::Uniform;
+    device.CreateBindGroupLayout(&descriptor);
+    // Fails when both type and a buffer.type are specified.
+    binding.type = wgpu::BindingType::UniformBuffer;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
+
+    binding.buffer.type = wgpu::BufferBindingType::Undefined;
+    binding.type = wgpu::BindingType::Undefined;
+
+    // Succeeds with only a sampler.type.
+    binding.sampler.type = wgpu::SamplerBindingType::Filtering;
+    device.CreateBindGroupLayout(&descriptor);
+    // Fails when both type and a sampler.type are specified.
+    binding.type = wgpu::BindingType::Sampler;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
+
+    binding.sampler.type = wgpu::SamplerBindingType::Undefined;
+    binding.type = wgpu::BindingType::Undefined;
+
+    // Succeeds with only a texture.sampleType.
+    binding.texture.sampleType = wgpu::TextureSampleType::Float;
+    device.CreateBindGroupLayout(&descriptor);
+    // Fails when both type and a texture.sampleType are specified.
+    binding.type = wgpu::BindingType::SampledTexture;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
+
+    binding.texture.sampleType = wgpu::TextureSampleType::Undefined;
+    binding.type = wgpu::BindingType::Undefined;
+
+    // Succeeds with only a storageTexture.access.
+    binding.storageTexture.access = wgpu::StorageTextureAccess::ReadOnly;
+    binding.storageTexture.format = wgpu::TextureFormat::RGBA8Unorm;
+    device.CreateBindGroupLayout(&descriptor);
+    // Fails when both type and a storageTexture.access are specified.
+    binding.type = wgpu::BindingType::ReadonlyStorageTexture;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
 }
 
-// Test that a using BGLEntry.multisampled produces the correct state tracking.
-TEST_P(DeprecationTests, BGLEntryMultisampledBooleanTracking) {
-    // Create a BGL with the deprecated multisampled boolean
-    wgpu::BindGroupLayoutEntry entry{};
-    entry.visibility = wgpu::ShaderStage::Fragment;
-    entry.type = wgpu::BindingType::SampledTexture;
-    entry.multisampled = true;
-    entry.binding = 0;
+// Test that the deprecated BGLEntry path correctly handles the defaulting of viewDimension.
+// This is a regression test for crbug.com/dawn/620
+TEST_P(DeprecationTests, BindGroupLayoutEntryViewDimensionDefaulting) {
+    wgpu::BindGroupLayoutEntry binding;
+    binding.binding = 0;
+    binding.visibility = wgpu::ShaderStage::Vertex;
+    binding.type = wgpu::BindingType::SampledTexture;
 
-    wgpu::BindGroupLayoutDescriptor desc;
-    desc.entryCount = 1;
-    desc.entries = &entry;
+    wgpu::BindGroupLayoutDescriptor bglDesc;
+    bglDesc.entryCount = 1;
+    bglDesc.entries = &binding;
+
     wgpu::BindGroupLayout bgl;
-    EXPECT_DEPRECATION_WARNING(bgl = device.CreateBindGroupLayout(&desc));
 
-    // Create both a multisampled and non-multisampled texture.
-    wgpu::TextureDescriptor textureDesc;
-    textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
-    textureDesc.usage = wgpu::TextureUsage::Sampled;
-    textureDesc.size = {1, 1, 1};
-    textureDesc.dimension = wgpu::TextureDimension::e2D;
-    textureDesc.sampleCount = 1;
-    wgpu::Texture texture1Sample = device.CreateTexture(&textureDesc);
+    // Check that the default viewDimension is 2D.
+    {
+        binding.viewDimension = wgpu::TextureViewDimension::Undefined;
+        EXPECT_DEPRECATION_WARNING(bgl = device.CreateBindGroupLayout(&bglDesc));
 
-    textureDesc.sampleCount = 4;
-    wgpu::Texture texture4Sample = device.CreateTexture(&textureDesc);
+        wgpu::TextureDescriptor desc;
+        desc.usage = wgpu::TextureUsage::Sampled;
+        desc.size = {1, 1, 1};
+        desc.format = wgpu::TextureFormat::RGBA8Unorm;
+        desc.dimension = wgpu::TextureDimension::e2D;
+        wgpu::Texture texture = device.CreateTexture(&desc);
 
-    // Creating a bindgroup with that layout is only valid with multisampled = true
-    ASSERT_DEVICE_ERROR(utils::MakeBindGroup(device, bgl, {{0, texture1Sample.CreateView()}}));
-    utils::MakeBindGroup(device, bgl, {{0, texture4Sample.CreateView()}});
+        // Success, the default is 2D and we give it a 2D view.
+        utils::MakeBindGroup(device, bgl, {{0, texture.CreateView()}});
+    }
+
+    // Check that setting a non-default viewDimension works.
+    {
+        binding.viewDimension = wgpu::TextureViewDimension::e2DArray;
+        EXPECT_DEPRECATION_WARNING(bgl = device.CreateBindGroupLayout(&bglDesc));
+
+        wgpu::TextureDescriptor desc;
+        desc.usage = wgpu::TextureUsage::Sampled;
+        desc.size = {1, 1, 4};
+        desc.format = wgpu::TextureFormat::RGBA8Unorm;
+        desc.dimension = wgpu::TextureDimension::e2D;
+        wgpu::Texture texture = device.CreateTexture(&desc);
+
+        // Success, the view will be 2DArray and the BGL expects a 2DArray.
+        utils::MakeBindGroup(device, bgl, {{0, texture.CreateView()}});
+    }
 }
 
-// Test that compiling a pipeline with TextureComponentType::Float in the BGL when ::DepthComparison
-// is expected emits a deprecation warning but isn't an error.
-TEST_P(DeprecationTests, TextureComponentTypeFloatWhenDepthComparisonIsExpected) {
-    wgpu::ShaderModule module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform samplerShadow samp;
-            layout(set = 0, binding = 1) uniform texture2D tex;
+// Test Device::GetDefaultQueue deprecation.
+TEST_P(DeprecationTests, GetDefaultQueueDeprecation) {
+    // Using GetDefaultQueue emits a warning.
+    wgpu::Queue deprecatedQueue;
+    EXPECT_DEPRECATION_WARNING(deprecatedQueue = device.GetDefaultQueue());
 
-            void main() {
-                texture(sampler2DShadow(tex, samp), vec3(0.5, 0.5, 0.5));
-            }
-        )");
+    // Using GetQueue doesn't emit a warning.
+    wgpu::Queue queue = device.GetQueue();
 
-    {
-        wgpu::BindGroupLayout goodBgl = utils::MakeBindGroupLayout(
-            device,
-            {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ComparisonSampler},
-             {1, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0, false,
-              wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::DepthComparison}});
-
-        wgpu::ComputePipelineDescriptor goodDesc;
-        goodDesc.layout = utils::MakeBasicPipelineLayout(device, &goodBgl);
-        goodDesc.computeStage.module = module;
-        goodDesc.computeStage.entryPoint = "main";
-
-        device.CreateComputePipeline(&goodDesc);
-    }
-
-    {
-        wgpu::BindGroupLayout badBgl = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::BindingType::ComparisonSampler},
-                     {1, wgpu::ShaderStage::Compute, wgpu::BindingType::SampledTexture, false, 0,
-                      false, wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
-
-        wgpu::ComputePipelineDescriptor badDesc;
-        badDesc.layout = utils::MakeBasicPipelineLayout(device, &badBgl);
-        badDesc.computeStage.module = module;
-        badDesc.computeStage.entryPoint = "main";
-
-        EXPECT_DEPRECATION_WARNING(device.CreateComputePipeline(&badDesc));
-    }
+    // Both objects are the same, even with dawn_wire.
+    EXPECT_EQ(deprecatedQueue.Get(), queue.Get());
 }
 
 DAWN_INSTANTIATE_TEST(DeprecationTests,
@@ -141,6 +169,7 @@ DAWN_INSTANTIATE_TEST(DeprecationTests,
                       MetalBackend(),
                       NullBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class BufferCopyViewDeprecationTests : public DeprecationTests {
@@ -160,108 +189,3 @@ class BufferCopyViewDeprecationTests : public DeprecationTests {
 
     wgpu::Extent3D copySize = {1, 1, 1};
 };
-
-constexpr uint32_t kRTSize = 400;
-
-class SetIndexBufferDeprecationTests : public DeprecationTests {
-  protected:
-    void SetUp() override {
-        DeprecationTests::SetUp();
-
-        renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
-    }
-
-    utils::BasicRenderPass renderPass;
-
-    wgpu::RenderPipeline MakeTestPipeline(wgpu::IndexFormat format) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                layout(location = 0) in vec4 pos;
-                void main() {
-                    gl_Position = pos;
-                })");
-
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
-
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
-        descriptor.cVertexState.indexFormat = format;
-        descriptor.cVertexState.vertexBufferCount = 1;
-        descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-        descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
-        descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-        descriptor.cColorStates[0].format = renderPass.colorFormat;
-
-        return device.CreateRenderPipeline(&descriptor);
-    }
-};
-
-// Test that the Uint32 index format is correctly interpreted
-TEST_P(SetIndexBufferDeprecationTests, Uint32) {
-    wgpu::RenderPipeline pipeline = MakeTestPipeline(wgpu::IndexFormat::Uint32);
-
-    wgpu::Buffer vertexBuffer = utils::CreateBufferFromData<float>(
-        device, wgpu::BufferUsage::Vertex,
-        {-1.0f, -1.0f, 0.0f, 1.0f,  // Note Vertices[0] = Vertices[1]
-         -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f});
-    // If this is interpreted as Uint16, then it would be 0, 1, 0, ... and would draw nothing.
-    wgpu::Buffer indexBuffer =
-        utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {1, 2, 3});
-
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    {
-        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
-        pass.SetPipeline(pipeline);
-        pass.SetVertexBuffer(0, vertexBuffer);
-        EXPECT_DEPRECATION_WARNING(pass.SetIndexBuffer(indexBuffer));
-        pass.DrawIndexed(3);
-        pass.EndPass();
-    }
-
-    wgpu::CommandBuffer commands = encoder.Finish();
-    queue.Submit(1, &commands);
-
-    EXPECT_PIXEL_RGBA8_EQ(RGBA8::kGreen, renderPass.color, 100, 300);
-}
-
-// Test that the Uint16 index format is correctly interpreted
-TEST_P(SetIndexBufferDeprecationTests, Uint16) {
-    wgpu::RenderPipeline pipeline = MakeTestPipeline(wgpu::IndexFormat::Uint16);
-
-    wgpu::Buffer vertexBuffer = utils::CreateBufferFromData<float>(
-        device, wgpu::BufferUsage::Vertex,
-        {-1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f});
-    // If this is interpreted as uint32, it will have index 1 and 2 be both 0 and render nothing
-    wgpu::Buffer indexBuffer =
-        utils::CreateBufferFromData<uint16_t>(device, wgpu::BufferUsage::Index, {1, 2, 0, 0, 0, 0});
-
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    {
-        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
-        pass.SetPipeline(pipeline);
-        pass.SetVertexBuffer(0, vertexBuffer);
-        EXPECT_DEPRECATION_WARNING(pass.SetIndexBuffer(indexBuffer));
-        pass.DrawIndexed(3);
-        pass.EndPass();
-    }
-
-    wgpu::CommandBuffer commands = encoder.Finish();
-    queue.Submit(1, &commands);
-
-    EXPECT_PIXEL_RGBA8_EQ(RGBA8::kGreen, renderPass.color, 100, 300);
-}
-
-DAWN_INSTANTIATE_TEST(SetIndexBufferDeprecationTests,
-                      D3D12Backend(),
-                      MetalBackend(),
-                      OpenGLBackend(),
-                      VulkanBackend());

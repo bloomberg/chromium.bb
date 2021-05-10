@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/public/dns_protocol.h"
 
 namespace base {
@@ -25,7 +25,6 @@ class BigEndianWriter;
 
 namespace net {
 
-class AddressList;
 class DnsQuery;
 class IOBuffer;
 
@@ -111,28 +110,16 @@ class NET_EXPORT_PRIVATE DnsRecordParser {
 // position the RR parser.
 class NET_EXPORT_PRIVATE DnsResponse {
  public:
-  // Possible results from ParseToAddressList.
-  enum Result {
-    DNS_PARSE_OK = 0,
-    DNS_MALFORMED_RESPONSE,    // DnsRecordParser failed before the end of
-                               // packet.
-    DNS_MALFORMED_CNAME,       // Could not parse CNAME out of RRDATA.
-    DNS_NAME_MISMATCH,         // Got an address but no ordered chain of CNAMEs
-                               // leads there.
-    DNS_SIZE_MISMATCH,         // Got an address but size does not match.
-    DNS_CNAME_AFTER_ADDRESS,   // Found CNAME after an address record.
-    DNS_ADDRESS_TTL_MISMATCH,  // OBSOLETE. No longer used.
-    DNS_NO_ADDRESSES,          // OBSOLETE. No longer used.
-    // Only add new values here.
-    DNS_PARSE_RESULT_MAX,      // Bounding value for histograms.
-  };
-
   // Constructs a response buffer large enough to store one byte more than
   // largest possible response, to detect malformed responses.
   DnsResponse();
 
-  // Constructs a response message from |answers| and the originating |query|.
+  // Constructs a response message from `answers` and the originating `query`.
   // After the successful construction, and the parser is also initialized.
+  //
+  // If `validate_records` is false, DCHECKs validating the correctness of
+  // records will be skipped. Intended for tests to allow creation of malformed
+  // responses.
   DnsResponse(uint16_t id,
               bool is_authoritative,
               const std::vector<DnsResourceRecord>& answers,
@@ -140,7 +127,7 @@ class NET_EXPORT_PRIVATE DnsResponse {
               const std::vector<DnsResourceRecord>& additional_records,
               const base::Optional<DnsQuery>& query,
               uint8_t rcode = dns_protocol::kRcodeNOERROR,
-              bool validate_answers_match_query = true);
+              bool validate_records = true);
 
   // Constructs a response buffer of given length. Used for TCP transactions.
   explicit DnsResponse(size_t length);
@@ -207,21 +194,17 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // This operation is idempotent.
   DnsRecordParser Parser() const;
 
-  // Extracts an AddressList from this response. Returns SUCCESS if succeeded.
-  // Otherwise returns a detailed error number.
-  Result ParseToAddressList(AddressList* out_addr_list,
-                            base::Optional<base::TimeDelta>* out_ttl) const;
-
  private:
   bool WriteHeader(base::BigEndianWriter* writer,
                    const dns_protocol::Header& header);
   bool WriteQuestion(base::BigEndianWriter* writer, const DnsQuery& query);
   bool WriteRecord(base::BigEndianWriter* writer,
-                   const DnsResourceRecord& record);
+                   const DnsResourceRecord& record,
+                   bool validate_record);
   bool WriteAnswer(base::BigEndianWriter* writer,
                    const DnsResourceRecord& answer,
                    const base::Optional<DnsQuery>& query,
-                   bool validate_answer_matches_query);
+                   bool validate_record);
 
   // Convenience for header access.
   const dns_protocol::Header* header() const;

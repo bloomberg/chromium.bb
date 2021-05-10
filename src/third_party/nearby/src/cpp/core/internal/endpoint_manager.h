@@ -60,8 +60,6 @@ class EndpointManager {
  public:
   class FrameProcessor {
    public:
-    using Handle = void*;
-
     virtual ~FrameProcessor() = default;
 
     // @EndpointManagerReaderThread
@@ -93,12 +91,11 @@ class EndpointManager {
   // Invoked from the constructors of the various *Manager components that make
   // up the OfflineServiceController implementation.
   // FrameProcessor* instances are of dynamic duration and survive all sessions.
-  // returns unique handle to be used for unregistering.
   // Blocks until registration is complete.
-  FrameProcessor::Handle RegisterFrameProcessor(V1Frame::FrameType frame_type,
-                                                FrameProcessor* processor);
+  void RegisterFrameProcessor(V1Frame::FrameType frame_type,
+                              FrameProcessor* processor);
   void UnregisterFrameProcessor(V1Frame::FrameType frame_type,
-                                const void* handle, bool sync = false);
+                                const FrameProcessor* processor);
 
   // Invoked from the different PcpHandler implementations (of which there can
   // be only one at a time).
@@ -149,10 +146,27 @@ class EndpointManager {
     ClientProxy* client;
     // Execution barrier, used to ensure that all workers associated with an
     // endpoint on handlers_executor_ and keep_alive_executor_ are terminated.
-    CountDownLatch barrier{2};
+    std::shared_ptr<CountDownLatch> barrier =
+        std::make_shared<CountDownLatch>(2);
   };
 
-  FrameProcessor* GetFrameProcessor(V1Frame::FrameType frame_type);
+  // RAII accessor for FrameProcessor
+  class LockedFrameProcessor;
+
+  // Provides a mutex per FrameProcessor to prevent unregistering (and
+  // destroying) a FrameProcessor when it's in use.
+  class FrameProcessorWithMutex {
+   public:
+    explicit FrameProcessorWithMutex(FrameProcessor* frame_processor = nullptr)
+        : frame_processor_{frame_processor} {}
+
+   private:
+    FrameProcessor* frame_processor_;
+    Mutex mutex_;
+    friend class LockedFrameProcessor;
+  };
+
+  LockedFrameProcessor GetFrameProcessor(V1Frame::FrameType frame_type);
 
   ExceptionOr<bool> HandleData(const std::string& endpoint_id,
                                ClientProxy* client_proxy,
@@ -169,7 +183,7 @@ class EndpointManager {
 
   void EndpointChannelLoopRunnable(
       const std::string& runnable_name, ClientProxy* client_proxy,
-      const std::string& endpoint_id, CountDownLatch* barrier,
+      const std::string& endpoint_id, std::weak_ptr<CountDownLatch> barrier,
       std::function<ExceptionOr<bool>(EndpointChannel*)> handler);
 
   static void WaitForLatch(const std::string& method_name,
@@ -220,7 +234,8 @@ class EndpointManager {
 
   EndpointChannelManager* channel_manager_;
 
-  absl::flat_hash_map<V1Frame::FrameType, FrameProcessor*> frame_processors_;
+  absl::flat_hash_map<V1Frame::FrameType, FrameProcessorWithMutex>
+      frame_processors_;
 
   // We keep track of all registered channel endpoints here.
   absl::flat_hash_map<std::string, EndpointState> endpoints_;

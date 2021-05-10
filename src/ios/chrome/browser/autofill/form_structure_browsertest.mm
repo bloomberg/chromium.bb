@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -120,7 +119,6 @@ class FormStructureBrowserTest
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
   FormSuggestionController* suggestion_controller_;
-  TestPatternProvider test_pattern_provider_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -133,16 +131,22 @@ FormStructureBrowserTest::FormStructureBrowserTest()
       DataDrivenTest(GetTestDataDir()) {
   feature_list_.InitWithFeatures(
       // Enabled
-      {
-          // TODO(crbug.com/1098943): Remove once experiment is over.
-          autofill::features::kAutofillEnableSupportForMoreStructureInNames,
-          // TODO(crbug.com/1125978): Remove once launched.
-          autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
-          // TODO(crbug.com/896689): Remove once launched.
-          autofill::features::kAutofillNameSectionsWithRendererIds,
-          // TODO(crbug.com/1076175) Remove once launched.
-          autofill::features::kAutofillUseNewSectioningMethod,
-      },
+      {// TODO(crbug.com/1098943): Remove once experiment is over.
+       autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+       // TODO(crbug.com/1125978): Remove once launched.
+       autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
+       // TODO(crbug.com/896689): Remove once launched.
+       autofill::features::kAutofillNameSectionsWithRendererIds,
+       // TODO(crbug.com/1076175) Remove once launched.
+       autofill::features::kAutofillUseNewSectioningMethod,
+       // TODO(crbug.com/1150890) Remove once launched
+       autofill::features::kAutofillEnableAugmentedPhoneCountryCode,
+       // TODO(crbug.com/1157405) Remove once launched.
+       autofill::features::kAutofillEnableDependentLocalityParsing,
+       // TODO(crbug/1165780): Remove once shared labels are launched.
+       autofill::features::kAutofillEnableSupportForParsingWithSharedLabels,
+       // TODO(crbug.com/1150895) Remove once launched.
+       autofill::features::kAutofillParsingPatternsLanguageDetection},
       // Disabled
       {autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 }

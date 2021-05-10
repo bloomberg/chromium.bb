@@ -19,6 +19,7 @@ vars = {
   'checkout_sde': False,
   'checkout_nasm': False,
   'checkout_libcxx': False,
+  'vs_version': 'env',
 
   'android_sdk_platform-tools_version': 'Jxtur3_L9RzY4q79K-AwIahwFW4oi5uYVD5URx9h62wC',
 }
@@ -153,18 +154,6 @@ hooks = [
     ],
   },
   {
-    'name': 'yasm_win32',
-    'pattern': '.',
-    'condition': 'host_os == "win" and not checkout_nasm',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=win32',
-                '--no_auth',
-                '--bucket', 'chromium-tools',
-                '-s', 'boringssl/util/bot/yasm-win32.exe.sha1',
-    ],
-  },
-  {
     'name': 'nasm_win32',
     'pattern': '.',
     'condition': 'host_os == "win" and checkout_nasm',
@@ -183,6 +172,7 @@ hooks = [
     'action': [ 'python',
                 'boringssl/util/bot/vs_toolchain.py',
                 'update',
+                Var('vs_version'),
     ],
   },
   {

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 
-#include <utility>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
@@ -26,12 +25,14 @@
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
+#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -42,37 +43,37 @@ namespace {
 // TODO(loyso): Call sites should specify Source explicitly as a part of
 // AppTraits parameter object.
 Source::Type InferSourceFromMetricsInstallSource(
-    WebappInstallSource install_source) {
+    webapps::WebappInstallSource install_source) {
   switch (install_source) {
-    case WebappInstallSource::MENU_BROWSER_TAB:
-    case WebappInstallSource::MENU_CUSTOM_TAB:
-    case WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
-    case WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
-    case WebappInstallSource::API_BROWSER_TAB:
-    case WebappInstallSource::API_CUSTOM_TAB:
-    case WebappInstallSource::DEVTOOLS:
-    case WebappInstallSource::MANAGEMENT_API:
-    case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
-    case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
-    case WebappInstallSource::OMNIBOX_INSTALL_ICON:
-    case WebappInstallSource::SYNC:
-    case WebappInstallSource::MENU_CREATE_SHORTCUT:
+    case webapps::WebappInstallSource::MENU_BROWSER_TAB:
+    case webapps::WebappInstallSource::MENU_CUSTOM_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case webapps::WebappInstallSource::API_BROWSER_TAB:
+    case webapps::WebappInstallSource::API_CUSTOM_TAB:
+    case webapps::WebappInstallSource::DEVTOOLS:
+    case webapps::WebappInstallSource::MANAGEMENT_API:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
+    case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
+    case webapps::WebappInstallSource::SYNC:
+    case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
       return Source::kSync;
 
-    case WebappInstallSource::INTERNAL_DEFAULT:
-    case WebappInstallSource::EXTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::INTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
       return Source::kDefault;
 
-    case WebappInstallSource::EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::EXTERNAL_POLICY:
       return Source::kPolicy;
 
-    case WebappInstallSource::SYSTEM_DEFAULT:
+    case webapps::WebappInstallSource::SYSTEM_DEFAULT:
       return Source::kSystem;
 
-    case WebappInstallSource::ARC:
+    case webapps::WebappInstallSource::ARC:
       return Source::kWebAppStore;
 
-    case WebappInstallSource::COUNT:
+    case webapps::WebappInstallSource::COUNT:
       NOTREACHED();
       return Source::kSync;
   }
@@ -130,11 +131,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
   const WebApp* existing_web_app = GetWebAppRegistrar().GetAppById(app_id);
 
   std::unique_ptr<WebApp> web_app;
-
   if (existing_web_app) {
-    // There is an existing app from other source(s). Preserve
-    // |user_display_mode| and any user-controllable fields here, do not modify
-    // them. Prepare copy-on-write:
+    // Prepare copy-on-write:
     DCHECK_EQ(web_app_info.start_url, existing_web_app->start_url());
     web_app = std::make_unique<WebApp>(*existing_web_app);
 
@@ -148,17 +146,31 @@ void WebAppInstallFinalizer::FinalizeInstall(
     web_app = std::make_unique<WebApp>(app_id);
     web_app->SetStartUrl(web_app_info.start_url);
     web_app->SetIsLocallyInstalled(options.locally_installed);
+    if (options.locally_installed)
+      web_app->SetInstallTime(base::Time::Now());
+  }
+
+  // Set |user_display_mode| and any user-controllable fields here if this
+  // install is user initiated or it's a new app.
+  if (webapps::InstallableMetrics::IsUserInitiatedInstallSource(
+          options.install_source) ||
+      !existing_web_app) {
     web_app->SetUserDisplayMode(web_app_info.open_as_window
                                     ? DisplayMode::kStandalone
                                     : DisplayMode::kBrowser);
-    if (options.locally_installed)
-      web_app->SetInstallTime(base::Time::Now());
   }
 
   // `WebApp::chromeos_data` has a default value already. Only override if the
   // caller provided a new value.
   if (options.chromeos_data.has_value())
     web_app->SetWebAppChromeOsData(options.chromeos_data.value());
+
+  // `WebApp::system_web_app_data` has a default value already. Only override if
+  // the caller provided a new value.
+  if (options.system_web_app_data.has_value()) {
+    web_app->client_data()->system_web_app_data =
+        options.system_web_app_data.value();
+  }
 
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);
@@ -200,13 +212,15 @@ void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
     UninstallWebAppCallback callback) {
   DCHECK(started_);
   // WebAppSyncBridge::ApplySyncChangesToRegistrar does the actual
-  // NotifyWebAppUninstalled and unregistration of the app from the registry.
+  // NotifyWebAppWillBeUninstalled and unregistration of the app from the
+  // registry.
   DCHECK(!GetWebAppRegistrar().GetAppById(app_id));
 
   icon_manager_->DeleteData(
-      app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
-                             weak_ptr_factory_.GetWeakPtr(), app_id,
-                             std::move(callback)));
+      app_id,
+      base::BindOnce(
+          &WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled,
+          weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback)));
 }
 
 void WebAppInstallFinalizer::UninstallExternalWebApp(
@@ -217,20 +231,6 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
   Source::Type source =
       InferSourceFromExternalInstallSource(external_install_source);
   UninstallWebAppOrRemoveSource(app_id, source, std::move(callback));
-}
-
-bool WebAppInstallFinalizer::CanUserUninstallFromSync(
-    const AppId& app_id) const {
-  DCHECK(started_);
-  const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
-  return app ? app->IsSynced() : false;
-}
-
-void WebAppInstallFinalizer::UninstallWebAppFromSyncByUser(
-    const AppId& app_id,
-    UninstallWebAppCallback callback) {
-  DCHECK(CanUserUninstallFromSync(app_id));
-  UninstallWebAppOrRemoveSource(app_id, Source::kSync, std::move(callback));
 }
 
 bool WebAppInstallFinalizer::CanUserUninstallExternalApp(
@@ -313,10 +313,6 @@ void WebAppInstallFinalizer::RemoveLegacyInstallFinalizerForTesting() {
   legacy_finalizer_ = nullptr;
 }
 
-InstallFinalizer* WebAppInstallFinalizer::legacy_finalizer_for_testing() {
-  return legacy_finalizer_.get();
-}
-
 void WebAppInstallFinalizer::Start() {
   DCHECK(!started_);
   started_ = true;
@@ -328,16 +324,26 @@ void WebAppInstallFinalizer::Shutdown() {
 
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback callback) {
-  registrar().NotifyWebAppUninstalled(app_id);
-  os_integration_manager().UninstallAllOsHooks(app_id, base::DoNothing());
 
+  registrar().NotifyWebAppWillBeUninstalled(app_id);
+  os_integration_manager().UninstallAllOsHooks(
+      app_id, base::BindOnce(&WebAppInstallFinalizer::OnUninstallOsHooks,
+                             weak_ptr_factory_.GetWeakPtr(), app_id,
+                             std::move(callback)));
+}
+
+void WebAppInstallFinalizer::OnUninstallOsHooks(
+    const AppId& app_id,
+    UninstallWebAppCallback callback,
+    OsHooksResults os_hooks_info) {
   ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
   update->DeleteApp(app_id);
 
   icon_manager_->DeleteData(
-      app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
-                             weak_ptr_factory_.GetWeakPtr(), app_id,
-                             std::move(callback)));
+      app_id,
+      base::BindOnce(
+          &WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled,
+          weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback)));
 }
 
 void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
@@ -432,10 +438,11 @@ void WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten(
       std::move(update), std::move(commit_callback));
 }
 
-void WebAppInstallFinalizer::OnIconsDataDeleted(
+void WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled(
     const AppId& app_id,
     UninstallWebAppCallback callback,
     bool success) {
+  registrar().NotifyWebAppUninstalled(app_id);
   std::move(callback).Run(success);
 }
 

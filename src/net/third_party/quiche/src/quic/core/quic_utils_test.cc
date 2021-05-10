@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/quic_utils.h"
 
 #include <string>
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -135,8 +136,12 @@ TEST_F(QuicUtilsTest, RetransmissionTypeToPacketState) {
       EXPECT_EQ(PTO_RETRANSMITTED, state);
     } else if (i == PROBING_RETRANSMISSION) {
       EXPECT_EQ(PROBE_RETRANSMITTED, state);
+    } else if (i == PATH_RETRANSMISSION) {
+      EXPECT_EQ(NOT_CONTRIBUTING_RTT, state);
+    } else if (i == ALL_INITIAL_RETRANSMISSION) {
+      EXPECT_EQ(UNACKABLE, state);
     } else {
-      DCHECK(false)
+      QUICHE_DCHECK(false)
           << "No corresponding packet state according to transmission type: "
           << i;
     }

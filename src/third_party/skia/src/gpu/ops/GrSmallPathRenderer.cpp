@@ -20,8 +20,8 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDistanceFieldGenFromVector.h"
 #include "src/gpu/GrDrawOpTest.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/effects/GrBitmapTextGeoProc.h"
 #include "src/gpu/effects/GrDistanceFieldGeoProc.h"
@@ -163,20 +163,22 @@ private:
 
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         // We cannot surface the SmallPathOp's programInfo at record time. As currently
         // implemented, the GP is modified at flush time based on the number of pages in the
         // atlas.
     }
 
     void onPrePrepareDraws(GrRecordingContext*,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
                            const GrXferProcessor::DstProxyView&,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         // TODO [PI]: implement
     }
 

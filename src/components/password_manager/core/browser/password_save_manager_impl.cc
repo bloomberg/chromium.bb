@@ -188,8 +188,6 @@ void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
               form_fetcher_->GetAllRelevantMatches(),
               parsed_submitted_form.username_value,
               parsed_submitted_form.password_value);
-      UMA_HISTOGRAM_BOOLEAN("PasswordManager.UsernameCorrectionFound",
-                            username_correction_found);
       if (username_correction_found) {
         metrics_recorder_->RecordDetailedUserAction(
             password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
@@ -254,15 +252,15 @@ void PasswordSaveManagerImpl::Update(
   SavePendingToStore(observed_form, parsed_submitted_form);
 }
 
-void PasswordSaveManagerImpl::PermanentlyBlacklist(
+void PasswordSaveManagerImpl::Blocklist(
     const PasswordStore::FormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
-  form_saver_->PermanentlyBlacklist(form_digest);
+  form_saver_->Blocklist(form_digest);
 }
 
-void PasswordSaveManagerImpl::Unblacklist(
+void PasswordSaveManagerImpl::Unblocklist(
     const PasswordStore::FormDigest& form_digest) {
-  form_saver_->Unblacklist(form_digest);
+  form_saver_->Unblocklist(form_digest);
 }
 
 void PasswordSaveManagerImpl::PresaveGeneratedPassword(

@@ -16,14 +16,6 @@ var CrSettingsV3InteractiveUITest = class extends PolymerInteractiveUITest {
   get browsePreload() {
     return 'chrome://settings';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 };
 
 // eslint-disable-next-line no-var
@@ -114,4 +106,17 @@ GEN('#define MAYBE_SettingsUISearch SettingsUISearch');
 GEN('#endif');
 TEST_F('SettingsUIV3InteractiveTest', 'MAYBE_SettingsUISearch', function() {
   runMochaSuite('SettingsUISearch');
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsMenuV3InteractiveTest =
+    class extends CrSettingsV3InteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_menu_interactive_ui_test.js';
+  }
+};
+
+TEST_F('CrSettingsMenuV3InteractiveTest', 'All', function() {
+  mocha.run();
 });

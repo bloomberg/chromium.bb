@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "ash/public/cpp/clipboard_history_controller.h"
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -69,7 +70,9 @@ void CopyImageToClipboard(bool maintain_clipboard,
   std::string html = base::StrCat(
       {kImageClipboardFormatPrefix, encoded, kImageClipboardFormatSuffix});
 
-  if (!maintain_clipboard) {
+  if (!maintain_clipboard ||
+      !ui::ClipboardNonBacked::GetForCurrentThread()->GetClipboardData(
+          nullptr)) {
     ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteHTML(base::UTF8ToUTF16(html), std::string());
     clipboard_writer.WriteImage(decoded_image);
@@ -89,6 +92,14 @@ void CopyImageToClipboard(bool maintain_clipboard,
       std::make_unique<ui::ClipboardData>(
           *ui::ClipboardNonBacked::GetForCurrentThread()->GetClipboardData(
               nullptr));
+
+  // Before modifying the clipboard, remove the old entry in ClipboardHistory.
+  // CopyAndMaintainClipboard will write to the clipboard a second time,
+  // creating a new entry in clipboard history.
+  auto* clipboard_history = ash::ClipboardHistoryController::Get();
+  if (clipboard_history) {
+    clipboard_history->DeleteClipboardItemByClipboardData(current_data.get());
+  }
   CopyAndMaintainClipboard(std::move(current_data), html, png_data,
                            decoded_image);
   std::move(callback).Run(true);

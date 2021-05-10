@@ -21,8 +21,6 @@ component("arcore") {
     "arcore_anchor_manager.h",
     "arcore_device.cc",
     "arcore_device.h",
-    "arcore_device_provider_factory.cc",
-    "arcore_device_provider_factory.h",
     "arcore_gl.cc",
     "arcore_gl.h",
     "arcore_gl_thread.cc",
@@ -46,8 +44,8 @@ component("arcore") {
 
   deps = [
     "//base",
-    "//device/vr:vr",
     "//device/vr:vr_base",
+    "//device/vr:vr_util",
     "//device/vr/android:vr_android",
     "//mojo/public/cpp/bindings",
     "//ui/gfx",

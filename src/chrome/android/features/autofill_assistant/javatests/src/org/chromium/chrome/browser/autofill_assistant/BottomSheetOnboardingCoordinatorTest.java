@@ -24,10 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.app.Activity;
+import android.support.test.runner.lifecycle.Stage;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -44,12 +43,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.AssistantOnboardingResult;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.BaseOnboardingCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.OnboardingCoordinatorFactory;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
@@ -57,7 +59,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -66,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tests {@link BottomSheetOnboardingCoordinator}
@@ -97,11 +99,16 @@ public class BottomSheetOnboardingCoordinatorTest {
                                     .getScrimCoordinator();
     }
 
-    private BottomSheetOnboardingCoordinator createCoordinator() {
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", new HashMap<String, String>(), mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
+    private BaseOnboardingCoordinator createCoordinator() {
+        return createCoordinator("", new HashMap<>());
+    }
+
+    private BaseOnboardingCoordinator createCoordinator(
+            String experimentIds, Map<String, String> parameters) {
+        BaseOnboardingCoordinator coordinator =
+                OnboardingCoordinatorFactory.createBottomSheetOnboardingCoordinator(experimentIds,
+                        parameters, mActivity, mBottomSheetController,
+                        mActivity.getBrowserControlsManager(), mActivity.getCompositorViewHolder());
         coordinator.disableAnimationForTesting();
         return coordinator;
     }
@@ -123,7 +130,7 @@ public class BottomSheetOnboardingCoordinatorTest {
         AutofillAssistantPreferencesUtil.setInitialPreferences(
                 expectedResult != AssistantOnboardingResult.ACCEPTED);
 
-        BottomSheetOnboardingCoordinator coordinator = createCoordinator();
+        BaseOnboardingCoordinator coordinator = createCoordinator();
         showOnboardingAndWait(coordinator, mCallback);
 
         assertTrue(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
@@ -139,7 +146,7 @@ public class BottomSheetOnboardingCoordinatorTest {
     @Test
     @MediumTest
     public void testOnboardingWithNoTabs() {
-        BottomSheetOnboardingCoordinator coordinator = createCoordinator();
+        BaseOnboardingCoordinator coordinator = createCoordinator();
         showOnboardingAndWait(coordinator, mCallback);
 
         onView(withId(R.id.button_init_not_ok))
@@ -155,7 +162,7 @@ public class BottomSheetOnboardingCoordinatorTest {
     @Test
     @MediumTest
     public void testTransferControls() throws Exception {
-        BottomSheetOnboardingCoordinator coordinator = createCoordinator();
+        BaseOnboardingCoordinator coordinator = createCoordinator();
 
         List<AssistantOverlayCoordinator> capturedOverlays =
                 Collections.synchronizedList(new ArrayList<>());
@@ -181,7 +188,7 @@ public class BottomSheetOnboardingCoordinatorTest {
     @Test
     @MediumTest
     public void testShownFlag() {
-        BottomSheetOnboardingCoordinator coordinator = createCoordinator();
+        BaseOnboardingCoordinator coordinator = createCoordinator();
         assertFalse(coordinator.getOnboardingShown());
 
         showOnboardingAndWait(coordinator, mCallback);
@@ -195,11 +202,7 @@ public class BottomSheetOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap();
         parameters.put("INTENT", "RENT_CAR");
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
-        coordinator.disableAnimationForTesting();
+        BaseOnboardingCoordinator coordinator = createCoordinator("", parameters);
         showOnboardingAndWait(coordinator, mCallback);
 
         TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
@@ -219,11 +222,7 @@ public class BottomSheetOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap();
         parameters.put("INTENT", "BUY_MOVIE_TICKET");
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("4363482", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
-        coordinator.disableAnimationForTesting();
+        BaseOnboardingCoordinator coordinator = createCoordinator("4363482", parameters);
         showOnboardingAndWait(coordinator, mCallback);
 
         TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
@@ -241,12 +240,7 @@ public class BottomSheetOnboardingCoordinatorTest {
     public void testShowStandardInformationalText() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
 
-        HashMap<String, String> parameters = new HashMap();
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
-        coordinator.disableAnimationForTesting();
+        BaseOnboardingCoordinator coordinator = createCoordinator();
         showOnboardingAndWait(coordinator, mCallback);
 
         TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
@@ -265,10 +259,7 @@ public class BottomSheetOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("ONBOARDING_FETCH_TIMEOUT_MS", "0");
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
+        BaseOnboardingCoordinator coordinator = createCoordinator("", parameters);
 
         String expectedTitle = "Title";
         String expectedMessage = "Message";
@@ -280,7 +271,6 @@ public class BottomSheetOnboardingCoordinatorTest {
         coordinator.addEntryToStringMap("terms_and_conditions", expectedTerms);
         coordinator.addEntryToStringMap("terms_and_conditions_url", expectedTermsUrl);
 
-        coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
         assertEquals(((TextView) mActivity.findViewById(R.id.onboarding_try_assistant)).getText(),
@@ -301,8 +291,13 @@ public class BottomSheetOnboardingCoordinatorTest {
                                     spannedMessage.getSpanEnd(spans[0]))
                             .toString());
         });
-        spans[0].onClick(termsMessage);
-        waitUntil(() -> getOpenedUrlSpec().equals(expectedTermsUrl));
+        CustomTabActivity activity = ApplicationTestUtils.waitForActivityWithClass(
+                CustomTabActivity.class, Stage.RESUMED, () -> spans[0].onClick(termsMessage));
+        CriteriaHelper.pollUiThread(() -> {
+            return activity.getActivityTab() != null
+                    && activity.getActivityTab().getUrlString().equals(expectedTermsUrl);
+        });
+        activity.finish();
     }
 
     @Test
@@ -312,14 +307,10 @@ public class BottomSheetOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("ONBOARDING_FETCH_TIMEOUT_MS", "0");
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
+        BaseOnboardingCoordinator coordinator = createCoordinator("", parameters);
 
         coordinator.addEntryToStringMap("terms_and_conditions", "Bad terms");
 
-        coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
         TextView termsMessage = mActivity.findViewById(R.id.google_terms_message);
@@ -338,15 +329,11 @@ public class BottomSheetOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("ONBOARDING_FETCH_TIMEOUT_MS", "0");
-        BottomSheetOnboardingCoordinator coordinator =
-                new BottomSheetOnboardingCoordinator("", parameters, mActivity,
-                        mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
+        BaseOnboardingCoordinator coordinator = createCoordinator("", parameters);
 
         coordinator.addEntryToStringMap(
                 "terms_and_conditions_url", "https://www.domain.com/something");
 
-        coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
         TextView termsMessage = mActivity.findViewById(R.id.google_terms_message);
@@ -362,35 +349,22 @@ public class BottomSheetOnboardingCoordinatorTest {
                             .toString()
                             .replaceAll("\\s+", " "));
         });
-        spans[0].onClick(termsMessage);
-        waitUntil(()
-                          -> getOpenedUrlSpec().equals(
-                                  mActivity.getResources()
-                                          .getText(R.string.autofill_assistant_google_terms_url)
-                                          .toString()));
+        CustomTabActivity activity = ApplicationTestUtils.waitForActivityWithClass(
+                CustomTabActivity.class, Stage.RESUMED, () -> spans[0].onClick(termsMessage));
+        String url = mActivity.getResources()
+                             .getText(R.string.autofill_assistant_google_terms_url)
+                             .toString();
+        CriteriaHelper.pollUiThread(() -> {
+            return activity.getActivityTab() != null
+                    && activity.getActivityTab().getUrlString().equals(url);
+        });
+        activity.finish();
     }
 
     /** Trigger onboarding and wait until it is fully displayed. */
     private void showOnboardingAndWait(
-            BottomSheetOnboardingCoordinator coordinator, Callback<Integer> callback) {
+            BaseOnboardingCoordinator coordinator, Callback<Integer> callback) {
         TestThreadUtils.runOnUiThreadBlocking(() -> coordinator.show(callback));
         waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isCompletelyDisplayed());
-    }
-
-    // Get the newly opened Activity (through CustomTabActivity.showInfoPage) that happens on
-    // terms click. Return the URL of the current tab on that activity.
-    private String getOpenedUrlSpec() {
-        for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
-            if (runningActivity instanceof CustomTabActivity
-                    && ApplicationStatus.getStateForActivity(runningActivity)
-                            == ActivityState.RESUMED) {
-                return ChromeTabUtils
-                        .getUrlOnUiThread(((CustomTabActivity) runningActivity)
-                                                  .getTabModelSelector()
-                                                  .getCurrentTab())
-                        .getSpec();
-            }
-        }
-        return "";
     }
 }

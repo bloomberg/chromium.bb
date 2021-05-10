@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/is_potentially_trustworthy_unittest.h"
 
 #include "base/test/scoped_command_line.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -10,8 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace network {
+namespace test {
 
 bool IsOriginAllowlisted(const url::Origin& origin) {
   return SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(origin);
@@ -21,8 +23,8 @@ bool IsOriginAllowlisted(const char* str) {
   return IsOriginAllowlisted(url::Origin::Create(GURL(str)));
 }
 
-bool IsPotentiallyTrustworthy(const char* str) {
-  return IsUrlPotentiallyTrustworthy(GURL(str));
+bool IsUrlPotentiallyTrustworthy(const char* str) {
+  return network::IsUrlPotentiallyTrustworthy(GURL(str));
 }
 
 std::vector<std::string> CanonicalizeAllowlist(
@@ -32,83 +34,41 @@ std::vector<std::string> CanonicalizeAllowlist(
       allowlist, rejected_patterns);
 }
 
-TEST(IsPotentiallyTrustworthy, MainTest) {
-  const url::Origin unique_origin;
-  EXPECT_FALSE(IsOriginPotentiallyTrustworthy(unique_origin));
-  const url::Origin opaque_origin =
-      url::Origin::Create(GURL("https://www.example.com"))
-          .DeriveNewOpaqueOrigin();
-  EXPECT_FALSE(IsOriginPotentiallyTrustworthy(opaque_origin));
+// TODO(crbug.com/1153336 and crbug.com/1164416): Fix product behavior, so that
+// blink::SecurityOrigin::IsSecure(const KURL&) is compatible with
+// network::IsUrlPotentiallyTrustworthy(const GURL&) and then move the tests
+// below to the AbstractTrustworthinessTest.UrlFromString test case in
+// //services/network/public/cpp/is_potentially_trustworthy_unittest.h
+// See also SecurityOriginTest.IsSecure test.
+TEST(IsPotentiallyTrustworthy, Url) {
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("file:///test/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("file:///test/"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("file://localhost/test/"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("file://otherhost/test/"));
 
-  EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank#ref"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("about:srcdoc"));
-
-  EXPECT_FALSE(IsPotentiallyTrustworthy("data:test/plain;blah"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("javascript:alert('blah')"));
-
-  EXPECT_TRUE(IsPotentiallyTrustworthy("file:///test/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("file:///test/"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("file://localhost/test/"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("file://otherhost/test/"));
-
-  EXPECT_TRUE(IsPotentiallyTrustworthy("https://example.com/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/fun.html"));
-
-  EXPECT_TRUE(IsPotentiallyTrustworthy("wss://example.com/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("ws://example.com/fun.html"));
-
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost./fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://pumpkin.localhost/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://localhost/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://localhost./fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://pumpkin.localhost/fun.html"));
   EXPECT_TRUE(
-      IsPotentiallyTrustworthy("http://crumpet.pumpkin.localhost/fun.html"));
+      IsUrlPotentiallyTrustworthy("http://crumpet.pumpkin.localhost/fun.html"));
   EXPECT_TRUE(
-      IsPotentiallyTrustworthy("http://pumpkin.localhost:8080/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy(
+      IsUrlPotentiallyTrustworthy("http://pumpkin.localhost:8080/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy(
       "http://crumpet.pumpkin.localhost:3000/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://localhost.com/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("https://localhost.com/fun.html"));
 
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.0.0.1/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("ftp://127.0.0.1/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.3.0.1/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/fun.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("https://127.example.com/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://127.0.0.1/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("ftp://127.0.0.1/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://127.3.0.1/fun.html"));
 
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://[::1]/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::2]/fun.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::1].example.com/fun.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://[::1]/fun.html"));
 
-  // IPv4 mapped IPv6 literals for loopback.
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::ffff:127.0.0.1]/"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::ffff:7f00:1]"));
-
-  // IPv4 compatible IPv6 literal for loopback.
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::127.0.0.1]"));
-
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://loopback"));
-
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost6"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("ftp://localhost6.localdomain6"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost.localdomain"));
-
-  EXPECT_FALSE(
-      IsPotentiallyTrustworthy("filesystem:http://www.example.com/temporary/"));
-  EXPECT_FALSE(
-      IsPotentiallyTrustworthy("filesystem:ftp://www.example.com/temporary/"));
   EXPECT_TRUE(
-      IsPotentiallyTrustworthy("filesystem:ftp://127.0.0.1/temporary/"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy(
-      "filesystem:https://www.example.com/temporary/"));
-
-  EXPECT_FALSE(
-      IsPotentiallyTrustworthy("blob:http://www.example.com/guid-goes-here"));
-  EXPECT_FALSE(
-      IsPotentiallyTrustworthy("blob:ftp://www.example.com/guid-goes-here"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("blob:ftp://127.0.0.1/guid-goes-here"));
+      IsUrlPotentiallyTrustworthy("filesystem:ftp://127.0.0.1/temporary/"));
   EXPECT_TRUE(
-      IsPotentiallyTrustworthy("blob:https://www.example.com/guid-goes-here"));
+      IsUrlPotentiallyTrustworthy("blob:ftp://127.0.0.1/guid-goes-here"));
+
+  EXPECT_FALSE(IsUrlPotentiallyTrustworthy("blob:data:text/html,Hello"));
+  EXPECT_FALSE(IsUrlPotentiallyTrustworthy("blob:about:blank"));
 }
 
 class SecureOriginAllowlistTest : public testing::Test {
@@ -121,8 +81,8 @@ class SecureOriginAllowlistTest : public testing::Test {
 TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
   EXPECT_FALSE(IsOriginAllowlisted("http://example.com/a.html"));
   EXPECT_FALSE(IsOriginAllowlisted("http://127.example.com/a.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/a.html"));
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
+  EXPECT_FALSE(IsUrlPotentiallyTrustworthy("http://example.com/a.html"));
+  EXPECT_FALSE(IsUrlPotentiallyTrustworthy("http://127.example.com/a.html"));
 
   // Add http://example.com and http://127.example.com to allowlist by
   // command-line and see if they are now considered secure origins.
@@ -136,13 +96,13 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
   // They should be now allow-listed.
   EXPECT_TRUE(IsOriginAllowlisted("http://example.com/a.html"));
   EXPECT_TRUE(IsOriginAllowlisted("http://127.example.com/a.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://example.com/a.html"));
-  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://example.com/a.html"));
+  EXPECT_TRUE(IsUrlPotentiallyTrustworthy("http://127.example.com/a.html"));
 
   // Check that similarly named sites are not considered secure.
-  EXPECT_FALSE(IsPotentiallyTrustworthy("http://128.example.com/a.html"));
+  EXPECT_FALSE(IsUrlPotentiallyTrustworthy("http://128.example.com/a.html"));
   EXPECT_FALSE(
-      IsPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
+      IsUrlPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
 
   // When port is not specified, default port is assumed.
   EXPECT_TRUE(IsOriginAllowlisted("http://example.com:80/a.html"));
@@ -199,7 +159,8 @@ TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
     GURL input_url(test.test_input);
     url::Origin input_origin = url::Origin::Create(input_url);
     EXPECT_EQ(test.expected_secure, IsOriginAllowlisted(input_origin));
-    EXPECT_EQ(test.expected_secure, IsPotentiallyTrustworthy(test.test_input));
+    EXPECT_EQ(test.expected_secure,
+              IsUrlPotentiallyTrustworthy(test.test_input));
   }
 }
 
@@ -254,4 +215,27 @@ TEST_F(SecureOriginAllowlistTest, Canonicalization) {
   EXPECT_THAT(canonicalized, ::testing::ElementsAre("*.example.com"));
 }
 
+class TrustworthinessTestTraits : public url::UrlOriginTestTraits {
+ public:
+  using OriginType = url::Origin;
+
+  static bool IsOriginPotentiallyTrustworthy(const OriginType& origin) {
+    return network::IsOriginPotentiallyTrustworthy(origin);
+  }
+  static bool IsUrlPotentiallyTrustworthy(base::StringPiece str) {
+    return network::IsUrlPotentiallyTrustworthy(GURL(str));
+  }
+  static bool IsOriginOfLocalhost(const OriginType& origin) {
+    return net::IsLocalhost(origin.GetURL());
+  }
+
+  // Only static members = no constructors are needed.
+  TrustworthinessTestTraits() = delete;
+};
+
+INSTANTIATE_TYPED_TEST_SUITE_P(UrlOrigin,
+                               AbstractTrustworthinessTest,
+                               TrustworthinessTestTraits);
+
+}  // namespace test
 }  // namespace network

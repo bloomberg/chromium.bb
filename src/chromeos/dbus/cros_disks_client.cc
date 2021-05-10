@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -20,7 +21,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
@@ -600,6 +600,10 @@ DiskInfo::~DiskInfo() = default;
 //
 // array [
 //   dict entry {
+//     string "BusNumber"
+//     variant       int32 1
+//   }
+//   dict entry {
 //     string "DeviceFile"
 //     variant       string "/dev/sdb"
 //   }
@@ -639,6 +643,10 @@ DiskInfo::~DiskInfo() = default;
 //     string "DeviceMountPaths"
 //     variant       array [
 //       ]
+//   }
+//   dict entry {
+//     string "DeviceNumber"
+//     variant       int32 5
 //   }
 //   dict entry {
 //     string "DevicePresentationHide"
@@ -729,6 +737,11 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
   properties->GetStringWithoutPathExpansion(cros_disks::kIdUuid, &uuid_);
   properties->GetStringWithoutPathExpansion(cros_disks::kFileSystemType,
                                             &file_system_type_);
+
+  properties->GetIntegerWithoutPathExpansion(cros_disks::kBusNumber,
+                                             &bus_number_);
+  properties->GetIntegerWithoutPathExpansion(cros_disks::kDeviceNumber,
+                                             &device_number_);
 
   // dbus::PopDataAsValue() pops uint64_t as double.
   // The top 11 bits of uint64_t are dropped by the use of double. But, this

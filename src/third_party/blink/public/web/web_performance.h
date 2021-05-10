@@ -116,6 +116,7 @@ class WebPerformance {
   BLINK_EXPORT uint64_t LargestImagePaintSize() const;
   BLINK_EXPORT double LargestTextPaint() const;
   BLINK_EXPORT uint64_t LargestTextPaintSize() const;
+  BLINK_EXPORT base::TimeTicks LargestContentfulPaintAsMonotonicTime() const;
   BLINK_EXPORT double ExperimentalLargestImagePaint() const;
   BLINK_EXPORT uint64_t ExperimentalLargestImagePaintSize() const;
   BLINK_EXPORT double ExperimentalLargestTextPaint() const;
@@ -137,6 +138,9 @@ class WebPerformance {
   BLINK_EXPORT double ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
   BLINK_EXPORT base::Optional<base::TimeTicks> LastPortalActivatedPaint() const;
+  BLINK_EXPORT base::Optional<base::TimeTicks> UnloadStart() const;
+  BLINK_EXPORT base::Optional<base::TimeTicks> UnloadEnd() const;
+  BLINK_EXPORT base::Optional<base::TimeTicks> CommitNavigationEnd() const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebPerformance(WindowPerformance*);

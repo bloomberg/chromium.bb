@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/sequenced_task_runner.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
@@ -29,13 +29,13 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/session_manager/session_manager_types.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
@@ -126,6 +126,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
     machine_learning::ServiceConnection::UseFakeServiceConnectionForTesting(
         &fake_service_connection_);
+    machine_learning::ServiceConnection::GetInstance()->Initialize();
   }
 
   void TearDown() override {
@@ -1272,7 +1273,8 @@ TEST_F(UserActivityManagerTest, DISABLED_BasicTabs) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   const ukm::SourceId source_id1 = CreateTestWebContents(
       tab_strip_model, url1_, true /* is_active */, "application/pdf");
-  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(url1_, 95);
+  site_engagement::SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+      url1_, 95);
 
   CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
 

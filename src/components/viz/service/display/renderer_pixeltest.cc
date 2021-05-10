@@ -189,14 +189,14 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
   auto* quad =
       render_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   quad->SetNew(shared_state, rect, rect, pass_id,
-               0,                 // mask_resource_id
-               gfx::RectF(),      // mask_uv_rect
-               gfx::Size(),       // mask_texture_size
-               gfx::Vector2dF(),  // filters scale
-               gfx::PointF(),     // filter origin
-               gfx::RectF(rect),  // tex_coord_rect
-               false,             // force_anti_aliasing_off
-               1.0f);             // backdrop_filter_quality
+               kInvalidResourceId,  // mask_resource_id
+               gfx::RectF(),        // mask_uv_rect
+               gfx::Size(),         // mask_texture_size
+               gfx::Vector2dF(),    // filters scale
+               gfx::PointF(),       // filter origin
+               gfx::RectF(rect),    // tex_coord_rect
+               false,               // force_anti_aliasing_off
+               1.0f);               // backdrop_filter_quality
 }
 
 // Create a TextureDrawDrawQuad with two given colors.
@@ -271,7 +271,7 @@ void CreateTestTwoColoredTextureDrawQuad(
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap({resource}, resource_provider,
                                              child_resource_provider,
                                              child_context_provider.get());
@@ -332,7 +332,7 @@ void CreateTestTextureDrawQuad(
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap({resource}, resource_provider,
                                              child_resource_provider,
                                              child_context_provider.get());
@@ -417,7 +417,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
       resources.resources[media::VideoFrame::kVPlane],
       SingleReleaseCallback::Create(
           std::move(resources.release_callbacks[media::VideoFrame::kVPlane])));
-  ResourceId resource_a = 0;
+  ResourceId resource_a = kInvalidResourceId;
   if (with_alpha) {
     resource_a = child_resource_provider->ImportResource(
         resources.resources[media::VideoFrame::kAPlane],
@@ -432,7 +432,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   if (with_alpha)
     resource_ids_to_transfer.push_back(resource_a);
   // Transfer resources to the parent, and get the resource map.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           resource_ids_to_transfer, resource_provider, child_resource_provider,
           child_context_provider);
@@ -440,18 +440,18 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   ResourceId mapped_resource_y = resource_map[resource_y];
   ResourceId mapped_resource_u = resource_map[resource_u];
   ResourceId mapped_resource_v = resource_map[resource_v];
-  ResourceId mapped_resource_a = 0;
+  ResourceId mapped_resource_a = kInvalidResourceId;
   if (with_alpha)
     mapped_resource_a = resource_map[resource_a];
   const gfx::Size ya_tex_size = video_frame->coded_size();
-  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSizeInSamples(
       video_frame->format(), media::VideoFrame::kUPlane,
       video_frame->coded_size());
-  DCHECK(uv_tex_size == media::VideoFrame::PlaneSize(
+  DCHECK(uv_tex_size == media::VideoFrame::PlaneSizeInSamples(
                             video_frame->format(), media::VideoFrame::kVPlane,
                             video_frame->coded_size()));
   if (with_alpha) {
-    DCHECK(ya_tex_size == media::VideoFrame::PlaneSize(
+    DCHECK(ya_tex_size == media::VideoFrame::PlaneSizeInSamples(
                               video_frame->format(), media::VideoFrame::kAPlane,
                               video_frame->coded_size()));
   }
@@ -521,7 +521,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
       SingleReleaseCallback::Create(std::move(resources.release_callbacks[0])));
 
   // Transfer resources to the parent, and get the resource map.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap({resource_y}, resource_provider,
                                              child_resource_provider,
                                              child_context_provider);
@@ -560,7 +560,7 @@ scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
       video_frame->natural_size(), video_frame->timestamp());
 
   // Copy all metadata.
-  ret->metadata()->MergeMetadataFrom(video_frame->metadata());
+  ret->metadata().MergeMetadataFrom(video_frame->metadata());
 
   for (int plane = media::VideoFrame::kYPlane;
        plane <= media::VideoFrame::kVPlane; ++plane) {
@@ -757,7 +757,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
     scoped_refptr<ContextProvider> child_context_provider) {
   bool needs_blending = true;
   const gfx::Size ya_tex_size = rect.size();
-  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSizeInSamples(
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
 
   std::vector<uint8_t> y_pixels(ya_tex_size.GetArea(), y);
@@ -772,10 +772,10 @@ void CreateTestYUVVideoDrawQuad_NV12(
       child_context_provider, child_resource_provider, uv_tex_size, RGBA_8888,
       color_space, MakePixelSpan(uv_pixels));
   ResourceId resource_v = resource_u;
-  ResourceId resource_a = 0;
+  ResourceId resource_a = kInvalidResourceId;
 
   // Transfer resources to the parent, and get the resource map.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource_y, resource_u, resource_v}, resource_provider,
           child_resource_provider, child_context_provider.get());
@@ -2155,8 +2155,8 @@ TEST_P(RendererPixelTest, DISABLED_FastPassColorFilterAlpha) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(),
+                           child_pass_id, kInvalidResourceId, gfx::RectF(),
+                           gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
@@ -2215,8 +2215,8 @@ TEST_P(RendererPixelTest, DISABLED_FastPassSaturateFilter) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(),
+                           child_pass_id, kInvalidResourceId, gfx::RectF(),
+                           gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
@@ -2275,8 +2275,8 @@ TEST_P(RendererPixelTest, FastPassFilterChain) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(),
+                           child_pass_id, kInvalidResourceId, gfx::RectF(),
+                           gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
@@ -2357,8 +2357,8 @@ TEST_P(RendererPixelTest, DISABLED_FastPassColorFilterAlphaTranslation) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(),
+                           child_pass_id, kInvalidResourceId, gfx::RectF(),
+                           gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
@@ -2523,7 +2523,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {mask_resource_id}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -2620,7 +2620,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {mask_resource_id}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -2713,7 +2713,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {mask_resource_id}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -2817,7 +2817,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {mask_resource_id}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -2882,7 +2882,7 @@ class RendererPixelTestWithBackdropFilter : public VizPixelTestWithParam {
                          filter_pass_layer_rect_, SK_ColorTRANSPARENT, false);
     }
 
-    ResourceId mapped_mask_resource_id = 0;
+    ResourceId mapped_mask_resource_id(0);
     gfx::RectF mask_uv_rect;
     gfx::Size mask_texture_size;
     if (include_backdrop_mask_) {
@@ -2924,8 +2924,8 @@ class RendererPixelTestWithBackdropFilter : public VizPixelTestWithParam {
       }
 
       // Return the mapped resource id.
-      std::unordered_map<ResourceId, ResourceId> resource_map =
-          cc::SendResourceAndGetChildToParentMap(
+      std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>
+          resource_map = cc::SendResourceAndGetChildToParentMap(
               {mask_resource_id}, this->resource_provider_.get(),
               this->child_resource_provider_.get(),
               this->child_context_provider_.get());
@@ -3090,13 +3090,14 @@ class GLRendererPixelTestWithBackdropFilter : public VizPixelTest {
           root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
       filter_pass_quad->SetAll(
           shared_state, filter_pass_layer_rect_, filter_pass_layer_rect_,
-          /*needs_blending=*/true, filter_pass_id, 0, gfx::RectF(), gfx::Size(),
+          /*needs_blending=*/true, filter_pass_id, kInvalidResourceId,
+          gfx::RectF(), gfx::Size(),
           gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
           gfx::PointF(),               // filters_origin
           gfx::RectF(),                // tex_coord_rect
           false,                       // force_anti_aliasing_off
           backdrop_filter_quality_,    // backdrop_filter_quality
-          can_use_backdrop_filter_cache_);
+          intersects_damage_under_);
     }
 
     const int kGridWidth = device_viewport_rect.width() / 3;
@@ -3136,7 +3137,7 @@ class GLRendererPixelTestWithBackdropFilter : public VizPixelTest {
   cc::FilterOperations backdrop_filters_;
   base::Optional<gfx::RRectF> backdrop_filter_bounds_;
   float backdrop_filter_quality_ = 1.0f;
-  bool can_use_backdrop_filter_cache_ = false;
+  bool intersects_damage_under_ = true;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
 };
@@ -3152,6 +3153,8 @@ TEST_F(GLRendererPixelTestWithBackdropFilter, FilterQuality) {
       &this->pass_list_,
       base::FilePath(FILE_PATH_LITERAL("gl_backdrop_filter_1.png")),
       cc::FuzzyPixelOffByOneComparator(true)));
+  if (this->context_provider()->ContextCapabilities().major_version < 3)
+    return;
   this->backdrop_filter_quality_ = 0.33f;
   this->SetUpRenderPassList();
   EXPECT_TRUE(this->RunPixelTest(
@@ -3167,7 +3170,7 @@ TEST_F(GLRendererPixelTestWithBackdropFilter, CachedResultOfBackdropFilter) {
       gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
   // Set the flag to use cached backdrop filtered texture. This makes the
   // GLRenderer cache backdrop filtered result.
-  this->can_use_backdrop_filter_cache_ = true;
+  this->intersects_damage_under_ = false;
   this->SetUpRenderPassList();
 
   EXPECT_TRUE(this->RunPixelTest(
@@ -3195,9 +3198,9 @@ TEST_F(GLRendererPixelTestWithBackdropFilter, CachedResultOfBackdropFilter) {
       base::FilePath(FILE_PATH_LITERAL("gl_backdrop_filter_1.png")),
       cc::FuzzyPixelOffByOneComparator(true)));
 
-  // Set|can_use_backdrop_filter_cache_| to false to make GLRenderer re-run the
+  // Set |intersects_damage_under_| to true to make GLRenderer re-run the
   // backdrop filter calculation
-  this->can_use_backdrop_filter_cache_ = false;
+  this->intersects_damage_under_ = true;
   this->SetUpRenderPassList();
   background_quad = *pass_list_.back()->quad_list.rbegin();
   static_cast<SolidColorDrawQuad*>(background_quad)->color = SK_ColorYELLOW;
@@ -3500,7 +3503,7 @@ TEST_P(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   bool needs_blending = false;
   bool force_anti_aliasing_off = true;
   float backdrop_filter_quality = 1.0f;
-  bool can_use_backdrop_filter_cache = false;
+  bool intersects_damage_under = true;
   gfx::Transform hole_pass_to_target_transform;
   hole_pass_to_target_transform.Translate(50, 50);
   hole_pass_to_target_transform.Scale(0.5f + 1.0f / (rect.width() * 2.0f),
@@ -3510,10 +3513,10 @@ TEST_P(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   AggregatedRenderPassDrawQuad* pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   pass_quad->SetAll(pass_shared_state, rect, rect, needs_blending,
-                    child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                    gfx::Vector2dF(), gfx::PointF(), gfx::RectF(rect),
-                    force_anti_aliasing_off, backdrop_filter_quality,
-                    can_use_backdrop_filter_cache);
+                    child_pass_id, kInvalidResourceId, gfx::RectF(),
+                    gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+                    gfx::RectF(rect), force_anti_aliasing_off,
+                    backdrop_filter_quality, intersects_damage_under);
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -3555,7 +3558,7 @@ TEST_P(GPURendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   }
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -3664,17 +3667,16 @@ TEST_P(GPURendererPixelTest, TrilinearFiltering) {
   blue->SetNew(blue_shared_state, child_pass_rect, child_pass_rect,
                SK_ColorBLUE, false);
 
-  gfx::Transform child_to_root_transform(SkMatrix::MakeRectToRect(
-      RectToSkRect(child_pass_rect), RectToSkRect(viewport_rect),
-      SkMatrix::kFill_ScaleToFit));
+  gfx::Transform child_to_root_transform(SkMatrix::RectToRect(
+      RectToSkRect(child_pass_rect), RectToSkRect(viewport_rect)));
   SharedQuadState* child_pass_shared_state = CreateTestSharedQuadState(
       child_to_root_transform, child_pass_rect, root_pass.get(), gfx::RRectF());
   auto* child_pass_quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
-  child_pass_quad->SetNew(child_pass_shared_state, child_pass_rect,
-                          child_pass_rect, child_pass_id, 0, gfx::RectF(),
-                          gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                          gfx::RectF(child_pass_rect), false, 1.0f);
+  child_pass_quad->SetNew(
+      child_pass_shared_state, child_pass_rect, child_pass_rect, child_pass_id,
+      kInvalidResourceId, gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
+      gfx::PointF(), gfx::RectF(child_pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -3913,10 +3915,9 @@ TEST_F(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 
   std::unique_ptr<cc::FakeRecordingSource> recording =
       cc::FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
-  cc::PaintFlags flags;
-  flags.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_image_with_flags(surface->makeImageSnapshot(),
-                                       gfx::Point(), flags);
+  recording->add_draw_image_with_flags(
+      surface->makeImageSnapshot(), gfx::Point(),
+      SkSamplingOptions(SkFilterMode::kLinear), cc::PaintFlags());
   recording->Rerecord();
   scoped_refptr<cc::RasterSource> raster_source =
       recording->CreateRasterSource();
@@ -3964,10 +3965,9 @@ TEST_F(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 
   std::unique_ptr<cc::FakeRecordingSource> recording =
       cc::FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
-  cc::PaintFlags flags;
-  flags.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_image_with_flags(surface->makeImageSnapshot(),
-                                       gfx::Point(), flags);
+  recording->add_draw_image_with_flags(
+      surface->makeImageSnapshot(), gfx::Point(),
+      SkSamplingOptions(SkFilterMode::kLinear), cc::PaintFlags());
   recording->Rerecord();
   scoped_refptr<cc::RasterSource> raster_source =
       recording->CreateRasterSource();
@@ -4022,7 +4022,7 @@ TEST_P(RendererPixelTest, TileDrawQuadNearestNeighbor) {
     resource = this->AllocateAndFillSoftwareResource(tile_size, bitmap);
   }
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -4072,7 +4072,7 @@ TEST_F(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
       this->AllocateAndFillSoftwareResource(tile_size, bitmap);
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -4125,7 +4125,7 @@ TEST_F(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
       this->AllocateAndFillSoftwareResource(tile_size, bitmap);
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -4479,7 +4479,7 @@ TEST_P(GPURendererPixelTest, TextureQuadBatching) {
       mask_rect.size(), RGBA_8888, gfx::ColorSpace(), MakePixelSpan(bitmap));
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -4559,7 +4559,7 @@ TEST_P(GPURendererPixelTest, TileQuadClamping) {
     resource = this->AllocateAndFillSoftwareResource(tile_size, bitmap);
   }
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -4669,7 +4669,7 @@ TEST_P(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
       this->child_context_provider_, this->child_resource_provider_.get(),
       gfx::Size(2, 2), RGBA_8888, gfx::ColorSpace(), colors);
 
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {resource}, this->resource_provider_.get(),
           this->child_resource_provider_.get(),
@@ -5070,8 +5070,8 @@ class ColorTransformPixelTest
           rect.size(), RGBA_8888, this->src_color_space_, input_colors);
 
       // Return the mapped resource id.
-      std::unordered_map<ResourceId, ResourceId> resource_map =
-          cc::SendResourceAndGetChildToParentMap(
+      std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>
+          resource_map = cc::SendResourceAndGetChildToParentMap(
               {resource}, this->resource_provider_.get(),
               this->child_resource_provider_.get(),
               this->child_context_provider_.get());
@@ -5227,16 +5227,18 @@ INSTANTIATE_TEST_SUITE_P(,
 // Draw a single trail and erase it, making sure that no bits of trail are left
 // behind.
 TEST_P(DelegatedInkTest, DrawOneTrailAndErase) {
-  // First provide the metadata required to draw the trail, numbers arbitrary.
-  CreateAndSendMetadata(gfx::PointF(10, 10), 3.5f, SK_ColorBLACK,
-                        gfx::RectF(0, 0, 175, 172));
-
-  // Then provide some points for the trail to draw. Numbers chosen arbitrarily
-  // after the first point, which must match the metadata. This will predict no
+  // Send some DelegatedInkPoints, numbers arbitrary. This will predict no
   // points, so a trail made of 3 points will be drawn.
-  CreateAndSendPointFromMetadata();
+  const gfx::PointF kFirstPoint(10, 10);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   CreateAndSendPointFromLastPoint(gfx::PointF(75, 62));
   CreateAndSendPointFromLastPoint(gfx::PointF(124, 45));
+
+  // Provide the metadata required to draw the trail, matching the first
+  // DelegatedInkPoint sent.
+  CreateAndSendMetadata(kFirstPoint, 3.5f, SK_ColorBLACK, kFirstTimestamp,
+                        gfx::RectF(0, 0, 175, 172));
 
   // Confirm that the trail was drawn.
   EXPECT_TRUE(
@@ -5253,15 +5255,17 @@ TEST_P(DelegatedInkTest, DrawTwoTrailsAndErase) {
   if (renderer_type() == RendererType::kSkiaDawn)
     return;
 
-  // First provide the metadata required to draw the trail, numbers arbitrary.
-  CreateAndSendMetadata(gfx::PointF(140, 48), 8.2f, SK_ColorMAGENTA,
-                        gfx::RectF(0, 0, 200, 200));
-
-  // Then provide some points for the trail to draw. Numbers chosen arbitrarily
-  // after the first point, which must match the metadata. No points will be
-  // predicted, so a trail made of 2 points will be drawn.
-  CreateAndSendPointFromMetadata();
+  // Numbers chosen arbitrarily. No points will be predicted, so a trail made of
+  // 2 points will be drawn.
+  const gfx::PointF kFirstPoint(140, 48);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   CreateAndSendPointFromLastPoint(gfx::PointF(115, 85));
+
+  // Provide the metadata required to draw the trail, numbers matching the first
+  // DelegatedInkPoint sent.
+  CreateAndSendMetadata(kFirstPoint, 8.2f, SK_ColorMAGENTA, kFirstTimestamp,
+                        gfx::RectF(0, 0, 200, 200));
 
   // Confirm that the trail was drawn correctly.
   EXPECT_TRUE(DrawAndTestTrail(
@@ -5288,14 +5292,13 @@ TEST_P(DelegatedInkTest, TrailExtendsBeyondPresentationArea) {
   if (renderer_type() == RendererType::kSkiaDawn)
     return;
 
-  const gfx::RectF kPresentationArea(30, 30, 100, 100);
-  CreateAndSendMetadata(gfx::PointF(50.2f, 89.999f), 15.22f, SK_ColorCYAN,
-                        kPresentationArea);
+  const gfx::PointF kFirstPoint(50.2f, 89.999f);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
 
   // Send points such that some extend beyond the presentation area to confirm
   // that the trail is clipped correctly. One point will be predicted, so the
   // trail will be made of 9 points.
-  CreateAndSendPointFromMetadata();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   CreateAndSendPointFromLastPoint(gfx::PointF(80.7f, 149.6f));
   CreateAndSendPointFromLastPoint(gfx::PointF(128.999f, 110.01f));
   CreateAndSendPointFromLastPoint(gfx::PointF(50, 50));
@@ -5303,6 +5306,11 @@ TEST_P(DelegatedInkTest, TrailExtendsBeyondPresentationArea) {
   CreateAndSendPointFromLastPoint(gfx::PointF(29.98f, 66));
   CreateAndSendPointFromLastPoint(gfx::PointF(52.3456f, 2.31f));
   CreateAndSendPointFromLastPoint(gfx::PointF(97, 36.9f));
+
+  const gfx::RectF kPresentationArea(30, 30, 100, 100);
+  CreateAndSendMetadata(kFirstPoint, 15.22f, SK_ColorCYAN, kFirstTimestamp,
+                        kPresentationArea);
+
   EXPECT_TRUE(DrawAndTestTrail(FILE_PATH_LITERAL(
       "delegated_ink_trail_clipped_by_presentation_area.png")));
 }
@@ -5333,12 +5341,15 @@ TEST_P(DelegatedInkTest, DelegatedInkTrailAfterBatchedQuads) {
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  const gfx::RectF kPresentationArea(0, 0, 200, 200);
-  CreateAndSendMetadata(gfx::PointF(34.f, 72.f), 7.77f, SK_ColorDKGRAY,
-                        kPresentationArea);
-  CreateAndSendPointFromMetadata();
+  const gfx::PointF kFirstPoint(34.f, 72.f);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   CreateAndSendPointFromLastPoint(gfx::PointF(79, 101));
   CreateAndSendPointFromLastPoint(gfx::PointF(134, 114));
+
+  const gfx::RectF kPresentationArea(0, 0, 200, 200);
+  CreateAndSendMetadata(kFirstPoint, 7.77f, SK_ColorDKGRAY, kFirstTimestamp,
+                        kPresentationArea);
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -5376,12 +5387,15 @@ TEST_P(DelegatedInkTest, SimpleTrailNonRootRenderPass) {
   pass_list.push_back(std::move(root_pass));
 
   // Values for a simple delegated ink trail, numbers chosen arbitrarily.
-  const gfx::RectF kPresentationArea(0, 0, 200, 200);
-  CreateAndSendMetadata(gfx::PointF(156.f, 111.f), 19.177f, SK_ColorRED,
-                        kPresentationArea);
-  CreateAndSendPointFromMetadata();
+  const gfx::PointF kFirstPoint(156.f, 111.f);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
   CreateAndSendPointFromLastPoint(gfx::PointF(119, 87.23f));
   CreateAndSendPointFromLastPoint(gfx::PointF(74.222f, 95.4f));
+
+  const gfx::RectF kPresentationArea(0, 0, 200, 200);
+  CreateAndSendMetadata(kFirstPoint, 19.177f, SK_ColorRED, kFirstTimestamp,
+                        kPresentationArea);
 
   // This will only check what was drawn in the child pass, which should never
   // contain a delegated ink trail, so it should be solid green.
@@ -5389,6 +5403,62 @@ TEST_P(DelegatedInkTest, SimpleTrailNonRootRenderPass) {
       &pass_list, child_pass_ptr,
       base::FilePath(FILE_PATH_LITERAL("green.png")),
       cc::ExactPixelComparator(true)));
+}
+
+// Draw two different trails that are made up of sets of DelegatedInkPoints with
+// different pointer IDs. All numbers arbitrarily chosen.
+TEST_P(DelegatedInkTest, DrawTrailsWithDifferentPointerIds) {
+  const int32_t kPointerId1 = 2;
+  const int32_t kPointerId2 = 100;
+
+  const base::TimeTicks kTimestamp = base::TimeTicks::Now();
+
+  // Constants used for sending points and making sure we can send matching
+  // DelegatedInkMetadata later.
+  const gfx::PointF kPointerId1StartPoint(40, 27);
+  const base::TimeTicks kPointerId1StartTime = kTimestamp;
+  const gfx::PointF kPointerId2StartPoint(160, 190);
+  const base::TimeTicks kPointerId2StartTime =
+      kTimestamp + base::TimeDelta::FromMilliseconds(15);
+
+  // Send four points for pointer ID 1 and two points for pointer ID 2 in mixed
+  // order to confirm that they get put in the right buckets. Some timestamps
+  // match intentionally to make sure that point is considered when matching
+  // DelegatedInkMetadata to DelegatedInkPoints
+  CreateAndSendPoint(kPointerId1StartPoint, kPointerId1StartTime, kPointerId1);
+  CreateAndSendPoint(gfx::PointF(24, 80),
+                     kTimestamp + base::TimeDelta::FromMilliseconds(15),
+                     kPointerId1);
+  CreateAndSendPoint(kPointerId2StartPoint, kPointerId2StartTime, kPointerId2);
+  CreateAndSendPoint(gfx::PointF(60, 130),
+                     kTimestamp + base::TimeDelta::FromMilliseconds(24),
+                     kPointerId1);
+  CreateAndSendPoint(gfx::PointF(80, 118),
+                     kTimestamp + base::TimeDelta::FromMilliseconds(20),
+                     kPointerId2);
+  CreateAndSendPoint(gfx::PointF(100, 190),
+                     kTimestamp + base::TimeDelta::FromMilliseconds(30),
+                     kPointerId1);
+
+  const gfx::RectF kPresentationArea(200, 200);
+
+  // Now send a metadata to match the first point of the first pointer id to
+  // confirm that only that trail is drawn.
+  CreateAndSendMetadata(kPointerId1StartPoint, 7, SK_ColorYELLOW,
+                        kPointerId1StartTime, kPresentationArea);
+  EXPECT_TRUE(
+      DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_pointer_id_1.png")));
+
+  // Then send metadata that matches the first point of the other pointer id.
+  // These points should not have been erased, so all 3 points should be drawn.
+  CreateAndSendMetadata(kPointerId2StartPoint, 2.4f, SK_ColorRED,
+                        kPointerId2StartTime, kPresentationArea);
+  EXPECT_TRUE(
+      DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_pointer_id_2.png")));
+
+  // The metadata should have been cleared after drawing, so confirm that there
+  // is no trail after another draw.
+  EXPECT_TRUE(DrawAndTestTrail(FILE_PATH_LITERAL("white.png")));
 }
 #endif  // !defined(OS_ANDROID)
 

@@ -14,14 +14,7 @@ GEN('#include "services/network/public/cpp/features.h"');
 var TabSearchInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://tab-search/test_loader.html?module=tab_search/tab_search_app_focus_test.js';
-  }
-
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
+    return 'chrome://tab-search.top-chrome/test_loader.html?module=tab_search/tab_search_app_focus_test.js';
   }
 
   /** @override */

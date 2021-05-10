@@ -692,7 +692,7 @@ void GrCCStroker::drawStrokes(GrOpFlushState* flushState, GrCCCoverageProcessor*
             ? &fZeroTallies : fScissorSubBatches[startScissorSubBatch - 1].fEndInstances;
 
     GrPipeline pipeline(GrScissorTest::kEnabled, SkBlendMode::kPlus,
-                        flushState->drawOpArgs().writeSwizzle());
+                        flushState->drawOpArgs().writeView().swizzle());
 
     // Draw linear strokes.
     this->drawLog2Strokes(0, flushState, LinearStrokeProcessor(), pipeline, batch, startIndices,
@@ -726,12 +726,10 @@ void GrCCStroker::drawLog2Strokes(int numSegmentsLog2, GrOpFlushState* flushStat
                                   const GrPrimitiveProcessor& processor, const GrPipeline& pipeline,
                                   const Batch& batch, const InstanceTallies* startIndices[2],
                                   int startScissorSubBatch, const SkIRect& drawBounds) const {
-    GrProgramInfo programInfo(flushState->proxy()->numSamples(),
-                              flushState->proxy()->numStencilSamples(),
-                              flushState->proxy()->backendFormat(),
-                              flushState->writeView()->origin(), &pipeline,
+    GrProgramInfo programInfo(flushState->writeView(), &pipeline,
                               &GrUserStencilSettings::kUnused, &processor,
-                              GrPrimitiveType::kTriangleStrip, 0, flushState->renderPassBarriers());
+                              GrPrimitiveType::kTriangleStrip, 0, flushState->renderPassBarriers(),
+                              flushState->colorLoadOp());
 
     flushState->bindPipeline(programInfo, SkRect::Make(drawBounds));
     flushState->bindBuffers(nullptr, fInstanceBuffer, nullptr);

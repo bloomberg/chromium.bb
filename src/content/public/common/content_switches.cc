@@ -5,14 +5,10 @@
 #include "content/public/common/content_switches.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/media_buildflags.h"
 
 namespace switches {
-
-// Allows processing of input before a frame has been committed.
-// TODO(schenney): crbug.com/987626. Used by headless. Look for a way not
-// involving a command line switch.
-const char kAllowPreCommitInput[] = "allow-pre-commit-input";
 
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
@@ -376,7 +372,7 @@ const char kEnablePluginPlaceholderTesting[] =
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
-// Set options to cache V8 data. (off, preparse data, or code)
+// Set options to cache V8 data. (none, code, or default)
 const char kV8CacheOptions[] = "v8-cache-options";
 
 // If true the ServiceProcessLauncher is used to launch services. This allows
@@ -405,14 +401,6 @@ const char kEnableStrictPowerfulFeatureRestrictions[] =
 
 // Enabled threaded compositing for web tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
-
-// Enable tracing during the execution of browser tests.
-const char kEnableTracing[]                 = "enable-tracing";
-
-// The filename to write the output of the test tracing to. If it is empty
-// or it ends in a directory separator then an auto-generated filename will be
-// appended.
-const char kEnableTracingOutput[]           = "enable-tracing-output";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
@@ -510,6 +498,12 @@ const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 //   --isolate-origins=https://www.foo.com,https://www.bar.com
 const char kIsolateOrigins[] = "isolate-origins";
 
+// Enables the web-facing behaviors that will enable origin-isolation by default
+// at some point in the relatively near future.
+//
+// https://crbug.com/1140371
+const char kIsolationByDefault[] = "isolation-by-default";
+
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";
@@ -562,6 +556,12 @@ const char kMojoCoreLibraryPath[] = "mojo-core-library-path";
 
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
+
+// Disables the unsandboxed zygote.
+// Note: this flag should not be used on most platforms. It is introduced
+// because some platforms (e.g. Cast) have very limited memory and binaries
+// won't be updated when the browser process is running.
+const char kNoUnsandboxedZygote[] = "no-unsandboxed-zygote";
 
 // Disables the use of a zygote process for forking child processes. Instead,
 // child processes will be forked and exec'd directly. Note that --no-sandbox
@@ -628,6 +628,11 @@ const char kProxyServer[] = "proxy-server";
 // touchpad and touchscreen, and set to '2' to enable it only for touchscreen.
 // Defaults to disabled.
 const char kPullToRefresh[] = "pull-to-refresh";
+
+// Specifies the minimum amount of time, in seconds, that must pass before
+// consecutive quota change events can be fired. Set the value to '0' to disable
+// the debounce mechanimsm.
+const char kQuotaChangeEventInterval[] = "quota-change-event-interval";
 
 // Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
@@ -780,8 +785,9 @@ const char kUtilityProcess[]                = "utility";
 // Causes the utility process to display a dialog on launch.
 const char kUtilityStartupDialog[] = "utility-startup-dialog";
 
-// This switch indicates the type of a utility process. It is not used by Chrome
-// but is added to the command line for debugging and profiling purposes.
+// This switch indicates the type of a utility process. It does not affect the
+// services offered by the process, but is added to the command line for
+// debugging and profiling purposes.
 const char kUtilitySubType[] = "utility-sub-type";
 
 // In debug builds, asserts that the stream of input events is valid.
@@ -895,11 +901,6 @@ const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-// Enables hardware acceleration of video decoding on linux. (defaults to off)
-const char kEnableAcceleratedVideoDecode[] = "enable-accelerated-video-decode";
-#endif
-
 #if defined(OS_ANDROID)
 // Disable Media Session API
 const char kDisableMediaSessionAPI[] = "disable-media-session-api";
@@ -934,9 +935,6 @@ const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
 const char kForceOnlineConnectionStateForIndicator[] =
     "force-online-connection-state-for-indicator";
 
-// The telephony region (ISO country code) to use in phone number detection.
-const char kNetworkCountryIso[] = "network-country-iso";
-
 // Enables remote debug over HTTP on the specified socket name.
 const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 
@@ -959,7 +957,9 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 // Enable indication that browser is controlled by automation.
 const char kEnableAutomation[] = "enable-automation";
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Allows sending text-to-speech requests to speech-dispatcher, a common
 // Linux speech service. Because it's buggy, the user must explicitly
 // enable it so that visiting a random webpage can't cause instability.
@@ -1023,6 +1023,9 @@ const char kRaiseTimerFrequency[] = "raise-timer-frequency";
 // Causes the second GPU process used for gpu info collection to display a
 // dialog on launch.
 const char kGpu2StartupDialog[] = "gpu2-startup-dialog";
+
+// Use high priority for the audio process.
+const char kAudioProcessHighPriority[] = "audio-process-high-priority";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

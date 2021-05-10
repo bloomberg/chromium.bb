@@ -28,44 +28,182 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as UI from '../ui/ui.js';
 
 import {ApplicationCacheItemsView} from './ApplicationCacheItemsView.js';
 import {ApplicationCacheModel, Events as ApplicationCacheModelEvents} from './ApplicationCacheModel.js';
+import {ApplicationCacheFrameTreeElement, ApplicationCacheManifestTreeElement, ServiceWorkerCacheTreeElement} from './ApplicationPanelCacheSection.js';
+import {ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement} from './ApplicationPanelTreeElement.js';
 import {AppManifestView} from './AppManifestView.js';
 import {BackgroundServiceModel} from './BackgroundServiceModel.js';
 import {BackgroundServiceView} from './BackgroundServiceView.js';
-import {ClearStorageView} from './ClearStorageView.js';
 import {Database as DatabaseModelDatabase, DatabaseModel, Events as DatabaseModelEvents} from './DatabaseModel.js';  // eslint-disable-line no-unused-vars
 import {DatabaseQueryView, Events as DatabaseQueryViewEvents} from './DatabaseQueryView.js';
 import {DatabaseTableView} from './DatabaseTableView.js';
 import {DOMStorage, DOMStorageModel, Events as DOMStorageModelEvents} from './DOMStorageModel.js';  // eslint-disable-line no-unused-vars
-import {FrameDetailsView, OpenedWindowDetailsView, WorkerDetailsView} from './FrameDetailsView.js';
+import {FrameDetailsView} from './FrameDetailsView.js';
 import {Database as IndexedDBModelDatabase, DatabaseId, Events as IndexedDBModelEvents, Index, IndexedDBModel, ObjectStore} from './IndexedDBModel.js';  // eslint-disable-line no-unused-vars
 import {IDBDatabaseView, IDBDataView} from './IndexedDBViews.js';
-import {ServiceWorkerCacheView} from './ServiceWorkerCacheViews.js';
+import {OpenedWindowDetailsView, WorkerDetailsView} from './OpenedWindowDetailsView.js';
+import {ResourcesPanel} from './ResourcesPanel.js';  // eslint-disable-line no-unused-vars
 import {ServiceWorkersView} from './ServiceWorkersView.js';
+import {StorageView} from './StorageView.js';
+import {TrustTokensTreeElement} from './TrustTokensView.js';
 
+export const UIStrings = {
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  application: 'Application',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  storage: 'Storage',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  localStorage: 'Local Storage',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  sessionStorage: 'Session Storage',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  webSql: 'Web SQL',
+  /**
+  *@description Text for web cookies
+  */
+  cookies: 'Cookies',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  cache: 'Cache',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  applicationCache: 'Application Cache',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  backgroundServices: 'Background Services',
+  /**
+  *@description Text for rendering frames
+  */
+  frames: 'Frames',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  serviceWorkers: '`Service Workers`',
+  /**
+  *@description Text that appears on a button for the manifest resource type filter.
+  */
+  manifest: 'Manifest',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  indexeddb: 'IndexedDB',
+  /**
+  *@description A context menu item in the Application Panel Sidebar of the Application panel
+  */
+  refreshIndexeddb: 'Refresh IndexedDB',
+  /**
+  *@description Tooltip in Application Panel Sidebar of the Application panel
+  *@example {1.0} PH1
+  */
+  versionSEmpty: 'Version: {PH1} (empty)',
+  /**
+  *@description Tooltip in Application Panel Sidebar of the Application panel
+  *@example {1.0} PH1
+  */
+  versionS: 'Version: {PH1}',
+  /**
+  *@description Text to clear content
+  */
+  clear: 'Clear',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  *@example {"key path"} PH1
+  */
+  keyPathS: 'Key path: {PH1}',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  autoincrement: 'autoIncrement',
+  /**
+  * @description Shown in a tooltip for the Application Panel Sidebar of the Application panel.
+  * Indicates that an IndexedDB Index is multiEntry. Not to be translated as it is a property name
+  * used in code.
+  */
+  unique: '`unique`',
+  /**
+  * @description Shown in a tooltip for the Application Panel Sidebar of the Application panel.
+  * Indicates that an IndexedDB Index is unique. Not to be translated as it is a property name
+  * used in code.
+  */
+  multientry: '`multiEntry`',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  localFiles: 'Local Files',
+  /**
+  *@description Tooltip in Application Panel Sidebar of the Application panel
+  *@example {https://example.com} PH1
+  */
+  cookiesUsedByFramesFromS: 'Cookies used by frames from {PH1}',
+  /**
+  *@description Text in Frames View of the Application panel
+  */
+  openedWindows: 'Opened Windows',
+  /**
+  *@description Label for plural of worker type: web workers
+  */
+  webWorkers: 'Web Workers',
+  /**
+  *@description Label in frame tree for unavailable document
+  */
+  documentNotAvailable: 'Document not available',
+  /**
+  *@description Description of content of unavailable document in Application panel
+  */
+  theContentOfThisDocumentHasBeen:
+      'The content of this document has been generated dynamically via \'document.write()\'.',
+  /**
+  *@description Text in Frames View of the Application panel
+  */
+  windowWithoutTitle: 'Window without title',
+  /**
+  *@description Default name for worker
+  */
+  worker: 'worker',
+};
+const str_ = i18n.i18n.registerUIStrings('resources/ApplicationPanelSidebar.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {SDK.SDKModel.Observer}
- * @unrestricted
  */
 export class ApplicationPanelSidebar extends UI.Widget.VBox {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} panel
+   * @param {!ResourcesPanel} panel
    */
   constructor(panel) {
     super();
 
     this._panel = panel;
+
+    /** @type {!Map<!Protocol.Page.FrameId, !ApplicationCacheItemsView>} */
+    this._applicationCacheViews = new Map();
+    /** @type {!Map<!Protocol.Page.FrameId, !ApplicationCacheFrameTreeElement>} */
+    this._applicationCacheFrameElements = new Map();
+    /** @type {!Map<!Protocol.Page.FrameId, !ApplicationCacheManifestTreeElement>} */
+    this._applicationCacheManifestElements = new Map();
 
     this._sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
     this._sidebarTree.element.classList.add('resources-sidebar');
@@ -75,7 +213,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     this._sidebarTree.addEventListener(UI.TreeOutline.Events.ElementAttached, this._treeElementAdded, this);
 
     this.contentElement.appendChild(this._sidebarTree.element);
-    this._applicationTreeElement = this._addSidebarSection(Common.UIString.UIString('Application'));
+
+    const applicationSectionTitle = i18nString(UIStrings.application);
+    this._applicationTreeElement = this._addSidebarSection(applicationSectionTitle);
     const manifestTreeElement = new AppManifestTreeElement(panel);
     this._applicationTreeElement.appendChild(manifestTreeElement);
     this.serviceWorkersTreeElement = new ServiceWorkersTreeElement(panel);
@@ -83,9 +223,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     const clearStorageTreeElement = new ClearStorageTreeElement(panel);
     this._applicationTreeElement.appendChild(clearStorageTreeElement);
 
-    const storageTreeElement = this._addSidebarSection(Common.UIString.UIString('Storage'));
+    const storageSectionTitle = i18nString(UIStrings.storage);
+    const storageTreeElement = this._addSidebarSection(storageSectionTitle);
     this.localStorageListTreeElement =
-        new StorageCategoryTreeElement(panel, Common.UIString.UIString('Local Storage'), 'LocalStorage');
+        new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), 'LocalStorage');
     this.localStorageListTreeElement.setLink(
         'https://developers.google.com/web/tools/chrome-devtools/storage/localstorage?utm_source=devtools');
     const localStorageIcon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
@@ -93,7 +234,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
 
     storageTreeElement.appendChild(this.localStorageListTreeElement);
     this.sessionStorageListTreeElement =
-        new StorageCategoryTreeElement(panel, Common.UIString.UIString('Session Storage'), 'SessionStorage');
+        new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), 'SessionStorage');
     this.sessionStorageListTreeElement.setLink(
         'https://developers.google.com/web/tools/chrome-devtools/storage/sessionstorage?utm_source=devtools');
     const sessionStorageIcon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
@@ -105,25 +246,30 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         'https://developers.google.com/web/tools/chrome-devtools/storage/indexeddb?utm_source=devtools');
     storageTreeElement.appendChild(this.indexedDBListTreeElement);
     this.databasesListTreeElement =
-        new StorageCategoryTreeElement(panel, Common.UIString.UIString('Web SQL'), 'Databases');
+        new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.webSql), 'Databases');
     this.databasesListTreeElement.setLink(
         'https://developers.google.com/web/tools/chrome-devtools/storage/websql?utm_source=devtools');
     const databaseIcon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.databasesListTreeElement.setLeadingIcons([databaseIcon]);
 
     storageTreeElement.appendChild(this.databasesListTreeElement);
-    this.cookieListTreeElement = new StorageCategoryTreeElement(panel, Common.UIString.UIString('Cookies'), 'Cookies');
+    this.cookieListTreeElement =
+        new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'Cookies');
     this.cookieListTreeElement.setLink(
         'https://developers.google.com/web/tools/chrome-devtools/storage/cookies?utm_source=devtools');
     const cookieIcon = UI.Icon.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
     storageTreeElement.appendChild(this.cookieListTreeElement);
 
-    const cacheTreeElement = this._addSidebarSection(Common.UIString.UIString('Cache'));
+    this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
+    storageTreeElement.appendChild(this.trustTokensTreeElement);
+
+    const cacheSectionTitle = i18nString(UIStrings.cache);
+    const cacheTreeElement = this._addSidebarSection(cacheSectionTitle);
     this.cacheStorageListTreeElement = new ServiceWorkerCacheTreeElement(panel);
     cacheTreeElement.appendChild(this.cacheStorageListTreeElement);
     this.applicationCacheListTreeElement =
-        new StorageCategoryTreeElement(panel, Common.UIString.UIString('Application Cache'), 'ApplicationCache');
+        new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.applicationCache), 'ApplicationCache');
     this.applicationCacheListTreeElement.setLink(
         'https://developers.google.com/web/tools/chrome-devtools/storage/applicationcache?utm_source=devtools');
     const applicationCacheIcon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
@@ -132,7 +278,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     cacheTreeElement.appendChild(this.applicationCacheListTreeElement);
 
     if (Root.Runtime.experiments.isEnabled('backgroundServices')) {
-      const backgroundServiceTreeElement = this._addSidebarSection(ls`Background Services`);
+      const backgroundServiceSectionTitle = i18nString(UIStrings.backgroundServices);
+      const backgroundServiceTreeElement = this._addSidebarSection(backgroundServiceSectionTitle);
 
       this.backgroundFetchTreeElement =
           new BackgroundServiceTreeElement(panel, Protocol.BackgroundService.ServiceName.BackgroundFetch);
@@ -160,8 +307,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         backgroundServiceTreeElement.appendChild(this.pushMessagingTreeElement);
       }
     }
-
-    this._resourcesSection = new ResourcesSection(panel, this._addSidebarSection(Common.UIString.UIString('Frames')));
+    const resourcesSectionTitle = i18nString(UIStrings.frames);
+    const resourcesTreeElement = this._addSidebarSection(resourcesSectionTitle);
+    this._resourcesSection = new ResourcesSection(panel, resourcesTreeElement);
 
     /** @type {!Map.<!DatabaseModelDatabase, !Object.<string, !DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -186,6 +334,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     if (!selection.length) {
       manifestTreeElement.select();
     }
+    // Work-around for crbug.com/1152713: Something is wrong with custom scrollbars and size containment.
+    // @ts-ignore
+    this.contentElement.style.contain = 'layout style';
   }
 
   /**
@@ -198,6 +349,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     treeElement.setCollapsible(false);
     treeElement.selectable = false;
     this._sidebarTree.appendChild(treeElement);
+    UI.ARIAUtils.setAccessibleName(treeElement.childrenListElement, title);
     return treeElement;
   }
 
@@ -270,39 +422,41 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
       this._databaseModel.enable();
     }
 
-    const cacheStorageModel = this._target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);
+    const cacheStorageModel = this._target && this._target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);
     if (cacheStorageModel) {
       cacheStorageModel.enable();
     }
-    const resourceTreeModel = this._target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = this._target && this._target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     if (resourceTreeModel) {
       this._populateApplicationCacheTree(resourceTreeModel);
     }
     SDK.SDKModel.TargetManager.instance().observeModels(
-        DOMStorageModel, /** @type {!SDK.SDKModel.SDKModelObserver} */ ({
+        DOMStorageModel, /** @type {!SDK.SDKModel.SDKModelObserver<!DOMStorageModel>} */ ({
           modelAdded: model => this._domStorageModelAdded(model),
           modelRemoved: model => this._domStorageModelRemoved(model)
         }));
     this.indexedDBListTreeElement._initialize();
     SDK.SDKModel.TargetManager.instance().observeModels(
-        IndexedDBModel, /** @type {!SDK.SDKModel.SDKModelObserver} */ ({
+        IndexedDBModel, /** @type {!SDK.SDKModel.SDKModelObserver<!IndexedDBModel>} */ ({
           modelAdded: model => model.enable(),
           modelRemoved: model => this.indexedDBListTreeElement.removeIndexedDBForModel(model)
         }));
-    const serviceWorkerCacheModel = this._target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);
-    this.cacheStorageListTreeElement._initialize(serviceWorkerCacheModel);
-    const backgroundServiceModel = this._target.model(BackgroundServiceModel);
+    const serviceWorkerCacheModel =
+        this._target && this._target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel) || null;
+    this.cacheStorageListTreeElement.initialize(serviceWorkerCacheModel);
+    const backgroundServiceModel = this._target && this._target.model(BackgroundServiceModel) || null;
     if (Root.Runtime.experiments.isEnabled('backgroundServices')) {
-      this.backgroundFetchTreeElement._initialize(backgroundServiceModel);
-      this.backgroundSyncTreeElement._initialize(backgroundServiceModel);
-      if (Root.Runtime.experiments.isEnabled('backgroundServicesNotifications')) {
+      this.backgroundFetchTreeElement && this.backgroundFetchTreeElement._initialize(backgroundServiceModel);
+      this.backgroundSyncTreeElement && this.backgroundSyncTreeElement._initialize(backgroundServiceModel);
+      if (Root.Runtime.experiments.isEnabled('backgroundServicesNotifications') && this.notificationsTreeElement) {
         this.notificationsTreeElement._initialize(backgroundServiceModel);
       }
-      if (Root.Runtime.experiments.isEnabled('backgroundServicesPaymentHandler')) {
+      if (Root.Runtime.experiments.isEnabled('backgroundServicesPaymentHandler') && this.paymentHandlerTreeElement) {
         this.paymentHandlerTreeElement._initialize(backgroundServiceModel);
       }
-      this.periodicBackgroundSyncTreeElement._initialize(backgroundServiceModel);
-      if (Root.Runtime.experiments.isEnabled('backgroundServicesPushMessaging')) {
+      this.periodicBackgroundSyncTreeElement &&
+          this.periodicBackgroundSyncTreeElement._initialize(backgroundServiceModel);
+      if (Root.Runtime.experiments.isEnabled('backgroundServicesPushMessaging') && this.pushMessagingTreeElement) {
         this.pushMessagingTreeElement._initialize(backgroundServiceModel);
       }
     }
@@ -346,7 +500,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
   }
 
   _resetAppCache() {
-    for (const frameId of Object.keys(this._applicationCacheFrameElements)) {
+    for (const frameId of this._applicationCacheFrameElements.keys()) {
       this._applicationCacheFrameManifestRemoved({data: frameId});
     }
     this.applicationCacheListTreeElement.setExpandable(false);
@@ -403,7 +557,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
       this._reset();
     }
 
-    const applicationCacheFrameTreeElement = this._applicationCacheFrameElements[frame.id];
+    const applicationCacheFrameTreeElement = this._applicationCacheFrameElements.get(frame.id);
     if (applicationCacheFrameTreeElement) {
       applicationCacheFrameTreeElement.frameNavigated(frame);
     }
@@ -482,9 +636,11 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     }
     const wasSelected = treeElement.selected;
     const parentListTreeElement = treeElement.parent;
-    parentListTreeElement.removeChild(treeElement);
-    if (wasSelected) {
-      parentListTreeElement.select();
+    if (parentListTreeElement) {
+      parentListTreeElement.removeChild(treeElement);
+      if (wasSelected) {
+        parentListTreeElement.select();
+      }
     }
     this._domStorageTreeElements.delete(domStorage);
   }
@@ -495,7 +651,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
   selectDatabase(database) {
     if (database) {
       this._showDatabase(database);
-      this._databaseTreeElements.get(database).select();
+      const treeElement = this._databaseTreeElements.get(database);
+      treeElement && treeElement.select();
     }
   }
 
@@ -503,7 +660,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
    * @param {!SDK.Resource.Resource} resource
    * @param {number=} line
    * @param {number=} column
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async showResource(resource, line, column) {
     await this._resourcesSection.revealResource(resource, line, column);
@@ -544,12 +701,19 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     this._innerShowView(view);
   }
 
+  /**
+   * @param {!Protocol.Page.FrameId} frameId
+   */
   _showApplicationCache(frameId) {
-    if (!this._applicationCacheViews[frameId]) {
-      this._applicationCacheViews[frameId] = new ApplicationCacheItemsView(this._applicationCacheModel, frameId);
+    if (!this._applicationCacheModel) {
+      return;
     }
-
-    this._innerShowView(this._applicationCacheViews[frameId]);
+    let view = this._applicationCacheViews.get(frameId);
+    if (!view) {
+      view = new ApplicationCacheItemsView(this._applicationCacheModel, frameId);
+      this._applicationCacheViews.set(frameId, view);
+    }
+    this._innerShowView(view);
   }
 
   /**
@@ -559,6 +723,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     this._innerShowView(view);
   }
 
+  /**
+   * @param {!UI.Widget.Widget} view
+   */
   _innerShowView(view) {
     this._panel.showView(view);
   }
@@ -585,17 +752,17 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
       return;
     }
 
-    const tableNamesHash = {};
+    /** @type {!Set<string>} */
+    const tableNamesHash = new Set();
     const panel = this._panel;
     const tableNames = await database.tableNames();
-    const tableNamesLength = tableNames.length;
 
-    for (let i = 0; i < tableNamesLength; ++i) {
-      tableNamesHash[tableNames[i]] = true;
+    for (const tableName of tableNames) {
+      tableNamesHash.add(tableName);
     }
 
     for (const tableName in tableViews) {
-      if (!(tableName in tableNamesHash)) {
+      if (!(tableNamesHash.has(tableName))) {
         if (panel.visibleView === tableViews[tableName]) {
           panel.showView(null);
         }
@@ -610,12 +777,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
    * @param {!SDK.ResourceTreeModel.ResourceTreeModel} resourceTreeModel
    */
   _populateApplicationCacheTree(resourceTreeModel) {
+    if (!this._target) {
+      return;
+    }
     this._applicationCacheModel = this._target.model(ApplicationCacheModel);
-
-    this._applicationCacheViews = {};
-    this._applicationCacheFrameElements = {};
-    this._applicationCacheManifestElements = {};
-
+    if (!this._applicationCacheModel) {
+      return;
+    }
     this._applicationCacheModel.addEventListener(
         ApplicationCacheModelEvents.FrameManifestAdded, this._applicationCacheFrameManifestAdded, this);
     this._applicationCacheModel.addEventListener(
@@ -629,70 +797,90 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         ApplicationCacheModelEvents.NetworkStateChanged, this._applicationCacheNetworkStateChanged, this);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _applicationCacheFrameManifestAdded(event) {
     const frameId = event.data;
+    if (!this._applicationCacheModel || !this._target || frameId !== 'string') {
+      return;
+    }
     const manifestURL = this._applicationCacheModel.frameManifestURL(frameId);
 
-    let manifestTreeElement = this._applicationCacheManifestElements[manifestURL];
+    let manifestTreeElement = this._applicationCacheManifestElements.get(manifestURL);
     if (!manifestTreeElement) {
       manifestTreeElement = new ApplicationCacheManifestTreeElement(this._panel, manifestURL);
       this.applicationCacheListTreeElement.appendChild(manifestTreeElement);
-      this._applicationCacheManifestElements[manifestURL] = manifestTreeElement;
+      this._applicationCacheManifestElements.set(manifestURL, manifestTreeElement);
     }
 
     const model = this._target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-    const frameTreeElement = new ApplicationCacheFrameTreeElement(this, model.frameForId(frameId), manifestURL);
-    manifestTreeElement.appendChild(frameTreeElement);
-    manifestTreeElement.expand();
-    this._applicationCacheFrameElements[frameId] = frameTreeElement;
+    const frame = model && model.frameForId(frameId);
+    if (model && frame) {
+      const frameTreeElement = new ApplicationCacheFrameTreeElement(this, frame, manifestURL);
+      manifestTreeElement.appendChild(frameTreeElement);
+      manifestTreeElement.expand();
+      this._applicationCacheFrameElements.set(frameId, frameTreeElement);
+    }
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _applicationCacheFrameManifestRemoved(event) {
-    const frameId = event.data;
-    const frameTreeElement = this._applicationCacheFrameElements[frameId];
+    const frameId = /** @type {!Protocol.Page.FrameId} */ (event.data);
+    const frameTreeElement = this._applicationCacheFrameElements.get(frameId);
     if (!frameTreeElement) {
       return;
     }
 
     const manifestURL = frameTreeElement.manifestURL;
-    delete this._applicationCacheFrameElements[frameId];
-    delete this._applicationCacheViews[frameId];
-    frameTreeElement.parent.removeChild(frameTreeElement);
+    this._applicationCacheFrameElements.delete(frameId);
+    this._applicationCacheViews.delete(frameId);
+    frameTreeElement.parent && frameTreeElement.parent.removeChild(frameTreeElement);
 
-    const manifestTreeElement = this._applicationCacheManifestElements[manifestURL];
-    if (manifestTreeElement.childCount()) {
+    const manifestTreeElement = this._applicationCacheManifestElements.get(manifestURL);
+    if (!manifestTreeElement || manifestTreeElement.childCount()) {
       return;
     }
 
-    delete this._applicationCacheManifestElements[manifestURL];
-    manifestTreeElement.parent.removeChild(manifestTreeElement);
+    this._applicationCacheManifestElements.delete(manifestURL);
+    manifestTreeElement.parent && manifestTreeElement.parent.removeChild(manifestTreeElement);
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
   _applicationCacheFrameManifestStatusChanged(event) {
-    const frameId = event.data;
+    if (!this._applicationCacheModel) {
+      return;
+    }
+    const frameId = /** @type {!Protocol.Page.FrameId} */ (event.data);
     const status = this._applicationCacheModel.frameManifestStatus(frameId);
 
-    if (this._applicationCacheViews[frameId]) {
-      this._applicationCacheViews[frameId].updateStatus(status);
-    }
-  }
-
-  _applicationCacheNetworkStateChanged(event) {
-    const isNowOnline = event.data;
-
-    for (const manifestURL in this._applicationCacheViews) {
-      this._applicationCacheViews[manifestURL].updateNetworkState(isNowOnline);
-    }
-  }
-
-  showView(view) {
+    const view = this._applicationCacheViews.get(frameId);
     if (view) {
-      this.showResource(view.resource);
+      view.updateStatus(status);
     }
   }
 
+  /**
+   * @param {!Common.EventTarget.EventTargetEvent} event
+   */
+  _applicationCacheNetworkStateChanged(event) {
+    const isNowOnline = /** @type {boolean} */ (event.data);
+
+    for (const view of this._applicationCacheViews.values()) {
+      view.updateNetworkState(isNowOnline);
+    }
+  }
+
+  /**
+   *
+   * @param {!MouseEvent} event
+   */
   _onmousemove(event) {
-    const nodeUnderMouse = event.target;
+    const nodeUnderMouse = /** @type {!Node} */ (event.target);
     if (!nodeUnderMouse) {
       return;
     }
@@ -702,7 +890,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
       return;
     }
 
-    const element = listNode.treeElement;
+    const element = UI.TreeOutline.TreeElement.getTreeElementBylistItemNode(listNode);
     if (this._previousHoveredElement === element) {
       return;
     }
@@ -713,11 +901,15 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     }
 
     if (element instanceof FrameTreeElement) {
+      /** @type {!FrameTreeElement} */
       this._previousHoveredElement = element;
       element.hovered = true;
     }
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   _onmouseleave(event) {
     if (this._previousHoveredElement) {
       this._previousHoveredElement.hovered = false;
@@ -726,117 +918,9 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
   }
 }
 
-/**
- * @unrestricted
- */
-export class BaseStorageTreeElement extends UI.TreeOutline.TreeElement {
+export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
-   * @param {string} title
-   * @param {boolean} expandable
-   */
-  constructor(storagePanel, title, expandable) {
-    super(title, expandable);
-    this._storagePanel = storagePanel;
-    UI.ARIAUtils.setAccessibleName(this.listItemElement, title);
-  }
-
-  /**
-   * @override
-   * @param {boolean=} selectedByUser
-   * @return {boolean}
-   */
-  onselect(selectedByUser) {
-    if (!selectedByUser) {
-      return false;
-    }
-
-    const path = [];
-    for (let el = this; el; el = el.parent) {
-      const url = el.itemURL;
-      if (!url) {
-        break;
-      }
-      path.push(url);
-    }
-    this._storagePanel.setLastSelectedItemPath(path);
-
-    return false;
-  }
-
-  /**
-   * @protected
-   * @param {?UI.Widget.Widget} view
-   */
-  showView(view) {
-    this._storagePanel.showView(view);
-  }
-}
-
-export class StorageCategoryTreeElement extends BaseStorageTreeElement {
-  /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
-   * @param {string} categoryName
-   * @param {string} settingsKey
-   */
-  constructor(storagePanel, categoryName, settingsKey) {
-    super(storagePanel, categoryName, false);
-    this._expandedSetting = Common.Settings.Settings.instance().createSetting(
-        'resources' + settingsKey + 'Expanded', settingsKey === 'Frames');
-    this._categoryName = categoryName;
-    this._categoryLink = null;
-  }
-
-  get itemURL() {
-    return 'category://' + this._categoryName;
-  }
-
-  /**
-   * @param {string} link
-   */
-  setLink(link) {
-    this._categoryLink = link;
-  }
-
-  /**
-   * @override
-   * @param {boolean=} selectedByUser
-   * @return {boolean}
-   */
-  onselect(selectedByUser) {
-    super.onselect(selectedByUser);
-    this._storagePanel.showCategoryView(this._categoryName, this._categoryLink);
-    return false;
-  }
-
-  /**
-   * @override
-   */
-  onattach() {
-    super.onattach();
-    if (this._expandedSetting.get()) {
-      this.expand();
-    }
-  }
-
-  /**
-   * @override
-   */
-  onexpand() {
-    this._expandedSetting.set(true);
-  }
-
-  /**
-   * @override
-   */
-  oncollapse() {
-    this._expandedSetting.set(false);
-  }
-}
-
-export class BackgroundServiceTreeElement extends BaseStorageTreeElement {
-  /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!Protocol.BackgroundService.ServiceName} serviceName
    */
   constructor(storagePanel, serviceName) {
@@ -895,6 +979,10 @@ export class BackgroundServiceTreeElement extends BaseStorageTreeElement {
   /**
    * @return {string}
    */
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return `background-service://${this._serviceName}`;
   }
@@ -921,10 +1009,7 @@ export class BackgroundServiceTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class DatabaseTreeElement extends BaseStorageTreeElement {
+export class DatabaseTreeElement extends ApplicationPanelTreeElement {
   /**
    * @param {!ApplicationPanelSidebar} sidebar
    * @param {!DatabaseModelDatabase} database
@@ -938,6 +1023,10 @@ export class DatabaseTreeElement extends BaseStorageTreeElement {
     this.setLeadingIcons([icon]);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'database://' + encodeURI(this._database.name);
   }
@@ -969,10 +1058,7 @@ export class DatabaseTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class DatabaseTableTreeElement extends BaseStorageTreeElement {
+export class DatabaseTableTreeElement extends ApplicationPanelTreeElement {
   /**
    * @param {!ApplicationPanelSidebar} sidebar
    * @param {!DatabaseModelDatabase} database
@@ -987,6 +1073,10 @@ export class DatabaseTableTreeElement extends BaseStorageTreeElement {
     this.setLeadingIcons([icon]);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'database://' + encodeURI(this._database.name) + '/' + encodeURI(this._tableName);
   }
@@ -1003,191 +1093,21 @@ export class DatabaseTableTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class ServiceWorkerCacheTreeElement extends StorageCategoryTreeElement {
+export class ServiceWorkersTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    */
   constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('Cache Storage'), 'CacheStorage');
-    const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
-    this.setLeadingIcons([icon]);
-    /** @type {?SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} */
-    this._swCacheModel = null;
-  }
-
-  /**
-   * @param {?SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} model
-   */
-  _initialize(model) {
-    /** @type {!Set.<!SWCacheTreeElement>} */
-    this._swCacheTreeElements = new Set();
-    this._swCacheModel = model;
-    if (model) {
-      for (const cache of model.caches()) {
-        this._addCache(model, cache);
-      }
-    }
-    SDK.SDKModel.TargetManager.instance().addModelListener(
-        SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, SDK.ServiceWorkerCacheModel.Events.CacheAdded,
-        this._cacheAdded, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
-        SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, SDK.ServiceWorkerCacheModel.Events.CacheRemoved,
-        this._cacheRemoved, this);
-  }
-
-  /**
-   * @override
-   */
-  onattach() {
-    super.onattach();
-    this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
-  }
-
-  _handleContextMenuEvent(event) {
-    const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(Common.UIString.UIString('Refresh Caches'), this._refreshCaches.bind(this));
-    contextMenu.show();
-  }
-
-  _refreshCaches() {
-    if (this._swCacheModel) {
-      this._swCacheModel.refreshCacheNames();
-    }
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _cacheAdded(event) {
-    const cache = /** @type {!SDK.ServiceWorkerCacheModel.Cache} */ (event.data.cache);
-    const model = /** @type {!SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} */ (event.data.model);
-    this._addCache(model, cache);
-  }
-
-  /**
-   * @param {!SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} model
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   */
-  _addCache(model, cache) {
-    const swCacheTreeElement = new SWCacheTreeElement(this._storagePanel, model, cache);
-    this._swCacheTreeElements.add(swCacheTreeElement);
-    this.appendChild(swCacheTreeElement);
-  }
-
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _cacheRemoved(event) {
-    const cache = /** @type {!SDK.ServiceWorkerCacheModel.Cache} */ (event.data.cache);
-    const model = /** @type {!SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} */ (event.data.model);
-
-    const swCacheTreeElement = this._cacheTreeElement(model, cache);
-    if (!swCacheTreeElement) {
-      return;
-    }
-
-    this.removeChild(swCacheTreeElement);
-    this._swCacheTreeElements.delete(swCacheTreeElement);
-    this.setExpandable(this.childCount() > 0);
-  }
-
-  /**
-   * @param {!SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} model
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   * @return {?SWCacheTreeElement}
-   */
-  _cacheTreeElement(model, cache) {
-    for (const cacheTreeElement of this._swCacheTreeElements) {
-      if (cacheTreeElement._cache.equals(cache) && cacheTreeElement._model === model) {
-        return cacheTreeElement;
-      }
-    }
-    return null;
-  }
-}
-
-export class SWCacheTreeElement extends BaseStorageTreeElement {
-  /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
-   * @param {!SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel} model
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   */
-  constructor(storagePanel, model, cache) {
-    super(storagePanel, cache.cacheName + ' - ' + cache.securityOrigin, false);
-    this._model = model;
-    this._cache = cache;
-    /** @type {?ServiceWorkerCacheView} */
-    this._view = null;
-    const icon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
-    this.setLeadingIcons([icon]);
-  }
-
-  get itemURL() {
-    // I don't think this will work at all.
-    return 'cache://' + this._cache.cacheId;
-  }
-
-  /**
-   * @override
-   */
-  onattach() {
-    super.onattach();
-    this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
-  }
-
-  _handleContextMenuEvent(event) {
-    const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(Common.UIString.UIString('Delete'), this._clearCache.bind(this));
-    contextMenu.show();
-  }
-
-  _clearCache() {
-    this._model.deleteCache(this._cache);
-  }
-
-  /**
-   * @param {!SDK.ServiceWorkerCacheModel.Cache} cache
-   */
-  update(cache) {
-    this._cache = cache;
-    if (this._view) {
-      this._view.update(cache);
-    }
-  }
-
-  /**
-   * @override
-   * @param {boolean=} selectedByUser
-   * @return {boolean}
-   */
-  onselect(selectedByUser) {
-    super.onselect(selectedByUser);
-    if (!this._view) {
-      this._view = new ServiceWorkerCacheView(this._model, this._cache);
-    }
-
-    this.showView(this._view);
-    return false;
-  }
-}
-
-/**
- * @unrestricted
- */
-export class ServiceWorkersTreeElement extends BaseStorageTreeElement {
-  /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
-   */
-  constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('Service Workers'), false);
+    super(storagePanel, i18nString(UIStrings.serviceWorkers), false);
     const icon = UI.Icon.Icon.create('mediumicon-service-worker', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
   /**
+   * @return {string}
+   */
+  /**
+   * @override
    * @return {string}
    */
   get itemURL() {
@@ -1209,20 +1129,21 @@ export class ServiceWorkersTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class AppManifestTreeElement extends BaseStorageTreeElement {
+export class AppManifestTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    */
   constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('Manifest'), false);
+    super(storagePanel, i18nString(UIStrings.manifest), false);
     const icon = UI.Icon.Icon.create('mediumicon-manifest', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
   /**
+   * @return {string}
+   */
+  /**
+   * @override
    * @return {string}
    */
   get itemURL() {
@@ -1244,20 +1165,18 @@ export class AppManifestTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class ClearStorageTreeElement extends BaseStorageTreeElement {
+export class ClearStorageTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    */
   constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('Storage'), false);
+    super(storagePanel, i18nString(UIStrings.storage), false);
     const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
   /**
+   * @override
    * @return {string}
    */
   get itemURL() {
@@ -1272,24 +1191,23 @@ export class ClearStorageTreeElement extends BaseStorageTreeElement {
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this._view) {
-      this._view = new ClearStorageView();
+      this._view = new StorageView();
     }
     this.showView(this._view);
     return false;
   }
 }
 
-/**
- * @unrestricted
- */
-export class IndexedDBTreeElement extends StorageCategoryTreeElement {
+export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    */
   constructor(storagePanel) {
-    super(storagePanel, Common.UIString.UIString('IndexedDB'), 'IndexedDB');
+    super(storagePanel, i18nString(UIStrings.indexeddb), 'IndexedDB');
     const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.setLeadingIcons([icon]);
+    /** @type {!Array.<!IDBDatabaseTreeElement>} */
+    this._idbDatabaseTreeElements = [];
   }
 
   _initialize() {
@@ -1303,7 +1221,6 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
         IndexedDBModel, IndexedDBModelEvents.IndexedDBContentUpdated, this._indexedDBContentUpdated, this);
     // TODO(szuend): Replace with a Set once two web tests no longer directly access this private
     //               variable (indexeddb/live-update-indexeddb-content.js, indexeddb/delete-entry.js).
-    /** @type {!Array.<!IDBDatabaseTreeElement>} */
     this._idbDatabaseTreeElements = [];
 
     for (const indexedDBModel of SDK.SDKModel.TargetManager.instance().models(IndexedDBModel)) {
@@ -1332,10 +1249,12 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
     this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(
-        Common.UIString.UIString('Refresh IndexedDB'), this.refreshIndexedDB.bind(this));
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this.refreshIndexedDB.bind(this));
     contextMenu.show();
   }
 
@@ -1359,7 +1278,7 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
    * @param {!DatabaseId} databaseId
    */
   _addIndexedDB(model, databaseId) {
-    const idbDatabaseTreeElement = new IDBDatabaseTreeElement(this._storagePanel, model, databaseId);
+    const idbDatabaseTreeElement = new IDBDatabaseTreeElement(this.resourcesPanel, model, databaseId);
     this._idbDatabaseTreeElements.push(idbDatabaseTreeElement);
     this.appendChild(idbDatabaseTreeElement);
     model.refreshDatabase(databaseId);
@@ -1434,12 +1353,9 @@ export class IndexedDBTreeElement extends StorageCategoryTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
+export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!IndexedDBModel} model
    * @param {!DatabaseId} databaseId
    */
@@ -1447,12 +1363,17 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
     super(storagePanel, databaseId.name + ' - ' + databaseId.securityOrigin, false);
     this._model = model;
     this._databaseId = databaseId;
-    this._idbObjectStoreTreeElements = {};
+    /** @type {!Map<string, !IDBObjectStoreTreeElement>} */
+    this._idbObjectStoreTreeElements = new Map();
     const icon = UI.Icon.Icon.create('mediumicon-database', 'resource-tree-item');
     this.setLeadingIcons([icon]);
     this._model.addEventListener(IndexedDBModelEvents.DatabaseNamesRefreshed, this._refreshIndexedDB, this);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'indexedDB://' + this._databaseId.securityOrigin + '/' + this._databaseId.name;
   }
@@ -1465,10 +1386,12 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
     this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(
-        Common.UIString.UIString('Refresh IndexedDB'), this._refreshIndexedDB.bind(this));
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this._refreshIndexedDB.bind(this));
     contextMenu.show();
   }
 
@@ -1480,8 +1403,9 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
    * @param {string} objectStoreName
    */
   indexedDBContentUpdated(objectStoreName) {
-    if (this._idbObjectStoreTreeElements[objectStoreName]) {
-      this._idbObjectStoreTreeElements[objectStoreName].markNeedsRefresh();
+    const treeElement = this._idbObjectStoreTreeElements.get(objectStoreName);
+    if (treeElement) {
+      treeElement.markNeedsRefresh();
     }
   }
 
@@ -1491,20 +1415,24 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
    */
   update(database, entriesUpdated) {
     this._database = database;
-    const objectStoreNames = {};
+    /** @type {!Set<string>} */
+    const objectStoreNames = new Set();
     for (const objectStoreName of [...this._database.objectStores.keys()].sort()) {
       const objectStore = this._database.objectStores.get(objectStoreName);
-      objectStoreNames[objectStore.name] = true;
-      if (!this._idbObjectStoreTreeElements[objectStore.name]) {
-        const idbObjectStoreTreeElement =
-            new IDBObjectStoreTreeElement(this._storagePanel, this._model, this._databaseId, objectStore);
-        this._idbObjectStoreTreeElements[objectStore.name] = idbObjectStoreTreeElement;
-        this.appendChild(idbObjectStoreTreeElement);
+      if (!objectStore) {
+        continue;
       }
-      this._idbObjectStoreTreeElements[objectStore.name].update(objectStore, entriesUpdated);
+      objectStoreNames.add(objectStore.name);
+      let treeElement = this._idbObjectStoreTreeElements.get(objectStore.name);
+      if (!treeElement) {
+        treeElement = new IDBObjectStoreTreeElement(this.resourcesPanel, this._model, this._databaseId, objectStore);
+        this._idbObjectStoreTreeElements.set(objectStore.name, treeElement);
+        this.appendChild(treeElement);
+      }
+      treeElement.update(objectStore, entriesUpdated);
     }
-    for (const objectStoreName in this._idbObjectStoreTreeElements) {
-      if (!objectStoreNames[objectStoreName]) {
+    for (const objectStoreName of this._idbObjectStoreTreeElements.keys()) {
+      if (!objectStoreNames.has(objectStoreName)) {
         this._objectStoreRemoved(objectStoreName);
       }
     }
@@ -1517,10 +1445,11 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
   }
 
   _updateTooltip() {
+    const version = this._database ? this._database.version : '-';
     if (Object.keys(this._idbObjectStoreTreeElements).length === 0) {
-      this.tooltip = ls`Version: ${this._database.version} (empty)`;
+      this.tooltip = i18nString(UIStrings.versionSEmpty, {PH1: version});
     } else {
-      this.tooltip = ls`Version: ${this._database.version}`;
+      this.tooltip = i18nString(UIStrings.versionS, {PH1: version});
     }
   }
 
@@ -1531,6 +1460,9 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
+    if (!this._database) {
+      return false;
+    }
     if (!this._view) {
       this._view = new IDBDatabaseView(this._model, this._database);
     }
@@ -1543,23 +1475,25 @@ export class IDBDatabaseTreeElement extends BaseStorageTreeElement {
    * @param {string} objectStoreName
    */
   _objectStoreRemoved(objectStoreName) {
-    const objectStoreTreeElement = this._idbObjectStoreTreeElements[objectStoreName];
-    objectStoreTreeElement.clear();
-    this.removeChild(objectStoreTreeElement);
-    delete this._idbObjectStoreTreeElements[objectStoreName];
+    const objectStoreTreeElement = this._idbObjectStoreTreeElements.get(objectStoreName);
+    if (objectStoreTreeElement) {
+      objectStoreTreeElement.clear();
+      this.removeChild(objectStoreTreeElement);
+    }
+    this._idbObjectStoreTreeElements.delete(objectStoreName);
     this._updateTooltip();
   }
 
   clear() {
-    for (const objectStoreName in this._idbObjectStoreTreeElements) {
+    for (const objectStoreName of this._idbObjectStoreTreeElements.keys()) {
       this._objectStoreRemoved(objectStoreName);
     }
   }
 }
 
-export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
+export class IDBObjectStoreTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!IndexedDBModel} model
    * @param {!DatabaseId} databaseId
    * @param {!ObjectStore} objectStore
@@ -1568,7 +1502,8 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
     super(storagePanel, objectStore.name, false);
     this._model = model;
     this._databaseId = databaseId;
-    this._idbIndexTreeElements = {};
+    /** @type {!Map<string, !IDBIndexTreeElement>} */
+    this._idbIndexTreeElements = new Map();
     this._objectStore = objectStore;
     /** @type {?IDBDataView} */
     this._view = null;
@@ -1576,6 +1511,10 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
     this.setLeadingIcons([icon]);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'indexedDB://' + this._databaseId.securityOrigin + '/' + this._databaseId.name + '/' +
         this._objectStore.name;
@@ -1593,14 +1532,17 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
     if (this._view) {
       this._view.markNeedsRefresh();
     }
-    for (const indexName in this._idbIndexTreeElements) {
-      this._idbIndexTreeElements[indexName].markNeedsRefresh();
+    for (const treeElement of this._idbIndexTreeElements.values()) {
+      treeElement.markNeedsRefresh();
     }
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(Common.UIString.UIString('Clear'), this._clearObjectStore.bind(this));
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), this._clearObjectStore.bind(this));
     contextMenu.show();
   }
 
@@ -1608,8 +1550,8 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
     if (this._view) {
       this._view.refreshData();
     }
-    for (const indexName in this._idbIndexTreeElements) {
-      this._idbIndexTreeElements[indexName].refreshIndex();
+    for (const treeElement of this._idbIndexTreeElements.values()) {
+      treeElement.refreshIndex();
     }
   }
 
@@ -1625,27 +1567,28 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
   update(objectStore, entriesUpdated) {
     this._objectStore = objectStore;
 
-    const indexNames = {};
+    const indexNames = new Set();
     for (const index of this._objectStore.indexes.values()) {
-      indexNames[index.name] = true;
-      if (!this._idbIndexTreeElements[index.name]) {
-        const idbIndexTreeElement = new IDBIndexTreeElement(
-            this._storagePanel, this._model, this._databaseId, this._objectStore, index,
+      indexNames.add(index.name);
+      let treeElement = this._idbIndexTreeElements.get(index.name);
+      if (!treeElement) {
+        treeElement = new IDBIndexTreeElement(
+            this.resourcesPanel, this._model, this._databaseId, this._objectStore, index,
             this._refreshObjectStore.bind(this));
-        this._idbIndexTreeElements[index.name] = idbIndexTreeElement;
-        this.appendChild(idbIndexTreeElement);
+        this._idbIndexTreeElements.set(index.name, treeElement);
+        this.appendChild(treeElement);
       }
-      this._idbIndexTreeElements[index.name].update(this._objectStore, index, entriesUpdated);
+      treeElement.update(this._objectStore, index, entriesUpdated);
     }
-    for (const indexName in this._idbIndexTreeElements) {
-      if (!indexNames[indexName]) {
+    for (const indexName of this._idbIndexTreeElements.keys()) {
+      if (!indexNames.has(indexName)) {
         this._indexRemoved(indexName);
       }
     }
-    for (const indexName in this._idbIndexTreeElements) {
-      if (!indexNames[indexName]) {
-        this.removeChild(this._idbIndexTreeElements[indexName]);
-        delete this._idbIndexTreeElements[indexName];
+    for (const [indexName, treeElement] of this._idbIndexTreeElements.entries()) {
+      if (!indexNames.has(indexName)) {
+        this.removeChild(/** @type {!IDBIndexTreeElement}*/ (treeElement));
+        this._idbIndexTreeElements.delete(/** @type {string} */ (indexName));
       }
     }
 
@@ -1662,9 +1605,9 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
 
   _updateTooltip() {
     const keyPathString = this._objectStore.keyPathString;
-    let tooltipString = keyPathString !== null ? ls`Key path: ${keyPathString}` : '';
+    let tooltipString = keyPathString !== null ? i18nString(UIStrings.keyPathS, {PH1: keyPathString}) : '';
     if (this._objectStore.autoIncrement) {
-      tooltipString += '\n' + Common.UIString.UIString('autoIncrement');
+      tooltipString += '\n' + i18nString(UIStrings.autoincrement);
     }
     this.tooltip = tooltipString;
   }
@@ -1689,14 +1632,16 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
    * @param {string} indexName
    */
   _indexRemoved(indexName) {
-    const indexTreeElement = this._idbIndexTreeElements[indexName];
-    indexTreeElement.clear();
-    this.removeChild(indexTreeElement);
-    delete this._idbIndexTreeElements[indexName];
+    const indexTreeElement = this._idbIndexTreeElements.get(indexName);
+    if (indexTreeElement) {
+      indexTreeElement.clear();
+      this.removeChild(indexTreeElement);
+    }
+    this._idbIndexTreeElements.delete(indexName);
   }
 
   clear() {
-    for (const indexName in this._idbIndexTreeElements) {
+    for (const indexName of this._idbIndexTreeElements.keys()) {
       this._indexRemoved(indexName);
     }
     if (this._view) {
@@ -1705,17 +1650,14 @@ export class IDBObjectStoreTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class IDBIndexTreeElement extends BaseStorageTreeElement {
+export class IDBIndexTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!IndexedDBModel} model
    * @param {!DatabaseId} databaseId
    * @param {!ObjectStore} objectStore
    * @param {!Index} index
-   * @param {function()} refreshObjectStore
+   * @param {function():void} refreshObjectStore
    */
   constructor(storagePanel, model, databaseId, objectStore, index, refreshObjectStore) {
     super(storagePanel, index.name, false);
@@ -1726,6 +1668,10 @@ export class IDBIndexTreeElement extends BaseStorageTreeElement {
     this._refreshObjectStore = refreshObjectStore;
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'indexedDB://' + this._databaseId.securityOrigin + '/' + this._databaseId.name + '/' +
         this._objectStore.name + '/' + this._index.name;
@@ -1762,12 +1708,12 @@ export class IDBIndexTreeElement extends BaseStorageTreeElement {
   _updateTooltip() {
     const tooltipLines = [];
     const keyPathString = this._index.keyPathString;
-    tooltipLines.push(ls`Key path: ${keyPathString}`);
+    tooltipLines.push(i18nString(UIStrings.keyPathS, {PH1: keyPathString}));
     if (this._index.unique) {
-      tooltipLines.push(Common.UIString.UIString('unique'));
+      tooltipLines.push(i18nString(UIStrings.unique));
     }
     if (this._index.multiEntry) {
-      tooltipLines.push(Common.UIString.UIString('multiEntry'));
+      tooltipLines.push(i18nString(UIStrings.multientry));
     }
     this.tooltip = tooltipLines.join('\n');
   }
@@ -1795,23 +1741,23 @@ export class IDBIndexTreeElement extends BaseStorageTreeElement {
   }
 }
 
-/**
- * @unrestricted
- */
-export class DOMStorageTreeElement extends BaseStorageTreeElement {
+export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!DOMStorage} domStorage
    */
   constructor(storagePanel, domStorage) {
     super(
-        storagePanel, domStorage.securityOrigin ? domStorage.securityOrigin : Common.UIString.UIString('Local Files'),
-        false);
+        storagePanel, domStorage.securityOrigin ? domStorage.securityOrigin : i18nString(UIStrings.localFiles), false);
     this._domStorage = domStorage;
     const icon = UI.Icon.Icon.create('mediumicon-table', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'storage://' + this._domStorage.securityOrigin + '/' +
         (this._domStorage.isLocalStorage ? 'local' : 'session');
@@ -1824,7 +1770,7 @@ export class DOMStorageTreeElement extends BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._storagePanel.showDOMStorage(this._domStorage);
+    this.resourcesPanel.showDOMStorage(this._domStorage);
     return false;
   }
 
@@ -1836,28 +1782,35 @@ export class DOMStorageTreeElement extends BaseStorageTreeElement {
     this.listItemElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), true);
   }
 
+  /**
+   * @param {!MouseEvent} event
+   */
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(Common.UIString.UIString('Clear'), () => this._domStorage.clear());
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this._domStorage.clear());
     contextMenu.show();
   }
 }
 
-export class CookieTreeElement extends BaseStorageTreeElement {
+export class CookieTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    * @param {string} cookieDomain
    */
   constructor(storagePanel, frame, cookieDomain) {
-    super(storagePanel, cookieDomain ? cookieDomain : Common.UIString.UIString('Local Files'), false);
+    super(storagePanel, cookieDomain ? cookieDomain : i18nString(UIStrings.localFiles), false);
     this._target = frame.resourceTreeModel().target();
     this._cookieDomain = cookieDomain;
-    this.tooltip = ls`Cookies used by frames from ${cookieDomain}`;
+    this.tooltip = i18nString(UIStrings.cookiesUsedByFramesFromS, {PH1: cookieDomain});
     const icon = UI.Icon.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return 'cookies://' + this._cookieDomain;
   }
@@ -1880,7 +1833,7 @@ export class CookieTreeElement extends BaseStorageTreeElement {
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(
-        Common.UIString.UIString('Clear'), () => this._storagePanel.clearCookies(this._target, this._cookieDomain));
+        i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this._target, this._cookieDomain));
     contextMenu.show();
   }
 
@@ -1891,103 +1844,11 @@ export class CookieTreeElement extends BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._storagePanel.showCookies(this._target, this._cookieDomain);
+    this.resourcesPanel.showCookies(this._target, this._cookieDomain);
     return false;
   }
 }
 
-/**
- * @unrestricted
- */
-export class ApplicationCacheManifestTreeElement extends BaseStorageTreeElement {
-  constructor(storagePanel, manifestURL) {
-    const title = new Common.ParsedURL.ParsedURL(manifestURL).displayName;
-    super(storagePanel, title, false);
-    this.tooltip = manifestURL;
-    this._manifestURL = manifestURL;
-  }
-
-  get itemURL() {
-    return 'appcache://' + this._manifestURL;
-  }
-
-  get manifestURL() {
-    return this._manifestURL;
-  }
-
-  /**
-   * @override
-   * @param {boolean=} selectedByUser
-   * @return {boolean}
-   */
-  onselect(selectedByUser) {
-    super.onselect(selectedByUser);
-    this._storagePanel.showCategoryView(this._manifestURL, null);
-    return false;
-  }
-}
-
-/**
- * @unrestricted
- */
-export class ApplicationCacheFrameTreeElement extends BaseStorageTreeElement {
-  /**
-   * @param {!ApplicationPanelSidebar} sidebar
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
-   * @param {string} manifestURL
-   */
-  constructor(sidebar, frame, manifestURL) {
-    super(sidebar._panel, '', false);
-    this._sidebar = sidebar;
-    this._frameId = frame.id;
-    this._manifestURL = manifestURL;
-    this._refreshTitles(frame);
-
-    const icon = UI.Icon.Icon.create('mediumicon-frame-top', 'navigator-folder-tree-item');
-    this.setLeadingIcons([icon]);
-  }
-
-  get itemURL() {
-    return 'appcache://' + this._manifestURL + '/' + encodeURI(this.titleAsText());
-  }
-
-  get frameId() {
-    return this._frameId;
-  }
-
-  get manifestURL() {
-    return this._manifestURL;
-  }
-
-  /**
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
-   */
-  _refreshTitles(frame) {
-    this.title = frame.displayName();
-  }
-
-  /**
-   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
-   */
-  frameNavigated(frame) {
-    this._refreshTitles(frame);
-  }
-
-  /**
-   * @override
-   * @param {boolean=} selectedByUser
-   * @return {boolean}
-   */
-  onselect(selectedByUser) {
-    super.onselect(selectedByUser);
-    this._sidebar._showApplicationCache(this._frameId);
-    return false;
-  }
-}
-
-/**
- * @unrestricted
- */
 export class StorageCategoryView extends UI.Widget.VBox {
   constructor() {
     super();
@@ -2027,12 +1888,13 @@ export class StorageCategoryView extends UI.Widget.VBox {
  */
 export class ResourcesSection {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!UI.TreeOutline.TreeElement} treeElement
    */
   constructor(storagePanel, treeElement) {
     this._panel = storagePanel;
     this._treeElement = treeElement;
+    UI.ARIAUtils.setAccessibleName(this._treeElement._listItemNode, 'Resources Section');
     /** @type {!Map<string, !FrameTreeElement>} */
     this._treeElementForFrameId = new Map();
     /** @type {!Map<string, !FrameTreeElement>} */
@@ -2065,8 +1927,10 @@ export class ResourcesSection {
         this._addFrameAndParents(frame);
       }
       const childTargetManager = frame.resourceTreeModel().target().model(SDK.ChildTargetManager.ChildTargetManager);
-      for (const targetInfo of childTargetManager.targetInfos()) {
-        this._windowOpened({data: {targetInfo}});
+      if (childTargetManager) {
+        for (const targetInfo of childTargetManager.targetInfos()) {
+          this._windowOpened({data: {targetInfo}});
+        }
       }
     }
   }
@@ -2076,7 +1940,7 @@ export class ResourcesSection {
    * @param {!SDK.SDKModel.Target} target
    */
   targetAdded(target) {
-    if (target.type() === 'worker') {
+    if (target.type() === SDK.SDKModel.Type.Worker || target.type() === SDK.SDKModel.Type.ServiceWorker) {
       this._workerAdded(target);
     }
   }
@@ -2086,10 +1950,13 @@ export class ResourcesSection {
    * @return {!Promise<void>}
    */
   async _workerAdded(target) {
-    const parentTargetId = target.parentTarget().id();
+    const parentTarget = target.parentTarget();
+    if (!parentTarget) {
+      return;
+    }
+    const parentTargetId = parentTarget.id();
     const frameTreeElement = this._treeElementForTargetId.get(parentTargetId);
-    const targetInfo =
-        (await target.parentTarget().targetAgent().invoke_getTargetInfo({targetId: target.id()})).targetInfo;
+    const {targetInfo} = await parentTarget.targetAgent().invoke_getTargetInfo({targetId: target.id()});
     if (frameTreeElement && targetInfo) {
       frameTreeElement.workerCreated(targetInfo);
     }
@@ -2137,7 +2004,7 @@ export class ResourcesSection {
    * @param {!SDK.Resource.Resource} resource
    * @param {number=} line
    * @param {number=} column
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async revealResource(resource, line, column) {
     if (!this._expandFrame(resource.frame())) {
@@ -2266,7 +2133,7 @@ export class ResourcesSection {
   }
 }
 
-export class FrameTreeElement extends BaseStorageTreeElement {
+export class FrameTreeElement extends ApplicationPanelTreeElement {
   /**
    * @param {!ResourcesSection} section
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
@@ -2276,13 +2143,14 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     this._section = section;
     this._frame = frame;
     this._frameId = frame.id;
-    /** @type {!Map<string, !StorageCategoryTreeElement>} */
+    /** @type {!Map<string, !ExpandableApplicationPanelTreeElement>} */
     this._categoryElements = new Map();
     /** @type {!Map<string, !FrameResourceTreeElement>} */
     this._treeElementForResource = new Map();
-    /** @type {!Map<string, !BaseStorageTreeElement>} */
+    /** @type {!Map<string, !FrameWindowTreeElement>} */
     this._treeElementForWindow = new Map();
-    this.setExpandable(true);
+    /** @type {!Map<string, !WorkerTreeElement>} */
+    this._treeElementForWorker = new Map();
     this.frameNavigated(frame);
     /** @type {?FrameDetailsView} */
     this._view = null;
@@ -2301,7 +2169,7 @@ export class FrameTreeElement extends BaseStorageTreeElement {
   /**
    * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
-  frameNavigated(frame) {
+  async frameNavigated(frame) {
     const icon = UI.Icon.Icon.create(this.getIconTypeForFrame(frame));
     if (frame.unreachableUrl()) {
       icon.classList.add('red-icon');
@@ -2322,6 +2190,7 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     }
     this._categoryElements.clear();
     this._treeElementForResource.clear();
+    this._treeElementForWorker.clear();
 
     if (this.selected) {
       this._view = new FrameDetailsView(this._frame);
@@ -2329,12 +2198,33 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     } else {
       this._view = null;
     }
+
+    // Service Workers' parent is always the top frame. We need to reconstruct
+    // the service worker tree elements after those navigations which allow
+    // the service workers to stay alive.
+    if (frame.isTopFrame()) {
+      const targets = SDK.SDKModel.TargetManager.instance().targets();
+      for (const target of targets) {
+        if (target.type() === SDK.SDKModel.Type.ServiceWorker) {
+          const agent = frame.resourceTreeModel().target().targetAgent();
+          const targetInfo = (await agent.invoke_getTargetInfo({targetId: target.id()})).targetInfo;
+          this.workerCreated(targetInfo);
+        }
+      }
+    }
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     // This is used to persist over reloads/navigation which frame was selected.
     // A frame's title can change on DevTools refresh, so we resort to using
     // the URL instead (even though it is not guaranteed to be unique).
+    if (this._frame.isTopFrame()) {
+      return 'frame://';
+    }
     return 'frame://' + encodeURI(this._frame.url);
   }
 
@@ -2374,7 +2264,7 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    * @param {!SDK.Resource.Resource} resource
    */
   appendResource(resource) {
-    const statusCode = resource['statusCode'];
+    const statusCode = resource.statusCode();
     if (statusCode >= 301 && statusCode <= 303) {
       return;
     }
@@ -2384,8 +2274,8 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     let categoryElement =
         resourceType === Common.ResourceType.resourceTypes.Document ? this : this._categoryElements.get(categoryName);
     if (!categoryElement) {
-      categoryElement =
-          new StorageCategoryTreeElement(this._section._panel, resource.resourceType().category().title, categoryName);
+      categoryElement = new ExpandableApplicationPanelTreeElement(
+          this._section._panel, resource.resourceType().category().title(), categoryName, categoryName === 'Frames');
       this._categoryElements.set(resourceType.name(), categoryElement);
       this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
     }
@@ -2405,7 +2295,8 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     const categoryKey = 'OpenedWindows';
     let categoryElement = this._categoryElements.get(categoryKey);
     if (!categoryElement) {
-      categoryElement = new StorageCategoryTreeElement(this._section._panel, ls`Opened Windows`, categoryKey);
+      categoryElement = new ExpandableApplicationPanelTreeElement(
+          this._section._panel, i18nString(UIStrings.openedWindows), categoryKey);
       this._categoryElements.set(categoryKey, categoryElement);
       this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
     }
@@ -2420,17 +2311,19 @@ export class FrameTreeElement extends BaseStorageTreeElement {
    * @param {!Protocol.Target.TargetInfo} targetInfo
    */
   workerCreated(targetInfo) {
-    const categoryKey = 'Workers';
+    const categoryKey = targetInfo.type === 'service_worker' ? 'Service Workers' : 'Web Workers';
+    const categoryName =
+        targetInfo.type === 'service_worker' ? i18nString(UIStrings.serviceWorkers) : i18nString(UIStrings.webWorkers);
     let categoryElement = this._categoryElements.get(categoryKey);
     if (!categoryElement) {
-      categoryElement = new StorageCategoryTreeElement(this._section._panel, ls`Workers`, categoryKey);
+      categoryElement = new ExpandableApplicationPanelTreeElement(this._section._panel, categoryName, categoryKey);
       this._categoryElements.set(categoryKey, categoryElement);
       this.appendChild(categoryElement, FrameTreeElement._presentationOrderCompare);
     }
-    if (!this._treeElementForWindow.get(targetInfo.targetId)) {
+    if (!this._treeElementForWorker.get(targetInfo.targetId)) {
       const workerTreeElement = new WorkerTreeElement(this._section._panel, targetInfo);
       categoryElement.appendChild(workerTreeElement);
-      this._treeElementForWindow.set(targetInfo.targetId, workerTreeElement);
+      this._treeElementForWorker.set(targetInfo.targetId, workerTreeElement);
     }
   }
 
@@ -2459,20 +2352,12 @@ export class FrameTreeElement extends BaseStorageTreeElement {
   }
 
   /**
-   * @param {string} url
-   * @return {?SDK.Resource.Resource}
-   */
-  resourceByURL(url) {
-    const treeElement = this._treeElementForResource.get(url);
-    return treeElement ? treeElement._resource : null;
-  }
-
-  /**
    * @override
    * @param {!UI.TreeOutline.TreeElement} treeElement
+   * @param {(function(!UI.TreeOutline.TreeElement, !UI.TreeOutline.TreeElement):number)=} comparator
    */
-  appendChild(treeElement) {
-    super.appendChild(treeElement, FrameTreeElement._presentationOrderCompare);
+  appendChild(treeElement, comparator = FrameTreeElement._presentationOrderCompare) {
+    super.appendChild(treeElement, comparator);
   }
 
   /**
@@ -2486,7 +2371,7 @@ export class FrameTreeElement extends BaseStorageTreeElement {
      * @param {*} treeElement
      */
     function typeWeight(treeElement) {
-      if (treeElement instanceof StorageCategoryTreeElement) {
+      if (treeElement instanceof ExpandableApplicationPanelTreeElement) {
         return 2;
       }
       if (treeElement instanceof FrameTreeElement) {
@@ -2500,21 +2385,23 @@ export class FrameTreeElement extends BaseStorageTreeElement {
     return typeWeight1 - typeWeight2 || treeElement1.titleAsText().localeCompare(treeElement2.titleAsText());
   }
 }
-
-export class FrameResourceTreeElement extends BaseStorageTreeElement {
+/** @type {!WeakMap<!SDK.Resource.Resource, !FrameResourceTreeElement>} */
+const resourceToFrameResourceTreeElement = new WeakMap();
+export class FrameResourceTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!SDK.Resource.Resource} resource
    */
   constructor(storagePanel, resource) {
-    super(storagePanel, resource.displayName, false);
+    super(
+        storagePanel, resource.isGenerated ? i18nString(UIStrings.documentNotAvailable) : resource.displayName, false);
     this._panel = storagePanel;
     /** @type {!SDK.Resource.Resource} */
     this._resource = resource;
     /** @type {?Promise<!UI.Widget.Widget>} */
     this._previewPromise = null;
     this.tooltip = resource.url;
-    this._resource[FrameResourceTreeElement._symbol] = this;
+    resourceToFrameResourceTreeElement.set(this._resource, this);
 
     const icon = UI.Icon.Icon.create('mediumicon-manifest', 'navigator-file-tree-item');
     icon.classList.add('navigator-' + resource.resourceType().name() + '-tree-item');
@@ -2525,9 +2412,13 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
    * @param {!SDK.Resource.Resource} resource
    */
   static forResource(resource) {
-    return resource[FrameResourceTreeElement._symbol];
+    return resourceToFrameResourceTreeElement.get(resource);
   }
 
+  /**
+   * @override
+   * @return {string}
+   */
   get itemURL() {
     return this._resource.url;
   }
@@ -2557,12 +2448,17 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
    */
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this._panel.scheduleShowView(this._preparePreview());
+    if (this._resource.isGenerated) {
+      this._panel.showCategoryView(i18nString(UIStrings.theContentOfThisDocumentHasBeen), null);
+    } else {
+      this._panel.scheduleShowView(this._preparePreview());
+    }
     return false;
   }
 
   /**
    * @override
+   * @param {!Event} event
    * @return {boolean}
    */
   ondblclick(event) {
@@ -2581,15 +2477,22 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
   }
 
   /**
-   * @param {!MouseEvent} event
+   * @param {!DragEvent} event
    * @return {boolean}
    */
   _ondragstart(event) {
+    if (!event.dataTransfer) {
+      return false;
+    }
     event.dataTransfer.setData('text/plain', this._resource.content || '');
     event.dataTransfer.effectAllowed = 'copy';
     return true;
   }
 
+  /**
+   *
+   * @param {!MouseEvent} event
+   */
   _handleContextMenuEvent(event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this._resource);
@@ -2610,13 +2513,13 @@ export class FrameResourceTreeElement extends BaseStorageTreeElement {
   }
 }
 
-class FrameWindowTreeElement extends BaseStorageTreeElement {
+class FrameWindowTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!Protocol.Target.TargetInfo} targetInfo
    */
   constructor(storagePanel, targetInfo) {
-    super(storagePanel, targetInfo.title || ls`Window without title`, false);
+    super(storagePanel, targetInfo.title || i18nString(UIStrings.windowWithoutTitle), false);
     this._targetInfo = targetInfo;
     this._isWindowClosed = false;
     this._view = null;
@@ -2670,15 +2573,23 @@ class FrameWindowTreeElement extends BaseStorageTreeElement {
     this.showView(this._view);
     return false;
   }
+
+  /**
+   * @override
+   * @return {string}
+   */
+  get itemURL() {
+    return this._targetInfo.url;
+  }
 }
 
-class WorkerTreeElement extends BaseStorageTreeElement {
+class WorkerTreeElement extends ApplicationPanelTreeElement {
   /**
-   * @param {!UI.Panel.PanelWithSidebar} storagePanel
+   * @param {!ResourcesPanel} storagePanel
    * @param {!Protocol.Target.TargetInfo} targetInfo
    */
   constructor(storagePanel, targetInfo) {
-    super(storagePanel, targetInfo.title || targetInfo.url || ls`worker`, false);
+    super(storagePanel, targetInfo.title || targetInfo.url || i18nString(UIStrings.worker), false);
     this._targetInfo = targetInfo;
     this._view = null;
     const icon = UI.Icon.Icon.create('mediumicon-service-worker', 'navigator-file-tree-item');
@@ -2703,11 +2614,10 @@ class WorkerTreeElement extends BaseStorageTreeElement {
 
 
   /**
+   * @override
    * @return {string}
    */
   get itemURL() {
-    return 'dedicated-workers://';
+    return this._targetInfo.url;
   }
 }
-
-FrameResourceTreeElement._symbol = Symbol('treeElement');

@@ -26,23 +26,23 @@ public class ScreenshotCoordinator {
     static final int MAX_INSTALL_ATTEMPTS = 5;
     private static int sInstallAttempts;
 
-    private final Activity mActivity;
-    private final Tab mTab;
+    protected final Activity mActivity;
+    protected final Tab mTab;
     private final ScreenshotShareSheetDialog mDialog;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private final BottomSheetController mBottomSheetController;
     private final ImageEditorModuleProvider mImageEditorModuleProvider;
 
     private EditorScreenshotSource mScreenshotSource;
-    private Bitmap mScreenshot;
+    protected Bitmap mScreenshot;
 
     /**
      * Constructs a new ScreenshotCoordinator which may launch the editor, or a fallback.
      *
      * @param activity The parent activity.
      * @param tab The Tab which contains the content to share.
-     * @param screenshotSource The Source interface to use to take a screenshot.
      * @param chromeOptionShareCallback An interface to share sheet APIs.
+     * @param sheetController The {@link BottomSheetController} for the current activity.
      * @param imageEditorModuleProvider An interface to install and/or instantiate the image editor.
      */
     public ScreenshotCoordinator(Activity activity, Tab tab,
@@ -127,7 +127,7 @@ public class ScreenshotCoordinator {
     /**
      * Opens the screenshot sharesheet.
      */
-    private void launchSharesheet() {
+    protected void launchSharesheet() {
         ScreenshotShareSheetDialogCoordinator shareSheet =
                 new ScreenshotShareSheetDialogCoordinator(mActivity, mDialog, mScreenshot, mTab,
                         mChromeOptionShareCallback, this::retryInstallEditor);
@@ -142,6 +142,10 @@ public class ScreenshotCoordinator {
     protected void retryInstallEditor(Runnable onSuccess) {
         if (mImageEditorModuleProvider == null) {
             // If the module does not exist, nothing to do.
+            return;
+        }
+        if (mImageEditorModuleProvider.isModuleInstalled()) {
+            launchEditor();
             return;
         }
         installEditor(false, onSuccess);

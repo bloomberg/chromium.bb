@@ -384,6 +384,7 @@ Node* RawMachineAssembler::CreateNodeFromPredecessors(
     return sidetable[predecessors.front()->id().ToSize()];
   }
   std::vector<Node*> inputs;
+  inputs.reserve(predecessors.size());
   for (BasicBlock* predecessor : predecessors) {
     inputs.push_back(sidetable[predecessor->id().ToSize()]);
   }
@@ -410,6 +411,7 @@ void RawMachineAssembler::MakePhiBinary(Node* phi, int split_point,
     left_input = NodeProperties::GetValueInput(phi, 0);
   } else {
     std::vector<Node*> inputs;
+    inputs.reserve(left_input_count);
     for (int i = 0; i < left_input_count; ++i) {
       inputs.push_back(NodeProperties::GetValueInput(phi, i));
     }
@@ -731,14 +733,18 @@ namespace {
 enum FunctionDescriptorMode { kHasFunctionDescriptor, kNoFunctionDescriptor };
 
 Node* CallCFunctionImpl(
-    RawMachineAssembler* rasm, Node* function, MachineType return_type,
+    RawMachineAssembler* rasm, Node* function,
+    base::Optional<MachineType> return_type,
     std::initializer_list<RawMachineAssembler::CFunctionArg> args,
     bool caller_saved_regs, SaveFPRegsMode mode,
     FunctionDescriptorMode no_function_descriptor) {
   static constexpr std::size_t kNumCArgs = 10;
 
-  MachineSignature::Builder builder(rasm->zone(), 1, args.size());
-  builder.AddReturn(return_type);
+  MachineSignature::Builder builder(rasm->zone(), return_type ? 1 : 0,
+                                    args.size());
+  if (return_type) {
+    builder.AddReturn(*return_type);
+  }
   for (const auto& arg : args) builder.AddParam(arg.first);
 
   bool caller_saved_fp_regs = caller_saved_regs && (mode == kSaveFPRegs);
@@ -763,7 +769,7 @@ Node* CallCFunctionImpl(
 }  // namespace
 
 Node* RawMachineAssembler::CallCFunction(
-    Node* function, MachineType return_type,
+    Node* function, base::Optional<MachineType> return_type,
     std::initializer_list<RawMachineAssembler::CFunctionArg> args) {
   return CallCFunctionImpl(this, function, return_type, args, false,
                            kDontSaveFPRegs, kHasFunctionDescriptor);

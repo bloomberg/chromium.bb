@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -16,7 +17,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
@@ -53,7 +53,7 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus,
   // On Chrome OS, Bluez might not be ready by the time we initialize the
   // BluezDBusManager so we initialize the clients anyway.
   bool should_check_object_manager = true;
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   should_check_object_manager = false;
 #endif
 
@@ -226,12 +226,9 @@ void BluezDBusManager::InitializeClients() {
       GetSystemBus(),
       bluetooth_object_manager::kBluetoothObjectManagerServiceName);
 
-#if BUILDFLAG(IS_ASH)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kShowBluetoothDeviceBattery)) {
-    client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
-                                                     bluetooth_service_name);
-  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
+                                                   bluetooth_service_name);
 #endif
 
   if (!alternate_bus_)
@@ -254,7 +251,7 @@ void BluezDBusManager::Initialize(dbus::Bus* system_bus) {
 
   BluezDBusThreadManager::Initialize();
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK(system_bus);
   // On ChromeOS, BluetoothSystem needs a separate connection to Bluez, so we
   // use BluezDBusThreadManager to get two different connections to the same
@@ -263,7 +260,7 @@ void BluezDBusManager::Initialize(dbus::Bus* system_bus) {
   CreateGlobalInstance(system_bus,
                        BluezDBusThreadManager::Get()->GetSystemBus(),
                        false /* use_dbus_stubs */);
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // BluetoothSystem, the client that needs the extra connection, is not
   // implemented on Linux, so no need for an extra Bus.
   CreateGlobalInstance(BluezDBusThreadManager::Get()->GetSystemBus(), nullptr,
@@ -313,7 +310,7 @@ void BluezDBusManager::Shutdown() {
   g_bluez_dbus_manager = nullptr;
   delete dbus_manager;
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!g_using_bluez_dbus_manager_for_testing)
     BluezDBusThreadManager::Shutdown();
 #endif

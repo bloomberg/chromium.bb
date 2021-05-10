@@ -9,7 +9,6 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
-#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -118,6 +117,12 @@ void WorkerScriptLoader::MaybeStartLoader(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!completed_);
   DCHECK(interceptor);
+
+  if (!service_worker_handle_) {
+    // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
+    Abort();
+    return;
+  }
 
   // Create SubresourceLoaderParams for intercepting subresource requests and
   // populating the "controller" field in ServiceWorkerContainer. This can be

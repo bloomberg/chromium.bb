@@ -15,29 +15,36 @@
 #include "src/ast/call_statement.h"
 
 #include "src/ast/call_expression.h"
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::CallStatement);
 
 namespace tint {
 namespace ast {
 
-CallStatement::CallStatement() : Statement() {}
-
-CallStatement::CallStatement(std::unique_ptr<CallExpression> call)
-    : Statement(), call_(std::move(call)) {}
+CallStatement::CallStatement(const Source& source, CallExpression* call)
+    : Base(source), call_(call) {}
 
 CallStatement::CallStatement(CallStatement&&) = default;
 
 CallStatement::~CallStatement() = default;
 
-bool CallStatement::IsCall() const {
-  return true;
+CallStatement* CallStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* call = ctx->Clone(call_);
+  return ctx->dst->create<CallStatement>(src, call);
 }
 
 bool CallStatement::IsValid() const {
   return call_ != nullptr && call_->IsValid();
 }
 
-void CallStatement::to_str(std::ostream& out, size_t indent) const {
-  call_->to_str(out, indent);
+void CallStatement::to_str(const semantic::Info& sem,
+                           std::ostream& out,
+                           size_t indent) const {
+  call_->to_str(sem, out, indent);
 }
 
 }  // namespace ast

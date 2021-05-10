@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -29,7 +29,10 @@ class BrowserContext;
 class WebContents;
 }
 
+namespace webapps {
 struct ShortcutInfo;
+}
+
 class SkBitmap;
 
 // A Java counterpart will be generated for this enum.
@@ -68,10 +71,10 @@ class WebApkInstallService : public KeyedService {
   // WebAPK server to generate a WebAPK on the server and to Google Play to
   // install the downloaded WebAPK.
   void InstallAsync(content::WebContents* web_contents,
-                    const ShortcutInfo& shortcut_info,
+                    const webapps::ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
                     bool is_primary_icon_maskable,
-                    WebappInstallSource install_source);
+                    webapps::WebappInstallSource install_source);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
   // the Google Play server to install the downloaded WebAPK.
@@ -93,7 +96,7 @@ class WebApkInstallService : public KeyedService {
 
   // Called once the install/update completed or failed.
   void OnFinishedInstall(std::unique_ptr<LifetimeObserver> observer,
-                         const ShortcutInfo& shortcut_info,
+                         const webapps::ShortcutInfo& shortcut_info,
                          const SkBitmap& primary_icon,
                          bool is_priamry_icon_maskable,
                          WebApkInstallResult result,
@@ -102,15 +105,16 @@ class WebApkInstallService : public KeyedService {
 
   // Shows a notification that an install is in progress.
   static void ShowInstallInProgressNotification(
-      const ShortcutInfo& shortcut_info,
+      const webapps::ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
       bool is_primary_icon_maskable);
 
   // Shows a notification that an install is completed.
-  static void ShowInstalledNotification(const ShortcutInfo& shortcut_info,
-                                        const SkBitmap& primary_icon,
-                                        bool is_primary_icon_maskable,
-                                        const std::string& webapk_package_name);
+  static void ShowInstalledNotification(
+      const webapps::ShortcutInfo& shortcut_info,
+      const SkBitmap& primary_icon,
+      bool is_primary_icon_maskable,
+      const std::string& webapk_package_name);
 
   content::BrowserContext* browser_context_;
 

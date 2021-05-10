@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/alternative_state_name_map_test_utils.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -100,13 +101,13 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
   // Try a single-digit month.
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(3);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   GetIndexOfValue(field.option_values, field.value, &content_index);
   EXPECT_EQ(ASCIIToUTF16("Mar"), field.option_contents[content_index]);
 
   // Try a two-digit month.
   card.SetExpirationMonth(11);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   GetIndexOfValue(field.option_values, field.value, &content_index);
   EXPECT_EQ(ASCIIToUTF16("Nov"), field.option_contents[content_index]);
 }
@@ -125,11 +126,11 @@ void TestFillingInvalidFields(const base::string16& state,
   field_city.set_heuristic_type(ADDRESS_HOME_CITY);
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field_state, profile, &field_state,
+  filler.FillFormField(field_state, &profile, &field_state,
                        /*cvc=*/base::string16());
   EXPECT_EQ(state, field_state.value);
 
-  filler.FillFormField(field_city, profile, &field_city,
+  filler.FillFormField(field_city, &profile, &field_city,
                        /*cvc=*/base::string16());
   EXPECT_EQ(city, field_city.value);
 }
@@ -177,37 +178,37 @@ TEST_F(AutofillFieldFillerTest, Type) {
   // Set the heuristic type and check it.
   field.set_heuristic_type(NAME_FIRST);
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
-  EXPECT_EQ(NAME, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Set the server type and check it.
   field.set_server_type(ADDRESS_BILLING_LINE1);
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_BILLING, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Checks that overall_type trumps everything.
   field.SetTypeTo(AutofillType(ADDRESS_BILLING_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_BILLING, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Checks that setting server type resets overall type.
   field.set_server_type(ADDRESS_BILLING_LINE1);
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_BILLING, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
   field.set_server_type(NO_SERVER_DATA);
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
-  EXPECT_EQ(NAME, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Checks that overall_type trumps everything.
   field.SetTypeTo(AutofillType(ADDRESS_BILLING_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_BILLING, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Set the heuristic type and check it and reset overall Type.
   field.set_heuristic_type(NAME_FIRST);
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
-  EXPECT_EQ(NAME, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 }
 
 // Tests that a credit card related prediction made by the heuristics overrides
@@ -354,31 +355,6 @@ TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
 }
 
 // Verify that non credit card related fields with the autocomplete attribute
-// set to off don't get filled on desktop when the feature to Autofill all
-// addresses is disabled.
-TEST_F(AutofillFieldFillerTest,
-       FillFormField_AutocompleteOffRespected_AddressField) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kAutofillAlwaysFillAddresses);
-
-  AutofillField field;
-  field.should_autocomplete = false;
-  field.set_heuristic_type(NAME_FIRST);
-
-  // Non credit card related field.
-  address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Test"));
-  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
-
-  // Verify that the field is filled on mobile but not on desktop.
-  if (IsDesktopPlatform()) {
-    EXPECT_EQ(base::string16(), field.value);
-  } else {
-    EXPECT_EQ(ASCIIToUTF16("Test"), field.value);
-  }
-}
-
-// Verify that non credit card related fields with the autocomplete attribute
 // set to off are filled on desktop when the feature to Autofill all
 // addresses is enabled (default).
 TEST_F(AutofillFieldFillerTest,
@@ -390,7 +366,7 @@ TEST_F(AutofillFieldFillerTest,
   // Non credit card related field.
   address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Test"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled in all circumstances.
   EXPECT_EQ(ASCIIToUTF16("Test"), field.value);
@@ -406,7 +382,7 @@ TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
   // Credit card related field.
   credit_card()->SetNumber(ASCIIToUTF16("4111111111111111"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, credit_card(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled.
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
@@ -424,7 +400,7 @@ TEST_F(AutofillFieldFillerTest,
   // Credit card related field.
   credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, credit_card(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled with the fourth digit of the credit card
   // number.
@@ -443,7 +419,7 @@ TEST_F(AutofillFieldFillerTest,
   // Credit card related field.
   credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, credit_card(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled with the full credit card number.
   EXPECT_EQ(ASCIIToUTF16("0123456789999999"), field.value);
@@ -461,7 +437,7 @@ TEST_F(AutofillFieldFillerTest,
   // Credit card related field.
   credit_card()->SetNumber(ASCIIToUTF16("0123456789999999"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, credit_card(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled with the third digit of the credit card
   // number.
@@ -477,7 +453,7 @@ TEST_F(AutofillFieldFillerTest, FillFormField_MaxLength_CreditCardField) {
   // Credit card related field.
   credit_card()->SetNumber(ASCIIToUTF16("4111111111111111"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, credit_card(), &field, /*cvc=*/base::string16());
 
   // Verify that the field is filled with only the first digit of the credit
   // card number.
@@ -549,13 +525,13 @@ TEST_F(AutofillFieldFillerTest, FillFormField_Validity_CountryEmpty) {
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   // State is filled, because it's an address field.
-  filler.FillFormField(field_state, profile, &field_state,
+  filler.FillFormField(field_state, &profile, &field_state,
                        /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("CA"), field_state.value);
 
   // Email is not filled, because it's not an address field, and it doesn't
   // depend on the country.
-  filler.FillFormField(field_email, profile, &field_email,
+  filler.FillFormField(field_email, &profile, &field_email,
                        /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16(""), field_email.value);
 }
@@ -581,7 +557,7 @@ TEST_P(PhoneNumberTest, FillPhoneNumber) {
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+15145554578"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
@@ -631,7 +607,7 @@ TEST_P(ExpirationYearTest, FillExpirationYearInput) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationDateFromString(ASCIIToUTF16("12/2023"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
@@ -694,7 +670,7 @@ TEST_P(ExpirationDateTest, FillExpirationDateInput) {
   card.SetExpirationDateFromString(ASCIIToUTF16("03/2022"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   bool response =
-      filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+      filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
   EXPECT_EQ(response, test_case.expected_response);
 }
@@ -767,7 +743,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(AutofillFieldFillerTest, FillSelectControlByValue) {
   std::vector<const char*> kOptions = {
-      "Eenie", "Meenie", "Miney", "Mo",
+      "Eenie",
+      "Meenie",
+      "Miney",
+      "Mo",
   };
 
   AutofillField field;
@@ -781,13 +760,16 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByValue) {
 
   address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Meenie"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("Meenie"), field.value);
 }
 
 TEST_F(AutofillFieldFillerTest, FillSelectControlByContents) {
   std::vector<const char*> kOptions = {
-      "Eenie", "Meenie", "Miney", "Mo",
+      "Eenie",
+      "Meenie",
+      "Miney",
+      "Mo",
   };
   AutofillField field;
   test::CreateTestSelectField(kOptions, &field);
@@ -800,7 +782,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByContents) {
 
   address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Miney"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);  // Corresponds to "Miney".
 }
 
@@ -829,6 +811,17 @@ class AutofillSelectWithStatesTest
         std::unique_ptr<Source>(
             new TestdataSource(true, file_path.AsUTF8Unsafe())),
         std::unique_ptr<Storage>(new NullStorage), "en-US");
+
+    test::PopulateAlternativeStateNameMapForTesting(
+        "US", "California",
+        {{.canonical_name = "California",
+          .abbreviations = {"CA"},
+          .alternative_names = {}}});
+    test::PopulateAlternativeStateNameMapForTesting(
+        "US", "North Carolina",
+        {{.canonical_name = "North Carolina",
+          .abbreviations = {"NC"},
+          .alternative_names = {}}});
     // Make sure the normalizer is done initializing its member(s) in
     // background task(s).
     task_environment_.RunUntilIdle();
@@ -854,7 +847,7 @@ TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
   AutofillProfile address = test::GetFullProfile();
   address.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16(test_case.input_value));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   // nullptr means we expect them not to match without normalization.
   if (test_case.expected_value_without_normalization != nullptr) {
     EXPECT_EQ(UTF8ToUTF16(test_case.expected_value_without_normalization),
@@ -867,7 +860,7 @@ TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
                               UTF8ToUTF16(test_case.input_value));
   // Fill a first time without loading the rules for the region.
   FieldFiller canadian_filler(/*app_locale=*/"en-US", normalizer());
-  canadian_filler.FillFormField(field, canadian_address, &field,
+  canadian_filler.FillFormField(field, &canadian_address, &field,
                                 /*cvc=*/base::string16());
   // If the expectation with normalization is nullptr, this means that the same
   // result than without a normalizer is expected.
@@ -882,7 +875,7 @@ TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
 
     // Load the rules and try again.
     normalizer()->LoadRulesForRegion("CA");
-    canadian_filler.FillFormField(field, canadian_address, &field,
+    canadian_filler.FillFormField(field, &canadian_address, &field,
                                   /*cvc=*/base::string16());
     EXPECT_EQ(UTF8ToUTF16(test_case.expected_value_with_normalization),
               field.value);
@@ -951,7 +944,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectWithCountries) {
   AutofillProfile address = test::GetFullProfile();
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("CA"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("Canada"), field.value);
 }
 
@@ -1077,7 +1070,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithAbbreviatedMonthName) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(4);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("Apr"), field.value);
 }
 
@@ -1093,7 +1086,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithMonthName) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(4);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("April"), field.value);
 }
 
@@ -1110,7 +1103,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithMonthNameAndDigits) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(4);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("April (04)"), field.value);
 }
 
@@ -1137,10 +1130,10 @@ TEST_F(AutofillFieldFillerTest,
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(8);
   FieldFiller filler(/*app_locale=*/"fr-FR", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("08 - AOÛT"), field.value);
   card.SetExpirationMonth(12);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("12 - DECEMBRE"), field.value);
 }
 
@@ -1154,15 +1147,15 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithMonthName_French) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(2);
   FieldFiller filler(/*app_locale=*/"fr-FR", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("FÉVR."), field.value);
 
   card.SetExpirationMonth(1);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("JANV"), field.value);
 
   card.SetExpirationMonth(12);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("décembre"), field.value);
 }
 
@@ -1178,7 +1171,7 @@ TEST_F(AutofillFieldFillerTest,
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(4);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("4"), field.value);
 }
 
@@ -1192,7 +1185,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithTwoDigitCreditCardYear) {
   CreditCard card = test::GetCreditCard();
   card.SetExpirationYear(2017);
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
 }
 
@@ -1207,22 +1200,22 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithCreditCardType) {
 
   // Normal case:
   card.SetNumber(ASCIIToUTF16("4111111111111111"));  // Visa number.
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
 
   // Filling should be able to handle intervening whitespace:
   card.SetNumber(ASCIIToUTF16("5555555555554444"));  // MC number.
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("Mastercard"), field.value);
 
   // American Express is sometimes abbreviated as AmEx:
   card.SetNumber(ASCIIToUTF16("378282246310005"));  // Amex number.
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
 
   // Case insensitivity:
   card.SetNumber(ASCIIToUTF16("6011111111111117"));  // Discover number.
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
 }
 
@@ -1235,12 +1228,12 @@ TEST_F(AutofillFieldFillerTest, FillMonthControl) {
   // Try a month with two digits.
   CreditCard card = test::GetCreditCard();
   card.SetExpirationDateFromString(ASCIIToUTF16("12/2017"));
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("2017-12"), field.value);
 
   // Try a month with a leading zero.
   card.SetExpirationDateFromString(ASCIIToUTF16("03/2019"));
-  filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &card, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("2019-03"), field.value);
 }
 
@@ -1254,7 +1247,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
       "123 Fake St.\n"
       "Apt. 42");
   address()->SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), value, "en-US");
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(value, field.value);
 
   base::string16 ja_value = UTF8ToUTF16(
@@ -1263,7 +1256,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
   address()->SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), ja_value,
                      "ja-JP");
   address()->set_language_code("ja-JP");
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(ja_value, field.value);
 }
 
@@ -1277,7 +1270,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
       "123 Fake St.\n"
       "Apt. 42");
   address()->SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), value, "en-US");
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("123 Fake St., Apt. 42"), field.value);
 
   base::string16 ja_value = UTF8ToUTF16(
@@ -1286,7 +1279,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
   address()->SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), ja_value,
                      "ja-JP");
   address()->set_language_code("ja-JP");
-  filler.FillFormField(field, *address(), &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, address(), &field, /*cvc=*/base::string16());
   EXPECT_EQ(UTF8ToUTF16("桜丘町26-1セルリアンタワー6階"), field.value);
 }
 
@@ -1297,7 +1290,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithoutSplits) {
 
   credit_card()->SetNumber(ASCIIToUTF16("41111111111111111"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(cc_number_full, *credit_card(), &cc_number_full,
+  filler.FillFormField(cc_number_full, credit_card(), &cc_number_full,
                        /*cvc=*/base::string16());
 
   // Verify that full card-number shall get filled properly.
@@ -1325,7 +1318,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
 
     // Fill with a card-number; should fill just the card_number_part.
     credit_card()->SetNumber(ASCIIToUTF16(test.card_number_));
-    filler.FillFormField(cc_number_part, *credit_card(), &cc_number_part,
+    filler.FillFormField(cc_number_part, credit_card(), &cc_number_part,
                          /*cvc=*/base::string16());
 
     // Verify for expected results.
@@ -1339,7 +1332,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
   cc_number_full.set_heuristic_type(CREDIT_CARD_NUMBER);
 
   credit_card()->SetNumber(ASCIIToUTF16(test.card_number_));
-  filler.FillFormField(cc_number_full, *credit_card(), &cc_number_full,
+  filler.FillFormField(cc_number_full, credit_card(), &cc_number_full,
                        /*cvc=*/base::string16());
 
   // Verify for expected results.
@@ -1368,7 +1361,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
 
     // Fill with a card-number; should fill just the card_number_part.
     credit_card()->SetNumber(ASCIIToUTF16(test.card_number_));
-    filler.FillFormField(cc_number_part, *credit_card(), &cc_number_part,
+    filler.FillFormField(cc_number_part, credit_card(), &cc_number_part,
                          /*cvc=*/base::string16());
 
     // Verify for expected results.
@@ -1382,7 +1375,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
   AutofillField cc_number_full;
   cc_number_full.set_heuristic_type(CREDIT_CARD_NUMBER);
   credit_card()->SetNumber(ASCIIToUTF16(test.card_number_));
-  filler.FillFormField(cc_number_full, *credit_card(), &cc_number_full,
+  filler.FillFormField(cc_number_full, credit_card(), &cc_number_full,
                        /*cvc=*/base::string16());
 
   // Verify for expected results.
@@ -1457,7 +1450,7 @@ TEST_P(AutofillStateTextTest, FillStateText) {
   AutofillProfile address = test::GetFullProfile();
   address.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16(test_case.value_to_fill));
   bool has_filled =
-      filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+      filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
 
   EXPECT_EQ(test_case.should_fill, has_filled);
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
@@ -1511,7 +1504,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+15145554578"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("1"), field.value);
 }
 
@@ -1532,7 +1525,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+918890888888"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("+91"), field.value);
 }
 
@@ -1553,7 +1546,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+918890888888"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("0091"), field.value);
 }
 
@@ -1574,7 +1567,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlAugmentedPhoneCountryCode) {
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+49151669087345"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("+49 (Germany)"), field.value);
 }
 
@@ -1596,7 +1589,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+49151669087345"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("(00 49) Germany"), field.value);
 }
 
@@ -1619,8 +1612,199 @@ TEST_F(AutofillFieldFillerTest,
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+49151669087345"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  filler.FillFormField(field, address, &field, /*cvc=*/base::string16());
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
   EXPECT_EQ(ASCIIToUTF16("(0049) Germany"), field.value);
+}
+
+// Tests that the abbreviated state names are selected correctly.
+TEST_F(AutofillFieldFillerTest, FillSelectAbbreviatedState) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"BA", "BB", "BC", "BY"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavaria"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("BY"), field.value);
+}
+
+// Tests that the localized state names are selected correctly.
+TEST_F(AutofillFieldFillerTest, FillSelectLocalizedState) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Bayern", "Berlin", "Brandenburg",
+                                     "Bremen"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavaria"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("Bayern"), field.value);
+}
+
+// Tests that the state names are selected correctly when the state name exists
+// as a substring in the selection options.
+TEST_F(AutofillFieldFillerTest, FillSelectLocalizedStateSubstring) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Bavaria Has Munich", "Berlin has Berlin"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavaria"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("Bavaria Has Munich"), field.value);
+}
+
+// Tests that the state abbreviations are filled in the text field when the
+// field length is limited.
+TEST_F(AutofillFieldFillerTest, FillStateAbbreviationInTextField) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting();
+
+  AutofillField field;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+  field.max_length = 4;
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavaria"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("BY"), field.value);
+}
+
+// Tests that the state names are selected correctly even though the state
+// value saved in the address is not recognized by the AlternativeStateNameMap.
+TEST_F(AutofillFieldFillerTest, FillStateFieldWithSavedValueInProfile) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Bavari", "Berlin", "Lower Saxony"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavari"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("Bavari"), field.value);
+}
+
+// Tests that Autofill does not wrongly fill the state when the appropriate
+// state is not in the list of selection options given that the abbreviation is
+// saved in the profile.
+TEST_F(AutofillFieldFillerTest, FillStateFieldWhenStateIsNotInOptions) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting(
+      "US", "Colorado",
+      {{.canonical_name = "Colorado",
+        .abbreviations = {"CO"},
+        .alternative_names = {}}});
+  std::vector<const char*> kState = {"Connecticut", "California"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CO"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16(""), field.value);
+}
+
+// Tests that Autofill uses the static states data of US as a fallback mechanism
+// for filling when |AlternativeStateNameMap| is not populated.
+TEST_F(AutofillFieldFillerTest,
+       FillStateFieldWhenAlternativeStateNameMapIsNotPopulated) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  std::vector<const char*> kState = {"Colorado", "Connecticut", "California"};
+
+  AutofillField field;
+  test::CreateTestSelectField(kState, &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CO"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("Colorado"), field.value);
+}
+
+// Tests that Autofill fills upper case abbreviation in the input field when
+// field length is limited.
+TEST_F(AutofillFieldFillerTest, FillUpperCaseAbbreviationInStateTextField) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
+
+  test::ClearAlternativeStateNameMapForTesting();
+  test::PopulateAlternativeStateNameMapForTesting("DE", "Bavaria",
+                                                  {{.canonical_name = "Bavaria",
+                                                    .abbreviations = {"by"},
+                                                    .alternative_names = {}}});
+
+  AutofillField field;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  field.set_heuristic_type(ADDRESS_HOME_STATE);
+  field.max_length = 4;
+
+  AutofillProfile address;
+  address.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Bavaria"));
+  address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, &address, &field, /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("BY"), field.value);
 }
 
 }  // namespace autofill

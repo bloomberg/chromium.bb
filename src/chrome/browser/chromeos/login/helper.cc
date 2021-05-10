@@ -12,14 +12,14 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -102,13 +102,13 @@ bool NetworkStateHelper::IsConnecting() const {
 }
 
 void NetworkStateHelper::OnCreateConfiguration(
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     network_handler::ErrorCallback error_callback,
     const std::string& service_path,
     const std::string& guid) const {
   // Connect to the network.
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      service_path, success_callback, std::move(error_callback),
+      service_path, std::move(success_callback), std::move(error_callback),
       false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
 }
 
@@ -156,6 +156,13 @@ void SaveSyncPasswordDataToProfile(const UserContext& user_context,
         password_manager::metrics_util::GaiaPasswordHashChange::
             SAVED_ON_CHROME_SIGNIN);
   }
+}
+
+base::TimeDelta TimeToOnlineSignIn(base::Time last_online_signin,
+                                   base::TimeDelta offline_signin_limit) {
+  const base::Time now = base::DefaultClock::GetInstance()->Now();
+  // Time left to the next forced online signin.
+  return offline_signin_limit - (now - last_online_signin);
 }
 
 }  // namespace login

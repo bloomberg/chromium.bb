@@ -23,22 +23,26 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tooltip_icon.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
 
 class CircularImageView : public views::ImageView {
  public:
+  METADATA_HEADER(CircularImageView);
   CircularImageView() = default;
+  CircularImageView(const CircularImageView&) = delete;
+  CircularImageView& operator=(const CircularImageView&) = delete;
 
  private:
   // views::ImageView:
   void OnPaint(gfx::Canvas* canvas) override;
-
-  DISALLOW_COPY_AND_ASSIGN(CircularImageView);
 };
 
 void CircularImageView::OnPaint(gfx::Canvas* canvas) {
@@ -52,6 +56,9 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
   canvas->ClipPath(circular_mask, true);
   ImageView::OnPaint(canvas);
 }
+
+BEGIN_METADATA(CircularImageView, views::ImageView)
+END_METADATA
 
 }  // namespace
 
@@ -171,3 +178,6 @@ void CredentialsItemView::OnPaintBackground(gfx::Canvas* canvas) {
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
   }
 }
+
+BEGIN_METADATA(CredentialsItemView, views::Button)
+END_METADATA

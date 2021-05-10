@@ -45,6 +45,8 @@ void FakeLocalFrame::AddMessageToConsole(
 void FakeLocalFrame::AddInspectorIssue(
     blink::mojom::InspectorIssueInfoPtr info) {}
 
+void FakeLocalFrame::SwapInImmediately() {}
+
 void FakeLocalFrame::CheckCompleted() {}
 
 void FakeLocalFrame::StopLoading() {}
@@ -82,7 +84,7 @@ void FakeLocalFrame::MediaPlayerActionAt(
 
 void FakeLocalFrame::AdvanceFocusInFrame(
     blink::mojom::FocusType focus_type,
-    const base::Optional<base::UnguessableToken>& source_frame_token) {}
+    const base::Optional<blink::RemoteFrameToken>& source_frame_token) {}
 
 void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
 
@@ -95,7 +97,7 @@ void FakeLocalFrame::DidUpdateFramePolicy(
 void FakeLocalFrame::OnScreensChange() {}
 
 void FakeLocalFrame::PostMessageEvent(
-    const base::Optional<base::UnguessableToken>& source_frame_token,
+    const base::Optional<blink::RemoteFrameToken>& source_frame_token,
     const base::string16& source_origin,
     const base::string16& target_origin,
     blink::TransferableMessage message) {}
@@ -116,7 +118,7 @@ void FakeLocalFrame::BindReportingObserver(
     mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {}
 
 void FakeLocalFrame::UpdateOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+    const base::Optional<blink::FrameToken>& opener_frame_token) {}
 
 void FakeLocalFrame::MixedContentFound(
     const GURL& main_resource_url,

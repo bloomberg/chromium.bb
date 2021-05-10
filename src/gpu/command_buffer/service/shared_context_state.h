@@ -55,6 +55,7 @@ struct ContextState;
 }  // namespace gles2
 
 namespace raster {
+class GrShaderCache;
 class RasterDecoderTestBase;
 }  // namespace raster
 
@@ -66,8 +67,8 @@ class GPU_GLES2_EXPORT SharedContextState
  public:
   using ContextLostCallback = base::OnceCallback<void(bool)>;
 
-  // TODO: Refactor code to have seperate constructor for GL and Vulkan and not
-  // initialize/use GL related info for vulkan and vice-versa.
+  // TODO(vikassoni): Refactor code to have seperate constructor for GL and
+  // Vulkan and not initialize/use GL related info for vulkan and vice-versa.
   SharedContextState(
       scoped_refptr<gl::GLShareGroup> share_group,
       scoped_refptr<gl::GLSurface> surface,
@@ -83,7 +84,7 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool InitializeGrContext(const GpuPreferences& gpu_preferences,
                            const GpuDriverBugWorkarounds& workarounds,
-                           GrContextOptions::PersistentCache* cache,
+                           gpu::raster::GrShaderCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
   bool GrContextIsGL() const {
@@ -106,7 +107,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
   void ReleaseCurrent(gl::GLSurface* surface);
   void MarkContextLost(error::ContextLostReason reason = error::kUnknown);
-  bool IsCurrent(gl::GLSurface* surface);
+  bool IsCurrent(gl::GLSurface* surface, bool needs_gl = false);
 
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -115,6 +116,8 @@ class GPU_GLES2_EXPORT SharedContextState
   uint64_t GetMemoryUsage();
 
   void PessimisticallyResetGrContext() const;
+
+  void StoreVkPipelineCacheIfNeeded();
 
   gl::GLShareGroup* share_group() { return share_group_.get(); }
   gl::GLContext* context() { return context_.get(); }
@@ -182,7 +185,7 @@ class GPU_GLES2_EXPORT SharedContextState
     virtual void OnContextLost() = 0;
 
    protected:
-    virtual ~ContextLostObserver() {}
+    virtual ~ContextLostObserver() = default;
   };
   void AddContextLostObserver(ContextLostObserver* obs);
   void RemoveContextLostObserver(ContextLostObserver* obs);
@@ -328,6 +331,7 @@ class GPU_GLES2_EXPORT SharedContextState
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
   uint64_t skia_gr_cache_size_ = 0;
   std::vector<uint8_t> scratch_deserialization_buffer_;
+  gpu::raster::GrShaderCache* gr_shader_cache_ = nullptr;
 
   // |need_context_state_reset| is set whenever Skia may have altered the
   // driver's GL state.

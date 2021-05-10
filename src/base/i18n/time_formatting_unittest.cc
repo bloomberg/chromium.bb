@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
@@ -203,6 +205,36 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDE) {
                                                  kDropAmPm));
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST(TimeFormattingTest, TimeMonthYearInUTC) {
+  // See third_party/icu/source/data/locales/en.txt.
+  // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
+  test::ScopedRestoreICUDefaultLocale restore_locale;
+  i18n::SetICUDefaultLocale("en_US");
+  test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
+
+  Time time;
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
+  EXPECT_EQ(
+      ASCIIToUTF16("April 2011"),
+      TimeFormatMonthAndYear(time, /*time_zone=*/icu::TimeZone::getGMT()));
+  EXPECT_EQ(ASCIIToUTF16("April 2011"),
+            TimeFormatMonthAndYear(time, /*time_zone=*/nullptr));
+
+  const Time::Exploded kDiffMonthsForDiffTzTime = {
+      2011, 4, 5, 1,  // Fri, Apr 1, 2011 UTC = Thurs, March 31, 2011 US PDT.
+      0,    0, 0, 0   // 00:00:00.000 UTC = 05:00:00 previous day US PDT.
+  };
+
+  EXPECT_TRUE(Time::FromUTCExploded(kDiffMonthsForDiffTzTime, &time));
+  EXPECT_EQ(
+      ASCIIToUTF16("April 2011"),
+      TimeFormatMonthAndYear(time, /*time_zone=*/icu::TimeZone::getGMT()));
+  EXPECT_EQ(ASCIIToUTF16("March 2011"),
+            TimeFormatMonthAndYear(time, /*time_zone=*/nullptr));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 TEST(TimeFormattingTest, TimeFormatDateUS) {
   // See third_party/icu/source/data/locales/en.txt.
   // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
@@ -311,7 +343,9 @@ TEST(TimeFormattingTest, TimeDurationFormat) {
   string16 fa_short = UTF8ToUTF16(
       u8"\u06f1\u06f5 \u0633\u0627\u0639\u062a\u060c\u200f \u06f4\u06f2 \u062f"
       u8"\u0642\u06cc\u0642\u0647");
-  string16 fa_narrow = UTF8ToUTF16(u8"\u06F1\u06F5h \u06F4\u06F2m");
+  string16 fa_narrow = UTF8ToUTF16(
+      u8"\u06f1\u06f5 \u0633\u0627\u0639\u062a \u06f4\u06f2 \u062f\u0642\u06cc"
+      u8"\u0642\u0647");
   string16 fa_numeric = UTF8ToUTF16(u8"\u06f1\u06f5:\u06f4\u06f2");
   EXPECT_EQ(fa_wide, TimeDurationFormatString(delta, DURATION_WIDTH_WIDE));
   EXPECT_EQ(fa_short, TimeDurationFormatString(delta, DURATION_WIDTH_SHORT));

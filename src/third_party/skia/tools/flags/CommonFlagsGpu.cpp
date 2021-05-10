@@ -20,7 +20,7 @@ static DEFINE_bool(allPathsVolatile, false,
                    "Causes all GPU paths to be processed as if 'setIsVolatile' had been called.");
 
 static DEFINE_bool(gs, true, "Enables support for geometry shaders (if hw allows).");
-static DEFINE_bool(ts, true, "Enables support for tessellation shaders (if hw allows.).");
+static DEFINE_bool(hwtess, false, "Enables support for tessellation shaders (if hw allows.).");
 
 static DEFINE_int(maxTessellationSegments, 0,
                   "Overrides the max number of tessellation segments supported by the caps.");
@@ -29,8 +29,8 @@ static DEFINE_bool(cc, false, "Allow coverage counting shortcuts to render paths
 
 static DEFINE_string(pr, "",
               "Set of enabled gpu path renderers. Defined as a list of: "
-              "[~]none [~]dashline [~]tess [~]nvpr [~]ccpr [~]aahairline [~]aaconvex "
-              "[~]aalinearizing [~]small [~]tri] [~]all");
+              "[~]none [~]dashline [~]nvpr [~]ccpr [~]aahairline [~]aaconvex [~]aalinearizing "
+              "[~]small [~]tri [~]tess [~]all");
 
 static DEFINE_int(internalSamples, 4,
                   "Number of samples for internal draws that use MSAA or mixed samples.");
@@ -46,8 +46,6 @@ static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
         return GpuPathRenderers::kNone;
     } else if (!strcmp(name, "dashline")) {
         return GpuPathRenderers::kDashLine;
-    } else if (!strcmp(name, "tess")) {
-        return GpuPathRenderers::kTessellation;
     } else if (!strcmp(name, "nvpr")) {
         return GpuPathRenderers::kStencilAndCover;
     } else if (!strcmp(name, "ccpr")) {
@@ -62,6 +60,8 @@ static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
         return GpuPathRenderers::kSmall;
     } else if (!strcmp(name, "tri")) {
         return GpuPathRenderers::kTriangulating;
+    } else if (!strcmp(name, "tess")) {
+        return GpuPathRenderers::kTessellation;
     } else if (!strcmp(name, "default")) {
         return GpuPathRenderers::kDefault;
     }
@@ -98,7 +98,7 @@ void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
     ctxOptions->fAllowPathMaskCaching                = FLAGS_cachePathMasks;
     ctxOptions->fAllPathsVolatile                    = FLAGS_allPathsVolatile;
     ctxOptions->fSuppressGeometryShaders             = !FLAGS_gs;
-    ctxOptions->fSuppressTessellationShaders         = !FLAGS_ts;
+    ctxOptions->fSuppressTessellationShaders         = !FLAGS_hwtess;
     ctxOptions->fMaxTessellationSegmentsOverride     = FLAGS_maxTessellationSegments;
     ctxOptions->fGpuPathRenderers                    = collect_gpu_path_renderers_from_flags();
     ctxOptions->fInternalMultisampleCount            = FLAGS_internalSamples;

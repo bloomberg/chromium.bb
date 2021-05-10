@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -47,7 +48,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const String& user_agent,
       const base::Optional<UserAgentMetadata>& ua_metadata,
       scoped_refptr<WebWorkerFetchContext>,
-      const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          outside_content_security_policies,
       network::mojom::ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
@@ -65,9 +67,12 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       BeginFrameProviderParams begin_frame_provider_params = {},
       const FeaturePolicy* parent_feature_policy = nullptr,
       base::UnguessableToken agent_cluster_id = {},
+      ukm::SourceId ukm_source_id = ukm::kInvalidSourceId,
       const base::Optional<ExecutionContextToken>& parent_context_token =
           base::nullopt,
-      bool parent_cross_origin_isolated_capability = false);
+      bool parent_cross_origin_isolated_capability = false,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          agent_group_scheduler_compositor_task_runner = nullptr);
 
   ~GlobalScopeCreationParams() = default;
 
@@ -96,7 +101,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // TODO(bashi): This contains "inside" CSP headers for on-the-main-thread
   // service/shared worker script fetch. Add a separate parameter for "inside"
   // CSP headers.
-  Vector<CSPHeaderAndType> outside_content_security_policy_headers;
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+      outside_content_security_policies;
 
   network::mojom::ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
@@ -164,6 +170,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // See https://tc39.github.io/ecma262/#sec-agent-clusters
   base::UnguessableToken agent_cluster_id;
 
+  // Set to ukm::kInvalidSourceId when the global scope is not provided an ID.
+  ukm::SourceId ukm_source_id;
+
   // The identity of the parent ExecutionContext that is the sole owner of this
   // worker or worklet, which caused it to be created, and to whose lifetime
   // this worker/worklet is bound. This is used for resource usage attribution.
@@ -172,6 +181,11 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // https://html.spec.whatwg.org/C/#concept-settings-object-cross-origin-isolated-capability
   // Used by dedicated workers, and set to false when there is no parent.
   const bool parent_cross_origin_isolated_capability;
+
+  // The compositor task runner associated with the |AgentGroupScheduler| this
+  // worker belongs to.
+  scoped_refptr<base::SingleThreadTaskRunner>
+      agent_group_scheduler_compositor_task_runner;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

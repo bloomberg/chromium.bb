@@ -31,9 +31,8 @@ public:
         kNotSupported_AdvBlendEqInteraction,     //<! No _blend_equation_advanced extension
         kAutomatic_AdvBlendEqInteraction,        //<! No interaction required
         kGeneralEnable_AdvBlendEqInteraction,    //<! layout(blend_support_all_equations) out
-        kSpecificEnables_AdvBlendEqInteraction,  //<! Specific layout qualifiers per equation
 
-        kLast_AdvBlendEqInteraction = kSpecificEnables_AdvBlendEqInteraction
+        kLast_AdvBlendEqInteraction = kGeneralEnable_AdvBlendEqInteraction
     };
 
     GrShaderCaps(const GrContextOptions&);
@@ -95,10 +94,6 @@ public:
 
     bool mustEnableAdvBlendEqs() const {
         return fAdvBlendEqInteraction >= kGeneralEnable_AdvBlendEqInteraction;
-    }
-
-    bool mustEnableSpecificAdvBlendEqs() const {
-        return fAdvBlendEqInteraction == kSpecificEnables_AdvBlendEqInteraction;
     }
 
     bool mustDeclareFragmentShaderOutput() const { return fGLSLGeneration > k110_GrGLSLGeneration; }
@@ -179,6 +174,10 @@ public:
     // ANGLE disallows do loops altogether, and we're seeing crashes on Tegra3 with do loops in at
     // least some cases.
     bool canUseDoLoops() const { return fCanUseDoLoops; }
+
+    // By default, SkSL pools IR nodes per-program. To debug memory corruption, it is sometimes
+    // helpful to disable that feature.
+    bool useNodePools() const { return fUseNodePools; }
 
     // Returns the string of an extension that must be enabled in the shader to support
     // derivatives. If nullptr is returned then no extension needs to be enabled. Before calling
@@ -309,6 +308,9 @@ private:
     bool fCanOnlyUseSampleMaskWithStencil             : 1;
     bool fColorSpaceMathNeedsFloat                    : 1;
     bool fCanUseDoLoops                               : 1;
+
+    // This controls behavior of the SkSL compiler, not the code we generate
+    bool fUseNodePools : 1;
 
     const char* fVersionDeclString;
 

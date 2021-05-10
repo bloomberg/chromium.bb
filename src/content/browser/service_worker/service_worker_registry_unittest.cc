@@ -16,10 +16,10 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 
 namespace content {
@@ -278,6 +278,7 @@ class ServiceWorkerRegistryTest : public testing::Test {
     content::RunAllTasksUntilIdle();
   }
 
+  EmbeddedWorkerTestHelper* helper() { return helper_.get(); }
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerRegistry* registry() { return context()->registry(); }
   mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage_control() {
@@ -287,6 +288,8 @@ class ServiceWorkerRegistryTest : public testing::Test {
   storage::MockSpecialStoragePolicy* special_storage_policy() {
     return special_storage_policy_.get();
   }
+
+  size_t inflight_call_count() { return registry()->inflight_calls_.size(); }
 
   void InitializeTestHelper() {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
@@ -300,6 +303,13 @@ class ServiceWorkerRegistryTest : public testing::Test {
     helper_.reset();
     base::RunLoop().RunUntilIdle();
     InitializeTestHelper();
+  }
+
+  void EnsureRemoteCallsAreExecuted() {
+    storage_control().FlushForTesting();
+    // ServiceWorkerRegistry has an internal queue for inflight remote calls.
+    // Run all tasks until all calls in the queue are executed.
+    content::RunAllTasksUntilIdle();
   }
 
   std::vector<url::Origin> GetRegisteredOrigins() {
@@ -500,9 +510,10 @@ class ServiceWorkerRegistryTest : public testing::Test {
     base::RunLoop loop;
     storage_control()->GetPurgeableResourceIdsForTest(
         base::BindLambdaForTesting(
-            [&](ServiceWorkerDatabase::Status status,
+            [&](storage::mojom::ServiceWorkerDatabaseStatus status,
                 const std::vector<int64_t>& resource_ids) {
-              EXPECT_EQ(status, ServiceWorkerDatabase::Status::kOk);
+              EXPECT_EQ(status,
+                        storage::mojom::ServiceWorkerDatabaseStatus::kOk);
               ids = resource_ids;
               loop.Quit();
             }));
@@ -514,9 +525,9 @@ class ServiceWorkerRegistryTest : public testing::Test {
     std::vector<int64_t> ids;
     base::RunLoop loop;
     storage_control()->GetPurgingResourceIdsForTest(base::BindLambdaForTesting(
-        [&](ServiceWorkerDatabase::Status status,
+        [&](storage::mojom::ServiceWorkerDatabaseStatus status,
             const std::vector<int64_t>& resource_ids) {
-          EXPECT_EQ(status, ServiceWorkerDatabase::Status::kOk);
+          EXPECT_EQ(status, storage::mojom::ServiceWorkerDatabaseStatus::kOk);
           ids = resource_ids;
           loop.Quit();
         }));
@@ -531,7 +542,8 @@ class ServiceWorkerRegistryTest : public testing::Test {
     storage_control()->StoreRegistration(
         std::move(registration_data), std::move(resources),
         base::BindLambdaForTesting(
-            [&](storage::mojom::ServiceWorkerDatabaseStatus status) {
+            [&](storage::mojom::ServiceWorkerDatabaseStatus status,
+                uint64_t /*deleted_resources_size*/) {
               ASSERT_EQ(storage::mojom::ServiceWorkerDatabaseStatus::kOk,
                         status);
               loop.Quit();
@@ -1231,7 +1243,7 @@ TEST_F(ServiceWorkerRegistryTest, StoragePolicyChange) {
 
   ASSERT_EQ(StoreRegistration(registration, registration->waiting_version()),
             blink::ServiceWorkerStatusCode::kOk);
-  EXPECT_FALSE(registry()->ShouldPurgeOnShutdown(kOrigin));
+  EXPECT_FALSE(registry()->ShouldPurgeOnShutdownForTesting(kOrigin));
 
   {
     // Update storage policy to mark the origin should be purged on shutdown.
@@ -1240,7 +1252,7 @@ TEST_F(ServiceWorkerRegistryTest, StoragePolicyChange) {
     base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_TRUE(registry()->ShouldPurgeOnShutdown(kOrigin));
+  EXPECT_TRUE(registry()->ShouldPurgeOnShutdownForTesting(kOrigin));
 }
 
 // Tests that callbacks of storage operations are always called even when the
@@ -1261,15 +1273,686 @@ TEST_F(ServiceWorkerRegistryTest, RemoteStorageDisconnection) {
   ASSERT_EQ(result.status, blink::ServiceWorkerStatusCode::kOk);
 
   // This will disconnect mojo connection of the remote storage.
-  registry()->SimulateStorageRestartForTesting();
+  helper()->SimulateStorageRestartForTesting();
 
-  result = GetStorageUsageForOrigin(kOrigin);
-  ASSERT_EQ(result.status,
-            blink::ServiceWorkerStatusCode::kErrorStorageDisconnected);
-
-  // The connection should be recovered automatically.
+  // The connection should be recovered and inflight calls should be retried
+  // automatically.
   result = GetStorageUsageForOrigin(kOrigin);
   ASSERT_EQ(result.status, blink::ServiceWorkerStatusCode::kOk);
+  result = GetStorageUsageForOrigin(kOrigin);
+  ASSERT_EQ(result.status, blink::ServiceWorkerStatusCode::kOk);
+}
+
+// Tests that inflight remote calls are retried after the remote storage is
+// restarted.
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
+  EnsureRemoteCallsAreExecuted();
+
+  const GURL kScope1("https://www.example.com/scope/");
+  const GURL kScriptUrl1("https://www.example.com/script.js");
+  const auto kOrigin1(url::Origin::Create(kScope1));
+  scoped_refptr<ServiceWorkerRegistration> registration1 =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScriptUrl1,
+                                                /*resource_id=*/1);
+
+  const GURL kScope2("https://www2.example.com/scope/foo");
+  const GURL kScriptUrl2("https://www2.example.com/foo/script.js");
+  const auto kOrigin2(url::Origin::Create(kScope2));
+  scoped_refptr<ServiceWorkerRegistration> registration2 =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScriptUrl2,
+                                                /*resource_id=*/2);
+
+  // Store two registrations. Restart the remote storage several times.
+  {
+    helper()->SimulateStorageRestartForTesting();
+
+    base::RunLoop loop1;
+    registry()->StoreRegistration(
+        registration1.get(), registration1->waiting_version(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop1.Quit();
+        }));
+
+    helper()->SimulateStorageRestartForTesting();
+
+    base::RunLoop loop2;
+    registry()->StoreRegistration(
+        registration2.get(), registration2->waiting_version(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop2.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Get registered origins
+  {
+    base::RunLoop loop;
+    registry()->GetRegisteredOrigins(base::BindLambdaForTesting(
+        [&](const std::vector<url::Origin>& origins) {
+          EXPECT_THAT(origins,
+                      testing::UnorderedElementsAreArray({kOrigin1, kOrigin2}));
+          loop.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 1U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Finding registrations stored in the previous block.
+  {
+    base::RunLoop loop1;
+    registry()->FindRegistrationForClientUrl(
+        kScope1,
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(found_registration, registration1);
+              loop1.Quit();
+            }));
+
+    base::RunLoop loop2;
+    registry()->FindRegistrationForScope(
+        GURL("http://www.example.com/not-in-scope"),
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorNotFound);
+              EXPECT_EQ(found_registration, nullptr);
+              loop2.Quit();
+            }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Get both of the registrations by these APIs.
+  {
+    base::RunLoop loop1;
+    registry()->GetRegistrationsForOrigin(
+        kOrigin1,
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+                    registrations) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(registrations.size(), 1U);
+              loop1.Quit();
+            }));
+
+    base::RunLoop loop2;
+    registry()->GetAllRegistrationsInfos(base::BindLambdaForTesting(
+        [&](blink::ServiceWorkerStatusCode status,
+            const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          EXPECT_EQ(registrations.size(), 2U);
+          loop2.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Delete `registrations` from the storage.
+  {
+    base::RunLoop loop;
+    registry()->DeleteRegistration(
+        registration2, kScope2.GetOrigin(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 1U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Update fields of `registration1` in the storage.
+  {
+    base::RunLoop loop1;
+    registry()->UpdateToActiveState(
+        registration1->id(), kScope1.GetOrigin(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop1.Quit();
+        }));
+
+    base::RunLoop loop2;
+    registry()->UpdateLastUpdateCheckTime(
+        registration1->id(), kScope1.GetOrigin(), base::Time::Now(),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop2.Quit();
+        }));
+
+    base::RunLoop loop3;
+    registry()->UpdateNavigationPreloadEnabled(
+        registration1->id(), kScope1.GetOrigin(), /*enable=*/true,
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop3.Quit();
+        }));
+
+    base::RunLoop loop4;
+    registry()->UpdateNavigationPreloadHeader(
+        registration1->id(), kScope1.GetOrigin(), "header",
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop4.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 4U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    loop3.Run();
+    loop4.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+}
+
+// Tests that FindRegistrationForId methods are retried after the remote storage
+// is restarted. Separated from other FindRegistration method tests because
+// these methods skip remote calls when live registrations are alive.
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_FindRegistrationForId) {
+  // Prerequisite: Store two registrations.
+  const GURL origin1("https://www.example.com");
+  const GURL scope1("https://www.example.com/foo/");
+  const GURL script1(origin1.spec() + "/script.js");
+  const int64_t registration_id1 = 1;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources1;
+  resources1.push_back(CreateResourceRecord(1, script1, 100));
+  storage::mojom::ServiceWorkerRegistrationDataPtr data1 =
+      CreateRegistrationData(registration_id1,
+                             /*version_id=*/1000,
+                             /*scope=*/scope1,
+                             /*script_url=*/script1, resources1);
+  StoreRegistrationData(std::move(data1), std::move(resources1));
+
+  const GURL origin2("https://www.example.com");
+  const GURL scope2("https://www.example.com/bar/");
+  const GURL script2(origin2.spec() + "/script.js");
+  const int64_t registration_id2 = 2;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources2;
+  resources2.push_back(CreateResourceRecord(2, script2, 200));
+  storage::mojom::ServiceWorkerRegistrationDataPtr data2 =
+      CreateRegistrationData(registration_id2,
+                             /*version_id=*/2000,
+                             /*scope=*/scope2,
+                             /*script_url=*/script2, resources2);
+  StoreRegistrationData(std::move(data2), std::move(resources2));
+
+  base::RunLoop loop1;
+  registry()->FindRegistrationForId(
+      registration_id1, url::Origin::Create(origin1.GetOrigin()),
+      base::BindLambdaForTesting(
+          [&](blink::ServiceWorkerStatusCode status,
+              scoped_refptr<ServiceWorkerRegistration> found_registration) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+            EXPECT_EQ(found_registration->id(), registration_id1);
+            loop1.Quit();
+          }));
+
+  base::RunLoop loop2;
+  registry()->FindRegistrationForIdOnly(
+      registration_id2,
+      base::BindLambdaForTesting(
+          [&](blink::ServiceWorkerStatusCode status,
+              scoped_refptr<ServiceWorkerRegistration> found_registration) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+            EXPECT_EQ(found_registration->id(), registration_id2);
+            loop2.Quit();
+          }));
+
+  EXPECT_EQ(inflight_call_count(), 2U);
+  helper()->SimulateStorageRestartForTesting();
+
+  loop1.Run();
+  loop2.Run();
+  EXPECT_EQ(inflight_call_count(), 0U);
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       RetryInflightCalls_CreateNewRegistrationAndVersion) {
+  EnsureRemoteCallsAreExecuted();
+
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScriptUrl("http://www.example.com/script.js");
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+
+  {
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = kScope;
+    base::RunLoop loop;
+    registry()->CreateNewRegistration(
+        std::move(options),
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<ServiceWorkerRegistration> new_registration) {
+              EXPECT_EQ(new_registration->scope(), kScope);
+              registration = new_registration;
+              loop.Quit();
+            }));
+
+    helper()->SimulateStorageRestartForTesting();
+    EXPECT_EQ(inflight_call_count(), 1U);
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  {
+    base::RunLoop loop;
+    registry()->CreateNewVersion(
+        registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
+        base::BindLambdaForTesting(
+            [&](scoped_refptr<ServiceWorkerVersion> new_version) {
+              EXPECT_EQ(new_version->script_url(), kScriptUrl);
+              EXPECT_EQ(new_version->registration_id(), registration->id());
+              loop.Quit();
+            }));
+
+    helper()->SimulateStorageRestartForTesting();
+    EXPECT_EQ(inflight_call_count(), 1U);
+
+    loop.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+}
+
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_UserData) {
+  // Prerequisite: Store two registrations.
+  const GURL kScope1("http://www.example.com/scope/");
+  const GURL kScriptUrl1("http://www.example.com/script.js");
+  const auto kOrigin1(url::Origin::Create(kScope1));
+  scoped_refptr<ServiceWorkerRegistration> registration1 =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScriptUrl1,
+                                                /*resource_id=*/1);
+  ASSERT_EQ(StoreRegistration(registration1, registration1->waiting_version()),
+            blink::ServiceWorkerStatusCode::kOk);
+
+  const GURL kScope2("http://www.example.com/scope/foo");
+  const GURL kScriptUrl2("http://www.example.com/fooscript.js");
+  const auto kOrigin2(url::Origin::Create(kScope2));
+  scoped_refptr<ServiceWorkerRegistration> registration2 =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScriptUrl2,
+                                                /*resource_id=*/2);
+  ASSERT_EQ(StoreRegistration(registration2, registration2->waiting_version()),
+            blink::ServiceWorkerStatusCode::kOk);
+
+  // Store some user data.
+  {
+    base::RunLoop loop1;
+    registry()->StoreUserData(
+        registration1->id(), kOrigin1,
+        {{"key1", "value1"}, {"prefixed_key1", "prefixed_value1"}},
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop1.Quit();
+        }));
+
+    base::RunLoop loop2;
+    registry()->StoreUserData(
+        registration2->id(), kOrigin2,
+        {{"key2", "value2"}, {"prefixed_key2", "prefixed_value2"}},
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop2.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Tests that get methods for `registration1` work.
+  {
+    base::RunLoop loop1;
+    registry()->GetUserData(
+        registration1->id(), {{"key1"}},
+        base::BindLambdaForTesting([&](const std::vector<std::string>& values,
+                                       blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          EXPECT_EQ(values.size(), 1U);
+          loop1.Quit();
+        }));
+
+    base::RunLoop loop2;
+    registry()->GetUserDataByKeyPrefix(
+        registration1->id(), "prefixed",
+        base::BindLambdaForTesting([&](const std::vector<std::string>& values,
+                                       blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          EXPECT_EQ(values.size(), 1U);
+          loop2.Quit();
+        }));
+
+    base::RunLoop loop3;
+    registry()->GetUserKeysAndDataByKeyPrefix(
+        registration1->id(), "prefixed",
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                const base::flat_map<std::string, std::string>& user_data) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(user_data.size(), 1U);
+              loop3.Quit();
+            }));
+
+    EXPECT_EQ(inflight_call_count(), 3U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    loop3.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Tests that get methods for all registrations work.
+  {
+    base::RunLoop loop1;
+    registry()->GetUserDataForAllRegistrations(
+        "key2",
+        base::BindLambdaForTesting(
+            [&](const std::vector<std::pair<int64_t, std::string>>& user_data,
+                blink::ServiceWorkerStatusCode status) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(user_data.size(), 1U);
+              loop1.Quit();
+            }));
+
+    base::RunLoop loop2;
+    registry()->GetUserDataForAllRegistrationsByKeyPrefix(
+        "prefixed",
+        base::BindLambdaForTesting(
+            [&](const std::vector<std::pair<int64_t, std::string>>& user_data,
+                blink::ServiceWorkerStatusCode status) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+              EXPECT_EQ(user_data.size(), 2U);
+              loop2.Quit();
+            }));
+
+    EXPECT_EQ(inflight_call_count(), 2U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+
+  // Tests that clear methods work.
+  {
+    base::RunLoop loop1;
+    registry()->ClearUserData(
+        registration1->id(), {{"key1"}},
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop1.Quit();
+        }));
+
+    base::RunLoop loop2;
+    registry()->ClearUserDataByKeyPrefixes(
+        registration2->id(), {{"key2"}},
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop2.Quit();
+        }));
+
+    base::RunLoop loop3;
+    registry()->ClearUserDataForAllRegistrationsByKeyPrefix(
+        "prefixed",
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+          loop3.Quit();
+        }));
+
+    EXPECT_EQ(inflight_call_count(), 3U);
+    helper()->SimulateStorageRestartForTesting();
+
+    loop1.Run();
+    loop2.Run();
+    loop3.Run();
+    EXPECT_EQ(inflight_call_count(), 0U);
+  }
+}
+
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_DeleteAndStartOver) {
+  EnsureRemoteCallsAreExecuted();
+
+  base::RunLoop loop;
+  registry()->DeleteAndStartOver(
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        DCHECK_EQ(status, blink::ServiceWorkerStatusCode::kOk);
+        loop.Quit();
+      }));
+
+  EXPECT_EQ(inflight_call_count(), 1U);
+  helper()->SimulateStorageRestartForTesting();
+
+  base::HistogramTester histogram_tester;
+  loop.Run();
+  EXPECT_EQ(inflight_call_count(), 0U);
+  const size_t kExpectedRetryCountForRecovery = 0;
+  const size_t kExpectedSampleCount = 1;
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.Storage.RetryCountForRecovery",
+      kExpectedRetryCountForRecovery, kExpectedSampleCount);
+}
+
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_PerformStorageCleanup) {
+  EnsureRemoteCallsAreExecuted();
+
+  base::RunLoop loop;
+  registry()->PerformStorageCleanup(
+      base::BindLambdaForTesting([&]() { loop.Quit(); }));
+
+  EXPECT_EQ(inflight_call_count(), 1U);
+  helper()->SimulateStorageRestartForTesting();
+
+  base::HistogramTester histogram_tester;
+  loop.Run();
+  EXPECT_EQ(inflight_call_count(), 0U);
+  const size_t kExpectedRetryCountForRecovery = 0;
+  const size_t kExpectedSampleCount = 1;
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.Storage.RetryCountForRecovery",
+      kExpectedRetryCountForRecovery, kExpectedSampleCount);
+}
+
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_Disable) {
+  EnsureRemoteCallsAreExecuted();
+
+  // This schedules a Disable() remote call.
+  registry()->PrepareForDeleteAndStartOver();
+
+  EXPECT_EQ(inflight_call_count(), 1U);
+  helper()->SimulateStorageRestartForTesting();
+
+  base::HistogramTester histogram_tester;
+  EnsureRemoteCallsAreExecuted();
+  EXPECT_EQ(inflight_call_count(), 0U);
+  const size_t kExpectedRetryCountForRecovery = 0;
+  const size_t kExpectedSampleCount = 1;
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.Storage.RetryCountForRecovery",
+      kExpectedRetryCountForRecovery, kExpectedSampleCount);
+}
+
+// Similar to `StoragePolicyChange` test but restart the remote storage to make
+// sure ApplyPolicyUpdates() is retried.
+TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_ApplyPolicyUpdates) {
+  EnsureRemoteCallsAreExecuted();
+
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScriptUrl("http://www.example.com/script.js");
+  const auto kOrigin(url::Origin::Create(kScope));
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScriptUrl,
+                                                /*resource_id=*/1);
+
+  ASSERT_EQ(StoreRegistration(registration, registration->waiting_version()),
+            blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_FALSE(registry()->ShouldPurgeOnShutdownForTesting(kOrigin));
+
+  // Update storage policy to mark the origin should be purged on shutdown.
+  special_storage_policy()->AddSessionOnly(kOrigin.GetURL());
+  special_storage_policy()->NotifyPolicyChanged();
+
+  helper()->SimulateStorageRestartForTesting();
+
+  EnsureRemoteCallsAreExecuted();
+  // All Mojo calls must be done at this point.
+  EXPECT_EQ(inflight_call_count(), 0U);
+
+  EXPECT_TRUE(registry()->ShouldPurgeOnShutdownForTesting(kOrigin));
+}
+
+// Regression test for https://crbug.com/1165784.
+// Tests that callbacks of ServiceWorkerRegistry are always called. Calls
+// ServiceWorkerRegistry methods and destroys the instance immediately by
+// simulating restarts.
+TEST_F(ServiceWorkerRegistryTest, DestroyRegistryDuringInflightCall) {
+  {
+    base::RunLoop loop;
+    registry()->GetRegisteredOrigins(base::BindLambdaForTesting(
+        [&](const std::vector<url::Origin>& origins) {
+          EXPECT_TRUE(origins.empty());
+          loop.Quit();
+        }));
+    SimulateRestart();
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    registry()->GetStorageUsageForOrigin(
+        url::Origin::Create(GURL("https://example.com/")),
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status, int64_t usage) {
+              EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+              loop.Quit();
+            }));
+    SimulateRestart();
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    registry()->PerformStorageCleanup(loop.QuitClosure());
+    SimulateRestart();
+    loop.Run();
+  }
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       DestroyRegistryDuringInflightCall_StoreUserData) {
+  base::RunLoop loop;
+  registry()->StoreUserData(
+      /*registration_id=*/1, url::Origin::Create(GURL("https://example.com/")),
+      {{"key", "value"}},
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+        loop.Quit();
+      }));
+  SimulateRestart();
+  loop.Run();
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       DestroyRegistryDuringInflightCall_ClearUserData) {
+  base::RunLoop loop;
+  registry()->ClearUserData(
+      /*registration_id=*/1, {{"key"}},
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+        loop.Quit();
+      }));
+  SimulateRestart();
+  loop.Run();
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       DestroyRegistryDuringInflightCall_ClearUserDataByKeyPrefixes) {
+  base::RunLoop loop;
+  registry()->ClearUserDataByKeyPrefixes(
+      /*registration_id=*/1, {{"prefix"}},
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+        loop.Quit();
+      }));
+  SimulateRestart();
+  loop.Run();
+}
+
+TEST_F(
+    ServiceWorkerRegistryTest,
+    DestroyRegistryDuringInflightCall_ClearUserDataForAllRegistrationsByKeyPrefix) {
+  base::RunLoop loop;
+  registry()->ClearUserDataForAllRegistrationsByKeyPrefix(
+      "prefix",
+      base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+        EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+        loop.Quit();
+      }));
+  SimulateRestart();
+  loop.Run();
+}
+
+TEST_F(ServiceWorkerRegistryTest,
+       DestroyRegistryDuringInflightCall_GetUserDataForAllRegistrations) {
+  base::RunLoop loop;
+  registry()->GetUserDataForAllRegistrations(
+      "key",
+      base::BindLambdaForTesting(
+          [&](const std::vector<std::pair<int64_t, std::string>>& user_data,
+              blink::ServiceWorkerStatusCode status) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+            loop.Quit();
+          }));
+  SimulateRestart();
+  loop.Run();
+}
+
+TEST_F(
+    ServiceWorkerRegistryTest,
+    DestroyRegistryDuringInflightCall_GetUserDataForAllRegistrationsByKeyPrefix) {
+  base::RunLoop loop;
+  registry()->GetUserDataForAllRegistrationsByKeyPrefix(
+      "prefix",
+      base::BindLambdaForTesting(
+          [&](const std::vector<std::pair<int64_t, std::string>>& user_data,
+              blink::ServiceWorkerStatusCode status) {
+            EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorFailed);
+            loop.Quit();
+          }));
+  SimulateRestart();
+  loop.Run();
 }
 
 class ServiceWorkerRegistryOriginTrialsTest : public ServiceWorkerRegistryTest {
@@ -1300,7 +1983,7 @@ class ServiceWorkerRegistryOriginTrialsTest : public ServiceWorkerRegistryTest {
     }
 
     bool IsOriginSecure(const GURL& url) const override {
-      return blink::network_utils::IsOriginSecure(url);
+      return network::IsUrlPotentiallyTrustworthy(url);
     }
 
    private:
@@ -1450,8 +2133,7 @@ class ServiceWorkerRegistryResourceTest : public ServiceWorkerRegistryTest {
     // Add the resources ids to the uncommitted list.
     registry()->StoreUncommittedResourceId(resource_id1_, scope_);
     registry()->StoreUncommittedResourceId(resource_id2_, scope_);
-    // Make sure that StoreUncommittedResourceId mojo message is received.
-    storage_control().FlushForTesting();
+    EnsureRemoteCallsAreExecuted();
 
     std::vector<int64_t> verify_ids = GetUncommittedResourceIds();
     EXPECT_EQ(2u, verify_ids.size());
@@ -1476,9 +2158,10 @@ class ServiceWorkerRegistryResourceTest : public ServiceWorkerRegistryTest {
     base::RunLoop loop;
     storage_control()->GetUncommittedResourceIdsForTest(
         base::BindLambdaForTesting(
-            [&](ServiceWorkerDatabase::Status status,
+            [&](storage::mojom::ServiceWorkerDatabaseStatus status,
                 const std::vector<int64_t>& resource_ids) {
-              EXPECT_EQ(status, ServiceWorkerDatabase::Status::kOk);
+              EXPECT_EQ(status,
+                        storage::mojom::ServiceWorkerDatabaseStatus::kOk);
               ids = resource_ids;
               loop.Quit();
             }));
@@ -1767,8 +2450,7 @@ TEST_F(ServiceWorkerRegistryResourceTest, CleanupOnRestart) {
   int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage_control());
   registry()->StoreUncommittedResourceId(kStaleUncommittedResourceId,
                                          registration_->scope());
-  // Make sure that StoreUncommittedResourceId mojo message is received.
-  storage_control().FlushForTesting();
+  EnsureRemoteCallsAreExecuted();
   verify_ids = GetUncommittedResourceIds();
   EXPECT_EQ(1u, verify_ids.size());
   WriteBasicResponse(storage_control(), kStaleUncommittedResourceId);
@@ -1808,7 +2490,7 @@ TEST_F(ServiceWorkerRegistryResourceTest, Restart_LiveVersion) {
   // waiting version associated with the registration.
 
   // Restarting should not schedule resource purging.
-  registry()->SimulateStorageRestartForTesting();
+  helper()->SimulateStorageRestartForTesting();
   storage_control().FlushForTesting();
 
   ASSERT_EQ(GetPurgeableResourceIds().size(), 0u);
@@ -1826,7 +2508,7 @@ TEST_F(ServiceWorkerRegistryResourceTest, Restart_LiveVersion) {
   ASSERT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, true));
 
   // Restarting should not change the situation.
-  registry()->SimulateStorageRestartForTesting();
+  helper()->SimulateStorageRestartForTesting();
   storage_control().FlushForTesting();
 
   EXPECT_THAT(GetPurgeableResourceIds(), testing::UnorderedElementsAreArray(
@@ -1845,6 +2527,31 @@ TEST_F(ServiceWorkerRegistryResourceTest, Restart_LiveVersion) {
   ASSERT_EQ(GetPurgingResources().size(), 0u);
   ASSERT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
   ASSERT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
+}
+
+// Tests that StoreUncommittedResourceId() and DoomUncommittedResource() are
+// automatically retried after storage restarts.
+TEST_F(ServiceWorkerRegistryResourceTest, RetryInflightCalls_Resources) {
+  const int64_t kResourceId = GetNewResourceIdSync(storage_control());
+
+  registry()->StoreUncommittedResourceId(kResourceId, registration_->scope());
+  EXPECT_EQ(inflight_call_count(), 1U);
+
+  helper()->SimulateStorageRestartForTesting();
+  EnsureRemoteCallsAreExecuted();
+
+  EXPECT_EQ(inflight_call_count(), 0U);
+  EXPECT_THAT(GetUncommittedResourceIds(),
+              testing::UnorderedElementsAreArray({kResourceId}));
+
+  registry()->DoomUncommittedResource(kResourceId);
+  EXPECT_EQ(inflight_call_count(), 1U);
+
+  helper()->SimulateStorageRestartForTesting();
+  EnsureRemoteCallsAreExecuted();
+
+  EXPECT_EQ(inflight_call_count(), 0U);
+  EXPECT_EQ(GetUncommittedResourceIds().size(), 0U);
 }
 
 }  // namespace content

@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import fnmatch
+import json
 import logging
 import multiprocessing
 import os
@@ -102,7 +103,11 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
+CHROME_CLANG_CL_EXE = os.path.join(CHROME_CLANG_DIR, 'clang-cl.exe') \
+                      .replace('\\', '/')
 CHROME_LLD = os.path.join(CHROME_CLANG_DIR, 'lld')
+CHROME_LLD_LINK_EXE = os.path.join(CHROME_CLANG_DIR, 'lld-link.exe') \
+                      .replace('\\', '/')
 CHROME_SYSROOT_DIR = os.path.join(os.path.dirname(NACL_DIR), 'build',
                                   'linux', 'debian_sid_amd64-sysroot')
 
@@ -149,6 +154,9 @@ DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm', 'mipsel']
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 def TripleIsWindows(t):
+  return TripleIsMinGW(t) or TripleIsMSVC(t)
+
+def TripleIsMinGW(t):
   return fnmatch.fnmatch(t, '*-mingw32*')
 
 def TripleIsCygWin(t):
@@ -163,6 +171,9 @@ def TripleIsMac(t):
 def TripleIsX8664(t):
   return fnmatch.fnmatch(t, 'x86_64*')
 
+def TripleIsMSVC(t):
+  return fnmatch.fnmatch(t, '*x86-64-win32*')
+
 def HostIsDebug(options):
   return options.host_flavor == 'debug'
 
@@ -174,6 +185,12 @@ def ProgramPath(program):
     pass
   return None
 
+# Return the file name with the appropriate suffix for an executable file.
+def Exe(file, host):
+  if TripleIsWindows(host):
+    return file + '.exe'
+  else:
+    return file
 
 # Determine the extra compiler flags necessary for Mac.  Do this once at
 # top level, rather than every time in CompilersForHost, because running
@@ -217,10 +234,11 @@ def CompilersForHost(host):
       'x86_64-linux': [CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'],
       'x86_64-apple-darwin': [CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'],
       # Windows build should work for native and cross
-      'i686-w64-mingw32': [
-          'i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++', 'ar', 'ranlib'],
+      'i686-w64-mingw32':
+          ['i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++', 'ar', 'ranlib'],
       # TODO: add arm-hosted support
       'i686-pc-cygwin': ['gcc', 'g++', 'ar', 'ranlib'],
+      'x86-64-win32': [CHROME_CLANG_CL_EXE, CHROME_CLANG_CL_EXE, '', ''],
       'le32-nacl': ['pnacl-clang', 'pnacl-clang++', 'pnacl-ar', 'pnacl-ranlib'],
   }[host]
 
@@ -301,7 +319,7 @@ def HostArchToolFlags(host, extra_cflags, opts):
              'CFLAGS' : [],
              'CXXFLAGS' : []}
   deps = []
-  if TripleIsWindows(host):
+  if TripleIsMinGW(host):
     result['LDFLAGS'] += ['-L%(abs_libdl)s', '-ldl']
     result['CFLAGS'] += ['-isystem','%(abs_libdl)s']
     result['CXXFLAGS'] += ['-isystem', '%(abs_libdl)s']
@@ -444,8 +462,11 @@ def CmakeHostArchFlags(host, options):
   if TripleIsMac(host):
     cflags = MAC_SDK_FLAGS + cflags
     cxxflags = MAC_SDK_FLAGS + cxxflags
-  cmake_flags.append('-DCMAKE_C_FLAGS=' + ' '.join(cflags))
-  cmake_flags.append('-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags))
+  if TripleIsMSVC(host):
+    cmake_flags.append('-DCMAKE_LINKER=' + CHROME_LLD_LINK_EXE)
+  else:
+    cmake_flags.append('-DCMAKE_C_FLAGS=' + ' '.join(cflags))
+    cmake_flags.append('-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags))
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
     cmake_flags.extend([('-DCMAKE_%s_LINKER_FLAGS=' % linker_type) +
                         ' '.join(tool_flags['LDFLAGS'])])
@@ -505,7 +526,7 @@ def MakeCommand(host, options):
 
 
 def NinjaCommand(host, options):
-  ninja_command = ['ninja']
+  ninja_command = [Exe('ninja', host)]
   if options.goma:
     ninja_command.append('-j%s' % GOMA_JOBS)
   return ninja_command
@@ -667,12 +688,6 @@ def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return FlavoredName(component_name, host, options)
-  # Return the file name with the appropriate suffix for an executable file.
-  def Exe(file):
-    if TripleIsWindows(host):
-      return file + '.exe'
-    else:
-      return file
 
   # TODO(jfb): gold's build currently generates the following error on Windows:
   #            too many arguments for format.
@@ -921,9 +936,11 @@ def HostTools(host, options):
                   'install'])] +
               cleanup_static_libs + [
               command.Remove(*[os.path.join('%(output)s', 'bin', f) for f in
-                               Exe('clang-format'), Exe('clang-check'),
-                               Exe('c-index-test'), Exe('clang-tblgen'),
-                               Exe('llvm-tblgen')])] +
+                               Exe('clang-format', host),
+                               Exe('clang-check', host),
+                               Exe('c-index-test', host),
+                               Exe('clang-tblgen', host),
+                               Exe('llvm-tblgen', host)])] +
               CreateSymLinksToDirectToNaClTools(host) +
               CreateSymLinksToPNaClTools(host) +
               CopyWindowsHostLibs(host),
@@ -958,13 +975,36 @@ def TargetLibCompiler(host, options):
                   host_windows=TripleIsWindows(host) or TripleIsCygWin(host),
                   host_64bit=TripleIsX8664(host))
           ]
-      },
+      }
   }
 
   if TripleIsWindows(host):
+    # Add libdl for use in the PNaCl bitcode toolchain.
     compiler['target_lib_compiler']['dependencies'].append('libdl')
     compiler['target_lib_compiler']['commands'].append(
         command.CopyRecursive('%(libdl)s', '%(output)s'))
+  return compiler
+
+
+def TargetLibCompilerSaigo(host, options):
+  def H(component_name):
+    return FlavoredName(component_name, host, options)
+  binutils = H('binutils_x86')
+  if TripleIsMSVC(host):
+    binutils = FlavoredName('binutils_x86', 'i686-w64-mingw32', options)
+
+  compiler = {
+      'target_lib_compiler_saigo': {
+          'type': 'work',
+          'output_subdir': 'target_lib_compiler_saigo',
+          'dependencies': [H('llvm-saigo'), binutils],
+          'commands': [
+              command.CopyRecursive('%(' + t + ')s', '%(output)s')
+              for t in [H('llvm-saigo'), binutils]
+          ]
+      }
+  }
+
   return compiler
 
 
@@ -1101,6 +1141,37 @@ def HostToolsDirectToNacl(host, options):
   return tools
 
 
+def GetVSEnv(dir):
+    # Return the configured VS build environment block as a python dict.
+    # The format is a list of nul-terminated strings of the form var=val
+    # where 'var' is the environment variable name, and 'val' is its value
+    env = os.environ.copy()
+    with open(os.path.join(dir, 'environment.x64'), 'rb') as f:
+        entries = f.read().decode().split('\0')
+        for e in entries:
+            if not e:
+                continue
+            var, val = e.split('=', 1)
+            env[var] = val
+    return env
+
+def PrepareVSEnv():
+  outdir = os.path.join(os.path.dirname(NACL_DIR), 'build')
+
+  with open(os.path.join('..', 'build', 'win_toolchain.json')) as f:
+    paths = json.load(f)
+
+  # Write path information (usable by a non-chromium build) into an
+  # environment block
+  runtime_dirs = os.pathsep.join(paths['runtime_dirs'])
+  subprocess.check_call(['vpython.bat',
+                         os.path.join('..', 'build', 'toolchain', 'win',
+                                      'setup_toolchain.py'),
+                         'foo', paths['win_sdk'], runtime_dirs, 'win', 'x64',
+                         'environment.x64'],
+                        cwd=outdir)
+  return GetVSEnv(outdir)
+
 def HostToolsSaigo(host, options):
   def H(component_name):
     return FlavoredName(component_name, host, options)
@@ -1108,9 +1179,12 @@ def HostToolsSaigo(host, options):
   tools = {}
   tool_flags, tool_deps = HostArchToolFlags(host, [], options)
   llvm_cmake_config_env = {'LDFLAGS': ' '.join(tool_flags['LDFLAGS'])}
-  llvm_host_arch_flags, llvm_inputs, llvm_deps = CmakeHostArchFlags(
-      host, options)
+  llvm_host_arch_flags, llvm_inputs, llvm_deps = \
+      CmakeHostArchFlags(host, options)
   llvm_deps = list(set(tool_deps + llvm_deps))
+
+  if TripleIsMSVC(host):
+    PrepareVSEnv()
 
   build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
   tools.update({
@@ -1142,13 +1216,16 @@ def HostToolsSaigo(host, options):
                   '-DLLVM_LINK_LLVM_DYLIB=' + build_dylib,
                   '-DLLVM_CCACHE_BUILD=' + ('ON' if ProgramPath('ccache') and
                                             not options.goma else 'OFF'),
+                  '-DLLVM_ENABLE_TERMINFO=' + ('OFF' if TripleIsLinux(host)
+                                               else 'ON'),
                   '%(llvm_saigo_src)s/llvm'],
                   env=llvm_cmake_config_env,
                   path_dirs=GomaPathDirs(host, options))] +
               [command.Command(NinjaCommand(host, options) + ['-v'],
                                path_dirs=GomaPathDirs(host, options),
                                env=AflFuzzEnvMap(host, options)),
-               command.Command(NinjaCommand(host, options) + ['install'])] +
+               command.Command(NinjaCommand(host, options) + ['install'])
+              ] +
               CreateSymLinksToDirectToNaClTools(host)
       },
   })
@@ -1374,10 +1451,9 @@ def main():
 
   rev = ParseComponentRevisionsFile(GIT_DEPS_FILE)
   upload_packages = GetUploadPackageTargets()
+  pnacl_commands.SyncPrebuiltCMake()
   if pynacl.platform.IsWindows():
     InstallMinGWHostCompiler()
-  else:
-    pnacl_commands.SyncPrebuiltCMake()
 
   packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
   if args.testsuite_sync:
@@ -1394,10 +1470,11 @@ def main():
     if not args.pnacl_in_pnacl:
       packages.update(HostLibs(host, args))
     packages.update(HostToolsDirectToNacl(host, args))
-    if TripleIsLinux(host):
-      packages.update(HostToolsSaigo(host, args))
+  packages.update(HostToolsSaigo(pynacl.platform.PlatformTripleSaigo(), args))
   if not args.pnacl_in_pnacl:
     packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
+    packages.update(
+        TargetLibCompilerSaigo(pynacl.platform.PlatformTripleSaigo(), args))
   # Don't build the target libs on Windows because of pathname issues.
   # Only the linux64 bot is canonical (i.e. it will upload its packages).
   # The other bots will use a 'work' target instead of a 'build' target for
@@ -1412,9 +1489,11 @@ def main():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdsCallback(rev)))
     for bias in BITCODE_BIASES:
-      packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
+      packages.update(
+          pnacl_targetlibs.TargetLibs(bias, is_canonical))
     for arch in DIRECT_TO_NACL_ARCHES:
-      packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
+      packages.update(
+          pnacl_targetlibs.TargetLibs(arch, is_canonical))
       if not args.no_sdk_libs:
         packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
     for arch in TRANSLATOR_ARCHES:

@@ -71,6 +71,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
     virtual void MaybeShutdownGpuProcess() = 0;
+    virtual void DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) = 0;
 #if defined(OS_WIN)
     virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
     virtual void DidUpdateHDRStatus(bool hdr_enabled) = 0;
@@ -90,9 +91,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void BindInterface(
         const std::string& interface_name,
         mojo::ScopedMessagePipeHandle interface_pipe) = 0;
-    virtual void RunService(
-        const std::string& service_name,
-        mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
 #if defined(USE_OZONE)
     virtual void TerminateGpuProcess(const std::string& message) = 0;
 #endif
@@ -179,9 +177,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
-  void RunService(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
   mojom::GpuService* gpu_service();
 
@@ -231,6 +226,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
+  void DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
   void DidUpdateHDRStatus(bool hdr_enabled) override;

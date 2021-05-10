@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/screens/user_selection_screen.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/test/browser_test.h"
@@ -168,10 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIEnrolledTest, UserReverseRemoval) {
 
 class DisplayPasswordButtonTest : public LoginManagerTest {
  public:
-  DisplayPasswordButtonTest() : LoginManagerTest() {
-    feature_list_.InitWithFeatures(
-        {chromeos::features::kLoginDisplayPasswordButton}, {});
-  }
+  DisplayPasswordButtonTest() : LoginManagerTest() {}
 
   void LoginAndLock(const LoginManagerMixin::TestUserInfo& test_user) {
     chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -187,7 +182,7 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
 
   void SetDisplayPasswordButtonEnabledLoginAndLock(
       bool display_password_button_enabled) {
-    // Sets the feature by user policy
+    // Enables the login display password buttonn by user policy.
     {
       std::unique_ptr<ScopedUserPolicyUpdate> scoped_user_policy_update =
           user_policy_mixin_.RequestPolicyUpdate();
@@ -219,9 +214,6 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
       AccountId::FromUserEmailGaiaId("user@example.com", "22222")};
   UserPolicyMixin user_policy_mixin_{&mixin_host_, managed_user_.account_id};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Check if the display password button is shown on the lock screen after having
@@ -405,9 +397,7 @@ class UserManagementDisclosureChildTest
 // having logged a child account into a session and having locked the screen.
 IN_PROC_BROWSER_TEST_F(UserManagementDisclosureChildTest,
                        PRE_EnterpriseIconVisibleChildUser) {
-  logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
-                                  true /*wait_for_active_session*/,
-                                  true /*request_policy_update*/);
+  logged_in_user_mixin_.LogInUser();
   ScreenLockerTester screen_locker_tester;
   screen_locker_tester.Lock();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedIconShown(

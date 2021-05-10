@@ -13,6 +13,7 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -24,7 +25,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "gpu/config/gpu_util.h"
 #endif
 
@@ -45,10 +46,13 @@ std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
       .Build();
 }
 // Give the GPU process a few seconds to provide GPU info.
-// Linux Debug builds need more time -- see Issue 796437 and 1046598.
+// Linux and Mac Debug builds need more time -- see Issue 796437, 1046598, and
+// 1153667.
 // Windows builds need more time -- see Issue 873112 and 1004472.
-#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)) || \
-    defined(OS_WIN)
+// ASAN builds need more time -- see Issue 1167875.
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)) && \
+     !defined(NDEBUG)) ||                                              \
+    defined(OS_WIN) || defined(ADDRESS_SANITIZER)
 const int kGPUInfoWatchdogTimeoutMs = 30000;
 #else
 const int kGPUInfoWatchdogTimeoutMs = 5000;

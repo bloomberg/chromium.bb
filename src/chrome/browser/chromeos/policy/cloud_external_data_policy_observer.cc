@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -140,8 +140,9 @@ CloudExternalDataPolicyObserver::CloudExternalDataPolicyObserver(
 
   device_local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kAccountsPrefDeviceLocalAccounts,
-      base::Bind(&CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts,
+          base::Unretained(this)));
 }
 
 CloudExternalDataPolicyObserver::~CloudExternalDataPolicyObserver() {

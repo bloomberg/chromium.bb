@@ -37,11 +37,13 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -54,13 +56,13 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class UnguessableToken;
 }  // namespace base
 
@@ -71,7 +73,6 @@ class UkmRecorder;
 namespace blink {
 
 class Agent;
-class BrowserInterfaceBrokerProxy;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
@@ -91,12 +92,12 @@ class ScriptState;
 class ScriptWrappable;
 class TrustedTypePolicyFactory;
 
-enum class TaskType : unsigned char;
-
 enum ReasonForCallingCanExecuteScripts {
   kAboutToExecuteScript,
   kNotAboutToExecuteScript
 };
+
+enum ReferrerPolicySource { kPolicySourceHttpHeader, kPolicySourceMetaTag };
 
 // An environment in which script can execute. This class exposes the common
 // properties of script execution environments on the web (i.e, common between
@@ -121,7 +122,7 @@ enum ReasonForCallingCanExecuteScripts {
 // by an extension developer, but these share an ExecutionContext (the window)
 // in common.
 class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
-                                     public ContextLifecycleNotifier,
+                                     public MojoBindingContext,
                                      public ConsoleLogger,
                                      public UseCounter,
                                      public FeatureContext {
@@ -186,6 +187,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual KURL CompleteURL(const String& url) const = 0;
   virtual void DisableEval(const String& error_message) = 0;
   virtual String UserAgent() const = 0;
+  virtual UserAgentMetadata GetUserAgentMetadata() const {
+    return UserAgentMetadata();
+  }
 
   virtual HttpsState GetHttpsState() const = 0;
 
@@ -212,6 +216,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   virtual bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) {
     return false;
+  }
+  virtual mojom::blink::V8CacheOptions GetV8CacheOptions() const {
+    return mojom::blink::V8CacheOptions::kDefault;
   }
 
   void DispatchErrorEvent(ErrorEvent*, SanitizeScriptErrors);
@@ -272,41 +279,24 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   virtual String OutgoingReferrer() const;
 
-  // Parses a comma-separated list of referrer policy tokens, and sets
-  // the context's referrer policy to the last one that is a valid
-  // policy. Logs a message to the console if none of the policy
-  // tokens are valid policies.
+  // Parses a referrer policy directive using either Header or Meta rules and
+  // sets the context to use that policy. If the supplied policy is invalid,
+  // the context's policy is unchanged and a message is logged to the console.
   //
-  // If |supportLegacyKeywords| is true, then the legacy keywords
-  // "never", "default", "always", and "origin-when-crossorigin" are
-  // parsed as valid policies.
-  //
-  // If |from_meta_tag_with_list_of_policies| is *false*, also updates
-  // |referrer_policy_but_for_meta_tags_with_lists_of_policies_|, which
-  // maintains a counterfactual to determine what the policy would look like if
-  // we started ignoring <meta name=referrer content=policy1,policy2,...> tags
-  // in order to align with the HTML standard (crbug.com/1092930).
-  void ParseAndSetReferrerPolicy(
-      const String& policies,
-      bool support_legacy_keywords = false,
-      bool from_meta_tag_with_list_of_policies = false);
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy,
-                         bool from_meta_tag_with_list_of_policies = false);
+  // For a header-set policy, parses a comma-delimited list of tokens, and sets
+  // the context's policy to the last one that is a valid policy. For a meta-set
+  // policy, accepts only a single token, and allows the legacy tokens defined
+  // in the HTML specification.
+  void ParseAndSetReferrerPolicy(const String& policy,
+                                 ReferrerPolicySource source);
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
-  }
-  virtual network::mojom::blink::ReferrerPolicy
-  ReferrerPolicyButForMetaTagsWithListsOfPolicies() const {
-    return referrer_policy_but_for_meta_tags_with_lists_of_policies_;
   }
 
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
 
-  virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
-
   virtual FrameOrWorkerScheduler* GetScheduler() = 0;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      TaskType) = 0;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   Agent* GetAgent() const { return agent_; }
@@ -366,10 +356,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   }
   network::mojom::IPAddressSpace AddressSpace() const { return address_space_; }
 
-  void AddContextLifecycleObserver(ContextLifecycleObserver*) override;
-  void RemoveContextLifecycleObserver(ContextLifecycleObserver*) override;
   HeapObserverSet<ContextLifecycleObserver>& ContextLifecycleObserverSet() {
-    return context_lifecycle_observer_set_;
+    return ContextLifecycleNotifier::observers();
   }
   unsigned ContextLifecycleStateObserverCountForTesting() const;
 
@@ -382,6 +370,10 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // timers useful for Spectre-style side channel attacks, so are restricted
   // to cross-origin isolated contexts.
   bool SharedArrayBufferTransferAllowed() const;
+  // Returns SharedArrayBufferTransferAllowed() but potentially reports an
+  // inspector issue if the transfer was disallowed, or will be disallowed in
+  // the future.
+  bool CheckSharedArrayBufferTransferAllowedAndReport();
 
   virtual ukm::UkmRecorder* UkmRecorder() { return nullptr; }
   virtual ukm::SourceId UkmSourceID() const { return ukm::kInvalidSourceId; }
@@ -407,6 +399,12 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
     NOTREACHED();
     return nullptr;
   }
+
+  bool has_filed_shared_array_buffer_creation_issue() const {
+    return has_filed_shared_array_buffer_creation_issue_;
+  }
+
+  void FileSharedArrayBufferCreationIssue();
 
  protected:
   explicit ExecutionContext(v8::Isolate* isolate, Agent*);
@@ -445,13 +443,14 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   bool is_in_back_forward_cache_ = false;
 
+  bool has_filed_shared_array_buffer_transfer_issue_ = false;
+  bool has_filed_shared_array_buffer_creation_issue_ = false;
+
   Member<PublicURLManager> public_url_manager_;
 
   const Member<ContentSecurityPolicyDelegate> csp_delegate_;
 
   DOMTimerCoordinator timers_;
-
-  HeapObserverSet<ContextLifecycleObserver> context_lifecycle_observer_set_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call
@@ -460,14 +459,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   int window_interaction_tokens_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
-
-  // This is the same value as |referrer_policy_| except that it ignores
-  // referrer policies set as the result of parsing <meta name=referrer> tags
-  // whose values are comma-separated lists of policies. Its purpose is to allow
-  // evaluating the impact of switching to a behavior of no longer supporting
-  // these lists (crbug.com/1092930).
-  network::mojom::blink::ReferrerPolicy
-      referrer_policy_but_for_meta_tags_with_lists_of_policies_;
 
   network::mojom::blink::IPAddressSpace address_space_;
 

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -27,6 +28,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
+#include "chromeos/ui/frame/interior_resize_handler_targeter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -54,42 +56,25 @@ namespace {
 
 // This window targeter reserves space for the portion of the resize handles
 // that extend within a top level window.
-class InteriorResizeHandleTargeter : public aura::WindowTargeter {
+class InteriorResizeHandleTargeterAsh
+    : public chromeos::InteriorResizeHandleTargeter {
  public:
-  InteriorResizeHandleTargeter() {
-    SetInsets(gfx::Insets(chromeos::kResizeInsideBoundsSize));
-  }
-
-  ~InteriorResizeHandleTargeter() override = default;
-
-  bool GetHitTestRects(aura::Window* target,
-                       gfx::Rect* hit_test_rect_mouse,
-                       gfx::Rect* hit_test_rect_touch) const override {
-    if (target == window() && window()->parent() &&
-        window()->parent()->targeter()) {
-      // Defer to the parent's targeter on whether |window_| should be able to
-      // receive the event. This should be EasyResizeWindowTargeter, which is
-      // installed on the container window, and is necessary for
-      // kResizeOutsideBoundsSize to work.
-      return window()->parent()->targeter()->GetHitTestRects(
-          target, hit_test_rect_mouse, hit_test_rect_touch);
-    }
-
-    return WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
-                                           hit_test_rect_touch);
-  }
+  InteriorResizeHandleTargeterAsh() = default;
+  InteriorResizeHandleTargeterAsh(const InteriorResizeHandleTargeterAsh&) =
+      delete;
+  InteriorResizeHandleTargeterAsh& operator=(
+      const InteriorResizeHandleTargeterAsh&) = delete;
+  ~InteriorResizeHandleTargeterAsh() override = default;
 
   bool ShouldUseExtendedBounds(const aura::Window* target) const override {
     // Fullscreen/maximized windows can't be drag-resized.
     const WindowState* window_state = WindowState::Get(window());
     if (window_state && window_state->IsMaximizedOrFullscreenOrPinned())
       return false;
-    // The shrunken hit region only applies to children of |window()|.
-    return target->parent() == window();
-  }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(InteriorResizeHandleTargeter);
+    // The shrunken hit region only applies to children of |window()|.
+    return InteriorResizeHandleTargeter::ShouldUseExtendedBounds(target);
+  }
 };
 
 }  // namespace
@@ -203,7 +188,7 @@ void CloseWidgetForWindow(aura::Window* window) {
 }
 
 void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
-  window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeter>());
+  window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeterAsh>());
 }
 
 bool IsDraggingTabs(const aura::Window* window) {
@@ -309,11 +294,6 @@ aura::Window* GetRootWindowMatching(const gfx::Rect& rect_in_screen) {
       Shell::GetRootWindowControllerWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetRootWindow()
                                 : nullptr;
-}
-
-bool IsArcWindow(const aura::Window* window) {
-  return window->GetProperty(aura::client::kAppType) ==
-         static_cast<int>(ash::AppType::ARC_APP);
 }
 
 bool IsArcPipWindow(const aura::Window* window) {
@@ -443,6 +423,21 @@ gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
     bounds.Union(window_bounds);
   }
   return bounds;
+}
+
+bool ShouldShowForCurrentUser(aura::Window* window) {
+  MultiUserWindowManager* multi_user_window_manager =
+      MultiUserWindowManagerImpl::Get();
+  if (!multi_user_window_manager)
+    return true;
+
+  const AccountId account_id =
+      multi_user_window_manager->GetUserPresentingWindow(window);
+  // An empty account ID is returned if the window is presented for all users.
+  if (!account_id.is_valid())
+    return true;
+
+  return account_id == multi_user_window_manager->CurrentAccountId();
 }
 
 }  // namespace window_util

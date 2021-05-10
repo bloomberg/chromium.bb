@@ -49,12 +49,17 @@ class PlayerCompositorDelegate {
   void Initialize(PaintPreviewBaseService* paint_preview_service,
                   const GURL& url,
                   const DirectoryKey& key,
+                  bool main_frame_mode,
                   base::OnceCallback<void(int)> compositor_error,
                   base::TimeDelta timeout_duration,
                   size_t max_requests);
 
   // Returns whether initialization has happened.
   bool IsInitialized() const { return paint_preview_service_; }
+
+  void SetProto(std::unique_ptr<PaintPreviewProto> proto) {
+    proto_ = std::move(proto);
+  }
 
   // Overrides whether to compress the directory when the player is closed. By
   // default compression will happen.
@@ -64,14 +69,15 @@ class PlayerCompositorDelegate {
   // situations.
   virtual void OnCompositorReady(
       CompositorStatus compositor_status,
-      mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {}
+      mojom::PaintPreviewBeginCompositeResponsePtr composite_response,
+      std::unique_ptr<ui::AXTreeUpdate> update) {}
 
   // Called when there is a request for a new bitmap. When the bitmap
   // is ready, it will be passed to callback. Returns an ID for the request.
   // Pass this ID to `CancelBitmapRequest(int32_t)` to cancel the request if it
   // hasn't already been sent.
   int32_t RequestBitmap(
-      const base::UnguessableToken& frame_guid,
+      const base::Optional<base::UnguessableToken>& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
       base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
@@ -100,6 +106,7 @@ class PlayerCompositorDelegate {
       PaintPreviewBaseService* paint_preview_service,
       const GURL& expected_url,
       const DirectoryKey& key,
+      bool main_frame_mode,
       base::OnceCallback<void(int)> compositor_error,
       base::TimeDelta timeout_duration,
       size_t max_requests,
@@ -123,9 +130,12 @@ class PlayerCompositorDelegate {
   void InitializeInternal(PaintPreviewBaseService* paint_preview_service,
                           const GURL& expected_url,
                           const DirectoryKey& key,
+                          bool main_frame_mode,
                           base::OnceCallback<void(int)> compositor_error,
                           base::TimeDelta timeout_duration,
                           size_t max_requests);
+
+  void OnAXTreeUpdateAvailable(std::unique_ptr<ui::AXTreeUpdate> update);
 
   void OnCompositorReadyStatusAdapter(
       mojom::PaintPreviewCompositor::BeginCompositeStatus status,
@@ -141,7 +151,7 @@ class PlayerCompositorDelegate {
   void OnCompositorTimeout();
 
   void OnProtoAvailable(const GURL& expected_url,
-                        PaintPreviewBaseService::ProtoReadStatus proto_status,
+                        PaintPreviewFileMixin::ProtoReadStatus proto_status,
                         std::unique_ptr<PaintPreviewProto> proto);
 
   void SendCompositeRequest(
@@ -166,10 +176,12 @@ class PlayerCompositorDelegate {
 
   base::CancelableOnceClosure timeout_;
   int max_requests_{1};
+  bool main_frame_mode_{false};
 
   base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>
       hit_testers_;
   std::unique_ptr<PaintPreviewProto> proto_;
+  std::unique_ptr<ui::AXTreeUpdate> ax_tree_update_;
 
   int active_requests_{0};
   int32_t next_request_id_{0};

@@ -4,18 +4,22 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {RoutineName, RoutineResult, RoutineResultInfo, RoutineRunner, StandardRoutineResult} from './diagnostics_types.js';
+
+import {PowerRoutineResult, RoutineResult, RoutineResultInfo, RoutineRunner, RoutineType, StandardRoutineResult, SystemRoutineControllerInterface} from './diagnostics_types.js';
+import {FakeMethodResolver} from './fake_method_resolver.js';
 
 /**
  * @fileoverview
  * Implements a fake version of the SystemRoutineController mojo interface.
- *
- * TODO(zentaro): Add support for complex routine results.
  */
 
+/** @implements {SystemRoutineControllerInterface} */
 export class FakeSystemRoutineController {
   constructor() {
-    /** private !Map<!RoutineName, !StandardRoutineResult> */
+    /** @private {!FakeMethodResolver} */
+    this.methods_ = new FakeMethodResolver();
+
+    /** private !Map<!RoutineType, !RoutineResult> */
     this.routineResults_ = new Map();
 
     /**
@@ -39,22 +43,40 @@ export class FakeSystemRoutineController {
     this.remote_ = null;
 
     /**
-     * Holds the name of the routine currently running.
-     * @private {?RoutineName}
+     * Holds the type of the routine currently running.
+     * @private {?RoutineType}
      */
-    this.routineName_ = null;
+    this.routineType_ = null;
+
+    this.registerMethods();
+  }
+
+  /*
+   * Implements SystemRoutineController.GetSupportedRoutines
+   * @return {!Promise<!{routines: !Array<!RoutineType>}>}
+   */
+  getSupportedRoutines() {
+    return this.methods_.resolveMethod('getSupportedRoutines');
+  }
+
+  /**
+   * Sets the value that will be returned when calling getSupportedRoutines().
+   * @param {!Array<!RoutineType>} routines
+   */
+  setFakeSupportedRoutines(routines) {
+    this.methods_.setResult('getSupportedRoutines', {routines: routines});
   }
 
   /*
    * Implements SystemRoutineController.RunRoutine.
-   * @param {!RoutineName} routineName
+   * @param {!RoutineType} routineType
    * @param {!RoutineRunner} remoteRunner
    * @return {!Promise}
    */
-  runRoutine(routineName, remoteRunner) {
+  runRoutine(routineType, remoteRunner) {
     this.resolver_ = new PromiseResolver();
     this.remote_ = remoteRunner;
-    this.routineName_ = routineName;
+    this.routineType_ = routineType;
 
     // If there is a positive or zero delay then setup a timer, otherwise
     // the routine will wait until resolveRoutineForTesting() is called.
@@ -68,12 +90,28 @@ export class FakeSystemRoutineController {
   }
 
   /**
+   * Setup method resolvers.
+   */
+  registerMethods() {
+    this.methods_.register('getSupportedRoutines');
+  }
+
+  /**
    *
-   * @param {!RoutineName} routineName
+   * @param {!RoutineType} routineType
    * @param {!StandardRoutineResult} routineResult
    */
-  setFakeStandardRoutineResult(routineName, routineResult) {
-    this.routineResults_.set(routineName, routineResult);
+  setFakeStandardRoutineResult(routineType, routineResult) {
+    this.routineResults_.set(routineType, {simpleResult: routineResult});
+  }
+
+  /**
+   *
+   * @param {!RoutineType} routineType
+   * @param {!PowerRoutineResult} routineResult
+   */
+  setFakePowerRoutineResult(routineType, routineResult) {
+    this.routineResults_.set(routineType, {powerResult: routineResult});
   }
 
   /**
@@ -118,26 +156,23 @@ export class FakeSystemRoutineController {
 
   /**
    * Returns the expected result for a running routine.
-   * @return {RoutineResultInfo}
+   * @return {!RoutineResultInfo}
    * @private
    */
   getResultInfo_() {
-    assert(this.routineName_ != null);
-    let result = this.routineResults_.get(this.routineName_);
+    assert(this.routineType_ != null);
+    let result = this.routineResults_.get(this.routineType_);
     if (result == undefined) {
-      result = StandardRoutineResult.kErrorExecuting;
+      result = {
+        simpleResult:
+            chromeos.diagnostics.mojom.StandardRoutineResult.kExecutionError
+      };
     }
 
-    /** @type {!RoutineResult} */
-    const fullResult = {
-      simpleResult: result,
-    };
-
-    /** @type {!RoutineResultInfo} */
-    const resultInfo = {
-      name: this.routineName_,
-      result: fullResult,
-    };
+    const resultInfo = /** @type {!RoutineResultInfo} */ ({
+      type: this.routineType_,
+      result: result,
+    });
 
     return resultInfo;
   }
@@ -152,6 +187,6 @@ export class FakeSystemRoutineController {
     this.resolver_.resolve();
     this.resolver_ = null;
     this.remote_ = null;
-    this.routineName_ = null;
+    this.routineType_ = null;
   }
 }

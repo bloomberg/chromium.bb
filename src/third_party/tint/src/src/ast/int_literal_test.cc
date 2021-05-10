@@ -14,28 +14,29 @@
 
 #include "src/ast/int_literal.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/bool_literal.h"
+#include "src/ast/float_literal.h"
+#include "src/ast/null_literal.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/u32_type.h"
+#include "src/ast/test_helper.h"
 #include "src/ast/uint_literal.h"
+#include "src/type/i32_type.h"
+#include "src/type/u32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using IntLiteralTest = testing::Test;
+using IntLiteralTest = TestHelper;
 
 TEST_F(IntLiteralTest, Sint_IsInt) {
-  ast::type::I32Type i32;
-  SintLiteral i{&i32, 47};
-  ASSERT_TRUE(i.IsInt());
+  auto* i = create<SintLiteral>(ty.i32(), 47);
+  ASSERT_TRUE(i->Is<IntLiteral>());
 }
 
 TEST_F(IntLiteralTest, Uint_IsInt) {
-  ast::type::I32Type i32;
-  UintLiteral i{&i32, 42};
-  EXPECT_TRUE(i.IsInt());
+  auto* i = create<UintLiteral>(ty.i32(), 42);
+  EXPECT_TRUE(i->Is<IntLiteral>());
 }
 
 }  // namespace

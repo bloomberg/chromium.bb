@@ -35,24 +35,28 @@ class TestNavigationObserver {
   TestNavigationObserver(WebContents* web_contents,
                          int number_of_navigations,
                          MessageLoopRunner::QuitMode quit_mode =
-                             MessageLoopRunner::QuitMode::IMMEDIATE);
+                             MessageLoopRunner::QuitMode::IMMEDIATE,
+                         bool ignore_uncommitted_navigations = true);
   // Like above but waits for one navigation.
   explicit TestNavigationObserver(WebContents* web_contents,
                                   MessageLoopRunner::QuitMode quit_mode =
-                                      MessageLoopRunner::QuitMode::IMMEDIATE);
+                                      MessageLoopRunner::QuitMode::IMMEDIATE,
+                                  bool ignore_uncommitted_navigations = true);
   // Create and register a new TestNavigationObserver that will wait for
-  // |target_url| to complete loading or for a committed navigation to
+  // |target_url| to complete loading or for a finished navigation to
   // |target_url|.
   explicit TestNavigationObserver(const GURL& target_url,
                                   MessageLoopRunner::QuitMode quit_mode =
-                                      MessageLoopRunner::QuitMode::IMMEDIATE);
+                                      MessageLoopRunner::QuitMode::IMMEDIATE,
+                                  bool ignore_uncommitted_navigations = true);
 
   // Create and register a new TestNavigationObserver that will wait for
   // a navigation with |target_error|.
   explicit TestNavigationObserver(WebContents* web_contents,
                                   net::Error target_error,
                                   MessageLoopRunner::QuitMode quit_mode =
-                                      MessageLoopRunner::QuitMode::IMMEDIATE);
+                                      MessageLoopRunner::QuitMode::IMMEDIATE,
+                                  bool ignore_uncommitted_navigations = true);
 
   virtual ~TestNavigationObserver();
 
@@ -88,9 +92,19 @@ class TestNavigationObserver {
     return last_navigation_initiator_origin_;
   }
 
-  const GlobalFrameRoutingId& last_initiator_routing_id() const {
-    return last_initiator_routing_id_;
+  // Returns the frame token of the initiator RenderFrameHost of the last
+  // finished navigation. This is defined if and only if
+  // last_initiator_process_id below is.
+  const base::Optional<blink::LocalFrameToken>& last_initiator_frame_token()
+      const {
+    return last_initiator_frame_token_;
   }
+
+  // Returns the process id of the initiator RenderFrameHost of the last
+  // finished navigation. This is defined if and only if
+  // last_initiator_frame_token above is, and it is valid only in conjunction
+  // with it.
+  int last_initiator_process_id() const { return last_initiator_process_id_; }
 
   // Returns the net::Error origin of the last finished navigation (that matched
   // URL / net error filters, if set).
@@ -140,7 +154,8 @@ class TestNavigationObserver {
                          const base::Optional<GURL>& target_url,
                          base::Optional<net::Error> target_error,
                          MessageLoopRunner::QuitMode quit_mode =
-                             MessageLoopRunner::QuitMode::IMMEDIATE);
+                             MessageLoopRunner::QuitMode::IMMEDIATE,
+                         bool ignore_uncommitted_navigations = true);
 
   // Callbacks for WebContents-related events.
   void OnWebContentsCreated(WebContents* web_contents);
@@ -183,6 +198,9 @@ class TestNavigationObserver {
   // If this is nullopt, any net::Error counts.
   const base::Optional<net::Error> target_error_;
 
+  // Whether to ignore navigations that finish but don't commit.
+  bool ignore_uncommitted_navigations_;
+
   // The url of the navigation that last committed.
   GURL last_navigation_url_;
 
@@ -192,8 +210,15 @@ class TestNavigationObserver {
   // The initiator origin of the last navigation.
   base::Optional<url::Origin> last_navigation_initiator_origin_;
 
-  // The routing id of the initiator frame for the last observed navigation.
-  GlobalFrameRoutingId last_initiator_routing_id_;
+  // The frame token of the initiator frame for the last observed
+  // navigation. This parameter is defined if and only if
+  // |initiator_process_id_| below is.
+  base::Optional<blink::LocalFrameToken> last_initiator_frame_token_;
+
+  // The process id of the initiator frame for the last observed navigation.
+  // This is defined if and only if |initiator_frame_token_| above is, and it is
+  // only valid in conjunction with it.
+  int last_initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
   // The net error code of the last navigation.
   net::Error last_net_error_code_;

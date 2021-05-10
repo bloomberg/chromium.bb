@@ -48,20 +48,37 @@ bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
 
 void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
   DCHECK_LT(from_index, item_count());
-  DCHECK_LT(to_index, item_count());
-  if (from_index == to_index || item_count() == 1)
+  // Speculative fix for crash, possibly due to single-item folders.
+  // https://crbug.com/937431
+  if (item_count() <= 1)
+    return;
+  // Speculative fix for crash, possibly due |to_index| == item_count().
+  // Make |to_index| point to the last item. https://crbug.com/1166011
+  if (to_index >= item_count()) {
+    DCHECK_GT(item_count(), 1u);
+    to_index = item_count() - 1;
+  }
+  if (from_index == to_index)
     return;
 
   auto target_item = std::move(app_list_items_[from_index]);
   DVLOG(2) << "MoveItem: " << from_index << " -> " << to_index << " ["
            << target_item->position().ToDebugString() << "]";
-  // Remove the target item
+  // Remove the target item. If |from_index| <= |to_index| this changes the
+  // item |to_index| points to, but that's OK.
   app_list_items_.erase(app_list_items_.begin() + from_index);
 
   // Update the position
   AppListItem* prev = to_index > 0 ? item_at(to_index - 1) : nullptr;
   AppListItem* next = to_index < item_count() ? item_at(to_index) : nullptr;
-  CHECK_NE(prev, next);
+  // TODO(https://crbug.com/1166011): Replace LOG(FATAL) with CHECK_NE() when
+  // root cause is found.
+  if (prev == next) {
+    LOG(FATAL) << "crbug.com/1166011 Move from " << from_index << " to "
+               << to_index << " count " << item_count() << " prev "
+               << (prev ? prev->position().ToDebugString() : "null") << " next "
+               << (next ? next->position().ToDebugString() : "null");
+  }
   syncer::StringOrdinal new_position;
   if (!prev) {
     new_position = next->position().CreateBefore();
@@ -155,6 +172,9 @@ AppListItem* AppListItemList::AddPageBreakItemAfter(
 
   AppListItem* item = page_break_item.get();
   size_t index = GetItemSortOrderIndex(item->position(), item->id());
+  DVLOG(2) << "AddPageBreakItemAfter: " << previous_item->id() << " prev index "
+           << previous_index << " next index " << next_index << " count "
+           << item_count() << " add index " << index;
   app_list_items_.insert(app_list_items_.begin() + index,
                          std::move(page_break_item));
   return item;

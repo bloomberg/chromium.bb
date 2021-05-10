@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/common/constants.h"
 
 namespace extension_urls {
@@ -37,8 +38,6 @@ const char kGooglePlayMusicAppId[] = "icppfcnhkcmnfdhfhphakoifcfokfdhg";
 const char kGooglePlusAppId[] = "dlppkpafhbajpcmmoheippocdidnckmm";
 const char kGoogleSheetsAppId[] = "felcaaldnbdncclmgdcncolpebgiejap";
 const char kGoogleSlidesAppId[] = "aapocclcgogkmnckokdopfmhonfmgoek";
-const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
-const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kIdentityApiUiAppId[] = "ahjaciijnoiaklcomgnblndopackapon";
 const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
@@ -62,13 +61,11 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kGooglePlusAppId,
     kGoogleSheetsAppId,
     kGoogleSlidesAppId,
-    kHTermAppId,
-    kHTermDevAppId,
     kIdentityApiUiAppId,
     kTextEditorAppId,
     kInAppPaymentsSupportAppId,
     kCastExtensionIdRelease,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     kAssessmentAssistantExtensionId,
     kAccessibilityCommonExtensionId,
     kSelectToSpeakExtensionId,
@@ -79,11 +76,11 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kGoogleSpeechSynthesisExtensionId,
     kWallpaperManagerId,
     kZipArchiverExtensionId,
-#endif        // defined(OS_CHROMEOS)
+#endif        // BUILDFLAG(IS_CHROMEOS_ASH)
     nullptr,  // Null-terminated array.
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kAssessmentAssistantExtensionId[] =
     "gndmhdcefbhlchkhipcnnbkcmicncehk";
 const char kAccessibilityCommonExtensionId[] =

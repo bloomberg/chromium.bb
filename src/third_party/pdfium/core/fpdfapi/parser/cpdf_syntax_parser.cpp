@@ -98,7 +98,7 @@ CPDF_SyntaxParser::CPDF_SyntaxParser(
     : m_pFileAccess(validator),
       m_HeaderOffset(HeaderOffset),
       m_FileLen(m_pFileAccess->GetSize()) {
-  ASSERT(m_HeaderOffset <= m_FileLen);
+  DCHECK(m_HeaderOffset <= m_FileLen);
 }
 
 CPDF_SyntaxParser::~CPDF_SyntaxParser() = default;
@@ -465,7 +465,7 @@ void CPDF_SyntaxParser::RecordingToNextWord() {
 }
 
 ByteString CPDF_SyntaxParser::GetNextWord(bool* bIsNumber) {
-  const CPDF_ReadValidator::Session read_session(GetValidator());
+  CPDF_ReadValidator::ScopedSession read_session(GetValidator());
   GetNextWordInternal(bIsNumber);
   ByteString ret;
   if (!GetValidator()->has_read_problems())
@@ -488,7 +488,7 @@ void CPDF_SyntaxParser::SetPos(FX_FILESIZE pos) {
 
 RetainPtr<CPDF_Object> CPDF_SyntaxParser::GetObjectBody(
     CPDF_IndirectObjectHolder* pObjList) {
-  const CPDF_ReadValidator::Session read_session(GetValidator());
+  CPDF_ReadValidator::ScopedSession read_session(GetValidator());
   auto result = GetObjectBodyInternal(pObjList, ParseType::kLoose);
   if (GetValidator()->has_read_problems())
     return nullptr;
@@ -609,7 +609,7 @@ RetainPtr<CPDF_Object> CPDF_SyntaxParser::GetObjectBodyInternal(
 RetainPtr<CPDF_Object> CPDF_SyntaxParser::GetIndirectObject(
     CPDF_IndirectObjectHolder* pObjList,
     ParseType parse_type) {
-  const CPDF_ReadValidator::Session read_session(GetValidator());
+  CPDF_ReadValidator::ScopedSession read_session(GetValidator());
   const FX_FILESIZE saved_pos = GetPos();
   bool is_number = false;
   ByteString word = GetNextWord(&is_number);
@@ -742,7 +742,7 @@ RetainPtr<CPDF_Stream> CPDF_SyntaxParser::ReadStream(
   // Note, we allow zero length streams as we need to pass them through when we
   // are importing pages into a new document.
   if (len >= 0) {
-    const CPDF_ReadValidator::Session read_session(GetValidator());
+    CPDF_ReadValidator::ScopedSession read_session(GetValidator());
     m_Pos += ReadEOLMarkers(GetPos());
     memset(m_WordBuffer, 0, kEndStreamStr.GetLength() + 1);
     GetNextWordInternal(nullptr);
@@ -768,7 +768,7 @@ RetainPtr<CPDF_Stream> CPDF_SyntaxParser::ReadStream(
       return nullptr;
 
     len = streamEndPos - streamStartPos;
-    ASSERT(len >= 0);
+    DCHECK(len >= 0);
     if (len > 0) {
       SetPos(streamStartPos);
       // Check data availability first to allow the Validator to request data
@@ -794,6 +794,14 @@ RetainPtr<CPDF_Stream> CPDF_SyntaxParser::ReadStream(
   const FX_FILESIZE end_stream_offset = GetPos();
   memset(m_WordBuffer, 0, kEndObjStr.GetLength() + 1);
   GetNextWordInternal(nullptr);
+
+  // Allow whitespace after endstream and before a newline.
+  unsigned char ch = 0;
+  while (GetNextChar(ch)) {
+    if (!PDFCharIsWhitespace(ch) || PDFCharIsLineEnding(ch))
+      break;
+  }
+  SetPos(GetPos() - 1);
 
   int numMarkers = ReadEOLMarkers(GetPos());
   if (m_WordSize == static_cast<unsigned int>(kEndObjStr.GetLength()) &&
@@ -825,8 +833,8 @@ bool CPDF_SyntaxParser::IsWholeWord(FX_FILESIZE startpos,
                      !PDFCharIsWhitespace(tag[taglen - 1]);
 
   uint8_t ch;
-  if (bCheckRight && startpos + (int32_t)taglen <= limit &&
-      GetCharAt(startpos + (int32_t)taglen, ch)) {
+  if (bCheckRight && startpos + static_cast<int32_t>(taglen) <= limit &&
+      GetCharAt(startpos + static_cast<int32_t>(taglen), ch)) {
     if (PDFCharIsNumeric(ch) || PDFCharIsOther(ch) ||
         (checkKeyword && PDFCharIsDelimiter(ch))) {
       return false;
@@ -879,7 +887,7 @@ bool CPDF_SyntaxParser::BackwardsSearchToWord(ByteStringView word,
 FX_FILESIZE CPDF_SyntaxParser::FindTag(ByteStringView tag) {
   const FX_FILESIZE startpos = GetPos();
   const int32_t taglen = tag.GetLength();
-  ASSERT(taglen > 0);
+  DCHECK(taglen > 0);
 
   int32_t match = 0;
   while (1) {

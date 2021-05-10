@@ -43,12 +43,6 @@
                     rc == NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ || \
                     rc == NV_ENC_PARAMS_RC_CBR_HQ)
 
-#ifdef NVENC_HAVE_NEW_PRESETS
-#define IS_SDK10_PRESET(p) ((p) >= PRESET_P1 && (p) <= PRESET_P7)
-#else
-#define IS_SDK10_PRESET(p) 0
-#endif
-
 const enum AVPixelFormat ff_nvenc_pix_fmts[] = {
     AV_PIX_FMT_YUV420P,
     AV_PIX_FMT_NV12,
@@ -65,7 +59,7 @@ const enum AVPixelFormat ff_nvenc_pix_fmts[] = {
     AV_PIX_FMT_NONE
 };
 
-const AVCodecHWConfigInternal *ff_nvenc_hw_configs[] = {
+const AVCodecHWConfigInternal *const ff_nvenc_hw_configs[] = {
     HW_CONFIG_ENCODER_FRAMES(CUDA,  CUDA),
     HW_CONFIG_ENCODER_DEVICE(NONE,  CUDA),
 #if CONFIG_D3D11VA
@@ -152,8 +146,14 @@ static int nvenc_print_error(AVCodecContext *avctx, NVENCSTATUS err,
 
 static void nvenc_print_driver_requirement(AVCodecContext *avctx, int level)
 {
-#if NVENCAPI_CHECK_VERSION(10, 1)
+#if NVENCAPI_CHECK_VERSION(11, 1)
     const char *minver = "(unknown)";
+#elif NVENCAPI_CHECK_VERSION(11, 0)
+# if defined(_WIN32) || defined(__CYGWIN__)
+    const char *minver = "456.71";
+# else
+    const char *minver = "455.28";
+# endif
 #elif NVENCAPI_CHECK_VERSION(10, 0)
 # if defined(_WIN32) || defined(__CYGWIN__)
     const char *minver = "450.51";
@@ -651,6 +651,28 @@ typedef struct GUIDTuple {
 static void nvenc_map_preset(NvencContext *ctx)
 {
     GUIDTuple presets[] = {
+#ifdef NVENC_HAVE_NEW_PRESETS
+        PRESET(P1),
+        PRESET(P2),
+        PRESET(P3),
+        PRESET(P4),
+        PRESET(P5),
+        PRESET(P6),
+        PRESET(P7),
+        PRESET_ALIAS(SLOW,   P7, NVENC_TWO_PASSES),
+        PRESET_ALIAS(MEDIUM, P4, NVENC_ONE_PASS),
+        PRESET_ALIAS(FAST,   P1, NVENC_ONE_PASS),
+        // Compat aliases
+        PRESET_ALIAS(DEFAULT,             P4, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(HP,                  P1, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(HQ,                  P7, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(BD,                  P5, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(LOW_LATENCY_DEFAULT, P4, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOW_LATENCY_HP,      P1, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOW_LATENCY_HQ,      P7, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOSSLESS_DEFAULT,    P4, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
+        PRESET_ALIAS(LOSSLESS_HP,         P1, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
+#else
         PRESET(DEFAULT),
         PRESET(HP),
         PRESET(HQ),
@@ -663,14 +685,6 @@ static void nvenc_map_preset(NvencContext *ctx)
         PRESET(LOW_LATENCY_HQ,      NVENC_LOWLATENCY),
         PRESET(LOSSLESS_DEFAULT,    NVENC_LOSSLESS),
         PRESET(LOSSLESS_HP,         NVENC_LOSSLESS),
-#ifdef NVENC_HAVE_NEW_PRESETS
-        PRESET(P1),
-        PRESET(P2),
-        PRESET(P3),
-        PRESET(P4),
-        PRESET(P5),
-        PRESET(P6),
-        PRESET(P7),
 #endif
     };
 
@@ -883,10 +897,22 @@ static av_cold void nvenc_setup_rate_control(AVCodecContext *avctx)
 
 #ifdef NVENC_HAVE_MULTIPASS
     ctx->encode_config.rcParams.multiPass = ctx->multipass;
-    if (ctx->encode_config.rcParams.multiPass != NV_ENC_MULTI_PASS_DISABLED)
-        ctx->flags |= NVENC_TWO_PASSES;
-#endif
 
+    if (ctx->flags & NVENC_ONE_PASS)
+        ctx->encode_config.rcParams.multiPass = NV_ENC_MULTI_PASS_DISABLED;
+    if (ctx->flags & NVENC_TWO_PASSES || ctx->twopass > 0)
+        ctx->encode_config.rcParams.multiPass = NV_ENC_TWO_PASS_FULL_RESOLUTION;
+
+    if (ctx->rc < 0) {
+        if (ctx->cbr) {
+            ctx->rc = NV_ENC_PARAMS_RC_CBR;
+        } else if (ctx->cqp >= 0) {
+            ctx->rc = NV_ENC_PARAMS_RC_CONSTQP;
+        } else if (ctx->quality >= 0.0f) {
+            ctx->rc = NV_ENC_PARAMS_RC_VBR;
+        }
+    }
+#else
     if (ctx->rc < 0) {
         if (ctx->flags & NVENC_ONE_PASS)
             ctx->twopass = 0;
@@ -910,13 +936,11 @@ static av_cold void nvenc_setup_rate_control(AVCodecContext *avctx)
             ctx->rc = NV_ENC_PARAMS_RC_VBR_MINQP;
         }
     }
+#endif
 
     if (ctx->rc >= 0 && ctx->rc & RC_MODE_DEPRECATED) {
         av_log(avctx, AV_LOG_WARNING, "Specified rc mode is deprecated.\n");
-        av_log(avctx, AV_LOG_WARNING, "\tll_2pass_quality -> cbr_ld_hq\n");
-        av_log(avctx, AV_LOG_WARNING, "\tll_2pass_size -> cbr_hq\n");
-        av_log(avctx, AV_LOG_WARNING, "\tvbr_2pass -> vbr_hq\n");
-        av_log(avctx, AV_LOG_WARNING, "\tvbr_minqp -> (no replacement)\n");
+        av_log(avctx, AV_LOG_WARNING, "Use -rc constqp/cbr/vbr, -tune and -multipass instead.\n");
 
         ctx->rc &= ~RC_MODE_DEPRECATED;
     }
@@ -1232,30 +1256,29 @@ static av_cold int nvenc_setup_encoder(AVCodecContext *avctx)
 
     nvenc_map_preset(ctx);
 
+    if (ctx->flags & NVENC_DEPRECATED_PRESET)
+        av_log(avctx, AV_LOG_WARNING, "The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.\n");
+
     preset_config.version = NV_ENC_PRESET_CONFIG_VER;
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
 
-    if (IS_SDK10_PRESET(ctx->preset)) {
 #ifdef NVENC_HAVE_NEW_PRESETS
-        ctx->init_encode_params.tuningInfo = ctx->tuning_info;
+    ctx->init_encode_params.tuningInfo = ctx->tuning_info;
 
-        nv_status = p_nvenc->nvEncGetEncodePresetConfigEx(ctx->nvencoder,
-            ctx->init_encode_params.encodeGUID,
-            ctx->init_encode_params.presetGUID,
-            ctx->init_encode_params.tuningInfo,
-            &preset_config);
-#endif
-    } else {
-#ifdef NVENC_HAVE_NEW_PRESETS
-        // Turn off tuning info parameter if older presets are on
-        ctx->init_encode_params.tuningInfo = 0;
-#endif
+    if (ctx->flags & NVENC_LOWLATENCY)
+        ctx->init_encode_params.tuningInfo = NV_ENC_TUNING_INFO_LOW_LATENCY;
 
-        nv_status = p_nvenc->nvEncGetEncodePresetConfig(ctx->nvencoder,
-            ctx->init_encode_params.encodeGUID,
-            ctx->init_encode_params.presetGUID,
-            &preset_config);
-    }
+    nv_status = p_nvenc->nvEncGetEncodePresetConfigEx(ctx->nvencoder,
+        ctx->init_encode_params.encodeGUID,
+        ctx->init_encode_params.presetGUID,
+        ctx->init_encode_params.tuningInfo,
+        &preset_config);
+#else
+    nv_status = p_nvenc->nvEncGetEncodePresetConfig(ctx->nvencoder,
+        ctx->init_encode_params.encodeGUID,
+        ctx->init_encode_params.presetGUID,
+        &preset_config);
+#endif
     if (nv_status != NV_ENC_SUCCESS)
         return nvenc_print_error(avctx, nv_status, "Cannot get the preset configuration");
 
@@ -1446,7 +1469,6 @@ static av_cold int nvenc_alloc_surface(AVCodecContext *avctx, int idx)
     }
 
     ctx->surfaces[idx].output_surface = allocOut.bitstreamBuffer;
-    ctx->surfaces[idx].size = allocOut.size;
 
     av_fifo_generic_write(ctx->unused_surface_queue, &tmp_surface, sizeof(tmp_surface), NULL);
 

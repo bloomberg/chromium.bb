@@ -1,3 +1,7 @@
+import { assert } from '../../../common/framework/util/util.js';
+import { kAllTextureFormatInfo } from '../../capability_info.js';
+import { align } from '../../util/math.js';
+
 export interface BeginCountRange {
   begin: number;
   count: number;
@@ -52,4 +56,41 @@ export class SubresourceRange {
       };
     }
   }
+}
+
+export function mipSize(size: [number], level: number): [number];
+export function mipSize(size: [number, number], level: number): [number, number];
+export function mipSize(size: [number, number, number], level: number): [number, number, number];
+export function mipSize(size: GPUExtent3DDict, level: number): GPUExtent3DDict;
+export function mipSize(size: GPUExtent3D, level: number): GPUExtent3D {
+  const rShiftMax1 = (s: number) => Math.max(s >> level, 1);
+  if (size instanceof Array) {
+    return size.map(rShiftMax1);
+  } else {
+    return {
+      width: rShiftMax1(size.width),
+      height: rShiftMax1(size.height),
+      depth: rShiftMax1(size.depth),
+    };
+  }
+}
+
+// TODO(jiawei.shao@intel.com): support 1D and 3D textures
+export function physicalMipSize(
+  size: GPUExtent3DDict,
+  format: GPUTextureFormat,
+  dimension: GPUTextureDimension,
+  level: number
+): GPUExtent3DDict {
+  assert(dimension === '2d');
+  assert(Math.max(size.width, size.height) >> level > 0);
+
+  const virtualWidthAtLevel = Math.max(size.width >> level, 1);
+  const virtualHeightAtLevel = Math.max(size.height >> level, 1);
+  const physicalWidthAtLevel = align(virtualWidthAtLevel, kAllTextureFormatInfo[format].blockWidth);
+  const physicalHeightAtLevel = align(
+    virtualHeightAtLevel,
+    kAllTextureFormatInfo[format].blockHeight
+  );
+  return { width: physicalWidthAtLevel, height: physicalHeightAtLevel, depth: size.depth };
 }

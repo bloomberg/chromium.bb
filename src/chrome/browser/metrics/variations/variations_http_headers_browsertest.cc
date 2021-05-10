@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,7 +35,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -848,6 +848,8 @@ class VariationsHttpHeadersBrowserTestWithOptimizationGuide
     VariationsHttpHeadersBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kLoadingPredictorAllowLocalRequestForTesting);
+    command_line->AppendSwitch(
+        switches::kLoadingPredictorOptimizationGuideAllowNonGwsForTesting);
   }
 
   std::unique_ptr<content::TestNavigationManager> NavigateToURLAsync(

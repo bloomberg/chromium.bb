@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
@@ -39,6 +40,7 @@ enum class MergeType {
 
 namespace test {
 class BridgedNativeWidgetTest;
+class TextfieldTest;
 }  // namespace test
 
 // A model that represents text content for a views::Textfield.
@@ -233,15 +235,14 @@ class VIEWS_EXPORT TextfieldModel {
   // composition text.
   void SetCompositionText(const ui::CompositionText& composition);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Return the text range corresponding to the autocorrected text.
   const gfx::Range& autocorrect_range() const { return autocorrect_range_; }
 
-  // Replace the text in the specified range with the autocorrect text and
-  // store necessary metadata (The size of the new text + the original text)
-  // to be able to undo this change if needed.
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           const gfx::Range& range);
+  // Sets the autocorrect range to |range|. If |range| is empty, then the
+  // autocorrect range is cleared. Returns true if the range was set or cleared
+  // successfully.
+  bool SetAutocorrectRange(const gfx::Range& range);
 #endif
 
   // Puts the text in the specified range into composition mode.
@@ -270,7 +271,7 @@ class VIEWS_EXPORT TextfieldModel {
   friend class internal::Edit;
   friend class test::BridgedNativeWidgetTest;
   friend class TextfieldModelTest;
-  friend class TextfieldTest;
+  friend class test::TextfieldTest;
 
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_BasicTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_CutCopyPasteTest);
@@ -335,12 +336,8 @@ class VIEWS_EXPORT TextfieldModel {
 
   gfx::Range composition_range_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   gfx::Range autocorrect_range_;
-  // Original text is the text that was replaced by the autocorrect feature.
-  // This should be restored if the Undo button corresponding to the Autocorrect
-  // window is pressed.
-  base::string16 original_text_;
 #endif
 
   // The list of Edits. The oldest Edits are at the front of the list, and the

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -25,6 +26,7 @@ class NGBlockNode;
 class NGBoxFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalContainerFragment;
+struct NGLink;
 struct NGLogicalOutOfFlowPositionedNode;
 
 // Helper class for positioning of out-of-flow blocks.
@@ -80,23 +82,30 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // The writing direction of the container.
     WritingDirectionMode writing_direction = {WritingMode::kHorizontalTb,
                                               TextDirection::kLtr};
-    // Logical in containing block coordinates.
-    LogicalSize content_size_for_absolute;
-    // Content size for fixed is different for the ICB.
-    LogicalSize content_size_for_fixed;
+    // Size and offset of the container.
+    LogicalRect rect;
+  };
 
-    // Offset of the container's padding-box.
-    LogicalOffset container_offset;
+  // TODO(almaher): Move this to the multicol algorithm in upcoming refactor.
+  // This stores the information needed to update a multicol child inside an
+  // existing multicol fragment. This is used during nested fragmentation of an
+  // OOF positioned element.
+  struct MulticolChildInfo {
+    // The mutable link of a multicol child.
+    NGLink* mutable_link;
 
-    LogicalSize ContentSize(EPosition position) const {
-      return position == EPosition::kAbsolute ? content_size_for_absolute
-                                              : content_size_for_fixed;
-    }
+    // The multicol break token that stores a reference to |mutable_link|'s
+    // break token in its list of child break tokens.
+    const NGBlockBreakToken* parent_break_token;
+
+    explicit MulticolChildInfo(NGLink* mutable_link,
+                               NGBlockBreakToken* parent_break_token = nullptr)
+        : mutable_link(mutable_link), parent_break_token(parent_break_token) {}
   };
 
   bool SweepLegacyCandidates(HashSet<const LayoutObject*>* placed_objects);
 
-  const ContainingBlockInfo& GetContainingBlockInfo(
+  const ContainingBlockInfo GetContainingBlockInfo(
       const NGLogicalOutOfFlowPositionedNode&,
       const NGPhysicalContainerFragment* = nullptr);
 
@@ -111,10 +120,18 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGLogicalOutOfFlowPositionedNode&,
       const LayoutBox* only_layout);
 
-  void LayoutFragmentainerDescendants(
-      Vector<NGLogicalOutOfFlowPositionedNode>* descendants);
+  void LayoutOOFsInMulticol(const NGBlockNode& multicol);
 
-  void LayoutFragmentainerDescendant(const NGLogicalOutOfFlowPositionedNode&);
+  // Layout the OOF nodes that are descendants of a fragmentation context root.
+  // |multicol_children| holds the children of an inner multicol if
+  // we are laying out OOF elements inside a nested fragmentation context.
+  void LayoutFragmentainerDescendants(
+      Vector<NGLogicalOutOfFlowPositionedNode>* descendants,
+      LayoutUnit column_inline_progression,
+      Vector<MulticolChildInfo>* multicol_children = nullptr);
+
+  scoped_refptr<const NGLayoutResult> LayoutFragmentainerDescendant(
+      const NGLogicalOutOfFlowPositionedNode&);
 
   scoped_refptr<const NGLayoutResult> Layout(
       NGBlockNode,
@@ -135,10 +152,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGLogicalOutOfFlowDimensions& node_dimensions,
       const LayoutUnit block_offset,
       const NGBlockBreakToken* break_token,
-      const NGConstraintSpace* fragmentainer_constraint_space);
+      const NGConstraintSpace* fragmentainer_constraint_space,
+      bool should_use_fixed_block_size);
   void AddOOFResultsToFragmentainer(
       const Vector<scoped_refptr<const NGLayoutResult>>& results,
-      wtf_size_t index);
+      wtf_size_t index,
+      LayoutUnit column_inline_progression,
+      Vector<MulticolChildInfo>* multicol_children = nullptr);
   const NGConstraintSpace& GetFragmentainerConstraintSpace(wtf_size_t index);
   void AddOOFResultToFragmentainerResults(
       const scoped_refptr<const NGLayoutResult> result,
@@ -146,11 +166,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   void ComputeStartFragmentIndexAndRelativeOffset(
       const ContainingBlockInfo& container_info,
       WritingMode default_writing_mode,
+      LayoutUnit block_estimate,
       wtf_size_t* start_index,
       LogicalOffset* offset) const;
 
   NGBoxFragmentBuilder* container_builder_;
-  ContainingBlockInfo default_containing_block_;
+  ContainingBlockInfo default_containing_block_info_for_absolute_;
+  ContainingBlockInfo default_containing_block_info_for_fixed_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
   HashMap<wtf_size_t, NGConstraintSpace> fragmentainer_constraint_space_map_;
   // Map of fragmentainer indexes to a list of descendant layout results to
@@ -158,7 +180,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   HashMap<wtf_size_t, Vector<scoped_refptr<const NGLayoutResult>>>
       fragmentainer_descendant_results_;
   const WritingMode writing_mode_;
-  LayoutUnit column_inline_progression_ = kIndefiniteSize;
+  const WritingDirectionMode default_writing_direction_;
   // The block size of the multi-column (before adjustment for spanners, etc.)
   // This is used to calculate the column size of any newly added proxy
   // fragments when handling fragmentation for abspos elements.
@@ -167,6 +189,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   bool is_fixed_container_;
   bool allow_first_tier_oof_cache_;
   bool has_block_fragmentation_;
+  bool can_traverse_fragments_ = false;
+  bool nested_fragmentation_context_ = false;
 };
 
 }  // namespace blink

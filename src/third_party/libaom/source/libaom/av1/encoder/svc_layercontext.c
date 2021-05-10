@@ -38,7 +38,6 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
       RATE_CONTROL *const lrc = &lc->rc;
       lrc->ni_av_qi = oxcf->rc_cfg.worst_allowed_q;
       lrc->total_actual_bits = 0;
-      lrc->total_target_vs_actual = 0;
       lrc->ni_tot_qi = 0;
       lrc->tot_q = 0.0;
       lrc->avg_q = 0.0;
@@ -193,21 +192,21 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
     cr->actual_num_seg1_blocks = lc->actual_num_seg1_blocks;
     cr->actual_num_seg2_blocks = lc->actual_num_seg2_blocks;
   }
-  svc->skip_nonzeromv_last = 0;
-  svc->skip_nonzeromv_gf = 0;
-  // For each reference (LAST/GOLDEN) set the skip_nonzero_last/gf frame flags.
-  // This is to skip testing nonzero-mv for that reference if it was last
+  svc->skip_mvsearch_last = 0;
+  svc->skip_mvsearch_gf = 0;
+  // For each reference (LAST/GOLDEN) set the skip_mvsearch_last/gf frame flags.
+  // This is to skip searching mv for that reference if it was last
   // refreshed (i.e., buffer slot holding that reference was refreshed) on the
   // previous spatial layer(s) at the same time (current_superframe).
   if (svc->external_ref_frame_config && svc->force_zero_mode_spatial_ref) {
     int ref_frame_idx = svc->ref_idx[LAST_FRAME - 1];
     if (svc->buffer_time_index[ref_frame_idx] == svc->current_superframe &&
         svc->buffer_spatial_layer[ref_frame_idx] <= svc->spatial_layer_id - 1)
-      svc->skip_nonzeromv_last = 1;
+      svc->skip_mvsearch_last = 1;
     ref_frame_idx = svc->ref_idx[GOLDEN_FRAME - 1];
     if (svc->buffer_time_index[ref_frame_idx] == svc->current_superframe &&
         svc->buffer_spatial_layer[ref_frame_idx] <= svc->spatial_layer_id - 1)
-      svc->skip_nonzeromv_gf = 1;
+      svc->skip_mvsearch_gf = 1;
   }
 }
 
@@ -312,21 +311,9 @@ void av1_svc_reset_temporal_layers(AV1_COMP *const cpi, int is_key) {
   av1_restore_layer_context(cpi);
 }
 
-/*!\brief Get resolution for current layer.
- *
- * \ingroup rate_control
- * \param[in]       width_org    Original width, unscaled
- * \param[in]       height_org   Original height, unscaled
- * \param[in]       num          Numerator for the scale ratio
- * \param[in]       den          Denominator for the scale ratio
- * \param[in]       width_out    Output width, scaled for current layer
- * \param[in]       height_out   Output height, scaled for current layer
- *
- * \return Nothing is returned. Instead the scaled width and height are set.
- */
-static void get_layer_resolution(const int width_org, const int height_org,
-                                 const int num, const int den, int *width_out,
-                                 int *height_out) {
+void av1_get_layer_resolution(const int width_org, const int height_org,
+                              const int num, const int den, int *width_out,
+                              int *height_out) {
   int w, h;
   if (width_out == NULL || height_out == NULL || den == 0) return;
   w = width_org * num / den;
@@ -344,8 +331,14 @@ void av1_one_pass_cbr_svc_start_layer(AV1_COMP *const cpi) {
   int width = 0, height = 0;
   lc = &svc->layer_context[svc->spatial_layer_id * svc->number_temporal_layers +
                            svc->temporal_layer_id];
-  get_layer_resolution(cpi->oxcf.frm_dim_cfg.width,
-                       cpi->oxcf.frm_dim_cfg.height, lc->scaling_factor_num,
-                       lc->scaling_factor_den, &width, &height);
-  av1_set_size_literal(cpi, width, height);
+  av1_get_layer_resolution(cpi->oxcf.frm_dim_cfg.width,
+                           cpi->oxcf.frm_dim_cfg.height, lc->scaling_factor_num,
+                           lc->scaling_factor_den, &width, &height);
+  // Use Eightap_smooth for low resolutions.
+  if (width * height <= 320 * 240)
+    svc->downsample_filter_type[svc->spatial_layer_id] = EIGHTTAP_SMOOTH;
+
+  cpi->common.width = width;
+  cpi->common.height = height;
+  av1_update_frame_size(cpi);
 }

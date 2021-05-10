@@ -31,6 +31,7 @@ source_set("internal") {
     "download_interrupt_reasons_utils.cc",
     "download_item_impl.cc",
     "download_item_impl_delegate.cc",
+    "download_item_rename_handler.cc",
     "download_job.cc",
     "download_job_factory.cc",
     "download_job_impl.cc",
@@ -120,8 +121,8 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_provider:android_provider_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
@@ -170,6 +171,8 @@ source_set("unit_tests") {
   deps = [
     ":for_tests",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
+    "//build:chromeos_buildflags",
     "//components/download/database",
     "//components/download/public/common:test_support",
     "//components/leveldb_proto",

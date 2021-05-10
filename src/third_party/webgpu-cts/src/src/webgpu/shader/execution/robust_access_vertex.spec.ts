@@ -123,7 +123,7 @@ class DrawCall {
   // Insert an indexed draw call into |pass|
   public drawIndexed(pass: GPURenderPassEncoder) {
     this.bindVertexBuffers(pass);
-    pass.setIndexBuffer(this.indexBuffer);
+    pass.setIndexBuffer(this.indexBuffer, 'uint16');
     pass.drawIndexed(
       this.indexCount,
       this.instanceCount,
@@ -142,7 +142,7 @@ class DrawCall {
   // Insert an indexed indirect draw call into |pass|
   public drawIndexedIndirect(pass: GPURenderPassEncoder) {
     this.bindVertexBuffers(pass);
-    pass.setIndexBuffer(this.indexBuffer);
+    pass.setIndexBuffer(this.indexBuffer, 'uint16');
     pass.drawIndexedIndirect(this.generateIndexedIndirectBuffer(), 0);
   }
 
@@ -162,17 +162,13 @@ class DrawCall {
       size -= 1;
     }
     const vertexBuffer = this.device.createBuffer({
-      mappedAtCreation: true,
       size,
-      usage: GPUBufferUsage.VERTEX,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
-    const vertexMapping = vertexBuffer.getMappedRange();
-    if (!partialLastNumber) {
-      new Float32Array(vertexMapping).set(vertexArray);
-    } else {
-      new Uint8Array(vertexMapping).set(new Uint8Array(vertexArray.buffer).slice(0, size));
+    if (partialLastNumber) {
+      size -= 3;
     }
-    vertexBuffer.unmap();
+    this.device.defaultQueue.writeBuffer(vertexBuffer, 0, vertexArray, size);
     return vertexBuffer;
   }
 
@@ -180,10 +176,9 @@ class DrawCall {
   private generateIndexBuffer(indexArray: Uint16Array): GPUBuffer {
     const indexBuffer = this.device.createBuffer({
       size: indexArray.byteLength,
-      usage: GPUBufferUsage.INDEX,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
     });
-    new Uint16Array(indexBuffer.getMappedRange()).set(indexArray);
-    indexBuffer.unmap();
+    this.device.defaultQueue.writeBuffer(indexBuffer, 0, indexArray);
     return indexBuffer;
   }
 
@@ -227,32 +222,32 @@ class DrawCall {
 
 // Parameterize different sized types
 interface VertexInfo {
-  format: GPUVertexFormat;
+  wgslType: string;
   size: number;
   validationFunc: string;
 }
 
 const typeInfoMap: { [k: string]: VertexInfo } = {
   float: {
-    format: 'float',
+    wgslType: 'f32',
     size: 4,
     validationFunc: 'return valid(v);',
   },
-  vec2: {
-    format: 'float2',
+  float2: {
+    wgslType: 'vec2<f32>',
     size: 8,
     validationFunc: 'return valid(v.x) && valid(v.y);',
   },
-  vec3: {
-    format: 'float3',
+  float3: {
+    wgslType: 'vec3<f32>',
     size: 12,
     validationFunc: 'return valid(v.x) && valid(v.y) && valid(v.z);',
   },
-  vec4: {
-    format: 'float4',
+  float4: {
+    wgslType: 'vec4<f32>',
     size: 16,
     validationFunc: `return valid(v.x) && valid(v.y) && valid(v.z) && valid(v.w) ||
-                            v.x == 0 && v.y == 0 && v.z == 0 && (v.w == 0.0 || v.w == 1.0);`,
+                            v.x == 0.0 && v.y == 0.0 && v.z == 0.0 && (v.w == 0.0 || v.w == 1.0);`,
   },
 };
 
@@ -285,8 +280,8 @@ g.test('vertexAccess')
     const p = t.params;
     const typeInfo = typeInfoMap[p.type];
 
-    // Number of vertices to draw
-    const numVertices = 3;
+    // Number of vertices to draw, odd so that uint16 index buffers are aligned to size 4
+    const numVertices = 4;
     // Each buffer will be bound to this many attributes (2 would mean 2 attributes per buffer)
     const attributesPerBuffer = 2;
     // Make an array big enough for the vertices, attributes, and size of each element
@@ -323,7 +318,7 @@ g.test('vertexAccess')
       let currAttribute = 0;
       for (let i = 0; i < bufferContents.length; i++) {
         for (let j = 0; j < attributesPerBuffer; j++) {
-          layoutStr += `layout(location=${currAttribute}) in ${p.type} a_${currAttribute};\n`;
+          layoutStr += `[[location(${currAttribute})]] var<in> a_${currAttribute} : ${typeInfo.wgslType};\n`;
           attributeNames.push(`a_${currAttribute}`);
           currAttribute++;
         }
@@ -343,7 +338,7 @@ g.test('vertexAccess')
             .map((_, i) => ({
               shaderLocation: currAttribute++,
               offset: i * typeInfo.size,
-              format: typeInfo.format,
+              format: p.type as GPUVertexFormat,
             })),
         });
       }
@@ -355,47 +350,56 @@ g.test('vertexAccess')
       vertexIndexOffset += p.errorScale;
     }
 
-    // Construct pipeline that outputs a red fragment, only if we notice any invalid values
-    const vertexModule = t.makeShaderModule('vertex', {
-      glsl: `
-      #version 450
-      ${layoutStr}
+    const pipeline = t.device.createRenderPipeline({
+      vertexStage: {
+        module: t.device.createShaderModule({
+          code: `
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[builtin(vertex_idx)]] var<in> VertexIndex : u32;
+            ${layoutStr}
 
-      bool valid(float f) {
-        return ${validValues.map(v => `f == ${v}`).join(' || ')};
-      }
+            fn valid(f : f32) -> bool {
+              return ${validValues.map(v => `f == ${v}.0`).join(' || ')};
+            }
 
-      bool validationFunc(${p.type} v) {
-        ${typeInfo.validationFunc}
-      }
+            fn validationFunc(v : ${typeInfo.wgslType}) -> bool {
+              ${typeInfo.validationFunc}
+            }
 
-      void main() {
-        bool attributesInBounds = ${attributeNames.map(a => `validationFunc(${a})`).join(' && ')};
-        bool indexInBounds = gl_VertexIndex == 0 || (gl_VertexIndex >= ${vertexIndexOffset} &&
-          gl_VertexIndex < ${vertexIndexOffset + numVertices});
+            [[stage(vertex)]] fn main() -> void {
+              var attributesInBounds : bool = ${attributeNames
+                .map(a => `validationFunc(${a})`)
+                .join(' && ')};
+              var indexInBounds : bool = VertexIndex == 0u ||
+                  (VertexIndex >= ${vertexIndexOffset}u &&
+                   VertexIndex < ${vertexIndexOffset + numVertices}u);
 
-        if (attributesInBounds && (${!p.indexed} || indexInBounds)) {
-          // Success case, move the vertex out of the viewport
-          gl_Position = vec4(-1.0, 0.0, 0.0, 1.0);
-        } else {
-          // Failure case, move the vertex inside the viewport
-          gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-        }
-      }
-    `,
-    });
-
-    const fragmentModule = t.makeShaderModule('fragment', {
-      glsl: `
-      #version 450
-      precision mediump float;
-
-      layout(location = 0) out vec4 fragColor;
-
-      void main() {
-        fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-      }
-    `,
+              if (attributesInBounds && (${!p.indexed} || indexInBounds)) {
+                // Success case, move the vertex out of the viewport
+                Position = vec4<f32>(-1.0, 0.0, 0.0, 1.0);
+              } else {
+                // Failure case, move the vertex inside the viewport
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+              }
+            }`,
+        }),
+        entryPoint: 'main',
+      },
+      fragmentStage: {
+        module: t.device.createShaderModule({
+          code: `
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+              fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            }`,
+        }),
+        entryPoint: 'main',
+      },
+      primitiveTopology: 'point-list',
+      colorStates: [{ format: 'rgba8unorm' }],
+      vertexState: {
+        vertexBuffers,
+      },
     });
 
     // Pipeline setup, texture setup
@@ -405,17 +409,6 @@ g.test('vertexAccess')
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
     });
     const colorAttachmentView = colorAttachment.createView();
-
-    const pipeline = t.device.createRenderPipeline({
-      vertexStage: { module: vertexModule, entryPoint: 'main' },
-      fragmentStage: { module: fragmentModule, entryPoint: 'main' },
-      primitiveTopology: 'point-list',
-      colorStates: [{ format: 'rgba8unorm', alphaBlend: {}, colorBlend: {} }],
-      vertexState: {
-        indexFormat: 'uint16',
-        vertexBuffers,
-      },
-    });
 
     // Offset the draw call parameter we are testing by |errorScale|
     draw[p.drawCallTestParameter] += p.errorScale;

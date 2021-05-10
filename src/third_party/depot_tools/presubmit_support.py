@@ -43,7 +43,8 @@ import gclient_paths  # Exposed through the API
 import gclient_utils
 import git_footers
 import gerrit_util
-import owners
+import owners as owners_db
+import owners_client
 import owners_finder
 import presubmit_canned_checks
 import rdb_wrapper
@@ -651,8 +652,10 @@ class InputApi(object):
 
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
-    self.owners_db = owners.Database(change.RepositoryRoot(),
-                                     fopen=open, os_path=self.os_path)
+    self.owners_client = owners_client.DepotToolsClient(
+        change.RepositoryRoot(), change.UpstreamBranch(), os_path=self.os_path)
+    self.owners_db = owners_db.Database(
+        change.RepositoryRoot(), fopen=open, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
     self.Command = CommandData
@@ -722,9 +725,12 @@ class InputApi(object):
     """An alias to AffectedTestableFiles for backwards compatibility."""
     return self.AffectedTestableFiles(include_deletes=include_deletes)
 
-  def FilterSourceFile(self, affected_file, files_to_check=None,
-                       files_to_skip=None, allow_list=None, block_list=None,
-                       white_list=None, black_list=None):
+  def FilterSourceFile(self,
+                       affected_file,
+                       files_to_check=None,
+                       files_to_skip=None,
+                       allow_list=None,
+                       block_list=None):
     """Filters out files that aren't considered 'source file'.
 
     If files_to_check or files_to_skip is None, InputApi.DEFAULT_FILES_TO_CHECK
@@ -733,20 +739,8 @@ class InputApi(object):
     The lists will be compiled as regular expression and
     AffectedFile.LocalPath() needs to pass both list.
 
-    Note: if files_to_check or files_to_skip is not set, and
-    white_list/allow_list or black_list/block_list is, then those values are
-    used. This is used for backward compatibility reasons.
-
     Note: Copy-paste this function to suit your needs or use a lambda function.
     """
-    # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-    if files_to_check is None and (allow_list or white_list):
-      warn('Use files_to_check in FilterSourceFile')
-      files_to_check = allow_list or white_list
-    if files_to_skip is None and (block_list or black_list):
-      warn('Use files_to_skip in FilterSourceFile')
-      files_to_skip = block_list or black_list
-
     if files_to_check is None:
       files_to_check = self.DEFAULT_FILES_TO_CHECK
     if files_to_skip is None:
@@ -1095,6 +1089,10 @@ class Change(object):
         self._AFFECTED_FILES(path, action.strip(), self._local_root, diff_cache)
         for action, path in files
     ]
+
+  def UpstreamBranch(self):
+    """Returns the upstream branch for the change."""
+    return self._upstream
 
   def Name(self):
     """Returns the change name."""
@@ -1581,30 +1579,34 @@ class PresubmitExecuter(object):
     results = []
 
     try:
-      if 'PRESUBMIT_VERSION' in context and \
-        [int(x) for x in context['PRESUBMIT_VERSION'].split('.')] >= [2, 0, 0]:
-        for function_name in context:
-          if not function_name.startswith('Check'):
-            continue
-          if function_name.endswith('Commit') and not self.committing:
-            continue
-          if function_name.endswith('Upload') and self.committing:
-            continue
-          logging.debug('Running %s in %s', function_name, presubmit_path)
-          results.extend(
-              self._run_check_function(function_name, context, prefix))
-          logging.debug('Running %s done.', function_name)
-          self.more_cc.extend(output_api.more_cc)
+      version = [
+          int(x) for x in context.get('PRESUBMIT_VERSION', '0.0.0').split('.')
+      ]
 
-      else: # Old format
-        if self.committing:
-          function_name = 'CheckChangeOnCommit'
-        else:
-          function_name = 'CheckChangeOnUpload'
-        if function_name in context:
+      with rdb_wrapper.client(prefix) as sink:
+        if version >= [2, 0, 0]:
+          for function_name in context:
+            if not function_name.startswith('Check'):
+              continue
+            if function_name.endswith('Commit') and not self.committing:
+              continue
+            if function_name.endswith('Upload') and self.committing:
+              continue
             logging.debug('Running %s in %s', function_name, presubmit_path)
             results.extend(
-                self._run_check_function(function_name, context, prefix))
+                self._run_check_function(function_name, context, sink))
+            logging.debug('Running %s done.', function_name)
+            self.more_cc.extend(output_api.more_cc)
+
+        else:  # Old format
+          if self.committing:
+            function_name = 'CheckChangeOnCommit'
+          else:
+            function_name = 'CheckChangeOnUpload'
+          if function_name in context:
+            logging.debug('Running %s in %s', function_name, presubmit_path)
+            results.extend(
+                self._run_check_function(function_name, context, sink))
             logging.debug('Running %s done.', function_name)
             self.more_cc.extend(output_api.more_cc)
 
@@ -1616,23 +1618,37 @@ class PresubmitExecuter(object):
     os.chdir(main_path)
     return results
 
-  def _run_check_function(self, function_name, context, prefix):
-    """Evaluates a presubmit check function, function_name, in the context
-    provided. If LUCI_CONTEXT is enabled, it will send the result to ResultSink.
-    Passes function_name and prefix to rdb_wrapper.setup_rdb. Returns results.
+  def _run_check_function(self, function_name, context, sink=None):
+    """Evaluates and returns the result of a given presubmit function.
+
+    If sink is given, the result of the presubmit function will be reported
+    to the ResultSink.
 
     Args:
-      function_name: a string representing the name of the function to run
+      function_name: the name of the presubmit function to evaluate
       context: a context dictionary in which the function will be evaluated
-      prefix: a string describing prefix for ResultDB test id
-
-    Returns: Results from evaluating the function call."""
-    with rdb_wrapper.setup_rdb(function_name, prefix) as my_status:
+      sink: an instance of ResultSink. None, by default.
+    Returns:
+      the result of the presubmit function call.
+    """
+    start_time = time_time()
+    try:
       result = eval(function_name + '(*__args)', context)
       self._check_result_type(result)
-      if any(res.fatal for res in result):
-        my_status.status = rdb_wrapper.STATUS_FAIL
-      return result
+    except:
+      if sink:
+        elapsed_time = time_time() - start_time
+        sink.report(function_name, rdb_wrapper.STATUS_FAIL, elapsed_time)
+      raise
+
+    if sink:
+      elapsed_time = time_time() - start_time
+      status = rdb_wrapper.STATUS_PASS
+      if any(r.fatal for r in result):
+        status = rdb_wrapper.STATUS_FAIL
+      sink.report(function_name, status, elapsed_time)
+
+    return result
 
   def _check_result_type(self, result):
     """Helper function which ensures result is a list, and all elements are
@@ -1883,7 +1899,7 @@ def canned_check_filter(method_names):
   try:
     for method_name in method_names:
       if not hasattr(presubmit_canned_checks, method_name):
-        logging.warn('Skipping unknown "canned" check %s' % method_name)
+        logging.warning('Skipping unknown "canned" check %s' % method_name)
         continue
       filtered[method_name] = getattr(presubmit_canned_checks, method_name)
       setattr(presubmit_canned_checks, method_name, lambda *_a, **_kw: [])

@@ -12,6 +12,10 @@
 #include "third_party/blink/renderer/platform/loader/fetch/subresource_web_bundle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace blink {
 
 class WebBundleLoader;
@@ -22,6 +26,8 @@ class WebBundleLoader;
 class CORE_EXPORT LinkWebBundle final : public LinkResource,
                                         public SubresourceWebBundle {
  public:
+  static bool IsFeatureEnabled(const ExecutionContext*);
+
   explicit LinkWebBundle(HTMLLinkElement* owner);
   ~LinkWebBundle() override;
 
@@ -41,9 +47,9 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
 
   // SubresourceWebBundle overrides:
   bool CanHandleRequest(const KURL& url) const override;
-  mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
-  GetURLLoaderFactory() override;
   String GetCacheIdentifier() const override;
+  const KURL& GetBundleUrl() const override;
+  const base::UnguessableToken& WebBundleToken() const override;
 
   // Parse the given |str| as a url. If |str| doesn't meet the criteria which
   // WebBundles specification requires, this returns invalid empty KURL as an
@@ -53,6 +59,8 @@ class CORE_EXPORT LinkWebBundle final : public LinkResource,
   static KURL ParseResourceUrl(const AtomicString& str);
 
  private:
+  bool ResourcesOrScopesMatch(const KURL& url) const;
+
   Member<WebBundleLoader> bundle_loader_;
 };
 

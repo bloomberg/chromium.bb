@@ -123,8 +123,8 @@ void FormFetcherImpl::Fetch() {
   password_store->GetSiteStats(form_digest_.url.GetOrigin(), this);
 
   // The desktop bubble needs this information.
-  password_store->GetMatchingCompromisedCredentials(form_digest_.signon_realm,
-                                                    this);
+  password_store->GetMatchingInsecureCredentials(form_digest_.signon_realm,
+                                                 this);
 #endif
 }
 
@@ -137,9 +137,9 @@ const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
   return interactions_stats_;
 }
 
-base::span<const CompromisedCredentials>
-FormFetcherImpl::GetCompromisedCredentials() const {
-  return compromised_credentials_;
+base::span<const InsecureCredential> FormFetcherImpl::GetInsecureCredentials()
+    const {
+  return insecure_credentials_;
 }
 
 std::vector<const PasswordForm*> FormFetcherImpl::GetNonFederatedMatches()
@@ -151,8 +151,8 @@ std::vector<const PasswordForm*> FormFetcherImpl::GetFederatedMatches() const {
   return MakeWeakCopies(federated_);
 }
 
-bool FormFetcherImpl::IsBlacklisted() const {
-  return is_blacklisted_;
+bool FormFetcherImpl::IsBlocklisted() const {
+  return is_blocklisted_;
 }
 
 bool FormFetcherImpl::IsMovingBlocked(const autofill::GaiaIdHash& destination,
@@ -188,14 +188,14 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
 
   result->non_federated_ = MakeCopies(non_federated_);
   result->federated_ = MakeCopies(federated_);
-  result->is_blacklisted_ = is_blacklisted_;
+  result->is_blocklisted_ = is_blocklisted_;
   password_manager_util::FindBestMatches(
       MakeWeakCopies(result->non_federated_), form_digest_.scheme,
       &result->non_federated_same_scheme_, &result->best_matches_,
       &result->preferred_match_);
 
   result->interactions_stats_ = interactions_stats_;
-  result->compromised_credentials_ = compromised_credentials_;
+  result->insecure_credentials_ = insecure_credentials_;
   result->state_ = state_;
   result->need_to_refetch_ = need_to_refetch_;
 
@@ -218,14 +218,14 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
 
 void FormFetcherImpl::SplitResults(
     std::vector<std::unique_ptr<PasswordForm>> forms) {
-  is_blacklisted_ = false;
+  is_blocklisted_ = false;
   non_federated_.clear();
   federated_.clear();
   for (auto& form : forms) {
     if (form->blocked_by_user) {
-      // Ignore PSL matches for blacklisted entries.
+      // Ignore PSL matches for blocklisted entries.
       if (!form->is_public_suffix_match) {
-        is_blacklisted_ = true;
+        is_blocklisted_ = true;
       }
     } else if (form->IsFederatedCredential()) {
       federated_.push_back(std::move(form));
@@ -276,9 +276,9 @@ void FormFetcherImpl::ProcessMigratedForms(
   ProcessPasswordStoreResults(std::move(forms));
 }
 
-void FormFetcherImpl::OnGetCompromisedCredentials(
-    std::vector<CompromisedCredentials> compromised_credentials) {
-  compromised_credentials_ = std::move(compromised_credentials);
+void FormFetcherImpl::OnGetInsecureCredentials(
+    std::vector<InsecureCredential> insecure_credentials) {
+  insecure_credentials_ = std::move(insecure_credentials);
 }
 
 }  // namespace password_manager

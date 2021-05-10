@@ -32,7 +32,6 @@ namespace arc {
 class AdaptiveIconDelegate;
 class ArcBridgeService;
 class ControlCameraAppDelegate;
-class FactoryResetDelegate;
 class IntentFilter;
 class OpenUrlDelegate;
 
@@ -40,6 +39,14 @@ class OpenUrlDelegate;
 class ArcIntentHelperBridge : public KeyedService,
                               public mojom::IntentHelperHost {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Resets ARC; this wipes all user data, stops ARC, then
+    // re-enables ARC.
+    virtual void ResetArc() = 0;
+  };
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcIntentHelperBridge* GetForBrowserContext(
@@ -56,22 +63,12 @@ class ArcIntentHelperBridge : public KeyedService,
 
   static void SetControlCameraAppDelegate(ControlCameraAppDelegate* delegate);
 
-  static void SetFactoryResetDelegate(FactoryResetDelegate* delegate);
+  // Sets the Delegate instance.
+  void SetDelegate(std::unique_ptr<Delegate> delegate);
 
   ArcIntentHelperBridge(content::BrowserContext* context,
                         ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
-
-  void SetAdaptiveIconDelegate(AdaptiveIconDelegate* delegate);
-
-  void AddObserver(ArcIntentHelperObserver* observer);
-  void RemoveObserver(ArcIntentHelperObserver* observer);
-  bool HasObserver(ArcIntentHelperObserver* observer) const;
-  void HandleCameraResult(
-      uint32_t intent_id,
-      arc::mojom::CameraIntentAction action,
-      const std::vector<uint8_t>& data,
-      arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback);
 
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;
@@ -79,16 +76,19 @@ class ArcIntentHelperBridge : public KeyedService,
       std::vector<IntentFilter> intent_filters) override;
   void OnOpenDownloads() override;
   void OnOpenUrl(const std::string& url) override;
+  void OnOpenCustomTabDeprecated(const std::string& url,
+                                 int32_t task_id,
+                                 int32_t surface_id,
+                                 int32_t top_margin,
+                                 OnOpenCustomTabCallback callback) override;
   void OnOpenCustomTab(const std::string& url,
                        int32_t task_id,
-                       int32_t surface_id,
-                       int32_t top_margin,
                        OnOpenCustomTabCallback callback) override;
   void OnOpenChromePage(mojom::ChromePage page) override;
+  void FactoryResetArc() override;
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
   void OpenVolumeControl() override;
-  void FactoryResetArc() override;
   void OnOpenWebApp(const std::string& url) override;
   void RecordShareFilesMetrics(mojom::ShareFiles flag) override;
   void LaunchCameraApp(uint32_t intent_id,
@@ -124,6 +124,20 @@ class ArcIntentHelperBridge : public KeyedService,
   // scheme is neither http nor https, the function immediately returns true
   // without checking the filters.
   bool ShouldChromeHandleUrl(const GURL& url);
+
+  void SetAdaptiveIconDelegate(AdaptiveIconDelegate* delegate);
+
+  void AddObserver(ArcIntentHelperObserver* observer);
+  void RemoveObserver(ArcIntentHelperObserver* observer);
+  bool HasObserver(ArcIntentHelperObserver* observer) const;
+
+  void HandleCameraResult(
+      uint32_t intent_id,
+      arc::mojom::CameraIntentAction action,
+      const std::vector<uint8_t>& data,
+      arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback);
+
+  void SendNewCaptureBroadcast(bool is_video, std::string file_path);
 
   // Returns false if |package_name| is for the intent_helper apk.
   static bool IsIntentHelperPackage(const std::string& package_name);
@@ -168,6 +182,8 @@ class ArcIntentHelperBridge : public KeyedService,
 
   // The preferred app deleted in ARC.
   std::vector<IntentFilter> deleted_preferred_apps_;
+
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

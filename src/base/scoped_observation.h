@@ -51,31 +51,35 @@ class ScopedObservation {
   explicit ScopedObservation(Observer* observer) : observer_(observer) {}
   ScopedObservation(const ScopedObservation&) = delete;
   ScopedObservation& operator=(const ScopedObservation&) = delete;
-  ~ScopedObservation() {
-    if (IsObserving())
-      RemoveObservation();
-  }
+  ~ScopedObservation() { Reset(); }
 
   // Adds the object passed to the constructor as an observer on |source|.
   // IsObserving() must be false.
   void Observe(Source* source) {
-    DCHECK_EQ(source_, nullptr);
+    // TODO(https://crbug.com/1145565): Make this a DCHECK once ScopedObserver
+    //     has been fully retired.
+    CHECK_EQ(source_, nullptr);
     source_ = source;
     (source_->*AddObsFn)(observer_);
   }
 
-  // Remove the object passed to the constructor as an observer from |source|.
-  void RemoveObservation() {
-    DCHECK_NE(source_, nullptr);
-    (source_->*RemoveObsFn)(observer_);
-    source_ = nullptr;
+  // Remove the object passed to the constructor as an observer from |source_|
+  // if currently observing. Does nothing otherwise.
+  void Reset() {
+    if (source_) {
+      (source_->*RemoveObsFn)(observer_);
+      source_ = nullptr;
+    }
   }
 
   // Returns true if any source is being observed.
   bool IsObserving() const { return source_ != nullptr; }
 
   // Returns true if |source| is being observed.
-  bool IsObservingSource(Source* source) const { return source_ == source; }
+  bool IsObservingSource(Source* source) const {
+    DCHECK(source);
+    return source_ == source;
+  }
 
  private:
   Observer* const observer_;

@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/base_tracing.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {

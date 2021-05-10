@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
@@ -75,6 +76,8 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
         ->set_test_mode(true);
   }
 
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutotestPrivateApiTest);
 };
@@ -89,11 +92,15 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
 
+  // Having ARC Terms accepted automatically bypasses TOS stage.
+  // Set it before |arc::SetArcPlayStoreEnabledForProfile|
+  browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcTermsAccepted,
+                                               true);
   arc::SetArcPlayStoreEnabledForProfile(profile(), true);
   // Provisioning is completed.
   browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
-  browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcTermsAccepted,
-                                               true);
+  // Start ARC
+  arc::ArcSessionManager::Get()->StartArcForTesting();
 
   std::unique_ptr<arc::FakeAppInstance> app_instance;
   app_instance.reset(new arc::FakeAppInstance(prefs));
@@ -338,8 +345,7 @@ class AutotestPrivateSystemWebAppsTest : public AutotestPrivateApiTest {
  public:
   AutotestPrivateSystemWebAppsTest() {
     installation_ =
-        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
-            true);
+        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
   }
   ~AutotestPrivateSystemWebAppsTest() override = default;
 

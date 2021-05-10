@@ -28,6 +28,10 @@ namespace internal {
 // Reserves address space for PartitionAllocator.
 class BASE_EXPORT PartitionAddressSpace {
  public:
+  static ALWAYS_INLINE constexpr uintptr_t NormalBucketPoolBaseMask() {
+    return kNormalBucketPoolBaseMask;
+  }
+
   static ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
     return direct_map_pool_;
   }
@@ -59,6 +63,10 @@ class BASE_EXPORT PartitionAddressSpace {
            normal_bucket_pool_base_address_;
   }
 
+  static ALWAYS_INLINE uintptr_t NormalBucketPoolBase() {
+    return normal_bucket_pool_base_address_;
+  }
+
   // PartitionAddressSpace is static_only class.
   PartitionAddressSpace() = delete;
   PartitionAddressSpace(const PartitionAddressSpace&) = delete;
@@ -77,11 +85,16 @@ class BASE_EXPORT PartitionAddressSpace {
   //
   // +----------------+ reserved_base_address_ (16GiB aligned)
   // |   direct map   |     == direct_map_pool_base_address_
-  // |     space      |
+  // |      pool      |
   // +----------------+ reserved_base_address_ + 16GiB
   // | normal bucket  |     == normal_bucket_pool_base_address_
-  // |     space      |
+  // |      pool      |
   // +----------------+ reserved_base_address_ + 32GiB
+  //
+  // NOTE! On 64-bit systems with BackupRefPtr enabled, the direct map pool must
+  // precede normal bucket pool. This is to prevent a pointer immediately past a
+  // non-GigaCage allocation from falling into the normal bucket pool, thus
+  // triggering BackupRefPtr mechanism and likely crashing.
 
   static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
 

@@ -36,6 +36,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
     STOPPED = 0,
     // Start has been called but libassistant creation is still in progress.
     // Calling |assistant_manager()| will still return a nullptr.
+    // TODO(b/171748795): I think we no longer need this state once
+    // Libassistant has migrated to a mojom service (in fact, we should be able
+    // to remove this enum and use chromeos::libassistant::mojom::ServiceState).
     STARTING = 1,
     // The service is started, libassistant has been created, but libassistant
     // is not ready yet to take requests.
@@ -68,9 +71,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Libassistant to run in signed-out mode, and passing a valid non-empty value
   // will switch the mode back to normal.
   virtual void SetUser(const base::Optional<UserInfo>& user) = 0;
-
-  // Enable/disable ambient mode for Assistant.
-  virtual void EnableAmbientMode(bool enabled) = 0;
 
   // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;

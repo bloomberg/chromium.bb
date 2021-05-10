@@ -125,6 +125,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void GetUvToken(std::vector<pin::Permissions> permissions,
                           base::Optional<std::string> rp_id,
                           GetTokenCallback callback);
+  // Returns the minimum PIN length for this authenticator's currently set PIN.
+  virtual uint32_t CurrentMinPINLength();
+  // Returns the minimum PIN length required to set a new PIN for this
+  // authenticator.
+  virtual uint32_t NewMinPINLength();
+  // Returns |true| if the PIN must be changed before attempting to obtain a PIN
+  // token.
+  virtual bool ForcePINChange();
   // SetPIN sets a new PIN on a device that does not currently have one. The
   // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is
   // only valid to call this method if |Options| indicates that the
@@ -138,9 +146,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                          const std::string& new_pin,
                          SetPINCallback callback);
 
-  // MakeCredentialPINUVDisposition enumerates the possible options for
-  // obtaining user verification when making a credential.
-  enum class MakeCredentialPINUVDisposition {
+  // PINUVDisposition enumerates the possible options for obtaining user
+  // verification when making a CTAP2 request.
+  enum class PINUVDisposition {
     // No UV (neither clientPIN nor internal) is needed to make this
     // credential.
     kNoUV,
@@ -157,31 +165,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
     // The request cannot be satisfied by this authenticator.
     kUnsatisfiable,
   };
-  // PINUVDispositionForMakeCredential returns whether and how user verification
+
+  // PINUVDisposition returns whether and how user verification
   // should be obtained in order to serve the given request on this
   // authenticator.
-  virtual MakeCredentialPINUVDisposition PINUVDispositionForMakeCredential(
+  virtual PINUVDisposition PINUVDispositionForMakeCredential(
       const CtapMakeCredentialRequest& request,
       const FidoRequestHandlerBase::Observer* observer);
 
-  // GetAssertionPINDisposition enumerates the possible interactions between
-  // a user-verification level and the PIN support of an authenticator when
-  // getting an assertion.
-  enum class GetAssertionPINDisposition {
-    // kNoPIN means that a PIN will not be needed for this assertion.
-    kNoPIN,
-    // kUsePIN means that a PIN must be gathered and used for this assertion.
-    kUsePIN,
-    // kUsePINForFallback means that a PIN may be used for fallback if internal
-    // user verification fails.
-    kUsePINForFallback,
-    // kUnsatisfiable means that the request cannot be satisfied by this
-    // authenticator.
-    kUnsatisfiable,
-  };
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
-  virtual GetAssertionPINDisposition WillNeedPINToGetAssertion(
+  virtual PINUVDisposition PINUVDispositionForGetAssertion(
       const CtapGetAssertionRequest& request,
       const FidoRequestHandlerBase::Observer* observer);
 
@@ -242,8 +236,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // stored resident keys and any configured PIN.
   virtual void Reset(ResetCallback callback);
   virtual void Cancel() = 0;
+  // GetId returns a unique string representing this device. This string should
+  // be distinct from all other devices concurrently discovered.
   virtual std::string GetId() const = 0;
-  virtual base::string16 GetDisplayName() const = 0;
+  // GetDisplayName returns a string identifying a device to a human, which
+  // might not be unique. For example, |GetDisplayName| could return the VID:PID
+  // of a HID device, but |GetId| could not because two devices can share the
+  // same VID:PID. It defaults to returning the value of |GetId|.
+  virtual std::string GetDisplayName() const;
   virtual ProtocolVersion SupportedProtocol() const;
   virtual bool SupportsCredProtectExtension() const;
   virtual bool SupportsHMACSecretExtension() const;
@@ -261,7 +261,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
 #if defined(OS_MAC)
   virtual bool IsTouchIdAuthenticator() const = 0;
 #endif  // defined(OS_MAC)
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   virtual bool IsChromeOSAuthenticator() const = 0;
 #endif
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;

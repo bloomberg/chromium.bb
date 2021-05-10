@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -18,8 +19,11 @@ class CredentialLeakDialogController;
 class CredentialLeakDialogView : public views::DialogDelegateView,
                                  public CredentialLeakPrompt {
  public:
+  METADATA_HEADER(CredentialLeakDialogView);
   CredentialLeakDialogView(CredentialLeakDialogController* controller,
                            content::WebContents* web_contents);
+  CredentialLeakDialogView(const CredentialLeakDialogView&) = delete;
+  CredentialLeakDialogView& operator=(const CredentialLeakDialogView&) = delete;
   ~CredentialLeakDialogView() override;
 
   // CredentialsLeakedPrompt:
@@ -28,10 +32,7 @@ class CredentialLeakDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
-  ui::ModalType GetModalType() const override;
-  gfx::Size CalculatePreferredSize() const override;
-  bool ShouldShowCloseButton() const override;
-  void OnThemeChanged() override;
+  void AddedToWidget() override;
   base::string16 GetWindowTitle() const override;
 
   // Sets up the child views.
@@ -40,8 +41,6 @@ class CredentialLeakDialogView : public views::DialogDelegateView,
   // A weak pointer to the controller.
   CredentialLeakDialogController* controller_ = nullptr;
   content::WebContents* const web_contents_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialLeakDialogView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_CREDENTIAL_LEAK_DIALOG_VIEW_H_

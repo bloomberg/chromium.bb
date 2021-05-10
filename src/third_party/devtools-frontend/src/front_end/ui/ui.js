@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Action from './Action.js';
-import * as ActionDelegate from './ActionDelegate.js';
+import * as ActionRegistration from './ActionRegistration.js';
 import * as ActionRegistry from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import * as Context from './Context.js';
@@ -43,7 +42,6 @@ import * as SoftContextMenu from './SoftContextMenu.js';
 import * as SoftDropDown from './SoftDropDown.js';
 import * as SplitWidget from './SplitWidget.js';
 import * as SuggestBox from './SuggestBox.js';
-import * as SyntaxHighlighter from './SyntaxHighlighter.js';
 import * as TabbedPane from './TabbedPane.js';
 import * as TargetCrashedScreen from './TargetCrashedScreen.js';
 import * as TextEditor from './TextEditor.js';
@@ -63,8 +61,7 @@ import * as XWidget from './XWidget.js';
 import * as ZoomManager from './ZoomManager.js';
 
 export {
-  Action,
-  ActionDelegate,
+  ActionRegistration,
   ActionRegistry,
   ARIAUtils,
   Context,
@@ -104,7 +101,6 @@ export {
   SoftDropDown,
   SplitWidget,
   SuggestBox,
-  SyntaxHighlighter,
   TabbedPane,
   TargetCrashedScreen,
   TextEditor,

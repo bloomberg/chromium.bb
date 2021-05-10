@@ -39,6 +39,12 @@ class JourneyLoggerAndroid {
   void SetEventOccurred(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jcaller,
                         jint jevent);
+  void SetSelectedMethod(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         jint jPaymentMethodCategory);
+  void SetAvailableMethod(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& jcaller,
+                          jint jPaymentMethodCategory);
   void SetRequestedInformation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,

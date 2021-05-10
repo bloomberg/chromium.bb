@@ -81,7 +81,7 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
     : AXAuraObjWrapper(aura_obj_cache),
       window_(window),
       is_root_window_(window->IsRootWindow()) {
-  observer_.Add(window);
+  observation_.Observe(window);
 
   if (is_root_window_)
     aura_obj_cache_->OnRootWindowObjCreated(window);
@@ -95,10 +95,6 @@ bool AXWindowObjWrapper::HandleAccessibleAction(
     window_->Focus();
     return true;
   }
-  return false;
-}
-
-bool AXWindowObjWrapper::IsIgnored() {
   return false;
 }
 
@@ -161,7 +157,7 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
                                     GetWindowName(window_));
 }
 
-int32_t AXWindowObjWrapper::GetUniqueId() const {
+ui::AXNodeID AXWindowObjWrapper::GetUniqueId() const {
   return unique_id_.Get();
 }
 

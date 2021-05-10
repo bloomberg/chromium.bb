@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -33,7 +34,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-test-utils.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #endif
 
@@ -52,6 +53,7 @@ class FakeFileHandlingExpiryService
   }
 
   void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.reset();
     receiver_.Bind(
         mojo::PendingAssociatedReceiver<blink::mojom::FileHandlingExpiry>(
             std::move(handle)));
@@ -557,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingOriginTrialTest,
             content::EvalJs(web_content, "window.launchParams.files[0].name"));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // End-to-end test to ensure the file handler is registered on ChromeOS when the
 // extension system is initialized. Gives more coverage than the unit tests for
@@ -598,4 +600,4 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingOriginTrialTest,
   EXPECT_EQ(0u, tasks.size());
 }
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -45,27 +45,33 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   EXPECT_TRUE(value->GetBool());
 
   base::Value expected_list(base::Value::Type::LIST);
-  expected_list.Append(SystemFeature::CAMERA);
-  expected_list.Append(SystemFeature::BROWSER_SETTINGS);
+  expected_list.Append(SystemFeature::kCamera);
+  expected_list.Append(SystemFeature::kBrowserSettings);
 
   EXPECT_TRUE(prefs.GetValue(policy_prefs::kSystemFeaturesDisableList, &value));
   EXPECT_EQ(expected_list, *value);
 
   histogram_tester_.ExpectTotalCount(kSystemFeaturesDisableListHistogram, 2);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::CAMERA,
+                                      SystemFeature::kCamera,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::BROWSER_SETTINGS,
+                                      SystemFeature::kBrowserSettings,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::OS_SETTINGS,
+                                      SystemFeature::kOsSettings,
                                       /*amount*/ 0);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::SCANNING,
+                                      SystemFeature::kScanning,
                                       /*amount*/ 0);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::UNKNOWN_SYSTEM_FEATURE,
+                                      SystemFeature::kUnknownSystemFeature,
+                                      /*amount*/ 0);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::kWebStore,
+                                      /*amount*/ 0);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::kCanvas,
                                       /*amount*/ 0);
 
   features_list.ClearList();
@@ -73,6 +79,8 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   features_list.Append("os_settings");
   features_list.Append("scanning");
   features_list.Append("gallery");
+  features_list.Append("web_store");
+  features_list.Append("canvas");
 
   policy_map.Set(policy::key::kSystemFeaturesDisableList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -84,29 +92,37 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   EXPECT_FALSE(value->GetBool());
 
   expected_list.ClearList();
-  expected_list.Append(SystemFeature::CAMERA);
-  expected_list.Append(SystemFeature::OS_SETTINGS);
-  expected_list.Append(SystemFeature::SCANNING);
-  expected_list.Append(SystemFeature::UNKNOWN_SYSTEM_FEATURE);
+  expected_list.Append(SystemFeature::kCamera);
+  expected_list.Append(SystemFeature::kOsSettings);
+  expected_list.Append(SystemFeature::kScanning);
+  expected_list.Append(SystemFeature::kUnknownSystemFeature);
+  expected_list.Append(SystemFeature::kWebStore);
+  expected_list.Append(SystemFeature::kCanvas);
 
   EXPECT_TRUE(prefs.GetValue(policy_prefs::kSystemFeaturesDisableList, &value));
   EXPECT_EQ(expected_list, *value);
 
-  histogram_tester_.ExpectTotalCount(kSystemFeaturesDisableListHistogram, 5);
+  histogram_tester_.ExpectTotalCount(kSystemFeaturesDisableListHistogram, 7);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::CAMERA,
+                                      SystemFeature::kCamera,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::BROWSER_SETTINGS,
+                                      SystemFeature::kBrowserSettings,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::OS_SETTINGS,
+                                      SystemFeature::kOsSettings,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::SCANNING,
+                                      SystemFeature::kScanning,
                                       /*amount*/ 1);
   histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
-                                      SystemFeature::UNKNOWN_SYSTEM_FEATURE,
+                                      SystemFeature::kUnknownSystemFeature,
+                                      /*amount*/ 1);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::kWebStore,
+                                      /*amount*/ 1);
+  histogram_tester_.ExpectBucketCount(kSystemFeaturesDisableListHistogram,
+                                      SystemFeature::kCanvas,
                                       /*amount*/ 1);
 }
 }  // namespace policy

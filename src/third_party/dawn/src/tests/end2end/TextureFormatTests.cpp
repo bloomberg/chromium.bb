@@ -146,34 +146,32 @@ class TextureFormatTest : public DawnTest {
                                               FormatTestInfo renderFormatInfo) {
         utils::ComboRenderPipelineDescriptor desc(device);
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            void main() {
-                const vec2 pos[3] = vec2[3](
-                    vec2(-3.0f, -1.0f),
-                    vec2( 3.0f, -1.0f),
-                    vec2( 0.0f,  2.0f)
-                );
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0f, 1.0f);
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-3.0, -1.0),
+                    vec2<f32>( 3.0, -1.0),
+                    vec2<f32>( 0.0,  2.0));
+
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
-        // Compute the prefix needed for GLSL types that handle our texture's data.
-        const char* prefix = utils::GetColorTextureComponentTypePrefix(sampleFormatInfo.format);
+        // Compute the WGSL type of the texture's data.
+        const char* type = utils::GetWGSLColorTextureComponentType(sampleFormatInfo.format);
 
         std::ostringstream fsSource;
-        fsSource << "#version 450\n";
-        fsSource << "layout(set=0, binding=0) uniform sampler mySampler;\n";
-        fsSource << "layout(set=0, binding=1) uniform " << prefix << "texture2D myTexture;\n";
-        fsSource << "layout(location=0) out " << prefix << "vec4 fragColor;\n";
-
-        fsSource << "void main() {\n";
-        fsSource << "    fragColor = texelFetch(" << prefix
-                 << "sampler2D(myTexture, mySampler), ivec2(gl_FragCoord), 0);\n";
+        fsSource << "[[group(0), binding(0)]] var myTexture : texture_2d<" << type << ">;\n";
+        fsSource << "[[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;\n";
+        fsSource << "[[location(0)]] var<out> fragColor : vec4<" << type << ">;\n";
+        fsSource << "[[stage(fragment)]] fn main() -> void {\n";
+        fsSource << "    fragColor = textureLoad(myTexture, vec2<i32>(FragCoord.xy), 0);\n";
         fsSource << "}";
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModule(
-            device, utils::SingleShaderStage::Fragment, fsSource.str().c_str());
+        wgpu::ShaderModule fsModule =
+            utils::CreateShaderModuleFromWGSL(device, fsSource.str().c_str());
 
         desc.vertexStage.module = vsModule;
         desc.cFragmentStage.module = fsModule;
@@ -229,11 +227,8 @@ class TextureFormatTest : public DawnTest {
 
         // Prepare objects needed to sample from texture in the renderpass
         wgpu::RenderPipeline pipeline = CreateSamplePipeline(sampleFormatInfo, renderFormatInfo);
-        wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-        wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
-        wgpu::BindGroup bindGroup =
-            utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
-                                 {{0, sampler}, {1, sampleTexture.CreateView()}});
+        wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                                         {{0, sampleTexture.CreateView()}});
 
         // Encode commands for the test that fill texture, sample it to render to renderTarget then
         // copy renderTarget in a buffer so we can read it easily.
@@ -464,6 +459,8 @@ TEST_P(TextureFormatTest, RGBA8Unorm) {
 
 // Test the BGRA8Unorm format
 TEST_P(TextureFormatTest, BGRA8Unorm) {
+    // TODO(crbug.com/dawn/596): BGRA is unsupported on OpenGL ES; add workaround or validation
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
     uint8_t maxValue = std::numeric_limits<uint8_t>::max();
     std::vector<uint8_t> textureData = {maxValue, 1, 0, maxValue};
     std::vector<float> uncompressedData = {0.0f, 1.0f / maxValue, 1.0f, 1.0f};
@@ -599,7 +596,7 @@ TEST_P(TextureFormatTest, RGBA32Float) {
 TEST_P(TextureFormatTest, R16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::R16Float, 2, wgpu::TextureComponentType::Float, 1});
 }
@@ -608,7 +605,7 @@ TEST_P(TextureFormatTest, R16Float) {
 TEST_P(TextureFormatTest, RG16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::RG16Float, 4, wgpu::TextureComponentType::Float, 2});
 }
@@ -617,7 +614,7 @@ TEST_P(TextureFormatTest, RG16Float) {
 TEST_P(TextureFormatTest, RGBA16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::RGBA16Float, 8, wgpu::TextureComponentType::Float, 4});
 }
@@ -649,6 +646,7 @@ TEST_P(TextureFormatTest, BGRA8UnormSrgb) {
     // TODO(cwallez@chromium.org): This format doesn't exist in OpenGL, emulate it using
     // RGBA8UnormSrgb and swizzling / shader twiddling
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     uint8_t maxValue = std::numeric_limits<uint8_t>::max();
     std::vector<uint8_t> textureData = {0, 1, maxValue, 64, 35, 68, 152, 168};
@@ -799,4 +797,5 @@ DAWN_INSTANTIATE_TEST(TextureFormatTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

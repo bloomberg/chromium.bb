@@ -9,11 +9,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "components/autofill/android/provider/form_data_android.h"
 #include "components/autofill/android/provider/jni_headers/AutofillProvider_jni.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
@@ -33,6 +35,12 @@ using gfx::RectF;
 namespace autofill {
 
 using mojom::SubmissionSource;
+
+static jboolean JNI_AutofillProvider_IsQueryServerFieldTypesEnabled(
+    JNIEnv* env) {
+  return base::FeatureList::IsEnabled(
+      features::kAndroidAutofillQueryServerFieldTypes);
+}
 
 AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
@@ -151,7 +159,7 @@ void AutofillProviderAndroid::MaybeStartNewSession(
   Java_AutofillProvider_startAutofillSession(
       env, obj, form_obj, index, transformed_bounding.x(),
       transformed_bounding.y(), transformed_bounding.width(),
-      transformed_bounding.height());
+      transformed_bounding.height(), handler->has_server_prediction());
 }
 
 void AutofillProviderAndroid::OnAutofillAvailable(JNIEnv* env,
@@ -341,8 +349,7 @@ void AutofillProviderAndroid::OnDidFillAutofillFormData(
 }
 
 void AutofillProviderAndroid::OnFormsSeen(AutofillHandlerProxy* handler,
-                                          const std::vector<FormData>& forms,
-                                          const base::TimeTicks timestamp) {}
+                                          const std::vector<FormData>& forms) {}
 
 void AutofillProviderAndroid::OnHidePopup(AutofillHandlerProxy* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -353,6 +360,45 @@ void AutofillProviderAndroid::OnHidePopup(AutofillHandlerProxy* handler) {
       return;
 
     Java_AutofillProvider_hidePopup(env, obj);
+  }
+}
+
+void AutofillProviderAndroid::OnServerPredictionsAvailable(
+    AutofillHandlerProxy* handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (handler != handler_.get() || !form_.get())
+    return;
+
+  if (auto* form_structure = handler_->FindCachedFormByRendererId(
+          form_->form().unique_renderer_id)) {
+    form_->UpdateFieldTypes(*form_structure);
+
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (obj.is_null())
+      return;
+
+    Java_AutofillProvider_onQueryDone(env, obj, /*success=*/true);
+  }
+}
+
+void AutofillProviderAndroid::OnServerQueryRequestError(
+    AutofillHandlerProxy* handler,
+    FormSignature form_signature) {
+  if (!IsCurrentlyLinkedHandler(handler) || !form_.get())
+    return;
+
+  if (auto* form_structure = handler_->FindCachedFormByRendererId(
+          form_->form().unique_renderer_id)) {
+    if (form_structure->form_signature() != form_signature)
+      return;
+
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (obj.is_null())
+      return;
+
+    Java_AutofillProvider_onQueryDone(env, obj, /*success=*/false);
   }
 }
 

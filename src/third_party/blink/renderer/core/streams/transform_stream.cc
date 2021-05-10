@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -55,7 +54,7 @@ class TransformStream::FlushAlgorithm final : public StreamAlgorithm {
       return PromiseReject(script_state, exception);
     }
 
-    return promise.V8Value().As<v8::Promise>();
+    return promise.V8Promise();
   }
 
   // SetController() must be called before Run() is.
@@ -101,7 +100,7 @@ class TransformStream::TransformAlgorithm final : public StreamAlgorithm {
       return PromiseReject(script_state, exception);
     }
 
-    return promise.V8Value().As<v8::Promise>();
+    return promise.V8Promise();
   }
 
   // SetController() must be called before Run() is.
@@ -261,6 +260,13 @@ TransformStream::TransformStream() = default;
 TransformStream::TransformStream(ReadableStream* readable,
                                  WritableStream* writable)
     : readable_(readable), writable_(writable) {}
+
+ReadableStreamDefaultController* TransformStream::GetReadableController() {
+  // The type of source is not given when constructing the readable stream in
+  // TranformStream, so it is guaranteed that the controller is a
+  // ReadableStreamDefaultController.
+  return To<ReadableStreamDefaultController>(readable_->GetController());
+}
 
 void TransformStream::Trace(Visitor* visitor) const {
   visitor->Trace(backpressure_change_promise_);
@@ -437,7 +443,6 @@ class TransformStream::DefaultSinkCloseAlgorithm final
     DCHECK_EQ(argc, 0);
     // https://streams.spec.whatwg.org/#transform-stream-default-sink-close-algorithm
     // 1. Let readable be stream.[[readable]].
-    ReadableStream* readable = stream_->readable_;
 
     // 2. Let controller be stream.[[transformStreamController]].
     TransformStreamDefaultController* controller =
@@ -453,24 +458,24 @@ class TransformStream::DefaultSinkCloseAlgorithm final
 
     class ResolveFunction final : public PromiseHandlerWithValue {
      public:
-      ResolveFunction(ScriptState* script_state, ReadableStream* readable)
-          : PromiseHandlerWithValue(script_state), readable_(readable) {}
+      ResolveFunction(ScriptState* script_state, TransformStream* stream)
+          : PromiseHandlerWithValue(script_state), stream_(stream) {}
 
       v8::Local<v8::Value> CallWithLocal(v8::Local<v8::Value>) override {
         // 5. Return the result of transforming flushPromise with:
         //    a. A fulfillment handler that performs the following steps:
         //       i. If readable.[[state]] is "errored", throw
         //          readable.[[storedError]].
-        if (ReadableStream::IsErrored(readable_)) {
+        if (ReadableStream::IsErrored(stream_->readable_)) {
           // Returning a rejection is equivalent to throwing here.
-          return PromiseReject(
-              GetScriptState(),
-              readable_->GetStoredError(GetScriptState()->GetIsolate()));
+          return PromiseReject(GetScriptState(),
+                               stream_->readable_->GetStoredError(
+                                   GetScriptState()->GetIsolate()));
         }
 
         //      ii. Let readableController be
         //          readable.[[readableStreamController]].
-        auto* readable_controller = readable_->GetController();
+        auto* readable_controller = stream_->GetReadableController();
 
         //     iii. If ! ReadableStreamDefaultControllerCanCloseOrEnqueue(
         //          readableController) is true, perform !
@@ -485,12 +490,12 @@ class TransformStream::DefaultSinkCloseAlgorithm final
       }
 
       void Trace(Visitor* visitor) const override {
-        visitor->Trace(readable_);
+        visitor->Trace(stream_);
         PromiseHandlerWithValue::Trace(visitor);
       }
 
      private:
-      Member<ReadableStream> readable_;
+      Member<TransformStream> stream_;
     };
 
     class RejectFunction final : public PromiseHandlerWithValue {
@@ -522,7 +527,7 @@ class TransformStream::DefaultSinkCloseAlgorithm final
     // 5. Return the result of transforming flushPromise ...
     return StreamThenPromise(
         script_state->GetContext(), flush_promise,
-        MakeGarbageCollected<ResolveFunction>(script_state, readable),
+        MakeGarbageCollected<ResolveFunction>(script_state, stream_),
         MakeGarbageCollected<RejectFunction>(script_state, stream_));
   }
 
@@ -828,9 +833,8 @@ void TransformStream::Error(ScriptState* script_state,
   // https://streams.spec.whatwg.org/#transform-stream-error
   // 1. Perform ! ReadableStreamDefaultControllerError(stream.[[readable]].
   //    [[readableStreamController]], e).
-  ReadableStream* readable = stream->readable_;
   ReadableStreamDefaultController::Error(script_state,
-                                         readable->GetController(), e);
+                                         stream->GetReadableController(), e);
 
   // 2. Perform ! TransformStreamErrorWritableAndUnblockWrite(stream, e).
   ErrorWritableAndUnblockWrite(script_state, stream, e);

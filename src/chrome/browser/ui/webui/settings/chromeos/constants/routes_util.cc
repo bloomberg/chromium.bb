@@ -61,6 +61,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       // Personalization section.
       chromeos::settings::mojom::kPersonalizationSectionPath,
       chromeos::settings::mojom::kChangePictureSubpagePath,
+      chromeos::settings::mojom::kWallpaperSubpagePath,
       chromeos::settings::mojom::kAmbientModeSubpagePath,
 
       // Search and Assistant section.
@@ -82,6 +83,9 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath,
       chromeos::settings::mojom::kCrostiniDevelopAndroidAppsSubpagePath,
       chromeos::settings::mojom::kCrostiniPortForwardingSubpagePath,
+
+      // On Startup section.
+      chromeos::settings::mojom::kOnStartupSectionPath,
 
       // Date and Time section.
       chromeos::settings::mojom::kDateAndTimeSectionPath,

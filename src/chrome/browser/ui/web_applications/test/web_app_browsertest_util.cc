@@ -13,7 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -34,9 +34,11 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -86,6 +88,17 @@ class BrowserRemovedWaiter final : public BrowserListObserver {
   base::RunLoop run_loop_;
 };
 
+void AutoAcceptDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+  web_app_info->open_as_window = true;
+  std::move(acceptance_callback)
+      .Run(
+          /*user_accepted=*/true, std::move(web_app_info));
+}
+
 }  // namespace
 
 AppId InstallWebApp(Profile* profile,
@@ -100,7 +113,7 @@ AppId InstallWebApp(Profile* profile,
   WaitUntilReady(provider);
   provider->install_manager().InstallWebAppFromInfo(
       std::move(web_app_info), ForInstallableSite::kYes,
-      WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -112,7 +125,7 @@ AppId InstallWebApp(Profile* profile,
   return app_id;
 }
 
-AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
+AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   NavigateToURLAndWait(browser, app_url);
 
   AppId app_id;
@@ -123,17 +136,38 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
   WaitUntilReady(provider);
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       browser->tab_strip_model()->GetActiveWebContents(),
-      /*force_shortcut_app=*/true, WebappInstallSource::MENU_BROWSER_TAB,
+      /*force_shortcut_app=*/true,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
-          [](content::WebContents* initiator_web_contents,
-             std::unique_ptr<WebApplicationInfo> web_app_info,
-             ForInstallableSite for_installable_site,
-             InstallManager::WebAppInstallationAcceptanceCallback
-                 acceptance_callback) {
-            std::move(acceptance_callback)
-                .Run(
-                    /*user_accepted=*/true, std::move(web_app_info));
-          }),
+          [&run_loop, &app_id](const AppId& installed_app_id,
+                               InstallResultCode code) {
+            DCHECK_EQ(code, InstallResultCode::kSuccessNewInstall);
+            app_id = installed_app_id;
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+  return app_id;
+}
+
+AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
+  ServiceWorkerRegistrationWaiter registration_waiter(browser->profile(),
+                                                      app_url);
+  NavigateToURLAndWait(browser, app_url);
+  registration_waiter.AwaitRegistration();
+
+  AppId app_id;
+  base::RunLoop run_loop;
+
+  auto* provider = WebAppProvider::Get(browser->profile());
+  DCHECK(provider);
+  WaitUntilReady(provider);
+  provider->install_manager().InstallWebAppFromManifestWithFallback(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      /*force_shortcut_app=*/false,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const AppId& installed_app_id,
                                InstallResultCode code) {
@@ -220,8 +254,8 @@ InstallResultCode PendingAppManagerInstall(
       std::move(install_options),
       base::BindLambdaForTesting(
           [&result_code, &run_loop](const GURL& provided_url,
-                                    InstallResultCode code) {
-            result_code = code;
+                                    PendingAppManager::InstallResult result) {
+            result_code = result.code;
             run_loop.Quit();
           }));
   run_loop.Run();
@@ -291,6 +325,11 @@ void CloseAndWait(Browser* browser) {
   waiter.Wait();
 }
 
+void WaitForBrowserToBeClosed(Browser* browser) {
+  BrowserRemovedWaiter waiter(browser);
+  waiter.Wait();
+}
+
 bool IsBrowserOpen(const Browser* test_browser) {
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser == test_browser)
@@ -305,6 +344,16 @@ void UninstallWebApp(Profile* profile, const AppId& app_id) {
   DCHECK(provider->install_finalizer().CanUserUninstallExternalApp(app_id));
   provider->install_finalizer().UninstallExternalAppByUser(app_id,
                                                            base::DoNothing());
+}
+
+void UninstallWebAppWithCallback(Profile* profile,
+                                 const AppId& app_id,
+                                 UninstallWebAppCallback callback) {
+  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  DCHECK(provider->install_finalizer().CanUserUninstallExternalApp(app_id));
+  provider->install_finalizer().UninstallExternalAppByUser(app_id,
+                                                           std::move(callback));
 }
 
 SkColor ReadAppIconPixel(Profile* profile,

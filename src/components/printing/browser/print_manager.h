@@ -23,10 +23,6 @@
 #include "ui/accessibility/ax_tree_update_forward.h"
 #endif
 
-namespace IPC {
-class Message;
-}
-
 namespace printing {
 
 class PrintManager : public content::WebContentsObserver,
@@ -47,6 +43,8 @@ class PrintManager : public content::WebContentsObserver,
   // printing::mojom::PrintManagerHost:
   void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;
   void DidGetDocumentCookie(int32_t cookie) override;
+  void DidPrintDocument(mojom::DidPrintDocumentParamsPtr params,
+                        DidPrintDocumentCallback callback) override;
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
   void SetAccessibilityTree(
       int32_t cookie,
@@ -58,6 +56,15 @@ class PrintManager : public content::WebContentsObserver,
   void DidShowPrintDialog() override;
   void ShowInvalidPrinterSettingsError() override;
   void PrintingFailed(int32_t cookie) override;
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void SetupScriptedPrintPreview(
+      SetupScriptedPrintPreviewCallback callback) override;
+  void ShowScriptedPrintPreview(bool source_is_modifiable) override;
+  void RequestPrintPreview(mojom::RequestPrintPreviewParamsPtr params) override;
+  void CheckForCancel(int32_t preview_ui_id,
+                      int32_t request_id,
+                      CheckForCancelCallback callback) override;
+#endif
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -75,48 +82,7 @@ class PrintManager : public content::WebContentsObserver,
   void PrintingRenderFrameDeleted();
 
   // content::WebContentsObserver
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-
-  // IPC handling support
-  struct FrameDispatchHelper;
-
-  // IPC message PrintHostMsg_DidPrintDocument can require handling in other
-  // processes beyond the rendering process running OnMessageReceived(),
-  // requiring that the renderer needs to wait.
-  class DelayedFrameDispatchHelper : public content::WebContentsObserver {
-   public:
-    DelayedFrameDispatchHelper(content::WebContents* contents,
-                               content::RenderFrameHost* render_frame_host,
-                               IPC::Message* reply_msg);
-    DelayedFrameDispatchHelper(const DelayedFrameDispatchHelper&) = delete;
-    ~DelayedFrameDispatchHelper() override;
-    DelayedFrameDispatchHelper& operator=(const DelayedFrameDispatchHelper&) =
-        delete;
-
-    // content::WebContentsObserver
-    void RenderFrameDeleted(
-        content::RenderFrameHost* render_frame_host) override;
-
-    // SendCompleted() can be called at most once, since it provides the success
-    // reply for a message. A failure reply for the message is automatically
-    // sent if this is never called.
-    void SendCompleted();
-
-   private:
-    content::RenderFrameHost* const render_frame_host_;
-    IPC::Message* reply_msg_;
-  };
-
-  // IPC handlers
-  virtual void OnDidPrintDocument(
-      content::RenderFrameHost* render_frame_host,
-      const mojom::DidPrintDocumentParams& params,
-      std::unique_ptr<DelayedFrameDispatchHelper> helper) = 0;
-  virtual void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                               const mojom::ScriptedPrintParams& params,
-                               IPC::Message* reply_msg) = 0;
 
   uint32_t number_pages_ = 0;  // Number of pages to print in the print job.
   int cookie_ = 0;        // The current document cookie.

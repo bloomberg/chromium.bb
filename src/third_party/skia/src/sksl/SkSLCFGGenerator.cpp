@@ -7,6 +7,7 @@
 
 #include "src/sksl/SkSLCFGGenerator.h"
 
+#include "src/sksl/SkSLOperators.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
@@ -17,28 +18,36 @@
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
+#include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
-#include "src/sksl/ir/SkSLWhileStatement.h"
+
+#include <tuple>
 
 namespace SkSL {
 
-void BasicBlock::Node::setExpression(std::unique_ptr<Expression> expr, ProgramUsage* usage) {
+void BasicBlockNode::setExpression(std::unique_ptr<Expression> expr, ProgramUsage* usage) {
     SkASSERT(!this->isStatement());
     usage->remove(fExpression->get());
     *fExpression = std::move(expr);
 }
 
-void BasicBlock::Node::setStatement(std::unique_ptr<Statement> stmt, ProgramUsage* usage) {
+std::unique_ptr<Statement> BasicBlockNode::setStatement(std::unique_ptr<Statement> stmt,
+                                                        ProgramUsage* usage) {
     SkASSERT(!this->isExpression());
     // See comment in header - we assume that stmt was already counted in usage (it was a subset
     // of fStatement). There is no way to verify that, unfortunately.
     usage->remove(fStatement->get());
+    std::unique_ptr<Statement> result;
+    if (stmt->is<Nop>()) {
+        result = std::move(*fStatement);
+    }
     *fStatement = std::move(stmt);
+    return result;
 }
 
 BlockId CFG::newBlock() {
@@ -78,12 +87,13 @@ void CFG::dump() const {
 void BasicBlock::dump() const {
     printf("Before: [");
     const char* separator = "";
-    fBefore.foreach([&](const Variable* var, std::unique_ptr<Expression>* expr) {
-        printf("%s%s = %s", separator,
-                            var->description().c_str(),
-                            expr ? (*expr)->description().c_str() : "<undefined>");
+    for (const auto& [var, expr] : fBefore) {
+        printf("%s%s = %s",
+               separator,
+               var->description().c_str(),
+               expr ? *expr ? (*expr)->description().c_str() : "NULL" : "<undefined>");
         separator = ", ";
-    });
+    }
     printf("]\nIs Reachable: [%s]\n", fIsReachable ? "yes" : "no");
     for (size_t j = 0; j < fNodes.size(); j++) {
         const BasicBlock::Node& n = fNodes[j];
@@ -101,13 +111,16 @@ void BasicBlock::dump() const {
 
 bool BasicBlock::tryRemoveExpressionBefore(std::vector<BasicBlock::Node>::iterator* iter,
                                            Expression* e) {
-    if (e->kind() == Expression::Kind::kTernary) {
+    if (e->is<TernaryExpression>()) {
         return false;
     }
     bool result;
     if ((*iter)->isExpression()) {
         SkASSERT((*iter)->expression()->get() != e);
+        // Remember the expression that we started on.
         Expression* old = (*iter)->expression()->get();
+        // Back up `iter` until we find the expression that we want to remove. (If we don't find
+        // that expression at all, fail and rescan.)
         do {
             if ((*iter) == fNodes.begin()) {
                 return false;
@@ -115,14 +128,19 @@ bool BasicBlock::tryRemoveExpressionBefore(std::vector<BasicBlock::Node>::iterat
             --(*iter);
         } while (!(*iter)->isExpression() || (*iter)->expression()->get() != e);
 
+        // `iter` now points to our expression that needs removal. Erase it.
         result = this->tryRemoveExpression(iter);
 
+        // Move `iter` forward again until we find the expression we started on.
         while (!(*iter)->isExpression() || (*iter)->expression()->get() != old) {
             SkASSERT(*iter != fNodes.end());
             ++(*iter);
         }
     } else {
+        // Remember the statement that we started on.
         Statement* old = (*iter)->statement()->get();
+        // Back up `iter` until we find the expression that we want to remove. (If we don't find
+        // that expression at all, fail and rescan.)
         do {
             if ((*iter) == fNodes.begin()) {
                 return false;
@@ -130,8 +148,10 @@ bool BasicBlock::tryRemoveExpressionBefore(std::vector<BasicBlock::Node>::iterat
             --(*iter);
         } while (!(*iter)->isExpression() || (*iter)->expression()->get() != e);
 
+        // `iter` now points to our expression that needs removal. Erase it.
         result = this->tryRemoveExpression(iter);
 
+        // Move `iter` forward again until we find the statement we started on.
         while (!(*iter)->isStatement() || (*iter)->statement()->get() != old) {
             SkASSERT(*iter != fNodes.end());
             ++(*iter);
@@ -143,7 +163,6 @@ bool BasicBlock::tryRemoveExpressionBefore(std::vector<BasicBlock::Node>::iterat
 bool BasicBlock::tryRemoveLValueBefore(std::vector<BasicBlock::Node>::iterator* iter,
                                        Expression* lvalue) {
     switch (lvalue->kind()) {
-        case Expression::Kind::kExternalValue: // fall through
         case Expression::Kind::kVariableReference:
             return true;
         case Expression::Kind::kSwizzle:
@@ -168,9 +187,7 @@ bool BasicBlock::tryRemoveLValueBefore(std::vector<BasicBlock::Node>::iterator* 
             return this->tryRemoveLValueBefore(iter, ternary.ifFalse().get());
         }
         default:
-#ifdef SK_DEBUG
-            ABORT("invalid lvalue: %s\n", lvalue->description().c_str());
-#endif
+            SkDEBUGFAILF("invalid lvalue: %s\n", lvalue->description().c_str());
             return false;
     }
 }
@@ -180,7 +197,7 @@ bool BasicBlock::tryRemoveExpression(std::vector<BasicBlock::Node>::iterator* it
     switch (expr->kind()) {
         case Expression::Kind::kBinary: {
             BinaryExpression& b = expr->as<BinaryExpression>();
-            if (b.getOperator() == Token::Kind::TK_EQ) {
+            if (b.getOperator().kind() == Token::Kind::TK_EQ) {
                 if (!this->tryRemoveLValueBefore(iter, b.left().get())) {
                     return false;
                 }
@@ -269,9 +286,7 @@ bool BasicBlock::tryRemoveExpression(std::vector<BasicBlock::Node>::iterator* it
             *iter = fNodes.erase(*iter);
             return true;
         default:
-#ifdef SK_DEBUG
-            ABORT("unhandled expression: %s\n", expr->description().c_str());
-#endif
+            SkDEBUGFAILF("unhandled expression: %s\n", expr->description().c_str());
             return false;
     }
 }
@@ -334,8 +349,8 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
     switch ((*e)->kind()) {
         case Expression::Kind::kBinary: {
             BinaryExpression& b = e->get()->as<BinaryExpression>();
-            Token::Kind op = b.getOperator();
-            switch (op) {
+            Operator op = b.getOperator();
+            switch (op.kind()) {
                 case Token::Kind::TK_LOGICALAND: // fall through
                 case Token::Kind::TK_LOGICALOR: {
                     // this isn't as precise as it could be -- we don't bother to track that if we
@@ -359,14 +374,16 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
                     break;
                 }
                 default:
-                    this->addExpression(cfg, &b.left(),
-                                        !Compiler::IsAssignment(b.getOperator()));
+                    this->addExpression(cfg, &b.left(), !b.getOperator().isAssignment());
                     this->addExpression(cfg, &b.right(), constantPropagate);
                     cfg.currentBlock().fNodes.push_back(
                             BasicBlock::MakeExpression(e, constantPropagate));
             }
             break;
         }
+        case Expression::Kind::kCodeString:
+            SkDEBUGFAIL("shouldn't be able to receive kCodeString here");
+            break;
         case Expression::Kind::kConstructor: {
             Constructor& c = e->get()->as<Constructor>();
             for (auto& arg : c.arguments()) {
@@ -406,9 +423,10 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
         }
         case Expression::Kind::kPrefix: {
             PrefixExpression& p = e->get()->as<PrefixExpression>();
-            this->addExpression(cfg, &p.operand(), constantPropagate &&
-                                                  p.getOperator() != Token::Kind::TK_PLUSPLUS &&
-                                                  p.getOperator() != Token::Kind::TK_MINUSMINUS);
+            this->addExpression(cfg, &p.operand(),
+                                constantPropagate &&
+                                p.getOperator().kind() != Token::Kind::TK_PLUSPLUS &&
+                                p.getOperator().kind() != Token::Kind::TK_MINUSMINUS);
             cfg.currentBlock().fNodes.push_back(BasicBlock::MakeExpression(e, constantPropagate));
             break;
         }
@@ -421,10 +439,8 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
             cfg.currentBlock().fNodes.push_back(BasicBlock::MakeExpression(e, constantPropagate));
             break;
         case Expression::Kind::kBoolLiteral:   // fall through
-        case Expression::Kind::kExternalValue: // fall through
         case Expression::Kind::kFloatLiteral:  // fall through
         case Expression::Kind::kIntLiteral:    // fall through
-        case Expression::Kind::kNullLiteral:   // fall through
         case Expression::Kind::kSetting:       // fall through
         case Expression::Kind::kVariableReference:
             cfg.currentBlock().fNodes.push_back(BasicBlock::MakeExpression(e, constantPropagate));
@@ -444,6 +460,7 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
             cfg.fCurrent = next;
             break;
         }
+        case Expression::Kind::kExternalFunctionReference:     // fall through
         case Expression::Kind::kFunctionReference: // fall through
         case Expression::Kind::kTypeReference:     // fall through
         case Expression::Kind::kDefined:
@@ -467,7 +484,6 @@ void CFGGenerator::addLValue(CFG& cfg, std::unique_ptr<Expression>* e) {
         case Expression::Kind::kSwizzle:
             this->addLValue(cfg, &e->get()->as<Swizzle>().base());
             break;
-        case Expression::Kind::kExternalValue: // fall through
         case Expression::Kind::kVariableReference:
             break;
         case Expression::Kind::kTernary: {
@@ -485,10 +501,6 @@ void CFGGenerator::addLValue(CFG& cfg, std::unique_ptr<Expression>* e) {
             SkASSERT(false);
             break;
     }
-}
-
-static bool is_true(Expression& expr) {
-    return expr.is<BoolLiteral>() && expr.as<BoolLiteral>().value();
 }
 
 void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
@@ -556,25 +568,6 @@ void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
             cfg.addExit(cfg.fCurrent, fLoopContinues.top());
             cfg.fCurrent = cfg.newIsolatedBlock();
             break;
-        case Statement::Kind::kWhile: {
-            WhileStatement& w = (*s)->as<WhileStatement>();
-            BlockId loopStart = cfg.newBlock();
-            fLoopContinues.push(loopStart);
-            BlockId loopExit = cfg.newIsolatedBlock();
-            fLoopExits.push(loopExit);
-            this->addExpression(cfg, &w.test(), /*constantPropagate=*/true);
-            BlockId test = cfg.fCurrent;
-            if (!is_true(*w.test())) {
-                cfg.addExit(test, loopExit);
-            }
-            cfg.newBlock();
-            this->addStatement(cfg, &w.statement());
-            cfg.addExit(cfg.fCurrent, loopStart);
-            fLoopContinues.pop();
-            fLoopExits.pop();
-            cfg.fCurrent = loopExit;
-            break;
-        }
         case Statement::Kind::kDo: {
             DoStatement& d = (*s)->as<DoStatement>();
             BlockId loopStart = cfg.newBlock();
@@ -617,6 +610,11 @@ void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
             if (f.next()) {
                 this->addExpression(cfg, &f.next(), /*constantPropagate=*/true);
             }
+            // The increment expression of a for loop is allowed to be unreachable, because GLSL
+            // ES2 requires us to provide an increment expression for our for-loops whether or not
+            // it can be reached. Reporting it as "unreachable" isn't helpful if the alternative
+            // is an invalid program.
+            cfg.currentBlock().fAllowUnreachable = true;
             cfg.addExit(cfg.fCurrent, loopStart);
             cfg.addExit(cfg.fCurrent, loopExit);
             fLoopContinues.pop();
@@ -657,9 +655,7 @@ void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
         case Statement::Kind::kNop:
             break;
         default:
-#ifdef SK_DEBUG
-            ABORT("unsupported statement: %s\n", (*s)->description().c_str());
-#endif
+            SkDEBUGFAILF("unsupported statement: %s\n", (*s)->description().c_str());
             break;
     }
 }
@@ -668,6 +664,8 @@ CFG CFGGenerator::getCFG(FunctionDefinition& f) {
     CFG result;
     result.fStart = result.newBlock();
     result.fCurrent = result.fStart;
+    // The starting block is "reached" implicitly, even if nothing points to it.
+    result.currentBlock().fAllowUnreachable = true;
     this->addStatement(result, &f.body());
     result.newBlock();
     result.fExit = result.fCurrent;

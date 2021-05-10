@@ -41,13 +41,8 @@ const base::TimeDelta kDefaultFetchPoliciesRequestTimeout =
     base::TimeDelta::FromMilliseconds(5000);
 
 // Path elements for the path where the policies are stored on disk.
-constexpr base::FilePath::CharType kGcpwPoliciesDirectory[] = L"Policies";
-constexpr base::FilePath::CharType kGcpwUserPolicyFileName[] =
-    L"PolicyFetchResponse";
-
-// Registry key where the the last time the policy is refreshed for the user is
-// stored.
-const wchar_t kLastUserPolicyRefreshTimeRegKey[] = L"last_policy_refresh_time";
+constexpr wchar_t kGcpwPoliciesDirectory[] = L"Policies";
+constexpr wchar_t kGcpwUserPolicyFileName[] = L"PolicyFetchResponse";
 
 // Maximum number of retries if a HTTP call to the backend fails.
 constexpr unsigned int kMaxNumHttpRetries = 1;
@@ -59,68 +54,21 @@ const wchar_t kCloudPoliciesEnabledRegKey[] = L"cloud_policies_enabled";
 // policies.
 const char kPolicyFetchResponseKeyName[] = "policies";
 
+// The period of refreshing cloud policies.
+const base::TimeDelta kCloudPoliciesExecutionPeriod =
+    base::TimeDelta::FromHours(1);
+
 // True when cloud policies feature is enabled.
 bool g_cloud_policies_enabled = false;
 
-// Get the path to the directory where the policies will be stored for the user
-// with |sid|.
-base::FilePath GetUserPolicyDirectoryFilePath(const base::string16& sid) {
-  base::FilePath path;
-  if (!base::PathService::Get(base::DIR_COMMON_APP_DATA, &path)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "PathService::Get(DIR_COMMON_APP_DATA) hr=" << putHR(hr);
-    return base::FilePath();
-  }
-  path = path.Append(GetInstallParentDirectoryName())
-             .Append(kCredentialProviderFolder)
-             .Append(kGcpwPoliciesDirectory)
-             .Append(sid);
-  return path;
-}
-
-std::unique_ptr<base::File> GetOpenedPolicyFileForUser(
-    const base::string16& sid,
-    uint32_t open_flags) {
-  base::FilePath policy_dir = GetUserPolicyDirectoryFilePath(sid);
-  if (!base::DirectoryExists(policy_dir)) {
-    base::File::Error error;
-    if (!CreateDirectoryAndGetError(policy_dir, &error)) {
-      LOGFN(ERROR) << "Policy data directory could not be created for " << sid
-                   << " Error: " << error;
-      return nullptr;
-    }
-  }
-
-  base::FilePath policy_file_path = policy_dir.Append(kGcpwUserPolicyFileName);
-  std::unique_ptr<base::File> policy_file(
-      new base::File(policy_file_path, open_flags));
-
-  if (!policy_file->IsValid()) {
-    LOGFN(ERROR) << "Error opening policy file for user " << sid
-                 << " with flags " << open_flags
-                 << " Error: " << policy_file->error_details();
-    return nullptr;
-  }
-
-  base::File::Error lock_error =
-      policy_file->Lock(base::File::LockMode::kExclusive);
-  if (lock_error != base::File::FILE_OK) {
-    LOGFN(ERROR) << "Failed to obtain exclusive lock on policy file! Error: "
-                 << lock_error;
-    return nullptr;
-  }
-
-  return policy_file;
-}
-
 // Creates the URL used to fetch the policies from the backend based on the
 // credential present (OAuth vs DM token) for authentication.
-GURL GetFetchUserPoliciesUrl(const base::string16& sid,
+GURL GetFetchUserPoliciesUrl(const std::wstring& sid,
                              bool has_access_token,
-                             const base::string16& device_resource_id,
-                             const base::string16& dm_token) {
+                             const std::wstring& device_resource_id,
+                             const std::wstring& dm_token) {
   GURL gcpw_service_url = GetGcpwServiceUrl();
-  base::string16 user_id;
+  std::wstring user_id;
 
   HRESULT status = GetIdFromSid(sid.c_str(), &user_id);
   if (FAILED(status)) {
@@ -131,7 +79,7 @@ GURL GetFetchUserPoliciesUrl(const base::string16& sid,
   std::string user_policies_path(kGcpwServiceFetchUserPoliciesPath);
   std::string placeholder(kUserIdUrlPlaceholder);
   user_policies_path.replace(user_policies_path.find(placeholder),
-                             placeholder.size(), base::UTF16ToUTF8(user_id));
+                             placeholder.size(), base::WideToUTF8(user_id));
 
   if (!has_access_token) {
     if (device_resource_id.empty() || dm_token.empty()) {
@@ -141,9 +89,8 @@ GURL GetFetchUserPoliciesUrl(const base::string16& sid,
       return GURL();
     }
 
-    std::string device_resource_id_value =
-        base::UTF16ToUTF8(device_resource_id);
-    std::string dm_token_value = base::UTF16ToUTF8(dm_token);
+    std::string device_resource_id_value = base::WideToUTF8(device_resource_id);
+    std::string dm_token_value = base::WideToUTF8(dm_token);
     std::string query_suffix = base::StringPrintf(
         kGcpwServiceFetchUserPoliciesQueryTemplate,
         device_resource_id_value.c_str(), dm_token_value.c_str());
@@ -163,8 +110,12 @@ class UserPoliciesFetchTask : public extension::Task {
   }
 
   // ESA calls this to retrieve a configuration for the task execution. Return
-  // a default config for now.
-  extension::Config GetConfig() final { return extension::Config(); }
+  // the 1 hour period for the user policies fetch.
+  extension::Config GetConfig() final {
+    extension::Config config;
+    config.execution_period = kCloudPoliciesExecutionPeriod;
+    return config;
+  }
 
   // ESA calls this to set all the user-device contexts for the execution of the
   // task.
@@ -212,10 +163,8 @@ extension::TaskCreator UserPoliciesManager::GetFetchPoliciesTaskCreator() {
 }
 
 UserPoliciesManager::UserPoliciesManager() : fetch_status_(S_OK) {
-  std::string dm_token;
-  bool has_dm_token = SUCCEEDED(GetDmToken(&dm_token)) && !dm_token.empty();
-  g_cloud_policies_enabled = GetGlobalFlagOrDefault(kCloudPoliciesEnabledRegKey,
-                                                    has_dm_token ? 1 : 0) == 1;
+  g_cloud_policies_enabled =
+      GetGlobalFlagOrDefault(kCloudPoliciesEnabledRegKey, 1) == 1;
 }
 
 UserPoliciesManager::~UserPoliciesManager() = default;
@@ -225,14 +174,14 @@ bool UserPoliciesManager::CloudPoliciesEnabled() const {
 }
 
 GURL UserPoliciesManager::GetGcpwServiceUserPoliciesUrl(
-    const base::string16& sid) {
+    const std::wstring& sid) {
   return GetFetchUserPoliciesUrl(sid, true, L"", L"");
 }
 
 GURL UserPoliciesManager::GetGcpwServiceUserPoliciesUrl(
-    const base::string16& sid,
-    const base::string16& device_resource_id,
-    const base::string16& dm_token) {
+    const std::wstring& sid,
+    const std::wstring& device_resource_id,
+    const std::wstring& dm_token) {
   return GetFetchUserPoliciesUrl(sid, false, device_resource_id, dm_token);
 }
 
@@ -246,7 +195,7 @@ HRESULT UserPoliciesManager::FetchAndStoreCloudUserPolicies(
 }
 
 HRESULT UserPoliciesManager::FetchAndStoreCloudUserPolicies(
-    const base::string16& sid,
+    const std::wstring& sid,
     const std::string& access_token) {
   if (access_token.empty()) {
     LOGFN(ERROR) << "Access token not specified";
@@ -258,7 +207,7 @@ HRESULT UserPoliciesManager::FetchAndStoreCloudUserPolicies(
 }
 
 HRESULT UserPoliciesManager::FetchAndStorePolicies(
-    const base::string16& sid,
+    const std::wstring& sid,
     GURL user_policies_url,
     const std::string& access_token) {
   fetch_status_ = E_FAIL;
@@ -294,8 +243,8 @@ HRESULT UserPoliciesManager::FetchAndStorePolicies(
   uint32_t open_flags = base::File::FLAG_CREATE_ALWAYS |
                         base::File::FLAG_WRITE |
                         base::File::FLAG_EXCLUSIVE_WRITE;
-  std::unique_ptr<base::File> policy_file =
-      GetOpenedPolicyFileForUser(sid, open_flags);
+  std::unique_ptr<base::File> policy_file = GetOpenedFileForUser(
+      sid, open_flags, kGcpwPoliciesDirectory, kGcpwUserPolicyFileName);
   if (!policy_file) {
     return (fetch_status_ = E_FAIL);
   }
@@ -313,7 +262,7 @@ HRESULT UserPoliciesManager::FetchAndStorePolicies(
   }
 
   base::Time fetch_time = base::Time::Now();
-  base::string16 fetch_time_millis = base::NumberToString16(
+  std::wstring fetch_time_millis = base::NumberToWString(
       fetch_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
 
   // Store the fetch time so we know whether a refresh is needed.
@@ -322,35 +271,13 @@ HRESULT UserPoliciesManager::FetchAndStorePolicies(
   return (fetch_status_ = S_OK);
 }
 
-base::TimeDelta UserPoliciesManager::GetTimeDeltaSinceLastPolicyFetch(
-    const base::string16& sid) const {
-  wchar_t last_fetch_millis[512];
-  ULONG last_fetch_size = base::size(last_fetch_millis);
-  HRESULT hr = GetUserProperty(sid, kLastUserPolicyRefreshTimeRegKey,
-                               last_fetch_millis, &last_fetch_size);
-
-  if (FAILED(hr)) {
-    // The policy was never fetched before.
-    return base::TimeDelta::Max();
-  }
-
-  int64_t last_fetch_millis_int64;
-  base::StringToInt64(last_fetch_millis, &last_fetch_millis_int64);
-
-  int64_t time_delta_from_last_fetch_ms =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds() -
-      last_fetch_millis_int64;
-
-  return base::TimeDelta::FromMilliseconds(time_delta_from_last_fetch_ms);
-}
-
-bool UserPoliciesManager::GetUserPolicies(const base::string16& sid,
+bool UserPoliciesManager::GetUserPolicies(const std::wstring& sid,
                                           UserPolicies* user_policies) const {
   DCHECK(user_policies);
 
   uint32_t open_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  std::unique_ptr<base::File> policy_file =
-      GetOpenedPolicyFileForUser(sid, open_flags);
+  std::unique_ptr<base::File> policy_file = GetOpenedFileForUser(
+      sid, open_flags, kGcpwPoliciesDirectory, kGcpwUserPolicyFileName);
   if (!policy_file) {
     return false;
   }
@@ -381,13 +308,13 @@ bool UserPoliciesManager::GetUserPolicies(const base::string16& sid,
 }
 
 bool UserPoliciesManager::IsUserPolicyStaleOrMissing(
-    const base::string16& sid) const {
+    const std::wstring& sid) const {
   UserPolicies user_policies;
   if (!GetUserPolicies(sid, &user_policies)) {
     return true;
   }
 
-  if (GetTimeDeltaSinceLastPolicyFetch(sid) >
+  if (GetTimeDeltaSinceLastFetch(sid, kLastUserPolicyRefreshTimeRegKey) >
       kMaxTimeDeltaSinceLastUserPolicyRefresh) {
     return true;
   }

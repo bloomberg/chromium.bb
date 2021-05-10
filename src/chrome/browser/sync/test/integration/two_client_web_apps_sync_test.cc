@@ -6,8 +6,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -49,7 +50,7 @@ class TwoClientWebAppsSyncTest : public SyncTest {
 
     WebAppProvider::Get(profile)->install_manager().InstallWebAppFromInfo(
         std::make_unique<WebApplicationInfo>(info), ForInstallableSite::kYes,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&run_loop, &app_id](const AppId& new_app_id,
                                  InstallResultCode code) {
@@ -149,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsSyncTest, IsLocallyInstalled) {
   EXPECT_EQ(WebAppInstallObserver(GetProfile(1)).AwaitNextInstall(), app_id);
   bool is_locally_installed =
       GetRegistrar(GetProfile(1)).IsLocallyInstalled(app_id);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_TRUE(is_locally_installed);
 #else
   EXPECT_FALSE(is_locally_installed);

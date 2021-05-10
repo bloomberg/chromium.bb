@@ -92,30 +92,37 @@ class PLATFORM_EXPORT CanvasResourceProvider
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize& size,
       SkFilterQuality filter_quality,
-      const CanvasColorParams& color_params,
+      const CanvasResourceParams& params,
       ShouldInitialize initialize_provider);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedBitmapProvider(
       const IntSize& size,
       SkFilterQuality filter_quality,
-      const CanvasColorParams& color_params,
+      const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<CanvasResourceDispatcher>);
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize& size,
       SkFilterQuality filter_quality,
-      const CanvasColorParams& color_params,
+      const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       RasterMode raster_mode,
       bool is_origin_top_left,
       uint32_t shared_image_usage_flags);
 
+  static std::unique_ptr<CanvasResourceProvider> CreateWebGPUImageProvider(
+      const IntSize& size,
+      SkFilterQuality filter_quality,
+      const CanvasResourceParams& params,
+      ShouldInitialize initialize_provider,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
+
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
       const IntSize& size,
       SkFilterQuality filter_quality,
-      const CanvasColorParams& color_params,
+      const CanvasResourceParams& params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left);
@@ -123,7 +130,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   static std::unique_ptr<CanvasResourceProvider> CreateSwapChainProvider(
       const IntSize& size,
       SkFilterQuality filter_quality,
-      const CanvasColorParams& color_params,
+      const CanvasResourceParams& params,
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceDispatcher>,
@@ -142,8 +149,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void OnContextDestroyed() override;
 
   cc::PaintCanvas* Canvas();
+  void ReleaseLockedImages();
   sk_sp<cc::PaintRecord> FlushCanvas();
-  const CanvasColorParams& ColorParams() const { return color_params_; }
+  const CanvasResourceParams& ColorParams() const { return params_; }
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
   const IntSize& Size() const { return size_; }
   bool IsOriginTopLeft() const { return is_origin_top_left_; }
@@ -251,7 +259,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   CanvasResourceProvider(const ResourceProviderType&,
                          const IntSize&,
                          SkFilterQuality,
-                         const CanvasColorParams&,
+                         const CanvasResourceParams&,
                          bool is_origin_top_left,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
                          base::WeakPtr<CanvasResourceDispatcher>);
@@ -265,6 +273,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual void RasterRecord(sk_sp<cc::PaintRecord>);
   CanvasImageProvider* GetOrCreateCanvasImageProvider();
   void TearDownSkSurface();
+
+  // Will only notify a will draw if its needed. This is initially done for the
+  // CanvasResourceProviderSharedImage use case.
+  virtual void WillDrawIfNeeded() {}
 
   ResourceProviderType type_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
@@ -298,7 +310,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   const IntSize size_;
   SkFilterQuality filter_quality_;
-  const CanvasColorParams color_params_;
+  const CanvasResourceParams params_;
   const bool is_origin_top_left_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;

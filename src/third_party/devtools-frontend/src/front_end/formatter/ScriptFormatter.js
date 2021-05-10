@@ -68,7 +68,8 @@ FormatterInterface.locationToPosition = function(lineEndings, lineNumber, column
  * @return {!Array<number>}
  */
 FormatterInterface.positionToLocation = function(lineEndings, position) {
-  const lineNumber = lineEndings.upperBound(position - 1);
+  const lineNumber =
+      Platform.ArrayUtilities.upperBound(lineEndings, position - 1, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
   let columnNumber;
   if (!lineNumber) {
     columnNumber = position;
@@ -80,7 +81,6 @@ FormatterInterface.positionToLocation = function(lineEndings, position) {
 
 /**
  * @implements {FormatterInterface}
- * @unrestricted
  */
 export class ScriptFormatter {
   /**
@@ -123,7 +123,6 @@ export class ScriptFormatter {
 
 /**
  * @implements {FormatterInterface}
- * @unrestricted
  */
 class ScriptIdentityFormatter {
   /**
@@ -161,7 +160,6 @@ export class FormatterSourceMapping {
 
 /**
  * @implements {FormatterSourceMapping}
- * @unrestricted
  */
 class IdentityFormatterSourceMapping {
   /**
@@ -187,7 +185,6 @@ class IdentityFormatterSourceMapping {
 
 /**
  * @implements {FormatterSourceMapping}
- * @unrestricted
  */
 class FormatterSourceMappingImpl {
   /**
@@ -235,7 +232,8 @@ class FormatterSourceMappingImpl {
    * @return {number}
    */
   _convertPosition(positions1, positions2, position) {
-    const index = positions1.upperBound(position) - 1;
+    const index =
+        Platform.ArrayUtilities.upperBound(positions1, position, Platform.ArrayUtilities.DEFAULT_COMPARATOR) - 1;
     let convertedPosition = positions2[index] + position - positions1[index];
     if (index < positions2.length - 1 && convertedPosition > positions2[index + 1]) {
       convertedPosition = positions2[index + 1];

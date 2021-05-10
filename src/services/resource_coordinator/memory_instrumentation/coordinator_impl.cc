@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -87,11 +87,6 @@ CoordinatorImpl::~CoordinatorImpl() {
 // static
 CoordinatorImpl* CoordinatorImpl::GetInstance() {
   return g_coordinator_impl;
-}
-
-void CoordinatorImpl::BindController(
-    mojo::PendingReceiver<mojom::CoordinatorController> receiver) {
-  controller_receiver_.Bind(std::move(receiver));
 }
 
 void CoordinatorImpl::RegisterHeapProfiler(

@@ -12,6 +12,7 @@
 #include "src/heap/local-heap.h"
 #include "src/heap/marking.h"
 #include "src/heap/memory-chunk.h"
+#include "src/heap/parked-scope.h"
 
 namespace v8 {
 namespace internal {
@@ -60,7 +61,6 @@ void StressConcurrentAllocatorTask::RunInternal() {
 
 // static
 void StressConcurrentAllocatorTask::Schedule(Isolate* isolate) {
-  CHECK(FLAG_local_heaps && FLAG_concurrent_allocation);
   auto task = std::make_unique<StressConcurrentAllocatorTask>(isolate);
   const double kDelayInSeconds = 0.1;
   V8::GetCurrentPlatform()->CallDelayedOnWorkerThread(std::move(task),

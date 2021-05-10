@@ -126,6 +126,12 @@ class AccountReconcilor : public KeyedService,
   // Returns true if reconcilor is blocked.
   bool IsReconcileBlocked() const;
 
+ protected:
+  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error);
+  void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
+  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
+
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTest;
@@ -221,6 +227,8 @@ class AccountReconcilor : public KeyedService,
                            TableRowTestMergeSession);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestActiveDirectory,
                            TableRowTestMultilogin);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ReconcileAfterShutdown);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnlockAfterShutdown);
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
 
@@ -250,7 +258,7 @@ class AccountReconcilor : public KeyedService,
                        const std::vector<CoreAccountId>& chrome_accounts,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
-  void CalculateIfReconcileIsDone();
+  void CalculateIfMergeSessionReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
 
   // Returns the list of valid accounts from the TokenService.
@@ -282,11 +290,7 @@ class AccountReconcilor : public KeyedService,
       const CoreAccountId& primary_account,
       const std::vector<CoreAccountId>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
-
-  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
-                                     const GoogleServiceAuthError& error);
-  void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
-  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
+  void CalculateIfMultiloginReconcileIsDone();
 
   // Lock related methods.
   void IncrementLockCount();
@@ -308,6 +312,9 @@ class AccountReconcilor : public KeyedService,
 
   // Sets the reconcilor state and calls Observer::OnStateChanged() if needed.
   void SetState(signin_metrics::AccountReconcilorState state);
+
+  // Returns whether Shutdown() was called.
+  bool WasShutDown() const;
 
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
@@ -372,6 +379,9 @@ class AccountReconcilor : public KeyedService,
   int synced_data_deletion_in_progress_count_ = 0;
 
   signin_metrics::AccountReconcilorState state_;
+
+  // Set to true when Shutdown() is called.
+  bool was_shut_down_ = false;
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_{this};
 

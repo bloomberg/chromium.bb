@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.ui.native_page.NativePage.NativePageType;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
@@ -88,9 +89,9 @@ public class NativePageFactory {
             return new NewTabPage(mActivity, mActivity.getBrowserControlsManager(),
                     mActivity.getActivityTabProvider(), mActivity.getSnackbarManager(),
                     mActivity.getLifecycleDispatcher(), mActivity.getTabModelSelector(),
-                    mActivity.isTablet(), mUma.get(),
-                    mActivity.getNightModeStateProvider().isInNightMode(), nativePageHost, tab,
-                    mBottomSheetController);
+                    mActivity.isTablet(), mUma.get(), ColorUtils.inNightMode(mActivity),
+                    nativePageHost, tab, mBottomSheetController,
+                    mActivity.getShareDelegateSupplier(), mActivity.getWindowAndroid());
         }
 
         protected NativePage buildBookmarksPage(Tab tab) {
@@ -99,21 +100,32 @@ public class NativePageFactory {
         }
 
         protected NativePage buildDownloadsPage(Tab tab) {
-            return new DownloadPage(mActivity, new TabShim(tab, mActivity));
+            // For preloaded tabs, the tab model might not be initialized yet. Use tab to figure
+            // out if it is a regular profile.
+            Profile profile = tab.isIncognito() ? mActivity.getCurrentTabModel().getProfile()
+                                                : Profile.getLastUsedRegularProfile();
+            return new DownloadPage(
+                    mActivity, profile.getOTRProfileID(), new TabShim(tab, mActivity));
         }
 
         protected NativePage buildExploreSitesPage(Tab tab) {
-            return new ExploreSitesPage(mActivity, new TabShim(tab, mActivity), tab);
+            return new ExploreSitesPage(
+                    mActivity, new TabShim(tab, mActivity), tab, mActivity.getTabModelSelector());
         }
 
         protected NativePage buildHistoryPage(Tab tab) {
-            return new HistoryPage(mActivity, new TabShim(tab, mActivity));
+            return new HistoryPage(mActivity, new TabShim(tab, mActivity),
+                    mActivity.getSnackbarManager(),
+                    mActivity.getTabModelSelector().isIncognitoSelected(),
+                    /* TabCreatorManager */ mActivity, mActivity.getActivityTabProvider());
         }
 
         protected NativePage buildRecentTabsPage(Tab tab) {
             RecentTabsManager recentTabsManager = new RecentTabsManager(tab,
                     Profile.fromWebContents(tab.getWebContents()), mActivity,
-                    () -> HistoryManagerUtils.showHistoryManager(mActivity, tab));
+                    ()
+                            -> HistoryManagerUtils.showHistoryManager(mActivity, tab,
+                                    mActivity.getTabModelSelector().isIncognitoSelected()));
             return new RecentTabsPage(mActivity, recentTabsManager, new TabShim(tab, mActivity));
         }
     }
@@ -169,18 +181,6 @@ public class NativePageFactory {
         return page;
     }
 
-    /**
-     * Returns whether the URL would navigate to a native page.
-     * TODO(crbug.com/1127732): Use NativePage.isNativePageUrl directly.
-     * @param url The URL to be checked.
-     * @param isIncognito Whether the page will be displayed in incognito mode.
-     * @return Whether the host and the scheme of the passed in URL matches one of the supported
-     *         native pages.
-     */
-    public static boolean isNativePageUrl(String url, boolean isIncognito) {
-        return NativePage.isNativePageUrl(url, isIncognito);
-    }
-
     @VisibleForTesting
     void setNativePageBuilderForTesting(NativePageBuilder builder) {
         mNativePageBuilder = builder;
@@ -228,5 +228,10 @@ public class NativePageFactory {
         public DestroyableObservableSupplier<Rect> createDefaultMarginSupplier() {
             return new BrowserControlsMarginSupplier(mBrowserControlsStateProvider);
         }
+    }
+
+    /** Destroy and unhook objects at destruction. */
+    public void destroy() {
+        if (mNewTabPageUma != null) mNewTabPageUma.destroy();
     }
 }

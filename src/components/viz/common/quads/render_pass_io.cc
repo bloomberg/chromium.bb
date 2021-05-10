@@ -385,7 +385,7 @@ std::string PaintFilterToString(const sk_sp<cc::PaintFilter>& filter) {
   // and serialization of PaintRecords.
   cc::PaintOp::SerializeOptions options(nullptr, nullptr, nullptr, nullptr,
                                         nullptr, nullptr, false, false, 0,
-                                        SkMatrix::I());
+                                        SkM44());
   cc::PaintOpWriter writer(buffer.data(), buffer.size(), options,
                            true /* enable_security_constraints */);
   writer.Write(filter.get());
@@ -455,7 +455,8 @@ base::Value FilterOperationToDict(const cc::FilterOperation& filter) {
       dict.SetIntKey("zoom_inset", filter.zoom_inset());
       break;
     case cc::FilterOperation::BLUR:
-      dict.SetIntKey("blur_tile_mode", filter.blur_tile_mode());
+      dict.SetIntKey("blur_tile_mode",
+                     static_cast<int>(filter.blur_tile_mode()));
       break;
     default:
       break;
@@ -536,7 +537,7 @@ bool FilterOperationFromDict(const base::Value& dict,
       if (!blur_tile_mode)
         return false;
       filter.set_blur_tile_mode(
-          static_cast<SkBlurImageFilter::TileMode>(blur_tile_mode.value()));
+          static_cast<SkTileMode>(blur_tile_mode.value()));
       break;
     default:
       break;
@@ -850,7 +851,7 @@ base::Value DrawQuadResourcesToList(const DrawQuad::Resources& resources) {
   base::Value list(base::Value::Type::LIST);
   DCHECK_LE(resources.count, DrawQuad::Resources::kMaxResourceIdCount);
   for (ResourceId id : resources)
-    list.Append(static_cast<int>(id));
+    list.Append(static_cast<int>(id.GetUnsafeValue()));
   return list;
 }
 
@@ -873,7 +874,7 @@ bool DrawQuadResourcesFromList(const base::Value& list,
 
   resources->count = static_cast<uint32_t>(size);
   for (size_t ii = 0; ii < size; ++ii) {
-    resources->ids[ii] = static_cast<ResourceId>(list.GetList()[ii].GetInt());
+    resources->ids[ii] = ResourceId(list.GetList()[ii].GetInt());
   }
   return true;
 }
@@ -1060,8 +1061,8 @@ void CompositorRenderPassDrawQuadToDict(
                      draw_quad->backdrop_filter_quality);
   dict->SetBoolKey("force_anti_aliasing_off",
                    draw_quad->force_anti_aliasing_off);
-  dict->SetBoolKey("can_use_backdrop_filter_cache",
-                   draw_quad->can_use_backdrop_filter_cache);
+  dict->SetBoolKey("intersects_damage_under",
+                   draw_quad->intersects_damage_under);
   DCHECK_GE(1u, draw_quad->resources.count);
 }
 
@@ -1233,8 +1234,8 @@ bool CompositorRenderPassDrawQuadFromDict(
       dict.FindDoubleKey("backdrop_filter_quality");
   base::Optional<bool> force_anti_aliasing_off =
       dict.FindBoolKey("force_anti_aliasing_off");
-  base::Optional<bool> can_use_backdrop_filter_cache =
-      dict.FindBoolKey("can_use_backdrop_filter_cache");
+  base::Optional<bool> intersects_damage_under =
+      dict.FindBoolKey("intersects_damage_under");
 
   if (!render_pass_id || !mask_uv_rect || !mask_texture_size ||
       !filters_scale || !filters_origin || !tex_coord_rect ||
@@ -1256,7 +1257,7 @@ bool CompositorRenderPassDrawQuadFromDict(
   }
   CompositorRenderPassId t_render_pass_id{render_pass_id_as_int};
 
-  ResourceId mask_resource_id = 0u;
+  ResourceId mask_resource_id = kInvalidResourceId;
   if (common.resources.count == 1u) {
     const size_t kIndex = CompositorRenderPassDrawQuad::kMaskResourceIdIndex;
     mask_resource_id = common.resources.ids[kIndex];
@@ -1266,8 +1267,7 @@ bool CompositorRenderPassDrawQuadFromDict(
       common.needs_blending, t_render_pass_id, mask_resource_id, t_mask_uv_rect,
       t_mask_texture_size, t_filters_scale, t_filters_origin, t_tex_coord_rect,
       force_anti_aliasing_off.value(), backdrop_filter_quality.value(),
-      can_use_backdrop_filter_cache ? can_use_backdrop_filter_cache.value()
-                                    : false);
+      intersects_damage_under ? intersects_damage_under.value() : false);
   return true;
 }
 

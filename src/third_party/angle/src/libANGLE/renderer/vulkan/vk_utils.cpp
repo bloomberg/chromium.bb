@@ -437,8 +437,8 @@ angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUs
     VkMemoryPropertyFlags requiredFlags =
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-    RendererVk *renderer           = context->getRenderer();
-    const vk::Allocator &allocator = renderer->getAllocator();
+    RendererVk *renderer       = context->getRenderer();
+    const Allocator &allocator = renderer->getAllocator();
 
     uint32_t memoryTypeIndex = 0;
     ANGLE_VK_TRY(context,
@@ -451,8 +451,8 @@ angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUs
     // invalid values ensures our testing doesn't assume zero-initialized memory.
     if (renderer->getFeatures().allocateNonZeroMemory.enabled)
     {
-        ANGLE_TRY(vk::InitMappableAllocation(context, allocator, &mAllocation, size,
-                                             kNonZeroInitValue, requiredFlags));
+        ANGLE_TRY(InitMappableAllocation(context, allocator, &mAllocation, size, kNonZeroInitValue,
+                                         requiredFlags));
     }
 
     return angle::Result::Continue;
@@ -466,18 +466,18 @@ void StagingBuffer::release(ContextVk *contextVk)
 
 void StagingBuffer::collectGarbage(RendererVk *renderer, Serial serial)
 {
-    vk::GarbageList garbageList;
-    garbageList.emplace_back(vk::GetGarbage(&mBuffer));
-    garbageList.emplace_back(vk::GetGarbage(&mAllocation));
+    GarbageList garbageList;
+    garbageList.emplace_back(GetGarbage(&mBuffer));
+    garbageList.emplace_back(GetGarbage(&mAllocation));
 
-    vk::SharedResourceUse sharedUse;
+    SharedResourceUse sharedUse;
     sharedUse.init();
     sharedUse.updateSerialOneOff(serial);
     renderer->collectGarbage(std::move(sharedUse), std::move(garbageList));
 }
 
 angle::Result InitMappableAllocation(Context *context,
-                                     const vk::Allocator &allocator,
+                                     const Allocator &allocator,
                                      Allocation *allocation,
                                      VkDeviceSize size,
                                      int value,
@@ -524,7 +524,7 @@ angle::Result InitMappableDeviceMemory(Context *context,
     return angle::Result::Continue;
 }
 
-angle::Result AllocateBufferMemory(vk::Context *context,
+angle::Result AllocateBufferMemory(Context *context,
                                    VkMemoryPropertyFlags requestedMemoryPropertyFlags,
                                    VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                    const void *extraAllocationInfo,
@@ -537,7 +537,7 @@ angle::Result AllocateBufferMemory(vk::Context *context,
                                        deviceMemoryOut, sizeOut);
 }
 
-angle::Result AllocateImageMemory(vk::Context *context,
+angle::Result AllocateImageMemory(Context *context,
                                   VkMemoryPropertyFlags memoryPropertyFlags,
                                   VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                   const void *extraAllocationInfo,
@@ -549,7 +549,7 @@ angle::Result AllocateImageMemory(vk::Context *context,
                                        extraAllocationInfo, image, deviceMemoryOut, sizeOut);
 }
 
-angle::Result AllocateImageMemoryWithRequirements(vk::Context *context,
+angle::Result AllocateImageMemoryWithRequirements(Context *context,
                                                   VkMemoryPropertyFlags memoryPropertyFlags,
                                                   const VkMemoryRequirements &memoryRequirements,
                                                   const void *extraAllocationInfo,
@@ -559,6 +559,19 @@ angle::Result AllocateImageMemoryWithRequirements(vk::Context *context,
     VkMemoryPropertyFlags memoryPropertyFlagsOut = 0;
     return AllocateAndBindBufferOrImageMemory(context, memoryPropertyFlags, &memoryPropertyFlagsOut,
                                               memoryRequirements, extraAllocationInfo, image,
+                                              deviceMemoryOut);
+}
+
+angle::Result AllocateBufferMemoryWithRequirements(Context *context,
+                                                   VkMemoryPropertyFlags memoryPropertyFlags,
+                                                   const VkMemoryRequirements &memoryRequirements,
+                                                   const void *extraAllocationInfo,
+                                                   Buffer *buffer,
+                                                   VkMemoryPropertyFlags *memoryPropertyFlagsOut,
+                                                   DeviceMemory *deviceMemoryOut)
+{
+    return AllocateAndBindBufferOrImageMemory(context, memoryPropertyFlags, memoryPropertyFlagsOut,
+                                              memoryRequirements, extraAllocationInfo, buffer,
                                               deviceMemoryOut);
 }
 
@@ -784,7 +797,6 @@ uint32_t ResourceSerialFactory::issueSerial()
     }
 
 ANGLE_VK_SERIAL_OP(ANGLE_DEFINE_GEN_VK_SERIAL)
-
 }  // namespace vk
 
 #if !defined(ANGLE_SHARED_LIBVULKAN)
@@ -893,6 +905,7 @@ void InitGetPhysicalDeviceProperties2KHRFunctions(VkInstance instance)
 {
     GET_INSTANCE_FUNC(vkGetPhysicalDeviceProperties2KHR);
     GET_INSTANCE_FUNC(vkGetPhysicalDeviceFeatures2KHR);
+    GET_INSTANCE_FUNC(vkGetPhysicalDeviceMemoryProperties2KHR);
 }
 
 void InitTransformFeedbackEXTFunctions(VkDevice device)
@@ -950,6 +963,20 @@ void InitExternalMemoryHostFunctions(VkInstance instance)
     GET_INSTANCE_FUNC(vkGetMemoryHostPointerPropertiesEXT);
 }
 
+// VK_KHR_get_memory_requirements2
+void InitGetMemoryRequirements2KHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkGetBufferMemoryRequirements2KHR);
+    GET_DEVICE_FUNC(vkGetImageMemoryRequirements2KHR);
+}
+
+// VK_KHR_bind_memory2
+void InitBindMemory2KHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkBindBufferMemory2KHR);
+    GET_DEVICE_FUNC(vkBindImageMemory2KHR);
+}
+
 // VK_KHR_external_fence_capabilities
 void InitExternalFenceCapabilitiesFunctions(VkInstance instance)
 {
@@ -977,7 +1004,7 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance)
 GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, const vk::Format &format)
 {
     const bool formatSupportsLinearFiltering = contextVk->getRenderer()->hasImageFormatFeatureBits(
-        format.vkImageFormat, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+        format.actualImageFormatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
     const bool hintFastest = contextVk->getState().getGenerateMipmapHint() == GL_FASTEST;
 
     return formatSupportsLinearFiltering && !hintFastest ? GL_LINEAR : GL_NEAREST;
@@ -1079,6 +1106,16 @@ VkPrimitiveTopology GetPrimitiveTopology(gl::PrimitiveMode mode)
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         case gl::PrimitiveMode::LineLoop:
             return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+        case gl::PrimitiveMode::LinesAdjacency:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
+        case gl::PrimitiveMode::LineStripAdjacency:
+            return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
+        case gl::PrimitiveMode::TrianglesAdjacency:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
+        case gl::PrimitiveMode::TriangleStripAdjacency:
+            return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
+        case gl::PrimitiveMode::Patches:
+            return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
         default:
             UNREACHABLE();
             return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
@@ -1273,6 +1310,7 @@ void GetViewport(const gl::Rectangle &viewport,
                  float nearPlane,
                  float farPlane,
                  bool invertViewport,
+                 bool clipSpaceOriginUpperLeft,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut)
 {
@@ -1283,10 +1321,60 @@ void GetViewport(const gl::Rectangle &viewport,
     viewportOut->minDepth = gl::clamp01(nearPlane);
     viewportOut->maxDepth = gl::clamp01(farPlane);
 
-    if (invertViewport)
+    // Say an application intends to draw a primitive (shown as 'o' below), it can choose to use
+    // different clip space origin. When clip space origin (shown as 'C' below) is switched from
+    // lower-left to upper-left, primitives will be rendered with its y-coordinate flipped.
+
+    // Rendered content will differ based on whether it is a default framebuffer or a user defined
+    // framebuffer. We modify the viewport's 'y' and 'h' accordingly.
+
+    // clip space origin is lower-left
+    // Expected draw in GLES        default framebuffer    user defined framebuffer
+    // (0,H)                        (0,0)                  (0,0)
+    // +                            +-----------+  (W,0)   +-----------+ (W,0)
+    // |                            |                      |  C----+
+    // |                            |                      |  |    | (h)
+    // |  +----+                    |  +----+              |  | O  |
+    // |  | O  |                    |  | O  | (-h)         |  +----+
+    // |  |    |                    |  |    |              |
+    // |  C----+                    |  C----+              |
+    // +-----------+ (W,0)          +                      +
+    // (0,0)                        (0,H)                  (0,H)
+    //                              y' = H - h             y' = y
+
+    // clip space origin is upper-left
+    // Expected draw in GLES        default framebuffer     user defined framebuffer
+    // (0,H)                        (0,0)                  (0,0)
+    // +                            +-----------+  (W,0)   +-----------+ (W,0)
+    // |                            |                      |  +----+
+    // |                            |                      |  | O  | (-h)
+    // |  C----+                    |  C----+              |  |    |
+    // |  |    |                    |  |    | (h)          |  C----+
+    // |  | O  |                    |  | O  |              |
+    // |  +----+                    |  +----+              |
+    // +-----------+  (W,0)         +                      +
+    // (0,0)                        (0,H)                  (0,H)
+    //                              y' = H - (y + h)       y' = y + H
+
+    if (clipSpaceOriginUpperLeft)
     {
-        viewportOut->y      = static_cast<float>(renderAreaHeight - viewport.y);
-        viewportOut->height = -viewportOut->height;
+        if (invertViewport)
+        {
+            viewportOut->y = static_cast<float>(renderAreaHeight - (viewport.height + viewport.y));
+        }
+        else
+        {
+            viewportOut->y      = static_cast<float>(viewport.height + viewport.y);
+            viewportOut->height = -viewportOut->height;
+        }
+    }
+    else
+    {
+        if (invertViewport)
+        {
+            viewportOut->y      = static_cast<float>(renderAreaHeight - viewport.y);
+            viewportOut->height = -viewportOut->height;
+        }
     }
 }
 

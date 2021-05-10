@@ -28,7 +28,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-namespace syncer {
+namespace invalidation {
 
 namespace {
 
@@ -198,7 +198,8 @@ PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionEntry(
       type(type),
       request_backoff_(&kBackoffPolicy) {}
 
-PerUserTopicSubscriptionManager::SubscriptionEntry::~SubscriptionEntry() {}
+PerUserTopicSubscriptionManager::SubscriptionEntry::~SubscriptionEntry() =
+    default;
 
 void PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionFinished(
     const Status& code,
@@ -207,7 +208,7 @@ void PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionFinished(
 }
 
 PerUserTopicSubscriptionManager::PerUserTopicSubscriptionManager(
-    invalidation::IdentityProvider* identity_provider,
+    IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const std::string& project_id,
@@ -219,12 +220,12 @@ PerUserTopicSubscriptionManager::PerUserTopicSubscriptionManager(
       migrate_prefs_(migrate_prefs),
       request_access_token_backoff_(&kBackoffPolicy) {}
 
-PerUserTopicSubscriptionManager::~PerUserTopicSubscriptionManager() {}
+PerUserTopicSubscriptionManager::~PerUserTopicSubscriptionManager() = default;
 
 // static
 std::unique_ptr<PerUserTopicSubscriptionManager>
 PerUserTopicSubscriptionManager::Create(
-    invalidation::IdentityProvider* identity_provider,
+    IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const std::string& project_id,
@@ -635,4 +636,4 @@ PerUserTopicSubscriptionManager::LookupSubscribedPublicTopicByPrivateTopic(
   return it->second;
 }
 
-}  // namespace syncer
+}  // namespace invalidation

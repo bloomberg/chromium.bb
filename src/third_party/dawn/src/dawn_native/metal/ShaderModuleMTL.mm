@@ -22,15 +22,24 @@
 
 #include <spirv_msl.hpp>
 
+#ifdef DAWN_ENABLE_WGSL
+// Tint include must be after spirv_msl.hpp, because spirv-cross has its own
+// version of spirv_headers. We also need to undef SPV_REVISION because SPIRV-Cross
+// is at 3 while spirv-headers is at 4.
+#    undef SPV_REVISION
+#    include <tint/tint.h>
+#endif  // DAWN_ENABLE_WGSL
+
 #include <sstream>
 
 namespace dawn_native { namespace metal {
 
     // static
     ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
-                                                      const ShaderModuleDescriptor* descriptor) {
+                                                      const ShaderModuleDescriptor* descriptor,
+                                                      ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
-        DAWN_TRY(module->Initialize());
+        DAWN_TRY(module->Initialize(parseResult));
         return module.Detach();
     }
 
@@ -38,30 +47,93 @@ namespace dawn_native { namespace metal {
         : ShaderModuleBase(device, descriptor) {
     }
 
-    MaybeError ShaderModule::Initialize() {
-        return InitializeBase();
+    MaybeError ShaderModule::Initialize(ShaderModuleParseResult* parseResult) {
+        DAWN_TRY(InitializeBase(parseResult));
+#ifdef DAWN_ENABLE_WGSL
+        mTintProgram = std::move(parseResult->tintProgram);
+#endif
+        return {};
     }
 
-    MaybeError ShaderModule::CreateFunction(const char* entryPointName,
-                                            SingleShaderStage stage,
-                                            const PipelineLayout* layout,
-                                            ShaderModule::MetalFunctionData* out,
-                                            uint32_t sampleMask,
-                                            const RenderPipeline* renderPipeline) {
-        ASSERT(!IsError());
-        ASSERT(out);
+    ResultOrError<std::string> ShaderModule::TranslateToMSLWithTint(
+        const char* entryPointName,
+        SingleShaderStage stage,
+        const PipelineLayout* layout,
+        // TODO(crbug.com/tint/387): AND in a fixed sample mask in the shader.
+        uint32_t sampleMask,
+        const RenderPipeline* renderPipeline,
+        std::string* remappedEntryPointName,
+        bool* needsStorageBufferLength) {
+#if DAWN_ENABLE_WGSL
+        // TODO(crbug.com/tint/256): Set this accordingly if arrayLength(..) is used.
+        *needsStorageBufferLength = false;
+
+        std::ostringstream errorStream;
+        errorStream << "Tint MSL failure:" << std::endl;
+
+        tint::transform::Manager transformManager;
+        if (stage == SingleShaderStage::Vertex &&
+            GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling)) {
+            transformManager.append(
+                MakeVertexPullingTransform(*renderPipeline->GetVertexStateDescriptor(),
+                                           entryPointName, kPullingBufferBindingSet));
+
+            for (VertexBufferSlot slot :
+                 IterateBitSet(renderPipeline->GetVertexBufferSlotsUsed())) {
+                uint32_t metalIndex = renderPipeline->GetMtlVertexBufferIndex(slot);
+                DAWN_UNUSED(metalIndex);
+                // TODO(crbug.com/tint/104): Tell Tint to map (kPullingBufferBindingSet, slot) to
+                // this MSL buffer index.
+            }
+        }
+        transformManager.append(std::make_unique<tint::transform::BoundArrayAccessors>());
+
+        tint::Program program;
+        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, mTintProgram.get()));
+
+        ASSERT(remappedEntryPointName != nullptr);
+        tint::inspector::Inspector inspector(&program);
+        *remappedEntryPointName = inspector.GetRemappedNameForEntryPoint(entryPointName);
+
+        tint::writer::msl::Generator generator(&program);
+        if (!generator.Generate()) {
+            errorStream << "Generator: " << generator.error() << std::endl;
+            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+        }
+
+        std::string msl = generator.result();
+        return std::move(msl);
+#else
+        UNREACHABLE();
+#endif
+    }
+
+    ResultOrError<std::string> ShaderModule::TranslateToMSLWithSPIRVCross(
+        const char* entryPointName,
+        SingleShaderStage stage,
+        const PipelineLayout* layout,
+        uint32_t sampleMask,
+        const RenderPipeline* renderPipeline,
+        std::string* remappedEntryPointName,
+        bool* needsStorageBufferLength) {
         const std::vector<uint32_t>* spirv = &GetSpirv();
         spv::ExecutionModel executionModel = ShaderStageToExecutionModel(stage);
 
 #ifdef DAWN_ENABLE_WGSL
-        // Use set 4 since it is bigger than what users can access currently
-        static const uint32_t kPullingBufferBindingSet = 4;
         std::vector<uint32_t> pullingSpirv;
         if (GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling) &&
             stage == SingleShaderStage::Vertex) {
-            DAWN_TRY_ASSIGN(pullingSpirv,
-                            GeneratePullingSpirv(*renderPipeline->GetVertexStateDescriptor(),
-                                                 entryPointName, kPullingBufferBindingSet));
+            if (mTintProgram) {
+                DAWN_TRY_ASSIGN(pullingSpirv,
+                                GeneratePullingSpirv(mTintProgram.get(),
+                                                     *renderPipeline->GetVertexStateDescriptor(),
+                                                     entryPointName, kPullingBufferBindingSet));
+            } else {
+                DAWN_TRY_ASSIGN(
+                    pullingSpirv,
+                    GeneratePullingSpirv(GetSpirv(), *renderPipeline->GetVertexStateDescriptor(),
+                                         entryPointName, kPullingBufferBindingSet));
+            }
             spirv = &pullingSpirv;
         }
 #endif
@@ -131,7 +203,7 @@ namespace dawn_native { namespace metal {
                 spirv_cross::MSLResourceBinding mslBinding;
 
                 mslBinding.stage = spv::ExecutionModelVertex;
-                mslBinding.desc_set = kPullingBufferBindingSet;
+                mslBinding.desc_set = static_cast<uint32_t>(kPullingBufferBindingSet);
                 mslBinding.binding = static_cast<uint8_t>(slot);
                 mslBinding.msl_buffer = metalIndex;
                 compiler.add_msl_resource_binding(mslBinding);
@@ -139,47 +211,68 @@ namespace dawn_native { namespace metal {
         }
 #endif
 
-        {
-            // SPIRV-Cross also supports re-ordering attributes but it seems to do the correct thing
-            // by default.
-            NSString* mslSource;
-            std::string msl = compiler.compile();
+        // SPIRV-Cross also supports re-ordering attributes but it seems to do the correct thing
+        // by default.
+        std::string msl = compiler.compile();
 
-            // Some entry point names are forbidden in MSL so SPIRV-Cross modifies them. Query the
-            // modified entryPointName from it.
-            const std::string& modifiedEntryPointName =
-                compiler.get_entry_point(entryPointName, executionModel).name;
+        // Some entry point names are forbidden in MSL so SPIRV-Cross modifies them. Query the
+        // modified entryPointName from it.
+        *remappedEntryPointName = compiler.get_entry_point(entryPointName, executionModel).name;
+        *needsStorageBufferLength = compiler.needs_buffer_size_buffer();
 
-            // Metal uses Clang to compile the shader as C++14. Disable everything in the -Wall
-            // category. -Wunused-variable in particular comes up a lot in generated code, and some
-            // (old?) Metal drivers accidentally treat it as a MTLLibraryErrorCompileError instead
-            // of a warning.
-            msl = R"(\
+        return std::move(msl);
+    }
+
+    MaybeError ShaderModule::CreateFunction(const char* entryPointName,
+                                            SingleShaderStage stage,
+                                            const PipelineLayout* layout,
+                                            ShaderModule::MetalFunctionData* out,
+                                            uint32_t sampleMask,
+                                            const RenderPipeline* renderPipeline) {
+        ASSERT(!IsError());
+        ASSERT(out);
+
+        std::string remappedEntryPointName;
+        std::string msl;
+        if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
+            DAWN_TRY_ASSIGN(msl, TranslateToMSLWithTint(entryPointName, stage, layout, sampleMask,
+                                                        renderPipeline, &remappedEntryPointName,
+                                                        &out->needsStorageBufferLength));
+        } else {
+            DAWN_TRY_ASSIGN(msl, TranslateToMSLWithSPIRVCross(
+                                     entryPointName, stage, layout, sampleMask, renderPipeline,
+                                     &remappedEntryPointName, &out->needsStorageBufferLength));
+        }
+
+        // Metal uses Clang to compile the shader as C++14. Disable everything in the -Wall
+        // category. -Wunused-variable in particular comes up a lot in generated code, and some
+        // (old?) Metal drivers accidentally treat it as a MTLLibraryErrorCompileError instead
+        // of a warning.
+        msl = R"(\
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wall"
 #endif
 )" + msl;
-            mslSource = [[NSString alloc] initWithUTF8String:msl.c_str()];
 
-            auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
-            NSError* error = nil;
-            id<MTLLibrary> library = [mtlDevice newLibraryWithSource:mslSource
-                                                             options:nil
-                                                               error:&error];
-            if (error != nil) {
-                if (error.code != MTLLibraryErrorCompileWarning) {
-                    const char* errorString = [error.localizedDescription UTF8String];
-                    return DAWN_VALIDATION_ERROR(std::string("Unable to create library object: ") +
-                                                 errorString);
-                }
+        NSRef<NSString> mslSource = AcquireNSRef([[NSString alloc] initWithUTF8String:msl.c_str()]);
+
+        auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
+        NSError* error = nullptr;
+        NSPRef<id<MTLLibrary>> library =
+            AcquireNSPRef([mtlDevice newLibraryWithSource:mslSource.Get()
+                                                  options:nullptr
+                                                    error:&error]);
+        if (error != nullptr) {
+            if (error.code != MTLLibraryErrorCompileWarning) {
+                const char* errorString = [error.localizedDescription UTF8String];
+                return DAWN_VALIDATION_ERROR(std::string("Unable to create library object: ") +
+                                             errorString);
             }
-
-            NSString* name = [[NSString alloc] initWithUTF8String:modifiedEntryPointName.c_str()];
-            out->function = [library newFunctionWithName:name];
-            [library release];
         }
 
-        out->needsStorageBufferLength = compiler.needs_buffer_size_buffer();
+        NSRef<NSString> name =
+            AcquireNSRef([[NSString alloc] initWithUTF8String:remappedEntryPointName.c_str()]);
+        out->function = AcquireNSPRef([*library newFunctionWithName:name.Get()]);
 
         if (GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling) &&
             GetEntryPoint(entryPointName).usedVertexAttributes.any()) {

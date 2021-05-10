@@ -92,12 +92,6 @@ CORE_EXPORT bool IsVisuallyEquivalentCandidate(const PositionInFlatTree&);
 // If true, adjacent candidates are visually distinct.
 CORE_EXPORT bool EndsOfNodeAreVisuallyDistinctPositions(const Node*);
 
-CORE_EXPORT PositionWithAffinity SnapBackward(const Position&);
-CORE_EXPORT PositionInFlatTreeWithAffinity
-SnapBackward(const PositionInFlatTree&);
-CORE_EXPORT PositionWithAffinity SnapForward(const Position&);
-CORE_EXPORT PositionInFlatTreeWithAffinity
-SnapForward(const PositionInFlatTree&);
 CORE_EXPORT Position CanonicalPositionOf(const Position&);
 CORE_EXPORT PositionInFlatTree CanonicalPositionOf(const PositionInFlatTree&);
 
@@ -125,34 +119,32 @@ CORE_EXPORT Position StartOfWordPosition(const Position&,
 CORE_EXPORT PositionInFlatTree
 StartOfWordPosition(const PositionInFlatTree&,
                     WordSide = kNextWordIfOnBoundary);
-CORE_EXPORT VisiblePosition EndOfWord(const VisiblePosition&,
-                                      WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT Position EndOfWordPosition(const Position&,
                                        WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
 EndOfWordPosition(const PositionInFlatTree&, WordSide = kNextWordIfOnBoundary);
-CORE_EXPORT VisiblePositionInFlatTree
-EndOfWord(const VisiblePositionInFlatTree&, WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionWithAffinity PreviousWordPosition(const Position&);
+CORE_EXPORT PositionInFlatTreeWithAffinity
+PreviousWordPosition(const PositionInFlatTree&);
 CORE_EXPORT PositionWithAffinity NextWordPosition(
     const Position&,
+    PlatformWordBehavior = PlatformWordBehavior::kWordDontSkipSpaces);
+CORE_EXPORT PositionInFlatTreeWithAffinity NextWordPosition(
+    const PositionInFlatTree&,
     PlatformWordBehavior = PlatformWordBehavior::kWordDontSkipSpaces);
 
 // sentences
 CORE_EXPORT Position StartOfSentencePosition(const Position&);
 CORE_EXPORT PositionInFlatTree
 StartOfSentencePosition(const PositionInFlatTree&);
-CORE_EXPORT VisiblePosition StartOfSentence(const VisiblePosition&);
-CORE_EXPORT VisiblePositionInFlatTree
-StartOfSentence(const VisiblePositionInFlatTree&);
 CORE_EXPORT PositionWithAffinity EndOfSentence(const Position&);
 CORE_EXPORT PositionInFlatTreeWithAffinity
 EndOfSentence(const PositionInFlatTree&);
 CORE_EXPORT VisiblePosition EndOfSentence(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfSentence(const VisiblePositionInFlatTree&);
-VisiblePosition PreviousSentencePosition(const VisiblePosition&);
-VisiblePosition NextSentencePosition(const VisiblePosition&);
+PositionInFlatTree PreviousSentencePosition(const PositionInFlatTree&);
+PositionInFlatTree NextSentencePosition(const PositionInFlatTree&);
 EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange&);
 EphemeralRange ExpandRangeToSentenceBoundary(const EphemeralRange&);
 
@@ -165,11 +157,6 @@ StartOfLine(const VisiblePositionInFlatTree&);
 CORE_EXPORT PositionWithAffinity StartOfLine(const PositionWithAffinity&);
 CORE_EXPORT PositionInFlatTreeWithAffinity
 StartOfLine(const PositionInFlatTreeWithAffinity&);
-// TODO(yosin) Return values of |VisiblePosition| version of |endOfLine()| with
-// shadow tree isn't defined well. We should not use it for shadow tree.
-CORE_EXPORT VisiblePosition EndOfLine(const VisiblePosition&);
-CORE_EXPORT VisiblePositionInFlatTree
-EndOfLine(const VisiblePositionInFlatTree&);
 CORE_EXPORT PositionWithAffinity EndOfLine(const PositionWithAffinity&);
 CORE_EXPORT PositionInFlatTreeWithAffinity
 EndOfLine(const PositionInFlatTreeWithAffinity&);
@@ -230,9 +217,8 @@ bool InSameParagraph(const VisiblePosition&,
 EphemeralRange ExpandToParagraphBoundary(const EphemeralRange&);
 
 // document
-CORE_EXPORT VisiblePosition StartOfDocument(const VisiblePosition&);
-CORE_EXPORT VisiblePositionInFlatTree
-StartOfDocument(const VisiblePositionInFlatTree&);
+CORE_EXPORT Position StartOfDocument(const Position&);
+CORE_EXPORT PositionInFlatTree StartOfDocument(const PositionInFlatTree&);
 CORE_EXPORT VisiblePosition EndOfDocument(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfDocument(const VisiblePositionInFlatTree&);
@@ -240,8 +226,8 @@ bool IsStartOfDocument(const VisiblePosition&);
 bool IsEndOfDocument(const VisiblePosition&);
 
 // editable content
-VisiblePosition StartOfEditableContent(const VisiblePosition&);
-VisiblePosition EndOfEditableContent(const VisiblePosition&);
+PositionInFlatTree StartOfEditableContent(const PositionInFlatTree&);
+PositionInFlatTree EndOfEditableContent(const PositionInFlatTree&);
 CORE_EXPORT bool IsEndOfEditableOrNonEditableContent(const VisiblePosition&);
 CORE_EXPORT bool IsEndOfEditableOrNonEditableContent(
     const VisiblePositionInFlatTree&);
@@ -283,24 +269,6 @@ PositionWithAffinity AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
 PositionInFlatTreeWithAffinity
 AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTreeWithAffinity&,
-    const PositionInFlatTree&);
-
-VisiblePosition AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePosition&,
-    const Position&);
-
-VisiblePositionInFlatTree AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePositionInFlatTree&,
-    const PositionInFlatTree&);
-
-// Export below functions only for |SelectionModifier|.
-VisiblePosition AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePosition&,
-    const Position&);
-
-VisiblePositionInFlatTree
-AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePositionInFlatTree&,
     const PositionInFlatTree&);
 
 }  // namespace blink

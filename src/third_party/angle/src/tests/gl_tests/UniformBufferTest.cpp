@@ -1520,6 +1520,8 @@ TEST_P(UniformBufferTest, SizeOverMaxBlockSize)
 {
     // Test crashes on Windows AMD OpenGL
     ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
+    // http://anglebug.com/5382
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
 
     ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFragmentShader);
 
@@ -1600,13 +1602,11 @@ TEST_P(UniformBufferTest, SizeOverMaxBlockSize)
 // Compile uniform buffer with large array member.
 TEST_P(UniformBufferTest, LargeArrayOfStructs)
 {
-    constexpr char kVertexShader[] = R"(#version 300 es
+    constexpr char kVertexShader[] = R"(
         struct InstancingData
         {
             mat4 transformation;
         };
-
-        #define MAX_INSTANCE_COUNT 800
 
         layout(std140) uniform InstanceBlock
         {
@@ -1626,7 +1626,13 @@ TEST_P(UniformBufferTest, LargeArrayOfStructs)
             outFragColor = vec4(0.0);
         })";
 
-    ANGLE_GL_PROGRAM(program, kVertexShader, kFragmentShader);
+    int maxUniformBlockSize;
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
+
+    std::string vs = "#version 300 es\n#define MAX_INSTANCE_COUNT " +
+                     std::to_string(std::min(800, maxUniformBlockSize / 64)) + kVertexShader;
+
+    ANGLE_GL_PROGRAM(program, vs.c_str(), kFragmentShader);
     // Add a draw call for the sake of the Vulkan backend that currently really builds shaders at
     // draw time.
     drawQuad(program.get(), essl3_shaders::PositionAttrib(), 0.5f);
@@ -3000,19 +3006,25 @@ TEST_P(UniformBlockWithOneLargeArrayMemberTest, MemberTypeIsFloat)
 // Test to transfer a uniform block large array member as an actual parameter to a function.
 TEST_P(UniformBlockWithOneLargeArrayMemberTest, MemberAsActualParameter)
 {
+    ANGLE_SKIP_TEST_IF(IsAdreno());
+
     constexpr char kVS[] = R"(#version 300 es
 layout(location=0) in vec3 a_position;
 
-uniform UBO{
-    mat4x4 buf[90];
+layout(std140) uniform UBO1{
+    mat4x4 buf1[90];
 } instance;
 
-vec4 test(mat4x4[90] para, vec3 pos){
-    return para[0] * vec4(pos, 1.0);
+layout(std140) uniform UBO2{
+    mat4x4 buf2[90];
+};
+
+vec4 test(mat4x4[90] para1, mat4x4[90] para2, vec3 pos){
+    return para1[0] * para2[0] * vec4(pos, 1.0);
 }
 
 void main(void){
-    gl_Position = test(instance.buf, a_position);
+    gl_Position = test(instance.buf1, buf2, a_position);
 })";
 
     constexpr char kFS[] = R"(#version 300 es
@@ -3037,15 +3049,15 @@ TEST_P(UniformBlockWithOneLargeArrayMemberTest, MemberArrayOperations)
     constexpr char kVS[] = R"(#version 300 es
 layout(location=0) in vec3 a_position;
 
-uniform UBO1{
+layout(std140) uniform UBO1{
     mat4x4 buf1[90];
 };
 
-uniform UBO2{
+layout(std140) uniform UBO2{
     mat4x4 buf2[90];
 };
 
-uniform UBO3{
+layout(std140) uniform UBO3{
     mat4x4 buf[90];
 } instance;
 
@@ -3082,6 +3094,51 @@ void main(void){
 })";
 
     ANGLE_GL_PROGRAM(program, kVS, kFS);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test to throw a warning if a uniform block with a large array member
+// fails to hit the optimization on D3D backend.
+TEST_P(UniformBlockWithOneLargeArrayMemberTest, ThrowPerfWarningInD3D)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+
+struct S1 {
+    vec2 a[2];
+};
+
+struct S2 {
+    mat2x4 b;
+};
+
+layout(std140, row_major) uniform UBO1{
+    mat3x2 buf1[128];
+};
+
+layout(std140, row_major) uniform UBO2{
+    mat4x3 buf2[128];
+} instance1;
+
+layout(std140, row_major) uniform UBO3{
+    S1 buf3[128];
+};
+
+layout(std140, row_major) uniform UBO4{
+    S2 buf4[128];
+} instance2[2];
+
+out vec4 my_FragColor;
+
+void main(void){
+    uvec2 coord = uvec2(floor(gl_FragCoord.xy));
+    uint x = coord.x % 64u;
+    uint y = coord.y;
+    my_FragColor = vec4(buf1[y]*instance1.buf2[y]*instance2[0].buf4[y].b*buf3[y].a[x], 0.0f, 1.0);
+
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
     EXPECT_GL_NO_ERROR();
 }
 

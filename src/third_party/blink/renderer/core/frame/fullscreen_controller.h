@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -73,7 +74,10 @@ class CORE_EXPORT FullscreenController {
 
   // Called by Fullscreen (via ChromeClient) to notify that the fullscreen
   // element has changed.
-  void FullscreenElementChanged(Element* old_element, Element* new_element);
+  void FullscreenElementChanged(Element* old_element,
+                                Element* new_element,
+                                const FullscreenOptions*,
+                                FullscreenRequestType request_type);
 
   bool IsFullscreenOrTransitioning() const { return state_ != State::kInitial; }
 

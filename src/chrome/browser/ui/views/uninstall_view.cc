@@ -18,10 +18,11 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 UninstallView::UninstallView(int* user_selection,
-                             const base::Closure& quit_closure)
+                             const base::RepeatingClosure& quit_closure)
     : confirm_label_(nullptr),
       delete_profile_(nullptr),
       change_default_browser_(nullptr),
@@ -166,8 +167,11 @@ base::string16 UninstallView::GetItemAt(int index) const {
   DCHECK_LT(index, static_cast<int>(browsers_->size()));
   BrowsersMap::const_iterator i = browsers_->begin();
   std::advance(i, index);
-  return i->first;
+  return base::WideToUTF16(i->first);
 }
+
+BEGIN_METADATA(UninstallView, views::DialogDelegateView)
+END_METADATA
 
 namespace chrome {
 

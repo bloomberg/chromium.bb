@@ -14,6 +14,10 @@ endif() # AOM_AV1_AV1_CMAKE_
 set(AOM_AV1_AV1_CMAKE_ 1)
 
 list(APPEND AOM_AV1_COMMON_SOURCES
+            "${AOM_ROOT}/common/args_helper.h"
+            "${AOM_ROOT}/common/args_helper.c"
+            "${AOM_ROOT}/av1/arg_defs.h"
+            "${AOM_ROOT}/av1/arg_defs.c"
             "${AOM_ROOT}/av1/av1_iface_common.h"
             "${AOM_ROOT}/av1/common/alloccommon.c"
             "${AOM_ROOT}/av1/common/alloccommon.h"
@@ -240,6 +244,9 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/tpl_model.h"
             "${AOM_ROOT}/av1/encoder/tx_search.c"
             "${AOM_ROOT}/av1/encoder/tx_search.h"
+            "${AOM_ROOT}/av1/encoder/txb_rdopt.c"
+            "${AOM_ROOT}/av1/encoder/txb_rdopt.h"
+            "${AOM_ROOT}/av1/encoder/txb_rdopt_utils.h"
             "${AOM_ROOT}/av1/encoder/intra_mode_search.c"
             "${AOM_ROOT}/av1/encoder/intra_mode_search.h"
             "${AOM_ROOT}/av1/encoder/intra_mode_search_utils.h"
@@ -265,6 +272,12 @@ endif()
 if(CONFIG_OPTICAL_FLOW_API)
   list(APPEND AOM_AV1_ENCODER_SOURCES "${AOM_ROOT}/av1/encoder/optical_flow.c"
               "${AOM_ROOT}/av1/encoder/optical_flow.h")
+endif()
+
+if(CONFIG_AV1_TEMPORAL_DENOISING)
+  list(APPEND AOM_AV1_ENCODER_SOURCES
+              "${AOM_ROOT}/av1/encoder/av1_temporal_denoiser.c"
+              "${AOM_ROOT}/av1/encoder/av1_temporal_denoiser.h")
 endif()
 
 list(APPEND AOM_AV1_COMMON_INTRIN_SSE2
@@ -373,8 +386,14 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE2
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse2.c"
+            "${AOM_ROOT}/av1/encoder/x86/av1_k_means_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_temporal_filter_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
+
+if(CONFIG_AV1_TEMPORAL_DENOISING)
+  list(APPEND AOM_AV1_ENCODER_INTRIN_SSE2
+              "${AOM_ROOT}/av1/encoder/x86/av1_temporal_denoiser_sse2.c")
+endif()
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
   list(
@@ -415,9 +434,11 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
             "${AOM_ROOT}/av1/encoder/x86/wedge_utils_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/rdopt_avx2.c"
+            "${AOM_ROOT}/av1/encoder/x86/av1_k_means_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/temporal_filter_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_temporal_filter_avx2.c"
-            "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c")
+            "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c"
+            "${AOM_ROOT}/av1/encoder/x86/cnn_avx2.c")
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
   list(
@@ -428,7 +449,8 @@ endif()
 
 if(CONFIG_REALTIME_ONLY)
   list(REMOVE_ITEM AOM_AV1_ENCODER_INTRIN_AVX2
-                   "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c")
+                   "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c"
+                   "${AOM_ROOT}/av1/encoder/x86/cnn_avx2.c")
 endif()
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
@@ -441,6 +463,11 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
             "${AOM_ROOT}/av1/encoder/arm/neon/hybrid_fwd_txfm_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/av1_fwd_txfm2d_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/highbd_fwd_txfm_neon.c")
+
+if(CONFIG_AV1_TEMPORAL_DENOISING)
+  list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
+              "${AOM_ROOT}/av1/encoder/arm/neon/av1_temporal_denoiser_neon.c")
+endif()
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_MSA
             "${AOM_ROOT}/av1/encoder/mips/msa/error_msa.c"

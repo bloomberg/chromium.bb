@@ -190,6 +190,9 @@
 // settings' navigation bar.
 + (id<GREYMatcher>)syncSettingsConfirmButton;
 
+// Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
++ (id<GREYMatcher>)autofillCreditCardEditTableView;
+
 // Returns matcher for the Autofill Credit Card "Payment Methods" view in the
 // settings menu.
 + (id<GREYMatcher>)autofillCreditCardTableView;
@@ -217,9 +220,6 @@
 // Returns matcher for the "Cancel" button in the Payment Methods add credit
 // card view.
 + (id<GREYMatcher>)addCreditCardCancelButton;
-
-// Returns matcher for the "Credit Card Scanner" view.
-+ (id<GREYMatcher>)creditCardScannerView;
 
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;
@@ -271,6 +271,10 @@
 
 // Returns matcher for the back button on a settings menu.
 + (id<GREYMatcher>)settingsMenuBackButton;
+
+// Returns matcher for the back button on a settings menu in given window
+// number.
++ (id<GREYMatcher>)settingsMenuBackButtonInWindowWithNumber:(int)windowNumber;
 
 // Returns matcher for the Privacy cell on the main Settings screen.
 + (id<GREYMatcher>)settingsMenuPrivacyButton;
@@ -338,8 +342,15 @@
 // Returns matcher for the system selection callout.
 + (id<GREYMatcher>)systemSelectionCallout;
 
+// Returns a matcher for the Link to text button in the edit menu.
++ (id<GREYMatcher>)systemSelectionCalloutLinkToTextButton;
+
 // Returns matcher for the copy button on the system selection callout.
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton;
+
+// Matcher for a Copy button, such as the one in the Activity View. This matcher
+// is very broad and will look for any button with a matching string.
++ (id<GREYMatcher>)copyActivityButton API_AVAILABLE(ios(13));
 
 // Matcher for the Copy Link option in the updated context menus when long
 // pressing on a link. |useNewString| determines which string to use.

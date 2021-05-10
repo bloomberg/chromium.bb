@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
 namespace chromeos {
@@ -72,8 +72,7 @@ class WilcoDtcSupportdManager final
   std::unique_ptr<Delegate> delegate_;
 
   // Observer to changes in the wilco DTC allowed policy.
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      wilco_dtc_allowed_observer_;
+  base::CallbackListSubscription wilco_dtc_allowed_subscription_;
 
   // The configuration data blob is stored and owned.
   std::unique_ptr<std::string> configuration_data_;

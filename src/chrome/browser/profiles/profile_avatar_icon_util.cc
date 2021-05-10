@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -341,7 +342,7 @@ constexpr base::FilePath::CharType kHighResAvatarFolderName[] =
 // The size of the function-static kDefaultAvatarIconResources array below.
 #if defined(OS_ANDROID)
 constexpr size_t kDefaultAvatarIconsCount = 1;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr size_t kDefaultAvatarIconsCount = 27;
 #else
 constexpr size_t kDefaultAvatarIconsCount = 56;
@@ -428,10 +429,11 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 
 #if defined(OS_MAC)
 gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_path, &entry)) {
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path);
+  if (!entry) {
     // This can happen if the user deletes the current profile.
     return gfx::Image();
   }
@@ -475,7 +477,7 @@ size_t GetPlaceholderAvatarIndex() {
 }
 
 size_t GetModernAvatarIconStartIndex() {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
   return GetPlaceholderAvatarIndex() + 1;
 #else
   // Only use the placeholder avatar on ChromeOS and Android.
@@ -554,7 +556,7 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
     // Placeholder avatar icon:
     {IDR_PROFILE_AVATAR_26, nullptr, IDS_DEFAULT_AVATAR_LABEL_26},
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
     // Modern avatar icons:
     {IDR_PROFILE_AVATAR_27, "avatar_origami_cat.png",
      IDS_DEFAULT_AVATAR_LABEL_27},
@@ -677,9 +679,8 @@ bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
     return false;
 
   int int_value = -1;
-  if (base::StringToInt(base::StringPiece(url.begin() +
-                                          strlen(kDefaultUrlPrefix),
-                                          url.end()),
+  if (base::StringToInt(base::MakeStringPiece(
+                            url.begin() + strlen(kDefaultUrlPrefix), url.end()),
                         &int_value)) {
     if (int_value < 0 ||
         int_value >= static_cast<int>(kDefaultAvatarIconsCount))
@@ -812,7 +813,7 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
                                app_icon_bitmap.height());
   SkCanvas offscreen_canvas(badged_bitmap, SkSurfaceProps{});
   offscreen_canvas.clear(SK_ColorTRANSPARENT);
-  offscreen_canvas.drawBitmap(app_icon_bitmap, 0, 0);
+  offscreen_canvas.drawImage(app_icon_bitmap.asImage(), 0, 0);
 
   // Render the avatar in a cutout circle. If the avatar is not square, center
   // it in the circle but favor pushing it further down.
@@ -826,7 +827,7 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
       SkRect::MakeXYWH(cutout_left, cutout_top, cutout_size, cutout_size));
 
   offscreen_canvas.clipRRect(clip_circle, true);
-  offscreen_canvas.drawBitmap(sk_icon, icon_left, icon_top);
+  offscreen_canvas.drawImage(sk_icon.asImage(), icon_left, icon_top);
   return badged_bitmap;
 }
 #endif  // OS_WIN

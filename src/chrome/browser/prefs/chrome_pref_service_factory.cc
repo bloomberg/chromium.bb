@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
@@ -176,7 +177,7 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     {29, prefs::kMediaStorageIdSalt, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    {30, prefs::kModuleBlacklistCacheMD5Digest,
+    {30, prefs::kModuleBlocklistCacheMD5Digest,
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::IMPERSONAL},
 #endif
@@ -452,7 +453,7 @@ void HandlePersistentPrefStoreReadError(
                             PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
 
   if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
     // an example problem that this can cause.
     // Do some diagnosis and try to avoid losing data.

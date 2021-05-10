@@ -132,12 +132,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     _target_type = invoker.target_type
   }
 
-  if (defined(invoker.enable_multidex)) {
-    _enable_multidex = invoker.enable_multidex
-  } else {
-    _enable_multidex = is_java_debug
-  }
-
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
 
@@ -171,45 +165,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
     # Material design layouts that cause views to be kept that we don't use.
     # Instead of manually filtering, unused resource removal would be better:
     # https://crbug.com/636448
-    resource_exclusion_regex += "|${_material_package}/layout"
-    resource_exclusion_regex += "|${_material_package}/color.*(choice|chip_|card_|calendar_|bottom_nav_|slider_)"
-    resource_exclusion_regex +=
-        "|${_material_package}/drawable.*design_snackbar"
     resource_exclusion_regex += "|${_material_package}/xml.*badge_"
     _material_package = "*com_google_android_material*"
-    resource_exclusion_exceptions += [
-      # AppBarLayout
-      "${_material_package}design_appbar_*",
-
-      # TabLayout
-      "${_material_package}_tab*",
-
-      # TextInputLayout
-      "${_material_package}/design_text_*",
-      "${_material_package}/text_*",
-    ]
 
     # Remove unneeded entries from material design values.xml files.
-    resource_values_filter_rules = [
-      "${_material_package}:[Bb]adge",
-      "${_material_package}:[Bb]ottomNavigation",
-      "${_material_package}:[Bb]ottomSheet",
-      "${_material_package}:[Bb]uttonToggleGroup",
-      "${_material_package}:[Cc]alendar",
-      "${_material_package}:[Cc]ardView",
-      "${_material_package}:\b[Cc]hip",
-      "${_material_package}:design_snackbar",
-      "${_material_package}:[Ff]loatingActionButton",
-      "${_material_package}:[Mm]aterialAlertDialog",
-      "${_material_package}:mtrl_alert",
-      "${_material_package}:mtrl_navigation",
-      "${_material_package}:mtrl_slider",
-      "${_material_package}:[Nn]avigationView",
-      "${_material_package}:picker",
-      "${_material_package}:[Ss]nackbar",
-      "${_material_package}:[Ss]lider",
-      "${_material_package}:[Tt]oolbarLayout",
-    ]
+    resource_values_filter_rules = [ "${_material_package}:[Tt]oolbarLayout" ]
 
     if (!_is_monochrome) {
       product_config_java_packages = [ "org.chromium.chrome.browser" ]
@@ -288,25 +248,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
       }
     }
 
-    if (_enable_multidex) {
-      enable_multidex = true
-      if (_target_type == "android_apk") {
-        if (!defined(negative_main_dex_globs)) {
-          negative_main_dex_globs = [
-            "*ApplicationStatus*",  # Doesn't work in non-browser process.
-            "*ChromeActivity*",  # Pulls in the world; ensure it stays out.
-            "*GoogleApiAvailability*",  # Play Services only in browser process.
-            "*R\$*",  # Should not use resources from non-browser process.
-          ]
-        }
-
-        # Allow targets to append to the default list.
-        if (defined(extra_negative_main_dex_globs)) {
-          negative_main_dex_globs += extra_negative_main_dex_globs
-        }
-      }
-    }
-
     if (dfmify_dev_ui && (_target_type == "android_apk" ||
                           _target_type == "instrumentation_test_apk")) {
       # Dev UI is a feature in a DFM, and APKs don't use DFMs. To make the code
@@ -324,13 +265,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
       ]
-      if (enable_proguard_obfuscation) {
-        proguard_configs +=
-            [ "//base/android/proguard/enable_obfuscation.flags" ]
-      } else {
-        proguard_configs +=
-            [ "//base/android/proguard/disable_all_obfuscation.flags" ]
-      }
       if (_enable_chrome_module) {
         proguard_configs +=
             [ "//chrome/android/proguard/isolated_splits.flags" ]
@@ -406,43 +340,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
 template("monochrome_public_common_apk_or_module_tmpl") {
   _is_bundle_module = defined(invoker.target_type) &&
                       invoker.target_type == "android_app_bundle_module"
-  _enable_chrome_module =
-      _is_bundle_module && invoker.is_base_module && enable_chrome_module
-
-  # If the chrome module is enabled, collect shared libraries from all other
-  # DFMs and add them as loadable modules to the base module.
-  if (_enable_chrome_module) {
-    _module_descs = []
-    if (defined(invoker.module_descs)) {
-      _module_descs = invoker.module_descs
-    }
-    _chrome_module_shared_lib_deps = []
-    _chrome_module_loadable_modules = []
-    _arch = ""
-    _toolchain = ""
-    if (android_64bit_target_cpu) {
-      if (invoker.is_64_bit_browser) {
-        _arch = "_64"
-      } else {
-        _toolchain = "($android_secondary_abi_toolchain)"
-      }
-    }
-    _base_target_name = "libmonochrome${_arch}"
-    foreach(_module_desc, _module_descs) {
-      if (defined(_module_desc.native_deps) && _module_desc.native_deps != []) {
-        _lib_target = "//chrome/android:${_base_target_name}_${_module_desc.name}${_toolchain}"
-        _chrome_module_shared_lib_deps += [ _lib_target ]
-
-        # In component builds, native libraries from DFMs are not in partitions,
-        # so include them as normal shared libraries instead of loadable
-        # modules.
-        if (!is_component_build) {
-          _lib_out_dir = get_label_info(_lib_target, "root_out_dir")
-          _chrome_module_loadable_modules += [ "${_lib_out_dir}/${_base_target_name}_${_module_desc.name}_partition.so" ]
-        }
-      }
-    }
-  }
 
   chrome_public_common_apk_or_module_tmpl(target_name) {
     _overrides = {
@@ -452,11 +349,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
             "_is_bundle_module is true but the invoker does not define is_base_module!")
       }
 
-      if (defined(invoker.enable_multidex)) {
-        _enable_multidex = invoker.enable_multidex
-      } else {
-        _enable_multidex = is_java_debug
-      }
       is_trichrome = defined(invoker.use_trichrome_library) &&
                      invoker.use_trichrome_library
       is_monochrome = !is_trichrome
@@ -526,14 +418,28 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         }
       }
 
-      # Add all loadable modules and shared libraries from DFMs.
-      if (_enable_chrome_module) {
+      if (_is_bundle_module && enable_isolated_splits) {
         # Sets ISOLATED_SPLITS_ENABLED in BuildConfig.java.
         isolated_splits_enabled = true
+        deps += [ ":${target_name}__all_dfm_resources" ]
+      }
 
-        # The arcore manifest needs to be merged into the base module because the Play
-        # Store verifies the com.google.ar.core.min_apk_version meta-data tag is in
-        # the base manifest.
+      _enable_chrome_module =
+          _is_bundle_module && invoker.is_base_module && enable_chrome_module
+      if (_enable_chrome_module) {
+        # If the manifest is being verified, add the chrome module's manifest.
+        if (defined(invoker.expected_android_manifest)) {
+          _bundle_target_gen_dir =
+              get_label_info(invoker.bundle_target, "target_gen_dir")
+          _bundle_name = get_label_info(invoker.bundle_target, "name")
+          extra_verification_manifest = "${_bundle_target_gen_dir}/${_bundle_name}__chrome_bundle_module_manifest/AndroidManifest.xml"
+          extra_verification_manifest_dep =
+              "${invoker.bundle_target}__chrome_bundle_module__merge_manifests"
+        }
+
+        # The arcore manifest needs to be merged into the base module because
+        # the Play Store verifies the com.google.ar.core.min_apk_version
+        # meta-data tag is in the base manifest.
         if (enable_arcore) {
           deps += [
             "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
@@ -544,39 +450,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
           deps += [ "//chrome/android:base_monochrome_module_java" ]
         } else {
           deps += [ "//chrome/android:base_module_java" ]
-        }
-        deps += [ ":${target_name}__all_chrome_resources" ]
-        if (is_component_build) {
-          if (android_64bit_target_cpu && !invoker.is_64_bit_browser) {
-            secondary_abi_shared_libraries += _chrome_module_shared_lib_deps
-          } else {
-            shared_libraries += _chrome_module_shared_lib_deps
-          }
-        } else {
-          deps += _chrome_module_shared_lib_deps
-        }
-        _loadable_modules_32_bit = []
-        _loadable_modules_64_bit = []
-        foreach(_module_desc, _module_descs) {
-          if (defined(_module_desc.loadable_modules_32_bit)) {
-            _loadable_modules_32_bit += _module_desc.loadable_modules_32_bit
-          }
-          if (defined(_module_desc.loadable_modules_64_bit)) {
-            _loadable_modules_64_bit += _module_desc.loadable_modules_64_bit
-          }
-        }
-
-        if (android_64bit_target_cpu) {
-          if (invoker.is_64_bit_browser) {
-            loadable_modules +=
-                _loadable_modules_64_bit + _chrome_module_loadable_modules
-          } else {
-            secondary_abi_loadable_modules +=
-                _loadable_modules_32_bit + _chrome_module_loadable_modules
-          }
-        } else {
-          loadable_modules +=
-              _loadable_modules_32_bit + _chrome_module_loadable_modules
         }
       }
 
@@ -751,19 +624,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
       deps += [ "//chrome/android:${_pak_prefix}_pak_assets" ]
 
-      if (defined(invoker.negative_main_dex_globs)) {
-        negative_main_dex_globs = invoker.negative_main_dex_globs
-      } else if (_enable_multidex && invoker.target_type == "android_apk") {
-        # WebView pulls play services into the main dex.
-        negative_main_dex_globs = [
-          # TODO(agrieve): Add ApplicationStatus to this list. It's currently
-          #     included because of ActivityWindowAndroid, but is never used at
-          #     runtime by webview.
-          "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip
-                               # in.
-        ]
-      }
-
       if (!is_java_debug) {
         proguard_configs = []
         if (defined(invoker.proguard_configs)) {
@@ -791,12 +651,13 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "alternative_android_sdk_dep",
       "app_as_shared_lib",
       "deps",
+      "extra_verification_manifest",
+      "extra_verification_manifest_dep",
       "is_monochrome",
       "is_trichrome",
       "isolated_splits_enabled",
       "loadable_modules",
       "native_lib_placeholders",
-      "negative_main_dex_globs",
       "never_incremental",
       "no_xml_namespaces",
       "product_config_java_packages",

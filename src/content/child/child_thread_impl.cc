@@ -43,6 +43,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "content/child/browser_exposed_child_interfaces.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process.mojom.h"
@@ -80,7 +81,11 @@
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
-#endif
+#if !defined(OS_ANDROID)
+#include "services/tracing/public/cpp/system_tracing_service.h"
+#include "services/tracing/public/cpp/traced_process.h"
+#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_MAC)
 #include "base/mac/mach_port_rendezvous.h"
@@ -316,6 +321,14 @@ class ChildThreadImpl::IOThreadState
                        weak_main_thread_, std::move(receiver)));
   }
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  void EnableSystemTracingService(
+      mojo::PendingRemote<tracing::mojom::SystemTracingService> remote)
+      override {
+    tracing::TracedProcess::EnableSystemTracingService(std::move(remote));
+  }
+#endif
+
   // Make sure this isn't inlined so it shows up in stack traces, and also make
   // the function body unique by adding a log line, so it doesn't get merged
   // with other functions by link time optimizations (ICF).
@@ -330,13 +343,13 @@ class ChildThreadImpl::IOThreadState
     mojo::FusePipes(std::move(receiver), std::move(legacy_ipc_bootstrap_));
   }
 
-  void RunService(const std::string& service_name,
-                  mojo::PendingReceiver<service_manager::mojom::Service>
-                      receiver) override {
+  void RunServiceDeprecated(
+      const std::string& service_name,
+      mojo::ScopedMessagePipeHandle service_pipe) override {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ChildThreadImpl::RunService, weak_main_thread_,
-                       service_name, std::move(receiver)));
+        FROM_HERE, base::BindOnce(&ChildThreadImpl::RunServiceDeprecated,
+                                  weak_main_thread_, service_name,
+                                  std::move(service_pipe)));
   }
 
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
@@ -626,6 +639,9 @@ void ChildThreadImpl::Init(const Options& options) {
     source_ptr->Init(std::move(remote_power_monitor));
   }
 
+  // Requires base::PowerMonitor to be initialized first.
+  power_scheduler::PowerModeArbiter::GetInstance()->OnThreadPoolAvailable();
+
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests
   // and single-process mode.
@@ -809,9 +825,9 @@ void ChildThreadImpl::GetBackgroundTracingAgentProvider(
   background_tracing_agent_provider_->AddBinding(std::move(receiver));
 }
 
-void ChildThreadImpl::RunService(
+void ChildThreadImpl::RunServiceDeprecated(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+    mojo::ScopedMessagePipeHandle service_pipe) {
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
 }
 

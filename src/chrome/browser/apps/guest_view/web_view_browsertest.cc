@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -16,7 +17,6 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -36,10 +37,11 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_link_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -55,7 +57,8 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "components/no_state_prefetch/browser/prerender_link_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_link_manager.h"
+#include "components/safe_browsing/core/db/fake_database_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
@@ -133,8 +136,8 @@ using extensions::MenuItem;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
-using prerender::PrerenderLinkManager;
-using prerender::PrerenderLinkManagerFactory;
+using prerender::NoStatePrefetchLinkManager;
+using prerender::NoStatePrefetchLinkManagerFactory;
 using task_manager::browsertest_util::MatchAboutBlankTab;
 using task_manager::browsertest_util::MatchAnyApp;
 using task_manager::browsertest_util::MatchAnyBackground;
@@ -1216,6 +1219,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteScript) {
       "platform_apps/web_view/common", "execute_script")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteCode) {
+  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/web_view/common",
+                                        "execute_code"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);
 }
@@ -1625,6 +1634,138 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
   ASSERT_NE(empty_guest_opener, empty_guest_embedder->GetMainFrame());
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_AttachAfterOpenerDestroyed) {
+  TestHelper("testNewWindowAttachAfterOpenerDestroyed", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_AttachInSubFrame) {
+  TestHelper("testNewWindowAttachInSubFrame", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_NewWindowNameTakesPrecedence) {
+  TestHelper("testNewWindowNameTakesPrecedence", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_WebViewNameTakesPrecedence) {
+  TestHelper("testNewWindowWebViewNameTakesPrecedence", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_NoName) {
+  TestHelper("testNewWindowNoName", "web_view/newwindow", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_Redirect) {
+  TestHelper("testNewWindowRedirect", "web_view/newwindow", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_Close) {
+  TestHelper("testNewWindowClose", "web_view/newwindow", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_DeferredAttachment) {
+  TestHelper("testNewWindowDeferredAttachment", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_ExecuteScript) {
+  TestHelper("testNewWindowExecuteScript", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_DeclarativeWebRequest) {
+  TestHelper("testNewWindowDeclarativeWebRequest", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_DiscardAfterOpenerDestroyed) {
+  TestHelper("testNewWindowDiscardAfterOpenerDestroyed", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_WebRequest) {
+  TestHelper("testNewWindowWebRequest", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+// A custom elements bug needs to be addressed to enable this test:
+// See http://crbug.com/282477 for more information.
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       DISABLED_NewWindow_WebRequestCloseWindow) {
+  TestHelper("testNewWindowWebRequestCloseWindow", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_WebRequestRemoveElement) {
+  TestHelper("testNewWindowWebRequestRemoveElement", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
+// Ensure that when one <webview> makes a window.open() call that references
+// another <webview> by name, the opener is updated without a crash. Regression
+// test for https://crbug.com/1013553.
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, NewWindow_UpdateOpener) {
+  TestHelper("testNewWindowAndUpdateOpener", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+
+  // The first <webview> tag in the test will run window.open(), which the
+  // embedder will translate into an injected second <webview> tag, after which
+  // test control will return here.  Wait until there are two guests; i.e.,
+  // until the second <webview>'s guest is also created.
+  GetGuestViewManager()->WaitForNumGuestsCreated(2);
+
+  std::vector<content::WebContents*> guest_contents_list;
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_contents_list);
+  ASSERT_EQ(2u, guest_contents_list.size());
+  content::WebContents* guest1 = guest_contents_list[0];
+  content::WebContents* guest2 = guest_contents_list[1];
+  EXPECT_TRUE(content::WaitForLoadStop(guest1));
+  EXPECT_TRUE(content::WaitForLoadStop(guest2));
+  ASSERT_NE(guest1, guest2);
+
+  // Change first guest's window.name to "foo" and check that it does not
+  // have an opener to start with.
+  EXPECT_TRUE(content::ExecJs(guest1, "window.name = 'foo'"));
+  EXPECT_EQ("foo", content::EvalJs(guest1, "window.name"));
+  EXPECT_EQ(true, content::EvalJs(guest1, "window.opener == null"));
+
+  // Create a subframe in the second guest.  This is needed because the crash
+  // in crbug.com/1013553 only happened when trying to incorrectly create
+  // proxies for a subframe.
+  EXPECT_TRUE(content::ExecuteScript(
+      guest2, "document.body.appendChild(document.createElement('iframe'));"));
+
+  // Update the opener of |guest1| to point to |guest2|.  This triggers
+  // creation of proxies on the new opener chain, which should not crash.
+  EXPECT_TRUE(content::ExecuteScript(guest2, "window.open('', 'foo');"));
+
+  // Ensure both guests have the proper opener relationship set up.  Namely,
+  // each guest's opener should point to the other guest, creating a cycle.
+  EXPECT_EQ(true, content::EvalJs(guest1, "window.opener.opener === window"));
+  EXPECT_EQ(true, content::EvalJs(guest2, "window.opener.opener === window"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       NewWindow_OpenerDestroyedWhileUnattached) {
+  TestHelper("testNewWindowOpenerDestroyedWhileUnattached",
+             "web_view/newwindow", NEEDS_TEST_SERVER);
+  ASSERT_EQ(2u, GetGuestViewManager()->num_guests_created());
+
+  // We have two guests in this test, one is the initial one, the other
+  // is the newwindow one.
+  // Before the embedder goes away, both the guests should go away.
+  // This ensures that unattached guests are gone if opener is gone.
+  GetGuestViewManager()->WaitForAllGuestsDeleted();
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
@@ -1917,6 +2058,57 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
   chrome::CloseAllBrowsers();
 }
 
+// This allows us to specify URLs which trigger Safe Browsing.
+class WebViewSafeBrowsingTest : public WebViewTest {
+ public:
+  WebViewSafeBrowsingTest()
+      : safe_browsing_factory_(
+            std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>()) {
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    WebViewTest::SetUpOnMainThread();
+  }
+
+ protected:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    fake_safe_browsing_database_manager_ =
+        base::MakeRefCounted<safe_browsing::FakeSafeBrowsingDatabaseManager>();
+    safe_browsing_factory_->SetTestDatabaseManager(
+        fake_safe_browsing_database_manager_.get());
+    safe_browsing::SafeBrowsingService::RegisterFactory(
+        safe_browsing_factory_.get());
+    WebViewTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+  void TearDown() override {
+    WebViewTest::TearDown();
+    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+  }
+
+  void AddDangerousUrl(const GURL& dangerous_url) {
+    fake_safe_browsing_database_manager_->AddDangerousUrl(
+        dangerous_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
+  }
+
+ private:
+  scoped_refptr<safe_browsing::FakeSafeBrowsingDatabaseManager>
+      fake_safe_browsing_database_manager_;
+  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
+      safe_browsing_factory_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewSafeBrowsingTest,
+                       Shim_TestLoadAbortSafeBrowsing) {
+  // We start the test server here, instead of in TestHelper, because we need
+  // to know the URL to treat as dangerous before running the rest of the test.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  AddDangerousUrl(embedded_test_server()->GetURL("evil.com", "/title1.html"));
+  TestHelper("testLoadAbortSafeBrowsing", "web_view/shim", NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
@@ -1933,11 +2125,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
           "web_view/noprerenderer");
   ASSERT_TRUE(guest_web_contents != nullptr);
 
-  PrerenderLinkManager* prerender_link_manager =
-      PrerenderLinkManagerFactory::GetForBrowserContext(
+  NoStatePrefetchLinkManager* no_state_prefetch_link_manager =
+      NoStatePrefetchLinkManagerFactory::GetForBrowserContext(
           guest_web_contents->GetBrowserContext());
-  ASSERT_TRUE(prerender_link_manager != nullptr);
-  EXPECT_TRUE(prerender_link_manager->IsEmpty());
+  ASSERT_TRUE(no_state_prefetch_link_manager != nullptr);
+  EXPECT_TRUE(no_state_prefetch_link_manager->IsEmpty());
 }
 
 // Verify that existing <webview>'s are detected when the task manager starts
@@ -2014,30 +2206,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 
 // This tests that in-memory storage partitions are reset on browser restart,
 // but persistent ones maintain state for cookies and HTML5 storage.
-IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
+// TODO(1144228): Flaky.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  // Since this test is PRE_ step, we need file access.
-  ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "platform_apps/web_view/storage_persistence", "PRE_StoragePersistence",
-      kFlagEnableFileAccess, kFlagNone))
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/storage_persistence", "PRE_StoragePersistence"))
       << message_;
   content::EnsureCookiesFlushed(profile());
 }
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
+// TODO(1144228): Flaky.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-  // Since this test has PRE_ step, we need file access (possibly because we
-  // need to access previous profile).
-  ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "platform_apps/web_view/storage_persistence", "StoragePersistence",
-      kFlagEnableFileAccess, kFlagNone))
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/storage_persistence", "StoragePersistence"))
       << message_;
 }
 
@@ -2109,7 +2298,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 // The test launches an app with guest and closes the window on loadcommit. It
 // then launches the app window again. The process is repeated 3 times.
 // TODO(crbug.com/949923): The test is flaky (crash) on ChromeOS debug and ASan/LSan
-#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#if BUILDFLAG(IS_CHROMEOS_ASH) && \
+    (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
 #else
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
@@ -2772,7 +2962,7 @@ class DownloadManagerWaiter : public content::DownloadManager::Observer {
   }
 
  private:
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   bool initialized_;
   content::DownloadManager* download_manager_;
 };
@@ -2932,7 +3122,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 #else
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DownloadCookieIsolation_CrossSession
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_DownloadCookieIsolation_CrossSession) {
@@ -3185,39 +3375,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
   TestHelper("testPostMessageCommChannel", "web_view/shim", NO_TEST_SERVER);
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-class WebViewPluginTest : public WebViewTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
-  TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
-  const char kTestMimeType[] = "application/pdf";
-  const char kTestFileType[] = "pdf";
-  content::WebPluginInfo plugin_info;
-  plugin_info.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
-  plugin_info.mime_types.push_back(
-      content::WebPluginMimeType(kTestMimeType, kTestFileType, std::string()));
-  content::PluginService::GetInstance()->RegisterInternalPlugin(plugin_info,
-                                                                true);
-
-  TestHelper("testPluginLoadInternalResource", "web_view/shim", NO_TEST_SERVER);
-  // Sanity check to ensure no GuestView was created.
-  for (auto* guest_wc : GetEmbedderWebContents()->GetInnerWebContents()) {
-    EXPECT_FALSE(extensions::MimeHandlerViewEmbedder::Get(
-        guest_wc->GetMainFrame()->GetFrameTreeNodeId()));
-  }
-}
-
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-
 class WebViewCaptureTest : public WebViewTest {
  public:
   WebViewCaptureTest() {}
@@ -3229,7 +3386,11 @@ class WebViewCaptureTest : public WebViewTest {
 };
 
 // https://crbug.com/1087381
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_CHROMEOS) ||                                  \
+    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+     defined(ADDRESS_SANITIZER))
 #define MAYBE_Shim_TestZoomAPI DISABLED_Shim_TestZoomAPI
 #else
 #define MAYBE_Shim_TestZoomAPI Shim_TestZoomAPI
@@ -3382,12 +3543,8 @@ IN_PROC_BROWSER_TEST_P(
       registry_service->GetRulesRegistry(rules_registry_id, "ui").get());
 
   // Kill the embedder's render process, so the webview will go as well.
-  base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-      embedder_web_contents->GetMainFrame()
-          ->GetProcess()
-          ->GetProcess()
-          .Handle());
-  process.Terminate(0, false);
+  embedder_web_contents->GetMainFrame()->GetProcess()->GetProcess().Terminate(
+      0, false);
   observer->WaitForEmbedderRenderProcessTerminate();
 
   EXPECT_FALSE(
@@ -3445,15 +3602,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
 // See http://crbug.com/327035.
 IN_PROC_BROWSER_TEST_F(WebViewCaptureTest, DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
-}
-
-// Tests that browser process does not crash when loading plugin inside
-// <webview> with content settings set to CONTENT_SETTING_BLOCK.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
-                                 CONTENT_SETTING_BLOCK);
-  TestHelper("testPlugin", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 // Test is disabled because it times out often.
@@ -3517,9 +3665,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_NestedGuestContainerBounds) {
   content::WebContents* mime_handler_view_contents = guest_web_contents_list[1];
 
   // Make sure we've completed loading |mime_handler_view_guest|.
-  bool load_success = pdf_extension_test_util::EnsurePDFHasLoaded(
-      web_view_contents);
-  EXPECT_TRUE(load_success);
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_view_contents));
 
   gfx::Rect web_view_container_bounds = web_view_contents->GetContainerBounds();
   gfx::Rect mime_handler_view_container_bounds =
@@ -3560,6 +3706,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuNavigationInMimeHandlerView) {
   observer.Wait();
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             web_view_contents->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDialogInPdf) {
+  TestHelper("testDialogInPdf", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestMailtoLink) {
@@ -4211,7 +4361,9 @@ class ChromeSignInWebViewTest : public WebViewTest {
   }
 };
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MAC) || \
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC) || \
     defined(OS_WIN)
 // This verifies the fix for http://crbug.com/667708.
 IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
@@ -4430,14 +4582,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest,
 // from guest to embedder.
 IN_PROC_BROWSER_TEST_F(WebViewTest, AutoResizeMessages) {
   LoadAppWithGuest("web_view/simple");
-  content::WebContents* embedder = GetEmbedderWebContents();
-  content::WebContents* guest = GetGuestWebContents();
 
   // Helper function as this test requires inspecting a number of content::
   // internal objects.
-  EXPECT_TRUE(content::TestGuestAutoresize(
-      embedder->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetProcess(),
-      guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
+  EXPECT_TRUE(content::TestGuestAutoresize(GetEmbedderWebContents(),
+                                           GetGuestWebContents()));
 }
 
 // Test that a guest sees the synthetic wheel events of a touchpad pinch.

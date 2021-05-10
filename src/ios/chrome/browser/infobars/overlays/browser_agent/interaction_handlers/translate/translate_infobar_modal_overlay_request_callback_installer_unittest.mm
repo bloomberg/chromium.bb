@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/translate/translate_infobar_modal_overlay_request_callback_installer.h"
 
-#include "base/test/scoped_feature_list.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/test/mock_translate_infobar_interaction_handler.h"
@@ -19,9 +17,8 @@
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/translate/fake_translate_infobar_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -35,11 +32,9 @@ class TranslateInfobarModalOverlayRequestCallbackInstallerTest
  public:
   TranslateInfobarModalOverlayRequestCallbackInstallerTest()
       : installer_(&mock_handler_) {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                          {kInfobarUIRebootOnlyiOS13});
     // Create the infobar and add it to the WebState's manager.
     web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
     TranslateOverlayTabHelper::CreateForWebState(&web_state_);
     std::unique_ptr<FakeTranslateInfoBarDelegate> delegate =
@@ -68,8 +63,7 @@ class TranslateInfobarModalOverlayRequestCallbackInstallerTest
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   InfoBarIOS* infobar_ = nullptr;
   OverlayRequest* request_ = nullptr;
   MockTranslateInfobarModalInteractionHandler mock_handler_;
@@ -112,7 +106,7 @@ TEST_F(TranslateInfobarModalOverlayRequestCallbackInstallerTest,
   EXPECT_CALL(mock_handler_, ToggleNeverTranslateSite(infobar_));
   request_->GetCallbackManager()->DispatchResponse(
       OverlayResponse::CreateWithInfo<
-          translate_infobar_modal_responses::ToggleBlacklistSite>());
+          translate_infobar_modal_responses::ToggleNeverPromptSite>());
 }
 
 TEST_F(TranslateInfobarModalOverlayRequestCallbackInstallerTest,

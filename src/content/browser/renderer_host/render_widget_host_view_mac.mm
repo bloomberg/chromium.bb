@@ -85,8 +85,10 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor() const {
   return last_frame_root_background_color_;
 }
 
-void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
-  OnFrameTokenChangedForView(frame_token);
+void RenderWidgetHostViewMac::OnFrameTokenChanged(
+    uint32_t frame_token,
+    base::TimeTicks activation_time) {
+  OnFrameTokenChangedForView(frame_token, activation_time);
 }
 
 void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
@@ -367,12 +369,6 @@ void RenderWidgetHostViewMac::InitAsPopup(
   ns_view_->InitAsPopup(pos, has_shadow);
 }
 
-void RenderWidgetHostViewMac::InitAsFullscreen(
-    RenderWidgetHostView* reference_host_view) {
-  // This path appears never to be reached.
-  NOTREACHED();
-}
-
 RenderWidgetHostViewBase*
 RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
@@ -451,9 +447,6 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
 
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
-  DelegatedFrameHost* delegated_frame_host =
-      browser_compositor_->GetDelegatedFrameHost();
-
   bool has_saved_frame =
       browser_compositor_->has_saved_frame_before_state_transition();
 
@@ -464,17 +457,18 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
                        ? tab_switch_start_state.Clone()
                        : blink::mojom::RecordContentToVisibleTimeRequestPtr());
 
-  if (delegated_frame_host) {
-    // If the frame for the renderer is already available, then the
-    // tab-switching time is the presentation time for the browser-compositor.
-    const bool record_presentation_time = has_saved_frame;
-    delegated_frame_host->WasShown(
-        browser_compositor_->GetRendererLocalSurfaceId(),
-        browser_compositor_->GetRendererSize(),
-        record_presentation_time
-            ? std::move(tab_switch_start_state)
-            : blink::mojom::RecordContentToVisibleTimeRequestPtr());
-  }
+  // If the frame for the renderer is already available, then the
+  // tab-switching time is the presentation time for the browser-compositor.
+  DelegatedFrameHost* delegated_frame_host =
+      browser_compositor_->GetDelegatedFrameHost();
+  DCHECK(delegated_frame_host);
+  const bool record_presentation_time = has_saved_frame;
+  delegated_frame_host->WasShown(
+      browser_compositor_->GetRendererLocalSurfaceId(),
+      browser_compositor_->GetRendererSize(),
+      record_presentation_time
+          ? std::move(tab_switch_start_state)
+          : blink::mojom::RecordContentToVisibleTimeRequestPtr());
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -678,7 +672,8 @@ void RenderWidgetHostViewMac::OnGestureEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation() {
+void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation(
+    base::TimeTicks activation_time) {
   last_frame_root_background_color_ = host()
                                           ->render_frame_metadata_provider()
                                           ->LastRenderFrameMetadata()
@@ -793,9 +788,12 @@ void CombineTextNodesAndMakeCallback(SpeechCallback callback,
 }  // namespace
 
 void RenderWidgetHostViewMac::GetPageTextForSpeech(SpeechCallback callback) {
-  // Note that the WebContents::RequestAXTreeSnapshot() call has a limit on the
-  // number of nodes returned. For large pages, this call might hit that limit.
-  // This is a reasonable thing. The "Start Speaking" call dates back to the
+  // Note that we are calling WebContents::RequestAXTreeSnapshot() with a limit
+  // of 5000 nodes returned. For large pages, this call might hit that limit
+  // (and in practice it may return slightly more than 5000 to ensure a
+  // well-formed tree).
+  //
+  // This is a reasonable limit. The "Start Speaking" call dates back to the
   // earliest days of the Mac, before accessibility. It was designed to show off
   // the speech capabilities of the Mac, which is fine, but is mostly
   // inapplicable nowadays. Is it useful to have the Mac read megabytes of text
@@ -808,7 +806,10 @@ void RenderWidgetHostViewMac::GetPageTextForSpeech(SpeechCallback callback) {
 
   GetWebContents()->RequestAXTreeSnapshot(
       base::BindOnce(CombineTextNodesAndMakeCallback, std::move(callback)),
-      ui::AXMode::kWebContents);
+      ui::AXMode::kWebContents,
+      /* exclude_offscreen= */ false,
+      /* max_nodes= */ 5000,
+      /* timeout= */ {});
 }
 
 void RenderWidgetHostViewMac::SpeakSelection() {
@@ -1378,14 +1379,6 @@ void RenderWidgetHostViewMac::SetDisplayFeatureForTesting(
     display_feature_ = base::nullopt;
 }
 
-BrowserAccessibilityManager*
-RenderWidgetHostViewMac::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate,
-    bool for_root_frame) {
-  return new BrowserAccessibilityManagerMac(
-      BrowserAccessibilityManagerMac::GetEmptyDocument(), delegate);
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
   return GetInProcessNSView();
@@ -1509,6 +1502,7 @@ void RenderWidgetHostViewMac::OnWindowFrameInScreenChanged(
 void RenderWidgetHostViewMac::OnDisplayChanged(
     const display::Display& display) {
   display_ = display;
+  // TODO(crbug.com/1169291): Unify per-platform DisplayObserver instances.
   UpdateNSViewAndDisplayProperties();
 }
 

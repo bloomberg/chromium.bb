@@ -5,10 +5,10 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -1729,8 +1729,17 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
   scoped_refptr<Layer> scroller_;
 };
 
+// This test is flaky in the single threaded configuration, only on the
+// chromeos-amd64-generic-rel bot. https://crbug.com/1093078.
+#if defined(OS_CHROMEOS)
+// SINGLE_THREAD_TEST_F(
+//    LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+MULTI_THREAD_TEST_F(
+    LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+#else
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+#endif
 
 class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:

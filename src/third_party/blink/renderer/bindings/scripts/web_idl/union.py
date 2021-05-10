@@ -114,7 +114,7 @@ class NewUnion(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
             union_members.add(sub_union_ir.public_object)
 
         components = set()
-        for_testing = False
+        for_testing = [False]
 
         def collect_primary_component(idl_type):
             type_definition_object = idl_type.type_definition_object
@@ -122,12 +122,12 @@ class NewUnion(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
                 components.add(type_definition_object.components[0])
             if (type_definition_object and
                     type_definition_object.code_generator_info.for_testing):
-                for_testing = True
+                for_testing[0] = True
 
         for idl_type in flattened_member_types:
             idl_type.apply_to_all_composing_elements(collect_primary_component)
         code_generator_info = CodeGeneratorInfoMutable()
-        code_generator_info.set_for_testing(for_testing)
+        code_generator_info.set_for_testing(for_testing[0])
 
         WithIdentifier.__init__(self, identifier)
         WithCodeGeneratorInfo.__init__(self,
@@ -140,7 +140,8 @@ class NewUnion(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
             idl_type.type_name_with_extended_attribute_key_values)
         sort_key_identifier = lambda x: x.identifier
 
-        self._union_types = tuple(ir.union_types)
+        self._idl_types = tuple(ir.union_types)
+        self._member_tokens = ir.token
         self._flattened_member_types = tuple(
             sorted(flattened_member_types, key=sort_key_typename))
         self._does_include_nullable_type = does_include_nullable_type
@@ -153,9 +154,19 @@ class NewUnion(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
             sorted(ir.typedefs, key=sort_key_identifier))
 
         ir.public_object = self
-        # TODO(yukishiino): Replace BackwardCompatibleUnion with NewUnion
-        # for union_type in self._union_types:
-        #     union_type.set_union_definition_object(self)
+
+        for idl_type in self._idl_types:
+            idl_type.set_new_union_definition_object(self)
+
+    @property
+    def idl_types(self):
+        """Returns a list of IdlTypes which this object represents."""
+        return self._idl_types
+
+    @property
+    def member_tokens(self):
+        """Returns a list of unique names of union member types."""
+        return self._member_tokens
 
     @property
     def flattened_member_types(self):

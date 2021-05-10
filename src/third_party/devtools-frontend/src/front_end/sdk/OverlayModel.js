@@ -3,14 +3,23 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Root from '../root/root.js';
 
 import {DebuggerModel, Events as DebuggerModelEvents} from './DebuggerModel.js';
 import {DeferredDOMNode, DOMModel, DOMNode, Events as DOMModelEvents} from './DOMModel.js';  // eslint-disable-line no-unused-vars
+import {OverlayPersistentHighlighter} from './OverlayPersistentHighlighter.js';
 import {RemoteObject} from './RemoteObject.js';                             // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text in Overlay Model
+  */
+  pausedInDebugger: 'Paused in debugger',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/OverlayModel.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /**
  * @typedef {{r: number, g: number, b: number, a: number}}
@@ -57,7 +66,6 @@ export class OverlayModel extends SDKModel {
     }
 
     this._inspectModeEnabled = false;
-    this._gridFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssGridFeatures');
     this._flexFeaturesExperimentEnabled = Root.Runtime.experiments.isEnabled('cssFlexboxFeatures');
 
     this._hideHighlightTimeout = null;
@@ -73,6 +81,7 @@ export class OverlayModel extends SDKModel {
     this._showScrollBottleneckRectsSetting =
         Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects');
     this._showHitTestBordersSetting = Common.Settings.Settings.instance().moduleSetting('showHitTestBorders');
+    this._showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting('showWebVitals');
 
     /**
      * @type {!Array<!Common.EventTarget.EventDescriptor>}
@@ -85,23 +94,15 @@ export class OverlayModel extends SDKModel {
       this._wireAgentToSettings();
     }
 
-    /** @type {?DefaultPersistentGridHighlighter} */
-    this._persistentGridHighlighter = null;
-    if (this._gridFeaturesExperimentEnabled) {
-      this._persistentGridHighlighter = new DefaultPersistentGridHighlighter(this);
-      this._domModel.addEventListener(DOMModelEvents.NodeRemoved, () => {
-        if (!this._persistentGridHighlighter) {
-          return;
-        }
-        this._persistentGridHighlighter.refreshHighlights();
-      });
-      this._domModel.addEventListener(DOMModelEvents.DocumentUpdated, () => {
-        if (!this._persistentGridHighlighter) {
-          return;
-        }
-        this._persistentGridHighlighter.hideAllInOverlay();
-      });
-    }
+    /** @type {?OverlayPersistentHighlighter} */
+    this._peristentHighlighter = new OverlayPersistentHighlighter(this, this._flexFeaturesExperimentEnabled);
+    this._domModel.addEventListener(DOMModelEvents.NodeRemoved, () => {
+      this._peristentHighlighter && this._peristentHighlighter.refreshHighlights();
+    });
+    this._domModel.addEventListener(DOMModelEvents.DocumentUpdated, () => {
+      this._peristentHighlighter && this._peristentHighlighter.hideAllInOverlay();
+    });
+
     this._sourceOrderHighlighter = new SourceOrderHighlighter(this);
     this._sourceOrderModeActive = false;
   }
@@ -190,7 +191,9 @@ export class OverlayModel extends SDKModel {
           () => this._overlayAgent.invoke_setShowScrollBottleneckRects(
               {show: this._showScrollBottleneckRectsSetting.get()})),
       this._showHitTestBordersSetting.addChangeListener(
-          () => this._overlayAgent.invoke_setShowHitTestBorders({show: this._showHitTestBordersSetting.get()}))
+          () => this._overlayAgent.invoke_setShowHitTestBorders({show: this._showHitTestBordersSetting.get()})),
+      this._showWebVitalsSetting.addChangeListener(
+          () => this._overlayAgent.invoke_setShowWebVitals({show: this._showWebVitalsSetting.get()}))
     ];
 
     if (this._showPaintRectsSetting.get()) {
@@ -213,6 +216,9 @@ export class OverlayModel extends SDKModel {
     }
     if (this._showHitTestBordersSetting.get()) {
       this._overlayAgent.invoke_setShowHitTestBorders({show: true});
+    }
+    if (this._showWebVitalsSetting.get()) {
+      this._overlayAgent.invoke_setShowWebVitals({show: true});
     }
     if (this._debuggerModel && this._debuggerModel.isPaused()) {
       this._updatePausedInDebuggerMessage();
@@ -258,7 +264,7 @@ export class OverlayModel extends SDKModel {
     }
     const message = this._debuggerModel && this._debuggerModel.isPaused() &&
             !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get() ?
-        Common.UIString.UIString('Paused in debugger') :
+        i18nString(UIStrings.pausedInDebugger) :
         undefined;
     this._overlayAgent.invoke_setPausedInDebuggerMessage({message});
   }
@@ -321,14 +327,12 @@ export class OverlayModel extends SDKModel {
 
   /**
    * @param {number} nodeId
-   * @param {!Host.UserMetrics.GridOverlayOpener} gridOverlayOpener
    */
-  highlightGridInPersistentOverlay(nodeId, gridOverlayOpener) {
-    if (!this._persistentGridHighlighter) {
+  highlightGridInPersistentOverlay(nodeId) {
+    if (!this._peristentHighlighter) {
       return;
     }
-    this._persistentGridHighlighter.highlightInOverlay(nodeId);
-    Host.userMetrics.gridOverlayOpenedFrom(gridOverlayOpener);
+    this._peristentHighlighter.highlightGridInOverlay(nodeId);
     this.dispatchEventToListeners(Events.PersistentGridOverlayStateChanged, {nodeId, enabled: true});
   }
 
@@ -337,21 +341,54 @@ export class OverlayModel extends SDKModel {
    * @return {boolean}
    */
   isHighlightedGridInPersistentOverlay(nodeId) {
-    if (!this._persistentGridHighlighter) {
+    if (!this._peristentHighlighter) {
       return false;
     }
-    return this._persistentGridHighlighter.isHighlighted(nodeId);
+    return this._peristentHighlighter.isGridHighlighted(nodeId);
   }
 
   /**
    * @param {number} nodeId
    */
   hideGridInPersistentOverlay(nodeId) {
-    if (!this._persistentGridHighlighter) {
+    if (!this._peristentHighlighter) {
       return;
     }
-    this._persistentGridHighlighter.hideInOverlay(nodeId);
+    this._peristentHighlighter.hideGridInOverlay(nodeId);
     this.dispatchEventToListeners(Events.PersistentGridOverlayStateChanged, {nodeId, enabled: false});
+  }
+
+  /**
+   * @param {number} nodeId
+   */
+  highlightFlexContainerInPersistentOverlay(nodeId) {
+    if (!this._peristentHighlighter) {
+      return;
+    }
+    this._peristentHighlighter.highlightFlexInOverlay(nodeId);
+    this.dispatchEventToListeners(Events.PersistentFlexContainerOverlayStateChanged, {nodeId, enabled: true});
+  }
+
+  /**
+   * @param {number} nodeId
+   * @return {boolean}
+   */
+  isHighlightedFlexContainerInPersistentOverlay(nodeId) {
+    if (!this._peristentHighlighter) {
+      return false;
+    }
+    return this._peristentHighlighter.isFlexHighlighted(nodeId);
+  }
+
+  /**
+   * @param {number} nodeId
+   */
+  hideFlexContainerInPersistentOverlay(nodeId) {
+    if (!this._peristentHighlighter) {
+      return;
+    }
+    this._peristentHighlighter.hideFlexInOverlay(nodeId);
+    this.dispatchEventToListeners(Events.PersistentFlexContainerOverlayStateChanged, {nodeId, enabled: false});
   }
 
   /**
@@ -370,10 +407,10 @@ export class OverlayModel extends SDKModel {
    * @return {string|null}
    */
   colorOfGridInPersistentOverlay(nodeId) {
-    if (!this._persistentGridHighlighter) {
+    if (!this._peristentHighlighter) {
       return null;
     }
-    return this._persistentGridHighlighter.colorOfGrid(nodeId).asString(Common.Color.Format.HEX);
+    return this._peristentHighlighter.colorOfGrid(nodeId).asString(Common.Color.Format.HEX);
   }
 
   /**
@@ -381,15 +418,42 @@ export class OverlayModel extends SDKModel {
    * @param {string} colorStr
    */
   setColorOfGridInPersistentOverlay(nodeId, colorStr) {
-    if (!this._persistentGridHighlighter) {
+    if (!this._peristentHighlighter) {
       return;
     }
     const color = Common.Color.Color.parse(colorStr);
     if (!color) {
       return;
     }
-    this._persistentGridHighlighter.setColorOfGrid(nodeId, color);
-    this._persistentGridHighlighter._resetOverlay();
+    this._peristentHighlighter.setColorOfGrid(nodeId, color);
+    this._peristentHighlighter.resetOverlay();
+  }
+
+  /**
+   * @param {number} nodeId
+   * @return {string|null}
+   */
+  colorOfFlexInPersistentOverlay(nodeId) {
+    if (!this._peristentHighlighter) {
+      return null;
+    }
+    return this._peristentHighlighter.colorOfFlex(nodeId).asString(Common.Color.Format.HEX);
+  }
+
+  /**
+   * @param {number} nodeId
+   * @param {string} colorStr
+   */
+  setColorOfFlexInPersistentOverlay(nodeId, colorStr) {
+    if (!this._peristentHighlighter) {
+      return;
+    }
+    const color = Common.Color.Color.parse(colorStr);
+    if (!color) {
+      return;
+    }
+    this._peristentHighlighter.setColorOfFlex(nodeId, color);
+    this._peristentHighlighter.resetOverlay();
   }
 
   hideSourceOrderInOverlay() {
@@ -460,6 +524,9 @@ export class OverlayModel extends SDKModel {
       showExtensionLines: showRulers,
       gridHighlightConfig: {},
       flexContainerHighlightConfig: {},
+      flexItemHighlightConfig: {},
+      contrastAlgorithm: Root.Runtime.experiments.isEnabled('APCA') ? Protocol.Overlay.ContrastAlgorithm.Apca :
+                                                                      Protocol.Overlay.ContrastAlgorithm.Aa,
     };
 
     if (mode === 'all' || mode === 'content') {
@@ -484,12 +551,12 @@ export class OverlayModel extends SDKModel {
       highlightConfig.shapeMarginColor = Common.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
 
       highlightConfig.gridHighlightConfig = {
-        rowGapColor: Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA(),
-        rowHatchColor: Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA(),
-        columnGapColor: Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA(),
-        columnHatchColor: Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA(),
-        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
-        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        rowGapColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        rowHatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        columnGapColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        columnHatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        rowLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true,
       };
@@ -497,44 +564,92 @@ export class OverlayModel extends SDKModel {
       if (this._flexFeaturesExperimentEnabled) {
         highlightConfig.flexContainerHighlightConfig = {
           containerBorder: {
-            color: Common.Color.PageHighlight.FlexContainerBorder.toProtocolRGBA(),
+            color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
             pattern: Protocol.Overlay.LineStylePattern.Dashed,
           },
           itemSeparator: {
-            color: Common.Color.PageHighlight.FlexContainerBorder.toProtocolRGBA(),
+            color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
             pattern: Protocol.Overlay.LineStylePattern.Dotted,
           },
           lineSeparator: {
-            color: Common.Color.PageHighlight.FlexContainerBorder.toProtocolRGBA(),
+            color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
             pattern: Protocol.Overlay.LineStylePattern.Dashed,
+          },
+          mainDistributedSpace: {
+            hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+            fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+          },
+          crossDistributedSpace: {
+            hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+            fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+          },
+          rowGapSpace: {
+            hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+            fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+          },
+          columnGapSpace: {
+            hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+            fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+          },
+        };
+
+        highlightConfig.flexItemHighlightConfig = {
+          baseSizeBox: {
+            hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          },
+          baseSizeBorder: {
+            color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+            pattern: Protocol.Overlay.LineStylePattern.Dotted,
+          },
+          flexibilityArrow: {
+            color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           }
         };
       }
     }
 
-    if (mode.endsWith('gap') && this._gridFeaturesExperimentEnabled) {
+    if (mode.endsWith('gap')) {
       highlightConfig.gridHighlightConfig = {
         gridBorderColor: Common.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         gridBorderDash: true
       };
 
       if (mode === 'gap' || mode === 'row-gap') {
-        highlightConfig.gridHighlightConfig.rowGapColor =
-            Common.Color.PageHighlight.GridRowGapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.rowHatchColor = Common.Color.PageHighlight.GridRowGapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowGapColor = Common.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowHatchColor = Common.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
       if (mode === 'gap' || mode === 'column-gap') {
-        highlightConfig.gridHighlightConfig.columnGapColor =
-            Common.Color.PageHighlight.GridColumnGapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.columnHatchColor =
-            Common.Color.PageHighlight.GridColumnGapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnGapColor = Common.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnHatchColor = Common.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
     }
 
-    if (mode === 'grid-areas' && this._gridFeaturesExperimentEnabled) {
+    if (mode.endsWith('gap') && this._flexFeaturesExperimentEnabled) {
+      highlightConfig.flexContainerHighlightConfig = {
+        containerBorder: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed,
+        },
+      };
+
+      if (mode === 'gap' || mode === 'row-gap') {
+        highlightConfig.flexContainerHighlightConfig.rowGapSpace = {
+          hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        };
+      }
+      if (mode === 'gap' || mode === 'column-gap') {
+        highlightConfig.flexContainerHighlightConfig.columnGapSpace = {
+          hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        };
+      }
+    }
+
+    if (mode === 'grid-areas') {
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
-        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        rowLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true,
         showAreaNames: true,
@@ -542,19 +657,59 @@ export class OverlayModel extends SDKModel {
       };
     }
 
-    if (mode === 'grid-template-columns' && this._gridFeaturesExperimentEnabled) {
+    if (mode === 'grid-template-columns') {
       highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        columnLineColor: Common.Color.PageHighlight.GridColumnLine.toProtocolRGBA(),
+        columnLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         columnLineDash: true
       };
     }
 
-    if (mode === 'grid-template-rows' && this._gridFeaturesExperimentEnabled) {
+    if (mode === 'grid-template-rows') {
       highlightConfig.contentColor = Common.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common.Color.PageHighlight.GridRowLine.toProtocolRGBA(),
+        rowLineColor: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true
+      };
+    }
+
+    if (mode === 'justify-content' && this._flexFeaturesExperimentEnabled) {
+      highlightConfig.flexContainerHighlightConfig = {
+        containerBorder: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed
+        },
+        mainDistributedSpace: {
+          hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        }
+      };
+    }
+
+    if (mode === 'align-content' && this._flexFeaturesExperimentEnabled) {
+      highlightConfig.flexContainerHighlightConfig = {
+        containerBorder: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed
+        },
+        crossDistributedSpace: {
+          hatchColor: Common.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        }
+      };
+    }
+
+    if (mode === 'align-items' && this._flexFeaturesExperimentEnabled) {
+      highlightConfig.flexContainerHighlightConfig = {
+        containerBorder: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed
+        },
+        lineSeparator: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed
+        },
+        crossAlignment: {color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA()}
       };
     }
 
@@ -630,8 +785,8 @@ export const Events = {
   ExitedInspectMode: Symbol('InspectModeExited'),
   HighlightNodeRequested: Symbol('HighlightNodeRequested'),
   ScreenshotRequested: Symbol('ScreenshotRequested'),
-  PersistentGridOverlayCleared: Symbol('PersistentGridOverlayCleared'),
   PersistentGridOverlayStateChanged: Symbol('PersistentGridOverlayStateChanged'),
+  PersistentFlexContainerOverlayStateChanged: Symbol('PersistentFlexContainerOverlayStateChanged'),
 };
 
 /**
@@ -713,308 +868,6 @@ class DefaultHighlighter {
   }
 }
 
-/**
- * @interface
- */
-export class PersistentGridHighlighter {
-  /**
-   * @param {number} nodeId
-   * @param {!Protocol.Overlay.GridHighlightConfig} config
-   */
-  highlightInOverlay(nodeId, config) {
-  }
-
-  /**
-   * @param {number} nodeId
-   */
-  hideInOverlay(nodeId) {
-  }
-
-  hideAllInOverlay() {
-  }
-
-  refreshHighlights() {
-  }
-
-  /**
-   * @param {number} nodeId
-   * @return {boolean}
-   */
-  isHighlighted(nodeId) {
-    return false;
-  }
-}
-
-/**
- * @implements {PersistentGridHighlighter}
- */
-class DefaultPersistentGridHighlighter {
-  /**
-   * @param {!OverlayModel} model
-   */
-  constructor(model) {
-    this._model = model;
-
-    /** @type {!Map<number, !Protocol.Overlay.GridHighlightConfig>} */
-    this._gridHighlights = new Map();
-
-    /** @type {!Map<number, !Common.Color.Color>} */
-    this._gridColors = new Map();
-
-    this._colorGenerator = new OverlayColorGenerator();
-
-    /** @type {!Common.Settings.Setting<*>} */
-    this._showGridLineLabelsSetting = Common.Settings.Settings.instance().moduleSetting('showGridLineLabels');
-    this._showGridLineLabelsSetting.addChangeListener(this._onSettingChange, this);
-    /** @type {!Common.Settings.Setting<*>} */
-    this._extendGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('extendGridLines');
-    this._extendGridLinesSetting.addChangeListener(this._onSettingChange, this);
-    /** @type {!Common.Settings.Setting<*>} */
-    this._showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('showGridAreas');
-    this._showGridAreasSetting.addChangeListener(this._onSettingChange, this);
-    /** @type {!Common.Settings.Setting<*>} */
-    this._showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('showGridTrackSizes');
-    this._showGridTrackSizesSetting.addChangeListener(this._onSettingChange, this);
-
-    this._logCurrentGridSettings();
-
-    // Debounce recording highlighted grids in order to avoid counting rapidly turning grids on and off.
-    this._recordHighlightedGridCount = Common.Debouncer.debounce(this._doRecordHighlightedGridCount.bind(this), 1000);
-    /** @type {!Array<number>} */
-    this._previouslyRecordedGridCountNodeIds = [];
-  }
-
-  /**
-   * @returns {boolean}
-   */
-  static getGridTelemetryLogged() {
-    return DefaultPersistentGridHighlighter.gridTelemetryLogged;
-  }
-
-  /**
-   * @param {boolean} isLogged
-   */
-  static setGridTelemetryLogged(isLogged) {
-    DefaultPersistentGridHighlighter.gridTelemetryLogged = isLogged;
-  }
-
-  _onSettingChange() {
-    this._resetOverlay();
-  }
-
-  _logCurrentGridSettings() {
-    if (DefaultPersistentGridHighlighter.getGridTelemetryLogged()) {
-      return;
-    }
-    this._recordGridSetting(this._showGridLineLabelsSetting);
-    this._recordGridSetting(this._extendGridLinesSetting);
-    this._recordGridSetting(this._showGridAreasSetting);
-    this._recordGridSetting(this._showGridTrackSizesSetting);
-    DefaultPersistentGridHighlighter.setGridTelemetryLogged(true);
-  }
-
-  /**
-   * @param {?Common.Settings.Setting<*>} setting
-   */
-  _recordGridSetting(setting) {
-    if (!setting) {
-      return;
-    }
-    Host.userMetrics.cssGridSettings(`${setting.name}.${setting.get()}`);
-  }
-
-  _doRecordHighlightedGridCount() {
-    const recordedNodeIds = [...this._gridHighlights.keys()];
-
-    // If only settings changed, but not the list of highlighted grids, bail out.
-    if (arraysEqual(recordedNodeIds, this._previouslyRecordedGridCountNodeIds)) {
-      return;
-    }
-
-    Host.userMetrics.highlightedPersistentCssGridCount(recordedNodeIds.length);
-
-    this._previouslyRecordedGridCountNodeIds = recordedNodeIds;
-  }
-
-  /**
-   * @param {number} nodeId
-   * @return {!Protocol.Overlay.GridHighlightConfig}
-   */
-  _buildGridHighlightConfig(nodeId) {
-    const mainColor = this.colorOfGrid(nodeId);
-    const background = mainColor.setAlpha(0.1);
-    const gapBackground = mainColor.setAlpha(0.3);
-    const gapHatch = mainColor.setAlpha(0.8);
-
-    const showGridExtensionLines = /** @type {boolean} */ (this._extendGridLinesSetting.get());
-    const showPositiveLineNumbers = this._showGridLineLabelsSetting.get() === 'lineNumbers';
-    const showNegativeLineNumbers = showPositiveLineNumbers;
-    const showLineNames = this._showGridLineLabelsSetting.get() === 'lineNames';
-    return {
-      rowGapColor: gapBackground.toProtocolRGBA(),
-      rowHatchColor: gapHatch.toProtocolRGBA(),
-      columnGapColor: gapBackground.toProtocolRGBA(),
-      columnHatchColor: gapHatch.toProtocolRGBA(),
-      gridBorderColor: mainColor.toProtocolRGBA(),
-      gridBorderDash: false,
-      rowLineColor: mainColor.toProtocolRGBA(),
-      columnLineColor: mainColor.toProtocolRGBA(),
-      rowLineDash: true,
-      columnLineDash: true,
-      showGridExtensionLines,
-      showPositiveLineNumbers,
-      showNegativeLineNumbers,
-      showLineNames,
-      showAreaNames: /** @type {boolean} */ (this._showGridAreasSetting.get()),
-      showTrackSizes: /** @type {boolean} */ (this._showGridTrackSizesSetting.get()),
-      areaBorderColor: mainColor.toProtocolRGBA(),
-      gridBackgroundColor: background.toProtocolRGBA(),
-    };
-  }
-
-  /**
-   * @override
-   * @param {number} nodeId
-   */
-  highlightInOverlay(nodeId) {
-    this._gridHighlights.set(nodeId, this._buildGridHighlightConfig(nodeId));
-    this._updateHighlightsInOverlay();
-  }
-
-  /**
-   * @override
-   * @param {number} nodeId
-   * @return {boolean}
-   */
-  isHighlighted(nodeId) {
-    return this._gridHighlights.has(nodeId);
-  }
-
-  /**
-   * @param {number} nodeId
-   * @return {!Common.Color.Color}
-   */
-  colorOfGrid(nodeId) {
-    let color = this._gridColors.get(nodeId);
-    if (!color) {
-      color = this._colorGenerator.next();
-      this._gridColors.set(nodeId, color);
-    }
-
-    return color;
-  }
-
-  /**
-   * @param {number} nodeId
-   * @param {!Common.Color.Color} color
-   */
-  setColorOfGrid(nodeId, color) {
-    this._gridColors.set(nodeId, color);
-  }
-
-  /**
-   * @override
-   * @param {number} nodeId
-   */
-  hideInOverlay(nodeId) {
-    if (this._gridHighlights.has(nodeId)) {
-      this._gridHighlights.delete(nodeId);
-      this._updateHighlightsInOverlay();
-    }
-  }
-
-  /**
-   * @override
-   */
-  hideAllInOverlay() {
-    this._gridHighlights.clear();
-    this._updateHighlightsInOverlay();
-  }
-
-  /**
-   * @override
-   */
-  refreshHighlights() {
-    let needsUpdate = false;
-    for (const nodeId of this._gridHighlights.keys()) {
-      if (this._model.getDOMModel().nodeForId(nodeId) === null) {
-        this._gridHighlights.delete(nodeId);
-        needsUpdate = true;
-      }
-    }
-    if (needsUpdate) {
-      this._updateHighlightsInOverlay();
-    }
-  }
-
-  _resetOverlay() {
-    for (const nodeId of this._gridHighlights.keys()) {
-      this._gridHighlights.set(nodeId, this._buildGridHighlightConfig(nodeId));
-    }
-    this._updateHighlightsInOverlay();
-  }
-
-  _updateHighlightsInOverlay() {
-    const hasGridNodesToHighlight = this._gridHighlights.size > 0;
-    this._model.setShowViewportSizeOnResize(!hasGridNodesToHighlight);
-    const overlayModel = this._model;
-    const gridNodeHighlightConfigs = [];
-    for (const [nodeId, gridHighlightConfig] of this._gridHighlights.entries()) {
-      gridNodeHighlightConfigs.push({nodeId, gridHighlightConfig});
-    }
-    overlayModel.target().overlayAgent().invoke_setShowGridOverlays({gridNodeHighlightConfigs});
-    this._recordHighlightedGridCount();
-  }
-}
-
-DefaultPersistentGridHighlighter.gridTelemetryLogged = false;
-
-/**
- * Used to cycle through a list of predetermined colors for the grid overlay.
- * This helps users differentiate between overlays when several are shown at the
- * same time.
- */
-class OverlayColorGenerator {
-  constructor() {
-    this._colors = [
-      // F59794
-      new Common.Color.Color([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], Common.Color.Format.RGBA),
-      // F0BF4C
-      new Common.Color.Color([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], Common.Color.Format.RGBA),
-      // D4ED31
-      new Common.Color.Color(
-          [0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], Common.Color.Format.RGBA),
-      // 9EEB47
-      new Common.Color.Color([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], Common.Color.Format.RGBA),
-      // 5BD1D7
-      new Common.Color.Color([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], Common.Color.Format.RGBA),
-      // BCCEFB
-      new Common.Color.Color([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], Common.Color.Format.RGBA),
-      // C6BEEE
-      new Common.Color.Color([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], Common.Color.Format.RGBA),
-      // D094EA
-      new Common.Color.Color([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], Common.Color.Format.RGBA),
-      // EB94CF
-      new Common.Color.Color([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], Common.Color.Format.RGBA),
-    ];
-    this._index = 0;
-  }
-
-  /**
-   * Generate the next color in the spectrum
-   * @return {!Common.Color.Color}
-   */
-  next() {
-    const color = this._colors[this._index];
-    this._index++;
-    if (this._index >= this._colors.length) {
-      this._index = 0;
-    }
-
-    return color;
-  }
-}
-
 export class SourceOrderHighlighter {
   /**
    * @param {!OverlayModel} model
@@ -1045,25 +898,3 @@ SDKModel.register(OverlayModel, Capability.DOM, true);
 /** @typedef {!{node: !DOMNode, selectorList: (string|undefined)} | !{deferredNode: DeferredDOMNode, selectorList: (string|undefined)} | !{object: !RemoteObject, selectorList: (string|undefined)} | !{clear: *}} */
 // @ts-ignore typedef
 export let HighlightData;
-
-/**
- * Checks if 2 arrays are equal.
- * @param {!Array<*>} a1 The first array
- * @param {!Array<*>} a2 The second array
- * @return {boolean}
- */
-const arraysEqual = (a1, a2) => {
-  if (a1.length !== a2.length) {
-    return false;
-  }
-
-  a1 = [...a1].sort();
-  a2 = [...a2].sort();
-  for (let i = 0; i < a1.length; i++) {
-    if (a1[i] !== a2[i]) {
-      return false;
-    }
-  }
-
-  return true;
-};

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/masque/masque_utils.h"
+#include "quic/masque/masque_utils.h"
 
 namespace quic {
 
@@ -16,7 +16,7 @@ ParsedQuicVersionVector MasqueSupportedVersions() {
       break;
     }
   }
-  CHECK(version.IsKnown());
+  QUICHE_CHECK(version.IsKnown());
   QuicEnableVersion(version);
   return {version};
 }

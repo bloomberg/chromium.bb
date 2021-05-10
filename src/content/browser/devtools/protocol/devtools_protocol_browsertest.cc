@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -54,6 +56,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -326,7 +329,7 @@ std::unique_ptr<SkBitmap> DecodeJPEG(std::string base64_data) {
       jpeg_data.size());
 }
 
-bool ColorsMatchWithinLimit(SkColor color1, SkColor color2, int error_limit) {
+int ColorsSquareDiff(SkColor color1, SkColor color2) {
   auto a_diff = static_cast<int>(SkColorGetA(color1)) -
                 static_cast<int>(SkColorGetA(color2));
   auto r_diff = static_cast<int>(SkColorGetR(color1)) -
@@ -336,8 +339,11 @@ bool ColorsMatchWithinLimit(SkColor color1, SkColor color2, int error_limit) {
   auto b_diff = static_cast<int>(SkColorGetB(color1)) -
                 static_cast<int>(SkColorGetB(color2));
   return a_diff * a_diff + r_diff * r_diff + g_diff * g_diff +
-             b_diff * b_diff <=
-         error_limit * error_limit;
+             b_diff * b_diff;
+}
+
+bool ColorsMatchWithinLimit(SkColor color1, SkColor color2, int max_collor_diff) {
+  return ColorsSquareDiff(color1, color2) <= max_collor_diff * max_collor_diff;
 }
 
 // Adapted from cc::ExactPixelComparator.
@@ -345,7 +351,7 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
                    const SkBitmap& actual_bmp,
                    const gfx::Rect& matching_mask,
                    float device_scale_factor,
-                   int error_limit) {
+                   int max_collor_diff) {
   // Number of pixels with an error
   int error_pixels_count = 0;
 
@@ -355,10 +361,12 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
   device_scale_factor = device_scale_factor ? device_scale_factor : 1;
 
   // Check that bitmaps have identical dimensions.
-  EXPECT_EQ(expected_bmp.width() * device_scale_factor, actual_bmp.width());
-  EXPECT_EQ(expected_bmp.height() * device_scale_factor, actual_bmp.height());
-  if (expected_bmp.width() * device_scale_factor != actual_bmp.width() ||
-      expected_bmp.height() * device_scale_factor != actual_bmp.height()) {
+  int expected_width = round(expected_bmp.width() * device_scale_factor);
+  int expected_height = round(expected_bmp.height() * device_scale_factor);
+  EXPECT_EQ(expected_width, actual_bmp.width());
+  EXPECT_EQ(expected_height, actual_bmp.height());
+  if (expected_width != actual_bmp.width() ||
+      expected_height != actual_bmp.height()) {
     return false;
   }
 
@@ -369,10 +377,12 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
       SkColor actual_color =
           actual_bmp.getColor(x * device_scale_factor, y * device_scale_factor);
       SkColor expected_color = expected_bmp.getColor(x, y);
-      if (!ColorsMatchWithinLimit(actual_color, expected_color, error_limit)) {
+      if (!ColorsMatchWithinLimit(actual_color, expected_color, max_collor_diff)) {
         if (error_pixels_count < 10) {
-          LOG(ERROR) << "Pixel (" << x << "," << y << "): expected " << std::hex
-                     << expected_color << " actual " << actual_color;
+          LOG(ERROR) << "Pixel (" << x << "," << y
+                     << "). Expected: " << std::hex << expected_color
+                     << ", actual: " << actual_color << std::dec
+                     << ", square diff: " << ColorsSquareDiff(expected_color, actual_color);
         }
         error_pixels_count++;
         error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
@@ -398,11 +408,15 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
       ScreenshotEncoding encoding,
       bool from_surface,
       const gfx::RectF& clip = gfx::RectF(),
-      float clip_scale = 0) {
+      float clip_scale = 0,
+      bool capture_beyond_viewport = false) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("format", encoding == ENCODING_PNG ? "png" : "jpeg");
     params->SetInteger("quality", 100);
     params->SetBoolean("fromSurface", from_surface);
+    if (capture_beyond_viewport) {
+      params->SetBoolean("captureBeyondViewport", true);
+    }
     if (clip_scale) {
       std::unique_ptr<base::DictionaryValue> clip_value(
           new base::DictionaryValue());
@@ -433,9 +447,10 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
                                      bool from_surface,
                                      float device_scale_factor = 0,
                                      const gfx::RectF& clip = gfx::RectF(),
-                                     float clip_scale = 0) {
-    std::unique_ptr<SkBitmap> result_bitmap =
-        CaptureScreenshot(encoding, from_surface, clip, clip_scale);
+                                     float clip_scale = 0,
+                                     bool capture_beyond_viewport = false) {
+    std::unique_ptr<SkBitmap> result_bitmap = CaptureScreenshot(
+        encoding, from_surface, clip, clip_scale, capture_beyond_viewport);
 
     gfx::Rect matching_mask(gfx::SkIRectToRect(expected_bitmap.bounds()));
 #if defined(OS_MAC)
@@ -449,10 +464,10 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     // Allow some error between actual and expected pixel values.
     // That assumes there is no shift in pixel positions, so it only works
     // reliably if all pixels have equal values.
-    int error_limit = 16;
+    int max_collor_diff = 20;
 
     EXPECT_TRUE(MatchesBitmap(expected_bitmap, *result_bitmap, matching_mask,
-                              device_scale_factor, error_limit));
+                              device_scale_factor, max_collor_diff));
   }
 
   // Takes a screenshot of a colored box that is positioned inside the frame.
@@ -531,6 +546,98 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 #endif
 };
 
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
+                       CaptureScreenshotBeyondViewport_OutOfView) {
+  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // devices.
+  if (base::SysInfo::IsLowEndDevice())
+    return;
+
+  // Load dummy page before getting the window size.
+  shell()->LoadURL(GURL("data:text/html,"));
+  gfx::Size window_size =
+      static_cast<RenderWidgetHostViewBase*>(
+          shell()->web_contents()->GetRenderWidgetHostView())
+          ->GetCompositorViewportPixelSize();
+
+  // Make a page a bit bigger than the view to force scrollbars to be shown.
+  float content_height = window_size.height() + 10;
+  float content_width = window_size.width() + 10;
+
+  shell()->LoadURL(
+      GURL("data:text/html,<body "
+           "style='background:%23123456;height:" +
+           base::NumberToString(content_height) +
+           "px;width:" + base::NumberToString(content_width) + "px'></body>"));
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  Attach();
+
+  // Generate expected screenshot without any scrollbars.
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocN32Pixels(content_width, content_height);
+  expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
+
+  float device_scale_factor =
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+
+  // Verify there are no scrollbars on the screenshot.
+  CaptureScreenshotAndCompareTo(
+      expected_bitmap, ENCODING_PNG, true, device_scale_factor,
+      gfx::RectF(0, 0, content_width, content_height), 1, true);
+}
+
+// ChromeOS and Android has fading out scrollbars, which makes the test flacky.
+// TODO(crbug.com/1150059) Android has a problem with changing scale.
+// TODO(crbug.com/1147911) Android Lollipop has a problem with capturing
+// screenshot.
+// TODO(crbug.com/1156767) Flaky on linux-lacros-tester-rel
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown \
+  DISABLED_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown
+#else
+#define MAYBE_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown \
+  CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown
+#endif
+IN_PROC_BROWSER_TEST_F(
+    CaptureScreenshotTest,
+    MAYBE_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown) {
+  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // devices.
+  if (base::SysInfo::IsLowEndDevice())
+    return;
+
+  shell()->LoadURL(GURL(
+      "data:text/html,<body><div style='width: 50px; height: 50px; overflow: "
+      "scroll;'><h3>test</h3><h3>test</h3><h3>test</h3></div></body>"));
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  Attach();
+
+  // We compare against the actual physical backing size rather than the
+  // view size, because the view size is stored adjusted for DPI and only in
+  // integer precision.
+  gfx::Size view_size = static_cast<RenderWidgetHostViewBase*>(
+                            shell()->web_contents()->GetRenderWidgetHostView())
+                            ->GetCompositorViewportPixelSize();
+
+  // Capture a screenshot not "form surface", meaning without emulation and
+  // without changing preferences, as-is.
+  std::unique_ptr<SkBitmap> expected_bitmap =
+      CaptureScreenshot(ENCODING_PNG, false);
+
+  float device_scale_factor =
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+
+  // Compare the captured screenshot with one made "from_surface", where actual
+  // scrollbar magic happened, and verify it looks the same, meaning the
+  // internal scrollbars are rendered.
+  CaptureScreenshotAndCompareTo(
+      *expected_bitmap, ENCODING_PNG, true, device_scale_factor,
+      gfx::RectF(0, 0, view_size.width(), view_size.height()), 1, true);
+}
+
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
   // This test fails consistently on low-end Android devices.
   // See crbug.com/653637.
@@ -577,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
 }
 
 // ChromeOS and Android don't support software compositing.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
 
 class NoGPUCaptureScreenshotTest : public CaptureScreenshotTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -632,7 +739,7 @@ IN_PROC_BROWSER_TEST_F(NoGPUCaptureScreenshotTest, LargeScreenshot) {
   EXPECT_GT(static_cast<int>(SkColorGetB(bottom_left)), 128);
 }
 
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
 
 // Setting frame size (through RWHV) is not supported on Android.
 // This test seems to be very flaky on windows: https://crbug.com/801173
@@ -1825,7 +1932,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
       content::WebContents::Create(create_params));
   EXPECT_TRUE(notifications_.empty());
 
+  NavigateToURLBlockUntilNavigationsComplete(web_contents.get(), first_url, 1);
+  // The notification does not come when there's no delegate.
+  EXPECT_FALSE(HasExistingNotification("Target.targetCreated"));
+
   web_contents->SetDelegate(this);
+  // Attaching a delegate causes the notification to be sent.
   params = WaitForNotification("Target.targetCreated", true);
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("page", temp);
@@ -2121,7 +2233,8 @@ class DevToolsProtocolBackForwardCacheTest : public DevToolsProtocolTest {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
-        {});
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
   }
   ~DevToolsProtocolBackForwardCacheTest() override = default;
 
@@ -2619,4 +2732,34 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DISABLED_MultiDownload) {
       file2, GetTestFilePath("download", "download-test.lib")));
 }
 #endif  // !defined(ANDROID)
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TracingWithPerfettoConfig) {
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  base::trace_event::TraceConfig chrome_config;
+  base::DictionaryValue* command_result;
+  perfetto::TraceConfig perfetto_config;
+  std::string perfetto_config_encoded;
+
+  chrome_config = base::trace_event::TraceConfig();
+  perfetto_config = tracing::GetDefaultPerfettoConfig(
+      chrome_config,
+      /*privacy_filtering_enabled=*/false,
+      /*convert_to_legacy_json=*/false,
+      perfetto::protos::gen::ChromeConfig::USER_INITIATED);
+  base::Base64Encode(perfetto_config.SerializeAsString(),
+                     &perfetto_config_encoded);
+  params->SetKey("perfettoConfig", base::Value(perfetto_config_encoded));
+  params->SetString("transferMode", "ReturnAsStream");
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  command_result = SendCommand("Tracing.start", std::move(params), true);
+  ASSERT_NE(command_result, nullptr);
+
+  command_result = SendCommand("Tracing.end", nullptr, true);
+  ASSERT_NE(command_result, nullptr);
+
+  WaitForNotification("Tracing.tracingComplete", true);
+}
 }  // namespace content

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/gtest_prod_util.h"  // FRIEND_TEST_ALL_PREFIXES
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -25,6 +24,9 @@ class RenderFrameHost;
 class WebContents;
 class WebUIImpl;
 
+// The WebContentObserver for WebUIImpl. Each WebUIImpl has exactly one
+// WebUIMainFrameObserver to watch for notifications from the associated
+// WebContents object.
 class CONTENT_EXPORT WebUIMainFrameObserver : public WebContentsObserver {
  public:
   WebUIMainFrameObserver(WebUIImpl* web_ui, WebContents* contents);
@@ -44,14 +46,22 @@ class CONTENT_EXPORT WebUIMainFrameObserver : public WebContentsObserver {
   // On official Google builds, capture and report JavaScript error messages on
   // WebUI surfaces back to Google. This allows us to fix JavaScript errors and
   // exceptions.
-  void OnDidAddMessageToConsole(RenderFrameHost* source_frame,
-                                blink::mojom::ConsoleMessageLevel log_level,
-                                const base::string16& message,
-                                int32_t line_no,
-                                const base::string16& source_id) override;
+  void OnDidAddMessageToConsole(
+      RenderFrameHost* source_frame,
+      blink::mojom::ConsoleMessageLevel log_level,
+      const base::string16& message,
+      int32_t line_no,
+      const base::string16& source_id,
+      const base::Optional<base::string16>& untrusted_stack_trace) override;
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
  private:
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // Do we report JavaScript errors ?
+  bool error_reporting_enabled_ = false;
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
   WebUIImpl* web_ui_;
 };
 

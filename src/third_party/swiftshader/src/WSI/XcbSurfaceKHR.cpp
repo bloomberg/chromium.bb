@@ -109,6 +109,11 @@ VkExtent2D getWindowSize(xcb_connection_t *connection, xcb_window_t window)
 
 namespace vk {
 
+bool XcbSurfaceKHR::hasLibXCB()
+{
+	return libXcb;
+}
+
 XcbSurfaceKHR::XcbSurfaceKHR(const VkXcbSurfaceCreateInfoKHR *pCreateInfo, void *mem)
     : connection(pCreateInfo->connection)
     , window(pCreateInfo->window)
@@ -124,15 +129,16 @@ size_t XcbSurfaceKHR::ComputeRequiredAllocationSize(const VkXcbSurfaceCreateInfo
 	return 0;
 }
 
-void XcbSurfaceKHR::getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const
+VkResult XcbSurfaceKHR::getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const
 {
-	SurfaceKHR::getSurfaceCapabilities(pSurfaceCapabilities);
+	setCommonSurfaceCapabilities(pSurfaceCapabilities);
 
 	VkExtent2D extent = getWindowSize(connection, window);
 
 	pSurfaceCapabilities->currentExtent = extent;
 	pSurfaceCapabilities->minImageExtent = extent;
 	pSurfaceCapabilities->maxImageExtent = extent;
+	return VK_SUCCESS;
 }
 
 void XcbSurfaceKHR::attachImage(PresentImage *image)

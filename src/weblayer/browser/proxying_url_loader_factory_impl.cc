@@ -49,7 +49,7 @@ void StartCachedLoad(
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
+  if (CreateDataPipe(nullptr, producer, consumer) != MOJO_RESULT_OK) {
     client->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
     return;
@@ -107,7 +107,6 @@ bool IsCachedResponseValid(net::HttpResponseHeaders* headers,
   return headers->RequiresValidation(request_time, response_time,
                                      base::Time::Now()) == net::VALIDATION_NONE;
 }
-
 
 // A ResponseDelegate for AndroidStreamReaderURLLoader which will cache the
 // response if it's successful. This allows back-forward navigations to reuse an

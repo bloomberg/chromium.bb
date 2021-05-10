@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "src/ast/continue_statement.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -27,11 +27,13 @@ namespace {
 using HlslGeneratorImplTest_Continue = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Continue, Emit_Continue) {
-  ast::ContinueStatement c;
+  auto* c = create<ast::ContinueStatement>();
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &c)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, c)) << gen.error();
   EXPECT_EQ(result(), "  continue;\n");
 }
 

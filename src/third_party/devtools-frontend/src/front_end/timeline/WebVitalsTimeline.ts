@@ -7,13 +7,14 @@ import * as Host from '../host/host.js';
 import {WebVitalsEventLane, WebVitalsTimeboxLane} from './WebVitalsLane.js';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-timeline-webvitals': WebVitalsTimeline;
   }
 }
 
 export interface Event {
-  timestamp: number
+  timestamp: number;
 }
 
 export interface Timebox {
@@ -53,15 +54,15 @@ export interface Marker {
   type: MarkerType;
   timestamp: number;
   timestampLabel: string;
-  timestampMetrics: TextMetrics
-  widthIncludingLabel: number
-  widthIncludingTimestamp: number
+  timestampMetrics: TextMetrics;
+  widthIncludingLabel: number;
+  widthIncludingTimestamp: number;
 }
 
 export const enum MarkerType {
   Good = 'Good',
   Medium = 'Medium',
-  Bad = 'Bad'
+  Bad = 'Bad',
 }
 
 export const LINE_HEIGHT = 24;
@@ -78,7 +79,7 @@ export const enum Colors {
 }
 
 type Constructor<T> = {
-  new (...args: unknown[]): T
+  new (...args: unknown[]): T,
 };
 
 //  eslint-disable-next-line
@@ -90,7 +91,7 @@ export function assertInstanceOf<T>(instance: any, constructor: Constructor<T>):
 
 export class WebVitalsTimeline extends HTMLElement {
   private readonly shadow = this.attachShadow({mode: 'open'});
-  private mainFrameNavigations: ReadonlyArray<number> = [];
+  private mainFrameNavigations: readonly number[] = [];
   private startTime = 0;
   private duration = 1000;
   private maxDuration = 1000;
@@ -163,7 +164,7 @@ export class WebVitalsTimeline extends HTMLElement {
     return LINE_HEIGHT;
   }
 
-  private handlePointerMove(e: MouseEvent) {
+  private handlePointerMove(e: MouseEvent): void {
     const x = e.offsetX, y = e.offsetY;
     const lane = Math.floor(y / LINE_HEIGHT);
 
@@ -176,7 +177,7 @@ export class WebVitalsTimeline extends HTMLElement {
     this.scheduleRender();
   }
 
-  private handlePointerOut(_: MouseEvent) {
+  private handlePointerOut(_: MouseEvent): void {
     this.fcpLane.handlePointerMove(null);
     this.lcpLane.handlePointerMove(null);
     this.layoutShiftsLane.handlePointerMove(null);
@@ -185,7 +186,7 @@ export class WebVitalsTimeline extends HTMLElement {
     this.scheduleRender();
   }
 
-  private handleClick(e: MouseEvent) {
+  private handleClick(e: MouseEvent): void {
     const x = e.offsetX;
 
     this.focus();
@@ -228,7 +229,7 @@ export class WebVitalsTimeline extends HTMLElement {
     this.render();
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.style.display = 'block';
     this.tabIndex = 0;
 
@@ -240,7 +241,7 @@ export class WebVitalsTimeline extends HTMLElement {
     this.render();
   }
 
-  private getMarkerTypeForFCPEvent(event: WebVitalsFCPEvent) {
+  private getMarkerTypeForFCPEvent(event: WebVitalsFCPEvent): MarkerType {
     const t = this.getTimeSinceLastMainFrameNavigation(event.timestamp);
     if (t <= FCP_GOOD_TIMING) {
       return MarkerType.Good;
@@ -251,7 +252,7 @@ export class WebVitalsTimeline extends HTMLElement {
     return MarkerType.Bad;
   }
 
-  private getMarkerTypeForLCPEvent(event: WebVitalsLCPEvent) {
+  private getMarkerTypeForLCPEvent(event: WebVitalsLCPEvent): MarkerType {
     const t = this.getTimeSinceLastMainFrameNavigation(event.timestamp);
     if (t <= LCP_GOOD_TIMING) {
       return MarkerType.Good;
@@ -262,7 +263,7 @@ export class WebVitalsTimeline extends HTMLElement {
     return MarkerType.Bad;
   }
 
-  private renderMainFrameNavigations(markers: ReadonlyArray<number>) {
+  private renderMainFrameNavigations(markers: readonly number[]): void {
     this.context.save();
     this.context.strokeStyle = 'blue';
     this.context.beginPath();
@@ -311,20 +312,20 @@ export class WebVitalsTimeline extends HTMLElement {
 
     // Render all the lanes.
     this.context.save();
-    this.context.translate(0, LINE_HEIGHT * 1);
+    this.context.translate(0, Number(LINE_HEIGHT));
     this.fcpLane.render();
-    this.context.translate(0, LINE_HEIGHT * 1);
+    this.context.translate(0, Number(LINE_HEIGHT));
     this.lcpLane.render();
-    this.context.translate(0, LINE_HEIGHT * 1);
+    this.context.translate(0, Number(LINE_HEIGHT));
     this.layoutShiftsLane.render();
-    this.context.translate(0, LINE_HEIGHT * 1);
+    this.context.translate(0, Number(LINE_HEIGHT));
     this.longTasksLane.render();
     this.context.restore();
 
     this.renderMainFrameNavigations(this.mainFrameNavigations);
   }
 
-  private scheduleRender() {
+  private scheduleRender(): void {
     if (this.animationFrame) {
       return;
     }

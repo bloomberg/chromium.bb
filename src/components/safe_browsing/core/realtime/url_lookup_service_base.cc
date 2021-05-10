@@ -12,12 +12,12 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
-#include "components/sync/driver/sync_service.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -72,6 +72,13 @@ void RecordCount100WithAndWithoutSuffix(const std::string& metric,
   base::UmaHistogramCounts100(metric + suffix, value);
 }
 
+void RecordCount1MWithAndWithoutSuffix(const std::string& metric,
+                                       const std::string& suffix,
+                                       int value) {
+  base::UmaHistogramCounts1M(metric, value);
+  base::UmaHistogramCounts1M(metric + suffix, value);
+}
+
 void RecordRequestPopulationWithAndWithoutSuffix(
     const std::string& metric,
     const std::string& suffix,
@@ -95,13 +102,13 @@ void RecordNetworkResultWithAndWithoutSuffix(const std::string& metric,
 RTLookupRequest::OSType GetRTLookupRequestOSType() {
 #if defined(OS_ANDROID)
   return RTLookupRequest::OS_TYPE_ANDROID;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return RTLookupRequest::OS_TYPE_CHROME_OS;
 #elif defined(OS_FUCHSIA)
   return RTLookupRequest::OS_TYPE_FUCHSIA;
 #elif defined(OS_IOS)
   return RTLookupRequest::OS_TYPE_IOS;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return RTLookupRequest::OS_TYPE_LINUX;
 #elif defined(OS_MAC)
   return RTLookupRequest::OS_TYPE_MAC;
@@ -116,7 +123,7 @@ RTLookupRequest::OSType GetRTLookupRequestOSType() {
 RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     VerdictCacheManager* cache_manager,
-    syncer::SyncService* sync_service,
+    const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
     PrefService* pref_service,
     const ChromeUserPopulation::ProfileManagementStatus&
         profile_management_status,
@@ -124,7 +131,7 @@ RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
       cache_manager_(cache_manager),
-      sync_service_(sync_service),
+      is_history_sync_enabled_callback_(is_history_sync_enabled_callback),
       pref_service_(pref_service),
       profile_management_status_(profile_management_status),
       is_under_advanced_protection_(is_under_advanced_protection),
@@ -164,12 +171,6 @@ GURL RealTimeUrlLookupServiceBase::SanitizeURL(const GURL& url) {
   replacements.ClearUsername();
   replacements.ClearPassword();
   return url.ReplaceComponents(replacements);
-}
-
-// static
-GURL RealTimeUrlLookupServiceBase::GetRealTimeLookupUrl() {
-  return GURL(
-      "https://safebrowsing.google.com/safebrowsing/clientreport/realtime");
 }
 
 base::WeakPtr<RealTimeUrlLookupServiceBase>
@@ -356,6 +357,8 @@ void RealTimeUrlLookupServiceBase::SendRequestInternal(
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        GetTrafficAnnotationTag());
   network::SimpleURLLoader* loader = owned_loader.get();
+  RecordCount1MWithAndWithoutSuffix("SafeBrowsing.RT.Request.Size",
+                                    GetMetricSuffix(), req_data.size());
   owned_loader->AttachStringForUpload(req_data, "application/octet-stream");
   owned_loader->SetTimeoutDuration(
       base::TimeDelta::FromSeconds(kURLLookupTimeoutDurationInSeconds));
@@ -444,30 +447,19 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupServiceBase::FillRequestProto(
                 : ChromeUserPopulation::SAFE_BROWSING);
 
   user_population->set_profile_management_status(profile_management_status_);
-  user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
+  user_population->set_is_history_sync_enabled(
+      is_history_sync_enabled_callback_.Run());
   user_population->set_is_under_advanced_protection(
       is_under_advanced_protection_);
   user_population->set_is_incognito(is_off_the_record_);
   return request;
 }
 
-// TODO(bdea): Refactor this method into a util class as multiple SB classes
-// have this method.
-bool RealTimeUrlLookupServiceBase::IsHistorySyncEnabled() {
-  return sync_service_ && sync_service_->IsSyncFeatureActive() &&
-         !sync_service_->IsLocalSyncEnabled() &&
-         sync_service_->GetActiveDataTypes().Has(
-             syncer::HISTORY_DELETE_DIRECTIVES);
-}
-
 void RealTimeUrlLookupServiceBase::Shutdown() {
   for (auto& pending : pending_requests_) {
-    // Treat all pending requests as safe, and not from cache so that a
-    // hash-based check isn't performed.
-    auto response = std::make_unique<RTLookupResponse>();
-    std::move(pending.second)
-        .Run(/* is_rt_lookup_successful */ true, /* is_cached_response */ false,
-             std::move(response));
+    // Pending requests are not posted back to the IO thread during shutdown,
+    // because it is too late to post a task to the IO thread when the UI thread
+    // is shutting down.
     delete pending.first;
   }
   pending_requests_.clear();

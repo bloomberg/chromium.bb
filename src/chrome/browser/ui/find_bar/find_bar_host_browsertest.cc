@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -491,6 +492,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanSearchable) {
 // TODO(crbug.com/1077855): Test is flaky on Mac debug builds.
 #if defined(OS_MAC) && !defined(NDEBUG)
 #define MAYBE_LargePage DISABLED_LargePage
+#elif defined(OS_LINUX) && !defined(NDEBUG)
+// TODO(crbug.com/1181717): Test is flaky on Linux debug builds.
+#define MAYBE_LargePage DISABLED_LargePage
 #else
 #define MAYBE_LargePage LargePage
 #endif
@@ -506,6 +510,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
 // Find a very long string in a large page.
 // TODO(crbug.com/1096911): Test is flaky on Mac debug builds and Linux asan.
 #if (defined(OS_MAC) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#define MAYBE_FindLongString DISABLED_FindLongString
+#elif defined(OS_LINUX) && !defined(NDEBUG)
+// TODO(crbug.com/1181717): Test is flaky on Linux debug builds.
 #define MAYBE_FindLongString DISABLED_FindLongString
 #else
 #define MAYBE_FindLongString FindLongString
@@ -538,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, BigString) {
 
 // Search Back and Forward on a single occurrence.
 // TODO(crbug.com/1119361): Test is flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_SingleOccurrence DISABLED_SingleOccurrence
 #else
 #define MAYBE_SingleOccurrence SingleOccurrence

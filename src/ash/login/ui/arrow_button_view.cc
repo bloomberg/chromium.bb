@@ -19,6 +19,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 namespace {
@@ -26,6 +27,9 @@ namespace {
 // Arrow icon size.
 constexpr int kArrowIconSizeDp = 20;
 constexpr int kArrowIconBackroundRadius = 25;
+
+constexpr const int kBorderForFocusRingDp = 3;
+
 // How long does a single step of the loading animation take - i.e., the time it
 // takes for the arc to grow from a point to a full circle.
 constexpr base::TimeDelta kLoadingAnimationStepDuration =
@@ -43,7 +47,9 @@ void PaintLoadingArc(gfx::Canvas* canvas,
              /*sweepAngle=*/360 * loading_fraction, /*forceMoveTo=*/true);
 
   cc::PaintFlags flags;
-  flags.setColor(gfx::kGoogleGrey100);
+  // Use the same color as the arrow icon.
+  flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kButtonIconColor));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setAntiAlias(true);
   canvas->DrawPath(path, flags);
@@ -52,8 +58,10 @@ void PaintLoadingArc(gfx::Canvas* canvas,
 }  // namespace
 
 ArrowButtonView::ArrowButtonView(PressedCallback callback, int size)
-    : LoginButton(std::move(callback)), size_(size) {
-  SetPreferredSize(gfx::Size(size, size));
+    : LoginButton(std::move(callback)) {
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderForFocusRingDp)));
+  SetPreferredSize(gfx::Size(size + 2 * kBorderForFocusRingDp,
+                             size + 2 * kBorderForFocusRingDp));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // Layer rendering is needed for animation.
@@ -80,7 +88,7 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setColor(background_color_);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
+  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2, flags);
 
   // Draw arrow icon.
   views::ImageButton::PaintButtonContents(canvas);
@@ -95,10 +103,6 @@ void ArrowButtonView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // TODO(tbarzic): Fix this - https://crbug.com/961930.
   if (GetAccessibleName().empty())
     node_data->SetNameExplicitlyEmpty();
-}
-
-const char* ArrowButtonView::GetClassName() const {
-  return "ArrowButtonView";
 }
 
 void ArrowButtonView::SetBackgroundColor(SkColor color) {
@@ -141,5 +145,8 @@ void ArrowButtonView::LoadingAnimationDelegate::AnimationProgressed(
     const gfx::Animation* /*animation*/) {
   owner_->SchedulePaint();
 }
+
+BEGIN_METADATA(ArrowButtonView, LoginButton)
+END_METADATA
 
 }  // namespace ash

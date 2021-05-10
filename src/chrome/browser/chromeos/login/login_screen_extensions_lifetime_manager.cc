@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -37,7 +37,7 @@ std::vector<std::string> GetLoginScreenPolicyExtensionIds() {
             PrefService::INITIALIZATION_STATUS_SUCCESS);
 
   const PrefService::Preference* const pref =
-      prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
+      prefs->FindPreference(extensions::pref_names::kInstallForceList);
   if (!pref || !pref->IsManaged() ||
       pref->GetType() != base::Value::Type::DICTIONARY) {
     return {};

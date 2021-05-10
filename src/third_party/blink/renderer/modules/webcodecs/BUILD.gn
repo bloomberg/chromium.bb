@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -12,9 +13,15 @@ blink_modules_sources("webcodecs") {
     "audio_decoder.h",
     "audio_decoder_broker.cc",
     "audio_decoder_broker.h",
+    "audio_encoder.cc",
+    "audio_encoder.h",
     "audio_frame.cc",
     "audio_frame.h",
+    "audio_frame_serialization_data.cc",
+    "audio_frame_serialization_data.h",
     "codec_config_eval.h",
+    "codec_logger.cc",
+    "codec_logger.h",
     "codec_state_helper.cc",
     "codec_state_helper.h",
     "decoder_selector.cc",
@@ -27,6 +34,10 @@ blink_modules_sources("webcodecs") {
     "encoded_video_chunk.cc",
     "encoded_video_chunk.h",
     "encoded_video_metadata.h",
+    "encoder_base.cc",
+    "encoder_base.h",
+    "hardware_preference.cc",
+    "hardware_preference.h",
     "image_decoder_external.cc",
     "image_decoder_external.h",
     "plane.cc",
@@ -43,6 +54,8 @@ blink_modules_sources("webcodecs") {
     "video_frame_attachment.h",
     "video_frame_handle.cc",
     "video_frame_handle.h",
+    "video_frame_logger.cc",
+    "video_frame_logger.h",
     "video_track_reader.cc",
     "video_track_reader.h",
     "video_track_writer.cc",
@@ -54,7 +67,11 @@ blink_modules_sources("webcodecs") {
     "//media/mojo/clients",
     "//media/mojo/mojom",
     "//third_party/libyuv:libyuv",
+    "//third_party/opus",
   ]
+  if (media_use_openh264) {
+    deps += [ "//third_party/openh264:encoder" ]
+  }
   public_deps = [
     "//third_party/blink/renderer/modules/mediastream:mediastream",
     "//third_party/blink/renderer/modules/webaudio:webaudio",
@@ -67,6 +84,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_decoder_broker_test.cc",
+    "audio_frame_test.cc",
     "decoder_selector_test.cc",
     "encoded_video_chunk_test.cc",
     "image_decoder_external_test.cc",
@@ -101,5 +119,6 @@ source_set("unit_tests") {
 }
 
 fuzzable_proto_library("fuzzer_protos") {
+  generate_python = true
   sources = [ "fuzzer_inputs.proto" ]
 }

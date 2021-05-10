@@ -23,7 +23,7 @@ struct InstallWarning;
 
 // Wraps the DictionaryValue form of extension's manifest. Enforces access to
 // properties of the manifest using ManifestFeatureProvider.
-class Manifest {
+class Manifest final {
  public:
   // Historically, where an extension was loaded from, and whether an
   // extension's files were inside or outside of the profile's directory. In
@@ -146,12 +146,13 @@ class Manifest {
   // (like platform apps) may be installed in the same login screen profile.
   static std::unique_ptr<Manifest> CreateManifestForLoginScreen(
       Location location,
-      std::unique_ptr<base::DictionaryValue> value);
+      std::unique_ptr<base::DictionaryValue> value,
+      ExtensionId extension_id);
 
-  Manifest(Location location, std::unique_ptr<base::DictionaryValue> value);
-  virtual ~Manifest();
-
-  void SetExtensionId(const ExtensionId& id);
+  Manifest(Location location,
+           std::unique_ptr<base::DictionaryValue> value,
+           ExtensionId extension_id);
+  ~Manifest();
 
   const ExtensionId& extension_id() const { return extension_id_; }
   const HashedExtensionId& hashed_id() const { return hashed_id_; }
@@ -168,7 +169,7 @@ class Manifest {
   // version when making breaking changes to the extension system. If the
   // manifest contains no explicit manifest version, this returns the current
   // system default.
-  int GetManifestVersion() const;
+  int manifest_version() const { return manifest_version_; }
 
   // Returns the manifest type.
   Type type() const { return type_; }
@@ -216,42 +217,49 @@ class Manifest {
                      base::Value::Type type,
                      const base::Value** out_value) const;
 
-  // Returns a new Manifest equal to this one.
-  std::unique_ptr<Manifest> CreateDeepCopy() const;
-
   // Returns true if this equals the |other| manifest.
-  bool Equals(const Manifest* other) const;
+  bool EqualsForTesting(const Manifest& other) const;
 
   // Gets the underlying DictionaryValue representing the manifest.
   // Note: only use this when you KNOW you don't need the validation.
+  // TODO(karandeepb): Audit existing usages to see if they should be replaced
+  // by  available_values() instead.
   const base::DictionaryValue* value() const { return value_.get(); }
+
+  // Gets the underlying DictionaryValue representing the manifest with all
+  // unavailable manifest keys removed.
+  const base::DictionaryValue& available_values() const {
+    return *available_values_;
+  }
 
  private:
   Manifest(Location location,
            std::unique_ptr<base::DictionaryValue> value,
+           ExtensionId extension_id,
            bool for_login_screen);
-  // Returns true if the extension can specify the given |path|.
-  bool CanAccessPath(const std::string& path) const;
-  bool CanAccessPath(const base::span<const base::StringPiece> path) const;
-  bool CanAccessKey(const std::string& key) const;
 
   // A persistent, globally unique ID. An extension's ID is used in things
   // like directory structures and URLs, and is expected to not change across
   // versions. It is generated as a SHA-256 hash of the extension's public
   // key, or as a hash of the path in the case of unpacked extensions.
-  std::string extension_id_;
+  const std::string extension_id_;
 
   // The hex-encoding of the SHA1 of the extension id; used to determine feature
   // availability.
-  HashedExtensionId hashed_id_;
+  const HashedExtensionId hashed_id_;
 
   // The location the extension was loaded from.
-  Location location_;
+  const Location location_;
 
   // The underlying dictionary representation of the manifest.
-  std::unique_ptr<base::DictionaryValue> value_;
+  const std::unique_ptr<const base::DictionaryValue> value_;
 
-  Type type_;
+  // Same as |value_| but comprises only of keys available to this manifest.
+  std::unique_ptr<const base::DictionaryValue> available_values_;
+
+  const Type type_;
+
+  const int manifest_version_;
 
   DISALLOW_COPY_AND_ASSIGN(Manifest);
 };

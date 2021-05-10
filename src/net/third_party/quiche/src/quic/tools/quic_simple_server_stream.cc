@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_stream.h"
+#include "quic/tools/quic_simple_server_stream.h"
 
 #include <list>
 #include <utility>
 
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/http/quic_spdy_stream.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "quic/tools/quic_simple_server_session.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "spdy/core/spdy_protocol.h"
 
 using spdy::Http2HeaderBlock;
 
@@ -33,7 +34,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
       content_length_(-1),
       generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
-  DCHECK(quic_simple_server_backend_);
+  QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
 QuicSimpleServerStream::QuicSimpleServerStream(
@@ -45,7 +46,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
       content_length_(-1),
       generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
-  DCHECK(quic_simple_server_backend_);
+  QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
 QuicSimpleServerStream::~QuicSimpleServerStream() {
@@ -63,6 +64,16 @@ void QuicSimpleServerStream::OnInitialHeadersComplete(
     SendErrorResponse();
   }
   ConsumeHeaderList();
+  if (!fin) {
+    // CONNECT and other CONNECT-like methods (such as CONNECT-UDP) require
+    // sending the response right after parsing the headers even though the FIN
+    // bit has not been received on the request stream.
+    auto it = request_headers_.find(":method");
+    if (it != request_headers_.end() &&
+        absl::StartsWith(it->second, "CONNECT")) {
+      SendResponse();
+    }
+  }
 }
 
 void QuicSimpleServerStream::OnTrailingHeadersComplete(
@@ -121,7 +132,7 @@ void QuicSimpleServerStream::PushResponse(
   content_length_ = 0;
   QUIC_DVLOG(1) << "Stream " << id()
                 << " ready to receive server push response.";
-  DCHECK(reading_stopped());
+  QUICHE_DCHECK(reading_stopped());
 
   // Directly send response based on the emulated request_headers_.
   SendResponse();

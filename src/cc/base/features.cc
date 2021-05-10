@@ -8,9 +8,21 @@
 
 namespace features {
 
+// Uses the Resume method instead of the Catch-up method for animated images.
+// - Catch-up behavior tries to keep animated images in pace with wall-clock
+//   time. This might require decoding several animation frames if the
+//   animation has fallen behind.
+// - Resume behavior presents what would have been the next presented frame.
+//   This means it might only decode one frame, resuming where it left off.
+//   However, if the animation updates faster than the display's refresh rate,
+//   it is possible to decode more than a single frame.
+const base::Feature kAnimatedImageResume = {"AnimatedImageResume",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables impulse-style scroll animations in place of the default ones.
 const base::Feature kImpulseScrollAnimations = {
-    "ImpulseScrollAnimations", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ImpulseScrollAnimations",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether the compositor should attempt to sync with the scroll handlers before
 // submitting a frame.
@@ -60,4 +72,10 @@ const base::Feature kSchedulerSmoothnessForAnimatedScrolls{
 
 const base::Feature kWheelEventRegions{"WheelEventRegions",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHudDisplayForPerformanceMetrics{
+    "HudDisplayForPerformanceMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kJankInjectionAblationFeature{
+    "JankInjectionAblation", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features

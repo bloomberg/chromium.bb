@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -22,7 +23,7 @@
 #include "base/values.h"
 #include "chrome/android/chrome_jni_headers/BrowsingDataBridge_jni.h"
 #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/same_site_data_remover.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -98,31 +100,30 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
       case browsing_data::BrowsingDataType::HISTORY:
-        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
+        remove_mask |= chrome_browsing_data_remover::DATA_TYPE_HISTORY;
         break;
       case browsing_data::BrowsingDataType::CACHE:
         remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
         break;
       case browsing_data::BrowsingDataType::COOKIES:
         remove_mask |= BrowsingDataRemover::DATA_TYPE_COOKIES;
-        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
+        remove_mask |= chrome_browsing_data_remover::DATA_TYPE_SITE_DATA;
         remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
         break;
       case browsing_data::BrowsingDataType::PASSWORDS:
-        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+        remove_mask |= chrome_browsing_data_remover::DATA_TYPE_PASSWORDS;
         remove_mask |=
-            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_ACCOUNT_PASSWORDS;
+            chrome_browsing_data_remover::DATA_TYPE_ACCOUNT_PASSWORDS;
         break;
       case browsing_data::BrowsingDataType::FORM_DATA:
-        remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
+        remove_mask |= chrome_browsing_data_remover::DATA_TYPE_FORM_DATA;
         break;
       case browsing_data::BrowsingDataType::BOOKMARKS:
         // Bookmarks are deleted separately on the Java side.
         NOTREACHED();
         break;
       case browsing_data::BrowsingDataType::SITE_SETTINGS:
-        remove_mask |=
-            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
+        remove_mask |= chrome_browsing_data_remover::DATA_TYPE_CONTENT_SETTINGS;
         break;
       case browsing_data::BrowsingDataType::DOWNLOADS:
       case browsing_data::BrowsingDataType::HOSTED_APPS_DATA:
@@ -153,7 +154,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
   }
 
   if (!excluding_domains.empty() || !ignoring_domains.empty()) {
-    ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
+    site_engagement::ImportantSitesUtil::RecordExcludedAndIgnoredImportantSites(
         profile, excluding_domains, excluding_domain_reasons, ignoring_domains,
         ignoring_domain_reasons);
   }
@@ -167,6 +168,20 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
   browsing_data_important_sites_util::Remove(
       remove_mask, BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, period,
       std::move(filter_builder), browsing_data_remover, std::move(callback));
+}
+
+static void JNI_BrowsingDataBridge_ClearSameSiteNoneData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jobject>& jcallback,
+    jboolean jclear_storage) {
+  TRACE_EVENT0("browsing_data", "BrowsingDataBridge_ClearSameSiteNoneData");
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  content::ClearSameSiteNoneData(
+      base::BindOnce(&base::android::RunRunnableAndroid,
+                     ScopedJavaGlobalRef<jobject>(jcallback)),
+      profile, jclear_storage);
 }
 
 static void EnableDialogAboutOtherFormsOfBrowsingHistory(
@@ -202,15 +217,18 @@ static void JNI_BrowsingDataBridge_FetchImportantSites(
     const JavaParamRef<jobject>& java_callback) {
   TRACE_EVENT0("browsing_data", "BrowsingDataBridge_FetchImportantSites");
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(
-          profile, ImportantSitesUtil::kMaxImportantSites);
-  bool dialog_disabled = ImportantSitesUtil::IsDialogDisabled(profile);
+  std::vector<site_engagement::ImportantSitesUtil::ImportantDomainInfo>
+      important_sites =
+          site_engagement::ImportantSitesUtil::GetImportantRegisterableDomains(
+              profile, site_engagement::ImportantSitesUtil::kMaxImportantSites);
+  bool dialog_disabled =
+      site_engagement::ImportantSitesUtil::IsDialogDisabled(profile);
 
   std::vector<std::string> important_domains;
   std::vector<int32_t> important_domain_reasons;
   std::vector<std::string> important_domain_examples;
-  for (const ImportantSitesUtil::ImportantDomainInfo& info : important_sites) {
+  for (const site_engagement::ImportantSitesUtil::ImportantDomainInfo& info :
+       important_sites) {
     important_domains.push_back(info.registerable_domain);
     important_domain_reasons.push_back(info.reason_bitfield);
     important_domain_examples.push_back(info.example_origin.spec());
@@ -230,7 +248,7 @@ static void JNI_BrowsingDataBridge_FetchImportantSites(
 
 // This value should not change during a sessions, as it's used for UMA metrics.
 static jint JNI_BrowsingDataBridge_GetMaxImportantSites(JNIEnv* env) {
-  return ImportantSitesUtil::kMaxImportantSites;
+  return site_engagement::ImportantSitesUtil::kMaxImportantSites;
 }
 
 static void JNI_BrowsingDataBridge_MarkOriginAsImportantForTesting(
@@ -239,7 +257,7 @@ static void JNI_BrowsingDataBridge_MarkOriginAsImportantForTesting(
     const JavaParamRef<jstring>& jorigin) {
   GURL origin(base::android::ConvertJavaStringToUTF8(jorigin));
   CHECK(origin.is_valid());
-  ImportantSitesUtil::MarkOriginAsImportantForTesting(
+  site_engagement::ImportantSitesUtil::MarkOriginAsImportantForTesting(
       ProfileAndroid::FromProfileAndroid(jprofile), origin);
 }
 

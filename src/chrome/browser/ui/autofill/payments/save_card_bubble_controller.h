@@ -20,17 +20,13 @@
 
 class Profile;
 
-namespace signin_metrics {
-enum class AccessPoint;
-}
-
 namespace autofill {
 
 class CreditCard;
-class SaveCardBubbleView;
+class AutofillBubbleBase;
 enum class BubbleType;
 
-// Interface that exposes controller functionality to SaveCardBubbleView.
+// Interface that exposes controller functionality to save card bubbles.
 class SaveCardBubbleController {
  public:
   SaveCardBubbleController() = default;
@@ -69,7 +65,7 @@ class SaveCardBubbleController {
 
   // Returns the currently active save card bubble view. Can be nullptr if no
   // bubble is visible.
-  virtual SaveCardBubbleView* GetSaveCardBubbleView() const = 0;
+  virtual AutofillBubbleBase* GetSaveCardBubbleView() const = 0;
 
   // Returns whether the dialog should include a textfield requesting the user
   // to confirm/provide cardholder name.
@@ -79,14 +75,7 @@ class SaveCardBubbleController {
   // allowing the user to provide expiration date.
   virtual bool ShouldRequestExpirationDateFromUser() const = 0;
 
-  // Returns whether or not a sign in / sync promo needs to be shown.
-  virtual bool ShouldShowSignInPromo() const = 0;
-
   // Interaction.
-  // OnSyncPromoAccepted is called when the Dice Sign-in promo is clicked.
-  virtual void OnSyncPromoAccepted(
-      const AccountInfo& account,
-      signin_metrics::AccessPoint access_point) = 0;
   // OnSaveButton takes in a struct representing the cardholder name,
   // expiration date month and expiration date year confirmed/entered by the
   // user if they were requested, or struct with empty strings otherwise.

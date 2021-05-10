@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,7 +26,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/gfx/color_palette.h"
 
 #if defined(OS_WIN)
@@ -34,7 +35,7 @@
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 const int kContentsBorderThickness = 5;
 const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
@@ -77,7 +78,7 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 
 void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
   // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!contents)
     return;
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
@@ -102,7 +103,7 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
 base::string16 GetTabName(content::WebContents* tab) {
   GURL url = tab->GetLastCommittedURL();
   const base::string16 tab_name =
-      blink::network_utils::IsOriginSecure(url)
+      network::IsUrlPotentiallyTrustworthy(url)
           ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
           : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
   return tab_name.empty() ? tab->GetTitle() : tab_name;
@@ -128,7 +129,7 @@ TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   InitContentsBorderWidget(shared_tab_);
 #endif
 }
@@ -149,10 +150,6 @@ gfx::NativeViewId TabSharingUIViews::OnStarted(
   SetContentsBorderVisible(shared_tab_, true);
   CreateTabCaptureIndicator();
   return 0;
-}
-
-void TabSharingUIViews::SetStopCallback(base::OnceClosure stop_callback) {
-  stop_callback_ = std::move(stop_callback);
 }
 
 void TabSharingUIViews::StartSharing(infobars::InfoBar* infobar) {

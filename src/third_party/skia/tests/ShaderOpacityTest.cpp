@@ -21,7 +21,7 @@ static void test_bitmap(skiatest::Reporter* reporter) {
     bmp.setInfo(info);
 
     // test 1: bitmap without pixel data
-    auto shader = bmp.makeShader(SkTileMode::kClamp, SkTileMode::kClamp);
+    auto shader = bmp.makeShader(SkSamplingOptions());
     REPORTER_ASSERT(reporter, shader);
     REPORTER_ASSERT(reporter, !shader->isOpaque());
 
@@ -29,19 +29,19 @@ static void test_bitmap(skiatest::Reporter* reporter) {
     bmp.allocPixels(info);
 
     // test 2: not opaque by default
-    shader = bmp.makeShader();
+    shader = bmp.makeShader(SkSamplingOptions());
     REPORTER_ASSERT(reporter, shader);
     REPORTER_ASSERT(reporter, !shader->isOpaque());
 
     // test 3: explicitly opaque
     bmp.setAlphaType(kOpaque_SkAlphaType);
-    shader = bmp.makeShader();
+    shader = bmp.makeShader(SkSamplingOptions());
     REPORTER_ASSERT(reporter, shader);
     REPORTER_ASSERT(reporter, shader->isOpaque());
 
     // test 4: explicitly not opaque
     bmp.setAlphaType(kPremul_SkAlphaType);
-    shader = bmp.makeShader();
+    shader = bmp.makeShader(SkSamplingOptions());
     REPORTER_ASSERT(reporter, shader);
     REPORTER_ASSERT(reporter, !shader->isOpaque());
 }
@@ -99,6 +99,7 @@ DEF_TEST(ShaderOpacity, reporter) {
     test_bitmap(reporter);
 }
 
+#ifdef SK_SUPPORT_LEGACY_IMPLICIT_FILTERQUALITY
 DEF_TEST(image_shader_filtering, reporter) {
     auto make_checker_img = [](int w, int h) {
         auto info = SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
@@ -131,7 +132,8 @@ DEF_TEST(image_shader_filtering, reporter) {
         for (auto scale : scales) {
             SkMatrix m = SkMatrix::Scale(scale, scale);
             paint.setFilterQuality(kNone_SkFilterQuality); // this setting should be ignored
-            paint.setShader(img->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &m, q));
+            paint.setShader(img->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat,
+                                            SkSamplingOptions(q), &m));
             auto img0 = make_img(paint);
 
             paint.setFilterQuality(q);  // this should (still) be ignored
@@ -146,3 +148,4 @@ DEF_TEST(image_shader_filtering, reporter) {
         }
     }
 }
+#endif

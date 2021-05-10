@@ -23,6 +23,7 @@ extern const base::Feature kIPHFocusModeFeature;
 extern const base::Feature kIPHGlobalMediaControlsFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
+extern const base::Feature kIPHReadingListDiscoveryFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
@@ -62,12 +63,15 @@ extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryBarSwipingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
+extern const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature;
 extern const base::Feature kIPHNewTabPageHomeButtonFeature;
+extern const base::Feature kIPHPageInfoFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 extern const base::Feature kIPHQuietNotificationPromptsFeature;
 extern const base::Feature kIPHReadLaterContextMenuFeature;
 extern const base::Feature kIPHReadLaterAppMenuBookmarkThisPageFeature;
 extern const base::Feature kIPHReadLaterAppMenuBookmarksFeature;
+extern const base::Feature kIPHReadLaterBottomSheetFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
@@ -85,6 +89,7 @@ extern const base::Feature kIPHChromeReengagementNotification1Feature;
 extern const base::Feature kIPHChromeReengagementNotification2Feature;
 extern const base::Feature kIPHChromeReengagementNotification3Feature;
 extern const base::Feature kIPHPwaInstallAvailableFeature;
+extern const base::Feature kIPHShareScreenshotFeature;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

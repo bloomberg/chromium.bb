@@ -93,8 +93,9 @@ void EncoderTest::SetMode(TestMode mode) {
     case kOnePassGood:
     case kTwoPassGood: break;
     case kRealTime: {
-      cfg_.g_lag_in_frames = 0;
       cfg_.g_usage = AOM_USAGE_REALTIME;
+      cfg_.g_lag_in_frames = 0;
+      cfg_.rc_end_usage = AOM_CBR;
       break;
     }
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;

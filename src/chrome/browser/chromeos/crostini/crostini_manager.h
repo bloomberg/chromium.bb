@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom-forward.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/crostini/termina_installer.h"
+#include "chrome/browser/chromeos/vm_shutdown_observer.h"
 #include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,9 +39,14 @@
 
 class Profile;
 
+namespace guest_os {
+class GuestOsStabilityMonitor;
+}
+
 namespace crostini {
 
-class CrostiniStabilityMonitor;
+extern const char kCrostiniStabilityHistogram[];
+
 class CrostiniUpgradeAvailableNotification;
 
 class LinuxPackageOperationProgressObserver {
@@ -126,12 +132,6 @@ class CrostiniContainerPropertiesObserver : public base::CheckedObserver {
                                            bool can_upgrade) = 0;
 };
 
-class VmShutdownObserver : public base::CheckedObserver {
- public:
-  // Called when the given VM has shutdown.
-  virtual void OnVmShutdown(const std::string& vm_name) = 0;
-};
-
 class ContainerStartedObserver : public base::CheckedObserver {
  public:
   // Called when the container has started.
@@ -193,6 +193,7 @@ class CrostiniManager : public KeyedService,
                                     vm_tools::concierge::DiskImageStatus status,
                                     int64_t disk_size_bytes) {}
     virtual void OnVmStarted(bool success) {}
+    virtual void OnLxdStarted(CrostiniResult result) {}
     virtual void OnContainerDownloading(int32_t download_percent) {}
     virtual void OnContainerCreated(CrostiniResult result) {}
     virtual void OnContainerSetup(bool success) {}
@@ -237,7 +238,7 @@ class CrostiniManager : public KeyedService,
 
   // Installs termina using either component updater or the DLC service
   // depending on the value of chromeos::features::kCrostiniUseDlc
-  void InstallTermina(CrostiniResultCallback callback);
+  void InstallTermina(CrostiniResultCallback callback, bool is_initial_install);
 
   // Unloads and removes termina.
   void UninstallTermina(BoolCallback callback);
@@ -502,8 +503,8 @@ class CrostiniManager : public KeyedService,
       UpgradeContainerProgressObserver* observer);
 
   // Add/remove vm shutdown observers.
-  void AddVmShutdownObserver(VmShutdownObserver* observer);
-  void RemoveVmShutdownObserver(VmShutdownObserver* observer);
+  void AddVmShutdownObserver(chromeos::VmShutdownObserver* observer);
+  void RemoveVmShutdownObserver(chromeos::VmShutdownObserver* observer);
 
   // Add/remove vm starting observers.
   void AddVmStartingObserver(chromeos::VmStartingObserver* observer);
@@ -567,7 +568,7 @@ class CrostiniManager : public KeyedService,
 
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   // Callback for |RemoveSshfsCrostiniVolume| called from |SuspendImminent| when
   // the device is allowed to suspend. Removes metadata associated with the
@@ -626,8 +627,6 @@ class CrostiniManager : public KeyedService,
   void AddContainerShutdownObserver(ContainerShutdownObserver* observer);
   void RemoveContainerShutdownObserver(ContainerShutdownObserver* observer);
 
-  void OnDBusShuttingDownForTesting();
-
   bool IsContainerUpgradeable(const ContainerId& container_id) const;
   bool ShouldPromptContainerUpgrade(const ContainerId& container_id) const;
   void UpgradePromptShown(const ContainerId& container_id);
@@ -646,6 +645,12 @@ class CrostiniManager : public KeyedService,
       CrostiniMicSharingEnabledObserver* observer);
   void RemoveCrostiniMicSharingEnabledObserver(
       CrostiniMicSharingEnabledObserver* observer);
+  void CallRestarterStartLxdContainerFinishedForTesting(
+      CrostiniManager::RestartId id,
+      CrostiniResult result);
+  void SetInstallTerminaNeverCompletesForTesting(bool never_completes) {
+    install_termina_never_completes_ = never_completes;
+  }
 
  private:
   class CrostiniRestarter;
@@ -886,7 +891,7 @@ class CrostiniManager : public KeyedService,
   base::ObserverList<UpgradeContainerProgressObserver>::Unchecked
       upgrade_container_progress_observers_;
 
-  base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
+  base::ObserverList<chromeos::VmShutdownObserver> vm_shutdown_observers_;
   base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
 
   // Only one restarter flow is actually running for a given container, other
@@ -923,12 +928,15 @@ class CrostiniManager : public KeyedService,
 
   base::Time time_of_last_disk_type_metric_;
 
-  std::unique_ptr<CrostiniStabilityMonitor> crostini_stability_monitor_;
+  std::unique_ptr<guest_os::GuestOsStabilityMonitor>
+      guest_os_stability_monitor_;
 
   std::unique_ptr<CrostiniUpgradeAvailableNotification>
       upgrade_available_notification_;
 
   TerminaInstaller termina_installer_{};
+
+  bool install_termina_never_completes_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

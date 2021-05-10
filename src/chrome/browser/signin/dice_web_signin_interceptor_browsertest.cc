@@ -5,12 +5,15 @@
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 
 #include <map>
+#include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -19,6 +22,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
+#include "chrome/browser/signin/dice_intercepted_session_startup_helper.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -28,6 +32,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/profile_waiter.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -36,24 +41,62 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/test/browser_test.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
+// Fake response for OAuth multilogin.
+const char kMultiloginSuccessResponse[] =
+    R"()]}'
+       {
+         "status": "OK",
+         "cookies":[
+           {
+             "name":"SID",
+             "value":"SID_value",
+             "domain":".google.fr",
+             "path":"/",
+             "isSecure":true,
+             "isHttpOnly":false,
+             "priority":"HIGH",
+             "maxAge":63070000
+           }
+         ]
+       }
+      )";
+
+class FakeDiceWebSigninInterceptorDelegate;
+
+class FakeBubbleHandle : public ScopedDiceWebSigninInterceptionBubbleHandle,
+                         public base::SupportsWeakPtr<FakeBubbleHandle> {
+ public:
+  ~FakeBubbleHandle() override = default;
+};
+
 // Dummy interception delegate that automatically accepts multi user
 // interception.
 class FakeDiceWebSigninInterceptorDelegate
     : public DiceWebSigninInterceptor::Delegate {
  public:
-  void ShowSigninInterceptionBubble(
+  std::unique_ptr<ScopedDiceWebSigninInterceptionBubbleHandle>
+  ShowSigninInterceptionBubble(
       content::WebContents* web_contents,
       const BubbleParameters& bubble_parameters,
       base::OnceCallback<void(SigninInterceptionResult)> callback) override {
     EXPECT_EQ(bubble_parameters.interception_type, expected_interception_type_);
-    std::move(callback).Run(SigninInterceptionResult::kAccepted);
+    auto bubble_handle = std::make_unique<FakeBubbleHandle>();
+    weak_bubble_handle_ = bubble_handle->AsWeakPtr();
+    // The callback must not be called synchronously (see the documentation for
+    // ShowSigninInterceptionBubble).
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  SigninInterceptionResult::kAccepted));
+    return bubble_handle;
   }
+
   void ShowProfileCustomizationBubble(Browser* browser) override {
     EXPECT_FALSE(customized_browser_)
         << "Customization must be shown only once.";
@@ -61,45 +104,24 @@ class FakeDiceWebSigninInterceptorDelegate
   }
 
   Browser* customized_browser() { return customized_browser_; }
+
   void set_expected_interception_type(
       DiceWebSigninInterceptor::SigninInterceptionType type) {
     expected_interception_type_ = type;
+  }
+
+  bool intercept_bubble_shown() const { return weak_bubble_handle_.get(); }
+
+  bool intercept_bubble_destroyed() const {
+    return weak_bubble_handle_.WasInvalidated();
   }
 
  private:
   Browser* customized_browser_ = nullptr;
   DiceWebSigninInterceptor::SigninInterceptionType expected_interception_type_ =
       DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser;
+  base::WeakPtr<FakeBubbleHandle> weak_bubble_handle_;
 };
-
-// Waits until a new profile is created.
-class ProfileWaiter : public ProfileManagerObserver {
- public:
-  ProfileWaiter() {
-    profile_manager_observer_.Add(g_browser_process->profile_manager());
-  }
-
-  ~ProfileWaiter() override = default;
-
-  Profile* WaitForProfileAdded() {
-    run_loop_.Run();
-    return profile_;
-  }
-
- private:
-  // ProfileManagerObserver:
-  void OnProfileAdded(Profile* profile) override {
-    profile_manager_observer_.RemoveAll();
-    profile_ = profile;
-    run_loop_.Quit();
-  }
-
-  Profile* profile_ = nullptr;
-  ScopedObserver<ProfileManager, ProfileManagerObserver>
-      profile_manager_observer_{this};
-  base::RunLoop run_loop_;
-};
-
 
 // Runs the interception and returns the new profile that was created.
 Profile* InterceptAndWaitProfileCreation(content::WebContents* contents,
@@ -133,8 +155,18 @@ void CheckHistograms(const base::HistogramTester& histogram_tester,
                                     profile_creation_count);
   histogram_tester.ExpectTotalCount("Signin.Intercept.ProfileSwitchDuration",
                                     profile_switch_count);
-  histogram_tester.ExpectTotalCount("Signin.Intercept.SessionStartupDuration",
-                                    1);
+  histogram_tester.ExpectTotalCount(
+      "Signin.Intercept.SessionStartupDuration.Multilogin",
+      profile_creation_count);
+  histogram_tester.ExpectTotalCount(
+      "Signin.Intercept.SessionStartupDuration.Reconcilor",
+      profile_switch_count);
+  histogram_tester.ExpectUniqueSample(
+      "Signin.Intercept.SessionStartupResult",
+      profile_switch_count
+          ? DiceInterceptedSessionStartupHelper::Result::kReconcilorSuccess
+          : DiceInterceptedSessionStartupHelper::Result::kMultiloginSuccess,
+      1);
 }
 
 }  // namespace
@@ -172,6 +204,7 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     identity_test_env_profile_adaptor_ =
@@ -188,9 +221,9 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
     create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterCreateServicesCallbackForTesting(
-                base::Bind(&DiceWebSigninInterceptorBrowserTest::
-                               OnWillCreateBrowserContextServices,
-                           base::Unretained(this)));
+                base::BindRepeating(&DiceWebSigninInterceptorBrowserTest::
+                                        OnWillCreateBrowserContextServices,
+                                    base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -221,9 +254,7 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
   std::map<content::BrowserContext*, FakeDiceWebSigninInterceptorDelegate*>
       interceptor_delegates_;
 };
@@ -245,41 +276,59 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, InterceptionTest) {
   DCHECK(account_info.IsValid());
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
 
+  // Instantly return from Gaia calls, to avoid timing out when injecting the
+  // account in the new profile.
+  network::TestURLLoaderFactory* loader_factory = test_url_loader_factory();
+  loader_factory->SetInterceptor(base::BindLambdaForTesting(
+      [loader_factory](const network::ResourceRequest& request) {
+        std::string path = request.url.path();
+        if (path == "/ListAccounts" || path == "/GetCheckConnectionInfo") {
+          loader_factory->AddResponse(request.url.spec(), std::string());
+          return;
+        }
+        if (path == "/oauth/multilogin") {
+          loader_factory->AddResponse(request.url.spec(),
+                                      kMultiloginSuccessResponse);
+          return;
+        }
+      }));
+
   // Add a tab.
   GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
   content::WebContents* web_contents = AddTab(intercepted_url);
   int original_tab_count = browser()->tab_strip_model()->count();
 
   // Do the signin interception.
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
   Profile* new_profile =
       InterceptAndWaitProfileCreation(web_contents, account_info.account_id);
   ASSERT_TRUE(new_profile);
+  FakeDiceWebSigninInterceptorDelegate* source_interceptor_delegate =
+      GetInterceptorDelegate(profile());
+  EXPECT_TRUE(source_interceptor_delegate->intercept_bubble_shown());
   signin::IdentityManager* new_identity_manager =
       IdentityManagerFactory::GetForProfile(new_profile);
   EXPECT_TRUE(new_identity_manager->HasAccountWithRefreshToken(
       account_info.account_id));
 
+  IdentityTestEnvironmentProfileAdaptor adaptor(new_profile);
+  adaptor.identity_test_env()->SetAutomaticIssueOfAccessTokens(true);
+
   // Check the profile name.
-  ProfileAttributesEntry* entry = nullptr;
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  ASSERT_TRUE(
-      storage.GetProfileAttributesWithPath(new_profile->GetPath(), &entry));
+  ProfileAttributesEntry* entry =
+      storage.GetProfileAttributesWithPath(new_profile->GetPath());
   ASSERT_TRUE(entry);
   EXPECT_EQ("givenname", base::UTF16ToUTF8(entry->GetLocalProfileName()));
   // Check the profile color.
   EXPECT_TRUE(ThemeServiceFactory::GetForProfile(new_profile)
                   ->UsingAutogeneratedTheme());
 
-  // Add the account to the cookies (simulates the account reconcilor).
-  EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
-  signin::SetCookieAccounts(new_identity_manager, test_url_loader_factory(),
-                            {{account_info.email, account_info.gaia}});
-
   // A browser has been created for the new profile and the tab was moved there.
-  ASSERT_EQ(BrowserList::GetInstance()->size(), 2u);
-  Browser* added_browser = BrowserList::GetInstance()->get(1);
+  Browser* added_browser = ui_test_utils::WaitForBrowserToOpen();
   ASSERT_TRUE(added_browser);
+  ASSERT_EQ(BrowserList::GetInstance()->size(), 2u);
   EXPECT_EQ(added_browser->profile(), new_profile);
   EXPECT_EQ(browser()->tab_strip_model()->count(), original_tab_count - 1);
   EXPECT_EQ(added_browser->tab_strip_model()->GetActiveWebContents()->GetURL(),
@@ -287,10 +336,16 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, InterceptionTest) {
 
   CheckHistograms(histogram_tester,
                   SigninInterceptionHeuristicOutcome::kInterceptMultiUser);
+  // Interception bubble is destroyed in the source profile, and was not shown
+  // in the new profile.
+  FakeDiceWebSigninInterceptorDelegate* new_interceptor_delegate =
+      GetInterceptorDelegate(new_profile);
+  EXPECT_TRUE(source_interceptor_delegate->intercept_bubble_destroyed());
+  EXPECT_FALSE(new_interceptor_delegate->intercept_bubble_shown());
+  EXPECT_FALSE(new_interceptor_delegate->intercept_bubble_destroyed());
   // Profile customization UI was shown exactly once in the new profile.
-  EXPECT_EQ(GetInterceptorDelegate(new_profile)->customized_browser(),
-            added_browser);
-  EXPECT_EQ(GetInterceptorDelegate(profile())->customized_browser(), nullptr);
+  EXPECT_EQ(new_interceptor_delegate->customized_browser(), added_browser);
+  EXPECT_EQ(source_interceptor_delegate->customized_browser(), nullptr);
 }
 
 // Tests the complete profile switch flow when the profile is not loaded.
@@ -309,9 +364,8 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAndLoad) {
       base::UTF8ToUTF16(account_info.email),
       /*is_consented_primary_account=*/false, /*icon_index=*/0,
       /*supervised_user_id*/ std::string(), EmptyAccountId());
-  ProfileAttributesEntry* entry = nullptr;
-  ASSERT_TRUE(
-      profile_storage->GetProfileAttributesWithPath(profile_path, &entry));
+  ProfileAttributesEntry* entry =
+      profile_storage->GetProfileAttributesWithPath(profile_path);
   ASSERT_TRUE(entry);
   ASSERT_EQ(entry->GetGAIAId(), account_info.gaia);
 
@@ -321,11 +375,14 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAndLoad) {
   int original_tab_count = browser()->tab_strip_model()->count();
 
   // Do the signin interception.
-  GetInterceptorDelegate(profile())->set_expected_interception_type(
+  FakeDiceWebSigninInterceptorDelegate* source_interceptor_delegate =
+      GetInterceptorDelegate(profile());
+  source_interceptor_delegate->set_expected_interception_type(
       DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch);
   Profile* new_profile =
       InterceptAndWaitProfileCreation(web_contents, account_info.account_id);
   ASSERT_TRUE(new_profile);
+  EXPECT_TRUE(source_interceptor_delegate->intercept_bubble_shown());
   signin::IdentityManager* new_identity_manager =
       IdentityManagerFactory::GetForProfile(new_profile);
   EXPECT_TRUE(new_identity_manager->HasAccountWithRefreshToken(
@@ -350,9 +407,11 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAndLoad) {
 
   CheckHistograms(histogram_tester,
                   SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch);
+  // Interception bubble was closed.
+  EXPECT_TRUE(source_interceptor_delegate->intercept_bubble_destroyed());
   // Profile customization was not shown.
   EXPECT_EQ(GetInterceptorDelegate(new_profile)->customized_browser(), nullptr);
-  EXPECT_EQ(GetInterceptorDelegate(profile())->customized_browser(), nullptr);
+  EXPECT_EQ(source_interceptor_delegate->customized_browser(), nullptr);
 }
 
 // Tests the complete profile switch flow when the profile is already loaded.

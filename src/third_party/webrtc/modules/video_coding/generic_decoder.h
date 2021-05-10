@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 
+#include "api/sequence_checker.h"
 #include "api/units/time_delta.h"
 #include "modules/video_coding/encoded_frame.h"
 #include "modules/video_coding/include/video_codec_interface.h"
@@ -21,7 +22,6 @@
 #include "modules/video_coding/timing.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/synchronization/mutex.h"
-#include "rtc_base/thread_checker.h"
 
 namespace webrtc {
 
@@ -35,7 +35,6 @@ struct VCMFrameInformation {
   void* userData;
   VideoRotation rotation;
   VideoContentType content_type;
-  PlayoutDelay playout_delay;
   EncodedImage::Timing timing;
   int64_t ntp_time_ms;
   RtpPacketInfos packet_infos;
@@ -61,7 +60,7 @@ class VCMDecodedFrameCallback : public DecodedImageCallback {
   int32_t Pop(uint32_t timestamp);
 
  private:
-  rtc::ThreadChecker construction_thread_;
+  SequenceChecker construction_thread_;
   // Protect |_timestampMap|.
   Clock* const _clock;
   // This callback must be set before the decoder thread starts running
@@ -111,7 +110,6 @@ class VCMGenericDecoder {
    */
   int32_t RegisterDecodeCompleteCallback(VCMDecodedFrameCallback* callback);
 
-  bool PrefersLateDecoding() const;
   bool IsSameDecoder(VideoDecoder* decoder) const {
     return decoder_.get() == decoder;
   }
@@ -124,7 +122,7 @@ class VCMGenericDecoder {
   VideoCodecType _codecType;
   const bool _isExternal;
   VideoContentType _last_keyframe_content_type;
-  std::string implementation_name_;
+  VideoDecoder::DecoderInfo decoder_info_;
 };
 
 }  // namespace webrtc

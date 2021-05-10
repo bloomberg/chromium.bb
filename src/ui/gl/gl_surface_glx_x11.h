@@ -6,8 +6,8 @@
 #define UI_GL_GL_SURFACE_GLX_X11_H_
 
 #include "base/macros.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_glx.h"
@@ -17,7 +17,7 @@ namespace gl {
 // X11 specific implementation of GLX surface. Registers as a
 // PlatformEventDispatcher to handle XEvents.
 class GL_EXPORT GLSurfaceGLXX11 : public NativeViewGLSurfaceGLX,
-                                  public ui::XEventDispatcher {
+                                  public x11::EventObserver {
  public:
   explicit GLSurfaceGLXX11(gfx::AcceleratedWidget window);
 
@@ -28,8 +28,8 @@ class GL_EXPORT GLSurfaceGLXX11 : public NativeViewGLSurfaceGLX,
   void RegisterEvents() override;
   void UnregisterEvents() override;
 
-  // XEventDispatcher:
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXX11);

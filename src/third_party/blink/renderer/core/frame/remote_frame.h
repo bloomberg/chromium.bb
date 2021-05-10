@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/blink/public/common/frame/frame_visual_properties.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -42,8 +44,6 @@ class CORE_EXPORT RemoteFrame final : public Frame,
                                       public mojom::blink::RemoteFrame {
  public:
   // Returns the RemoteFrame for the given |frame_token|.
-  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
-  static RemoteFrame* FromFrameToken(const base::UnguessableToken& frame_token);
   static RemoteFrame* FromFrameToken(const RemoteFrameToken& frame_token);
 
   // For a description of |inheriting_agent_factory| go see the comment on the
@@ -54,7 +54,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
               Frame* parent,
               Frame* previous_sibling,
               FrameInsertType insert_type,
-              const base::UnguessableToken& frame_token,
+              const RemoteFrameToken& frame_token,
               WindowAgentFactory* inheriting_agent_factory,
               InterfaceRegistry*,
               AssociatedInterfaceProvider*);
@@ -80,13 +80,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void AddResourceTimingFromChild(
       mojom::blink::ResourceTimingInfoPtr timing) override;
 
-  void SetCcLayer(cc::Layer*,
-                  bool prevent_contents_opaque_changes,
-                  bool is_surface_layer);
+  void SetCcLayer(cc::Layer*, bool is_surface_layer);
   cc::Layer* GetCcLayer() const { return cc_layer_; }
-  bool WebLayerHasFixedContentsOpaque() const {
-    return prevent_contents_opaque_changes_;
-  }
 
   void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source);
 
@@ -111,21 +106,47 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void DidChangeVisibleToHitTesting() override;
 
-  void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
-      const ParsedFeaturePolicy& parsed_header,
-      const FeaturePolicyFeatureState&);
+  void SetReplicatedFeaturePolicyHeader(
+      const ParsedFeaturePolicy& parsed_header);
 
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
+  void FrameRectsChanged(const IntRect& local_frame_rect,
+                         const IntRect& screen_space_rect);
+  void InitializeFrameVisualProperties(const FrameVisualProperties& properties);
+  // If 'propagate' is true, updated properties will be sent to the browser.
+  // Returns true if visual properties have changed.
+  bool SynchronizeVisualProperties(bool propagate = true);
+  void ResendVisualProperties();
+  void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&);
+
+  // Called when the local root's screen info changes.
+  void DidChangeScreenInfo(const ScreenInfo& screen_info);
+  // Called when the main frame's zoom level is changed and should be propagated
+  // to the remote's associated view.
+  void ZoomLevelChanged(double zoom_level);
+  // Called when the local root's window segments change.
+  void DidChangeRootWindowSegments(
+      const std::vector<gfx::Rect>& root_widget_window_segments);
+  // Called when the local page scale factor changed.
+  void PageScaleFactorChanged(float page_scale_factor,
+                              bool is_pinch_gesture_active);
+  // Called when the local root's visible viewport changes size.
+  void DidChangeVisibleViewportSize(const gfx::Size& visible_viewport_size);
+  // Called when the local root's capture sequence number has changed.
+  void UpdateCaptureSequenceNumber(uint32_t sequence_number);
 
   const String& UniqueName() const { return unique_name_; }
+  const FrameVisualProperties& GetPendingVisualPropertiesForTesting() const {
+    return pending_visual_properties_;
+  }
 
   // blink::mojom::RemoteFrame overrides:
   void WillEnterFullscreen(mojom::blink::FullscreenOptionsPtr) override;
   void AddReplicatedContentSecurityPolicies(
-      WTF::Vector<network::mojom::blink::ContentSecurityPolicyHeaderPtr>
-          headers) override;
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> csps)
+      override;
   void ResetReplicatedContentSecurityPolicy() override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
@@ -169,8 +190,15 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   // sandbox flags or container policy. The new policy won't take effect until
   // the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) override;
-  void UpdateOpener(const base::Optional<base::UnguessableToken>&
-                        opener_frame_token) override;
+  void UpdateOpener(
+      const base::Optional<blink::FrameToken>& opener_frame_token) override;
+  void DetachAndDispose() override;
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize() override;
+  void DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
+  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
   // Called only when this frame has a local frame owner.
   IntSize GetMainFrameViewportSize() const override;
@@ -189,22 +217,26 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void WasAttachedAsRemoteMainFrame();
 
   RemoteFrameToken GetRemoteFrameToken() const {
-    return RemoteFrameToken(GetFrameToken());
+    return GetFrameToken().GetAs<RemoteFrameToken>();
   }
+
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
   viz::FrameSinkId GetFrameSinkId();
 
  private:
   // Frame protected overrides:
-  void DetachImpl(FrameDetachType) override;
+  bool DetachImpl(FrameDetachType) override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
   bool IsLocalFrame() const override { return false; }
   bool IsRemoteFrame() const override { return true; }
 
-  void DetachChildren();
+  // Returns false if detaching child frames reentrantly detached `this`.
+  bool DetachChildren();
   void ApplyReplicatedFeaturePolicyHeader();
+  void RecordSentVisualProperties();
 
   static void BindToReceiver(
       RemoteFrame* frame,
@@ -215,11 +247,16 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   Member<RemoteFrameView> view_;
   RemoteSecurityContext security_context_;
+  base::Optional<blink::FrameVisualProperties> sent_visual_properties_;
+  blink::FrameVisualProperties pending_visual_properties_;
   cc::Layer* cc_layer_ = nullptr;
-  bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;
   ParsedFeaturePolicy feature_policy_header_;
   String unique_name_;
+
+  viz::FrameSinkId frame_sink_id_;
+  std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
+      parent_local_surface_id_allocator_;
 
   InterfaceRegistry* const interface_registry_;
 

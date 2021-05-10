@@ -11,19 +11,16 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/language/core/browser/pref_names.h"
-#include "components/language/core/common/locale_util.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -36,10 +33,8 @@ namespace chromeos {
 constexpr StaticOobeScreenId TermsOfServiceScreenView::kScreenId;
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
-    JSCallsContainer* js_calls_container,
-    CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      core_oobe_view_(core_oobe_view) {
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.TermsOfServiceScreen.userActed");
 }
 
@@ -54,8 +49,6 @@ void TermsOfServiceScreenHandler::DeclareLocalizedValues(
                IDS_TERMS_OF_SERVICE_SCREEN_HEADING);
   builder->Add("termsOfServiceScreenSubheading",
                IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING);
-  builder->Add("termsOfServiceContentHeading",
-               IDS_TERMS_OF_SERVICE_SCREEN_CONTENT_HEADING);
   builder->Add("termsOfServiceLoading", IDS_TERMS_OF_SERVICE_SCREEN_LOADING);
   builder->Add("termsOfServiceError", IDS_TERMS_OF_SERVICE_SCREEN_ERROR);
   builder->Add("termsOfServiceTryAgain", IDS_TERMS_OF_SERVICE_SCREEN_TRY_AGAIN);
@@ -77,38 +70,15 @@ void TermsOfServiceScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-
-  std::string locale =
-      ProfileHelper::Get()
-          ->GetProfileByUserUnsafe(
-              user_manager::UserManager::Get()->GetActiveUser())
-          ->GetPrefs()
-          ->GetString(language::prefs::kApplicationLocale);
-  language::ConvertToActualUILocale(&locale);
-
-  if (locale.empty() || locale == g_browser_process->GetApplicationLocale()) {
-    // If the user has not chosen a UI locale yet or the chosen locale matches
-    // the current UI locale, show the screen immediately.
-    DoShow();
-    return;
-  }
-
-  // Switch to the user's UI locale before showing the screen.
-  locale_util::SwitchLanguageCallback callback(
-      base::Bind(&TermsOfServiceScreenHandler::OnLanguageChangedCallback,
-                 base::Unretained(this)));
-  locale_util::SwitchLanguage(locale,
-                              true,   // enable_locale_keyboard_layouts
-                              false,  // login_layouts_only
-                              callback, ProfileManager::GetActiveUserProfile());
+  DoShow();
 }
 
 void TermsOfServiceScreenHandler::Hide() {
 }
 
-void TermsOfServiceScreenHandler::SetDomain(const std::string& domain) {
-  domain_ = domain;
-  UpdateDomainInUI();
+void TermsOfServiceScreenHandler::SetManager(const std::string& manager) {
+  manager_ = manager;
+  UpdateManagerInUI();
 }
 
 void TermsOfServiceScreenHandler::OnLoadError() {
@@ -135,16 +105,6 @@ void TermsOfServiceScreenHandler::Initialize() {
   }
 }
 
-void TermsOfServiceScreenHandler::OnLanguageChangedCallback(
-    const locale_util::LanguageSwitchResult& result) {
-  // Update the screen contents to the new locale.
-  base::DictionaryValue localized_strings;
-  GetOobeUI()->GetLocalizedStrings(&localized_strings);
-  core_oobe_view_->ReloadContent(localized_strings);
-
-  DoShow();
-}
-
 void TermsOfServiceScreenHandler::DoShow() {
   // Determine the user's most preferred input method.
   std::vector<std::string> input_methods = base::SplitString(
@@ -165,8 +125,8 @@ void TermsOfServiceScreenHandler::DoShow() {
         input_methods.front(), false /* show_message */);
   }
 
-  // Updates the domain name shown in the UI.
-  UpdateDomainInUI();
+  // Updates the manager name shown in the UI.
+  UpdateManagerInUI();
 
   // Update the UI to show an error message or the Terms of Service.
   UpdateTermsOfServiceInUI();
@@ -174,9 +134,9 @@ void TermsOfServiceScreenHandler::DoShow() {
   ShowScreen(kScreenId);
 }
 
-void TermsOfServiceScreenHandler::UpdateDomainInUI() {
+void TermsOfServiceScreenHandler::UpdateManagerInUI() {
   if (page_is_ready())
-    CallJS("login.TermsOfServiceScreen.setDomain", domain_);
+    CallJS("login.TermsOfServiceScreen.setManager", manager_);
 }
 
 void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {

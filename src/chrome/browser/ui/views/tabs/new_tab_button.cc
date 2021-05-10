@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -27,15 +28,13 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
-
-// static
-constexpr char NewTabButton::kClassName[];
 
 // static
 const gfx::Size NewTabButton::kButtonSize{28, 28};
@@ -57,7 +56,9 @@ class NewTabButton::HighlightPathGenerator
 NewTabButton::NewTabButton(TabStrip* tab_strip, PressedCallback callback)
     : views::ImageButton(std::move(callback)), tab_strip_(tab_strip) {
   SetAnimateOnStateChange(true);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   SetTriggerableEventFlags(GetTriggerableEventFlags() |
                            ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
@@ -77,8 +78,6 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, PressedCallback callback)
 }
 
 NewTabButton::~NewTabButton() {
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 void NewTabButton::FrameColorsChanged() {
@@ -88,10 +87,6 @@ void NewTabButton::FrameColorsChanged() {
 
 void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
   GetInkDrop()->AnimateToState(state);
-}
-
-const char* NewTabButton::GetClassName() const {
-  return kClassName;
 }
 
 void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
@@ -126,11 +121,11 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   gfx::Point point = event.location();
   views::View::ConvertPointToScreen(this, &point);
   point = display::win::ScreenWin::DIPToScreenPoint(point);
-  bool destroyed = false;
-  destroyed_ = &destroyed;
+  auto weak_this = weak_factory_.GetWeakPtr();
   views::ShowSystemMenuAtScreenPixelLocation(views::HWNDForView(this), point);
-  if (!destroyed)
-    SetState(views::Button::STATE_NORMAL);
+  if (!weak_this)
+    return;
+  SetState(views::Button::STATE_NORMAL);
 }
 #endif
 
@@ -163,9 +158,11 @@ gfx::Size NewTabButton::CalculatePreferredSize() const {
 bool NewTabButton::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 
+  gfx::Point origin = GetContentsBounds().origin();
+  if (base::i18n::IsRTL())
+    origin.set_x(GetInsets().right());
   const float scale = GetWidget()->GetCompositor()->device_scale_factor();
-  // TODO(pkasting): Fitts' Law horizontally when appropriate.
-  SkPath border = GetBorderPath(GetContentsBounds().origin(), scale,
+  SkPath border = GetBorderPath(origin, scale,
                                 tab_strip_->controller()->IsFrameCondensed());
   mask->addPath(border, SkMatrix::Scale(1 / scale, 1 / scale));
   return true;
@@ -270,3 +267,6 @@ void NewTabButton::UpdateInkDropBaseColor() {
   SetInkDropBaseColor(
       color_utils::GetColorWithMaxContrast(GetButtonFillColor()));
 }
+
+BEGIN_METADATA(NewTabButton, views::ImageButton)
+END_METADATA

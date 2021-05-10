@@ -4,15 +4,15 @@
 
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_coordinator.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_view_controller.h"
+#import "ios/chrome/browser/ui/whats_new/default_browser_string_util.h"
 #import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
-#include "ios/chrome/grit/ios_google_chrome_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,7 +24,8 @@ namespace {
 enum IOSDefaultBrowserFullscreenPromoAction {
   ACTION_BUTTON = 0,
   CANCEL = 1,
-  kMaxValue = CANCEL,
+  REMIND_ME_LATER = 2,
+  kMaxValue = REMIND_ME_LATER,
 };
 
 }  // namespace
@@ -92,7 +93,17 @@ enum IOSDefaultBrowserFullscreenPromoAction {
 }
 
 - (void)confirmationAlertPrimaryAction {
-  UMA_HISTOGRAM_ENUMERATION("IOS.DefaultBrowserFullscreenPromo", ACTION_BUTTON);
+  if (IsInRemindMeLaterGroup()) {
+    if (self.defaultBrowerPromoViewController.tertiaryActionAvailable) {
+      [self logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:
+                ACTION_BUTTON];
+    } else {
+      [self logDefaultBrowserFullscreenRemindMeSecondPromoHistogramForAction:
+                ACTION_BUTTON];
+    }
+  } else {
+    [self logDefaultBrowserFullscreenPromoHistogramForAction:ACTION_BUTTON];
+  }
   base::RecordAction(base::UserMetricsAction(
       "IOS.DefaultBrowserFullscreenPromo.PrimaryActionTapped"));
   LogUserInteractionWithFullscreenPromo();
@@ -105,7 +116,34 @@ enum IOSDefaultBrowserFullscreenPromoAction {
 }
 
 - (void)confirmationAlertSecondaryAction {
-  UMA_HISTOGRAM_ENUMERATION("IOS.DefaultBrowserFullscreenPromo", CANCEL);
+  if (IsInRemindMeLaterGroup()) {
+    if (self.defaultBrowerPromoViewController.tertiaryActionAvailable) {
+      // When the "Remind Me Later" button is visible, it is the secondary
+      // button, while the "No Thanks" button is the tertiary button.
+      [self logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:
+                REMIND_ME_LATER];
+      base::RecordAction(base::UserMetricsAction(
+          "IOS.DefaultBrowserFullscreenPromo.RemindMeTapped"));
+      LogRemindMeLaterPromoActionInteraction();
+    } else {
+      [self logDefaultBrowserFullscreenRemindMeSecondPromoHistogramForAction:
+                CANCEL];
+      base::RecordAction(base::UserMetricsAction(
+          "IOS.DefaultBrowserFullscreenPromo.Dismissed"));
+      LogUserInteractionWithFullscreenPromo();
+    }
+  } else {
+    [self logDefaultBrowserFullscreenPromoHistogramForAction:CANCEL];
+    base::RecordAction(
+        base::UserMetricsAction("IOS.DefaultBrowserFullscreenPromo.Dismissed"));
+    LogUserInteractionWithFullscreenPromo();
+  }
+  [self.handler hidePromo];
+}
+
+- (void)confirmationAlertTertiaryAction {
+  DCHECK(IsInRemindMeLaterGroup());
+  [self logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:CANCEL];
   base::RecordAction(
       base::UserMetricsAction("IOS.DefaultBrowserFullscreenPromo.Dismissed"));
   LogUserInteractionWithFullscreenPromo();
@@ -115,8 +153,7 @@ enum IOSDefaultBrowserFullscreenPromoAction {
 - (void)confirmationAlertLearnMoreAction {
   base::RecordAction(base::UserMetricsAction(
       "IOS.DefaultBrowserFullscreen.PromoMoreInfoTapped"));
-  NSString* message =
-      l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE);
+  NSString* message = GetDefaultBrowserLearnMoreText();
   self.learnMoreViewController =
       [[PopoverLabelViewController alloc] initWithMessage:message];
 
@@ -129,6 +166,23 @@ enum IOSDefaultBrowserFullscreenPromoAction {
       presentViewController:self.learnMoreViewController
                    animated:YES
                  completion:nil];
+}
+
+- (void)logDefaultBrowserFullscreenPromoHistogramForAction:
+    (IOSDefaultBrowserFullscreenPromoAction)action {
+  base::UmaHistogramEnumeration("IOS.DefaultBrowserFullscreenPromo", action);
+}
+
+- (void)logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:
+    (IOSDefaultBrowserFullscreenPromoAction)action {
+  base::UmaHistogramEnumeration("IOS.DefaultBrowserFullscreenPromoRemindMe",
+                                action);
+}
+
+- (void)logDefaultBrowserFullscreenRemindMeSecondPromoHistogramForAction:
+    (IOSDefaultBrowserFullscreenPromoAction)action {
+  base::UmaHistogramEnumeration(
+      "IOS.DefaultBrowserFullscreenPromoRemindMeSecondPromo", action);
 }
 
 @end

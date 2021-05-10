@@ -29,7 +29,7 @@ namespace {
 
 const char kContextGone[] = "Script context has shut down.";
 const char kFeaturePolicyBlocked[] =
-    "Access to the feature \"hid\" is disallowed by feature policy.";
+    "Access to the feature \"hid\" is disallowed by permissions policy.";
 
 void RejectWithTypeError(const String& message,
                          ScriptPromiseResolver* resolver) {
@@ -104,7 +104,7 @@ HID::HID(Navigator& navigator)
       feature_handle_for_scheduler_(
           navigator.DomWindow()->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kWebHID,
-              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
+              {SchedulingPolicy::DisableBackForwardCache()})) {}
 
 HID::~HID() {
   DCHECK(get_devices_promises_.IsEmpty());

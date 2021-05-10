@@ -435,6 +435,8 @@
     "disc",
     "circle",
     "square",
+    "disclosure-open",
+    "disclosure-closed",
     "decimal",
     "decimal-leading-zero",
     "arabic-indic",
@@ -1327,6 +1329,12 @@
     "max",
     "clamp",
 
+    //<calc-constant>
+    //https://drafts.csswg.org/css-values/#calc-syntax
+    "infinity",
+    "-infinity",
+    "nan",
+
     // scroll-snap-type
     // none
     // x
@@ -1353,6 +1361,8 @@
     "style",
     // layout
     "size",
+    "block-size",
+    "inline-size",
 
     // grid auto-repeat
     "auto-fill",
@@ -1435,6 +1445,14 @@
     "single-fold-vertical",
     "single-fold-horizontal",
 
+    // (screen-fold-posture) media feature
+    "no-fold",
+    "laptop",
+    // flat,
+    "tent",
+    "tablet",
+    "book",
+
     // scrollbar-gutter
     // auto
     "stable",
@@ -1447,5 +1465,36 @@
     "more",
     "less",
     "forced",
+
+    // @counter-style system
+    "cyclic",
+    // fixed,
+    "symbolic",
+    // alphabetic,
+    "numeric",
+    "additive",
+    "extends",
+    // Predefined counter styles that don't use the above systems
+    "-internal-simp-chinese-informal",
+    "-internal-simp-chinese-formal",
+    "-internal-trad-chinese-informal",
+    "-internal-trad-chinese-formal",
+    "-internal-korean-hangul-formal",
+    "-internal-korean-hanja-informal",
+    "-internal-korean-hanja-formal",
+    "-internal-hebrew",
+    "-internal-lower-armenian",
+    "-internal-upper-armenian",
+    "-internal-ethiopic-numeric",
+
+    // @counter-style range
+    // infinite,
+
+    // @counter-style speak-as
+    // auto
+    "bullets",
+    "numbers",
+    "words",
+    // spell-out,
   ],
 }

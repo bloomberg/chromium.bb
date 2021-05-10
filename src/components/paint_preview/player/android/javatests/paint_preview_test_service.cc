@@ -5,6 +5,7 @@
 #include "components/paint_preview/player/android/javatests/paint_preview_test_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -107,14 +108,19 @@ jlong JNI_PaintPreviewTestService_GetInstance(
 }
 
 PaintPreviewTestService::PaintPreviewTestService(const base::FilePath& path)
-    : PaintPreviewBaseService(path,
-                              kTestDirName,
-                              std::make_unique<TestPaintPreviewPolicy>(),
-                              false),
+    : PaintPreviewBaseService(
+          std::make_unique<PaintPreviewFileMixin>(path, kTestDirName),
+          std::make_unique<TestPaintPreviewPolicy>(),
+          false),
       test_data_dir_(
           path.AppendASCII(kPaintPreviewDir).AppendASCII(kTestDirName)) {}
 
 PaintPreviewTestService::~PaintPreviewTestService() = default;
+
+jlong PaintPreviewTestService::GetBaseService(JNIEnv* env) {
+  return reinterpret_cast<intptr_t>(
+      static_cast<PaintPreviewBaseService*>(this));
+}
 
 base::android::ScopedJavaLocalRef<jintArray>
 PaintPreviewTestService::CreateSingleSkp(

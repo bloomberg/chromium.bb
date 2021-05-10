@@ -16,18 +16,20 @@
 
 namespace password_manager {
 
-using BlacklistedStatus = OriginCredentialStore::BlacklistedStatus;
+using BlocklistedStatus = OriginCredentialStore::BlocklistedStatus;
 
 UiCredential::UiCredential(base::string16 username,
                            base::string16 password,
                            url::Origin origin,
                            IsPublicSuffixMatch is_public_suffix_match,
-                           IsAffiliationBasedMatch is_affiliation_based_match)
+                           IsAffiliationBasedMatch is_affiliation_based_match,
+                           base::Time last_used)
     : username_(std::move(username)),
       password_(std::move(password)),
       origin_(std::move(origin)),
       is_public_suffix_match_(is_public_suffix_match),
-      is_affiliation_based_match_(is_affiliation_based_match) {}
+      is_affiliation_based_match_(is_affiliation_based_match),
+      last_used_(last_used) {}
 
 UiCredential::UiCredential(const PasswordForm& form,
                            const url::Origin& affiliated_origin)
@@ -36,7 +38,8 @@ UiCredential::UiCredential(const PasswordForm& form,
       origin_(form.is_affiliation_based_match ? affiliated_origin
                                               : url::Origin::Create(form.url)),
       is_public_suffix_match_(form.is_public_suffix_match),
-      is_affiliation_based_match_(form.is_affiliation_based_match) {}
+      is_affiliation_based_match_(form.is_affiliation_based_match),
+      last_used_(form.date_last_used) {}
 
 UiCredential::UiCredential(UiCredential&&) = default;
 UiCredential::UiCredential(const UiCredential&) = default;
@@ -49,7 +52,7 @@ bool operator==(const UiCredential& lhs, const UiCredential& rhs) {
     return std::make_tuple(std::cref(cred.username()),
                            std::cref(cred.password()), std::cref(cred.origin()),
                            cred.is_public_suffix_match(),
-                           cred.is_affiliation_based_match());
+                           cred.is_affiliation_based_match(), cred.last_used());
   };
 
   return tie(lhs) == tie(rhs);
@@ -62,7 +65,8 @@ std::ostream& operator<<(std::ostream& os, const UiCredential& credential) {
             << (credential.is_public_suffix_match() ? "PSL-" : "exact origin ")
             << "match, "
             << "affiliation based match: " << std::boolalpha
-            << credential.is_affiliation_based_match();
+            << credential.is_affiliation_based_match()
+            << ", last_used: " << credential.last_used();
 }
 
 OriginCredentialStore::OriginCredentialStore(url::Origin origin)
@@ -78,19 +82,19 @@ base::span<const UiCredential> OriginCredentialStore::GetCredentials() const {
   return credentials_;
 }
 
-void OriginCredentialStore::SetBlacklistedStatus(bool is_blacklisted) {
-  if (is_blacklisted) {
-    blacklisted_status_ = BlacklistedStatus::kIsBlacklisted;
+void OriginCredentialStore::SetBlocklistedStatus(bool is_blocklisted) {
+  if (is_blocklisted) {
+    blocklisted_status_ = BlocklistedStatus::kIsBlocklisted;
     return;
   }
 
-  if (blacklisted_status_ == BlacklistedStatus::kIsBlacklisted) {
-    blacklisted_status_ = BlacklistedStatus::kWasBlacklisted;
+  if (blocklisted_status_ == BlocklistedStatus::kIsBlocklisted) {
+    blocklisted_status_ = BlocklistedStatus::kWasBlocklisted;
   }
 }
 
-BlacklistedStatus OriginCredentialStore::GetBlacklistedStatus() const {
-  return blacklisted_status_;
+BlocklistedStatus OriginCredentialStore::GetBlocklistedStatus() const {
+  return blocklisted_status_;
 }
 
 void OriginCredentialStore::ClearCredentials() {

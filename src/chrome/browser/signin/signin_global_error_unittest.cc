@@ -60,9 +60,10 @@ class SigninGlobalErrorTest : public testing::Test {
     AccountInfo account_info =
         identity_test_env_profile_adaptor_->identity_test_env()
             ->MakePrimaryAccountAvailable(kTestEmail);
-    ProfileAttributesEntry* entry;
-    ASSERT_TRUE(profile_manager_.profile_attributes_storage()->
-        GetProfileAttributesWithPath(profile()->GetPath(), &entry));
+    ProfileAttributesEntry* entry =
+        profile_manager_.profile_attributes_storage()
+            ->GetProfileAttributesWithPath(profile()->GetPath());
+    ASSERT_NE(entry, nullptr);
 
     entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail),
                        /*is_consented_primary_account=*/true);
@@ -83,7 +84,8 @@ class SigninGlobalErrorTest : public testing::Test {
     signin::IdentityTestEnvironment* identity_test_env =
         identity_test_env_profile_adaptor_->identity_test_env();
     CoreAccountId primary_account_id =
-        identity_test_env->identity_manager()->GetPrimaryAccountId();
+        identity_test_env->identity_manager()->GetPrimaryAccountId(
+            signin::ConsentLevel::kSync);
 
     signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_test_env->identity_manager(), primary_account_id,

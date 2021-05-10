@@ -465,6 +465,13 @@ static const arg_def_t target_level = ARG_DEF(
 static const arg_def_t row_mt =
     ARG_DEF(NULL, "row-mt", 1,
             "Enable row based non-deterministic multi-threading in VP9");
+
+static const arg_def_t disable_loopfilter =
+    ARG_DEF(NULL, "disable-loopfilter", 1,
+            "Control Loopfilter in VP9\n"
+            "0: Loopfilter on for all frames (default)\n"
+            "1: Loopfilter off for non reference frames\n"
+            "2: Loopfilter off for all frames");
 #endif
 
 #if CONFIG_VP9_ENCODER
@@ -495,6 +502,10 @@ static const arg_def_t *vp9_args[] = { &cpu_used_vp9,
                                        &max_gf_interval,
                                        &target_level,
                                        &row_mt,
+                                       &disable_loopfilter,
+// NOTE: The entries above have a corresponding entry in vp9_arg_ctrl_map. The
+// entries below do not have a corresponding entry in vp9_arg_ctrl_map. They
+// must be listed at the end of vp9_args.
 #if CONFIG_VP9_HIGHBITDEPTH
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -527,6 +538,7 @@ static const int vp9_arg_ctrl_map[] = { VP8E_SET_CPUUSED,
                                         VP9E_SET_MAX_GF_INTERVAL,
                                         VP9E_SET_TARGET_LEVEL,
                                         VP9E_SET_ROW_MT,
+                                        VP9E_SET_DISABLE_LOOPFILTER,
                                         0 };
 #endif
 
@@ -1624,6 +1636,7 @@ int main(int argc, const char **argv_) {
   int res = 0;
 
   memset(&input, 0, sizeof(input));
+  memset(&raw, 0, sizeof(raw));
   exec_name = argv_[0];
 
   /* Setup default input stream settings */
@@ -1769,14 +1782,10 @@ int main(int argc, const char **argv_) {
       FOREACH_STREAM(show_stream_config(stream, &global, &input));
 
     if (pass == (global.pass ? global.pass - 1 : 0)) {
-      if (input.file_type == FILE_TYPE_Y4M)
-        /*The Y4M reader does its own allocation.
-          Just initialize this here to avoid problems if we never read any
-           frames.*/
-        memset(&raw, 0, sizeof(raw));
-      else
+      // The Y4M reader does its own allocation.
+      if (input.file_type != FILE_TYPE_Y4M) {
         vpx_img_alloc(&raw, input.fmt, input.width, input.height, 32);
-
+      }
       FOREACH_STREAM(stream->rate_hist = init_rate_histogram(
                          &stream->config.cfg, &global.framerate));
     }

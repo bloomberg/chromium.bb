@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -43,11 +44,17 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
      IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL},
     {"networkListItemLabel", IDS_NETWORK_LIST_ITEM_LABEL},
     {"networkListItemLabelCellular", IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR},
+    {"networkListItemLabelCellularWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_PROVIDER_NAME},
     {"networkListItemLabelCellularManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED},
+    {"networkListItemLabelCellularManagedWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_PROVIDER_NAME},
     {"networkListItemLabelEthernetManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED},
     {"networkListItemLabelTether", IDS_NETWORK_LIST_ITEM_LABEL_TETHER},
+    {"networkListItemLabelTetherWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_PROVIDER_NAME},
     {"networkListItemLabelWifi", IDS_NETWORK_LIST_ITEM_LABEL_WIFI},
     {"networkListItemLabelWifiManaged",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED},
@@ -57,14 +64,28 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
      IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED_WITH_CONNECTION_STATUS},
     {"networkListItemLabelCellularWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelCellularWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
     {"networkListItemLabelCellularManagedWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelCellularManagedWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
     {"networkListItemLabelWifiWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_WITH_CONNECTION_STATUS},
     {"networkListItemLabelWifiManagedWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED_WITH_CONNECTION_STATUS},
     {"networkListItemLabelTetherWithConnectionStatus",
      IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS},
+    {"networkListItemLabelTetherWithConnectionStatusAndProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME},
+    {"networkListItemLabelESimPendingProfile",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE},
+    {"networkListItemLabelESimPendingProfileWithProviderName",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME},
+    {"networkListItemLabelESimPendingProfileInstalling",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_INSTALLING},
+    {"networkListItemLabelESimPendingProfileWithProviderNameInstalling",
+     IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING},
     {"wifiNetworkStatusSecured", IDS_WIFI_NETWORK_STATUS_SECURED},
     {"wifiNetworkStatusUnsecured", IDS_WIFI_NETWORK_STATUS_UNSECURED},
     {"networkListItemNotAvailable", IDS_NETWORK_LIST_NOT_AVAILABLE},
@@ -72,6 +93,8 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"networkListItemSimCardLocked", IDS_NETWORK_LIST_SIM_CARD_LOCKED},
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
     {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
+    {"networkListItemDownload", IDS_NETWORK_LIST_ITEM_DOWNLOAD},
+    {"networkListItemAddingProfile", IDS_NETWORK_LIST_ITEM_ADDING_PROFILE},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
     {"networkIconLabelEthernet", IDS_NETWORK_ICON_LABEL_ETHERNET},
     {"networkIconLabelVpn", IDS_NETWORK_ICON_LABEL_VPN},
@@ -85,7 +108,7 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  AddLocalizedStringsBulk(html_source, kElementLocalizedStrings);
+  html_source->AddLocalizedStrings(kElementLocalizedStrings);
 }
 
 void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
@@ -209,7 +232,7 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"Oncipv4-Netmask", IDS_ONC_IPV4_NETMASK},
       {"Oncipv6-IPAddress", IDS_ONC_IPV6_ADDRESS},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -280,12 +303,20 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN},
       {"networkSimErrorIncorrectPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN},
+      {"networkSimErrorIncorrectPinPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN_PLURAL},
       {"networkSimErrorIncorrectPuk",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK},
+      {"networkSimErrorIncorrectPukPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK_PLURAL},
       {"networkSimErrorInvalidPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN},
+      {"networkSimErrorInvalidPinPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN_PLURAL},
       {"networkSimErrorInvalidPuk",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK},
+      {"networkSimErrorInvalidPukPlural",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK_PLURAL},
       {"networkSimErrorPinMismatch",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH},
       {"networkSimUnlock", IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK},
@@ -313,7 +344,7 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkProxyWpadNone", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE},
       {"remove", IDS_REMOVE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -335,7 +366,7 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean(
       "showHiddenNetworkWarning",
@@ -364,7 +395,7 @@ void AddErrorLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkErrorNotHardwareBacked",
        IDS_SETTINGS_INTERNET_NETWORK_REQUIRE_HARDWARE_BACKED},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   // Include Shill errors.
   const char* const shill_errors[] = {

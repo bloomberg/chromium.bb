@@ -50,6 +50,7 @@ class MatchResult;
 class PropertyHandle;
 class RuleSet;
 class StyleCascade;
+class StyleRecalcContext;
 class StyleRuleUsageTracker;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
@@ -67,6 +68,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   scoped_refptr<ComputedStyle> StyleForElement(
       Element*,
+      const StyleRecalcContext&,
       const ComputedStyle* parent_style = nullptr,
       const ComputedStyle* layout_parent_style = nullptr,
       RuleMatchingBehavior = kMatchAllRules);
@@ -78,10 +80,12 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,
       const PropertyHandle&,
-      const CSSValue*);
+      const CSSValue*,
+      double offset);
 
   scoped_refptr<ComputedStyle> PseudoStyleForElement(
       Element*,
+      const StyleRecalcContext&,
       const PseudoElementStyleRequest&,
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
@@ -163,6 +167,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void InitStyleAndApplyInheritance(Element& element,
                                     StyleResolverState& state);
   void ApplyBaseStyle(Element* element,
+                      const StyleRecalcContext&,
                       StyleResolverState& state,
                       StyleCascade& cascade,
                       MatchResult& match_result,
@@ -186,22 +191,16 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void MatchUserRules(ElementRuleCollector&);
   // This matches `::part` selectors. It looks in ancestor scopes as far as
   // part mapping requires.
-  void MatchPseudoPartRules(const Element&, ElementRuleCollector&);
+  void MatchPseudoPartRules(const Element&,
+                            ElementRuleCollector&,
+                            bool for_shadow_pseudo = false);
   void MatchPseudoPartRulesForUAHost(const Element&, ElementRuleCollector&);
-  void MatchScopedRulesV0(const Element&,
-                          ElementRuleCollector&,
-                          ScopedStyleResolver*);
   void MatchAuthorRules(const Element&,
                         ScopedStyleResolver*,
                         ElementRuleCollector&);
-  void MatchAuthorRulesV0(const Element&,
-                          ScopedStyleResolver*,
-                          ElementRuleCollector&);
   void MatchAllRules(StyleResolverState&,
                      ElementRuleCollector&,
                      bool include_smil_properties);
-  void CollectTreeBoundaryCrossingRulesV0CascadeOrder(const Element&,
-                                                      ElementRuleCollector&);
   void ApplyMathMLCustomStyleProperties(Element*, StyleResolverState&);
 
   struct CacheSuccess {

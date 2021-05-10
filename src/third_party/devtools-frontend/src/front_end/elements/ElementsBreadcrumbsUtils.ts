@@ -2,8 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ls} from '../platform/platform.js';
-
+import * as i18n from '../i18n/i18n.js';
+export const UIStrings = {
+  /**
+  * @description Text in Elements Breadcrumbs of the Elements panel. Indicates that a HTML element
+  * is a text node, meaning it contains text only and no other HTML elements. Should be translatd.
+  */
+  text: '(text)',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/ElementsBreadcrumbsUtils.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export interface DOMNode {
   parentNode: DOMNode|null;
   id: number;
@@ -29,10 +37,10 @@ export interface Crumb {
 
 export interface CrumbTitle {
   main: string;
-  extras: {id?: string; classes?: string[];};
+  extras: {id?: string, classes?: string[]};
 }
 
-export const crumbsToRender = (crumbs: ReadonlyArray<DOMNode>, selectedNode: Readonly<DOMNode>|null): Crumb[] => {
+export const crumbsToRender = (crumbs: readonly DOMNode[], selectedNode: Readonly<DOMNode>|null): Crumb[] => {
   if (!selectedNode) {
     return [];
   }
@@ -61,7 +69,7 @@ const makeCrumbTitle = (main: string, extras = {}): CrumbTitle => {
 };
 
 export class NodeSelectedEvent extends Event {
-  data: unknown
+  data: unknown;
 
   constructor(node: DOMNode) {
     super('node-selected', {});
@@ -92,7 +100,7 @@ export const determineElementTitle = (domNode: DOMNode): CrumbTitle => {
     }
 
     case Node.TEXT_NODE:
-      return makeCrumbTitle(ls`(text)`);
+      return makeCrumbTitle(i18nString(UIStrings.text));
     case Node.COMMENT_NODE:
       return makeCrumbTitle('<!-->');
     case Node.DOCUMENT_TYPE_NODE:

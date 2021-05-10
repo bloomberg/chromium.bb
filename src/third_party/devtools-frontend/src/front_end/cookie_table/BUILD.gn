@@ -6,12 +6,13 @@ import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("cookie_table") {
-  sources = [ "CookiesTable.js" ]
+  sources = [ "CookiesTable.ts" ]
 
   deps = [
     "../browser_sdk:bundle",
     "../common:bundle",
     "../data_grid:bundle",
+    "../i18n:bundle",
     "../root:bundle",
     "../sdk:bundle",
     "../ui:bundle",
@@ -19,13 +20,13 @@ devtools_module("cookie_table") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "cookie_table.js"
+  entrypoint = "cookie_table.ts"
 
   deps = [ ":cookie_table" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "cookie_table-legacy.js"
+  entrypoint = "cookie_table-legacy.ts"
 
   deps = [ ":bundle" ]
 }

@@ -14,6 +14,7 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/array_accessor_expression.h"
+#include "src/ast/binary_expression.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
@@ -27,29 +28,29 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, ArgumentExpressionList_Parses) {
-  auto* p = parser("a");
+  auto p = parser("a");
   auto e = p->expect_argument_expression_list();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
 
   ASSERT_EQ(e.value.size(), 1u);
-  ASSERT_TRUE(e.value[0]->IsIdentifier());
+  ASSERT_TRUE(e.value[0]->Is<ast::IdentifierExpression>());
 }
 
 TEST_F(ParserImplTest, ArgumentExpressionList_ParsesMultiple) {
-  auto* p = parser("a, -33, 1+2");
+  auto p = parser("a, -33, 1+2");
   auto e = p->expect_argument_expression_list();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
 
   ASSERT_EQ(e.value.size(), 3u);
-  ASSERT_TRUE(e.value[0]->IsIdentifier());
-  ASSERT_TRUE(e.value[1]->IsConstructor());
-  ASSERT_TRUE(e.value[2]->IsBinary());
+  ASSERT_TRUE(e.value[0]->Is<ast::IdentifierExpression>());
+  ASSERT_TRUE(e.value[1]->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(e.value[2]->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, ArgumentExpressionList_HandlesMissingExpression) {
-  auto* p = parser("a, ");
+  auto p = parser("a, ");
   auto e = p->expect_argument_expression_list();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -57,7 +58,7 @@ TEST_F(ParserImplTest, ArgumentExpressionList_HandlesMissingExpression) {
 }
 
 TEST_F(ParserImplTest, ArgumentExpressionList_HandlesInvalidExpression) {
-  auto* p = parser("if(a) {}");
+  auto p = parser("if(a) {}");
   auto e = p->expect_argument_expression_list();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);

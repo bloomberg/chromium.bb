@@ -67,8 +67,10 @@ public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, bool stroke, bool clipPlane,
                                      bool isectPlane, bool unionPlane, bool roundCaps,
                                      bool wideColor, const SkMatrix& localMatrix) {
-        return arena->make<CircleGeometryProcessor>(stroke, clipPlane, isectPlane, unionPlane,
-                                                    roundCaps, wideColor, localMatrix);
+        return arena->make([&](void* ptr) {
+            return new (ptr) CircleGeometryProcessor(stroke, clipPlane, isectPlane, unionPlane,
+                                                     roundCaps, wideColor, localMatrix);
+        });
     }
 
     const char* name() const override { return "CircleGeometryProcessor"; }
@@ -82,8 +84,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     CircleGeometryProcessor(bool stroke, bool clipPlane, bool isectPlane, bool unionPlane,
                             bool roundCaps, bool wideColor, const SkMatrix& localMatrix)
             : INHERITED(kCircleGeometryProcessor_ClassID)
@@ -267,7 +267,9 @@ class ButtCapDashedCircleGeometryProcessor : public GrGeometryProcessor {
 public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, bool wideColor,
                                      const SkMatrix& localMatrix) {
-        return arena->make<ButtCapDashedCircleGeometryProcessor>(wideColor, localMatrix);
+        return arena->make([&](void* ptr) {
+            return new (ptr) ButtCapDashedCircleGeometryProcessor(wideColor, localMatrix);
+        });
     }
 
     ~ButtCapDashedCircleGeometryProcessor() override {}
@@ -283,8 +285,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     ButtCapDashedCircleGeometryProcessor(bool wideColor, const SkMatrix& localMatrix)
             : INHERITED(kButtCapStrokedCircleGeometryProcessor_ClassID)
             , fLocalMatrix(localMatrix) {
@@ -522,7 +522,9 @@ class EllipseGeometryProcessor : public GrGeometryProcessor {
 public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, bool stroke, bool wideColor,
                                      bool useScale, const SkMatrix& localMatrix) {
-        return arena->make<EllipseGeometryProcessor>(stroke, wideColor, useScale, localMatrix);
+        return arena->make([&](void* ptr) {
+            return new (ptr) EllipseGeometryProcessor(stroke, wideColor, useScale, localMatrix);
+        });
     }
 
     ~EllipseGeometryProcessor() override {}
@@ -538,8 +540,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     EllipseGeometryProcessor(bool stroke, bool wideColor, bool useScale,
                              const SkMatrix& localMatrix)
             : INHERITED(kEllipseGeometryProcessor_ClassID)
@@ -719,7 +719,9 @@ class DIEllipseGeometryProcessor : public GrGeometryProcessor {
 public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, bool wideColor, bool useScale,
                                      const SkMatrix& viewMatrix, DIEllipseStyle style) {
-        return arena->make<DIEllipseGeometryProcessor>(wideColor, useScale, viewMatrix, style);
+        return arena->make([&](void* ptr) {
+            return new (ptr) DIEllipseGeometryProcessor(wideColor, useScale, viewMatrix, style);
+        });
     }
 
     ~DIEllipseGeometryProcessor() override {}
@@ -735,8 +737,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     DIEllipseGeometryProcessor(bool wideColor, bool useScale, const SkMatrix& viewMatrix,
                                DIEllipseStyle style)
             : INHERITED(kDIEllipseGeometryProcessor_ClassID)
@@ -1241,10 +1241,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         SkMatrix localMatrix;
         if (!fViewMatrixIfUsingLocalCoords.invert(&localMatrix)) {
             return;
@@ -1257,7 +1258,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -1603,10 +1604,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         SkMatrix localMatrix;
         if (!fViewMatrixIfUsingLocalCoords.invert(&localMatrix)) {
             return;
@@ -1619,7 +1621,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -1936,10 +1938,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         SkMatrix localMatrix;
         if (!fViewMatrixIfUsingLocalCoords.invert(&localMatrix)) {
             return;
@@ -1950,7 +1953,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -2212,17 +2215,18 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp = DIEllipseGeometryProcessor::Make(arena, fWideColor, fUseScale,
                                                                    this->viewMatrix(),
                                                                    this->style());
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -2610,10 +2614,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         // Invert the view matrix as a local matrix (if any other processors require coords).
         SkMatrix localMatrix;
         if (!fViewMatrixIfUsingLocalCoords.invert(&localMatrix)) {
@@ -2626,7 +2631,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -2933,10 +2938,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         SkMatrix localMatrix;
         if (!fViewMatrixIfUsingLocalCoords.invert(&localMatrix)) {
             return;
@@ -2947,7 +2953,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                                  dstProxyView, gp, GrPrimitiveType::kTriangles,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {

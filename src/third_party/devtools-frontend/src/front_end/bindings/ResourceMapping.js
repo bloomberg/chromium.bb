@@ -49,7 +49,7 @@ export class ResourceMapping {
     if (!resourceMappingInstance || forceNew) {
       if (!targetManager || !workspace) {
         throw new Error(
-            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+            `Unable to create ResourceMapping: targetManager and workspace must be provided: ${new Error().stack}`);
       }
 
       resourceMappingInstance = new ResourceMapping(targetManager, workspace);
@@ -218,7 +218,7 @@ class ModelInfo {
     this._bindings = new Map();
 
     const cssModel = target.model(SDK.CSSModel.CSSModel);
-    console.assert(!!cssModel);
+    console.assert(Boolean(cssModel));
     this._cssModel = /** @type {!SDK.CSSModel.CSSModel} */ (cssModel);
     this._eventListeners = [
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),

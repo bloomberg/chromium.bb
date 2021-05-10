@@ -659,7 +659,7 @@ TEST_F(HostResolverTest, IncludeCanonicalName) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddRuleWithFlags("example.com", "123.0.12.24",
                                             net::HOST_RESOLVER_CANONNAME,
-                                            "canonicalexample.com");
+                                            {"canonicalexample.com"});
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -680,7 +680,7 @@ TEST_F(HostResolverTest, IncludeCanonicalName) {
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("123.0.12.24", 80)));
   EXPECT_EQ("canonicalexample.com",
-            response_client.result_addresses().value().canonical_name());
+            response_client.result_addresses().value().GetCanonicalName());
 }
 
 TEST_F(HostResolverTest, LoopbackOnly) {

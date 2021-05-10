@@ -27,6 +27,8 @@
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace extensions {
@@ -40,12 +42,12 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 18;
+constexpr int kIndexedRulesetFormatVersion = 19;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating kIndexedRulesetFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 6,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 7,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated kIndexedRulesetFormatVersion above.");
 
@@ -58,9 +60,9 @@ int g_override_checksum_for_test = kInvalidOverrideChecksumForTest;
 
 constexpr int kInvalidRuleLimit = -1;
 int g_static_guaranteed_minimum_for_testing = kInvalidRuleLimit;
-int g_static_rule_limit_for_testing = kInvalidRuleLimit;
 int g_global_static_rule_limit_for_testing = kInvalidRuleLimit;
 int g_regex_rule_limit_for_testing = kInvalidRuleLimit;
+int g_dynamic_and_session_rule_limit_for_testing = kInvalidRuleLimit;
 
 int GetIndexedRulesetFormatVersion() {
   return g_indexed_ruleset_format_version_for_testing ==
@@ -77,12 +79,6 @@ std::string GetVersionHeader() {
 }
 
 }  // namespace
-
-bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum) {
-  flatbuffers::Verifier verifier(data.data(), data.size());
-  return expected_checksum == GetChecksum(data) &&
-         flat::VerifyExtensionIndexedRulesetBuffer(verifier);
-}
 
 std::string GetVersionHeaderForTesting() {
   return GetVersionHeader();
@@ -127,10 +123,7 @@ void OverrideGetChecksumForTest(int checksum) {
 }
 
 bool PersistIndexedRuleset(const base::FilePath& path,
-                           base::span<const uint8_t> data,
-                           int* ruleset_checksum) {
-  DCHECK(ruleset_checksum);
-
+                           base::span<const uint8_t> data) {
   // Create the directory corresponding to |path| if it does not exist.
   if (!base::CreateDirectory(path.DirName()))
     return false;
@@ -157,7 +150,6 @@ bool PersistIndexedRuleset(const base::FilePath& path,
     return false;
   }
 
-  *ruleset_checksum = GetChecksum(data);
   return true;
 }
 
@@ -270,6 +262,8 @@ std::string GetPublicRulesetID(const Extension& extension,
                                RulesetID ruleset_id) {
   if (ruleset_id == kDynamicRulesetID)
     return dnr_api::DYNAMIC_RULESET_ID;
+  if (ruleset_id == kSessionRulesetID)
+    return dnr_api::SESSION_RULESET_ID;
 
   DCHECK_GE(ruleset_id, kMinValidStaticRulesetID);
   return DNRManifestData::GetRuleset(extension, ruleset_id).manifest_id;
@@ -292,28 +286,19 @@ int GetStaticGuaranteedMinimumRuleCount() {
 }
 
 int GetGlobalStaticRuleLimit() {
-  DCHECK(base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules));
   return g_global_static_rule_limit_for_testing == kInvalidRuleLimit
              ? kMaxStaticRulesPerProfile
              : g_global_static_rule_limit_for_testing;
 }
 
-int GetStaticRuleLimit() {
-  DCHECK(!base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules));
-  return g_static_rule_limit_for_testing == kInvalidRuleLimit
-             ? dnr_api::MAX_NUMBER_OF_RULES
-             : g_static_rule_limit_for_testing;
-}
-
 int GetMaximumRulesPerRuleset() {
-  return base::FeatureList::IsEnabled(kDeclarativeNetRequestGlobalRules)
-             ? GetStaticGuaranteedMinimumRuleCount() +
-                   GetGlobalStaticRuleLimit()
-             : GetStaticRuleLimit();
+  return GetStaticGuaranteedMinimumRuleCount() + GetGlobalStaticRuleLimit();
 }
 
-int GetDynamicRuleLimit() {
-  return dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES;
+int GetDynamicAndSessionRuleLimit() {
+  return g_dynamic_and_session_rule_limit_for_testing == kInvalidRuleLimit
+             ? dnr_api::MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES
+             : g_dynamic_and_session_rule_limit_for_testing;
 }
 
 int GetRegexRuleLimit() {
@@ -328,11 +313,6 @@ ScopedRuleLimitOverride CreateScopedStaticGuaranteedMinimumOverrideForTesting(
                               minimum);
 }
 
-ScopedRuleLimitOverride CreateScopedStaticRuleLimitOverrideForTesting(
-    int limit) {
-  return base::AutoReset<int>(&g_static_rule_limit_for_testing, limit);
-}
-
 ScopedRuleLimitOverride CreateScopedGlobalStaticRuleLimitOverrideForTesting(
     int limit) {
   return base::AutoReset<int>(&g_global_static_rule_limit_for_testing, limit);
@@ -341,6 +321,12 @@ ScopedRuleLimitOverride CreateScopedGlobalStaticRuleLimitOverrideForTesting(
 ScopedRuleLimitOverride CreateScopedRegexRuleLimitOverrideForTesting(
     int limit) {
   return base::AutoReset<int>(&g_regex_rule_limit_for_testing, limit);
+}
+
+ScopedRuleLimitOverride
+CreateScopedDynamicAndSessionRuleLimitOverrideForTesting(int limit) {
+  return base::AutoReset<int>(&g_dynamic_and_session_rule_limit_for_testing,
+                              limit);
 }
 
 size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher) {
@@ -357,6 +343,16 @@ size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher) {
   }
 
   return enabled_static_rule_count;
+}
+
+bool HasDNRFeedbackPermission(const Extension* extension,
+                              const base::Optional<int>& tab_id) {
+  const PermissionsData* permissions_data = extension->permissions_data();
+  return tab_id.has_value()
+             ? permissions_data->HasAPIPermissionForTab(
+                   *tab_id, APIPermission::kDeclarativeNetRequestFeedback)
+             : permissions_data->HasAPIPermission(
+                   APIPermission::kDeclarativeNetRequestFeedback);
 }
 
 }  // namespace declarative_net_request

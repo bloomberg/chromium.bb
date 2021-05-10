@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
@@ -23,16 +24,19 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.RemoteViewsWithNightModeInflater;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
@@ -47,9 +51,11 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
     private static final String TAG = "CustomTab";
     private static final int SLIDE_ANIMATION_DURATION_MS = 400;
 
-    private final ChromeActivity<?> mActivity;
+    private final Activity mActivity;
+    private final WindowAndroid mWindowAndroid;
     private final BrowserControlsSizer mBrowserControlsSizer;
     private final BrowserServicesIntentDataProvider mDataProvider;
+    private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabNightModeStateController mNightModeStateController;
     private final SystemNightModeMonitor mSystemNightModeMonitor;
 
@@ -70,28 +76,34 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
         public void onClick(View v) {
             if (mClickPendingIntent == null) return;
             Intent extraIntent = new Intent();
-            extraIntent.putExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, v.getId());
-            sendPendingIntentWithUrl(mClickPendingIntent, extraIntent, mActivity);
+            int originalId = v.getId();
+            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS)) {
+                originalId = (Integer) v.getTag(R.id.view_id_tag_key);
+            }
+            extraIntent.putExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, originalId);
+            sendPendingIntentWithUrl(mClickPendingIntent, extraIntent, mActivity, mTabProvider);
         }
     };
 
     @Inject
-    public CustomTabBottomBarDelegate(ChromeActivity<?> activity,
+    public CustomTabBottomBarDelegate(Activity activity, WindowAndroid windowAndroid,
             BrowserServicesIntentDataProvider dataProvider,
             BrowserControlsSizer browserControlsSizer,
             CustomTabNightModeStateController nightModeStateController,
-            SystemNightModeMonitor systemNightModeMonitor,
+            SystemNightModeMonitor systemNightModeMonitor, CustomTabActivityTabProvider tabProvider,
             CustomTabCompositorContentInitializer compositorContentInitializer) {
         mActivity = activity;
+        mWindowAndroid = windowAndroid;
         mDataProvider = dataProvider;
         mBrowserControlsSizer = browserControlsSizer;
         mNightModeStateController = nightModeStateController;
         mSystemNightModeMonitor = systemNightModeMonitor;
+        mTabProvider = tabProvider;
         browserControlsSizer.addObserver(this);
 
         compositorContentInitializer.addCallback(this::addOverlayPanelManagerObserver);
 
-        mActivity.getWindowAndroid().getApplicationBottomInsetProvider().addObserver((inset) -> {
+        mWindowAndroid.getApplicationBottomInsetProvider().addObserver((inset) -> {
             if (mBottomBarView == null) return;
             hideBottomBar(inset > 0);
         });
@@ -139,7 +151,8 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
             final PendingIntent pendingIntent = params.getPendingIntent();
             OnClickListener clickListener = null;
             if (pendingIntent != null) {
-                clickListener = v -> sendPendingIntentWithUrl(pendingIntent, null, mActivity);
+                clickListener =
+                        v -> sendPendingIntentWithUrl(pendingIntent, null, mActivity, mTabProvider);
             }
             layout.addView(
                     params.buildBottomBarButton(mActivity, getBottomBarView(), clickListener));
@@ -276,6 +289,21 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
         mBrowserControlsSizer.setBottomControlsHeight(0, 0);
     }
 
+    private void transformViewIds(View view) {
+        // Store the old id in a tag. The tag key here does not matter as long
+        // as it is unique across all tags.
+        view.setTag(R.id.view_id_tag_key, view.getId());
+        view.setId(View.NO_ID);
+        if (view instanceof ViewGroup) {
+            final ViewGroup group = (ViewGroup) view;
+            final int childCount = group.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                final View child = group.getChildAt(i);
+                transformViewIds(child);
+            }
+        }
+    }
+
     private boolean showRemoteViews(RemoteViews remoteViews) {
         final View inflatedView = RemoteViewsWithNightModeInflater.inflate(remoteViews,
                 getBottomBarView(), mNightModeStateController.isInNightMode(),
@@ -290,6 +318,11 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
                 if (view != null) view.setOnClickListener(mBottomBarClickListener);
             }
         }
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS)) {
+            // Set all views' ids to be View.NO_ID to prevent them clashing with
+            // chrome's resource ids. See http://crbug.com/1061872
+            transformViewIds(inflatedView);
+        }
         getBottomBarView().addView(inflatedView, 1);
         inflatedView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
@@ -303,9 +336,9 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
     }
 
     private static void sendPendingIntentWithUrl(PendingIntent pendingIntent, Intent extraIntent,
-            ChromeActivity activity) {
+            Activity activity, CustomTabActivityTabProvider tabProvider) {
         Intent addedIntent = extraIntent == null ? new Intent() : new Intent(extraIntent);
-        Tab tab = activity.getActivityTab();
+        Tab tab = tabProvider.getTab();
         if (tab != null) addedIntent.setData(Uri.parse(tab.getUrlString()));
         try {
             pendingIntent.send(activity, 0, addedIntent, null, null);

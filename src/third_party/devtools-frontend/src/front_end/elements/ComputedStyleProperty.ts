@@ -26,7 +26,7 @@ export class ComputedStyleProperty extends HTMLElement {
     this.render();
   }
 
-  private render() {
+  private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -68,6 +68,7 @@ export class ComputedStyleProperty extends HTMLElement {
 
         .goto {
           --size: 16px;
+
           display: none;
           position: absolute;
           width: var(--size);
@@ -85,7 +86,6 @@ export class ComputedStyleProperty extends HTMLElement {
         .hidden {
           display: none;
         }
-
         /* narrowed styles */
         :host-context(.computed-narrow) .computed-style-property {
           white-space: normal;
@@ -103,7 +103,6 @@ export class ComputedStyleProperty extends HTMLElement {
         :host-context(.computed-narrow) .goto {
           display: none;
         }
-
         /* high-contrast styles */
         @media (forced-colors: active) {
           .computed-style-property.inherited {
@@ -144,6 +143,7 @@ export class ComputedStyleProperty extends HTMLElement {
 customElements.define('devtools-computed-style-property', ComputedStyleProperty);
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-computed-style-property': ComputedStyleProperty;
   }

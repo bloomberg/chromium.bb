@@ -11,6 +11,7 @@
 #include "base/containers/adapters.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -154,8 +155,7 @@ void CustomFrameView::GetWindowMask(const gfx::Size& size,
   if (frame_->IsMaximized() || !ShouldShowTitleBarAndBorder())
     return;
 
-  GetDefaultWindowMask(size, frame_->GetCompositor()->device_scale_factor(),
-                       window_mask);
+  GetDefaultWindowMask(size, window_mask);
 }
 
 void CustomFrameView::ResetWindowControls() {
@@ -191,7 +191,6 @@ void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_frame_color(GetFrameColor());
   frame_background_->set_use_custom_frame(true);
   frame_background_->set_is_active(ShouldPaintAsActive());
-  frame_background_->set_incognito(false);
   const gfx::ImageSkia frame_image = GetFrameImage();
   frame_background_->set_theme_image(frame_image);
   frame_background_->set_top_area_height(frame_image.height());
@@ -257,7 +256,9 @@ int CustomFrameView::NonClientTopBorderHeight() const {
 int CustomFrameView::CaptionButtonY() const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return FrameBorderThickness();
 #else
   return frame_->IsMaximized() ? FrameBorderThickness() : kFrameShadowThickness;

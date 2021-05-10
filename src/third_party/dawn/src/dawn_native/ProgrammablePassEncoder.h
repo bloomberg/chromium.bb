@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_PROGRAMMABLEPASSENCODER_H_
 #define DAWNNATIVE_PROGRAMMABLEPASSENCODER_H_
 
+#include "dawn_native/CommandBufferStateTracker.h"
 #include "dawn_native/CommandEncoder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/ObjectBase.h"
@@ -24,7 +25,6 @@
 
 namespace dawn_native {
 
-    class CommandAllocator;
     class DeviceBase;
 
     // Base class for shared functionality between ComputePassEncoder and RenderPassEncoder.
@@ -44,6 +44,9 @@ namespace dawn_native {
                           const uint32_t* dynamicOffsets = nullptr);
 
       protected:
+        bool IsValidationEnabled() const;
+        MaybeError ValidateProgrammableEncoderEnd() const;
+
         // Construct an "error" programmable pass encoder.
         ProgrammablePassEncoder(DeviceBase* device,
                                 EncodingContext* encodingContext,
@@ -52,6 +55,12 @@ namespace dawn_native {
 
         EncodingContext* mEncodingContext = nullptr;
         PassResourceUsageTracker mUsageTracker;
+
+        uint64_t mDebugGroupStackSize = 0;
+        CommandBufferStateTracker mCommandBufferState;
+
+      private:
+        const bool mValidationEnabled;
     };
 
 }  // namespace dawn_native

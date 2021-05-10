@@ -1,5 +1,5 @@
-# v-0028: line 9: a fallthrough statement must not appear as the last statement in last clause
-# of a switch
+// v-0028: line 9: a fallthrough statement must not appear as the last statement in last clause
+// of a switch
 
 [[stage(vertex)]]
 fn main() -> void {

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 
+#include "base/containers/contains.h"
+#include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -20,6 +21,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -27,7 +29,9 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace {
 // If true, allows more than one instance of the ExtensionsMenuView, which may
@@ -40,8 +44,8 @@ constexpr int EXTENSIONS_SETTINGS_ID = 42;
 
 bool CompareExtensionMenuItemViews(const ExtensionsMenuItemView* a,
                                    const ExtensionsMenuItemView* b) {
-  return a->view_controller()->GetActionName() <
-         b->view_controller()->GetActionName();
+  return base::i18n::ToLower(a->view_controller()->GetActionName()) <
+         base::i18n::ToLower(b->view_controller()->GetActionName());
 }
 
 // A helper method to convert to an ExtensionsMenuItemView. This cannot be used
@@ -49,7 +53,7 @@ bool CompareExtensionMenuItemViews(const ExtensionsMenuItemView* a,
 // when the view is known to be one). It is only used as an extra measure to
 // prevent bad static casts.
 ExtensionsMenuItemView* GetAsMenuItemView(views::View* view) {
-  DCHECK_EQ(ExtensionsMenuItemView::kClassName, view->GetClassName());
+  DCHECK(views::IsViewClass<ExtensionsMenuItemView>(view));
   return static_cast<ExtensionsMenuItemView*>(view);
 }
 
@@ -66,7 +70,6 @@ ExtensionsMenuView::ExtensionsMenuView(
       extensions_container_(extensions_container),
       allow_pinning_(allow_pinning),
       toolbar_model_(ToolbarActionsModel::Get(browser_->profile())),
-      toolbar_model_observer_(this),
       cant_access_{nullptr, nullptr,
                    IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA_SHORT,
                    IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA,
@@ -79,13 +82,19 @@ ExtensionsMenuView::ExtensionsMenuView(
                   IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA_SHORT,
                   IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA,
                   ToolbarActionViewController::PageInteractionStatus::kActive} {
-  toolbar_model_observer_.Add(toolbar_model_);
+  // Ensure layer masking is used for the extensions menu to ensure buttons with
+  // layer effects sitting flush with the bottom of the bubble are clipped
+  // appropriately.
+  SetPaintClientToLayer(true);
+
+  toolbar_model_observation_.Observe(toolbar_model_);
   browser_->tab_strip_model()->AddObserver(this);
   set_margins(gfx::Insets(0));
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetShowCloseButton(true);
   SetTitle(IDS_EXTENSIONS_MENU_TITLE);
+  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
 
   SetEnableArrowKeyTraversal(true);
 
@@ -394,6 +403,11 @@ void ExtensionsMenuView::SanityCheck() {
 #endif
 }
 
+base::string16 ExtensionsMenuView::GetAccessibleWindowTitle() const {
+  // The title is already spoken via the call to SetTitle().
+  return base::string16();
+}
+
 void ExtensionsMenuView::TabChangedAt(content::WebContents* contents,
                                       int index,
                                       TabChangeType change_type) {
@@ -510,3 +524,18 @@ void ExtensionsMenuView::Hide() {
 ExtensionsMenuView* ExtensionsMenuView::GetExtensionsMenuViewForTesting() {
   return g_extensions_dialog;
 }
+
+// static
+std::vector<ExtensionsMenuItemView*>
+ExtensionsMenuView::GetSortedItemsForSectionForTesting(
+    ToolbarActionViewController::PageInteractionStatus status) {
+  const ExtensionsMenuView::Section* section =
+      GetExtensionsMenuViewForTesting()->GetSectionForStatus(status);
+  std::vector<ExtensionsMenuItemView*> menu_item_views;
+  for (views::View* view : section->menu_items->children())
+    menu_item_views.push_back(GetAsMenuItemView(view));
+  return menu_item_views;
+}
+
+BEGIN_METADATA(ExtensionsMenuView, views::BubbleDialogDelegateView)
+END_METADATA

@@ -165,6 +165,11 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
     return;
   }
 
+  if (authenticator->ForcePINChange()) {
+    Finish(BioEnrollmentStatus::kForcePINChange);
+    return;
+  }
+
   authenticator_ = authenticator;
   state_ = State::kGettingRetries;
   authenticator_->GetPinRetries(base::BindOnce(
@@ -187,7 +192,8 @@ void BioEnrollmentHandler::OnRetriesResponse(
   }
 
   state_ = State::kWaitingForPIN;
-  get_pin_callback_.Run(response->retries,
+  get_pin_callback_.Run(authenticator_->CurrentMinPINLength(),
+                        response->retries,
                         base::BindOnce(&BioEnrollmentHandler::OnHavePIN,
                                        weak_factory_.GetWeakPtr()));
 }

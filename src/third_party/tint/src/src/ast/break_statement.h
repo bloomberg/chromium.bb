@@ -21,10 +21,8 @@ namespace tint {
 namespace ast {
 
 /// An break statement
-class BreakStatement : public Statement {
+class BreakStatement : public Castable<BreakStatement, Statement> {
  public:
-  /// Constructor
-  BreakStatement();
   /// Constructor
   /// @param source the break statement source
   explicit BreakStatement(const Source& source);
@@ -32,16 +30,22 @@ class BreakStatement : public Statement {
   BreakStatement(BreakStatement&&);
   ~BreakStatement() override;
 
-  /// @returns true if this is an break statement
-  bool IsBreak() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  BreakStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   BreakStatement(const BreakStatement&) = delete;

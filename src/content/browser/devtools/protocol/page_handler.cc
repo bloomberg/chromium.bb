@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -162,11 +163,11 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
                           gfx::Vector2dF* root_scroll_offset,
                           double* top_controls_visible_height) {
   // Get metadata from |frame|. This will CHECK if metadata is missing.
-  *device_scale_factor = *frame.metadata()->device_scale_factor;
-  *page_scale_factor = *frame.metadata()->page_scale_factor;
-  root_scroll_offset->set_x(*frame.metadata()->root_scroll_offset_x);
-  root_scroll_offset->set_y(*frame.metadata()->root_scroll_offset_y);
-  *top_controls_visible_height = *frame.metadata()->top_controls_visible_height;
+  *device_scale_factor = *frame.metadata().device_scale_factor;
+  *page_scale_factor = *frame.metadata().page_scale_factor;
+  root_scroll_offset->set_x(*frame.metadata().root_scroll_offset_x);
+  root_scroll_offset->set_y(*frame.metadata().root_scroll_offset_y);
+  *top_controls_visible_height = *frame.metadata().top_controls_visible_height;
 }
 
 template <typename ProtocolCallback>
@@ -203,14 +204,19 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       browser_handler_(browser_handler) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
+  constexpr auto kScreencastPixelFormat = media::PIXEL_FORMAT_I420;
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
   if (!CompositorImpl::IsInitialized())
     create_video_consumer = false;
+#else
+  constexpr auto kScreencastPixelFormat = media::PIXEL_FORMAT_ARGB;
 #endif
   if (create_video_consumer) {
     video_consumer_ = std::make_unique<DevToolsVideoConsumer>(
         base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
                             weak_factory_.GetWeakPtr()));
+    video_consumer_->SetFormat(kScreencastPixelFormat,
+                               gfx::ColorSpace::CreateREC709());
   }
   DCHECK(emulation_handler_);
 }
@@ -246,7 +252,7 @@ void PageHandler::SetRenderer(int process_host_id,
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (widget_host && observation_.IsObservingSource(widget_host))
-    observation_.RemoveObservation();
+    observation_.Reset();
 
   host_ = frame_host;
   widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
@@ -284,7 +290,7 @@ void PageHandler::RenderWidgetHostVisibilityChanged(
 
 void PageHandler::RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) {
   DCHECK(observation_.IsObservingSource(widget_host));
-  observation_.RemoveObservation();
+  observation_.Reset();
 }
 
 void PageHandler::DidAttachInterstitialPage() {
@@ -501,8 +507,12 @@ void PageHandler::Navigate(const std::string& url,
   params.referrer = Referrer(GURL(referrer.fromMaybe("")), policy);
   params.transition_type = type;
   params.frame_tree_node_id = frame_tree_node->frame_tree_node_id();
-  frame_tree_node->navigator().GetController()->LoadURLWithParams(params);
-
+  // Handler may be destroyed while navigating if the session
+  // gets disconnected as a result of access checks.
+  base::WeakPtr<PageHandler> weak_self = weak_factory_.GetWeakPtr();
+  frame_tree_node->navigator().controller().LoadURLWithParams(params);
+  if (!weak_self)
+    return;
   base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
   auto navigate_callback = navigate_callbacks_.find(frame_token);
   if (navigate_callback != navigate_callbacks_.end()) {
@@ -681,6 +691,7 @@ void PageHandler::CaptureScreenshot(
     Maybe<int> quality,
     Maybe<Page::Viewport> clip,
     Maybe<bool> from_surface,
+    Maybe<bool> capture_beyond_viewport,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
   if (!host_ || !host_->GetRenderWidgetHost() ||
       !host_->GetRenderWidgetHost()->GetView()) {
@@ -712,7 +723,8 @@ void PageHandler::CaptureScreenshot(
         base::BindOnce(&PageHandler::ScreenshotCaptured,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        screenshot_format, screenshot_quality, gfx::Size(),
-                       gfx::Size(), blink::DeviceEmulationParams()),
+                       gfx::Size(), blink::DeviceEmulationParams(),
+                       base::nullopt),
         false);
     return;
   }
@@ -775,6 +787,30 @@ void PageHandler::CaptureScreenshot(
     }
   }
 
+  base::Optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
+  if (capture_beyond_viewport.fromMaybe(false)) {
+    blink::web_pref::WebPreferences original_web_prefs =
+        host_->GetRenderViewHost()->GetDelegate()->GetOrCreateWebPreferences();
+    maybe_original_web_prefs = original_web_prefs;
+
+    blink::web_pref::WebPreferences modified_web_prefs = original_web_prefs;
+    // Hiding scrollbar is needed to avoid scrollbar artefacts on the
+    // screenshot. Details: https://crbug.com/1003629.
+    modified_web_prefs.hide_scrollbars = true;
+    modified_web_prefs.record_whole_document = true;
+    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+        modified_web_prefs);
+
+    {
+      // TODO(crbug.com/1141835): Remove the bug is fixed.
+      // Walkaround for the bug. Emulated `view_size` has to be set twice,
+      // otherwise the scrollbar will be on the screenshot present.
+      blink::DeviceEmulationParams tmp_params = modified_params;
+      tmp_params.view_size = gfx::Size(1, 1);
+      emulation_handler_->SetDeviceEmulationParams(tmp_params);
+    }
+  }
+
   // We use DeviceEmulationParams to either emulate, set viewport or both.
   emulation_handler_->SetDeviceEmulationParams(modified_params);
 
@@ -796,8 +832,7 @@ void PageHandler::CaptureScreenshot(
     } else {
       requested_image_size = emulated_view_size;
     }
-    double scale = emulation_enabled ? original_params.device_scale_factor
-                                     : widget_host_device_scale_factor;
+    double scale = widget_host_device_scale_factor * dpfactor;
     if (clip.isJust())
       scale *= clip.fromJust()->GetScale();
     requested_image_size = gfx::ScaleToRoundedSize(requested_image_size, scale);
@@ -807,7 +842,8 @@ void PageHandler::CaptureScreenshot(
       base::BindOnce(&PageHandler::ScreenshotCaptured,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      screenshot_format, screenshot_quality, original_view_size,
-                     requested_image_size, original_params),
+                     requested_image_size, original_params,
+                     maybe_original_web_prefs),
       true);
 }
 
@@ -1110,11 +1146,18 @@ void PageHandler::ScreenshotCaptured(
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
     const blink::DeviceEmulationParams& original_emulation_params,
+    const base::Optional<blink::web_pref::WebPreferences>&
+        maybe_original_web_prefs,
     const gfx::Image& image) {
   if (original_view_size.width()) {
     RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
     widget_host->GetView()->SetSize(original_view_size);
     emulation_handler_->SetDeviceEmulationParams(original_emulation_params);
+  }
+
+  if (maybe_original_web_prefs) {
+    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+        maybe_original_web_prefs.value());
   }
 
   if (image.IsEmpty()) {

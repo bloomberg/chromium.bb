@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -26,7 +27,6 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -155,9 +155,9 @@
 #include "net/reporting/reporting_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/network/mock_mojo_dhcp_wpad_url_client.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace network {
 
@@ -166,8 +166,6 @@ namespace {
 using ::testing::Optional;
 
 constexpr char kMockHost[] = "mock.host";
-constexpr char kCustomProxyResponse[] = "CustomProxyResponse";
-constexpr int kProcessId = 11;
 constexpr int kRouteId = 12;
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -253,13 +251,6 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
 
   client->RunUntilComplete();
   return client;
-}
-
-std::unique_ptr<net::test_server::HttpResponse> CustomProxyResponse(
-    const net::test_server::HttpRequest& request) {
-  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  response->set_content(kCustomProxyResponse);
-  return std::move(response);
 }
 
 // proxy_resolver::mojom::ProxyResolverFactory that captures the most recent PAC
@@ -2002,7 +1993,7 @@ TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
   EXPECT_FALSE(result.has_value());
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 base::Optional<net::AuthCredentials> GetProxyAuthCredentials(
     NetworkContext* network_context,
     const net::ProxyServer& proxy_server,
@@ -2500,10 +2491,10 @@ bool SetCookieHelper(NetworkContext* network_context,
   base::RunLoop run_loop;
   bool result = false;
   cookie_manager->SetCanonicalCookie(
-      net::CanonicalCookie(key, value, url.host(), "/", base::Time(),
-                           base::Time(), base::Time(), true, false,
-                           net::CookieSameSite::NO_RESTRICTION,
-                           net::COOKIE_PRIORITY_LOW, false),
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          key, value, url.host(), "/", base::Time(), base::Time(), base::Time(),
+          true, false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_LOW, false),
       url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop, &result));
   run_loop.Run();
@@ -2521,12 +2512,12 @@ TEST_F(NetworkContextTest, CookieManager) {
   // Set a cookie through the cookie interface.
   base::RunLoop run_loop1;
   bool result = false;
-  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
-                              base::Time(), base::Time(), base::Time(), false,
-                              false, net::CookieSameSite::LAX_MODE,
-                              net::COOKIE_PRIORITY_LOW, false);
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+      "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
+      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      net::COOKIE_PRIORITY_LOW, false);
   cookie_manager_remote->SetCanonicalCookie(
-      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+      *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
       net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop1, &result));
   run_loop1.Run();
@@ -2802,11 +2793,11 @@ TEST_F(NetworkContextTest, ProxyLookupWithNetworkIsolationKey) {
   context_params->proxy_config_client_receiver =
       config_client.BindNewPipeAndPassReceiver();
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->dhcp_wpad_url_client =
       network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
           std::string());
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -2899,11 +2890,11 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
   // unsupported platforms, we'd simply ignore the PAC quick check input and
   // default to false.
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->dhcp_wpad_url_client =
       network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
           std::string());
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->proxy_resolver_factory =
       MockMojoProxyResolverFactory::Create();
   std::unique_ptr<NetworkContext> network_context =
@@ -2917,11 +2908,11 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
 
   // Explicitly enable.
   context_params = CreateContextParams();
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->dhcp_wpad_url_client =
       network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
           std::string());
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->proxy_resolver_factory =
       MockMojoProxyResolverFactory::Create();
   context_params->pac_quick_check_enabled = true;
@@ -2935,11 +2926,11 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
 
   // Explicitly disable.
   context_params = CreateContextParams();
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->dhcp_wpad_url_client =
       network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
           std::string());
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->proxy_resolver_factory =
       MockMojoProxyResolverFactory::Create();
   context_params->pac_quick_check_enabled = false;
@@ -3988,17 +3979,17 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
   std::unique_ptr<net::URLRequest> request =
       context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
-  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
-                              base::Time(), base::Time(), base::Time(), false,
-                              false, net::CookieSameSite::LAX_MODE,
-                              net::COOKIE_PRIORITY_LOW, false);
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+      "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
+      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      net::COOKIE_PRIORITY_LOW, false);
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, cookie, nullptr, true));
+          *request, *cookie, nullptr, true));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
   EXPECT_FALSE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, cookie, nullptr, true));
+          *request, *cookie, nullptr, true));
 }
 
 TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
@@ -4008,15 +3999,15 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
   std::unique_ptr<net::URLRequest> request =
       context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
-  net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
-                              base::Time(), base::Time(), base::Time(), false,
-                              false, net::CookieSameSite::LAX_MODE,
-                              net::COOKIE_PRIORITY_LOW, false);
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+      "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
+      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      net::COOKIE_PRIORITY_LOW, false);
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, cookie, nullptr, true));
+          *request, *cookie, nullptr, true));
 }
 
 TEST_F(NetworkContextTest, CanGetCookiesFalseIfCookiesBlocked) {
@@ -4186,39 +4177,56 @@ TEST_F(NetworkContextTest, PreconnectOne) {
 }
 
 TEST_F(NetworkContextTest, PreconnectHSTS) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
+  net::NetworkIsolationKey network_isolation_key =
+      net::NetworkIsolationKey::CreateTransient();
 
-  ConnectionListener connection_listener;
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.SetConnectionListener(&connection_listener);
-  ASSERT_TRUE(test_server.Start());
+  for (bool partition_connections : {false, true}) {
+    base::test::ScopedFeatureList feature_list;
+    if (partition_connections) {
+      feature_list.InitAndEnableFeature(
+          net::features::kPartitionConnectionsByNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
+          net::features::kPartitionConnectionsByNetworkIsolationKey);
+    }
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
 
-  const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
-  network_context->PreconnectSockets(1, server_http_url,
-                                     /*allow_credentials=*/false,
-                                     net::NetworkIsolationKey());
-  connection_listener.WaitForAcceptedConnections(1u);
+    ConnectionListener connection_listener;
+    net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+    test_server.SetConnectionListener(&connection_listener);
+    ASSERT_TRUE(test_server.Start());
 
-  int num_sockets = GetSocketCountForGroup(
-      network_context.get(),
-      "pm/" + net::HostPortPair::FromURL(server_http_url).ToString());
-  EXPECT_EQ(num_sockets, 1);
+    const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
 
-  const base::Time expiry =
-      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
-  network_context->url_request_context()->transport_security_state()->AddHSTS(
-      server_http_url.host(), expiry, false);
-  network_context->PreconnectSockets(1, server_http_url,
-                                     /*allow_credentials=*/false,
-                                     net::NetworkIsolationKey());
-  connection_listener.WaitForAcceptedConnections(1u);
+    std::string group_suffix =
+        net::HostPortPair::FromURL(server_http_url).ToString();
+    if (partition_connections)
+      group_suffix += " <" + network_isolation_key.ToDebugString() + ">";
+    std::string group_name = "pm/" + group_suffix;
+    std::string ssl_group_name = "pm/ssl/" + group_suffix;
 
-  // If HSTS weren't respected, the initial connection would have been reused.
-  num_sockets = GetSocketCountForGroup(
-      network_context.get(),
-      "pm/ssl/" + net::HostPortPair::FromURL(server_http_url).ToString());
-  EXPECT_EQ(num_sockets, 1);
+    network_context->PreconnectSockets(1, server_http_url,
+                                       /*allow_credentials=*/false,
+                                       network_isolation_key);
+    connection_listener.WaitForAcceptedConnections(1u);
+
+    int num_sockets = GetSocketCountForGroup(network_context.get(), group_name);
+    EXPECT_EQ(num_sockets, 1);
+
+    const base::Time expiry =
+        base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+    network_context->url_request_context()->transport_security_state()->AddHSTS(
+        server_http_url.host(), expiry, false);
+    network_context->PreconnectSockets(1, server_http_url,
+                                       /*allow_credentials=*/false,
+                                       network_isolation_key);
+    connection_listener.WaitForAcceptedConnections(1u);
+
+    // If HSTS weren't respected, the initial connection would have been reused.
+    num_sockets = GetSocketCountForGroup(network_context.get(), ssl_group_name);
+    EXPECT_EQ(num_sockets, 1);
+  }
 }
 
 TEST_F(NetworkContextTest, PreconnectZero) {
@@ -5141,11 +5149,11 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
       mojom::NetworkContextParams::New();
   context_params->proxy_error_client = proxy_error_client.CreateRemote();
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   context_params->dhcp_wpad_url_client =
       network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
           std::string());
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // The PAC URL doesn't matter, since the test is configured to use a
   // mock ProxyResolverFactory which doesn't actually evaluate it. It just
@@ -5785,70 +5793,6 @@ TEST_F(NetworkContextMockHostTest, MAYBE_CustomProxyUsesSpecifiedProxyList) {
   EXPECT_EQ(response, "Echo");
   EXPECT_EQ(client->response_head()->proxy_server,
             ConvertToProxyServer(proxy_test_server));
-}
-
-// Verifies that custom proxy is used only for requests with process id and
-// render frame id.
-// TODO(https://crbug.com/991035): Crash flakes due to NetworkService'
-// UploadLoadInfo() timer firing during FetchRequest().
-TEST_F(NetworkContextMockHostTest,
-       DISABLED_UseCustomProxyForNavigationAndRenderFrameRequest) {
-  net::EmbeddedTestServer test_server;
-  net::test_server::RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  net::EmbeddedTestServer proxy_test_server;
-  proxy_test_server.RegisterRequestHandler(
-      base::BindRepeating(&CustomProxyResponse));
-  ASSERT_TRUE(proxy_test_server.Start());
-
-  struct TestCase {
-    int process_id;
-    int render_frame_id;
-    bool expected_custom_proxy_used;
-  };
-  const TestCase test_cases[] = {
-      // When process id and renderer id are invalid, custom proxy is not used.
-      {0, MSG_ROUTING_NONE, false},
-
-      {kProcessId, kRouteId, true},
-      {0, kRouteId, true},
-      {kProcessId, MSG_ROUTING_NONE, true},
-
-      // render_frame_id = MSG_ROUTING_CONTROL provides a temporary way to use
-      // the custom proxy for specific requests.
-      {0, MSG_ROUTING_CONTROL, true},
-  };
-
-  for (const TestCase& test_case : test_cases) {
-    mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
-    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-    context_params->custom_proxy_config_client_receiver =
-        proxy_config_client.BindNewPipeAndPassReceiver();
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(std::move(context_params));
-    auto config = mojom::CustomProxyConfig::New();
-    net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
-    config->rules.ParseFromString("http=" + proxy_server.ToURI());
-    proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-    task_environment_.RunUntilIdle();
-
-    ResourceRequest request;
-    request.url = GetURLWithMockHost(test_server, "/echo");
-    request.render_frame_id = test_case.render_frame_id;
-    std::unique_ptr<TestURLLoaderClient> client =
-        FetchRequest(request, network_context.get(), mojom::kURLLoadOptionNone,
-                     test_case.process_id);
-    task_environment_.RunUntilIdle();
-    std::string response;
-    EXPECT_TRUE(
-        mojo::BlockingCopyToString(client->response_body_release(), &response));
-
-    if (test_case.expected_custom_proxy_used)
-      EXPECT_EQ(kCustomProxyResponse, response);
-    else
-      EXPECT_EQ("Echo", response);
-  }
 }
 
 TEST_F(NetworkContextTest, MaximumCount) {
@@ -6530,6 +6474,14 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
       request.trusted_params = ResourceRequest::TrustedParams();
       request.trusted_params->isolation_info = isolation_info;
       params->is_trusted = true;
+      // These params must be individually set, to be consistent with the
+      // IsolationInfo if its request type is a main frame navigation.
+      // TODO(crbug.com/1172314): Unify these to avoid inconsistencies.
+      if (isolation_info.request_type() ==
+          net::IsolationInfo::RequestType::kMainFrame) {
+        request.is_main_frame = true;
+        request.update_first_party_url_on_redirect = true;
+      }
     }
 
     params->automatically_assign_isolation_info =
@@ -6953,6 +6905,121 @@ TEST_F(NetworkContextTest,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
   EXPECT_EQ(client->completion_status().trust_token_operation_status,
             mojom::TrustTokenOperationStatus::kUnavailable);
+}
+
+TEST_F(NetworkContextTest, NoAvailableTrustTokensWhenTrustTokensAreDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Allow the store time to initialize asynchronously.
+  base::RunLoop run_loop;
+  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+      trust_tokens;
+  network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
+      [&trust_tokens,
+       &run_loop](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
+        trust_tokens = std::move(tokens);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  ASSERT_TRUE(trust_tokens.has_value());
+  EXPECT_TRUE(trust_tokens->empty());
+}
+
+TEST_F(NetworkContextTest, GetStoredTrustTokens) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  base::RunLoop run_loop;
+
+  // Query Trust Tokens before adding the mock token.
+  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+      trust_tokens_before_adding;
+  network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
+      [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
+        trust_tokens_before_adding = std::move(tokens);
+      }));
+
+  // Add a mock token.
+  network_context->trust_token_store()->ExecuteOrEnqueue(
+      base::BindLambdaForTesting([&](TrustTokenStore* store) {
+        DCHECK(store);
+        store->AddTokens(
+            *SuitableTrustTokenOrigin::Create(GURL("https://trusttoken.com")),
+            std::vector<std::string>{"token"}, "issuing key");
+      }));
+
+  // Query Trust Tokens after adding the mock token.
+  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+      trust_tokens_after_adding;
+  network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
+      [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
+        trust_tokens_after_adding = std::move(tokens);
+        run_loop.Quit();
+      }));
+
+  // Allow the store time to initialize asynchronously and execute the
+  // operations.
+  run_loop.Run();
+
+  ASSERT_TRUE(trust_tokens_before_adding.has_value());
+  EXPECT_EQ(trust_tokens_before_adding->size(), 0ul);
+
+  ASSERT_TRUE(trust_tokens_after_adding.has_value());
+  ASSERT_EQ(trust_tokens_after_adding->size(), 1ul);
+  EXPECT_EQ(trust_tokens_after_adding.value()[0]->issuer.Serialize(),
+            "https://trusttoken.com");
+}
+
+TEST_F(NetworkContextTest, GetStoredTrustTokensReentrant) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Add a mock token.
+  base::RunLoop run_loop;
+  network_context->trust_token_store()->ExecuteOrEnqueue(
+      base::BindLambdaForTesting([&](TrustTokenStore* store) {
+        DCHECK(store);
+        store->AddTokens(
+            *SuitableTrustTokenOrigin::Create(GURL("https://trusttoken.com")),
+            std::vector<std::string>{"token"}, "issuing key");
+      }));
+
+  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+      trust_tokens;
+  base::Optional<std::vector<mojom::StoredTrustTokensForIssuerPtr>>
+      reentrant_trust_tokens;
+  network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
+      [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
+        network_context->GetStoredTrustTokenCounts(base::BindLambdaForTesting(
+            [&](std::vector<mojom::StoredTrustTokensForIssuerPtr> tokens) {
+              reentrant_trust_tokens = std::move(tokens);
+              run_loop.Quit();
+            }));
+        trust_tokens = std::move(tokens);
+      }));
+
+  // Allow the store time to initialize asynchronously and execute the
+  // operations.
+  run_loop.Run();
+
+  ASSERT_TRUE(trust_tokens.has_value());
+  ASSERT_TRUE(reentrant_trust_tokens.has_value());
+  EXPECT_EQ(trust_tokens->size(), reentrant_trust_tokens->size());
+  EXPECT_EQ(trust_tokens.value()[0]->issuer,
+            reentrant_trust_tokens.value()[0]->issuer);
+  EXPECT_EQ(trust_tokens.value()[0]->count,
+            reentrant_trust_tokens.value()[0]->count);
 }
 
 }  // namespace

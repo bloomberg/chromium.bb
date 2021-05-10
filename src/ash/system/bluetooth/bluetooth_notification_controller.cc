@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/nearby_share_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -20,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/nearby/public/cpp/nearby_client_uuids.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -296,8 +298,18 @@ void BluetoothNotificationController::OnGetAdapter(
 }
 
 void BluetoothNotificationController::NotifyAdapterDiscoverable() {
-  message_center::RichNotificationData optional;
+  // If Nearby Share has made the local device discoverable, do not
+  // unnecessarily display this notification.
+  // TODO(crbug.com/1155669): Generalize this logic to prevent leaking Nearby
+  // implementation details.
+  auto* nearby_share_delegate = Shell::Get()->nearby_share_delegate();
+  if (nearby_share_delegate &&
+      (nearby_share_delegate->IsEnableHighVisibilityRequestActive() ||
+       nearby_share_delegate->IsHighVisibilityOn())) {
+    return;
+  }
 
+  message_center::RichNotificationData optional;
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kBluetoothDeviceDiscoverableNotificationId, base::string16() /* title */,
@@ -348,6 +360,16 @@ void BluetoothNotificationController::NotifyPairedDevice(
           kBluetoothDevicePairingNotificationId)) {
     message_center_->RemoveNotification(kBluetoothDevicePairingNotificationId,
                                         false /* by_user */);
+  }
+
+  // If the newly paired device is connected via a Nearby Connections client
+  // (e.g., Nearby Share), do not display this notification.
+  // TODO(crbug.com/1155669): Generalize this logic to prevent leaking Nearby
+  // implementation details.
+  for (const auto& uuid : device->GetUUIDs()) {
+    if (chromeos::nearby::IsNearbyClientUuid(uuid)) {
+      return;
+    }
   }
 
   std::unique_ptr<Notification> notification = CreateSystemNotification(

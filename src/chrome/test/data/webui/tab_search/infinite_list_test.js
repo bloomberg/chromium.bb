@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {InfiniteList} from 'chrome://tab-search/infinite_list.js';
-import {TabSearchItem} from 'chrome://tab-search/tab_search_item.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {InfiniteList, TabSearchItem} from 'chrome://tab-search.top-chrome/tab_search.js';
 
 import {assertEquals, assertGT, assertNotEquals, assertTrue} from '../../chai_assert.js';
 import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
@@ -11,8 +11,35 @@ import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
 import {generateSampleTabsFromSiteNames, sampleSiteNames} from './tab_search_test_data.js';
 import {assertTabItemAndNeighborsInViewBounds, disableScrollIntoViewAnimations} from './tab_search_test_helper.js';
 
-suite('InfniteListTest', () => {
-  const CHUNK_ITEM_COUNT = 7;
+const CHUNK_ITEM_COUNT = 7;
+
+class TestApp extends PolymerElement {
+  static get properties() {
+    return {
+      /** @private {number} */
+      chunkItemCount_: {
+        type: Number,
+        value: CHUNK_ITEM_COUNT
+      }
+    };
+  }
+
+  static get template() {
+    return html`
+    <infinite-list id="list" chunk-item-count="[[chunkItemCount_]]">
+      <template is="dom-repeat">
+        <tab-search-item id="[[item.tab.tabId]]"
+            style="display: flex;height: 56px" data="[[item]]" tabindex="0"
+            role="option">
+        </tab-search-item>
+      </template>
+    </infinite-list>`;
+  }
+}
+
+customElements.define('test-app', TestApp);
+
+suite('InfiniteListTest', () => {
   /** @type {!InfiniteList} */
   let infiniteList;
 
@@ -22,20 +49,19 @@ suite('InfniteListTest', () => {
    * @param {!Array<!tabSearch.mojom.Tab>} sampleData
    */
   async function setupTest(sampleData) {
-    document.head.insertAdjacentHTML(
-        'beforeend', `<style>html{--list-max-height: 280px}</style>`);
+    document.head.insertAdjacentHTML('beforeend', `
+    <style>
+    html {
+      --list-max-height: 280px;
+    }
+    </style>`);
 
-    document.body.innerHTML = `
-    <infinite-list id="list" chunk-item-count="${CHUNK_ITEM_COUNT}">
-      <template>
-        <tab-search-item id="[[item.tab.tabId]]" class="mwb-list-item"
-            data="[[item]]" tabindex="0" role="option">
-        </tab-search-item>
-      </template>
-    </infinite-list>`;
+    const testApp = document.createElement('test-app');
+    document.body.innerHTML = '';
+    document.body.appendChild(testApp);
 
-    infiniteList =
-        /** @type {!InfiniteList} */ (document.querySelector('#list'));
+    infiniteList = /** @type {!InfiniteList} */ (
+        testApp.shadowRoot.querySelector('#list'));
     infiniteList.items = sampleData;
     await flushTasks();
   }
@@ -45,7 +71,7 @@ suite('InfniteListTest', () => {
    */
   function queryRows() {
     return /** @type {!NodeList<!HTMLElement>} */ (
-        infiniteList.shadowRoot.querySelectorAll('tab-search-item'));
+        infiniteList.querySelectorAll('tab-search-item'));
   }
 
   /**
@@ -61,9 +87,9 @@ suite('InfniteListTest', () => {
   test('ScrollHeight', async () => {
     const tabItems = sampleTabItems(sampleSiteNames());
     await setupTest(tabItems);
+    await waitAfterNextRender(infiniteList);
 
-    const container = infiniteList.shadowRoot.getElementById('container');
-    assertEquals(0, container.scrollTop);
+    assertEquals(0, infiniteList.scrollTop);
 
     const itemHeightStyle =
         getComputedStyle(document.head).getPropertyValue('--mwb-item-height');
@@ -71,7 +97,29 @@ suite('InfniteListTest', () => {
 
     const tabItemHeight = Number.parseInt(
         itemHeightStyle.substring(0, itemHeightStyle.length - 2), 10);
-    assertEquals(tabItemHeight * tabItems.length, container.scrollHeight);
+    assertEquals(tabItemHeight * tabItems.length, infiniteList.scrollHeight);
+  });
+
+  test('ListUpdates', async () => {
+    let siteNames = Array.from({length: 1}, (_, i) => 'site' + (i + 1));
+    const tabItems = sampleTabItems(siteNames);
+    await setupTest(tabItems);
+    assertEquals(1, queryRows().length);
+
+    // Ensure that on updating the list with an array smaller in size
+    // than the chunkItemCount property, all the array items are rendered.
+    siteNames = Array.from({length: 3}, (_, i) => 'site' + (i + 1));
+    infiniteList.items = sampleTabItems(siteNames);
+    await waitAfterNextRender(infiniteList);
+    assertEquals(3, queryRows().length);
+
+    // Ensure that on updating the list with an array greater in size than
+    // the chunkItemCount property, only a chunk of array items are rendered.
+    siteNames =
+        Array.from({length: 2 * CHUNK_ITEM_COUNT}, (_, i) => 'site' + (i + 1));
+    infiniteList.items = sampleTabItems(siteNames);
+    await waitAfterNextRender(infiniteList);
+    assertEquals(CHUNK_ITEM_COUNT, queryRows().length);
   });
 
   test('SelectedIndex', async () => {
@@ -79,8 +127,7 @@ suite('InfniteListTest', () => {
     const tabItems = sampleTabItems(siteNames);
     await setupTest(tabItems);
 
-    const container = infiniteList.shadowRoot.getElementById('container');
-    assertEquals(0, container.scrollTop);
+    assertEquals(0, infiniteList.scrollTop);
     assertEquals(CHUNK_ITEM_COUNT, queryRows().length);
 
     // Assert that upon changing the selected index to a non previously rendered
@@ -94,7 +141,7 @@ suite('InfniteListTest', () => {
     assertEquals(2 * CHUNK_ITEM_COUNT, domTabItems.length);
 
     // Assert that the view scrolled to show the selected item.
-    const afterSelectionScrollTop = container.scrollTop;
+    const afterSelectionScrollTop = infiniteList.scrollTop;
     assertNotEquals(0, afterSelectionScrollTop);
 
     // Assert that on replacing the list items, the currently selected index
@@ -106,15 +153,14 @@ suite('InfniteListTest', () => {
     assertNotEquals(null, theSelectedTabItem);
 
     // Assert the selected item is still visible in the view.
-    assertEquals(afterSelectionScrollTop, container.scrollTop);
+    assertEquals(afterSelectionScrollTop, infiniteList.scrollTop);
   });
 
   test('NavigateDownShowsPreviousAndFollowingListItems', async () => {
     const tabItems = sampleTabItems(sampleSiteNames());
     await setupTest(tabItems);
 
-    const tabsDiv = /** @type {!HTMLElement} */
-        (infiniteList.shadowRoot.querySelector('#container'));
+    const tabsDiv = /** @type {!HTMLElement} */ (infiniteList);
     // Assert that the tabs are in a overflowing state.
     assertGT(tabsDiv.scrollHeight, tabsDiv.clientHeight);
 
@@ -134,8 +180,7 @@ suite('InfniteListTest', () => {
     const tabItems = sampleTabItems(sampleSiteNames());
     await setupTest(tabItems);
 
-    const tabsDiv = /** @type {!HTMLElement} */
-        (infiniteList.shadowRoot.querySelector('#container'));
+    const tabsDiv = /** @type {!HTMLElement} */ (infiniteList);
     // Assert that the tabs are in a overflowing state.
     assertGT(tabsDiv.scrollHeight, tabsDiv.clientHeight);
 

@@ -31,6 +31,17 @@
 #include <unordered_map>
 #include <vector>
 
+namespace tint {
+
+    class Program;
+
+    namespace transform {
+        class Transform;
+        class VertexPulling;
+    }  // namespace transform
+
+}  // namespace tint
+
 namespace spirv_cross {
     class Compiler;
 }
@@ -39,17 +50,43 @@ namespace dawn_native {
 
     struct EntryPointMetadata;
 
-    MaybeError ValidateShaderModuleDescriptor(DeviceBase* device,
-                                              const ShaderModuleDescriptor* descriptor);
+    // A map from name to EntryPointMetadata.
+    using EntryPointMetadataTable =
+        std::unordered_map<std::string, std::unique_ptr<EntryPointMetadata>>;
+
+    struct ShaderModuleParseResult {
+        ShaderModuleParseResult();
+        ~ShaderModuleParseResult();
+        ShaderModuleParseResult(ShaderModuleParseResult&& rhs);
+        ShaderModuleParseResult& operator=(ShaderModuleParseResult&& rhs);
+
+#ifdef DAWN_ENABLE_WGSL
+        std::unique_ptr<tint::Program> tintProgram;
+#endif
+        std::vector<uint32_t> spirv;
+    };
+
+    ResultOrError<ShaderModuleParseResult> ValidateShaderModuleDescriptor(
+        DeviceBase* device,
+        const ShaderModuleDescriptor* descriptor);
     MaybeError ValidateCompatibilityWithPipelineLayout(DeviceBase* device,
                                                        const EntryPointMetadata& entryPoint,
                                                        const PipelineLayoutBase* layout);
 
     RequiredBufferSizes ComputeRequiredBufferSizesForLayout(const EntryPointMetadata& entryPoint,
                                                             const PipelineLayoutBase* layout);
+#ifdef DAWN_ENABLE_WGSL
+    ResultOrError<tint::Program> RunTransforms(tint::transform::Transform* transform,
+                                               tint::Program* program);
+
+    std::unique_ptr<tint::transform::VertexPulling> MakeVertexPullingTransform(
+        const VertexStateDescriptor& vertexState,
+        const std::string& entryPoint,
+        BindGroupIndex pullingBufferBindingSet);
+#endif
 
     // Contains all the reflection data for a valid (ShaderModule, entryPoint, stage). They are
-    // stored in the ShaderModuleBase and destroyed only when the shader module is destroyed so
+    // stored in the ShaderModuleBase and destroyed only when the shader program is destroyed so
     // pointers to EntryPointMetadata are safe to store as long as you also keep a Ref to the
     // ShaderModuleBase.
     struct EntryPointMetadata {
@@ -62,15 +99,14 @@ namespace dawn_native {
 
           private:
             // Disallow access to unused members.
-            using BindingInfo::hasDynamicOffset;
             using BindingInfo::visibility;
         };
 
         // bindings[G][B] is the reflection data for the binding defined with
         // [[group=G, binding=B]] in WGSL / SPIRV.
         using BindingGroupInfoMap = std::map<BindingNumber, ShaderBindingInfo>;
-        using BindingInfo = ityp::array<BindGroupIndex, BindingGroupInfoMap, kMaxBindGroups>;
-        BindingInfo bindings;
+        using BindingInfoArray = ityp::array<BindGroupIndex, BindingGroupInfoMap, kMaxBindGroups>;
+        BindingInfoArray bindings;
 
         // The set of vertex attributes this entryPoint uses.
         std::bitset<kMaxVertexAttributes> usedVertexAttributes;
@@ -94,17 +130,16 @@ namespace dawn_native {
 
         static ShaderModuleBase* MakeError(DeviceBase* device);
 
-        // Return true iff the module has an entrypoint called `entryPoint`.
+        // Return true iff the program has an entrypoint called `entryPoint`.
         bool HasEntryPoint(const std::string& entryPoint) const;
 
         // Returns the metadata for the given `entryPoint`. HasEntryPoint with the same argument
         // must be true.
         const EntryPointMetadata& GetEntryPoint(const std::string& entryPoint) const;
 
-        // Functors necessary for the unordered_set<ShaderModuleBase*>-based cache.
-        struct HashFunc {
-            size_t operator()(const ShaderModuleBase* module) const;
-        };
+        // Functions necessary for the unordered_set<ShaderModuleBase*>-based cache.
+        size_t ComputeContentHash() override;
+
         struct EqualityFunc {
             bool operator()(const ShaderModuleBase* a, const ShaderModuleBase* b) const;
         };
@@ -113,13 +148,20 @@ namespace dawn_native {
 
 #ifdef DAWN_ENABLE_WGSL
         ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
+            const std::vector<uint32_t>& spirv,
             const VertexStateDescriptor& vertexState,
             const std::string& entryPoint,
-            uint32_t pullingBufferBindingSet) const;
+            BindGroupIndex pullingBufferBindingSet) const;
+
+        ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
+            tint::Program* program,
+            const VertexStateDescriptor& vertexState,
+            const std::string& entryPoint,
+            BindGroupIndex pullingBufferBindingSet) const;
 #endif
 
       protected:
-        MaybeError InitializeBase();
+        MaybeError InitializeBase(ShaderModuleParseResult* parseResult);
 
       private:
         ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag);
@@ -130,8 +172,7 @@ namespace dawn_native {
         std::vector<uint32_t> mSpirv;
         std::string mWgsl;
 
-        // A map from [name, stage] to EntryPointMetadata.
-        std::unordered_map<std::string, std::unique_ptr<EntryPointMetadata>> mEntryPoints;
+        EntryPointMetadataTable mEntryPoints;
     };
 
 }  // namespace dawn_native

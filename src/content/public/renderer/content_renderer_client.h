@@ -24,8 +24,6 @@
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -212,28 +210,21 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|. If the function returns a valid |new_url|, the request must be
-  // updated to use it. The |force_ignore_site_for_cookies| output parameter
-  // indicates whether SameSite cookies should be unconditionally attached to
-  // the request, bypassing the usual |site_for_cookies| checks. The
-  // |site_for_cookies| is the site_for_cookies of the request. (This is
+  // updated to use it.
+  //
+  // The |site_for_cookies| is the site_for_cookies of the request. (This is
   // approximately the URL of the main frame. It is empty in the case of
   // cross-site iframes.)
-  //
-  // TODO(nasko): When moved over to Network Service, find a way to perform
-  // this check on the browser side, so untrusted renderer processes cannot
-  // influence whether SameSite cookies are attached.
   virtual void WillSendRequest(blink::WebLocalFrame* frame,
                                ui::PageTransition transition_type,
                                const blink::WebURL& url,
                                const net::SiteForCookies& site_for_cookies,
                                const url::Origin* initiator_origin,
-                               GURL* new_url,
-                               bool* force_ignore_site_for_cookies);
+                               GURL* new_url);
 
-  // Returns true if the request is associated with a document that is in
-  // ""prefetch only" mode, and will not be rendered.
-  virtual bool IsPrefetchOnly(RenderFrame* render_frame,
-                              const blink::WebURLRequest& request);
+  // Returns true if the render frame is used for NoStatePrefetch and will not
+  // be rendered.
+  virtual bool IsPrefetchOnly(RenderFrame* render_frame);
 
   // See blink::Platform.
   virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
@@ -419,12 +410,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual base::Optional<::media::AudioRendererAlgorithmParameters>
   GetAudioRendererAlgorithmParameters(
       ::media::AudioParameters audio_parameters);
-
-  // Proxies the URLLoaderFactory if the platform supports Chrome extensions.
-  virtual void MaybeProxyURLLoaderFactory(
-      RenderFrame* render_frame,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-          factory_receiver);
 };
 
 }  // namespace content

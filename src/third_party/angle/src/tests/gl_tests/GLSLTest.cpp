@@ -826,8 +826,10 @@ TEST_P(GLSLTest_ES3, GLVertexIDIntegerTextureDrawArrays)
     ANGLE_SKIP_TEST_IF(isSwiftshader());
     // http://anglebug.com/5232
     ANGLE_SKIP_TEST_IF(IsMetal());
-    // TODO(crbug.com/1132295): Failing on ARM-based Apple DTKs.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
+    // TODO(anglebug.com/5491): Failing on iOS, probably related to the ARM Mac failure above.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
     // Have to set a large point size because the window size is much larger than the texture
     constexpr char kVS[] = R"(#version 300 es
 flat out highp int vVertexID;
@@ -886,7 +888,7 @@ TEST_P(GLSLTest_ES3, GLVertexIDOffsetFiveDrawArray)
     // http://anglebug.com/4092
     ANGLE_SKIP_TEST_IF(isSwiftshader());
     // Bug in Nexus drivers, offset does not work. (anglebug.com/3264)
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
 
     constexpr int kStartIndex  = 5;
     constexpr int kArrayLength = 5;
@@ -1563,7 +1565,7 @@ TEST_P(GLSLTest, MaxVaryingVec3AndOneFloat)
 // Only fails on D3D9 because of packing limitations.
 TEST_P(GLSLTest, MaxVaryingVec3ArrayAndOneFloatArray)
 {
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
 
     GLint maxVaryings = 0;
@@ -1601,7 +1603,7 @@ TEST_P(GLSLTest, MaxVaryingVec2Arrays)
     // (http://anglebug.com/1291)
     ANGLE_SKIP_TEST_IF(IsOSX() && IsAMD() && IsOpenGL());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
 
     GLint maxVaryings = 0;
@@ -2111,9 +2113,6 @@ void main()
 // can actually be used.
 TEST_P(GLSLTest, VerifyMaxVertexUniformVectors)
 {
-    // Times out on D3D11 on test infra. http://anglebug.com/5076
-    ANGLE_SKIP_TEST_IF(IsD3D11() && IsIntel());
-
     // crbug.com/680631
     ANGLE_SKIP_TEST_IF(IsOzone() && IsIntel());
 
@@ -2331,6 +2330,26 @@ TEST_P(GLSLTest, ArrayOfStructContainingArrayOfSamplers)
     }
     drawQuad(program.get(), essl1_shaders::PositionAttrib(), 0.5f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, expected);
+}
+
+// Test that if a non-preprocessor token is seen in a disabled if-block then it does not disallow
+// extension pragmas later
+TEST_P(GLSLTest, NonPreprocessorTokensInIfBlocks)
+{
+    constexpr const char *kFS = R"(
+#if __VERSION__ >= 300
+    inout mediump vec4 fragData;
+#else
+    #extension GL_EXT_shader_texture_lod :enable
+#endif
+
+void main()
+{
+}
+    )";
+
+    GLuint shader = CompileShader(GL_FRAGMENT_SHADER, kFS);
+    EXPECT_NE(0u, shader);
 }
 
 // Test that two constructors which have vec4 and mat2 parameters get disambiguated (issue in
@@ -2858,6 +2877,9 @@ TEST_P(GLSLTest, VaryingMatrixArray)
 // Test that using a centroid varying matrix array is supported.
 TEST_P(GLSLTest_ES3, CentroidVaryingMatrixArray)
 {
+    // TODO(anglebug.com/5491): Skipping initial failures so we can set up a passing iOS test bot.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     constexpr char kVS[] =
         "#version 300 es\n"
         "uniform vec2 u_a1;\n"
@@ -3243,15 +3265,11 @@ TEST_P(GLSLTest_ES31, AtomicCounterArrayLength)
     // http://anglebug.com/3782
     ANGLE_SKIP_TEST_IF(IsOpenGL());
 
-    // Skipping due to a bug on the Qualcomm Vulkan Android driver.
-    // http://anglebug.com/3726
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr char kCS[] = R"(#version 310 es
 precision mediump float;
 layout(local_size_x=1) in;
 
-layout(binding = 0) uniform atomic_uint ac1[2][3];
+layout(binding = 0) uniform atomic_uint ac1[2][3][4];
 uniform uint testSideEffectValue;
 
 layout(binding = 1, std140) buffer Result
@@ -3266,11 +3284,19 @@ void main() {
         passed = false;
     }
     uint value = 0u;
-    if (ac1[(value = testSideEffectValue)].length() != 3)
+    if (ac1[value = testSideEffectValue].length() != 3)
     {
         passed = false;
     }
     if (value != testSideEffectValue)
+    {
+        passed = false;
+    }
+    if (ac1[1][value = testSideEffectValue + 1u].length() != 4)
+    {
+        passed = false;
+    }
+    if (value != testSideEffectValue + 1u)
     {
         passed = false;
     }
@@ -3307,9 +3333,10 @@ void main() {
                  GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, shaderStorageBuffer);
 
-    GLint uniformLocation = glGetUniformLocation(program.get(), "testSideEffectValue");
+    GLint uniformLocation = glGetUniformLocation(program, "testSideEffectValue");
     EXPECT_NE(uniformLocation, -1);
-    glUniform1i(uniformLocation, kUniformTestValue);
+    glUniform1ui(uniformLocation, kUniformTestValue);
+    EXPECT_GL_NO_ERROR();
 
     glDispatchCompute(1, 1, 1);
 
@@ -3380,10 +3407,6 @@ void main()
 // Test that inactive samplers in structs don't cause any errors.
 TEST_P(GLSLTest_ES31, InactiveSamplersInStructCS)
 {
-    // While the sampler is being extracted and declared outside of the struct, it's not removed
-    // from the struct definition.  http://anglebug.com/4211
-    ANGLE_SKIP_TEST_IF(IsVulkan() || IsMetal());
-
     constexpr char kCS[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 struct S
@@ -3510,10 +3533,6 @@ TEST_P(GLSLTest_ES31, ArraysOfArraysBlockBasicType)
 // Test that arrays of arrays of samplers work as expected.
 TEST_P(GLSLTest_ES31, ArraysOfArraysSampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump float;\n"
@@ -3565,10 +3584,6 @@ TEST_P(GLSLTest_ES31, ArraysOfArraysImage)
 {
     // http://anglebug.com/5072
     ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
-
-    // anglebug.com/2703 - QC doesn't support arrays of image as parameters,
-    // so image array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
 
     // Fails on D3D due to mistranslation.
     ANGLE_SKIP_TEST_IF(IsD3D());
@@ -3643,6 +3658,306 @@ TEST_P(GLSLTest_ES31, ArraysOfArraysImage)
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
+// Test that multiple arrays of arrays of images work as expected.
+TEST_P(GLSLTest_ES31, ConsecutiveArraysOfArraysImage)
+{
+    // http://anglebug.com/5072
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
+
+    // Fails on D3D due to mistranslation.
+    ANGLE_SKIP_TEST_IF(IsD3D());
+
+    constexpr GLsizei kImage1Layers = 3;
+    constexpr GLsizei kImage1Rows   = 2;
+    constexpr GLsizei kImage1Cols   = 1;
+    constexpr GLsizei kImage2Rows   = 2;
+    constexpr GLsizei kImage2Cols   = 4;
+
+    constexpr GLsizei kImage1Units = kImage1Layers * kImage1Rows * kImage1Cols;
+    constexpr GLsizei kImage2Units = kImage2Rows * kImage2Cols;
+    constexpr GLsizei kImage3Units = 1;
+
+    constexpr GLsizei kTotalImageCount = kImage1Units + kImage2Units + kImage3Units;
+
+    GLint maxTextures, maxComputeImageUniforms;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
+    glGetIntegerv(GL_MAX_COMPUTE_IMAGE_UNIFORMS, &maxComputeImageUniforms);
+    ANGLE_SKIP_TEST_IF(maxTextures < kTotalImageCount);
+    ANGLE_SKIP_TEST_IF(maxComputeImageUniforms < kTotalImageCount);
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+        layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+        layout(binding = 0, r32ui) uniform highp readonly uimage2D image1[3][2][1];
+        layout(binding = 6, r32ui) uniform highp readonly uimage2D image2[2][4];
+        layout(binding = 14, r32ui) uniform highp readonly uimage2D image3;
+        layout(binding = 0, std430) buffer Output {
+            uint image_value;
+        } outbuf;
+
+        void main(void)
+        {
+            outbuf.image_value = uint(0.0);
+
+            outbuf.image_value += imageLoad(image1[0][0][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image1[0][1][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image1[1][0][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image1[1][1][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image1[2][0][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image1[2][1][0], ivec2(0, 0)).x;
+
+            outbuf.image_value += imageLoad(image2[0][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[0][1], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[0][2], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[0][3], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[1][0], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[1][1], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[1][2], ivec2(0, 0)).x;
+            outbuf.image_value += imageLoad(image2[1][3], ivec2(0, 0)).x;
+
+            outbuf.image_value += imageLoad(image3, ivec2(0, 0)).x;
+        })";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    constexpr GLuint kOutputInitData = 10;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kOutputInitData), &kOutputInitData,
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr GLsizei kImage1Binding = 0;
+    constexpr GLsizei kImage2Binding = kImage1Binding + kImage1Units;
+    constexpr GLsizei kImage3Binding = kImage2Binding + kImage2Units;
+
+    constexpr GLuint kImage1Data = 13;
+    GLTexture images1[kImage1Layers][kImage1Rows][kImage1Cols];
+    for (int layer = 0; layer < kImage1Layers; layer++)
+    {
+        for (int row = 0; row < kImage1Rows; row++)
+        {
+            for (int col = 0; col < kImage1Cols; col++)
+            {
+                glBindTexture(GL_TEXTURE_2D, images1[layer][row][col]);
+                glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1, 1);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_INT,
+                                &kImage1Data);
+                glBindImageTexture(kImage1Binding + (layer * kImage1Rows + row) * kImage1Cols + col,
+                                   images1[layer][row][col], 0, GL_FALSE, 0, GL_READ_ONLY,
+                                   GL_R32UI);
+                EXPECT_GL_NO_ERROR();
+            }
+        }
+    }
+
+    constexpr GLuint kImage2Data = 17;
+    GLTexture images2[kImage2Rows][kImage2Cols];
+    for (int row = 0; row < kImage2Rows; row++)
+    {
+        for (int col = 0; col < kImage2Cols; col++)
+        {
+            glBindTexture(GL_TEXTURE_2D, images2[row][col]);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1, 1);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_INT,
+                            &kImage2Data);
+            glBindImageTexture(kImage2Binding + row * kImage2Cols + col, images2[row][col], 0,
+                               GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+
+    constexpr GLuint kImage3Data = 19;
+    GLTexture image3;
+    glBindTexture(GL_TEXTURE_2D, image3);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1, 1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_INT, &kImage3Data);
+    glBindImageTexture(kImage3Binding, image3, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    EXPECT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kOutputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(*ptr,
+              kImage1Data * kImage1Units + kImage2Data * kImage2Units + kImage3Data * kImage3Units);
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Test that arrays of arrays of images of r32f format work when passed to functions.
+TEST_P(GLSLTest_ES31, ArraysOfArraysOfR32fImages)
+{
+    // Skip if GL_OES_shader_image_atomic is not enabled.
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_shader_image_atomic"));
+
+    // http://anglebug.com/5072
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
+
+    // Fails on D3D due to mistranslation.
+    ANGLE_SKIP_TEST_IF(IsD3D());
+
+    // Fails on Android on GLES.
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    // http://anglebug.com/5353
+    ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsOpenGL());
+
+    GLint maxComputeImageUniforms;
+    glGetIntegerv(GL_MAX_COMPUTE_IMAGE_UNIFORMS, &maxComputeImageUniforms);
+    ANGLE_SKIP_TEST_IF(maxComputeImageUniforms < 7);
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+#extension GL_OES_shader_image_atomic : require
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(binding = 0, r32f) uniform highp image2D image1[2][3];
+layout(binding = 6, r32f) uniform highp image2D image2;
+
+void testFunction(image2D imageOut[2][3])
+{
+    // image1 is an array of 1x1 images.
+    // image2 is a 1x4 image with the following data:
+    //
+    // (0, 0): 234.5
+    // (0, 1): 4.0
+    // (0, 2): 456.0
+    // (0, 3): 987.0
+
+
+    // Write to [0][0]
+    imageStore(imageOut[0][0], ivec2(0, 0), vec4(1234.5));
+
+    // Write to [0][1]
+    imageStore(imageOut[0][1], ivec2(0, 0), imageLoad(image2, ivec2(0, 0)));
+
+    // Write to [0][2]
+    imageStore(imageOut[0][2], ivec2(0, 0), vec4(imageSize(image2).y));
+
+    // Write to [1][0]
+    imageStore(imageOut[1][0], ivec2(0,
+                 imageSize(image2).y - int(imageLoad(image2, ivec2(0, 1)).x)
+                ), vec4(678.0));
+
+    // Write to [1][1]
+    imageStore(imageOut[1][1], ivec2(0, 0),
+                vec4(imageAtomicExchange(image2, ivec2(0, 2), 135.0)));
+
+    // Write to [1][2]
+    imageStore(imageOut[1][2], ivec2(0, 0),
+                    imageLoad(image2, ivec2(imageSize(image2).x - 1, 3)));
+}
+
+void main(void)
+{
+    testFunction(image1);
+})";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    constexpr GLsizei kImageRows = 2;
+    constexpr GLsizei kImageCols = 3;
+    constexpr GLfloat kImageData = 0;
+    GLTexture images[kImageRows][kImageCols];
+    for (size_t row = 0; row < kImageRows; row++)
+    {
+        for (size_t col = 0; col < kImageCols; col++)
+        {
+            glBindTexture(GL_TEXTURE_2D, images[row][col]);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, 1, 1);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RED, GL_FLOAT, &kImageData);
+            glBindImageTexture(row * kImageCols + col, images[row][col], 0, GL_FALSE, 0,
+                               GL_READ_WRITE, GL_R32F);
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+
+    constexpr GLsizei kImage2Size                          = 4;
+    constexpr std::array<GLfloat, kImage2Size> kImage2Data = {
+        234.5f,
+        4.0f,
+        456.0f,
+        987.0f,
+    };
+    GLTexture image2;
+    glBindTexture(GL_TEXTURE_2D, image2);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, 1, kImage2Size);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, kImage2Size, GL_RED, GL_FLOAT, kImage2Data.data());
+    glBindImageTexture(6, image2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32F);
+    EXPECT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    // Verify the previous dispatch with another dispatch
+    constexpr char kVerifyShader[] = R"(#version 310 es
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(binding = 0, r32f) uniform highp readonly image2D image1[2][3];
+layout(binding = 6, r32f) uniform highp readonly image2D image2;
+layout(binding = 0, std430) buffer Output {
+    float image2Data[4];
+    float image1Data[6];
+} outbuf;
+
+void main(void)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        outbuf.image2Data[i] = imageLoad(image2, ivec2(0, i)).x;
+    }
+    outbuf.image1Data[0] = imageLoad(image1[0][0], ivec2(0, 0)).x;
+    outbuf.image1Data[1] = imageLoad(image1[0][1], ivec2(0, 0)).x;
+    outbuf.image1Data[2] = imageLoad(image1[0][2], ivec2(0, 0)).x;
+    outbuf.image1Data[3] = imageLoad(image1[1][0], ivec2(0, 0)).x;
+    outbuf.image1Data[4] = imageLoad(image1[1][1], ivec2(0, 0)).x;
+    outbuf.image1Data[5] = imageLoad(image1[1][2], ivec2(0, 0)).x;
+})";
+    ANGLE_GL_COMPUTE_PROGRAM(verifyProgram, kVerifyShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(verifyProgram);
+
+    constexpr std::array<GLfloat, kImage2Size + kImageRows *kImageCols> kOutputInitData = {};
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kOutputInitData), kOutputInitData.data(),
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // Verify
+    const GLfloat *ptr = reinterpret_cast<const GLfloat *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kOutputInitData), GL_MAP_READ_BIT));
+
+    EXPECT_EQ(ptr[0], kImage2Data[0]);
+    EXPECT_EQ(ptr[1], kImage2Data[1]);
+    EXPECT_NEAR(ptr[2], 135.0f, 0.0001f);
+    EXPECT_EQ(ptr[3], kImage2Data[3]);
+
+    EXPECT_NEAR(ptr[4], 1234.5f, 0.0001f);
+    EXPECT_NEAR(ptr[5], kImage2Data[0], 0.0001f);
+    EXPECT_NEAR(ptr[6], kImage2Size, 0.0001f);
+    EXPECT_NEAR(ptr[7], 678.0f, 0.0001f);
+    EXPECT_NEAR(ptr[8], kImage2Data[2], 0.0001f);
+    EXPECT_NEAR(ptr[9], kImage2Data[3], 0.0001f);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
 // Test that structs containing arrays of samplers work as expected.
 TEST_P(GLSLTest_ES31, StructArraySampler)
 {
@@ -3684,10 +3999,6 @@ TEST_P(GLSLTest_ES31, StructArraySampler)
 // Test that arrays of arrays of samplers inside structs work as expected.
 TEST_P(GLSLTest_ES31, StructArrayArraySampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump float;\n"
@@ -3738,10 +4049,6 @@ TEST_P(GLSLTest_ES31, StructArrayArraySampler)
 // Test that an array of structs with arrays of arrays of samplers works.
 TEST_P(GLSLTest_ES31, ArrayStructArrayArraySampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     GLint numTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &numTextures);
     ANGLE_SKIP_TEST_IF(numTextures < 2 * (2 * 2 + 2 * 2));
@@ -3810,10 +4117,6 @@ TEST_P(GLSLTest_ES31, ArrayStructArrayArraySampler)
 // Test that a complex chain of structs and arrays of samplers works as expected.
 TEST_P(GLSLTest_ES31, ComplexStructArraySampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     GLint numTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &numTextures);
     ANGLE_SKIP_TEST_IF(numTextures < 2 * 3 * (2 + 3));
@@ -3899,10 +4202,6 @@ TEST_P(GLSLTest_ES31, ComplexStructArraySampler)
 
 TEST_P(GLSLTest_ES31, ArraysOfArraysStructDifferentTypesSampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     GLint numTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &numTextures);
     ANGLE_SKIP_TEST_IF(numTextures < 3 * (2 + 2));
@@ -3979,9 +4278,7 @@ TEST_P(GLSLTest_ES31, ParameterArraysOfArraysSampler)
 {
     // anglebug.com/3832 - no sampler array params on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
+
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump float;\n"
@@ -4041,9 +4338,7 @@ TEST_P(GLSLTest_ES31, ParameterStructArrayArraySampler)
 {
     // anglebug.com/3832 - no sampler array params on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
+
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump float;\n"
@@ -4104,9 +4399,7 @@ TEST_P(GLSLTest_ES31, ParameterArrayArrayStructArrayArraySampler)
 {
     // anglebug.com/3832 - no sampler array params on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
+
     GLint numTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &numTextures);
     ANGLE_SKIP_TEST_IF(numTextures < 3 * 2 * 2 * 2);
@@ -4180,17 +4473,16 @@ TEST_P(GLSLTest_ES31, ParameterArrayArrayStructArrayArraySampler)
 // Test that 3D arrays with sub-arrays passed as parameters works as expected.
 TEST_P(GLSLTest_ES31, ParameterArrayArrayArraySampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     GLint numTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &numTextures);
     ANGLE_SKIP_TEST_IF(numTextures < 2 * 3 * 4 + 4);
+
     // anglebug.com/3832 - no sampler array params on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-    // Seems like this is failing on Windows Intel?
+
+    // http://anglebug.com/5546
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
+
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump float;\n"
@@ -4318,10 +4610,6 @@ TEST_P(GLSLTest_ES31, ArraysOfArraysNameCollisionSampler)
 // Test that regular arrays are unmodified.
 TEST_P(GLSLTest_ES31, BasicTypeArrayAndArrayOfSampler)
 {
-    // anglebug.com/2703 - QC doesn't support arrays of samplers as parameters,
-    // so sampler array of array handling is disabled
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr char kFS[] =
         "#version 310 es\n"
         "precision mediump sampler2D;\n"
@@ -4862,7 +5150,7 @@ TEST_P(GLSLTest, StructsWithSameMembersDisambiguatedByName)
 TEST_P(GLSLTest, InactiveVaryingInVertexActiveInFragment)
 {
     // http://anglebug.com/4820
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL());
+    ANGLE_SKIP_TEST_IF((IsOSX() && IsOpenGL()) || (IsIOS() && IsOpenGLES()));
 
     constexpr char kVS[] =
         "attribute vec4 inputAttribute;\n"
@@ -4996,6 +5284,9 @@ TEST_P(WebGL2GLSLTest, VaryingStructNotInitializedInVertexShader)
     //
     // http://anglebug.com/3413
     ANGLE_SKIP_TEST_IF(IsDesktopOpenGL() && (IsOSX() || (IsWindows() && !IsNVIDIA())));
+    // TODO(anglebug.com/5491): iOS thinks that the precision qualifiers don't match on the
+    // struct member. Not sure if it's being overly strict.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -5027,6 +5318,9 @@ TEST_P(WebGL2GLSLTest, VaryingStructNotInitializedInVertexShader)
 // Test that a varying struct that gets used in the fragment shader works.
 TEST_P(GLSLTest_ES3, VaryingStructUsedInFragmentShader)
 {
+    // TODO(anglebug.com/5491): iOS thinks that the precision qualifiers don't match on the
+    // struct member. Not sure if it's being overly strict.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
     constexpr char kVS[] =
         "#version 300 es\n"
         "in vec4 inputAttribute;\n"
@@ -5061,6 +5355,84 @@ TEST_P(GLSLTest_ES3, VaryingStructUsedInFragmentShader)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
+// This is a regression test to make sure a red quad is rendered without issues
+// when a passthrough function with a vec3 input parameter is used in the fragment shader.
+TEST_P(GLSLTest_ES31, SamplerPassthroughFailedLink)
+{
+    constexpr char kVS[] =
+        "precision mediump float;\n"
+        "attribute vec4 inputAttribute;\n"
+        "varying mediump vec2 texCoord;\n"
+        "void main() {\n"
+        "    texCoord = inputAttribute.xy;\n"
+        "    gl_Position = vec4(inputAttribute.x, inputAttribute.y, 0.0, 1.0);\n"
+        "}\n";
+
+    constexpr char kFS[] =
+        "precision mediump float;\n"
+        "varying mediump vec2 texCoord;\n"
+        "uniform sampler2D testSampler;\n"
+        "vec3 passthrough(vec3 c) {\n"
+        "    return c;\n"
+        "}\n"
+        "void main() {\n"
+        "    gl_FragColor = vec4(passthrough(texture2D(testSampler, texCoord).rgb), 1.0);\n"
+        "}\n";
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+
+    // Initialize basic red texture.
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    drawQuad(program.get(), "inputAttribute", 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// This is a regression test to make sure a red quad is rendered without issues
+// when a passthrough function with a vec4 input parameter is used in the fragment shader.
+TEST_P(GLSLTest_ES31, SamplerPassthroughIncorrectColor)
+{
+    constexpr char kVS[] =
+        "precision mediump float;\n"
+        "attribute vec4 inputAttribute;\n"
+        "varying mediump vec2 texCoord;\n"
+        "void main() {\n"
+        "    texCoord = inputAttribute.xy;\n"
+        "    gl_Position = vec4(inputAttribute.x, inputAttribute.y, 0.0, 1.0);\n"
+        "}\n";
+
+    constexpr char kFS[] =
+        "precision mediump float;\n"
+        "varying mediump vec2 texCoord;\n"
+        "uniform sampler2D testSampler;\n"
+        "vec4 passthrough(vec4 c) {\n"
+        "    return c;\n"
+        "}\n"
+        "void main() {\n"
+        "    gl_FragColor = vec4(passthrough(texture2D(testSampler, texCoord)));\n"
+        "}\n";
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+
+    // Initialize basic red texture.
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    drawQuad(program.get(), "inputAttribute", 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
 // Test that multiple multi-field varying structs that get used in the fragment shader work.
 TEST_P(GLSLTest_ES3, ComplexVaryingStructsUsedInFragmentShader)
 {
@@ -5070,6 +5442,9 @@ TEST_P(GLSLTest_ES3, ComplexVaryingStructsUsedInFragmentShader)
     //
     // http://anglebug.com/3220
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+    // TODO(anglebug.com/5491): iOS thinks that the precision qualifiers don't match on the
+    // struct members. Not sure if it's being overly strict.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -5219,7 +5594,7 @@ TEST_P(GLSLTest_ES3, VaryingMatrices)
 TEST_P(GLSLTest, StructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; };
@@ -5311,7 +5686,7 @@ void main()
 TEST_P(GLSLTest, ArrayOfStructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
     constexpr char kFS[] =
         "precision mediump float;\n"
@@ -5362,10 +5737,7 @@ TEST_P(GLSLTest, ArrayOfStructsWithSamplersAsFunctionArg)
 TEST_P(GLSLTest, StructWithSamplerArrayAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
-
-    // TODO(jmadill): Fix on Android/vulkan if possible. http://anglebug.com/2703
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
     constexpr char kFS[] =
         "precision mediump float;\n"
@@ -5416,9 +5788,9 @@ TEST_P(GLSLTest, StructWithSamplerArrayAsFunctionArg)
 TEST_P(GLSLTest, NestedStructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     const char kFragmentShader[] = R"(precision mediump float;
@@ -5470,7 +5842,7 @@ void main()
 TEST_P(GLSLTest, CompoundStructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; bool b; };
@@ -5522,9 +5894,9 @@ void main()
 TEST_P(GLSLTest, NestedCompoundStructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     const char kFragmentShader[] = R"(precision mediump float;
@@ -5590,9 +5962,9 @@ void main()
 TEST_P(GLSLTest, MoreNestedCompoundStructsWithSamplersAsFunctionArg)
 {
     // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     const char kFragmentShader[] = R"(precision mediump float;
@@ -6124,6 +6496,9 @@ void main()
 // Test that a varying struct that's defined as a part of the declaration is handled correctly.
 TEST_P(GLSLTest_ES3, VaryingStructWithInlineDefinition)
 {
+    // TODO(anglebug.com/5491): iOS thinks that the precision qualifiers don't match on the
+    // struct member. Not sure if it's being overly strict.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
     constexpr char kVS[] = R"(#version 300 es
 in vec4 inputAttribute;
 
@@ -7088,10 +7463,6 @@ void main()
 // Tests that PointCoord behaves the same betweeen a user FBO and the back buffer.
 TEST_P(GLSLTest, PointCoordConsistency)
 {
-    // On Intel Windows OpenGL drivers PointCoord appears to be flipped when drawing to the
-    // default framebuffer. http://anglebug.com/2805
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsOpenGL());
-
     // AMD's OpenGL drivers may have the same issue. http://anglebug.com/1643
     ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
     // http://anglebug.com/4092
@@ -7545,10 +7916,6 @@ TEST_P(GLSLTest, MemoryExhaustedTest)
 // Test that inactive samplers in structs don't cause any errors.
 TEST_P(GLSLTest, InactiveSamplersInStruct)
 {
-    // While the sampler is being extracted and declared outside of the struct, it's not removed
-    // from the struct definition.  http://anglebug.com/4211
-    ANGLE_SKIP_TEST_IF(IsVulkan() || IsMetal());
-
     constexpr char kVS[] = R"(attribute vec4 a_position;
 void main() {
   gl_Position = a_position;
@@ -8413,6 +8780,661 @@ void main(void)
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
+// Test that sending mixture of resources to functions works.
+TEST_P(GLSLTest_ES31, MixOfResourcesAsFunctionArgs)
+{
+    // http://anglebug.com/5546
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
+
+    // anglebug.com/3832 - no sampler array params on Android
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 1, std430) buffer Output {
+  uint success;
+} outbuf;
+
+uniform uint initialAcValue;
+uniform sampler2D smplr[2][3];
+layout(binding=0) uniform atomic_uint ac;
+
+bool sampler1DAndAtomicCounter(uvec3 sExpect, in sampler2D s[3], in atomic_uint a, uint aExpect)
+{
+    uvec3 sResult = uvec3(uint(texture(s[0], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[1], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[2], vec2(0.5, 0.5)).x * 255.0));
+    uint aResult = atomicCounterIncrement(a);
+
+    return sExpect == sResult && aExpect == aResult;
+}
+
+bool sampler2DAndAtomicCounter(in sampler2D s[2][3], uint aInitial, in atomic_uint a)
+{
+    bool success = true;
+    success = sampler1DAndAtomicCounter(uvec3(0, 127, 255), s[0], a, aInitial) && success;
+    success = sampler1DAndAtomicCounter(uvec3(31, 63, 191), s[1], a, aInitial + 1u) && success;
+    return success;
+}
+
+void main(void)
+{
+    outbuf.success = uint(sampler2DAndAtomicCounter(smplr, initialAcValue, ac));
+}
+)";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    unsigned int outputInitData = 0x12345678u;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(outputInitData), &outputInitData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    unsigned int acData   = 2u;
+    GLint uniformLocation = glGetUniformLocation(program, "initialAcValue");
+    ASSERT_NE(uniformLocation, -1);
+    glUniform1ui(uniformLocation, acData);
+
+    GLBuffer atomicCounterBuffer;
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(acData), &acData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    const std::array<GLColor, 6> kTextureData = {
+        GLColor(0, 0, 0, 0),  GLColor(127, 0, 0, 0), GLColor(255, 0, 0, 0),
+        GLColor(31, 0, 0, 0), GLColor(63, 0, 0, 0),  GLColor(191, 0, 0, 0),
+    };
+    GLTexture textures[2][3];
+
+    for (int dim1 = 0; dim1 < 2; ++dim1)
+    {
+        for (int dim2 = 0; dim2 < 3; ++dim2)
+        {
+            int textureUnit = dim1 * 3 + dim2;
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, textures[dim1][dim2]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         &kTextureData[textureUnit]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            std::stringstream uniformName;
+            uniformName << "smplr[" << dim1 << "][" << dim2 << "]";
+            GLint samplerLocation = glGetUniformLocation(program, uniformName.str().c_str());
+            EXPECT_NE(samplerLocation, -1);
+            glUniform1i(samplerLocation, textureUnit);
+        }
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(outputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(ptr[0], 1u);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Test that array of array of samplers used as function parameter with an index that has a
+// side-effect works.
+TEST_P(GLSLTest_ES31, ArrayOfArrayOfSamplerAsFunctionParameterIndexedWithSideEffect)
+{
+    // http://anglebug.com/5546
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
+
+    // anglebug.com/3832 - no sampler array params on Android
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    // Skip if EXT_gpu_shader5 is not enabled.
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_gpu_shader5"));
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+#extension GL_EXT_gpu_shader5 : require
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 1, std430) buffer Output {
+  uint success;
+} outbuf;
+
+uniform sampler2D smplr[2][3];
+layout(binding=0) uniform atomic_uint ac;
+
+bool sampler1DAndAtomicCounter(uvec3 sExpect, in sampler2D s[3], in atomic_uint a, uint aExpect)
+{
+    uvec3 sResult = uvec3(uint(texture(s[0], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[1], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[2], vec2(0.5, 0.5)).x * 255.0));
+    uint aResult = atomicCounter(a);
+
+    return sExpect == sResult && aExpect == aResult;
+}
+
+bool sampler2DAndAtomicCounter(in sampler2D s[2][3], uint aInitial, in atomic_uint a)
+{
+    bool success = true;
+    success = sampler1DAndAtomicCounter(uvec3(0, 127, 255),
+                    s[atomicCounterIncrement(ac)], a, aInitial + 1u) && success;
+    success = sampler1DAndAtomicCounter(uvec3(31, 63, 191),
+                    s[atomicCounterIncrement(ac)], a, aInitial + 2u) && success;
+    return success;
+}
+
+void main(void)
+{
+    outbuf.success = uint(sampler2DAndAtomicCounter(smplr, 0u, ac));
+}
+)";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    unsigned int outputInitData = 0x12345678u;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(outputInitData), &outputInitData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    unsigned int acData = 0u;
+    GLBuffer atomicCounterBuffer;
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(acData), &acData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    const std::array<GLColor, 6> kTextureData = {
+        GLColor(0, 0, 0, 0),  GLColor(127, 0, 0, 0), GLColor(255, 0, 0, 0),
+        GLColor(31, 0, 0, 0), GLColor(63, 0, 0, 0),  GLColor(191, 0, 0, 0),
+    };
+    GLTexture textures[2][3];
+
+    for (int dim1 = 0; dim1 < 2; ++dim1)
+    {
+        for (int dim2 = 0; dim2 < 3; ++dim2)
+        {
+            int textureUnit = dim1 * 3 + dim2;
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, textures[dim1][dim2]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         &kTextureData[textureUnit]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            std::stringstream uniformName;
+            uniformName << "smplr[" << dim1 << "][" << dim2 << "]";
+            GLint samplerLocation = glGetUniformLocation(program, uniformName.str().c_str());
+            EXPECT_NE(samplerLocation, -1);
+            glUniform1i(samplerLocation, textureUnit);
+        }
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(outputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(ptr[0], 1u);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Test that array of array of samplers can be indexed correctly with dynamic indices.
+TEST_P(GLSLTest_ES31, ArrayOfArrayOfSamplerDynamicIndex)
+{
+    // Skip if EXT_gpu_shader5 is not enabled.
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_gpu_shader5"));
+
+    int maxTextureImageUnits = 0;
+    glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &maxTextureImageUnits);
+    ANGLE_SKIP_TEST_IF(maxTextureImageUnits < 24);
+
+    // anglebug.com/3832 - no sampler array params on Android
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    // http://anglebug.com/5546
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+#extension GL_EXT_gpu_shader5 : require
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 1, std430) buffer Output {
+  uint success;
+} outbuf;
+
+uniform sampler2D smplr[2][3][4];
+layout(binding=0) uniform atomic_uint ac;
+
+bool sampler1DAndAtomicCounter(uvec4 sExpect, in sampler2D s[4], in atomic_uint a, uint aExpect)
+{
+    uvec4 sResult = uvec4(uint(texture(s[0], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[1], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[2], vec2(0.5, 0.5)).x * 255.0),
+                          uint(texture(s[3], vec2(0.5, 0.5)).x * 255.0));
+    uint aResult = atomicCounter(a);
+
+    return sExpect == sResult && aExpect == aResult;
+}
+
+bool sampler3DAndAtomicCounter(in sampler2D s[2][3][4], uint aInitial, in atomic_uint a)
+{
+    bool success = true;
+    // [0][0]
+    success = sampler1DAndAtomicCounter(uvec4(0, 8, 16, 24),
+                    s[atomicCounterIncrement(ac)][0], a, aInitial + 1u) && success;
+    // [1][0]
+    success = sampler1DAndAtomicCounter(uvec4(96, 104, 112, 120),
+                    s[atomicCounterIncrement(ac)][0], a, aInitial + 2u) && success;
+    // [0][1]
+    success = sampler1DAndAtomicCounter(uvec4(32, 40, 48, 56),
+                    s[0][atomicCounterIncrement(ac) - 1u], a, aInitial + 3u) && success;
+    // [0][2]
+    success = sampler1DAndAtomicCounter(uvec4(64, 72, 80, 88),
+                    s[0][atomicCounterIncrement(ac) - 1u], a, aInitial + 4u) && success;
+    // [1][1]
+    success = sampler1DAndAtomicCounter(uvec4(128, 136, 144, 152),
+                    s[1][atomicCounterIncrement(ac) - 3u], a, aInitial + 5u) && success;
+    // [1][2]
+    uint acValue = atomicCounterIncrement(ac);  // Returns 5
+    success = sampler1DAndAtomicCounter(uvec4(160, 168, 176, 184),
+                    s[acValue - 4u][atomicCounterIncrement(ac) - 4u], a, aInitial + 7u) && success;
+
+    return success;
+}
+
+void main(void)
+{
+    outbuf.success = uint(sampler3DAndAtomicCounter(smplr, 0u, ac));
+}
+)";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    unsigned int outputInitData = 0x12345678u;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(outputInitData), &outputInitData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    unsigned int acData = 0u;
+    GLBuffer atomicCounterBuffer;
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(acData), &acData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    const std::array<GLColor, 24> kTextureData = {
+        GLColor(0, 0, 0, 0),   GLColor(8, 0, 0, 0),   GLColor(16, 0, 0, 0),  GLColor(24, 0, 0, 0),
+        GLColor(32, 0, 0, 0),  GLColor(40, 0, 0, 0),  GLColor(48, 0, 0, 0),  GLColor(56, 0, 0, 0),
+        GLColor(64, 0, 0, 0),  GLColor(72, 0, 0, 0),  GLColor(80, 0, 0, 0),  GLColor(88, 0, 0, 0),
+        GLColor(96, 0, 0, 0),  GLColor(104, 0, 0, 0), GLColor(112, 0, 0, 0), GLColor(120, 0, 0, 0),
+        GLColor(128, 0, 0, 0), GLColor(136, 0, 0, 0), GLColor(144, 0, 0, 0), GLColor(152, 0, 0, 0),
+        GLColor(160, 0, 0, 0), GLColor(168, 0, 0, 0), GLColor(176, 0, 0, 0), GLColor(184, 0, 0, 0),
+    };
+    GLTexture textures[2][3][4];
+
+    for (int dim1 = 0; dim1 < 2; ++dim1)
+    {
+        for (int dim2 = 0; dim2 < 3; ++dim2)
+        {
+            for (int dim3 = 0; dim3 < 4; ++dim3)
+            {
+                int textureUnit = (dim1 * 3 + dim2) * 4 + dim3;
+                glActiveTexture(GL_TEXTURE0 + textureUnit);
+                glBindTexture(GL_TEXTURE_2D, textures[dim1][dim2][dim3]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             &kTextureData[textureUnit]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+                std::stringstream uniformName;
+                uniformName << "smplr[" << dim1 << "][" << dim2 << "][" << dim3 << "]";
+                GLint samplerLocation = glGetUniformLocation(program, uniformName.str().c_str());
+                EXPECT_NE(samplerLocation, -1);
+                glUniform1i(samplerLocation, textureUnit);
+            }
+        }
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(outputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(ptr[0], 1u);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Test that array of array of samplers can be indexed correctly with dynamic indices.  Uses
+// samplers in structs.
+TEST_P(GLSLTest_ES31, ArrayOfArrayOfSamplerInStructDynamicIndex)
+{
+    // Skip if EXT_gpu_shader5 is not enabled.
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_gpu_shader5"));
+
+    int maxTextureImageUnits = 0;
+    glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &maxTextureImageUnits);
+    ANGLE_SKIP_TEST_IF(maxTextureImageUnits < 24);
+
+    // http://anglebug.com/5072
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
+
+    // anglebug.com/3832 - no sampler array params on Android
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    // http://anglebug.com/5546
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+#extension GL_EXT_gpu_shader5 : require
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 1, std430) buffer Output {
+  uint success;
+} outbuf;
+
+struct I
+{
+    uint index;
+};
+
+struct S
+{
+    sampler2D smplr[4];
+    I nested;
+};
+
+struct T
+{
+    S nested[3];
+    uint tIndex;
+};
+
+uniform T u[2];
+
+uint getValue(in sampler2D s)
+{
+    return uint(texture(s, vec2(0.5, 0.5)).x * 255.0);
+}
+
+bool sampler1DTest(uvec4 sExpect, in sampler2D s[4])
+{
+    uvec4 sResult = uvec4(getValue(s[0]), getValue(s[1]),
+                          getValue(s[2]), getValue(s[3]));
+
+    return sExpect == sResult;
+}
+
+bool samplerTest(T t, uint N)
+{
+    // u[N].tIndex == 0 + N*4
+    // u[N].nested[0].nested.index == 1 + N*4
+    // u[N].nested[1].nested.index == 2 + N*4
+    // u[N].nested[2].nested.index == 3 + N*4
+
+    uvec4 colorOffset = N * 3u * 4u * uvec4(8);
+
+    bool success = true;
+    // [N][0]
+    success = sampler1DTest(uvec4(0, 8, 16, 24) + colorOffset,
+                    t.nested[t.nested[0].nested.index - t.tIndex - 1u].smplr) && success;
+    // [N][1]
+    success = sampler1DTest(uvec4(32, 40, 48, 56) + colorOffset,
+                    t.nested[t.nested[1].nested.index - t.tIndex - 1u].smplr) && success;
+    // [N][2]
+    success = sampler1DTest(uvec4(64, 72, 80, 88) + colorOffset,
+                    t.nested[t.nested[2].nested.index - t.tIndex - 1u].smplr) && success;
+
+    return success;
+}
+
+bool uniformTest(T t, uint N)
+{
+    // Also verify that expressions that involve structs-with-samplers are correct when not
+    // referecing the sampler.
+
+    bool success = true;
+    success = (t.nested[0].nested.index - t.tIndex == 1u) && success;
+    success = (t.nested[1].nested.index - t.tIndex == 2u) && success;
+    success = (t.nested[2].nested.index - t.tIndex == 3u) && success;
+
+    success = (t.nested[t.nested[0].nested.index - t.tIndex - 1u].nested.index - t.tIndex == 1u)
+                && success;
+    success = (t.nested[t.nested[0].nested.index - t.tIndex     ].nested.index - t.tIndex == 2u)
+                && success;
+    success = (t.nested[t.nested[0].nested.index - t.tIndex + 1u].nested.index - t.tIndex == 3u)
+                && success;
+
+    success = (t.nested[
+                          t.nested[
+                                     t.nested[2].nested.index - t.tIndex - 1u  // 2
+                                  ].nested.index - t.tIndex - 2u               // 1
+                       ].nested.index - t.tIndex                               // 2
+                == 2u) && success;
+
+    return success;
+}
+
+void main(void)
+{
+    bool success = samplerTest(u[0], 0u) && samplerTest(u[1], 1u)
+                    && uniformTest(u[0], 0u) && uniformTest(u[1], 1u);
+    outbuf.success = uint(success);
+}
+)";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    unsigned int outputInitData = 0x12345678u;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(outputInitData), &outputInitData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    const std::array<GLColor, 24> kTextureData = {
+        GLColor(0, 0, 0, 0),   GLColor(8, 0, 0, 0),   GLColor(16, 0, 0, 0),  GLColor(24, 0, 0, 0),
+        GLColor(32, 0, 0, 0),  GLColor(40, 0, 0, 0),  GLColor(48, 0, 0, 0),  GLColor(56, 0, 0, 0),
+        GLColor(64, 0, 0, 0),  GLColor(72, 0, 0, 0),  GLColor(80, 0, 0, 0),  GLColor(88, 0, 0, 0),
+        GLColor(96, 0, 0, 0),  GLColor(104, 0, 0, 0), GLColor(112, 0, 0, 0), GLColor(120, 0, 0, 0),
+        GLColor(128, 0, 0, 0), GLColor(136, 0, 0, 0), GLColor(144, 0, 0, 0), GLColor(152, 0, 0, 0),
+        GLColor(160, 0, 0, 0), GLColor(168, 0, 0, 0), GLColor(176, 0, 0, 0), GLColor(184, 0, 0, 0),
+    };
+    GLTexture textures[2][3][4];
+
+    for (int dim1 = 0; dim1 < 2; ++dim1)
+    {
+        for (int dim2 = 0; dim2 < 3; ++dim2)
+        {
+            for (int dim3 = 0; dim3 < 4; ++dim3)
+            {
+                int textureUnit = (dim1 * 3 + dim2) * 4 + dim3;
+                glActiveTexture(GL_TEXTURE0 + textureUnit);
+                glBindTexture(GL_TEXTURE_2D, textures[dim1][dim2][dim3]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             &kTextureData[textureUnit]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+                std::stringstream uniformName;
+                uniformName << "u[" << dim1 << "].nested[" << dim2 << "].smplr[" << dim3 << "]";
+                GLint samplerLocation = glGetUniformLocation(program, uniformName.str().c_str());
+                EXPECT_NE(samplerLocation, -1);
+                glUniform1i(samplerLocation, textureUnit);
+            }
+
+            std::stringstream uniformName;
+            uniformName << "u[" << dim1 << "].nested[" << dim2 << "].nested.index";
+            GLint nestedIndexLocation = glGetUniformLocation(program, uniformName.str().c_str());
+            EXPECT_NE(nestedIndexLocation, -1);
+            glUniform1ui(nestedIndexLocation, dim1 * 4 + dim2 + 1);
+        }
+
+        std::stringstream uniformName;
+        uniformName << "u[" << dim1 << "].tIndex";
+        GLint indexLocation = glGetUniformLocation(program, uniformName.str().c_str());
+        EXPECT_NE(indexLocation, -1);
+        glUniform1ui(indexLocation, dim1 * 4);
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(outputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(ptr[0], 1u);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Test that array of array of samplers work when indexed with an expression that's derived from an
+// array of array of samplers.
+TEST_P(GLSLTest_ES31, ArrayOfArrayOfSamplerIndexedWithArrayOfArrayOfSamplers)
+{
+    // Skip if EXT_gpu_shader5 is not enabled.
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_gpu_shader5"));
+
+    // anglebug.com/3832 - no sampler array params on Android
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+#extension GL_EXT_gpu_shader5 : require
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 1, std430) buffer Output {
+  uint success;
+} outbuf;
+
+uniform sampler2D smplr[2][3];
+
+uint getValue(in sampler2D s)
+{
+    return uint(texture(s, vec2(0.5, 0.5)).x * 255.0);
+}
+
+bool runTest(in sampler2D s[2][3])
+{
+    // s[0][0] should contain 2
+    // s[0][1] should contain 0
+    // s[0][2] should contain 1
+    // s[1][0] should contain 1
+    // s[1][1] should contain 2
+    // s[1][2] should contain 0
+
+    uint result = getValue(
+                       s[
+                           getValue(
+                                s[
+                                    getValue(s[0][1])   // 0
+                                ][
+                                    getValue(s[0][0])   // 2
+                                ]
+                           )                      // s[0][2] -> 1
+                       ][
+                           getValue(
+                                s[
+                                    getValue(s[1][0])   // 1
+                                ][
+                                    getValue(s[1][1])   // 2
+                                ]
+                           )                      // s[1][2] -> 0
+                       ]
+                  );                      // s[1][0] -> 1
+
+    return result == 1u;
+}
+
+void main(void)
+{
+    outbuf.success = uint(runTest(smplr));
+}
+)";
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+
+    unsigned int outputInitData = 0x12345678u;
+    GLBuffer outputBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(outputInitData), &outputInitData, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    EXPECT_GL_NO_ERROR();
+
+    const std::array<GLColor, 6> kTextureData = {
+        GLColor(2, 0, 0, 0), GLColor(0, 0, 0, 0), GLColor(1, 0, 0, 0),
+        GLColor(1, 0, 0, 0), GLColor(2, 0, 0, 0), GLColor(0, 0, 0, 0),
+    };
+    GLTexture textures[2][3];
+
+    for (int dim1 = 0; dim1 < 2; ++dim1)
+    {
+        for (int dim2 = 0; dim2 < 3; ++dim2)
+        {
+            int textureUnit = dim1 * 3 + dim2;
+            glActiveTexture(GL_TEXTURE0 + textureUnit);
+            glBindTexture(GL_TEXTURE_2D, textures[dim1][dim2]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         &kTextureData[textureUnit]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            std::stringstream uniformName;
+            uniformName << "smplr[" << dim1 << "][" << dim2 << "]";
+            GLint samplerLocation = glGetUniformLocation(program, uniformName.str().c_str());
+            EXPECT_NE(samplerLocation, -1);
+            glUniform1i(samplerLocation, textureUnit);
+        }
+    }
+    ASSERT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+
+    // read back
+    const GLuint *ptr = reinterpret_cast<const GLuint *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(outputInitData), GL_MAP_READ_BIT));
+    EXPECT_EQ(ptr[0], 1u);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
 // Test that multiple nested assignments are handled correctly.
 TEST_P(GLSLTest_ES31, MixedRowAndColumnMajorMatrices_WriteSideEffect)
 {
@@ -8421,6 +9443,8 @@ TEST_P(GLSLTest_ES31, MixedRowAndColumnMajorMatrices_WriteSideEffect)
 
     // Fails on windows AMD on GL: http://anglebug.com/3838
     ANGLE_SKIP_TEST_IF(IsWindows() && IsOpenGL() && IsAMD());
+    // http://anglebug.com/5384
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
 
     // Fails on D3D due to mistranslation: http://anglebug.com/3841
     ANGLE_SKIP_TEST_IF(IsD3D11());
@@ -8503,6 +9527,8 @@ TEST_P(GLSLTest_ES31, MixedRowAndColumnMajorMatrices_WriteArrayOfArray)
 {
     // Fails on windows AMD on GL: http://anglebug.com/3838
     ANGLE_SKIP_TEST_IF(IsWindows() && IsOpenGL() && IsAMD());
+    // http://anglebug.com/5384
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
 
     // Fails on D3D due to mistranslation: http://anglebug.com/3841
     ANGLE_SKIP_TEST_IF(IsD3D11());
@@ -8696,6 +9722,32 @@ void main() {
     EXPECT_NE(0u, program);
 }
 
+// Test that reusing the same uniform variable name for different uses across stages links fine.
+TEST_P(GLSLTest_ES31, UniformVariableNameReuseAcrossStages)
+{
+    constexpr char kVS[] = R"(#version 310 es
+precision mediump float;
+in highp vec4 variableWithSameName;
+
+void main() {
+    gl_Position = variableWithSameName;
+}
+)";
+
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+uniform vec4 variableWithSameName;
+out vec4 col;
+
+void main() {
+    col = vec4(variableWithSameName);
+}
+)";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_NE(0u, program);
+}
+
 // Verify that precision match validation of uniforms is performed only if they are statically used
 TEST_P(GLSLTest_ES31, UniformPrecisionMatchValidation)
 {
@@ -8752,6 +9804,617 @@ void main()
     EXPECT_NE(0u, program);
 
     program = CompileProgram(kVSStaticUse, kFSStaticUse);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails when two instanceless interface blocks with different block names but
+// same field names are present.
+TEST_P(GLSLTest_ES31, AmbiguousInstancelessInterfaceBlockFields)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+in highp vec4 position;
+layout(binding = 0) buffer BlockA { mediump float a; };
+void main()
+{
+    a = 0.0;
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+uniform BlockB { float a; };
+void main()
+{
+    color = vec4(a, a, a, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Verify I/O block array locations
+TEST_P(GLSLTest_ES31, IOBlockLocations)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
+
+    // http://anglebug.com/5444
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+
+in highp vec4 position;
+
+layout(location = 0) out vec4 aOut;
+
+layout(location = 6) out VSBlock
+{
+    vec4 b;     // location 6
+    vec4 c;     // location 7
+    layout(location = 1) vec4 d;
+    vec4 e;     // location 2
+    vec4 f[2];  // locations 3 and 4
+} blockOut;
+
+layout(location = 5) out vec4 gOut;
+
+void main()
+{
+    aOut = vec4(0.03, 0.06, 0.09, 0.12);
+    blockOut.b = vec4(0.15, 0.18, 0.21, 0.24);
+    blockOut.c = vec4(0.27, 0.30, 0.33, 0.36);
+    blockOut.d = vec4(0.39, 0.42, 0.45, 0.48);
+    blockOut.e = vec4(0.51, 0.54, 0.57, 0.6);
+    blockOut.f[0] = vec4(0.63, 0.66, 0.66, 0.69);
+    blockOut.f[1] = vec4(0.72, 0.75, 0.78, 0.81);
+    gOut = vec4(0.84, 0.87, 0.9, 0.93);
+    gl_Position = position;
+})";
+
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout (triangles) in;
+layout (triangle_strip, max_vertices = 3) out;
+
+// Input varyings
+layout(location = 0) in vec4 aIn[];
+
+layout(location = 6) in VSBlock
+{
+    vec4 b;
+    vec4 c;
+    layout(location = 1) vec4 d;
+    vec4 e;
+    vec4 f[2];
+} blockIn[];
+
+layout(location = 5) in vec4 gIn[];
+
+// Output varyings
+layout(location = 1) out vec4 aOut;
+
+layout(location = 0) out GSBlock
+{
+    vec4 b;     // location 0
+    layout(location = 3) vec4 c;
+    layout(location = 7) vec4 d;
+    layout(location = 5) vec4 e[2];
+    layout(location = 4) vec4 f;
+} blockOut;
+
+layout(location = 2) out vec4 gOut;
+
+void main()
+{
+    int n;
+    for (n = 0; n < gl_in.length(); n++)
+    {
+        gl_Position = gl_in[n].gl_Position;
+
+        aOut = aIn[n];
+        blockOut.b = blockIn[n].b;
+        blockOut.c = blockIn[n].c;
+        blockOut.d = blockIn[n].d;
+        blockOut.e[0] = blockIn[n].e;
+        blockOut.e[1] = blockIn[n].f[0];
+        blockOut.f = blockIn[n].f[1];
+        gOut = gIn[n];
+
+        EmitVertex();
+    }
+    EndPrimitive();
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+
+layout(location = 0) out mediump vec4 color;
+
+layout(location = 1) in vec4 aIn;
+
+layout(location = 0) in GSBlock
+{
+    vec4 b;
+    layout(location = 3) vec4 c;
+    layout(location = 7) vec4 d;
+    layout(location = 5) vec4 e[2];
+    layout(location = 4) vec4 f;
+} blockIn;
+
+layout(location = 2) in vec4 gIn;
+
+bool isEq(vec4 a, vec4 b) { return all(lessThan(abs(a-b), vec4(0.001))); }
+
+void main()
+{
+    bool passR = isEq(aIn, vec4(0.03, 0.06, 0.09, 0.12));
+    bool passG = isEq(blockIn.b, vec4(0.15, 0.18, 0.21, 0.24)) &&
+                 isEq(blockIn.c, vec4(0.27, 0.30, 0.33, 0.36)) &&
+                 isEq(blockIn.d, vec4(0.39, 0.42, 0.45, 0.48)) &&
+                 isEq(blockIn.e[0], vec4(0.51, 0.54, 0.57, 0.6)) &&
+                 isEq(blockIn.e[1], vec4(0.63, 0.66, 0.66, 0.69)) &&
+                 isEq(blockIn.f, vec4(0.72, 0.75, 0.78, 0.81));
+    bool passB = isEq(gIn, vec4(0.84, 0.87, 0.9, 0.93));
+
+    color = vec4(passR, passG, passB, 1.0);
+})";
+
+    ANGLE_GL_PROGRAM_WITH_GS(program, kVS, kGS, kFS);
+    EXPECT_GL_NO_ERROR();
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+
+    drawQuad(program, "position", 0);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Test varying packing in presence of multiple I/O blocks
+TEST_P(GLSLTest_ES31, MultipleIOBlocks)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+
+in highp vec4 position;
+
+out VSBlock1
+{
+    vec4 a;
+    vec4 b[2];
+} blockOut1;
+
+out VSBlock2
+{
+    vec4 c[2];
+    vec4 d;
+} blockOut2;
+
+void main()
+{
+    blockOut1.a = vec4(0.15, 0.18, 0.21, 0.24);
+    blockOut1.b[0] = vec4(0.27, 0.30, 0.33, 0.36);
+    blockOut1.b[1] = vec4(0.39, 0.42, 0.45, 0.48);
+    blockOut2.c[0] = vec4(0.51, 0.54, 0.57, 0.6);
+    blockOut2.c[1] = vec4(0.63, 0.66, 0.66, 0.69);
+    blockOut2.d = vec4(0.72, 0.75, 0.78, 0.81);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+
+layout(location = 0) out mediump vec4 color;
+
+in VSBlock1
+{
+    vec4 a;
+    vec4 b[2];
+} blockIn1;
+
+in VSBlock2
+{
+    vec4 c[2];
+    vec4 d;
+} blockIn2;
+
+bool isEq(vec4 a, vec4 b) { return all(lessThan(abs(a-b), vec4(0.001))); }
+
+void main()
+{
+    bool passR = isEq(blockIn1.a, vec4(0.15, 0.18, 0.21, 0.24));
+    bool passG = isEq(blockIn1.b[0], vec4(0.27, 0.30, 0.33, 0.36)) &&
+                 isEq(blockIn1.b[1], vec4(0.39, 0.42, 0.45, 0.48));
+    bool passB = isEq(blockIn2.c[0], vec4(0.51, 0.54, 0.57, 0.6)) &&
+                 isEq(blockIn2.c[1], vec4(0.63, 0.66, 0.66, 0.69));
+    bool passA = isEq(blockIn2.d, vec4(0.72, 0.75, 0.78, 0.81));
+
+    color = vec4(passR, passG, passB, passA);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    EXPECT_GL_NO_ERROR();
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+
+    drawQuad(program, "position", 0);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+}
+
+// Validate that link fails with I/O block member name mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberNameMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+out VSBlock { vec4 a; vec4 b[2]; } blockOut1;
+void main()
+{
+    blockOut1.a = vec4(0);
+    blockOut1.b[0] = vec4(0);
+    blockOut1.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+in VSBlock { vec4 c; vec4 b[2]; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.c.x, blockIn1.b[0].y, blockIn1.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member array size mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberArraySizeMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+out VSBlock { vec4 a; vec4 b[2]; } blockOut1;
+void main()
+{
+    blockOut1.a = vec4(0);
+    blockOut1.b[0] = vec4(0);
+    blockOut1.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+in VSBlock { vec4 a; vec4 b[3]; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.a.x, blockIn1.b[0].y, blockIn1.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member type mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberTypeMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+out VSBlock { vec4 a; vec4 b[2]; } blockOut1;
+void main()
+{
+    blockOut1.a = vec4(0);
+    blockOut1.b[0] = vec4(0);
+    blockOut1.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+in VSBlock { vec3 a; vec4 b[2]; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.a.x, blockIn1.b[0].y, blockIn1.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block location mismatches
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkLocationMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+layout(location = 2) out VSBlock { vec4 a; vec4 b[2]; } blockOut1;
+void main()
+{
+    blockOut1.a = vec4(0);
+    blockOut1.b[0] = vec4(0);
+    blockOut1.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+layout(location = 1) in VSBlock { vec4 a; vec4 b[2]; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.a.x, blockIn1.b[0].y, blockIn1.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member location mismatches
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberLocationMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+out VSBlock { vec4 a; layout(location = 2) vec4 b[2]; } blockOut1;
+void main()
+{
+    blockOut1.a = vec4(0);
+    blockOut1.b[0] = vec4(0);
+    blockOut1.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+in VSBlock { vec4 a; layout(location = 3) vec4 b[2]; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.a.x, blockIn1.b[0].y, blockIn1.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member struct name mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberStructNameMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S1 { vec4 a; vec4 b[2]; };
+out VSBlock { S1 s; } blockOut1;
+void main()
+{
+    blockOut1.s.a = vec4(0);
+    blockOut1.s.b[0] = vec4(0);
+    blockOut1.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S2 { vec4 a; vec4 b[2]; };
+in VSBlock { S2 s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.a.x, blockIn1.s.b[0].y, blockIn1.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member struct member name mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberStructMemberNameMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S { vec4 c; vec4 b[2]; };
+out VSBlock { S s; } blockOut1;
+void main()
+{
+    blockOut1.s.c = vec4(0);
+    blockOut1.s.b[0] = vec4(0);
+    blockOut1.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S { vec4 a; vec4 b[2]; };
+in VSBlock { S s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.a.x, blockIn1.s.b[0].y, blockIn1.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member struct member type mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberStructMemberTypeMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S { vec4 a; vec4 b[2]; };
+out VSBlock { S s; } blockOut1;
+void main()
+{
+    blockOut1.s.a = vec4(0);
+    blockOut1.s.b[0] = vec4(0);
+    blockOut1.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S { vec3 a; vec4 b[2]; };
+in VSBlock { S s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.a.x, blockIn1.s.b[0].y, blockIn1.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member struct member array size mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberStructMemberArraySizeMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S { vec4 a; vec4 b[3]; };
+out VSBlock { S s; } blockOut1;
+void main()
+{
+    blockOut1.s.a = vec4(0);
+    blockOut1.s.b[0] = vec4(0);
+    blockOut1.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S { vec4 a; vec4 b[2]; };
+in VSBlock { S s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.a.x, blockIn1.s.b[0].y, blockIn1.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member struct member count mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberStructMemberCountMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S { vec4 a; vec4 b[2]; vec4 c; };
+out VSBlock { S s; } blockOut1;
+void main()
+{
+    blockOut1.s.c = vec4(0);
+    blockOut1.s.b[0] = vec4(0);
+    blockOut1.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S { vec4 a; vec4 b[2]; };
+in VSBlock { S s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.a.x, blockIn1.s.b[0].y, blockIn1.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
+    EXPECT_EQ(0u, program);
+}
+
+// Validate that link fails with I/O block member nested struct mismatches.
+TEST_P(GLSLTest_ES31, NegativeIOBlocksLinkMemberNestedStructMismatch)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+in highp vec4 position;
+struct S1 { vec4 c; vec4 b[2]; };
+struct S2 { S1 s; };
+struct S3 { S2 s; };
+out VSBlock { S3 s; } blockOut1;
+void main()
+{
+    blockOut1.s.s.s.c = vec4(0);
+    blockOut1.s.s.s.b[0] = vec4(0);
+    blockOut1.s.s.s.b[1] = vec4(0);
+    gl_Position = position;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_EXT_shader_io_blocks : require
+precision mediump float;
+layout(location = 0) out mediump vec4 color;
+struct S1 { vec4 a; vec4 b[2]; };
+struct S2 { S1 s; };
+struct S3 { S2 s; };
+in VSBlock { S3 s; } blockIn1;
+void main()
+{
+    color = vec4(blockIn1.s.s.s.a.x, blockIn1.s.s.s.b[0].y, blockIn1.s.s.s.b[1].z, 1.0);
+})";
+
+    GLuint program = CompileProgram(kVS, kFS);
     EXPECT_EQ(0u, program);
 }
 }  // anonymous namespace

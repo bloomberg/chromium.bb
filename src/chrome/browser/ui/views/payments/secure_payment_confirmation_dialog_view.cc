@@ -4,53 +4,59 @@
 
 #include "chrome/browser/ui/views/payments/secure_payment_confirmation_dialog_view.h"
 
-#include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "chrome/browser/ui/views/payments/secure_payment_confirmation_views_util.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/payments/content/payment_ui_observer.h"
 #include "components/payments/content/secure_payment_confirmation_model.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace payments {
 namespace {
 
-// Height of the header icon.
-constexpr int kHeaderIconHeight = 148;
-
-// Height of the progress bar at the top of the dialog.
-constexpr int kProgressBarHeight = 4;
-
-// Size of the instrument icon shown in the payment method row.
-constexpr int kInstrumentIconWidth = 32;
-constexpr int kInstrumentIconHeight = 20;
-
-// Line height of the title text.
-constexpr int kTitleLineHeight = 24;
-
-// Line height of the row text.
-constexpr int kRowViewLineHeight = 20;
-
-// Insets of the body content.
-constexpr int kBodyInsets = 16;
-
-// Extra inset between the body content and the dialog buttons.
-constexpr int kBodyExtraInset = 24;
-
 // Height of each row.
 constexpr int kRowHeight = 48;
 
+// Records UMA metric for the authentication dialog result.
+void RecordAuthenticationDialogResult(
+    const SecurePaymentConfirmationAuthenticationDialogResult result) {
+  base::UmaHistogramEnumeration(
+      "PaymentRequest.SecurePaymentConfirmation.Funnel."
+      "AuthenticationDialogResult",
+      result);
+}
+
 }  // namespace
 
+// static
+base::WeakPtr<SecurePaymentConfirmationView>
+SecurePaymentConfirmationView::Create(
+    const PaymentUIObserver* payment_ui_observer) {
+  // On desktop, the SecurePaymentConfirmationView object is memory managed by
+  // the views:: machinery. It is deleted when the window is closed and
+  // views::DialogDelegateView::DeleteDelegate() is called by its corresponding
+  // views::Widget.
+  return (new SecurePaymentConfirmationDialogView(
+              /*observer_for_test=*/nullptr, payment_ui_observer))
+      ->GetWeakPtr();
+}
+
+SecurePaymentConfirmationView::SecurePaymentConfirmationView() = default;
+SecurePaymentConfirmationView::~SecurePaymentConfirmationView() = default;
+
 SecurePaymentConfirmationDialogView::SecurePaymentConfirmationDialogView(
-    ObserverForTest* observer_for_test)
-    : observer_for_test_(observer_for_test) {}
+    ObserverForTest* observer_for_test,
+    const PaymentUIObserver* ui_observer_for_test)
+    : observer_for_test_(observer_for_test),
+      ui_observer_for_test_(ui_observer_for_test) {}
 SecurePaymentConfirmationDialogView::~SecurePaymentConfirmationDialogView() =
     default;
 
@@ -79,14 +85,23 @@ void SecurePaymentConfirmationDialogView::ShowDialog(
       base::BindOnce(&SecurePaymentConfirmationDialogView::OnDialogClosed,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  SetModalType(ui::MODAL_TYPE_CHILD);
+
   constrained_window::ShowWebModalDialogViews(this, web_contents);
 
+  // observer_for_test_ is used in views browsertests.
   if (observer_for_test_)
     observer_for_test_->OnDialogOpened();
+
+  // ui_observer_for_test_ is used in platform browsertests.
+  if (ui_observer_for_test_)
+    ui_observer_for_test_->OnUIDisplayed();
 }
 
 void SecurePaymentConfirmationDialogView::OnDialogAccepted() {
   std::move(verify_callback_).Run();
+  RecordAuthenticationDialogResult(
+      SecurePaymentConfirmationAuthenticationDialogResult::kAccepted);
 
   if (observer_for_test_) {
     observer_for_test_->OnConfirmButtonPressed();
@@ -96,6 +111,8 @@ void SecurePaymentConfirmationDialogView::OnDialogAccepted() {
 
 void SecurePaymentConfirmationDialogView::OnDialogCancelled() {
   std::move(cancel_callback_).Run();
+  RecordAuthenticationDialogResult(
+      SecurePaymentConfirmationAuthenticationDialogResult::kCanceled);
 
   if (observer_for_test_) {
     observer_for_test_->OnCancelButtonPressed();
@@ -105,6 +122,8 @@ void SecurePaymentConfirmationDialogView::OnDialogCancelled() {
 
 void SecurePaymentConfirmationDialogView::OnDialogClosed() {
   std::move(cancel_callback_).Run();
+  RecordAuthenticationDialogResult(
+      SecurePaymentConfirmationAuthenticationDialogResult::kClosed);
 
   if (observer_for_test_) {
     observer_for_test_->OnDialogClosed();
@@ -160,10 +179,6 @@ void SecurePaymentConfirmationDialogView::HideDialog() {
     GetWidget()->Close();
 }
 
-ui::ModalType SecurePaymentConfirmationDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 bool SecurePaymentConfirmationDialogView::ShouldShowCloseButton() const {
   return false;
 }
@@ -181,12 +196,6 @@ SecurePaymentConfirmationDialogView::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-const gfx::VectorIcon&
-SecurePaymentConfirmationDialogView::GetFingerprintIcon() {
-  return GetNativeTheme()->ShouldUseDarkColors() ? kWebauthnFingerprintDarkIcon
-                                                 : kWebauthnFingerprintIcon;
-}
-
 void SecurePaymentConfirmationDialogView::InitChildViews() {
   RemoveAllChildViews(true);
 
@@ -202,7 +211,7 @@ void SecurePaymentConfirmationDialogView::InitChildViews() {
 
 // Creates the header view, which is the fingerprint icon and a progress bar.
 // The fingerprint icon covers the whole header view and the progress bar is
-// overlayed on the top of the header.
+// overlaid on the top of the header.
 // +------------------------------------------+
 // |===============progress bar===============|
 // |                                          |
@@ -210,8 +219,7 @@ void SecurePaymentConfirmationDialogView::InitChildViews() {
 // +------------------------------------------+
 std::unique_ptr<views::View>
 SecurePaymentConfirmationDialogView::CreateHeaderView() {
-  const int header_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  const int header_width = GetSecurePaymentConfirmationHeaderWidth();
   const gfx::Size header_size(header_width, kHeaderIconHeight);
 
   // The container view has no layout, so its preferred size is hardcoded to
@@ -221,21 +229,13 @@ SecurePaymentConfirmationDialogView::CreateHeaderView() {
   header_view->SetPreferredSize(header_size);
 
   // Fingerprint header icon
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  gfx::IconDescription icon_description(GetFingerprintIcon());
-  image_view->SetImage(gfx::CreateVectorIcon(icon_description));
-  image_view->SetSize(header_size);
-  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  auto image_view = CreateSecurePaymentConfirmationHeaderView(
+      GetNativeTheme()->ShouldUseDarkColors());
   image_view->SetID(static_cast<int>(DialogViewID::HEADER_ICON));
   header_view->AddChildView(image_view.release());
 
   // Progress bar
-  auto progress_bar = std::make_unique<views::ProgressBar>(
-      kProgressBarHeight, /*allow_round_corner=*/false);
-  progress_bar->SetValue(-1);  // infinite animation.
-  progress_bar->SetBackgroundColor(SK_ColorTRANSPARENT);
-  progress_bar->SetPreferredSize(gfx::Size(header_width, kProgressBarHeight));
-  progress_bar->SizeToPreferredSize();
+  auto progress_bar = CreateSecurePaymentConfirmationProgressBarView();
   progress_bar->SetID(static_cast<int>(DialogViewID::PROGRESS_BAR));
   progress_bar->SetVisible(model_->progress_bar_visible());
   progress_bar_ = progress_bar.get();
@@ -267,12 +267,8 @@ SecurePaymentConfirmationDialogView::CreateBodyView() {
                      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  std::unique_ptr<views::Label> title_text = std::make_unique<views::Label>(
-      model_->title(), views::style::CONTEXT_DIALOG_TITLE,
-      views::style::STYLE_PRIMARY);
-  title_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  title_text->SetLineHeight(kTitleLineHeight);
-  title_text->SetBorder(views::CreateEmptyBorder(0, 0, kBodyInsets, 0));
+  std::unique_ptr<views::Label> title_text =
+      CreateSecurePaymentConfirmationTitleLabel(model_->title());
   title_text->SetID(static_cast<int>(DialogViewID::TITLE));
   layout->AddView(std::move(title_text));
 
@@ -367,7 +363,7 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
       label, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
   label_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  label_text->SetLineHeight(kRowViewLineHeight);
+  label_text->SetLineHeight(kDescriptionLineHeight);
   label_text->SetID(static_cast<int>(label_id));
   layout->AddView(std::move(label_text));
 
@@ -375,31 +371,26 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
       value, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_PRIMARY);
   value_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  value_text->SetLineHeight(kRowViewLineHeight);
+  value_text->SetLineHeight(kDescriptionLineHeight);
   value_text->SetID(static_cast<int>(value_id));
   layout->AddView(std::move(value_text));
 
   if (icon) {
-    std::unique_ptr<views::ImageView> icon_view =
-        std::make_unique<views::ImageView>();
-
     instrument_icon_ = model_->instrument_icon();
     instrument_icon_generation_id_ =
         model_->instrument_icon()->getGenerationID();
-    gfx::ImageSkia image =
-        gfx::ImageSkia::CreateFrom1xBitmap(*model_->instrument_icon())
-            .DeepCopy();
 
-    icon_view->SetImage(image);
-    icon_view->SetImageSize(
-        gfx::Size(kInstrumentIconWidth, kInstrumentIconHeight));
-    icon_view->SetPaintToLayer();
-    icon_view->layer()->SetFillsBoundsOpaquely(false);
+    std::unique_ptr<views::ImageView> icon_view =
+        CreateSecurePaymentConfirmationInstrumentIconView(
+            *model_->instrument_icon());
     icon_view->SetID(static_cast<int>(icon_id));
     layout->AddView(std::move(icon_view));
   }
 
   return row;
 }
+
+BEGIN_METADATA(SecurePaymentConfirmationDialogView, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace payments

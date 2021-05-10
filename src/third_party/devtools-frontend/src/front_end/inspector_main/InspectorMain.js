@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Host from '../host/host.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
@@ -22,8 +20,9 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
   async run() {
     let firstCall = true;
     await SDK.Connections.initMainConnection(async () => {
-      const type = Root.Runtime.queryParam('v8only') ? SDK.SDKModel.Type.Node : SDK.SDKModel.Type.Frame;
-      const waitForDebuggerInPage = type === SDK.SDKModel.Type.Frame && Root.Runtime.queryParam('panel') === 'sources';
+      const type = Root.Runtime.Runtime.queryParam('v8only') ? SDK.SDKModel.Type.Node : SDK.SDKModel.Type.Frame;
+      const waitForDebuggerInPage =
+          type === SDK.SDKModel.Type.Frame && Root.Runtime.Runtime.queryParam('panel') === 'sources';
       const target = SDK.SDKModel.TargetManager.instance().createTarget(
           'main', Common.UIString.UIString('Main'), type, null, undefined, waitForDebuggerInPage);
 
@@ -37,13 +36,15 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
 
       if (waitForDebuggerInPage) {
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-        if (!debuggerModel.isReadyToPause()) {
-          await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+        if (debuggerModel) {
+          if (!debuggerModel.isReadyToPause()) {
+            await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+          }
+          debuggerModel.pause();
         }
-        debuggerModel.pause();
       }
 
-      target.runtimeAgent().runIfWaitingForDebugger();
+      target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
 
     new SourcesPanelIndicator();
@@ -58,11 +59,25 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
   }
 }
 
+/** @type {!ReloadActionDelegate} */
+let reloadActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ReloadActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!reloadActionDelegateInstance || forceNew) {
+      reloadActionDelegateInstance = new ReloadActionDelegate();
+    }
+
+    return reloadActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context
@@ -82,11 +97,24 @@ export class ReloadActionDelegate {
   }
 }
 
+/** @type {!FocusDebuggeeActionDelegate} */
+let focusDebuggeeActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class FocusDebuggeeActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!focusDebuggeeActionDelegateInstance || forceNew) {
+      focusDebuggeeActionDelegateInstance = new FocusDebuggeeActionDelegate();
+    }
+
+    return focusDebuggeeActionDelegateInstance;
+  }
   /**
    * @override
    * @param {!UI.Context.Context} context
@@ -94,19 +122,27 @@ export class FocusDebuggeeActionDelegate {
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    SDK.SDKModel.TargetManager.instance().mainTarget().pageAgent().bringToFront();
+    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    if (!mainTarget) {
+      return false;
+    }
+    mainTarget.pageAgent().invoke_bringToFront();
     return true;
   }
 }
+
+/** @type {!NodeIndicator} */
+let nodeIndicatorInstance;
 
 /**
  * @implements {UI.Toolbar.Provider}
  */
 export class NodeIndicator {
+  /** @private */
   constructor() {
-    const element = createElement('div');
+    const element = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        element, {cssFile: 'inspector_main/nodeIcon.css', enableLegacyPatching: true, delegatesFocus: undefined});
+        element, {cssFile: 'inspector_main/nodeIcon.css', enableLegacyPatching: false, delegatesFocus: undefined});
     this._element = shadowRoot.createChild('div', 'node-icon');
     element.addEventListener(
         'click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
@@ -118,12 +154,23 @@ export class NodeIndicator {
     this._button.setVisible(false);
     this._update([]);
   }
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!nodeIndicatorInstance || forceNew) {
+      nodeIndicatorInstance = new NodeIndicator();
+    }
+
+    return nodeIndicatorInstance;
+  }
 
   /**
    * @param {!Array<!Protocol.Target.TargetInfo>} targetInfos
    */
   _update(targetInfos) {
-    const hasNode = !!targetInfos.find(target => target.type === 'node' && !target.attached);
+    const hasNode = Boolean(targetInfos.find(target => target.type === 'node' && !target.attached));
     this._element.classList.toggle('inactive', !hasNode);
     if (hasNode) {
       this._button.setVisible(true);
@@ -139,9 +186,6 @@ export class NodeIndicator {
   }
 }
 
-/**
- * @unrestricted
- */
 export class SourcesPanelIndicator {
   constructor() {
     Common.Settings.Settings.instance()
@@ -154,7 +198,7 @@ export class SourcesPanelIndicator {
       const javaScriptDisabled = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled').get();
       if (javaScriptDisabled) {
         icon = UI.Icon.Icon.create('smallicon-warning');
-        icon.title = Common.UIString.UIString('JavaScript is disabled');
+        UI.Tooltip.Tooltip.install(icon, Common.UIString.UIString('JavaScript is disabled'));
       }
       UI.InspectorView.InspectorView.instance().setPanelIcon('sources', icon);
     }
@@ -163,7 +207,6 @@ export class SourcesPanelIndicator {
 
 /**
  * @implements {SDK.SDKModel.Observer}
- * @unrestricted
  */
 export class BackendSettingsSync {
   constructor() {
@@ -187,8 +230,8 @@ export class BackendSettingsSync {
     if (target.type() !== SDK.SDKModel.Type.Frame || target.parentTarget()) {
       return;
     }
-    target.pageAgent().setAdBlockingEnabled(this._adBlockEnabledSetting.get());
-    target.emulationAgent().setFocusEmulationEnabled(this._emulatePageFocusSetting.get());
+    target.pageAgent().invoke_setAdBlockingEnabled({enabled: this._adBlockEnabledSetting.get()});
+    target.emulationAgent().invoke_setFocusEmulationEnabled({enabled: this._emulatePageFocusSetting.get()});
   }
 
   _updateAutoAttach() {

@@ -10,14 +10,15 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
-#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_mutex.h"
+#include "quic/tools/quic_backend_response.h"
+#include "quic/tools/quic_simple_server_backend.h"
+#include "quic/tools/quic_url.h"
+#include "spdy/core/spdy_framer.h"
 
 namespace quic {
 
@@ -168,8 +169,8 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
                                  QuicBackendResponse::ServerPushInfo resource);
 
   // Cached responses.
-  QuicHashMap<std::string, std::unique_ptr<QuicBackendResponse>> responses_
-      QUIC_GUARDED_BY(response_mutex_);
+  absl::flat_hash_map<std::string, std::unique_ptr<QuicBackendResponse>>
+      responses_ QUIC_GUARDED_BY(response_mutex_);
 
   // The default response for cache misses, if set.
   std::unique_ptr<QuicBackendResponse> default_response_

@@ -1,36 +1,12 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "drawer-view",
-      "id": "changes.changes",
-      "title": "Changes",
-      "persistence": "closeable",
-      "className": "Changes.ChangesView"
-    },
-    {
-      "type": "@Common.Revealer",
-      "contextTypes": [
-        "WorkspaceDiff.DiffUILocation"
-      ],
-      "destination": "Changes drawer",
-      "className": "Changes.ChangesView.DiffUILocationRevealer"
-    }
-  ],
   "dependencies": [
     "workspace_diff",
     "text_editor",
-    "workspace",
-    "diff",
-    "bindings",
     "persistence",
     "snippets",
     "ui"
   ],
   "modules": [
-    "changes-legacy.js"
-  ],
-  "skip_compilation": [
     "changes-legacy.js"
   ],
   "resources": [

@@ -39,13 +39,13 @@ struct StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
     return r.content_language;
   }
 
-  static const std::string& cld_language(
+  static const std::string& model_detected_language(
       const translate::LanguageDetectionDetails& r) {
-    return r.cld_language;
+    return r.model_detected_language;
   }
 
-  static bool is_cld_reliable(const translate::LanguageDetectionDetails& r) {
-    return r.is_cld_reliable;
+  static bool is_model_reliable(const translate::LanguageDetectionDetails& r) {
+    return r.is_model_reliable;
   }
 
   static bool has_notranslate(const translate::LanguageDetectionDetails& r) {
@@ -65,6 +65,16 @@ struct StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
   static const base::string16& contents(
       const translate::LanguageDetectionDetails& r) {
     return r.contents;
+  }
+
+  static float model_reliability_score(
+      const translate::LanguageDetectionDetails& r) {
+    return r.model_reliability_score;
+  }
+
+  static const std::string& detection_model_version(
+      const translate::LanguageDetectionDetails& r) {
+    return r.detection_model_version;
   }
 
   static bool Read(translate::mojom::LanguageDetectionDetailsDataView data,

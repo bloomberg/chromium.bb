@@ -6,14 +6,16 @@
 #define CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom.h"
+#include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/promo_browser_command/promo_browser_command.mojom-forward.h"
+#include "chrome/browser/search/drive/drive.mojom.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/task_module/task_module.mojom.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
+#include "chrome/browser/ui/webui/realbox/realbox.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -33,11 +35,13 @@ class FooHandler;
 #endif
 class GURL;
 class InstantService;
-class KaleidoscopeDataProviderImpl;
 class NewTabPageHandler;
 class Profile;
 class PromoBrowserCommandHandler;
+class RealboxHandler;
 class TaskModuleHandler;
+class CartHandler;
+class DriveHandler;
 
 class NewTabPageUI
     : public ui::MojoWebUIController,
@@ -57,6 +61,11 @@ class NewTabPageUI
       mojo::PendingReceiver<new_tab_page::mojom::PageHandlerFactory>
           pending_receiver);
 
+  // Instantiates the implementor of the realbox::mojom::PageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<realbox::mojom::PageHandler> pending_page_handler);
+
   // Instantiates the implementor of the
   // promo_browser_command::mojom::CommandHandler mojo interface passing the
   // pending receiver that will be internally bound.
@@ -72,18 +81,16 @@ class NewTabPageUI
                          pending_receiver);
 
   // Instantiates the implementor of the
-  // media::mojom::KaleidoscopeNTPDataProvider mojo interface passing the
-  // pending receiver that will be internally bound.
-  void BindInterface(
-      mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider>
-          pending_receiver);
-
-  // Instantiates the implementor of the
   // shopping_tasks::mojom::ShoppingTasksHandler mojo interface passing the
   // pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<task_module::mojom::TaskModuleHandler>
           pending_receiver);
+
+  // Instantiates the implementor of drive::mojom::DriveHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<drive::mojom::DriveHandler> pending_receiver);
 
 #if !defined(OFFICIAL_BUILD)
   // Instantiates the implementor of the foo::mojom::FooHandler mojo interface
@@ -91,6 +98,11 @@ class NewTabPageUI
   void BindInterface(
       mojo::PendingReceiver<foo::mojom::FooHandler> pending_receiver);
 #endif
+
+  // Instantiates the implementor of the chrome_cart::mojom::CartHandler
+  // mojo interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<chrome_cart::mojom::CartHandler> pending_receiver);
 
  private:
   // new_tab_page::mojom::PageHandlerFactory:
@@ -126,9 +138,11 @@ class NewTabPageUI
   mojo::Receiver<customize_themes::mojom::CustomizeThemesHandlerFactory>
       customize_themes_factory_receiver_;
   std::unique_ptr<PromoBrowserCommandHandler> promo_browser_command_handler_;
+  std::unique_ptr<RealboxHandler> realbox_handler_;
 #if !defined(OFFICIAL_BUILD)
   std::unique_ptr<FooHandler> foo_handler_;
 #endif
+  std::unique_ptr<CartHandler> cart_handler_;
   Profile* profile_;
   InstantService* instant_service_;
   content::WebContents* web_contents_;
@@ -137,8 +151,8 @@ class NewTabPageUI
   base::Time navigation_start_time_;
 
   // Mojo implementations for modules:
-  std::unique_ptr<KaleidoscopeDataProviderImpl> kaleidoscope_data_provider_;
   std::unique_ptr<TaskModuleHandler> task_module_handler_;
+  std::unique_ptr<DriveHandler> drive_handler_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

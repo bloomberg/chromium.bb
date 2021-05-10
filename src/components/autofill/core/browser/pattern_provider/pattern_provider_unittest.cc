@@ -16,199 +16,193 @@
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
-#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/language_code.h"
+#include "components/grit/components_resources.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace autofill {
 
 namespace {
 
+LanguageCode kLanguageDe("de");
+LanguageCode kLanguageEn("en");
+
 MatchingPattern GetCompanyPatternEn() {
   autofill::MatchingPattern m_p;
-  m_p.pattern_identifier = "kCompanyPatternEn";
   m_p.positive_pattern = "company|business|organization|organisation";
-  m_p.positive_score = 1.1f;
+  m_p.positive_score = 1.1;
   m_p.negative_pattern = "";
   m_p.match_field_attributes = MATCH_NAME;
   m_p.match_field_input_types = MATCH_TEXT;
-  m_p.language = "en";
+  m_p.language = kLanguageEn;
   return m_p;
 }
 
 MatchingPattern GetCompanyPatternDe() {
   autofill::MatchingPattern m_p;
-  m_p.pattern_identifier = "kCompanyPatternDe";
   m_p.positive_pattern = "|(?<!con)firma|firmenname";
-  m_p.positive_score = 1.1f;
+  m_p.positive_score = 1.1;
   m_p.negative_pattern = "";
   m_p.match_field_attributes = MATCH_LABEL | MATCH_NAME;
   m_p.match_field_input_types = MATCH_TEXT;
-  m_p.language = "de";
+  m_p.language = kLanguageDe;
   return m_p;
 }
 
 // Pattern Provider with custom values set for testing.
 class UnitTestPatternProvider : public PatternProvider {
  public:
-  UnitTestPatternProvider();
+  UnitTestPatternProvider()
+      : UnitTestPatternProvider({GetCompanyPatternDe()},
+                                {GetCompanyPatternEn()}) {}
+
   UnitTestPatternProvider(const std::vector<MatchingPattern>& de_patterns,
-                          const std::vector<MatchingPattern>& en_patterns);
-  ~UnitTestPatternProvider();
+                          const std::vector<MatchingPattern>& en_patterns) {
+    Map patterns;
+    auto& company_patterns =
+        patterns[AutofillType::ServerFieldTypeToString(COMPANY_NAME)];
+    company_patterns[kLanguageDe] = de_patterns;
+    company_patterns[kLanguageEn] = en_patterns;
+    SetPatterns(std::move(patterns), base::Version());
+  }
 };
 
-UnitTestPatternProvider::UnitTestPatternProvider()
-    : UnitTestPatternProvider({GetCompanyPatternDe()},
-                              {GetCompanyPatternEn()}) {}
-
-UnitTestPatternProvider::UnitTestPatternProvider(
-    const std::vector<MatchingPattern>& de_patterns,
-    const std::vector<MatchingPattern>& en_patterns) {
-  PatternProvider::SetPatternProviderForTesting(this);
-  Map patterns;
-  auto& company_patterns = patterns[AutofillType(COMPANY_NAME).ToString()];
-  company_patterns["de"] = de_patterns;
-  company_patterns["en"] = en_patterns;
-  SetPatterns(patterns, base::Version(), true);
+// Called when the JSON bundle has been parsed, and sets the PatternProvider's
+// patterns.
+void OnJsonParsed(base::OnceClosure done_callback,
+                  data_decoder::DataDecoder::ValueOrError result) {
+  base::Version version =
+      field_type_parsing::ExtractVersionFromJsonObject(result.value.value());
+  base::Optional<PatternProvider::Map> patterns =
+      field_type_parsing::GetConfigurationFromJsonObject(result.value.value());
+  ASSERT_TRUE(patterns);
+  ASSERT_TRUE(version.IsValid());
+  PatternProvider& pattern_provider = PatternProvider::GetInstance();
+  pattern_provider.SetPatterns(std::move(patterns.value()), std::move(version));
+  std::move(done_callback).Run();
 }
 
-UnitTestPatternProvider::~UnitTestPatternProvider() {
-  PatternProvider::ResetPatternProvider();
+// Loads the string from the Resource Bundle on a worker thread.
+void LoadPatternsFromResourceBundle() {
+  ASSERT_TRUE(ui::ResourceBundle::HasSharedInstance());
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  base::RunLoop run_loop;
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&ui::ResourceBundle::LoadDataResourceString,
+                     base::Unretained(&bundle), IDR_AUTOFILL_REGEX_JSON),
+      base::BindOnce(
+          [](base::OnceClosure done_callback, std::string resource_string) {
+            data_decoder::DataDecoder::ParseJsonIsolated(
+                std::move(resource_string),
+                base::BindOnce(&OnJsonParsed, std::move(done_callback)));
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 }  // namespace
 
-class AutofillPatternProviderTest : public testing::Test {
- protected:
-  UnitTestPatternProvider pattern_provider_;
-
-  ~AutofillPatternProviderTest() override = default;
-};
-
 bool operator==(const MatchingPattern& mp1, const MatchingPattern& mp2) {
-  return (mp1.language == mp2.language &&
-          mp1.match_field_attributes == mp2.match_field_attributes &&
-          mp1.match_field_input_types == mp2.match_field_input_types &&
-          mp1.negative_pattern == mp2.negative_pattern &&
-          mp1.pattern_identifier == mp2.pattern_identifier &&
-          mp1.positive_pattern == mp2.positive_pattern &&
-          mp1.positive_score == mp2.positive_score);
+  return mp1.language == mp2.language &&
+         mp1.positive_pattern == mp2.positive_pattern &&
+         mp1.negative_pattern == mp2.negative_pattern &&
+         mp1.positive_score == mp2.positive_score &&
+         mp1.match_field_attributes == mp2.match_field_attributes &&
+         mp1.match_field_input_types == mp2.match_field_input_types;
 }
 
-TEST(AutofillPatternProvider, Single_Match) {
+TEST(AutofillPatternProviderTest, Single_Match) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillUsePageLanguageToSelectFieldParsingPatterns);
+      features::kAutofillParsingPatternsLanguageDependent);
 
-  MatchingPattern kCompanyPatternEn = GetCompanyPatternEn();
-  MatchingPattern kCompanyPatternDe = GetCompanyPatternDe();
-  UnitTestPatternProvider* pattern_provider = new UnitTestPatternProvider();
-  auto pattern_store = pattern_provider->GetMatchPatterns("COMPANY_NAME", "en");
-
-  ASSERT_EQ(pattern_store.size(), 1u);
-  EXPECT_EQ(pattern_store[0], kCompanyPatternEn);
-}
-
-// Test that the default pattern provider loads without crashing.
-TEST(AutofillPatternProviderPipelineTest, DefaultPatternProviderLoads) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Enable so that PatternProvider::GetInstance() actually does load the JSON.
-  scoped_feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillUsePageLanguageToSelectFieldParsingPatterns);
-
-  base::test::TaskEnvironment task_environment_;
-  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-
-  base::RunLoop run_loop;
-  field_type_parsing::PopulateFromResourceBundle(run_loop.QuitClosure());
-  run_loop.Run();
-  PatternProvider& default_pattern_provider = PatternProvider::GetInstance();
-
-  EXPECT_FALSE(default_pattern_provider.patterns().empty());
-
-  // Call the getter to ensure sequence checks work correctly.
-  default_pattern_provider.GetMatchPatterns("EMAIL_ADDRESS", "en");
-}
-
-// Test that the TestPatternProvider class uses a PatternProvider::Map
-// equivalent to the DefaultPatternProvider. This is also an example of what is
-// needed to test the DefaultPatternProvider. Warning: If this crashes, check
-// that no state carried over from other tests using the singleton.
-TEST(AutofillPatternProviderPipelineTest, TestParsingEquivalent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Enable so that PatternProvider::GetInstance() actually does load the JSON.
-  scoped_feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillUsePageLanguageToSelectFieldParsingPatterns);
-
-  base::test::TaskEnvironment task_environment_;
-  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-
-  base::RunLoop run_loop;
-  field_type_parsing::PopulateFromResourceBundle(run_loop.QuitClosure());
-  run_loop.Run();
-  PatternProvider& default_pattern_provider = PatternProvider::GetInstance();
-
-  TestPatternProvider test_pattern_provider;
-
-  EXPECT_EQ(default_pattern_provider.patterns(),
-            test_pattern_provider.patterns());
-}
-
-TEST(AutofillPatternProvider, BasedOnMatchType) {
   UnitTestPatternProvider p;
-  ASSERT_GT(p.GetAllPatternsByType("COMPANY_NAME").size(), 0u);
-  EXPECT_EQ(p.GetAllPatternsByType("COMPANY_NAME"),
-            std::vector<MatchingPattern>(
-                {GetCompanyPatternDe(), GetCompanyPatternEn()}));
-  EXPECT_EQ(p.GetAllPatternsByType("COMPANY_NAME").size(), 2u);
+  EXPECT_THAT(p.GetMatchPatterns("COMPANY_NAME", kLanguageEn),
+              ::testing::ElementsAre(GetCompanyPatternEn()));
+  EXPECT_THAT(
+      p.GetMatchPatterns("COMPANY_NAME", kLanguageDe),
+      ::testing::ElementsAre(GetCompanyPatternDe(), GetCompanyPatternEn()));
 }
 
-TEST(AutofillPatternProvider, UnknownLanguages) {
+TEST(AutofillPatternProviderTest, BasedOnMatchType) {
+  UnitTestPatternProvider p;
+  EXPECT_THAT(
+      p.GetAllPatternsByType("COMPANY_NAME"),
+      ::testing::ElementsAre(GetCompanyPatternDe(), GetCompanyPatternEn()));
+}
+
+TEST(AutofillPatternProviderTest, TestDefaultEqualsJson) {
+  base::test::TaskEnvironment task_environment_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+
+  auto default_version = PatternProvider::GetInstance().pattern_version_;
+  auto default_patterns = PatternProvider::GetInstance().patterns_;
+
+  // We want to make sure that the JSON loading actually does set the patterns.
+  // To this end, manipulate the current patterns. Then |default_patterns| can
+  // only be identical to |json_patterns| if loading the JSON updates the
+  // patterns.
+  PatternProvider::GetInstance().patterns_.clear();
+  ASSERT_NE(default_patterns, PatternProvider::GetInstance().patterns_);
+
+  // Load the JSON explicitly from the file.
+  LoadPatternsFromResourceBundle();
+
+  auto json_version = PatternProvider::GetInstance().pattern_version_;
+  auto json_patterns = PatternProvider::GetInstance().patterns_;
+
+  EXPECT_FALSE(default_version.IsValid());
+  EXPECT_TRUE(json_version.IsValid());
+  EXPECT_EQ(default_patterns, json_patterns);
+}
+
+TEST(AutofillPatternProviderTest, UnknownLanguages) {
   {
     base::test::ScopedFeatureList feature;
     feature.InitWithFeatures(
         // enabled
-        {features::kAutofillUsePageLanguageToSelectFieldParsingPatterns},
+        {features::kAutofillParsingPatternsLanguageDependent},
         // disabled
-        {features::
-             kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics});
+        {features::kAutofillParsingPatternsNegativeMatching});
     UnitTestPatternProvider p;
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", ""),
-              p.GetAllPatternsByType("COMPANY_NAME"));
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "blabla"),
-              p.GetAllPatternsByType("COMPANY_NAME"));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, LanguageCode("")),
+              p.GetAllPatternsByType(COMPANY_NAME));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, LanguageCode("io")),
+              p.GetAllPatternsByType(COMPANY_NAME));
   }
 
   {
     base::test::ScopedFeatureList feature;
     feature.InitWithFeatures(
         // enabled
-        {features::
-             kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics},
+        {features::kAutofillParsingPatternsNegativeMatching},
         // disabled
-        {features::kAutofillUsePageLanguageToSelectFieldParsingPatterns});
+        {features::kAutofillParsingPatternsLanguageDependent});
     UnitTestPatternProvider p;
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", ""),
-              p.GetAllPatternsByType("COMPANY_NAME"));
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "blabla"),
-              p.GetAllPatternsByType("COMPANY_NAME"));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, LanguageCode("")),
+              p.GetAllPatternsByType(COMPANY_NAME));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, LanguageCode("io")),
+              p.GetAllPatternsByType(COMPANY_NAME));
   }
 }
 
-TEST(AutofillPatternProvider, EnrichPatternsWithEnVersion) {
+TEST(AutofillPatternProviderTest, EnrichPatternsWithEnVersion) {
   {
     base::test::ScopedFeatureList feature;
     feature.InitWithFeatures(
         // enabled
-        {features::kAutofillUsePageLanguageToSelectFieldParsingPatterns},
+        {features::kAutofillParsingPatternsLanguageDependent},
         // disabled
-        {features::
-             kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics});
+        {features::kAutofillParsingPatternsNegativeMatching});
     UnitTestPatternProvider p;
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "en"),
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, kLanguageEn),
               std::vector<MatchingPattern>{GetCompanyPatternEn()});
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "de"),
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, kLanguageDe),
               std::vector<MatchingPattern>(
                   {GetCompanyPatternDe(), GetCompanyPatternEn()}));
   }
@@ -217,26 +211,25 @@ TEST(AutofillPatternProvider, EnrichPatternsWithEnVersion) {
     base::test::ScopedFeatureList feature;
     feature.InitWithFeatures(
         // enabled
-        {features::
-             kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics},
+        {features::kAutofillParsingPatternsNegativeMatching},
         // disabled
-        {features::kAutofillUsePageLanguageToSelectFieldParsingPatterns});
+        {features::kAutofillParsingPatternsLanguageDependent});
     UnitTestPatternProvider p;
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "en"),
-              std::vector<MatchingPattern>({GetCompanyPatternDe(),
-                                            GetCompanyPatternEn()}));
-    EXPECT_EQ(p.GetMatchPatterns("COMPANY_NAME", "de"),
-              std::vector<MatchingPattern>({GetCompanyPatternDe(),
-                                            GetCompanyPatternEn()}));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, kLanguageEn),
+              std::vector<MatchingPattern>(
+                  {GetCompanyPatternDe(), GetCompanyPatternEn()}));
+    EXPECT_EQ(p.GetMatchPatterns(COMPANY_NAME, kLanguageDe),
+              std::vector<MatchingPattern>(
+                  {GetCompanyPatternDe(), GetCompanyPatternEn()}));
   }
 }
 
-TEST(AutofillPatternProvider, SortPatternsByScore) {
+TEST(AutofillPatternProviderTest, SortPatternsByScore) {
   base::test::ScopedFeatureList feature;
   feature.InitWithFeatures(
       // enabled
-      {features::kAutofillUsePageLanguageToSelectFieldParsingPatterns,
-       features::kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics},
+      {features::kAutofillParsingPatternsLanguageDependent,
+       features::kAutofillParsingPatternsNegativeMatching},
       // disabled
       {});
   std::vector<MatchingPattern> de_input_patterns;
@@ -250,7 +243,7 @@ TEST(AutofillPatternProvider, SortPatternsByScore) {
   de_input_patterns[3].positive_score = 3.0;
   UnitTestPatternProvider p(de_input_patterns, {});
   const std::vector<MatchingPattern>& de_patterns =
-      p.GetMatchPatterns(COMPANY_NAME, "de");
+      p.GetMatchPatterns(COMPANY_NAME, kLanguageDe);
   ASSERT_EQ(de_patterns.size(), de_input_patterns.size());
   EXPECT_EQ(de_patterns[0].positive_score, 5.0);
   EXPECT_EQ(de_patterns[1].positive_score, 3.0);

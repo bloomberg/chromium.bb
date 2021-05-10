@@ -3,16 +3,21 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import {ls} from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
 import {DeviceModeModel, MaxDeviceNameLength, UA} from './DeviceModeModel.js';
 import {Capability, EmulatedDevice, EmulatedDevicesList, Events, Horizontal, Vertical,} from './EmulatedDevices.js';
+import {parseBrandsList, serializeBrandsList, validateAsStructuredHeadersString} from './UserAgentMetadata.js';
+
+/** @type {!DevicesSettingsTab} */
+let devicesSettingsTabInstance;
 
 /**
  * @implements {UI.ListWidget.Delegate<!EmulatedDevice>}
- * @unrestricted
  */
 export class DevicesSettingsTab extends UI.Widget.VBox {
+  /** @private */
   constructor() {
     super();
     this.element.classList.add('settings-tab-container');
@@ -27,6 +32,7 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     const buttonsRow = this.containerElement.createChild('div', 'devices-button-row');
     this._addCustomButton =
         UI.UIUtils.createTextButton(Common.UIString.UIString('Add custom device...'), this._addCustomDevice.bind(this));
+    this._addCustomButton.id = 'custom-device-add-button';
     buttonsRow.appendChild(this._addCustomButton);
 
     this._list = new UI.ListWidget.ListWidget(this, false /* delegatesFocus */);
@@ -40,6 +46,13 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     this._emulatedDevicesList.addEventListener(Events.StandardDevicesUpdated, this._devicesUpdated, this);
 
     this.setDefaultFocusedElement(this._addCustomButton);
+  }
+
+  static instance() {
+    if (!devicesSettingsTabInstance) {
+      devicesSettingsTabInstance = new DevicesSettingsTab();
+    }
+    return devicesSettingsTabInstance;
   }
 
   /**
@@ -115,7 +128,10 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     checkbox.type = 'checkbox';
     checkbox.checked = device.show();
     checkbox.addEventListener('click', onItemClicked.bind(this), false);
-    label.appendChild(document.createTextNode(device.title));
+    const span = document.createElement('span');
+    span.classList.add('device-name');
+    span.appendChild(document.createTextNode(device.title));
+    label.appendChild(span);
     return label;
 
     /**
@@ -164,6 +180,16 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     if (uaType === UA.Mobile || uaType === UA.DesktopTouch) {
       device.capabilities.push(Capability.Touch);
     }
+    const brandsOrError = parseBrandsList(editor.control('brands').value.trim(), 'unused_err1', 'unused_err2');
+    device.userAgentMetadata = {
+      brands: (typeof brandsOrError === 'string' ? [] : brandsOrError),
+      fullVersion: editor.control('full-version').value.trim(),
+      platform: editor.control('platform').value.trim(),
+      platformVersion: editor.control('platform-version').value.trim(),
+      architecture: editor.control('arch').value.trim(),
+      model: editor.control('model').value.trim(),
+      mobile: (uaType === UA.Mobile || uaType === UA.MobileNoTouch)
+    };
     if (isNew) {
       this._emulatedDevicesList.addCustomDevice(device);
     } else {
@@ -192,6 +218,14 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
       uaType = device.touch() ? UA.DesktopTouch : UA.Desktop;
     }
     editor.control('ua-type').value = uaType;
+    if (device.userAgentMetadata) {
+      editor.control('brands').value = serializeBrandsList(device.userAgentMetadata.brands || []);
+      editor.control('full-version').value = device.userAgentMetadata.fullVersion || '';
+      editor.control('platform').value = device.userAgentMetadata.platform;
+      editor.control('platform-version').value = device.userAgentMetadata.platformVersion;
+      editor.control('arch').value = device.userAgentMetadata.architecture;
+      editor.control('model').value = device.userAgentMetadata.model;
+    }
     return editor;
   }
 
@@ -207,15 +241,22 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     this._editor = editor;
     const content = editor.contentElement();
 
-    const fields = content.createChild('div', 'devices-edit-fields');
-    fields.createChild('div', 'hbox').appendChild(editor.createInput('title', 'text', ls`Device Name`, titleValidator));
-    const screen = fields.createChild('div', 'hbox');
+    const deviceFields = content.createChild('div', 'devices-edit-fields');
+    UI.UIUtils.createTextChild(deviceFields.createChild('b'), ls`Device`);
+    const deviceNameField = editor.createInput('title', 'text', ls`Device Name`, titleValidator);
+    deviceFields.createChild('div', 'hbox').appendChild(deviceNameField);
+    deviceNameField.id = 'custom-device-name-field';
+    const screen = deviceFields.createChild('div', 'hbox');
     screen.appendChild(editor.createInput('width', 'text', ls`Width`, widthValidator));
     screen.appendChild(editor.createInput('height', 'text', ls`Height`, heightValidator));
     const dpr = editor.createInput('scale', 'text', ls`Device pixel ratio`, scaleValidator);
     dpr.classList.add('device-edit-fixed');
     screen.appendChild(dpr);
-    const ua = fields.createChild('div', 'hbox');
+
+    const uaStringFields = content.createChild('div', 'devices-edit-fields');
+    UI.UIUtils.createTextChild(uaStringFields.createChild('b'), ls`User agent string`);
+
+    const ua = uaStringFields.createChild('div', 'hbox');
     ua.appendChild(editor.createInput('user-agent', 'text', ls`User agent string`, () => {
       return {valid: true, errorMessage: undefined};
     }));
@@ -226,7 +267,91 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     uaType.classList.add('device-edit-fixed');
     ua.appendChild(uaType);
 
+    const uaChFields = content.createChild('div', 'devices-edit-client-hints-heading');
+    UI.UIUtils.createTextChild(uaChFields.createChild('b'), ls`User agent client hints`);
+
+    const helpIconWrapper = document.createElement('a');
+    helpIconWrapper.href = 'https://web.dev/user-agent-client-hints/';
+    helpIconWrapper.target = '_blank';
+    const icon = UI.Icon.Icon.create('mediumicon-info', 'help-icon');
+    helpIconWrapper.appendChild(icon);
+    helpIconWrapper.title =
+        ls`User agent client hints are an alternative to the user agent string that identify the browser and the device in a more structured way with better privacy accounting. Click the button to learn more.`;
+    // Prevent the editor grabbing the enter key, letting the default behavior happen.
+    helpIconWrapper.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.stopPropagation();
+      }
+    });
+    uaChFields.appendChild(helpIconWrapper);
+
+    const tree = new UI.TreeOutline.TreeOutlineInShadow();
+    tree.registerRequiredCSS('emulation/devicesSettingsTab.css', {enableLegacyPatching: true});
+    tree.setShowSelectionOnKeyboardFocus(true, false);
+    const treeRoot = new UI.TreeOutline.TreeElement(uaChFields, true);
+    tree.appendChild(treeRoot);
+    // Select the folder to make left/right arrows work as expected; don't change focus, however, since it should start with the device name field.
+    treeRoot.select(true, false);
+    content.appendChild(tree.element);
+
+    /**
+     * @param {!HTMLInputElement|!HTMLSelectElement} input
+     */
+    function addToTree(input) {
+      const treeNode = new UI.TreeOutline.TreeElement(input, false);
+      // The inputs themselves are selectable, no need for the tree nodes to be.
+      treeNode.selectable = false;
+      treeNode.listItemElement.classList.add('devices-edit-client-hints-field');
+      treeRoot.appendChild(treeNode);
+    }
+
+    const brands =
+        editor.createInput('brands', 'text', ls`UA brands list (e.g. "Chromium";v="87")`, brandListValidator);
+    addToTree(brands);
+
+    const fullVersion =
+        editor.createInput('full-version', 'text', ls`Full browser version (e.g. 87.0.4280.88)`, chStringValidator);
+    addToTree(fullVersion);
+
+    const platform = editor.createInput('platform', 'text', ls`Platform (e.g. Android)`, chStringValidator);
+    addToTree(platform);
+
+    const platformVersion = editor.createInput('platform-version', 'text', ls`Platform version`, chStringValidator);
+    addToTree(platformVersion);
+
+    const arch = editor.createInput('arch', 'text', ls`Architecture (e.g. x86)`, chStringValidator);
+    addToTree(arch);
+
+    const model = editor.createInput('model', 'text', ls`Device model`, chStringValidator);
+    addToTree(model);
+
     return editor;
+
+    /**
+     * @param {*} item
+     * @param {number} index
+     * @param {!HTMLInputElement|!HTMLSelectElement} input
+     * @return {!UI.ListWidget.ValidatorResult}
+     */
+    function chStringValidator(item, index, input) {
+      return validateAsStructuredHeadersString(input.value, ls`Not representable as structured headers string.`);
+    }
+
+    /**
+     * @param {*} item
+     * @param {number} index
+     * @param {!HTMLInputElement|!HTMLSelectElement} input
+     * @return {!UI.ListWidget.ValidatorResult}
+     */
+    function brandListValidator(item, index, input) {
+      const syntaxError = ls`Brands list is not a valid structured fields list.`;
+      const structError = ls`Brands list must consist of strings, each with a v parameter with a string value.`;
+      const errorOrResult = parseBrandsList(input.value, syntaxError, structError);
+      if (typeof errorOrResult === 'string') {
+        return {valid: false, errorMessage: errorOrResult};
+      }
+      return {valid: true, errorMessage: undefined};
+    }
 
     /**
      * @param {*} item

@@ -254,15 +254,6 @@
   "lighthouse-core/audits/accessibility/label.js | title": {
     "message": "Lomake-elementeillä on niihin liittyvät tunnisteet"
   },
-  "lighthouse-core/audits/accessibility/layout-table.js | description": {
-    "message": "Asettelua varten luodussa taulukossa ei pitäisi olla dataelementtejä, kuten taulukoiden otsikko ‑elementtejä, tekstityselementtejä tai yhteenvetomääritteitä, koska ne voivat tehdä näytönlukuohjelman käytöstä sekavaa. [Lue lisää](https://web.dev/layout-table/)."
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | failureTitle": {
-    "message": "Esittelyyn tarkoitetut `<table>`-elementit eivät vältä `<th>`-,`<caption>`- tai `[summary]`-määritteen käyttöä"
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | title": {
-    "message": "Esittelyyn tarkoitetut `<table>`-elementit välttävät `<th>`-,`<caption>`- tai `[summary]`-määritteiden käyttöä"
-  },
   "lighthouse-core/audits/accessibility/link-name.js | description": {
     "message": "Linkkiteksti (ja vaihtoehtoinen teksti kuvia varten, kun niitä käytetään linkkeinä), joka on erottuva, yksilöllinen ja tarkennettavissa, parantaa näytönlukuohjelmaa käyttävien navigointikokemusta. [Lue lisää](https://web.dev/link-name/)."
   },
@@ -362,15 +353,6 @@
   "lighthouse-core/audits/accessibility/video-caption.js | title": {
     "message": "`<video>`-elementit sisältävät `<track>`-elementin, jossa on `[kind=\"captions\"]`"
   },
-  "lighthouse-core/audits/accessibility/video-description.js | description": {
-    "message": "Äänikuvaukset antavat videoista oleellista tietoa (esimerkiksi ilmeistä ja tapahtumapaikoista), jota ei saa keskustelusta. [Lue lisää](https://web.dev/video-description/)."
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | failureTitle": {
-    "message": "`<video>`-elementit eivät sisällä `<track>`-elementtiä, jossa on `[kind=\"description\"]`"
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | title": {
-    "message": "`<video>`-elementit sisältävät `<track>`-elementin, jossa on `[kind=\"description\"]`"
-  },
   "lighthouse-core/audits/apple-touch-icon.js | description": {
     "message": "Määritä `apple-touch-icon`, jotta iOS-näkyvyys on paras mahdollinen, kun käyttäjä lisää progressiivisen web-sovelluksen aloitusnäytölle. Sen on viitattava läpinäkymättömään neliön muotoiseen (192 px tai 180 px) PNG-tiedostoon. [Lue lisää](https://web.dev/apple-touch-icon/)."
   },
@@ -384,16 +366,16 @@
     "message": "Sisältää kelvollisen `apple-touch-icon`-määritteen"
   },
   "lighthouse-core/audits/autocomplete.js | columnCurrent": {
-    "message": "Current Value"
+    "message": "Nykyinen arvo"
   },
   "lighthouse-core/audits/autocomplete.js | columnSuggestions": {
-    "message": "Suggested Token"
+    "message": "Ehdotettu tunnus"
   },
   "lighthouse-core/audits/autocomplete.js | description": {
-    "message": "`autocomplete` helps users submit forms quicker. To reduce user effort, consider enabling by setting the `autocomplete` attribute to a valid value. [Learn more](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
+    "message": "`autocomplete` auttaa käyttäjiä lähettämään lomakkeita nopeammin. Voit helpottaa lomakkeiden täyttämistä, jos otat ominaisuuden käyttöön lisäämällä `autocomplete`-määritteelle kelvollisen arvon. [Lue lisää](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
   },
   "lighthouse-core/audits/autocomplete.js | failureTitle": {
-    "message": "`<input>` elements do not have correct `autocomplete` attributes"
+    "message": "`<input>`-elementeillä ei ole tarvittavia `autocomplete`-määritteitä"
   },
   "lighthouse-core/audits/autocomplete.js | manualReview": {
     "message": "Edellyttää manuaalista tarkistusta"
@@ -402,10 +384,10 @@
     "message": "Tarkista tunnusten järjestys"
   },
   "lighthouse-core/audits/autocomplete.js | title": {
-    "message": "`<input>` elements correctly use `autocomplete`"
+    "message": "`<input>`-elementeillä on käytössä tarvittava `autocomplete`"
   },
   "lighthouse-core/audits/autocomplete.js | warningInvalid": {
-    "message": "`autocomplete` token(s): \"{token}\" is invalid in {snippet}"
+    "message": "`autocomplete`-tunnukset: \"{token}\" on virheellinen ({snippet})"
   },
   "lighthouse-core/audits/autocomplete.js | warningOrder": {
     "message": "Tarkista tunnusten järjestys: {tokens} ({snippet})"
@@ -585,7 +567,7 @@
     "message": "Välttää sovellusvälimuistia"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
-    "message": "A character encoding declaration is required. It can be done with a `<meta>` tag in the first 1024 bytes of the HTML or in the Content-Type HTTP response header. [Learn more](https://web.dev/charset/)."
+    "message": "Merkistökoodausilmoitus vaaditaan. Sen voi tehdä `<meta>`-tagilla HTML:n ensimmäisen 1 024 tavun sisällä tai HTTP:n vastauksen otsikon sisältötyyppi-kohdassa. [Lue lisää](https://web.dev/charset/)."
   },
   "lighthouse-core/audits/dobetterweb/charset.js | failureTitle": {
     "message": "Merkistöilmoitus puuttuu tai näkyy liian myöhään HTML:ssä"
@@ -665,6 +647,24 @@
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | title": {
     "message": "Välttää maantieteellisen sijainnin pyytämistä sivun latauksessa"
   },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | columnIssueType": {
+    "message": "Ongelmatyyppi"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | description": {
+    "message": "Chrome DevToolsin `Issues`-paneeliin kirjatut virheet viittaavat ratkaisemattomiin ongelmiin. Ne voivat johtua epäonnistuneista verkkopyynnöistä, riittämättömistä tietoturva-asetuksista ja muista selainongelmista. Katso lisätietoja kustakin ongelmasta avaamalla Chrome DevToolsin Ongelmat-paneeli."
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | failureTitle": {
+    "message": "Ongelmat kirjattiin Chrome DevToolsin `Issues`-paneeliin"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeBlockedByResponse": {
+    "message": "Eri lähteitä koskevan käytännön estämä"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeHeavyAds": {
+    "message": "Resursseja kuluttavat raskaat mainokset"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | title": {
+    "message": "Ei ongelmia Chrome DevToolsin `Issues`-paneelissa"
+  },
   "lighthouse-core/audits/dobetterweb/js-libraries.js | columnVersion": {
     "message": "Versio"
   },
@@ -735,7 +735,7 @@
     "message": "Protokolla"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | description": {
-    "message": "HTTP/2 tarjoaa monia etuja HTTP/1.1:een verrattuna, mukaan lukien binaariotsikot, kanavoinnin ja palvelinkehotteet. [Lue lisää](https://web.dev/uses-http2/)."
+    "message": "HTTP/2 tarjoaa monia etuja HTTP/1.1:een verrattuna, mukaan lukien binaariotsikot ja kanavoinnin. [Lue lisää](https://web.dev/uses-http2/)."
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | displayValue": {
     "message": "{itemCount,plural, =1{1 pyyntöä ei tehty HTTP/2:n kautta}other{# pyyntöä ei tehty HTTP/2:n kautta}}"
@@ -751,9 +751,6 @@
   },
   "lighthouse-core/audits/dobetterweb/uses-passive-event-listeners.js | title": {
     "message": "Käyttää passiivisia seuraimia vieritystoiminnan parantamiseen"
-  },
-  "lighthouse-core/audits/errors-in-console.js | columnDesc": {
-    "message": "Kuvaus"
   },
   "lighthouse-core/audits/errors-in-console.js | description": {
     "message": "Konsoliin kirjatut virheet viittaavat ratkaisemattomiin ongelmiin. Ne voivat johtua epäonnistuneista verkkopyynnöistä ja muista selainongelmista. [Lue lisää](https://web.dev/errors-in-console/)."
@@ -791,9 +788,6 @@
   "lighthouse-core/audits/image-aspect-ratio.js | title": {
     "message": "Näytä kuvat, joiden kuvasuhde on oikea"
   },
-  "lighthouse-core/audits/image-aspect-ratio.js | warningCompute": {
-    "message": "Virheelliset kuvan kokotiedot: {url}"
-  },
   "lighthouse-core/audits/image-size-responsive.js | columnActual": {
     "message": "Todellinen koko"
   },
@@ -812,14 +806,98 @@
   "lighthouse-core/audits/image-size-responsive.js | title": {
     "message": "Näyttää kuvat sopivalla resoluutiolla"
   },
+  "lighthouse-core/audits/installable-manifest.js | already-installed": {
+    "message": "Sovellus on jo asennettu"
+  },
+  "lighthouse-core/audits/installable-manifest.js | cannot-download-icon": {
+    "message": "Ladattu kuvake oli tyhjä tai vioittunut"
+  },
+  "lighthouse-core/audits/installable-manifest.js | columnValue": {
+    "message": "Epäonnistumisen syy"
+  },
   "lighthouse-core/audits/installable-manifest.js | description": {
-    "message": "Selain voi aktiivisesti suositella käyttäjille sovelluksesi lisäämistä aloitusnäytölle, mikä voi edistää aktivoitumista. [Lue lisää](https://web.dev/installable-manifest/)."
+    "message": "Service worker ‑teknologia tuo sovelluksen käyttöön monia progressiivisen web-sovelluksen ominaisuuksia, kuten offline-käytön, aloitusnäytölle lisäämisen ja ilmoitukset. Jos service worker ja manifesti on otettu käyttöön oikein, selaimet voivat aktiivisesti suositella käyttäjille sovelluksesi lisäämistä aloitusnäytölle, mikä voi lisätä aktivoitumisten määrää. [Lue lisää](https://web.dev/installable-manifest/)."
+  },
+  "lighthouse-core/audits/installable-manifest.js | displayValue": {
+    "message": "{itemCount,plural, =1{1 syy}other{# syytä}}"
   },
   "lighthouse-core/audits/installable-manifest.js | failureTitle": {
-    "message": "Verkkosovelluksen luettelo ei vastaa asennettavuusvaatimuksia"
+    "message": "Web app manifest ja service worker eivät täytä asennettavuusvaatimuksia"
+  },
+  "lighthouse-core/audits/installable-manifest.js | ids-do-not-match": {
+    "message": "Play Kauppa ‑sovelluksen URL ja Play Kaupan tunnus eivät täsmää"
+  },
+  "lighthouse-core/audits/installable-manifest.js | in-incognito": {
+    "message": "Sivu ladataan incognito-ikkunassa"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-not-supported": {
+    "message": "Manifestin \"display\"-omaisuuden on oltava \"standalone\", \"fullscreen\" tai \"minimal-ui\""
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-override-not-supported": {
+    "message": "Manifestissä on \"display_override\"-kenttä, ja ensimmäisen tuetun näyttötilan on oltava \"standalone\", \"fullscreen\" tai \"minimal-ui\""
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-empty": {
+    "message": "Manifestin nouto ei onnistunut, se on tyhjä tai ei jäsenneltävissä"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-location-changed": {
+    "message": "Manifestin URL muuttui manifestin noudon aikana"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-name-or-short-name": {
+    "message": "Manifestiin ei sisälly \"name\"- tai \"short_name\"-kenttää"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
+    "message": "Manifestiin ei ole sisälly sopivaa kuvaketta, siinä on oltava vähintään {value0} pikselin kokoinen PNG-, SVG- tai WebP-tiedosto, kokomäärite on lisättävä ja mahdollisen tarkoitusmääritteen on oltava \"any\" tai \"maskable\"."
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
+    "message": "Mikään kuvakkeista ei ole vähintään {value0} pikselin kokoinen PNG-, SVG- tai WebP-tiedosto"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
+    "message": "Ladattu kuvake oli tyhjä tai vioittunut"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-id-specified": {
+    "message": "Ei Play Kaupan tunnusta"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-manifest": {
+    "message": "Sivulta puuttuu manifestin <link>-URL"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-matching-service-worker": {
+    "message": "Vastaavaa service workeria ei havaittu. Sinun on ehkä päivitettävä sivu ja tarkistettava, kattaako nykyisen sivun service workerin laajuus manifestin ja aloitus-URL:in."
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-url-for-service-worker": {
+    "message": "Service workeria ei voitu tarkistaa, koska manifestistä puuttuu \"start_url\"-kenttä"
+  },
+  "lighthouse-core/audits/installable-manifest.js | noErrorId": {
+    "message": "Asennettavuusvirheen tunnusta \"{errorId}\" ei tunnistettu"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-from-secure-origin": {
+    "message": "Sivu ei ole peräisin turvallisesta lähteestä"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-in-main-frame": {
+    "message": "Sivu ei lataudu pääkehyksessä"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-offline-capable": {
+    "message": "Sivu ei toimi ilman verkkoyhteyttä"
+  },
+  "lighthouse-core/audits/installable-manifest.js | platform-not-supported-on-android": {
+    "message": "Määritettyä sovellusalustaa ei tueta Androidilla"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications": {
+    "message": "Manifestin määritys prefer_related_applications: true"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications-only-beta-stable": {
+    "message": "prefer_related_applications on tuettu vain Chromen betaversioissa ja vakaissa versioissa Androidilla."
+  },
+  "lighthouse-core/audits/installable-manifest.js | start-url-not-valid": {
+    "message": "Manifestin aloitus-URL ei kelpaa"
   },
   "lighthouse-core/audits/installable-manifest.js | title": {
-    "message": "Verkkosovelluksen luettelo vastaa asennettavuusvaatimuksia"
+    "message": "Web app manifest ja service worker täyttävät asennettavuusvaatimukset"
+  },
+  "lighthouse-core/audits/installable-manifest.js | url-not-supported-for-webapk": {
+    "message": "Manifestissa oleva URL sisältää käyttäjänimen, salasanan tai portin"
+  },
+  "lighthouse-core/audits/installable-manifest.js | warn-not-offline-capable": {
+    "message": "Sivu ei toimi ilman verkkoyhteyttä. Tämä sivu ei enää ole ladattavissa Chrome 93:n vakaan version jälkeen (julkaistaan elokuussa 2021)."
   },
   "lighthouse-core/audits/is-on-https.js | allowed": {
     "message": "Sallittu"
@@ -834,7 +912,7 @@
     "message": "Pyydä ratkaisua"
   },
   "lighthouse-core/audits/is-on-https.js | description": {
-    "message": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more](https://web.dev/is-on-https/)."
+    "message": "Kaikki sivustot on suojattava HTTPS:llä, vaikka ne eivät käsittelisi arkaluontoista dataa. Vältä myös [yhdistelmäsisältöä](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content) eli alkupyyntöön vastaamista HTTPS:llä ja joidenkin resurssien lataamista HTTP:llä. HTTPS estää tunkeutujia peukaloimasta sovelluksesi ja sen käyttäjien välistä toimintaa tai seuraamasta sitä passiivisesti. HTTPS:ää edellytetään HTTP/2:ssa ja monien uusien verkkoalustojen käyttöliittymissä. [Lue lisää](https://web.dev/is-on-https/)."
   },
   "lighthouse-core/audits/is-on-https.js | displayValue": {
     "message": "{itemCount,plural, =1{1 suojaamaton pyyntö löytyi}other{# suojaamatonta pyyntöä löytyi}}"
@@ -880,24 +958,6 @@
   },
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "Vältä suuria asettelun muutoksia"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | description": {
-    "message": "Nopea sivun lataus mobiiliverkon kautta varmistaa hyvän mobiilikäyttökokemuksen. [Lue lisää](https://web.dev/load-fast-enough-for-pwa/)."
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueText": {
-    "message": "Interaktiivinen: {timeInMs, number, seconds} s"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueTextWithOverride": {
-    "message": "Interaktiivinen simuloidussa mobiiliverkossa: {timeInMs, number, seconds} s"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | explanationLoadSlow": {
-    "message": "Sivu latautuu liian hitaasti eikä ole interaktiivinen 10 sekunnin sisällä. Katso mahdollisuuksia ja diagnostiikkatietoja Tehokkuus-osiosta sivujen kehittämiseksi."
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | failureTitle": {
-    "message": "Sivu ei lataudu tarpeeksi nopeasti mobiiliverkoissa"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | title": {
-    "message": "Sivu latautuu tarpeeksi nopeasti mobiiliverkoissa"
   },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "Näyttää pääsäikeen pitkäkestoisimmat tehtävät, mistä on apua syöttöviiveen pahimpien aiheuttajien tunnistamisessa. [Lue lisää](https://web.dev/long-tasks-devtools/)"
@@ -1025,21 +1085,6 @@
   "lighthouse-core/audits/non-composited-animations.js | unsupportedTimingParameters": {
     "message": "Tehosteessa on ei-tuettuja ajoitusparametreja"
   },
-  "lighthouse-core/audits/offline-start-url.js | description": {
-    "message": "Service worker auttaa tekemään verkkosovelluksesta luotettavan, jos verkko-olosuhteet ovat vaikeita ennustaa. [Lue lisää](https://web.dev/offline-start-url/)."
-  },
-  "lighthouse-core/audits/offline-start-url.js | errorLoading": {
-    "message": "Virhe, kun {url} ladattiin Service Workerissa, tuloksena tilakoodi {statusCode}"
-  },
-  "lighthouse-core/audits/offline-start-url.js | failureTitle": {
-    "message": "`start_url` ei vastaa 200-viestillä offline-tilassa"
-  },
-  "lighthouse-core/audits/offline-start-url.js | title": {
-    "message": "`start_url` vastaa 200-viestillä offline-tilassa"
-  },
-  "lighthouse-core/audits/offline-start-url.js | warningCantStart": {
-    "message": "`start_url` ei ollut Lighthousen luettavissa luettelossa. Siksi oletimme, että `start_url` on dokumentin URL-osoite. Virheilmoitus: {manifestWarning}"
-  },
   "lighthouse-core/audits/performance-budget.js | description": {
     "message": "Pidä verkkopyyntöjen määrä ja koko tehokkuusbudjetissa määritettyjen tavoitteiden rajoissa. [Lue lisää](https://developers.google.com/web/tools/lighthouse/audits/budgets)."
   },
@@ -1057,6 +1102,12 @@
   },
   "lighthouse-core/audits/preload-fonts.js | title": {
     "message": "Fontit, joissa on `font-display: optional`, on esiladattu"
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | description": {
+    "message": "Esilataa LCP-elementin käyttämä kuva, jotta voit parantaa sivun latautumisaikaa. [Lue lisää](https://web.dev/optimize-lcp/#preload-important-resources)."
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | title": {
+    "message": "Esilataa sivun latautumisajan kuva"
   },
   "lighthouse-core/audits/redirects-http.js | description": {
     "message": "Jos määritit jo HTTPS:n, varmista että ohjaat kaiken HTTP-liikenteen HTTPS:ään, jotta kaikki käyttäjät saavat turvalliset verkko-ominaisuudet. [Lue lisää](https://web.dev/redirects-http/)."
@@ -1313,8 +1364,32 @@
   "lighthouse-core/audits/themed-omnibox.js | title": {
     "message": "Asettaa osoitepalkin teemavärin"
   },
-  "lighthouse-core/audits/third-party-summary.js | columnBlockingTime": {
-    "message": "Pääsäikeen estoaika"
+  "lighthouse-core/audits/third-party-facades.js | categoryCustomerSuccess": {
+    "message": "{productName} (asiakkaiden menestystarinat)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryMarketing": {
+    "message": "{productName} (markkinointi)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categorySocial": {
+    "message": "{productName} (some)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryVideo": {
+    "message": "{productName} (video)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | columnProduct": {
+    "message": "Tuote"
+  },
+  "lighthouse-core/audits/third-party-facades.js | description": {
+    "message": "Osa kolmansien osapuolten upotuksista on ladattavissa laiskasti. Kannattaa ehkä korvata ne fasadeilla, kunnes niitä tarvitaan. [Lue lisää](https://web.dev/third-party-facades/)."
+  },
+  "lighthouse-core/audits/third-party-facades.js | displayValue": {
+    "message": "{itemCount,plural, =1{# vaihtoehtoinen fasadi saatavilla}other{# vaihtoehtoista fasadia saatavilla}}"
+  },
+  "lighthouse-core/audits/third-party-facades.js | failureTitle": {
+    "message": "Osa kolmansien osapuolten sisällöstä on ladattavissa laiskasti fasadin avulla"
+  },
+  "lighthouse-core/audits/third-party-facades.js | title": {
+    "message": "Lataa kolmansien osapuolten sisältöä laiskemmin fasadeilla"
   },
   "lighthouse-core/audits/third-party-summary.js | columnThirdParty": {
     "message": "Kolmas osapuoli"
@@ -1327,9 +1402,6 @@
   },
   "lighthouse-core/audits/third-party-summary.js | failureTitle": {
     "message": "Vähennä kolmannen osapuolen koodin vaikutusta"
-  },
-  "lighthouse-core/audits/third-party-summary.js | otherValue": {
-    "message": "Muut resurssit"
   },
   "lighthouse-core/audits/third-party-summary.js | title": {
     "message": "Minimoi kolmannen osapuolen käyttö"
@@ -1368,7 +1440,7 @@
     "message": "User Timing ‑merkinnät ja ‑mitat"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | crossoriginWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "`<link rel=preconnect>` löytyi osoitteelle {securityOrigin}, mutta selain ei käyttänyt sitä. Varmista, että käytät eri lähteiden `crossorigin`-määritettä oikein."
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | description": {
     "message": "Suosittelemme lisäämään sivulle `preconnect`- tai `dns-prefetch` ‑resurssivihjeitä, joiden avulla yhteydet tärkeisiin kolmannen osapuolen lähteisiin voidaan muodostaa ajoissa. [Lue lisää](https://web.dev/uses-rel-preconnect/)."
@@ -1377,13 +1449,13 @@
     "message": "Muodosta yhteydet pakollisiin kohteisiin etukäteen"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | tooManyPreconnectLinksWarning": {
-    "message": "More than 2 `<link rel=preconnect>` connections were found. These should be used sparingly and only to the most important origins."
+    "message": "`<link rel=preconnect>`-yhteyksiä löytyi enemmän kuin kaksi. Niitä tulee käyttää säästeliäästi ja vain tärkeimpiin alkuperiin."
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | unusedWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Only use `preconnect` for important origins that the page will certainly request."
+    "message": "`<link rel=preconnect>` löytyi osoitteelle {securityOrigin}, mutta selain ei käyttänyt sitä. Valitse `preconnect` vain tärkeille alkuperille, joita sivu pyytää varmasti."
   },
   "lighthouse-core/audits/uses-rel-preload.js | crossoriginWarning": {
-    "message": "A preload `<link>` was found for \"{preloadURL}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "Latausta edeltävä `<link>` löytyi osoitteelle {preloadURL}, mutta selain ei käyttänyt sitä. Varmista, että käytät eri lähteiden `crossorigin`-määritettä oikein."
   },
   "lighthouse-core/audits/uses-rel-preload.js | description": {
     "message": "Suosittelemme käyttämään `<link rel=preload>`-tagia, jotta voit priorisoida resursseja, joiden noutamista pyydetään sivun lataamisen myöhemmässä vaiheessa. [Lue lisää](https://web.dev/uses-rel-preload/)."
@@ -1420,30 +1492,6 @@
   },
   "lighthouse-core/audits/viewport.js | title": {
     "message": "`<meta name=\"viewport\">` ‑tagi, jossa `width` tai `initial-scale`, löytyy"
-  },
-  "lighthouse-core/audits/without-javascript.js | description": {
-    "message": "Sovelluksen tulee näyttää jotakin sisältöä, vaikka JavaScript ei ole toiminnassa. Näytä käyttäjälle vähintään varoitus, että JavaScript on pakollinen sovelluksen käyttöä varten. [Lue lisää](https://web.dev/without-javascript/)."
-  },
-  "lighthouse-core/audits/without-javascript.js | explanation": {
-    "message": "Sivun runko-osan pitäisi renderöidä sisältöä, vaikka sen skriptit eivät ole saatavilla."
-  },
-  "lighthouse-core/audits/without-javascript.js | failureTitle": {
-    "message": "Ei palauta varasisältöä, kun JavaScript ei ole käytettävissä"
-  },
-  "lighthouse-core/audits/without-javascript.js | title": {
-    "message": "Palauttaa sisältöä, vaikka JavaScript ei ole käytettävissä"
-  },
-  "lighthouse-core/audits/works-offline.js | description": {
-    "message": "Jos kehität progressiivista web-sovellusta, harkitse service workerin käyttöä tukemaan sovelluksen toimintaa offline-tilassa. [Lue lisää](https://web.dev/works-offline/)."
-  },
-  "lighthouse-core/audits/works-offline.js | failureTitle": {
-    "message": "Nykyinen sivu ei vastaa 200-viestillä offline-tilassa"
-  },
-  "lighthouse-core/audits/works-offline.js | title": {
-    "message": "Nykyinen sivu vastaa 200-viestillä offline-tilassa"
-  },
-  "lighthouse-core/audits/works-offline.js | warningNoLoad": {
-    "message": "Sivun offline-lataus ei ehkä onnistu, koska testi-URL ({requested}) ohjattiin uudelleen osoitteeseen {final}. Kokeile suoraan toista URL-osoitetta."
   },
   "lighthouse-core/config/default-config.js | a11yAriaGroupDescription": {
     "message": "Näillä voit parantaa ARIA:n käyttöä sovelluksessasi, mikä voi tehdä avustusteknologiaa (kuten näytönlukuohjelmaa) käyttävien kokemuksesta paremman."
@@ -1562,9 +1610,6 @@
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
     "message": "Progressiivinen web-sovellus"
   },
-  "lighthouse-core/config/default-config.js | pwaFastReliableGroupTitle": {
-    "message": "Nopea ja luotettava"
-  },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "Asennettavissa"
   },
@@ -1598,14 +1643,26 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "Mobiiliystävällinen"
   },
+  "lighthouse-core/gather/driver.js | warningData": {
+    "message": "{locationCount,plural, =1{Tähän sijaintiin on voitu tallentaa dataa, joka vaikuttaa lataukseen: {locations}. Tarkista sivu incognito-ikkunassa, jotta voit estää kyseisten resurssien vaikutuksen tuloksiisi.}other{Näihin sijainteihin on voitu tallentaa dataa, joka vaikuttaa lataukseen: {locations}. Tarkista sivu incognito-ikkunassa, jotta voit estää kyseisten resurssien vaikutuksen tuloksiisi.}}"
+  },
   "lighthouse-core/gather/gather-runner.js | warningRedirected": {
     "message": "Sivun lataus ei ehkä onnistu odotetusti, koska testi-URL ({requested}) ohjattiin uudelleen osoitteeseen {final}. Kokeile suoraan toista URL-osoitetta."
+  },
+  "lighthouse-core/gather/gather-runner.js | warningSlowHostCpu": {
+    "message": "Testatun laitteen CPU näyttää olevan hitaampi kuin Lighthouse olettaa. Tämä voi vaikuttaa tuloksiin negatiivisesti. Lue lisää [sopivan CPU-hidastuskertoimen kalibroinnista](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)."
   },
   "lighthouse-core/gather/gather-runner.js | warningTimeout": {
     "message": "Sivu ei ehtinyt latautua loppuun aikarajan sisällä. Tuloksista voi puuttua osa."
   },
+  "lighthouse-core/lib/i18n/i18n.js | columnBlockingTime": {
+    "message": "Pääsäikeen estoaika"
+  },
   "lighthouse-core/lib/i18n/i18n.js | columnCacheTTL": {
     "message": "Välimuistin käyttöikä"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | columnDescription": {
+    "message": "Kuvaus"
   },
   "lighthouse-core/lib/i18n/i18n.js | columnDuration": {
     "message": "Kesto"
@@ -1709,6 +1766,9 @@
   "lighthouse-core/lib/i18n/i18n.js | otherResourceType": {
     "message": "Muu"
   },
+  "lighthouse-core/lib/i18n/i18n.js | otherResourcesLabel": {
+    "message": "Muut resurssit"
+  },
   "lighthouse-core/lib/i18n/i18n.js | scriptResourceType": {
     "message": "Skripti"
   },
@@ -1751,6 +1811,9 @@
   "lighthouse-core/lib/lh-error.js | missingRequiredArtifact": {
     "message": "Vaadittua {artifactName}-keräystoimintoa ei suoritettu."
   },
+  "lighthouse-core/lib/lh-error.js | noFcp": {
+    "message": "Sivu ei renderöinyt mitään sisältöä. Pidä selainikkuna etualalla latauksen aikana ja yritä uudelleen. ({errorCode})"
+  },
   "lighthouse-core/lib/lh-error.js | notHtml": {
     "message": "Sivu ei ole HTML-muodossa (MIME-tyyppi on {mimeType})."
   },
@@ -1786,9 +1849,6 @@
   },
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "Kirjoittamasi URL-osoite näyttää olevan virheellinen."
-  },
-  "lighthouse-core/report/html/renderer/util.js | auditGroupExpandTooltip": {
-    "message": "Näytä tarkastukset"
   },
   "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
     "message": "Katso laskin."
@@ -1923,34 +1983,34 @@
     "message": "Varoitukset: "
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
-    "message": "For animated content, use [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) to minimize CPU usage when the content is offscreen."
+    "message": "Käytä animoidun sisällön kanssa [`amp-anim`](https://amp.dev/documentation/components/amp-anim/)-ominaisuutta, joka minimoi suoritinkäytön, kun sisältö ei ole näytöllä."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
-    "message": "Ensure that you are using [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) for images to automatically lazy-load. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)."
+    "message": "Varmista, että käytössä on [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites), jotta kuvien lataamista lykätään automaattisesti. [Lue lisää](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | render-blocking-resources": {
     "message": "Käytä [AMP-optimoijaa](https://github.com/ampproject/amp-toolbox/tree/master/packages/optimizer) ja muita työkaluja [AMP-asettelujen palvelinpuolen renderöintiin](https://amp.dev/documentation/guides-and-tutorials/optimize-and-measure/server-side-rendering/)."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | unminified-css": {
-    "message": "Refer to the [AMP documentation](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/) to ensure all styles are supported."
+    "message": "Lue [AMP-dokumentaatio](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/) ja varmista, että kaikkia tyylejä tuetaan."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
-    "message": "The [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) component supports the [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) attribute to specify which image assets to use based on the screen size. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)."
+    "message": "[`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites)-komponentti tukee [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/)-määritettä, jolla määritetään käytettävä kuvasisältö näytön koon perusteella. [Lue lisää](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Consider displaying all [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) components in WebP formats while specifying an appropriate fallback for other browsers. [Learn more](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
+    "message": "Harkitse kaikkien [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites)-komponenttien näyttämistä WebP-muodoissa ja lisää varavaihtoehto muita selaimia varten. [Lue lisää](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "Harkitse virtuaalivieritystä Component Dev Kitissä (CDK), jos laajoja listoja renderöidään. [Lue lisää](https://web.dev/virtualize-lists-with-angular-cdk/)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | total-byte-weight": {
-    "message": "Apply [route-level code splitting](https://web.dev/route-level-code-splitting-in-angular/) to minimize the size of your JavaScript bundles. Also, consider precaching assets with the [Angular service worker](https://web.dev/precaching-with-the-angular-service-worker/)."
+    "message": "Minimoi JavaScript-nippujen koko [reittitason koodinjakamisella](https://web.dev/route-level-code-splitting-in-angular/). Harkitse myös sisällön tallentamista välimuistiin etukäteen [Angular-service workerilla](https://web.dev/precaching-with-the-angular-service-worker/)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unminified-warning": {
     "message": "Jos käytät Angular CLI:tä, varmista että versiot luodaan tuotantotilassa. [Lue lisää](https://angular.io/guide/deployment#enable-runtime-production-mode)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unused-javascript": {
-    "message": "If you are using Angular CLI, include source maps in your production build to inspect your bundles. [Learn more](https://angular.io/guide/deployment#inspect-the-bundles)."
+    "message": "Jos käytät Angular CLI:tä, lisää tuotantoversioosi lähdekartat nippujen tarkistamista varten. [Lue lisää](https://angular.io/guide/deployment#inspect-the-bundles)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | uses-rel-preload": {
     "message": "Lataa reittejä ennalta navigoinnin nopeuttamiseksi. [Lue lisää](https://web.dev/route-preloading-in-angular/)."
@@ -1965,10 +2025,10 @@
     "message": "Valitse `@font-display`, kun määrität teemaasi yksilöityjä fontteja."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
-    "message": "Install [a Drupal module](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) that can lazy load images. Such modules provide the ability to defer any offscreen images to improve performance."
+    "message": "Asenna [Drupal-moduuli](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search), joka voi ladata kuvia tarveohjatusti. Tällaiset moduulit voivat parantaa toimintaa lykkäämällä näytön ulkopuolella olevien kuvien lataamista."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
-    "message": "Consider using a module to inline critical CSS and JavaScript, or potentially load assets asynchronously via JavaScript such as the [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg) module. Beware that optimizations provided by this module may break your site, so you will likely need to make code changes."
+    "message": "Sinun kannattaa ehkä käyttää moduulia, joka voi tuoda kriittistä CSS:ää tai JavaScriptiä sivun sisälle tai mahdollisesti ladata sisältöä asynkronisesti JavaScriptin avulla (esim. [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg) ‑moduuli). Huomaathan, että tämän moduulin suorittamat optimoinnit voivat rikkoa sivustosi, joten sinun on todennäköisesti muutettava koodia."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
     "message": "Teemat, moduulit ja palvelinasetukset vaikuttavat kaikki palvelimen vastausaikaan. Sinun kannattaa ehkä etsiä optimoidumpi teema, valita optimointimoduuli tai päivittää palvelimesi. Hosting-palvelimiesi olisi hyvä käyttää PHP-toimintokoodin ja muun sisällön tallentamista välimuistiin, mikä auttaa lyhentämään tietokantojen kyselyaikoja (esim. Redis tai Memcached). Lisäksi niiden tulee käyttää optimoitua sovelluslogiikkaa sivujen nopeampaan valmisteluun."
@@ -1986,7 +2046,7 @@
     "message": "Sinun kannattaa ehkä poistaa käyttämättömät CSS-säännöt ja liittää relevanttiin sivuun tai sivun osaan vain tarvittavat Drupal-kirjastot. Saat lisätietoja [Drupal-dokumentaatiosta](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library). Voit etsiä tarpeetonta CSS:ää lisääviä liitettyjä kirjastoja tutkimalla [koodin testikattavuutta](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) Chromen DevToolsissa. Löydät syynä olevan teeman tai moduulin tarkistamalla tyyliarkin URL-osoitteen, kun CSS-koonti on poistettuna käytöstä Drupal-sivustollasi. Etsi teemoja ja moduuleja, joilla on monia tyyliarkkeja luettelossa ja paljon punaista koodin testikattavuudessa. Teeman tai moduulin pitäisi lisätä tyyliarkki jonoon vain, jos sitä todella käytetään sivulla."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | unused-javascript": {
-    "message": "Consider removing unused JavaScript assets and only attach the needed Drupal libraries to the relevant page or component in a page. See the [Drupal documentation link](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library) for details. To identify attached libraries that are adding extraneous JavaScript, try running [code coverage](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) in Chrome DevTools. You can identify the theme/module responsible from the URL of the script when JavaScript aggregation is disabled in your Drupal site. Look out for themes/modules that have many scripts in the list which have a lot of red in code coverage. A theme/module should only enqueue a script if it is actually used on the page."
+    "message": "Sinun kannattaa ehkä poistaa käyttämätön JavaScript-sisältö ja liittää relevanttiin sivuun tai sivun osaan vain tarvittavat Drupal-kirjastot. Saat lisätietoja [Drupal-dokumentaatiosta](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library). Voit etsiä tarpeetonta JavaScriptiä lisääviä liitettyjä kirjastoja tutkimalla [koodin testikattavuutta](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) Chromen DevToolsissa. Löydät syynä olevan teeman tai moduulin tarkistamalla skriptin URL-osoitteen, kun JavaScript-koonti on poistettuna käytöstä Drupal-sivustollasi. Etsi teemoja ja moduuleja, joilla on monia skriptejä luettelossa ja paljon punaista koodin testikattavuudessa. Teeman tai moduulin pitäisi lisätä skripti jonoon vain, jos sitä todella käytetään sivulla."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-long-cache-ttl": {
     "message": "Määritä Browser and proxy cache maximum age (Selaimen ja välityspalvelimen välitysmuistin enimmäisikä) ‑asetus kohdassa Administration > Configuration > Development (Järjestelmänvalvonta > Määritys > Kehitys). Lue lisää [Drupalin välimuistista ja toiminnan optimoinnista](https://www.drupal.org/docs/7/managing-site-performance-and-scalability/caching-to-improve-performance/caching-overview#s-drupal-performance-resources)."
@@ -2001,13 +2061,13 @@
     "message": "Varmista, että käytät Drupalin natiivia [Responsive Image Styles](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8) (Responsiiviset kuvatyylit) ‑toimintoa, joka on saatavilla Drupalin versiosta 8 alkaen. Käytä Responsive Image Styles ‑toimintoa, kun renderöit kuvakenttiä hyödyntämällä katselutiloja, näkymiä tai WYSIWYG-muokkaustyökalulla ladattuja kuvia."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Consider installing and configuring [a module to leverage WebP image formats](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) in your site. Such modules automatically generate a WebP version of your uploaded images to optimize loading times."
+    "message": "Sinun kannattaa ehkä asentaa ja määrittää [moduuli, jolla voit käyttää WebP-kuvamuotoja](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) sivustollasi. Tällaiset moduulit optimoivat latautumisaikoja luomalla WebP-versioita lataamistasi kuvista automaattisesti."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "GIF kannattaa ehkä ladata palveluun, jonka avulla se voidaan upottaa HTML5-videona."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
-    "message": "Install a [lazy-load Joomla plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) that provides the ability to defer any offscreen images, or switch to a template that provides that functionality. Starting with Joomla 4.0, a dedicated lazy-loading plugin can be enabled by using the \"Content - Lazy Loading Images\" plugin. Also consider using [an AMP plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=amp)."
+    "message": "Asenna [Joomlan laiskan latautumisen liitännäinen](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading), joka lykkää muiden kuin näytöllä näkyvien kuvien latautumista, tai vaihda malliin, joka tarjoaa tämän ominaisuuden. Joomla 4.0:sta alkaen kaikille kuville lisätään [automaattisesti](https://github.com/joomla/joomla-cms/pull/30748) `loading`-ydinmäärite."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | render-blocking-resources": {
     "message": "Tietyt Joomla-laajennukset voivat [tuoda tärkeää sisältöä sivun sisälle](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance) tai [lykätä vähemmän tärkeiden resurssien lataamista](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance). Huomaa, että näiden laajennusten suorittamat optimoinnit voivat rikkoa mallien tai muiden laajennusten toimintoja, joten sinun on testattava ne huolellisesti."
@@ -2081,8 +2141,50 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
     "message": "Etsi [Magento Marketplacesta](https://marketplace.magento.com/catalogsearch/result/?q=webp) erilaisia kolmannen osapuolen laajennuksia uusien kuvamuotojen hyödyntämiseksi."
   },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
+    "message": "[Korvaa animoidut GIFit videoilla](https://web.dev/replace-gifs-with-videos/), mikä nopeuttaa verkkosivujen latautumista. Kannattaa myös käyttää nykyaikaisia tiedostomuotoja (esim. [WebM](https://web.dev/replace-gifs-with-videos/#create-webm-videos) tai [AV1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder)), jotka voivat pakata yli 30 % tehokkaammin kuin VP9."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
+    "message": "Kannattaa ehkä asentaa [kuvien laiskan latautumisen liitännäinen](https://octobercms.com/plugins?search=lazy), joka lykkää muiden kuin näytöllä näkyvien kuvien latautumista, tai vaihtaa malliin, joka tarjoaa tämän ominaisuuden. Harkitse myös [AMP-liitännäisen](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages) käyttöä."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
+    "message": "Liitännäisistä (plugin) voi olla apua [tärkeiden osien järjestelemisessä](https://octobercms.com/plugins?search=css). En voivat kuitenkin rikkoa muita liitännäisiä, joten testaa ne huolellisesti."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+    "message": "Teemat, liitännäiset ja palvelinasetukset vaikuttavat kaikki palvelimen vastausaikaan. Kannattaa ehkä etsiä optimoidumpi teema, valita optimointiliitännäinen tai päivittää palvelin. October CMSin ansiosta [`Queues`](https://octobercms.com/docs/services/queues) voivat auttaa kehittäjiä aikaa vievien tehtävien (esim. sähköpostin lähettämisen) lykkäämisessä. Tämä nopeuttaa verkkopyyntöjä merkittävästi."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
+    "message": "Kannattaa ehkä näyttää postauslistalla katkelmia (esim. `show more`-painikkeella), vähentää yhdellä verkkosivulla näkyvien postauksien määrää, jakaa pitkät postaukset usealle sivulle tai käyttää liitännäistä kommenttien laiskempaan latautumiseen."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-css": {
+    "message": "Monet [liitännäiset](https://octobercms.com/plugins?search=css) voivat nopeuttaa sivustoja ketjuttamalla, pienentämällä ja pakkaamalla tyylejä. Kun tämä tehdään etukäteen rakennusvaiheessa, kehittäminen voi olla nopeampaa."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-javascript": {
+    "message": "Monet [liitännäiset](https://octobercms.com/plugins?search=javascript) voivat nopeuttaa sivustojen toimintaa ketjuttamalla, pienentämällä ja pakkaamalla skriptiä. Kun tämä tehdään etukäteen rakennusvaiheessa, kehittäminen voi olla nopeampaa."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-css-rules": {
+    "message": "Kannattaa ehkä tarkistaa [liitännäiset](https://octobercms.com/plugins), jotka lataavat käyttämätöntä CSS:ää sivustolla. Löydät tarpeetonta CSS:ää lisäävät liitännäiset testaamalla [koodin käyttötason](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) Chromen DevToolsissa. Tunnista syynä oleva teema tai liitännäinen tyyliarkin URL-osoitteen perusteella. Yritä löytää liitännäiset, joissa on paljon skriptiä ja punaista koodin käyttötasossa. Liitännäisen pitäisi lisätä tyyliarkki vain, jos sitä todella käytetään verkkosivulla."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-javascript": {
+    "message": "Kannattaa ehkä tarkistaa [liitännäiset](https://octobercms.com/plugins?search=javascript), jotka lataavat käyttämätöntä JavaScriptiä verkkosivulla. Löydät tarpeetonta JavaScriptiä lisäävät liitännäiset testaamalla [koodin käyttötason](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) Chromen DevToolsissa. Tunnista syynä oleva teema tai liitännäinen skriptin URL-osoitteen perusteella. Yritä löytää liitännäiset, joissa on paljon skriptiä ja punaista koodin käyttötasossa. Liitännäisen pitäisi lisätä skriptiä vain, jos sitä todella käytetään verkkosivulla."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-long-cache-ttl": {
+    "message": "Lue lisää [tarpeettomien verkkopyyntöjen estämisestä HTTP-välimuistilla](https://web.dev/http-cache/#caching-checklist). Välimuistiin tallentamista voi nopeuttaa eri [liitännäisillä](https://octobercms.com/plugins?search=Caching)."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-optimized-images": {
+    "message": "Kannattaa ehkä käyttää [kuvanoptimointilaajennusta](https://octobercms.com/plugins?search=image), joka pakkaa kuvat niiden laadun säilyttäen."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-responsive-images": {
+    "message": "Lataa kuvat suoraan mediatyökalulla, jolloin oikeat kuvakoot ovat varmasti saatavilla. Kannattaa varmistaa koon muuttamiseen tarkoitetulla [suodattimella](https://octobercms.com/docs/markup/filter-resize) tai [liitännäisellä](https://octobercms.com/plugins?search=image), että kuvien koko on optimaalinen."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
+    "message": "Ota tekstin pakkaaminen käyttöön palvelimen määrityksistä."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
+    "message": "Harkitse [laajennusta](https://octobercms.com/plugins?search=image) tai palvelua, joka muuntaa ladatut kuvat automaattisesti oikeaan muotoon. [Häviöttömät WebP-kuvat](https://developers.google.com/speed/webp) ovat kooltaan 26 % pienempiä kuin PNG:t ja 25–34 % pienempiä kuin vertailukelpoiset JPEG-kuvat vastaavassa SSIM-laatuindeksissä. Myös [AVIF](https://jakearchibald.com/2020/avif-has-landed/) on mahdollinen seuraavan sukupolven kuvamuoto."
+  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
-    "message": "Consider using a “windowing” library like `react-window` to minimize the number of DOM nodes created if you are rendering many repeated elements on the page. [Learn more](https://web.dev/virtualize-long-lists-react-window/). Also, minimize unnecessary re-renders using [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent), or [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) and [skip effects](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) only until certain dependencies have changed if you are using the `Effect` hook to improve runtime performance."
+    "message": "Kannattaa ehkä käyttää \"windowing\"-kirjastoa (esim. `react-window`) DOM-säikeiden määrän vähentämiseksi, jos sivulla renderöidään monia toistuvia elementtejä. [Lue lisää](https://web.dev/virtualize-long-lists-react-window/). [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) tai [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) auttavat välttämään tarpeettomia uudelleenrenderöintejä. [Ohita tehosteet](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) vain siihen asti, kunnes tietyt riippuvuudet ovat muuttuneet, jos käytät `Effect` -koukkua suoritusaikaisen toiminnan parantamiseen."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "Jos käytät React Routeria, minimoi `<Redirect>`-komponentin käyttö [reittinavigoinnissa](https://reacttraining.com/react-router/web/api/Redirect)."
@@ -2091,10 +2193,10 @@
     "message": "Jos renderöit React-komponentteja palvelinpuolella, `renderToNodeStream()` tai `renderToStaticNodeStream()` voi auttaa niin, että asiakas saa vastaanottaa ja aktivoida merkintöjen eri kohtia kerralla käsittelyn sijaan. [Lue lisää](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
-    "message": "If your build system minifies CSS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "Jos versiojärjestelmäsi kutistaa CSS-tiedostoja automaattisesti, varmista että käyttöönotto koskee sovelluksen tuotantoversiota. Voit tarkistaa tämän Reactin kehittäjätyökalut ‑laajennuksella. [Lue lisää](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-javascript": {
-    "message": "If your build system minifies JS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "Jos versiojärjestelmäsi kutistaa JS-tiedostoja automaattisesti, varmista että käyttöönotto koskee sovelluksen tuotantoversiota. Voit tarkistaa tämän Reactin kehittäjätyökalut ‑laajennuksella. [Lue lisää](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unused-javascript": {
     "message": "Jos et vielä renderöi palvelinpuolella, [jaa JavaScript-niput osiin](https://web.dev/code-splitting-suspense/) – `React.lazy()` voi auttaa. Jaa muussa tapauksessa koodi osiin kolmannen osapuolen kirjastolla, esimerkiksi [loadable-components](https://www.smooth-code.com/open-source/loadable-components/docs/getting-started/)."

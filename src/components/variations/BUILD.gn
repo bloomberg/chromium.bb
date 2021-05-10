@@ -73,6 +73,8 @@ static_library("variations") {
     "variations_id_collection.h",
     "variations_ids_provider.cc",
     "variations_ids_provider.h",
+    "variations_layers.cc",
+    "variations_layers.h",
     "variations_murmur_hash.cc",
     "variations_murmur_hash.h",
     "variations_request_scheduler.cc",
@@ -111,6 +113,7 @@ static_library("variations") {
     ":variations_mojom",
     "proto",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/crash/core/common:crash_key",
     "//components/prefs",
     "//crypto",
@@ -134,7 +137,7 @@ if (is_android) {
   android_library("load_seed_result_enum_java") {
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
     srcjar_deps = [ ":load_seed_result_enum_srcjar" ]
   }

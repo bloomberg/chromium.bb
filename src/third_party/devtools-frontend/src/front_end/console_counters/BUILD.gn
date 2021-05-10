@@ -6,29 +6,33 @@ import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("console_counters") {
-  sources = [ "WarningErrorCounter.js" ]
+  sources = [ "WarningErrorCounter.ts" ]
 
   deps = [
     "../browser_sdk:bundle",
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../ui:bundle",
+    "../ui/components:bundle",
   ]
 }
 
-copy_to_gen("legacy_css") {
-  sources = [ "warningErrorCounter.css" ]
-}
-
 devtools_entrypoint("bundle") {
-  entrypoint = "console_counters.js"
+  entrypoint = "console_counters.ts"
 
   deps = [ ":console_counters" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "console_counters-legacy.js"
+  entrypoint = "console_counters-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "console_counters-meta.ts"
 
   deps = [ ":bundle" ]
 }

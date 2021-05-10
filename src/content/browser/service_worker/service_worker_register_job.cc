@@ -23,12 +23,14 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_new_script_fetcher.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -53,7 +55,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       outside_fetch_client_settings_object_(
           std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
-      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
@@ -77,7 +78,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       outside_fetch_client_settings_object_(
           std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
-      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
@@ -89,8 +89,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
 }
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
-  DCHECK(is_shutting_down_ || phase_ == INITIAL || phase_ == COMPLETE ||
-         phase_ == ABORT)
+  DCHECK(phase_ == INITIAL || phase_ == COMPLETE || phase_ == ABORT)
       << "Jobs should only be interrupted during shutdown.";
 }
 
@@ -150,10 +149,6 @@ void ServiceWorkerRegisterJob::Abort() {
   CompleteInternal(blink::ServiceWorkerStatusCode::kErrorAbort, std::string());
   // Don't have to call FinishJob() because the caller takes care of removing
   // the jobs from the queue.
-}
-
-void ServiceWorkerRegisterJob::WillShutDown() {
-  is_shutting_down_ = true;
 }
 
 bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
@@ -336,39 +331,6 @@ bool ServiceWorkerRegisterJob::IsUpdateCheckNeeded() const {
   return !skip_script_comparison_;
 }
 
-void ServiceWorkerRegisterJob::TriggerUpdateCheck(
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  if (!loader_factory) {
-    // We can't continue with update checking appropriately without
-    // |loader_factory|. Null |loader_factory| means that the storage partition
-    // was not available probably because it's shutting down.
-    // This terminates the current job (|this|).
-    Complete(blink::ServiceWorkerStatusCode::kErrorAbort,
-             ServiceWorkerConsts::kShutdownErrorMessage);
-    return;
-  }
-
-  ServiceWorkerVersion* version_to_update = registration()->GetNewestVersion();
-  base::TimeDelta time_since_last_check =
-      base::Time::Now() - registration()->last_update_check();
-  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
-  version_to_update->script_cache_map()->GetResources(&resources);
-  int64_t script_resource_id =
-      version_to_update->script_cache_map()->LookupResourceId(script_url_);
-  DCHECK_NE(script_resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
-
-  update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
-      std::move(resources), script_url_, script_resource_id, version_to_update,
-      std::move(loader_factory), force_bypass_cache_,
-      registration()->update_via_cache(), time_since_last_check, context_,
-      outside_fetch_client_settings_object_.Clone());
-  update_checker_->Start(
-      base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
     ServiceWorkerSingleScriptUpdateChecker::Result result,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
@@ -395,7 +357,11 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
     return;
   }
 
-  CreateNewVersionForUpdate();
+  context_->registry()->NotifyInstallingRegistration(registration());
+  context_->registry()->CreateNewVersion(
+      registration(), script_url_, worker_script_type_,
+      base::BindOnce(&ServiceWorkerRegisterJob::StartWorkerForUpdate,
+                     weak_factory_.GetWeakPtr()));
 }
 
 // Creates a new ServiceWorkerRegistration.
@@ -463,12 +429,35 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
   UpdateAndContinue();
 }
 
-void ServiceWorkerRegisterJob::CreateNewVersionForUpdate() {
-  context_->registry()->NotifyInstallingRegistration(registration());
-  context_->registry()->CreateNewVersion(
-      registration(), script_url_, worker_script_type_,
-      base::BindOnce(&ServiceWorkerRegisterJob::StartWorkerForUpdate,
-                     weak_factory_.GetWeakPtr()));
+void ServiceWorkerRegisterJob::StartScriptFetchForNewWorker(
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    scoped_refptr<ServiceWorkerVersion> version) {
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzServiceWorker));
+  DCHECK(!new_script_fetcher_);
+  new_script_fetcher_ = std::make_unique<ServiceWorkerNewScriptFetcher>(
+      *context_, version, std::move(loader_factory),
+      outside_fetch_client_settings_object_.Clone());
+  new_script_fetcher_->Start(
+      base::BindOnce(&ServiceWorkerRegisterJob::OnScriptFetchCompleted,
+                     weak_factory_.GetWeakPtr(), std::move(version)));
+}
+
+void ServiceWorkerRegisterJob::OnScriptFetchCompleted(
+    scoped_refptr<ServiceWorkerVersion> version,
+    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params) {
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzServiceWorker));
+  if (!main_script_load_params) {
+    // Null `main_script_load_params` means the main script failed to be loaded.
+    // Use DeduceStartWorkerFailureReason() because it returns an error code
+    // based on the main script's net error.
+    Complete(version->DeduceStartWorkerFailureReason(
+        blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+  DCHECK(version->cross_origin_embedder_policy().has_value());
+
+  version->set_main_script_load_params(std::move(main_script_load_params));
+  StartWorkerForUpdate(std::move(version));
 }
 
 void ServiceWorkerRegisterJob::StartWorkerForUpdate(
@@ -490,13 +479,13 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
         update_checker_->updated_script_url(),
         update_checker_->cross_origin_embedder_policy());
     update_checker_.reset();
-  } else {
+  } else if (!base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
     // When the update checker is not used, subresource loader factories needs
-    // to be updated after the main script is loaded because COEP header is not
-    // available until then. This flag lets the script evaluation wait until the
-    // browser sends a message with a new subresoruce loader factories.
-    // This happens when this is (1) a new registration, or (2) an old
-    // registration where the script URL is changed.
+    // to be updated after the main script is loaded because COEP header is
+    // not available until then. This flag lets the script evaluation wait
+    // until the browser sends a message with a new subresoruce loader
+    // factories. This happens when this is (1) a new registration, or (2) an
+    // old registration where the script URL is changed.
     new_version()->set_initialize_global_scope_after_main_script_loaded();
   }
 
@@ -513,15 +502,52 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
 void ServiceWorkerRegisterJob::UpdateAndContinue() {
   SetPhase(UPDATE);
 
-  if (!IsUpdateCheckNeeded()) {
-    CreateNewVersionForUpdate();
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
+      context_->wrapper()->GetLoaderFactoryForUpdateCheck(scope_);
+  if (!loader_factory) {
+    // We can't continue with update checking appropriately without
+    // |loader_factory|. Null |loader_factory| means that the storage partition
+    // was not available probably because it's shutting down.
+    // This terminates the current job (|this|).
+    Complete(blink::ServiceWorkerStatusCode::kErrorAbort,
+             ServiceWorkerConsts::kShutdownErrorMessage);
     return;
   }
 
-  // This will start the update check after loader factory is retrieved.
-  context_->wrapper()->GetLoaderFactoryForUpdateCheck(
-      scope_, base::BindOnce(&ServiceWorkerRegisterJob::TriggerUpdateCheck,
-                             weak_factory_.GetWeakPtr()));
+  if (!IsUpdateCheckNeeded()) {
+    context_->registry()->NotifyInstallingRegistration(registration());
+    base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion>)> next_task;
+    if (base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
+      next_task = base::BindOnce(
+          &ServiceWorkerRegisterJob::StartScriptFetchForNewWorker,
+          weak_factory_.GetWeakPtr(), std::move(loader_factory));
+    } else {
+      next_task =
+          base::BindOnce(&ServiceWorkerRegisterJob::StartWorkerForUpdate,
+                         weak_factory_.GetWeakPtr());
+    }
+    context_->registry()->CreateNewVersion(
+        registration(), script_url_, worker_script_type_, std::move(next_task));
+    return;
+  }
+
+  ServiceWorkerVersion* version_to_update = registration()->GetNewestVersion();
+  base::TimeDelta time_since_last_check =
+      base::Time::Now() - registration()->last_update_check();
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
+  version_to_update->script_cache_map()->GetResources(&resources);
+  int64_t script_resource_id =
+      version_to_update->script_cache_map()->LookupResourceId(script_url_);
+  DCHECK_NE(script_resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
+
+  update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
+      std::move(resources), script_url_, script_resource_id, version_to_update,
+      std::move(loader_factory), force_bypass_cache_, worker_script_type_,
+      registration()->update_via_cache(), time_since_last_check, context_,
+      outside_fetch_client_settings_object_.Clone());
+  update_checker_->Start(
+      base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(

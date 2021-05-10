@@ -4,21 +4,57 @@
 
 import * as Common from '../common/common.js';
 import * as Formatter from '../formatter/formatter.js';
+import * as i18n from '../i18n/i18n.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
 import {SourcesView} from './SourcesView.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text in Go To Line Quick Open of the Sources panel
+  */
+  noFileSelected: 'No file selected.',
+  /**
+  *@description Text in Outline Quick Open of the Sources panel
+  */
+  openAJavascriptOrCssFileToSee: 'Open a JavaScript or CSS file to see symbols',
+  /**
+  *@description Text to show no results have been found
+  */
+  noResultsFound: 'No results found',
+  /**
+  *@description Title of the Filtered List WidgetProvider of Quick Open
+  */
+  goToSymbol: 'Go to symbol',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/OutlineQuickOpen.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+
+/** @type {!OutlineQuickOpen} */
+let outlineQuickOpenInstance;
+
 export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
+  /** @private */
   constructor() {
     super();
     /** @type {!Array<!Formatter.FormatterWorkerPool.OutlineItem>} */
     this._items = [];
     this._active = false;
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!outlineQuickOpenInstance || forceNew) {
+      outlineQuickOpenInstance = new OutlineQuickOpen();
+    }
+
+    return outlineQuickOpenInstance;
   }
 
   /**
@@ -129,11 +165,17 @@ export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
    */
   notFoundText() {
     if (!this._currentUISourceCode()) {
-      return Common.UIString.UIString('No file selected.');
+      return i18nString(UIStrings.noFileSelected);
     }
     if (!this._active) {
-      return Common.UIString.UIString('Open a JavaScript or CSS file to see symbols');
+      return i18nString(UIStrings.openAJavascriptOrCssFileToSee);
     }
-    return Common.UIString.UIString('No results found');
+    return i18nString(UIStrings.noResultsFound);
   }
 }
+
+QuickOpen.FilteredListWidget.registerProvider({
+  prefix: '@',
+  title: i18nLazyString(UIStrings.goToSymbol),
+  provider: OutlineQuickOpen.instance,
+});

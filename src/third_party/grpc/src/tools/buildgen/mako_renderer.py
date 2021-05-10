@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # Copyright 2015 gRPC authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ Just a wrapper around the mako rendering library.
 import getopt
 import imp
 import os
-import cPickle as pickle
+import pickle
 import shutil
 import sys
 
@@ -36,16 +36,11 @@ import yaml
 def import_plugin(name):
     _, base_ex = os.path.split(name)
     base, _ = os.path.splitext(base_ex)
-
-    with open(name, 'r') as plugin_file:
-        plugin_code = plugin_file.read()
-    plugin_module = imp.new_module(base)
-    exec plugin_code in plugin_module.__dict__
-    return plugin_module
+    return imp.load_source(base, name)
 
 
 def out(msg):
-    print >> sys.stderr, msg
+    print(msg, file=sys.stderr)
 
 
 def showhelp():
@@ -99,11 +94,11 @@ def main(argv):
         elif opt == '-P':
             assert not got_preprocessed_input
             assert json_dict == {}
-            sys.path.insert(0,
-                            os.path.abspath(
-                                os.path.join(
-                                    os.path.dirname(sys.argv[0]), 'plugins')))
-            with open(arg, 'r') as dict_file:
+            sys.path.insert(
+                0,
+                os.path.abspath(
+                    os.path.join(os.path.dirname(sys.argv[0]), 'plugins')))
+            with open(arg, 'rb') as dict_file:
                 dictionary = pickle.load(dict_file)
             got_preprocessed_input = True
         elif opt == '-d':
@@ -125,7 +120,7 @@ def main(argv):
             dictionary[k] = bunch.to_bunch(v)
 
     if preprocessed_output:
-        with open(preprocessed_output, 'w') as dict_file:
+        with open(preprocessed_output, 'wb') as dict_file:
             pickle.dump(dictionary, dict_file)
 
     cleared_dir = False
@@ -134,13 +129,12 @@ def main(argv):
         with open(arg) as f:
             srcs = list(yaml.load_all(f.read()))
         for src in srcs:
-            if isinstance(src, basestring):
+            if isinstance(src, str):
                 assert len(srcs) == 1
-                template = Template(
-                    src,
-                    filename=arg,
-                    module_directory=module_directory,
-                    lookup=TemplateLookup(directories=['.']))
+                template = Template(src,
+                                    filename=arg,
+                                    module_directory=module_directory,
+                                    lookup=TemplateLookup(directories=['.']))
                 with open(output_name, 'w') as output_file:
                     template.render_context(Context(output_file, **dictionary))
             else:

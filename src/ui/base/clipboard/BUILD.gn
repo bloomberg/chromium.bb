@@ -4,6 +4,7 @@
 
 import("///build/config/ozone.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
 
 component("clipboard_types") {
@@ -35,7 +36,7 @@ component("clipboard_types") {
   }
 
   if (use_aura) {
-    if ((use_x11 && is_linux) || !is_win) {
+    if ((use_x11 && (is_linux || is_chromeos_lacros)) || !is_win) {
       sources += [ "clipboard_format_type_aura.cc" ]
     }
   }
@@ -51,6 +52,19 @@ component("clipboard_types") {
   if (is_mac) {
     frameworks += [ "AppKit.framework" ]
   }
+}
+
+component("file_info") {
+  output_name = "ui_base_file_info"
+
+  sources = [
+    "file_info.cc",
+    "file_info.h",
+  ]
+
+  defines = [ "IS_UI_BASE_FILE_INFO_IMPL" ]
+
+  deps = [ "//base" ]
 }
 
 component("clipboard") {
@@ -100,6 +114,7 @@ component("clipboard") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//mojo/public/cpp/base",
     "//net",
     "//skia",
@@ -110,12 +125,13 @@ component("clipboard") {
 
   public_deps = [
     ":clipboard_types",
+    ":file_info",
     "//ui/base/data_transfer_policy",
   ]
 
   if (use_aura) {
     # Linux clipboard implementations.
-    if (is_linux && !is_chromecast) {
+    if ((is_linux || is_chromeos_lacros) && !is_chromecast) {
       sources += [ "clipboard_linux.cc" ]
       if (use_ozone) {
         sources += [
@@ -138,7 +154,7 @@ component("clipboard") {
           "//ui/gfx/x",
         ]
       }
-    } else if (is_chromeos && ozone_platform_x11) {
+    } else if (is_chromeos_ash && ozone_platform_x11) {
       # linux-chromeos uses non-backed clipboard by default, but supports ozone
       # x11 with flag --use-system-clipbboard.
       sources += [
@@ -227,8 +243,7 @@ source_set("clipboard_test") {
     ]
   }
 
-  if (use_aura && !chromeos_is_browser_only && !use_x11 && !is_win &&
-      !use_ozone) {
+  if (use_aura && !is_chromeos_lacros && !use_x11 && !is_win) {
     sources += [
       "clipboard_data_unittest.cc",
       "clipboard_non_backed_unittest.cc",
@@ -240,6 +255,7 @@ source_set("clipboard_test") {
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base:features",
     "//ui/events/platform",
     "//ui/gfx:test_support",
     "//url:url",

@@ -606,7 +606,6 @@ Position CompositeEditCommand::PositionOutsideTabSpan(const Position& pos) {
     return pos;
 
   switch (pos.AnchorType()) {
-    case PositionAnchorType::kBeforeChildren:
     case PositionAnchorType::kAfterChildren:
       NOTREACHED();
       return pos;
@@ -1138,6 +1137,8 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   visible_pos = CreateVisiblePosition(pos);
   visible_paragraph_start = StartOfParagraph(visible_pos);
   visible_paragraph_end = EndOfParagraph(visible_pos);
+  DCHECK_LE(visible_paragraph_start.DeepEquivalent(),
+            visible_paragraph_end.DeepEquivalent());
   MoveParagraphs(visible_paragraph_start, visible_paragraph_end, destination,
                  editing_state);
   if (editing_state->IsAborted())
@@ -1504,13 +1505,19 @@ void CompositeEditCommand::MoveParagraphs(
       NextPositionOf(end_of_paragraph_to_move, kCannotCrossEditingBoundary)
           .DeepEquivalent());
 
+  const Position& start_candidate = start_of_paragraph_to_move.DeepEquivalent();
+  const Position& end_candidate = end_of_paragraph_to_move.DeepEquivalent();
+  DCHECK_LE(start_candidate, end_candidate);
+
   // We upstream() the end and downstream() the start so that we don't include
   // collapsed whitespace in the move. When we paste a fragment, spaces after
   // the end and before the start are treated as though they were rendered.
+  bool equal = start_candidate == end_candidate;
   Position start =
-      MostForwardCaretPosition(start_of_paragraph_to_move.DeepEquivalent());
+      equal ? start_candidate : MostForwardCaretPosition(start_candidate);
   Position end =
-      MostBackwardCaretPosition(end_of_paragraph_to_move.DeepEquivalent());
+      equal ? end_candidate : MostBackwardCaretPosition(end_candidate);
+  DCHECK_LE(start, end);
 
   // FIXME: This is an inefficient way to preserve style on nodes in the
   // paragraph to move. It shouldn't matter though, since moved paragraphs will
@@ -1906,8 +1913,10 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
     if (visible_pos.DeepEquivalent() == last_in_anchor.DeepEquivalent()) {
       // Make sure anchors are pushed down before avoiding them so that we don't
       // also avoid structural elements like lists and blocks (5142012).
-      if (original.AnchorNode() != enclosing_anchor &&
-          original.AnchorNode()->parentNode() != enclosing_anchor) {
+      Element* enclosing_block = EnclosingBlock(original.AnchorNode());
+      if (enclosing_block &&
+          enclosing_block->IsDescendantOf(enclosing_anchor)) {
+        // Only push down anchor element if there are block elements inside it.
         PushAnchorElementDown(enclosing_anchor, editing_state);
         if (editing_state->IsAborted())
           return original;
@@ -1935,8 +1944,10 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
     if (visible_pos.DeepEquivalent() == first_in_anchor.DeepEquivalent()) {
       // Make sure anchors are pushed down before avoiding them so that we don't
       // also avoid structural elements like lists and blocks (5142012).
-      if (original.AnchorNode() != enclosing_anchor &&
-          original.AnchorNode()->parentNode() != enclosing_anchor) {
+      Element* enclosing_block = EnclosingBlock(original.AnchorNode());
+      if (enclosing_block &&
+          enclosing_block->IsDescendantOf(enclosing_anchor)) {
+        // Only push down anchor element if there are block elements inside it.
         PushAnchorElementDown(enclosing_anchor, editing_state);
         if (editing_state->IsAborted())
           return original;

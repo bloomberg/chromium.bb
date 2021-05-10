@@ -14,20 +14,30 @@
 
 #include "src/ast/constant_id_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ConstantIdDecoration);
+
 namespace tint {
 namespace ast {
 
-ConstantIdDecoration::ConstantIdDecoration(uint32_t val, const Source& source)
-    : VariableDecoration(source), value_(val) {}
+ConstantIdDecoration::ConstantIdDecoration(const Source& source, uint32_t val)
+    : Base(source), value_(val) {}
 
 ConstantIdDecoration::~ConstantIdDecoration() = default;
 
-bool ConstantIdDecoration::IsConstantId() const {
-  return true;
+void ConstantIdDecoration::to_str(const semantic::Info&,
+                                  std::ostream& out,
+                                  size_t indent) const {
+  make_indent(out, indent);
+  out << "ConstantIdDecoration{" << value_ << "}" << std::endl;
 }
 
-void ConstantIdDecoration::to_str(std::ostream& out) const {
-  out << "ConstantIdDecoration{" << value_ << "}" << std::endl;
+ConstantIdDecoration* ConstantIdDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<ConstantIdDecoration>(src, value_);
 }
 
 }  // namespace ast

@@ -46,10 +46,13 @@ enum class PluginVmSetupResult {
   kError = 13,
   kUserCancelledWithoutStarting = 14,
   kUserCancelledValidatingLicense = 15,
+  kUserCancelledStartingDispatcher = 16,
 
-  kMaxValue = kUserCancelledValidatingLicense,
+  kMaxValue = kUserCancelledStartingDispatcher,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PluginVmDlcUseResult {
   kDlcSuccess = 0,
   kInvalidDlcError = 1,

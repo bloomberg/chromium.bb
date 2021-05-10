@@ -40,6 +40,10 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_ANDROID)
+#include "services/network/public/mojom/network_service.mojom.h"
+#endif
+
 #if defined(OS_MAC)
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
@@ -106,16 +110,17 @@ bool UtilityProcessHost::Start() {
   return StartProcess();
 }
 
-void UtilityProcessHost::RunService(
+void UtilityProcessHost::RunServiceDeprecated(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
-    service_manager::Service::CreatePackagedServiceInstanceCallback callback) {
+    mojo::ScopedMessagePipeHandle service_pipe,
+    RunServiceDeprecatedCallback callback) {
   if (launch_state_ == LaunchState::kLaunchFailed) {
     std::move(callback).Run(base::nullopt);
     return;
   }
 
-  process_->GetHost()->RunService(service_name, std::move(receiver));
+  process_->GetHost()->RunServiceDeprecated(service_name,
+                                            std::move(service_pipe));
   if (launch_state_ == LaunchState::kLaunchComplete) {
     std::move(callback).Run(process_->GetProcess().Pid());
   } else {
@@ -130,11 +135,6 @@ void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
 
 void UtilityProcessHost::SetName(const base::string16& name) {
   name_ = name;
-}
-
-void UtilityProcessHost::SetServiceIdentity(
-    const service_manager::Identity& identity) {
-  service_identity_ = identity;
 }
 
 void UtilityProcessHost::SetExtraCommandLineSwitches(
@@ -177,7 +177,7 @@ bool UtilityProcessHost::StartProcess() {
     // not needed on Android anyway. See crbug.com/500854.
     std::unique_ptr<base::CommandLine> cmd_line =
         std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
-    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork &&
+    if (metrics_name_ == network::mojom::NetworkService::Name_ &&
         base::FeatureList::IsEnabled(features::kWarmUpNetworkProcess)) {
       process_->EnableWarmUpConnection();
     }
@@ -229,7 +229,10 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kNetLogCaptureMode,
       network::switches::kExplicitlyAllowedPorts,
       sandbox::policy::switches::kNoSandbox,
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
       switches::kDisableDevShmUsage,
 #endif
 #if defined(OS_MAC)
@@ -288,6 +291,9 @@ bool UtilityProcessHost::StartProcess() {
       sandbox::policy::switches::kAddXrAppContainerCaps,
 #endif
       network::switches::kUseFirstPartySet,
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+      switches::kSchedulerBoostUrgent,
+#endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                base::size(kSwitchNames));
@@ -362,9 +368,7 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
 }
 
 base::Optional<std::string> UtilityProcessHost::GetServiceName() {
-  if (!service_identity_)
-    return metrics_name_;
-  return service_identity_->name();
+  return metrics_name_;
 }
 
 }  // namespace content

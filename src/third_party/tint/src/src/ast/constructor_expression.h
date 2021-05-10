@@ -20,35 +20,18 @@
 namespace tint {
 namespace ast {
 
-class ScalarConstructorExpression;
-class TypeConstructorExpression;
-
 /// Base class for constructor style expressions
-class ConstructorExpression : public Expression {
+class ConstructorExpression
+    : public Castable<ConstructorExpression, Expression> {
  public:
   ~ConstructorExpression() override;
 
-  /// @returns true if this is an constructor expression
-  bool IsConstructor() const override;
-
-  /// @returns true if this is a scalar constructor
-  virtual bool IsScalarConstructor() const;
-  /// @returns true if this is a type constructor
-  virtual bool IsTypeConstructor() const;
-
-  /// @returns this as a scalar constructor expression
-  ScalarConstructorExpression* AsScalarConstructor();
-  /// @returns this as a type constructor expression
-  TypeConstructorExpression* AsTypeConstructor();
-
  protected:
-  /// Constructor
-  ConstructorExpression();
   /// Constructor
   /// @param source the constructor source
   explicit ConstructorExpression(const Source& source);
   /// Move constructor
-  ConstructorExpression(ConstructorExpression&&) = default;
+  ConstructorExpression(ConstructorExpression&&);
 
  private:
   ConstructorExpression(const ConstructorExpression&) = delete;

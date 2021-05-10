@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2021-02-14">
+    enum="BooleanChecked" expires_after="2021-07-27">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.BootToSignInCompleted" units="ms"
-    expires_after="2021-04-01">
+    expires_after="2021-08-08">
   <owner>alemate@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -44,15 +44,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
-    Time spent on error screens during enrollment or autoenrollment.
+    Time spent on error screens during enrollment or autoenrollment. Recorded
+    when user leaves error screen.
   </summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Signin" units="ms"
-    expires_after="2020-12-06">
+    expires_after="2021-08-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
-  <summary>Time spent on error screens during signin.</summary>
+  <summary>
+    Time spent on error screens during signin. Recorded when user leaves error
+    screen.
+  </summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Supervised" units="ms"
@@ -60,19 +64,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
-    Time spent on error screens during supervised user creation.
+    Time spent on error screens during supervised user creation. Recorded when
+    user leaves error screen.
   </summary>
 </histogram>
 
 <histogram name="OOBE.ErrorScreensTime.Update" units="ms"
-    expires_after="2021-02-07">
+    expires_after="2021-08-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
-  <summary>Time spent on error screens during update.</summary>
+  <summary>
+    Time spent on error screens during update. Recorded when user leaves error
+    screen.
+  </summary>
 </histogram>
 
 <histogram name="OOBE.EulaScreen.UserActions" enum="EulaScreenUserAction"
-    expires_after="2021-02-02">
+    expires_after="2021-08-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -94,7 +102,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.FingerprintSetupScreen.UserActions"
-    enum="FingerprintSetupScreenUserAction" expires_after="2021-04-04">
+    enum="FingerprintSetupScreenUserAction" expires_after="2021-08-09">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -114,12 +122,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="OOBE.GestureNavigationScreen.PageShownTime"
-    units="ms" expires_after="2021-04-01">
+    units="ms" expires_after="2021-08-09">
 <!-- Name completed by histogram_suffixes
      name="GestureNavigationOOBEPage" -->
 
   <owner>mmourgos@chromium.org</owner>
-  <owner>tbarzic@chormium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
   <summary>
     Records the amount of time that each page within the gesture navigation OOBE
     screen is shown. Recorded when the gesture navigation oobe screen is
@@ -128,7 +136,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.MarketingOptInScreen.BackendConnector"
-    enum="MarketingOptInBackendConnectorEvent" expires_after="2021-03-30">
+    enum="MarketingOptInBackendConnectorEvent" expires_after="2021-08-01">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -140,7 +148,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.MarketingOptInScreen.Event"
-    enum="MarketingOptInScreenEvent" expires_after="2021-03-30">
+    enum="MarketingOptInScreenEvent" expires_after="2021-08-01">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -150,7 +158,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.MarketingOptInScreen.GeolocationResolve"
-    enum="MarketingOptInGeolocationEvent" expires_after="2021-03-30">
+    enum="MarketingOptInGeolocationEvent" expires_after="2021-08-01">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -159,7 +167,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.MarketingOptInScreen.GeolocationResolveLength"
-    units="chars" expires_after="2021-03-30">
+    units="chars" expires_after="2021-08-09">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -187,6 +195,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="M77">
   <owner>achuith@google.com</owner>
   <summary>Number of times error screen has appeared during update.</summary>
+</histogram>
+
+<histogram name="OOBE.PinSetupScreen.UserActions"
+    enum="PinSetupScreenUserAction" expires_after="2021-07-30">
+  <owner>raleksandrov@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Tracks all user actions on the PinSetup screen. Recorded when user clicks on
+    buttons on the PinSetup screen or when screen is automatically skipped.
+  </summary>
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Fetcher.AppCount" units="apps"
@@ -264,14 +282,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.StepCompletionTimeByExitReason" units="ms"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>Time spent on specific OOBE screen grouped by exit reason.</summary>
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.Behavior" enum="SyncConsentBehavior"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -283,7 +301,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2021-04-11">
+    enum="BooleanChecked" expires_after="2021-08-09">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -293,7 +311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -304,7 +322,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.UserChoice"
-    enum="SyncConsentUserChoice" expires_after="2021-04-04">
+    enum="SyncConsentUserChoice" expires_after="2021-08-09">
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -314,7 +332,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Check" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2021-08-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -324,7 +342,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Download" units="ms"
-    expires_after="2021-02-01">
+    expires_after="2021-08-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -334,7 +352,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Finalize" units="ms"
-    expires_after="2021-02-01">
+    expires_after="2021-08-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -344,7 +362,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Verify" units="ms"
-    expires_after="2021-02-01">
+    expires_after="2021-08-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -365,7 +383,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.WebUIToViewsSwitch.Duration" units="ms"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -374,13 +392,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.A11yUserActions"
-    enum="WelcomeScreenA11yUserAction" expires_after="2021-04-11">
+    enum="WelcomeScreenA11yUserAction" expires_after="2021-08-15">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Measures usage of the accessibility options on the welcome screen during
     OOBE. Recorded when user enables or disables any of the accessibility
     options from accessibility menu on the welcome screen.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.WelcomeScreen.AcceptChromeVoxHint" enum="BooleanEnabled"
+    expires_after="2021-04-11">
+  <owner>akihiroota@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Whether or not the user accepted the ChromeVox hint. Recorded when the user
+    interacts with the ChromeVox hint dialog.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.WelcomeScreen.ChromeVoxHintSpokenSuccess"
+    enum="BooleanEnabled" expires_after="2021-04-11">
+  <owner>akihiroota@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Whether or not the ChromeVox hint was successfully spoken. Recorded when the
+    ChromeVox hint dialog is shown.
   </summary>
 </histogram>
 

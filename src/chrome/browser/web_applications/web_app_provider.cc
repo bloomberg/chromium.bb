@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/components/url_handler_manager.h"
+#include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
@@ -29,7 +32,8 @@
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_migration_manager.h"
-#include "chrome/browser/web_applications/web_app_migration_user_display_mode_clean_up.h"
+#include "chrome/browser/web_applications/web_app_mover.h"
+#include "chrome/browser/web_applications/web_app_protocol_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
@@ -39,6 +43,13 @@
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
+
+namespace {
+
+WebAppProvider::OsIntegrationManagerFactory
+    g_os_integration_manager_factory_for_testing = nullptr;
+
+}  // namespace
 
 // static
 WebAppProvider* WebAppProvider::Get(Profile* profile) {
@@ -52,6 +63,12 @@ WebAppProvider* WebAppProvider::GetForWebContents(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(profile);
   return WebAppProvider::Get(profile);
+}
+
+// static
+void WebAppProvider::SetOsIntegrationManagerFactoryForTesting(
+    OsIntegrationManagerFactory factory) {
+  g_os_integration_manager_factory_for_testing = factory;
 }
 
 WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
@@ -148,8 +165,8 @@ void WebAppProvider::Shutdown() {
   icon_manager_->Shutdown();
   install_finalizer_->Shutdown();
   registrar_->Shutdown();
-  if (migration_user_display_mode_clean_up_)
-    migration_user_display_mode_clean_up_->Shutdown();
+  if (web_app_mover_)
+    web_app_mover_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {
@@ -206,19 +223,34 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       profile, icon_manager.get(), std::move(legacy_finalizer));
 
-  auto file_handler_manager =
-      std::make_unique<WebAppFileHandlerManager>(profile);
-  auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
-      profile, icon_manager.get(), file_handler_manager.get());
-  os_integration_manager_ = std::make_unique<OsIntegrationManager>(
-      profile, std::move(shortcut_manager), std::move(file_handler_manager));
+  if (g_os_integration_manager_factory_for_testing) {
+    os_integration_manager_ =
+        g_os_integration_manager_factory_for_testing(profile);
+  } else {
+    auto file_handler_manager =
+        std::make_unique<WebAppFileHandlerManager>(profile);
+    auto protocol_handler_manager =
+        std::make_unique<WebAppProtocolHandlerManager>(profile);
+    auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
+        profile, icon_manager.get(), file_handler_manager.get());
+
+    std::unique_ptr<UrlHandlerManager> url_handler_manager = nullptr;
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+    url_handler_manager = std::make_unique<UrlHandlerManagerImpl>(profile);
+#endif
+
+    os_integration_manager_ = std::make_unique<OsIntegrationManager>(
+        profile, std::move(shortcut_manager), std::move(file_handler_manager),
+        std::move(protocol_handler_manager), std::move(url_handler_manager));
+  }
 
   migration_manager_ = std::make_unique<WebAppMigrationManager>(
       profile, database_factory_.get(), icon_manager.get(),
       os_integration_manager_.get());
-  migration_user_display_mode_clean_up_ =
-      WebAppMigrationUserDisplayModeCleanUp::CreateIfNeeded(
-          profile, sync_bridge.get(), os_integration_manager_.get());
+  web_app_mover_ = WebAppMover::CreateIfNeeded(
+      profile, registrar.get(), install_finalizer_.get(),
+      install_manager_.get(), sync_bridge.get());
 
   // Upcast to unified subsystem types:
   registrar_ = std::move(registrar);
@@ -244,8 +276,11 @@ void WebAppProvider::ConnectSubsystems() {
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
       pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),
-      ui_manager_.get(), os_integration_manager_.get());
-  web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
+      ui_manager_.get(), os_integration_manager_.get(),
+      web_app_policy_manager_.get());
+  web_app_policy_manager_->SetSubsystems(
+      pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),
+      system_web_app_manager_.get(), os_integration_manager_.get());
   ui_manager_->SetSubsystems(registry_controller_.get());
   os_integration_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                          icon_manager_.get());
@@ -274,8 +309,8 @@ void WebAppProvider::OnRegistryControllerReady() {
   manifest_update_manager_->Start();
   os_integration_manager_->Start();
   ui_manager_->Start();
-  if (migration_user_display_mode_clean_up_)
-    migration_user_display_mode_clean_up_->Start();
+  if (web_app_mover_)
+    web_app_mover_->Start();
 
   on_registry_ready_.Signal();
 }
@@ -295,7 +330,6 @@ void WebAppProvider::RegisterProfilePrefs(
   WebAppPrefsUtilsRegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
   RegisterDailyWebAppMetricsProfilePrefs(registry);
-  WebAppMigrationUserDisplayModeCleanUp::RegisterProfilePrefs(registry);
 }
 
 }  // namespace web_app

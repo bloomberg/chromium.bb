@@ -19,7 +19,7 @@ DEPS = [
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:77.0.3865.120_v2'
+DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:87.0.4280.88_v1'
 INNER_KARMA_SCRIPT = 'skia/infra/canvaskit/test_canvaskit.sh'
 
 
@@ -28,10 +28,10 @@ def RunSteps(api):
   checkout_root = api.path['start_dir']
   out_dir = api.vars.swarming_out_dir
 
-  # The karma script is configured to look in ./canvaskit/bin/ for
+  # The karma script is configured to look in ./npm_build/bin/ for
   # the test files to load, so we must copy them there (see Set up for docker).
   copy_dest = checkout_root.join('skia', 'modules', 'canvaskit',
-                                 'canvaskit', 'bin')
+                                 'npm_build', 'bin')
   api.file.ensure_directory('mkdirs copy_dest', copy_dest, mode=0777)
   base_dir = api.vars.build_dir
   copies = {

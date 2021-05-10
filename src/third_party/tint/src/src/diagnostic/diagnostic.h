@@ -15,6 +15,7 @@
 #ifndef SRC_DIAGNOSTIC_DIAGNOSTIC_H_
 #define SRC_DIAGNOSTIC_DIAGNOSTIC_H_
 
+#include <cassert>
 #include <initializer_list>
 #include <string>
 #include <utility>
@@ -26,9 +27,9 @@ namespace tint {
 namespace diag {
 
 /// Severity is an enumerator of diagnostic severities.
-enum class Severity { Info, Warning, Error, Fatal };
+enum class Severity { Info, Warning, Error, InternalCompilerError, Fatal };
 
-/// @return true iff |a| is more than, or of equal severity to |b|.
+/// @return true iff `a` is more than, or of equal severity to `b`
 inline bool operator>=(Severity a, Severity b) {
   return static_cast<int>(a) >= static_cast<int>(b);
 }
@@ -43,6 +44,9 @@ class Diagnostic {
   Source source;
   /// message is the text associated with the diagnostic.
   std::string message;
+  /// code is the error code, for example a validation error might have the code
+  /// `"v-0001"`.
+  const char* code = nullptr;
 };
 
 /// List is a container of Diagnostic messages.
@@ -54,25 +58,25 @@ class List {
   /// Constructs the list with no elements.
   List();
 
-  /// Copy constructor. Copies the diagnostics from |list| into this list.
+  /// Copy constructor. Copies the diagnostics from `list` into this list.
   /// @param list the list of diagnostics to copy into this list.
   List(std::initializer_list<Diagnostic> list);
 
-  /// Copy constructor. Copies the diagnostics from |list| into this list.
+  /// Copy constructor. Copies the diagnostics from `list` into this list.
   /// @param list the list of diagnostics to copy into this list.
   List(const List& list);
 
-  /// Move constructor. Moves the diagnostics from |list| into this list.
+  /// Move constructor. Moves the diagnostics from `list` into this list.
   /// @param list the list of diagnostics to move into this list.
   List(List&& list);
   ~List();
 
-  /// Assignment operator. Copies the diagnostics from |list| into this list.
+  /// Assignment operator. Copies the diagnostics from `list` into this list.
   /// @param list the list to copy into this list.
   /// @return this list.
   List& operator=(const List& list);
 
-  /// Assignment move operator. Moves the diagnostics from |list| into this
+  /// Assignment move operator. Moves the diagnostics from `list` into this
   /// list.
   /// @param list the list to move into this list.
   /// @return this list.
@@ -81,15 +85,56 @@ class List {
   /// adds a diagnostic to the end of this list.
   /// @param diag the diagnostic to append to this list.
   void add(Diagnostic&& diag) {
-    entries_.emplace_back(std::move(diag));
     if (diag.severity >= Severity::Error) {
-      contains_errors_ = true;
+      error_count_++;
     }
+    entries_.emplace_back(std::move(diag));
+  }
+
+  /// adds a list of diagnostics to the end of this list.
+  /// @param list the diagnostic to append to this list.
+  void add(const List& list) {
+    for (auto diag : list) {
+      add(std::move(diag));
+    }
+  }
+
+  /// adds the error message without a source to the end of this list.
+  /// @param err_msg the error message
+  void add_error(const std::string& err_msg) {
+    diag::Diagnostic error{};
+    error.severity = diag::Severity::Error;
+    error.message = err_msg;
+    add(std::move(error));
+  }
+
+  /// adds the error message with the given Source to the end of this list.
+  /// @param err_msg the error message
+  /// @param source the source of the error diagnostic
+  void add_error(const std::string& err_msg, const Source& source) {
+    diag::Diagnostic error{};
+    error.severity = diag::Severity::Error;
+    error.source = source;
+    error.message = err_msg;
+    add(std::move(error));
+  }
+
+  /// adds an internal compiler error message to the end of this list.
+  /// @param err_msg the error message
+  /// @param source the source of the internal compiler error
+  void add_ice(const std::string& err_msg, const Source& source) {
+    diag::Diagnostic ice{};
+    ice.severity = diag::Severity::InternalCompilerError;
+    ice.source = source;
+    ice.message = err_msg;
+    add(std::move(ice));
   }
 
   /// @returns true iff the diagnostic list contains errors diagnostics (or of
   /// higher severity).
-  bool contains_errors() const { return contains_errors_; }
+  bool contains_errors() const { return error_count_ > 0; }
+  /// @returns the number of error diagnostics (or of higher severity).
+  size_t error_count() const { return error_count_; }
   /// @returns the number of entries in the list.
   size_t count() const { return entries_.size(); }
   /// @returns the first diagnostic in the list.
@@ -97,9 +142,12 @@ class List {
   /// @returns the last diagnostic in the list.
   iterator end() const { return entries_.end(); }
 
+  /// @returns a formatted string of all the diagnostics in this list.
+  std::string str() const;
+
  private:
   std::vector<Diagnostic> entries_;
-  bool contains_errors_ = false;
+  size_t error_count_ = 0;
 };
 
 }  // namespace diag

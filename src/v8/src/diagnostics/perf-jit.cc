@@ -27,14 +27,18 @@
 
 #include "src/diagnostics/perf-jit.h"
 
+#include "src/common/assert-scope.h"
+
 // Only compile the {PerfJitLogger} on Linux.
 #if V8_OS_LINUX
 
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
 #include <memory>
 
+#include "src/base/platform/wrappers.h"
 #include "src/codegen/assembler.h"
 #include "src/codegen/source-position-table.h"
 #include "src/diagnostics/eh-frame.h"
@@ -109,6 +113,8 @@ const char PerfJitLogger::kFilenameFormatString[] = "./jit-%d.dump";
 // Extra padding for the PID in the filename
 const int PerfJitLogger::kFilenameBufferPadding = 16;
 
+static const char kStringTerminator[] = "\0";
+
 base::LazyRecursiveMutex PerfJitLogger::file_mutex_;
 // The following static variables are protected by PerfJitLogger::file_mutex_.
 uint64_t PerfJitLogger::reference_count_ = 0;
@@ -145,7 +151,7 @@ void PerfJitLogger::OpenJitDumpFile() {
 
 void PerfJitLogger::CloseJitDumpFile() {
   if (perf_output_handle_ == nullptr) return;
-  fclose(perf_output_handle_);
+  base::Fclose(perf_output_handle_);
   perf_output_handle_ = nullptr;
 }
 
@@ -207,7 +213,8 @@ void PerfJitLogger::LogRecordedBuffer(
       (abstract_code->kind() != CodeKind::INTERPRETED_FUNCTION &&
        abstract_code->kind() != CodeKind::TURBOFAN &&
        abstract_code->kind() != CodeKind::NATIVE_CONTEXT_INDEPENDENT &&
-       abstract_code->kind() != CodeKind::TURBOPROP)) {
+       abstract_code->kind() != CodeKind::TURBOPROP &&
+       abstract_code->kind() != CodeKind::BASELINE)) {
     return;
   }
 
@@ -222,7 +229,7 @@ void PerfJitLogger::LogRecordedBuffer(
 
   // Debug info has to be emitted first.
   Handle<SharedFunctionInfo> shared;
-  if (FLAG_perf_prof && !maybe_shared.ToHandle(&shared)) {
+  if (FLAG_perf_prof && maybe_shared.ToHandle(&shared)) {
     // TODO(herhut): This currently breaks for js2wasm/wasm2js functions.
     if (code->kind() != CodeKind::JS_TO_WASM_FUNCTION &&
         code->kind() != CodeKind::WASM_TO_JS_FUNCTION) {
@@ -257,8 +264,6 @@ void PerfJitLogger::LogRecordedBuffer(const wasm::WasmCode* code,
 void PerfJitLogger::WriteJitCodeLoadEntry(const uint8_t* code_pointer,
                                           uint32_t code_size, const char* name,
                                           int name_length) {
-  static const char string_terminator[] = "\0";
-
   PerfJitCodeLoad code_load;
   code_load.event_ = PerfJitCodeLoad::kLoad;
   code_load.size_ = sizeof(code_load) + name_length + 1 + code_size;
@@ -275,7 +280,7 @@ void PerfJitLogger::WriteJitCodeLoadEntry(const uint8_t* code_pointer,
 
   LogWriteBytes(reinterpret_cast<const char*>(&code_load), sizeof(code_load));
   LogWriteBytes(name, name_length);
-  LogWriteBytes(string_terminator, 1);
+  LogWriteBytes(kStringTerminator, 1);
   LogWriteBytes(reinterpret_cast<const char*>(code_pointer), code_size);
 }
 
@@ -301,7 +306,7 @@ size_t GetScriptNameLength(const SourcePositionInfo& info) {
 
 Vector<const char> GetScriptName(const SourcePositionInfo& info,
                                  std::unique_ptr<char[]>* storage,
-                                 const DisallowHeapAllocation& no_gc) {
+                                 const DisallowGarbageCollection& no_gc) {
   if (!info.script.is_null()) {
     Object name_or_url = info.script->GetNameOrSourceURL();
     if (name_or_url.IsSeqOneByteString()) {
@@ -322,7 +327,7 @@ SourcePositionInfo GetSourcePositionInfo(Handle<Code> code,
                                          Handle<SharedFunctionInfo> function,
                                          SourcePosition pos) {
   if (code->is_turbofanned()) {
-    DisallowHeapAllocation disallow;
+    DisallowGarbageCollection disallow;
     return pos.InliningStack(code)[0];
   } else {
     return SourcePositionInfo(pos, function);
@@ -333,9 +338,17 @@ SourcePositionInfo GetSourcePositionInfo(Handle<Code> code,
 
 void PerfJitLogger::LogWriteDebugInfo(Handle<Code> code,
                                       Handle<SharedFunctionInfo> shared) {
+  DisallowGarbageCollection no_gc;
+  // TODO(v8:11429,cbruni): add proper baseline source position iterator
+  bool is_baseline = code->kind() == CodeKind::BASELINE;
+  ByteArray source_position_table = code->SourcePositionTable();
+  if (is_baseline) {
+    source_position_table =
+        shared->GetBytecodeArray(shared->GetIsolate()).SourcePositionTable();
+  }
   // Compute the entry count and get the name of the script.
   uint32_t entry_count = 0;
-  for (SourcePositionTableIterator iterator(code->SourcePositionTable());
+  for (SourcePositionTableIterator iterator(source_position_table);
        !iterator.done(); iterator.Advance()) {
     entry_count++;
   }
@@ -356,7 +369,7 @@ void PerfJitLogger::LogWriteDebugInfo(Handle<Code> code,
   size += entry_count * sizeof(PerfJitDebugEntry);
   // Add the size of the name after each entry.
 
-  for (SourcePositionTableIterator iterator(code->SourcePositionTable());
+  for (SourcePositionTableIterator iterator(source_position_table);
        !iterator.done(); iterator.Advance()) {
     SourcePositionInfo info(
         GetSourcePositionInfo(code, shared, iterator.source_position()));
@@ -369,7 +382,7 @@ void PerfJitLogger::LogWriteDebugInfo(Handle<Code> code,
 
   Address code_start = code->InstructionStart();
 
-  for (SourcePositionTableIterator iterator(code->SourcePositionTable());
+  for (SourcePositionTableIterator iterator(source_position_table);
        !iterator.done(); iterator.Advance()) {
     SourcePositionInfo info(
         GetSourcePositionInfo(code, shared, iterator.source_position()));
@@ -382,11 +395,12 @@ void PerfJitLogger::LogWriteDebugInfo(Handle<Code> code,
     entry.column_ = info.column + 1;
     LogWriteBytes(reinterpret_cast<const char*>(&entry), sizeof(entry));
     // The extracted name may point into heap-objects, thus disallow GC.
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     std::unique_ptr<char[]> name_storage;
     Vector<const char> name_string = GetScriptName(info, &name_storage, no_gc);
     LogWriteBytes(name_string.begin(),
-                  static_cast<uint32_t>(name_string.size()) + 1);
+                  static_cast<uint32_t>(name_string.size()));
+    LogWriteBytes(kStringTerminator, 1);
   }
   char padding_bytes[8] = {0};
   LogWriteBytes(padding_bytes, padding);
@@ -451,8 +465,8 @@ void PerfJitLogger::LogWriteDebugInfo(const wasm::WasmCode* code) {
     entry.column_ = 1;
     LogWriteBytes(reinterpret_cast<const char*>(&entry), sizeof(entry));
     std::string name_string = source_map->GetFilename(offset);
-    LogWriteBytes(name_string.c_str(),
-                  static_cast<int>(name_string.size() + 1));
+    LogWriteBytes(name_string.c_str(), static_cast<int>(name_string.size()));
+    LogWriteBytes(kStringTerminator, 1);
   }
 
   char padding_bytes[8] = {0};

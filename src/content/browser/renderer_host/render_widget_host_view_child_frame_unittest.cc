@@ -33,6 +33,7 @@
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget.h"
 #include "content/test/test_render_view_host.h"
+#include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -65,9 +66,9 @@ class MockFrameConnector : public CrossProcessFrameConnector {
   }
 
   void SetViewportIntersection(
-      const blink::WebRect& viewport_intersection,
-      const blink::WebRect& main_frame_intersection,
-      const blink::WebRect& compositor_visible_rect,
+      const gfx::Rect& viewport_intersection,
+      const gfx::Rect& main_frame_intersection,
+      const gfx::Rect& compositor_visible_rect,
       blink::mojom::FrameOcclusionState occlusion_state) {
     intersection_state_.viewport_intersection = viewport_intersection;
     intersection_state_.main_frame_intersection = main_frame_intersection;
@@ -124,26 +125,25 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     int32_t routing_id = process_host_->GetNextRoutingID();
     sink_ = &process_host_->sink();
 
-    widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, *agent_scheduling_group_host_, routing_id,
-        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
+    widget_host_ = RenderWidgetHostImpl::Create(
+        /*frame_tree=*/nullptr, &delegate_, *agent_scheduling_group_host_,
+        routing_id,
+        /*hidden=*/false, /*renderer_initiated_creation=*/false,
+        std::make_unique<FrameTokenMessageQueue>());
 
-    mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
     widget_host_->BindWidgetInterfaces(
-        blink_widget_host.BindNewEndpointAndPassDedicatedReceiver(),
+        mojo::AssociatedRemote<blink::mojom::WidgetHost>()
+            .BindNewEndpointAndPassDedicatedReceiver(),
         widget_.GetNewRemote());
-
-    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
-    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
-    auto frame_widget_receiver =
-        frame_widget.BindNewEndpointAndPassDedicatedReceiver();
     widget_host_->BindFrameWidgetInterfaces(
-        frame_widget_host.BindNewEndpointAndPassDedicatedReceiver(),
-        frame_widget.Unbind());
+        mojo::AssociatedRemote<blink::mojom::FrameWidgetHost>()
+            .BindNewEndpointAndPassDedicatedReceiver(),
+        TestRenderWidgetHost::CreateStubFrameWidgetRemote());
 
     blink::ScreenInfo screen_info;
     screen_info.rect = gfx::Rect(1, 2, 3, 4);
-    view_ = RenderWidgetHostViewChildFrame::Create(widget_host_, screen_info);
+    view_ =
+        RenderWidgetHostViewChildFrame::Create(widget_host_.get(), screen_info);
     // Test we get the expected ScreenInfo before the FrameDelegate is set.
     blink::ScreenInfo actual_screen_info;
     view_->GetScreenInfo(&actual_screen_info);
@@ -159,7 +159,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     sink_ = nullptr;
     if (view_)
       view_->Destroy();
-    delete widget_host_;
+    widget_host_.reset();
     process_host_->Cleanup();
     agent_scheduling_group_host_ = nullptr;
     delete test_frame_connector_;
@@ -196,7 +196,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
-  RenderWidgetHostImpl* widget_host_;
+  std::unique_ptr<RenderWidgetHostImpl> widget_host_;
   RenderWidgetHostViewChildFrame* view_;
   MockFrameConnector* test_frame_connector_;
 };
@@ -221,8 +221,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // Tests that the viewport intersection rect is dispatched to the RenderWidget
 // whenever screen rects are updated.
 TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
-  blink::WebRect intersection_rect(5, 5, 100, 80);
-  blink::WebRect main_frame_intersection(5, 10, 200, 200);
+  gfx::Rect intersection_rect(5, 5, 100, 80);
+  gfx::Rect main_frame_intersection(5, 10, 200, 200);
   blink::mojom::FrameOcclusionState occlusion_state =
       blink::mojom::FrameOcclusionState::kPossiblyOccluded;
 
@@ -244,8 +244,9 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
       std::move(blink_frame_widget_host_receiver), blink_frame_widget.Unbind());
   FakeFrameWidget fake_frame_widget(std::move(blink_frame_widget_receiver));
 
-  widget_host_->Init();
-
+  widget_host_->RendererWidgetCreated(/*for_frame_widget=*/true);
+  base::RunLoop().RunUntilIdle();
+  widget_.ClearScreenRects();
   base::RunLoop().RunUntilIdle();
 
   auto& intersection_state = fake_frame_widget.GetIntersectionState();
@@ -300,7 +301,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
       static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
   process->Init();
 
-  widget_host_->Init();
+  widget_host_->RendererWidgetCreated(/*for_frame_widget=*/true);
 
   constexpr gfx::Rect compositor_viewport_pixel_rect(100, 100);
   constexpr gfx::Rect screen_space_rect(compositor_viewport_pixel_rect);

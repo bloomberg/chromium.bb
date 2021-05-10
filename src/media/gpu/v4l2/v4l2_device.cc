@@ -958,8 +958,7 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
   struct v4l2_format format = BuildV4L2Format(type_, fourcc, size, buffer_size);
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPQLOGF(2) << "Failed to set format (format_fourcc=0x" << std::hex << fourcc
-               << ")";
+    VPQLOGF(2) << "Failed to set format fourcc: " << FourccToString(fourcc);
     return base::nullopt;
   }
 
@@ -973,8 +972,7 @@ base::Optional<struct v4l2_format> V4L2Queue::TryFormat(uint32_t fourcc,
   struct v4l2_format format = BuildV4L2Format(type_, fourcc, size, buffer_size);
   if (device_->Ioctl(VIDIOC_TRY_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPQLOGF(2) << "Tried format not supported (format_fourcc=0x" << std::hex
-               << fourcc << ")";
+    VPQLOGF(2) << "Failed to try format fourcc: " << FourccToString(fourcc);
     return base::nullopt;
   }
 
@@ -1486,12 +1484,15 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
   }
 }
 
-// static
-VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
-                                                             uint32_t profile) {
+namespace {
+
+VideoCodecProfile V4L2ProfileToVideoCodecProfile(VideoCodec codec,
+                                                 uint32_t v4l2_profile) {
   switch (codec) {
     case kCodecH264:
-      switch (profile) {
+      switch (v4l2_profile) {
+        // H264 Stereo amd Multiview High are not tested and the use is
+        // minuscule, skip.
         case V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE:
         case V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_BASELINE:
           return H264PROFILE_BASELINE;
@@ -1501,14 +1502,10 @@ VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
           return H264PROFILE_EXTENDED;
         case V4L2_MPEG_VIDEO_H264_PROFILE_HIGH:
           return H264PROFILE_HIGH;
-        case V4L2_MPEG_VIDEO_H264_PROFILE_STEREO_HIGH:
-          return H264PROFILE_STEREOHIGH;
-        case V4L2_MPEG_VIDEO_H264_PROFILE_MULTIVIEW_HIGH:
-          return H264PROFILE_MULTIVIEWHIGH;
       }
       break;
     case kCodecVP8:
-      switch (profile) {
+      switch (v4l2_profile) {
         case V4L2_MPEG_VIDEO_VP8_PROFILE_0:
         case V4L2_MPEG_VIDEO_VP8_PROFILE_1:
         case V4L2_MPEG_VIDEO_VP8_PROFILE_2:
@@ -1517,27 +1514,25 @@ VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
       }
       break;
     case kCodecVP9:
-      switch (profile) {
+      switch (v4l2_profile) {
+        // VP9 Profile 1 and 3 are not tested and the use is minuscule, skip.
         case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
           return VP9PROFILE_PROFILE0;
-        case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
-          return VP9PROFILE_PROFILE1;
         case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
           return VP9PROFILE_PROFILE2;
-        case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
-          return VP9PROFILE_PROFILE3;
       }
       break;
     default:
-      VLOGF(2) << "Unknown codec: " << codec;
+      VLOGF(2) << "Unsupported codec: " << GetCodecName(codec);
   }
-  VLOGF(2) << "Unknown profile: " << profile;
+  VLOGF(2) << "Unsupported V4L2 profile: " << v4l2_profile;
   return VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 
+}  // namespace
+
 std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
-    uint32_t pix_fmt,
-    bool is_encoder) {
+    uint32_t pix_fmt) {
   auto get_supported_profiles = [this](
                                     VideoCodec codec,
                                     std::vector<VideoCodecProfile>* profiles) {
@@ -1559,9 +1554,9 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     v4l2_queryctrl query_ctrl;
     memset(&query_ctrl, 0, sizeof(query_ctrl));
     query_ctrl.id = query_id;
-    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0) {
+    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0)
       return false;
-    }
+
     v4l2_querymenu query_menu;
     memset(&query_menu, 0, sizeof(query_menu));
     query_menu.id = query_ctrl.id;
@@ -1570,7 +1565,7 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
          query_menu.index++) {
       if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
         const VideoCodecProfile profile =
-            V4L2Device::V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
+            V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
         if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
           profiles->push_back(profile);
       }
@@ -2088,7 +2083,7 @@ V4L2Device::EnumerateSupportedDecodeProfiles(const size_t num_formats,
                            &profile.max_resolution);
 
     const auto video_codec_profiles =
-        V4L2PixFmtToVideoCodecProfiles(pixelformat, false);
+        V4L2PixFmtToVideoCodecProfiles(pixelformat);
 
     for (const auto& video_codec_profile : video_codec_profiles) {
       profile.profile = video_codec_profile;
@@ -2119,7 +2114,7 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
                            &profile.max_resolution);
 
     const auto video_codec_profiles =
-        V4L2PixFmtToVideoCodecProfiles(pixelformat, true);
+        V4L2PixFmtToVideoCodecProfiles(pixelformat);
 
     for (const auto& video_codec_profile : video_codec_profiles) {
       profile.profile = video_codec_profile;
@@ -2172,7 +2167,9 @@ base::Optional<struct v4l2_event> V4L2Device::DequeueEvent() {
   memset(&event, 0, sizeof(event));
 
   if (Ioctl(VIDIOC_DQEVENT, &event) != 0) {
-    VPLOGF(3) << "Failed to dequeue event";
+    // The ioctl will fail if there are no pending events. This is part of the
+    // normal flow, so keep this log level low.
+    VPLOGF(4) << "Failed to dequeue event";
     return base::nullopt;
   }
 
@@ -2227,7 +2224,19 @@ bool V4L2Device::SetExtCtrls(uint32_t ctrl_class,
   if (request_ref)
     request_ref->ApplyCtrls(&ext_ctrls);
 
-  return Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
+  const int result = Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls);
+  if (result < 0) {
+    if (ext_ctrls.error_idx == ext_ctrls.count)
+      VPLOGF(1) << "VIDIOC_S_EXT_CTRLS: validation failed while trying to set "
+                   "controls";
+    else
+      VPLOGF(1) << "VIDIOC_S_EXT_CTRLS: unable to set control (0x" << std::hex
+                << ctrls[ext_ctrls.error_idx].ctrl.id << ") at index ("
+                << ext_ctrls.error_idx << ")  to 0x"
+                << ctrls[ext_ctrls.error_idx].ctrl.value;
+  }
+
+  return result == 0;
 }
 
 base::Optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
@@ -2247,6 +2256,31 @@ base::Optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
   }
 
   return ctrl;
+}
+
+bool V4L2Device::SetGOPLength(uint32_t gop_length) {
+  if (!SetExtCtrls(V4L2_CTRL_CLASS_MPEG,
+                   {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_GOP_SIZE, gop_length)})) {
+    // Some platforms allow setting the GOP length to 0 as
+    // a way of turning off keyframe placement.  If the platform
+    // does not support turning off periodic keyframe placement,
+    // set the GOP to the maximum supported value.
+    if (gop_length == 0) {
+      v4l2_query_ext_ctrl queryctrl;
+      memset(&queryctrl, 0, sizeof(queryctrl));
+
+      queryctrl.id = V4L2_CTRL_CLASS_MPEG | V4L2_CID_MPEG_VIDEO_GOP_SIZE;
+      if (Ioctl(VIDIOC_QUERY_EXT_CTRL, &queryctrl) == 0) {
+        VPLOGF(3) << "Unable to set GOP to 0, instead using max : "
+                  << queryctrl.maximum;
+        return SetExtCtrls(
+            V4L2_CTRL_CLASS_MPEG,
+            {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_GOP_SIZE, queryctrl.maximum)});
+      }
+    }
+    return false;
+  }
+  return true;
 }
 
 class V4L2Request {

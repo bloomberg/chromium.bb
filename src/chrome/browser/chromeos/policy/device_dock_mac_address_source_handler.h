@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 
 namespace chromeos {
 class NetworkDeviceHandler;
@@ -31,8 +31,7 @@ class DeviceDockMacAddressHandler {
 
   chromeos::CrosSettings* cros_settings_;
   chromeos::NetworkDeviceHandler* network_device_handler_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      dock_mac_address_source_policy_subscription_;
+  base::CallbackListSubscription dock_mac_address_source_policy_subscription_;
   base::WeakPtrFactory<DeviceDockMacAddressHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDockMacAddressHandler);

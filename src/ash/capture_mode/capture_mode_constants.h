@@ -27,6 +27,20 @@ constexpr SkColor kInkDropBaseColor = SK_ColorWHITE;
 // CaptureModeBarView.
 constexpr int kBetweenChildSpacing = 16;
 
+// The amount the capture region changes when using the arrow keys to adjust it.
+constexpr int kCtrlArrowKeyboardRegionChangeDp = 1;
+constexpr int kArrowKeyboardRegionChangeDp = 15;
+constexpr int kShiftArrowKeyboardRegionChangeDp = 40;
+
+// Blur quality applied to the capture bar and settings menu backdrop.
+constexpr float kBlurQuality = 0.33f;
+
+constexpr int kSpaceBetweenCaptureBarAndSettingsMenu = 8;
+
+// Constants needed to paint the highlight around the area being captured.
+constexpr int kCaptureRegionBorderStrokePx = 1;
+constexpr SkColor kRegionBorderColor = SK_ColorWHITE;
+
 }  // namespace capture_mode
 
 }  // namespace ash

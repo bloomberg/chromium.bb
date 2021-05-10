@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -13,14 +14,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   SetPolicyValue(&proto, policy_value, true);
   base::RunLoop run_loop;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
+  base::CallbackListSubscription subscription =
       chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kDeviceDisplayResolution, run_loop.QuitClosure());
   device_policy->SetDefaultSigningKey();

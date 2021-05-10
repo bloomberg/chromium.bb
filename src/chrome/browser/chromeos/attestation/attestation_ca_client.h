@@ -14,8 +14,14 @@
 #include "chromeos/dbus/constants/attestation_constants.h"
 
 namespace network {
+
 class SimpleURLLoader;
+
+namespace mojom {
+class NetworkContext;
 }
+
+}  // namespace network
 
 namespace chromeos {
 namespace attestation {
@@ -40,6 +46,13 @@ class AttestationCAClient : public ServerProxy {
 
   PrivacyCAType GetType() override;
 
+  void CheckIfAnyProxyPresent(ProxyPresenceCallback callback) override;
+
+  void set_network_context_for_testing(
+      network::mojom::NetworkContext* network_context) {
+    network_context_for_testing_ = network_context;
+  }
+
  private:
   PrivacyCAType pca_type_;
 
@@ -51,6 +64,8 @@ class AttestationCAClient : public ServerProxy {
 
   // Loaders used for the processing the requests. Invalidated after completion.
   std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;
+
+  network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AttestationCAClient);
 };

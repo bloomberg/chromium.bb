@@ -71,8 +71,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   using TransportAvailabilityNotificationReceiver = test::TestCallbackReceiver<
       FidoRequestHandlerBase::TransportAvailabilityInfo>;
 
-  TestObserver() {}
-  ~TestObserver() override {}
+  TestObserver() = default;
+  ~TestObserver() override = default;
 
   FidoRequestHandlerBase::TransportAvailabilityInfo
   WaitForTransportAvailabilityInfo() {
@@ -82,15 +82,12 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 
   void WaitForAndExpectAvailableTransportsAre(
       base::flat_set<FidoTransportProtocol> expected_transports,
-      base::Optional<bool> has_recognized_mac_touch_id_credential =
-          base::nullopt) {
+      base::Optional<bool> has_platform_credential = base::nullopt) {
     auto result = WaitForTransportAvailabilityInfo();
     EXPECT_THAT(result.available_transports,
                 ::testing::UnorderedElementsAreArray(expected_transports));
-    if (has_recognized_mac_touch_id_credential) {
-      EXPECT_EQ(*has_recognized_mac_touch_id_credential,
-                result.has_recognized_mac_touch_id_credential);
-    }
+    EXPECT_EQ(result.has_recognized_platform_authenticator_credential,
+              has_platform_credential);
   }
 
  protected:
@@ -113,16 +110,12 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   bool SupportsPIN() const override { return false; }
 
   void CollectPIN(
-      base::Optional<int> attempts,
-      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+      CollectPINOptions options,
+      base::OnceCallback<void(base::string16)> provide_pin_cb) override {
     NOTREACHED();
   }
 
-  void SetMightCreateResidentCredential(bool v) override {}
-
   void OnRetryUserVerification(int attempts) override {}
-
-  void OnInternalUserVerificationLocked() override {}
 
   void StartBioEnrollment(base::OnceClosure next_callback) override {}
 
@@ -207,6 +200,11 @@ class FakeFidoRequestHandler : public FidoRequestHandlerBase {
   }
   ~FakeFidoRequestHandler() override = default;
 
+  void set_has_platform_credential(bool has_platform_credential) {
+    has_platform_credential_ = has_platform_credential;
+  }
+
+ private:
   void DispatchRequest(FidoAuthenticator* authenticator) override {
     // FidoRequestHandlerTest uses FakeDiscovery to inject mock devices
     // that get wrapped in a FidoDeviceAuthenticator, so we can safely cast
@@ -222,7 +220,18 @@ class FakeFidoRequestHandler : public FidoRequestHandlerBase {
                        weak_factory_.GetWeakPtr(), authenticator)));
   }
 
- private:
+  void AuthenticatorAdded(FidoDiscoveryBase* discovery,
+                          FidoAuthenticator* authenticator) override {
+    if (authenticator->AuthenticatorTransport() ==
+        FidoTransportProtocol::kInternal) {
+      transport_availability_info()
+          .has_recognized_platform_authenticator_credential =
+          has_platform_credential_;
+    }
+
+    FidoRequestHandlerBase::AuthenticatorAdded(discovery, authenticator);
+  }
+
   void HandleResponse(FidoAuthenticator* authenticator,
                       CtapDeviceResponseCode status,
                       base::Optional<std::vector<uint8_t>> response) {
@@ -248,6 +257,8 @@ class FakeFidoRequestHandler : public FidoRequestHandlerBase {
   }
 
   CompletionCallback completion_callback_;
+  bool has_platform_credential_ = false;
+
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_{this};
 };
 
@@ -442,7 +453,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   EXPECT_CALL(*device0, GetDisplayName())
-      .WillRepeatedly(testing::Return(base::string16()));
+      .WillRepeatedly(testing::Return(std::string()));
   device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeDeviceProcesssingError());
 
@@ -454,7 +465,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
   EXPECT_CALL(*device1, GetDisplayName())
-      .WillRepeatedly(testing::Return(base::string16()));
+      .WillRepeatedly(testing::Return(std::string()));
   device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeUserPresenceVerifiedError(),
                                        base::TimeDelta::FromMicroseconds(1));
@@ -467,7 +478,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device2, GetId()).WillRepeatedly(testing::Return("device2"));
   EXPECT_CALL(*device2, GetDisplayName())
-      .WillRepeatedly(testing::Return(base::string16()));
+      .WillRepeatedly(testing::Return(std::string()));
   device2->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeDeviceProcesssingError(),
                                        base::TimeDelta::FromMicroseconds(10));
@@ -569,12 +580,13 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
       &fake_discovery_factory_,
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
+  request_handler->set_has_platform_credential(true);
   request_handler->set_observer(&observer);
   fake_discovery->AddDevice(std::move(device));
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kInternal},
-      false /* has_recognized_mac_touch_id_credential */);
+      /*has_platform_credential=*/true);
 
   callback().WaitForCallback();
   EXPECT_TRUE(callback().status());

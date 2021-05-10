@@ -1,22 +1,6 @@
 import { CaseParams, CaseParamsIterable, publicParamsEquals } from './params_utils.js';
+import { ResolveType, UnionToIntersection } from './util/types.js';
 import { assert } from './util/util.js';
-
-/** Forces a type to resolve its type definitions, to make it readable/debuggable. */
-export type ResolveType<T> = T extends object
-  ? T extends infer O
-    ? { [K in keyof O]: ResolveType<O[K]> }
-    : never
-  : T;
-
-/**
- * Computes the intersection of a set of types, given the union of those types.
- *
- * From: https://stackoverflow.com/a/56375136
- */
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
-  ? I
-  : never;
 
 /** Conditionally chooses between two types depending on whether T is a union. */
 type CheckForUnion<T, TErr, TOk> = [T] extends [UnionToIntersection<T>] ? TOk : TErr;

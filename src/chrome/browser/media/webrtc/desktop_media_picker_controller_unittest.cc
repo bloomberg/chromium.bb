@@ -41,35 +41,41 @@ class MockDesktopMediaList : public DesktopMediaList {
   MOCK_METHOD1(Update, void(UpdateCallback callback));
   MOCK_CONST_METHOD0(GetSourceCount, int());
   MOCK_CONST_METHOD1(GetSource, Source&(int index));
-  MOCK_CONST_METHOD0(GetMediaListType, content::DesktopMediaID::Type());
+  MOCK_CONST_METHOD0(GetMediaListType, DesktopMediaList::Type());
 };
 
 class MockDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
  public:
-  MOCK_METHOD0(CreatePicker, std::unique_ptr<DesktopMediaPicker>());
-  MOCK_METHOD1(CreateMediaList,
+  MOCK_METHOD1(CreatePicker,
+               std::unique_ptr<DesktopMediaPicker>(
+                   const content::MediaStreamRequest* request));
+  MOCK_METHOD2(CreateMediaList,
                std::vector<std::unique_ptr<DesktopMediaList>>(
-                   const std::vector<content::DesktopMediaID::Type>& types));
+                   const std::vector<DesktopMediaList::Type>& types,
+                   content::WebContents* web_contents));
 };
 
 class DesktopMediaPickerControllerTest : public testing::Test {
  public:
   void SetUp() override {
-    ON_CALL(factory_, CreatePicker).WillByDefault([this]() {
-      return std::unique_ptr<DesktopMediaPicker>(std::move(picker_));
-    });
-    ON_CALL(factory_, CreateMediaList).WillByDefault([this](const auto& types) {
-      std::vector<std::unique_ptr<DesktopMediaList>> lists;
-      lists.push_back(std::move(media_list_));
-      return lists;
-    });
+    ON_CALL(factory_, CreatePicker)
+        .WillByDefault([this](const content::MediaStreamRequest* request) {
+          return std::unique_ptr<DesktopMediaPicker>(std::move(picker_));
+        });
+    ON_CALL(factory_, CreateMediaList)
+        .WillByDefault(
+            [this](const auto& types, content::WebContents* web_contents) {
+              std::vector<std::unique_ptr<DesktopMediaList>> lists;
+              lists.push_back(std::move(media_list_));
+              return lists;
+            });
   }
 
  protected:
   DesktopMediaPickerController::Params picker_params_;
   base::MockCallback<DesktopMediaPickerController::DoneCallback> done_;
-  std::vector<content::DesktopMediaID::Type> source_types_{
-      content::DesktopMediaID::TYPE_SCREEN};
+  std::vector<DesktopMediaList::Type> source_types_{
+      DesktopMediaList::Type::kScreen};
   content::DesktopMediaID media_id_{content::DesktopMediaID::TYPE_SCREEN, 42};
   std::unique_ptr<MockDesktopMediaPicker> picker_ =
       std::make_unique<MockDesktopMediaPicker>();
@@ -80,8 +86,8 @@ class DesktopMediaPickerControllerTest : public testing::Test {
 
 // Test that the picker dialog is shown and the selected media ID is returned.
 TEST_F(DesktopMediaPickerControllerTest, ShowPicker) {
-  EXPECT_CALL(factory_, CreatePicker());
-  EXPECT_CALL(factory_, CreateMediaList(source_types_));
+  EXPECT_CALL(factory_, CreatePicker(nullptr));
+  EXPECT_CALL(factory_, CreateMediaList(source_types_, nullptr));
   EXPECT_CALL(done_, Run("", media_id_));
   EXPECT_CALL(*picker_, Show)
       .WillOnce(WithArg<2>([&](DesktopMediaPicker::DoneCallback cb) {
@@ -95,8 +101,8 @@ TEST_F(DesktopMediaPickerControllerTest, ShowPicker) {
 
 // Test that a null result is returned in response to WebContentsDestroyed().
 TEST_F(DesktopMediaPickerControllerTest, WebContentsDestroyed) {
-  EXPECT_CALL(factory_, CreatePicker());
-  EXPECT_CALL(factory_, CreateMediaList(source_types_));
+  EXPECT_CALL(factory_, CreatePicker(nullptr));
+  EXPECT_CALL(factory_, CreateMediaList(source_types_, nullptr));
   EXPECT_CALL(done_, Run("", content::DesktopMediaID()));
   EXPECT_CALL(*picker_, Show);
 
@@ -113,8 +119,8 @@ TEST_F(DesktopMediaPickerControllerTest, ShowSingleScreen) {
   source.id = media_id_;
   source.name = base::ASCIIToUTF16("fake name");
 
-  EXPECT_CALL(factory_, CreatePicker()).Times(0);
-  EXPECT_CALL(factory_, CreateMediaList(source_types_));
+  EXPECT_CALL(factory_, CreatePicker(nullptr)).Times(0);
+  EXPECT_CALL(factory_, CreateMediaList(source_types_, nullptr));
   EXPECT_CALL(done_, Run("", source.id));
   EXPECT_CALL(*picker_, Show).Times(0);
   EXPECT_CALL(*media_list_, Update)

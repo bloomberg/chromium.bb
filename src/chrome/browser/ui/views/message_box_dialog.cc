@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/browser/ui/views/message_box_dialog.h"
@@ -28,7 +29,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/window.h"  // nogncheck
 #endif
@@ -117,8 +118,9 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
-    int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
-                                title, GetMessageBoxFlagsFromType(type));
+    int result = ui::MessageBox(
+        views::HWNDForNativeWindow(parent), base::AsWString(message),
+        base::AsWString(title), GetMessageBoxFlagsFromType(type));
     std::move(callback).Run((result == IDYES || result == IDOK)
                                 ? chrome::MESSAGE_BOX_RESULT_YES
                                 : chrome::MESSAGE_BOX_RESULT_NO);
@@ -195,7 +197,7 @@ bool MessageBoxDialog::ShouldShowCloseButton() const {
 
 void MessageBoxDialog::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (GetWidget()->GetNativeWindow()->GetProperty(
           chromeos::kIsShowingInOverviewKey)) {
     // Prevent this from closing while starting overview mode for better UX.
@@ -221,7 +223,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
     : window_title_(title),
       type_(type),
       message_box_view_(new views::MessageBoxView(message)) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SetModalType(is_system_modal ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW);
 #else
   DCHECK(!is_system_modal);
@@ -311,15 +313,26 @@ void ShowWarningMessageBoxWithCheckbox(
                                std::move(callback).Run(message_box_result ==
                                                        MESSAGE_BOX_RESULT_YES);
                              },
-                             base::Passed(std::move(callback))));
+                             std::move(callback)));
 }
 
-MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
-                                        const base::string16& title,
-                                        const base::string16& message) {
+MessageBoxResult ShowQuestionMessageBoxSync(gfx::NativeWindow parent,
+                                            const base::string16& title,
+                                            const base::string16& message) {
   return MessageBoxDialog::Show(
       parent, title, message, chrome::MESSAGE_BOX_TYPE_QUESTION,
       base::string16(), base::string16(), base::string16());
+}
+
+void ShowQuestionMessageBox(
+    gfx::NativeWindow parent,
+    const base::string16& title,
+    const base::string16& message,
+    base::OnceCallback<void(MessageBoxResult)> callback) {
+  MessageBoxDialog::Show(parent, title, message,
+                         chrome::MESSAGE_BOX_TYPE_QUESTION, base::string16(),
+                         base::string16(), base::string16(),
+                         std::move(callback));
 }
 
 MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,

@@ -14,9 +14,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -26,6 +28,7 @@
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -80,7 +83,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
@@ -162,6 +165,10 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
   void SetPriority(RequestPriority priority) override {}
   HttpStream* RenewStreamForAuth() override { return nullptr; }
+  const std::vector<std::string>& GetDnsAliases() const override {
+    static const base::NoDestructor<std::vector<std::string>> nullvector_result;
+    return *nullvector_result;
+  }
 
   std::unique_ptr<WebSocketStream> Upgrade() override {
     return std::unique_ptr<WebSocketStream>();
@@ -492,9 +499,6 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
 
 using HttpStreamFactoryTest = TestWithTaskEnvironment;
 
-// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
-// kAppendInitiatingFrameOriginToNetworkIsolationKey.
-
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
   for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(
@@ -660,10 +664,10 @@ TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   const GURL kURL("http://foo.test/");
-  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test"));
-  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
-  const NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
-  const NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
+  SchemefulSite kSiteFoo(GURL("http://foo.test"));
+  SchemefulSite kSiteBar(GURL("http://bar.test"));
+  const NetworkIsolationKey kKey1(kSiteFoo, kSiteFoo);
+  const NetworkIsolationKey kKey2(kSiteBar, kSiteBar);
   PreconnectHelperForURL(1, kURL, kKey1, false /* disable_secure_dns */,
                          session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
@@ -698,8 +702,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectDisableSecureDns) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   const GURL kURL("http://foo.test/");
-  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test"));
-  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
+  SchemefulSite kSiteFoo(GURL("http://foo.test"));
+  SchemefulSite kSiteBar(GURL("http://bar.test"));
   PreconnectHelperForURL(1, kURL, NetworkIsolationKey(),
                          false /* disable_secure_dns */, session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
@@ -851,8 +855,6 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     session_context.cert_verifier = &cert_verifier;
     TransportSecurityState transport_security_state;
     session_context.transport_security_state = &transport_security_state;
-    MultiLogCTVerifier ct_verifier;
-    session_context.cert_transparency_verifier = &ct_verifier;
     DefaultCTPolicyEnforcer ct_policy_enforcer;
     QuicContext quic_context;
     session_context.ct_policy_enforcer = &ct_policy_enforcer;
@@ -1668,10 +1670,10 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
 // should probably be merged into the above test.
 TEST_F(HttpStreamFactoryTest,
        RequestSpdyHttpStreamHttpURLWithNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -1950,10 +1952,10 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quiche::QuicheStrCat(
-      ParsedQuicVersionToString(p.version), "_",
-      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
-      "Dependency");
+  return base::StrCat(
+      {ParsedQuicVersionToString(p.version), "_",
+       (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+       "Dependency"});
 }
 
 std::vector<TestParams> GetTestParams() {
@@ -2030,7 +2032,6 @@ class HttpStreamFactoryBidirectionalQuicTest
     session_context.quic_crypto_client_stream_factory =
         &crypto_client_stream_factory_;
     session_context.transport_security_state = &transport_security_state_;
-    session_context.cert_transparency_verifier = &ct_verifier_;
     session_context.ct_policy_enforcer = &ct_policy_enforcer_;
     session_context.host_resolver = &host_resolver_;
     session_context.proxy_resolution_service = proxy_resolution_service_.get();
@@ -2085,7 +2086,6 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   HttpServerProperties http_server_properties_;
   TransportSecurityState transport_security_state_;
-  MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   MockHostResolver host_resolver_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
@@ -3136,7 +3136,6 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
     session_context_.host_resolver = &host_resolver_;
     session_context_.cert_verifier = &cert_verifier_;
     session_context_.transport_security_state = &transport_security_state_;
-    session_context_.cert_transparency_verifier = &ct_verifier_;
     session_context_.client_socket_factory = &socket_factory_;
     session_context_.ct_policy_enforcer = &ct_policy_enforcer_;
     session_context_.ssl_config_service = &ssl_config_service_;
@@ -3159,7 +3158,6 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
-  MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
 };
 
@@ -3184,10 +3182,10 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
-  ;
+
   NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
 
   http_server_properties_.SetAlternativeServices(
       origin, network_isolation_key,
@@ -3227,8 +3225,8 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicOldFormat) {
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
   NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
@@ -3257,18 +3255,18 @@ TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   // Note that this test only covers the Google-specific AltSvc format
   // which is now deprecated.
   quic_context_.params()->supported_versions = {
-      quic::ParsedQuicVersion::Q043(), quic::ParsedQuicVersion::T050()};
+      quic::ParsedQuicVersion::Q043(), quic::ParsedQuicVersion::T051()};
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
   NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"50,43\"");
+  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"51,43\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
@@ -3280,7 +3278,7 @@ TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
   EXPECT_EQ(kProtoQUIC, alternatives[0].protocol());
   EXPECT_EQ(HostPortPair("example.com", 443), alternatives[0].host_port_pair());
   EXPECT_EQ(1u, alternatives[0].advertised_versions().size());
-  // Q043 and T050 are supported.  Q043 and Q050 are advertised in the Alt-Svc
+  // Q043 and T051 are supported.  Q043 and Q050 are advertised in the Alt-Svc
   // header.  Therefore only Q043 is parsed.
   EXPECT_EQ(quic::ParsedQuicVersion::Q043(),
             alternatives[0].advertised_versions()[0]);
@@ -3293,13 +3291,13 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
   NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
   headers->AddHeader("alt-svc",
-                     "h3-27=\":443\","
+                     "h3-29=\":443\","
                      "h3-Q050=\":443\","
                      "h3-Q043=\":443\"");
 
@@ -3307,7 +3305,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       session_.get(), network_isolation_key, headers.get(), origin);
 
   quic::ParsedQuicVersionVector versions = {
-      quic::ParsedQuicVersion::Draft27(),
+      quic::ParsedQuicVersion::Draft29(),
       quic::ParsedQuicVersion::Q050(),
       quic::ParsedQuicVersion::Q043(),
   };
@@ -3331,8 +3329,8 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
   NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
 
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));

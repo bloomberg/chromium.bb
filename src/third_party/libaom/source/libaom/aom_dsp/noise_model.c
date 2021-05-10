@@ -1591,7 +1591,7 @@ static int denoise_and_model_realloc_if_necessary(
 
 int aom_denoise_and_model_run(struct aom_denoise_and_model_t *ctx,
                               YV12_BUFFER_CONFIG *sd,
-                              aom_film_grain_t *film_grain) {
+                              aom_film_grain_t *film_grain, int apply_denoise) {
   const int block_size = ctx->block_size;
   const int use_highbd = (sd->flags & YV12_FLAG_HIGHBITDEPTH) != 0;
   uint8_t *raw_data[3] = {
@@ -1643,12 +1643,14 @@ int aom_denoise_and_model_run(struct aom_denoise_and_model_t *ctx,
     if (!film_grain->random_seed) {
       film_grain->random_seed = 7391;
     }
-    memcpy(raw_data[0], ctx->denoised[0],
-           (strides[0] * sd->y_height) << use_highbd);
-    memcpy(raw_data[1], ctx->denoised[1],
-           (strides[1] * sd->uv_height) << use_highbd);
-    memcpy(raw_data[2], ctx->denoised[2],
-           (strides[2] * sd->uv_height) << use_highbd);
+    if (apply_denoise) {
+      memcpy(raw_data[0], ctx->denoised[0],
+             (strides[0] * sd->y_height) << use_highbd);
+      memcpy(raw_data[1], ctx->denoised[1],
+             (strides[1] * sd->uv_height) << use_highbd);
+      memcpy(raw_data[2], ctx->denoised[2],
+             (strides[2] * sd->uv_height) << use_highbd);
+    }
   }
   return 1;
 }

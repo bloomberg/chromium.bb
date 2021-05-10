@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -31,6 +30,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -171,7 +171,11 @@ class OzonePlatformWayland : public OzonePlatform {
 
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
+#else
+    cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
+#endif
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
@@ -224,6 +228,8 @@ class OzonePlatformWayland : public OzonePlatform {
       // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
       properties->custom_frame_pref_default = true;
 
+      properties->uses_external_vulkan_image_factory = true;
+
       // Wayland doesn't provide clients with global screen coordinates.
       // Instead, it forces clients to position windows relative to their top
       // level windows if the have child-parent relationship. In case of
@@ -250,7 +256,8 @@ class OzonePlatformWayland : public OzonePlatform {
         properties;
     static bool initialized = false;
     if (!initialized) {
-      properties->supports_overlays = ui::IsWaylandOverlayDelegationEnabled();
+      properties->supports_overlays =
+          ui::IsWaylandOverlayDelegationEnabled() && connection_->viewporter();
       initialized = true;
     }
     return *properties;

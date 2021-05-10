@@ -123,24 +123,70 @@ void LazyBuiltinsAssembler::CompileLazy(TNode<JSFunction> function) {
   // If feedback cell isn't initialized, compile function
   GotoIf(IsUndefined(feedback_cell_value), &compile_function);
 
-  Label use_sfi_code(this);
+  Label maybe_use_sfi_code(this);
   // If there is no feedback, don't check for optimized code.
   GotoIf(HasInstanceType(feedback_cell_value, CLOSURE_FEEDBACK_CELL_ARRAY_TYPE),
-         &use_sfi_code);
+         &maybe_use_sfi_code);
 
   // If it isn't undefined or fixed array it must be a feedback vector.
   CSA_ASSERT(this, IsFeedbackVector(feedback_cell_value));
 
   // Is there an optimization marker or optimized code in the feedback vector?
   MaybeTailCallOptimizedCodeSlot(function, CAST(feedback_cell_value));
-  Goto(&use_sfi_code);
+  Goto(&maybe_use_sfi_code);
 
-  BIND(&use_sfi_code);
-  // If not, install the SFI's code entry and jump to that.
+  // At this point we have a candidate Code object. It's *not* a cached
+  // optimized Code object (we'd have tail-called it above). A usual case would
+  // be the InterpreterEntryTrampoline to start executing existing bytecode.
+  BIND(&maybe_use_sfi_code);
   CSA_ASSERT(this, TaggedNotEqual(sfi_code, HeapConstant(BUILTIN_CODE(
                                                 isolate(), CompileLazy))));
   StoreObjectField(function, JSFunction::kCodeOffset, sfi_code);
-  GenerateTailCallToJSCode(sfi_code, function);
+
+  Label tailcall_code(this);
+  Label baseline(this);
+
+  TVARIABLE(Code, code);
+
+  // Check if we have baseline code.
+  // TODO(v8:11429): We already know if we have baseline code in
+  // GetSharedFunctionInfoCode, make that jump to here.
+  TNode<Uint32T> code_flags =
+      LoadObjectField<Uint32T>(sfi_code, Code::kFlagsOffset);
+  TNode<Uint32T> code_kind = DecodeWord32<Code::KindField>(code_flags);
+  TNode<BoolT> is_baseline =
+      IsEqualInWord32<Code::KindField>(code_kind, CodeKind::BASELINE);
+  GotoIf(is_baseline, &baseline);
+
+  // Finally, check for presence of an NCI cached Code object - if an entry
+  // possibly exists, call into runtime to query the cache.
+  TNode<Uint8T> flags2 =
+      LoadObjectField<Uint8T>(shared, SharedFunctionInfo::kFlags2Offset);
+  TNode<BoolT> may_have_cached_code =
+      IsSetWord32<SharedFunctionInfo::MayHaveCachedCodeBit>(flags2);
+  code = Select<Code>(
+      may_have_cached_code,
+      [=]() {
+        return CAST(CallRuntime(Runtime::kTryInstallNCICode,
+                                Parameter<Context>(Descriptor::kContext),
+                                function));
+      },
+      [=]() { return sfi_code; });
+  Goto(&tailcall_code);
+
+  BIND(&baseline);
+  // Ensure we have a feedback vector.
+  code = Select<Code>(
+      IsFeedbackVector(feedback_cell_value), [=]() { return sfi_code; },
+      [=]() {
+        return CAST(CallRuntime(Runtime::kInstallBaselineCode,
+                                Parameter<Context>(Descriptor::kContext),
+                                function));
+      });
+  Goto(&tailcall_code);
+  BIND(&tailcall_code);
+  // Jump to the selected code entry.
+  GenerateTailCallToJSCode(code.value(), function);
 
   BIND(&compile_function);
   GenerateTailCallToReturnedCode(Runtime::kCompileLazy, function);

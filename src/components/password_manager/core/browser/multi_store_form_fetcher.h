@@ -23,7 +23,7 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
 
   // FormFetcher overrides.
   void Fetch() override;
-  bool IsBlacklisted() const override;
+  bool IsBlocklisted() const override;
   bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
                        const base::string16& username) const override;
   std::unique_ptr<FormFetcher> Clone() override;
@@ -39,23 +39,23 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
   void ProcessMigratedForms(
       std::vector<std::unique_ptr<PasswordForm>> forms) override;
 
-  // CompromisedCredentialsConsumer:
-  void OnGetCompromisedCredentials(
-      std::vector<CompromisedCredentials> compromised_credentials) override;
+  // InsecureCredentialsConsumer:
+  void OnGetInsecureCredentials(
+      std::vector<InsecureCredential> insecure_credentials) override;
 
  private:
   void AggregatePasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results);
 
   // Splits |results| into |federated_|, |non_federated_|,
-  // |is_blacklisted_in_profile_store_| and |is_blacklisted_in_account_store_|.
+  // |is_blocklisted_in_profile_store_| and |is_blocklisted_in_account_store_|.
   void SplitResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
-  // Whether there were any blacklisted credentials obtained from the profile
+  // Whether there were any blocklisted credentials obtained from the profile
   // and account password stores respectively.
-  bool is_blacklisted_in_profile_store_ = false;
-  bool is_blacklisted_in_account_store_ = false;
+  bool is_blocklisted_in_profile_store_ = false;
+  bool is_blocklisted_in_account_store_ = false;
 
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<PasswordForm>> partial_results_;

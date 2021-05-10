@@ -83,6 +83,37 @@ FieldRendererId MakeFieldRendererId() {
 
 }  // namespace
 
+void SetFormGroupValues(FormGroup& form_group,
+                        const std::vector<FormGroupValue>& values) {
+  for (const auto& value : values) {
+    form_group.SetRawInfoWithVerificationStatus(
+        value.type, base::UTF8ToUTF16(value.value), value.verification_status);
+  }
+}
+
+void VerifyFormGroupValues(const FormGroup& form_group,
+                           const std::vector<FormGroupValue>& values,
+                           bool ignore_status) {
+  for (const auto& value : values) {
+    SCOPED_TRACE(testing::Message()
+                 << "Expected for type "
+                 << AutofillType::ServerFieldTypeToString(value.type) << "\n\t"
+                 << value.value << " with status "
+                 << (ignore_status ? "(ignored)" : "")
+                 << value.verification_status << "\nFound:"
+                 << "\n\t" << form_group.GetRawInfo(value.type)
+                 << " with status "
+                 << form_group.GetVerificationStatus(value.type));
+
+    EXPECT_EQ(form_group.GetRawInfo(value.type),
+              base::UTF8ToUTF16(value.value));
+    if (!ignore_status) {
+      EXPECT_EQ(form_group.GetVerificationStatus(value.type),
+                value.verification_status);
+    }
+  }
+}
+
 std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
@@ -176,9 +207,9 @@ void CreateTestAddressFormData(FormData* form,
   form->button_titles = {
       std::make_pair(ASCIIToUTF16("Submit"),
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
-  form->url = GURL("http://myform.com/form.html");
-  form->full_url = GURL("http://myform.com/form.html?foo=bar");
-  form->action = GURL("http://myform.com/submit.html");
+  form->url = GURL("https://myform.com/form.html");
+  form->full_url = GURL("https://myform.com/form.html?foo=bar");
+  form->action = GURL("https://myform.com/submit.html");
   form->is_action_empty = true;
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
@@ -216,6 +247,10 @@ void CreateTestAddressFormData(FormData* form,
   form->fields.push_back(field);
   type_set.clear();
   type_set.insert(ADDRESS_HOME_LINE2);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInAddresses)) {
+    type_set.insert(ADDRESS_HOME_SUBPREMISE);
+  }
   types->push_back(type_set);
   test::CreateTestFormField("City", "city", "", "text", &field);
   form->fields.push_back(field);
@@ -254,9 +289,9 @@ void CreateTestPersonalInformationFormData(FormData* form,
   form->unique_renderer_id = MakeFormRendererId();
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
-  form->url = GURL("http://myform.com/form.html");
-  form->full_url = GURL("http://myform.com/form.html?foo=bar");
-  form->action = GURL("http://myform.com/submit.html");
+  form->url = GURL("https://myform.com/form.html");
+  form->full_url = GURL("https://myform.com/form.html?foo=bar");
+  form->action = GURL("https://myform.com/submit.html");
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
 
@@ -281,7 +316,7 @@ void CreateTestCreditCardFormData(FormData* form,
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   if (is_https) {
     form->url = GURL("https://myform.com/form.html");
-    form->full_url = GURL("http://myform.com/form.html?foo=bar");
+    form->full_url = GURL("https://myform.com/form.html?foo=bar");
     form->action = GURL("https://myform.com/submit.html");
     form->main_frame_origin =
         url::Origin::Create(GURL("https://myform_root.com/form.html"));
@@ -324,13 +359,15 @@ void CreateTestCreditCardFormData(FormData* form,
   form->fields.push_back(field);
 }
 
-inline void check_and_set(FormGroup* profile,
-                          ServerFieldType type,
-                          const char* value) {
+inline void check_and_set(
+    FormGroup* profile,
+    ServerFieldType type,
+    const char* value,
+    structured_address::VerificationStatus status =
+        structured_address::VerificationStatus::kObserved) {
   if (value) {
-    profile->SetRawInfoWithVerificationStatus(
-        type, base::UTF8ToUTF16(value),
-        structured_address::VerificationStatus::kObserved);
+    profile->SetRawInfoWithVerificationStatus(type, base::UTF8ToUTF16(value),
+                                              status);
   }
 }
 
@@ -619,20 +656,22 @@ void SetProfileInfo(AutofillProfile* profile,
                     const char* zipcode,
                     const char* country,
                     const char* phone,
-                    bool finalize) {
-  check_and_set(profile, NAME_FIRST, first_name);
-  check_and_set(profile, NAME_MIDDLE, middle_name);
-  check_and_set(profile, NAME_LAST, last_name);
-  check_and_set(profile, EMAIL_ADDRESS, email);
-  check_and_set(profile, COMPANY_NAME, company);
-  check_and_set(profile, ADDRESS_HOME_LINE1, address1);
-  check_and_set(profile, ADDRESS_HOME_LINE2, address2);
-  check_and_set(profile, ADDRESS_HOME_DEPENDENT_LOCALITY, dependent_locality);
-  check_and_set(profile, ADDRESS_HOME_CITY, city);
-  check_and_set(profile, ADDRESS_HOME_STATE, state);
-  check_and_set(profile, ADDRESS_HOME_ZIP, zipcode);
-  check_and_set(profile, ADDRESS_HOME_COUNTRY, country);
-  check_and_set(profile, PHONE_HOME_WHOLE_NUMBER, phone);
+                    bool finalize,
+                    structured_address::VerificationStatus status) {
+  check_and_set(profile, NAME_FIRST, first_name, status);
+  check_and_set(profile, NAME_MIDDLE, middle_name, status);
+  check_and_set(profile, NAME_LAST, last_name, status);
+  check_and_set(profile, EMAIL_ADDRESS, email, status);
+  check_and_set(profile, COMPANY_NAME, company, status);
+  check_and_set(profile, ADDRESS_HOME_LINE1, address1, status);
+  check_and_set(profile, ADDRESS_HOME_LINE2, address2, status);
+  check_and_set(profile, ADDRESS_HOME_DEPENDENT_LOCALITY, dependent_locality,
+                status);
+  check_and_set(profile, ADDRESS_HOME_CITY, city, status);
+  check_and_set(profile, ADDRESS_HOME_STATE, state, status);
+  check_and_set(profile, ADDRESS_HOME_ZIP, zipcode, status);
+  check_and_set(profile, ADDRESS_HOME_COUNTRY, country, status);
+  check_and_set(profile, PHONE_HOME_WHOLE_NUMBER, phone, status);
   if (finalize)
     profile->FinalizeAfterImport();
 }
@@ -650,19 +689,20 @@ void SetProfileInfo(AutofillProfile* profile,
                     const char* zipcode,
                     const char* country,
                     const char* phone,
-                    bool finalize) {
-  check_and_set(profile, NAME_FIRST, first_name);
-  check_and_set(profile, NAME_MIDDLE, middle_name);
-  check_and_set(profile, NAME_LAST, last_name);
-  check_and_set(profile, EMAIL_ADDRESS, email);
-  check_and_set(profile, COMPANY_NAME, company);
-  check_and_set(profile, ADDRESS_HOME_LINE1, address1);
-  check_and_set(profile, ADDRESS_HOME_LINE2, address2);
-  check_and_set(profile, ADDRESS_HOME_CITY, city);
-  check_and_set(profile, ADDRESS_HOME_STATE, state);
-  check_and_set(profile, ADDRESS_HOME_ZIP, zipcode);
-  check_and_set(profile, ADDRESS_HOME_COUNTRY, country);
-  check_and_set(profile, PHONE_HOME_WHOLE_NUMBER, phone);
+                    bool finalize,
+                    structured_address::VerificationStatus status) {
+  check_and_set(profile, NAME_FIRST, first_name, status);
+  check_and_set(profile, NAME_MIDDLE, middle_name, status);
+  check_and_set(profile, NAME_LAST, last_name, status);
+  check_and_set(profile, EMAIL_ADDRESS, email, status);
+  check_and_set(profile, COMPANY_NAME, company, status);
+  check_and_set(profile, ADDRESS_HOME_LINE1, address1, status);
+  check_and_set(profile, ADDRESS_HOME_LINE2, address2, status);
+  check_and_set(profile, ADDRESS_HOME_CITY, city, status);
+  check_and_set(profile, ADDRESS_HOME_STATE, state, status);
+  check_and_set(profile, ADDRESS_HOME_ZIP, zipcode, status);
+  check_and_set(profile, ADDRESS_HOME_COUNTRY, country, status);
+  check_and_set(profile, PHONE_HOME_WHOLE_NUMBER, phone, status);
   if (finalize)
     profile->FinalizeAfterImport();
 }
@@ -681,12 +721,13 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
                             const char* zipcode,
                             const char* country,
                             const char* phone,
-                            bool finalize) {
+                            bool finalize,
+                            structured_address::VerificationStatus status) {
   if (guid)
     profile->set_guid(guid);
   SetProfileInfo(profile, first_name, middle_name, last_name, email, company,
                  address1, address2, city, state, zipcode, country, phone,
-                 finalize);
+                 finalize, status);
 }
 
 void SetCreditCardInfo(CreditCard* credit_card,
@@ -830,28 +871,6 @@ void FillUploadField(AutofillUploadContents::Field* field,
     type_validities->add_validity(validity_states[i]);
 }
 
-void FillQueryField(AutofillQueryContents::Form::Field* field,
-                    unsigned signature,
-                    const char* name,
-                    const char* control_type) {
-  field->set_signature(signature);
-  if (name)
-    field->set_name(name);
-  if (control_type)
-    field->set_type(control_type);
-}
-
-void FillQueryField(AutofillPageQueryRequest_Form_Field* field,
-                    unsigned signature,
-                    const char* name,
-                    const char* control_type) {
-  field->set_signature(signature);
-  if (name)
-    field->set_name(name);
-  if (control_type)
-    field->set_control_type(control_type);
-}
-
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
   int query_id = 1;
@@ -875,26 +894,22 @@ std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {
 
 std::string NextMonth() {
   base::Time::Exploded now;
-  // Using AutofillClock here might cause test flakiness. See crbug/1108232.
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::StringPrintf("%02d", now.month % 12 + 1);
 }
 std::string LastYear() {
   base::Time::Exploded now;
-  // Using AutofillClock here might cause test flakiness. See crbug/1108232.
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year - 1);
 }
 std::string NextYear() {
   base::Time::Exploded now;
-  // Using AutofillClock here might cause test flakiness. See crbug/1108232.
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 1);
 }
 std::string TenYearsFromNow() {
   base::Time::Exploded now;
-  // Using AutofillClock here might cause test flakiness. See crbug/1108232.
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 10);
 }
 
@@ -910,6 +925,43 @@ std::vector<FormSignature> GetEncodedSignatures(
   for (const FormStructure* form : forms)
     all_signatures.push_back(form->form_signature());
   return all_signatures;
+}
+
+void AddFieldSuggestionToForm(
+    const autofill::FormFieldData& field_data,
+    ServerFieldType field_type,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  auto* field_suggestion = form_suggestion->add_field_suggestions();
+  field_suggestion->set_field_signature(
+      CalculateFieldSignatureForField(field_data).value());
+  field_suggestion->set_primary_type_prediction(field_type);
+}
+
+void AddFieldPredictionsToForm(
+    const autofill::FormFieldData& field_data,
+    const std::vector<int>& field_types,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  std::vector<ServerFieldType> types;
+  for (auto type : field_types) {
+    types.emplace_back(static_cast<ServerFieldType>(type));
+  }
+  AddFieldPredictionsToForm(field_data, types, form_suggestion);
+}
+
+void AddFieldPredictionsToForm(
+    const autofill::FormFieldData& field_data,
+    const std::vector<ServerFieldType>& field_types,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  // According to api_v1.proto, the first element is always set to primary type.
+  auto* field_suggestion = form_suggestion->add_field_suggestions();
+  field_suggestion->set_field_signature(
+      CalculateFieldSignatureForField(field_data).value());
+  field_suggestion->set_primary_type_prediction(*field_types.begin());
+  for (auto field_type : field_types) {
+    AutofillQueryResponse_FormSuggestion_FieldSuggestion_FieldPrediction*
+        prediction = field_suggestion->add_predictions();
+    prediction->set_type(field_type);
+  }
 }
 
 }  // namespace test

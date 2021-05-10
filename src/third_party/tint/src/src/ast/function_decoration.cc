@@ -14,35 +14,19 @@
 
 #include "src/ast/function_decoration.h"
 
-#include <assert.h>
-
-#include "src/ast/stage_decoration.h"
-#include "src/ast/workgroup_decoration.h"
+TINT_INSTANTIATE_CLASS_ID(tint::ast::FunctionDecoration);
 
 namespace tint {
 namespace ast {
 
-FunctionDecoration::FunctionDecoration(const Source& source)
-    : Decoration(Kind, source) {}
+constexpr const DecorationKind FunctionDecoration::Kind;
+
+FunctionDecoration::FunctionDecoration(const Source& source) : Base(source) {}
 
 FunctionDecoration::~FunctionDecoration() = default;
 
-bool FunctionDecoration::IsStage() const {
-  return false;
-}
-
-bool FunctionDecoration::IsWorkgroup() const {
-  return false;
-}
-
-const StageDecoration* FunctionDecoration::AsStage() const {
-  assert(IsStage());
-  return static_cast<const StageDecoration*>(this);
-}
-
-const WorkgroupDecoration* FunctionDecoration::AsWorkgroup() const {
-  assert(IsWorkgroup());
-  return static_cast<const WorkgroupDecoration*>(this);
+DecorationKind FunctionDecoration::GetKind() const {
+  return Kind;
 }
 
 }  // namespace ast

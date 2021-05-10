@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -416,9 +416,9 @@
          FT_FRAME_ENTER( sfnt.num_tables * 16L ) )
       goto Exit;
 
-    FT_TRACE2(( "\n"
-                "  tag    offset    length   checksum\n"
-                "  ----------------------------------\n" ));
+    FT_TRACE2(( "\n" ));
+    FT_TRACE2(( "  tag    offset    length   checksum\n" ));
+    FT_TRACE2(( "  ----------------------------------\n" ));
 
     valid_entries = 0;
     for ( nn = 0; nn < sfnt.num_tables; nn++ )
@@ -505,7 +505,8 @@
 
     FT_FRAME_EXIT();
 
-    FT_TRACE2(( "table directory loaded\n\n" ));
+    FT_TRACE2(( "table directory loaded\n" ));
+    FT_TRACE2(( "\n" ));
 
   Exit:
     return error;
@@ -794,8 +795,8 @@
       if ( maxProfile->maxTwilightPoints > ( 0xFFFFU - 4 ) )
       {
         FT_TRACE0(( "tt_face_load_maxp:"
-                    " too much twilight points in `maxp' table;\n"
-                    "                  "
+                    " too much twilight points in `maxp' table;\n" ));
+        FT_TRACE0(( "                  "
                     " some glyphs might be rendered incorrectly\n" ));
 
         maxProfile->maxTwilightPoints = 0xFFFFU - 4;

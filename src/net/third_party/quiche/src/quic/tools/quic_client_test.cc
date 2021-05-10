@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_client.h"
+#include "quic/tools/quic_client.h"
 
 #include <dirent.h>
 #include <sys/types.h>
@@ -12,13 +12,13 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_port_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_client_peer.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_port_utils.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test_loopback.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_client_peer.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -29,7 +29,8 @@ const char* kPathToFds = "/proc/self/fd";
 std::string ReadLink(const std::string& path) {
   std::string result(PATH_MAX, '\0');
   ssize_t result_size = readlink(path.c_str(), &result[0], result.size());
-  CHECK(result_size > 0 && static_cast<size_t>(result_size) < result.size());
+  QUICHE_CHECK(result_size > 0 &&
+               static_cast<size_t>(result_size) < result.size());
   result.resize(result_size);
   return result;
 }
@@ -46,7 +47,7 @@ size_t NumOpenSocketFDs() {
       continue;
     }
 
-    std::string fd_path = ReadLink(quiche::QuicheStrCat(kPathToFds, "/", name));
+    std::string fd_path = ReadLink(absl::StrCat(kPathToFds, "/", name));
     if (absl::StartsWith(fd_path, "socket:")) {
       socket_count++;
     }

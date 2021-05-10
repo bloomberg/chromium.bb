@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/unix_domain_socket.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -174,6 +174,8 @@ void FakePowerManagerClient::RequestStatusUpdate() {
       FROM_HERE, base::BindOnce(&FakePowerManagerClient::NotifyObservers,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
+
+void FakePowerManagerClient::RequestThermalState() {}
 
 void FakePowerManagerClient::RequestSuspend() {}
 
@@ -390,7 +392,10 @@ void FakePowerManagerClient::RefreshBluetoothBattery(
   for (auto& observer : observers_) {
     observer.PeripheralBatteryStatusReceived(
         SysnameFromBluetoothAddress(address), "somename",
-        peripheral_battery_refresh_levels_[address]);
+        peripheral_battery_refresh_levels_[address],
+        power_manager::
+            PeripheralBatteryStatus_ChargeStatus_CHARGE_STATUS_UNKNOWN,
+        /*active_update=*/true);
   }
 }
 

@@ -11,13 +11,13 @@
 #include "base/base64.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -72,6 +72,8 @@ const char kDefaultCount[] = "10";
 // Used if the output encoding parameter is required.
 const char kOutputEncodingType[] = "UTF-8";
 
+const size_t kMaxStringEncodeStringLength = 1'000'000;
+
 // Attempts to encode |terms| and |original_query| in |encoding| and escape
 // them.  |terms| may be escaped as path or query depending on |is_in_query|;
 // |original_query| is always escaped as query. If |force_encode| is true
@@ -86,12 +88,23 @@ bool TryEncoding(const base::string16& terms,
                  base::string16* escaped_original_query) {
   DCHECK(escaped_terms);
   DCHECK(escaped_original_query);
+
+  // Both |base::UTF16ToCodepage()| and |net::Escape*()| invocations below
+  // create strings longer than their inputs. To ensure doing so does not crash,
+  // this truncates |terms| to |kMaxStringEncodeStringLength|.
+  const base::string16& truncated_terms =
+      terms.size() > kMaxStringEncodeStringLength
+          ? terms.substr(0, kMaxStringEncodeStringLength)
+          : terms;
+
   base::OnStringConversionError::Type error_handling =
       force_encode ? base::OnStringConversionError::SKIP
                    : base::OnStringConversionError::FAIL;
   std::string encoded_terms;
-  if (!base::UTF16ToCodepage(terms, encoding, error_handling, &encoded_terms))
+  if (!base::UTF16ToCodepage(truncated_terms, encoding, error_handling,
+                             &encoded_terms)) {
     return false;
+  }
   *escaped_terms = base::UTF8ToUTF16(is_in_query ?
       net::EscapeQueryParamValue(encoded_terms, true) :
       net::EscapePath(encoded_terms));
@@ -636,10 +649,11 @@ bool TemplateURLRef::ParseParameter(size_t start,
     length--;
   }
 
-  const base::StringPiece parameter(original_url.begin() + start + 1,
-                                    original_url.begin() + start + 1 + length);
-  const base::StringPiece full_parameter(original_url.begin() + start,
-                                         original_url.begin() + end + 1);
+  const auto parameter =
+      base::MakeStringPiece(original_url.begin() + start + 1,
+                            original_url.begin() + start + 1 + length);
+  const auto full_parameter = base::MakeStringPiece(
+      original_url.begin() + start, original_url.begin() + end + 1);
   // Remove the parameter from the string.  For parameters who replacement is
   // constant and already known, just replace them directly.  For other cases,
   // like parameters whose values may change over time, use |replacements|.
@@ -653,6 +667,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_ASSISTED_QUERY_STATS, start));
   } else if (parameter == "google:baseURL") {
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
+  } else if (parameter == "google:baseSearchByImageURL") {
+    replacements->push_back(
+        Replacement(GOOGLE_BASE_SEARCH_BY_IMAGE_URL, start));
   } else if (parameter == "google:baseSuggestURL") {
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == "google:currentPageUrl") {
@@ -700,6 +717,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     // Do nothing, we just want the path wildcard removed from the URL.
   } else if (parameter == "google:prefetchQuery") {
     replacements->push_back(Replacement(GOOGLE_PREFETCH_QUERY, start));
+  } else if (parameter == "google:prefetchSource") {
+    replacements->push_back(Replacement(GOOGLE_PREFETCH_SOURCE, start));
   } else if (parameter == "google:RLZ") {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
   } else if (parameter == "google:searchClient") {
@@ -1043,6 +1062,13 @@ std::string TemplateURLRef::HandleReplacements(
             std::string(), search_terms_data.GoogleBaseURLValue(), *i, &url);
         break;
 
+      case GOOGLE_BASE_SEARCH_BY_IMAGE_URL:
+        DCHECK(!i->is_post_param);
+        HandleReplacement(std::string(),
+                          search_terms_data.GoogleBaseSearchByImageURLValue(),
+                          *i, &url);
+        break;
+
       case GOOGLE_BASE_SUGGEST_URL:
         DCHECK(!i->is_post_param);
         HandleReplacement(
@@ -1112,6 +1138,19 @@ std::string TemplateURLRef::HandleReplacements(
         if (!query.empty() && !type.empty()) {
           HandleReplacement(
               std::string(), "pfq=" + query + "&qha=" + type + "&", *i, &url);
+        }
+        break;
+      }
+
+      case GOOGLE_PREFETCH_SOURCE: {
+        if (search_terms_args.is_prefetch) {
+          // Currently, Chrome only support "cs" for prefetches, but if new
+          // prefetch sources (outside of suggestions) are added, a new prefetch
+          // source value is needed. These should denote the source of the
+          // prefetch to allow the search server to treat the requests based on
+          // source. "cs" represents Chrome Suggestions as the source. Adding a
+          // new source should be supported by the Search engine.
+          HandleReplacement(std::string(), "pf=cs&", *i, &url);
         }
         break;
       }
@@ -1335,8 +1374,15 @@ bool TemplateURL::IsBetterThanEngineWithConflictingKeyword(
                                 : base::Time(),
         // Prefer engines that CANNOT be auto-replaced.
         !engine->safe_for_autoreplace(),
-        // More recently modified engines win.
-        engine->last_modified(),
+        // Prefer engines created by Play API.
+        engine->created_from_play_api(),
+        // Favor prepopulated engines over other auto-generated engines.
+        engine->prepopulate_id() > 0,
+        // Favor engines derived from OpenSearch descriptions over
+        // autogenerated engines heuristically generated from searchable forms.
+        engine->originating_url().is_valid(),
+        // More recently modified engines or created engines win.
+        engine->last_modified(), engine->date_created(),
         // TODO(tommycli): This should be a tie-breaker than provides a total
         // ordering of all TemplateURLs so that distributed clients resolve
         // conflicts identically. This sync_guid is not globally unique today,

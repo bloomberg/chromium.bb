@@ -15,6 +15,7 @@
 #include "src/snapshot/embedded/platform-embedded-file-writer-base.h"
 
 #if defined(V8_OS_WIN64)
+#include "src/base/platform/wrappers.h"
 #include "src/diagnostics/unwinding-info-win64.h"
 #endif  // V8_OS_WIN64
 
@@ -41,8 +42,8 @@ class EmbeddedFileWriterInterface {
   // compiled builtin Code objects with trampolines.
   virtual void PrepareBuiltinSourcePositionMap(Builtins* builtins) = 0;
 
-  virtual void PrepareBuiltinLabelInfoMap(int create_offset, int invoke_offset,
-                                          int arguments_adaptor_offset) = 0;
+  virtual void PrepareBuiltinLabelInfoMap(int create_offset,
+                                          int invoke_offset) = 0;
 
 #if defined(V8_OS_WIN64)
   virtual void SetBuiltinUnwindData(
@@ -68,8 +69,8 @@ class EmbeddedFileWriter : public EmbeddedFileWriterInterface {
 
   void PrepareBuiltinSourcePositionMap(Builtins* builtins) override;
 
-  void PrepareBuiltinLabelInfoMap(int create_offset, int invoke_create,
-                                  int arguments_adaptor_offset) override;
+  void PrepareBuiltinLabelInfoMap(int create_offset,
+                                  int invoke_create) override;
 
 #if defined(V8_OS_WIN64)
   void SetBuiltinUnwindData(
@@ -113,7 +114,7 @@ class EmbeddedFileWriter : public EmbeddedFileWriterInterface {
     WriteCodeSection(writer.get(), blob);
     WriteFileEpilogue(writer.get(), blob);
 
-    fclose(fp);
+    base::Fclose(fp);
   }
 
   static FILE* GetFileDescriptorOrDie(const char* filename) {

@@ -27,14 +27,14 @@ import org.chromium.chrome.browser.password_manager.settings.PasswordUIView;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SignOutDialogFragment;
-import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -47,7 +47,8 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
- * Settings fragment to enable Sync and other services that communicate with Google.
+ * Settings fragment controlling a number of features communicating with Google services, such as
+ * search autocomplete and the automatic upload of crash reports.
  */
 public class GoogleServicesSettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener,
@@ -76,8 +77,8 @@ public class GoogleServicesSettings
     public static final String PREF_METRICS_SETTINGS = "metrics_settings";
 
     private final PrefService mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
-    private final PrivacyPreferencesManager mPrivacyPrefManager =
-            PrivacyPreferencesManager.getInstance();
+    private final PrivacyPreferencesManagerImpl mPrivacyPrefManager =
+            PrivacyPreferencesManagerImpl.getInstance();
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
     private final SharedPreferencesManager mSharedPreferencesManager =
@@ -98,8 +99,6 @@ public class GoogleServicesSettings
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
-        mPrivacyPrefManager.migrateNetworkPredictionPreferences();
-
         getActivity().setTitle(R.string.prefs_google_services);
         setHasOptionsMenu(true);
 
@@ -350,7 +349,7 @@ public class GoogleServicesSettings
                 return mPrefService.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();
+                return PrivacyPreferencesManagerImpl.getInstance().isMetricsReportingManaged();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
                 return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(
@@ -404,9 +403,7 @@ public class GoogleServicesSettings
 
                             @Override
                             public void signOutComplete() {
-                                if (clearDataProgressDialog.isAdded()) {
-                                    clearDataProgressDialog.dismissAllowingStateLoss();
-                                }
+                                clearDataProgressDialog.dismissAllowingStateLoss();
                             }
                         },
                         forceWipeUserData);

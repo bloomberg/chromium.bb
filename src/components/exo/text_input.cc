@@ -8,6 +8,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/strings/string_piece.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -131,17 +132,28 @@ void TextInput::ClearCompositionText() {
   delegate_->SetCompositionText(composition_);
 }
 
-void TextInput::InsertText(const base::string16& text) {
+void TextInput::InsertText(const base::string16& text,
+                           InsertTextCursorBehavior cursor_behavior) {
+  // TODO(crbug.com/1155331): Handle |cursor_behavior| correctly.
   delegate_->Commit(text);
 }
 
 void TextInput::InsertChar(const ui::KeyEvent& event) {
   base::char16 ch = event.GetCharacter();
   if (u_isprint(ch)) {
-    InsertText(base::string16(1, ch));
+    InsertText(
+        base::string16(1, ch),
+        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
     return;
   }
-  delegate_->SendKey(event);
+  // TextInput is currently used only for Lacros, and this is the
+  // short term workaround not to duplicate KeyEvent there.
+  // This is what we do for ARC, which is being removed in the near
+  // future.
+  // TODO(fukino): Get rid of this, too, when the wl_keyboard::key
+  // and text_input::keysym events are handled properly in Lacros.
+  if (window_ && ConsumedByIme(window_, event))
+    delegate_->SendKey(event);
 }
 
 ui::TextInputType TextInput::GetTextInputType() const {
@@ -348,15 +360,9 @@ gfx::Rect TextInput::GetAutocorrectCharacterBounds() const {
 }
 
 // TODO(crbug.com/1091088) Implement setAutocorrectRange
-bool TextInput::SetAutocorrectRange(const base::string16& autocorrect_text,
-                                    const gfx::Range& range) {
+bool TextInput::SetAutocorrectRange(const gfx::Range& range) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
-}
-
-// TODO(crbug.com/1091088) Implement ClearAutocorrectRange
-void TextInput::ClearAutocorrectRange() {
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void TextInput::OnKeyboardVisibilityChanged(bool is_visible) {

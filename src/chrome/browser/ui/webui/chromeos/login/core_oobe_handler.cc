@@ -6,6 +6,7 @@
 
 #include <type_traits>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -17,17 +18,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/screens/reset_screen.h"
+#include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/oobe_dialog_size_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
@@ -40,9 +42,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_constants.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
@@ -124,7 +123,8 @@ void CoreOobeHandler::Initialize() {
   version_info_updater_.StartUpdate(false);
 #endif
   UpdateKeyboardState();
-  UpdateClientAreaSize();
+  UpdateClientAreaSize(
+      display::Screen::GetScreen()->GetPrimaryDisplay().size());
 }
 
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -134,6 +134,8 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(DemoSetupController::IsDemoModeAllowed()));
   dict->SetKey("showTechnologyBadge",
                base::Value(!ash::features::IsSeparateNetworkIconsEnabled()));
+  dict->SetKey("newLayoutEnabled",
+               base::Value(features::IsNewOobeLayoutEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -157,6 +159,7 @@ void CoreOobeHandler::RegisterMessages() {
 
   AddCallback("hideOobeDialog", &CoreOobeHandler::HandleHideOobeDialog);
   AddCallback("updateOobeUIState", &CoreOobeHandler::HandleUpdateOobeUIState);
+  AddCallback("enableShelfButtons", &CoreOobeHandler::HandleEnableShelfButtons);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -173,26 +176,12 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
   LaunchResetScreen();
 }
 
-void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(
-      EnableAdbSideloadingScreenView::kScreenId);
-}
-
-void CoreOobeHandler::ShowSignInUI(const std::string& email) {
-  CallJS("cr.ui.Oobe.showSigninUI", email);
+void CoreOobeHandler::FocusReturned(bool reverse) {
+  CallJS("cr.ui.Oobe.focusReturned", reverse);
 }
 
 void CoreOobeHandler::ResetSignInUI(bool force_online) {
   CallJS("cr.ui.Oobe.resetSigninUI", force_online);
-}
-
-void CoreOobeHandler::ClearUserPodPassword() {
-  CallJS("cr.ui.Oobe.clearUserPodPassword");
-}
-
-void CoreOobeHandler::RefocusCurrentPod() {
-  CallJS("cr.ui.Oobe.refocusCurrentPod");
 }
 
 void CoreOobeHandler::ClearErrors() {
@@ -205,7 +194,12 @@ void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
 
 void CoreOobeHandler::ReloadEulaContent(
     const base::DictionaryValue& dictionary) {
-  CallJS("cr.ui.Oobe.reloadEulaContent", dictionary);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.reloadEulaContent", dictionary);
+  } else {
+    LOG(ERROR) << "Silently dropping ReloadEulaContent request.";
+  }
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
@@ -213,17 +207,45 @@ void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
 }
 
 void CoreOobeHandler::SetClientAreaSize(int width, int height) {
-  CallJS("cr.ui.Oobe.setClientAreaSize", width, height);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setClientAreaSize", width, height);
+  } else {
+    LOG(ERROR) << "Silently dropping SetClientAreaSize request.";
+  }
 }
 
 void CoreOobeHandler::SetShelfHeight(int height) {
-  CallJS("cr.ui.Oobe.setShelfHeight", height);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setShelfHeight", height);
+  } else {
+    LOG(ERROR) << "Silently dropping SetShelfHeight request.";
+  }
+}
+
+void CoreOobeHandler::SetOrientation(bool is_horizontal) {
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
+  } else {
+    LOG(ERROR) << "Silently dropping SetOrientation request.";
+  }
+}
+
+void CoreOobeHandler::SetDialogSize(int width, int height) {
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setDialogSize", width, height);
+  } else {
+    LOG(ERROR) << "Silently dropping SetDialogSize request.";
+  }
 }
 
 void CoreOobeHandler::HandleInitialized() {
   VLOG(3) << "CoreOobeHandler::HandleInitialized";
-  GetOobeUI()->InitializeHandlers();
   AllowJavascript();
+  GetOobeUI()->InitializeHandlers();
 }
 
 void CoreOobeHandler::HandleUpdateCurrentScreen(
@@ -237,6 +259,11 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
 void CoreOobeHandler::HandleHideOobeDialog() {
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->HideOobeDialog();
+}
+
+void CoreOobeHandler::HandleEnableShelfButtons(bool enable) {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->SetShelfButtonsEnabled(enable);
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting() {
@@ -319,7 +346,7 @@ void CoreOobeHandler::OnOSVersionLabelTextUpdated(
 
 void CoreOobeHandler::OnEnterpriseInfoUpdated(const std::string& message_text,
                                               const std::string& asset_id) {
-  CallJS("cr.ui.Oobe.setEnterpriseInfo", message_text, asset_id);
+  // Not relevant in OOBE mode.
 }
 
 void CoreOobeHandler::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
@@ -327,12 +354,17 @@ void CoreOobeHandler::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
 }
 
 ui::EventSink* CoreOobeHandler::GetEventSink() {
-  return ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
+  return ash::Shell::GetPrimaryRootWindow()->GetHost()->GetEventSink();
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
-  CallJS("cr.ui.Oobe.setLabelText", id, text);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setLabelText", id, text);
+  } else {
+    LOG(ERROR) << "Silently dropping UpdateLabel request.";
+  }
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
@@ -349,11 +381,18 @@ void CoreOobeHandler::OnTabletModeEnded() {
   CallJS("cr.ui.Oobe.setTabletModeState", false);
 }
 
-void CoreOobeHandler::UpdateClientAreaSize() {
-  const gfx::Size size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+void CoreOobeHandler::UpdateClientAreaSize(const gfx::Size& size) {
   SetClientAreaSize(size.width(), size.height());
   SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
+  if (features::IsNewOobeLayoutEnabled()) {
+    const gfx::Size display_size =
+        display::Screen::GetScreen()->GetPrimaryDisplay().size();
+    const bool is_horizontal = display_size.width() > display_size.height();
+    SetOrientation(is_horizontal);
+    const gfx::Size dialog_size = CalculateOobeDialogSize(
+        size, ash::ShelfConfig::Get()->shelf_size(), is_horizontal);
+    SetDialogSize(dialog_size.width(), dialog_size.height());
+  }
 }
 
 void CoreOobeHandler::SetDialogPaddingMode(
@@ -372,7 +411,12 @@ void CoreOobeHandler::SetDialogPaddingMode(
     default:
       NOTREACHED();
   }
-  CallJS("cr.ui.Oobe.setDialogPaddingMode", padding);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("cr.ui.Oobe.setDialogPaddingMode", padding);
+  } else {
+    LOG(ERROR) << "Silently dropping SetDialogPaddingMode request.";
+  }
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {

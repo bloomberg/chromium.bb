@@ -10,7 +10,7 @@
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/gfx/aw_draw_fn_impl.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
-#include "android_webview/browser/gfx/gpu_service_web_view.h"
+#include "android_webview/browser/gfx/gpu_service_webview.h"
 #include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
 #include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_allowlist.h"
@@ -64,6 +64,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/gl/gl_switches.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -142,7 +143,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // isn't much point in having the crash dumps there.
   cl->AppendSwitch(switches::kDisableOoprDebugCrashDump);
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
 
@@ -154,6 +154,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // confusing the tap suppression controller. Simply disable it for WebView
     ui::GestureConfiguration::GetInstance()
         ->set_fling_touchscreen_tap_suppression_enabled(false);
+
+    if (AwDrawFnImpl::IsUsingVulkan())
+      cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
 
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
     gin::V8Initializer::V8SnapshotFileType file_type =
@@ -168,11 +171,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(false, file_type));
-
-    if (AwDrawFnImpl::IsUsingVulkan())
-      cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
   }
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
     content::RenderProcessHost::SetMaxRendererProcessCount(1u);
@@ -202,6 +201,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       // When draw functor uses vulkan, assume that it is safe to enable viz
       // which depends on shared images.
       features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
+    } else {
+      // Not use ANGLE's Vulkan backend, if the draw functor is not using
+      // Vulkan.
+      features.DisableIfNotSet(::features::kDefaultANGLEVulkan);
     }
 
     // WebView uses kWebViewVulkan to control vulkan. Pre-emptively disable
@@ -209,20 +212,20 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.DisableIfNotSet(::features::kVulkan);
 
     features.DisableIfNotSet(::features::kWebPayments);
+    features.DisableIfNotSet(::features::kServiceWorkerPaymentApps);
 
     // WebView does not and should not support WebAuthN.
     features.DisableIfNotSet(::features::kWebAuth);
 
-    // Checking for command line here as FeatureList isn't initialized here yet,
-    // so we can't use FeatureList::IsEnabled. This is necessary if someone
-    // enabled feature through command line. Finch experiments will need to set
-    // all flags in trial config.
-    if (!features.IsEnabled(::features::kVizForWebView)) {
-      // Viz for WebView is required to support embedding CompositorFrameSinks
-      // which is needed for UseSurfaceLayerForVideo feature.
-      // https://crbug.com/853832
-      features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
-    }
+    // Enable VizForWebView by default.
+    features.EnableIfNotSet(::features::kVizForWebViewDefault);
+
+    // WebView doesn't support surface embedding without viz.The media code
+    // checks for both media::kDisableSurfaceLayerForVideo and VizForWebView to
+    // decide if it can embed, so we always enable kDisableSurfaceLayerForVideo
+    // here.
+    // https://crbug.com/853832
+    features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
 
     // WebView does not support overlay fullscreen yet for video overlays.
     features.DisableIfNotSet(media::kOverlayFullscreenVideo);
@@ -265,6 +268,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
         metrics::UnsentLogStoreMetrics::kRecordLastUnsentLogMetadataMetrics);
 
     features.DisableIfNotSet(::features::kPeriodicBackgroundSync);
+
+    // TODO(crbug.com/921655): Add support for User Agent Client hints on
+    // WebView.
+    features.DisableIfNotSet(::features::kUserAgentClientHint);
   }
 
   android_webview::RegisterPathProvider();
@@ -398,7 +405,8 @@ void AwMainDelegate::PostFieldTrialInitialization() {
 #endif
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
-  gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
+  gwp_asan::EnableForPartitionAlloc(is_canary_dev || is_browser_process,
+                                    process_type.c_str());
 #endif
 }
 

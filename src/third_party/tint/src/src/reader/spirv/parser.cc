@@ -14,32 +14,23 @@
 
 #include "src/reader/spirv/parser.h"
 
+#include <utility>
+
 #include "src/reader/spirv/parser_impl.h"
 
 namespace tint {
 namespace reader {
 namespace spirv {
 
-Parser::Parser(Context* ctx, const std::vector<uint32_t>& spv_binary)
-    : Reader(ctx), impl_(std::make_unique<ParserImpl>(ctx, spv_binary)) {}
-
-Parser::~Parser() = default;
-
-bool Parser::Parse() {
-  const auto result = impl_->Parse();
-  auto err_msg = impl_->error();
-  if (!err_msg.empty()) {
+Program Parse(const std::vector<uint32_t>& input) {
+  ParserImpl parser(input);
+  bool parsed = parser.Parse();
+  ProgramBuilder builder = std::move(parser.builder());
+  if (!parsed) {
     // TODO(bclayton): Migrate spirv::ParserImpl to using diagnostics.
-    diag::Diagnostic error{};
-    error.severity = diag::Severity::Error;
-    error.message = err_msg;
-    set_diagnostics({error});
+    builder.Diagnostics().add_error(parser.error());
   }
-  return result;
-}
-
-ast::Module Parser::module() {
-  return impl_->module();
+  return Program(std::move(builder));
 }
 
 }  // namespace spirv

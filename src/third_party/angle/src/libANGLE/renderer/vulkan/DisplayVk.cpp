@@ -47,7 +47,7 @@ void DisplayVk::terminate()
     mRenderer->reloadVolkIfNeeded();
 
     ASSERT(mRenderer);
-    mRenderer->onDestroy();
+    mRenderer->onDestroy(this);
 }
 
 egl::Error DisplayVk::makeCurrent(egl::Display * /*display*/,
@@ -74,21 +74,31 @@ egl::Error DisplayVk::restoreLostDevice(const egl::Display *display)
     return egl::EglBadDisplay();
 }
 
-std::string DisplayVk::getVendorString() const
+std::string DisplayVk::getRendererDescription()
 {
-    std::string vendorString = "Google Inc.";
     if (mRenderer)
     {
-        vendorString += " " + mRenderer->getVendorString();
+        return mRenderer->getRendererDescription();
     }
-
-    return vendorString;
+    return std::string();
 }
 
-DeviceImpl *DisplayVk::createDevice()
+std::string DisplayVk::getVendorString()
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    if (mRenderer)
+    {
+        return mRenderer->getVendorString();
+    }
+    return std::string();
+}
+
+std::string DisplayVk::getVersionString()
+{
+    if (mRenderer)
+    {
+        return mRenderer->getVersionString();
+    }
+    return std::string();
 }
 
 egl::Error DisplayVk::waitClient(const gl::Context *context)
@@ -218,7 +228,8 @@ void DisplayVk::generateExtensions(egl::DisplayExtensions *outExtensions) const
         outExtensions->glColorspace && getRenderer()->getFeatures().supportsImageFormatList.enabled;
 
 #if defined(ANGLE_PLATFORM_ANDROID)
-    outExtensions->framebufferTargetANDROID = true;
+    outExtensions->getNativeClientBufferANDROID = true;
+    outExtensions->framebufferTargetANDROID     = true;
 #endif  // defined(ANGLE_PLATFORM_ANDROID)
 
     // Disable context priority when non-zero memory init is enabled. This enforces a queue order.
@@ -260,10 +271,10 @@ void DisplayVk::handleError(VkResult result,
 {
     ASSERT(result != VK_SUCCESS);
 
-    mSavedError.mErrorCode = result;
-    mSavedError.mFile      = file;
-    mSavedError.mFunction  = function;
-    mSavedError.mLine      = line;
+    mSavedError.errorCode = result;
+    mSavedError.file      = file;
+    mSavedError.function  = function;
+    mSavedError.line      = line;
 
     if (result == VK_ERROR_DEVICE_LOST)
     {
@@ -277,10 +288,9 @@ void DisplayVk::handleError(VkResult result,
 egl::Error DisplayVk::getEGLError(EGLint errorCode)
 {
     std::stringstream errorStream;
-    errorStream << "Internal Vulkan error (" << mSavedError.mErrorCode
-                << "): " << VulkanResultString(mSavedError.mErrorCode) << ", in "
-                << mSavedError.mFile << ", " << mSavedError.mFunction << ":" << mSavedError.mLine
-                << ".";
+    errorStream << "Internal Vulkan error (" << mSavedError.errorCode
+                << "): " << VulkanResultString(mSavedError.errorCode) << ", in " << mSavedError.file
+                << ", " << mSavedError.function << ":" << mSavedError.line << ".";
     std::string errorString = errorStream.str();
 
     return egl::Error(errorCode, 0, std::move(errorString));
@@ -291,11 +301,15 @@ void DisplayVk::populateFeatureList(angle::FeatureList *features)
     mRenderer->getFeatures().populateFeatureList(features);
 }
 
+ShareGroupVk::ShareGroupVk() : mSyncObjectPendingFlush(false) {}
+
 void ShareGroupVk::onDestroy(const egl::Display *display)
 {
     DisplayVk *displayVk = vk::GetImpl(display);
 
-    mPipelineLayoutCache.destroy(displayVk->getDevice());
-    mDescriptorSetLayoutCache.destroy(displayVk->getDevice());
+    mPipelineLayoutCache.destroy(displayVk->getRenderer());
+    mDescriptorSetLayoutCache.destroy(displayVk->getRenderer());
+
+    ASSERT(mResourceUseLists.empty());
 }
 }  // namespace rx

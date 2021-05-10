@@ -47,7 +47,7 @@ LIB_TO_LICENSES_DICT = {
         'com_google_errorprone_error_prone_core/LICENSE'
     ],
     'fiat': ['third_party/boringssl/src/third_party/fiat/LICENSE'],
-    'guava': ['third_party/guava/LICENSE'],
+    'guava': ['third_party/android_deps/libs/com_google_guava_guava/LICENSE'],
     'ijar': ['third_party/ijar/LICENSE'],
     'jsoncpp': ['third_party/jsoncpp/LICENSE'],
     'libaom': ['third_party/libaom/source/libaom/LICENSE'],
@@ -78,6 +78,8 @@ LIB_TO_LICENSES_DICT = {
     # TODO(bugs.webrtc.org/1110): Remove this hack. This is not a lib.
     # For some reason it is listed as so in _GetThirdPartyLibraries.
     'android_deps': [],
+    # This is not a library but a collection of libraries.
+    'androidx': [],
 
     # Compile time dependencies, no license needed:
     'yasm': [],

@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -22,9 +23,9 @@
 #include "components/version_info/version_info.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
@@ -51,7 +52,7 @@ version_info::Channel BrowserReportGeneratorDesktop::GetChannel() {
 
 void BrowserReportGeneratorDesktop::GenerateBuildStateInfo(
     em::BrowserReport* report) {
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   const auto* const build_state = g_browser_process->GetBuildState();
   if (build_state->update_type() != BuildState::UpdateType::kNone) {
     const auto& installed_version = build_state->installed_version();
@@ -75,16 +76,17 @@ void BrowserReportGeneratorDesktop::GenerateProfileInfo(
   base::flat_set<base::FilePath> extension_request_profile_paths =
       throttler->GetProfiles();
 
-  for (const auto* entry : g_browser_process->profile_manager()
-                               ->GetProfileAttributesStorage()
-                               .GetAllProfilesAttributes()) {
-#if defined(OS_CHROMEOS)
+  for (const auto* entry :
+       g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetAllProfilesAttributes(/*include_guest_profile=*/false)) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Skip sign-in and lock screen app profile on Chrome OS.
     if (!chromeos::ProfileHelper::IsRegularProfilePath(
             entry->GetPath().BaseName())) {
       continue;
     }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     base::FilePath profile_path = entry->GetPath();
     if (is_extension_request_report &&
@@ -96,7 +98,7 @@ void BrowserReportGeneratorDesktop::GenerateProfileInfo(
         report->add_chrome_user_profile_infos();
     profile->set_id(profile_path.AsUTF8Unsafe());
     profile->set_name(base::UTF16ToUTF8(entry->GetName()));
-    profile->set_is_full_report(false);
+    profile->set_is_detail_available(false);
   }
 
   if (throttler->IsEnabled() && (report_type == ReportType::kExtensionRequest ||
@@ -107,7 +109,7 @@ void BrowserReportGeneratorDesktop::GenerateProfileInfo(
 void BrowserReportGeneratorDesktop::GeneratePluginsIfNeeded(
     ReportCallback callback,
     std::unique_ptr<em::BrowserReport> report) {
-#if defined(OS_CHROMEOS) || !BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !BUILDFLAG(ENABLE_PLUGINS)
   std::move(callback).Run(std::move(report));
 #else
   content::PluginService::GetInstance()->GetPlugins(base::BindOnce(

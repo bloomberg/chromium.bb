@@ -4,7 +4,9 @@
 
 const {assert} = chai;
 
+import * as Common from '../../../../front_end/common/common.js';
 import type * as ElementsModule from '../../../../front_end/elements/elements.js';
+import {ls} from '../../../../front_end/platform/platform.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
 
 const ADORNER_TAG_NAME = 'DEVTOOLS-ADORNER';
@@ -36,11 +38,11 @@ describeWithEnvironment('Adorner', async () => {
     assertIsAdorner(adorner);
 
     const options = {
-      category: Elements.Adorner.AdornerCategories.Layout,
+      category: Elements.AdornerManager.AdornerCategories.Layout,
     };
     const adornerWithOptions = Elements.Adorner.Adorner.create(content, ADORNER_NAME, options);
     assertIsAdorner(adornerWithOptions);
-    assert.strictEqual(adornerWithOptions.category, Elements.Adorner.AdornerCategories.Layout);
+    assert.strictEqual(adornerWithOptions.category, Elements.AdornerManager.AdornerCategories.Layout);
   });
 
   it('can interacts as a toggle button with proper ARIA setup', () => {
@@ -53,8 +55,8 @@ describeWithEnvironment('Adorner', async () => {
       clickCounter++;
     };
 
-    const ariaLabelDefault = 'adorner toggled on';
-    const ariaLabelActive = 'adorner toggled off';
+    const ariaLabelDefault = ls`adorner toggled on`;
+    const ariaLabelActive = ls`adorner toggled off`;
     adorner.addInteraction(clickListener, {
       isToggle: true,
       shouldPropagateOnKeydown: false,
@@ -102,8 +104,8 @@ describeWithEnvironment('Adorner', async () => {
     adorner.addInteraction(() => {}, {
       isToggle: true,
       shouldPropagateOnKeydown: false,
-      ariaLabelActive: '',
-      ariaLabelDefault: '',
+      ariaLabelActive: Common.UIString.LocalizedEmptyString,
+      ariaLabelDefault: Common.UIString.LocalizedEmptyString,
     });
     assert.strictEqual(
         adorner.getAttribute('aria-pressed'), 'false',

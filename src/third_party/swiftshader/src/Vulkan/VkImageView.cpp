@@ -20,6 +20,21 @@
 #include <climits>
 
 namespace vk {
+namespace {
+
+Format GetImageViewFormat(const VkImageViewCreateInfo *pCreateInfo)
+{
+	// VkImageViewCreateInfo: "If image has an external format, format must be VK_FORMAT_UNDEFINED"
+	// In that case, obtain the format from the underlying image.
+	if(pCreateInfo->format != VK_FORMAT_UNDEFINED)
+	{
+		return Format(pCreateInfo->format);
+	}
+
+	return vk::Cast(pCreateInfo->image)->getFormat();
+}
+
+}  // anonymous namespace
 
 VkComponentMapping ResolveIdentityMapping(VkComponentMapping mapping)
 {
@@ -83,7 +98,7 @@ Identifier::Identifier(VkFormat fmt)
 ImageView::ImageView(const VkImageViewCreateInfo *pCreateInfo, void *mem, const vk::SamplerYcbcrConversion *ycbcrConversion)
     : image(vk::Cast(pCreateInfo->image))
     , viewType(pCreateInfo->viewType)
-    , format(pCreateInfo->format)
+    , format(GetImageViewFormat(pCreateInfo))
     , components(ResolveComponentMapping(pCreateInfo->components, format))
     , subresourceRange(ResolveRemainingLevelsLayers(pCreateInfo->subresourceRange, image))
     , ycbcrConversion(ycbcrConversion)
@@ -247,6 +262,17 @@ void ImageView::resolveWithLayerMask(ImageView *resolveAttachment, uint32_t laye
 	}
 }
 
+void ImageView::resolveDepthStencil(ImageView *resolveAttachment, const VkSubpassDescriptionDepthStencilResolve &dsResolve)
+{
+	ASSERT(subresourceRange.levelCount == 1 && resolveAttachment->subresourceRange.levelCount == 1);
+	if((subresourceRange.layerCount != 1) || (resolveAttachment->subresourceRange.layerCount != 1))
+	{
+		UNIMPLEMENTED("b/148242443: layerCount != 1");  // FIXME(b/148242443)
+	}
+
+	image->resolveDepthStencilTo(this, resolveAttachment, dsResolve);
+}
+
 const Image *ImageView::getImage(Usage usage) const
 {
 	switch(usage)
@@ -291,6 +317,13 @@ VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel) const
 {
 	VkExtent3D extent = image->getMipLevelExtent(static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask),
 	                                             subresourceRange.baseMipLevel + mipLevel);
+
+	return { extent.width, extent.height };
+}
+
+VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel, VkImageAspectFlagBits aspect) const
+{
+	VkExtent3D extent = image->getMipLevelExtent(aspect, subresourceRange.baseMipLevel + mipLevel);
 
 	return { extent.width, extent.height };
 }

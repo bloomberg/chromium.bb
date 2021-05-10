@@ -16,8 +16,14 @@
 #include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "ui/accessibility/ax_enum_util.h"
 
+namespace aura {
+class Window;
+}
+
 namespace arc {
+
 class AccessibilityInfoDataWrapper;
+
 // This function is only called when EventType is WINDOW_STATE_CHANGED or
 // WINDOW_CONTENT_CHANGED.
 base::Optional<ax::mojom::Event> FromContentChangeTypesToAXEvent(
@@ -32,11 +38,15 @@ ax::mojom::Event ToAXEvent(
 base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
     ax::mojom::Action action);
 
+AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterViewEvent(
+    const mojom::AccessibilityEventData& event_data,
+    AccessibilityInfoDataWrapper* source_node);
+
 std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type);
 
 template <class DataType, class PropType>
 bool GetBooleanProperty(DataType* node, PropType prop) {
-  if (!node->boolean_properties)
+  if (!node || !node->boolean_properties)
     return false;
 
   auto it = node->boolean_properties->find(prop);
@@ -91,19 +101,7 @@ bool HasNonEmptyStringProperty(InfoDataType* node, PropType prop) {
   return !it->second.empty();
 }
 
-// Sets property to mojom struct. Used in test.
-template <class PropType, class ValueType>
-void SetProperty(
-    base::Optional<base::flat_map<PropType, ValueType>>& properties,
-    PropType prop,
-    const ValueType& value) {
-  if (!properties.has_value())
-    properties = base::flat_map<PropType, ValueType>();
-
-  auto& prop_map = properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
-}
+aura::Window* FindArcWindow(aura::Window* child);
 
 }  // namespace arc
 

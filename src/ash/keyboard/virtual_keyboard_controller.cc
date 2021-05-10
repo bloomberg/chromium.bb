@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -17,6 +18,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
@@ -51,10 +53,12 @@ VirtualKeyboardController::VirtualKeyboardController()
   UpdateDevices();
 
   // Set callback to show the emoji panel
-  ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
-      &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
-      base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
-
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kImeSystemEmojiPicker)) {
+    ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
+        &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
+        base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
+  }
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   bluetooth_devices_observer_ =

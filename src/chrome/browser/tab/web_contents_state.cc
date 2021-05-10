@@ -365,15 +365,19 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, profile);
 
-  // TODO(https://crbug.com/1060940): Update to cover all OTR profiles.
-  if (is_off_the_record)
+  if (is_off_the_record) {
+    // Serialization and deserialization related functionalities are only
+    // supported for Incognito tabbed Activities and they use primary OTR
+    // profile.
     profile = profile->GetPrimaryOTRProfile();
+  }
+
   WebContents::CreateParams params(profile);
 
   params.initially_hidden = initially_hidden;
   std::unique_ptr<WebContents> web_contents(WebContents::Create(params));
   web_contents->GetController().Restore(
-      current_entry_index, content::RestoreType::CURRENT_SESSION, &entries);
+      current_entry_index, content::RestoreType::kRestored, &entries);
   return web_contents.release();
 }
 

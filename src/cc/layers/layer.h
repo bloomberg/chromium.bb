@@ -31,6 +31,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -151,22 +152,22 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return inputs_.background_color; }
 
-  // Internal to property tree generation. Sets an opaque background color for
-  // the layer, to be used in place of the background_color() if the layer says
-  // contents_opaque() is true.
+  // For layer tree mode only. In layer list mode, client doesn't need to set
+  // it. Sets an opaque background color for the layer, to be used in place of
+  // the background_color() if the layer says contents_opaque() is true.
   void SetSafeOpaqueBackgroundColor(SkColor background_color);
-  // Returns a background color with opaque-ness equal to the value of
+
+  // Returns a background color with opaqueness equal to the value of
   // contents_opaque().
-  // If the layer says contents_opaque() is true, this returns the value set by
-  // SetSafeOpaqueBackgroundColor() which should be an opaque color. Otherwise,
-  // it returns something non-opaque. It prefers to return the
+  // If the layer says contents_opaque() is true, in layer tree mode, this
+  // returns the value set by SetSafeOpaqueBackgroundColor() which should be an
+  // opaque color, and in layer list mode, returns an opaque color calculated
+  // from background_color() and layer_tree_host()->background_clor().
+  // Otherwise, it returns something non-opaque. It prefers to return the
   // background_color(), but if the background_color() is opaque (and this layer
-  // claims to not be), then SK_ColorTRANSPARENT is returned.
+  // claims to not be), then SK_ColorTRANSPARENT is returned to avoid intrusive
+  // checkerboard where the layer is not covered by the background_color().
   SkColor SafeOpaqueBackgroundColor() const;
-  // For testing, return the actual stored value.
-  SkColor ActualSafeOpaqueBackgroundColorForTesting() const {
-    return safe_opaque_background_color_;
-  }
 
   // For layer tree mode only.
   // Set and get the position of this layer, relative to its parent. This is
@@ -471,6 +472,27 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // ScrollTree::SetScrollCallbacks() in layer list mode.
   void SetDidScrollCallback(base::RepeatingCallback<
                             void(const gfx::ScrollOffset&, const ElementId&)>);
+
+  // For layer tree mode only.
+  // Sets the given |subtree_id| on this layer, so that the layer subtree rooted
+  // at this layer can be uniquely identified by a FrameSinkVideoCapturer.
+  // The existence of a valid SubtreeCaptureId on this layer will force it to be
+  // drawn into a separate CompositorRenderPass.
+  // Setting a non-valid (i.e. default-constructed SubtreeCaptureId) will clear
+  // this property.
+  // It is not allowed to change this ID from a valid ID to another valid ID,
+  // since a client might already using the existing valid ID to make this layer
+  // subtree identifiable by a capturer.
+  //
+  // Note that this is useful when it's desired to video record a layer subtree
+  // of a non-root layer using a FrameSinkVideoCapturer, since non-root layers
+  // are usually not drawn into their own CompositorRenderPass.
+  void SetSubtreeCaptureId(viz::SubtreeCaptureId subtree_id);
+  viz::SubtreeCaptureId subtree_capture_id() const {
+    if (layer_tree_inputs())
+      return layer_tree_inputs()->subtree_capture_id;
+    return viz::SubtreeCaptureId();
+  }
 
   // Set or get if the layer and its subtree should be cached as a texture in
   // the display compositor. This is used as an optimization when it is known
@@ -862,10 +884,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // If not null, points to one of child layers which is set as mask layer
     // by SetMaskLayer().
-    PictureLayer* mask_layer;
+    PictureLayer* mask_layer = nullptr;
 
-    float opacity;
-    SkBlendMode blend_mode;
+    float opacity = 1.0f;
+    SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
     bool masks_to_bounds : 1;
 
@@ -889,12 +911,20 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     gfx::Transform transform;
     gfx::Point3F transform_origin;
 
+    // A unique ID that identifies the layer subtree rooted at this layer, so
+    // that it can be independently captured by the FrameSinkVideoCapturer. If
+    // this ID is set (i.e. valid), it would force this subtree into a render
+    // surface that darws in a render pass.
+    viz::SubtreeCaptureId subtree_capture_id;
+
+    SkColor safe_opaque_background_color = SK_ColorTRANSPARENT;
+
     FilterOperations filters;
     FilterOperations backdrop_filters;
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
-    float backdrop_filter_quality;
+    float backdrop_filter_quality = 1.0f;
 
-    int mirror_count;
+    int mirror_count = 0;
 
     gfx::ScrollOffset scroll_offset;
     // Size of the scroll container that this layer scrolls in.
@@ -925,6 +955,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int clip_tree_index_;
   int scroll_tree_index_;
   int property_tree_sequence_number_;
+
   gfx::Vector2dF offset_to_transform_parent_;
 
   // When true, the layer is about to perform an update. Any commit requests
@@ -944,8 +975,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool has_clip_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
-
-  SkColor safe_opaque_background_color_;
 
   std::unique_ptr<LayerDebugInfo> debug_info_;
 

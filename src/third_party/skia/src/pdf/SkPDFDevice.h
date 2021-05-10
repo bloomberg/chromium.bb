@@ -81,6 +81,7 @@ public:
     void drawImageRect(const SkImage*,
                        const SkRect* src,
                        const SkRect& dst,
+                       const SkSamplingOptions&,
                        const SkPaint&,
                        SkCanvas::SrcRectConstraint) override;
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
@@ -109,8 +110,9 @@ protected:
 
     void drawAnnotation(const SkRect&, const char key[], SkData* value) override;
 
-    void drawDevice(SkBaseDevice*, const SkPaint&) override;
-    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkPaint&) override;
+    void drawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint&) override;
+    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkSamplingOptions&,
+                     const SkPaint&) override;
 
     sk_sp<SkSpecialImage> makeSpecial(const SkBitmap&) override;
     sk_sp<SkSpecialImage> makeSpecial(const SkImage*) override;
@@ -166,6 +168,7 @@ private:
     void internalDrawImageRect(SkKeyedImage,
                                const SkRect* src,
                                const SkRect& dst,
+                               const SkSamplingOptions&,
                                const SkPaint&,
                                const SkMatrix& canvasTransformationMatrix);
 

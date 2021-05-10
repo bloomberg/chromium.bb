@@ -29,6 +29,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsObserver;
@@ -43,6 +44,7 @@ import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.Clipboard;
@@ -72,6 +74,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         int TOOLBAR = 2;
         int VR = 3;
     }
+    @ContentSettingsType
+    public static final int NO_HIGHLIGHTED_PERMISSION = ContentSettingsType.DEFAULT;
 
     private Context mContext;
     private final WindowAndroid mWindowAndroid;
@@ -92,7 +96,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
 
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
-    private String mFullUrl;
+    private GURL mFullUrl;
 
     // Whether or not this page is an internal chrome page (e.g. the
     // chrome://settings page).
@@ -135,6 +139,9 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
     // The controller for the cookies section of the page info.
     private PageInfoCookiesController mCookiesController;
 
+    // The controller for the history portions of page info.
+    private PageInfoSubpageController mHistoryController;
+
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mCookieBridge;
 
@@ -146,11 +153,14 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
      * @param publisher                The name of the content publisher, if any.
      * @param delegate                 The PageInfoControllerDelegate used to provide
      *                                 embedder-specific info.
+     * @param highlightedPermission    The ContentSettingsType to be highlighted on this page or
+     *                                 NO_HIGHLIGHTED_PERMISSION for no highlight.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public PageInfoController(WebContents webContents, int securityLevel, String publisher,
             PageInfoControllerDelegate delegate,
-            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate) {
+            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate,
+            @ContentSettingsType int highlightedPermission) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mDelegate = delegate;
@@ -173,20 +183,21 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         // Work out the URL and connection message and status visibility.
         // TODO(crbug.com/1033178): dedupe the DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
         // calls.
-        mFullUrl = mDelegate.isShowingOfflinePage()
+        String url = mDelegate.isShowingOfflinePage()
                 ? mDelegate.getOfflinePageUrl()
-                : DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                        webContents.getVisibleUrlString());
+                : DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(webContents.getVisibleUrl())
+                          .getSpec();
 
         // This can happen if an invalid chrome-distiller:// url was entered.
-        if (mFullUrl == null) mFullUrl = "";
+        if (url == null) url = "";
 
-        GURL url = new GURL(mFullUrl);
-        mIsInternalPage = UrlUtilities.isInternalScheme(url);
+        mFullUrl = new GURL(url);
+        mIsInternalPage = UrlUtilities.isInternalScheme(mFullUrl);
 
-        String displayUrl = UrlFormatter.formatUrlForDisplayOmitUsernamePassword(mFullUrl);
+        String displayUrl =
+                UrlFormatter.formatUrlForDisplayOmitUsernamePassword(mFullUrl.getSpec());
         if (mDelegate.isShowingOfflinePage()) {
-            displayUrl = UrlUtilities.stripScheme(mFullUrl);
+            displayUrl = UrlUtilities.stripScheme(mFullUrl.getSpec());
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
         AutocompleteSchemeClassifier autocompleteSchemeClassifier =
@@ -216,7 +227,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    mDelegate.showSiteSettings(mFullUrl);
+                    mDelegate.showSiteSettings(mFullUrl.getSpec());
                 });
             };
             viewParams.cookieControlsShown = delegate.cookieControlsShown();
@@ -233,8 +244,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         mDelegate.initOfflinePageUiParams(viewParams, this::runAfterDismiss);
 
         if (!mIsInternalPage && !mDelegate.isShowingOfflinePage() && !mDelegate.isShowingPreview()
-                && mDelegate.isInstantAppAvailable(mFullUrl)) {
-            final Intent instantAppIntent = mDelegate.getInstantAppIntentForUrl(mFullUrl);
+                && mDelegate.isInstantAppAvailable(mFullUrl.getSpec())) {
+            final Intent instantAppIntent = mDelegate.getInstantAppIntentForUrl(mFullUrl.getSpec());
             viewParams.instantAppButtonClickCallback = () -> {
                 try {
                     mWindowAndroid.getActivity().get().startActivity(instantAppIntent);
@@ -257,7 +268,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
             containerParams.url = viewParams.url;
             containerParams.urlOriginLength = viewParams.urlOriginLength;
             containerParams.truncatedUrl =
-                    UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(url);
+                    UrlFormatter.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(mFullUrl);
             containerParams.backButtonClickCallback = this::exitSubpage;
             containerParams.urlTitleClickCallback = mContainer::toggleUrlTruncation;
             containerParams.urlTitleLongClickCallback = viewParams.urlTitleLongClickCallback;
@@ -265,7 +276,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
             containerParams.previewUIShown = viewParams.previewUIShown;
             containerParams.previewUIIcon = mDelegate.getPreviewUiIcon();
             mContainer.setParams(containerParams);
-            mDelegate.getFavicon(mFullUrl, favicon -> {
+            mDelegate.getFavicon(mFullUrl.getSpec(), favicon -> {
                 // Return early if PageInfo has been dismissed.
                 if (mContext == null) return;
 
@@ -281,10 +292,16 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
             PageInfoViewV2 view2 = (PageInfoViewV2) mView;
             mConnectionController = new PageInfoConnectionController(
                     this, view2.getConnectionRowView(), mWebContents, mDelegate.getVrHandler());
-            mPermissionsController = new PageInfoPermissionsController(
-                    this, view2.getPermissionsRowView(), mDelegate, mFullUrl);
+            mPermissionsController =
+                    new PageInfoPermissionsController(this, view2.getPermissionsRowView(),
+                            mDelegate, mFullUrl.getSpec(), highlightedPermission);
             mCookiesController = new PageInfoCookiesController(
-                    this, view2.getCookiesRowView(), mDelegate, mFullUrl);
+                    this, view2.getCookiesRowView(), mDelegate, mFullUrl.getSpec());
+
+            if (PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_HISTORY)) {
+                mHistoryController = mDelegate.createHistoryController(this,
+                        view2.getHistoryRowView(), view2.getForgetSiteButton(), mFullUrl.getSpec());
+            }
         } else {
             mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
 
@@ -302,9 +319,9 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
 
         // TODO(crbug.com/1040091): Remove when cookie controls are launched.
         boolean showTitle = viewParams.cookieControlsShown;
-        mPermissionParamsListBuilder =
-                new PermissionParamsListBuilder(mContext, mWindowAndroid, mFullUrl, showTitle, this,
-                        mView::setPermissions, mPermissionParamsListBuilderDelegate);
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, mWindowAndroid,
+                mFullUrl.getSpec(), showTitle, this, mView::setPermissions,
+                mPermissionParamsListBuilderDelegate);
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
         mCookieBridge =
                 mDelegate.createCookieControlsBridge(mIsV2Enabled ? mCookiesController : this);
@@ -312,7 +329,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
 
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
-            public void navigationEntryCommitted() {
+            public void navigationEntryCommitted(LoadCommittedDetails details) {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're showing
                 // is stale so dismiss the dialog.
                 mDialog.dismiss(true);
@@ -540,11 +557,14 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
      * @param contentPublisher The name of the publisher of the content.
      * @param source Determines the source that triggered the popup.
      * @param delegate The PageInfoControllerDelegate used to provide embedder-specific info.
+     * @param highlightedPermission The ContentSettingsType to be highlighted on this page or
+     *            NO_HIGHLIGHTED_PERMISSION for no highlight.
      */
     public static void show(final Activity activity, WebContents webContents,
             final String contentPublisher, @OpenedFromSource int source,
             PageInfoControllerDelegate delegate,
-            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate) {
+            PermissionParamsListBuilderDelegate permissionParamsListBuilderDelegate,
+            @ContentSettingsType int highlightedPermission) {
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
         // https://crbug.com/921450.
@@ -563,7 +583,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
 
         sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(webContents,
                 SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
-                delegate, permissionParamsListBuilderDelegate));
+                delegate, permissionParamsListBuilderDelegate, highlightedPermission));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -609,7 +629,9 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         mSubpageController = controller;
         CharSequence title = mSubpageController.getSubpageTitle();
         View subview = mSubpageController.createViewForSubpage(mContainer);
-        mContainer.showPage(subview, title, null);
+        if (subview != null) {
+            mContainer.showPage(subview, title, null);
+        }
     }
 
     /**

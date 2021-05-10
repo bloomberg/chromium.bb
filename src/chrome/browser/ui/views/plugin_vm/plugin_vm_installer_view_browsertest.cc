@@ -8,15 +8,14 @@
 #include "base/files/file_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -309,7 +308,12 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
                        SetupShouldLaunchIfImageAlreadyImported) {
   AllowPluginVm();
 
-  // Setup dispatcher client for VM already imported.
+  // Setup concierge and the dispatcher for VM already imported.
+  vm_tools::concierge::ListVmDisksResponse list_vm_disks_response;
+  list_vm_disks_response.set_success(true);
+  list_vm_disks_response.add_images();
+  fake_concierge_client_->set_list_vm_disks_response(list_vm_disks_response);
+
   vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
   list_vms_response.add_vm_info()->set_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);

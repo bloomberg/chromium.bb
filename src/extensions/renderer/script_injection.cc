@@ -91,8 +91,8 @@ class TimedScriptInjectionCallback : public ScriptInjectionCallback {
  public:
   TimedScriptInjectionCallback(base::WeakPtr<ScriptInjection> injection)
       : ScriptInjectionCallback(
-            base::Bind(&TimedScriptInjectionCallback::OnCompleted,
-                       base::Unretained(this))),
+            base::BindOnce(&TimedScriptInjectionCallback::OnCompleted,
+                           base::Unretained(this))),
         injection_(injection) {}
   ~TimedScriptInjectionCallback() override {}
 
@@ -183,7 +183,7 @@ ScriptInjection::~ScriptInjection() {
 ScriptInjection::InjectionResult ScriptInjection::TryToInject(
     UserScript::RunLocation current_location,
     ScriptsRunInfo* scripts_run_info,
-    const CompletionCallback& async_completion_callback) {
+    CompletionCallback async_completion_callback) {
   if (current_location < run_location_)
     return INJECTION_WAITING;  // Wait for the right location.
 
@@ -212,7 +212,7 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
       // If the injection is blocked, we need to set the manager so we can
       // notify it upon completion.
       if (result == INJECTION_BLOCKED)
-        async_completion_callback_ = async_completion_callback;
+        async_completion_callback_ = std::move(async_completion_callback);
       return result;
   }
 
@@ -376,7 +376,7 @@ void ScriptInjection::OnJsInjectionCompleted(
     injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
     // Warning: this object can be destroyed after this line!
-    async_completion_callback_.Run(this);
+    std::move(async_completion_callback_).Run(this);
   }
 }
 
@@ -386,12 +386,18 @@ void ScriptInjection::InjectOrRemoveCss(
   std::vector<blink::WebString> css_sources = injector_->GetCssSources(
       run_location_, injected_stylesheets, num_injected_stylesheets);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  // Default CSS origin is "author", but can be overridden to "user" by scripts.
-  base::Optional<CSSOrigin> css_origin = injector_->GetCssOrigin();
+
   blink::WebDocument::CSSOrigin blink_css_origin =
-      css_origin && *css_origin == CSS_ORIGIN_USER
-          ? blink::WebDocument::kUserOrigin
-          : blink::WebDocument::kAuthorOrigin;
+      blink::WebDocument::kAuthorOrigin;
+  switch (injector_->GetCssOrigin()) {
+    case CSSOrigin::kUser:
+      blink_css_origin = blink::WebDocument::kUserOrigin;
+      break;
+    case CSSOrigin::kAuthor:
+      blink_css_origin = blink::WebDocument::kAuthorOrigin;
+      break;
+  }
+
   blink::WebStyleSheetKey style_sheet_key;
   if (const base::Optional<std::string>& injection_key =
           injector_->GetInjectionKey())

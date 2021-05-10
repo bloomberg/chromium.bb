@@ -10,17 +10,6 @@ executors:
 
 jobs:
 
-  macos-10_12_6-aat-fonts:
-    macos:
-      xcode: "9.0.1"
-    steps:
-      - checkout
-      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install pkg-config ragel freetype glib cairo python3 ninja
-      - run: pip3 install meson --upgrade
-      - run: meson build
-      - run: meson compile -Cbuild # or ninja -Cbuild
-      - run: meson test -Cbuild --print-errorlogs
-
   macos-10_13_6-aat-fonts:
     macos:
       xcode: "10.1.0"
@@ -31,6 +20,8 @@ jobs:
       - run: meson build
       - run: meson compile -Cbuild
       - run: meson test -Cbuild --print-errorlogs
+      - store_artifacts:
+          path: build/meson-logs/
 
   macos-10_14_4-aat-fonts:
     macos:
@@ -42,6 +33,8 @@ jobs:
       - run: PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" meson build -Dcoretext=enabled
       - run: meson compile -Cbuild
       - run: meson test -Cbuild --print-errorlogs
+      - store_artifacts:
+          path: build/meson-logs/
 
   macos-10_15_3-aat-fonts:
     macos:
@@ -53,13 +46,15 @@ jobs:
       - run: PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" meson build -Dcoretext=enabled -Dgraphite=enabled -Dauto_features=enabled
       - run: meson compile -Cbuild
       - run: meson test -Cbuild --print-errorlogs
+      - store_artifacts:
+          path: build/meson-logs/
 
   # will be dropped with autotools removal
   distcheck:
     executor: autotools-executor
     steps:
       - checkout
-      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y git ninja-build binutils libtool autoconf automake make gcc g++ pkg-config ragel gtk-doc-tools libfontconfig1-dev libfreetype6-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip cmake
+      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y git ninja-build binutils libtool autoconf automake make gcc g++ pkg-config ragel gtk-doc-tools gobject-introspection libfontconfig1-dev libfreetype6-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip cmake
       - run: pip3 install fonttools meson --upgrade
       - run: ./autogen.sh
       - run: make -j32
@@ -90,7 +85,7 @@ jobs:
       - run: meson build --buildtype=debugoptimized
       - run: ninja -Cbuild -j9
       # TOOD: increase timeouts and remove --no-suite=slow
-      - run: RUN_VALGRIND=1 HB_TEST_SHAPE_FUZZER_TIMEOUT=5 meson test -Cbuild --no-suite=slow --wrap='valgrind --leak-check=full --error-exitcode=1' --print-errorlogs
+      - run: RUN_VALGRIND=1 meson test -Cbuild --no-suite=slow --wrap='valgrind --leak-check=full --error-exitcode=1' --print-errorlogs
 
   alpine:
     docker:
@@ -110,7 +105,6 @@ jobs:
       - checkout
       - run: pacman --noconfirm -Syu freetype2 meson git clang cairo icu gettext gobject-introspection gcc gcc-libs glib2 graphite pkg-config ragel python python-pip base-devel gtk-doc
       - run: pip install flake8 fonttools
-      - run: pip install git+https://github.com/mesonbuild/meson
       - run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
       - run: meson build -Dgraphite=enabled -Dauto_features=enabled -Dexperimental_api=true
       - run: meson compile -Cbuild -j9
@@ -147,7 +141,8 @@ jobs:
     executor: win32-executor
     steps:
       - checkout
-      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y ninja-build binutils meson gcc g++ pkg-config ragel gtk-doc-tools libfreetype6-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip git g++-mingw-w64-i686 zip
+      - run: sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install -y ninja-build binutils gcc g++ pkg-config ragel gtk-doc-tools libfreetype6-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python3 python3-pip git g++-mingw-w64-i686 zip
+      - run: pip3 install meson==0.56.0 --upgrade
       - run: .ci/build-win32.sh
       - store_artifacts:
           path: harfbuzz-win32.zip
@@ -170,7 +165,6 @@ workflows:
 
   build:
     jobs:
-      - macos-10_12_6-aat-fonts
       - macos-10_13_6-aat-fonts
       - macos-10_14_4-aat-fonts
       - macos-10_15_3-aat-fonts
@@ -188,7 +182,7 @@ workflows:
               ignore: /.*/
       - fedora-valgrind
       - alpine
-      - archlinux
+     #- archlinux
       - sanitizers
       - crossbuild-win32:
           filters:

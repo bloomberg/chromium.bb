@@ -7,6 +7,8 @@
     "package/directives/class-map.js",
     "package/directives/if-defined.js",
     "package/directives/style-map.js",
+    "package/directives/repeat.js",
+    "package/directives/until.js",
     "package/lib/template-result.js",
     "package/lib/default-template-processor.js",
     "package/lib/directive.js",

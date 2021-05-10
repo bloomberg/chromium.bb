@@ -33,40 +33,31 @@ public:
                                                           kFloat4_GrSLType, "rectUniform");
         fragBuilder->codeAppendf(
                 R"SkSL(float4 prevRect = float4(%f, %f, %f, %f);
-half alpha;
+half coverage;
 @switch (%d) {
     case 0:
     case 2:
-        alpha = half(all(greaterThan(float4(sk_FragCoord.xy, %s.zw), float4(%s.xy, sk_FragCoord.xy))) ? 1 : 0);
+        coverage = half(all(greaterThan(float4(sk_FragCoord.xy, %s.zw), float4(%s.xy, sk_FragCoord.xy))) ? 1 : 0);
         break;
     default:
-        half xSub;
-        half ySub;
-
-        xSub = min(half(sk_FragCoord.x - %s.x), 0.0);
-        xSub += min(half(%s.z - sk_FragCoord.x), 0.0);
-        ySub = min(half(sk_FragCoord.y - %s.y), 0.0);
-        ySub += min(half(%s.w - sk_FragCoord.y), 0.0);
-        alpha = (1.0 + max(xSub, -1.0)) * (1.0 + max(ySub, -1.0));
+        half4 dists4 = clamp(half4(1.0, 1.0, -1.0, -1.0) * half4(sk_FragCoord.xyxy - %s), 0.0, 1.0);
+        half2 dists2 = (dists4.xy + dists4.zw) - 1.0;
+        coverage = dists2.x * dists2.y;
 }
 @if (%d == 2 || %d == 3) {
-    alpha = 1.0 - alpha;
+    coverage = 1.0 - coverage;
 })SkSL",
                 prevRect.left(), prevRect.top(), prevRect.right(), prevRect.bottom(),
                 (int)_outer.edgeType, args.fUniformHandler->getUniformCStr(rectUniformVar),
-                args.fUniformHandler->getUniformCStr(rectUniformVar),
-                args.fUniformHandler->getUniformCStr(rectUniformVar),
-                args.fUniformHandler->getUniformCStr(rectUniformVar),
                 args.fUniformHandler->getUniformCStr(rectUniformVar),
                 args.fUniformHandler->getUniformCStr(rectUniformVar), (int)_outer.edgeType,
                 (int)_outer.edgeType);
         SkString _sample0 = this->invokeChild(0, args);
         fragBuilder->codeAppendf(
                 R"SkSL(
-half4 inputColor = %s;
-%s = inputColor * alpha;
+return %s * coverage;
 )SkSL",
-                _sample0.c_str(), args.fOutputColor);
+                _sample0.c_str());
     }
 
 private:
@@ -80,7 +71,11 @@ private:
         UniformHandle& rectUniform = rectUniformVar;
         (void)rectUniform;
 
-        const SkRect& newRect = GrProcessorEdgeTypeIsAA(edgeType) ? rect.makeInset(.5f, .5f) : rect;
+        SkASSERT(rect.isSorted());
+        // The AA math in the shader evaluates to 0 at the uploaded coordinates, so outset by 0.5
+        // to interpolate from 0 at a half pixel inset and 1 at a half pixel outset of rect.
+        const SkRect& newRect =
+                GrProcessorEdgeTypeIsAA(edgeType) ? rect.makeOutset(.5f, .5f) : rect;
         if (newRect != prevRect) {
             pdman.set4f(rectUniform, newRect.fLeft, newRect.fTop, newRect.fRight, newRect.fBottom);
             prevRect = newRect;
@@ -89,8 +84,8 @@ private:
     SkRect prevRect = float4(0);
     UniformHandle rectUniformVar;
 };
-GrGLSLFragmentProcessor* GrAARectEffect::onCreateGLSLInstance() const {
-    return new GrGLSLAARectEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> GrAARectEffect::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLAARectEffect>();
 }
 void GrAARectEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                            GrProcessorKeyBuilder* b) const {
@@ -103,7 +98,6 @@ bool GrAARectEffect::onIsEqual(const GrFragmentProcessor& other) const {
     if (rect != that.rect) return false;
     return true;
 }
-bool GrAARectEffect::usesExplicitReturn() const { return false; }
 GrAARectEffect::GrAARectEffect(const GrAARectEffect& src)
         : INHERITED(kGrAARectEffect_ClassID, src.optimizationFlags())
         , edgeType(src.edgeType)
@@ -126,6 +120,7 @@ std::unique_ptr<GrFragmentProcessor> GrAARectEffect::TestCreate(GrProcessorTestD
                                    d->fRandom->nextSScalar1(),
                                    d->fRandom->nextSScalar1(),
                                    d->fRandom->nextSScalar1());
+    rect.sort();
     GrClipEdgeType edgeType =
             static_cast<GrClipEdgeType>(d->fRandom->nextULessThan(kGrClipEdgeTypeCnt));
 

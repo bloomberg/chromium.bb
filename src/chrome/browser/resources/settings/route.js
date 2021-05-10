@@ -18,7 +18,9 @@ function addPrivacyChildRoutes(r) {
   r.COOKIES = r.PRIVACY.createChild('/cookies');
   r.SECURITY = r.PRIVACY.createChild('/security');
 
-  // <if expr="use_nss_certs">
+  // TODO(crbug.com/1147032): The certificates settings page is temporarily
+  // disabled for Lacros-Chrome until a better solution is found.
+  // <if expr="use_nss_certs and not lacros">
   r.CERTIFICATES = r.SECURITY.createChild('/certificates');
   // </if>
 
@@ -99,8 +101,7 @@ function createBrowserSettingsRoutes() {
   r.SIGN_OUT.isNavigableDialog = true;
 
   r.SEARCH = r.BASIC.createSection('/search', 'search');
-  if (!loadTimeData.getBoolean('isGuest') ||
-      loadTimeData.getBoolean('isEphemeralGuestProfile')) {
+  if (!loadTimeData.getBoolean('isGuest')) {
     r.PEOPLE = r.BASIC.createSection('/people', 'people');
     r.SYNC = r.PEOPLE.createChild('/syncSetup');
     r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
@@ -145,10 +146,12 @@ function createBrowserSettingsRoutes() {
     r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
   }
 
+  // <if expr="not chromeos and not lacros">
   if (visibility.defaultBrowser !== false) {
     r.DEFAULT_BROWSER =
         r.BASIC.createSection('/defaultBrowser', 'defaultBrowser');
   }
+  // </if>
 
   r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
 
@@ -182,7 +185,7 @@ function createBrowserSettingsRoutes() {
     }
     // </if>
 
-    // <if expr="not chromeos">
+    // <if expr="not chromeos and not lacros">
     r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
     // </if>
 

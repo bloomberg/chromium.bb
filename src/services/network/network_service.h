@@ -32,7 +32,7 @@
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/first_party_sets/preloaded_first_party_sets.h"
+#include "services/network/first_party_sets/first_party_sets.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
@@ -61,7 +61,6 @@ namespace network {
 class CRLSetDistributor;
 class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
-class LegacyTLSConfigDistributor;
 class NetLogProxySink;
 class NetworkContext;
 class NetworkService;
@@ -152,7 +151,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // mojom::NetworkService implementation:
   void SetClient(mojo::PendingRemote<mojom::NetworkServiceClient> client,
                  mojom::NetworkServiceParamsPtr params) override;
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
 #endif
   void StartNetLog(base::File file,
@@ -193,17 +192,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void UpdateCRLSet(
       base::span<const uint8_t> crl_set,
       mojom::NetworkService::UpdateCRLSetCallback callback) override;
-  void UpdateLegacyTLSConfig(
-      base::span<const uint8_t> config,
-      mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) override;
   void OnCertDBChanged() override;
-#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
 #if defined(OS_WIN) || defined(OS_MAC)
   void SetEncryptionKey(const std::string& encryption_key) override;
 #endif
-  void AddCorbExceptionForPlugin(int32_t process_id) override;
   void AddAllowedRequestInitiatorForPlugin(
       int32_t process_id,
       const url::Origin& allowed_request_initiator) override;
@@ -275,12 +270,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return crl_set_distributor_.get();
   }
 
-  LegacyTLSConfigDistributor* legacy_tls_config_distributor() {
-    return legacy_tls_config_distributor_.get();
-  }
-
-  const PreloadedFirstPartySets* preloaded_first_party_sets() const {
-    return preloaded_first_party_sets_.get();
+  const FirstPartySets* first_party_sets() const {
+    return first_party_sets_.get();
   }
 
   bool os_crypt_config_set() const { return os_crypt_config_set_; }
@@ -377,9 +368,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_network_service_params_;
   mojom::HttpAuthStaticParamsPtr http_auth_static_network_service_params_;
 
-  // Globally-scoped state for First-Party Sets that were preloaded (and
-  // updated) via the component updater.
-  std::unique_ptr<PreloadedFirstPartySets> preloaded_first_party_sets_;
+  // Globally-scoped state for First-Party Sets.
+  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete
@@ -409,8 +399,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool os_crypt_config_set_ = false;
 
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
-
-  std::unique_ptr<LegacyTLSConfigDistributor> legacy_tls_config_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending
   // loads and not waiting on an ACK from the client for the last sent

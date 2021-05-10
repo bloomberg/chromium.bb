@@ -34,7 +34,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() final;
   std::string GetProduct() final;
   std::string GetUserAgent() final;
-  void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+  void OverrideWebkitPrefs(content::WebContents* web_contents,
                            blink::web_pref::WebPreferences* web_prefs) final;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
@@ -72,8 +72,8 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path,
       network::mojom::NetworkContextParams* network_context_params,
-      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
-      final;
+      cert_verifier::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params) final;
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() final;
 
  private:

@@ -70,7 +70,7 @@
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false, @@@",
@@ -119,7 +119,8 @@
     "name": "git diff to analyze patch",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@files@None/foo.cc@@@",
-      "@@@STEP_LOG_END@files@@@"
+      "@@@STEP_LOG_END@files@@@",
+      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"None/foo.cc\"], \"total_count\": 1}@@@"
     ]
   },
   {
@@ -182,6 +183,49 @@
       "@@@STEP_TEXT@TEST_EXPIRED@@@",
       "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_EXPIRED\"@@@",
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "1",
+      "-p",
+      "change=1234567",
+      "-o",
+      "ALL_REVISIONS",
+      "-o",
+      "DOWNLOAD_COMMANDS"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "gerrit fetch current CL info (2)",
+    "timeout": 600,
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"owner\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"name\": \"John Doe\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"refs/changes/67/1234567/1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {

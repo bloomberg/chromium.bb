@@ -18,39 +18,42 @@
 #include "src/ast/block_statement.h"
 #include "src/ast/discard_statement.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Block) {
-  ast::BlockStatement b;
-  b.append(std::make_unique<ast::DiscardStatement>());
+  auto* b = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&b)) << g.error();
-  EXPECT_EQ(g.result(), R"(  {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(b)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
     discard_fragment();
   }
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Block_WithoutNewline) {
-  ast::BlockStatement b;
-  b.append(std::make_unique<ast::DiscardStatement>());
+  auto* b = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitBlock(&b)) << g.error();
-  EXPECT_EQ(g.result(), R"({
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitBlock(b)) << gen.error();
+  EXPECT_EQ(gen.result(), R"({
     discard_fragment();
   })");
 }

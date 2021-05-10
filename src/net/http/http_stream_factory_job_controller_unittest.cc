@@ -24,6 +24,7 @@
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_basic_stream.h"
@@ -54,7 +55,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 using ::testing::_;
 using ::testing::Contains;
@@ -299,6 +300,9 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
       bool alt_job_retried_on_non_default_network);
   void TestMainJobSucceedsAfterAltJobFailed(
       bool alt_job_retried_on_non_default_network);
+  void TestMainJobSucceedsAfterIgnoredError(int net_error,
+                                            bool expect_broken = false,
+                                            std::string alternate_host = "");
   void TestAltJobSucceedsAfterMainJobSucceeded(
       bool alt_job_retried_on_non_default_network);
   void TestOnStreamFailedForBothJobs(
@@ -720,7 +724,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, CancelJobsBeforeBinding) {
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
   quic_data_ = std::make_unique<MockQuicData>(version_);
-  quic_data_->AddRead(SYNCHRONOUS, OK);
+  quic_data_->AddRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
@@ -1074,7 +1078,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
     quic_data_->AddWrite(SYNCHRONOUS,
                          client_maker_.MakeInitialSettingsPacket(1));
   }
-  quic_data_->AddRead(ASYNC, OK);
+  quic_data_->AddRead(ASYNC, ERR_CONNECTION_CLOSED);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1557,12 +1561,12 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   TestMainJobSucceedsAfterAltJobFailed(true);
 }
 
-// Verifies that if the alternative job fails due to a connection change event,
-// then the alternative service is not marked as broken.
-TEST_F(HttpStreamFactoryJobControllerTest,
-       MainJobSucceedsAfterConnectionChanged) {
+void HttpStreamFactoryJobControllerTest::TestMainJobSucceedsAfterIgnoredError(
+    int net_error,
+    bool expect_broken,
+    std::string alternate_host) {
   quic_data_ = std::make_unique<MockQuicData>(version_);
-  quic_data_->AddConnect(SYNCHRONOUS, ERR_NETWORK_CHANGED);
+  quic_data_->AddConnect(SYNCHRONOUS, net_error);
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   SSLSocketDataProvider ssl_data(ASYNC, OK);
@@ -1576,7 +1580,10 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   Initialize(request_info);
 
   url::SchemeHostPort server(request_info.url);
-  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  if (alternate_host.empty()) {
+    alternate_host = server.host();
+  }
+  AlternativeService alternative_service(kProtoQUIC, alternate_host, 443);
   SetAlternativeService(request_info, alternative_service);
 
   request_ =
@@ -1593,10 +1600,40 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   request_.reset();
 
   // Verify that the alternate protocol is not marked as broken.
-  VerifyBrokenAlternateProtocolMapping(request_info, false);
-  histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed",
-                                      -ERR_NETWORK_CHANGED, 1);
+  VerifyBrokenAlternateProtocolMapping(request_info, expect_broken);
+  if (expect_broken) {
+    histogram_tester.ExpectUniqueSample("Net.AlternateServiceFailed",
+                                        -net_error, 1);
+  }
   EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
+// Verifies that if the alternative job fails due to a connection change event,
+// then the alternative service is not marked as broken.
+TEST_F(HttpStreamFactoryJobControllerTest,
+       MainJobSucceedsAfterConnectionChanged) {
+  TestMainJobSucceedsAfterIgnoredError(ERR_NETWORK_CHANGED);
+}
+
+// Verifies that if the alternative job fails due to a disconnected network,
+// then the alternative service is not marked as broken.
+TEST_F(HttpStreamFactoryJobControllerTest,
+       MainJobSucceedsAfterInternetDisconnected) {
+  TestMainJobSucceedsAfterIgnoredError(ERR_INTERNET_DISCONNECTED);
+}
+
+// Verifies that if the alternative job fails due to a DNS failure,
+// then the alternative service is not marked as broken.
+TEST_F(HttpStreamFactoryJobControllerTest, MainJobSucceedsAfterDnsFailure) {
+  TestMainJobSucceedsAfterIgnoredError(ERR_NAME_NOT_RESOLVED);
+}
+
+// Verifies that if the alternative job fails due to a DNS failure on a
+// different name, then the alternative service is marked as broken.
+TEST_F(HttpStreamFactoryJobControllerTest,
+       MainJobSucceedsAfterDnsFailureWithAlternateName) {
+  TestMainJobSucceedsAfterIgnoredError(ERR_NAME_NOT_RESOLVED, true,
+                                       "alternate.google.com");
 }
 
 // Regression test for crbug/621069.
@@ -2061,7 +2098,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, PreconnectToHostWithValidAltSvc) {
     quic_data_->AddWrite(SYNCHRONOUS,
                          client_maker_.MakeInitialSettingsPacket(1));
   }
-  quic_data_->AddRead(ASYNC, OK);
+  quic_data_->AddRead(ASYNC, ERR_CONNECTION_CLOSED);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -2135,10 +2172,10 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   session_deps_.http_server_properties =
       std::make_unique<HttpServerProperties>();
 
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
@@ -2350,10 +2387,10 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   session_deps_.http_server_properties =
       std::make_unique<HttpServerProperties>();
 
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   tcp_data_ = std::make_unique<SequencedSocketData>(
       MockConnect(SYNCHRONOUS, ERR_IO_PENDING), base::span<MockRead>(),
@@ -2748,7 +2785,7 @@ TEST_P(HttpStreamFactoryJobControllerMisdirectedRequestRetry,
       quic_data_->AddWrite(SYNCHRONOUS,
                            client_maker_.MakeInitialSettingsPacket(1));
     }
-    quic_data_->AddRead(ASYNC, OK);
+    quic_data_->AddRead(ASYNC, ERR_CONNECTION_CLOSED);
   }
   tcp_data_ = std::make_unique<SequencedSocketData>();
   tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -2952,11 +2989,12 @@ void HttpStreamFactoryJobControllerTest::TestAltSvcVersionSelection(
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://example.com");
+  NetworkIsolationKey network_isolation_key(
+      SchemefulSite(GURL("https://example.com")),
+      SchemefulSite(GURL("https://example.com")));
+  request_info.network_isolation_key = network_isolation_key;
   Initialize(request_info);
   url::SchemeHostPort origin(request_info.url);
-  NetworkIsolationKey network_isolation_key(
-      url::Origin::Create(GURL("https://example.com")),
-      url::Origin::Create(GURL("https://example.com")));
   scoped_refptr<HttpResponseHeaders> headers(
       base::MakeRefCounted<HttpResponseHeaders>(""));
   headers->AddHeader("alt-svc", alt_svc_header);

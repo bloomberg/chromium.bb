@@ -126,6 +126,7 @@ ONC_EXPORT extern const char kFirmwareRevision[];
 ONC_EXPORT extern const char kFoundNetworks[];
 ONC_EXPORT extern const char kHardwareRevision[];
 ONC_EXPORT extern const char kHomeProvider[];
+ONC_EXPORT extern const char kEID[];
 ONC_EXPORT extern const char kICCID[];
 ONC_EXPORT extern const char kIMEI[];
 ONC_EXPORT extern const char kIMSI[];
@@ -243,7 +244,6 @@ ONC_EXPORT extern const char kSSID[];
 ONC_EXPORT extern const char kSecurity[];
 ONC_EXPORT extern const char kSecurityNone[];
 ONC_EXPORT extern const char kSignalStrength[];
-ONC_EXPORT extern const char kTetheringState[];
 ONC_EXPORT extern const char kWEP_PSK[];
 ONC_EXPORT extern const char kWEP_8021X[];
 ONC_EXPORT extern const char kWPA_PSK[];
@@ -502,12 +502,6 @@ ONC_EXPORT extern const char kDisabled[];
 ONC_EXPORT extern const char kEnabling[];
 ONC_EXPORT extern const char kEnabled[];
 }  // device_state
-
-namespace tethering_state {
-ONC_EXPORT extern const char kTetheringConfirmedState[];
-ONC_EXPORT extern const char kTetheringNotDetectedState[];
-ONC_EXPORT extern const char kTetheringSuspectedState[];
-}  // namespace tethering_state
 
 }  // namespace onc
 

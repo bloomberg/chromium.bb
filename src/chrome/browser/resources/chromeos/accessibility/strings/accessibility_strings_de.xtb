@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Kein vorheriges Steuerelement</translation>
 <translation id="2045606329038304310">Formularfeldsteuerung</translation>
 <translation id="2063539687800151747">Motto</translation>
+<translation id="2074531330963286860">Aktionen verfügbar. Zum Ansehen Suchtaste + Punkt drücken.</translation>
 <translation id="2086961585857038472">Nächstes Wort</translation>
 <translation id="2087981446621639008">Beschreibungslistendetail</translation>
 <translation id="2089387485033699258">de</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Nächste Gruppe</translation>
 <translation id="7813616274030162878">Menü für Schalterzugriff</translation>
 <translation id="7839679365527550018">Vorheriges Wort</translation>
+<translation id="7842115774595115751">Steuerelemente zur Navigation aktivieren</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7851816175263618915">Einige Satzzeichen</translation>
 <translation id="7871691770940645922">Virtuelle Braillezeile</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Entfernen</translation>
 <translation id="8989104346085848538">Wenn du die ChromeVox-Sprachausgabe anhalten möchtest, drücke die Steuerung-Taste.</translation>
+<translation id="8993737615451556423">Steuerelemente, damit die Vorlesestimme schneller oder langsamer liest oder pausiert</translation>
 <translation id="9014206344398081366">ChromeVox-Anleitung</translation>
 <translation id="9040132695316389094">Überschrift 1</translation>
 <translation id="9061884144798498064">8-Punkt-Braille-Tabelle auswählen:</translation>

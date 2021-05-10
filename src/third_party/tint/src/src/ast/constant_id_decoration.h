@@ -22,26 +22,34 @@ namespace tint {
 namespace ast {
 
 /// A constant id decoration
-class ConstantIdDecoration : public VariableDecoration {
+class ConstantIdDecoration
+    : public Castable<ConstantIdDecoration, VariableDecoration> {
  public:
   /// constructor
-  /// @param val the constant_id value
   /// @param source the source of this decoration
-  ConstantIdDecoration(uint32_t val, const Source& source);
+  /// @param val the constant_id value
+  ConstantIdDecoration(const Source& source, uint32_t val);
   ~ConstantIdDecoration() override;
-
-  /// @returns true if this is a constant_id decoration
-  bool IsConstantId() const override;
 
   /// @returns the constant id value
   uint32_t value() const { return value_; }
 
   /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  void to_str(std::ostream& out) const override;
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ConstantIdDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  uint32_t value_ = 0;
+  uint32_t const value_;
 };
 
 }  // namespace ast

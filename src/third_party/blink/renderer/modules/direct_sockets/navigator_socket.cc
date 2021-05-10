@@ -54,6 +54,7 @@ NavigatorSocket& NavigatorSocket::From(ScriptState* script_state) {
       Supplement<ExecutionContext>::From<NavigatorSocket>(context);
   if (!supplement) {
     supplement = MakeGarbageCollected<NavigatorSocket>(context);
+    supplement->UpdateStateIfNeeded();
     ProvideTo(*context, supplement);
   }
   return *supplement;
@@ -183,15 +184,6 @@ bool NavigatorSocket::OpenSocketPermitted(ScriptState* script_state,
   if (!window) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current frame is detached.");
-    return false;
-  }
-
-  // TODO(crbug.com/1119600): Do not consume (or check) transient activation
-  // for reconnection attempts.
-  if (!LocalFrame::ConsumeTransientUserActivation(window->GetFrame())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotAllowedError,
-        "Must be handling a user gesture to open a socket.");
     return false;
   }
 

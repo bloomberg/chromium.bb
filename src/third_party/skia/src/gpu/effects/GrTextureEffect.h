@@ -91,7 +91,6 @@ public:
             const float border[4] = kDefaultBorder);
 
     std::unique_ptr<GrFragmentProcessor> clone() const override;
-    bool usesExplicitReturn() const override { return true; }
 
     const char* name() const override { return "TextureEffect"; }
 
@@ -154,7 +153,7 @@ private:
 
     explicit GrTextureEffect(const GrTextureEffect& src);
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 

@@ -9,6 +9,8 @@
 }
 
 .toolbar {
-  background-color: #eee;
-  border-top: 1px solid #ccc;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-top: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }

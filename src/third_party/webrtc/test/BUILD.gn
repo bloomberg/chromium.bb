@@ -7,29 +7,32 @@
 # be found in the AUTHORS file in the root of the source tree.
 
 import("//build/config/ui.gni")
+import("//third_party/google_benchmark/buildconfig.gni")
 import("../webrtc.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-group("test") {
-  testonly = true
+if (!build_with_chromium) {
+  group("test") {
+    testonly = true
 
-  deps = [
-    ":copy_to_file_audio_capturer",
-    ":rtp_test_utils",
-    ":test_common",
-    ":test_renderer",
-    ":test_support",
-    ":video_test_common",
-  ]
-
-  if (rtc_include_tests) {
-    deps += [
-      ":test_main",
-      ":test_support_unittests",
-      "pc/e2e",
+    deps = [
+      ":copy_to_file_audio_capturer",
+      ":rtp_test_utils",
+      ":test_common",
+      ":test_renderer",
+      ":test_support",
+      ":video_test_common",
     ]
+
+    if (rtc_include_tests) {
+      deps += [
+        ":test_main",
+        ":test_support_unittests",
+        "pc/e2e",
+      ]
+    }
   }
 }
 
@@ -49,6 +52,7 @@ rtc_library("frame_generator_impl") {
     ":frame_utils",
     "../api:frame_generator_api",
     "../api:scoped_refptr",
+    "../api:sequence_checker",
     "../api/video:encoded_image",
     "../api/video:video_frame",
     "../api/video:video_frame_i010",
@@ -68,7 +72,6 @@ rtc_library("frame_generator_impl") {
     "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_event",
     "../rtc_base/synchronization:mutex",
-    "../rtc_base/synchronization:sequence_checker",
     "../rtc_base/system:file_wrapper",
     "../system_wrappers",
   ]
@@ -145,6 +148,7 @@ if (!build_with_chromium) {
         "../api:scoped_refptr",
         "../modules/video_capture:video_capture_module",
         "../rtc_base",
+        "../rtc_base:threading",
         "../sdk:base_objc",
         "../sdk:native_api",
         "../sdk:native_video",
@@ -248,10 +252,14 @@ rtc_library("perf_test") {
     "../rtc_base:criticalsection",
     "../rtc_base:logging",
     "../rtc_base:rtc_numerics",
+    "../rtc_base:stringutils",
     "../rtc_base/synchronization:mutex",
     "../test:fileutils",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
   if (rtc_enable_protobuf) {
     sources += [ "testsupport/perf_test_histogram_writer.cc" ]
     deps += [
@@ -303,7 +311,7 @@ config("suppress_warning_4373") {
 
 config("test_main_direct_config") {
   visibility = [ ":*" ]
-  defines = [ "UNIT_TEST" ]
+  defines = [ "WEBRTC_UNIT_TEST" ]
 }
 rtc_source_set("test_support") {
   visibility = [ "*" ]
@@ -355,6 +363,7 @@ rtc_library("video_test_support") {
     ":test_support",
     ":video_test_common",
     "../api:scoped_refptr",
+    "../api:sequence_checker",
     "../api/video:encoded_image",
     "../api/video:video_frame",
     "../api/video_codecs:video_codecs_api",
@@ -370,7 +379,6 @@ rtc_library("video_test_support") {
     "../rtc_base:logging",
     "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_event",
-    "../rtc_base/synchronization:sequence_checker",
     "../rtc_base/system:file_wrapper",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
@@ -387,7 +395,16 @@ rtc_library("video_test_support") {
   }
 }
 
-if (rtc_include_tests) {
+if (rtc_include_tests && enable_google_benchmarks) {
+  rtc_library("benchmark_main") {
+    testonly = true
+    sources = [ "benchmark_main.cc" ]
+
+    deps = [ "//third_party/google_benchmark" ]
+  }
+}
+
+if (rtc_include_tests && !build_with_chromium) {
   rtc_library("resources_dir_flag") {
     testonly = true
     visibility = [ "*" ]
@@ -415,6 +432,7 @@ if (rtc_include_tests) {
       "../rtc_base:checks",
       "../rtc_base:logging",
       "../rtc_base:rtc_base_approved",
+      "../rtc_base:threading",
       "../system_wrappers:field_trial",
       "../system_wrappers:metrics",
     ]
@@ -441,13 +459,6 @@ if (rtc_include_tests) {
       "//third_party/abseil-cpp/absl/debugging:symbolize",
       "//third_party/abseil-cpp/absl/flags:parse",
     ]
-  }
-
-  rtc_library("benchmark_main") {
-    testonly = true
-    sources = [ "benchmark_main.cc" ]
-
-    deps = [ "//third_party/google_benchmark" ]
   }
 
   rtc_library("test_support_test_artifacts") {
@@ -535,6 +546,8 @@ if (rtc_include_tests) {
       "scenario:scenario_unittests",
       "time_controller:time_controller",
       "time_controller:time_controller_unittests",
+    ]
+    absl_deps = [
       "//third_party/abseil-cpp/absl/flags:flag",
       "//third_party/abseil-cpp/absl/strings",
       "//third_party/abseil-cpp/absl/types:optional",
@@ -573,7 +586,7 @@ if (rtc_include_tests) {
       deps += [ ":test_support_unittests_bundle_data" ]
     }
 
-    if (!is_android && !build_with_chromium) {
+    if (!is_android) {
       # This is needed in order to avoid:
       # undefined symbol: webrtc::videocapturemodule::VideoCaptureImpl::Create
       deps += [ "../modules/video_capture:video_capture_internal_impl" ]
@@ -718,6 +731,7 @@ rtc_library("direct_transport") {
   ]
   deps = [
     ":rtp_test_utils",
+    "../api:sequence_checker",
     "../api:simulated_network_api",
     "../api:transport_api",
     "../api/task_queue",
@@ -727,7 +741,6 @@ rtc_library("direct_transport") {
     "../rtc_base:macromagic",
     "../rtc_base:timeutils",
     "../rtc_base/synchronization:mutex",
-    "../rtc_base/synchronization:sequence_checker",
     "../rtc_base/task_utils:repeating_task",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/memory" ]
@@ -753,6 +766,7 @@ rtc_library("fake_video_codecs") {
   deps = [
     "../api:fec_controller_api",
     "../api:scoped_refptr",
+    "../api:sequence_checker",
     "../api/task_queue",
     "../api/video:encoded_image",
     "../api/video:video_bitrate_allocation",
@@ -769,7 +783,6 @@ rtc_library("fake_video_codecs") {
     "../rtc_base:rtc_task_queue",
     "../rtc_base:timeutils",
     "../rtc_base/synchronization:mutex",
-    "../rtc_base/synchronization:sequence_checker",
     "../system_wrappers",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
@@ -865,6 +878,7 @@ rtc_library("test_common") {
     "../rtc_base:rtc_base",
     "../rtc_base:rtc_event",
     "../rtc_base:task_queue_for_test",
+    "../rtc_base:threading",
     "../rtc_base/task_utils:to_queued_task",
     "../system_wrappers",
     "../system_wrappers:field_trial",

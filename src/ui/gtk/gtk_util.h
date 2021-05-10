@@ -5,8 +5,11 @@
 #ifndef UI_GTK_GTK_UTIL_H_
 #define UI_GTK_GTK_UTIL_H_
 
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
+
 #include <string>
+#include <vector>
 
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/native_theme/native_theme.h"
@@ -16,8 +19,6 @@
 // not nullptr.
 #define WEAK_GTK_FN(x) extern "C" __attribute__((weak)) decltype(x) x
 
-typedef union _GdkEvent GdkEvent;
-
 namespace aura {
 class Window;
 }
@@ -26,17 +27,11 @@ namespace base {
 class CommandLine;
 }
 
-namespace color_utils {
-struct HSL;
-}
-
 namespace ui {
 class KeyEvent;
 }
 
 namespace gtk {
-
-extern const color_utils::HSL kDefaultTintFrameIncognito;
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
 
@@ -90,6 +85,7 @@ bool GtkCheckVersion(int major, int minor = 0, int micro = 0);
 using ScopedStyleContext = ScopedGObject<GtkStyleContext>;
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 }  // namespace gtk
 
 // Template override cannot be in the gtk namespace.
@@ -117,6 +113,7 @@ inline void gtk::ScopedStyleContext::Unref() {
 }
 
 namespace gtk {
+#endif
 
 // Converts ui::NativeTheme::State to GtkStateFlags.
 GtkStateFlags StateToStateFlags(ui::NativeTheme::State state);
@@ -195,6 +192,8 @@ int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group);
 // Context impl, X11 window XID is obtained through Event::target() which is
 // root aura::Window targeted by that key event.
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event);
+
+GtkIconTheme* GetDefaultIconTheme();
 
 }  // namespace gtk
 

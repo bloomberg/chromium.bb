@@ -65,9 +65,6 @@ def CommonChecks(input_api, output_api, tests_to_skip_list, run_on_python3):
   input_api.SetTimeout(TEST_TIMEOUT_S)
 
   results = []
-  results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
-  results.extend(input_api.canned_checks.CheckOwnersFormat(
-      input_api, output_api))
   results.extend(input_api.canned_checks.CheckJsonParses(
       input_api, output_api))
 
@@ -136,9 +133,15 @@ def CheckChangeOnUpload(input_api, output_api):
       r'^cipd_bootstrap_test\.py$',
       r'^gclient_smoketest\.py$',
   ]
+  results = []
+  results.extend(input_api.canned_checks.CheckOwners(
+      input_api, output_api, allow_tbr=False))
+  results.extend(input_api.canned_checks.CheckOwnersFormat(
+      input_api, output_api))
   # TODO(ehmaldonado): Run Python 3 tests on upload once Python 3 is
   # bootstrapped on Linux and Mac.
-  return CommonChecks(input_api, output_api, tests_to_skip_list, False)
+  results.extend(CommonChecks(input_api, output_api, tests_to_skip_list, False))
+  return results
 
 
 def CheckChangeOnCommit(input_api, output_api):

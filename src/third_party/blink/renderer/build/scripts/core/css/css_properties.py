@@ -67,6 +67,7 @@ class CSSProperties(object):
         # in the various generators for ComputedStyle.
         self._field_alias_expander = FieldAliasExpander(file_paths[1])
 
+        # _alias_offset must be a power of 2.
         self._alias_offset = 1024
         # 0: CSSPropertyID::kInvalid
         # 1: CSSPropertyID::kVariable
@@ -224,7 +225,7 @@ class CSSProperties(object):
             updated_alias['enum_key'] = enum_key_for_css_property_alias(
                 alias['name'])
             updated_alias['enum_value'] = aliased_property['enum_value'] + \
-                self._alias_offset
+                self._alias_offset * len(aliased_property['aliases'])
             updated_alias['superclass'] = 'CSSUnresolvedProperty'
             updated_alias['namespace_group'] = \
                 'Shorthand' if aliased_property['longhands'] else 'Longhand'
@@ -320,15 +321,29 @@ class CSSProperties(object):
         set_if_none(property_, 'custom_compare', False)
         set_if_none(property_, 'mutable', False)
 
-        if property_['direction_aware_options']:
-            if not property_['style_builder_template']:
+        if property_['logical_property_group']:
+            group = property_['logical_property_group']
+            assert 'name' in group, 'name option is required'
+            assert 'resolver' in group, 'resolver option is required'
+            logicals = {
+                'block', 'inline', 'block-start', 'block-end', 'inline-start',
+                'inline-end', 'start-start', 'start-end', 'end-start',
+                'end-end'
+            }
+            physicals = {
+                'vertical', 'horizontal', 'top', 'bottom', 'left', 'right',
+                'top-left', 'top-right', 'bottom-right', 'bottom-left'
+            }
+            if group['resolver'] in logicals:
+                group['is_logical'] = True
+            elif group['resolver'] in physicals:
+                group['is_logical'] = False
+            else:
+                assert 0, 'invalid resolver option'
+            group['name'] = NameStyleConverter(group['name'])
+            group['resolver_name'] = NameStyleConverter(group['resolver'])
+            if not property_['style_builder_template'] and group['is_logical']:
                 property_['style_builder_template'] = 'direction_aware'
-            options = property_['direction_aware_options']
-            assert 'resolver' in options, 'resolver option is required'
-            assert 'physical_group' in options, 'physical_group option is required'
-            options['resolver_name'] = NameStyleConverter(options['resolver'])
-            options['physical_group_name'] = NameStyleConverter(
-                options['physical_group'])
 
     @property
     def default_parameters(self):

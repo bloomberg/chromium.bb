@@ -13,7 +13,7 @@
 #include "include/core/SkRegion.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrTypes.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 
 class GrAccelData;
@@ -59,11 +59,11 @@ public:
     };
 
     /**
-     * Creates an SkGpuDevice from a GrRenderTargetContext whose backing width/height is
+     * Creates an SkGpuDevice from a GrSurfaceDrawContext whose backing width/height is
      * different than its actual width/height (e.g., approx-match scratch texture).
      */
     static sk_sp<SkGpuDevice> Make(GrRecordingContext*,
-                                   std::unique_ptr<GrRenderTargetContext>,
+                                   std::unique_ptr<GrSurfaceDrawContext>,
                                    InitContents);
 
     /**
@@ -81,15 +81,14 @@ public:
     ~SkGpuDevice() override {}
 
     GrRecordingContext* recordingContext() const override { return fContext.get(); }
+    GrSurfaceDrawContext* surfaceDrawContext() override;
 
     // set all pixels to 0
     void clearAll();
 
-    void replaceRenderTargetContext(SkSurface::ContentChangeMode mode);
-    void replaceRenderTargetContext(std::unique_ptr<GrRenderTargetContext>,
-                                    SkSurface::ContentChangeMode mode);
-
-    GrRenderTargetContext* accessRenderTargetContext() override;
+    void replaceSurfaceDrawContext(SkSurface::ContentChangeMode mode);
+    void replaceSurfaceDrawContext(std::unique_ptr<GrSurfaceDrawContext>,
+                                   SkSurface::ContentChangeMode mode);
 
     void drawPaint(const SkPaint& paint) override;
     void drawPoints(SkCanvas::PointMode mode, size_t count, const SkPoint[],
@@ -106,33 +105,31 @@ public:
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override;
     void drawShadow(const SkPath&, const SkDrawShadowRec&) override;
-    void drawAtlas(const SkImage* atlas, const SkRSXform[], const SkRect[],
-                   const SkColor[], int count, SkBlendMode, const SkPaint&) override;
+    void drawAtlas(const SkImage* atlas, const SkRSXform[], const SkRect[], const SkColor[],
+                   int count, SkBlendMode, const SkSamplingOptions&, const SkPaint&) override;
 
     void drawImageRect(const SkImage*, const SkRect* src, const SkRect& dst,
-                       const SkPaint&, SkCanvas::SrcRectConstraint) override;
-    void drawImageNine(const SkImage* image, const SkIRect& center,
-                       const SkRect& dst, const SkPaint& paint) override;
+                       const SkSamplingOptions&, const SkPaint&,
+                       SkCanvas::SrcRectConstraint) override;
     void drawImageLattice(const SkImage*, const SkCanvas::Lattice&,
-                          const SkRect& dst, const SkPaint&) override;
+                          const SkRect& dst, SkFilterMode, const SkPaint&) override;
 
     void drawDrawable(SkDrawable*, const SkMatrix*, SkCanvas* canvas) override;
 
-    void drawDevice(SkBaseDevice*, const SkPaint&) override;
-    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkPaint&) override;
+    void drawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint&) override;
+    void drawSpecial(SkSpecialImage*, const SkMatrix&, const SkSamplingOptions&,
+                     const SkPaint&) override;
 
     void drawEdgeAAQuad(const SkRect& rect, const SkPoint clip[4], SkCanvas::QuadAAFlags aaFlags,
                         const SkColor4f& color, SkBlendMode mode) override;
     void drawEdgeAAImageSet(const SkCanvas::ImageSetEntry[], int count, const SkPoint dstClips[],
-                            const SkMatrix[], const SkPaint&, SkCanvas::SrcRectConstraint) override;
+                            const SkMatrix[], const SkSamplingOptions&, const SkPaint&,
+                            SkCanvas::SrcRectConstraint) override;
 
     sk_sp<SkSpecialImage> makeSpecial(const SkBitmap&) override;
     sk_sp<SkSpecialImage> makeSpecial(const SkImage*) override;
     sk_sp<SkSpecialImage> snapSpecial(const SkIRect&, bool = false) override;
 
-    void flush() override;
-    GrSemaphoresSubmitted flush(SkSurface::BackendSurfaceAccess access, const GrFlushInfo&,
-                                const GrBackendSurfaceMutableState*);
     bool wait(int numSemaphores, const GrBackendSemaphore* waitSemaphores,
               bool deleteSemaphoresAfterWait);
 
@@ -180,11 +177,11 @@ protected:
 #endif
 
 private:
-    // We want these unreffed in RenderTargetContext, GrContext order.
+    // We want these unreffed in SurfaceDrawContext, GrContext order.
     sk_sp<GrRecordingContext> fContext;
-    std::unique_ptr<GrRenderTargetContext> fRenderTargetContext;
+    std::unique_ptr<GrSurfaceDrawContext> fSurfaceDrawContext;
 
-    GR_CLIP_STACK   fClip;
+    GR_CLIP_STACK fClip;
 
     enum Flags {
         kNeedClear_Flag = 1 << 0,  //!< Surface requires an initial clear
@@ -194,7 +191,7 @@ private:
     static bool CheckAlphaTypeAndGetFlags(const SkImageInfo* info, InitContents init,
                                           unsigned* flags);
 
-    SkGpuDevice(GrRecordingContext*, std::unique_ptr<GrRenderTargetContext>, unsigned flags);
+    SkGpuDevice(GrRecordingContext*, std::unique_ptr<GrSurfaceDrawContext>, unsigned flags);
 
     SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
@@ -210,24 +207,26 @@ private:
     // If 'preViewMatrix' is not null, final CTM will be this->ctm() * preViewMatrix.
     void drawImageQuad(const SkImage*, const SkRect* src, const SkRect* dst,
                        const SkPoint dstClip[4], GrAA aa, GrQuadAAFlags aaFlags,
-                       const SkMatrix* preViewMatrix, const SkPaint&, SkCanvas::SrcRectConstraint);
+                       const SkMatrix* preViewMatrix, const SkSamplingOptions&,
+                       const SkPaint&, SkCanvas::SrcRectConstraint);
 
     // FIXME(michaelludwig) - Should be removed in favor of using drawImageQuad with edge flags to
     // for every element in the SkLatticeIter.
-    void drawProducerLattice(GrTextureProducer*, std::unique_ptr<SkLatticeIter>, const SkRect& dst,
-                             const SkPaint&);
+    void drawViewLattice(GrSurfaceProxyView,
+                         const GrColorInfo& colorInfo,
+                         std::unique_ptr<SkLatticeIter>,
+                         const SkRect& dst,
+                         SkFilterMode,
+                         const SkPaint&);
 
-    void drawStrokedLine(const SkPoint pts[2], const SkPaint&);
+    static std::unique_ptr<GrSurfaceDrawContext> MakeSurfaceDrawContext(GrRecordingContext*,
+                                                                        SkBudgeted,
+                                                                        const SkImageInfo&,
+                                                                        int sampleCount,
+                                                                        GrSurfaceOrigin,
+                                                                        const SkSurfaceProps*,
+                                                                        GrMipmapped);
 
-    static std::unique_ptr<GrRenderTargetContext> MakeRenderTargetContext(GrRecordingContext*,
-                                                                          SkBudgeted,
-                                                                          const SkImageInfo&,
-                                                                          int sampleCount,
-                                                                          GrSurfaceOrigin,
-                                                                          const SkSurfaceProps*,
-                                                                          GrMipmapped);
-
-    friend class GrAtlasTextContext;
     friend class SkSurface_Gpu;      // for access to surfaceProps
     using INHERITED = BASE_DEVICE;
 };

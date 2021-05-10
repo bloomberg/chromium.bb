@@ -19,20 +19,26 @@ namespace sk_app {
 
 struct DisplayParams;
 
+static inline CGFloat GetBackingScaleFactor(NSView* view) {
+    #ifdef SK_BUILD_FOR_IOS
+    UIScreen* screen = view.window.screen ?: [UIScreen mainScreen];
+    return screen.nativeScale;
+    #else
+    NSScreen* screen = view.window.screen ?: [NSScreen mainScreen];
+    return screen.backingScaleFactor;
+    #endif
+}
+
 namespace window_context_factory {
 
 struct MacWindowInfo {
     NSView*   fMainView;
 };
 
-#ifdef SK_VULKAN
-std::unique_ptr<WindowContext> MakeVulkanForMac(const MacWindowInfo&, const DisplayParams&);
-#else
 inline std::unique_ptr<WindowContext> MakeVulkanForMac(const MacWindowInfo&, const DisplayParams&) {
     // No Vulkan support on Mac.
     return nullptr;
 }
-#endif
 
 std::unique_ptr<WindowContext> MakeGLForMac(const MacWindowInfo&, const DisplayParams&);
 

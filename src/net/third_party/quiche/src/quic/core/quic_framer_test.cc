@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
+#include "quic/core/quic_framer.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -16,26 +16,26 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_data_producer.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_data_producer.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 using testing::_;
 using testing::Return;
@@ -290,7 +290,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  void OnDecryptedPacket(EncryptionLevel /*level*/) override {
+  void OnDecryptedPacket(size_t /*length*/,
+                         EncryptionLevel /*level*/) override {
     EXPECT_EQ(0u, framer_->current_received_frame_type());
   }
 
@@ -363,7 +364,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
-    DCHECK(!ack_frames_.empty());
+    QUICHE_DCHECK(!ack_frames_.empty());
     ack_frames_[ack_frames_.size() - 1]->packets.AddRange(start, end);
     if (VersionHasIetfQuicFrames(transport_version_)) {
       EXPECT_TRUE(IETF_ACK == framer_->current_received_frame_type() ||
@@ -432,7 +433,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     ++frame_count_;
     handshake_done_frames_.push_back(
         std::make_unique<QuicHandshakeDoneFrame>(frame));
-    DCHECK(VersionHasIetfQuicFrames(transport_version_));
+    QUICHE_DCHECK(VersionHasIetfQuicFrames(transport_version_));
     EXPECT_EQ(IETF_HANDSHAKE_DONE, framer_->current_received_frame_type());
     return true;
   }
@@ -441,7 +442,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     ++frame_count_;
     ack_frequency_frames_.emplace_back(
         std::make_unique<QuicAckFrequencyFrame>(frame));
-    DCHECK(VersionHasIetfQuicFrames(transport_version_));
+    QUICHE_DCHECK(VersionHasIetfQuicFrames(transport_version_));
     EXPECT_EQ(IETF_ACK_FREQUENCY, framer_->current_received_frame_type());
     return true;
   }
@@ -1361,11 +1362,10 @@ TEST_P(QuicFramerTest, ParsePublicHeader) {
   const QuicErrorCode parse_error = QuicFramer::ParsePublicHeader(
       &reader, kQuicDefaultConnectionIdLength,
       /*ietf_format=*/
-      VersionHasIetfInvariantHeader(framer_.transport_version()), &first_byte,
-      &format, &version_present, &has_length_prefix, &version_label,
-      &parsed_version, &destination_connection_id, &source_connection_id,
-      &long_packet_type, &retry_token_length_length, &retry_token,
-      &detailed_error);
+      framer_.version().HasIetfInvariantHeader(), &first_byte, &format,
+      &version_present, &has_length_prefix, &version_label, &parsed_version,
+      &destination_connection_id, &source_connection_id, &long_packet_type,
+      &retry_token_length_length, &retry_token, &detailed_error);
   EXPECT_THAT(parse_error, IsQuicNoError());
   EXPECT_EQ("", detailed_error);
   EXPECT_EQ(p[0], first_byte);
@@ -1378,7 +1378,7 @@ TEST_P(QuicFramerTest, ParsePublicHeader) {
   EXPECT_EQ(EmptyQuicConnectionId(), source_connection_id);
   EXPECT_EQ(VARIABLE_LENGTH_INTEGER_LENGTH_0, retry_token_length_length);
   EXPECT_EQ(absl::string_view(), retry_token);
-  if (VersionHasIetfInvariantHeader(framer_.transport_version())) {
+  if (framer_.version().HasIetfInvariantHeader()) {
     EXPECT_EQ(IETF_QUIC_LONG_HEADER_PACKET, format);
     EXPECT_EQ(HANDSHAKE, long_packet_type);
   } else {
@@ -2762,7 +2762,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   // If IETF frames are in use then we must also have the IETF
   // header invariants.
   if (VersionHasIetfQuicFrames(framer_.transport_version())) {
-    DCHECK(VersionHasIetfInvariantHeader(framer_.transport_version()));
+    QUICHE_DCHECK(framer_.version().HasIetfInvariantHeader());
   }
 
   SetDecrypterLevel(ENCRYPTION_ZERO_RTT);
@@ -4605,15 +4605,8 @@ TEST_P(QuicFramerTest, ConnectionCloseFrameWithUnknownErrorCode) {
   } else {
     // For Google QUIC frame, |quic_error_code| and |wire_error_code| has the
     // same value.
-    if (GetQuicReloadableFlag(quic_do_not_clip_received_error_code)) {
-      EXPECT_EQ(0xC0DEu, visitor_.connection_close_frame_.wire_error_code);
-      EXPECT_EQ(0xC0DEu, visitor_.connection_close_frame_.quic_error_code);
-    } else {
-      EXPECT_EQ(QUIC_LAST_ERROR,
-                visitor_.connection_close_frame_.wire_error_code);
-      EXPECT_EQ(QUIC_LAST_ERROR,
-                visitor_.connection_close_frame_.quic_error_code);
-    }
+    EXPECT_EQ(0xC0DEu, visitor_.connection_close_frame_.wire_error_code);
+    EXPECT_EQ(0xC0DEu, visitor_.connection_close_frame_.quic_error_code);
   }
 
   ASSERT_EQ(0u, visitor_.ack_frames_.size());
@@ -5053,11 +5046,7 @@ TEST_P(QuicFramerTest, GoAwayFrameWithUnknownErrorCode) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
 
   EXPECT_EQ(kStreamId, visitor_.goaway_frame_.last_good_stream_id);
-  if (GetQuicReloadableFlag(quic_do_not_clip_received_error_code)) {
-    EXPECT_EQ(0xC0DE, visitor_.goaway_frame_.error_code);
-  } else {
-    EXPECT_EQ(QUIC_LAST_ERROR, visitor_.goaway_frame_.error_code);
-  }
+  EXPECT_EQ(0xC0DE, visitor_.goaway_frame_.error_code);
   EXPECT_EQ("because I can", visitor_.goaway_frame_.reason_phrase);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_GOAWAY_DATA);
@@ -6061,7 +6050,7 @@ TEST_P(QuicFramerTest, ParseIetfRetryPacket) {
 
   unsigned char* p = packet;
   size_t p_length = ABSL_ARRAYSIZE(packet);
-  if (framer_.version().HasRetryIntegrityTag()) {
+  if (framer_.version().UsesTls()) {
     p = packet_with_tag;
     p_length = ABSL_ARRAYSIZE(packet_with_tag);
   } else if (framer_.version().HasLongHeaderLengths()) {
@@ -6078,7 +6067,7 @@ TEST_P(QuicFramerTest, ParseIetfRetryPacket) {
   ASSERT_TRUE(visitor_.retry_new_connection_id_.get());
   ASSERT_TRUE(visitor_.retry_token_.get());
 
-  if (framer_.version().HasRetryIntegrityTag()) {
+  if (framer_.version().UsesTls()) {
     ASSERT_TRUE(visitor_.retry_token_integrity_tag_.get());
     static const unsigned char expected_integrity_tag[16] = {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -7820,8 +7809,9 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicConnectionCloseFrame close_frame(
-      framer_.transport_version(), QUIC_INTERNAL_ERROR, "because I can", 0x05);
+  QuicConnectionCloseFrame close_frame(framer_.transport_version(),
+                                       QUIC_INTERNAL_ERROR, NO_IETF_QUIC_ERROR,
+                                       "because I can", 0x05);
   QuicFrames frames = {QuicFrame(&close_frame)};
 
   // clang-format off
@@ -7921,7 +7911,7 @@ TEST_P(QuicFramerTest, BuildCloseFramePacketExtendedInfo) {
       static_cast<QuicErrorCode>(
           VersionHasIetfQuicFrames(framer_.transport_version()) ? 0x01
                                                                 : 0x05060708),
-      "because I can", 0x05);
+      NO_IETF_QUIC_ERROR, "because I can", 0x05);
   // Set this so that it is "there" for both Google QUIC and IETF QUIC
   // framing. It better not show up for Google QUIC!
   close_frame.quic_error_code = static_cast<QuicErrorCode>(0x4567);
@@ -8023,7 +8013,7 @@ TEST_P(QuicFramerTest, BuildTruncatedCloseFramePacket) {
   header.packet_number = kPacketNumber;
 
   QuicConnectionCloseFrame close_frame(framer_.transport_version(),
-                                       QUIC_INTERNAL_ERROR,
+                                       QUIC_INTERNAL_ERROR, NO_IETF_QUIC_ERROR,
                                        std::string(2048, 'A'), 0x05);
   QuicFrames frames = {QuicFrame(&close_frame)};
 
@@ -9765,7 +9755,7 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   EXPECT_CALL(visitor, OnPacketComplete());
   EXPECT_CALL(visitor, OnUnauthenticatedPublicHeader(_)).WillOnce(Return(true));
   EXPECT_CALL(visitor, OnUnauthenticatedHeader(_)).WillOnce(Return(true));
-  EXPECT_CALL(visitor, OnDecryptedPacket(_));
+  EXPECT_CALL(visitor, OnDecryptedPacket(_, _));
 
   unsigned char* p = packet;
   size_t p_size = ABSL_ARRAYSIZE(packet);
@@ -9824,7 +9814,7 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
       .Times(1)
       .WillOnce(Return(true));
   EXPECT_CALL(visitor, OnPacketHeader(_)).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
+  EXPECT_CALL(visitor, OnDecryptedPacket(_, _)).Times(1);
   EXPECT_CALL(visitor, OnError(_)).Times(0);
   EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
   if (!QuicVersionUsesCryptoFrames(framer_.version().transport_version)) {
@@ -9870,7 +9860,7 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
       .Times(1)
       .WillOnce(Return(true));
   EXPECT_CALL(visitor, OnPacketHeader(_)).Times(1);
-  EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
+  EXPECT_CALL(visitor, OnDecryptedPacket(_, _)).Times(1);
   EXPECT_CALL(visitor, OnError(_)).Times(1);
   EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete()).Times(0);
@@ -11165,8 +11155,9 @@ TEST_P(QuicFramerTest, BuildNewTokenFramePacket) {
   uint8_t expected_token_value[] = {0x00, 0x01, 0x02, 0x03,
                                     0x04, 0x05, 0x06, 0x07};
 
-  QuicNewTokenFrame frame(0, std::string((const char*)(expected_token_value),
-                                         sizeof(expected_token_value)));
+  QuicNewTokenFrame frame(0,
+                          absl::string_view((const char*)(expected_token_value),
+                                            sizeof(expected_token_value)));
 
   QuicFrames frames = {QuicFrame(&frame)};
 
@@ -11235,12 +11226,8 @@ TEST_P(QuicFramerTest, IetfStopSendingFrame) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
 
   EXPECT_EQ(kStreamId, visitor_.stop_sending_frame_.stream_id);
-  if (GetQuicReloadableFlag(quic_stop_sending_uses_ietf_error_code)) {
-    EXPECT_EQ(QUIC_STREAM_UNKNOWN_APPLICATION_ERROR_CODE,
-              visitor_.stop_sending_frame_.error_code);
-  } else {
-    EXPECT_EQ(0x7654, visitor_.stop_sending_frame_.error_code);
-  }
+  EXPECT_EQ(QUIC_STREAM_UNKNOWN_APPLICATION_ERROR_CODE,
+            visitor_.stop_sending_frame_.error_code);
   EXPECT_EQ(static_cast<uint64_t>(0x7654),
             visitor_.stop_sending_frame_.ietf_error_code);
 
@@ -11466,9 +11453,10 @@ TEST_P(QuicFramerTest, GetRetransmittableControlFrameSize) {
                 framer_.transport_version(), QuicFrame(&rst_stream)));
 
   std::string error_detail(2048, 'e');
-  QuicConnectionCloseFrame connection_close(
-      framer_.transport_version(), QUIC_NETWORK_IDLE_TIMEOUT, error_detail,
-      /*transport_close_frame_type=*/0);
+  QuicConnectionCloseFrame connection_close(framer_.transport_version(),
+                                            QUIC_NETWORK_IDLE_TIMEOUT,
+                                            NO_IETF_QUIC_ERROR, error_detail,
+                                            /*transport_close_frame_type=*/0);
 
   EXPECT_EQ(QuicFramer::GetConnectionCloseFrameSize(framer_.transport_version(),
                                                     connection_close),

@@ -1,4 +1,4 @@
-# v-0006 - Fails because 'a' is not defined.
+// v-0006 - Fails because 'a' is not defined.
 
 [[stage(vertex)]]
 fn main() -> void {

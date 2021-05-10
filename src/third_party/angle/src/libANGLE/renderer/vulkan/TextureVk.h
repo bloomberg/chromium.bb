@@ -156,6 +156,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                    egl::Stream *stream,
                                    const egl::Stream::GLTextureDescription &desc) override;
 
+    angle::Result setBuffer(const gl::Context *context, GLenum internalFormat) override;
+
     angle::Result generateMipmap(const gl::Context *context) override;
 
     angle::Result setBaseLevel(const gl::Context *context, GLuint baseLevel) override;
@@ -200,6 +202,11 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
         getImageViews().retain(resourceUseList);
     }
 
+    void retainBufferViews(vk::ResourceUseList *resourceUseList)
+    {
+        mBufferViews.retain(resourceUseList);
+    }
+
     void releaseOwnershipOfImage(const gl::Context *context);
 
     const vk::ImageView &getReadImageViewAndRecordUse(ContextVk *contextVk,
@@ -224,11 +231,17 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
         return mSampler.get();
     }
 
+    angle::Result getBufferViewAndRecordUse(ContextVk *contextVk,
+                                            const vk::Format *imageUniformFormat,
+                                            bool isImage,
+                                            const vk::BufferView **viewOut);
+
     // Normally, initialize the image with enabled mipmap level counts.
     angle::Result ensureImageInitialized(ContextVk *contextVk, ImageMipLevels mipLevels);
 
-    vk::ImageViewSubresourceSerial getImageViewSubresourceSerial(
+    vk::ImageOrBufferViewSubresourceSerial getImageViewSubresourceSerial(
         const gl::SamplerState &samplerState) const;
+    vk::ImageOrBufferViewSubresourceSerial getBufferViewSerial() const;
 
     void overrideStagingBufferSizeForTesting(size_t initialSizeForTesting)
     {
@@ -248,6 +261,10 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                               void *pixels) override;
 
     ANGLE_INLINE bool hasBeenBoundAsImage() const { return mState.hasBeenBoundAsImage(); }
+    ANGLE_INLINE const gl::OffsetBindingPointer<gl::Buffer> &getBuffer() const
+    {
+        return mState.getBuffer();
+    }
 
     bool isSRGBOverrideEnabled() const
     {
@@ -263,7 +280,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     gl::LevelIndex getNativeImageLevel(gl::LevelIndex frontendLevel) const;
     uint32_t getNativeImageLayer(uint32_t frontendLayer) const;
 
-    void releaseAndDeleteImage(ContextVk *contextVk);
+    void releaseAndDeleteImageAndViews(ContextVk *contextVk);
     angle::Result ensureImageAllocated(ContextVk *contextVk, const vk::Format &format);
     void setImageHelper(ContextVk *contextVk,
                         vk::ImageHelper *imageHelper,
@@ -483,11 +500,17 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     // - index N: views for mMultisampledImages[N]
     gl::RenderToTextureImageMap<vk::ImageViewHelper> mMultisampledImageViews;
 
+    // Texture buffers create texel buffer views instead.  |BufferViewHelper| contains the views
+    // corresponding to the attached buffer range.
+    vk::BufferViewHelper mBufferViews;
+
     // Render targets stored as array of vector of vectors
     //
     // - First dimension: index N contains render targets with views from mMultisampledImageViews[N]
     // - Second dimension: level
-    // - Third dimension: layer
+    // - Third dimension: layer.  If there are M layers:
+    //   * Indices [0, M-1] are single-layer render targets
+    //   * Index M is a layered render target
     gl::RenderToTextureImageMap<std::vector<RenderTargetVector>> mRenderTargets;
 
     // |mImage| wraps a VkImage and VkDeviceMemory that represents the gl::Texture. |mOwnsImage|

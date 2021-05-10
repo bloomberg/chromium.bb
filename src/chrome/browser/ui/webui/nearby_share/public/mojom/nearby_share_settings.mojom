@@ -19,7 +19,9 @@ enum DataUsage {
 };
 
 // TODO(crbug.com/1110098): Remove kUnknown.
-// Represents who the user has chosen to be visible to.
+// Represents who the user has chosen to be visible to. Note: These values are
+// persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
 enum Visibility {
   kUnknown = 0,
   // The user is not advertising to anyone.
@@ -68,6 +70,8 @@ interface NearbyShareSettings {
   GetEnabled() => (bool enabled);
   // Set the enabled state for the Nearby Share feature.
   SetEnabled(bool enabled);
+  // Get the onboarding completion state for the Nearby Share feature.
+  IsOnboardingComplete() => (bool completed);
 
   // Get the device name shown to a sender when this device is available as
   // a share target. |device_name| is the new device name.

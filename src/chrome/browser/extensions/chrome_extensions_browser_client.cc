@@ -12,10 +12,9 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
@@ -66,11 +67,12 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "extensions/browser/updater/null_extension_cache.h"
@@ -159,7 +161,7 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::string ChromeExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
   return chromeos::ProfileHelper::GetUserIdHashFromProfile(
@@ -207,8 +209,8 @@ void ChromeExtensionsBrowserClient::LoadResourceFromResourceBundle(
 }
 
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
-    const GURL& url,
-    blink::mojom::ResourceType resource_type,
+    const network::ResourceRequest& request,
+    network::mojom::RequestDestination destination,
     ui::PageTransition page_transition,
     int child_id,
     bool is_incognito,
@@ -217,7 +219,7 @@ bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const ProcessMap& process_map) {
   bool allowed = false;
   if (chrome_url_request_util::AllowCrossRendererResourceLoad(
-          url, resource_type, page_transition, child_id, is_incognito,
+          request, destination, page_transition, child_id, is_incognito,
           extension, extensions, process_map, &allowed)) {
     return allowed;
   }
@@ -291,7 +293,7 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
 bool ChromeExtensionsBrowserClient::IsInDemoMode() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const chromeos::DemoSession* const demo_session =
       chromeos::DemoSession::Get();
   return demo_session && demo_session->started();
@@ -302,7 +304,7 @@ bool ChromeExtensionsBrowserClient::IsInDemoMode() {
 
 bool ChromeExtensionsBrowserClient::IsScreensaverInDemoMode(
     const std::string& app_id) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return app_id == chromeos::DemoSession::GetScreensaverAppId() &&
          IsInDemoMode();
 #endif
@@ -319,7 +321,7 @@ bool ChromeExtensionsBrowserClient::IsAppModeForcedForApp(
 }
 
 bool ChromeExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
 #else
   return false;
@@ -364,16 +366,9 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
 
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
-#if defined(OS_CHROMEOS)
-    // TODO(crbug.com/1012892): Replace this with just BEST_EFFORT, since the
-    // sign-in profile extensions use a different caching mechanism now.
-    base::TaskPriority task_priority =
-        chromeos::ProfileHelper::IsSigninProfileInitialized() &&
-                chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions()
-            ? base::TaskPriority::USER_VISIBLE
-            : base::TaskPriority::BEST_EFFORT;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     extension_cache_.reset(new ExtensionCacheImpl(
-        std::make_unique<ChromeOSExtensionCacheDelegate>(), task_priority));
+        std::make_unique<ChromeOSExtensionCacheDelegate>()));
 #else
     extension_cache_.reset(new NullExtensionCache());
 #endif
@@ -502,7 +497,7 @@ KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {
 
 bool ChromeExtensionsBrowserClient::IsLockScreenContext(
     content::BrowserContext* context) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return chromeos::ProfileHelper::IsLockScreenAppProfile(
       Profile::FromBrowserContext(context));
 #else
@@ -538,7 +533,7 @@ UserScriptListener* ChromeExtensionsBrowserClient::GetUserScriptListener() {
 }
 
 std::string ChromeExtensionsBrowserClient::GetUserAgent() const {
-  return ::GetUserAgent();
+  return embedder_support::GetUserAgent();
 }
 
 bool ChromeExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
@@ -578,6 +573,13 @@ bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
 bool ChromeExtensionsBrowserClient::IsScreenshotRestricted(
     content::WebContents* web_contents) const {
   return tabs_util::IsScreenshotRestricted(web_contents);
+}
+
+bool ChromeExtensionsBrowserClient::IsValidTabId(
+    content::BrowserContext* context,
+    int tab_id) const {
+  return ExtensionTabUtil::GetTabById(
+      tab_id, context, true /* include_incognito */, nullptr /* contents */);
 }
 
 // static

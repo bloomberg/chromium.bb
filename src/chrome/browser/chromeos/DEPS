@@ -1,4 +1,7 @@
 include_rules = [
+  "+ash/components/account_manager",
+  "+ash/components/audio",
+  "+ash/components/pcie_peripheral",
   "+chrome/browser/image_decoder",
   # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/chromeos to chrome/browser/ui/views/chromeos
@@ -8,6 +11,7 @@ include_rules = [
   "+chrome/services/keymaster/public",
   "+chrome/services/wilco_dtc_supportd/public",
   "+components/account_manager_core",
+  "+components/full_restore",
   "+components/guest_os",
   "+components/services/app_service/public",
   "+cros",
@@ -31,6 +35,8 @@ specific_include_rules = {
   ],
   ".*test.*": [
    "!ash",
+   "+ash/components/audio",
+   "+ash/constants",
    "+ash/public",
   ],
   "assistant_util_unittest\.cc": [
@@ -42,6 +48,7 @@ specific_include_rules = {
   "chrome_browser_main_chromeos\.cc": [
     "+ash/shell.h",
     "+ash/sticky_keys/sticky_keys_controller.h",
+    "+ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h",
   ],
   "device_status_collector_browsertest.cc": [
     "+mojo/core/embedder/embedder.h",

@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_local_storage.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
@@ -46,7 +47,6 @@ class TSFBridgeImpl : public TSFBridge {
   bool IsInputLanguageCJK() override;
   Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() override;
   TextInputClient* GetFocusedTextInputClient() const override;
-  void SetInputPanelPolicy(bool input_panel_policy_manual) override;
 
  private:
   // Returns S_OK if |tsf_document_map_| is successfully initialized. This
@@ -233,6 +233,13 @@ void TSFBridgeImpl::OnTextInputTypeChanged(const TextInputClient* client) {
     return;
   }
 
+  // Since we reuse TSF document for same text input type, there is a case where
+  // focus is switched between two text fields with same input type. We should
+  // prepare the TSF document for reuse by clearing focus first.
+  if (input_type_ != TEXT_INPUT_TYPE_NONE &&
+      input_type_ == client_->GetTextInputType()) {
+    thread_manager_->SetFocus(nullptr);
+  }
   input_type_ = client_->GetTextInputType();
   TSFDocument* document = GetAssociatedDocument();
   if (!document)
@@ -256,15 +263,6 @@ void TSFBridgeImpl::OnTextLayoutChanged() {
   if (!document->text_store)
     return;
   document->text_store->SendOnLayoutChange();
-}
-
-void TSFBridgeImpl::SetInputPanelPolicy(bool input_panel_policy_manual) {
-  TSFDocument* document = GetAssociatedDocument();
-  if (!document)
-    return;
-  if (!document->text_store)
-    return;
-  document->text_store->SetInputPanelPolicy(input_panel_policy_manual);
 }
 
 bool TSFBridgeImpl::CancelComposition() {
@@ -614,6 +612,7 @@ TSFBridge::~TSFBridge() {}
 
 // static
 HRESULT TSFBridge::Initialize() {
+  TRACE_EVENT0("ime", "TSFBridge::Initialize");
   if (!base::CurrentUIThread::IsSet()) {
     return E_FAIL;
   }
@@ -662,6 +661,7 @@ void TSFBridge::ReplaceThreadLocalTSFBridge(TSFBridge* new_instance) {
 
 // static
 void TSFBridge::Shutdown() {
+  TRACE_EVENT0("ime", "TSFBridge::Shutdown");
   if (!base::CurrentUIThread::IsSet()) {
   }
   ReplaceThreadLocalTSFBridge(nullptr);

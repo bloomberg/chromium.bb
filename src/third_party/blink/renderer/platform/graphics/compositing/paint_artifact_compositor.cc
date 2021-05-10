@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "cc/document_transition/document_transition_request.h"
 #include "cc/layers/scrollbar_layer_base.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/effect_node.h"
@@ -153,8 +154,11 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::WrappedCcLayerForPendingLayer(
 const TransformPaintPropertyNode&
 PaintArtifactCompositor::NearestScrollTranslationForLayer(
     const PendingLayer& pending_layer) {
-  if (const auto* scroll_translation = ScrollTranslationForLayer(pending_layer))
-    return *scroll_translation;
+  if (pending_layer.compositing_type != PendingLayer::kPreCompositedLayer) {
+    if (const auto* scroll_translation =
+            ScrollTranslationForLayer(pending_layer))
+      return *scroll_translation;
+  }
 
   const auto& transform = pending_layer.property_tree_state.Transform();
   // TODO(pdr): This could be a performance issue because it crawls up the
@@ -166,6 +170,7 @@ PaintArtifactCompositor::NearestScrollTranslationForLayer(
 const TransformPaintPropertyNode*
 PaintArtifactCompositor::ScrollTranslationForLayer(
     const PendingLayer& pending_layer) {
+  DCHECK_NE(pending_layer.compositing_type, PendingLayer::kPreCompositedLayer);
   // Not checking PendingLayer::kScrollHitTestLayer because a scroll hit test
   // chunk without a direct compositing reasons can still be composited (e.g.
   // when it can't be merged into any other layer).
@@ -299,8 +304,13 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   // Set properties that foreign layers would normally control for themselves
   // here to avoid changing foreign layers. This includes things set by
   // GraphicsLayer on the ContentsLayer() or by video clients etc.
-  cc_layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
-      FloatRect(cc_combined_bounds)));
+  bool contents_opaque = pending_layer.rect_known_to_be_opaque.Contains(
+      FloatRect(cc_combined_bounds));
+  cc_layer->SetContentsOpaque(contents_opaque);
+  if (!contents_opaque) {
+    cc_layer->SetContentsOpaqueForText(
+        pending_layer.text_known_to_be_on_opaque_background);
+  }
 
   return cc_layer;
 }
@@ -315,13 +325,17 @@ bool PaintArtifactCompositor::HasComposited(
       element_id);
 }
 
-bool PaintArtifactCompositor::PropertyTreeStateChanged(
-    const PropertyTreeState& state) const {
-  const auto& root = PropertyTreeState::Root();
+bool PaintArtifactCompositor::PendingLayer::PropertyTreeStateChanged() const {
   auto change = PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-  return state.Transform().Changed(change, root.Transform()) ||
-         state.Clip().Changed(change, root, &state.Transform()) ||
-         state.Effect().Changed(change, root, &state.Transform());
+  if (change_of_decomposited_transforms >= change)
+    return true;
+
+  const auto& root = PropertyTreeState::Root();
+  return property_tree_state.Transform().Changed(change, root.Transform()) ||
+         property_tree_state.Clip().Changed(change, root,
+                                            &property_tree_state.Transform()) ||
+         property_tree_state.Effect().Changed(change, root,
+                                              &property_tree_state.Transform());
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
@@ -331,6 +345,8 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
     : bounds(first_chunk->bounds),
       rect_known_to_be_opaque(first_chunk->known_to_be_opaque ? bounds
                                                               : FloatRect()),
+      text_known_to_be_on_opaque_background(
+          first_chunk->text_known_to_be_on_opaque_background),
       chunks(&chunks.GetPaintArtifact(), first_chunk.IndexInPaintArtifact()),
       property_tree_state(
           first_chunk->properties.GetPropertyTreeState().Unalias()),
@@ -429,14 +445,23 @@ FloatRect PaintArtifactCompositor::PendingLayer::VisualRectForOverlapTesting()
 
 bool PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   PropertyTreeState new_state = PropertyTreeState::Uninitialized();
-  if (!CanMerge(guest, guest.property_tree_state, &new_state, &bounds))
+  FloatRect guest_bounds;
+  if (!CanMerge(guest, guest.property_tree_state, &new_state, &guest_bounds,
+                &bounds)) {
     return false;
+  }
 
   chunks.Merge(guest.chunks);
   rect_known_to_be_opaque =
       UniteRectsKnownToBeOpaque(MapRectKnownToBeOpaque(new_state),
                                 guest.MapRectKnownToBeOpaque(new_state));
+  text_known_to_be_on_opaque_background &=
+      (guest.text_known_to_be_on_opaque_background ||
+       rect_known_to_be_opaque.Contains(guest_bounds));
   property_tree_state = new_state;
+  change_of_decomposited_transforms =
+      std::max(change_of_decomposited_transforms,
+               guest.change_of_decomposited_transforms);
   return true;
 }
 
@@ -552,6 +577,7 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest,
     const PropertyTreeState& guest_state,
     PropertyTreeState* out_merged_state,
+    FloatRect* out_guest_bounds,
     FloatRect* out_merged_bounds) const {
   if (&chunks.GetPaintArtifact() != &guest.chunks.GetPaintArtifact())
     return false;
@@ -588,6 +614,8 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
 
   if (out_merged_state)
     *out_merged_state = *merged_state;
+  if (out_guest_bounds)
+    *out_guest_bounds = new_guest_bounds.Rect();
   if (out_merged_bounds)
     *out_merged_bounds = merged_bounds;
   return true;
@@ -916,8 +944,8 @@ SynthesizedClip::PaintContentsToDisplayList() {
       const auto& translation = translation_2d_or_matrix_.Translation2D();
       cc_list->push<cc::TranslateOp>(translation.Width(), translation.Height());
     } else {
-      cc_list->push<cc::ConcatOp>(SkMatrix(TransformationMatrix::ToSkMatrix44(
-          translation_2d_or_matrix_.Matrix())));
+      cc_list->push<cc::ConcatOp>(
+          TransformationMatrix::ToSkM44(translation_2d_or_matrix_.Matrix()));
     }
     if (path_) {
       cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
@@ -1088,6 +1116,9 @@ void PaintArtifactCompositor::DecompositeTransforms() {
     while (!transform->IsRoot() && can_be_decomposited.at(transform)) {
       pending_layer.offset_of_decomposited_transforms +=
           transform->Translation2D();
+      pending_layer.change_of_decomposited_transforms =
+          std::max(pending_layer.change_of_decomposited_transforms,
+                   transform->NodeChanged());
       transform = &transform->Parent()->Unalias();
     }
     pending_layer.property_tree_state.SetTransform(*transform);
@@ -1102,11 +1133,15 @@ void PaintArtifactCompositor::DecompositeTransforms() {
 void PaintArtifactCompositor::Update(
     const Vector<PreCompositedLayerInfo>& pre_composited_layers,
     const ViewportProperties& viewport_properties,
-    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
+    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+    Vector<std::unique_ptr<cc::DocumentTransitionRequest>>
+        transition_requests) {
   DCHECK(scroll_translation_nodes.IsEmpty() ||
          RuntimeEnabledFeatures::ScrollUnificationEnabled());
   DCHECK(root_layer_);
   DCHECK(NeedsUpdate());
+
+  TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
 
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
@@ -1114,26 +1149,29 @@ void PaintArtifactCompositor::Update(
   if (!host)
     return;
 
-  TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
+  for (auto& request : transition_requests)
+    host->AddDocumentTransitionRequest(std::move(request));
 
   host->property_trees()->scroll_tree.SetScrollCallbacks(scroll_callbacks_);
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 
+  // Make compositing decisions, storing the result in |pending_layers_|.
+  CollectPendingLayers(pre_composited_layers);
+  DecompositeTransforms();
+
   LayerListBuilder layer_list_builder;
   PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
                                             *root_layer_, layer_list_builder,
                                             g_s_property_tree_sequence_number);
-  CollectPendingLayers(pre_composited_layers);
 
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
                                      host);
 
   // With ScrollUnification, we ensure a cc::ScrollNode for all
   // |scroll_translation_nodes|.
-  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
     property_tree_manager.EnsureCompositorScrollNodes(scroll_translation_nodes);
-  }
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers_.size());
@@ -1147,10 +1185,7 @@ void PaintArtifactCompositor::Update(
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
-  // See if we can de-composite any transforms.
-  DecompositeTransforms();
-
-  const PendingLayer* previous_pending_layer = nullptr;
+  cc::LayerSelection layer_selection;
   for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
     const auto& transform = property_state.Transform();
@@ -1171,7 +1206,8 @@ void PaintArtifactCompositor::Update(
         pending_layer, new_content_layer_clients, new_scroll_hit_test_layers,
         new_scrollbar_layers);
 
-    UpdateLayerProperties(*layer, pending_layer, &property_tree_manager);
+    UpdateLayerProperties(*layer, pending_layer, layer_selection,
+                          &property_tree_manager);
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
@@ -1225,13 +1261,14 @@ void PaintArtifactCompositor::Update(
     // nodes|^2) and could be optimized by caching the lookup of nodes known
     // to be changed/unchanged.
     if (layer->subtree_property_changed() ||
-        PropertyTreeStateChanged(property_state)) {
+        pending_layer.PropertyTreeStateChanged()) {
       layer->SetSubtreePropertyChanged();
       root_layer_->SetNeedsCommit();
     }
-
-    previous_pending_layer = &pending_layer;
   }
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    root_layer_->layer_tree_host()->RegisterSelection(layer_selection);
 
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
@@ -1274,6 +1311,7 @@ void PaintArtifactCompositor::Update(
 void PaintArtifactCompositor::UpdateLayerProperties(
     cc::Layer& layer,
     const PendingLayer& pending_layer,
+    cc::LayerSelection& layer_selection,
     PropertyTreeManager* property_tree_manager) {
   // Properties of foreign layers are managed by their owners.
   if (pending_layer.compositing_type == PendingLayer::kForeignLayer)
@@ -1286,7 +1324,8 @@ void PaintArtifactCompositor::UpdateLayerProperties(
                                   .GetPaintArtifactShared());
   }
   PaintChunksToCcLayer::UpdateLayerProperties(
-      layer, pending_layer.property_tree_state, chunks, property_tree_manager);
+      layer, pending_layer.property_tree_state, chunks, layer_selection,
+      property_tree_manager);
 }
 
 void PaintArtifactCompositor::UpdateRepaintedLayerProperties() const {
@@ -1299,8 +1338,9 @@ void PaintArtifactCompositor::UpdateRepaintedLayerProperties() const {
       continue;
     DCHECK(pending_layer.graphics_layer);
     if (pending_layer.graphics_layer->Repainted()) {
+      cc::LayerSelection layer_selection;
       UpdateLayerProperties(pending_layer.graphics_layer->CcLayer(),
-                            pending_layer);
+                            pending_layer, layer_selection);
     }
   }
 

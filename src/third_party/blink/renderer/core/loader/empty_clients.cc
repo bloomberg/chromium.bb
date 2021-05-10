@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "cc/layers/layer.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -97,7 +98,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     NavigationPolicy,
     WebFrameLoadType,
     bool,
-    TriggeringEventInfo,
+    mojom::blink::TriggeringEventInfo,
     HTMLFormElement*,
     network::mojom::CSPDisposition,
     mojo::PendingRemote<mojom::blink::BlobURLToken>,
@@ -105,9 +106,10 @@ void EmptyLocalFrameClient::BeginNavigation(
     const String&,
     const base::Optional<WebImpression>&,
     WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
-    network::mojom::blink::CSPSourcePtr initiator_csp_self,
     network::mojom::IPAddressSpace,
-    mojo::PendingRemote<mojom::blink::NavigationInitiator>) {}
+    mojo::PendingRemote<mojom::blink::NavigationInitiator>,
+    const LocalFrameToken* initiator_frame_token,
+    mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
@@ -183,7 +185,5 @@ std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {
   return nullptr;
 }
-
-EmptyRemoteFrameClient::EmptyRemoteFrameClient() = default;
 
 }  // namespace blink

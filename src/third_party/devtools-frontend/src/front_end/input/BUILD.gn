@@ -7,12 +7,13 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("input") {
   sources = [
-    "InputModel.js",
-    "InputTimeline.js",
+    "InputModel.ts",
+    "InputTimeline.ts",
   ]
 
   deps = [
     "../bindings:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../protocol_client:bundle",
     "../sdk:bundle",
@@ -22,13 +23,19 @@ devtools_module("input") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "input.js"
+  entrypoint = "input.ts"
 
   deps = [ ":input" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "input-legacy.js"
+  entrypoint = "input-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "input-meta.ts"
 
   deps = [ ":bundle" ]
 }

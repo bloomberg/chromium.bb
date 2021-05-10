@@ -41,7 +41,7 @@ If you're at Google, this will automatically download the Windows SDK for you.
 If this fails with an error:
 
     Please follow the instructions at
-    https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md
+    https://chromium.googlesource.com/chromium/src/+/HEAD/docs/win_cross.md
 
 then you may need to re-authenticate via:
 
@@ -82,24 +82,13 @@ Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 
 ## Goma
 
-*** note
-**Warning:** This is unsupported and known to not work at times.
-***
-
-For now, one needs to use the rbe backend, not the borg backend
-(default for Googlers).
-Use cloud backend instead.
+This should be supported by the default (Goma RBE) backend. However, there may
+be issues with arbitrary toolchain support on Linux (b/177871873).
+This can be disabled via:
 
 ```shell
-    goma_auth.py login
-
-    # GOMA_* are needed for Googlers only
-    export GOMA_SERVER_HOST=goma.chromium.org
-    export GOMA_RPC_EXTRA_PARAMS=?rbe
-
-    goma_ctl.py ensure_start
+GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=false goma_ctl restart
 ```
-
 
 ## Copying and running chrome
 

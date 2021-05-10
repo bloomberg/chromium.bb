@@ -120,6 +120,18 @@ IntSize ImageElementBase::BitmapSourceSize() const {
   return image->IntrinsicSize(kDoNotRespectImageOrientation);
 }
 
+static bool HasDimensionsForImage(SVGImage* svg_image,
+                                  base::Optional<IntRect> crop_rect,
+                                  const ImageBitmapOptions* options) {
+  if (!svg_image->ConcreteObjectSize(FloatSize()).IsEmpty())
+    return true;
+  if (crop_rect)
+    return true;
+  if (options->hasResizeWidth() && options->hasResizeHeight())
+    return true;
+  return false;
+}
+
 ScriptPromise ImageElementBase::CreateImageBitmap(
     ScriptState* script_state,
     base::Optional<IntRect> crop_rect,
@@ -132,11 +144,20 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
         "No image can be retrieved from the provided element.");
     return ScriptPromise();
   }
-  Image* image = image_content->GetImage();
-  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
-    if (!svg_image->HasIntrinsicDimensions() &&
-        (!crop_rect &&
-         (!options->hasResizeWidth() || !options->hasResizeHeight()))) {
+  if (options->hasResizeWidth() && options->resizeWidth() == 0) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The resize width dimension is equal to 0.");
+    return ScriptPromise();
+  }
+  if (options->hasResizeHeight() && options->resizeHeight() == 0) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The resize width dimension is equal to 0.");
+    return ScriptPromise();
+  }
+  if (auto* svg_image = DynamicTo<SVGImage>(image_content->GetImage())) {
+    if (!HasDimensionsForImage(svg_image, crop_rect, options)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
           "The image element contains an SVG image without intrinsic "
@@ -168,11 +189,6 @@ Image::ImageDecodingMode ImageElementBase::GetDecodingModeForPainting(
       decoding_mode_ == Image::ImageDecodingMode::kUnspecifiedDecode)
     return Image::ImageDecodingMode::kSyncDecode;
   return decoding_mode_;
-}
-
-RespectImageOrientationEnum ImageElementBase::RespectImageOrientation() const {
-  return LayoutObject::ShouldRespectImageOrientation(
-      GetElement().GetLayoutObject());
 }
 
 }  // namespace blink

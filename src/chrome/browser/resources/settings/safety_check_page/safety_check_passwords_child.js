@@ -66,6 +66,7 @@ Polymer({
         SafetyCheckPasswordsStatus.SAFE,
         SafetyCheckPasswordsStatus.QUOTA_LIMIT,
         SafetyCheckPasswordsStatus.ERROR,
+        SafetyCheckPasswordsStatus.WEAK_PASSWORDS_EXIST,
       ]),
     },
   },
@@ -110,6 +111,7 @@ Polymer({
       case SafetyCheckPasswordsStatus.QUOTA_LIMIT:
       case SafetyCheckPasswordsStatus.ERROR:
       case SafetyCheckPasswordsStatus.FEATURE_UNAVAILABLE:
+      case SafetyCheckPasswordsStatus.WEAK_PASSWORDS_EXIST:
         return SafetyCheckIconStatus.INFO;
       default:
         assertNotReached();
@@ -133,7 +135,7 @@ Polymer({
   onButtonClick_: function() {
     // Log click both in action and histogram.
     this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
-        SafetyCheckInteractions.SAFETY_CHECK_PASSWORDS_MANAGE);
+        SafetyCheckInteractions.PASSWORDS_MANAGE_COMPROMISED_PASSWORDS);
     this.metricsBrowserProxy_.recordAction(
         'Settings.SafetyCheck.ManagePasswords');
     this.openPasswordCheckPage_();
@@ -152,10 +154,13 @@ Polymer({
     if (this.isRowClickable_()) {
       // Log click both in action and histogram.
       this.metricsBrowserProxy_.recordSafetyCheckInteractionHistogram(
-          SafetyCheckInteractions
-              .SAFETY_CHECK_PASSWORDS_MANAGE_THROUGH_CARET_NAVIGATION);
+          this.status_ === SafetyCheckPasswordsStatus.WEAK_PASSWORDS_EXIST ?
+              SafetyCheckInteractions.PASSWORDS_MANAGE_WEAK_PASSWORDS :
+              SafetyCheckInteractions.PASSWORDS_CARET_NAVIGATION);
       this.metricsBrowserProxy_.recordAction(
-          'Settings.SafetyCheck.ManagePasswordsThroughCaretNavigation');
+          this.status_ === SafetyCheckPasswordsStatus.WEAK_PASSWORDS_EXIST ?
+              'Settings.SafetyCheck.ManageWeakPasswords' :
+              'Settings.SafetyCheck.ManagePasswordsThroughCaretNavigation');
       this.openPasswordCheckPage_();
     }
   },

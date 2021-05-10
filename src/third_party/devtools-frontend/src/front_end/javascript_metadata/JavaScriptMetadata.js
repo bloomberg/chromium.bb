@@ -2,17 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 
 import {NativeFunctions} from './NativeFunctions.js';
+
+
+/** @type {JavaScriptMetadataImpl} */
+let javaScriptMetadataInstance;
 
 /**
  * @implements {Common.JavaScriptMetaData.JavaScriptMetaData}
  */
 export class JavaScriptMetadataImpl {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!javaScriptMetadataInstance || forceNew) {
+      javaScriptMetadataInstance = new JavaScriptMetadataImpl();
+    }
+
+    return javaScriptMetadataInstance;
+  }
   constructor() {
     /** @type {!Map<string, !Array<!Array<string>>>} */
     this._uniqueFunctions = new Map();
@@ -25,15 +37,19 @@ export class JavaScriptMetadataImpl {
       if (!nativeFunction.receiver) {
         this._uniqueFunctions.set(nativeFunction.name, nativeFunction.signatures);
       } else if (nativeFunction.static) {
-        if (!this._staticMethods.has(nativeFunction.receiver)) {
-          this._staticMethods.set(nativeFunction.receiver, new Map());
+        let staticMethod = this._staticMethods.get(nativeFunction.receiver);
+        if (!staticMethod) {
+          staticMethod = new Map();
+          this._staticMethods.set(nativeFunction.receiver, staticMethod);
         }
-        this._staticMethods.get(nativeFunction.receiver).set(nativeFunction.name, nativeFunction.signatures);
+        staticMethod.set(nativeFunction.name, nativeFunction.signatures);
       } else {
-        if (!this._instanceMethods.has(nativeFunction.receiver)) {
-          this._instanceMethods.set(nativeFunction.receiver, new Map());
+        let instanceMethod = this._instanceMethods.get(nativeFunction.receiver);
+        if (!instanceMethod) {
+          instanceMethod = new Map();
+          this._instanceMethods.set(nativeFunction.receiver, instanceMethod);
         }
-        this._instanceMethods.get(nativeFunction.receiver).set(nativeFunction.name, nativeFunction.signatures);
+        instanceMethod.set(nativeFunction.name, nativeFunction.signatures);
       }
     }
   }
@@ -54,10 +70,11 @@ export class JavaScriptMetadataImpl {
    * @return {?Array<!Array<string>>}
    */
   signaturesForInstanceMethod(name, receiverClassName) {
-    if (!this._instanceMethods.has(receiverClassName)) {
+    const instanceMethod = this._instanceMethods.get(receiverClassName);
+    if (!instanceMethod) {
       return null;
     }
-    return this._instanceMethods.get(receiverClassName).get(name) || null;
+    return instanceMethod.get(name) || null;
   }
 
   /**
@@ -67,9 +84,10 @@ export class JavaScriptMetadataImpl {
    * @return {?Array<!Array<string>>}
    */
   signaturesForStaticMethod(name, receiverConstructorName) {
-    if (!this._staticMethods.has(receiverConstructorName)) {
+    const staticMethod = this._staticMethods.get(receiverConstructorName);
+    if (!staticMethod) {
       return null;
     }
-    return this._staticMethods.get(receiverConstructorName).get(name) || null;
+    return staticMethod.get(name) || null;
   }
 }

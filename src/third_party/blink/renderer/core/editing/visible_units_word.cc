@@ -134,10 +134,20 @@ PositionInFlatTree NextWordPositionInternal(
             return SkipWhitespaceIfNeeded(text, runner);
           continue;
         }
-        // We stop searching when the character preceding the break is
-        // alphanumeric or punctuations or underscore or linebreaks.
+        // We stop searching in the following conditions:
+        // 1. When the character preceding the break is
+        //    alphanumeric or punctuations or underscore or linebreaks.
+        // Only on Windows:
+        // 2. When the character preceding the break is a whitespace and
+        //    the character following it is an alphanumeric or punctuations
+        //    or underscore or linebreaks.
         if (static_cast<unsigned>(runner) < text.length() &&
             IsWordBreak(text[runner - 1]))
+          return SkipWhitespaceIfNeeded(text, runner);
+        else if (platform_word_behavior_ ==
+                     PlatformWordBehavior::kWordSkipSpaces &&
+                 static_cast<unsigned>(runner) < text.length() &&
+                 IsWhitespace(text[runner - 1]) && IsWordBreak(text[runner]))
           return SkipWhitespaceIfNeeded(text, runner);
       }
       if (text[text.length() - 1] != kNewlineCharacter)
@@ -274,19 +284,6 @@ PositionInFlatTree EndOfWordPosition(const PositionInFlatTree& start,
 Position EndOfWordPosition(const Position& position, WordSide side) {
   return ToPositionInDOMTree(
       EndOfWordPosition(ToPositionInFlatTree(position), side));
-}
-
-VisiblePosition EndOfWord(const VisiblePosition& position, WordSide side) {
-  return CreateVisiblePosition(
-      EndOfWordPosition(position.DeepEquivalent(), side),
-      TextAffinity::kUpstreamIfPossible);
-}
-
-VisiblePositionInFlatTree EndOfWord(const VisiblePositionInFlatTree& position,
-                                    WordSide side) {
-  return CreateVisiblePosition(
-      EndOfWordPosition(position.DeepEquivalent(), side),
-      TextAffinity::kUpstreamIfPossible);
 }
 
 // ----

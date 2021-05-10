@@ -7,14 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("css_overview") {
   sources = [
-    "CSSOverviewCompletedView.js",
-    "CSSOverviewController.js",
-    "CSSOverviewModel.js",
-    "CSSOverviewPanel.js",
-    "CSSOverviewProcessingView.js",
-    "CSSOverviewSidebarPanel.js",
-    "CSSOverviewStartView.js",
-    "CSSOverviewUnusedDeclarations.js",
+    "CSSOverviewCompletedView.ts",
+    "CSSOverviewController.ts",
+    "CSSOverviewModel.ts",
+    "CSSOverviewPanel.ts",
+    "CSSOverviewProcessingView.ts",
+    "CSSOverviewSidebarPanel.ts",
+    "CSSOverviewStartView.ts",
+    "CSSOverviewUnusedDeclarations.ts",
   ]
 
   deps = [
@@ -23,6 +23,7 @@ devtools_module("css_overview") {
     "../components:bundle",
     "../data_grid:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../text_utils:bundle",
     "../ui:bundle",
@@ -35,8 +36,8 @@ devtools_entrypoint("bundle") {
   deps = [ ":css_overview" ]
 }
 
-devtools_entrypoint("legacy") {
-  entrypoint = "css_overview-legacy.js"
+devtools_entrypoint("meta") {
+  entrypoint = "css_overview-meta.ts"
 
   deps = [ ":bundle" ]
 }

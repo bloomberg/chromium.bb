@@ -10,6 +10,7 @@
 namespace extensions_features {
 
 extern const base::Feature kDisableMalwareExtensionsRemotely;
+extern const base::Feature kEnforceSafeBrowsingExtensionAllowlist;
 
 // Extension check up related features.
 extern const base::Feature kExtensionsCheckup;
@@ -31,12 +32,7 @@ extern const base::Feature kMv3ExtensionsSupported;
 
 extern const base::Feature kReportKeepaliveUkm;
 
-extern const base::Feature kReturnScopesInGetAuthToken;
-
-extern const base::Feature kSelectedUserIdInGetAuthToken;
-
-extern const base::Feature kCorbCorsAllowlist;
-extern const char kCorbCorsAllowlistParamName[];
+extern const base::Feature kDefaultChromeAppUninstallSync;
 
 }  // namespace extensions_features
 

@@ -7,7 +7,6 @@
 #import <MaterialComponents/MaterialPalettes.h>
 #import <MaterialComponents/MaterialTypography.h>
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
@@ -16,7 +15,6 @@
 #include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -425,13 +423,9 @@ NSString* GetSizeString(long long size_in_bytes) {
                      action:@selector(didTapCloseButton)
            forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _closeButton.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
   }
   return _closeButton;
 }
@@ -475,13 +469,9 @@ NSString* GetSizeString(long long size_in_bytes) {
                       action:@selector(didTapActionButton)
             forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _actionButton.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     [self updateActionButton];
   }
@@ -504,13 +494,9 @@ NSString* GetSizeString(long long size_in_bytes) {
         setTitle:l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_INSTALL)
         forState:UIControlStateNormal];
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _installDriveButton.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
   }
   return _installDriveButton;
 }

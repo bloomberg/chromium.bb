@@ -76,6 +76,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaValueMin
     property ariaValueNow
     property ariaValueText
+    property ariaVirtualContent
     property assignedSlot
     property attachInternals
     property attachShadow
@@ -108,6 +109,7 @@ namespace http://www.w3.org/1999/xhtml
     property dir
     property dispatchEvent
     property draggable
+    property editContext
     property elementTiming
     property enterKeyHint
     property firstChild
@@ -308,7 +310,6 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
-    property setInnerHTML
     property setPointerCapture
     property shadowRoot
     property slot
@@ -517,9 +518,6 @@ html element colgroup
     property span
     property vAlign
     property width
-html element content
-    property getDistributedNodes
-    property select
 html element data
     property value
 html element datalist
@@ -787,6 +785,7 @@ html element link
     property relList
     property resources
     property rev
+    property scopes
     property sheet
     property sizes
     property target
@@ -900,6 +899,10 @@ html element param
     property valueType
 html element picture
 html element plaintext
+html element popup
+    property hide
+    property open
+    property show
 html element pre
     property width
 html element progress
@@ -955,8 +958,8 @@ html element select
     property validity
     property value
     property willValidate
-html element shadow
-    property getDistributedNodes
+html element selectmenu
+    property value
 html element slot
     property assign
     property assignedElements
@@ -964,11 +967,13 @@ html element slot
     property name
 html element small
 html element source
+    property height
     property media
     property sizes
     property src
     property srcset
     property type
+    property width
 html element span
 html element strike
 html element strong
@@ -1280,6 +1285,7 @@ namespace http://www.w3.org/2000/svg
     property ariaValueMin
     property ariaValueNow
     property ariaValueText
+    property ariaVirtualContent
     property assignedSlot
     property attachShadow
     property attributeStyleMap
@@ -1306,6 +1312,7 @@ namespace http://www.w3.org/2000/svg
     property contains
     property dataset
     property dispatchEvent
+    property editContext
     property elementTiming
     property firstChild
     property firstElementChild
@@ -1494,7 +1501,6 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
-    property setInnerHTML
     property setPointerCapture
     property shadowRoot
     property slot

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 
+#include "third_party/blink/renderer/core/css/counter_style.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
+#include "third_party/blink/renderer/core/style/list_style_type_data.h"
 
 namespace blink {
 
@@ -22,6 +24,18 @@ const int kCMarkerPaddingPx = 7;
 // Blink starts to support ::marker crbug.com/457718
 // Recommended UA margin for list markers.
 const int kCUAMarkerMarginEm = 1;
+
+// 'closure-*' have 0.4em margin for compatibility with
+// ::-webkit-details-marker.
+const float kClosureMarkerMarginEm = 0.4f;
+
+namespace {
+
+LayoutUnit DisclosureSymbolSize(const ComputedStyle& style) {
+  return LayoutUnit(style.SpecifiedFontSize() * style.EffectiveZoom() * 0.66);
+}
+
+}  // namespace
 
 ListMarker::ListMarker() : marker_text_type_(kNotText) {}
 
@@ -79,8 +93,7 @@ int ListMarker::ListItemValue(const LayoutObject& list_item) const {
   return 0;
 }
 
-// If the value of ListStyleType changed, we need to the marker text has been
-// updated.
+// If the value of ListStyleType changed, we need to update the marker text.
 void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
   DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ == kNotText || marker_text_type_ == kUnresolved)
@@ -89,6 +102,18 @@ void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
   marker_text_type_ = kUnresolved;
   marker.SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kListStyleTypeChange);
+}
+
+// If the @counter-style in use has changed, we need to update the marker text.
+void ListMarker::CounterStyleChanged(LayoutObject& marker) {
+  DCHECK(RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled());
+  DCHECK_EQ(Get(&marker), this);
+  if (marker_text_type_ == kNotText || marker_text_type_ == kUnresolved)
+    return;
+
+  marker_text_type_ = kUnresolved;
+  marker.SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+      layout_invalidation_reason::kCounterStyleChange);
 }
 
 void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
@@ -105,7 +130,8 @@ void ListMarker::UpdateMarkerText(LayoutObject& marker, LayoutText* text) {
   DCHECK(text);
   DCHECK_EQ(marker_text_type_, kUnresolved);
   StringBuilder marker_text_builder;
-  marker_text_type_ = MarkerText(marker, &marker_text_builder, kWithSuffix);
+  marker_text_type_ =
+      MarkerText(marker, &marker_text_builder, kWithPrefixSuffix);
   text->SetTextIfNeeded(marker_text_builder.ToString().ReleaseImpl());
   DCHECK_NE(marker_text_type_, kNotText);
   DCHECK_NE(marker_text_type_, kUnresolved);
@@ -124,31 +150,50 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
   if (!marker.StyleRef().ContentBehavesAsNormal())
     return kNotText;
   if (IsMarkerImage(marker)) {
-    if (format == kWithSuffix)
+    if (format == kWithPrefixSuffix)
       text->Append(' ');
     return kNotText;
   }
 
   LayoutObject* list_item = ListItem(marker);
   const ComputedStyle& style = list_item->StyleRef();
-  switch (GetListStyleCategory(style.ListStyleType())) {
+  switch (GetListStyleCategory(marker.GetDocument(), style)) {
     case ListStyleCategory::kNone:
       return kNotText;
     case ListStyleCategory::kStaticString:
       text->Append(style.ListStyleStringValue());
       return kStatic;
     case ListStyleCategory::kSymbol:
-      // value is ignored for these types
-      text->Append(list_marker_text::GetText(style.ListStyleType(), 0));
-      if (format == kWithSuffix)
-        text->Append(' ');
+      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+        const CounterStyle& counter_style =
+            GetCounterStyle(marker.GetDocument(), style);
+        if (format == kWithPrefixSuffix)
+          text->Append(counter_style.GetPrefix());
+        text->Append(counter_style.GenerateRepresentation(0));
+        if (format == kWithPrefixSuffix)
+          text->Append(counter_style.GetSuffix());
+      } else {
+        text->Append(list_marker_text::GetText(style.ListStyleType(), 0));
+        if (format == kWithPrefixSuffix)
+          text->Append(' ');
+      }
       return kSymbolValue;
     case ListStyleCategory::kLanguage: {
       int value = ListItemValue(*list_item);
-      text->Append(list_marker_text::GetText(style.ListStyleType(), value));
-      if (format == kWithSuffix) {
-        text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
-        text->Append(' ');
+      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+        const CounterStyle& counter_style =
+            GetCounterStyle(marker.GetDocument(), style);
+        if (format == kWithPrefixSuffix)
+          text->Append(counter_style.GetPrefix());
+        text->Append(counter_style.GenerateRepresentation(value));
+        if (format == kWithPrefixSuffix)
+          text->Append(counter_style.GetSuffix());
+      } else {
+        text->Append(list_marker_text::GetText(style.ListStyleType(), value));
+        if (format == kWithPrefixSuffix) {
+          text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
+          text->Append(' ');
+        }
       }
       return kOrdinalValue;
     }
@@ -160,14 +205,14 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
 String ListMarker::MarkerTextWithSuffix(const LayoutObject& marker) const {
   DCHECK_EQ(Get(&marker), this);
   StringBuilder text;
-  MarkerText(marker, &text, kWithSuffix);
+  MarkerText(marker, &text, kWithPrefixSuffix);
   return text.ToString();
 }
 
 String ListMarker::MarkerTextWithoutSuffix(const LayoutObject& marker) const {
   DCHECK_EQ(Get(&marker), this);
   StringBuilder text;
-  MarkerText(marker, &text, kWithoutSuffix);
+  MarkerText(marker, &text, kWithoutPrefixSuffix);
   return text.ToString();
 }
 
@@ -231,7 +276,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     return;
   }
 
-  if (style.ListStyleType() == EListStyleType::kNone) {
+  if (!style.GetListStyleType()) {
     marker_text_type_ = kNotText;
     return;
   }
@@ -281,20 +326,31 @@ LayoutUnit ListMarker::WidthOfSymbol(const ComputedStyle& style) {
   DCHECK(font_data);
   if (!font_data)
     return LayoutUnit();
+  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  if (name == "disclosure-open" || name == "disclosure-closed")
+    return DisclosureSymbolSize(style);
   return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
 }
 
 std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForInside(
+    Document& document,
     const ComputedStyle& marker_style,
     const ComputedStyle& list_item_style) {
   if (!marker_style.ContentBehavesAsNormal())
     return {};
   if (list_item_style.GeneratesMarkerImage())
     return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
-  switch (GetListStyleCategory(list_item_style.ListStyleType())) {
-    case ListStyleCategory::kSymbol:
+  switch (GetListStyleCategory(document, list_item_style)) {
+    case ListStyleCategory::kSymbol: {
+      const AtomicString& name =
+          list_item_style.GetListStyleType()->GetCounterStyleName();
+      if (name == "disclosure-open" || name == "disclosure-closed") {
+        return {LayoutUnit(), LayoutUnit(kClosureMarkerMarginEm *
+                                         marker_style.SpecifiedFontSize())};
+      }
       return {LayoutUnit(-1),
               LayoutUnit(kCUAMarkerMarginEm * marker_style.ComputedFontSize())};
+    }
     default:
       break;
   }
@@ -302,6 +358,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForInside(
 }
 
 std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForOutside(
+    Document& document,
     const ComputedStyle& marker_style,
     const ComputedStyle& list_item_style,
     LayoutUnit marker_inline_size) {
@@ -313,7 +370,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForOutside(
     margin_start = -marker_inline_size - kCMarkerPaddingPx;
     margin_end = LayoutUnit(kCMarkerPaddingPx);
   } else {
-    switch (GetListStyleCategory(list_item_style.ListStyleType())) {
+    switch (GetListStyleCategory(document, list_item_style)) {
       case ListStyleCategory::kNone:
         break;
       case ListStyleCategory::kSymbol: {
@@ -322,8 +379,13 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForOutside(
         if (!font_data)
           return {};
         const FontMetrics& font_metrics = font_data->GetFontMetrics();
-        int offset = font_metrics.Ascent() * 2 / 3;
-        margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
+        const AtomicString& name =
+            list_item_style.GetListStyleType()->GetCounterStyleName();
+        LayoutUnit offset =
+            (name == "disclosure-open" || name == "disclosure-closed")
+                ? DisclosureSymbolSize(marker_style)
+                : LayoutUnit(font_metrics.Ascent() * 2 / 3);
+        margin_start = -offset - kCMarkerPaddingPx - 1;
         margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
         break;
       }
@@ -346,10 +408,17 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
   // TODO(wkorman): Review and clean up/document the calculations below.
   // http://crbug.com/543193
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
-  int ascent = font_metrics.Ascent();
-  int bullet_width = (ascent * 2 / 3 + 1) / 2;
-  relative_rect = LayoutRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bullet_width,
-                             bullet_width);
+  const int ascent = font_metrics.Ascent();
+  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  if (name == "disclosure-open" || name == "disclosure-closed") {
+    LayoutUnit marker_size = DisclosureSymbolSize(style);
+    relative_rect = LayoutRect(LayoutUnit(), ascent - marker_size, marker_size,
+                               marker_size);
+  } else {
+    int bullet_width = (ascent * 2 / 3 + 1) / 2;
+    relative_rect = LayoutRect(1, 3 * (ascent - ascent * 2 / 3) / 2,
+                               bullet_width, bullet_width);
+  }
   if (!style.IsHorizontalWritingMode()) {
     relative_rect = relative_rect.TransposedRect();
     relative_rect.SetX(width - relative_rect.X() - relative_rect.Width());
@@ -357,8 +426,30 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
   return relative_rect;
 }
 
+const CounterStyle& ListMarker::GetCounterStyle(Document& document,
+                                                const ComputedStyle& style) {
+  DCHECK(RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled());
+  DCHECK(style.GetListStyleType());
+  DCHECK(style.GetListStyleType()->IsCounterStyle());
+  return style.GetListStyleType()->GetCounterStyle(document);
+}
+
 ListMarker::ListStyleCategory ListMarker::GetListStyleCategory(
-    EListStyleType type) {
+    Document& document,
+    const ComputedStyle& style) {
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+    const ListStyleTypeData* list_style = style.GetListStyleType();
+    if (!list_style)
+      return ListStyleCategory::kNone;
+    if (list_style->IsString())
+      return ListStyleCategory::kStaticString;
+    DCHECK(list_style->IsCounterStyle());
+    return GetCounterStyle(document, style).IsPredefinedSymbolMarker()
+               ? ListStyleCategory::kSymbol
+               : ListStyleCategory::kLanguage;
+  }
+
+  EListStyleType type = style.ListStyleType();
   switch (type) {
     case EListStyleType::kNone:
       return ListStyleCategory::kNone;
@@ -367,6 +458,8 @@ ListMarker::ListStyleCategory ListMarker::GetListStyleCategory(
     case EListStyleType::kDisc:
     case EListStyleType::kCircle:
     case EListStyleType::kSquare:
+    case EListStyleType::kDisclosureOpen:
+    case EListStyleType::kDisclosureClosed:
       return ListStyleCategory::kSymbol;
     case EListStyleType::kArabicIndic:
     case EListStyleType::kArmenian:

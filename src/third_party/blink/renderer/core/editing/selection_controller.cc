@@ -491,7 +491,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
       Selection().SelectionHasFocus()
           ? PositionRespectingEditingBoundary(
                 Selection().ComputeVisibleSelectionInDOMTree().Start(),
-                hit_test_result.LocalPoint(), target)
+                hit_test_result)
           : PositionWithAffinity();
   const PositionInFlatTreeWithAffinity target_position =
       CreateVisiblePosition(
@@ -627,10 +627,9 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
           .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
       pos.IsNotNull()
-          ? CreateVisibleSelectionWithGranularity(
+          ? ExpandWithGranularity(
                 SelectionInFlatTree::Builder().Collapse(pos).Build(),
                 TextGranularity::kWord)
-                .AsSelection()
           : SelectionInFlatTree();
 
   // TODO(editing-dev): Fix CreateVisibleSelectionWithGranularity() to not
@@ -966,10 +965,9 @@ bool SelectionController::HandleTripleClick(
           .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
       pos.IsNotNull()
-          ? CreateVisibleSelectionWithGranularity(
+          ? ExpandWithGranularity(
                 SelectionInFlatTree::Builder().Collapse(pos).Build(),
                 TextGranularity::kParagraph)
-                .AsSelection()
           : SelectionInFlatTree();
 
   const bool is_handle_visible =
@@ -1193,11 +1191,7 @@ void SelectionController::HandleGestureTwoFingerTap(
 }
 
 static bool HitTestResultIsMisspelled(const HitTestResult& result) {
-  Node* inner_node = result.InnerPossiblyPseudoNode();
-  if (!inner_node || !inner_node->GetLayoutObject())
-    return false;
-  PositionWithAffinity pos_with_affinity =
-      inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint());
+  PositionWithAffinity pos_with_affinity = result.GetPosition();
   if (pos_with_affinity.IsNull())
     return false;
   // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.
@@ -1205,8 +1199,9 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
       pos_with_affinity.GetPosition().ParentAnchoredEquivalent();
   if (!SpellChecker::IsSpellCheckingEnabledAt(marker_position))
     return false;
-  return SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
-                                    ToPositionInFlatTree(marker_position));
+  return SpellCheckMarkerAtPosition(
+      result.InnerPossiblyPseudoNode()->GetDocument().Markers(),
+      ToPositionInFlatTree(marker_position));
 }
 
 template <typename MouseEventObject>
@@ -1239,6 +1234,9 @@ void SelectionController::UpdateSelectionForContextMenuEvent(
   }
 
   if (!frame_->GetEditor().Behavior().ShouldSelectOnContextualMenuClick())
+    return;
+
+  if (mouse_event->GetMenuSourceType() == kMenuSourceLongPress)
     return;
 
   SelectClosestWordOrLinkFromMouseEvent(mouse_event, hit_test_result);
@@ -1296,18 +1294,16 @@ void SelectionController::NotifySelectionChanged() {
 
   const SelectionInDOMTree& selection =
       this->Selection().GetSelectionInDOMTree();
-  switch (selection.Type()) {
-    case kNoSelection:
-      selection_state_ = SelectionState::kHaveNotStartedSelection;
-      return;
-    case kCaretSelection:
-      selection_state_ = SelectionState::kPlacedCaret;
-      return;
-    case kRangeSelection:
-      selection_state_ = SelectionState::kExtendedSelection;
-      return;
+  if (selection.IsNone()) {
+    selection_state_ = SelectionState::kHaveNotStartedSelection;
+    return;
   }
-  NOTREACHED() << "We should handle all SelectionType" << selection;
+  if (selection.IsCaret()) {
+    selection_state_ = SelectionState::kPlacedCaret;
+    return;
+  }
+  DCHECK(selection.IsRange()) << selection;
+  selection_state_ = SelectionState::kExtendedSelection;
 }
 
 FrameSelection& SelectionController::Selection() const {

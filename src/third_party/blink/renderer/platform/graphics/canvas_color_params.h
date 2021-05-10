@@ -13,13 +13,13 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/buffer_types.h"
 
-class SkSurfaceProps;
-
 namespace gfx {
 class ColorSpace;
 }
 
 namespace blink {
+
+class CanvasResourceParams;
 
 enum class CanvasColorSpace {
   kSRGB,
@@ -28,13 +28,29 @@ enum class CanvasColorSpace {
 };
 
 enum class CanvasPixelFormat {
-  kRGBA8,
-  kBGRA8,
+  kUint8,
   kF16,
 };
 
+constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
+constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
+constexpr const char* kP3CanvasColorSpaceName = "display-p3";
+
+constexpr const char* kUint8CanvasPixelFormatName = "uint8";
+constexpr const char* kF16CanvasPixelFormatName = "float16";
+
+// Return the CanvasColorSpace for the specified |name|. On invalid inputs,
+// returns CanvasColorSpace::kSRGB.
+CanvasColorSpace PLATFORM_EXPORT
+CanvasColorSpaceFromName(const String& color_space_name);
+
+// Return the SkColorSpace for the specified |color_space|.
 sk_sp<SkColorSpace> PLATFORM_EXPORT
 CanvasColorSpaceToSkColorSpace(CanvasColorSpace color_space);
+
+// Return the named CanvasColorSpace that best matches |sk_color_space|.
+CanvasColorSpace PLATFORM_EXPORT
+CanvasColorSpaceFromSkColorSpace(const SkColorSpace* sk_color_space);
 
 class PLATFORM_EXPORT CanvasColorParams {
   DISALLOW_NEW();
@@ -43,52 +59,32 @@ class PLATFORM_EXPORT CanvasColorParams {
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
-  explicit CanvasColorParams(const SkImageInfo&);
-
-  static CanvasPixelFormat GetNativeCanvasPixelFormat() {
-    if (kN32_SkColorType == kRGBA_8888_SkColorType)
-      return CanvasPixelFormat::kRGBA8;
-    else if (kN32_SkColorType == kBGRA_8888_SkColorType)
-      return CanvasPixelFormat::kBGRA8;
-  }
+  CanvasColorParams(const WTF::String& color_space,
+                    const WTF::String& pixel_format,
+                    bool has_alpha);
 
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
 
-  void SetCanvasColorSpace(CanvasColorSpace c) { color_space_ = c; }
-  void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
-  void SetOpacityMode(OpacityMode m) { opacity_mode_ = m; }
+  const char* GetColorSpaceAsString() const;
+  const char* GetPixelFormatAsString() const;
+
+  CanvasResourceParams GetAsResourceParams() const;
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;
-  uint8_t BytesPerPixel() const;
-
-  // The color space in which pixels read from the canvas via a shader will be
-  // returned. Note that for canvases with linear pixel math, these will be
-  // converted from their storage space into a linear space.
-  gfx::ColorSpace GetSamplerGfxColorSpace() const;
 
   // Return the color space of the underlying data for the canvas.
   gfx::ColorSpace GetStorageGfxColorSpace() const;
   sk_sp<SkColorSpace> GetSkColorSpace() const;
-  SkAlphaType GetSkAlphaType() const;
-  const SkSurfaceProps* GetSkSurfaceProps() const;
 
-  // Gpu memory buffer parameters
-  gfx::BufferFormat GetBufferFormat() const;
-  uint32_t GLSizedInternalFormat() const;  // For GLES2, use Unsized
-  uint32_t GLUnsizedInternalFormat() const;
-  uint32_t GLType() const;
-
-  viz::ResourceFormat TransferableResourceFormat() const;
+  uint8_t BytesPerPixel() const;
 
  private:
-  CanvasColorParams(const sk_sp<SkColorSpace> color_space,
-                    SkColorType color_type);
 
   CanvasColorSpace color_space_ = CanvasColorSpace::kSRGB;
-  CanvasPixelFormat pixel_format_ = GetNativeCanvasPixelFormat();
+  CanvasPixelFormat pixel_format_ = CanvasPixelFormat::kUint8;
   OpacityMode opacity_mode_ = kNonOpaque;
 };
 

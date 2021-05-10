@@ -16,8 +16,8 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
+#include "third_party/blink/renderer/core/css/background_color_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
-#include "third_party/blink/renderer/core/css/native_paint_image_generator.h"
 #include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_backend_impl.h"
@@ -42,8 +42,8 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/csspaint/background_color_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_image_generator_impl.h"
-#include "third_party/blink/renderer/modules/csspaint/native_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_absolute_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
@@ -95,6 +95,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -122,7 +123,8 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
-  NativePaintImageGenerator::Init(NativePaintImageGeneratorImpl::Create);
+  BackgroundColorPaintImageGenerator::Init(
+      BackgroundColorPaintImageGeneratorImpl::Create);
   WebDatabaseHost::GetInstance().Init();
   MediaSourceRegistryImpl::Init();
 
@@ -259,9 +261,12 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
   MediaInspectorContextImpl* context_impl = MediaInspectorContextImpl::From(
       *To<LocalDOMWindow>(html_media_element.GetExecutionContext()));
+  FrameWidget* frame_widget =
+      html_media_element.GetDocument().GetFrame()->GetWidgetForLocalRoot();
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
       source, media_player_client, context_impl, &encrypted_media,
-      encrypted_media.ContentDecryptionModule(), sink_id));
+      encrypted_media.ContentDecryptionModule(), sink_id,
+      frame_widget->GetLayerTreeSettings()));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(

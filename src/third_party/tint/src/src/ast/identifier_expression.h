@@ -15,55 +15,51 @@
 #ifndef SRC_AST_IDENTIFIER_EXPRESSION_H_
 #define SRC_AST_IDENTIFIER_EXPRESSION_H_
 
-#include <string>
+#include <memory>
+#include <utility>
 
 #include "src/ast/expression.h"
-#include "src/ast/intrinsic.h"
+#include "src/semantic/intrinsic.h"
+#include "src/symbol.h"
 
 namespace tint {
 namespace ast {
 
 /// An identifier expression
-class IdentifierExpression : public Expression {
+class IdentifierExpression : public Castable<IdentifierExpression, Expression> {
  public:
   /// Constructor
-  /// @param name the name
-  explicit IdentifierExpression(const std::string& name);
-  /// Constructor
   /// @param source the source
-  /// @param name the name
-  IdentifierExpression(const Source& source, const std::string& name);
+  /// @param sym the symbol for the identifier
+  IdentifierExpression(const Source& source, Symbol sym);
   /// Move constructor
   IdentifierExpression(IdentifierExpression&&);
   ~IdentifierExpression() override;
 
-  /// @returns the name part of the identifier
-  std::string name() const { return name_; }
+  /// @returns the symbol for the identifier
+  Symbol symbol() const { return sym_; }
 
-  /// Sets the intrinsic for this identifier
-  /// @param i the intrinsic to set
-  void set_intrinsic(Intrinsic i) { intrinsic_ = i; }
-  /// @returns the intrinsic this identifier represents
-  Intrinsic intrinsic() const { return intrinsic_; }
-  /// @returns true if this identifier is for an intrinsic
-  bool IsIntrinsic() const { return intrinsic_ != Intrinsic::kNone; }
-
-  /// @returns true if this is an identifier expression
-  bool IsIdentifier() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  IdentifierExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   IdentifierExpression(const IdentifierExpression&) = delete;
 
-  Intrinsic intrinsic_ = Intrinsic::kNone;
-  std::string name_;
+  Symbol const sym_;
 };
 
 }  // namespace ast

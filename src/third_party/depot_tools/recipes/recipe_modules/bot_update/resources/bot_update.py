@@ -13,6 +13,7 @@ from contextlib import contextmanager
 import copy
 import ctypes
 from datetime import datetime
+import functools
 import json
 import optparse
 import os
@@ -676,6 +677,15 @@ def _maybe_break_locks(checkout_path, tries=3):
       pass
 
 
+def _set_git_config(fn):
+  @functools.wraps(fn)
+  def wrapper(*args, **kwargs):
+    with git_config_if_not_set('user.name', 'chrome-bot'), \
+         git_config_if_not_set('user.email', 'chrome-bot@chromium.org'), \
+         git_config_if_not_set('fetch.uriprotocols', 'https'):
+        return fn(*args, **kwargs)
+  return wrapper
+
 
 def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
                   cleanup_dir, enforce_fetch):
@@ -710,6 +720,9 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
     env = {
         'GIT_TRACE': 'true',
         'GIT_TRACE_PERFORMANCE': 'true',
+        'GIT_TRACE_CURL': 'true',
+        'GIT_TRACE_CURL_NO_DATA': 'true',
+        'GIT_REDACT_COOKIES': 'o,SSO,GSSO_UberProxy,__Secure-GSSO_UberProxy',
     }
 
   branch, revision = get_target_branch_and_revision(name, url, revisions)
@@ -735,7 +748,9 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       # TODO(tandrii): propagate the pin to git server per recommendation of
       # maintainers of *.googlesource.com (workaround git server replication
       # lag).
-      git(*populate_cmd, env=env)
+      with git_config_if_not_set(
+          'http.extraheader', 'X-Return-Encrypted-Headers: all'):
+        git(*populate_cmd, env=env)
       if _has_in_git_cache(pin, refs, git_cache_dir, url):
         break
       overrun = time.time() - soft_deadline
@@ -864,6 +879,7 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
     f.write(json.dumps(output, sort_keys=True))
 
 
+@_set_git_config
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
                     no_fetch_tags, refs, git_cache_dir, cleanup_dir,
@@ -894,20 +910,18 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   for solution_name in list(solution_dirs):
     gc_revisions[solution_name] = 'unmanaged'
 
-  with git_config_if_not_set('user.name', 'chrome-bot'), \
-       git_config_if_not_set('user.email', 'chrome-bot@chromium.org'):
-    # Let gclient do the DEPS syncing.
-    # The branch-head refspec is a special case because it's possible Chrome
-    # src, which contains the branch-head refspecs, is DEPSed in.
-    gclient_output = gclient_sync(
-        BRANCH_HEADS_REFSPEC in refs,
-        TAGS_REFSPEC in refs,
-        gc_revisions,
-        break_repo_locks,
-        disable_syntax_validation,
-        patch_refs,
-        gerrit_reset,
-        gerrit_rebase_patch_ref)
+  # Let gclient do the DEPS syncing.
+  # The branch-head refspec is a special case because it's possible Chrome
+  # src, which contains the branch-head refspecs, is DEPSed in.
+  gclient_output = gclient_sync(
+      BRANCH_HEADS_REFSPEC in refs,
+      TAGS_REFSPEC in refs,
+      gc_revisions,
+      break_repo_locks,
+      disable_syntax_validation,
+      patch_refs,
+      gerrit_reset,
+      gerrit_rebase_patch_ref)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.

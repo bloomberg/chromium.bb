@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -44,15 +45,11 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalWebApp(const AppId& app_id,
                                ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
-  bool CanUserUninstallFromSync(const AppId& app_id) const override;
-  void UninstallWebAppFromSyncByUser(const AppId& app_id,
-                                     UninstallWebAppCallback callback) override;
   bool CanUserUninstallExternalApp(const AppId& app_id) const override;
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   void RemoveLegacyInstallFinalizerForTesting() override;
-  InstallFinalizer* legacy_finalizer_for_testing() override;
   void Start() override;
   void Shutdown() override;
 
@@ -79,9 +76,9 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                        std::unique_ptr<WebApp> web_app,
                                        bool success);
 
-  void OnIconsDataDeleted(const AppId& app_id,
-                          UninstallWebAppCallback callback,
-                          bool success);
+  void OnIconsDataDeletedAndWebAppUninstalled(const AppId& app_id,
+                                              UninstallWebAppCallback callback,
+                                              bool success);
   void OnDatabaseCommitCompletedForInstall(InstallFinalizedCallback callback,
                                            AppId app_id,
                                            bool success);
@@ -91,9 +88,13 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
       std::string old_name,
       const WebApplicationInfo& web_app_info,
       bool success);
+  void OnUninstallOsHooks(const AppId& app_id,
+                          UninstallWebAppCallback callback,
+                          OsHooksResults os_hooks_info);
 
   WebAppRegistrar& GetWebAppRegistrar() const;
 
+  // Used for legacy Bookmark Apps.
   std::unique_ptr<InstallFinalizer> legacy_finalizer_;
 
   Profile* const profile_;

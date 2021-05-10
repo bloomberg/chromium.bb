@@ -9,19 +9,15 @@
 
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
-namespace views {
-class Label;
-}  // namespace views
-
 namespace ash {
 
-class GlanceableInfoView;
+class AmbientInfoView;
 class MediaStringView;
 
 // AmbientBackgroundImageView--------------------------------------------------
@@ -35,7 +31,8 @@ class ASH_EXPORT AmbientBackgroundImageView : public views::View,
 
   explicit AmbientBackgroundImageView(AmbientViewDelegate* delegate);
   AmbientBackgroundImageView(const AmbientBackgroundImageView&) = delete;
-  AmbientBackgroundImageView& operator=(AmbientBackgroundImageView&) = delete;
+  AmbientBackgroundImageView& operator=(const AmbientBackgroundImageView&) =
+      delete;
   ~AmbientBackgroundImageView() override;
 
   // views::View:
@@ -83,15 +80,12 @@ class ASH_EXPORT AmbientBackgroundImageView : public views::View,
   gfx::ImageSkia image_unscaled_;
   gfx::ImageSkia related_image_unscaled_;
 
-  GlanceableInfoView* glanceable_info_view_ = nullptr;
-
-  // Label to show details text, i.e. attribution, to be displayed for the
-  // current image. Owned by the view hierarchy.
-  views::Label* details_label_ = nullptr;
+  AmbientInfoView* ambient_info_view_ = nullptr;
 
   MediaStringView* media_string_view_ = nullptr;
 
-  ScopedObserver<views::View, views::ViewObserver> observed_views_{this};
+  base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
+      observed_views_{this};
 };
 }  // namespace ash
 

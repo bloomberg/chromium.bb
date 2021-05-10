@@ -1,4 +1,4 @@
-# v-0021 - Fails because `c` is a const and can not be re-assigned.
+// v-0021 - Fails because `c` is a const and can not be re-assigned.
 
 [[stage(vertex)]]
 fn main() -> void {

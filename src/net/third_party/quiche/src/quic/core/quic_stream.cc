@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
+#include "quic/core/quic_stream.h"
 
 #include <limits>
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_flow_controller.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_flow_controller.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 using spdy::SpdyPriority;
 
@@ -113,6 +113,7 @@ const int QuicStream::kDefaultUrgency;
 
 PendingStream::PendingStream(QuicStreamId id, QuicSession* session)
     : id_(id),
+      version_(session->version()),
       stream_delegate_(session),
       stream_bytes_read_(0),
       fin_received_(false),
@@ -133,7 +134,7 @@ void PendingStream::OnDataAvailable() {
 }
 
 void PendingStream::OnFinRead() {
-  DCHECK(sequencer_.IsClosed());
+  QUICHE_DCHECK(sequencer_.IsClosed());
 }
 
 void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
@@ -153,12 +154,22 @@ void PendingStream::OnUnrecoverableError(QuicErrorCode error,
   stream_delegate_->OnStreamError(error, details);
 }
 
+void PendingStream::OnUnrecoverableError(QuicErrorCode error,
+                                         QuicIetfTransportErrorCodes ietf_error,
+                                         const std::string& details) {
+  stream_delegate_->OnStreamError(error, ietf_error, details);
+}
+
 QuicStreamId PendingStream::id() const {
   return id_;
 }
 
+ParsedQuicVersion PendingStream::version() const {
+  return version_;
+}
+
 void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
-  DCHECK_EQ(frame.stream_id, id_);
+  QUICHE_DCHECK_EQ(frame.stream_id, id_);
 
   bool is_stream_too_long =
       (frame.offset > kMaxStreamLength) ||
@@ -176,7 +187,7 @@ void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (frame.offset + frame.data_length > sequencer_.close_offset()) {
     OnUnrecoverableError(
         QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET,
-        quiche::QuicheStrCat(
+        absl::StrCat(
             "Stream ", id_,
             " received data with offset: ", frame.offset + frame.data_length,
             ", which is beyond close offset: ", sequencer()->close_offset()));
@@ -209,7 +220,7 @@ void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
 }
 
 void PendingStream::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
-  DCHECK_EQ(frame.stream_id, id_);
+  QUICHE_DCHECK_EQ(frame.stream_id, id_);
 
   if (frame.byte_offset > kMaxStreamLength) {
     // Peer are not suppose to write bytes more than maxium allowed.
@@ -224,10 +235,10 @@ void PendingStream::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
       frame.byte_offset != sequencer()->close_offset()) {
     OnUnrecoverableError(
         QUIC_STREAM_MULTIPLE_OFFSET,
-        quiche::QuicheStrCat("Stream ", id_,
-                             " received new final offset: ", frame.byte_offset,
-                             ", which is different from close offset: ",
-                             sequencer()->close_offset()));
+        absl::StrCat("Stream ", id_,
+                     " received new final offset: ", frame.byte_offset,
+                     ", which is different from close offset: ",
+                     sequencer()->close_offset()));
     return;
   }
 
@@ -392,9 +403,9 @@ QuicStream::~QuicStream() {
 }
 
 void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
-  DCHECK_EQ(frame.stream_id, id_);
+  QUICHE_DCHECK_EQ(frame.stream_id, id_);
 
-  DCHECK(!(read_side_closed_ && write_side_closed_));
+  QUICHE_DCHECK(!(read_side_closed_ && write_side_closed_));
 
   if (frame.fin && is_static_) {
     OnUnrecoverableError(QUIC_INVALID_STREAM_ID,
@@ -419,17 +430,16 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
                   << sequencer_.DebugString();
     OnUnrecoverableError(
         QUIC_STREAM_LENGTH_OVERFLOW,
-        quiche::QuicheStrCat("Peer sends more data than allowed on stream ",
-                             id_, ". frame: offset = ", frame.offset,
-                             ", length = ", frame.data_length, ". ",
-                             sequencer_.DebugString()));
+        absl::StrCat("Peer sends more data than allowed on stream ", id_,
+                     ". frame: offset = ", frame.offset, ", length = ",
+                     frame.data_length, ". ", sequencer_.DebugString()));
     return;
   }
 
   if (frame.offset + frame.data_length > sequencer_.close_offset()) {
     OnUnrecoverableError(
         QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET,
-        quiche::QuicheStrCat(
+        absl::StrCat(
             "Stream ", id_,
             " received data with offset: ", frame.offset + frame.data_length,
             ", which is beyond close offset: ", sequencer_.close_offset()));
@@ -439,7 +449,7 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (frame.fin && !fin_received_) {
     fin_received_ = true;
     if (fin_sent_) {
-      DCHECK(!was_draining_);
+      QUICHE_DCHECK(!was_draining_);
       session_->StreamDraining(id_,
                                /*unidirectional=*/type_ != BIDIRECTIONAL);
       was_draining_ = true;
@@ -497,16 +507,7 @@ bool QuicStream::OnStopSending(QuicRstStreamErrorCode code) {
   }
 
   stream_error_ = code;
-
-  if (session()->split_up_send_rst()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_split_up_send_rst_2, 1, 3);
-    MaybeSendRstStream(code);
-  } else {
-    session()->SendRstStream(id(), code, stream_bytes_written(),
-                             /*send_rst_only = */ true);
-    rst_sent_ = true;
-    CloseWriteSide();
-  }
+  MaybeSendRstStream(code);
   return true;
 }
 
@@ -533,10 +534,10 @@ void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
       frame.byte_offset != sequencer()->close_offset()) {
     OnUnrecoverableError(
         QUIC_STREAM_MULTIPLE_OFFSET,
-        quiche::QuicheStrCat("Stream ", id_,
-                             " received new final offset: ", frame.byte_offset,
-                             ", which is different from close offset: ",
-                             sequencer_.close_offset()));
+        absl::StrCat("Stream ", id_,
+                     " received new final offset: ", frame.byte_offset,
+                     ", which is different from close offset: ",
+                     sequencer_.close_offset()));
     return;
   }
 
@@ -575,7 +576,7 @@ void QuicStream::OnConnectionClosed(QuicErrorCode error,
 }
 
 void QuicStream::OnFinRead() {
-  DCHECK(sequencer_.IsClosed());
+  QUICHE_DCHECK(sequencer_.IsClosed());
   // OnFinRead can be called due to a FIN flag in a headers block, so there may
   // have been no OnStreamFrame call with a FIN in the frame.
   fin_received_ = true;
@@ -586,35 +587,31 @@ void QuicStream::OnFinRead() {
 }
 
 void QuicStream::SetFinSent() {
-  DCHECK(!VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(!VersionUsesHttp3(transport_version()));
   fin_sent_ = true;
 }
 
 void QuicStream::Reset(QuicRstStreamErrorCode error) {
   stream_error_ = error;
-  if (session()->split_up_send_rst()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_split_up_send_rst_2, 2, 3);
-    QuicConnection::ScopedPacketFlusher flusher(session()->connection());
-    MaybeSendStopSending(error);
-    MaybeSendRstStream(error);
-  } else {
-    session()->SendRstStream(id(), error, stream_bytes_written(),
-                             /*send_rst_only = */ false);
-    rst_sent_ = true;
-  }
+  QuicConnection::ScopedPacketFlusher flusher(session()->connection());
+  MaybeSendStopSending(error);
+  MaybeSendRstStream(error);
+
   if (read_side_closed_ && write_side_closed_ && !IsWaitingForAcks()) {
     session()->MaybeCloseZombieStream(id_);
     return;
-  }
-  if (!session()->split_up_send_rst()) {
-    CloseReadSide();
-    CloseWriteSide();
   }
 }
 
 void QuicStream::OnUnrecoverableError(QuicErrorCode error,
                                       const std::string& details) {
   stream_delegate_->OnStreamError(error, details);
+}
+
+void QuicStream::OnUnrecoverableError(QuicErrorCode error,
+                                      QuicIetfTransportErrorCodes ietf_error,
+                                      const std::string& details) {
+  stream_delegate_->OnStreamError(error, ietf_error, details);
 }
 
 const spdy::SpdyStreamPrecedence& QuicStream::precedence() const {
@@ -681,7 +678,7 @@ void QuicStream::WriteOrBufferDataInner(
       QUIC_BUG << "Write too many data via stream " << id_;
       OnUnrecoverableError(
           QUIC_STREAM_LENGTH_OVERFLOW,
-          quiche::QuicheStrCat("Write too many data via stream ", id_));
+          absl::StrCat("Write too many data via stream ", id_));
       return;
     }
     send_buffer_.SaveStreamData(&iov, 1, 0, data.length());
@@ -698,7 +695,7 @@ void QuicStream::WriteOrBufferDataAtLevel(
     bool fin,
     EncryptionLevel level,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  DCHECK(session()->use_write_or_buffer_data_at_level());
+  QUICHE_DCHECK(session()->use_write_or_buffer_data_at_level());
   QUIC_RELOADABLE_FLAG_COUNT(quic_use_write_or_buffer_data_at_level);
   return WriteOrBufferDataInner(data, fin, level, ack_listener);
 }
@@ -794,7 +791,7 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
         QUIC_BUG << "Write too many data via stream " << id_;
         OnUnrecoverableError(
             QUIC_STREAM_LENGTH_OVERFLOW,
-            quiche::QuicheStrCat("Write too many data via stream ", id_));
+            absl::StrCat("Write too many data via stream ", id_));
         return consumed_data;
       }
       OnDataBuffered(offset, consumed_data.bytes_consumed, nullptr);
@@ -856,7 +853,6 @@ void QuicStream::CloseWriteSide() {
 }
 
 void QuicStream::MaybeSendStopSending(QuicRstStreamErrorCode error) {
-  DCHECK(session()->split_up_send_rst());
   if (stop_sending_sent_) {
     return;
   }
@@ -869,7 +865,7 @@ void QuicStream::MaybeSendStopSending(QuicRstStreamErrorCode error) {
   if (session()->version().UsesHttp3()) {
     session()->MaybeSendStopSendingFrame(id(), error);
   } else {
-    DCHECK_EQ(QUIC_STREAM_NO_ERROR, error);
+    QUICHE_DCHECK_EQ(QUIC_STREAM_NO_ERROR, error);
     session()->MaybeSendRstStreamFrame(id(), QUIC_STREAM_NO_ERROR,
                                        stream_bytes_written());
   }
@@ -878,7 +874,6 @@ void QuicStream::MaybeSendStopSending(QuicRstStreamErrorCode error) {
 }
 
 void QuicStream::MaybeSendRstStream(QuicRstStreamErrorCode error) {
-  DCHECK(session()->split_up_send_rst());
   if (rst_sent_) {
     return;
   }
@@ -894,8 +889,12 @@ void QuicStream::MaybeSendRstStream(QuicRstStreamErrorCode error) {
 }
 
 bool QuicStream::HasBufferedData() const {
-  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
+  QUICHE_DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
   return send_buffer_.stream_offset() > stream_bytes_written();
+}
+
+ParsedQuicVersion QuicStream::version() const {
+  return session_->version();
 }
 
 QuicTransportVersion QuicStream::transport_version() const {
@@ -912,28 +911,18 @@ void QuicStream::StopReading() {
 }
 
 void QuicStream::OnClose() {
-  DCHECK(read_side_closed_ && write_side_closed_);
+  QUICHE_DCHECK(read_side_closed_ && write_side_closed_);
 
   if (!fin_sent_ && !rst_sent_) {
-    if (!session()->split_up_send_rst()) {
-      // For flow control accounting, tell the peer how many bytes have been
-      // written on this stream before termination. Done here if needed, using a
-      // RST_STREAM frame.
-      QUIC_DLOG(INFO) << ENDPOINT << "Sending RST_STREAM in OnClose: " << id();
-      session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
-                              stream_bytes_written(),
-                              /*send_rst_only = */ false);
-      session_->MaybeCloseZombieStream(id_);
-      rst_sent_ = true;
-    } else {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_split_up_send_rst_2, 3, 3);
-      QUIC_BUG_IF(session()->connection()->connected() &&
-                  session()->version().UsesHttp3())
-          << "The stream should've already sent RST in response to "
-             "STOP_SENDING";
-      MaybeSendRstStream(QUIC_RST_ACKNOWLEDGEMENT);
-      session_->MaybeCloseZombieStream(id_);
-    }
+    QUIC_BUG_IF(session()->connection()->connected() &&
+                session()->version().UsesHttp3())
+        << "The stream should've already sent RST in response to "
+           "STOP_SENDING";
+    // For flow control accounting, tell the peer how many bytes have been
+    // written on this stream before termination. Done here if needed, using a
+    // RST_STREAM frame.
+    MaybeSendRstStream(QUIC_RST_ACKNOWLEDGEMENT);
+    session_->MaybeCloseZombieStream(id_);
   }
 
   if (!flow_controller_.has_value() ||
@@ -1041,7 +1030,7 @@ bool QuicStream::MaybeConfigSendWindowOffset(QuicStreamOffset new_offset,
 
   // The validation code below is for QUIC with TLS only.
   if (new_offset < flow_controller_->send_window_offset()) {
-    DCHECK(session()->version().UsesTls());
+    QUICHE_DCHECK(session()->version().UsesTls());
     if (was_zero_rtt_rejected && new_offset < flow_controller_->bytes_sent()) {
       // The client is given flow control window lower than what's written in
       // 0-RTT. This QUIC implementation is unable to retransmit them.
@@ -1049,7 +1038,7 @@ bool QuicStream::MaybeConfigSendWindowOffset(QuicStreamOffset new_offset,
           << "Server streams' flow control should never be configured twice.";
       OnUnrecoverableError(
           QUIC_ZERO_RTT_UNRETRANSMITTABLE,
-          quiche::QuicheStrCat(
+          absl::StrCat(
               "Server rejected 0-RTT, aborting because new stream max data ",
               new_offset, " for stream ", id_, " is less than currently used: ",
               flow_controller_->bytes_sent()));
@@ -1063,7 +1052,7 @@ bool QuicStream::MaybeConfigSendWindowOffset(QuicStreamOffset new_offset,
       OnUnrecoverableError(
           was_zero_rtt_rejected ? QUIC_ZERO_RTT_REJECTION_LIMIT_REDUCED
                                 : QUIC_ZERO_RTT_RESUMPTION_LIMIT_REDUCED,
-          quiche::QuicheStrCat(
+          absl::StrCat(
               was_zero_rtt_rejected ? "Server rejected 0-RTT, aborting because "
                                     : "",
               "new stream max data ", new_offset, " decreases current limit: ",
@@ -1142,8 +1131,8 @@ bool QuicStream::RetransmitStreamData(QuicStreamOffset offset,
                                       QuicByteCount data_length,
                                       bool fin,
                                       TransmissionType type) {
-  DCHECK(type == PTO_RETRANSMISSION || type == RTO_RETRANSMISSION ||
-         type == TLP_RETRANSMISSION || type == PROBING_RETRANSMISSION);
+  QUICHE_DCHECK(type == PTO_RETRANSMISSION || type == RTO_RETRANSMISSION ||
+                type == TLP_RETRANSMISSION || type == PROBING_RETRANSMISSION);
   if (HasDeadlinePassed()) {
     OnDeadlinePassed();
     return true;
@@ -1210,14 +1199,14 @@ QuicByteCount QuicStream::ReadableBytes() const {
 bool QuicStream::WriteStreamData(QuicStreamOffset offset,
                                  QuicByteCount data_length,
                                  QuicDataWriter* writer) {
-  DCHECK_LT(0u, data_length);
+  QUICHE_DCHECK_LT(0u, data_length);
   QUIC_DVLOG(2) << ENDPOINT << "Write stream " << id_ << " data from offset "
                 << offset << " length " << data_length;
   return send_buffer_.WriteStreamData(offset, data_length, writer);
 }
 
 void QuicStream::WriteBufferedData(absl::optional<EncryptionLevel> level) {
-  DCHECK(!write_side_closed_ && (HasBufferedData() || fin_buffered_));
+  QUICHE_DCHECK(!write_side_closed_ && (HasBufferedData() || fin_buffered_));
 
   if (session_->ShouldYield(id())) {
     session_->MarkConnectionLevelWriteBlocked(id());
@@ -1290,11 +1279,11 @@ void QuicStream::WriteBufferedData(absl::optional<EncryptionLevel> level) {
       MaybeSendBlocked();
     }
     if (fin && consumed_data.fin_consumed) {
-      DCHECK(!fin_sent_);
+      QUICHE_DCHECK(!fin_sent_);
       fin_sent_ = true;
       fin_outstanding_ = true;
       if (fin_received_) {
-        DCHECK(!was_draining_);
+        QUICHE_DCHECK(!was_draining_);
         session_->StreamDraining(id_,
                                  /*unidirectional=*/type_ != BIDIRECTIONAL);
         was_draining_ = true;
@@ -1312,7 +1301,7 @@ void QuicStream::WriteBufferedData(absl::optional<EncryptionLevel> level) {
 }
 
 uint64_t QuicStream::BufferedDataBytes() const {
-  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
+  QUICHE_DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
   return send_buffer_.stream_offset() - stream_bytes_written();
 }
 
@@ -1438,16 +1427,23 @@ void QuicStream::UpdateReceiveWindowSize(QuicStreamOffset size) {
 // static
 spdy::SpdyStreamPrecedence QuicStream::CalculateDefaultPriority(
     const QuicSession* session) {
-  if (VersionUsesHttp3(session->transport_version())) {
-    return spdy::SpdyStreamPrecedence(kDefaultUrgency);
-  }
+  return spdy::SpdyStreamPrecedence(
+      VersionUsesHttp3(session->transport_version())
+          ? kDefaultUrgency
+          : QuicStream::kDefaultPriority);
+}
 
-  if (session->use_http2_priority_write_scheduler()) {
-    return spdy::SpdyStreamPrecedence(0, spdy::kHttp2DefaultStreamWeight,
-                                      false);
-  }
+absl::optional<QuicByteCount> QuicStream::GetSendWindow() const {
+  return flow_controller_.has_value()
+             ? absl::optional<QuicByteCount>(flow_controller_->SendWindowSize())
+             : absl::nullopt;
+}
 
-  return spdy::SpdyStreamPrecedence(QuicStream::kDefaultPriority);
+absl::optional<QuicByteCount> QuicStream::GetReceiveWindow() const {
+  return flow_controller_.has_value()
+             ? absl::optional<QuicByteCount>(
+                   flow_controller_->receive_window_size())
+             : absl::nullopt;
 }
 
 }  // namespace quic

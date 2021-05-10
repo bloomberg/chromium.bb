@@ -27,6 +27,11 @@ class Canvas;
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+class Layer;
+class LayerTreeOwner;
+}  // namespace ui
+
 namespace views {
 enum class CaptionButtonLayoutSize;
 class View;
@@ -40,6 +45,39 @@ class CaptionButtonModel;
 // Helper class for managing the window header.
 class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameHeader {
  public:
+  // An invisible view that drives the frame's animation. This holds the
+  // animating layer as a layer beneath this view so that it's behind all other
+  // child layers of the window to avoid hiding their contents.
+  class FrameAnimatorView : public views::View,
+                            public views::ViewObserver,
+                            public ui::ImplicitAnimationObserver {
+   public:
+    METADATA_HEADER(FrameAnimatorView);
+    explicit FrameAnimatorView(views::View* parent);
+    FrameAnimatorView(const FrameAnimatorView&) = delete;
+    FrameAnimatorView& operator=(const FrameAnimatorView&) = delete;
+    ~FrameAnimatorView() override;
+
+    void StartAnimation(base::TimeDelta duration);
+
+    // views::Views:
+    std::unique_ptr<ui::Layer> RecreateLayer() override;
+
+    // ViewObserver:
+    void OnChildViewReordered(views::View* observed_view,
+                              views::View* child) override;
+    void OnViewBoundsChanged(views::View* observed_view) override;
+
+    // ui::ImplicitAnimationObserver overrides:
+    void OnImplicitAnimationsCompleted() override;
+
+   private:
+    void StopAnimation();
+
+    views::View* parent_;
+    std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
+  };
+
   enum Mode { MODE_ACTIVE, MODE_INACTIVE };
 
   static FrameHeader* Get(views::Widget* widget);
@@ -86,6 +124,9 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameHeader {
   // Updates the frame header painting to reflect a change in frame colors.
   virtual void UpdateFrameColors() = 0;
 
+  // Returns window mask for the rounded corner of the frame header.
+  virtual SkPath GetWindowMaskForFrameHeader(const gfx::Size& size);
+
   // Sets text to display in place of the window's title. This will be shown
   // regardless of what ShouldShowWindowTitle() returns.
   void SetFrameTextOverride(const base::string16& frame_text_override);
@@ -127,7 +168,6 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameHeader {
   void StartTransitionAnimation(base::TimeDelta duration);
 
  private:
-  class FrameAnimatorView;
   FRIEND_TEST_ALL_PREFIXES(ash::DefaultFrameHeaderTest, BackButtonAlignment);
   FRIEND_TEST_ALL_PREFIXES(ash::DefaultFrameHeaderTest, TitleIconAlignment);
   FRIEND_TEST_ALL_PREFIXES(ash::DefaultFrameHeaderTest, FrameColors);

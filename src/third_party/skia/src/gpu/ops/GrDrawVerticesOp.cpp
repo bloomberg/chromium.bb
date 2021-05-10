@@ -118,9 +118,11 @@ public:
                                      const SkVertices::Attribute* attrs,
                                      int attrCount,
                                      const MarkedMatrices* customMatrices) {
-        return arena->make<VerticesGP>(localCoordsType, colorArrayType, color,
-                                       std::move(colorSpaceXform), viewMatrix, attrs, attrCount,
-                                       customMatrices);
+        return arena->make([&](void* ptr) {
+            return new (ptr) VerticesGP(localCoordsType, colorArrayType, color,
+                                        std::move(colorSpaceXform), viewMatrix, attrs, attrCount,
+                                        customMatrices);
+        });
     }
 
     const char* name() const override { return "VerticesGP"; }
@@ -375,8 +377,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     VerticesGP(LocalCoordsType localCoordsType,
                ColorArrayType colorArrayType,
                const SkPMColor4f& color,
@@ -465,10 +465,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override;
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
@@ -633,14 +634,15 @@ GrGeometryProcessor* DrawVerticesOp::makeGP(SkArenaAlloc* arena) {
 
 void DrawVerticesOp::onCreateProgramInfo(const GrCaps* caps,
                                          SkArenaAlloc* arena,
-                                         const GrSurfaceProxyView* writeView,
+                                         const GrSurfaceProxyView& writeView,
                                          GrAppliedClip&& appliedClip,
                                          const GrXferProcessor::DstProxyView& dstProxyView,
-                                         GrXferBarrierFlags renderPassXferBarriers) {
+                                         GrXferBarrierFlags renderPassXferBarriers,
+                                         GrLoadOp colorLoadOp) {
     GrGeometryProcessor* gp = this->makeGP(arena);
     fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(appliedClip),
                                              dstProxyView, gp, this->primitiveType(),
-                                             renderPassXferBarriers);
+                                             renderPassXferBarriers, colorLoadOp);
 }
 
 void DrawVerticesOp::onPrepareDraws(Target* target) {
@@ -711,7 +713,8 @@ void DrawVerticesOp::onPrepareDraws(Target* target) {
 
         if (fMultipleViewMatrices) {
             SkASSERT(!mesh.fViewMatrix.hasPerspective());
-            SkMatrixPriv::MapPointsWithStride(mesh.fViewMatrix, posBase, vertexStride, vertexCount);
+            SkMatrixPriv::MapPointsWithStride(mesh.fViewMatrix, posBase, vertexStride,
+                                              positions, sizeof(SkPoint), vertexCount);
         }
 
         vertexOffset += vertexCount;

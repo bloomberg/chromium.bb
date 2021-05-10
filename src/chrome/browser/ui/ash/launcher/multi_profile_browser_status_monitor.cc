@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -91,15 +91,21 @@ void MultiProfileBrowserStatusMonitor::ConnectV1AppToLauncher(
   // Adding a V1 app to the launcher consists of two actions: Add the browser
   // (launcher item) and add the content (launcher item status).
   BrowserStatusMonitor::AddV1AppToShelf(browser);
-  launcher_controller_->UpdateAppState(
-      browser->tab_strip_model()->GetActiveWebContents(), false /*remove*/);
+
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (web_contents)
+    launcher_controller_->UpdateAppState(web_contents, false /*remove*/);
 }
 
 void MultiProfileBrowserStatusMonitor::DisconnectV1AppFromLauncher(
     Browser* browser) {
   // Removing a V1 app from the launcher requires to remove the content and
   // the launcher item.
-  launcher_controller_->UpdateAppState(
-      browser->tab_strip_model()->GetActiveWebContents(), true /*remove*/);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (web_contents)
+    launcher_controller_->UpdateAppState(web_contents, true /*remove*/);
+
   BrowserStatusMonitor::RemoveV1AppFromShelf(browser);
 }

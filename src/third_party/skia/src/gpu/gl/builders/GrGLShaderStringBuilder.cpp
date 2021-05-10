@@ -17,24 +17,13 @@
 static const bool gPrintSKSL = false;
 static const bool gPrintGLSL = false;
 
-void print_shader_banner(SkSL::Program::Kind programKind) {
-    const char* typeName = "Unknown";
-    switch (programKind) {
-        case SkSL::Program::kVertex_Kind:   typeName = "Vertex";   break;
-        case SkSL::Program::kGeometry_Kind: typeName = "Geometry"; break;
-        case SkSL::Program::kFragment_Kind: typeName = "Fragment"; break;
-        default: break;
-    }
-    SkDebugf("---- %s shader ----------------------------------------------------\n", typeName);
-}
-
-std::unique_ptr<SkSL::Program> GrSkSLtoGLSL(const GrGLContext& context,
-                                            SkSL::Program::Kind programKind,
+std::unique_ptr<SkSL::Program> GrSkSLtoGLSL(const GrGLGpu* gpu,
+                                            SkSL::ProgramKind programKind,
                                             const SkSL::String& sksl,
                                             const SkSL::Program::Settings& settings,
                                             SkSL::String* glsl,
                                             GrContextOptions::ShaderErrorHandler* errorHandler) {
-    SkSL::Compiler* compiler = context.compiler();
+    SkSL::Compiler* compiler = gpu->shaderCompiler();
     std::unique_ptr<SkSL::Program> program;
 #ifdef SK_DEBUG
     SkSL::String src = GrShaderUtils::PrettyPrint(sksl);
@@ -48,7 +37,7 @@ std::unique_ptr<SkSL::Program> GrSkSLtoGLSL(const GrGLContext& context,
     }
 
     if (gPrintSKSL || gPrintGLSL) {
-        print_shader_banner(programKind);
+        GrShaderUtils::PrintShaderBanner(programKind);
         if (gPrintSKSL) {
             SkDebugf("SKSL:\n");
             GrShaderUtils::PrintLineByLine(GrShaderUtils::PrettyPrint(sksl));
@@ -68,6 +57,7 @@ GrGLuint GrGLCompileAndAttachShader(const GrGLContext& glCtx,
                                     const SkSL::String& glsl,
                                     GrGpu::Stats* stats,
                                     GrContextOptions::ShaderErrorHandler* errorHandler) {
+    TRACE_EVENT0_ALWAYS("skia.gpu", "driver_compile_shader");
     const GrGLInterface* gli = glCtx.glInterface();
 
     // Specify GLSL source to the driver.
@@ -86,6 +76,7 @@ GrGLuint GrGLCompileAndAttachShader(const GrGLContext& glCtx,
     bool checkCompiled = !glCtx.caps()->skipErrorChecks();
 
     if (checkCompiled) {
+        ATRACE_ANDROID_FRAMEWORK("checkCompiled");
         GrGLint compiled = GR_GL_INIT_ZERO;
         GR_GL_CALL(gli, GetShaderiv(shaderId, GR_GL_COMPILE_STATUS, &compiled));
 

@@ -36,9 +36,6 @@ import * as Workspace from '../workspace/workspace.js';    // eslint-disable-lin
 import {SourcesView} from './SourcesView.js';                                  // eslint-disable-line no-unused-vars
 import {UISourceCodeFrame} from './UISourceCodeFrame.js';                      // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class EditingLocationHistoryManager {
   /**
    * @param {!SourcesView} sourcesView
@@ -137,7 +134,6 @@ export const HistoryDepth = 20;
 
 /**
  * @implements {Common.SimpleHistoryManager.HistoryEntry}
- * @unrestricted
  */
 export class EditingLocationHistoryEntry {
   /**
@@ -182,7 +178,7 @@ export class EditingLocationHistoryEntry {
   valid() {
     const position = this._positionHandle.resolve();
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCode(this._projectId, this._url);
-    return !!(position && uiSourceCode);
+    return Boolean(position && uiSourceCode);
   }
 
   /**

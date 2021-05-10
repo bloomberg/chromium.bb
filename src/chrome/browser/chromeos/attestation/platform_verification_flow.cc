@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,17 +14,17 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -332,9 +333,9 @@ void PlatformVerificationFlow::OnChallengeReady(
   }
   VLOG(1) << "Platform verification successful.";
   UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, SUCCESS, RESULT_MAX);
-  std::move(context).callback.Run(SUCCESS, signed_data_pb.data(),
-                                  signed_data_pb.signature(),
-                                  certificate_chain);
+  std::move(context.callback)
+      .Run(SUCCESS, signed_data_pb.data(), signed_data_pb.signature(),
+           certificate_chain);
   if (is_expiring_soon && renewals_in_progress_.count(certificate_chain) == 0) {
     renewals_in_progress_.insert(certificate_chain);
     // Fire off a certificate request so next time we'll have a new one.

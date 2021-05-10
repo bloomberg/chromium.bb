@@ -104,6 +104,7 @@ class FakeAudioReceiveStream final : public webrtc::AudioReceiveStream {
   void Reconfigure(const webrtc::AudioReceiveStream::Config& config) override;
   void Start() override { started_ = true; }
   void Stop() override { started_ = false; }
+  bool IsRunning() const override { return started_; }
 
   webrtc::AudioReceiveStream::Stats GetStats(
       bool get_and_clear_legacy_stats) const override;
@@ -218,12 +219,6 @@ class FakeVideoReceiveStream final : public webrtc::VideoReceiveStream {
 
   void SetStats(const webrtc::VideoReceiveStream::Stats& stats);
 
-  void AddSecondarySink(webrtc::RtpPacketSinkInterface* sink) override;
-  void RemoveSecondarySink(const webrtc::RtpPacketSinkInterface* sink) override;
-
-  int GetNumAddedSecondarySinks() const;
-  int GetNumRemovedSecondarySinks() const;
-
   std::vector<webrtc::RtpSource> GetSources() const override {
     return std::vector<webrtc::RtpSource>();
   }
@@ -266,9 +261,6 @@ class FakeVideoReceiveStream final : public webrtc::VideoReceiveStream {
   webrtc::VideoReceiveStream::Stats stats_;
 
   int base_mininum_playout_delay_ms_ = 0;
-
-  int num_added_secondary_sinks_;
-  int num_removed_secondary_sinks_;
 };
 
 class FakeFlexfecReceiveStream final : public webrtc::FlexfecReceiveStream {

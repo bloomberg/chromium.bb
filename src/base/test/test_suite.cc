@@ -24,12 +24,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/tagging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_piece.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
@@ -477,6 +479,11 @@ int TestSuite::Run() {
   test_listener_ios::RegisterTestEndListener();
 #endif
 
+  // Opts this test into synchronous MTE mode, where pointer mismatches
+  // will be detected immediately.
+  base::memory::ChangeMemoryTaggingModeForCurrentThread(
+      base::memory::TagViolationReportingMode::kSynchronous);
+
   int result = RUN_ALL_TESTS();
 
 #if defined(OS_APPLE)
@@ -524,8 +531,8 @@ void TestSuite::UnitTestAssertHandler(const char* file,
   // logged text, concatenated with stack trace of assert.
   // Concatenate summary and stack_trace here, to pass it as a message.
   if (printer_) {
-    const std::string summary_str = summary.as_string();
-    const std::string stack_trace_str = summary_str + stack_trace.as_string();
+    const std::string summary_str(summary);
+    const std::string stack_trace_str = summary_str + std::string(stack_trace);
     printer_->OnAssert(file, line, summary_str, stack_trace_str);
   }
 

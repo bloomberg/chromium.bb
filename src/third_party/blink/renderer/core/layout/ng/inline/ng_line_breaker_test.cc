@@ -63,7 +63,7 @@ class NGLineBreakerTest : public NGLayoutTest {
     NGExclusionSpace exclusion_space;
     NGPositionedFloatVector leading_floats;
     NGLineLayoutOpportunity line_opportunity(available_width);
-    while (!break_token || !break_token->IsFinished()) {
+    do {
       NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  line_opportunity, leading_floats, 0u,
@@ -85,7 +85,7 @@ class NGLineBreakerTest : public NGLayoutTest {
       }
       lines.push_back(std::make_pair(ToString(line_info.Results(), node),
                                      line_info.Results().back().item_index));
-    }
+    } while (break_token);
 
     return lines;
   }
@@ -603,6 +603,38 @@ TEST_F(NGLineBreakerTest, SplitTextZero) {
   EXPECT_EQ(2u, lines.size());
   EXPECT_EQ("0123456789", lines[0].first);
   EXPECT_EQ("ab", lines[1].first);
+}
+
+TEST_F(NGLineBreakerTest, ForcedBreakFollowedByCloseTag) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="container">
+      <div><span>line<br></span></div>
+      <div>
+        <span>line<br></span>
+      </div>
+      <div>
+        <span>
+          line<br>
+        </span>
+      </div>
+      <div>
+        <span>line<br>  </span>
+      </div>
+      <div>
+        <span>line<br>  </span>&#32;&#32;
+      </div>
+    </div>
+  )HTML");
+  const LayoutObject* container = GetLayoutObjectByElementId("container");
+  for (const LayoutObject* child = container->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    NGInlineCursor cursor(*To<LayoutBlockFlow>(child));
+    wtf_size_t line_count = 0;
+    for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine())
+      ++line_count;
+    EXPECT_EQ(line_count, 1u);
+  }
 }
 
 TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {

@@ -46,7 +46,7 @@ void FakeActiveHost::SetActiveHostConnected(
 }
 
 void FakeActiveHost::GetActiveHost(
-    const ActiveHost::ActiveHostCallback& active_host_callback) {
+    ActiveHost::ActiveHostCallback active_host_callback) {
   base::Optional<multidevice::RemoteDeviceRef> remote_device;
   if (GetActiveHostStatus() != ActiveHost::ActiveHostStatus::DISCONNECTED) {
     // Convert the active host ID to a public key.
@@ -58,8 +58,9 @@ void FakeActiveHost::GetActiveHost(
         multidevice::RemoteDeviceRefBuilder().SetPublicKey(public_key).Build());
   }
 
-  active_host_callback.Run(GetActiveHostStatus(), remote_device,
-                           GetTetherNetworkGuid(), GetWifiNetworkGuid());
+  std::move(active_host_callback)
+      .Run(GetActiveHostStatus(), remote_device, GetTetherNetworkGuid(),
+           GetWifiNetworkGuid());
 }
 
 ActiveHost::ActiveHostStatus FakeActiveHost::GetActiveHostStatus() const {
@@ -100,9 +101,10 @@ void FakeActiveHost::SetActiveHost(ActiveHostStatus active_host_status,
   tether_network_guid_ = tether_network_guid;
   wifi_network_guid_ = wifi_network_guid;
 
-  GetActiveHost(base::Bind(&FakeActiveHost::SendActiveHostChangedUpdate,
-                           base::Unretained(this), old_status, old_device_id,
-                           old_tether_network_guid, old_wifi_network_guid));
+  GetActiveHost(base::BindOnce(&FakeActiveHost::SendActiveHostChangedUpdate,
+                               base::Unretained(this), old_status,
+                               old_device_id, old_tether_network_guid,
+                               old_wifi_network_guid));
 }
 
 }  // namespace tether

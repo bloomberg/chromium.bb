@@ -114,6 +114,10 @@ constexpr int kDefaultCanvasHeight = 150;
 constexpr int kUndefinedQualityValue = -1.0;
 constexpr int kMinimumAccelerated2dCanvasSize = 128 * 129;
 
+// A default size used for canvas memory allocation when canvas size is greater
+// than 2^20.
+constexpr uint32_t kMaximumCanvasSize = 2 << 20;
+
 }  // namespace
 
 HTMLCanvasElement::HTMLCanvasElement(Document& document)
@@ -138,9 +142,10 @@ HTMLCanvasElement::~HTMLCanvasElement() {
 }
 
 void HTMLCanvasElement::Dispose() {
-  if (OffscreenCanvasFrame()) {
-    ReleaseOffscreenCanvasFrame();
-  }
+  // We need to record metrics before we dispose of anything
+  if (context_)
+    UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.HasRendered", bool(ResourceProvider()));
+
   // It's possible that the placeholder frame has been disposed but its ID still
   // exists. Make sure that it gets unregistered here
   UnregisterPlaceholderCanvas();
@@ -150,12 +155,8 @@ void HTMLCanvasElement::Dispose() {
   DiscardResourceProvider();
 
   if (context_) {
-    UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.HasRendered", bool(ResourceProvider()));
-    if (context_->Host()) {
-      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.IsComposited",
-                            context_->IsComposited());
+    if (context_->Host())
       context_->DetachHost();
-    }
     context_ = nullptr;
   }
 
@@ -286,15 +287,19 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   auto* old_contents_cc_layer = ContentsCcLayer();
   auto* result = GetCanvasRenderingContextInternal(type, attributes);
 
+  Document& doc = GetDocument();
   if (IdentifiabilityStudySettings::Get()->ShouldSample(
           IdentifiableSurface::Type::kCanvasRenderingContext)) {
-    Document& doc = GetDocument();
     IdentifiabilityMetricBuilder(doc.UkmSourceID())
         .Set(IdentifiableSurface::FromTypeAndToken(
                  IdentifiableSurface::Type::kCanvasRenderingContext,
                  CanvasRenderingContext::ContextTypeFromId(type)),
              !!result)
         .Record(doc.UkmRecorder());
+  }
+  if (attributes.color_space != kSRGBCanvasColorSpaceName ||
+      attributes.pixel_format != kUint8CanvasPixelFormatName) {
+    UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
   }
 
   if (ContentsCcLayer() != old_contents_cc_layer)
@@ -377,10 +382,16 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   }
 
   if (context_->CreationAttributes().desynchronized) {
-    CreateLayer();
+    if (!CreateLayer())
+      return nullptr;
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
-        nullptr, surface_layer_bridge_->GetFrameSinkId().client_id(),
+        nullptr,
+        GetPage()
+            ->GetPageScheduler()
+            ->GetAgentGroupScheduler()
+            .CompositorTaskRunner(),
+        surface_layer_bridge_->GetFrameSinkId().client_id(),
         surface_layer_bridge_->GetFrameSinkId().sink_id(),
         CanvasResourceDispatcher::kInvalidPlaceholderCanvasId, size_);
     // We don't actually need the begin frame signal when in low latency mode,
@@ -468,6 +479,12 @@ void HTMLCanvasElement::DidDraw() {
 
 void HTMLCanvasElement::PreFinalizeFrame() {
   RecordCanvasSizeToUMA(size_);
+
+  // PreFinalizeFrame indicates the end of a script task that may have rendered
+  // into the canvas, now is a good time to unlock cache entries.
+  auto* resource_provider = ResourceProvider();
+  if (resource_provider)
+    resource_provider->ReleaseLockedImages();
 
   // Low-latency 2d canvases produce their frames after the resource gets single
   // buffered.
@@ -1060,6 +1077,32 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   }
 }
 
+bool HTMLCanvasElement::IsPresentationAttribute(
+    const QualifiedName& name) const {
+  if (name == html_names::kWidthAttr || name == html_names::kHeightAttr)
+    return true;
+  return HTMLElement::IsPresentationAttribute(name);
+}
+
+void HTMLCanvasElement::CollectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableCSSPropertyValueSet* style) {
+  if (name == html_names::kWidthAttr) {
+    if (FastHasAttribute(html_names::kHeightAttr)) {
+      const AtomicString& height = FastGetAttribute(html_names::kHeightAttr);
+      ApplyAspectRatioToStyle(value, height, style);
+    }
+  } else if (name == html_names::kHeightAttr) {
+    if (FastHasAttribute(html_names::kWidthAttr)) {
+      const AtomicString& width = FastGetAttribute(html_names::kWidthAttr);
+      ApplyAspectRatioToStyle(width, value, style);
+    }
+  } else {
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
+  }
+}
+
 void HTMLCanvasElement::AddListener(CanvasDrawListener* listener) {
   listeners_.insert(listener);
 }
@@ -1100,9 +1143,8 @@ bool HTMLCanvasElement::ShouldAccelerate() const {
     return false;
 
   // The command line flag --disable-accelerated-2d-canvas toggles this option
-  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
+  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled())
     return false;
-  }
 
   // Webview crashes with accelerated small canvases (crbug.com/1004304)
   // Experimenting to see if this still causes crashes (crbug.com/1136603)
@@ -1393,7 +1435,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 
 void HTMLCanvasElement::SetOffscreenCanvasResource(
     scoped_refptr<CanvasResource> image,
-    unsigned resource_id) {
+    viz::ResourceId resource_id) {
   OffscreenCanvasPlaceholder::SetOffscreenCanvasResource(std::move(image),
                                                          resource_id);
   SetSize(OffscreenCanvasFrame()->Size());
@@ -1484,20 +1526,23 @@ String HTMLCanvasElement::GetIdFromControl(const Element* element) {
   return String();
 }
 
-void HTMLCanvasElement::CreateLayer() {
+bool HTMLCanvasElement::CreateLayer() {
   DCHECK(!surface_layer_bridge_);
   LocalFrame* frame = GetDocument().GetFrame();
   // We do not design transferControlToOffscreen() for frame-less HTML canvas.
-  if (frame) {
-    surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
-        frame->GetPage()->GetChromeClient().GetFrameSinkId(frame),
-        ::blink::SurfaceLayerBridge::ContainsVideo::kNo, this,
-        base::NullCallback());
-    // Creates a placeholder layer first before Surface is created.
-    surface_layer_bridge_->CreateSolidColorLayer();
-    // This may cause the canvas to be composited.
-    SetNeedsCompositingUpdate();
-  }
+  if (!frame)
+    return false;
+
+  surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
+      frame->GetPage()->GetChromeClient().GetFrameSinkId(frame),
+      ::blink::SurfaceLayerBridge::ContainsVideo::kNo, this,
+      base::NullCallback());
+  // Creates a placeholder layer first before Surface is created.
+  surface_layer_bridge_->CreateSolidColorLayer();
+  // This may cause the canvas to be composited.
+  SetNeedsCompositingUpdate();
+
+  return true;
 }
 
 void HTMLCanvasElement::OnWebLayerUpdated() {
@@ -1539,12 +1584,15 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   const int bytes_per_pixel = ColorParams().BytesPerPixel();
 
   intptr_t gpu_memory_usage = 0;
+  uint32_t canvas_width = std::min(kMaximumCanvasSize, width());
+  uint32_t canvas_height = std::min(kMaximumCanvasSize, height());
+
   if (gpu_buffer_count) {
     // Switch from cpu mode to gpu mode
     base::CheckedNumeric<intptr_t> checked_usage =
         gpu_buffer_count * bytes_per_pixel;
-    checked_usage *= width();
-    checked_usage *= height();
+    checked_usage *= canvas_width;
+    checked_usage *= canvas_height;
     gpu_memory_usage =
         checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
   }
@@ -1553,8 +1601,8 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   // in all cases.
   base::CheckedNumeric<intptr_t> checked_usage =
       non_gpu_buffer_count * bytes_per_pixel;
-  checked_usage *= width();
-  checked_usage *= height();
+  checked_usage *= canvas_width;
+  checked_usage *= canvas_height;
   checked_usage += gpu_memory_usage;
   intptr_t externally_allocated_memory =
       checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
@@ -1607,8 +1655,22 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
 
   // TODO(jochin): Consider using ResourceProvider()->RestoreBackBuffer() here
   // to avoid all of this clip stack manipulation.
-  if (image)
-    canvas2d_bridge_->DrawFullImage(image->PaintImageForCurrentFrame());
+  if (image) {
+    auto paint_image = image->PaintImageForCurrentFrame();
+    if (!canvas2d_bridge_->IsAccelerated() && paint_image.IsTextureBacked()) {
+      // If new bridge is unaccelrated we must read back |paint_image| here.
+      // DrawFullImage will record the image and potentially raster on a worker
+      // thread, but texture backed PaintImages can't be used on a different
+      // thread.
+      auto sk_image = paint_image.GetSwSkImage();
+      auto content_id = paint_image.GetContentIdForFrame(0);
+      auto builder =
+          cc::PaintImageBuilder::WithProperties(std::move(paint_image))
+              .set_image(sk_image, content_id);
+      paint_image = builder.TakePaintImage();
+    }
+    canvas2d_bridge_->DrawFullImage(paint_image);
+  }
 
   RestoreCanvasMatrixClipStack(canvas);
   canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(canvas);

@@ -5,10 +5,10 @@
 #include "ash/accessibility/touch_exploration_manager.h"
 
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
@@ -18,7 +18,7 @@ using TouchExplorationManagerTest = AshTestBase;
 TEST_F(TouchExplorationManagerTest, AdjustSound) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   TouchExplorationManager touch_exploration_manager(controller);
-  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  auto* audio_handler = CrasAudioHandler::Get();
 
   touch_exploration_manager.SetOutputLevel(10);
   EXPECT_EQ(audio_handler->GetOutputVolumePercent(), 10);

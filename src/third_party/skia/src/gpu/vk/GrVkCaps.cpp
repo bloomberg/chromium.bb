@@ -46,7 +46,6 @@ GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* 
     fGpuTracingSupport = false; //TODO: figure this out
     fOversizedStencilSupport = false; //TODO: figure this out
     fDrawInstancedSupport = true;
-    fNativeDrawIndirectSupport = true;
 
     fSemaphoreSupport = true;   // always available in Vulkan
     fFenceSyncSupport = true;   // always available in Vulkan
@@ -217,7 +216,12 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
         if (rtProxy->wrapsVkSecondaryCB()) {
             return false;
         }
-        dstSampleCnt = rtProxy->numSamples();
+        if (this->preferDiscardableMSAAAttachment() && dst->asTextureProxy() &&
+            rtProxy->supportsVkInputAttachment()) {
+            dstSampleCnt = 1;
+        } else {
+            dstSampleCnt = rtProxy->numSamples();
+        }
     }
     if (const GrRenderTargetProxy* rtProxy = src->asRenderTargetProxy()) {
         // Copying to or from render targets that wrap a secondary command buffer is not allowed
@@ -226,7 +230,12 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
         if (rtProxy->wrapsVkSecondaryCB()) {
             return false;
         }
-        srcSampleCnt = rtProxy->numSamples();
+        if (this->preferDiscardableMSAAAttachment() && src->asTextureProxy() &&
+            rtProxy->supportsVkInputAttachment()) {
+            srcSampleCnt = 1;
+        } else {
+            srcSampleCnt = rtProxy->numSamples();
+        }
     }
     SkASSERT((dstSampleCnt > 0) == SkToBool(dst->asRenderTargetProxy()));
     SkASSERT((srcSampleCnt > 0) == SkToBool(src->asRenderTargetProxy()));
@@ -375,14 +384,17 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
 
     fMaxInputAttachmentDescriptors = properties.limits.maxDescriptorSetInputAttachments;
 
-    // On mobile GPUs we avoid using cached cpu memory. The memory is shared between the gpu and cpu
-    // and there probably isn't any win keeping a cached copy local on the CPU. We have seen
-    // examples on ARM where coherent non-cached memory writes are faster on the cpu than using
-    // cached non-coherent memory. Additionally we don't do a lot of read and writes to cpu memory
-    // in between GPU usues. Our uses are mostly write on CPU then read on GPU.
-    if (kQualcomm_VkVendor == properties.vendorID || kARM_VkVendor == properties.vendorID ||
-        kImagination_VkVendor == properties.vendorID) {
-        fPreferCachedCpuMemory = false;
+    // On desktop GPUs we have found that this does not provide much benefit. The perf results show
+    // a mix of regressions, some improvements, and lots of no changes. Thus it is no worth enabling
+    // this (especially with the rendering artifacts) on desktop.
+    //
+    // On Adreno devices we were expecting to see perf gains. But instead there were actually a lot
+    // of perf regressions and only a few perf wins. This needs some follow up with qualcomm since
+    // we do expect this to be a big win on tilers.
+    //
+    // On ARM devices we are seeing an average perf win of around 50%-60% across the board.
+    if (kARM_VkVendor == properties.vendorID) {
+        fPreferDiscardableMSAAAttachment = true;
     }
 
     this->initGrCaps(vkInterface, physDev, properties, memoryProperties, features, extensions);
@@ -396,11 +408,17 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
         fPreferFullscreenClears = true;
     }
 
-    if (kQualcomm_VkVendor == properties.vendorID || kARM_VkVendor == properties.vendorID) {
-        // On Qualcomm and ARM mapping a gpu buffer and doing both reads and writes to it is slow.
-        // Thus for index and vertex buffers we will force to use a cpu side buffer and then copy
-        // the whole buffer up to the gpu.
-        fBufferMapThreshold = SK_MaxS32;
+    if (properties.vendorID == kNvidia_VkVendor || properties.vendorID == kAMD_VkVendor) {
+        // On discrete GPUs it can be faster to read gpu only memory compared to memory that is also
+        // mappable on the host.
+        fGpuOnlyBuffersMorePerformant = true;
+
+        // On discrete GPUs we try to use special DEVICE_LOCAL and HOST_VISIBLE memory for our
+        // cpu write, gpu read buffers. This memory is not ideal to be kept persistently mapped.
+        // Some discrete GPUs do not expose this special memory, however we still disable
+        // persistently mapped buffers for all of them since most GPUs with updated drivers do
+        // expose it. If this becomes an issue we can try to be more fine grained.
+        fShouldPersistentlyMapCpuToGpuBuffers = false;
     }
 
     if (kQualcomm_VkVendor == properties.vendorID) {
@@ -412,6 +430,17 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
     if (kQualcomm_VkVendor == properties.vendorID) {
         // Adreno devices don't support push constants well
         fMaxPushConstantsSize = 0;
+    }
+
+    fNativeDrawIndirectSupport = features.features.drawIndirectFirstInstance;
+    if (properties.vendorID == kQualcomm_VkVendor) {
+        // Indirect draws seem slow on QC. Disable until we can investigate. http://skbug.com/11139
+        fNativeDrawIndirectSupport = false;
+    }
+
+    if (fNativeDrawIndirectSupport) {
+        fMaxDrawIndirectDrawCount = properties.limits.maxDrawIndirectCount;
+        SkASSERT(fMaxDrawIndirectDrawCount == 1 || features.features.multiDrawIndirect);
     }
 
     if (kARM_VkVendor == properties.vendorID) {
@@ -445,11 +474,11 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
 void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDeviceProperties& properties) {
 #if defined(SK_BUILD_FOR_WIN)
     if (kNvidia_VkVendor == properties.vendorID || kIntel_VkVendor == properties.vendorID) {
-        fMustSleepOnTearDown = true;
+        fMustSyncCommandBuffersWithQueue = true;
     }
 #elif defined(SK_BUILD_FOR_ANDROID)
     if (kImagination_VkVendor == properties.vendorID) {
-        fMustSleepOnTearDown = true;
+        fMustSyncCommandBuffersWithQueue = true;
     }
 #endif
 
@@ -481,6 +510,17 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
     // using only primary command buffers. We also see issues on the P30 running android 28.
     if (kARM_VkVendor == properties.vendorID && androidAPIVersion <= 28) {
         fPreferPrimaryOverSecondaryCommandBuffers = false;
+        // If we are using secondary command buffers our code isn't setup to insert barriers into
+        // the secondary cb so we need to disable support for them.
+        fTextureBarrierSupport = false;
+        fBlendEquationSupport = kBasic_BlendEquationSupport;
+    }
+
+    // We've seen numerous driver bugs on qualcomm devices running on android P (api 28) or earlier
+    // when trying to using discardable msaa attachments and loading from resolve. So we disable the
+    // feature for those devices.
+    if (properties.vendorID == kQualcomm_VkVendor && androidAPIVersion <= 28) {
+        fPreferDiscardableMSAAAttachment = false;
     }
 
     // On Mali G series GPUs, applying transfer functions in the fragment shader with half-floats
@@ -496,6 +536,27 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
     if (kQualcomm_VkVendor == properties.vendorID || kAMD_VkVendor == properties.vendorID) {
         fMustInvalidatePrimaryCmdBufferStateAfterClearAttachments = true;
     }
+
+    // On Qualcomm and Arm the gpu resolves an area larger than the render pass bounds when using
+    // discardable msaa attachments. This causes the resolve to resolve uninitialized data from the
+    // msaa image into the resolve image.
+    if (kQualcomm_VkVendor == properties.vendorID || kARM_VkVendor == properties.vendorID) {
+        fMustLoadFullImageWithDiscardableMSAA = true;
+    }
+
+#ifdef SK_BUILD_FOR_UNIX
+    if (kIntel_VkVendor == properties.vendorID) {
+        // At least on our linux Debug Intel HD405 bot we are seeing issues doing read pixels with
+        // non-conherent memory. It seems like the device is not properly honoring the
+        // vkInvalidateMappedMemoryRanges calls correctly. Other linux intel devices seem to work
+        // okay. However, since I'm not sure how to target a specific intel devices or driver
+        // version I am going to stop all intel linux from using non-coherent memory. Currently we
+        // are not shipping anything on these platforms and the only real thing that will regress is
+        // read backs. If we find later we do care about this performance we can come back to figure
+        // out how to do a more narrow workaround.
+        fMustUseCoherentHostVisibleMemory = true;
+    }
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // GrCaps workarounds
@@ -516,7 +577,6 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
 #endif
 
     if (kARM_VkVendor == properties.vendorID) {
-        fDrawInstancedSupport = false;
         fAvoidWritePixelsFastPath = true; // bugs.skia.org/8064
     }
 
@@ -529,6 +589,12 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
     // barriers.
     if (kQualcomm_VkVendor == properties.vendorID) {
         fTextureBarrierSupport = false;
+    }
+
+    // On ARM indirect draws are broken on Android 9 and earlier. This was tested on a P30 and
+    // Mate 20x running android 9.
+    if (properties.vendorID == kARM_VkVendor && androidAPIVersion <= 28) {
+        fNativeDrawIndirectSupport = false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -639,6 +705,13 @@ void GrVkCaps::initGrCaps(const GrVkInterface* vkInterface,
 
     if (kARM_VkVendor == properties.vendorID) {
         fShouldCollapseSrcOverToSrcWhenAble = true;
+    }
+
+    // We're seeing vkCmdClearAttachments take a lot of cpu time when clearing the color attachment.
+    // We really should only be getting in there for partial clears. So instead we will do all
+    // partial clears as draws.
+    if (kQualcomm_VkVendor == properties.vendorID) {
+        fPerformPartialClearsAsDraws = true;
     }
 }
 
@@ -834,8 +907,8 @@ void GrVkCaps::initFormatTable(const GrVkInterface* interface, VkPhysicalDevice 
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-                ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
             // Format: VK_FORMAT_R8_UNORM, Surface: kGray_8
             {
@@ -923,8 +996,8 @@ void GrVkCaps::initFormatTable(const GrVkInterface* interface, VkPhysicalDevice 
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-                ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
         }
     }
@@ -1072,8 +1145,8 @@ void GrVkCaps::initFormatTable(const GrVkInterface* interface, VkPhysicalDevice 
                 auto& ctInfo = info.fColorTypeInfos[ctIdx++];
                 ctInfo.fColorType = ct;
                 ctInfo.fFlags = ColorTypeInfo::kUploadData_Flag | ColorTypeInfo::kRenderable_Flag;
-                ctInfo.fReadSwizzle = GrSwizzle::RRRR();
-                ctInfo.fWriteSwizzle = GrSwizzle::AAAA();
+                ctInfo.fReadSwizzle = GrSwizzle("000r");
+                ctInfo.fWriteSwizzle = GrSwizzle("a000");
             }
         }
     }
@@ -1607,7 +1680,11 @@ GrSwizzle GrVkCaps::getWriteSwizzle(const GrBackendFormat& format, GrColorType c
 }
 
 GrDstSampleType GrVkCaps::onGetDstSampleTypeForProxy(const GrRenderTargetProxy* rt) const {
-    if (rt->supportsVkInputAttachment()) {
+    bool isMSAAWithResolve = rt->numSamples() > 1 && rt->asTextureProxy();
+    // TODO: Currently if we have an msaa rt with a resolve, the supportsVkInputAttachment call
+    // references whether the resolve is supported as an input attachment. We need to add a check to
+    // allow checking the color attachment (msaa or not) supports input attachment specifically.
+    if (!isMSAAWithResolve && rt->supportsVkInputAttachment()) {
         return GrDstSampleType::kAsInputAttachment;
     }
     return GrDstSampleType::kAsTextureCopy;
@@ -1698,7 +1775,9 @@ void GrVkCaps::addExtraSamplerKey(GrProcessorKeyBuilder* b,
  * each draw  and thus is not included in this descriptor. This includes the viewport, scissor,
  * and blend constant.
  */
-GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& programInfo) const {
+GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt,
+                                 const GrProgramInfo& programInfo,
+                                 ProgramDescOverrideFlags overrideFlags) const {
     GrProgramDesc desc;
     if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
         SkASSERT(!desc.isValid());
@@ -1722,12 +1801,28 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progra
         selfDepFlags |= GrVkRenderPass::SelfDependencyFlags::kForInputAttachment;
     }
 
+    bool needsResolve = programInfo.targetSupportsVkResolveLoad() &&
+                        this->preferDiscardableMSAAAttachment();
+
+    bool forceLoadFromResolve =
+            overrideFlags & GrCaps::ProgramDescOverrideFlags::kVulkanHasResolveLoadSubpass;
+    SkASSERT(!forceLoadFromResolve || needsResolve);
+
+    GrVkRenderPass::LoadFromResolve loadFromResolve = GrVkRenderPass::LoadFromResolve::kNo;
+    if (needsResolve && (programInfo.colorLoadOp() == GrLoadOp::kLoad || forceLoadFromResolve)) {
+        loadFromResolve = GrVkRenderPass::LoadFromResolve::kLoad;
+    }
+
     if (rt) {
         GrVkRenderTarget* vkRT = (GrVkRenderTarget*) rt;
 
+        SkASSERT(!needsResolve ||
+                 (vkRT->resolveAttachmentView() && vkRT->supportsInputAttachmentUsage()));
+
         bool needsStencil = programInfo.numStencilSamples() || programInfo.isStencilEnabled();
         // TODO: support failure in getSimpleRenderPass
-        const GrVkRenderPass* rp = vkRT->getSimpleRenderPass(needsStencil, selfDepFlags);
+        const GrVkRenderPass* rp = vkRT->getSimpleRenderPass(needsResolve, needsStencil,
+                                                             selfDepFlags, loadFromResolve);
         SkASSERT(rp);
         rp->genKey(&b);
 
@@ -1740,7 +1835,8 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progra
             GrVkRenderTarget::ReconstructAttachmentsDescriptor(*this, programInfo,
                                                                &attachmentsDescriptor,
                                                                &attachmentFlags);
-            SkASSERT(rp->isCompatible(attachmentsDescriptor, attachmentFlags, selfDepFlags));
+            SkASSERT(rp->isCompatible(attachmentsDescriptor, attachmentFlags, selfDepFlags,
+                                      loadFromResolve));
         }
 #endif
     } else {
@@ -1753,7 +1849,8 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progra
         // kExternal_AttachmentFlag is only set for wrapped secondary command buffers - which
         // will always go through the above 'rt' path (i.e., we can always pass 0 as the final
         // parameter to GenKey).
-        GrVkRenderPass::GenKey(&b, attachmentFlags, attachmentsDescriptor, selfDepFlags, 0);
+        GrVkRenderPass::GenKey(&b, attachmentFlags, attachmentsDescriptor, selfDepFlags,
+                               loadFromResolve, 0);
     }
 
     GrStencilSettings stencil = programInfo.nonGLStencilSettings();
@@ -1777,6 +1874,14 @@ GrProgramDesc GrVkCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& progra
 GrInternalSurfaceFlags GrVkCaps::getExtraSurfaceFlagsForDeferredRT() const {
     // We always create vulkan RT with the input attachment flag;
     return GrInternalSurfaceFlags::kVkRTSupportsInputAttachment;
+}
+
+VkShaderStageFlags GrVkCaps::getPushConstantStageFlags() const {
+    VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    if (this->shaderCaps()->geometryShaderSupport()) {
+        stageFlags |= VK_SHADER_STAGE_GEOMETRY_BIT;
+    }
+    return stageFlags;
 }
 
 #if GR_TEST_UTILS

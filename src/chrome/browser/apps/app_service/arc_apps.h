@@ -14,7 +14,6 @@
 #include "ash/public/cpp/message_center/arc_notification_manager_base.h"
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -60,6 +59,8 @@ class ArcApps : public KeyedService,
                                    apps::AppServiceProxy* proxy);
 
   explicit ArcApps(Profile* profile);
+  ArcApps(const ArcApps&) = delete;
+  ArcApps& operator=(const ArcApps&) = delete;
 
   ~ArcApps() override;
 
@@ -88,12 +89,12 @@ class ArcApps : public KeyedService,
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
+              apps::mojom::WindowInfoPtr window_info) override;
   void LaunchAppWithIntent(const std::string& app_id,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
+                           apps::mojom::WindowInfoPtr window_info) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id,
@@ -227,11 +228,9 @@ class ArcApps : public KeyedService,
   ScopedObserver<apps::InstanceRegistry, apps::InstanceRegistry::Observer>
       instance_registry_observer_{this};
 
-  bool settings_app_is_active_;
+  bool settings_app_is_active_ = false;
 
   base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcApps);
 };
 
 }  // namespace apps

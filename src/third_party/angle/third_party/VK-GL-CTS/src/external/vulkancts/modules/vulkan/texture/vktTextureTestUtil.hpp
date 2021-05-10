@@ -171,12 +171,29 @@ private:
 	vk::VkComponentMapping							m_componentMapping;
 };
 
+void checkTextureSupport (Context& context, const vk::VkFormat imageFormat, const vk::VkComponentMapping& imageComponents,
+											const vk::VkFormat viewFormat,  const vk::VkComponentMapping& viewComponents);
+
 typedef de::SharedPtr<TextureBinding>	TextureBindingSp;
 
 class TextureRenderer
 {
 public:
-										TextureRenderer				(Context& context, vk::VkSampleCountFlagBits sampleCount, deUint32 renderWidth, deUint32 renderHeight, vk::VkComponentMapping componentMapping = vk::makeComponentMappingRGBA());
+										TextureRenderer				(Context& context,
+																	 vk::VkSampleCountFlagBits sampleCount,
+																	 deUint32 renderWidth,
+																	 deUint32 renderHeight,
+																	 vk::VkComponentMapping componentMapping = vk::makeComponentMappingRGBA());
+
+										TextureRenderer				(Context& context,
+																	 vk::VkSampleCountFlagBits sampleCount,
+																	 deUint32 renderWidth,
+																	 deUint32 renderHeight,
+																	 deUint32 renderDepth,
+																	 vk::VkComponentMapping componentMapping = vk::makeComponentMappingRGBA(),
+																	 vk::VkImageType imageType = vk::VK_IMAGE_TYPE_2D,
+																	 vk::VkImageViewType imageViewType = vk::VK_IMAGE_VIEW_TYPE_2D);
+
 										~TextureRenderer			(void);
 
 	void								renderQuad					(tcu::Surface& result, int texUnit, const float* texCoord, glu::TextureTestUtil::TextureType texType);
@@ -225,6 +242,7 @@ protected:
 
 	const deUint32						m_renderWidth;
 	const deUint32						m_renderHeight;
+	const deUint32						m_renderDepth;
 	const vk::VkSampleCountFlagBits		m_sampleCount;
 	const deBool						m_multisampling;
 
@@ -306,6 +324,7 @@ public:
 										{
 											initializePrograms(programCollection, m_testsParameters.texCoordPrecision, m_testsParameters.programs);
 										}
+
 	virtual void						checkSupport				(Context& context) const
 										{
 											checkTextureSupport(context, m_testsParameters);

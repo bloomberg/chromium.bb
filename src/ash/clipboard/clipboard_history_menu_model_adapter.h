@@ -50,10 +50,9 @@ class ASH_EXPORT ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
       const ClipboardHistoryMenuModelAdapter&) = delete;
   ~ClipboardHistoryMenuModelAdapter() override;
 
-  // Shows the menu anchored at `anchor_rect` with the menu position being
-  // `menu_anchor_position`. `source_type` indicates how the menu is triggered.
+  // Shows the menu anchored at `anchor_rect`, `source_type` indicates how the
+  // menu is triggered.
   void Run(const gfx::Rect& anchor_rect,
-           views::MenuAnchorPosition menu_anchor_position,
            ui::MenuSourceType source_type);
 
   // Returns if the menu is currently running.
@@ -75,6 +74,9 @@ class ASH_EXPORT ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   // Selects the menu item specified by `command_id`.
   void SelectMenuItemWithCommandId(int command_id);
 
+  // Selects the menu item hovered by mouse.
+  void SelectMenuItemHoveredByMouse();
+
   // Removes the menu item specified by `command_id`.
   void RemoveMenuItemWithCommandId(int command_id);
 
@@ -95,6 +97,8 @@ class ASH_EXPORT ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   }
 
  private:
+  class ScopedA11yIgnore;
+
   ClipboardHistoryMenuModelAdapter(
       std::unique_ptr<ui::SimpleMenuModel> model,
       base::RepeatingClosure menu_closed_callback,
@@ -105,11 +109,9 @@ class ASH_EXPORT ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   // `reverse` is true).
   void AdvancePseudoFocusFromSelectedItem(bool reverse);
 
-  // Returns the command id of the menu item to be selected if any after the
-  // menu item specified by `command_id` is deleted. If no menu item is
-  // selectable after deletion, an absent value is returned.
-  base::Optional<int> CalculateSelectedCommandIdAfterDeletion(
-      int command_id) const;
+  // Returns the command id of the menu item to be selected after the
+  // menu item specified by `command_id` is deleted.
+  int CalculateSelectedCommandIdAfterDeletion(int command_id) const;
 
   // Removes the item view specified by `command_id` from the root menu.
   void RemoveItemView(int command_id);
@@ -148,6 +150,15 @@ class ASH_EXPORT ClipboardHistoryMenuModelAdapter : views::MenuModelAdapter {
   // Resource manager used to fetch image models. Owned by
   // ClipboardHistoryController.
   const ClipboardHistoryResourceManager* const resource_manager_;
+
+  // Indicates the number of item deletion operations in progress. Note that
+  // a `ClipboardHistoryItemView` instance is deleted asynchronously.
+  int item_deletion_in_progress_count_ = 0;
+
+  std::unique_ptr<ScopedA11yIgnore> scoped_ignore_;
+
+  // Indicates whether `Run()` has been called before.
+  bool run_before_ = false;
 
   // Called when an item view is removed from the root menu.
   base::RepeatingClosure item_removal_callback_for_test_;

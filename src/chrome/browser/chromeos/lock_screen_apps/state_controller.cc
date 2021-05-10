@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_window_metrics_tracker.h"
@@ -23,10 +24,8 @@
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/lock_screen_apps/lock_screen_profile_creator_impl.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "crypto/symmetric_key.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
+#include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
@@ -97,10 +97,10 @@ void StateController::FlushTrayActionForTesting() {
 }
 
 void StateController::SetReadyCallbackForTesting(
-    const base::Closure& ready_callback) {
+    base::OnceClosure ready_callback) {
   DCHECK(ready_callback_.is_null());
 
-  ready_callback_ = ready_callback;
+  ready_callback_ = std::move(ready_callback);
 }
 
 void StateController::SetTickClockForTesting(const base::TickClock* clock) {
@@ -265,8 +265,9 @@ void StateController::SetFocusCyclerDelegate(FocusCyclerDelegate* delegate) {
   focus_cycler_delegate_ = delegate;
 
   if (focus_cycler_delegate_ && note_app_window_) {
-    focus_cycler_delegate_->RegisterLockScreenAppFocusHandler(base::Bind(
-        &StateController::FocusAppWindow, weak_ptr_factory_.GetWeakPtr()));
+    focus_cycler_delegate_->RegisterLockScreenAppFocusHandler(
+        base::BindRepeating(&StateController::FocusAppWindow,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -313,8 +314,8 @@ void StateController::OnSessionStateChanged() {
   // and the callback will not be invoked after |app_manager_| goes out of
   // scope.
   app_manager_->Start(
-      base::Bind(&StateController::OnNoteTakingAvailabilityChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&StateController::OnNoteTakingAvailabilityChanged,
+                          base::Unretained(this)));
   note_app_window_metrics_ =
       std::make_unique<AppWindowMetricsTracker>(tick_clock_);
   lock_screen_data_->SetSessionLocked(true);
@@ -333,8 +334,9 @@ void StateController::OnWindowVisibilityChanged(aura::Window* window,
 
   UpdateLockScreenNoteState(TrayActionState::kActive);
   if (focus_cycler_delegate_) {
-    focus_cycler_delegate_->RegisterLockScreenAppFocusHandler(base::Bind(
-        &StateController::FocusAppWindow, weak_ptr_factory_.GetWeakPtr()));
+    focus_cycler_delegate_->RegisterLockScreenAppFocusHandler(
+        base::BindRepeating(&StateController::FocusAppWindow,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

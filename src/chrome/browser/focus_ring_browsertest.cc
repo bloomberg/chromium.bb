@@ -6,7 +6,9 @@
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/test/pixel_comparator.h"
+#include "chrome/browser/focus_ring_browsertest_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -16,6 +18,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 
 // TODO(crbug.com/958242): Move the baselines to skia gold for easier
 //   rebaselining when all platforms are supported
@@ -52,7 +55,9 @@ const cc::FuzzyPixelComparator mac_loose_comparator(
 class FocusRingBrowserTest : public InProcessBrowserTest {
  public:
   FocusRingBrowserTest() {
-    feature_list_.InitWithFeatures({features::kFormControlsRefresh}, {});
+    feature_list_.InitWithFeatures(
+        {features::kFormControlsRefresh, features::kCSSColorSchemeUARendering},
+        {});
   }
 
   void SetUp() override {
@@ -66,6 +71,9 @@ class FocusRingBrowserTest : public InProcessBrowserTest {
     // The --disable-lcd-text flag helps text render more similarly on
     // different bots and platform.
     command_line->AppendSwitch(switches::kDisableLCDText);
+
+    // This is required to allow dark mode to be used on some platforms.
+    command_line->AppendSwitch(switches::kForceDarkMode);
   }
 
   void RunTest(const std::string& screenshot_filename,
@@ -76,6 +84,7 @@ class FocusRingBrowserTest : public InProcessBrowserTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
 
     ASSERT_TRUE(features::IsFormControlsRefreshEnabled());
+    ASSERT_TRUE(features::IsCSSColorSchemeUARenderingEnabled());
 
     base::FilePath dir_test_data;
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
@@ -85,7 +94,7 @@ class FocusRingBrowserTest : public InProcessBrowserTest {
     platform_suffix = "_mac";
 #elif defined(OS_WIN)
     platform_suffix = "_win";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
     platform_suffix = "_chromeos";
 #endif
 
@@ -102,8 +111,7 @@ class FocusRingBrowserTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(content::NavigateToURL(
-        web_contents,
-        GURL("data:text/html,<!DOCTYPE html><body>" + body_html + "</body>")));
+        web_contents, GURL("data:text/html,<!DOCTYPE html>" + body_html)));
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
     EXPECT_TRUE(CompareWebContentsOutputToReference(
@@ -172,4 +180,22 @@ IN_PROC_BROWSER_TEST_F(FocusRingBrowserTest, Anchor) {
           "</div>",
           /* screenshot_width */ 90,
           /* screenshot_height */ 130, comparator);
+}
+
+IN_PROC_BROWSER_TEST_F(FocusRingBrowserTest, DarkModeButton) {
+#if defined(OS_MAC)
+  if (!MacOSVersionSupportsDarkMode())
+    return;
+  cc::FuzzyPixelComparator comparator = mac_strict_comparator;
+#else
+  cc::ExactPixelComparator comparator(/*discard_alpha=*/true);
+#endif
+  RunTest("focus_ring_browsertest_dark_mode_button",
+          "<meta name=\"color-scheme\" content=\"dark\">"
+          "<button autofocus style=\"width:40px;height:20px;\"></button>"
+          "<br>"
+          "<br>"
+          "<button style=\"width:40px;height:20px;\"></button>",
+          /* screenshot_width */ 80,
+          /* screenshot_height */ 80, comparator);
 }

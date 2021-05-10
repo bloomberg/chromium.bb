@@ -47,6 +47,8 @@ const base::flat_map<std::string, ButtonInfo>& GetMenuButtonDetails() {
           IDS_ASH_SWITCH_ACCESS_END_TEXT_SELECTION}},
         {"increment",
          {&kSwitchAccessIncrementIcon, IDS_ASH_SWITCH_ACCESS_INCREMENT}},
+        {"itemScan",
+         {&kSwitchAccessItemScanIcon, IDS_ASH_SWITCH_ACCESS_ITEM_SCAN}},
         {"jumpToBeginningOfText",
          {&kSwitchAccessJumpToBeginningOfTextIcon,
           IDS_ASH_SWITCH_ACCESS_JUMP_TO_BEGINNING_OF_TEXT}},
@@ -96,6 +98,12 @@ const base::flat_map<std::string, ButtonInfo>& GetMenuButtonDetails() {
       menu_button_details->insert(
           {"pointScan",
            {&kSwitchAccessPointScanIcon, IDS_ASH_SWITCH_ACCESS_POINT_SCAN}});
+      menu_button_details->insert(
+          {"leftClick",
+           {&kSwitchAccessLeftClickIcon, IDS_ASH_SWITCH_ACCESS_LEFT_CLICK}});
+      menu_button_details->insert(
+          {"rightClick",
+           {&kSwitchAccessRightClickIcon, IDS_ASH_SWITCH_ACCESS_RIGHT_CLICK}});
     }
   }
   return *menu_button_details;

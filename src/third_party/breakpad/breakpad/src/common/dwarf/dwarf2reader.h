@@ -72,8 +72,19 @@ typedef std::map<string, std::pair<const uint8_t*, uint64_t> > SectionMap;
 const SectionMap::const_iterator GetSectionByName(const SectionMap&
                                                   sections, const char* name);
 
-typedef std::list<std::pair<enum DwarfAttribute, enum DwarfForm> >
-    AttributeList;
+// Most of the time, this struct functions as a simple attribute and form pair.
+// However, Dwarf5 DW_FORM_implicit_const means that a form may have its value
+// in line in the abbrev table, and that value must be associated with the
+// pair until the attr's value is needed.
+struct AttrForm {
+  AttrForm(enum DwarfAttribute attr, enum DwarfForm form, uint64_t value) :
+      attr_(attr), form_(form), value_(value) { }
+
+  enum DwarfAttribute attr_;
+  enum DwarfForm form_;
+  uint64_t value_;
+};
+typedef std::list<AttrForm> AttributeList;
 typedef AttributeList::iterator AttributeIterator;
 typedef AttributeList::const_iterator ConstAttributeIterator;
 
@@ -234,25 +245,78 @@ class RangeListHandler {
   // Add a range.
   virtual void AddRange(uint64_t begin, uint64_t end) { };
 
-  // A new base address must be set for computing the ranges' addresses.
-  virtual void SetBaseAddress(uint64_t base_address) { };
-
   // Finish processing the range list.
   virtual void Finish() { };
 };
 
 class RangeListReader {
  public:
-  RangeListReader(const uint8_t* buffer, uint64_t size, ByteReader* reader,
-                  RangeListHandler* handler);
+  // Reading a range list requires quite a bit of information
+  // from the compilation unit. Package it conveniently.
+  struct CURangesInfo {
+    CURangesInfo() :
+        version_(0), base_address_(0), ranges_base_(0),
+        buffer_(nullptr), size_(0), addr_buffer_(nullptr),
+        addr_buffer_size_(0), addr_base_(0) { }
 
-  bool ReadRangeList(uint64_t offset);
+    uint16_t version_;
+    // Ranges base address. Ordinarily the CU's low_pc.
+    uint64_t base_address_;
+    // Offset into .debug_rnglists for this CU's rangelists.
+    uint64_t ranges_base_;
+    // Contents of either .debug_ranges or .debug_rnglists.
+    const uint8_t* buffer_;
+    uint64_t size_;
+    // Contents of .debug_addr. This cu's contribution starts at
+    // addr_base_
+    const uint8_t* addr_buffer_;
+    uint64_t addr_buffer_size_;
+    uint64_t addr_base_;
+  };
+
+  RangeListReader(ByteReader* reader, CURangesInfo* cu_info,
+                  RangeListHandler* handler) :
+      reader_(reader), cu_info_(cu_info), handler_(handler),
+      offset_array_(0), offset_entry_count_(0) { }
+
+  // Read ranges from cu_info as specified by form and data.
+  bool ReadRanges(enum DwarfForm form, uint64_t data);
 
  private:
-  const uint8_t* buffer_;
-  uint64_t size_;
+  bool SetRangesBase(uint64_t base);
+
+  // Read dwarf4 .debug_ranges at offset.
+  bool ReadDebugRanges(uint64_t offset);
+  // Read dwarf5 .debug_rngslist at offset.
+  bool ReadDebugRngList(uint64_t offset);
+
+  // Convenience functions to handle the mechanics of reading entries in the
+  // ranges section.
+  uint64_t ReadULEB(uint64_t offset, uint64_t* value) {
+    size_t len;
+    *value = reader_->ReadUnsignedLEB128(cu_info_->buffer_ + offset, &len);
+    return len;
+  }
+
+  uint64_t ReadAddress(uint64_t offset, uint64_t* value) {
+    *value = reader_->ReadAddress(cu_info_->buffer_ + offset);
+    return reader_->AddressSize();
+  }
+
+  // Read the address at this CU's addr_index in the .debug_addr section.
+  uint64_t GetAddressAtIndex(uint64_t addr_index) {
+    assert(cu_info_->addr_buffer_ != nullptr);
+    uint64_t offset =
+        cu_info_->addr_base_ + addr_index * reader_->AddressSize();
+    assert(offset < cu_info_->addr_buffer_size_);
+    return reader_->ReadAddress(cu_info_->addr_buffer_ + offset);
+  }
+
   ByteReader* reader_;
+  CURangesInfo* cu_info_;
   RangeListHandler* handler_;
+  uint64_t offset_array_;
+  uint64_t offset_entry_count_;
 };
 
 // This class is the main interface between the reader and the
@@ -474,7 +538,8 @@ class CompilationUnit {
   const uint8_t* ProcessAttribute(uint64_t dieoffset,
                                   const uint8_t* start,
                                   enum DwarfAttribute attr,
-                                  enum DwarfForm form);
+                                  enum DwarfForm form,
+                                  uint64_t implicit_const);
 
   // Called when we have an attribute with unsigned data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
@@ -492,7 +557,7 @@ class CompilationUnit {
     else if (attr == DW_AT_GNU_addr_base) {
       addr_base_ = data;
     }
-    else if (attr == DW_AT_GNU_ranges_base) {
+    else if (attr == DW_AT_GNU_ranges_base || attr == DW_AT_rnglists_base) {
       ranges_base_ = data;
     }
     // TODO(yunlian): When we add DW_AT_ranges_base from DWARF-5,
@@ -654,7 +719,8 @@ class CompilationUnit {
   // from the skeleton CU.
   uint64_t skeleton_dwo_id_;
 
-  // The value of the DW_AT_GNU_ranges_base attribute, if any.
+  // The value of the DW_AT_GNU_ranges_base or DW_AT_rnglists_base attribute,
+  // if any.
   uint64_t ranges_base_;
 
   // The value of the DW_AT_GNU_addr_base attribute, if any.

@@ -8,11 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/file_icon_util.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,8 +64,12 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
       l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME), true);
   base::i18n::SanitizeUserSuppliedString(&sanitized_name);
   SetDetails(sanitized_name);
-  SetIcon(ash::GetIconForPath(filepath));
-  SetChipIcon(ash::GetChipIconForPath(filepath));
+  SetIcon(ash::GetIconForPath(
+      filepath, ash::AppListColorProvider::Get()->GetPrimaryIconColor(
+                    gfx::kGoogleGrey700)));
+  SetChipIcon(ash::GetChipIconForPath(
+      filepath, ash::AppListColorProvider::Get()->GetPrimaryIconColor(
+                    gfx::kGoogleGrey700)));
 }
 
 ZeroStateFileResult::~ZeroStateFileResult() = default;

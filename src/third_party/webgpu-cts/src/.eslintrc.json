@@ -11,6 +11,15 @@
   },
   "plugins": ["node", "ban", "import"],
   "rules": {
+    "linebreak-style": ["warn", "unix"],
+    "no-console": "warn",
+    "no-undef": "off",
+    "no-useless-rename": "warn",
+    "object-shorthand": "warn",
+    "quotes": ["warn",
+      "single", { "avoidEscape": true, "allowTemplateLiterals": true }
+    ],
+
     "ban/ban": [
       "warn",
       {
@@ -18,11 +27,6 @@
         "message": "WPT disallows setTimeout; use `framework/util/timeout.js`."
       }
     ],
-    "linebreak-style": ["warn", "unix"],
-    "object-shorthand": "warn",
-    "no-console": "warn",
-    "no-undef": "off",
-    "no-useless-rename": "warn",
     "@typescript-eslint/no-inferrable-types": "off",
     "import/order": [
       "warn",

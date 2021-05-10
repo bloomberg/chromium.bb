@@ -24,26 +24,27 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, VariableDecorationList_Parses) {
-  auto* p = parser(R"([[location(4), builtin(position)]])");
+  auto p = parser(R"([[location(4), builtin(position)]])");
   auto decos = p->decoration_list();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);
   ASSERT_TRUE(decos.matched);
   ASSERT_EQ(decos.value.size(), 2u);
 
-  auto deco_0 = ast::As<ast::VariableDecoration>(std::move(decos.value[0]));
-  auto deco_1 = ast::As<ast::VariableDecoration>(std::move(decos.value[1]));
+  auto* deco_0 = decos.value[0]->As<ast::VariableDecoration>();
+  auto* deco_1 = decos.value[1]->As<ast::VariableDecoration>();
   ASSERT_NE(deco_0, nullptr);
   ASSERT_NE(deco_1, nullptr);
 
-  ASSERT_TRUE(deco_0->IsLocation());
-  EXPECT_EQ(deco_0->AsLocation()->value(), 4u);
-  ASSERT_TRUE(deco_1->IsBuiltin());
-  EXPECT_EQ(deco_1->AsBuiltin()->value(), ast::Builtin::kPosition);
+  ASSERT_TRUE(deco_0->Is<ast::LocationDecoration>());
+  EXPECT_EQ(deco_0->As<ast::LocationDecoration>()->value(), 4u);
+  ASSERT_TRUE(deco_1->Is<ast::BuiltinDecoration>());
+  EXPECT_EQ(deco_1->As<ast::BuiltinDecoration>()->value(),
+            ast::Builtin::kPosition);
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_Empty) {
-  auto* p = parser(R"([[]])");
+  auto p = parser(R"([[]])");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -53,7 +54,7 @@ TEST_F(ParserImplTest, VariableDecorationList_Empty) {
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_Invalid) {
-  auto* p = parser(R"([[invalid]])");
+  auto p = parser(R"([[invalid]])");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -63,7 +64,7 @@ TEST_F(ParserImplTest, VariableDecorationList_Invalid) {
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_ExtraComma) {
-  auto* p = parser(R"([[builtin(position), ]])");
+  auto p = parser(R"([[builtin(position), ]])");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -73,7 +74,7 @@ TEST_F(ParserImplTest, VariableDecorationList_ExtraComma) {
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_MissingComma) {
-  auto* p = parser(R"([[binding(4) location(5)]])");
+  auto p = parser(R"([[binding(4) location(5)]])");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -83,7 +84,7 @@ TEST_F(ParserImplTest, VariableDecorationList_MissingComma) {
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_BadDecoration) {
-  auto* p = parser(R"([[location(bad)]])");
+  auto p = parser(R"([[location(bad)]])");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -94,7 +95,7 @@ TEST_F(ParserImplTest, VariableDecorationList_BadDecoration) {
 }
 
 TEST_F(ParserImplTest, VariableDecorationList_InvalidBuiltin) {
-  auto* p = parser("[[builtin(invalid)]]");
+  auto p = parser("[[builtin(invalid)]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);

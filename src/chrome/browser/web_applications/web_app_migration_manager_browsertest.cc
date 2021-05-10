@@ -4,16 +4,15 @@
 
 #include "chrome/browser/web_applications/web_app_migration_manager.h"
 
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -55,14 +55,6 @@ constexpr char kBaseDataDir[] = "chrome/test/data/banners";
 // manifest_test_page.html.
 constexpr char kSimpleManifestStartUrl[] =
     "https://example.org/manifest_test_page.html";
-// start_url in release_notes_manifest.json generates the id of an app that
-// should be hidden from the user.
-constexpr char kHiddenAppInstallUrl[] =
-    "https://www.google.com/manifest_test_page.html"
-    "?manifest=release_notes_manifest.json";
-
-constexpr char kHiddenAppStartUrl[] =
-    "https://www.google.com/chromebook/whatsnew/embedded/";
 
 constexpr char kManifestWithShortcutsMenuInstallUrl[] =
     "https://example.org/manifest_test_page.html"
@@ -154,7 +146,7 @@ class WebAppMigrationManagerBrowserTest : public InProcessBrowserTest {
     bool started = CreateWebAppFromManifest(
         browser()->tab_strip_model()->GetActiveWebContents(),
         /*bypass_service_worker_check=*/false,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
@@ -256,41 +248,6 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
             run_loop.Quit();
           }));
   run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
-                       PRE_DatabaseMigration_HiddenFromUser) {
-  ui_test_utils::NavigateToURL(browser(), GURL{kHiddenAppInstallUrl});
-  AppId app_id = InstallWebAppAsUserViaOmnibox();
-  EXPECT_EQ(GenerateAppIdFromURL(GURL(kHiddenAppStartUrl)), app_id);
-
-  EXPECT_TRUE(provider().registrar().AsBookmarkAppRegistrar());
-  EXPECT_FALSE(provider().registrar().AsWebAppRegistrar());
-
-  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
-                       DatabaseMigration_HiddenFromUser) {
-  AwaitRegistryReady();
-
-  AppId app_id = GenerateAppIdFromURL(GURL{kHiddenAppStartUrl});
-  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
-
-  WebAppRegistrar* registrar = provider().registrar().AsWebAppRegistrar();
-  ASSERT_TRUE(registrar);
-  EXPECT_FALSE(provider().registrar().AsBookmarkAppRegistrar());
-
-  const WebApp* web_app = registrar->GetAppById(app_id);
-  ASSERT_TRUE(web_app);
-
-  if (IsChromeOs()) {
-    EXPECT_FALSE(web_app->chromeos_data()->show_in_launcher);
-    EXPECT_FALSE(web_app->chromeos_data()->show_in_search);
-    EXPECT_FALSE(web_app->chromeos_data()->show_in_management);
-  } else {
-    EXPECT_FALSE(web_app->chromeos_data().has_value());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,

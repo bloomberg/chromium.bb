@@ -8,7 +8,7 @@ of their two days working on bug triage/investigation.
 ## 1. Review untriaged bugs
 
 Look through [this list of untriaged
-bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=status%3Aunconfirmed%2Cuntriaged%20-Needs%3DFeedback%20-Label%3ANetwork-Triaged%20component%3DInternals%3ENetwork%2CInternals%3ENetwork%3ECache%2CInternals%3ENetwork%3ESSL%2CInternals%3ENetwork%3EQUIC%2CInternals%3ENetwork%3EAuth%2CInternals%3ENetwork%3EHTTP2%2CInternals%3ENetwork%3EProxy%2CInternals%3ENetwork%3ELibrary%2CInternals%3ENetwork%3ELogging%2CInternals%3ENetwork%3EConnectivity%2CInternals%3ENetwork%3EDomainSecurityPolicy%2CInternals%3ENetwork%3ETrustTokens%2CInternals%3ENetwork%3EFilters%2CInternals%3ENetwork%3EFTP%2CInternals%3ENetwork%3ESDCH).
+bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=status%3Aunconfirmed%2Cuntriaged%20-Needs%3DFeedback%20-Label%3ANetwork-Triaged%20-has:NextAction%20component%3DInternals%3ENetwork%2CInternals%3ENetwork%3ECache%2CInternals%3ENetwork%3ESSL%2CInternals%3ENetwork%3EQUIC%2CInternals%3ENetwork%3EAuth%2CInternals%3ENetwork%3EHTTP2%2CInternals%3ENetwork%3EProxy%2CInternals%3ENetwork%3ELibrary%2CInternals%3ENetwork%3ELogging%2CInternals%3ENetwork%3EConnectivity%2CInternals%3ENetwork%3EDomainSecurityPolicy%2CInternals%3ENetwork%3ETrustTokens%2CInternals%3ENetwork%3EFilters%2CInternals%3ENetwork%3EFTP%2CInternals%3ENetwork%3ESDCH).
 
 The goal is for this query to be empty. Bugs can be removed from the triage queue
 by doing any of the following:
@@ -23,7 +23,7 @@ For each bug try to:
   elsewhere
 * Dupe it against an existing bug
 * Close it as `WontFix`.
-* Give the bug a priority. Refer to [this (internal) document for guidelines](https://goto.google.com/xnzwn)
+* Give the bug a priority. Refer to [this document for guidelines](https://docs.google.com/document/d/1JOtp1LS7suqTjMuv41jQFc7aCTR33zJKPoGjKpvVFCA)
 * If the bug is a potential security issue (Allows for code execution from remote
   site, allows crossing security boundaries, unchecked array bounds, etc) mark
   it `Type-Bug-Security`.
@@ -165,4 +165,4 @@ generating and modifying shifts
 
 * [Web Platform Team SLOs](https://docs.google.com/document/d/18ylPve6jd43m8B7Dil6xmS4G9MHL2_DhQon72je-O9o/edit)
 
-* [(Internal) Web Platform bug triage guidelines](http://go/xnzwn)
+* [Web Platform bug triage guidelines](https://docs.google.com/document/d/1JOtp1LS7suqTjMuv41jQFc7aCTR33zJKPoGjKpvVFCA)

@@ -65,6 +65,7 @@ using testing::AnyNumber;
 using testing::AtLeast;
 using testing::ByMove;
 using testing::Contains;
+using testing::DoAll;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Ge;
@@ -202,9 +203,9 @@ class MockSuggestionsService : public SuggestionsService {
   MOCK_METHOD0(FetchSuggestionsData, bool());
   MOCK_CONST_METHOD0(GetSuggestionsDataFromCache,
                      base::Optional<SuggestionsProfile>());
-  MOCK_METHOD1(AddCallback,
-               std::unique_ptr<ResponseCallbackList::Subscription>(
-                   const ResponseCallback& callback));
+  MOCK_METHOD1(
+      AddCallback,
+      base::CallbackListSubscription(const ResponseCallback& callback));
   MOCK_METHOD1(BlocklistURL, bool(const GURL& candidate_url));
   MOCK_METHOD1(UndoBlocklistURL, bool(const GURL& url));
   MOCK_METHOD0(ClearBlocklist, void());
@@ -283,8 +284,7 @@ class MockCustomLinksManager : public CustomLinksManager {
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
   MOCK_METHOD0(UndoAction, bool());
   MOCK_METHOD1(RegisterCallbackForOnChanged,
-               std::unique_ptr<base::RepeatingClosureList::Subscription>(
-                   base::RepeatingClosure callback));
+               base::CallbackListSubscription(base::RepeatingClosure callback));
 };
 
 class PopularSitesFactoryForTest {
@@ -1663,8 +1663,8 @@ TEST_P(MostVisitedSitesWithCustomLinksTest, RebuildTilesOnCustomLinksChanged) {
   // Build initial tiles with Top Sites.
   base::RepeatingClosure custom_links_callback;
   EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_))
-      .WillOnce(
-          DoAll(SaveArg<0>(&custom_links_callback), Return(ByMove(nullptr))));
+      .WillOnce(DoAll(SaveArg<0>(&custom_links_callback),
+                      Return(ByMove(base::CallbackListSubscription()))));
   ExpectBuildWithTopSites(
       MostVisitedURLList{MakeMostVisitedURL(kTestTitle1, kTestUrl1)},
       &sections);
@@ -2191,7 +2191,7 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPersonalOnly) {
   // Without any popular tiles, the result after merge should be the personal
   // tiles.
   EXPECT_THAT(MostVisitedSites::MergeTiles(std::move(personal_tiles),
-                                           /*whitelist_tiles=*/NTPTilesVector(),
+                                           /*allowlist_tiles=*/NTPTilesVector(),
                                            /*popular_tiles=*/NTPTilesVector(),
                                            /*explore_tile=*/base::nullopt),
               ElementsAre(MatchesTile("Site 1", "https://www.site1.com/",
@@ -2215,7 +2215,7 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPopularOnly) {
   // tiles.
   EXPECT_THAT(
       MostVisitedSites::MergeTiles(/*personal_tiles=*/NTPTilesVector(),
-                                   /*whitelist_tiles=*/NTPTilesVector(),
+                                   /*allowlist_tiles=*/NTPTilesVector(),
                                    /*popular_tiles=*/std::move(popular_tiles),
                                    /*explore_tile=*/base::nullopt),
       ElementsAre(
@@ -2240,7 +2240,7 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesFavoringPersonalOverPopular) {
   };
   EXPECT_THAT(
       MostVisitedSites::MergeTiles(std::move(personal_tiles),
-                                   /*whitelist_tiles=*/NTPTilesVector(),
+                                   /*allowlist_tiles=*/NTPTilesVector(),
                                    /*popular_tiles=*/std::move(popular_tiles),
                                    /*explore_tiles=*/explore_tile),
       ElementsAre(

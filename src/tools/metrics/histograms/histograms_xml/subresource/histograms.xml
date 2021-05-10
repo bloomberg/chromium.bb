@@ -22,14 +22,174 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="SubresourceFilter.Actions2" enum="SubresourceFilterActions2"
-    expires_after="2021-04-18">
-  <owner>ericrobinson@google.com</owner>
-  <owner>jkarlin@chromium.org</owner>
+    expires_after="2021-08-22">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Counts of various UI and user action events related to the
     SubresourceFilter. This will be triggered when portions of the UI are shown
     or interacted with.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Browser.HadAliases"
+    units="BooleanHadAliases" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records whether or not a given NavigationRequest has a nonempty vector of
+    CNAME aliases. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromBrowser is enabled.
+    Recorded in a method called in the SubframeNavigationFilteringThrottle's
+    destructor.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Browser.InvalidCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of invalid CNAME aliases seen for a NavigationRequest by
+    the SubframeNavigationFilteringThrottle. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromBrowser is enabled and the
+    request has a nonempty vector of CNAME aliases. Recorded in a method called
+    in the SubframeNavigationFilteringThrottle's destructor.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Browser.ListLength"
+    units="length" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records the lengths of each CNAME aliases vector passed to the
+    SubframeNavigationFilteringThrottle, not including empty alias vectors. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromBrowser is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called in the SubframeNavigationFilteringThrottle's destructor.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Browser.RedundantCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of CNAME aliases seen by the
+    SubframeNavigationFilteringThrottle that match the host of the requested
+    URL. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromBrowser is enabled and the
+    request has a nonempty vector of CNAME aliases. Recorded in a method called
+    in the SubframeNavigationFilteringThrottle's destructor.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.CnameAlias.Browser.WasAdTaggedBasedOnAliasCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of CNAME aliases seen for a given NavigationRequest for
+    which LoadPolicy::kWouldDisallow was returned due to an alias match. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromBrowser is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called in the SubframeNavigationFilteringThrottle's destructor.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.CnameAlias.Browser.WasBlockedBasedOnAliasCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of CNAME aliases seen for a given NavigationRequest for
+    which LoadPolicy::kDisallow was returned due to an alias match. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromBrowser is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called in the SubframeNavigationFilteringThrottle's destructor.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.HadAliases"
+    units="BooleanHadAliases" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records whether or not a given ResourceLoader's ResourceRequest has a
+    nonempty vector of CNAME aliases. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromRenderer is enabled.
+    Recorded in a method called by
+    blink::ResourceLoader::DidReceiveResponseInternal.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.InvalidCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of invalid CNAME aliases encountered by the
+    ResourceLoader, as these are not sent to the SubResourceFilter. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromRenderer is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called by blink::ResourceLoader::DidReceiveResponseInternal.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.ListLength"
+    units="length" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records the length of the CNAME aliases vector passed to the ResourceLoader,
+    not including empty alias vectors. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromRenderer is enabled and
+    the request has a nonempty vector of CNAME aliases. Recorded in a method
+    called by blink::ResourceLoader::DidReceiveResponseInternal.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.RedundantCount"
+    units="count" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Counts the number of CNAME aliases encountered by the ResourceLoader that
+    match the host of the requested URL (as well as the number of any that the
+    match the host of the original URL in the case of redirects), as these
+    aliases are not sent to the SubResourceFilter. Only recorded if
+    features::kSendCnameAliasesToSubresourceFilterFromRenderer is enabled and
+    the request has a nonempty vector of CNAME aliases. Recorded in a method
+    called by blink::ResourceLoader::DidReceiveResponseInternal.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.WasAdTaggedBasedOnAlias"
+    units="BooleanTagged" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records whether or not a given ResourceLoader's ResourceRequest has CNAME
+    alias for which the returned LoadPolicy was LoadPolicy::kWouldDisallow. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromRenderer is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called by blink::ResourceLoader::DidReceiveResponseInternal.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.CnameAlias.Renderer.WasBlockedBasedOnAlias"
+    units="BooleanBlocked" expires_after="2021-06-18">
+  <owner>cammie@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Records whether or not a given ResourceLoader's ResourceRequest has CNAME
+    alias for which the returned LoadPolicy was LoadPolicy::kDisallow. Only
+    recorded if features::kSendCnameAliasesToSubresourceFilterFromRenderer is
+    enabled and the request has a nonempty vector of CNAME aliases. Recorded in
+    a method called by the destructor of blink::ResourceLoader.
   </summary>
 </histogram>
 
@@ -83,8 +243,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed"
-    units="microseconds" expires_after="M92">
-  <owner>ericrobinson@google.com</owner>
+    units="microseconds" expires_after="2021-08-09">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Records the total time a subframe navigation was delayed while calculating
@@ -99,7 +259,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed2"
     units="microseconds" expires_after="M92">
-  <owner>ericrobinson@google.com</owner>
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Records the total time a subframe navigation was delayed while calculating
@@ -114,7 +274,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="SubresourceFilter.DocumentLoad.SubframeFilteringDelay.WouldDisallow"
     units="microseconds" expires_after="M92">
-  <owner>ericrobinson@google.com</owner>
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Records the total time a subframe navigation was delayed while calculating
@@ -151,8 +311,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.IndexRuleset.Verify.Status"
-    enum="SubresourceFilterVerifyStatus" expires_after="2021-04-04">
-  <owner>ericrobinson@chromium.org</owner>
+    enum="SubresourceFilterVerifyStatus" expires_after="2021-08-08">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     The result of the IndexRulesetMatcher Verify method. Either pass if both the
@@ -166,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SubresourceFilter.IndexRuleset.Verify2.WallDuration"
     units="ms" expires_after="M92">
-  <owner>ericrobinson@google.com</owner>
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     The total time it took to verify the indexed ruleset in the browser process.
@@ -189,7 +349,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="SubresourceFilter.MainFrameLoad.RulesetIsAvailableAnyActivationLevel"
-    enum="BooleanAvailable" expires_after="2021-03-15">
+    enum="BooleanAvailable" expires_after="2021-08-09">
   <owner>alexmt@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -250,7 +410,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.ActivationDecision"
-    enum="SubresourceFilterActivationDecision" expires_after="M90">
+    enum="SubresourceFilterActivationDecision" expires_after="2021-08-22">
   <owner>jkarlin@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
@@ -261,8 +421,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.ActivationList"
-    enum="ActivationList" expires_after="2021-05-09">
-  <owner>ericrobinson@google.com</owner>
+    enum="ActivationList" expires_after="2021-07-11">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     The ActivationList or NONE that the main frame navigation matched with.
@@ -271,8 +431,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.ActivationState"
-    enum="SubresourceFilterActivationState" expires_after="2021-05-09">
-  <owner>ericrobinson@google.com</owner>
+    enum="SubresourceFilterActivationState" expires_after="2021-07-11">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whenever a document load is committed in a main frame, records whether
@@ -304,7 +464,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed"
-    units="resource loads" expires_after="M92">
+    units="resource loads" expires_after="2021-08-09">
   <owner>jkarlin@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
@@ -328,7 +488,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules"
-    units="resource loads" expires_after="M92">
+    units="resource loads" expires_after="2021-08-09">
   <owner>jkarlin@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
@@ -352,7 +512,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SubresourceFilter.PageLoad.SafeBrowsingDelay" units="ms"
     expires_after="M92">
-  <owner>ericrobinson@google.com</owner>
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     The navigation delay imposed by the subresource filter on a given navigation
@@ -419,8 +579,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.SafeBrowsing.TotalCheckTime" units="ms"
-    expires_after="M92">
-  <owner>ericrobinson@chromium.org</owner>
+    expires_after="2021-08-08">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     The time an individual Safe Browsing URL check took before finishing,
@@ -476,8 +636,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.WriteRuleset.Result"
-    enum="SubresourceFilterWriteRulesetResult" expires_after="M88">
-  <owner>ericrobinson@chromium.org</owner>
+    enum="SubresourceFilterWriteRulesetResult" expires_after="M92">
+  <owner>alexmt@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whether indexing a version of the ruleset and writing it to disk succeeded,
@@ -486,8 +646,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="SubresourceRedirect.Blink.Ineligibility"
+    enum="BlinkSubresourceRedirectIneligibility" expires_after="2021-08-09">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records the different reasons subresource redirect was disabled by Blink.
+    Recorded for each subresource that was disabled by Blink.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceRedirect.BypassDuration" units="ms"
-    expires_after="M90">
+    expires_after="M92">
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -500,7 +670,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.CompressionAttempt.ResponseCode"
-    enum="HttpResponseCode" expires_after="M90">
+    enum="HttpResponseCode" expires_after="2021-08-22">
   <owner>robertogden@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -512,7 +682,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.CompressionAttempt.ServerResponded"
-    enum="Boolean" expires_after="M90">
+    enum="Boolean" expires_after="M92">
   <owner>robertogden@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -523,7 +693,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.CompressionFetchTimeout" enum="Boolean"
-    expires_after="M90">
+    expires_after="M92">
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -533,7 +703,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.DidCompress.BytesSaved" units="bytes"
-    expires_after="M90">
+    expires_after="2021-08-08">
   <owner>robertogden@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -543,7 +713,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.DidCompress.CompressionPercent" units="%"
-    expires_after="M90">
+    expires_after="2021-08-08">
   <owner>robertogden@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -553,7 +723,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceRedirect.ImageCompressionNotificationInfoBar"
-    enum="HttpsImageCompressionInfoBarAction" expires_after="2021-04-04">
+    enum="HttpsImageCompressionInfoBarAction" expires_after="2021-08-09">
   <owner>rajendrant@chromium.org</owner>
   <owner>src/components/data_reduction_proxy/OWNERS</owner>
   <summary>
@@ -562,8 +732,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="SubresourceRedirect.LitePagesService.BypassResult"
+    enum="Boolean" expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records whether the LitePages service fetches were bypassed or not. Recorded
+    once per LitePages server accesss. Currently LitePages service is used for
+    fetching compressed images and robots.txt rules.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceRedirect.LoginRobotsDeciderAgent.RedirectResult"
+    enum="SubresourceRedirectRedirectResult" expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records the different results possible for subresource redirection, such as
+    redirectable or different reasons of ineligibility. Recorded once for each
+    image request.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceRedirect.PageLoad.BypassResult" enum="Boolean"
-    expires_after="M90">
+    expires_after="M92">
+  <obsolete>
+    Replaced by SubresourceRedirect.LitePagesService.BypassResult on 11/2020
+  </obsolete>
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -603,6 +798,47 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records the final result of retrieving robots.txt rules. Recorded once per
     robots rules decider object, which is roughly the number of unique image
     origins in the page.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceRedirect.RobotsRules.Browser.InMemoryCacheHit"
+    units="BooleanCacheHit" expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records how often the origin robots rules were found in the in-memory
+    browser cache. Recorded for every robots rules request from renderer that is
+    eligible to check the in-memory cache.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceRedirect.RobotsRulesFetcher.CacheHit" units="ms"
+    expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records whether LitePages robots rules was fetched from Chrome network
+    cache. Recorded for every fetch.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceRedirect.RobotsRulesFetcher.NetErrorCode"
+    enum="NetErrorCodes" expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Net error codes for the LitePages robots rules fetcher. Recorded on every
+    fetch after completion or failure.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceRedirect.RobotsRulesFetcher.ResponseCode"
+    units="HttpResponseCode" expires_after="M92">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    HTTP response code for the LitePages robots rules fetcher. Recorded on every
+    fetch after completion or failure.
   </summary>
 </histogram>
 

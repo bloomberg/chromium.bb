@@ -152,12 +152,12 @@ void ManagePasswordsTest::SetupMoreToFixState() {
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS);
-  // This is an unrelated compromised credential that should still be fixed.
-  password_manager::CompromisedCredentials compromised = {
-      .signon_realm = "https://somesite.com/",
-      .username = ASCIIToUTF16(kTestUsername),
-  };
-  password_store->AddCompromisedCredentials(compromised);
+  // This is an unrelated insecure credential that should still be fixed.
+  password_manager::InsecureCredential credential(
+      "https://somesite.com/", ASCIIToUTF16(kTestUsername), base::Time(),
+      password_manager::InsecureType::kLeaked,
+      password_manager::IsMuted(false));
+  password_store->AddInsecureCredential(credential);
   SetupPendingPassword();
   GetController()->SavePassword(password_form_.username_value,
                                 password_form_.password_value);
@@ -172,17 +172,17 @@ void ManagePasswordsTest::SetupUnsafeState() {
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS);
-  // This is an unrelated compromised credential that should still be fixed.
-  password_manager::CompromisedCredentials some_compromised = {
-      .signon_realm = "https://somesite.com/",
-      .username = ASCIIToUTF16(kTestUsername),
-  };
-  password_manager::CompromisedCredentials current_compromised = {
-      .signon_realm = password_form_.signon_realm,
-      .username = password_form_.username_value,
-  };
-  password_store->AddCompromisedCredentials(some_compromised);
-  password_store->AddCompromisedCredentials(current_compromised);
+  // This is an unrelated insecure credential that should still be fixed.
+  password_manager::InsecureCredential some_credential(
+      "https://somesite.com/", ASCIIToUTF16(kTestUsername), base::Time(),
+      password_manager::InsecureType::kLeaked,
+      password_manager::IsMuted(false));
+  password_manager::InsecureCredential current_credential(
+      password_form_.signon_realm, password_form_.username_value, base::Time(),
+      password_manager::InsecureType::kLeaked,
+      password_manager::IsMuted(false));
+  password_store->AddInsecureCredential(some_credential);
+  password_store->AddInsecureCredential(current_credential);
   SetupPendingPassword();
   GetController()->SavePassword(password_form_.username_value,
                                 password_form_.password_value);
@@ -237,11 +237,11 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager() {
           base::WrapUnique(new password_manager::StubFormSaver)),
       nullptr /*  metrics_recorder */);
 
-  password_manager::CompromisedCredentials compromised = {
-      .signon_realm = password_form_.signon_realm,
-      .username = password_form_.username_value,
-  };
-  fetcher_.set_compromised({compromised});
+  password_manager::InsecureCredential credential(
+      password_form_.signon_realm, password_form_.username_value, base::Time(),
+      password_manager::InsecureType::kLeaked,
+      password_manager::IsMuted(false));
+  fetcher_.set_insecure_credentials({credential});
 
   fetcher_.NotifyFetchCompleted();
 

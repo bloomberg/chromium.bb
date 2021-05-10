@@ -39,7 +39,9 @@ macro(libgav1_configure_sanitizer)
     list(APPEND LIBGAV1_CXX_FLAGS "-fno-omit-frame-pointer"
                 "-fno-optimize-sibling-calls")
 
-    libgav1_test_cxx_flag(FLAG_LIST_VAR_NAMES LIBGAV1_CXX_FLAGS FLAG_REQUIRED)
+    # Check the linker flags first as they may be required in the compile check
+    # to avoid undefined symbols related to the sanitizer.
     libgav1_test_exe_linker_flag(FLAG_LIST_VAR_NAME LIBGAV1_EXE_LINKER_FLAGS)
+    libgav1_test_cxx_flag(FLAG_LIST_VAR_NAMES LIBGAV1_CXX_FLAGS FLAG_REQUIRED)
   endif()
 endmacro()

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_checkup.h"
 
-#include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "extensions/common/extension_builder.h"
@@ -20,7 +20,7 @@ class ExtensionCheckupTest : public ExtensionServiceTestBase,
   ~ExtensionCheckupTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+    feature_list_.InitAndEnableFeatureWithParameters(
         extensions_features::kExtensionsCheckup,
         {{extensions_features::kExtensionsCheckupEntryPointParameter,
           GetParam()}});
@@ -71,20 +71,14 @@ class ExtensionCheckupTest : public ExtensionServiceTestBase,
       EXPECT_FALSE(ShouldShowExtensionsCheckupPromo(browser_context()));
   }
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionCheckupTest);
 };
 
-// Checkup is not shown if no extensions are installed.
 TEST_P(ExtensionCheckupTest, NoInstalledExtensions) {
   VerifyNonExperimentCheckupDisabled();
   EXPECT_FALSE(ShouldShowExperimentCheckup());
 }
 
-// Checkup is not shown if the only extensions installed are policy
-// installed, component extensions, or installed by default.
 TEST_P(ExtensionCheckupTest, NoUserInstalledExtensions) {
   AddExemptExtensions();
   VerifyNonExperimentCheckupDisabled();

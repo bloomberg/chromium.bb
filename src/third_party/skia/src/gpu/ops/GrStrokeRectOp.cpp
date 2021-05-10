@@ -172,10 +172,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& clip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
         {
             using namespace GrDefaultGeoProcFactory;
@@ -192,7 +193,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(clip),
                                                  dstProxyView, gp, primType,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -440,10 +441,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override;
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
@@ -516,10 +518,11 @@ private:
 
 void AAStrokeRectOp::onCreateProgramInfo(const GrCaps* caps,
                                          SkArenaAlloc* arena,
-                                         const GrSurfaceProxyView* writeView,
+                                         const GrSurfaceProxyView& writeView,
                                          GrAppliedClip&& appliedClip,
                                          const GrXferProcessor::DstProxyView& dstProxyView,
-                                         GrXferBarrierFlags renderPassXferBarriers) {
+                                         GrXferBarrierFlags renderPassXferBarriers,
+                                         GrLoadOp colorLoadOp) {
 
     GrGeometryProcessor* gp = create_aa_stroke_rect_gp(arena,
                                                        fHelper.compatibleWithCoverageAsAlpha(),
@@ -538,7 +541,8 @@ void AAStrokeRectOp::onCreateProgramInfo(const GrCaps* caps,
                                              dstProxyView,
                                              gp,
                                              GrPrimitiveType::kTriangles,
-                                             renderPassXferBarriers);
+                                             renderPassXferBarriers,
+                                             colorLoadOp);
 }
 
 void AAStrokeRectOp::onPrepareDraws(Target* target) {

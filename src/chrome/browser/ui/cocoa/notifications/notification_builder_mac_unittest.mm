@@ -5,11 +5,12 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
@@ -20,7 +21,7 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];
-  [builder setTag:@"tag1"];
+  [builder setIdentifier:@"identifier"];
   [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
@@ -38,13 +39,17 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
   EXPECT_EQ(nullptr, [notification informativeText]);
   EXPECT_EQ("https://www.miguel.com",
             base::SysNSStringToUTF8([notification subtitle]));
-  EXPECT_EQ("tag1",
+  EXPECT_EQ("identifier",
             base::SysNSStringToUTF8([notification valueForKey:@"identifier"]));
 
   EXPECT_TRUE([notification hasActionButton]);
   EXPECT_EQ("Settings",
             base::SysNSStringToUTF8([notification actionButtonTitle]));
-  EXPECT_EQ("Close", base::SysNSStringToUTF8([notification otherButtonTitle]));
+
+  if (!base::mac::IsAtLeastOS11()) {
+    EXPECT_EQ("Close",
+              base::SysNSStringToUTF8([notification otherButtonTitle]));
+  }
 }
 
 TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
@@ -75,11 +80,13 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
   EXPECT_EQ("https://www.miguel.com",
             base::SysNSStringToUTF8([notification subtitle]));
 
-  EXPECT_TRUE([notification hasActionButton]);
-
-  EXPECT_EQ("Options",
-            base::SysNSStringToUTF8([notification actionButtonTitle]));
-  EXPECT_EQ("Close", base::SysNSStringToUTF8([notification otherButtonTitle]));
+  if (!base::mac::IsAtLeastOS11()) {
+    EXPECT_TRUE([notification hasActionButton]);
+    EXPECT_EQ("Options",
+              base::SysNSStringToUTF8([notification actionButtonTitle]));
+    EXPECT_EQ("Close",
+              base::SysNSStringToUTF8([notification otherButtonTitle]));
+  }
 
   NSArray* buttons = [notification valueForKey:@"_alternateActionButtonTitles"];
   ASSERT_EQ(2u, buttons.count);
@@ -115,11 +122,13 @@ TEST(NotificationBuilderMacTest, TestNotificationTwoButtons) {
   EXPECT_EQ("https://www.miguel.com",
             base::SysNSStringToUTF8([notification subtitle]));
 
-  EXPECT_TRUE([notification hasActionButton]);
-
-  EXPECT_EQ("Options",
-            base::SysNSStringToUTF8([notification actionButtonTitle]));
-  EXPECT_EQ("Close", base::SysNSStringToUTF8([notification otherButtonTitle]));
+  if (!base::mac::IsAtLeastOS11()) {
+    EXPECT_TRUE([notification hasActionButton]);
+    EXPECT_EQ("Options",
+              base::SysNSStringToUTF8([notification actionButtonTitle]));
+    EXPECT_EQ("Close",
+              base::SysNSStringToUTF8([notification otherButtonTitle]));
+  }
 
   NSArray* buttons = [notification valueForKey:@"_alternateActionButtonTitles"];
   ASSERT_EQ(3u, buttons.count);
@@ -149,7 +158,11 @@ TEST(NotificationBuilderMacTest, TestNotificationExtensionNoButtons) {
   NSUserNotification* notification = [builder buildUserNotification];
 
   EXPECT_FALSE(notification.hasActionButton);
-  EXPECT_EQ("Close", base::SysNSStringToUTF8([notification otherButtonTitle]));
+
+  if (!base::mac::IsAtLeastOS11()) {
+    EXPECT_EQ("Close",
+              base::SysNSStringToUTF8([notification otherButtonTitle]));
+  }
 }
 
 TEST(NotificationBuilderMacTest, TestNotificationExtensionOneButton) {
@@ -177,7 +190,11 @@ TEST(NotificationBuilderMacTest, TestNotificationExtensionOneButton) {
   EXPECT_TRUE([notification hasActionButton]);
   EXPECT_EQ("Button1",
             base::SysNSStringToUTF8([notification actionButtonTitle]));
-  EXPECT_EQ("Close", base::SysNSStringToUTF8([notification otherButtonTitle]));
+
+  if (!base::mac::IsAtLeastOS11()) {
+    EXPECT_EQ("Close",
+              base::SysNSStringToUTF8([notification otherButtonTitle]));
+  }
 }
 
 TEST(NotificationBuilderMacTest, TestNotificationExtensionButtons) {

@@ -8,9 +8,13 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/speech/tts_chromeos.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/tts_controller.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
 
 namespace arc {
 namespace {
@@ -33,6 +37,24 @@ class ArcTtsServiceFactory
   ArcTtsServiceFactory() = default;
   ~ArcTtsServiceFactory() override = default;
 };
+
+std::string CanonicalizeLocale(std::string locale) {
+  UErrorCode error = U_ZERO_ERROR;
+
+  // We only ever expect a maximum of a three-letter language code, a separator,
+  // followed by a three-letter country code.
+  static constexpr int kBufferSize = 8;
+  std::string canonical_locale;
+  int actual_size = uloc_canonicalize(
+      locale.c_str(), base::WriteInto(&canonical_locale, kBufferSize),
+      kBufferSize, &error);
+
+  if (actual_size == 0 || error != U_ZERO_ERROR)
+    return locale;
+
+  canonical_locale.resize(actual_size);
+  return canonical_locale;
+}
 
 }  // namespace
 
@@ -58,9 +80,17 @@ ArcTtsService::~ArcTtsService() {
   arc_bridge_service_->tts()->SetHost(nullptr);
 }
 
+void ArcTtsService::OnTtsEventDeprecated(uint32_t id,
+                                         mojom::TtsEventType event_type,
+                                         uint32_t char_index,
+                                         const std::string& error_msg) {
+  OnTtsEvent(id, event_type, char_index, -1 /* length */, error_msg);
+}
+
 void ArcTtsService::OnTtsEvent(uint32_t id,
                                mojom::TtsEventType event_type,
                                uint32_t char_index,
+                               uint32_t length,
                                const std::string& error_msg) {
   if (!tts_controller_) {
     // GetInstance() returns a base::Singleton<> object which always outlives
@@ -86,8 +116,44 @@ void ArcTtsService::OnTtsEvent(uint32_t id,
     case mojom::TtsEventType::ERROR:
       chrome_event_type = content::TTS_EVENT_ERROR;
       break;
+    case mojom::TtsEventType::WORD:
+      chrome_event_type = content::TTS_EVENT_WORD;
+      TtsPlatformImplChromeOs::GetInstance()->ReceivedWordEvent();
   }
-  tts_controller_->OnTtsEvent(id, chrome_event_type, char_index, -1, error_msg);
+  tts_controller_->OnTtsEvent(id, chrome_event_type, char_index, length,
+                              error_msg);
+}
+
+void ArcTtsService::OnVoicesChanged(std::vector<mojom::TtsVoicePtr> voices) {
+  std::vector<content::VoiceData> chrome_voices;
+  for (const auto& voice : voices) {
+    chrome_voices.emplace_back();
+    content::VoiceData& chrome_voice = chrome_voices.back();
+    chrome_voice.native = true;
+    chrome_voice.native_voice_identifier = base::NumberToString(voice->id);
+    chrome_voice.name = std::move(voice->name);
+
+    // Normalizes using ICU; in particular, turns language codes from three to
+    // two letter codes. Then, replaces _ with - (expected by Chrome's tts
+    // controller).
+    chrome_voice.lang = CanonicalizeLocale(std::move(voice->locale));
+    for (size_t i = 0; i < chrome_voice.lang.size(); i++) {
+      if (chrome_voice.lang[i] == '_')
+        chrome_voice.lang[i] = '-';
+    }
+
+    chrome_voice.remote = voice->is_network_connection_required;
+    chrome_voice.events.insert(content::TTS_EVENT_START);
+    chrome_voice.events.insert(content::TTS_EVENT_END);
+    chrome_voice.events.insert(content::TTS_EVENT_INTERRUPTED);
+    chrome_voice.events.insert(content::TTS_EVENT_ERROR);
+  }
+
+  TtsPlatformImplChromeOs* impl = TtsPlatformImplChromeOs::GetInstance();
+  DCHECK(impl);
+  impl->SetVoices(std::move(chrome_voices));
+
+  content::TtsController::GetInstance()->VoicesChanged();
 }
 
 }  // namespace arc

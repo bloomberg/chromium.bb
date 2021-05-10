@@ -22,7 +22,6 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -293,7 +292,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             mFaviconRects.add(faviconRect);
         }
 
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 boolean isIncognito = newModel.isIncognito();
@@ -310,10 +309,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     }
 
     public void initWithNative() {
-        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
-        mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+        Profile profile = mTabModelSelector.getCurrentModel().getProfile();
+        mTabListFaviconProvider.initWithNative(profile);
     }
 
     /**

@@ -14,20 +14,30 @@
 
 #include "src/ast/stage_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StageDecoration);
+
 namespace tint {
 namespace ast {
 
-StageDecoration::StageDecoration(ast::PipelineStage stage, const Source& source)
-    : FunctionDecoration(source), stage_(stage) {}
+StageDecoration::StageDecoration(const Source& source, PipelineStage stage)
+    : Base(source), stage_(stage) {}
 
 StageDecoration::~StageDecoration() = default;
 
-bool StageDecoration::IsStage() const {
-  return true;
+void StageDecoration::to_str(const semantic::Info&,
+                             std::ostream& out,
+                             size_t indent) const {
+  make_indent(out, indent);
+  out << "StageDecoration{" << stage_ << "}" << std::endl;
 }
 
-void StageDecoration::to_str(std::ostream& out) const {
-  out << "StageDecoration{" << stage_ << "}" << std::endl;
+StageDecoration* StageDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<StageDecoration>(src, stage_);
 }
 
 }  // namespace ast

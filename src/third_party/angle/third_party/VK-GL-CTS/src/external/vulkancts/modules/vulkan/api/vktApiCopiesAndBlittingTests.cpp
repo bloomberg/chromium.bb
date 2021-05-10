@@ -66,6 +66,19 @@ namespace api
 namespace
 {
 
+enum FillMode
+{
+	FILL_MODE_GRADIENT = 0,
+	FILL_MODE_WHITE,
+	FILL_MODE_RED,
+	FILL_MODE_MULTISAMPLE,
+	FILL_MODE_BLUE_RED_X,
+	FILL_MODE_BLUE_RED_Y,
+	FILL_MODE_BLUE_RED_Z,
+
+	FILL_MODE_LAST
+};
+
 enum MirrorModeBits
 {
 	MIRROR_MODE_X		= (1<<0),
@@ -254,6 +267,7 @@ struct ImageParms
 	VkImageTiling		tiling;
 	VkImageLayout		operationLayout;
 	VkImageCreateFlags	createFlags;
+	FillMode			fillMode;
 };
 
 struct TestParams
@@ -282,6 +296,7 @@ struct TestParams
 	deBool			singleCommand;
 	deUint32		barrierCount;
 	deBool			separateDepthStencilLayouts;
+	deBool			clearDestination;
 
 	TestParams (void)
 	{
@@ -291,6 +306,9 @@ struct TestParams
 		separateDepthStencilLayouts	= DE_FALSE;
 		src.image.createFlags		= VK_IMAGE_CREATE_FLAG_BITS_MAX_ENUM;
 		dst.image.createFlags		= VK_IMAGE_CREATE_FLAG_BITS_MAX_ENUM;
+		src.image.fillMode			= FILL_MODE_GRADIENT;
+		dst.image.fillMode			= FILL_MODE_WHITE;
+		clearDestination			= DE_FALSE;
 	}
 };
 
@@ -416,16 +434,6 @@ public:
 																			 TestParams	testParams);
 	virtual tcu::TestStatus				iterate								(void) = 0;
 
-	enum FillMode
-	{
-		FILL_MODE_GRADIENT = 0,
-		FILL_MODE_WHITE,
-		FILL_MODE_RED,
-		FILL_MODE_MULTISAMPLE,
-
-		FILL_MODE_LAST
-	};
-
 protected:
 	const TestParams					m_params;
 
@@ -547,6 +555,27 @@ void CopiesAndBlittingTestInstance::generateBuffer (tcu::PixelBufferAccess buffe
 				}
 				else
 					buffer.setPixel(redColor, x, y, z);
+				break;
+
+			case FILL_MODE_BLUE_RED_X:
+			case FILL_MODE_BLUE_RED_Y:
+			case FILL_MODE_BLUE_RED_Z:
+				bool useBlue;
+				switch (mode)
+				{
+					case FILL_MODE_BLUE_RED_X: useBlue = (x & 1); break;
+					case FILL_MODE_BLUE_RED_Y: useBlue = (y & 1); break;
+					case FILL_MODE_BLUE_RED_Z: useBlue = (z & 1); break;
+					default: DE_ASSERT(false); break;
+				}
+				if (tcu::isCombinedDepthStencilType(buffer.getFormat().type))
+				{
+					buffer.setPixDepth((useBlue ? blueColor[0] : redColor[0]), x, y, z);
+					if (tcu::hasStencilComponent(buffer.getFormat().order))
+						buffer.setPixStencil((useBlue ? (int) blueColor[3] : (int)redColor[3]), x, y, z);
+				}
+				else
+					buffer.setPixel((useBlue ? blueColor : redColor), x, y, z);
 				break;
 
 			case FILL_MODE_MULTISAMPLE:
@@ -1040,7 +1069,7 @@ tcu::TestStatus CopyImageToImage::iterate (void)
 																				(int)m_params.dst.image.extent.width,
 																				(int)m_params.dst.image.extent.height,
 																				(int)m_params.dst.image.extent.depth));
-	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, FILL_MODE_GRADIENT);
+	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, m_params.clearDestination ? FILL_MODE_WHITE : FILL_MODE_GRADIENT);
 	generateExpectedResult();
 
 	uploadImage(m_sourceTextureLevel->getAccess(), m_source.get(), m_params.src.image);
@@ -1133,6 +1162,18 @@ tcu::TestStatus CopyImageToImage::iterate (void)
 
 	beginCommandBuffer(vk, *m_cmdBuffer);
 	vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, DE_LENGTH_OF_ARRAY(imageBarriers), imageBarriers);
+
+	if (m_params.clearDestination)
+	{
+		VkImageSubresourceRange	range		= { VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u };
+		VkClearColorValue		clearColor;
+
+		clearColor.float32[0] = 1.0f;
+		clearColor.float32[1] = 1.0f;
+		clearColor.float32[2] = 1.0f;
+		clearColor.float32[3] = 1.0f;
+		vk.cmdClearColorImage(*m_cmdBuffer, m_destination.get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1u, &range);
+	}
 
 	if (m_params.extensionUse == EXTENSION_USE_NONE)
 	{
@@ -2568,12 +2609,12 @@ tcu::TestStatus BlittingImages::iterate (void)
 																				m_params.src.image.extent.width,
 																				m_params.src.image.extent.height,
 																				m_params.src.image.extent.depth));
-	generateBuffer(m_sourceTextureLevel->getAccess(), m_params.src.image.extent.width, m_params.src.image.extent.height, m_params.src.image.extent.depth, FILL_MODE_GRADIENT);
+	generateBuffer(m_sourceTextureLevel->getAccess(), m_params.src.image.extent.width, m_params.src.image.extent.height, m_params.src.image.extent.depth, m_params.src.image.fillMode);
 	m_destinationTextureLevel = de::MovePtr<tcu::TextureLevel>(new tcu::TextureLevel(dstTcuFormat,
 																					 (int)m_params.dst.image.extent.width,
 																					 (int)m_params.dst.image.extent.height,
 																					 (int)m_params.dst.image.extent.depth));
-	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, FILL_MODE_WHITE);
+	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, m_params.dst.image.fillMode);
 	generateExpectedResult();
 
 	uploadImage(m_sourceTextureLevel->getAccess(), m_source.get(), m_params.src.image);
@@ -2660,7 +2701,7 @@ tcu::TestStatus BlittingImages::iterate (void)
 			m_params.dst.image.operationLayout,			// VkImageLayout				dstImageLayout;
 			(deUint32)m_params.regions.size(),			// uint32_t						regionCount;
 			&regions2KHR[0],							// const VkImageBlit2KHR*		pRegions;
-			m_params.filter								// VkFilter						filter;
+			m_params.filter,							// VkFilter						filter;
 		};
 		vk.cmdBlitImage2KHR(*m_cmdBuffer, &BlitImageInfo2KHR);
 	}
@@ -3526,12 +3567,12 @@ tcu::TestStatus BlittingMipmaps::iterate (void)
 																				m_params.src.image.extent.width,
 																				m_params.src.image.extent.height,
 																				m_params.src.image.extent.depth));
-	generateBuffer(m_sourceTextureLevel->getAccess(), m_params.src.image.extent.width, m_params.src.image.extent.height, m_params.src.image.extent.depth, FILL_MODE_GRADIENT);
+	generateBuffer(m_sourceTextureLevel->getAccess(), m_params.src.image.extent.width, m_params.src.image.extent.height, m_params.src.image.extent.depth, m_params.src.image.fillMode);
 	m_destinationTextureLevel = de::MovePtr<tcu::TextureLevel>(new tcu::TextureLevel(dstTcuFormat,
 																						(int)m_params.dst.image.extent.width,
 																						(int)m_params.dst.image.extent.height,
 																						(int)m_params.dst.image.extent.depth));
-	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, FILL_MODE_WHITE);
+	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth, m_params.dst.image.fillMode);
 	generateExpectedResult();
 
 	uploadImage(m_sourceTextureLevel->getAccess(), m_source.get(), m_params.src.image);
@@ -5465,6 +5506,43 @@ void addImageToImageSimpleTests (tcu::TestCaseGroup* group, AllocationKind alloc
 	}
 
 	{
+		VkExtent3D	extent					= { 65u, 63u, 1u };
+
+		TestParams	params;
+		params.src.image.imageType			= VK_IMAGE_TYPE_2D;
+		params.src.image.format				= VK_FORMAT_R32_UINT;
+		params.src.image.extent				= extent;
+		params.src.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
+		params.src.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		params.dst.image.imageType			= VK_IMAGE_TYPE_2D;
+		params.dst.image.format				= VK_FORMAT_R8G8B8A8_UNORM;
+		params.dst.image.extent				= extent;
+		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
+		params.dst.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		params.allocationKind				= allocationKind;
+		params.extensionUse					= extensionUse;
+		params.clearDestination				= VK_TRUE;
+
+		{
+			const VkImageCopy	testCopy	=
+			{
+				defaultSourceLayer,	// VkImageSubresourceLayers	srcSubresource;
+				{34, 34, 0},		// VkOffset3D				srcOffset;
+				defaultSourceLayer,	// VkImageSubresourceLayers	dstSubresource;
+				{0, 0, 0},			// VkOffset3D				dstOffset;
+				{31, 29, 1}			// VkExtent3D				extent;
+			};
+
+			CopyRegion			imageCopy;
+
+			imageCopy.imageCopy = testCopy;
+			params.regions.push_back(imageCopy);
+		}
+
+		group->addChild(new CopyImageToImageTestCase(testCtx, "partial_image_npot_diff_format_clear", "Partial image with npot dimensions, different format, and clearing of the destination image", params));
+	}
+
+	{
 		TestParams	params;
 		params.src.image.imageType			= VK_IMAGE_TYPE_2D;
 		params.src.image.format				= VK_FORMAT_D32_SFLOAT;
@@ -5661,6 +5739,8 @@ const VkFormat	compatibleFormats16Bit[]	=
 	VK_FORMAT_R16_UINT,
 	VK_FORMAT_R16_SINT,
 	VK_FORMAT_R16_SFLOAT,
+	VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT,
+	VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT,
 
 	VK_FORMAT_UNDEFINED
 };
@@ -5990,6 +6070,7 @@ void addImageToImageAllFormatsColorTests (tcu::TestCaseGroup* group, AllocationK
 		params.src.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.dst.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind		= allocationKind;
+		params.extensionUse			= extensionUse;
 
 		for (deInt32 i = defaultFourthSize; i < defaultSize; i += defaultSize / 2)
 		{
@@ -6043,6 +6124,7 @@ void addImageToImageAllFormatsColorTests (tcu::TestCaseGroup* group, AllocationK
 		params.src.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.dst.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind		= allocationKind;
+		params.extensionUse			= extensionUse;
 
 		for (deInt32 i = 0; i < defaultFourthSize; i += defaultSixteenthSize)
 		{
@@ -8800,6 +8882,34 @@ void addBlittingImageAllFormatsColorSrcFormatDstFormatTests (tcu::TestCaseGroup*
 						testParams.params.filter = VK_FILTER_CUBIC_EXT;
 						group->addChild(new BlitImageTestCase(testCtx, testName + "_cubic", description, testParams.params));
 					}
+
+					if (testParams.params.src.image.imageType == VK_IMAGE_TYPE_3D)
+					{
+						const struct
+						{
+							FillMode	mode;
+							const char*	name;
+						} modeList[] =
+						{
+							{ FILL_MODE_BLUE_RED_X, "x" },
+							{ FILL_MODE_BLUE_RED_Y, "y" },
+							{ FILL_MODE_BLUE_RED_Z, "z" },
+						};
+
+						auto otherParams = testParams;
+						otherParams.params.dst.image.fillMode = FILL_MODE_WHITE;
+
+						for (int i = 0; i < DE_LENGTH_OF_ARRAY(modeList); ++i)
+						{
+							otherParams.params.src.image.fillMode = modeList[i].mode;
+
+							otherParams.params.filter = VK_FILTER_LINEAR;
+							group->addChild(new BlitImageTestCase(testCtx, testName + "_linear_stripes_" + modeList[i].name, description, otherParams.params));
+
+							otherParams.params.filter = VK_FILTER_NEAREST;
+							group->addChild(new BlitImageTestCase(testCtx, testName + "_nearest_stripes_" + modeList[i].name, description, otherParams.params));
+						}
+					}
 				}
 			}
 		}
@@ -8987,6 +9097,9 @@ const VkFormat	compatibleFormatsFloats[]	=
 //	VK_FORMAT_ASTC_12x10_UNORM_BLOCK,
 //	VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
 
+	VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT,
+	VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT,
+
 	VK_FORMAT_UNDEFINED
 };
 const VkFormat	compatibleFormatsSrgb[]		=
@@ -9165,6 +9278,7 @@ void addBlittingImageAllFormatsColorTests (tcu::TestCaseGroup* group, Allocation
 		params.src.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.dst.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind		= allocationKind;
+		params.extensionUse			= extensionUse;
 
 		CopyRegion	region;
 		for (int i = 0; i < defaultSize; i += defaultSize / 2)
@@ -9244,6 +9358,7 @@ void addBlittingImageAllFormatsColorTests (tcu::TestCaseGroup* group, Allocation
 		params.src.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.dst.image.tiling		= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind		= allocationKind;
+		params.extensionUse			= extensionUse;
 
 		CopyRegion	region;
 		for (int i = 0, j = 1; (i + defaultSixteenthSize / j < defaultFourthSize) && (defaultSixteenthSize > j); i += defaultSixteenthSize / j++)

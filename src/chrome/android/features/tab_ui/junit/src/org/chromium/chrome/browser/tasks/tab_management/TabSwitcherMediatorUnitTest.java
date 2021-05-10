@@ -126,7 +126,11 @@ public class TabSwitcherMediatorUnitTest {
     @Mock
     TabSwitcherMediator.MessageItemsController mMessageItemsController;
     @Mock
+    TabSwitcherMediator.PriceWelcomeMessageController mPriceWelcomeMessageController;
+    @Mock
     MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
+    @Mock
+    PriceMessageService mPriceMessageService;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -201,7 +205,8 @@ public class TabSwitcherMediatorUnitTest {
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
-                mMultiWindowModeStateDispatcher, TabListCoordinator.TabListMode.GRID);
+                mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
+                TabListCoordinator.TabListMode.GRID);
         mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
@@ -447,6 +452,29 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void scrollAfterNewTabModelSelected() {
+        initAndAssertAllProperties();
+        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
+        TabModel incognitoTabModel = mock(TabModel.class);
+
+        doReturn(0).when(mTabModelFilter).index();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+
+        doReturn(1).when(mTabModelFilter).index();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+
+        doReturn(2).when(mTabModelFilter).index();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+
+        doReturn(3).when(mTabModelFilter).index();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(1));
+    }
+
+    @Test
     public void updatesMarginWithBottomBarChanges() {
         initAndAssertAllProperties();
 
@@ -553,6 +581,63 @@ public class TabSwitcherMediatorUnitTest {
         doReturn(1).when(mTabModel).getCount();
         mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
         verify(mMessageItemsController).restoreAllAppendedMessage();
+    }
+
+    @Test
+    public void removePriceWelcomeMessageWhenCloseBindingTab() {
+        mMediator.setPriceMessageService(mPriceMessageService);
+
+        doReturn(1).when(mTabModel).getCount();
+        doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mPriceWelcomeMessageController, times(0)).removePriceWelcomeMessage();
+
+        doReturn(2).when(mTabModel).getCount();
+        doReturn(TAB2_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mPriceWelcomeMessageController, times(0)).removePriceWelcomeMessage();
+
+        doReturn(2).when(mTabModel).getCount();
+        doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mPriceWelcomeMessageController, times(1)).removePriceWelcomeMessage();
+    }
+
+    @Test
+    public void restorePriceWelcomeMessageWhenUndoBindingTabClosure() {
+        mMediator.setPriceMessageService(mPriceMessageService);
+
+        doReturn(1).when(mTabModel).getCount();
+        doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mPriceWelcomeMessageController, times(1)).restorePriceWelcomeMessage();
+
+        doReturn(2).when(mTabModel).getCount();
+        doReturn(TAB2_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mPriceWelcomeMessageController, times(1)).restorePriceWelcomeMessage();
+    }
+
+    @Test
+    public void invalidatePriceWelcomeMessageWhenBindingTabClosureCommitted() {
+        mMediator.setPriceMessageService(mPriceMessageService);
+
+        doReturn(TAB2_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().tabClosureCommitted(mTab1);
+        verify(mPriceMessageService, times(0)).invalidateMessage();
+
+        doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
+        mTabModelObserverCaptor.getValue().tabClosureCommitted(mTab1);
+        verify(mPriceMessageService, times(1)).invalidateMessage();
+    }
+
+    @Test
+    public void testScrollToTab() {
+        initAndAssertAllProperties();
+        mMediator.scrollToTab(0);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+        mMediator.scrollToTab(1);
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(1));
     }
 
     @Test
@@ -792,13 +877,15 @@ public class TabSwitcherMediatorUnitTest {
         assertEquals(0, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
-                mMultiWindowModeStateDispatcher, TabListCoordinator.TabListMode.GRID);
+                mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
+                TabListCoordinator.TabListMode.GRID);
         assertEquals(16, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
 
         mModel.set(TabListContainerProperties.BOTTOM_PADDING, 0);
         new TabSwitcherMediator(mContext, mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
-                mMultiWindowModeStateDispatcher, TabListCoordinator.TabListMode.STRIP);
+                mPriceWelcomeMessageController, mMultiWindowModeStateDispatcher,
+                TabListCoordinator.TabListMode.STRIP);
         assertEquals(0, mModel.get(TabListContainerProperties.BOTTOM_PADDING));
     }
 

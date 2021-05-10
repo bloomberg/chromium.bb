@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_android.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image_representation_gl_texture_android.h"
+#include "gpu/command_buffer/service/shared_image_representation_gl_texture_passthrough_android.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_vk_android.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -161,6 +162,10 @@ class SharedImageBackingAHB : public SharedImageBackingAndroid {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
 
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) override;
+
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
@@ -215,7 +220,7 @@ class SharedImageRepresentationOverlayAHB
                                       MemoryTypeTracker* tracker)
       : SharedImageRepresentationOverlay(manager, backing, tracker) {}
 
-  ~SharedImageRepresentationOverlayAHB() override { EndReadAccess(); }
+  ~SharedImageRepresentationOverlayAHB() override { EndReadAccess({}); }
 
  private:
   SharedImageBackingAHB* ahb_backing() {
@@ -227,13 +232,13 @@ class SharedImageRepresentationOverlayAHB
     NOTREACHED();
   }
 
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences,
-                       std::vector<gfx::GpuFence>* release_fences) override {
+  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override {
     gl_image_ = ahb_backing()->BeginOverlayAccess();
     return !!gl_image_;
   }
 
-  void EndReadAccess() override {
+  void EndReadAccess(gfx::GpuFenceHandle release_fence) override {
+    DCHECK(release_fence.is_null());
     if (gl_image_) {
       ahb_backing()->EndOverlayAccess();
       gl_image_ = nullptr;
@@ -358,6 +363,28 @@ SharedImageBackingAHB::ProduceGLTexture(SharedImageManager* manager,
     return nullptr;
 
   return std::make_unique<SharedImageRepresentationGLTextureAndroid>(
+      manager, this, tracker, std::move(texture));
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+SharedImageBackingAHB::ProduceGLTexturePassthrough(SharedImageManager* manager,
+                                                   MemoryTypeTracker* tracker) {
+  // Use same texture for all the texture representations generated from same
+  // backing.
+  DCHECK(hardware_buffer_handle_.is_valid());
+
+  // Note that we are not using GL_TEXTURE_EXTERNAL_OES target(here and all
+  // other places in this file) since sksurface
+  // doesn't supports it. As per the egl documentation -
+  // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
+  // if GL_OES_EGL_image is supported then <target> may also be TEXTURE_2D.
+  auto texture = GenGLTexturePassthrough(hardware_buffer_handle_.get(),
+                                         GL_TEXTURE_2D, color_space(), size(),
+                                         estimated_size(), ClearedRect());
+  if (!texture)
+    return nullptr;
+
+  return std::make_unique<SharedImageRepresentationGLTexturePassthroughAndroid>(
       manager, this, tracker, std::move(texture));
 }
 
@@ -746,10 +773,13 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     return nullptr;
   }
 
-  return std::make_unique<SharedImageBackingAHB>(
+  auto backing = std::make_unique<SharedImageBackingAHB>(
       mailbox, resource_format, size, color_space, surface_origin, alpha_type,
       usage, std::move(handle.android_hardware_buffer), estimated_size, false,
       base::ScopedFD());
+
+  backing->SetCleared();
+  return backing;
 }
 
 }  // namespace gpu

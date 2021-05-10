@@ -15,15 +15,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
-#include "components/sync/model_impl/in_memory_metadata_change_list.h"
-#include "components/sync/model_impl/sync_metadata_store_change_list.h"
+#include "components/sync/model/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -55,8 +56,50 @@ std::string ComputeClientTag(
          net::EscapePath(password_data.signon_realm());
 }
 
+base::Time ConvertToBaseTime(uint64_t time) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      // Use FromDeltaSinceWindowsEpoch because create_time_us has
+      // always used the Windows epoch.
+      base::TimeDelta::FromMicroseconds(time));
+}
+
+// Converts 'insecure_credentials' into PasswordIssues.
+// 'insecure_credentials' should contain only unique Insecure Types.
+sync_pb::PasswordSpecificsData::PasswordIssues
+PasswordIssuesFromInsecureCredentials(
+    const std::vector<InsecureCredential>& insecure_credentials) {
+  sync_pb::PasswordSpecificsData::PasswordIssues issues;
+  for (const auto& insecure_credential : insecure_credentials) {
+    sync_pb::PasswordSpecificsData::PasswordIssues::PasswordIssue issue;
+    issue.set_date_first_detection_microseconds(
+        insecure_credential.create_time.ToDeltaSinceWindowsEpoch()
+            .InMicroseconds());
+    issue.set_is_muted(insecure_credential.is_muted.value());
+    switch (insecure_credential.insecure_type) {
+      case InsecureType::kLeaked:
+        DCHECK(!issues.has_leaked_password_issue());
+        *issues.mutable_leaked_password_issue() = std::move(issue);
+        break;
+      case InsecureType::kPhished:
+        DCHECK(!issues.has_phished_password_issue());
+        *issues.mutable_phished_password_issue() = std::move(issue);
+        break;
+      case InsecureType::kWeak:
+        DCHECK(!issues.has_weak_password_issue());
+        *issues.mutable_weak_password_issue() = std::move(issue);
+        break;
+      case InsecureType::kReused:
+        DCHECK(!issues.has_reused_password_issue());
+        *issues.mutable_reused_password_issue() = std::move(issue);
+        break;
+    }
+  }
+  return issues;
+}
+
 sync_pb::PasswordSpecifics SpecificsFromPassword(
-    const PasswordForm& password_form) {
+    const PasswordForm& password_form,
+    const std::vector<InsecureCredential>& insecure_credentials) {
   sync_pb::PasswordSpecifics specifics;
   sync_pb::PasswordSpecificsData* password_data =
       specifics.mutable_client_only_encrypted_data();
@@ -86,6 +129,11 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       password_form.federation_origin.opaque()
           ? std::string()
           : password_form.federation_origin.Serialize());
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSyncingCompromisedCredentials)) {
+    *password_data->mutable_password_issues() =
+        PasswordIssuesFromInsecureCredentials(insecure_credentials);
+  }
   return specifics;
 }
 
@@ -107,18 +155,14 @@ PasswordForm PasswordFromEntityChange(const syncer::EntityChange& entity_change,
   password.username_value = base::UTF8ToUTF16(password_data.username_value());
   password.password_value = base::UTF8ToUTF16(password_data.password_value());
   if (password_data.has_date_last_used()) {
-    password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(password_data.date_last_used()));
+    password.date_last_used = ConvertToBaseTime(password_data.date_last_used());
   } else if (password_data.preferred()) {
     // For legacy passwords that don't have the |date_last_used| field set, we
     // should it similar to the logic in login database migration.
     password.date_last_used =
         base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(1));
   }
-  password.date_created = base::Time::FromDeltaSinceWindowsEpoch(
-      // Use FromDeltaSinceWindowsEpoch because create_time_us has
-      // always used the Windows epoch.
-      base::TimeDelta::FromMicroseconds(password_data.date_created()));
+  password.date_created = ConvertToBaseTime(password_data.date_created());
   password.blocked_by_user = password_data.blacklisted();
   password.type = static_cast<PasswordForm::Type>(password_data.type());
   password.times_used = password_data.times_used();
@@ -130,20 +174,75 @@ PasswordForm PasswordFromEntityChange(const syncer::EntityChange& entity_change,
   return password;
 }
 
-std::unique_ptr<syncer::EntityData> CreateEntityData(const PasswordForm& form) {
+InsecureCredential CreateInsecureCredential(
+    const std::string& signon_realm,
+    const base::string16& username,
+    InsecureType type,
+    const sync_pb::PasswordSpecificsData::PasswordIssues::PasswordIssue&
+        issue) {
+  return InsecureCredential(
+      signon_realm, username,
+      ConvertToBaseTime(issue.date_first_detection_microseconds()), type,
+      IsMuted(issue.is_muted()));
+}
+
+std::vector<InsecureCredential> InsecureCredentialsFromEntityChange(
+    const syncer::EntityChange& entity_change) {
+  DCHECK(entity_change.data().specifics.has_password());
+
+  const sync_pb::PasswordSpecificsData& password_data =
+      entity_change.data().specifics.password().client_only_encrypted_data();
+
+  std::vector<InsecureCredential> insecure_credentials;
+
+  if (!password_data.has_password_issues())
+    return insecure_credentials;
+
+  const std::string& signon_realm = password_data.signon_realm();
+  const base::string16& username =
+      base::UTF8ToUTF16(password_data.username_value());
+
+  const auto& password_issues = password_data.password_issues();
+  if (password_issues.has_leaked_password_issue()) {
+    insecure_credentials.push_back(
+        CreateInsecureCredential(signon_realm, username, InsecureType::kLeaked,
+                                 password_issues.leaked_password_issue()));
+  }
+  if (password_issues.has_reused_password_issue()) {
+    insecure_credentials.push_back(
+        CreateInsecureCredential(signon_realm, username, InsecureType::kReused,
+                                 password_issues.reused_password_issue()));
+  }
+  if (password_issues.has_weak_password_issue()) {
+    insecure_credentials.push_back(
+        CreateInsecureCredential(signon_realm, username, InsecureType::kWeak,
+                                 password_issues.weak_password_issue()));
+  }
+  if (password_issues.has_phished_password_issue()) {
+    insecure_credentials.push_back(
+        CreateInsecureCredential(signon_realm, username, InsecureType::kPhished,
+                                 password_issues.phished_password_issue()));
+  }
+  return insecure_credentials;
+}
+
+std::unique_ptr<syncer::EntityData> CreateEntityData(
+    const PasswordForm& form,
+    const std::vector<InsecureCredential>& insecure_credentials) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  *entity_data->specifics.mutable_password() = SpecificsFromPassword(form);
+  *entity_data->specifics.mutable_password() =
+      SpecificsFromPassword(form, insecure_credentials);
   entity_data->name = form.signon_realm;
   return entity_data;
 }
 
-int ParsePrimaryKey(const std::string& storage_key) {
+FormPrimaryKey ParsePrimaryKey(const std::string& storage_key) {
   int primary_key = 0;
   bool success = base::StringToInt(storage_key, &primary_key);
   DCHECK(success)
       << "Invalid storage key. Failed to convert the storage key to "
          "an integer";
-  return primary_key;
+  return FormPrimaryKey(primary_key);
 }
 
 // Returns true iff |password_specifics| and |password_form| are equal
@@ -165,13 +264,9 @@ bool AreLocalAndRemotePasswordsEqual(
           base::UTF16ToUTF8(password_form.password_value) ==
               password_specifics.password_value() &&
           password_form.date_last_used ==
-              base::Time::FromDeltaSinceWindowsEpoch(
-                  base::TimeDelta::FromMicroseconds(
-                      password_specifics.date_last_used())) &&
+              ConvertToBaseTime(password_specifics.date_last_used()) &&
           password_form.date_created ==
-              base::Time::FromDeltaSinceWindowsEpoch(
-                  base::TimeDelta::FromMicroseconds(
-                      password_specifics.date_created())) &&
+              ConvertToBaseTime(password_specifics.date_created()) &&
           password_form.blocked_by_user == password_specifics.blacklisted() &&
           static_cast<int>(password_form.type) == password_specifics.type() &&
           password_form.times_used == password_specifics.times_used() &&
@@ -229,7 +324,8 @@ class ScopedStoreTransaction {
 PasswordSyncBridge::PasswordSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     PasswordStoreSync* password_store_sync,
-    const base::RepeatingClosure& sync_enabled_or_disabled_cb)
+    const base::RepeatingClosure& sync_enabled_or_disabled_cb,
+    ForceInitialSyncCycle force_initial_sync)
     : ModelTypeSyncBridge(std::move(change_processor)),
       password_store_sync_(password_store_sync),
       sync_enabled_or_disabled_cb_(sync_enabled_or_disabled_cb) {
@@ -244,13 +340,17 @@ PasswordSyncBridge::PasswordSyncBridge(
         {FROM_HERE, "Password metadata store isn't available."});
     sync_metadata_read_error = SyncMetadataReadError::kDbNotAvailable;
   } else {
-    batch = password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
+    if (!force_initial_sync) {
+      batch = password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
+    }
     if (!batch) {
-      // If the metadata cannot be read, it's mostly a persistent error, and
-      // hence we should drop the metadata to go throw the initial sync flow.
+      // If the metadata cannot be read, it's either a persistent error or force
+      // initial sync has been requested. In both cases, we drop the metadata to
+      // go through the initial sync flow.
       password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
       batch = std::make_unique<syncer::MetadataBatch>();
-      sync_metadata_read_error = SyncMetadataReadError::kReadFailed;
+      if (!force_initial_sync)
+        sync_metadata_read_error = SyncMetadataReadError::kReadFailed;
     }
   }
   base::UmaHistogramEnumeration("PasswordManager.SyncMetadataReadError",
@@ -287,12 +387,17 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
       password_store_sync_->GetMetadataStore(), syncer::PASSWORDS);
 
   for (const PasswordStoreChange& change : local_changes) {
-    const std::string storage_key = base::NumberToString(change.primary_key());
+    const std::string storage_key =
+        base::NumberToString(change.primary_key().value());
     switch (change.type()) {
       case PasswordStoreChange::ADD:
       case PasswordStoreChange::UPDATE: {
-        change_processor()->Put(storage_key, CreateEntityData(change.form()),
-                                &metadata_change_list);
+        const std::vector<InsecureCredential> insecure_credentials =
+            password_store_sync_->ReadSecurityIssues(
+                FormPrimaryKey(change.primary_key()));
+        change_processor()->Put(
+            storage_key, CreateEntityData(change.form(), insecure_credentials),
+            &metadata_change_list);
         break;
       }
       case PasswordStoreChange::REMOVE: {
@@ -373,6 +478,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
   // This is used to keep track of all the changes applied to the password
   // store to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
+  // Whether local state of insecure credentials changed.
+  bool local_insecure_credentials_changed = false;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
     const base::Time time_now = base::Time::Now();
@@ -383,10 +490,13 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     // tags. In addition, collect the client tags of local passwords.
     std::unordered_set<std::string> client_tags_of_local_passwords;
     for (const auto& pair : key_to_local_form_map) {
-      const int primary_key = pair.first;
+      const FormPrimaryKey primary_key = pair.first;
       const PasswordForm& local_password_form = *pair.second;
+      const std::vector<InsecureCredential> local_insecure_credentials =
+          password_store_sync_->ReadSecurityIssues(primary_key);
+
       std::unique_ptr<syncer::EntityData> local_form_entity_data =
-          CreateEntityData(local_password_form);
+          CreateEntityData(local_password_form, local_insecure_credentials);
       const std::string client_tag_of_local_password =
           GetClientTag(*local_form_entity_data);
       client_tags_of_local_passwords.insert(client_tag_of_local_password);
@@ -396,7 +506,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
         // Local password doesn't exist in the remote model, Put() it in the
         // processor.
         change_processor()->Put(
-            /*storage_key=*/base::NumberToString(primary_key),
+            /*storage_key=*/base::NumberToString(primary_key.value()),
             std::move(local_form_entity_data), metadata_change_list.get());
         continue;
       }
@@ -410,33 +520,59 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
               .client_only_encrypted_data();
 
       // First, we need to inform the processor about the storage key anyway.
-      change_processor()->UpdateStorageKey(remote_entity_change.data(),
-                                           /*storage_key=*/
-                                           base::NumberToString(primary_key),
-                                           metadata_change_list.get());
+      change_processor()->UpdateStorageKey(
+          remote_entity_change.data(),
+          /*storage_key=*/
+          base::NumberToString(primary_key.value()),
+          metadata_change_list.get());
 
-      if (AreLocalAndRemotePasswordsEqual(remote_password_specifics,
-                                          local_password_form)) {
+      std::vector<InsecureCredential> remote_insecure_credentials;
+      bool remote_and_local_insecure_credentials_equal = true;
+      bool remote_and_local_passwords_equal = AreLocalAndRemotePasswordsEqual(
+          remote_password_specifics, local_password_form);
+
+      if (base::FeatureList::IsEnabled(
+              password_manager::features::kSyncingCompromisedCredentials)) {
+        remote_insecure_credentials =
+            InsecureCredentialsFromEntityChange(remote_entity_change);
+        remote_and_local_insecure_credentials_equal =
+            base::ranges::is_permutation(remote_insecure_credentials,
+                                         local_insecure_credentials);
+      }
+
+      if (remote_and_local_passwords_equal &&
+          remote_and_local_insecure_credentials_equal) {
         // Passwords are identical, nothing else to do.
         continue;
       }
 
-      // Passwords aren't identical, pick the most recently created one.
-      if (base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(
-                  remote_password_specifics.date_created())) <
-          local_password_form.date_created) {
-        // The local password is more recent, update the processor.
+      // Passwords or insecure credentials aren't identical.
+      if (ConvertToBaseTime(remote_password_specifics.date_created()) <
+              local_password_form.date_created ||
+          (remote_and_local_passwords_equal &&
+           !remote_password_specifics.has_password_issues())) {
+        // Either the local password is more recent, or they are equal but local
+        // password has security issues - update the processor.
         change_processor()->Put(
-            /*storage_key=*/base::NumberToString(primary_key),
+            /*storage_key=*/base::NumberToString(primary_key.value()),
             std::move(local_form_entity_data), metadata_change_list.get());
       } else {
         // The remote password is more recent, update the local model.
         UpdateLoginError update_login_error;
-        PasswordStoreChangeList changes = password_store_sync_->UpdateLoginSync(
+        const PasswordForm form =
             PasswordFromEntityChange(remote_entity_change,
-                                     /*sync_time=*/time_now),
-            &update_login_error);
+                                     /*sync_time=*/time_now);
+        PasswordStoreChangeList changes =
+            password_store_sync_->UpdateLoginSync(form, &update_login_error);
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kSyncingCompromisedCredentials)) {
+          // Check if insecure credentials changed before updating.
+          if (!remote_and_local_insecure_credentials_equal) {
+            password_store_sync_->UpdateInsecureCredentialsSync(
+                form, remote_insecure_credentials);
+            local_insecure_credentials_changed = true;
+          }
+        }
         DCHECK_LE(changes.size(), 1U);
         base::UmaHistogramEnumeration(
             "PasswordManager.MergeSyncData.UpdateLoginSyncError",
@@ -476,6 +612,16 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
       PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
           PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
           &add_login_error);
+      if (base::FeatureList::IsEnabled(
+              password_manager::features::kSyncingCompromisedCredentials)) {
+        std::vector<InsecureCredential> credentials =
+            InsecureCredentialsFromEntityChange(*entity_change);
+        if (!credentials.empty()) {
+          local_insecure_credentials_changed = true;
+          password_store_sync_->AddInsecureCredentialsSync(
+              std::move(credentials));
+        }
+      }
       base::UmaHistogramEnumeration(
           "PasswordManager.MergeSyncData.AddLoginSyncError", add_login_error);
 
@@ -513,7 +659,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
       change_processor()->UpdateStorageKey(
           entity_change->data(),
           /*storage_key=*/
-          base::NumberToString(changes.back().primary_key()),
+          base::NumberToString(changes.back().primary_key().value()),
           metadata_change_list.get());
 
       password_store_changes.insert(password_store_changes.end(),
@@ -544,6 +690,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     // metadata changes, and no need to notify observers since they aren't
     // interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
+    if (local_insecure_credentials_changed) {
+      password_store_sync_->NotifyInsecureCredentialsChanged();
+    }
   }
 
   metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
@@ -578,6 +727,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
   // This is used to keep track of all the changes applied to the password store
   // to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
+  // Whether local state of insecure credentials changed.
+  bool insecure_credentials_changed = false;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
 
@@ -590,6 +741,17 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           changes = password_store_sync_->AddLoginSync(
               PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
               &add_login_error);
+          if (base::FeatureList::IsEnabled(
+                  password_manager::features::kSyncingCompromisedCredentials)) {
+            std::vector<InsecureCredential> credentials =
+                InsecureCredentialsFromEntityChange(*entity_change);
+
+            if (!credentials.empty()) {
+              insecure_credentials_changed = true;
+              password_store_sync_->AddInsecureCredentialsSync(
+                  std::move(credentials));
+            }
+          }
           base::UmaHistogramEnumeration(
               "PasswordManager.ApplySyncChanges.AddLoginSyncError",
               add_login_error);
@@ -630,10 +792,10 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           change_processor()->UpdateStorageKey(
               entity_change->data(),
               /*storage_key=*/
-              base::NumberToString(changes.back().primary_key()),
+              base::NumberToString(changes.back().primary_key().value()),
               metadata_change_list.get());
           break;
-        case syncer::EntityChange::ACTION_UPDATE:
+        case syncer::EntityChange::ACTION_UPDATE: {
           // TODO(mamir): This had been added to mitigate some potential issues
           // in the login database. Once the underlying cause is verified, we
           // should remove this check.
@@ -641,9 +803,27 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
             continue;
           }
           UpdateLoginError update_login_error;
-          changes = password_store_sync_->UpdateLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
-              &update_login_error);
+          PasswordForm form =
+              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now);
+          changes =
+              password_store_sync_->UpdateLoginSync(form, &update_login_error);
+          FormPrimaryKey primary_key =
+              FormPrimaryKey(ParsePrimaryKey(entity_change->storage_key()));
+          if (base::FeatureList::IsEnabled(
+                  password_manager::features::kSyncingCompromisedCredentials)) {
+            // Check if insecure credentials changed before updating.
+            std::vector<InsecureCredential> remote_insecure_credentials =
+                InsecureCredentialsFromEntityChange(*entity_change);
+            std::vector<InsecureCredential> local_insecure_credentials =
+                password_store_sync_->ReadSecurityIssues(
+                    FormPrimaryKey(primary_key));
+            if (!base::ranges::is_permutation(remote_insecure_credentials,
+                                              local_insecure_credentials)) {
+              password_store_sync_->UpdateInsecureCredentialsSync(
+                  form, remote_insecure_credentials);
+              insecure_credentials_changed = true;
+            }
+          }
           base::UmaHistogramEnumeration(
               "PasswordManager.ApplySyncChanges.UpdateLoginSyncError",
               update_login_error);
@@ -661,9 +841,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
                 FROM_HERE, "Failed to update an entry in the password store.");
           }
           DCHECK_EQ(1U, changes.size());
-          DCHECK(changes[0].primary_key() ==
-                 ParsePrimaryKey(entity_change->storage_key()));
+          DCHECK(changes[0].primary_key() == primary_key);
           break;
+        }
         case syncer::EntityChange::ACTION_DELETE: {
           // TODO(mamir): This had been added to mitigate some potential issues
           // in the login database. Once the underlying cause is verified, we
@@ -671,7 +851,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           if (entity_change->storage_key().empty()) {
             continue;
           }
-          int primary_key = ParsePrimaryKey(entity_change->storage_key());
+          FormPrimaryKey primary_key =
+              ParsePrimaryKey(entity_change->storage_key());
           changes =
               password_store_sync_->RemoveLoginByPrimaryKeySync(primary_key);
           if (changes.empty()) {
@@ -713,6 +894,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // changes are only metadata changes. In such case, no need to notify
     // observers since they aren't interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
+    if (insecure_credentials_changed) {
+      password_store_sync_->NotifyInsecureCredentialsChanged();
+    }
   }
   metrics_util::LogApplySyncChangesState(
       metrics_util::ApplySyncChangesState::kApplyOK);
@@ -734,9 +918,12 @@ void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::string& storage_key : storage_keys) {
-    int primary_key = ParsePrimaryKey(storage_key);
+    FormPrimaryKey primary_key = ParsePrimaryKey(storage_key);
     if (key_to_form_map.count(primary_key) != 0) {
-      batch->Put(storage_key, CreateEntityData(*key_to_form_map[primary_key]));
+      const std::vector<InsecureCredential> insecure_credentials =
+          password_store_sync_->ReadSecurityIssues(primary_key);
+      batch->Put(storage_key, CreateEntityData(*key_to_form_map[primary_key],
+                                               insecure_credentials));
     }
   }
   std::move(callback).Run(std::move(batch));
@@ -756,8 +943,11 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const auto& pair : key_to_form_map) {
     PasswordForm form = *pair.second;
-    form.password_value = base::UTF8ToUTF16("hidden");
-    batch->Put(base::NumberToString(pair.first), CreateEntityData(form));
+    const std::vector<InsecureCredential> insecure_credentials =
+        password_store_sync_->ReadSecurityIssues(pair.first);
+    form.password_value = base::UTF8ToUTF16("<redacted>");
+    batch->Put(base::NumberToString(pair.first.value()),
+               CreateEntityData(form, insecure_credentials));
   }
   std::move(callback).Run(std::move(batch));
 }
@@ -806,10 +996,10 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   PrimaryKeyToFormMap logins;
   FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
   if (result == FormRetrievalResult::kSuccess) {
-    std::set<int> unsynced_passwords_storage_keys =
+    std::set<FormPrimaryKey> unsynced_passwords_storage_keys =
         GetUnsyncedPasswordsStorageKeys();
     for (const auto& primary_key_and_form : logins) {
-      int primary_key = primary_key_and_form.first;
+      FormPrimaryKey primary_key = primary_key_and_form.first;
       const PasswordForm& form = *primary_key_and_form.second;
       password_store_changes.emplace_back(PasswordStoreChange::REMOVE, form,
                                           primary_key);
@@ -835,8 +1025,8 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   sync_enabled_or_disabled_cb_.Run();
 }
 
-std::set<int> PasswordSyncBridge::GetUnsyncedPasswordsStorageKeys() {
-  std::set<int> storage_keys;
+std::set<FormPrimaryKey> PasswordSyncBridge::GetUnsyncedPasswordsStorageKeys() {
+  std::set<FormPrimaryKey> storage_keys;
   DCHECK(password_store_sync_);
   PasswordStoreSync::MetadataStore* metadata_store =
       password_store_sync_->GetMetadataStore();

@@ -5,11 +5,12 @@
 #include "chrome/browser/chromeos/scanning/scan_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager_factory.h"
 #include "chrome/browser/chromeos/scanning/scan_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -29,21 +30,12 @@ ScanServiceFactory* ScanServiceFactory::GetInstance() {
   return base::Singleton<ScanServiceFactory>::get();
 }
 
-ScanServiceFactory::ScanServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "ScanService",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(LorgnetteScannerManagerFactory::GetInstance());
-}
-
-ScanServiceFactory::~ScanServiceFactory() = default;
-
-KeyedService* ScanServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
+// static
+KeyedService* ScanServiceFactory::BuildInstanceFor(
+    content::BrowserContext* context) {
   // Prevent an instance of ScanService from being created on the lock screen.
   Profile* profile = Profile::FromBrowserContext(context);
-  if (ProfileHelper::IsLockScreenAppProfile(profile) ||
-      ProfileHelper::IsSigninProfile(profile)) {
+  if (!ProfileHelper::IsRegularProfile(profile)) {
     return nullptr;
   }
 
@@ -57,6 +49,25 @@ KeyedService* ScanServiceFactory::BuildServiceInstanceFor(
       file_manager::util::GetMyFilesFolderForProfile(profile),
       drive_available ? integration_service->GetMountPointPath()
                       : base::FilePath());
+}
+
+ScanServiceFactory::ScanServiceFactory()
+    : BrowserContextKeyedServiceFactory(
+          "ScanService",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(LorgnetteScannerManagerFactory::GetInstance());
+}
+
+ScanServiceFactory::~ScanServiceFactory() = default;
+
+KeyedService* ScanServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return BuildInstanceFor(context);
+}
+
+content::BrowserContext* ScanServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool ScanServiceFactory::ServiceIsCreatedWithBrowserContext() const {

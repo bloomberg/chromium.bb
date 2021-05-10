@@ -10,12 +10,12 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -25,6 +25,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -135,11 +136,11 @@ VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {
   return new VersionUpdaterCros(web_contents);
 }
 
-void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
-  callback_ = callback;
+void VersionUpdaterCros::GetUpdateStatus(StatusCallback callback) {
+  callback_ = std::move(callback);
 
   // User is not actively checking for updates.
-  if (!EnsureCanUpdate(false /* interactive */, callback))
+  if (!EnsureCanUpdate(false /* interactive */, callback_))
     return;
 
   UpdateEngineClient* update_engine_client =
@@ -151,12 +152,12 @@ void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
       DBusThreadManager::Get()->GetUpdateEngineClient()->GetLastStatus());
 }
 
-void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback,
-                                        const PromoteCallback&) {
-  callback_ = callback;
+void VersionUpdaterCros::CheckForUpdate(StatusCallback callback,
+                                        PromoteCallback) {
+  callback_ = std::move(callback);
 
   // User is actively checking for updates.
-  if (!EnsureCanUpdate(true /* interactive */, callback))
+  if (!EnsureCanUpdate(true /* interactive */, callback_))
     return;
 
   UpdateEngineClient* update_engine_client =
@@ -194,10 +195,10 @@ void VersionUpdaterCros::SetChannel(const std::string& channel,
 }
 
 void VersionUpdaterCros::SetUpdateOverCellularOneTimePermission(
-    const StatusCallback& callback,
+    StatusCallback callback,
     const std::string& update_version,
     int64_t update_size) {
-  callback_ = callback;
+  callback_ = std::move(callback);
   DBusThreadManager::Get()
       ->GetUpdateEngineClient()
       ->SetUpdateOverCellularOneTimePermission(
@@ -222,20 +223,21 @@ void VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission(
 }
 
 void VersionUpdaterCros::GetChannel(bool get_current_channel,
-                                    const ChannelCallback& cb) {
+                                    ChannelCallback cb) {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
   // Request the channel information. Bind to a weak_ptr bound method rather
   // than passing |cb| directly so that |cb| does not outlive |this|.
   update_engine_client->GetChannel(
-      get_current_channel, base::BindOnce(&VersionUpdaterCros::OnGetChannel,
-                                          weak_ptr_factory_.GetWeakPtr(), cb));
+      get_current_channel,
+      base::BindOnce(&VersionUpdaterCros::OnGetChannel,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
-void VersionUpdaterCros::OnGetChannel(const ChannelCallback& cb,
+void VersionUpdaterCros::OnGetChannel(ChannelCallback cb,
                                       const std::string& current_channel) {
-  cb.Run(current_channel);
+  std::move(cb).Run(current_channel);
 }
 
 void VersionUpdaterCros::GetEolInfo(EolInfoCallback cb) {

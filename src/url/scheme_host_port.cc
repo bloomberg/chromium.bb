@@ -10,9 +10,9 @@
 #include <tuple>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -49,6 +49,10 @@ bool IsCanonicalHost(const base::StringPiece& host) {
   return host == canon_host;
 }
 
+// Note: When changing IsValidInput, consider also updating
+// ShouldTreatAsOpaqueOrigin in Blink (there might be existing differences in
+// behavior between these 2 layers, but we should avoid introducing new
+// differences).
 bool IsValidInput(const base::StringPiece& scheme,
                   const base::StringPiece& host,
                   uint16_t port,
@@ -57,15 +61,21 @@ bool IsValidInput(const base::StringPiece& scheme,
   if (scheme.empty())
     return false;
 
+  // about:blank and other no-access schemes translate into an opaque origin.
+  // This helps consistency with ShouldTreatAsOpaqueOrigin in Blink.
+  if (base::Contains(GetNoAccessSchemes(), scheme))
+    return false;
+
   SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   bool is_standard = GetStandardSchemeType(
       scheme.data(),
       Component(0, base::checked_cast<int>(scheme.length())),
       &scheme_type);
   if (!is_standard) {
-    // To be consistent with blink, local non-standard schemes are currently
-    // allowed to be tuple origins. Nonstandard schemes don't have hostnames,
-    // so their tuple is just ("protocol", "", 0).
+    // To be consistent with ShouldTreatAsOpaqueOrigin in Blink, local
+    // non-standard schemes are currently allowed to be tuple origins.
+    // Nonstandard schemes don't have hostnames, so their tuple is just
+    // ("protocol", "", 0).
     //
     // TODO: Migrate "content:" and "externalfile:" to be standard schemes, and
     // remove this local scheme exception.
@@ -241,9 +251,6 @@ std::string SchemeHostPort::SerializeInternal(url::Parsed* parsed) const {
     parsed->host = Component(result.length(), host_.length());
     result.append(host_);
   }
-
-  if (port_ == 0)
-    return result;
 
   // Omit the port component if the port matches with the default port
   // defined for the scheme, if any.

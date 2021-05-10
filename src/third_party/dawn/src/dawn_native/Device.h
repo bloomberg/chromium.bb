@@ -33,12 +33,13 @@ namespace dawn_native {
     class AttachmentState;
     class AttachmentStateBlueprint;
     class BindGroupLayoutBase;
-    class CreateReadyPipelineTracker;
+    class CreatePipelineAsyncTracker;
     class DynamicUploader;
-    class ErrorScope;
-    class ErrorScopeTracker;
+    class ErrorScopeStack;
+    class PersistentCache;
     class StagingBufferBase;
     struct InternalPipelineStore;
+    struct ShaderModuleParseResult;
 
     class DeviceBase {
       public:
@@ -69,8 +70,6 @@ namespace dawn_native {
 
         AdapterBase* GetAdapter() const;
         dawn_platform::Platform* GetPlatform() const;
-
-        ErrorScopeTracker* GetErrorScopeTracker() const;
 
         // Returns the Format corresponding to the wgpu::TextureFormat or an error if the format
         // isn't a valid wgpu::TextureFormat or isn't supported by this device.
@@ -128,7 +127,8 @@ namespace dawn_native {
         void UncacheSampler(SamplerBase* obj);
 
         ResultOrError<ShaderModuleBase*> GetOrCreateShaderModule(
-            const ShaderModuleDescriptor* descriptor);
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult);
         void UncacheShaderModule(ShaderModuleBase* obj);
 
         Ref<AttachmentState> GetOrCreateAttachmentState(AttachmentStateBlueprint* blueprint);
@@ -146,11 +146,11 @@ namespace dawn_native {
         ComputePipelineBase* CreateComputePipeline(const ComputePipelineDescriptor* descriptor);
         PipelineLayoutBase* CreatePipelineLayout(const PipelineLayoutDescriptor* descriptor);
         QuerySetBase* CreateQuerySet(const QuerySetDescriptor* descriptor);
-        void CreateReadyComputePipeline(const ComputePipelineDescriptor* descriptor,
-                                        WGPUCreateReadyComputePipelineCallback callback,
+        void CreateComputePipelineAsync(const ComputePipelineDescriptor* descriptor,
+                                        WGPUCreateComputePipelineAsyncCallback callback,
                                         void* userdata);
-        void CreateReadyRenderPipeline(const RenderPipelineDescriptor* descriptor,
-                                       WGPUCreateReadyRenderPipelineCallback callback,
+        void CreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
+                                       WGPUCreateRenderPipelineAsyncCallback callback,
                                        void* userdata);
         RenderBundleEncoder* CreateRenderBundleEncoder(
             const RenderBundleEncoderDescriptor* descriptor);
@@ -166,7 +166,9 @@ namespace dawn_native {
         // For Dawn Wire
         BufferBase* CreateErrorBuffer();
 
+        // TODO(dawn:22): Remove once the deprecation period is finished.
         QueueBase* GetDefaultQueue();
+        QueueBase* GetQueue();
 
         void InjectError(wgpu::ErrorType type, const char* message);
         bool Tick();
@@ -178,7 +180,7 @@ namespace dawn_native {
 
         MaybeError ValidateIsAlive() const;
 
-        ErrorScope* GetCurrentErrorScope();
+        PersistentCache* GetPersistentCache();
 
         void Reference();
         void Release();
@@ -238,9 +240,13 @@ namespace dawn_native {
         // still check if we have pending work to take care of, rather than hanging and never
         // reaching the serial the work will be executed on.
         void AddFutureSerial(ExecutionSerial serial);
+        // Check for passed fences and set the new completed serial
+        void CheckPassedSerials();
 
         virtual uint32_t GetOptimalBytesPerRowAlignment() const = 0;
         virtual uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const = 0;
+
+        virtual float GetTimestampPeriodInNS() const = 0;
 
       protected:
         void SetToggle(Toggle toggle, bool isEnabled);
@@ -251,8 +257,6 @@ namespace dawn_native {
 
         // Incrememt mLastSubmittedSerial when we submit the next serial
         void IncrementLastSubmittedCommandSerial();
-        // Check for passed fences and set the new completed serial
-        void CheckPassedSerials();
 
       private:
         virtual ResultOrError<BindGroupBase*> CreateBindGroupImpl(
@@ -272,7 +276,8 @@ namespace dawn_native {
         virtual ResultOrError<SamplerBase*> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) = 0;
         virtual ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
-            const ShaderModuleDescriptor* descriptor) = 0;
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult) = 0;
         virtual ResultOrError<SwapChainBase*> CreateSwapChainImpl(
             const SwapChainDescriptor* descriptor) = 0;
         // Note that previousSwapChain may be nullptr, or come from a different backend.
@@ -353,13 +358,20 @@ namespace dawn_native {
         // resources.
         virtual MaybeError WaitForIdleForDestruction() = 0;
 
+        wgpu::ErrorCallback mUncapturedErrorCallback = nullptr;
+        void* mUncapturedErrorUserdata = nullptr;
+
         wgpu::DeviceLostCallback mDeviceLostCallback = nullptr;
         void* mDeviceLostUserdata = nullptr;
 
-        AdapterBase* mAdapter = nullptr;
+        std::unique_ptr<ErrorScopeStack> mErrorScopeStack;
 
-        Ref<ErrorScope> mRootErrorScope;
-        Ref<ErrorScope> mCurrentErrorScope;
+        // The Device keeps a ref to the Instance so that any live Device keeps the Instance alive.
+        // The Instance shouldn't need to ref child objects so this shouldn't introduce ref cycles.
+        // The Device keeps a simple pointer to the Adapter because the Adapter is owned by the
+        // Instance.
+        Ref<InstanceBase> mInstance;
+        AdapterBase* mAdapter = nullptr;
 
         // The object caches aren't exposed in the header as they would require a lot of
         // additional includes.
@@ -369,9 +381,8 @@ namespace dawn_native {
         Ref<BindGroupLayoutBase> mEmptyBindGroupLayout;
 
         std::unique_ptr<DynamicUploader> mDynamicUploader;
-        std::unique_ptr<ErrorScopeTracker> mErrorScopeTracker;
-        std::unique_ptr<CreateReadyPipelineTracker> mCreateReadyPipelineTracker;
-        Ref<QueueBase> mDefaultQueue;
+        std::unique_ptr<CreatePipelineAsyncTracker> mCreatePipelineAsyncTracker;
+        Ref<QueueBase> mQueue;
 
         struct DeprecationWarnings;
         std::unique_ptr<DeprecationWarnings> mDeprecationWarnings;
@@ -388,6 +399,8 @@ namespace dawn_native {
         ExtensionsSet mEnabledExtensions;
 
         std::unique_ptr<InternalPipelineStore> mInternalPipelineStore;
+
+        std::unique_ptr<PersistentCache> mPersistentCache;
     };
 
 }  // namespace dawn_native

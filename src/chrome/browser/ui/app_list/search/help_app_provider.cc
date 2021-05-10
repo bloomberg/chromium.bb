@@ -12,12 +12,14 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/chromeos/devicetype_utils.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -34,8 +36,7 @@ HelpAppResult::HelpAppResult(float relevance,
     : profile_(profile) {
   DCHECK(profile_);
   set_id(kHelpAppResult);
-  SetTitle(ui::SubstituteChromeOSDeviceType(
-      IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE));
+  SetTitle(l10n_util::GetStringUTF16(IDS_HELP_APP_WHATS_NEW_SUGGESTION_CHIP));
   // Show this in the first position, in front of any other chips that may be
   // also claiming the first slot.
   SetDisplayIndex(DisplayIndex::kFirstIndex);
@@ -53,10 +54,10 @@ void HelpAppResult::Open(int event_flags) {
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   base::RecordAction(
       base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
-  proxy->LaunchAppWithUrl(chromeos::default_web_apps::kHelpAppId, event_flags,
+  proxy->LaunchAppWithUrl(web_app::kHelpAppId, event_flags,
                           GURL("chrome://help-app/updates"),
                           apps::mojom::LaunchSource::kFromAppListRecommendation,
-                          display::kDefaultDisplayId);
+                          apps::MakeWindowInfo(display::kDefaultDisplayId));
   chromeos::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
 }
 
@@ -98,8 +99,7 @@ ash::AppListSearchResultType HelpAppProvider::ResultType() {
 }
 
 void HelpAppProvider::OnAppUpdate(const apps::AppUpdate& update) {
-  if (update.AppId() == chromeos::default_web_apps::kHelpAppId &&
-      update.ReadinessChanged() &&
+  if (update.AppId() == web_app::kHelpAppId && update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kReady) {
     LoadIcon();
   }
@@ -126,8 +126,7 @@ void HelpAppProvider::LoadIcon() {
           ? apps::mojom::IconType::kStandard
           : apps::mojom::IconType::kUncompressed;
   app_service_proxy_->LoadIcon(
-      apps::mojom::AppType::kWeb, chromeos::default_web_apps::kHelpAppId,
-      icon_type,
+      apps::mojom::AppType::kWeb, web_app::kHelpAppId, icon_type,
       ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
       /*allow_placeholder_icon=*/false,
       base::BindOnce(&HelpAppProvider::OnLoadIcon, weak_factory_.GetWeakPtr()));

@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_image_decode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_frame.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_track.h"
@@ -33,8 +34,9 @@ ImageDecoderExternal* ImageDecoderExternal::Create(
     ScriptState* script_state,
     const ImageDecoderInit* init,
     ExceptionState& exception_state) {
-  return MakeGarbageCollected<ImageDecoderExternal>(script_state, init,
-                                                    exception_state);
+  auto* result = MakeGarbageCollected<ImageDecoderExternal>(script_state, init,
+                                                            exception_state);
+  return exception_state.HadException() ? nullptr : result;
 }
 
 ImageDecoderExternal::DecodeRequest::DecodeRequest(
@@ -72,7 +74,7 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   options_ =
       init->hasOptions() ? init->options() : ImageBitmapOptions::Create();
 
-  mime_type_ = init->type();
+  mime_type_ = init->type().LowerASCII();
   if (!canDecodeType(mime_type_)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Unsupported image format");
@@ -109,7 +111,7 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   if (init->data().IsArrayBuffer()) {
     buffer = DOMArrayPiece(init->data().GetAsArrayBuffer());
   } else if (init->data().IsArrayBufferView()) {
-    buffer = DOMArrayPiece(init->data().GetAsArrayBufferView().View());
+    buffer = DOMArrayPiece(init->data().GetAsArrayBufferView().Get());
   } else {
     NOTREACHED();
     return;
@@ -146,14 +148,14 @@ ImageDecoderExternal::~ImageDecoderExternal() {
   DVLOG(1) << __func__;
 }
 
-ScriptPromise ImageDecoderExternal::decode(uint32_t frame_index,
-                                           bool complete_frames_only) {
+ScriptPromise ImageDecoderExternal::decode(const ImageDecodeOptions* options) {
   DVLOG(1) << __func__;
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
   auto promise = resolver->Promise();
   pending_decodes_.push_back(MakeGarbageCollected<DecodeRequest>(
-      resolver, frame_index, complete_frames_only));
+      resolver, options ? options->frameIndex() : 0,
+      options ? options->completeFramesOnly() : true));
   MaybeSatisfyPendingDecodes();
   return promise;
 }
@@ -310,7 +312,7 @@ void ImageDecoderExternal::CreateImageDecoder() {
 
   // CreateByImageType() can't fail if we use a supported image type. Which we
   // DCHECK above via canDecodeType().
-  DCHECK(decoder_);
+  DCHECK(decoder_) << mime_type_;
 }
 
 void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {

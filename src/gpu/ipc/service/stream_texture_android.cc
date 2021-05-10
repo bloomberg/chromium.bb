@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -38,7 +39,8 @@ namespace {
 std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrent(
     SharedContextState* context_state) {
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-  bool needs_make_current = !context_state->IsCurrent(nullptr);
+  bool needs_make_current =
+      !context_state->IsCurrent(nullptr, /*needs_gl=*/true);
   if (needs_make_current) {
     scoped_make_current = std::make_unique<ui::ScopedMakeCurrent>(
         context_state->context(), context_state->surface());
@@ -75,9 +77,8 @@ void StreamTexture::RunCallback(
       weak_stream_texture->OnFrameAvailable();
   } else {
     task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&StreamTexture::RunCallback, std::move(task_runner),
-                       std::move(weak_stream_texture)));
+        FROM_HERE, base::BindOnce(&StreamTexture::RunCallback, task_runner,
+                                  std::move(weak_stream_texture)));
   }
 }
 
@@ -295,11 +296,21 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
   // need to ensure that it gets updated here.
 
   auto scoped_make_current = MakeCurrent(context_state_.get());
-  auto legacy_mailbox_texture =
-      std::make_unique<gles2::AbstractTextureImplOnSharedContext>(
-          GL_TEXTURE_EXTERNAL_OES, GL_RGBA, coded_size.width(),
-          coded_size.height(), 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-          context_state_.get());
+
+  bool use_passthrough =
+      context_state_->feature_info()->is_passthrough_cmd_decoder();
+  std::unique_ptr<gles2::AbstractTexture> legacy_mailbox_texture;
+  if (use_passthrough) {
+    legacy_mailbox_texture =
+        std::make_unique<gles2::AbstractTextureImplOnSharedContextPassthrough>(
+            GL_TEXTURE_EXTERNAL_OES, context_state_);
+  } else {
+    legacy_mailbox_texture =
+        std::make_unique<gles2::AbstractTextureImplOnSharedContext>(
+            GL_TEXTURE_EXTERNAL_OES, GL_RGBA, coded_size.width(),
+            coded_size.height(), 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+            context_state_);
+  }
   legacy_mailbox_texture->BindStreamTextureImage(
       this, texture_owner_->GetTextureId());
 

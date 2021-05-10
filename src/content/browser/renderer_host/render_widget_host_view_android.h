@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
 
@@ -98,7 +99,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InitAsChild(gfx::NativeView parent_view) override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& pos) override;
-  void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
   gfx::NativeView GetNativeView() override;
@@ -139,9 +139,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ChildDidAckGestureEvent(
       const blink::WebGestureEvent& event,
       blink::mojom::InputEventResultState ack_result) override;
-  BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate,
-      bool for_root_frame) override;
   blink::mojom::PointerLockResult LockMouse(
       bool request_unadjusted_movement) override;
   blink::mojom::PointerLockResult ChangeMouseLock(
@@ -168,11 +165,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
-  void OnRenderWidgetInit() override;
+  void OnRendererWidgetCreated() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
-  void OnSynchronizedDisplayPropertiesChanged() override;
+  void OnSynchronizedDisplayPropertiesChanged(bool rotation) override;
   base::Optional<SkColor> GetBackgroundColor() override;
   void DidNavigate() override;
+  WebContentsAccessibility* GetWebContentsAccessibility() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void GetScreenInfo(blink::ScreenInfo* screen_info) override;
@@ -222,7 +220,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
-  void OnDragUpdate(const gfx::PointF& position) override;
+  void OnDragUpdate(const ui::TouchSelectionDraggable::Type type,
+                    const gfx::PointF& position) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
   void DidScroll() override;
   void ShowTouchSelectionContextMenu(const gfx::Point& location) override;
@@ -323,7 +322,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // RenderFrameMetadataProvider::Observer implementation.
   void OnRenderFrameMetadataChangedBeforeActivation(
       const cc::RenderFrameMetadata& metadata) override;
-  void OnRenderFrameMetadataChangedAfterActivation() override;
+  void OnRenderFrameMetadataChangedAfterActivation(
+      base::TimeTicks activation_time) override;
   void OnRenderFrameSubmission() override {}
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override {}
@@ -549,11 +549,26 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   uint32_t latest_capture_sequence_number_ = 0u;
 
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  bool in_rotation_ = false;
+  // Tracks the time at which rotation started, along with the targeted
+  // viz::LocalSurfaceId which would first embed the new rotation. This is a
+  // deque because it is possible that one rotation may be interrupted by
+  // another before the first has displayed. This can occur on pages that have
+  // long layout and rendering time.
+  std::deque<std::pair<base::TimeTicks, viz::LocalSurfaceId>> rotation_metrics_;
   bool is_first_navigation_ = true;
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
 
-  bool render_widget_initialized_ = false;
+  // False at creation time until the connection to the renderer process is
+  // established. If the connection is lost (ie. renderer process crash) then
+  // this object will be destroyed and recreated for the new process.
+  // NOTE: Due to unfortunate circumstances, the RenderWidgetHost and the
+  // RenderWidgetHostView will outlive the renderer-side object if a
+  // cross-process navigation occurs and the main frame moves out of the
+  // process. At that time this value would remain true though there is no
+  // Widget anymore associated with it. See https://crbug.com/419087.
+  bool renderer_widget_created_ = false;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.

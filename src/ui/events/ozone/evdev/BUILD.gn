@@ -107,6 +107,7 @@ component("evdev") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//ui/display",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
@@ -167,6 +168,7 @@ source_set("unittests") {
     "event_device_test_util.h",
     "event_factory_evdev_unittest.cc",
     "gamepad_event_converter_evdev_unittest.cc",
+    "input_controller_evdev_unittest.cc",
     "input_injector_evdev_unittest.cc",
     "stylus_button_event_converter_evdev_unittest.cc",
     "tablet_event_converter_evdev_unittest.cc",
@@ -185,6 +187,7 @@ source_set("unittests") {
     ":evdev",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/events",

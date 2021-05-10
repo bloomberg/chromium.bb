@@ -105,20 +105,30 @@ public final class BrowsingDataBridge {
      * @param dataTypes An array of browsing data types to delete, represented as values from
      *                  the shared enum {@link BrowsingDataType}.
      * @param timePeriod The time period for which to delete the data.
-     * @param blacklistDomains A list of registerable domains that we don't clear data for.
-     * @param blacklistedDomainReasons A list of the reason metadata for the blacklisted domains.
-     * @param ignoredDomains A list of ignored domains that the user chose to not blacklist. We use
+     * @param excludedDomains A list of registerable domains that we don't clear data for.
+     * @param excludedDomainReasons A list of the reason metadata for the excluded domains.
+     * @param ignoredDomains A list of ignored domains that the user chose to not exclude. We use
      *                       these to remove important site entries if the user ignores them enough.
      * @param ignoredDomainReasons A list of reason metadata for the ignored domains.
      */
     public void clearBrowsingDataExcludingDomains(OnClearBrowsingDataListener listener,
-            int[] dataTypes, @TimePeriod int timePeriod, String[] blacklistDomains,
-            int[] blacklistedDomainReasons, String[] ignoredDomains, int[] ignoredDomainReasons) {
+            int[] dataTypes, @TimePeriod int timePeriod, String[] excludedDomains,
+            int[] excludedDomainReasons, String[] ignoredDomains, int[] ignoredDomainReasons) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
         BrowsingDataBridgeJni.get().clearBrowsingData(BrowsingDataBridge.this, getProfile(),
-                dataTypes, timePeriod, blacklistDomains, blacklistedDomainReasons, ignoredDomains,
+                dataTypes, timePeriod, excludedDomains, excludedDomainReasons, ignoredDomains,
                 ignoredDomainReasons);
+    }
+
+    /**
+     * Clear SameSite=None cookies and related storage asynchronously.
+     * @param callback Invoked when the clearing is done.
+     * @param clearStorage If true, clears any storage associated with SameSite=None cookies.
+     */
+    public void clearSameSiteNoneData(Runnable callback, boolean clearStorage) {
+        BrowsingDataBridgeJni.get().clearSameSiteNoneData(
+                BrowsingDataBridge.this, getProfile(), callback, clearStorage);
     }
 
     /**
@@ -251,8 +261,10 @@ public final class BrowsingDataBridge {
     @NativeMethods
     interface Natives {
         void clearBrowsingData(BrowsingDataBridge caller, Profile profile, int[] dataTypes,
-                int timePeriod, String[] blacklistDomains, int[] blacklistedDomainReasons,
+                int timePeriod, String[] excludedDomains, int[] excludedDomainReasons,
                 String[] ignoredDomains, int[] ignoredDomainReasons);
+        void clearSameSiteNoneData(BrowsingDataBridge caller, Profile profile, Runnable callback,
+                boolean clearStorage);
         void requestInfoAboutOtherFormsOfBrowsingHistory(BrowsingDataBridge caller, Profile profile,
                 OtherFormsOfBrowsingHistoryListener listener);
         void fetchImportantSites(Profile profile, ImportantSitesCallback callback);

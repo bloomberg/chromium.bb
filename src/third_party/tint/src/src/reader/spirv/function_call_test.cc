@@ -30,7 +30,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 
 TEST_F(SpvParserTest, EmitStatement_VoidCallNoParams) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
 
@@ -46,29 +46,30 @@ TEST_F(SpvParserTest, EmitStatement_VoidCallNoParams) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error();
-  const auto module_ast_str = p->module().to_str();
-  EXPECT_THAT(module_ast_str, Eq(R"(Module{
-  Function x_50 -> __void
+  const auto got = p->program().to_str(false);
+  const char* expect = R"(Module{
+  Function tint_symbol_1 -> __void
   ()
   {
     Return{}
   }
-  Function x_100 -> __void
+  Function tint_symbol_2 -> __void
   ()
   {
-    Call{
-      Identifier{x_50}
+    Call[not set]{
+      Identifier[not set]{tint_symbol_1}
       (
       )
     }
     Return{}
   }
 }
-)")) << module_ast_str;
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParams) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -88,16 +89,17 @@ TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParams) {
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
   {
-    FunctionEmitter fe(p, *spirv_function(100));
+    FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
     EXPECT_TRUE(fe.EmitBody());
-    EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+    EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+                HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __u32
     {
-      Call{
-        Identifier{x_50}
+      Call[not set]{
+        Identifier[not set]{x_50}
         (
         )
       }
@@ -105,22 +107,22 @@ TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParams) {
   }
 }
 Return{})"))
-        << ToString(fe.ast_body());
+        << ToString(p->builder(), fe.ast_body());
   }
 
   {
-    FunctionEmitter fe(p, *spirv_function(50));
+    FunctionEmitter fe(p.get(), *spirv_function(p.get(), 50));
     EXPECT_TRUE(fe.EmitBody());
-    EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Return{
+    EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Return{
   {
-    ScalarConstructor{42}
+    ScalarConstructor[not set]{42}
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
   }
 }
 
 TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParamsUsedTwice) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -144,9 +146,10 @@ TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParamsUsedTwice) {
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
   {
-    FunctionEmitter fe(p, *spirv_function(100));
+    FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
     EXPECT_TRUE(fe.EmitBody()) << p->error();
-    EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+    EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+                HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_10
     function
@@ -159,8 +162,8 @@ VariableDeclStatement{
     none
     __u32
     {
-      Call{
-        Identifier{x_50}
+      Call[not set]{
+        Identifier[not set]{x_50}
         (
         )
       }
@@ -168,29 +171,29 @@ VariableDeclStatement{
   }
 }
 Assignment{
-  Identifier{x_10}
-  Identifier{x_1}
+  Identifier[not set]{x_10}
+  Identifier[not set]{x_1}
 }
 Assignment{
-  Identifier{x_10}
-  Identifier{x_1}
+  Identifier[not set]{x_10}
+  Identifier[not set]{x_1}
 }
 Return{})"))
-        << ToString(fe.ast_body());
+        << ToString(p->builder(), fe.ast_body());
   }
   {
-    FunctionEmitter fe(p, *spirv_function(50));
+    FunctionEmitter fe(p.get(), *spirv_function(p.get(), 50));
     EXPECT_TRUE(fe.EmitBody()) << p->error();
-    EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Return{
+    EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Return{
   {
-    ScalarConstructor{42}
+    ScalarConstructor[not set]{42}
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
   }
 }
 
 TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -214,8 +217,8 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error();
   EXPECT_TRUE(p->error().empty());
-  const auto module_ast_str = p->module().to_str();
-  EXPECT_THAT(module_ast_str, HasSubstr(R"(Module{
+  const auto program_ast_str = p->program().to_str();
+  EXPECT_THAT(program_ast_str, HasSubstr(R"(Module{
   Function x_50 -> __u32
   (
     VariableConst{
@@ -232,10 +235,10 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
   {
     Return{
       {
-        Binary{
-          Identifier{x_51}
+        Binary[not set]{
+          Identifier[not set]{x_51}
           add
-          Identifier{x_52}
+          Identifier[not set]{x_52}
         }
       }
     }
@@ -249,11 +252,11 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
         none
         __u32
         {
-          Call{
-            Identifier{x_50}
+          Call[not set]{
+            Identifier[not set]{x_50}
             (
-              ScalarConstructor{42}
-              ScalarConstructor{84}
+              ScalarConstructor[not set]{42}
+              ScalarConstructor[not set]{84}
             )
           }
         }
@@ -261,7 +264,7 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
     }
     Return{}
   }
-})")) << module_ast_str;
+})")) << program_ast_str;
 }
 
 }  // namespace

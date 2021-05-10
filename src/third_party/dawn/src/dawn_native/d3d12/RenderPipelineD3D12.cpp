@@ -272,6 +272,24 @@ namespace dawn_native { namespace d3d12 {
             return mDepthStencilDescriptor;
         }
 
+        D3D12_INDEX_BUFFER_STRIP_CUT_VALUE ComputeIndexBufferStripCutValue(
+            wgpu::PrimitiveTopology primitiveTopology,
+            wgpu::IndexFormat indexFormat) {
+            if (primitiveTopology != wgpu::PrimitiveTopology::TriangleStrip &&
+                primitiveTopology != wgpu::PrimitiveTopology::LineStrip) {
+                return D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+            }
+
+            switch (indexFormat) {
+                case wgpu::IndexFormat::Uint16:
+                    return D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFF;
+                case wgpu::IndexFormat::Uint32:
+                    return D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFFFFFF;
+                case wgpu::IndexFormat::Undefined:
+                    return D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+            }
+        }
+
     }  // anonymous namespace
 
     ResultOrError<RenderPipeline*> RenderPipeline::Create(
@@ -306,45 +324,16 @@ namespace dawn_native { namespace d3d12 {
         shaders[SingleShaderStage::Vertex] = &descriptorD3D12.VS;
         shaders[SingleShaderStage::Fragment] = &descriptorD3D12.PS;
 
-        PerStage<ComPtr<ID3DBlob>> compiledFXCShader;
-        PerStage<ComPtr<IDxcBlob>> compiledDXCShader;
-
+        PerStage<CompiledShader> compiledShader;
         wgpu::ShaderStage renderStages = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
         for (auto stage : IterateStages(renderStages)) {
-            std::string hlslSource;
-            const char* entryPoint = GetStage(stage).entryPoint.c_str();
-            std::string remappedEntryPoint;
-
-            if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
-                DAWN_TRY_ASSIGN(hlslSource, modules[stage]->TranslateToHLSLWithTint(
-                                                entryPoint, stage, ToBackend(GetLayout()),
-                                                &remappedEntryPoint));
-                entryPoint = remappedEntryPoint.c_str();
-
-            } else {
-                DAWN_TRY_ASSIGN(hlslSource, modules[stage]->TranslateToHLSLWithSPIRVCross(
-                                                entryPoint, stage, ToBackend(GetLayout())));
-
-                // Note that the HLSL will always use entryPoint "main" under SPIRV-cross.
-                entryPoint = "main";
-            }
-
-            if (device->IsToggleEnabled(Toggle::UseDXC)) {
-                DAWN_TRY_ASSIGN(
-                    compiledDXCShader[stage],
-                    CompileShaderDXC(device, stage, hlslSource, entryPoint, compileFlags));
-
-                shaders[stage]->pShaderBytecode = compiledDXCShader[stage]->GetBufferPointer();
-                shaders[stage]->BytecodeLength = compiledDXCShader[stage]->GetBufferSize();
-            } else {
-                DAWN_TRY_ASSIGN(
-                    compiledFXCShader[stage],
-                    CompileShaderFXC(device, stage, hlslSource, entryPoint, compileFlags));
-
-                shaders[stage]->pShaderBytecode = compiledFXCShader[stage]->GetBufferPointer();
-                shaders[stage]->BytecodeLength = compiledFXCShader[stage]->GetBufferSize();
-            }
+            DAWN_TRY_ASSIGN(compiledShader[stage],
+                            modules[stage]->Compile(entryPoints[stage], stage,
+                                                    ToBackend(GetLayout()), compileFlags));
+            *shaders[stage] = compiledShader[stage].GetD3D12ShaderBytecode();
         }
+
+        mFirstOffsetInfo = compiledShader[SingleShaderStage::Vertex].firstOffsetInfo;
 
         PipelineLayout* layout = ToBackend(GetLayout());
 
@@ -355,6 +344,9 @@ namespace dawn_native { namespace d3d12 {
         if (GetAttributeLocationsUsed().any()) {
             descriptorD3D12.InputLayout = ComputeInputLayout(&inputElementDescriptors);
         }
+
+        descriptorD3D12.IBStripCutValue = ComputeIndexBufferStripCutValue(
+            GetPrimitiveTopology(), GetVertexStateDescriptor()->indexFormat);
 
         descriptorD3D12.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
         descriptorD3D12.RasterizerState.CullMode = D3D12CullMode(GetCullMode());
@@ -411,6 +403,10 @@ namespace dawn_native { namespace d3d12 {
 
     ID3D12PipelineState* RenderPipeline::GetPipelineState() const {
         return mPipelineState.Get();
+    }
+
+    const FirstOffsetInfo& RenderPipeline::GetFirstOffsetInfo() const {
+        return mFirstOffsetInfo;
     }
 
     D3D12_INPUT_LAYOUT_DESC RenderPipeline::ComputeInputLayout(

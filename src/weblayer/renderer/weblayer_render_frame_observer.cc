@@ -8,13 +8,18 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "components/no_state_prefetch/renderer/prerender_helper.h"
+#include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
 #include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "weblayer/common/features.h"
 #include "weblayer/common/isolated_world_ids.h"
+
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+#include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier_delegate.h"
+#endif
 
 namespace weblayer {
 
@@ -38,6 +43,10 @@ WebLayerRenderFrameObserver::WebLayerRenderFrameObserver(
   // Don't do anything for subframes.
   if (!render_frame->IsMainFrame())
     return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kWebLayerClientSidePhishingDetection))
+    SetClientSidePhishingDetection();
 
   // TODO(crbug.com/1073370): Handle case where subframe translation is enabled.
   DCHECK(!translate::IsSubFrameTranslationEnabled());
@@ -72,9 +81,10 @@ void WebLayerRenderFrameObserver::DidMeaningfulLayout(
 
   switch (layout_type) {
     case blink::WebMeaningfulLayout::kFinishedParsing:
-      // We should run language detection only once. Parsing finishes before
-      // the page loads, so let's pick that timing.
-      CapturePageText();
+      CapturePageText(PRELIMINARY_CAPTURE);
+      break;
+    case blink::WebMeaningfulLayout::kFinishedLoading:
+      CapturePageText(FINAL_CAPTURE);
       break;
     default:
       break;
@@ -86,7 +96,8 @@ void WebLayerRenderFrameObserver::DidMeaningfulLayout(
 // used for embedder-level purposes beyond translation. This code is expected to
 // be eliminated when WebLayer adopts Chrome's upcoming per-frame translate
 // architecture (crbug.com/1063520).
-void WebLayerRenderFrameObserver::CapturePageText() {
+void WebLayerRenderFrameObserver::CapturePageText(
+    TextCaptureType capture_type) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
@@ -104,37 +115,55 @@ void WebLayerRenderFrameObserver::CapturePageText() {
   if (document_loader && document_loader->HasUnreachableURL())
     return;
 
-  // Don't index/capture pages that are being prerendered.
-  if (prerender::PrerenderHelper::IsPrerendering(render_frame()))
+  // Don't index/capture pages that are being no-state prefetched.
+  if (prerender::NoStatePrefetchHelper::IsPrefetching(render_frame()))
     return;
 
-  // Don't capture contents unless there is a translate agent to consume them.
+    // Don't capture contents unless there is either a translate agent or a
+    // phishing classifier to consume them.
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+  if (!translate_agent_ && !phishing_classifier_)
+    return;
+#else
   if (!translate_agent_)
     return;
-
-  // Don't index/capture pages that are being prerendered.
-  if (prerender::PrerenderHelper::IsPrerendering(render_frame()))
-    return;
+#endif
 
   base::TimeTicks capture_begin_time = base::TimeTicks::Now();
 
   // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
   // translate helper for language detection and possible translation.
-  // TODO(http://crbug.com/585164)): Update this when the corresponding usage of
+  // TODO(http://crbug.com/1163244): Update this when the corresponding usage of
   // this function in //chrome is updated.
   base::string16 contents =
-      blink::WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
-          frame, kMaxIndexChars)
+      blink::WebFrameContentDumper::DumpFrameTreeAsText(frame, kMaxIndexChars)
           .Utf16();
 
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
 
-  translate_agent_->PageCaptured(contents);
+  // We should run language detection only once. Parsing finishes before
+  // the page loads, so let's pick that timing (as in chrome).
+  if (translate_agent_ && capture_type == PRELIMINARY_CAPTURE) {
+    translate_agent_->PageCaptured(contents);
+  }
+
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+  if (phishing_classifier_)
+    phishing_classifier_->PageCaptured(&contents,
+                                       capture_type == PRELIMINARY_CAPTURE);
+#endif
 }
 
 void WebLayerRenderFrameObserver::OnDestruct() {
   delete this;
+}
+
+void WebLayerRenderFrameObserver::SetClientSidePhishingDetection() {
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+  phishing_classifier_ = safe_browsing::PhishingClassifierDelegate::Create(
+      render_frame(), nullptr);
+#endif
 }
 
 }  // namespace weblayer

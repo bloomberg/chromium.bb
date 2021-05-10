@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/args.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -67,8 +68,10 @@ declare_args() {
   # not ARC or linux-chromeos since it's been seen to not play nicely with
   # Chrome's clang. crbug.com/1033839
   use_thin_lto = is_cfi || (is_official_build &&
-                            (target_os == "android" ||
-                             (target_os == "chromeos" && is_chromeos_device)))
+                            ((is_win && chrome_pgo_phase != 1) ||
+                             (is_android && target_os != "chromeos") ||
+                             ((is_chromeos_ash || is_chromeos_lacros) &&
+                              is_chromeos_device)))
 
   # If true, use Goma for ThinLTO code generation where applicable.
   use_goma_thin_lto = false
@@ -98,13 +101,12 @@ declare_args() {
   clang_diagnostic_dir =
       rebase_path("//tools/clang/crashreports", root_build_dir)
 
-  # Experimental option to mark binaries as compatible with Shadow
-  # Stack of Control-flow Enforcement Technology (CET). If Windows version
-  # and hardware supports the feature and it's enabled by OS then additional
-  # additional validation of return address will be performed as mitigation
-  # against Return-oriented programming (ROP).
+  # Mark binaries as compatible with Shadow Stack of Control-flow Enforcement
+  # Technology (CET). If Windows version and hardware supports the feature and
+  # it's enabled by OS then additional validation of return address will be
+  # performed as mitigation against Return-oriented programming (ROP).
   # https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#cet-shadow-stack
-  enable_cet_shadow_stack = false
+  enable_cet_shadow_stack = target_cpu == "x64"
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
@@ -125,7 +127,9 @@ declare_args() {
 
 # Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
-if (is_chromeos) {
+# TODO(crbug.com/1052397): Consider changing is_chromeos_ash to is_chromeos after
+# lacros-chrome switches to target_os="chromeos".
+if (is_chromeos_ash) {
   # ChromeOS generally prefers frame pointers, to support CWP.
   # However, Clang does not currently generate usable frame pointers in ARM
   # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
@@ -190,19 +194,21 @@ enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.
+  # Not supported for macOS (see docs/mac_lld.md), and not functional at all for
+  # iOS. The default linker everywhere else.
   use_lld = is_clang && !is_apple
 }
 
 declare_args() {
   # Whether to use the gold linker from binutils instead of lld or bfd.
-  use_gold =
-      !use_lld && !(is_chromecast && is_linux &&
-                    (current_cpu == "arm" || current_cpu == "mipsel")) &&
-      ((is_linux && (current_cpu == "x64" || current_cpu == "x86" ||
-                     current_cpu == "arm" || current_cpu == "arm64" ||
-                     current_cpu == "mipsel" || current_cpu == "mips64el")) ||
-       (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
-                       current_cpu == "arm" || current_cpu == "arm64")))
+  use_gold = !use_lld && !(is_chromecast && is_linux &&
+                           (current_cpu == "arm" || current_cpu == "mipsel")) &&
+             (((is_linux || is_chromeos_lacros) &&
+               (current_cpu == "x64" || current_cpu == "x86" ||
+                current_cpu == "arm" || current_cpu == "arm64" ||
+                current_cpu == "mipsel" || current_cpu == "mips64el")) ||
+              (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
+                              current_cpu == "arm" || current_cpu == "arm64")))
 }
 
 # Use relative paths for debug info. This is important to make the build
@@ -215,8 +221,11 @@ declare_args() {
 # deterministic builds to reduce compile times, so this is less relevant for
 # official builders.
 strip_absolute_paths_from_debug_symbols_default =
-    is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
-    is_chromeos || (is_apple && !enable_dsyms)
+    # TODO(crbug.com/1010267): remove '!use_clang_coverage', coverage build has
+    # dependency to absolute path of source files.
+    !use_clang_coverage &&
+    (is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
+     is_chromeos || (is_apple && !enable_dsyms))
 
 # If the platform uses stripped absolute paths by default, then we don't expose
 # it as a configuration option. If this is causing problems, please file a bug.

@@ -15,6 +15,8 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
+#include "chrome/browser/web_applications/components/protocol_handler_manager.h"
+#include "chrome/browser/web_applications/components/url_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
@@ -70,7 +72,9 @@ class OsIntegrationManager {
   explicit OsIntegrationManager(
       Profile* profile,
       std::unique_ptr<AppShortcutManager> shortcut_manager,
-      std::unique_ptr<FileHandlerManager> file_handler_manager);
+      std::unique_ptr<FileHandlerManager> file_handler_manager,
+      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
+      std::unique_ptr<UrlHandlerManager> url_handler_manager);
   virtual ~OsIntegrationManager();
 
   void SetSubsystems(AppRegistrar* registrar,
@@ -110,7 +114,6 @@ class OsIntegrationManager {
                              const WebApplicationInfo& web_app_info);
 
   // Proxy calls for AppShortcutManager.
-  bool CanCreateShortcuts() const;
   void GetShortcutInfoForApp(
       const AppId& app_id,
       AppShortcutManager::GetShortcutInfoCallback callback);
@@ -132,15 +135,18 @@ class OsIntegrationManager {
 
   static ScopedOsHooksSuppress ScopedSuppressOsHooksForTesting();
 
-  // Suppress calling individual OS managers for testing.
-  void SuppressOsManagersForTesting();
-
   virtual TestOsIntegrationManager* AsTestOsIntegrationManager();
 
  protected:
   AppShortcutManager* shortcut_manager() { return shortcut_manager_.get(); }
   FileHandlerManager* file_handler_manager() {
     return file_handler_manager_.get();
+  }
+  ProtocolHandlerManager* protocol_handler_manager() {
+    return protocol_handler_manager_.get();
+  }
+  UrlHandlerManager* url_handler_manager() {
+    return url_handler_manager_.get();
   }
   void set_shortcut_manager(
       std::unique_ptr<AppShortcutManager> shortcut_manager) {
@@ -150,12 +156,26 @@ class OsIntegrationManager {
       std::unique_ptr<FileHandlerManager> file_handler_manager) {
     file_handler_manager_ = std::move(file_handler_manager);
   }
-
+  void set_protocol_handler_manager(
+      std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager) {
+    protocol_handler_manager_ = std::move(protocol_handler_manager);
+  }
+  void set_url_handler_manager(
+      std::unique_ptr<UrlHandlerManager> url_handler_manager) {
+    url_handler_manager_ = std::move(url_handler_manager);
+  }
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
 
+  // Installation:
   virtual void RegisterFileHandlers(
+      const AppId& app_id,
+      base::OnceCallback<void(bool success)> callback);
+  virtual void RegisterProtocolHandlers(
+      const AppId& app_id,
+      base::OnceCallback<void(bool success)> callback);
+  virtual void RegisterUrlHandlers(
       const AppId& app_id,
       base::OnceCallback<void(bool success)> callback);
   virtual void RegisterShortcutsMenu(
@@ -171,12 +191,37 @@ class OsIntegrationManager {
                                     RegisterRunOnOsLoginCallback callback);
   virtual void MacAppShimOnAppInstalledForProfile(const AppId& app_id);
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);
+  virtual void RegisterWebAppOsUninstallation(const AppId& app_id,
+                                              const std::string& name);
+
+  // Uninstallation:
+  virtual bool UnregisterShortcutsMenu(const AppId& app_id);
+  virtual void UnregisterRunOnOsLogin(const AppId& app_id,
+                                      const base::FilePath& profile_path,
+                                      const base::string16& shortcut_title,
+                                      UnregisterRunOnOsLoginCallback callback);
+  virtual void DeleteShortcuts(const AppId& app_id,
+                               const base::FilePath& shortcuts_data_dir,
+                               std::unique_ptr<ShortcutInfo> shortcut_info,
+                               DeleteShortcutsCallback callback);
+  virtual void UnregisterFileHandlers(const AppId& app_id);
+  virtual void UnregisterProtocolHandlers(const AppId& app_id);
+  virtual void UnregisterUrlHandlers(const AppId& app_id);
+  virtual void UnregisterWebAppOsUninstallation(const AppId& app_id);
+
+  // Update:
+  virtual void UpdateUrlHandlers(const AppId& app_id);
+
+  // Utility methods:
+  virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id);
 
  private:
+  class OsHooksBarrier;
+
   void OnShortcutsCreated(const AppId& app_id,
                           std::unique_ptr<WebApplicationInfo> web_app_info,
                           InstallOsHooksOptions options,
-                          BarrierCallback barrier,
+                          scoped_refptr<OsHooksBarrier> barrier,
                           bool shortcuts_created);
 
   void OnShortcutsDeleted(const AppId& app_id,
@@ -193,7 +238,8 @@ class OsIntegrationManager {
 
   std::unique_ptr<AppShortcutManager> shortcut_manager_;
   std::unique_ptr<FileHandlerManager> file_handler_manager_;
-  bool suppress_os_managers_for_testing_ = false;
+  std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager_;
+  std::unique_ptr<UrlHandlerManager> url_handler_manager_;
 
   base::WeakPtrFactory<OsIntegrationManager> weak_ptr_factory_{this};
 };

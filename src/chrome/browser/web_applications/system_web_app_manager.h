@@ -16,8 +16,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/system_web_app_background_task.h"
+#include "chrome/browser/web_applications/components/system_web_app_types.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -42,29 +46,7 @@ namespace web_app {
 class WebAppUiManager;
 class OsIntegrationManager;
 class AppRegistryController;
-
-// An enum that lists the different System Apps that exist. Can be used to
-// retrieve the App ID from the underlying Web App system.
-enum class SystemAppType {
-  SETTINGS,
-  CAMERA,
-  TERMINAL,
-  MEDIA,
-  HELP,
-  PRINT_MANAGEMENT,
-  SCANNING,
-  DIAGNOSTICS,
-  CONNECTIVITY_DIAGNOSTICS,
-#if !defined(OFFICIAL_BUILD)
-  FILE_MANAGER,
-  TELEMETRY,
-  SAMPLE,
-#endif  // !defined(OFFICIAL_BUILD)
-
-  // When adding a new System App, add a corresponding histogram suffix in
-  // WebAppSystemAppInternalName (histograms.xml). The suffix name should match
-  // the App's |internal_name|. This is for reporting per-app install results.
-};
+class WebAppPolicyManager;
 
 using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
 using WebApplicationInfoFactory =
@@ -72,7 +54,6 @@ using WebApplicationInfoFactory =
 
 // The configuration options for a System App.
 struct SystemAppInfo {
-  SystemAppInfo(const std::string& internal_name, const GURL& install_url);
   // When installing via a WebApplicationInfo, the url is never loaded. It's
   // needed only for various legacy reasons, maps for tracking state, and
   // generating the AppId and things of that nature.
@@ -126,7 +107,16 @@ struct SystemAppInfo {
   // browser tab).
   bool capture_navigations = false;
 
+  // If set to false, the app will non-resizeable.
+  bool is_resizeable = true;
+
+  // If set to false, the surface of app will can be non-maximizable.
+  bool is_maximizable = true;
+
   WebApplicationInfoFactory app_info_factory;
+
+  // Setup information to drive a background task.
+  base::Optional<SystemAppBackgroundTaskInfo> timer_info;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -159,7 +149,8 @@ class SystemWebAppManager {
                      AppRegistrar* registrar,
                      AppRegistryController* registry_controller,
                      WebAppUiManager* ui_manager,
-                     OsIntegrationManager* os_integration_manager);
+                     OsIntegrationManager* os_integration_manager,
+                     WebAppPolicyManager* web_app_policy_manager);
 
   void Start();
 
@@ -209,6 +200,12 @@ class SystemWebAppManager {
   // Returns whether the app should be shown in search.
   bool ShouldShowInSearch(SystemAppType type) const;
 
+  // Returns whether the app should be resizeable.
+  bool IsResizeableWindow(SystemAppType type) const;
+
+  // Returns whether the surface of app can be maximizable.
+  bool IsMaximizableWindow(SystemAppType type) const;
+
   // Returns the SystemAppType that should capture the navigation to |url|.
   base::Optional<SystemAppType> GetCapturingSystemAppForURL(
       const GURL& url) const;
@@ -237,10 +234,11 @@ class SystemWebAppManager {
 
   void ResetOnAppsSynchronizedForTesting();
 
-  // Updates each system app either disabled/not disabled.
-  void OnAppsPolicyChanged();
-
   void Shutdown();
+
+  // Get the timers. Only use this for testing.
+  const std::vector<std::unique_ptr<SystemAppBackgroundTask>>&
+  GetBackgroundTasksForTesting();
 
  protected:
   virtual const base::Version& CurrentVersion() const;
@@ -255,10 +253,13 @@ class SystemWebAppManager {
 
   bool AppHasFileHandlingOriginTrial(SystemAppType type);
 
-  void OnAppsSynchronized(bool did_force_install_apps,
-                          const base::TimeTicks& install_start_time,
-                          std::map<GURL, InstallResultCode> install_results,
-                          std::map<GURL, bool> uninstall_results);
+  void StopBackgroundTasks();
+
+  void OnAppsSynchronized(
+      bool did_force_install_apps,
+      const base::TimeTicks& install_start_time,
+      std::map<GURL, PendingAppManager::InstallResult> install_results,
+      std::map<GURL, bool> uninstall_results);
   bool ShouldForceInstallApps() const;
   void UpdateLastAttemptedInfo();
   // Returns if we have exceeded the number of retry attempts allowed for this
@@ -266,10 +267,13 @@ class SystemWebAppManager {
   bool CheckAndIncrementRetryAttempts();
 
   void RecordSystemWebAppInstallResults(
-      const std::map<GURL, InstallResultCode>& install_results) const;
+      const std::map<GURL, PendingAppManager::InstallResult>& install_results)
+      const;
 
   void RecordSystemWebAppInstallDuration(
       const base::TimeDelta& time_duration) const;
+
+  void StartBackgroundTasks() const;
 
   Profile* profile_;
 
@@ -282,8 +286,6 @@ class SystemWebAppManager {
   UpdatePolicy update_policy_;
 
   base::flat_map<SystemAppType, SystemAppInfo> system_app_infos_;
-
-  base::flat_map<AppId, SystemAppType> app_id_to_app_type_;
 
   PrefService* const pref_service_;
 
@@ -298,10 +300,11 @@ class SystemWebAppManager {
 
   OsIntegrationManager* os_integration_manager_ = nullptr;
 
-  PrefChangeRegistrar local_state_pref_change_registrar_;
+  WebAppPolicyManager* web_app_policy_manager_ = nullptr;
+
+  std::vector<std::unique_ptr<SystemAppBackgroundTask>> tasks_;
 
   base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
-
 };
 
 }  // namespace web_app

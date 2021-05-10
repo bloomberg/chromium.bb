@@ -185,6 +185,13 @@ def PlatformTriple(platform=None, machine=None):
 
   raise Exception('Unknown platform and machine')
 
+def PlatformTripleSaigo(platform=None, machine=None):
+  triple = PlatformTriple(platform, machine)
+  if triple == 'i686-w64-mingw32':
+    # We are using MSVC instead of MinGW for the saigo toolchain.
+    triple = 'x86-64-win32'
+  return triple
+
 
 def KillSubprocessAndChildren(proc):
   """Kill a subprocess and all children.

@@ -35,13 +35,12 @@ class VertexBufferRobustnessTest : public DawnTest {
         return utils::CreateShaderModuleFromWGSL(device, (attributes + R"(
                 [[builtin(position)]] var<out> Position : vec4<f32>;
 
-                [[stage(vertex)]]
-                fn main() -> void {
+                [[stage(vertex)]] fn main() -> void {
                     if ()" + successExpression + R"() {
-                        # Success case, move the vertex out of the viewport
+                        // Success case, move the vertex out of the viewport
                         Position = vec4<f32>(-10.0, 0.0, 0.0, 1.0);
                     } else {
-                        # Failure case, move the vertex inside the viewport
+                        // Failure case, move the vertex inside the viewport
                         Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
                     }
                     return;
@@ -53,7 +52,7 @@ class VertexBufferRobustnessTest : public DawnTest {
     // Runs the test, a true |expectation| meaning success
     void DoTest(const std::string& attributes,
                 const std::string& successExpression,
-                utils::ComboVertexStateDescriptor vertexState,
+                const utils::ComboVertexStateDescriptor& vertexState,
                 wgpu::Buffer vertexBuffer,
                 uint64_t bufferOffset,
                 bool expectation) {
@@ -61,8 +60,7 @@ class VertexBufferRobustnessTest : public DawnTest {
         wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
                 [[location(0)]] var<out> outColor : vec4<f32>;
 
-                [[stage(fragment)]]
-                fn main() -> void {
+                [[stage(fragment)]] fn main() -> void {
                     outColor = vec4<f32>(1.0, 1.0, 1.0, 1.0);
                     return;
                 }
@@ -74,7 +72,7 @@ class VertexBufferRobustnessTest : public DawnTest {
         descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        descriptor.cVertexState = std::move(vertexState);
+        descriptor.vertexState = &vertexState;
         descriptor.cColorStates[0].format = renderPass.colorFormat;
         renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0, 0, 0, 1};
 
@@ -110,8 +108,7 @@ TEST_P(VertexBufferRobustnessTest, DetectInvalidValues) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", std::move(vertexState), vertexBuffer,
-           0, false);
+    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", vertexState, vertexBuffer, 0, false);
 }
 
 TEST_P(VertexBufferRobustnessTest, FloatClamp) {
@@ -128,8 +125,7 @@ TEST_P(VertexBufferRobustnessTest, FloatClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", std::move(vertexState), vertexBuffer,
-           4, true);
+    DoTest("[[location(0)]] var<in> a : f32;", "a == 473.0", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, IntClamp) {
@@ -146,8 +142,7 @@ TEST_P(VertexBufferRobustnessTest, IntClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : i32;", "a == 473", std::move(vertexState), vertexBuffer, 4,
-           true);
+    DoTest("[[location(0)]] var<in> a : i32;", "a == 473", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, UIntClamp) {
@@ -164,8 +159,7 @@ TEST_P(VertexBufferRobustnessTest, UIntClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : u32;", "a == 473", std::move(vertexState), vertexBuffer, 4,
-           true);
+    DoTest("[[location(0)]] var<in> a : u32;", "a == 473", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, Float2Clamp) {
@@ -201,8 +195,7 @@ TEST_P(VertexBufferRobustnessTest, Float3Clamp) {
                                                             wgpu::BufferUsage::Vertex);
 
     DoTest("[[location(0)]] var<in> a : vec3<f32>;",
-           "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0", std::move(vertexState), vertexBuffer,
-           12, true);
+           "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0", vertexState, vertexBuffer, 12, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, Float4Clamp) {
@@ -220,8 +213,8 @@ TEST_P(VertexBufferRobustnessTest, Float4Clamp) {
                                                             wgpu::BufferUsage::Vertex);
 
     DoTest("[[location(0)]] var<in> a : vec4<f32>;",
-           "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0 && a[3] == 473.0",
-           std::move(vertexState), vertexBuffer, 16, true);
+           "a[0] == 473.0 && a[1] == 473.0 && a[2] == 473.0 && a[3] == 473.0", vertexState,
+           vertexBuffer, 16, true);
 }
 
 DAWN_INSTANTIATE_TEST(VertexBufferRobustnessTest, MetalBackend({"metal_enable_vertex_pulling"}));

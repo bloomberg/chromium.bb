@@ -7,15 +7,15 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("lighthouse") {
   sources = [
-    "LighthouseController.js",
-    "LighthousePanel.js",
-    "LighthouseProtocolService.js",
-    "LighthouseReportRenderer.js",
-    "LighthouseReportSelector.js",
-    "LighthouseReporterTypes.js",
-    "LighthouseStartView.js",
-    "LighthouseStatusView.js",
-    "RadioSetting.js",
+    "LighthouseController.ts",
+    "LighthousePanel.ts",
+    "LighthouseProtocolService.ts",
+    "LighthouseReportRenderer.ts",
+    "LighthouseReportSelector.ts",
+    "LighthouseReporterTypes.ts",
+    "LighthouseStartView.ts",
+    "LighthouseStatusView.ts",
+    "RadioSetting.ts",
   ]
 
   deps = [
@@ -23,10 +23,10 @@ devtools_module("lighthouse") {
     "../components:bundle",
     "../emulation:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../protocol_client:bundle",
     "../sdk:bundle",
-    "../services:bundle",
     "../timeline:bundle",
     "../ui:bundle",
     "../workspace:bundle",
@@ -43,7 +43,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "lighthouse-legacy.js"
+  entrypoint = "lighthouse-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "lighthouse-meta.ts"
 
   deps = [ ":bundle" ]
 }

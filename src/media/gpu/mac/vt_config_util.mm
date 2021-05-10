@@ -6,9 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include <simd/simd.h>
-
 #include "base/mac/foundation_util.h"
+#include "media/base/mac/color_space_util_mac.h"
 
 namespace {
 
@@ -43,11 +42,7 @@ CFStringRef GetPrimaries(media::VideoColorSpace::PrimaryID primary_id) {
       return kCMFormatDescriptionColorPrimaries_ITU_R_709_2;
 
     case media::VideoColorSpace::PrimaryID::BT2020:
-      if (@available(macos 10.11, *))
-        return kCMFormatDescriptionColorPrimaries_ITU_R_2020;
-      DLOG(WARNING) << "kCMFormatDescriptionColorPrimaries_ITU_R_2020 "
-                       "unsupported prior to 10.11";
-      return nil;
+      return kCMFormatDescriptionColorPrimaries_ITU_R_2020;
 
     case media::VideoColorSpace::PrimaryID::SMPTE170M:
     case media::VideoColorSpace::PrimaryID::SMPTE240M:
@@ -57,18 +52,10 @@ CFStringRef GetPrimaries(media::VideoColorSpace::PrimaryID primary_id) {
       return kCMFormatDescriptionColorPrimaries_EBU_3213;
 
     case media::VideoColorSpace::PrimaryID::SMPTEST431_2:
-      if (@available(macos 10.11, *))
-        return kCMFormatDescriptionColorPrimaries_DCI_P3;
-      DLOG(WARNING) << "kCMFormatDescriptionColorPrimaries_DCI_P3 unsupported "
-                       "prior to 10.11";
-      return nil;
+      return kCMFormatDescriptionColorPrimaries_DCI_P3;
 
     case media::VideoColorSpace::PrimaryID::SMPTEST432_1:
-      if (@available(macos 10.11, *))
-        return kCMFormatDescriptionColorPrimaries_P3_D65;
-      DLOG(WARNING) << "kCMFormatDescriptionColorPrimaries_P3_D65 unsupported "
-                       "prior to 10.11";
-      return nil;
+      return kCMFormatDescriptionColorPrimaries_P3_D65;
 
     default:
       DLOG(ERROR) << "Unsupported primary id: " << static_cast<int>(primary_id);
@@ -105,11 +92,7 @@ CFStringRef GetTransferFunction(
 
     case media::VideoColorSpace::TransferID::BT2020_10:
     case media::VideoColorSpace::TransferID::BT2020_12:
-      if (@available(macos 10.11, *))
-        return kCMFormatDescriptionTransferFunction_ITU_R_2020;
-      DLOG(WARNING) << "kCMFormatDescriptionTransferFunction_ITU_R_2020 "
-                       "unsupported prior to 10.11";
-      return nil;
+      return kCMFormatDescriptionTransferFunction_ITU_R_2020;
 
     case media::VideoColorSpace::TransferID::SMPTEST2084:
       if (@available(macos 10.13, *))
@@ -150,11 +133,7 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
       return kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2;
 
     case media::VideoColorSpace::MatrixID::BT2020_NCL:
-      if (@available(macos 10.11, *))
-        return kCMFormatDescriptionYCbCrMatrix_ITU_R_2020;
-      DLOG(WARNING) << "kCVImageBufferYCbCrMatrix_ITU_R_2020 "
-                       "unsupported prior to 10.11";
-      return nil;
+      return kCMFormatDescriptionYCbCrMatrix_ITU_R_2020;
 
     case media::VideoColorSpace::MatrixID::FCC:
     case media::VideoColorSpace::MatrixID::SMPTE170M:
@@ -175,24 +154,10 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
 void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
                               NSMutableDictionary<NSString*, id>* extensions) {
   if (@available(macos 10.13, *)) {
-    // This is a SMPTEST2086 Content Light Level Information box.
-    struct ContentLightLevelInfoSEI {
-      uint16_t max_content_light_level;
-      uint16_t max_frame_average_light_level;
-    } __attribute__((packed, aligned(2)));
-    static_assert(sizeof(ContentLightLevelInfoSEI) == 4, "Must be 4 bytes");
-
-    // Values are stored in big-endian...
-    ContentLightLevelInfoSEI sei;
-    sei.max_content_light_level =
-        __builtin_bswap16(hdr_metadata.max_content_light_level);
-    sei.max_frame_average_light_level =
-        __builtin_bswap16(hdr_metadata.max_frame_average_light_level);
-
-    NSData* nsdata_sei = [NSData dataWithBytes:&sei length:4];
     SetDictionaryValue(extensions,
                        kCMFormatDescriptionExtension_ContentLightLevelInfo,
-                       nsdata_sei);
+                       base::mac::CFToNSCast(
+                           media::GenerateContentLightLevelInfo(hdr_metadata)));
   } else {
     DLOG(WARNING) << "kCMFormatDescriptionExtension_ContentLightLevelInfo "
                      "unsupported prior to 10.13";
@@ -202,46 +167,10 @@ void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
 void SetMasteringMetadata(const gfx::HDRMetadata& hdr_metadata,
                           NSMutableDictionary<NSString*, id>* extensions) {
   if (@available(macos 10.13, *)) {
-    // This is a SMPTEST2086 Mastering Display Color Volume box.
-    struct MasteringDisplayColorVolumeSEI {
-      vector_ushort2 primaries[3];  // GBR
-      vector_ushort2 white_point;
-      uint32_t luminance_max;
-      uint32_t luminance_min;
-    } __attribute__((packed, aligned(4)));
-    static_assert(sizeof(MasteringDisplayColorVolumeSEI) == 24,
-                  "Must be 24 bytes");
-
-    // Make a copy which we can manipulate.
-    auto md = hdr_metadata.mastering_metadata;
-
-    constexpr float kColorCoordinateUpperBound = 50000.0f;
-    md.primary_r.Scale(kColorCoordinateUpperBound);
-    md.primary_g.Scale(kColorCoordinateUpperBound);
-    md.primary_b.Scale(kColorCoordinateUpperBound);
-    md.white_point.Scale(kColorCoordinateUpperBound);
-
-    constexpr float kUnitOfMasteringLuminance = 10000.0f;
-    md.luminance_max *= kUnitOfMasteringLuminance;
-    md.luminance_min *= kUnitOfMasteringLuminance;
-
-    // Values are stored in big-endian...
-    MasteringDisplayColorVolumeSEI sei;
-    sei.primaries[0].x = __builtin_bswap16(md.primary_g.x() + 0.5f);
-    sei.primaries[0].y = __builtin_bswap16(md.primary_g.y() + 0.5f);
-    sei.primaries[1].x = __builtin_bswap16(md.primary_b.x() + 0.5f);
-    sei.primaries[1].y = __builtin_bswap16(md.primary_b.y() + 0.5f);
-    sei.primaries[2].x = __builtin_bswap16(md.primary_r.x() + 0.5f);
-    sei.primaries[2].y = __builtin_bswap16(md.primary_r.y() + 0.5f);
-    sei.white_point.x = __builtin_bswap16(md.white_point.x() + 0.5f);
-    sei.white_point.y = __builtin_bswap16(md.white_point.y() + 0.5f);
-    sei.luminance_max = __builtin_bswap32(md.luminance_max + 0.5f);
-    sei.luminance_min = __builtin_bswap32(md.luminance_min + 0.5f);
-
-    NSData* nsdata_sei = [NSData dataWithBytes:&sei length:24];
     SetDictionaryValue(
         extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
-        nsdata_sei);
+        base::mac::CFToNSCast(
+            media::GenerateMasteringDisplayColorVolume(hdr_metadata)));
   } else {
     DLOG(WARNING) << "kCMFormatDescriptionExtension_"
                      "MasteringDisplayColorVolume unsupported prior to 10.13";

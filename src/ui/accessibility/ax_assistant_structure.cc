@@ -4,7 +4,7 @@
 
 #include "ui/accessibility/ax_assistant_structure.h"
 
-#include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/optional.h"
@@ -32,15 +32,6 @@ bool HasFocusableChild(const AXNode* node) {
     }
   }
   return false;
-}
-
-bool HasOnlyTextChildren(const AXNode* node) {
-  for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
-    AXNode* child = node->GetUnignoredChildAtIndex(i);
-    if (!child->IsText())
-      return false;
-  }
-  return true;
 }
 
 // TODO(muyuanli): share with BrowserAccessibility.
@@ -111,7 +102,7 @@ base::string16 GetInnerText(const AXNode* node) {
   return text;
 }
 
-base::string16 GetValue(const AXNode* node, bool show_password) {
+base::string16 GetValue(const AXNode* node) {
   base::string16 value =
       node->data().GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
@@ -122,51 +113,27 @@ base::string16 GetValue(const AXNode* node, bool show_password) {
     value = GetInnerText(node);
   }
 
-  if (node->data().HasState(ax::mojom::State::kProtected)) {
-    if (!show_password) {
-      value = base::string16(value.size(), kSecurePasswordBullet);
-    }
-  }
+  // Always obscure passwords.
+  if (node->data().HasState(ax::mojom::State::kProtected))
+    value = base::string16(value.size(), kSecurePasswordBullet);
 
   return value;
 }
 
-bool HasOnlyTextAndImageChildren(const AXNode* node) {
-  for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
-    AXNode* child = node->GetUnignoredChildAtIndex(i);
-    if (!child->IsText() && !ui::IsImage(child->data().role)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsFocusable(const AXNode* node) {
-  if (node->data().role == ax::mojom::Role::kIframe ||
-      node->data().role == ax::mojom::Role::kIframePresentational ||
-      (node->data().role == ax::mojom::Role::kRootWebArea &&
-       node->GetUnignoredParent())) {
-    return node->data().HasStringAttribute(ax::mojom::StringAttribute::kName);
-  }
-  return node->data().HasState(ax::mojom::State::kFocusable);
-}
-
-base::string16 GetText(const AXNode* node, bool show_password) {
-  if (node->data().role == ax::mojom::Role::kWebArea ||
+base::string16 GetText(const AXNode* node) {
+  if (node->data().role == ax::mojom::Role::kPdfRoot ||
       node->data().role == ax::mojom::Role::kIframe ||
       node->data().role == ax::mojom::Role::kIframePresentational) {
     return base::string16();
   }
 
-  ax::mojom::NameFrom name_from = static_cast<ax::mojom::NameFrom>(
-      node->data().GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-  if (ui::IsListItem(node->data().role) &&
-      name_from == ax::mojom::NameFrom::kContents) {
-    if (!node->children().empty() && !HasOnlyTextChildren(node))
-      return base::string16();
+  ax::mojom::NameFrom name_from = node->data().GetNameFrom();
+
+  if (!ui::IsLeaf(node) && name_from == ax::mojom::NameFrom::kContents) {
+    return base::string16();
   }
 
-  base::string16 value = GetValue(node, show_password);
+  base::string16 value = GetValue(node);
 
   if (!value.empty()) {
     if (node->data().HasState(ax::mojom::State::kEditable))
@@ -206,15 +173,15 @@ base::string16 GetText(const AXNode* node, bool show_password) {
   if (text.empty())
     text = value;
 
-  if (node->data().role == ax::mojom::Role::kRootWebArea)
+  if (node->data().role == ax::mojom::Role::kRootWebArea ||
+      node->data().role == ax::mojom::Role::kPdfRoot) {
     return text;
+  }
 
-  if (text.empty() &&
-      (HasOnlyTextChildren(node) ||
-       (IsFocusable(node) && HasOnlyTextAndImageChildren(node)))) {
+  if (text.empty() && IsLeaf(node)) {
     for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
       AXNode* child = node->GetUnignoredChildAtIndex(i);
-      text += GetText(child, show_password);
+      text += GetText(child);
     }
   }
 
@@ -224,6 +191,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
         node->data().GetString16Attribute(ax::mojom::StringAttribute::kUrl);
     text = AXUrlBaseText(url);
   }
+
   return text;
 }
 
@@ -279,7 +247,6 @@ AssistantNode* AddChild(AssistantTree* tree) {
 
 struct WalkAXTreeConfig {
   bool should_select_leaf;
-  const bool show_password;
 };
 
 void WalkAXTreeDepthFirst(const AXNode* node,
@@ -289,7 +256,7 @@ void WalkAXTreeDepthFirst(const AXNode* node,
                           WalkAXTreeConfig* config,
                           AssistantTree* assistant_tree,
                           AssistantNode* result) {
-  result->text = GetText(node, config->show_password);
+  result->text = GetText(node);
   result->class_name =
       AXRoleToAndroidClassName(node->data().role, node->GetUnignoredParent());
   result->role = AXRoleToString(node->data().role);
@@ -342,8 +309,7 @@ void WalkAXTreeDepthFirst(const AXNode* node,
     }
 
     if (config->should_select_leaf) {
-      end_selection =
-          static_cast<int32_t>(GetText(node, config->show_password).length());
+      end_selection = static_cast<int32_t>(GetText(node).length());
     }
 
     if (unignored_selection.focus_object_id == node->id()) {
@@ -354,6 +320,9 @@ void WalkAXTreeDepthFirst(const AXNode* node,
       result->selection =
           base::make_optional<gfx::Range>(start_selection, end_selection);
   }
+
+  result->html_tag =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
 
   for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i) {
     AXNode* child = node->GetUnignoredChildAtIndex(i);
@@ -378,8 +347,7 @@ AssistantTree::AssistantTree(const AssistantTree& other) {
     nodes.emplace_back(std::make_unique<AssistantNode>(*node));
 }
 
-std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
-                                                   bool show_password) {
+std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update) {
   auto tree = std::make_unique<AXSerializableTree>();
   auto assistant_tree = std::make_unique<AssistantTree>();
   auto* root = AddChild(assistant_tree.get());
@@ -387,7 +355,6 @@ std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
     LOG(FATAL) << tree->error();
   WalkAXTreeConfig config{
       false,         // should_select_leaf
-      show_password  // show_password
   };
   WalkAXTreeDepthFirst(tree->root(), gfx::Rect(), update, tree.get(), &config,
                        assistant_tree.get(), root);
@@ -425,7 +392,6 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
     case ax::mojom::Role::kColorWell:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kDate:
-    case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kInputTime:
       return kAXSpinnerClassname;
     case ax::mojom::Role::kButton:
@@ -454,6 +420,7 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
     case ax::mojom::Role::kList:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kDescriptionList:
+    case ax::mojom::Role::kDirectory:
       return kAXListViewClassname;
     case ax::mojom::Role::kDialog:
       return kAXDialogClassname;

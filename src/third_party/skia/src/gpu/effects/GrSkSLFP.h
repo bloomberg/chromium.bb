@@ -11,15 +11,7 @@
 #include "include/core/SkRefCnt.h"
 #include "include/gpu/GrContextOptions.h"
 #include "src/gpu/GrFragmentProcessor.h"
-#include "src/sksl/SkSLCompiler.h"
-#include "src/sksl/SkSLPipelineStageCodeGenerator.h"
 #include <atomic>
-
-#if GR_TEST_UTILS
-#define GR_FP_SRC_STRING const char*
-#else
-#define GR_FP_SRC_STRING static const char*
-#endif
 
 class GrContext_Base;
 class GrShaderCaps;
@@ -44,8 +36,6 @@ public:
 
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
-    bool usesExplicitReturn() const override { return true; }
-
 private:
     using ShaderErrorHandler = GrContextOptions::ShaderErrorHandler;
 
@@ -54,7 +44,7 @@ private:
 
     GrSkSLFP(const GrSkSLFP& other);
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 

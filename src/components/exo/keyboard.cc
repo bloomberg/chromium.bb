@@ -6,10 +6,12 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/keyboard_delegate.h"
@@ -54,70 +56,6 @@ bool ProcessAccelerator(Surface* surface, const ui::KeyEvent* event) {
   return false;
 }
 
-bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
-  // When IME is blocked, Exo can handle any key events.
-  if (WMHelper::GetInstance()->IsImeBlocked(focus->window()))
-    return false;
-
-  // Check if IME consumed the event, to avoid it to be doubly processed.
-  // First let us see whether IME is active and is in text input mode.
-  views::Widget* widget =
-      views::Widget::GetTopLevelWidgetForNativeView(focus->window());
-  ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
-  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
-      ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL) {
-    return false;
-  }
-
-  // Case 1:
-  // When IME ate a key event but did not emit character insertion event yet
-  // (e.g., when it is still showing a candidate list UI to the user,) the
-  // consumed key event is re-sent after masked |key_code| by VKEY_PROCESSKEY.
-  if (event->key_code() == ui::VKEY_PROCESSKEY)
-    return true;
-
-  // Except for PROCESSKEY, never discard "key-up" events. A keydown not paired
-  // by a keyup can trigger a never-ending key repeat in the client, which can
-  // never be desirable.
-  if (event->type() == ui::ET_KEY_RELEASED)
-    return false;
-
-  // Case 2:
-  // When IME ate a key event and generated a single character input, it leaves
-  // the key event as-is, and in addition calls the active ui::TextInputClient's
-  // InsertChar() method. (In our case, arc::ArcImeService::InsertChar()).
-  //
-  // In Chrome OS (and Web) convention, the two calls won't cause duplicates,
-  // because key-down events do not mean any character inputs there.
-  // (InsertChar issues a DOM "keypress" event, which is distinct from keydown.)
-  // Unfortunately, this is not necessary the case for our clients that may
-  // treat keydown as a trigger of text inputs. We need suppression for keydown.
-  //
-  // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
-  const base::char16 ch = event->GetCharacter();
-  const bool is_control_char =
-      (0x00 <= ch && ch <= 0x1f) || (0x7f <= ch && ch <= 0x9f);
-  if (!is_control_char && !ui::IsSystemKeyModifier(event->flags()))
-    return true;
-
-  // Case 3:
-  // Workaround for apps that doesn't handle hardware keyboard events well.
-  // Keys typically on software keyboard and lack of them are fatal, namely,
-  // unmodified enter and backspace keys, are sent through IME.
-  constexpr int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
-                                ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
-  // Same condition as components/arc/ime/arc_ime_service.cc#InsertChar.
-  if ((event->flags() & kModifierMask) == 0) {
-    if (event->key_code() == ui::VKEY_RETURN ||
-        event->key_code() == ui::VKEY_BACK) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 bool IsVirtualKeyboardEnabled() {
   return keyboard::GetAccessibilityKeyboardEnabled() ||
          keyboard::GetTouchKeyboardEnabled() ||
@@ -159,6 +97,52 @@ bool IsImeSupportedSurface(Surface* surface) {
     }
   }
   return false;
+}
+
+// Returns true if the surface can consume ash accelerators.
+bool CanConsumeAshAccelerators(Surface* surface) {
+  aura::Window* window = surface->window();
+  for (; window; window = window->parent()) {
+    const auto app_type =
+        static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
+    // TODO(fukino): Always returning false for Lacros window is a short-term
+    // solution. In reality, Lacros can consume ash accelerator's key
+    // combination when it is a deprecated ash accelerator or the window is
+    // running PWA. We need to let the wayland client dynamically decrlare
+    // whether it want to consume ash accelerators' key combinations.
+    // crbug.com/1174025.
+    if (app_type == ash::AppType::LACROS)
+      return false;
+  }
+  return true;
+}
+
+// Returns true if an accelerator is an ash accelerator which can be handled
+// before sending it to client and it is actually processed by ash-chrome.
+bool ProcessAshAcceleratorIfPossible(Surface* surface, ui::KeyEvent* event) {
+  // Process ash accelerators before sending it to client only when the client
+  // should not consume ash accelerators. (e.g. Lacros-chrome)
+  if (CanConsumeAshAccelerators(surface))
+    return false;
+
+  // Ctrl-N (new window), Shift-Ctrl-N (new incognite window), Ctrl-T (new tab),
+  // and Shit-Ctrl-T (restore tab) need to be sent to the active client even
+  // when the active window is lacros-chrome, since the ash-chrome does not
+  // handle these new-window requests properly at this moment.
+  // TODO(fukino): Remove this workaround once ash-chrome has an implementation
+  // to handle new-window requests when lacros-chrome browser window is active.
+  // crbug.com/1172189.
+  const ui::Accelerator kAppHandlingAccelerators[] = {
+      {ui::VKEY_N, ui::EF_CONTROL_DOWN},
+      {ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
+      {ui::VKEY_T, ui::EF_CONTROL_DOWN},
+      {ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
+  };
+  ui::Accelerator accelerator(*event);
+  if (base::Contains(kAppHandlingAccelerators, accelerator))
+    return false;
+
+  return ash::AcceleratorController::Get()->Process(accelerator);
 }
 
 }  // namespace
@@ -248,13 +232,8 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   if (!focus_)
     return;
 
-  // If the event target is not an exo::Surface, let another handler process the
-  // event. This check may not be necessary once https://crbug.com/624168 is
-  // resolved.
-  if (!GetShellMainSurface(static_cast<aura::Window*>(event->target())) &&
-      !Surface::AsSurface(static_cast<aura::Window*>(event->target()))) {
-    return;
-  }
+  DCHECK(GetShellRootSurface(static_cast<aura::Window*>(event->target())) ||
+         Surface::AsSurface(static_cast<aura::Window*>(event->target())));
 
   // Ignore synthetic key repeat events.
   if (event->is_repeat()) {
@@ -268,11 +247,15 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 
   TRACE_EXO_INPUT_EVENT(event);
 
-  // Process reserved accelerators before sending it to client.
-  if (ProcessAcceleratorIfReserved(focus_, event)) {
-    // Discard a key press event if it's a reserved accelerator and it's
-    // enabled.
+  // Process reserved accelerators or ash accelerators which need to be handled
+  // before sending it to client.
+  if (ProcessAcceleratorIfReserved(focus_, event) ||
+      ProcessAshAcceleratorIfPossible(focus_, event)) {
+    // Discard a key press event if the corresponding accelerator is handled.
     event->SetHandled();
+    // The current focus might have been reset while processing accelerators.
+    if (!focus_)
+      return;
   }
 
   // When IME ate a key event, we use the event only for tracking key states and
@@ -283,7 +266,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // needed.
   const bool consumed_by_ime =
       !focus_->window()->GetProperty(aura::client::kSkipImeProcessing) &&
-      ConsumedByIme(focus_, event);
+      ConsumedByIme(focus_->window(), *event);
 
   // Always update modifiers.
   // XkbTracker must be updated in the Seat, before calling this method.

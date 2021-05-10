@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "src/context.h"
+#include "src/program_builder.h"
 #include "src/reader/wgsl/parser_impl.h"
 
 namespace tint {
@@ -29,71 +29,47 @@ namespace reader {
 namespace wgsl {
 
 /// WGSL Parser test class
-class ParserImplTest : public testing::Test {
+class ParserImplTest : public testing::Test, public ProgramBuilder {
  public:
   /// Constructor
   ParserImplTest();
   ~ParserImplTest() override;
 
-  /// Sets up the test helper
-  void SetUp() override;
-
-  /// Tears down the test helper
-  void TearDown() override;
-
   /// Retrieves the parser from the helper
   /// @param str the string to parse
   /// @returns the parser implementation
-  ParserImpl* parser(const std::string& str) {
+  std::unique_ptr<ParserImpl> parser(const std::string& str) {
     auto file = std::make_unique<Source::File>("test.wgsl", str);
-    impl_ = std::make_unique<ParserImpl>(&ctx_, file.get());
+    auto impl = std::make_unique<ParserImpl>(file.get());
     files_.emplace_back(std::move(file));
-    return impl_.get();
+    return impl;
   }
-
-  /// @returns the type manager
-  TypeManager* tm() { return &(ctx_.type_mgr()); }
 
  private:
   std::vector<std::unique_ptr<Source::File>> files_;
-  std::unique_ptr<ParserImpl> impl_;
-  Context ctx_;
 };
 
 /// WGSL Parser test class with param
 template <typename T>
-class ParserImplTestWithParam : public testing::TestWithParam<T> {
+class ParserImplTestWithParam : public testing::TestWithParam<T>,
+                                public ProgramBuilder {
  public:
   /// Constructor
   ParserImplTestWithParam() = default;
   ~ParserImplTestWithParam() override = default;
 
-  /// Sets up the test helper
-  void SetUp() override { ctx_.Reset(); }
-
-  /// Tears down the test helper
-  void TearDown() override {
-    impl_ = nullptr;
-    files_.clear();
-  }
-
   /// Retrieves the parser from the helper
   /// @param str the string to parse
   /// @returns the parser implementation
-  ParserImpl* parser(const std::string& str) {
+  std::unique_ptr<ParserImpl> parser(const std::string& str) {
     auto file = std::make_unique<Source::File>("test.wgsl", str);
-    impl_ = std::make_unique<ParserImpl>(&ctx_, file.get());
+    auto impl = std::make_unique<ParserImpl>(file.get());
     files_.emplace_back(std::move(file));
-    return impl_.get();
+    return impl;
   }
-
-  /// @returns the type manager
-  TypeManager* tm() { return &(ctx_.type_mgr()); }
 
  private:
   std::vector<std::unique_ptr<Source::File>> files_;
-  std::unique_ptr<ParserImpl> impl_;
-  Context ctx_;
 };
 
 }  // namespace wgsl

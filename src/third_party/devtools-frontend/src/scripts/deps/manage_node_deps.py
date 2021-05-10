@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 #
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -15,6 +15,7 @@ import json
 import shutil
 import subprocess
 import sys
+from collections import OrderedDict
 
 scripts_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(scripts_path)
@@ -31,44 +32,64 @@ LICENSES = [
     "CC-BY-3.0",
     "CC-BY-4.0",
     "ISC",
+    "MPL-2.0",
+    "Python-2.0",
 ]
 
 # List all DEPS here.
 DEPS = {
-    "@rollup/plugin-commonjs": "13.0.0",
-    "@types/chai": "4.2.11",
-    "@types/codemirror": "0.0.97",
-    "@types/estree": "0.0.45",
+    "@rollup/plugin-commonjs": "17.1.0",
+    "@types/chai": "4.2.15",
+    "@types/codemirror": "0.0.108",
+    "@types/karma-chai-sinon": "0.1.15",
+    "@types/estree": "0.0.46",
     "@types/filesystem": "0.0.29",
-    "@types/mocha": "5.2.7",
-    "@types/puppeteer": "2.0.0",
-    "@typescript-eslint/parser": "3.6.1",
-    "@typescript-eslint/eslint-plugin": "3.6.1",
-    "chai": "4.2.0",
-    "escodegen": "1.12.0",
-    "eslint": "6.8.0",
-    "eslint-plugin-import": "2.20.2",
-    "eslint-plugin-mocha": "6.2.2",
+    "@types/node": "14.14.30",
+    "@types/mocha": "8.2.0",
+    "@types/sinon": "9.0.10",
+    "@typescript-eslint/parser": "4.15.0",
+    "@typescript-eslint/eslint-plugin": "4.15.0",
+    "bl": "4.1.0",
+    "chai": "4.3.0",
+    "escodegen": "2.0.0",
+    "eslint": "7.19.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-lit-a11y": "1.0.1",
+    "eslint-plugin-mocha": "8.0.0",
     "eslint-plugin-rulesdir": "0.1.0",
-    "karma": "5.2.3",
+    "karma": "6.1.0",
     "karma-chai": "0.1.0",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage": "2.0.3",
     "karma-mocha": "2.0.1",
+    "karma-sinon": "1.0.5",
     "karma-sourcemap-loader": "0.3.8",
+    "karma-spec-reporter": "0.0.32",
     "license-checker": "25.0.1",
-    "mocha": "8.2.1",
-    "puppeteer": "5.4.1",
-    "recast": "0.18.2",
+    "mocha": "8.3.0",
+    "puppeteer": "7.1.0",
+    "recast": "0.20.4",
     "rimraf": "3.0.2",
-    "rollup": "2.3.3",
-    "rollup-plugin-terser": "5.3.0",
+    "rollup": "2.38.5",
+    "rollup-plugin-terser": "7.0.2",
+    "sinon": "9.2.4",
     "source-map-support": "0.5.19",
-    "stylelint": "13.5.0",
+    "stylelint": "13.10.0",
     "stylelint-config-standard": "20.0.0",
-    "typescript": "4.1.1-rc",
-    "yargs": "15.3.1",
+    "typescript": "4.2.1-rc",
+    "yargs": "16.2.0",
 }
+
+def load_json_file(location):
+    # By default, json load uses a standard Python dictionary, which is not ordered.
+    # To prevent subsequent invocations of this script to erroneously alter the order
+    # of keys defined in package.json files, we should use an `OrderedDict`. This
+    # ensures not only that we use a strict ordering, it will also make sure we maintain
+    # the order defined by the NPM packages themselves. That in turn is important, since
+    # NPM packages can define `exports`, where the order of entrypoints is crucial for
+    # how an NPM package is loaded. If you would change the order, it could break loading
+    # that package.
+    return json.load(location, object_pairs_hook=OrderedDict)
 
 def exec_command(cmd):
     try:
@@ -107,7 +128,7 @@ def strip_private_fields():
     for pkg in packages:
         with open(pkg, 'r+') as pkg_file:
             try:
-                pkg_data = json.load(pkg_file)
+                pkg_data = load_json_file(pkg_file)
 
                 # Remove anything that begins with an underscore, as these are
                 # the private fields in a package.json
@@ -117,7 +138,7 @@ def strip_private_fields():
 
                 pkg_file.truncate(0)
                 pkg_file.seek(0)
-                json.dump(pkg_data, pkg_file, indent=2, sort_keys=True, separators=(',', ': '))
+                json.dump(pkg_data, pkg_file, indent=2, separators=(',', ': '))
                 pkg_file.write('\n')
             except:
                 print('Unable to fix: %s' % pkg)
@@ -130,7 +151,7 @@ def strip_private_fields():
 def install_missing_deps():
     with open(devtools_paths.package_lock_json_path(), 'r+') as pkg_lock_file:
         try:
-            pkg_lock_data = json.load(pkg_lock_file)
+            pkg_lock_data = load_json_file(pkg_lock_file)
             existing_deps = pkg_lock_data[u'dependencies']
             new_deps = []
 
@@ -155,14 +176,14 @@ def install_missing_deps():
 def append_package_json_entries():
     with open(devtools_paths.package_json_path(), 'r+') as pkg_file:
         try:
-            pkg_data = json.load(pkg_file)
+            pkg_data = load_json_file(pkg_file)
 
             # Replace the dev deps.
             pkg_data[u'devDependencies'] = DEPS
 
             pkg_file.truncate(0)
             pkg_file.seek(0)
-            json.dump(pkg_data, pkg_file, indent=2, sort_keys=True, separators=(',', ': '))
+            json.dump(pkg_data, pkg_file, indent=2, separators=(',', ': '))
             pkg_file.write('\n')
 
         except:
@@ -174,7 +195,7 @@ def append_package_json_entries():
 def remove_package_json_entries():
     with open(devtools_paths.package_json_path(), 'r+') as pkg_file:
         try:
-            pkg_data = json.load(pkg_file)
+            pkg_data = load_json_file(pkg_file)
 
             # Remove the dependencies and devDependencies from the root package.json
             # so that they can't be used to overwrite the node_modules managed by this file.
@@ -184,7 +205,7 @@ def remove_package_json_entries():
 
             pkg_file.truncate(0)
             pkg_file.seek(0)
-            json.dump(pkg_data, pkg_file, indent=2, sort_keys=True, separators=(',', ': '))
+            json.dump(pkg_data, pkg_file, indent=2, separators=(',', ': '))
             pkg_file.write('\n')
         except:
             print('Unable to fix: %s' % pkg)
@@ -238,9 +259,25 @@ def run_npm_command(npm_command_args=None):
     if install_missing_deps():
         return True
 
+    runs_analysis_command = False
+
+    if run_custom_command:
+        runs_analysis_command = npm_command_args[:1] == [
+            'outdated'
+        ] or npm_command_args[:1] == ['audit']
+
     # By default, run the CI version of npm, which prevents updates to the versions of modules.
-    if exec_command(['npm', 'ci']):
-        return True
+    # However, when we are analyzing the installed NPM dependencies, we don't need to run
+    # the installation process again.
+    if not runs_analysis_command:
+        if exec_command(['npm', 'ci']):
+            return True
+
+        # To minimize disk usage for Chrome DevTools node_modules, always try to dedupe dependencies.
+        # We need to perform this every time, as the order of dependencies added could lead to a
+        # non-optimal dependency tree, resulting in unnecessary disk usage.
+        if exec_command(['npm', 'dedupe']):
+            return True
 
     if run_custom_command:
         custom_command_result = exec_command(['npm'] + npm_command_args)

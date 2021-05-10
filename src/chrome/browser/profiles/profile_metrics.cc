@@ -212,8 +212,10 @@ profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
     Profile* profile) {
   if (profile->IsSystemProfile())
     return profile_metrics::BrowserProfileType::kSystem;
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
+  if (profile->IsGuestSession())
     return profile_metrics::BrowserProfileType::kGuest;
+  if (profile->IsEphemeralGuestProfile())
+    return profile_metrics::BrowserProfileType::kEphemeralGuest;
   // A regular profile can be in a guest session or a system profile. Hence it
   // should be checked after them.
   if (profile->IsRegularProfile())
@@ -239,6 +241,12 @@ void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
   base::UmaHistogramEnumeration("Profile.AddNewUser", metric);
   base::UmaHistogramEnumeration("Profile.NetUserCount",
                                 ProfileNetUserCounts::ADD_NEW_USER);
+}
+
+// static
+void ProfileMetrics::LogProfileAddSignInFlowOutcome(
+    ProfileAddSignInFlowOutcome outcome) {
+  base::UmaHistogramEnumeration("Profile.AddSignInFlowOutcome", outcome);
 }
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {

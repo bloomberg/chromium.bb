@@ -14,37 +14,37 @@
 
 #include "src/ast/null_literal.h"
 
-#include "gtest/gtest.h"
-#include "src/ast/type/i32_type.h"
+#include "src/ast/bool_literal.h"
+#include "src/ast/float_literal.h"
+#include "src/ast/sint_literal.h"
+#include "src/ast/test_helper.h"
+#include "src/ast/uint_literal.h"
+#include "src/type/i32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using NullLiteralTest = testing::Test;
+using NullLiteralTest = TestHelper;
 
 TEST_F(NullLiteralTest, Is) {
-  ast::type::I32Type i32;
-  NullLiteral i{&i32};
-  EXPECT_FALSE(i.IsBool());
-  EXPECT_FALSE(i.IsSint());
-  EXPECT_FALSE(i.IsFloat());
-  EXPECT_FALSE(i.IsUint());
-  EXPECT_FALSE(i.IsInt());
-  EXPECT_TRUE(i.IsNull());
+  ast::Literal* l = create<NullLiteral>(ty.i32());
+  EXPECT_FALSE(l->Is<BoolLiteral>());
+  EXPECT_FALSE(l->Is<SintLiteral>());
+  EXPECT_FALSE(l->Is<FloatLiteral>());
+  EXPECT_FALSE(l->Is<UintLiteral>());
+  EXPECT_FALSE(l->Is<IntLiteral>());
+  EXPECT_TRUE(l->Is<NullLiteral>());
 }
 
 TEST_F(NullLiteralTest, ToStr) {
-  ast::type::I32Type i32;
-  NullLiteral i{&i32};
-
-  EXPECT_EQ(i.to_str(), "null __i32");
+  auto* i = create<NullLiteral>(ty.i32());
+  EXPECT_EQ(str(i), "null __i32");
 }
 
 TEST_F(NullLiteralTest, Name_I32) {
-  ast::type::I32Type i32;
-  NullLiteral i{&i32};
-  EXPECT_EQ("__null__i32", i.name());
+  auto* i = create<NullLiteral>(ty.i32());
+  EXPECT_EQ("__null__i32", i->name());
 }
 
 }  // namespace

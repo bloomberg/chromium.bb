@@ -56,11 +56,11 @@ class SANDBOX_POLICY_EXPORT SandboxMac {
   static const char* kSandboxOSVersion;
 
   // TODO(kerrnel): this is only for the legacy sandbox.
-  static const char* kSandboxElCapOrLater;
   static const char* kSandboxMacOS1013;
   static const char* kSandboxFieldTrialSeverName;
 
   static const char* kSandboxBundleVersionPath;
+  static const char* kSandboxDisableMetalShaderCache;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);

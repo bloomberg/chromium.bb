@@ -13,13 +13,13 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_headers_handler_interface.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "http2/decoder/http2_frame_decoder.h"
+#include "common/platform/api/quiche_export.h"
+#include "spdy/core/hpack/hpack_decoder_adapter.h"
+#include "spdy/core/hpack/hpack_header_table.h"
+#include "spdy/core/spdy_alt_svc_wire_format.h"
+#include "spdy/core/spdy_headers_handler_interface.h"
+#include "spdy/core/spdy_protocol.h"
 
 namespace spdy {
 
@@ -131,20 +131,10 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   void SetDecoderHeaderTableDebugVisitor(
       std::unique_ptr<spdy::HpackHeaderTable::DebugVisitorInterface> visitor);
 
-  // Sets whether or not ProcessInput returns after finishing a frame, or
-  // continues processing additional frames. Normally ProcessInput processes
-  // all input, but this method enables the caller (and visitor) to work with
-  // a single frame at a time (or that portion of the frame which is provided
-  // as input). Reset() does not change the value of this flag.
-  void set_process_single_input_frame(bool v);
-  bool process_single_input_frame() const {
-    return process_single_input_frame_;
-  }
-
   // Decode the |len| bytes of encoded HTTP/2 starting at |*data|. Returns
   // the number of bytes consumed. It is safe to pass more bytes in than
   // may be consumed. Should process (or otherwise buffer) as much as
-  // available, unless process_single_input_frame is true.
+  // available.
   size_t ProcessInput(const char* data, size_t len);
 
   // Reset the decoder (used just for tests at this time).
@@ -209,6 +199,11 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   void OnAltSvcOriginData(const char* data, size_t len) override;
   void OnAltSvcValueData(const char* data, size_t len) override;
   void OnAltSvcEnd() override;
+  void OnPriorityUpdateStart(
+      const Http2FrameHeader& header,
+      const Http2PriorityUpdateFields& priority_update) override;
+  void OnPriorityUpdatePayload(const char* data, size_t len) override;
+  void OnPriorityUpdateEnd() override;
   void OnUnknownStart(const Http2FrameHeader& header) override;
   void OnUnknownPayload(const char* data, size_t len) override;
   void OnUnknownEnd() override;
@@ -274,6 +269,10 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   // Temporary buffers for the AltSvc fields.
   std::string alt_svc_origin_;
   std::string alt_svc_value_;
+
+  // Temporary buffers for PRIORITY_UPDATE fields.
+  uint32_t prioritized_stream_id_ = 0;
+  std::string priority_field_value_;
 
   // Listener used if we transition to an error state; the listener ignores all
   // the callbacks.
@@ -341,8 +340,6 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
 
   // Is the current frame payload destined for |extension_|?
   bool handling_extension_payload_ = false;
-
-  bool process_single_input_frame_ = false;
 };
 
 }  // namespace http2
@@ -508,6 +505,13 @@ class QUICHE_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                           SpdyStreamId parent_stream_id,
                           int weight,
                           bool exclusive) = 0;
+
+  // Called when a PRIORITY_UPDATE frame is received on stream 0.
+  // |prioritized_stream_id| is the Prioritized Stream ID and
+  // |priority_field_value| is the Priority Field Value
+  // parsed from the frame payload.
+  virtual void OnPriorityUpdate(SpdyStreamId prioritized_stream_id,
+                                absl::string_view priority_field_value) = 0;
 
   // Called when a frame type we don't recognize is received.
   // Return true if this appears to be a valid extension frame, false otherwise.

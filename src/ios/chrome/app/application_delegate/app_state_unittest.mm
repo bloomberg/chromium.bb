@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/ios/block_types.h"
+#import "base/ios/ios_util.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/app_state_testing.h"
@@ -26,8 +27,6 @@
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/test_browser.h"
-#import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
-#import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -43,7 +42,6 @@
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -131,36 +129,6 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserProvider);
 };
 
-class FakeProfileSessionDurationsService
-    : public IOSProfileSessionDurationsService {
- public:
-  FakeProfileSessionDurationsService()
-      : IOSProfileSessionDurationsService(nullptr, nullptr) {}
-  ~FakeProfileSessionDurationsService() override = default;
-
-  static std::unique_ptr<KeyedService> Create(
-      web::BrowserState* browser_state) {
-    return std::make_unique<FakeProfileSessionDurationsService>();
-  }
-
-  void OnSessionStarted(base::TimeTicks session_start) override {
-    ++session_started_count_;
-  }
-  void OnSessionEnded(base::TimeDelta session_length) override {
-    ++session_ended_count_;
-  }
-
-  // IOSProfileSessionDurationsService:
-  int session_started_count() const { return session_started_count_; }
-  int session_ended_count() const { return session_ended_count_; }
-
- private:
-  int session_started_count_ = 0;
-  int session_ended_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeProfileSessionDurationsService);
-};
-
 }  // namespace
 
 class AppStateTest : public BlockCleanupTest {
@@ -189,9 +157,6 @@ class AppStateTest : public BlockCleanupTest {
         AuthenticationServiceFactory::GetInstance(),
         base::BindRepeating(
             &AuthenticationServiceFake::CreateAuthenticationService));
-    test_cbs_builder.AddTestingFactory(
-        IOSProfileSessionDurationsServiceFactory::GetInstance(),
-        base::BindRepeating(&FakeProfileSessionDurationsService::Create));
     browser_state_ = test_cbs_builder.Build();
   }
 
@@ -331,11 +296,6 @@ class AppStateTest : public BlockCleanupTest {
 
   BOOL metricsMediatorHasBeenCalled() { return metrics_mediator_called_; }
 
-  FakeProfileSessionDurationsService* getProfileSessionDurationsService() {
-    return static_cast<FakeProfileSessionDurationsService*>(
-        IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
-            getBrowserState()));
-  }
 
  private:
   web::WebTaskEnvironment task_environment_;
@@ -428,7 +388,7 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForegroundSafeMode) {
   BOOL result = [appState requiresHandlingAfterLaunchWithOptions:launchOptions
                                                  stateBackground:NO];
 
-  if (IsMultiwindowSupported()) {
+  if (base::ios::IsMultiwindowSupported()) {
     [appState startSafeMode];
   }
 
@@ -438,7 +398,7 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForegroundSafeMode) {
   EXPECT_OCMOCK_VERIFY(browserLauncherMock);
   EXPECT_OCMOCK_VERIFY(windowMock);
 
-  if (IsMultiwindowSupported()) {
+  if (base::ios::IsMultiwindowSupported()) {
     [appState stopSafeMode];
   }
 }
@@ -544,7 +504,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
                             applicationDelegate:applicationDelegate];
 
   // Create a scene state so that full shutdown will run.
-  if (!IsSceneStartupSupported()) {
+  if (!base::ios::IsSceneStartupSupported()) {
     appState.mainSceneState = [[SceneState alloc] initWithAppState:appState];
   }
 
@@ -566,7 +526,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
 // Test that -resumeSessionWithTabOpener
 // restart metrics and launchs from StartupParameters if they exist.
 TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
-  if (IsSceneStartupSupported()) {
+  if (base::ios::IsSceneStartupSupported()) {
     // TODO(crbug.com/1045579): Session restoration not available yet in MW.
     return;
   }
@@ -608,17 +568,13 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   [appState resumeSessionWithTabOpener:tabOpener
                            tabSwitcher:tabSwitcher
                  connectionInformation:getConnectionInformationMock()];
-
-  // Test.
-  EXPECT_EQ(1, getProfileSessionDurationsService()->session_started_count());
-  EXPECT_EQ(0, getProfileSessionDurationsService()->session_ended_count());
 }
 
 // Test that -resumeSessionWithTabOpener
 // restart metrics and creates a new tab from tab switcher if shouldOpenNTP is
 // YES.
 TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
-  if (IsSceneStartupSupported()) {
+  if (base::ios::IsSceneStartupSupported()) {
     // TODO(crbug.com/1045579): Session restoration not available yet in MW.
     return;
   }
@@ -666,7 +622,7 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
 // Test that -resumeSessionWithTabOpener,
 // restart metrics and creates a new tab if shouldOpenNTP is YES.
 TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
-  if (IsSceneStartupSupported()) {
+  if (base::ios::IsSceneStartupSupported()) {
     // TODO(crbug.com/1045579): Session restoration not available yet in MW.
     return;
   }
@@ -811,7 +767,7 @@ TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
 // application is in background.
 TEST_F(AppStateTest,
        applicationWillEnterForegroundFromBackgroundShouldStartSafeMode) {
-  if (IsMultiwindowSupported()) {
+  if (base::ios::IsMultiwindowSupported()) {
     // In Multi Window, this is not the case. Skip this test.
     return;
   }

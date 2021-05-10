@@ -5,7 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
@@ -16,7 +16,7 @@ preprocess_gen_manifest = "preprocessed_gen_manifest.json"
 preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"
 preprocess_folder = "preprocessed"
 
-grit("nearby_share_dialog_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -55,12 +55,13 @@ generate_grd("build_grd") {
   ]
   resource_path_rewrites = [
     "chrome/browser/ui/webui/nearby_share/nearby_share.mojom-lite.js|mojo/nearby_share.mojom-lite.js",
+    "chrome/browser/ui/webui/nearby_share/nearby_share_share_type.mojom-lite.js|mojo/nearby_share_share_type.mojom-lite.js",
     "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom-lite.js|mojo/nearby_share_settings.mojom-lite.js",
-    "chromeos/services/nearby/public/mojom/nearby_share_target_types.mojom-lite.js|mojo/nearby_share_settings.mojom-lite.js",
+    "chromeos/services/nearby/public/mojom/nearby_share_target_types.mojom-lite.js|mojo/nearby_share_target_types.mojom-lite.js",
   ]
 }
 
-preprocess_grit("preprocess_src") {
+preprocess_if_expr("preprocess_src") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
@@ -70,20 +71,15 @@ preprocess_grit("preprocess_src") {
   ]
 }
 
-preprocess_grit("preprocess_gen") {
+preprocess_if_expr("preprocess_gen") {
   deps = [ ":web_components" ]
   in_folder = "$target_gen_dir"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
   in_files = [
     "app.js",
-    "icons.js",
     "nearby_confirmation_page.js",
-    "nearby_device.js",
-    "nearby_device_icon.js",
     "nearby_discovery_page.js",
-    "nearby_preview.js",
-    "nearby_progress.js",
   ]
 }
 
@@ -94,13 +90,14 @@ generate_grd("build_mojo_grdp") {
   manifest_files = [ "$target_gen_dir/$preprocess_mojo_manifest" ]
   resource_path_rewrites = [
     "chrome/browser/ui/webui/nearby_share/nearby_share.mojom-lite.js|mojo/nearby_share.mojom-lite.js",
+    "chrome/browser/ui/webui/nearby_share/nearby_share_share_type.mojom-lite.js|mojo/nearby_share_share_type.mojom-lite.js",
     "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom-lite.js|mojo/nearby_share_settings.mojom-lite.js",
     "chromeos/services/nearby/public/mojom/nearby_share_target_types.mojom-lite.js|mojo/nearby_share_target_types.mojom-lite.js",
   ]
 }
 
 # Mojo files, for generating grdp
-preprocess_grit("preprocess_mojo") {
+preprocess_if_expr("preprocess_mojo") {
   deps = [
     "//chrome/browser/ui/webui/nearby_share:mojom_js",
     "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js__generator",
@@ -111,6 +108,7 @@ preprocess_grit("preprocess_mojo") {
   out_manifest = "$target_gen_dir/$preprocess_mojo_manifest"
   in_files = [
     "chrome/browser/ui/webui/nearby_share/nearby_share.mojom-lite.js",
+    "chrome/browser/ui/webui/nearby_share/nearby_share_share_type.mojom-lite.js",
     "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom-lite.js",
     "chromeos/services/nearby/public/mojom/nearby_share_target_types.mojom-lite.js",
   ]
@@ -127,11 +125,7 @@ js_type_check("closure_compile") {
     ":app",
     ":discovery_manager",
     ":nearby_confirmation_page",
-    ":nearby_device",
-    ":nearby_device_icon",
     ":nearby_discovery_page",
-    ":nearby_preview",
-    ":nearby_progress",
   ]
 }
 
@@ -149,15 +143,18 @@ js_library("app") {
 }
 
 js_library("discovery_manager") {
-  deps =
-      [ "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile" ]
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
+  ]
 }
 
 js_library("nearby_confirmation_page") {
   deps = [
-    ":nearby_preview",
-    ":nearby_progress",
+    "./shared:nearby_preview.m",
+    "./shared:nearby_progress.m",
     "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
@@ -165,29 +162,13 @@ js_library("nearby_confirmation_page") {
   ]
 }
 
-js_library("nearby_device") {
-  deps = [
-    ":nearby_device_icon",
-    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
-    "//third_party/polymer/v3_0/components-chromium/iron-icon",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("nearby_device_icon") {
-  deps = [
-    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
-    "//third_party/polymer/v3_0/components-chromium/iron-icon",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
 js_library("nearby_discovery_page") {
   deps = [
     ":discovery_manager",
-    ":nearby_device",
-    ":nearby_preview",
+    "./shared:nearby_device.m",
+    "./shared:nearby_preview.m",
     "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//chrome/browser/ui/webui/nearby_share:share_type_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
@@ -196,29 +177,10 @@ js_library("nearby_discovery_page") {
   ]
 }
 
-js_library("nearby_preview") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("nearby_progress") {
-  deps = [
-    ":nearby_device_icon",
-    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
 html_to_js("web_components") {
   js_files = [
     "app.js",
-    "icons.js",
     "nearby_confirmation_page.js",
-    "nearby_device.js",
-    "nearby_device_icon.js",
     "nearby_discovery_page.js",
-    "nearby_preview.js",
-    "nearby_progress.js",
   ]
 }

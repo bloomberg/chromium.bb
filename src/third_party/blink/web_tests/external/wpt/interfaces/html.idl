@@ -1397,11 +1397,11 @@ interface mixin CanvasDrawImage {
 
 interface mixin CanvasImageData {
   // pixel manipulation
-  ImageData createImageData(long sw, long sh);
+  ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh);
   ImageData createImageData(ImageData imagedata);
-  ImageData getImageData(long sx, long sy, long sw, long sh);
-  undefined putImageData(ImageData imagedata, long dx, long dy);
-  undefined putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
+  ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh);
+  undefined putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy);
+  undefined putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy, [EnforceRange] long dirtyX, [EnforceRange] long dirtyY, [EnforceRange] long dirtyWidth, [EnforceRange] long dirtyHeight);
 };
 
 enum CanvasLineCap { "butt", "round", "square" };
@@ -1440,8 +1440,8 @@ interface mixin CanvasPath {
   undefined bezierCurveTo(unrestricted double cp1x, unrestricted double cp1y, unrestricted double cp2x, unrestricted double cp2y, unrestricted double x, unrestricted double y);
   undefined arcTo(unrestricted double x1, unrestricted double y1, unrestricted double x2, unrestricted double y2, unrestricted double radius);
   undefined rect(unrestricted double x, unrestricted double y, unrestricted double w, unrestricted double h);
-  undefined arc(unrestricted double x, unrestricted double y, unrestricted double radius, unrestricted double startAngle, unrestricted double endAngle, optional boolean anticlockwise = false);
-  undefined ellipse(unrestricted double x, unrestricted double y, unrestricted double radiusX, unrestricted double radiusY, unrestricted double rotation, unrestricted double startAngle, unrestricted double endAngle, optional boolean anticlockwise = false);
+  undefined arc(unrestricted double x, unrestricted double y, unrestricted double radius, unrestricted double startAngle, unrestricted double endAngle, optional boolean counterclockwise = false);
+  undefined ellipse(unrestricted double x, unrestricted double y, unrestricted double radiusX, unrestricted double radiusY, unrestricted double rotation, unrestricted double startAngle, unrestricted double endAngle, optional boolean counterclockwise = false);
 };
 
 [Exposed=(Window,Worker)]
@@ -1701,8 +1701,7 @@ interface Window : EventTarget {
 
   // the user agent
   readonly attribute Navigator navigator;
-  [SecureContext] readonly attribute ApplicationCache applicationCache;
-  readonly attribute boolean originIsolated;
+  readonly attribute boolean originAgentCluster;
 
   // user prompts
   undefined alert();
@@ -1799,39 +1798,6 @@ dictionary PageTransitionEventInit : EventInit {
 [Exposed=Window]
 interface BeforeUnloadEvent : Event {
   attribute DOMString returnValue;
-};
-
-[SecureContext,
- Exposed=Window]
-interface ApplicationCache : EventTarget {
-
-  // update status
-  const unsigned short UNCACHED = 0;
-  const unsigned short IDLE = 1;
-  const unsigned short CHECKING = 2;
-  const unsigned short DOWNLOADING = 3;
-  const unsigned short UPDATEREADY = 4;
-  const unsigned short OBSOLETE = 5;
-  readonly attribute unsigned short status;
-
-  // updates
-  undefined update();
-  undefined abort();
-  undefined swapCache();
-
-  // events
-  attribute EventHandler onchecking;
-  attribute EventHandler onerror;
-  attribute EventHandler onnoupdate;
-  attribute EventHandler ondownloading;
-  attribute EventHandler onprogress;
-  attribute EventHandler onupdateready;
-  attribute EventHandler oncached;
-  attribute EventHandler onobsolete;
-};
-
-interface mixin NavigatorOnLine {
-  readonly attribute boolean onLine;
 };
 
 [Exposed=(Window,Worker)]
@@ -2048,6 +2014,10 @@ interface mixin NavigatorLanguage {
   readonly attribute FrozenArray<DOMString> languages;
 };
 
+interface mixin NavigatorOnLine {
+  readonly attribute boolean onLine;
+};
+
 interface mixin NavigatorContentUtils {
   [SecureContext] undefined registerProtocolHandler(DOMString scheme, USVString url);
   [SecureContext] undefined unregisterProtocolHandler(DOMString scheme, USVString url);
@@ -2055,48 +2025,6 @@ interface mixin NavigatorContentUtils {
 
 interface mixin NavigatorCookies {
   readonly attribute boolean cookieEnabled;
-};
-
-interface mixin NavigatorPlugins {
-  [SameObject] readonly attribute PluginArray plugins;
-  [SameObject] readonly attribute MimeTypeArray mimeTypes;
-  boolean javaEnabled();
-};
-
-[Exposed=Window,
- LegacyUnenumerableNamedProperties]
-interface PluginArray {
-  undefined refresh(optional boolean reload = false);
-  readonly attribute unsigned long length;
-  getter Plugin? item(unsigned long index);
-  getter Plugin? namedItem(DOMString name);
-};
-
-[Exposed=Window,
- LegacyUnenumerableNamedProperties]
-interface MimeTypeArray {
-  readonly attribute unsigned long length;
-  getter MimeType? item(unsigned long index);
-  getter MimeType? namedItem(DOMString name);
-};
-
-[Exposed=Window,
- LegacyUnenumerableNamedProperties]
-interface Plugin {
-  readonly attribute DOMString name;
-  readonly attribute DOMString description;
-  readonly attribute DOMString filename;
-  readonly attribute unsigned long length;
-  getter MimeType? item(unsigned long index);
-  getter MimeType? namedItem(DOMString name);
-};
-
-[Exposed=Window]
-interface MimeType {
-  readonly attribute DOMString type;
-  readonly attribute DOMString description;
-  readonly attribute DOMString suffixes; // comma-separated
-  readonly attribute Plugin enabledPlugin;
 };
 
 [Exposed=(Window,Worker), Serializable, Transferable]
@@ -2426,10 +2354,6 @@ interface HTMLMarqueeElement : HTMLElement {
   [CEReactions] attribute unsigned long vspace;
   [CEReactions] attribute DOMString width;
 
-  attribute EventHandler onbounce;
-  attribute EventHandler onfinish;
-  attribute EventHandler onstart;
-
   undefined start();
   undefined stop();
 };
@@ -2707,4 +2631,43 @@ partial interface Window {
 interface External {
   undefined AddSearchProvider();
   undefined IsSearchProviderInstalled();
+};
+
+interface mixin NavigatorPlugins {
+  [SameObject] readonly attribute PluginArray plugins;
+  [SameObject] readonly attribute MimeTypeArray mimeTypes;
+  boolean javaEnabled();
+};
+
+[Exposed=Window]
+interface PluginArray {
+  undefined refresh();
+  readonly attribute unsigned long length;
+  getter object? item(unsigned long index);
+  object? namedItem(DOMString name);
+};
+
+[Exposed=Window]
+interface MimeTypeArray {
+  readonly attribute unsigned long length;
+  getter object? item(unsigned long index);
+  object? namedItem(DOMString name);
+};
+
+[Exposed=Window]
+interface Plugin {
+  readonly attribute undefined name;
+  readonly attribute undefined description;
+  readonly attribute undefined filename;
+  readonly attribute undefined length;
+  getter undefined item(unsigned long index);
+  undefined namedItem(DOMString name);
+};
+
+[Exposed=Window]
+interface MimeType {
+  readonly attribute undefined type;
+  readonly attribute undefined description;
+  readonly attribute undefined suffixes;
+  readonly attribute undefined enabledPlugin;
 };

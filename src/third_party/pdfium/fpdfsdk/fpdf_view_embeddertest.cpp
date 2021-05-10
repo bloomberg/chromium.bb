@@ -22,6 +22,7 @@
 #include "testing/utils/file_util.h"
 #include "testing/utils/hash.h"
 #include "testing/utils/path_service.h"
+#include "third_party/base/check.h"
 #include "third_party/base/stl_util.h"
 
 using pdfium::kManyRectanglesChecksum;
@@ -348,7 +349,7 @@ TEST_F(FPDFViewEmbedderTest, LoadDocument64) {
   size_t file_length = 0;
   std::unique_ptr<char, pdfium::FreeDeleter> file_contents =
       GetFileContents(file_path.c_str(), &file_length);
-  ASSERT(file_contents);
+  DCHECK(file_contents);
   ScopedFPDFDocument doc(
       FPDF_LoadMemDocument64(file_contents.get(), file_length, nullptr));
   ASSERT_TRUE(doc);
@@ -1230,7 +1231,7 @@ TEST_F(FPDFViewEmbedderTest, LoadDocumentWithEmptyXRefConsistently) {
     size_t file_length = 0;
     std::unique_ptr<char, pdfium::FreeDeleter> file_contents =
         GetFileContents(file_path.c_str(), &file_length);
-    ASSERT(file_contents);
+    DCHECK(file_contents);
     ScopedFPDFDocument doc(
         FPDF_LoadMemDocument(file_contents.get(), file_length, ""));
     ASSERT_TRUE(doc);
@@ -1382,12 +1383,10 @@ TEST_F(FPDFViewEmbedderTest, RenderHelloWorldWithFlags) {
 
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 #if defined(OS_WIN)
-  static const char kLcdTextChecksum[] = "fa4b12e9db8316f699624250307e5106";
-#elif defined(OS_APPLE)
-  static const char kLcdTextChecksum[] = "b0a33a2ab9f26d225bbad1c714d95beb";
+  static const char kLcdTextChecksum[] = "7fca5790ce81c715d74d955ea9939fd8";
 #else
-  static const char kLcdTextChecksum[] = "693563ed2a3f1f6545856377be4bf3b3";
-#endif
+  static const char kLcdTextChecksum[] = "66ecb880a880dd263ff495b28aeda0d1";
+#endif  // defined(OS_WIN)
   static const char kNoSmoothtextChecksum[] =
       "18156d2a55ae142c3870da7229650890";
 #else
@@ -1419,13 +1418,7 @@ TEST_F(FPDFViewEmbedderTest, RenderHelloWorldWithFlags) {
 }
 
 #if defined(OS_WIN)
-// TODO(crbug.com/pdfium/1500): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_FPDFRenderPageEmf DISABLED_FPDFRenderPageEmf
-#else
-#define MAYBE_FPDFRenderPageEmf FPDFRenderPageEmf
-#endif
-TEST_F(FPDFViewEmbedderTest, MAYBE_FPDFRenderPageEmf) {
+TEST_F(FPDFViewEmbedderTest, FPDFRenderPageEmf) {
   ASSERT_TRUE(OpenDocument("rectangles.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -1512,13 +1505,7 @@ TEST_F(PostScriptLevel3EmbedderTest, Rectangles) {
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/1500): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_Image DISABLED_Image
-#else
-#define MAYBE_Image Image
-#endif
-TEST_F(PostScriptLevel2EmbedderTest, MAYBE_Image) {
+TEST_F(PostScriptLevel2EmbedderTest, Image) {
   const char kExpected[] =
       "\n"
       "save\n"
@@ -1591,13 +1578,7 @@ TEST_F(PostScriptLevel2EmbedderTest, MAYBE_Image) {
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/1500): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_Image DISABLED_Image
-#else
-#define MAYBE_Image Image
-#endif
-TEST_F(PostScriptLevel3EmbedderTest, MAYBE_Image) {
+TEST_F(PostScriptLevel3EmbedderTest, Image) {
   const char kExpected[] = R"(
 save
 /im/initmatrix load def
@@ -1642,7 +1623,7 @@ restore
 }
 
 // TODO(crbug.com/pdfium/1500): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#if defined(_SKIA_SUPPORT_)
 #define MAYBE_ImageMask DISABLED_ImageMask
 #else
 #define MAYBE_ImageMask ImageMask
@@ -1733,4 +1714,18 @@ TEST_F(FPDFViewEmbedderTest, GetTrailerEndsLinearized) {
   std::vector<unsigned int> ends(size);
   ASSERT_EQ(size, FPDF_GetTrailerEnds(document(), ends.data(), size));
   ASSERT_EQ(kExpectedEnds, ends);
+}
+
+TEST_F(FPDFViewEmbedderTest, GetTrailerEndsWhitespace) {
+  // Whitespace between 'endstream'/'endobj' and the newline.
+  ASSERT_TRUE(OpenDocument("trailer_end_trailing_space.pdf"));
+
+  unsigned long size = FPDF_GetTrailerEnds(document(), nullptr, 0);
+  const std::vector<unsigned int> kExpectedEnds{1193};
+  // Without the accompanying fix in place, this test would have failed, as the
+  // size was 0, not 1, i.e. no trailer ends were found.
+  ASSERT_EQ(kExpectedEnds.size(), size);
+  std::vector<unsigned int> ends(size);
+  ASSERT_EQ(size, FPDF_GetTrailerEnds(document(), ends.data(), size));
+  EXPECT_EQ(kExpectedEnds, ends);
 }

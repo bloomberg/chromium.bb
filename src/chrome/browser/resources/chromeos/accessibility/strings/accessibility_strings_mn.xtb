@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Өмнөх хяналт алга байна</translation>
 <translation id="2045606329038304310">Маягтын талбарын хяналт</translation>
 <translation id="2063539687800151747">Эпиграф</translation>
+<translation id="2074531330963286860">Үйлдэл хийх боломжтой. Харахын тулд Search+Period-г дарна уу</translation>
 <translation id="2086961585857038472">Дараагийн үг</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
@@ -174,7 +175,7 @@
 <translation id="2220529011494928058">Асуудлыг мэдэгдэх</translation>
 <translation id="224426591676115802">Хэлд зориулсан дуу алга байна: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">Сургалтын горимыг зогсоож байна</translation>
-<translation id="225732394367814946">Дууны хэмжээг нэмэгдүүлэх</translation>
+<translation id="225732394367814946">Дууны түвшинг нэмэгдүүлэх</translation>
 <translation id="2267538686624070261">Алдаатай бичсэн үгийг орхиж байна</translation>
 <translation id="2267945578749931355">Дараагийн тэмдэгт</translation>
 <translation id="2278490101488436824">Гурван хурууг зүүн тийш шудрах</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Дараагийн бүлэг</translation>
 <translation id="7813616274030162878">Хандалтыг сэлгэх цэс</translation>
 <translation id="7839679365527550018">Өмнөх үг</translation>
+<translation id="7842115774595115751">Навигацын хяналтыг идэвхжүүлэх</translation>
 <translation id="7846634333498149051">Гар</translation>
 <translation id="7851816175263618915">Зарим цэг таслал</translation>
 <translation id="7871691770940645922">Виртуал Брайлийн дэлгэц</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Мартах</translation>
 <translation id="8989104346085848538">ChromeVox-н одоогийн аливаа яриаг зогсоохын тулд Control товчийг дарна уу.</translation>
+<translation id="8993737615451556423">Унших дуу хоолойг хурдасгах, удаашруулах болон түр зогсоох удирдлагаар хангана</translation>
 <translation id="9014206344398081366">ChromeVox-н практик хичээл</translation>
 <translation id="9040132695316389094">Гарчиг 1</translation>
 <translation id="9061884144798498064">8 цэгт брайлийн хүснэгтийг сонгоно уу:</translation>

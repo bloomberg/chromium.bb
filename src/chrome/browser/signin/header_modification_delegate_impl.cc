@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -20,11 +21,14 @@
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_pref_names.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_pref_names.h"
 #endif
 
 namespace signin {
@@ -58,7 +62,7 @@ void HeaderModificationDelegateImpl::ProcessRequest(
       ProfileSyncServiceFactory::GetForProfile(profile_);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_secondary_account_addition_allowed = true;
   if (!prefs->GetBoolean(
           chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
@@ -92,7 +96,7 @@ void HeaderModificationDelegateImpl::ProcessRequest(
       prefs->GetInteger(prefs::kIncognitoModeAvailability),
       AccountConsistencyModeManager::GetMethodForProfile(profile_),
       account.gaia, is_child_account,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

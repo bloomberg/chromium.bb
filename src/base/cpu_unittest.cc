@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/cpu.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
+#include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,13 +15,14 @@
 // "undefined instruction" exceptions. That is, this test succeeds when this
 // test finishes without a crash.
 TEST(CPU, RunExtendedInstructions) {
-#if defined(ARCH_CPU_X86_FAMILY)
   // Retrieve the CPU information.
   base::CPU cpu;
+#if defined(ARCH_CPU_X86_FAMILY)
 
   ASSERT_TRUE(cpu.has_mmx());
   ASSERT_TRUE(cpu.has_sse());
   ASSERT_TRUE(cpu.has_sse2());
+  ASSERT_TRUE(cpu.has_sse3());
 
 // GCC and clang instruction test.
 #if defined(COMPILER_GCC)
@@ -32,10 +35,8 @@ TEST(CPU, RunExtendedInstructions) {
   // Execute an SSE 2 instruction.
   __asm__ __volatile__("psrldq $0, %%xmm0\n" : : : "xmm0");
 
-  if (cpu.has_sse3()) {
-    // Execute an SSE 3 instruction.
-    __asm__ __volatile__("addsubpd %%xmm0, %%xmm0\n" : : : "xmm0");
-  }
+  // Execute an SSE 3 instruction.
+  __asm__ __volatile__("addsubpd %%xmm0, %%xmm0\n" : : : "xmm0");
 
   if (cpu.has_ssse3()) {
     // Execute a Supplimental SSE 3 instruction.
@@ -66,7 +67,6 @@ TEST(CPU, RunExtendedInstructions) {
     // Execute an AVX 2 instruction.
     __asm__ __volatile__("vpunpcklbw %%ymm0, %%ymm0, %%ymm0\n" : : : "xmm0");
   }
-
 // Visual C 32 bit and ClangCL 32/64 bit test.
 #elif defined(COMPILER_MSVC) && (defined(ARCH_CPU_32_BITS) || \
       (defined(ARCH_CPU_64_BITS) && defined(__clang__)))
@@ -80,10 +80,8 @@ TEST(CPU, RunExtendedInstructions) {
   // Execute an SSE 2 instruction.
   __asm psrldq xmm0, 0;
 
-  if (cpu.has_sse3()) {
-    // Execute an SSE 3 instruction.
-    __asm addsubpd xmm0, xmm0;
-  }
+  // Execute an SSE 3 instruction.
+  __asm addsubpd xmm0, xmm0;
 
   if (cpu.has_ssse3()) {
     // Execute a Supplimental SSE 3 instruction.
@@ -116,6 +114,32 @@ TEST(CPU, RunExtendedInstructions) {
   }
 #endif  // defined(COMPILER_GCC)
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+
+#if defined(ARCH_CPU_ARM64)
+  // Check that the CPU is correctly reporting support for the Armv8.5-A memory
+  // tagging extension. The new MTE instructions aren't encoded in NOP space
+  // like BTI/Pointer Authentication and will crash older cores with a SIGILL if
+  // used incorrectly. This test demonstrates how it should be done and that
+  // this approach works.
+  if (cpu.has_mte()) {
+#if !defined(__ARM_FEATURE_MEMORY_TAGGING)
+    // In this section, we're running on an MTE-compatible core, but we're
+    // building this file without MTE support. Fail this test to indicate that
+    // there's a problem with the base/ build configuration.
+    GTEST_FAIL()
+        << "MTE support detected (but base/ built without MTE support)";
+#else
+    char ptr[32];
+    uint64_t val;
+    // Execute a trivial MTE instruction. Normally, MTE should be used via the
+    // intrinsics documented at
+    // https://developer.arm.com/documentation/101028/0012/10--Memory-tagging-intrinsics,
+    // this test uses the irg (Insert Random Tag) instruction directly to make
+    // sure that it's not optimized out by the compiler.
+    __asm__ __volatile__("irg %0, %1" : "=r"(val) : "r"(ptr));
+#endif  // __ARM_FEATURE_MEMORY_TAGGING
+  }
+#endif  // ARCH_CPU_ARM64
 }
 
 // For https://crbug.com/249713
@@ -167,3 +191,19 @@ TEST(CPU, X86FamilyAndModel) {
   EXPECT_EQ(ext_model, 7);
 }
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS))
+TEST(CPU, ARMImplementerAndPartNumber) {
+  base::CPU cpu;
+
+  const std::string& cpu_brand = cpu.cpu_brand();
+
+  // Some devices, including on the CQ, do not report a cpu_brand
+  // https://crbug.com/1166533 and https://crbug.com/1167123.
+  EXPECT_EQ(cpu_brand, base::TrimWhitespaceASCII(cpu_brand, base::TRIM_ALL));
+  EXPECT_GT(cpu.implementer(), 0u);
+  EXPECT_GT(cpu.part_number(), 0u);
+}
+#endif  // defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_LINUX) ||
+        // defined(OS_ANDROID) || defined(OS_CHROMEOS))

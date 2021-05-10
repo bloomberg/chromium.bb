@@ -96,7 +96,7 @@ def CleanObjectFiles(object_files):
   Args:
     object_files: List of object files that needs cleaning.
   """
-  blacklist = [
+  cleaning_list = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
       'libavcodec/file_open.o',  # Includes libavutil/file_open.c
       'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
@@ -137,7 +137,7 @@ def CleanObjectFiles(object_files):
       'libavutil/xtea.o',
       'libavutil/xga_font_data.o',
   ]
-  for name in blacklist:
+  for name in cleaning_list:
     name = name.replace('/', os.sep)
     if name in object_files:
       object_files.remove(name)
@@ -649,6 +649,7 @@ IGNORED_INCLUDE_FILES = [
     os.path.join('libavcodec', 'cbrt_tables.h'),
     os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
     os.path.join('libavcodec', 'mpegaudio_tables.h'),
+    os.path.join('libavcodec', 'mpegaudiodec_common_tables.h'),
     os.path.join('libavcodec', 'pcm_tables.h'),
     os.path.join('libavcodec', 'sinewin_tables.h'),
     os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
@@ -657,7 +658,7 @@ IGNORED_INCLUDE_FILES = [
 # Known licenses that are acceptable for static linking
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the
 # licenses are okay to add.
-LICENSE_WHITELIST = [
+ALLOWED_LICENSES = [
     'BSD (3 clause) LGPL (v2.1 or later)',
     'BSL (v1) LGPL (v2.1 or later)',
     'ISC GENERATED FILE',
@@ -671,7 +672,7 @@ LICENSE_WHITELIST = [
 # give the full path from the source_dir to avoid ambiguity.
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the files
 # you're adding have acceptable licenses.
-UNKNOWN_WHITELIST = [
+LICENSE_EXCEPTIONS = [
     # From of Independent JPEG group. No named license, but usage is allowed.
     os.path.join('libavcodec', 'jrevdct.c'),
     os.path.join('libavcodec', 'jfdctfst.c'),
@@ -791,8 +792,8 @@ def CheckLicensesForSources(sources, source_dir, print_licenses):
     licensename = licensename.replace('*No copyright*', '').strip()
     rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
 
-    if (licensename in LICENSE_WHITELIST or
-        (licensename == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
+    if (licensename in ALLOWED_LICENSES or
+        (licensename == 'UNKNOWN' and rel_file_path in LICENSE_EXCEPTIONS)):
       if print_licenses:
         print filename, ':', licensename
       continue
@@ -827,7 +828,7 @@ def FixObjectBasenameCollisions(disjoint_sets,
   If upstream changes the name such that the collision no longer exists, we
   detect the presence of a renamed file in all_sources which is overridden and
   warn that it should be removed.
-  
+
   This will return a tuple of two sets.  The first is a list of all currently
   renamed files, in their renamed form.  The second is a list of renamed files
   that we have in the working directory, but no longer need."""

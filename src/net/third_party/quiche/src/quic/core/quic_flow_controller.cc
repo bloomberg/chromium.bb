@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_flow_controller.h"
+#include "quic/core/quic_flow_controller.h"
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -25,7 +25,7 @@ std::string QuicFlowController::LogLabel() {
   if (is_connection_flow_controller_) {
     return "connection";
   }
-  return quiche::QuicheStrCat("stream ", id_);
+  return absl::StrCat("stream ", id_);
 }
 
 QuicFlowController::QuicFlowController(
@@ -53,8 +53,8 @@ QuicFlowController::QuicFlowController(
       session_flow_controller_(session_flow_controller),
       last_blocked_send_window_offset_(0),
       prev_window_update_time_(QuicTime::Zero()) {
-  DCHECK_LE(receive_window_size_, receive_window_size_limit_);
-  DCHECK_EQ(
+  QUICHE_DCHECK_LE(receive_window_size_, receive_window_size_limit_);
+  QUICHE_DCHECK_EQ(
       is_connection_flow_controller_,
       QuicUtils::GetInvalidStreamId(session_->transport_version()) == id_);
 
@@ -99,8 +99,8 @@ void QuicFlowController::AddBytesSent(QuicByteCount bytes_sent) {
     // This is an error on our side, close the connection as soon as possible.
     connection_->CloseConnection(
         QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA,
-        quiche::QuicheStrCat(send_window_offset_ - (bytes_sent_ + bytes_sent),
-                             "bytes over send window offset"),
+        absl::StrCat(send_window_offset_ - (bytes_sent_ + bytes_sent),
+                     "bytes over send window offset"),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
@@ -198,7 +198,7 @@ void QuicFlowController::MaybeSendWindowUpdate() {
   // Send WindowUpdate to increase receive window if
   // (receive window offset - consumed bytes) < (max window / 2).
   // This is behaviour copied from SPDY.
-  DCHECK_LE(bytes_consumed_, receive_window_offset_);
+  QUICHE_DCHECK_LE(bytes_consumed_, receive_window_offset_);
   QuicStreamOffset available_window = receive_window_offset_ - bytes_consumed_;
   QuicByteCount threshold = WindowUpdateThreshold();
 
@@ -294,7 +294,7 @@ uint64_t QuicFlowController::SendWindowSize() const {
 }
 
 void QuicFlowController::UpdateReceiveWindowSize(QuicStreamOffset size) {
-  DCHECK_LE(size, receive_window_size_limit_);
+  QUICHE_DCHECK_LE(size, receive_window_size_limit_);
   QUIC_DVLOG(1) << ENDPOINT << "UpdateReceiveWindowSize for " << LogLabel()
                 << ": " << size;
   if (receive_window_size_ != receive_window_offset_) {

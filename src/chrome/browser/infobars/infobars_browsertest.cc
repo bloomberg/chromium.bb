@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
@@ -20,8 +21,6 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -59,14 +58,13 @@
 #include "sandbox/policy/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/startup/default_browser_infobar_delegate.h"
 #endif
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/rosetta_required_infobar_delegate.h"
-#include "chrome/browser/ui/startup/mac_system_infobar_delegate.h"
 #endif
 
 #if !defined(USE_AURA)
@@ -188,13 +186,11 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
        IBD::INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE},
       {"theme_installed", IBD::THEME_INSTALLED_INFOBAR_DELEGATE},
       {"nacl", IBD::NACL_INFOBAR_DELEGATE},
-      {"pepper_broker", IBD::PEPPER_BROKER_INFOBAR_DELEGATE},
       {"outdated_plugin", IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE},
       {"reload_plugin", IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE},
       {"plugin_observer", IBD::PLUGIN_OBSERVER_INFOBAR_DELEGATE},
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
       {"keystone_promotion", IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC},
-      {"mac_system", IBD::SYSTEM_INFOBAR_DELEGATE_MAC},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
       {"installation_error", IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE},
       {"bad_flags", IBD::BAD_FLAGS_INFOBAR_DELEGATE},
@@ -262,13 +258,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
 #endif
       break;
 
-    case IBD::PEPPER_BROKER_INFOBAR_DELEGATE:
-      PepperBrokerInfoBarDelegate::Create(GetInfoBarService(),
-                                          GURL("http://example.com/"),
-                                          base::ASCIIToUTF16("Test Plugin"),
-                                          nullptr, nullptr, base::DoNothing());
-      break;
-
     case IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE:
       OutdatedPluginInfoBarDelegate::Create(
           GetInfoBarService(), nullptr,
@@ -301,14 +290,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
 #endif
       break;
 
-    case IBD::SYSTEM_INFOBAR_DELEGATE_MAC:
-#if defined(OS_MAC)
-      MacSystemInfoBarDelegate::Create(GetInfoBarService());
-#else
-      ADD_FAILURE() << "This infobar is not supported on this OS.";
-#endif
-      break;
-
     case IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE:
       CollectedCookiesInfoBarDelegate::Create(GetInfoBarService());
       break;
@@ -332,7 +313,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       ADD_FAILURE() << "This infobar is not supported on this OS.";
 #else
       chrome::DefaultBrowserInfoBarDelegate::Create(GetInfoBarService(),
@@ -427,10 +408,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_nacl) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_pepper_broker) {
-  ShowAndVerifyUi();
-}
-
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_outdated_plugin) {
   ShowAndVerifyUi();
 }
@@ -451,9 +428,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_file_access_disabled) {
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_keystone_promotion) {
   ShowAndVerifyUi();
 }
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_mac_system) {
-  ShowAndVerifyUi();
-}
 #endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_collected_cookies) {
@@ -468,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_bad_flags) {
   ShowAndVerifyUi();
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_default_browser) {
   ShowAndVerifyUi();
 }

@@ -87,13 +87,12 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 #if !defined(NACL_WIN64)
     // We don't support PPAPI win32k lockdown prior to Windows 10.
     if (base::win::GetVersion() >= base::win::Version::WIN10) {
-      result =
-          sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, true);
+      result = sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy);
       if (result != sandbox::SBOX_ALL_OK)
         return false;
     }
 #endif  // !defined(NACL_WIN64)
-    const base::string16& sid =
+    const std::wstring& sid =
         browser_client->GetAppContainerSidForSandboxType(GetSandboxType());
     if (!sid.empty())
       sandbox::policy::SandboxWin::AddAppContainerPolicy(policy, sid.c_str());

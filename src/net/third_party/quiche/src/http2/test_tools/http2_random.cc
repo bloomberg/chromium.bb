@@ -1,7 +1,7 @@
-#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
+#include "http2/test_tools/http2_random.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_string_utils.h"
 #include "third_party/boringssl/src/include/openssl/chacha.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 
@@ -18,7 +18,7 @@ Http2Random::Http2Random() {
 
 Http2Random::Http2Random(absl::string_view key) {
   std::string decoded_key = Http2HexDecode(key);
-  CHECK_EQ(sizeof(key_), decoded_key.size());
+  QUICHE_CHECK_EQ(sizeof(key_), decoded_key.size());
   memcpy(key_, decoded_key.data(), sizeof(key_));
 }
 

@@ -19,6 +19,7 @@ devtools_module("quick_open") {
     "../common:bundle",
     "../diff:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../text_utils:bundle",
     "../ui:bundle",
@@ -26,13 +27,19 @@ devtools_module("quick_open") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "quick_open.js"
+  entrypoint = "quick_open.ts"
 
   deps = [ ":quick_open" ]
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "quick_open-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "quick_open-meta.ts"
 
   deps = [ ":bundle" ]
 }

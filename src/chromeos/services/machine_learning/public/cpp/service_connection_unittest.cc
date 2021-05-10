@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
@@ -56,49 +57,180 @@ class ServiceConnectionTest : public testing::Test {
 // Tests that LoadBuiltinModel runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadBuiltinModel) {
+  ServiceConnection::GetInstance()->Initialize();
   mojo::Remote<mojom::Model> model;
-  mojom::BuiltinModelSpecPtr spec =
-      mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL);
-  ServiceConnection::GetInstance()->LoadBuiltinModel(
-      std::move(spec), model.BindNewPipeAndPassReceiver(),
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+
+  ml_service->LoadBuiltinModel(
+      mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
+      model.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
+
+  // Also tests GetMachineLearningService runs OK.
+  model.reset();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadBuiltinModel(
+          mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
+          model.BindNewPipeAndPassReceiver(),
+          base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests that LoadFlatBufferModel runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadFlatBufferModel) {
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+
   mojo::Remote<mojom::Model> model;
-  mojom::FlatBufferModelSpecPtr spec = mojom::FlatBufferModelSpec::New();
-  ServiceConnection::GetInstance()->LoadFlatBufferModel(
-      std::move(spec), model.BindNewPipeAndPassReceiver(),
+  ml_service->LoadFlatBufferModel(
+      mojom::FlatBufferModelSpec::New(), model.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
+
+  model.reset();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadFlatBufferModel(
+          mojom::FlatBufferModelSpec::New(), model.BindNewPipeAndPassReceiver(),
+          base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests that LoadTextClassifier runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadTextClassifier) {
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+
   mojo::Remote<mojom::TextClassifier> text_classifier;
-  ServiceConnection::GetInstance()->LoadTextClassifier(
+  ml_service->LoadTextClassifier(
       text_classifier.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
+
+  text_classifier.reset();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadTextClassifier(text_classifier.BindNewPipeAndPassReceiver(),
+                          base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests that LoadHandwritingModelWithSpec runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadHandwritingModelWithSpec) {
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+
   mojo::Remote<mojom::HandwritingRecognizer> handwriting_recognizer;
-  ServiceConnection::GetInstance()->LoadHandwritingModelWithSpec(
+  ml_service->LoadHandwritingModelWithSpec(
       mojom::HandwritingRecognizerSpec::New("en"),
       handwriting_recognizer.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
+
+  handwriting_recognizer.reset();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadHandwritingModelWithSpec(
+          mojom::HandwritingRecognizerSpec::New("en"),
+          handwriting_recognizer.BindNewPipeAndPassReceiver(),
+          base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests that LoadGrammarChecker runs OK (no crash) in a basic Mojo environment.
 TEST_F(ServiceConnectionTest, LoadGrammarModel) {
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+
   mojo::Remote<mojom::GrammarChecker> grammar_checker;
-  ServiceConnection::GetInstance()->LoadGrammarChecker(
+  ml_service->LoadGrammarChecker(
       grammar_checker.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
+
+  grammar_checker.reset();
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadGrammarChecker(grammar_checker.BindNewPipeAndPassReceiver(),
+                          base::BindOnce([](mojom::LoadModelResult result) {}));
+}
+
+// Tests the fake ML service for binding ml_service receiver.
+TEST_F(ServiceConnectionTest, BindMachineLearningService) {
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Remote<mojom::MachineLearningService> ml_service;
+  ServiceConnection::GetInstance()->BindMachineLearningService(
+      ml_service.BindNewPipeAndPassReceiver());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(ml_service.is_bound());
+
+  // Check the bound ml_service remote can be used to call
+  // MachineLearningService methods.
+  mojo::Remote<mojom::Model> model;
+  bool callback_done = false;
+
+  ml_service->LoadBuiltinModel(
+      mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
+      model.BindNewPipeAndPassReceiver(),
+      base::BindOnce(
+          [](bool* callback_done, mojom::LoadModelResult result) {
+            EXPECT_EQ(result, mojom::LoadModelResult::OK);
+            *callback_done = true;
+          },
+          &callback_done));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_done);
+  EXPECT_TRUE(model.is_bound());
+}
+
+class TestSodaClient : public mojom::SodaClient {
+  void OnStop() override {}
+  void OnStart() override {}
+  void OnSpeechRecognizerEvent(mojom::SpeechRecognizerEventPtr event) override {
+  }
+};
+
+// Tests that LoadSpeechRecognizer runs OK without a crash in a basic Mojo
+// Environment.
+TEST_F(ServiceConnectionTest, LoadSpeechRecognizerAndCallback) {
+  mojo::Remote<mojom::SodaRecognizer> soda_recognizer;
+  TestSodaClient test_client;
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
+
+  mojo::Receiver<mojom::SodaClient> soda_client{&test_client};
+  bool callback_done = false;
+  auto config = mojom::SodaConfig::New();
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadSpeechRecognizer(
+          std::move(config), soda_client.BindNewPipeAndPassRemote(),
+          soda_recognizer.BindNewPipeAndPassReceiver(),
+          base::BindLambdaForTesting([&](mojom::LoadModelResult result) {
+            callback_done = true;
+            EXPECT_EQ(result, mojom::LoadModelResult::OK);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  ASSERT_TRUE(callback_done);
 }
 
 // Tests the fake ML service for builtin model.
@@ -108,19 +240,22 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
   const double expected_value = 200.002;
   fake_service_connection.SetOutputValue(std::vector<int64_t>{1L},
                                          std::vector<double>{expected_value});
-  ServiceConnection::GetInstance()->LoadBuiltinModel(
-      mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
-      model.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadBuiltinModel(
+          mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
+          model.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(model.is_bound());
@@ -169,19 +304,22 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
   const double expected_value = 200.002;
   fake_service_connection.SetOutputValue(std::vector<int64_t>{1L},
                                          std::vector<double>{expected_value});
 
-  ServiceConnection::GetInstance()->LoadFlatBufferModel(
-      mojom::FlatBufferModelSpec::New(), model.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadFlatBufferModel(
+          mojom::FlatBufferModelSpec::New(), model.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(model.is_bound());
@@ -231,6 +369,7 @@ TEST_F(ServiceConnectionTest,
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
   auto dummy_data = mojom::TextEntityData::New();
   dummy_data->set_numeric_value(123456789.);
@@ -246,14 +385,16 @@ TEST_F(ServiceConnectionTest,
   annotations.emplace_back(std::move(dummy_annotation));
   fake_service_connection.SetOutputAnnotation(annotations);
 
-  ServiceConnection::GetInstance()->LoadTextClassifier(
-      text_classifier.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadTextClassifier(
+          text_classifier.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
@@ -287,20 +428,23 @@ TEST_F(ServiceConnectionTest,
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
   auto span = mojom::CodepointSpan::New();
   span->start_offset = 1;
   span->end_offset = 2;
   fake_service_connection.SetOutputSelection(span);
 
-  ServiceConnection::GetInstance()->LoadTextClassifier(
-      text_classifier.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadTextClassifier(
+          text_classifier.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
@@ -330,20 +474,23 @@ TEST_F(ServiceConnectionTest,
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
   std::vector<mojom::TextLanguagePtr> languages;
   languages.emplace_back(mojom::TextLanguage::New("en", 0.9));
   languages.emplace_back(mojom::TextLanguage::New("fr", 0.1));
   fake_service_connection.SetOutputLanguages(languages);
 
-  ServiceConnection::GetInstance()->LoadTextClassifier(
-      text_classifier.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadTextClassifier(
+          text_classifier.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(text_classifier.is_bound());
@@ -374,16 +521,20 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
-  ServiceConnection::GetInstance()->LoadHandwritingModel(
-      mojom::HandwritingRecognizerSpec::New("en"),
-      recognizer.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadHandwritingModelResult result) {
-            EXPECT_EQ(result, mojom::LoadHandwritingModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadHandwritingModel(
+          mojom::HandwritingRecognizerSpec::New("en"),
+          recognizer.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done,
+                 mojom::LoadHandwritingModelResult result) {
+                EXPECT_EQ(result, mojom::LoadHandwritingModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(recognizer.is_bound());
@@ -403,7 +554,7 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
   bool infer_callback_done = false;
   recognizer->Recognize(
       std::move(query),
-      base::Bind(
+      base::BindOnce(
           [](bool* infer_callback_done,
              mojom::HandwritingRecognizerResultPtr result) {
             *infer_callback_done = true;
@@ -426,16 +577,19 @@ TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
-  ServiceConnection::GetInstance()->LoadHandwritingModelWithSpec(
-      mojom::HandwritingRecognizerSpec::New("en"),
-      recognizer.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadHandwritingModelWithSpec(
+          mojom::HandwritingRecognizerSpec::New("en"),
+          recognizer.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(recognizer.is_bound());
@@ -476,15 +630,18 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
+  ServiceConnection::GetInstance()->Initialize();
 
-  ServiceConnection::GetInstance()->LoadGrammarChecker(
-      checker.BindNewPipeAndPassReceiver(),
-      base::BindOnce(
-          [](bool* callback_done, mojom::LoadModelResult result) {
-            EXPECT_EQ(result, mojom::LoadModelResult::OK);
-            *callback_done = true;
-          },
-          &callback_done));
+  ServiceConnection::GetInstance()
+      ->GetMachineLearningService()
+      .LoadGrammarChecker(
+          checker.BindNewPipeAndPassReceiver(),
+          base::BindOnce(
+              [](bool* callback_done, mojom::LoadModelResult result) {
+                EXPECT_EQ(result, mojom::LoadModelResult::OK);
+                *callback_done = true;
+              },
+              &callback_done));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
   ASSERT_TRUE(checker.is_bound());
@@ -496,6 +653,12 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
       mojom::GrammarCheckerCandidate::New();
   candidate->text = "cat";
   candidate->score = 0.5f;
+  mojom::GrammarCorrectionFragmentPtr fragment =
+      mojom::GrammarCorrectionFragment::New();
+  fragment->offset = 3;
+  fragment->length = 5;
+  fragment->replacement = "dog";
+  candidate->fragments.emplace_back(std::move(fragment));
   result->candidates.emplace_back(std::move(candidate));
   fake_service_connection.SetOutputGrammarCheckerResult(result);
 
@@ -508,8 +671,15 @@ TEST_F(ServiceConnectionTest, FakeGrammarChecker) {
             *infer_callback_done = true;
             // Check if the annotation is correct.
             ASSERT_EQ(result->status, mojom::GrammarCheckerResult::Status::OK);
+            ASSERT_EQ(result->candidates.size(), 1UL);
             EXPECT_EQ(result->candidates.at(0)->text, "cat");
             EXPECT_EQ(result->candidates.at(0)->score, 0.5f);
+
+            ASSERT_EQ(result->candidates.at(0)->fragments.size(), 1UL);
+            EXPECT_EQ(result->candidates.at(0)->fragments.at(0)->offset, 3U);
+            EXPECT_EQ(result->candidates.at(0)->fragments.at(0)->length, 5U);
+            EXPECT_EQ(result->candidates.at(0)->fragments.at(0)->replacement,
+                      "dog");
           },
           &infer_callback_done));
   base::RunLoop().RunUntilIdle();

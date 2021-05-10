@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/sessions/content/navigation_task_id.h"
 #include "content/public/browser/navigation_details.h"
@@ -61,10 +61,8 @@ class TaskTabHelper : public content::WebContentsObserver,
 
   void RecordHubAndSpokeNavigationUsage(int sample);
 
-#if defined(OS_ANDROID)
   int64_t GetParentTaskId();
   int64_t GetParentRootTaskId();
-#endif  // defined(OS_ANDROID)
 
   int last_pruned_navigation_entry_index_;
   std::map<int, int> entry_index_to_spoke_count_map_;

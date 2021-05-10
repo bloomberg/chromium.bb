@@ -11,20 +11,19 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
+#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -66,12 +65,6 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
   ~ScreenTimeControllerTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kOobeSkipPostLogin);
-  }
-
-  // MixinBasedInProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     // A basic starting policy.
@@ -87,9 +80,7 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
  protected:
   void LogInChildAndSetupClockWithTime(const char* time) {
     SetupTaskRunnerWithTime(utils::TimeFromString(time));
-    logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
-                                    true /*wait_for_active_session*/,
-                                    true /*request_policy_update*/);
+    logged_in_user_mixin_.LogInUser();
     MockClockForActiveUser();
   }
 
@@ -113,8 +104,9 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
   }
 
   bool IsAuthEnabled() {
-    return ScreenLocker::default_screen_locker()->IsAuthEnabledForUser(
-        logged_in_user_mixin_.GetAccountId());
+    return !ScreenLocker::default_screen_locker()
+                ->IsAuthTemporarilyDisabledForUser(
+                    logged_in_user_mixin_.GetAccountId());
   }
 
   const AccountId& GetAccountId() {

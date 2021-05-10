@@ -520,7 +520,8 @@ void CreditCardFIDOAuthenticator::OnFullCardRequestSucceeded(
   requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/true, &card, cvc);
 }
 
-void CreditCardFIDOAuthenticator::OnFullCardRequestFailed() {
+void CreditCardFIDOAuthenticator::OnFullCardRequestFailed(
+    payments::FullCardRequest::FailureType failure_type) {
   DCHECK_EQ(AUTHENTICATION_FLOW, current_flow_);
   current_flow_ = NONE_FLOW;
   requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
@@ -573,10 +574,13 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
     options->relying_party.icon_url = GURL(*icon_url);
 
   const std::string gaia =
-      autofill_client_->GetIdentityManager()->GetPrimaryAccountInfo().gaia;
+      autofill_client_->GetIdentityManager()
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+          .gaia;
   options->user.id = std::vector<uint8_t>(gaia.begin(), gaia.end());
-  options->user.name =
-      autofill_client_->GetIdentityManager()->GetPrimaryAccountInfo().email;
+  options->user.name = autofill_client_->GetIdentityManager()
+                           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                           .email;
 
   base::Optional<AccountInfo> account_info =
       autofill_client_->GetIdentityManager()

@@ -6,6 +6,7 @@
 #define UI_OZONE_PUBLIC_OZONE_PLATFORM_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -69,6 +70,18 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // operate as a single process for platforms (i.e. drm) that are usually
     // split between a host and viz specific portion.
     bool single_process = false;
+
+    // Setting this to true indicates the the platform can do additional
+    // initialization for the GpuMemoryBuffer framework.
+    bool enable_native_gpu_memory_buffers = false;
+
+    // The direct VideoDecoder is disallowed on some particular SoC/platforms.
+    // This flag is a reflection of whatever the ChromeOS command line builder
+    // says. If false, overlay manager will not use synchronous pageflip
+    // testing with real buffer.
+    // TODO(fangzhoug): Some Chrome OS boards still use the legacy video
+    // decoder. Remove this once ChromeOSVideoDecoder is on everywhere.
+    bool allow_sync_and_real_buffer_page_flip_testing = false;
   };
 
   // Struct used to indicate platform properties.
@@ -103,6 +116,13 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Determines if the platform supports vulkan swap chain.
     bool supports_vulkan_swap_chain = false;
 
+    // Linux only: determines if the platform uses the external Vulkan image
+    // factory.
+    bool uses_external_vulkan_image_factory = false;
+
+    // Linux only: determines if Skia can fall back to the X11 output device.
+    bool skia_can_fall_back_to_x11 = false;
+
     // Wayland only: determines if the client must ignore the screen bounds when
     // calculating bounds of menu windows.
     bool ignore_screen_bounds_for_menus = false;
@@ -121,6 +141,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Determines if the application modal dialogs should use the event blocker
     // to allow the only browser window receiving UI events.
     bool app_modal_dialogs_use_event_blocker = false;
+
+    // Determines whether buffer formats should be fetched on GPU and passed
+    // back via gpu extra info.
+    bool fetch_buffer_formats_for_gmb_on_gpu = false;
   };
 
   // Properties available in the host process after initialization.
@@ -168,12 +192,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   static OzonePlatform* GetInstance();
 
   // Returns the current ozone platform name.
-  // TODO(crbug.com/1002674): This is temporary and meant to make it possible
-  // for higher level components to take run-time actions depending on the
-  // current ozone platform selected. Which implies in layering violations,
-  // which are tolerated during the X11 migration to Ozone and must be fixed
-  // once it is done.
-  static const char* GetPlatformName();
+  // Some tests may skip based on the platform name.
+  static std::string GetPlatformNameForTest();
 
   // Factory getters to override in subclasses. The returned objects will be
   // injected into the appropriate layer at startup. Subclasses should not

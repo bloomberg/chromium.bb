@@ -85,6 +85,18 @@ export class RemoteObject {
   }
 
   /**
+   * @param {!RemoteObject|!Protocol.Runtime.RemoteObject|!Protocol.Runtime.ObjectPreview} object
+   * @return {number}
+   */
+  static arrayBufferByteLength(object) {
+    if (object.subtype !== 'arraybuffer') {
+      return 0;
+    }
+    const matches = object.description && object.description.match(_descriptionLengthParenRegex);
+    return matches ? parseInt(matches[1], 10) : 0;
+  }
+
+  /**
    * @param {*} object
    * @return {?string}
    */
@@ -264,6 +276,13 @@ export class RemoteObject {
   }
 
   /**
+   * @return {number}
+   */
+  arrayBufferByteLength() {
+    throw 'Not implemented';
+  }
+
+  /**
    * @param {boolean} generatePreview
    * @return {!Promise<!GetPropertiesResult>}
    */
@@ -377,7 +396,7 @@ export class RemoteObjectImpl extends RemoteObject {
         this._description = unserializableValue;
       }
       if (!this._description && (typeof value !== 'object' || value === null)) {
-        this._description = value + '';
+        this._description = String(value);
       }
       this._hasChildren = false;
       if (typeof unserializableValue === 'string') {
@@ -510,9 +529,10 @@ export class RemoteObjectImpl extends RemoteObject {
 
   /**
    * @param {!Protocol.Runtime.RemoteObject} object
+   * @return {!Promise<!RemoteObject>}
    */
-  _createRemoteObject(object) {
-    return Promise.resolve(this._runtimeModel.createRemoteObject(object));
+  async _createRemoteObject(object) {
+    return this._runtimeModel.createRemoteObject(object);
   }
 
   /**
@@ -541,8 +561,8 @@ export class RemoteObjectImpl extends RemoteObject {
       const propertyValue = property.value ? await this._createRemoteObject(property.value) : null;
       const propertySymbol = property.symbol ? this._runtimeModel.createRemoteObject(property.symbol) : null;
       const remoteProperty = new RemoteObjectProperty(
-          property.name, propertyValue, !!property.enumerable, !!property.writable, !!property.isOwn,
-          !!property.wasThrown, propertySymbol);
+          property.name, propertyValue, Boolean(property.enumerable), Boolean(property.writable),
+          Boolean(property.isOwn), Boolean(property.wasThrown), propertySymbol);
 
       if (typeof property.value === 'undefined') {
         if (property.get && property.get.type !== 'undefined') {
@@ -666,7 +686,10 @@ export class RemoteObjectImpl extends RemoteObject {
       return {object: null, wasThrown: false};
     }
     // TODO: release exceptionDetails object
-    return {object: this._runtimeModel.createRemoteObject(response.result), wasThrown: !!response.exceptionDetails};
+    return {
+      object: this._runtimeModel.createRemoteObject(response.result),
+      wasThrown: Boolean(response.exceptionDetails)
+    };
   }
 
   /**
@@ -682,8 +705,12 @@ export class RemoteObjectImpl extends RemoteObject {
       functionDeclaration: functionDeclaration.toString(),
       arguments: args,
       silent: true,
-      returnByValue: true
+      returnByValue: true,
     });
+
+    if (!this._objectId) {
+      return this.value;
+    }
     return response.getError() || response.exceptionDetails ? null : response.result.value;
   }
 
@@ -707,6 +734,14 @@ export class RemoteObjectImpl extends RemoteObject {
 
   /**
    * @override
+   * @return {number}
+   */
+  arrayBufferByteLength() {
+    return RemoteObject.arrayBufferByteLength(this);
+  }
+
+  /**
+   * @override
    * @return {!DebuggerModel}
    */
   debuggerModel() {
@@ -726,7 +761,7 @@ export class RemoteObjectImpl extends RemoteObject {
    * @return {boolean}
    */
   isNode() {
-    return !!this._objectId && this.type === 'object' && this.subtype === 'node';
+    return Boolean(this._objectId) && this.type === 'object' && this.subtype === 'node';
   }
 }
 
@@ -816,9 +851,6 @@ export class ScopeRef {
   }
 }
 
-/**
- * @unrestricted
- */
 export class RemoteObjectProperty {
   /**
    * @param {string} name
@@ -838,23 +870,25 @@ export class RemoteObjectProperty {
       this.value = value;
     }
     this.enumerable = typeof enumerable !== 'undefined' ? enumerable : true;
-    const isNonSyntheticOrSyntheticWritable = !synthetic || !!syntheticSetter;
+    const isNonSyntheticOrSyntheticWritable = !synthetic || Boolean(syntheticSetter);
     this.writable = typeof writable !== 'undefined' ? writable : isNonSyntheticOrSyntheticWritable;
-    this.isOwn = !!isOwn;
-    this.wasThrown = !!wasThrown;
+    this.isOwn = Boolean(isOwn);
+    this.wasThrown = Boolean(wasThrown);
     if (symbol) {
       this.symbol = symbol;
     }
-    this.synthetic = !!synthetic;
+    this.synthetic = Boolean(synthetic);
     if (syntheticSetter) {
       this.syntheticSetter = syntheticSetter;
     }
-    this.private = !!isPrivate;
+    this.private = Boolean(isPrivate);
 
     /** @type {(!RemoteObject|undefined)} */
     this.getter;
     /** @type {(!RemoteObject|undefined)} */
     this.setter;
+    /** @type {(?RemoteObject|undefined)} */
+    this.value;
   }
 
   /**
@@ -869,14 +903,14 @@ export class RemoteObjectProperty {
     if (result) {
       this.value = result;
     }
-    return !!result;
+    return Boolean(result);
   }
 
   /**
    * @return {boolean}
    */
   isAccessorProperty() {
-    return !!(this.getter || this.setter);
+    return Boolean(this.getter || this.setter);
   }
 }
 
@@ -961,7 +995,7 @@ export class LocalJSONObject extends RemoteObject {
           this._cachedDescription = this._concatenate('[', ']', formatArrayItem.bind(this));
           break;
         case 'date':
-          this._cachedDescription = '' + this._value;
+          this._cachedDescription = String(this._value);
           break;
         case 'null':
           this._cachedDescription = 'null';
@@ -1042,6 +1076,10 @@ export class LocalJSONObject extends RemoteObject {
       return 'date';
     }
 
+    if (this._value instanceof ArrayBuffer || this._value instanceof SharedArrayBuffer) {
+      return 'arraybuffer';
+    }
+
     return undefined;
   }
 
@@ -1053,7 +1091,7 @@ export class LocalJSONObject extends RemoteObject {
     if ((typeof this._value !== 'object') || (this._value === null)) {
       return false;
     }
-    return !!Object.keys(/** @type {!Object} */ (this._value)).length;
+    return Boolean(Object.keys(/** @type {!Object} */ (this._value)).length);
   }
 
   /**
@@ -1061,9 +1099,8 @@ export class LocalJSONObject extends RemoteObject {
    * @param {boolean} generatePreview
    * @return {!Promise<!GetPropertiesResult>}
    */
-  getOwnProperties(generatePreview) {
-    return Promise.resolve(
-        /** @type {!GetPropertiesResult} */ ({properties: this._children(), internalProperties: null}));
+  async getOwnProperties(generatePreview) {
+    return /** @type {!GetPropertiesResult} */ ({properties: this._children(), internalProperties: null});
   }
 
   /**
@@ -1072,12 +1109,11 @@ export class LocalJSONObject extends RemoteObject {
    * @param {boolean} generatePreview
    * @return {!Promise<!GetPropertiesResult>}
    */
-  getAllProperties(accessorPropertiesOnly, generatePreview) {
+  async getAllProperties(accessorPropertiesOnly, generatePreview) {
     if (accessorPropertiesOnly) {
-      return Promise.resolve(/** @type {!GetPropertiesResult} */ ({properties: [], internalProperties: null}));
+      return /** @type {!GetPropertiesResult} */ ({properties: [], internalProperties: null});
     }
-    return Promise.resolve(
-        /** @type {!GetPropertiesResult} */ ({properties: this._children(), internalProperties: null}));
+    return /** @type {!GetPropertiesResult} */ ({properties: this._children(), internalProperties: null});
   }
 
   /**
@@ -1121,7 +1157,7 @@ export class LocalJSONObject extends RemoteObject {
    * @return {!Promise<!CallFunctionResult>}
    * @template T
    */
-  callFunction(functionDeclaration, args) {
+  async callFunction(functionDeclaration, args) {
     const target = /** @type {!Object} */ (this._value);
     const rawArgs = args ? args.map(arg => arg.value) : [];
 
@@ -1135,8 +1171,7 @@ export class LocalJSONObject extends RemoteObject {
 
     const object = RemoteObject.fromLocalObject(result);
 
-    return Promise.resolve(
-        /** @type {!CallFunctionResult} */ ({object, wasThrown}));
+    return /** @type {!CallFunctionResult} */ ({object, wasThrown});
   }
 
   /**
@@ -1146,7 +1181,7 @@ export class LocalJSONObject extends RemoteObject {
    * @return {!Promise<T>}
    * @template T
    */
-  callFunctionJSON(functionDeclaration, args) {
+  async callFunctionJSON(functionDeclaration, args) {
     const target = /** @type {!Object} */ (this._value);
     const rawArgs = args ? args.map(arg => arg.value) : [];
 
@@ -1157,7 +1192,59 @@ export class LocalJSONObject extends RemoteObject {
       result = null;
     }
 
-    return Promise.resolve(/** @type {T} */ (result));
+    return /** @type {T} */ (result);
+  }
+}
+
+export class RemoteArrayBuffer {
+  /**
+   * @param {!RemoteObject} object
+   */
+  constructor(object) {
+    if (object.type !== 'object' || object.subtype !== 'arraybuffer') {
+      throw new Error('Object is not an arraybuffer');
+    }
+    this._object = object;
+  }
+
+  /**
+   * @return {number}
+   */
+  byteLength() {
+    return this._object.arrayBufferByteLength();
+  }
+
+  /**
+   * @param {*} start
+   * @param {*} end
+   * @return {!Promise<!Array<number>>}
+   */
+  async bytes(start = 0, end = this.byteLength()) {
+    if (start < 0 || start >= this.byteLength()) {
+      throw new RangeError('start is out of range');
+    }
+    if (end < start || end > this.byteLength()) {
+      throw new RangeError('end is out of range');
+    }
+
+    return await this._object.callFunctionJSON(bytes, [{value: start}, {value: end - start}]);
+
+    /**
+     * @param {number} offset
+     * @param {number} length
+     * @return {!Array<number>}
+     * @this {*}
+     */
+    function bytes(offset, length) {
+      return [...new Uint8Array(this, offset, length)];
+    }
+  }
+
+  /**
+   * @return {!RemoteObject}
+   */
+  object() {
+    return this._object;
   }
 }
 
@@ -1227,7 +1314,6 @@ export class RemoteArray {
     return this._object.callFunction(at, [RemoteObject.toCallArgument(index)]).then(assertCallFunctionResult);
 
     /**
-     * @suppressReceiverCheck
      * @param {number} index
      * @return {*}
      * @this {*}

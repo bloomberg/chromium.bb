@@ -30,6 +30,7 @@
 #include "call/audio_state.h"
 #include "modules/audio_device/include/mock_audio_device.h"
 #include "modules/audio_processing/include/mock_audio_processing.h"
+#include "modules/include/module.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_interface.h"
 #include "test/fake_encoder.h"
 #include "test/gtest.h"
@@ -41,6 +42,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::Contains;
+using ::testing::NiceMock;
 using ::testing::StrictMock;
 
 struct CallHelper {
@@ -52,7 +54,8 @@ struct CallHelper {
     audio_state_config.audio_processing =
         use_null_audio_processing
             ? nullptr
-            : new rtc::RefCountedObject<webrtc::test::MockAudioProcessing>();
+            : new rtc::RefCountedObject<
+                  NiceMock<webrtc::test::MockAudioProcessing>>();
     audio_state_config.audio_device_module =
         new rtc::RefCountedObject<webrtc::test::MockAudioDeviceModule>();
     webrtc::Call::Config config(&event_log_);

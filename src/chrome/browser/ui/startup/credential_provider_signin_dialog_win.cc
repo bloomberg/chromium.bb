@@ -126,7 +126,8 @@ void HandleSigninCompleteForGcpwLogin(
     // deleted once it is finished.
     auto fetcher = std::make_unique<CredentialProviderSigninInfoFetcher>(
         refresh_token, url_loader_factory);
-    fetcher->SetCompletionCallbackAndStart(
+    auto* const fetcher_ptr = fetcher.get();
+    fetcher_ptr->SetCompletionCallbackAndStart(
         access_token, additional_mdm_oauth_scopes,
         base::BindOnce(&HandleAllGcpwInfoFetched, std::move(keep_alive),
                        std::move(fetcher), std::move(signin_result)));
@@ -433,7 +434,7 @@ bool CanStartGCPWSignin() {
 #endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
   // Ensure that we are running under a "winlogon" desktop before starting the
   // gcpw sign in dialog.
-  return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
+  return base::win::IsRunningUnderDesktopName(L"winlogon");
 }
 
 bool StartGCPWSignin(const base::CommandLine& command_line,

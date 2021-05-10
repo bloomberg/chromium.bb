@@ -5,15 +5,23 @@
 #ifndef CHROME_UPDATER_TEST_INTEGRATION_TESTS_H_
 #define CHROME_UPDATER_TEST_INTEGRATION_TESTS_H_
 
+#include <string>
+
+#include "build/build_config.h"
+
 namespace base {
 class CommandLine;
 class FilePath;
 class Version;
 }  // namespace base
 
-namespace updater {
+class GURL;
 
+namespace updater {
 namespace test {
+
+// Prints the updater.log file to stdout.
+void PrintLog();
 
 // Removes traces of the updater from the system. It is best to run this at the
 // start of each test in case a previous crash or timeout on the machine running
@@ -25,8 +33,12 @@ void Clean();
 // test.
 void ExpectClean();
 
-// Places the updater into test mode (use local servers and disable CUP).
-void EnterTestMode();
+// Places the updater into test mode (use `url` as the update server and disable
+// CUP).
+void EnterTestMode(const GURL& url);
+
+// Copies the logs to a location where they can be retrieved by ResultDB.
+void CopyLog(const base::FilePath& src_dir);
 
 // Sleeps for the given number of seconds. This should be avoided, but in some
 // cases surrounding uninstall it is necessary since the processes can exit
@@ -52,7 +64,7 @@ void ExpectActive();
 void Uninstall();
 
 // Runs the wake client and wait for it to exit. Assert that it exits with
-// |exit_code|. The server should exit a few seconds after.
+// `exit_code`. The server should exit a few seconds after.
 void RunWake(int exit_code);
 
 // Registers the test app. As a result, the bundled updater is installed,
@@ -84,8 +96,20 @@ void SetupFakeUpdaterHigherVersion();
 // Expects that this version of updater is uninstalled from the system.
 void ExpectCandidateUninstalled();
 
-}  // namespace test
+// Sets the active bit for `app_id`.
+void SetActive(const std::string& app_id);
 
+// Expects that the active bit for `app_id` is set.
+void ExpectActive(const std::string& app_id);
+
+// Expects that the active bit for `app_id` is unset.
+void ExpectNotActive(const std::string& app_id);
+
+#if defined(OS_WIN)
+void ExpectInterfacesRegistered();
+#endif
+
+}  // namespace test
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_TEST_INTEGRATION_TESTS_H_

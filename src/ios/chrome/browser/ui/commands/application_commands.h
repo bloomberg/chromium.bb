@@ -112,6 +112,10 @@ enum class KeyRetrievalTriggerForUMA;
 // TabSwitcher UI, specifically in its grid layout.
 - (void)displayTabSwitcherInGridLayout;
 
+// Same as displayTabSwitcherInGridLayout, but also force tab switcher to
+// regular tabs page.
+- (void)displayRegularTabSwitcherInGridLayout;
+
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Autofill Settings UI, presenting from |baseViewController|.
 - (void)showAutofillSettingsFromViewController:
@@ -139,6 +143,9 @@ enum class KeyRetrievalTriggerForUMA;
 // Shows the signin UI, presenting from |baseViewController|.
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController;
+
+// Signs the user out and dismisses UI for any in-progress sign-in.
+- (void)forceSignOut;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Add Account UI, presenting from |baseViewController|.

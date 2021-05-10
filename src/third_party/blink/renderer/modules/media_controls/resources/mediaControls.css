@@ -2,21 +2,7 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file.*/
 
-/**
- * Used in MediaDocument only.
- * TODO: Move those outside of this file.
- */
-
-video:-webkit-full-page-media {
-    margin: auto;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    max-height: 100%;
-    max-width: 100%;
-}
+@namespace "http://www.w3.org/1999/xhtml";
 
 /**
  * Panel Structure
@@ -565,7 +551,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-size: 50%;
   background-repeat: no-repeat;
   background-position: center center;
-  background-image: -internal-light-dark(-webkit-image-set(url(ic_play_arrow.svg) 1x), -webkit-image-set(url(ic_play_arrow_white.svg) 1x));
+  background-image: -internal-light-dark(-webkit-image-set(url(ic_play_arrow.svg) 1x), -webkit-image-set(url(ic_play_arrow_dark.svg) 1x));
   background-color: rgba(255, 255, 255, .9);
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.10);
 
@@ -586,6 +572,12 @@ audio::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-contro
 video::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-play-button" i],
 video::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   background-image: -internal-light-dark(-webkit-image-set(url(ic_pause.svg) 1x), -webkit-image-set(url(ic_pause_white.svg) 1x));
+}
+
+video::-webkit-media-controls.state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal,
+video::-webkit-media-controls.state-loading-metadata-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal,
+video::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  background-image: -internal-light-dark(-webkit-image-set(url(ic_pause.svg) 1x), -webkit-image-set(url(ic_pause_dark.svg) 1x));
 }
 
 /* For the play button inside the button panel, we want to use a white icon
@@ -868,7 +860,7 @@ video::-internal-media-controls-overflow-menu-list {
   overflow-y: auto;
   white-space: nowrap;
   font-size: 12px;
-  background: #FFFFFF;
+  background: -internal-light-dark(#ffffff, #3B3B3B);
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
   transition: transform .3s ease-out, opacity .2s linear;
@@ -1072,21 +1064,6 @@ video::-webkit-media-controls-overlay-enclosure {
  * Audio Controls
  */
 
-audio:not([controls]) {
-  display: none !important;
-}
-
-/** TODO(crbug.com/985623): Remove these hard-coded audio tag size.
- * This fixed audio tag width/height leads to fail the wpt tests below.
- * crbug.com/955170 external/wpt/css/css-contain/contain-size-replaced-003a.html
- * crbug.com/955163 external/wpt/css/css-contain/contain-size-replaced-003b.html
- * crbug.com/955163 external/wpt/css/css-contain/contain-size-replaced-003c.html
- */
-audio {
-  width: 300px;
-  height: 54px;
-}
-
 audio::-webkit-media-controls-overlay-enclosure,
 video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-overlay-enclosure"] {
   display: none;
@@ -1155,7 +1132,7 @@ video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-overf
 
 .state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   opacity: .3;
-  background-image: -internal-light-dark(-webkit-image-set(url(ic_no_source.svg) 1x), -webkit-image-set(url(ic_no_source_white.svg) 1x));
+  background-image: -internal-light-dark(-webkit-image-set(url(ic_no_source.svg) 1x), -webkit-image-set(url(ic_no_source_dark.svg) 1x));
 }
 
 /**

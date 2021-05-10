@@ -47,6 +47,10 @@ namespace {
 // The maximum number of retries for a fetcher used in this class.
 constexpr int kMaxFetcherRetries = 8;
 
+// Timeout for the ExternalCCResult fetch. See https://crbug.com/750316#c37 for
+// details on the exact duration.
+constexpr int kExternalCCResultTimeoutSeconds = 7;
+
 // In case of an error while fetching using the GaiaAuthFetcher or
 // SimpleURLLoader, retry with exponential backoff. Try up to 7 times within 15
 // minutes.
@@ -75,10 +79,6 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
     // Don't use initial delay unless the last request was an error.
     false,
 };
-
-// Name of the GAIA cookie that is being observed to detect when available
-// accounts have changed in the content-area.
-const char* const kGaiaCookieName = "SAPISID";
 
 // State of requests to Gaia logout endpoint. Used as entry for histogram
 // |Signin.GaiaCookieManager.Logout|.
@@ -248,10 +248,10 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start(
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
-  // has waited long enough. See https://crbug.com/750316#c36 for details on
-  // exact timeout duration.
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(7), this,
-               &GaiaCookieManagerService::ExternalCcResultFetcher::Timeout);
+  // has waited long enough.
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kExternalCCResultTimeoutSeconds),
+      this, &GaiaCookieManagerService::ExternalCcResultFetcher::Timeout);
 }
 
 bool GaiaCookieManagerService::ExternalCcResultFetcher::IsRunning() {
@@ -478,7 +478,8 @@ void GaiaCookieManagerService::InitCookieListener() {
   // testing contexts.
   if (cookie_manager) {
     cookie_manager->AddCookieChangeListener(
-        GaiaUrls::GetInstance()->secure_google_url(), kGaiaCookieName,
+        GaiaUrls::GetInstance()->secure_google_url(),
+        GaiaConstants::kGaiaSigninCookieName,
         cookie_listener_receiver_.BindNewPipeAndPassRemote());
     cookie_listener_receiver_.set_disconnect_handler(base::BindOnce(
         &GaiaCookieManagerService::OnCookieListenerConnectionError,
@@ -596,12 +597,13 @@ void GaiaCookieManagerService::TriggerListAccounts() {
 
 void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
   GURL google_url = GaiaUrls::GetInstance()->secure_google_url();
-  std::unique_ptr<net::CanonicalCookie> cookie(
-      std::make_unique<net::CanonicalCookie>(
-          kGaiaCookieName, std::string(), "." + google_url.host(), "/",
-          base::Time(), base::Time(), base::Time(), true /* secure */,
-          false /* httponly */, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_DEFAULT, false /* same_party */));
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::CreateSanitizedCookie(
+          google_url, GaiaConstants::kGaiaSigninCookieName, std::string(),
+          "." + google_url.host(), "/", base::Time(), base::Time(),
+          base::Time(), true /* secure */, false /* httponly */,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+          false /* same_party */);
   OnCookieChange(
       net::CookieChangeInfo(*cookie, net::CookieAccessResult(),
                             net::CookieChangeCause::UNKNOWN_DELETION));
@@ -611,6 +613,7 @@ void GaiaCookieManagerService::LogOutAllAccounts(
     gaia::GaiaSource source,
     LogOutFromCookieCompletedCallback completion_callback) {
   VLOG(1) << "GaiaCookieManagerService::LogOutAllAccounts";
+  DCHECK(completion_callback);
 
   bool log_out_queued = false;
   if (!requests_.empty()) {
@@ -689,7 +692,7 @@ void GaiaCookieManagerService::MarkListAccountsStale() {
 
 void GaiaCookieManagerService::OnCookieChange(
     const net::CookieChangeInfo& change) {
-  DCHECK_EQ(kGaiaCookieName, change.cookie.Name());
+  DCHECK_EQ(GaiaConstants::kGaiaSigninCookieName, change.cookie.Name());
   DCHECK(change.cookie.IsDomainMatch(
       GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;

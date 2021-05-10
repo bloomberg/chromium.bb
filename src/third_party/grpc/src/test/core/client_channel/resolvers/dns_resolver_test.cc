@@ -24,23 +24,28 @@
 #include "src/core/ext/filters/client_channel/resolver/dns/dns_resolver_selection.h"
 #include "src/core/ext/filters/client_channel/resolver_registry.h"
 #include "src/core/lib/gpr/string.h"
-#include "src/core/lib/iomgr/combiner.h"
+#include "src/core/lib/gprpp/memory.h"
+#include "src/core/lib/iomgr/work_serializer.h"
 #include "test/core/util/test_config.h"
 
-static grpc_combiner* g_combiner;
+static std::shared_ptr<grpc_core::WorkSerializer>* g_work_serializer;
+
+class TestResultHandler : public grpc_core::Resolver::ResultHandler {
+  void ReturnResult(grpc_core::Resolver::Result /*result*/) override {}
+  void ReturnError(grpc_error* /*error*/) override {}
+};
 
 static void test_succeeds(grpc_core::ResolverFactory* factory,
                           const char* string) {
   gpr_log(GPR_DEBUG, "test: '%s' should be valid for '%s'", string,
           factory->scheme());
   grpc_core::ExecCtx exec_ctx;
-  grpc_uri* uri = grpc_uri_parse(string, 0);
+  grpc_uri* uri = grpc_uri_parse(string, false);
   GPR_ASSERT(uri);
   grpc_core::ResolverArgs args;
   args.uri = uri;
-  args.combiner = g_combiner;
-  args.result_handler =
-      grpc_core::MakeUnique<grpc_core::Resolver::ResultHandler>();
+  args.work_serializer = *g_work_serializer;
+  args.result_handler = absl::make_unique<TestResultHandler>();
   grpc_core::OrphanablePtr<grpc_core::Resolver> resolver =
       factory->CreateResolver(std::move(args));
   GPR_ASSERT(resolver != nullptr);
@@ -52,13 +57,12 @@ static void test_fails(grpc_core::ResolverFactory* factory,
   gpr_log(GPR_DEBUG, "test: '%s' should be invalid for '%s'", string,
           factory->scheme());
   grpc_core::ExecCtx exec_ctx;
-  grpc_uri* uri = grpc_uri_parse(string, 0);
+  grpc_uri* uri = grpc_uri_parse(string, false);
   GPR_ASSERT(uri);
   grpc_core::ResolverArgs args;
   args.uri = uri;
-  args.combiner = g_combiner;
-  args.result_handler =
-      grpc_core::MakeUnique<grpc_core::Resolver::ResultHandler>();
+  args.work_serializer = *g_work_serializer;
+  args.result_handler = absl::make_unique<TestResultHandler>();
   grpc_core::OrphanablePtr<grpc_core::Resolver> resolver =
       factory->CreateResolver(std::move(args));
   GPR_ASSERT(resolver == nullptr);
@@ -69,7 +73,8 @@ int main(int argc, char** argv) {
   grpc::testing::TestEnvironment env(argc, argv);
   grpc_init();
 
-  g_combiner = grpc_combiner_create();
+  auto work_serializer = std::make_shared<grpc_core::WorkSerializer>();
+  g_work_serializer = &work_serializer;
 
   grpc_core::ResolverFactory* dns =
       grpc_core::ResolverRegistry::LookupResolverFactory("dns");
@@ -84,10 +89,6 @@ int main(int argc, char** argv) {
     test_fails(dns, "dns://8.8.8.8/8.8.8.8:8888");
   } else {
     test_succeeds(dns, "dns://8.8.8.8/8.8.8.8:8888");
-  }
-  {
-    grpc_core::ExecCtx exec_ctx;
-    GRPC_COMBINER_UNREF(g_combiner, "test");
   }
   grpc_shutdown();
 

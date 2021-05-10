@@ -13,126 +13,6 @@
 namespace mojo {
 
 // static
-blink::mojom::PointerType
-EnumTraits<blink::mojom::PointerType, ui::PointerType>::ToMojom(
-    ui::PointerType scheme) {
-  switch (scheme) {
-    case ui::PointerType::POINTER_TYPE_FIRST:
-      return blink::mojom::PointerType::kPointerFirstType;
-    case ui::PointerType::POINTER_TYPE_COARSE:
-      return blink::mojom::PointerType::kPointerCoarseType;
-    case ui::PointerType::POINTER_TYPE_FINE:
-      return blink::mojom::PointerType::kPointerFineType;
-  }
-  NOTREACHED();
-  return blink::mojom::PointerType::kMinValue;
-}
-
-// static
-bool EnumTraits<blink::mojom::PointerType, ui::PointerType>::FromMojom(
-    blink::mojom::PointerType input,
-    ui::PointerType* out) {
-  switch (input) {
-    case blink::mojom::PointerType::kPointerFirstType:
-      *out = ui::PointerType::POINTER_TYPE_FIRST;
-      return true;
-    case blink::mojom::PointerType::kPointerCoarseType:
-      *out = ui::PointerType::POINTER_TYPE_COARSE;
-      return true;
-    case blink::mojom::PointerType::kPointerFineType:
-      *out = ui::PointerType::POINTER_TYPE_FINE;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
-blink::mojom::HoverType EnumTraits<blink::mojom::HoverType,
-                                   ui::HoverType>::ToMojom(ui::HoverType type) {
-  switch (type) {
-    case ui::HoverType::HOVER_TYPE_FIRST:
-      return blink::mojom::HoverType::kHoverFirstType;
-    case ui::HoverType::HOVER_TYPE_HOVER:
-      return blink::mojom::HoverType::kHoverHoverType;
-  }
-  NOTREACHED();
-  return blink::mojom::HoverType::kMinValue;
-}
-
-// static
-bool EnumTraits<blink::mojom::HoverType, ui::HoverType>::FromMojom(
-    blink::mojom::HoverType input,
-    ui::HoverType* out) {
-  switch (input) {
-    case blink::mojom::HoverType::kHoverFirstType:
-      *out = ui::HoverType::HOVER_TYPE_FIRST;
-      return true;
-    case blink::mojom::HoverType::kHoverHoverType:
-      *out = ui::HoverType::HOVER_TYPE_HOVER;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
-blink::mojom::EffectiveConnectionType EnumTraits<
-    blink::mojom::EffectiveConnectionType,
-    net::EffectiveConnectionType>::ToMojom(net::EffectiveConnectionType type) {
-  switch (type) {
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return blink::mojom::EffectiveConnectionType::
-          kEffectiveConnectionUnknownType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return blink::mojom::EffectiveConnectionType::
-          kEffectiveConnectionOfflineType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return blink::mojom::EffectiveConnectionType::
-          kEffectiveConnectionSlow2GType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G:
-      return blink::mojom::EffectiveConnectionType::kEffectiveConnection2GType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G:
-      return blink::mojom::EffectiveConnectionType::kEffectiveConnection3GType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G:
-      return blink::mojom::EffectiveConnectionType::kEffectiveConnection4GType;
-    case net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST:
-      break;
-  }
-  NOTREACHED();
-  return blink::mojom::EffectiveConnectionType::kMaxValue;
-}
-
-// static
-bool EnumTraits<blink::mojom::EffectiveConnectionType,
-                net::EffectiveConnectionType>::
-    FromMojom(blink::mojom::EffectiveConnectionType input,
-              net::EffectiveConnectionType* out) {
-  switch (input) {
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnectionUnknownType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-      return true;
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnectionOfflineType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-      return true;
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnectionSlow2GType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-      return true;
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnection2GType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
-      return true;
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnection3GType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G;
-      return true;
-    case blink::mojom::EffectiveConnectionType::kEffectiveConnection4GType:
-      *out = net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
 bool StructTraits<blink::mojom::WebPreferencesDataView,
                   blink::web_pref::WebPreferences>::
     Read(blink::mojom::WebPreferencesDataView data,
@@ -151,7 +31,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       !data.ReadLazyImageFirstKFullyLoad(&out->lazy_image_first_k_fully_load) ||
       !data.ReadDefaultEncoding(&out->default_encoding) ||
       !data.ReadTextTrackBackgroundColor(&out->text_track_background_color) ||
-      !data.ReadDefaultEncoding(&out->text_track_text_color) ||
+      !data.ReadTextTrackTextColor(&out->text_track_text_color) ||
       !data.ReadTextTrackTextSize(&out->text_track_text_size) ||
       !data.ReadTextTrackTextShadow(&out->text_track_text_shadow) ||
       !data.ReadTextTrackFontFamily(&out->text_track_font_family) ||
@@ -253,6 +133,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->sync_xhr_in_documents_enabled = data.sync_xhr_in_documents_enabled();
   out->target_blank_implies_no_opener_enabled_will_be_removed =
       data.target_blank_implies_no_opener_enabled_will_be_removed();
+  out->allow_non_empty_navigator_plugins =
+      data.allow_non_empty_navigator_plugins();
   out->number_of_cpu_cores = data.number_of_cpu_cores();
   out->editing_behavior = data.editing_behavior();
   out->supports_multiple_windows = data.supports_multiple_windows();
@@ -338,6 +220,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->allow_mixed_content_upgrades = data.allow_mixed_content_upgrades();
   out->always_show_focus = data.always_show_focus();
   out->touch_drag_drop_enabled = data.touch_drag_drop_enabled();
+  out->webxr_immersive_ar_allowed = data.webxr_immersive_ar_allowed();
   return true;
 }
 

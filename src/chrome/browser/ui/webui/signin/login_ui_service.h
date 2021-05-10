@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Browser;
@@ -41,8 +42,11 @@ class LoginUIService : public KeyedService {
     SYNC_WITH_DEFAULT_SETTINGS,
     // Show the user the sync settings before starting sync.
     CONFIGURE_SYNC_FIRST,
-    // The signing process was aborted, don't start sync or show settings.
-    ABORT_SIGNIN,
+    // Turn sync on process was aborted, don't start sync or show settings.
+    ABORT_SYNC,
+    // The dialog got closed without any explicit user action. The impact of
+    // this action depends on the particular flow.
+    UI_CLOSED,
   };
 
   // Interface for obervers of LoginUIService.
@@ -107,7 +111,7 @@ class LoginUIService : public KeyedService {
  private:
   // Weak pointers to the recently opened UIs, with the most recent in front.
   std::list<LoginUI*> ui_list_;
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* profile_;
 #endif
 

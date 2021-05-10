@@ -23,6 +23,7 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "url/android/gurl_android.h"
 
 namespace bookmarks {
 class BookmarkModel;
@@ -151,7 +152,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                       const base::android::JavaParamRef<jobject>& obj,
                       jlong id,
                       jint type,
-                      const base::android::JavaParamRef<jstring>& url);
+                      const base::android::JavaParamRef<jobject>& url);
 
   bool DoesBookmarkExist(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
@@ -211,22 +212,22 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jobject>& j_parent_id_obj,
       jint index,
       const base::android::JavaParamRef<jstring>& j_title,
-      const base::android::JavaParamRef<jstring>& j_url);
+      const base::android::JavaParamRef<jobject>& j_url);
 
   base::android::ScopedJavaLocalRef<jobject> AddToReadingList(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_title,
-      const base::android::JavaParamRef<jstring>& j_url);
+      const base::android::JavaParamRef<jobject>& j_url);
 
   base::android::ScopedJavaLocalRef<jobject> GetReadingListItem(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_url);
+      const base::android::JavaParamRef<jobject>& j_url);
 
   void SetReadStatus(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj,
-                     const base::android::JavaParamRef<jstring>& j_url,
+                     const base::android::JavaParamRef<jobject>& j_url,
                      jboolean j_read);
 
   void Undo(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -236,6 +237,9 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
 
   void EndGroupingUndos(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
+
+  bool IsBookmarked(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& gurl);
 
   base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
 

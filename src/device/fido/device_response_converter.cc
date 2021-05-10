@@ -14,13 +14,13 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_supported_options.h"
-#include "device/fido/client_data.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/opaque_attestation_statement.h"
@@ -58,9 +58,8 @@ CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer) {
   if (buffer.empty())
     return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
 
-  auto code = static_cast<CtapDeviceResponseCode>(buffer[0]);
-  return base::Contains(kCtapResponseCodeList, code)
-             ? code
+  return kCtapResponseCodeList.contains(buffer[0])
+             ? static_cast<CtapDeviceResponseCode>(buffer[0])
              : CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
 }
 
@@ -103,13 +102,6 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
       return base::nullopt;
     }
     response.enterprise_attestation_returned = it->second.GetBool();
-  }
-
-  if (base::FeatureList::IsEnabled(kWebAuthPhoneSupport)) {
-    it = decoded_map.find(CBOR(kAndroidClientDataExtOutputKey));
-    if (it != decoded_map.end() && it->second.is_bytestring()) {
-      response.set_android_client_data_ext(it->second.GetBytestring());
-    }
   }
 
   it = decoded_map.find(CBOR(0x05));
@@ -174,13 +166,6 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     response.SetNumCredentials(it->second.GetUnsigned());
   }
 
-  if (base::FeatureList::IsEnabled(kWebAuthPhoneSupport)) {
-    it = response_map.find(CBOR(kAndroidClientDataExtOutputKey));
-    if (it != response_map.end() && it->second.is_bytestring()) {
-      response.set_android_client_data_ext(it->second.GetBytestring());
-    }
-  }
-
   it = response_map.find(CBOR(0x07));
   if (it != response_map.end()) {
     if (!it->second.is_bytestring() ||
@@ -196,9 +181,15 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     base::span<const uint8_t> buffer) {
-  if (buffer.size() <= kResponseCodeLength ||
-      GetResponseCode(buffer) != CtapDeviceResponseCode::kSuccess)
+  if (buffer.size() <= kResponseCodeLength) {
+    FIDO_LOG(ERROR) << "-> (GetInfo response too short: " << buffer.size()
+                    << " bytes)";
     return base::nullopt;
+  }
+  if (GetResponseCode(buffer) != CtapDeviceResponseCode::kSuccess) {
+    FIDO_LOG(ERROR) << "-> (GetInfo CTAP2 error code " << +buffer[0] << ")";
+    return base::nullopt;
+  }
 
   cbor::Reader::DecoderError error;
   base::Optional<CBOR> decoded_response =
@@ -283,8 +274,6 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       const std::string& extension_str = extension.GetString();
       if (extension_str == kExtensionCredProtect) {
         options.supports_cred_protect = true;
-      } else if (extension_str == kExtensionAndroidClientData) {
-        options.supports_android_client_data_ext = true;
       }
       extensions.push_back(extension_str);
     }
@@ -543,6 +532,34 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
       response.algorithms.push_back(alg);
     }
+  }
+
+  it = response_map.find(CBOR(0x0b));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+
+    response.max_serialized_large_blob_array =
+        base::saturated_cast<uint32_t>(it->second.GetUnsigned());
+  }
+
+  it = response_map.find(CBOR(0x0c));
+  if (it != response_map.end()) {
+    if (!it->second.is_bool()) {
+      return base::nullopt;
+    }
+
+    response.force_pin_change = it->second.GetBool();
+  }
+
+  it = response_map.find(CBOR(0x0d));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+    response.min_pin_length =
+        base::saturated_cast<uint32_t>(it->second.GetUnsigned());
   }
 
   it = response_map.find(CBOR(0x14));

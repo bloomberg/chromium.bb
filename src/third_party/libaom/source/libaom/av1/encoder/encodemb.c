@@ -30,8 +30,8 @@
 
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encodemb.h"
-#include "av1/encoder/encodetxb.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
+#include "av1/encoder/txb_rdopt.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 
@@ -96,8 +96,8 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     return eob;
   }
 
-  return av1_optimize_txb_new(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
-                              rate_cost, cpi->oxcf.algo_cfg.sharpness);
+  return av1_optimize_txb(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
+                          rate_cost, cpi->oxcf.algo_cfg.sharpness);
 }
 
 // Hyper-parameters for dropout optimization, based on following logics.

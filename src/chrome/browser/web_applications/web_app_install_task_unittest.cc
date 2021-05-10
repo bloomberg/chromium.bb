@@ -20,8 +20,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/installable/installable_data.h"
-#include "chrome/browser/installable/installable_metrics.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
@@ -48,12 +47,14 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/webapps/browser/installable/installable_data.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -114,7 +115,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     controller().Init();
     install_finalizer_->Start();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     arc_test_.SetUp(profile());
 
     auto* arc_bridge_service =
@@ -130,7 +131,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     arc_test_.arc_service_manager()
         ->arc_bridge_service()
         ->intent_helper()
@@ -237,7 +238,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     const bool force_shortcut_app = false;
     install_task_->InstallWebAppFromManifestWithFallback(
         web_contents(), force_shortcut_app,
-        WebappInstallSource::MENU_BROWSER_TAB,
+        webapps::WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -253,7 +254,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     InstallResult result;
     base::RunLoop run_loop;
     install_task_->LoadAndInstallWebAppFromManifestWithFallback(
-        url, web_contents(), &url_loader(), WebappInstallSource::SYNC,
+        url, web_contents(), &url_loader(), webapps::WebappInstallSource::SYNC,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               result.app_id = installed_app_id;
@@ -290,7 +291,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     AppId app_id;
     base::RunLoop run_loop;
     install_task_->InstallWebAppWithParams(
-        web_contents(), params, WebappInstallSource::EXTERNAL_DEFAULT,
+        web_contents(), params, webapps::WebappInstallSource::EXTERNAL_DEFAULT,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -338,7 +339,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   // Owned by install_task_:
   TestDataRetriever* data_retriever_ = nullptr;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ArcAppTest arc_test_;
   std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
   std::unique_ptr<arc::FakeIntentHelperInstance> fake_intent_helper_instance_;
@@ -411,7 +412,8 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -463,7 +465,8 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& force_installed_app_id, InstallResultCode code) {
@@ -488,7 +491,8 @@ TEST_F(WebAppInstallTaskTest, GetWebApplicationInfoFailed) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -512,7 +516,8 @@ TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -562,7 +567,8 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -736,7 +742,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -770,7 +777,8 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestDeclineDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -795,7 +803,7 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
   EXPECT_EQ(1u, test_os_integration_manager().num_create_shortcuts_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const size_t expected_num_add_app_to_quick_launch_bar_calls = 0;
 #else
   const size_t expected_num_add_app_to_quick_launch_bar_calls = 1;
@@ -837,7 +845,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
 
   install_task_->InstallWebAppFromManifest(
       web_contents(), /*bypass_service_worker_check=*/false,
-      WebappInstallSource::MENU_BROWSER_TAB,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -864,7 +872,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
 
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), ForInstallableSite::kYes,
-      WebappInstallSource::MENU_BROWSER_TAB,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -896,7 +904,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
 
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), ForInstallableSite::kYes,
-      WebappInstallSource::ARC,
+      webapps::WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      InstallResultCode code) {
         std::unique_ptr<WebApplicationInfo> final_web_app_info =
@@ -931,7 +939,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
 
   install_task_->InstallWebAppFromManifestWithFallback(
       web_contents(), /*force_shortcut_app=*/true,
-      WebappInstallSource::MENU_BROWSER_TAB,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      InstallResultCode code) {
@@ -955,7 +963,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
   run_loop.Run();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   arc_test_.app_instance()->set_is_installable(true);
 
@@ -984,7 +992,7 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   base::RunLoop run_loop;
   install_task_->InstallWebAppFromManifestWithFallback(
       web_contents(), /*force_shortcut_app=*/false,
-      WebappInstallSource::MENU_BROWSER_TAB,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -996,8 +1004,20 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
 }
 #endif
 
+class GuestWebAppInstallTaskTest : public WebAppInstallTaskTest,
+                                   public ::testing::WithParamInterface<bool> {
+ public:
+  GuestWebAppInstallTaskTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Default apps should be installable for guest profiles.
-TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
+TEST_P(GuestWebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
   SetInstallFinalizerForTesting();
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
@@ -1015,7 +1035,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithParams(
-      web_contents(), MakeParams(), WebappInstallSource::EXTERNAL_DEFAULT,
+      web_contents(), MakeParams(),
+      webapps::WebappInstallSource::EXTERNAL_DEFAULT,
       base::BindLambdaForTesting(
           [&](const AppId& app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -1023,6 +1044,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
           }));
   run_loop.Run();
 }
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestWebAppInstallTaskTest,
+                         /*is_ephemeral_guest=*/testing::Bool());
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   {
@@ -1219,7 +1244,8 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -1265,7 +1291,8 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), force_shortcut_app,
+      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -1339,7 +1366,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
     install_task_->InstallWebAppFromManifest(
         web_contents(), /*bypass_service_worker_check=*/false,
-        WebappInstallSource::MENU_BROWSER_TAB,
+        webapps::WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {

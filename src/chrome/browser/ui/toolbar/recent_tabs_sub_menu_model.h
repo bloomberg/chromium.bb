@@ -13,7 +13,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/favicon/core/favicon_service.h"
@@ -180,12 +180,11 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // Time the menu is open for until a recent tab is selected.
   base::ElapsedTimer menu_opened_timer_;
 
-  ScopedObserver<sessions::TabRestoreService,
-                 sessions::TabRestoreServiceObserver>
-      tab_restore_service_observer_{this};
+  base::ScopedObservation<sessions::TabRestoreService,
+                          sessions::TabRestoreServiceObserver>
+      tab_restore_service_observation_{this};
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      foreign_session_updated_subscription_;
+  base::CallbackListSubscription foreign_session_updated_subscription_;
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_{this};
   base::WeakPtrFactory<RecentTabsSubMenuModel>

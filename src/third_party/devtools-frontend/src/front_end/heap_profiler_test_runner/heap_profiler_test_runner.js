@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../heap_snapshot_worker/heap_snapshot_worker-legacy.js';
+import '../test_runner/test_runner.js';
+import '../profiler/profiler-legacy.js';
+import '../data_grid/data_grid-legacy.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.HeapProfilerTestRunner = self.HeapProfilerTestRunner || {};
 
@@ -476,7 +480,7 @@ HeapProfilerTestRunner.clickColumn = function(column, callback) {
 
   function sortingComplete() {
     HeapProfilerTestRunner._currentGrid().removeEventListener(
-        Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, this);
+        Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, this);
     TestRunner.assertEquals(column.id, this._currentGrid().sortColumnId(), 'unexpected sorting');
     column.sort = this._currentGrid().sortOrder();
 
@@ -488,7 +492,7 @@ HeapProfilerTestRunner.clickColumn = function(column, callback) {
   }
 
   HeapProfilerTestRunner._currentGrid().addEventListener(
-      Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, this);
+      Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, this);
   this._currentGrid()._clickInHeaderCell(event);
 };
 
@@ -575,7 +579,7 @@ HeapProfilerTestRunner.findAndExpandWindow = function(callback) {
 
 HeapProfilerTestRunner.findAndExpandRow = async function(name, callback) {
   const row = HeapProfilerTestRunner.findRow(name);
-  TestRunner.assertEquals(true, !!row, `"${name}" row`);
+  TestRunner.assertEquals(true, Boolean(row), `"${name}" row`);
   await HeapProfilerTestRunner.expandRowPromise(row);
   TestRunner.safeWrap(callback)(row);
   return row;
@@ -659,11 +663,11 @@ HeapProfilerTestRunner.takeSnapshotPromise = function() {
       UI.panels.heap_profiler.showProfile(profile);
 
       const dataGrid = HeapProfilerTestRunner.currentProfileView()._dataGrid;
-      dataGrid.addEventListener(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
+      dataGrid.addEventListener(Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, null);
 
       function sortingComplete() {
         dataGrid.removeEventListener(
-            Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
+            Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, null);
         resolve(profile);
       }
     }
@@ -689,11 +693,11 @@ HeapProfilerTestRunner._snapshotViewShown = function() {
     const dataGrid = this._dataGrid;
 
     function sortingComplete() {
-      dataGrid.removeEventListener(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
+      dataGrid.removeEventListener(Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, null);
       callback();
     }
 
-    dataGrid.addEventListener(Profiler.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
+    dataGrid.addEventListener(Profiler.HeapSnapshotSortableDataGridEvents.SortingComplete, sortingComplete, null);
   }
 };
 

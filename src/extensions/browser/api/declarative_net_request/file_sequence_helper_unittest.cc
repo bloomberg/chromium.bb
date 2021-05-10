@@ -16,8 +16,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/rules_count_pair.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -51,9 +52,10 @@ struct TestLoadRulesetInfo {
 };
 
 struct TestCase {
-  explicit TestCase(RulesetSource source) : source(std::move(source)) {}
+  explicit TestCase(FileBackedRulesetSource source)
+      : source(std::move(source)) {}
   int checksum;
-  RulesetSource source;
+  FileBackedRulesetSource source;
   TestLoadRulesetInfo expected_result;
 };
 
@@ -77,7 +79,7 @@ class FileSequenceHelperTest : public ExtensionsTest {
   }
 
   void TestAddDynamicRules(
-      RulesetSource source,
+      FileBackedRulesetSource source,
       std::vector<api::declarative_net_request::Rule> rules_to_add,
       ReadJSONRulesResult::Status expected_read_status,
       UpdateDynamicRulesStatus expected_update_status,
@@ -101,11 +103,12 @@ class FileSequenceHelperTest : public ExtensionsTest {
     data.rulesets.emplace_back(std::move(source));
 
     // Unretained is safe because |helper_| outlives the |add_rules_task|.
-    auto add_rules_task =
-        base::BindOnce(&FileSequenceHelper::UpdateDynamicRules,
-                       base::Unretained(helper_.get()), std::move(data),
-                       /* rule_ids_to_remove */ std::vector<int>(),
-                       std::move(rules_to_add), std::move(add_rules_callback));
+    auto add_rules_task = base::BindOnce(
+        &FileSequenceHelper::UpdateDynamicRules,
+        base::Unretained(helper_.get()), std::move(data),
+        /* rule_ids_to_remove */ std::vector<int>(), std::move(rules_to_add),
+        RulesCountPair(GetDynamicAndSessionRuleLimit(), GetRegexRuleLimit()),
+        std::move(add_rules_callback));
 
     base::HistogramTester tester;
     GetExtensionFileTaskRunner()->PostTask(FROM_HERE,
@@ -298,7 +301,7 @@ TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {
 TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
   // Simulate adding rules for the first time i.e. with no JSON and indexed
   // ruleset files.
-  RulesetSource source = CreateTemporarySource();
+  FileBackedRulesetSource source = CreateTemporarySource();
   base::DeleteFile(source.json_path());
   base::DeleteFile(source.indexed_path());
 
@@ -314,7 +317,7 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
                         true /* expected_did_load_successfully*/);
   }
 
-  // Test adding an invalid rule, e.g. a redirect rule without priority.
+  // Test adding an invalid rule, e.g. a rule with invalid priority.
   {
     SCOPED_TRACE("Test adding an invalid rule");
     TestRule rule = CreateGenericRule();
@@ -322,12 +325,12 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     rule.action->type = std::string("redirect");
     rule.action->redirect.emplace();
     rule.action->redirect->url = std::string("http://google.com");
-    rule.priority.reset();
+    rule.priority = kMinValidPriority - 1;
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
 
     int rule_id = kMinValidID + 1;
-    ParseInfo info(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
+    ParseInfo info(ParseResult::ERROR_INVALID_RULE_PRIORITY, &rule_id);
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
                         ReadJSONRulesResult::Status::kSuccess,
                         UpdateDynamicRulesStatus::kErrorInvalidRules,

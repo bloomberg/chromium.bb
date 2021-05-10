@@ -8,24 +8,28 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_DISPATCHER_H_
 #define QUICHE_QUIC_CORE_QUIC_DISPATCHER_H_
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_blocked_writer_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_buffered_packet_store.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_process_packet_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_time_wait_list_manager.h"
-#include "net/third_party/quiche/src/quic/core/quic_version_manager.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/crypto/quic_compressed_certs_cache.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_blocked_writer_interface.h"
+#include "quic/core/quic_buffered_packet_store.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_crypto_server_stream_base.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_process_packet_interface.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_time_wait_list_manager.h"
+#include "quic/core/quic_version_manager.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_reference_counted.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 namespace test {
@@ -97,23 +101,43 @@ class QUIC_NO_EXPORT QuicDispatcher
   // Collects reset error code received on streams.
   void OnStopSendingReceived(const QuicStopSendingFrame& frame) override;
 
+  // QuicSession::Visitor interface implementation (via inheritance of
+  // QuicTimeWaitListManager::Visitor):
+  // Add the newly issued connection ID to the session map.
+  void OnNewConnectionIdSent(
+      const QuicConnectionId& server_connection_id,
+      const QuicConnectionId& new_connection_id) override;
+
+  // QuicSession::Visitor interface implementation (via inheritance of
+  // QuicTimeWaitListManager::Visitor):
+  // Remove the retired connection ID from the session map.
+  void OnConnectionIdRetired(
+      const QuicConnectionId& server_connection_id) override;
+
   // QuicTimeWaitListManager::Visitor interface implementation
   // Called whenever the time wait list manager adds a new connection to the
   // time-wait list.
   void OnConnectionAddedToTimeWaitList(
       QuicConnectionId server_connection_id) override;
 
-  using SessionMap = QuicHashMap<QuicConnectionId,
-                                 std::unique_ptr<QuicSession>,
-                                 QuicConnectionIdHash>;
+  using SessionMap = absl::flat_hash_map<QuicConnectionId,
+                                         std::unique_ptr<QuicSession>,
+                                         QuicConnectionIdHash>;
+
+  using ReferenceCountedSessionMap =
+      absl::flat_hash_map<QuicConnectionId,
+                          std::shared_ptr<QuicSession>,
+                          QuicConnectionIdHash>;
+
+  size_t NumSessions() const;
 
   const SessionMap& session_map() const { return session_map_; }
 
   // Deletes all sessions on the closed session list and clears the list.
   virtual void DeleteSessions();
 
-  using ConnectionIdMap =
-      QuicHashMap<QuicConnectionId, QuicConnectionId, QuicConnectionIdHash>;
+  using ConnectionIdMap = absl::
+      flat_hash_map<QuicConnectionId, QuicConnectionId, QuicConnectionIdHash>;
 
   // QuicBufferedPacketStore::VisitorInterface implementation.
   void OnExpiredPackets(QuicConnectionId server_connection_id,
@@ -133,7 +157,22 @@ class QUIC_NO_EXPORT QuicDispatcher
   // duck process or because explicitly configured.
   void StopAcceptingNewConnections();
 
+  // Apply an operation for each session.
+  void PerformActionOnActiveSessions(
+      std::function<void(QuicSession*)> operation) const;
+
+  // Get a snapshot of all sessions.
+  std::vector<std::shared_ptr<QuicSession>> GetSessionsSnapshot() const;
+
   bool accept_new_connections() const { return accept_new_connections_; }
+
+  bool use_reference_counted_session_map() const {
+    return use_reference_counted_session_map_;
+  }
+
+  bool support_multiple_cid_per_connection() const {
+    return support_multiple_cid_per_connection_;
+  }
 
  protected:
   virtual std::unique_ptr<QuicSession> CreateQuicSession(
@@ -213,8 +252,6 @@ class QUIC_NO_EXPORT QuicDispatcher
     return time_wait_list_manager_.get();
   }
 
-  const QuicTransportVersionVector& GetSupportedTransportVersions();
-
   const ParsedQuicVersionVector& GetSupportedVersions();
 
   const ParsedQuicVersionVector& GetSupportedVersionsWithQuicCrypto();
@@ -263,11 +300,12 @@ class QUIC_NO_EXPORT QuicDispatcher
       QuicBufferedPacketStore::EnqueuePacketResult result,
       QuicConnectionId server_connection_id);
 
-  // Removes the session from the session map and write blocked list, and adds
-  // the ConnectionId to the time-wait list.
-  virtual void CleanUpSession(SessionMap::iterator it,
-                              QuicConnection* connection,
-                              ConnectionCloseSource source);
+  // Removes the session from the write blocked list, and adds the ConnectionId
+  // to the time-wait list.  The caller needs to manually remove the session
+  // from the map after that.
+  void CleanUpSession(QuicConnectionId server_connection_id,
+                      QuicConnection* connection,
+                      ConnectionCloseSource source);
 
   // Called to terminate a connection statelessly. Depending on |format|, either
   // 1) send connection close with |error_code| and |error_details| and add
@@ -352,12 +390,14 @@ class QUIC_NO_EXPORT QuicDispatcher
   WriteBlockedList write_blocked_list_;
 
   SessionMap session_map_;
+  ReferenceCountedSessionMap reference_counted_session_map_;
 
   // Entity that manages connection_ids in time wait state.
   std::unique_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The list of closed but not-yet-deleted sessions.
   std::vector<std::unique_ptr<QuicSession>> closed_session_list_;
+  std::vector<std::shared_ptr<QuicSession>> closed_ref_counted_session_list_;
 
   // The helper used for all connections.
   std::unique_ptr<QuicConnectionHelperInterface> helper_;
@@ -385,6 +425,9 @@ class QUIC_NO_EXPORT QuicDispatcher
   // TODO(fayang): consider removing last_error_.
   QuicErrorCode last_error_;
 
+  // Number of unique session in session map.
+  size_t num_sessions_in_session_map_ = 0;
+
   // A backward counter of how many new sessions can be create within current
   // event loop. When reaches 0, it means can't create sessions for now.
   int16_t new_sessions_allowed_per_event_loop_;
@@ -409,6 +452,14 @@ class QUIC_NO_EXPORT QuicDispatcher
   // If true, change expected_server_connection_id_length_ to be the received
   // destination connection ID length of all IETF long headers.
   bool should_update_expected_server_connection_id_length_;
+
+  const bool use_reference_counted_session_map_ =
+      GetQuicRestartFlag(quic_use_reference_counted_sesssion_map);
+  const bool support_multiple_cid_per_connection_ =
+      use_reference_counted_session_map_ &&
+      GetQuicRestartFlag(quic_time_wait_list_support_multiple_cid_v2) &&
+      GetQuicRestartFlag(
+          quic_dispatcher_support_multiple_cid_per_connection_v2);
 };
 
 }  // namespace quic

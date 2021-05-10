@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 import {ContentSecurityPolicyIssue} from './ContentSecurityPolicyIssue.js';
+import {CorsIssue} from './CorsIssue.js';
 import {CrossOriginEmbedderPolicyIssue, isCrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
 import {HeavyAdIssue} from './HeavyAdIssue.js';
 import {Issue} from './Issue.js';  // eslint-disable-line no-unused-vars
+import {LowTextContrastIssue} from './LowTextContrastIssue.js';
 import {MixedContentIssue} from './MixedContentIssue.js';
 import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {SharedArrayBufferIssue} from './SharedArrayBufferIssue.js';
+import {TrustedWebActivityIssue} from './TrustedWebActivityIssue.js';
 
 
 /**
@@ -107,7 +111,7 @@ function createIssuesForSameSiteCookieIssue(issuesModel, inspectorDetails) {
     return [];
   }
 
-  return SameSiteCookieIssue.createIssuesFromSameSiteDetails(sameSiteDetails);
+  return SameSiteCookieIssue.createIssuesFromSameSiteDetails(sameSiteDetails, issuesModel);
 }
 
 /**
@@ -121,7 +125,7 @@ function createIssuesForMixedContentIssue(issuesModel, inspectorDetails) {
     console.warn('Mixed content issue without details received.');
     return [];
   }
-  return [new MixedContentIssue(mixedContentDetails)];
+  return [new MixedContentIssue(mixedContentDetails, issuesModel)];
 }
 
 
@@ -151,7 +155,7 @@ function createIssuesForHeavyAdIssue(issuesModel, inspectorDetails) {
     console.warn('Heavy Ad issue without details received.');
     return [];
   }
-  return [new HeavyAdIssue(heavyAdIssueDetails)];
+  return [new HeavyAdIssue(heavyAdIssueDetails, issuesModel)];
 }
 
 /**
@@ -166,9 +170,65 @@ function createIssuesForBlockedByResponseIssue(issuesModel, inspectorDetails) {
     return [];
   }
   if (isCrossOriginEmbedderPolicyIssue(blockedByResponseIssueDetails.reason)) {
-    return [new CrossOriginEmbedderPolicyIssue(blockedByResponseIssueDetails)];
+    return [new CrossOriginEmbedderPolicyIssue(blockedByResponseIssueDetails, issuesModel)];
   }
   return [];
+}
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForSharedArrayBufferIssue(issuesModel, inspectorDetails) {
+  const sabIssueDetails = inspectorDetails.sharedArrayBufferIssueDetails;
+  if (!sabIssueDetails) {
+    console.warn('SAB transfer issue without details received.');
+    return [];
+  }
+  return [new SharedArrayBufferIssue(sabIssueDetails, issuesModel)];
+}
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForTrustedWebActivityIssue(issuesModel, inspectorDetails) {
+  const twaQualityEnforcementDetails = inspectorDetails.twaQualityEnforcementDetails;
+  if (!twaQualityEnforcementDetails) {
+    console.warn('TWA Quality Enforcement issue without details received.');
+    return [];
+  }
+  return [new TrustedWebActivityIssue(twaQualityEnforcementDetails)];
+}
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForLowTextContrastIssue(issuesModel, inspectorDetails) {
+  const lowTextContrastIssueDetails = inspectorDetails.lowTextContrastIssueDetails;
+  if (!lowTextContrastIssueDetails) {
+    console.warn('LowTextContrast issue without details received.');
+    return [];
+  }
+  return [new LowTextContrastIssue(lowTextContrastIssueDetails)];
+}
+
+/**
+ * @param {!IssuesModel} issuesModel
+ * @param {!Protocol.Audits.InspectorIssueDetails} inspectorDetails
+ * @return {!Array<!Issue>}
+ */
+function createIssuesForCorsIssue(issuesModel, inspectorDetails) {
+  const corsIssueDetails = inspectorDetails.corsIssueDetails;
+  if (!corsIssueDetails) {
+    console.warn('Cors issue without details received.');
+    return [];
+  }
+  return [new CorsIssue(corsIssueDetails, issuesModel)];
 }
 
 /**
@@ -180,6 +240,10 @@ const issueCodeHandlers = new Map([
   [Protocol.Audits.InspectorIssueCode.HeavyAdIssue, createIssuesForHeavyAdIssue],
   [Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue, createIssuesForContentSecurityPolicyIssue],
   [Protocol.Audits.InspectorIssueCode.BlockedByResponseIssue, createIssuesForBlockedByResponseIssue],
+  [Protocol.Audits.InspectorIssueCode.SharedArrayBufferIssue, createIssuesForSharedArrayBufferIssue],
+  [Protocol.Audits.InspectorIssueCode.TrustedWebActivityIssue, createIssuesForTrustedWebActivityIssue],
+  [Protocol.Audits.InspectorIssueCode.LowTextContrastIssue, createIssuesForLowTextContrastIssue],
+  [Protocol.Audits.InspectorIssueCode.CorsIssue, createIssuesForCorsIssue],
 ]);
 
 /** @enum {symbol} */

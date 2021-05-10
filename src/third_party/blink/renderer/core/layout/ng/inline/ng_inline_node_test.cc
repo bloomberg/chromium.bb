@@ -14,14 +14,12 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
@@ -82,16 +80,10 @@ class NGInlineNodeForTest : public NGInlineNode {
 
 class NGInlineNodeTest : public NGLayoutTest {
  protected:
-  void SetUp() override {
-    NGLayoutTest::SetUp();
-    style_ = ComputedStyle::Create();
-  }
-
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
     layout_block_flow_ = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId(id));
     layout_object_ = layout_block_flow_->FirstChild();
-    style_ = layout_object_ ? layout_object_->Style() : nullptr;
   }
 
   void UseLayoutObjectAndAhem() {
@@ -160,7 +152,6 @@ class NGInlineNodeTest : public NGLayoutTest {
     EXPECT_FALSE(expected);
   }
 
-  scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
@@ -691,14 +682,12 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
   EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 
-  if (data.is_line_dirty &&
-      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+  if (data.is_line_dirty) {
     TestAnyItemsAreDirty(*To<LayoutBlockFlow>(container->GetLayoutObject()),
                          *data.is_line_dirty);
   }
 
-  if (data.invalidate_ink_overflow &&
-      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+  if (data.invalidate_ink_overflow) {
     const LayoutObject* parent_layout_object = parent->GetLayoutObject();
     for (const LayoutObject* child = parent_layout_object->SlowFirstChild();
          child; child = child->NextInPreOrder(parent_layout_object)) {
@@ -886,12 +875,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
 
   // Running |CollectInlines| should not clear |FirstInlineFragment|.
   LayoutObject* first_child = container->firstChild()->GetLayoutObject();
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    // TODO(yosin): We should use |FirstInlineItemFragmentIndex()| once we
-    // implement it.
-  } else {
-    EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
-  }
+  EXPECT_TRUE(first_child->HasInlineFragments());
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiChangeSetsNeedsLayout) {
@@ -1136,8 +1120,6 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   NGInlineCursor before_split;
   before_split.MoveTo(*text->GetLayoutObject());
   EXPECT_TRUE(before_split);
-  scoped_refptr<const NGPaintFragment> text_fragment_before_split =
-      before_split.Current().PaintFragment();
 
   // Append <div> to <span>. causing SplitFlow().
   Element* outer_span = GetElementById("outer_span");
@@ -1160,10 +1142,6 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   NGInlineCursor after_layout;
   after_layout.MoveTo(*text->GetLayoutObject());
   EXPECT_TRUE(after_layout);
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    EXPECT_NE(text_fragment_before_split.get(),
-              after_layout.Current().PaintFragment());
-  }
 
   // Check it is the one owned by the new root inline formatting context.
   LayoutBlock* anonymous_block =
@@ -1175,10 +1153,6 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   EXPECT_TRUE(anonymous_block_cursor);
   EXPECT_EQ(anonymous_block_cursor.Current().GetLayoutObject(),
             text->GetLayoutObject());
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    EXPECT_EQ(anonymous_block_cursor.Current().PaintFragment(),
-              after_layout.Current().PaintFragment());
-  }
 }
 
 TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {
@@ -1387,6 +1361,58 @@ TEST_F(NGInlineNodeTest, ReusingRTLAsLTR) {
   TEST_ITEM_OFFSET_DIR(Items()[0], 0u, 0u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(Items()[1], 0u, 10u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(Items()[2], 10u, 10u, TextDirection::kLtr);
+}
+
+TEST_F(NGInlineNodeTest, ReuseFirstNonSafe) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    p {
+      font-size: 50px;
+    }
+    </style>
+    <p id="p">
+      <span>A</span>V
+    </p>
+  )HTML");
+  auto* block_flow = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  const NGInlineNodeData* data = block_flow->GetNGInlineNodeData();
+  ASSERT_TRUE(data);
+  const Vector<NGInlineItem>& items = data->items;
+
+  // We shape "AV" together, which usually has kerning between "A" and "V", then
+  // split the |ShapeResult| to two |NGInlineItem|s. The |NGInlineItem| for "V"
+  // is not safe to reuse even if its style does not change.
+  const NGInlineItem& item_v = items[3];
+  EXPECT_EQ(item_v.Type(), NGInlineItem::kText);
+  EXPECT_EQ(
+      StringView(data->text_content, item_v.StartOffset(), item_v.Length()),
+      "V");
+  EXPECT_TRUE(NGInlineNode::NeedsShapingForTesting(item_v));
+}
+
+TEST_F(NGInlineNodeTest, ReuseFirstNonSafeRtl) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    p {
+      font-size: 50px;
+      unicode-bidi: bidi-override;
+      direction: rtl;
+    }
+    </style>
+    <p id="p">
+      <span>A</span>V
+    </p>
+  )HTML");
+  auto* block_flow = To<LayoutNGBlockFlow>(GetLayoutObjectByElementId("p"));
+  const NGInlineNodeData* data = block_flow->GetNGInlineNodeData();
+  ASSERT_TRUE(data);
+  const Vector<NGInlineItem>& items = data->items;
+  const NGInlineItem& item_v = items[4];
+  EXPECT_EQ(item_v.Type(), NGInlineItem::kText);
+  EXPECT_EQ(
+      StringView(data->text_content, item_v.StartOffset(), item_v.Length()),
+      "V");
+  EXPECT_TRUE(NGInlineNode::NeedsShapingForTesting(item_v));
 }
 
 TEST_F(NGInlineNodeTest, LetterSpacingUseCounterFalse) {

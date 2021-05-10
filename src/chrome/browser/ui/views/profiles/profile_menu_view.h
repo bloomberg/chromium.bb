@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -32,8 +33,13 @@ class Browser;
 // It displays a list of profiles and allows users to switch between profiles.
 class ProfileMenuView : public ProfileMenuViewBase {
  public:
+  METADATA_HEADER(ProfileMenuView);
+
   ProfileMenuView(views::Button* anchor_button, Browser* browser);
   ~ProfileMenuView() override;
+
+  ProfileMenuView(const ProfileMenuView&) = delete;
+  ProfileMenuView& operator=(const ProfileMenuView&) = delete;
 
   // ProfileMenuViewBase:
   void BuildMenu() override;
@@ -57,7 +63,7 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
   void OnSigninAccountButtonClicked(AccountInfo account);
   void OnCookiesClearedOnExitLinkClicked();
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void OnSignoutButtonClicked();
   void OnSigninButtonClicked();
   void OnOtherProfileSelected(const base::FilePath& profile_path);
@@ -77,13 +83,14 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildFeatureButtons();
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void BuildSelectableProfiles();
   void BuildProfileManagementHeading();
   void BuildProfileManagementFeatureButtons();
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileMenuView);
+  base::string16 menu_title_;
+  base::string16 menu_subtitle_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MENU_VIEW_H_

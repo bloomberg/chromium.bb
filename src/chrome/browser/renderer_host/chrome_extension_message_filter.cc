@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_messages.h"
@@ -56,12 +55,9 @@ void AddActionToExtensionActivityLog(Profile* profile,
 
 }  // namespace
 
-ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
-    int render_process_id,
-    Profile* profile)
+ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(Profile* profile)
     : BrowserMessageFilter(kExtensionFilteredMessageClasses,
                            base::size(kExtensionFilteredMessageClasses)),
-      render_process_id_(render_process_id),
       profile_(profile),
       activity_log_(extensions::ActivityLog::GetInstance(profile)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

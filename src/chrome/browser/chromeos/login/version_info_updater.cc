@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -15,13 +16,12 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -30,6 +30,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 
@@ -95,7 +96,7 @@ void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
   }
 
   // Watch for changes to the reporting flags.
-  base::Closure callback = base::Bind(&VersionInfoUpdater::UpdateEnterpriseInfo,
+  auto callback = base::BindRepeating(&VersionInfoUpdater::UpdateEnterpriseInfo,
                                       base::Unretained(this));
   for (unsigned int i = 0; i < base::size(kReportingFlags); ++i) {
     subscriptions_.push_back(
@@ -144,19 +145,19 @@ void VersionInfoUpdater::UpdateVersionLabel() {
 void VersionInfoUpdater::UpdateEnterpriseInfo() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  SetEnterpriseInfo(connector->GetEnterpriseDisplayDomain(),
+  SetEnterpriseInfo(connector->GetEnterpriseDomainManager(),
                     connector->GetDeviceAssetID());
 }
 
 void VersionInfoUpdater::SetEnterpriseInfo(
-    const std::string& enterprise_display_domain,
+    const std::string& enterprise_manager,
     const std::string& asset_id) {
   // Update the notification about device status reporting.
-  if (delegate_ && !enterprise_display_domain.empty()) {
+  if (delegate_ && !enterprise_manager.empty()) {
     std::string enterprise_info;
-    enterprise_info =
-        l10n_util::GetStringFUTF8(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                  base::UTF8ToUTF16(enterprise_display_domain));
+    enterprise_info = l10n_util::GetStringFUTF8(
+        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY, ui::GetChromeOSDeviceName(),
+        base::UTF8ToUTF16(enterprise_manager));
     delegate_->OnEnterpriseInfoUpdated(enterprise_info, asset_id);
   }
 }

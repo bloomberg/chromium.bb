@@ -27,6 +27,9 @@ Polymer({
     currentlyOnChannelText_: String,
 
     /** @private */
+    deviceNameText_: String,
+
+    /** @private */
     showChannelSwitcherDialog_: Boolean,
 
     /** @private */
@@ -72,6 +75,10 @@ Polymer({
     });
 
     this.updateChannelInfo_();
+
+    if (this.isHostnameSettingEnabled_) {
+      this.updateDeviceName_();
+    }
   },
 
   /**
@@ -106,6 +113,14 @@ Polymer({
           'aboutCurrentlyOnChannel',
           this.i18n(
               settings.browserChannelToI18nId(info.targetChannel, info.isLts)));
+    });
+  },
+
+  /** @private */
+  updateDeviceName_() {
+    const browserProxy = DeviceNameBrowserProxyImpl.getInstance();
+    browserProxy.getDeviceNameMetadata().then(data => {
+      this.deviceNameText_ = data.deviceName;
     });
   },
 

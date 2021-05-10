@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/env.h"
@@ -218,7 +217,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       preferred_width_(init_params.preferred_width),
       bubble_border_(new BubbleBorder(
           arrow(),
-          BubbleBorder::NO_ASSETS,
+          BubbleBorder::NO_SHADOW,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
@@ -240,7 +239,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   SetCanActivate(false);
   SetNotifyEnterExitOnChild(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
-  set_margins(gfx::Insets());
+  set_margins(init_params.margin.has_value() ? init_params.margin.value()
+                                             : gfx::Insets());
 
   if (init_params.translucent) {
     // The following code will not work with bubble's shadow.

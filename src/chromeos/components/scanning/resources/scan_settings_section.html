@@ -1,34 +1,52 @@
-<!-- TODO(jschettler): Update styling to match the spec. -->
 <style include="scanning-shared scanning-fonts">
-  :host {
+  #selectDiv {
+    align-items: center;
     display: flex;
+    height: 48px;
+    margin-bottom: 8px;
+    margin-inline-end: 40px;
+    margin-inline-start: 32px;
+    margin-top: 0;
   }
 
   ::slotted([slot=label]),
   ::slotted([slot=settings]) {
-    @apply --scanning-select-font;
-    color: var(--scanning-select-text-color);
     display: flex;
     flex-direction: column;
-    min-height: 32px;
   }
 
   ::slotted([slot=label]) {
+    color: var(--scanning-scan-setting-text-color);
     flex: none;
     flex-basis: 68px;
     flex-grow: 0;
     flex-shrink: 0;
-    margin-top: 5px;
+    font-family: var(--scanning-scan-setting-font-family);
+    font-size: var(--scanning-scan-setting-font-size);
+    font-weight: var(--scanning-regular-font-weight);
+    line-height: var(--scanning-scan-setting-line-height);
     padding-inline-end: 20px;
+    word-break: break-word;
   }
 
   ::slotted([slot=settings]) {
     flex: 1;
-    flex-basis: 192px;
     flex-grow: 0;
     flex-shrink: 0;
+    width: 192px;
+  }
+
+  ::slotted([slot=error]) {
+    display: block;
     margin-bottom: 8px;
+    margin-inline-end: 40px;
+    margin-inline-start: 120px;
+    margin-top: -8px;
+    width: 192px;
   }
 </style>
-<slot name="label"></slot>
-<slot name="settings"></slot>
+<div id="selectDiv">
+  <slot name="label"></slot>
+  <slot name="settings"></slot>
+</div>
+<slot name="error"></slot>

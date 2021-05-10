@@ -10,6 +10,7 @@ import android.os.Message;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
@@ -21,8 +22,8 @@ import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * Determines the desired visibility of the browser controls based on the current state of a given
@@ -103,13 +104,13 @@ public class TabStateBrowserControlsVisibilityDelegate
             }
 
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
+            public void onPageLoadStarted(Tab tab, GURL url) {
                 mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
                 updateWaitingForLoad(!DomDistillerUrlUtils.isDistilledPage(url));
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
+            public void onPageLoadFinished(Tab tab, GURL url) {
                 // Handle the case where a commit or prerender swap notification failed to arrive
                 // and the enable fullscreen message was never enqueued.
                 scheduleEnableFullscreenLoadDelayIfNecessary();

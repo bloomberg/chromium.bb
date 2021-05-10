@@ -7,6 +7,7 @@ import("//tools/polymer/polymer.gni")
 import("../settings.gni")
 
 js_type_check("closure_compile") {
+  uses_legacy_modules = true
   deps = [ ":captions_subpage" ]
 }
 
@@ -14,6 +15,7 @@ js_library("captions_subpage") {
   deps = [
     "../appearance_page:fonts_browser_proxy",
     "../controls:settings_dropdown_menu",
+    "../controls:settings_toggle_button",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
     "//ui/webui/resources/js:i18n_behavior",
@@ -52,6 +54,7 @@ js_library("captions_subpage.m") {
   deps = [
     "../appearance_page:fonts_browser_proxy.m",
     "../controls:settings_dropdown_menu.m",
+    "../controls:settings_toggle_button.m",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",

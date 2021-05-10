@@ -4,8 +4,8 @@
 
 #include "base/scoped_observation.h"
 
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,18 +62,22 @@ TEST(ScopedObservationTest, RemovesObservationOnDestruction) {
   EXPECT_EQ(0u, s1.num_observers());
 }
 
-TEST(ScopedObservationTest, RemoveObservation) {
+TEST(ScopedObservationTest, Reset) {
   TestSource s1;
   TestSourceObserver o1;
   TestScopedObservation obs(&o1);
   EXPECT_EQ(0u, s1.num_observers());
-  EXPECT_FALSE(s1.HasObserver(&o1));
+  obs.Reset();
 
   obs.Observe(&s1);
   EXPECT_EQ(1u, s1.num_observers());
   EXPECT_TRUE(s1.HasObserver(&o1));
 
-  obs.RemoveObservation();
+  obs.Reset();
+  EXPECT_EQ(0u, s1.num_observers());
+
+  // Safe to call with no observation.
+  obs.Reset();
   EXPECT_EQ(0u, s1.num_observers());
 }
 
@@ -86,7 +90,7 @@ TEST(ScopedObservationTest, IsObserving) {
   obs.Observe(&s1);
   EXPECT_TRUE(obs.IsObserving());
 
-  obs.RemoveObservation();
+  obs.Reset();
   EXPECT_FALSE(obs.IsObserving());
 }
 
@@ -102,7 +106,7 @@ TEST(ScopedObservationTest, IsObservingSource) {
   EXPECT_TRUE(obs.IsObservingSource(&s1));
   EXPECT_FALSE(obs.IsObservingSource(&s2));
 
-  obs.RemoveObservation();
+  obs.Reset();
   EXPECT_FALSE(obs.IsObservingSource(&s1));
   EXPECT_FALSE(obs.IsObservingSource(&s2));
 }

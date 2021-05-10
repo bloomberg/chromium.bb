@@ -113,6 +113,25 @@ void SetCallStack(TracedValue* value) {
   v8::CpuProfiler::CollectSample(v8::Isolate::GetCurrent());
 }
 
+void SetCallStack(perfetto::TracedDictionary& dict) {
+  static const unsigned char* trace_category_enabled = nullptr;
+  WTF_ANNOTATE_BENIGN_RACE(&trace_category_enabled, "trace_event category");
+  if (!trace_category_enabled) {
+    trace_category_enabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"));
+  }
+  if (!*trace_category_enabled)
+    return;
+  // The CPU profiler stack trace does not include call site line numbers.
+  // So we collect the top frame with SourceLocation::capture() to get the
+  // binding call site info.
+  auto source_location = SourceLocation::Capture();
+  if (source_location->HasStackTrace()) {
+    dict.Add("stackTrace", source_location);
+  }
+  v8::CpuProfiler::CollectSample(v8::Isolate::GetCurrent());
+}
+
 void InspectorTraceEvents::WillSendRequest(
     uint64_t identifier,
     DocumentLoader* loader,
@@ -120,12 +139,12 @@ void InspectorTraceEvents::WillSendRequest(
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo&,
-    ResourceType) {
+    ResourceType,
+    RenderBlockingBehavior render_blocking_behavior) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
-      "data",
-      inspector_send_request_event::Data(loader, identifier, frame, request));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+      "ResourceSendRequest", inspector_send_request_event::Data, loader,
+      identifier, frame, request, render_blocking_behavior);
 }
 
 void InspectorTraceEvents::WillSendNavigationRequest(
@@ -299,6 +318,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoEnabled)
     DEFINE_STRING_MAPPING(PseudoFullPageMedia)
     DEFINE_STRING_MAPPING(PseudoDefault)
+    DEFINE_STRING_MAPPING(PseudoDir)
     DEFINE_STRING_MAPPING(PseudoDisabled)
     DEFINE_STRING_MAPPING(PseudoOptional)
     DEFINE_STRING_MAPPING(PseudoPlaceholderShown)
@@ -316,6 +336,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoLang)
     DEFINE_STRING_MAPPING(PseudoNot)
     DEFINE_STRING_MAPPING(PseudoPlaceholder)
+    DEFINE_STRING_MAPPING(PseudoFileSelectorButton)
     DEFINE_STRING_MAPPING(PseudoResizer)
     DEFINE_STRING_MAPPING(PseudoRoot)
     DEFINE_STRING_MAPPING(PseudoScope)
@@ -351,12 +372,9 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoCue)
     DEFINE_STRING_MAPPING(PseudoFutureCue)
     DEFINE_STRING_MAPPING(PseudoPastCue)
-    DEFINE_STRING_MAPPING(PseudoUnresolved)
     DEFINE_STRING_MAPPING(PseudoDefined)
-    DEFINE_STRING_MAPPING(PseudoContent)
     DEFINE_STRING_MAPPING(PseudoHost)
     DEFINE_STRING_MAPPING(PseudoHostContext)
-    DEFINE_STRING_MAPPING(PseudoShadow)
     DEFINE_STRING_MAPPING(PseudoSlotted)
     DEFINE_STRING_MAPPING(PseudoSpatialNavigationFocus)
     DEFINE_STRING_MAPPING(PseudoSpatialNavigationInterest)
@@ -364,12 +382,15 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoIsHtml)
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
+    DEFINE_STRING_MAPPING(PseudoPopupOpen)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
     DEFINE_STRING_MAPPING(PseudoXrOverlay)
     DEFINE_STRING_MAPPING(PseudoTargetText)
     DEFINE_STRING_MAPPING(PseudoModal)
+    DEFINE_STRING_MAPPING(PseudoSpellingError)
+    DEFINE_STRING_MAPPING(PseudoGrammarError)
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -434,6 +455,8 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "no data pipe received";
     case ScriptStreamer::NotStreamingReason::kDisabledByFeatureList:
       return "streaming disabled from the feature list";
+    case ScriptStreamer::NotStreamingReason::kNonJavascriptModule:
+      return "not a javascript module";
     case ScriptStreamer::NotStreamingReason::kLoadingCancelled:
       return "loading was cancelled";
     case ScriptStreamer::NotStreamingReason::kDidntTryToStartStreaming:
@@ -714,6 +737,7 @@ const char kFullscreen[] = "Fullscreen change";
 const char kChildChanged[] = "Child changed";
 const char kListValueChange[] = "List value change";
 const char kListStyleTypeChange[] = "List style type change";
+const char kCounterStyleChange[] = "Counter style change";
 const char kImageChanged[] = "Image changed";
 const char kLineBoxesChanged[] = "Line boxes changed";
 const char kSliderValueChanged[] = "Slider value changed";
@@ -733,6 +757,7 @@ const char kTextControlChanged[] = "Text control changed";
 const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLock[] = "Display lock";
+const char kCanvasFormattedTextRunChange[] = "CanvasFormattedText runs changed";
 }  // namespace layout_invalidation_reason
 
 std::unique_ptr<TracedValue> inspector_layout_invalidation_tracking_event::Data(
@@ -760,22 +785,47 @@ std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
   return value;
 }
 
-std::unique_ptr<TracedValue> inspector_send_request_event::Data(
+void inspector_send_request_event::Data(
+    perfetto::TracedValue context,
     DocumentLoader* loader,
     uint64_t identifier,
     LocalFrame* frame,
-    const ResourceRequest& request) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("requestId",
-                   IdentifiersFactory::RequestId(loader, identifier));
-  value->SetString("frame", IdentifiersFactory::FrameId(frame));
-  value->SetString("url", request.Url().GetString());
-  value->SetString("requestMethod", request.HttpMethod());
+    const ResourceRequest& request,
+    RenderBlockingBehavior render_blocking_behavior) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("requestId", IdentifiersFactory::RequestId(loader, identifier));
+  dict.Add("frame", IdentifiersFactory::FrameId(frame));
+  dict.Add("url", request.Url().GetString());
+  dict.Add("requestMethod", request.HttpMethod());
+  String render_blocking_string;
+  switch (render_blocking_behavior) {
+    case RenderBlockingBehavior::kUnset:
+      break;
+    case RenderBlockingBehavior::kBlocking:
+      render_blocking_string = "blocking";
+      break;
+    case RenderBlockingBehavior::kNonBlocking:
+      render_blocking_string = "non_blocking";
+      break;
+    case RenderBlockingBehavior::kNonBlockingDynamic:
+      render_blocking_string = "dynamically_injected_non_blocking";
+      break;
+    case RenderBlockingBehavior::kInBodyParserBlocking:
+      render_blocking_string = "in_body_parser_blocking";
+      break;
+    case RenderBlockingBehavior::kPotentiallyBlocking:
+      render_blocking_string = "potentially_blocking";
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (!render_blocking_string.IsNull()) {
+    dict.Add("renderBlocking", render_blocking_string);
+  }
   const char* priority = ResourcePriorityString(request.Priority());
   if (priority)
-    value->SetString("priority", priority);
-  SetCallStack(value.get());
-  return value;
+    dict.Add("priority", priority);
+  SetCallStack(dict);
 }
 
 std::unique_ptr<TracedValue> inspector_send_navigation_request_event::Data(

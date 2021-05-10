@@ -357,6 +357,9 @@ GCCPatterns = [
   ( '(-pedantic)',            AddCCFlag),
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
+  ( ('(-resource-dir)','(.+)'), AddCCFlag),
+  ( ('(--resource-dir=.+)'),    AddCCFlag),
+  ( '(-Qunused-arguments)',   AddCCFlag),
   ( '(-v|--v)',               "env.append('CC_FLAGS', $0)\n"
                               "env.set('VERBOSE', '1')"),
   ( '(-pthreads?)',           "env.set('PTHREAD', '1')"),

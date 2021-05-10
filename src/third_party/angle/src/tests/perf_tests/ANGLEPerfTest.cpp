@@ -11,6 +11,7 @@
 
 #include "ANGLEPerfTestArgs.h"
 #include "common/debug.h"
+#include "common/mathutil.h"
 #include "common/platform.h"
 #include "common/system_utils.h"
 #include "common/utilities.h"
@@ -92,6 +93,8 @@ angle::TraceEventHandle AddPerfTraceEvent(angle::PlatformMethods *platform,
     const TraceCategory *category = reinterpret_cast<const TraceCategory *>(categoryEnabledFlag);
 
     ANGLERenderTest *renderTest = static_cast<ANGLERenderTest *>(platform->context);
+
+    std::lock_guard<std::mutex> lock(renderTest->getTraceEventMutex());
 
     uint32_t tid = renderTest->getCurrentThreadSerial();
 
@@ -218,7 +221,6 @@ ANGLEPerfTest::ANGLEPerfTest(const std::string &name,
       mStepsToRun(std::max(gStepsPerTrial, gMaxStepsPerformed)),
       mTrialNumStepsPerformed(0),
       mTotalNumStepsPerformed(0),
-      mStepsPerRunLoopStep(1),
       mIterationsPerStep(iterationsPerStep),
       mRunning(true)
 {
@@ -235,6 +237,7 @@ ANGLEPerfTest::ANGLEPerfTest(const std::string &name,
     mReporter->RegisterImportantMetric(".gpu_time", units);
     mReporter->RegisterFyiMetric(".trial_steps", "count");
     mReporter->RegisterFyiMetric(".total_steps", "count");
+    mReporter->RegisterFyiMetric(".steps_to_run", "count");
 }
 
 ANGLEPerfTest::~ANGLEPerfTest() {}
@@ -244,6 +247,14 @@ void ANGLEPerfTest::run()
     if (mSkipTest)
     {
         return;
+    }
+
+    if (mStepsToRun <= 0)
+    {
+        // We don't call finish between calibration steps when calibrating non-Render tests. The
+        // Render tests will have already calibrated when this code is run.
+        calibrateStepsToRun(RunLoopPolicy::RunContinuously);
+        ASSERT(mStepsToRun > 0);
     }
 
     uint32_t numTrials = OneFrame() ? 1 : gTestTrials;
@@ -288,15 +299,16 @@ void ANGLEPerfTest::run()
         double standardDeviation      = std::sqrt(variance);
         double coefficientOfVariation = standardDeviation / mean;
 
-        printf("Mean result time: %.4lf ms.\n", mean);
+        if (mean < 0.001)
+        {
+            printf("Mean result time: %.4lf ns.\n", mean * 1000.0);
+        }
+        else
+        {
+            printf("Mean result time: %.4lf ms.\n", mean);
+        }
         printf("Coefficient of variation: %.2lf%%\n", coefficientOfVariation * 100.0);
     }
-}
-
-void ANGLEPerfTest::setStepsPerRunLoopStep(int stepsPerRunLoop)
-{
-    ASSERT(stepsPerRunLoop >= 1);
-    mStepsPerRunLoopStep = stepsPerRunLoop;
 }
 
 void ANGLEPerfTest::doRunLoop(double maxRunTime, int maxStepsToRun, RunLoopPolicy runPolicy)
@@ -318,9 +330,13 @@ void ANGLEPerfTest::doRunLoop(double maxRunTime, int maxStepsToRun, RunLoopPolic
 
         if (mRunning)
         {
-            mTrialNumStepsPerformed += mStepsPerRunLoopStep;
-            mTotalNumStepsPerformed += mStepsPerRunLoopStep;
-            if (mTimer.getElapsedTime() > maxRunTime)
+            mTrialNumStepsPerformed++;
+            mTotalNumStepsPerformed++;
+            if (gMaxStepsPerformed > 0 && mTotalNumStepsPerformed >= gMaxStepsPerformed)
+            {
+                mRunning = false;
+            }
+            else if (mTimer.getElapsedTime() > maxRunTime)
             {
                 mRunning = false;
             }
@@ -402,8 +418,15 @@ double ANGLEPerfTest::printResults()
         printf("Ran %0.2lf iterations per second\n", fps);
     }
 
-    mReporter->AddResult(".trial_steps", static_cast<size_t>(mTrialNumStepsPerformed));
-    mReporter->AddResult(".total_steps", static_cast<size_t>(mTotalNumStepsPerformed));
+    if (gCalibration)
+    {
+        mReporter->AddResult(".steps_to_run", static_cast<size_t>(mStepsToRun));
+    }
+    else
+    {
+        mReporter->AddResult(".trial_steps", static_cast<size_t>(mTrialNumStepsPerformed));
+        mReporter->AddResult(".total_steps", static_cast<size_t>(mTotalNumStepsPerformed));
+    }
 
     // Output histogram JSON set format if enabled.
     double secondsPerStep = elapsedTimeSeconds[0] / static_cast<double>(mTrialNumStepsPerformed);
@@ -418,10 +441,9 @@ double ANGLEPerfTest::normalizedTime(size_t value) const
     return static_cast<double>(value) / static_cast<double>(mTrialNumStepsPerformed);
 }
 
-void ANGLEPerfTest::calibrateStepsToRun()
+void ANGLEPerfTest::calibrateStepsToRun(RunLoopPolicy policy)
 {
-    doRunLoop(gCalibrationTimeSeconds, std::numeric_limits<int>::max(),
-              RunLoopPolicy::FinishEveryStep);
+    doRunLoop(gCalibrationTimeSeconds, std::numeric_limits<int>::max(), policy);
 
     double elapsedTime = mTimer.getElapsedTime();
 
@@ -429,6 +451,11 @@ void ANGLEPerfTest::calibrateStepsToRun()
     double scale = gCalibrationTimeSeconds / elapsedTime;
     mStepsToRun  = static_cast<unsigned int>(static_cast<double>(mTrialNumStepsPerformed) * scale);
     mStepsToRun  = std::max(1, mStepsToRun);
+
+    if (getStepAlignment() != 1)
+    {
+        mStepsToRun = rx::roundUp(mStepsToRun, getStepAlignment());
+    }
 
     if (gVerboseLogging)
     {
@@ -442,9 +469,15 @@ void ANGLEPerfTest::calibrateStepsToRun()
     // Calibration allows the perf test runner script to save some time.
     if (gCalibration)
     {
-        mReporter->AddResult(".steps", static_cast<size_t>(mStepsToRun));
+        printResults();
         return;
     }
+}
+
+int ANGLEPerfTest::getStepAlignment() const
+{
+    // Default: No special alignment rules.
+    return 1;
 }
 
 std::string RenderTestParams::backend() const
@@ -688,17 +721,13 @@ void ANGLERenderTest::SetUp()
         // FAIL returns.
     }
 
-    mTestTrialResults.reserve(gTestTrials);
-
-    // Capture a screenshot if enabled.
-    if (gScreenShotDir != nullptr)
+    if (gVerboseLogging)
     {
-        std::stringstream screenshotNameStr;
-        screenshotNameStr << gScreenShotDir << GetPathSeparator() << "angle" << mBackend << "_"
-                          << mStory << ".png";
-        std::string screenshotName = screenshotNameStr.str();
-        saveScreenshot(screenshotName);
+        printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
+        printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
     }
+
+    mTestTrialResults.reserve(gTestTrials);
 
     for (int loopIndex = 0; loopIndex < gWarmupLoops; ++loopIndex)
     {
@@ -712,7 +741,9 @@ void ANGLERenderTest::SetUp()
 
     if (mStepsToRun <= 0)
     {
-        calibrateStepsToRun();
+        // Ensure we always call Finish when calibrating Render tests. This completes our work
+        // beween calibration measurements.
+        calibrateStepsToRun(RunLoopPolicy::FinishEveryStep);
     }
 }
 

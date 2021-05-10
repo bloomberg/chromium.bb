@@ -115,13 +115,20 @@ TEST(SmiMove) {
   TestMoveSmi(masm, &exit, 3, Smi::FromInt(128));
   TestMoveSmi(masm, &exit, 4, Smi::FromInt(255));
   TestMoveSmi(masm, &exit, 5, Smi::FromInt(256));
-  TestMoveSmi(masm, &exit, 6, Smi::FromInt(Smi::kMaxValue));
-  TestMoveSmi(masm, &exit, 7, Smi::FromInt(-1));
-  TestMoveSmi(masm, &exit, 8, Smi::FromInt(-128));
-  TestMoveSmi(masm, &exit, 9, Smi::FromInt(-129));
-  TestMoveSmi(masm, &exit, 10, Smi::FromInt(-256));
-  TestMoveSmi(masm, &exit, 11, Smi::FromInt(-257));
-  TestMoveSmi(masm, &exit, 12, Smi::FromInt(Smi::kMinValue));
+  TestMoveSmi(masm, &exit, 6, Smi::FromInt(0xFFFF - 1));
+  TestMoveSmi(masm, &exit, 7, Smi::FromInt(0xFFFF));
+  TestMoveSmi(masm, &exit, 8, Smi::FromInt(0xFFFF + 1));
+  TestMoveSmi(masm, &exit, 9, Smi::FromInt(Smi::kMaxValue));
+
+  TestMoveSmi(masm, &exit, 10, Smi::FromInt(-1));
+  TestMoveSmi(masm, &exit, 11, Smi::FromInt(-128));
+  TestMoveSmi(masm, &exit, 12, Smi::FromInt(-129));
+  TestMoveSmi(masm, &exit, 13, Smi::FromInt(-256));
+  TestMoveSmi(masm, &exit, 14, Smi::FromInt(-257));
+  TestMoveSmi(masm, &exit, 15, Smi::FromInt(-0xFFFF + 1));
+  TestMoveSmi(masm, &exit, 16, Smi::FromInt(-0xFFFF));
+  TestMoveSmi(masm, &exit, 17, Smi::FromInt(-0xFFFF - 1));
+  TestMoveSmi(masm, &exit, 18, Smi::FromInt(Smi::kMinValue));
 
   __ xorq(rax, rax);  // Success.
   __ bind(&exit);
@@ -1045,14 +1052,24 @@ TEST(DeoptExitSizeIsFixed) {
   STATIC_ASSERT(static_cast<int>(kFirstDeoptimizeKind) == 0);
   for (int i = 0; i < kDeoptimizeKindCount; i++) {
     DeoptimizeKind kind = static_cast<DeoptimizeKind>(i);
-    Builtins::Name target = Deoptimizer::GetDeoptimizationEntry(isolate, kind);
     Label before_exit;
     masm.bind(&before_exit);
-    masm.CallForDeoptimization(target, 42, &before_exit, kind, nullptr);
-    CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
-             kind == DeoptimizeKind::kLazy
-                 ? Deoptimizer::kLazyDeoptExitSize
-                 : Deoptimizer::kNonLazyDeoptExitSize);
+    if (kind == DeoptimizeKind::kEagerWithResume) {
+      Builtins::Name target = Deoptimizer::GetDeoptWithResumeBuiltin(
+          DeoptimizeReason::kDynamicCheckMaps);
+      masm.CallForDeoptimization(target, 42, &before_exit, kind, &before_exit,
+                                 nullptr);
+      CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
+               Deoptimizer::kEagerWithResumeBeforeArgsSize);
+    } else {
+      Builtins::Name target = Deoptimizer::GetDeoptimizationEntry(kind);
+      masm.CallForDeoptimization(target, 42, &before_exit, kind, &before_exit,
+                                 nullptr);
+      CHECK_EQ(masm.SizeOfCodeGeneratedSince(&before_exit),
+               kind == DeoptimizeKind::kLazy
+                   ? Deoptimizer::kLazyDeoptExitSize
+                   : Deoptimizer::kNonLazyDeoptExitSize);
+    }
   }
 }
 

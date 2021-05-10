@@ -25,6 +25,7 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -64,9 +65,9 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -260,7 +261,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         new content::InProcessUtilityThreadHelper);
 
     // This is needed to create extension service under CrOS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
     // Creating a DBus thread manager setter has the side effect of
     // creating a DBusThreadManager, which is needed for testing.
@@ -291,7 +292,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     test_user_manager_.reset();
 #endif
 
@@ -345,7 +346,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     extensions::CrxInstaller* installer = NULL;
     content::WindowedNotificationObserver observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        base::Bind(&IsCrxInstallerDone, &installer));
+        base::BindRepeating(&IsCrxInstallerDone, &installer));
     extensions::CRXFileInfo crx_info(path, extensions::GetTestVerifierFormat());
     crx_info.extension_id = extension->id();
     extension_service_->UpdateExtension(crx_info, true, &installer);
@@ -413,7 +414,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   // This is needed to create extension service under CrOS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif

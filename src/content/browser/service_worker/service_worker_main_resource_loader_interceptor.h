@@ -13,6 +13,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_client_info.h"
@@ -32,8 +33,10 @@ struct NavigationRequestInfo;
 // Lives on the UI thread.
 //
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
-// lives on the service worker context core thread. Currently, this class just
-// delegates to the legacy class by posting tasks to it on the core thread.
+// used to live on a different thread. Currently, this class just delegates to
+// the legacy class.
+// TODO(crbug.com/1138155): Merge the classes together now that they are on
+// the same thread.
 class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
@@ -70,16 +73,6 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
-  // These are called back from the core thread helper functions:
-  void LoaderCallbackWrapper(
-      base::Optional<SubresourceLoaderParams> subresource_loader_params,
-      LoaderCallback loader_callback,
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread);
-  void FallbackCallbackWrapper(FallbackCallback fallback_callback,
-                               bool reset_subresource_loader_params);
-
-  base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor> GetWeakPtr();
-
  private:
   friend class ServiceWorkerMainResourceLoaderInterceptorTest;
 
@@ -101,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
 
   // Given as a callback to NavigationURLLoaderImpl.
   void RequestHandlerWrapper(
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
+      SingleRequestURLLoaderFactory::RequestHandler handler,
       const network::ResourceRequest& resource_request,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client);
@@ -134,10 +127,8 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
   const int process_id_;
   const base::Optional<DedicatedOrSharedWorkerToken> worker_token_;
 
-  base::Optional<SubresourceLoaderParams> subresource_loader_params_;
-
-  base::WeakPtrFactory<ServiceWorkerMainResourceLoaderInterceptor>
-      weak_factory_{this};
+  // Handles a single request. Set to a new instance on redirects.
+  std::unique_ptr<ServiceWorkerControlleeRequestHandler> request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMainResourceLoaderInterceptor);
 };

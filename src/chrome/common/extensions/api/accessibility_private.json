@@ -39,10 +39,22 @@
         "description": "Accessibility gestures fired by the touch exploration controller."
       },
       {
+        "id": "MagnifierCommand",
+        "type": "string",
+        "enum": [ "moveStop", "moveUp", "moveDown", "moveLeft", "moveRight" ],
+        "description": "Commands for magnifier (e.g. move magnifier viewport up)."
+      },
+      {
         "id": "SwitchAccessCommand",
         "type": "string",
         "enum": [ "select", "next", "previous" ],
         "description": "Commands that can be triggered by switch activation."
+      },
+      {
+        "id": "PointScanState",
+        "type": "string",
+        "enum": ["start", "stop"],
+        "description" : "Point scanning states in Switch Access."
       },
       {
         "id": "SwitchAccessBubble",
@@ -67,7 +79,7 @@
       {
         "id": "SwitchAccessMenuAction",
         "type": "string",
-        "enum": [ "copy", "cut", "decrement", "dictation", "endTextSelection", "increment", "jumpToBeginningOfText", "jumpToEndOfText", "keyboard", "moveBackwardOneCharOfText", "moveBackwardOneWordOfText", "moveCursor", "moveDownOneLineOfText", "moveForwardOneCharOfText", "moveForwardOneWordOfText", "moveUpOneLineOfText", "paste", "pointScan", "scrollDown", "scrollLeft", "scrollRight", "scrollUp", "select", "settings", "startTextSelection" ],
+        "enum": [ "copy", "cut", "decrement", "dictation", "endTextSelection", "increment", "itemScan", "jumpToBeginningOfText", "jumpToEndOfText", "keyboard", "leftClick", "moveBackwardOneCharOfText", "moveBackwardOneWordOfText", "moveCursor", "moveDownOneLineOfText", "moveForwardOneCharOfText", "moveForwardOneWordOfText", "moveUpOneLineOfText", "paste", "pointScan", "rightClick", "scrollDown", "scrollLeft", "scrollRight", "scrollUp", "select", "settings", "startTextSelection" ],
         "description": "Available actions to be shown in the Switch Access menu. Must be kept in sync with the strings in ash/system/accessibility/switch_access_menu_view.cc"
       },
       {
@@ -159,6 +171,12 @@
         "enum": ["glow", "solid", "dashed"]
       },
       {
+        "id": "FocusRingStackingOrder",
+        "type": "string",
+        "description": "Whether to stack focus rings above or below accessibility bubble panels. Note: focus rings will be stacked above most other UI in either case",
+        "enum": ["aboveAccessibilityBubbles", "belowAccessibilityBubbles"]
+      },
+      {
         "id": "FocusRingInfo",
         "type": "object",
         "properties": {
@@ -185,6 +203,11 @@
             "description": "A RGB hex-value color string (e.g. #803F82E4) that describes the color drawn outside of the focus ring and over the rest of the display.",
             "optional": true
           },
+          "stackingOrder": {
+            "$ref": "FocusRingStackingOrder",
+            "description": "The FocusType for the ring.",
+            "optional": true
+          },
           "id": {
             "type": "string",
             "description": "An identifier for this focus ring, unique within the extension.",
@@ -203,8 +226,21 @@
         "type": "string",
         "enum": [ "selectToSpeakNavigationControl" ],
         "description": "Subset of accessibility features."
+      },
+      {
+        "id": "SelectToSpeakPanelAction",
+        "type": "string",
+        "enum": [ "previousParagraph", "previousSentence", "pause", "resume", "nextSentence", "nextParagraph", "exit", "changeSpeed" ],
+        "description": "Actions that can be performed in the Select-to-speak panel."
       }
     ],
+    "properties": {
+      "IS_DEFAULT_EVENT_SOURCE_TOUCH": {
+        "type": "integer",
+        "value": 0,
+        "description": "Property to indicate whether event source should default to touch."
+      }
+    },
     "functions": [
       {
         "name": "getDisplayNameForLocale",
@@ -363,10 +399,16 @@
         "platforms": ["chromeos"]
       },
       {
-        "name": "activatePointScan",
+        "name": "setPointScanState",
         "type": "function",
-        "description": "Activates point scanning in Switch Access.",
-        "parameters": [],
+        "description": "Sets point scanning state Switch Access.",
+        "parameters": [
+          {
+            "name": "state",
+            "$ref": "PointScanState",
+            "description": "The point scanning state to set."
+          }
+        ],
         "platforms": ["chromeos"]
       },
       {
@@ -396,14 +438,14 @@
         "platforms": ["chromeos"]
       },
       {
-        "name": "enableChromeVoxMouseEvents",
+        "name": "enableMouseEvents",
         "type": "function",
-        "description": "Enables or disables mouse events in ChromeVox.",
+        "description": "Enables or disables mouse events in accessibility extensions",
         "parameters": [
           {
             "name": "enabled",
             "type": "boolean",
-            "description": "True if ChromeVox should receive mouse events."
+            "description": "True if accessibility component extensions should receive mouse events."
           }
         ],
         "platforms": ["chromeos"]
@@ -545,6 +587,12 @@
             "type": "boolean",
             "description": "True if Select-to-speak playback is paused.",
             "optional": true
+          },
+          {
+            "name": "speed",
+            "type": "number",
+            "description": "Current reading speed (TTS speech rate).",
+            "optional": true
           }
         ],
         "platforms": ["chromeos"]
@@ -595,6 +643,23 @@
         "platforms": ["chromeos"]
       },
       {
+        "name": "onSelectToSpeakPanelAction",
+        "type": "function",
+        "description": "Fired when an action is performed in the Select-to-speak panel.",
+        "parameters": [
+          {
+            "name": "action",
+            "$ref": "SelectToSpeakPanelAction"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "optional": true
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "onSwitchAccessCommand",
         "type": "function",
         "description": "Fired when Chrome OS has received a key event corresponding to a Switch Access command.",
@@ -614,6 +679,18 @@
           {
             "name": "point",
             "$ref": "PointScanPoint"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "onMagnifierCommand",
+        "type": "function",
+        "description": "Fired when Chrome OS has received a key event corresponding to a Magnifier command.",
+        "parameters": [
+          {
+            "name": "command",
+            "$ref": "MagnifierCommand"
           }
         ],
         "platforms": ["chromeos"]

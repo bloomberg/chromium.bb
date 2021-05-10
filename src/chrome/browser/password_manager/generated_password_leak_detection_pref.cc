@@ -20,7 +20,7 @@ namespace {
 
 // Returns whether a primary account is present and syncing successfully.
 bool IsUserSignedInAndSyncing(Profile* profile) {
-  if (profile->IsGuestSession())
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
     return false;
 
   auto* identity_manager =
@@ -34,7 +34,11 @@ bool IsUserSignedInAndSyncing(Profile* profile) {
       status_labels.message_type == sync_ui_util::SYNC_ERROR ||
       status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR;
 
-  return identity_manager->HasPrimaryAccount() && !sync_error;
+  // Password leak detection only requires a signed in account and a functioning
+  // sync service, it does not require sync consent.
+  return identity_manager->HasPrimaryAccount(
+             signin::ConsentLevel::kNotRequired) &&
+         !sync_error;
 }
 
 // Returns whether the effective value of the Safe Browsing preferences for
@@ -141,14 +145,16 @@ void GeneratedPasswordLeakDetectionPref::IdentityManagerShutdown(
   identity_manager_observer_.RemoveAll();
 }
 
-void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  NotifyObservers(kGeneratedPasswordLeakDetectionPref);
-}
-
-void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  NotifyObservers(kGeneratedPasswordLeakDetectionPref);
+void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  switch (event_details.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      NotifyObservers(kGeneratedPasswordLeakDetectionPref);
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      break;
+  }
 }
 
 void GeneratedPasswordLeakDetectionPref::OnExtendedAccountInfoUpdated(

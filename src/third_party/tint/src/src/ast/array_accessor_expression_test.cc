@@ -14,92 +14,88 @@
 
 #include "src/ast/array_accessor_expression.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ArrayAccessorExpressionTest = testing::Test;
+using ArrayAccessorExpressionTest = TestHelper;
 
 TEST_F(ArrayAccessorExpressionTest, Create) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
-  auto idx = std::make_unique<IdentifierExpression>("idx");
+  auto* ary = Expr("ary");
+  auto* idx = Expr("idx");
 
-  auto* ary_ptr = ary.get();
-  auto* idx_ptr = idx.get();
-
-  ArrayAccessorExpression exp(std::move(ary), std::move(idx));
-  ASSERT_EQ(exp.array(), ary_ptr);
-  ASSERT_EQ(exp.idx_expr(), idx_ptr);
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  ASSERT_EQ(exp->array(), ary);
+  ASSERT_EQ(exp->idx_expr(), idx);
 }
-TEST_F(ArrayAccessorExpressionTest, CreateWithSource) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
-  auto idx = std::make_unique<IdentifierExpression>("idx");
 
-  ArrayAccessorExpression exp(Source{Source::Location{20, 2}}, std::move(ary),
-                              std::move(idx));
-  auto src = exp.source();
+TEST_F(ArrayAccessorExpressionTest, CreateWithSource) {
+  auto* ary = Expr("ary");
+  auto* idx = Expr("idx");
+
+  auto* exp = create<ArrayAccessorExpression>(Source{Source::Location{20, 2}},
+                                              ary, idx);
+  auto src = exp->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsArrayAccessor) {
-  ArrayAccessorExpression exp;
-  EXPECT_TRUE(exp.IsArrayAccessor());
+  auto* ary = Expr("ary");
+  auto* idx = Expr("idx");
+
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  EXPECT_TRUE(exp->Is<ArrayAccessorExpression>());
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsValid) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
-  auto idx = std::make_unique<IdentifierExpression>("idx");
+  auto* ary = Expr("ary");
+  auto* idx = Expr("idx");
 
-  ArrayAccessorExpression exp(std::move(ary), std::move(idx));
-  EXPECT_TRUE(exp.IsValid());
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  EXPECT_TRUE(exp->IsValid());
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsValid_MissingArray) {
-  auto idx = std::make_unique<IdentifierExpression>("idx");
+  auto* idx = Expr("idx");
 
-  ArrayAccessorExpression exp;
-  exp.set_idx_expr(std::move(idx));
-  EXPECT_FALSE(exp.IsValid());
+  auto* exp = create<ArrayAccessorExpression>(nullptr, idx);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsValid_MissingIndex) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
+  auto* ary = Expr("ary");
 
-  ArrayAccessorExpression exp;
-  exp.set_array(std::move(ary));
-  EXPECT_FALSE(exp.IsValid());
+  auto* exp = create<ArrayAccessorExpression>(ary, nullptr);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsValid_InvalidArray) {
-  auto ary = std::make_unique<IdentifierExpression>("");
-  auto idx = std::make_unique<IdentifierExpression>("idx");
-  ArrayAccessorExpression exp(std::move(ary), std::move(idx));
-  EXPECT_FALSE(exp.IsValid());
+  auto* ary = Expr("");
+  auto* idx = Expr("idx");
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(ArrayAccessorExpressionTest, IsValid_InvalidIndex) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
-  auto idx = std::make_unique<IdentifierExpression>("");
-  ArrayAccessorExpression exp(std::move(ary), std::move(idx));
-  EXPECT_FALSE(exp.IsValid());
+  auto* ary = Expr("ary");
+  auto* idx = Expr("");
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(ArrayAccessorExpressionTest, ToStr) {
-  auto ary = std::make_unique<IdentifierExpression>("ary");
-  auto idx = std::make_unique<IdentifierExpression>("idx");
+  auto* ary = Expr("ary");
+  auto* idx = Expr("idx");
 
-  ArrayAccessorExpression exp(std::move(ary), std::move(idx));
-  std::ostringstream out;
-  exp.to_str(out, 2);
-
-  EXPECT_EQ(out.str(), R"(  ArrayAccessor{
-    Identifier{ary}
-    Identifier{idx}
-  }
+  auto* exp = create<ArrayAccessorExpression>(ary, idx);
+  EXPECT_EQ(str(exp), R"(ArrayAccessor[not set]{
+  Identifier[not set]{ary}
+  Identifier[not set]{idx}
+}
 )");
 }
 

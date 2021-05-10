@@ -5,6 +5,7 @@
 #include "osp/impl/quic/quic_service_common.h"
 
 #include <memory>
+#include <utility>
 
 #include "util/osp_logging.h"
 
@@ -62,10 +63,11 @@ ServiceStreamPair::ServiceStreamPair(
       protocol_connection(std::move(protocol_connection)) {}
 ServiceStreamPair::~ServiceStreamPair() = default;
 
-ServiceStreamPair::ServiceStreamPair(ServiceStreamPair&& other) = default;
-
-ServiceStreamPair& ServiceStreamPair::operator=(ServiceStreamPair&& other) =
+ServiceStreamPair::ServiceStreamPair(ServiceStreamPair&& other) noexcept =
     default;
+
+ServiceStreamPair& ServiceStreamPair::operator=(
+    ServiceStreamPair&& other) noexcept = default;
 
 ServiceConnectionDelegate::ServiceConnectionDelegate(ServiceDelegate* parent,
                                                      const IPEndpoint& endpoint)

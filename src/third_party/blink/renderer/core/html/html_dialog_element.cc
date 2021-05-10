@@ -149,6 +149,9 @@ void HTMLDialogElement::show() {
     return;
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
+  // Showing a <dialog> should hide all open popups.
+  GetDocument().HideAllPopupsUntil(nullptr);
+
   // The layout must be updated here because setFocusForDialog calls
   // Element::isFocusable, which requires an up-to-date layout.
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
@@ -176,6 +179,9 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
                       WebFeature::kShowModalForElementInFullscreenStack);
   }
 
+  // Showing a <dialog> should hide all open popups.
+  GetDocument().HideAllPopupsUntil(nullptr);
+
   GetDocument().AddToTopLayer(this);
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
@@ -192,25 +198,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
 
 void HTMLDialogElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
-
-  // TODO(671907): Calling UpdateDistributionForFlatTreeTraversal here is a
-  // workaround for https://crbug.com/895511. This shouldn't be done during DOM
-  // mutation. However, Shadow DOM v0 will be removed, at which point this call
-  // can be removed.
-  GetDocument().UpdateDistributionForFlatTreeTraversal();
-
   InertSubtreesChanged(GetDocument());
-}
-
-bool HTMLDialogElement::IsPresentationAttribute(
-    const QualifiedName& name) const {
-  // FIXME: Workaround for <https://bugs.webkit.org/show_bug.cgi?id=91058>:
-  // modifying an attribute for which there is an attribute selector in html.css
-  // sometimes does not trigger a style recalc.
-  if (name == html_names::kOpenAttr)
-    return true;
-
-  return HTMLElement::IsPresentationAttribute(name);
 }
 
 void HTMLDialogElement::DefaultEventHandler(Event& event) {

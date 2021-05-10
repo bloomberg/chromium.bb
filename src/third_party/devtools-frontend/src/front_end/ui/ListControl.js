@@ -131,9 +131,12 @@ export class ListControl {
    * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _replacedItemsInRange(event) {
-    const data = /** @type {{index: number, removed: !Array<T>, inserted: number}} */ (event.data);
+    const data =
+        /** @type {{index: number, removed: !Array<T>, inserted: number, keepSelectedIndex: (boolean|undefined)}} */ (
+            event.data);
     const from = data.index;
     const to = from + data.removed.length;
+    const keepSelectedIndex = data.keepSelectedIndex;
 
     const oldSelectedItem = this._selectedItem;
     const oldSelectedElement = oldSelectedItem ? (this._itemToElement.get(oldSelectedItem) || null) : null;
@@ -146,9 +149,11 @@ export class ListControl {
       this._selectedIndex += data.inserted - (to - from);
       this._selectedItem = this._model.at(this._selectedIndex);
     } else if (this._selectedIndex >= from) {
-      let index = this._findFirstSelectable(from + data.inserted, +1, false);
+      const selectableIndex = keepSelectedIndex ? from : from + data.inserted;
+      let index = this._findFirstSelectable(selectableIndex, +1, false);
       if (index === -1) {
-        index = this._findFirstSelectable(from - 1, -1, false);
+        const alternativeSelectableIndex = keepSelectedIndex ? from : from - 1;
+        index = this._findFirstSelectable(alternativeSelectableIndex, -1, false);
       }
       this._select(index, oldSelectedItem, oldSelectedElement);
     }
@@ -298,7 +303,7 @@ export class ListControl {
       return false;
     }
     let index = this._selectedIndex === -1 ? this._model.length - 1 : this._selectedIndex - 1;
-    index = this._findFirstSelectable(index, -1, !!canWrap);
+    index = this._findFirstSelectable(index, -1, Boolean(canWrap));
     if (index !== -1) {
       this._scrollIntoView(index, center);
       this._select(index);
@@ -317,7 +322,7 @@ export class ListControl {
       return false;
     }
     let index = this._selectedIndex === -1 ? 0 : this._selectedIndex + 1;
-    index = this._findFirstSelectable(index, +1, !!canWrap);
+    index = this._findFirstSelectable(index, +1, Boolean(canWrap));
     if (index !== -1) {
       this._scrollIntoView(index, center);
       this._select(index);
@@ -368,7 +373,7 @@ export class ListControl {
    */
   _scrollIntoView(index, center) {
     if (this._mode === ListMode.NonViewport) {
-      this._elementAtIndex(index).scrollIntoViewIfNeeded(!!center);
+      this._elementAtIndex(index).scrollIntoViewIfNeeded(Boolean(center));
       return;
     }
 
@@ -445,7 +450,9 @@ export class ListControl {
     }
     if (this._mode === ListMode.VariousHeightItems) {
       return Math.min(
-          this._model.length - 1, this._variableOffsets.lowerBound(offset, undefined, 0, this._model.length));
+          this._model.length - 1,
+          Platform.ArrayUtilities.lowerBound(
+              this._variableOffsets, offset, Platform.ArrayUtilities.DEFAULT_COMPARATOR, 0, this._model.length));
     }
     if (!this._fixedHeight) {
       this._measureHeight();

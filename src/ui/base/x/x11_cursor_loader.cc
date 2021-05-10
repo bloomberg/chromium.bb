@@ -20,6 +20,7 @@
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -30,7 +31,9 @@
 #include "ui/base/cursor/cursor_theme_manager.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 
 extern "C" {
 const char* XcursorLibraryPath(void);
@@ -290,14 +293,15 @@ XCursorLoader::XCursorLoader(x11::Connection* connection)
     : connection_(connection) {
   auto ver_cookie = connection_->render().QueryVersion(
       {x11::Render::major_version, x11::Render::minor_version});
-  auto pf_cookie = connection_->render().QueryPictFormats({});
+  auto pf_cookie = connection_->render().QueryPictFormats();
   cursor_font_ = connection_->GenerateId<x11::Font>();
   connection_->OpenFont({cursor_font_, "cursor"});
 
-  std::string resource_manager;
-  if (ui::GetStringProperty(connection_->default_root(), "RESOURCE_MANAGER",
-                            &resource_manager)) {
-    ParseXResources(resource_manager);
+  std::vector<char> resource_manager;
+  if (GetArrayProperty(connection_->default_root(), x11::Atom::RESOURCE_MANAGER,
+                       &resource_manager)) {
+    ParseXResources(
+        base::StringPiece(resource_manager.data(), resource_manager.size()));
   }
 
   if (auto reply = ver_cookie.Sync()) {
@@ -454,7 +458,7 @@ uint32_t XCursorLoader::GetPreferredCursorSize() const {
          kScreenCursorRatio;
 }
 
-void XCursorLoader::ParseXResources(const std::string& resources) {
+void XCursorLoader::ParseXResources(base::StringPiece resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::StringPairs pairs;
   base::SplitStringIntoKeyValuePairs(resources, ':', '\n', &pairs);

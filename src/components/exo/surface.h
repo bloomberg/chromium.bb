@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/region.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface_delegate.h"
@@ -167,6 +168,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have the specified frame type.
   void SetFrame(SurfaceFrameType type);
 
+  // Request that the server should start resize on this surface.
+  void SetServerStartResize();
+
   // Request that surface should use a specific set of frame colors.
   void SetFrameColors(SkColor active_color, SkColor inactive_color);
 
@@ -180,6 +184,16 @@ class Surface final : public ui::PropertyHandler {
   // (plain fullscreen). If false, shelf auto-hides and can be shown with a
   // mouse gesture (immersive fullscreen).
   void SetUseImmersiveForFullscreen(bool value);
+
+  // Called to show the snap preview to the right or left, or to hide it.
+  void ShowSnapPreviewToRight();
+  void ShowSnapPreviewToLeft();
+  void HideSnapPreview();
+
+  // Called when the client was snapped to right or left, or reset.
+  void SetSnappedToRight();
+  void SetSnappedToLeft();
+  void UnsetSnap();
 
   // This sets the color space for the buffer for this surface.
   void SetColorSpace(gfx::ColorSpace color_space);
@@ -455,9 +469,9 @@ class Surface final : public ui::PropertyHandler {
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ash::OutputProtectionDelegate> output_protection_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   viz::SurfaceId first_embedded_surface_id_;
   viz::SurfaceId latest_embedded_surface_id_;

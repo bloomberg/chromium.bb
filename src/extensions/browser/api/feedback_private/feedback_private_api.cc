@@ -194,7 +194,7 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
 }
 
 // static
-base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
+base::OnceClosure* FeedbackPrivateGetStringsFunction::test_callback_ = nullptr;
 
 ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
   auto params = feedback_private::GetStrings::Params::Create(*args_);
@@ -209,7 +209,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
           params->flow == FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH);
 
   if (test_callback_ && !test_callback_->is_null())
-    test_callback_->Run();
+    std::move(*test_callback_).Run();
 
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
@@ -313,7 +313,6 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   scoped_refptr<FeedbackData> feedback_data =
       base::MakeRefCounted<FeedbackData>(
           delegate->GetFeedbackUploaderForContext(browser_context()));
-  feedback_data->set_context(browser_context());
   feedback_data->set_description(feedback_info.description);
 
   if (feedback_info.product_id)
@@ -412,8 +411,8 @@ void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
 
   service->SendFeedback(
       feedback_data,
-      base::Bind(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this,
-                 GetLandingPageType(*feedback_data)));
+      base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this,
+                     GetLandingPageType(*feedback_data)));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -96,6 +96,9 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool InTabletMode() const override;
   double GetDefaultDeviceScaleFactor() const override;
+  double GetDeviceScaleFactorForWindow(aura::Window* window) const override;
+  void SetDefaultScaleCancellation(bool default_scale_cancellation) override;
+
   void SetImeBlocked(aura::Window* window, bool ime_blocked) override;
   bool IsImeBlocked(aura::Window* window) const override;
 
@@ -104,10 +107,12 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event,
-                    std::unique_ptr<ui::OSExchangeData> data) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event,
+      std::unique_ptr<ui::OSExchangeData> data) override;
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(
@@ -118,6 +123,7 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
   base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
   LifetimeManager lifetime_manager_;
   VSyncTimingManager vsync_timing_manager_;
+  bool default_scale_cancellation_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperChromeOS);
 };

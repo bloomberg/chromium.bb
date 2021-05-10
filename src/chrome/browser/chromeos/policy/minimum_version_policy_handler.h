@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/util/timer/wall_clock_timer.h"
 #include "base/version.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -301,8 +301,7 @@ class MinimumVersionPolicyHandler
 
   base::OnceClosure fetch_eol_callback_;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      policy_subscription_;
+  base::CallbackListSubscription policy_subscription_;
 
   // Handles showing in-session update required notifications on the basis of
   // current network and time to reach the deadline.

@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -41,7 +40,9 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -72,6 +73,8 @@ public class DownloadUtils {
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+    private static final String EXTRA_OTR_PROFILE_ID =
+            "org.chromium.chrome.browser.download.OTR_PROFILE_ID";
     private static final String MIME_TYPE_ZIP = "application/zip";
     private static final String DOCUMENTS_UI_PACKAGE_NAME = "com.android.documentsui";
     public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
@@ -127,8 +130,10 @@ public class DownloadUtils {
                 // the ChromeTabbedActivity.
                 tab.loadUrl(params);
 
-                // Bring Chrome to the foreground, if possible.
-                Intent intent = ChromeIntentUtil.createBringTabToFrontIntent(tab.getId());
+                // Bring Chrome to the foreground, if possible. Unless Chrome is already in the
+                // foreground, this request is most likely coming from a notification.
+                Intent intent = IntentHandler.createTrustedBringTabToFrontIntent(
+                        tab.getId(), IntentHandler.BringToFrontSource.NOTIFICATION);
                 if (intent != null) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     IntentUtils.safeStartActivity(appContext, intent);
@@ -139,7 +144,12 @@ public class DownloadUtils {
             Intent intent = new Intent();
             intent.setClass(appContext, DownloadActivity.class);
             intent.putExtra(EXTRA_SHOW_PREFETCHED_CONTENT, showPrefetchedContent);
-            if (tab != null) intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
+            if (tab != null) {
+                intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
+
+                OTRProfileID id = Profile.fromWebContents(tab.getWebContents()).getOTRProfileID();
+                intent.putExtra(EXTRA_OTR_PROFILE_ID, OTRProfileID.serialize(id));
+            }
             if (activity == null) {
                 // Stands alone in its own task.
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -148,7 +158,6 @@ public class DownloadUtils {
                 // Sits on top of another Activity.
                 intent.addFlags(
                         Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
                 activity.startActivity(intent);
             }
         }
@@ -162,8 +171,17 @@ public class DownloadUtils {
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
-        DownloadMetrics.recordDownloadPageOpen(source);
+        DownloadMetrics.recordDownloadPageOpen(source, tab);
         return true;
+    }
+
+    /**
+     * @param intent An {@link Intent} instance.
+     * @return The {@link OTRProfileID} that is attached to the given intent.
+     */
+    public static OTRProfileID getOTRProfileIDFromIntent(Intent intent) {
+        String serializedId = IntentUtils.safeGetString(intent.getExtras(), EXTRA_OTR_PROFILE_ID);
+        return OTRProfileID.deserialize(serializedId);
     }
 
     /**
@@ -213,19 +231,19 @@ public class DownloadUtils {
      * Issues a request to the {@link DownloadManagerService} associated to check for externally
      * removed downloads.
      * See {@link DownloadManagerService#checkForExternallyRemovedDownloads}.
-     * @param isOffTheRecord  Whether to check downloads for the off the record profile.
+     * @param profileKey  The {@link ProfileKey} to check downloads of the given profile.
      */
-    public static void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
+    public static void checkForExternallyRemovedDownloads(ProfileKey profileKey) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             return;
         }
 
-        if (isOffTheRecord) {
+        if (profileKey.isOffTheRecord()) {
             DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
-                    true);
+                    profileKey);
         }
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
-                false);
+                ProfileKey.getLastUsedRegularProfileKey());
         RecordUserAction.record(
                 "Android.DownloadManager.CheckForExternallyRemovedItems");
     }
@@ -331,18 +349,18 @@ public class DownloadUtils {
      * @param source The location from which the download was opened.
      */
     public static void openItem(
-            ContentId contentId, boolean isOffTheRecord, @DownloadOpenSource int source) {
+            ContentId contentId, OTRProfileID otrProfileID, @DownloadOpenSource int source) {
         if (LegacyHelpers.isLegacyAndroidDownload(contentId)) {
             ContextUtils.getApplicationContext().startActivity(
                     new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         } else if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
             OpenParams openParams = new OpenParams(LaunchLocation.PROGRESS_BAR);
-            openParams.openInIncognito = isOffTheRecord;
+            openParams.openInIncognito = OTRProfileID.isOffTheRecord(otrProfileID);
             OfflineContentAggregatorFactory.get().openItem(openParams, contentId);
         } else {
             DownloadManagerService.getDownloadManagerService().openDownload(
-                    contentId, isOffTheRecord, source);
+                    contentId, otrProfileID, source);
         }
     }
 

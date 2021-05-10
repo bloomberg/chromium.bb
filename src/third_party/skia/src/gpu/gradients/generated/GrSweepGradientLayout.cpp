@@ -64,8 +64,8 @@ private:
     UniformHandle biasVar;
     UniformHandle scaleVar;
 };
-GrGLSLFragmentProcessor* GrSweepGradientLayout::onCreateGLSLInstance() const {
-    return new GrGLSLSweepGradientLayout();
+std::unique_ptr<GrGLSLFragmentProcessor> GrSweepGradientLayout::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLSweepGradientLayout>();
 }
 void GrSweepGradientLayout::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                   GrProcessorKeyBuilder* b) const {}
@@ -76,7 +76,6 @@ bool GrSweepGradientLayout::onIsEqual(const GrFragmentProcessor& other) const {
     if (scale != that.scale) return false;
     return true;
 }
-bool GrSweepGradientLayout::usesExplicitReturn() const { return true; }
 GrSweepGradientLayout::GrSweepGradientLayout(const GrSweepGradientLayout& src)
         : INHERITED(kGrSweepGradientLayout_ClassID, src.optimizationFlags())
         , bias(src.bias)

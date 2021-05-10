@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 
 import {ConsoleMessage, ConsoleModel, MessageLevel, MessageSource} from './ConsoleModel.js';
@@ -38,6 +39,20 @@ import {Events as ResourceTreeModelEvents, ResourceTreeFrame, ResourceTreeModel}
 import {RuntimeModel} from './RuntimeModel.js';
 import {SDKModelObserver, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text in Network Log
+  */
+  anonymous: '<anonymous>',
+  /**
+  *@description Text in Network Log
+  *@example {Chrome Data Saver} PH1
+  *@example {https://example.com} PH2
+  */
+  considerDisablingSWhileDebugging: 'Consider disabling {PH1} while debugging. For more info see: {PH2}'
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/NetworkLog.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** @type {!NetworkLog} */
 let _instance;
 
@@ -66,6 +81,17 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     /** @type {!WeakMap<!NetworkRequest, !InitiatorData>} */
     this._initiatorData = new WeakMap();
     TargetManager.instance().observeModels(NetworkManager, this);
+    /** @type {!Common.Settings.Setting<*>} */
+    const recordLogSetting = Common.Settings.Settings.instance().moduleSetting('network_log.record-log');
+    recordLogSetting.addChangeListener(() => {
+      const preserveLogSetting = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log');
+      if (!preserveLogSetting.get() && recordLogSetting.get()) {
+        this.reset(true);
+      }
+      this.setIsRecording(/** @type{boolean} */ (recordLogSetting.get()));
+    }, this);
+    /** @type {!Map<string, !NetworkRequest>} */
+    this._unresolvedPreflightRequests = new Map();
   }
 
   /**
@@ -237,6 +263,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     let columnNumber = -Infinity;
     let scriptId = null;
     let initiatorStack = null;
+    let initiatorRequest = null;
     const initiator = request.initiator();
 
     const redirectSource = request.redirectSource();
@@ -257,7 +284,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             continue;
           }
           type = InitiatorType.Script;
-          url = topFrame.url || Common.UIString.UIString('<anonymous>');
+          url = topFrame.url || i18nString(UIStrings.anonymous);
           lineNumber = topFrame.lineNumber;
           columnNumber = topFrame.columnNumber;
           scriptId = topFrame.scriptId;
@@ -273,20 +300,16 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         }
       } else if (initiator.type === Protocol.Network.InitiatorType.Preload) {
         type = InitiatorType.Preload;
+      } else if (initiator.type === Protocol.Network.InitiatorType.Preflight) {
+        type = InitiatorType.Preflight;
+        initiatorRequest = request.preflightInitiatorRequest();
       } else if (initiator.type === Protocol.Network.InitiatorType.SignedExchange) {
         type = InitiatorType.SignedExchange;
         url = initiator.url || '';
       }
     }
 
-    initiatorInfo.info = {
-      type: type,
-      url: url,
-      lineNumber: lineNumber,
-      columnNumber: columnNumber,
-      scriptId: scriptId,
-      stack: initiatorStack
-    };
+    initiatorInfo.info = {type, url, lineNumber, columnNumber, scriptId, stack: initiatorStack, initiatorRequest};
     return initiatorInfo.info;
   }
 
@@ -359,7 +382,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
 
   _willReloadPage() {
     if (!Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
-      this.reset();
+      this.reset(true);
     }
   }
 
@@ -380,6 +403,8 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
 
+    const preserveLog = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get();
+
     const oldRequests = this._requests;
     const oldManagerRequests = this._requests.filter(request => NetworkManager.forRequest(request) === manager);
     const oldRequestsSet = this._requestsSet;
@@ -388,7 +413,8 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     this._receivedNetworkResponses = [];
     this._requestsSet = new Set();
     this._requestsMap.clear();
-    this.dispatchEventToListeners(Events.Reset);
+    this._unresolvedPreflightRequests.clear();
+    this.dispatchEventToListeners(Events.Reset, {clearIfPreserved: !preserveLog});
 
     // Preserve requests from the new session.
     let currentPageLoad = null;
@@ -433,7 +459,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
       this._addRequest(request);
     }
 
-    if (Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
+    if (preserveLog) {
       for (const request of oldRequestsSet) {
         this._addRequest(request);
       }
@@ -456,19 +482,52 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     } else {
       requestList.push(request);
     }
+    this._tryResolvePreflightRequests(request);
     this.dispatchEventToListeners(Events.RequestAdded, request);
+  }
+
+  /**
+   * @param {!NetworkRequest} request
+   */
+  _tryResolvePreflightRequests(request) {
+    if (request.isPreflightRequest()) {
+      const initiator = request.initiator();
+      if (initiator && initiator.requestId) {
+        const [initiatorRequest] = this.requestsForId(initiator.requestId);
+        if (initiatorRequest) {
+          request.setPreflightInitiatorRequest(initiatorRequest);
+          initiatorRequest.setPreflightRequest(request);
+        } else {
+          this._unresolvedPreflightRequests.set(initiator.requestId, request);
+        }
+      }
+    } else {
+      const preflightRequest = this._unresolvedPreflightRequests.get(request.requestId());
+      if (preflightRequest) {
+        this._unresolvedPreflightRequests.delete(request.requestId());
+        request.setPreflightRequest(preflightRequest);
+        preflightRequest.setPreflightInitiatorRequest(request);
+        // Force recomputation of initiator info, if it already exists.
+        const data = this._initiatorData.get(preflightRequest);
+        if (data) {
+          data.info = null;
+        }
+        this.dispatchEventToListeners(Events.RequestUpdated, preflightRequest);
+      }
+    }
   }
 
   /**
    * @param {!Array<!NetworkRequest>} requests
    */
   importRequests(requests) {
-    this.reset();
+    this.reset(true);
     this._requests = [];
     this._sentNetworkRequests = [];
     this._receivedNetworkResponses = [];
     this._requestsSet.clear();
     this._requestsMap.clear();
+    this._unresolvedPreflightRequests.clear();
     for (const request of requests) {
       this._addRequest(request);
     }
@@ -541,12 +600,16 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
 
-  reset() {
+  /**
+   * @param {boolean} clearIfPreserved
+   */
+  reset(clearIfPreserved) {
     this._requests = [];
     this._sentNetworkRequests = [];
     this._receivedNetworkResponses = [];
     this._requestsSet.clear();
     this._requestsMap.clear();
+    this._unresolvedPreflightRequests.clear();
     const managers = new Set(TargetManager.instance().models(NetworkManager));
     for (const manager of this._pageLoadForManager.keys()) {
       if (!managers.has(manager)) {
@@ -554,7 +617,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
       }
     }
 
-    this.dispatchEventToListeners(Events.Reset);
+    this.dispatchEventToListeners(Events.Reset, {clearIfPreserved});
   }
 
   /**
@@ -642,9 +705,9 @@ export class PageLoad {
     }
     const saveDataHeader = this.mainRequest.requestHeaderValue('Save-Data');
     if (!PageLoad._dataSaverMessageWasShown && saveDataHeader && saveDataHeader === 'on') {
-      const message = Common.UIString.UIString(
-          'Consider disabling %s while debugging. For more info see: %s', Common.UIString.UIString('Chrome Data Saver'),
-          'https://support.google.com/chrome/?p=datasaver');
+      const message = i18nString(
+          UIStrings.considerDisablingSWhileDebugging,
+          {PH1: 'Chrome Data Saver', PH2: 'https://support.google.com/chrome/?p=datasaver'});
       manager.dispatchEventToListeners(
           NetworkManagerEvents.MessageGenerated,
           {message: message, requestId: this.mainRequest.requestId(), warning: true});
@@ -689,6 +752,6 @@ let InitiatorData;  // eslint-disable-line no-unused-vars
 // @ts-ignore typedef
 export let InitiatorGraph;
 
-/** @typedef {!{type: !InitiatorType, url: string, lineNumber: number, columnNumber: number, scriptId: ?string, stack: ?Protocol.Runtime.StackTrace}} */
+/** @typedef {!{type: !InitiatorType, url: string, lineNumber: number, columnNumber: number, scriptId: ?string, stack: ?Protocol.Runtime.StackTrace, initiatorRequest: ?NetworkRequest}} */
 // @ts-ignore typedef
 export let _InitiatorInfo;

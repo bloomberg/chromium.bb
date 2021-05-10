@@ -15,9 +15,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
@@ -364,6 +364,14 @@ ClipboardAndroid::~ClipboardAndroid() {
 
 void ClipboardAndroid::OnPreShutdown() {}
 
+// DataTransferEndpoint is not used on this platform.
+DataTransferEndpoint* ClipboardAndroid::GetSource(
+    ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  return nullptr;
+}
+
 uint64_t ClipboardAndroid::GetSequenceNumber(
     ClipboardBuffer /* buffer */) const {
   DCHECK(CalledOnValidThread());
@@ -525,6 +533,15 @@ void ClipboardAndroid::ReadCustomData(ClipboardBuffer buffer,
 
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
+void ClipboardAndroid::ReadFilenames(ClipboardBuffer buffer,
+                                     const DataTransferEndpoint* data_dst,
+                                     std::vector<ui::FileInfo>* result) const {
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
+}
+
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadBookmark(const DataTransferEndpoint* data_dst,
                                     base::string16* title,
                                     std::string* url) const {
@@ -603,6 +620,10 @@ void ClipboardAndroid::WriteSvg(const char* markup_data, size_t markup_len) {
 }
 
 void ClipboardAndroid::WriteRTF(const char* rtf_data, size_t data_len) {
+  NOTIMPLEMENTED();
+}
+
+void ClipboardAndroid::WriteFilenames(std::vector<ui::FileInfo> filenames) {
   NOTIMPLEMENTED();
 }
 

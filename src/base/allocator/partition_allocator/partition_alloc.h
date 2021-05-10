@@ -32,7 +32,6 @@
 #include <memory>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -42,7 +41,6 @@
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
-#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/pcscan.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/base_export.h"
@@ -69,22 +67,6 @@ namespace base {
 
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
-
-// This file may end up getting included even when PartitionAlloc isn't used,
-// but the .cc file won't be linked. Exclude the code that relies on it.
-#if BUILDFLAG(USE_PARTITION_ALLOC)
-
-namespace internal {
-// Avoid including partition_address_space.h from this .h file, by moving the
-// call to IfManagedByPartitionAllocNormalBuckets into the .cc file.
-#if DCHECK_IS_ON()
-BASE_EXPORT void DCheckIfManagedByPartitionAllocNormalBuckets(const void* ptr);
-#else
-ALWAYS_INLINE void DCheckIfManagedByPartitionAllocNormalBuckets(const void*) {}
-#endif
-}  // namespace internal
-
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 namespace internal {
 template <bool thread_safe>

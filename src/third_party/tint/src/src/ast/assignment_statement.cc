@@ -14,26 +14,29 @@
 
 #include "src/ast/assignment_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::AssignmentStatement);
+
 namespace tint {
 namespace ast {
 
-AssignmentStatement::AssignmentStatement() : Statement() {}
-
-AssignmentStatement::AssignmentStatement(std::unique_ptr<Expression> lhs,
-                                         std::unique_ptr<Expression> rhs)
-    : Statement(), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
-
 AssignmentStatement::AssignmentStatement(const Source& source,
-                                         std::unique_ptr<Expression> lhs,
-                                         std::unique_ptr<Expression> rhs)
-    : Statement(source), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+                                         Expression* lhs,
+                                         Expression* rhs)
+    : Base(source), lhs_(lhs), rhs_(rhs) {}
 
 AssignmentStatement::AssignmentStatement(AssignmentStatement&&) = default;
 
 AssignmentStatement::~AssignmentStatement() = default;
 
-bool AssignmentStatement::IsAssign() const {
-  return true;
+AssignmentStatement* AssignmentStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* l = ctx->Clone(lhs_);
+  auto* r = ctx->Clone(rhs_);
+  return ctx->dst->create<AssignmentStatement>(src, l, r);
 }
 
 bool AssignmentStatement::IsValid() const {
@@ -45,11 +48,13 @@ bool AssignmentStatement::IsValid() const {
   return true;
 }
 
-void AssignmentStatement::to_str(std::ostream& out, size_t indent) const {
+void AssignmentStatement::to_str(const semantic::Info& sem,
+                                 std::ostream& out,
+                                 size_t indent) const {
   make_indent(out, indent);
   out << "Assignment{" << std::endl;
-  lhs_->to_str(out, indent + 2);
-  rhs_->to_str(out, indent + 2);
+  lhs_->to_str(sem, out, indent + 2);
+  rhs_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

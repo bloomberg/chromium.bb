@@ -14,10 +14,11 @@
 
 import * as m from 'mithril';
 
-import {assertTrue} from '../base/logging';
+import {assertExists, assertTrue} from '../base/logging';
 import {Actions} from '../common/actions';
 import {QueryResponse} from '../common/queries';
 import {EngineMode, TraceArrayBufferSource} from '../common/state';
+import * as version from '../gen/perfetto_version';
 
 import {Animation} from './animation';
 import {copyToClipboard} from './clipboard';
@@ -35,19 +36,13 @@ const ALL_PROCESSES_QUERY = 'select name, pid from process order by name;';
 const CPU_TIME_FOR_PROCESSES = `
 select
   process.name,
-  tot_proc/1e9 as cpu_sec
-from
-  (select
-    upid,
-    sum(tot_thd) as tot_proc
-  from
-    (select
-      utid,
-      sum(dur) as tot_thd
-    from sched group by utid)
-  join thread using(utid) group by upid)
+  sum(dur)/1e9 as cpu_sec
+from sched
+join thread using(utid)
 join process using(upid)
-order by cpu_sec desc limit 100;`;
+group by upid
+order by cpu_sec desc
+limit 100;`;
 
 const CYCLES_PER_P_STATE_PER_CPU = `
 select
@@ -66,14 +61,18 @@ from (
 ) group by cpu, freq
 order by mcycles desc limit 32;`;
 
-const CPU_TIME_BY_CLUSTER_BY_PROCESS = `
-select process.name as process, thread, core, cpu_sec from (
-  select thread.name as thread, upid,
-    case when cpug = 0 then 'little' else 'big' end as core,
-    cpu_sec from (select cpu/4 as cpug, utid, sum(dur)/1e9 as cpu_sec
-    from sched group by utid, cpug order by cpu_sec desc
-  ) inner join thread using(utid)
-) inner join process using(upid) limit 30;`;
+const CPU_TIME_BY_CPU_BY_PROCESS = `
+select
+  process.name as process,
+  thread.name as thread,
+  cpu,
+  sum(dur) / 1e9 as cpu_sec
+from sched
+inner join thread using(utid)
+inner join process using(upid)
+group by utid, cpu
+order by cpu_sec desc
+limit 30;`;
 
 const HEAP_GRAPH_BYTES_PER_TYPE = `
 select
@@ -97,8 +96,6 @@ select query,
     round((started - first.ts)/1e6) as t_start_ms
 from sqlstats, first
 order by started desc`;
-
-const TRACE_STATS = 'select * from stats order by severity, source, name, idx';
 
 let lastTabTitle = '';
 
@@ -212,19 +209,14 @@ const SECTIONS = [
         i: 'search',
       },
       {
-        t: 'CPU Time by cluster by process',
-        a: createCannedQuery(CPU_TIME_BY_CLUSTER_BY_PROCESS),
+        t: 'CPU Time by CPU by process',
+        a: createCannedQuery(CPU_TIME_BY_CPU_BY_PROCESS),
         i: 'search',
       },
       {
         t: 'Heap Graph: Bytes per type',
         a: createCannedQuery(HEAP_GRAPH_BYTES_PER_TYPE),
         i: 'search',
-      },
-      {
-        t: 'Trace stats',
-        a: createCannedQuery(TRACE_STATS),
-        i: 'bug_report',
       },
       {
         t: 'Debug SQL performance',
@@ -484,7 +476,7 @@ function navigateViewer(e: Event) {
 
 function shareTrace(e: Event) {
   e.preventDefault();
-  const engine = globals.state.engines[0];
+  const engine = assertExists(Object.values(globals.state.engines)[0]);
   const traceUrl = (engine.source as (TraceArrayBufferSource)).url || '';
 
   // If the trace is not shareable (has been pushed via postMessage()) but has
@@ -690,6 +682,17 @@ const SidebarFooter: m.Component = {
             'assessment')),
         m(EngineRPCWidget),
         m(ServiceWorkerWidget),
+        m(
+            '.version',
+            m('a',
+              {
+                href: `https://github.com/google/perfetto/tree/${
+                    version.SCM_REVISION}/ui`,
+                title: `Channel: ${globals.channel}`,
+                target: '_blank',
+              },
+              `${version.VERSION}`),
+            ),
     );
   }
 };
@@ -704,12 +707,18 @@ export class Sidebar implements m.ClassComponent {
       if (section.hideIfNoTraceLoaded && !isTraceLoaded()) continue;
       const vdomItems = [];
       for (const item of section.items) {
+        let css = '';
         let attrs = {
           onclick: typeof item.a === 'function' ? item.a : null,
           href: typeof item.a === 'string' ? item.a : '#',
           target: typeof item.a === 'string' ? '_blank' : null,
           disabled: false,
         };
+        if (item.a === openCurrentTraceWithOldUI &&
+            globals.state.traceConversionInProgress) {
+          attrs.onclick = e => e.preventDefault();
+          css = '.pending';
+        }
         if ((item as {internalUserOnly: boolean}).internalUserOnly === true) {
           if (!globals.isInternalUser) continue;
         }
@@ -724,8 +733,8 @@ export class Sidebar implements m.ClassComponent {
             disabled: true,
           };
         }
-        vdomItems.push(
-            m('li', m('a', attrs, m('i.material-icons', item.i), item.t)));
+        vdomItems.push(m(
+            'li', m(`a${css}`, attrs, m('i.material-icons', item.i), item.t)));
       }
       if (section.appendOpenedTraceTitle) {
         const engines = Object.values(globals.state.engines);
@@ -811,8 +820,8 @@ export class Sidebar implements m.ClassComponent {
           ontransitionend: () => this._redrawWhileAnimating.stop(),
         },
         m(
-            'header',
-            m('img[src=assets/brand.png].brand'),
+            `header.${globals.channel}`,
+            m(`img[src=${globals.root}assets/brand.png].brand`),
             m('button.sidebar-button',
               {
                 onclick: () => {

@@ -4,6 +4,9 @@
 
 // https://github.com/WICG/WebID
 
-dictionary WebIDRequestOptions {
+dictionary WebIdRequestOptions {
+  // URL for the Identity Provider.
   USVString provider;
+  // Serialized request parameters.
+  USVString request;
 };

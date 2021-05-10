@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 
+#include "ash/constants/ash_features.h"
+#include "base/containers/span.h"
+#include "base/feature_list.h"
+#include "base/no_destructor.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -12,10 +17,10 @@
 #include "ui/base/webui/web_ui_util.h"
 
 namespace chromeos {
-
 namespace cellular_setup {
-
 namespace {
+
+const char useExternalEuiccLoadTimeDataName[] = "useExternalEuicc";
 
 constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"activationCode", IDS_CELLULAR_SETUP_ESIM_PAGE_ACTIVATION_CODE},
@@ -30,6 +35,7 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"next", IDS_CELLULAR_SETUP_NEXT_LABEL},
     {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL},
     {"skipDiscovery", IDS_CELLULAR_SETUP_SKIP_DISCOVERY_LABEL},
+    {"confirm", IDS_CELLULAR_SETUP_CONFIRM_LABEL},
     {"simDetectPageTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE},
     {"simDetectPageErrorTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE},
     {"simDetectPageErrorMessage",
@@ -49,16 +55,56 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"finalPageMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_MESSAGE},
     {"finalPageErrorTitle", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_TITLE},
     {"finalPageErrorMessage", IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE},
+    {"eSimFinalPageMessage", IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_MESSAGE},
+    {"eSimFinalPageErrorMessage",
+     IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_ERROR_MESSAGE},
+    {"eSimProfileDetectMessage",
+     IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_MESSAGE},
+    {"eSimConnectionWarning", IDS_CELLULAR_SETUP_ESIM_CONNECTION_WARNING},
     {"scanQRCode", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE},
+    {"scanQRCodeNoProfiles",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_NO_PROFILES},
+    {"scanQRCodeEnterActivationCode",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ENTER_ACTIVATION_CODE},
     {"switchCamera", IDS_CELLULAR_SETUP_ESIM_PAGE_SWITCH_CAMERA},
     {"useCamera", IDS_CELLULAR_SETUP_ESIM_PAGE_USE_CAMERA},
     {"scanQRCodeSuccess", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_SUCCESS},
+    {"qrCodeUseCameraAgain",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_USE_CAMERA_AGAIN},
+    {"scanQrCodeError", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ERROR},
     {"qrCodeRetry", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY},
-    {"profileListPageMessage", IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE}};
+    {"scanQrCodeLoading", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING},
+    {"profileListPageMessage", IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE},
+    {"eidPopupTitle", IDS_CELLULAR_SETUP_EID_POPUP_TITLE},
+    {"eidPopupDescription", IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION},
+    {"closeEidPopupButtonLabel",
+     IDS_CELLULAR_SETUP_CLOSE_EID_POPUP_BUTTON_LABEL},
+    {"confirmationCodeMessage",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_MESSAGE},
+    {"confirmationCodeInput",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_INPUT},
+    {"confirmationCodeError",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_ERROR},
+    {"confirmationCodeLoading",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_LOADING}};  // namespace
+
+struct NamedBoolean {
+  const char* name;
+  bool value;
+};
+
+const std::vector<const NamedBoolean>& GetBooleanValues() {
+  static const base::NoDestructor<std::vector<const NamedBoolean>> named_bools({
+      {"updatedCellularActivationUi",
+       chromeos::features::IsCellularActivationUiEnabled()},
+  });
+  return *named_bools;
+}
+
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders);
+  html_source->AddLocalizedStrings(kLocalizedStringsWithoutPlaceholders);
 }
 
 void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
@@ -66,6 +112,18 @@ void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
     builder->Add(entry.name, entry.id);
 }
 
-}  // namespace cellular_setup
+void AddNonStringLoadTimeData(content::WebUIDataSource* html_source) {
+  for (const auto& entry : GetBooleanValues())
+    html_source->AddBoolean(entry.name, entry.value);
+  html_source->AddBoolean(useExternalEuiccLoadTimeDataName,
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kCellularUseExternalEuicc));
+}
 
+void AddNonStringLoadTimeDataToDict(base::DictionaryValue* dict) {
+  for (const auto& entry : GetBooleanValues())
+    dict->SetBoolean(entry.name, entry.value);
+}
+
+}  // namespace cellular_setup
 }  // namespace chromeos

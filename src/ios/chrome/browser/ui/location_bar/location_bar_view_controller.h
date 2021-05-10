@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 
 @class InfobarMetricsRecorder;
@@ -35,6 +34,9 @@
 
 // Request the scribble target to be focused.
 - (void)locationBarRequestScribbleTargetFocus;
+
+// Notifies the delegate about a tap on the share button to record metrics.
+- (void)recordShareButtonPressed;
 
 @end
 

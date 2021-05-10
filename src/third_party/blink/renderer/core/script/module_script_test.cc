@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
@@ -80,11 +81,12 @@ class ModuleScriptTest : public ::testing::Test, public ParametrizedModuleTest {
       Modulator* modulator,
       const String& source_text,
       SingleCachedMetadataHandler* cache_handler) {
-    return JSModuleScript::Create(
-        ParkableString(source_text.IsolatedCopy().ReleaseImpl()), cache_handler,
-        ScriptSourceLocationType::kExternalFile, modulator,
+    ModuleScriptCreationParams params(
         KURL("https://fox.url/script.js"), KURL("https://fox.url/"),
-        ScriptFetchOptions());
+        ScriptSourceLocationType::kInline, ModuleType::kJavaScript,
+        ParkableString(source_text.IsolatedCopy().ReleaseImpl()),
+        cache_handler);
+    return JSModuleScript::Create(params, modulator, ScriptFetchOptions());
   }
 
   static ValueWrapperSyntheticModuleScript*

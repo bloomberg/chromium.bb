@@ -99,6 +99,30 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
     return results
 
 
+def _CheckBugAssociation(input_api, output_api, is_committing):
+    results = [output_api.PresubmitNotifyResult('Bug Association Check:')]
+    bugs = input_api.change.BugsFromDescription()
+    message = (
+        "Each CL should be associated with a bug, use \'Bug:\' or \'Fixed:\' lines in\n"
+        "the footer of the commit description. If you explicitly don\'t want to\n"
+        "set a bug, use \'Bug: none\' in the footer of the commit description.\n\n"
+        "Note: The footer of the commit description is the last block of lines in\n"
+        "the commit description that doesn't contain empty lines. This means that\n"
+        "any \'Bug:\' or \'Fixed:\' lines that are eventually followed by an empty\n"
+        "line are not detected by this presubmit check.")
+
+    if not bugs:
+        if is_committing:
+            results.append(output_api.PresubmitError(message))
+        else:
+            results.append(output_api.PresubmitNotifyResult(message))
+
+    for bug in bugs:
+        results.append(output_api.PresubmitNotifyResult(('%s') % bug))
+
+    return results
+
+
 def _CheckBuildGN(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running BUILD.GN check:')]
     script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'check_gn.js')
@@ -159,7 +183,7 @@ def _CheckDevtoolsLocalization(input_api, output_api, check_all_files=False):  #
     else:
         devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
         affected_front_end_files = _getAffectedFiles(
-            input_api, [devtools_front_end], ['D'],
+            input_api, [devtools_front_end], [],
             ['.ts', '.js', '.grdp', '.grd', 'module.json'])
 
         if len(affected_front_end_files) == 0:
@@ -190,6 +214,8 @@ def _CheckDevToolsStyleJS(input_api, output_api):
 
     front_end_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'front_end')
+    component_docs_directory = input_api.os_path.join(front_end_directory,
+                                                      'component_docs')
     inspector_overlay_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'inspector_overlay')
     test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
@@ -205,9 +231,14 @@ def _CheckDevToolsStyleJS(input_api, output_api):
     eslint_related_files = [
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules',
                                'eslint'),
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules',
+                               '@typescript-eslint'),
         input_api.os_path.join(input_api.PresubmitLocalPath(), '.eslintrc.js'),
         input_api.os_path.join(input_api.PresubmitLocalPath(),
                                '.eslintignore'),
+        input_api.os_path.join(front_end_directory, '.eslintrc.js'),
+        input_api.os_path.join(component_docs_directory, '.eslintrc.js'),
+        input_api.os_path.join(test_directory, '.eslintrc.js'),
         input_api.os_path.join(scripts_directory, 'test',
                                'run_lint_check_js.py'),
         input_api.os_path.join(scripts_directory, 'test',
@@ -234,7 +265,7 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('CSS style check:')]
     lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                        'scripts', 'test',
-                                       'run_lint_check_css.py')
+                                       'run_lint_check_css.js')
 
     front_end_directory = input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'front_end')
@@ -255,21 +286,48 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
         input_api.os_path.join(input_api.PresubmitLocalPath(),
                                '.stylelintignore'),
         input_api.os_path.join(scripts_directory, 'test',
-                               'run_lint_check_css.py'),
+                               'run_lint_check_css.js'),
     ]
 
     lint_config_files = _getAffectedFiles(input_api, stylelint_related_files,
-                                          [],
-                                          ['.json', '.py', '.stylelintignore'])
+                                          [], [])
 
-    should_bail_out, files_to_lint = _getFilesToLint(
+    css_should_bail_out, css_files_to_lint = _getFilesToLint(
         input_api, output_api, lint_config_files, default_linted_directories,
         ['.css'], results)
-    if should_bail_out:
-        return results
 
-    return _ExecuteSubProcess(input_api, output_api, lint_path, files_to_lint,
-                              results)
+    if not css_should_bail_out:
+        script_args = ["--files"] + css_files_to_lint
+        results.extend(
+            _checkWithNodeScript(input_api, output_api, lint_path,
+                                 script_args))
+
+    ts_should_bail_out, ts_files_to_lint = _getFilesToLint(
+        input_api, output_api, lint_config_files, default_linted_directories,
+        ['.ts'], results)
+
+    if not ts_should_bail_out:
+        script_args = ["--syntax", "html", "--files"] + ts_files_to_lint
+        results.extend(
+            _checkWithNodeScript(input_api, output_api, lint_path,
+                                 script_args))
+
+    return results
+
+
+def _CheckDarkModeStyleSheetsUpToDate(input_api, output_api):
+    devtools_root = input_api.PresubmitLocalPath()
+    devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
+    affected_css_files = _getAffectedFiles(input_api, [devtools_front_end], [],
+                                           ['.css'])
+    results = [output_api.PresubmitNotifyResult('Dark Mode CSS check:')]
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                         'scripts', 'dark_mode',
+                                         'check_darkmode_css_up_to_date.js')
+    results.extend(
+        _checkWithNodeScript(input_api, output_api, script_path,
+                             affected_css_files))
+    return results
 
 
 def _CheckOptimizeSVGHashes(input_api, output_api):
@@ -345,8 +403,8 @@ def _CollectStrings(input_api, output_api):
     devtools_root = input_api.PresubmitLocalPath()
     devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
     affected_front_end_files = _getAffectedFiles(input_api,
-                                                 [devtools_front_end], ['D'],
-                                                 ['.js'])
+                                                 [devtools_front_end], [],
+                                                 ['.js', '.ts'])
     if len(affected_front_end_files) == 0:
         return [
             output_api.PresubmitNotifyResult(
@@ -361,7 +419,7 @@ def _CollectStrings(input_api, output_api):
     results.extend(_checkWithNodeScript(input_api, output_api, script_path))
     results.append(
         output_api.PresubmitNotifyResult(
-            'Please commit en-US.json if changes are generated.'))
+            'Please commit en-US.json/en-XL.json if changes are generated.'))
     return results
 
 
@@ -413,21 +471,6 @@ def _CheckForTooLargeFiles(input_api, output_api):
         return []
 
 
-def _CheckComponentBridgesUpToDate(input_api, output_api):
-    # Regenerate all bridge files - if any are out of date it will cause the git diff check to fail.
-    results = []
-
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                         'scripts', 'component_bridges',
-                                         'regenerate-all-bridges.js')
-
-    tsc_arguments = ['-p', 'scripts/component_bridges/tsconfig.json']
-    results.extend(
-        _checkWithTypeScript(input_api, output_api, tsc_arguments, script_path,
-                             ['--silent']))
-    return results
-
-
 def _RunCannedChecks(input_api, output_api):
     results = []
     results.extend(
@@ -456,10 +499,11 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckJSON(input_api, output_api))
     results.extend(_CheckDevToolsStyleJS(input_api, output_api))
     results.extend(_CheckDevToolsStyleCSS(input_api, output_api))
+    results.extend(_CheckDarkModeStyleSheetsUpToDate(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
     results.extend(_CheckChangesAreExclusiveToDirectory(input_api, output_api))
-    results.extend(_CheckComponentBridgesUpToDate(input_api, output_api))
+    results.extend(_CheckI18nWasBundled(input_api, output_api))
     # Run the canned checks from `depot_tools` after the custom DevTools checks.
     # The canned checks for example check that lines have line endings. The
     # DevTools presubmit checks automatically fix these issues. If we would run
@@ -470,6 +514,12 @@ def _CommonChecks(input_api, output_api):
     # we don't show the message to suppress these errors, which would otherwise be
     # causing CQ to fail.
     results.extend(_RunCannedChecks(input_api, output_api))
+    return results
+
+
+def _SideEffectChecks(input_api, output_api):
+    """Check side effects caused by other checks"""
+    results = []
     results.extend(_CheckNoUncheckedFiles(input_api, output_api))
     results.extend(_CheckForTooLargeFiles(input_api, output_api))
     return results
@@ -481,6 +531,9 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CheckDevtoolsLocalization(input_api, output_api))
     # Run collectStrings after localization check that cleans up unused strings
     results.extend(_CollectStrings(input_api, output_api))
+    # Run checks that rely on output from other DevTool checks
+    results.extend(_SideEffectChecks(input_api, output_api))
+    results.extend(_CheckBugAssociation(input_api, output_api, False))
     return results
 
 
@@ -490,7 +543,10 @@ def CheckChangeOnCommit(input_api, output_api):
     results.extend(_CheckDevtoolsLocalization(input_api, output_api, True))
     # Run collectStrings after localization check that cleans up unused strings
     results.extend(_CollectStrings(input_api, output_api))
+    # Run checks that rely on output from other DevTool checks
+    results.extend(_SideEffectChecks(input_api, output_api))
     results.extend(input_api.canned_checks.CheckChangeHasDescription(input_api, output_api))
+    results.extend(_CheckBugAssociation(input_api, output_api, True))
     return results
 
 
@@ -580,3 +636,23 @@ def _getFilesToLint(input_api, output_api, lint_config_files,
 
     should_bail_out = len(files_to_lint) is 0 and not run_full_check
     return should_bail_out, files_to_lint
+
+
+def _CheckI18nWasBundled(input_api, output_api):
+    affected_files = _getAffectedFiles(input_api, [
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end',
+                               'third_party', 'i18n', 'lib')
+    ], [], ['.js'])
+
+    if len(affected_files) == 0:
+        return [
+            output_api.PresubmitNotifyResult(
+                'No affected files for i18n bundle check')
+        ]
+
+    results = [output_api.PresubmitNotifyResult('Running buildi18nBundle.js:')]
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                         'scripts', 'localizationV2',
+                                         'buildi18nBundle.js')
+    results.extend(_checkWithNodeScript(input_api, output_api, script_path))
+    return results

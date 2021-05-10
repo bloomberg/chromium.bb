@@ -272,8 +272,10 @@ void ClipboardPromise::OnReadAvailableFormatNames(
 
   clipboard_item_data_.ReserveInitialCapacity(format_names.size());
   for (const String& format_name : format_names) {
-    clipboard_item_data_.emplace_back(format_name,
-                                      /* Placeholder value. */ nullptr);
+    if (ClipboardWriter::IsValidType(format_name, is_raw_)) {
+      clipboard_item_data_.emplace_back(format_name,
+                                        /* Placeholder value. */ nullptr);
+    }
   }
   ReadNextRepresentation();
 }
@@ -434,8 +436,9 @@ void ClipboardPromise::RequestPermission(
   }
 
   constexpr char kFeaturePolicyMessage[] =
-      "The Clipboard API has been blocked because of a Feature Policy applied "
-      "to the current document. See https://goo.gl/EuHzyv for more details.";
+      "The Clipboard API has been blocked because of a permissions policy "
+      "applied to the current document. See https://goo.gl/EuHzyv for more "
+      "details.";
 
   if ((permission == mojom::blink::PermissionName::CLIPBOARD_READ &&
        !window.IsFeatureEnabled(

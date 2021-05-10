@@ -72,7 +72,8 @@ void RemoteApps::Connect(
   for (const auto& entry : delegate_->GetApps()) {
     apps.push_back(Convert(entry.second));
   }
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kRemote,
+                     true /* should_notify_initialized */);
 
   subscribers_.Add(std::move(subscriber));
 }
@@ -110,7 +111,7 @@ void RemoteApps::LoadIcon(const std::string& app_id,
 void RemoteApps::Launch(const std::string& app_id,
                         int32_t event_flags,
                         mojom::LaunchSource launch_source,
-                        int64_t display_id) {
+                        apps::mojom::WindowInfoPtr window_info) {
   delegate_->LaunchApp(app_id);
 }
 

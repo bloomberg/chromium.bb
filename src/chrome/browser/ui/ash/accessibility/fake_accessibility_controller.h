@@ -28,14 +28,19 @@ class FakeAccessibilityController : ash::AccessibilityController {
   void SetSelectToSpeakState(ash::SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
       ash::SelectToSpeakEventHandlerDelegate* delegate) override;
-  void ShowSelectToSpeakPanel(const gfx::Rect& anchor, bool is_paused) override;
+  void ShowSelectToSpeakPanel(const gfx::Rect& anchor,
+                              bool is_paused,
+                              double speed) override;
   void HideSelectToSpeakPanel() override;
+  void OnSelectToSpeakPanelAction(ash::SelectToSpeakPanelAction action,
+                                  double value) override;
   void HideSwitchAccessBackButton() override;
   void HideSwitchAccessMenu() override;
   void ShowSwitchAccessBackButton(const gfx::Rect& anchor) override;
   void ShowSwitchAccessMenu(const gfx::Rect& anchor,
                             std::vector<std::string> actions) override;
-  void ActivatePointScan() override;
+  void StartPointScan() override;
+  void StopPointScan() override;
   void SetDictationActive(bool is_active) override;
   void ToggleDictationFromSource(ash::DictationToggleSource source) override;
   void HandleAutoclickScrollableBoundsFound(

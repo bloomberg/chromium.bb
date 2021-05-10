@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace sequence_manager {
@@ -324,6 +325,13 @@ bool TaskQueue::BlockedByFence() const {
 const char* TaskQueue::GetName() const {
   return name_;
 }
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+void TaskQueue::WriteIntoTracedValue(perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("name", name_);
+}
+#endif
 
 void TaskQueue::SetObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);

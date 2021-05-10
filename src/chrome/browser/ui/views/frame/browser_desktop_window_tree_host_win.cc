@@ -135,7 +135,7 @@ void VirtualDesktopHelper::UpdateWindowDesktopId(
       base::BindOnce(&VirtualDesktopHelper::GetWindowDesktopIdImpl, hwnd,
                      virtual_desktop_manager_),
       base::BindOnce(&VirtualDesktopHelper::SetWorkspace, this,
-                     base::Passed(std::move(callback))));
+                     std::move(callback)));
 }
 
 bool VirtualDesktopHelper::GetInitialWorkspaceRemembered() const {
@@ -174,7 +174,7 @@ void VirtualDesktopHelper::InitImpl(HWND hwnd,
   }
   GUID guid = GUID_NULL;
   HRESULT hr =
-      CLSIDFromString(base::UTF8ToUTF16(initial_workspace).c_str(), &guid);
+      CLSIDFromString(base::UTF8ToWide(initial_workspace).c_str(), &guid);
   if (SUCCEEDED(hr)) {
     // There are valid reasons MoveWindowToDesktop can fail, e.g.,
     // the desktop was deleted. If it fails, the window will open on the
@@ -217,7 +217,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
       browser_view_(browser_view),
       browser_frame_(browser_frame),
       virtual_desktop_helper_(nullptr) {
-  profile_observer_.Add(
+  profile_observation_.Observe(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
   // TODO(crbug.com/1051306) Make turning off this policy turn off
@@ -309,8 +309,7 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
 
   // Use default insets for popups and apps, unless we are custom drawing the
   // titlebar.
-  if (!ShouldCustomDrawSystemTitlebar() &&
-      !browser_view_->IsBrowserTypeNormal())
+  if (!ShouldCustomDrawSystemTitlebar() && !browser_view_->GetIsNormalType())
     return false;
 
   if (GetWidget()->IsFullscreen()) {
@@ -336,7 +335,7 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
   // an opaque frame, leading to graphical glitches behind the opaque frame.
   // Instead, we use that function below to tell us whether the frame is
   // currently native or opaque.
-  if (!GetWidget()->client_view() || !browser_view_->IsBrowserTypeNormal() ||
+  if (!GetWidget()->client_view() || !browser_view_->GetIsNormalType() ||
       !DesktopWindowTreeHostWin::ShouldUseNativeFrame())
     return false;
 
@@ -470,7 +469,7 @@ views::FrameMode BrowserDesktopWindowTreeHostWin::GetFrameMode() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() &&
+  if (!browser_view_->GetIsNormalType() &&
       DesktopWindowTreeHostWin::GetFrameMode() ==
           views::FrameMode::SYSTEM_DRAWN) {
     return system_frame_mode;
@@ -497,7 +496,7 @@ bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal())
+  if (!browser_view_->GetIsNormalType())
     return true;
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
@@ -561,7 +560,7 @@ void BrowserDesktopWindowTreeHostWin::UpdateWorkspace() {
 bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
   // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for web-app
   // window titlebar controls.
-  return browser_view_->IsBrowserTypeWebApp() &&
+  return browser_view_->GetIsWebAppType() &&
          base::win::GetVersion() < base::win::Version::WIN10;
 }
 
@@ -577,11 +576,11 @@ SkBitmap GetBadgedIconBitmapForProfile(Profile* profile) {
   if (app_icon_bitmap.isNull())
     return SkBitmap();
 
-
-  ProfileAttributesEntry* entry = nullptr;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile->GetPath(), &entry))
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  if (!entry)
     return SkBitmap();
 
   SkBitmap avatar_bitmap_2x = profiles::GetWin2xAvatarImage(entry);

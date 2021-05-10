@@ -20,6 +20,8 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
+#include "components/subresource_filter/content/common/ad_evidence.h"
+#include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -80,8 +82,7 @@ class ContentSubresourceFilterThrottleManager
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver,
       public mojom::SubresourceFilterHost,
-      public SubresourceFilterObserver,
-      public SubframeNavigationFilteringThrottle::Delegate {
+      public SubresourceFilterObserver {
  public:
   static const char
       kContentSubresourceFilterThrottleManagerWebContentsUserDataKey[];
@@ -127,12 +128,8 @@ class ContentSubresourceFilterThrottleManager
     return ruleset_handle_.get();
   }
 
-  // SubframeNavigationFilteringThrottle::Delegate:
-  bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
-                             LoadPolicy load_policy) override;
-
   // Returns whether |frame_host| is considered to be an ad.
-  bool IsFrameTaggedAsAd(const content::RenderFrameHost* frame_host) const;
+  bool IsFrameTaggedAsAd(content::RenderFrameHost* frame_host) const;
 
   // Returns whether the last navigation resource in |frame_host| was detected
   // to be an ad. A null optional indicates there was no previous navigation or
@@ -140,17 +137,24 @@ class ContentSubresourceFilterThrottleManager
   // |frame_host|. Load policy is determined by presence of the navigation url
   // in the filter list.
   base::Optional<LoadPolicy> LoadPolicyForLastCommittedNavigation(
-      const content::RenderFrameHost* frame_host) const;
+      content::RenderFrameHost* frame_host) const;
 
   // Notifies the client that the user has requested a reload of a page with
   // blocked ads (e.g., via an infobar).
   void OnReloadRequested();
 
+  // Invoked when an ads violation is detected in |rfh|.
+  void OnAdsViolationTriggered(content::RenderFrameHost* rfh,
+                               mojom::AdsViolation triggered_violation);
+
   static void LogAction(SubresourceFilterAction action);
+
+  void SetFrameAsAdSubframeForTesting(content::RenderFrameHost* frame_host);
 
  protected:
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
+  void FrameDeleted(content::RenderFrameHost* frame_host) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
@@ -165,8 +169,7 @@ class ContentSubresourceFilterThrottleManager
       const mojom::ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      LoadPolicy load_policy,
-      bool is_ad_subframe) override;
+      LoadPolicy load_policy) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
@@ -206,15 +209,25 @@ class ContentSubresourceFilterThrottleManager
   VerifiedRuleset::Handle* EnsureRulesetHandle();
   void DestroyRulesetHandleIfNoLongerUsed();
 
-  // Registers |render_frame_host| as an ad frame. If the frame later moves to
+  FrameAdEvidence& EnsureFrameAdEvidence(
+      content::RenderFrameHost* render_frame_host);
+
+  // Registers `render_frame_host` as an ad frame. If the frame later moves to
   // a new process its RenderHost will be told that it's an ad.
   void OnFrameIsAdSubframe(content::RenderFrameHost* render_frame_host);
+
+  // Registers `frame_host` as a frame that was created by ad script.
+  // TODO(crbug.com/1145634): Propagate this bit for a frame that navigates
+  // cross-origin.
+  void OnSubframeWasCreatedByAdScript(content::RenderFrameHost* frame_host);
 
   // mojom::SubresourceFilterHost:
   void DidDisallowFirstSubresource() override;
   void FrameIsAdSubframe() override;
+  void SubframeWasCreatedByAdScript() override;
   void SetDocumentLoadStatistics(
       mojom::DocumentLoadStatisticsPtr statistics) override;
+  void OnAdsViolationTriggered(mojom::AdsViolation violation) override;
 
   // Gets a filter for the navigation from |throttle|, creates and returns a new
   // filter, or returns |nullptr|. Also updates |frame_host_filter_map_| as
@@ -233,19 +246,20 @@ class ContentSubresourceFilterThrottleManager
       const mojom::ActivationLevel& activation_level,
       bool did_inherit_opener_activation);
 
-  // For each RenderFrameHost where the last committed load has subresource
-  // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
-  // A null filter indicates that the filter should be inherited from its
-  // parent if the parent has one. This is possible if the last load was a
-  // special navigation (see MaybeActivateSubframeSpecialUrls) or if no
-  // navigations have committed.
+  // Sets a frame as an ad subframe by moving its ad evidence from
+  // `tracked_ad_evidence_` to `ad_frames_` (and thus freezing it).
+  void SetFrameAsAdSubframe(content::RenderFrameHost* render_frame_host);
+
+  // For each RenderFrameHost where the last committed load (or the initial load
+  // if no committed load has occurred) has subresource filtering activated,
+  // owns the corresponding AsyncDocumentSubresourceFilter.
   std::map<content::RenderFrameHost*,
            std::unique_ptr<AsyncDocumentSubresourceFilter>>
       frame_host_filter_map_;
 
-  // Set of RenderFrameHosts that have had at least one committed or aborted
-  // navigation.
-  std::set<content::RenderFrameHost*> navigated_frames_;
+  // Set of frames that have had at least one committed or aborted navigation.
+  // Keyed by FrameTreeNode ID.
+  std::set<int> navigated_frames_;
 
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that
@@ -254,21 +268,32 @@ class ContentSubresourceFilterThrottleManager
   std::map<int64_t, ActivationStateComputingNavigationThrottle*>
       ongoing_activation_throttles_;
 
-  // Set of RenderFrameHosts that have been identified as ads. An RFH is an ad
-  // subframe if any of the following conditions are met:
+  // Map of frames that have been identified as ads, keyed by FrameTreeNode ID,
+  // with value being the evidence that the respective frames are ads. This
+  // evidence object is frozen upon the frame being tagged as an ad and is no
+  // longer updated. An RFH is an ad subframe if any of the following conditions
+  // are met:
   // 1. Its navigation URL is in the filter list
   // 2. Its parent is a known ad subframe
-  // 3. The RenderFrame declares the frame is an ad (see AdTracker in Blink)
+  // 3. Ad script was on the v8 stack when the frame was created (see AdTracker
+  //    in Blink)
   // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
   //    OOPIF)
-  std::set<const content::RenderFrameHost*> ad_frames_;
+  std::map<int, const FrameAdEvidence> ad_frames_;
 
-  // Map of RenderFrameHost's whose navigations have been identified as ads.
-  // Contains information on the most current completed navigation for any given
-  // RenderFrameHost. If a frame is not present in the map, it has not had a
-  // navigation evaluated by the filter list.
-  std::map<const content::RenderFrameHost*, LoadPolicy>
-      navigation_load_policies_;
+  // Map of subframes that have not (yet) been tagged as ads, keyed by
+  // FrameTreeNode ID, with value being the evidence that the frames are ads.
+  // Once a subframe is tagged as an ad, the evidence is moved to `ad_frames_`
+  // and no longer updated. This will be called prior to commit time in the case
+  // of an initial synchronous load or at ReadyToCommitNavigation otherwise.
+  // Otherwise, it is updated whenever a navigation's LoadPolicy is calculated.
+  std::map<int, FrameAdEvidence> tracked_ad_evidence_;
+
+  // Map of frames whose navigations have been identified as ads, keyed by
+  // FrameTreeNode ID. Contains information on the most current completed
+  // navigation for any given frames. If a frame is not present in the map, it
+  // has not had a navigation evaluated by the filter list.
+  std::map<int, LoadPolicy> navigation_load_policies_;
 
   content::WebContentsFrameReceiverSet<mojom::SubresourceFilterHost> receiver_;
 

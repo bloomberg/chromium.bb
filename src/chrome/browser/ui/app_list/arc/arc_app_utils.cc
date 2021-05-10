@@ -10,18 +10,20 @@
 #include <tuple>
 #include <utility>
 
+#include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -98,7 +100,7 @@ constexpr char kAndroidFilesAppId[] = "gmiohhmfhgfclpeacmdfancbipocempm";
 constexpr char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    kAndroidClockAppId,   kSettingsAppId,     kAndroidFilesAppId,
+    kAndroidClockAppId, kSettingsAppId, kAndroidFilesAppId,
     kAndroidContactsAppId};
 
 // Returns true if |event_flags| came from a mouse or touch event.
@@ -166,7 +168,10 @@ bool Launch(content::BrowserContext* context,
 
   if (app_info->shortcut || intent.has_value()) {
     const std::string intent_uri = intent.value_or(app_info->intent_uri);
-    if (auto* app_instance = GET_APP_INSTANCE(LaunchIntent)) {
+    if (auto* app_instance = GET_APP_INSTANCE(LaunchIntentWithWindowInfo)) {
+      app_instance->LaunchIntentWithWindowInfo(intent_uri,
+                                               MakeWindowInfo(display_id));
+    } else if (auto* app_instance = GET_APP_INSTANCE(LaunchIntent)) {
       app_instance->LaunchIntent(intent_uri, display_id);
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchIntentDeprecated)) {
       app_instance->LaunchIntentDeprecated(intent_uri, gfx::Rect());
@@ -174,7 +179,11 @@ bool Launch(content::BrowserContext* context,
       return false;
     }
   } else {
-    if (auto* app_instance = GET_APP_INSTANCE(LaunchApp)) {
+    if (auto* app_instance = GET_APP_INSTANCE(LaunchAppWithWindowInfo)) {
+      app_instance->LaunchAppWithWindowInfo(app_info->package_name,
+                                            app_info->activity,
+                                            MakeWindowInfo(display_id));
+    } else if (auto* app_instance = GET_APP_INSTANCE(LaunchApp)) {
       app_instance->LaunchApp(app_info->package_name, app_info->activity,
                               display_id);
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchAppDeprecated)) {
@@ -214,10 +223,6 @@ const char kRequestStartTimeParamTemplate[] =
     "S.org.chromium.arc.request.start=%" PRId64;
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kPlayStorePackage[] = "com.android.vending";
-const char kSettingsAppDomainUrlActivity[] =
-    "com.android.settings.Settings$ManageDomainUrlsActivity";
-
-constexpr char kSettingsAppPackage[] = "com.android.settings";
 
 // App IDs, kept in sorted order.
 const char kGmailAppId[] = "hhkfkjpmacfncmbapfohfocpjpdnobjg";
@@ -235,6 +240,7 @@ const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 const char kYoutubeAppId[] = "aniolghapcdkoolpkffememnhpphmjkl";
 const char kYoutubeMusicAppId[] = "hpdkdmlckojaocbedhffglopeafcgggc";
+const char kYoutubeMusicWebApkAppId[] = "jcmmigapnpnikbmnjknhcoageaeinihi";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
   for (auto* const id : kAppIdsHiddenInLauncher) {
@@ -244,38 +250,28 @@ bool ShouldShowInLauncher(const std::string& app_id) {
   return true;
 }
 
-bool LaunchAndroidSettingsApp(content::BrowserContext* context,
-                              int event_flags,
-                              int64_t display_id) {
-  return LaunchApp(context, kSettingsAppId, event_flags,
-                   UserInteractionType::APP_STARTED_FROM_SETTINGS, display_id);
-}
-
-bool LaunchPlayStoreWithUrl(const std::string& url) {
-  arc::mojom::IntentHelperInstance* instance =
-      GET_INTENT_HELPER_INSTANCE(HandleUrl);
-  if (!instance) {
-    VLOG(1) << "Cannot find a mojo instance, ARC is unreachable or mojom"
-            << " version mismatch";
-    return false;
-  }
-  instance->HandleUrl(url, kPlayStorePackage);
-  return true;
+arc::mojom::WindowInfoPtr MakeWindowInfo(int64_t display_id) {
+  arc::mojom::WindowInfoPtr window_info = arc::mojom::WindowInfo::New();
+  window_info->display_id = display_id;
+  return window_info;
 }
 
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                int event_flags,
                arc::UserInteractionType user_action) {
-  return LaunchApp(context, app_id, event_flags, user_action,
-                   display::kInvalidDisplayId);
+  return LaunchAppWithIntent(context, app_id, base::nullopt /* launch_intent */,
+                             event_flags, user_action,
+                             display::kInvalidDisplayId);
 }
 
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                int event_flags,
                arc::UserInteractionType user_action,
-               int64_t display_id) {
+               arc::mojom::WindowInfoPtr window_info) {
+  int64_t display_id =
+      window_info ? window_info->display_id : display::kInvalidDisplayId;
   return LaunchAppWithIntent(context, app_id, base::nullopt /* launch_intent */,
                              event_flags, user_action, display_id);
 }
@@ -428,17 +424,6 @@ bool LaunchAppShortcutItem(content::BrowserContext* context,
   app_instance->LaunchAppShortcutItem(app_info->package_name, shortcut_id,
                                       GetValidDisplayId(display_id));
   return true;
-}
-
-bool LaunchSettingsAppActivity(content::BrowserContext* context,
-                               const std::string& activity,
-                               int event_flags,
-                               int64_t display_id) {
-  const std::string launch_intent = GetLaunchIntent(
-      kSettingsAppPackage, activity, std::vector<std::string>());
-  return LaunchAppWithIntent(
-      context, kSettingsAppId, launch_intent, event_flags,
-      UserInteractionType::APP_STARTED_FROM_SETTINGS, display_id);
 }
 
 void SetTaskActive(int task_id) {
@@ -705,8 +690,10 @@ std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile) {
 
 std::string ArcPackageNameToAppId(const std::string& package_name,
                                   Profile* profile) {
+  DCHECK(profile);
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  return arc_prefs->GetAppIdByPackageName(package_name);
+  return arc_prefs ? arc_prefs->GetAppIdByPackageName(package_name)
+                   : std::string();
 }
 
 void AddAppLaunchObserver(content::BrowserContext* context,

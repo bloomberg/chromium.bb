@@ -92,7 +92,10 @@ struct TestResults
     std::mutex currentTestMutex;
     TestIdentifier currentTest;
     Timer currentTestTimer;
-    bool allDone = false;
+    double currentTestTimeout = 0.0;
+    bool allDone              = false;
+    std::string testArtifactsFakeTestName;
+    std::vector<std::string> testArtifactPaths;
 };
 
 struct FileLine
@@ -130,8 +133,15 @@ class TestSuite
                             const std::string &story,
                             double value,
                             const std::string &units);
+    void registerSlowTests(const char *slowTests[], size_t numSlowTests);
 
     static TestSuite *GetInstance() { return mInstance; }
+
+    // Returns the path to the artifact in the output directory.
+    std::string addTestArtifact(const std::string &artifactName);
+
+    int getShardIndex() const { return mShardIndex; }
+    int getBatchId() const { return mBatchId; }
 
   private:
     bool parseSingleArg(const char *argument);
@@ -173,6 +183,8 @@ class TestSuite
     std::vector<ProcessInfo> mCurrentProcesses;
     std::thread mWatchdogThread;
     HistogramWriter mHistogramWriter;
+    std::vector<std::string> mSlowTests;
+    std::string mTestArtifactDirectory;
 };
 
 bool GetTestResultsFromFile(const char *fileName, TestResults *resultsOut);

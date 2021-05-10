@@ -70,6 +70,9 @@ const char kAccountCategories[] = "account_categories";
 // Local state pref to keep track of the next available profile bucket.
 const char kNextMetricsBucketIndex[] = "profile.metrics.next_bucket_index";
 
+// Deprecated 2/2021.
+const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
+
 constexpr int kIntegerNotSet = -1;
 
 // Persisted in prefs.
@@ -97,19 +100,13 @@ int GetLowEntropyHashValue(const std::string& value) {
   return base::PersistentHash(value) % kNumberOfLowEntropyHashValues;
 }
 
-bool ShouldShowGenericColoredAvatar(size_t avatar_icon_index) {
-  return base::FeatureList::IsEnabled(features::kNewProfilePicker) &&
-         avatar_icon_index == profiles::GetPlaceholderAvatarIndex();
-}
-
 }  // namespace
 
 const char ProfileAttributesEntry::kSupervisedUserId[] = "managed_user_id";
-const char ProfileAttributesEntry::kIsOmittedFromProfileListKey[] =
-    "is_omitted_from_profile_list";
 const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
 const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
+const char ProfileAttributesEntry::kProfileIsGuest[] = "is_guest";
 const char ProfileAttributesEntry::kUserNameKey[] = "user_name";
 const char ProfileAttributesEntry::kGAIAIdKey[] = "gaia_id";
 const char ProfileAttributesEntry::kIsConsentedPrimaryAccountKey[] =
@@ -145,6 +142,8 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
 
   DCHECK(profile_info_cache_->GetUserDataDir() == profile_path_.DirName());
   storage_key_ = profile_path_.BaseName().MaybeAsASCII();
+
+  MigrateObsoleteProfileAttributes();
 
   const base::Value* entry_data = GetEntryData();
   if (entry_data) {
@@ -291,11 +290,13 @@ gfx::Image ProfileAttributesEntry::GetAvatarIcon(
       return *image;
   }
 
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1100835): After launch, remove the treatment of placeholder
   // avatars from GetHighResAvatar() and from any other places.
-  if (ShouldShowGenericColoredAvatar(GetAvatarIconIndex())) {
+  if (GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex()) {
     return GetPlaceholderAvatarIcon(size_for_placeholder_avatar);
   }
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
   // Use the high resolution version of the avatar if it exists. Mobile doesn't
@@ -374,12 +375,8 @@ bool ProfileAttributesEntry::IsChild() const {
 #endif
 }
 
-bool ProfileAttributesEntry::IsLegacySupervised() const {
-  return IsSupervised() && !IsChild();
-}
-
 bool ProfileAttributesEntry::IsOmitted() const {
-  return GetBool(kIsOmittedFromProfileListKey);
+  return is_omitted_;
 }
 
 bool ProfileAttributesEntry::IsSigninRequired() const {
@@ -392,6 +389,10 @@ std::string ProfileAttributesEntry::GetSupervisedUserId() const {
 
 bool ProfileAttributesEntry::IsEphemeral() const {
   return GetBool(kProfileIsEphemeral);
+}
+
+bool ProfileAttributesEntry::IsGuest() const {
+  return GetBool(kProfileIsGuest);
 }
 
 bool ProfileAttributesEntry::IsUsingDefaultName() const {
@@ -489,8 +490,11 @@ std::string ProfileAttributesEntry::GetHostedDomain() const {
   return GetString(kHostedDomain);
 }
 
-void ProfileAttributesEntry::SetLocalProfileName(const base::string16& name) {
-  if (SetString16(kNameKey, name))
+void ProfileAttributesEntry::SetLocalProfileName(const base::string16& name,
+                                                 bool is_default_name) {
+  bool changed = SetString16(kNameKey, name);
+  changed |= SetBool(kIsUsingDefaultNameKey, is_default_name);
+  if (changed)
     profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
@@ -507,7 +511,15 @@ void ProfileAttributesEntry::SetActiveTimeToNow() {
 }
 
 void ProfileAttributesEntry::SetIsOmitted(bool is_omitted) {
-  if (SetBool(kIsOmittedFromProfileListKey, is_omitted))
+  if (is_omitted) {
+    DCHECK(IsEphemeral()) << "Only ephemeral profiles can be omitted.";
+  }
+
+  bool old_value = IsOmitted();
+  is_omitted_ = is_omitted;
+
+  // Send a notification only if the value has really changed.
+  if (old_value != is_omitted_)
     profile_info_cache_->NotifyProfileIsOmittedChanged(GetPath());
 }
 
@@ -580,7 +592,16 @@ void ProfileAttributesEntry::RecordAccountMetrics() const {
 }
 
 void ProfileAttributesEntry::SetIsEphemeral(bool value) {
+  if (!value) {
+    DCHECK(!IsOmitted()) << "An omitted account should not be made "
+                            "non-ephemeral. Call SetIsOmitted(false) first.";
+  }
+
   SetBool(kProfileIsEphemeral, value);
+}
+
+void ProfileAttributesEntry::SetIsGuest(bool value) {
+  SetBool(kProfileIsGuest, value);
 }
 
 void ProfileAttributesEntry::SetIsUsingDefaultName(bool value) {
@@ -638,13 +659,14 @@ void ProfileAttributesEntry::SetProfileThemeColors(
 
   if (changed) {
     profile_info_cache_->NotifyProfileThemeColorsChanged(GetPath());
-    if (ShouldShowGenericColoredAvatar(GetAvatarIconIndex()))
+    if (GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex())
       profile_info_cache_->NotifyOnProfileAvatarChanged(GetPath());
   }
 }
 
 void ProfileAttributesEntry::SetHostedDomain(std::string hosted_domain) {
-  SetString(kHostedDomain, hosted_domain);
+  if (SetString(kHostedDomain, hosted_domain))
+    profile_info_cache_->NotifyProfileHostedDomainChanged(GetPath());
 }
 
 void ProfileAttributesEntry::SetAuthInfo(const std::string& gaia_id,
@@ -707,9 +729,7 @@ void ProfileAttributesEntry::ClearAccountCategories() {
 }
 
 size_t ProfileAttributesEntry::profile_index() const {
-  size_t index = profile_info_cache_->GetIndexOfProfileWithPath(profile_path_);
-  DCHECK(index < profile_info_cache_->GetNumberOfProfiles());
-  return index;
+  return profile_info_cache_->GetIndexOfProfileWithPath(profile_path_);
 }
 
 const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
@@ -934,4 +954,10 @@ bool ProfileAttributesEntry::ClearValue(const char* key) {
   new_data.RemoveKey(key);
   SetEntryData(std::move(new_data));
   return true;
+}
+
+// This method should be periodically pruned of year+ old migrations.
+void ProfileAttributesEntry::MigrateObsoleteProfileAttributes() {
+  // Added 2/2021.
+  ClearValue(kIsOmittedFromProfileListKey);
 }

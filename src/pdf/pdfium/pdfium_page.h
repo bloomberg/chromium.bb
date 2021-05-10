@@ -34,6 +34,12 @@ namespace chrome_pdf {
 
 class PDFiumEngine;
 class Thumbnail;
+struct AccessibilityLinkInfo;
+struct AccessibilityHighlightInfo;
+struct AccessibilityImageInfo;
+struct AccessibilityTextFieldInfo;
+struct AccessibilityTextRunInfo;
+struct AccessibilityTextStyleInfo;
 
 // Wrapper around a page from the document.
 class PDFiumPage {
@@ -55,23 +61,25 @@ class PDFiumPage {
   // Log overlaps between annotations in the page.
   void LogOverlappingAnnotations();
   // See definition of PDFEngine::GetTextRunInfo().
-  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> GetTextRunInfo(
-      int start_char_index);
+  base::Optional<AccessibilityTextRunInfo> GetTextRunInfo(int start_char_index);
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
   // Get the bounds of a character in page pixels.
   gfx::RectF GetCharBounds(int char_index);
   // For all the links on the page, get their urls, underlying text ranges and
   // bounding boxes.
-  std::vector<PDFEngine::AccessibilityLinkInfo> GetLinkInfo();
+  std::vector<AccessibilityLinkInfo> GetLinkInfo(
+      const std::vector<AccessibilityTextRunInfo>& text_runs);
   // For all the images on the page, get their alt texts and bounding boxes.
-  std::vector<PDFEngine::AccessibilityImageInfo> GetImageInfo();
+  std::vector<AccessibilityImageInfo> GetImageInfo(uint32_t text_run_count);
   // For all the highlights on the page, get their underlying text ranges and
   // bounding boxes.
-  std::vector<PDFEngine::AccessibilityHighlightInfo> GetHighlightInfo();
+  std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      const std::vector<AccessibilityTextRunInfo>& text_runs);
   // For all the text fields on the page, get their properties like name,
   // value, bounding boxes, etc.
-  std::vector<PDFEngine::AccessibilityTextFieldInfo> GetTextFieldInfo();
+  std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(
+      uint32_t text_run_count);
 
   enum Area {
     NONSELECTABLE_AREA,
@@ -110,14 +118,26 @@ class PDFiumPage {
   // NONSELECTABLE_AREA if link detection failed.
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
 
-  // Fills the output params with the (x, y) position in page coordinates and
-  // zoom value of a destination.
+  // Fills the output params with the in-page coordinates and the zoom value of
+  // the destination.
   void GetPageDestinationTarget(FPDF_DEST destination,
-                                base::Optional<gfx::PointF>* xy,
+                                base::Optional<float>* dest_x,
+                                base::Optional<float>* dest_y,
                                 base::Optional<float>* zoom_value);
+
+  // For a named destination with "XYZ" view fit type, pre-processes the in-page
+  // x/y coordinate in case it's out of the range of the page dimension.
+  float PreProcessInPageCoordX(float x);
+  float PreProcessInPageCoordY(float y);
 
   // Transforms an (x, y) position in page coordinates to screen coordinates.
   gfx::PointF TransformPageToScreenXY(const gfx::PointF& xy);
+
+  // Transforms an in-page x coordinate to its value in screen coordinates.
+  float TransformPageToScreenX(float x);
+
+  // Transforms an in-page y coordinate to its value in screen coordinates.
+  float TransformPageToScreenY(float y);
 
   // Given a point in the document that's in this page, returns its character
   // index if it's near a character, and also the type of text.
@@ -348,14 +368,12 @@ class PDFiumPage {
   // broken for page objects such as links and images.
   void CalculatePageObjectTextRunBreaks();
   // Set text run style information based on a character of the text run.
-  void CalculateTextRunStyleInfo(
-      int char_index,
-      pp::PDF::PrivateAccessibilityTextStyleInfo* style_info);
+  void CalculateTextRunStyleInfo(int char_index,
+                                 AccessibilityTextStyleInfo& style_info);
   // Returns a boolean indicating if the character at index |char_index| has the
   // same text style as the text run.
-  bool AreTextStyleEqual(
-      int char_index,
-      const pp::PDF::PrivateAccessibilityTextStyleInfo& style);
+  bool AreTextStyleEqual(int char_index,
+                         const AccessibilityTextStyleInfo& style);
 
   // Key    :  Marked content id for the image element as specified in the
   //           struct tree.

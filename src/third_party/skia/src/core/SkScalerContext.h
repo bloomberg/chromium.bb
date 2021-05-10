@@ -112,10 +112,11 @@ public:
         setContrast(0);
     }
 
-    uint8_t     fMaskFormat;
+    SkMask::Format fMaskFormat;
+
 private:
-    uint8_t     fStrokeJoin : 4;
-    uint8_t     fStrokeCap : 4;
+    uint8_t        fStrokeJoin : 4;
+    uint8_t        fStrokeCap  : 4;
 
 public:
     uint16_t    fFlags;
@@ -193,7 +194,7 @@ public:
     inline void setHinting(SkFontHinting);
 
     SkMask::Format getFormat() const {
-        return static_cast<SkMask::Format>(fMaskFormat);
+        return fMaskFormat;
     }
 
     SkColor getLuminanceColor() const {
@@ -269,7 +270,7 @@ public:
     SkTypeface* getTypeface() const { return fTypeface.get(); }
 
     SkMask::Format getMaskFormat() const {
-        return (SkMask::Format)fRec.fMaskFormat;
+        return fRec.fMaskFormat;
     }
 
     bool isSubpixel() const {
@@ -283,8 +284,7 @@ public:
     // DEPRECATED
     bool isVertical() const { return false; }
 
-    unsigned    getGlyphCount() { return this->generateGlyphCount(); }
-    void        getMetrics(SkGlyph*);
+    SkGlyph     makeGlyph(SkPackedGlyphID);
     void        getImage(const SkGlyph&);
     bool SK_WARN_UNUSED_RESULT getPath(SkPackedGlyphID, SkPath*);
     void        getFontMetrics(SkFontMetrics*);
@@ -319,10 +319,7 @@ public:
                 SkScalerContextFlags::kNone, SkMatrix::I(), rec, effects);
     }
 
-    static SkDescriptor*  MakeDescriptorForPaths(SkFontID fontID,
-                                                 SkAutoDescriptor* ad);
-
-    static SkScalerContext* MakeEmptyContext(
+    static std::unique_ptr<SkScalerContext> MakeEmpty(
             sk_sp<SkTypeface> typeface, const SkScalerContextEffects& effects,
             const SkDescriptor* desc);
 
@@ -371,7 +368,7 @@ protected:
     /** Generates the contents of glyph.fWidth, fHeight, fTop, fLeft,
      *  as well as fAdvanceX and fAdvanceY if not already set.
      *
-     *  TODO: fMaskFormat is set by getMetrics later; cannot be set here.
+     *  TODO: fMaskFormat is set by internalMakeGlyph later; cannot be set here.
      */
     virtual void generateMetrics(SkGlyph* glyph) = 0;
 
@@ -394,9 +391,6 @@ protected:
 
     /** Retrieves font metrics. */
     virtual void generateFontMetrics(SkFontMetrics*) = 0;
-
-    /** Returns the number of glyphs in the font. */
-    virtual unsigned generateGlyphCount() = 0;
 
     void forceGenerateImageFromPath() { fGenerateImageFromPath = true; }
     void forceOffGenerateImageFromPath() { fGenerateImageFromPath = false; }
@@ -421,6 +415,7 @@ private:
 
     /** Returns false if the glyph has no path at all. */
     bool internalGetPath(SkPackedGlyphID id, SkPath* devPath);
+    SkGlyph internalMakeGlyph(SkPackedGlyphID packedID, SkMask::Format format);
 
     // SkMaskGamma::PreBlend converts linear masks to gamma correcting masks.
 protected:

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/qpack/qpack_receive_stream.h"
+#include "quic/core/quic_utils.h"
+#include "quic/test_tools/quic_session_peer.h"
 
 namespace quic {
 namespace test {
@@ -14,14 +15,14 @@ namespace test {
 // static
 QuicHeadersStream* QuicSpdySessionPeer::GetHeadersStream(
     QuicSpdySession* session) {
-  DCHECK(!VersionUsesHttp3(session->transport_version()));
+  QUICHE_DCHECK(!VersionUsesHttp3(session->transport_version()));
   return session->headers_stream();
 }
 
 void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
                                            QuicHeadersStream* headers_stream) {
-  DCHECK(!VersionUsesHttp3(session->transport_version()));
-  for (auto& it : session->stream_map()) {
+  QUICHE_DCHECK(!VersionUsesHttp3(session->transport_version()));
+  for (auto& it : QuicSessionPeer::stream_map(session)) {
     if (it.first ==
         QuicUtils::GetHeadersStreamId(session->transport_version())) {
       it.second.reset(headers_stream);

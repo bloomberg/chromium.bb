@@ -62,13 +62,15 @@ class InputEngine : public mojom::InputChannel {
   void ResetForRulebased() override;
   void GetRulebasedKeypressCountForTesting(
       GetRulebasedKeypressCountForTestingCallback callback) override;
-  void CommitText(const std::string& text) override;
+  void CommitText(const std::string& text,
+                  mojom::CommitTextCursorBehavior cursor_behavior) override;
   void SetComposition(const std::string& text) override;
   void SetCompositionRange(uint32_t start_byte_index,
                            uint32_t end_byte_index) override;
   void FinishComposition() override;
   void DeleteSurroundingText(uint32_t num_bytes_before_cursor,
                              uint32_t num_bytes_after_cursor) override;
+  void HandleAutocorrect(mojom::AutocorrectSpanPtr autocorrect_span) override;
 
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 

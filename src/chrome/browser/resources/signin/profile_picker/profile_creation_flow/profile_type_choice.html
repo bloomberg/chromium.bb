@@ -22,22 +22,14 @@
     width: 100%;
   }
 
-  #notNowButton {
-    background: none;
-    border: none;
-    color: var(--cr-link-color);
-    cursor: pointer;
+  cr-button {
     font-size: 1em;
     font-weight: normal;
-    line-height: 20px;
-    margin-top: 18px;
-    outline: none;
+    min-width: 210px;
   }
 
-  #signInButton {
-    font-size: 1em;
-    font-weight: normal;
-    width: 208px;
+  #notNowButton {
+    margin-top: 18px;
   }
 
   .title-container {
@@ -50,24 +42,26 @@
 <div id="headerContainer"
     style$="--theme-frame-color:[[profileThemeInfo.themeFrameColor]];
             --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];">
-  <cr-icon-button id="backButton" class="icon-arrow-back"
+  <cr-icon-button id="backButton" iron-icon="cr:arrow-back"
       on-click="onClickBack_" aria-label="$i18n{backButtonLabel}"
       disabled="[[loadSigninInProgess_]]">
   </cr-icon-button>
   <div id="signinPromoBanner" class="banner"></div>
-  <img class="avatar" alt="" src="[[profileThemeInfo.themeGenericAvatar]]">
+  <div id="avatarContainer">
+    <img class="avatar" alt="" src="[[profileThemeInfo.themeGenericAvatar]]">
+  </div>
 </div>
 <div class="title-container">
   <h2>$i18n{profileTypeChoiceTitle}</h2>
   <h3>$i18n{profileTypeChoiceSubtitle}</h3>
 </div>
 <div id="actionContainer">
-  <cr-button id="signInButton" class="action-button fade-in"
-      on-click="onSignInClick_" disabled="[[loadSigninInProgess_]]">
+  <cr-button id="signInButton" class="action-button" on-click="onSignInClick_"
+      disabled="[[loadSigninInProgess_]]">
     $i18n{signInButtonLabel}
   </cr-button>
-  <button id="notNowButton" class="action-link fade-in"
-      on-click="onNotNowClick_" disabled="[[loadSigninInProgess_]]">
+  <cr-button id="notNowButton" on-click="onNotNowClick_"
+      disabled="[[loadSigninInProgess_]]">
     $i18n{notNowButtonLabel}
-  </button>
+  </cr-button>
 </div>

@@ -14,6 +14,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/browser/xr/xr_utils.h"
@@ -148,15 +149,6 @@ constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
     device::mojom::XRSessionFeature::IMAGE_TRACKING,
 };
 
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-constexpr device::mojom::XRSessionFeature kWindowsMixedRealityFeatures[] = {
-    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
-    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
-    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
-    device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
-};
-#endif
-
 #if BUILDFLAG(ENABLE_OPENXR)
 constexpr device::mojom::XRSessionFeature kOpenXRFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
@@ -164,15 +156,9 @@ constexpr device::mojom::XRSessionFeature kOpenXRFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
     device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
     device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+    device::mojom::XRSessionFeature::ANCHORS,
 };
 #endif
-
-bool ContainsFeature(
-    base::span<const device::mojom::XRSessionFeature> feature_list,
-    device::mojom::XRSessionFeature feature) {
-  return std::find(feature_list.begin(), feature_list.end(), feature) !=
-         feature_list.end();
-}
 }  // anonymous namespace
 
 BrowserXRRuntimeImpl::BrowserXRRuntimeImpl(
@@ -239,20 +225,19 @@ bool BrowserXRRuntimeImpl::SupportsFeature(
       }
 #endif
 
-      return ContainsFeature(kARCoreDeviceFeatures, feature);
+      return base::Contains(kARCoreDeviceFeatures, feature);
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
-      return ContainsFeature(kOrientationDeviceFeatures, feature);
+      return base::Contains(kOrientationDeviceFeatures, feature);
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
-      return ContainsFeature(kGVRDeviceFeatures, feature);
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
-      return ContainsFeature(kWindowsMixedRealityFeatures, feature);
-#endif
+      return base::Contains(kGVRDeviceFeatures, feature);
 
 #if BUILDFLAG(ENABLE_OPENXR)
     case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
-      return ContainsFeature(kOpenXRFeatures, feature);
+      // Only support hand input if the feature flag is enabled.
+      if (feature == device::mojom::XRSessionFeature::HAND_INPUT) {
+        return base::FeatureList::IsEnabled(features::kWebXrHandInput);
+      }
+      return base::Contains(kOpenXRFeatures, feature);
 #endif
   }
 
@@ -277,10 +262,6 @@ bool BrowserXRRuntimeImpl::SupportsCustomIPD() const {
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
       return false;
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
-      return true;
-#endif
 #if BUILDFLAG(ENABLE_OPENXR)
     case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
       return true;
@@ -298,9 +279,6 @@ bool BrowserXRRuntimeImpl::SupportsNonEmulatedHeight() const {
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
       return false;
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
-#endif
 #if BUILDFLAG(ENABLE_OPENXR)
     case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
 #endif
@@ -452,6 +430,8 @@ void BrowserXRRuntimeImpl::EnsureInstalled(
     int render_process_id,
     int render_frame_id,
     base::OnceCallback<void(bool)> install_callback) {
+  DVLOG(2) << __func__;
+
   // If there's no install helper, then we can assume no install is needed.
   if (!install_helper_) {
     std::move(install_callback).Run(true);

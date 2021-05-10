@@ -51,7 +51,7 @@ cast_source_set("unittests") {
   testonly = true
   sources = [
     "backend/audio_video_pipeline_device_unittest.cc",
-    "backend/proxy/cma_backend_proxy_unittest.cc",
+    "backend/multizone_backend_unittest.cc",
     "base/balanced_media_task_runner_unittest.cc",
     "base/buffering_controller_unittest.cc",
     "base/buffering_frame_provider_unittest.cc",
@@ -72,20 +72,33 @@ cast_source_set("unittests") {
     "//chromecast/media:libcast_media",
     "//chromecast/media/api",
     "//chromecast/media/api:test_support",
-    "//chromecast/media/cma/backend/proxy",
     "//media",
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  # Building the required proto files here cause a linker issue on
+  # Android because both protobuf_full and protobuf_lite get included.
+  if (!is_android) {
+    sources += [
+      "backend/proxy/audio_decoder_pipeline_node_unittest.cc",
+      "backend/proxy/buffer_id_manager_unittest.cc",
+      "backend/proxy/cma_backend_proxy_unittest.cc",
+      "backend/proxy/proxy_call_translator_unittest.cc",
+      "backend/proxy/push_buffer_queue_unittest.cc",
+    ]
+    deps += [
+      "//chromecast/media/cma/backend/proxy",
+      "//chromecast/media/cma/backend/proxy:cast_audio_decoder_service_proto",
+
+      # TODO(b/174874712): Remove the explicit gRPC dependency.
+      "//third_party/grpc:grpc++",
+    ]
+  }
 
   if (enable_video_with_mixed_audio) {
     defines = [ "ENABLE_VIDEO_WITH_MIXED_AUDIO" ]
   }
 
   data = [ "//media/test/data/" ]
-
-  # MultizoneBackendTest verifies rendering delay reported by the backend.
-  if (supports_multizone) {
-    sources += [ "backend/multizone_backend_unittest.cc" ]
-  }
 }

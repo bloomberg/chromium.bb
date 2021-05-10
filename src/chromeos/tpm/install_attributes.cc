@@ -23,6 +23,8 @@
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/policy/proto/install_attributes.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -42,7 +44,7 @@ bool g_using_install_attributes_for_testing = false;
 const int kDbusRetryCount = 12;
 
 // Interval of TPM lock state query retries during consistency check.
-const int kDbusRetryIntervalInSeconds = 5;
+constexpr base::TimeDelta kDbusRetryInterval = base::TimeDelta::FromSeconds(5);
 
 std::string ReadMapKey(const std::map<std::string, std::string>& map,
                        const std::string& key) {
@@ -58,13 +60,6 @@ void WarnIfNonempty(const std::map<std::string, std::string>& map,
   if (!ReadMapKey(map, key).empty()) {
     LOG(WARNING) << key << " expected to be empty.";
   }
-}
-
-// Reports the metric for whether the locking succeeded with existing locked
-// attributes equal to the requested ones.
-void ReportExistingLockUma(bool is_existing_lock) {
-  UMA_HISTOGRAM_BOOLEAN("Enterprise.ExistingInstallAttributesLock",
-                        is_existing_lock);
 }
 
 }  // namespace
@@ -260,7 +255,6 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
     }
 
     // Already locked in the right mode, signal success.
-    ReportExistingLockUma(true /* is_existing_lock */);
     std::move(callback).Run(LOCK_SUCCESS);
     return;
   }
@@ -296,11 +290,12 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
     return;
   }
 
-  // Clearing the TPM password seems to be always a good deal.
-  if (tpm_util::TpmIsEnabled() && !tpm_util::TpmIsBeingOwned() &&
-      tpm_util::TpmIsOwned()) {
-    cryptohome_client_->CallTpmClearStoredPasswordAndBlock();
-  }
+  // Clearing the TPM password seems to be always a good deal. At this point
+  // install attributes is ready, which implies TPM readiness as well.
+  TpmManagerClient::Get()->ClearStoredOwnerPassword(
+      ::tpm_manager::ClearStoredOwnerPasswordRequest(),
+      base::BindOnce(&InstallAttributes::OnClearStoredOwnerPassword,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Make sure we really have a working InstallAttrs.
   if (tpm_util::InstallAttributesIsInvalid()) {
@@ -366,7 +361,6 @@ void InstallAttributes::OnReadImmutableAttributes(policy::DeviceMode mode,
     return;
   }
 
-  ReportExistingLockUma(false /* is_existing_lock */);
   std::move(callback).Run(LOCK_SUCCESS);
 }
 
@@ -400,36 +394,42 @@ bool InstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
 }
 
 void InstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
-  cryptohome_client_->TpmGetPassword(
-      base::BindOnce(&InstallAttributes::OnTpmGetPasswordCompleted,
+  TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+      ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+      base::BindOnce(&InstallAttributes::OnTpmStatusComplete,
                      weak_ptr_factory_.GetWeakPtr(), dbus_retries));
 }
 
-void InstallAttributes::OnTpmGetPasswordCompleted(
+void InstallAttributes::OnTpmStatusComplete(
     int dbus_retries_remaining,
-    base::Optional<std::string> result) {
-  if (!result.has_value() && dbus_retries_remaining) {
+    const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
+  if (reply.status() != ::tpm_manager::STATUS_SUCCESS &&
+      dbus_retries_remaining) {
+    LOG(WARNING) << "Failed to get tpm status reply; status: "
+                 << reply.status();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&InstallAttributes::TriggerConsistencyCheck,
                        weak_ptr_factory_.GetWeakPtr(),
                        dbus_retries_remaining - 1),
-        base::TimeDelta::FromSeconds(kDbusRetryIntervalInSeconds));
+        kDbusRetryInterval);
     return;
   }
 
   base::HistogramBase::Sample state;
-  // If the result has a value, we are interested if install attributes file
-  // exists (device_locked_), if the device is enrolled (registration_mode_) and
-  // if the TPM is locked, meaning the TPM password is deleted so
-  // the value from result is empty.
-  if (result.has_value()) {
+  // If we get the TPM status successfully, we are interested if install
+  // attributes file exists (device_locked_), if the device is enrolled
+  // (registration_mode_) and if the TPM is locked, meaning the TPM password
+  // is deleted so the value from result is empty.
+  if (reply.status() == ::tpm_manager::STATUS_SUCCESS) {
     const bool is_cloud_managed =
         registration_mode_ == policy::DEVICE_MODE_ENTERPRISE ||
         registration_mode_ == policy::DEVICE_MODE_DEMO;
     state = (device_locked_ ? 1 : 0) | (is_cloud_managed ? 2 : 0) |
-            (result->empty() ? 4 : 0);
+            (!reply.is_owner_password_present() ? 4 : 0);
   } else {
+    LOG(WARNING) << "Failed to get TPM status after retries; status: "
+                 << reply.status();
     state = 8;
   }
   UMA_HISTOGRAM_ENUMERATION("Enterprise.AttributesTPMConsistency", state, 9);
@@ -441,6 +441,12 @@ void InstallAttributes::OnTpmGetPasswordCompleted(
     std::move(post_check_action_).Run();
     post_check_action_.Reset();
   }
+}
+
+void InstallAttributes::OnClearStoredOwnerPassword(
+    const ::tpm_manager::ClearStoredOwnerPasswordReply& reply) {
+  LOG_IF(WARNING, reply.status() != ::tpm_manager::STATUS_SUCCESS)
+      << "Failed to call ClearStoredOwnerPassword; status: " << reply.status();
 }
 
 // Warning: The values for these keys (but not the keys themselves) are stored

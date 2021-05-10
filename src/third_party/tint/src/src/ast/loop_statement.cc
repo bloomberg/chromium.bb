@@ -14,31 +14,29 @@
 
 #include "src/ast/loop_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::LoopStatement);
+
 namespace tint {
 namespace ast {
 
-LoopStatement::LoopStatement()
-    : Statement(),
-      body_(std::make_unique<BlockStatement>()),
-      continuing_(std::make_unique<BlockStatement>()) {}
-
-LoopStatement::LoopStatement(std::unique_ptr<BlockStatement> body,
-                             std::unique_ptr<BlockStatement> continuing)
-    : Statement(), body_(std::move(body)), continuing_(std::move(continuing)) {}
-
 LoopStatement::LoopStatement(const Source& source,
-                             std::unique_ptr<BlockStatement> body,
-                             std::unique_ptr<BlockStatement> continuing)
-    : Statement(source),
-      body_(std::move(body)),
-      continuing_(std::move(continuing)) {}
+                             BlockStatement* body,
+                             BlockStatement* continuing)
+    : Base(source), body_(body), continuing_(continuing) {}
 
 LoopStatement::LoopStatement(LoopStatement&&) = default;
 
 LoopStatement::~LoopStatement() = default;
 
-bool LoopStatement::IsLoop() const {
-  return true;
+LoopStatement* LoopStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* b = ctx->Clone(body_);
+  auto* cont = ctx->Clone(continuing_);
+  return ctx->dst->create<LoopStatement>(src, b, cont);
 }
 
 bool LoopStatement::IsValid() const {
@@ -51,13 +49,15 @@ bool LoopStatement::IsValid() const {
   return true;
 }
 
-void LoopStatement::to_str(std::ostream& out, size_t indent) const {
+void LoopStatement::to_str(const semantic::Info& sem,
+                           std::ostream& out,
+                           size_t indent) const {
   make_indent(out, indent);
   out << "Loop{" << std::endl;
 
   if (body_ != nullptr) {
-    for (const auto& stmt : *body_) {
-      stmt->to_str(out, indent + 2);
+    for (auto* stmt : *body_) {
+      stmt->to_str(sem, out, indent + 2);
     }
   }
 
@@ -65,8 +65,8 @@ void LoopStatement::to_str(std::ostream& out, size_t indent) const {
     make_indent(out, indent + 2);
     out << "continuing {" << std::endl;
 
-    for (const auto& stmt : *continuing_) {
-      stmt->to_str(out, indent + 4);
+    for (auto* stmt : *continuing_) {
+      stmt->to_str(sem, out, indent + 4);
     }
 
     make_indent(out, indent + 2);

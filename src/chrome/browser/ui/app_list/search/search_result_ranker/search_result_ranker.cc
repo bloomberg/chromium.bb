@@ -21,9 +21,9 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -43,10 +43,6 @@ using file_manager::file_tasks::FileTasksObserver;
 
 // Limits how frequently models are queried for ranking results.
 constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
-
-// Limits how frequently results are logged, due to the possibility of multiple
-// ranking events occurring for each user action.
-constexpr TimeDelta kMinTimeBetweenLogs = TimeDelta::FromSeconds(2);
 
 constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
@@ -267,7 +263,6 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 
     if (model == Model::MIXED_TYPES) {
       if (last_query_.empty() && zero_state_group_ranker_) {
-        LogZeroStateResultScore(type, result.score);
         ScoreZeroStateItem(&result, type, &zero_state_type_counts);
       }
     } else if (model == Model::APPS) {
@@ -433,27 +428,6 @@ void SearchResultRanker::OnFilesOpened(
     CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
         {base::StrCat({"FileOpened-", file_open.path.value()})},
         {{"open_type", static_cast<int>(file_open.open_type)}});
-  }
-}
-
-void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
-                                                 float score) {
-  const auto& now = Time::Now();
-  if (type == RankingItemType::kOmniboxGeneric) {
-    if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_omnibox_log_ = now;
-    LogZeroStateReceivedScore("OmniboxSearch", score, 0.0f, 1.0f);
-  } else if (type == RankingItemType::kZeroStateFile) {
-    if (now - time_of_last_local_file_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_local_file_log_ = now;
-    LogZeroStateReceivedScore("ZeroStateFile", score, 0.0f, 1.0f);
-  } else if (type == RankingItemType::kDriveQuickAccess) {
-    if (now - time_of_last_drive_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_drive_log_ = now;
-    LogZeroStateReceivedScore("DriveQuickAccess", score, -10.0f, 10.0f);
   }
 }
 

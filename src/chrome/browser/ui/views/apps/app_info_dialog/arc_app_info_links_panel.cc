@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,7 +39,7 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
 
   ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_prefs);
-  app_list_observer_.Add(arc_prefs);
+  app_list_observation_.Observe(arc_prefs);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       ArcAppListPrefs::Get(profile)->GetApp(arc::kSettingsAppId);
@@ -81,3 +82,6 @@ void ArcAppInfoLinksPanel::LinkClicked() {
     Close();
   }
 }
+
+BEGIN_METADATA(ArcAppInfoLinksPanel, AppInfoPanel)
+END_METADATA

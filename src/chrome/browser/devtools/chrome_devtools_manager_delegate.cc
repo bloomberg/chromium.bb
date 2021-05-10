@@ -8,9 +8,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/chrome_devtools_session.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,6 +31,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/render_frame_host.h"
@@ -41,9 +44,9 @@
 #include "extensions/common/manifest.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using content::DevToolsAgentHost;
@@ -94,6 +97,11 @@ ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
   DCHECK(!g_instance);
   g_instance = this;
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Only create and hold keep alive for automation test for non ChromeOS.
+  // ChromeOS automation test (aka tast) manages chrome instance via session
+  // manager daemon. The extra keep alive is not needed and makes ChromeOS
+  // not able to shutdown chrome properly. See https://crbug.com/1174627.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoStartupWindow) &&
       (command_line->HasSwitch(switches::kRemoteDebuggingPipe) ||
@@ -105,6 +113,7 @@ ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
     keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::REMOTE_DEBUGGING,
                                           KeepAliveRestartOption::DISABLED));
   }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
@@ -179,7 +188,7 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
 bool ChromeDevToolsManagerDelegate::AllowInspection(
     Profile* profile,
     const extensions::Extension* extension) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kForceDevToolsAvailable))
     return true;
@@ -189,7 +198,7 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
   Availability availability =
       policy::DeveloperToolsPolicyHandler::GetDevToolsAvailability(
           profile->GetPrefs());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Do not create DevTools if it's disabled for primary profile.
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
   if (primary_profile &&
@@ -321,9 +330,10 @@ void ChromeDevToolsManagerDelegate::UpdateDeviceDiscovery() {
     providers.push_back(new TCPDeviceProvider(remote_locations));
     device_manager_->SetDeviceProviders(providers);
 
-    device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
-        base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
-                   base::Unretained(this))));
+    device_discovery_ = std::make_unique<DevToolsDeviceDiscovery>(
+        device_manager_.get(),
+        base::BindRepeating(&ChromeDevToolsManagerDelegate::DevicesAvailable,
+                            base::Unretained(this)));
   }
   remote_locations_.swap(remote_locations);
 }
@@ -336,8 +346,15 @@ void ChromeDevToolsManagerDelegate::ResetAndroidDeviceManagerForTesting() {
   device_discovery_.reset();
 }
 
-void ChromeDevToolsManagerDelegate::BrowserCloseRequested() {
-  // Do not keep the application running anymore, we got an explicit request
-  // to close.
-  keep_alive_.reset();
+// static
+void ChromeDevToolsManagerDelegate::CloseBrowserSoon() {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        if (GetInstance()) {
+          // Do not keep the application running anymore, we got an explicit
+          // request to close.
+          GetInstance()->keep_alive_.reset();
+        }
+        chrome::ExitIgnoreUnloadHandlers();
+      }));
 }

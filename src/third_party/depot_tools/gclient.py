@@ -404,7 +404,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._file_list = []
     # List of host names from which dependencies are allowed.
     # Default is an empty set, meaning unspecified in DEPS file, and hence all
-    # hosts will be allowed. Non-empty set means whitelist of hosts.
+    # hosts will be allowed. Non-empty set means allowlist of hosts.
     # allowed_hosts var is scoped to its DEPS file, and so it isn't recursive.
     self._allowed_hosts = frozenset()
     self._gn_args_from = None
@@ -2273,6 +2273,8 @@ def CMDflatten(parser, args):
   options.nohooks = True
   options.process_all_deps = True
   client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
 
   # Only print progress if we're writing to a file. Otherwise, progress updates
   # could obscure intended output.
@@ -2758,6 +2760,8 @@ def CMDvalidate(parser, args):
   """Validates the .gclient and DEPS syntax."""
   options, args = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   rv = client.RunOnDeps('validate', args)
   if rv == 0:
     print('validate: SUCCESS')

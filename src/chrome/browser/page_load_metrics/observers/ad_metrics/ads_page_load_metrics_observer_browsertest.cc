@@ -22,8 +22,12 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_load_metrics/browser/ads_page_load_metrics_test_waiter.h"
 #include "components/page_load_metrics/browser/observers/use_counter_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
+#include "components/performance_manager/public/v8_memory/v8_detailed_memory.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
@@ -32,7 +36,6 @@
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -59,6 +62,9 @@ using OriginStatus = ad_metrics::OriginStatus;
 using OriginStatusWithThrottling = ad_metrics::OriginStatusWithThrottling;
 
 using FrameTreeNodeId = int;
+
+const char kAdsInterventionRecordedHistogram[] =
+    "SubresourceFilter.PageLoad.AdsInterventionTriggered";
 
 const char kCrossOriginHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
@@ -124,60 +130,6 @@ void LoadLargeResource(net::test_server::ControllableHttpResponse* response,
 
 }  // namespace
 
-class MemoryMeasurementWaiter
-    : public performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq {
- public:
-  MemoryMeasurementWaiter() = default;
-  ~MemoryMeasurementWaiter() override = default;
-
-  void OnV8MemoryMeasurementAvailable(
-      performance_manager::RenderProcessHostId process_id,
-      const performance_manager::v8_memory::V8DetailedMemoryProcessData&
-          process_data,
-      const performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq::
-          FrameDataMap& frame_data) override {
-    // Iterate through frames with available measurements.
-    for (const auto& map_pair : frame_data) {
-      content::GlobalFrameRoutingId frame_routing_id = map_pair.first;
-      content::RenderFrameHost* rfh =
-          content::RenderFrameHost::FromID(frame_routing_id);
-
-      // If the measurement is positive and this is a frame that we're waiting
-      // for, then remove the frame node id from the set of ones awaiting
-      // measurement.
-      if (map_pair.second.v8_bytes_used() > 0) {
-        auto it = expected_frame_ids_.find(rfh->GetFrameTreeNodeId());
-        if (it != expected_frame_ids_.end())
-          expected_frame_ids_.erase(it);
-      }
-    }
-
-    QuitIfDone();
-  }
-
-  bool ExpectationSatisfied() const { return expected_frame_ids_.empty(); }
-
-  // Waits for positive memory measurements to be received for frames
-  // corresponding to each FrameTreeNodeId in |expected_frame_ids|.
-  void WaitForPositiveMeasurementsForFramesWithIds(
-      std::vector<FrameTreeNodeId> expected_frame_ids) {
-    expected_frame_ids_.insert(expected_frame_ids.begin(),
-                               expected_frame_ids.end());
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  void QuitIfDone() {
-    if (!quit_closure_.is_null() && ExpectationSatisfied())
-      std::move(quit_closure_).Run();
-  }
-
- private:
-  std::set<FrameTreeNodeId> expected_frame_ids_;
-  base::OnceClosure quit_closure_;
-};
-
 class AdsPageLoadMetricsObserverBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
@@ -196,14 +148,9 @@ class AdsPageLoadMetricsObserverBrowserTest
   void SetUp() override {
     std::vector<base::Feature> enabled = {
         subresource_filter::kAdTagging, features::kSitePerProcess,
-        features::kV8PerAdFrameMemoryMonitoring};
+        features::kV8PerFrameMemoryMonitoring};
     std::vector<base::Feature> disabled = {};
 
-    if (use_process_priority_) {
-      enabled.push_back(features::kUseFramePriorityInRenderProcessHost);
-    } else {
-      disabled.push_back(features::kUseFramePriorityInRenderProcessHost);
-    }
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
@@ -217,9 +164,6 @@ class AdsPageLoadMetricsObserverBrowserTest
              "expensive_animation_frame.html*"),
          subresource_filter::testing::CreateSuffixRule("ad.html")});
   }
-
- protected:
-  bool use_process_priority_ = false;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -490,15 +434,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
 // Creates a frame with display:none styling and verifies that it has an
 // empty intersection with the main frame.
-#if defined(OS_WIN)
-#define MAYBE_PageAdDensityIgnoreDisplayNoneFrame \
-  DISABLED_PageAdDensityIgnoreDisplayNoneFrame
-#else
-#define MAYBE_PageAdDensityIgnoreDisplayNoneFrame \
-  PageAdDensityIgnoreDisplayNoneFrame
-#endif
+//
+// TODO(crbug.com/1121444): This test is disabled due to flaky failures on
+// multiple platforms.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       MAYBE_PageAdDensityIgnoreDisplayNoneFrame) {
+                       DISABLED_PageAdDensityIgnoreDisplayNoneFrame) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -1000,15 +940,15 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint2",
+      "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint3",
       1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.Visible.AdPaintTiming."
-      "NavigationToFirstContentfulPaint2",
+      "NavigationToFirstContentfulPaint3",
       1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.NonVisible.AdPaintTiming."
-      "NavigationToFirstContentfulPaint2",
+      "NavigationToFirstContentfulPaint3",
       0);
 }
 
@@ -1313,33 +1253,6 @@ IN_PROC_BROWSER_TEST_F(
       "PageLoad.Clients.Ads.FrameCounts.IgnoredByRestrictedAdTagging", 1, 1);
 }
 
-class AdsPageLoadMetricsTestWaiter
-    : public page_load_metrics::PageLoadMetricsTestWaiter {
- public:
-  explicit AdsPageLoadMetricsTestWaiter(content::WebContents* web_contents)
-      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents) {}
-  void AddMinimumAdResourceExpectation(int num_ad_resources) {
-    expected_minimum_ad_resources_ = num_ad_resources;
-  }
-
- protected:
-  bool ExpectationsSatisfied() const override {
-    return complete_ad_resources_ >= expected_minimum_ad_resources_ &&
-           PageLoadMetricsTestWaiter::ExpectationsSatisfied();
-  }
-
-  void HandleResourceUpdate(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource)
-      override {
-    if (resource->reported_as_ad_resource && resource->is_complete)
-      complete_ad_resources_++;
-  }
-
- private:
-  int complete_ad_resources_ = 0;
-  int expected_minimum_ad_resources_ = 0;
-};
-
 // This test harness does not start the test server and allows
 // ControllableHttpResponses to be declared.
 class AdsPageLoadMetricsObserverResourceBrowserTest
@@ -1348,8 +1261,9 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
   AdsPageLoadMetricsObserverResourceBrowserTest() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{subresource_filter::kAdTagging, {}},
+         {subresource_filter::kAdsInterventionsEnforced, {}},
          {features::kHeavyAdIntervention, {}},
-         {features::kHeavyAdPrivacyMitigations, {{"host-threshold", "1"}}}},
+         {features::kHeavyAdPrivacyMitigations, {{"host-threshold", "3"}}}},
         {});
   }
 
@@ -1370,12 +1284,45 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
         switches::autoplay::kNoUserGestureRequiredPolicy);
   }
 
+  // This function loads a |large_resource| and if |will_block| is set, then
+  // checks to see the resource is blocked, otherwise, it uses the |waiter| to
+  // wait until the resource is loaded.
+  void LoadHeavyAdResourceAndWaitOrError(
+      net::test_server::ControllableHttpResponse* large_resource,
+      page_load_metrics::PageLoadMetricsTestWaiter* waiter,
+      bool will_block) {
+    // Create a frame for the large resource.
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(ExecJs(web_contents,
+                       "createAdFrame('/ads_observer/"
+                       "ad_with_incomplete_resource.html', '');"));
+
+    if (will_block) {
+      // If we expect the resource to be blocked, load a resource large enough
+      // to trigger the intervention and ensure that the navigation failed.
+      content::TestNavigationObserver error_observer(
+          web_contents, net::ERR_BLOCKED_BY_CLIENT);
+      LoadLargeResource(large_resource, kMaxHeavyAdNetworkSize);
+      error_observer.WaitForNavigationFinished();
+      EXPECT_FALSE(error_observer.last_navigation_succeeded());
+    } else {
+      // Otherwise load the resource, ensuring enough bytes were loaded.
+      int64_t current_network_bytes = waiter->current_network_bytes();
+      LoadLargeResource(large_resource, kMaxHeavyAdNetworkSize);
+      waiter->AddMinimumNetworkBytesExpectation(current_network_bytes +
+                                                kMaxHeavyAdNetworkSize);
+      waiter->Wait();
+    }
+  }
+
  protected:
-  std::unique_ptr<AdsPageLoadMetricsTestWaiter>
+  std::unique_ptr<page_load_metrics::AdsPageLoadMetricsTestWaiter>
   CreateAdsPageLoadMetricsTestWaiter() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    return std::make_unique<AdsPageLoadMetricsTestWaiter>(web_contents);
+    return std::make_unique<page_load_metrics::AdsPageLoadMetricsTestWaiter>(
+        web_contents);
   }
 
  private:
@@ -1543,13 +1490,19 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   waiter->Wait();
   int64_t initial_page_bytes = waiter->current_network_bytes();
 
+  // Make the response large enough so that normal editing to the resource files
+  // won't interfere with the test expectations.
+  const int response_kilobytes = 64;
+  const int response_bytes = response_kilobytes * 1024;
+
   // Ad resource will not finish loading but should be reported to metrics.
   incomplete_resource_response->WaitForRequest();
   incomplete_resource_response->Send(kHttpOkResponseHeader);
-  incomplete_resource_response->Send(std::string(2048, ' '));
+  incomplete_resource_response->Send(std::string(response_bytes, ' '));
 
   // Wait for the resource update to be received for the incomplete response.
-  waiter->AddMinimumNetworkBytesExpectation(2048);
+
+  waiter->AddMinimumNetworkBytesExpectation(response_bytes);
   waiter->Wait();
 
   // Close all tabs instead of navigating as the embedded_test_server will
@@ -1557,25 +1510,29 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // ControllableHttpResponse.
   browser()->tab_strip_model()->CloseAllTabs();
 
-  int expected_page_kilobytes = (initial_page_bytes + 2048) / 1024;
+  int expected_page_kilobytes = (initial_page_bytes + response_bytes) / 1024;
 
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.FullPage.Network", expected_page_kilobytes,
       1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Network", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Network",
+      response_kilobytes, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total2", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total2",
+      response_kilobytes, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network",
+      response_kilobytes, 1);
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total2", 2, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total2", response_kilobytes,
+      1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kLoading_NetworkBytesName,
-      ukm::GetExponentialBucketMinForBytes(2048));
+      ukm::GetExponentialBucketMinForBytes(response_bytes));
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytes2Name, 0);
 }
@@ -1820,70 +1777,98 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
           ->trial_name()));
 }
 
-// Verifies that when the blocklist is at threshold, the heavy ad intervention
-// does not trigger.
+// Check that the Heavy Ad Intervention fires the correct number of times to
+// protect privacy, and that after that limit is hit, the Ads Intervention
+// Framework takes over for future navigations.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        HeavyAdInterventionBlocklistFull_InterventionBlocked) {
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      http_responses(4);
+  for (auto& http_response : http_responses) {
+    http_response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/ads_observer/incomplete_resource.js",
+            false /*relative_url_is_prefix*/);
+  }
   base::HistogramTester histogram_tester;
-  auto large_resource_1 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/ads_observer/incomplete_resource.js",
-          false /*relative_url_is_prefix*/);
-  auto large_resource_2 =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/ads_observer/incomplete_resource.js",
-          false /*relative_url_is_prefix*/);
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Create a navigation observer that will watch for the intervention to
-  // navigate the frame.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver error_observer(web_contents,
-                                                 net::ERR_BLOCKED_BY_CLIENT);
-
+  // Create a waiter for the navigation and navigate.
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "foo.com", "/ad_tagging/frame_factory.html"));
 
-  EXPECT_TRUE(ExecJs(
-      web_contents,
-      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
-
-  // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(large_resource_1.get(), kMaxHeavyAdNetworkSize);
-
-  // Wait for the intervention page navigation to finish on the frame.
-  error_observer.WaitForNavigationFinished();
-
+  // Load and block the resource. The ads intervention framework should not
+  // be triggered at this point.
+  LoadHeavyAdResourceAndWaitOrError(http_responses[0].get(), waiter.get(),
+                                    /*will_block=*/true);
   histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
                                       ad_metrics::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectTotalCount(kAdsInterventionRecordedHistogram, 0);
+  histogram_tester.ExpectBucketCount(
+      "SubresourceFilter.Actions2",
+      subresource_filter::SubresourceFilterAction::kUIShown, 0);
 
-  // Check that the ad frame was navigated to the intervention page.
-  EXPECT_FALSE(error_observer.last_navigation_succeeded());
-
+  // Block a second resource on the page. The ads intervention framework should
+  // not be triggered at this point.
+  LoadHeavyAdResourceAndWaitOrError(http_responses[1].get(), waiter.get(),
+                                    /*will_block=*/true);
   histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 1);
+                                      ad_metrics::HeavyAdStatus::kNetwork, 2);
+  histogram_tester.ExpectTotalCount(kAdsInterventionRecordedHistogram, 0);
+  histogram_tester.ExpectBucketCount(
+      "SubresourceFilter.Actions2",
+      subresource_filter::SubresourceFilterAction::kUIShown, 0);
 
-  EXPECT_TRUE(ExecJs(
-      web_contents,
-      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
+  // Create a new waiter for the next navigation and navigate.
+  waiter = CreateAdsPageLoadMetricsTestWaiter();
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html?avoid_reload"));
 
-  // Use the current network bytes because the ad could have been unloaded
-  // before loading the entire large resource.
-  int64_t current_network_bytes = waiter->current_network_bytes();
-
-  // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(large_resource_2.get(), kMaxHeavyAdNetworkSize);
-  waiter->AddMinimumNetworkBytesExpectation(current_network_bytes +
-                                            kMaxHeavyAdNetworkSize);
-  waiter->Wait();
-
-  // Check that the intervention did not trigger on this frame.
+  // Load and block the resource. The ads intervention framework should
+  // be triggered at this point.
+  LoadHeavyAdResourceAndWaitOrError(http_responses[2].get(), waiter.get(),
+                                    /*will_block=*/true);
   histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 1);
+                                      ad_metrics::HeavyAdStatus::kNetwork, 3);
+  histogram_tester.ExpectUniqueSample(
+      kAdsInterventionRecordedHistogram,
+      subresource_filter::mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "SubresourceFilter.Actions2",
+      subresource_filter::SubresourceFilterAction::kUIShown, 0);
+
+  // Allow a second resource on the page. The ads intervention shouldn't fire a
+  // second time.
+  LoadHeavyAdResourceAndWaitOrError(http_responses[3].get(), waiter.get(),
+                                    /*will_block=*/false);
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      ad_metrics::HeavyAdStatus::kNetwork, 3);
+  histogram_tester.ExpectUniqueSample(
+      kAdsInterventionRecordedHistogram,
+      subresource_filter::mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "SubresourceFilter.Actions2",
+      subresource_filter::SubresourceFilterAction::kUIShown, 0);
+
+  // Reset the waiter and navigate again. Check we show the Ads Intervention UI.
+  waiter.reset();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+  histogram_tester.ExpectUniqueSample(
+      kAdsInterventionRecordedHistogram,
+      subresource_filter::mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "SubresourceFilter.Actions2",
+      subresource_filter::SubresourceFilterAction::kUIShown, 1);
 }
 
 // Verifies that the blocklist is setup correctly and the intervention triggers
@@ -2173,160 +2158,24 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    AdsPageLoadMetricsObserverBrowserTest,
-    RenderProcessHostNotBackgroundedWhenFramePriorityDisabled) {
-  // Used for assignment during testing.
-  auto frame1_pred = base::BindRepeating(&content::FrameMatchesName, "iframe1");
-  auto frame2_pred = base::BindRepeating(&content::FrameMatchesName, "iframe2");
-
-  // Navigate to a page with an iframe.  Make sure the two frames share a
-  // process and that process is not low priority.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/two_iframes_blank.html"));
-  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  content::RenderFrameHost* frame1 =
-      content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  content::RenderFrameHost* frame2 =
-      content::FrameMatchingPredicate(web_contents(), frame2_pred);
-  EXPECT_EQ(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_EQ(main_frame->GetProcess(), frame2->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate iframe1 to a cross-origin non-ad frame.  It should be on a
-  // different process, but still not be low priority.
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL("a.com", "/iframe_blank.html"));
-  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  EXPECT_NE(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_FALSE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate iframe1 to an ad on its current domain.  It should have the same
-  // process host but because the feature is turned off, not be low priority.
-  content::DOMMessageQueue message_queue1(web_contents());
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL(
-          "a.com", "/ads_observer/expensive_animation_frame.html?delay=0"));
-  // After navigation, the RenderFrameHost may change.
-  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  WaitForRAF(&message_queue1);
-  EXPECT_EQ(frame1->GetProcess(),
-            content::FrameMatchingPredicate(web_contents(), frame1_pred)
-                ->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_FALSE(frame1->GetProcess()->IsProcessBackgrounded());
-}
-
-class AdsPageLoadMetricsObserverWithBackgroundingBrowserTest
-    : public AdsPageLoadMetricsObserverBrowserTest {
+// DummyMemoryObserver is a subclass of V8DetailedMemoryObserverAnySeq so
+// that we can spin up a request in the AdsMemoryMeasurementBrowserTest with
+// MeasurementMode::kEagerForTesting, which will make measurements available
+// to the PageLoadMetricsMemoryTracker much more quickly than they would be
+// otherwise.
+class DummyMemoryObserver
+    : public performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq {
  public:
-  AdsPageLoadMetricsObserverWithBackgroundingBrowserTest()
-      : AdsPageLoadMetricsObserverBrowserTest() {
-    use_process_priority_ = true;
-  }
-  ~AdsPageLoadMetricsObserverWithBackgroundingBrowserTest() override {}
+  DummyMemoryObserver() = default;
+  ~DummyMemoryObserver() override = default;
+
+  void OnV8MemoryMeasurementAvailable(
+      performance_manager::RenderProcessHostId process_id,
+      const performance_manager::v8_memory::V8DetailedMemoryProcessData&
+          process_data,
+      const performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq::
+          FrameDataMap& frame_data) override {}
 };
-
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverWithBackgroundingBrowserTest,
-                       RenderProcessHostBackgroundedForAd) {
-  // Used for assignment during testing.
-  auto frame1_pred = base::BindRepeating(&content::FrameMatchesName, "iframe1");
-  auto frame2_pred = base::BindRepeating(&content::FrameMatchesName, "iframe2");
-
-  // Navigate to a page with an iframe.  Make sure the two frames share a
-  // process and that process is not low priority.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/two_iframes_blank.html"));
-  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  content::RenderFrameHost* frame1 =
-      content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  content::RenderFrameHost* frame2 =
-      content::FrameMatchingPredicate(web_contents(), frame2_pred);
-  EXPECT_EQ(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_EQ(main_frame->GetProcess(), frame2->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate iframe1 to a cross-origin non-ad frame.  It should be on a
-  // different process, but still not be low priority.
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL("a.com", "/iframe_blank.html"));
-  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  EXPECT_NE(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_FALSE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate iframe1 to an ad on its current domain.  It should have the
-  // same process host but now be low priority.
-  content::DOMMessageQueue message_queue1(web_contents());
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL(
-          "a.com", "/ads_observer/expensive_animation_frame.html?delay=0"));
-  WaitForRAF(&message_queue1);
-  EXPECT_EQ(frame1->GetProcess(),
-            content::FrameMatchingPredicate(web_contents(), frame1_pred)
-                ->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_TRUE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate the iframe2 to a non-ad on the same domain as iframe1.  Make sure
-  // that they get assigned the same process and that it's not low priority.
-  NavigateIframeToURL(
-      web_contents(), "iframe2",
-      embedded_test_server()->GetURL("a.com", "/iframe_blank.html"));
-  frame2 = content::FrameMatchingPredicate(web_contents(), frame2_pred);
-  EXPECT_EQ(frame1->GetProcess(), frame2->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_FALSE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Delete iframe2, make sure that iframe1 is now low priority, as it now only
-  // has ads assigned to it.
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      web_contents(),
-      "var frame = document.getElementById('iframe2'); "
-      "frame.parentNode.removeChild(frame);"));
-  EXPECT_TRUE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate the subframe to a non-ad on its current domain.  Even though this
-  // is a non-ad, the frame is still identified as an ad because it was
-  // previously identified as an ad by SubresourceFilterThrottle.
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL("a.com", "/iframe_blank.html"));
-  EXPECT_EQ(frame1->GetProcess(),
-            content::FrameMatchingPredicate(web_contents(), frame1_pred)
-                ->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_TRUE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate the subframe to an ad on the original domain.  It should now have
-  // the same process as the main frame, but not be low priority because it
-  // shares a process with a non-ad frame (the main frame).
-  content::DOMMessageQueue message_queue2(web_contents());
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL(
-          "/ads_observer/expensive_animation_frame.html?delay=0"));
-  WaitForRAF(&message_queue2);
-  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  EXPECT_EQ(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_FALSE(frame1->GetProcess()->IsProcessBackgrounded());
-
-  // Navigate the subframe to a non-ad on a different domain.  Even though this
-  // is a non-ad, the frame is still identified as an ad because it was
-  // previously identified as an ad by SubresourceFilterThrottle.
-  NavigateIframeToURL(
-      web_contents(), "iframe1",
-      embedded_test_server()->GetURL("b.com", "/iframe_blank.html"));
-  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
-  EXPECT_NE(main_frame->GetProcess(), frame1->GetProcess());
-  EXPECT_FALSE(main_frame->GetProcess()->IsProcessBackgrounded());
-  EXPECT_TRUE(frame1->GetProcess()->IsProcessBackgrounded());
-}
 
 class AdsMemoryMeasurementBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
@@ -2335,34 +2184,41 @@ class AdsMemoryMeasurementBrowserTest
   ~AdsMemoryMeasurementBrowserTest() override = default;
 
   void SetUp() override {
-    std::map<std::string, std::string> memory_poll_params = {
-        {"MemoryPollInterval", "1"}, {"MemoryPollMode", "eager_for_testing"}};
     performance_manager::v8_memory::internal::
         SetEagerMemoryMeasurementEnabledForTesting(true);
-    std::vector<base::test::ScopedFeatureList::FeatureAndParams> enabled = {
-        {subresource_filter::kAdTagging, {{}}},
-        {features::kSitePerProcess, {{}}},
-        {features::kV8PerAdFrameMemoryMonitoring, memory_poll_params}};
+    std::vector<base::Feature> enabled = {
+        subresource_filter::kAdTagging, features::kSitePerProcess,
+        features::kV8PerFrameMemoryMonitoring};
     std::vector<base::Feature> disabled = {};
-
-    scoped_feature_list_.InitWithFeaturesAndParameters(enabled, disabled);
+    scoped_feature_list_.InitWithFeatures(enabled, disabled);
 
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
 
-  std::vector<FrameTreeNodeId> GetFrameNodeIds(Browser* browser) {
+  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
+  CreatePageLoadMetricsTestWaiter() {
     content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    std::vector<int> frame_node_ids = {
-        web_contents->GetMainFrame()->GetFrameTreeNodeId()};
+        browser()->tab_strip_model()->GetActiveWebContents();
+    return std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+        web_contents);
+  }
+
+  std::unordered_set<int> GetFrameRoutingIds() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    std::unordered_set<int> frame_routing_ids = {web_contents->GetMainFrame()
+                                                     ->GetGlobalFrameRoutingId()
+                                                     .frame_routing_id};
 
     std::vector<content::RenderFrameHost*> children =
         web_contents->GetMainFrame()->GetFramesInSubtree();
 
-    for (auto* child : children)
-      frame_node_ids.push_back(child->GetFrameTreeNodeId());
+    for (auto* child : children) {
+      frame_routing_ids.insert(
+          child->GetGlobalFrameRoutingId().frame_routing_id);
+    }
 
-    return frame_node_ids;
+    return frame_routing_ids;
   }
 
  private:
@@ -2375,14 +2231,16 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
                        SingleAdFrame_MaxMemoryBytesRecorded) {
   base::HistogramTester histogram_tester;
 
-  // Instantiate a memory request and waiter to wait for a minimum
-  // number of memory measurements to be received.
+  // Instantiate a memory request and observer to set memory measurement
+  // polling parameters.
   std::unique_ptr<performance_manager::v8_memory::V8DetailedMemoryRequestAnySeq>
       memory_request = std::make_unique<
           performance_manager::v8_memory::V8DetailedMemoryRequestAnySeq>(
-          base::TimeDelta::FromSeconds(1), MeasurementMode::kEagerForTesting);
-  auto waiter = std::make_unique<MemoryMeasurementWaiter>();
-  memory_request->AddObserver(waiter.get());
+          base::TimeDelta::FromSeconds(1),
+          performance_manager::v8_memory::V8DetailedMemoryRequest::
+              MeasurementMode::kEagerForTesting);
+  auto memory_observer = std::make_unique<DummyMemoryObserver>();
+  memory_request->AddObserver(memory_observer.get());
 
   // cross_site_iframe_factory loads URLs like:
   // http://b.com:40919/cross_site_iframe_factory.html?b()
@@ -2390,11 +2248,27 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
   const GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
 
+  // Create a waiter, navigate the mainframe to "about:blank", and prime the
+  // waiter with the mainframe's routing ID.
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  int main_frame_routing_id = browser()
+                                  ->tab_strip_model()
+                                  ->GetActiveWebContents()
+                                  ->GetMainFrame()
+                                  ->GetGlobalFrameRoutingId()
+                                  .frame_routing_id;
+  waiter->AddMemoryUpdateExpectation(main_frame_routing_id);
+
+  // Navigate to the main URL.
   ui_test_utils::NavigateToURL(browser(), main_url);
 
-  // Wait until we get positive memory measurements for each frame.
-  std::vector<FrameTreeNodeId> frame_node_ids = GetFrameNodeIds(browser());
-  waiter->WaitForPositiveMeasurementsForFramesWithIds(frame_node_ids);
+  // Add any additional frame routing IDs and wait until we get positive
+  // memory measurements for each frame.
+  for (int id : GetFrameRoutingIds())
+    waiter->AddMemoryUpdateExpectation(id);
+  waiter->Wait();
 
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -2415,5 +2289,5 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
   EXPECT_GE(
       histogram_tester.GetAllSamples(kMemoryUpdateCountHistogramId)[0].min, 1);
 
-  memory_request->RemoveObserver(waiter.get());
+  memory_request->RemoveObserver(memory_observer.get());
 }

@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
@@ -19,7 +20,7 @@
 #include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
-#include "components/no_state_prefetch/renderer/prerender_helper.h"
+#include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
 #include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
@@ -35,12 +36,11 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/switches.h"
 #include "extensions/renderer/extension_throttle_manager.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/renderer/chromeos_merge_session_loader_throttle.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -152,28 +152,12 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
       !is_frame_resource) {
     auto throttle =
-        prerender::PrerenderHelper::MaybeCreateThrottle(render_frame_id);
+        prerender::NoStatePrefetchHelper::MaybeCreateThrottle(render_frame_id);
     if (throttle)
       throttles.push_back(std::move(throttle));
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
-      request_destination == network::mojom::RequestDestination::kObject) {
-    content::RenderFrame* render_frame =
-        content::RenderFrame::FromRoutingID(render_frame_id);
-    auto mime_handlers =
-        extensions::MimeHandlerViewContainer::FromRenderFrame(render_frame);
-    GURL gurl(request.Url());
-    for (auto* handler : mime_handlers) {
-      auto throttle = handler->MaybeCreatePluginThrottle(gurl);
-      if (throttle) {
-        throttles.push_back(std::move(throttle));
-        break;
-      }
-    }
-  }
-
   if (!extension_throttle_manager_)
     extension_throttle_manager_ = CreateExtensionThrottleManager();
 
@@ -202,14 +186,15 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #if defined(OS_ANDROID)
       client_data_header,
       /* night_mode_enabled= */ false,
+      /* is_tab_large_enough= */ false,
 #endif
       ChromeRenderThreadObserver::GetDynamicParams()));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   throttles.push_back(std::make_unique<MergeSessionLoaderThrottle>(
       chrome_content_renderer_client_->GetChromeObserver()
           ->chromeos_listener()));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   auto throttle = subresource_redirect::SubresourceRedirectURLLoaderThrottle::
       MaybeCreateThrottle(request, render_frame_id);

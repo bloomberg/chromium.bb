@@ -169,15 +169,23 @@ FormStructureBrowserTest::FormStructureBrowserTest()
   feature_list_.InitWithFeatures(
       // Enabled
       {// TODO(crbug.com/1098943): Remove once experiment is over.
-       autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+       features::kAutofillEnableSupportForMoreStructureInNames,
        // TODO(crbug.com/1125978): Remove once launched.
-       autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
+       features::kAutofillEnableSupportForMoreStructureInAddresses,
        // TODO(crbug.com/896689): Remove once launched.
-       autofill::features::kAutofillNameSectionsWithRendererIds,
+       features::kAutofillNameSectionsWithRendererIds,
        // TODO(crbug.com/1076175) Remove once launched.
-       autofill::features::kAutofillUseNewSectioningMethod},
+       features::kAutofillUseNewSectioningMethod,
+       // Remove once launched
+       features::kAutofillEnableAugmentedPhoneCountryCode,
+       // TODO(crbug.com/1157405) Remove once launched.
+       features::kAutofillEnableDependentLocalityParsing,
+       // TODO(crbug.com/1150895) Remove once launched.
+       features::kAutofillParsingPatternsLanguageDetection,
+       // TODO(crbug/1165780): Remove once shared labels are launched.
+       features::kAutofillEnableSupportForParsingWithSharedLabels},
       // Disabled
-      {autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+      {features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() {}
@@ -192,11 +200,6 @@ void FormStructureBrowserTest::SetUpCommandLine(
 
 void FormStructureBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
-
-  // Load the MatchingPattern definitions.
-  base::RunLoop run_loop;
-  field_type_parsing::PopulateFromResourceBundle(run_loop.QuitClosure());
-  run_loop.Run();
 
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &FormStructureBrowserTest::HandleRequest, base::Unretained(this)));

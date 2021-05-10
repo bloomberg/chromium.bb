@@ -117,10 +117,11 @@ private:
     GrProgramInfo* programInfo() override { return fProgramInfo; }
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override;
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
@@ -177,10 +178,11 @@ TestRectOp::TestRectOp(const GrCaps* caps,
 
 void TestRectOp::onCreateProgramInfo(const GrCaps* caps,
                                      SkArenaAlloc* arena,
-                                     const GrSurfaceProxyView* writeView,
+                                     const GrSurfaceProxyView& writeView,
                                      GrAppliedClip&& appliedClip,
                                      const GrXferProcessor::DstProxyView& dstProxyView,
-                                     GrXferBarrierFlags renderPassXferBarriers) {
+                                     GrXferBarrierFlags renderPassXferBarriers,
+                                     GrLoadOp colorLoadOp) {
     fProgramInfo = GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps,
                                                                arena,
                                                                writeView,
@@ -190,6 +192,7 @@ void TestRectOp::onCreateProgramInfo(const GrCaps* caps,
                                                                std::move(fProcessorSet),
                                                                GrPrimitiveType::kTriangles,
                                                                renderPassXferBarriers,
+                                                               colorLoadOp,
                                                                GrPipeline::InputFlags::kNone);
 }
 

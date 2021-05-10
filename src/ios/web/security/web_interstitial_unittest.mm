@@ -7,7 +7,7 @@
 #include <memory>
 
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/test/fakes/test_web_state_observer.h"
+#include "ios/web/public/test/fakes/fake_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/test/fakes/mock_interstitial_delegate.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -32,7 +32,6 @@ class WebInterstitialTest : public WebTest {
     WebTest::SetUp();
     WebState::CreateParams params(GetBrowserState());
     web_state_ = std::make_unique<WebStateImpl>(params);
-    web_state_->GetNavigationManagerImpl().InitializeSession();
 
     // Transient item can only be added for pending non-app-specific loads.
     web_state_->GetNavigationManagerImpl().AddPendingItem(
@@ -83,7 +82,7 @@ TEST_F(WebInterstitialTest, DontProceed) {
 
 // Tests that presenting an interstitial changes the visible security state.
 TEST_F(WebInterstitialTest, VisibleSecurityStateChanged) {
-  TestWebStateObserver observer(web_state_.get());
+  FakeWebStateObserver observer(web_state_.get());
 
   std::unique_ptr<MockInterstitialDelegate> delegate =
       std::make_unique<MockInterstitialDelegate>();

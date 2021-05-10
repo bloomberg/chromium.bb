@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
+#include "quic/core/http/http_encoder.h"
 #include <cstdint>
 #include <memory>
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -35,7 +37,7 @@ QuicByteCount GetTotalLength(QuicByteCount payload_length, HttpFrameType type) {
 QuicByteCount HttpEncoder::SerializeDataFrameHeader(
     QuicByteCount payload_length,
     std::unique_ptr<char[]>* output) {
-  DCHECK_NE(0u, payload_length);
+  QUICHE_DCHECK_NE(0u, payload_length);
   QuicByteCount header_length = QuicDataWriter::GetVarInt62Len(payload_length) +
                                 QuicDataWriter::GetVarInt62Len(
                                     static_cast<uint64_t>(HttpFrameType::DATA));
@@ -55,7 +57,7 @@ QuicByteCount HttpEncoder::SerializeDataFrameHeader(
 QuicByteCount HttpEncoder::SerializeHeadersFrameHeader(
     QuicByteCount payload_length,
     std::unique_ptr<char[]>* output) {
-  DCHECK_NE(0u, payload_length);
+  QUICHE_DCHECK_NE(0u, payload_length);
   QuicByteCount header_length =
       QuicDataWriter::GetVarInt62Len(payload_length) +
       QuicDataWriter::GetVarInt62Len(
@@ -202,50 +204,23 @@ QuicByteCount HttpEncoder::SerializeMaxPushIdFrame(
 QuicByteCount HttpEncoder::SerializePriorityUpdateFrame(
     const PriorityUpdateFrame& priority_update,
     std::unique_ptr<char[]>* output) {
-  if (GetQuicReloadableFlag(quic_new_priority_update_frame)) {
-    QUIC_CODE_COUNT_N(quic_new_priority_update_frame, 1, 2);
-
-    if (priority_update.prioritized_element_type != REQUEST_STREAM) {
-      QUIC_BUG << "PRIORITY_UPDATE for push streams not implemented";
-      return 0;
-    }
-
-    QuicByteCount payload_length =
-        QuicDataWriter::GetVarInt62Len(priority_update.prioritized_element_id) +
-        priority_update.priority_field_value.size();
-    QuicByteCount total_length = GetTotalLength(
-        payload_length, HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM);
-
-    output->reset(new char[total_length]);
-    QuicDataWriter writer(total_length, output->get());
-
-    if (WriteFrameHeader(payload_length,
-                         HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM,
-                         &writer) &&
-        writer.WriteVarInt62(priority_update.prioritized_element_id) &&
-        writer.WriteBytes(priority_update.priority_field_value.data(),
-                          priority_update.priority_field_value.size())) {
-      return total_length;
-    }
-
-    QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
-                        "PRIORITY_UPDATE frame.";
+  if (priority_update.prioritized_element_type != REQUEST_STREAM) {
+    QUIC_BUG << "PRIORITY_UPDATE for push streams not implemented";
     return 0;
   }
 
   QuicByteCount payload_length =
-      kPriorityFirstByteLength +
       QuicDataWriter::GetVarInt62Len(priority_update.prioritized_element_id) +
       priority_update.priority_field_value.size();
-  QuicByteCount total_length =
-      GetTotalLength(payload_length, HttpFrameType::PRIORITY_UPDATE);
+  QuicByteCount total_length = GetTotalLength(
+      payload_length, HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM);
 
   output->reset(new char[total_length]);
   QuicDataWriter writer(total_length, output->get());
 
-  if (WriteFrameHeader(payload_length, HttpFrameType::PRIORITY_UPDATE,
+  if (WriteFrameHeader(payload_length,
+                       HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM,
                        &writer) &&
-      writer.WriteUInt8(priority_update.prioritized_element_type) &&
       writer.WriteVarInt62(priority_update.prioritized_element_id) &&
       writer.WriteBytes(priority_update.priority_field_value.data(),
                         priority_update.priority_field_value.size())) {
@@ -255,6 +230,42 @@ QuicByteCount HttpEncoder::SerializePriorityUpdateFrame(
   QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
                       "PRIORITY_UPDATE frame.";
   return 0;
+}
+
+// static
+QuicByteCount HttpEncoder::SerializeAcceptChFrame(
+    const AcceptChFrame& accept_ch,
+    std::unique_ptr<char[]>* output) {
+  QuicByteCount payload_length = 0;
+  for (const auto& entry : accept_ch.entries) {
+    payload_length += QuicDataWriter::GetVarInt62Len(entry.origin.size());
+    payload_length += entry.origin.size();
+    payload_length += QuicDataWriter::GetVarInt62Len(entry.value.size());
+    payload_length += entry.value.size();
+  }
+
+  QuicByteCount total_length =
+      GetTotalLength(payload_length, HttpFrameType::ACCEPT_CH);
+
+  output->reset(new char[total_length]);
+  QuicDataWriter writer(total_length, output->get());
+
+  if (!WriteFrameHeader(payload_length, HttpFrameType::ACCEPT_CH, &writer)) {
+    QUIC_DLOG(ERROR)
+        << "Http encoder failed to serialize ACCEPT_CH frame header.";
+    return 0;
+  }
+
+  for (const auto& entry : accept_ch.entries) {
+    if (!writer.WriteStringPieceVarInt62(entry.origin) ||
+        !writer.WriteStringPieceVarInt62(entry.value)) {
+      QUIC_DLOG(ERROR)
+          << "Http encoder failed to serialize ACCEPT_CH frame payload.";
+      return 0;
+    }
+  }
+
+  return total_length;
 }
 
 // static

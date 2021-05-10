@@ -90,13 +90,46 @@
     overflow-wrap: break-word;  /** For very long names and emails */
   }
 
-  .action-container {
+  #actionRow {
+    display: flex;
+    justify-content: flex-end;
     padding: 0 16px 16px;
+  }
+
+  .action-container {
+    padding: 0 0 0 8px;
+  }
+
+  paper-spinner-lite {
+    margin: auto 0;
   }
 
   cr-button {
     font-size: 12px;
   }
+
+  #interceptDialog [slot=footer] {
+        background: var(--paper-grey-50);
+        border-top: none;
+        padding: 0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #interceptDialog [slot=footer] {
+          background: rgb(50, 54, 57);  /* Custom color from Namrata. */
+        }
+      }
+
+      .divider {
+        border-top: var(--cr-separator-line);
+      }
+
+      #footer-description {
+        color: var(--cr-secondary-text-color);
+        padding: 16px;
+        text-align: center;
+      }
+
 </style>
 
 <div role="dialog" id="interceptDialog" aria-labelledby="title"
@@ -118,13 +151,26 @@
     <div id="contents">[[interceptionParameters_.bodyText]]</div>
   </div>
 
-  <div class="action-container">
-    <cr-button id="acceptButton" class="action-button" on-click="onAccept_"
-        autofocus>
-      [[interceptionParameters_.confirmButtonLabel]]
-    </cr-button>
-    <cr-button id="cancelButton" on-click="onCancel_">
-      [[interceptionParameters_.cancelButtonLabel]]
-    </cr-button>
+  <div id="actionRow">
+    <paper-spinner-lite active="[[acceptButtonClicked_]]"></paper-spinner-lite>
+    <div class="action-container">
+      <cr-button id="acceptButton" class="action-button" on-click="onAccept_"
+          disabled="[[acceptButtonClicked_]]" autofocus>
+        [[interceptionParameters_.confirmButtonLabel]]
+      </cr-button>
+      <cr-button id="cancelButton" on-click="onCancel_"
+          disabled="[[acceptButtonClicked_]]">
+        [[interceptionParameters_.cancelButtonLabel]]
+      </cr-button>
+    </div>
   </div>
+  <!-- TODO(https://crbug.com/1157764): Change to make only link clickable. -->
+  <template is="dom-if" if="[[interceptionParameters_.showGuestOption]]"
+      restamp>
+    <div slot="footer">
+      <div class="divider"></div>
+      <div id="footer-description" on-click="onGuest_"
+          inner-h-t-m-l="[[guestLink_]]"></div>
+    </div>
+  </template>
 </div>

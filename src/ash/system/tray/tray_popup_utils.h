@@ -38,7 +38,9 @@ class TrayPopupUtils {
   enum class FontStyle {
     // Topmost header rows for default view and detailed view.
     kTitle,
-    // Topmost header rows for secondary tray bubbles.
+    // Topmost header for secondary tray bubbles
+    kPodMenuHeader,
+    // Small title used for selections in tray bubbles.
     kSmallTitle,
     // Text in sub-section header rows in detailed views.
     kSubHeader,
@@ -200,6 +202,9 @@ class TrayPopupUtils {
   // Updates the visibility and a11y state of the checkable row |container|.
   static void UpdateCheckMarkVisibility(HoverHighlightView* container,
                                         bool visible);
+
+  // Updates the toggle button colors based on the current color mode.
+  static void UpdateToggleButtonColors(views::ToggleButton* toggle);
 
   // Sets the font list for |label| based on |style|.
   static void SetLabelFontList(views::Label* label, FontStyle style);

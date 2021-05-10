@@ -1201,8 +1201,8 @@ static AOM_INLINE void update_b_sep_sym(int wiener_win, int64_t **Mc,
   }
 }
 
-static int wiener_decompose_sep_sym(int wiener_win, int64_t *M, int64_t *H,
-                                    int32_t *a, int32_t *b) {
+static void wiener_decompose_sep_sym(int wiener_win, int64_t *M, int64_t *H,
+                                     int32_t *a, int32_t *b) {
   static const int32_t init_filt[WIENER_WIN] = {
     WIENER_FILT_TAP0_MIDV, WIENER_FILT_TAP1_MIDV, WIENER_FILT_TAP2_MIDV,
     WIENER_FILT_TAP3_MIDV, WIENER_FILT_TAP2_MIDV, WIENER_FILT_TAP1_MIDV,
@@ -1231,7 +1231,6 @@ static int wiener_decompose_sep_sym(int wiener_win, int64_t *M, int64_t *H,
     update_b_sep_sym(wiener_win, Mc, Hc, a, b);
     iter++;
   }
-  return 1;
 }
 
 // Computes the function x'*H*x - x'*M for the learned 2D filter x, and compares
@@ -1527,14 +1526,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
                     limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
 #endif
 
-  if (!wiener_decompose_sep_sym(reduced_wiener_win, M, H, vfilter, hfilter)) {
-    rsc->bits += bits_none;
-    rsc->sse += rusi->sse[RESTORE_NONE];
-    rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
-    rusi->sse[RESTORE_WIENER] = INT64_MAX;
-    if (rsc->lpf_sf->prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
-    return;
-  }
+  wiener_decompose_sep_sym(reduced_wiener_win, M, H, vfilter, hfilter);
 
   RestorationUnitInfo rui;
   memset(&rui, 0, sizeof(rui));

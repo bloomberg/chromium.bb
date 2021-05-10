@@ -32,6 +32,8 @@ class SourceTextModule
   // kErrored.
   SharedFunctionInfo GetSharedFunctionInfo() const;
 
+  Script GetScript() const;
+
   // Whether or not this module is an async module. Set during module creation
   // and does not change afterwards.
   DECL_BOOLEAN_ACCESSORS(async)
@@ -81,6 +83,9 @@ class SourceTextModule
                                           Handle<SourceTextModule> module,
                                           Handle<SourceTextModule> parent);
 
+  // Get the non-hole cycle root. Only valid when status >= kEvaluated.
+  inline Handle<SourceTextModule> GetCycleRoot(Isolate* isolate) const;
+
   // Returns a SourceTextModule, the
   // ith parent in depth first traversal order of a given async child.
   inline Handle<SourceTextModule> GetAsyncParentModule(Isolate* isolate,
@@ -103,10 +108,6 @@ class SourceTextModule
   // Whether or not this module is async and evaluating or currently evaluating
   // an async child.
   DECL_BOOLEAN_ACCESSORS(async_evaluating)
-
-  // The top level promise capability of this module. Will only be defined
-  // for cycle roots.
-  DECL_ACCESSORS(top_level_capability, HeapObject)
 
   // The parent modules of a given async dependency, use async_parent_modules()
   // to retrieve the ArrayList representation.
@@ -136,7 +137,9 @@ class SourceTextModule
 
   static V8_WARN_UNUSED_RESULT bool PrepareInstantiate(
       Isolate* isolate, Handle<SourceTextModule> module,
-      v8::Local<v8::Context> context, v8::Module::ResolveCallback callback);
+      v8::Local<v8::Context> context,
+      v8::Module::ResolveModuleCallback callback,
+      Module::DeprecatedResolveCallback callback_without_import_assertions);
   static V8_WARN_UNUSED_RESULT bool FinishInstantiate(
       Isolate* isolate, Handle<SourceTextModule> module,
       ZoneForwardList<Handle<SourceTextModule>>* stack, unsigned* dfs_index,
@@ -164,10 +167,6 @@ class SourceTextModule
   static V8_WARN_UNUSED_RESULT bool MaybeTransitionComponent(
       Isolate* isolate, Handle<SourceTextModule> module,
       ZoneForwardList<Handle<SourceTextModule>>* stack, Status new_status);
-
-  // Implementation of spec GetAsyncCycleRoot.
-  static V8_WARN_UNUSED_RESULT Handle<SourceTextModule> GetAsyncCycleRoot(
-      Isolate* isolate, Handle<SourceTextModule> module);
 
   // Implementation of spec ExecuteModule is broken up into
   // InnerExecuteAsyncModule for asynchronous modules and ExecuteModule
@@ -203,7 +202,6 @@ class SourceTextModuleInfo : public FixedArray {
   inline FixedArray regular_exports() const;
   inline FixedArray regular_imports() const;
   inline FixedArray namespace_imports() const;
-  inline FixedArray module_request_positions() const;
 
   // Accessors for [regular_exports].
   int RegularExportCount() const;
@@ -225,7 +223,6 @@ class SourceTextModuleInfo : public FixedArray {
     kRegularExportsIndex,
     kNamespaceImportsIndex,
     kRegularImportsIndex,
-    kModuleRequestPositionsIndex,
     kLength
   };
   enum {
@@ -247,7 +244,12 @@ class ModuleRequest
   template <typename LocalIsolate>
   static Handle<ModuleRequest> New(LocalIsolate* isolate,
                                    Handle<String> specifier,
-                                   Handle<FixedArray> import_assertions);
+                                   Handle<FixedArray> import_assertions,
+                                   int position);
+
+  // The number of entries in the import_assertions FixedArray that are used for
+  // a single assertion.
+  static const size_t kAssertionEntrySize = 3;
 
   TQ_OBJECT_CONSTRUCTORS(ModuleRequest)
 };

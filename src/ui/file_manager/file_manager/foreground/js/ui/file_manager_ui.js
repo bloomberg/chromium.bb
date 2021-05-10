@@ -2,12 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {VolumeManager} from '../../../../externs/volume_manager.m.js';
+// #import {FileGrid} from './file_grid.m.js';
+// #import {FileTable} from './file_table.m.js';
+// #import {FilesToast} from '../../elements/files_toast.m.js';
+// #import {Banners} from './banners.m.js';
+// #import {DirectoryTree} from './directory_tree.m.js';
+// #import {FilesPasswordDialog} from '../../elements/files_password_dialog.m.js';
+// #import {LaunchParam} from '../launch_param.m.js';
+// #import {ProvidersModel} from '../providers_model.m.js';
+// #import {A11yAnnounce} from './a11y_announce.m.js';
+// #import {ActionModelUI} from './action_model_ui.m.js';
+// #import {ImportCrostiniImageDialog} from './import_crostini_image_dialog.m.js';
+// #import {DialogFooter} from './dialog_footer.m.js';
+// #import {InstallLinuxPackageDialog} from './install_linux_package_dialog.m.js';
+// #import {Splitter} from 'chrome://resources/js/cr/ui/splitter.m.js';
+// #import {FilesMenuItem} from './files_menu.m.js';
+// #import {decorate, define as crUiDefine} from 'chrome://resources/js/cr/ui.m.js';
+// #import {MenuItem} from 'chrome://resources/js/cr/ui/menu_item.m.js';
+// #import {FilesTooltip} from '../../elements/files_tooltip.m.js';
+// #import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
+// #import {DialogType} from '../dialog_type.m.js';
+// #import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
+// #import {LocationLine} from './location_line.m.js';
+// #import {ListContainer} from './list_container.m.js';
+// #import {AllowedPaths} from '../../../../base/js/volume_manager_types.m.js';
+// #import {ActionsSubmenu} from './actions_submenu.m.js';
+// #import {ProvidersMenu} from './providers_menu.m.js';
+// #import {ComboButton} from './combobutton.m.js';
+// #import {MultiMenu} from './multi_menu.m.js';
+// #import {ProgressCenterPanel} from './progress_center_panel.m.js';
+// #import {GearMenu} from './gear_menu.m.js';
+// #import {MultiMenuButton} from './multi_menu_button.m.js';
+// #import {EmptyFolder} from './empty_folder.m.js';
+// #import {SearchBox} from './search_box.m.js';
+// #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+// #import {FilesConfirmDialog} from './files_confirm_dialog.m.js';
+// #import {FilesAlertDialog} from './files_alert_dialog.m.js';
+// #import {str, util, strf} from '../../../common/js/util.m.js';
+// #import {BaseDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
+// #import {DefaultTaskDialog} from './default_task_dialog.m.js';
+// clang-format on
+
 /**
  * The root of the file manager's view managing the DOM of the Files app.
  * @implements {ActionModelUI}
  * @implements {A11yAnnounce}
  */
-class FileManagerUI {
+/* #export */ class FileManagerUI {
   /**
    * @param {!ProvidersModel} providersModel Model for providers.
    * @param {!HTMLElement} element Top level element of the Files app.
@@ -63,6 +107,7 @@ class FileManagerUI {
      */
     this.deleteConfirmDialog = new FilesConfirmDialog(this.element);
     this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
+    this.deleteConfirmDialog.focusCancelButton = true;
 
     /**
      * Confirm dialog for file move operation.
@@ -86,14 +131,6 @@ class FileManagerUI {
      * @const
      */
     this.defaultTaskPicker = new cr.filebrowser.DefaultTaskDialog(this.element);
-
-    /**
-     * Suggest apps dialog.
-     * @type {!SuggestAppsDialog}
-     * @const
-     */
-    this.suggestAppsDialog = new SuggestAppsDialog(
-        providersModel, this.element, launchParam.suggestAppsDialogState);
 
     /**
      * Dialog for installing .deb files
@@ -254,8 +291,7 @@ class FileManagerUI {
      * @type {!ProgressCenterPanel}
      * @const
      */
-    this.progressCenterPanel = new ProgressCenterPanel(
-        queryRequiredElement('#progress-center', this.element));
+    this.progressCenterPanel = new ProgressCenterPanel();
 
     /**
      * Activity feedback panel.
@@ -358,7 +394,7 @@ class FileManagerUI {
      */
     this.providersMenu = new ProvidersMenu(
         providersModel,
-        util.queryDecoratedElement('#add-new-services-menu', cr.ui.Menu));
+        util.queryDecoratedElement('#providers-menu', cr.ui.Menu));
 
     /**
      * @public {!ActionsSubmenu}
@@ -413,6 +449,16 @@ class FileManagerUI {
         e.stopPropagation();
       });
     }
+
+    /**
+     * True while FilesApp is in the process of a drag and drop. Set to true on
+     * 'dragstart', set to false on 'dragend'. If CrostiniEvent
+     * 'drop_failed_plugin_vm_directory_not_shared' is received during drag, we
+     * show the move-to-windows-files dialog.
+     *
+     * @public {boolean}
+     */
+    this.dragInProcess = false;
   }
 
   /**
@@ -486,6 +532,13 @@ class FileManagerUI {
         }
       });
     });
+
+    document.addEventListener('dragstart', () => {
+      this.dragInProcess = true;
+    });
+    document.addEventListener('dragend', () => {
+      this.dragInProcess = false;
+    });
   }
 
   /**
@@ -522,18 +575,6 @@ class FileManagerUI {
         util.queryDecoratedElement('#directory-tree-context-menu', cr.ui.Menu);
     this.directoryTree.disabledContextMenu =
         util.queryDecoratedElement('#disabled-context-menu', cr.ui.Menu);
-
-    // Visible height of the directory tree depends on the size of progress
-    // center panel. When the size of progress center panel changes, directory
-    // tree has to be notified to adjust its components (e.g. progress bar).
-    const relayoutLimiter = new AsyncUtil.RateLimiter(
-        directoryTree.relayout.bind(directoryTree), 200);
-    const observer =
-        new MutationObserver(relayoutLimiter.run.bind(relayoutLimiter));
-    observer.observe(
-        this.progressCenterPanel.element,
-        /** @type {MutationObserverInit} */
-        ({subtree: true, attributes: true, childList: true}));
   }
 
   /**
@@ -670,24 +711,24 @@ class FileManagerUI {
    */
   decorateSplitter_(splitterElement, opt_resizeNextElement) {
     const self = this;
-    const Splitter = cr.ui.Splitter;
+    const FileSplitter = cr.ui.Splitter;
     const customSplitter = cr.ui.define('div');
 
     customSplitter.prototype = {
-      __proto__: Splitter.prototype,
+      __proto__: FileSplitter.prototype,
 
       handleSplitterDragStart: function(e) {
-        Splitter.prototype.handleSplitterDragStart.apply(this, arguments);
+        FileSplitter.prototype.handleSplitterDragStart.apply(this, arguments);
         this.ownerDocument.documentElement.classList.add('col-resize');
       },
 
       handleSplitterDragMove: function(deltaX) {
-        Splitter.prototype.handleSplitterDragMove.apply(this, arguments);
+        FileSplitter.prototype.handleSplitterDragMove.apply(this, arguments);
         self.relayout();
       },
 
       handleSplitterDragEnd: function(e) {
-        Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
+        FileSplitter.prototype.handleSplitterDragEnd.apply(this, arguments);
         this.ownerDocument.documentElement.classList.remove('col-resize');
       }
     };

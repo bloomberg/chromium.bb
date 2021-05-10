@@ -624,6 +624,58 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
   RunSeekCB_Locked(PIPELINE_OK);
 }
 
+ChunkDemuxer::Status ChunkDemuxer::AddId(
+    const std::string& id,
+    std::unique_ptr<AudioDecoderConfig> audio_config) {
+  DCHECK(audio_config);
+  DVLOG(1) << __func__ << " id="
+           << " audio_config=" << audio_config->AsHumanReadableString();
+  base::AutoLock auto_lock(lock_);
+
+  // Any valid audio config provided by WC is bufferable here, though decode
+  // error may occur later.
+  if (!audio_config->IsValidConfig())
+    return ChunkDemuxer::kNotSupported;
+
+  if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
+    return kReachedIdLimit;
+
+  DCHECK(init_cb_);
+
+  std::string expected_codec = GetCodecName(audio_config->codec());
+  std::unique_ptr<media::StreamParser> stream_parser(
+      media::StreamParserFactory::Create(std::move(audio_config)));
+  DCHECK(stream_parser);
+
+  return AddIdInternal(id, std::move(stream_parser), expected_codec);
+}
+
+ChunkDemuxer::Status ChunkDemuxer::AddId(
+    const std::string& id,
+    std::unique_ptr<VideoDecoderConfig> video_config) {
+  DCHECK(video_config);
+  DVLOG(1) << __func__ << " id="
+           << " video_config=" << video_config->AsHumanReadableString();
+  base::AutoLock auto_lock(lock_);
+
+  // Any valid video config provided by WC is bufferable here, though decode
+  // error may occur later.
+  if (!video_config->IsValidConfig())
+    return ChunkDemuxer::kNotSupported;
+
+  if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
+    return kReachedIdLimit;
+
+  DCHECK(init_cb_);
+
+  std::string expected_codec = GetCodecName(video_config->codec());
+  std::unique_ptr<media::StreamParser> stream_parser(
+      media::StreamParserFactory::Create(std::move(video_config)));
+  DCHECK(stream_parser);
+
+  return AddIdInternal(id, std::move(stream_parser), expected_codec);
+}
+
 ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                                          const std::string& content_type,
                                          const std::string& codecs) {
@@ -645,6 +697,18 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
              << " codecs=" << codecs;
     return ChunkDemuxer::kNotSupported;
   }
+
+  return AddIdInternal(id, std::move(stream_parser),
+                       ExpectedCodecs(content_type, codecs));
+}
+
+ChunkDemuxer::Status ChunkDemuxer::AddIdInternal(
+    const std::string& id,
+    std::unique_ptr<media::StreamParser> stream_parser,
+    std::string expected_codecs) {
+  DVLOG(2) << __func__ << " id=" << id
+           << " expected_codecs=" << expected_codecs;
+  lock_.AssertAcquired();
 
   std::unique_ptr<FrameProcessor> frame_processor =
       std::make_unique<FrameProcessor>(
@@ -670,8 +734,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   source_state->Init(base::BindOnce(&ChunkDemuxer::OnSourceInitDone,
                                     base::Unretained(this), id),
-                     ExpectedCodecs(content_type, codecs),
-                     encrypted_media_init_data_cb_, base::NullCallback());
+                     expected_codecs, encrypted_media_init_data_cb_,
+                     base::NullCallback());
 
   // TODO(wolenetz): Change to DCHECKs once less verification in release build
   // is needed. See https://crbug.com/786975.
@@ -883,6 +947,66 @@ bool ChunkDemuxer::AppendData(const std::string& id,
       case ENDED:
       case SHUTDOWN:
         DVLOG(1) << "AppendData(): called in unexpected state " << state_;
+        return false;
+    }
+
+    // Check to see if data was appended at the pending seek point. This
+    // indicates we have parsed enough data to complete the seek. Work is still
+    // in progress at this point, but it's okay since |seek_cb_| will post.
+    if (old_waiting_for_data && !IsSeekWaitingForData_Locked() && seek_cb_)
+      RunSeekCB_Locked(PIPELINE_OK);
+
+    ranges = GetBufferedRanges_Locked();
+  }
+
+  host_->OnBufferedTimeRangesChanged(ranges);
+  progress_cb_.Run();
+  return true;
+}
+
+bool ChunkDemuxer::AppendChunks(
+    const std::string& id,
+    std::unique_ptr<StreamParser::BufferQueue> buffer_queue,
+    base::TimeDelta append_window_start,
+    base::TimeDelta append_window_end,
+    base::TimeDelta* timestamp_offset) {
+  DCHECK(buffer_queue);
+  DVLOG(1) << __func__ << ": " << id
+           << ", buffer_queue size()=" << buffer_queue->size();
+
+  DCHECK(!id.empty());
+  DCHECK(timestamp_offset);
+
+  Ranges<TimeDelta> ranges;
+
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK_NE(state_, ENDED);
+
+    // Capture if any of the SourceBuffers are waiting for data before we start
+    // buffering new chunks.
+    bool old_waiting_for_data = IsSeekWaitingForData_Locked();
+
+    if (buffer_queue->size() == 0u)
+      return true;
+
+    switch (state_) {
+      case INITIALIZING:
+      case INITIALIZED:
+        DCHECK(IsValidId(id));
+        if (!source_state_map_[id]->AppendChunks(
+                std::move(buffer_queue), append_window_start, append_window_end,
+                timestamp_offset)) {
+          ReportError_Locked(CHUNK_DEMUXER_ERROR_APPEND_FAILED);
+          return false;
+        }
+        break;
+
+      case PARSE_ERROR:
+      case WAITING_FOR_INIT:
+      case ENDED:
+      case SHUTDOWN:
+        DVLOG(1) << "AppendChunks(): called in unexpected state " << state_;
         return false;
     }
 
@@ -1294,7 +1418,7 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
     DemuxerStream::Type type) {
   // New ChunkDemuxerStreams can be created only during initialization segment
   // processing, which happens when a new chunk of data is appended and the
-  // lock_ must be held by ChunkDemuxer::AppendData.
+  // lock_ must be held by ChunkDemuxer::AppendData/Chunks.
   lock_.AssertAcquired();
 
   MediaTrack::Id media_track_id = GenerateMediaTrackId();

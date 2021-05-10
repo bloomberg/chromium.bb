@@ -7,10 +7,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include <array>
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/optional.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,7 +34,7 @@ class VulkanDeviceQueue;
 
 class COMPONENT_EXPORT(VULKAN) VulkanImage {
  public:
-  explicit VulkanImage(util::PassKey<VulkanImage> pass_key);
+  explicit VulkanImage(base::PassKey<VulkanImage> pass_key);
   ~VulkanImage();
 
   VulkanImage(VulkanImage&) = delete;
@@ -55,7 +58,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       VkFormat format,
       VkImageUsageFlags usage,
       VkImageCreateFlags flags = 0,
-      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL);
+      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL,
+      void* image_create_info_next = nullptr,
+      void* memory_allocation_info_next = nullptr);
 
   static std::unique_ptr<VulkanImage> CreateFromGpuMemoryBufferHandle(
       VulkanDeviceQueue* device_queue,
@@ -78,6 +83,16 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       base::Optional<VulkanYCbCrInfo>& ycbcr_info,
       VkImageUsageFlags usage,
       VkImageCreateFlags flags);
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  static std::unique_ptr<VulkanImage> CreateWithExternalMemoryAndModifiers(
+      VulkanDeviceQueue* device_queue,
+      const gfx::Size& size,
+      VkFormat format,
+      std::vector<uint64_t> modifiers,
+      VkImageUsageFlags usage,
+      VkImageCreateFlags flags);
+#endif
 
   void Destroy();
 
@@ -120,6 +135,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
   const scoped_refptr<gfx::NativePixmap>& native_pixmap() const {
     return native_pixmap_;
   }
+  uint64_t modifier() const { return modifier_; }
+  size_t plane_count() const { return plane_count_; }
+  const std::array<VkSubresourceLayout, 4>& layouts() const { return layouts_; }
 
  private:
   bool Initialize(VulkanDeviceQueue* device_queue,
@@ -136,7 +154,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
                                     VkFormat format,
                                     VkImageUsageFlags usage,
                                     VkImageCreateFlags flags,
-                                    VkImageTiling image_tiling);
+                                    VkImageTiling image_tiling,
+                                    void* image_create_info_next,
+                                    void* memory_allocation_info_next);
   bool InitializeFromGpuMemoryBufferHandle(
       VulkanDeviceQueue* device_queue,
       gfx::GpuMemoryBufferHandle gmb_handle,
@@ -145,6 +165,15 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       VkImageUsageFlags usage,
       VkImageCreateFlags flags,
       VkImageTiling image_tiling);
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  bool InitializeWithExternalMemoryAndModifiers(VulkanDeviceQueue* device_queue,
+                                                const gfx::Size& size,
+                                                VkFormat format,
+                                                std::vector<uint64_t> modifiers,
+                                                VkImageUsageFlags usage,
+                                                VkImageCreateFlags flags);
+#endif
 
   VulkanDeviceQueue* device_queue_ = nullptr;
   gfx::Size size_;
@@ -161,6 +190,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
   VkDeviceMemory device_memory_ = VK_NULL_HANDLE;
   VkExternalMemoryHandleTypeFlags handle_types_ = 0;
   scoped_refptr<gfx::NativePixmap> native_pixmap_;
+  uint64_t modifier_ = gfx::NativePixmapHandle::kNoModifier;
+  size_t plane_count_ = 1;
+  std::array<VkSubresourceLayout, 4> layouts_ = {};
 };
 
 }  // namespace gpu

@@ -89,7 +89,9 @@ void SVGFilterElement::Trace(Visitor* visitor) const {
   SVGURIReference::Trace(visitor);
 }
 
-void SVGFilterElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGFilterElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   bool is_xywh =
       attr_name == svg_names::kXAttr || attr_name == svg_names::kYAttr ||
       attr_name == svg_names::kWidthAttr || attr_name == svg_names::kHeightAttr;
@@ -103,7 +105,7 @@ void SVGFilterElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGElement::SvgAttributeChanged(attr_name);
+  SVGElement::SvgAttributeChanged(params);
 }
 
 LocalSVGResource* SVGFilterElement::AssociatedResource() const {
@@ -119,10 +121,8 @@ void SVGFilterElement::PrimitiveAttributeChanged(
 }
 
 void SVGFilterElement::InvalidateFilterChain() {
-  if (LocalSVGResource* resource = AssociatedResource()) {
-    resource->NotifyContentChanged(SVGResourceClient::kPaintInvalidation |
-                                   SVGResourceClient::kFilterCacheInvalidation);
-  }
+  if (LocalSVGResource* resource = AssociatedResource())
+    resource->NotifyContentChanged();
 }
 
 void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import {appendStyle} from './append-style.js';
 import {focusChanged} from './focus-changed.js';
 import {injectCoreStyles} from './inject-core-styles.js';
@@ -12,7 +9,7 @@ import {injectCoreStyles} from './inject-core-styles.js';
 /**
  * @param {!Element} element
  * @param {(!{cssFile:(string|undefined),delegatesFocus:(boolean|undefined),enableLegacyPatching:boolean}|undefined)} options
- * @return {!DocumentFragment}
+ * @return {!ShadowRoot}
  */
 export function createShadowRootWithCoreStyles(element, options = {
   delegatesFocus: undefined,
@@ -30,6 +27,6 @@ export function createShadowRootWithCoreStyles(element, options = {
   if (cssFile) {
     appendStyle(shadowRoot, cssFile, {enableLegacyPatching});
   }
-  shadowRoot.addEventListener('focus', focusChanged.bind(UI), true);
+  shadowRoot.addEventListener('focus', focusChanged, true);
   return shadowRoot;
 }

@@ -9,12 +9,14 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -34,7 +36,7 @@ namespace storage {
 
 const base::FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
-const base::FilePath::CharType kOffTheRecordDatabaseDirectoryName[] =
+const base::FilePath::CharType kIncognitoDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases-off-the-record");
 const base::FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
@@ -55,44 +57,28 @@ OriginInfo::~OriginInfo() = default;
 
 void OriginInfo::GetAllDatabaseNames(
     std::vector<base::string16>* databases) const {
-  for (const auto& pair : database_info_)
-    databases->push_back(pair.first);
+  for (const auto& name_and_size : database_sizes_)
+    databases->push_back(name_and_size.first);
 }
 
 int64_t OriginInfo::GetDatabaseSize(const base::string16& database_name) const {
-  auto it = database_info_.find(database_name);
-  if (it != database_info_.end())
-    return it->second.size;
+  auto it = database_sizes_.find(database_name);
+  if (it != database_sizes_.end())
+    return it->second;
   return 0;
-}
-
-base::string16 OriginInfo::GetDatabaseDescription(
-    const base::string16& database_name) const {
-  auto it = database_info_.find(database_name);
-  if (it != database_info_.end())
-    return it->second.description;
-  return base::string16();
-}
-
-base::Time OriginInfo::GetDatabaseLastModified(
-    const base::string16& database_name) const {
-  auto it = database_info_.find(database_name);
-  if (it != database_info_.end())
-    return it->second.last_modified;
-  return base::Time();
 }
 
 OriginInfo::OriginInfo(const std::string& origin_identifier, int64_t total_size)
     : origin_identifier_(origin_identifier), total_size_(total_size) {}
 
 DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
-                                 bool is_off_the_record,
+                                 bool is_incognito,
                                  SpecialStoragePolicy* special_storage_policy,
                                  QuotaManagerProxy* quota_manager_proxy)
-    : is_off_the_record_(is_off_the_record),
+    : is_incognito_(is_incognito),
       profile_path_(profile_path),
-      db_dir_(is_off_the_record_
-                  ? profile_path_.Append(kOffTheRecordDatabaseDirectoryName)
+      db_dir_(is_incognito_
+                  ? profile_path_.Append(kIncognitoDatabaseDirectoryName)
                   : profile_path_.Append(kDatabaseDirectoryName)),
       db_(new sql::Database()),
       special_storage_policy_(special_storage_policy),
@@ -101,7 +87,8 @@ DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(
+    // TODO(crbug.com/1163048): Use mojo and switch to RegisterClient().
+    quota_manager_proxy->RegisterLegacyClient(
         base::MakeRefCounted<DatabaseQuotaClient>(this),
         QuotaClientType::kDatabase, {blink::mojom::StorageType::kTemporary});
   }
@@ -126,7 +113,7 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         GetOriginFromIdentifier(origin_identifier),
-        blink::mojom::StorageType::kTemporary);
+        blink::mojom::StorageType::kTemporary, base::Time::Now());
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
                                 database_description, estimated_size);
@@ -162,7 +149,7 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         GetOriginFromIdentifier(origin_identifier),
-        blink::mojom::StorageType::kTemporary);
+        blink::mojom::StorageType::kTemporary, base::Time::Now());
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
   if (database_connections_.RemoveConnection(origin_identifier, database_name))
@@ -183,8 +170,7 @@ void DatabaseTracker::HandleSqliteError(
   // Note: the client-side filters out all but these two errors as
   // a small optimization, see WebDatabaseObserverImpl::HandleSqliteError.
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
-    DeleteDatabase(origin_identifier, database_name,
-                   net::CompletionOnceCallback());
+    DeleteDatabase(origin_identifier, database_name, base::DoNothing());
   }
 }
 
@@ -259,7 +245,7 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearAllCachedOriginInfo();
 
-  if (!is_off_the_record_) {
+  if (!is_incognito_) {
     meta_table_.reset(nullptr);
     databases_table_.reset(nullptr);
     db_->Close();
@@ -273,16 +259,16 @@ base::FilePath DatabaseTracker::GetOriginDirectory(
 
   base::string16 origin_directory;
 
-  if (!is_off_the_record_) {
+  if (!is_incognito_) {
     origin_directory = base::UTF8ToUTF16(origin_identifier);
   } else {
-    auto it = off_the_record_origin_directories_.find(origin_identifier);
-    if (it != off_the_record_origin_directories_.end()) {
+    auto it = incognito_origin_directories_.find(origin_identifier);
+    if (it != incognito_origin_directories_.end()) {
       origin_directory = it->second;
     } else {
-      origin_directory = base::NumberToString16(
-          off_the_record_origin_directories_generator_++);
-      off_the_record_origin_directories_[origin_identifier] = origin_directory;
+      origin_directory =
+          base::NumberToString16(incognito_origin_directories_generator_++);
+      incognito_origin_directories_[origin_identifier] = origin_directory;
     }
   }
 
@@ -373,7 +359,8 @@ bool DatabaseTracker::DeleteClosedDatabase(
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
         QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_identifier),
-        blink::mojom::StorageType::kTemporary, -db_file_size);
+        blink::mojom::StorageType::kTemporary, -db_file_size,
+        base::Time::Now());
 
   // Clean up the main database and invalidate the cached record.
   databases_table_->DeleteDatabaseDetails(origin_identifier, database_name);
@@ -427,18 +414,18 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   base::DeletePathRecursively(origin_dir);
   base::DeletePathRecursively(new_origin_dir);  // Might fail on windows.
 
-  if (is_off_the_record_) {
-    off_the_record_origin_directories_.erase(origin_identifier);
+  if (is_incognito_) {
+    incognito_origin_directories_.erase(origin_identifier);
 
     // TODO(jsbell): Consider alternate data structures to avoid this
     // linear scan.
-    for (auto it = off_the_record_file_handles_.begin();
-         it != off_the_record_file_handles_.end();) {
+    for (auto it = incognito_file_handles_.begin();
+         it != incognito_file_handles_.end();) {
       std::string id;
       if (DatabaseUtil::CrackVfsFileName(it->first, &id, nullptr, nullptr) &&
           id == origin_identifier) {
         delete it->second;
-        it = off_the_record_file_handles_.erase(it);
+        it = incognito_file_handles_.erase(it);
       } else {
         ++it;
       }
@@ -450,7 +437,8 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
         QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_identifier),
-        blink::mojom::StorageType::kTemporary, -deleted_size);
+        blink::mojom::StorageType::kTemporary, -deleted_size,
+        base::Time::Now());
   }
 
   return true;
@@ -507,12 +495,11 @@ bool DatabaseTracker::LazyInit() {
     databases_table_.reset(new DatabasesTable(db_.get()));
     meta_table_.reset(new sql::MetaTable());
 
-    is_initialized_ =
-        base::CreateDirectory(db_dir_) &&
-        (db_->is_open() ||
-         (is_off_the_record_ ? db_->OpenInMemory()
-                             : db_->Open(kTrackerDatabaseFullPath))) &&
-        UpgradeToCurrentVersion();
+    is_initialized_ = base::CreateDirectory(db_dir_) &&
+                      (db_->is_open() ||
+                       (is_incognito_ ? db_->OpenInMemory()
+                                      : db_->Open(kTrackerDatabaseFullPath))) &&
+                      UpgradeToCurrentVersion();
     if (!is_initialized_) {
       databases_table_.reset(nullptr);
       meta_table_.reset(nullptr);
@@ -595,7 +582,6 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
         db_file_size = GetDBFileSize(origin_identifier, db.database_name);
       }
       origin_info.SetDatabaseSize(db.database_name, db_file_size);
-      origin_info.SetDatabaseDescription(db.database_name, db.description);
 
       base::FilePath path =
           GetFullDBFilePath(origin_identifier, db.database_name);
@@ -603,8 +589,7 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
       // TODO(jsbell): Avoid duplicate base::GetFileInfo calls between this and
       // the GetDBFileSize() call above.
       if (base::GetFileInfo(path, &file_info)) {
-        origin_info.SetDatabaseLastModified(db.database_name,
-                                            file_info.last_modified);
+        origin_info.UpdateLastModified(file_info.last_modified);
       }
     }
   }
@@ -634,7 +619,6 @@ int64_t DatabaseTracker::SeedOpenDatabaseInfo(
   CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
   if (info) {
     info->SetDatabaseSize(name, size);
-    info->SetDatabaseDescription(name, description);
   }
   return size;
 }
@@ -648,8 +632,6 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
   int64_t new_size = GetDBFileSize(origin_id, name);
   int64_t old_size = database_connections_.GetOpenDatabaseSize(origin_id, name);
   CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
-  if (info && opt_description)
-    info->SetDatabaseDescription(name, *opt_description);
   if (old_size != new_size) {
     database_connections_.SetOpenDatabaseSize(origin_id, name, new_size);
     if (info)
@@ -657,7 +639,8 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
           QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_id),
-          blink::mojom::StorageType::kTemporary, new_size - old_size);
+          blink::mojom::StorageType::kTemporary, new_size - old_size,
+          base::Time::Now());
     for (auto& observer : observers_)
       observer.OnDatabaseSizeChanged(origin_id, name, new_size);
   }
@@ -689,39 +672,46 @@ void DatabaseTracker::ScheduleDatabasesForDeletion(
   }
 }
 
-int DatabaseTracker::DeleteDatabase(const std::string& origin_identifier,
-                                    const base::string16& database_name,
-                                    net::CompletionOnceCallback callback) {
+void DatabaseTracker::DeleteDatabase(const std::string& origin_identifier,
+                                     const base::string16& database_name,
+                                     net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!LazyInit())
-    return net::ERR_FAILED;
+  DCHECK(!callback.is_null());
+  if (!LazyInit()) {
+    std::move(callback).Run(net::ERR_FAILED);
+    return;
+  }
 
   if (database_connections_.IsDatabaseOpened(origin_identifier,
                                              database_name)) {
-    if (!callback.is_null()) {
-      DatabaseSet set;
-      set[origin_identifier].insert(database_name);
-      deletion_callbacks_.emplace_back(std::move(callback), set);
-    }
+    DatabaseSet set;
+    set[origin_identifier].insert(database_name);
+    deletion_callbacks_.emplace_back(std::move(callback), std::move(set));
     ScheduleDatabaseForDeletion(origin_identifier, database_name);
-    return net::ERR_IO_PENDING;
+    return;
   }
+
   DeleteClosedDatabase(origin_identifier, database_name);
-  return net::OK;
+  std::move(callback).Run(net::OK);
 }
 
-int DatabaseTracker::DeleteDataModifiedSince(
+void DatabaseTracker::DeleteDataModifiedSince(
     const base::Time& cutoff,
     net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!LazyInit())
-    return net::ERR_FAILED;
-
-  DatabaseSet to_be_deleted;
+  DCHECK(!callback.is_null());
+  if (!LazyInit()) {
+    std::move(callback).Run(net::ERR_FAILED);
+    return;
+  }
 
   std::vector<std::string> origins_identifiers;
-  if (!databases_table_->GetAllOriginIdentifiers(&origins_identifiers))
-    return net::ERR_FAILED;
+  if (!databases_table_->GetAllOriginIdentifiers(&origins_identifiers)) {
+    std::move(callback).Run(net::ERR_FAILED);
+    return;
+  }
+
+  DatabaseSet to_be_deleted;
   int rv = net::OK;
   for (const auto& origin : origins_identifiers) {
     if (special_storage_policy_.get() &&
@@ -732,8 +722,9 @@ int DatabaseTracker::DeleteDataModifiedSince(
 
     std::vector<DatabaseDetails> details;
     if (!databases_table_->GetAllDatabaseDetailsForOriginIdentifier(origin,
-                                                                    &details))
+                                                                    &details)) {
       rv = net::ERR_FAILED;
+    }
     for (const DatabaseDetails& db : details) {
       base::FilePath db_file = GetFullDBFilePath(origin, db.database_name);
       base::File::Info file_info;
@@ -742,110 +733,123 @@ int DatabaseTracker::DeleteDataModifiedSince(
         continue;
 
       // Check if the database is opened by any renderer.
-      if (database_connections_.IsDatabaseOpened(origin, db.database_name))
+      if (database_connections_.IsDatabaseOpened(origin, db.database_name)) {
         to_be_deleted[origin].insert(db.database_name);
-      else
+      } else {
         DeleteClosedDatabase(origin, db.database_name);
+      }
     }
   }
 
-  if (rv != net::OK)
-    return rv;
+  if (rv != net::OK) {
+    DCHECK_EQ(rv, net::ERR_FAILED);
+    std::move(callback).Run(rv);
+    return;
+  }
 
   if (!to_be_deleted.empty()) {
     ScheduleDatabasesForDeletion(to_be_deleted, std::move(callback));
-    return net::ERR_IO_PENDING;
+    return;
   }
-  return net::OK;
+
+  std::move(callback).Run(net::OK);
 }
 
-int DatabaseTracker::DeleteDataForOrigin(const url::Origin& origin,
-                                         net::CompletionOnceCallback callback) {
+void DatabaseTracker::DeleteDataForOrigin(
+    const url::Origin& origin,
+    net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!LazyInit())
-    return net::ERR_FAILED;
-
-  DatabaseSet to_be_deleted;
+  DCHECK(!callback.is_null());
+  if (!LazyInit()) {
+    std::move(callback).Run(net::ERR_FAILED);
+    return;
+  }
 
   const std::string identifier = GetIdentifierFromOrigin(origin);
 
   std::vector<DatabaseDetails> details;
   if (!databases_table_->GetAllDatabaseDetailsForOriginIdentifier(identifier,
-                                                                  &details))
-    return net::ERR_FAILED;
-  for (const auto& db : details) {
+                                                                  &details)) {
+    std::move(callback).Run(net::ERR_FAILED);
+    return;
+  }
+
+  DatabaseSet to_be_deleted;
+  for (const DatabaseDetails& db : details) {
     // Check if the database is opened by any renderer.
-    if (database_connections_.IsDatabaseOpened(identifier, db.database_name))
+    if (database_connections_.IsDatabaseOpened(identifier, db.database_name)) {
       to_be_deleted[identifier].insert(db.database_name);
-    else
+    } else {
       DeleteClosedDatabase(identifier, db.database_name);
+    }
   }
 
   if (!to_be_deleted.empty()) {
     ScheduleDatabasesForDeletion(to_be_deleted, std::move(callback));
-    return net::ERR_IO_PENDING;
+    return;
   }
-  return net::OK;
+
+  std::move(callback).Run(net::OK);
 }
 
-const base::File* DatabaseTracker::GetOffTheRecordFile(
+const base::File* DatabaseTracker::GetIncognitoFile(
     const base::string16& vfs_file_name) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_off_the_record_);
-  auto it = off_the_record_file_handles_.find(vfs_file_name);
-  if (it != off_the_record_file_handles_.end())
+  DCHECK(is_incognito_);
+  auto it = incognito_file_handles_.find(vfs_file_name);
+  if (it != incognito_file_handles_.end())
     return it->second;
 
   return nullptr;
 }
 
-const base::File* DatabaseTracker::SaveOffTheRecordFile(
+const base::File* DatabaseTracker::SaveIncognitoFile(
     const base::string16& vfs_file_name,
     base::File file) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_off_the_record_);
+  DCHECK(is_incognito_);
   if (!file.IsValid())
     return nullptr;
 
   base::File* to_insert = new base::File(std::move(file));
-  auto rv = off_the_record_file_handles_.insert(
-      std::make_pair(vfs_file_name, to_insert));
+  auto rv =
+      incognito_file_handles_.insert(std::make_pair(vfs_file_name, to_insert));
   DCHECK(rv.second);
   return rv.first->second;
 }
 
-void DatabaseTracker::CloseOffTheRecordFileHandle(
+void DatabaseTracker::CloseIncognitoFileHandle(
     const base::string16& vfs_file_name) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(is_off_the_record_);
-  DCHECK(off_the_record_file_handles_.find(vfs_file_name) !=
-         off_the_record_file_handles_.end());
+  DCHECK(is_incognito_);
+  DCHECK(incognito_file_handles_.find(vfs_file_name) !=
+         incognito_file_handles_.end());
 
-  auto it = off_the_record_file_handles_.find(vfs_file_name);
-  if (it != off_the_record_file_handles_.end()) {
+  auto it = incognito_file_handles_.find(vfs_file_name);
+  if (it != incognito_file_handles_.end()) {
     delete it->second;
-    off_the_record_file_handles_.erase(it);
+    incognito_file_handles_.erase(it);
   }
 }
 
-bool DatabaseTracker::HasSavedOffTheRecordFileHandle(
+bool DatabaseTracker::HasSavedIncognitoFileHandle(
     const base::string16& vfs_file_name) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  return (off_the_record_file_handles_.find(vfs_file_name) !=
-          off_the_record_file_handles_.end());
+  return (incognito_file_handles_.find(vfs_file_name) !=
+          incognito_file_handles_.end());
 }
 
-void DatabaseTracker::DeleteOffTheRecordDBDirectory() {
+void DatabaseTracker::DeleteIncognitoDBDirectory() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   is_initialized_ = false;
 
-  for (auto& pair : off_the_record_file_handles_)
+  for (auto& pair : incognito_file_handles_)
     delete pair.second;
 
-  base::FilePath off_the_record_db_dir =
-      profile_path_.Append(kOffTheRecordDatabaseDirectoryName);
-  if (base::DirectoryExists(off_the_record_db_dir))
-    base::DeletePathRecursively(off_the_record_db_dir);
+  base::FilePath incognito_db_dir =
+      profile_path_.Append(kIncognitoDatabaseDirectoryName);
+  if (base::DirectoryExists(incognito_db_dir))
+    base::DeletePathRecursively(incognito_db_dir);
 }
 
 void DatabaseTracker::ClearSessionOnlyOrigins() {
@@ -893,8 +897,8 @@ void DatabaseTracker::Shutdown() {
     return;
   }
   shutting_down_ = true;
-  if (is_off_the_record_)
-    DeleteOffTheRecordDBDirectory();
+  if (is_incognito_)
+    DeleteIncognitoDBDirectory();
   else if (!force_keep_session_state_)
     ClearSessionOnlyOrigins();
   CloseTrackerDatabaseAndClearCaches();

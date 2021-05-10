@@ -10,9 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
-#include "third_party/blink/renderer/modules/nfc/ndef_writer.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -22,10 +20,6 @@ const char NFCProxy::kSupplementName[] = "NFCProxy";
 
 // static
 NFCProxy* NFCProxy::From(LocalDOMWindow& window) {
-  // https://w3c.github.io/web-nfc/#security-policies
-  // WebNFC API must be only accessible from top level browsing context.
-  DCHECK(window.GetFrame()->IsMainFrame());
-
   NFCProxy* nfc_proxy = Supplement<LocalDOMWindow>::From<NFCProxy>(window);
   if (!nfc_proxy) {
     nfc_proxy = MakeGarbageCollected<NFCProxy>(window);
@@ -66,11 +60,8 @@ void NFCProxy::StopReading(NDEFReader* reader) {
   DCHECK(reader);
   auto iter = readers_.find(reader);
   if (iter != readers_.end()) {
-    if (nfc_remote_) {
-      // We do not need to notify |reader| of anything.
-      nfc_remote_->CancelWatch(
-          iter->value, device::mojom::blink::NFC::CancelWatchCallback());
-    }
+    if (nfc_remote_)
+      nfc_remote_->CancelWatch(iter->value);
     readers_.erase(iter);
   }
 }
@@ -80,9 +71,9 @@ bool NFCProxy::IsReading(const NDEFReader* reader) {
   return readers_.Contains(const_cast<NDEFReader*>(reader));
 }
 
-void NFCProxy::AddWriter(NDEFWriter* writer) {
-  DCHECK(!writers_.Contains(writer));
-  writers_.insert(writer);
+void NFCProxy::AddWriter(NDEFReader* writer) {
+  if (!writers_.Contains(writer))
+    writers_.insert(writer);
 }
 
 void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
@@ -92,10 +83,10 @@ void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
   nfc_remote_->Push(std::move(message), std::move(options), std::move(cb));
 }
 
-void NFCProxy::CancelPush(
-    device::mojom::blink::NFC::CancelPushCallback callback) {
-  DCHECK(nfc_remote_);
-  nfc_remote_->CancelPush(std::move(callback));
+void NFCProxy::CancelPush() {
+  if (!nfc_remote_)
+    return;
+  nfc_remote_->CancelPush();
 }
 
 // device::mojom::blink::NFCClient implementation.
@@ -115,11 +106,11 @@ void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
 
 void NFCProxy::OnError(device::mojom::blink::NDEFErrorPtr error) {
   // Dispatch the event to all readers. We iterate on a copy of |readers_|
-  // because a reader's onerror event handler may remove itself from |readers_|
-  // just during the iteration process.
+  // because a reader's onreadingerror event handler may remove itself from
+  // |readers_| just during the iteration process.
   ReaderMap copy = readers_;
   for (auto& pair : copy) {
-    pair.key->OnError(error->error_message);
+    pair.key->OnReadingError(error->error_message);
   }
 }
 
@@ -180,21 +171,20 @@ void NFCProxy::OnMojoConnectionError() {
   nfc_remote_.reset();
   client_receiver_.reset();
 
-  // Notify all active readers about the connection error and clear the list.
+  // Notify all active readers about the connection error.
   ReaderMap readers = std::move(readers_);
   for (auto& pair : readers) {
-    pair.key->OnMojoConnectionError();
+    pair.key->ReadOnMojoConnectionError();
   }
 
   // Each connection maintains its own watch ID numbering, so reset to 1 on
   // connection error.
   next_watch_id_ = 1;
 
-  // Notify all writers about the connection error.
+  // Notify all writers about the connection error and clear the list.
   for (auto& writer : writers_) {
-    writer->OnMojoConnectionError();
+    writer->WriteOnMojoConnectionError();
   }
-  // Clear the reader list.
   writers_.clear();
 }
 

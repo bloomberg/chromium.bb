@@ -27,13 +27,32 @@ class CommandProcessor;
 
 namespace vk
 {
-// CommandProcessor is used to dispatch work to the GPU when commandProcessor feature is true.
-// If asynchronousCommandProcessing is enabled the work will be queued and handled by a worker
-// thread asynchronous to the context. Issuing the CustomTask::Exit command will cause the worker
-// thread to clean up it's resources and shut down. This command is sent when the renderer instance
-// shuts down. Custom tasks are:
+enum class SubmitPolicy
+{
+    AllowDeferred,
+    EnsureSubmitted,
+};
 
-enum CustomTask
+class FenceRecycler
+{
+  public:
+    FenceRecycler() {}
+    ~FenceRecycler() {}
+    void destroy(vk::Context *context);
+
+    angle::Result newSharedFence(vk::Context *context, vk::Shared<vk::Fence> *sharedFenceOut);
+    inline void resetSharedFence(vk::Shared<vk::Fence> *sharedFenceIn)
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        sharedFenceIn->resetAndRecycle(&mRecyler);
+    }
+
+  private:
+    std::mutex mMutex;
+    vk::Recycler<vk::Fence> mRecyler;
+};
+
+enum class CustomTask
 {
     Invalid = 0,
     // Process SecondaryCommandBuffer commands into the primary CommandBuffer.
@@ -54,6 +73,7 @@ enum CustomTask
     Exit,
 };
 
+// CommandProcessorTask interface
 class CommandProcessorTask
 {
   public:
@@ -63,24 +83,23 @@ class CommandProcessorTask
 
     void initTask(CustomTask command) { mTask = command; }
 
-    void initProcessCommands(ContextVk *contextVk,
-                             CommandBufferHelper *commandBuffer,
-                             RenderPass *renderPass);
+    void initProcessCommands(CommandBufferHelper *commandBuffer, const RenderPass *renderPass);
 
-    void initPresent(egl::ContextPriority priority, VkPresentInfoKHR &presentInfo);
+    void initPresent(egl::ContextPriority priority, const VkPresentInfoKHR &presentInfo);
 
     void initFinishToSerial(Serial serial);
 
-    void initFlushAndQueueSubmit(std::vector<VkSemaphore> &&waitSemaphores,
-                                 std::vector<VkPipelineStageFlags> &&waitSemaphoreStageMasks,
+    void initFlushAndQueueSubmit(const std::vector<VkSemaphore> &waitSemaphores,
+                                 const std::vector<VkPipelineStageFlags> &waitSemaphoreStageMasks,
                                  const Semaphore *semaphore,
                                  egl::ContextPriority priority,
                                  GarbageList &&currentGarbage,
-                                 ResourceUseList &&currentResources);
+                                 Serial submitQueueSerial);
 
-    void initOneOffQueueSubmit(VkCommandBuffer oneOffCommandBufferVk,
+    void initOneOffQueueSubmit(VkCommandBuffer commandBufferHandle,
                                egl::ContextPriority priority,
-                               const Fence *fence);
+                               const Fence *fence,
+                               Serial submitQueueSerial);
 
     CommandProcessorTask &operator=(CommandProcessorTask &&rhs);
 
@@ -91,7 +110,6 @@ class CommandProcessorTask
 
     void setQueueSerial(Serial serial) { mSerial = serial; }
     Serial getQueueSerial() const { return mSerial; }
-    ResourceUseList &getResourceUseList() { return mResourceUseList; }
     CustomTask getTaskCommand() { return mTask; }
     std::vector<VkSemaphore> &getWaitSemaphores() { return mWaitSemaphores; }
     std::vector<VkPipelineStageFlags> &getWaitSemaphoreStageMasks()
@@ -101,12 +119,11 @@ class CommandProcessorTask
     const Semaphore *getSemaphore() { return mSemaphore; }
     GarbageList &getGarbage() { return mGarbage; }
     egl::ContextPriority getPriority() const { return mPriority; }
-    const VkCommandBuffer &getOneOffCommandBufferVk() const { return mOneOffCommandBufferVk; }
+    VkCommandBuffer getOneOffCommandBufferVk() const { return mOneOffCommandBufferVk; }
     const Fence *getOneOffFence() { return mOneOffFence; }
     const VkPresentInfoKHR &getPresentInfo() const { return mPresentInfo; }
-    RenderPass *getRenderPass() const { return mRenderPass; }
+    const RenderPass *getRenderPass() const { return mRenderPass; }
     CommandBufferHelper *getCommandBuffer() const { return mCommandBuffer; }
-    ContextVk *getContextVk() const { return mContextVk; }
 
   private:
     void copyPresentInfo(const VkPresentInfoKHR &other);
@@ -114,8 +131,7 @@ class CommandProcessorTask
     CustomTask mTask;
 
     // ProcessCommands
-    ContextVk *mContextVk;
-    RenderPass *mRenderPass;
+    const RenderPass *mRenderPass;
     CommandBufferHelper *mCommandBuffer;
 
     // Flush data
@@ -123,7 +139,6 @@ class CommandProcessorTask
     std::vector<VkPipelineStageFlags> mWaitSemaphoreStageMasks;
     const Semaphore *mSemaphore;
     GarbageList mGarbage;
-    ResourceUseList mResourceUseList;
 
     // FinishToSerial & Flush command data
     Serial mSerial;
@@ -162,44 +177,119 @@ struct CommandBatch final : angle::NonCopyable
     Serial serial;
 };
 
-class CommandQueue final : angle::NonCopyable
+using DeviceQueueMap = angle::PackedEnumMap<egl::ContextPriority, VkQueue>;
+
+class CommandQueueInterface : angle::NonCopyable
+{
+  public:
+    virtual ~CommandQueueInterface() {}
+
+    virtual angle::Result init(Context *context, const DeviceQueueMap &queueMap) = 0;
+    virtual void destroy(Context *context)                                       = 0;
+
+    virtual void handleDeviceLost(RendererVk *renderer) = 0;
+
+    // Wait until the desired serial has been completed.
+    virtual angle::Result finishToSerial(Context *context,
+                                         Serial finishSerial,
+                                         uint64_t timeout) = 0;
+    virtual Serial reserveSubmitSerial()                   = 0;
+    virtual angle::Result submitFrame(
+        Context *context,
+        egl::ContextPriority priority,
+        const std::vector<VkSemaphore> &waitSemaphores,
+        const std::vector<VkPipelineStageFlags> &waitSemaphoreStageMasks,
+        const Semaphore *signalSemaphore,
+        GarbageList &&currentGarbage,
+        CommandPool *commandPool,
+        Serial submitQueueSerial)                                      = 0;
+    virtual angle::Result queueSubmitOneOff(Context *context,
+                                            egl::ContextPriority contextPriority,
+                                            VkCommandBuffer commandBufferHandle,
+                                            const Fence *fence,
+                                            SubmitPolicy submitPolicy,
+                                            Serial submitQueueSerial)  = 0;
+    virtual VkResult queuePresent(egl::ContextPriority contextPriority,
+                                  const VkPresentInfoKHR &presentInfo) = 0;
+
+    virtual angle::Result waitForSerialWithUserTimeout(vk::Context *context,
+                                                       Serial serial,
+                                                       uint64_t timeout,
+                                                       VkResult *result) = 0;
+
+    // Check to see which batches have finished completion (forward progress for
+    // the last completed serial, for example for when the application busy waits on a query
+    // result). It would be nice if we didn't have to expose this for QueryVk::getResult.
+    virtual angle::Result checkCompletedCommands(Context *context) = 0;
+
+    virtual angle::Result flushOutsideRPCommands(Context *context,
+                                                 CommandBufferHelper **outsideRPCommands)   = 0;
+    virtual angle::Result flushRenderPassCommands(Context *context,
+                                                  const RenderPass &renderPass,
+                                                  CommandBufferHelper **renderPassCommands) = 0;
+
+    virtual Serial getLastSubmittedQueueSerial() const = 0;
+    virtual Serial getLastCompletedQueueSerial() const = 0;
+    virtual Serial getCurrentQueueSerial() const       = 0;
+};
+
+class CommandQueue final : public CommandQueueInterface
 {
   public:
     CommandQueue();
-    ~CommandQueue();
+    ~CommandQueue() override;
 
-    angle::Result init(Context *context);
-    void destroy(VkDevice device);
-    void handleDeviceLost(RendererVk *renderer);
-
-    bool hasInFlightCommands() const;
-
+    angle::Result init(Context *context, const DeviceQueueMap &queueMap) override;
+    void destroy(Context *context) override;
     void clearAllGarbage(RendererVk *renderer);
 
-    angle::Result finishToSerial(Context *context, Serial finishSerial, uint64_t timeout);
+    void handleDeviceLost(RendererVk *renderer) override;
+
+    angle::Result finishToSerial(Context *context, Serial finishSerial, uint64_t timeout) override;
+
+    Serial reserveSubmitSerial() override;
 
     angle::Result submitFrame(Context *context,
                               egl::ContextPriority priority,
                               const std::vector<VkSemaphore> &waitSemaphores,
                               const std::vector<VkPipelineStageFlags> &waitSemaphoreStageMasks,
                               const Semaphore *signalSemaphore,
-                              const Shared<Fence> &sharedFence,
-                              ResourceUseList *resourceList,
-                              GarbageList *currentGarbage,
-                              CommandPool *commandPool);
+                              GarbageList &&currentGarbage,
+                              CommandPool *commandPool,
+                              Serial submitQueueSerial) override;
 
-    Shared<Fence> getLastSubmittedFence(const Context *context) const;
+    angle::Result queueSubmitOneOff(Context *context,
+                                    egl::ContextPriority contextPriority,
+                                    VkCommandBuffer commandBufferHandle,
+                                    const Fence *fence,
+                                    SubmitPolicy submitPolicy,
+                                    Serial submitQueueSerial) override;
 
-    // Check to see which batches have finished completion (forward progress for
-    // mLastCompletedQueueSerial, for example for when the application busy waits on a query
-    // result). It would be nice if we didn't have to expose this for QuerygetResult.
-    angle::Result checkCompletedCommands(Context *context);
+    VkResult queuePresent(egl::ContextPriority contextPriority,
+                          const VkPresentInfoKHR &presentInfo) override;
 
-    angle::Result flushOutsideRPCommands(Context *context, CommandBufferHelper *outsideRPCommands);
+    angle::Result waitForSerialWithUserTimeout(vk::Context *context,
+                                               Serial serial,
+                                               uint64_t timeout,
+                                               VkResult *result) override;
 
+    angle::Result checkCompletedCommands(Context *context) override;
+
+    angle::Result flushOutsideRPCommands(Context *context,
+                                         CommandBufferHelper **outsideRPCommands) override;
     angle::Result flushRenderPassCommands(Context *context,
                                           const RenderPass &renderPass,
-                                          CommandBufferHelper *renderPassCommands);
+                                          CommandBufferHelper **renderPassCommands) override;
+
+    Serial getLastSubmittedQueueSerial() const override;
+    Serial getLastCompletedQueueSerial() const override;
+    Serial getCurrentQueueSerial() const override;
+
+    angle::Result queueSubmit(Context *context,
+                              egl::ContextPriority contextPriority,
+                              const VkSubmitInfo &submitInfo,
+                              const Fence *fence,
+                              Serial submitQueueSerial);
 
   private:
     angle::Result releaseToCommandBatch(Context *context,
@@ -208,10 +298,8 @@ class CommandQueue final : angle::NonCopyable
                                         CommandBatch *batch);
     angle::Result retireFinishedCommands(Context *context, size_t finishedCount);
     angle::Result ensurePrimaryCommandBufferValid(Context *context);
-    angle::Result allocatePrimaryCommandBuffer(Context *context,
-                                               PrimaryCommandBuffer *commandBufferOut);
-    angle::Result releasePrimaryCommandBuffer(Context *context,
-                                              PrimaryCommandBuffer &&commandBuffer);
+
+    bool allInFlightCommandsAreAfterSerial(Serial serial) const;
 
     GarbageQueue mGarbageQueue;
     std::vector<CommandBatch> mInFlightCommands;
@@ -219,134 +307,117 @@ class CommandQueue final : angle::NonCopyable
     // Keeps a free list of reusable primary command buffers.
     PrimaryCommandBuffer mPrimaryCommands;
     PersistentCommandPool mPrimaryCommandPool;
+
+    // Queue serial management.
+    AtomicSerialFactory mQueueSerialFactory;
+    Serial mLastCompletedQueueSerial;
+    Serial mLastSubmittedQueueSerial;
+    Serial mCurrentQueueSerial;
+
+    // Devices queues.
+    DeviceQueueMap mQueues;
+
+    FenceRecycler mFenceRecycler;
 };
 
-class TaskProcessor : angle::NonCopyable
-{
-  public:
-    TaskProcessor();
-    ~TaskProcessor();
+// CommandProcessor is used to dispatch work to the GPU when the asyncCommandQueue feature is
+// enabled. Issuing the |destroy| command will cause the worker thread to clean up it's resources
+// and shut down. This command is sent when the renderer instance shuts down. Tasks are defined by
+// the CommandQueue interface.
 
-    angle::Result init(Context *context, std::thread::id threadId);
-    void destroy(VkDevice device);
-
-    angle::Result allocatePrimaryCommandBuffer(Context *context,
-                                               PrimaryCommandBuffer *commandBufferOut);
-    angle::Result releasePrimaryCommandBuffer(Context *context,
-                                              PrimaryCommandBuffer &&commandBuffer);
-
-    angle::Result finishToSerial(Context *context, Serial serial);
-
-    VkResult present(VkQueue queue, const VkPresentInfoKHR &presentInfo);
-
-    angle::Result submitFrame(Context *context,
-                              VkQueue queue,
-                              const VkSubmitInfo &submitInfo,
-                              const Shared<Fence> &sharedFence,
-                              GarbageList *currentGarbage,
-                              CommandPool *commandPool,
-                              PrimaryCommandBuffer &&commandBuffer,
-                              const Serial &queueSerial);
-    angle::Result queueSubmit(Context *context,
-                              VkQueue queue,
-                              const VkSubmitInfo &submitInfo,
-                              const Fence *fence);
-
-    Shared<Fence> getLastSubmittedFenceWithLock(VkDevice device) const;
-
-    void handleDeviceLost(Context *context);
-
-    // Called by CommandProcessor to process any completed work
-    angle::Result lockAndCheckCompletedCommands(Context *context);
-
-    VkResult getLastAndClearPresentResult(VkSwapchainKHR swapchain);
-
-  private:
-    bool isValidWorkerThread(Context *context) const;
-
-    angle::Result releaseToCommandBatch(Context *context,
-                                        PrimaryCommandBuffer &&commandBuffer,
-                                        CommandPool *commandPool,
-                                        CommandBatch *batch);
-
-    // Check to see which batches have finished completion (forward progress for
-    // mLastCompletedQueueSerial, for example for when the application busy waits on a query
-    // result). It would be nice if we didn't have to expose this for QuerygetResult.
-    angle::Result checkCompletedCommandsNoLock(Context *context);
-
-    GarbageQueue mGarbageQueue;
-
-    mutable std::mutex mInFlightCommandsMutex;
-    std::vector<CommandBatch> mInFlightCommands;
-
-    // Keeps a free list of reusable primary command buffers.
-    PersistentCommandPool mPrimaryCommandPool;
-    std::thread::id mThreadId;
-
-    // Track present info
-    std::mutex mSwapchainStatusMutex;
-    std::condition_variable mSwapchainStatusCondition;
-    std::map<VkSwapchainKHR, VkResult> mSwapchainStatus;
-};
-
-class CommandProcessor : public Context
+class CommandProcessor : public Context, public CommandQueueInterface
 {
   public:
     CommandProcessor(RendererVk *renderer);
     ~CommandProcessor() override;
 
-    angle::Result initTaskProcessor(Context *context);
+    // Used by main thread to wait for worker thread to complete all outstanding work.
+    // TODO(jmadill): Make private. b/172704839
+    angle::Result waitForWorkComplete(Context *context);
+    angle::Result finishAllWork(Context *context);
 
+    VkResult getLastPresentResult(VkSwapchainKHR swapchain)
+    {
+        return getLastAndClearPresentResult(swapchain);
+    }
+
+    // vk::Context
     void handleError(VkResult result,
                      const char *file,
                      const char *function,
                      unsigned int line) override;
 
-    // Entry point for command processor thread, calls processTasksImpl to do the
-    // work. called by Rendererinitialization on main thread
-    void processTasks();
+    // CommandQueueInterface
+    angle::Result init(Context *context, const DeviceQueueMap &queueMap) override;
 
-    // Called asynchronously from main thread to queue work that is then processed by the worker
-    // thread
-    void queueCommand(Context *context, CommandProcessorTask *task);
+    void destroy(Context *context) override;
 
-    void checkCompletedCommands(Context *context);
+    void handleDeviceLost(RendererVk *renderer) override;
 
-    // Used by main thread to wait for worker thread to complete all outstanding work.
-    void waitForWorkComplete(Context *context);
-    Serial getCurrentQueueSerial();
-    Serial getLastSubmittedSerial();
+    angle::Result finishToSerial(Context *context, Serial finishSerial, uint64_t timeout) override;
 
-    // Wait until desired serial has been processed.
-    void finishToSerial(Context *context, Serial serial);
+    Serial reserveSubmitSerial() override;
 
-    Shared<Fence> getLastSubmittedFence(const Context *context) const;
-    void handleDeviceLost();
+    angle::Result submitFrame(Context *context,
+                              egl::ContextPriority priority,
+                              const std::vector<VkSemaphore> &waitSemaphores,
+                              const std::vector<VkPipelineStageFlags> &waitSemaphoreStageMasks,
+                              const Semaphore *signalSemaphore,
+                              GarbageList &&currentGarbage,
+                              CommandPool *commandPool,
+                              Serial submitQueueSerial) override;
 
+    angle::Result queueSubmitOneOff(Context *context,
+                                    egl::ContextPriority contextPriority,
+                                    VkCommandBuffer commandBufferHandle,
+                                    const Fence *fence,
+                                    SubmitPolicy submitPolicy,
+                                    Serial submitQueueSerial) override;
+    VkResult queuePresent(egl::ContextPriority contextPriority,
+                          const VkPresentInfoKHR &presentInfo) override;
+
+    angle::Result waitForSerialWithUserTimeout(vk::Context *context,
+                                               Serial serial,
+                                               uint64_t timeout,
+                                               VkResult *result) override;
+
+    angle::Result checkCompletedCommands(Context *context) override;
+
+    angle::Result flushOutsideRPCommands(Context *context,
+                                         CommandBufferHelper **outsideRPCommands) override;
+    angle::Result flushRenderPassCommands(Context *context,
+                                          const RenderPass &renderPass,
+                                          CommandBufferHelper **renderPassCommands) override;
+
+    Serial getLastSubmittedQueueSerial() const override;
+    Serial getLastCompletedQueueSerial() const override;
+    Serial getCurrentQueueSerial() const override;
+
+  private:
     bool hasPendingError() const
     {
         std::lock_guard<std::mutex> queueLock(mErrorMutex);
         return !mErrors.empty();
     }
-    Error getAndClearPendingError();
+    angle::Result checkAndPopPendingError(Context *errorHandlingContext);
 
-    // Stop the command processor thread
-    void shutdown(std::thread *commandProcessorThread);
+    // Entry point for command processor thread, calls processTasksImpl to do the
+    // work. called by RendererVk::initializeDevice on main thread
+    void processTasks(const DeviceQueueMap &queueMap);
 
-    void finishAllWork(Context *context);
+    // Called asynchronously from main thread to queue work that is then processed by the worker
+    // thread
+    void queueCommand(CommandProcessorTask &&task);
 
-    VkResult getLastPresentResult(VkSwapchainKHR swapchain)
-    {
-        return mTaskProcessor.getLastAndClearPresentResult(swapchain);
-    }
-
-  private:
     // Command processor thread, called by processTasks. The loop waits for work to
     // be submitted from a separate thread.
     angle::Result processTasksImpl(bool *exitThread);
 
     // Command processor thread, process a task
-    angle::Result processTask(Context *context, CommandProcessorTask *task);
+    angle::Result processTask(CommandProcessorTask *task);
+
+    VkResult getLastAndClearPresentResult(VkSwapchainKHR swapchain);
+    VkResult present(egl::ContextPriority priority, const VkPresentInfoKHR &presentInfo);
 
     std::queue<CommandProcessorTask> mTasks;
     mutable std::mutex mWorkerMutex;
@@ -358,16 +429,20 @@ class CommandProcessor : public Context
     bool mWorkerThreadIdle;
     // Command pool to allocate processor thread primary command buffers from
     CommandPool mCommandPool;
-    PrimaryCommandBuffer mPrimaryCommandBuffer;
-    TaskProcessor mTaskProcessor;
+    CommandQueue mCommandQueue;
 
-    AtomicSerialFactory mQueueSerialFactory;
-    std::mutex mCommandProcessorQueueSerialMutex;
-    Serial mCommandProcessorLastSubmittedSerial;
-    Serial mCommandProcessorCurrentQueueSerial;
+    mutable std::mutex mQueueSerialMutex;
 
     mutable std::mutex mErrorMutex;
     std::queue<Error> mErrors;
+
+    // Track present info
+    std::mutex mSwapchainStatusMutex;
+    std::condition_variable mSwapchainStatusCondition;
+    std::map<VkSwapchainKHR, VkResult> mSwapchainStatus;
+
+    // Command queue worker thread.
+    std::thread mTaskThread;
 };
 
 }  // namespace vk

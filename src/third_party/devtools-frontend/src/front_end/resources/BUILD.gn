@@ -10,23 +10,28 @@ devtools_module("resources") {
     "AppManifestView.js",
     "ApplicationCacheItemsView.js",
     "ApplicationCacheModel.js",
+    "ApplicationPanelCacheSection.ts",
     "ApplicationPanelSidebar.js",
+    "ApplicationPanelTreeElement.ts",
     "BackgroundServiceModel.js",
     "BackgroundServiceView.js",
-    "ClearStorageView.js",
     "CookieItemsView.js",
     "DOMStorageItemsView.js",
     "DOMStorageModel.js",
     "DatabaseModel.js",
     "DatabaseQueryView.js",
     "DatabaseTableView.js",
-    "FrameDetailsView.js",
+    "FrameDetailsView.ts",
     "IndexedDBModel.js",
     "IndexedDBViews.js",
+    "OpenedWindowDetailsView.js",
     "ResourcesPanel.js",
     "ServiceWorkerCacheViews.js",
+    "ServiceWorkerUpdateCycleHelper.ts",
     "ServiceWorkersView.js",
     "StorageItemsView.js",
+    "StorageView.ts",
+    "TrustTokensView.ts",
   ]
 
   deps = [
@@ -54,13 +59,19 @@ devtools_module("resources") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "resources.js"
+  entrypoint = "resources.ts"
 
   deps = [ ":resources" ]
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "resources-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "resources-meta.ts"
 
   deps = [ ":bundle" ]
 }

@@ -134,6 +134,12 @@ struct URLResponseHead {
   // https://fetch.spec.whatwg.org/#concept-response-type
   FetchResponseType response_type = FetchResponseType.kDefault;
 
+  // Pre-computed padding.  This should only be non-zero when |response_type|
+  // is set to kOpaque.  Note, this is not set by network service, but will be
+  // populated if the response was provided by a service worker FetchEvent
+  // handler.
+  int64 padding = 0;
+
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   string cache_storage_cache_name;
@@ -219,4 +225,14 @@ struct URLResponseHead {
   // is propagated to the renderer and set on recursive prefetch requests
   // (see corresponding documentation in url_loader.mojom).
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
+
+  // Aliases, if any, for the destination URL, as read from DNS CNAME records.
+  // The first entry of `dns_aliases`, if it exists, is the canonical name.
+  // The alias chain is preserved in reverse order, from canonical name (i.e.
+  // address record name) through to query name.
+  array<string> dns_aliases;
+
+  // The URL of WebBundle this response was loaded from. This value is only
+  // populated for resources loaded from a WebBundle.
+  url.mojom.Url web_bundle_url;
 };

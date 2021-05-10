@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "ui",
+    "persistence",
+    "accessibility",
+    "elements"
+  ],
+  "modules": [],
+  "resources": []
+}

@@ -150,6 +150,11 @@ void GpuDataManagerImpl::AppendGpuCommandLine(base::CommandLine* command_line,
   private_->AppendGpuCommandLine(command_line, kind);
 }
 
+void GpuDataManagerImpl::StartUmaTimer() {
+  base::AutoLock auto_lock(lock_);
+  private_->StartUmaTimer();
+}
+
 bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
   base::AutoLock auto_lock(lock_);
   return private_->GpuProcessStartAllowed();
@@ -262,6 +267,16 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
   return private_->GetGpuFeatureInfoForHardwareGpu();
 }
 
+bool GpuDataManagerImpl::GpuAccessAllowedForHardwareGpu(std::string* reason) {
+  base::AutoLock auto_lock(lock_);
+  return private_->GpuAccessAllowedForHardwareGpu(reason);
+}
+
+bool GpuDataManagerImpl::IsGpuCompositingDisabledForHardwareGpu() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsGpuCompositingDisabledForHardwareGpu();
+}
+
 gfx::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuExtraInfo();
@@ -326,12 +341,6 @@ void GpuDataManagerImpl::UnblockDomainFrom3DAPIs(const GURL& url) {
 void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
   base::AutoLock auto_lock(lock_);
   private_->DisableDomainBlockingFor3DAPIsForTesting();
-}
-
-bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,
-                                         uint32_t device_id) {
-  base::AutoLock auto_lock(lock_);
-  return private_->UpdateActiveGpu(vendor_id, device_id);
 }
 
 gpu::GpuMode GpuDataManagerImpl::GetGpuMode() const {

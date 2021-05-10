@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//bazel:grpc_build_system.bzl", "grpc_cc_library", "grpc_cc_test", "grpc_cc_binary", "grpc_package")
+load("//bazel:grpc_build_system.bzl", "grpc_cc_binary", "grpc_cc_library", "grpc_cc_test", "grpc_package")
 
 licenses(["notice"])  # Apache v2
 
@@ -38,6 +38,7 @@ grpc_cc_library(
     name = "grpc_test_util_base",
     srcs = [
         "cmdline.cc",
+        "eval_args_mock_endpoint.cc",
         "fuzzer_util.cc",
         "grpc_profiler.cc",
         "histogram.cc",
@@ -49,6 +50,7 @@ grpc_cc_library(
         "port_isolated_runtime_environment.cc",
         "port_server_client.cc",
         "reconnect_server.cc",
+        "resolve_localhost_ip46.cc",
         "slice_splitter.cc",
         "subprocess_posix.cc",
         "subprocess_windows.cc",
@@ -59,6 +61,7 @@ grpc_cc_library(
     ],
     hdrs = [
         "cmdline.h",
+        "eval_args_mock_endpoint.h",
         "fuzzer_util.h",
         "grpc_profiler.h",
         "histogram.h",
@@ -69,6 +72,7 @@ grpc_cc_library(
         "port.h",
         "port_server_client.h",
         "reconnect_server.h",
+        "resolve_localhost_ip46.h",
         "slice_splitter.h",
         "subprocess.h",
         "test_config.h",
@@ -81,10 +85,16 @@ grpc_cc_library(
         "tsan_suppressions.txt",
         "ubsan_suppressions.txt",
     ],
+    external_deps = [
+        "absl/debugging:failure_signal_handler",
+        "absl/debugging:symbolize",
+    ],
     language = "C++",
     deps = [
         ":grpc_debugger_macros",
+        ":stack_tracer",
         "//:gpr",
+        "//:grpc_base_c",
         "//:grpc_common",
     ],
 )
@@ -115,6 +125,7 @@ grpc_cc_test(
     name = "cmdline_test",
     srcs = ["cmdline_test.cc"],
     language = "C++",
+    uses_polling = False,
     deps = [
         ":grpc_test_util",
         "//:gpr",
@@ -126,21 +137,22 @@ grpc_cc_library(
     testonly = 1,
     srcs = ["fuzzer_corpus_test.cc"],
     external_deps = [
+        "absl/flags:flag",
         "gtest",
-        "gflags",
     ],
+    tags = ["no_windows"],
     deps = [
         ":grpc_test_util",
         "//:grpc",
         "//test/cpp/util:test_config",
     ],
-    tags = ["no_windows"],
 )
 
 grpc_cc_test(
     name = "histogram_test",
     srcs = ["histogram_test.cc"],
     language = "C++",
+    uses_polling = False,
     deps = [
         ":grpc_test_util",
         "//:gpr",
@@ -155,6 +167,43 @@ sh_library(
 sh_library(
     name = "run_with_poller_sh",
     srcs = ["run_with_poller.sh"],
+)
+
+grpc_cc_library(
+    name = "stack_tracer",
+    srcs = [
+        "stack_tracer.cc",
+    ],
+    hdrs = [
+        "stack_tracer.h",
+    ],
+    external_deps = [
+        "absl/debugging:stacktrace",
+        "absl/debugging:symbolize",
+    ],
+    language = "C++",
+    deps = [
+        "//:grpc_common",
+    ],
+)
+
+grpc_cc_test(
+    name = "stack_tracer_test",
+    srcs = [
+        "stack_tracer_test.cc",
+    ],
+    external_deps = [
+        "absl/debugging:symbolize",
+        "gtest",
+    ],
+    language = "C++",
+    # TODO(https://github.com/grpc/grpc/issues/24627): Disable this on Windows
+    tags = ["no_windows"],
+    uses_polling = False,
+    deps = [
+        ":grpc_test_util",
+        ":stack_tracer",
+    ],
 )
 
 grpc_cc_library(

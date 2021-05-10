@@ -11,12 +11,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
@@ -28,10 +29,10 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -49,7 +50,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/media_buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #endif
 
@@ -81,17 +82,6 @@ const char kConversionErrorMessage[] =
     "properly.";
 
 const PrefMappingEntry kPrefMapping[] = {
-    {"spdy_proxy.enabled", data_reduction_proxy::prefs::kDataSaverEnabled,
-     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
-    {"data_reduction.daily_original_length",
-     data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
-     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
-    {"data_reduction.daily_received_length",
-     data_reduction_proxy::prefs::kDailyHttpReceivedContentLength,
-     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
-    {"data_usage_reporting.enabled",
-     data_reduction_proxy::prefs::kDataUsageReportingEnabled,
-     APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"alternateErrorPagesEnabled",
      embedder_support::kAlternateErrorPagesEnabled, APIPermission::kPrivacy,
      APIPermission::kPrivacy},
@@ -127,6 +117,8 @@ const PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"thirdPartyCookiesAllowed", prefs::kCookieControlsMode,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"privacySandboxEnabled", prefs::kPrivacySandboxApisEnabled,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"translationServiceEnabled", prefs::kOfferTranslateEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"webRTCIPHandlingPolicy", prefs::kWebRTCIPHandlingPolicy,
@@ -139,7 +131,7 @@ const PrefMappingEntry kPrefMapping[] = {
     {"animationPolicy", prefs::kAnimationPolicy,
      APIPermission::kAccessibilityFeaturesRead,
      APIPermission::kAccessibilityFeaturesModify},
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"autoclick", ash::prefs::kAccessibilityAutoclickEnabled,
      APIPermission::kAccessibilityFeaturesRead,
      APIPermission::kAccessibilityFeaturesModify},
@@ -150,6 +142,9 @@ const PrefMappingEntry kPrefMapping[] = {
      APIPermission::kAccessibilityFeaturesRead,
      APIPermission::kAccessibilityFeaturesModify},
     {"cursorHighlight", ash::prefs::kAccessibilityCursorHighlightEnabled,
+     APIPermission::kAccessibilityFeaturesRead,
+     APIPermission::kAccessibilityFeaturesModify},
+    {"dictation", ash::prefs::kAccessibilityDictationEnabled,
      APIPermission::kAccessibilityFeaturesRead,
      APIPermission::kAccessibilityFeaturesModify},
     {"dockedMagnifier", ash::prefs::kDockedMagnifierEnabled,
@@ -379,9 +374,10 @@ PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
     : profile_(profile) {
   registrar_.Init(profile_->GetPrefs());
   for (const auto& pref : kPrefMapping) {
-    registrar_.Add(pref.browser_pref,
-                   base::Bind(&PreferenceEventRouter::OnPrefChanged,
-                              base::Unretained(this), registrar_.prefs()));
+    registrar_.Add(
+        pref.browser_pref,
+        base::BindRepeating(&PreferenceEventRouter::OnPrefChanged,
+                            base::Unretained(this), registrar_.prefs()));
   }
   DCHECK(!profile_->IsOffTheRecord());
   observed_profiles_.Add(profile_);
@@ -464,8 +460,9 @@ void PreferenceEventRouter::ObserveOffTheRecordPrefs(PrefService* prefs) {
   for (const auto& pref : kPrefMapping) {
     incognito_registrar_->Add(
         pref.browser_pref,
-        base::Bind(&PreferenceEventRouter::OnPrefChanged,
-                   base::Unretained(this), incognito_registrar_->prefs()));
+        base::BindRepeating(&PreferenceEventRouter::OnPrefChanged,
+                            base::Unretained(this),
+                            incognito_registrar_->prefs()));
   }
 }
 

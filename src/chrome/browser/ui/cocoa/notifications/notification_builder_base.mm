@@ -67,11 +67,10 @@
   }
 }
 
-- (void)setTag:(NSString*)tag {
-  if (tag.length) {
-    [_notificationData setObject:tag
-                          forKey:notification_constants::kNotificationTag];
-  }
+- (void)setIdentifier:(NSString*)identifier {
+  DCHECK(identifier.length);
+  [_notificationData setObject:identifier
+                        forKey:notification_constants::kNotificationIdentifier];
 }
 
 - (void)setOrigin:(NSString*)origin {
@@ -108,10 +107,23 @@
                         forKey:notification_constants::kNotificationType];
 }
 
+- (void)setRenotify:(BOOL)renotify {
+  [_notificationData setObject:[NSNumber numberWithBool:renotify]
+                        forKey:notification_constants::kNotificationRenotify];
+}
+
 - (void)setShowSettingsButton:(BOOL)showSettingsButton {
   [_notificationData
       setObject:[NSNumber numberWithBool:showSettingsButton]
          forKey:notification_constants::kNotificationHasSettingsButton];
+}
+
+- (void)setIcon:(NSImage*)icon {
+  if (!icon)
+    return;
+
+  [_notificationData setObject:icon
+                        forKey:notification_constants::kNotificationIcon];
 }
 
 - (NSDictionary*)buildDictionary {

@@ -31,7 +31,7 @@
 
 import {AreaBounds, Bounds} from './common.js';
 import {drawGridLabels, GridLabelState} from './css_grid_label_helpers.js';
-import {applyMatrixToPoint, buildPath, emptyBounds} from './highlight_common.js';
+import {applyMatrixToPoint, buildPath, emptyBounds, hatchFillPath} from './highlight_common.js';
 
 const DEFAULT_EXTENDED_LINE_COLOR = 'rgba(128, 128, 128, 0.3)';
 
@@ -59,12 +59,12 @@ export const gridStyle = `
 
 .grid-label-content[data-direction=row] {
   background-color: var(--row-label-color, #1A73E8);
-  color: #121212;
+  color: var(--row-label-text-color, #121212);
 }
 
 .grid-label-content[data-direction=column] {
   background-color: var(--column-label-color, #1A73E8);
-  color: #121212;
+  color: var(--column-label-text-color,#121212);
 }
 
 .line-names ul,
@@ -218,25 +218,29 @@ export interface GridHighlight {
   gridBorder: Array<string|number>;
   writingMode: string;
   rowGaps: Array<string|number>;
-  rotationAngle: number, columnGaps: Array<string|number>;
+  rotationAngle: number;
+  columnGaps: Array<string|number>;
   rows: Array<string|number>;
   columns: Array<string|number>;
   areaNames: {[key: string]: Array<string|number>};
   gridHighlightConfig: {
-    gridBackgroundColor?: string;
-    gridBorderColor?: string;
-    rowGapColor?: string;
-    columnGapColor?: string;
-    areaBorderColor?: string; gridBorderDash: boolean; rowLineDash: boolean; columnLineDash: boolean;
-    showGridExtensionLines: boolean;
-    showPositiveLineNumbers: boolean;
-    showNegativeLineNumbers: boolean;
-    rowLineColor: string;
-    columnLineColor: string;
-    rowHatchColor: string;
-    columnHatchColor: string;
-    showLineNames: boolean;
-  }
+    gridBackgroundColor?: string,
+    gridBorderColor?: string,
+    rowGapColor?: string,
+    columnGapColor?: string,
+    areaBorderColor?: string,
+                   gridBorderDash: boolean,
+                   rowLineDash: boolean,
+                   columnLineDash: boolean,
+                   showGridExtensionLines: boolean,
+                   showPositiveLineNumbers: boolean,
+                   showNegativeLineNumbers: boolean,
+                   rowLineColor: string,
+                   columnLineColor: string,
+                   rowHatchColor: string,
+                   columnHatchColor: string,
+                   showLineNames: boolean,
+  };
 }
 
 export function drawLayoutGridHighlight(
@@ -247,7 +251,7 @@ export function drawLayoutGridHighlight(
 
   // Transform the context to match the current writing-mode.
   context.save();
-  _applyWritingModeTransformation(highlight.writingMode, gridBounds, context);
+  applyWritingModeTransformation(highlight.writingMode, gridBounds, context);
 
   // Draw grid background
   if (highlight.gridHighlightConfig.gridBackgroundColor) {
@@ -269,22 +273,22 @@ export function drawLayoutGridHighlight(
   }
 
   // Draw grid lines
-  const rowBounds = _drawGridLines(context, highlight, 'row', emulationScaleFactor);
-  const columnBounds = _drawGridLines(context, highlight, 'column', emulationScaleFactor);
+  const rowBounds = drawGridLines(context, highlight, 'row', emulationScaleFactor);
+  const columnBounds = drawGridLines(context, highlight, 'column', emulationScaleFactor);
 
   // Draw gaps
-  _drawGridGap(
+  drawGridGap(
       context, highlight.rowGaps, highlight.gridHighlightConfig.rowGapColor,
       highlight.gridHighlightConfig.rowHatchColor, highlight.rotationAngle, emulationScaleFactor,
       /* flipDirection */ true);
-  _drawGridGap(
+  drawGridGap(
       context, highlight.columnGaps, highlight.gridHighlightConfig.columnGapColor,
       highlight.gridHighlightConfig.columnHatchColor, highlight.rotationAngle, emulationScaleFactor,
       /* flipDirection */ false);
 
   // Draw named grid areas
   const areaBounds =
-      _drawGridAreas(context, highlight.areaNames, highlight.gridHighlightConfig.areaBorderColor, emulationScaleFactor);
+      drawGridAreas(context, highlight.areaNames, highlight.gridHighlightConfig.areaBorderColor, emulationScaleFactor);
 
   // The rest of the overlay is drawn without the writing-mode transformation, but we keep the matrix to transform relevant points.
   const writingModeMatrix = context.getTransform();
@@ -293,21 +297,23 @@ export function drawLayoutGridHighlight(
 
   if (highlight.gridHighlightConfig.showGridExtensionLines) {
     if (rowBounds) {
-      _drawExtendedGridLines(
+      drawExtendedGridLines(
           context, rowBounds, highlight.gridHighlightConfig.rowLineDash, writingModeMatrix, canvasWidth, canvasHeight);
     }
     if (columnBounds) {
-      _drawExtendedGridLines(
+      drawExtendedGridLines(
           context, columnBounds, highlight.gridHighlightConfig.columnLineDash, writingModeMatrix, canvasWidth,
           canvasHeight);
     }
   }
 
   // Draw all the labels
-  drawGridLabels(highlight, gridBounds, areaBounds, {canvasWidth, canvasHeight}, labelState, writingModeMatrix);
+  drawGridLabels(
+      highlight, gridBounds, areaBounds, {canvasWidth, canvasHeight}, labelState, emulationScaleFactor,
+      writingModeMatrix);
 }
 
-function _applyWritingModeTransformation(writingMode: string, gridBounds: Bounds, context: CanvasRenderingContext2D) {
+function applyWritingModeTransformation(writingMode: string, gridBounds: Bounds, context: CanvasRenderingContext2D) {
   if (writingMode !== 'vertical-rl' && writingMode !== 'vertical-lr') {
     return;
   }
@@ -332,7 +338,7 @@ function _applyWritingModeTransformation(writingMode: string, gridBounds: Bounds
   context.translate(topLeft.x * -1, topLeft.y * -1);
 }
 
-function _drawGridLines(
+function drawGridLines(
     context: CanvasRenderingContext2D, highlight: GridHighlight, direction: 'row'|'column',
     emulationScaleFactor: number) {
   const tracks = highlight[`${direction}s` as 'rows' | 'columns'];
@@ -363,7 +369,7 @@ function _drawGridLines(
   return bounds;
 }
 
-function _drawExtendedGridLines(
+function drawExtendedGridLines(
     context: CanvasRenderingContext2D, bounds: Bounds, dash: boolean|undefined, writingModeMatrix: DOMMatrix,
     canvasWidth: number, canvasHeight: number) {
   context.save();
@@ -424,7 +430,7 @@ function _drawExtendedGridLines(
  * Draw all of the named grid area paths. This does not draw the labels, as
  * placing labels in and around the grid for various things is handled later.
  */
-function _drawGridAreas(
+function drawGridAreas(
     context: CanvasRenderingContext2D, areas: {[key: string]: Array<string|number>}, borderColor: string|undefined,
     emulationScaleFactor: number): AreaBounds[] {
   if (!areas || !Object.keys(areas).length) {
@@ -455,7 +461,7 @@ function _drawGridAreas(
   return areaBounds;
 }
 
-function _drawGridGap(
+function drawGridGap(
     context: CanvasRenderingContext2D, gapCommands: Array<number|string>, gapColor: string|undefined,
     hatchColor: string|undefined, rotationAngle: number, emulationScaleFactor: number,
     flipDirection: boolean|undefined) {
@@ -478,51 +484,7 @@ function _drawGridGap(
 
   // And draw the hatch pattern if needed.
   if (hatchColor) {
-    _hatchFillPath(context, path, bounds, /* delta */ 10, hatchColor, rotationAngle, flipDirection);
-  }
-  context.restore();
-}
-
-/**
- * Draw line hatching at a 45 degree angle for a given
- * path.
- *   __________
- *   |\  \  \ |
- *   | \  \  \|
- *   |  \  \  |
- *   |\  \  \ |
- *   **********
- */
-function _hatchFillPath(
-    context: CanvasRenderingContext2D, path: Path2D, bounds: Bounds, delta: number, color: string,
-    rotationAngle: number, flipDirection: boolean|undefined) {
-  const dx = bounds.maxX - bounds.minX;
-  const dy = bounds.maxY - bounds.minY;
-  context.rect(bounds.minX, bounds.minY, dx, dy);
-  context.save();
-  context.clip(path);
-  context.setLineDash([5, 3]);
-  const majorAxis = Math.max(dx, dy);
-  context.strokeStyle = color;
-  const centerX = bounds.minX + dx / 2;
-  const centerY = bounds.minY + dy / 2;
-  context.translate(centerX, centerY);
-  context.rotate(rotationAngle * Math.PI / 180);
-  context.translate(-centerX, -centerY);
-  if (flipDirection) {
-    for (let i = -majorAxis; i < majorAxis; i += delta) {
-      context.beginPath();
-      context.moveTo(bounds.maxX - i, bounds.minY);
-      context.lineTo(bounds.maxX - dy - i, bounds.maxY);
-      context.stroke();
-    }
-  } else {
-    for (let i = -majorAxis; i < majorAxis; i += delta) {
-      context.beginPath();
-      context.moveTo(i + bounds.minX, bounds.minY);
-      context.lineTo(dy + i + bounds.minX, bounds.maxY);
-      context.stroke();
-    }
+    hatchFillPath(context, path, bounds, /* delta */ 10, hatchColor, rotationAngle, flipDirection);
   }
   context.restore();
 }

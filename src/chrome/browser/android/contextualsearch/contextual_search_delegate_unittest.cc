@@ -15,11 +15,13 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/escape.h"
@@ -56,6 +58,7 @@ class ContextualSearchDelegateTest : public testing::Test {
         base::BindRepeating(
             &ContextualSearchDelegateTest::recordSampleSelectionAvailable,
             base::Unretained(this))));
+    feature_list_.InitAndEnableFeature(chrome::android::kRelatedSearches);
   }
 
   void TearDown() override {
@@ -233,6 +236,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string search_url_full() { return search_url_full_; }
   std::string search_url_preload() { return search_url_preload_; }
   int coca_card_tag() { return coca_card_tag_; }
+  std::vector<std::string> related_searches() { return related_searches_; }
 
   // The delegate under test.
   std::unique_ptr<ContextualSearchDelegate> delegate_;
@@ -260,6 +264,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     search_url_full_ = resolved_search_term.search_url_full;
     search_url_preload_ = resolved_search_term.search_url_preload;
     coca_card_tag_ = resolved_search_term.coca_card_tag;
+    related_searches_ = resolved_search_term.related_searches;
   }
 
   void recordSampleSelectionAvailable(const std::string& encoding,
@@ -288,6 +293,7 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string search_url_full_;
   std::string search_url_preload_;
   int coca_card_tag_;
+  std::vector<std::string> related_searches_;
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
@@ -297,6 +303,9 @@ class ContextualSearchDelegateTest : public testing::Test {
 
   // Will be owned by the delegate.
   ContextualSearchContext* test_context_;
+
+  // Features to enable
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchDelegateTest);
 };
@@ -556,7 +565,8 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
       "search?q=define+obscure&ctxs=2\","
       "\"search_url_preload\":\"https://www.google.com/"
       "search?q=define+obscure&ctxs=2&pf=c&sns=1\","
-      "\"card_tag\":12"
+      "\"card_tag\":12,"
+      "\"searches\":[\"Barack Obama\",\"Donald Trump\"]"
       "}";
   std::string search_term;
   std::string display_text;
@@ -574,18 +584,22 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   std::string search_url_full;
   std::string search_url_preload;
   int coca_card_tag;
+  std::vector<std::string> related_searches;
 
   delegate_->DecodeSearchTermFromJsonResponse(
       json_with_escape, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
       &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
-      &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag);
+      &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag,
+      &related_searches);
 
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
   EXPECT_EQ("barack obama", alternate_term);
   EXPECT_EQ("/m/02mjmr", mid);
   EXPECT_EQ("", prevent_preload);
+  EXPECT_EQ(0, mention_start);
+  EXPECT_EQ(15, mention_end);
   EXPECT_EQ("", context_language);
   EXPECT_EQ("", thumbnail_url);
   EXPECT_EQ("", caption);
@@ -597,6 +611,9 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   EXPECT_EQ("https://www.google.com/search?q=define+obscure&ctxs=2&pf=c&sns=1",
             search_url_preload);
   EXPECT_EQ(12, coca_card_tag);
+  EXPECT_EQ(2u, related_searches.size());
+  EXPECT_EQ("Barack Obama", related_searches[0]);
+  EXPECT_EQ("Donald Trump", related_searches[1]);
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {
@@ -689,4 +706,29 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithStringCocaCardTag) {
   SimulateResponseReturned(response);
   EXPECT_EQ("obscure", search_term());
   EXPECT_EQ(0, coca_card_tag());
+}
+
+TEST_F(ContextualSearchDelegateTest, ResponseWithRelatedSearches) {
+  CreateDefaultSearchContextAndRequestSearchTerm();
+  std::string response("{\"searches\":[\"RSS 1\",\"RSS 2\"]}");
+  SimulateResponseReturned(response);
+  EXPECT_EQ(2u, related_searches().size());
+  EXPECT_EQ("RSS 1", related_searches()[0]);
+  EXPECT_EQ("RSS 2", related_searches()[1]);
+}
+
+TEST_F(ContextualSearchDelegateTest, ResponseWithRelatedSearchesWhenDisabled) {
+  base::test::ScopedFeatureList local_feature_list;
+  local_feature_list.InitAndDisableFeature(chrome::android::kRelatedSearches);
+  CreateDefaultSearchContextAndRequestSearchTerm();
+  std::string response("{\"searches\":[\"RSS 1\",\"RSS 2\"]}");
+  SimulateResponseReturned(response);
+  EXPECT_EQ(0u, related_searches().size());
+}
+
+TEST_F(ContextualSearchDelegateTest, ResponseWithEmptyRelatedSearches) {
+  CreateDefaultSearchContextAndRequestSearchTerm();
+  std::string response("{\"searches\":[]}");
+  SimulateResponseReturned(response);
+  EXPECT_EQ(0u, related_searches().size());
 }

@@ -20,6 +20,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -42,10 +43,6 @@ void RequestFileSystemDialogView::ShowDialog(
 }
 
 RequestFileSystemDialogView::~RequestFileSystemDialogView() {}
-
-ui::ModalType RequestFileSystemDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
 
 gfx::Size RequestFileSystemDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogMaxWidth,
@@ -76,6 +73,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
                                    ui::DIALOG_BUTTON_OK));
   SetCancelCallback(base::BindOnce(run_callback, base::Unretained(this),
                                    ui::DIALOG_BUTTON_CANCEL));
+  SetModalType(ui::MODAL_TYPE_CHILD);
 
   DCHECK(!callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -109,3 +107,6 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
+
+BEGIN_METADATA(RequestFileSystemDialogView, views::DialogDelegateView)
+END_METADATA

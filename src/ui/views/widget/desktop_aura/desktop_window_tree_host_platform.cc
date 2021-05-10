@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -27,6 +28,7 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/window_shape_updater.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
@@ -88,6 +90,20 @@ ui::PlatformWindowType GetPlatformWindowType(
   return ui::PlatformWindowType::kPopup;
 }
 
+ui::PlatformWindowShadowType GetPlatformWindowShadowType(
+    Widget::InitParams::ShadowType shadow_type) {
+  switch (shadow_type) {
+    case Widget::InitParams::ShadowType::kDefault:
+      return ui::PlatformWindowShadowType::kDefault;
+    case Widget::InitParams::ShadowType::kNone:
+      return ui::PlatformWindowShadowType::kNone;
+    case Widget::InitParams::ShadowType::kDrop:
+      return ui::PlatformWindowShadowType::kDrop;
+  }
+  NOTREACHED();
+  return ui::PlatformWindowShadowType::kNone;
+}
+
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties;
@@ -101,6 +117,7 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   properties.remove_standard_frame = params.remove_standard_frame;
   properties.workspace = params.workspace;
   properties.opacity = GetPlatformWindowOpacity(params.opacity);
+  properties.shadow_type = GetPlatformWindowShadowType(params.shadow_type);
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
@@ -198,7 +215,15 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
   native_widget_delegate_->OnNativeWidgetCreated();
 }
 
-void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
+void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {
+  // WindowShape is updated from ShapeRects transformed from
+  // NonClientView::GetWindowMask. We can guarantee that |NonClientView|
+  // is created OnWidgetInitDone.
+  if (ShouldUseLayerForShapedWindow()) {
+    WindowShapeUpdater::CreateWindowShapeUpdater(
+        this, this->desktop_native_widget_aura());
+  }
+}
 
 void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {}
 
@@ -208,12 +233,10 @@ DesktopWindowTreeHostPlatform::CreateTooltip() {
 }
 
 std::unique_ptr<aura::client::DragDropClient>
-DesktopWindowTreeHostPlatform::CreateDragDropClient(
-    DesktopNativeCursorManager* cursor_manager) {
+DesktopWindowTreeHostPlatform::CreateDragDropClient() {
   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
   std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
-      std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
-                                                   drag_handler);
+      std::make_unique<DesktopDragDropClientOzone>(window(), drag_handler);
   // Set a class property key, which allows |drag_drop_client| to be used for
   // drop action.
   SetWmDropHandler(platform_window(), drag_drop_client.get());
@@ -436,6 +459,8 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostPlatform::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
+  // TODO(crbug.com/1158733) : When supporting PlatformWindow::SetShape,
+  // Calls ui::Layer::SetAlphaShape and sets |is_shape_explicitly_set_| to true.
   platform_window()->SetShape(std::move(native_shape), GetRootTransform());
 }
 
@@ -558,7 +583,8 @@ bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
-  return platform_window()->ShouldWindowContentsBeTransparent();
+  return platform_window()->ShouldWindowContentsBeTransparent() ||
+         ShouldUseLayerForShapedWindow();
 }
 
 void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
@@ -655,7 +681,7 @@ gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
   // This might be called before the |platform_window| is created. Thus,
   // explicitly check if that exists before trying to access its visibility and
   // the display where it is shown.
-  if (platform_window() && IsVisible()) {
+  if (platform_window()) {
     display = display::Screen::GetScreen()->GetDisplayNearestWindow(
         GetWidget()->GetNativeWindow());
   }
@@ -738,6 +764,21 @@ DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
       .size();
 }
 
+SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
+  if (!GetWidget()->non_client_view())
+    return SkPath();
+
+  SkPath window_mask;
+  // Some frame views define a custom (non-rectanguar) window mask.
+  // If so, use it to define the window shape. If not, fall through.
+  GetWidget()->non_client_view()->GetWindowMask(
+      GetWindowBoundsInScreen().size(), &window_mask);
+  // Convert SkPath in DIPs to pixels.
+  if (!window_mask.isEmpty())
+    window_mask.transform(SkMatrix(GetRootTransform().matrix()));
+  return window_mask;
+}
+
 void DesktopWindowTreeHostPlatform::OnWorkspaceChanged() {
   OnHostWorkspaceChanged();
 }
@@ -786,6 +827,10 @@ void DesktopWindowTreeHostPlatform::SetVisible(bool visible) {
 void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(
     const Widget::InitParams& params,
     ui::PlatformWindowInitProperties* properties) {}
+
+bool DesktopWindowTreeHostPlatform::ShouldUseLayerForShapedWindow() const {
+  return platform_window()->ShouldUseLayerForShapedWindow();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost:

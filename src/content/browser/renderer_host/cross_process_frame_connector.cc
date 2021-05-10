@@ -62,18 +62,6 @@ CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   SetView(nullptr);
 }
 
-bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SynchronizeVisualProperties,
-                        OnSynchronizeVisualProperties)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
   if (view_) {
@@ -119,7 +107,7 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     if (visibility_ != blink::mojom::FrameVisibility::kRenderedInViewport)
       OnVisibilityChanged(visibility_);
     if (frame_proxy_in_parent_renderer_) {
-      frame_proxy_in_parent_renderer_->GetAssociatedRenderFrameProxy()
+      frame_proxy_in_parent_renderer_->GetAssociatedRemoteFrame()
           ->SetFrameSinkId(view_->GetFrameSinkId());
     }
   }
@@ -162,7 +150,10 @@ void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
 }
 
 void CrossProcessFrameConnector::SynchronizeVisualProperties(
-    const blink::FrameVisualProperties& visual_properties) {
+    const blink::FrameVisualProperties& visual_properties,
+    bool propagate) {
+  last_received_zoom_level_ = visual_properties.zoom_level;
+  last_received_local_frame_size_ = visual_properties.local_frame_size;
   screen_info_ = visual_properties.screen_info;
   local_surface_id_ = visual_properties.local_surface_id;
 
@@ -182,12 +173,13 @@ void CrossProcessFrameConnector::SynchronizeVisualProperties(
                                     visual_properties.max_size_for_auto_resize);
   render_widget_host->SetVisualPropertiesFromParentFrame(
       visual_properties.page_scale_factor,
+      visual_properties.compositing_scale_factor,
       visual_properties.is_pinch_gesture_active,
       visual_properties.visible_viewport_size,
       visual_properties.compositor_viewport,
       visual_properties.root_widget_window_segments);
 
-  render_widget_host->SynchronizeVisualProperties();
+  render_widget_host->UpdateVisualProperties(propagate);
 }
 
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
@@ -331,16 +323,24 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
     return;
   }
 
-  last_received_zoom_level_ = visual_properties.zoom_level;
-  last_received_local_frame_size_ = visual_properties.local_frame_size;
   SynchronizeVisualProperties(visual_properties);
 }
 
 void CrossProcessFrameConnector::UpdateViewportIntersection(
+    const blink::mojom::ViewportIntersectionState& intersection_state,
+    const base::Optional<blink::FrameVisualProperties>& visual_properties) {
+  if (visual_properties.has_value())
+    SynchronizeVisualProperties(visual_properties.value(), false);
+  UpdateViewportIntersectionInternal(intersection_state);
+}
+
+void CrossProcessFrameConnector::UpdateViewportIntersectionInternal(
     const blink::mojom::ViewportIntersectionState& intersection_state) {
   intersection_state_ = intersection_state;
-  if (view_)
-    view_->UpdateViewportIntersection(intersection_state_);
+  if (view_) {
+    view_->UpdateViewportIntersection(
+        intersection_state_, view_->host()->LastComputedVisualProperties());
+  }
 
   if (IsVisible()) {
     // Record metrics if a crashed subframe became visible as a result of this
@@ -520,11 +520,14 @@ void CrossProcessFrameConnector::ResetScreenSpaceRect() {
 
 void CrossProcessFrameConnector::UpdateRenderThrottlingStatus(
     bool is_throttled,
-    bool subtree_throttled) {
+    bool subtree_throttled,
+    bool display_locked) {
   if (is_throttled != is_throttled_ ||
-      subtree_throttled != subtree_throttled_) {
+      subtree_throttled != subtree_throttled_ ||
+      display_locked != display_locked_) {
     is_throttled_ = is_throttled;
     subtree_throttled_ = subtree_throttled;
+    display_locked_ = display_locked;
     if (view_)
       view_->UpdateRenderThrottlingStatus();
   }
@@ -536,6 +539,10 @@ bool CrossProcessFrameConnector::IsThrottled() const {
 
 bool CrossProcessFrameConnector::IsSubtreeThrottled() const {
   return subtree_throttled_;
+}
+
+bool CrossProcessFrameConnector::IsDisplayLocked() const {
+  return display_locked_;
 }
 
 bool CrossProcessFrameConnector::MaybeLogCrash(CrashVisibility visibility) {

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
@@ -935,7 +934,7 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 
   // TODO(crbug.com/1003742): We should use |result.is_overflow| here. For now,
   // use |inline_size| because some tests rely on this behavior.
-  return inline_size <= available_width ? kSuccess : kOverflow;
+  return inline_size <= available_width_with_hyphens ? kSuccess : kOverflow;
 }
 
 // Breaks the text item at the previous break opportunity from
@@ -1419,6 +1418,10 @@ void NGLineBreaker::HandleControlItem(const NGInlineItem& item,
       const NGInlineItem& next_item = items[item_index_];
       if (next_item.Type() == NGInlineItem::kCloseTag) {
         HandleCloseTag(next_item, line_info);
+        continue;
+      }
+      if (next_item.Type() == NGInlineItem::kText && !next_item.Length()) {
+        HandleEmptyText(next_item, line_info);
         continue;
       }
       break;
@@ -2282,10 +2285,8 @@ const ComputedStyle& NGLineBreaker::ComputeCurrentStyle(
   }
 
   // Use the style at the beginning of the line if no items are available.
-  if (break_token_) {
-    DCHECK(break_token_->Style());
+  if (break_token_ && break_token_->Style())
     return *break_token_->Style();
-  }
   return line_info->LineStyle();
 }
 
@@ -2382,7 +2383,7 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
   const Vector<NGInlineItem>& items = Items();
   DCHECK_LE(item_index_, items.size());
   if (item_index_ >= items.size())
-    return NGInlineBreakToken::Create(node_);
+    return nullptr;
   return NGInlineBreakToken::Create(
       node_, current_style_.get(), item_index_, offset_,
       (is_after_forced_break_ ? NGInlineBreakToken::kIsForcedBreak : 0) |

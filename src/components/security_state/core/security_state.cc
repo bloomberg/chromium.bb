@@ -21,25 +21,6 @@ namespace security_state {
 
 namespace {
 
-// For nonsecure pages, returns a SecurityLevel based on the
-// provided information and the kMarkHttpAsFeature field trial.
-SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
-    const InsecureInputEventData& input_events) {
-  if (base::FeatureList::IsEnabled(features::kMarkHttpAsFeature)) {
-    std::string parameter = base::GetFieldTrialParamValueByFeature(
-        features::kMarkHttpAsFeature,
-        features::kMarkHttpAsFeatureParameterName);
-    if (parameter == features::kMarkHttpAsParameterDangerous) {
-      return DANGEROUS;
-    }
-    if (parameter ==
-        features::kMarkHttpAsParameterWarningAndDangerousOnFormEdits) {
-      return input_events.insecure_field_edited ? DANGEROUS : WARNING;
-    }
-  }
-  return WARNING;
-}
-
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
@@ -177,8 +158,7 @@ SecurityLevel GetSecurityLevel(
         return NONE;
       }
 #endif  // !defined(OS_ANDROID)
-      return GetSecurityLevelForNonSecureFieldTrial(
-          visible_security_state.insecure_input_events);
+      return WARNING;
     }
     return NONE;
   }
@@ -186,8 +166,7 @@ SecurityLevel GetSecurityLevel(
   // Downgrade the security level for pages loaded over legacy TLS versions.
   if (base::FeatureList::IsEnabled(
           security_state::features::kLegacyTLSWarnings) &&
-      visible_security_state.connection_used_legacy_tls &&
-      !visible_security_state.should_suppress_legacy_tls_warning) {
+      visible_security_state.connection_used_legacy_tls) {
     return WARNING;
   }
 
@@ -266,7 +245,6 @@ VisibleSecurityState::VisibleSecurityState()
       is_devtools(false),
       is_reader_mode(false),
       connection_used_legacy_tls(false),
-      should_suppress_legacy_tls_warning(false),
       should_treat_displayed_mixed_forms_as_secure(false) {}
 
 VisibleSecurityState::VisibleSecurityState(const VisibleSecurityState& other) =
@@ -302,14 +280,13 @@ std::string GetSafetyTipHistogramName(const std::string& prefix,
 
 bool GetLegacyTLSWarningStatus(
     const VisibleSecurityState& visible_security_state) {
-  return visible_security_state.connection_used_legacy_tls &&
-         !visible_security_state.should_suppress_legacy_tls_warning;
+  return visible_security_state.connection_used_legacy_tls;
 }
 
 std::string GetLegacyTLSHistogramName(
     const std::string& prefix,
     const VisibleSecurityState& visible_security_state) {
-  if (GetLegacyTLSWarningStatus(visible_security_state)) {
+  if (visible_security_state.connection_used_legacy_tls) {
     return prefix + "." + "LegacyTLS_Triggered";
   } else {
     return prefix + "." + "LegacyTLS_NotTriggered";
@@ -320,12 +297,6 @@ bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {
   return visible_security_state.certificate &&
          (visible_security_state.cert_status &
           net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
-}
-
-// TODO(crbug.com/1015626): Clean this up once the experiment is fully
-// launched.
-bool ShouldShowDangerTriangleForWarningLevel() {
-  return true;
 }
 
 bool IsSafetyTipUIFeatureEnabled() {

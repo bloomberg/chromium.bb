@@ -78,6 +78,8 @@ void PendingAppManagerImpl::Shutdown() {
   pending_registrations_.clear();
   current_registration_.reset();
   pending_installs_.clear();
+  // `current_install_` keeps a pointer to `web_contents_` so destroy it before
+  // releasing the WebContents.
   current_install_.reset();
   ReleaseWebContents();
 }
@@ -100,8 +102,8 @@ std::unique_ptr<PendingAppInstallTask>
 PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
   return std::make_unique<PendingAppInstallTask>(
-      profile_, registrar(), os_integration_manager(), ui_manager(),
-      finalizer(), install_manager(), std::move(install_options));
+      profile_, url_loader_.get(), registrar(), os_integration_manager(),
+      ui_manager(), finalizer(), install_manager(), std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>
@@ -179,7 +181,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
       // Otherwise no need to do anything.
       std::move(front->callback)
           .Run(install_options.install_url,
-               InstallResultCode::kSuccessAlreadyInstalled);
+               {.code = InstallResultCode::kSuccessAlreadyInstalled,
+                .did_uninstall_and_replace = false});
       continue;
     }
 
@@ -190,7 +193,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.install_url,
-               InstallResultCode::kPreviouslyUninstalled);
+               {.code = InstallResultCode::kPreviouslyUninstalled,
+                .did_uninstall_and_replace = false});
       continue;
     }
 
@@ -216,31 +220,12 @@ void PendingAppManagerImpl::StartInstallationTask(
     pending_registrations_.push_front(current_registration_->install_url());
     current_registration_.reset();
   }
+
   current_install_ = std::move(task);
-
-  if (current_install_->task->install_options().only_use_app_info_factory) {
-    DCHECK(current_install_->task->install_options().app_info_factory);
-    current_install_->task->InstallFromInfo(base::BindOnce(
-        &PendingAppManagerImpl::OnInstalled, weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
   CreateWebContentsIfNecessary();
-
-  url_loader_->PrepareForLoad(
-      web_contents_.get(),
-      base::BindOnce(&PendingAppManagerImpl::OnWebContentsReady,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PendingAppManagerImpl::OnWebContentsReady(WebAppUrlLoader::Result) {
-  // TODO(crbug.com/1098139): Handle the scenario where WebAppUrlLoader fails to
-  // load about:blank and flush WebContents states.
-  url_loader_->LoadUrl(current_install_->task->install_options().install_url,
-                       web_contents_.get(),
-                       WebAppUrlLoader::UrlComparison::kSameOrigin,
-                       base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  current_install_->task->Install(
+      web_contents_.get(), base::BindOnce(&PendingAppManagerImpl::OnInstalled,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool PendingAppManagerImpl::RunNextRegistration() {
@@ -265,26 +250,15 @@ void PendingAppManagerImpl::CreateWebContentsIfNecessary() {
   PendingAppInstallTask::CreateTabHelpers(web_contents_.get());
 }
 
-void PendingAppManagerImpl::OnUrlLoaded(WebAppUrlLoader::Result result) {
-  current_install_->task->Install(
-      web_contents_.get(), result,
-      base::BindOnce(&PendingAppManagerImpl::OnInstalled,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
-  CurrentInstallationFinished(result.app_id, result.code);
-}
-
-void PendingAppManagerImpl::CurrentInstallationFinished(
-    const base::Optional<AppId>& app_id,
-    InstallResultCode code) {
-  if (app_id && IsSuccess(code)) {
+void PendingAppManagerImpl::OnInstalled(
+    base::Optional<AppId> app_id,
+    PendingAppManager::InstallResult result) {
+  if (app_id && IsSuccess(result.code)) {
     MaybeEnqueueServiceWorkerRegistration(
         current_install_->task->install_options());
   }
 
-  // Post a task to avoid InstallableManager crashing and do so before
+  // Post a task to avoid webapps::InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.
   PostMaybeStartNext();
@@ -292,7 +266,7 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_install_);
   std::move(task_and_callback->callback)
-      .Run(task_and_callback->task->install_options().install_url, code);
+      .Run(task_and_callback->task->install_options().install_url, result);
 }
 
 void PendingAppManagerImpl::MaybeEnqueueServiceWorkerRegistration(

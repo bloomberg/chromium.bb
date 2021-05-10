@@ -16,7 +16,6 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrSWMaskHelper.h"
 #include "src/gpu/GrStencilMaskHelper.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
@@ -376,7 +375,7 @@ static GrSurfaceProxyView render_sw_mask(GrRecordingContext* context, const SkIR
     }
 }
 
-static void render_stencil_mask(GrRecordingContext* context, GrRenderTargetContext* rtc,
+static void render_stencil_mask(GrRecordingContext* context, GrSurfaceDrawContext* rtc,
                                 uint32_t genID, const SkIRect& bounds,
                                 const GrClipStack::Element** elements, int count,
                                 GrAppliedClip* out) {
@@ -1256,7 +1255,7 @@ GrClip::PreClipResult GrClipStack::preApply(const SkRect& bounds, GrAA aa) const
     SkUNREACHABLE;
 }
 
-GrClip::Effect GrClipStack::apply(GrRecordingContext* context, GrRenderTargetContext* rtc,
+GrClip::Effect GrClipStack::apply(GrRecordingContext* context, GrSurfaceDrawContext* rtc,
                                   GrAAType aa, bool hasUserStencilSettings,
                                   GrAppliedClip* out, SkRect* bounds) const {
     // TODO: Once we no longer store SW masks, we don't need to sneak the provider in like this
@@ -1288,7 +1287,7 @@ GrClip::Effect GrClipStack::apply(GrRecordingContext* context, GrRenderTargetCon
     if (cs.shader()) {
         static const GrColorInfo kCoverageColorInfo{GrColorType::kUnknown, kPremul_SkAlphaType,
                                                     nullptr};
-        GrFPArgs args(context, *fMatrixProvider, kNone_SkFilterQuality, &kCoverageColorInfo);
+        GrFPArgs args(context, *fMatrixProvider, SkSamplingOptions(), &kCoverageColorInfo);
         clipFP = as_SB(cs.shader())->asFragmentProcessor(args);
         if (clipFP) {
             // The initial input is the coverage from the geometry processor, so this ensures it
@@ -1352,7 +1351,7 @@ GrClip::Effect GrClipStack::apply(GrRecordingContext* context, GrRenderTargetCon
     }
 
     // If window rectangles are supported, we can use them to exclude inner bounds of difference ops
-    int maxWindowRectangles = rtc->priv().maxWindowRectangles();
+    int maxWindowRectangles = rtc->maxWindowRectangles();
     GrWindowRectangles windowRects;
 
     // Elements not represented as an analytic FP or skipped will be collected here and later
@@ -1645,6 +1644,6 @@ GrFPResult GrClipStack::GetSWMaskFP(GrRecordingContext* context, Mask::Stack* ma
     fp = GrDeviceSpaceEffect::Make(std::move(fp));
 
     // Must combine the coverage sampled from the texture effect with the previous coverage
-    fp = GrBlendFragmentProcessor::Make(std::move(clipFP), std::move(fp), SkBlendMode::kModulate);
+    fp = GrBlendFragmentProcessor::Make(std::move(fp), std::move(clipFP), SkBlendMode::kDstIn);
     return GrFPSuccess(std::move(fp));
 }

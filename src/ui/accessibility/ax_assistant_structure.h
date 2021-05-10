@@ -5,7 +5,10 @@
 #ifndef UI_ACCESSIBILITY_AX_ASSISTANT_STRUCTURE_H_
 #define UI_ACCESSIBILITY_AX_ASSISTANT_STRUCTURE_H_
 
-#include <cstdint>
+#include <stdint.h>
+
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -49,6 +52,9 @@ struct AssistantNode {
   // a closest approximation of Android's views to keep the server happy.
   std::string class_name;
 
+  // HTML tag name
+  std::string html_tag;
+
   // Accessibility functionality of the node inferred from DOM or based on HTML
   // role attribute.
   base::Optional<std::string> role;
@@ -63,8 +69,7 @@ struct AssistantTree {
   std::vector<std::unique_ptr<AssistantNode>> nodes;
 };
 
-std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
-                                                   bool show_password);
+std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update);
 
 base::string16 AXUrlBaseText(base::string16 url);
 const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent);

@@ -248,6 +248,10 @@ class TemplateURLRef {
     // Source of the search or suggest request.
     RequestSource request_source = SEARCHBOX;
 
+    // Whether the query is being fetched as a prefetch request before the user
+    // actually searches for the search terms.
+    bool is_prefetch = false;
+
     ContextualSearchParams contextual_search_params;
   };
 
@@ -377,6 +381,7 @@ class TemplateURLRef {
     ENCODING,
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
+    GOOGLE_BASE_SEARCH_BY_IMAGE_URL,
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_CONTEXTUAL_SEARCH_VERSION,
     GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
@@ -395,6 +400,7 @@ class TemplateURLRef {
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_PAGE_CLASSIFICATION,
     GOOGLE_PREFETCH_QUERY,
+    GOOGLE_PREFETCH_SOURCE,
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
@@ -584,11 +590,12 @@ class TemplateURL {
   enum Type {
     // Installed only on this device. Should not be synced. This is not common.
     LOCAL = 0,
-    // Regular search engine. This is the most common.
+    // Regular search engine. This is the most common, and the ONLY type synced.
     NORMAL = 1,
-    // Installed by extension through Override Settings API.
+    // Installed by extension through Override Settings API. Not synced.
     NORMAL_CONTROLLED_BY_EXTENSION = 2,
     // The keyword associated with an extension that uses the Omnibox API.
+    // Not synced.
     OMNIBOX_API_EXTENSION = 3,
   };
 

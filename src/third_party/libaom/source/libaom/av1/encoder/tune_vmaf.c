@@ -917,7 +917,7 @@ void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
-  av1_set_error_per_bit(&x->mv_costs, *rdmult);
+  av1_set_error_per_bit(&x->errorperbit, *rdmult);
   aom_clear_system_state();
 }
 

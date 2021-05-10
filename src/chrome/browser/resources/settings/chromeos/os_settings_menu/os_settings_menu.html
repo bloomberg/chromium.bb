@@ -7,7 +7,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../os_icons.html">
@@ -176,6 +175,11 @@
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{osPeoplePageTitle}
       </a>
+      <a id="kerberos" href="/kerberos" class="item"
+          hidden="[[!showKerberosSection]]">
+        <iron-icon icon="os-settings:auth-key"></iron-icon>
+        $i18n{kerberosPageTitle}
+      </a>
       <a href="/device" class="item">
         <iron-icon icon="os-settings:laptop-chromebook"></iron-icon>
         $i18n{devicePageTitle}
@@ -189,13 +193,19 @@
         <iron-icon icon="cr:search"></iron-icon>
         $i18n{osSearchPageTitle}
       </a>
+      <template is="dom-if" if="[[isAccountManagementFlowsV2Enabled_]]">
+        <a href="/osPrivacy" class="item">
+          <iron-icon icon="cr:security"></iron-icon>
+          $i18n{privacyPageTitle}
+        </a>
+      </template>
       <a href="/apps" class="item">
         <iron-icon icon="os-settings:apps"></iron-icon>
         $i18n{appsPageTitle}
       </a>
-      <a href="/crostini" hidden="[[!showCrostini]]" class="item">
-        <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
-        $i18n{crostiniPageTitle}
+      <a href="/onstartup" hidden="[[!showStartup]]" class="item">
+        <iron-icon icon="os-settings:startup"></iron-icon>
+        $i18n{onStartupPageTitle}
       </a>
       <cr-button id="advancedButton"
           aria-expanded$="[[boolToString_(advancedOpened)]]"
@@ -211,10 +221,12 @@
             <iron-icon icon="os-settings:access-time"></iron-icon>
             $i18n{dateTimePageTitle}
           </a>
-          <a href="/osPrivacy" class="item">
+          <template is="dom-if" if="[[!isAccountManagementFlowsV2Enabled_]]">
+            <a href="/osPrivacy" class="item">
               <iron-icon icon="cr:security"></iron-icon>
               $i18n{privacyPageTitle}
-          </a>
+            </a>
+          </template>
           <a href="/osLanguages" class="item">
             <iron-icon icon="os-settings:language"></iron-icon>
             $i18n{osLanguagesPageTitle}
@@ -226,6 +238,10 @@
           <a href="/osPrinting" class="item">
             <iron-icon icon="os-settings:print"></iron-icon>
             $i18n{printingPageTitle}
+          </a>
+          <a href="/crostini" hidden="[[!showCrostini]]" class="item">
+            <iron-icon icon="os-settings:developer-tags"></iron-icon>
+            $i18n{crostiniPageTitle}
           </a>
           <a href="/osAccessibility" class="item">
             <iron-icon icon="os-settings:accessibility"></iron-icon>

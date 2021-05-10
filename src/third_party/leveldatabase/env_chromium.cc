@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
@@ -49,9 +48,6 @@ using base::trace_event::ProcessMemoryDump;
 using leveldb::FileLock;
 using leveldb::Slice;
 using leveldb::Status;
-
-const base::Feature kLevelDBFileHandleEviction{
-    "LevelDBFileHandleEviction", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace leveldb_env {
 namespace {
@@ -455,7 +451,7 @@ Options::Options() {
 //
 // Currently log reuse is an experimental feature in leveldb. More info at:
 // https://github.com/google/leveldb/commit/251ebf5dc70129ad3
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Reusing logs on Chrome OS resulted in an unacceptably high leveldb
   // corruption rate (at least for Indexed DB). More info at
   // https://crbug.com/460568
@@ -707,8 +703,7 @@ ChromiumEnv::ChromiumEnv(const std::string& name,
   DCHECK(filesystem_);
 
   size_t max_open_files = base::GetMaxFds();
-  if (base::FeatureList::IsEnabled(kLevelDBFileHandleEviction) &&
-      max_open_files < kFileLimitToDisableEviction) {
+  if (max_open_files < kFileLimitToDisableEviction) {
     file_cache_.reset(
         leveldb::NewLRUCache(GetLevelDBFileLimit(max_open_files)));
   }

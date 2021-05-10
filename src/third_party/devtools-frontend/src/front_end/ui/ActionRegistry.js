@@ -4,10 +4,10 @@
 
 import * as Root from '../root/root.js';  // eslint-disable-line no-unused-vars
 
-import {Action} from './Action.js';
+import {Action, getRegisteredActionExtensions} from './ActionRegistration.js';  // eslint-disable-line no-unused-vars
 import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
 
-/** @type {!ActionRegistry} */
+/** @type {!ActionRegistry|undefined} */
 let actionRegistryInstance;
 
 export class ActionRegistry {
@@ -32,28 +32,14 @@ export class ActionRegistry {
     return actionRegistryInstance;
   }
 
+  static removeInstance() {
+    actionRegistryInstance = undefined;
+  }
+
   _registerActions() {
-    Root.Runtime.Runtime.instance().extensions('action').forEach(registerExtension, this);
-
-    /**
-     * @param {!Root.Runtime.Extension} extension
-     * @this {ActionRegistry}
-     */
-    function registerExtension(extension) {
-      const actionId = extension.descriptor().actionId;
-      if (!actionId) {
-        console.error(`No actionId provided for extension ${extension.descriptor().name}`);
-        return;
-      }
-      console.assert(!this._actionsById.get(actionId));
-
-      const action = new Action(extension);
-      if (!action.category() || action.title()) {
-        this._actionsById.set(actionId, action);
-      } else {
-        console.error(`Category actions require a title for command menu: ${actionId}`);
-      }
-      if (!extension.canInstantiate()) {
+    for (const action of getRegisteredActionExtensions()) {
+      this._actionsById.set(action.id(), action);
+      if (!action.canInstantiate()) {
         action.setEnabled(false);
       }
     }
@@ -79,23 +65,37 @@ export class ActionRegistry {
    * @return {!Array.<!Action>}
    */
   applicableActions(actionIds, context) {
-    const extensions = [];
+    /** @type {!Array<!Action>} */
+    const applicableActions = [];
     for (const actionId of actionIds) {
       const action = this._actionsById.get(actionId);
       if (action && action.enabled()) {
-        extensions.push(action.extension());
+        if (isActionApplicableToContextTypes(
+                /** @type {!Action} */ (action), context.flavors())) {
+          applicableActions.push(/** @type {!Action} */ (action));
+        }
       }
     }
-    return [...context.applicableExtensions(extensions)].map(extensionToAction.bind(this));
+    return applicableActions;
 
     /**
-     * @param {!Root.Runtime.Extension} extension
-     * @return {!Action}
-     * @this {ActionRegistry}
+     * @param {!Action} action
+     * @param {!Set.<?>} currentContextTypes
+     * @return {boolean}
      */
-    function extensionToAction(extension) {
-      const actionId = /** @type {string} */ (extension.descriptor().actionId);
-      return /** @type {!Action} */ (this.action(actionId));
+    function isActionApplicableToContextTypes(action, currentContextTypes) {
+      const contextTypes = action.contextTypes();
+      if (!contextTypes) {
+        return true;
+      }
+      for (let i = 0; i < contextTypes.length; ++i) {
+        const contextType = contextTypes[i];
+        const isMatching = Boolean(contextType) && currentContextTypes.has(contextType);
+        if (isMatching) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 

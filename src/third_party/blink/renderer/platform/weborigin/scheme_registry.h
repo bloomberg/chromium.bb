@@ -49,18 +49,7 @@ class PLATFORM_EXPORT SchemeRegistry {
   STATIC_ONLY(SchemeRegistry);
 
  public:
-  static void RegisterURLSchemeAsLocal(const String&);
-  static bool ShouldTreatURLSchemeAsLocal(const String&);
-
   static bool ShouldTreatURLSchemeAsRestrictingMixedContent(const String&);
-
-  // Subresources transported by secure schemes do not trigger mixed content
-  // warnings. For example, https and data are secure schemes because they
-  // cannot be corrupted by active network attackers.
-  static void RegisterURLSchemeAsSecure(const String&);
-  static bool ShouldTreatURLSchemeAsSecure(const String&);
-
-  static bool ShouldTreatURLSchemeAsNoAccess(const String&);
 
   // Display-isolated schemes can only be displayed (in the sense of
   // SecurityOrigin::canDisplay) by documents from the same scheme.
@@ -107,8 +96,8 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void RegisterURLSchemeAsSupportingFetchAPI(const String& scheme);
   static bool ShouldTreatURLSchemeAsSupportingFetchAPI(const String& scheme);
 
-  // https://fetch.spec.whatwg.org/#fetch-scheme
-  static bool IsFetchScheme(const String& scheme);
+  // https://url.spec.whatwg.org/#special-scheme
+  static bool IsSpecialScheme(const String& scheme);
 
   // Schemes which override the first-/third-party checks on a Document.
   static void RegisterURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
@@ -128,6 +117,10 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void RegisterURLSchemeAsAllowedForReferrer(const String& scheme);
   static void RemoveURLSchemeAsAllowedForReferrer(const String& scheme);
   static bool ShouldTreatURLSchemeAsAllowedForReferrer(const String& scheme);
+
+  // Schemes used for internal error pages, for failed navigations.
+  static void RegisterURLSchemeAsError(const String&);
+  static bool ShouldTreatURLSchemeAsError(const String& scheme);
 
   // Allow resources from some schemes to load on a page, regardless of its
   // Content Security Policy.

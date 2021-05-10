@@ -11,6 +11,7 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/clipboard_history_item.h"
 #include "ash/clipboard/test_support/clipboard_history_item_builder.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -18,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,6 +75,7 @@ class MockClipboardImageModelFactory : public ClipboardImageModelFactory {
   MOCK_METHOD(void, CancelRequest, (const base::UnguessableToken&), (override));
   MOCK_METHOD(void, Activate, (), (override));
   MOCK_METHOD(void, Deactivate, (), (override));
+  MOCK_METHOD(void, RenderCurrentPendingRequests, (), (override));
   void OnShutdown() override {}
 };
 
@@ -124,8 +125,10 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
   // Populate a builder with all the data formats that we expect to handle.
   ClipboardHistoryItemBuilder builder;
   builder.SetText("Text")
-      .SetMarkup("<img Markup")
+      .SetMarkup("HTML with no image or table tags")
       .SetRtf("Rtf")
+      .SetFilenames({ui::FileInfo(base::FilePath("/dir/filename"),
+                                  base::FilePath("filename"))})
       .SetBookmarkTitle("Bookmark Title")
       .SetBitmap(gfx::test::CreateBitmap(10, 10))
       .SetFileSystemData({"/path/to/File.txt", "/path/to/Other%20File.txt"})
@@ -137,9 +140,18 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
 
   builder.ClearBitmap();
 
-  // In the absence of bitmap data, HTML data takes precedence.
+  // In the absence of bitmap data, HTML data takes precedence, but we use
+  // plain-text format for the label.
   EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
-            base::UTF8ToUTF16("<img Markup"));
+            base::UTF8ToUTF16("Text"));
+
+  builder.ClearText();
+
+  // If plan-text does not exist, we show a placeholder label.
+  EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
+            base::UTF8ToUTF16("HTML Content"));
+
+  builder.SetText("Text");
 
   builder.ClearMarkup();
 
@@ -154,6 +166,12 @@ TEST_F(ClipboardHistoryResourceManagerTest, GetLabel) {
             base::UTF8ToUTF16("RTF Content"));
 
   builder.ClearRtf();
+
+  // In the absence of RTF data, Filenames data takes precedence.
+  EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
+            base::UTF8ToUTF16("filename"));
+
+  builder.ClearFilenames();
 
   // In the absence of RTF data, bookmark data takes precedence.
   EXPECT_EQ(resource_manager()->GetLabel(builder.Build()),
@@ -221,7 +239,8 @@ TEST_F(ClipboardHistoryResourceManagerTest, BasicTableCachedImageModel) {
                                       clipboard_history()->GetItems().front()));
 }
 
-// Tests that Render is not called ineligble html is added to ClipboarHistory
+// Tests that Render is not called when ineligble html is added to
+// ClipboarHistory
 TEST_F(ClipboardHistoryResourceManagerTest, BasicIneligibleCachedImageModel) {
   ui::ImageModel expected_image_model = GetRandomImageModel();
   ON_CALL(*mock_image_factory(), Render)
@@ -256,13 +275,19 @@ TEST_F(ClipboardHistoryResourceManagerTest, DuplicateHTML) {
   EXPECT_CALL(*mock_image_factory(), CancelRequest).Times(0);
   EXPECT_CALL(*mock_image_factory(), Render).Times(1);
 
-  for (int i = 0; i < 2; ++i) {
-    {
-      ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
-      scw.WriteHTML(base::UTF8ToUTF16("<img test>"), "source_url");
-    }
-    FlushMessageLoop();
+  // Use identical markup but differing source url so that both items are added
+  // to the clipboard history.
+  {
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+    scw.WriteHTML(base::UTF8ToUTF16("<img test>"), "source_url_1");
   }
+  FlushMessageLoop();
+  {
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+    scw.WriteHTML(base::UTF8ToUTF16("<img test>"), "source_url_2");
+  }
+  FlushMessageLoop();
+
   auto items = clipboard_history()->GetItems();
   EXPECT_EQ(2u, items.size());
   for (const auto& item : items)

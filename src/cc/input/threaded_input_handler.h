@@ -56,6 +56,7 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
       ScrollState* scroll_state,
       base::TimeDelta delayed_by = base::TimeDelta()) override;
   void ScrollEnd(bool should_snap = false) override;
+  PointerResultType HitTest(const gfx::PointF& viewport_point) override;
   void RecordScrollBegin(ui::ScrollInputType input_type,
                          ScrollBeginThreadState scroll_start_state) override;
   void RecordScrollEnd(ui::ScrollInputType input_type) override;
@@ -167,6 +168,8 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   bool animating_for_snap_for_testing() const { return IsAnimatingForSnap(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScrollUnifiedLayerTreeHostImplTest,
+                           AbortAnimatedScrollBeforeStartingAutoscroll);
   FRIEND_TEST_ALL_PREFIXES(ScrollUnifiedLayerTreeHostImplTest,
                            AnimatedScrollYielding);
   FRIEND_TEST_ALL_PREFIXES(ScrollUnifiedLayerTreeHostImplTest,
@@ -434,6 +437,7 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   bool has_scrolled_by_wheel_ = false;
   bool has_scrolled_by_touch_ = false;
   bool has_scrolled_by_precisiontouchpad_ = false;
+  bool has_scrolled_by_scrollbar_ = false;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

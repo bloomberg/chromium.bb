@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -21,11 +22,15 @@ class Textfield;
 class CryptoModulePasswordDialogView : public views::DialogDelegateView,
                                        public views::TextfieldController {
  public:
+  METADATA_HEADER(CryptoModulePasswordDialogView);
   CryptoModulePasswordDialogView(const std::string& slot_name,
                                  CryptoModulePasswordReason reason,
                                  const std::string& server,
-                                 const CryptoModulePasswordCallback& callback);
-
+                                 CryptoModulePasswordCallback callback);
+  CryptoModulePasswordDialogView(const CryptoModulePasswordDialogView&) =
+      delete;
+  CryptoModulePasswordDialogView& operator=(
+      const CryptoModulePasswordDialogView&) = delete;
   ~CryptoModulePasswordDialogView() override;
 
  private:
@@ -36,7 +41,6 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
 
   // views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override;
-  ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
 
   // views::TextfieldController:
@@ -54,9 +58,7 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   views::Label* password_label_;
   views::Textfield* password_entry_;
 
-  const CryptoModulePasswordCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptoModulePasswordDialogView);
+  CryptoModulePasswordCallback callback_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CRYPTO_MODULE_PASSWORD_DIALOG_VIEW_H_

@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,8 +38,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
@@ -72,7 +75,7 @@ views::View* AnchorViewForBrowser(const ExtensionInstalledBubbleModel* model,
           browser_view->toolbar()->browser_actions();
       // Hitting this DCHECK means |ShouldShow| failed.
       DCHECK(container);
-      DCHECK(!container->animating());
+      DCHECK(!container->GetAnimating());
 
       reference_view = container->GetViewForId(model->extension_id());
     }
@@ -91,7 +94,7 @@ views::View* AnchorViewForBrowser(const ExtensionInstalledBubbleModel* model,
 std::unique_ptr<views::View> CreateSigninPromoView(
     Profile* profile,
     BubbleSyncPromoDelegate* delegate) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS does not show the signin promo.
   return nullptr;
 #else
@@ -117,9 +120,13 @@ std::unique_ptr<views::View> CreateSigninPromoView(
 class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(ExtensionInstalledBubbleView);
   ExtensionInstalledBubbleView(
       Browser* browser,
       std::unique_ptr<ExtensionInstalledBubbleModel> model);
+  ExtensionInstalledBubbleView(const ExtensionInstalledBubbleView&) = delete;
+  ExtensionInstalledBubbleView& operator=(const ExtensionInstalledBubbleView&) =
+      delete;
   ~ExtensionInstalledBubbleView() override;
 
   static void Show(Browser* browser,
@@ -141,8 +148,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
   Browser* const browser_;
   const std::unique_ptr<ExtensionInstalledBubbleModel> model_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };
 
 // static
@@ -268,6 +273,9 @@ void ExtensionInstalledBubbleView::LinkClicked() {
   GetWidget()->Close();
 }
 
+BEGIN_METADATA(ExtensionInstalledBubbleView, views::BubbleDialogDelegateView)
+END_METADATA
+
 void ShowUiOnToolbarMenu(scoped_refptr<const extensions::Extension> extension,
                          Browser* browser,
                          const SkBitmap& icon) {
@@ -303,8 +311,8 @@ class IconAnimationWaiter {
                                                             icon)) {
     removal_watcher_ = std::make_unique<ExtensionRemovalWatcher>(
         browser, extension,
-        base::Bind(&IconAnimationWaiter::OnExtensionRemoved,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&IconAnimationWaiter::OnExtensionRemoved,
+                       weak_factory_.GetWeakPtr()));
   }
   virtual ~IconAnimationWaiter() = default;
 
@@ -345,7 +353,7 @@ class IconAnimationWaiter {
           BrowserView::GetBrowserViewForBrowser(browser_)
               ->toolbar()
               ->browser_actions();
-      return container && !container->animating();
+      return container && !container->GetAnimating();
     }
     return true;
   }

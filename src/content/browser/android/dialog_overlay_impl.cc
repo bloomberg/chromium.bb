@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "media/mojo/mojom/android_overlay.mojom.h"
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 
@@ -250,6 +251,22 @@ void DialogOverlayImpl::RegisterWindowObserverIfNeeded(
     observed_window_android_ = true;
     window->AddObserver(this);
   }
+}
+
+static void JNI_DialogOverlayImpl_NotifyDestroyedSynchronously(
+    JNIEnv* env,
+    int message_pipe_handle) {
+  mojo::MessagePipeHandle handle(message_pipe_handle);
+  mojo::ScopedMessagePipeHandle scoped_handle(handle);
+  mojo::Remote<media::mojom::AndroidOverlayClient> remote(
+      mojo::PendingRemote<media::mojom::AndroidOverlayClient>(
+          std::move(scoped_handle),
+          media::mojom::AndroidOverlayClient::Version_));
+  if (!remote.is_bound())
+    return;
+  remote->OnSynchronouslyDestroyed();
+  // Note that we don't take back the mojo message pipe.  We let it close when
+  // `remote` goes out of scope.
 }
 
 static jint JNI_DialogOverlayImpl_RegisterSurface(

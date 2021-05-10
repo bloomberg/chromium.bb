@@ -32,6 +32,7 @@ Polymer({
     'setNumKeysEnteredPinCode',
     'setPointingDeviceName',
     'setKeyboardDeviceName',
+    'setTouchscreenDetectedState',
     'setContinueButtonEnabled',
   ],
 
@@ -56,6 +57,15 @@ Polymer({
     pointingDeviceName: {
       type: String,
       value: '',
+    },
+
+    /**
+     * State of touchscreen detection
+     * @private
+     */
+    touchscreenDetected_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -136,6 +146,13 @@ Polymer({
     });
   },
 
+  getPrerequisitesText_(locale, touchscreenDetected) {
+    if (touchscreenDetected)
+      return this.i18n('hidDetectionPrerequisitesTouchscreen');
+    else
+      return this.i18n('hidDetectionPrerequisites');
+  },
+
   /**
    * Provides the label for the mouse row
    */
@@ -192,6 +209,15 @@ Polymer({
   },
 
   /**
+   * Helper function to calculate visibility of the spinner.
+   * @param {string} state Connection state (one of CONNECTION).
+   * @private
+   */
+  spinnerIsVisible_(state) {
+    return state == CONNECTION.SEARCHING;
+  },
+
+  /**
    * Updates the visibility of the PIN dialog.
    * @private
    */
@@ -242,6 +268,13 @@ Polymer({
   onHIDContinueTap_(event) {
     this.userActed('HIDDetectionOnContinue');
     event.stopPropagation();
+  },
+
+  /**
+   * Sets TouchscreenDetected to true
+   */
+  setTouchscreenDetectedState(state) {
+    this.touchscreenDetected_ = state;
   },
 
   /**

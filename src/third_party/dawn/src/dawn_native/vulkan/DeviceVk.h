@@ -52,6 +52,7 @@ namespace dawn_native { namespace vulkan {
 
         VkInstance GetVkInstance() const;
         const VulkanDeviceInfo& GetDeviceInfo() const;
+        const VulkanGlobalInfo& GetGlobalInfo() const;
         VkDevice GetVkDevice() const;
         uint32_t GetGraphicsQueueFamily() const;
         VkQueue GetQueue() const;
@@ -108,6 +109,8 @@ namespace dawn_native { namespace vulkan {
         uint32_t GetOptimalBytesPerRowAlignment() const override;
         uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
 
+        float GetTimestampPeriodInNS() const override;
+
       private:
         Device(Adapter* adapter, const DeviceDescriptor* descriptor);
 
@@ -127,7 +130,8 @@ namespace dawn_native { namespace vulkan {
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
         ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
-            const ShaderModuleDescriptor* descriptor) override;
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult) override;
         ResultOrError<SwapChainBase*> CreateSwapChainImpl(
             const SwapChainDescriptor* descriptor) override;
         ResultOrError<NewSwapChainBase*> CreateSwapChainImpl(

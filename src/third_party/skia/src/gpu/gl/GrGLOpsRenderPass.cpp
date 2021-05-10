@@ -46,7 +46,7 @@ bool GrGLOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
 }
 
 void GrGLOpsRenderPass::onSetScissorRect(const SkIRect& scissor) {
-    fGpu->flushScissorRect(scissor, fRenderTarget->width(), fRenderTarget->height(), fOrigin);
+    fGpu->flushScissorRect(scissor, fRenderTarget->height(), fOrigin);
 }
 
 bool GrGLOpsRenderPass::onBindTextures(const GrPrimitiveProcessor& primProc,
@@ -286,11 +286,11 @@ void GrGLOpsRenderPass::multiDrawArraysANGLEOrWebGL(const GrBuffer* drawIndirect
     while (drawCount) {
         int countInBatch = std::min(drawCount, kMaxDrawCountPerBatch);
         for (int i = 0; i < countInBatch; ++i) {
-            const auto& cmd = cmds[i];
-            fFirsts[i] = cmd.fBaseVertex;
-            fCounts[i] = cmd.fVertexCount;
-            fInstanceCounts[i] = cmd.fInstanceCount;
-            fBaseInstances[i] = cmd.fBaseInstance;
+            auto [vertexCount, instanceCount, baseVertex, baseInstance] = cmds[i];
+            fFirsts[i] = baseVertex;
+            fCounts[i] = vertexCount;
+            fInstanceCounts[i] = instanceCount;
+            fBaseInstances[i] = baseInstance;
         }
         if (countInBatch == 1) {
             GL_CALL(DrawArraysInstancedBaseInstance(glPrimType, fFirsts[0], fCounts[0],
@@ -359,12 +359,12 @@ void GrGLOpsRenderPass::multiDrawElementsANGLEOrWebGL(const GrBuffer* drawIndire
     while (drawCount) {
         int countInBatch = std::min(drawCount, kMaxDrawCountPerBatch);
         for (int i = 0; i < countInBatch; ++i) {
-            const auto& cmd = cmds[i];
-            fCounts[i] = cmd.fIndexCount;
-            fIndices[i] = this->offsetForBaseIndex(cmd.fBaseIndex);
-            fInstanceCounts[i] = cmd.fInstanceCount;
-            fBaseVertices[i] = cmd.fBaseVertex;
-            fBaseInstances[i] = cmd.fBaseInstance;
+            auto [indexCount, instanceCount, baseIndex, baseVertex, baseInstance] = cmds[i];
+            fCounts[i] = indexCount;
+            fIndices[i] = this->offsetForBaseIndex(baseIndex);
+            fInstanceCounts[i] = instanceCount;
+            fBaseVertices[i] = baseVertex;
+            fBaseInstances[i] = baseInstance;
         }
         if (countInBatch == 1) {
             GL_CALL(DrawElementsInstancedBaseVertexBaseInstance(glPrimType, fCounts[0],
@@ -383,7 +383,7 @@ void GrGLOpsRenderPass::multiDrawElementsANGLEOrWebGL(const GrBuffer* drawIndire
     }
 }
 
-void GrGLOpsRenderPass::onClear(const GrScissorState& scissor, const SkPMColor4f& color) {
+void GrGLOpsRenderPass::onClear(const GrScissorState& scissor, std::array<float, 4> color) {
     fGpu->clear(scissor, color, fRenderTarget, fOrigin);
 }
 

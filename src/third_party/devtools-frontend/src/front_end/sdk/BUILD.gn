@@ -7,6 +7,7 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("sdk") {
   sources = [
+    "AccessibilityModel.js",
     "CPUProfileDataModel.js",
     "CPUProfilerModel.js",
     "CSSFontFace.js",
@@ -23,10 +24,12 @@ devtools_module("sdk") {
     "CompilerSourceMappingContentProvider.js",
     "Connections.js",
     "ConsoleModel.js",
+    "ConsoleModelTypes.ts",
     "ContentSecurityPolicyIssue.js",
     "Cookie.js",
     "CookieModel.js",
     "CookieParser.js",
+    "CorsIssue.ts",
     "CrossOriginEmbedderPolicyIssue.js",
     "DOMDebuggerModel.js",
     "DOMModel.js",
@@ -44,13 +47,16 @@ devtools_module("sdk") {
     "IssuesModel.js",
     "LayerTreeBase.js",
     "LogModel.js",
+    "LowTextContrastIssue.ts",
     "MixedContentIssue.js",
     "NetworkLog.js",
     "NetworkManager.js",
     "NetworkRequest.js",
+    "OverlayColorGenerator.js",
     "OverlayModel.js",
+    "OverlayPersistentHighlighter.js",
     "PageResourceLoader.js",
-    "PaintProfiler.js",
+    "PaintProfiler.ts",
     "PerformanceMetricsModel.js",
     "ProfileTreeModel.js",
     "RemoteObject.js",
@@ -65,10 +71,12 @@ devtools_module("sdk") {
     "ServerTiming.js",
     "ServiceWorkerCacheModel.js",
     "ServiceWorkerManager.js",
+    "SharedArrayBufferIssue.ts",
     "SourceMap.js",
     "SourceMapManager.js",
     "TracingManager.js",
     "TracingModel.js",
+    "TrustedWebActivityIssue.ts",
     "WebAuthnModel.js",
   ]
 
@@ -76,10 +84,11 @@ devtools_module("sdk") {
     "../common:bundle",
     "../generated",
     "../host:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../protocol_client:bundle",
+    "../text_editor:bundle",
     "../text_utils:bundle",
-    "wasm_source_map",
   ]
 }
 
@@ -91,6 +100,12 @@ devtools_entrypoint("bundle") {
 
 devtools_entrypoint("legacy") {
   entrypoint = "sdk-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "sdk-meta.ts"
 
   deps = [ ":bundle" ]
 }

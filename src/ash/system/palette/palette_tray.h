@@ -11,6 +11,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/palette/palette_tool_manager.h"
+#include "ash/system/palette/stylus_battery_delegate.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

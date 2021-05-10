@@ -27,73 +27,55 @@ namespace tint {
 namespace ast {
 
 /// An else statement
-class ElseStatement : public Statement {
+class ElseStatement : public Castable<ElseStatement, Statement> {
  public:
-  /// Constructor
-  ElseStatement();
-  /// Constructor
-  /// @param body the else body
-  explicit ElseStatement(std::unique_ptr<BlockStatement> body);
-  /// Constructor
-  /// @param condition the else condition
-  /// @param body the else body
-  ElseStatement(std::unique_ptr<Expression> condition,
-                std::unique_ptr<BlockStatement> body);
-  /// Constructor
-  /// @param source the source information
-  /// @param body the else body
-  ElseStatement(const Source& source, std::unique_ptr<BlockStatement> body);
   /// Constructor
   /// @param source the source information
   /// @param condition the else condition
   /// @param body the else body
   ElseStatement(const Source& source,
-                std::unique_ptr<Expression> condition,
-                std::unique_ptr<BlockStatement> body);
+                Expression* condition,
+                BlockStatement* body);
   /// Move constructor
   ElseStatement(ElseStatement&&);
   ~ElseStatement() override;
 
-  /// Sets the condition for the else statement
-  /// @param condition the condition to set
-  void set_condition(std::unique_ptr<Expression> condition) {
-    condition_ = std::move(condition);
-  }
   /// @returns the else condition or nullptr if none set
-  Expression* condition() const { return condition_.get(); }
+  Expression* condition() const { return condition_; }
   /// @returns true if the else has a condition
   bool HasCondition() const { return condition_ != nullptr; }
 
-  /// Sets the else body
-  /// @param body the else body
-  void set_body(std::unique_ptr<BlockStatement> body) {
-    body_ = std::move(body);
-  }
   /// @returns the else body
-  const BlockStatement* body() const { return body_.get(); }
+  const BlockStatement* body() const { return body_; }
   /// @returns the else body
-  BlockStatement* body() { return body_.get(); }
+  BlockStatement* body() { return body_; }
 
-  /// @returns true if this is a else statement
-  bool IsElse() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ElseStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   ElseStatement(const ElseStatement&) = delete;
 
-  std::unique_ptr<Expression> condition_;
-  std::unique_ptr<BlockStatement> body_;
+  Expression* const condition_;
+  BlockStatement* const body_;
 };
 
-/// A list of unique else statements
-using ElseStatementList = std::vector<std::unique_ptr<ElseStatement>>;
+/// A list of else statements
+using ElseStatementList = std::vector<ElseStatement*>;
 
 }  // namespace ast
 }  // namespace tint

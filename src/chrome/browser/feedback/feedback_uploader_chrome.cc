@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/feedback/feedback_report.h"
@@ -13,17 +14,19 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #if BUILDFLAG(PLATFORM_CFM)
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/device_identity/device_identity_provider.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #endif  // BUILDFLAG(PLATFORM_CFM)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace feedback {
 
@@ -43,15 +46,30 @@ void QueueSingleReport(base::WeakPtr<feedback::FeedbackUploader> uploader,
                                 std::move(uploader), std::move(report)));
 }
 
+// Helper function to create an URLLoaderFactory for the FeedbackUploader from
+// the BrowserContext storage partition. As creating the storage partition can
+// be expensive, this is delayed so that it does not happen during startup.
+scoped_refptr<network::SharedURLLoaderFactory>
+CreateURLLoaderFactoryForBrowserContext(content::BrowserContext* context) {
+  return content::BrowserContext::GetDefaultStoragePartition(context)
+      ->GetURLLoaderFactoryForBrowserProcess();
+}
+
 }  // namespace
 
-FeedbackUploaderChrome::FeedbackUploaderChrome(
-    content::BrowserContext* context,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : FeedbackUploader(context, task_runner) {
-  DCHECK(!context->IsOffTheRecord());
+FeedbackUploaderChrome::FeedbackUploaderChrome(content::BrowserContext* context)
+    // The FeedbackUploaderChrome lifetime is bound to that of BrowserContext
+    // by the KeyedServiceFactory infrastructure. The FeedbackUploaderChrome
+    // will be destroyed before the BrowserContext, thus base::Unretained()
+    // usage is safe.
+    : FeedbackUploader(/*is_off_the_record=*/false,
+                       context->GetPath(),
+                       base::BindOnce(&CreateURLLoaderFactoryForBrowserContext,
+                                      base::Unretained(context))),
+      context_(context) {
+  DCHECK(!context_->IsOffTheRecord());
 
-  task_runner->PostTask(
+  task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FeedbackReport::LoadReportsAndQueue,
                      feedback_reports_path(),
@@ -68,7 +86,7 @@ void FeedbackUploaderChrome::PrimaryAccountAccessTokenAvailable(
   AccessTokenAvailable(error, access_token_info.token);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(PLATFORM_CFM)
 void FeedbackUploaderChrome::ActiveAccountAccessTokenAvailable(
     GoogleServiceAuthError error,
@@ -78,7 +96,7 @@ void FeedbackUploaderChrome::ActiveAccountAccessTokenAvailable(
   AccessTokenAvailable(error, token);
 }
 #endif  // BUILDFLAG(PLATFORM_CFM)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void FeedbackUploaderChrome::AccessTokenAvailable(GoogleServiceAuthError error,
                                                   std::string token) {
@@ -102,7 +120,7 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
   // TODO(crbug.com/849591): Instead of getting the IdentityManager from the
   // profile, we should pass the IdentityManager to FeedbackUploaderChrome's
   // ctor.
-  Profile* profile = Profile::FromBrowserContext(context());
+  Profile* profile = Profile::FromBrowserContext(context_);
   DCHECK(profile);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -124,7 +142,7 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
     return;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(PLATFORM_CFM)
   // CFM Devices may need to acquire the auth token for their robot account
   // before they submit feedback.
@@ -148,7 +166,7 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
     return;
   }
 #endif  // BUILDFLAG(PLATFORM_CFM)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   LOG(ERROR) << "Failed to request oauth access token. "
              << kAuthenticationErrorLogMessage;

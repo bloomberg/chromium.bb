@@ -115,10 +115,11 @@ class RemoteCall {
    */
   waitForWindow(windowIdPrefix) {
     const caller = getCaller();
+    const windowIdRegex = new RegExp(windowIdPrefix);
     return repeatUntil(async () => {
       const windows = await this.callRemoteTestUtil('getWindows', null, []);
       for (const id in windows) {
-        if (id.indexOf(windowIdPrefix) === 0) {
+        if (id.indexOf(windowIdPrefix) === 0 || windowIdRegex.test(id)) {
           return id;
         }
       }
@@ -264,7 +265,7 @@ class RemoteCall {
       const elements =
           await this.callRemoteTestUtil('deepQueryAllElements', appId, [query]);
       if (elements.length > 0) {
-        return pending(caller, 'Elements %j is still exists.', elements);
+        return pending(caller, 'Elements %j still exists.', elements);
       }
       return true;
     });

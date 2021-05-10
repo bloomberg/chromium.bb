@@ -42,12 +42,14 @@ class LoadStreamTask : public offline_pages::Task {
     ~Result();
     Result(Result&&);
     Result& operator=(Result&&);
-
+    StreamType stream_type;
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
     // Status of just loading the stream from the persistent store, if that
     // was attempted.
     LoadStreamStatus load_from_store_status = LoadStreamStatus::kNoStatus;
+    // Age of content loaded from local storage. Zero if none was loaded.
+    base::TimeDelta stored_content_age;
     LoadType load_type;
 
     // Information about the network request, if one was made.
@@ -57,9 +59,13 @@ class LoadStreamTask : public offline_pages::Task {
 
     // Result of the upload actions task.
     std::unique_ptr<UploadActionsTask::Result> upload_actions_result;
+
+    // Experiments information from the server.
+    Experiments experiments;
   };
 
   LoadStreamTask(LoadType load_type,
+                 const StreamType& stream_type,
                  FeedStream* stream,
                  base::OnceCallback<void(Result)> done_callback);
   ~LoadStreamTask() override;
@@ -78,13 +84,17 @@ class LoadStreamTask : public offline_pages::Task {
   void Done(LoadStreamStatus status);
 
   LoadType load_type_;
+  StreamType stream_type_;
   FeedStream* stream_;  // Unowned.
   std::unique_ptr<LoadStreamFromStoreTask> load_from_store_task_;
+  std::unique_ptr<StreamModelUpdateRequest> stale_store_state_;
 
   // Information to be stuffed in |Result|.
   LoadStreamStatus load_from_store_status_ = LoadStreamStatus::kNoStatus;
   base::Optional<NetworkResponseInfo> network_response_info_;
   bool loaded_new_content_from_network_ = false;
+  base::TimeDelta stored_content_age_;
+  Experiments experiments_;
 
   std::unique_ptr<LoadLatencyTimes> latencies_;
   base::TimeTicks task_creation_time_;

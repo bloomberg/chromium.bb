@@ -12,8 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -24,6 +22,8 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/navigation_entry.h"
 
 namespace web_app {
@@ -31,7 +31,7 @@ namespace web_app {
 namespace {
 
 void WebAppInstallDialogCallback(
-    WebappInstallSource install_source,
+    webapps::WebappInstallSource install_source,
     chrome::PwaInProductHelpState iph_state,
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebApplicationInfo> web_app_info,
@@ -85,8 +85,8 @@ bool CanCreateWebApp(const Browser* browser) {
     return false;
 
   // Check whether the app is externally installed.
-  banners::AppBannerManager* app_banner_manager =
-      banners::AppBannerManager::FromWebContents(web_contents);
+  webapps::AppBannerManager* app_banner_manager =
+      webapps::AppBannerManager::FromWebContents(web_contents);
 
   if (app_banner_manager && app_banner_manager->IsExternallyInstalledWebApp())
     return false;
@@ -108,9 +108,11 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   DCHECK(provider);
 
-  WebappInstallSource install_source = InstallableMetrics::GetInstallSource(
-      web_contents, force_shortcut_app ? InstallTrigger::CREATE_SHORTCUT
-                                       : InstallTrigger::MENU);
+  webapps::WebappInstallSource install_source =
+      webapps::InstallableMetrics::GetInstallSource(
+          web_contents, force_shortcut_app
+                            ? webapps::InstallTrigger::CREATE_SHORTCUT
+                            : webapps::InstallTrigger::MENU);
 
   WebAppInstalledCallback callback = base::DoNothing();
 
@@ -123,7 +125,7 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 
 bool CreateWebAppFromManifest(content::WebContents* web_contents,
                               bool bypass_service_worker_check,
-                              WebappInstallSource install_source,
+                              webapps::WebappInstallSource install_source,
                               WebAppInstalledCallback installed_callback,
                               chrome::PwaInProductHelpState iph_state) {
   auto* provider = WebAppProvider::GetForWebContents(web_contents);

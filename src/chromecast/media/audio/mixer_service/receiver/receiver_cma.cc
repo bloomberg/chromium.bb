@@ -21,7 +21,14 @@ namespace media {
 namespace mixer_service {
 
 namespace {
+
 constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromSeconds(5);
+
+enum MessageTypes : int {
+  kPushResult = 1,
+  kEndOfStream,
+};
+
 }  // namespace
 
 class ReceiverCma::UnusedSocket : public MixerSocket::Delegate {
@@ -86,6 +93,11 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
       cma_audio_->SetVolumeMultiplier(message.set_stream_volume().volume());
     }
 
+    if (message.has_eos_played_out()) {
+      // Explicit EOS.
+      return HandleAudioData(nullptr, 0, INT64_MIN);
+    }
+
     return true;
   }
 
@@ -136,7 +148,7 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
       message.set_next_playback_timestamp(next_playout_timestamp);
       mixer_service::Generic generic;
       *(generic.mutable_push_result()) = message;
-      socket_->SendProto(generic);
+      socket_->SendProto(kPushResult, generic);
       last_send_time_ = base::TimeTicks::Now();
     }
 
@@ -148,7 +160,7 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
     mixer_service::EosPlayedOut message;
     mixer_service::Generic generic;
     *generic.mutable_eos_played_out() = message;
-    socket_->SendProto(generic);
+    socket_->SendProto(kEndOfStream, generic);
     last_send_time_ = base::TimeTicks::Now();
 
     cma_audio_.reset();

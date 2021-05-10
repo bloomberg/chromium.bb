@@ -21,6 +21,7 @@ int GetAccessFlags(PageAccessibilityConfiguration accessibility) {
     case PageRead:
       return PAGE_READONLY;
     case PageReadWrite:
+    case PageReadWriteTagged:
       return PAGE_READWRITE;
     case PageReadExecute:
       return PAGE_EXECUTE_READ;
@@ -103,13 +104,32 @@ void FreePagesInternal(void* address, size_t length) {
   PA_CHECK(VirtualFree(address, 0, MEM_RELEASE));
 }
 
-void DecommitSystemPagesInternal(void* address, size_t length) {
+void DecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityDisposition accessibility_disposition) {
+  // Ignore accessibility_disposition, because decommitting is equivalent to
+  // making pages inaccessible.
   SetSystemPagesAccess(address, length, PageInaccessible);
 }
 
-bool RecommitSystemPagesInternal(void* address,
-                                 size_t length,
-                                 PageAccessibilityConfiguration accessibility) {
+void RecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility,
+    PageAccessibilityDisposition accessibility_disposition) {
+  // Ignore accessibility_disposition, because decommitting is equivalent to
+  // making pages inaccessible.
+  SetSystemPagesAccess(address, length, accessibility);
+}
+
+bool TryRecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility,
+    PageAccessibilityDisposition accessibility_disposition) {
+  // Ignore accessibility_disposition, because decommitting is equivalent to
+  // making pages inaccessible.
   return TrySetSystemPagesAccess(address, length, accessibility);
 }
 

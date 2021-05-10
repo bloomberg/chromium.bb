@@ -1,7 +1,5 @@
 {
   "dependencies": [
-    "bindings",
-    "platform",
     "ui"
   ],
   "modules": [

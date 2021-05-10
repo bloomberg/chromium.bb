@@ -55,7 +55,7 @@ class StateChangeTestEngine {
   // Construct a StateChangeTestEngine that will issue the given states in
   // the given sequence, and verify that it observes the expected items
   // in its callback.
-  StateChangeTestEngine(std::vector<StatePair>&& state_vec);
+  explicit StateChangeTestEngine(std::vector<StatePair> state_vec);
 
   ~StateChangeTestEngine();
 
@@ -73,7 +73,7 @@ class StateChangeTestEngine {
   // of the test - this is intended to be used to send the final reply.
   void StartSimulating(
       base::scoped_nsprotocol<id<CRUUpdateStateObserving>> observer,
-      base::OnceClosure&& done_cb);
+      base::OnceClosure done_cb);
 
  private:
   using vec_size_t = std::vector<StatePair>::size_type;
@@ -123,8 +123,8 @@ class StateChangeTestEngine {
 const StateChangeTestEngine::vec_size_t StateChangeTestEngine::kNotStarted;
 const StateChangeTestEngine::vec_size_t StateChangeTestEngine::kDone;
 
-StateChangeTestEngine::StateChangeTestEngine(std::vector<StatePair>&& state_vec)
-    : state_seq_(state_vec) {}
+StateChangeTestEngine::StateChangeTestEngine(std::vector<StatePair> state_vec)
+    : state_seq_(std::move(state_vec)) {}
 
 StateChangeTestEngine::~StateChangeTestEngine() {
   EXPECT_NE(next_observation_, kNotStarted)
@@ -138,7 +138,7 @@ StateChangeTestEngine::~StateChangeTestEngine() {
 
 void StateChangeTestEngine::StartSimulating(
     base::scoped_nsprotocol<id<CRUUpdateStateObserving>> observer,
-    base::OnceClosure&& done_cb) {
+    base::OnceClosure done_cb) {
   EXPECT_TRUE(callback_prepared_)
       << "TEST ISSUE:  StateChangetestEngine cannot StartSimulating without "
          "Watch()ing for event callbacks";
@@ -284,7 +284,7 @@ class MacUpdateServiceProxyTest : public ::testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
-  ScopedXPCServiceMock mock_driver_ { @protocol (CRUUpdateChecking) };
+  ScopedXPCServiceMock mock_driver_ { @protocol (CRUUpdateServicing) };
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<UpdateServiceProxy> service_;
 };  // class MacUpdateOutOfProcessTest
@@ -450,7 +450,7 @@ TEST_F(MacUpdateServiceProxyTest, NoProductsUpdateAll) {
       mock_driver_.PrepareNewMockConnection();
   ScopedXPCServiceMock::RemoteObjectMockRecord* mock_rec =
       conn_rec->PrepareNewMockRemoteObject();
-  id<CRUUpdateChecking> mock_remote_object = mock_rec->mock_object.get();
+  id<CRUUpdateServicing> mock_remote_object = mock_rec->mock_object.get();
 
   OCMockBlockCapturer<void (^)(UpdateService::Result)> reply_block_capturer;
   // Create a pointer that can be copied into the .andDo block to refer to the
@@ -490,7 +490,7 @@ TEST_F(MacUpdateServiceProxyTest, SimpleProductUpdate) {
       mock_driver_.PrepareNewMockConnection();
   ScopedXPCServiceMock::RemoteObjectMockRecord* mock_rec =
       conn_rec->PrepareNewMockRemoteObject();
-  id<CRUUpdateChecking> mock_remote_object = mock_rec->mock_object.get();
+  id<CRUUpdateServicing> mock_remote_object = mock_rec->mock_object.get();
 
   OCMockBlockCapturer<void (^)(UpdateService::Result)> reply_block_capturer;
   OCMockObjectCapturer<CRUUpdateStateObserver> update_state_observer_capturer;

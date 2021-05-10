@@ -90,11 +90,10 @@ void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
  * in this function. The rd_cost struct is also updated with the RD stats
  * corresponding to the best mode found.
  */
-void av1_rd_pick_inter_mode_sb(struct AV1_COMP *cpi,
-                               struct TileDataEnc *tile_data,
-                               struct macroblock *x, struct RD_STATS *rd_cost,
-                               BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
-                               int64_t best_rd_so_far);
+void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
+                            struct macroblock *x, struct RD_STATS *rd_cost,
+                            BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
+                            int64_t best_rd_so_far);
 
 /*!\brief AV1 intra mode selection based on Non-RD optimized model.
  *

@@ -9,9 +9,10 @@
 #include <map>
 #include <set>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -77,7 +78,7 @@ class QUIC_EXPORT_PRIVATE QpackBlockingManager {
   // same time.  Use std::list instead of QuicCircularDeque because it has lower
   // memory footprint when holding few elements.
   using HeaderBlocksForStream = std::list<IndexSet>;
-  using HeaderBlocks = QuicHashMap<QuicStreamId, HeaderBlocksForStream>;
+  using HeaderBlocks = absl::flat_hash_map<QuicStreamId, HeaderBlocksForStream>;
 
   // Increase or decrease the reference count for each index in |indices|.
   void IncreaseReferenceCounts(const IndexSet& indices);

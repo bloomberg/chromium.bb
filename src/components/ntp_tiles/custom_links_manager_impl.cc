@@ -191,7 +191,7 @@ CustomLinksManagerImpl::FindLinkWithUrl(const GURL& url) {
                       [&url](const Link& link) { return link.url == url; });
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
+base::CallbackListSubscription
 CustomLinksManagerImpl::RegisterCallbackForOnChanged(
     base::RepeatingClosure callback) {
   return callback_list_.Add(callback);
@@ -226,7 +226,8 @@ void CustomLinksManagerImpl::OnURLsDeleted(
 
 void CustomLinksManagerImpl::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
-  history_service_observation_.RemoveObservation();
+  DCHECK(history_service_observation_.IsObserving());
+  history_service_observation_.Reset();
 }
 
 void CustomLinksManagerImpl::OnPreferenceChanged() {

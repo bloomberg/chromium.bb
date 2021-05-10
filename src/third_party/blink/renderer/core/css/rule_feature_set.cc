@@ -128,8 +128,10 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoModal:
     case CSSSelector::kPseudoBackdrop:
     case CSSSelector::kPseudoLang:
+    case CSSSelector::kPseudoDir:
     case CSSSelector::kPseudoNot:
     case CSSSelector::kPseudoPlaceholder:
+    case CSSSelector::kPseudoFileSelectorButton:
     case CSSSelector::kPseudoResizer:
     case CSSSelector::kPseudoRoot:
     case CSSSelector::kPseudoScope:
@@ -162,11 +164,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoCue:
     case CSSSelector::kPseudoFutureCue:
     case CSSSelector::kPseudoPastCue:
-    case CSSSelector::kPseudoUnresolved:
     case CSSSelector::kPseudoDefined:
-    case CSSSelector::kPseudoContent:
     case CSSSelector::kPseudoHost:
-    case CSSSelector::kPseudoShadow:
     case CSSSelector::kPseudoSpatialNavigationFocus:
     case CSSSelector::kPseudoSpatialNavigationInterest:
     case CSSSelector::kPseudoHasDatalist:
@@ -174,6 +173,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoListBox:
     case CSSSelector::kPseudoMultiSelectFocus:
     case CSSSelector::kPseudoHostHasAppearance:
+    case CSSSelector::kPseudoPopupOpen:
     case CSSSelector::kPseudoSlotted:
     case CSSSelector::kPseudoVideoPersistent:
     case CSSSelector::kPseudoVideoPersistentAncestor:
@@ -181,6 +181,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoIs:
     case CSSSelector::kPseudoWhere:
     case CSSSelector::kPseudoTargetText:
+    case CSSSelector::kPseudoSpellingError:
+    case CSSSelector::kPseudoGrammarError:
       return true;
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
@@ -500,13 +502,10 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
 
   sibling_features = nullptr;
 
-  if (last_in_compound.IsShadowSelector())
+  if (last_in_compound.IsUAShadowSelector())
     descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
-  if (last_in_compound.Relation() == CSSSelector::kShadowSlot ||
-      last_in_compound.RelationIsAffectedByPseudoContent())
+  if (last_in_compound.Relation() == CSSSelector::kShadowSlot)
     descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
-  if (last_in_compound.RelationIsAffectedByPseudoContent())
-    descendant_features.content_pseudo_crossing = true;
 }
 
 void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
@@ -595,14 +594,15 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoIndeterminate:
       case CSSSelector::kPseudoTarget:
       case CSSSelector::kPseudoLang:
+      case CSSSelector::kPseudoDir:
       case CSSSelector::kPseudoFullScreen:
       case CSSSelector::kPseudoFullScreenAncestor:
       case CSSSelector::kPseudoFullscreen:
       case CSSSelector::kPseudoPictureInPicture:
       case CSSSelector::kPseudoInRange:
       case CSSSelector::kPseudoOutOfRange:
-      case CSSSelector::kPseudoUnresolved:
       case CSSSelector::kPseudoDefined:
+      case CSSSelector::kPseudoPopupOpen:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
       case CSSSelector::kPseudoXrOverlay:
@@ -888,8 +888,6 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSelectorList(
 
     if (simple_selector.IsHostPseudoClass())
       descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
-    if (simple_selector.IsV0InsertionPointCrossing())
-      descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
 
     descendant_features.has_features_for_rule_set_invalidation = false;
 

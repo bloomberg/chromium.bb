@@ -1,5 +1,4 @@
 import { Fixture } from '../common/framework/fixture.js';
-import { compileGLSL, initGLSL } from '../common/framework/glsl.js';
 import { attemptGarbageCollection } from '../common/framework/util/collect_garbage.js';
 import { assert } from '../common/framework/util/util.js';
 
@@ -11,11 +10,9 @@ import {
   getTextureCopyLayout,
   LayoutOptions as TextureLayoutOptions,
 } from './util/texture/layout.js';
-import { PerTexelComponent, getTexelDataRepresentation } from './util/texture/texelData.js';
+import { PerTexelComponent, kTexelRepresentationInfo } from './util/texture/texel_data.js';
 
-type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
-
-type TypedArrayBufferView =
+export type TypedArrayBufferView =
   | Uint8Array
   | Uint16Array
   | Uint32Array
@@ -25,7 +22,7 @@ type TypedArrayBufferView =
   | Float32Array
   | Float64Array;
 
-type TypedArrayBufferViewConstructor =
+export type TypedArrayBufferViewConstructor =
   | Uint8ArrayConstructor
   | Uint16ArrayConstructor
   | Uint32ArrayConstructor
@@ -59,7 +56,6 @@ export class GPUTest extends Fixture {
 
   async init(): Promise<void> {
     await super.init();
-    await initGLSL();
 
     this.provider = await devicePool.reserve();
   }
@@ -115,16 +111,6 @@ export class GPUTest extends Fixture {
     }
   }
 
-  makeShaderModule(stage: ShaderStage, code: { glsl: string } | { wgsl: string }): GPUShaderModule {
-    // If both are provided, always choose WGSL. (Can change this if needed.)
-    if ('wgsl' in code) {
-      return this.device.createShaderModule({ code: code.wgsl });
-    } else {
-      const spirv = compileGLSL(code.glsl, stage, false);
-      return this.device.createShaderModule({ code: spirv });
-    }
-  }
-
   createCopyForMapRead(src: GPUBuffer, srcOffset: number, size: number): GPUBuffer {
     assert(srcOffset % 4 === 0);
     assert(size % 4 === 0);
@@ -162,10 +148,6 @@ export class GPUTest extends Fixture {
   }
 
   expectContents(src: GPUBuffer, expected: TypedArrayBufferView, srcOffset: number = 0): void {
-    this.expectSubContents(src, srcOffset, expected);
-  }
-
-  expectSubContents(src: GPUBuffer, srcOffset: number, expected: TypedArrayBufferView): void {
     const { dst, begin, end } = this.createAlignedCopyForMapRead(
       src,
       expected.byteLength,
@@ -179,6 +161,37 @@ export class GPUTest extends Fixture {
       const check = this.checkBuffer(actual.subarray(begin, end), expected);
       if (check !== undefined) {
         niceStack.message = check;
+        this.rec.expectationFailed(niceStack);
+      }
+      dst.destroy();
+    });
+  }
+
+  // We can expand this function in order to support multiple valid values or two mixed vectors
+  // if needed. See the discussion at https://github.com/gpuweb/cts/pull/384#discussion_r533101429
+  expectContentsTwoValidValues(
+    src: GPUBuffer,
+    expected1: TypedArrayBufferView,
+    expected2: TypedArrayBufferView,
+    srcOffset: number = 0
+  ): void {
+    assert(expected1.byteLength === expected2.byteLength);
+    const { dst, begin, end } = this.createAlignedCopyForMapRead(
+      src,
+      expected1.byteLength,
+      srcOffset
+    );
+
+    this.eventualAsyncExpectation(async niceStack => {
+      const constructor = expected1.constructor as TypedArrayBufferViewConstructor;
+      await dst.mapAsync(GPUMapMode.READ);
+      const actual = new constructor(dst.getMappedRange());
+      const check1 = this.checkBuffer(actual.subarray(begin, end), expected1);
+      const check2 = this.checkBuffer(actual.subarray(begin, end), expected2);
+      if (check1 !== undefined && check2 !== undefined) {
+        niceStack.message = `Expected one of the following two checks to succeed:
+  - ${check1}
+  - ${check2}`;
         this.rec.expectationFailed(niceStack);
       }
       dst.destroy();
@@ -281,7 +294,8 @@ got [${failedByteActualValues.join(', ')}]`;
       size,
       layout
     );
-    const expectedTexelData = getTexelDataRepresentation(format).getBytes(exp);
+    const rep = kTexelRepresentationInfo[format];
+    const expectedTexelData = rep.pack(rep.encode(exp));
 
     const buffer = this.device.createBuffer({
       size: byteLength,

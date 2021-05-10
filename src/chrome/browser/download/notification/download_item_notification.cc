@@ -23,7 +23,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
-#include "chrome/browser/enterprise/connectors/connectors_manager.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -118,12 +118,12 @@ SkBitmap CropImage(const SkBitmap& original_bitmap) {
   SkBitmap container_bitmap;
   container_bitmap.allocN32Pixels(container_size.width(),
                                   container_size.height());
-  SkPaint paint;
-  paint.setFilterQuality(kHigh_SkFilterQuality);
+  SkSamplingOptions sampling({1.0f / 3, 1.0f / 3});
   SkCanvas container_image(container_bitmap);
   container_image.drawColor(kImageBackgroundColor);
-  container_image.drawBitmapRect(
-      original_bitmap, source_rect, SkRect::MakeSize(container_size), &paint);
+  container_image.drawImageRect(original_bitmap.asImage(), source_rect,
+                                SkRect::MakeSize(container_size), sampling,
+                                nullptr, SkCanvas::kStrict_SrcRectConstraint);
 
   return container_bitmap;
 }
@@ -878,7 +878,7 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-    case download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY:
+    case download::DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY:
     case download::DOWNLOAD_DANGER_TYPE_MAX: {
       break;
     }
@@ -900,7 +900,6 @@ base::string16 DownloadItemNotification::GetInProgressSubStatusString() const {
   // time_remaining is only known if the download isn't paused.
   bool time_remaining_known = (!item_->IsPaused() &&
                                item_->TimeRemaining(&time_remaining));
-
 
   // A download scheduled to be opened when complete.
   if (item_->GetOpenWhenComplete()) {
@@ -1037,9 +1036,12 @@ bool DownloadItemNotification::IsScanning() const {
 }
 
 bool DownloadItemNotification::AllowedToOpenWhileScanning() const {
-  return !enterprise_connectors::ConnectorsManager::GetInstance()
-              ->DelayUntilVerdict(
-                  enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
+  auto* service =
+      enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+          profile());
+  return !service ||
+         !service->DelayUntilVerdict(
+             enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
 }
 
 Browser* DownloadItemNotification::GetBrowser() const {

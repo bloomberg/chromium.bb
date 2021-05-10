@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -29,7 +28,7 @@ class ActiveAccountAccessTokenFetcher;
 class IdentityProvider;
 }  // namespace invalidation
 
-namespace syncer {
+namespace invalidation {
 
 // A class that manages the subscription to topics for server-issued
 // notifications.
@@ -45,17 +44,20 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
   };
 
   PerUserTopicSubscriptionManager(
-      invalidation::IdentityProvider* identity_provider,
+      IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& project_id,
       bool migrate_prefs);
-
+  PerUserTopicSubscriptionManager(
+      const PerUserTopicSubscriptionManager& other) = delete;
+  PerUserTopicSubscriptionManager& operator=(
+      const PerUserTopicSubscriptionManager& other) = delete;
   virtual ~PerUserTopicSubscriptionManager();
 
   // Just calls std::make_unique. For ease of base::Bind'ing
   static std::unique_ptr<PerUserTopicSubscriptionManager> Create(
-      invalidation::IdentityProvider* identity_provider,
+      IdentityProvider* identity_provider,
       PrefService* pref_service,
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& project_id,
@@ -136,7 +138,7 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
       SubscriptionChannelState invalidator_state);
 
   PrefService* const pref_service_;
-  invalidation::IdentityProvider* const identity_provider_;
+  IdentityProvider* const identity_provider_;
   network::mojom::URLLoaderFactory* const url_loader_factory_;
 
   const std::string project_id_;
@@ -157,8 +159,7 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
 
   // Cached OAuth2 access token, and/or pending request to fetch one.
   std::string access_token_;
-  std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
-      access_token_fetcher_;
+  std::unique_ptr<ActiveAccountAccessTokenFetcher> access_token_fetcher_;
   base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
@@ -167,10 +168,8 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
       SubscriptionChannelState::NOT_STARTED;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PerUserTopicSubscriptionManager);
 };
 
-}  // namespace syncer
+}  // namespace invalidation
 
 #endif  // COMPONENTS_INVALIDATION_IMPL_PER_USER_TOPIC_SUBSCRIPTION_MANAGER_H_

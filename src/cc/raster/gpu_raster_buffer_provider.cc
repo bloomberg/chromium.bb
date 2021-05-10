@@ -45,78 +45,6 @@
 namespace cc {
 namespace {
 
-class ScopedSkSurfaceForUnpremultiplyAndDither {
- public:
-  ScopedSkSurfaceForUnpremultiplyAndDither(
-      viz::RasterContextProvider* context_provider,
-      sk_sp<SkColorSpace> color_space,
-      const gfx::Rect& playback_rect,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Size& max_tile_size,
-      GLuint texture_id,
-      const gfx::Size& texture_size,
-      bool can_use_lcd_text,
-      int msaa_sample_count)
-      : context_provider_(context_provider),
-        texture_id_(texture_id),
-        offset_(playback_rect.OffsetFromOrigin() -
-                raster_full_rect.OffsetFromOrigin()),
-        size_(playback_rect.size()) {
-    // Determine the |intermediate_size| to use for our 32-bit texture. If we
-    // know the max tile size, use that. This prevents GPU cache explosion due
-    // to using lots of different 32-bit texture sizes. Otherwise just use the
-    // exact size of the target texture.
-    gfx::Size intermediate_size;
-    if (!max_tile_size.IsEmpty()) {
-      DCHECK_GE(max_tile_size.width(), texture_size.width());
-      DCHECK_GE(max_tile_size.height(), texture_size.height());
-      intermediate_size = max_tile_size;
-    } else {
-      intermediate_size = texture_size;
-    }
-
-    // Allocate a 32-bit surface for raster. We will copy from that into our
-    // actual surface in destruction.
-    SkImageInfo n32Info = SkImageInfo::MakeN32Premul(intermediate_size.width(),
-                                                     intermediate_size.height(),
-                                                     std::move(color_space));
-    SkSurfaceProps surface_props =
-        skia::LegacyDisplayGlobals::ComputeSurfaceProps(can_use_lcd_text);
-    surface_ = SkSurface::MakeRenderTarget(
-        context_provider->GrContext(), SkBudgeted::kNo, n32Info,
-        msaa_sample_count, kTopLeft_GrSurfaceOrigin, &surface_props);
-  }
-
-  ~ScopedSkSurfaceForUnpremultiplyAndDither() {
-    // In lost-context cases, |surface_| may be null and there's nothing
-    // meaningful to do here.
-    if (!surface_)
-      return;
-
-    GrBackendTexture backend_texture =
-        surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
-    if (!backend_texture.isValid()) {
-      return;
-    }
-    GrGLTextureInfo info;
-    if (!backend_texture.getGLTextureInfo(&info)) {
-      return;
-    }
-    context_provider_->ContextGL()->UnpremultiplyAndDitherCopyCHROMIUM(
-        info.fID, texture_id_, offset_.x(), offset_.y(), size_.width(),
-        size_.height());
-  }
-
-  SkSurface* surface() { return surface_.get(); }
-
- private:
-  viz::RasterContextProvider* context_provider_;
-  GLuint texture_id_;
-  gfx::Vector2d offset_;
-  gfx::Size size_;
-  sk_sp<SkSurface> surface_;
-};
-
 static void RasterizeSourceOOP(
     const RasterSource* raster_source,
     bool resource_has_previous_content,
@@ -186,7 +114,6 @@ static void RasterizeSource(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    bool unpremultiply_and_dither,
     const gfx::Size& max_tile_size) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   if (mailbox->IsZero()) {
@@ -211,26 +138,15 @@ static void RasterizeSource(
       texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   {
     ScopedGrContextAccess gr_context_access(context_provider);
-    base::Optional<viz::ClientResourceProvider::ScopedSkSurface> scoped_surface;
-    base::Optional<ScopedSkSurfaceForUnpremultiplyAndDither>
-        scoped_dither_surface;
     SkSurface* surface;
     sk_sp<SkColorSpace> sk_color_space = color_space.ToSkColorSpace();
-    if (!unpremultiply_and_dither) {
-      scoped_surface.emplace(context_provider->GrContext(), sk_color_space,
-                             texture_id, texture_target, resource_size,
-                             resource_format,
-                             skia::LegacyDisplayGlobals::ComputeSurfaceProps(
-                                 playback_settings.use_lcd_text),
-                             playback_settings.msaa_sample_count);
-      surface = scoped_surface->surface();
-    } else {
-      scoped_dither_surface.emplace(
-          context_provider, sk_color_space, playback_rect, raster_full_rect,
-          max_tile_size, texture_id, resource_size,
-          playback_settings.use_lcd_text, playback_settings.msaa_sample_count);
-      surface = scoped_dither_surface->surface();
-    }
+    viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
+        context_provider->GrContext(), sk_color_space, texture_id,
+        texture_target, resource_size, resource_format,
+        skia::LegacyDisplayGlobals::ComputeSurfaceProps(
+            playback_settings.use_lcd_text),
+        playback_settings.msaa_sample_count);
+    surface = scoped_surface.surface();
 
     // Allocating an SkSurface will fail after a lost context.  Pretend we
     // rasterized, as the contents of the resource don't matter anymore.
@@ -372,17 +288,18 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
     bool enable_oop_rasterization,
+    RasterQueryQueue* const pending_raster_queries,
     float raster_metric_probability)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       tile_format_(tile_format),
       max_tile_size_(max_tile_size),
-      unpremultiply_and_dither_low_bit_depth_tiles_(
-          unpremultiply_and_dither_low_bit_depth_tiles),
       enable_oop_rasterization_(enable_oop_rasterization),
+      pending_raster_queries_(pending_raster_queries),
       random_generator_(static_cast<uint32_t>(base::RandUint64())),
       bernoulli_distribution_(raster_metric_probability) {
+  DCHECK(pending_raster_queries);
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
 }
@@ -494,7 +411,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     bool depends_on_at_raster_decodes,
     bool depends_on_hardware_accelerated_jpeg_candidates,
     bool depends_on_hardware_accelerated_webp_candidates) {
-  PendingRasterQuery query;
+  RasterQuery query;
   query.depends_on_hardware_accelerated_jpeg_candidates =
       depends_on_hardware_accelerated_jpeg_candidates;
   query.depends_on_hardware_accelerated_webp_candidates =
@@ -511,13 +428,12 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
       query.raster_buffer_creation_time = raster_buffer_creation_time;
 
     // Note that it is important to scope the raster context lock to
-    // PlaybackOnWorkerThreadInternal and release it before acquiring this lock
-    // to avoid a deadlock in CheckRasterFinishedQueries which acquires the
-    // raster context lock while holding this lock.
-    base::AutoLock hold(pending_raster_queries_lock_);
-    pending_raster_queries_.push_back(query);
+    // PlaybackOnWorkerThreadInternal and release it before calling this
+    // function to avoid a deadlock in
+    // RasterQueryQueue::CheckRasterFinishedQueries which acquires the raster
+    // context lock while holding a lock used in the function.
+    pending_raster_queries_->Append(std::move(query));
   }
-  DCHECK(!query.raster_start_query_id || query.raster_duration_query_id);
 
   return raster_finished_token;
 }
@@ -539,7 +455,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
     bool depends_on_at_raster_decodes,
-    PendingRasterQuery* query) {
+    RasterQuery* query) {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_, url.possibly_invalid_spec().c_str());
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
@@ -597,7 +513,6 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
                       resource_size, resource_format, color_space,
                       raster_full_rect, playback_rect, transform,
                       playback_settings, worker_context_provider_,
-                      ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }
     if (measure_raster_metric) {
@@ -612,121 +527,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
 
 bool GpuRasterBufferProvider::ShouldUnpremultiplyAndDitherResource(
     viz::ResourceFormat format) const {
-  switch (format) {
-    case viz::RGBA_4444:
-      return unpremultiply_and_dither_low_bit_depth_tiles_;
-    default:
-      return false;
-  }
-}
-
-#define UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(name, total_time) \
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(                              \
-      name, total_time, base::TimeDelta::FromMicroseconds(1),           \
-      base::TimeDelta::FromMilliseconds(100), 100);
-
-bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
-  base::AutoLock hold(pending_raster_queries_lock_);
-  if (pending_raster_queries_.empty())
-    return false;
-
-  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
-      worker_context_provider_);
-  auto* ri = scoped_context.RasterInterface();
-
-  auto it = pending_raster_queries_.begin();
-  while (it != pending_raster_queries_.end()) {
-    GLuint complete = 0;
-    ri->GetQueryObjectuivEXT(it->raster_duration_query_id,
-                             GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
-                             &complete);
-    if (!complete)
-      break;
-
-#if DCHECK_IS_ON()
-    if (it->raster_start_query_id) {
-      // We issued the GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM query prior to the
-      // GL_COMMANDS_ISSUED_CHROMIUM query. Therefore, if the result of the
-      // latter is available, the result of the former should be too.
-      complete = 0;
-      ri->GetQueryObjectuivEXT(it->raster_start_query_id,
-                               GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
-                               &complete);
-      DCHECK(complete);
-    }
-#endif
-
-    GLuint gpu_raster_duration = 0u;
-    ri->GetQueryObjectuivEXT(it->raster_duration_query_id, GL_QUERY_RESULT_EXT,
-                             &gpu_raster_duration);
-    ri->DeleteQueriesEXT(1, &it->raster_duration_query_id);
-
-    base::TimeDelta raster_duration =
-        it->worker_raster_duration +
-        base::TimeDelta::FromMicroseconds(gpu_raster_duration);
-
-    // It is safe to use the UMA macros here with runtime generated strings
-    // because the client name should be initialized once in the process, before
-    // recording any metrics here.
-    const char* client_name = GetClientNameForMetrics();
-
-    if (it->raster_start_query_id) {
-      GLuint64 gpu_raster_start_time = 0u;
-      ri->GetQueryObjectui64vEXT(it->raster_start_query_id, GL_QUERY_RESULT_EXT,
-                                 &gpu_raster_start_time);
-      ri->DeleteQueriesEXT(1, &it->raster_start_query_id);
-
-      // The base::checked_cast<int64_t> should not crash as long as the GPU
-      // process was not compromised: that's because the result of the query
-      // should have been generated using base::TimeDelta::InMicroseconds()
-      // there, so the result should fit in an int64_t.
-      base::TimeDelta raster_scheduling_delay =
-          base::TimeDelta::FromMicroseconds(
-              base::checked_cast<int64_t>(gpu_raster_start_time)) -
-          it->raster_buffer_creation_time.since_origin();
-
-      // We expect the clock we're using to be monotonic, so we shouldn't get a
-      // negative scheduling delay.
-      DCHECK_GE(raster_scheduling_delay.InMicroseconds(), 0u);
-      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-          base::StringPrintf(
-              "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes.All",
-              client_name),
-          raster_scheduling_delay);
-      if (it->depends_on_hardware_accelerated_jpeg_candidates) {
-        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-            base::StringPrintf(
-                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
-                "TilesWithJpegHwDecodeCandidates",
-                client_name),
-            raster_scheduling_delay);
-      }
-      if (it->depends_on_hardware_accelerated_webp_candidates) {
-        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-            base::StringPrintf(
-                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
-                "TilesWithWebPHwDecodeCandidates",
-                client_name),
-            raster_scheduling_delay);
-      }
-    }
-
-    if (enable_oop_rasterization_) {
-      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-          base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Oop",
-                             client_name),
-          raster_duration);
-    } else {
-      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-          base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Gpu",
-                             client_name),
-          raster_duration);
-    }
-
-    it = pending_raster_queries_.erase(it);
-  }
-
-  return pending_raster_queries_.size() > 0u;
+  // TODO(crbug.com/1151490): Re-enable for OOPR.
+  return false;
 }
 
 }  // namespace cc

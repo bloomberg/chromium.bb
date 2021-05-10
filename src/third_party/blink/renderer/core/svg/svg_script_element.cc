@@ -53,14 +53,15 @@ void SVGScriptElement::ParseAttribute(
   }
 }
 
-void SVGScriptElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+void SVGScriptElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  if (SVGURIReference::IsKnownAttribute(params.name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     loader_->HandleSourceAttribute(LegacyHrefString(*this));
     return;
   }
 
-  SVGElement::SvgAttributeChanged(attr_name);
+  SVGElement::SvgAttributeChanged(params);
 }
 
 Node::InsertionNotificationRequest SVGScriptElement::InsertedInto(
@@ -171,7 +172,7 @@ void SVGScriptElement::DispatchErrorEvent() {
 
 void SVGScriptElement::SetScriptElementForBinding(
     HTMLScriptElementOrSVGScriptElement& element) {
-  if (!IsInV1ShadowTree())
+  if (!IsInShadowTree())
     element.SetSVGScriptElement(this);
 }
 

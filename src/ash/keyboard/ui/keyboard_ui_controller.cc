@@ -21,10 +21,10 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -43,8 +43,6 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -72,13 +70,6 @@ constexpr base::TimeDelta kReportLingeringStateDelay =
 constexpr base::TimeDelta kTransientBlurThreshold =
     base::TimeDelta::FromMilliseconds(3500);
 
-void SetTouchEventLogging(bool enable) {
-  ui::InputController* controller =
-      ui::OzonePlatform::GetInstance()->GetInputController();
-  if (controller)
-    controller->SetTouchEventLoggingEnabled(enable);
-}
-
 // An enumeration of different keyboard control events that should be logged.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -93,15 +84,15 @@ void LogKeyboardControlEvent(KeyboardControlEvent event) {
   UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event);
 }
 
-class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
+class VirtualKeyboardController : public ui::VirtualKeyboardController {
  public:
-  explicit InputMethodKeyboardController(
+  explicit VirtualKeyboardController(
       KeyboardUIController* keyboard_ui_controller)
       : keyboard_ui_controller_(keyboard_ui_controller) {}
 
-  ~InputMethodKeyboardController() override = default;
+  ~VirtualKeyboardController() override = default;
 
-  // ui::InputMethodKeyboardController
+  // ui::VirtualKeyboardController
   bool DisplayVirtualKeyboard() override {
     // Calling |ShowKeyboardInternal| may move the keyboard to another display.
     if (keyboard_ui_controller_->IsEnabled() &&
@@ -116,13 +107,12 @@ class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
     keyboard_ui_controller_->HideKeyboardByUser();
   }
 
-  void AddObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override {
+  void AddObserver(ui::VirtualKeyboardControllerObserver* observer) override {
     // TODO(shend): Implement.
   }
 
   void RemoveObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override {
+      ui::VirtualKeyboardControllerObserver* observer) override {
     // TODO(shend): Implement.
   }
 
@@ -163,8 +153,8 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 KeyboardUIController::KeyboardUIController()
-    : input_method_keyboard_controller_(
-          std::make_unique<InputMethodKeyboardController>(this)) {
+    : virtual_keyboard_controller_(
+          std::make_unique<VirtualKeyboardController>(this)) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
 }
@@ -258,7 +248,7 @@ void KeyboardUIController::DisableKeyboard() {
   container_behavior_.reset();
   animation_observer_.reset();
 
-  ime_observer_.RemoveAll();
+  ime_observation_.Reset();
   ui_->SetController(nullptr);
   ui_.reset();
 
@@ -296,7 +286,10 @@ void KeyboardUIController::DeactivateKeyboard() {
       parent_container_->RemoveChild(keyboard_window);
     }
   }
-  parent_container_->GetRootWindow()->RemoveObserver(this);
+  aura::Window* root_window = parent_container_->GetRootWindow();
+  if (root_window) {
+    root_window->RemoveObserver(this);
+  }
   parent_container_ = nullptr;
 }
 
@@ -478,6 +471,9 @@ bool KeyboardUIController::IsKeyboardEnableRequested() const {
   if (IsEnableFlagSet(KeyboardEnableFlag::kCommandLineEnabled))
     return true;
 
+  if (IsEnableFlagSet(KeyboardEnableFlag::kCommandLineDisabled))
+    return false;
+
   if (IsEnableFlagSet(KeyboardEnableFlag::kExtensionDisabled))
     return false;
 
@@ -554,8 +550,6 @@ void KeyboardUIController::HideKeyboard(HideReason reason) {
 
     case KeyboardUIState::kWillHide:
     case KeyboardUIState::kShown: {
-      SetTouchEventLogging(true /* enable */);
-
       // Log whether this was a user or system (automatic) action.
       switch (reason) {
         case HIDE_REASON_SYSTEM_EXPLICIT:
@@ -784,7 +778,7 @@ void KeyboardUIController::OnWindowBoundsChanged(
 
 void KeyboardUIController::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
-  ime_observer_.RemoveAll();
+  ime_observation_.Reset();
   OnTextInputStateChanged(nullptr);
 }
 
@@ -875,8 +869,6 @@ void KeyboardUIController::PopulateKeyboardContent(
 
   ui_->ReloadKeyboardIfNeeded();
 
-  SetTouchEventLogging(false /* enable */);
-
   switch (model_.state()) {
     case KeyboardUIState::kWillHide:
       ChangeState(KeyboardUIState::kShown);
@@ -962,7 +954,9 @@ void KeyboardUIController::ReportLingeringState() {
 }
 
 gfx::Rect KeyboardUIController::GetWorkspaceOccludedBoundsInScreen() const {
-  if (!ui_)
+  // TODO(crbug.com/1157150): Investigate why the keyboard window may become
+  // null when adding a new monitor.
+  if (!ui_ || !GetKeyboardWindow())
     return gfx::Rect();
 
   const gfx::Rect visual_bounds_in_window(visual_bounds_in_root_.size());
@@ -1117,12 +1111,12 @@ void KeyboardUIController::UpdateInputMethodObserver() {
   if (!ime)
     return;
 
-  if (ime_observer_.IsObserving(ime))
+  if (ime_observation_.IsObservingSource(ime))
     return;
 
   // Only observes the current active IME.
-  ime_observer_.RemoveAll();
-  ime_observer_.Add(ime);
+  ime_observation_.Reset();
+  ime_observation_.Observe(ime);
 
   // Note: We used to call OnTextInputStateChanged(ime->GetTextInputClient())
   // here, but that can trigger HideKeyboardImplicitlyBySystem() from a call to

@@ -142,6 +142,13 @@ Polymer({
 
     // Enables javascript and gets the screen reader state.
     chrome.send('a11yPageReady');
+
+    if (this.captionSettingsOpensExternally_) {
+      // If captions settings open externally, then this page doesn't have a
+      // separate captions subpage. Send a captionsSubpageReady notification in
+      // order to start observing SODA events.
+      chrome.send('captionsSubpageReady');
+    }
   },
 
   /**
@@ -187,7 +194,7 @@ Polymer({
   onA11yLiveCaptionChange_(event) {
     const a11yLiveCaptionOn = event.target.checked;
     chrome.metricsPrivate.recordBoolean(
-        'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+        'Accessibility.LiveCaption.EnableFromSettings', a11yLiveCaptionOn);
   },
 
   /**

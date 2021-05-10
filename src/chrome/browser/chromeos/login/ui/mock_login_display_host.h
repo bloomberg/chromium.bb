@@ -10,7 +10,7 @@
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user_type.h"
@@ -58,8 +58,10 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, PrewarmAuthentication, (), (override));
   MOCK_METHOD(void, StartDemoAppLaunch, (), (override));
   MOCK_METHOD(void, StartKiosk, (const KioskAppId&, bool), (override));
+  MOCK_METHOD(void, AttemptShowEnableConsumerKioskScreen, (), (override));
   MOCK_METHOD(void, ShowGaiaDialog, (const AccountId&), (override));
   MOCK_METHOD(void, HideOobeDialog, (), (override));
+  MOCK_METHOD(void, SetShelfButtonsEnabled, (bool), (override));
   MOCK_METHOD(void,
               UpdateOobeDialogState,
               (ash::OobeDialogState state),
@@ -89,8 +91,10 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, UpdateAddUserButtonStatus, (), (override));
   MOCK_METHOD(void, RequestSystemInfoUpdate, (), (override));
   MOCK_METHOD(bool, HasUserPods, (), (override));
+  MOCK_METHOD(void, VerifyOwnerForKiosk, (base::OnceClosure), (override));
   MOCK_METHOD(void, AddObserver, (LoginDisplayHost::Observer*), (override));
   MOCK_METHOD(void, RemoveObserver, (LoginDisplayHost::Observer*), (override));
+  MOCK_METHOD(SigninUI*, GetSigninUI, (), (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

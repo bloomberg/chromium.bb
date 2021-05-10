@@ -110,8 +110,6 @@ class SyncManager {
     // Must outlive SyncManager.
     ExtensionsActivity* extensions_activity;
 
-    CoreAccountId authenticated_account_id;
-
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
 
@@ -236,13 +234,17 @@ class SyncManager {
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.
-  virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
+  virtual void OnCookieJarChanged(bool account_mismatch) = 0;
 
   // Updates invalidation client id.
   virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
 
   // Notifies SyncManager that there are no other known active devices.
   virtual void UpdateSingleClientStatus(bool single_client) = 0;
+
+  // Updates the list of known active device FCM registration tokens.
+  virtual void UpdateActiveDeviceFCMRegistrationTokens(
+      std::vector<std::string> fcm_registration_tokens) = 0;
 };
 
 }  // namespace syncer

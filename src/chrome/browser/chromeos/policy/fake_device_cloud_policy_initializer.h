@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 
 namespace policy {
 
@@ -29,8 +30,8 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
       DeviceManagementService* device_management_service,
       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
-      std::unique_ptr<DMAuth> auth,
-      const EnrollmentCallback& enrollment_callback) override;
+      DMAuth auth,
+      EnrollmentCallback enrollment_callback) override;
 
   void StartEnrollment() override;
 

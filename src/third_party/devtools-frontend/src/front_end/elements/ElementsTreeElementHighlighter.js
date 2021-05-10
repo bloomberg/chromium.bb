@@ -6,11 +6,9 @@ import * as Common from '../common/common.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
+import {ElementsTreeElement} from './ElementsTreeElement.js';
 import {ElementsTreeOutline} from './ElementsTreeOutline.js';
 
-/**
- * @unrestricted
- */
 export class ElementsTreeElementHighlighter {
   /**
    * @param {!ElementsTreeOutline} treeOutline
@@ -58,13 +56,16 @@ export class ElementsTreeElementHighlighter {
     let treeElement = null;
 
     if (this._currentHighlightedElement) {
+      /** @type {?ElementsTreeElement} */
       let currentTreeElement = this._currentHighlightedElement;
-      while (currentTreeElement !== this._alreadyExpandedParentElement) {
+      while (currentTreeElement && currentTreeElement !== this._alreadyExpandedParentElement) {
         if (currentTreeElement.expanded) {
           currentTreeElement.collapse();
         }
 
-        currentTreeElement = currentTreeElement.parent;
+        /** @type {?UI.TreeOutline.TreeElement} */
+        const parent = currentTreeElement.parent;
+        currentTreeElement = parent instanceof ElementsTreeElement ? parent : null;
       }
     }
 

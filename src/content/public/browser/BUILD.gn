@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -25,7 +26,6 @@ source_set("browser_sources") {
   # External code should depend on via ":browser" above.
   visibility = [ "//content/*" ]
   sources = [
-    "accessibility_tree_formatter.h",
     "allow_service_worker_result.cc",
     "allow_service_worker_result.h",
     "appcache_service.cc",
@@ -36,6 +36,8 @@ source_set("browser_sources") {
     "authenticator_environment.h",
     "ax_event_notification_details.cc",
     "ax_event_notification_details.h",
+    "ax_inspect_factory.cc",
+    "ax_inspect_factory.h",
     "back_forward_cache.h",
     "background_fetch_delegate.cc",
     "background_fetch_delegate.h",
@@ -87,7 +89,6 @@ source_set("browser_sources") {
     "browsing_data_filter_builder.h",
     "browsing_data_remover.h",
     "browsing_data_remover_delegate.h",
-    "cache_storage_context.h",
     "cdm_registry.h",
     "certificate_request_result_type.h",
     "child_process_data.cc",
@@ -98,6 +99,8 @@ source_set("browser_sources") {
     "child_process_termination_info.h",
     "clear_site_data_utils.h",
     "client_certificate_delegate.h",
+    "client_hints.cc",
+    "client_hints.h",
     "client_hints_controller_delegate.h",
     "color_chooser.h",
     "console_message.h",
@@ -151,9 +154,20 @@ source_set("browser_sources") {
     "favicon_status.h",
     "feature_observer_client.h",
     "file_select_listener.h",
+    "file_system_access_entry_factory.h",
+    "file_system_access_permission_context.h",
+    "file_system_access_permission_grant.cc",
+    "file_system_access_permission_grant.h",
+    "file_system_access_write_item.cc",
+    "file_system_access_write_item.h",
     "file_url_loader.h",
     "focused_node_details.h",
+    "font_access_chooser.h",
+    "font_access_context.h",
+    "font_access_delegate.h",
     "font_list_async.h",
+    "frame_accept_header.cc",
+    "frame_accept_header.h",
     "frame_service_base.h",
     "generated_code_cache_settings.h",
     "global_request_id.h",
@@ -171,6 +185,7 @@ source_set("browser_sources") {
     "hid_chooser.h",
     "hid_delegate.h",
     "histogram_fetcher.h",
+    "identity_request_dialog_controller.h",
     "idle_manager.h",
     "installability_error.cc",
     "installability_error.h",
@@ -203,12 +218,9 @@ source_set("browser_sources") {
     "mhtml_extra_parts.h",
     "mhtml_generation_result.cc",
     "mhtml_generation_result.h",
-    "native_file_system_entry_factory.h",
-    "native_file_system_permission_context.h",
-    "native_file_system_permission_grant.cc",
-    "native_file_system_permission_grant.h",
-    "native_file_system_write_item.cc",
-    "native_file_system_write_item.h",
+    "mojo_binder_policy_map.h",
+    "native_io_context.cc",
+    "native_io_context.h",
     "native_web_keyboard_event.h",
     "navigation_controller.cc",
     "navigation_controller.h",
@@ -217,6 +229,7 @@ source_set("browser_sources") {
     "navigation_entry.h",
     "navigation_handle.cc",
     "navigation_handle.h",
+    "navigation_handle_timing.cc",
     "navigation_handle_timing.h",
     "navigation_throttle.cc",
     "navigation_throttle.h",
@@ -225,8 +238,6 @@ source_set("browser_sources") {
     "network_context_client_base.h",
     "network_quality_observer_factory.h",
     "network_service_instance.h",
-    "non_network_url_loader_factory_base.cc",
-    "non_network_url_loader_factory_base.h",
     "notification_database_data.cc",
     "notification_database_data.h",
     "notification_details.h",
@@ -260,6 +271,7 @@ source_set("browser_sources") {
     "presentation_request.h",
     "presentation_screen_availability_listener.h",
     "presentation_service_delegate.h",
+    "process_visibility_util.h",
     "provision_fetcher_factory.h",
     "provision_fetcher_impl.cc",
     "provision_fetcher_impl.h",
@@ -274,10 +286,13 @@ source_set("browser_sources") {
     "render_process_host.h",
     "render_process_host_creation_observer.h",
     "render_process_host_factory.h",
+    "render_process_host_observer.cc",
     "render_process_host_observer.h",
     "render_view_host.h",
     "render_widget_host.h",
     "render_widget_host_iterator.h",
+    "render_widget_host_observer.cc",
+    "render_widget_host_observer.h",
     "render_widget_host_view.h",
     "render_widget_host_view_mac_delegate.h",
     "renderer_preferences_util.cc",
@@ -342,7 +357,6 @@ source_set("browser_sources") {
     "supported_delegations.cc",
     "supported_delegations.h",
     "swap_metrics_driver.h",
-    "system_connector.h",
     "touch_selection_controller_client_manager.h",
     "trace_uploader.h",
     "tracing_controller.h",
@@ -433,13 +447,14 @@ source_set("browser_sources") {
     "//services/tracing/public/mojom",
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
-    "//third_party/webrtc_overrides:webrtc_component",
 
     # We expose skia headers in the public API.
     "//skia",
 
     # We expose storage headers for quota and blob storage context in the public API.
     "//storage/browser",
+    "//third_party/webrtc_overrides:webrtc_component",
+    "//ui/base/dragdrop/mojom:mojom_headers",
   ]
   deps = [
     "//build:chromeos_buildflags",
@@ -470,7 +485,7 @@ source_set("browser_sources") {
     "//content/browser",
   ]
 
-  if (is_chromeos || is_android || is_chromecast || is_fuchsia) {
+  if (is_chromeos_ash || is_android || is_chromecast || is_fuchsia) {
     defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 
@@ -495,6 +510,7 @@ source_set("browser_sources") {
       "android/synchronous_compositor.cc",
       "android/synchronous_compositor.h",
       "android/synchronous_compositor_client.h",
+      "ax_inspect_factory_android.cc",
       "tts_environment_android.h",
     ]
   }
@@ -505,11 +521,20 @@ source_set("browser_sources") {
 
   if (is_mac) {
     sources += [
+      "ax_inspect_factory_mac.mm",
       "native_event_processor_mac.h",
       "native_event_processor_observer_mac.h",
       "native_event_processor_observer_mac.mm",
       "remote_cocoa.h",
     ]
+  }
+
+  if (is_win) {
+    sources += [ "ax_inspect_factory_win.cc" ]
+  }
+
+  if (use_atk) {
+    sources += [ "ax_inspect_factory_auralinux.cc" ]
   }
 
   if (is_linux || is_chromeos) {
@@ -525,7 +550,7 @@ source_set("browser_sources") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h",
       "tts_controller_delegate.cc",

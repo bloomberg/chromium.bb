@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,6 +38,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "sandbox/policy/switches.h"
+#include "services/device/public/cpp/hid/hid_switches.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -79,6 +81,10 @@ static const char* kBadFlags[] = {
     switches::kDisableWebRtcEncryption,
     switches::kIgnoreCertificateErrors,
 
+    // This flag could prevent QuotaChange events from firing or cause the event
+    // to fire too often, potentially impacting web application behavior.
+    switches::kQuotaChangeEventInterval,
+
     // These flags change the URLs that handle PII.
     switches::kGaiaUrl,
     translate::switches::kTranslateScriptURL,
@@ -88,7 +94,9 @@ static const char* kBadFlags[] = {
     extensions::switches::kExtensionsOnChromeURLs,
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // Speech dispatcher is buggy, it can crash and it can make Chrome freeze.
     // http://crbug.com/327295
     switches::kEnableSpeechDispatcher,
@@ -136,6 +144,9 @@ static const char* kBadFlags[] = {
     // A flag to support local file based WebBundle loading, only for testing
     // purpose.
     switches::kTrustableWebBundleFileUrl,
+
+    // A flag to bypass the WebHID blocklist for testing purposes.
+    switches::kDisableHidBlocklist,
 };
 #endif  // OS_ANDROID
 
@@ -143,7 +154,6 @@ static const char* kBadFlags[] = {
 // "stability and security will suffer".
 static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
     &blink::features::kRawClipboard,
-    &features::kAllowSignedHTTPExchangeCertsWithoutExtension,
     &features::kWebBundlesFromNetwork,
 #if defined(OS_ANDROID)
     &chrome::android::kCommandLineOnNonRooted,

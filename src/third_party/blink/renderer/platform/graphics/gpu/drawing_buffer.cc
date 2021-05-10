@@ -210,7 +210,6 @@ DrawingBuffer::DrawingBuffer(
       want_depth_(want_depth),
       want_stencil_(want_stencil),
       storage_color_space_(color_params.GetStorageGfxColorSpace()),
-      sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
       use_half_float_storage_(color_params.PixelFormat() ==
                               CanvasPixelFormat::kF16),
       filter_quality_(filter_quality),
@@ -421,8 +420,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   // mailbox is released (and while the release callback is running). It also
   // owns the SharedBitmap.
   auto func = base::BindOnce(&DrawingBuffer::MailboxReleasedSoftware,
-                             weak_factory_.GetWeakPtr(),
-                             WTF::Passed(std::move(registered)));
+                             weak_factory_.GetWeakPtr(), std::move(registered));
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
   contents_changed_ = false;
@@ -520,7 +518,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
         color_buffer_for_mailbox->mailbox, GL_LINEAR, texture_target_,
         color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
         is_overlay_candidate);
-    out_resource->color_space = sampler_color_space_;
+    out_resource->color_space = storage_color_space_;
     out_resource->format = color_buffer_for_mailbox->format;
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -672,7 +670,7 @@ DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
   }
 }
 
-scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
+scoped_refptr<CanvasResource> DrawingBuffer::ExportLowLatencyCanvasResource(
     base::WeakPtr<CanvasResourceProvider> resource_provider) {
   // Swap chain must be presented before resource is exported.
   ResolveAndPresentSwapChainIfNeeded();
@@ -680,14 +678,14 @@ scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
   scoped_refptr<ColorBuffer> canvas_resource_buffer =
       UsingSwapChain() ? front_color_buffer_ : back_color_buffer_;
 
-  CanvasColorParams color_params;
+  CanvasResourceParams resource_params;
   switch (canvas_resource_buffer->format) {
     case viz::RGBA_8888:
     case viz::RGBX_8888:
-      color_params.SetCanvasPixelFormat(CanvasPixelFormat::kRGBA8);
+      resource_params.SetSkColorType(kRGBA_8888_SkColorType);
       break;
     case viz::RGBA_F16:
-      color_params.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
+      resource_params.SetSkColorType(kRGBA_F16_SkColorType);
       break;
     default:
       NOTREACHED();
@@ -695,10 +693,51 @@ scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
   }
 
   return ExternalCanvasResource::Create(
-      canvas_resource_buffer->mailbox, canvas_resource_buffer->size,
-      texture_target_, color_params, context_provider_->GetWeakPtr(),
-      resource_provider, kLow_SkFilterQuality,
-      /*is_origin_top_left=*/opengl_flip_y_extension_);
+      canvas_resource_buffer->mailbox, /*release_callback=*/nullptr,
+      gpu::SyncToken(), canvas_resource_buffer->size, texture_target_,
+      resource_params, context_provider_->GetWeakPtr(), resource_provider,
+      kLow_SkFilterQuality,
+      /*is_origin_top_left=*/opengl_flip_y_extension_,
+      /*is_overlay_candidate=*/true);
+}
+
+scoped_refptr<CanvasResource> DrawingBuffer::ExportCanvasResource() {
+  ScopedStateRestorer scoped_state_restorer(this);
+  TRACE_EVENT0("blink", "DrawingBuffer::ExportCanvasResource");
+
+  // Using PrepareTransferableResourceInternal, with force_gpu_result as we
+  // will use this ExportCanvasResource only for gpu_composited content.
+  viz::TransferableResource out_resource;
+  std::unique_ptr<viz::SingleReleaseCallback> out_release_callback;
+  const bool force_gpu_result = true;
+  if (!PrepareTransferableResourceInternal(
+          nullptr, &out_resource, &out_release_callback, force_gpu_result))
+    return nullptr;
+
+  CanvasResourceParams resource_params;
+  switch (out_resource.format) {
+    case viz::RGBA_8888:
+      resource_params.SetSkColorType(kRGBA_8888_SkColorType);
+      break;
+    case viz::RGBX_8888:
+      resource_params.SetSkColorType(kRGB_888x_SkColorType);
+      break;
+    case viz::RGBA_F16:
+      resource_params.SetSkColorType(kRGBA_F16_SkColorType);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return ExternalCanvasResource::Create(
+      out_resource.mailbox_holder.mailbox, std::move(out_release_callback),
+      out_resource.mailbox_holder.sync_token, IntSize(out_resource.size),
+      out_resource.mailbox_holder.texture_target, resource_params,
+      context_provider_->GetWeakPtr(), /*resource_provider=*/nullptr,
+      kLow_SkFilterQuality,
+      /*is_origin_top_left=*/opengl_flip_y_extension_,
+      out_resource.is_overlay_candidate);
 }
 
 DrawingBuffer::ColorBuffer::ColorBuffer(
@@ -1667,10 +1706,17 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     // Create a normal SharedImage if GpuMemoryBuffer is not needed or the
     // allocation above failed.
     if (!gpu_memory_buffer) {
+      // We want to set the correct SkAlphaType on the new shared image but in
+      // the case of ShouldUseChromiumImage() we instead keep this buffer
+      // premultiplied, draw to |premultiplied_alpha_false_mailbox_|, and
+      // convert during copy.
+      SkAlphaType alpha_type = kPremul_SkAlphaType;
+      if (!ShouldUseChromiumImage() && !premultiplied_alpha_)
+        alpha_type = kUnpremul_SkAlphaType;
+
       back_buffer_mailbox = sii->CreateSharedImage(
           format, static_cast<gfx::Size>(size), storage_color_space_,
-          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-          gpu::kNullSurfaceHandle);
+          kTopLeft_GrSurfaceOrigin, alpha_type, usage, gpu::kNullSurfaceHandle);
     }
   }
 

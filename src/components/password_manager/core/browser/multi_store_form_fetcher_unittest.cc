@@ -205,13 +205,13 @@ TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherClonesState) {
   form_fetcher_->OnGetPasswordStoreResultsFrom(profile_mock_store_.get(), {});
 
   EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 
-  // Cloning a fetcher that is done fetching keeps blacklisting information.
+  // Cloning a fetcher that is done fetching keeps blocklisting information.
   form_fetcher_.reset(
       static_cast<MultiStoreFormFetcher*>(form_fetcher_->Clone().release()));
   EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 }
 
 TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherResumesFetch) {
@@ -227,7 +227,7 @@ TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherResumesFetch) {
   form_fetcher_.reset(
       static_cast<MultiStoreFormFetcher*>(form_fetcher_->Clone().release()));
   EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::WAITING);
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 
   // Create and push a blocked account store entry to complete the fetch.
   PasswordForm blocked = CreateBlocked();
@@ -239,7 +239,7 @@ TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherResumesFetch) {
   form_fetcher_->OnGetPasswordStoreResultsFrom(profile_mock_store_.get(), {});
 
   EXPECT_EQ(form_fetcher_->GetState(), FormFetcher::State::NOT_WAITING);
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 }
 
 // Check that empty PasswordStore results are handled correctly.
@@ -257,7 +257,7 @@ TEST_F(MultiStoreFormFetcherTest, Empty) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 }
 
 // Check that results from both stores are merged.
@@ -309,7 +309,7 @@ TEST_F(MultiStoreFormFetcherTest, MergeFromBothStores) {
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(Pointee(federated1), Pointee(federated2),
                                    Pointee(federated3)));
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
   EXPECT_THAT(form_fetcher_->GetPreferredMatch(), Pointee(non_federated3));
 }
 
@@ -331,12 +331,12 @@ TEST_F(MultiStoreFormFetcherTest, BlockedEntryInTheAccountStore) {
       .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 
   // Simulate a user in the profile mode.
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 
   // Now simulate a user who isn't opted in for the account storage. In this
   // case, the blocked entry in the account store shouldn't matter,
@@ -346,11 +346,11 @@ TEST_F(MultiStoreFormFetcherTest, BlockedEntryInTheAccountStore) {
 
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 }
 
 TEST_F(MultiStoreFormFetcherTest, BlockedEntryInTheProfileStore) {
@@ -371,12 +371,12 @@ TEST_F(MultiStoreFormFetcherTest, BlockedEntryInTheProfileStore) {
       .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
-  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+  EXPECT_FALSE(form_fetcher_->IsBlocklisted());
 
   // Simulate a user in the profile mode.
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 
   // Now simulate a user who isn't opted in for the account storage. In this
   // case, the blocked entry in the profile store should take effect, whatever
@@ -386,11 +386,11 @@ TEST_F(MultiStoreFormFetcherTest, BlockedEntryInTheProfileStore) {
 
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
-  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+  EXPECT_TRUE(form_fetcher_->IsBlocklisted());
 }
 
 TEST_F(MultiStoreFormFetcherTest, MovingToAccountStoreIsBlocked) {
@@ -434,33 +434,35 @@ TEST_F(MultiStoreFormFetcherTest, MovingToAccountStoreIsBlocked) {
   // Moving shouldn't be blocked for other users.
   EXPECT_FALSE(form_fetcher_->IsMovingBlocked(kAnotherUser,
                                               blocked_form.username_value));
-  // PSL match entries should be ignored when computing the moving blacklist
+  // PSL match entries should be ignored when computing the moving blocklist
   // entries.
   EXPECT_FALSE(form_fetcher_->IsMovingBlocked(kUser, psl_form.username_value));
 }
 
-TEST_F(MultiStoreFormFetcherTest, CompromisedCredentials) {
+TEST_F(MultiStoreFormFetcherTest, InsecureCredentials) {
   Fetch();
-  const CompromisedCredentials profile_store_compromised_credentials{
+  InsecureCredential profile_store_insecure_credentials(
       form_digest_.signon_realm, base::ASCIIToUTF16("profile_username"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked,
-      PasswordForm::Store::kProfileStore};
+      base::Time::FromTimeT(1), InsecureType::kLeaked, IsMuted(false));
+  profile_store_insecure_credentials.in_store =
+      PasswordForm::Store::kProfileStore;
 
-  const CompromisedCredentials account_store_compromised_credentials{
+  InsecureCredential account_store_insecure_credentials(
       form_digest_.signon_realm, base::ASCIIToUTF16("account_username"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked,
-      PasswordForm::Store::kAccountStore};
+      base::Time::FromTimeT(1), InsecureType::kLeaked, IsMuted(false));
+  account_store_insecure_credentials.in_store =
+      PasswordForm::Store::kAccountStore;
 
-  static_cast<CompromisedCredentialsConsumer*>(form_fetcher_.get())
-      ->OnGetCompromisedCredentials({profile_store_compromised_credentials});
+  static_cast<InsecureCredentialsConsumer*>(form_fetcher_.get())
+      ->OnGetInsecureCredentials({profile_store_insecure_credentials});
 
-  static_cast<CompromisedCredentialsConsumer*>(form_fetcher_.get())
-      ->OnGetCompromisedCredentials({account_store_compromised_credentials});
+  static_cast<InsecureCredentialsConsumer*>(form_fetcher_.get())
+      ->OnGetInsecureCredentials({account_store_insecure_credentials});
 
-  EXPECT_THAT(form_fetcher_->GetCompromisedCredentials(),
-              testing::UnorderedElementsAreArray(
-                  {profile_store_compromised_credentials,
-                   account_store_compromised_credentials}));
+  EXPECT_THAT(
+      form_fetcher_->GetInsecureCredentials(),
+      testing::UnorderedElementsAreArray({profile_store_insecure_credentials,
+                                          account_store_insecure_credentials}));
 }
 
 }  // namespace password_manager

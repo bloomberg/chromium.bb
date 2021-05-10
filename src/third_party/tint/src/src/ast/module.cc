@@ -1,4 +1,4 @@
-// Copyright 2020 The Tint Authors.
+// Copyright 2021 The Tint Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,39 +15,50 @@
 #include "src/ast/module.h"
 
 #include <sstream>
+#include <string>
+#include <utility>
 
-#include "src/ast/type/struct_type.h"
+#include "src/debug.h"
+#include "src/program_builder.h"
+#include "src/type/alias_type.h"
+#include "src/type/struct_type.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::Module);
 
 namespace tint {
 namespace ast {
 
-Module::Module() = default;
+Module::Module(const Source& source) : Base(source) {}
 
-Module::Module(Module&&) = default;
+Module::Module(const Source& source, std::vector<CastableBase*> global_decls)
+    : Base(source), global_declarations_(std::move(global_decls)) {
+  for (auto* decl : global_declarations_) {
+    if (decl == nullptr) {
+      continue;
+    }
+
+    if (auto* ty = decl->As<type::Type>()) {
+      constructed_types_.push_back(ty);
+    } else if (auto* func = decl->As<Function>()) {
+      functions_.push_back(func);
+    } else if (auto* var = decl->As<Variable>()) {
+      global_variables_.push_back(var);
+    } else {
+      diag::List diagnostics;
+      TINT_ICE(diagnostics) << "Unknown global declaration type";
+    }
+  }
+}
 
 Module::~Module() = default;
 
-Function* Module::FindFunctionByName(const std::string& name) const {
-  for (const auto& func : functions_) {
-    if (func->name() == name) {
-      return func.get();
-    }
-  }
-  return nullptr;
-}
-
-Function* Module::FindFunctionByNameAndStage(const std::string& name,
-                                             ast::PipelineStage stage) const {
-  for (const auto& func : functions_) {
-    if (func->name() == name && func->pipeline_stage() == stage) {
-      return func.get();
-    }
-  }
-  return nullptr;
-}
-
 bool Module::IsValid() const {
-  for (const auto& var : global_variables_) {
+  for (auto* decl : global_declarations_) {
+    if (decl == nullptr) {
+      return false;
+    }
+  }
+  for (auto* var : global_variables_) {
     if (var == nullptr || !var->IsValid()) {
       return false;
     }
@@ -56,25 +67,24 @@ bool Module::IsValid() const {
     if (ty == nullptr) {
       return false;
     }
-    if (ty->IsAlias()) {
-      auto* alias = ty->AsAlias();
+    if (auto* alias = ty->As<type::Alias>()) {
       if (alias->type() == nullptr) {
         return false;
       }
-      if (alias->type()->IsStruct() &&
-          alias->type()->AsStruct()->name().empty()) {
-        return false;
+      if (auto* str = alias->type()->As<type::Struct>()) {
+        if (!str->symbol().IsValid()) {
+          return false;
+        }
       }
-    } else if (ty->IsStruct()) {
-      auto* str = ty->AsStruct();
-      if (str->name().empty()) {
+    } else if (auto* str = ty->As<type::Struct>()) {
+      if (!str->symbol().IsValid()) {
         return false;
       }
     } else {
       return false;
     }
   }
-  for (const auto& func : functions_) {
+  for (auto* func : functions_) {
     if (func == nullptr || !func->IsValid()) {
       return false;
     }
@@ -82,35 +92,58 @@ bool Module::IsValid() const {
   return true;
 }
 
-std::string Module::to_str() const {
-  std::ostringstream out;
+Module* Module::Clone(CloneContext* ctx) const {
+  auto* out = ctx->dst->create<Module>();
+  out->Copy(ctx, this);
+  return out;
+}
 
+void Module::Copy(CloneContext* ctx, const Module* src) {
+  for (auto* decl : src->global_declarations_) {
+    assert(decl);
+    if (auto* ty = decl->As<type::Type>()) {
+      AddConstructedType(ctx->Clone(ty));
+    } else if (auto* func = decl->As<Function>()) {
+      AddFunction(ctx->Clone(func));
+    } else if (auto* var = decl->As<Variable>()) {
+      AddGlobalVariable(ctx->Clone(var));
+    } else {
+      TINT_ICE(ctx->dst->Diagnostics()) << "Unknown global declaration type";
+    }
+  }
+}
+
+void Module::to_str(const semantic::Info& sem,
+                    std::ostream& out,
+                    size_t indent) const {
+  make_indent(out, indent);
   out << "Module{" << std::endl;
-  const auto indent = 2;
+  indent += 2;
   for (auto* const ty : constructed_types_) {
-    for (size_t i = 0; i < indent; ++i) {
-      out << " ";
-    }
-    if (ty->IsAlias()) {
-      auto* alias = ty->AsAlias();
-      out << alias->name() << " -> " << alias->type()->type_name() << std::endl;
-      if (alias->type()->IsStruct()) {
-        alias->type()->AsStruct()->impl()->to_str(out, indent);
+    make_indent(out, indent);
+    if (auto* alias = ty->As<type::Alias>()) {
+      out << alias->symbol().to_str() << " -> " << alias->type()->type_name()
+          << std::endl;
+      if (auto* str = alias->type()->As<type::Struct>()) {
+        str->impl()->to_str(sem, out, indent);
       }
-    } else if (ty->IsStruct()) {
-      auto* str = ty->AsStruct();
-      out << str->name() << " ";
-      str->impl()->to_str(out, indent);
+    } else if (auto* str = ty->As<type::Struct>()) {
+      out << str->symbol().to_str() << " ";
+      str->impl()->to_str(sem, out, indent);
     }
   }
-  for (const auto& var : global_variables_) {
-    var->to_str(out, indent);
+  for (auto* var : global_variables_) {
+    var->to_str(sem, out, indent);
   }
-  for (const auto& func : functions_) {
-    func->to_str(out, indent);
+  for (auto* func : functions_) {
+    func->to_str(sem, out, indent);
   }
   out << "}" << std::endl;
+}
 
+std::string Module::to_str(const semantic::Info& sem) const {
+  std::ostringstream out;
+  to_str(sem, out, 0);
   return out.str();
 }
 

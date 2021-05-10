@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,7 +46,7 @@ class ExtensionApiNewTabTest : public ExtensionApiTabTest {
 };
 
 // Flaky on chromeos: http://crbug.com/870322
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_Tabs DISABLED_Tabs
 #else
 #define MAYBE_Tabs Tabs
@@ -60,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, MAYBE_Tabs) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabAudible) {
+// TODO(crbug.com/1177118) Re-enable test
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabAudible) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "audible.html")) << message_;
 }
 
@@ -164,7 +166,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabPng) {
                                   "test_png.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabRace) {
+// TODO(crbug.com/1177118) Re-enable test
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
+                       DISABLED_CaptureVisibleTabRace) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
 }
@@ -176,8 +180,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabRace) {
 #define MAYBE_CaptureVisibleFile CaptureVisibleFile
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, MAYBE_CaptureVisibleFile) {
-  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
-                                  "test_file.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "tabs/capture_visible_tab", "test_file.html", nullptr,
+      kFlagEnableFileAccess, kFlagNone))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleDisabled) {

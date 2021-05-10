@@ -116,7 +116,8 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
 
   // Check if the scheme is valid for extensions. If not, return.
   if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
-      document_url.spec() != url::kAboutBlankURL) {
+      document_url.spec() != url::kAboutBlankURL &&
+      document_url.spec() != url::kAboutSrcdocURL) {
     if (error) {
       if (active_permissions().HasAPIPermission(APIPermission::kTab)) {
         *error = ErrorUtils::FormatErrorMessage(
@@ -282,15 +283,11 @@ bool PermissionsData::CheckAPIPermissionWithParam(
                                                                  param);
 }
 
-URLPatternSet PermissionsData::GetEffectiveHostPermissions(
-    EffectiveHostPermissionsMode mode) const {
+URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
   base::AutoLock auto_lock(runtime_lock_);
   URLPatternSet effective_hosts =
       active_permissions_unsafe_->effective_hosts().Clone();
-  if (mode == EffectiveHostPermissionsMode::kOmitTabSpecific)
-    return effective_hosts;
 
-  DCHECK_EQ(EffectiveHostPermissionsMode::kIncludeTabSpecific, mode);
   for (const auto& val : tab_specific_permissions_)
     effective_hosts.AddPatterns(val.second->effective_hosts());
   return effective_hosts;

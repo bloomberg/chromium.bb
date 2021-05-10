@@ -33,11 +33,10 @@
 #include "src/core/lib/iomgr/sockaddr_utils.h"
 #include "src/core/lib/security/credentials/credentials.h"
 #include "src/core/lib/security/security_connector/security_connector.h"
-#include "src/core/lib/security/transport/target_authority_table.h"
-#include "src/core/lib/slice/slice_hash_table.h"
 #include "src/core/lib/slice/slice_internal.h"
 #include "src/core/lib/surface/api_trace.h"
 #include "src/core/lib/surface/channel.h"
+#include "src/core/lib/transport/authority_override.h"
 #include "src/core/lib/uri/uri_parser.h"
 
 namespace grpc_core {
@@ -51,31 +50,10 @@ class Chttp2SecureClientChannelFactory : public ClientChannelFactory {
               "Failed to create channel args during subchannel creation.");
       return nullptr;
     }
-    grpc_connector* connector = grpc_chttp2_connector_create();
-    Subchannel* s = Subchannel::Create(connector, new_args);
-    grpc_connector_unref(connector);
+    Subchannel* s =
+        Subchannel::Create(MakeOrphanable<Chttp2Connector>(), new_args);
     grpc_channel_args_destroy(new_args);
     return s;
-  }
-
-  grpc_channel* CreateChannel(const char* target,
-                              const grpc_channel_args* args) override {
-    if (target == nullptr) {
-      gpr_log(GPR_ERROR, "cannot create channel with NULL target name");
-      return nullptr;
-    }
-    // Add channel arg containing the server URI.
-    UniquePtr<char> canonical_target =
-        ResolverRegistry::AddDefaultPrefixIfNeeded(target);
-    grpc_arg arg = grpc_channel_arg_string_create(
-        const_cast<char*>(GRPC_ARG_SERVER_URI), canonical_target.get());
-    const char* to_remove[] = {GRPC_ARG_SERVER_URI};
-    grpc_channel_args* new_args =
-        grpc_channel_args_copy_and_add_and_remove(args, to_remove, 1, &arg, 1);
-    grpc_channel* channel =
-        grpc_channel_create(target, new_args, GRPC_CLIENT_CHANNEL, nullptr);
-    grpc_channel_args_destroy(new_args);
-    return channel;
   }
 
  private:
@@ -96,38 +74,16 @@ class Chttp2SecureClientChannelFactory : public ClientChannelFactory {
               "channel args.");
       return nullptr;
     }
-    // To which address are we connecting? By default, use the server URI.
-    const grpc_arg* server_uri_arg =
-        grpc_channel_args_find(args, GRPC_ARG_SERVER_URI);
-    const char* server_uri_str = grpc_channel_arg_get_string(server_uri_arg);
-    GPR_ASSERT(server_uri_str != nullptr);
-    grpc_uri* server_uri =
-        grpc_uri_parse(server_uri_str, true /* suppress errors */);
-    GPR_ASSERT(server_uri != nullptr);
-    const TargetAuthorityTable* target_authority_table =
-        FindTargetAuthorityTableInArgs(args);
-    UniquePtr<char> authority;
-    if (target_authority_table != nullptr) {
-      // Find the authority for the target.
-      const char* target_uri_str =
-          Subchannel::GetUriFromSubchannelAddressArg(args);
-      grpc_uri* target_uri =
-          grpc_uri_parse(target_uri_str, false /* suppress errors */);
-      GPR_ASSERT(target_uri != nullptr);
-      if (target_uri->path[0] != '\0') {  // "path" may be empty
-        const grpc_slice key = grpc_slice_from_static_string(
-            target_uri->path[0] == '/' ? target_uri->path + 1
-                                       : target_uri->path);
-        const UniquePtr<char>* value = target_authority_table->Get(key);
-        if (value != nullptr) authority.reset(gpr_strdup(value->get()));
-        grpc_slice_unref_internal(key);
-      }
-      grpc_uri_destroy(target_uri);
-    }
-    // If the authority hasn't already been set (either because no target
-    // authority table was present or because the target was not present
-    // in the table), fall back to using the original server URI.
+    // Find the authority to use in the security connector.
+    // First, check the authority override channel arg.
+    // Otherwise, get it from the server name used to construct the
+    // channel.
+    grpc_core::UniquePtr<char> authority(
+        gpr_strdup(FindAuthorityOverrideInArgs(args)));
     if (authority == nullptr) {
+      const char* server_uri_str =
+          grpc_channel_args_find_string(args, GRPC_ARG_SERVER_URI);
+      GPR_ASSERT(server_uri_str != nullptr);
       authority = ResolverRegistry::GetDefaultAuthority(server_uri_str);
     }
     grpc_arg args_to_add[2];
@@ -140,7 +96,6 @@ class Chttp2SecureClientChannelFactory : public ClientChannelFactory {
     }
     grpc_channel_args* args_with_authority =
         grpc_channel_args_copy_and_add(args, args_to_add, num_args_to_add);
-    grpc_uri_destroy(server_uri);
     // Create the security connector using the credentials and target name.
     grpc_channel_args* new_args_from_connector = nullptr;
     RefCountedPtr<grpc_channel_security_connector>
@@ -170,6 +125,29 @@ class Chttp2SecureClientChannelFactory : public ClientChannelFactory {
   }
 };
 
+namespace {
+
+grpc_channel* CreateChannel(const char* target, const grpc_channel_args* args) {
+  if (target == nullptr) {
+    gpr_log(GPR_ERROR, "cannot create channel with NULL target name");
+    return nullptr;
+  }
+  // Add channel arg containing the server URI.
+  grpc_core::UniquePtr<char> canonical_target =
+      ResolverRegistry::AddDefaultPrefixIfNeeded(target);
+  grpc_arg arg = grpc_channel_arg_string_create(
+      const_cast<char*>(GRPC_ARG_SERVER_URI), canonical_target.get());
+  const char* to_remove[] = {GRPC_ARG_SERVER_URI};
+  grpc_channel_args* new_args =
+      grpc_channel_args_copy_and_add_and_remove(args, to_remove, 1, &arg, 1);
+  grpc_channel* channel =
+      grpc_channel_create(target, new_args, GRPC_CLIENT_CHANNEL, nullptr);
+  grpc_channel_args_destroy(new_args);
+  return channel;
+}
+
+}  // namespace
+
 }  // namespace grpc_core
 
 namespace {
@@ -178,7 +156,7 @@ grpc_core::Chttp2SecureClientChannelFactory* g_factory;
 gpr_once g_factory_once = GPR_ONCE_INIT;
 
 void FactoryInit() {
-  g_factory = grpc_core::New<grpc_core::Chttp2SecureClientChannelFactory>();
+  g_factory = new grpc_core::Chttp2SecureClientChannelFactory();
 }
 
 }  // namespace
@@ -202,14 +180,16 @@ grpc_channel* grpc_secure_channel_create(grpc_channel_credentials* creds,
     // Add channel args containing the client channel factory and channel
     // credentials.
     gpr_once_init(&g_factory_once, FactoryInit);
-    grpc_arg args_to_add[] = {
-        grpc_core::ClientChannelFactory::CreateChannelArg(g_factory),
-        grpc_channel_credentials_to_arg(creds)};
-    grpc_channel_args* new_args = grpc_channel_args_copy_and_add(
-        args, args_to_add, GPR_ARRAY_SIZE(args_to_add));
+    grpc_arg channel_factory_arg =
+        grpc_core::ClientChannelFactory::CreateChannelArg(g_factory);
+    grpc_arg args_to_add[] = {channel_factory_arg,
+                              grpc_channel_credentials_to_arg(creds)};
+    const char* arg_to_remove = channel_factory_arg.key;
+    grpc_channel_args* new_args = grpc_channel_args_copy_and_add_and_remove(
+        args, &arg_to_remove, 1, args_to_add, GPR_ARRAY_SIZE(args_to_add));
     new_args = creds->update_arguments(new_args);
     // Create channel.
-    channel = g_factory->CreateChannel(target, new_args);
+    channel = grpc_core::CreateChannel(target, new_args);
     // Clean up.
     grpc_channel_args_destroy(new_args);
   }

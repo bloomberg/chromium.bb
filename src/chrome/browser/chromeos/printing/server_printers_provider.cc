@@ -8,13 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
@@ -42,7 +42,7 @@ class ServerPrintersProviderImpl
     : public ServerPrintersProvider,
       public base::SupportsWeakPtr<ServerPrintersProviderImpl> {
  public:
-  ServerPrintersProviderImpl() {
+  explicit ServerPrintersProviderImpl(Profile* profile) : profile_(profile) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
@@ -66,15 +66,6 @@ class ServerPrintersProviderImpl
   void OnServersChanged(bool servers_are_complete,
                         const std::map<GURL, PrintServer>& servers) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // Create an entry in the device log.
-    if (servers_are_complete) {
-      PRINTER_LOG(EVENT) << "The list of print servers has been completed. "
-                         << "Number of print servers: " << servers.size();
-      if (!servers.empty()) {
-        base::UmaHistogramCounts1000("Printing.PrintServers.ServersToQuery",
-                                     servers.size());
-      }
-    }
     // Save previous state.
     const bool previous_complete = IsComplete();
     // Initialize new state.
@@ -96,7 +87,7 @@ class ServerPrintersProviderImpl
         // This is a new print server: query for printers.
         fetchers_.emplace(
             url, std::make_unique<ServerPrintersFetcher>(
-                     url, name,
+                     profile_, url, name,
                      base::BindRepeating(
                          &ServerPrintersProviderImpl::OnPrintersFetched,
                          weak_ptr_factory_.GetWeakPtr())));
@@ -158,6 +149,8 @@ class ServerPrintersProviderImpl
     return (servers_are_complete_ && fetchers_.empty());
   }
 
+  Profile* profile_;
+
   // A callback to propagate update of the resultant list of server printers.
   OnPrintersUpdateCallback callback_;
 
@@ -178,8 +171,9 @@ class ServerPrintersProviderImpl
 }  // namespace
 
 // static
-std::unique_ptr<ServerPrintersProvider> ServerPrintersProvider::Create() {
-  return std::make_unique<ServerPrintersProviderImpl>();
+std::unique_ptr<ServerPrintersProvider> ServerPrintersProvider::Create(
+    Profile* profile) {
+  return std::make_unique<ServerPrintersProviderImpl>(profile);
 }
 
 }  // namespace chromeos

@@ -56,7 +56,7 @@ Polymer({
     rowLabel: {
       type: String,
       notify: true,
-      computed: 'getRowLabel_(item, networkState)',
+      computed: 'getRowLabel_(item, networkState, subtitle_)',
     },
 
     buttonLabel: {
@@ -69,6 +69,17 @@ Polymer({
       type: String,
       reflectToAttribute: true,
       value: 'button',
+    },
+
+    /**
+     * Whether the network item is a cellular one and is of an esim
+     * pending profile.
+     */
+    isESimPendingProfile_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+      computed: 'computeIsESimPendingProfile_(item, item.customItemType)',
     },
 
     /**
@@ -95,6 +106,32 @@ Polymer({
      * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
      */
     deviceState: Object,
+
+    /**
+     * Subtitle for item.
+     * @private {string}
+     */
+    subtitle_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
+    },
+  },
+
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
+
+  /** @override */
+  created() {
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -109,12 +146,49 @@ Polymer({
 
   /** @private */
   itemChanged_() {
-    if (this.item && !this.item.hasOwnProperty('customItemName')) {
+    if (this.item && !this.item.hasOwnProperty('customItemType')) {
       this.networkState =
           /** @type {!OncMojo.NetworkStateProperties} */ (this.item);
-    } else if (this.networkState) {
+    } else {
       this.networkState = undefined;
     }
+    this.setSubtitle_();
+  },
+
+  /** @private */
+  setSubtitle_() {
+    const mojom = chromeos.networkConfig.mojom;
+
+    if (this.item.hasOwnProperty('customItemSubtitle') &&
+        this.item.customItemSubtitle) {
+      // Item is a custom OOBE network or pending eSIM profile.
+      const item = /** @type {!NetworkList.CustomItemState} */ (this.item);
+      this.subtitle_ = item.customItemSubtitle;
+      return;
+    }
+
+    if (!this.networkState) {
+      return;
+    }
+
+    if (this.networkState.type !== mojom.NetworkType.kCellular ||
+        !this.isUpdatedCellularUiEnabled_) {
+      return;
+    }
+
+    this.networkConfig_.getManagedProperties(this.networkState.guid)
+        .then(response => {
+          if (!response || !response.result ||
+              !response.result.typeProperties.cellular.eid) {
+            return;
+          }
+          const managedProperty = response.result;
+
+          if (managedProperty.typeProperties.cellular.homeProvider) {
+            this.subtitle_ =
+                managedProperty.typeProperties.cellular.homeProvider.name;
+          }
+        });
   },
 
   /** @private */
@@ -138,10 +212,9 @@ Polymer({
   getItemName_() {
     if (this.item.hasOwnProperty('customItemName')) {
       const item = /** @type {!NetworkList.CustomItemState} */ (this.item);
-      const name = item.customItemName || '';
-      const customName = this.i18n(item.customItemName);
-
-      return customName ? customName : name;
+      return this.i18nExists(item.customItemName) ?
+          this.i18n(item.customItemName) :
+          item.customItemName;
     }
     return OncMojo.getNetworkStateDisplayName(
         /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
@@ -162,6 +235,10 @@ Polymer({
    * @private
    */
   getRowLabel_() {
+    if (!this.item) {
+      return '';
+    }
+
     const NetworkType = chromeos.networkConfig.mojom.NetworkType;
     const OncSource = chromeos.networkConfig.mojom.OncSource;
     const SecurityType = chromeos.networkConfig.mojom.SecurityType;
@@ -187,9 +264,21 @@ Polymer({
       case NetworkType.kCellular:
         if (isManaged) {
           if (status) {
+            if (this.subtitle_) {
+              return this.i18n(
+                  'networkListItemLabelCellularManagedWithConnectionStatusAndProviderName',
+                  index, total, this.getItemName_(), this.subtitle_, status,
+                  this.item.typeState.cellular.signalStrength);
+            }
             return this.i18n(
                 'networkListItemLabelCellularManagedWithConnectionStatus',
                 index, total, this.getItemName_(), status,
+                this.item.typeState.cellular.signalStrength);
+          }
+          if (this.subtitle_) {
+            return this.i18n(
+                'networkListItemLabelCellularManagedWithProviderName', index,
+                total, this.getItemName_(), this.subtitle_,
                 this.item.typeState.cellular.signalStrength);
           }
           return this.i18n(
@@ -197,9 +286,22 @@ Polymer({
               this.getItemName_(), this.item.typeState.cellular.signalStrength);
         }
         if (status) {
+          if (this.subtitle_) {
+            return this.i18n(
+                'networkListItemLabelCellularWithConnectionStatusAndProviderName',
+                index, total, this.getItemName_(), this.subtitle_, status,
+                this.item.typeState.cellular.signalStrength);
+          }
           return this.i18n(
               'networkListItemLabelCellularWithConnectionStatus', index, total,
               this.getItemName_(), status,
+              this.item.typeState.cellular.signalStrength);
+        }
+
+        if (this.subtitle_) {
+          return this.i18n(
+              'networkListItemLabelCellularWithProviderName', index, total,
+              this.getItemName_(), this.subtitle_,
               this.item.typeState.cellular.signalStrength);
         }
         return this.i18n(
@@ -226,9 +328,23 @@ Polymer({
       case NetworkType.kTether:
         // Tether networks will never be controlled by policy (only disabled).
         if (status) {
+          if (this.subtitle_) {
+            return this.i18n(
+                'networkListItemLabelTetherWithConnectionStatusAndProviderName',
+                index, total, this.getItemName_(), this.subtitle_, status,
+                this.item.typeState.tether.signalStrength,
+                this.item.typeState.tether.batteryPercentage);
+          }
           return this.i18n(
               'networkListItemLabelTetherWithConnectionStatus', index, total,
               this.getItemName_(), status,
+              this.item.typeState.tether.signalStrength,
+              this.item.typeState.tether.batteryPercentage);
+        }
+        if (this.subtitle_) {
+          return this.i18n(
+              'networkListItemLabelTetherWithProviderName', index, total,
+              this.getItemName_(), this.subtitle_,
               this.item.typeState.tether.signalStrength,
               this.item.typeState.tether.batteryPercentage);
         }
@@ -263,6 +379,25 @@ Polymer({
             'networkListItemLabelWifi', index, total, this.getItemName_(),
             secured, this.item.typeState.wifi.signalStrength);
       default:
+        if (this.isESimPendingProfile_) {
+          if (this.subtitle_) {
+            return this.i18n(
+                'networkListItemLabelESimPendingProfileWithProviderName', index,
+                total, this.getItemName_(), this.subtitle_);
+          }
+          return this.i18n(
+              'networkListItemLabelESimPendingProfile', index, total,
+              this.getItemName_());
+        } else if (this.isESimInstallingProfile_()) {
+          if (this.subtitle_) {
+            return this.i18n(
+                'networkListItemLabelESimPendingProfileWithProviderNameInstalling',
+                index, total, this.getItemName_(), this.subtitle_);
+          }
+          return this.i18n(
+              'networkListItemLabelESimPendingProfileInstalling', index, total,
+              this.getItemName_());
+        }
         return this.i18n(
             'networkListItemLabel', index, total, this.getItemName_());
     }
@@ -309,6 +444,22 @@ Polymer({
       return this.i18n('networkListItemConnecting');
     }
     return '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSubtitle() {
+    return this.subtitle_ ? this.subtitle_ : '';
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isSubtitleVisible_() {
+    return !!this.subtitle_;
   },
 
   /**
@@ -364,6 +515,8 @@ Polymer({
     if (this.isSubpageButtonVisible_(this.networkState, this.showButtons) &&
         this.$$('#subpage-button') === this.shadowRoot.activeElement) {
       this.fireShowDetails_(event);
+    } else if (this.isESimPendingProfile_) {
+      this.onInstallButtonClick_();
     } else if (this.item.hasOwnProperty('customItemName')) {
       this.fire('custom-item-selected', this.item);
     } else {
@@ -419,5 +572,30 @@ Polymer({
   getLiveStatus_(isFocused) {
     // isFocused is supplied by FocusRowBehavior.
     return this.isFocused ? 'polite' : 'off';
+  },
+
+  /** @private */
+  onInstallButtonClick_() {
+    this.fire('install-profile', {iccid: this.item.customData.iccid});
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsESimPendingProfile_() {
+    return !!this.item && this.item.hasOwnProperty('customItemType') &&
+        this.item.customItemType ===
+        NetworkList.CustomItemType.ESIM_PENDING_PROFILE;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isESimInstallingProfile_() {
+    return !!this.item && this.item.hasOwnProperty('customItemType') &&
+        this.item.customItemType ===
+        NetworkList.CustomItemType.ESIM_INSTALLING_PROFILE;
   },
 });

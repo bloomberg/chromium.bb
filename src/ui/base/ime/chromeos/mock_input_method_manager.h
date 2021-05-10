@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/virtual_keyboard_controller.h"
 
 namespace chromeos {
 namespace input_method {
@@ -18,7 +18,7 @@ class ImeKeyboard;
 // The mock InputMethodManager for testing.
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockInputMethodManager
     : public InputMethodManager,
-      public ui::InputMethodKeyboardController {
+      public ui::VirtualKeyboardController {
  public:
  public:
   class State : public InputMethodManager::State {
@@ -99,8 +99,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockInputMethodManager
       InputMethodManager::CandidateWindowObserver* observer) override;
   void RemoveImeMenuObserver(
       InputMethodManager::ImeMenuObserver* observer) override;
-  std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
-      const override;
   void ActivateInputMethodMenuItem(const std::string& key) override;
   void ConnectInputEngineManager(
       mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver)
@@ -125,23 +123,21 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockInputMethodManager
   void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
   bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
   void NotifyObserversImeExtraInputStateChange() override;
-  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
-      override;
+  ui::VirtualKeyboardController* GetVirtualKeyboardController() override;
   void NotifyInputMethodExtensionAdded(
       const std::string& extension_id) override;
   void NotifyInputMethodExtensionRemoved(
       const std::string& extension_id) override;
 
-  // ui::InputMethodKeyboardController overrides.
+  // ui::VirtualKeyboardController overrides.
   bool DisplayVirtualKeyboard() override;
   void DismissVirtualKeyboard() override;
-  void AddObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override;
-  void RemoveObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override;
+  void AddObserver(ui::VirtualKeyboardControllerObserver* observer) override;
+  void RemoveObserver(ui::VirtualKeyboardControllerObserver* observer) override;
   bool IsKeyboardVisible() override;
 
  private:
+  scoped_refptr<State> state_;
   uint32_t features_enabled_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodManager);

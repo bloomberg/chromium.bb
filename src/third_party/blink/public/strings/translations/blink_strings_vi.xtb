@@ -151,6 +151,7 @@
 <translation id="5307600278924710095">Vui lòng nhập phần đứng trước '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' không hoàn chỉnh.</translation>
 <translation id="5334352251556557839">Không thể phát nội dung đa phương tiện.</translation>
 <translation id="537648784377940524">Ngày tối thiểu (<ph name="MIN_DATE_OR_TIME" />) phải trước ngày tối đa (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">đã mở rộng, hộp thoại đã mở.</translation>
 <translation id="5406322316791861025">hình dáng</translation>
 <translation id="5425179576310518467">ngày hiện tại</translation>
 <translation id="5453733299334684579">mục dạng cây</translation>
@@ -167,6 +168,7 @@
 <translation id="5677946354068040947">tùy chọn khác</translation>
 <translation id="576709008726043716">giới thiệu</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
+<translation id="5787939484346677755">đã mở rộng, có các tùy chọn tự động hoàn thành.</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5888666972993069672">Hiện đang truyền tới <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -180,6 +182,7 @@
 <translation id="6023896073578205740">hộp danh sách</translation>
 <translation id="6150588977291308318">danh mục</translation>
 <translation id="6164829606128959761">thước đo</translation>
+<translation id="6165053282446038410">đã mở rộng, có <ph name="COUNT" /> tùy chọn tự động hoàn thành.</translation>
 <translation id="6166809985690652833">lời bạt</translation>
 <translation id="6209276755895393898">Có vẻ như là: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">trang hiện tại</translation>
@@ -200,6 +203,7 @@
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="668171684555832681">Khác...</translation>
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
+<translation id="6696580792574109116">công cụ chọn tháng</translation>
 <translation id="6709093583001123835">Giá trị phải là <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Chất lượng phát lại kém</translation>
 <translation id="6755330956360078551">chú giải công cụ</translation>
@@ -214,12 +218,14 @@
 <translation id="693476918119313863">tiêu đề</translation>
 <translation id="6941933287844615239">tải xuống phương tiện</translation>
 <translation id="6981594929165378967">chèn</translation>
+<translation id="698788488269350478">đã mở rộng.</translation>
 <translation id="6989848892321993519">Vui lòng kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng 1 ký tự).</translation>
 <translation id="7034405885550056553">đề xuất</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
 <translation id="7102274145889307184">vị trí hiện tại</translation>
 <translation id="7118469954320184356">Không có nội dung mô tả.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
+<translation id="7198226213493847604">nút bật lên mở ra trình đơn</translation>
 <translation id="7214187073215825913">thông tin về nội dung</translation>
 <translation id="7238347055216017155">nhấn mạnh</translation>
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
@@ -273,7 +279,7 @@
 <translation id="8474886197722836894">lời đề tặng</translation>
 <translation id="8531739829932800271">bản đính chính</translation>
 <translation id="8534579021159131403">Phút</translation>
-<translation id="8541249477527128034">kiểm soát phương tiện</translation>
+<translation id="8541249477527128034">điều khiển nội dung nghe nhìn</translation>
 <translation id="8550857728288566671">biểu tượng đồ họa</translation>
 <translation id="8583702881314752957">danh sách định nghĩa</translation>
 <translation id="8597182159515967513">đầu đề</translation>
@@ -281,11 +287,13 @@
 <translation id="8613126697340063924">điều khiển phát lại từ xa</translation>
 <translation id="862370744433916922">phụ đề</translation>
 <translation id="8634971699417195529">Hiển thị bộ chọn tháng</translation>
+<translation id="8668988909814782445">Tự ngắt dòng</translation>
 <translation id="8711688047404765493">thiết bị ra</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="8808573423886751634">chương</translation>
 <translation id="8845239796550121995">Hiện đang truyền tới TV của bạn</translation>
 <translation id="8851136666856101339">chính</translation>
+<translation id="8861621546968757188">nút bật lên mở ra hộp thoại</translation>
 <translation id="8875657656876809964">Lỗi phát lại video</translation>
 <translation id="8889402386540077796">Màu sắc</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

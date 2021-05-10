@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -28,7 +29,9 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -62,8 +65,8 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 namespace {
@@ -177,16 +180,16 @@ class TestBrowserCloseManager : public BrowserCloseManager {
 
   void ConfirmCloseWithPendingDownloads(
       int download_count,
-      const base::Callback<void(bool)>& callback) override {
+      base::OnceCallback<void(bool)> callback) override {
     EXPECT_NE(NO_USER_CHOICE, user_choice_);
     switch (user_choice_) {
       case NO_USER_CHOICE:
       case USER_CHOICE_USER_CANCELS_CLOSE: {
-        callback.Run(false);
+        std::move(callback).Run(false);
         break;
       }
       case USER_CHOICE_USER_ALLOWS_CLOSE: {
-        callback.Run(true);
+        std::move(callback).Run(true);
         break;
       }
     }
@@ -282,7 +285,7 @@ class BrowserCloseManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
@@ -397,11 +400,16 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, PRE_TestSessionRestore) {
 
 // Test that the tab closed after the aborted shutdown attempt is not re-opened
 // when restoring the session.
-// Flaky on Windows trybots, see https://crbug.com/737860.
 // Flaky on chromium.chromeos, chromium.linux, and chromium.mac bots. See
-// https://crbug.com/1145235.
+// https://crbug.com/1145235. It was flaky on Windows, but  crrev.com/c/2559156,
+// which added retries to ReplaceFile, should fix the Windows flakiness.
+#if defined(OS_WIN)
+#define MAYBE_TestSessionRestore TestSessionRestore
+#else
+#define MAYBE_TestSessionRestore DISABLED_TestSessionRestore
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
-                       DISABLED_TestSessionRestore) {
+                       MAYBE_TestSessionRestore) {
   // The testing framework launches Chrome with about:blank as args.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(GURL(chrome::kChromeUIVersionURL),
@@ -527,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // Regression for crbug.com/365052 caused some of tabs to be closed even if
 // user chose to cancel browser close.
 // Flaky on ChromeOS ASan. https://crbug.com/805457
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ADDRESS_SANITIZER)
 #define MAYBE_TestUnloadMultipleSlowTabs DISABLED_TestUnloadMultipleSlowTabs
 #else
 #define MAYBE_TestUnloadMultipleSlowTabs TestUnloadMultipleSlowTabs
@@ -1190,10 +1198,13 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
                        CloseAllBrowsersWithBackgroundMode) {
   EXPECT_FALSE(IsBackgroundModeSuspended());
   std::unique_ptr<ScopedKeepAlive> tmp_keep_alive;
+  std::unique_ptr<ScopedProfileKeepAlive> tmp_profile_keep_alive;
   Profile* profile = browser()->profile();
   {
     tmp_keep_alive.reset(new ScopedKeepAlive(KeepAliveOrigin::PANEL_VIEW,
                                              KeepAliveRestartOption::DISABLED));
+    tmp_profile_keep_alive.reset(new ScopedProfileKeepAlive(
+        profile, ProfileKeepAliveOrigin::kBrowserWindow));
     chrome::CloseAllBrowsers();
     ui_test_utils::WaitForBrowserToClose();
   }
@@ -1205,6 +1216,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
   chrome::NewEmptyWindow(profile);
   ui_test_utils::WaitForBrowserToOpen();
   tmp_keep_alive.reset();
+  tmp_profile_keep_alive.reset();
   EXPECT_FALSE(IsBackgroundModeSuspended());
 
   // Background mode should not be suspended when quitting.
@@ -1235,6 +1247,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(IsBackgroundModeSuspended());
   ScopedKeepAlive tmp_keep_alive(KeepAliveOrigin::PANEL_VIEW,
                                  KeepAliveRestartOption::DISABLED);
+  ScopedProfileKeepAlive tmp_profile_keep_alive(
+      browser()->profile(), ProfileKeepAliveOrigin::kBrowserWindow);
   browser()->window()->Close();
   ui_test_utils::WaitForBrowserToClose();
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());

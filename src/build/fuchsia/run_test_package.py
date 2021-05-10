@@ -151,6 +151,8 @@ def _GetComponentUri(package_name):
 class RunTestPackageArgs:
   """RunTestPackage() configuration arguments structure.
 
+  code_coverage: If set, the test package will be run via 'runtests', and the
+                 output will be saved to /tmp folder on the device.
   system_logging: If set, connects a system log reader to the target.
   test_realm_label: Specifies the realm name that run-test-component should use.
       This must be specified if a filter file is to be set, or a results summary
@@ -160,6 +162,7 @@ class RunTestPackageArgs:
   """
 
   def __init__(self):
+    self.code_coverage = False
     self.system_logging = False
     self.test_realm_label = None
     self.use_run_test_component = False
@@ -167,6 +170,7 @@ class RunTestPackageArgs:
   @staticmethod
   def FromCommonArgs(args):
     run_test_package_args = RunTestPackageArgs()
+    run_test_package_args.code_coverage = args.code_coverage
     run_test_package_args.system_logging = args.include_system_logs
     return run_test_package_args
 
@@ -217,13 +221,24 @@ def RunTestPackage(output_dir, target, package_paths, package_name,
         log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
 
       logging.info('Running application.')
-      if args.use_run_test_component:
+
+      # TODO(crbug.com/1156768): Deprecate runtests.
+      if args.code_coverage:
+        # runtests requires specifying an output directory and a double dash
+        # before the argument list.
+        command = ['runtests', '-o', '/tmp', _GetComponentUri(package_name)]
+        if args.test_realm_label:
+          command += ['--realm-label', args.test_realm_label]
+        command += ['--']
+      elif args.use_run_test_component:
         command = ['run-test-component']
         if args.test_realm_label:
           command += ['--realm-label=%s' % args.test_realm_label]
+        command.append(_GetComponentUri(package_name))
       else:
-        command = ['run']
-      command += [_GetComponentUri(package_name)] + package_args
+        command = ['run', _GetComponentUri(package_name)]
+
+      command.extend(package_args)
 
       process = target.RunCommandPiped(command,
                                        stdin=open(os.devnull, 'r'),

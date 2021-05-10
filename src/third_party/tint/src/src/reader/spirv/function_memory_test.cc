@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "gmock/gmock.h"
+#include "src/demangler.h"
 #include "src/reader/spirv/function.h"
 #include "src/reader/spirv/parser_impl.h"
 #include "src/reader/spirv/parser_impl_test_helper.h"
@@ -30,7 +31,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 
 TEST_F(SpvParserTest, EmitStatement_StoreBoolConst) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeBool
@@ -48,24 +49,24 @@ TEST_F(SpvParserTest, EmitStatement_StoreBoolConst) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{true}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{true}
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{false}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{false}
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{false}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{false}
 })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_StoreUintConst) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
@@ -80,20 +81,20 @@ TEST_F(SpvParserTest, EmitStatement_StoreUintConst) {
      OpReturn
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{42}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{42}
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{0}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{0}
 })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_StoreIntConst) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 1
@@ -108,20 +109,20 @@ TEST_F(SpvParserTest, EmitStatement_StoreIntConst) {
      OpReturn
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{42}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{42}
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{0}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{0}
 })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_StoreFloatConst) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeFloat 32
@@ -136,20 +137,20 @@ TEST_F(SpvParserTest, EmitStatement_StoreFloatConst) {
      OpReturn
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{42.000000}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{42.000000}
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{0.000000}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{0.000000}
 })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_LoadBool) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeBool
@@ -165,21 +166,21 @@ TEST_F(SpvParserTest, EmitStatement_LoadBool) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_2
     none
     __bool
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_LoadScalar) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
@@ -194,15 +195,16 @@ TEST_F(SpvParserTest, EmitStatement_LoadScalar) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_2
     none
     __u32
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   }
 }
@@ -212,14 +214,14 @@ VariableDeclStatement{
     none
     __u32
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   }
 })"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_UseLoadedScalarTwice) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
@@ -235,31 +237,32 @@ TEST_F(SpvParserTest, EmitStatement_UseLoadedScalarTwice) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_2
     none
     __u32
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   }
 }
 Assignment{
-  Identifier{x_1}
-  Identifier{x_2}
+  Identifier[not set]{x_1}
+  Identifier[not set]{x_2}
 }
 Assignment{
-  Identifier{x_1}
-  Identifier{x_2}
+  Identifier[not set]{x_1}
+  Identifier[not set]{x_2}
 }
 )"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_StoreToModuleScopeVar) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %ty = OpTypeInt 32 0
@@ -272,11 +275,11 @@ TEST_F(SpvParserTest, EmitStatement_StoreToModuleScopeVar) {
      OpReturn
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{42}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{42}
 })"));
 }
 
@@ -300,7 +303,7 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_NoOperands) {
 }
 
 TEST_F(SpvParserTest, EmitStatement_AccessChain_BaseIsNotPointer) {
-  auto* p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %10 = OpTypeInt 32 0
@@ -336,18 +339,18 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_VectorSwizzle) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  MemberAccessor{
-    Identifier{myvar}
-    Identifier{z}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{z}
   }
-  ScalarConstructor{42}
-})")) << ToString(fe.ast_body());
+  ScalarConstructor[not set]{42}
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest, EmitStatement_AccessChain_VectorConstOutOfBounds) {
@@ -369,10 +372,10 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_VectorConstOutOfBounds) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_FALSE(fe.EmitBody());
   EXPECT_THAT(p->error(), Eq("Access chain %2 index %42 value 42 is out of "
                              "bounds for vector of 4 elements"));
@@ -399,17 +402,17 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_VectorNonConstIndex) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  ArrayAccessor{
-    Identifier{myvar}
-    Identifier{x_11}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  ArrayAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{x_11}
   }
-  ScalarConstructor{42}
+  ScalarConstructor[not set]{42}
 })"));
 }
 
@@ -436,22 +439,22 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Matrix) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  ArrayAccessor{
-    Identifier{myvar}
-    ScalarConstructor{2}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  ArrayAccessor[not set]{
+    Identifier[not set]{myvar}
+    ScalarConstructor[not set]{2}
   }
-  TypeConstructor{
+  TypeConstructor[not set]{
     __vec_4__f32
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
   }
 })"));
 }
@@ -479,22 +482,22 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Array) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  ArrayAccessor{
-    Identifier{myvar}
-    ScalarConstructor{2}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  ArrayAccessor[not set]{
+    Identifier[not set]{myvar}
+    ScalarConstructor[not set]{2}
   }
-  TypeConstructor{
+  TypeConstructor[not set]{
     __vec_4__f32
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
-    ScalarConstructor{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
+    ScalarConstructor[not set]{42.000000}
   }
 })"));
 }
@@ -521,17 +524,17 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Struct) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  MemberAccessor{
-    Identifier{myvar}
-    Identifier{age}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{age}
   }
-  ScalarConstructor{42.000000}
+  ScalarConstructor[not set]{42.000000}
 })"));
 }
 
@@ -569,25 +572,25 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Struct_DifferOnlyMemberName) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  MemberAccessor{
-    Identifier{myvar}
-    Identifier{age}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{age}
   }
-  ScalarConstructor{42.000000}
+  ScalarConstructor[not set]{42.000000}
 }
 Assignment{
-  MemberAccessor{
-    Identifier{myvar2}
-    Identifier{ancientness}
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar2}
+    Identifier[not set]{ancientness}
   }
-  ScalarConstructor{420.000000}
-})")) << ToString(fe.ast_body());
+  ScalarConstructor[not set]{420.000000}
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest, EmitStatement_AccessChain_StructNonConstIndex) {
@@ -615,10 +618,10 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_StructNonConstIndex) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_FALSE(fe.EmitBody());
   EXPECT_THAT(p->error(), Eq("Access chain %2 index %10 is a non-constant "
                              "index into a structure %55"));
@@ -646,10 +649,10 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_StructConstOutOfBounds) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_FALSE(fe.EmitBody());
   EXPECT_THAT(p->error(), Eq("Access chain %2 index value 99 is out of bounds "
                              "for structure %55 having 2 members"));
@@ -679,20 +682,20 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Struct_RuntimeArray) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  ArrayAccessor{
-    MemberAccessor{
-      Identifier{myvar}
-      Identifier{age}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  ArrayAccessor[not set]{
+    MemberAccessor[not set]{
+      Identifier[not set]{myvar}
+      Identifier[not set]{age}
     }
-    ScalarConstructor{2}
+    ScalarConstructor[not set]{2}
   }
-  ScalarConstructor{42.000000}
+  ScalarConstructor[not set]{42.000000}
 })"));
 }
 
@@ -719,20 +722,20 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_Compound_Matrix_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody());
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  MemberAccessor{
-    ArrayAccessor{
-      Identifier{myvar}
-      ScalarConstructor{2}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    ArrayAccessor[not set]{
+      Identifier[not set]{myvar}
+      ScalarConstructor[not set]{2}
     }
-    Identifier{w}
+    Identifier[not set]{w}
   }
-  ScalarConstructor{42.000000}
+  ScalarConstructor[not set]{42.000000}
 })"));
 }
 
@@ -754,10 +757,10 @@ TEST_F(SpvParserTest, EmitStatement_AccessChain_InvalidPointeeType) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_FALSE(fe.EmitBody());
   EXPECT_THAT(p->error(),
               HasSubstr("Access chain with unknown or invalid pointee type "
@@ -794,10 +797,10 @@ TEST_F(SpvParserTest, RemapStorageBuffer_TypesAndVarDeclarations) {
   // of the structure type, arrays of the structure, pointers to them, and
   // OpVariable of these.
   const auto assembly = OldStorageBufferPreamble();
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  const auto module_str = p->module().to_str();
+  const auto module_str = p->program().to_str();
   EXPECT_THAT(module_str, HasSubstr(R"(
   RTArr -> __array__u32_stride_4
   S Struct{
@@ -807,7 +810,7 @@ TEST_F(SpvParserTest, RemapStorageBuffer_TypesAndVarDeclarations) {
   }
   Variable{
     myvar
-    storage_buffer
+    storage
     __access_control_read_write__struct_S
   })"));
 }
@@ -828,27 +831,70 @@ TEST_F(SpvParserTest, RemapStorageBuffer_ThroughAccessChain_NonCascaded) {
   OpReturn
   OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  MemberAccessor{
-    Identifier{myvar}
-    Identifier{field0}
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(got, HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{field0}
   }
-  ScalarConstructor{0}
+  ScalarConstructor[not set]{0}
 }
 Assignment{
-  ArrayAccessor{
-    MemberAccessor{
-      Identifier{myvar}
-      Identifier{field1}
+  ArrayAccessor[not set]{
+    MemberAccessor[not set]{
+      Identifier[not set]{myvar}
+      Identifier[not set]{field1}
     }
-    ScalarConstructor{1}
+    ScalarConstructor[not set]{1}
   }
-  ScalarConstructor{0}
-})")) << ToString(fe.ast_body())
+  ScalarConstructor[not set]{0}
+})"));
+}
+
+TEST_F(SpvParserTest,
+       RemapStorageBuffer_ThroughAccessChain_NonCascaded_InBoundsAccessChain) {
+  // Like the previous test, but using OpInBoundsAccessChain.
+  const auto assembly = OldStorageBufferPreamble() + R"(
+  %100 = OpFunction %void None %voidfn
+  %entry = OpLabel
+
+  ; the scalar element
+  %1 = OpInBoundsAccessChain %ptr_uint %myvar %uint_0
+  OpStore %1 %uint_0
+
+  ; element in the runtime array
+  %2 = OpInBoundsAccessChain %ptr_uint %myvar %uint_1 %uint_1
+  OpStore %2 %uint_0
+
+  OpReturn
+  OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(got, HasSubstr(R"(Assignment{
+  MemberAccessor[not set]{
+    Identifier[not set]{myvar}
+    Identifier[not set]{field0}
+  }
+  ScalarConstructor[not set]{0}
+}
+Assignment{
+  ArrayAccessor[not set]{
+    MemberAccessor[not set]{
+      Identifier[not set]{myvar}
+      Identifier[not set]{field1}
+    }
+    ScalarConstructor[not set]{1}
+  }
+  ScalarConstructor[not set]{0}
+})")) << got
       << p->error();
 }
 
@@ -867,20 +913,20 @@ TEST_F(SpvParserTest, RemapStorageBuffer_ThroughAccessChain_Cascaded) {
   OpReturn
   OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(Assignment{
-  ArrayAccessor{
-    MemberAccessor{
-      Identifier{myvar}
-      Identifier{field1}
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(Assignment{
+  ArrayAccessor[not set]{
+    MemberAccessor[not set]{
+      Identifier[not set]{myvar}
+      Identifier[not set]{field1}
     }
-    ScalarConstructor{1}
+    ScalarConstructor[not set]{1}
   }
-  ScalarConstructor{0}
-})")) << ToString(fe.ast_body())
+  ScalarConstructor[not set]{0}
+})")) << ToString(p->builder(), fe.ast_body())
       << p->error();
 }
 
@@ -900,30 +946,31 @@ TEST_F(SpvParserTest, RemapStorageBuffer_ThroughCopyObject_WithoutHoisting) {
   OpReturn
   OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_2
     none
-    __ptr_storage_buffer__u32
+    __ptr_storage__u32
     {
-      ArrayAccessor{
-        MemberAccessor{
-          Identifier{myvar}
-          Identifier{field1}
+      ArrayAccessor[not set]{
+        MemberAccessor[not set]{
+          Identifier[not set]{myvar}
+          Identifier[not set]{field1}
         }
-        ScalarConstructor{1}
+        ScalarConstructor[not set]{1}
       }
     }
   }
 }
 Assignment{
-  Identifier{x_2}
-  ScalarConstructor{0}
-})")) << ToString(fe.ast_body())
+  Identifier[not set]{x_2}
+  ScalarConstructor[not set]{0}
+})")) << ToString(p->builder(), fe.ast_body())
       << p->error();
 }
 
@@ -955,30 +1002,31 @@ TEST_F(SpvParserTest, RemapStorageBuffer_ThroughCopyObject_WithHoisting) {
 
   OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              Eq(R"(VariableDeclStatement{
   Variable{
     x_2
     function
-    __ptr_storage_buffer__u32
+    __ptr_storage__u32
   }
 }
 If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
     Assignment{
-      Identifier{x_2}
-      ArrayAccessor{
-        MemberAccessor{
-          Identifier{myvar}
-          Identifier{field1}
+      Identifier[not set]{x_2}
+      ArrayAccessor[not set]{
+        MemberAccessor[not set]{
+          Identifier[not set]{myvar}
+          Identifier[not set]{field1}
         }
-        ScalarConstructor{1}
+        ScalarConstructor[not set]{1}
       }
     }
   }
@@ -989,11 +1037,11 @@ Else{
   }
 }
 Assignment{
-  Identifier{x_2}
-  ScalarConstructor{0}
+  Identifier[not set]{x_2}
+  ScalarConstructor[not set]{0}
 }
 Return{}
-)")) << ToString(fe.ast_body())
+)")) << ToString(p->builder(), fe.ast_body())
      << p->error();
 }
 
@@ -1003,6 +1051,69 @@ TEST_F(SpvParserTest, DISABLED_RemapStorageBuffer_ThroughFunctionCall) {
 }
 TEST_F(SpvParserTest, DISABLED_RemapStorageBuffer_ThroughFunctionParameter) {
   // TODO(dneto): Blocked on OpFunctionCall support.
+}
+
+std::string RuntimeArrayPreamble() {
+  return R"(
+     OpName %myvar "myvar"
+     OpMemberName %struct 0 "first"
+     OpMemberName %struct 1 "rtarr"
+
+     OpDecorate %struct Block
+     OpMemberDecorate %struct 0 Offset 0
+     OpMemberDecorate %struct 1 Offset 4
+     OpDecorate %arr ArrayStride 4
+
+     %void = OpTypeVoid
+     %voidfn = OpTypeFunction %void
+     %uint = OpTypeInt 32 0
+
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+
+     %arr = OpTypeRuntimeArray %uint
+     %struct = OpTypeStruct %uint %arr
+     %ptr_struct = OpTypePointer StorageBuffer %struct
+     %ptr_uint = OpTypePointer StorageBuffer %uint
+
+     %myvar = OpVariable %ptr_struct StorageBuffer
+  )";
+}
+
+TEST_F(SpvParserTest, ArrayLength) {
+  const auto assembly = RuntimeArrayPreamble() + R"(
+
+  %100 = OpFunction %void None %voidfn
+
+  %entry = OpLabel
+  %1 = OpArrayLength %uint %myvar 1
+  OpReturn
+  OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly << p->error();
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  const auto body_str = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(body_str, HasSubstr(R"(VariableDeclStatement{
+  VariableConst{
+    x_1
+    none
+    __u32
+    {
+      Call[not set]{
+        Identifier[not set]{arrayLength}
+        (
+          MemberAccessor[not set]{
+            Identifier[not set]{myvar}
+            Identifier[not set]{rtarr}
+          }
+        )
+      }
+    }
+  }
+}
+)")) << body_str;
 }
 
 }  // namespace

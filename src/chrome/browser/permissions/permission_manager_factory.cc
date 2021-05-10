@@ -5,12 +5,14 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_read_write_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_sanitized_write_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/display_capture/display_capture_permission_context.h"
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 #include "chrome/browser/idle/idle_detection_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/media/webrtc/camera_pan_tilt_zoom_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/payments/payment_handler_permission_context.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -33,15 +34,12 @@
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/contexts/font_access_permission_context.h"
+#include "components/permissions/contexts/payment_handler_permission_context.h"
 #include "components/permissions/contexts/webxr_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/flash_permission_context.h"
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #endif
 
@@ -77,7 +75,7 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
           std::make_unique<GeolocationPermissionContextDelegateAndroid>(
               profile));
 #endif
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
   permission_contexts[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =
       std::make_unique<ProtectedMediaIdentifierPermissionContext>(profile);
 #endif
@@ -91,10 +89,6 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
           profile, ContentSettingsType::MEDIASTREAM_CAMERA);
   permission_contexts[ContentSettingsType::BACKGROUND_SYNC] =
       std::make_unique<BackgroundSyncPermissionContext>(profile);
-#if BUILDFLAG(ENABLE_PLUGINS)
-  permission_contexts[ContentSettingsType::PLUGINS] =
-      std::make_unique<FlashPermissionContext>(profile);
-#endif
   permission_contexts[ContentSettingsType::SENSORS] =
       std::make_unique<SensorPermissionContext>(profile);
   permission_contexts[ContentSettingsType::ACCESSIBILITY_EVENTS] =
@@ -138,6 +132,8 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<WindowPlacementPermissionContext>(profile);
   permission_contexts[ContentSettingsType::FONT_ACCESS] =
       std::make_unique<FontAccessPermissionContext>(profile);
+  permission_contexts[ContentSettingsType::DISPLAY_CAPTURE] =
+      std::make_unique<DisplayCapturePermissionContext>(profile);
   return permission_contexts;
 }
 }  // namespace

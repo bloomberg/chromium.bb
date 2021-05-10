@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
+#include "quic/tools/quic_simple_server_session.h"
 
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_stream.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/tools/quic_simple_server_stream.h"
 
 namespace quic {
 
@@ -35,7 +35,7 @@ QuicSimpleServerSession::QuicSimpleServerSession(
       highest_promised_stream_id_(
           QuicUtils::GetInvalidStreamId(connection->transport_version())),
       quic_simple_server_backend_(quic_simple_server_backend) {
-  DCHECK(quic_simple_server_backend_);
+  QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
 QuicSimpleServerSession::~QuicSimpleServerSession() {
@@ -65,7 +65,7 @@ void QuicSimpleServerSession::PromisePushResources(
     const std::string& request_url,
     const std::list<QuicBackendResponse::ServerPushInfo>& resources,
     QuicStreamId original_stream_id,
-    const spdy::SpdyStreamPrecedence& original_precedence,
+    const spdy::SpdyStreamPrecedence& /* original_precedence */,
     const spdy::Http2HeaderBlock& original_request_headers) {
   if (!server_push_enabled()) {
     return;
@@ -85,11 +85,9 @@ void QuicSimpleServerSession::PromisePushResources(
     highest_promised_stream_id_ = new_highest_promised_stream_id;
     SendPushPromise(original_stream_id, highest_promised_stream_id_,
                     headers.Clone());
-    promised_streams_.push_back(PromisedStreamInfo(
-        std::move(headers), highest_promised_stream_id_,
-        use_http2_priority_write_scheduler()
-            ? original_precedence
-            : spdy::SpdyStreamPrecedence(resource.priority)));
+    promised_streams_.push_back(
+        PromisedStreamInfo(std::move(headers), highest_promised_stream_id_,
+                           spdy::SpdyStreamPrecedence(resource.priority)));
   }
 
   // Procese promised push request as many as possible.
@@ -117,7 +115,7 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(
 
 QuicSimpleServerStream*
 QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
-  DCHECK(false);
+  QUICHE_DCHECK(false);
   return nullptr;
 }
 
@@ -157,14 +155,15 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
     // Since PromisedStreamInfo are queued in sequence, the corresponding
     // index for it in promised_streams_ can be calculated.
     QuicStreamId next_stream_id = next_outgoing_unidirectional_stream_id();
-    if (VersionHasIetfQuicFrames(transport_version())) {
-      DCHECK(!QuicUtils::IsBidirectionalStreamId(frame.stream_id, version()));
+    if ((!version().HasIetfQuicFrames() ||
+         !QuicUtils::IsBidirectionalStreamId(frame.stream_id, version())) &&
+        frame.stream_id >= next_stream_id) {
+      size_t index = (frame.stream_id - next_stream_id) /
+                     QuicUtils::StreamIdDelta(transport_version());
+      if (index <= promised_streams_.size()) {
+        promised_streams_[index].is_cancelled = true;
+      }
     }
-    DCHECK_GE(frame.stream_id, next_stream_id);
-    size_t index = (frame.stream_id - next_stream_id) /
-                   QuicUtils::StreamIdDelta(transport_version());
-    DCHECK_LE(index, promised_streams_.size());
-    promised_streams_[index].is_cancelled = true;
     control_frame_manager().WriteOrBufferRstStream(frame.stream_id,
                                                    QUIC_RST_ACKNOWLEDGEMENT, 0);
     connection()->OnStreamReset(frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT);
@@ -207,8 +206,8 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
   while (!promised_streams_.empty() &&
          ShouldCreateOutgoingUnidirectionalStream()) {
     PromisedStreamInfo& promised_info = promised_streams_.front();
-    DCHECK_EQ(next_outgoing_unidirectional_stream_id(),
-              promised_info.stream_id);
+    QUICHE_DCHECK_EQ(next_outgoing_unidirectional_stream_id(),
+                     promised_info.stream_id);
 
     if (promised_info.is_cancelled) {
       // This stream has been reset by client. Skip this stream id.
@@ -220,8 +219,8 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
     QuicSimpleServerStream* promised_stream =
         static_cast<QuicSimpleServerStream*>(
             CreateOutgoingUnidirectionalStream());
-    DCHECK_NE(promised_stream, nullptr);
-    DCHECK_EQ(promised_info.stream_id, promised_stream->id());
+    QUICHE_DCHECK_NE(promised_stream, nullptr);
+    QUICHE_DCHECK_EQ(promised_info.stream_id, promised_stream->id());
     QUIC_DLOG(INFO) << "created server push stream " << promised_stream->id();
 
     promised_stream->SetPriority(promised_info.precedence);
@@ -246,7 +245,7 @@ void QuicSimpleServerSession::MaybeInitializeHttp3UnidirectionalStreams() {
   size_t previous_static_stream_count = num_static_streams();
   QuicSpdySession::MaybeInitializeHttp3UnidirectionalStreams();
   size_t current_static_stream_count = num_static_streams();
-  DCHECK_GE(current_static_stream_count, previous_static_stream_count);
+  QUICHE_DCHECK_GE(current_static_stream_count, previous_static_stream_count);
   highest_promised_stream_id_ +=
       QuicUtils::StreamIdDelta(transport_version()) *
       (current_static_stream_count - previous_static_stream_count);

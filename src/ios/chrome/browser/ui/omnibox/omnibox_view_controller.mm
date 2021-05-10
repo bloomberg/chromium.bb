@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -20,7 +19,6 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
@@ -498,12 +496,22 @@ const CGFloat kClearButtonSize = 28.0f;
 
   // Cancel original menu opening.
   UIMenuController* menuController = [UIMenuController sharedMenuController];
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
   [menuController setMenuVisible:NO animated:NO];
 
   // Reset where it should open below text field and reopen it.
   menuController.arrowDirection = UIMenuControllerArrowUp;
+
   [menuController setTargetRect:self.textField.frame inView:self.textField];
   [menuController setMenuVisible:YES animated:YES];
+#else
+  [menuController hideMenu];
+
+  // Reset where it should open below text field and reopen it.
+  menuController.arrowDirection = UIMenuControllerArrowUp;
+
+  [menuController showMenuFromView:self.textField rect:self.textField.frame];
+#endif
 
   self.showingEditMenu = NO;
 }
@@ -541,15 +549,11 @@ const CGFloat kClearButtonSize = 28.0f;
   SetA11yLabelAndUiAutomationName(clearButton, IDS_IOS_ACCNAME_CLEAR_TEXT,
                                   @"Clear Text");
 
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       clearButton.pointerInteractionEnabled = YES;
       clearButton.pointerStyleProvider =
           CreateLiftEffectCirclePointerStyleProvider();
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   // Observe text changes to show the clear button when there is text and hide
   // it when the textfield is empty.
@@ -641,10 +645,10 @@ const CGFloat kClearButtonSize = 28.0f;
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
       base::BindOnce(^(base::Optional<GURL> optionalURL) {
-        NSString* url;
-        if (optionalURL) {
-          url = base::SysUTF8ToNSString(optionalURL.value().spec());
+        if (!optionalURL) {
+          return;
         }
+        NSString* url = base::SysUTF8ToNSString(optionalURL.value().spec());
         dispatch_async(dispatch_get_main_queue(), ^{
           [self.dispatcher loadQuery:url immediately:YES];
           [self.dispatcher cancelOmniboxEdit];
@@ -660,10 +664,10 @@ const CGFloat kClearButtonSize = 28.0f;
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
       base::BindOnce(^(base::Optional<base::string16> optionalText) {
-        NSString* query;
-        if (optionalText) {
-          query = base::SysUTF16ToNSString(optionalText.value());
+        if (!optionalText) {
+          return;
         }
+        NSString* query = base::SysUTF16ToNSString(optionalText.value());
         dispatch_async(dispatch_get_main_queue(), ^{
           [self.dispatcher loadQuery:query immediately:YES];
           [self.dispatcher cancelOmniboxEdit];

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/insets.h"
@@ -106,7 +107,7 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
 
   // Returns whether the specified child view can be visible. To be able to be
   // visible, |child| must be a child of the host view, and must have been
-  // visible when it was added or most recently had GetVisible(true) called on
+  // visible when it was added or most recently had SetVisible(true) called on
   // it by non-layout code.
   bool CanBeVisible(const View* child) const;
 
@@ -215,6 +216,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // when it changes, children are always laid out regardless of visibility or
   // whether their bounds have changed.
   SizeBounds cached_available_size_;
+
+#if (DCHECK_IS_ON())
+  // Used to prevent GetProposedLayout() from being re-entrant.
+  mutable bool calculating_layout_ = false;
+#endif
 
   // Do some really simple caching because layout generation can cost as much
   // as 1ms or more for complex views.

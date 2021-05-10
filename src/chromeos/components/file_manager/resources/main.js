@@ -1,8 +1,22 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @const {boolean}
+ */
+window.isSWA = true;
+
+import './crt0.js';
+
+/**
+ * Load modules.
+ */
 import {BrowserProxy} from './browser_proxy.js'
+import {ScriptLoader} from './script_loader.js'
+import {VolumeManagerImpl} from '../../../../../ui/file_manager/file_manager/background/js/volume_manager_impl.m.js';
+import '../../../../../ui/file_manager/file_manager/background/js/metrics_start.m.js';
+import {background} from '../../../../../ui/file_manager/file_manager/background/js/background.m.js';
 
 /**
  * Represents file manager application. Starting point for the application
@@ -10,55 +24,45 @@ import {BrowserProxy} from './browser_proxy.js'
  */
 class FileManagerApp {
   constructor() {
-    console.info('File manager app created ...');
+    /**
+     * Creates a Mojo pipe to the C++ SWA container.
+     * @private @const {!BrowserProxy}
+     */
+    this.browserProxy_ = new BrowserProxy();
+  }
+
+  /** @return {!BrowserProxy} */
+  get browserProxy() {
+    return this.browserProxy_;
   }
 
   /**
-   * Lazily loads File App legacy code.
+   * Start-up: load the page scripts in order: fakes first (to provide chrome.*
+   * API that the files app foreground scripts expect for initial render), then
+   * the files app foreground scripts. Note main_scripts.js should have 'defer'
+   * true per crbug.com/496525.
    */
-  loadLegacyCode() {
-    const legacyLoader = document.createElement('script');
-    legacyLoader.src = 'legacy_main_scripts.js';
-    document.body.appendChild(legacyLoader);
-  }
+  async run() {
+    await Promise.all([
+        new ScriptLoader('file_manager_private_fakes.js').load(),
+        new ScriptLoader('file_manager_fakes.js').load(),
+    ]);
 
-  /**
-   * Demonstrates Mojo interactions.
-   */
-  demoMojo() {
-    // Basic example of establishing communication with the backend.
-    const browserProxy = new BrowserProxy();
+    // Temporarily remove window.cr while the foreground script bundle loads.
+    const origCr = window.cr;
+    delete window.cr;
+    // Avoid double loading the LoadTimeData strings.
+    window.loadTimeData.data_ = null;
 
-    // There must be only one listener returning values.
-    browserProxy.callbackRouter.getBar.addListener((foo) => {
-      console.log('GetBar(' + foo + ')');
-      return Promise.resolve({bar: 'baz'});
-    });
-
-    // Listen-only callbacks can be multiple.
-    browserProxy.callbackRouter.onSomethingHappened.addListener(
-        (something, other) => {
-          console.log('OnSomethingHappened(' + something + ', ' + other + ')');
-        });
-    browserProxy.callbackRouter.onSomethingHappened.addListener(
-        (something, other) => {
-          console.log('eh? ' + something + '. what? ' + other);
-        });
-
-    // Show the interaction via Mojo.
-    window.setTimeout(() => {
-      browserProxy.handler.setFoo('foo-value');
-      browserProxy.handler.doABarrelRoll();
-    }, 1000);
-  }
-
-  run() {
-    this.loadLegacyCode();
-    this.demoMojo();
+    await Promise.all([
+      new ScriptLoader('foreground/js/elements_importer.js').load(),
+      new ScriptLoader('foreground/js/main_scripts.js', {defer: true}).load(),
+    ]);
+    // Restore the window.cr object.
+    Object.assign(window.cr, origCr);
+    console.debug('Files app UI loaded');
   }
 }
 
 const app = new FileManagerApp();
-document.addEventListener('DOMContentLoaded', () => {
-  app.run();
-});
+app.run();

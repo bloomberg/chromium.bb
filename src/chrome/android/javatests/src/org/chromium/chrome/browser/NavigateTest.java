@@ -54,6 +54,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 import java.net.URL;
@@ -280,7 +281,7 @@ public class NavigateTest {
     // TODO(https://crbug.com/928669) Remove switch when UA-CH-* launched.
     public void testRequestDesktopSiteClientHints() throws Exception {
         String url1 = mTestServer.getURL(
-                "/set-header?Accept-CH: ua-arch,ua-platform,ua-model&Accept-CH-Lifetime: 86400");
+                "/set-header?Accept-CH: sec-ch-ua-arch,sec-ch-ua-platform,sec-ch-ua-model&Accept-CH-Lifetime: 86400");
         String url2 = mTestServer.getURL(
                 "/echoheader?sec-ch-ua-arch&sec-ch-ua-mobile&sec-ch-ua-model&sec-ch-ua-platform");
 
@@ -347,10 +348,10 @@ public class NavigateTest {
 
         TabObserver onPageLoadStartedObserver = new EmptyTabObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab, String newUrl) {
+            public void onPageLoadStarted(Tab tab, GURL newUrl) {
                 tab.removeObserver(this);
                 Assert.assertEquals(url1, ChromeTabUtils.getUrlStringOnUiThread(tab));
-                Assert.assertEquals(url2, newUrl);
+                Assert.assertEquals(url2, newUrl.getSpec());
             }
         };
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -435,7 +436,8 @@ public class NavigateTest {
                                                .getWebContents()
                                                .getNavigationController()
                                                .getEntryAtIndex(0)
-                                               .getUrl();
+                                               .getUrl()
+                                               .getSpec();
         Assert.assertEquals(NEW_TAB_PAGE, previousNavigationUrl);
     }
 

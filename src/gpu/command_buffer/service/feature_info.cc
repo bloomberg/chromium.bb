@@ -196,7 +196,7 @@ FeatureInfo::FeatureInfo(
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
 
-#if BUILDFLAG(IS_ASH) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
@@ -204,7 +204,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::P010);
@@ -946,11 +946,11 @@ void FeatureInfo::InitializeFeatures() {
         enable_texture_storage = false;
         break;
       case CONTEXT_TYPE_OPENGLES3:
+      case CONTEXT_TYPE_OPENGLES31_FOR_TESTING:
         enable_texture_format_bgra8888 = false;
         break;
       case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
-      case CONTEXT_TYPE_WEBGL2_COMPUTE:
       case CONTEXT_TYPE_WEBGPU:
         break;
     }
@@ -2085,8 +2085,8 @@ bool FeatureInfo::IsWebGL2OrES3OrHigherContext() const {
   return IsWebGL2OrES3OrHigherContextType(context_type_);
 }
 
-bool FeatureInfo::IsWebGL2ComputeContext() const {
-  return IsWebGL2ComputeContextType(context_type_);
+bool FeatureInfo::IsES31ForTestingContext() const {
+  return IsES31ForTestingContextType(context_type_);
 }
 
 void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {

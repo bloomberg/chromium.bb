@@ -5,6 +5,7 @@
 #include "components/arc/test/fake_arc_bridge_host.h"
 
 #include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "components/arc/mojom/adbd.mojom.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/mojom/appfuse.mojom.h"
@@ -67,6 +68,9 @@ void FakeArcBridgeHost::OnAccessibilityHelperInstanceReady(
     mojo::PendingRemote<mojom::AccessibilityHelperInstance>
         accessibility_helper_remote) {}
 
+void FakeArcBridgeHost::OnAdbdMonitorInstanceReady(
+    mojo::PendingRemote<mojom::AdbdMonitorInstance> adbd_monitor_remote) {}
+
 void FakeArcBridgeHost::OnAppInstanceReady(
     mojo::PendingRemote<mojom::AppInstance> app_ptr) {}
 
@@ -122,6 +126,9 @@ void FakeArcBridgeHost::OnEnterpriseReportingInstanceReady(
 
 void FakeArcBridgeHost::OnFileSystemInstanceReady(
     mojo::PendingRemote<mojom::FileSystemInstance> file_system_remote) {}
+
+void FakeArcBridgeHost::OnIioSensorInstanceReady(
+    mojo::PendingRemote<mojom::IioSensorInstance> iio_sensor_remote) {}
 
 void FakeArcBridgeHost::OnImeInstanceReady(
     mojo::PendingRemote<mojom::ImeInstance> ime_remote) {}

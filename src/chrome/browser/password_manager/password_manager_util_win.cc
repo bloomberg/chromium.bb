@@ -18,6 +18,7 @@
 #undef SECURITY_WIN32
 
 #include <memory>
+#include <utility>
 
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 
@@ -25,6 +26,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/hang_watcher.h"
@@ -334,8 +336,8 @@ void GetOsPasswordStatus() {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
-      base::BindOnce(&ReplyOsPasswordStatus, base::Passed(&prefs),
-                     base::Passed(&status)));
+      base::BindOnce(&ReplyOsPasswordStatus, std::move(prefs),
+                     std::move(status)));
 }
 
 }  // namespace
@@ -382,8 +384,8 @@ bool AuthenticateUser(gfx::NativeWindow window,
   CREDUI_INFO cui;
   cui.cbSize = sizeof(cui);
   cui.hwndParent = window->GetHost()->GetAcceleratedWidget();
-  cui.pszMessageText = password_prompt.c_str();
-  cui.pszCaptionText = product_name.c_str();
+  cui.pszMessageText = base::as_wcstr(password_prompt);
+  cui.pszCaptionText = base::as_wcstr(product_name);
   cui.hbmBanner = nullptr;
 
   // Disable hang watching until the end of the function since the user can take

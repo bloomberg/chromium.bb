@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -14,7 +15,7 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/value_store/settings_namespace.h"
 
 namespace extensions {
 
@@ -288,7 +289,9 @@ base::Optional<syncer::ModelError> SyncableSettingsStorage::ProcessSyncChanges(
 
     syncer::SyncError error;
 
-    switch (sync_change->change_type()) {
+    DCHECK(sync_change->change_type().has_value());
+
+    switch (*sync_change->change_type()) {
       case syncer::SyncChange::ACTION_ADD:
         if (!current_value.get()) {
           error = OnSyncAdd(key, std::move(change_value), &changes);
@@ -323,9 +326,6 @@ base::Optional<syncer::ModelError> SyncableSettingsStorage::ProcessSyncChanges(
               extension_id_ << "/" << key;
         }
         break;
-
-      default:
-        NOTREACHED();
     }
 
     if (error.IsSet()) {

@@ -18,8 +18,8 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/trusted_vault_client.h"
-#include "components/sync/engine/mock_sync_engine.h"
-#include "components/sync/nigori/nigori.h"
+#include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/test/engine/mock_sync_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,25 +53,6 @@ CoreAccountInfo MakeAccountInfoWithGaia(const std::string& gaia) {
   result.gaia = gaia;
   return result;
 }
-
-class MockCryptoSyncPrefs : public CryptoSyncPrefs {
- public:
-  MockCryptoSyncPrefs() = default;
-  ~MockCryptoSyncPrefs() override = default;
-  MOCK_METHOD(std::string, GetEncryptionBootstrapToken, (), (const override));
-  MOCK_METHOD(void,
-              SetEncryptionBootstrapToken,
-              (const std::string&),
-              (override));
-  MOCK_METHOD(std::string,
-              GetKeystoreEncryptionBootstrapToken,
-              (),
-              (const override));
-  MOCK_METHOD(void,
-              SetKeystoreEncryptionBootstrapToken,
-              (const std::string&),
-              (override));
-};
 
 // Object representing a server that contains the authoritative trusted vault
 // keys, and TestTrustedVaultClient reads from.
@@ -296,7 +277,6 @@ class SyncServiceCryptoTest : public testing::Test {
         crypto_(notify_observers_cb_.Get(),
                 /*notify_required_user_action_changed=*/base::DoNothing(),
                 reconfigure_cb_.Get(),
-                &prefs_,
                 &trusted_vault_client_) {
     trusted_vault_server_.StoreKeysOnServer(kSyncingAccount.gaia,
                                             kInitialTrustedVaultKeys);
@@ -321,7 +301,6 @@ class SyncServiceCryptoTest : public testing::Test {
   testing::NiceMock<
       base::MockCallback<base::RepeatingCallback<void(ConfigureReason)>>>
       reconfigure_cb_;
-  testing::NiceMock<MockCryptoSyncPrefs> prefs_;
   TestTrustedVaultServer trusted_vault_server_;
   TestTrustedVaultClient trusted_vault_client_;
   testing::NiceMock<MockSyncEngine> engine_;
@@ -386,8 +365,8 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   VerifyAndClearExpectations();
 
   // Entering the wrong passphrase should be rejected.
-  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
-  EXPECT_CALL(engine_, SetDecryptionPassphrase(_)).Times(0);
+  EXPECT_CALL(reconfigure_cb_, Run).Times(0);
+  EXPECT_CALL(engine_, SetDecryptionPassphrase).Times(0);
   EXPECT_FALSE(crypto_.SetDecryptionPassphrase("wrongpassphrase"));
   EXPECT_TRUE(crypto_.IsPassphraseRequired());
 
@@ -408,7 +387,7 @@ TEST_F(SyncServiceCryptoTest,
   // engine initialization.
   MimicKeyRetrievalByUser();
 
-  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
+  EXPECT_CALL(reconfigure_cb_, Run).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   // OnTrustedVaultKeyRequired() called during initialization of the sync
@@ -452,7 +431,7 @@ TEST_F(SyncServiceCryptoTest,
   // engine initialization.
   MimicKeyRetrievalByUser();
 
-  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
+  EXPECT_CALL(reconfigure_cb_, Run).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   // Mimic the initialization of the sync engine, without trusted vault keys
@@ -492,8 +471,8 @@ TEST_F(SyncServiceCryptoTest,
 
 TEST_F(SyncServiceCryptoTest,
        ShouldReadNoTrustedVaultKeysFromClientAfterInitialization) {
-  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
-  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _)).Times(0);
+  EXPECT_CALL(reconfigure_cb_, Run).Times(0);
+  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys).Times(0);
 
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
@@ -529,7 +508,7 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
   MimicKeyRetrievalByUser();
 
   base::OnceClosure add_keys_cb;
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault(
           [&](const std::vector<std::vector<uint8_t>>& keys,
               base::OnceClosure done_cb) { add_keys_cb = std::move(done_cb); });
@@ -601,7 +580,7 @@ TEST_F(SyncServiceCryptoTest, ShouldFollowKeyRotationDueToSecondFetch) {
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kRotatedKeys|
   // are provided.
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
                          base::OnceClosure done_cb) {
         if (keys == kRotatedKeys) {
@@ -655,7 +634,7 @@ TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
                          base::OnceClosure done_cb) {
         if (keys == kNewKeys) {
@@ -705,7 +684,7 @@ TEST_F(SyncServiceCryptoTest,
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
                          base::OnceClosure done_cb) {
         if (keys == kNewKeys) {
@@ -753,7 +732,7 @@ TEST_F(
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kLatestKeys|
   // are provided.
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
                          base::OnceClosure done_cb) {
         if (keys == kLatestKeys) {
@@ -916,7 +895,7 @@ TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponRetrieval) {
   ASSERT_FALSE(crypto_.IsTrustedVaultRecoverabilityDegraded());
 
   // Mimic a successful key retrieval.
-  ON_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _))
+  ON_CALL(engine_, AddTrustedVaultDecryptionKeys)
       .WillByDefault([&](const std::vector<std::vector<uint8_t>>& keys,
                          base::OnceClosure done_cb) {
         crypto_.OnTrustedVaultKeyAccepted();

@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_running_on_chromeos.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
@@ -16,9 +17,10 @@
 #include "chrome/browser/chromeos/plugin_vm/mock_plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
+#include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -26,18 +28,29 @@
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/mock_base_window.h"
+
+namespace {
+
+class MockAppWindowBase : public AppWindowBase {
+ public:
+  MockAppWindowBase(const ash::ShelfID& shelf_id, views::Widget* widget)
+      : AppWindowBase(shelf_id, widget) {}
+  ~MockAppWindowBase() = default;
+  MockAppWindowBase(const MockAppWindowBase&) = delete;
+  MockAppWindowBase& operator=(const MockAppWindowBase&) = delete;
+
+  MOCK_METHOD(void, Activate, (), ());
+};
+
+}  // namespace
 
 namespace plugin_vm {
 
 using EnsureDefaultSharedDirExistsCallback =
     testing::StrictMock<base::MockCallback<
         base::OnceCallback<void(const base::FilePath& dir, bool result)>>>;
-
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
 class PluginVmFilesTest : public testing::Test {
  protected:
@@ -56,7 +69,7 @@ class PluginVmFilesTest : public testing::Test {
     mount_points_ = storage::ExternalMountPoints::GetSystemInstance();
     mount_name_ = file_manager::util::GetDownloadsMountPointName(&profile_);
     mount_points_->RegisterFileSystem(
-        mount_name_, storage::kFileSystemTypeNativeLocal,
+        mount_name_, storage::kFileSystemTypeLocal,
         storage::FileSystemMountOption(), GetMyFilesFolderPath());
   }
 
@@ -85,7 +98,7 @@ class PluginVmFilesTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   FakePluginVmFeatures fake_plugin_vm_features_;
-  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release_{kLsbRelease, {}};
+  base::test::ScopedRunningOnChromeOS running_on_chromeos_;
   std::string app_id_;
   storage::ExternalMountPoints* mount_points_;
   std::string mount_name_;
@@ -133,6 +146,9 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
               })));
   ash::ShelfModel shelf_model;
   ChromeLauncherController chrome_launcher_controller(&profile_, &shelf_model);
+  chrome_launcher_controller.SetProfileForTest(&profile_);
+  chrome_launcher_controller.SetLauncherControllerHelperForTest(
+      std::make_unique<LauncherControllerHelper>(&profile_));
   chrome_launcher_controller.Init();
 
   AppLaunchedCallback app_launched_callback;
@@ -160,11 +176,12 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   std::move(launch_plugin_vm_callback).Run(/*success=*/true);
   ASSERT_FALSE(cicerone_response_callback.is_null());
 
+  ash::ShelfID shelf_id(kPluginVmShelfAppId);
   auto launcher_item_controller =
-      std::make_unique<AppWindowLauncherItemController>(
-          ash::ShelfID(kPluginVmShelfAppId));
-  ui::test::MockBaseWindow mock_window;
+      std::make_unique<AppWindowLauncherItemController>(shelf_id);
+  MockAppWindowBase mock_window(shelf_id, nullptr);
   launcher_item_controller->AddWindow(&mock_window);
+  mock_window.SetController(launcher_item_controller.get());
   shelf_model.SetShelfItemDelegate(ash::ShelfID(kPluginVmShelfAppId),
                                    std::move(launcher_item_controller));
   vm_tools::cicerone::LaunchContainerApplicationResponse response;
@@ -199,14 +216,14 @@ TEST_F(PluginVmFilesTest, LaunchAppFail) {
 
   // Path in different volume.
   mount_points_->RegisterFileSystem(
-      "other-volume", storage::kFileSystemTypeNativeLocal,
+      "other-volume", storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(), GetMyFilesFolderPath());
   storage::FileSystemURL url = mount_points_->CreateExternalFileSystemURL(
       url::Origin(), "other-volume", base::FilePath("other/volume"));
   LaunchPluginVmApp(&profile_, app_id_, {url},
                     base::BindOnce(capture_result, &actual_result));
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(LaunchPluginVmAppResult::FAILED_FILE_ON_EXTERNAL_DRIVE,
+  EXPECT_EQ(LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED,
             actual_result);
 }
 

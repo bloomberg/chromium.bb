@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js';
-import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import './shared_style.js';
 import './strings.m.js';
@@ -99,7 +99,10 @@ Polymer({
 
   /** @private */
   onClearSelectionTap_() {
-    this.dispatch(deselectItems());
+    const commandManager = CommandManager.getInstance();
+    assert(
+        commandManager.canExecute(Command.DESELECT_ALL, this.selectedItems_));
+    commandManager.handle(Command.DESELECT_ALL, this.selectedItems_);
   },
 
   /**

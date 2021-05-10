@@ -55,12 +55,14 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/back_forward_cache_utils.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
@@ -91,20 +93,15 @@ namespace blink {
 
 namespace {
 
-enum RequestOutcome { kSuccess, kFail };
+enum class RequestOutcome { kSuccess, kFail };
 
-std::unique_ptr<TracedValue> EndResourceLoadData(RequestOutcome outcome) {
-  auto value = std::make_unique<TracedValue>();
+const char* RequestOutcomeToString(RequestOutcome outcome) {
   switch (outcome) {
     case RequestOutcome::kSuccess:
-      value->SetString("outcome", "Success");
-      break;
+      return "Success";
     case RequestOutcome::kFail:
-      value->SetString("outcome", "Fail");
-      break;
+      return "Fail";
   }
-
-  return value;
 }
 
 bool IsThrottlableRequestContext(mojom::blink::RequestContextType context) {
@@ -187,6 +184,28 @@ SchedulingPolicy::Feature GetFeatureFromRequestContextType(
       return SchedulingPolicy::Feature::kOutstandingNetworkRequestXHR;
     default:
       return SchedulingPolicy::Feature::kOutstandingNetworkRequestOthers;
+  }
+}
+
+void LogCnameAliasMetrics(const CnameAliasMetricInfo& info) {
+  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.CnameAlias.Renderer.HadAliases",
+                        info.has_aliases);
+
+  if (info.has_aliases) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "SubresourceFilter.CnameAlias.Renderer.WasAdTaggedBasedOnAlias",
+        info.was_ad_tagged_based_on_alias);
+    UMA_HISTOGRAM_BOOLEAN(
+        "SubresourceFilter.CnameAlias.Renderer.WasBlockedBasedOnAlias",
+        info.was_blocked_based_on_alias);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.CnameAlias.Renderer.ListLength", info.list_length);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.CnameAlias.Renderer.InvalidCount",
+        info.invalid_count);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.CnameAlias.Renderer.RedundantCount",
+        info.redundant_count);
   }
 }
 
@@ -419,11 +438,11 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       // Only when this feature is turned on and the loading tasks keep being
       // processed and the data is queued up on the renderer, a page can stay in
       // BackForwardCache with network requests.
-      if (!base::FeatureList::IsEnabled(features::kLoadingTasksUnfreezable)) {
+      if (!IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
         feature_handle_for_scheduler_ =
             frame_or_worker_scheduler->RegisterFeature(
                 GetFeatureFromRequestContextType(request_context),
-                {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+                {SchedulingPolicy::DisableBackForwardCache()});
       }
     }
   }
@@ -439,6 +458,7 @@ void ResourceLoader::Trace(Visitor* visitor) const {
   visitor->Trace(resource_);
   visitor->Trace(response_body_loader_);
   visitor->Trace(data_pipe_completion_notifier_);
+  visitor->Trace(cancel_timer_);
   ResourceLoadSchedulerClient::Trace(visitor);
 }
 
@@ -525,8 +545,8 @@ void ResourceLoader::DidStartLoadingResponseBodyInternal(
   DCHECK(!response_body_loader_);
   ResponseBodyLoaderClient& response_body_loader_client = *this;
   response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
-      bytes_consumer, response_body_loader_client,
-      task_runner_for_body_loader_);
+      bytes_consumer, response_body_loader_client, task_runner_for_body_loader_,
+      fetcher_->GetBackForwardCacheLoaderHelper());
   resource_->ResponseBodyReceived(*response_body_loader_,
                                   task_runner_for_body_loader_);
   if (response_body_loader_->IsDrained()) {
@@ -539,6 +559,8 @@ void ResourceLoader::DidStartLoadingResponseBodyInternal(
 }
 
 void ResourceLoader::Run() {
+  // TODO(crbug.com/1169032): Manage cookies' capability control here for the
+  // Prerender2.
   StartWith(resource_->GetResourceRequest());
 }
 
@@ -787,8 +809,9 @@ bool ResourceLoader::WillFollowRedirect(
                              reporting_disposition,
                              new_request->GetRedirectInfo());
 
-    if (Context().CalculateIfAdSubresource(*new_request, resource_type,
-                                           options.initiator_info))
+    if (Context().CalculateIfAdSubresource(
+            *new_request, base::nullopt /* alias_url */, resource_type,
+            options.initiator_info))
       new_request->SetIsAdResource();
 
     if (blocked_reason) {
@@ -823,7 +846,8 @@ bool ResourceLoader::WillFollowRedirect(
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
     observer->WillSendRequest(resource_->InspectorId(), *new_request,
                               redirect_response, resource_->GetType(),
-                              options.initiator_info);
+                              options.initiator_info,
+                              initial_request.GetRenderBlockingBehavior());
   }
 
   // First-party cookie logic moved from DocumentLoader in Blink to
@@ -858,7 +882,16 @@ void ResourceLoader::DidReceiveCachedMetadata(mojo_base::BigBuffer data) {
 }
 
 blink::mojom::CodeCacheType ResourceLoader::GetCodeCacheType() const {
-  return Resource::ResourceTypeToCodeCacheType(resource_->GetType());
+  const auto& request = resource_->GetResourceRequest();
+  if (request.GetRequestDestination() ==
+      network::mojom::RequestDestination::kEmpty) {
+    // For requests initiated by the fetch function, we use code cache for
+    // WASM compiled code.
+    return mojom::blink::CodeCacheType::kWebAssembly;
+  } else {
+    // Otherwise, we use code cache for scripting.
+    return mojom::blink::CodeCacheType::kJavascript;
+  }
 }
 
 void ResourceLoader::SendCachedCodeToResource(mojo_base::BigBuffer data) {
@@ -949,6 +982,15 @@ void ResourceLoader::DidReceiveResponseInternal(
     return;
   }
 
+  // Redirect information for possible post-request checks below.
+  const base::Optional<ResourceRequest::RedirectInfo>& previous_redirect_info =
+      request.GetRedirectInfo();
+  const KURL& original_url = previous_redirect_info
+                                 ? previous_redirect_info->original_url
+                                 : request.Url();
+  const ResourceRequest::RedirectInfo redirect_info(original_url,
+                                                    request.Url());
+
   if (response.WasFetchedViaServiceWorker()) {
     // Run post-request CSP checks. This is the "Should response to request be
     // blocked by Content Security Policy?" algorithm in the CSP specification:
@@ -968,16 +1010,10 @@ void ResourceLoader::DidReceiveResponseInternal(
     // checks as a first-class concept instead of just reusing the functions for
     // pre-request checks, and consider running the checks regardless of service
     // worker interception.
-    const KURL& response_url = response.ResponseUrl();
-    const base::Optional<ResourceRequest::RedirectInfo>&
-        previous_redirect_info = request.GetRedirectInfo();
-    const KURL& original_url = previous_redirect_info
-                                   ? previous_redirect_info->original_url
-                                   : request.Url();
-    const ResourceRequest::RedirectInfo redirect_info(original_url,
-                                                      request.Url());
+    //
     // CanRequest() below only checks enforced policies: check report-only
     // here to ensure violations are sent.
+    const KURL& response_url = response.ResponseUrl();
     Context().CheckCSPForRequest(
         request_context, request_destination, response_url, options,
         ReportingDisposition::kReport, original_url,
@@ -992,6 +1028,18 @@ void ResourceLoader::DidReceiveResponseInternal(
           response_url, blocked_reason.value()));
       return;
     }
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kSendCnameAliasesToSubresourceFilterFromRenderer)) {
+    CnameAliasMetricInfo info;
+    bool should_block = ShouldBlockRequestBasedOnSubresourceFilterDnsAliasCheck(
+        response.DnsAliases(), request.Url(), original_url, resource_type,
+        initial_request, options, redirect_info, &info);
+    LogCnameAliasMetrics(info);
+
+    if (should_block)
+      return;
   }
 
   // A response should not serve partial content if it was not requested via a
@@ -1029,12 +1077,12 @@ void ResourceLoader::DidReceiveResponseInternal(
     if (response.CacheControlContainsNoCache()) {
       frame_or_worker_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoCache,
-          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+          {SchedulingPolicy::DisableBackForwardCache()});
     }
     if (response.CacheControlContainsNoStore()) {
       frame_or_worker_scheduler->RegisterStickyFeature(
           SchedulingPolicy::Feature::kSubresourceHasCacheControlNoStore,
-          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+          {SchedulingPolicy::DisableBackForwardCache()});
     }
   }
 
@@ -1098,7 +1146,7 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
                           TRACE_ID_LOCAL(resource_->InspectorId())),
-      "endData", EndResourceLoadData(RequestOutcome::kSuccess));
+      "outcome", RequestOutcomeToString(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(resource_.Get(), base::TimeTicks(),
                                ResourceFetcher::kDidFinishFirstPartInMultipart,
@@ -1142,7 +1190,7 @@ void ResourceLoader::DidFinishLoading(base::TimeTicks response_end_time,
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
                           TRACE_ID_LOCAL(resource_->InspectorId())),
-      "endData", EndResourceLoadData(RequestOutcome::kSuccess));
+      "outcome", RequestOutcomeToString(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
       resource_.Get(), response_end_time, ResourceFetcher::kDidFinishLoading,
@@ -1209,7 +1257,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
                           TRACE_ID_LOCAL(resource_->InspectorId())),
-      "endData", EndResourceLoadData(RequestOutcome::kFail));
+      "outcome", RequestOutcomeToString(RequestOutcome::kFail));
 
   // Set Now() as the response time, in case a more accurate one wasn't set in
   // DidFinishLoading or DidFail. This is important for error cases that don't
@@ -1220,11 +1268,6 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   fetcher_->HandleLoaderError(resource_.Get(),
                               response_end_time_for_error_cases_, error,
                               inflight_keepalive_bytes_);
-}
-
-void ResourceLoader::EvictFromBackForwardCache(
-    mojom::RendererEvictionReason reason) {
-  fetcher_->EvictFromBackForwardCache(reason);
 }
 
 void ResourceLoader::RequestSynchronously(const ResourceRequestHead& request) {
@@ -1505,6 +1548,75 @@ void ResourceLoader::HandleDataUrl() {
   // end.
   DidFinishLoading(base::TimeTicks::Now(), data_size, data_size, data_size,
                    false /* should_report_corb_blocking */);
+}
+
+bool ResourceLoader::ShouldBlockRequestBasedOnSubresourceFilterDnsAliasCheck(
+    const Vector<String>& dns_aliases,
+    const KURL& request_url,
+    const KURL& original_url,
+    ResourceType resource_type,
+    const ResourceRequestHead& initial_request,
+    const ResourceLoaderOptions& options,
+    const ResourceRequest::RedirectInfo redirect_info,
+    CnameAliasMetricInfo* out_metric_info) {
+  DCHECK(out_metric_info);
+
+  // Look for CNAME aliases, and if any are found, run SubresourceFilter
+  // checks on them to perform resource-blocking and ad-tagging based on the
+  // aliases: if any one of the aliases is on the denylist, then the
+  // request will be deemed on the denylist and treated accordingly (blocked
+  // and/or tagged).
+  out_metric_info->has_aliases = !dns_aliases.IsEmpty();
+  out_metric_info->list_length = dns_aliases.size();
+
+  // If there are no aliases, we have no reason to block based on them.
+  if (!out_metric_info->has_aliases)
+    return false;
+
+  // CNAME aliases were found, and so the SubresourceFilter must be
+  // consulted for each one.
+  // Create a copy of the request URL. We will swap out the host below.
+  KURL alias_url = request_url;
+
+  for (const String& alias : dns_aliases) {
+    alias_url.SetHost(alias);
+
+    // The SubresourceFilter only performs nontrivial matches for
+    // valid URLs. Skip sending this alias if it's invalid.
+    if (!alias_url.IsValid()) {
+      out_metric_info->invalid_count++;
+      continue;
+    }
+
+    // Do not perform a SubresourceFilter check on an `alias_url` that matches
+    // the requested URL (or, inclusively, the original URL in the case of
+    // redirects).
+    if (alias_url == original_url || alias_url == request_url) {
+      out_metric_info->redundant_count++;
+      continue;
+    }
+
+    base::Optional<ResourceRequestBlockedReason> blocked_reason =
+        Context().CanRequestBasedOnSubresourceFilterOnly(
+            resource_type, ResourceRequest(initial_request), alias_url, options,
+            ReportingDisposition::kReport, redirect_info);
+    if (blocked_reason) {
+      HandleError(ResourceError::CancelledDueToAccessCheckError(
+          alias_url, blocked_reason.value()));
+      out_metric_info->was_blocked_based_on_alias = true;
+      return true;
+    }
+
+    if (!resource_->GetResourceRequest().IsAdResource() &&
+        Context().CalculateIfAdSubresource(resource_->GetResourceRequest(),
+                                           alias_url, resource_type,
+                                           options.initiator_info)) {
+      resource_->SetIsAdResource();
+      out_metric_info->was_ad_tagged_based_on_alias = true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace blink

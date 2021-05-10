@@ -47,6 +47,10 @@ try_.defaults.caches.set([
     ),
 ])
 
+consoles.list_view(
+    name = "tryserver.chromium.codesearch",
+)
+
 try_.builder(
     name = "gen-android-try",
 )

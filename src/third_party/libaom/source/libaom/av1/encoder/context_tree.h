@@ -60,6 +60,16 @@ typedef struct PICK_MODE_CONTEXT {
 
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has
                          // been made.
+#if CONFIG_AV1_TEMPORAL_DENOISING
+  int64_t newmv_sse;
+  int64_t zeromv_sse;
+  int64_t zeromv_lastref_sse;
+  PREDICTION_MODE best_sse_inter_mode;
+  int_mv best_sse_mv;
+  MV_REFERENCE_FRAME best_reference_frame;
+  MV_REFERENCE_FRAME best_zeromv_reference_frame;
+  int sb_skip_denoising;
+#endif
 } PICK_MODE_CONTEXT;
 
 typedef struct PC_TREE {
@@ -99,7 +109,8 @@ PC_TREE *av1_alloc_pc_tree_node(BLOCK_SIZE bsize);
 void av1_free_pc_tree_recursive(PC_TREE *tree, int num_planes, int keep_best,
                                 int keep_none);
 
-PICK_MODE_CONTEXT *av1_alloc_pmc(const AV1_COMMON *cm, BLOCK_SIZE bsize,
+PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
+                                 BLOCK_SIZE bsize,
                                  PC_TREE_SHARED_BUFFERS *shared_bufs);
 void av1_free_pmc(PICK_MODE_CONTEXT *ctx, int num_planes);
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,

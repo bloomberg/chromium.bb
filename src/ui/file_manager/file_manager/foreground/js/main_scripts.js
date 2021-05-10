@@ -86,7 +86,9 @@
 // <include src="../../../base/js/app_util.js">
 // <include src="../../common/js/util.js">
 // <include src="../../common/js/progress_center_common.js">
+// <include src="../../common/js/storage_adapter.js">
 // <include src="../../common/js/importer_common.js">
+// <include src="../../common/js/trash.js">
 //
 // <include src="constants.js">
 // <include src="crossover_search_utils.js">
@@ -116,6 +118,7 @@
 // <include src="directory_contents.js">
 // <include src="directory_model.js">
 // <include src="directory_tree_naming_controller.js">
+// <include src="drive_dialog_controller.js">
 // <include src="drop_effect_and_label.js">
 // <include src="empty_folder_controller.js">
 // <include src="file_manager.js">
@@ -129,6 +132,7 @@
 // <include src="folder_shortcuts_data_model.js">
 // <include src="sort_menu_controller.js">
 // <include src="gear_menu_controller.js">
+// <include src="holding_space_util.js">
 // <include src="import_controller.js">
 // <include src="last_modified_controller.js">
 // <include src="launch_param.js">
@@ -146,7 +150,6 @@
 // <include src="navigation_list_model.js">
 // <include src="navigation_uma.js">
 // <include src="path_component.js">
-// <include src="progress_center_item_group.js">
 // <include src="quick_view_controller.js">
 // <include src="quick_view_model.js">
 // <include src="quick_view_uma.js">
@@ -186,7 +189,6 @@
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
 // <include src="ui/search_box.js">
-// <include src="ui/suggest_apps_dialog.js">
 // <include src="main_window_component.js">
 // <include src="../../../base/js/filtered_volume_manager.js">
 // <include src="webui_command_extender.js">

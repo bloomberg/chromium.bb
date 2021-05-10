@@ -7,14 +7,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -82,10 +82,9 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     settings_helper_.Set(kAccountsPrefDeviceLocalAccounts, accounts);
 
     // Prevent settings changes from auto-starting the timer.
-    existing_user_controller_->local_account_auto_login_id_subscription_
-        .reset();
-    existing_user_controller_->local_account_auto_login_delay_subscription_
-        .reset();
+    existing_user_controller_->local_account_auto_login_id_subscription_ = {};
+    existing_user_controller_
+        ->local_account_auto_login_delay_subscription_ = {};
   }
 
   ExistingUserController* existing_user_controller() const {

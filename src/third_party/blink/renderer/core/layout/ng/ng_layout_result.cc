@@ -95,6 +95,8 @@ NGLayoutResult::NGLayoutResult(
       rare_data->minimal_space_shortage = builder->minimal_space_shortage_;
     }
 
+    rare_data->has_violating_break = builder->has_violating_break_;
+
     if (builder->column_spanner_)
       rare_data->column_spanner = builder->column_spanner_;
 
@@ -319,6 +321,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK(EndMarginStrut() == other.EndMarginStrut());
   DCHECK_EQ(MinimalSpaceShortage(), other.MinimalSpaceShortage());
+  DCHECK_EQ(TableColumnCount(), other.TableColumnCount());
 
   DCHECK_EQ(bitfields_.has_forced_break, other.bitfields_.has_forced_break);
   DCHECK_EQ(bitfields_.is_self_collapsing, other.bitfields_.is_self_collapsing);

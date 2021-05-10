@@ -140,7 +140,6 @@ void DefaultVideoQualityAnalyzer::Start(
     rtc::ArrayView<const std::string> peer_names,
     int max_threads_count) {
   test_label_ = std::move(test_case_name);
-  peers_ = std::make_unique<NamesCollection>(peer_names);
   for (int i = 0; i < max_threads_count; i++) {
     auto thread = std::make_unique<rtc::PlatformThread>(
         &DefaultVideoQualityAnalyzer::ProcessComparisonsThread, this,
@@ -151,6 +150,7 @@ void DefaultVideoQualityAnalyzer::Start(
   }
   {
     MutexLock lock(&lock_);
+    peers_ = std::make_unique<NamesCollection>(peer_names);
     RTC_CHECK(start_time_.IsMinusInfinity());
 
     state_ = State::kActive;
@@ -166,19 +166,22 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
   // |next_frame_id| is atomic, so we needn't lock here.
   uint16_t frame_id = next_frame_id_++;
   Timestamp start_time = Timestamp::MinusInfinity();
-  size_t peer_index = peers_->index(peer_name);
+  size_t peer_index = -1;
+  size_t peers_count = -1;
   size_t stream_index;
   {
     MutexLock lock(&lock_);
-    // Create a local copy of start_time_ to access it under
-    // |comparison_lock_| without holding a |lock_|
+    // Create a local copy of |start_time_|, peer's index and total peers count
+    // to access it under |comparison_lock_| without holding a |lock_|
     start_time = start_time_;
+    peer_index = peers_->index(peer_name);
+    peers_count = peers_->size();
     stream_index = streams_.AddIfAbsent(stream_label);
   }
   {
     // Ensure stats for this stream exists.
     MutexLock lock(&comparison_lock_);
-    for (size_t i = 0; i < peers_->size(); ++i) {
+    for (size_t i = 0; i < peers_count; ++i) {
       if (i == peer_index) {
         continue;
       }
@@ -495,8 +498,41 @@ void DefaultVideoQualityAnalyzer::OnDecoderError(absl::string_view peer_name,
                     << ", code=" << error_code;
 }
 
+void DefaultVideoQualityAnalyzer::RegisterParticipantInCall(
+    absl::string_view peer_name) {
+  MutexLock lock1(&lock_);
+  MutexLock lock2(&comparison_lock_);
+  RTC_CHECK(!peers_->HasName(peer_name));
+  peers_->AddIfAbsent(peer_name);
+
+  // Ensure stats for receiving (for frames from other peers to this one)
+  // streams exists. Since in flight frames will be sent to the new peer
+  // as well. Sending stats (from this peer to others) will be added by
+  // DefaultVideoQualityAnalyzer::OnFrameCaptured.
+  for (auto& key_val : stream_to_sender_) {
+    InternalStatsKey key(key_val.first, key_val.second,
+                         peers_->index(peer_name));
+    const int64_t frames_count = captured_frames_in_flight_.size();
+    FrameCounters counters;
+    counters.captured = frames_count;
+    counters.pre_encoded = frames_count;
+    counters.encoded = frames_count;
+    stream_frame_counters_.insert({key, std::move(counters)});
+
+    stream_last_freeze_end_time_.insert({key, start_time_});
+  }
+  // Ensure, that frames states are handled correctly
+  // (e.g. dropped frames tracking).
+  for (auto& key_val : stream_states_) {
+    key_val.second.AddPeer();
+  }
+  // Register new peer for every frame in flight.
+  for (auto& key_val : captured_frames_in_flight_) {
+    key_val.second.AddPeer();
+  }
+}
+
 void DefaultVideoQualityAnalyzer::Stop() {
-  StopMeasuringCpuProcessTime();
   {
     MutexLock lock(&lock_);
     if (state_ == State::kStopped) {
@@ -504,6 +540,7 @@ void DefaultVideoQualityAnalyzer::Stop() {
     }
     state_ = State::kStopped;
   }
+  StopMeasuringCpuProcessTime();
   comparison_available_event_.Set();
   for (auto& thread : thread_pool_) {
     thread->Stop();
@@ -922,7 +959,7 @@ StatsKey DefaultVideoQualityAnalyzer::ToStatsKey(
 }
 
 std::string DefaultVideoQualityAnalyzer::StatsKeyToMetricName(
-    const StatsKey& key) {
+    const StatsKey& key) const {
   if (peers_->size() <= 2) {
     return key.stream_label;
   }

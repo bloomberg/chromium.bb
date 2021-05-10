@@ -6,16 +6,20 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/views/frame/custom_tab_browser_frame.h"
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/views/frame/browser_frame_lacros.h"
 #endif
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #endif
+#include "build/chromeos_buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -28,9 +32,12 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView(std::move(browser));
   BrowserFrame* browser_frame = nullptr;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (view->browser()->is_type_custom_tab())
     browser_frame = new CustomTabBrowserFrame(view);
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  browser_frame = new BrowserFrameLacros(view);
 #endif
   if (!browser_frame)
     browser_frame = new BrowserFrame(view);

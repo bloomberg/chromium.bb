@@ -224,7 +224,8 @@ bool IsNodeFullyGrown(NGBlockNode node,
   // constrained. If it doesn't affect the block size, it means that the node
   // cannot grow any further.
   LayoutUnit max_block_size = ComputeBlockSizeForFragment(
-      space, node.Style(), border_padding, LayoutUnit::Max(), inline_size);
+      space, node.Style(), border_padding, LayoutUnit::Max(), inline_size,
+      node.ShouldBeConsideredAsReplaced());
   DCHECK_GE(max_block_size, current_total_block_size);
   return max_block_size == current_total_block_size;
 }
@@ -594,12 +595,12 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
       DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken());
 
   LayoutUnit space_left =
-      space.FragmentainerBlockSize() - fragmentainer_block_offset;
+      FragmentainerCapacity(space) - fragmentainer_block_offset;
 
   // If we haven't used any space at all in the fragmentainer yet, we cannot
   // break before this child, or there'd be no progress. We'd risk creating an
   // infinite number of fragmentainers without putting any content into them.
-  bool refuse_break_before = space_left >= space.FragmentainerBlockSize();
+  bool refuse_break_before = space_left >= FragmentainerCapacity(space);
 
   // If the child starts past the end of the fragmentainer (probably due to a
   // block-start margin), we must break before it.
@@ -639,38 +640,20 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
         builder->SetBreakAppeal(appeal_inside);
       return true;
     }
-  } else {
-    bool need_break;
-    if (refuse_break_before) {
-      need_break = false;
-    } else if (child.IsMonolithic()) {
-      // If the monolithic piece of content (e.g. a line, or block-level
-      // replaced content) doesn't fit, we need a break.
-      need_break = fragment.BlockSize() > space_left;
-    } else {
-      // If the block-offset is past the fragmentainer boundary (or exactly at
-      // the boundary), no part of the fragment is going to fit in the current
-      // fragmentainer. Fragments may be pushed past the fragmentainer boundary
-      // by margins. We shouldn't break before a zero-size block that's exactly
-      // at a fragmentainer boundary, though.
-      need_break = space_left < LayoutUnit() ||
-                   (space_left == LayoutUnit() && fragment.BlockSize());
+  } else if (refuse_break_before || fragment.BlockSize() <= space_left) {
+    // The child either fits, or we are not allowed to break. So we can move
+    // past this breakpoint.
+    if (child.IsBlock() && builder) {
+      // We're tentatively not going to break before or inside this child, but
+      // we'll check the appeal of breaking there anyway. It may be the best
+      // breakpoint we'll ever find. (Note that we only do this for block
+      // children, since, when it comes to inline layout, we first need to lay
+      // out all the line boxes, so that we know what do to in order to honor
+      // orphans and widows, if at all possible.)
+      UpdateEarlyBreakAtBlockChild(space, To<NGBlockNode>(child), layout_result,
+                                   appeal_before, builder);
     }
-
-    if (!need_break) {
-      if (child.IsBlock() && builder) {
-        // If this doesn't happen, though, we're tentatively not going to break
-        // before or inside this child, but we'll check the appeal of breaking
-        // there anyway. It may be the best breakpoint we'll ever find. (Note
-        // that we only do this for block children, since, when it comes to
-        // inline layout, we first need to lay out all the line boxes, so that
-        // we know what do to in order to honor orphans and widows, if at all
-        // possible.)
-        UpdateEarlyBreakAtBlockChild(space, To<NGBlockNode>(child),
-                                     layout_result, appeal_before, builder);
-      }
-      return true;
-    }
+    return true;
   }
 
   // We don't want to break inside, so we should attempt to break before.
@@ -743,15 +726,9 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
       parent_space, parent_space.GetWritingDirection(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(column_size);
   space_builder.SetPercentageResolutionSize(percentage_resolution_size);
-
-  // To ensure progression, we need something larger than 0 here. The spec
-  // actually says that fragmentainers have to accept at least 1px of content.
-  // See https://www.w3.org/TR/css-break-3/#breaking-rules
-  LayoutUnit column_block_size =
-      std::max(column_size.block_size, LayoutUnit(1));
-
+  space_builder.SetStretchInlineSizeIfAuto(true);
   space_builder.SetFragmentationType(kFragmentColumn);
-  space_builder.SetFragmentainerBlockSize(column_block_size);
+  space_builder.SetFragmentainerBlockSize(column_size.block_size);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsInColumnBfc();
   if (balance_columns)
@@ -765,9 +742,32 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
     space_builder.SetDiscardingMarginStrut();
   }
 
-  space_builder.SetNeedsBaseline(parent_space.NeedsBaseline());
   space_builder.SetBaselineAlgorithmType(parent_space.BaselineAlgorithmType());
 
+  return space_builder.ToConstraintSpace();
+}
+
+NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
+    const NGBlockNode& multicol,
+    const NGConstraintSpace& space,
+    const NGFragmentGeometry& fragment_geometry) {
+  const ComputedStyle* style = &multicol.Style();
+  NGBoxFragmentBuilder multicol_container_builder(multicol, style, &space,
+                                                  style->GetWritingDirection());
+  multicol_container_builder.SetIsNewFormattingContext(true);
+  multicol_container_builder.SetInitialFragmentGeometry(fragment_geometry);
+  multicol_container_builder.SetIsBlockFragmentationContextRoot();
+
+  return multicol_container_builder;
+}
+
+NGConstraintSpace CreateConstraintSpaceForMulticol(
+    const NGBlockNode& multicol) {
+  WritingDirectionMode writing_direction_mode =
+      multicol.Style().GetWritingDirection();
+  NGConstraintSpaceBuilder space_builder(
+      writing_direction_mode.GetWritingMode(), writing_direction_mode,
+      /* is_new_fc */ true);
   return space_builder.ToConstraintSpace();
 }
 

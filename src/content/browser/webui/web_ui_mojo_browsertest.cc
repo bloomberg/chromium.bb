@@ -82,7 +82,7 @@ class TestWebUIController : public WebUIController {
   explicit TestWebUIController(WebUI* web_ui,
                                int bindings = BINDINGS_POLICY_MOJO_WEB_UI)
       : WebUIController(web_ui) {
-    const base::span<const GritResourceMap> kMojoWebUiResources =
+    const base::span<const webui::ResourcePath> kMojoWebUiResources =
         base::make_span(kWebUiMojoTestResources, kWebUiMojoTestResourcesSize);
 
     web_ui->SetBindings(bindings);
@@ -92,8 +92,7 @@ class TestWebUIController : public WebUIController {
           network::mojom::CSPDirectiveName::ScriptSrc,
           "script-src chrome://resources 'self' 'unsafe-eval';");
       data_source->DisableTrustedTypesCSP();
-      for (const GritResourceMap& resource : kMojoWebUiResources)
-        data_source->AddResourcePath(resource.name, resource.value);
+      data_source->AddResourcePaths(kMojoWebUiResources);
       data_source->AddResourcePath("", IDR_WEB_UI_MOJO_HTML);
       WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                            data_source);
@@ -171,10 +170,6 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 
   bool UseWebUIForURL(BrowserContext* browser_context,
                       const GURL& url) override {
-    return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
-  }
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) override {
     return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
 

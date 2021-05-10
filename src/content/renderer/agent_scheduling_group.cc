@@ -5,17 +5,23 @@
 #include "content/renderer/agent_scheduling_group.h"
 
 #include "base/feature_list.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
+#include "content/common/agent_scheduling_group.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "ipc/ipc_channel_mojo.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sync_channel.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 
 namespace content {
 
+using ::IPC::ChannelMojo;
 using ::IPC::Listener;
+using ::IPC::SyncChannel;
 using ::mojo::AssociatedReceiver;
 using ::mojo::AssociatedRemote;
 using ::mojo::PendingAssociatedReceiver;
@@ -25,107 +31,121 @@ using ::mojo::PendingRemote;
 using ::mojo::Receiver;
 using ::mojo::Remote;
 
-using PassKey = ::util::PassKey<AgentSchedulingGroup>;
+using PassKey = ::base::PassKey<AgentSchedulingGroup>;
 
 namespace {
+
 RenderThreadImpl& ToImpl(RenderThread& render_thread) {
   DCHECK(RenderThreadImpl::current());
   return static_cast<RenderThreadImpl&>(render_thread);
 }
 
-}  // namespace
-
-// MaybeAssociatedReceiver:
-AgentSchedulingGroup::MaybeAssociatedReceiver::MaybeAssociatedReceiver(
-    AgentSchedulingGroup& impl,
-    PendingReceiver<mojom::AgentSchedulingGroup> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : receiver_(absl::in_place_type<Receiver<mojom::AgentSchedulingGroup>>,
-                &impl,
-                std::move(receiver),
-                task_runner) {}
-
-AgentSchedulingGroup::MaybeAssociatedReceiver::MaybeAssociatedReceiver(
-    AgentSchedulingGroup& impl,
-    PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : receiver_(
-          absl::in_place_type<AssociatedReceiver<mojom::AgentSchedulingGroup>>,
-          &impl,
-          std::move(receiver),
-          task_runner) {}
-
-AgentSchedulingGroup::MaybeAssociatedReceiver::~MaybeAssociatedReceiver() =
-    default;
-
-// MaybeAssociatedRemote:
-AgentSchedulingGroup::MaybeAssociatedRemote::MaybeAssociatedRemote(
-    PendingRemote<mojom::AgentSchedulingGroupHost> host_remote,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : remote_(absl::in_place_type<Remote<mojom::AgentSchedulingGroupHost>>,
-              std::move(host_remote),
-              task_runner) {}
-
-AgentSchedulingGroup::MaybeAssociatedRemote::MaybeAssociatedRemote(
-    PendingAssociatedRemote<mojom::AgentSchedulingGroupHost> host_remote,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : remote_(absl::in_place_type<
-                  AssociatedRemote<mojom::AgentSchedulingGroupHost>>,
-              std::move(host_remote),
-              task_runner) {}
-
-AgentSchedulingGroup::MaybeAssociatedRemote::~MaybeAssociatedRemote() = default;
-
-mojom::AgentSchedulingGroupHost*
-AgentSchedulingGroup::MaybeAssociatedRemote::get() {
-  return absl::visit([](auto& r) { return r.get(); }, remote_);
+static features::MBIMode GetMBIMode() {
+  return base::FeatureList::IsEnabled(features::kMBIMode)
+             ? features::kMBIModeParam.Get()
+             : features::MBIMode::kLegacy;
 }
+
+}  // namespace
 
 // AgentSchedulingGroup:
 AgentSchedulingGroup::AgentSchedulingGroup(
     RenderThread& render_thread,
-    PendingRemote<mojom::AgentSchedulingGroupHost> host_remote,
-    PendingReceiver<mojom::AgentSchedulingGroup> receiver)
+    mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
               ->CreateAgentGroupScheduler()),
       render_thread_(render_thread),
-      receiver_(*this,
-                std::move(receiver),
-                agent_group_scheduler_->DefaultTaskRunner()),
-      host_remote_(std::move(host_remote),
-                   agent_group_scheduler_->DefaultTaskRunner()) {
+      // `receiver_` will be bound by `OnAssociatedInterfaceRequest()`.
+      receiver_(this) {
   DCHECK(agent_group_scheduler_);
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kMbiDetachAgentSchedulingGroupFromChannel));
+  DCHECK_NE(GetMBIMode(), features::MBIMode::kLegacy);
+
+  agent_group_scheduler_->BindInterfaceBroker(std::move(broker_remote));
+
+  channel_ = SyncChannel::Create(
+      /*listener=*/this, /*ipc_task_runner=*/render_thread_.GetIOTaskRunner(),
+      /*listener_task_runner=*/agent_group_scheduler_->DefaultTaskRunner(),
+      render_thread_.GetShutdownEvent());
+
+  // TODO(crbug.com/1111231): Add necessary filters.
+  // Currently, the renderer process has these filters:
+  // 1. `UnfreezableMessageFilter` - in the process of being removed,
+  // 2. `PnaclTranslationResourceHost` - NaCl is going away, and
+  // 3. `AutomationMessageFilter` - needs to be handled somehow.
+
+  channel_->Init(
+      ChannelMojo::CreateClientFactory(
+          bootstrap.PassPipe(),
+          /*ipc_task_runner=*/render_thread_.GetIOTaskRunner(),
+          /*proxy_task_runner=*/agent_group_scheduler_->DefaultTaskRunner()),
+      /*create_pipe_now=*/true);
 }
 
 AgentSchedulingGroup::AgentSchedulingGroup(
     RenderThread& render_thread,
-    PendingAssociatedRemote<mojom::AgentSchedulingGroupHost> host_remote,
-    PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver)
+    PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
               ->CreateAgentGroupScheduler()),
       render_thread_(render_thread),
-      receiver_(*this,
+      receiver_(this,
                 std::move(receiver),
-                agent_group_scheduler_->DefaultTaskRunner()),
-      host_remote_(std::move(host_remote),
-                   agent_group_scheduler_->DefaultTaskRunner()) {
+                agent_group_scheduler_->DefaultTaskRunner()) {
   DCHECK(agent_group_scheduler_);
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kMbiDetachAgentSchedulingGroupFromChannel));
+  DCHECK_EQ(GetMBIMode(), features::MBIMode::kLegacy);
+  agent_group_scheduler_->BindInterfaceBroker(std::move(broker_remote));
 }
 
 AgentSchedulingGroup::~AgentSchedulingGroup() = default;
 
-// IPC messages to be forwarded to the `RenderThread`, for now. In the future
-// they will be handled directly by the `AgentSchedulingGroup`.
+bool AgentSchedulingGroup::OnMessageReceived(const IPC::Message& message) {
+  DCHECK_NE(message.routing_id(), MSG_ROUTING_CONTROL);
+
+  auto* listener = GetListener(message.routing_id());
+  if (!listener)
+    return false;
+
+  return listener->OnMessageReceived(message);
+}
+
+void AgentSchedulingGroup::OnBadMessageReceived(const IPC::Message& message) {
+  // Not strictly required, since we don't currently do anything with bad
+  // messages in the renderer, but if we ever do then this will "just work".
+  return ToImpl(render_thread_).OnBadMessageReceived(message);
+}
+
+void AgentSchedulingGroup::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  // The ASG's channel should only be used to bootstrap the ASG mojo interface.
+  DCHECK_EQ(interface_name, mojom::AgentSchedulingGroup::Name_);
+  DCHECK(!receiver_.is_bound());
+
+  PendingAssociatedReceiver<mojom::AgentSchedulingGroup> pending_receiver(
+      std::move(handle));
+  receiver_.Bind(std::move(pending_receiver),
+                 agent_group_scheduler_->DefaultTaskRunner());
+}
+
 bool AgentSchedulingGroup::Send(IPC::Message* message) {
-  // TODO(crbug.com/1111231): For some reason, changing this to use
-  // render_thread_ causes trybots to time out (not specific tests).
-  return RenderThread::Get()->Send(message);
+  std::unique_ptr<IPC::Message> msg(message);
+
+  if (GetMBIMode() == features::MBIMode::kLegacy)
+    return render_thread_.Send(msg.release());
+
+  // This DCHECK is too idealistic for now - messages that are handled by
+  // filters are sent control messages since they are intercepted before
+  // routing. It is put here as documentation for now, since this code would not
+  // be reached until we activate
+  // `features::MBIMode::kEnabledPerRenderProcessHost` or
+  // `features::MBIMode::kEnabledPerSiteInstance`.
+  DCHECK_NE(message->routing_id(), MSG_ROUTING_CONTROL);
+
+  DCHECK(channel_);
+  return channel_->Send(msg.release());
 }
 
 void AgentSchedulingGroup::AddRoute(int32_t routing_id, Listener* listener) {
@@ -134,10 +154,23 @@ void AgentSchedulingGroup::AddRoute(int32_t routing_id, Listener* listener) {
   render_thread_.AddRoute(routing_id, listener);
 }
 
+void AgentSchedulingGroup::AddFrameRoute(
+    int32_t routing_id,
+    IPC::Listener* listener,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  AddRoute(routing_id, listener);
+  render_thread_.AttachTaskRunnerToRoute(routing_id, std::move(task_runner));
+}
+
 void AgentSchedulingGroup::RemoveRoute(int32_t routing_id) {
   DCHECK(listener_map_.Lookup(routing_id));
   listener_map_.Remove(routing_id);
   render_thread_.RemoveRoute(routing_id);
+}
+
+void AgentSchedulingGroup::DidUnloadRenderFrame(
+    const blink::LocalFrameToken& frame_token) {
+  host_remote_->DidUnloadRenderFrame(frame_token);
 }
 
 mojom::RouteProvider* AgentSchedulingGroup::GetRemoteRouteProvider() {
@@ -172,43 +205,40 @@ void AgentSchedulingGroup::DestroyView(int32_t view_id,
 }
 
 void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider(
-          std::move(params->interface_bundle->interface_provider));
-  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-      browser_interface_broker(
-          std::move(params->interface_bundle->browser_interface_broker));
-
   RenderFrameImpl::CreateFrame(
-      *this, params->routing_id, std::move(interface_provider),
-      std::move(browser_interface_broker), params->previous_routing_id,
+      *this, params->token, params->routing_id, std::move(params->frame),
+      std::move(params->interface_broker), params->previous_routing_id,
       params->opener_frame_token, params->parent_routing_id,
-      params->previous_sibling_routing_id, params->frame_token,
-      params->devtools_frame_token, params->replication_state,
-      &ToImpl(render_thread_), std::move(params->widget_params),
+      params->previous_sibling_routing_id, params->devtools_frame_token,
+      std::move(params->replication_state), &ToImpl(render_thread_),
+      std::move(params->widget_params),
       std::move(params->frame_owner_properties),
       params->has_committed_real_load, std::move(params->policy_container));
 }
 
 void AgentSchedulingGroup::CreateFrameProxy(
+    const blink::RemoteFrameToken& token,
     int32_t routing_id,
-    int32_t render_view_routing_id,
-    const base::Optional<base::UnguessableToken>& opener_frame_token,
+    const base::Optional<blink::FrameToken>& opener_frame_token,
+    int32_t view_routing_id,
     int32_t parent_routing_id,
-    const FrameReplicationState& replicated_state,
-    const base::UnguessableToken& frame_token,
+    mojom::FrameReplicationStatePtr replicated_state,
     const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy::CreateFrameProxy(
-      *this, routing_id, render_view_routing_id, opener_frame_token,
-      parent_routing_id, replicated_state, frame_token, devtools_frame_token);
+      *this, token, routing_id, opener_frame_token, view_routing_id,
+      parent_routing_id, std::move(replicated_state), devtools_frame_token);
 }
 
-void AgentSchedulingGroup::BindAssociatedRouteProvider(
-    mojo::PendingAssociatedRemote<mojom::RouteProvider> remote,
-    mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiver) {
-  remote_route_provider_.Bind(std::move(remote),
+void AgentSchedulingGroup::BindAssociatedInterfaces(
+    mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost> remote_host,
+    mojo::PendingAssociatedRemote<mojom::RouteProvider> remote_route_provider,
+    mojo::PendingAssociatedReceiver<mojom::RouteProvider>
+        route_provider_receiever) {
+  host_remote_.Bind(std::move(remote_host),
+                    agent_group_scheduler_->DefaultTaskRunner());
+  remote_route_provider_.Bind(std::move(remote_route_provider),
                               agent_group_scheduler_->DefaultTaskRunner());
-  route_provider_receiver_.Bind(std::move(receiver),
+  route_provider_receiver_.Bind(std::move(route_provider_receiever),
                                 agent_group_scheduler_->DefaultTaskRunner());
 }
 

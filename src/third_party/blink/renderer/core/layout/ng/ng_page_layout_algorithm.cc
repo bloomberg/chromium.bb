@@ -58,7 +58,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   // Compute the block-axis size now that we know our content size.
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
-      container_builder_.InitialBorderBoxSize().inline_size);
+      container_builder_.InitialBorderBoxSize().inline_size,
+      Node().ShouldBeConsideredAsReplaced());
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -83,6 +84,7 @@ NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
       ConstraintSpace(), Style().GetWritingDirection(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(page_size);
   space_builder.SetPercentageResolutionSize(page_size);
+  space_builder.SetStretchInlineSizeIfAuto(true);
 
   // TODO(mstensho): Handle auto block size.
   space_builder.SetFragmentationType(kFragmentPage);

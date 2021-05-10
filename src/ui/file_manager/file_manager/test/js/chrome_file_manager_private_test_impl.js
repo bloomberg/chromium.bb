@@ -42,6 +42,8 @@ if (window.test === undefined && window.isSWA) {
   };
 } else {
   mockVolumeManager = new MockVolumeManager();
+  window.webkitResolveLocalFileSystemURL =
+      MockVolumeManager.resolveLocalFileSystemURL.bind(null, mockVolumeManager);
 }
 
 /**
@@ -123,6 +125,9 @@ chrome.fileManagerPrivate = {
   executeTask: (taskId, entries, callback) => {
     // Returns opened|message_sent|failed|empty.
     setTimeout(callback, 0, 'failed');
+  },
+  getContentMetadata: (entry, mimeType, includeImages, callback) => {
+    setTimeout(callback, 0);
   },
   getContentMimeType: (entry, callback) => {
     setTimeout(callback, 0, '');
@@ -219,11 +224,13 @@ chrome.fileManagerPrivate = {
   onDeviceChanged: new test.Event(),
   onDirectoryChanged: new test.Event(),
   onDriveConnectionStatusChanged: new test.Event(),
+  onDriveConfirmDialog: new test.Event(),
   onDriveSyncError: new test.Event(),
   onFileTransfersUpdated: new test.Event(),
   onPinTransfersUpdated: new test.Event(),
   onMountCompleted: new test.Event(),
   onPreferencesChanged: new test.Event(),
+  onTabletModeChanged: new test.Event(),
   openInspector: (type) => {},
   openSettingsSubpage: (sub_page) => {},
   removeFileWatch: (entry, callback) => {
@@ -293,6 +300,9 @@ chrome.fileManagerPrivate = {
   validatePathNameLength: (parentEntry, name, callback) => {
     setTimeout(callback, 0, true);
   },
+  isTabletModeEnabled: (callback) => {
+    setTimeout(callback, 0, false);
+  },
 };
 
 /**
@@ -311,37 +321,4 @@ chrome.fileSystem = {
     }
     setTimeout(callback, 0, fs);
   },
-};
-
-/**
- * Override webkitResolveLocalFileSystemURL for testing.
- * @param {string} url URL to resolve.
- * @param {function(!MockEntry)} successCallback Success callback.
- * @param {function(!Error)} errorCallback Error callback.
- */
-// eslint-disable-next-line
-var webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
-  const match = url.match(/^filesystem:(\w+)(\/.*)/);
-  if (match) {
-    const volumeType = /** @type {VolumeManagerCommon.VolumeType} */ (match[1]);
-    let path = match[2];
-    const volume = mockVolumeManager.getCurrentProfileVolumeInfo(volumeType);
-    if (volume) {
-      // Decode URI in file paths.
-      path = path.split('/').map(decodeURIComponent).join('/');
-      const entry = volume.fileSystem.entries[path];
-      if (entry) {
-        setTimeout(successCallback, 0, entry);
-        return;
-      }
-    }
-  }
-  const message = `webkitResolveLocalFileSystemURL not found: ${url}`;
-  console.warn(message);
-  const error = new DOMException(message, 'NotFoundError');
-  if (errorCallback) {
-    setTimeout(errorCallback, 0, error);
-  } else {
-    throw error;
-  }
 };

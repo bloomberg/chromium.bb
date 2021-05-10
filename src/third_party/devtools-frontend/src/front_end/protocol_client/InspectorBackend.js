@@ -32,7 +32,6 @@ import {NodeURL} from './NodeURL.js';
 
 /**
  * @typedef {string}
- * @suppress {checkTypes}
  */
 export const ProtocolError = Symbol('Protocol.Error');
 export const DevToolsStubErrorCode = -32015;
@@ -41,9 +40,6 @@ export const DevToolsStubErrorCode = -32015;
 const _GenericError = -32000;
 const _ConnectionClosedErrorCode = -32001;
 
-/**
- * @unrestricted
- */
 export class InspectorBackend {
   constructor() {
     /** @type {!Map<string, !_AgentPrototype>} */
@@ -59,6 +55,14 @@ export class InspectorBackend {
    */
   static reportProtocolError(error, messageObject) {
     console.error(error + ': ' + JSON.stringify(messageObject));
+  }
+
+  /**
+   * @param {string} error
+   * @param {!Object} messageObject
+   */
+  static reportProtocolWarning(error, messageObject) {
+    console.warn(error + ': ' + JSON.stringify(messageObject));
   }
 
   /**
@@ -99,6 +103,17 @@ export class InspectorBackend {
 
     // @ts-ignore Method code generation
     TargetBase.prototype['register' + domain + 'Dispatcher'] = registerDispatcher;
+
+    /**
+     * @this {TargetBase}
+     * @param {!_DispatcherPrototype} dispatcher
+     */
+    function unregisterDispatcher(dispatcher) {
+      this.unregisterDispatcher(domain, dispatcher);
+    }
+
+    // @ts-ignore Method code generation
+    TargetBase.prototype['unregister' + domain + 'Dispatcher'] = unregisterDispatcher;
   }
 
   /**
@@ -584,9 +599,6 @@ export class SessionRouter {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TargetBase {
   /**
    * @param {boolean} needsNodeJSPatching
@@ -641,6 +653,17 @@ export class TargetBase {
       return;
     }
     this._dispatchers[domain].addDomainDispatcher(dispatcher);
+  }
+
+  /**
+   * @param {string} domain
+   * @param {!Object} dispatcher
+   */
+  unregisterDispatcher(domain, dispatcher) {
+    if (!this._dispatchers[domain]) {
+      return;
+    }
+    this._dispatchers[domain].removeDomainDispatcher(dispatcher);
   }
 
   /**
@@ -986,6 +1009,13 @@ export class TargetBase {
   }
 
   /**
+   * @param {!ProtocolProxyApi.DebuggerDispatcher} dispatcher
+   */
+  unregisterDebuggerDispatcher(dispatcher) {
+    throw new Error('Implemented in InspectorBackend.js');
+  }
+
+  /**
    * @param {!ProtocolProxyApi.DOMDispatcher} dispatcher
    */
   registerDOMDispatcher(dispatcher) {
@@ -1110,9 +1140,6 @@ export class TargetBase {
   }
 }
 
-/**
- * @unrestricted
- */
 class _AgentPrototype {
   /**
    * @param {string} domain
@@ -1301,9 +1328,6 @@ class _AgentPrototype {
   }
 }
 
-/**
- * @unrestricted
- */
 class _DispatcherPrototype {
   constructor() {
     /** @type {!Object<string, *>} */
@@ -1328,8 +1352,19 @@ class _DispatcherPrototype {
   }
 
   /**
+   * @param {!Object} dispatcher
+   */
+  removeDomainDispatcher(dispatcher) {
+    const index = this._dispatchers.indexOf(dispatcher);
+    if (index === -1) {
+      return;
+    }
+    this._dispatchers.splice(index, 1);
+  }
+
+  /**
    * @param {string} functionName
-   * @param {!{method: string, params: ?Array<string>}} messageObject
+   * @param {!{method: string, params: ?Object.<string, *>|undefined}} messageObject
    */
   dispatch(functionName, messageObject) {
     if (!this._dispatchers.length) {
@@ -1337,8 +1372,8 @@ class _DispatcherPrototype {
     }
 
     if (!this._eventArgs[messageObject.method]) {
-      InspectorBackend.reportProtocolError(
-          `Protocol Error: Attempted to dispatch an unspecified method '${messageObject.method}'`, messageObject);
+      InspectorBackend.reportProtocolWarning(
+          `Protocol Warning: Attempted to dispatch an unspecified method '${messageObject.method}'`, messageObject);
       return;
     }
 

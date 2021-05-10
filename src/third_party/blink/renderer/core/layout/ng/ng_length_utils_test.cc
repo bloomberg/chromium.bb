@@ -31,6 +31,7 @@ static NGConstraintSpace ConstructConstraintSpace(
                                    /* is_new_fc */ false);
   builder.SetAvailableSize(size);
   builder.SetPercentageResolutionSize(size);
+  builder.SetStretchInlineSizeIfAuto(true);
   builder.SetIsFixedInlineSize(fixed_inline);
   builder.SetIsFixedBlockSize(fixed_block);
   return builder.ToConstraintSpace();
@@ -42,8 +43,8 @@ class NGLengthUtilsTest : public testing::Test {
 
   LayoutUnit ResolveMainInlineLength(
       const Length& length,
-      const base::Optional<MinMaxSizes>& sizes = base::nullopt) {
-    NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
+      const base::Optional<MinMaxSizes>& sizes = base::nullopt,
+      NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
@@ -53,26 +54,24 @@ class NGLengthUtilsTest : public testing::Test {
 
   LayoutUnit ResolveMinInlineLength(
       const Length& length,
-      LengthResolvePhase phase = LengthResolvePhase::kLayout,
-      const base::Optional<MinMaxSizes>& sizes = base::nullopt) {
-    NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
+      const base::Optional<MinMaxSizes>& sizes = base::nullopt,
+      NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMinInlineLength(
-        constraint_space, *style_, border_padding, sizes, length, phase);
+    return ::blink::ResolveMinInlineLength(constraint_space, *style_,
+                                           border_padding, sizes, length);
   }
 
   LayoutUnit ResolveMaxInlineLength(
       const Length& length,
-      LengthResolvePhase phase = LengthResolvePhase::kLayout,
-      const base::Optional<MinMaxSizes>& sizes = base::nullopt) {
-    NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
+      const base::Optional<MinMaxSizes>& sizes = base::nullopt,
+      NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300)) {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMaxInlineLength(
-        constraint_space, *style_, border_padding, sizes, length, phase);
+    return ::blink::ResolveMaxInlineLength(constraint_space, *style_,
+                                           border_padding, sizes, length);
   }
 
   LayoutUnit ResolveMainBlockLength(const Length& length,
@@ -81,9 +80,8 @@ class NGLengthUtilsTest : public testing::Test {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMainBlockLength(constraint_space, *style_,
-                                           border_padding, length, content_size,
-                                           LengthResolvePhase::kLayout);
+    return ::blink::ResolveMainBlockLength(
+        constraint_space, *style_, border_padding, length, content_size);
   }
 
   scoped_refptr<ComputedStyle> style_;
@@ -121,26 +119,18 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
     return ::blink::ComputeBlockSizeForFragment(
-        constraint_space, *style_, border_padding, content_size, inline_size);
+        constraint_space, *style_, border_padding, content_size, inline_size,
+        body->ShouldBeConsideredAsReplaced());
   }
 
   scoped_refptr<ComputedStyle> style_;
 };
 
-TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
+TEST_F(NGLengthUtilsTest, TestResolveInlineLength) {
   EXPECT_EQ(LayoutUnit(60), ResolveMainInlineLength(Length::Percent(30)));
   EXPECT_EQ(LayoutUnit(150), ResolveMainInlineLength(Length::Fixed(150)));
-  EXPECT_EQ(LayoutUnit(0), ResolveMinInlineLength(
-                               Length::Auto(), LengthResolvePhase::kIntrinsic));
-  EXPECT_EQ(LayoutUnit(200), ResolveMainInlineLength(Length::Auto()));
   EXPECT_EQ(LayoutUnit(200), ResolveMainInlineLength(Length::FillAvailable()));
 
-  EXPECT_EQ(LayoutUnit::Max(),
-            ResolveMaxInlineLength(Length::Percent(30),
-                                   LengthResolvePhase::kIntrinsic));
-  EXPECT_EQ(LayoutUnit::Max(),
-            ResolveMaxInlineLength(Length::FillAvailable(),
-                                   LengthResolvePhase::kIntrinsic));
   MinMaxSizes sizes;
   sizes.min_size = LayoutUnit(30);
   sizes.max_size = LayoutUnit(40);
@@ -160,16 +150,24 @@ TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
 #endif
 }
 
-TEST_F(NGLengthUtilsTest, testResolveBlockLength) {
+TEST_F(NGLengthUtilsTest, TestIndefiniteResolveInlineLength) {
+  const NGConstraintSpace space = ConstructConstraintSpace(-1, -1);
+
+  EXPECT_EQ(LayoutUnit(0),
+            ResolveMinInlineLength(Length::Auto(), base::nullopt, space));
+  EXPECT_EQ(LayoutUnit::Max(),
+            ResolveMaxInlineLength(Length::Percent(30), base::nullopt, space));
+  EXPECT_EQ(LayoutUnit::Max(), ResolveMaxInlineLength(Length::FillAvailable(),
+                                                      base::nullopt, space));
+}
+
+TEST_F(NGLengthUtilsTest, TestResolveBlockLength) {
   EXPECT_EQ(LayoutUnit(90), ResolveMainBlockLength(Length::Percent(30)));
   EXPECT_EQ(LayoutUnit(150), ResolveMainBlockLength(Length::Fixed(150)));
-  EXPECT_EQ(LayoutUnit(0), ResolveMainBlockLength(Length::Auto()));
-  EXPECT_EQ(LayoutUnit(300), ResolveMainBlockLength(Length::FillAvailable()));
-
   EXPECT_EQ(LayoutUnit(300), ResolveMainBlockLength(Length::FillAvailable()));
 }
 
-TEST_F(NGLengthUtilsTestWithNode, testComputeContentContribution) {
+TEST_F(NGLengthUtilsTestWithNode, TestComputeContentContribution) {
   MinMaxSizes sizes;
   sizes.min_size = LayoutUnit(30);
   sizes.max_size = LayoutUnit(40);
@@ -261,7 +259,7 @@ TEST_F(NGLengthUtilsTestWithNode, testComputeContentContribution) {
                           style_->GetWritingMode(), node, sizes));
 }
 
-TEST_F(NGLengthUtilsTestWithNode, testComputeInlineSizeForFragment) {
+TEST_F(NGLengthUtilsTestWithNode, TestComputeInlineSizeForFragment) {
   MinMaxSizes sizes;
   sizes.min_size = LayoutUnit(30);
   sizes.max_size = LayoutUnit(40);
@@ -332,7 +330,7 @@ TEST_F(NGLengthUtilsTestWithNode, testComputeInlineSizeForFragment) {
             ComputeInlineSizeForFragment(constraint_space, sizes));
 }
 
-TEST_F(NGLengthUtilsTestWithNode, testComputeBlockSizeForFragment) {
+TEST_F(NGLengthUtilsTestWithNode, TestComputeBlockSizeForFragment) {
   style_->SetLogicalHeight(Length::Percent(30));
   EXPECT_EQ(LayoutUnit(90), ComputeBlockSizeForFragment());
 
@@ -412,7 +410,7 @@ TEST_F(NGLengthUtilsTestWithNode, testComputeBlockSizeForFragment) {
   // TODO(layout-ng): test {min,max}-content on max-height.
 }
 
-TEST_F(NGLengthUtilsTestWithNode, testIndefinitePercentages) {
+TEST_F(NGLengthUtilsTestWithNode, TestIndefinitePercentages) {
   style_->SetMinHeight(Length::Fixed(20));
   style_->SetHeight(Length::Percent(20));
 
@@ -427,7 +425,7 @@ TEST_F(NGLengthUtilsTestWithNode, testIndefinitePercentages) {
                                         LayoutUnit(120)));
 }
 
-TEST_F(NGLengthUtilsTest, testMargins) {
+TEST_F(NGLengthUtilsTest, TestMargins) {
   style_->SetMarginTop(Length::Percent(10));
   style_->SetMarginRight(Length::Fixed(52));
   style_->SetMarginBottom(Length::Auto());
@@ -444,7 +442,7 @@ TEST_F(NGLengthUtilsTest, testMargins) {
   EXPECT_EQ(LayoutUnit(22), margins.left);
 }
 
-TEST_F(NGLengthUtilsTest, testBorders) {
+TEST_F(NGLengthUtilsTest, TestBorders) {
   style_->SetBorderTopWidth(1);
   style_->SetBorderRightWidth(2);
   style_->SetBorderBottomWidth(3);
@@ -463,7 +461,7 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   EXPECT_EQ(LayoutUnit(1), borders.inline_start);
 }
 
-TEST_F(NGLengthUtilsTest, testPadding) {
+TEST_F(NGLengthUtilsTest, TestPadding) {
   style_->SetPaddingTop(Length::Percent(10));
   style_->SetPaddingRight(Length::Fixed(52));
   style_->SetPaddingBottom(Length::Auto());
@@ -481,7 +479,7 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   EXPECT_EQ(LayoutUnit(20), padding.inline_start);
 }
 
-TEST_F(NGLengthUtilsTest, testAutoMargins) {
+TEST_F(NGLengthUtilsTest, TestAutoMargins) {
   style_->SetMarginRight(Length::Auto());
   style_->SetMarginLeft(Length::Auto());
 
@@ -551,7 +549,7 @@ int GetUsedColumnCount(int computed_column_count,
                                 LayoutUnit(available_inline_size));
 }
 
-TEST_F(NGLengthUtilsTest, testColumnWidthAndCount) {
+TEST_F(NGLengthUtilsTest, TestColumnWidthAndCount) {
   EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 0, 300));
   EXPECT_EQ(3, GetUsedColumnCount(0, 100, 0, 300));
   EXPECT_EQ(150, GetUsedColumnWidth(0, 101, 0, 300));

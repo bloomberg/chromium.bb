@@ -23,6 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -76,8 +77,8 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 namespace extensions {
@@ -164,7 +165,7 @@ void ExtensionProtocolTestResourcesHandler(const base::FilePath& test_dir_root,
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     :
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       set_chromeos_user_(true),
 #endif
       // Default channel is STABLE but override with UNKNOWN so that unlaunched
@@ -253,7 +254,7 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
         new ScopedInstallVerifierBypassForTest());
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (set_chromeos_user_) {
     // This makes sure that we create the Default profile first, with no
     // ExtensionService and then the real profile with one, as we do when
@@ -272,8 +273,8 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
         test_extension_cache_.get());
   }
 
-  test_protocol_handler_ = base::Bind(&ExtensionProtocolTestResourcesHandler,
-                                      GetTestResourcesParentDir());
+  test_protocol_handler_ = base::BindRepeating(
+      &ExtensionProtocolTestResourcesHandler, GetTestResourcesParentDir());
   SetExtensionProtocolTestHandler(&test_protocol_handler_);
 }
 
@@ -285,53 +286,73 @@ void ExtensionBrowserTest::TearDownOnMainThread() {
 
 const Extension* ExtensionBrowserTest::LoadExtension(
     const base::FilePath& path) {
-  return LoadExtensionWithFlags(path, kFlagEnableFileAccess);
+  return LoadExtension(path, {});
 }
 
-const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
-    const base::FilePath& path) {
-  return LoadExtensionWithFlags(path,
-                                kFlagEnableFileAccess | kFlagEnableIncognito);
-}
+const Extension* ExtensionBrowserTest::LoadExtension(
+    const base::FilePath& path,
+    const LoadOptions& options) {
+  ChromeTestExtensionLoader loader(profile());
+  loader.set_allow_incognito_access(options.allow_in_incognito);
+  loader.set_allow_file_access(options.allow_file_access);
+  loader.set_ignore_manifest_warnings(options.ignore_manifest_warnings);
+  loader.set_require_modern_manifest_version(
+      options.require_modern_manifest_version);
+  if (options.load_for_login_screen) {
+    loader.add_creation_flag(Extension::FOR_LOGIN_SCREEN);
+    loader.set_location(Manifest::EXTERNAL_POLICY);
+  }
+  loader.set_wait_for_renderers(options.wait_for_renderers);
 
-const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
-    const base::FilePath& path, int flags) {
+  if (options.install_param != nullptr) {
+    loader.set_install_param(options.install_param);
+  }
+  // Attempt to convert the extension to run as a Service Worker-based
+  // extension if requested.
   base::FilePath extension_path = path;
-  if (flags & kFlagRunAsServiceWorkerBasedExtension) {
+  if (options.load_as_service_worker) {
     if (!CreateServiceWorkerBasedExtension(path, &extension_path))
       return nullptr;
   }
-  return LoadExtensionWithInstallParam(extension_path, flags, std::string());
+
+  scoped_refptr<const Extension> extension =
+      loader.LoadExtension(extension_path);
+  if (extension)
+    observer_->set_last_loaded_extension_id(extension->id());
+  return extension.get();
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionWithInstallParam(
     const base::FilePath& path,
     int flags,
     const std::string& install_param) {
-  // Make sure there aren't any stray bits in "flags." This could happen
-  // if someone inadvertently used any of the ExtensionApiTest flag values.
-  CHECK_LT(flags, kFlagNextValue);
-  ChromeTestExtensionLoader loader(profile());
-  loader.set_require_modern_manifest_version(
-      (flags & kFlagAllowOldManifestVersions) == 0);
-  loader.set_ignore_manifest_warnings(flags & kFlagIgnoreManifestWarnings);
-  loader.set_allow_incognito_access(flags & kFlagEnableIncognito);
-  loader.set_allow_file_access(flags & kFlagEnableFileAccess);
-  loader.set_install_param(install_param);
-
-  // Note: Rely on the default value to wait for renderers unless otherwise
-  // specified.
-  if (flags & kFlagDontWaitForExtensionRenderers)
-    loader.set_wait_for_renderers(false);
-
-  if ((flags & kFlagLoadForLoginScreen) != 0) {
-    loader.add_creation_flag(Extension::FOR_LOGIN_SCREEN);
-    loader.set_location(Manifest::EXTERNAL_POLICY);
+  LoadOptions options;
+  if (flags & kFlagEnableIncognito) {
+    options.allow_in_incognito = true;
   }
-  scoped_refptr<const Extension> extension = loader.LoadExtension(path);
-  if (extension)
-    observer_->set_last_loaded_extension_id(extension->id());
-  return extension.get();
+  if (flags & kFlagEnableFileAccess) {
+    options.allow_file_access = true;
+  }
+  if (flags & kFlagIgnoreManifestWarnings) {
+    options.ignore_manifest_warnings = true;
+  }
+  if (flags & kFlagAllowOldManifestVersions) {
+    options.require_modern_manifest_version = false;
+  }
+  if (flags & kFlagLoadForLoginScreen) {
+    options.load_for_login_screen = true;
+  }
+  if (flags & kFlagRunAsServiceWorkerBasedExtension) {
+    options.load_as_service_worker = true;
+  }
+  if (flags & kFlagDontWaitForExtensionRenderers) {
+    options.wait_for_renderers = false;
+  }
+  if (!install_param.empty()) {
+    options.install_param = install_param.c_str();
+  }
+
+  return LoadExtension(path, options);
 }
 
 bool ExtensionBrowserTest::CreateServiceWorkerBasedExtension(

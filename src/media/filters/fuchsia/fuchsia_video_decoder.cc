@@ -123,7 +123,7 @@ class OutputMailbox {
         coded_size, visible_rect, natural_size, timestamp);
 
     // Request a fence we'll wait on before reusing the buffer.
-    frame->metadata()->read_lock_fences_enabled = true;
+    frame->metadata().read_lock_fences_enabled = true;
 
     return frame;
   }
@@ -134,7 +134,7 @@ class OutputMailbox {
       // The mailbox is referenced by a VideoFrame. It will be deleted  as soon
       // as the frame is destroyed.
       DCHECK(reuse_callback_);
-      reuse_callback_ = base::Closure();
+      reuse_callback_ = base::OnceClosure();
     } else {
       delete this;
     }
@@ -197,6 +197,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   bool IsPlatformDecoder() const override;
   bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+  VideoDecoderType GetDecoderType() const override;
 
   // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
@@ -334,6 +335,7 @@ FuchsiaVideoDecoder::FuchsiaVideoDecoder(
       enable_sw_decoding_(enable_sw_decoding),
       use_overlays_for_video_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseOverlaysForVideo)),
+      sysmem_allocator_("CrFuchsiaVideoDecoder"),
       client_native_pixmap_factory_(ui::CreateClientNativePixmapFactoryOzone()),
       weak_factory_(this) {
   DCHECK(raster_context_provider_);
@@ -359,6 +361,10 @@ bool FuchsiaVideoDecoder::SupportsDecryption() const {
 
 std::string FuchsiaVideoDecoder::GetDisplayName() const {
   return "FuchsiaVideoDecoder";
+}
+
+VideoDecoderType FuchsiaVideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kFuchsia;
 }
 
 void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -684,8 +690,9 @@ void FuchsiaVideoDecoder::SendInputPacket(
 
   DCHECK(in_flight_input_packets_.find(packet.buffer_index()) ==
          in_flight_input_packets_.end());
+  const size_t buffer_index = packet.buffer_index();
   in_flight_input_packets_.insert_or_assign(
-      packet.buffer_index(), InputDecoderPacket{std::move(packet)});
+      buffer_index, InputDecoderPacket{std::move(packet)});
 }
 
 void FuchsiaVideoDecoder::ProcessEndOfStream() {
@@ -765,14 +772,18 @@ void FuchsiaVideoDecoder::OnOutputConstraints(
   fuchsia::sysmem::BufferCollectionTokenPtr collection_token;
   sysmem_allocator_.raw()->AllocateSharedCollection(
       collection_token.NewRequest());
+  collection_token->SetName(100u, "ChromiumVideoDecoderOutput");
+  collection_token->SetDebugClientInfo("chromium_video_decoder", 0u);
 
   // Create sysmem tokens for the gpu process and the codec.
   fuchsia::sysmem::BufferCollectionTokenPtr collection_token_for_codec;
   collection_token->Duplicate(ZX_RIGHT_SAME_RIGHTS,
                               collection_token_for_codec.NewRequest());
+  collection_token_for_codec->SetDebugClientInfo("codec", 0u);
   fuchsia::sysmem::BufferCollectionTokenPtr collection_token_for_gpu;
   collection_token->Duplicate(ZX_RIGHT_SAME_RIGHTS,
                               collection_token_for_gpu.NewRequest());
+  collection_token_for_gpu->SetDebugClientInfo("chromium_gpu", 0u);
 
   // Convert the token to a BufferCollection connection.
   sysmem_allocator_.raw()->BindSharedCollection(
@@ -944,11 +955,11 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   // codec may still decode on hardware even when |enable_sw_decoding_| is set
   // (i.e. power_efficient flag would not be set correctly in that case). It
   // doesn't matter because software decoders can be enabled only for tests.
-  frame->metadata()->power_efficient = !enable_sw_decoding_;
+  frame->metadata().power_efficient = !enable_sw_decoding_;
 
   // Allow this video frame to be promoted as an overlay, because it was
   // registered with an ImagePipe.
-  frame->metadata()->allow_overlay = use_overlays_for_video_;
+  frame->metadata().allow_overlay = use_overlays_for_video_;
 
   output_cb_.Run(std::move(frame));
 }

@@ -11,8 +11,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/prefs/pref_service.h"
@@ -23,6 +25,7 @@
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -37,6 +40,9 @@
 #endif
 
 namespace {
+
+using TokenResponseBuilder = OAuth2AccessTokenConsumer::TokenResponse::Builder;
+
 // Simple wrapper around a static string; used to avoid implicit conversion
 // of the account key to an std::string (which is the type used for account
 // identifier). This is a POD type so it can be used for static storage const
@@ -53,7 +59,7 @@ const AccountKey kAccountKeyIncomplete = {"incomplete"};
 const AccountKey kAccountKeyFooBar = {"foobar"};
 const AccountKey kAccountKeyFooDotBar = {"foo.bar"};
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_IOS)
 const AccountKey kAccountKeyAdvancedProtection = {"advanced_protection"};
 #endif
 
@@ -271,9 +277,11 @@ class AccountTrackerServiceTest : public testing::Test {
   void IssueAccessToken(AccountKey account_key) {
     fake_oauth2_token_service_.IssueAllTokensForAccount(
         AccountKeyToAccountId(account_key),
-        OAuth2AccessTokenConsumer::TokenResponse(
-            base::StringPrintf("access_token-%s", account_key.value),
-            base::Time::Max(), std::string()));
+        TokenResponseBuilder()
+            .WithAccessToken(
+                base::StringPrintf("access_token-%s", account_key.value))
+            .WithExpirationTime(base::Time::Max())
+            .build());
   }
 
   std::string GenerateValidTokenInfoResponse(AccountKey account_key) {
@@ -698,6 +706,11 @@ TEST_F(AccountTrackerServiceTest, FindAccountInfoByEmail) {
 }
 
 TEST_F(AccountTrackerServiceTest, Persistence) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(switches::kAccountIdMigration);
+#endif
+
   // Define a user data directory for the account image storage.
   base::ScopedTempDir scoped_user_data_dir;
   ASSERT_TRUE(scoped_user_data_dir.CreateUniqueTempDir());
@@ -753,7 +766,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
                                        true);
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) && !defined(OS_IOS)
   account_tracker()->SetIsAdvancedProtectionAccount(
       AccountKeyToAccountId(kAccountKeyBeta), true);
 #endif
@@ -766,7 +779,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
   ASSERT_EQ(1u, infos.size());
   CheckAccountDetails(kAccountKeyBeta, infos[0]);
   EXPECT_TRUE(infos[0].is_child_account);
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID) && !defined(OS_IOS)
   EXPECT_TRUE(infos[0].is_under_advanced_protection);
 #else
   EXPECT_FALSE(infos[0].is_under_advanced_protection);
@@ -854,6 +867,11 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
 }
 
 TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(switches::kAccountIdMigration);
+#endif
+
   // Start by simulating an incomplete account info and let it be saved to
   // prefs.
   ResetAccountTracker();
@@ -981,8 +999,10 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
 }
 
 TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
-  if (!AccountTrackerService::IsMigrationSupported())
-    return;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(switches::kAccountIdMigration);
+#endif
 
   const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
   const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
@@ -1028,8 +1048,10 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
 }
 
 TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
-  if (!AccountTrackerService::IsMigrationSupported())
-    return;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(switches::kAccountIdMigration);
+#endif
 
   const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
   const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
@@ -1074,8 +1096,10 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
 }
 
 TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
-  if (!AccountTrackerService::IsMigrationSupported())
-    return;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(switches::kAccountIdMigration);
+#endif
 
   const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
   const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
@@ -1346,7 +1370,7 @@ TEST_F(AccountTrackerServiceTest, RemoveAccountBeforeImageFetchDone) {
   }));
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_IOS)
 TEST_F(AccountTrackerServiceTest, AdvancedProtectionAccountBasic) {
   SimulateTokenAvailable(kAccountKeyAdvancedProtection);
   IssueAccessToken(kAccountKeyAdvancedProtection);

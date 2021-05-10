@@ -57,12 +57,11 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   base::Optional<Path> AsPath();
   sk_sp<const PaintRecord> CreatePaintRecord();
 
- protected:
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void WillBeDestroyed() override;
-
  private:
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
   void CalculateLocalClipBounds();
+  bool FindCycleFromSelf() const override;
 
   // Cache of the clip path when using path clipping.
   enum ClipContentPathValidity {
@@ -79,17 +78,28 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   FloatRect local_clip_bounds_;
 };
 
-DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceClipper,
-                                      kClipperResourceType);
+template <>
+struct DowncastTraits<LayoutSVGResourceClipper> {
+  static bool AllowFrom(const LayoutSVGResourceContainer& container) {
+    return container.ResourceType() == kClipperResourceType;
+  }
+};
 
 inline LayoutSVGResourceClipper* GetSVGResourceAsType(
+    SVGResourceClient& client,
+    const ReferenceClipPathOperation& reference_clip) {
+  return GetSVGResourceAsType<LayoutSVGResourceClipper>(
+      client, reference_clip.Resource());
+}
+
+inline LayoutSVGResourceClipper* GetSVGResourceAsType(
+    SVGResourceClient& client,
     const ClipPathOperation* clip_path_operation) {
   const auto* reference_clip =
       DynamicTo<ReferenceClipPathOperation>(clip_path_operation);
   if (!reference_clip)
     return nullptr;
-  return GetSVGResourceAsType<LayoutSVGResourceClipper>(
-      reference_clip->Resource());
+  return GetSVGResourceAsType(client, *reference_clip);
 }
 
 }  // namespace blink

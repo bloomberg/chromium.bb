@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
+#include "components/webapps/browser/android/shortcut_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -20,7 +20,10 @@ class WebContents;
 }
 
 class GURL;
+
+namespace webapps {
 struct InstallableData;
+}
 
 // WebApkUpdateDataFetcher is the C++ counterpart of
 // org.chromium.chrome.browser's WebApkUpdateDataFetcher in Java. It is created
@@ -56,7 +59,8 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   void FetchInstallableData();
 
   // Called once the installable data has been fetched.
-  void OnDidGetInstallableData(const InstallableData& installable_data);
+  void OnDidGetInstallableData(
+      const webapps::InstallableData& installable_data);
 
   // Called with the computed Murmur2 hashes for the icons.
   void OnGotIconMurmur2Hashes(
@@ -79,7 +83,7 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   GURL last_fetched_url_;
 
   // Downloaded data for |web_manifest_url_|.
-  ShortcutInfo info_;
+  webapps::ShortcutInfo info_;
   SkBitmap primary_icon_;
   bool is_primary_icon_maskable_;
 

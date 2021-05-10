@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
@@ -36,6 +37,9 @@
 #include "ui/views/view_utils.h"
 
 using media_session::mojom::MediaSessionAction;
+
+// Global Media Controls are not supported on Chrome OS.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -540,12 +544,12 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
         ->live_caption_title_new_badge_;
   }
 
-  void OnSODAProgress(int progress) {
-    MediaDialogView::GetDialogViewForTesting()->OnSODAProgress(progress);
+  void OnSodaProgress(int progress) {
+    MediaDialogView::GetDialogViewForTesting()->OnSodaProgress(progress);
   }
 
-  void OnSODAInstalled() {
-    MediaDialogView::GetDialogViewForTesting()->OnSODAInstalled();
+  void OnSodaInstalled() {
+    MediaDialogView::GetDialogViewForTesting()->OnSodaInstalled();
   }
 
  protected:
@@ -596,9 +600,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      subscription_;
+  base::CallbackListSubscription subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);
 };
@@ -880,7 +882,13 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   EXPECT_TRUE(IsPlayingSessionDisplayedFirst());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaption) {
+// Flaky on Mac: crbug.com/1163666
+#if defined(OS_MAC)
+#define MAYBE_LiveCaption DISABLED_LiveCaption
+#else
+#define MAYBE_LiveCaption LiveCaption
+#endif  // defined(OS_MAC)
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
   // Open a tab and play media.
   OpenTestURL();
   StartPlayback();
@@ -950,19 +958,21 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaptionProgressUpdate) {
             base::UTF16ToUTF8(GetLiveCaptionTitleNewBadgeLabel()->GetText()));
 
   ClickEnableLiveCaptionOnDialog();
-  OnSODAProgress(0);
+  OnSodaProgress(0);
   EXPECT_EQ("Downloading… 0%",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
-  OnSODAProgress(12);
+  OnSodaProgress(12);
   EXPECT_EQ("Downloading… 12%",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
-  OnSODAProgress(100);
+  OnSodaProgress(100);
   EXPECT_EQ("Downloading… 100%",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 
-  OnSODAInstalled();
+  OnSodaInstalled();
   EXPECT_EQ("Live Caption (English only)",
             base::UTF16ToUTF8(GetLiveCaptionTitleLabel()->GetText()));
 }
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -14,15 +14,15 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.AssistantCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.AssistantOnboardingResult;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantClient;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
-import org.chromium.chrome.browser.autofill_assistant.BaseOnboardingCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.OnboardingCoordinatorFactory;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptFinishedState;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.AssistantOnboardingResult;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.BaseOnboardingCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.OnboardingCoordinatorFactory;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
@@ -278,10 +278,15 @@ public class AssistantTriggerScriptBridge {
     }
 
     private void showOnboardingForTriggerScript(boolean isDialogOnboardingEnabled) {
-        mOnboardingCoordinator = OnboardingCoordinatorFactory.createOnboardingCoordinator(
-                isDialogOnboardingEnabled, mExperimentIds, mScriptParameters, mContext,
-                mBottomSheetController, mBrowserControls, mCompositorViewHolder);
-
+        if (isDialogOnboardingEnabled) {
+            mOnboardingCoordinator = OnboardingCoordinatorFactory.createDialogOnboardingCoordinator(
+                    mExperimentIds, mScriptParameters, mContext);
+        } else {
+            mOnboardingCoordinator =
+                    OnboardingCoordinatorFactory.createBottomSheetOnboardingCoordinator(
+                            mExperimentIds, mScriptParameters, mContext, mBottomSheetController,
+                            mBrowserControls, mCompositorViewHolder);
+        }
         mOnboardingCoordinator.show(result -> {
             safeNativeOnOnboardingFinished(/* onboardingShown= */ true, result);
         }, mWebContents, mInitialUrl);

@@ -173,6 +173,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     START_AMBIENT_MODE,
     SWITCH_TO_LAST_USED_IME,
     SWITCH_TO_NEXT_IME,
+    TAKE_SCREENSHOT,
     TOGGLE_CAPS_LOCK,
     TOGGLE_DICTATION,
     TOGGLE_DOCKED_MAGNIFIER,
@@ -198,9 +199,6 @@ const size_t kActionsAllowedAtLoginOrLockScreenLength =
 const AcceleratorAction kActionsAllowedAtLockScreen[] = {
     EXIT,
     SUSPEND,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-    TAKE_WINDOW_SCREENSHOT,
 };
 
 const size_t kActionsAllowedAtLockScreenLength =
@@ -323,6 +321,7 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     SWITCH_TO_LAST_USED_IME,
     SWITCH_TO_NEXT_IME,
     TOGGLE_CAPS_LOCK,
+    TOGGLE_CLIPBOARD_HISTORY,
     TOGGLE_DICTATION,
     TOGGLE_DOCKED_MAGNIFIER,
     TOGGLE_FULLSCREEN_MAGNIFIER,
@@ -378,6 +377,12 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     BRIGHTNESS_UP,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
+    // Keep the menu open when switching desks. The desk activation code will
+    // close the menu without animation manually. Otherwise, the menu will fade
+    // out and a trace will be visible while switching desks.
+    DESKS_ACTIVATE_DESK,
+    DESKS_NEW_DESK,
+    DESKS_REMOVE_CURRENT_DESK,
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
@@ -399,6 +404,7 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     TOGGLE_APP_LIST,
     TOGGLE_APP_LIST_FULLSCREEN,
     TOGGLE_CAPS_LOCK,
+    TOGGLE_CLIPBOARD_HISTORY,
     TOGGLE_DICTATION,
     TOGGLE_DOCKED_MAGNIFIER,
     TOGGLE_FULLSCREEN_MAGNIFIER,

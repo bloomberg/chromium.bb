@@ -15,7 +15,6 @@
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
-#include "ash/style/default_colors.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
@@ -59,8 +58,6 @@ constexpr int kScrollThumbThicknessDp = 6;
 constexpr int kScrollThumbPaddingDp = 8;
 // Radius of the scroll bar thumb.
 constexpr int kScrollThumbRadiusDp = 8;
-// Alpha of scroll bar thumb (43/255 = 17%).
-constexpr int kScrollThumbAlpha = 43;
 // How long for the scrollbar to hide after no scroll events have been received?
 constexpr base::TimeDelta kScrollThumbHideTimeout =
     base::TimeDelta::FromMilliseconds(500);
@@ -108,7 +105,8 @@ class ScrollBarThumb : public views::BaseScrollBarThumb {
   void OnPaint(gfx::Canvas* canvas) override {
     cc::PaintFlags fill_flags;
     fill_flags.setStyle(cc::PaintFlags::kFill_Style);
-    fill_flags.setColor(SkColorSetA(SK_ColorWHITE, kScrollThumbAlpha));
+    fill_flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kLoginScrollBarColor));
     canvas->DrawRoundRect(GetLocalBounds(), kScrollThumbRadiusDp, fill_flags);
   }
 
@@ -339,7 +337,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   SetVerticalScrollBar(std::make_unique<UsersListScrollBar>(false));
   SetHorizontalScrollBar(std::make_unique<UsersListScrollBar>(true));
 
-  observer_.Add(Shell::Get()->wallpaper_controller());
+  observation_.Observe(Shell::Get()->wallpaper_controller());
 }
 
 ScrollableUsersListView::~ScrollableUsersListView() = default;

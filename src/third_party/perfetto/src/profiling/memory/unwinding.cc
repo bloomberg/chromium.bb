@@ -51,6 +51,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/thread_task_runner.h"
 
+#include "src/profiling/memory/unwound_messages.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
@@ -67,6 +68,7 @@ constexpr size_t kMaxFrames = 500;
 // saturates this thread.
 constexpr size_t kUnwindBatchSize = 1000;
 constexpr size_t kRecordBatchSize = 1024;
+constexpr size_t kMaxAllocRecordArenaSize = 2 * kRecordBatchSize;
 
 #pragma GCC diagnostic push
 // We do not care about deterministic destructor order.
@@ -129,7 +131,10 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
     frame_data.function_name = "ERROR READING REGISTERS";
     frame_data.map_name = "ERROR";
 
-    out->frames.emplace_back(frame_data, "");
+    out->frames.clear();
+    out->build_ids.clear();
+    out->frames.emplace_back(std::move(frame_data));
+    out->build_ids.emplace_back("");
     out->error = true;
     return false;
   }
@@ -167,17 +172,18 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
       unwinder.SetDexFiles(metadata->dex_files.get());
 #endif
     }
+    out->frames.swap(unwinder.frames());  // Provide the unwinder buffer to use.
     unwinder.Unwind(&kSkipMaps, /*map_suffixes_to_ignore=*/nullptr);
+    out->frames.swap(unwinder.frames());  // Take the buffer back.
     error_code = unwinder.LastErrorCode();
     if (error_code != unwindstack::ERROR_INVALID_MAP &&
         (unwinder.warnings() & unwindstack::WARNING_DEX_PC_NOT_IN_MAP) == 0) {
       break;
     }
   }
-  std::vector<unwindstack::FrameData> frames = unwinder.ConsumeFrames();
-  out->frames.reserve(frames.size() + 1);
-  for (unwindstack::FrameData& fd : frames) {
-    out->frames.emplace_back(metadata->AnnotateFrame(std::move(fd)));
+  out->build_ids.resize(out->frames.size());
+  for (size_t i = 0; i < out->frames.size(); ++i) {
+    out->build_ids[i] = metadata->GetBuildId(out->frames[i]);
   }
 
   if (error_code != unwindstack::ERROR_NONE) {
@@ -187,14 +193,15 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
         "ERROR " + StringifyLibUnwindstackError(error_code);
     frame_data.map_name = "ERROR";
 
-    out->frames.emplace_back(std::move(frame_data), "");
+    out->frames.emplace_back(std::move(frame_data));
+    out->build_ids.emplace_back("");
     out->error = true;
   }
   return true;
 }
 
 void UnwindingWorker::OnDisconnect(base::UnixSocket* self) {
-  pid_t peer_pid = self->peer_pid();
+  pid_t peer_pid = self->peer_pid_linux();
   auto it = client_data_.find(peer_pid);
   if (it == client_data_.end()) {
     PERFETTO_DFATAL_OR_ELOG("Disconnected unexpected socket.");
@@ -205,12 +212,8 @@ void UnwindingWorker::OnDisconnect(base::UnixSocket* self) {
   ReadAndUnwindBatch(&client_data);
   SharedRingBuffer& shmem = client_data.shmem;
 
-  if (!client_data.alloc_records.empty()) {
-    delegate_->PostAllocRecord(std::move(client_data.alloc_records));
-    client_data.alloc_records.clear();
-  }
   if (!client_data.free_records.empty()) {
-    delegate_->PostFreeRecord(std::move(client_data.free_records));
+    delegate_->PostFreeRecord(this, std::move(client_data.free_records));
     client_data.free_records.clear();
   }
 
@@ -225,16 +228,22 @@ void UnwindingWorker::OnDisconnect(base::UnixSocket* self) {
   DataSourceInstanceID ds_id = client_data.data_source_instance_id;
 
   client_data_.erase(it);
+  if (client_data_.empty()) {
+    // We got rid of the last client. Flush and destruct AllocRecords in
+    // arena. Disable the arena (will not accept returning borrowed records)
+    // in case there are pending AllocRecords on the main thread.
+    alloc_record_arena_.Disable();
+  }
   // The erase invalidates the self pointer.
   self = nullptr;
-  delegate_->PostSocketDisconnected(ds_id, peer_pid, stats);
+  delegate_->PostSocketDisconnected(this, ds_id, peer_pid, stats);
 }
 
 void UnwindingWorker::OnDataAvailable(base::UnixSocket* self) {
   // Drain buffer to clear the notification.
   char recv_buf[kUnwindBatchSize];
   self->Receive(recv_buf, sizeof(recv_buf));
-  BatchUnwindJob(self->peer_pid());
+  BatchUnwindJob(self->peer_pid_linux());
 }
 
 UnwindingWorker::ReadAndUnwindBatchResult UnwindingWorker::ReadAndUnwindBatch(
@@ -248,7 +257,8 @@ UnwindingWorker::ReadAndUnwindBatchResult UnwindingWorker::ReadAndUnwindBatch(
     buf = shmem.BeginRead();
     if (!buf)
       break;
-    HandleBuffer(buf, client_data, client_data->sock->peer_pid(), delegate_);
+    HandleBuffer(this, &alloc_record_arena_, buf, client_data,
+                 client_data->sock->peer_pid_linux(), delegate_);
     shmem.EndRead(std::move(buf));
     // Reparsing takes time, so process the rest in a new batch to avoid timing
     // out.
@@ -304,7 +314,9 @@ void UnwindingWorker::BatchUnwindJob(pid_t peer_pid) {
 }
 
 // static
-void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
+void UnwindingWorker::HandleBuffer(UnwindingWorker* self,
+                                   AllocRecordArena* alloc_record_arena,
+                                   const SharedRingBuffer::Buffer& buf,
                                    ClientData* client_data,
                                    pid_t peer_pid,
                                    Delegate* delegate) {
@@ -321,21 +333,16 @@ void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
   }
 
   if (msg.record_type == RecordType::Malloc) {
-    AllocRecord rec;
-    rec.alloc_metadata = *msg.alloc_header;
-    rec.pid = peer_pid;
-    rec.data_source_instance_id = data_source_instance_id;
+    std::unique_ptr<AllocRecord> rec = alloc_record_arena->BorrowAllocRecord();
+    rec->alloc_metadata = *msg.alloc_header;
+    rec->pid = peer_pid;
+    rec->data_source_instance_id = data_source_instance_id;
     auto start_time_us = base::GetWallTimeNs() / 1000;
     if (!client_data->stream_allocations)
-      DoUnwind(&msg, unwinding_metadata, &rec);
-    rec.unwinding_time_us = static_cast<uint64_t>(
+      DoUnwind(&msg, unwinding_metadata, rec.get());
+    rec->unwinding_time_us = static_cast<uint64_t>(
         ((base::GetWallTimeNs() / 1000) - start_time_us).count());
-    client_data->alloc_records.emplace_back(std::move(rec));
-    if (client_data->alloc_records.size() == kRecordBatchSize) {
-      delegate->PostAllocRecord(std::move(client_data->alloc_records));
-      client_data->alloc_records.clear();
-      client_data->alloc_records.reserve(kRecordBatchSize);
-    }
+    delegate->PostAllocRecord(self, std::move(rec));
   } else if (msg.record_type == RecordType::Free) {
     FreeRecord rec;
     rec.pid = peer_pid;
@@ -344,7 +351,7 @@ void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
     memcpy(&rec.entry, msg.free_header, sizeof(*msg.free_header));
     client_data->free_records.emplace_back(std::move(rec));
     if (client_data->free_records.size() == kRecordBatchSize) {
-      delegate->PostFreeRecord(std::move(client_data->free_records));
+      delegate->PostFreeRecord(self, std::move(client_data->free_records));
       client_data->free_records.clear();
       client_data->free_records.reserve(kRecordBatchSize);
     }
@@ -354,7 +361,7 @@ void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
     rec.data_source_instance_id = data_source_instance_id;
     memcpy(&rec.entry, msg.heap_name_header, sizeof(*msg.heap_name_header));
     rec.entry.heap_name[sizeof(rec.entry.heap_name) - 1] = '\0';
-    delegate->PostHeapNameRecord(std::move(rec));
+    delegate->PostHeapNameRecord(self, std::move(rec));
   } else {
     PERFETTO_DFATAL_OR_ELOG("Invalid record type.");
   }
@@ -377,7 +384,7 @@ void UnwindingWorker::HandleHandoffSocket(HandoffData handoff_data) {
   auto sock = base::UnixSocket::AdoptConnected(
       handoff_data.sock.ReleaseFd(), this, this->thread_task_runner_.get(),
       base::SockFamily::kUnix, base::SockType::kStream);
-  pid_t peer_pid = sock->peer_pid();
+  pid_t peer_pid = sock->peer_pid_linux();
 
   UnwindingMetadata metadata(std::move(handoff_data.maps_fd),
                              std::move(handoff_data.mem_fd));
@@ -389,12 +396,11 @@ void UnwindingWorker::HandleHandoffSocket(HandoffData handoff_data) {
       std::move(handoff_data.client_config),
       handoff_data.stream_allocations,
       {},
-      {},
   };
   client_data.free_records.reserve(kRecordBatchSize);
-  client_data.alloc_records.reserve(kRecordBatchSize);
   client_data.shmem.SetReaderPaused();
   client_data_.emplace(peer_pid, std::move(client_data));
+  alloc_record_arena_.Enable();
 }
 
 void UnwindingWorker::PostDisconnectSocket(pid_t pid) {
@@ -414,6 +420,33 @@ void UnwindingWorker::HandleDisconnectSocket(pid_t pid) {
   // Shutdown and call OnDisconnect handler.
   client_data.shmem.SetShuttingDown();
   client_data.sock->Shutdown(/* notify= */ true);
+}
+
+std::unique_ptr<AllocRecord> AllocRecordArena::BorrowAllocRecord() {
+  std::lock_guard<std::mutex> l(*alloc_records_mutex_);
+  if (!alloc_records_.empty()) {
+    std::unique_ptr<AllocRecord> result = std::move(alloc_records_.back());
+    alloc_records_.pop_back();
+    return result;
+  }
+  return std::unique_ptr<AllocRecord>(new AllocRecord());
+}
+
+void AllocRecordArena::ReturnAllocRecord(std::unique_ptr<AllocRecord> record) {
+  std::lock_guard<std::mutex> l(*alloc_records_mutex_);
+  if (enabled_ && record && alloc_records_.size() < kMaxAllocRecordArenaSize)
+    alloc_records_.emplace_back(std::move(record));
+}
+
+void AllocRecordArena::Disable() {
+  std::lock_guard<std::mutex> l(*alloc_records_mutex_);
+  alloc_records_.clear();
+  enabled_ = false;
+}
+
+void AllocRecordArena::Enable() {
+  std::lock_guard<std::mutex> l(*alloc_records_mutex_);
+  enabled_ = true;
 }
 
 UnwindingWorker::Delegate::~Delegate() = default;

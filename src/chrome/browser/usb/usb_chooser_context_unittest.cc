@@ -9,15 +9,14 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_mock_device_observer.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -705,12 +704,11 @@ TEST_F(UsbChooserContextTest,
                                          *unrelated_device_info));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 class DeviceLoginScreenWebUsbChooserContextTest : public UsbChooserContextTest {
  public:
-  DeviceLoginScreenWebUsbChooserContextTest()
-      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+  DeviceLoginScreenWebUsbChooserContextTest() {
     TestingProfile::Builder builder;
     builder.SetPath(base::FilePath(FILE_PATH_LITERAL(chrome::kInitialProfile)));
     signin_profile_ = builder.Build();
@@ -721,7 +719,6 @@ class DeviceLoginScreenWebUsbChooserContextTest : public UsbChooserContextTest {
   Profile* GetSigninProfile() { return signin_profile_.get(); }
 
  private:
-  ScopedTestingLocalState testing_local_state_;
   std::unique_ptr<Profile> signin_profile_;
 };
 
@@ -770,8 +767,8 @@ TEST_F(DeviceLoginScreenWebUsbChooserContextTest,
   ExpectNoPermissions(user_store, *specific_device_info);
   ExpectNoPermissions(signin_store, *specific_device_info);
 
-  g_browser_process->local_state()->Set(
-      prefs::kDeviceLoginScreenWebUsbAllowDevicesForUrls,
+  signin_profile->GetPrefs()->Set(
+      prefs::kManagedWebUsbAllowDevicesForUrls,
       *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   ExpectNoPermissions(user_store, *specific_device_info);
@@ -779,7 +776,7 @@ TEST_F(DeviceLoginScreenWebUsbChooserContextTest,
                            kInvalidRequestingOrigins, *specific_device_info);
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -1275,4 +1272,37 @@ TEST_F(UsbChooserContextTest,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
                           /*name=*/"Unknown product 0x054D from vendor 0x18D2");
+}
+
+TEST_F(UsbChooserContextTest, MassStorageHidden) {
+  GURL url("https://www.google.com");
+  const auto origin = url::Origin::Create(url);
+
+  // Mass storage devices should be hidden.
+  std::vector<device::mojom::UsbConfigurationInfoPtr> storage_configs;
+  storage_configs.push_back(
+      device::FakeUsbDeviceInfo::CreateConfiguration(0x08, 0x06, 0x50));
+  UsbDeviceInfoPtr storage_device_info = device_manager_.CreateAndAddDevice(
+      0, 0, "vendor1", "storage", "123ABC", std::move(storage_configs));
+
+  // Composite devices with both mass storage and allowed interfaces should be
+  // shown.
+  std::vector<device::mojom::UsbConfigurationInfoPtr> complex_configs;
+  complex_configs.push_back(
+      device::FakeUsbDeviceInfo::CreateConfiguration(0x08, 0x06, 0x50, 1));
+  complex_configs.push_back(
+      device::FakeUsbDeviceInfo::CreateConfiguration(0xff, 0x42, 0x1, 2));
+  UsbDeviceInfoPtr complex_device_info = device_manager_.CreateAndAddDevice(
+      0, 0, "vendor2", "complex", "456DEF", std::move(complex_configs));
+
+  UsbChooserContext* chooser_context = GetChooserContext(profile());
+
+  base::RunLoop loop;
+  chooser_context->GetDevices(
+      base::BindLambdaForTesting([&](std::vector<UsbDeviceInfoPtr> devices) {
+        EXPECT_EQ(1u, devices.size());
+        EXPECT_EQ(complex_device_info->product_name, devices[0]->product_name);
+        loop.Quit();
+      }));
+  loop.Run();
 }

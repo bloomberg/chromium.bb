@@ -9,26 +9,21 @@
 #define SkRuntimeEffect_DEFINED
 
 #include "include/core/SkData.h"
+#include "include/core/SkImageInfo.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkString.h"
-#include "include/private/GrTypesPriv.h"
 #include "include/private/SkSLSampleUsage.h"
 
-#include <string>
 #include <vector>
 
-#if SK_SUPPORT_GPU
-#include "include/gpu/GrContextOptions.h"
-#endif
-
+class GrRecordingContext;
 class SkColorFilter;
+class SkImage;
 class SkShader;
 
 namespace SkSL {
-class ByteCode;
-struct PipelineStageArgs;
+class FunctionDefinition;
 struct Program;
-class SharedCompiler;
 }  // namespace SkSL
 
 /*
@@ -57,33 +52,54 @@ public:
             kSRGBUnpremul_Flag  = 0x8,
         };
 
-        SkString  fName;
-        size_t    fOffset;
-        Type      fType;
-        GrSLType  fGPUType;
-        int       fCount;
-        uint32_t  fFlags;
-        uint32_t  fMarker;
+        SkString  name;
+        size_t    offset;
+        Type      type;
+        int       count;
+        uint32_t  flags;
+        uint32_t  marker;
 
-        bool isArray() const { return SkToBool(fFlags & kArray_Flag); }
+        bool isArray() const { return SkToBool(this->flags & kArray_Flag); }
         size_t sizeInBytes() const;
     };
 
     struct Varying {
-        SkString fName;
-        int      fWidth;  // 1 - 4 (floats)
+        SkString name;
+        int      width;  // 1 - 4 (floats)
     };
 
-    // [Effect, ErrorText]
-    // If successful, Effect != nullptr, otherwise, ErrorText contains the reason for failure.
-    using EffectResult = std::tuple<sk_sp<SkRuntimeEffect>, SkString>;
-    static EffectResult Make(SkString sksl);
+    struct Options {
+        // Sets an upper limit on the acceptable amount of code growth from inlining.
+        // By default, runtime effects don't run the inliner directly.
+        int inlineThreshold = 0;
+    };
+
+    // If the effect is compiled successfully, `effect` will be non-null.
+    // Otherwise, `errorText` will contain the reason for failure.
+    struct Result {
+        sk_sp<SkRuntimeEffect> effect;
+        SkString errorText;
+    };
+
+    static Result Make(SkString sksl, const Options& options);
+
+    // We can't use a default argument for `options` due to a bug in Clang.
+    // https://bugs.llvm.org/show_bug.cgi?id=36684
+    static Result Make(SkString sksl) { return Make(std::move(sksl), Options{}); }
 
     sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
                                sk_sp<SkShader> children[],
                                size_t childCount,
                                const SkMatrix* localMatrix,
                                bool isOpaque);
+
+    sk_sp<SkImage> makeImage(GrRecordingContext*,
+                             sk_sp<SkData> uniforms,
+                             sk_sp<SkShader> children[],
+                             size_t childCount,
+                             const SkMatrix* localMatrix,
+                             SkImageInfo resultInfo,
+                             bool mipmapped);
 
     sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms);
     sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms,
@@ -127,6 +143,7 @@ public:
 private:
     SkRuntimeEffect(SkString sksl,
                     std::unique_ptr<SkSL::Program> baseProgram,
+                    const SkSL::FunctionDefinition& main,
                     std::vector<Uniform>&& uniforms,
                     std::vector<SkString>&& children,
                     std::vector<SkSL::SampleUsage>&& sampleUsages,
@@ -138,26 +155,18 @@ private:
     bool usesSampleCoords() const { return fUsesSampleCoords; }
 
 #if SK_SUPPORT_GPU
-    friend class GrSkSLFP;      // toPipelineStage
-    friend class GrGLSLSkSLFP;  // fSampleUsages
-
-    bool toPipelineStage(GrContextOptions::ShaderErrorHandler* errorHandler,
-                         SkSL::PipelineStageArgs* outArgs);
+    friend class GrSkSLFP;      // fBaseProgram, fSampleUsages
+    friend class GrGLSLSkSLFP;  //
 #endif
 
-    friend class SkRTShader;            // toByteCode
+    friend class SkRTShader;            // fBaseProgram, fMain
     friend class SkRuntimeColorFilter;  //
-
-    // [ByteCode, ErrorText]
-    // If successful, ByteCode != nullptr, otherwise, ErrorText contains the reason for failure.
-    using ByteCodeResult = std::tuple<std::unique_ptr<SkSL::ByteCode>, SkString>;
-    ByteCodeResult toByteCode() const;
-
 
     uint32_t fHash;
     SkString fSkSL;
 
     std::unique_ptr<SkSL::Program> fBaseProgram;
+    const SkSL::FunctionDefinition& fMain;
     std::vector<Uniform> fUniforms;
     std::vector<SkString> fChildren;
     std::vector<SkSL::SampleUsage> fSampleUsages;
@@ -206,7 +215,7 @@ public:
             } else if (sizeof(val) != fVar->sizeInBytes()) {
                 SkDEBUGFAIL("Incorrect value size");
             } else {
-                memcpy(SkTAddOffset<void>(fOwner->writableUniformData(), fVar->fOffset),
+                memcpy(SkTAddOffset<void>(fOwner->writableUniformData(), fVar->offset),
                        &val, sizeof(val));
             }
             return *this;
@@ -218,12 +227,28 @@ public:
             } else if (fVar->sizeInBytes() != 9 * sizeof(float)) {
                 SkDEBUGFAIL("Incorrect value size");
             } else {
-                float* data = SkTAddOffset<float>(fOwner->writableUniformData(), fVar->fOffset);
+                float* data = SkTAddOffset<float>(fOwner->writableUniformData(), fVar->offset);
                 data[0] = val.get(0); data[1] = val.get(3); data[2] = val.get(6);
                 data[3] = val.get(1); data[4] = val.get(4); data[5] = val.get(7);
                 data[6] = val.get(2); data[7] = val.get(5); data[8] = val.get(8);
             }
             return *this;
+        }
+
+        template <typename T>
+        bool set(const T val[], const int count) {
+            static_assert(std::is_trivially_copyable<T>::value, "Value must be trivial copyable");
+            if (!fVar) {
+                SkDEBUGFAIL("Assigning to missing variable");
+                return false;
+            } else if (sizeof(T) * count != fVar->sizeInBytes()) {
+                SkDEBUGFAIL("Incorrect value size");
+                return false;
+            } else {
+                memcpy(SkTAddOffset<void>(fOwner->writableUniformData(), fVar->offset),
+                       val, sizeof(T) * count);
+            }
+            return true;
         }
 
         SkRuntimeShaderBuilder*         fOwner;
@@ -243,6 +268,10 @@ public:
     BuilderChild child(const char* name) { return { this, fEffect->findChild(name) }; }
 
     sk_sp<SkShader> makeShader(const SkMatrix* localMatrix, bool isOpaque);
+    sk_sp<SkImage> makeImage(GrRecordingContext*,
+                             const SkMatrix* localMatrix,
+                             SkImageInfo resultInfo,
+                             bool mipmapped);
 
 private:
     void* writableUniformData();

@@ -56,7 +56,7 @@ When updating the JSON schema files, take care to ensure consistant formatting.
 Since `clang-format` doesn't support JSON files (currently only Python, C++,
 and JavaScript), the JSON files here are instead formatted using
 (json-stringify-pretty-compact)[https://github.com/lydell/json-stringify-pretty-compact]
-with a max line length of 80 and a 2-character indent. Many IDEs have an extension
-for this, such as VSCode's
+with a max line length of 80 and a 2-character indent. Many IDEs have an
+extension for this, such as VSCode's
 (json-compact-prettifier)[https://marketplace.visualstudio.com/items?itemName=inadarei.json-compact-prettifier].
 

@@ -18,7 +18,7 @@ void ShellVirtualKeyboardDelegate::GetKeyboardConfig(
     OnKeyboardSettingsCallback on_settings_callback) {
   std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   settings->SetBoolean("hotrodmode", is_hotrod_keyboard_);
-  on_settings_callback.Run(std::move(settings));
+  std::move(on_settings_callback).Run(std::move(settings));
 }
 
 void ShellVirtualKeyboardDelegate::OnKeyboardConfigChanged() {
@@ -98,6 +98,24 @@ bool ShellVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
 
 bool ShellVirtualKeyboardDelegate::SetWindowBoundsInScreen(
     const gfx::Rect& bounds_in_screen) {
+  return false;
+}
+
+void ShellVirtualKeyboardDelegate::GetClipboardHistory(
+    const std::set<std::string>& item_ids_filter,
+    OnGetClipboardHistoryCallback get_history_callback) {
+  NOTIMPLEMENTED();
+}
+
+bool ShellVirtualKeyboardDelegate::PasteClipboardItem(
+    const std::string& clipboard_item_id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool ShellVirtualKeyboardDelegate::DeleteClipboardItem(
+    const std::string& clipboard_item_id) {
+  NOTIMPLEMENTED();
   return false;
 }
 

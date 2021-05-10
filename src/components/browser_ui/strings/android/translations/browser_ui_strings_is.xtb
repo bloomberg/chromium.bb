@@ -13,15 +13,16 @@
 <translation id="1272079795634619415">Stöðva</translation>
 <translation id="1289742167380433257">Þessar myndir voru fínstilltar af Google til að spara gögn.</translation>
 <translation id="129382876167171263">Skrár sem vefsvæði vista birtast hér</translation>
+<translation id="1317194122196776028">Gleyma þessu vefsvæði</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Vefsvæðinu <ph name="SITE_NAME" /> bætt við</translation>
 <translation id="1383876407941801731">Leita</translation>
 <translation id="1384959399684842514">Gert var hlé á niðurhali</translation>
 <translation id="1415402041810619267">Stytt vefslóð</translation>
-<translation id="1431402976894535801">Lokar fyrir það að vefsvæði viti hvenær þú ert á staðnum</translation>
 <translation id="1446450296470737166">Leyfa ótakmarkaða stjórn á MIDI-tækjum</translation>
 <translation id="1509960214886564027">Eiginleikar gætu bilað á mörgum vefsvæðum</translation>
 <translation id="1620510694547887537">Myndavél</translation>
+<translation id="1644574205037202324">Ferill</translation>
 <translation id="1660204651932907780">Leyfa vefsvæðum að spila hljóð (mælt með)</translation>
 <translation id="1677097821151855053">Fótspor og önnur gögn af síðunni eru notuð til að muna eftir þér, t.d. til að skrá þig inn eða sérsníða auglýsingar. Upplýsingar um stjórnun fótspora fyrir öll vefsvæði eru í <ph name="BEGIN_LINK" />Stillingar<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Viltu hreinsa vefsvæðagögn?</translation>
@@ -39,7 +40,6 @@
 <translation id="1994173015038366702">Slóð vefsvæðis</translation>
 <translation id="2025115093177348061">Aukinn veruleiki</translation>
 <translation id="2030769033451695672">Ýttu til að fara aftur á <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2054665754582400095">Viðvera þín</translation>
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2091887806945687916">Hljóð</translation>
 <translation id="2107397443965016585">Spyrja áður en vefsvæði fá leyfi til að spila varið efni (ráðlagt)</translation>
@@ -82,7 +82,6 @@
 <translation id="3114012059975132928">Myndspilari</translation>
 <translation id="3115898365077584848">Sýna upplýsingar</translation>
 <translation id="3123473560110926937">Útilokaðar á sumum vefsvæðum</translation>
-<translation id="3165371858310906303">Spyrja þegar vefsvæði vill vita af því þegar þú ert á staðnum</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> af vistuðum gögnum</translation>
 <translation id="321187648315454507">Til að leyfa <ph name="APP_NAME" /> að senda þér tilkynningar þarftu einnig að kveikja á þeim í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Hljóðnemi</translation>
@@ -101,6 +100,7 @@
 <translation id="3744111561329211289">Samstilling í bakgrunni</translation>
 <translation id="3763247130972274048">Ýttu tvisvar vinstra eða hægra megin á myndskeið til að fara fram um 10 sekúndur</translation>
 <translation id="381841723434055211">Símanúmer</translation>
+<translation id="3835233591525155343">Tækjanotkun þín</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3859306556332390985">Leita áfram</translation>
 <translation id="3955193568934677022">Leyfa vefsvæðum að spila varið efni (ráðlagt)</translation>
@@ -117,6 +117,7 @@
 <translation id="429312253194641664">Vefsvæði er að spila efni</translation>
 <translation id="42981349822642051">Stækka</translation>
 <translation id="4336434711095810371">Hreinsa öll gögn</translation>
+<translation id="4402755511846832236">Lokaðu á að vefsvæði geti séð hvenær þú notar þetta tæki</translation>
 <translation id="4433925000917964731">Léttútgáfa síðu frá Google</translation>
 <translation id="4434045419905280838">Sprettigluggar og framsendingar</translation>
 <translation id="445467742685312942">Leyfa vefsvæðum að spila varið efni</translation>
@@ -129,6 +130,7 @@
 <translation id="4670064810192446073">Sýndarveruleiki</translation>
 <translation id="4708011789095599544">Viltu örugglega hreinsa fótspor og önnur gögn fyrir þetta vefsvæði?</translation>
 <translation id="4751476147751820511">Hreyfi- eða birtuskynjarar</translation>
+<translation id="4836046166855586901">Spyrja þegar vefsvæði vill vita hvenær þú notar þetta tæki</translation>
 <translation id="4883854917563148705">Ekki er hægt að endurstilla stýrðar stillingar</translation>
 <translation id="4887024562049524730">Spyrja áður en vefsvæði nota sýndarveruleikatæki og -gögn (ráðlagt)</translation>
 <translation id="4962975101802056554">Afturkalla allar heimildir fyrir þetta tæki</translation>
@@ -140,6 +142,7 @@
 <translation id="5063480226653192405">Notkun</translation>
 <translation id="5100237604440890931">Minnkað – smelltu til að stækka.</translation>
 <translation id="5123685120097942451">Huliðsflipi</translation>
+<translation id="5186036860380548585">Valkosturinn er við efri brún skjásins</translation>
 <translation id="5197729504361054390">Tengiliðunum sem þú valdir verður deilt með <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="528192093759286357">Dragðu ofan frá og snertu bakkhnappinn til að hætta birtingu á öllum skjánum.</translation>
 <translation id="5300589172476337783">Sýna</translation>
@@ -278,6 +281,7 @@
 <translation id="8447861592752582886">Afturkalla tækjaheimild</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 fótspor í notkun}one{# fótspor í notkun}other{# fótspor í notkun}}</translation>
 <translation id="8463851957836045671">Vefsvæðið er hratt</translation>
+<translation id="8487700953926739672">Í boði án nettengingar</translation>
 <translation id="851751545965956758">Ekki leyfa vefsvæðum að tengjast tækjum</translation>
 <translation id="8525306231823319788">Allur skjárinn</translation>
 <translation id="857943718398505171">Leyft (ráðlagt)</translation>

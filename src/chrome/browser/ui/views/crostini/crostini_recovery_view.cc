@@ -22,6 +22,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -49,7 +50,11 @@ void CrostiniRecoveryView::Show(Profile* profile,
                                 int64_t display_id,
                                 const std::vector<crostini::LaunchArg>& args,
                                 crostini::CrostiniSuccessCallback callback) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    std::move(callback).Run(false, "crostini is not allowed");
+    return;
+  }
+
   // Any new apps launched during recovery are immediately cancelled.
   if (g_crostini_recovery_view) {
     std::move(callback).Run(false, "recovery in progress");
@@ -141,3 +146,6 @@ CrostiniRecoveryView::CrostiniRecoveryView(
 CrostiniRecoveryView::~CrostiniRecoveryView() {
   g_crostini_recovery_view = nullptr;
 }
+
+BEGIN_METADATA(CrostiniRecoveryView, views::BubbleDialogDelegateView)
+END_METADATA

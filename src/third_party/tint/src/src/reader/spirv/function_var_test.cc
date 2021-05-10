@@ -78,7 +78,7 @@ std::string Preamble() {
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_AnonymousVars) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %1 = OpVariable %ptr_uint Function
@@ -88,10 +88,11 @@ TEST_F(SpvParserTest, EmitFunctionVariables_AnonymousVars) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_1
     function
@@ -116,7 +117,7 @@ VariableDeclStatement{
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_NamedVars) {
-  auto* p = parser(test::Assemble(Names({"a", "b", "c"}) + Preamble() + R"(
+  auto p = parser(test::Assemble(Names({"a", "b", "c"}) + Preamble() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %a = OpVariable %ptr_uint Function
@@ -126,10 +127,11 @@ TEST_F(SpvParserTest, EmitFunctionVariables_NamedVars) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     a
     function
@@ -154,7 +156,7 @@ VariableDeclStatement{
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_MixedTypes) {
-  auto* p = parser(test::Assemble(Names({"a", "b", "c"}) + Preamble() + R"(
+  auto p = parser(test::Assemble(Names({"a", "b", "c"}) + Preamble() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      %a = OpVariable %ptr_uint Function
@@ -164,10 +166,11 @@ TEST_F(SpvParserTest, EmitFunctionVariables_MixedTypes) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     a
     function
@@ -192,7 +195,7 @@ VariableDeclStatement{
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_ScalarInitializers) {
-  auto* p =
+  auto p =
       parser(test::Assemble(Names({"a", "b", "c", "d", "e"}) + Preamble() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
@@ -205,16 +208,17 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ScalarInitializers) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     a
     function
     __bool
     {
-      ScalarConstructor{true}
+      ScalarConstructor[not set]{true}
     }
   }
 }
@@ -224,7 +228,7 @@ VariableDeclStatement{
     function
     __bool
     {
-      ScalarConstructor{false}
+      ScalarConstructor[not set]{false}
     }
   }
 }
@@ -234,7 +238,7 @@ VariableDeclStatement{
     function
     __i32
     {
-      ScalarConstructor{-1}
+      ScalarConstructor[not set]{-1}
     }
   }
 }
@@ -244,7 +248,7 @@ VariableDeclStatement{
     function
     __u32
     {
-      ScalarConstructor{1}
+      ScalarConstructor[not set]{1}
     }
   }
 }
@@ -254,7 +258,7 @@ VariableDeclStatement{
     function
     __f32
     {
-      ScalarConstructor{1.500000}
+      ScalarConstructor[not set]{1.500000}
     }
   }
 }
@@ -262,7 +266,7 @@ VariableDeclStatement{
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_ScalarNullInitializers) {
-  auto* p = parser(test::Assemble(Names({"a", "b", "c", "d"}) + Preamble() + R"(
+  auto p = parser(test::Assemble(Names({"a", "b", "c", "d"}) + Preamble() + R"(
      %null_bool = OpConstantNull %bool
      %null_int = OpConstantNull %int
      %null_uint = OpConstantNull %uint
@@ -278,16 +282,17 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ScalarNullInitializers) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     a
     function
     __bool
     {
-      ScalarConstructor{false}
+      ScalarConstructor[not set]{false}
     }
   }
 }
@@ -297,7 +302,7 @@ VariableDeclStatement{
     function
     __i32
     {
-      ScalarConstructor{0}
+      ScalarConstructor[not set]{0}
     }
   }
 }
@@ -307,7 +312,7 @@ VariableDeclStatement{
     function
     __u32
     {
-      ScalarConstructor{0}
+      ScalarConstructor[not set]{0}
     }
   }
 }
@@ -317,7 +322,7 @@ VariableDeclStatement{
     function
     __f32
     {
-      ScalarConstructor{0.000000}
+      ScalarConstructor[not set]{0.000000}
     }
   }
 }
@@ -325,7 +330,7 @@ VariableDeclStatement{
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_VectorInitializer) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %v2float
      %two = OpConstant %float 2.0
      %const = OpConstantComposite %v2float %float_1p5 %two
@@ -337,28 +342,29 @@ TEST_F(SpvParserTest, EmitFunctionVariables_VectorInitializer) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __vec_2__f32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __vec_2__f32
-        ScalarConstructor{1.500000}
-        ScalarConstructor{2.000000}
+        ScalarConstructor[not set]{1.500000}
+        ScalarConstructor[not set]{2.000000}
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_MatrixInitializer) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %m3v2float
      %two = OpConstant %float 2.0
      %three = OpConstant %float 3.0
@@ -375,31 +381,32 @@ TEST_F(SpvParserTest, EmitFunctionVariables_MatrixInitializer) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __mat_2_3__f32
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __mat_2_3__f32
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{1.500000}
-          ScalarConstructor{2.000000}
+          ScalarConstructor[not set]{1.500000}
+          ScalarConstructor[not set]{2.000000}
         }
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{2.000000}
-          ScalarConstructor{3.000000}
+          ScalarConstructor[not set]{2.000000}
+          ScalarConstructor[not set]{3.000000}
         }
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{3.000000}
-          ScalarConstructor{4.000000}
+          ScalarConstructor[not set]{3.000000}
+          ScalarConstructor[not set]{4.000000}
         }
       }
     }
@@ -409,7 +416,7 @@ TEST_F(SpvParserTest, EmitFunctionVariables_MatrixInitializer) {
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %arr2uint
      %two = OpConstant %uint 2
      %const = OpConstantComposite %arr2uint %uint_1 %two
@@ -421,28 +428,29 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __array__u32_2
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __array__u32_2
-        ScalarConstructor{1}
-        ScalarConstructor{2}
+        ScalarConstructor[not set]{1}
+        ScalarConstructor[not set]{2}
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
-TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_AliasType) {
-  auto* p = parser(test::Assemble(
+TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_Alias) {
+  auto p = parser(test::Assemble(
       std::string("OpDecorate %arr2uint ArrayStride 16\n") + Preamble() + R"(
      %ptr = OpTypePointer Function %arr2uint
      %two = OpConstant %uint 2
@@ -455,28 +463,30 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_AliasType) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  const char* expect = R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __alias_Arr__array__u32_2_stride_16
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __alias_Arr__array__u32_2_stride_16
-        ScalarConstructor{1}
-        ScalarConstructor{2}
+        ScalarConstructor[not set]{1}
+        ScalarConstructor[not set]{2}
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_Null) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %arr2uint
      %two = OpConstant %uint 2
      %const = OpConstantNull %arr2uint
@@ -488,28 +498,29 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_Null) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __array__u32_2
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __array__u32_2
-        ScalarConstructor{0}
-        ScalarConstructor{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
-TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_AliasType_Null) {
-  auto* p = parser(test::Assemble(
+TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_Alias_Null) {
+  auto p = parser(test::Assemble(
       std::string("OpDecorate %arr2uint ArrayStride 16\n") + Preamble() + R"(
      %ptr = OpTypePointer Function %arr2uint
      %two = OpConstant %uint 2
@@ -522,28 +533,29 @@ TEST_F(SpvParserTest, EmitFunctionVariables_ArrayInitializer_AliasType_Null) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __alias_Arr__array__u32_2_stride_16
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __alias_Arr__array__u32_2_stride_16
-        ScalarConstructor{0}
-        ScalarConstructor{0}
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_StructInitializer) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %strct
      %two = OpConstant %uint 2
      %arrconst = OpConstantComposite %arr2uint %uint_1 %two
@@ -556,33 +568,34 @@ TEST_F(SpvParserTest, EmitFunctionVariables_StructInitializer) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __struct_S
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __struct_S
-        ScalarConstructor{1}
-        ScalarConstructor{1.500000}
-        TypeConstructor{
+        ScalarConstructor[not set]{1}
+        ScalarConstructor[not set]{1.500000}
+        TypeConstructor[not set]{
           __array__u32_2
-          ScalarConstructor{1}
-          ScalarConstructor{2}
+          ScalarConstructor[not set]{1}
+          ScalarConstructor[not set]{2}
         }
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest, EmitFunctionVariables_StructInitializer_Null) {
-  auto* p = parser(test::Assemble(Preamble() + R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %ptr = OpTypePointer Function %strct
      %two = OpConstant %uint 2
      %arrconst = OpConstantComposite %arr2uint %uint_1 %two
@@ -595,29 +608,30 @@ TEST_F(SpvParserTest, EmitFunctionVariables_StructInitializer_Null) {
      OpFunctionEnd
   )"));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitFunctionVariables());
 
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   Variable{
     x_200
     function
     __struct_S
     {
-      TypeConstructor{
+      TypeConstructor[not set]{
         __struct_S
-        ScalarConstructor{0}
-        ScalarConstructor{0.000000}
-        TypeConstructor{
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0.000000}
+        TypeConstructor[not set]{
           __array__u32_2
-          ScalarConstructor{0}
-          ScalarConstructor{0}
+          ScalarConstructor[not set]{0}
+          ScalarConstructor[not set]{0}
         }
       }
     }
   }
 }
-)")) << ToString(fe.ast_body());
+)")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvParserTest,
@@ -637,12 +651,14 @@ TEST_F(SpvParserTest,
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect =
+      R"(VariableDeclStatement{
   Variable{
     x_25
     function
@@ -650,19 +666,20 @@ TEST_F(SpvParserTest,
   }
 }
 Assignment{
-  Identifier{x_25}
-  ScalarConstructor{1}
+  Identifier[not set]{x_25}
+  ScalarConstructor[not set]{1}
 }
 Assignment{
-  Identifier{x_25}
-  Binary{
-    ScalarConstructor{1}
+  Identifier[not set]{x_25}
+  Binary[not set]{
+    ScalarConstructor[not set]{1}
     add
-    ScalarConstructor{1}
+    ScalarConstructor[not set]{1}
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_CombinatorialValue_Immediate_UsedTwice) {
@@ -682,12 +699,13 @@ TEST_F(SpvParserTest, EmitStatement_CombinatorialValue_Immediate_UsedTwice) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   Variable{
     x_25
     function
@@ -700,28 +718,29 @@ VariableDeclStatement{
     none
     __u32
     {
-      Binary{
-        ScalarConstructor{1}
+      Binary[not set]{
+        ScalarConstructor[not set]{1}
         add
-        ScalarConstructor{1}
+        ScalarConstructor[not set]{1}
       }
     }
   }
 }
 Assignment{
-  Identifier{x_25}
-  ScalarConstructor{1}
+  Identifier[not set]{x_25}
+  ScalarConstructor[not set]{1}
 }
 Assignment{
-  Identifier{x_25}
-  Identifier{x_2}
+  Identifier[not set]{x_25}
+  Identifier[not set]{x_2}
 }
 Assignment{
-  Identifier{x_25}
-  Identifier{x_2}
+  Identifier[not set]{x_25}
+  Identifier[not set]{x_2}
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest,
@@ -752,12 +771,13 @@ TEST_F(SpvParserTest,
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   Variable{
     x_25
     function
@@ -770,32 +790,33 @@ VariableDeclStatement{
     none
     __u32
     {
-      Binary{
-        ScalarConstructor{1}
+      Binary[not set]{
+        ScalarConstructor[not set]{1}
         add
-        ScalarConstructor{1}
+        ScalarConstructor[not set]{1}
       }
     }
   }
 }
 Assignment{
-  Identifier{x_25}
-  ScalarConstructor{1}
+  Identifier[not set]{x_25}
+  ScalarConstructor[not set]{1}
 }
 Loop{
   continuing {
     Assignment{
-      Identifier{x_25}
-      Identifier{x_2}
+      Identifier[not set]{x_25}
+      Identifier[not set]{x_2}
     }
   }
 }
 Assignment{
-  Identifier{x_25}
-  ScalarConstructor{2}
+  Identifier[not set]{x_25}
+  ScalarConstructor[not set]{2}
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(
@@ -849,14 +870,15 @@ TEST_F(
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(Assignment{
-  Identifier{x_1}
-  ScalarConstructor{0}
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(Assignment{
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{0}
 }
 Loop{
   VariableDeclStatement{
@@ -867,32 +889,32 @@ Loop{
     }
   }
   Assignment{
-    Identifier{x_1}
-    ScalarConstructor{1}
+    Identifier[not set]{x_1}
+    ScalarConstructor[not set]{1}
   }
   If{
     (
-      ScalarConstructor{false}
+      ScalarConstructor[not set]{false}
     )
     {
       Break{}
     }
   }
   Assignment{
-    Identifier{x_1}
-    ScalarConstructor{3}
+    Identifier[not set]{x_1}
+    ScalarConstructor[not set]{3}
   }
   If{
     (
-      ScalarConstructor{true}
+      ScalarConstructor[not set]{true}
     )
     {
       Assignment{
-        Identifier{x_2}
-        Binary{
-          ScalarConstructor{1}
+        Identifier[not set]{x_2}
+        Binary[not set]{
+          ScalarConstructor[not set]{1}
           add
-          ScalarConstructor{1}
+          ScalarConstructor[not set]{1}
         }
       }
     }
@@ -903,17 +925,17 @@ Loop{
     }
   }
   Assignment{
-    Identifier{x_1}
-    Identifier{x_2}
+    Identifier[not set]{x_1}
+    Identifier[not set]{x_2}
   }
   continuing {
     Assignment{
-      Identifier{x_1}
-      ScalarConstructor{4}
+      Identifier[not set]{x_1}
+      ScalarConstructor[not set]{4}
     }
     If{
       (
-        ScalarConstructor{false}
+        ScalarConstructor[not set]{false}
       )
       {
         Break{}
@@ -922,11 +944,12 @@ Loop{
   }
 }
 Assignment{
-  Identifier{x_1}
-  ScalarConstructor{5}
+  Identifier[not set]{x_1}
+  ScalarConstructor[not set]{5}
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(
@@ -963,26 +986,27 @@ TEST_F(
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
   // We don't hoist x_1 into its own mutable variable. It is emitted as
   // a const definition.
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __u32
     {
-      ScalarConstructor{1}
+      ScalarConstructor[not set]{1}
     }
   }
 }
 If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
   }
@@ -993,16 +1017,17 @@ VariableDeclStatement{
     none
     __u32
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   }
 }
 Assignment{
-  Identifier{x_200}
-  Identifier{x_3}
+  Identifier[not set]{x_200}
+  Identifier[not set]{x_3}
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest,
@@ -1048,14 +1073,15 @@ TEST_F(SpvParserTest,
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(If{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
     VariableDeclStatement{
@@ -1064,13 +1090,13 @@ TEST_F(SpvParserTest,
         none
         __u32
         {
-          ScalarConstructor{1}
+          ScalarConstructor[not set]{1}
         }
       }
     }
     If{
       (
-        ScalarConstructor{true}
+        ScalarConstructor[not set]{true}
       )
       {
       }
@@ -1081,18 +1107,19 @@ TEST_F(SpvParserTest,
         none
         __u32
         {
-          Identifier{x_1}
+          Identifier[not set]{x_1}
         }
       }
     }
     Assignment{
-      Identifier{x_200}
-      Identifier{x_3}
+      Identifier[not set]{x_200}
+      Identifier[not set]{x_3}
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(
@@ -1133,14 +1160,15 @@ TEST_F(
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(If{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
     VariableDeclStatement{
@@ -1149,12 +1177,12 @@ TEST_F(
         none
         __u32
         {
-          ScalarConstructor{1}
+          ScalarConstructor[not set]{1}
         }
       }
     }
     Switch{
-      ScalarConstructor{1}
+      ScalarConstructor[not set]{1}
       {
         Case 0{
         }
@@ -1168,18 +1196,19 @@ TEST_F(
         none
         __u32
         {
-          Identifier{x_1}
+          Identifier[not set]{x_1}
         }
       }
     }
     Assignment{
-      Identifier{x_200}
-      Identifier{x_3}
+      Identifier[not set]{x_200}
+      Identifier[not set]{x_3}
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest,
@@ -1212,20 +1241,21 @@ TEST_F(SpvParserTest,
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
   // We don't hoist x_1 into its own mutable variable. It is emitted as
   // a const definition.
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __u32
     {
-      ScalarConstructor{1}
+      ScalarConstructor[not set]{1}
     }
   }
 }
@@ -1235,19 +1265,20 @@ VariableDeclStatement{
     none
     __u32
     {
-      Identifier{x_1}
+      Identifier[not set]{x_1}
     }
   }
 }
 If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
@@ -1286,12 +1317,13 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(Loop{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(Loop{
   VariableDeclStatement{
     Variable{
       x_2_phi
@@ -1312,7 +1344,7 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
       none
       __bool
       {
-        Identifier{x_7}
+        Identifier[not set]{x_7}
       }
     }
   }
@@ -1322,21 +1354,21 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
       none
       __bool
       {
-        Identifier{x_8}
+        Identifier[not set]{x_8}
       }
     }
   }
   Assignment{
-    Identifier{x_2_phi}
-    ScalarConstructor{0}
+    Identifier[not set]{x_2_phi}
+    ScalarConstructor[not set]{0}
   }
   Assignment{
-    Identifier{x_3_phi}
-    ScalarConstructor{1}
+    Identifier[not set]{x_3_phi}
+    ScalarConstructor[not set]{1}
   }
   If{
     (
-      Identifier{x_101}
+      Identifier[not set]{x_101}
     )
     {
       Break{}
@@ -1349,7 +1381,7 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
         none
         __u32
         {
-          Identifier{x_2_phi}
+          Identifier[not set]{x_2_phi}
         }
       }
     }
@@ -1359,25 +1391,25 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
         none
         __u32
         {
-          Identifier{x_3_phi}
+          Identifier[not set]{x_3_phi}
         }
       }
     }
     Assignment{
-      Identifier{x_2_phi}
-      Binary{
-        Identifier{x_2}
+      Identifier[not set]{x_2_phi}
+      Binary[not set]{
+        Identifier[not set]{x_2}
         add
-        ScalarConstructor{1}
+        ScalarConstructor[not set]{1}
       }
     }
     Assignment{
-      Identifier{x_3_phi}
-      Identifier{x_3}
+      Identifier[not set]{x_3_phi}
+      Identifier[not set]{x_3}
     }
     If{
       (
-        Identifier{x_102}
+        Identifier[not set]{x_102}
       )
       {
         Break{}
@@ -1386,7 +1418,8 @@ TEST_F(SpvParserTest, EmitStatement_Phi_SingleBlockLoopIndex) {
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
@@ -1428,12 +1461,13 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(Loop{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(Loop{
   VariableDeclStatement{
     Variable{
       x_2_phi
@@ -1454,7 +1488,7 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
       none
       __bool
       {
-        Identifier{x_7}
+        Identifier[not set]{x_7}
       }
     }
   }
@@ -1464,21 +1498,21 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
       none
       __bool
       {
-        Identifier{x_8}
+        Identifier[not set]{x_8}
       }
     }
   }
   Assignment{
-    Identifier{x_2_phi}
-    ScalarConstructor{0}
+    Identifier[not set]{x_2_phi}
+    ScalarConstructor[not set]{0}
   }
   Assignment{
-    Identifier{x_3_phi}
-    ScalarConstructor{1}
+    Identifier[not set]{x_3_phi}
+    ScalarConstructor[not set]{1}
   }
   If{
     (
-      Identifier{x_101}
+      Identifier[not set]{x_101}
     )
     {
       Break{}
@@ -1498,7 +1532,7 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
         none
         __u32
         {
-          Identifier{x_2_phi}
+          Identifier[not set]{x_2_phi}
         }
       }
     }
@@ -1508,13 +1542,13 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
         none
         __u32
         {
-          Identifier{x_3_phi}
+          Identifier[not set]{x_3_phi}
         }
       }
     }
     If{
       (
-        Identifier{x_102}
+        Identifier[not set]{x_102}
       )
       {
         Break{}
@@ -1522,26 +1556,27 @@ TEST_F(SpvParserTest, EmitStatement_Phi_MultiBlockLoopIndex) {
     }
     continuing {
       Assignment{
-        Identifier{x_4}
-        Binary{
-          Identifier{x_2}
+        Identifier[not set]{x_4}
+        Binary[not set]{
+          Identifier[not set]{x_2}
           add
-          ScalarConstructor{1}
+          ScalarConstructor[not set]{1}
         }
       }
       Assignment{
-        Identifier{x_2_phi}
-        Identifier{x_4}
+        Identifier[not set]{x_2_phi}
+        Identifier[not set]{x_4}
       }
       Assignment{
-        Identifier{x_3_phi}
-        Identifier{x_3}
+        Identifier[not set]{x_3_phi}
+        Identifier[not set]{x_3}
       }
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_Phi_ValueFromLoopBodyAndContinuing) {
@@ -1583,19 +1618,20 @@ TEST_F(SpvParserTest, EmitStatement_Phi_ValueFromLoopBodyAndContinuing) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << assembly << p->error();
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   VariableConst{
     x_101
     none
     __bool
     {
-      Identifier{x_17}
+      Identifier[not set]{x_17}
     }
   }
 }
@@ -1615,12 +1651,12 @@ Loop{
     }
   }
   Assignment{
-    Identifier{x_2_phi}
-    ScalarConstructor{0}
+    Identifier[not set]{x_2_phi}
+    ScalarConstructor[not set]{0}
   }
   Assignment{
-    Identifier{x_5_phi}
-    ScalarConstructor{1}
+    Identifier[not set]{x_5_phi}
+    ScalarConstructor[not set]{1}
   }
   Loop{
     VariableDeclStatement{
@@ -1636,7 +1672,7 @@ Loop{
         none
         __u32
         {
-          Identifier{x_2_phi}
+          Identifier[not set]{x_2_phi}
         }
       }
     }
@@ -1646,7 +1682,7 @@ Loop{
         none
         __u32
         {
-          Identifier{x_5_phi}
+          Identifier[not set]{x_5_phi}
         }
       }
     }
@@ -1656,10 +1692,10 @@ Loop{
         none
         __u32
         {
-          Binary{
-            Identifier{x_2}
+          Binary[not set]{
+            Identifier[not set]{x_2}
             add
-            ScalarConstructor{1}
+            ScalarConstructor[not set]{1}
           }
         }
       }
@@ -1670,17 +1706,17 @@ Loop{
         none
         __u32
         {
-          Binary{
-            Identifier{x_4}
+          Binary[not set]{
+            Identifier[not set]{x_4}
             add
-            ScalarConstructor{1}
+            ScalarConstructor[not set]{1}
           }
         }
       }
     }
     If{
       (
-        Identifier{x_101}
+        Identifier[not set]{x_101}
       )
       {
         Break{}
@@ -1688,27 +1724,27 @@ Loop{
     }
     continuing {
       Assignment{
-        Identifier{x_7}
-        Binary{
-          Identifier{x_4}
+        Identifier[not set]{x_7}
+        Binary[not set]{
+          Identifier[not set]{x_4}
           add
-          Identifier{x_6}
+          Identifier[not set]{x_6}
         }
       }
       Assignment{
-        Identifier{x_2_phi}
-        Identifier{x_4}
+        Identifier[not set]{x_2_phi}
+        Identifier[not set]{x_4}
       }
       Assignment{
-        Identifier{x_5_phi}
-        Identifier{x_7}
+        Identifier[not set]{x_5_phi}
+        Identifier[not set]{x_7}
       }
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body())
-     << assembly;
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_Phi_FromElseAndThen) {
@@ -1752,18 +1788,19 @@ TEST_F(SpvParserTest, EmitStatement_Phi_FromElseAndThen) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   VariableConst{
     x_101
     none
     __bool
     {
-      Identifier{x_7}
+      Identifier[not set]{x_7}
     }
   }
 }
@@ -1773,14 +1810,14 @@ VariableDeclStatement{
     none
     __bool
     {
-      Identifier{x_8}
+      Identifier[not set]{x_8}
     }
   }
 }
 Loop{
   If{
     (
-      Identifier{x_101}
+      Identifier[not set]{x_101}
     )
     {
       Break{}
@@ -1795,12 +1832,12 @@ Loop{
   }
   If{
     (
-      Identifier{x_102}
+      Identifier[not set]{x_102}
     )
     {
       Assignment{
-        Identifier{x_2_phi}
-        ScalarConstructor{0}
+        Identifier[not set]{x_2_phi}
+        ScalarConstructor[not set]{0}
       }
       Continue{}
     }
@@ -1808,8 +1845,8 @@ Loop{
   Else{
     {
       Assignment{
-        Identifier{x_2_phi}
-        ScalarConstructor{1}
+        Identifier[not set]{x_2_phi}
+        ScalarConstructor[not set]{1}
       }
     }
   }
@@ -1820,18 +1857,19 @@ Loop{
         none
         __u32
         {
-          Identifier{x_2_phi}
+          Identifier[not set]{x_2_phi}
         }
       }
     }
     Assignment{
-      Identifier{x_1}
-      Identifier{x_2}
+      Identifier[not set]{x_1}
+      Identifier[not set]{x_2}
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_Phi_FromHeaderAndThen) {
@@ -1872,18 +1910,19 @@ TEST_F(SpvParserTest, EmitStatement_Phi_FromHeaderAndThen) {
 
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   VariableConst{
     x_101
     none
     __bool
     {
-      Identifier{x_7}
+      Identifier[not set]{x_7}
     }
   }
 }
@@ -1893,14 +1932,14 @@ VariableDeclStatement{
     none
     __bool
     {
-      Identifier{x_8}
+      Identifier[not set]{x_8}
     }
   }
 }
 Loop{
   If{
     (
-      Identifier{x_101}
+      Identifier[not set]{x_101}
     )
     {
       Break{}
@@ -1914,17 +1953,17 @@ Loop{
     }
   }
   Assignment{
-    Identifier{x_2_phi}
-    ScalarConstructor{0}
+    Identifier[not set]{x_2_phi}
+    ScalarConstructor[not set]{0}
   }
   If{
     (
-      Identifier{x_102}
+      Identifier[not set]{x_102}
     )
     {
       Assignment{
-        Identifier{x_2_phi}
-        ScalarConstructor{1}
+        Identifier[not set]{x_2_phi}
+        ScalarConstructor[not set]{1}
       }
     }
   }
@@ -1935,18 +1974,19 @@ Loop{
         none
         __u32
         {
-          Identifier{x_2_phi}
+          Identifier[not set]{x_2_phi}
         }
       }
     }
     Assignment{
-      Identifier{x_1}
-      Identifier{x_2}
+      Identifier[not set]{x_1}
+      Identifier[not set]{x_2}
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_UseInPhiCountsAsUse) {
@@ -1978,12 +2018,13 @@ TEST_F(SpvParserTest, EmitStatement_UseInPhiCountsAsUse) {
                OpFunctionEnd
 
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
 
-  EXPECT_THAT(ToString(fe.ast_body()), Eq(R"(VariableDeclStatement{
+  auto got = ToString(p->builder(), fe.ast_body());
+  auto* expect = R"(VariableDeclStatement{
   Variable{
     x_101_phi
     function
@@ -1996,10 +2037,10 @@ VariableDeclStatement{
     none
     __bool
     {
-      Binary{
-        ScalarConstructor{true}
+      Binary[not set]{
+        ScalarConstructor[not set]{true}
         logical_and
-        ScalarConstructor{true}
+        ScalarConstructor[not set]{true}
       }
     }
   }
@@ -2010,25 +2051,25 @@ VariableDeclStatement{
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Identifier{x_11}
+        Identifier[not set]{x_11}
       }
     }
   }
 }
 Assignment{
-  Identifier{x_101_phi}
-  Identifier{x_11}
+  Identifier[not set]{x_101_phi}
+  Identifier[not set]{x_11}
 }
 If{
   (
-    ScalarConstructor{true}
+    ScalarConstructor[not set]{true}
   )
   {
     Assignment{
-      Identifier{x_101_phi}
-      Identifier{x_12}
+      Identifier[not set]{x_101_phi}
+      Identifier[not set]{x_12}
     }
   }
 }
@@ -2038,12 +2079,13 @@ VariableDeclStatement{
     none
     __bool
     {
-      Identifier{x_101_phi}
+      Identifier[not set]{x_101_phi}
     }
   }
 }
 Return{}
-)")) << ToString(fe.ast_body());
+)";
+  EXPECT_EQ(expect, got);
 }
 
 }  // namespace

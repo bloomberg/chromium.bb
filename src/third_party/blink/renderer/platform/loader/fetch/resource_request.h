@@ -41,9 +41,12 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
+#include "services/network/public/mojom/url_loader.mojom-blink.h"
+#include "services/network/public/mojom/web_bundle_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/render_blocking_behavior.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -78,6 +81,23 @@ class PLATFORM_EXPORT ResourceRequestHead {
     RedirectInfo() = delete;
     RedirectInfo(const KURL& original_url, const KURL& previous_url)
         : original_url(original_url), previous_url(previous_url) {}
+  };
+
+  struct PLATFORM_EXPORT WebBundleTokenParams {
+    WebBundleTokenParams() = delete;
+    WebBundleTokenParams(const WebBundleTokenParams& other);
+    WebBundleTokenParams& operator=(const WebBundleTokenParams& other);
+
+    WebBundleTokenParams(
+        const KURL& bundle_url,
+        const base::UnguessableToken& token,
+        mojo::PendingRemote<network::mojom::WebBundleHandle> handle);
+
+    mojo::PendingRemote<network::mojom::WebBundleHandle> CloneHandle() const;
+
+    KURL bundle_url;
+    base::UnguessableToken token;
+    mojo::PendingRemote<network::mojom::WebBundleHandle> handle;
   };
 
   ResourceRequestHead();
@@ -457,6 +477,10 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   void SetFetchLikeAPI(bool enabled) { is_fetch_like_api_ = enabled; }
 
+  bool IsFavicon() const { return is_favicon_; }
+
+  void SetFavicon(bool enabled) { is_favicon_ = enabled; }
+
   bool PrefetchMaybeForTopLeveNavigation() const {
     return prefetch_maybe_for_top_level_navigation_;
   }
@@ -484,6 +508,23 @@ class PLATFORM_EXPORT ResourceRequestHead {
   }
   bool AllowHTTP1ForStreamingUpload() const {
     return allowHTTP1ForStreamingUpload_;
+  }
+
+  const base::Optional<ResourceRequestHead::WebBundleTokenParams>&
+  GetWebBundleTokenParams() const {
+    return web_bundle_token_params_;
+  }
+
+  void SetWebBundleTokenParams(
+      ResourceRequestHead::WebBundleTokenParams params) {
+    web_bundle_token_params_ = params;
+  }
+
+  void SetRenderBlockingBehavior(RenderBlockingBehavior behavior) {
+    render_blocking_behavior_ = behavior;
+  }
+  RenderBlockingBehavior GetRenderBlockingBehavior() const {
+    return render_blocking_behavior_;
   }
 
  private:
@@ -569,6 +610,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   bool is_fetch_like_api_ = false;
 
+  bool is_favicon_ = false;
+
   // Currently this is only used when a prefetch request has `as=document`
   // specified. If true, and the request is cross-origin, the browser will cache
   // the request under the cross-origin's partition. Furthermore, its reuse from
@@ -581,6 +624,16 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // prefetch responses. The browser process uses this token to ensure the
   // request is cached correctly.
   base::Optional<base::UnguessableToken> recursive_prefetch_token_;
+
+  // This is used when fetching either a WebBundle or a subresrouce in the
+  // WebBundle. The network process uses this token to associate the request to
+  // the bundle.
+  base::Optional<WebBundleTokenParams> web_bundle_token_params_;
+
+  // Render blocking behavior of the resource. Used in maintaining correct
+  // reporting for redirects.
+  RenderBlockingBehavior render_blocking_behavior_ =
+      RenderBlockingBehavior::kUnset;
 };
 
 class PLATFORM_EXPORT ResourceRequestBody {
@@ -644,13 +697,11 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
 
   ResourceRequest(const ResourceRequest&) = delete;
   ResourceRequest(ResourceRequest&&);
+  ResourceRequest& operator=(const ResourceRequest&) = delete;
   ResourceRequest& operator=(ResourceRequest&&);
 
   ~ResourceRequest();
 
-  // TODO(yoichio): Use move semantics as much as possible.
-  // See crbug.com/787704.
-  void CopyFrom(const ResourceRequest&);
   void CopyHeadFrom(const ResourceRequestHead&);
 
   const scoped_refptr<EncodedFormData>& HttpBody() const;
@@ -659,8 +710,6 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
   ResourceRequestBody& MutableBody() { return body_; }
 
  private:
-  ResourceRequest& operator=(const ResourceRequest&);
-
   ResourceRequestBody body_;
 };
 

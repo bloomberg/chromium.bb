@@ -7,6 +7,8 @@
 
 // #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
 // #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+// #import {setESimManagerRemoteForTesting} from 'chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
+// #import {FakeESimManagerRemote} from 'chrome://test/cr_components/chromeos/cellular_setup/fake_esim_manager_remote.m.js';
 // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
 // #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -20,6 +22,9 @@ suite('InternetSubpage', function() {
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
+
+  /** @type {?chromeos.cellularSetup.mojom.CellularSetupRemote} */
+  let eSimManagerRemote;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -36,6 +41,9 @@ suite('InternetSubpage', function() {
 
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+
+    eSimManagerRemote = new cellular_setup.FakeESimManagerRemote();
+    cellular_setup.setESimManagerRemoteForTesting(eSimManagerRemote);
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
@@ -55,18 +63,28 @@ suite('InternetSubpage', function() {
     internetSubpage.deviceState = mojoApi_.getDeviceStateForTest(type);
   }
 
-  function setCellularNetworks() {
+  /**
+   * @param {!Array<!chromeos.networkConfig.mojom.NetworkStateProperties>=}
+   *     opt_networks Networks to set. If left undefined, default networks will
+   *     be set.
+   */
+  function addCellularNetworks(opt_networks) {
     const mojom = chromeos.networkConfig.mojom;
-    mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether);
-    setNetworksForTest(mojom.NetworkType.kCellular, [
+
+    const networks = opt_networks || [
       OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular, 'cellular1'),
       OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
       OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether2'),
-    ]);
+    ];
+
+    mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether);
+    setNetworksForTest(mojom.NetworkType.kCellular, networks);
     internetSubpage.tetherDeviceState = {
       type: mojom.NetworkType.kTether,
       deviceState: mojom.DeviceStateType.kEnabled
     };
+    internetSubpage.cellularDeviceState =
+        mojoApi_.getDeviceStateForTest(mojom.NetworkType.kCellular);
   }
 
   function initSubpage(isUpdatedCellularUiEnabled) {
@@ -78,6 +96,7 @@ suite('InternetSubpage', function() {
     internetSubpage = document.createElement('settings-internet-subpage');
     assertTrue(!!internetSubpage);
     mojoApi_.resetForTest();
+    eSimManagerRemote.addEuiccForTest(0);
     document.body.appendChild(internetSubpage);
     internetSubpage.init();
     return flushAsync();
@@ -212,7 +231,7 @@ suite('InternetSubpage', function() {
         function() {
           initSubpage(false /* isUpdatedCellularUiEnabled */);
           const mojom = chromeos.networkConfig.mojom;
-          setCellularNetworks();
+          addCellularNetworks();
           return flushAsync().then(() => {
             assertEquals(3, internetSubpage.networkStateList_.length);
             const toggle = internetSubpage.$$('#deviceEnabledButton');
@@ -232,7 +251,7 @@ suite('InternetSubpage', function() {
         function() {
           initSubpage(true /* isUpdatedCellularUiEnabled */);
           const mojom = chromeos.networkConfig.mojom;
-          setCellularNetworks();
+          addCellularNetworks();
           return flushAsync().then(() => {
             assertEquals(3, internetSubpage.networkStateList_.length);
             const toggle = internetSubpage.$$('#deviceEnabledButton');
@@ -246,6 +265,47 @@ suite('InternetSubpage', function() {
             assertFalse(!!tetherToggle);
           });
         });
+
+    // Regression test for https://crbug.com/1182406.
+    test(
+        'Cellular subpage with no networks w/ updatedCellularActivationUi flag',
+        function() {
+          initSubpage(true /* isUpdatedCellularUiEnabled */);
+          addCellularNetworks([] /* networks */);
+          return flushAsync().then(() => {
+            const cellularNetworkList =
+                internetSubpage.$$('#cellularNetworkList');
+            assertTrue(!!cellularNetworkList);
+          });
+        });
+
+    test('Select locked SIM shows details', async () => {
+      initSubpage(false /* isUpdatedCellularUiEnabled */);
+
+      internetSubpage.globalPolicy = {
+        allowOnlyPolicyNetworksToConnect: false,
+      };
+
+      // Add cellular network with locked SIM.
+      const lockedSim = OncMojo.getDefaultNetworkState(
+          chromeos.networkConfig.mojom.NetworkType.kCellular, 'cellular1');
+      lockedSim.typeState.cellular.simLocked = true;
+      addCellularNetworks([lockedSim]);
+
+      return flushAsync().then(async () => {
+        const networkList = internetSubpage.$$('#networkList');
+        assertTrue(!!networkList);
+
+        // Selecting this network should cause the the detail page to be shown
+        // instead of initiating a connection.
+        const showDetailPromise =
+            test_util.eventToPromise('show-detail', internetSubpage);
+
+        const event = {detail: lockedSim, target: networkList};
+        networkList.fire('selected', event);
+        await showDetailPromise;
+      });
+    });
 
     test('Deep link to tether on/off toggle w/ cellular', async () => {
       initSubpage(false /* isUpdatedCellularUiEnabled */);

@@ -6,7 +6,7 @@
  */
 
 #include "src/sksl/SkSLASTNode.h"
-#include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLString.h"
 
 namespace SkSL {
@@ -17,7 +17,7 @@ String ASTNode::description() const {
         case Kind::kNull: return "";
         case Kind::kBinary:
             return "(" + this->begin()->description() + " " +
-                               Compiler::OperatorName(getToken().fKind) + " " +
+                               getOperator().operatorName() + " " +
                                (this->begin() + 1)->description() + ")";
         case Kind::kBlock: {
             String result = "{\n";
@@ -139,7 +139,7 @@ String ASTNode::description() const {
             }
             result += "} ";
             result += id.fInstanceName;
-            for (size_t i = 0; i < id.fSizeCount; ++i) {
+            if (id.fIsArray) {
                 result += "[" + (iter++)->description() + "]";
             }
             SkASSERT(iter == this->end());
@@ -152,7 +152,7 @@ String ASTNode::description() const {
             ParameterData pd = getParameterData();
             auto iter = this->begin();
             String result = (iter++)->description() + " " + pd.fName;
-            for (size_t i = 0; i < pd.fSizeCount; ++i) {
+            if (pd.fIsArray) {
                 result += "[" + (iter++)->description() + "]";
             }
             if (iter != this->end()) {
@@ -162,9 +162,9 @@ String ASTNode::description() const {
             return result;
         }
         case Kind::kPostfix:
-            return this->begin()->description() + Compiler::OperatorName(getToken().fKind);
+            return this->begin()->description() + getOperator().operatorName();
         case Kind::kPrefix:
-            return Compiler::OperatorName(getToken().fKind) + this->begin()->description();
+            return getOperator().operatorName() + this->begin()->description();
         case Kind::kReturn:
             if (this->begin() != this->end()) {
                 return "return " + this->begin()->description() + ";";
@@ -204,12 +204,12 @@ String ASTNode::description() const {
             return "(" + this->begin()->description() + " ? " + (this->begin() + 1)->description() +
                    " : " + (this->begin() + 2)->description() + ")";
         case Kind::kType:
-            return String(getTypeData().fName);
+            return getString();
         case Kind::kVarDeclaration: {
             VarData vd = getVarData();
             String result = vd.fName;
             auto iter = this->begin();
-            for (size_t i = 0; i < vd.fSizeCount; ++i) {
+            if (vd.fIsArray) {
                 result += "[" + (iter++)->description() + "]";
             }
             if (iter != this->end()) {

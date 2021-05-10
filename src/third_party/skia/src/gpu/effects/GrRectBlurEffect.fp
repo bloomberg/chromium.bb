@@ -21,14 +21,14 @@
 #include "src/gpu/effects/GrTextureEffect.h"
 }
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 in float4 rect;
 
-layout(key) bool highp = abs(rect.x) > 16000 || abs(rect.y) > 16000 ||
-                         abs(rect.z) > 16000 || abs(rect.w) > 16000;
+layout(key) bool highPrecision = abs(rect.x) > 16000 || abs(rect.y) > 16000 ||
+                                 abs(rect.z) > 16000 || abs(rect.w) > 16000;
 
-layout(when= highp) uniform float4 rectF;
-layout(when=!highp) uniform half4  rectH;
+layout(when= highPrecision) uniform float4 rectF;
+layout(when=!highPrecision) uniform half4  rectH;
 
 layout(key) in bool applyInvVM;
 layout(when=applyInvVM) in uniform float3x3 invVM;
@@ -179,7 +179,7 @@ static std::unique_ptr<GrFragmentProcessor> MakeIntegralFP(GrRecordingContext* r
      }
 }
 
-void main() {
+half4 main() {
     half xCoverage, yCoverage;
     float2 pos = sk_FragCoord.xy;
     @if (applyInvVM) {
@@ -193,7 +193,7 @@ void main() {
         // computations align the left edge of the integral texture with the inset rect's edge
         // extending outward 6 * sigma from the inset rect.
         half2 xy;
-        @if (highp) {
+        @if (highPrecision) {
             xy = max(half2(rectF.LT - pos), half2(pos - rectF.RB));
        } else {
             xy = max(half2(rectH.LT - pos), half2(pos - rectH.RB));
@@ -217,7 +217,7 @@ void main() {
         // Also, our rect uniform was pre-inset by 3 sigma from the actual rect being blurred,
         // also factored in.
         half4 rect;
-        @if (highp) {
+        @if (highPrecision) {
             rect.LT = half2(rectF.LT - pos);
             rect.RB = half2(pos - rectF.RB);
         } else {
@@ -229,13 +229,12 @@ void main() {
         yCoverage = 1 - sample(integral, half2(rect.T, 0.5)).a
                       - sample(integral, half2(rect.B, 0.5)).a;
     }
-    half4 inputColor = sample(inputFP);
-    sk_OutColor = inputColor * xCoverage * yCoverage;
+    return sample(inputFP) * xCoverage * yCoverage;
 }
 
 @setData(pdman) {
     float r[] {rect.fLeft, rect.fTop, rect.fRight, rect.fBottom};
-    pdman.set4fv(highp ? rectF : rectH, 1, r);
+    pdman.set4fv(highPrecision ? rectF : rectH, 1, r);
 }
 
 @test(data) {

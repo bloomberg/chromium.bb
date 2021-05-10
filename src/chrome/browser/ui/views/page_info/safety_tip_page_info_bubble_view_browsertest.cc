@@ -13,8 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/engagement/site_engagement_score.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/reputation/reputation_service.h"
@@ -39,6 +37,8 @@
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
+#include "components/site_engagement/content/site_engagement_score.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -169,7 +169,7 @@ void CloseWarningIgnore(views::Widget::ClosedReason reason) {
 
 // Sets the absolute Site Engagement |score| for the testing origin.
 void SetEngagementScore(Browser* browser, const GURL& url, double score) {
-  SiteEngagementService::Get(browser->profile())
+  site_engagement::SiteEngagementService::Get(browser->profile())
       ->ResetBaseScoreForURL(url, score);
 }
 

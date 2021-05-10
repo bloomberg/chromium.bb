@@ -68,12 +68,29 @@ void TranslateBubbleModelImpl::GoBackFromAdvanced() {
   view_state_transition_.GoBackFromAdvanced();
 }
 
-int TranslateBubbleModelImpl::GetNumberOfLanguages() const {
+int TranslateBubbleModelImpl::GetNumberOfSourceLanguages() const {
   return ui_delegate_->GetNumberOfLanguages();
 }
 
-base::string16 TranslateBubbleModelImpl::GetLanguageNameAt(int index) const {
+int TranslateBubbleModelImpl::GetNumberOfTargetLanguages() const {
+  // Subtract 1 to account for unknown language option being omitted.
+  return ui_delegate_->GetNumberOfLanguages() - 1;
+}
+
+base::string16 TranslateBubbleModelImpl::GetSourceLanguageNameAt(
+    int index) const {
   return ui_delegate_->GetLanguageNameAt(index);
+}
+
+base::string16 TranslateBubbleModelImpl::GetTargetLanguageNameAt(
+    int index) const {
+  // Add 1 to account for unknown language option at index 0 in
+  // TranslateUIDelegate language list.
+  return ui_delegate_->GetLanguageNameAt(index + 1);
+}
+
+std::string TranslateBubbleModelImpl::GetOriginalLanguageCode() const {
+  return ui_delegate_->GetOriginalLanguageCode();
 }
 
 int TranslateBubbleModelImpl::GetOriginalLanguageIndex() const {
@@ -85,11 +102,15 @@ void TranslateBubbleModelImpl::UpdateOriginalLanguageIndex(int index) {
 }
 
 int TranslateBubbleModelImpl::GetTargetLanguageIndex() const {
-  return ui_delegate_->GetTargetLanguageIndex();
+  // Subtract 1 to account for unknown language option being omitted from the
+  // bubble target language list.
+  return ui_delegate_->GetTargetLanguageIndex() - 1;
 }
 
 void TranslateBubbleModelImpl::UpdateTargetLanguageIndex(int index) {
-  ui_delegate_->UpdateTargetLanguageIndex(index);
+  // Add 1 to account for unknown language option at index 0 in
+  // TranslateUIDelegate language list.
+  ui_delegate_->UpdateTargetLanguageIndex(index + 1);
 }
 
 void TranslateBubbleModelImpl::DeclineTranslation() {
@@ -105,15 +126,15 @@ void TranslateBubbleModelImpl::SetNeverTranslateLanguage(bool value) {
 }
 
 bool TranslateBubbleModelImpl::ShouldNeverTranslateSite() {
-  return ui_delegate_->IsSiteBlacklisted();
+  return ui_delegate_->IsSiteOnNeverPromptList();
 }
 
 void TranslateBubbleModelImpl::SetNeverTranslateSite(bool value) {
-  ui_delegate_->SetSiteBlacklist(value);
+  ui_delegate_->SetNeverPrompt(value);
 }
 
 bool TranslateBubbleModelImpl::CanBlocklistSite() {
-  return ui_delegate_->CanBlacklistSite();
+  return ui_delegate_->CanAddToNeverPromptList();
 }
 
 bool TranslateBubbleModelImpl::ShouldAlwaysTranslate() const {
@@ -150,4 +171,9 @@ bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
              language_state.original_language() &&
          ui_delegate_->GetTargetLanguageCode() ==
              language_state.current_language();
+}
+
+void TranslateBubbleModelImpl::ReportUIInteraction(
+    translate::UIInteraction ui_interaction) {
+  ui_delegate_->ReportUIInteraction(ui_interaction);
 }

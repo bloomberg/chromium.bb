@@ -40,16 +40,16 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckMediator.SafetyCheckI
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.signin.SigninActivityLauncher;
+import org.chromium.chrome.browser.signin.ui.SigninActivityLauncher;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.ref.WeakReference;
 
 /** Unit tests for {@link SafetyCheckMediator}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.SAFETY_CHECK_ANDROID, ChromeFeatureList.PASSWORD_CHECK})
+@Features.EnableFeatures(ChromeFeatureList.SAFETY_CHECK_ANDROID)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class SafetyCheckMediatorTest {
     private static final String SAFETY_CHECK_INTERACTIONS_HISTOGRAM =

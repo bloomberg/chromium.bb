@@ -74,6 +74,7 @@ class Tile : public Allocable {
       const ObuFrameHeader& frame_header, RefCountedBuffer* const current_frame,
       const DecoderState& state, FrameScratchBuffer* const frame_scratch_buffer,
       const WedgeMaskArray& wedge_masks,
+      const QuantizerMatrix& quantizer_matrix,
       SymbolDecoderContext* const saved_symbol_decoder_context,
       const SegmentationMap* prev_segment_ids, PostFilter* const post_filter,
       const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
@@ -81,9 +82,10 @@ class Tile : public Allocable {
       bool use_intra_prediction_buffer) {
     std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
         tile_number, data, size, sequence_header, frame_header, current_frame,
-        state, frame_scratch_buffer, wedge_masks, saved_symbol_decoder_context,
-        prev_segment_ids, post_filter, dsp, thread_pool, pending_tiles,
-        frame_parallel, use_intra_prediction_buffer));
+        state, frame_scratch_buffer, wedge_masks, quantizer_matrix,
+        saved_symbol_decoder_context, prev_segment_ids, post_filter, dsp,
+        thread_pool, pending_tiles, frame_parallel,
+        use_intra_prediction_buffer));
     return (tile != nullptr && tile->Init()) ? std::move(tile) : nullptr;
   }
 
@@ -186,17 +188,6 @@ class Tile : public Allocable {
   int column4x4_end() const { return column4x4_end_; }
 
  private:
-  Tile(int tile_number, const uint8_t* data, size_t size,
-       const ObuSequenceHeader& sequence_header,
-       const ObuFrameHeader& frame_header, RefCountedBuffer* current_frame,
-       const DecoderState& state, FrameScratchBuffer* frame_scratch_buffer,
-       const WedgeMaskArray& wedge_masks,
-       SymbolDecoderContext* saved_symbol_decoder_context,
-       const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
-       const dsp::Dsp* dsp, ThreadPool* thread_pool,
-       BlockingCounterWithStatus* pending_tiles, bool frame_parallel,
-       bool use_intra_prediction_buffer);
-
   // Stores the transform tree state when reading variable size transform trees
   // and when applying the transform tree. When applying the transform tree,
   // |depth| is not used.
@@ -247,6 +238,18 @@ class Tile : public Allocable {
   //    The pointer is reset to the beginning of the |residual_buffer_| for
   //    every transform block.
   using ResidualPtr = uint8_t*;
+
+  Tile(int tile_number, const uint8_t* data, size_t size,
+       const ObuSequenceHeader& sequence_header,
+       const ObuFrameHeader& frame_header, RefCountedBuffer* current_frame,
+       const DecoderState& state, FrameScratchBuffer* frame_scratch_buffer,
+       const WedgeMaskArray& wedge_masks,
+       const QuantizerMatrix& quantizer_matrix,
+       SymbolDecoderContext* saved_symbol_decoder_context,
+       const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
+       const dsp::Dsp* dsp, ThreadPool* thread_pool,
+       BlockingCounterWithStatus* pending_tiles, bool frame_parallel,
+       bool use_intra_prediction_buffer);
 
   // Performs member initializations that may fail. Helper function used by
   // Create().
@@ -357,7 +360,12 @@ class Tile : public Allocable {
                                 const MvContexts& mode_contexts);
   void ReadRefMvIndex(const Block& block);
   void ReadInterIntraMode(const Block& block, bool is_compound);  // 5.11.28.
-  bool IsScaled(ReferenceFrameType type) const;  // Part of 5.11.27.
+  bool IsScaled(ReferenceFrameType type) const {  // Part of 5.11.27.
+    const int index =
+        frame_header_.reference_frame_index[type - kReferenceFrameLast];
+    return reference_frames_[index]->upscaled_width() != frame_header_.width ||
+           reference_frames_[index]->frame_height() != frame_header_.height;
+  }
   void ReadMotionMode(const Block& block, bool is_compound);  // 5.11.27.
   uint16_t* GetIsExplicitCompoundTypeCdf(const Block& block);
   uint16_t* GetIsCompoundTypeAverageCdf(const Block& block);
@@ -394,22 +402,28 @@ class Tile : public Allocable {
                          TransformSize tx_size);  // 5.11.47.
   template <typename ResidualType>
   void ReadCoeffBase2D(
-      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
-      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      const uint16_t* scan, TransformSize tx_size, int adjusted_tx_width_log2,
+      int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      ResidualType* quantized_buffer);
+      uint16_t coeff_base_range_cdf[kCoeffBaseRangeContexts]
+                                   [kCoeffBaseRangeSymbolCount + 1],
+      ResidualType* quantized_buffer, uint8_t* level_buffer);
   template <typename ResidualType>
   void ReadCoeffBaseHorizontal(
-      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
-      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      const uint16_t* scan, TransformSize tx_size, int adjusted_tx_width_log2,
+      int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      ResidualType* quantized_buffer);
+      uint16_t coeff_base_range_cdf[kCoeffBaseRangeContexts]
+                                   [kCoeffBaseRangeSymbolCount + 1],
+      ResidualType* quantized_buffer, uint8_t* level_buffer);
   template <typename ResidualType>
   void ReadCoeffBaseVertical(
-      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
-      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      const uint16_t* scan, TransformSize tx_size, int adjusted_tx_width_log2,
+      int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      ResidualType* quantized_buffer);
+      uint16_t coeff_base_range_cdf[kCoeffBaseRangeContexts]
+                                   [kCoeffBaseRangeSymbolCount + 1],
+      ResidualType* quantized_buffer, uint8_t* level_buffer);
   int GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane);
   void SetEntropyContexts(int x4, int y4, int w4, int h4, Plane plane,
                           uint8_t coefficient_level, int8_t dc_category);
@@ -495,9 +509,8 @@ class Tile : public Allocable {
       const uint16_t* scan, int i, int q_value, const uint8_t* quantizer_matrix,
       int shift, int max_value, uint16_t* dc_sign_cdf, int8_t* dc_category,
       int* coefficient_level,
-      ResidualType* residual_buffer);  // Part of 5.11.39.
-  int ReadCoeffBaseRange(int clamped_tx_size_context, int cdf_context,
-                         int plane_type);  // Part of 5.11.39.
+      ResidualType* residual_buffer);     // Part of 5.11.39.
+  int ReadCoeffBaseRange(uint16_t* cdf);  // Part of 5.11.39.
   // Returns the number of non-zero coefficients that were read. |tx_type| is an
   // output parameter that stores the computed transform type for the plane
   // whose coefficients were read. Returns -1 on failure.
@@ -637,6 +650,7 @@ class Tile : public Allocable {
   TemporalMotionField& motion_field_;
   const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint_;
   const WedgeMaskArray& wedge_masks_;
+  const QuantizerMatrix& quantizer_matrix_;
   DaalaBitReader reader_;
   SymbolDecoderContext symbol_decoder_context_;
   SymbolDecoderContext* const saved_symbol_decoder_context_;

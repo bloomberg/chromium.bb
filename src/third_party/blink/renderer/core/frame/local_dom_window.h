@@ -64,6 +64,7 @@ class External;
 class FrameConsole;
 class History;
 class IdleRequestOptions;
+class ImpressionParams;
 class MediaQueryList;
 class MessageEvent;
 class Modulator;
@@ -128,6 +129,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void ResetWindowAgent(WindowAgent*);
 
+  mojom::blink::V8CacheOptions GetV8CacheOptions() const override;
+
   // Bind Content Security Policy to this window. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
@@ -146,6 +149,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   KURL CompleteURL(const String&) const final;
   void DisableEval(const String& error_message) final;
   String UserAgent() const final;
+  UserAgentMetadata GetUserAgentMetadata() const final;
   HttpsState GetHttpsState() const final;
   ResourceFetcher* Fetcher() const final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
@@ -154,14 +158,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   EventTarget* ErrorEventTarget() final { return this; }
   String OutgoingReferrer() const final;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const final;
-  network::mojom::blink::ReferrerPolicy
-  ReferrerPolicyButForMetaTagsWithListsOfPolicies() const final;
   CoreProbeSink* GetProbeSink() final;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
+  const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const final;
   FrameOrWorkerScheduler* GetScheduler() final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
   TrustedTypePolicyFactory* GetTrustedTypes() const final {
-    return trustedTypes();
+    return GetTrustedTypesForWorld(*GetCurrentWorld());
   }
   ScriptWrappable* ToScriptWrappable() final { return this; }
   void CountPotentialFeaturePolicyViolation(
@@ -308,8 +310,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const Vector<String>& originPolicyIds() const;
   void SetOriginPolicyIds(const Vector<String>&);
 
-  // https://github.com/whatwg/html/pull/5545
-  bool originIsolated() const;
+  // https://html.spec.whatwg.org/C/#dom-originagentcluster
+  bool originAgentCluster() const;
 
   // Idle callback extensions
   int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
@@ -344,6 +346,20 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                   const String& url_string,
                   const AtomicString& target,
                   const String& features,
+                  ExceptionState&);
+
+  DOMWindow* open(v8::Isolate*,
+                  const String& url_string,
+                  const AtomicString& target,
+                  const String& features,
+                  bool unused,
+                  ExceptionState&);
+
+  DOMWindow* open(v8::Isolate*,
+                  const String& url_string,
+                  const AtomicString& target,
+                  const String& features,
+                  const ImpressionParams* impression_params,
                   ExceptionState&);
 
   FrameConsole* GetFrameConsole() const;
@@ -391,7 +407,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Event* CurrentEvent() const;
   void SetCurrentEvent(Event*);
 
-  TrustedTypePolicyFactory* trustedTypes() const;
+  TrustedTypePolicyFactory* trustedTypes(ScriptState*) const;
+  TrustedTypePolicyFactory* GetTrustedTypesForWorld(
+      const DOMWrapperWorld&) const;
 
   // Returns true if this window is cross-site to the main frame. Defaults to
   // false in a detached window.
@@ -484,7 +502,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // We represent the "undefined" value as nullptr.
   Member<Event> current_event_;
 
-  mutable Member<TrustedTypePolicyFactory> trusted_types_;
+  // Store TrustedTypesPolicyFactory, per DOMWrapperWorld.
+  mutable HeapHashMap<scoped_refptr<const DOMWrapperWorld>,
+                      Member<TrustedTypePolicyFactory>>
+      trusted_types_map_;
 
   // A dummy scheduler to return when the window is detached.
   // All operations on it result in no-op, but due to this it's safe to
@@ -517,6 +538,13 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // this document, to avoid reporting duplicates. The value stored comes
   // from |DocumentPolicyViolationReport::MatchId()|.
   mutable HashSet<unsigned> document_policy_violation_reports_sent_;
+
+  // A list of the most recently recorded source frame UKM source IDs for the
+  // PostMessage.Incoming.Frame UKM event, in order to partially deduplicate
+  // logged events. Its size is limited to 20. See SchedulePostMessage() where
+  // this UKM is logged.
+  // TODO(crbug.com/1112491): Remove when no longer needed.
+  Deque<ukm::SourceId> post_message_ukm_recorded_source_ids_;
 };
 
 template <>

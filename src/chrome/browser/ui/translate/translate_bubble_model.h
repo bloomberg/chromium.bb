@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "components/translate/core/browser/translate_metrics_logger_impl.h"
 #include "components/translate/core/common/translate_errors.h"
 
 // The model for the Translate bubble UX. This manages the user's manipulation
@@ -51,11 +52,20 @@ class TranslateBubbleModel {
   // Goes back from the 'Advanced' view state.
   virtual void GoBackFromAdvanced() = 0;
 
-  // Returns the number of languages supported.
-  virtual int GetNumberOfLanguages() const = 0;
+  // Returns the number of source languages supported.
+  virtual int GetNumberOfSourceLanguages() const = 0;
 
-  // Returns the displayable name for the language at |index|.
-  virtual base::string16 GetLanguageNameAt(int index) const = 0;
+  // Returns the number of target languages supported.
+  virtual int GetNumberOfTargetLanguages() const = 0;
+
+  // Returns the displayable name for the source language at |index|.
+  virtual base::string16 GetSourceLanguageNameAt(int index) const = 0;
+
+  // Returns the displayable name for the target language at |index|.
+  virtual base::string16 GetTargetLanguageNameAt(int index) const = 0;
+
+  // Returns the original language code.
+  virtual std::string GetOriginalLanguageCode() const = 0;
 
   // Returns the original language index.
   virtual int GetOriginalLanguageIndex() const = 0;
@@ -123,6 +133,10 @@ class TranslateBubbleModel {
 
   // True if the site of the current page can be blocklisted.
   virtual bool CanBlocklistSite() = 0;
+
+  // Reports a high level UI interaction to the centralzied
+  // TranslateMetricsLogger.
+  virtual void ReportUIInteraction(translate::UIInteraction ui_interaction) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_MODEL_H_

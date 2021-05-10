@@ -13,9 +13,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
-namespace web_pref {
-struct WebPreferences;
-}  // namespace web_pref
 class WebView;
 }  // namespace blink
 
@@ -43,9 +40,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the RenderView containing the given WebView.
   static RenderView* FromWebView(blink::WebView* webview);
 
-  // Returns the RenderView for the given routing ID.
-  static RenderView* FromRoutingID(int routing_id);
-
   // Returns the number of live RenderView instances in this process.
   static size_t GetRenderViewCount();
 
@@ -58,17 +52,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Get the routing ID of the view.
   virtual int GetRoutingID() = 0;
-
-  // Returns the page's zoom level for the render view.
-  virtual float GetZoomLevel() = 0;
-
-  // Gets WebKit related preferences associated with this view.
-  virtual const blink::web_pref::WebPreferences& GetBlinkPreferences() = 0;
-
-  // Overrides the WebKit related preferences associated with this view. Note
-  // that the browser process may update the preferences at any time.
-  virtual void SetBlinkPreferences(
-      const blink::web_pref::WebPreferences& preferences) = 0;
 
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;

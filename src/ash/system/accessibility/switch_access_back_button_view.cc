@@ -6,6 +6,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/accessibility/floating_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/bind.h"
@@ -35,9 +36,7 @@ constexpr int kRadiusDp = 18;
 SwitchAccessBackButtonView::SwitchAccessBackButtonView(bool for_menu) {
   // Calculate the side length of the bounding box, with room for the two-color
   // focus ring on either side.
-  int focus_ring_width_per_side =
-      2 * kFocusRingSingleColorWidthDp + kFocusRingBufferDp;
-  int side_length = 2 * (kRadiusDp + focus_ring_width_per_side);
+  int side_length = 2 * (kRadiusDp + GetFocusRingWidthPerSide());
 
   views::Builder<SwitchAccessBackButtonView>(this)
       .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kCenter)
@@ -55,6 +54,10 @@ SwitchAccessBackButtonView::SwitchAccessBackButtonView(bool for_menu) {
                    base::Unretained(this)))})
       .SetSize(gfx::Size(side_length, side_length))
       .BuildChildren();
+}
+
+int SwitchAccessBackButtonView::GetFocusRingWidthPerSide() {
+  return 2 * kFocusRingSingleColorWidthDp + kFocusRingBufferDp;
 }
 
 void SwitchAccessBackButtonView::SetFocusRing(bool should_show) {
@@ -81,23 +84,27 @@ int SwitchAccessBackButtonView::GetHeightForWidth(int w) const {
 }
 
 void SwitchAccessBackButtonView::OnPaint(gfx::Canvas* canvas) {
+  auto* color_provider = AshColorProvider::Get();
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(gfx::kGoogleGrey800);
+  flags.setColor(color_provider->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kRadiusDp, flags);
 
   if (!show_focus_ring_)
     return;
 
-  flags.setColor(gfx::kGoogleBlue300);
+  flags.setColor(color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchAccessInnerStrokeColor));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kFocusRingSingleColorWidthDp);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
                      kRadiusDp + kFocusRingSingleColorWidthDp, flags);
 
-  flags.setColor(SK_ColorBLACK);
+  flags.setColor(color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSwitchAccessOuterStrokeColor));
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
                      kRadiusDp + (2 * kFocusRingSingleColorWidthDp), flags);
 }

@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -201,7 +202,7 @@ public class DownloadBroadcastManagerImpl extends DownloadBroadcastManager.Impl 
             }
 
             @Override
-            public boolean startServiceManagerOnly() {
+            public boolean startMinimalBrowser() {
                 if (!LegacyHelpers.isLegacyDownload(id)) return false;
                 return CachedFeatureFlags.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
@@ -239,6 +240,12 @@ public class DownloadBroadcastManagerImpl extends DownloadBroadcastManager.Impl 
         boolean isOffTheRecord = entry == null
                 ? IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false)
                 : entry.isOffTheRecord;
+        OTRProfileID otrProfileID = DownloadUtils.getOTRProfileIDFromIntent(intent);
+        // TODO(crbug.com/1164379): Pass OTRProfileID from intent by adding
+        //  |DownloadNotificationService#EXTRA_OTR_PROFILE_ID|.
+        if (isOffTheRecord && otrProfileID == null) {
+            otrProfileID = OTRProfileID.getPrimaryOTRProfileID();
+        }
         DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(id);
 
         checkNotNull(downloadServiceDelegate);
@@ -252,11 +259,11 @@ public class DownloadBroadcastManagerImpl extends DownloadBroadcastManager.Impl 
                         intent.getIntExtra(EXTRA_DOWNLOAD_STATE_AT_CANCEL, -1));
                 DownloadMetrics.recordDownloadCancel(
                         DownloadMetrics.CancelFrom.CANCEL_NOTIFICATION);
-                downloadServiceDelegate.cancelDownload(id, isOffTheRecord);
+                downloadServiceDelegate.cancelDownload(id, otrProfileID);
                 break;
 
             case ACTION_DOWNLOAD_PAUSE:
-                downloadServiceDelegate.pauseDownload(id, isOffTheRecord);
+                downloadServiceDelegate.pauseDownload(id, otrProfileID);
                 break;
 
             case ACTION_DOWNLOAD_RESUME:

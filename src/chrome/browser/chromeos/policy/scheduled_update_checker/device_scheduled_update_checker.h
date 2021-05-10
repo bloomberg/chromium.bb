@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/os_and_policies_update_checker.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/task_executor_with_retries.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -129,9 +129,8 @@ class DeviceScheduledUpdateChecker
   // Used to retrieve Chrome OS settings. Not owned.
   chromeos::CrosSettings* const cros_settings_;
 
-  // Used to observe when settings change.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      cros_settings_observer_;
+  // Subscription for callback when settings change.
+  base::CallbackListSubscription cros_settings_subscription_;
 
   // Currently active scheduled update check policy.
   base::Optional<ScheduledUpdateCheckData> scheduled_update_check_data_;

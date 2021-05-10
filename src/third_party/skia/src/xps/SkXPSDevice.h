@@ -90,11 +90,11 @@ protected:
                   bool pathIsMutable = false) override;
     void drawImageRect(const SkImage*,
                        const SkRect* srcOrNull, const SkRect& dst,
-                       const SkPaint& paint,
+                       const SkSamplingOptions&, const SkPaint& paint,
                        SkCanvas::SrcRectConstraint) override;
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
     void drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) override;
-    void drawDevice(SkBaseDevice*, const SkPaint&) override;
+    void drawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint&) override;
 
 private:
     class TypefaceUse {

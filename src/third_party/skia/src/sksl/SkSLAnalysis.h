@@ -17,14 +17,17 @@ namespace SkSL {
 
 class ErrorReporter;
 class Expression;
+class ForStatement;
 class FunctionDeclaration;
 class FunctionDefinition;
+struct LoadedModule;
 struct Program;
 class ProgramElement;
 class ProgramUsage;
 class Statement;
 class Variable;
 class VariableReference;
+enum class VariableRefKind : int8_t;
 
 /**
  * Provides utilities for analyzing SkSL statically before it's composed into a full program.
@@ -37,13 +40,65 @@ struct Analysis {
     static bool ReferencesSampleCoords(const Program& program);
     static bool ReferencesFragCoords(const Program& program);
 
-    static bool NodeCountExceeds(const FunctionDefinition& function, int limit);
+    static int NodeCountUpToLimit(const FunctionDefinition& function, int limit);
+
+    /**
+     * Finds unconditional exits from a switch-case. Returns true if this statement unconditionally
+     * causes an exit from this switch (via continue, break or return).
+     */
+    static bool SwitchCaseContainsUnconditionalExit(Statement& stmt);
+
+    /**
+     * Finds conditional exits from a switch-case. Returns true if this statement contains a
+     * conditional that wraps a potential exit from the switch (via continue, break or return).
+     */
+    static bool SwitchCaseContainsConditionalExit(Statement& stmt);
 
     static std::unique_ptr<ProgramUsage> GetUsage(const Program& program);
+    static std::unique_ptr<ProgramUsage> GetUsage(const LoadedModule& module);
 
     static bool StatementWritesToVariable(const Statement& stmt, const Variable& var);
-    static bool IsAssignable(Expression& expr, VariableReference** assignableVar,
+
+    struct AssignmentInfo {
+        VariableReference* fAssignedVar = nullptr;
+    };
+    static bool IsAssignable(Expression& expr, AssignmentInfo* info,
                              ErrorReporter* errors = nullptr);
+
+    // Updates the `refKind` field of every VariableReference found within `expr`.
+    static void UpdateRefKind(Expression* expr, VariableRefKind refKind);
+
+    // A "trivial" expression is one where we'd feel comfortable cloning it multiple times in
+    // the code, without worrying about incurring a performance penalty. Examples:
+    // - true
+    // - 3.14159265
+    // - myIntVariable
+    // - myColor.rgb
+    // - myArray[123]
+    // - myStruct.myField
+    // - half4(0)
+    //
+    // Trivial-ness is stackable. Somewhat large expressions can occasionally make the cut:
+    // - half4(myColor.a)
+    // - myStruct.myArrayField[7].xyz
+    static bool IsTrivialExpression(const Expression& expr);
+
+    struct UnrollableLoopInfo {
+        const Variable* fIndex;
+        double fStart;
+        double fDelta;
+        int fCount;
+    };
+
+    // Ensures that 'loop' meets the strict requirements of The OpenGL ES Shading Language 1.00,
+    // Appendix A, Section 4.
+    // Information about the loop's structure are placed in outLoopInfo (if not nullptr).
+    // If the function returns false, specific reasons are reported via errors (if not nullptr).
+    static bool ForLoopIsValidForES2(const ForStatement& loop,
+                                     UnrollableLoopInfo* outLoopInfo,
+                                     ErrorReporter* errors);
+
+    static void ValidateIndexingForES2(const ProgramElement& pe, ErrorReporter& errors);
 };
 
 /**
@@ -66,8 +121,6 @@ class TProgramVisitor {
 public:
     virtual ~TProgramVisitor() = default;
 
-    bool visit(PROG program);
-
 protected:
     virtual bool visitExpression(EXPR expression);
     virtual bool visitStatement(STMT statement);
@@ -86,8 +139,14 @@ extern template class TProgramVisitor<Program&, Expression&, Statement&, Program
 #pragma clang diagnostic pop
 #endif
 
-using ProgramVisitor = TProgramVisitor<const Program&, const Expression&,
-                                       const Statement&, const ProgramElement&>;
+class ProgramVisitor : public TProgramVisitor<const Program&,
+                                              const Expression&,
+                                              const Statement&,
+                                              const ProgramElement&> {
+public:
+    bool visit(const Program& program);
+};
+
 using ProgramWriter = TProgramVisitor<Program&, Expression&, Statement&, ProgramElement&>;
 
 }  // namespace SkSL

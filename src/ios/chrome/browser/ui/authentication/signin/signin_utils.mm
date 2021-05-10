@@ -6,7 +6,9 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/version.h"
+#import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
+#import "components/signin/public/base/signin_pref_names.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -49,7 +51,9 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 
 #pragma mark - Public
 
-bool SigninShouldPresentUserSigninUpgrade(ChromeBrowserState* browserState) {
+namespace signin {
+
+bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browserState) {
   if (tests_hook::DisableSigninRecallPromo())
     return false;
 
@@ -61,9 +65,12 @@ bool SigninShouldPresentUserSigninUpgrade(ChromeBrowserState* browserState) {
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
+  // Sign-in can be disabled by policy.
+  if (!signin::IsSigninAllowed(browserState->GetPrefs()))
+    return false;
+
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
-  authService->WaitUntilCacheIsPopulated();
   // Do not show the SSO promo if the user is already logged in.
   if (authService->IsAuthenticated())
     return false;
@@ -103,7 +110,7 @@ bool SigninShouldPresentUserSigninUpgrade(ChromeBrowserState* browserState) {
          ![lastKnownGaiaIdSet isEqualToSet:currentGaiaIdSet];
 }
 
-void SigninRecordVersionSeen() {
+void RecordVersionSeen() {
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
   [standardDefaults
       setObject:base::SysUTF8ToNSString(CurrentVersion().GetString())
@@ -121,6 +128,12 @@ void SigninRecordVersionSeen() {
                         forKey:kSigninPromoViewDisplayCountKey];
 }
 
-void SetSigninCurrentVersionForTesting(Version* version) {
+void SetCurrentVersionForTesting(Version* version) {
   g_current_version_for_test = version;
 }
+
+bool IsSigninAllowed(const PrefService* prefs) {
+  return prefs->GetBoolean(prefs::kSigninAllowed);
+}
+
+}  // namespace signin

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 
+#include "media/mojo/mojom/media_player.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -62,7 +64,7 @@ class MockPictureInPictureService
  public:
   MockPictureInPictureService() {
     // Setup default implementations.
-    ON_CALL(*this, StartSession(_, _, _, _, _, _))
+    ON_CALL(*this, StartSession(_, _, _, _, _, _, _))
         .WillByDefault(testing::Invoke(
             this, &MockPictureInPictureService::StartSessionInternal));
   }
@@ -76,9 +78,10 @@ class MockPictureInPictureService
         session_remote_.InitWithNewPipeAndPassReceiver()));
   }
 
-  MOCK_METHOD6(
+  MOCK_METHOD7(
       StartSession,
       void(uint32_t,
+           mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayer>,
            const base::Optional<viz::SurfaceId>&,
            const gfx::Size&,
            bool,
@@ -89,6 +92,7 @@ class MockPictureInPictureService
 
   void StartSessionInternal(
       uint32_t,
+      mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayer>,
       const base::Optional<viz::SurfaceId>&,
       const gfx::Size&,
       bool,
@@ -195,7 +199,7 @@ TEST_F(PictureInPictureControllerTest, EnterPictureInPictureFiresEvent) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
@@ -215,7 +219,7 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
@@ -243,7 +247,7 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
@@ -263,7 +267,7 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
@@ -292,7 +296,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
@@ -312,7 +316,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_MediaSource) {
 
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), player->GetSurfaceId(),
+              StartSession(player->GetDelegateId(), _, player->GetSurfaceId(),
                            player->NaturalSize(), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())

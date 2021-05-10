@@ -15,12 +15,12 @@
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/json_schema_constants.h"
 #include "components/policy/core/common/schema_internal.h"
@@ -224,6 +224,10 @@ bool SchemaTypeToValueType(const std::string& schema_type,
 
 bool StrategyAllowUnknown(SchemaOnErrorStrategy strategy) {
   return strategy != SCHEMA_STRICT;
+}
+
+bool StrategyAllowInvalidListEntry(SchemaOnErrorStrategy strategy) {
+  return strategy == SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY;
 }
 
 void SchemaErrorFound(std::string* error_path,
@@ -1252,7 +1256,7 @@ bool Schema::Validate(const base::Value& value,
         AddListIndexPrefixToPath(index, error_path);
         *error = std::move(new_error);
       }
-      if (!validation_result)
+      if (!validation_result && !StrategyAllowInvalidListEntry(strategy))
         return false;  // Invalid list item was detected.
     }
   } else if (value.is_int()) {
@@ -1357,7 +1361,8 @@ bool Schema::Normalize(base::Value* value,
       }
       if (!normalization_result) {
         // Invalid list item was detected.
-        return false;
+        if (!StrategyAllowInvalidListEntry(strategy))
+          return false;
       } else {
         if (write_index != index)
           list[write_index] = std::move(list_item);

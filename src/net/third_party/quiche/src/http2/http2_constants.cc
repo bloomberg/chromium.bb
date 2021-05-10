@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/http2_constants.h"
+#include "http2/http2_constants.h"
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
@@ -35,8 +35,10 @@ std::string Http2FrameTypeToString(Http2FrameType v) {
       return "CONTINUATION";
     case Http2FrameType::ALTSVC:
       return "ALTSVC";
+    case Http2FrameType::PRIORITY_UPDATE:
+      return "PRIORITY_UPDATE";
   }
-  return quiche::QuicheStrCat("UnknownFrameType(", static_cast<int>(v), ")");
+  return absl::StrCat("UnknownFrameType(", static_cast<int>(v), ")");
 }
 
 std::string Http2FrameTypeToString(uint8_t v) {
@@ -83,7 +85,7 @@ std::string Http2FrameFlagsToString(Http2FrameType type, uint8_t flags) {
   if (flags != 0) {
     append_and_clear(Http2StringPrintf("0x%02x", flags), flags);
   }
-  DCHECK_EQ(0, flags);
+  QUICHE_DCHECK_EQ(0, flags);
   return s;
 }
 std::string Http2FrameFlagsToString(uint8_t type, uint8_t flags) {
@@ -121,7 +123,7 @@ std::string Http2ErrorCodeToString(uint32_t v) {
     case 0xd:
       return "HTTP_1_1_REQUIRED";
   }
-  return quiche::QuicheStrCat("UnknownErrorCode(0x", Http2Hex(v), ")");
+  return absl::StrCat("UnknownErrorCode(0x", Http2Hex(v), ")");
 }
 std::string Http2ErrorCodeToString(Http2ErrorCode v) {
   return Http2ErrorCodeToString(static_cast<uint32_t>(v));
@@ -142,7 +144,7 @@ std::string Http2SettingsParameterToString(uint32_t v) {
     case 0x6:
       return "MAX_HEADER_LIST_SIZE";
   }
-  return quiche::QuicheStrCat("UnknownSettingsParameter(0x", Http2Hex(v), ")");
+  return absl::StrCat("UnknownSettingsParameter(0x", Http2Hex(v), ")");
 }
 std::string Http2SettingsParameterToString(Http2SettingsParameter v) {
   return Http2SettingsParameterToString(static_cast<uint32_t>(v));

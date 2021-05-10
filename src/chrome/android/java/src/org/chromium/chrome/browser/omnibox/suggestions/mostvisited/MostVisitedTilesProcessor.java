@@ -19,17 +19,17 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionViewProperties;
-import org.chromium.chrome.browser.suggestions.tile.TileView;
-import org.chromium.chrome.browser.suggestions.tile.TileViewBinder;
-import org.chromium.chrome.browser.suggestions.tile.TileViewProperties;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.browser_ui.widget.tile.TileView;
+import org.chromium.components.browser_ui.widget.tile.TileViewBinder;
+import org.chromium.components.browser_ui.widget.tile.TileViewProperties;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -81,7 +81,7 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
+    public boolean doesProcessSuggestion(AutocompleteMatch suggestion, int position) {
         return suggestion.getType() == OmniboxSuggestionType.TILE_NAVSUGGEST;
     }
 
@@ -101,8 +101,8 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     }
 
     @Override
-    public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        final List<OmniboxSuggestion.NavsuggestTile> tiles = suggestion.getNavsuggestTiles();
+    public void populateModel(AutocompleteMatch suggestion, PropertyModel model, int position) {
+        final List<AutocompleteMatch.NavsuggestTile> tiles = suggestion.getNavsuggestTiles();
         final int tilesCount = tiles.size();
         final List<ListItem> tileList = new ArrayList<>(tilesCount);
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
@@ -142,8 +142,7 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
         }
 
         model.set(BaseCarouselSuggestionViewProperties.TILES, tileList);
-        model.set(BaseCarouselSuggestionViewProperties.TITLE,
-                mContext.getResources().getString(R.string.most_visited_tiles_header));
+        model.set(BaseCarouselSuggestionViewProperties.SHOW_TITLE, false);
     }
 
     /**

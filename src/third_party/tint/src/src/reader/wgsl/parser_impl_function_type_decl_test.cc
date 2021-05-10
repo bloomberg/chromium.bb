@@ -15,12 +15,11 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/vector_type.h"
-#include "src/ast/type/void_type.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type_manager.h"
+#include "src/type/f32_type.h"
+#include "src/type/vector_type.h"
+#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -28,9 +27,10 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, FunctionTypeDecl_Void) {
-  auto* v = tm()->Get(std::make_unique<ast::type::VoidType>());
+  auto p = parser("void");
 
-  auto* p = parser("void");
+  auto* v = p->builder().create<type::Void>();
+
   auto e = p->function_type_decl();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
@@ -39,10 +39,11 @@ TEST_F(ParserImplTest, FunctionTypeDecl_Void) {
 }
 
 TEST_F(ParserImplTest, FunctionTypeDecl_Type) {
-  auto* f32 = tm()->Get(std::make_unique<ast::type::F32Type>());
-  auto* vec2 = tm()->Get(std::make_unique<ast::type::VectorType>(f32, 2));
+  auto p = parser("vec2<f32>");
 
-  auto* p = parser("vec2<f32>");
+  auto* f32 = p->builder().create<type::F32>();
+  auto* vec2 = p->builder().create<type::Vector>(f32, 2);
+
   auto e = p->function_type_decl();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
@@ -51,7 +52,7 @@ TEST_F(ParserImplTest, FunctionTypeDecl_Type) {
 }
 
 TEST_F(ParserImplTest, FunctionTypeDecl_InvalidType) {
-  auto* p = parser("vec2<invalid>");
+  auto p = parser("vec2<invalid>");
   auto e = p->function_type_decl();
   EXPECT_FALSE(e.matched);
   EXPECT_TRUE(e.errored);

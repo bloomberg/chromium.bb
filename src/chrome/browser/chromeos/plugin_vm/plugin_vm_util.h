@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -119,12 +119,9 @@ class PluginVmPolicySubscription {
   PluginVmAllowedChanged callback_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      device_allowed_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      license_subscription_;
-  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
-      fake_license_subscription_;
+  base::CallbackListSubscription device_allowed_subscription_;
+  base::CallbackListSubscription license_subscription_;
+  base::CallbackListSubscription fake_license_subscription_;
 };
 
 }  // namespace plugin_vm

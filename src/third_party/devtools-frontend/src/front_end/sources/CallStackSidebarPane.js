@@ -26,32 +26,81 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Persistence from '../persistence/persistence.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
+export const UIStrings = {
+  /**
+  *@description Text in Call Stack Sidebar Pane of the Sources panel
+  */
+  callStack: 'Call Stack',
+  /**
+  *@description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
+  */
+  notPaused: 'Not paused',
+  /**
+  *@description Text exposed to screen reader when navigating through a ignore-listed call frame in the sources panel
+  */
+  onIgnoreList: 'on ignore list',
+  /**
+  *@description Show all link text content in Call Stack Sidebar Pane of the Sources panel
+  */
+  showIgnorelistedFrames: 'Show ignore-listed frames',
+  /**
+  *@description Text to show more content
+  */
+  showMore: 'Show more',
+  /**
+  *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+  */
+  restartFrame: 'Restart frame',
+  /**
+  *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+  */
+  copyStackTrace: 'Copy stack trace',
+  /**
+  *@description Text to stop preventing the debugger from stepping into library code
+  */
+  removeFromIgnoreList: 'Remove from ignore list',
+  /**
+  *@description Text for scripts that should not be stepped into when debugging
+  */
+  addScriptToIgnoreList: 'Add script to ignore list',
+  /**
+  *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+  */
+  removeAllContentScriptsFrom: 'Remove all content scripts from ignore list',
+  /**
+  *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+  */
+  addAllContentScriptsToIgnoreList: 'Add all content scripts to ignore list',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/CallStackSidebarPane.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** @type {!CallStackSidebarPane} */
 let callstackSidebarPaneInstance;
 
 /**
  * @implements {UI.ContextFlavorListener.ContextFlavorListener}
  * @implements {UI.ListControl.ListDelegate<!Item>}
- * @unrestricted
  */
 export class CallStackSidebarPane extends UI.View.SimpleView {
   /**
    * @private
    */
   constructor() {
-    super(Common.UIString.UIString('Call Stack'), true);
+    super(i18nString(UIStrings.callStack), true);
     this.registerRequiredCSS('sources/callStackSidebarPane.css', {enableLegacyPatching: true});
 
-    this._blackboxedMessageElement = this._createBlackboxedMessageElement();
-    this.contentElement.appendChild(this._blackboxedMessageElement);
+    this._ignoreListMessageElement = this._createIgnoreListMessageElement();
+    this.contentElement.appendChild(this._ignoreListMessageElement);
 
     this._notPausedMessageElement = this.contentElement.createChild('div', 'gray-info-message');
-    this._notPausedMessageElement.textContent = Common.UIString.UIString('Not paused');
+    this._notPausedMessageElement.textContent = i18nString(UIStrings.notPaused);
     this._notPausedMessageElement.tabIndex = -1;
 
     /** @type {!UI.ListModel.ListModel<!Item>} */
@@ -72,7 +121,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     this._showMoreMessageElement.classList.add('hidden');
     this.contentElement.appendChild(this._showMoreMessageElement);
 
-    this._showBlackboxed = false;
+    this._showIgnoreListed = false;
     this._locationPool = new Bindings.LiveLocation.LiveLocationPool();
 
     this._updateThrottler = new Common.Throttler.Throttler(100);
@@ -100,7 +149,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @param {?Object} object
    */
   flavorChanged(object) {
-    this._showBlackboxed = false;
+    this._showIgnoreListed = false;
     this._maxAsyncStackChainDepth = defaultMaxAsyncStackChainDepth;
     this._update();
   }
@@ -119,7 +168,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     if (!details) {
       this.setDefaultFocusedElement(this._notPausedMessageElement);
       this._notPausedMessageElement.classList.remove('hidden');
-      this._blackboxedMessageElement.classList.add('hidden');
+      this._ignoreListMessageElement.classList.add('hidden');
       this._showMoreMessageElement.classList.add('hidden');
       this._items.replaceAll([]);
       UI.Context.Context.instance().setFlavor(SDK.DebuggerModel.CallFrame, null);
@@ -145,8 +194,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     let asyncStackTrace = details.asyncStackTrace;
     if (!asyncStackTrace && details.asyncStackTraceId) {
       if (details.asyncStackTraceId.debuggerId) {
-        debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerIdResyncIfNecessary(
-            details.asyncStackTraceId.debuggerId);
+        debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(details.asyncStackTraceId.debuggerId);
       }
       asyncStackTrace = debuggerModel ? await debuggerModel.fetchAsyncStackTrace(details.asyncStackTraceId) : null;
     }
@@ -173,8 +221,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         asyncStackTrace = asyncStackTrace.parent;
       } else if (asyncStackTrace.parentId) {
         if (asyncStackTrace.parentId.debuggerId) {
-          debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerIdResyncIfNecessary(
-              asyncStackTrace.parentId.debuggerId);
+          debuggerModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(asyncStackTrace.parentId.debuggerId);
         }
         asyncStackTrace = debuggerModel ? await debuggerModel.fetchAsyncStackTrace(asyncStackTrace.parentId) : null;
       } else {
@@ -206,23 +253,23 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
       this._scheduledForUpdateItems.clear();
 
       this._muteActivateItem = true;
-      if (!this._showBlackboxed && this._items.every(item => item.isBlackboxed)) {
-        this._showBlackboxed = true;
+      if (!this._showIgnoreListed && this._items.every(item => item.isIgnoreListed)) {
+        this._showIgnoreListed = true;
         for (let i = 0; i < this._items.length; ++i) {
           this._list.refreshItemByIndex(i);
         }
-        this._blackboxedMessageElement.classList.toggle('hidden', true);
+        this._ignoreListMessageElement.classList.toggle('hidden', true);
       } else {
         const itemsSet = new Set(items);
-        let hasBlackboxed = false;
+        let hasIgnoreListed = false;
         for (let i = 0; i < this._items.length; ++i) {
           const item = this._items.at(i);
           if (itemsSet.has(item)) {
             this._list.refreshItemByIndex(i);
           }
-          hasBlackboxed = hasBlackboxed || item.isBlackboxed;
+          hasIgnoreListed = hasIgnoreListed || item.isIgnoreListed;
         }
-        this._blackboxedMessageElement.classList.toggle('hidden', this._showBlackboxed || !hasBlackboxed);
+        this._ignoreListMessageElement.classList.toggle('hidden', this._showIgnoreListed || !hasIgnoreListed);
       }
       delete this._muteActivateItem;
     });
@@ -242,13 +289,13 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     if (item.isAsyncHeader) {
       element.classList.add('async-header');
     } else {
-      titleElement.title = item.title;
+      UI.Tooltip.Tooltip.install(titleElement, item.title);
       const linkElement = element.createChild('div', 'call-frame-location');
-      linkElement.textContent = item.linkText.trimMiddle(30);
-      linkElement.title = item.linkText;
-      element.classList.toggle('blackboxed-call-frame', item.isBlackboxed);
-      if (item.isBlackboxed) {
-        UI.ARIAUtils.setDescription(element, ls`blackboxed`);
+      linkElement.textContent = Platform.StringUtilities.trimMiddle(item.linkText, 30);
+      UI.Tooltip.Tooltip.install(linkElement, item.linkText);
+      element.classList.toggle('ignore-listed-call-frame', item.isIgnoreListed);
+      if (item.isIgnoreListed) {
+        UI.ARIAUtils.setDescription(element, i18nString(UIStrings.onIgnoreList));
       }
       if (!itemToCallFrame.has(item)) {
         UI.ARIAUtils.setDisabled(element, true);
@@ -257,7 +304,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     const isSelected = itemToCallFrame.get(item) === UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
     element.classList.toggle('selected', isSelected);
     UI.ARIAUtils.setSelected(element, isSelected);
-    element.classList.toggle('hidden', !this._showBlackboxed && item.isBlackboxed);
+    element.classList.toggle('hidden', !this._showIgnoreListed && item.isIgnoreListed);
     element.appendChild(UI.Icon.Icon.create('smallicon-thick-right-arrow', 'selected-call-frame-icon'));
     element.tabIndex = item === this._list.selectedItem() ? 0 : -1;
     return element;
@@ -315,23 +362,23 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
   /**
    * @return {!Element}
    */
-  _createBlackboxedMessageElement() {
+  _createIgnoreListMessageElement() {
     const element = document.createElement('div');
-    element.classList.add('blackboxed-message');
+    element.classList.add('ignore-listed-message');
     element.createChild('span');
     const showAllLink = element.createChild('span', 'link');
-    showAllLink.textContent = Common.UIString.UIString('Show blackboxed frames');
+    showAllLink.textContent = i18nString(UIStrings.showIgnorelistedFrames);
     UI.ARIAUtils.markAsLink(showAllLink);
     showAllLink.tabIndex = 0;
     const showAll = () => {
-      this._showBlackboxed = true;
+      this._showIgnoreListed = true;
       for (const item of this._items) {
         this._refreshItem(item);
       }
-      this._blackboxedMessageElement.classList.toggle('hidden', true);
+      this._ignoreListMessageElement.classList.toggle('hidden', true);
     };
     showAllLink.addEventListener('click', showAll);
-    showAllLink.addEventListener('keydown', event => isEnterKey(event) && showAll());
+    showAllLink.addEventListener('keydown', event => event.key === 'Enter' && showAll());
     return element;
   }
 
@@ -343,7 +390,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     element.classList.add('show-more-message');
     element.createChild('span');
     const showAllLink = element.createChild('span', 'link');
-    showAllLink.textContent = Common.UIString.UIString('Show more');
+    showAllLink.textContent = i18nString(UIStrings.showMore);
     showAllLink.addEventListener('click', () => {
       this._maxAsyncStackChainDepth += defaultMaxAsyncStackChainDepth;
       this._update();
@@ -362,13 +409,11 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     const debuggerCallFrame = itemToCallFrame.get(item);
     if (debuggerCallFrame) {
-      contextMenu.defaultSection().appendItem(
-          Common.UIString.UIString('Restart frame'), () => debuggerCallFrame.restart());
+      contextMenu.defaultSection().appendItem(i18nString(UIStrings.restartFrame), () => debuggerCallFrame.restart());
     }
-    contextMenu.defaultSection().appendItem(
-        Common.UIString.UIString('Copy stack trace'), this._copyStackTrace.bind(this));
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyStackTrace), this._copyStackTrace.bind(this));
     if (item.uiLocation) {
-      this.appendBlackboxURLContextMenuItems(contextMenu, item.uiLocation.uiSourceCode);
+      this.appendIgnoreListURLContextMenuItems(contextMenu, item.uiLocation.uiSourceCode);
     }
     contextMenu.show();
   }
@@ -421,7 +466,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
    * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
-  appendBlackboxURLContextMenuItems(contextMenu, uiSourceCode) {
+  appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode) {
     const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     if (binding) {
       uiSourceCode = binding.network;
@@ -429,28 +474,29 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
       return;
     }
-    const canBlackbox = Bindings.BlackboxManager.BlackboxManager.instance().canBlackboxUISourceCode(uiSourceCode);
-    const isBlackboxed = Bindings.BlackboxManager.BlackboxManager.instance().isBlackboxedUISourceCode(uiSourceCode);
+    const canIgnoreList =
+        Bindings.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiSourceCode);
+    const isIgnoreListed =
+        Bindings.IgnoreListManager.IgnoreListManager.instance().isIgnoreListedUISourceCode(uiSourceCode);
     const isContentScript = uiSourceCode.project().type() === Workspace.Workspace.projectTypes.ContentScripts;
 
-    const manager = Bindings.BlackboxManager.BlackboxManager.instance();
-    if (canBlackbox) {
-      if (isBlackboxed) {
+    const manager = Bindings.IgnoreListManager.IgnoreListManager.instance();
+    if (canIgnoreList) {
+      if (isIgnoreListed) {
         contextMenu.defaultSection().appendItem(
-            Common.UIString.UIString('Stop blackboxing'), manager.unblackboxUISourceCode.bind(manager, uiSourceCode));
+            i18nString(UIStrings.removeFromIgnoreList), manager.unIgnoreListUISourceCode.bind(manager, uiSourceCode));
       } else {
         contextMenu.defaultSection().appendItem(
-            Common.UIString.UIString('Blackbox script'), manager.blackboxUISourceCode.bind(manager, uiSourceCode));
+            i18nString(UIStrings.addScriptToIgnoreList), manager.ignoreListUISourceCode.bind(manager, uiSourceCode));
       }
     }
     if (isContentScript) {
-      if (isBlackboxed) {
+      if (isIgnoreListed) {
         contextMenu.defaultSection().appendItem(
-            Common.UIString.UIString('Stop blackboxing all content scripts'),
-            manager.blackboxContentScripts.bind(manager));
+            i18nString(UIStrings.removeAllContentScriptsFrom), manager.ignoreListContentScripts.bind(manager));
       } else {
         contextMenu.defaultSection().appendItem(
-            Common.UIString.UIString('Blackbox all content scripts'), manager.unblackboxContentScripts.bind(manager));
+            i18nString(UIStrings.addAllContentScriptsToIgnoreList), manager.unIgnoreListContentScripts.bind(manager));
       }
     }
   }
@@ -498,10 +544,25 @@ const itemToCallFrame = new WeakMap();
 export const elementSymbol = Symbol('element');
 export const defaultMaxAsyncStackChainDepth = 32;
 
+/** @type {!ActionDelegate} */
+let actionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!ActionDelegate}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
+    }
+
+    return actionDelegateInstance;
+  }
   /**
    * @override
    * @param {!UI.Context.Context} context
@@ -581,14 +642,14 @@ export class Item {
       let shouldUpdate = false;
       const items = headerItemToItemsSet.get(asyncHeaderItem);
       if (items) {
-        if (item.isBlackboxed) {
+        if (item.isIgnoreListed) {
           items.delete(item);
           shouldUpdate = items.size === 0;
         } else {
           shouldUpdate = items.size === 0;
           items.add(item);
         }
-        asyncHeaderItem.isBlackboxed = items.size === 0;
+        asyncHeaderItem.isIgnoreListed = items.size === 0;
       }
       if (shouldUpdate) {
         updateDelegate(asyncHeaderItem);
@@ -601,7 +662,7 @@ export class Item {
    * @param {function(!Item):void} updateDelegate
    */
   constructor(title, updateDelegate) {
-    this.isBlackboxed = false;
+    this.isIgnoreListed = false;
     this.title = title;
     this.linkText = '';
     this.uiLocation = null;
@@ -614,7 +675,7 @@ export class Item {
    */
   async _update(liveLocation) {
     const uiLocation = await liveLocation.uiLocation();
-    this.isBlackboxed = await liveLocation.isBlackboxed();
+    this.isIgnoreListed = await liveLocation.isIgnoreListed();
     this.linkText = uiLocation ? uiLocation.linkText() : '';
     this.uiLocation = uiLocation;
     this.updateDelegate(this);

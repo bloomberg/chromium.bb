@@ -12,7 +12,6 @@
 #include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/common/channel/connection_namespace_handler.h"
 #include "cast/common/channel/message_util.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
@@ -67,7 +66,7 @@ class SenderSocketsClient : public SenderSocketFactory::Client,
   void OnError(SenderSocketFactory* factory,
                const IPEndpoint& endpoint,
                Error error) override {
-    OSP_NOTREACHED() << error;
+    OSP_LOG_FATAL << error;
   }
 
   // VirtualConnectionRouter::SocketErrorHandler overrides.
@@ -112,7 +111,7 @@ class ReceiverSocketsClient
   }
 
   void OnError(ReceiverSocketFactory* factory, Error error) override {
-    OSP_NOTREACHED() << error;
+    OSP_LOG_FATAL << error;
   }
 
   // VirtualConnectionRouter::SocketErrorHandler overrides.
@@ -141,8 +140,7 @@ class CastSocketE2ETest : public ::testing::Test {
                                 std::chrono::milliseconds(0));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
 
-    sender_router_ = MakeSerialDelete<VirtualConnectionRouter>(
-        task_runner_, &sender_vc_manager_);
+    sender_router_ = MakeSerialDelete<VirtualConnectionRouter>(task_runner_);
     sender_client_ =
         std::make_unique<StrictMock<SenderSocketsClient>>(sender_router_.get());
     sender_factory_ = MakeSerialDelete<SenderSocketFactory>(
@@ -161,8 +159,7 @@ class CastSocketE2ETest : public ::testing::Test {
     CastTrustStore::CreateInstanceForTest(credentials_.root_cert_der);
     auth_handler_ = MakeSerialDelete<DeviceAuthNamespaceHandler>(
         task_runner_, credentials_.provider.get());
-    receiver_router_ = MakeSerialDelete<VirtualConnectionRouter>(
-        task_runner_, &receiver_vc_manager_);
+    receiver_router_ = MakeSerialDelete<VirtualConnectionRouter>(task_runner_);
     receiver_router_->AddHandlerForLocalId(kPlatformReceiverId,
                                            auth_handler_.get());
     receiver_client_ = std::make_unique<StrictMock<ReceiverSocketsClient>>(
@@ -258,14 +255,12 @@ class CastSocketE2ETest : public ::testing::Test {
   TaskRunner* task_runner_;
 
   // NOTE: Sender components.
-  VirtualConnectionManager sender_vc_manager_;
   SerialDeletePtr<VirtualConnectionRouter> sender_router_;
   std::unique_ptr<StrictMock<SenderSocketsClient>> sender_client_;
   SerialDeletePtr<SenderSocketFactory> sender_factory_;
   SerialDeletePtr<TlsConnectionFactory> sender_tls_factory_;
 
   // NOTE: Receiver components.
-  VirtualConnectionManager receiver_vc_manager_;
   SerialDeletePtr<VirtualConnectionRouter> receiver_router_;
   GeneratedCredentials credentials_;
   SerialDeletePtr<DeviceAuthNamespaceHandler> auth_handler_;

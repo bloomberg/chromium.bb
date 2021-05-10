@@ -124,6 +124,7 @@ namespace internal {
   V(_, ASM_WASM_DATA_TYPE, AsmWasmData, asm_wasm_data)                        \
   V(_, ASYNC_GENERATOR_REQUEST_TYPE, AsyncGeneratorRequest,                   \
     async_generator_request)                                                  \
+  V(_, BASELINE_DATA_TYPE, BaselineData, baseline_data)                       \
   V(_, BREAK_POINT_TYPE, BreakPoint, break_point)                             \
   V(_, BREAK_POINT_INFO_TYPE, BreakPointInfo, break_point_info)               \
   V(_, CACHED_TEMPLATE_OBJECT_TYPE, CachedTemplateObject,                     \
@@ -141,11 +142,12 @@ namespace internal {
   V(_, PROPERTY_DESCRIPTOR_OBJECT_TYPE, PropertyDescriptorObject,             \
     property_descriptor_object)                                               \
   V(_, PROTOTYPE_INFO_TYPE, PrototypeInfo, prototype_info)                    \
+  V(_, REG_EXP_BOILERPLATE_DESCRIPTION_TYPE, RegExpBoilerplateDescription,    \
+    regexp_boilerplate_description)                                           \
   V(_, SCRIPT_TYPE, Script, script)                                           \
   V(_, SOURCE_TEXT_MODULE_INFO_ENTRY_TYPE, SourceTextModuleInfoEntry,         \
     module_info_entry)                                                        \
   V(_, STACK_FRAME_INFO_TYPE, StackFrameInfo, stack_frame_info)               \
-  V(_, STACK_TRACE_FRAME_TYPE, StackTraceFrame, stack_trace_frame)            \
   V(_, TEMPLATE_OBJECT_DESCRIPTION_TYPE, TemplateObjectDescription,           \
     template_object_description)                                              \
   V(_, TUPLE2_TYPE, Tuple2, tuple2)                                           \
@@ -154,8 +156,7 @@ namespace internal {
     wasm_exported_function_data)                                              \
   V(_, WASM_INDIRECT_FUNCTION_TABLE_TYPE, WasmIndirectFunctionTable,          \
     wasm_indirect_function_table)                                             \
-  V(_, WASM_JS_FUNCTION_DATA_TYPE, WasmJSFunctionData, wasm_js_function_data) \
-  V(_, WASM_VALUE_TYPE, WasmValue, wasm_value)
+  V(_, WASM_JS_FUNCTION_DATA_TYPE, WasmJSFunctionData, wasm_js_function_data)
 
 #define STRUCT_LIST_GENERATOR(V, _) STRUCT_LIST_GENERATOR_BASE(V, _)
 

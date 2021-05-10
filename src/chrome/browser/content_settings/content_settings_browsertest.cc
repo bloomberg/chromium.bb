@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -140,11 +141,16 @@ MATCHER(IsErrorTooManyRedirects, "") {
 
 class ContentSettingsTest : public InProcessBrowserTest {
  public:
-  ContentSettingsTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  ContentSettingsTest() {
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
-  net::EmbeddedTestServer https_server_;
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 // Test the combination of different ways of accessing cookies --- JS, HTML,
@@ -180,10 +186,12 @@ class CookieSettingsTest
       set_secure_scheme();
   }
 
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    // Get access to CookieStore API.
-    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-    ContentSettingsTest::SetUpCommandLine(cmd);
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // TODO(fivedots): Remove this switch once Storage Foundation is enabled
+    // by default.
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "StorageFoundationAPI");
+    ContentSettingsTest::SetUpCommandLine(command_line);
   }
 
   void set_secure_scheme() { secure_scheme_ = true; }
@@ -711,6 +719,94 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksFileSystem) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
+                       BlockCookiesAlsoBlocksStorageFoundation) {
+  set_secure_scheme();
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
+
+  const char kBaseExpected[] = "%s - Storage access is denied";
+
+  const char kBaseScript[] = R"(
+      (async function() {
+        const name = `%s`;
+        try {
+          await %s;
+        } catch(e) {
+          const error = e.toString();
+          const n = error.lastIndexOf(`: `);
+          const message = error.substring(n + 2)
+          return `${name} - ${message}`;
+        }
+        return `${name} - success`;
+      }())
+  )";
+
+  struct TestOp {
+    const char* name;
+    const char* code;
+  };
+
+  // TODO(fivedots): Add test cases for getRemainingCapacity(),
+  // requestCapacity(), releaseCapacity() once they land.
+  const TestOp kTestOps[] = {
+      {.name = "storageFoundation.open()",
+       .code = "storageFoundation.open('foo')"},
+      {.name = "storageFoundation.delete()",
+       .code = "storageFoundation.delete('foo')"},
+      {.name = "storageFoundation.rename()",
+       .code = "storageFoundation.rename('foo', 'bar')"},
+      {.name = "storageFoundation.getAll()",
+       .code = "storageFoundation.getAll()"},
+  };
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  for (auto& op : kTestOps) {
+    EXPECT_EQ(base::StringPrintf(kBaseExpected, op.name),
+              EvalJs(tab, base::StringPrintf(kBaseScript, op.name, op.code)));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
+                       BlockCookiesAlsoBlocksSyncStorageFoundation) {
+  set_secure_scheme();
+  GURL url = GetServer()->GetURL("/sync_storage_foundation.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
+
+  const char kBaseExpected[] = "%s - Storage access is denied";
+  const char kBaseUnexpected[] = "%s - Success";
+  const char kBaseCall[] = "run('%s')";
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // TODO(fivedots): Add test cases for getRemainingCapacitySync(),
+  // requestCapacitySync(), releaseCapacitySync() once they land.
+  const char* kTestOps[] = {"openSync", "deleteSync", "renameSync",
+                            "getAllSync"};
+
+  for (auto* op : kTestOps) {
+    EXPECT_TRUE(ExecJs(tab, base::StringPrintf(kBaseCall, op)));
+
+    base::string16 expected_title(
+        base::ASCIIToUTF16(base::StringPrintf(kBaseExpected, op)));
+    content::TitleWatcher title_watcher(tab, expected_title);
+
+    base::string16 unexpected_title(
+        base::ASCIIToUTF16(base::StringPrintf(kBaseUnexpected, op)));
+    title_watcher.AlsoWaitForTitle(unexpected_title);
+
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     CookieSettingsTest,
@@ -726,7 +822,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 // This fails on ChromeOS because kRestoreOnStartup is ignored and the startup
 // preference is always "continue where I left off.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Verify that cookies can be allowed and set using exceptions for particular
 // website(s) only for a session when all others are blocked.
@@ -809,9 +905,14 @@ class ContentSettingsBackForwardCacheBrowserTest : public ContentSettingsTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        ::features::kBackForwardCache,
-        {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {// Set a very long TTL before expiration (longer than the test
+           // timeout) so tests that are expecting deletion don't pass when
+           // they shouldn't.
+           {"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
     ContentSettingsTest::SetUpCommandLine(command_line);
   }
 
@@ -887,42 +988,24 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
           ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
-// TODO(jww): This should be removed after strict secure cookies is enabled for
-// all and this test should be moved into ContentSettingsTest above.
-class ContentSettingsStrictSecureCookiesBrowserTest
-    : public ContentSettingsTest {
- public:
-  ContentSettingsStrictSecureCookiesBrowserTest() = default;
-  ~ContentSettingsStrictSecureCookiesBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
-  void SetUpOnMainThread() override {
-    ContentSettingsTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-};
-
-// This test verifies that if strict secure cookies is enabled, the site
-// settings accurately reflect that an attempt to create a secure cookie by an
-// insecure origin fails.
-IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
+// This test verifies that the site settings accurately reflect that an attempt
+// to create a secure cookie by an insecure origin fails.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, SecureCookies) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
   https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
-  GURL http_url = embedded_test_server()->GetURL("/setsecurecookie.html");
-  GURL https_url = https_server.GetURL("/setsecurecookie.html");
+  GURL http_url =
+      embedded_test_server()->GetURL("a.test", "/setsecurecookie.html");
+  GURL https_url = https_server.GetURL("a.test", "/setsecurecookie.html");
 
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(GetSiteSettingsCookieContainer(browser())->empty());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server.GetURL("/setsecurecookie.html"));
+  ui_test_utils::NavigateToURL(browser(), https_url);
   EXPECT_FALSE(GetSiteSettingsCookieContainer(browser())->empty());
 }
 
@@ -974,13 +1057,6 @@ class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {
  public:
   ContentSettingsWorkerModulesBrowserTest() = default;
   ~ContentSettingsWorkerModulesBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    // Module scripts on Dedicated Worker is still an experimental feature.
-    // Likewise for CookieStore.
-    // TODO(crbug/680046,crbug/729800): Remove this after shipping.
-    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  }
 
  protected:
   void RegisterStaticFile(net::EmbeddedTestServer* server,
@@ -1208,144 +1284,3 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("second=value"));
   }
 }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
- protected:
-  void SetUpOnMainThread() override {
-    ContentSettingsTest::SetUpOnMainThread();
-    ASSERT_TRUE(https_server_.Start());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-#if BUILDFLAG(ENABLE_NACL)
-    // Ensure NaCl can run.
-    command_line->AppendSwitch(switches::kEnableNaCl);
-#endif
-  }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(ENABLE_WIDEVINE)
-  // Since the CDM is bundled and registered through the component updater,
-  // we must re-enable the component updater.
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
-    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
-    test_launcher_utils::RemoveCommandLineSwitch(
-        default_command_line, switches::kDisableComponentUpdate, command_line);
-  }
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(ENABLE_WIDEVINE)
-
-  void RunLoadPepperPluginTest(const char* mime_type, bool expect_loaded) {
-    const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    base::string16 expected_title(base::ASCIIToUTF16(expected_result));
-    content::TitleWatcher title_watcher(web_contents, expected_title);
-
-    GURL url(https_server_.GetURL("/load_pepper_plugin.html").spec() +
-             base::StringPrintf("?mimetype=%s", mime_type));
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-    auto* pscs =
-        PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
-    EXPECT_EQ(!expect_loaded,
-              pscs && pscs->IsContentBlocked(ContentSettingsType::PLUGINS));
-  }
-
-  void RunJavaScriptBlockedTest(const char* path,
-                                bool expect_is_javascript_content_blocked) {
-    // Because JavaScript is blocked, <title> will be the only title set.
-    // Checking for it ensures that the page loaded, though that is not always
-    // sufficient - see below.
-    const char* const kExpectedTitle = "Initial Title";
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
-    content::TitleWatcher title_watcher(web_contents, expected_title);
-
-    // Because JavaScript is blocked, we cannot rely on JavaScript to set a
-    // title, telling us the test is complete.
-    // As a result, it is possible to reach the IsContentBlocked() checks below
-    // before the blocked content can be reported to the browser process.
-    // See http://crbug.com/306702.
-    // Therefore, when expecting blocked content, we must wait until it has been
-    // reported by waiting for the appropriate icon to appear in the location
-    // bar, and checking IsContentBlocked().
-    ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path));
-
-    // Always wait for the page to load.
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-
-    if (expect_is_javascript_content_blocked) {
-      ui_test_utils::WaitForViewVisibility(
-          browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
-    } else {
-      // Since there is no notification that content is not blocked and no
-      // content is blocked when |expect_is_javascript_content_blocked| is
-      // false, javascript_content_blocked_observer would never succeed.
-      // There is no way to ensure blocked content would not have been reported
-      // after the check below. For coverage of this scenario, we must rely on
-      // the TitleWatcher adding sufficient delay most of the time.
-    }
-
-    PageSpecificContentSettings* settings =
-        PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
-    EXPECT_EQ(expect_is_javascript_content_blocked,
-              settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
-    EXPECT_FALSE(settings->IsContentBlocked(ContentSettingsType::PLUGINS));
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list;
-};
-
-class PepperContentSettingsSpecialCasesPluginsBlockedTest
-    : public PepperContentSettingsSpecialCasesTest {
- public:
-  void SetUpOnMainThread() override {
-    PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
-                                   CONTENT_SETTING_BLOCK);
-  }
-};
-
-class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
-    : public PepperContentSettingsSpecialCasesTest {
- public:
-  void SetUpOnMainThread() override {
-    PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
-    GURL server_root = https_server_.GetURL("/");
-    HostContentSettingsMap* content_settings_map =
-        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-    content_settings_map->SetContentSettingDefaultScope(
-        server_root, server_root, ContentSettingsType::PLUGINS,
-        CONTENT_SETTING_ALLOW);
-    content_settings_map->SetDefaultContentSetting(
-        ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
-  }
-};
-
-// The following tests verify that Pepper plugins that use JavaScript settings
-// instead of Plugins settings still work when Plugins are blocked.
-
-#if BUILDFLAG(ENABLE_NACL)
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
-                       NaCl) {
-  RunLoadPepperPluginTest("application/x-nacl", true);
-}
-#endif  // BUILDFLAG(ENABLE_NACL)
-
-// The following tests verify that those same Pepper plugins do not work when
-// JavaScript is blocked.
-
-#if BUILDFLAG(ENABLE_NACL)
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
-                       NaCl) {
-  RunJavaScriptBlockedTest("/load_nacl_no_js.html", true);
-}
-#endif  // BUILDFLAG(ENABLE_NACL)
-
-#endif  // BUILDFLAG(ENABLE_PLUGINS)

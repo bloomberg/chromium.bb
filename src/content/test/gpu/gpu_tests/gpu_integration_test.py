@@ -22,9 +22,13 @@ ResultType = json_results.ResultType
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
 _SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION = ['win10']
 _SUPPORTED_WIN_GPU_VENDORS = [0x8086, 0x10de, 0x1002]
+_SUPPORTED_WIN_AMD_GPUS = [0x6613, 0x699f, 0x7340]
+_SUPPORTED_WIN_AMD_GPUS_WITH_NV12_OVERLAYS = [0x7340]
 _SUPPORTED_WIN_INTEL_GPUS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912, 0x3e92]
+# Hardware overlays are disabled in 26.20.100.8141 per crbug.com/1079393#c105
+_UNSUPPORTED_WIN_INTEL_GPU_DRIVERS_WITH_NV12_OVERLAYS = ['5912-26.20.100.8141']
 
 
 class GpuIntegrationTest(
@@ -456,11 +460,18 @@ class GpuIntegrationTest(
       config['supports_overlays'] = True
       config['yuy2_overlay_support'] = 'SOFTWARE'
       config['nv12_overlay_support'] = 'SOFTWARE'
-      if gpu_vendor_id == 0x8086:
+      if gpu_vendor_id == 0x1002:
+        assert gpu_device_id in _SUPPORTED_WIN_AMD_GPUS
+        if gpu_device_id in _SUPPORTED_WIN_AMD_GPUS_WITH_NV12_OVERLAYS:
+          config['nv12_overlay_support'] = 'SCALING'
+      elif gpu_vendor_id == 0x8086:
         assert gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS
+        gpu_device_and_driver = ('%x-' + gpu.driver_version) % gpu_device_id
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS:
           config['yuy2_overlay_support'] = 'SCALING'
-        if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS:
+        if (gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS
+            and gpu_device_and_driver not in
+            _UNSUPPORTED_WIN_INTEL_GPU_DRIVERS_WITH_NV12_OVERLAYS):
           config['nv12_overlay_support'] = 'SCALING'
     return config
 
@@ -589,14 +600,16 @@ class GpuIntegrationTest(
         'qualcomm-adreno-(tm)-330',  # android-nexus-5
         'qualcomm-adreno-(tm)-418',  # android-nexus-5x
         'qualcomm-adreno-(tm)-420',  # android-nexus-6
-        'qualcomm-adreno-(tm)-430',  # android-nexus-6p
         'qualcomm-adreno-(tm)-540',  # android-pixel-2
+        'qualcomm-adreno-(tm)-640',  # android-pixel-4
         'nvidia-nvidia-tegra',  # android-nexus-9 and android-shield-android-tv
-        'vmware',  # VMs
+        'vmware,',  # VMs
         'vmware,-0x1050',  # ChromeOS VMs
         # Fuchsia VMs
         ('google-angle-(vulkan-1.1.0(swiftshader-device-('
          'llvm-7.0.1)-(0x0000c0de)))'),
+        ('google-angle-(vulkan-1.1.0(swiftshader-device-('
+         'llvm-10.0.0)-(0x0000c0de)))'),
         # These browsers are analogous to a particular OS, and specifying the
         # OS name is clearer.
         'cros-chrome',  # ChromeOS

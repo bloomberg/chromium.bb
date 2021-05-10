@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <atomic>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -21,6 +23,7 @@
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if !defined(OS_NACL) && !defined(OS_AIX)
 #include <pthread.h>
@@ -33,15 +36,34 @@
 
 namespace base {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 const Feature kSchedUtilHints{"SchedUtilHints", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 std::atomic<bool> g_use_sched_util(true);
-std::atomic<bool> g_feature_checked(false);
+std::atomic<bool> g_scheduler_hints_adjusted(false);
+
+// When a device doesn't specify uclamp values via chrome switches,
+// default boosting for urgent tasks is hardcoded here as 20%.
+// Higher values can lead to higher power consumption thus this value
+// is chosen conservatively where it does not show noticeable
+// power usage increased from several perf/power tests.
+const int kSchedulerBoostDef = 20;
+const int kSchedulerLimitDef = 100;
+const bool kSchedulerUseLatencyTuneDef = true;
+
+int g_scheduler_boost_adj;
+int g_scheduler_limit_adj;
+bool g_scheduler_use_latency_tune_adj;
+
+#if !defined(OS_NACL) && !defined(OS_AIX)
+
+// Defined by linux uclamp ABI of sched_setattr().
+const uint32_t kSchedulerUclampMin = 0;
+const uint32_t kSchedulerUclampMax = 1024;
 
 // sched_attr is used to set scheduler attributes for Linux. It is not a POSIX
 // struct and glibc does not expose it.
@@ -85,6 +107,14 @@ struct sched_attr {
 #endif
 #endif
 
+#if !defined(SCHED_FLAG_UTIL_CLAMP_MIN)
+#define SCHED_FLAG_UTIL_CLAMP_MIN 0x20
+#endif
+
+#if !defined(SCHED_FLAG_UTIL_CLAMP_MAX)
+#define SCHED_FLAG_UTIL_CLAMP_MAX 0x40
+#endif
+
 int sched_getattr(pid_t pid,
                   const struct sched_attr* attr,
                   unsigned int size,
@@ -97,7 +127,8 @@ int sched_setattr(pid_t pid,
                   unsigned int flags) {
   return syscall(__NR_sched_setattr, pid, attr, flags);
 }
-#endif  // OS_CHROMEOS
+#endif  // !defined(OS_NACL) && !defined(OS_AIX)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !defined(OS_NACL)
 const FilePath::CharType kCgroupDirectory[] =
@@ -143,7 +174,7 @@ void SetThreadCgroupForThreadPriority(PlatformThreadId thread_id,
   SetThreadCgroup(thread_id, cgroup_directory);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // thread_id should always be the value in the root PID namespace (see
 // FindThreadID).
 void SetThreadLatencySensitivity(ProcessId process_id,
@@ -151,25 +182,22 @@ void SetThreadLatencySensitivity(ProcessId process_id,
                                  ThreadPriority priority) {
   struct sched_attr attr;
   bool is_urgent = false;
-  int uclamp_min_urgent, uclamp_max_non_urgent, latency_sensitive_urgent;
+  int boost_percent, limit_percent;
+  int latency_sensitive_urgent;
 
   // Scheduler boost defaults to true unless disabled.
   if (!g_use_sched_util.load())
     return;
 
   // FieldTrial API can be called only once features were parsed.
-  if (g_feature_checked.load()) {
-    uclamp_min_urgent =
-      GetFieldTrialParamByFeatureAsInt(kSchedUtilHints, "MinUrgent", 20);
-    uclamp_max_non_urgent = GetFieldTrialParamByFeatureAsInt(
-        kSchedUtilHints, "MaxNonUrgent", 100);
-    latency_sensitive_urgent = GetFieldTrialParamByFeatureAsBool(
-        kSchedUtilHints, "LatencySensitive", true);
+  if (g_scheduler_hints_adjusted.load()) {
+    boost_percent = g_scheduler_boost_adj;
+    limit_percent = g_scheduler_limit_adj;
+    latency_sensitive_urgent = g_scheduler_use_latency_tune_adj;
   } else {
-    // Use defaults if features were not parsed yet...
-    uclamp_min_urgent = 20;
-    uclamp_max_non_urgent = 100;
-    latency_sensitive_urgent = true;
+    boost_percent = kSchedulerBoostDef;
+    limit_percent = kSchedulerLimitDef;
+    latency_sensitive_urgent = kSchedulerUseLatencyTuneDef;
   }
 
   // The thread_id passed in here is either 0 (in which case we ste for current
@@ -217,13 +245,19 @@ void SetThreadLatencySensitivity(ProcessId process_id,
         << "Failed to write latency file.\n";
   }
 
+  attr.sched_flags |= SCHED_FLAG_UTIL_CLAMP_MIN;
+  attr.sched_flags |= SCHED_FLAG_UTIL_CLAMP_MAX;
+
   if (is_urgent) {
-    attr.sched_util_min = uclamp_min_urgent;
-    attr.sched_util_max = 100;
+    attr.sched_util_min = (boost_percent * kSchedulerUclampMax + 50) / 100;
+    attr.sched_util_max = kSchedulerUclampMax;
   } else {
-    attr.sched_util_min = 0;
-    attr.sched_util_max = uclamp_max_non_urgent;
+    attr.sched_util_min = kSchedulerUclampMin;
+    attr.sched_util_max = (limit_percent * kSchedulerUclampMax + 50) / 100;
   }
+
+  DCHECK_GE(attr.sched_util_min, kSchedulerUclampMin);
+  DCHECK_LE(attr.sched_util_max, kSchedulerUclampMax);
 
   attr.size = sizeof(struct sched_attr);
   if (sched_setattr(thread_id, &attr, 0) == -1) {
@@ -281,7 +315,7 @@ bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
   // For legacy schedtune interface
   SetThreadCgroupsForThreadPriority(PlatformThread::CurrentId(), priority);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // For upstream uclamp interface. We try both legacy (schedtune, as done
   // earlier) and upstream (uclamp) interfaces, and whichever succeeds wins.
   SetThreadLatencySensitivity(0 /* ignore */, 0 /* thread-self */, priority);
@@ -347,7 +381,7 @@ void PlatformThread::SetThreadPriority(ProcessId process_id,
   // For legacy schedtune interface
   SetThreadCgroupsForThreadPriority(thread_id, priority);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // For upstream uclamp interface. We try both legacy (schedtune, as done
   // earlier) and upstream (uclamp) interfaces, and whichever succeeds wins.
   SetThreadLatencySensitivity(process_id, thread_id, priority);
@@ -361,13 +395,39 @@ void PlatformThread::SetThreadPriority(ProcessId process_id,
 }
 #endif  //  !defined(OS_NACL) && !defined(OS_AIX)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void PlatformThread::InitThreadPostFieldTrial() {
   DCHECK(FeatureList::GetInstance());
   if (!FeatureList::IsEnabled(kSchedUtilHints)) {
     g_use_sched_util.store(false);
+    return;
   }
-  g_feature_checked.store(true);
+
+  int boost_def = kSchedulerBoostDef;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSchedulerBoostUrgent)) {
+    std::string boost_switch_str =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSchedulerBoostUrgent);
+
+    int boost_switch_val;
+    if (!StringToInt(boost_switch_str, &boost_switch_val) ||
+        boost_switch_val < 0 || boost_switch_val > 100) {
+      DVPLOG(1) << "Invalid input for " << switches::kSchedulerBoostUrgent;
+    } else {
+      boost_def = boost_switch_val;
+    }
+  }
+
+  g_scheduler_boost_adj = GetFieldTrialParamByFeatureAsInt(
+      kSchedUtilHints, "BoostUrgent", boost_def);
+  g_scheduler_limit_adj = GetFieldTrialParamByFeatureAsInt(
+      kSchedUtilHints, "LimitNonUrgent", kSchedulerLimitDef);
+  g_scheduler_use_latency_tune_adj = GetFieldTrialParamByFeatureAsBool(
+      kSchedUtilHints, "LatencyTune", kSchedulerUseLatencyTuneDef);
+
+  g_scheduler_hints_adjusted.store(true);
 }
 #endif
 

@@ -432,8 +432,8 @@ namespace {
 // inserted to report ether an error or a log message.
 //
 // This configuration bit will likely be removed at some point.
-constexpr bool kErrorOnUninstantiatedParameterizedTest = false;
-constexpr bool kErrorOnUninstantiatedTypeParameterizedTest = false;
+constexpr bool kErrorOnUninstantiatedParameterizedTest = true;
+constexpr bool kErrorOnUninstantiatedTypeParameterizedTest = true;
 
 // A test that fails at a given file/line location with a given message.
 class FailureTest : public Test {
@@ -497,7 +497,7 @@ void InsertSyntheticTestCase(const std::string& name, CodeLocation location,
       "removed but the rest got left behind.";
 
   std::string message =
-      "Paramaterized test suite " + name +
+      "Parameterized test suite " + name +
       (has_test_p ? kMissingInstantiation : kMissingTestCase) +
       "\n\n"
       "To suppress this error for this test suite, insert the following line "
@@ -505,7 +505,7 @@ void InsertSyntheticTestCase(const std::string& name, CodeLocation location,
       "\n\n"
       "GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(" + name + ");";
 
-  std::string full_name = "UninstantiatedParamaterizedTestSuite<" + name + ">";
+  std::string full_name = "UninstantiatedParameterizedTestSuite<" + name + ">";
   RegisterTest(  //
       "GoogleTestVerification", full_name.c_str(),
       nullptr,  // No type parameter.
@@ -552,7 +552,7 @@ void TypeParameterizedTestSuiteRegistry::CheckForInstantiations() {
     if (ignored.find(testcase.first) != ignored.end()) continue;
 
     std::string message =
-        "Type paramaterized test suite " + testcase.first +
+        "Type parameterized test suite " + testcase.first +
         " is defined via REGISTER_TYPED_TEST_SUITE_P, but never instantiated "
         "via INSTANTIATE_TYPED_TEST_SUITE_P. None of the test cases will run."
         "\n\n"
@@ -568,7 +568,7 @@ void TypeParameterizedTestSuiteRegistry::CheckForInstantiations() {
         testcase.first + ");";
 
     std::string full_name =
-        "UninstantiatedTypeParamaterizedTestSuite<" + testcase.first + ">";
+        "UninstantiatedTypeParameterizedTestSuite<" + testcase.first + ">";
     RegisterTest(  //
         "GoogleTestVerification", full_name.c_str(),
         nullptr,  // No type parameter.
@@ -3007,9 +3007,9 @@ void TestSuite::Run() {
   // Call both legacy and the new API
   repeater->OnTestSuiteStart(*this);
 //  Legacy API is deprecated but still available
-#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
   repeater->OnTestCaseStart(*this);
-#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   impl->os_stack_trace_getter()->UponLeavingGTest();
   internal::HandleExceptionsInMethodIfSupported(
@@ -3034,9 +3034,9 @@ void TestSuite::Run() {
   // Call both legacy and the new API
   repeater->OnTestSuiteEnd(*this);
 //  Legacy API is deprecated but still available
-#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
   repeater->OnTestCaseEnd(*this);
-#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   impl->set_current_test_suite(nullptr);
 }
@@ -3053,9 +3053,9 @@ void TestSuite::Skip() {
   // Call both legacy and the new API
   repeater->OnTestSuiteStart(*this);
 //  Legacy API is deprecated but still available
-#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
   repeater->OnTestCaseStart(*this);
-#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   for (int i = 0; i < total_test_count(); i++) {
     GetMutableTestInfo(i)->Skip();
@@ -3064,9 +3064,9 @@ void TestSuite::Skip() {
   // Call both legacy and the new API
   repeater->OnTestSuiteEnd(*this);
   // Legacy API is deprecated but still available
-#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
   repeater->OnTestCaseEnd(*this);
-#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   impl->set_current_test_suite(nullptr);
 }

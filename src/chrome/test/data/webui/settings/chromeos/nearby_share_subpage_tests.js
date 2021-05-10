@@ -10,7 +10,7 @@
 // #import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.m.js';
 // #import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.m.js';
 // #import {FakeReceiveManager} from './fake_receive_manager.m.js'
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {isVisible, waitAfterNextRender} from 'chrome://test/test_util.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
@@ -104,15 +104,30 @@ suite('NearbyShare', function() {
   });
 
   test('feature toggle button controls preference', function() {
+    // Ensure that these controls are enabled/disabled when the Nearby is
+    // enabled/disabled.
+    const highVizToggle = subpage.$$('#highVisibilityToggle');
+    const editDeviceNameButton = subpage.$$('#editDeviceNameButton');
+    const editVisibilityButton = subpage.$$('#editVisibilityButton');
+    const editDataUsageButton = subpage.$$('#editDataUsageButton');
+
     assertEquals(true, featureToggleButton.checked);
     assertEquals(true, subpage.prefs.nearby_sharing.enabled.value);
     assertEquals('On', onOffText.textContent.trim());
+    assertFalse(highVizToggle.disabled);
+    assertFalse(editDeviceNameButton.disabled);
+    assertFalse(editVisibilityButton.disabled);
+    assertFalse(editDataUsageButton.disabled);
 
     featureToggleButton.click();
 
     assertEquals(false, featureToggleButton.checked);
     assertEquals(false, subpage.prefs.nearby_sharing.enabled.value);
     assertEquals('Off', onOffText.textContent.trim());
+    assertTrue(highVizToggle.disabled);
+    assertTrue(editDeviceNameButton.disabled);
+    assertTrue(editVisibilityButton.disabled);
+    assertTrue(editDataUsageButton.disabled);
   });
 
   test('toggle row controls preference', function() {
@@ -127,23 +142,38 @@ suite('NearbyShare', function() {
     assertEquals('Off', onOffText.textContent.trim());
   });
 
-  test('Deep link to nearby share on/off toggle', async () => {
-    loadTimeData.overrideValues({
-      isDeepLinkingEnabled: true,
+  suite('Deeplinking', () => {
+    const deepLinkTestData = [
+      {settingId: '208', deepLinkElement: '#featureToggleButton'},
+      {settingId: '214', deepLinkElement: '#editDeviceNameButton'},
+      {settingId: '215', deepLinkElement: '#editVisibilityButton'},
+      {settingId: '216', deepLinkElement: '#manageContactsLinkRow'},
+      {settingId: '217', deepLinkElement: '#editDataUsageButton'},
+    ];
+
+    deepLinkTestData.forEach((testData) => {
+      test(
+          'Deep link to nearby setting element ' + testData.deepLinkElement,
+          async () => {
+            loadTimeData.overrideValues({
+              isDeepLinkingEnabled: true,
+            });
+
+            const params = new URLSearchParams;
+            params.append('settingId', testData.settingId);
+            settings.Router.getInstance().navigateTo(
+                settings.routes.NEARBY_SHARE, params);
+
+            Polymer.dom.flush();
+
+            const deepLinkElement = subpage.$$(testData.deepLinkElement);
+            await test_util.waitAfterNextRender(deepLinkElement);
+            assertEquals(
+                deepLinkElement, subpage.shadowRoot.activeElement,
+                'Nearby share setting element ' + testData.deepLinkElement +
+                    ' should be focused for settingId=' + testData.settingId);
+          });
     });
-
-    const params = new URLSearchParams;
-    params.append('settingId', '208');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.NEARBY_SHARE, params);
-
-    Polymer.dom.flush();
-
-    const deepLinkElement = featureToggleButton.$$('cr-toggle');
-    await test_util.waitAfterNextRender(deepLinkElement);
-    assertEquals(
-        deepLinkElement, getDeepActiveElement(),
-        'Nearby share on/off toggle should be focused for settingId=208.');
   });
 
   test('update device name preference', function() {
@@ -214,6 +244,33 @@ suite('NearbyShare', function() {
     dialog.$$('.action-button').click();
   });
 
+  test('toggle high visibility from UI', async function() {
+    subpage.$$('#highVisibilityToggle').click();
+    Polymer.dom.flush();
+    assertTrue(fakeReceiveManager.getInHighVisibilityForTest());
+
+    const dialog = subpage.$$('nearby-share-receive-dialog');
+    assertTrue(!!dialog);
+
+    await test_util.waitAfterNextRender(dialog);
+    const highVisibilityDialog = dialog.$$('nearby-share-high-visibility-page');
+    assertTrue(test_util.isVisible(highVisibilityDialog));
+
+    dialog.close_();
+    assertFalse(fakeReceiveManager.getInHighVisibilityForTest());
+  });
+
+  test('high visibility UI updates from high visibility changes', function() {
+    const highVisibilityToggle = subpage.$$('#highVisibilityToggle');
+    assertFalse(highVisibilityToggle.checked);
+
+    fakeReceiveManager.setInHighVisibilityForTest(true);
+    assertTrue(highVisibilityToggle.checked);
+
+    fakeReceiveManager.setInHighVisibilityForTest(false);
+    assertFalse(highVisibilityToggle.checked);
+  });
+
   test('GAIA email, account manager enabled', async () => {
     await accountManagerBrowserProxy.whenCalled('getAccounts');
     Polymer.dom.flush();
@@ -232,4 +289,72 @@ suite('NearbyShare', function() {
     assertTrue(!!dialog);
   });
 
+  test('show high visibility dialog', async function() {
+    // Mock performance.now to return a constant 0 for testing.
+    const originalNow = performance.now;
+    performance.now = () => {
+      return 0;
+    };
+
+    const params = new URLSearchParams;
+    params.append('receive', '1');
+    params.append('timeout', '600');  // 10 minutes
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NEARBY_SHARE, params);
+
+    const dialog = subpage.$$('nearby-share-receive-dialog');
+    assertTrue(!!dialog);
+    const highVisibilityDialog = dialog.$$('nearby-share-high-visibility-page');
+    assertTrue(!!highVisibilityDialog);
+    assertFalse(highVisibilityDialog.highVisibilityTimedOut_());
+
+    Polymer.dom.flush();
+    await test_util.waitAfterNextRender(dialog);
+
+    assertTrue(test_util.isVisible(highVisibilityDialog));
+    assertEquals(highVisibilityDialog.shutoffTimestamp, 600 * 1000);
+
+    // Restore mock
+    performance.now = originalNow;
+  });
+
+  test('high visibility dialog times out', async function() {
+    // Mock performance.now to return a constant 0 for testing.
+    const originalNow = performance.now;
+    performance.now = () => {
+      return 0;
+    };
+
+    const params = new URLSearchParams;
+    params.append('receive', '1');
+    params.append('timeout', '600');  // 10 minutes
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NEARBY_SHARE, params);
+
+    const dialog = subpage.$$('nearby-share-receive-dialog');
+    assertTrue(!!dialog);
+    const highVisibilityDialog = dialog.$$('nearby-share-high-visibility-page');
+    assertTrue(!!highVisibilityDialog);
+
+    highVisibilityDialog.calculateRemainingTime_();
+    assertFalse(highVisibilityDialog.highVisibilityTimedOut_());
+
+    // Set time past the shutoffTime.
+    performance.now = () => {
+      return 6000001;
+    };
+
+    highVisibilityDialog.calculateRemainingTime_();
+    await test_util.waitAfterNextRender(dialog);
+    assertTrue(test_util.isVisible(highVisibilityDialog));
+    assertTrue(highVisibilityDialog.highVisibilityTimedOut_());
+
+    // Restore mock
+    performance.now = originalNow;
+  });
+
+  test('download contacts on attach', () => {
+    // Ensure contacts download occurs when the subpage is attached.
+    assertTrue(fakeContactManager.downloadContactsCalled);
+  });
 });

@@ -22,6 +22,7 @@
 
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
+#include "api/network_state_predictor.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtp_headers.h"
 #include "api/rtp_parameters.h"
@@ -30,9 +31,7 @@
 #include "logging/rtc_event_log/encoder/rtc_event_log_encoder_common.h"
 #include "logging/rtc_event_log/rtc_event_processor.h"
 #include "modules/audio_coding/audio_network_adaptor/include/audio_network_adaptor.h"
-#include "modules/include/module_common_types.h"
 #include "modules/include/module_common_types_public.h"
-#include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "modules/rtp_rtcp/include/rtp_cvo.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
@@ -695,6 +694,7 @@ ParsedRtcEventLog::ParseStatus StoreRtcpBlocks(
     std::vector<LoggedRtcpPacketNack>* nack_list,
     std::vector<LoggedRtcpPacketFir>* fir_list,
     std::vector<LoggedRtcpPacketPli>* pli_list,
+    std::vector<LoggedRtcpPacketBye>* bye_list,
     std::vector<LoggedRtcpPacketTransportFeedback>* transport_feedback_list,
     std::vector<LoggedRtcpPacketLossNotification>* loss_notification_list) {
   rtcp::CommonHeader header;
@@ -739,7 +739,13 @@ ParsedRtcEventLog::ParseStatus StoreRtcpBlocks(
       if (parsed_block.pli.Parse(header)) {
         pli_list->push_back(std::move(parsed_block));
       }
-    } else if (header.type() == rtcp::Remb::kPacketType &&
+    } else if (header.type() == rtcp::Bye::kPacketType) {
+      LoggedRtcpPacketBye parsed_block;
+      parsed_block.timestamp_us = timestamp_us;
+      if (parsed_block.bye.Parse(header)) {
+        bye_list->push_back(std::move(parsed_block));
+      }
+    } else if (header.type() == rtcp::Psfb::kPacketType &&
                header.fmt() == rtcp::Psfb::kAfbMessageType) {
       bool type_found = false;
       if (!type_found) {
@@ -1183,7 +1189,7 @@ ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::ParseStream(
     auto status = StoreRtcpBlocks(
         timestamp_us, packet_begin, packet_end, &incoming_sr_, &incoming_rr_,
         &incoming_xr_, &incoming_remb_, &incoming_nack_, &incoming_fir_,
-        &incoming_pli_, &incoming_transport_feedback_,
+        &incoming_pli_, &incoming_bye_, &incoming_transport_feedback_,
         &incoming_loss_notification_);
     RTC_RETURN_IF_ERROR(status);
   }
@@ -1195,7 +1201,7 @@ ParsedRtcEventLog::ParseStatus ParsedRtcEventLog::ParseStream(
     auto status = StoreRtcpBlocks(
         timestamp_us, packet_begin, packet_end, &outgoing_sr_, &outgoing_rr_,
         &outgoing_xr_, &outgoing_remb_, &outgoing_nack_, &outgoing_fir_,
-        &outgoing_pli_, &outgoing_transport_feedback_,
+        &outgoing_pli_, &outgoing_bye_, &outgoing_transport_feedback_,
         &outgoing_loss_notification_);
     RTC_RETURN_IF_ERROR(status);
   }

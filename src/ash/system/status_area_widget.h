@@ -19,7 +19,6 @@ class Window;
 }
 
 namespace ash {
-class BloomTray;
 class DictationButtonTray;
 class HoldingSpaceTray;
 class ImeMenuTray;
@@ -136,6 +135,10 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
 
   Shelf* shelf() { return shelf_; }
 
+  const std::vector<TrayBackgroundView*>& tray_buttons() const {
+    return tray_buttons_;
+  }
+
   LoginStatus login_status() const { return login_status_; }
 
   // Returns true if the shelf should be visible. This is used when the
@@ -160,8 +163,6 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   VirtualKeyboardTray* virtual_keyboard_tray_for_testing() {
     return virtual_keyboard_tray_.get();
   }
-
-  BloomTray* bloom_tray_for_testing() { return bloom_tray_.get(); }
 
   CollapseState collapse_state() const { return collapse_state_; }
   void set_collapse_state_for_test(CollapseState state) {
@@ -227,7 +228,6 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   std::unique_ptr<PhoneHubTray> phone_hub_tray_;
   std::unique_ptr<StopRecordingButtonTray> stop_recording_button_tray_;
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
-  std::unique_ptr<BloomTray> bloom_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
   std::unique_ptr<HoldingSpaceTray> holding_space_tray_;

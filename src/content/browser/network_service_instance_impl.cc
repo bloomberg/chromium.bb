@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
 #include "content/browser/service_sandbox_type.h"
@@ -32,14 +33,13 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/log/net_log_util.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -47,6 +47,17 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+
+#if !defined(OS_MAC)
+#include "sandbox/policy/features.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string16.h"
+#include "base/win/registry.h"
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
 
 namespace content {
 
@@ -81,7 +92,7 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
 // called from the IO thread.
 const base::Feature kNetworkServiceDedicatedThread {
   "NetworkServiceDedicatedThread",
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -235,6 +246,39 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
   return net::NetLogCaptureMode::kDefault;
 }
 
+#if defined(OS_WIN)
+// This enum is used to record a histogram and should not be renumbered.
+enum class ServiceStatus {
+  kUnknown = 0,
+  kNotFound = 1,
+  kFound = 2,
+  kMaxValue = kFound
+};
+
+ServiceStatus DetectSecurityProviders() {
+  // https://docs.microsoft.com/en-us/windows/win32/secauthn/writing-and-installing-a-security-support-provider
+  base::win::RegKey key(HKEY_LOCAL_MACHINE,
+                        L"SYSTEM\\CurrentControlSet\\Control\\Lsa", KEY_READ);
+  if (!key.Valid())
+    return ServiceStatus::kUnknown;
+
+  std::vector<std::wstring> packages;
+  if (key.ReadValues(L"Security Packages", &packages) != ERROR_SUCCESS)
+    return ServiceStatus::kUnknown;
+
+  for (const auto& package : packages) {
+    // Security Packages can be empty or just "". Anything else indicates
+    // there is potentially a third party SSP/APs DLL installed, and network
+    // sandbox should not be engaged.
+    if (package.empty())
+      continue;
+    if (package != L"\"\"")
+      return ServiceStatus::kFound;
+  }
+  return ServiceStatus::kNotFound;
+}
+#endif  // defined(OS_WIN)
+
 static NetworkServiceClient* g_client = nullptr;
 
 }  // namespace
@@ -370,7 +414,7 @@ network::mojom::NetworkService* GetNetworkService() {
 #if defined(OS_WIN)
           // base::Environment returns environment variables in UTF-8 on
           // Windows.
-          ssl_key_log_path = base::FilePath(base::UTF8ToUTF16(env_str));
+          ssl_key_log_path = base::FilePath(base::UTF8ToWide(env_str));
 #else
           ssl_key_log_path = base::FilePath(env_str);
 #endif
@@ -398,15 +442,15 @@ network::mojom::NetworkService* GetNetworkService() {
   return g_network_service_remote->get();
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
-RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
+base::CallbackListSubscription RegisterNetworkServiceCrashHandler(
+    base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!handler.is_null());
 
   return GetCrashHandlersList().Add(std::move(handler));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 net::NetworkChangeNotifier* GetNetworkChangeNotifier() {
   return BrowserMainLoop::GetInstance()->network_change_notifier();
 }
@@ -502,16 +546,19 @@ void PingNetworkService(base::OnceClosure closure) {
         if (closure)
           std::move(closure).Run();
       },
-      base::Passed(std::move(closure))));
+      std::move(closure)));
 }
 
 namespace {
+
+cert_verifier::mojom::CertVerifierServiceFactory*
+    g_cert_verifier_service_factory_for_testing = nullptr;
 
 mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
 GetNewCertVerifierServiceRemote(
     cert_verifier::mojom::CertVerifierServiceFactory*
         cert_verifier_service_factory,
-    network::mojom::CertVerifierCreationParamsPtr creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParamsPtr creation_params) {
   mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
       cert_verifier_remote;
   cert_verifier_service_factory->GetNewCertVerifier(
@@ -520,96 +567,98 @@ GetNewCertVerifierServiceRemote(
   return cert_verifier_remote;
 }
 
-void CreateInProcessCertVerifierServiceOnThread(
+void RunInProcessCertVerifierServiceFactory(
     mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
         receiver) {
-  // Except in tests, our CertVerifierServiceFactoryImpl is a singleton.
-  static base::NoDestructor<cert_verifier::CertVerifierServiceFactoryImpl>
-      cv_service_factory(std::move(receiver));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+#else
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+#endif
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      std::unique_ptr<cert_verifier::CertVerifierServiceFactoryImpl>>>
+      service_factory_slot;
+  service_factory_slot->GetOrCreateValue() =
+      std::make_unique<cert_verifier::CertVerifierServiceFactoryImpl>(
+          std::move(receiver));
 }
 
 // Owns the CertVerifierServiceFactory used by the browser.
 // Lives on the UI thread.
-class CertVerifierServiceFactoryOwner {
- public:
-  CertVerifierServiceFactoryOwner() = default;
-  CertVerifierServiceFactoryOwner(const CertVerifierServiceFactoryOwner&) =
-      delete;
-  CertVerifierServiceFactoryOwner& operator=(
-      const CertVerifierServiceFactoryOwner&) = delete;
-  ~CertVerifierServiceFactoryOwner() = delete;
+mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>&
+GetCertVerifierServiceFactoryRemoteStorage() {
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>>>
+      cert_verifier_service_factory_remote;
+  return cert_verifier_service_factory_remote->GetOrCreateValue();
+}
 
-  static CertVerifierServiceFactoryOwner* Get() {
-    static base::NoDestructor<CertVerifierServiceFactoryOwner>
-        cert_verifier_service_factory_owner;
-    return &*cert_verifier_service_factory_owner;
-  }
+// Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.
+cert_verifier::mojom::CertVerifierServiceFactory*
+GetCertVerifierServiceFactory() {
+  if (g_cert_verifier_service_factory_for_testing)
+    return g_cert_verifier_service_factory_for_testing;
 
-  // Passing nullptr will reset the current remote.
-  void SetCertVerifierServiceFactoryForTesting(
-      cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
-    if (service_factory) {
-      DCHECK(!service_factory_);
-    }
-    service_factory_ = service_factory;
-    service_factory_remote_.reset();
-  }
-
-  // Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.
-  cert_verifier::mojom::CertVerifierServiceFactory*
-  GetCertVerifierServiceFactory() {
-    if (!service_factory_) {
-#if defined(OS_CHROMEOS)
-      // ChromeOS's in-process CertVerifierService should run on the IO thread
-      // because it interacts with IO-bound NSS and ChromeOS user slots.
-      // See for example InitializeNSSForChromeOSUser().
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE,
-          base::BindOnce(&CreateInProcessCertVerifierServiceOnThread,
-                         service_factory_remote_.BindNewPipeAndPassReceiver()));
+  mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>&
+      factory_remote_storage = GetCertVerifierServiceFactoryRemoteStorage();
+  if (!factory_remote_storage.is_bound() ||
+      !factory_remote_storage.is_connected()) {
+    factory_remote_storage.reset();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // ChromeOS's in-process CertVerifierService should run on the IO thread
+    // because it interacts with IO-bound NSS and ChromeOS user slots.
+    // See for example InitializeNSSForChromeOSUser().
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RunInProcessCertVerifierServiceFactory,
+                       factory_remote_storage.BindNewPipeAndPassReceiver()));
 #else
-      CreateInProcessCertVerifierServiceOnThread(
-          service_factory_remote_.BindNewPipeAndPassReceiver());
+    RunInProcessCertVerifierServiceFactory(
+        factory_remote_storage.BindNewPipeAndPassReceiver());
 #endif
-      service_factory_ = service_factory_remote_.get();
-    }
-    return service_factory_;
   }
-
- private:
-  // Bound to UI thread.
-  mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>
-      service_factory_remote_;
-  cert_verifier::mojom::CertVerifierServiceFactory* service_factory_ = nullptr;
-};
+  return factory_remote_storage.get();
+}
 
 }  // namespace
 
-network::mojom::CertVerifierParamsPtr GetCertVerifierParams(
-    network::mojom::CertVerifierCreationParamsPtr
+network::mojom::CertVerifierServiceRemoteParamsPtr GetCertVerifierParams(
+    cert_verifier::mojom::CertVerifierCreationParamsPtr
         cert_verifier_creation_params) {
-  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService)) {
-    return network::mojom::CertVerifierParams::NewCreationParams(
-        std::move(cert_verifier_creation_params));
-  }
-
-  auto cv_service_remote_params =
-      network::mojom::CertVerifierServiceRemoteParams::New();
-
-  // Create a cert verifier service.
-  cv_service_remote_params
-      ->cert_verifier_service = GetNewCertVerifierServiceRemote(
-      CertVerifierServiceFactoryOwner::Get()->GetCertVerifierServiceFactory(),
-      std::move(cert_verifier_creation_params));
-
-  return network::mojom::CertVerifierParams::NewRemoteParams(
-      std::move(cv_service_remote_params));
+  return network::mojom::CertVerifierServiceRemoteParams::New(
+      GetNewCertVerifierServiceRemote(
+          GetCertVerifierServiceFactory(),
+          std::move(cert_verifier_creation_params)));
 }
 
 void SetCertVerifierServiceFactoryForTesting(
     cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
-  CertVerifierServiceFactoryOwner::Get()
-      ->SetCertVerifierServiceFactoryForTesting(service_factory);
+  g_cert_verifier_service_factory_for_testing = service_factory;
+}
+
+bool IsNetworkSandboxEnabled() {
+#if defined(OS_MAC) || defined(OS_FUCHSIA)
+  return true;
+#else
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return false;
+  auto ssp_status = DetectSecurityProviders();
+  base::UmaHistogramEnumeration("Windows.ServiceStatus.SSP", ssp_status);
+  switch (ssp_status) {
+    case ServiceStatus::kUnknown:
+      return false;
+    case ServiceStatus::kNotFound:
+      break;
+    case ServiceStatus::kFound:
+      return false;
+  }
+#endif  // defined(OS_WIN)
+  return base::FeatureList::IsEnabled(
+      sandbox::policy::features::kNetworkServiceSandbox);
+#endif  // defined(OS_MAC) || defined(OS_FUCHSIA)
 }
 
 }  // namespace content

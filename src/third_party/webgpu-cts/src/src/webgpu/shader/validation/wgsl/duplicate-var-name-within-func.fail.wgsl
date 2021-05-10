@@ -1,4 +1,4 @@
-# v-0014 - This fails because variable `a` is redeclared.
+// v-0014 - This fails because variable `a` is redeclared.
 
 [[stage(vertex)]]
 fn main() -> void {

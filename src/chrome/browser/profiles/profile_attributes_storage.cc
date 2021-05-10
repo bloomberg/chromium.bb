@@ -19,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -117,38 +118,43 @@ bool SaveBitmap(std::unique_ptr<ImageData> data,
 }
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
-                              const base::Closure& callback) {
+                              base::OnceClosure callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(file_path))
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
 }
 
 // Compares two ProfileAttributesEntry using locale-sensitive comparison of
 // their names. For ties, the profile path is compared next.
 class ProfileAttributesSortComparator {
  public:
-  explicit ProfileAttributesSortComparator(icu::Collator* collator);
+  ProfileAttributesSortComparator(icu::Collator* collator, bool use_local_name)
+      : collator_(collator), use_local_name_(use_local_name) {}
+
   bool operator()(const ProfileAttributesEntry* const a,
-                  const ProfileAttributesEntry* const b) const;
+                  const ProfileAttributesEntry* const b) const {
+    UCollationResult result = base::i18n::CompareString16WithCollator(
+        *collator_, GetValue(a), GetValue(b));
+    if (result != UCOL_EQUAL)
+      return result == UCOL_LESS;
+
+    // If the names are the same, then compare the paths, which must be unique.
+    return a->GetPath().value() < b->GetPath().value();
+  }
+
  private:
+  base::string16 GetValue(const ProfileAttributesEntry* const entry) const {
+    if (use_local_name_)
+      return entry->GetLocalProfileName();
+
+    return entry->GetName();
+  }
+
   icu::Collator* collator_;
+  bool use_local_name_;
 };
-
-ProfileAttributesSortComparator::ProfileAttributesSortComparator(
-    icu::Collator* collator) : collator_(collator) {}
-
-bool ProfileAttributesSortComparator::operator()(
-    const ProfileAttributesEntry* const a,
-    const ProfileAttributesEntry* const b) const {
-  UCollationResult result = base::i18n::CompareString16WithCollator(
-      *collator_, a->GetName(), b->GetName());
-  if (result != UCOL_EQUAL)
-    return result == UCOL_LESS;
-
-  // If the names are the same, then compare the paths, which must be unique.
-  return a->GetPath().value() < b->GetPath().value();
-}
 
 MultiProfileUserType GetMultiProfileUserType(
     const std::vector<ProfileAttributesEntry*>& entries) {
@@ -158,7 +164,7 @@ MultiProfileUserType GetMultiProfileUserType(
 
   int active_count = std::count_if(
       entries.begin(), entries.end(), [](ProfileAttributesEntry* entry) {
-        return ProfileMetrics::IsProfileActive(entry);
+        return ProfileMetrics::IsProfileActive(entry) && !entry->IsGuest();
       });
 
   if (active_count <= 1)
@@ -239,22 +245,24 @@ ProfileAttributesStorage::~ProfileAttributesStorage() {
 }
 
 std::vector<ProfileAttributesEntry*>
-ProfileAttributesStorage::GetAllProfilesAttributes() {
+ProfileAttributesStorage::GetAllProfilesAttributes(bool include_guest_profile) {
   std::vector<ProfileAttributesEntry*> ret;
   for (const auto& path_and_entry : profile_attributes_entries_) {
-    ProfileAttributesEntry* entry;
     // Initialize any entries that are not yet initialized.
-    bool success = GetProfileAttributesWithPath(
-        base::FilePath(path_and_entry.first), &entry);
-    DCHECK(success);
-    ret.push_back(entry);
+    ProfileAttributesEntry* entry =
+        GetProfileAttributesWithPath(base::FilePath(path_and_entry.first));
+    DCHECK(entry);
+    if (!entry->IsGuest() || include_guest_profile)
+      ret.push_back(entry);
   }
   return ret;
 }
 
 std::vector<ProfileAttributesEntry*>
-ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
-  std::vector<ProfileAttributesEntry*> ret = GetAllProfilesAttributes();
+ProfileAttributesStorage::GetAllProfilesAttributesSorted(
+    bool use_local_profile_name) {
+  std::vector<ProfileAttributesEntry*> ret =
+      GetAllProfilesAttributes(/*include_guest_profile=*/false);
   // Do not allocate the collator and sort if it is not necessary.
   if (ret.size() < 2)
     return ret;
@@ -266,16 +274,27 @@ ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
       icu::Collator::createInstance(error_code));
   DCHECK(U_SUCCESS(error_code));
 
-  std::sort(ret.begin(), ret.end(),
-            ProfileAttributesSortComparator(collator.get()));
+  std::sort(
+      ret.begin(), ret.end(),
+      ProfileAttributesSortComparator(collator.get(), use_local_profile_name));
   return ret;
+}
+
+std::vector<ProfileAttributesEntry*>
+ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
+  return GetAllProfilesAttributesSorted(false);
+}
+
+std::vector<ProfileAttributesEntry*>
+ProfileAttributesStorage::GetAllProfilesAttributesSortedByLocalProfilName() {
+  return GetAllProfilesAttributesSorted(true);
 }
 
 base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
     size_t icon_index) const {
   base::string16 name;
   for (int name_index = 1; ; ++name_index) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
     // Using native digits will break IsDefaultProfileName() below because
     // it uses sscanf.
     // TODO(jshin): fix IsDefaultProfileName to handle native digits.
@@ -299,7 +318,8 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
 
     // Loop through previously named profiles to ensure we're not duplicating.
     std::vector<ProfileAttributesEntry*> entries =
-        const_cast<ProfileAttributesStorage*>(this)->GetAllProfilesAttributes();
+        const_cast<ProfileAttributesStorage*>(this)->GetAllProfilesAttributes(
+            /*include_guest_profile=*/false);
 
     if (std::none_of(entries.begin(), entries.end(),
                      [name](ProfileAttributesEntry* entry) {
@@ -324,7 +344,7 @@ bool ProfileAttributesStorage::IsDefaultProfileName(
   if (assignments == 1)
     return true;
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
   if (!include_check_for_legacy_profile_name)
     return false;
 #endif
@@ -346,7 +366,8 @@ size_t ProfileAttributesStorage::ChooseAvatarIconIndexForNewProfile() const {
   std::unordered_set<size_t> used_icon_indices;
 
   std::vector<ProfileAttributesEntry*> entries =
-      const_cast<ProfileAttributesStorage*>(this)->GetAllProfilesAttributes();
+      const_cast<ProfileAttributesStorage*>(this)->GetAllProfilesAttributes(
+          /*include_guest_profile=*/false);
   for (const ProfileAttributesEntry* entry : entries)
     used_icon_indices.insert(entry->GetAvatarIconIndex());
 
@@ -405,7 +426,8 @@ void ProfileAttributesStorage::RecordDeletedProfileState(
 #endif
 
 void ProfileAttributesStorage::RecordProfilesState() {
-  std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
+  std::vector<ProfileAttributesEntry*> entries =
+      GetAllProfilesAttributes(/*include_guest_profile=*/false);
   if (entries.size() == 0)
     return;
 
@@ -466,12 +488,12 @@ void ProfileAttributesStorage::DownloadHighResAvatarIfNeeded(
 
   const base::FilePath& file_path =
       profiles::GetPathOfHighResAvatarAtIndex(icon_index);
-  base::Closure callback =
-      base::Bind(&ProfileAttributesStorage::DownloadHighResAvatar, AsWeakPtr(),
-                 icon_index, profile_path);
+  base::OnceClosure callback =
+      base::BindOnce(&ProfileAttributesStorage::DownloadHighResAvatar,
+                     AsWeakPtr(), icon_index, profile_path);
   file_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunCallbackIfFileMissing, file_path, callback));
+      FROM_HERE, base::BindOnce(&RunCallbackIfFileMissing, file_path,
+                                std::move(callback)));
 }
 
 void ProfileAttributesStorage::DownloadHighResAvatar(

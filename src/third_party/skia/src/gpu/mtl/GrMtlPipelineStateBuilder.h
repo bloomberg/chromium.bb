@@ -45,20 +45,23 @@ private:
 
     const GrCaps* caps() const override;
 
+    SkSL::Compiler* shaderCompiler() const override;
+
     void finalizeFragmentOutputColor(GrShaderVar& outputColor) override;
 
     void finalizeFragmentSecondaryColor(GrShaderVar& outputColor) override;
 
     id<MTLLibrary> generateMtlShaderLibrary(const SkSL::String& sksl,
-                                            SkSL::Program::Kind kind,
+                                            SkSL::ProgramKind kind,
                                             const SkSL::Program::Settings& settings,
                                             SkSL::String* msl,
-                                            SkSL::Program::Inputs* inputs);
+                                            SkSL::Program::Inputs* inputs,
+                                            GrContextOptions::ShaderErrorHandler* errorHandler);
     id<MTLLibrary> compileMtlShaderLibrary(const SkSL::String& shader,
-                                           SkSL::Program::Inputs inputs);
+                                           SkSL::Program::Inputs inputs,
+                                           GrContextOptions::ShaderErrorHandler* errorHandler);
     void storeShadersInCache(const SkSL::String shaders[], const SkSL::Program::Inputs inputs[],
                              bool isSkSL);
-    bool loadShadersFromCache(SkReadBuffer* cached, __strong id<MTLLibrary> outLibraries[]);
 
     GrGLSLUniformHandler* uniformHandler() override { return &fUniformHandler; }
     const GrGLSLUniformHandler* uniformHandler() const override { return &fUniformHandler; }

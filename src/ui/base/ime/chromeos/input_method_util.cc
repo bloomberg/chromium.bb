@@ -482,13 +482,6 @@ bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
          extension_ime_util::IsKeyboardLayoutExtension(input_method_id);
 }
 
-base::string16 InputMethodUtil::GetInputMethodShortName(
-    const InputMethodDescriptor& input_method) const {
-  // TODO(shuchen): remove this method, as the client can directly use
-  // input_method.GetIndicator().
-  return base::UTF8ToUTF16(input_method.GetIndicator());
-}
-
 base::string16 InputMethodUtil::GetInputMethodMediumName(
     const InputMethodDescriptor& input_method) const {
   // For the "Your input method has changed to..." bubble. In most cases
@@ -500,7 +493,7 @@ base::string16 InputMethodUtil::GetInputMethodMediumName(
       return delegate_->GetLocalizedString(i.resource_id);
     }
   }
-  return GetInputMethodShortName(input_method);
+  return input_method.GetIndicator();
 }
 
 base::string16 InputMethodUtil::GetInputMethodLongNameInternal(
@@ -580,8 +573,7 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
   // screen or set in UserContext when starting a public session).
   out_input_method_ids->push_back(preferred_input_method.id());
 
-  const std::string current_layout =
-      preferred_input_method.GetPreferredKeyboardLayout();
+  const std::string current_layout = preferred_input_method.keyboard_layout();
   for (const auto& i : kDefaultInputMethodRecommendation) {
     if (i.locale == language_code &&
         (!i.layout[0] || i.layout == current_layout)) {
@@ -760,7 +752,7 @@ void InputMethodUtil::AppendInputMethods(const InputMethodDescriptors& imes) {
         input_method.language_codes();
     id_to_descriptor_[input_method.id()] = input_method;
 
-    typedef LanguageCodeToIdsMap::const_iterator It;
+    using It = LanguageCodeToIdsMap::const_iterator;
     for (const auto& language_code : language_codes) {
       std::pair<It, It> range =
           language_code_to_ids_.equal_range(language_code);
@@ -791,25 +783,16 @@ void InputMethodUtil::InitXkbInputMethodsForTesting(
   ResetInputMethods(imes);
 }
 
-const InputMethodUtil::InputMethodIdToDescriptorMap&
-InputMethodUtil::GetIdToDescriptorMapForTesting() {
-  return id_to_descriptor_;
-}
-
 InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
-  std::vector<std::string> layouts;
-  layouts.emplace_back("us");
   std::vector<std::string> languages;
   languages.emplace_back("en-US");
   return InputMethodDescriptor(
-      extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"),
-      "",
-      "US",
-      layouts,
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"), "", "US",
+      "us",  // layout
       languages,
-      true,  // login keyboard.
-      GURL(),  // options page, not available.
-      GURL()); // input view page, not available.
+      true,     // login keyboard.
+      GURL(),   // options page, not available.
+      GURL());  // input view page, not available.
 }
 
 }  // namespace input_method

@@ -49,14 +49,15 @@
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/service_connector.h"
+#include "chromecast/browser/service_manager_context.h"
 #include "chromecast/common/cast_content_client.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
-#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
 #include "chromecast/media/cdm/cast_cdm_origin_provider.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/media/common/media_pipeline_backend_manager.h"
+#include "chromecast/media/common/media_resource_tracker.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -71,16 +72,15 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media_switches.h"
+#include "media/gpu/buildflags.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -106,6 +106,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/core/app/crashpad.h"
 #include "media/audio/android/audio_manager_android.h"
+#include "media/audio/audio_features.h"
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -168,14 +169,20 @@ CastContentBrowserClient::CastContentBrowserClient(
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
         features::kMojoVideoCapture,
 #endif
+#if BUILDFLAG(USE_V4L2_CODEC)
+        // Enable accelerated video decode if v4l2 codec is supported.
+        ::media::kVaapiVideoDecodeLinux,
+#endif  // BUILDFLAG(USE_V4L2_CODEC)
   });
 
   cast_feature_list_creator_->SetExtraDisableFeatures({
       // TODO(juke): Reenable this after solving casting issue on LAN.
       blink::features::kMixedContentAutoupgrade,
 #if defined(OS_ANDROID)
-      ::media::kAudioFocusLossSuspendMediaSession,
-      ::media::kRequestSystemAudioFocus,
+          ::media::kAudioFocusLossSuspendMediaSession,
+          ::media::kRequestSystemAudioFocus,
+          // Disable AAudio improve AV sync performance.
+          ::features::kUseAAudioDriver,
 #endif
   });
 }
@@ -524,7 +531,7 @@ CastContentBrowserClient::GetSystemNetworkContext() {
 }
 
 void CastContentBrowserClient::OverrideWebkitPrefs(
-    content::RenderViewHost* render_view_host,
+    content::WebContents* web_contents,
     blink::web_pref::WebPreferences* prefs) {
   prefs->allow_scripts_to_close_windows = true;
   // TODO(halliwell): http://crbug.com/391089. This pref defaults to to true
@@ -553,8 +560,6 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 
   // Disable WebSQL databases by default.
   prefs->databases_enabled = false;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(render_view_host);
   if (web_contents) {
     chromecast::CastWebContents* cast_web_contents =
         chromecast::CastWebContents::FromWebContents(web_contents);
@@ -694,6 +699,22 @@ bool CastContentBrowserClient::CanCreateWindow(
     bool opener_suppressed,
     bool* no_javascript_access) {
   *no_javascript_access = true;
+
+  // To show new page in the existing view for WebView new window navigations,
+  // when supports_multiple_windows is disabled, return true so
+  // RenderFrameHostImpl::CreateNewWindow returns with kReuse.
+  // Otherwise, return false.
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(opener);
+  if (web_contents) {
+    CastWebPreferences* cast_prefs =
+        static_cast<CastWebPreferences*>(web_contents->GetUserData(
+            CastWebPreferences::kCastWebPreferencesDataKey));
+
+    return (cast_prefs &&
+            !cast_prefs->preferences()->supports_multiple_windows.value());
+  }
+
   return false;
 }
 
@@ -716,7 +737,7 @@ void CastContentBrowserClient::GetApplicationMediaInfo(
 base::Optional<service_manager::Manifest>
 CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
-  if (service_name == content::mojom::kBrowserServiceName)
+  if (service_name == ServiceManagerContext::kBrowserServiceName)
     return GetCastContentBrowserOverlayManifest();
 
   return base::nullopt;
@@ -920,7 +941,8 @@ void CastContentBrowserClient::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   return cast_network_contexts_->ConfigureNetworkContextParams(
       context, in_memory, relative_partition_path, network_context_params,
       cert_verifier_creation_params);

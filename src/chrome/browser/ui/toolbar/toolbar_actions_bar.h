@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
@@ -242,12 +242,14 @@ class ToolbarActionsBar : public ExtensionsContainer,
   bool CloseOverflowMenuIfOpen() override;
   void PopOutAction(ToolbarActionViewController* action,
                     bool is_sticky,
-                    const base::Closure& closure) override;
+                    base::OnceClosure closure) override;
   bool ShowToolbarActionPopupForAPICall(const std::string& id) override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
   void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ToggleExtensionsMenu() override;
+  bool HasAnyExtensions() const override;
 
  private:
   // Returns the insets by which the icon area bounds (See GetIconAreaRect())
@@ -320,8 +322,8 @@ class ToolbarActionsBar : public ExtensionsContainer,
   // from toolbar_actions_).
   ToolbarActionViewController* popup_owner_;
 
-  ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
-      model_observer_;
+  base::ScopedObservation<ToolbarActionsModel, ToolbarActionsModel::Observer>
+      model_observation_{this};
 
   // True if we should suppress layout, such as when we are creating or
   // adjusting a lot of actions at once.
@@ -351,7 +353,7 @@ class ToolbarActionsBar : public ExtensionsContainer,
 
   // The task to alert the |popped_out_action_| that animation has finished, and
   // it is fully popped out.
-  base::Closure popped_out_closure_;
+  base::OnceClosure popped_out_closure_;
 
   // The controller for the toolbar action bubble to show once animation
   // finishes, if any.

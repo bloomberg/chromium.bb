@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import static org.chromium.chrome.browser.incognito.IncognitoUtils.getNonPrimaryOTRProfileFromWindowAndroid;
-
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
@@ -20,12 +19,10 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
-import org.chromium.chrome.browser.layouts.LayoutType;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
+import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.paint_preview.TabbedPaintPreview;
@@ -33,7 +30,9 @@ import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
+import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -46,6 +45,7 @@ import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
+import org.chromium.url.GURL;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;
@@ -54,8 +54,47 @@ import java.net.URISyntaxException;
  * Provides a way of accessing toolbar data and state.
  */
 public class LocationBarModel implements ToolbarDataProvider, LocationBarDataProvider {
+    /**
+     * Formats the given URL to the original one of a distillation.
+     */
+    @FunctionalInterface
+    public interface UrlFormatter {
+        String format(GURL url);
+    }
+
+    /**
+     * Provides non-primary incognito profile.
+     */
+    @FunctionalInterface
+    public interface ProfileProvider {
+        Profile getNonPrimaryOtrProfile(WindowAndroid window);
+    }
+
+    /**
+     * Offline-related status of a given content.
+     */
+    public interface OfflineStatus {
+        /**
+         * Returns whether the WebContents is showing trusted offline page.
+         */
+        default boolean isShowingTrustedOfflinePage(WebContents webContents) {
+            return false;
+        }
+
+        /**
+         * Checks if an offline page is shown for the tab.
+         */
+        default boolean isOfflinePage(Tab tab) {
+            return false;
+        }
+    }
+
     private final Context mContext;
     private final NewTabPageDelegate mNtpDelegate;
+    private final @NonNull UrlFormatter mUrlFormatter;
+    private final @NonNull ProfileProvider mProfileProvider;
+    private final @NonNull OfflineStatus mOfflineStatus;
+    private final SearchEngineLogoUtils mSearchEngineLogoUtils;
 
     private Tab mTab;
     private int mPrimaryColor;
@@ -64,6 +103,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
+    private boolean mIsShowingTabSwitcher;
 
     private long mNativeLocationBarModelAndroid;
     private ObserverList<LocationBarDataProvider.Observer> mLocationBarDataObservers =
@@ -72,11 +112,24 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     /**
      * Default constructor for this class.
      * @param context The Context used for styling the toolbar visuals.
+     * @param newTabPageDelegate Delegate used to access NTP.
+     * @param urlFormatter Formatter returning the formatted version of the original version
+     *        of URL of a distillation.
+     * @param profileProvider Interface returning non-primary OTR profile.
+     * @param offlineStatus Offline-related status provider.
+     * @param searchEngineLogoUtils Utils to query the state of the search engine logos feature.
      */
-    public LocationBarModel(Context context, NewTabPageDelegate newTabPageDelegate) {
+    public LocationBarModel(Context context, NewTabPageDelegate newTabPageDelegate,
+            @NonNull UrlFormatter urlFormatter, @NonNull ProfileProvider profileProvider,
+            @NonNull OfflineStatus offlineStatus,
+            @NonNull SearchEngineLogoUtils searchEngineLogoUtils) {
         mContext = context;
         mNtpDelegate = newTabPageDelegate;
+        mUrlFormatter = urlFormatter;
+        mProfileProvider = profileProvider;
+        mOfflineStatus = offlineStatus;
         mPrimaryColor = ChromeColors.getDefaultThemeColor(context.getResources(), false);
+        mSearchEngineLogoUtils = searchEngineLogoUtils;
     }
 
     /**
@@ -106,6 +159,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     /**
      * Sets the tab that contains the information to be displayed in the toolbar.
+     *
      * @param tab The tab associated currently with the toolbar.
      * @param isIncognito Whether the incognito model is currently selected, which must match the
      *                    passed in tab if non-null.
@@ -113,10 +167,15 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public void setTab(Tab tab, boolean isIncognito) {
         assert tab == null || tab.isIncognito() == isIncognito;
         mTab = tab;
-        mIsIncognito = isIncognito;
+        if (mIsIncognito != isIncognito) {
+            mIsIncognito = isIncognito;
+            notifyIncognitoStateChanged();
+        }
         updateUsingBrandColor();
         notifyTitleChanged();
         notifyUrlChanged();
+        notifyPrimaryColorChanged();
+        notifySecurityStateChanged();
     }
 
     @Override
@@ -126,10 +185,10 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     @Override
     public boolean hasTab() {
-        // TODO(dtrainor, tedchoc): Remove the isInitialized() check when we no longer wait for
-        // TAB_CLOSED events to remove this tab.  Otherwise there is a chance we use this tab after
-        // {@link ChromeTab#destroy()} is called.
-        return mTab != null && mTab.isInitialized();
+        // TODO(https://crbug.com/1147131): Remove the isInitialized() and isDestroyed checks when
+        // we no longer wait for TAB_CLOSED events to remove this tab.  Otherwise there is a chance
+        // we use this tab after {@link Tab#destroy()} is called.
+        return mTab != null && mTab.isInitialized() && !mTab.isDestroyed();
     }
 
     @Override
@@ -146,7 +205,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public String getCurrentUrl() {
         // Provide NTP url instead of most recent tab url for searches in overview mode (when Start
         // Surface is enabled). .
-        if (isInOverviewAndShowingOmnibox()) {
+        if (isInOverviewAndShowingOmnibox()
+                || StartSurfaceConfiguration.shouldHandleAsNtp(getTab())) {
             return UrlConstants.NTP_URL;
         }
 
@@ -163,9 +223,21 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         }
     }
 
+    public void notifyZeroSuggestRefresh() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.hintZeroSuggestRefresh();
+        }
+    }
+
     @Override
     public NewTabPageDelegate getNewTabPageDelegate() {
         return mNtpDelegate;
+    }
+
+    void notifyNtpStartedLoading() {
+        for (Observer observer : mLocationBarDataObservers) {
+            observer.onNtpStartedLoading();
+        }
     }
 
     @Override
@@ -173,7 +245,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         if (!hasTab()) return UrlBarData.EMPTY;
 
         String url = getCurrentUrl();
-        if (NativePage.isNativePageUrl(url, isIncognito()) || UrlUtilities.isNTPUrl(url)) {
+        if (NativePage.isNativePageUrl(url, isIncognito()) || UrlUtilities.isNTPUrl(url)
+                || TextUtils.isEmpty(url)) {
             return UrlBarData.EMPTY;
         }
 
@@ -181,12 +254,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         if (mTab.isFrozen()) return buildUrlBarData(url, formattedUrl);
 
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
-            String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-            if (originalUrl != null) {
-                return buildUrlBarData(
-                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
-            }
-            return buildUrlBarData(url, formattedUrl);
+            GURL originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(new GURL(url));
+            return buildUrlBarData(mUrlFormatter.format(originalUrl));
         }
 
         // Strip the scheme from committed preview pages only.
@@ -195,12 +264,11 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         }
 
         if (isOfflinePage()) {
-            String originalUrl = mTab.getOriginalUrl();
-            formattedUrl = UrlUtilities.stripScheme(
-                    DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
+            GURL originalUrl = mTab.getOriginalUrl();
+            formattedUrl = UrlUtilities.stripScheme(mUrlFormatter.format(originalUrl));
 
             // Clear the editing text for untrusted offline pages.
-            if (!OfflinePageUtils.isShowingTrustedOfflinePage(mTab.getWebContents())) {
+            if (!mOfflineStatus.isShowingTrustedOfflinePage(mTab.getWebContents())) {
                 return buildUrlBarData(url, formattedUrl, "");
             }
 
@@ -285,6 +353,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return mIsIncognito;
     }
 
+    private void notifyIncognitoStateChanged() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.onIncognitoStateChanged();
+        }
+    }
+
     /**
      * @return Whether the location bar is showing in overview mode. If the location bar should not
      *  currently be showing in overview mode, returns false.
@@ -293,8 +367,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public boolean isInOverviewAndShowingOmnibox() {
         if (!mShouldShowOmniboxInOverviewMode) return false;
 
-        return mLayoutStateProvider != null
-                && mLayoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER);
+        return mLayoutStateProvider != null && mIsShowingTabSwitcher;
     }
 
     /**
@@ -312,8 +385,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             WindowAndroid windowAndroid = (mTab != null) ? mTab.getWindowAndroid() : null;
             // If the mTab belongs to a CustomTabActivity then we return the non-primary OTR profile
             // which is associated with it. For all other cases we return the primary OTR profile.
-            Profile nonPrimaryOTRProfile = getNonPrimaryOTRProfileFromWindowAndroid(windowAndroid);
-            if (nonPrimaryOTRProfile != null) return nonPrimaryOTRProfile;
+            Profile nonPrimaryOtrProfile = mProfileProvider.getNonPrimaryOtrProfile(windowAndroid);
+            if (nonPrimaryOtrProfile != null) return nonPrimaryOtrProfile;
 
             // When in overview mode with no open tabs, there has not been created an
             // OTR profile yet. #getOffTheRecordProfile will create a profile if none
@@ -330,7 +403,10 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     public void setShouldShowOmniboxInOverviewMode(boolean shouldShowOmniboxInOverviewMode) {
-        mShouldShowOmniboxInOverviewMode = shouldShowOmniboxInOverviewMode;
+        if (mShouldShowOmniboxInOverviewMode != shouldShowOmniboxInOverviewMode) {
+            mShouldShowOmniboxInOverviewMode = shouldShowOmniboxInOverviewMode;
+            notifyPrimaryColorChanged();
+        }
     }
 
     /**
@@ -340,6 +416,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public void setPrimaryColor(int color) {
         mPrimaryColor = color;
         updateUsingBrandColor();
+        notifyPrimaryColorChanged();
     }
 
     private void updateUsingBrandColor() {
@@ -363,9 +440,18 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return isInOverviewAndShowingOmnibox() || mIsUsingBrandColor;
     }
 
+    public void notifyPrimaryColorChanged() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.onPrimaryColorChanged();
+        }
+    }
+
     @Override
     public boolean isOfflinePage() {
-        return hasTab() && OfflinePageUtils.isOfflinePage(mTab);
+        // Start Surface homepage is not bond with a tab and mTab is kept as the previous tab if
+        // homepage is shown. |!isInOverviewAndShowingOmnibox()| is added here to make sure Start
+        // Surface homepage is not regarded as offline.
+        return hasTab() && mOfflineStatus.isOfflinePage(mTab) && !isInOverviewAndShowingOmnibox();
     }
 
     @Override
@@ -381,7 +467,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     @Override
     public int getSecurityLevel() {
         Tab tab = getTab();
-        return getSecurityLevel(tab, isOfflinePage(), TrustedCdn.getPublisherUrl(tab));
+        String publisherUrl = tab != null ? TrustedCdn.getPublisherUrl(tab) : null;
+        return getSecurityLevel(tab, isOfflinePage(), publisherUrl);
     }
 
     @Override
@@ -390,7 +477,10 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         // Provide NTP as page class in overview mode (when Start Surface is enabled). No call
         // to the backend necessary or possible, since there is no tab or navigation entry.
-        if (isInOverviewAndShowingOmnibox()) return PageClassification.NTP_VALUE;
+        if (isInOverviewAndShowingOmnibox()
+                || StartSurfaceConfiguration.shouldHandleAsNtp(getTab())) {
+            return PageClassification.NTP_VALUE;
+        }
 
         return LocationBarModelJni.get().getPageClassification(
                 mNativeLocationBarModelAndroid, LocationBarModel.this, isFocusedFromFakebox);
@@ -456,12 +546,11 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         }
 
         boolean skipIconForNeutralState =
-                !SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
+                !mSearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
                 || mNtpDelegate.isCurrentlyVisible();
 
-        return SecurityStatusIcon.getSecurityIconResource(securityLevel,
-                SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), isSmallDevice,
-                skipIconForNeutralState);
+        return SecurityStatusIcon.getSecurityIconResource(
+                securityLevel, isSmallDevice, skipIconForNeutralState);
     }
 
     @Override
@@ -472,7 +561,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
-            return ToolbarColors.getThemedToolbarIconTintRes(true);
+            return ThemeUtils.getThemedToolbarIconTintRes(true);
         }
 
         if (isPreview()) {
@@ -481,7 +570,13 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             return R.color.locationbar_status_preview_color;
         }
 
-        return ToolbarColors.getThemedToolbarIconTintRes(false);
+        return ThemeUtils.getThemedToolbarIconTintRes(false);
+    }
+
+    public void notifySecurityStateChanged() {
+        for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
+            observer.onSecurityStateChanged();
+        }
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -496,6 +591,18 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         if (mNativeLocationBarModelAndroid == 0) return "";
         return LocationBarModelJni.get().getURLForDisplay(
                 mNativeLocationBarModelAndroid, LocationBarModel.this);
+    }
+
+    /**
+     * Set whether tab switcher is showing or not and notify changes.
+     * @param isShowingTabSwitcher Whether tab switcher is showing or not.
+     */
+    public void setIsShowingTabSwitcher(boolean isShowingTabSwitcher) {
+        mIsShowingTabSwitcher = isShowingTabSwitcher;
+        notifyTitleChanged();
+        notifyUrlChanged();
+        notifyPrimaryColorChanged();
+        notifySecurityStateChanged();
     }
 
     @NativeMethods

@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/fetch/trust_token_issuance_authorization.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/trust_token_attribute_parsing.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -154,8 +152,6 @@ void HTMLIFrameElement::ParseAttribute(
       FrameOwnerPropertiesChanged();
   } else if (name == html_names::kSandboxAttr) {
     sandbox_->DidUpdateAttributeValue(params.old_value, value);
-    bool feature_policy_for_sandbox =
-        RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
 
     network::mojom::blink::WebSandboxFlags current_flags =
         network::mojom::blink::WebSandboxFlags::kNone;
@@ -178,29 +174,7 @@ void HTMLIFrameElement::ParseAttribute(
                 parsed.error_message)));
       }
     }
-    SetAllowedToDownload(
-        (current_flags & network::mojom::blink::WebSandboxFlags::kDownloads) ==
-        network::mojom::blink::WebSandboxFlags::kNone);
-    // With FeaturePolicyForSandbox, sandbox flags are represented as part of
-    // the container policies. However, not all sandbox flags are yet converted
-    // and for now the residue will stay around in the stored flags.
-    // (see https://crbug.com/812381).
-    network::mojom::blink::WebSandboxFlags sandbox_to_set = current_flags;
-    sandbox_flags_converted_to_feature_policies_ =
-        network::mojom::blink::WebSandboxFlags::kNone;
-    if (feature_policy_for_sandbox &&
-        current_flags != network::mojom::blink::WebSandboxFlags::kNone) {
-      // Residue sandbox which will not be mapped to feature policies.
-      sandbox_to_set =
-          GetSandboxFlagsNotImplementedAsFeaturePolicy(current_flags);
-      // The part of sandbox which will be mapped to feature policies.
-      sandbox_flags_converted_to_feature_policies_ =
-          current_flags & ~sandbox_to_set;
-    }
-    SetSandboxFlags(sandbox_to_set);
-    if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
-      UpdateContainerPolicy();
-
+    SetSandboxFlags(current_flags);
     UseCounter::Count(GetDocument(), WebFeature::kSandboxViaIFrame);
   } else if (name == html_names::kReferrerpolicyAttr) {
     referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
@@ -233,35 +207,19 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateContainerPolicy();
     }
   } else if (name == html_names::kCspAttr) {
-    if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE)) {
-      if (value.Contains('\n') || value.Contains('\r') || value.Contains(',')) {
-        required_csp_ = g_null_atom;
-        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-            mojom::blink::ConsoleMessageSource::kOther,
-            mojom::blink::ConsoleMessageLevel::kError,
-            "'csp' attribute is invalid: " + value));
-        return;
-      }
-      if (required_csp_ != value) {
-        required_csp_ = value;
-        CSPAttributeChanged();
-        UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
-      }
-    } else {
-      if (!ContentSecurityPolicy::IsValidCSPAttr(
-              value.GetString(), GetDocument().RequiredCSP().GetString())) {
-        required_csp_ = g_null_atom;
-        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-            mojom::blink::ConsoleMessageSource::kOther,
-            mojom::blink::ConsoleMessageLevel::kError,
-            "'csp' attribute is not a valid policy: " + value));
-        return;
-      }
-      if (required_csp_ != value) {
-        required_csp_ = value;
-        FrameOwnerPropertiesChanged();
-        UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
-      }
+    if (value && (value.Contains('\n') || value.Contains('\r') ||
+                  !MatchesTheSerializedCSPGrammar(value.GetString()))) {
+      required_csp_ = g_null_atom;
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kOther,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "'csp' attribute is invalid: " + value));
+      return;
+    }
+    if (required_csp_ != value) {
+      required_csp_ = value;
+      CSPAttributeChanged();
+      UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
     }
   } else if (name == html_names::kAllowAttr) {
     if (allow_ != value) {
@@ -270,11 +228,6 @@ void HTMLIFrameElement::ParseAttribute(
       if (!value.IsEmpty()) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kFeaturePolicyAllowAttribute);
-      }
-      if (value.Contains(',')) {
-        Deprecation::CountDeprecation(
-            GetDocument().GetExecutionContext(),
-            WebFeature::kCommaSeparatorInAllowAttribute);
       }
     }
   } else if (name == html_names::kDisallowdocumentaccessAttr &&
@@ -289,6 +242,7 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateRequiredPolicy();
     }
   } else if (name == html_names::kTrusttokenAttr) {
+    UseCounter::Count(GetDocument(), WebFeature::kTrustTokenIframe);
     trust_token_ = value;
   } else {
     // Websites picked up a Chromium article that used this non-specified
@@ -369,32 +323,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
       allow_, self_origin, src_origin, logger, GetExecutionContext());
 
-  // Next, process sandbox flags. These all only take effect if a corresponding
-  // policy does *not* exist in the allow attribute's value.
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    // If the frame is sandboxed at all, then warn if feature policy attributes
-    // will override the sandbox attributes.
-    if ((sandbox_flags_converted_to_feature_policies_ &
-         network::mojom::blink::WebSandboxFlags::kNavigation) !=
-        network::mojom::blink::WebSandboxFlags::kNone) {
-      for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
-        if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
-                network::mojom::blink::WebSandboxFlags::kNone &&
-            IsFeatureDeclared(pair.second, container_policy)) {
-          logger.Warn(String::Format(
-              "Allow and Sandbox attributes both mention '%s'. Allow will take "
-              "precedence.",
-              GetNameForFeature(pair.second).Utf8().c_str()));
-        }
-      }
-    }
-    ApplySandboxFlagsToParsedFeaturePolicy(
-        sandbox_flags_converted_to_feature_policies_, container_policy);
-  }
-
-  // Finally, process the allow* attribuets. Like sandbox attributes, they only
-  // take effect if the corresponding feature is not present in the allow
-  // attribute's value.
+  // Process the allow* attributes. These only take effect if the corresponding
+  // feature is not present in the allow attribute's value.
 
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.
@@ -449,24 +379,8 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
       HTMLFrameElementBase::InsertedInto(insertion_point);
 
   auto* html_doc = DynamicTo<HTMLDocument>(GetDocument());
-  if (html_doc && insertion_point.IsInDocumentTree()) {
+  if (html_doc && insertion_point.IsInDocumentTree())
     html_doc->AddNamedItem(name_);
-    if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE) &&
-        !ContentSecurityPolicy::IsValidCSPAttr(
-            required_csp_, GetDocument().RequiredCSP().GetString())) {
-      if (!required_csp_.IsEmpty()) {
-        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kError,
-            "'csp' attribute is not a valid policy: " + required_csp_));
-      }
-      if (required_csp_ != GetDocument().RequiredCSP()) {
-        required_csp_ = GetDocument().RequiredCSP();
-        FrameOwnerPropertiesChanged();
-        UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
-      }
-    }
-  }
   LogAddElementIfIsolatedWorldAndInDocument("iframe", html_names::kSrcAttr);
   return result;
 }

@@ -5,7 +5,8 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_
 #define QUICHE_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_dispatcher.h"
 
 namespace quic {
 
@@ -46,9 +47,6 @@ class QuicDispatcherPeer {
   static QuicBufferedPacketStore* GetBufferedPackets(
       QuicDispatcher* dispatcher);
 
-  static const QuicDispatcher::SessionMap& session_map(
-      QuicDispatcher* dispatcher);
-
   static void set_new_sessions_allowed_per_event_loop(
       QuicDispatcher* dispatcher,
       size_t num_session_allowed);
@@ -69,6 +67,14 @@ class QuicDispatcherPeer {
 
   static std::string SelectAlpn(QuicDispatcher* dispatcher,
                                 const std::vector<std::string>& alpns);
+
+  // Get the first session in the session map. Returns nullptr if the map is
+  // empty.
+  static QuicSession* GetFirstSessionIfAny(QuicDispatcher* dispatcher);
+
+  // Find the corresponding session if exsits.
+  static const QuicSession* FindSession(const QuicDispatcher* dispatcher,
+                                        QuicConnectionId id);
 };
 
 }  // namespace test

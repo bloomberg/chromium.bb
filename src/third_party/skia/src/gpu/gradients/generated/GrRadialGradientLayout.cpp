@@ -35,8 +35,8 @@ private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {}
 };
-GrGLSLFragmentProcessor* GrRadialGradientLayout::onCreateGLSLInstance() const {
-    return new GrGLSLRadialGradientLayout();
+std::unique_ptr<GrGLSLFragmentProcessor> GrRadialGradientLayout::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLRadialGradientLayout>();
 }
 void GrRadialGradientLayout::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                    GrProcessorKeyBuilder* b) const {}
@@ -45,7 +45,6 @@ bool GrRadialGradientLayout::onIsEqual(const GrFragmentProcessor& other) const {
     (void)that;
     return true;
 }
-bool GrRadialGradientLayout::usesExplicitReturn() const { return true; }
 GrRadialGradientLayout::GrRadialGradientLayout(const GrRadialGradientLayout& src)
         : INHERITED(kGrRadialGradientLayout_ClassID, src.optimizationFlags()) {
     this->cloneAndRegisterAllChildProcessors(src);

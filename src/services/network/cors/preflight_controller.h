@@ -14,11 +14,11 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/cors/preflight_cache.h"
+#include "services/network/cors/preflight_result.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/cpp/cors/preflight_cache.h"
-#include "services/network/public/cpp/cors/preflight_result.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   using CompletionCallback =
       base::OnceCallback<void(int net_error, base::Optional<CorsErrorStatus>)>;
   using WithTrustedHeaderClient =
-      util::StrongAlias<class WithTrustedHeaderClientTag, bool>;
+      base::StrongAlias<class WithTrustedHeaderClientTag, bool>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(

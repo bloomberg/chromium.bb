@@ -203,40 +203,40 @@ bool isYCbCrFormat (VkFormat format)
 {
 	switch (format)
 	{
-		case VK_FORMAT_G8B8G8R8_422_UNORM_KHR:
-		case VK_FORMAT_B8G8R8G8_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR:
-		case VK_FORMAT_R10X6_UNORM_PACK16_KHR:
-		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR:
-		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_R12X4_UNORM_PACK16_KHR:
-		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR:
-		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16B16G16R16_422_UNORM_KHR:
-		case VK_FORMAT_B16G16R16G16_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR:
+		case VK_FORMAT_G8B8G8R8_422_UNORM:
+		case VK_FORMAT_B8G8R8G8_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+		case VK_FORMAT_R10X6_UNORM_PACK16:
+		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16:
+		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:
+		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_R12X4_UNORM_PACK16:
+		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16:
+		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16:
+		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G16B16G16R16_422_UNORM:
+		case VK_FORMAT_B16G16R16G16_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
 			return true;
 
 		default:
@@ -248,14 +248,14 @@ bool isYCbCr420Format (VkFormat format)
 {
 	switch (format)
 	{
-		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR:
+		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
 			return true;
 
 		default:
@@ -267,22 +267,22 @@ bool isYCbCr422Format (VkFormat format)
 {
 	switch (format)
 	{
-		case VK_FORMAT_G8B8G8R8_422_UNORM_KHR:
-		case VK_FORMAT_B8G8R8G8_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16B16G16R16_422_UNORM_KHR:
-		case VK_FORMAT_B16G16R16G16_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR:
+		case VK_FORMAT_G8B8G8R8_422_UNORM:
+		case VK_FORMAT_B8G8R8G8_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
+		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G16B16G16R16_422_UNORM:
+		case VK_FORMAT_B16G16R16G16_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 			return true;
 
 		default:
@@ -303,14 +303,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 
 	static const PlanarFormatDescription s_formatInfo[] =
 	{
-		// VK_FORMAT_G8B8G8R8_422_UNORM_KHR
+		// VK_FORMAT_G8B8G8R8_422_UNORM
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	4,		1,		1,		VK_FORMAT_G8B8G8R8_422_UNORM_KHR	},
+				{	4,		1,		1,		VK_FORMAT_G8B8G8R8_422_UNORM	},
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED	},
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED	},
 			},
@@ -322,14 +322,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_B8G8R8G8_422_UNORM_KHR
+		// VK_FORMAT_B8G8R8G8_422_UNORM
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	4,		1,		1,		VK_FORMAT_B8G8R8G8_422_UNORM_KHR },
+				{	4,		1,		1,		VK_FORMAT_B8G8R8G8_422_UNORM },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -341,7 +341,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR
+		// VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -360,7 +360,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR
+		// VK_FORMAT_G8_B8R8_2PLANE_420_UNORM
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -379,7 +379,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR
+		// VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -398,7 +398,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR
+		// VK_FORMAT_G8_B8R8_2PLANE_422_UNORM
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -417,7 +417,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR
+		// VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -436,14 +436,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_R10X6_UNORM_PACK16_KHR
+		// VK_FORMAT_R10X6_UNORM_PACK16
 		{
 			1, // planes
 			chanR,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	2,		1,		1,		VK_FORMAT_R10X6_UNORM_PACK16_KHR },
+				{	2,		1,		1,		VK_FORMAT_R10X6_UNORM_PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -455,14 +455,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 },
 			}
 		},
-		// VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR
+		// VK_FORMAT_R10X6G10X6_UNORM_2PACK16
 		{
 			1, // planes
 			chanR|chanG,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	4,		1,		1,		VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR },
+				{	4,		1,		1,		VK_FORMAT_R10X6G10X6_UNORM_2PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -474,14 +474,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 },
 			}
 		},
-		// VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR
+		// VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB|chanA,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -493,14 +493,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{	0,		unorm,	54,		10,		8 },	// A
 			}
 		},
-		// VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR
+		// VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -512,14 +512,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR
+		// VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -531,7 +531,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR
+		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -550,7 +550,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR
+		// VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -569,7 +569,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR
+		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -588,7 +588,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR
+		// VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -607,7 +607,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR
+		// VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -626,14 +626,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_R12X4_UNORM_PACK16_KHR
+		// VK_FORMAT_R12X4_UNORM_PACK16
 		{
 			1, // planes
 			chanR,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	2,		1,		1,		VK_FORMAT_R12X4_UNORM_PACK16_KHR },
+				{	2,		1,		1,		VK_FORMAT_R12X4_UNORM_PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -645,14 +645,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 },
 			}
 		},
-		// VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR
+		// VK_FORMAT_R12X4G12X4_UNORM_2PACK16
 		{
 			1, // planes
 			chanR|chanG,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	4,		1,		1,		VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR },
+				{	4,		1,		1,		VK_FORMAT_R12X4G12X4_UNORM_2PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -664,14 +664,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 },
 			}
 		},
-		// VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR
+		// VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB|chanA,
 			1,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -683,14 +683,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{	0,		unorm,	52,		12,		8 },	// A
 			}
 		},
-		// VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR
+		// VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -702,14 +702,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR
+		// VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR },
+				{	8,		1,		1,		VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16 },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -721,7 +721,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR
+		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -740,7 +740,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR
+		// VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -759,7 +759,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR
+		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -778,7 +778,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR
+		// VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -797,7 +797,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR
+		// VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -816,14 +816,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16B16G16R16_422_UNORM_KHR
+		// VK_FORMAT_G16B16G16R16_422_UNORM
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_G16B16G16R16_422_UNORM_KHR },
+				{	8,		1,		1,		VK_FORMAT_G16B16G16R16_422_UNORM },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -835,14 +835,14 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_B16G16R16G16_422_UNORM_KHR
+		// VK_FORMAT_B16G16R16G16_422_UNORM
 		{
 			1, // planes
 			chanR|chanG|chanB,
 			2,1,
 			{
 			//		Size	WDiv	HDiv	planeCompatibleFormat
-				{	8,		1,		1,		VK_FORMAT_B16G16R16G16_422_UNORM_KHR },
+				{	8,		1,		1,		VK_FORMAT_B16G16R16G16_422_UNORM },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 				{	0,		0,		0,		VK_FORMAT_UNDEFINED },
 			},
@@ -854,7 +854,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR
+		// VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -873,7 +873,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR
+		// VK_FORMAT_G16_B16R16_2PLANE_420_UNORM
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -892,7 +892,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR
+		// VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -911,7 +911,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR
+		// VK_FORMAT_G16_B16R16_2PLANE_422_UNORM
 		{
 			2, // planes
 			chanR|chanG|chanB,
@@ -930,7 +930,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 				{ 0, 0, 0, 0, 0 }
 			}
 		},
-		// VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR
+		// VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM
 		{
 			3, // planes
 			chanR|chanG|chanB,
@@ -951,7 +951,7 @@ const PlanarFormatDescription& getYCbCrPlanarFormatDescription (VkFormat format)
 		},
 	};
 
-	const size_t	offset	= (size_t)VK_FORMAT_G8B8G8R8_422_UNORM_KHR;
+	const size_t	offset	= (size_t)VK_FORMAT_G8B8G8R8_422_UNORM;
 
 	DE_ASSERT(de::inBounds<size_t>((size_t)format, offset, offset+(size_t)DE_LENGTH_OF_ARRAY(s_formatInfo)));
 
@@ -1653,6 +1653,31 @@ PlanarFormatDescription getCorePlanarFormatDescription (VkFormat format)
 			return desc;
 		}
 
+
+		case VK_FORMAT_R64_SINT:
+		{
+			const PlanarFormatDescription	desc =
+			{
+				1, // planes
+				chanR,
+				1,1,
+				{
+				//		Size	WDiv	HDiv	planeCompatibleFormat
+					{	8,		1,		1,		VK_FORMAT_R64_SINT },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+				},
+				{
+					//		Plane	Type	Offs	Size	Stride
+						{	0,		sint,	0,		64,		8 },	// R
+						{	0,		0,		0,		0,		0 },	// G
+						{	0,		0,		0,		0,		0 },	// B
+						{	0,		0,		0,		0,		0 }		// A
+					}
+			};
+			return desc;
+		}
+
 		case VK_FORMAT_R8G8_SINT:
 		{
 			const PlanarFormatDescription	desc	=
@@ -1865,6 +1890,30 @@ PlanarFormatDescription getCorePlanarFormatDescription (VkFormat format)
 					{	0,		0,		0,		0,		0 },	// B
 					{	0,		0,		0,		0,		0 }		// A
 				}
+			};
+			return desc;
+		}
+
+		case VK_FORMAT_R64_UINT:
+		{
+			const PlanarFormatDescription	desc =
+			{
+				1, // planes
+				chanR,
+				1,1,
+				{
+				//		Size	WDiv	HDiv	planeCompatibleFormat
+					{	8,		1,		1,		VK_FORMAT_R64_UINT },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+				},
+				{
+					//		Plane	Type	Offs	Size	Stride
+						{	0,		uint,	0,		64,		8 },	// R
+						{	0,		0,		0,		0,		0 },	// G
+						{	0,		0,		0,		0,		0 },	// B
+						{	0,		0,		0,		0,		0 }		// A
+					}
 			};
 			return desc;
 		}
@@ -2157,6 +2206,54 @@ PlanarFormatDescription getCorePlanarFormatDescription (VkFormat format)
 			return desc;
 		}
 
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+		{
+			const PlanarFormatDescription	desc	=
+			{
+				1, // planes
+				chanR|chanG|chanB|chanA,
+				1,1,
+				{
+				//		Size	WDiv	HDiv	planeCompatibleFormat
+					{	2,		1,		1,		VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+				},
+				{
+				//		Plane	Type	Offs	Size	Stride
+					{	0,		unorm,	8,		4,		2 },	// R
+					{	0,		unorm,	4,		4,		2 },	// G
+					{	0,		unorm,	0,		4,		2 },	// B
+					{	0,		unorm,	12,		4,		2 }		// A
+				}
+			};
+			return desc;
+		}
+
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+		{
+			const PlanarFormatDescription	desc	=
+			{
+				1, // planes
+				chanR|chanG|chanB|chanA,
+				1,1,
+				{
+				//		Size	WDiv	HDiv	planeCompatibleFormat
+					{	2,		1,		1,		VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+					{	0,		0,		0,		VK_FORMAT_UNDEFINED },
+				},
+				{
+				//		Plane	Type	Offs	Size	Stride
+					{	0,		unorm,	0,		4,		2 },	// R
+					{	0,		unorm,	4,		4,		2 },	// G
+					{	0,		unorm,	8,		4,		2 },	// B
+					{	0,		unorm,	12,		4,		2 }		// A
+				}
+			};
+			return desc;
+		}
+
 
 		default:
 			TCU_THROW(InternalError, "Not implemented");
@@ -2175,44 +2272,44 @@ int getPlaneCount (VkFormat format)
 {
 	switch (format)
 	{
-		case VK_FORMAT_G8B8G8R8_422_UNORM_KHR:
-		case VK_FORMAT_B8G8R8G8_422_UNORM_KHR:
-		case VK_FORMAT_R10X6_UNORM_PACK16_KHR:
-		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR:
-		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_R12X4_UNORM_PACK16_KHR:
-		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR:
-		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G16B16G16R16_422_UNORM_KHR:
-		case VK_FORMAT_B16G16R16G16_422_UNORM_KHR:
+		case VK_FORMAT_G8B8G8R8_422_UNORM:
+		case VK_FORMAT_B8G8R8G8_422_UNORM:
+		case VK_FORMAT_R10X6_UNORM_PACK16:
+		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16:
+		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:
+		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_R12X4_UNORM_PACK16:
+		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16:
+		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16:
+		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_G16B16G16R16_422_UNORM:
+		case VK_FORMAT_B16G16R16G16_422_UNORM:
 			return 1;
 
-		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR:
+		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 			return 2;
 
-		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR:
+		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
 			return 3;
 
 		default:
@@ -2327,16 +2424,16 @@ VkFormat getPlaneCompatibleFormat(const PlanarFormatDescription& formatInfo, deU
 VkImageAspectFlagBits getPlaneAspect (deUint32 planeNdx)
 {
 	DE_ASSERT(de::inBounds(planeNdx, 0u, 3u));
-	return (VkImageAspectFlagBits)(VK_IMAGE_ASPECT_PLANE_0_BIT_KHR << planeNdx);
+	return (VkImageAspectFlagBits)(VK_IMAGE_ASPECT_PLANE_0_BIT << planeNdx);
 }
 
 deUint32 getAspectPlaneNdx (VkImageAspectFlagBits flags)
 {
 	switch (flags)
 	{
-		case VK_IMAGE_ASPECT_PLANE_0_BIT_KHR:	return 0;
-		case VK_IMAGE_ASPECT_PLANE_1_BIT_KHR:	return 1;
-		case VK_IMAGE_ASPECT_PLANE_2_BIT_KHR:	return 2;
+		case VK_IMAGE_ASPECT_PLANE_0_BIT:	return 0;
+		case VK_IMAGE_ASPECT_PLANE_1_BIT:	return 1;
+		case VK_IMAGE_ASPECT_PLANE_2_BIT:	return 2;
 		default:
 			DE_FATAL("Invalid plane aspect");
 			return 0;
@@ -2347,34 +2444,30 @@ bool isChromaSubsampled (VkFormat format)
 {
 	switch (format)
 	{
-		case VK_FORMAT_G8B8G8R8_422_UNORM_KHR:
-		case VK_FORMAT_B8G8R8G8_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR:
-		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR:
-		case VK_FORMAT_G16B16G16R16_422_UNORM_KHR:
-		case VK_FORMAT_B16G16R16G16_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR:
-		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR:
+		case VK_FORMAT_G8B8G8R8_422_UNORM:
+		case VK_FORMAT_B8G8R8G8_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
+		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G16B16G16R16_422_UNORM:
+		case VK_FORMAT_B16G16R16G16_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 			return true;
 
 		default:
@@ -2526,6 +2619,8 @@ VkFormat mapTextureFormat (const tcu::TextureFormat& format)
 
 		case FMT_CASE(R, UNSIGNED_INT32):					return VK_FORMAT_R32_UINT;
 		case FMT_CASE(R, SIGNED_INT32):						return VK_FORMAT_R32_SINT;
+		case FMT_CASE(R, UNSIGNED_INT64):					return VK_FORMAT_R64_UINT;
+		case FMT_CASE(R, SIGNED_INT64):						return VK_FORMAT_R64_SINT;
 		case FMT_CASE(R, FLOAT):							return VK_FORMAT_R32_SFLOAT;
 
 		case FMT_CASE(RG, UNSIGNED_INT32):					return VK_FORMAT_R32G32_UINT;
@@ -2575,13 +2670,13 @@ VkFormat mapTextureFormat (const tcu::TextureFormat& format)
 		case FMT_CASE(DS, UNSIGNED_INT_24_8_REV):			return VK_FORMAT_D24_UNORM_S8_UINT;
 		case FMT_CASE(DS, FLOAT_UNSIGNED_INT_24_8_REV):		return VK_FORMAT_D32_SFLOAT_S8_UINT;
 
-		case FMT_CASE(R,	UNORM_SHORT_10):				return VK_FORMAT_R10X6_UNORM_PACK16_KHR;
-		case FMT_CASE(RG,	UNORM_SHORT_10):				return VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR;
-		case FMT_CASE(RGBA,	UNORM_SHORT_10):				return VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR;
+		case FMT_CASE(R,	UNORM_SHORT_10):				return VK_FORMAT_R10X6_UNORM_PACK16;
+		case FMT_CASE(RG,	UNORM_SHORT_10):				return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+		case FMT_CASE(RGBA,	UNORM_SHORT_10):				return VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16;
 
-		case FMT_CASE(R,	UNORM_SHORT_12):				return VK_FORMAT_R12X4_UNORM_PACK16_KHR;
-		case FMT_CASE(RG,	UNORM_SHORT_12):				return VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR;
-		case FMT_CASE(RGBA,	UNORM_SHORT_12):				return VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR;
+		case FMT_CASE(R,	UNORM_SHORT_12):				return VK_FORMAT_R12X4_UNORM_PACK16;
+		case FMT_CASE(RG,	UNORM_SHORT_12):				return VK_FORMAT_R12X4G12X4_UNORM_2PACK16;
+		case FMT_CASE(RGBA,	UNORM_SHORT_12):				return VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16;
 
 		case FMT_CASE(R,	USCALED_INT8):					return VK_FORMAT_R8_USCALED;
 		case FMT_CASE(RG,	USCALED_INT8):					return VK_FORMAT_R8G8_USCALED;
@@ -2605,6 +2700,9 @@ VkFormat mapTextureFormat (const tcu::TextureFormat& format)
 
 		case FMT_CASE(RGBA, USCALED_INT_1010102_REV):		return VK_FORMAT_A2B10G10R10_USCALED_PACK32;
 		case FMT_CASE(RGBA, SSCALED_INT_1010102_REV):		return VK_FORMAT_A2B10G10R10_SSCALED_PACK32;
+
+		case FMT_CASE(ARGB, UNORM_SHORT_4444):				return VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT;
+		case FMT_CASE(ABGR, UNORM_SHORT_4444):				return VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT;
 
 		default:
 			TCU_THROW(InternalError, "Unknown texture format");
@@ -2786,7 +2884,13 @@ tcu::TextureFormat mapVkFormat (VkFormat format)
 		case VK_FORMAT_R32G32B32A32_SFLOAT:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::FLOAT);
 
 		case VK_FORMAT_R64_UINT:				return TextureFormat(TextureFormat::R,		TextureFormat::UNSIGNED_INT64);
+		case VK_FORMAT_R64G64_UINT:				return TextureFormat(TextureFormat::RG,		TextureFormat::UNSIGNED_INT64);
+		case VK_FORMAT_R64G64B64_UINT:			return TextureFormat(TextureFormat::RGB,	TextureFormat::UNSIGNED_INT64);
+		case VK_FORMAT_R64G64B64A64_UINT:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::UNSIGNED_INT64);
 		case VK_FORMAT_R64_SINT:				return TextureFormat(TextureFormat::R,		TextureFormat::SIGNED_INT64);
+		case VK_FORMAT_R64G64_SINT:				return TextureFormat(TextureFormat::RG,		TextureFormat::SIGNED_INT64);
+		case VK_FORMAT_R64G64B64_SINT:			return TextureFormat(TextureFormat::RGB,	TextureFormat::SIGNED_INT64);
+		case VK_FORMAT_R64G64B64A64_SINT:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::SIGNED_INT64);
 		case VK_FORMAT_R64_SFLOAT:				return TextureFormat(TextureFormat::R,		TextureFormat::FLOAT64);
 		case VK_FORMAT_R64G64_SFLOAT:			return TextureFormat(TextureFormat::RG,		TextureFormat::FLOAT64);
 		case VK_FORMAT_R64G64B64_SFLOAT:		return TextureFormat(TextureFormat::RGB,	TextureFormat::FLOAT64);
@@ -2850,13 +2954,16 @@ tcu::TextureFormat mapVkFormat (VkFormat format)
 		case VK_FORMAT_A2B10G10R10_SINT_PACK32:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::SIGNED_INT_1010102_REV);
 
 		// YCbCr formats that can be mapped
-		case VK_FORMAT_R10X6_UNORM_PACK16_KHR:					return TextureFormat(TextureFormat::R,		TextureFormat::UNORM_SHORT_10);
-		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR:			return TextureFormat(TextureFormat::RG,		TextureFormat::UNORM_SHORT_10);
-		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR:	return TextureFormat(TextureFormat::RGBA,	TextureFormat::UNORM_SHORT_10);
+		case VK_FORMAT_R10X6_UNORM_PACK16:					return TextureFormat(TextureFormat::R,		TextureFormat::UNORM_SHORT_10);
+		case VK_FORMAT_R10X6G10X6_UNORM_2PACK16:			return TextureFormat(TextureFormat::RG,		TextureFormat::UNORM_SHORT_10);
+		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:	return TextureFormat(TextureFormat::RGBA,	TextureFormat::UNORM_SHORT_10);
 
-		case VK_FORMAT_R12X4_UNORM_PACK16_KHR:					return TextureFormat(TextureFormat::R,		TextureFormat::UNORM_SHORT_12);
-		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR:			return TextureFormat(TextureFormat::RG,		TextureFormat::UNORM_SHORT_12);
-		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR:	return TextureFormat(TextureFormat::RGBA,	TextureFormat::UNORM_SHORT_12);
+		case VK_FORMAT_R12X4_UNORM_PACK16:					return TextureFormat(TextureFormat::R,		TextureFormat::UNORM_SHORT_12);
+		case VK_FORMAT_R12X4G12X4_UNORM_2PACK16:			return TextureFormat(TextureFormat::RG,		TextureFormat::UNORM_SHORT_12);
+		case VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16:	return TextureFormat(TextureFormat::RGBA,	TextureFormat::UNORM_SHORT_12);
+
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:				return TextureFormat(TextureFormat::ARGB,	TextureFormat::UNORM_SHORT_4444);
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:				return TextureFormat(TextureFormat::ABGR,	TextureFormat::UNORM_SHORT_4444);
 
 		default:
 			TCU_THROW(InternalError, "Unknown image format");
@@ -3054,6 +3161,15 @@ tcu::TextureFormat getChannelAccessFormat (tcu::TextureChannelClass	type,
 			TextureFormat::FLOAT,				// float
 		};
 
+		static const TextureFormat::ChannelType	s_size64[tcu::TEXTURECHANNELCLASS_LAST] =
+		{
+			TextureFormat::CHANNELTYPE_LAST,	// snorm
+			TextureFormat::CHANNELTYPE_LAST,	// unorm
+			TextureFormat::SIGNED_INT64,		// sint
+			TextureFormat::UNSIGNED_INT64,		// uint
+			TextureFormat::FLOAT64,				// float
+		};
+
 		TextureFormat::ChannelType	chnType		= TextureFormat::CHANNELTYPE_LAST;
 
 		if (sizeBits == 8)
@@ -3062,6 +3178,8 @@ tcu::TextureFormat getChannelAccessFormat (tcu::TextureChannelClass	type,
 			chnType = s_size16[type];
 		else if (sizeBits == 32)
 			chnType = s_size32[type];
+		else if (sizeBits == 64)
+			chnType = s_size64[type];
 
 		if (chnType != TextureFormat::CHANNELTYPE_LAST)
 			return TextureFormat(TextureFormat::R, chnType);
@@ -3199,7 +3317,7 @@ void imageUtilSelfTest (void)
 		}
 	}
 
-	for (int formatNdx = VK_FORMAT_G8B8G8R8_422_UNORM_KHR; formatNdx <= VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR; formatNdx++)
+	for (int formatNdx = VK_FORMAT_G8B8G8R8_422_UNORM; formatNdx <= VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM; formatNdx++)
 	{
 		const VkFormat					format	= (VkFormat)formatNdx;
 		const PlanarFormatDescription&	info	= getPlanarFormatDescription(format);
@@ -3314,12 +3432,14 @@ deUint32 getFormatComponentWidth (const VkFormat format, const deUint32 componen
 				return 32;
 
 			case tcu::TextureFormat::FLOAT64:
-			return 64;
+			case tcu::TextureFormat::UNSIGNED_INT64:
+			case tcu::TextureFormat::SIGNED_INT64:
+				return 64;
 
 			// Packed formats
 			case tcu::TextureFormat::UNORM_SHORT_4444:
 			case tcu::TextureFormat::UNSIGNED_SHORT_4444:
-			return 4;
+				return 4;
 
 			case tcu::TextureFormat::UNORM_SHORT_565:
 			case tcu::TextureFormat::UNSIGNED_SHORT_565:
@@ -3507,10 +3627,10 @@ static VkBorderColor mapBorderColor (tcu::TextureChannelClass channelClass, cons
 
 VkSamplerCreateInfo mapSampler (const tcu::Sampler& sampler, const tcu::TextureFormat& format, float minLod, float maxLod, bool unnormal)
 {
-	const bool					compareEnabled	= (sampler.compare != tcu::Sampler::COMPAREMODE_NONE);
-	const VkCompareOp			compareOp		= (compareEnabled) ? (mapCompareMode(sampler.compare)) : (VK_COMPARE_OP_ALWAYS);
-	const VkBorderColor			borderColor		= mapBorderColor(getTextureChannelClass(format.type), sampler.borderColor);
-	const bool					isMipmapEnabled	= (sampler.minFilter != tcu::Sampler::NEAREST && sampler.minFilter != tcu::Sampler::LINEAR);
+	const bool			compareEnabled	= (sampler.compare != tcu::Sampler::COMPAREMODE_NONE);
+	const VkCompareOp	compareOp		= (compareEnabled) ? (mapCompareMode(sampler.compare)) : (VK_COMPARE_OP_ALWAYS);
+	const VkBorderColor	borderColor		= mapBorderColor(getTextureChannelClass(format.type), sampler.borderColor);
+	const bool			isMipmapEnabled = (sampler.minFilter != tcu::Sampler::NEAREST && sampler.minFilter != tcu::Sampler::LINEAR && sampler.minFilter != tcu::Sampler::CUBIC);
 
 	const VkSamplerCreateInfo	createInfo		=
 	{
@@ -3569,7 +3689,7 @@ tcu::Sampler mapVkSampler (const VkSamplerCreateInfo& samplerCreateInfo)
 		const VkStructureType nextType = *reinterpret_cast<const VkStructureType*>(pNext);
 		switch (nextType)
 		{
-			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT:
+			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO:
 			{
 				const VkSamplerReductionModeCreateInfo reductionModeCreateInfo = *reinterpret_cast<const VkSamplerReductionModeCreateInfo*>(pNext);
 				reductionMode = mapVkSamplerReductionMode(reductionModeCreateInfo.reductionMode);
@@ -4682,7 +4802,7 @@ void allocateAndBindSparseImage (const DeviceInterface&						vk,
 		TCU_THROW(NotSupportedError, "Required memory size for sparse resource exceeds device limits.");
 
 	const VkSparseImageMemoryRequirements		aspectRequirements	= sparseImageMemoryRequirements[aspectIndex];
-	const VkExtent3D							imageGranularity	= aspectRequirements.formatProperties.imageGranularity;
+	VkExtent3D									blockSize			= aspectRequirements.formatProperties.imageGranularity;
 
 	std::vector<VkSparseImageMemoryBind>		imageResidencyMemoryBinds;
 	std::vector<VkSparseMemoryBind>				imageMipTailMemoryBinds;
@@ -4692,10 +4812,10 @@ void allocateAndBindSparseImage (const DeviceInterface&						vk,
 		for (deUint32 mipLevelNdx = 0; mipLevelNdx < aspectRequirements.imageMipTailFirstLod; ++mipLevelNdx)
 		{
 			const VkExtent3D	mipExtent		= mipLevelExtents(imageCreateInfo.extent, mipLevelNdx);
-			const tcu::UVec3	numSparseBinds	= alignedDivide(mipExtent, imageGranularity);
-			const tcu::UVec3	lastBlockExtent	= tcu::UVec3(mipExtent.width  % imageGranularity.width  ? mipExtent.width  % imageGranularity.width  : imageGranularity.width,
-															 mipExtent.height % imageGranularity.height ? mipExtent.height % imageGranularity.height : imageGranularity.height,
-															 mipExtent.depth  % imageGranularity.depth  ? mipExtent.depth  % imageGranularity.depth  : imageGranularity.depth );
+			const tcu::UVec3	numSparseBinds	= alignedDivide(mipExtent, blockSize);
+			const tcu::UVec3	lastBlockExtent	= tcu::UVec3(mipExtent.width  % blockSize.width  ? mipExtent.width  % blockSize.width  : blockSize.width,
+															 mipExtent.height % blockSize.height ? mipExtent.height % blockSize.height : blockSize.height,
+															 mipExtent.depth  % blockSize.depth  ? mipExtent.depth  % blockSize.depth  : blockSize.depth );
 
 			for (deUint32 z = 0; z < numSparseBinds.z(); ++z)
 			for (deUint32 y = 0; y < numSparseBinds.y(); ++y)
@@ -4713,14 +4833,14 @@ void allocateAndBindSparseImage (const DeviceInterface&						vk,
 				allocations.push_back(allocation);
 
 				VkOffset3D offset;
-				offset.x = x*imageGranularity.width;
-				offset.y = y*imageGranularity.height;
-				offset.z = z*imageGranularity.depth;
+				offset.x = x*blockSize.width;
+				offset.y = y*blockSize.height;
+				offset.z = z*blockSize.depth;
 
 				VkExtent3D extent;
-				extent.width	= (x == numSparseBinds.x() - 1) ? lastBlockExtent.x() : imageGranularity.width;
-				extent.height	= (y == numSparseBinds.y() - 1) ? lastBlockExtent.y() : imageGranularity.height;
-				extent.depth	= (z == numSparseBinds.z() - 1) ? lastBlockExtent.z() : imageGranularity.depth;
+				extent.width	= (x == numSparseBinds.x() - 1) ? lastBlockExtent.x() : blockSize.width;
+				extent.height	= (y == numSparseBinds.y() - 1) ? lastBlockExtent.y() : blockSize.height;
+				extent.depth	= (z == numSparseBinds.z() - 1) ? lastBlockExtent.z() : blockSize.depth;
 
 				const VkSparseImageMemoryBind imageMemoryBind =
 				{

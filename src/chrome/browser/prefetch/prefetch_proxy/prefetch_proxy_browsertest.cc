@@ -10,15 +10,16 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -32,7 +33,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/policy_test_utils.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_origin_prober.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
@@ -59,8 +60,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/language/core/browser/pref_names.h"
-#include "components/no_state_prefetch/browser/prerender_handle.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -195,6 +196,10 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
   }
   ~TestTabHelperObserver() { tab_helper_->RemoveObserverForTesting(this); }
 
+  void SetDecoyPrefetchClosure(base::OnceClosure closure) {
+    on_decoy_prefetch_closure_ = std::move(closure);
+  }
+
   void SetOnPrefetchSuccessfulClosure(base::OnceClosure closure) {
     on_successful_prefetch_closure_ = std::move(closure);
   }
@@ -217,6 +222,12 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
   }
 
   // PrefetchProxyTabHelper::Observer:
+  void OnDecoyPrefetchCompleted(const GURL& url) override {
+    if (on_decoy_prefetch_closure_) {
+      std::move(on_decoy_prefetch_closure_).Run();
+    }
+  }
+
   void OnPrefetchCompletedSuccessfully(const GURL& url) override {
     auto it = expected_successful_prefetch_urls_.find(url);
     if (it != expected_successful_prefetch_urls_.end()) {
@@ -256,6 +267,8 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
 
  private:
   PrefetchProxyTabHelper* tab_helper_;
+
+  base::OnceClosure on_decoy_prefetch_closure_;
 
   base::OnceClosure on_successful_prefetch_closure_;
   std::set<GURL> expected_successful_prefetch_urls_;
@@ -411,7 +424,7 @@ BuildPrefetchResourceMatchers(
 }  // namespace
 
 // Occasional flakes on Windows (https://crbug.com/1045971).
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
@@ -419,7 +432,7 @@ BuildPrefetchResourceMatchers(
 
 class PrefetchProxyBrowserTest
     : public InProcessBrowserTest,
-      public prerender::PrerenderHandle::Observer,
+      public prerender::NoStatePrefetchHandle::Observer,
       public net::test_server::EmbeddedTestServerConnectionListener {
  public:
   PrefetchProxyBrowserTest() {
@@ -493,6 +506,7 @@ class PrefetchProxyBrowserTest
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     InProcessBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch("prefetch-proxy-never-send-decoy-requests-for-testing");
     // For the proxy.
     cmd->AppendSwitch("ignore-certificate-errors");
     cmd->AppendSwitch("force-enable-metrics-reporting");
@@ -520,12 +534,13 @@ class PrefetchProxyBrowserTest
             predicted_urls);
   }
 
-  std::unique_ptr<prerender::PrerenderHandle> StartPrerender(const GURL& url) {
-    prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForBrowserContext(
+  std::unique_ptr<prerender::NoStatePrefetchHandle> StartPrerender(
+      const GURL& url) {
+    prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+        prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
             browser()->profile());
 
-    return prerender_manager->AddPrerenderFromNavigationPredictor(
+    return no_state_prefetch_manager->AddPrerenderFromNavigationPredictor(
         url,
         GetWebContents()->GetController().GetDefaultSessionStorageNamespace(),
         kSize);
@@ -790,6 +805,14 @@ class PrefetchProxyBrowserTest
       return resp;
     }
 
+    if (request.all_headers.find("CONNECT error.com:443") !=
+        std::string::npos) {
+      std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      resp->set_code(net::HTTP_BAD_REQUEST);
+      return resp;
+    }
+
     std::vector<std::string> request_lines =
         base::SplitString(request.all_headers, "\r\n", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY);
@@ -872,14 +895,10 @@ class PrefetchProxyBrowserTest
                       language::prefs::kAcceptLanguages)));
   }
 
-  // prerender::PrerenderHandle::Observer:
-  void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderDomContentLoaded(
-      prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderNetworkBytesChanged(
-      prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderStop(prerender::PrerenderHandle* handle) override {}
+  // prerender::NoStatePrefetchHandle::Observer:
+  void OnPrefetchNetworkBytesChanged(
+      prerender::NoStatePrefetchHandle* handle) override {}
+  void OnPrefetchStop(prerender::NoStatePrefetchHandle* handle) override {}
 
   // net::test_server::EmbeddedTestServerConnectionListener:
   void ReadFromSocket(const net::StreamSocket& socket, int rv) override {}
@@ -989,6 +1008,54 @@ IN_PROC_BROWSER_TEST_F(
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(auth_observer->GotAuthChallenge());
+}
+
+IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProxyServerBackOff)) {
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  WaitForUpdatedCustomProxyConfig();
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  GURL error_url("https://error.com/");
+
+  base::RunLoop run_loop;
+  tab_helper_observer.SetOnPrefetchErrorClosure(run_loop.QuitClosure());
+  tab_helper_observer.SetExpectedPrefetchErrors(
+      {{error_url, net::ERR_TUNNEL_CONNECTION_FAILED}});
+
+  base::HistogramTester histogram_tester;
+  GURL doc_url("https://www.google.com/search?q=test");
+
+  MakeNavigationPrediction(doc_url, {error_url});
+  run_loop.Run();
+
+  histogram_tester.ExpectUniqueSample("PrefetchProxy.Proxy.RespCode", 400, 1);
+  EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
+  EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_attempted_count_);
+  EXPECT_EQ(0U, tab_helper->srp_metrics().prefetch_successful_count_);
+
+  ui_test_utils::NavigateToURL(browser(), error_url);
+  ASSERT_TRUE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(
+      base::make_optional(PrefetchProxyPrefetchStatus::kPrefetchFailedNetError),
+      tab_helper->after_srp_metrics()->prefetch_status_);
+
+  // Doing this prefetch again is immediately skipped because the proxy is not
+  // available.
+  MakeNavigationPrediction(doc_url, {error_url});
+  EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
+  EXPECT_EQ(0U, tab_helper->srp_metrics().prefetch_attempted_count_);
+  EXPECT_EQ(0U, tab_helper->srp_metrics().prefetch_successful_count_);
+
+  ui_test_utils::NavigateToURL(browser(), error_url);
+  ASSERT_TRUE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(base::make_optional(
+                PrefetchProxyPrefetchStatus::kPrefetchProxyNotAvailable),
+            tab_helper->after_srp_metrics()->prefetch_status_);
 }
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
@@ -1245,14 +1312,14 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   // successfully done and processed.
   run_loop.Run();
 
+  histogram_tester.ExpectTotalCount("PrefetchProxy.Prefetch.Mainframe.RespCode",
+                                    3);
   histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 3);
+      "PrefetchProxy.Prefetch.Mainframe.BodyLength", 3);
   histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 3);
+      "PrefetchProxy.Prefetch.Mainframe.TotalTime", 3);
   histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 3);
-  histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 3);
+      "PrefetchProxy.Prefetch.Mainframe.ConnectTime", 3);
 
   // Navigate to a prefetched page to trigger UKM recording.
   ui_test_utils::NavigateToURL(browser(), eligible_link_2);
@@ -1285,10 +1352,11 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
               {"DataLength", 0},                    /* only checked for > 0 */
               {"FetchDurationMS", 0},               /* only checked for > 0 */
               {"NavigationStartToFetchStartMS", 0}, /* only checked for > 0 */
+              {"ISPFilteringStatus", 0},
               {"LinkClicked", 1},
               {"LinkPosition", 1},
               {"ResourceType", 1},
-              {"Status", 14},
+              {"Status", 0},
           }},
       // not eligible url #1
       UkmEntry{srp_source_id,
@@ -1430,7 +1498,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
     run_loop.Run();
 
     histogram_tester.ExpectUniqueSample(
-        "IsolatedPrerender.Prefetch.Mainframe.RespCode",
+        "PrefetchProxy.Prefetch.Mainframe.RespCode",
         net::HTTP_SERVICE_UNAVAILABLE, 1);
     EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
     EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_attempted_count_);
@@ -1507,7 +1575,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   run_loop.Run();
 
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 204, 1);
+      "PrefetchProxy.Prefetch.Mainframe.RespCode", 204, 1);
 
   // Navigate to a prefetched page to trigger UKM recording. Note that because
   // the navigation is never committed, the UKM recording happens immediately.
@@ -1894,9 +1962,9 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   EXPECT_TRUE(inspected_image_request);
 
   histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime", 1);
+      "PrefetchProxy.AfterClick.Mainframe.CookieWaitTime", 1);
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy", 1, 1);
+      "PrefetchProxy.Prefetch.Mainframe.CookiesToCopy", 1, 1);
 
   // The cookie from prefetch should also be present in the CookieManager API.
   EXPECT_EQ("type=ChocolateChip",
@@ -1961,6 +2029,193 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   // This run loop will quit when the prefetch response have been
   // successfully done and processed with the expected error.
   run_loop.Run();
+}
+
+class PrefetchProxyWithDecoyRequestsBrowserTest
+    : public PrefetchProxyBrowserTest {
+ public:
+  PrefetchProxyWithDecoyRequestsBrowserTest() = default;
+  ~PrefetchProxyWithDecoyRequestsBrowserTest() override = default;
+
+  // PrefetchProxyBrowserTest:
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PrefetchProxyBrowserTest::SetUpCommandLine(cmd);
+    cmd->RemoveSwitch("prefetch-proxy-never-send-decoy-requests-for-testing");
+    cmd->AppendSwitch("prefetch-proxy-always-send-decoy-requests-for-testing");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorker)) {
+  SetDataSaverEnabled(true);
+
+  GURL starting_page =
+      GetOriginServerURL("/service_worker/create_service_worker.html");
+
+  // Load a page that registers a service worker.
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  EXPECT_EQ("DONE", EvalJs(GetWebContents(),
+                           "register('network_fallback_worker.js');"));
+
+  content::ServiceWorkerContext* service_worker_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+  ASSERT_TRUE(service_worker_context_->MaybeHasRegistrationForOrigin(
+      url::Origin::Create(starting_page)));
+
+  ukm::SourceId srp_source_id =
+      GetWebContents()->GetMainFrame()->GetPageUkmSourceId();
+
+  base::RunLoop run_loop;
+  TestTabHelperObserver tab_helper_observer(
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents()));
+  tab_helper_observer.SetDecoyPrefetchClosure(run_loop.QuitClosure());
+
+  size_t starting_origin_request_count = origin_server_requests().size();
+
+  GURL prefetch_url = GetOriginServerURL("/title2.html");
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+  run_loop.Run();
+
+  size_t after_prefetch_origin_request_count = origin_server_requests().size();
+  EXPECT_EQ(starting_origin_request_count + 1,
+            after_prefetch_origin_request_count);
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  // The prefetch should not have been used, so the webpage should have been
+  // requested again.
+  EXPECT_GT(origin_server_requests().size(),
+            after_prefetch_origin_request_count);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
+  auto expected_entries = std::vector<UkmEntry>{
+      // prefetch_url
+      UkmEntry{
+          srp_source_id,
+          {
+              {"DataLength", 0},                    /* only checked for > 0 */
+              {"FetchDurationMS", 0},               /* only checked for > 0 */
+              {"NavigationStartToFetchStartMS", 0}, /* only checked for > 0 */
+              {"LinkClicked", 1},
+              {"LinkPosition", 0},
+              {"ResourceType", 1},
+              {"Status", 29},
+          }},
+  };
+  auto actual_entries =
+      GetAndVerifyPrefetchedResourceUKM(starting_page, srp_source_id);
+  EXPECT_THAT(actual_entries,
+              testing::UnorderedElementsAreArray(
+                  BuildPrefetchResourceMatchers(expected_entries)))
+      << ActualHumanReadableMetricsToDebugString(actual_entries);
+
+  // 29 = |kPrefetchIsPrivacyDecoy|
+  EXPECT_EQ(base::Optional<int64_t>(29),
+            GetUKMMetric(prefetch_url,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+  VerifyUKMAfterSRP(
+      prefetch_url,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kClickedLinkSRPPositionName,
+      0);
+  VerifyUKMAfterSRP(
+      prefetch_url,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kSRPPrefetchEligibleCountName,
+      0);
+  EXPECT_EQ(
+      base::nullopt,
+      GetUKMMetric(
+          prefetch_url, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+          ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName));
+}
+
+IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(Cookie)) {
+  GURL starting_page = GetOriginServerURL("/simple.html");
+
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),
+                                 "cookietype=ChocolateChip"));
+
+  ukm::SourceId srp_source_id =
+      GetWebContents()->GetMainFrame()->GetPageUkmSourceId();
+
+  base::RunLoop run_loop;
+  TestTabHelperObserver tab_helper_observer(
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents()));
+  tab_helper_observer.SetDecoyPrefetchClosure(run_loop.QuitClosure());
+
+  size_t starting_origin_request_count = origin_server_requests().size();
+
+  GURL prefetch_url = GetOriginServerURL("/title2.html");
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+  run_loop.Run();
+
+  size_t after_prefetch_origin_request_count = origin_server_requests().size();
+  EXPECT_EQ(starting_origin_request_count + 1,
+            after_prefetch_origin_request_count);
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  // The prefetch should not have been used, so the webpage should have been
+  // requested again.
+  EXPECT_GT(origin_server_requests().size(),
+            after_prefetch_origin_request_count);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
+  auto expected_entries = std::vector<UkmEntry>{
+      // prefetch_url
+      UkmEntry{
+          srp_source_id,
+          {
+              {"DataLength", 0},                    /* only checked for > 0 */
+              {"FetchDurationMS", 0},               /* only checked for > 0 */
+              {"NavigationStartToFetchStartMS", 0}, /* only checked for > 0 */
+              {"LinkClicked", 1},
+              {"LinkPosition", 0},
+              {"ResourceType", 1},
+              {"Status", 29},
+          }},
+  };
+  auto actual_entries =
+      GetAndVerifyPrefetchedResourceUKM(starting_page, srp_source_id);
+  EXPECT_THAT(actual_entries,
+              testing::UnorderedElementsAreArray(
+                  BuildPrefetchResourceMatchers(expected_entries)))
+      << ActualHumanReadableMetricsToDebugString(actual_entries);
+
+  // 29 = |kPrefetchIsPrivacyDecoy|
+  EXPECT_EQ(base::Optional<int64_t>(29),
+            GetUKMMetric(prefetch_url,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+  VerifyUKMAfterSRP(
+      prefetch_url,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kClickedLinkSRPPositionName,
+      0);
+  VerifyUKMAfterSRP(
+      prefetch_url,
+      ukm::builders::PrefetchProxy_AfterSRPClick::kSRPPrefetchEligibleCountName,
+      0);
+  EXPECT_EQ(
+      base::nullopt,
+      GetUKMMetric(
+          prefetch_url, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+          ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName));
 }
 
 class PolicyTestPrefetchProxyBrowserTest : public policy::PolicyTest {
@@ -2084,9 +2339,9 @@ IN_PROC_BROWSER_TEST_F(
   GURL eligible_link = https_expired_server.GetURL("b.test", "/simple.html");
 
   TestTabHelperObserver tab_helper_observer(tab_helper);
-  // |ERR_ABORTED| is set by the PrefetchProxyNetworkContextClient.
+  // |ERR_INSECURE_RESPONSE| is set by the URLLoader.
   tab_helper_observer.SetExpectedPrefetchErrors(
-      {{eligible_link, net::ERR_ABORTED}});
+      {{eligible_link, net::ERR_INSECURE_RESPONSE}});
 
   base::RunLoop prefetch_run_loop;
   tab_helper_observer.SetOnPrefetchErrorClosure(
@@ -2214,7 +2469,12 @@ class ProbingEnabled_CanaryOff_HTTPHead_PrefetchProxyBrowserTest
     PrefetchProxyBrowserTest::SetFeatures();
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "false"}, {"replace_tls_with_http", "true"}});
+        {
+            {"do_canary", "false"},
+            {"replace_tls_with_http", "true"},
+            {"ineligible_decoy_request_probability", "0"},
+            {"ineligible_decoy_request_probability", "0"},
+        });
   }
 
  private:
@@ -2472,6 +2732,7 @@ class ProbingEnabled_CanaryOn_BothCanaryGood_PrefetchProxyBrowserTest
             {"do_canary", "true"},
             {"tls_canary_url", GetCanaryServerURL().spec()},
             {"dns_canary_url", GetCanaryServerURL().spec()},
+            {"ineligible_decoy_request_probability", "0"},
         });
   }
 
@@ -2490,6 +2751,7 @@ class ProbingEnabled_CanaryOn_TLSCanaryBad_DNSCanaryBad_PrefetchProxyBrowserTest
             {"do_canary", "true"},
             {"tls_canary_url", "http://invalid.com"},
             {"dns_canary_url", "http://invalid.com"},
+            {"ineligible_decoy_request_probability", "0"},
         });
   }
 
@@ -2509,6 +2771,7 @@ class
             {"do_canary", "true"},
             {"tls_canary_url", "http://invalid.com"},
             {"dns_canary_url", GetCanaryServerURL().spec()},
+            {"ineligible_decoy_request_probability", "0"},
         });
   }
 
@@ -2528,6 +2791,7 @@ class
             {"do_canary", "true"},
             {"tls_canary_url", GetCanaryServerURL().spec()},
             {"dns_canary_url", "http://invalid.com"},
+            {"ineligible_decoy_request_probability", "0"},
         });
   }
 
@@ -2542,7 +2806,11 @@ class ProbingEnabled_CanaryOn_CanaryBad_PrefetchProxyBrowserTest
     PrefetchProxyBaseProbingBrowserTest::SetFeatures();
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "true"}, {"canary_url", "http://invalid.com"}});
+        {
+            {"do_canary", "true"},
+            {"canary_url", "http://invalid.com"},
+            {"ineligible_decoy_request_probability", "0"},
+        });
   }
 
  private:
@@ -2794,9 +3062,9 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
                 net::CookieOptions::SameSiteCookieContext::MakeInclusive()));
 
   histogram_tester.ExpectTotalCount(
-      "IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime", 1);
+      "PrefetchProxy.AfterClick.Mainframe.CookieWaitTime", 1);
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy", 1, 1);
+      "PrefetchProxy.Prefetch.Mainframe.CookiesToCopy", 1, 1);
 
   // Check that the JavaScript ran.
   EXPECT_EQ(base::ASCIIToUTF16("JavaScript Executed"),
@@ -2814,13 +3082,13 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
                              kSRPClickPrefetchStatusName));
 
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Subresources.NetError", net::OK, 2);
+      "PrefetchProxy.Prefetch.Subresources.NetError", net::OK, 2);
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Subresources.Quantity", 4, 1);
+      "PrefetchProxy.Prefetch.Subresources.Quantity", 4, 1);
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.Prefetch.Subresources.RespCode", 200, 2);
+      "PrefetchProxy.Prefetch.Subresources.RespCode", 200, 2);
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.AfterClick.Subresources.UsedCache", true, 2);
+      "PrefetchProxy.AfterClick.Subresources.UsedCache", true, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
@@ -2864,7 +3132,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.SpareRenderer.CountStartedOnSRP", 1, 1);
+      "PrefetchProxy.SpareRenderer.CountStartedOnSRP", 1, 1);
 }
 
 namespace {
@@ -2876,6 +3144,33 @@ std::unique_ptr<net::test_server::HttpResponse> HandleNonEligibleOrigin(
     resp->set_code(net::HTTP_OK);
     resp->set_content_type("application/javascript");
     resp->set_content("console.log(0);");
+    return resp;
+  }
+  return nullptr;
+}
+
+std::unique_ptr<net::test_server::HttpResponse>
+HandleOriginWithIneligibleSubresources(
+    net::EmbeddedTestServer* non_eligible_server,
+    const net::test_server::HttpRequest& request) {
+  GURL url = request.GetURL();
+
+  if (url.path() == "/page.html") {
+    GURL same_origin_resource =
+        non_eligible_server->GetURL("a.test", "/script.js");
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    resp->set_code(net::HTTP_OK);
+    resp->set_content_type("text/html");
+    resp->set_content(base::StringPrintf(R"(
+        <html>
+          <head>
+            <script src="%s">
+          </head>
+          <body>Test</body>
+        </html>)",
+                                         same_origin_resource.spec().c_str()));
     return resp;
   }
   return nullptr;
@@ -2991,6 +3286,63 @@ IN_PROC_BROWSER_TEST_F(
       eligible_origin.GetURL("a.test", "/script.js"),
   };
   EXPECT_EQ(expected_subresources, manager->successfully_loaded_subresources());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrefetchProxyWithNSPBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NSPWithIneligibleSubresources)) {
+  TestServerConnectionCounter http_counter;
+  net::EmbeddedTestServer non_eligible_origin(
+      net::EmbeddedTestServer::TYPE_HTTP);
+  non_eligible_origin.SetConnectionListener(&http_counter);
+  ASSERT_TRUE(non_eligible_origin.Start());
+
+  net::EmbeddedTestServer eligible_origin(net::EmbeddedTestServer::TYPE_HTTPS);
+  eligible_origin.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  eligible_origin.RegisterRequestHandler(base::BindRepeating(
+      &HandleOriginWithIneligibleSubresources, &non_eligible_origin));
+  ASSERT_TRUE(eligible_origin.Start());
+
+  SetDataSaverEnabled(true);
+  WaitForUpdatedCustomProxyConfig();
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link = eligible_origin.GetURL("a.test", "/page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  base::RunLoop nsp_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // This run loop will quit when a NSP finishes.
+  nsp_run_loop.Run();
+
+  EXPECT_EQ(0U, http_counter.count());
+
+  // Verify the resource load was reported to the subresource manager.
+  PrefetchProxyService* service =
+      PrefetchProxyServiceFactory::GetForProfile(browser()->profile());
+  PrefetchProxySubresourceManager* manager =
+      service->GetSubresourceManagerForURL(eligible_link);
+  ASSERT_TRUE(manager);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(manager->successfully_loaded_subresources().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
@@ -3232,7 +3584,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
 
   // Checks that only one resource was used from cache.
   histogram_tester.ExpectUniqueSample(
-      "IsolatedPrerender.AfterClick.Subresources.UsedCache", true, 1);
+      "PrefetchProxy.AfterClick.Subresources.UsedCache", true, 1);
 
   // Navigate again to trigger UKM recording.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -3258,7 +3610,11 @@ class ProbingAndNSPEnabledPrefetchProxyBrowserTest
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kLightweightNoStatePrefetch);
     probing_scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin, {{"do_canary", "false"}});
+        features::kIsolatePrerendersMustProbeOrigin,
+        {
+            {"do_canary", "false"},
+            {"ineligible_decoy_request_probability", "0"},
+        });
   }
 
  private:

@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
@@ -43,7 +44,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/server_printer_url_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/components/scanning/scanning_uma.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/ppd_line_reader.h"
@@ -268,8 +269,8 @@ CupsPrintersHandler::CupsPrintersHandler(
       ppd_provider_(ppd_provider),
       printer_configurer_(std::move(printer_configurer)),
       printers_manager_(printers_manager),
-      endpoint_resolver_(std::make_unique<local_discovery::EndpointResolver>()),
-      printers_manager_observer_(this) {}
+      endpoint_resolver_(
+          std::make_unique<local_discovery::EndpointResolver>()) {}
 
 // static
 std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::CreateForTesting(
@@ -350,23 +351,25 @@ void CupsPrintersHandler::RegisterMessages() {
       "queryPrintServer",
       base::BindRepeating(&CupsPrintersHandler::HandleQueryPrintServer,
                           base::Unretained(this)));
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kPrintJobManagementApp)) {
+  web_ui()->RegisterMessageCallback(
+      "openPrintManagementApp",
+      base::BindRepeating(&CupsPrintersHandler::HandleOpenPrintManagementApp,
+                          base::Unretained(this)));
+  if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI)) {
     web_ui()->RegisterMessageCallback(
-        "openPrintManagementApp",
-        base::BindRepeating(&CupsPrintersHandler::HandleOpenPrintManagementApp,
+        "openScanningApp",
+        base::BindRepeating(&CupsPrintersHandler::HandleOpenScanningApp,
                             base::Unretained(this)));
   }
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
-  if (!printers_manager_observer_.IsObservingSources()) {
-    printers_manager_observer_.Add(printers_manager_);
-  }
+  DCHECK(!printers_manager_observation_.IsObserving());
+  printers_manager_observation_.Observe(printers_manager_);
 }
 
 void CupsPrintersHandler::OnJavascriptDisallowed() {
-  printers_manager_observer_.RemoveAll();
+  printers_manager_observation_.Reset();
 }
 
 void CupsPrintersHandler::SetWebUIForTest(content::WebUI* web_ui) {
@@ -1088,6 +1091,14 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     return;
   }
 
+  // We need a special case for USB printers here. We cannot query them
+  // directly, so we have to fall back to manual configuration here.
+  if (printer->IsUsbProtocol()) {
+    RejectJavascriptCallback(base::Value(callback_id),
+                             *GetCupsPrinterInfo(*printer));
+    return;
+  }
+
   // The mDNS record doesn't guarantee we can setup the printer.  Query it to
   // see if we want to try IPP.
   auto address = printer->GetHostAndPort();
@@ -1242,7 +1253,7 @@ void CupsPrintersHandler::QueryPrintServer(const std::string& callback_id,
                                            const GURL& server_url,
                                            bool should_fallback) {
   server_printers_fetcher_ = std::make_unique<ServerPrintersFetcher>(
-      server_url, "(from user)",
+      profile_, server_url, "(from user)",
       base::BindRepeating(&CupsPrintersHandler::OnQueryPrintServerCompleted,
                           weak_factory_.GetWeakPtr(), callback_id,
                           should_fallback));
@@ -1302,10 +1313,15 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
 void CupsPrintersHandler::HandleOpenPrintManagementApp(
     const base::ListValue* args) {
   DCHECK(args->empty());
-  DCHECK(
-      base::FeatureList::IsEnabled(chromeos::features::kPrintJobManagementApp));
   chrome::ShowPrintManagementApp(profile_,
                                  PrintManagementAppEntryPoint::kSettings);
+}
+
+void CupsPrintersHandler::HandleOpenScanningApp(const base::ListValue* args) {
+  DCHECK(args->empty());
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kScanningUI));
+  chrome::ShowScanningApp(profile_,
+                          chromeos::scanning::ScanAppEntryPoint::kSettings);
 }
 
 }  // namespace settings

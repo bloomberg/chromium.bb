@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/configurator.h"
 
 namespace updater {
 
-class Configurator;
-class ControlService;
+class UpdateServiceInternal;
 class GlobalPrefs;
 class LocalPrefs;
 class UpdateService;
@@ -31,6 +31,8 @@ class AppServer : public App {
  protected:
   ~AppServer() override;
 
+  scoped_refptr<const Configurator> config() const { return config_; }
+
   // Overrides of App.
   void Uninitialize() override;
 
@@ -39,16 +41,17 @@ class AppServer : public App {
   void Initialize() final;
   void FirstTaskRun() final;
 
-  // Set up the server for normal active version functions using the provided
+  // Sets up the server for normal active version functions using the provided
   // services.
-  virtual void ActiveDuty(scoped_refptr<UpdateService> update_service,
-                          scoped_refptr<ControlService> control_service) = 0;
+  virtual void ActiveDuty(
+      scoped_refptr<UpdateService> update_service,
+      scoped_refptr<UpdateServiceInternal> update_service_internal) = 0;
 
-  // Set up all non-side-by-side RPC interfaces to point to this candidate
+  // Sets up all non-side-by-side RPC interfaces to point to this candidate
   // server.
   virtual bool SwapRPCInterfaces() = 0;
 
-  // Uninstall this candidate version of the updater.
+  // Uninstalls this candidate version of the updater.
   virtual void UninstallSelf() = 0;
 
   // As part of initialization, an AppServer must do a mode check to determine
@@ -64,12 +67,15 @@ class AppServer : public App {
   void Qualify(std::unique_ptr<LocalPrefs> local_prefs);
   bool SwapVersions(GlobalPrefs* global_prefs);
 
+  // Uninstalls the updater if it doesn't manage any apps, aside from itself.
+  void MaybeUninstall();
+
   base::OnceClosure first_task_;
   scoped_refptr<Configurator> config_;
 
   // If true, this version of the updater should uninstall itself during
   // shutdown.
-  bool uninstall_ = false;
+  bool uninstall_self_ = false;
 };
 
 scoped_refptr<App> AppServerInstance();

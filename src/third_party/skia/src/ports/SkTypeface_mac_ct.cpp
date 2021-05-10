@@ -57,7 +57,7 @@
 #include "src/utils/SkUTF.h"
 #include "src/utils/mac/SkCGBase.h"
 #include "src/utils/mac/SkCGGeometry.h"
-#include "src/utils/mac/SkCTFontSmoothBehavior.h"
+#include "src/utils/mac/SkCTFont.h"
 #include "src/utils/mac/SkUniqueCFRef.h"
 
 #include <dlfcn.h>
@@ -321,56 +321,6 @@ struct CGFloatIdentity {
     CGFloat operator()(CGFloat s) { return s; }
 };
 
-/** Returns the [-1, 1] CTFontDescriptor weights for the
- *  <0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000> CSS weights.
- *
- *  It is assumed that the values will be interpolated linearly between these points.
- *  NSFontWeightXXX were added in 10.11, appear in 10.10, but do not appear in 10.9.
- *  The actual values appear to be stable, but they may change in the future without notice.
- */
-static CGFloat(&get_NSFontWeight_mapping())[11] {
-
-    // Declarations in <AppKit/AppKit.h> on macOS, <UIKit/UIKit.h> on iOS
-#ifdef SK_BUILD_FOR_MAC
-#  define SK_KIT_FONT_WEIGHT_PREFIX "NS"
-#endif
-#ifdef SK_BUILD_FOR_IOS
-#  define SK_KIT_FONT_WEIGHT_PREFIX "UI"
-#endif
-    static constexpr struct {
-        CGFloat defaultValue;
-        const char* name;
-    } nsFontWeightLoaderInfos[] = {
-        { -0.80f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightUltraLight" },
-        { -0.60f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightThin" },
-        { -0.40f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightLight" },
-        {  0.00f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightRegular" },
-        {  0.23f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightMedium" },
-        {  0.30f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightSemibold" },
-        {  0.40f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightBold" },
-        {  0.56f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightHeavy" },
-        {  0.62f, SK_KIT_FONT_WEIGHT_PREFIX "FontWeightBlack" },
-    };
-
-    static_assert(SK_ARRAY_COUNT(nsFontWeightLoaderInfos) == 9, "");
-    static CGFloat nsFontWeights[11];
-    static SkOnce once;
-    once([&] {
-        size_t i = 0;
-        nsFontWeights[i++] = -1.00;
-        for (const auto& nsFontWeightLoaderInfo : nsFontWeightLoaderInfos) {
-            void* nsFontWeightValuePtr = dlsym(RTLD_DEFAULT, nsFontWeightLoaderInfo.name);
-            if (nsFontWeightValuePtr) {
-                nsFontWeights[i++] = *(static_cast<CGFloat*>(nsFontWeightValuePtr));
-            } else {
-                nsFontWeights[i++] = nsFontWeightLoaderInfo.defaultValue;
-            }
-        }
-        nsFontWeights[i++] = 1.00;
-    });
-    return nsFontWeights;
-}
-
 /** Convert the [0, 1000] CSS weight to [-1, 1] CTFontDescriptor weight (for system fonts).
  *
  *  The -1 to 1 weights reported by CTFontDescriptors have different mappings depending on if the
@@ -385,7 +335,7 @@ CGFloat SkCTFontCTWeightForCSSWeight(int fontstyleWeight) {
     static Interpolator::Mapping nativeWeightMappings[11];
     static SkOnce once;
     once([&] {
-        CGFloat(&nsFontWeights)[11] = get_NSFontWeight_mapping();
+        const CGFloat(&nsFontWeights)[11] = SkCTFontGetNSFontWeightMapping();
         for (int i = 0; i < 11; ++i) {
             nativeWeightMappings[i].src_val = i * 100;
             nativeWeightMappings[i].dst_val = nsFontWeights[i];
@@ -396,7 +346,6 @@ CGFloat SkCTFontCTWeightForCSSWeight(int fontstyleWeight) {
 
     return nativeInterpolator.map(fontstyleWeight);
 }
-
 
 /** Convert the [-1, 1] CTFontDescriptor weight to [0, 1000] CSS weight.
  *
@@ -409,37 +358,24 @@ static int ct_weight_to_fontstyle(CGFloat cgWeight, bool fromDataProvider) {
     // Note that Mac supports the old OS2 version A so 0 through 10 are as if multiplied by 100.
     // However, on this end we can't tell, so this is ignored.
 
-    /** This mapping for CGDataProvider created fonts is determined by creating font data with every
-     *  weight, creating a CTFont, and asking the CTFont for its weight. See the TypefaceStyle test
-     *  in tests/TypefaceTest.cpp for the code used to determine these values.
-     */
-    static constexpr Interpolator::Mapping dataProviderWeightMappings[] = {
-        { -1.00,    0 },
-        { -0.70,  100 },
-        { -0.50,  200 },
-        { -0.23,  300 },
-        {  0.00,  400 },
-        {  0.20,  500 },
-        {  0.30,  600 },
-        {  0.40,  700 },
-        {  0.60,  800 },
-        {  0.80,  900 },
-        {  1.00, 1000 },
-    };
-    static constexpr Interpolator dataProviderInterpolator(
-            dataProviderWeightMappings, SK_ARRAY_COUNT(dataProviderWeightMappings));
-
     static Interpolator::Mapping nativeWeightMappings[11];
+    static Interpolator::Mapping dataProviderWeightMappings[11];
     static SkOnce once;
     once([&] {
-        CGFloat(&nsFontWeights)[11] = get_NSFontWeight_mapping();
+        const CGFloat(&nsFontWeights)[11] = SkCTFontGetNSFontWeightMapping();
+        const CGFloat(&userFontWeights)[11] = SkCTFontGetDataFontWeightMapping();
         for (int i = 0; i < 11; ++i) {
             nativeWeightMappings[i].src_val = nsFontWeights[i];
             nativeWeightMappings[i].dst_val = i * 100;
+
+            dataProviderWeightMappings[i].src_val = userFontWeights[i];
+            dataProviderWeightMappings[i].dst_val = i * 100;
         }
     });
     static constexpr Interpolator nativeInterpolator(
             nativeWeightMappings, SK_ARRAY_COUNT(nativeWeightMappings));
+    static constexpr Interpolator dataProviderInterpolator(
+            dataProviderWeightMappings, SK_ARRAY_COUNT(dataProviderWeightMappings));
 
     return fromDataProvider ? dataProviderInterpolator.map(cgWeight)
                             : nativeInterpolator.map(cgWeight);
@@ -980,9 +916,11 @@ sk_sp<SkData> SkTypeface_Mac::onCopyTableData(SkFontTableTag tag) const {
                                 }, (void*)srcData.release());
 }
 
-SkScalerContext* SkTypeface_Mac::onCreateScalerContext(const SkScalerContextEffects& effects,
-                                                       const SkDescriptor* desc) const {
-    return new SkScalerContext_Mac(sk_ref_sp(const_cast<SkTypeface_Mac*>(this)), effects, desc);
+std::unique_ptr<SkScalerContext> SkTypeface_Mac::onCreateScalerContext(
+    const SkScalerContextEffects& effects, const SkDescriptor* desc) const
+{
+    return std::make_unique<SkScalerContext_Mac>(
+            sk_ref_sp(const_cast<SkTypeface_Mac*>(this)), effects, desc);
 }
 
 void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
@@ -1178,12 +1116,16 @@ CTFontVariation SkCTVariationFromSkFontArguments(CTFontRef ct, const SkFontArgum
     }
     CFIndex axisCount = CFArrayGetCount(ctAxes.get());
 
+    // On 10.12 and later, this only returns non-default variations.
+    SkUniqueCFRef<CFDictionaryRef> oldCtVariation(CTFontCopyVariation(ct));
+
     const SkFontArguments::VariationPosition position = args.getVariationDesignPosition();
 
-    SkUniqueCFRef<CFMutableDictionaryRef> dict(
+    SkUniqueCFRef<CFMutableDictionaryRef> newCtVariation(
             CFDictionaryCreateMutable(kCFAllocatorDefault, axisCount,
                                       &kCFTypeDictionaryKeyCallBacks,
                                       &kCFTypeDictionaryValueCallBacks));
+    SkUniqueCFRef<CFMutableDictionaryRef> wrongOpszVariation;
 
     for (int i = 0; i < axisCount; ++i) {
         CFDictionaryRef axisInfoDict;
@@ -1213,13 +1155,29 @@ CTFontVariation SkCTVariationFromSkFontArguments(CTFontRef ct, const SkFontArgum
             return CTFontVariation();
         }
 
+        // Start with the default value.
         double value = defDouble;
+
+        // Then the current value.
+        bool haveCurrentDouble = false;
+        double currentDouble = 0;
+        if (oldCtVariation) {
+            CFTypeRef currentNumber = CFDictionaryGetValue(oldCtVariation.get(), tagNumber);
+            if (currentNumber) {
+                if (!SkCFNumberDynamicCast(currentNumber, &value, nullptr, "Variation value")) {
+                    return CTFontVariation();
+                }
+                currentDouble = value;
+                haveCurrentDouble = true;
+            }
+        }
+
+        // Then the requested value.
         // The position may be over specified. If there are multiple values for a given axis,
         // use the last one since that's what css-fonts-4 requires.
         for (int j = position.coordinateCount; j --> 0;) {
             if (position.coordinates[j].axis == tagLong) {
-                value = SkTPin(SkScalarToDouble(position.coordinates[j].value),
-                               minDouble, maxDouble);
+                value = SkTPin<double>(position.coordinates[j].value, minDouble, maxDouble);
                 if (tagLong == opszTag) {
                     opsz.isSet = true;
                 }
@@ -1228,28 +1186,66 @@ CTFontVariation SkCTVariationFromSkFontArguments(CTFontRef ct, const SkFontArgum
         }
         if (tagLong == opszTag) {
             opsz.value = value;
+            if (haveCurrentDouble && value == currentDouble) {
+                // Calculate a value strictly in range but different from currentValue.
+                double wrongOpszDouble = ((maxDouble - minDouble) / 2.0) + minDouble;
+                if (wrongOpszDouble == currentDouble) {
+                    wrongOpszDouble = ((maxDouble - minDouble) / 4.0) + minDouble;
+                }
+                wrongOpszVariation.reset(
+                    CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                              &kCFTypeDictionaryKeyCallBacks,
+                                              &kCFTypeDictionaryValueCallBacks));
+                SkUniqueCFRef<CFNumberRef> wrongOpszNumber(
+                    CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &wrongOpszDouble));
+                CFDictionarySetValue(wrongOpszVariation.get(), tagNumber, wrongOpszNumber.get());
+            }
         }
         SkUniqueCFRef<CFNumberRef> valueNumber(
             CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value));
-        CFDictionaryAddValue(dict.get(), tagNumber, valueNumber.get());
+        CFDictionaryAddValue(newCtVariation.get(), tagNumber, valueNumber.get());
     }
-    return { SkUniqueCFRef<CFDictionaryRef>(std::move(dict)), opsz };
+    return { SkUniqueCFRef<CFDictionaryRef>(std::move(newCtVariation)),
+             SkUniqueCFRef<CFDictionaryRef>(std::move(wrongOpszVariation)),
+             opsz };
 }
 
 sk_sp<SkTypeface> SkTypeface_Mac::onMakeClone(const SkFontArguments& args) const {
     CTFontVariation ctVariation = SkCTVariationFromSkFontArguments(fFontRef.get(), args);
 
     SkUniqueCFRef<CTFontRef> ctVariant;
-    if (ctVariation.dict) {
+    if (ctVariation.variation) {
         SkUniqueCFRef<CFMutableDictionaryRef> attributes(
                 CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                           &kCFTypeDictionaryKeyCallBacks,
                                           &kCFTypeDictionaryValueCallBacks));
-        CFDictionaryAddValue(attributes.get(),
-                             kCTFontVariationAttribute, ctVariation.dict.get());
+
+        CTFontRef ctFont = fFontRef.get();
+        SkUniqueCFRef<CTFontRef> wrongOpszFont;
+        if (ctVariation.wrongOpszVariation) {
+            // On macOS 11 cloning a system font with an opsz axis and not changing the
+            // value of the opsz axis (either by setting it to the same value or not
+            // specifying it at all) when setting a variation causes the variation to
+            // be set but the cloned font will still compare CFEqual to the original
+            // font. Work around this by setting the opsz to something which isn't the
+            // desired value before setting the entire desired variation.
+            //
+            // A similar issue occurs with fonts from data on macOS 10.15 and the same
+            // work around seems to apply. This is less noticeable though since CFEqual
+            // isn't used on these fonts.
+            CFDictionarySetValue(attributes.get(),
+                                 kCTFontVariationAttribute, ctVariation.wrongOpszVariation.get());
+            SkUniqueCFRef<CTFontDescriptorRef> varDesc(
+                CTFontDescriptorCreateWithAttributes(attributes.get()));
+            wrongOpszFont.reset(CTFontCreateCopyWithAttributes(ctFont, 0, nullptr, varDesc.get()));
+            ctFont = wrongOpszFont.get();
+        }
+
+        CFDictionarySetValue(attributes.get(),
+                             kCTFontVariationAttribute, ctVariation.variation.get());
         SkUniqueCFRef<CTFontDescriptorRef> varDesc(
                 CTFontDescriptorCreateWithAttributes(attributes.get()));
-        ctVariant.reset(CTFontCreateCopyWithAttributes(fFontRef.get(), 0, nullptr, varDesc.get()));
+        ctVariant.reset(CTFontCreateCopyWithAttributes(ctFont, 0, nullptr, varDesc.get()));
     } else {
         ctVariant.reset((CTFontRef)CFRetain(fFontRef.get()));
     }

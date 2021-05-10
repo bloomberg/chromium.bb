@@ -10,10 +10,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -86,14 +87,16 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, NonRegisteredType);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterCorrectExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncIndividualTypes);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
-                           EnterExistingFrozenImplicitPassword);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SetNewCustomPassphrase);
+                           SuccessfullyCreateCustomPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterWrongExistingPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterBlankExistingPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, CannotCreateBlankPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           CannotCreatePassphraseIfEncryptEverythingDisallowed);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           CannotOverwritePassphraseWithNewOne);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            UnrecoverableErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GaiaErrorInitializingSync);
@@ -123,10 +126,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   void FocusUI() override;
 
   // IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
@@ -151,15 +152,16 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleGetProfileInfo(const base::ListValue* args);
   void OnDidClosePage(const base::ListValue* args);
   void HandleSetDatatypes(const base::ListValue* args);
-  void HandleSetEncryption(const base::ListValue* args);
+  void HandleSetEncryptionPassphrase(const base::ListValue* args);
+  void HandleSetDecryptionPassphrase(const base::ListValue* args);
   void HandleShowSyncSetupUI(const base::ListValue* args);
   void HandleSyncPrefsDispatch(const base::ListValue* args);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void HandleAttemptUserExit(const base::ListValue* args);
   void HandleTurnOnSync(const base::ListValue* args);
   void HandleTurnOffSync(const base::ListValue* args);
 #endif
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void HandleStartSignin(const base::ListValue* args);
   void HandleSignout(const base::ListValue* args);
   void HandlePauseSync(const base::ListValue* args);
@@ -167,7 +169,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleStartKeyRetrieval(const base::ListValue* args);
   void HandleGetSyncStatus(const base::ListValue* args);
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Displays the GAIA login form.
   void DisplayGaiaLogin(signin_metrics::AccessPoint access_point);
 
@@ -224,10 +226,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetimes.
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_{this};
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_service_observer_{this};
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
+  base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observation_{this};
 
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
 

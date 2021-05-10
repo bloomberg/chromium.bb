@@ -4,34 +4,36 @@
 
 /* eslint-disable no-console */
 
-import {ChildProcess, spawn} from 'child_process';
-import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 
-import {getBrowserAndPages, registerHandlers, setBrowserAndPages, setHostedModeServerPort} from './puppeteer-state.js';
+import {clearPuppeteerState, getBrowserAndPages, registerHandlers, setBrowserAndPages, setTestServerPort} from './puppeteer-state.js';
 
 // Workaround for mismatching versions of puppeteer types and puppeteer library.
 declare module 'puppeteer' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ConsoleMessage {
     stackTrace(): ConsoleMessageLocation[];
   }
 }
 
-const HOSTED_MODE_SERVER_PATH = path.join(__dirname, '..', '..', 'scripts', 'hosted_mode', 'server.js');
 const EMPTY_PAGE = 'data:text/html,';
 const DEFAULT_TAB = {
   name: 'elements',
   selector: '.elements',
 };
 
-const cwd = path.join(__dirname, '..', '..');
-const {execPath} = process;
 const width = 1280;
 const height = 720;
+let unhandledRejectionSet = false;
 
 const headless = !process.env['DEBUG'];
 const envSlowMo = process.env['STRESS'] ? 50 : undefined;
 const envThrottleRate = process.env['STRESS'] ? 3 : 1;
+
+const TEST_SERVER_TYPE = process.env.TEST_SERVER_TYPE;
+if (!TEST_SERVER_TYPE) {
+  throw new Error('Failed to run tests: process.env.TEST_SERVER_TYPE was not defined.');
+}
 
 // TODO: move this into a file
 const ALLOWED_ASSERTION_FAILURES = [
@@ -40,6 +42,9 @@ const ALLOWED_ASSERTION_FAILURES = [
   // Expected failures in assertion_test.ts
   'expected failure 1',
   'expected failure 2',
+  // A failing fetch isn't itself a real error.
+  // TODO(https://crbug.com/124534) Remove once those messages are not printed anymore.
+  'Failed to load resource: the server responded with a status of 404 (Not Found)',
 ];
 
 const logLevels = {
@@ -51,7 +56,6 @@ const logLevels = {
   assert: 'E',
 };
 
-let hostedModeServer: ChildProcess;
 let browser: puppeteer.Browser;
 let frontendUrl: string;
 
@@ -64,11 +68,17 @@ const envChromeBinary = process.env['CHROME_BIN'];
 
 function launchChrome() {
   // Use port 0 to request any free port.
-  const launchArgs = ['--remote-debugging-port=0', '--enable-experimental-web-platform-features'];
-  const opts: puppeteer.LaunchOptions = {
+  const launchArgs = [
+    '--remote-debugging-port=0',
+    '--enable-experimental-web-platform-features',
+    '--ignore-certificate-errors',
+    '--site-per-process',  // Default on Desktop anyway, but ensure that we always use out-of-process frames when we intend to.
+    '--host-resolver-rules=MAP *.test 127.0.0.1',
+  ];
+  // TODO(jacktfranklin): crbug.com/1176642 expose this as a cleaner type in Puppeteer and update this type.
+  const opts: puppeteer.LaunchOptions&puppeteer.ChromeArgOptions&puppeteer.BrowserOptions = {
     headless,
     executablePath: envChromeBinary,
-    defaultViewport: null,
     dumpio: !headless,
     slowMo: envSlowMo,
   };
@@ -93,25 +103,26 @@ function getDebugPort(browser: puppeteer.Browser) {
   throw new Error(`Unable to find debug port: ${websocketUrl}`);
 }
 
-async function loadTargetPageAndDevToolsFrontend(hostedModeServerPort: number) {
+async function loadTargetPageAndFrontend(testServerPort: number) {
+  /**
+   * In hosted mode we run the DevTools and test against it.
+   */
+  const needToLoadDevTools = TEST_SERVER_TYPE === 'hosted-mode';
+
   browser = await launchChrome();
-  const chromeDebugPort = getDebugPort(browser);
-  console.log(`Opened chrome with debug port: ${chromeDebugPort}`);
-
   let stdout = '', stderr = '';
-
-  const process = browser.process();
-  if (process) {
-    if (process.stderr) {
-      process.stderr.setEncoding('utf8');
-      process.stderr.on('data', data => {
+  const browserProcess = browser.process();
+  if (browserProcess) {
+    if (browserProcess.stderr) {
+      browserProcess.stderr.setEncoding('utf8');
+      browserProcess.stderr.on('data', data => {
         stderr += data;
       });
     }
 
-    if (process.stdout) {
-      process.stdout.setEncoding('utf8');
-      process.stdout.on('data', data => {
+    if (browserProcess.stdout) {
+      browserProcess.stdout.setEncoding('utf8');
+      browserProcess.stdout.on('data', data => {
         stdout += data;
       });
     }
@@ -121,27 +132,45 @@ async function loadTargetPageAndDevToolsFrontend(hostedModeServerPort: number) {
   const srcPage = await browser.newPage();
   await srcPage.goto(EMPTY_PAGE);
 
-  // Now get the DevTools listings.
-  const devtools = await browser.newPage();
-  await devtools.goto(`http://localhost:${chromeDebugPort}/json`);
+  // Create the frontend - the page that will be under test. This will be either
+  // DevTools Frontend in hosted mode, or the component docs in docs test mode.
+  const frontend = await browser.newPage();
 
-  // Find the appropriate item to inspect the target page.
-  const listing = await devtools.$('pre');
-  const json = await devtools.evaluate(listing => listing.textContent, listing);
-  const targets: DevToolsTarget[] = JSON.parse(json);
-  const target = targets.find(target => target.url === EMPTY_PAGE);
-  if (!target) {
-    throw new Error(`Unable to find target page: ${EMPTY_PAGE}`);
+  if (needToLoadDevTools) {
+    const chromeDebugPort = getDebugPort(browser);
+    console.log(`Opened chrome with debug port: ${chromeDebugPort}`);
+    // Now get the DevTools listings.
+    const devtools = await browser.newPage();
+    await devtools.goto(`http://localhost:${chromeDebugPort}/json`);
+
+    // Find the appropriate item to inspect the target page.
+    const listing = await devtools.$('pre');
+    const json = await devtools.evaluate(listing => listing.textContent, listing);
+    const targets: DevToolsTarget[] = JSON.parse(json);
+    const target = targets.find(target => target.url === EMPTY_PAGE);
+    if (!target) {
+      throw new Error(`Unable to find target page: ${EMPTY_PAGE}`);
+    }
+
+    const {id} = target;
+    await devtools.close();
+
+    /**
+     * In hosted mode the frontend points to DevTools, so let's load it up.
+     */
+    frontendUrl = `https://localhost:${testServerPort}/front_end/devtools_app.html?ws=localhost:${
+        chromeDebugPort}/devtools/page/${id}`;
+    await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
   }
 
-  const {id} = target;
-  await devtools.close();
 
-  // Connect to the DevTools frontend.
-  const frontend = await browser.newPage();
-  frontendUrl = `http://localhost:${hostedModeServerPort}/front_end/devtools_app.html?ws=localhost:${
-      chromeDebugPort}/devtools/page/${id}`;
-  await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
+  if (TEST_SERVER_TYPE === 'component-docs') {
+    /**
+     * In the component docs mode it points to the page where we load component
+     * doc examples, so let's just set it to an empty page for now.
+     */
+    await frontend.goto(EMPTY_PAGE);
+  }
 
   frontend.on('error', error => {
     console.log('STDOUT:');
@@ -157,9 +186,15 @@ async function loadTargetPageAndDevToolsFrontend(hostedModeServerPort: number) {
     throw new Error(`Page error in Frontend: ${error}`);
   });
 
-  process.on('unhandledRejection', error => {
-    throw new Error(`Unhandled rejection in Frontend: ${error}`);
-  });
+  if (!unhandledRejectionSet) {
+    if (!browserProcess) {
+      throw new Error('browserProcess is unexpectedly not defined.');
+    }
+    browserProcess.on('unhandledRejection', error => {
+      throw new Error(`Unhandled rejection in Frontend: ${error}`);
+    });
+    unhandledRejectionSet = true;
+  }
 
   frontend.on('console', msg => {
     const logLevel = logLevels[msg.type() as keyof typeof logLevels] as string;
@@ -186,10 +221,10 @@ async function loadTargetPageAndDevToolsFrontend(hostedModeServerPort: number) {
 }
 
 function formatStackFrame(stackFrame: puppeteer.ConsoleMessageLocation): string {
-  if (!stackFrame) {
+  if (!stackFrame || !stackFrame.url) {
     return '<unknown>';
   }
-  const filename = stackFrame!.url!.replace(/^.*\//, '');
+  const filename = stackFrame.url.replace(/^.*\//, '');
   return `${filename}:${stackFrame.lineNumber}:${stackFrame.columnNumber}`;
 }
 
@@ -198,21 +233,26 @@ export async function resetPages() {
   // Reload the target page.
   await target.goto(EMPTY_PAGE, {waitUntil: ['domcontentloaded']});
 
-  // Clear any local storage settings.
-  await frontend.evaluate(() => localStorage.clear());
+  if (TEST_SERVER_TYPE === 'hosted-mode') {
+    const {frontend} = getBrowserAndPages();
+    // Clear any local storage settings.
+    await frontend.evaluate(() => localStorage.clear());
 
-  await reloadDevTools();
+    await reloadDevTools();
+  } else {
+    // Reset the frontend back to an empty page for the component docs server.
+    await frontend.goto(EMPTY_PAGE, {waitUntil: ['domcontentloaded']});
+  }
 }
 
 type ReloadDevToolsOptions = {
   selectedPanel?: {name: string, selector?: string},
   canDock?: boolean,
-  queryParams?: {panel?: string}
+  queryParams?: {panel?: string},
 };
 
 export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   const {frontend} = getBrowserAndPages();
-
   // For the unspecified case wait for loading, then wait for the elements panel.
   const {selectedPanel = DEFAULT_TAB, canDock = false, queryParams = {}} = options;
 
@@ -248,49 +288,15 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   }
 }
 
-function startHostedModeServer(): Promise<number> {
-  console.log('Spawning hosted mode server');
-
-  function handleHostedModeError(error: Error) {
-    throw new Error(`Hosted mode server: ${error}`);
-  }
-
-  // Copy the current env and append the port.
-  const env = Object.create(process.env);
-  env.PORT = 0;  // 0 means request a free port from the OS.
-  return new Promise((resolve, reject) => {
-    // We open the server with an IPC channel so that it can report the port it
-    // used back to us. For parallel test mode, we need to avoid specifying a
-    // port directly and instead request any free port, which is what port 0
-    // signifies to the OS.
-    hostedModeServer = spawn(execPath, [HOSTED_MODE_SERVER_PATH], {cwd, env, stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
-    hostedModeServer.on('message', message => {
-      if (message === 'ERROR') {
-        reject('Could not start hosted mode server');
-      } else {
-        resolve(parseInt(message, 10));
-      }
-    });
-    hostedModeServer.on('error', handleHostedModeError);
-    if (hostedModeServer.stderr) {
-      hostedModeServer.stderr.on('data', handleHostedModeError);
-    }
-  });
+// Can be run multiple times in the same process.
+export async function preFileSetup(serverPort: number) {
+  setTestServerPort(serverPort);
+  registerHandlers();
+  await loadTargetPageAndFrontend(serverPort);
 }
 
-export async function globalSetup() {
-  try {
-    const port = await startHostedModeServer();
-    console.log(`Started hosted mode server on port ${port}`);
-    registerHandlers();
-    setHostedModeServerPort(port);
-    await loadTargetPageAndDevToolsFrontend(port);
-  } catch (message) {
-    throw new Error(message);
-  }
-}
-
-export async function globalTeardown() {
+// Can be run multiple times in the same process.
+export async function postFileTeardown() {
   // We need to kill the browser before we stop the hosted mode server.
   // That's because the browser could continue to make network requests,
   // even after we would have closed the server. If we did so, the requests
@@ -298,8 +304,7 @@ export async function globalTeardown() {
   // for the very last test that runs.
   await browser.close();
 
-  console.log('Stopping hosted mode server');
-  hostedModeServer.kill();
+  clearPuppeteerState();
 
   console.log('Expected errors: ' + expectedErrors.length);
   console.log('   Fatal errors: ' + fatalErrors.length);

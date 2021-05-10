@@ -101,10 +101,6 @@ StyleResolverState::~StyleResolverState() {
   animation_update_.Clear();
 }
 
-TreeScope& StyleResolverState::GetTreeScope() const {
-  return GetElement().GetTreeScope();
-}
-
 void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
@@ -151,9 +147,11 @@ void StyleResolverState::SetLayoutParentStyle(
 void StyleResolverState::LoadPendingResources() {
   if (pseudo_request_type_ == PseudoElementStyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
-      StyleRef().Display() == EDisplay::kNone ||
-      StyleRef().IsEnsuredOutsideFlatTree())
+      (StyleRef().Display() == EDisplay::kNone &&
+       !GetElement().LayoutObjectIsNeeded(StyleRef())) ||
+      StyleRef().IsEnsuredOutsideFlatTree()) {
     return;
+  }
 
   if (StyleRef().StyleType() == kPseudoIdTargetText) {
     // Do not load any resources for ::target-text since that could leak text
@@ -224,16 +222,6 @@ const CSSValue& StyleResolverState::ResolveLightDarkPair(
     return pair->Second();
   }
   return value;
-}
-
-void StyleResolverState::MarkDependency(const CSSProperty& property) {
-  if (!RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled())
-    return;
-  if (!HasValidDependencies())
-    return;
-
-  has_incomparable_dependency_ |= !property.IsComputedValueComparable();
-  dependencies_.insert(property.GetCSSPropertyName());
 }
 
 }  // namespace blink

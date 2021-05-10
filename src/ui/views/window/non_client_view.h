@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -40,6 +42,8 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   };
 
   NonClientFrameView();
+  NonClientFrameView(const NonClientFrameView&) = delete;
+  NonClientFrameView& operator=(const NonClientFrameView&) = delete;
   ~NonClientFrameView() override;
 
   // Used to determine if the frame should be painted as active. Keyed off the
@@ -110,8 +114,6 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // offset into the caption area; the caller will take care of this.
   virtual int GetSystemMenuY() const;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(NonClientFrameView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,6 +157,8 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   METADATA_HEADER(NonClientView);
 
   explicit NonClientView(ClientView* client_view);
+  NonClientView(const NonClientView&) = delete;
+  NonClientView& operator=(const NonClientView&) = delete;
   ~NonClientView() override;
 
   // Returns the current NonClientFrameView instance, or NULL if
@@ -245,10 +249,18 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
 
   // The accessible name of this view.
   base::string16 accessible_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, NonClientFrameView, View)
+END_VIEW_BUILDER
+
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, NonClientView, View)
+VIEW_BUILDER_VIEW_PROPERTY(NonClientFrameView, FrameView)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, NonClientFrameView)
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, NonClientView)
 
 #endif  // UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_

@@ -63,8 +63,8 @@ class ChildAccountService : public KeyedService,
   // Subscribes to changes to the Google authentication state
   // (see IsGoogleAuthenticated()). Can send a notification even if the
   // authentication state has not changed.
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  ObserveGoogleAuthState(const base::Callback<void()>& callback);
+  base::CallbackListSubscription ObserveGoogleAuthState(
+      const base::RepeatingCallback<void()>& callback);
 
  private:
   friend class ChildAccountServiceFactory;
@@ -79,6 +79,8 @@ class ChildAccountService : public KeyedService,
   void SetIsChildAccount(bool is_child_account);
 
   // signin::IdentityManager::Observer implementation.
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event_details) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 

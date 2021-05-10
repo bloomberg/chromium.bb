@@ -12,7 +12,6 @@
 #include "src/gpu/GrGpuResourcePriv.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrSurfaceProxyView.h"
-#include "src/gpu/SkGr.h"
 #include "src/image/SkImage_GpuBase.h"
 
 class GrDirectContext;
@@ -20,31 +19,44 @@ class GrRecordingContext;
 class GrTexture;
 
 class SkBitmap;
-struct SkYUVAIndex;
 
-class SkImage_Gpu : public SkImage_GpuBase {
+class SkImage_Gpu final : public SkImage_GpuBase {
 public:
     SkImage_Gpu(sk_sp<GrImageContext>, uint32_t uniqueID, GrSurfaceProxyView, SkColorType,
                 SkAlphaType, sk_sp<SkColorSpace>);
+    SkImage_Gpu(sk_sp<GrImageContext> context,
+                uint32_t uniqueID,
+                GrSurfaceProxyView view,
+                SkColorInfo info)
+            : SkImage_Gpu(std::move(context),
+                          uniqueID,
+                          std::move(view),
+                          info.colorType(),
+                          info.alphaType(),
+                          info.refColorSpace()) {}
+
     ~SkImage_Gpu() override;
+
+    // If this is image is a cached SkSurface snapshot then this method is called by the SkSurface
+    // before a write to check if the surface must make a copy to avoid modifying the image's
+    // contents.
+    bool surfaceMustCopyOnWrite(GrSurfaceProxy* surfaceProxy) const;
+
+    bool onHasMipmaps() const override {
+        return fView.asTextureProxy()->mipmapped() == GrMipmapped::kYes;
+    }
 
     GrSemaphoresSubmitted onFlush(GrDirectContext*, const GrFlushInfo&) override;
 
-    GrTextureProxy* peekProxy() const override {
-        return fView.asTextureProxy();
-    }
-
-    const GrSurfaceProxyView* view(GrRecordingContext* context) const override {
-        if (!fView.proxy()) {
-            return nullptr;
-        }
-        return &fView;
-    }
+    GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
+                                         GrSurfaceOrigin* origin) const final;
 
     bool onIsTextureBacked() const override {
         SkASSERT(fView.proxy());
         return true;
     }
+
+    size_t onTextureSize() const override { return fView.proxy()->gpuMemorySize(); }
 
     sk_sp<SkImage> onMakeColorTypeAndColorSpace(SkColorType, sk_sp<SkColorSpace>,
                                                 GrDirectContext*) const final;
@@ -54,7 +66,7 @@ public:
     void onAsyncRescaleAndReadPixels(const SkImageInfo&,
                                      const SkIRect& srcRect,
                                      RescaleGamma,
-                                     SkFilterQuality,
+                                     RescaleMode,
                                      ReadPixelsCallback,
                                      ReadPixelsContext) override;
 
@@ -63,36 +75,15 @@ public:
                                            const SkIRect& srcRect,
                                            const SkISize& dstSize,
                                            RescaleGamma,
-                                           SkFilterQuality,
+                                           RescaleMode,
                                            ReadPixelsCallback,
                                            ReadPixelsContext) override;
 
-    /**
-     * This is the implementation of SkDeferredDisplayListRecorder::makePromiseImage.
-     */
-    static sk_sp<SkImage> MakePromiseTexture(GrRecordingContext*,
-                                             const GrBackendFormat& backendFormat,
-                                             SkISize dimensions,
-                                             GrMipmapped mipMapped,
-                                             GrSurfaceOrigin origin,
-                                             SkColorType colorType,
-                                             SkAlphaType alphaType,
-                                             sk_sp<SkColorSpace> colorSpace,
-                                             PromiseImageTextureFulfillProc textureFulfillProc,
-                                             PromiseImageTextureReleaseProc textureReleaseProc,
-                                             PromiseImageTextureContext textureContext);
-
-    static sk_sp<SkImage> ConvertYUVATexturesToRGB(
-            GrRecordingContext*,
-            SkYUVColorSpace,
-            const GrBackendTexture[],
-            const SkYUVAIndex[SkYUVAIndex::kIndexCount],
-            SkISize,
-            GrSurfaceOrigin,
-            GrRenderTargetContext*,
-            sk_sp<GrRefCntedCallback> releaseHelper = nullptr);
-
 private:
+    std::tuple<GrSurfaceProxyView, GrColorType> onAsView(GrRecordingContext*,
+                                                         GrMipmapped,
+                                                         GrImageTexGenPolicy) const override;
+
     GrSurfaceProxyView fView;
 
     using INHERITED = SkImage_GpuBase;

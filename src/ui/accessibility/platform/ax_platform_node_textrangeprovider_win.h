@@ -117,7 +117,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   AXPlatformNodeDelegate* GetDelegate(
       const AXPositionInstanceType* position) const;
   AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
-                                      const AXNode::AXID node_id) const;
+                                      const AXNodeID node_id) const;
 
   template <typename AnchorIterator, typename ExpandMatchLambda>
   HRESULT FindAttributeRange(const TEXTATTRIBUTEID text_attribute_id,
@@ -169,6 +169,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   // normalizes the endpoints passed by parameter.
   // TODO(vicfei): Make static.
   void NormalizeTextRange(AXPositionInstance& start, AXPositionInstance& end);
+  static void NormalizeAsUnignoredPosition(AXPositionInstance& position);
   static void NormalizeAsUnignoredTextRange(AXPositionInstance& start,
                                             AXPositionInstance& end);
 
@@ -211,6 +212,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
     void AddObserver(const AXTreeID tree_id);
     void RemoveObserver(const AXTreeID tree_id);
     void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override;
+    void OnTreeManagerWillBeRemoved(AXTreeID previous_tree_id) override;
 
    private:
     AXPositionInstance start_;

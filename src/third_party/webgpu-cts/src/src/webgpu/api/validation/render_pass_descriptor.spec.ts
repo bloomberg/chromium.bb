@@ -1,5 +1,8 @@
 export const description = `
 render pass descriptor validation tests.
+
+TODO: per-test descriptions, make test names more succinct
+TODO: review for completeness
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';

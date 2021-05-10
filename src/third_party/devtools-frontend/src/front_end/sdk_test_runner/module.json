@@ -1,12 +1,8 @@
 {
   "dependencies": [
-    "sdk",
     "test_runner"
   ],
   "modules": [
-    "sdk_test_runner.js"
-  ],
-  "skip_compilation": [
     "sdk_test_runner.js"
   ]
 }

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 
 namespace ui {
 class ThroughputTracker;
@@ -25,12 +25,10 @@ class ThroughputTracker;
 
 namespace ash {
 
-class HomeLauncherGestureHandler;
 class HomeScreenDelegate;
 
-// HomeScreenController handles the home launcher (e.g., tablet-mode app list)
-// and owns the HomeLauncherGestureHandler that transitions the launcher window
-// and other windows when the launcher is shown, hidden or animated.
+// HomeScreenController provides functionality to control the home launcher -
+// the tablet mode app list.
 class ASH_EXPORT HomeScreenController : public OverviewObserver,
                                         public SplitViewObserver,
                                         public WallpaperControllerObserver {
@@ -85,10 +83,6 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
 
   HomeScreenDelegate* delegate() { return delegate_; }
 
-  HomeLauncherGestureHandler* home_launcher_gesture_handler() {
-    return home_launcher_gesture_handler_.get();
-  }
-
  private:
   // OverviewObserver:
   void OnOverviewModeStarting() override;
@@ -122,10 +116,6 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Not owned.
   HomeScreenDelegate* delegate_ = nullptr;
 
-  // Owned pointer to the object which handles gestures related to the home
-  // launcher.
-  std::unique_ptr<HomeLauncherGestureHandler> home_launcher_gesture_handler_;
-
   // Presenter that manages home screen animations.
   HomeScreenPresenter home_screen_presenter_{this};
 
@@ -139,8 +129,8 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // animations.
   base::Optional<ui::ThroughputTracker> smoothness_tracker_;
 
-  ScopedObserver<SplitViewController, SplitViewObserver> split_view_observer_{
-      this};
+  base::ScopedObservation<SplitViewController, SplitViewObserver>
+      split_view_observation_{this};
 
   base::WeakPtrFactory<HomeScreenController> weak_ptr_factory_{this};
 

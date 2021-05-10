@@ -40,6 +40,7 @@ Receiver::Receiver(Environment* environment,
       rtp_parser_(config.sender_ssrc),
       rtp_timebase_(config.rtp_timebase),
       crypto_(config.aes_secret_key, config.aes_iv_mask),
+      is_pli_enabled_(config.is_pli_enabled),
       rtcp_buffer_capacity_(environment->GetMaxPacketSize()),
       rtcp_buffer_(new uint8_t[rtcp_buffer_capacity_]),
       rtcp_alarm_(environment->now_function(), environment->task_runner()),
@@ -72,7 +73,10 @@ void Receiver::SetPlayerProcessingTime(Clock::duration needed_time) {
 }
 
 void Receiver::RequestKeyFrame() {
-  if (!last_key_frame_received_.is_null() &&
+  // If we don't have picture loss indication enabled, we should not request
+  // any key frames.
+  OSP_DCHECK(is_pli_enabled_) << "PLI is not enabled.";
+  if (is_pli_enabled_ && !last_key_frame_received_.is_null() &&
       last_frame_consumed_ >= last_key_frame_received_ &&
       !rtcp_builder_.is_picture_loss_indicator_set()) {
     rtcp_builder_.SetPictureLossIndicator(true);

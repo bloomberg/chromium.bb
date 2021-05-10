@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -14,10 +15,12 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/predictors/predictors_switches.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/google/core/common/google_util.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -62,6 +65,7 @@ net::RequestPriority GetRequestPriority(
     case network::mojom::RequestDestination::kSharedWorker:
     case network::mojom::RequestDestination::kTrack:
     case network::mojom::RequestDestination::kVideo:
+    case network::mojom::RequestDestination::kWebBundle:
     case network::mojom::RequestDestination::kWorker:
     case network::mojom::RequestDestination::kXslt:
       return net::LOWEST;
@@ -71,11 +75,11 @@ net::RequestPriority GetRequestPriority(
 bool IsHandledNavigation(content::NavigationHandle* navigation_handle) {
   content::WebContents* web_contents = navigation_handle->GetWebContents();
 
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
+  prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
-  if (prerender_manager &&
-      prerender_manager->IsWebContentsPrerendering(web_contents)) {
+  if (no_state_prefetch_manager &&
+      no_state_prefetch_manager->IsWebContentsPrerendering(web_contents)) {
     return false;
   }
 
@@ -128,6 +132,20 @@ class ScopedOptimizationHintsReceiveStatusRecorder {
   OptimizationHintsReceiveStatus status_;
 };
 
+bool ShouldConsultOptimizationGuide(const GURL& current_main_frame_url,
+                                    content::WebContents* web_contents) {
+  GURL previous_main_frame_url = web_contents->GetLastCommittedURL();
+  if (google_util::IsGoogleSearchUrl(previous_main_frame_url))
+    return true;
+
+  // Check if it is a cross-origin navigation if we are in an experiment to
+  // act on cross-origin navigations.
+  return features::
+             ShouldRetrieveOptimizationGuidePredictionsOnCrossOriginNavigations() &&
+         url::Origin::Create(current_main_frame_url) !=
+             url::Origin::Create(previous_main_frame_url);
+}
+
 }  // namespace
 
 LoadingPredictorTabHelper::LoadingPredictorTabHelper(
@@ -179,6 +197,13 @@ void LoadingPredictorTabHelper::DidStartNavigation(
 
   if (!optimization_guide_decider_)
     return;
+
+  if (!ShouldConsultOptimizationGuide(navigation_handle->GetURL(),
+                                      web_contents()) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLoadingPredictorOptimizationGuideAllowNonGwsForTesting)) {
+    return;
+  }
 
   last_optimization_guide_prediction_ = OptimizationGuidePrediction();
   last_optimization_guide_prediction_->decision =

@@ -30,6 +30,29 @@ version <next>:
 - IPU decoder, parser and demuxer
 - Intel QSV-accelerated AV1 decoding
 - Argonaut Games Video decoder
+- libwavpack encoder removed
+- ACE demuxer
+- AVS3 demuxer
+- AVS3 video decoder via libuavs3d
+- Cintel RAW decoder
+- VDPAU accelerated VP9 10/12bit decoding
+- afreqshift and aphaseshift filters
+- High Voltage Software ADPCM encoder
+- LEGO Racers ALP (.tun & .pcm) muxer
+- AV1 VAAPI decoder
+- adenorm filter
+- ADPCM IMA AMV encoder
+- AMV muxer
+- NVDEC AV1 hwaccel
+- DXVA2/D3D11VA hardware accelerated AV1 decoding
+- speechnorm filter
+- SpeedHQ encoder
+- asupercut filter
+- asubcut filter
+- Microsoft Paint (MSP) version 2 decoder
+- Microsoft Paint (MSP) demuxer
+- AV1 monochrome encoding support via libaom >= 2.0.1
+- asuperpass and asuperstop filter
 
 
 version 4.3:

@@ -4,21 +4,21 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "base/feature_list.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 
@@ -32,40 +32,6 @@ bool IsUnaffiliatedCrostiniAllowedByPolicy() {
     return unaffiliated_crostini_allowed;
   }
   // If device policy is not set, allow Crostini.
-  return true;
-}
-
-bool IsAllowedImpl(Profile* profile) {
-  if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
-      profile->IsOffTheRecord() ||
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    VLOG(1) << "Profile is not allowed to run crostini.";
-    return false;
-  }
-  if (!crostini::CrostiniManager::IsDevKvmPresent()) {
-    // Hardware is physically incapable, no matter what the user wants.
-    VLOG(1) << "Cannot run crostini because /dev/kvm is not present.";
-    return false;
-  }
-
-  bool kernelnext = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kKernelnextRestrictVMs);
-  bool kernelnext_override =
-      base::FeatureList::IsEnabled(features::kKernelnextVMs);
-  if (kernelnext && !kernelnext_override) {
-    // The host kernel is on an experimental version. In future updates this
-    // device may not have VM support, so we allow enabling VMs, but guard them
-    // on a chrome://flags switch (enable-experimental-kernel-vm-support).
-    VLOG(1) << "Cannot run crostini on experimental kernel without "
-            << "--enable-experimental-kernel-vm-support.";
-    return false;
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kCrostini)) {
-    VLOG(1) << "Crostini is not enabled in feature list.";
-    return false;
-  }
   return true;
 }
 
@@ -213,44 +179,105 @@ CrostiniFeatures::CrostiniFeatures() = default;
 
 CrostiniFeatures::~CrostiniFeatures() = default;
 
-bool CrostiniFeatures::IsAllowed(Profile* profile) {
+bool CrostiniFeatures::CouldBeAllowed(Profile* profile, std::string* reason) {
+  if (!base::FeatureList::IsEnabled(features::kCrostini)) {
+    VLOG(1) << "Crostini is not enabled in feature list.";
+    *reason = "Crostini is not supported on this device";
+    return false;
+  }
+
+  if (!crostini::CrostiniManager::IsDevKvmPresent()) {
+    // Hardware is physically incapable, no matter what the user wants.
+    VLOG(1) << "Cannot run crostini because /dev/kvm is not present.";
+    *reason = "Crostini is not supported on this device";
+    return false;
+  }
+
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    VLOG(1) << "Crostini UI is not allowed on non-primary profiles.";
+    *reason = "Crostini is only allowed in primary user sessions";
+    return false;
+  }
+
+  if (!profile || profile->IsChild() || profile->IsOffTheRecord() ||
+      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    VLOG(1) << "Profile is not allowed to run crostini.";
+    *reason = "This user session is not allowed to run crostini";
+    return false;
+  }
+
+  bool kernelnext = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kKernelnextRestrictVMs);
+  bool kernelnext_override =
+      base::FeatureList::IsEnabled(features::kKernelnextVMs);
+  if (kernelnext && !kernelnext_override) {
+    // The host kernel is on an experimental version. In future updates this
+    // device may not have VM support, so we allow enabling VMs, but guard them
+    // on a chrome://flags switch (enable-experimental-kernel-vm-support).
+    VLOG(1) << "Cannot run crostini on experimental kernel without "
+            << "--enable-experimental-kernel-vm-support.";
+    *reason = "Crostini can not run on experimental kernel by default";
+    return false;
+  }
+
+  return true;
+}
+
+bool CrostiniFeatures::CouldBeAllowed(Profile* profile) {
+  std::string reason;
+  return CouldBeAllowed(profile, &reason);
+}
+
+bool CrostiniFeatures::IsAllowedNow(Profile* profile, std::string* reason) {
+  if (!CouldBeAllowed(profile, reason)) {
+    return false;
+  }
+
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!IsUnaffiliatedCrostiniAllowedByPolicy() && !user->IsAffiliated()) {
     VLOG(1) << "Policy blocks unaffiliated user from running Crostini.";
+    *reason = "Crostini for unaffiliated users is disabled by policy";
     return false;
   }
-  if (!profile->GetPrefs()->GetBoolean(
-          crostini::prefs::kUserCrostiniAllowedByPolicy)) {
+
+  const PrefService::Preference* crostini_allowed_by_policy =
+      profile->GetPrefs()->FindPreference(
+          crostini::prefs::kUserCrostiniAllowedByPolicy);
+  if (!crostini_allowed_by_policy->GetValue()->GetBool()) {
     VLOG(1) << "kUserCrostiniAllowedByPolicy preference is false.";
+    *reason = "Crostini is disabled by policy";
     return false;
   }
+  if (!crostini_allowed_by_policy->IsManaged() && user->IsAffiliated()) {
+    VLOG(1) << "Affiliated user is not allowed to run Crostini by default.";
+    *reason = "Affiliated user is not allowed to run Crostini by default.";
+    return false;
+  }
+
   if (!virtual_machines::AreVirtualMachinesAllowedByPolicy()) {
     VLOG(1)
         << "Crostini cannot run as virtual machines are not allowed by policy.";
+    *reason = "Virtual Machines are disabled by policy";
     return false;
   }
-  return IsAllowedImpl(profile);
+
+  return true;
 }
 
-bool CrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    VLOG(1) << "Crostini UI is not allowed on non-primary profiles.";
-    return false;
-  }
-  if (check_policy) {
-    return g_crostini_features->IsAllowed(profile);
-  }
-  return IsAllowedImpl(profile);
+bool CrostiniFeatures::IsAllowedNow(Profile* profile) {
+  std::string reason;
+  return IsAllowedNow(profile, &reason);
 }
 
 bool CrostiniFeatures::IsEnabled(Profile* profile) {
-  return g_crostini_features->IsUIAllowed(profile) &&
+  return g_crostini_features->IsAllowedNow(profile) &&
          profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
 }
 
 bool CrostiniFeatures::IsExportImportUIAllowed(Profile* profile) {
-  return g_crostini_features->IsUIAllowed(profile, true) &&
+  return g_crostini_features->IsAllowedNow(profile) &&
          profile->GetPrefs()->GetBoolean(
              crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy);
 }
@@ -264,7 +291,7 @@ bool CrostiniFeatures::IsRootAccessAllowed(Profile* profile) {
 }
 
 bool CrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
-  return g_crostini_features->IsUIAllowed(profile, true) &&
+  return g_crostini_features->IsAllowedNow(profile) &&
          base::FeatureList::IsEnabled(
              chromeos::features::kCrostiniWebUIUpgrader);
 }

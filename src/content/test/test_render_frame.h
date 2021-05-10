@@ -18,14 +18,6 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
-namespace base {
-class UnguessableToken;
-}
-
-namespace blink {
-class WebHistoryItem;
-}
-
 namespace content {
 
 class MockFrameHost;
@@ -36,10 +28,6 @@ class TestRenderFrame : public RenderFrameImpl {
   static RenderFrameImpl* CreateTestRenderFrame(
       RenderFrameImpl::CreateParams params);
   ~TestRenderFrame() override;
-
-  const blink::WebHistoryItem& current_history_item() {
-    return current_history_item_;
-  }
 
   // Overrides the content in the next navigation originating from the frame.
   // This will also short-circuit browser-side navigation,
@@ -56,22 +44,9 @@ class TestRenderFrame : public RenderFrameImpl {
                          int error_code,
                          const net::ResolveErrorInfo& resolve_error_info,
                          const base::Optional<std::string>& error_page_content);
-  void Unload(int proxy_routing_id,
-              bool is_loading,
-              const FrameReplicationState& replicated_frame_state,
-              const base::UnguessableToken& frame_token);
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
 
-  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-  TakeLastCommitParams();
-
-  // Sets a callback to be run the next time DidAddMessageToConsole
-  // is called (e.g. window.console.log() is called).
-  void SetDidAddMessageToConsoleCallback(
-      base::OnceCallback<void(const base::string16& msg)> callback);
-
-  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-  TakeLastInterfaceProviderReceiver();
+  mojom::DidCommitProvisionalLoadParamsPtr TakeLastCommitParams();
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();
@@ -81,6 +56,17 @@ class TestRenderFrame : public RenderFrameImpl {
   bool IsPageStateUpdated() const;
 
   bool IsURLOpened() const;
+
+  // Returns a pending Frame receiver that represents a renderer-side connection
+  // from a non-existent browser, so no messages would ever be received on it.
+  static mojo::PendingAssociatedReceiver<mojom::Frame>
+  CreateStubFrameReceiver();
+
+  // Returns a pending BrowserInterfaceBroker remote that represents a
+  // connection to a non-existent browser, where all messages will go into the
+  // void.
+  static mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+  CreateStubBrowserInterfaceBrokerRemote();
 
  protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);

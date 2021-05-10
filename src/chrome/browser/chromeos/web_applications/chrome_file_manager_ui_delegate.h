@@ -7,25 +7,24 @@
 
 #include "chromeos/components/file_manager/file_manager_ui_delegate.h"
 
-#include <memory>
+namespace content {
+class WebUI;
+}  // namespace content
 
-#include "base/values.h"
-
-/**
- * Implementation of the FileManagerUIDelegate interface. Provides the file
- * manager code in //chromeos with functions that only exist in //chrome.
- */
+// Chrome browser FileManagerUIDelegate implementation.
 class ChromeFileManagerUIDelegate : public FileManagerUIDelegate {
  public:
-  ChromeFileManagerUIDelegate();
+  explicit ChromeFileManagerUIDelegate(content::WebUI* web_ui);
 
   ChromeFileManagerUIDelegate(const ChromeFileManagerUIDelegate&) = delete;
   ChromeFileManagerUIDelegate& operator=(const ChromeFileManagerUIDelegate&) =
       delete;
 
-  // Returns a map from message labels to actual messages used by Files app.
-  std::unique_ptr<base::DictionaryValue> GetFileManagerAppStrings()
-      const override;
+  // FileManagerUIDelegate:
+  void PopulateLoadTimeData(content::WebUIDataSource*) const override;
+
+ private:
+  content::WebUI* web_ui_;  // Owns |this|.
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_CHROME_FILE_MANAGER_UI_DELEGATE_H_

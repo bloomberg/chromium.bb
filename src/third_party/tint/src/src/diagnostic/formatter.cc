@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <vector>
 
 #include "src/diagnostic/diagnostic.h"
 #include "src/diagnostic/printer.h"
@@ -24,38 +25,31 @@ namespace tint {
 namespace diag {
 namespace {
 
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& stream,
-    Severity severity) {
+const char* to_str(Severity severity) {
   switch (severity) {
     case Severity::Info:
-      stream << "info";
-      break;
+      return "info";
     case Severity::Warning:
-      stream << "warning";
-      break;
+      return "warning";
     case Severity::Error:
-      stream << "error";
-      break;
+      return "error";
+    case Severity::InternalCompilerError:
+      return "internal compiler error";
     case Severity::Fatal:
-      stream << "fatal";
-      break;
+      return "fatal";
   }
-  return stream;
+  return "";
 }
 
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& stream,
-    const Source::Location& location) {
+std::string to_str(const Source::Location& location) {
+  std::stringstream ss;
   if (location.line > 0) {
-    stream << location.line;
+    ss << location.line;
     if (location.column > 0) {
-      stream << ":" << location.column;
+      ss << ":" << location.column;
     }
   }
-  return stream;
+  return ss.str();
 }
 
 }  // namespace
@@ -99,9 +93,9 @@ struct Formatter::State {
   /// newline queues a newline to be written to the printer.
   void newline() { stream << std::endl; }
 
-  /// repeat queues the character c to be writen to the printer n times.
-  /// @param c the character to print |n| times
-  /// @param n the number of times to print character |c|
+  /// repeat queues the character c to be written to the printer n times.
+  /// @param c the character to print `n` times
+  /// @param n the number of times to print character `c`
   void repeat(char c, size_t n) {
     while (n-- > 0) {
       stream << c;
@@ -120,6 +114,7 @@ Formatter::Formatter(const Style& style) : style_(style) {}
 void Formatter::format(const List& list, Printer* printer) const {
   State state{printer};
 
+  bool please_report_bug = false;
   bool first = true;
   for (auto diag : list) {
     state.set_style({});
@@ -128,59 +123,100 @@ void Formatter::format(const List& list, Printer* printer) const {
     }
     format(diag, state);
     first = false;
+
+    if (static_cast<int>(diag.severity) > static_cast<int>(Severity::Error)) {
+      please_report_bug = true;
+    }
+  }
+  if (please_report_bug) {
+    state.set_style({Color::kRed, true});
+    state << R"(
+********************************************************************
+*  The tint shader compiler has encountered an unexpected error.   *
+*                                                                  *
+*  Please help us fix this issue by submitting a bug report at     *
+*  crbug.com/tint with the source program that triggered the bug.  *
+********************************************************************
+)";
+  }
+
+  if (style_.print_newline_at_end) {
+    state.newline();
   }
 }
 
 void Formatter::format(const Diagnostic& diag, State& state) const {
   auto const& src = diag.source;
   auto const& rng = src.range;
+  bool has_code = diag.code != nullptr && diag.code[0] != '\0';
 
   state.set_style({Color::kDefault, true});
 
-  bool emit_colon = true;
-  if (style_.print_file && src.file != nullptr && !src.file->path.empty()) {
-    state << src.file->path;
+  struct TextAndColor {
+    std::string text;
+    Color color;
+    bool bold = false;
+  };
+  std::vector<TextAndColor> prefix;
+  prefix.reserve(6);
+
+  if (style_.print_file && !src.file_path.empty()) {
     if (rng.begin.line > 0) {
-      state << ":" << rng.begin;
+      prefix.emplace_back(TextAndColor{src.file_path + ":" + to_str(rng.begin),
+                                       Color::kDefault});
+    } else {
+      prefix.emplace_back(TextAndColor{src.file_path, Color::kDefault});
     }
   } else if (rng.begin.line > 0) {
-    state << rng.begin;
-  } else {
-    // No position infomation was printed, so don't start the line with a colon.
-    emit_colon = false;
+    prefix.emplace_back(TextAndColor{to_str(rng.begin), Color::kDefault});
+  }
+
+  Color severity_color = Color::kDefault;
+  switch (diag.severity) {
+    case Severity::Info:
+      break;
+    case Severity::Warning:
+      severity_color = Color::kYellow;
+      break;
+    case Severity::Error:
+      severity_color = Color::kRed;
+      break;
+    case Severity::Fatal:
+    case Severity::InternalCompilerError:
+      severity_color = Color::kMagenta;
+      break;
   }
   if (style_.print_severity) {
-    switch (diag.severity) {
-      case Severity::Warning:
-        state.set_style({Color::kYellow, true});
-        break;
-      case Severity::Error:
-      case Severity::Fatal:
-        state.set_style({Color::kRed, true});
-        break;
-      default:
-        break;
+    prefix.emplace_back(
+        TextAndColor{to_str(diag.severity), severity_color, true});
+  }
+  if (has_code) {
+    prefix.emplace_back(TextAndColor{diag.code, severity_color});
+  }
+
+  for (size_t i = 0; i < prefix.size(); i++) {
+    if (i > 0) {
+      state << " ";
     }
-    state << " " << diag.severity << ": ";
-    // A colon was just printed, don't repeat it.
-    emit_colon = false;
+    state.set_style({prefix[i].color, prefix[i].bold});
+    state << prefix[i].text;
   }
 
   state.set_style({Color::kDefault, true});
-  if (emit_colon) {
+  if (!prefix.empty()) {
     state << ": ";
   }
   state << diag.message;
 
-  if (style_.print_line && src.file != nullptr && rng.begin.line > 0) {
+  if (style_.print_line && src.file_content != nullptr && rng.begin.line > 0) {
     state.newline();
     state.set_style({Color::kDefault, false});
 
     for (size_t line = rng.begin.line; line <= rng.end.line; line++) {
-      if (line < src.file->lines.size() + 1) {
-        auto len = src.file->lines[line - 1].size();
+      if (line < src.file_content->lines.size() + 1) {
+        auto len = src.file_content->lines[line - 1].size();
 
-        state << src.file->lines[line - 1];
+        state << src.file_content->lines[line - 1];
 
         state.newline();
         state.set_style({Color::kCyan, false});

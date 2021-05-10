@@ -39,6 +39,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 
 namespace media_router {
@@ -223,6 +224,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       controller_(controller),
       profile_(profile),
       metrics_(start_time, activation_location, profile) {
+  DCHECK(profile);
   SetShowCloseButton(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
@@ -319,11 +321,22 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
-    sink_buttons_.push_back(
+    auto* sink_button =
         sink_list_view->AddChildView(std::make_unique<CastDialogSinkButton>(
             base::BindRepeating(&CastDialogView::SinkPressed,
                                 base::Unretained(this), i),
-            sinks.at(i))));
+            sinks.at(i)));
+    sink_buttons_.push_back(sink_button);
+
+    // This could potentially add a lot of warnings to the receiver list, but in
+    // practice a user is unlikely to have more than one or two meetings in the
+    // list at any given time, and repeating the warning is probably better than
+    // having the user ignore possibly the warning if it's only shown for a
+    // meeting they're not trying to cast to.
+    auto warning_view =
+        sink_button->MakeCastToMeetingDeprecationWarningView(profile_);
+    if (warning_view)
+      sink_list_view->AddChildView(std::move(warning_view));
   }
   scroll_view_->SetContents(std::move(sink_list_view));
 
@@ -450,7 +463,7 @@ void CastDialogView::OnFilePickerClosed(const ui::SelectedFileInfo* file_info) {
   set_close_on_deactivate(!keep_shown_for_testing_);
   if (file_info) {
 #if defined(OS_WIN)
-    local_file_name_ = file_info->display_name;
+    local_file_name_ = base::WideToUTF16(file_info->display_name);
 #else
     local_file_name_ = base::UTF8ToUTF16(file_info->display_name);
 #endif  // defined(OS_WIN)
@@ -460,5 +473,8 @@ void CastDialogView::OnFilePickerClosed(const ui::SelectedFileInfo* file_info) {
 
 // static
 CastDialogView* CastDialogView::instance_ = nullptr;
+
+BEGIN_METADATA(CastDialogView, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace media_router

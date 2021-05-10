@@ -57,6 +57,8 @@ borderBottomStyle
 borderBottomWidth
 borderCollapse
 borderColor
+borderEndEndRadius
+borderEndStartRadius
 borderImage
 borderImageOutset
 borderImageRepeat
@@ -85,6 +87,8 @@ borderRightColor
 borderRightStyle
 borderRightWidth
 borderSpacing
+borderStartEndRadius
+borderStartStartRadius
 borderStyle
 borderTop
 borderTopColor
@@ -169,6 +173,7 @@ fontVariantLigatures
 fontVariantNumeric
 fontVariationSettings
 fontWeight
+forcedColorAdjust
 gap
 getPropertyPriority
 getPropertyValue
@@ -265,6 +270,7 @@ outlineStyle
 outlineWidth
 overflow
 overflowAnchor
+overflowClipMargin
 overflowWrap
 overflowX
 overflowY

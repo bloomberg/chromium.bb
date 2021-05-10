@@ -15,9 +15,6 @@
 #ifndef SRC_AST_VARIABLE_DECORATION_H_
 #define SRC_AST_VARIABLE_DECORATION_H_
 
-#include <memory>
-#include <ostream>
-#include <string>
 #include <vector>
 
 #include "src/ast/decoration.h"
@@ -25,45 +22,16 @@
 namespace tint {
 namespace ast {
 
-class BindingDecoration;
-class BuiltinDecoration;
-class ConstantIdDecoration;
-class LocationDecoration;
-class SetDecoration;
-
 /// A decoration attached to a variable
-class VariableDecoration : public Decoration {
+class VariableDecoration : public Castable<VariableDecoration, Decoration> {
  public:
   /// The kind of decoration that this type represents
-  static constexpr DecorationKind Kind = DecorationKind::kVariable;
+  static constexpr const DecorationKind Kind = DecorationKind::kVariable;
 
   ~VariableDecoration() override;
 
-  /// @returns true if this is a binding decoration
-  virtual bool IsBinding() const;
-  /// @returns true if this is a builtin decoration
-  virtual bool IsBuiltin() const;
-  /// @returns true if this is a constant id decoration
-  virtual bool IsConstantId() const;
-  /// @returns true if this is a location decoration
-  virtual bool IsLocation() const;
-  /// @returns true if this is a set decoration
-  virtual bool IsSet() const;
-
-  /// @returns the decoration as a binding decoration
-  BindingDecoration* AsBinding();
-  /// @returns the decoration as a builtin decoration
-  BuiltinDecoration* AsBuiltin();
-  /// @returns the decoration as a constant id decoration
-  ConstantIdDecoration* AsConstantId();
-  /// @returns the decoration as a location decoration
-  LocationDecoration* AsLocation();
-  /// @returns the decoration as a set decoration
-  SetDecoration* AsSet();
-
-  /// Outputs the variable decoration to the given stream
-  /// @param out the stream to output too
-  virtual void to_str(std::ostream& out) const = 0;
+  /// @return the decoration kind
+  DecorationKind GetKind() const override;
 
  protected:
   /// Constructor
@@ -71,8 +39,8 @@ class VariableDecoration : public Decoration {
   explicit VariableDecoration(const Source& source);
 };
 
-/// A list of unique variable decorations
-using VariableDecorationList = std::vector<std::unique_ptr<VariableDecoration>>;
+/// A list of variable decorations
+using VariableDecorationList = std::vector<VariableDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

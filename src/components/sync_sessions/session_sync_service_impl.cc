@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -44,7 +44,7 @@ OpenTabsUIDelegate* SessionSyncServiceImpl::GetOpenTabsUIDelegate() {
   return bridge_->GetOpenTabsUIDelegate();
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
+base::CallbackListSubscription
 SessionSyncServiceImpl::SubscribeToForeignSessionsChanged(
     const base::RepeatingClosure& cb) {
   return foreign_sessions_changed_callback_list_.Add(cb);
@@ -62,10 +62,6 @@ void SessionSyncServiceImpl::ProxyTabsStateChanged(
   if (proxy_tabs_running_ != was_proxy_tabs_running) {
     NotifyForeignSessionUpdated();
   }
-}
-
-void SessionSyncServiceImpl::SetSyncSessionsGUID(const std::string& guid) {
-  sessions_client_->GetSessionSyncPrefs()->SetSyncSessionsGUID(guid);
 }
 
 OpenTabsUIDelegate*

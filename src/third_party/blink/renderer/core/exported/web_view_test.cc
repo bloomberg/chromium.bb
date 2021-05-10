@@ -56,6 +56,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
@@ -67,22 +68,22 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_non_composited_widget_client.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
@@ -102,8 +103,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -152,6 +153,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
@@ -162,9 +164,9 @@
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 using blink::frame_test_helpers::LoadFrame;
-using blink::url_test_helpers::ToKURL;
-using blink::url_test_helpers::RegisterMockedURLLoad;
 using blink::test::RunPendingTasks;
+using blink::url_test_helpers::RegisterMockedURLLoad;
+using blink::url_test_helpers::ToKURL;
 
 namespace blink {
 
@@ -216,7 +218,9 @@ class AutoResizeWebViewClient : public frame_test_helpers::TestWebViewClient {
 
 class WebViewTest : public testing::Test {
  public:
-  WebViewTest() : base_url_("http://www.test.com/") {}
+  explicit WebViewTest(frame_test_helpers::CreateTestWebFrameWidgetCallback
+                           create_web_frame_callback = base::NullCallback())
+      : web_view_helper_(std::move(create_web_frame_callback)) {}
 
   void SetUp() override {
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
@@ -283,33 +287,7 @@ class WebViewTest : public testing::Test {
     return detector;
   }
 
-  // Helper function that creates a widget for a main frame.
-  // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
-  // the appropriate pointers!
-  WebFrameWidget* CreateWidgetForMainFrame(WebWidgetClient* client,
-                                           WebLocalFrame* frame) {
-    mojo::AssociatedRemote<mojom::blink::FrameWidget> frame_widget;
-    mojo::PendingAssociatedReceiver<mojom::blink::FrameWidget>
-        frame_widget_receiver =
-            frame_widget.BindNewEndpointAndPassDedicatedReceiver();
-
-    mojo::AssociatedRemote<mojom::blink::FrameWidgetHost> frame_widget_host;
-    ignore_result(frame_widget_host.BindNewEndpointAndPassDedicatedReceiver());
-
-    mojo::AssociatedRemote<mojom::blink::Widget> widget_remote;
-    mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
-        widget_remote.BindNewEndpointAndPassDedicatedReceiver();
-
-    mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_remote;
-    ignore_result(widget_host_remote.BindNewEndpointAndPassDedicatedReceiver());
-
-    return blink::WebFrameWidget::CreateForMainFrame(
-        client, frame, frame_widget_host.Unbind(),
-        std::move(frame_widget_receiver), widget_host_remote.Unbind(),
-        std::move(widget_receiver), viz::FrameSinkId());
-  }
-
-  std::string base_url_;
+  std::string base_url_{"http://www.test.com/"};
   frame_test_helpers::WebViewHelper web_view_helper_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
@@ -503,18 +481,13 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // Note: this test doesn't use WebViewHelper since it intentionally runs
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;
-  frame_test_helpers::TestWebWidgetClient web_widget_client;
-  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
-      agent_group_scheduler =
-          blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-              ->CreateAgentGroupScheduler();
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(&web_view_client,
                       /*is_hidden=*/false,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/true,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
-                      *agent_group_scheduler));
+                      web_view_helper_.GetAgentGroupScheduler()));
 
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // WebView does not have a frame yet, but we should still be able to set the
@@ -523,28 +496,16 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
-  WebLocalFrame* frame =
-      WebLocalFrame::CreateMainFrame(web_view, &web_frame_client, nullptr,
-                                     base::UnguessableToken::Create(), nullptr);
+  WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
+      web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
   web_frame_client.Bind(frame);
 
-  {
-    // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
-    // the appropriate pointers!
-    WebFrameWidget* widget =
-        CreateWidgetForMainFrame(&web_widget_client, frame);
-    cc::LayerTreeSettings layer_tree_settings =
-        frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
-    web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
-        web_widget_client.main_thread_scheduler(),
-        web_widget_client.task_graph_runner(), true, ScreenInfo(),
-        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
-    widget->SetCompositorVisible(true);
-    web_view->DidAttachLocalMainFrame();
-  }
+  frame_test_helpers::TestWebFrameWidget* widget =
+      web_view_helper_.CreateFrameWidgetAndInitializeCompositing(frame);
+  web_view->DidAttachLocalMainFrame();
 
   // The color should be passed to the compositor.
-  cc::LayerTreeHost* host = web_widget_client.layer_tree_host();
+  cc::LayerTreeHost* host = widget->LayerTreeHostForTesting();
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
   EXPECT_EQ(SK_ColorBLUE, host->background_color());
 
@@ -733,7 +694,9 @@ TEST_F(WebViewTest, PlatformColorsChangedOnDeviceEmulation) {
   ASSERT_TRUE(span1);
 
   // Check non-MobileLayoutTheme color.
-  Color original = LayoutTheme::GetTheme().FocusRingColor();
+  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+  Color original = LayoutTheme::GetTheme().FocusRingColor(
+      ComputedStyle::InitialStyle().UsedColorScheme());
   EXPECT_EQ(original, OutlineColor(span1));
 
   // Set the focus ring color for the mobile theme to something known.
@@ -1897,6 +1860,9 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 }
 
 TEST_F(WebViewTest, IsSelectionAnchorFirst) {
+  // TODO(xidachen): crbug.com/1150389, Make this test work with the feature.
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled())
+    return;
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
@@ -2526,13 +2492,19 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // Go back, then forward, then back again.
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+      ClientRedirectPolicy::kNotClientRedirect,
+      false /* has_transient_user_activation */, nullptr, false /* has_event */,
+      nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+      ClientRedirectPolicy::kNotClientRedirect,
+      false /* has_transient_user_activation */, nullptr, false /* has_event */,
+      nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+      ClientRedirectPolicy::kNotClientRedirect,
+      false /* has_transient_user_activation */, nullptr, false /* has_event */,
+      nullptr);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
@@ -2550,11 +2522,15 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // forward navigation.
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+      ClientRedirectPolicy::kNotClientRedirect,
+      false /* has_transient_user_activation */, nullptr, false /* has_event */,
+      nullptr);
 
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
+      ClientRedirectPolicy::kNotClientRedirect,
+      false /* has_transient_user_activation */, nullptr, false /* has_event */,
+      nullptr);
   // The scroll offset is only applied via invoking the anchor via the main
   // lifecycle, or a forced layout.
   // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
@@ -2747,21 +2723,20 @@ ExternalDateTimeChooser* WebViewTest::GetExternalDateTimeChooser(
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
-  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
-      agent_group_scheduler =
-          blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-              ->CreateAgentGroupScheduler();
   WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
       /*client=*/nullptr, /*is_hidden=*/false, /*is_inside_portal=*/false,
       /*compositing_enabled=*/false, /*opener=*/nullptr,
-      mojo::NullAssociatedReceiver(), *agent_group_scheduler));
+      mojo::NullAssociatedReceiver(),
+      web_view_helper_.GetAgentGroupScheduler()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
-  frame_test_helpers::TestWebWidgetClient web_widget_client;
-  WebLocalFrame* local_frame =
-      WebLocalFrame::CreateMainFrame(web_view, &web_frame_client, nullptr,
-                                     base::UnguessableToken::Create(), nullptr);
+  WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
+      web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
   web_frame_client.Bind(local_frame);
-  CreateWidgetForMainFrame(&web_widget_client, local_frame);
+  WebNonCompositedWidgetClient widget_client;
+  frame_test_helpers::TestWebFrameWidget* widget =
+      web_view_helper_.CreateFrameWidget(local_frame);
+  widget->InitializeNonCompositing(&widget_client);
+  web_view->DidAttachLocalMainFrame();
 
   WebGestureEvent event(WebInputEvent::Type::kGestureTap,
                         WebInputEvent::kNoModifiers,
@@ -3007,7 +2982,7 @@ TEST_F(WebViewTest, TouchDragContextMenuWithoutDrag) {
   // Simulate the end of a non-moving drag.
   const gfx::PointF dragend_point(250, 8);
   web_view->MainFrameViewWidget()->DragSourceEndedAt(
-      dragend_point, dragend_point, kDragOperationNone);
+      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone);
   EXPECT_TRUE(
       web_view->GetPage()->GetContextMenuController().ContextMenuNodeForFrame(
           web_view->MainFrameImpl()->GetFrame()));
@@ -3046,7 +3021,7 @@ TEST_F(WebViewTest, TouchDragContextMenuWithDrag) {
   // Simulate the end of a drag.
   const gfx::PointF dragend_point(270, 28);
   web_view->MainFrameViewWidget()->DragSourceEndedAt(
-      dragend_point, dragend_point, kDragOperationNone);
+      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone);
   EXPECT_FALSE(
       web_view->GetPage()->GetContextMenuController().ContextMenuNodeForFrame(
           web_view->MainFrameImpl()->GetFrame()));
@@ -3154,7 +3129,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
 
   WebString target = WebString::FromUTF8("target");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  static_cast<WebView*>(web_view)->SetFocus(true);
+  web_view->SetPageFocus(true);
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
   EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureTap, target));
@@ -3431,11 +3406,14 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
       WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
 }
 
-class MiddleClickAutoscrollWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
+class MiddleClickAutoscrollWebFrameWidget
+    : public frame_test_helpers::TestWebFrameWidget {
  public:
-  // WebWidgetClient methods
+  template <typename... Args>
+  explicit MiddleClickAutoscrollWebFrameWidget(Args&&... args)
+      : frame_test_helpers::TestWebFrameWidget(std::forward<Args>(args)...) {}
 
+  // FrameWidget overrides:
   void DidChangeCursor(const ui::Cursor& cursor) override {
     last_cursor_type_ = cursor.type();
   }
@@ -3449,8 +3427,15 @@ class MiddleClickAutoscrollWebWidgetClient
       ui::mojom::blink::CursorType::kPointer;
 };
 
-TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
-  MiddleClickAutoscrollWebWidgetClient client;
+class MiddleClickWebViewTest : public WebViewTest {
+ public:
+  MiddleClickWebViewTest()
+      : WebViewTest(base::BindRepeating(
+            &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
+                MiddleClickAutoscrollWebFrameWidget>)) {}
+};
+
+TEST_F(MiddleClickWebViewTest, MiddleClickAutoscrollCursor) {
   ScopedMiddleClickAutoscrollForTest middle_click_autoscroll(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
@@ -3473,12 +3458,15 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
 
   for (const CursorTests current_test : cursor_tests) {
     WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-        base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
+        base_url_ + "content-width-1000.html", nullptr, nullptr);
     web_view->MainFrameWidget()->Resize(
         gfx::Size(current_test.resize_width, current_test.resize_height));
     UpdateAllLifecyclePhases();
     RunPendingTasks();
 
+    MiddleClickAutoscrollWebFrameWidget* widget =
+        static_cast<MiddleClickAutoscrollWebFrameWidget*>(
+            web_view_helper_.GetMainFrameWidget());
     LocalFrame* local_frame =
         To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
 
@@ -3501,13 +3489,13 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
 
-    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
+    EXPECT_EQ(current_test.expected_cursor, widget->GetLastCursorType());
 
     // Even if a plugin tries to change the cursor type, that should be ignored
     // during middle-click autoscroll.
     web_view->GetChromeClient().SetCursorForPlugin(PointerCursor(),
                                                    local_frame);
-    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
+    EXPECT_EQ(current_test.expected_cursor, widget->GetLastCursorType());
 
     // End middle-click autoscroll.
     mouse_event.SetType(WebInputEvent::Type::kMouseDown);
@@ -3518,7 +3506,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
         WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
 
     web_view->GetChromeClient().SetCursorForPlugin(IBeamCursor(), local_frame);
-    EXPECT_EQ(IBeamCursor().type(), client.GetLastCursorType());
+    EXPECT_EQ(IBeamCursor().type(), widget->GetLastCursorType());
   }
 
   // Explicitly reset to break dependency on locally scoped client.
@@ -3754,20 +3742,18 @@ class ViewCreatingWebViewClient : public frame_test_helpers::TestWebViewClient {
  public:
   ViewCreatingWebViewClient() : did_focus_called_(false) {}
 
-  // WebViewClient methods
+  // WebViewClient overrides.
   WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicyFeatureState&,
                       const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture) override {
+                      bool& consumed_user_gesture,
+                      const base::Optional<WebImpression>&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
-
-  // WebWidgetClient methods
   void DidFocus() override { did_focus_called_ = true; }
 
   bool DidFocusCalled() const { return did_focus_called_; }
@@ -3846,9 +3832,9 @@ class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicyFeatureState&,
                       const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture) override {
+                      bool& consumed_user_gesture,
+                      const base::Optional<WebImpression>&) override {
     return web_view_;
   }
 
@@ -4007,13 +3993,14 @@ class CreateChildCounterFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
   CreateChildCounterFrameClient() : count_(0) {}
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  mojom::blink::TreeScopeType,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  mojom::blink::FrameOwnerElementType) override;
+  WebLocalFrame* CreateChildFrame(
+      mojom::blink::TreeScopeType,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::blink::FrameOwnerElementType,
+      WebPolicyContainerBindParams policy_container_bind_params) override;
 
   int Count() const { return count_; }
 
@@ -4022,17 +4009,17 @@ class CreateChildCounterFrameClient
 };
 
 WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
-    WebLocalFrame* parent,
     mojom::blink::TreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
-    mojom::blink::FrameOwnerElementType frame_owner_element_type) {
+    mojom::blink::FrameOwnerElementType frame_owner_element_type,
+    WebPolicyContainerBindParams policy_container_bind_params) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
-      parent, scope, name, fallback_name, frame_policy, frame_owner_properties,
-      frame_owner_element_type);
+      scope, name, fallback_name, frame_policy, frame_owner_properties,
+      frame_owner_element_type, std::move(policy_container_bind_params));
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {
@@ -4040,12 +4027,12 @@ TEST_F(WebViewTest, ChangeDisplayMode) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "display_mode.html");
 
-  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  String content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("regular-ui", content);
 
   web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
       mojom::blink::DisplayMode::kMinimalUi);
-  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("minimal-ui", content);
   web_view_helper_.Reset();
 }
@@ -4056,13 +4043,13 @@ TEST_F(WebViewTest, ChangeDisplayModeChildFrame) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "iframe-display_mode.html");
 
-  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  String content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   // An iframe inserts whitespace into the content.
   EXPECT_EQ("regular-ui", content.StripWhiteSpace());
 
   web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
       mojom::blink::DisplayMode::kMinimalUi);
-  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   // An iframe inserts whitespace into the content.
   EXPECT_EQ("minimal-ui", content.StripWhiteSpace());
   web_view_helper_.Reset();
@@ -4073,12 +4060,12 @@ TEST_F(WebViewTest, ChangeDisplayModeAlertsListener) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "display_mode_listener.html");
 
-  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  String content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("regular-ui", content);
 
   web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
       mojom::blink::DisplayMode::kMinimalUi);
-  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   EXPECT_EQ("minimal-ui", content);
   web_view_helper_.Reset();
 }
@@ -4089,13 +4076,13 @@ TEST_F(WebViewTest, ChangeDisplayModeChildFrameAlertsListener) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "iframe-display_mode_listener.html");
 
-  String content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  String content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   // An iframe inserts whitespace into the content.
   EXPECT_EQ("regular-ui", content.StripWhiteSpace());
 
   web_view->MainFrameImpl()->LocalRootFrameWidget()->SetDisplayMode(
       mojom::blink::DisplayMode::kMinimalUi);
-  content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21);
+  content = TestWebFrameContentDumper::DumpWebViewAsText(web_view, 21);
   // An iframe inserts whitespace into the content.
   EXPECT_EQ("minimal-ui", content.StripWhiteSpace());
   web_view_helper_.Reset();
@@ -4144,31 +4131,16 @@ TEST_F(WebViewTest, AddFrameInChildInNavigateUnload) {
   web_view_helper_.Reset();
 }
 
-class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
+class TouchEventConsumersWebFrameWidgetHost
+    : public frame_test_helpers::TestWebFrameWidgetHost {
  public:
-  FakeFrameWidgetHost()
-      : has_touch_event_handler_count_(), has_touch_event_handler_(false) {}
-  ~FakeFrameWidgetHost() override = default;
-
-  mojo::PendingAssociatedRemote<mojom::blink::FrameWidgetHost>
-  BindNewFrameWidgetInterfaces() {
-    frame_widget_host_receiver_.reset();
-    return frame_widget_host_receiver_.BindNewEndpointAndPassDedicatedRemote();
-  }
-
   int GetAndResetHasTouchEventHandlerCallCount(bool state) {
     int value = has_touch_event_handler_count_[state];
     has_touch_event_handler_count_[state] = 0;
     return value;
   }
 
- private:
-  // blink::mojom::FrameWidgetHost overrides.
-  void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
-                                       const gfx::Rect& rect_to_zoom) override {
-  }
-  void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override {
-  }
+  // mojom::FrameWidgetHost overrides:
   void SetHasTouchEventConsumers(
       mojom::blink::TouchEventConsumersPtr consumers) override {
     // Only count the times the state changes.
@@ -4177,89 +4149,51 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
       has_touch_event_handler_count_[state]++;
     has_touch_event_handler_ = state;
   }
-  void IntrinsicSizingInfoChanged(
-      mojom::blink::IntrinsicSizingInfoPtr sizing_info) override {}
-  void AutoscrollStart(const gfx::PointF& position) override {}
-  void AutoscrollFling(const gfx::Vector2dF& position) override {}
-  void AutoscrollEnd() override {}
-  void DidFirstVisuallyNonEmptyPaint() override {}
-  void StartDragging(const blink::WebDragData& drag_data,
-                     blink::DragOperationsMask operations_allowed,
-                     const SkBitmap& bitmap,
-                     const gfx::Vector2d& bitmap_offset_in_dip,
-                     mojom::blink::DragEventSourceInfoPtr event_info) override {
-  }
 
  private:
-  mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>
-      frame_widget_host_receiver_{this};
-  int has_touch_event_handler_count_[2];
-  bool has_touch_event_handler_;
+  int has_touch_event_handler_count_[2]{};
+  bool has_touch_event_handler_ = false;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(FakeFrameWidgetHost);
+class TouchEventConsumersWebFrameWidget
+    : public frame_test_helpers::TestWebFrameWidget {
+ public:
+  template <typename... Args>
+  explicit TouchEventConsumersWebFrameWidget(Args&&... args)
+      : frame_test_helpers::TestWebFrameWidget(std::forward<Args>(args)...) {}
+
+  // frame_test_helpers::TestWebFrameWidget overrides.
+  std::unique_ptr<frame_test_helpers::TestWebFrameWidgetHost> CreateWidgetHost()
+      override {
+    return std::make_unique<TouchEventConsumersWebFrameWidgetHost>();
+  }
+
+  TouchEventConsumersWebFrameWidgetHost& TouchEventWidgetHost() {
+    return static_cast<TouchEventConsumersWebFrameWidgetHost&>(WidgetHost());
+  }
+};
+
+class TouchEventConsumersWebViewTest : public WebViewTest {
+ public:
+  TouchEventConsumersWebViewTest()
+      : WebViewTest(base::BindRepeating(
+            &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
+                TouchEventConsumersWebFrameWidget>)) {}
 };
 
 // This test verifies that FrameWidgetHost::SetHasTouchEventConsumers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
-TEST_F(WebViewTest, SetHasTouchEventConsumers) {
-  // Note: this test doesn't use WebViewHelper since it intentionally runs
-  // initialization code between WebView and WebLocalFrame creation.
-  frame_test_helpers::TestWebViewClient web_view_client;
-  frame_test_helpers::TestWebWidgetClient web_widget_client;
-  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
-      agent_group_scheduler =
-          blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-              ->CreateAgentGroupScheduler();
-  WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(WebView::Create(
-      &web_view_client, /*is_hidden=*/false, /*is_inside_portal=*/false,
-      /*compositing_enabled=*/true, /*opener=*/nullptr,
-      mojo::NullAssociatedReceiver(), *agent_group_scheduler));
-
-  frame_test_helpers::TestWebFrameClient web_frame_client;
-  WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view_impl, &web_frame_client, nullptr,
-      base::UnguessableToken::Create(),
-      std::make_unique<WebPolicyContainer>(WebPolicyContainerDocumentPolicies(),
-                                           mojo::NullAssociatedRemote()));
-  web_frame_client.Bind(frame);
-
-  FakeFrameWidgetHost frame_widget_host;
-  auto blink_frame_widget_host =
-      frame_widget_host.BindNewFrameWidgetInterfaces();
-
-  {
-    mojo::AssociatedRemote<mojom::blink::FrameWidget> frame_widget;
-    mojo::PendingAssociatedReceiver<mojom::blink::FrameWidget>
-        frame_widget_receiver =
-            frame_widget.BindNewEndpointAndPassDedicatedReceiver();
-
-    mojo::AssociatedRemote<mojom::blink::Widget> widget_remote;
-    mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
-        widget_remote.BindNewEndpointAndPassDedicatedReceiver();
-
-    mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_remote;
-    ignore_result(widget_host_remote.BindNewEndpointAndPassDedicatedReceiver());
-
-    // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
-    // the appropriate pointers!
-    WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
-        &web_widget_client, frame, std::move(blink_frame_widget_host),
-        std::move(frame_widget_receiver), widget_host_remote.Unbind(),
-        std::move(widget_receiver), viz::FrameSinkId());
-    cc::LayerTreeSettings layer_tree_settings =
-        frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
-    web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
-        web_widget_client.main_thread_scheduler(),
-        web_widget_client.task_graph_runner(), true, ScreenInfo(),
-        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
-    widget->SetCompositorVisible(true);
-    web_view_impl->DidAttachLocalMainFrame();
-  }
-
+TEST_F(TouchEventConsumersWebViewTest, SetHasTouchEventConsumers) {
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
-  LoadFrame(web_view_impl->MainFrameImpl(), url);
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);
+
+  TouchEventConsumersWebFrameWidget* widget =
+      static_cast<TouchEventConsumersWebFrameWidget*>(
+          web_view_helper_.GetMainFrameWidget());
+  TouchEventConsumersWebFrameWidgetHost& frame_widget_host =
+      widget->TouchEventWidgetHost();
 
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
@@ -4426,10 +4360,6 @@ TEST_F(WebViewTest, SetHasTouchEventConsumers) {
             frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0,
             frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
-
-  // Free the webView before the TouchEventHandlerWebViewClient gets freed.
-  web_view_helper_.Reset();
-  web_view_impl->Close();
 }
 
 // This test checks that deleting nodes which have only non-JS-registered touch
@@ -4595,7 +4525,7 @@ TEST_F(WebViewTest, CompositionIsUserGesture) {
 }
 
 // Currently, SelectionAsText() is built upon TextIterator, but
-// WebFrameContentDumper is built upon TextDumperForTests. Their results can
+// TestWebFrameContentDumper is built upon TextDumperForTests. Their results can
 // be different, making the test fail.
 // TODO(crbug.com/781434): Build a selection serializer upon TextDumperForTests.
 TEST_F(WebViewTest, DISABLED_CompareSelectAllToContentAsText) {
@@ -4609,9 +4539,9 @@ TEST_F(WebViewTest, DISABLED_CompareSelectAllToContentAsText) {
   std::string actual = frame->SelectionAsText().Utf8();
 
   const int kMaxOutputCharacters = 1024;
-  std::string expected =
-      WebFrameContentDumper::DumpWebViewAsText(web_view, kMaxOutputCharacters)
-          .Utf8();
+  std::string expected = TestWebFrameContentDumper::DumpWebViewAsText(
+                             web_view, kMaxOutputCharacters)
+                             .Utf8();
   EXPECT_EQ(expected, actual);
 }
 
@@ -5149,7 +5079,7 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);
+    EXPECT_EQ(IntRect(50, 55, 100, 150), visible_rect);
   }
 
   // Setting new override discards previous one.
@@ -5160,7 +5090,7 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(5, 10, 68, 101), visible_rect);  // Was modified.
+    EXPECT_EQ(IntRect(5, 10, 101, 151), visible_rect);  // Was modified.
   }
 
   // Clearing override restores original transform, visible rect and
@@ -5195,10 +5125,7 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   emulation_params.viewport_offset = gfx::PointF(5, 10);
   emulation_params.viewport_scale = 1.5f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
-  expected_matrix.MakeIdentity()
-      .Scale(1.5f)
-      .Translate(-5, -10)
-      .Scale(2.f);
+  expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5, -10).Scale(2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 }
 
@@ -5237,7 +5164,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50 - 100, 55 - 150, 50, 75), visible_rect);
+    EXPECT_EQ(IntRect(50 - 100, 55 - 150, 100, 150), visible_rect);
   }
 
   // Transform adapts to scroll changes.
@@ -5254,7 +5181,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 50, 75), visible_rect);
+    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 100, 150), visible_rect);
   }
 
   // Transform adapts to page scale changes.
@@ -5269,7 +5196,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 50, 75), visible_rect);
+    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 100, 150), visible_rect);
   }
 }
 
@@ -5292,20 +5219,19 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
 
   EXPECT_EQ(800, vw_element->OffsetWidth());
 
-  FloatSize page_size(300, 360);
+  gfx::Size page_size(300, 360);
 
   WebPrintParams print_params;
-  print_params.print_content_area.width = page_size.Width();
-  print_params.print_content_area.height = page_size.Height();
+  print_params.print_content_area.set_size(page_size);
 
-  IntSize expected_size = PrintICBSizeFromPageSize(page_size);
+  IntSize expected_size = PrintICBSizeFromPageSize(FloatSize(page_size));
 
   frame->PrintBegin(print_params, WebNode());
 
   EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
   EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
 
-  web_view->MainFrameWidget()->Resize(gfx::Size(FlooredIntSize(page_size)));
+  web_view->MainFrameWidget()->Resize(page_size);
 
   EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
   EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
@@ -5338,11 +5264,10 @@ TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
 
-  FloatSize page_size(300, 360);
+  gfx::Size page_size(300, 360);
 
   WebPrintParams print_params;
-  print_params.print_content_area.width = page_size.Width();
-  print_params.print_content_area.height = page_size.Height();
+  print_params.print_content_area.set_size(page_size);
 
   frame->PrintBegin(print_params, WebNode());
   frame->PrintEnd();
@@ -5375,12 +5300,11 @@ TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   EXPECT_EQ(400, t1->OffsetWidth());
   EXPECT_EQ(400, t2->OffsetWidth());
 
-  FloatSize page_size(600, 720);
-  int expected_width = PrintICBSizeFromPageSize(page_size).Width();
+  gfx::Size page_size(600, 720);
+  int expected_width = PrintICBSizeFromPageSize(FloatSize(page_size)).Width();
 
   WebPrintParams print_params;
-  print_params.print_content_area.width = page_size.Width();
-  print_params.print_content_area.height = page_size.Height();
+  print_params.print_content_area.set_size(page_size);
 
   frame->PrintBegin(print_params, WebNode());
 

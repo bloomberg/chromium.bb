@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -102,20 +103,18 @@ struct SameSizeAsComputedStyleBase {
   }
 
  private:
-  void* data_refs[8];
-  unsigned bitfields[6];
+  void* data_refs[9];
+  unsigned bitfields[5];
 };
 
 struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
                                  public RefCounted<SameSizeAsComputedStyle> {
   SameSizeAsComputedStyle() {
     base::debug::Alias(&own_ptrs);
-    base::debug::Alias(&data_ref_svg_style);
   }
 
  private:
   void* own_ptrs[1];
-  void* data_ref_svg_style;
 };
 
 // If this assert fails, it means that size of ComputedStyle has changed. Please
@@ -170,13 +169,10 @@ scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
-  svg_style_.Init();
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
-    : ComputedStyleBase(o),
-      RefCounted<ComputedStyle>(),
-      svg_style_(o.svg_style_) {}
+    : ComputedStyleBase(o), RefCounted<ComputedStyle>() {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
 
@@ -448,8 +444,6 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
   EUserModify current_user_modify = UserModify();
 
   ComputedStyleBase::InheritFrom(inherit_parent, is_at_shadow_boundary);
-  if (svg_style_ != inherit_parent.svg_style_)
-    svg_style_.Access()->InheritFrom(*inherit_parent.svg_style_);
 
   if (is_at_shadow_boundary == kAtShadowBoundary) {
     // Even if surrounding content is user-editable, shadow DOM should act as a
@@ -492,9 +486,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   // m_affectedByActive
   // m_affectedByDrag
   // m_isLink
-
-  if (svg_style_ != other.svg_style_)
-    svg_style_.Access()->CopyNonInheritedFromCached(*other.svg_style_);
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const {
@@ -506,7 +497,8 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
   if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
     return nullptr;
 
-  if (StyleType() != kPseudoIdNone)
+  if (StyleType() != kPseudoIdNone &&
+      StyleType() != kPseudoIdFirstLineInherited)
     return nullptr;
 
   for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
@@ -558,20 +550,17 @@ bool ComputedStyle::IndependentInheritedEqual(
 
 bool ComputedStyle::NonIndependentInheritedEqual(
     const ComputedStyle& other) const {
-  return ComputedStyleBase::NonIndependentInheritedEqual(other) &&
-         svg_style_->InheritedEqual(*other.svg_style_);
+  return ComputedStyleBase::NonIndependentInheritedEqual(other);
 }
 
 bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
   // compare everything except the pseudoStyle pointer
-  return ComputedStyleBase::NonInheritedEqual(other) &&
-         svg_style_->NonInheritedEqual(*other.svg_style_);
+  return ComputedStyleBase::NonInheritedEqual(other);
 }
 
 bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   // This is a fast check that only looks if the data structures are shared.
-  return ComputedStyleBase::InheritedDataShared(other) &&
-         svg_style_.Get() == other.svg_style_.Get();
+  return ComputedStyleBase::InheritedDataShared(other);
 }
 
 static bool DependenceOnContentHeightHasChanged(const ComputedStyle& a,
@@ -592,9 +581,6 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   // property inside this function anyway.
 
   StyleDifference diff;
-  if (svg_style_.Get() != other.svg_style_.Get())
-    diff = svg_style_->Diff(*other.svg_style_);
-
   if ((!diff.NeedsReshape() || !diff.NeedsFullLayout() ||
        !diff.NeedsPaintInvalidation()) &&
       DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
@@ -908,6 +894,17 @@ bool ComputedStyle::DiffNeedsVisualRectUpdate(
   return ComputedStyleBase::DiffNeedsVisualRectUpdate(*this, other);
 }
 
+bool ComputedStyle::PotentialCompositingReasonsFor3DTransformChanged(
+    const ComputedStyle& other) const {
+  // Compositing reasons for 3D transforms depend on the LayoutObject type (see:
+  // |LayoutObject::HasTransformRelatedProperty|)) This will return true for
+  // some LayoutObjects that end up not supporting transforms.
+  return CompositingReasonFinder::PotentialCompositingReasonsFor3DTransform(
+             *this) !=
+         CompositingReasonFinder::PotentialCompositingReasonsFor3DTransform(
+             other);
+}
+
 void ComputedStyle::UpdatePropertySpecificDifferences(
     const ComputedStyle& other,
     StyleDifference& diff) const {
@@ -958,7 +955,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       IsOverflowVisibleAlongBothAxes() !=
           other.IsOverflowVisibleAlongBothAxes() ||
       WillChangeProperties() != other.WillChangeProperties() ||
-      !BackdropFilterDataEquivalent(other)) {
+      !BackdropFilterDataEquivalent(other) ||
+      PotentialCompositingReasonsFor3DTransformChanged(other)) {
     diff.SetCompositingReasonsChanged();
   }
 }
@@ -1264,15 +1262,16 @@ void ComputedStyle::ApplyMotionPathTransform(
   const BasicShape* path = OffsetPath();
   const StyleOffsetRotation& rotate = OffsetRotate();
 
-  FloatPoint point;
-  float angle;
+  PointAndTangent path_position;
   if (path->GetType() == BasicShape::kStyleRayType) {
     // TODO(ericwilligers): crbug.com/641245 Support <size> for ray paths.
     float float_distance = FloatValueForLength(distance, 0);
 
-    angle = To<StyleRay>(*path).Angle() - 90;
-    point.SetX(float_distance * cos(deg2rad(angle)));
-    point.SetY(float_distance * sin(deg2rad(angle)));
+    path_position.tangent_in_degrees = To<StyleRay>(*path).Angle() - 90;
+    path_position.point.SetX(float_distance *
+                             cos(deg2rad(path_position.tangent_in_degrees)));
+    path_position.point.SetY(float_distance *
+                             sin(deg2rad(path_position.tangent_in_degrees)));
   } else {
     float zoom = EffectiveZoom();
     const StylePath& motion_path = To<StylePath>(*path);
@@ -1288,14 +1287,13 @@ void ComputedStyle::ApplyMotionPathTransform(
       computed_distance = clampTo<float>(float_distance, 0, path_length);
     }
 
-    motion_path.GetPath().PointAndNormalAtLength(computed_distance, point,
-                                                 angle);
-
-    point.Scale(zoom, zoom);
+    path_position =
+        motion_path.GetPath().PointAndNormalAtLength(computed_distance);
+    path_position.point.Scale(zoom, zoom);
   }
 
   if (rotate.type == OffsetRotationType::kFixed)
-    angle = 0;
+    path_position.tangent_in_degrees = 0;
 
   float origin_shift_x = 0;
   float origin_shift_y = 0;
@@ -1311,9 +1309,10 @@ void ComputedStyle::ApplyMotionPathTransform(
     origin_shift_y = anchor_point.Y() - origin_y;
   }
 
-  transform.Translate(point.X() - anchor_point.X() + origin_shift_x,
-                      point.Y() - anchor_point.Y() + origin_shift_y);
-  transform.Rotate(angle + rotate.angle);
+  transform.Translate(
+      path_position.point.X() - anchor_point.X() + origin_shift_x,
+      path_position.point.Y() - anchor_point.Y() + origin_shift_y);
+  transform.Rotate(path_position.tangent_in_degrees + rotate.angle);
 
   if (!position.X().IsAuto() || !anchor.X().IsAuto())
     // Shift the origin back to transform-origin.
@@ -2072,7 +2071,8 @@ void ComputedStyle::ApplyTextDecorations(
   bool is_simple_underline = decoration_lines == TextDecoration::kUnderline &&
                              decoration_style == ETextDecorationStyle::kSolid &&
                              TextDecorationColor().IsCurrentColor() &&
-                             TextUnderlineOffset().IsAuto();
+                             TextUnderlineOffset().IsAuto() &&
+                             GetTextDecorationThickness().IsAuto();
   if (is_simple_underline && !AppliedTextDecorationsInternal()) {
     SetHasSimpleUnderlineInternal(true);
     return;
@@ -2174,6 +2174,12 @@ Color ComputedStyle::ResolvedColor(const StyleColor& color) const {
   return color.Resolve(current_color, UsedColorScheme());
 }
 
+bool ComputedStyle::ShouldForceColor(const StyleColor& unforced_color) const {
+  return InForcedColorsMode() &&
+         ForcedColorAdjust() != EForcedColorAdjust::kNone &&
+         !unforced_color.IsSystemColor();
+}
+
 void ComputedStyle::SetMarginStart(const Length& margin) {
   if (IsHorizontalWritingMode()) {
     if (IsLeftToRightDirection())
@@ -2224,6 +2230,11 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
   // so narrow that it becomes invisible.
   return std::max(EffectiveZoom(), 1.f);
 #endif
+}
+
+bool ComputedStyle::StrokeDashArrayDataEquivalent(
+    const ComputedStyle& other) const {
+  return StrokeDashArray()->data == other.StrokeDashArray()->data;
 }
 
 bool ComputedStyle::ColumnRuleEquivalent(
@@ -2359,6 +2370,22 @@ Color ComputedStyle::GetInternalVisitedCurrentColor() const {
   return InternalVisitedColor().Resolve(Color(), UsedColorScheme());
 }
 
+Color ComputedStyle::GetInternalForcedCurrentColor() const {
+  DCHECK(!InternalForcedColor().IsCurrentColor());
+  if (GetColor().IsSystemColor())
+    return GetCurrentColor();
+  return InternalForcedColor().Resolve(Color(), UsedColorScheme(),
+                                       /* is_forced_color */ true);
+}
+
+Color ComputedStyle::GetInternalForcedVisitedCurrentColor() const {
+  DCHECK(!InternalForcedVisitedColor().IsCurrentColor());
+  if (InternalVisitedColor().IsSystemColor())
+    return GetInternalVisitedCurrentColor();
+  return InternalForcedVisitedColor().Resolve(Color(), UsedColorScheme(),
+                                              /* is_forced_color */ true);
+}
+
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   if (!shadow_list)
     return false;
@@ -2367,6 +2394,72 @@ bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
                      [](const ShadowData& shadow) {
                        return shadow.GetColor().IsCurrentColor();
                      });
+}
+
+void ComputedStyle::ClearBackgroundImage() {
+  FillLayer* curr_child = &AccessBackgroundLayers();
+  curr_child->SetImage(
+      FillLayer::InitialFillImage(EFillLayerType::kBackground));
+  for (curr_child = curr_child->Next(); curr_child;
+       curr_child = curr_child->Next())
+    curr_child->ClearImage();
+}
+
+ListStyleTypeData* ComputedStyle::GetListStyleType() const {
+  return ListStyleTypeInternal();
+}
+
+EListStyleType ComputedStyle::ListStyleType() const {
+  if (!GetListStyleType())
+    return EListStyleType::kNone;
+  if (GetListStyleType()->IsString())
+    return EListStyleType::kString;
+  return GetListStyleType()->ToDeprecatedListStyleTypeEnum();
+}
+
+const AtomicString& ComputedStyle::ListStyleStringValue() const {
+  if (!GetListStyleType() || !GetListStyleType()->IsString())
+    return g_null_atom;
+  return GetListStyleType()->GetStringValue();
+}
+
+static const int kPaintOrderBitwidth = 2;
+
+static unsigned PaintOrderSequence(EPaintOrderType first,
+                                   EPaintOrderType second,
+                                   EPaintOrderType third) {
+  return (((third << kPaintOrderBitwidth) | second) << kPaintOrderBitwidth) |
+         first;
+}
+
+EPaintOrderType ComputedStyle::PaintOrderType(unsigned index) const {
+  unsigned pt = 0;
+  DCHECK(index < ((1 << kPaintOrderBitwidth) - 1));
+  switch (PaintOrder()) {
+    case kPaintOrderNormal:
+    case kPaintOrderFillStrokeMarkers:
+      pt = PaintOrderSequence(PT_FILL, PT_STROKE, PT_MARKERS);
+      break;
+    case kPaintOrderFillMarkersStroke:
+      pt = PaintOrderSequence(PT_FILL, PT_MARKERS, PT_STROKE);
+      break;
+    case kPaintOrderStrokeFillMarkers:
+      pt = PaintOrderSequence(PT_STROKE, PT_FILL, PT_MARKERS);
+      break;
+    case kPaintOrderStrokeMarkersFill:
+      pt = PaintOrderSequence(PT_STROKE, PT_MARKERS, PT_FILL);
+      break;
+    case kPaintOrderMarkersFillStroke:
+      pt = PaintOrderSequence(PT_MARKERS, PT_FILL, PT_STROKE);
+      break;
+    case kPaintOrderMarkersStrokeFill:
+      pt = PaintOrderSequence(PT_MARKERS, PT_STROKE, PT_FILL);
+      break;
+  }
+
+  pt =
+      (pt >> (kPaintOrderBitwidth * index)) & ((1u << kPaintOrderBitwidth) - 1);
+  return static_cast<EPaintOrderType>(pt);
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

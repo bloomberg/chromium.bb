@@ -18,7 +18,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class FilePath;
@@ -125,6 +125,12 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // CHILD_NORMAL, and this cannot be combined with any other CHILD_* values.
     CHILD_LAUNCH_X86_64,
 #endif  // ARCH_CPU_ARM64
+
+    // Marker for the start of embedder-specific helper child process types.
+    // Values greater than CHILD_EMBEDDER_FIRST are reserved to be used by the
+    // embedder to add custom process types and will be resolved via
+    // ContentClient::GetChildPath().
+    CHILD_EMBEDDER_FIRST,
 #endif
   };
 
@@ -173,10 +179,11 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   //   3. Main thread, ChildThreadImpl::BindReceiver (virtual).
   virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
-  // Instructs the child process to run an instance of the named service.
-  virtual void RunService(
+  // Instructs the child process to run an instance of the named service. This
+  // is DEPRECATED and should never be used.
+  virtual void RunServiceDeprecated(
       const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
+      mojo::ScopedMessagePipeHandle service_pipe) = 0;
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Write out the accumulated code profiling profile to the configured file.

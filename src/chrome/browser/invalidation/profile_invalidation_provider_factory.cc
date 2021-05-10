@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -31,10 +32,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/device_identity/device_identity_provider.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "components/user_manager/user_manager.h"
@@ -50,12 +51,12 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
   auto service = std::make_unique<FCMInvalidationService>(
       identity_provider,
       base::BindRepeating(
-          &syncer::FCMNetworkHandler::Create,
+          &FCMNetworkHandler::Create,
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
               ->driver()),
       base::BindRepeating(
-          &syncer::PerUserTopicSubscriptionManager::Create, identity_provider,
+          &PerUserTopicSubscriptionManager::Create, identity_provider,
           profile->GetPrefs(),
           base::RetainedRef(
               content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -72,7 +73,7 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
 // static
 ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
     Profile* profile) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Using ProfileHelper::GetSigninProfile() here would lead to an infinite loop
   // when this method is called during the creation of the sign-in profile
   // itself. Using ProfileHelper::GetSigninProfileDir() is safe because it does
@@ -118,7 +119,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<IdentityProvider> identity_provider;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (user_manager::UserManager::IsInitialized() &&
@@ -127,7 +128,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     identity_provider = std::make_unique<DeviceIdentityProvider>(
         DeviceOAuth2TokenServiceFactory::Get());
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   Profile* profile = Profile::FromBrowserContext(context);
 

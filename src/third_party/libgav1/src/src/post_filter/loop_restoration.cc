@@ -29,15 +29,15 @@ void PostFilter::ApplyLoopRestorationForOneRow(
                                                unit_row * num_horizontal_units);
   const bool in_place = DoCdef() || thread_pool_ != nullptr;
   const Pixel* border = nullptr;
+  ptrdiff_t border_stride = 0;
   src_buffer += unit_y * stride;
   if (in_place) {
-    assert(loop_restoration_border_.stride(plane) ==
-           static_cast<int>(sizeof(Pixel) * stride));
     const int border_unit_y = std::max(
         RightShiftWithCeiling(unit_y, 4 - subsampling_y_[plane]) - 4, 0);
+    border_stride = loop_restoration_border_.stride(plane) / sizeof(Pixel);
     border =
         reinterpret_cast<const Pixel*>(loop_restoration_border_.data(plane)) +
-        border_unit_y * stride;
+        border_unit_y * border_stride;
   }
   int unit_column = 0;
   int column = 0;
@@ -61,18 +61,22 @@ void PostFilter::ApplyLoopRestorationForOneRow(
       }
     } else {
       const Pixel* top_border = src - kRestorationVerticalBorder * stride;
+      ptrdiff_t top_border_stride = stride;
       const Pixel* bottom_border = src + current_process_unit_height * stride;
+      ptrdiff_t bottom_border_stride = stride;
       const bool frame_bottom_border =
           (unit_y + current_process_unit_height >= plane_height);
       if (in_place && (unit_y != 0 || !frame_bottom_border)) {
         const Pixel* loop_restoration_border = border + column;
         if (unit_y != 0) {
           top_border = loop_restoration_border;
-          loop_restoration_border += 4 * stride;
+          top_border_stride = border_stride;
+          loop_restoration_border += 4 * border_stride;
         }
         if (!frame_bottom_border) {
-          bottom_border =
-              loop_restoration_border + kRestorationVerticalBorder * stride;
+          bottom_border = loop_restoration_border +
+                          kRestorationVerticalBorder * border_stride;
+          bottom_border_stride = border_stride;
         }
       }
       RestorationBuffer restoration_buffer;
@@ -81,10 +85,10 @@ void PostFilter::ApplyLoopRestorationForOneRow(
              type == kLoopRestorationTypeWiener);
       const dsp::LoopRestorationFunc restoration_func =
           dsp_.loop_restorations[type - 2];
-      restoration_func(restoration_info[unit_column], src, top_border,
-                       bottom_border, stride, current_process_unit_width,
-                       current_process_unit_height, &restoration_buffer,
-                       dst_buffer + column);
+      restoration_func(restoration_info[unit_column], src, stride, top_border,
+                       top_border_stride, bottom_border, bottom_border_stride,
+                       current_process_unit_width, current_process_unit_height,
+                       &restoration_buffer, dst_buffer + column);
     }
     ++unit_column;
     column += plane_unit_size;

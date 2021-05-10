@@ -7,13 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("developer_resources") {
   sources = [
-    "DeveloperResourcesListView.js",
-    "DeveloperResourcesView.js",
+    "DeveloperResourcesListView.ts",
+    "DeveloperResourcesView.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../data_grid:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../sdk:bundle",
     "../text_utils:bundle",
@@ -28,7 +29,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "developer_resources-legacy.js"
+  entrypoint = "developer_resources-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "developer_resources-meta.ts"
 
   deps = [ ":bundle" ]
 }

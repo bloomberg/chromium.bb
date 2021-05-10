@@ -14,21 +14,32 @@
 
 #include "src/ast/struct_member_offset_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StructMemberOffsetDecoration);
+
 namespace tint {
 namespace ast {
 
-StructMemberOffsetDecoration::StructMemberOffsetDecoration(uint32_t offset,
-                                                           const Source& source)
-    : StructMemberDecoration(source), offset_(offset) {}
-
-bool StructMemberOffsetDecoration::IsOffset() const {
-  return true;
-}
+StructMemberOffsetDecoration::StructMemberOffsetDecoration(const Source& source,
+                                                           uint32_t offset)
+    : Base(source), offset_(offset) {}
 
 StructMemberOffsetDecoration::~StructMemberOffsetDecoration() = default;
 
-std::string StructMemberOffsetDecoration::to_str() const {
-  return "offset " + std::to_string(offset_);
+void StructMemberOffsetDecoration::to_str(const semantic::Info&,
+                                          std::ostream& out,
+                                          size_t indent) const {
+  make_indent(out, indent);
+  out << "offset " << std::to_string(offset_);
+}
+
+StructMemberOffsetDecoration* StructMemberOffsetDecoration::Clone(
+    CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<StructMemberOffsetDecoration>(src, offset_);
 }
 
 }  // namespace ast

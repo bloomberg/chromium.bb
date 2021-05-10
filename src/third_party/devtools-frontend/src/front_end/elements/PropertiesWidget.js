@@ -33,13 +33,13 @@ import * as ObjectUI from '../object_ui/object_ui.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+/** @type {!PropertiesWidget} */
+let propertiesWidgetInstance;
+
 export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true /* isWebComponent */);
-    this.registerRequiredCSS('elements/propertiesWidget.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('elements/propertiesWidget.css', {enableLegacyPatching: false});
 
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this._onNodeChange, this);
@@ -63,6 +63,18 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     });
 
     this.update();
+  }
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!PropertiesWidget}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!propertiesWidgetInstance || forceNew) {
+      propertiesWidgetInstance = new PropertiesWidget();
+    }
+
+    return propertiesWidgetInstance;
   }
 
   /**
@@ -137,7 +149,6 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     /**
-     * @suppressReceiverCheck
      * @this {*}
      */
     function protoList() {

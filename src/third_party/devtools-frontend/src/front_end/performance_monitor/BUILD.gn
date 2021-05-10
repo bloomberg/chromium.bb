@@ -6,11 +6,12 @@ import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("performance_monitor") {
-  sources = [ "PerformanceMonitor.js" ]
+  sources = [ "PerformanceMonitor.ts" ]
 
   deps = [
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../sdk:bundle",
     "../theme_support:bundle",
@@ -25,7 +26,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "performance_monitor-legacy.js"
+  entrypoint = "performance_monitor-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "performance_monitor-meta.ts"
 
   deps = [ ":bundle" ]
 }

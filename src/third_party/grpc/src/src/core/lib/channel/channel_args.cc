@@ -21,7 +21,14 @@
 #include <limits.h>
 #include <string.h>
 
+#include <vector>
+
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
+
 #include <grpc/grpc.h>
+#include <grpc/impl/codegen/grpc_types.h>
+#include <grpc/impl/codegen/log.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/string_util.h>
@@ -177,8 +184,9 @@ grpc_channel_args* grpc_channel_args_normalize(const grpc_channel_args* a) {
   for (size_t i = 0; i < a->num_args; i++) {
     args[i] = &a->args[i];
   }
-  if (a->num_args > 1)
+  if (a->num_args > 1) {
     qsort(args, a->num_args, sizeof(grpc_arg*), cmp_key_stable);
+  }
 
   grpc_channel_args* b =
       static_cast<grpc_channel_args*>(gpr_malloc(sizeof(grpc_channel_args)));
@@ -214,6 +222,8 @@ void grpc_channel_args_destroy(grpc_channel_args* a) {
 
 int grpc_channel_args_compare(const grpc_channel_args* a,
                               const grpc_channel_args* b) {
+  if (a == nullptr && b == nullptr) return 0;
+  if (a == nullptr || b == nullptr) return a == nullptr ? -1 : 1;
   int c = GPR_ICMP(a->num_args, b->num_args);
   if (c != 0) return c;
   for (size_t i = 0; i < a->num_args; i++) {
@@ -255,6 +265,13 @@ int grpc_channel_arg_get_integer(const grpc_arg* arg,
   return arg->value.integer;
 }
 
+int grpc_channel_args_find_integer(const grpc_channel_args* args,
+                                   const char* name,
+                                   const grpc_integer_options options) {
+  const grpc_arg* arg = grpc_channel_args_find(args, name);
+  return grpc_channel_arg_get_integer(arg, options);
+}
+
 char* grpc_channel_arg_get_string(const grpc_arg* arg) {
   if (arg == nullptr) return nullptr;
   if (arg->type != GRPC_ARG_STRING) {
@@ -262,6 +279,12 @@ char* grpc_channel_arg_get_string(const grpc_arg* arg) {
     return nullptr;
   }
   return arg->value.string;
+}
+
+char* grpc_channel_args_find_string(const grpc_channel_args* args,
+                                    const char* name) {
+  const grpc_arg* arg = grpc_channel_args_find(args, name);
+  return grpc_channel_arg_get_string(arg);
 }
 
 bool grpc_channel_arg_get_bool(const grpc_arg* arg, bool default_value) {
@@ -280,6 +303,12 @@ bool grpc_channel_arg_get_bool(const grpc_arg* arg, bool default_value) {
               arg->key, arg->value.integer);
       return true;
   }
+}
+
+bool grpc_channel_args_find_bool(const grpc_channel_args* args,
+                                 const char* name, bool default_value) {
+  const grpc_arg* arg = grpc_channel_args_find(args, name);
+  return grpc_channel_arg_get_bool(arg, default_value);
 }
 
 bool grpc_channel_args_want_minimal_stack(const grpc_channel_args* args) {
@@ -313,30 +342,40 @@ grpc_arg grpc_channel_arg_pointer_create(
   return arg;
 }
 
-char* grpc_channel_args_string(const grpc_channel_args* args) {
-  if (args == nullptr) return nullptr;
-  gpr_strvec v;
-  gpr_strvec_init(&v);
+std::string grpc_channel_args_string(const grpc_channel_args* args) {
+  if (args == nullptr) return "";
+  std::vector<std::string> arg_strings;
   for (size_t i = 0; i < args->num_args; ++i) {
     const grpc_arg& arg = args->args[i];
-    char* s;
+    std::string arg_string;
     switch (arg.type) {
       case GRPC_ARG_INTEGER:
-        gpr_asprintf(&s, "%s=%d", arg.key, arg.value.integer);
+        arg_string = absl::StrFormat("%s=%d", arg.key, arg.value.integer);
         break;
       case GRPC_ARG_STRING:
-        gpr_asprintf(&s, "%s=%s", arg.key, arg.value.string);
+        arg_string = absl::StrFormat("%s=%s", arg.key, arg.value.string);
         break;
       case GRPC_ARG_POINTER:
-        gpr_asprintf(&s, "%s=%p", arg.key, arg.value.pointer.p);
+        arg_string = absl::StrFormat("%s=%p", arg.key, arg.value.pointer.p);
         break;
       default:
-        gpr_asprintf(&s, "arg with unknown type");
+        arg_string = "arg with unknown type";
     }
-    gpr_strvec_add(&v, s);
+    arg_strings.push_back(arg_string);
   }
-  char* result =
-      gpr_strjoin_sep(const_cast<const char**>(v.strs), v.count, ", ", nullptr);
-  gpr_strvec_destroy(&v);
-  return result;
+  return absl::StrJoin(arg_strings, ", ");
+}
+
+namespace {
+grpc_channel_args_client_channel_creation_mutator g_mutator = nullptr;
+}  // namespace
+
+void grpc_channel_args_set_client_channel_creation_mutator(
+    grpc_channel_args_client_channel_creation_mutator cb) {
+  GPR_DEBUG_ASSERT(g_mutator == nullptr);
+  g_mutator = cb;
+}
+grpc_channel_args_client_channel_creation_mutator
+grpc_channel_args_get_client_channel_creation_mutator() {
+  return g_mutator;
 }

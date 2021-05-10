@@ -21,12 +21,9 @@ namespace blink {
 // We enable LayoutNGFragmentTraversal here, so that we get the "first/last for
 // node" bits set as appropriate.
 class NGFragmentItemTest : public NGLayoutTest,
-                           ScopedLayoutNGFragmentItemForTest,
                            ScopedLayoutNGFragmentTraversalForTest {
  public:
-  NGFragmentItemTest()
-      : ScopedLayoutNGFragmentItemForTest(true),
-        ScopedLayoutNGFragmentTraversalForTest(true) {}
+  NGFragmentItemTest() : ScopedLayoutNGFragmentTraversalForTest(true) {}
 
   void ForceLayout() { RunDocumentLifecycle(); }
 
@@ -175,14 +172,14 @@ TEST_F(NGFragmentItemTest, BasicText) {
   const NGFragmentItem& text1 = *items_for_text[0];
   EXPECT_EQ(text1.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text1.GetLayoutObject(), layout_text);
-  EXPECT_EQ(text1.OffsetInContainerBlock(), PhysicalOffset());
+  EXPECT_EQ(text1.OffsetInContainerFragment(), PhysicalOffset());
   EXPECT_TRUE(text1.IsFirstForNode());
   EXPECT_FALSE(text1.IsLastForNode());
 
   const NGFragmentItem& text2 = *items_for_text[1];
   EXPECT_EQ(text2.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text2.GetLayoutObject(), layout_text);
-  EXPECT_EQ(text2.OffsetInContainerBlock(), PhysicalOffset(0, 10));
+  EXPECT_EQ(text2.OffsetInContainerFragment(), PhysicalOffset(0, 10));
   EXPECT_FALSE(text2.IsFirstForNode());
   EXPECT_TRUE(text2.IsLastForNode());
 }
@@ -282,12 +279,12 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
   EXPECT_TRUE(items_for_span1[0]->IsFirstForNode());
   EXPECT_FALSE(items_for_span1[0]->IsLastForNode());
   EXPECT_EQ(PhysicalOffset(40, 0),
-            items_for_span1[0]->OffsetInContainerBlock());
+            items_for_span1[0]->OffsetInContainerFragment());
   EXPECT_EQ(PhysicalRect(0, 0, 40, 10), items_for_span1[0]->InkOverflow());
   EXPECT_FALSE(items_for_span1[1]->IsFirstForNode());
   EXPECT_TRUE(items_for_span1[1]->IsLastForNode());
   EXPECT_EQ(PhysicalOffset(0, 10),
-            items_for_span1[1]->OffsetInContainerBlock());
+            items_for_span1[1]->OffsetInContainerFragment());
   EXPECT_EQ(PhysicalRect(0, 0, 40, 10), items_for_span1[1]->InkOverflow());
 
   // "span2" doesn't wrap, produces only one fragment.
@@ -298,7 +295,7 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
   EXPECT_TRUE(items_for_span2[0]->IsFirstForNode());
   EXPECT_TRUE(items_for_span2[0]->IsLastForNode());
   EXPECT_EQ(PhysicalOffset(0, 20),
-            items_for_span2[0]->OffsetInContainerBlock());
+            items_for_span2[0]->OffsetInContainerFragment());
   EXPECT_EQ(PhysicalRect(0, 0, 80, 10), items_for_span2[0]->InkOverflow());
 }
 
@@ -794,6 +791,29 @@ TEST_F(NGFragmentItemTest, MarkLineBoxesDirtyInsideInlineBlock) {
   Element& target = *GetDocument().getElementById("target");
   target.remove();
   TestFirstDirtyLineIndex("container", 0);
+}
+
+// This test creates various types of |NGFragmentItem| to check "natvis" (Native
+// DebugVisualizers) for Windows Visual Studio.
+TEST_F(NGFragmentItemTest, Disabled_DebugVisualizers) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      text
+      <span style="display: inline-block"></span>
+    </div>
+  )HTML");
+  auto* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  NGInlineCursor cursor(*container);
+  cursor.MoveToFirstLine();
+  const NGFragmentItem* line = cursor.Current().Item();
+  EXPECT_NE(line, nullptr);
+  cursor.MoveToNext();
+  const NGFragmentItem* text = cursor.Current().Item();
+  EXPECT_NE(text, nullptr);
+  cursor.MoveToNext();
+  const NGFragmentItem* box = cursor.Current().Item();
+  EXPECT_NE(box, nullptr);
 }
 
 }  // namespace blink

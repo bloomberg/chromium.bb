@@ -51,7 +51,6 @@ class CertVerifier;
 class ClientSocketFactory;
 class ClientSocketPool;
 class ClientSocketPoolManager;
-class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
@@ -152,6 +151,13 @@ class NET_EXPORT HttpNetworkSession {
     bool disable_idle_sockets_close_on_memory_pressure;
 
     bool key_auth_cache_server_entries_by_network_isolation_key;
+
+    // If true, enable sending PRIORITY_UPDATE frames until SETTINGS frame
+    // arrives.  After SETTINGS frame arrives, do not send PRIORITY_UPDATE
+    // frames any longer if SETTINGS_DEPRECATE_HTTP2_PRIORITIES is missing or
+    // has zero 0, but continue and also stop sending HTTP/2-style priority
+    // information in HEADERS frames and PRIORITY frames if it has value 1.
+    bool enable_priority_update;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.
@@ -165,7 +171,6 @@ class NET_EXPORT HttpNetworkSession {
     HostResolver* host_resolver;
     CertVerifier* cert_verifier;
     TransportSecurityState* transport_security_state;
-    CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
     SCTAuditingDelegate* sct_auditing_delegate;
     ProxyResolutionService* proxy_resolution_service;

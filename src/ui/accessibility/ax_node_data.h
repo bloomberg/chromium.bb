@@ -23,6 +23,13 @@
 
 namespace ui {
 
+// Defines the type used for AXNode IDs.
+using AXNodeID = int32_t;
+
+// If a node is not yet or no longer valid, its ID should have a value of
+// kInvalidAXNodeID.
+static constexpr AXNodeID kInvalidAXNodeID = 0;
+
 // Return true if |attr| should be interpreted as the id of another node
 // in the same tree.
 AX_BASE_EXPORT bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr);
@@ -36,11 +43,11 @@ AX_BASE_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
 // one process to another.
 struct AX_BASE_EXPORT AXNodeData {
   // Defines the type used for AXNode IDs.
-  using AXID = int32_t;
+  using AXID = AXNodeID;
 
   // If a node is not yet or no longer valid, its ID should have a value of
   // kInvalidAXID.
-  static constexpr AXID kInvalidAXID = 0;
+  static constexpr AXID kInvalidAXID = kInvalidAXNodeID;
 
   AXNodeData();
   virtual ~AXNodeData();
@@ -261,7 +268,7 @@ struct AX_BASE_EXPORT AXNodeData {
   bool IsReadOnlyOrDisabled() const;
 
   // Helper to determine if the data belongs to a node that supports
-  // range-based value.
+  // range-based values.
   bool IsRangeValueSupported() const;
 
   // Helper to determine if the data belongs to a node that supports
@@ -278,10 +285,10 @@ struct AX_BASE_EXPORT AXNodeData {
 
   // As much as possible this should behave as a simple, serializable,
   // copyable struct.
-  int32_t id = -1;
+  AXNodeID id = kInvalidAXNodeID;
   ax::mojom::Role role;
-  uint32_t state;
-  uint64_t actions;
+  uint32_t state = 0U;
+  uint64_t actions = 0ULL;
   std::vector<std::pair<ax::mojom::StringAttribute, std::string>>
       string_attributes;
   std::vector<std::pair<ax::mojom::IntAttribute, int32_t>> int_attributes;

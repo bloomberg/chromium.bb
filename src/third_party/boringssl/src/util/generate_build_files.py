@@ -37,6 +37,7 @@ OS_ARCH_COMBOS = [
     ('mac', 'x86_64', 'macosx', [], 'S'),
     ('win', 'x86', 'win32n', ['-DOPENSSL_IA32_SSE2'], 'asm'),
     ('win', 'x86_64', 'nasm', [], 'asm'),
+    ('win', 'aarch64', 'win64', [], 'S'),
 ]
 
 # NON_PERL_FILES enumerates assembly files that are not processed by the
@@ -357,6 +358,8 @@ class GN(object):
       self.PrintVariableSection(out, 'ssl_sources',
                                 files['ssl'] + files['ssl_internal_headers'])
       self.PrintVariableSection(out, 'ssl_headers', files['ssl_headers'])
+      self.PrintVariableSection(out, 'tool_sources',
+                                files['tool'] + files['tool_headers'])
 
       for ((osname, arch), asm_files) in asm_outputs:
         self.PrintVariableSection(

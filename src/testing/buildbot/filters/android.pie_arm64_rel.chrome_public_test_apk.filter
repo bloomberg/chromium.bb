@@ -30,9 +30,6 @@
 # crbug.com/707528
 -org.chromium.chrome.browser.push_messaging.PushMessagingTest.testPushAndShowNotification
 
-# crbug.com/836460
--org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
-
 # crbug.com/1036545
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileUndo
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileWithContextMenu
@@ -86,3 +83,12 @@
 
 # crbug.com/1128665
 -org.chromium.chrome.browser.download.DownloadTest.testDuplicateHttpPostDownload_Cancel__UseDownloadOfflineContentProviderEnabled
+
+# crbug.com/1165449
+-org.chromium.chrome.browser.firstrun.TosAndUmaFirstRunFragmentWithEnterpriseSupportTest.testAcceptTosWithoutCrashUpload
+
+# crbug.com/1165459
+-org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsEntryTest.testCaptured
+
+# crbug.com/1169250
+-org.chromium.chrome.browser.omnibox.LocationBarTest.testFocusLogic_keyboardVisibility

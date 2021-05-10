@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -81,9 +82,9 @@
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
+#include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_store_service.h"
-#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_client.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -104,7 +105,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -122,7 +122,9 @@
 #include "chrome/browser/sync/trusted_vault_client_android.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
@@ -138,10 +140,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_util.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::BrowserThread;
 using syncer::ForwardingModelTypeControllerDelegate;
@@ -381,10 +381,6 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       syncer::SUPERVISED_USER_SETTINGS, profile_, dump_stack,
       model_type_store_factory,
       GetSyncableServiceForType(syncer::SUPERVISED_USER_SETTINGS)));
-  controllers.push_back(std::make_unique<SupervisedUserSyncModelTypeController>(
-      syncer::SUPERVISED_USER_ALLOWLISTS, profile_, dump_stack,
-      model_type_store_factory,
-      GetSyncableServiceForType(syncer::SUPERVISED_USER_ALLOWLISTS)));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -445,7 +441,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Some profile types (e.g. sign-in screen) don't support app list.
   // Temporarily Disable AppListSyncableService for tablet form factor devices.
   // See crbug/1013732 for details.
@@ -466,7 +462,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
               GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
     }
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Chrome prefers OS provided spell checkers where they exist. So only sync the
 // custom dictionary on platforms that typically don't provide one.
@@ -481,7 +477,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (arc::IsArcAllowedForProfile(profile_) &&
       !arc::IsArcAppSyncFlowDisabled()) {
     controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
@@ -542,7 +538,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           std::make_unique<ForwardingModelTypeControllerDelegate>(delegate)));
     }
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return controllers;
 }
@@ -585,11 +581,11 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::EXTENSIONS:
       return GetWeakPtrOrNull(ExtensionSyncService::Get(profile_));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::APP_LIST:
       return GetWeakPtrOrNull(
           app_list::AppListSyncableServiceFactory::GetForProfile(profile_));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if !defined(OS_ANDROID)
     case syncer::THEMES:
       return ThemeServiceFactory::GetForProfile(profile_)->
@@ -609,12 +605,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return SupervisedUserSettingsServiceFactory::GetForKey(
                  profile_->GetProfileKey())
           ->AsWeakPtr();
-    case syncer::SUPERVISED_USER_ALLOWLISTS:
-      return SupervisedUserServiceFactory::GetForProfile(profile_)
-          ->GetAllowlistService()
-          ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
     case syncer::OS_PREFERENCES:
@@ -622,7 +614,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return PrefServiceSyncableFromProfile(profile_)
           ->GetSyncableService(type)
           ->AsWeakPtr();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     default:
       NOTREACHED();
       return nullptr;
@@ -639,7 +631,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
     }
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::PRINTERS:
       return chromeos::SyncedPrintersManagerFactory::GetForBrowserContext(
                  profile_)
@@ -650,7 +642,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return WifiConfigurationSyncServiceFactory::GetForProfile(profile_,
                                                                 /*create=*/true)
           ->GetControllerDelegate();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::SHARING_MESSAGE:
       return SharingMessageBridgeFactory::GetForBrowserContext(profile_)
           ->GetControllerDelegate();
@@ -716,7 +708,7 @@ void ChromeSyncClient::OnLocalSyncTransportDataCleared() {
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppsModelTypeController(
     syncer::SyncService* sync_service) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     return AppsModelTypeController::Create(
         GetModelTypeStoreService()->GetStoreFactory(),
@@ -733,7 +725,7 @@ ChromeSyncClient::CreateAppsModelTypeController(
 std::unique_ptr<syncer::ModelTypeController>
 ChromeSyncClient::CreateAppSettingsModelTypeController(
     syncer::SyncService* sync_service) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     return std::make_unique<AppSettingsModelTypeController>(
         GetModelTypeStoreService()->GetStoreFactory(),
@@ -755,7 +747,7 @@ ChromeSyncClient::CreateWebAppsModelTypeController(
     syncer::SyncService* sync_service) {
   syncer::ModelTypeControllerDelegate* delegate =
       GetControllerDelegateForModelType(syncer::WEB_APPS).get();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     // Use the same delegate in full-sync and transport-only modes.
     return std::make_unique<OsSyncModelTypeController>(

@@ -148,7 +148,7 @@ void NGMathScriptsLayoutAlgorithm::GatherChildren(
         // The structure of mmultiscripts is specified here:
         // https://mathml-refresh.github.io/mathml-core/#prescripts-and-tensor-indices-mmultiscripts
         if (IsPrescriptDelimiter(block_child)) {
-          if (!number_of_scripts_is_even || *first_prescript_index > 0) {
+          if (!number_of_scripts_is_even || *prescripts) {
             NOTREACHED();
             return;
           }
@@ -397,7 +397,8 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
 
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
-      container_builder_.InitialBorderBoxSize().inline_size);
+      container_builder_.InitialBorderBoxSize().inline_size,
+      Node().ShouldBeConsideredAsReplaced());
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
@@ -423,9 +424,9 @@ MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
   MinMaxSizes sizes;
   bool depends_on_percentage_block_size = false;
 
-  ChildAndMetrics base_metrics = LayoutAndGetMetrics(base);
-  LayoutUnit base_italic_correction = std::min(
-      base_metrics.inline_size, base_metrics.result->MathItalicCorrection());
+  // TODO(layout-dev): Determine the italic-correction without calling layout
+  // within ComputeMinMaxSizes, (or setup in an interoperable constraint-space).
+  LayoutUnit base_italic_correction;
   MinMaxSizesResult base_result =
       ComputeMinAndMaxContentContribution(Style(), base, child_input);
   base_result.sizes += ComputeMinMaxMargins(Style(), base).InlineSum();
@@ -489,9 +490,9 @@ MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
       break;
     }
   }
-  sizes += BorderScrollbarPadding().InlineSum();
 
-  return {sizes, depends_on_percentage_block_size};
+  sizes += BorderScrollbarPadding().InlineSum();
+  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
 }
 
 }  // namespace blink

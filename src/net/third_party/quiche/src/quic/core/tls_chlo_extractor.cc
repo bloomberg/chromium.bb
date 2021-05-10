@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/tls_chlo_extractor.h"
+#include "quic/core/tls_chlo_extractor.h"
 #include <cstring>
 #include <memory>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_crypto_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/frames/quic_crypto_frame.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -43,7 +43,7 @@ TlsChloExtractor& TlsChloExtractor::operator=(TlsChloExtractor&& other) {
     std::pair<SSL_CTX*, int> shared_handles = GetSharedSslHandles();
     int ex_data_index = shared_handles.second;
     const int rv = SSL_set_ex_data(ssl_.get(), ex_data_index, this);
-    CHECK_EQ(rv, 1) << "Internal allocation failure in SSL_set_ex_data";
+    QUICHE_CHECK_EQ(rv, 1) << "Internal allocation failure in SSL_set_ex_data";
   }
   state_ = other.state_;
   error_details_ = std::move(other.error_details_);
@@ -138,8 +138,17 @@ bool TlsChloExtractor::OnProtocolVersionMismatch(ParsedQuicVersion version) {
 // error that will prevent it from reassembling the crypto stream data.
 void TlsChloExtractor::OnUnrecoverableError(QuicErrorCode error,
                                             const std::string& details) {
-  HandleUnrecoverableError(quiche::QuicheStrCat(
+  HandleUnrecoverableError(absl::StrCat(
       "Crypto stream error ", QuicErrorCodeToString(error), ": ", details));
+}
+
+void TlsChloExtractor::OnUnrecoverableError(
+    QuicErrorCode error,
+    QuicIetfTransportErrorCodes ietf_error,
+    const std::string& details) {
+  HandleUnrecoverableError(absl::StrCat(
+      "Crypto stream error ", QuicErrorCodeToString(error), "(",
+      QuicIetfTransportErrorCodeString(ietf_error), "): ", details));
 }
 
 // This is called by the framer if it sees a CRYPTO frame during parsing.
@@ -232,7 +241,7 @@ int TlsChloExtractor::FlushFlightCallback(SSL* ssl) {
 void TlsChloExtractor::HandleUnexpectedCallback(
     const std::string& callback_name) {
   std::string error_details =
-      quiche::QuicheStrCat("Unexpected callback ", callback_name);
+      absl::StrCat("Unexpected callback ", callback_name);
   QUIC_BUG << error_details;
   HandleUnrecoverableError(error_details);
 }
@@ -252,7 +261,7 @@ void TlsChloExtractor::SendAlert(uint8_t tls_alert_value) {
     // try to send this alert to tell the client that the handshake failed.
     return;
   }
-  HandleUnrecoverableError(quiche::QuicheStrCat(
+  HandleUnrecoverableError(absl::StrCat(
       "BoringSSL attempted to send alert ", static_cast<int>(tls_alert_value),
       " ", SSL_alert_desc_string_long(tls_alert_value)));
 }
@@ -346,8 +355,15 @@ void TlsChloExtractor::SetupSslHandle() {
 
   ssl_ = bssl::UniquePtr<SSL>(SSL_new(ssl_ctx));
   const int rv = SSL_set_ex_data(ssl_.get(), ex_data_index, this);
-  CHECK_EQ(rv, 1) << "Internal allocation failure in SSL_set_ex_data";
+  QUICHE_CHECK_EQ(rv, 1) << "Internal allocation failure in SSL_set_ex_data";
   SSL_set_accept_state(ssl_.get());
+
+  // Make sure we use the right TLS extension codepoint.
+  int use_legacy_extension = 0;
+  if (framer_->version().UsesLegacyTlsExtension()) {
+    use_legacy_extension = 1;
+  }
+  SSL_set_quic_use_legacy_codepoint(ssl_.get(), use_legacy_extension);
 }
 
 // Called by other methods to record any unrecoverable failures they experience.
@@ -365,7 +381,7 @@ void TlsChloExtractor::HandleUnrecoverableError(
   if (error_details_.empty()) {
     error_details_ = error_details;
   } else {
-    error_details_ = quiche::QuicheStrCat(error_details_, "; ", error_details);
+    error_details_ = absl::StrCat(error_details_, "; ", error_details);
   }
 }
 
@@ -383,7 +399,7 @@ std::string TlsChloExtractor::StateToString(State state) {
     case State::kUnrecoverableFailure:
       return "UnrecoverableFailure";
   }
-  return quiche::QuicheStrCat("Unknown(", static_cast<int>(state), ")");
+  return absl::StrCat("Unknown(", static_cast<int>(state), ")");
 }
 
 std::ostream& operator<<(std::ostream& os,

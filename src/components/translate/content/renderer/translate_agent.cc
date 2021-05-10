@@ -22,6 +22,7 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/translate/core/language_detection/language_detection_model.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -33,6 +34,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 #include "v8/include/v8.h"
 
 using blink::WebDocument;
@@ -58,6 +60,17 @@ const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
+
+// The current CLD model version.
+constexpr char kCLDModelVersion[] = "CLD3";
+
+// Returns the language detection model that is shared across the RenderFrames
+// in the renderer.
+translate::LanguageDetectionModel& GetLanguageDetectionModel() {
+  static base::NoDestructor<translate::LanguageDetectionModel> instance;
+  return *instance;
+}
+
 }  // namespace
 
 namespace translate {
@@ -72,6 +85,19 @@ TranslateAgent::TranslateAgent(content::RenderFrame* render_frame,
       extension_scheme_(extension_scheme) {
   translate_task_runner_ = this->render_frame()->GetTaskRunner(
       blink::TaskType::kInternalTranslation);
+
+  if (translate::IsTFLiteLanguageDetectionEnabled()) {
+    translate::LanguageDetectionModel& language_detection_model =
+        GetLanguageDetectionModel();
+    if (!language_detection_model.IsAvailable()) {
+      // TODO(crbug.com/1160948): Consider tracking if another agent associated
+      // with the same LanguageDetectionModel has already requested a model be
+      // provided by the translate host.
+      GetTranslateHandler()->GetLanguageDetectionModel(
+          base::BindOnce(&TranslateAgent::UpdateLanguageDetectionModel,
+                         weak_pointer_factory_.GetWeakPtr()));
+    }
+  }
 }
 
 TranslateAgent::~TranslateAgent() {}
@@ -89,7 +115,7 @@ void TranslateAgent::PageCaptured(const base::string16& contents) {
   // original intent of http-equiv to be an equivalent) with the former
   // being the language of the document and the latter being the
   // language of the intended audience (a distinction really only
-  // relevant for things like langauge textbooks).  This distinction
+  // relevant for things like language textbooks).  This distinction
   // shouldn't affect translation.
   WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame)
@@ -100,25 +126,56 @@ void TranslateAgent::PageCaptured(const base::string16& contents) {
       WebLanguageDetectionDetails::CollectLanguageDetectionDetails(document);
   std::string content_language = web_detection_details.content_language.Utf8();
   std::string html_lang = web_detection_details.html_language.Utf8();
-  std::string cld_language;
-  bool is_cld_reliable;
-  std::string language = DeterminePageLanguage(
-      content_language, html_lang, contents, &cld_language, &is_cld_reliable);
+  std::string model_detected_language;
+  bool is_model_reliable = false;
+  std::string detection_model_version;
+  float model_reliability_score = 0.0;
+
+  std::string language;
+  if (translate::IsTFLiteLanguageDetectionEnabled()) {
+    if (!document.Url().ProtocolIs(url::kHttpsScheme) &&
+        !document.Url().ProtocolIs(url::kHttpScheme)) {
+      // TFLite-based language detection only supports HTTP/HTTPS pages.
+      // Others should be ignored, for example the New Tab Page.
+      return;
+    }
+    translate::LanguageDetectionModel& language_detection_model =
+        GetLanguageDetectionModel();
+    bool is_available = language_detection_model.IsAvailable();
+    language = is_available ? language_detection_model.DeterminePageLanguage(
+                                  content_language, html_lang, contents,
+                                  &model_detected_language, &is_model_reliable,
+                                  model_reliability_score)
+                            : translate::kUnknownLanguageCode;
+    UMA_HISTOGRAM_BOOLEAN(
+        "LanguageDetection.TFLiteModel.WasModelAvailableForDetection",
+        is_available);
+    detection_model_version = language_detection_model.GetModelVersion();
+  } else {
+    language = DeterminePageLanguage(
+        content_language, html_lang, contents, &model_detected_language,
+        &is_model_reliable, model_reliability_score);
+    detection_model_version = kCLDModelVersion;
+  }
 
   if (language.empty())
     return;
 
   language_determined_time_ = base::TimeTicks::Now();
 
+  // TODO(crbug.com/1157983): Update the language detection details struct to be
+  // model agnostic.
   LanguageDetectionDetails details;
   details.time = base::Time::Now();
   details.url = web_detection_details.url;
   details.content_language = content_language;
-  details.cld_language = cld_language;
-  details.is_cld_reliable = is_cld_reliable;
+  details.model_detected_language = model_detected_language;
+  details.is_model_reliable = is_model_reliable;
   details.has_notranslate = web_detection_details.has_no_translate_meta;
   details.html_root_language = html_lang;
   details.adopted_language = language;
+  details.model_reliability_score = model_reliability_score;
+  details.detection_model_version = detection_model_version;
 
   // TODO(hajimehoshi): If this affects performance, it should be set only if
   // translate-internals tab exists.
@@ -472,6 +529,12 @@ std::string TranslateAgent::BuildTranslationScript(
   return "cr.googleTranslate.translate(" +
          base::GetQuotedJSONString(source_lang) + "," +
          base::GetQuotedJSONString(target_lang) + ")";
+}
+
+void TranslateAgent::UpdateLanguageDetectionModel(base::File model_file) {
+  translate::LanguageDetectionModel& language_detection_model =
+      GetLanguageDetectionModel();
+  language_detection_model.UpdateWithFile(std::move(model_file));
 }
 
 }  // namespace translate

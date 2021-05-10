@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../test_runner/test_runner.js';
+import '../console_test_runner/console_test_runner.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.NetworkTestRunner = self.NetworkTestRunner || {};
 
@@ -78,7 +80,7 @@ NetworkTestRunner.dumpNetworkRequests = function() {
 NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo = function() {
   for (const request of SDK.NetworkLog.instance().requests()) {
     TestRunner.addResult(`* ${request.url()}`);
-    TestRunner.addResult(`  failed: ${!!request.failed}`);
+    TestRunner.addResult(`  failed: ${Boolean(request.failed)}`);
     TestRunner.addResult(`  statusCode: ${request.statusCode}`);
     TestRunner.addResult(`  resourceType: ${request.resourceType().name()}`);
     if (request.signedExchangeInfo()) {

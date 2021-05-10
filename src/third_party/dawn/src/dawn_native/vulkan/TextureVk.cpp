@@ -45,9 +45,10 @@ namespace dawn_native { namespace vulkan {
                     return VK_IMAGE_VIEW_TYPE_CUBE;
                 case wgpu::TextureViewDimension::CubeArray:
                     return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+                case wgpu::TextureViewDimension::e3D:
+                    return VK_IMAGE_VIEW_TYPE_3D;
 
                 case wgpu::TextureViewDimension::e1D:
-                case wgpu::TextureViewDimension::e3D:
                 case wgpu::TextureViewDimension::Undefined:
                     UNREACHABLE();
             }
@@ -70,6 +71,9 @@ namespace dawn_native { namespace vulkan {
             }
             if (usage & wgpu::TextureUsage::Storage) {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+            }
+            if (usage & kReadOnlyStorageTexture) {
+                flags |= VK_ACCESS_SHADER_READ_BIT;
             }
             if (usage & wgpu::TextureUsage::RenderAttachment) {
                 if (format.HasDepthOrStencil()) {
@@ -102,48 +106,6 @@ namespace dawn_native { namespace vulkan {
             return flags;
         }
 
-        // Chooses which Vulkan image layout should be used for the given Dawn usage
-        VkImageLayout VulkanImageLayout(wgpu::TextureUsage usage, const Format& format) {
-            if (usage == wgpu::TextureUsage::None) {
-                return VK_IMAGE_LAYOUT_UNDEFINED;
-            }
-
-            if (!wgpu::HasZeroOrOneBits(usage)) {
-                return VK_IMAGE_LAYOUT_GENERAL;
-            }
-
-            // Usage has a single bit so we can switch on its value directly.
-            switch (usage) {
-                case wgpu::TextureUsage::CopyDst:
-                    return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                case wgpu::TextureUsage::Sampled:
-                    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                // Vulkan texture copy functions require the image to be in _one_  known layout.
-                // Depending on whether parts of the texture have been transitioned to only
-                // CopySrc or a combination with something else, the texture could be in a
-                // combination of GENERAL and TRANSFER_SRC_OPTIMAL. This would be a problem, so we
-                // make CopySrc use GENERAL.
-                case wgpu::TextureUsage::CopySrc:
-                // Read-only and write-only storage textures must use general layout because load
-                // and store operations on storage images can only be done on the images in
-                // VK_IMAGE_LAYOUT_GENERAL layout.
-                case wgpu::TextureUsage::Storage:
-                case kReadonlyStorageTexture:
-                    return VK_IMAGE_LAYOUT_GENERAL;
-                case wgpu::TextureUsage::RenderAttachment:
-                    if (format.HasDepthOrStencil()) {
-                        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                    } else {
-                        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    }
-                case kPresentTextureUsage:
-                    return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-                case wgpu::TextureUsage::None:
-                    UNREACHABLE();
-            }
-        }
-
         // Computes which Vulkan pipeline stage can access a texture in the given Dawn usage
         VkPipelineStageFlags VulkanPipelineStage(wgpu::TextureUsage usage, const Format& format) {
             VkPipelineStageFlags flags = 0;
@@ -156,7 +118,7 @@ namespace dawn_native { namespace vulkan {
             if (usage & (wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst)) {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
-            if (usage & (wgpu::TextureUsage::Sampled | kReadonlyStorageTexture)) {
+            if (usage & (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture)) {
                 // TODO(cwallez@chromium.org): Only transition to the usage we care about to avoid
                 // introducing FS -> VS dependencies that would prevent parallelization on tiler
                 // GPUs
@@ -202,20 +164,19 @@ namespace dawn_native { namespace vulkan {
             return flags;
         }
 
-        VkImageMemoryBarrier BuildMemoryBarrier(const Format& format,
-                                                const VkImage& image,
+        VkImageMemoryBarrier BuildMemoryBarrier(const Texture* texture,
                                                 wgpu::TextureUsage lastUsage,
                                                 wgpu::TextureUsage usage,
                                                 const SubresourceRange& range) {
             VkImageMemoryBarrier barrier;
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.pNext = nullptr;
-            barrier.srcAccessMask = VulkanAccessFlags(lastUsage, format);
-            barrier.dstAccessMask = VulkanAccessFlags(usage, format);
-            barrier.oldLayout = VulkanImageLayout(lastUsage, format);
-            barrier.newLayout = VulkanImageLayout(usage, format);
-            barrier.image = image;
-            barrier.subresourceRange.aspectMask = VulkanAspectMask(format.aspects);
+            barrier.srcAccessMask = VulkanAccessFlags(lastUsage, texture->GetFormat());
+            barrier.dstAccessMask = VulkanAccessFlags(usage, texture->GetFormat());
+            barrier.oldLayout = VulkanImageLayout(texture, lastUsage);
+            barrier.newLayout = VulkanImageLayout(texture, usage);
+            barrier.image = texture->GetHandle();
+            barrier.subresourceRange.aspectMask = VulkanAspectMask(range.aspects);
             barrier.subresourceRange.baseMipLevel = range.baseMipLevel;
             barrier.subresourceRange.levelCount = range.levelCount;
             barrier.subresourceRange.baseArrayLayer = range.baseArrayLayer;
@@ -241,8 +202,13 @@ namespace dawn_native { namespace vulkan {
                     info->arrayLayers = size.depth;
                     break;
 
-                case wgpu::TextureDimension::e1D:
                 case wgpu::TextureDimension::e3D:
+                    info->imageType = VK_IMAGE_TYPE_3D;
+                    info->extent = {size.width, size.height, size.depth};
+                    info->arrayLayers = 1;
+                    break;
+
+                case wgpu::TextureDimension::e1D:
                     UNREACHABLE();
             }
         }
@@ -372,7 +338,8 @@ namespace dawn_native { namespace vulkan {
                 return VK_FORMAT_BC7_UNORM_BLOCK;
             case wgpu::TextureFormat::BC7RGBAUnormSrgb:
                 return VK_FORMAT_BC7_SRGB_BLOCK;
-
+            case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
+            case wgpu::TextureFormat::Stencil8:
             case wgpu::TextureFormat::Undefined:
                 UNREACHABLE();
         }
@@ -392,7 +359,7 @@ namespace dawn_native { namespace vulkan {
         if (usage & wgpu::TextureUsage::Sampled) {
             flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
         }
-        if (usage & wgpu::TextureUsage::Storage) {
+        if (usage & (wgpu::TextureUsage::Storage | kReadOnlyStorageTexture)) {
             flags |= VK_IMAGE_USAGE_STORAGE_BIT;
         }
         if (usage & wgpu::TextureUsage::RenderAttachment) {
@@ -404,6 +371,68 @@ namespace dawn_native { namespace vulkan {
         }
 
         return flags;
+    }
+
+    // Chooses which Vulkan image layout should be used for the given Dawn usage. Note that this
+    // layout must match the layout given to various Vulkan operations as well as the layout given
+    // to descriptor set writes.
+    VkImageLayout VulkanImageLayout(const Texture* texture, wgpu::TextureUsage usage) {
+        if (usage == wgpu::TextureUsage::None) {
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+        }
+
+        if (!wgpu::HasZeroOrOneBits(usage)) {
+            // Sampled | ReadOnlyStorage is the only possible multi-bit usage, if more appear  we
+            // might need additional special-casing.
+            ASSERT(usage == (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture));
+            return VK_IMAGE_LAYOUT_GENERAL;
+        }
+
+        // Usage has a single bit so we can switch on its value directly.
+        switch (usage) {
+            case wgpu::TextureUsage::CopyDst:
+                return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+                // A texture that's sampled and storage may be used as both usages in the same pass.
+                // When that happens, the layout must be GENERAL because that's a requirement for
+                // the storage usage. We can't know at bindgroup creation time if that case will
+                // happen so we must prepare for the pessimistic case and always use the GENERAL
+                // layout.
+            case wgpu::TextureUsage::Sampled:
+                if (texture->GetUsage() & wgpu::TextureUsage::Storage) {
+                    return VK_IMAGE_LAYOUT_GENERAL;
+                } else {
+                    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                }
+
+                // Vulkan texture copy functions require the image to be in _one_  known layout.
+                // Depending on whether parts of the texture have been transitioned to only CopySrc
+                // or a combination with something else, the texture could be in a combination of
+                // GENERAL and TRANSFER_SRC_OPTIMAL. This would be a problem, so we make CopySrc use
+                // GENERAL.
+                // TODO(cwallez@chromium.org): We no longer need to transition resources all at
+                // once and can instead track subresources so we should lift this limitation.
+            case wgpu::TextureUsage::CopySrc:
+                // Read-only and write-only storage textures must use general layout because load
+                // and store operations on storage images can only be done on the images in
+                // VK_IMAGE_LAYOUT_GENERAL layout.
+            case wgpu::TextureUsage::Storage:
+            case kReadOnlyStorageTexture:
+                return VK_IMAGE_LAYOUT_GENERAL;
+
+            case wgpu::TextureUsage::RenderAttachment:
+                if (texture->GetFormat().HasDepthOrStencil()) {
+                    return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                } else {
+                    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                }
+
+            case kPresentTextureUsage:
+                return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+            case wgpu::TextureUsage::None:
+                UNREACHABLE();
+        }
     }
 
     VkSampleCountFlagBits VulkanSampleCount(uint32_t sampleCount) {
@@ -484,6 +513,16 @@ namespace dawn_native { namespace vulkan {
             AcquireRef(new Texture(device, descriptor, TextureState::OwnedExternal));
         texture->InitializeForSwapChain(nativeImage);
         return texture;
+    }
+
+    Texture::Texture(Device* device, const TextureDescriptor* descriptor, TextureState state)
+        : TextureBase(device, descriptor, state),
+          // A usage of none will make sure the texture is transitioned before its first use as
+          // required by the Vulkan spec.
+          mSubresourceLastUsages(ComputeAspectsForSubresourceStorage(),
+                                 GetArrayLayers(),
+                                 GetNumMipLevels(),
+                                 wgpu::TextureUsage::None) {
     }
 
     MaybeError Texture::InitializeAsInternalTexture(VkImageUsageFlags extraUsages) {
@@ -616,12 +655,12 @@ namespace dawn_native { namespace vulkan {
         }
 
         ASSERT(mSignalSemaphore != VK_NULL_HANDLE);
-        ASSERT(GetNumMipLevels() == 1 && GetArrayLayers() == 1);
 
         // Release the texture
         mExternalState = ExternalState::Released;
 
-        wgpu::TextureUsage usage = mSubresourceLastUsages[0];
+        ASSERT(GetNumMipLevels() == 1 && GetArrayLayers() == 1);
+        wgpu::TextureUsage usage = mSubresourceLastUsages.Get(Aspect::Color, 0, 0);
 
         VkImageMemoryBarrier barrier;
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -637,7 +676,7 @@ namespace dawn_native { namespace vulkan {
         barrier.dstAccessMask = 0;  // The barrier must be paired with another barrier that will
                                     // specify the dst access mask on the importing queue.
 
-        barrier.oldLayout = VulkanImageLayout(usage, GetFormat());
+        barrier.oldLayout = VulkanImageLayout(this, usage);
         if (desiredLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
             // VK_IMAGE_LAYOUT_UNDEFINED is invalid here. We use it as a
             // special value to indicate no layout transition should be done.
@@ -719,6 +758,9 @@ namespace dawn_native { namespace vulkan {
             case wgpu::TextureAspect::StencilOnly:
                 ASSERT(GetFormat().aspects & Aspect::Stencil);
                 return VulkanAspectMask(Aspect::Stencil);
+            case wgpu::TextureAspect::Plane0Only:
+            case wgpu::TextureAspect::Plane1Only:
+                UNREACHABLE();
         }
     }
 
@@ -735,7 +777,7 @@ namespace dawn_native { namespace vulkan {
         if (mExternalState == ExternalState::PendingAcquire) {
             if (barriers->size() == transitionBarrierStart) {
                 barriers->push_back(BuildMemoryBarrier(
-                    GetFormat(), mHandle, wgpu::TextureUsage::None, wgpu::TextureUsage::None,
+                    this, wgpu::TextureUsage::None, wgpu::TextureUsage::None,
                     SubresourceRange::SingleMipAndLayer(0, 0, GetFormat().aspects)));
             }
 
@@ -809,9 +851,15 @@ namespace dawn_native { namespace vulkan {
         return false;
     }
 
-    void Texture::TransitionFullUsage(CommandRecordingContext* recordingContext,
-                                      wgpu::TextureUsage usage) {
-        TransitionUsageNow(recordingContext, usage, GetAllSubresources());
+    bool Texture::ShouldCombineDepthStencilBarriers() const {
+        return GetFormat().aspects == (Aspect::Depth | Aspect::Stencil);
+    }
+
+    Aspect Texture::ComputeAspectsForSubresourceStorage() const {
+        if (ShouldCombineDepthStencilBarriers()) {
+            return Aspect::CombinedDepthStencil;
+        }
+        return GetFormat().aspects;
     }
 
     void Texture::TransitionUsageForPass(CommandRecordingContext* recordingContext,
@@ -819,73 +867,61 @@ namespace dawn_native { namespace vulkan {
                                          std::vector<VkImageMemoryBarrier>* imageBarriers,
                                          VkPipelineStageFlags* srcStages,
                                          VkPipelineStageFlags* dstStages) {
+        // Base Vulkan doesn't support transitioning depth and stencil separately. We work around
+        // this limitation by combining the usages in the two planes of `textureUsages` into a
+        // single plane in a new SubresourceStorage<TextureUsage>. The barriers will be produced
+        // for DEPTH | STENCIL since the SubresourceRange uses Aspect::CombinedDepthStencil.
+        if (ShouldCombineDepthStencilBarriers()) {
+            SubresourceStorage<wgpu::TextureUsage> combinedUsages(
+                Aspect::CombinedDepthStencil, GetArrayLayers(), GetNumMipLevels());
+            textureUsages.Iterate([&](const SubresourceRange& range, wgpu::TextureUsage usage) {
+                SubresourceRange updateRange = range;
+                updateRange.aspects = Aspect::CombinedDepthStencil;
+
+                combinedUsages.Update(
+                    updateRange, [&](const SubresourceRange&, wgpu::TextureUsage* combinedUsage) {
+                        *combinedUsage |= usage;
+                    });
+            });
+
+            TransitionUsageForPassImpl(recordingContext, combinedUsages, imageBarriers, srcStages,
+                                       dstStages);
+        } else {
+            TransitionUsageForPassImpl(recordingContext, textureUsages, imageBarriers, srcStages,
+                                       dstStages);
+        }
+    }
+
+    void Texture::TransitionUsageForPassImpl(
+        CommandRecordingContext* recordingContext,
+        const SubresourceStorage<wgpu::TextureUsage>& subresourceUsages,
+        std::vector<VkImageMemoryBarrier>* imageBarriers,
+        VkPipelineStageFlags* srcStages,
+        VkPipelineStageFlags* dstStages) {
         size_t transitionBarrierStart = imageBarriers->size();
         const Format& format = GetFormat();
 
         wgpu::TextureUsage allUsages = wgpu::TextureUsage::None;
         wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
 
-        uint32_t subresourceCount = GetSubresourceCount();
-        ASSERT(textureUsages.subresourceUsages.size() == subresourceCount);
         // This transitions assume it is a 2D texture
         ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
 
-        // If new usages of all subresources are the same and old usages of all subresources are
-        // the same too, we can use one barrier to do state transition for all subresources.
-        // Note that if the texture has only one mip level and one array slice, it will fall into
-        // this category.
-        if (textureUsages.sameUsagesAcrossSubresources && mSameLastUsagesAcrossSubresources) {
-            if (CanReuseWithoutBarrier(mSubresourceLastUsages[0], textureUsages.usage)) {
-                return;
-            }
-
-            imageBarriers->push_back(BuildMemoryBarrier(format, mHandle, mSubresourceLastUsages[0],
-                                                        textureUsages.usage, GetAllSubresources()));
-            allLastUsages = mSubresourceLastUsages[0];
-            allUsages = textureUsages.usage;
-            for (uint32_t i = 0; i < subresourceCount; ++i) {
-                mSubresourceLastUsages[i] = textureUsages.usage;
-            }
-        } else {
-            for (uint32_t arrayLayer = 0; arrayLayer < GetArrayLayers(); ++arrayLayer) {
-                for (uint32_t mipLevel = 0; mipLevel < GetNumMipLevels(); ++mipLevel) {
-                    wgpu::TextureUsage lastUsage = wgpu::TextureUsage::None;
-                    wgpu::TextureUsage usage = wgpu::TextureUsage::None;
-
-                    // Accumulate usage for all format aspects because we cannot transition
-                    // separately.
-                    // TODO(enga): Use VK_KHR_separate_depth_stencil_layouts.
-                    for (Aspect aspect : IterateEnumMask(GetFormat().aspects)) {
-                        uint32_t index = GetSubresourceIndex(mipLevel, arrayLayer, aspect);
-
-                        usage |= textureUsages.subresourceUsages[index];
-                        lastUsage |= mSubresourceLastUsages[index];
-                    }
-
-                    // Avoid encoding barriers when it isn't needed.
-                    if (usage == wgpu::TextureUsage::None) {
-                        continue;
-                    }
-
-                    if (CanReuseWithoutBarrier(lastUsage, usage)) {
-                        continue;
-                    }
-
-                    allLastUsages |= lastUsage;
-                    allUsages |= usage;
-
-                    for (Aspect aspect : IterateEnumMask(GetFormat().aspects)) {
-                        uint32_t index = GetSubresourceIndex(mipLevel, arrayLayer, aspect);
-                        mSubresourceLastUsages[index] = usage;
-                    }
-
-                    imageBarriers->push_back(
-                        BuildMemoryBarrier(format, mHandle, lastUsage, usage,
-                                           SubresourceRange::SingleMipAndLayer(
-                                               mipLevel, arrayLayer, GetFormat().aspects)));
+        mSubresourceLastUsages.Merge(
+            subresourceUsages, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage,
+                                   const wgpu::TextureUsage& newUsage) {
+                if (newUsage == wgpu::TextureUsage::None ||
+                    CanReuseWithoutBarrier(*lastUsage, newUsage)) {
+                    return;
                 }
-            }
-        }
+
+                imageBarriers->push_back(BuildMemoryBarrier(this, *lastUsage, newUsage, range));
+
+                allLastUsages |= *lastUsage;
+                allUsages |= newUsage;
+
+                *lastUsage = newUsage;
+            });
 
         if (mExternalState != ExternalState::InternalOnly) {
             TweakTransitionForExternalUsage(recordingContext, imageBarriers,
@@ -894,7 +930,6 @@ namespace dawn_native { namespace vulkan {
 
         *srcStages |= VulkanPipelineStage(allLastUsages, format);
         *dstStages |= VulkanPipelineStage(allUsages, format);
-        mSameLastUsagesAcrossSubresources = textureUsages.sameUsagesAcrossSubresources;
     }
 
     void Texture::TransitionUsageNow(CommandRecordingContext* recordingContext,
@@ -925,69 +960,50 @@ namespace dawn_native { namespace vulkan {
         std::vector<VkImageMemoryBarrier>* imageBarriers,
         VkPipelineStageFlags* srcStages,
         VkPipelineStageFlags* dstStages) {
+        // Base Vulkan doesn't support transitioning depth and stencil separately. We work around
+        // this limitation by modifying the range to be on CombinedDepthStencil. The barriers will
+        // be produced for DEPTH | STENCIL since the SubresourceRange uses
+        // Aspect::CombinedDepthStencil.
+        if (ShouldCombineDepthStencilBarriers()) {
+            SubresourceRange updatedRange = range;
+            updatedRange.aspects = Aspect::CombinedDepthStencil;
+
+            std::vector<VkImageMemoryBarrier> newBarriers;
+            TransitionUsageAndGetResourceBarrierImpl(usage, updatedRange, imageBarriers, srcStages,
+                                                     dstStages);
+        } else {
+            TransitionUsageAndGetResourceBarrierImpl(usage, range, imageBarriers, srcStages,
+                                                     dstStages);
+        }
+    }
+
+    void Texture::TransitionUsageAndGetResourceBarrierImpl(
+        wgpu::TextureUsage usage,
+        const SubresourceRange& range,
+        std::vector<VkImageMemoryBarrier>* imageBarriers,
+        VkPipelineStageFlags* srcStages,
+        VkPipelineStageFlags* dstStages) {
         ASSERT(imageBarriers != nullptr);
-
         const Format& format = GetFormat();
-
-        wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
 
         // This transitions assume it is a 2D texture
         ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
 
-        // If the usages transitions can cover all subresources, and old usages of all subresources
-        // are the same, then we can use one barrier to do state transition for all subresources.
-        // Note that if the texture has only one mip level and one array slice, it will fall into
-        // this category.
-        bool areAllSubresourcesCovered = (range.levelCount == GetNumMipLevels() &&  //
-                                          range.layerCount == GetArrayLayers() &&   //
-                                          range.aspects == format.aspects);
-        if (mSameLastUsagesAcrossSubresources && areAllSubresourcesCovered) {
-            ASSERT(range.baseMipLevel == 0 && range.baseArrayLayer == 0);
-            if (CanReuseWithoutBarrier(mSubresourceLastUsages[0], usage)) {
-                return;
-            }
-            imageBarriers->push_back(
-                BuildMemoryBarrier(format, mHandle, mSubresourceLastUsages[0], usage, range));
-            allLastUsages = mSubresourceLastUsages[0];
-            for (uint32_t i = 0; i < GetSubresourceCount(); ++i) {
-                mSubresourceLastUsages[i] = usage;
-            }
-        } else {
-            for (uint32_t layer = range.baseArrayLayer;
-                 layer < range.baseArrayLayer + range.layerCount; ++layer) {
-                for (uint32_t level = range.baseMipLevel;
-                     level < range.baseMipLevel + range.levelCount; ++level) {
-                    // Accumulate usage for all format aspects because we cannot transition
-                    // separately.
-                    // TODO(enga): Use VK_KHR_separate_depth_stencil_layouts.
-                    wgpu::TextureUsage lastUsage = wgpu::TextureUsage::None;
-                    for (Aspect aspect : IterateEnumMask(format.aspects)) {
-                        uint32_t index = GetSubresourceIndex(level, layer, aspect);
-                        lastUsage |= mSubresourceLastUsages[index];
-                    }
-
-                    if (CanReuseWithoutBarrier(lastUsage, usage)) {
-                        continue;
-                    }
-
-                    allLastUsages |= lastUsage;
-
-                    for (Aspect aspect : IterateEnumMask(format.aspects)) {
-                        uint32_t index = GetSubresourceIndex(level, layer, aspect);
-                        mSubresourceLastUsages[index] = usage;
-                    }
-
-                    imageBarriers->push_back(BuildMemoryBarrier(
-                        format, mHandle, lastUsage, usage,
-                        SubresourceRange::SingleMipAndLayer(level, layer, format.aspects)));
+        wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
+        mSubresourceLastUsages.Update(
+            range, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage) {
+                if (CanReuseWithoutBarrier(*lastUsage, usage)) {
+                    return;
                 }
-            }
-        }
+
+                imageBarriers->push_back(BuildMemoryBarrier(this, *lastUsage, usage, range));
+
+                allLastUsages |= *lastUsage;
+                *lastUsage = usage;
+            });
 
         *srcStages |= VulkanPipelineStage(allLastUsages, format);
         *dstStages |= VulkanPipelineStage(usage, format);
-
-        mSameLastUsagesAcrossSubresources = areAllSubresourcesCovered;
     }
 
     MaybeError Texture::ClearTexture(CommandRecordingContext* recordingContext,
@@ -1006,65 +1022,117 @@ namespace dawn_native { namespace vulkan {
         imageRange.levelCount = 1;
         imageRange.layerCount = 1;
 
-        for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
-             ++level) {
-            imageRange.baseMipLevel = level;
-            for (uint32_t layer = range.baseArrayLayer;
-                 layer < range.baseArrayLayer + range.layerCount; ++layer) {
-                Aspect aspects = Aspect::None;
-                for (Aspect aspect : IterateEnumMask(range.aspects)) {
+        if (GetFormat().isCompressed) {
+            if (range.aspects == Aspect::None) {
+                return {};
+            }
+            // need to clear the texture with a copy from buffer
+            ASSERT(range.aspects == Aspect::Color);
+            const TexelBlockInfo& blockInfo = GetFormat().GetAspectInfo(range.aspects).block;
+
+            uint32_t bytesPerRow = Align((GetWidth() / blockInfo.width) * blockInfo.byteSize,
+                                         device->GetOptimalBytesPerRowAlignment());
+            uint64_t bufferSize = bytesPerRow * (GetHeight() / blockInfo.height);
+            DynamicUploader* uploader = device->GetDynamicUploader();
+            UploadHandle uploadHandle;
+            DAWN_TRY_ASSIGN(uploadHandle,
+                            uploader->Allocate(bufferSize, device->GetPendingCommandSerial(),
+                                               blockInfo.byteSize));
+            memset(uploadHandle.mappedBuffer, uClearColor, bufferSize);
+
+            std::vector<VkBufferImageCopy> regions;
+            for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
+                 ++level) {
+                imageRange.baseMipLevel = level;
+                for (uint32_t layer = range.baseArrayLayer;
+                     layer < range.baseArrayLayer + range.layerCount; ++layer) {
                     if (clearValue == TextureBase::ClearValue::Zero &&
                         IsSubresourceContentInitialized(
-                            SubresourceRange::SingleMipAndLayer(level, layer, aspect))) {
+                            SubresourceRange::SingleMipAndLayer(level, layer, range.aspects))) {
                         // Skip lazy clears if already initialized.
                         continue;
                     }
-                    aspects |= aspect;
+
+                    TextureDataLayout dataLayout;
+                    dataLayout.offset = uploadHandle.startOffset;
+                    dataLayout.rowsPerImage = GetHeight() / blockInfo.height;
+                    dataLayout.bytesPerRow = bytesPerRow;
+                    TextureCopy textureCopy;
+                    textureCopy.aspect = range.aspects;
+                    textureCopy.mipLevel = level;
+                    textureCopy.origin = {0, 0, layer};
+                    textureCopy.texture = this;
+
+                    regions.push_back(ComputeBufferImageCopyRegion(dataLayout, textureCopy,
+                                                                   GetMipLevelPhysicalSize(level)));
                 }
-
-                if (aspects == Aspect::None) {
-                    continue;
-                }
-
-                imageRange.aspectMask = VulkanAspectMask(aspects);
-                imageRange.baseArrayLayer = layer;
-
-                if (aspects & (Aspect::Depth | Aspect::Stencil)) {
-                    VkClearDepthStencilValue clearDepthStencilValue[1];
-                    clearDepthStencilValue[0].depth = fClearColor;
-                    clearDepthStencilValue[0].stencil = uClearColor;
-                    device->fn.CmdClearDepthStencilImage(recordingContext->commandBuffer,
-                                                         GetHandle(),
-                                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                         clearDepthStencilValue, 1, &imageRange);
-                } else {
-                    ASSERT(aspects == Aspect::Color);
-                    VkClearColorValue clearColorValue;
-                    switch (GetFormat().GetAspectInfo(Aspect::Color).baseType) {
-                        case wgpu::TextureComponentType::Float:
-                            clearColorValue.float32[0] = fClearColor;
-                            clearColorValue.float32[1] = fClearColor;
-                            clearColorValue.float32[2] = fClearColor;
-                            clearColorValue.float32[3] = fClearColor;
-                            break;
-                        case wgpu::TextureComponentType::Sint:
-                            clearColorValue.int32[0] = sClearColor;
-                            clearColorValue.int32[1] = sClearColor;
-                            clearColorValue.int32[2] = sClearColor;
-                            clearColorValue.int32[3] = sClearColor;
-                            break;
-                        case wgpu::TextureComponentType::Uint:
-                            clearColorValue.uint32[0] = uClearColor;
-                            clearColorValue.uint32[1] = uClearColor;
-                            clearColorValue.uint32[2] = uClearColor;
-                            clearColorValue.uint32[3] = uClearColor;
-                            break;
-                        case wgpu::TextureComponentType::DepthComparison:
-                            UNREACHABLE();
+            }
+            device->fn.CmdCopyBufferToImage(
+                recordingContext->commandBuffer,
+                ToBackend(uploadHandle.stagingBuffer)->GetBufferHandle(), GetHandle(),
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, regions.data());
+        } else {
+            for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
+                 ++level) {
+                imageRange.baseMipLevel = level;
+                for (uint32_t layer = range.baseArrayLayer;
+                     layer < range.baseArrayLayer + range.layerCount; ++layer) {
+                    Aspect aspects = Aspect::None;
+                    for (Aspect aspect : IterateEnumMask(range.aspects)) {
+                        if (clearValue == TextureBase::ClearValue::Zero &&
+                            IsSubresourceContentInitialized(
+                                SubresourceRange::SingleMipAndLayer(level, layer, aspect))) {
+                            // Skip lazy clears if already initialized.
+                            continue;
+                        }
+                        aspects |= aspect;
                     }
-                    device->fn.CmdClearColorImage(recordingContext->commandBuffer, GetHandle(),
-                                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                  &clearColorValue, 1, &imageRange);
+
+                    if (aspects == Aspect::None) {
+                        continue;
+                    }
+
+                    imageRange.aspectMask = VulkanAspectMask(aspects);
+                    imageRange.baseArrayLayer = layer;
+
+                    if (aspects &
+                        (Aspect::Depth | Aspect::Stencil | Aspect::CombinedDepthStencil)) {
+                        VkClearDepthStencilValue clearDepthStencilValue[1];
+                        clearDepthStencilValue[0].depth = fClearColor;
+                        clearDepthStencilValue[0].stencil = uClearColor;
+                        device->fn.CmdClearDepthStencilImage(
+                            recordingContext->commandBuffer, GetHandle(),
+                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clearDepthStencilValue, 1,
+                            &imageRange);
+                    } else {
+                        ASSERT(aspects == Aspect::Color);
+                        VkClearColorValue clearColorValue;
+                        switch (GetFormat().GetAspectInfo(Aspect::Color).baseType) {
+                            case wgpu::TextureComponentType::Float:
+                                clearColorValue.float32[0] = fClearColor;
+                                clearColorValue.float32[1] = fClearColor;
+                                clearColorValue.float32[2] = fClearColor;
+                                clearColorValue.float32[3] = fClearColor;
+                                break;
+                            case wgpu::TextureComponentType::Sint:
+                                clearColorValue.int32[0] = sClearColor;
+                                clearColorValue.int32[1] = sClearColor;
+                                clearColorValue.int32[2] = sClearColor;
+                                clearColorValue.int32[3] = sClearColor;
+                                break;
+                            case wgpu::TextureComponentType::Uint:
+                                clearColorValue.uint32[0] = uClearColor;
+                                clearColorValue.uint32[1] = uClearColor;
+                                clearColorValue.uint32[2] = uClearColor;
+                                clearColorValue.uint32[3] = uClearColor;
+                                break;
+                            case wgpu::TextureComponentType::DepthComparison:
+                                UNREACHABLE();
+                        }
+                        device->fn.CmdClearColorImage(recordingContext->commandBuffer, GetHandle(),
+                                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                                      &clearColorValue, 1, &imageRange);
+                    }
                 }
             }
         }
@@ -1082,12 +1150,6 @@ namespace dawn_native { namespace vulkan {
             return;
         }
         if (!IsSubresourceContentInitialized(range)) {
-            // TODO(jiawei.shao@intel.com): initialize textures in BC formats with Buffer-to-Texture
-            // copies.
-            if (GetFormat().isCompressed) {
-                return;
-            }
-
             // If subresource has not been initialized, clear it to black as it could contain dirty
             // bits from recycled memory
             GetDevice()->ConsumedError(
@@ -1096,8 +1158,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     VkImageLayout Texture::GetCurrentLayoutForSwapChain() const {
-        ASSERT(mSubresourceLastUsages.size() == 1);
-        return VulkanImageLayout(mSubresourceLastUsages[0], GetFormat());
+        return VulkanImageLayout(this, mSubresourceLastUsages.Get(Aspect::Color, 0, 0));
     }
 
     // static

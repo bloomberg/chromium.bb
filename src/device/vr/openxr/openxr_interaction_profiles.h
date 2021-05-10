@@ -28,7 +28,7 @@ enum class OpenXrInteractionProfileType {
   kHTCVive = 4,
   kSamsungOdyssey = 5,
   kHPReverbG2 = 6,
-  kHandSelect = 7,
+  kHandSelectGrasp = 7,
   kCount = 8,
 };
 
@@ -40,7 +40,8 @@ enum class OpenXrButtonType {
   kThumbrest = 4,
   kButton1 = 5,
   kButton2 = 6,
-  kMaxValue = 6,
+  kGrasp = 7,
+  kMaxValue = 7,
 };
 
 enum class OpenXrAxisType {
@@ -119,8 +120,8 @@ constexpr const char* kSamsungOdysseyInputProfiles[] = {
 constexpr const char* kHPReverbG2InputProfiles[] = {
     "hp-mixed-reality", "oculus-touch", "generic-trigger-squeeze"};
 
-constexpr const char* kGenericHandSelectInputProfile[] = {
-    "generic-hand-select"};
+constexpr const char* kGenericHandSelectGraspInputProfile[] = {
+    "generic-hand-select-grasp", "generic-hand-select"};
 
 constexpr OpenXrButtonPathMap kMicrosoftMotionControllerButtonPathMaps[] = {
     {OpenXrButtonType::kTrigger,
@@ -279,10 +280,15 @@ constexpr OpenXrButtonPathMap kHPReverbG2RightControllerButtonPathMaps[] = {
      1},
 };
 
-constexpr OpenXrButtonPathMap kGenericHandSelectButtonPathMaps[] = {
+constexpr OpenXrButtonPathMap kGenericHandSelectGraspButtonPathMaps[] = {
     {OpenXrButtonType::kTrigger,
-     {{OpenXrButtonActionType::kValue, "/input/select/value"}},
-     1},
+     {{OpenXrButtonActionType::kPress, "/input/select/value"},
+      {OpenXrButtonActionType::kValue, "/input/select/value"}},
+     2},
+    {OpenXrButtonType::kGrasp,
+     {{OpenXrButtonActionType::kPress, "/input/squeeze/value"},
+      {OpenXrButtonActionType::kValue, "/input/squeeze/value"}},
+     2},
 };
 
 constexpr OpenXrAxisPathMap kMicrosoftMotionControllerAxisPathMaps[] = {
@@ -408,16 +414,16 @@ constexpr OpenXrControllerInteractionProfile kHPReverbG2InteractionProfile = {
 
 constexpr OpenXrControllerInteractionProfile
     kHandInteractionMSFTInteractionProfile = {
-        OpenXrInteractionProfileType::kHandSelect,
+        OpenXrInteractionProfileType::kHandSelectGrasp,
         "/interaction_profiles/microsoft/hand_interaction",
         kMSFTHandInteractionExtensionName,
-        GamepadMapping::kNone,
-        kGenericHandSelectInputProfile,
-        base::size(kGenericHandSelectInputProfile),
-        kGenericHandSelectButtonPathMaps,
-        base::size(kGenericHandSelectButtonPathMaps),
-        kGenericHandSelectButtonPathMaps,
-        base::size(kGenericHandSelectButtonPathMaps),
+        GamepadMapping::kXrStandard,
+        kGenericHandSelectGraspInputProfile,
+        base::size(kGenericHandSelectGraspInputProfile),
+        kGenericHandSelectGraspButtonPathMaps,
+        base::size(kGenericHandSelectGraspButtonPathMaps),
+        kGenericHandSelectGraspButtonPathMaps,
+        base::size(kGenericHandSelectGraspButtonPathMaps),
         nullptr,
         0};
 

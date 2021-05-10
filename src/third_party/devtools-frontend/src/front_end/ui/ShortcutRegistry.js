@@ -7,14 +7,14 @@ import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
-import {Action} from './Action.js';                  // eslint-disable-line no-unused-vars
+import {Action, getRegisteredActionExtensions, KeybindSet} from './ActionRegistration.js';  // eslint-disable-line no-unused-vars
 import {ActionRegistry} from './ActionRegistry.js';  // eslint-disable-line no-unused-vars
 import {Context} from './Context.js';
 import {Dialog} from './Dialog.js';
 import {Descriptor, KeyboardShortcut, Modifiers, Type} from './KeyboardShortcut.js';  // eslint-disable-line no-unused-vars
 import {isEditing} from './UIUtils.js';
 
-/** @type {!ShortcutRegistry} */
+/** @type {!ShortcutRegistry|undefined} */
 let shortcutRegistryInstance;
 
 export class ShortcutRegistry {
@@ -23,8 +23,8 @@ export class ShortcutRegistry {
    */
   constructor(actionRegistry) {
     this._actionRegistry = actionRegistry;
-    /** @type {!Platform.Multimap.<string, !KeyboardShortcut>} */
-    this._actionToShortcut = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap.<string, !KeyboardShortcut>} */
+    this._actionToShortcut = new Platform.MapUtilities.Multimap();
     this._keyMap = new ShortcutTreeNode(0, 0);
     /** @type {?ShortcutTreeNode} */
     this._activePrefixKey = null;
@@ -34,8 +34,8 @@ export class ShortcutRegistry {
     this._consumePrefix = null;
     /** @type {!Set.<string>} */
     this._devToolsDefaultShortcutActions = new Set();
-    /** @type {!Platform.Multimap.<string, !KeyboardShortcut>} */
-    this._disabledDefaultShortcutsForAction = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap.<string, !KeyboardShortcut>} */
+    this._disabledDefaultShortcutsForAction = new Platform.MapUtilities.Multimap();
     this._keybindSetSetting = Common.Settings.Settings.instance().moduleSetting('activeKeybindSet');
     this._keybindSetSetting.addChangeListener(event => {
       Host.userMetrics.keybindSetSettingChanged(event.data);
@@ -62,6 +62,9 @@ export class ShortcutRegistry {
     return shortcutRegistryInstance;
   }
 
+  static removeInstance() {
+    shortcutRegistryInstance = undefined;
+  }
   /**
    * @param {number} key
    * @param {!Object.<string, function():Promise.<boolean>>=} handlers
@@ -204,9 +207,10 @@ export class ShortcutRegistry {
    */
   async handleKey(key, domKey, event, handlers) {
     const keyModifiers = key >> 8;
-    const hasHandlersOrPrefixKey = !!handlers || !!this._activePrefixKey;
+    const hasHandlersOrPrefixKey = Boolean(handlers) || Boolean(this._activePrefixKey);
     const keyMapNode = this._keyMap.getNode(key);
-    const maybeHasActions = this._applicableActions(key, handlers).length > 0 || (keyMapNode && keyMapNode.hasChords());
+    const maybeHasActions =
+        (this._applicableActions(key, handlers)).length > 0 || (keyMapNode && keyMapNode.hasChords());
     if ((!hasHandlersOrPrefixKey && isPossiblyInputKey()) || !maybeHasActions ||
         KeyboardShortcut.isModifier(KeyboardShortcut.keyCodeAndModifiersFromKey(key).keyCode)) {
       return;
@@ -220,7 +224,7 @@ export class ShortcutRegistry {
 
     if (this._activePrefixTimeout) {
       clearTimeout(this._activePrefixTimeout);
-      const handled = await maybeExecuteActionForKey.call(this);
+      const handled = maybeExecuteActionForKey.call(this);
       this._activePrefixKey = null;
       this._activePrefixTimeout = null;
       if (handled) {
@@ -287,7 +291,7 @@ export class ShortcutRegistry {
      * @return {boolean}
      */
     function hasModifier(mod) {
-      return !!(keyModifiers & mod);
+      return Boolean(keyModifiers & mod);
     }
 
     /**
@@ -391,7 +395,6 @@ export class ShortcutRegistry {
     this._actionToShortcut.clear();
     this._keyMap.clear();
     const keybindSet = this._keybindSetSetting.get();
-    const extensions = Root.Runtime.Runtime.instance().extensions('action');
     this._disabledDefaultShortcutsForAction.clear();
     this._devToolsDefaultShortcutActions.clear();
     /** @type {!Array<!{keyCode: number, modifiers: number}>} */
@@ -412,16 +415,9 @@ export class ShortcutRegistry {
         }
       }
     }
-    extensions.forEach(registerExtension, this);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(forwardedKeys));
-
-    /**
-     * @param {!Root.Runtime.Extension} extension
-     * @this {ShortcutRegistry}
-     */
-    function registerExtension(extension) {
-      const descriptor = extension.descriptor();
-      const bindings = descriptor.bindings;
+    for (const actionExtension of getRegisteredActionExtensions()) {
+      const actionId = actionExtension.id();
+      const bindings = actionExtension.bindings();
       for (let i = 0; bindings && i < bindings.length; ++i) {
         const keybindSets = bindings[i].keybindSets;
         if (!platformMatches(bindings[i].platform) || !keybindSetsMatch(keybindSets)) {
@@ -430,7 +426,6 @@ export class ShortcutRegistry {
         const keys = bindings[i].shortcut.split(/\s+/);
         const shortcutDescriptors = keys.map(KeyboardShortcut.makeDescriptorFromBindingShortcut);
         if (shortcutDescriptors.length > 0) {
-          const actionId = /** @type {string} */ (descriptor.actionId);
 
           if (this._isDisabledDefault(shortcutDescriptors, actionId)) {
             this._devToolsDefaultShortcutActions.add(actionId);
@@ -445,7 +440,7 @@ export class ShortcutRegistry {
             this._devToolsDefaultShortcutActions.add(actionId);
             this._registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, Type.DefaultShortcut));
           } else {
-            if (keybindSets.includes(DefaultShortcutSetting)) {
+            if (keybindSets.includes(KeybindSet.DEVTOOLS_DEFAULT)) {
               this._devToolsDefaultShortcutActions.add(actionId);
             }
             this._registerShortcut(
@@ -454,6 +449,7 @@ export class ShortcutRegistry {
         }
       }
     }
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setWhitelistedShortcuts(JSON.stringify(forwardedKeys));
 
     /**
      * @param {string=} platformsString

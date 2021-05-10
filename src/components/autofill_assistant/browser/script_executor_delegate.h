@@ -37,6 +37,7 @@ class TriggerContext;
 class WebsiteLoginManager;
 class EventHandler;
 class UserModel;
+class ElementStore;
 
 class ScriptExecutorDelegate {
  public:
@@ -60,6 +61,7 @@ class ScriptExecutorDelegate {
   virtual const GURL& GetScriptURL() = 0;
   virtual Service* GetService() = 0;
   virtual WebController* GetWebController() = 0;
+  virtual ElementStore* GetElementStore() const = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
@@ -80,7 +82,10 @@ class ScriptExecutorDelegate {
   virtual std::string GetStatusMessage() const = 0;
   virtual void SetBubbleMessage(const std::string& message) = 0;
   virtual std::string GetBubbleMessage() const = 0;
-  virtual void SetDetails(std::unique_ptr<Details> details) = 0;
+  virtual void SetDetails(std::unique_ptr<Details> details,
+                          base::TimeDelta delay) = 0;
+  virtual void AppendDetails(std::unique_ptr<Details> details,
+                             base::TimeDelta delay) = 0;
   virtual void SetInfoBox(const InfoBox& info_box) = 0;
   virtual void ClearInfoBox() = 0;
   virtual void SetCollectUserDataOptions(
@@ -187,6 +192,10 @@ class ScriptExecutorDelegate {
   // Sets whether browse mode should be invisible or not. Must be set before
   // calling |EnterState(BROWSE)| to take effect.
   virtual void SetBrowseModeInvisible(bool invisible) = 0;
+
+  // Whether the slow connection or website warning should be shown. Depends on
+  // the state at the moment of the invocation.
+  virtual bool ShouldShowWarning() = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

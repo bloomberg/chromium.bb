@@ -40,6 +40,10 @@ void TestSystemTrayClient::ShowConnectedDevicesSettings() {
 
 void TestSystemTrayClient::ShowTetherNetworkSettings() {}
 
+void TestSystemTrayClient::ShowWifiSyncSettings() {
+  show_wifi_sync_settings_count_++;
+}
+
 void TestSystemTrayClient::ShowAboutChromeOS() {}
 
 void TestSystemTrayClient::ShowHelp() {}
@@ -54,6 +58,10 @@ void TestSystemTrayClient::ShowPaletteHelp() {}
 
 void TestSystemTrayClient::ShowPaletteSettings() {}
 
+void TestSystemTrayClient::ShowPrivacyAndSecuritySettings() {
+  show_os_settings_privacy_and_security_count_++;
+}
+
 void TestSystemTrayClient::ShowPublicAccountInfo() {}
 
 void TestSystemTrayClient::ShowEnterpriseInfo() {}
@@ -62,6 +70,8 @@ void TestSystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
 }
 
 void TestSystemTrayClient::ShowNetworkCreate(const std::string& type) {}
+
+void TestSystemTrayClient::ShowSettingsCellularSetup(bool show_psim_flow) {}
 
 void TestSystemTrayClient::ShowThirdPartyVpnCreate(
     const std::string& extension_id) {}

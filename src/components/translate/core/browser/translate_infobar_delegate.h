@@ -19,6 +19,7 @@
 #include "base/observer_list_types.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/translate/core/browser/translate_metrics_logger.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
@@ -136,6 +137,10 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool triggered_from_menu() const {
     return triggered_from_menu_;
   }
+  // Languages supporting translate.
+  virtual void GetLanguagesNames(std::vector<base::string16>* languages) const;
+  virtual void GetLanguagesCodes(
+      std::vector<std::string>* languages_codes) const;
 
   virtual void Translate();
   virtual void RevertTranslation();
@@ -149,8 +154,8 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // Methods called by the Options menu delegate.
   virtual bool IsTranslatableLanguageByPrefs() const;
   virtual void ToggleTranslatableLanguageByPrefs();
-  virtual bool IsSiteBlacklisted() const;
-  virtual void ToggleSiteBlacklist();
+  virtual bool IsSiteOnNeverPromptList() const;
+  virtual void ToggleNeverPrompt();
   virtual bool ShouldAlwaysTranslate() const;
   virtual void ToggleAlwaysTranslate();
 
@@ -165,6 +170,14 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   void ResetTranslationAcceptedCount();
   void ResetTranslationDeniedCount();
+
+  // Translatable content languages.
+  virtual void GetContentLanguagesNames(
+      std::vector<base::string16>* content_languages) const;
+  virtual void GetContentLanguagesNativeNames(
+      std::vector<base::string16>* native_content_languages) const;
+  virtual void GetContentLanguagesCodes(
+      std::vector<std::string>* content_languages_codes) const;
 
   // Returns whether "Always Translate Language" should automatically trigger.
   // If true, this method has the side effect of mutating some prefs.
@@ -227,6 +240,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // and the user selects to never translate the language.
   void OnInfoBarClosedByUser();
 
+  // Records a high level UI interaction.
+  void ReportUIInteraction(UIInteraction ui_interaction);
+
   // InfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
@@ -244,7 +260,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
       bool triggered_from_menu);
 
  private:
-  friend class TranslationInfoBarTest;
+  friend class TranslateInfoBarDelegateTest;
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   bool is_off_the_record_;

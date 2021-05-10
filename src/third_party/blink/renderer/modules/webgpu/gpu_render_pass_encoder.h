@@ -18,6 +18,7 @@ class DoubleSequenceOrGPUColorDict;
 class GPURenderBundle;
 class GPURenderPipeline;
 class GPUQuerySet;
+class V8GPUIndexFormat;
 
 class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
                              public GPUProgrammablePassEncoder {
@@ -26,9 +27,9 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
  public:
   explicit GPURenderPassEncoder(GPUDevice* device,
                                 WGPURenderPassEncoder render_pass_encoder);
-  ~GPURenderPassEncoder() override;
 
   // gpu_render_pass_encoder.idl
+  void setBindGroup(uint32_t index, GPUBindGroup* bindGroup);
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bindGroup,
                     const Vector<uint32_t>& dynamicOffsets);
@@ -53,12 +54,10 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
                    float minDepth,
                    float maxDepth);
   void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset, uint64_t size);
   void setIndexBuffer(GPUBuffer* buffer,
-                      const WTF::String& format,
+                      const V8GPUIndexFormat& format,
                       uint64_t offset,
-                      uint64_t size,
-                      ExceptionState& exception_state);
+                      uint64_t size);
   void setVertexBuffer(uint32_t slot,
                        const GPUBuffer* buffer,
                        const uint64_t offset,
@@ -86,6 +85,8 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
   void drawIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
   void drawIndexedIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
   void executeBundles(const HeapVector<Member<GPURenderBundle>>& bundles);
+  void beginOcclusionQuery(uint32_t queryIndex);
+  void endOcclusionQuery();
   void writeTimestamp(GPUQuerySet* querySet, uint32_t queryIndex);
   void endPass();
 

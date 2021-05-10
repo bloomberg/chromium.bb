@@ -16,10 +16,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -39,7 +39,8 @@
 using base::Value;
 using content::BrowserThread;
 
-typedef base::Callback<void(bool success, const std::string&)> FetchCallback;
+using FetchCallback =
+    base::OnceCallback<void(bool success, const std::string&)>;
 
 namespace set_wallpaper = extensions::api::wallpaper::SetWallpaper;
 
@@ -52,7 +53,7 @@ class WallpaperFetcher {
   void FetchWallpaper(const GURL& url, FetchCallback callback) {
     CancelPreviousFetch();
     original_url_ = url;
-    callback_ = callback;
+    callback_ = std::move(callback);
 
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("wallpaper_fetcher", R"(
@@ -106,14 +107,13 @@ class WallpaperFetcher {
     }
 
     simple_loader_.reset();
-    callback_.Run(success, response);
-    callback_.Reset();
+    std::move(callback_).Run(success, response);
   }
 
   void CancelPreviousFetch() {
     if (simple_loader_.get()) {
-      callback_.Run(false, wallpaper_api_util::kCancelWallpaperMessage);
-      callback_.Reset();
+      std::move(callback_).Run(false,
+                               wallpaper_api_util::kCancelWallpaperMessage);
       simple_loader_.reset();
     }
   }
@@ -172,7 +172,7 @@ ExtensionFunction::ResponseAction WallpaperSetWallpaperFunction::Run() {
 
   g_wallpaper_fetcher.Get().FetchWallpaper(
       wallpaper_url,
-      base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
+      base::BindOnce(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
   // FetchWallpaper() repsonds asynchronously.
   return RespondLater();
 }

@@ -28,12 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Platform from '../platform/platform.js';
+
 import {FormattedContentBuilder} from './FormattedContentBuilder.js';  // eslint-disable-line no-unused-vars
 import {createTokenizer} from './FormatterWorker.js';
 
-/**
- * @unrestricted
- */
 export class CSSFormatter {
   /**
    * @param {!FormattedContentBuilder} builder
@@ -88,11 +87,14 @@ export class CSSFormatter {
    */
   _tokenCallback(token, type, startPosition) {
     startPosition += this._fromOffset;
-    const startLine = this._lineEndings.lowerBound(startPosition);
+    const startLine = Platform.ArrayUtilities.lowerBound(
+        this._lineEndings, startPosition, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
     if (startLine !== this._lastLine) {
       this._state.eatWhitespace = true;
     }
-    if (type && /^property/.test(type) && !this._state.inPropertyValue) {
+    // The css- prefix is optional, as we override that in the tokenizer defined
+    // in CodeMirrorTextEditor.js. In a worker context, we don't use the prefix.
+    if (type && (/^(css-)?property/.test(type) || /^(css-)?variable-2/.test(type)) && !this._state.inPropertyValue) {
       this._state.seenProperty = true;
     }
     this._lastLine = startLine;

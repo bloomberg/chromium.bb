@@ -32,7 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FORM_SUBMISSION_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -100,20 +101,24 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
                                 const Event*,
                                 HTMLFormControlElement* submit_button);
 
-  FormSubmission(SubmitMethod,
-                 const KURL& action,
-                 const AtomicString& target,
-                 const AtomicString& content_type,
-                 HTMLFormElement*,
-                 scoped_refptr<EncodedFormData>,
-                 const Event*,
-                 NavigationPolicy navigation_policy,
-                 TriggeringEventInfo triggering_event_info,
-                 ClientNavigationReason reason,
-                 std::unique_ptr<ResourceRequest> resource_request,
-                 Frame* target_frame,
-                 WebFrameLoadType load_type,
-                 LocalDOMWindow* origin_window);
+  FormSubmission(
+      SubmitMethod,
+      const KURL& action,
+      const AtomicString& target,
+      const AtomicString& content_type,
+      HTMLFormElement*,
+      scoped_refptr<EncodedFormData>,
+      const Event*,
+      NavigationPolicy navigation_policy,
+      mojom::blink::TriggeringEventInfo triggering_event_info,
+      ClientNavigationReason reason,
+      std::unique_ptr<ResourceRequest> resource_request,
+      Frame* target_frame,
+      WebFrameLoadType load_type,
+      LocalDOMWindow* origin_window,
+      const LocalFrameToken& initiator_frame_token,
+      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+          initiator_policy_container_keep_alive_handle);
   // FormSubmission for DialogMethod
   explicit FormSubmission(const String& result);
 
@@ -141,13 +146,20 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
   Member<HTMLFormElement> form_;
   scoped_refptr<EncodedFormData> form_data_;
   NavigationPolicy navigation_policy_;
-  TriggeringEventInfo triggering_event_info_;
+  mojom::blink::TriggeringEventInfo triggering_event_info_;
   String result_;
   ClientNavigationReason reason_;
   std::unique_ptr<ResourceRequest> resource_request_;
   Member<Frame> target_frame_;
   WebFrameLoadType load_type_;
   Member<LocalDOMWindow> origin_window_;
+  LocalFrameToken initiator_frame_token_;
+
+  // Since form submissions are scheduled asynchronously, we need to keep a
+  // handle to the initiator PolicyContainerHost. This ensures that it remains
+  // available in the browser until we create the NavigationRequest.
+  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+      initiator_policy_container_keep_alive_handle_;
 };
 
 }  // namespace blink

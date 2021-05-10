@@ -162,17 +162,17 @@ void SkPathRef::CreateTransformedCopy(sk_sp<SkPathRef>* dst,
     }
 
     if (dst->get() != &src) {
-        (*dst)->fPoints = src.fPoints;
         (*dst)->fVerbs = src.fVerbs;
         (*dst)->fConicWeights = src.fConicWeights;
         (*dst)->callGenIDChangeListeners();
         (*dst)->fGenerationID = 0;  // mark as dirty
+        // don't copy, just allocate the points
+        (*dst)->fPoints.setCount(src.fPoints.count());
     }
+    matrix.mapPoints((*dst)->fPoints.begin(), src.fPoints.begin(), src.fPoints.count());
 
     // Need to check this here in case (&src == dst)
     bool canXformBounds = !src.fBoundsIsDirty && matrix.rectStaysRect() && src.countPoints() > 1;
-
-    matrix.mapPoints((*dst)->fPoints.begin(), src.fPoints.begin(), src.fPoints.count());
 
     /*
      *  Here we optimize the bounds computation, by noting if the bounds are
@@ -681,6 +681,13 @@ bool SkPathRef::isValid() const {
     return true;
 }
 
+bool SkPathRef::dataMatchesVerbs() const {
+    const auto info = sk_path_analyze_verbs(fVerbs.begin(), fVerbs.count());
+    return info.valid                          &&
+           info.segmentMask == fSegmentMask    &&
+           info.points      == fPoints.count() &&
+           info.weights     == fConicWeights.count();
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 SkPathEdgeIter::SkPathEdgeIter(const SkPath& path) {

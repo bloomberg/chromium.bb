@@ -7,10 +7,6 @@
 
 #include <memory>
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace arc {
 
 class ArcSessionManager;
@@ -24,11 +20,8 @@ std::unique_ptr<ArcSessionManager> CreateTestArcSessionManager(
 
 // Does something similar to CreateTestArcSessionManager(), but for an existing
 // object. This function is useful for ARC browser_tests where ArcSessionManager
-// object is (re)created with ArcServiceLauncher::ResetForTesting(). This
-// function automatically starts prop files expansion and it succeeds as long as
-// |temp_dir| is writable.
-bool ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager,
-                                   const base::FilePath& temp_dir);
+// object is (re)created with ArcServiceLauncher::ResetForTesting().
+void ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager);
 
 }  // namespace arc
 

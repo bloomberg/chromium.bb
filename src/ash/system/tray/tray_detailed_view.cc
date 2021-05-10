@@ -270,7 +270,8 @@ class ScrollContentsView : public views::View {
 TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
     : delegate_(delegate) {
   box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kUnifiedDetailedViewPadding));
+      views::BoxLayout::Orientation::kVertical,
+      delegate->GetInsetsForDetailedView()));
   SetBackground(views::CreateSolidBackground(
       delegate_->GetBackgroundColor().value_or(SK_ColorTRANSPARENT)));
 }
@@ -382,19 +383,20 @@ TriView* TrayDetailedView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
   TrayPopupUtils::ConfigureAsStickyHeader(header);
 
   auto* color_provider = AshColorProvider::Get();
-  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-  label->SetText(l10n_util::GetStringUTF16(text_id));
-  label->SetEnabledColor(color_provider->GetContentLayerColor(
+  sub_header_label_ = TrayPopupUtils::CreateDefaultLabel();
+  sub_header_label_->SetText(l10n_util::GetStringUTF16(text_id));
+  sub_header_label_->SetEnabledColor(color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
-  TrayPopupUtils::SetLabelFontList(label,
+  TrayPopupUtils::SetLabelFontList(sub_header_label_,
                                    TrayPopupUtils::FontStyle::kSubHeader);
-  header->AddView(TriView::Container::CENTER, label);
+  header->AddView(TriView::Container::CENTER, sub_header_label_);
 
-  views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
-  image_view->SetImage(gfx::CreateVectorIcon(
+  sub_header_image_view_ = TrayPopupUtils::CreateMainImageView();
+  sub_header_icon_ = &icon;
+  sub_header_image_view_->SetImage(gfx::CreateVectorIcon(
       icon, color_provider->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kIconColorPrimary)));
-  header->AddView(TriView::Container::START, image_view);
+  header->AddView(TriView::Container::START, sub_header_image_view_);
 
   scroll_content_->AddChildView(header);
   return header;
@@ -495,6 +497,23 @@ int TrayDetailedView::GetHeightForWidth(int width) const {
 
 const char* TrayDetailedView::GetClassName() const {
   return "TrayDetailedView";
+}
+
+void TrayDetailedView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  delegate_->UpdateColors();
+
+  auto* color_provider = AshColorProvider::Get();
+  if (sub_header_label_) {
+    sub_header_label_->SetEnabledColor(color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
+  }
+  if (sub_header_image_view_) {
+    sub_header_image_view_->SetImage(gfx::CreateVectorIcon(
+        *sub_header_icon_,
+        color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary)));
+  }
 }
 
 }  // namespace ash

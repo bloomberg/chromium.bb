@@ -63,6 +63,8 @@ const AcceleratorData kAcceleratorData[] = {
     {false, ui::VKEY_SLEEP, ui::EF_NONE, LOCK_RELEASED},
     {true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED},
     {false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED},
+    {true, ui::VKEY_ESCAPE, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN,
+     OPEN_DIAGNOSTICS},
     {true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FILE_MANAGER},
     {true, ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN, OPEN_GET_HELP},
     {true, ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
@@ -94,6 +96,7 @@ const AcceleratorData kAcceleratorData[] = {
     // down. The key_code here is MENU (for Alt) and Search is a modifier
     // (EF_COMMAND_DOWN is used for Search as a modifier).
     {false, ui::VKEY_MENU, ui::EF_COMMAND_DOWN, TOGGLE_CAPS_LOCK},
+    {true, ui::VKEY_V, ui::EF_COMMAND_DOWN, TOGGLE_CLIPBOARD_HISTORY},
     {true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE},
     {true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN},
     {true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP},
@@ -193,6 +196,10 @@ const AcceleratorData kAcceleratorData[] = {
 
     // IME mode change key.
     {true, ui::VKEY_MODECHANGE, ui::EF_NONE, SWITCH_TO_NEXT_IME},
+
+    // Emoji picker shortcut.
+    {true, ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
+     SHOW_EMOJI_PICKER},
 
     // Debugging shortcuts that need to be available to end-users in
     // release builds.

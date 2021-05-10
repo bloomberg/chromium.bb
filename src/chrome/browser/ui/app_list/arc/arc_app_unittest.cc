@@ -12,21 +12,23 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -63,11 +65,11 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -461,6 +463,9 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   ChromeLauncherController* CreateLauncherController() {
     launcher_controller_ = std::make_unique<ChromeLauncherController>(
         profile_.get(), model_.get());
+    launcher_controller_->SetProfileForTest(profile_.get());
+    launcher_controller_->SetLauncherControllerHelperForTest(
+        std::make_unique<LauncherControllerHelper>(profile_.get()));
     launcher_controller_->Init();
     return launcher_controller_.get();
   }
@@ -957,24 +962,15 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
   }
 
   void LoadIconWithIconLoader(const std::string& app_id,
-                              int update_count,
                               AppServiceAppIconLoader& icon_loader,
                               FakeAppIconLoaderDelegate& delegate) {
-    size_t current_update_count = delegate.update_image_count();
     icon_loader.FetchImage(app_id);
-    EXPECT_EQ(current_update_count, delegate.update_image_count());
-    delegate.WaitForIconUpdates(update_count);
+    delegate.WaitForIconUpdates(1);
+    content::RunAllTasksUntilIdle();
 
     // Validate loaded image.
-    EXPECT_EQ(update_count + current_update_count,
-              delegate.update_image_count());
     ValidateIcon(delegate.images()[app_id],
                  extension_misc::EXTENSION_ICON_MEDIUM);
-
-    // No more updates are expected.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(update_count + current_update_count,
-              delegate.update_image_count());
   }
 
   void CreateFakeApps(int total_count, std::vector<std::string>& app_ids) {
@@ -982,8 +978,6 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
     AppServiceAppIconLoader icon_loader(
         profile(), extension_misc::EXTENSION_ICON_MEDIUM, &delegate);
 
-    const std::vector<ui::ScaleFactor>& scale_factors =
-        ui::GetSupportedScaleFactors();
     int current_count = 0;
     while (current_count < total_count) {
       // The id should start from 3 to avoid duplicate with the 3 existing fake
@@ -992,7 +986,8 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
       app_ids.emplace_back(app_id);
 
       // Wait AppServiceAppItem to finish loading icon.
-      model_updater()->WaitForIconUpdates(scale_factors.size() + 1);
+      model_updater()->WaitForIconUpdates(1);
+      content::RunAllTasksUntilIdle();
 
       size_t index;
       EXPECT_TRUE(model_updater()->FindItemIndexForTest(app_id, &index));
@@ -1001,21 +996,11 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
       ValidateIcon(item->icon(),
                    ash::AppListConfig::instance().grid_icon_dimension());
 
-      size_t update_count = model_updater()->update_image_count();
-      // No more updates are expected.
-      base::RunLoop().RunUntilIdle();
-      EXPECT_EQ(update_count, model_updater()->update_image_count());
+      LoadIconWithIconLoader(app_id, icon_loader, delegate);
 
-      LoadIconWithIconLoader(app_id, scale_factors.size() + 1, icon_loader,
-                             delegate);
-
-      // There should be 2 more updates for model_updater(), because fetch
+      // There could be 2 more updates for model_updater(), because fetch
       // the icon image for the size extension_misc::EXTENSION_ICON_MEDIUM.
-      size_t new_update_count = model_updater()->update_image_count();
-      if (new_update_count < update_count + 2) {
-        model_updater()->WaitForIconUpdates(update_count + 2 -
-                                            new_update_count);
-      }
+      content::RunAllTasksUntilIdle();
 
       current_count++;
     }
@@ -1105,7 +1090,8 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate,
 
     apps::AppServiceProxyFactory::GetForProfile(profile())
         ->AppRegistryCache()
-        .OnApps(std::move(apps));
+        .OnApps(std::move(apps), apps::mojom::AppType::kArc,
+                false /* should_notify_initialized */);
   }
 
   // Set FakeArcAppIconFactory to use FakeArcAppIcon for Arc app icon loading to
@@ -1805,7 +1791,7 @@ TEST_P(ArcAppModelBuilderTest, ForceCacheIcons) {
 
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcForceCacheAppIcons);
+      chromeos::switches::kArcGeneratePlayAutoInstall);
 
   const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
 
@@ -2771,7 +2757,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
                                                       fake_apps().begin() + 1));
 
   base::RunLoop run_loop;
-  base::Closure quit = run_loop.QuitClosure();
+  base::RepeatingClosure quit = run_loop.QuitClosure();
 
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     apps::AppServiceProxy* proxy =
@@ -2922,7 +2908,7 @@ TEST_P(ArcAppModelIconTest, IconInvalidationOnIconVersionUpdate) {
 }
 
 // TODO(crbug.com/1005069) Disabled on Chrome OS due to flake
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_IconLoadNonSupportedScales DISABLED_IconLoadNonSupportedScales
 #else
 #define MAYBE_IconLoadNonSupportedScales IconLoadNonSupportedScales

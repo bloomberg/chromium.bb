@@ -14,7 +14,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace prerender {
 
@@ -38,12 +37,9 @@ bool IsNoStoreResponse(const network::mojom::URLResponseHead& response_head) {
 }  // namespace
 
 PrerenderURLLoaderThrottle::PrerenderURLLoaderThrottle(
-    prerender::mojom::PrerenderMode mode,
     const std::string& histogram_prefix,
     mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler)
-    : mode_(mode),
-      histogram_prefix_(histogram_prefix),
-      canceler_(std::move(canceler)) {
+    : histogram_prefix_(histogram_prefix), canceler_(std::move(canceler)) {
   DCHECK(canceler_);
 }
 
@@ -68,31 +64,27 @@ void PrerenderURLLoaderThrottle::DetachFromCurrentSequence() {
 void PrerenderURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  if (mode_ == prerender::mojom::PrerenderMode::kPrefetchOnly) {
-    request->load_flags |= net::LOAD_PREFETCH;
-    request->cors_exempt_headers.SetHeader(kPurposeHeaderName,
-                                           kPurposeHeaderValue);
-  }
+  request->load_flags |= net::LOAD_PREFETCH;
+  request->cors_exempt_headers.SetHeader(kPurposeHeaderName,
+                                         kPurposeHeaderValue);
 
-  resource_type_ =
-      static_cast<blink::mojom::ResourceType>(request->resource_type);
+  request_destination_ = request->destination;
   // Abort any prerenders that spawn requests that use unsupported HTTP
   // methods or schemes.
-  if (!IsValidHttpMethod(mode_, request->method)) {
+  if (!IsValidHttpMethod(request->method)) {
     // If this is a full prerender, cancel the prerender in response to
     // invalid requests.  For prefetches, cancel invalid requests but keep the
     // prefetch going.
     delegate_->CancelWithError(net::ERR_ABORTED);
   }
 
-  if (request->resource_type !=
-          static_cast<int>(blink::mojom::ResourceType::kMainFrame) &&
+  if (request->destination != network::mojom::RequestDestination::kDocument &&
       !DoesSubresourceURLHaveValidScheme(request->url)) {
     // Destroying the prerender for unsupported scheme only for non-main
     // resource to allow chrome://crash to actually crash in the
     // *RendererCrash tests instead of being intercepted here. The
     // unsupported scheme for the main resource is checked in
-    // WillRedirectRequest() and PrerenderContents::CheckURL(). See
+    // WillRedirectRequest() and NoStatePrefetchContents::CheckURL(). See
     // http://crbug.com/673771.
     delegate_->CancelWithError(net::ERR_ABORTED);
     CallCancelPrerenderForUnsupportedScheme(std::move(canceler_));
@@ -100,8 +92,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
   }
 
 #if defined(OS_ANDROID)
-  if (request->resource_type ==
-      static_cast<int>(blink::mojom::ResourceType::kFavicon)) {
+  if (request->is_favicon) {
     // Delay icon fetching until the contents are getting swapped in
     // to conserve network usage in mobile devices.
     *defer = true;
@@ -122,12 +113,10 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
   }
 #endif  // OS_ANDROID
 
-  if (mode_ == prerender::mojom::PrerenderMode::kPrefetchOnly) {
-    detached_timer_.Start(FROM_HERE,
-                          base::TimeDelta::FromMilliseconds(
-                              content::kDefaultDetachableCancelDelayMs),
-                          this, &PrerenderURLLoaderThrottle::OnTimedOut);
-  }
+  detached_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(
+                            content::kDefaultDetachableCancelDelayMs),
+                        this, &PrerenderURLLoaderThrottle::OnTimedOut);
 }
 
 void PrerenderURLLoaderThrottle::WillRedirectRequest(
@@ -138,11 +127,9 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
     net::HttpRequestHeaders* /* modified_headers */,
     net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
   redirect_count_++;
-  if (mode_ == prerender::mojom::PrerenderMode::kPrefetchOnly) {
-    RecordPrefetchResponseReceived(
-        histogram_prefix_, blink::IsResourceTypeFrame(resource_type_),
-        true /* is_redirect */, IsNoStoreResponse(response_head));
-  }
+  RecordPrefetchResponseReceived(
+      histogram_prefix_, blink::IsRequestDestinationFrame(request_destination_),
+      true /* is_redirect */, IsNoStoreResponse(response_head));
 
   std::string follow_only_when_prerender_shown_header;
   if (response_head.headers) {
@@ -155,7 +142,8 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
     delegate_->CancelWithError(net::ERR_ABORTED);
     CallCancelPrerenderForUnsupportedScheme(std::move(canceler_));
   } else if (follow_only_when_prerender_shown_header == "1" &&
-             resource_type_ != blink::mojom::ResourceType::kMainFrame) {
+             request_destination_ !=
+                 network::mojom::RequestDestination::kDocument) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown
     // header. Do not defer redirects on main frame loads.
     *defer = true;
@@ -167,11 +155,8 @@ void PrerenderURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     network::mojom::URLResponseHead* response_head,
     bool* defer) {
-  if (mode_ != prerender::mojom::PrerenderMode::kPrefetchOnly) {
-    return;
-  }
-
-  bool is_main_resource = blink::IsResourceTypeFrame(resource_type_);
+  bool is_main_resource =
+      blink::IsRequestDestinationFrame(request_destination_);
   RecordPrefetchResponseReceived(histogram_prefix_, is_main_resource,
                                  true /* is_redirect */,
                                  IsNoStoreResponse(*response_head));

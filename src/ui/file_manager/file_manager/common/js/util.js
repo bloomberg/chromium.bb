@@ -53,47 +53,37 @@ util.iconSetToCSSBackgroundImageValue = iconSet => {
 };
 
 /**
- * @param {string} name File error name.
+ * Mapping table of file error name to i18n localized error name.
+ *
+ * @const @enum {string}
+ */
+util.FileErrorLocalizedName = {
+  'InvalidModificationError': 'FILE_ERROR_INVALID_MODIFICATION',
+  'InvalidStateError': 'FILE_ERROR_INVALID_STATE',
+  'NoModificationAllowedError': 'FILE_ERROR_NO_MODIFICATION_ALLOWED',
+  'NotFoundError': 'FILE_ERROR_NOT_FOUND',
+  'NotReadableError': 'FILE_ERROR_NOT_READABLE',
+  'PathExistsError': 'FILE_ERROR_PATH_EXISTS',
+  'QuotaExceededError': 'FILE_ERROR_QUOTA_EXCEEDED',
+  'SecurityError': 'FILE_ERROR_SECURITY',
+};
+Object.freeze(util.FileErrorLocalizedName);
+
+/**
+ * Returns i18n localized error name for file error |name|.
+ *
+ * @param {?string|undefined} name File error name.
  * @return {string} Translated file error string.
  */
 util.getFileErrorString = name => {
-  let candidateMessageFragment;
-  switch (name) {
-    case 'NotFoundError':
-      candidateMessageFragment = 'NOT_FOUND';
-      break;
-    case 'SecurityError':
-      candidateMessageFragment = 'SECURITY';
-      break;
-    case 'NotReadableError':
-      candidateMessageFragment = 'NOT_READABLE';
-      break;
-    case 'NoModificationAllowedError':
-      candidateMessageFragment = 'NO_MODIFICATION_ALLOWED';
-      break;
-    case 'InvalidStateError':
-      candidateMessageFragment = 'INVALID_STATE';
-      break;
-    case 'InvalidModificationError':
-      candidateMessageFragment = 'INVALID_MODIFICATION';
-      break;
-    case 'PathExistsError':
-      candidateMessageFragment = 'PATH_EXISTS';
-      break;
-    case 'QuotaExceededError':
-      candidateMessageFragment = 'QUOTA_EXCEEDED';
-      break;
-  }
-
-  return loadTimeData.getString('FILE_ERROR_' + candidateMessageFragment) ||
-      loadTimeData.getString('FILE_ERROR_GENERIC');
+  const error = util.FileErrorLocalizedName[name] || 'FILE_ERROR_GENERIC';
+  return loadTimeData.getString(error);
 };
 
 /**
  * Mapping table for FileError.code style enum to DOMError.name string.
  *
- * @enum {string}
- * @const
+ * @const @enum {string}
  */
 util.FileError = {
   ABORT_ERR: 'AbortError',
@@ -484,7 +474,9 @@ util.toggleFullScreen = (appWindow, enabled) => {
  */
 util.FileOperationType = {
   COPY: 'COPY',
+  DELETE: 'DELETE',
   MOVE: 'MOVE',
+  RESTORE: 'RESTORE',
   ZIP: 'ZIP',
 };
 Object.freeze(util.FileOperationType);
@@ -1154,6 +1146,8 @@ util.getRootTypeLabel = locationInfo => {
       return str('LINUX_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MY_FILES:
       return str('MY_FILES_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.TRASH:
+      return str('TRASH_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
       const mediaViewRootType =
           VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
@@ -1219,9 +1213,13 @@ util.getEntryLabel = (locationInfo, entry) => {
 };
 
 /**
- * Returns true if specified entry is a special entry such as MyFiles/Downloads,
- * MyFiles/PvmDefault, MyFiles/Camera or Linux files root which cannot be
- * modified such as deleted/cut or renamed.
+ * Returns true if the given |entry| matches any of the special entries:
+ *
+ *  - "My Files"/{Downloads,PvmDefault,Camera} directories, or
+ *  - "Play Files"/{<any-directory>,DCIM/Camera} directories, or
+ *  - "Linux Files" root "/" directory
+ *
+ * which cannot be modified such as deleted/cut or renamed.
  *
  * @param {!VolumeManager} volumeManager
  * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
@@ -1231,11 +1229,11 @@ util.isNonModifiable = (volumeManager, entry) => {
   if (!entry) {
     return false;
   }
+
   if (util.isFakeEntry(entry)) {
     return true;
   }
 
-  // If the entry is not a valid entry.
   if (!volumeManager) {
     return false;
   }
@@ -1245,21 +1243,55 @@ util.isNonModifiable = (volumeManager, entry) => {
     return false;
   }
 
-  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
-    if (entry.fullPath === '/Downloads') {
+  const volumeType = volumeInfo.volumeType;
+
+  if (volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (!entry.isDirectory) {
+      return false;
+    }
+
+    const fullPath = entry.fullPath;
+
+    if (fullPath === '/Downloads') {
       return true;
     }
-    if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
+
+    if (fullPath === '/PvmDefault' && util.isPluginVmEnabled()) {
       return true;
     }
-    if (util.isFilesCameraFolderEnabled() && entry.fullPath === '/Camera') {
+
+    if (fullPath === '/Camera' && util.isFilesCameraFolderEnabled()) {
       return true;
     }
+
+    return false;
   }
 
-  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.CROSTINI &&
-      entry.fullPath === '/') {
-    return true;
+  if (volumeType === VolumeManagerCommon.RootType.ANDROID_FILES) {
+    if (!entry.isDirectory) {
+      return false;
+    }
+
+    const fullPath = entry.fullPath;
+
+    if (fullPath === '/') {
+      return true;
+    }
+
+    const isRootDirectory = fullPath === ('/' + entry.name);
+    if (isRootDirectory) {
+      return true;
+    }
+
+    if (fullPath === '/DCIM/Camera') {
+      return true;
+    }
+
+    return false;
+  }
+
+  if (volumeType === VolumeManagerCommon.RootType.CROSTINI) {
+    return entry.fullPath === '/';
   }
 
   return false;
@@ -1425,7 +1457,7 @@ util.isFilesCameraFolderEnabled = () => {
  * @return {boolean}
  */
 util.isFilesNg = () => {
-  return loadTimeData.getBoolean('FILES_NG_ENABLED');
+  return true;
 };
 
 /**
@@ -1480,19 +1512,35 @@ util.isZipUnpackEnabled = () => {
 };
 
 /**
- * Returns true if transfer details flag is enabled.
- * @return {boolean}
- */
-util.isTransferDetailsEnabled = () => {
-  return loadTimeData.getBoolean('FILES_TRANSFER_DETAILS_ENABLED');
-};
-
-/**
  * Returns true if FilesSinglePartitionFormat flag is enabled.
  * @return {boolean}
  */
 util.isSinglePartitionFormatEnabled = () => {
   return loadTimeData.getBoolean('FILES_SINGLE_PARTITION_FORMAT_ENABLED');
+};
+
+/**
+ * Returns true if  flag is enabled.
+ * @return {boolean}
+ */
+util.isFilesJsModulesEnabled = () => {
+  return loadTimeData.getBoolean('FILES_JS_MODULES_ENABLED');
+};
+
+/**
+ * Returns true if  flag is enabled.
+ * @return {boolean}
+ */
+util.isAudioPlayerJsModulesEnabled = () => {
+  return loadTimeData.getBoolean('AUDIO_PLAYER_JS_MODULES_ENABLED');
+};
+
+/**
+ * Returns true if  flag is enabled.
+ * @return {boolean}
+ */
+util.isVideoPlayerJsModulesEnabled = () => {
+  return loadTimeData.getBoolean('VIDEO_PLAYER_JS_MODULES_ENABLED');
 };
 
 /**
@@ -1758,16 +1806,28 @@ util.hasOverflow = (element) => {
       element.clientHeight < element.scrollHeight;
 };
 
+/**
+ * Returns the Files app modal dialog used to embed any files app dialog
+ * that derives from cr.ui.dialogs.
+ *
+ * @return {!HTMLDialogElement}
+ */
+util.getFilesAppModalDialogInstance = () => {
+  let dialogElement = document.querySelector('#files-app-modal-dialog');
+
+  if (!dialogElement) {  // Lazily create the files app dialog instance.
+    dialogElement = document.createElement('dialog');
+    dialogElement.id = 'files-app-modal-dialog';
+    document.body.appendChild(dialogElement);
+  }
+
+  return /** @type {!HTMLDialogElement} */ (dialogElement);
+};
+
 /** @return {boolean} */
 util.isSharesheetEnabled = () => {
   return loadTimeData.valueExists('SHARESHEET_ENABLED') &&
       loadTimeData.getBoolean('SHARESHEET_ENABLED');
-};
-
-/** @return {boolean} */
-util.isHoldingSpaceEnabled = () => {
-  return loadTimeData.valueExists('HOLDING_SPACE_ENABLED') &&
-      loadTimeData.getBoolean('HOLDING_SPACE_ENABLED');
 };
 
 util.isDriveDssPinEnabled = () => {

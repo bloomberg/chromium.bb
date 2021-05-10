@@ -39,11 +39,19 @@ message AndroidBatteryMetric {
     optional int64 sleep_screen_doze_ns = 8;
   }
 
+  // Period of time during the trace that the device went to sleep completely.
+  message SuspendPeriod {
+    optional int64 timestamp_ns = 1;
+    optional int64 duration_ns = 2;
+  }
+
   // Battery counters info for each ts of the trace. This should only be
   // extracted for short traces.
   repeated BatteryCounters battery_counters = 1;
 
   optional BatteryAggregates battery_aggregates = 2;
+
+  repeated SuspendPeriod suspend_period = 3;
 }
 
 // End of protos/perfetto/metrics/android/batt_metric.proto
@@ -122,7 +130,11 @@ message AndroidDisplayMetrics {
 
   // Stat reports whether there is any duplicate_frames tracked
   optional uint32 duplicate_frames_logged = 2;
+
+  // Stat that reports the number of dpu underrrun occurs count.
+  optional uint32 total_dpu_underrun_count = 3;
 }
+
 // End of protos/perfetto/metrics/android/display_metrics.proto
 
 // Begin of protos/perfetto/metrics/android/gpu_metric.proto
@@ -239,6 +251,24 @@ message HeapProfileCallsites {
 
 // End of protos/perfetto/metrics/android/heap_profile_callsites.proto
 
+// Begin of protos/perfetto/metrics/android/hwcomposer.proto
+
+message AndroidHwcomposerMetrics {
+  // Counts the number of composition total layers in the trace. (non-weighted average)
+  optional double composition_total_layers = 1;
+
+  // Counts the number of composition dpu layers in the trace. (non-weighted average)
+  optional double composition_dpu_layers = 2;
+
+  // Counts the number of composition gpu layers in the trace. (non-weighted average)
+  optional double composition_gpu_layers = 3;
+
+  // Counts the number of composition dpu cached layers in the trace. (non-weighted average)
+  optional double composition_dpu_cached_layers = 4;
+}
+
+// End of protos/perfetto/metrics/android/hwcomposer.proto
+
 // Begin of protos/perfetto/metrics/android/hwui_metric.proto
 
 // Android HWUI graphics performance and graphics memory usage metrics.
@@ -346,6 +376,21 @@ message AndroidIonMetric {
 }
 
 // End of protos/perfetto/metrics/android/ion_metric.proto
+
+// Begin of protos/perfetto/metrics/android/jank_metric.proto
+
+message AndroidJankMetrics {
+  repeated Warning warnings = 1;
+
+  message Warning {
+    optional int64 ts = 1;
+    optional int64 dur = 2;
+
+    optional string process_name = 3;
+    optional string warning_text = 4;
+  }
+}
+// End of protos/perfetto/metrics/android/jank_metric.proto
 
 // Begin of protos/perfetto/metrics/android/java_heap_histogram.proto
 
@@ -671,6 +716,11 @@ message AndroidStartupMetric {
     optional AndroidProcessMetadata process = 7;
 
     optional HscMetrics hsc = 8;
+
+    // The time taken in the startup from intent recieved to the start time
+    // of the reportFullyDrawn slice. This should be longer than the time to
+    // first frame as the application decides this after it starts rendering.
+    optional Slice report_fully_drawn = 9;
   }
 
   repeated Startup startup = 1;
@@ -700,6 +750,13 @@ message AndroidSurfaceflingerMetric {
 message AndroidSysUiCujMetrics {
   // A list of all frames within the SysUi user journey.
   repeated Frame frames = 1;
+
+  optional string cuj_name = 2;
+  optional int64 cuj_start = 3;
+  optional int64 cuj_dur = 4;
+
+  // Details about the process (uid, version, etc)
+  optional AndroidProcessMetadata process = 5;
 
   message Frame {
     // Index of the frame within the single user journey.
@@ -794,11 +851,12 @@ message TraceMetadata {
   optional int64 trace_size_bytes = 6;
   repeated string trace_trigger = 7;
   optional string unique_session_name = 8;
+  optional string trace_config_pbtxt = 9;
 }
 
 // Root message for all Perfetto-based metrics.
 //
-// Next id: 28
+// Next id: 29
 message TraceMetrics {
   reserved 4, 10, 13, 14, 19;
 
@@ -866,6 +924,12 @@ message TraceMetrics {
 
   // Frame timing and jank root causes for system UI interactions.
   optional AndroidSysUiCujMetrics android_sysui_cuj = 27;
+
+  // Metric associated with hwcomposer.
+  optional AndroidHwcomposerMetrics android_hwcomposer = 28;
+
+  // Detects common bad patterns that might lead to jank.
+  optional AndroidJankMetrics android_jank = 29;
 
   // Demo extensions.
   extensions 450 to 499;

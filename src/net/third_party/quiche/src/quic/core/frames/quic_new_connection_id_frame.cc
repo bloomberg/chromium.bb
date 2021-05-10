@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_new_connection_id_frame.h"
+#include "quic/core/frames/quic_new_connection_id_frame.h"
 
 namespace quic {
 
@@ -17,7 +17,7 @@ QuicNewConnectionIdFrame::QuicNewConnectionIdFrame(
       sequence_number(sequence_number),
       stateless_reset_token(stateless_reset_token),
       retire_prior_to(retire_prior_to) {
-  DCHECK(retire_prior_to <= sequence_number);
+  QUICHE_DCHECK(retire_prior_to <= sequence_number);
 }
 
 std::ostream& operator<<(std::ostream& os,

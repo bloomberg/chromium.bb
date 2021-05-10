@@ -14,8 +14,11 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.mojo.bindings.Interface;
+import org.chromium.mojo.bindings.InterfaceRequest;
+import org.chromium.mojo.system.Pair;
 import org.chromium.mojo.system.impl.CoreImpl;
-import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 /**
@@ -28,27 +31,20 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     // mDelegate can be null.
     private final RenderFrameHostDelegate mDelegate;
     private final boolean mIncognito;
-    private final InterfaceProvider mInterfaceProvider;
 
     private RenderFrameHostImpl(long nativeRenderFrameHostAndroid, RenderFrameHostDelegate delegate,
-            boolean isIncognito, int nativeInterfaceProviderHandle) {
+            boolean isIncognito) {
         mNativeRenderFrameHostAndroid = nativeRenderFrameHostAndroid;
         mDelegate = delegate;
         mIncognito = isIncognito;
-        mInterfaceProvider =
-                new InterfaceProvider(CoreImpl.getInstance()
-                                              .acquireNativeHandle(nativeInterfaceProviderHandle)
-                                              .toMessagePipeHandle());
 
         mDelegate.renderFrameCreated(this);
     }
 
     @CalledByNative
     private static RenderFrameHostImpl create(long nativeRenderFrameHostAndroid,
-            RenderFrameHostDelegate delegate, boolean isIncognito,
-            int nativeInterfaceProviderHandle) {
-        return new RenderFrameHostImpl(
-                nativeRenderFrameHostAndroid, delegate, isIncognito, nativeInterfaceProviderHandle);
+            RenderFrameHostDelegate delegate, boolean isIncognito) {
+        return new RenderFrameHostImpl(nativeRenderFrameHostAndroid, delegate, isIncognito);
     }
 
     @CalledByNative
@@ -77,7 +73,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
 
     @Override
     @Nullable
-    public String getLastCommittedURL() {
+    public GURL getLastCommittedURL() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
         return RenderFrameHostImplJni.get().getLastCommittedURL(
                 mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
@@ -92,7 +88,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public void getCanonicalUrlForSharing(Callback<String> callback) {
+    public void getCanonicalUrlForSharing(Callback<GURL> callback) {
         if (mNativeRenderFrameHostAndroid == 0) {
             callback.onResult(null);
             return;
@@ -108,11 +104,6 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                         mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, feature);
     }
 
-    @Override
-    public InterfaceProvider getRemoteInterfaces() {
-        return mInterfaceProvider;
-    }
-
     /**
      * TODO(timloh): This function shouldn't really be on here. If we end up
      * needing more logic from the native BrowserContext, we should add a
@@ -125,14 +116,40 @@ public class RenderFrameHostImpl implements RenderFrameHost {
 
     @Override
     public void notifyUserActivation() {
+        if (mNativeRenderFrameHostAndroid == 0) return;
         RenderFrameHostImplJni.get().notifyUserActivation(
                 mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
     @Override
+    public boolean signalModalCloseWatcherIfActive() {
+        return RenderFrameHostImplJni.get().signalModalCloseWatcherIfActive(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+    }
+
+    @Override
     public boolean isRenderFrameCreated() {
+        if (mNativeRenderFrameHostAndroid == 0) return false;
         return RenderFrameHostImplJni.get().isRenderFrameCreated(
                 mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+    }
+
+    @Override
+    public <I extends Interface, P extends Interface.Proxy> P getInterfaceToRendererFrame(
+            Interface.Manager<I, P> manager) {
+        if (mNativeRenderFrameHostAndroid == 0) return null;
+        Pair<P, InterfaceRequest<I>> result = manager.getInterfaceRequest(CoreImpl.getInstance());
+        RenderFrameHostImplJni.get().getInterfaceToRendererFrame(mNativeRenderFrameHostAndroid,
+                RenderFrameHostImpl.this, manager.getName(),
+                result.second.passHandle().releaseNativeHandle());
+        return result.first;
+    }
+
+    @Override
+    public void terminateRendererDueToBadMessage(int reason) {
+        if (mNativeRenderFrameHostAndroid == 0) return;
+        RenderFrameHostImplJni.get().terminateRendererDueToBadMessage(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, reason);
     }
 
     /**
@@ -172,17 +189,23 @@ public class RenderFrameHostImpl implements RenderFrameHost {
 
     @NativeMethods
     interface Natives {
-        String getLastCommittedURL(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        GURL getLastCommittedURL(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         Origin getLastCommittedOrigin(
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid,
-                RenderFrameHostImpl caller, Callback<String> callback);
+                RenderFrameHostImpl caller, Callback<GURL> callback);
         boolean isFeatureEnabled(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller,
                 @FeaturePolicyFeature int feature);
         UnguessableToken getAndroidOverlayRoutingToken(
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void notifyUserActivation(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        boolean signalModalCloseWatcherIfActive(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         boolean isRenderFrameCreated(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        void getInterfaceToRendererFrame(long nativeRenderFrameHostAndroid,
+                RenderFrameHostImpl caller, String interfacename, int messagePipeRawHandle);
+        void terminateRendererDueToBadMessage(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller, int reason);
         boolean isProcessBlocked(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         int performGetAssertionWebAuthSecurityChecks(long nativeRenderFrameHostAndroid,
                 RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin);

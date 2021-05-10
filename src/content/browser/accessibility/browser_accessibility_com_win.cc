@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -21,6 +23,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -35,11 +38,6 @@ const uint32_t kScreenReaderAndHTMLAccessibilityModes =
     ui::AXMode::kScreenReader | ui::AXMode::kHTML;
 
 namespace content {
-
-using BrowserAccessibilityPositionInstance =
-    BrowserAccessibilityPosition::AXPositionInstance;
-using AXPlatformRange =
-    ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
 
 void AddAccessibilityModeFlags(ui::AXMode mode_flags) {
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
@@ -99,7 +97,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appName(BSTR* app_name) {
   // shell instead of Chrome.
   if (product_components.size() != 2)
     return E_FAIL;
-  *app_name = SysAllocString(base::UTF8ToUTF16(product_components[0]).c_str());
+  *app_name = SysAllocString(base::UTF8ToWide(product_components[0]).c_str());
   DCHECK(*app_name);
   return *app_name ? S_OK : E_FAIL;
 }
@@ -120,7 +118,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appVersion(BSTR* app_version) {
   if (product_components.size() != 2)
     return E_FAIL;
   *app_version =
-      SysAllocString(base::UTF8ToUTF16(product_components[1]).c_str());
+      SysAllocString(base::UTF8ToWide(product_components[1]).c_str());
   DCHECK(*app_version);
   return *app_version ? S_OK : E_FAIL;
 }
@@ -142,7 +140,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_toolkitVersion(
     return E_INVALIDARG;
 
   std::string user_agent = GetContentClient()->browser()->GetUserAgent();
-  *toolkit_version = SysAllocString(base::UTF8ToUTF16(user_agent).c_str());
+  *toolkit_version = SysAllocString(base::UTF8ToWide(user_agent).c_str());
   DCHECK(*toolkit_version);
   return *toolkit_version ? S_OK : E_FAIL;
 }
@@ -303,7 +301,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_text(LONG start_offset,
   if (substr.empty())
     return S_FALSE;
 
-  *text = SysAllocString(substr.c_str());
+  *text = SysAllocString(base::as_wcstr(substr));
   DCHECK(*text);
   return S_OK;
 }
@@ -327,7 +325,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_newText(
     return E_FAIL;
 
   base::string16 substr = GetHypertext().substr(start, new_len);
-  new_text->text = SysAllocString(substr.c_str());
+  new_text->text = SysAllocString(base::as_wcstr(substr));
   new_text->start = static_cast<LONG>(start);
   new_text->end = static_cast<LONG>(start + new_len);
   return S_OK;
@@ -353,7 +351,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_oldText(
 
   base::string16 old_hypertext = old_hypertext_.hypertext;
   base::string16 substr = old_hypertext.substr(start, old_len);
-  old_text->text = SysAllocString(substr.c_str());
+  old_text->text = SysAllocString(base::as_wcstr(substr));
   old_text->start = static_cast<LONG>(start);
   old_text->end = static_cast<LONG>(start + old_len);
   return S_OK;
@@ -460,7 +458,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
       attributes_stream << attribute.first << ":" << attribute.second << ";";
     }
   }
-  base::string16 attributes_str = base::UTF8ToUTF16(attributes_stream.str());
+  std::wstring attributes_str = base::UTF8ToWide(attributes_stream.str());
 
   // Returning an empty string is valid and indicates no attributes.
   // This is better than returning S_FALSE which the screen reader
@@ -485,12 +483,18 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nHyperlinks(
     return E_INVALIDARG;
 
   *hyperlink_count = hypertext_.hyperlink_offset_to_index.size();
+
+  DCHECK(!ui::IsIframe(owner()->GetRole()) || *hyperlink_count <= 1)
+      << "iframes should have 1 hyperlink, unless the child document is "
+         "destroyed/unloaded, in which case it should have 0";
+
   return S_OK;
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_hyperlink(
     LONG index,
     IAccessibleHyperlink** hyperlink) {
+  *hyperlink = nullptr;
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HYPERLINK);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   if (!owner())
@@ -501,9 +505,40 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_hyperlink(
     return E_INVALIDARG;
   }
 
+  DCHECK(!ui::IsIframe(owner()->GetRole()) || index == 0)
+      << "An iframe cannot have more than 1 hyperlink";
+
   int32_t id = hypertext_.hyperlinks[index];
-  auto* link = static_cast<BrowserAccessibilityComWin*>(
-      AXPlatformNodeWin::GetFromUniqueId(id));
+  AXPlatformNode* node = AXPlatformNodeWin::GetFromUniqueId(id);
+  if (!node) {
+    // TODO(https://crbug.com/id=1164043) Fix illegal hyperlink of iframes.
+    // Based on information received from DumpWithoutCrashing() reports, this
+    // is still sometimes occurring when get_hyperlink() is called on an
+    // iframe, which would have exactly 1 hyperlink and no text. The
+    // DumpWithoutCrashing() was removed to reduced crash report noise.
+    // Interestingly, the top url reported was always called "empty".
+    // Sample report for iframe issue: go/crash/93d7fce137a15ef0
+#if defined(AX_FAIL_FAST_BUILD)  // Fail in debug/sanitizers/clusterfuzz.
+    bool do_report = true;
+#else
+    std::srand(std::time(nullptr));             // Use current time as seed.
+    bool do_report = (std::rand() % 100 == 0);  // Roughly 1% of the time.
+#endif
+    if (do_report) {
+      LONG num_hyperlinks = -1;
+      get_nHyperlinks(&num_hyperlinks);
+      std::ostringstream error;
+      CHECK(false) << "Hyperlink error:\n index=" << index
+                   << " nHyperLinks#1=" << hypertext_.hyperlinks.size()
+                   << " nHyperLinks#2="
+                   << hypertext_.hyperlink_offset_to_index.size()
+                   << " needs_update=" << hypertext_.needs_update
+                   << " hyperlink_id=" << id
+                   << "\nparent=" << GetData().ToString();
+    }
+    return E_FAIL;
+  }
+  auto* link = static_cast<BrowserAccessibilityComWin*>(node);
   if (!link)
     return E_FAIL;
 
@@ -554,7 +589,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_anchor(LONG index,
   if (index != 0 || !anchor)
     return E_INVALIDARG;
 
-  BSTR ia2_hypertext = SysAllocString(GetHypertext().c_str());
+  BSTR ia2_hypertext = SysAllocString(base::as_wcstr(GetHypertext()));
   DCHECK(ia2_hypertext);
   anchor->vt = VT_BSTR;
   anchor->bstrVal = ia2_hypertext;
@@ -711,7 +746,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_name(LONG action_index,
     return E_INVALIDARG;
   }
 
-  base::string16 action_verb = base::UTF8ToUTF16(
+  std::wstring action_verb = base::UTF8ToWide(
       ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(action)));
   if (action_verb.empty() || action_verb == L"none") {
     *name = nullptr;
@@ -742,7 +777,7 @@ BrowserAccessibilityComWin::get_localizedName(LONG action_index,
     return E_INVALIDARG;
   }
 
-  base::string16 action_verb = base::UTF8ToUTF16(
+  std::wstring action_verb = base::UTF8ToWide(
       ui::ToLocalizedString(static_cast<ax::mojom::DefaultActionVerb>(action)));
   if (action_verb.empty()) {
     *localized_name = nullptr;
@@ -777,7 +812,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_URL(BSTR* url) {
   if (str.empty())
     return S_FALSE;
 
-  *url = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  *url = SysAllocString(base::UTF8ToWide(str).c_str());
   DCHECK(*url);
 
   return S_OK;
@@ -799,7 +834,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_title(BSTR* title) {
   if (str.empty())
     return S_FALSE;
 
-  *title = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  *title = SysAllocString(base::UTF8ToWide(str).c_str());
   DCHECK(*title);
 
   return S_OK;
@@ -821,7 +856,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_mimeType(BSTR* mime_type) {
   if (str.empty())
     return S_FALSE;
 
-  *mime_type = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  *mime_type = SysAllocString(base::UTF8ToWide(str).c_str());
   DCHECK(*mime_type);
 
   return S_OK;
@@ -843,7 +878,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_docType(BSTR* doc_type) {
   if (str.empty())
     return S_FALSE;
 
-  *doc_type = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  *doc_type = SysAllocString(base::UTF8ToWide(str).c_str());
   DCHECK(*doc_type);
 
   return S_OK;
@@ -886,7 +921,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
 
   base::string16 tag;
   if (owner()->GetString16Attribute(ax::mojom::StringAttribute::kHtmlTag, &tag))
-    *node_name = SysAllocString(tag.c_str());
+    *node_name = SysAllocString(base::as_wcstr(tag));
   else
     *node_name = nullptr;
 
@@ -895,7 +930,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   *num_children = owner()->PlatformChildCount();
   *unique_id = -AXPlatformNodeWin::GetUniqueId();
 
-  if (owner()->IsDocument()) {
+  if (owner()->IsPlatformDocument()) {
     *node_type = NODETYPE_DOCUMENT;
   } else if (owner()->IsText()) {
     *node_type = NODETYPE_TEXT;
@@ -934,10 +969,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(USHORT max_attribs,
     if (attribute == "srcdoc" || attribute == "data-srcdoc")
       continue;
 
-    attrib_names[i] = SysAllocString(base::UTF8ToUTF16(attribute).c_str());
+    attrib_names[i] = SysAllocString(base::UTF8ToWide(attribute).c_str());
     name_space_id[i] = 0;
     attrib_values[i] = SysAllocString(
-        base::UTF8ToUTF16(owner()->GetHtmlAttributes()[i].second).c_str());
+        base::UTF8ToWide(owner()->GetHtmlAttributes()[i].second).c_str());
   }
   return S_OK;
 }
@@ -960,11 +995,11 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
   for (USHORT i = 0; i < num_attribs; ++i) {
     name_space_id[i] = 0;
     bool found = false;
-    std::string name = base::UTF16ToUTF8((LPCWSTR)attrib_names[i]);
+    std::string name = base::WideToUTF8((LPCWSTR)attrib_names[i]);
     for (unsigned int j = 0; j < owner()->GetHtmlAttributes().size(); ++j) {
       if (owner()->GetHtmlAttributes()[j].first == name) {
         attrib_values[i] = SysAllocString(
-            base::UTF8ToUTF16(owner()->GetHtmlAttributes()[j].second).c_str());
+            base::UTF8ToWide(owner()->GetHtmlAttributes()[j].second).c_str());
         found = true;
         break;
       }
@@ -1002,7 +1037,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyle(
 
   *num_style_properties = 1;
   style_properties[0] = SysAllocString(L"display");
-  style_values[0] = SysAllocString(display.c_str());
+  style_values[0] = SysAllocString(base::as_wcstr(display));
 
   return S_OK;
 }
@@ -1023,12 +1058,12 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyleForProperties(
   // We only cache a single style property for now: DISPLAY
 
   for (USHORT i = 0; i < num_style_properties; ++i) {
-    base::string16 name = base::ToLowerASCII(
-        reinterpret_cast<const base::char16*>(style_properties[i]));
-    if (name == L"display") {
+    base::string16 name =
+        base::ToLowerASCII(base::as_u16cstr(style_properties[i]));
+    if (name == STRING16_LITERAL("display")) {
       base::string16 display =
           owner()->GetString16Attribute(ax::mojom::StringAttribute::kDisplay);
-      style_values[i] = SysAllocString(display.c_str());
+      style_values[i] = SysAllocString(base::as_wcstr(display));
     } else {
       style_values[i] = NULL;
     }
@@ -1169,7 +1204,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_innerHTML(BSTR* innerHTML) {
 
   base::string16 inner_html =
       owner()->GetString16Attribute(ax::mojom::StringAttribute::kInnerHtml);
-  *innerHTML = SysAllocString(inner_html.c_str());
+  *innerHTML = SysAllocString(base::as_wcstr(inner_html));
   DCHECK(*innerHTML);
   return S_OK;
 }
@@ -1191,7 +1226,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_language(BSTR* language) {
   if (!owner())
     return E_FAIL;
 
-  base::string16 lang = base::UTF8ToUTF16(owner()->node()->GetLanguage());
+  std::wstring lang = base::UTF8ToWide(owner()->node()->GetLanguage());
   if (lang.empty())
     lang = L"en-US";
 
@@ -1305,7 +1340,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_fontFamily(BSTR* font_family) {
   if (family.empty())
     return S_FALSE;
 
-  *font_family = SysAllocString(family.c_str());
+  *font_family = SysAllocString(base::as_wcstr(family));
   DCHECK(*font_family);
   return S_OK;
 }
@@ -1378,7 +1413,7 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_ISimpleDOMDocument) {
-    if (!accessibility->IsDocument()) {
+    if (!accessibility->IsPlatformDocument()) {
       *object = nullptr;
       return E_NOINTERFACE;
     }
@@ -1429,10 +1464,10 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
     win_attributes_->ia2_role = win_attributes_->ia_role;
   win_attributes_->ia2_state = ComputeIA2State();
   win_attributes_->ia2_attributes = ComputeIA2Attributes();
-  win_attributes_->name = owner()->GetNameAsString16();
-  win_attributes_->description =
-      owner()->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
-  win_attributes_->value = GetValueForControl();
+  win_attributes_->name = base::UTF8ToWide(owner()->GetName());
+  win_attributes_->description = base::UTF8ToWide(
+      owner()->GetStringAttribute(ax::mojom::StringAttribute::kDescription));
+  win_attributes_->value = base::UTF16ToWide(GetValueForControl());
   win_attributes_->ignored = owner()->IsIgnored();
 }
 
@@ -1546,39 +1581,29 @@ BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetTargetFromChildID(
 HRESULT BrowserAccessibilityComWin::GetStringAttributeAsBstr(
     ax::mojom::StringAttribute attribute,
     BSTR* value_bstr) {
-  base::string16 str;
   if (!owner())
     return E_FAIL;
 
+  base::string16 str;
   if (!owner()->GetString16Attribute(attribute, &str))
     return S_FALSE;
 
-  *value_bstr = SysAllocString(str.c_str());
+  *value_bstr = SysAllocString(base::as_wcstr(str));
   DCHECK(*value_bstr);
 
   return S_OK;
 }
 
 HRESULT BrowserAccessibilityComWin::GetNameAsBstr(BSTR* value_bstr) {
-  base::string16 str;
   if (!owner())
     return E_FAIL;
 
+  base::string16 str;
   str = owner()->GetNameAsString16();
-  *value_bstr = SysAllocString(str.c_str());
+  *value_bstr = SysAllocString(base::as_wcstr(str));
   DCHECK(*value_bstr);
 
   return S_OK;
-}
-
-// Pass in prefix with ":" included at the end, e.g. "invalid:".
-bool HasAttribute(const std::vector<base::string16>& existing_attributes,
-                  base::string16 prefix) {
-  for (const base::string16& attr : existing_attributes) {
-    if (base::StartsWith(attr, prefix, base::CompareCase::SENSITIVE))
-      return true;
-  }
-  return false;
 }
 
 void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,

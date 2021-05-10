@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -132,12 +134,19 @@ class QuerySelectorHandler : public content::WebContentsObserver {
 
 }  // namespace
 
+using OldAXTreeIdMap = std::map<content::NavigationHandle*, ui::AXTreeID>;
+base::LazyInstance<OldAXTreeIdMap>::DestructorAtExit g_old_ax_tree =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Helper class that receives accessibility data from |WebContents|.
 class AutomationWebContentsObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<AutomationWebContentsObserver> {
+      public content::WebContentsUserData<AutomationWebContentsObserver>,
+      public AutomationEventRouterObserver {
  public:
-  ~AutomationWebContentsObserver() override {}
+  ~AutomationWebContentsObserver() override {
+    automation_event_router_observer_.Reset();
+  }
 
   // content::WebContentsObserver overrides.
   void AccessibilityEventReceived(const content::AXEventNotificationDetails&
@@ -152,6 +161,34 @@ class AutomationWebContentsObserver
 #endif
     AutomationEventRouter* router = AutomationEventRouter::GetInstance();
     router->DispatchAccessibilityEvents(extension_event_bundle);
+  }
+
+  void DidStartNavigation(content::NavigationHandle* navigation) override {
+    content::RenderFrameHost* previous_rfh = content::RenderFrameHost::FromID(
+        navigation->GetPreviousRenderFrameHostId());
+    if (previous_rfh)
+      g_old_ax_tree.Get()[navigation] = previous_rfh->GetAXTreeID();
+  }
+
+  void DidFinishNavigation(content::NavigationHandle* navigation) override {
+    ui::AXTreeID old_ax_tree = g_old_ax_tree.Get()[navigation];
+    g_old_ax_tree.Get().erase(navigation);
+
+    if (old_ax_tree == ui::AXTreeIDUnknown())
+      return;
+
+    ui::AXTreeID new_ax_tree = ui::AXTreeIDUnknown();
+
+    // If navigation was canceled, render frame host will not
+    // be set and there is no new tree.
+    if (navigation->HasCommitted() && navigation->GetRenderFrameHost())
+      new_ax_tree = navigation->GetRenderFrameHost()->GetAXTreeID();
+
+    if (old_ax_tree == new_ax_tree)
+      return;
+
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        old_ax_tree, browser_context_);
   }
 
   void AccessibilityLocationChangesReceived(
@@ -170,19 +207,6 @@ class AutomationWebContentsObserver
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
     ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
-    if (tree_id == ui::AXTreeIDUnknown())
-      return;
-
-    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
-        tree_id, browser_context_);
-  }
-
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override {
-    if (!old_host)
-      return;
-
-    ui::AXTreeID tree_id = old_host->GetAXTreeID();
     if (tree_id == ui::AXTreeIDUnknown())
       return;
 
@@ -212,6 +236,17 @@ class AutomationWebContentsObserver
     AccessibilityEventReceived(content_event_bundle);
   }
 
+  // AutomationEventRouterObserver overrides.
+  void AllAutomationExtensionsGone() override {
+    if (!web_contents())
+      return;
+
+    ui::AXMode new_mode = web_contents()->GetAccessibilityMode();
+    uint8_t flags = ui::kAXModeWebContentsOnly.mode();
+    new_mode.set_mode(flags, false);
+    web_contents()->SetAccessibilityMode(std::move(new_mode));
+  }
+
  private:
   friend class content::WebContentsUserData<AutomationWebContentsObserver>;
 
@@ -230,9 +265,16 @@ class AutomationWebContentsObserver
           ax::mojom::Event::kMediaStartedPlaying;
       AccessibilityEventReceived(content_event_bundle);
     }
+
+    automation_event_router_observer_.Observe(
+        AutomationEventRouter::GetInstance());
   }
 
   content::BrowserContext* browser_context_;
+
+  base::ScopedObservation<extensions::AutomationEventRouter,
+                          extensions::AutomationEventRouterObserver>
+      automation_event_router_observer_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
@@ -281,6 +323,10 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   contents->EnableWebContentsOnlyAccessibilityMode();
 
   ui::AXTreeID ax_tree_id = rfh->GetAXTreeID();
+
+  // The AXTreeID is not yet ready/set.
+  if (ax_tree_id == ui::AXTreeIDUnknown())
+    return RespondNow(Error("Tab is not ready."));
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(

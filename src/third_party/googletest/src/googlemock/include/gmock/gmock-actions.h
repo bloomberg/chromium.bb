@@ -1032,9 +1032,13 @@ struct WithArgsAction {
 template <typename... Actions>
 struct DoAllAction {
  private:
-  template <typename... Args, size_t... I>
-  std::vector<Action<void(Args...)>> Convert(IndexSequence<I...>) const {
-    return {std::get<I>(actions)...};
+  template <typename T>
+  using NonFinalType =
+      typename std::conditional<std::is_scalar<T>::value, T, const T&>::type;
+
+  template <typename ActionT, size_t... I>
+  std::vector<ActionT> Convert(IndexSequence<I...>) const {
+    return {ActionT(std::get<I>(actions))...};
   }
 
  public:
@@ -1043,17 +1047,18 @@ struct DoAllAction {
   template <typename R, typename... Args>
   operator Action<R(Args...)>() const {  // NOLINT
     struct Op {
-      std::vector<Action<void(Args...)>> converted;
+      std::vector<Action<void(NonFinalType<Args>...)>> converted;
       Action<R(Args...)> last;
       R operator()(Args... args) const {
         auto tuple_args = std::forward_as_tuple(std::forward<Args>(args)...);
         for (auto& a : converted) {
           a.Perform(tuple_args);
         }
-        return last.Perform(tuple_args);
+        return last.Perform(std::move(tuple_args));
       }
     };
-    return Op{Convert<Args...>(MakeIndexSequence<sizeof...(Actions) - 1>()),
+    return Op{Convert<Action<void(NonFinalType<Args>...)>>(
+                  MakeIndexSequence<sizeof...(Actions) - 1>()),
               std::get<sizeof...(Actions) - 1>(actions)};
   }
 };
@@ -1093,7 +1098,8 @@ struct DoAllAction {
 typedef internal::IgnoredValue Unused;
 
 // Creates an action that does actions a1, a2, ..., sequentially in
-// each invocation.
+// each invocation. All but the last action will have a readonly view of the
+// arguments.
 template <typename... Action>
 internal::DoAllAction<typename std::decay<Action>::type...> DoAll(
     Action&&... action) {
@@ -1388,22 +1394,14 @@ class ActionImpl<Derived<Ts...>> {
   std::tuple<Ts...> params_;
 };
 
-namespace invoke_argument {
-
-// Appears in InvokeArgumentAdl's argument list to help avoid
-// accidental calls to user functions of the same name.
-struct AdlTag {};
-
-// InvokeArgumentAdl - a helper for InvokeArgument.
+// internal::InvokeArgument - a helper for InvokeArgument action.
 // The basic overloads are provided here for generic functors.
 // Overloads for other custom-callables are provided in the
 // internal/custom/gmock-generated-actions.h header.
 template <typename F, typename... Args>
-auto InvokeArgumentAdl(AdlTag, F f, Args... args) -> decltype(f(args...)) {
+auto InvokeArgument(F f, Args... args) -> decltype(f(args...)) {
   return f(args...);
 }
-
-}  // namespace invoke_argument
 
 #define GMOCK_INTERNAL_ARG_UNUSED(i, data, el) \
   , const arg##i##_type& arg##i GTEST_ATTRIBUTE_UNUSED_

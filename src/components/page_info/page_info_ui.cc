@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/page_info/features.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/permission_manager.h"
@@ -30,7 +31,6 @@
 #if defined(OS_ANDROID)
 #include "components/resources/android/theme_resources.h"
 #else
-#include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -147,9 +147,6 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
     {ContentSettingsType::JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
     {ContentSettingsType::POPUPS, IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS},
-#if BUILDFLAG(ENABLE_PLUGINS)
-    {ContentSettingsType::PLUGINS, IDS_PAGE_INFO_TYPE_FLASH},
-#endif
     {ContentSettingsType::GEOLOCATION, IDS_PAGE_INFO_TYPE_LOCATION},
     {ContentSettingsType::NOTIFICATIONS, IDS_PAGE_INFO_TYPE_NOTIFICATIONS},
     {ContentSettingsType::MEDIASTREAM_MIC, IDS_PAGE_INFO_TYPE_MIC},
@@ -158,7 +155,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
     {ContentSettingsType::MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
     {ContentSettingsType::BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
     {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
      IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER},
 #endif
@@ -421,8 +418,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_USER:
       if (setting == CONTENT_SETTING_DEFAULT) {
 #if !defined(OS_ANDROID)
-        if (type == ContentSettingsType::SOUND &&
-            base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
+        if (type == ContentSettingsType::SOUND) {
           // If the block autoplay enabled preference is enabled and the
           // sound default setting is ALLOW, we will return a custom string
           // indicating that Chrome is controlling autoplay and sound
@@ -444,8 +440,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_POLICY:
     case content_settings::SETTING_SOURCE_EXTENSION:
 #if !defined(OS_ANDROID)
-      if (type == ContentSettingsType::SOUND &&
-          base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
+      if (type == ContentSettingsType::SOUND) {
         button_text_ids = kSoundPermissionButtonTextIDUserManaged;
         break;
       }
@@ -669,11 +664,6 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(
     case ContentSettingsType::POPUPS:
       icon = &vector_icons::kLaunchIcon;
       break;
-#if BUILDFLAG(ENABLE_PLUGINS)
-    case ContentSettingsType::PLUGINS:
-      icon = &vector_icons::kExtensionIcon;
-      break;
-#endif
     case ContentSettingsType::GEOLOCATION:
       icon = &vector_icons::kLocationOnIcon;
       break;
@@ -690,7 +680,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &vector_icons::kFileDownloadIcon;
       break;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
       icon = &vector_icons::kProtectedContentIcon;
       break;
@@ -733,7 +723,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(
       icon = &vector_icons::kVrHeadsetIcon;
       break;
     case ContentSettingsType::WINDOW_PLACEMENT:
-      icon = &vector_icons::kWindowPlacementIcon;
+      icon = &vector_icons::kSelectWindowIcon;
       break;
     case ContentSettingsType::FONT_ACCESS:
       icon = &vector_icons::kFontDownloadIcon;
@@ -742,7 +732,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(
       icon = &vector_icons::kVideogameAssetIcon;
       break;
     case ContentSettingsType::IDLE_DETECTION:
-      icon = &vector_icons::kPersonIcon;
+      icon = &vector_icons::kDevicesIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

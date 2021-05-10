@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
@@ -120,6 +120,22 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
     });
   }
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+  // Migrating kSpellCheckBlacklistedDictionaries preference to
+  // kSpellCheckBlocklistedDictionaries.
+  // TODO(crbug/1161062): Remove after M91.
+  StringListPrefMember old_blocked_dict_pref;
+  old_blocked_dict_pref.Init(
+      spellcheck::prefs::kSpellCheckBlacklistedDictionaries, prefs);
+  StringListPrefMember blocked_dict_pref;
+  blocked_dict_pref.Init(spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
+                         prefs);
+
+  if (blocked_dict_pref.GetValue().empty() &&
+      !old_blocked_dict_pref.GetValue().empty()) {
+    blocked_dict_pref.SetValue(old_blocked_dict_pref.GetValue());
+    old_blocked_dict_pref.SetValue(std::vector<std::string>());
+  }
 
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,
@@ -509,18 +525,6 @@ bool SpellcheckService::IsSpellcheckEnabled() const {
 
   return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
          (!hunspell_dictionaries_.empty() || enable_if_uninitialized);
-}
-
-bool SpellcheckService::LoadExternalDictionary(std::string language,
-                                               std::string locale,
-                                               std::string path,
-                                               DictionaryFormat format) {
-  return false;
-}
-
-bool SpellcheckService::UnloadExternalDictionary(
-    const std::string& /* path */) {
-  return false;
 }
 
 void SpellcheckService::Observe(int type,

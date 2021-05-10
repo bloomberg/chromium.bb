@@ -46,10 +46,10 @@
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
-#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/render_blocking_behavior.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -322,14 +323,15 @@ KURL UrlWithoutFragment(const KURL& url) {
   return result;
 }
 
-String MixedContentTypeForContextType(WebMixedContentContextType context_type) {
+String MixedContentTypeForContextType(
+    mojom::blink::MixedContentContextType context_type) {
   switch (context_type) {
-    case WebMixedContentContextType::kNotMixedContent:
+    case mojom::blink::MixedContentContextType::kNotMixedContent:
       return protocol::Security::MixedContentTypeEnum::None;
-    case WebMixedContentContextType::kBlockable:
+    case mojom::blink::MixedContentContextType::kBlockable:
       return protocol::Security::MixedContentTypeEnum::Blockable;
-    case WebMixedContentContextType::kOptionallyBlockable:
-    case WebMixedContentContextType::kShouldBeBlockable:
+    case mojom::blink::MixedContentContextType::kOptionallyBlockable:
+    case mojom::blink::MixedContentContextType::kShouldBeBlockable:
       return protocol::Security::MixedContentTypeEnum::OptionallyBlockable;
   }
 
@@ -370,8 +372,6 @@ String BuildBlockedReason(ResourceRequestBlockedReason reason) {
     case ResourceRequestBlockedReason::kContentType:
       return protocol::Network::BlockedReasonEnum::ContentType;
     case ResourceRequestBlockedReason::kOther:
-    case ResourceRequestBlockedReason::
-        kBlockedByExtensionCrbug1128174Investigation:
       return protocol::Network::BlockedReasonEnum::Other;
     case ResourceRequestBlockedReason::kCollapsedByClient:
       return protocol::Network::BlockedReasonEnum::CollapsedByClient;
@@ -390,6 +390,11 @@ String BuildBlockedReason(ResourceRequestBlockedReason reason) {
           CorpNotSameOriginAfterDefaultedToSameOriginByCoep;
     case blink::ResourceRequestBlockedReason::kCorpNotSameSite:
       return protocol::Network::BlockedReasonEnum::CorpNotSameSite;
+    case ResourceRequestBlockedReason::kConversionRequest:
+      // This is actually never reached, as the conversion request
+      // is marked as successful and no blocking reason is reported.
+      NOTREACHED();
+      return protocol::Network::BlockedReasonEnum::Other;
   }
   NOTREACHED();
   return protocol::Network::BlockedReasonEnum::Other;
@@ -529,13 +534,8 @@ String GetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
     case network::mojom::ReferrerPolicy::kAlways:
       return protocol::Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case network::mojom::ReferrerPolicy::kDefault:
-      if (ReferrerUtils::IsReducedReferrerGranularityEnabled()) {
-        return protocol::Network::Request::ReferrerPolicyEnum::
-            StrictOriginWhenCrossOrigin;
-      } else {
-        return protocol::Network::Request::ReferrerPolicyEnum::
-            NoReferrerWhenDowngrade;
-      }
+      return protocol::Network::Request::ReferrerPolicyEnum::
+          StrictOriginWhenCrossOrigin;
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return protocol::Network::Request::ReferrerPolicyEnum::
           NoReferrerWhenDowngrade;
@@ -985,6 +985,19 @@ void InspectorNetworkAgent::DidBlockRequest(
                           ResourceResponse(), initiator_info, type);
 
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
+
+  // Conversion Measurement API triggers recording of conversions
+  // as redirects to a `/.well-known/register-conversion` url.
+  // The redirect request is not actually executed
+  // but stored internally and then aborted. As the redirect is blocked using
+  // the ResourceRequestBlockedReason::kConversionRequest even when everything
+  // worked out fine, we mark the request as successful, as to not confuse devs.
+  if (reason == ResourceRequestBlockedReason::kConversionRequest) {
+    GetFrontend()->loadingFinished(
+        request_id, base::TimeTicks::Now().since_origin().InSecondsF(), 0);
+    return;
+  }
+
   String protocol_reason = BuildBlockedReason(reason);
   GetFrontend()->loadingFailed(
       request_id, base::TimeTicks::Now().since_origin().InSecondsF(),
@@ -1028,10 +1041,14 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 
   resources_data_->ResourceCreated(request_id, loader_id, request.Url(),
                                    post_data);
-  if (initiator_info.name == fetch_initiator_type_names::kXmlhttprequest)
+  if (initiator_info.name == fetch_initiator_type_names::kXmlhttprequest) {
     type = InspectorPageAgent::kXHRResource;
-  else if (initiator_info.name == fetch_initiator_type_names::kFetch)
+  } else if (initiator_info.name == fetch_initiator_type_names::kFetch) {
     type = InspectorPageAgent::kFetchResource;
+  } else if (initiator_info.name == fetch_initiator_type_names::kBeacon ||
+             initiator_info.name == fetch_initiator_type_names::kPing) {
+    type = InspectorPageAgent::kPingResource;
+  }
 
   if (pending_request_type_)
     type = *pending_request_type_;
@@ -1193,7 +1210,8 @@ void InspectorNetworkAgent::WillSendRequest(
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    RenderBlockingBehavior render_blocking_behavior) {
   // Ignore the request initiated internally.
   if (initiator_info.name == fetch_initiator_type_names::kInternal)
     return;
@@ -1235,7 +1253,8 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
       saved_type == InspectorPageAgent::kXHRResource ||
       saved_type == InspectorPageAgent::kDocumentResource ||
       saved_type == InspectorPageAgent::kFetchResource ||
-      saved_type == InspectorPageAgent::kEventSourceResource) {
+      saved_type == InspectorPageAgent::kEventSourceResource ||
+      saved_type == InspectorPageAgent::kPingResource) {
     type = saved_type;
   }
 
@@ -1681,6 +1700,46 @@ void InspectorNetworkAgent::DidReceiveWebSocketMessageError(
       base::TimeTicks::Now().since_origin().InSecondsF(), error_message);
 }
 
+void InspectorNetworkAgent::WebTransportCreated(
+    ExecutionContext* execution_context,
+    uint64_t transport_id,
+    const KURL& request_url) {
+  std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
+      current_stack_trace =
+          SourceLocation::Capture(execution_context)->BuildInspectorObject();
+  if (!current_stack_trace) {
+    GetFrontend()->webTransportCreated(
+        IdentifiersFactory::SubresourceRequestId(transport_id),
+        UrlWithoutFragment(request_url).GetString(),
+        base::TimeTicks::Now().since_origin().InSecondsF());
+    return;
+  }
+
+  std::unique_ptr<protocol::Network::Initiator> initiator_object =
+      protocol::Network::Initiator::create()
+          .setType(protocol::Network::Initiator::TypeEnum::Script)
+          .build();
+  initiator_object->setStack(std::move(current_stack_trace));
+  GetFrontend()->webTransportCreated(
+      IdentifiersFactory::SubresourceRequestId(transport_id),
+      UrlWithoutFragment(request_url).GetString(),
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      std::move(initiator_object));
+}
+
+void InspectorNetworkAgent::WebTransportConnectionEstablished(
+    uint64_t transport_id) {
+  GetFrontend()->webTransportConnectionEstablished(
+      IdentifiersFactory::SubresourceRequestId(transport_id),
+      base::TimeTicks::Now().since_origin().InSecondsF());
+}
+
+void InspectorNetworkAgent::WebTransportClosed(uint64_t transport_id) {
+  GetFrontend()->webTransportClosed(
+      IdentifiersFactory::SubresourceRequestId(transport_id),
+      base::TimeTicks::Now().since_origin().InSecondsF());
+}
+
 Response InspectorNetworkAgent::enable(Maybe<int> total_buffer_size,
                                        Maybe<int> resource_buffer_size,
                                        Maybe<int> max_post_data_size) {
@@ -1759,8 +1818,7 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
   InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(
       blob, context->GetTaskRunner(TaskType::kFileReading),
       WTF::Bind(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
-                resource_data->TextEncodingName(),
-                WTF::Passed(std::move(callback))));
+                resource_data->TextEncodingName(), std::move(callback)));
   client->Start();
 }
 
@@ -2114,6 +2172,11 @@ ExecutionContext* InspectorNetworkAgent::GetTargetExecutionContext() const {
     return worker_global_scope_;
   DCHECK(inspected_frames_);
   return inspected_frames_->Root()->DomWindow();
+}
+
+void InspectorNetworkAgent::IsCacheDisabled(bool* is_cache_disabled) const {
+  if (cache_disabled_.Get())
+    *is_cache_disabled = true;
 }
 
 }  // namespace blink

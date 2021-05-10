@@ -14,23 +14,32 @@
 
 #include "src/ast/null_literal.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::NullLiteral);
+
 namespace tint {
 namespace ast {
 
-NullLiteral::NullLiteral(ast::type::Type* type) : Literal(type) {}
+NullLiteral::NullLiteral(const Source& source, type::Type* type)
+    : Base(source, type) {}
 
 NullLiteral::~NullLiteral() = default;
 
-bool NullLiteral::IsNull() const {
-  return true;
-}
-
-std::string NullLiteral::to_str() const {
+std::string NullLiteral::to_str(const semantic::Info&) const {
   return "null " + type()->type_name();
 }
 
 std::string NullLiteral::name() const {
   return "__null" + type()->type_name();
+}
+
+NullLiteral* NullLiteral::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type());
+  return ctx->dst->create<NullLiteral>(src, ty);
 }
 
 }  // namespace ast

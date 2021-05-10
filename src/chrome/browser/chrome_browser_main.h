@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
@@ -38,10 +39,6 @@ class RunLoop;
 
 namespace tracing {
 class TraceEventSystemStatsMonitor;
-}
-
-namespace performance_monitor {
-class SystemMonitor;
 }
 
 class ChromeBrowserMainParts : public content::BrowserMainParts {
@@ -155,10 +152,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Parts are deleted in the inverse order they are added.
   std::vector<std::unique_ptr<ChromeBrowserMainExtraParts>> chrome_extra_parts_;
 
-  // The system monitor instance, used by some subsystems to collect the system
-  // metrics they need.
-  std::unique_ptr<performance_monitor::SystemMonitor> system_monitor_;
-
   // The system stats monitor used by chrome://tracing. This doesn't do anything
   // until tracing of the |system_stats| category is enabled.
   std::unique_ptr<tracing::TraceEventSystemStatsMonitor>
@@ -192,7 +185,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   downgrade::DowngradeManager downgrade_manager_;
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Android's first run is done in Java instead of native. Chrome OS does not
   // use master preferences.
   std::unique_ptr<first_run::MasterPrefs> master_prefs_;

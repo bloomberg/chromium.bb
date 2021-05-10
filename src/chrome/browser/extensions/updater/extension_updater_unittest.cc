@@ -17,11 +17,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -33,6 +33,7 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -55,6 +56,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -72,6 +74,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/verifier_formats.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
@@ -85,10 +88,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/files/scoped_temp_dir.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
@@ -98,14 +101,15 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using update_client::UpdateQueryParams;
+using testing::_;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
+using testing::NiceMock;
 using testing::Return;
 using testing::SetArgPointee;
-using testing::_;
+using update_client::UpdateQueryParams;
 
 namespace extensions {
 
@@ -256,7 +260,7 @@ class MockUpdateService : public UpdateService {
                     base::OnceClosure callback));
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO (crbug.com/1061475) : Move this to a utility file.
 std::string CreateUpdateManifest(const std::string& extension_id,
                                  const std::string& extension_version,
@@ -388,16 +392,18 @@ class MockService : public TestExtensionService {
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 
-
-bool ShouldInstallExtensionsOnly(const Extension* extension) {
+bool ShouldInstallExtensionsOnly(const Extension* extension,
+                                 content::BrowserContext* context) {
   return extension->GetType() == Manifest::TYPE_EXTENSION;
 }
 
-bool ShouldInstallThemesOnly(const Extension* extension) {
+bool ShouldInstallThemesOnly(const Extension* extension,
+                             content::BrowserContext* context) {
   return extension->is_theme();
 }
 
-bool ShouldAlwaysInstall(const Extension* extension) {
+bool ShouldAlwaysInstall(const Extension* extension,
+                         content::BrowserContext* context) {
   return true;
 }
 
@@ -803,7 +809,10 @@ class ExtensionUpdaterTest : public testing::Test {
       const std::string& id = extensions[i]->id();
       EXPECT_CALL(helper.delegate(), GetPingDataForExtension(id, _));
 
-      helper.downloader().AddExtension(*extensions[i], 0, fetch_priority);
+      helper.downloader().AddPendingExtensionWithVersion(
+          id, ManifestURL::GetUpdateURL(extensions[i].get()),
+          extensions[i]->location(), false, 0, fetch_priority,
+          extensions[i]->version(), extensions[i]->GetType(), std::string());
     }
 
     // Get the headers our loader was asked to fetch.
@@ -1655,7 +1664,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // This tests the condition when the entry for the crx file is already
   // present in the cache but the crx file is itself corrupted. In this case,
   // after detecting the corruption of the crx file, it's entry should be
@@ -2422,7 +2431,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   ScopedTestingLocalState testing_local_state_;
 
-#if defined OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
@@ -2514,7 +2523,7 @@ TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailurePending) {
   TestSingleExtensionDownloading(true, false, true);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ExtensionUpdaterTest, TestCacheCorruptionCrxDownload) {
   TestCacheCorruption();
 }
@@ -2632,7 +2641,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
                            kUpdateFrequencySecs,
                            NULL,
                            service.GetDownloaderFactory());
-  MockUpdateService update_service;
+  NiceMock<MockUpdateService> update_service;
   OverrideUpdateService(&updater, &update_service);
 
   // Non-internal non-external extensions should be rejected.
@@ -2666,7 +2675,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingRemotelyDisabledExtensions) {
                            service.pref_service(), service.profile(),
                            kUpdateFrequencySecs, nullptr,
                            service.GetDownloaderFactory());
-  MockUpdateService update_service;
+  NiceMock<MockUpdateService> update_service;
   OverrideUpdateService(&updater, &update_service);
 
   ExtensionList enabled_extensions;
@@ -2680,6 +2689,8 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingRemotelyDisabledExtensions) {
   ASSERT_EQ(1u, enabled_extensions.size());
   ASSERT_EQ(2u, blocklisted_extensions.size());
   const std::string& remotely_blocklisted_id = blocklisted_extensions[0]->id();
+  service.extension_prefs()->SetExtensionBlocklistState(remotely_blocklisted_id,
+                                                        BLOCKLISTED_MALWARE);
   service.extension_prefs()->AddDisableReason(
       remotely_blocklisted_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
 
@@ -2764,8 +2775,9 @@ TEST_F(ExtensionUpdaterTest, TestAddPendingExtensionWithVersion) {
       .WillOnce(Return(false));
   EXPECT_TRUE(helper->downloader().AddPendingExtensionWithVersion(
       id, GURL("http://example.com/update"), Manifest::INTERNAL, false, 0,
-      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion)));
-  helper->downloader().StartAllPending(NULL);
+      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion),
+      Manifest::TYPE_UNKNOWN, std::string()));
+  helper->downloader().StartAllPending(nullptr);
   Mock::VerifyAndClearExpectations(&helper->delegate());
   EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
@@ -2773,15 +2785,17 @@ TEST_F(ExtensionUpdaterTest, TestAddPendingExtensionWithVersion) {
   id = crx_file::id_util::GenerateId("foo2");
   EXPECT_FALSE(helper->downloader().AddPendingExtensionWithVersion(
       id, GURL("http:google.com:foo"), Manifest::INTERNAL, false, 0,
-      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion)));
-  helper->downloader().StartAllPending(NULL);
+      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion),
+      Manifest::TYPE_UNKNOWN, std::string()));
+  helper->downloader().StartAllPending(nullptr);
   EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   // Extensions with empty IDs should be rejected.
   EXPECT_FALSE(helper->downloader().AddPendingExtensionWithVersion(
       std::string(), GURL(), Manifest::INTERNAL, false, 0,
-      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion)));
-  helper->downloader().StartAllPending(NULL);
+      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion),
+      Manifest::TYPE_UNKNOWN, std::string()));
+  helper->downloader().StartAllPending(nullptr);
   EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   // Reset the ExtensionDownloader so that it drops the current fetcher.
@@ -2795,8 +2809,9 @@ TEST_F(ExtensionUpdaterTest, TestAddPendingExtensionWithVersion) {
       .WillOnce(Return(false));
   EXPECT_TRUE(helper->downloader().AddPendingExtensionWithVersion(
       id, GURL(), Manifest::INTERNAL, false, 0,
-      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion)));
-  helper->downloader().StartAllPending(NULL);
+      ManifestFetchData::FetchPriority::BACKGROUND, base::Version(kVersion),
+      Manifest::TYPE_UNKNOWN, std::string()));
+  helper->downloader().StartAllPending(nullptr);
   EXPECT_EQ(1u, ManifestFetchersCount(&helper->downloader()));
 
   RunUntilIdle();

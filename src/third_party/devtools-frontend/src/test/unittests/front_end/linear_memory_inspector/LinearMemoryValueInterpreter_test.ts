@@ -3,14 +3,32 @@
 // found in the LICENSE file.
 
 import * as LinearMemoryInspector from '../../../../front_end/linear_memory_inspector/linear_memory_inspector.js';
-
-import {Endianness, ValueType} from '../../../../front_end/linear_memory_inspector/ValueInterpreterDisplayUtils.js';
-import {getElementWithinComponent, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
+import {getElementWithinComponent, getEventPromise, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
 const {assert} = chai;
 
 const DISPLAY_SELECTOR = 'devtools-linear-memory-inspector-interpreter-display';
-const SETTINGS_SELECTOR = '.settings-toolbar';
+const SETTINGS_SELECTOR = 'devtools-linear-memory-inspector-interpreter-settings';
+const TOOLBAR_SELECTOR = '.settings-toolbar';
+export const ENDIANNESS_SELECTOR = '[data-endianness]';
+
+function assertSettingsRenders(component: HTMLElement) {
+  const settings = getElementWithinComponent(
+      component, SETTINGS_SELECTOR, LinearMemoryInspector.ValueInterpreterSettings.ValueInterpreterSettings);
+  assert.isNotNull(settings);
+}
+
+function assertDisplayRenders(component: HTMLElement) {
+  const display = getElementWithinComponent(
+      component, DISPLAY_SELECTOR, LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay);
+  assert.isNotNull(display);
+}
+
+function clickSettingsButton(
+    component: LinearMemoryInspector.LinearMemoryValueInterpreter.LinearMemoryValueInterpreter) {
+  const settingsButton = getElementWithinComponent(component, '[data-settings]', HTMLButtonElement);
+  settingsButton.click();
+}
 
 describe('LinearMemoryValueInterpreter', () => {
   function setUpComponent() {
@@ -18,23 +36,74 @@ describe('LinearMemoryValueInterpreter', () => {
     const component = new LinearMemoryInspector.LinearMemoryValueInterpreter.LinearMemoryValueInterpreter();
     component.data = {
       value: buffer,
-      endianness: Endianness.Little,
-      valueTypes: [ValueType.Int8],
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int8]),
     };
     renderElementIntoDOM(component);
     return component;
   }
 
-  it('renders settings toolbar', async () => {
+  it('renders the settings toolbar', () => {
     const component = setUpComponent();
-    const settingsToolbar = getElementWithinComponent(component, SETTINGS_SELECTOR, HTMLDivElement);
+    const settingsToolbar = getElementWithinComponent(component, TOOLBAR_SELECTOR, HTMLDivElement);
     assert.isNotNull(settingsToolbar);
   });
 
-  it('renders value display', async () => {
+  it('renders value display as default', () => {
     const component = setUpComponent();
-    const valueDisplay = getElementWithinComponent(
-        component, DISPLAY_SELECTOR, LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay);
-    assert.isNotNull(valueDisplay);
+    assertDisplayRenders(component);
+  });
+
+  it('switches between value display and value settings', () => {
+    const component = setUpComponent();
+    assertDisplayRenders(component);
+
+    clickSettingsButton(component);
+
+    assertSettingsRenders(component);
+  });
+
+  it('listens on TypeToggleEvents', async () => {
+    const component = setUpComponent();
+    clickSettingsButton(component);
+
+    const settings = getElementWithinComponent(
+        component, SETTINGS_SELECTOR, LinearMemoryInspector.ValueInterpreterSettings.ValueInterpreterSettings);
+    const eventPromise = getEventPromise<LinearMemoryInspector.LinearMemoryValueInterpreter.ValueTypeToggledEvent>(
+        component, 'value-type-toggled');
+    const expectedType = LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float64;
+    const expectedChecked = true;
+    const typeToggleEvent =
+        new LinearMemoryInspector.ValueInterpreterSettings.TypeToggleEvent(expectedType, expectedChecked);
+    settings.dispatchEvent(typeToggleEvent);
+
+    const event = await eventPromise;
+    assert.strictEqual(event.data.type, expectedType);
+    assert.strictEqual(event.data.checked, expectedChecked);
+  });
+
+  it('renders the endianness options', () => {
+    const component = setUpComponent();
+    const input = getElementWithinComponent(component, ENDIANNESS_SELECTOR, HTMLSelectElement);
+    assert.deepEqual(input.value, LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little);
+    const options = input.querySelectorAll('option');
+    const endiannessSettings = Array.from(options).map(option => option.value);
+    assert.deepEqual(endiannessSettings, [
+      LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Big,
+    ]);
+  });
+
+  it('triggers an event on changing endianness', async () => {
+    const component = setUpComponent();
+    const input = getElementWithinComponent(component, ENDIANNESS_SELECTOR, HTMLSelectElement);
+
+    const eventPromise = getEventPromise<LinearMemoryInspector.LinearMemoryValueInterpreter.EndiannessChangedEvent>(
+        component, 'endianness-changed');
+    const changeEvent = new Event('change');
+    input.dispatchEvent(changeEvent);
+
+    const event = await eventPromise;
+    assert.deepEqual(event.data, LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little);
   });
 });

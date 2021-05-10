@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/form_data_importer.h"
@@ -64,16 +65,9 @@ namespace {
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
     std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
-  if (IsSaveCardInfobarMessagesUIEnabled()) {
-    InfobarSaveCardCoordinator* coordinator =
-        [[InfobarSaveCardCoordinator alloc]
-            initWithInfoBarDelegate:delegate.get()];
-    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
-  } else {
-    SaveCardInfoBarController* controller = [[SaveCardInfoBarController alloc]
-        initWithInfoBarDelegate:delegate.get()];
-    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
-  }
+  InfobarSaveCardCoordinator* coordinator = [[InfobarSaveCardCoordinator alloc]
+      initWithInfoBarDelegate:delegate.get()];
+  return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
@@ -147,6 +141,10 @@ ChromeAutofillClientIOS::GetAutocompleteHistoryManager() {
 }
 
 PrefService* ChromeAutofillClientIOS::GetPrefs() {
+  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+}
+
+const PrefService* ChromeAutofillClientIOS::GetPrefs() const {
   return pref_service_;
 }
 
@@ -183,7 +181,7 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
   return AddressNormalizerFactory::GetInstance();
 }
 
-const GURL& ChromeAutofillClientIOS::GetLastCommittedURL() {
+const GURL& ChromeAutofillClientIOS::GetLastCommittedURL() const {
   return web_state_->GetLastCommittedURL();
 }
 
@@ -200,6 +198,14 @@ const translate::LanguageState* ChromeAutofillClientIOS::GetLanguageState() {
     auto* translate_manager = translate_client->GetTranslateManager();
     if (translate_manager)
       return translate_manager->GetLanguageState();
+  }
+  return nullptr;
+}
+
+translate::TranslateDriver* ChromeAutofillClientIOS::GetTranslateDriver() {
+  auto* translate_client = ChromeIOSTranslateClient::FromWebState(web_state_);
+  if (translate_client) {
+    return translate_client->GetTranslateDriver();
   }
   return nullptr;
 }
@@ -251,7 +257,8 @@ void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo());
+          identity_manager_->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kSync));
   base::string16 account_name =
       primary_account_info ? base::UTF8ToUTF16(primary_account_info->full_name)
                            : base::string16();
@@ -309,6 +316,12 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
           ::CreateConfirmInfoBar(std::move(infobar_delegate)))) {
     raw_delegate->set_was_shown();
   }
+}
+
+void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
+    const AutofillProfile& profile,
+    AddressProfileSavePromptCallback callback) {
+  // TODO(crbug.com/1167062): Implement.
 }
 
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
@@ -371,7 +384,7 @@ void ChromeAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-bool ChromeAutofillClientIOS::IsContextSecure() {
+bool ChromeAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);
 }
 
@@ -379,7 +392,7 @@ bool ChromeAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }
 
-bool ChromeAutofillClientIOS::AreServerCardsSupported() {
+bool ChromeAutofillClientIOS::AreServerCardsSupported() const {
   return true;
 }
 

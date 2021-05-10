@@ -24,6 +24,12 @@ class CanvasStyle;
 class CSSValue;
 class Element;
 
+enum ShadowMode {
+  kDrawShadowAndForeground,
+  kDrawShadowOnly,
+  kDrawForegroundOnly
+};
+
 class CanvasRenderingContext2DState final
     : public GarbageCollected<CanvasRenderingContext2DState>,
       public FontSelectorClient {
@@ -143,6 +149,9 @@ class CanvasRenderingContext2DState final
   void SetFontKerning(FontDescription::Kerning font_kerning,
                       FontSelector* selector);
   FontDescription::Kerning GetFontKerning() const { return font_kerning_; }
+
+  void SetFontStretch(FontSelectionValue font_stretch, FontSelector* selector);
+  FontSelectionValue GetFontStretch() const { return font_stretch_; }
 
   void SetFontVariantCaps(FontDescription::FontVariantCaps font_kerning,
                           FontSelector* selector);
@@ -267,6 +276,7 @@ class CanvasRenderingContext2DState final
   float word_spacing_{0};
   TextRenderingMode text_rendering_mode_{TextRenderingMode::kAutoTextRendering};
   FontDescription::Kerning font_kerning_{FontDescription::kAutoKerning};
+  FontSelectionValue font_stretch_{NormalWidthValue()};
   FontDescription::FontVariantCaps font_variant_caps_{
       FontDescription::kCapsNormal};
 

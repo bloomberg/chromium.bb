@@ -312,15 +312,15 @@ void ThreadableLoader::ResponseBodyReceived(Resource* resource,
   client_->DidStartLoadingResponseBody(body);
 }
 
-void ThreadableLoader::SetSerializedCachedMetadata(Resource* resource,
-                                                   const uint8_t* data,
-                                                   size_t size) {
+void ThreadableLoader::CachedMetadataReceived(
+    Resource* resource,
+    mojo_base::BigBuffer cached_metadata) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
 
   checker_.SetSerializedCachedMetadata();
-  client_->DidReceiveCachedMetadata(reinterpret_cast<const char*>(data),
-                                    SafeCast<int>(size));
+
+  client_->DidReceiveCachedMetadata(std::move(cached_metadata));
 }
 
 void ThreadableLoader::DataReceived(Resource* resource,
@@ -384,6 +384,7 @@ void ThreadableLoader::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(client_);
   visitor->Trace(resource_fetcher_);
+  visitor->Trace(timeout_timer_);
   RawResourceClient::Trace(visitor);
 }
 

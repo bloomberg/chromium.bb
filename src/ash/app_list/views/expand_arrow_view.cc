@@ -75,7 +75,6 @@ constexpr int kAnimationIntervalInSec = 10;
 constexpr auto kCycleDuration = base::TimeDelta::FromMilliseconds(1000);
 constexpr auto kCycleInterval = base::TimeDelta::FromMilliseconds(500);
 
-constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
 constexpr int kFocusRingWidth = 2;
 
 // THe bounds for the tap target of the expand arrow button.
@@ -198,7 +197,7 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   if (HasFocus()) {
     cc::PaintFlags focus_ring_flags;
     focus_ring_flags.setAntiAlias(true);
-    focus_ring_flags.setColor(kFocusRingColor);
+    focus_ring_flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
     focus_ring_flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
     focus_ring_flags.setStrokeWidth(kFocusRingWidth);
 
@@ -281,10 +280,12 @@ std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()
     const {
+  const AppListColorProvider* color_provider = AppListColorProvider::Get();
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(GetCircleBounds()),
       GetInkDropCenterBasedOnLastEvent(),
-      AppListColorProvider::Get()->GetExpandArrowInkDropBaseColor(), 1.0f);
+      color_provider->GetRippleAttributesBaseColor(),
+      color_provider->GetRippleAttributesInkDropOpacity());
 }
 
 void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {

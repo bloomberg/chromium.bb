@@ -437,13 +437,12 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
   if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
                                             &updated_form, &field) &&
       (!element_.IsAutofilled() || !form.DynamicallySameFormAs(updated_form))) {
-    base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
     WebLocalFrame* frame = render_frame()->GetWebFrame();
     std::vector<FormData> forms;
     forms.push_back(updated_form);
     // Always communicate to browser process for topmost frame.
     if (!forms.empty() || !frame->Parent()) {
-      GetAutofillDriver()->FormsSeen(forms, forms_seen_timestamp);
+      GetAutofillDriver()->FormsSeen(forms);
     }
   }
 }
@@ -481,8 +480,10 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
   if (id != autofill_query_id_)
     return;
 
+  ClearPreviewedForm();
+
   query_node_autofill_state_ = element_.GetAutofillState();
-  form_util::PreviewForm(form, element_);
+  previewed_elements_ = form_util::PreviewForm(form, element_);
 
   GetAutofillDriver()->DidPreviewAutofillFormData();
 }
@@ -513,8 +514,9 @@ void AutofillAgent::ClearPreviewedForm() {
   if (password_autofill_agent_->DidClearAutofillSelection(element_))
     return;
 
-  form_util::ClearPreviewedFormWithElement(element_,
-                                           query_node_autofill_state_);
+  form_util::ClearPreviewedElements(previewed_elements_, element_,
+                                    query_node_autofill_state_);
+  previewed_elements_ = {};
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value) {
@@ -759,6 +761,10 @@ void AutofillAgent::SetAssistantActionState(bool running) {
   }
 }
 
+void AutofillAgent::EnableHeavyFormDataScraping() {
+  is_heavy_form_data_scraping_enabled_ = true;
+}
+
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element,
     bool autoselect_first_suggestion) {
@@ -818,25 +824,23 @@ void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
 
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
                                             WebInputElement* node) {
+  ClearPreviewedForm();
   query_node_autofill_state_ = element_.GetAutofillState();
   node->SetSuggestedValue(blink::WebString::FromUTF16(value));
   node->SetAutofillState(WebAutofillState::kPreviewed);
   form_util::PreviewSuggestion(node->SuggestedValue().Utf16(),
                                node->Value().Utf16(), node);
+  previewed_elements_.push_back(*node);
 }
 
 void AutofillAgent::ProcessForms() {
-  // Record timestamp of when the forms are first seen. This is used to
-  // measure the overhead of the Autofill feature.
-  base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
-
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   std::vector<FormData> forms =
       form_cache_.ExtractNewForms(field_data_manager_.get());
 
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() || !frame->Parent()) {
-    GetAutofillDriver()->FormsSeen(forms, forms_seen_timestamp);
+    GetAutofillDriver()->FormsSeen(forms);
   }
 }
 
@@ -1019,15 +1023,17 @@ void AutofillAgent::OnProvisionallySaveForm(
       UpdateLastInteractedForm(element.Form());
     } else {
       // Remove invisible elements
+      WebLocalFrame* frame = render_frame()->GetWebFrame();
       for (auto it = formless_elements_user_edited_.begin();
            it != formless_elements_user_edited_.end();) {
-        if (form_util::IsWebElementVisible(*it)) {
+        if (form_util::IsFormControlVisible(frame, *it)) {
           it = formless_elements_user_edited_.erase(it);
         } else {
           ++it;
         }
       }
-      formless_elements_user_edited_.insert(element);
+      formless_elements_user_edited_.insert(
+          FieldRendererId(element.UniqueRendererFormControlId()));
       provisionally_saved_form_ = base::make_optional<FormData>();
       if (!CollectFormlessElements(&provisionally_saved_form_.value())) {
         provisionally_saved_form_.reset();
@@ -1127,6 +1133,7 @@ base::Optional<FormData> AutofillAgent::GetSubmittedForm() const {
     }
   } else if (formless_elements_user_edited_.size() != 0 &&
              !form_util::IsSomeControlElementVisible(
+                 render_frame()->GetWebFrame(),
                  formless_elements_user_edited_)) {
     // we check if all the elements the user has interacted with are gone,
     // to decide if submission has occurred, and use the

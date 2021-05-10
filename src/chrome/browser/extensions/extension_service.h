@@ -20,7 +20,9 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/blocklist.h"
+#include "chrome/browser/extensions/extension_allowlist.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_metrics.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
@@ -82,10 +84,16 @@ enum class UnloadedExtensionReason;
 enum class ExtensionUpdateCheckDataKey {
   // No update check data keys were found so no action was taken.
   kNoKey = 0,
-  // The update check daya keys had a "_malware" key resulting in the extension
+  // The update check data keys had a "_malware" key resulting in the extension
   // being disabled.
   kMalware = 1,
-  kMaxValue = kMalware
+  // The update check data keys had a "_potentially_uws" key resulting in the
+  // extension being disabled.
+  kPotentiallyUWS = 2,
+  // The update check data keys had a "_policy_violation" key resulting in the
+  // extension being disabled.
+  kPolicyViolation = 3,
+  kMaxValue = kPolicyViolation
 };
 
 // This is an interface class to encapsulate the dependencies that
@@ -262,6 +270,11 @@ class ExtensionService : public ExtensionServiceInterface,
   // nothing.
   void EnableExtension(const std::string& extension_id);
 
+  // Removes the disable reason and enable the extension if there are no disable
+  // reasons left and is not blocked for another reason.
+  void RemoveDisableReasonAndMaybeEnable(const std::string& extension_id,
+                                         disable_reason::DisableReason reason);
+
   // Performs action based on Omaha attributes for the extension.
   void PerformActionBasedOnOmahaAttributes(const std::string& extension_id,
                                            const base::Value& attributes);
@@ -333,9 +346,9 @@ class ExtensionService : public ExtensionServiceInterface,
   // Checks for delayed installation for all pending installs.
   void MaybeFinishDelayedInstallations();
 
-  // ExtensionHost of background page calls this method right after its render
-  // view has been created.
-  void DidCreateRenderViewForBackgroundPage(ExtensionHost* host);
+  // ExtensionHost of background page calls this method right after its renderer
+  // main frame has been created.
+  void DidCreateMainFrameForBackgroundPage(ExtensionHost* host);
 
   // Record a histogram using the PermissionMessage enum values for each
   // permission in |e|.
@@ -404,6 +417,8 @@ class ExtensionService : public ExtensionServiceInterface,
     return &force_installed_tracker_;
   }
 
+  ExtensionAllowlist* allowlist() { return &allowlist_; }
+
   //////////////////////////////////////////////////////////////////////////////
   // For Testing
 
@@ -438,8 +453,8 @@ class ExtensionService : public ExtensionServiceInterface,
   // Set a callback to be called when all external providers are ready and their
   // extensions have been installed.
   void set_external_updates_finished_callback_for_test(
-      const base::Closure& callback) {
-    external_updates_finished_callback_ = callback;
+      base::OnceClosure callback) {
+    external_updates_finished_callback_ = std::move(callback);
   }
 
   // While disabled all calls to CheckForExternalUpdates() will bail out.
@@ -448,7 +463,7 @@ class ExtensionService : public ExtensionServiceInterface,
  private:
   // Loads extensions specified via a command line flag/switch.
   void LoadExtensionsFromCommandLineFlag(const char* switch_name);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void LoadSigninProfileTestExtension(const std::string& path);
 #endif
 
@@ -543,6 +558,10 @@ class ExtensionService : public ExtensionServiceInterface,
   // Helper method to determine if an extension can be blocked.
   bool CanBlockExtension(const Extension* extension) const;
 
+  // Handles the malware Omaha attribute for remotely disabled extensions.
+  void HandleMalwareOmahaAttribute(const std::string& extension_id,
+                                   const base::Value& attributes);
+
   // Enables an extension that was only previously disabled remotely.
   void MaybeEnableRemotelyDisabledExtension(const std::string& extension_id);
 
@@ -607,6 +626,8 @@ class ExtensionService : public ExtensionServiceInterface,
   // Blocklist for the owning profile.
   Blocklist* blocklist_ = nullptr;
 
+  ExtensionAllowlist allowlist_;
+
   // Sets of enabled/disabled/terminated/blocklisted extensions. Not owned.
   ExtensionRegistry* registry_ = nullptr;
 
@@ -663,9 +684,7 @@ class ExtensionService : public ExtensionServiceInterface,
   // extensions have been installed. This happens on initial load and whenever
   // a new entry is found. Normally this is a null callback, but is used in
   // external provider related tests.
-  // TODO(mxnguyen): Change |external_updates_finished_callback_| to
-  // OnceClosure.
-  base::Closure external_updates_finished_callback_;
+  base::OnceClosure external_updates_finished_callback_;
 
   // Set when the browser is terminating. Prevents us from installing or
   // updating additional extensions and allows in-progress installations to
@@ -733,8 +752,14 @@ class ExtensionService : public ExtensionServiceInterface,
                            ManagementPolicyProhibitsEnableOnInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            BlockAndUnblockBlocklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           CanAddDisableReasonToBlocklistedExtension);
   FRIEND_TEST_ALL_PREFIXES(::BlocklistedExtensionSyncServiceTest,
                            SyncBlocklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAllowlistUnitTest,
+                           ExtensionsNotAllowlistedThenBlocklisted);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAllowlistUnitTest,
+                           ExtensionsBlocklistedThenNotAllowlisted);
   friend class ::BlocklistedExtensionSyncServiceTest;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);

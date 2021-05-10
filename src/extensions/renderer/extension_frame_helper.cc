@@ -23,6 +23,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -79,13 +80,13 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
 // is valid, and clears |callbacks_to_be_run_and_cleared|.
 void RunCallbacksWhileFrameIsValid(
     base::WeakPtr<ExtensionFrameHelper> frame_helper,
-    std::vector<base::Closure>* callbacks_to_be_run_and_cleared) {
+    std::vector<base::OnceClosure>* callbacks_to_be_run_and_cleared) {
   // The JavaScript code can cause re-entrancy. To avoid a deadlock, don't run
   // callbacks that are added during the iteration.
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks_to_be_run_and_cleared->swap(callbacks);
   for (auto& callback : callbacks) {
-    callback.Run();
+    std::move(callback).Run();
     if (!frame_helper.get())
       return;  // Frame and ExtensionFrameHelper invalidated by callback.
   }
@@ -112,16 +113,16 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
                                            Dispatcher* extension_dispatcher)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ExtensionFrameHelper>(render_frame),
-      view_type_(VIEW_TYPE_INVALID),
-      tab_id_(-1),
-      browser_window_id_(-1),
-      extension_dispatcher_(extension_dispatcher),
-      did_create_current_document_element_(false) {
+      extension_dispatcher_(extension_dispatcher) {
   g_frame_helpers.Get().insert(this);
   if (render_frame->IsMainFrame()) {
     // Manages its own lifetime.
     new AutomationApiHelper(render_frame);
   }
+
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&ExtensionFrameHelper::BindLocalFrame,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ExtensionFrameHelper::~ExtensionFrameHelper() {
@@ -247,6 +248,11 @@ bool ExtensionFrameHelper::IsContextForEventPage(const ScriptContext* context) {
               VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
+void ExtensionFrameHelper::BindLocalFrame(
+    mojo::PendingAssociatedReceiver<mojom::LocalFrame> pending_receiver) {
+  local_frame_receivers_.Add(this, std::move(pending_receiver));
+}
+
 void ExtensionFrameHelper::DidCreateDocumentElement() {
   did_create_current_document_element_ = true;
   extension_dispatcher_->DidCreateDocumentElement(
@@ -276,19 +282,16 @@ void ExtensionFrameHelper::RunScriptsAtDocumentIdle() {
   // |this| might be dead by now.
 }
 
-void ExtensionFrameHelper::ScheduleAtDocumentStart(
-    const base::Closure& callback) {
-  document_element_created_callbacks_.push_back(callback);
+void ExtensionFrameHelper::ScheduleAtDocumentStart(base::OnceClosure callback) {
+  document_element_created_callbacks_.push_back(std::move(callback));
 }
 
-void ExtensionFrameHelper::ScheduleAtDocumentEnd(
-    const base::Closure& callback) {
-  document_load_finished_callbacks_.push_back(callback);
+void ExtensionFrameHelper::ScheduleAtDocumentEnd(base::OnceClosure callback) {
+  document_load_finished_callbacks_.push_back(std::move(callback));
 }
 
-void ExtensionFrameHelper::ScheduleAtDocumentIdle(
-    const base::Closure& callback) {
-  document_idle_callbacks_.push_back(callback);
+void ExtensionFrameHelper::ScheduleAtDocumentIdle(base::OnceClosure callback) {
+  document_idle_callbacks_.push_back(std::move(callback));
 }
 
 void ExtensionFrameHelper::ReadyToCommitNavigation(
@@ -380,17 +383,12 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnExtensionSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed, OnAppWindowClosed)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetSpatialNavigationEnabled,
-                        OnSetSpatialNavigationEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -441,7 +439,7 @@ void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
           error_message, render_frame());
 }
 
-void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {
+void ExtensionFrameHelper::SetTabId(int32_t tab_id) {
   CHECK_EQ(tab_id_, -1);
   CHECK_GE(tab_id, 0);
   tab_id_ = tab_id;
@@ -476,11 +474,11 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
       render_frame(), extension_id, module_name, function_name, args);
 }
 
-void ExtensionFrameHelper::OnSetFrameName(const std::string& name) {
+void ExtensionFrameHelper::SetFrameName(const std::string& name) {
   render_frame()->GetWebFrame()->SetName(blink::WebString::FromUTF8(name));
 }
 
-void ExtensionFrameHelper::OnAppWindowClosed(bool send_onclosed) {
+void ExtensionFrameHelper::AppWindowClosed(bool send_onclosed) {
   DCHECK(render_frame()->IsMainFrame());
 
   if (!send_onclosed)
@@ -497,7 +495,7 @@ void ExtensionFrameHelper::OnAppWindowClosed(bool send_onclosed) {
                                                         "onAppWindowClosed");
 }
 
-void ExtensionFrameHelper::OnSetSpatialNavigationEnabled(bool enabled) {
+void ExtensionFrameHelper::SetSpatialNavigationEnabled(bool enabled) {
   render_frame()
       ->GetRenderView()
       ->GetWebView()

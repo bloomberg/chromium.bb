@@ -6,8 +6,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2021-02-22
+
 ### Added
+* Image grid encoding
+* Premultiplied alpha support (tongyuantongyu)
+* avifenc: Image grid encoding (`-g`, `--grid`)
+* avifenc: Harvest framerate from y4m headers as the "default", if present
+* avifenc: Recognize the Y4M format string "C420mpeg2" (wantehchang)
+* Basic deduplication when writing mdat chunks
+
+### Changed
+* avifenc: Adjusted min/max/speed/fps defaults
+* Better handling for export headers (tongyuantongyu)
+* Use procedure specified in H.273 to quantize YUV (tongyuantongyu)
+* Impose a maximum of 4096 bytes on searchSampleSize (wantehchang, fixes oss-fuzz perf issue / timeout)
+* Update aom.cmd: v2.0.2
+* Update dav1d.cmd: 0.8.2
+* Update libgav1.cmd: 4a89dc3 / lts_2020_09_23
+* Update rav1e.cmd: 0.4
+* Update svt.cmd/svt.sh: v0.8.6
+* Force libjpeg to output in RGB Colorspace (bugfix)
+* Minor other compilation/linking/formatting/comment fixes
+
+## [0.8.4] - 2020-11-23
+
+### Added
+* YCgCo support (full-range only, wantehchang)
 * Expose `maxThreads` to `avifDecoder`, add `--jobs` to `avifdec`
+* Add `avifDecoderNthImageMaxExtent()` streaming helper function to determine future reads
+* Create AVIF_VERSION_DEVEL, which allows for in-development changes to be detected during the build
+* New avifResult values: `AVIF_RESULT_INVALID_ARGUMENT`, `AVIF_RESULT_NOT_IMPLEMENTED`
+
+### Changed
+* Read/write one of each type of colr box, as allowed in HEIF 6.5.5.1 Amendment 3 (also now supported in libheif)
+* avifenc/avifdec: Now guesses input file format by header inspection instead of extension
+* avifenc: Fix y4m/stdin corner cases when trying to detect a "single image" encode
+* Add some protections against improperly using AVIF_ADD_IMAGE_FLAG_SINGLE
+* imir transformation: Disambiguate all usages of "vertical" and "horizontal" across comments and tooling
+* Print MC value when warning resetting to defaults (wantehchang)
+* Fix grid image rows/cols parsing on invalid data
+* Allow override of HAVE_POISON_SYSTEM_DIRECTORIES_WARNING (bnason-nf)
+* Lots of comments clarifications in avif.h
 
 ## [0.8.3] - 2020-11-09
 
@@ -535,7 +575,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Constants `AVIF_VERSION`, `AVIF_VERSION_MAJOR`, `AVIF_VERSION_MINOR`, `AVIF_VERSION_PATCH`
 - `avifVersion()` function
 
-[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/AOMediaCodec/libavif/compare/v0.8.4...v0.9.0
+[0.8.4]: https://github.com/AOMediaCodec/libavif/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/AOMediaCodec/libavif/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/AOMediaCodec/libavif/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/AOMediaCodec/libavif/compare/v0.8.0...v0.8.1

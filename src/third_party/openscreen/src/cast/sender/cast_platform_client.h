@@ -7,7 +7,9 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "absl/types/optional.h"
 #include "cast/common/channel/cast_message_handler.h"
@@ -19,7 +21,6 @@ namespace openscreen {
 namespace cast {
 
 struct ServiceInfo;
-class VirtualConnectionManager;
 class VirtualConnectionRouter;
 
 // This class handles Cast messages that generally relate to the "platform", in
@@ -35,7 +36,6 @@ class CastPlatformClient final : public CastMessageHandler {
       std::function<void(const std::string& app_id, AppAvailabilityResult)>;
 
   CastPlatformClient(VirtualConnectionRouter* router,
-                     VirtualConnectionManager* manager,
                      ClockNowFunctionPtr clock,
                      TaskRunner* task_runner);
   ~CastPlatformClient() override;
@@ -82,7 +82,6 @@ class CastPlatformClient final : public CastMessageHandler {
 
   const std::string sender_id_;
   VirtualConnectionRouter* const virtual_conn_router_;
-  VirtualConnectionManager* const virtual_conn_manager_;
   std::map<std::string /* device_id */, int> socket_id_by_device_id_;
   std::map<std::string /* device_id */, PendingRequests>
       pending_requests_by_device_id_;

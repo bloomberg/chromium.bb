@@ -33,6 +33,7 @@ import re
 import subprocess
 import sys
 
+from enum import Enum
 from pathlib import Path
 
 USE_PYTHON_3 = f'This script will only run under python3.'
@@ -41,20 +42,15 @@ SRC_DIR = Path(__file__).parent.parent.resolve()
 DEPOT_TOOLS_DIR = SRC_DIR.joinpath('third_party', 'depot_tools')
 DEBUG = False
 
-_TEST_TARGET_SUFFIXES = [
-    '_browsertests',
-    '_junit_tests',
-    '_perftests',
-    '_test_apk',
-    '_unittests',
-]
-
 # Some test suites use suffixes that would also match non-test-suite targets.
 # Those test suites should be manually added here.
 _OTHER_TEST_TARGETS = [
     '//chrome/test:browser_tests',
     '//chrome/test:unit_tests',
 ]
+
+_TEST_TARGET_REGEX = re.compile(
+    r'(_browsertests|_junit_tests|_perftests|_test_.*apk|_unittests)$')
 
 TEST_FILE_NAME_REGEX = re.compile(r'(.*Test\.java)|(.*_[a-z]*test\.cc)')
 
@@ -68,20 +64,28 @@ def ExitWithMessage(*args):
   print(*args, file=sys.stderr)
   sys.exit(1)
 
+
+class TestValidity(Enum):
+  NOT_A_TEST = 0  # Does not match test file regex.
+  MAYBE_A_TEST = 1  # Matches test file regex, but doesn't include gtest files.
+  VALID_TEST = 2  # Matches test file regex and includes gtest files.
+
+
 def IsTestFile(file_path):
   if not TEST_FILE_NAME_REGEX.match(file_path):
-    return False
+    return TestValidity.NOT_A_TEST
   if file_path.endswith('.cc'):
     # Try a bit harder to remove non-test files for c++. Without this,
     # 'autotest.py base/' finds non-test files.
     try:
       with open(file_path, 'r', encoding='utf-8') as f:
         if GTEST_INCLUDE_REGEX.search(f.read()) is not None:
-          return True
+          return TestValidity.VALID_TEST
     except IOError:
       pass
-    return False
-  return True
+    # It may still be a test file, even if it doesn't include a gtest file.
+    return TestValidity.MAYBE_A_TEST
+  return TestValidity.VALID_TEST
 
 
 class CommandError(Exception):
@@ -127,7 +131,7 @@ def BuildTestTargetsWithNinja(out_dir, targets, dry_run):
   cmd = [ninja_path, '-C', out_dir] + targets
   print('Building: ' + ' '.join(cmd))
   if (dry_run):
-    return
+    return True
   try:
     subprocess.check_call(cmd)
   except subprocess.CalledProcessError as e:
@@ -138,27 +142,33 @@ def BuildTestTargetsWithNinja(out_dir, targets, dry_run):
 def RecursiveMatchFilename(folder, filename):
   current_dir = os.path.split(folder)[-1]
   if current_dir.startswith('out') or current_dir.startswith('.'):
-    return []
-  matches = []
+    return [[], []]
+  exact = []
+  close = []
   with os.scandir(folder) as it:
     for entry in it:
       if (entry.is_symlink()):
         continue
       if (entry.is_file() and filename in entry.path and
           not os.path.basename(entry.path).startswith('.')):
-        if IsTestFile(entry.path):
-          matches.append(entry.path)
+        file_validity = IsTestFile(entry.path)
+        if file_validity is TestValidity.VALID_TEST:
+          exact.append(entry.path)
+        elif file_validity is TestValidity.MAYBE_A_TEST:
+          close.append(entry.path)
       if entry.is_dir():
         # On Windows, junctions are like a symlink that python interprets as a
         # directory, leading to exceptions being thrown. We can just catch and
         # ignore these exceptions like we would ignore symlinks.
         try:
-          matches += RecursiveMatchFilename(entry.path, filename)
+          matches = RecursiveMatchFilename(entry.path, filename)
+          exact += matches[0]
+          close += matches[1]
         except FileNotFoundError as e:
           if DEBUG:
             print(f'Failed to scan directory "{entry}" - junction?')
           pass
-  return matches
+  return [exact, close]
 
 
 def FindTestFilesInDirectory(directory):
@@ -168,10 +178,13 @@ def FindTestFilesInDirectory(directory):
   for root, dirs, files in os.walk(directory):
     for f in files:
       path = os.path.join(root, f)
-      if IsTestFile(path):
+      file_validity = IsTestFile(path)
+      if file_validity is TestValidity.VALID_TEST:
         if DEBUG:
           print(path)
         test_files.append(path)
+      elif DEBUG and file_validity is TestValidity.MAYBE_A_TEST:
+        print(path + ' matched but doesn\'t include gtest files, skipping.')
   return test_files
 
 
@@ -180,10 +193,20 @@ def FindMatchingTestFiles(target):
   if os.path.isfile(target):
     # If the target is a C++ implementation file, try to guess the test file.
     if target.endswith('.cc') or target.endswith('.h'):
-      if IsTestFile(target):
+      target_validity = IsTestFile(target)
+      if target_validity is TestValidity.VALID_TEST:
         return [target]
       alternate = f"{target.rsplit('.', 1)[0]}_unittest.cc"
-      if os.path.isfile(alternate) and IsTestFile(alternate):
+      alt_validity = TestValidity.NOT_A_TEST if not os.path.isfile(
+          alternate) else IsTestFile(alternate)
+      if alt_validity is TestValidity.VALID_TEST:
+        return [alternate]
+
+      # If neither the target nor its alternative were valid, check if they just
+      # didn't include the gtest files before deciding to exit.
+      if target_validity is TestValidity.MAYBE_A_TEST:
+        return [target]
+      if alt_validity is TestValidity.MAYBE_A_TEST:
         return [alternate]
       ExitWithMessage(f"{target} doesn't look like a test file")
     return [target]
@@ -202,24 +225,31 @@ def FindMatchingTestFiles(target):
     target = target.replace(os.path.altsep, os.path.sep)
   if DEBUG:
     print('Finding files with full path containing: ' + target)
-  results = RecursiveMatchFilename(SRC_DIR, target)
+
+  [exact, close] = RecursiveMatchFilename(SRC_DIR, target)
   if DEBUG:
-    print('Found matching file(s): ' + ' '.join(results))
-  if len(results) > 1:
+    if exact:
+      print('Found exact matching file(s):')
+      print('\n'.join(exact))
+    if close:
+      print('Found possible matching file(s):')
+      print('\n'.join(close))
+
+  test_files = exact if len(exact) > 0 else close
+  if len(test_files) > 1:
     # Arbitrarily capping at 10 results so we don't print the name of every file
     # in the repo if the target is poorly specified.
-    results = results[:10]
+    test_files = test_files[:10]
     ExitWithMessage(f'Target "{target}" is ambiguous. Matching files: '
-                    f'{results}')
-  if not results:
+                    f'{test_files}')
+  if not test_files:
     ExitWithMessage(f'Target "{target}" did not match any files.')
-  return results
+  return test_files
 
 
 def IsTestTarget(target):
-  for suffix in _TEST_TARGET_SUFFIXES:
-    if target.endswith(suffix):
-      return True
+  if _TEST_TARGET_REGEX.search(target):
+    return True
   return target in _OTHER_TEST_TARGETS
 
 
@@ -294,7 +324,7 @@ def FindTestTargets(target_cache, out_dir, paths, run_all):
   if not test_targets:
     ExitWithMessage(
         f'Target(s) "{paths}" did not match any test targets. Consider adding'
-        f' one of the following targets to the top of this file: {targets}')
+        f' one of the following targets to the top of {__file__}: {targets}')
 
   target_cache.Store(paths, test_targets)
   target_cache.Save()

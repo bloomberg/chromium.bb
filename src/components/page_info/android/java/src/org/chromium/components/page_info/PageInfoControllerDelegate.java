@@ -6,21 +6,23 @@ package org.chromium.components.page_info;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.widget.Button;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
-import org.chromium.base.supplier.Supplier;
-import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,7 +49,6 @@ public abstract class PageInfoControllerDelegate {
         int INSECURE_PAGE_PREVIEW = 3;
     }
 
-    private final Supplier<ModalDialogManager> mModalDialogManager;
     private final AutocompleteSchemeClassifier mAutocompleteSchemeClassifier;
     private final VrHandler mVrHandler;
     private final boolean mIsSiteSettingsAvailable;
@@ -57,10 +58,8 @@ public abstract class PageInfoControllerDelegate {
     protected boolean mIsHttpsImageCompressionApplied;
     protected String mOfflinePageUrl;
 
-    public PageInfoControllerDelegate(Supplier<ModalDialogManager> modalDialogManager,
-            AutocompleteSchemeClassifier autocompleteSchemeClassifier, VrHandler vrHandler,
-            boolean isSiteSettingsAvailable, boolean cookieControlsShown) {
-        mModalDialogManager = modalDialogManager;
+    public PageInfoControllerDelegate(AutocompleteSchemeClassifier autocompleteSchemeClassifier,
+            VrHandler vrHandler, boolean isSiteSettingsAvailable, boolean cookieControlsShown) {
         mAutocompleteSchemeClassifier = autocompleteSchemeClassifier;
         mVrHandler = vrHandler;
         mIsSiteSettingsAvailable = isSiteSettingsAvailable;
@@ -89,9 +88,7 @@ public abstract class PageInfoControllerDelegate {
     /**
      * Return the ModalDialogManager to be used.
      */
-    public ModalDialogManager getModalDialogManager() {
-        return mModalDialogManager.get();
-    }
+    public abstract ModalDialogManager getModalDialogManager();
 
     /**
      * Initialize viewParams with Preview UI info, if any.
@@ -200,7 +197,7 @@ public abstract class PageInfoControllerDelegate {
     /**
      * Returns whether or not the performance badge should be shown for |url|.
      */
-    public boolean shouldShowPerformanceBadge(String url) {
+    public boolean shouldShowPerformanceBadge(GURL url) {
         return false;
     }
 
@@ -232,16 +229,25 @@ public abstract class PageInfoControllerDelegate {
             CookieControlsObserver observer);
 
     /**
+     * Creates controller for history features.
+     * @return created controller if it exists
+     */
+    @Nullable
+    public abstract PageInfoSubpageController createHistoryController(
+            PageInfoMainController mainController, PageInfoRowView rowView, Button forgetSiteButton,
+            String url);
+
+    /**
      * @return Returns the browser context associated with this dialog.
      */
     @NonNull
     public abstract BrowserContextHandle getBrowserContext();
 
     /**
-     * @return Returns the SiteSettingsClient for this page info.
+     * @return Returns the SiteSettingsDelegate for this page info.
      */
     @NonNull
-    public abstract SiteSettingsClient getSiteSettingsClient();
+    public abstract SiteSettingsDelegate getSiteSettingsDelegate();
 
     /**
      * Fetches a favicon for the current page and passes it to callback.
@@ -253,4 +259,6 @@ public abstract class PageInfoControllerDelegate {
      * @return Returns the drawable for the Preview UI.
      */
     public abstract Drawable getPreviewUiIcon();
+
+    public abstract FragmentManager getFragmentManager();
 }

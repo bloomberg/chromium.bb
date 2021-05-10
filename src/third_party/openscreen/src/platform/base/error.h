@@ -182,6 +182,11 @@ class Error {
     kOperationInvalid,
     kOperationInProgress,
     kOperationCancelled,
+
+    // Cast streaming errors
+    kTypeError,
+    kUnknownCodec,
+    kSocketFailure
   };
 
   Error();

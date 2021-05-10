@@ -24,9 +24,9 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     float device_pixel_ratio;
     int color_bits_per_component;
     int monochrome_bits_per_component;
-    ui::PointerType primary_pointer_type;
+    mojom::blink::PointerType primary_pointer_type;
     int available_pointer_types;
-    ui::HoverType primary_hover_type;
+    mojom::blink::HoverType primary_hover_type;
     int available_hover_types;
     int default_font_size;
     bool three_d_enabled;
@@ -42,6 +42,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     ForcedColors forced_colors;
     NavigationControls navigation_controls;
     ScreenSpanning screen_spanning;
+    ScreenFoldPosture screen_fold_posture;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -73,6 +74,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.forced_colors = forced_colors;
       data.navigation_controls = navigation_controls;
       data.screen_spanning = screen_spanning;
+      data.screen_fold_posture = screen_fold_posture;
       return data;
     }
   };
@@ -96,9 +98,9 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   float DevicePixelRatio() const override;
   int ColorBitsPerComponent() const override;
   int MonochromeBitsPerComponent() const override;
-  ui::PointerType PrimaryPointerType() const override;
+  mojom::blink::PointerType PrimaryPointerType() const override;
   int AvailablePointerTypes() const override;
-  ui::HoverType PrimaryHoverType() const override;
+  mojom::blink::HoverType PrimaryHoverType() const override;
   int AvailableHoverTypes() const override;
   bool ThreeDEnabled() const override;
   bool InImmersiveMode() const override;
@@ -115,6 +117,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
   ScreenSpanning GetScreenSpanning() const override;
+  ScreenFoldPosture GetScreenFoldPosture() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

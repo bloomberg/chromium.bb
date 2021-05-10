@@ -20,78 +20,72 @@
 #include "gtest/gtest.h"
 #include "src/ast/function.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/pipeline_stage.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/struct.h"
 #include "src/ast/struct_member.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/alias_type.h"
-#include "src/ast/type/array_type.h"
-#include "src/ast/type/bool_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/matrix_type.h"
-#include "src/ast/type/pointer_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/u32_type.h"
-#include "src/ast/type/vector_type.h"
-#include "src/ast/type/void_type.h"
+#include "src/program.h"
+#include "src/type/alias_type.h"
+#include "src/type/array_type.h"
+#include "src/type/bool_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/matrix_type.h"
+#include "src/type/pointer_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/u32_type.h"
+#include "src/type/vector_type.h"
+#include "src/type/void_type.h"
 #include "src/writer/msl/namer.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Generate) {
-  ast::type::VoidType void_type;
-  ast::Module m;
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{
+           create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+       });
 
-  auto func = std::make_unique<ast::Function>("my_func", ast::VariableList{},
-                                              &void_type);
-  func->add_decoration(std::make_unique<ast::StageDecoration>(
-      ast::PipelineStage::kCompute, Source{}));
-  m.AddFunction(std::move(func));
+  GeneratorImpl& gen = Build();
 
-  GeneratorImpl g(&m);
-
-  ASSERT_TRUE(g.Generate()) << g.error();
-  EXPECT_EQ(g.result(), R"(#include <metal_stdlib>
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
 
 kernel void my_func() {
+  return;
 }
 
 )");
 }
 
 TEST_F(MslGeneratorImplTest, InputStructName) {
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_EQ(g.generate_name("func_main_in"), "func_main_in");
+  GeneratorImpl& gen = Build();
+
+  ASSERT_EQ(gen.generate_name("func_main_in"), "func_main_in");
 }
 
 TEST_F(MslGeneratorImplTest, InputStructName_ConflictWithExisting) {
-  ast::Module m;
-  GeneratorImpl g(&m);
+  GeneratorImpl& gen = Build();
 
-  // Register the struct name as existing.
-  auto* namer = g.namer_for_testing();
-  namer->NameFor("func_main_out");
-
-  ASSERT_EQ(g.generate_name("func_main_out"), "func_main_out_0");
+  gen.namer_for_testing()->NameFor("func_main_out");
+  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out_0");
 }
 
 TEST_F(MslGeneratorImplTest, NameConflictWith_InputStructName) {
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_EQ(g.generate_name("func_main_in"), "func_main_in");
+  auto* ident = Expr("func_main_in");
 
-  ast::IdentifierExpression ident("func_main_in");
-  ASSERT_TRUE(g.EmitIdentifier(&ident));
-  EXPECT_EQ(g.result(), "func_main_in_0");
+  GeneratorImpl& gen = Build();
+
+  ASSERT_EQ(gen.generate_name("func_main_in"), "func_main_in");
+  ASSERT_TRUE(gen.EmitIdentifier(ident));
+  EXPECT_EQ(gen.result(), "func_main_in_0");
 }
 
 struct MslBuiltinData {
@@ -102,174 +96,133 @@ inline std::ostream& operator<<(std::ostream& out, MslBuiltinData data) {
   out << data.builtin;
   return out;
 }
-using MslBuiltinConversionTest = testing::TestWithParam<MslBuiltinData>;
+using MslBuiltinConversionTest = TestParamHelper<MslBuiltinData>;
 TEST_P(MslBuiltinConversionTest, Emit) {
   auto params = GetParam();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(g.builtin_to_attribute(params.builtin),
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(gen.builtin_to_attribute(params.builtin),
             std::string(params.attribute_name));
 }
 INSTANTIATE_TEST_SUITE_P(
     MslGeneratorImplTest,
     MslBuiltinConversionTest,
     testing::Values(MslBuiltinData{ast::Builtin::kPosition, "position"},
-                    MslBuiltinData{ast::Builtin::kVertexIdx, "vertex_id"},
-                    MslBuiltinData{ast::Builtin::kInstanceIdx, "instance_id"},
+                    MslBuiltinData{ast::Builtin::kVertexIndex, "vertex_id"},
+                    MslBuiltinData{ast::Builtin::kInstanceIndex, "instance_id"},
                     MslBuiltinData{ast::Builtin::kFrontFacing, "front_facing"},
                     MslBuiltinData{ast::Builtin::kFragCoord, "position"},
                     MslBuiltinData{ast::Builtin::kFragDepth, "depth(any)"},
                     MslBuiltinData{ast::Builtin::kLocalInvocationId,
                                    "thread_position_in_threadgroup"},
-                    MslBuiltinData{ast::Builtin::kLocalInvocationIdx,
+                    MslBuiltinData{ast::Builtin::kLocalInvocationIndex,
                                    "thread_index_in_threadgroup"},
                     MslBuiltinData{ast::Builtin::kGlobalInvocationId,
-                                   "thread_position_in_grid"}));
+                                   "thread_position_in_grid"},
+                    MslBuiltinData{ast::Builtin::kSampleIndex, "sample_id"},
+                    MslBuiltinData{ast::Builtin::kSampleMaskIn, "sample_mask"},
+                    MslBuiltinData{ast::Builtin::kSampleMaskOut,
+                                   "sample_mask"}));
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_alias) {
-  ast::type::F32Type f32;
-  ast::type::AliasType alias("a", &f32);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u, g.calculate_alignment_size(&alias));
+  auto* alias = ty.alias("a", ty.f32());
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u, gen.calculate_alignment_size(alias));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_array) {
-  ast::type::F32Type f32;
-  ast::type::ArrayType ary(&f32, 4);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u * 4u, g.calculate_alignment_size(&ary));
+  auto* array = ty.array<f32, 4>();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u * 4u, gen.calculate_alignment_size(array));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_bool) {
-  ast::type::BoolType bool_type;
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(1u, g.calculate_alignment_size(&bool_type));
+  auto* bool_ = ty.bool_();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(1u, gen.calculate_alignment_size(bool_));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_f32) {
-  ast::type::F32Type f32;
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u, g.calculate_alignment_size(&f32));
+  auto* f32 = ty.f32();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u, gen.calculate_alignment_size(f32));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_i32) {
-  ast::type::I32Type i32;
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u, g.calculate_alignment_size(&i32));
+  auto* i32 = ty.i32();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u, gen.calculate_alignment_size(i32));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_matrix) {
-  ast::type::F32Type f32;
-  ast::type::MatrixType mat(&f32, 3, 2);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u * 3u * 2u, g.calculate_alignment_size(&mat));
+  auto* mat3x2 = ty.mat3x2<f32>();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u * 3u * 2u, gen.calculate_alignment_size(mat3x2));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_pointer) {
-  ast::type::BoolType bool_type;
-  ast::type::PointerType ptr(&bool_type, ast::StorageClass::kPrivate);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(0u, g.calculate_alignment_size(&ptr));
+  type::Pointer ptr(ty.bool_(), ast::StorageClass::kPrivate);
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(0u, gen.calculate_alignment_size(&ptr));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_struct) {
-  ast::type::I32Type i32;
-  ast::type::F32Type f32;
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(4)}),
+                            Member("b", ty.f32(), {MemberOffset(32)}),
+                            Member("c", ty.f32(), {MemberOffset(128)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList decos;
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
+  auto* s = ty.struct_("S", str);
 
-  ast::StructMemberList members;
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(decos)));
+  GeneratorImpl& gen = Build();
 
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(32, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(decos)));
-
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(128, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &f32, std::move(decos)));
-
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
-
-  ast::type::StructType s("S", std::move(str));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(132u, g.calculate_alignment_size(&s));
+  EXPECT_EQ(132u, gen.calculate_alignment_size(s));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_struct_of_struct) {
-  ast::type::I32Type i32;
-  ast::type::F32Type f32;
-  ast::type::VectorType fvec(&f32, 3);
+  auto* inner_str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
+                            Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+                            Member("c", ty.f32(), {MemberOffset(32)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList decos;
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
+  auto* inner_s = ty.struct_("Inner", inner_str);
 
-  ast::StructMemberList members;
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(decos)));
+  auto* outer_str = create<ast::Struct>(
+      ast::StructMemberList{Member("d", ty.f32(), {MemberOffset(0)}),
+                            Member("e", inner_s, {MemberOffset(32)}),
+                            Member("f", ty.f32(), {MemberOffset(64)})},
+      ast::StructDecorationList{});
 
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec, std::move(decos)));
+  auto* outer_s = ty.struct_("Outer", outer_str);
 
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(32, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &f32, std::move(decos)));
+  GeneratorImpl& gen = Build();
 
-  auto inner_str = std::make_unique<ast::Struct>();
-  inner_str->set_members(std::move(members));
-
-  ast::type::StructType inner_s("Inner", std::move(inner_str));
-
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("d", &f32, std::move(decos)));
-
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(32, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("e", &inner_s, std::move(decos)));
-
-  decos.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(64, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("f", &f32, std::move(decos)));
-
-  auto outer_str = std::make_unique<ast::Struct>();
-  outer_str->set_members(std::move(members));
-
-  ast::type::StructType outer_s("Outer", std::move(outer_str));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(80u, g.calculate_alignment_size(&outer_s));
+  EXPECT_EQ(80u, gen.calculate_alignment_size(outer_s));
 }
 
 TEST_F(MslGeneratorImplTest, calculate_alignment_size_u32) {
-  ast::type::U32Type u32;
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(4u, g.calculate_alignment_size(&u32));
+  auto* u32 = ty.u32();
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(4u, gen.calculate_alignment_size(u32));
 }
 
 struct MslVectorSizeData {
@@ -280,15 +233,15 @@ inline std::ostream& operator<<(std::ostream& out, MslVectorSizeData data) {
   out << data.elements;
   return out;
 }
-using MslVectorSizeBoolTest = testing::TestWithParam<MslVectorSizeData>;
+using MslVectorSizeBoolTest = TestParamHelper<MslVectorSizeData>;
 TEST_P(MslVectorSizeBoolTest, calculate) {
   auto param = GetParam();
 
-  ast::type::BoolType bool_type;
-  ast::type::VectorType vec(&bool_type, param.elements);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(param.byte_size, g.calculate_alignment_size(&vec));
+  type::Vector vec(ty.bool_(), param.elements);
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(param.byte_size, gen.calculate_alignment_size(&vec));
 }
 INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                          MslVectorSizeBoolTest,
@@ -296,15 +249,15 @@ INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                                          MslVectorSizeData{3u, 4u},
                                          MslVectorSizeData{4u, 4u}));
 
-using MslVectorSizeI32Test = testing::TestWithParam<MslVectorSizeData>;
+using MslVectorSizeI32Test = TestParamHelper<MslVectorSizeData>;
 TEST_P(MslVectorSizeI32Test, calculate) {
   auto param = GetParam();
 
-  ast::type::I32Type i32;
-  ast::type::VectorType vec(&i32, param.elements);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(param.byte_size, g.calculate_alignment_size(&vec));
+  type::Vector vec(ty.i32(), param.elements);
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(param.byte_size, gen.calculate_alignment_size(&vec));
 }
 INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                          MslVectorSizeI32Test,
@@ -312,15 +265,15 @@ INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                                          MslVectorSizeData{3u, 16u},
                                          MslVectorSizeData{4u, 16u}));
 
-using MslVectorSizeU32Test = testing::TestWithParam<MslVectorSizeData>;
+using MslVectorSizeU32Test = TestParamHelper<MslVectorSizeData>;
 TEST_P(MslVectorSizeU32Test, calculate) {
   auto param = GetParam();
 
-  ast::type::U32Type u32;
-  ast::type::VectorType vec(&u32, param.elements);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(param.byte_size, g.calculate_alignment_size(&vec));
+  type::Vector vec(ty.u32(), param.elements);
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(param.byte_size, gen.calculate_alignment_size(&vec));
 }
 INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                          MslVectorSizeU32Test,
@@ -328,15 +281,15 @@ INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                                          MslVectorSizeData{3u, 16u},
                                          MslVectorSizeData{4u, 16u}));
 
-using MslVectorSizeF32Test = testing::TestWithParam<MslVectorSizeData>;
+using MslVectorSizeF32Test = TestParamHelper<MslVectorSizeData>;
 TEST_P(MslVectorSizeF32Test, calculate) {
   auto param = GetParam();
 
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, param.elements);
-  ast::Module m;
-  GeneratorImpl g(&m);
-  EXPECT_EQ(param.byte_size, g.calculate_alignment_size(&vec));
+  type::Vector vec(ty.f32(), param.elements);
+
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(param.byte_size, gen.calculate_alignment_size(&vec));
 }
 INSTANTIATE_TEST_SUITE_P(MslGeneratorImplTest,
                          MslVectorSizeF32Test,

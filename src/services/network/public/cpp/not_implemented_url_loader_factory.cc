@@ -10,7 +10,9 @@
 
 namespace network {
 
-NotImplementedURLLoaderFactory::NotImplementedURLLoaderFactory() = default;
+NotImplementedURLLoaderFactory::NotImplementedURLLoaderFactory(
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
+    : SelfDeletingURLLoaderFactory(std::move(factory_receiver)) {}
 
 NotImplementedURLLoaderFactory::~NotImplementedURLLoaderFactory() = default;
 
@@ -29,9 +31,18 @@ void NotImplementedURLLoaderFactory::CreateLoaderAndStart(
       ->OnComplete(status);
 }
 
-void NotImplementedURLLoaderFactory::Clone(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
-  receivers_.Add(this, std::move(receiver));
+// static
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+NotImplementedURLLoaderFactory::Create() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
+
+  // The NotImplementedURLLoaderFactory will delete itself when there are no
+  // more receivers - see the NotImplementedURLLoaderFactory::OnDisconnect
+  // method.
+  new NotImplementedURLLoaderFactory(
+      pending_remote.InitWithNewPipeAndPassReceiver());
+
+  return pending_remote;
 }
 
 }  // namespace network

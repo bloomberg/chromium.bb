@@ -521,7 +521,10 @@ base::Optional<std::string> TrustTokenRequestSigningHelper::
 
   header_items[kSignatureHeaderAlgorithmKey] =
       net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(signer_->GetAlgorithmIdentifier()), {});
+          net::structured_headers::Item(
+              signer_->GetAlgorithmIdentifier(),
+              net::structured_headers::Item::ItemType::kStringType),
+              {});
 
   std::vector<net::structured_headers::ParameterizedItem> keys_and_signatures;
   for (const auto& kv : signatures_per_issuer) {
@@ -602,6 +605,17 @@ TrustTokenRequestSigningHelper::GetSignature(
   base::span<const uint8_t> key_bytes =
       base::as_bytes(base::make_span(redemption_record.signing_key()));
   return signer_->Sign(key_bytes, base::make_span(signing_data));
+}
+
+mojom::TrustTokenOperationResultPtr
+TrustTokenRequestSigningHelper::CollectOperationResultWithStatus(
+    mojom::TrustTokenOperationStatus status) {
+  mojom::TrustTokenOperationResultPtr operation_result =
+      mojom::TrustTokenOperationResult::New();
+  operation_result->status = status;
+  operation_result->type = mojom::TrustTokenOperationType::kRedemption;
+  operation_result->top_level_origin = params_.toplevel;
+  return operation_result;
 }
 
 }  // namespace network

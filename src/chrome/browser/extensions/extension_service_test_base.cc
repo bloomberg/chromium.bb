@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -46,8 +47,9 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/extensions_client.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #endif
 
@@ -331,6 +333,12 @@ void ExtensionServiceTestBase::SetUp() {
 
   // Force TabManager/TabLifecycleUnitSource creation.
   g_browser_process->resource_coordinator_parts();
+
+  // Update the webstore update url. Some tests leave it set to a non-default
+  // webstore_update_url_. This can make extension_urls::IsWebstoreUpdateUrl
+  // return a false negative.
+  ExtensionsClient::Get()->InitializeWebStoreUrls(
+      base::CommandLine::ForCurrentProcess());
 }
 
 void ExtensionServiceTestBase::TearDown() {
@@ -386,7 +394,7 @@ void ExtensionServiceTestBase::CreateExtensionService(
   service_->RegisterInstallGate(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
                                 service_->shared_module_service());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   InstallLimiter::Get(profile_.get())->DisableForTest();
 #endif
 }

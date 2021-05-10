@@ -15,6 +15,7 @@
 #include "cast/streaming/capture_configs.h"
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/receiver_packet_router.h"
+#include "cast/streaming/sender_message.h"
 #include "cast/streaming/session_config.h"
 #include "cast/streaming/session_messager.h"
 #include "util/json/json_serialization.h"
@@ -25,7 +26,7 @@ namespace cast {
 class Environment;
 class Receiver;
 
-class ReceiverSession final {
+class ReceiverSession final : public Environment::SocketSubscriber {
  public:
   // Upon successful negotiation, a set of configured receivers is constructed
   // for handling audio and video. Note that either receiver may be null.
@@ -89,7 +90,7 @@ class ReceiverSession final {
 
     Preferences(Preferences&&) noexcept;
     Preferences(const Preferences&) = delete;
-    Preferences& operator=(Preferences&&);
+    Preferences& operator=(Preferences&&) noexcept;
     Preferences& operator=(const Preferences&) = delete;
 
     std::vector<VideoCodec> video_codecs{VideoCodec::kVp8, VideoCodec::kH264};
@@ -107,38 +108,63 @@ class ReceiverSession final {
                   MessagePort* message_port,
                   Preferences preferences);
   ReceiverSession(const ReceiverSession&) = delete;
-  ReceiverSession(ReceiverSession&&) = delete;
+  ReceiverSession(ReceiverSession&&) noexcept = delete;
   ReceiverSession& operator=(const ReceiverSession&) = delete;
   ReceiverSession& operator=(ReceiverSession&&) = delete;
   ~ReceiverSession();
 
   const std::string& session_id() const { return session_id_; }
 
+  // Environment::SocketSubscriber event callbacks.
+  void OnSocketReady() override;
+  void OnSocketInvalid(Error error) override;
+
  private:
+  struct SessionProperties {
+    std::unique_ptr<AudioStream> selected_audio;
+    std::unique_ptr<VideoStream> selected_video;
+    int sequence_number;
+
+    // To be valid either the audio or video must be selected, and we must
+    // have a sequence number we can reference.
+    bool IsValid() const;
+  };
+
   // Specific message type handler methods.
-  void OnOffer(SessionMessager::Message message);
+  void OnOffer(SenderMessage message);
+
+  // Creates receivers and sends an appropriate Answer message using the
+  // session properties.
+  void InitializeSession(const SessionProperties& properties);
 
   // Used by SpawnReceivers to generate a receiver for a specific stream.
   std::unique_ptr<Receiver> ConstructReceiver(const Stream& stream);
 
   // Creates a set of configured receivers from a given pair of audio and
   // video streams. NOTE: either audio or video may be null, but not both.
-  ConfiguredReceivers SpawnReceivers(const AudioStream* audio,
-                                     const VideoStream* video);
+  ConfiguredReceivers SpawnReceivers(const SessionProperties& properties);
 
   // Callers of this method should ensure at least one stream is non-null.
-  Answer ConstructAnswer(SessionMessager::Message* message,
-                         const AudioStream* audio,
-                         const VideoStream* video);
+  Answer ConstructAnswer(const SessionProperties& properties);
 
   // Handles resetting receivers and notifying the client.
   void ResetReceivers(Client::ReceiversDestroyingReason reason);
 
+  // Sends an error answer reply and notifies the client of the error.
+  void SendErrorAnswerReply(int sequence_number, const char* message);
+
   Client* const client_;
   Environment* const environment_;
   const Preferences preferences_;
+  // The sender_id of this session.
   const std::string session_id_;
-  SessionMessager messager_;
+  ReceiverSessionMessager messager_;
+
+  // In some cases, the session initialization may be pending waiting for the
+  // UDP socket to be ready. In this case, the receivers and the answer
+  // message will not be configured and sent until the UDP socket has finished
+  // binding.
+  std::unique_ptr<SessionProperties> pending_session_;
 
   bool supports_wifi_status_reporting_ = false;
   ReceiverPacketRouter packet_router_;

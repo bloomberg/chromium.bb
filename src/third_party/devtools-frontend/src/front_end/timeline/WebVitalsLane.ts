@@ -21,15 +21,15 @@ abstract class WebVitalsLane {
   abstract handlePointerMove(x: number|null): void;
   abstract handleClick(x: number|null): void;
 
-  protected tX(x: number) {
+  protected tX(x: number): number {
     return this.timeline.tX(x);
   }
 
-  protected tD(x: number) {
+  protected tD(x: number): number {
     return this.timeline.tD(x);
   }
 
-  protected renderLaneLabel(label: string) {
+  protected renderLaneLabel(label: string): void {
     const upperCaseLabel = label.toLocaleUpperCase();
     this.context.save();
 
@@ -43,12 +43,12 @@ abstract class WebVitalsLane {
     this.context.restore();
   }
 
-  render() {
+  render(): void {
   }
 }
 
 export class WebVitalsEventLane extends WebVitalsLane {
-  private markers: ReadonlyArray<Marker> = [];
+  private markers: readonly Marker[] = [];
   private selectedMarker: Marker|null = null;
   private hoverMarker: Marker|null = null;
   private labelMetrics: TextMetrics;
@@ -63,29 +63,29 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.labelMetrics = this.measureLabel(this.label);
   }
 
-  handlePointerMove(x: number|null) {
+  handlePointerMove(x: number|null): void {
     if (x === null) {
       this.hoverMarker = null;
     } else {
       this.hoverMarker = this.markers.find(m => {
-        const _x = this.tX(m.timestamp);
-        return _x - 5 <= x && x <= _x + m.widthIncludingLabel;
+        const tX = this.tX(m.timestamp);
+        return tX - 5 <= x && x <= tX + m.widthIncludingLabel;
       }) ||
           null;
     }
   }
 
-  handleClick(_: number|null) {
+  handleClick(_: number|null): void {
     this.selectedMarker = this.hoverMarker;
   }
 
-  setEvents(markers: ReadonlyArray<Event>) {
+  setEvents(markers: readonly Event[]): void {
     this.hoverMarker = null;
     this.selectedMarker = null;
     this.markers = markers.map(e => this.getMarker(e));
   }
 
-  private measureLabel(label: string) {
+  private measureLabel(label: string): TextMetrics {
     this.context.save();
     this.context.font = '11px ' + Host.Platform.fontFamily();
     const textMetrics = this.context.measureText(label);
@@ -93,7 +93,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     return textMetrics;
   }
 
-  private measureTimestamp(timestamp: string) {
+  private measureTimestamp(timestamp: string): TextMetrics {
     this.context.save();
     this.context.font = '11px ' + Host.Platform.fontFamily();
     const textMetrics = this.context.measureText(timestamp);
@@ -119,7 +119,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     };
   }
 
-  private renderLabel(position: number, label: string, textMetrics: TextMetrics) {
+  private renderLabel(position: number, label: string, textMetrics: TextMetrics): void {
     this.context.save();
     this.context.font = '11px ' + Host.Platform.fontFamily();
     const height = textMetrics.actualBoundingBoxAscent - textMetrics.actualBoundingBoxDescent;
@@ -130,7 +130,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  private renderTimestamp(position: number, textWidth: number, timestamp: string, textMetrics: TextMetrics) {
+  private renderTimestamp(position: number, textWidth: number, timestamp: string, textMetrics: TextMetrics): void {
     this.context.save();
     this.context.font = '11px ' + Host.Platform.fontFamily();
     const height = textMetrics.actualBoundingBoxAscent - textMetrics.actualBoundingBoxDescent;
@@ -141,7 +141,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  private renderGoodMarkerSymbol(timestamp: number) {
+  private renderGoodMarkerSymbol(timestamp: number): void {
     const radius = 5;
 
     this.context.save();
@@ -160,7 +160,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  private renderMediumMarkerSymbol(timestamp: number) {
+  private renderMediumMarkerSymbol(timestamp: number): void {
     this.context.save();
     this.context.beginPath();
     this.context.strokeStyle = Colors.Medium;
@@ -177,7 +177,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  private renderBadMarkerSymbol(timestamp: number) {
+  private renderBadMarkerSymbol(timestamp: number): void {
     this.context.save();
     this.context.beginPath();
     this.context.strokeStyle = Colors.Bad;
@@ -198,7 +198,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  private renderMarker(marker: Marker, selected: boolean, hover: boolean, nextMarker: Marker|null) {
+  private renderMarker(marker: Marker, selected: boolean, hover: boolean, nextMarker: Marker|null): void {
     const timestampLabel = marker.timestampLabel;
     const labelMetrics = this.labelMetrics;
     const timestampMetrics = marker.timestampMetrics;
@@ -213,19 +213,19 @@ export class WebVitalsEventLane extends WebVitalsLane {
 
     if (showDetails) {
       this.context.save();
-      const _x = this.tX(marker.timestamp) - 5 - 5;
-      const _y = 1;
-      const _width = widthIncludingTimestamp + 2 * 5;
-      const _height = this.timeline.getLineHeight() - 2;
+      const tX = this.tX(marker.timestamp) - 5 - 5;
+      const tY = 1;
+      const tWidth = widthIncludingTimestamp + 2 * 5;
+      const tHeight = this.timeline.getLineHeight() - 2;
 
 
       this.context.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      this.context.fillRect(_x, _y, _width, _height);
+      this.context.fillRect(tX, tY, tWidth, tHeight);
 
       if (showFrame) {
         this.context.strokeStyle = '#1b73e7';
         this.context.lineWidth = 2;
-        this.context.strokeRect(_x, _y, _width, _height);
+        this.context.strokeRect(tX, tY, tWidth, tHeight);
         this.context.lineWidth = 1;
       }
 
@@ -251,7 +251,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
     }
   }
 
-  render() {
+  render(): void {
     for (let i = 0; i < this.markers.length; i++) {
       const event = this.markers[i];
       if (event === this.selectedMarker || event === this.hoverMarker) {
@@ -272,7 +272,7 @@ export class WebVitalsEventLane extends WebVitalsLane {
 
 export class WebVitalsTimeboxLane extends WebVitalsLane {
   private longTaskPattern: CanvasPattern;
-  private boxes: ReadonlyArray<Timebox> = [];
+  private boxes: readonly Timebox[] = [];
   private label: string;
   private hoverBox: number = -1;
   private selectedBox: number = -1;
@@ -304,11 +304,11 @@ export class WebVitalsTimeboxLane extends WebVitalsLane {
     this.longTaskPattern = canvasPattern;
   }
 
-  handlePointerMove(x: number|null) {
+  handlePointerMove(x: number|null): void {
     if (x === null) {
       this.hoverBox = -1;
     } else {
-      this.hoverBox = this.boxes.findIndex(box => {
+      this.hoverBox = this.boxes.findIndex((box): boolean => {
         const start = this.tX(box.start);
         const end = this.tX(box.start + box.duration);
         return start <= x && x <= end;
@@ -316,17 +316,17 @@ export class WebVitalsTimeboxLane extends WebVitalsLane {
     }
   }
 
-  handleClick(_: number|null) {
+  handleClick(_: number|null): void {
     this.selectedBox = this.hoverBox;
   }
 
-  setTimeboxes(boxes: ReadonlyArray<Timebox>) {
+  setTimeboxes(boxes: readonly Timebox[]): void {
     this.selectedBox = -1;
     this.hoverBox = -1;
     this.boxes = boxes;
   }
 
-  private renderTimebox(box: Timebox, hover: boolean) {
+  private renderTimebox(box: Timebox, hover: boolean): void {
     const r = 2;
 
     this.context.save();
@@ -400,7 +400,7 @@ export class WebVitalsTimeboxLane extends WebVitalsLane {
     this.context.restore();
   }
 
-  render() {
+  render(): void {
     for (let i = 0; i < this.boxes.length; i++) {
       if (i === this.hoverBox || i === this.selectedBox) {
         continue;

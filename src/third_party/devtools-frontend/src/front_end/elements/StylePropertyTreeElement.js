@@ -6,15 +6,69 @@ import * as Bindings from '../bindings/bindings.js';
 import * as ColorPicker from '../color_picker/color_picker.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
 import {BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper} from './ColorSwatchPopoverIcon.js';
+import {FlexboxEditorWidget} from './FlexboxEditorWidget.js';
 import {CSSPropertyPrompt, StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer,} from './StylesSidebarPane.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text in Color Swatch Popover Icon of the Elements panel
+  */
+  shiftClickToChangeColorFormat: 'Shift + Click to change color format.',
+  /**
+  *@description Swatch icon element title in Color Swatch Popover Icon of the Elements panel
+  *@example {Shift + Click to change color format.} PH1
+  */
+  openColorPickerS: 'Open color picker. {PH1}',
+  /**
+  *@description The warning text shown in Elements panel when font-variation-settings don't match allowed values
+  *@example {wdth} PH1
+  *@example {100} PH2
+  *@example {10} PH3
+  *@example {20} PH4
+  *@example {Arial} PH5
+  */
+  valueForSettingSSIsOutsideThe:
+      'Value for setting “{PH1}” {PH2} is outside the supported range [{PH3}, {PH4}] for font-family “{PH5}”.',
+  /**
+  *@description Context menu item for style property in edit mode
+  */
+  togglePropertyAndContinueEditing: 'Toggle property and continue editing',
+  /**
+  *@description Context menu item for style property in edit mode
+  */
+  revealInSourcesPanel: 'Reveal in Sources panel',
+  /**
+  *@description A context menu item in Styles panel to copy CSS declaration
+  */
+  copyDeclaration: 'Copy declaration',
+  /**
+  *@description A context menu item in Styles panel to copy CSS property
+  */
+  copyProperty: 'Copy property',
+  /**
+  *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
+  */
+  copyValue: 'Copy value',
+  /**
+  *@description A context menu item in Styles panel to copy CSS rule
+  */
+  copyRule: 'Copy rule',
+  /**
+  *@description A context menu item in Styles panel to copy all CSS declarations
+  */
+  copyAllDeclarations: 'Copy all declarations',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/StylePropertyTreeElement.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** @type {!WeakMap<!StylesSidebarPane, !StylePropertyTreeElement>} */
 const parentMap = new WeakMap();
 
@@ -71,7 +125,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
    * @return {boolean}
    */
   _editable() {
-    return !!(this._style.styleSheetId && this._style.range);
+    return Boolean(this._style.styleSheetId && this._style.range);
   }
 
   /**
@@ -110,9 +164,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
   /**
    * @return {boolean}
    */
-  _updateFilter() {
+  updateFilter() {
     const regex = this._parentPane.filterRegex();
-    const matches = !!regex && (regex.test(this.property.name) || regex.test(this.property.value));
+    const matches = regex !== null && (regex.test(this.property.name) || regex.test(this.property.value));
     this.listItemElement.classList.toggle('filter-match', matches);
 
     this.onpopulate();
@@ -120,7 +174,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
 
     for (let i = 0; i < this.childCount(); ++i) {
       const child = /** @type {?StylePropertyTreeElement} */ (this.childAt(i));
-      if (!child || (child && !child._updateFilter())) {
+      if (!child || (child && !child.updateFilter())) {
         continue;
       }
       hasMatchingChildren = true;
@@ -148,16 +202,17 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
    */
   _processColor(text, valueChild) {
     const useUserSettingFormat = this._editable();
-    const shiftClickMessage = Common.UIString.UIString('Shift + Click to change color format.');
+    const shiftClickMessage = i18nString(UIStrings.shiftClickToChangeColorFormat);
     const tooltip =
-        this._editable() ? Common.UIString.UIString('Open color picker. %s', shiftClickMessage) : shiftClickMessage;
+        this._editable() ? i18nString(UIStrings.openColorPickerS, {PH1: shiftClickMessage}) : shiftClickMessage;
 
-    const swatch = InlineEditor.ColorSwatch.createColorSwatch();
+    const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
     swatch.renderColor(text, useUserSettingFormat, tooltip);
 
     if (!valueChild) {
       valueChild = swatch.createChild('span');
-      valueChild.textContent = swatch.color ? swatch.color.asString(swatch.format) : text;
+      const color = swatch.getColor();
+      valueChild.textContent = color ? color.asString(swatch.getFormat()) : text;
     }
     swatch.appendChild(valueChild);
 
@@ -184,11 +239,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
   _processVar(text) {
     const computedSingleValue = this._matchedStyles.computeSingleVariableValue(this._style, text);
     if (!computedSingleValue) {
-      throw new Error('Unable to compute single value');
+      return document.createTextNode(text);
     }
+
     const {computedValue, fromFallback} = computedSingleValue;
 
-    const varSwatch = InlineEditor.CSSVarSwatch.createCSSVarSwatch();
+    const varSwatch = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     UI.UIUtils.createTextChild(varSwatch, text);
     varSwatch.data = {text, computedValue, fromFallback, onLinkClick: this._handleVarDefinitionClick.bind(this)};
 
@@ -201,16 +257,20 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
 
   /**
    * @param {string} variableName
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _handleVarDefinitionClick(variableName, event) {
+    if (event.button !== 0) {
+      return;
+    }
+
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
     this._parentPane.jumpToProperty(variableName);
     event.consume(true);
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
    */
   async _addColorContrastInfo(swatch) {
     const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
@@ -249,6 +309,18 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     swatch.setBezierText(text);
     new BezierPopoverIcon(this, swatchPopoverHelper, swatch);
     return swatch;
+  }
+
+  /**
+   * @param {string} text
+   * @return {!Node}
+   */
+  _processFont(text) {
+    const section = this.section();
+    if (section) {
+      section.registerFontProperty(this);
+    }
+    return document.createTextNode(text);
   }
 
   /**
@@ -317,7 +389,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     if (!this._editable()) {
       return document.createTextNode(angleText);
     }
-    const cssAngle = InlineEditor.CSSAngle.createCSSAngle();
+    const cssAngle = new InlineEditor.CSSAngle.CSSAngle();
     const valueElement = document.createElement('span');
     valueElement.textContent = angleText;
     const computedPropertyValue = this._matchedStyles.computeValue(this.property.ownerStyle, this.property.value) || '';
@@ -524,6 +596,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         event.consume(true);
       }
     });
+
+    // Copy context menu.
+    this.listItemElement.addEventListener('contextmenu', this._handleCopyContextMenuEvent.bind(this));
   }
 
   /**
@@ -579,6 +654,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       propertyRenderer.setVarHandler(this._processVar.bind(this));
       propertyRenderer.setColorHandler(this._processColor.bind(this));
       propertyRenderer.setBezierHandler(this._processBezier.bind(this));
+      propertyRenderer.setFontHandler(this._processFont.bind(this));
       propertyRenderer.setShadowHandler(this._processShadow.bind(this));
       propertyRenderer.setGridHandler(this._processGrid.bind(this));
       propertyRenderer.setAngleHandler(this._processAngle.bind(this));
@@ -587,7 +663,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     this.listItemElement.removeChildren();
     this.nameElement = /** @type {!HTMLElement} */ (propertyRenderer.renderName());
     if (this.property.name.startsWith('--') && this.nameElement) {
-      this.nameElement.title = this._matchedStyles.computeCSSVariable(this._style, this.property.name) || '';
+      UI.Tooltip.Tooltip.install(
+          this.nameElement, this._matchedStyles.computeCSSVariable(this._style, this.property.name) || '');
     }
     this.valueElement = /** @type {!HTMLElement} */ (propertyRenderer.renderValue());
     if (!this.treeOutline) {
@@ -616,6 +693,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       }
     }
 
+    const section = this.section();
+    if (Root.Runtime.experiments.isEnabled('cssFlexboxFeatures') && this.valueElement && section && section.editable &&
+        this.property.name === 'display' && (this.property.value === 'flex' || this.property.value === 'inline-flex')) {
+      this.listItemElement.appendChild(FlexboxEditorWidget.createFlexboxEditorButton(this._parentPane, section));
+    }
+
     if (!this.property.parsedOk) {
       // Avoid having longhands under an invalid shorthand.
       this.listItemElement.classList.add('not-parsed-ok');
@@ -630,9 +713,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     if (!this.property.activeInStyle()) {
       this.listItemElement.classList.add('inactive');
     }
-    this._updateFilter();
+    this.updateFilter();
 
-    if (this.property.parsedOk && this.section() && this.parent.root) {
+    if (this.property.parsedOk && this.section() && this.parent && this.parent.root) {
       const enabledCheckboxElement = document.createElement('input');
       enabledCheckboxElement.className = 'enabled-button';
       enabledCheckboxElement.type = 'checkbox';
@@ -679,9 +762,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
           continue;
         }
         if (elementSetting.value < fontSetting.minValue || elementSetting.value > fontSetting.maxValue) {
-          warnings.push(
-              ls`Value for setting “${elementSetting.tag}” ${elementSetting.value} is outside the supported range [${
-                  fontSetting.minValue}, ${fontSetting.maxValue}] for font-family “${font.getFontFamily()}”.`);
+          warnings.push(i18nString(UIStrings.valueForSettingSSIsOutsideThe, {
+            PH1: elementSetting.tag,
+            PH2: elementSetting.value,
+            PH3: fontSetting.minValue,
+            PH4: fontSetting.maxValue,
+            PH5: font.getFontFamily()
+          }));
         }
       }
     }
@@ -732,21 +819,61 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
    */
   _handleContextMenuEvent(context, event) {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    if (this.property.parsedOk && this.section() && this.parent.root) {
-      contextMenu.defaultSection().appendCheckboxItem(ls`Toggle property and continue editing`, async () => {
-        const sectionIndex = this._parentPane.focusedSectionIndex();
-        if (this.treeOutline) {
-          const propertyIndex = this.treeOutline.rootElement().indexOfChild(this);
-          // order matters here: this.editingCancelled may invalidate this.treeOutline.
-          this.editingCancelled(null, context);
-          await this._toggleDisabled(!this.property.disabled);
-          event.consume();
-          this._parentPane.continueEditingElement(sectionIndex, propertyIndex);
-        }
-      }, !this.property.disabled);
+    if (this.property.parsedOk && this.section() && this.parent && this.parent.root) {
+      contextMenu.defaultSection().appendCheckboxItem(
+          i18nString(UIStrings.togglePropertyAndContinueEditing), async () => {
+            const sectionIndex = this._parentPane.focusedSectionIndex();
+            if (this.treeOutline) {
+              const propertyIndex = this.treeOutline.rootElement().indexOfChild(this);
+              // order matters here: this.editingCancelled may invalidate this.treeOutline.
+              this.editingCancelled(null, context);
+              await this._toggleDisabled(!this.property.disabled);
+              event.consume();
+              this._parentPane.continueEditingElement(sectionIndex, propertyIndex);
+            }
+          }, !this.property.disabled);
     }
-    const revealCallback = /** @type {function(?):*} */ (this._navigateToSource.bind(this));
-    contextMenu.defaultSection().appendItem(ls`Reveal in Sources panel`, revealCallback);
+    const revealCallback = /** @type {function():*} */ (this._navigateToSource.bind(this));
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealInSourcesPanel), revealCallback);
+    contextMenu.show();
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  _handleCopyContextMenuEvent(event) {
+    const target = /** @type {?Element} */ (event.target);
+
+    if (!target) {
+      return;
+    }
+
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
+    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyDeclaration), () => {
+      const propertyText = `${this.property.name}: ${this.property.value};`;
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
+    });
+
+    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyProperty), () => {
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.name);
+    });
+
+    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), () => {
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.value);
+    });
+
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyRule), () => {
+      const section = /** @type {!StylePropertiesSection} */ (this.section());
+      const ruleText = StylesSidebarPane.formatLeadingProperties(section).ruleText;
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
+    });
+
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
+      const section = /** @type {!StylePropertiesSection} */ (this.section());
+      const allDeclarationText = StylesSidebarPane.formatLeadingProperties(section).allDeclarationText;
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
+    });
+
     contextMenu.show();
   }
 
@@ -772,7 +899,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
    */
   startEditing(selectElement) {
     // FIXME: we don't allow editing of longhand properties under a shorthand right now.
-    if (this.parent.isShorthand) {
+    if (this.parent instanceof StylePropertyTreeElement && this.parent.isShorthand) {
       return;
     }
 
@@ -935,6 +1062,11 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       this._applyFreeFlowStyleTextEdit(context);
     });
 
+    const invalidString = this.property.getInvalidStringForInvalidProperty();
+    if (invalidString && selectElement) {
+      UI.ARIAUtils.alert(invalidString, selectElement);
+    }
+
     if (selectElement) {
       const proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
       this._navigateToSource(selectElement, true);
@@ -965,7 +1097,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
     const target = /** @type {!HTMLElement} */ (keyboardEvent.target);
     let result;
-    if (isEnterKey(keyboardEvent) && !keyboardEvent.shiftKey) {
+    if (keyboardEvent.key === 'Enter' && !keyboardEvent.shiftKey) {
       result = 'forward';
     } else if (keyboardEvent.keyCode === UI.KeyboardShortcut.Keys.Esc.code || keyboardEvent.key === 'Escape') {
       result = 'cancel';
@@ -1064,7 +1196,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     // Prevent destructive side-effects during live-edit. crbug.com/433889
     const parentNode = this._parentPane.node();
     if (parentNode) {
-      const isPseudo = !!parentNode.pseudoType();
+      const isPseudo = Boolean(parentNode.pseudoType());
       if (isPseudo) {
         if (this.name.toLowerCase() === 'content') {
           return;
@@ -1144,9 +1276,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
    * @return {?StylePropertyTreeElement}
    */
   _findSibling(moveDirection) {
+    /** @type {?StylePropertyTreeElement} */
     let target = this;
     do {
-      target = (moveDirection === 'forward' ? target.nextSibling : target.previousSibling);
+      /** @type {?UI.TreeOutline.TreeElement} */
+      const sibling = moveDirection === 'forward' ? target.nextSibling : target.previousSibling;
+      target = sibling instanceof StylePropertyTreeElement ? sibling : null;
     } while (target && target.inherited());
 
     return target;
@@ -1355,7 +1490,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     styleText = styleText.replace(/[\xA0\t]/g, ' ').trim();  // Replace &nbsp; with whitespace.
     if (!styleText.length && majorChange && this._newProperty && !hasBeenEditedIncrementally) {
       // The user deleted everything and never applied a new property value via Up/Down scrolling/live editing, so remove the tree element and update.
-      this.parent.removeChild(this);
+      this.parent && this.parent.removeChild(this);
       return;
     }
 
@@ -1401,7 +1536,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     // This occurs when deleting the last index of a StylePropertiesSection as this._style._allProperties array gets updated
     // before we index it when setting the value for updatedProperty
     const deleteProperty = majorChange && !styleText.length;
-    if (!deleteProperty && updatedProperty) {
+    const section = this.section();
+    if (deleteProperty && section) {
+      section.resetToolbars();
+    } else if (!deleteProperty && updatedProperty) {
       this.property = updatedProperty;
     }
 

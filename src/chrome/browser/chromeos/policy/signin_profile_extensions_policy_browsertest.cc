@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -16,14 +17,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/extension_force_install_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -110,8 +109,9 @@ class ExtensionInstallErrorObserver final {
         extension_id_(extension_id),
         notification_observer_(
             extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-            base::Bind(&ExtensionInstallErrorObserver::IsNotificationRelevant,
-                       base::Unretained(this))) {}
+            base::BindRepeating(
+                &ExtensionInstallErrorObserver::IsNotificationRelevant,
+                base::Unretained(this))) {}
 
   void Wait() { notification_observer_.Wait(); }
 
@@ -283,15 +283,12 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, ExtensionsEnabled) {
 // Tests that a background page is created for the installed sign-in profile
 // app.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
-  EXPECT_FALSE(
-      chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
   EXPECT_TRUE(extension_force_install_mixin_.IsExtensionBackgroundPageReady(
       kWhitelistedAppId));
-  EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
 
 // Tests installation of multiple sign-in profile apps/extensions.
@@ -475,7 +472,7 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
     : public SigninProfileExtensionsPolicyTest {
  public:
   SigninProfileExtensionsAutoUpdatePolicyTest() {
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &SigninProfileExtensionsAutoUpdatePolicyTest::HandleTestServerRequest,
         base::Unretained(this)));
   }

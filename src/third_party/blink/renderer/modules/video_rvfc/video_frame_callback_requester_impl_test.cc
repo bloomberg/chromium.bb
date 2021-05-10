@@ -58,8 +58,8 @@ class MockFunction : public ScriptFunction {
 // constructor, due to it having a media::VideoFrameMetadata instance.
 class MetadataHelper {
  public:
-  static VideoFramePresentationMetadata* GetDefaultMedatada() {
-    return &metadata_;
+  static const VideoFramePresentationMetadata& GetDefaultMedatada() {
+    return metadata_;
   }
 
   static std::unique_ptr<VideoFramePresentationMetadata> CopyDefaultMedatada() {
@@ -71,7 +71,7 @@ class MetadataHelper {
     copy->width = metadata_.width;
     copy->height = metadata_.height;
     copy->media_time = metadata_.media_time;
-    copy->metadata.MergeMetadataFrom(&(metadata_.metadata));
+    copy->metadata.MergeMetadataFrom(metadata_.metadata);
 
     return copy;
   }
@@ -121,28 +121,28 @@ class VfcRequesterParameterVerifierCallback
     was_invoked_ = true;
     now_ = now;
 
-    auto* expected = MetadataHelper::GetDefaultMedatada();
-    EXPECT_EQ(expected->presented_frames, metadata->presentedFrames());
-    EXPECT_EQ((unsigned int)expected->width, metadata->width());
-    EXPECT_EQ((unsigned int)expected->height, metadata->height());
-    EXPECT_EQ(expected->media_time.InSecondsF(), metadata->mediaTime());
+    auto expected = MetadataHelper::GetDefaultMedatada();
+    EXPECT_EQ(expected.presented_frames, metadata->presentedFrames());
+    EXPECT_EQ((unsigned int)expected.width, metadata->width());
+    EXPECT_EQ((unsigned int)expected.height, metadata->height());
+    EXPECT_EQ(expected.media_time.InSecondsF(), metadata->mediaTime());
 
-    EXPECT_EQ(*expected->metadata.rtp_timestamp, metadata->rtpTimestamp());
+    EXPECT_EQ(*expected.metadata.rtp_timestamp, metadata->rtpTimestamp());
 
     // Verify that values were correctly clamped.
-    VerifyTicksClamping(expected->presentation_time,
+    VerifyTicksClamping(expected.presentation_time,
                         metadata->presentationTime(), "presentation_time");
-    VerifyTicksClamping(expected->expected_display_time,
+    VerifyTicksClamping(expected.expected_display_time,
                         metadata->expectedDisplayTime(),
                         "expected_display_time");
 
-    VerifyTicksClamping(*expected->metadata.capture_begin_time,
+    VerifyTicksClamping(*expected.metadata.capture_begin_time,
                         metadata->captureTime(), "capture_time");
 
-    VerifyTicksClamping(*expected->metadata.receive_time,
+    VerifyTicksClamping(*expected.metadata.receive_time,
                         metadata->receiveTime(), "receive_time");
 
-    base::TimeDelta processing_time = *expected->metadata.processing_time;
+    base::TimeDelta processing_time = *expected.metadata.processing_time;
     EXPECT_EQ(ClampElapsedProcessingTime(processing_time),
               metadata->processingDuration());
     EXPECT_NE(processing_time.InSecondsF(), metadata->processingDuration());
@@ -260,7 +260,7 @@ TEST_F(VideoFrameCallbackRequesterImplTest, VerifyRequestVideoFrameCallback) {
 
   auto* function = MockFunction::Create(scope.GetScriptState());
 
-  // Queuing up a video.rAF call should propagate to the WebMediaPlayer.
+  // Queuing up a video.rVFC call should propagate to the WebMediaPlayer.
   EXPECT_CALL(*media_player(), RequestVideoFrameCallback()).Times(1);
   vfc_requester().requestVideoFrameCallback(GetCallback(function));
 
@@ -316,6 +316,28 @@ TEST_F(VideoFrameCallbackRequesterImplTest,
   // The callback should be scheduled for execution, but not yet run.
   EXPECT_CALL(*function, Call(_)).Times(0);
   vfc_requester().cancelVideoFrameCallback(callback_id);
+  SimulateVideoFrameCallback(base::TimeTicks::Now());
+
+  testing::Mock::VerifyAndClear(function);
+}
+
+TEST_F(VideoFrameCallbackRequesterImplTest,
+       VerifyClearedMediaPlayerCancelsPendingExecution) {
+  V8TestingScope scope;
+
+  auto* function = MockFunction::Create(scope.GetScriptState());
+
+  // Queue a request.
+  vfc_requester().requestVideoFrameCallback(GetCallback(function));
+  SimulateFramePresented();
+
+  // The callback should be scheduled for execution, but not yet run.
+  EXPECT_CALL(*function, Call(_)).Times(0);
+
+  // Simulate the HTMLVideoElement getting changing its WebMediaPlayer.
+  vfc_requester().OnWebMediaPlayerCleared();
+
+  // This should be a no-op, else we could get metadata for a null frame.
   SimulateVideoFrameCallback(base::TimeTicks::Now());
 
   testing::Mock::VerifyAndClear(function);

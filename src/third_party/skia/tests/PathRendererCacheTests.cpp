@@ -12,10 +12,10 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrSoftwarePathRenderer.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/ops/GrTriangulatingPathRenderer.h"
@@ -31,7 +31,7 @@ static SkPath create_concave_path() {
 }
 
 static void draw_path(GrRecordingContext* rContext,
-                      GrRenderTargetContext* renderTargetContext,
+                      GrSurfaceDrawContext* surfaceDrawContext,
                       const SkPath& path,
                       GrPathRenderer* pr,
                       GrAAType aaType,
@@ -40,8 +40,8 @@ static void draw_path(GrRecordingContext* rContext,
     GrPaint paint;
     paint.setXPFactory(GrPorterDuffXPFactory::Get(SkBlendMode::kSrc));
 
-    SkIRect clipConservativeBounds = SkIRect::MakeWH(renderTargetContext->width(),
-                                                     renderTargetContext->height());
+    SkIRect clipConservativeBounds = SkIRect::MakeWH(surfaceDrawContext->width(),
+                                                     surfaceDrawContext->height());
     GrStyledShape shape(path, style);
     if (shape.style().applies()) {
         shape = shape.applyStyle(GrStyle::Apply::kPathEffectAndStrokeRec, 1.0f);
@@ -51,7 +51,7 @@ static void draw_path(GrRecordingContext* rContext,
     GrPathRenderer::DrawPathArgs args{rContext,
                                       std::move(paint),
                                       &GrUserStencilSettings::kUnused,
-                                      renderTargetContext,
+                                      surfaceDrawContext,
                                       nullptr,
                                       &clipConservativeBounds,
                                       &matrix,
@@ -83,7 +83,7 @@ static void test_path(skiatest::Reporter* reporter,
     dContext->setResourceCacheLimit(8000000);
     GrResourceCache* cache = dContext->priv().getResourceCache();
 
-    auto rtc = GrRenderTargetContext::Make(
+    auto rtc = GrSurfaceDrawContext::Make(
             dContext.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox, {800, 800}, 1,
             GrMipmapped::kNo, GrProtected::kNo, kTopLeft_GrSurfaceOrigin);
     if (!rtc) {

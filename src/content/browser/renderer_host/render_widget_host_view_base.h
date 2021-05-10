@@ -28,6 +28,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/common/widget_type.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/common/page/content_to_visible_time_reporter.h"
@@ -60,8 +61,6 @@ struct DidOverscrollParams;
 
 namespace content {
 
-class BrowserAccessibilityDelegate;
-class BrowserAccessibilityManager;
 class CursorManager;
 class MouseWheelPhaseHandler;
 class RenderWidgetHostImpl;
@@ -70,13 +69,17 @@ class SyntheticGestureTarget;
 class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebCursor;
+class WebContentsAccessibility;
 class DelegatedFrameHost;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
  public:
+  RenderWidgetHostViewBase(const RenderWidgetHostViewBase&) = delete;
+  RenderWidgetHostViewBase& operator=(const RenderWidgetHostViewBase&) = delete;
+
   float current_device_scale_factor() const {
-    return current_device_scale_factor_;
+    return current_display_.device_scale_factor();
   }
 
   // Returns the focused RenderWidgetHost inside this |view|'s RWH.
@@ -143,6 +146,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   void SetWidgetType(WidgetType widget_type);
 
   WidgetType GetWidgetType();
+
+  virtual void SendInitialPropertiesIfNeeded() {}
 
   // Notification that a resize or move session ended on the native widget.
   void UpdateScreenInfo(gfx::NativeView view);
@@ -220,14 +225,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // be used to inject synthetic input events.
   virtual std::unique_ptr<SyntheticGestureTarget>
   CreateSyntheticGestureTarget() = 0;
-
-  // Create a BrowserAccessibilityManager for a frame in this view.
-  // If |for_root_frame| is true, creates a BrowserAccessibilityManager
-  // suitable for the root frame, which may be linked to its native
-  // window container.
-  virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate,
-      bool for_root_frame);
 
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
@@ -330,10 +327,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // need to also be resolved.
   virtual bool IsRenderWidgetHostViewChildFrame();
 
-  // Notify the View that a screen rect update is being sent to the
-  // RenderWidget. Related platform-specific updates can be sent from here.
-  virtual void WillSendScreenRects() {}
-
   // Returns true if the current view is in virtual reality mode.
   virtual bool IsInVR() const;
 
@@ -411,12 +404,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& bounds) = 0;
 
-  // Perform all the initialization steps necessary for this object to represent
-  // a full screen window.
-  // |reference_host_view| is the view associated with the creating page that
-  // helps to position the full screen widget on the correct monitor.
-  virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
-
   // Sets the cursor for this view to the one associated with the specified
   // cursor_type.
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
@@ -434,6 +421,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   // Notifies the View that the renderer has ceased to exist.
   virtual void RenderProcessGone() = 0;
+
+  // `web_contents_visibility` is HIDDEN when the view is shown even though
+  // the web contents should be hidden, e.g., because a background tab is
+  // screen captured.
+  virtual void ShowWithVisibility(content::Visibility web_contents_visibility);
 
   // Tells the View to destroy itself.
   virtual void Destroy();
@@ -474,7 +466,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   RenderWidgetHostImpl* host() const { return host_; }
 
   // Process swap messages sent before |frame_token| in RenderWidgetHostImpl.
-  void OnFrameTokenChangedForView(uint32_t frame_token);
+  void OnFrameTokenChangedForView(uint32_t frame_token,
+                                  base::TimeTicks activation_time);
 
   // Add and remove observers for lifetime event notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
@@ -496,8 +489,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   void StopFling();
 
-  bool is_fullscreen() { return is_fullscreen_; }
-
   void set_is_currently_scrolling_viewport(
       bool is_currently_scrolling_viewport) {
     is_currently_scrolling_viewport_ = is_currently_scrolling_viewport;
@@ -509,8 +500,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   virtual void DidNavigate();
 
-  // Called when the RenderWidgetHostImpl has be initialized.
-  virtual void OnRenderWidgetInit() {}
+  // Called when the RenderWidgetHostImpl establishes a connection to the
+  // renderer process Widget.
+  virtual void OnRendererWidgetCreated() {}
+
+  virtual WebContentsAccessibility* GetWebContentsAccessibility();
 
   void set_is_evicted() { is_evicted_ = true; }
   void reset_is_evicted() { is_evicted_ = false; }
@@ -525,6 +519,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
+  ~RenderWidgetHostViewBase() override;
 
   void NotifyObserversAboutShutdown();
 
@@ -551,12 +546,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   virtual bool HasFallbackSurface() const;
 
+  void set_current_device_scale_factor(float scale) {
+    current_display_.set_device_scale_factor(scale);
+  }
+
   // The model object. Access is protected to allow access to
   // RenderWidgetHostViewChildFrame.
   RenderWidgetHostImpl* host_;
-
-  // Is this a fullscreen view?
-  bool is_fullscreen_ = false;
 
   // Whether this view is a frame or a popup.
   WidgetType widget_type_ = WidgetType::kFrame;
@@ -567,16 +563,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // Indicates whether the scroll offset of the root layer is at top, i.e.,
   // whether scroll_offset.y() == 0.
   bool is_scroll_offset_at_top_ = true;
-
-  // The scale factor of the display the renderer is currently on.
-  float current_device_scale_factor_ = 0;
-
-  // The color space of the display the renderer is currently on.
-  gfx::DisplayColorSpaces current_display_color_spaces_;
-
-  // The orientation of the display the renderer is currently on.
-  display::Display::Rotation current_display_rotation_ =
-      display::Display::ROTATE_0;
 
   // A reference to current TextInputManager instance this RWHV is registered
   // with. This is initially nullptr until the first time the view calls
@@ -593,9 +579,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   bool is_currently_scrolling_viewport_ = false;
 
- protected:
-  ~RenderWidgetHostViewBase() override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(
       BrowserSideFlingBrowserTest,
@@ -610,6 +593,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   FRIEND_TEST_ALL_PREFIXES(DelegatedInkPointTest, EventForwardedToCompositor);
   FRIEND_TEST_ALL_PREFIXES(DelegatedInkPointTest,
                            MojoInterfaceReboundOnDisconnect);
+  FRIEND_TEST_ALL_PREFIXES(NoCompositingRenderWidgetHostViewBrowserTest,
+                           NoFallbackAfterHiddenNavigationFails);
 
   void SynchronizeVisualProperties();
 
@@ -617,7 +602,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // renderer process changes. This method is called before notifying
   // RenderWidgetHostImpl in order to allow the view to allocate a new
   // LocalSurfaceId.
-  virtual void OnSynchronizedDisplayPropertiesChanged() {}
+  virtual void OnSynchronizedDisplayPropertiesChanged(bool rotation = false) {}
 
   // Transforms |point| from |original_view| coord space to |target_view| coord
   // space. Result is stored in |transformed_point|. Returns true if the
@@ -631,7 +616,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
     return view_stopped_flinging_for_test_;
   }
 
-  gfx::Rect current_display_area_;
+  // Cached information about the renderer's display environment.
+  display::Display current_display_;
+  bool current_display_is_extended_ = false;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 
@@ -649,8 +636,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   bool is_evicted_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };
 
 }  // namespace content

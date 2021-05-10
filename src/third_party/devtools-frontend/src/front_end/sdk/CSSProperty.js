@@ -5,7 +5,7 @@
 import * as Common from '../common/common.js';
 import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
+import * as TextEditor from '../text_editor/text_editor.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {cssMetadata, GridAreaRowRegex} from './CSSMetadata.js';
@@ -41,6 +41,8 @@ export class CSSProperty {
     this._active = true;
     this._nameRange = null;
     this._valueRange = null;
+    /** @type {?string} */
+    this._invalidProperty = null;
   }
 
   /**
@@ -57,7 +59,8 @@ export class CSSProperty {
     // disabled: false
     const result = new CSSProperty(
         ownerStyle, index, payload.name, payload.value, payload.important || false, payload.disabled || false,
-        ('parsedOk' in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
+        ('parsedOk' in payload) ? Boolean(payload.parsedOk) : true, Boolean(payload.implicit), payload.text,
+        payload.range);
     return result;
   }
 
@@ -191,11 +194,7 @@ export class CSSProperty {
     const endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : '';
     const text = new TextUtils.Text.Text(this.ownerStyle.cssText || '');
     const newStyleText = text.replaceRange(range, Platform.StringUtilities.sprintf(';%s;', propertyText));
-    const tokenizerFactory =
-        /** @type {!TextUtils.TextUtils.TokenizerFactory} */ (
-            await /** @type {!Root.Runtime.Extension} */ (
-                Root.Runtime.Runtime.instance().extension(TextUtils.TextUtils.TokenizerFactory))
-                .instance());
+    const tokenizerFactory = TextEditor.CodeMirrorUtils.TokenizerFactory.instance();
     const styleText = CSSProperty._formatStyle(newStyleText, indentation, endIndentation, tokenizerFactory);
     return this.ownerStyle.setText(styleText, majorChange);
   }
@@ -205,9 +204,10 @@ export class CSSProperty {
    * @param {string} indentation
    * @param {string} endIndentation
    * @param {!TextUtils.TextUtils.TokenizerFactory} tokenizerFactory
+   * @param {!CodeMirror.Mode<*>=} codeMirrorMode
    * @return {string}
    */
-  static _formatStyle(styleText, indentation, endIndentation, tokenizerFactory) {
+  static _formatStyle(styleText, indentation, endIndentation, tokenizerFactory, codeMirrorMode) {
     const doubleIndent = indentation.substring(endIndentation.length) + indentation;
     if (indentation) {
       indentation = '\n' + indentation;
@@ -217,7 +217,7 @@ export class CSSProperty {
     let propertyText = '';
     let insideProperty = false;
     let needsSemi = false;
-    const tokenize = tokenizerFactory.createTokenizer('text/css');
+    const tokenize = tokenizerFactory.createTokenizer('text/css', codeMirrorMode);
 
     tokenize('*{' + styleText + '}', processToken);
     if (insideProperty) {
@@ -338,5 +338,21 @@ export class CSSProperty {
     const propertyText = this.text.trim();
     const text = disabled ? '/* ' + propertyText + ' */' : this.text.substring(2, propertyText.length - 2).trim();
     return this.setText(text, true, true);
+  }
+
+  /**
+   * This stores the warning string when a CSS Property is improperly parsed.
+   * @param {!Common.UIString.LocalizedString} invalidString
+   */
+  setDisplayedStringForInvalidProperty(invalidString) {
+    this._invalidString = invalidString;
+  }
+
+  /**
+   * Retrieve the warning string for a screen reader to announce when editing the property.
+   * @return {!Common.UIString.LocalizedString | undefined}
+   */
+  getInvalidStringForInvalidProperty() {
+    return this._invalidString;
   }
 }

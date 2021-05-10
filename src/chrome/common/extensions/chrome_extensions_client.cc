@@ -19,7 +19,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
@@ -28,7 +27,6 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -205,9 +203,9 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
   if (theme_images) {
     for (base::DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
          it.Advance()) {
-      base::FilePath::StringType path;
+      std::string path;
       if (it.value().GetAsString(&path))
-        image_paths.insert(base::FilePath(path));
+        image_paths.insert(base::FilePath::FromUTF8Unsafe(path));
     }
   }
 
@@ -216,12 +214,6 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     action->default_icon.GetPaths(&image_paths);
 
   return image_paths;
-}
-
-bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
-    const {
-  return GetCurrentChannel() <=
-         extension_misc::kMinChannelForServiceWorkerBasedExtension;
 }
 
 void ChromeExtensionsClient::AddOriginAccessPermissions(

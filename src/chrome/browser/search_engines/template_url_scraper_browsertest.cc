@@ -45,7 +45,7 @@ class TemplateURLServiceLoader {
 
     scoped_refptr<content::MessageLoopRunner> message_loop_runner =
         new content::MessageLoopRunner;
-    std::unique_ptr<TemplateURLService::Subscription> subscription =
+    base::CallbackListSubscription subscription =
         model_->RegisterOnLoadedCallback(
             base::BindLambdaForTesting([&]() { message_loop_runner->Quit(); }));
     model_->Load();
@@ -76,7 +76,8 @@ std::unique_ptr<net::test_server::HttpResponse> SendResponse(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
-  embedded_test_server()->RegisterRequestHandler(base::Bind(&SendResponse));
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&SendResponse));
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TemplateURLService* template_urls =

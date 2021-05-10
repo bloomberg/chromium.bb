@@ -17,11 +17,8 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_messages.h"
 
 using content::BrowserThread;
@@ -33,7 +30,7 @@ namespace {
 
 #if DCHECK_IS_ON()
 bool AreScriptsUnique(const UserScriptList& scripts) {
-  std::set<int> script_ids;
+  std::set<std::string> script_ids;
   for (const std::unique_ptr<UserScript>& script : scripts) {
     if (script_ids.count(script->id()))
       return false;
@@ -182,7 +179,7 @@ void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts) {
       << "AddScripts() expects scripts with unique IDs.";
 #endif  // DCHECK_IS_ON()
   for (std::unique_ptr<UserScript>& user_script : *scripts) {
-    int id = user_script->id();
+    const std::string& id = user_script->id();
     removed_script_hosts_.erase(UserScriptIDPair(id));
     if (added_scripts_map_.count(id) == 0)
       added_scripts_map_[id] = std::move(user_script);
@@ -268,7 +265,7 @@ void UserScriptLoader::StartLoad() {
     }
   }
 
-  std::set<int> added_script_ids;
+  std::set<std::string> added_script_ids;
   scripts_to_load->reserve(scripts_to_load->size() + added_scripts_map_.size());
   for (auto& id_and_script : added_scripts_map_) {
     std::unique_ptr<UserScript>& script = id_and_script.second;
@@ -409,11 +406,6 @@ void UserScriptLoader::OnScriptsLoaded(
   }
   changed_hosts_.clear();
 
-  // TODO(hanxi): Remove the NOTIFICATION_USER_SCRIPTS_UPDATED.
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<base::ReadOnlySharedMemoryRegion>(&shared_memory_));
   for (auto& observer : observers_)
     observer.OnScriptsLoaded(this, browser_context_);
 }

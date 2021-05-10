@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_coalesced_packet.h"
+#include "quic/core/quic_coalesced_packet.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -30,10 +30,10 @@ bool QuicCoalescedPacket::MaybeCoalescePacket(
   if (length_ == 0) {
 #ifndef NDEBUG
     for (const auto& buffer : encrypted_buffers_) {
-      DCHECK(buffer.empty());
+      QUICHE_DCHECK(buffer.empty());
     }
 #endif
-    DCHECK(initial_packet_ == nullptr);
+    QUICHE_DCHECK(initial_packet_ == nullptr);
     // This is the first packet, set max_packet_length and self/peer
     // addresses.
     max_packet_length_ = current_max_packet_length;
@@ -154,20 +154,19 @@ TransmissionType QuicCoalescedPacket::TransmissionTypeOfPacket(
 
 std::string QuicCoalescedPacket::ToString(size_t serialized_length) const {
   // Total length and padding size.
-  std::string info = quiche::QuicheStrCat(
+  std::string info = absl::StrCat(
       "total_length: ", serialized_length,
       " padding_size: ", serialized_length - length_, " packets: {");
   // Packets' encryption levels.
   bool first_packet = true;
   for (int8_t i = ENCRYPTION_INITIAL; i < NUM_ENCRYPTION_LEVELS; ++i) {
     if (ContainsPacketOfEncryptionLevel(static_cast<EncryptionLevel>(i))) {
-      info = quiche::QuicheStrCat(
-          info, first_packet ? "" : ", ",
-          EncryptionLevelToString(static_cast<EncryptionLevel>(i)));
+      absl::StrAppend(&info, first_packet ? "" : ", ",
+                      EncryptionLevelToString(static_cast<EncryptionLevel>(i)));
       first_packet = false;
     }
   }
-  info = quiche::QuicheStrCat(info, "}");
+  absl::StrAppend(&info, "}");
   return info;
 }
 

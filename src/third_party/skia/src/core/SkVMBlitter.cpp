@@ -33,7 +33,7 @@ namespace {
     static_assert(SkIsAlign4(sizeof(BlitterUniforms)), "");
     static constexpr int kBlitterUniformsCount = sizeof(BlitterUniforms) / 4;
 
-    enum class Coverage { Full, UniformA8, MaskA8, MaskLCD16, Mask3D };
+    enum class Coverage { Full, UniformF, MaskA8, MaskLCD16, Mask3D };
 
     struct Params {
         sk_sp<SkShader>         shader;
@@ -170,12 +170,6 @@ namespace {
             }
         }
 
-        skvm::PixelFormat unused;
-        if (!SkColorType_to_PixelFormat(params.dst.colorType(), &unused)) {
-            // All existing SkColorTypes pass this check.  We'd only get here adding new ones.
-            *ok = false;
-        }
-
         return {
             shaderHash,
               clipHash,
@@ -191,14 +185,14 @@ namespace {
                               skvm::Uniforms* uniforms, SkArenaAlloc* alloc) {
         // First two arguments are always uniforms and the destination buffer.
         uniforms->base    = p->uniform();
-        skvm::Arg dst_ptr = p->arg(SkColorTypeBytesPerPixel(params.dst.colorType()));
+        skvm::Ptr dst_ptr = p->arg(SkColorTypeBytesPerPixel(params.dst.colorType()));
         // A SpriteShader (in this file) may next use one argument as its varying source.
         // Subsequent arguments depend on params.coverage:
         //    - Full:      (no more arguments)
         //    - Mask3D:    mul varying, add varying, 8-bit coverage varying
         //    - MaskA8:    8-bit coverage varying
         //    - MaskLCD16: 565 coverage varying
-        //    - UniformA8: 8-bit coverage uniform
+        //    - UniformF:  float coverage uniform
 
         skvm::Coord device = device_coord(p, uniforms);
         skvm::Color paint = p->uniformColor(params.paint, uniforms);
@@ -240,8 +234,7 @@ namespace {
         }
 
         // Load the destination color.
-        skvm::PixelFormat dstFormat;
-        SkAssertResult(SkColorType_to_PixelFormat(params.dst.colorType(), &dstFormat));
+        skvm::PixelFormat dstFormat = skvm::SkColorType_to_PixelFormat(params.dst.colorType());
         skvm::Color dst = p->load(dstFormat, dst_ptr);
         if (params.dst.isOpaque()) {
             // When a destination is known opaque, we may assume it both starts and stays fully
@@ -259,8 +252,8 @@ namespace {
                 cov.r = cov.g = cov.b = cov.a = p->splat(1.0f);
                 break;
 
-            case Coverage::UniformA8:
-                cov.r = cov.g = cov.b = cov.a = from_unorm(8, p->uniform8(p->uniform(), 0));
+            case Coverage::UniformF:
+                cov.r = cov.g = cov.b = cov.a = p->uniformF(p->uniform(), 0);
                 break;
 
             case Coverage::Mask3D:
@@ -269,8 +262,7 @@ namespace {
                 break;
 
             case Coverage::MaskLCD16: {
-                skvm::PixelFormat fmt;
-                SkAssertResult(SkColorType_to_PixelFormat(kRGB_565_SkColorType, &fmt));
+                skvm::PixelFormat fmt = skvm::SkColorType_to_PixelFormat(kRGB_565_SkColorType);
                 cov = p->load(fmt, p->varying<uint16_t>());
                 cov.a = select(src.a < dst.a, min(cov.r, min(cov.g, cov.b))
                                             , max(cov.r, max(cov.g, cov.b)));
@@ -319,8 +311,8 @@ namespace {
             // An in-gamut src blended with an in-gamut dst should stay in gamut.
             // Being in-gamut implies all channels are in [0,1], so no need to clamp.
             // We allow one ulp error above 1.0f, and about that much (~1.2e-7) below 0.
-            skvm::F32 lo = bit_cast(p->splat(0xb400'0000)),
-                      hi = bit_cast(p->splat(0x3f80'0001));
+            skvm::F32 lo = pun_to_F32(p->splat(0xb400'0000)),
+                      hi = pun_to_F32(p->splat(0x3f80'0001));
             assert_true(src.r == clamp(src.r, lo, hi), src.r);
             assert_true(src.g == clamp(src.g, lo, hi), src.g);
             assert_true(src.b == clamp(src.b, lo, hi), src.b);
@@ -330,7 +322,7 @@ namespace {
         }
 
         // Write it out!
-        SkAssertResult(store(dstFormat, dst_ptr, src));
+        store(dstFormat, dst_ptr, src);
     }
 
 
@@ -365,8 +357,7 @@ namespace {
                               skvm::Uniforms* uniforms, SkArenaAlloc*) const override {
             const SkColorType ct = fSprite.colorType();
 
-            skvm::PixelFormat fmt;
-            SkAssertResult(SkColorType_to_PixelFormat(ct, &fmt));
+            skvm::PixelFormat fmt = skvm::SkColorType_to_PixelFormat(ct);
 
             skvm::Color c = p->load(fmt, p->arg(SkColorTypeBytesPerPixel(ct)));
 
@@ -459,6 +450,30 @@ namespace {
         }
     };
 
+    // This is similar to using SkShaders::Color(paint.getColor4f(), nullptr),
+    // but uses the blitter-provided paint color uniforms instead of pushing its own.
+    struct PaintColorShader : public SkShaderBase {
+        explicit PaintColorShader(bool isOpaque) : fIsOpaque(isOpaque) {}
+
+        const bool fIsOpaque;
+
+        // Only created here temporarily... never serialized.
+        Factory      getFactory() const override { return nullptr; }
+        const char* getTypeName() const override { return "PaintColorShader"; }
+
+        bool isOpaque() const override { return fIsOpaque; }
+
+        skvm::Color onProgram(skvm::Builder*,
+                              skvm::Coord, skvm::Coord, skvm::Color paint,
+                              const SkMatrixProvider&, const SkMatrix*,
+                              SkFilterQuality, const SkColorInfo&,
+                              skvm::Uniforms*, SkArenaAlloc*) const override {
+            // Incoming `paint` is unpremul in the destination color space,
+            // so we just need to premul it.
+            return premul(paint);
+        }
+    };
+
     static Params effective_params(const SkPixmap& device,
                                    const SkPixmap* sprite,
                                    SkPaint paint,
@@ -480,7 +495,7 @@ namespace {
         // but if there is a shader, it's modulated by the paint alpha.
         sk_sp<SkShader> shader = paint.refShader();
         if (!shader) {
-            shader = SkShaders::Color(paint.getColor4f(), nullptr);
+            shader = sk_make_sp<PaintColorShader>(paint.getColor4f().isOpaque());
         } else if (paint.getAlphaf() < 1.0f) {
             shader = sk_make_sp<SkColorFilterShader>(std::move(shader),
                                                      paint.getAlphaf(),
@@ -539,7 +554,7 @@ namespace {
             : fDevice(device)
             , fSprite(sprite ? *sprite : SkPixmap{})
             , fSpriteOffset(spriteOffset)
-            , fUniforms(kBlitterUniformsCount)
+            , fUniforms(skvm::Ptr{0}, kBlitterUniformsCount)
             , fParams(effective_params(device, sprite, paint, matrices, std::move(clip)))
             , fKey(cache_key(fParams, &fUniforms, &fAlloc, ok))
         {}
@@ -548,16 +563,11 @@ namespace {
             if (SkLRUCache<Key, skvm::Program>* cache = try_acquire_program_cache()) {
                 auto cache_program = [&](skvm::Program&& program, Coverage coverage) {
                     if (!program.empty()) {
-                        Key key = fKey.withCoverage(coverage);
-                        if (skvm::Program* found = cache->find(key)) {
-                            *found = std::move(program);
-                        } else {
-                            cache->insert(key, std::move(program));
-                        }
+                        cache->insert_or_update(fKey.withCoverage(coverage), std::move(program));
                     }
                 };
                 cache_program(std::move(fBlitH),         Coverage::Full);
-                cache_program(std::move(fBlitAntiH),     Coverage::UniformA8);
+                cache_program(std::move(fBlitAntiH),     Coverage::UniformF);
                 cache_program(std::move(fBlitMaskA8),    Coverage::MaskA8);
                 cache_program(std::move(fBlitMask3D),    Coverage::Mask3D);
                 cache_program(std::move(fBlitMaskLCD16), Coverage::MaskLCD16);
@@ -614,10 +624,6 @@ namespace {
                     builder.dump();
                     program.dump();
 
-                    SkString path = SkStringPrintf("/tmp/%s.dot", debug_name(key).c_str());
-                    SkFILEWStream tmp(path.c_str());
-                    builder.dot(&tmp);
-
                     missed++;
                 }
                 if (0 == total++) {
@@ -655,14 +661,15 @@ namespace {
 
         void blitAntiH(int x, int y, const SkAlpha cov[], const int16_t runs[]) override {
             if (fBlitAntiH.empty()) {
-                fBlitAntiH = this->buildProgram(Coverage::UniformA8);
+                fBlitAntiH = this->buildProgram(Coverage::UniformF);
             }
             for (int16_t run = *runs; run > 0; run = *runs) {
                 this->updateUniforms(x+run, y);
+                const float covF = *cov * (1/255.0f);
                 if (const void* sprite = this->isSprite(x,y)) {
-                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), sprite, cov);
+                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), sprite, &covF);
                 } else {
-                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), cov);
+                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), &covF);
                 }
                 x    += run;
                 runs += run;
@@ -754,10 +761,6 @@ SkBlitter* SkCreateSkVMSpriteBlitter(const SkPixmap& device,
                                      sk_sp<SkShader> clip) {
     if (paint.getMaskFilter()) {
         // TODO: SkVM support for mask filters?  definitely possible!
-        return nullptr;
-    }
-    if (skvm::PixelFormat unused; !SkColorType_to_PixelFormat(sprite.colorType(), &unused)) {
-        // All existing SkColorTypes pass this check.  We'd only get here adding new ones.
         return nullptr;
     }
     bool ok = true;

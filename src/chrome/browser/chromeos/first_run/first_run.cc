@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/first_run/first_run.h"
 
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -13,22 +14,18 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -43,7 +40,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
-#include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -57,8 +53,7 @@ void LaunchApp(Profile* profile, std::string app_id) {
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   proxy->Launch(app_id, ui::EventFlags::EF_NONE,
-                apps::mojom::LaunchSource::kFromChromeInternal,
-                display::kInvalidDisplayId);
+                apps::mojom::LaunchSource::kFromChromeInternal);
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 
@@ -68,7 +63,7 @@ void LaunchApp(Profile* profile, std::string app_id) {
 bool IsRegularUserOrSupervisedChild(user_manager::UserManager* user_manager) {
   switch (user_manager->GetActiveUser()->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_SUPERVISED:
+    case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
     case user_manager::USER_TYPE_CHILD:
       return true;
     default:
@@ -80,18 +75,13 @@ bool IsRegularUserOrSupervisedChild(user_manager::UserManager* user_manager) {
 // accounts.
 bool ShouldShowGetStarted(Profile* profile,
                           user_manager::UserManager* user_manager) {
-  // If we are disabling the first run experience, we don't show the getting
-  // started module.
-  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppFirstRun))
-    return false;
-
   // Child users return true for IsManaged. These are not EDU accounts though,
   // should still see the getting started module.
   if (profile->IsChild())
     return true;
   switch (user_manager->GetActiveUser()->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_SUPERVISED:
+    case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
       return !profile->GetProfilePolicyConnector()->IsManaged();
     default:
       return false;
@@ -127,7 +117,7 @@ class AppLauncher : public ProfileObserver,
   AppLauncher& operator=(const AppLauncher&) = delete;
 
   void LaunchHelpApp() {
-    LaunchApp(this->profile_, default_web_apps::kHelpAppId);
+    LaunchApp(this->profile_, web_app::kHelpAppId);
     delete this;
   }
   Profile* profile_;
@@ -170,9 +160,6 @@ bool ShouldLaunchHelpApp(Profile* profile) {
     return true;
   }
 
-  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppFirstRun))
-    return false;
-
   // ash::TabletMode does not exist in some tests.
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     return false;
@@ -201,11 +188,6 @@ bool ShouldLaunchHelpApp(Profile* profile) {
 
 void LaunchHelpApp(Profile* profile) {
   AppLauncher::LaunchHelpAfterSWALoad(profile);
-}
-
-void LaunchTutorial() {
-  UMA_HISTOGRAM_BOOLEAN("CrosFirstRun.TutorialLaunched", true);
-  FirstRunController::Start();
 }
 
 }  // namespace first_run

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 
-#include "base/containers/flat_map.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
@@ -13,7 +13,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,123 +79,135 @@ GURL GenerateVshInCroshUrl(Profile* profile,
 
 }  // namespace
 
-Browser* LaunchTerminal(Profile* profile,
-                        int64_t display_id,
-                        const ContainerId& container_id,
-                        const std::string& cwd,
-                        const std::vector<std::string>& terminal_args) {
+void LaunchTerminal(Profile* profile,
+                    int64_t display_id,
+                    const ContainerId& container_id,
+                    const std::string& cwd,
+                    const std::vector<std::string>& terminal_args) {
   GURL vsh_in_crosh_url =
       GenerateVshInCroshUrl(profile, container_id, cwd, terminal_args);
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL, display_id);
   if (!params.has_value()) {
     LOG(WARNING) << "Empty launch params for terminal";
-    return nullptr;
+    return;
   }
-  return web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
-                                     vsh_in_crosh_url, std::move(*params));
+
+  // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its own
+  // CrostiniApps publisher for launching. Calling LaunchSystemWebAppAsync
+  // would ask AppService to launch the App, which routes the launch request to
+  // this function, resulting in a loop.
+  //
+  // System Web Apps managed by Web App publisher should call
+  // LaunchSystemWebAppAsync.
+  web_app::LaunchSystemWebAppImpl(profile, web_app::SystemAppType::TERMINAL,
+                                  vsh_in_crosh_url, *params);
 }
 
-Browser* LaunchTerminalSettings(Profile* profile, int64_t display_id) {
+void LaunchTerminalSettings(Profile* profile, int64_t display_id) {
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL, display_id);
   if (!params.has_value()) {
     LOG(WARNING) << "Empty launch params for terminal";
-    return nullptr;
+    return;
   }
   std::string path = "html/terminal_settings.html";
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
-  return web_app::LaunchSystemWebApp(
+
+  // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its own
+  // CrostiniApps publisher for launching. Calling LaunchSystemWebAppAsync
+  // would ask AppService to launch the App, which routes the launch request to
+  // this function, resulting in a loop.
+  //
+  // System Web Apps managed by Web App publisher should call
+  // LaunchSystemWebAppAsync.
+  web_app::LaunchSystemWebAppImpl(
       profile, web_app::SystemAppType::TERMINAL,
       GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL, path})),
-      std::move(*params));
+      *params);
 }
 
 void RecordTerminalSettingsChangesUMAs(Profile* profile) {
-  static const base::NoDestructor<base::flat_map<std::string, TerminalSetting>>
-      kSettingsMap({
-          {"alt-gr-mode", TerminalSetting::kAltGrMode},
-          {"alt-backspace-is-meta-backspace",
-           TerminalSetting::kAltBackspaceIsMetaBackspace},
-          {"alt-is-meta", TerminalSetting::kAltIsMeta},
-          {"alt-sends-what", TerminalSetting::kAltSendsWhat},
-          {"audible-bell-sound", TerminalSetting::kAudibleBellSound},
-          {"desktop-notification-bell",
-           TerminalSetting::kDesktopNotificationBell},
-          {"background-color", TerminalSetting::kBackgroundColor},
-          {"background-image", TerminalSetting::kBackgroundImage},
-          {"background-size", TerminalSetting::kBackgroundSize},
-          {"background-position", TerminalSetting::kBackgroundPosition},
-          {"backspace-sends-backspace",
-           TerminalSetting::kBackspaceSendsBackspace},
-          {"character-map-overrides", TerminalSetting::kCharacterMapOverrides},
-          {"close-on-exit", TerminalSetting::kCloseOnExit},
-          {"cursor-blink", TerminalSetting::kCursorBlink},
-          {"cursor-blink-cycle", TerminalSetting::kCursorBlinkCycle},
-          {"cursor-shape", TerminalSetting::kCursorShape},
-          {"cursor-color", TerminalSetting::kCursorColor},
-          {"color-palette-overrides", TerminalSetting::kColorPaletteOverrides},
-          {"copy-on-select", TerminalSetting::kCopyOnSelect},
-          {"use-default-window-copy", TerminalSetting::kUseDefaultWindowCopy},
-          {"clear-selection-after-copy",
-           TerminalSetting::kClearSelectionAfterCopy},
-          {"ctrl-plus-minus-zero-zoom",
-           TerminalSetting::kCtrlPlusMinusZeroZoom},
-          {"ctrl-c-copy", TerminalSetting::kCtrlCCopy},
-          {"ctrl-v-paste", TerminalSetting::kCtrlVPaste},
-          {"east-asian-ambiguous-as-two-column",
-           TerminalSetting::kEastAsianAmbiguousAsTwoColumn},
-          {"enable-8-bit-control", TerminalSetting::kEnable8BitControl},
-          {"enable-bold", TerminalSetting::kEnableBold},
-          {"enable-bold-as-bright", TerminalSetting::kEnableBoldAsBright},
-          {"enable-blink", TerminalSetting::kEnableBlink},
-          {"enable-clipboard-notice", TerminalSetting::kEnableClipboardNotice},
-          {"enable-clipboard-write", TerminalSetting::kEnableClipboardWrite},
-          {"enable-dec12", TerminalSetting::kEnableDec12},
-          {"enable-csi-j-3", TerminalSetting::kEnableCsiJ3},
-          {"environment", TerminalSetting::kEnvironment},
-          {"font-family", TerminalSetting::kFontFamily},
-          {"font-size", TerminalSetting::kFontSize},
-          {"font-smoothing", TerminalSetting::kFontSmoothing},
-          {"foreground-color", TerminalSetting::kForegroundColor},
-          {"enable-resize-status", TerminalSetting::kEnableResizeStatus},
-          {"hide-mouse-while-typing", TerminalSetting::kHideMouseWhileTyping},
-          {"home-keys-scroll", TerminalSetting::kHomeKeysScroll},
-          {"keybindings", TerminalSetting::kKeybindings},
-          {"media-keys-are-fkeys", TerminalSetting::kMediaKeysAreFkeys},
-          {"meta-sends-escape", TerminalSetting::kMetaSendsEscape},
-          {"mouse-right-click-paste", TerminalSetting::kMouseRightClickPaste},
-          {"mouse-paste-button", TerminalSetting::kMousePasteButton},
-          {"word-break-match-left", TerminalSetting::kWordBreakMatchLeft},
-          {"word-break-match-right", TerminalSetting::kWordBreakMatchRight},
-          {"word-break-match-middle", TerminalSetting::kWordBreakMatchMiddle},
-          {"page-keys-scroll", TerminalSetting::kPageKeysScroll},
-          {"pass-alt-number", TerminalSetting::kPassAltNumber},
-          {"pass-ctrl-number", TerminalSetting::kPassCtrlNumber},
-          {"pass-ctrl-n", TerminalSetting::kPassCtrlN},
-          {"pass-ctrl-t", TerminalSetting::kPassCtrlT},
-          {"pass-ctrl-tab", TerminalSetting::kPassCtrlTab},
-          {"pass-ctrl-w", TerminalSetting::kPassCtrlW},
-          {"pass-meta-number", TerminalSetting::kPassMetaNumber},
-          {"pass-meta-v", TerminalSetting::kPassMetaV},
-          {"paste-on-drop", TerminalSetting::kPasteOnDrop},
-          {"receive-encoding", TerminalSetting::kReceiveEncoding},
-          {"scroll-on-keystroke", TerminalSetting::kScrollOnKeystroke},
-          {"scroll-on-output", TerminalSetting::kScrollOnOutput},
-          {"scrollbar-visible", TerminalSetting::kScrollbarVisible},
-          {"scroll-wheel-may-send-arrow-keys",
-           TerminalSetting::kScrollWheelMaySendArrowKeys},
-          {"scroll-wheel-move-multiplier",
-           TerminalSetting::kScrollWheelMoveMultiplier},
-          {"terminal-encoding", TerminalSetting::kTerminalEncoding},
-          {"shift-insert-paste", TerminalSetting::kShiftInsertPaste},
-          {"user-css", TerminalSetting::kUserCss},
-          {"user-css-text", TerminalSetting::kUserCssText},
-          {"allow-images-inline", TerminalSetting::kAllowImagesInline},
-          {"theme", TerminalSetting::kTheme},
-          {"theme-variations", TerminalSetting::kThemeVariations},
-      });
+  static constexpr auto kSettingsMap = base::MakeFixedFlatMap<base::StringPiece,
+                                                              TerminalSetting>({
+      {"alt-gr-mode", TerminalSetting::kAltGrMode},
+      {"alt-backspace-is-meta-backspace",
+       TerminalSetting::kAltBackspaceIsMetaBackspace},
+      {"alt-is-meta", TerminalSetting::kAltIsMeta},
+      {"alt-sends-what", TerminalSetting::kAltSendsWhat},
+      {"audible-bell-sound", TerminalSetting::kAudibleBellSound},
+      {"desktop-notification-bell", TerminalSetting::kDesktopNotificationBell},
+      {"background-color", TerminalSetting::kBackgroundColor},
+      {"background-image", TerminalSetting::kBackgroundImage},
+      {"background-size", TerminalSetting::kBackgroundSize},
+      {"background-position", TerminalSetting::kBackgroundPosition},
+      {"backspace-sends-backspace", TerminalSetting::kBackspaceSendsBackspace},
+      {"character-map-overrides", TerminalSetting::kCharacterMapOverrides},
+      {"close-on-exit", TerminalSetting::kCloseOnExit},
+      {"cursor-blink", TerminalSetting::kCursorBlink},
+      {"cursor-blink-cycle", TerminalSetting::kCursorBlinkCycle},
+      {"cursor-shape", TerminalSetting::kCursorShape},
+      {"cursor-color", TerminalSetting::kCursorColor},
+      {"color-palette-overrides", TerminalSetting::kColorPaletteOverrides},
+      {"copy-on-select", TerminalSetting::kCopyOnSelect},
+      {"use-default-window-copy", TerminalSetting::kUseDefaultWindowCopy},
+      {"clear-selection-after-copy", TerminalSetting::kClearSelectionAfterCopy},
+      {"ctrl-plus-minus-zero-zoom", TerminalSetting::kCtrlPlusMinusZeroZoom},
+      {"ctrl-c-copy", TerminalSetting::kCtrlCCopy},
+      {"ctrl-v-paste", TerminalSetting::kCtrlVPaste},
+      {"east-asian-ambiguous-as-two-column",
+       TerminalSetting::kEastAsianAmbiguousAsTwoColumn},
+      {"enable-8-bit-control", TerminalSetting::kEnable8BitControl},
+      {"enable-bold", TerminalSetting::kEnableBold},
+      {"enable-bold-as-bright", TerminalSetting::kEnableBoldAsBright},
+      {"enable-blink", TerminalSetting::kEnableBlink},
+      {"enable-clipboard-notice", TerminalSetting::kEnableClipboardNotice},
+      {"enable-clipboard-write", TerminalSetting::kEnableClipboardWrite},
+      {"enable-dec12", TerminalSetting::kEnableDec12},
+      {"enable-csi-j-3", TerminalSetting::kEnableCsiJ3},
+      {"environment", TerminalSetting::kEnvironment},
+      {"font-family", TerminalSetting::kFontFamily},
+      {"font-size", TerminalSetting::kFontSize},
+      {"font-smoothing", TerminalSetting::kFontSmoothing},
+      {"foreground-color", TerminalSetting::kForegroundColor},
+      {"enable-resize-status", TerminalSetting::kEnableResizeStatus},
+      {"hide-mouse-while-typing", TerminalSetting::kHideMouseWhileTyping},
+      {"home-keys-scroll", TerminalSetting::kHomeKeysScroll},
+      {"keybindings", TerminalSetting::kKeybindings},
+      {"media-keys-are-fkeys", TerminalSetting::kMediaKeysAreFkeys},
+      {"meta-sends-escape", TerminalSetting::kMetaSendsEscape},
+      {"mouse-right-click-paste", TerminalSetting::kMouseRightClickPaste},
+      {"mouse-paste-button", TerminalSetting::kMousePasteButton},
+      {"word-break-match-left", TerminalSetting::kWordBreakMatchLeft},
+      {"word-break-match-right", TerminalSetting::kWordBreakMatchRight},
+      {"word-break-match-middle", TerminalSetting::kWordBreakMatchMiddle},
+      {"page-keys-scroll", TerminalSetting::kPageKeysScroll},
+      {"pass-alt-number", TerminalSetting::kPassAltNumber},
+      {"pass-ctrl-number", TerminalSetting::kPassCtrlNumber},
+      {"pass-ctrl-n", TerminalSetting::kPassCtrlN},
+      {"pass-ctrl-t", TerminalSetting::kPassCtrlT},
+      {"pass-ctrl-tab", TerminalSetting::kPassCtrlTab},
+      {"pass-ctrl-w", TerminalSetting::kPassCtrlW},
+      {"pass-meta-number", TerminalSetting::kPassMetaNumber},
+      {"pass-meta-v", TerminalSetting::kPassMetaV},
+      {"paste-on-drop", TerminalSetting::kPasteOnDrop},
+      {"receive-encoding", TerminalSetting::kReceiveEncoding},
+      {"scroll-on-keystroke", TerminalSetting::kScrollOnKeystroke},
+      {"scroll-on-output", TerminalSetting::kScrollOnOutput},
+      {"scrollbar-visible", TerminalSetting::kScrollbarVisible},
+      {"scroll-wheel-may-send-arrow-keys",
+       TerminalSetting::kScrollWheelMaySendArrowKeys},
+      {"scroll-wheel-move-multiplier",
+       TerminalSetting::kScrollWheelMoveMultiplier},
+      {"terminal-encoding", TerminalSetting::kTerminalEncoding},
+      {"shift-insert-paste", TerminalSetting::kShiftInsertPaste},
+      {"user-css", TerminalSetting::kUserCss},
+      {"user-css-text", TerminalSetting::kUserCssText},
+      {"allow-images-inline", TerminalSetting::kAllowImagesInline},
+      {"theme", TerminalSetting::kTheme},
+      {"theme-variations", TerminalSetting::kThemeVariations},
+  });
 
   const base::DictionaryValue* settings = profile->GetPrefs()->GetDictionary(
       crostini::prefs::kCrostiniTerminalSettings);
@@ -206,12 +217,11 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile) {
                           base::CompareCase::SENSITIVE)) {
       continue;
     }
-    TerminalSetting setting = TerminalSetting::kUnknown;
-    auto it = kSettingsMap->find(item.first.substr(kSettingPrefixSize));
-    if (it != kSettingsMap->end()) {
-      setting = it->second;
-    }
-    base::UmaHistogramEnumeration("Crostini.TerminalSettingsChanged", setting);
+    const auto* it = kSettingsMap.find(
+        base::StringPiece(item.first).substr(kSettingPrefixSize));
+    base::UmaHistogramEnumeration(
+        "Crostini.TerminalSettingsChanged",
+        it != kSettingsMap.end() ? it->second : TerminalSetting::kUnknown);
   }
 }
 

@@ -37,6 +37,7 @@ void ff_mpeg12_common_init(MpegEncContext *s);
 }
 
 void ff_init_2d_vlc_rl(RLTable *rl, unsigned static_size, int flags);
+void ff_mpeg1_init_uni_ac_vlc(const RLTable *rl, uint8_t *uni_ac_vlc_len);
 
 static inline int decode_dc(GetBitContext *gb, int component)
 {
@@ -46,10 +47,6 @@ static inline int decode_dc(GetBitContext *gb, int component)
         code = get_vlc2(gb, ff_dc_lum_vlc.table, DC_VLC_BITS, 2);
     } else {
         code = get_vlc2(gb, ff_dc_chroma_vlc.table, DC_VLC_BITS, 2);
-    }
-    if (code < 0){
-        av_log(NULL, AV_LOG_ERROR, "invalid dc code at\n");
-        return 0xffff;
     }
     if (code == 0) {
         diff = 0;

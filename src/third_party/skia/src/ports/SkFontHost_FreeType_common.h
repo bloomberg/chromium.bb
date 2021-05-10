@@ -77,7 +77,8 @@ public:
             AxisDefinitions axisDefinitions,
             const SkFontArguments::VariationPosition position,
             SkFixed* axisValues,
-            const SkString& name);
+            const SkString& name,
+            const SkFontArguments::VariationPosition::Coordinate* currentPosition = nullptr);
         static bool GetAxes(FT_Face face, AxisDefinitions* axes);
 
     private:
@@ -100,8 +101,8 @@ protected:
     {}
 
     std::unique_ptr<SkFontData> cloneFontData(const SkFontArguments&) const;
-    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                           const SkDescriptor*) const override;
+    std::unique_ptr<SkScalerContext> onCreateScalerContext(const SkScalerContextEffects&,
+                                                           const SkDescriptor*) const override;
     void onFilterRec(SkScalerContextRec*) const override;
     void getGlyphToUnicodeMap(SkUnichar*) const override;
     std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override;

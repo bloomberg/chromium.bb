@@ -4,7 +4,7 @@
 
 import * as puppeteer from 'puppeteer';
 
-import {$, $$, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, $$, assertNotNull, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 import {AsyncScope} from '../../shared/mocha-extensions.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
@@ -79,7 +79,7 @@ export async function getCurrentConsoleMessages(withAnchor = false, callback?: (
   }
 
   // Ensure all messages are populated.
-  await asyncScope.exec(() => frontend.waitForFunction(CONSOLE_FIRST_MESSAGES_SELECTOR => {
+  await asyncScope.exec(() => frontend.waitForFunction((CONSOLE_FIRST_MESSAGES_SELECTOR: string) => {
     return Array.from(document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR))
         .every(message => message.childNodes.length > 0);
   }, {timeout: 0}, CONSOLE_FIRST_MESSAGES_SELECTOR));
@@ -105,7 +105,7 @@ export async function getStructuredConsoleMessages() {
   await waitFor(CONSOLE_MESSAGES_SELECTOR, undefined, asyncScope);
 
   // Ensure all messages are populated.
-  await asyncScope.exec(() => frontend.waitForFunction(CONSOLE_FIRST_MESSAGES_SELECTOR => {
+  await asyncScope.exec(() => frontend.waitForFunction((CONSOLE_FIRST_MESSAGES_SELECTOR: string) => {
     return Array.from(document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR))
         .every(message => message.childNodes.length > 0);
   }, {timeout: 0}, CONSOLE_FIRST_MESSAGES_SELECTOR));
@@ -159,7 +159,8 @@ export async function typeIntoConsole(frontend: puppeteer.Page, message: string)
     consoleElement.press('Escape');
   }
   await asyncScope.exec(
-      () => frontend.waitForFunction((msg, ln) => ln.textContent === msg, {timeout: 0}, message, line));
+      () =>
+          frontend.waitForFunction((msg: string, ln: Element) => ln.textContent === msg, {timeout: 0}, message, line));
   await consoleElement.press('Enter');
 }
 
@@ -171,7 +172,7 @@ export async function typeIntoConsoleAndWaitForResult(frontend: puppeteer.Page, 
 
   await typeIntoConsole(frontend, message);
 
-  await new AsyncScope().exec(() => frontend.waitForFunction(originalLength => {
+  await new AsyncScope().exec(() => frontend.waitForFunction((originalLength: number) => {
     return document.querySelectorAll('.console-user-command-result').length === originalLength + 1;
   }, {timeout: 0}, originalLength));
 }
@@ -211,14 +212,14 @@ export async function navigateToConsoleTab() {
 }
 
 export async function waitForConsoleMessageAndClickOnLink() {
-  const console_message = await waitFor('div.console-group-messages span.source-code');
-  await click('span.devtools-link', {root: console_message});
+  const consoleMessage = await waitFor('div.console-group-messages span.source-code');
+  await click('span.devtools-link', {root: consoleMessage});
 }
 
 export async function navigateToIssuesPanelViaInfoBar() {
   // Navigate to Issues panel
-  await waitFor('.infobar');
-  await click('.infobar .infobar-button');
+  await waitFor('#console-issues-counter');
+  await click('#console-issues-counter');
   await waitFor('.issues-pane');
 }
 
@@ -226,4 +227,12 @@ export async function turnOffHistoryAutocomplete() {
   await click(CONSOLE_SETTINGS_SELECTOR);
   await waitFor(AUTOCOMPLETE_FROM_HISTORY_SELECTOR);
   await click(AUTOCOMPLETE_FROM_HISTORY_SELECTOR);
+}
+
+export async function getIssueButtonLabel() {
+  const infobarButton = await waitFor('#console-issues-counter');
+  const titleElement = await waitFor('.icon-button-title', infobarButton);
+  assertNotNull(titleElement);
+  const infobarButtonText = await titleElement.evaluate(node => (node as HTMLElement).textContent);
+  return infobarButtonText;
 }

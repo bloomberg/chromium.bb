@@ -949,8 +949,8 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
  * \param[in]    iface     Pointer to the algorithm interface to use.
  * \param[out]   cfg       Configuration buffer to populate.
  * \param[in]    usage     Algorithm specific usage value. For AV1, must be
- *                         set to AOM_USAGE_GOOD_QUALITY (0) or
- *                         AOM_USAGE_REALTIME (1).
+ *                         set to AOM_USAGE_GOOD_QUALITY (0),
+ *                         AOM_USAGE_REALTIME (1), or AOM_USAGE_ALL_INTRA (2).
  *
  * \retval #AOM_CODEC_OK
  *     The configuration was populated.
@@ -1009,6 +1009,8 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 #define AOM_USAGE_GOOD_QUALITY (0)
 /*!\brief usage parameter analogous to AV1 REALTIME mode. */
 #define AOM_USAGE_REALTIME (1)
+/*!\brief usage parameter analogous to AV1 all intra mode. */
+#define AOM_USAGE_ALL_INTRA (2)
 
 /*!\brief Encode a frame
  *

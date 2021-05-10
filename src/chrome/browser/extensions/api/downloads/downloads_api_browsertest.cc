@@ -335,11 +335,13 @@ class DownloadExtensionTest : public ExtensionApiTest {
     download::DownloadDangerType danger_type;
   };
 
-  void LoadExtension(const char* name) {
+  void LoadExtension(const char* name, bool enable_file_access = false) {
     // Store the created Extension object so that we can attach it to
     // ExtensionFunctions.  Also load the extension in incognito profiles for
     // testing incognito.
-    extension_ = LoadExtensionIncognito(test_data_dir_.AppendASCII(name));
+    extension_ = ExtensionBrowserTest::LoadExtension(
+        test_data_dir_.AppendASCII(name),
+        {.allow_in_incognito = true, .allow_file_access = enable_file_access});
     CHECK(extension_);
     content::WebContents* tab = chrome::AddSelectedTabWithURL(
         current_browser(),
@@ -737,7 +739,7 @@ class ScopedCancellingItem {
   ~ScopedCancellingItem() {
     item_->Cancel(true);
     content::DownloadUpdatedObserver observer(
-        item_, base::Bind(&ItemNotInProgress));
+        item_, base::BindRepeating(&ItemNotInProgress));
     observer.WaitForEvent();
   }
   DownloadItem* get() { return item_; }
@@ -760,7 +762,7 @@ class ScopedItemVectorCanceller {
       if ((*item)->GetState() == DownloadItem::IN_PROGRESS)
         (*item)->Cancel(true);
       content::DownloadUpdatedObserver observer(
-          (*item), base::Bind(&ItemNotInProgress));
+          (*item), base::BindRepeating(&ItemNotInProgress));
       observer.WaitForEvent();
     }
   }
@@ -800,11 +802,12 @@ class HTML5FileWriter {
 
  private:
   static void CopyInCompletion(bool* result,
-                               const base::Closure& quit_closure,
+                               base::OnceClosure quit_closure,
                                base::File::Error error) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(quit_closure));
   }
 
   static void CreateFileForTestingOnIOThread(
@@ -812,12 +815,12 @@ class HTML5FileWriter {
       const storage::FileSystemURL& path,
       const base::FilePath& temp_file,
       bool* result,
-      const base::Closure& quit_closure) {
+      base::OnceClosure quit_closure) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context->operation_runner()->CopyInForeignFile(
         temp_file, path,
         base::BindOnce(&CopyInCompletion, base::Unretained(result),
-                       quit_closure));
+                       std::move(quit_closure)));
   }
 };
 
@@ -1201,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
       .WaitForEvent();
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadsShowFunction) {
   platform_util::internal::DisableShellOperationsForTesting();
@@ -2242,7 +2245,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_Download_File) {
   GoOnTheRecord();
-  LoadExtension("downloads_split");
+  LoadExtension("downloads_split", /*enable_file_access=*/true);
   std::string download_url = "file:///";
 #if defined(OS_WIN)
   download_url += "C:/";
@@ -2269,14 +2272,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "  \"paused\": false,"
                           "  \"url\": \"%s\"}]",
                           download_url.c_str())));
-  // File will be renamed to file.html due to its mime type.
+  // Extension for file URLs will not change even if the mime type is text/html.
   ASSERT_TRUE(
       WaitFor(downloads::OnChanged::kEventName,
               base::StringPrintf("[{\"id\": %d,"
                                  "  \"filename\": {"
                                  "    \"previous\": \"\","
                                  "    \"current\": \"%s\"}}]",
-                                 result_id, GetFilename("file.html").c_str())));
+                                 result_id, GetFilename("file").c_str())));
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf(
                           "[{\"id\": %d,"
@@ -4266,8 +4269,8 @@ IN_PROC_BROWSER_TEST_F(
                           item->GetId(),
                           GetFilename("42.txt").c_str())));
 
-  content::DownloadUpdatedObserver interrupted(item, base::Bind(
-      ItemIsInterrupted));
+  content::DownloadUpdatedObserver interrupted(
+      item, base::BindRepeating(ItemIsInterrupted));
   ASSERT_TRUE(interrupted.WaitForEvent());
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf(
@@ -4379,7 +4382,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
           GetCurrentManager(), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
   DownloadsAcceptDangerFunction::OnPromptCreatedCallback callback =
-      base::Bind(&OnDangerPromptCreated);
+      base::BindOnce(&OnDangerPromptCreated);
   DownloadsAcceptDangerFunction::OnPromptCreatedForTesting(
       &callback);
   ExtensionActionTestHelper::Create(current_browser())->Press(0);
@@ -4455,6 +4458,7 @@ TEST(DownloadInterruptReasonEnumsSynced,
   EXPECT_EQ(                                                                   \
       InterruptReasonExtensionToComponent(downloads::INTERRUPT_REASON_##name), \
       download::DOWNLOAD_INTERRUPT_REASON_##name);
+#include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 }

@@ -4,17 +4,82 @@
 
 #include "content/browser/renderer_host/policy_container_host.h"
 
+#include "base/lazy_instance.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace content {
 
+namespace {
+
+// KeepAliveHandle is simply a class referencing a PolicyContainerHost through a
+// scoped_refptr, hence maintaining it alive.
+class KeepAliveHandle
+    : public scoped_refptr<PolicyContainerHost>,
+      public blink::mojom::PolicyContainerHostKeepAliveHandle {
+ public:
+  explicit KeepAliveHandle(PolicyContainerHost* policy_container_host) {
+    wrapped_pointer = policy_container_host;
+  }
+
+ private:
+  scoped_refptr<PolicyContainerHost> wrapped_pointer;
+};
+
+using TokenPolicyContainerMap =
+    std::unordered_map<blink::LocalFrameToken,
+                       PolicyContainerHost*,
+                       blink::LocalFrameToken::Hasher>;
+base::LazyInstance<TokenPolicyContainerMap>::Leaky
+    g_token_policy_container_map = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+bool operator==(const PolicyContainerPolicies& lhs,
+                const PolicyContainerPolicies& rhs) {
+  return lhs.referrer_policy == rhs.referrer_policy &&
+         lhs.ip_address_space == rhs.ip_address_space;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const PolicyContainerPolicies& policies) {
+  return out << "{ referrer_policy: " << policies.referrer_policy
+             << ", ip_address_space: " << policies.ip_address_space << " }";
+}
+
 PolicyContainerHost::PolicyContainerHost() = default;
+
 PolicyContainerHost::PolicyContainerHost(
-    PolicyContainerHost::DocumentPolicies document_policies)
-    : document_policies_(document_policies) {}
-PolicyContainerHost::~PolicyContainerHost() = default;
+    const PolicyContainerPolicies& policies)
+    : policies_(policies) {}
+
+PolicyContainerHost::~PolicyContainerHost() {
+  // The PolicyContainerHost associated with |frame_token_| might have
+  // changed. In that case, we must not remove the map entry.
+  if (frame_token_ && FromFrameToken(frame_token_.value()) == this)
+    g_token_policy_container_map.Get().erase(frame_token_.value());
+}
+
+void PolicyContainerHost::AssociateWithFrameToken(
+    const blink::LocalFrameToken& frame_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!frame_token_);
+  frame_token_ = frame_token;
+  g_token_policy_container_map.Get().erase(frame_token);
+  g_token_policy_container_map.Get().emplace(frame_token, this);
+}
+
+PolicyContainerHost* PolicyContainerHost::FromFrameToken(
+    const blink::LocalFrameToken& frame_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto it = g_token_policy_container_map.Get().find(frame_token);
+  if (it == g_token_policy_container_map.Get().end())
+    return nullptr;
+  return it->second;
+}
 
 void PolicyContainerHost::SetReferrerPolicy(
     network::mojom::ReferrerPolicy referrer_policy) {
-  document_policies_.referrer_policy = referrer_policy;
+  policies_.referrer_policy = referrer_policy;
 }
 
 blink::mojom::PolicyContainerPtr
@@ -27,20 +92,37 @@ PolicyContainerHost::CreatePolicyContainerForBlink() {
   // handler, since the mojo disconnect notification is not guaranteed to be
   // received before we try to create a new remote.
   policy_container_host_receiver_.reset();
+  mojo::PendingAssociatedRemote<blink::mojom::PolicyContainerHost> remote;
+  Bind(blink::mojom::PolicyContainerBindParams::New(
+      remote.InitWithNewEndpointAndPassReceiver()));
+
   return blink::mojom::PolicyContainer::New(
-      blink::mojom::PolicyContainerDocumentPolicies::New(
-          document_policies_.referrer_policy),
-      policy_container_host_receiver_.BindNewEndpointAndPassRemote());
+      blink::mojom::PolicyContainerPolicies::New(policies_.referrer_policy,
+                                                 policies_.ip_address_space),
+      std::move(remote));
 }
 
-std::unique_ptr<PolicyContainerHost> PolicyContainerHost::Clone() const {
-  return std::make_unique<PolicyContainerHost>(document_policies_);
+scoped_refptr<PolicyContainerHost> PolicyContainerHost::Clone() const {
+  return base::MakeRefCounted<PolicyContainerHost>(policies_);
 }
 
 void PolicyContainerHost::Bind(
-    mojo::PendingAssociatedReceiver<blink::mojom::PolicyContainerHost>
+    blink::mojom::PolicyContainerBindParamsPtr bind_params) {
+  policy_container_host_receiver_.Bind(std::move(bind_params->receiver));
+
+  // Keep the PolicyContainerHost alive, as long as its PolicyContainer (owning
+  // the mojo remote) in the renderer process alive.
+  scoped_refptr<PolicyContainerHost> copy = this;
+  policy_container_host_receiver_.set_disconnect_handler(base::BindOnce(
+      base::DoNothing::Once<scoped_refptr<PolicyContainerHost>>(),
+      std::move(copy)));
+}
+
+void PolicyContainerHost::IssueKeepAliveHandle(
+    mojo::PendingReceiver<blink::mojom::PolicyContainerHostKeepAliveHandle>
         receiver) {
-  policy_container_host_receiver_.Bind(std::move(receiver));
+  keep_alive_handles_receiver_set_.Add(std::make_unique<KeepAliveHandle>(this),
+                                       std::move(receiver));
 }
 
 }  // namespace content

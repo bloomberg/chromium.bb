@@ -145,18 +145,23 @@ WidgetBase::WidgetBase(
     bool hidden,
     bool never_composited,
     bool is_for_child_local_root)
-    : client_(client),
+    : never_composited_(never_composited),
+      is_for_child_local_root_(is_for_child_local_root),
+      use_zoom_for_dsf_(Platform::Current()->IsUseZoomForDSFEnabled()),
+      client_(client),
       widget_host_(std::move(widget_host), task_runner),
       receiver_(this, std::move(widget), task_runner),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
-      use_zoom_for_dsf_(Platform::Current()->IsUseZoomForDSFEnabled()),
       is_hidden_(hidden),
-      never_composited_(never_composited),
-      is_for_child_local_root_(is_for_child_local_root) {
+      request_animation_after_delay_timer_(
+          std::move(task_runner),
+          this,
+          &WidgetBase::RequestAnimationAfterDelayTimerFired) {
   if (auto* main_thread_scheduler =
           scheduler::WebThreadScheduler::MainThreadScheduler()) {
     render_widget_scheduling_state_ =
         main_thread_scheduler->NewRenderWidgetSchedulingState();
+    render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
 }
 
@@ -166,14 +171,18 @@ WidgetBase::~WidgetBase() {
 }
 
 void WidgetBase::InitializeCompositing(
-    scheduler::WebThreadScheduler* main_thread_scheduler,
+    scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings) {
+    const cc::LayerTreeSettings* settings,
+    base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+        frame_widget_input_handler) {
+  scheduler::WebThreadScheduler* main_thread_scheduler =
+      &agent_group_scheduler.GetMainThreadScheduler();
   main_thread_compositor_task_runner_ =
-      main_thread_scheduler->CompositorTaskRunner();
+      agent_group_scheduler.CompositorTaskRunner();
 
   auto* compositing_thread_scheduler =
       scheduler::WebThreadScheduler::CompositorThreadScheduler();
@@ -214,9 +223,9 @@ void WidgetBase::InitializeCompositing(
   // WidgetBaseInputHandler.
   bool uses_input_handler = frame_widget;
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(), never_composited_,
-      std::move(compositor_input_task_runner), main_thread_scheduler,
-      uses_input_handler);
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame_widget_input_handler),
+      never_composited_, std::move(compositor_input_task_runner),
+      main_thread_scheduler, uses_input_handler);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -224,13 +233,19 @@ void WidgetBase::InitializeCompositing(
     widget_input_handler_manager_->AllowPreCommitInput();
 
   UpdateScreenInfo(screen_info);
+
+  // If the widget is hidden, delay starting the compositor until the user
+  // shows it. Otherwise start the compositor immediately. If the widget is
+  // for a provisional frame, this importantly starts the compositor before
+  // the frame is inserted into the frame tree, which impacts first paint
+  // metrics.
+  if (!is_hidden_)
+    SetCompositorVisible(true);
 }
 
-void WidgetBase::Shutdown(
-    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
-  if (!cleanup_runner)
-    cleanup_runner = base::ThreadTaskRunnerHandle::Get();
-
+void WidgetBase::Shutdown() {
+  scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner =
+      base::ThreadTaskRunnerHandle::Get();
   // The |input_event_queue_| is refcounted and will live while an event is
   // being handled. This drops the connection back to this WidgetBase which
   // is being destroyed.
@@ -267,6 +282,10 @@ cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
   return layer_tree_view_->layer_tree_host();
 }
 
+bool WidgetBase::IsComposited() const {
+  return !!layer_tree_view_;
+}
+
 cc::AnimationHost* WidgetBase::AnimationHost() const {
   return layer_tree_view_->animation_host();
 }
@@ -282,9 +301,10 @@ void WidgetBase::ForceRedraw(
       base::BindOnce(&OnDidPresentForceDrawFrame, std::move(callback)));
   LayerTreeHost()->SetNeedsCommitWithForcedRedraw();
 
-  // ScheduleAnimationForWebTests() which is implemented by WebWidgetTestProxy,
-  // providing the additional control over the lifecycle of compositing required
-  // by web tests. This will be a no-op on production.
+  // ScheduleAnimationForWebTests() which is implemented by
+  // WebTestWebFrameWidgetImpl, providing the additional control over the
+  // lifecycle of compositing required by web tests. This will be a no-op on
+  // production.
   client_->ScheduleAnimationForWebTests();
 }
 
@@ -312,34 +332,34 @@ void WidgetBase::UpdateVisualProperties(
   //    properties are usually the same for every WidgetBase, except when
   //    device emulation changes them in the main frame WidgetBase only.
   //    Example: screen_info.
-  // 3. Computed in the renderer of the main frame WebFrameWidgetBase (in blink
+  // 3. Computed in the renderer of the main frame WebFrameWidgetImpl (in blink
   //    usually). Passed down through the waterfall dance to child frame
-  //    WebFrameWidgetBase. Here that step is performed by passing the value
-  //    along to all RemoteFrame objects that are below this WebFrameWidgetBase
-  //    in the frame tree. The main frame (top level) WebFrameWidgetBase ignores
+  //    WebFrameWidgetImpl. Here that step is performed by passing the value
+  //    along to all RemoteFrame objects that are below this WebFrameWidgetImpl
+  //    in the frame tree. The main frame (top level) WebFrameWidgetImpl ignores
   //    this value from its RenderWidgetHost since it is controlled in the
-  //    renderer. Child frame WebFrameWidgetBases consume the value from their
+  //    renderer. Child frame WebFrameWidgetImpls consume the value from their
   //    RenderWidgetHost. Example: page_scale_factor.
   // 4. Computed independently in the renderer for each WidgetBase (in blink
   //    usually). Passed down from the parent to the child WidgetBases through
   //    the waterfall dance, but the value only travels one step - the child
-  //    frame WebFrameWidgetBase would compute values for grandchild
-  //    WebFrameWidgetBases independently. Here the value is passed to child
+  //    frame WebFrameWidgetImpl would compute values for grandchild
+  //    WebFrameWidgetImpls independently. Here the value is passed to child
   //    frame RenderWidgets by passing the value along to all RemoteFrame
-  //    objects that are below this WebFrameWidgetBase in the frame tree. Each
+  //    objects that are below this WebFrameWidgetImpl in the frame tree. Each
   //    WidgetBase consumes this value when it is received from its
   //    RenderWidgetHost. Example: compositor_viewport_pixel_rect.
   // For each of these properties:
-  //   If the WebView also knows these properties, each WebFrameWidgetBase
+  //   If the WebView also knows these properties, each WebFrameWidgetImpl
   //   will pass them along to the WebView as it receives it, even if there
-  //   are multiple WebFrameWidgetBases related to the same WebView.
+  //   are multiple WebFrameWidgetImpls related to the same WebView.
   //   However when the main frame in the renderer is the source of truth,
   //   then child widgets must not clobber that value! In all cases child frames
   //   do not need to update state in the WebView when a local main frame is
   //   present as it always sets the value first.
   //   TODO(danakj): This does create a race if there are multiple
-  //   UpdateVisualProperties updates flowing through the WebFrameWidgetBase
-  //   tree at the same time, and it seems that only one WebFrameWidgetBase for
+  //   UpdateVisualProperties updates flowing through the WebFrameWidgetImpl
+  //   tree at the same time, and it seems that only one WebFrameWidgetImpl for
   //   each WebView should be responsible for this update.
   //
   //   TODO(danakj): A more explicit API to give values from here to RenderView
@@ -353,7 +373,7 @@ void WidgetBase::UpdateVisualProperties(
 
   blink::VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
-  if (auto scale_factor = client_->GetDeviceScaleFactorForTesting()) {
+  if (auto scale_factor = client_->GetTestingDeviceScaleFactorOverride()) {
     visual_properties.screen_info.device_scale_factor = scale_factor;
     visual_properties.compositor_viewport_pixel_rect =
         gfx::Rect(gfx::ScaleToCeiledSize(
@@ -374,14 +394,11 @@ void WidgetBase::UpdateVisualProperties(
   LayerTreeHost()->SetBrowserControlsParams(
       visual_properties.browser_controls_params);
 
-  client_->UpdateVisualProperties(visual_properties);
+  LayerTreeHost()->SetVisualDeviceViewportSize(gfx::ScaleToCeiledSize(
+      visual_properties.visible_viewport_size,
+      visual_properties.screen_info.device_scale_factor));
 
-  // FrameWidgets have custom code for external page scale factor.
-  if (!client_->FrameWidget()) {
-    LayerTreeHost()->SetExternalPageScaleFactor(
-        visual_properties.page_scale_factor,
-        visual_properties.is_pinch_gesture_active);
-  }
+  client_->UpdateVisualProperties(visual_properties);
 }
 
 void WidgetBase::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
@@ -442,20 +459,9 @@ void WidgetBase::ApplyViewportChanges(
   client_->ApplyViewportChanges(args);
 }
 
-void WidgetBase::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
-  client_->RecordManipulationTypeCounts(info);
-}
-
-void WidgetBase::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  client_->SendOverscrollEventFromImplSide(overscroll_delta,
-                                           scroll_latched_element_id);
-}
-
-void WidgetBase::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  client_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+void WidgetBase::UpdateCompositorScrollState(
+    const cc::CompositorCommitData& commit_data) {
+  client_->UpdateCompositorScrollState(commit_data);
 }
 
 void WidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {
@@ -717,6 +723,10 @@ WidgetBase::GetBeginMainFrameMetrics() {
   return client_->GetBeginMainFrameMetrics();
 }
 
+std::unique_ptr<cc::WebVitalMetrics> WidgetBase::GetWebVitalMetrics() {
+  return client_->GetWebVitalMetrics();
+}
+
 void WidgetBase::BeginUpdateLayers() {
   client_->BeginUpdateLayers();
 }
@@ -832,6 +842,8 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
   ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
       ui::mojom::VirtualKeyboardVisibilityRequest::NONE;
   bool always_hide_ime = false;
+  base::Optional<gfx::Rect> control_bounds;
+  base::Optional<gfx::Rect> selection_bounds;
   if (frame_widget) {
     new_info = frame_widget->TextInputInfo();
     // This will be used to decide whether or not to show VK when VK policy is
@@ -842,6 +854,8 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // Check whether the keyboard should always be hidden for the currently
     // focused element.
     always_hide_ime = frame_widget->ShouldSuppressKeyboardForFocusedElement();
+    frame_widget->GetEditContextBoundsInWindow(&control_bounds,
+                                               &selection_bounds);
   }
   const ui::TextInputMode new_mode =
       ConvertWebTextInputMode(new_info.input_mode);
@@ -858,7 +872,9 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       always_hide_ime_ != always_hide_ime || vk_policy_ != new_vk_policy ||
       (new_vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL &&
        (last_vk_visibility_request !=
-        ui::mojom::VirtualKeyboardVisibilityRequest::NONE))) {
+        ui::mojom::VirtualKeyboardVisibilityRequest::NONE)) ||
+      (control_bounds && frame_control_bounds_ != control_bounds) ||
+      (selection_bounds && frame_selection_bounds_ != selection_bounds)) {
     ui::mojom::blink::TextInputStatePtr params =
         ui::mojom::blink::TextInputState::New();
     params->type = new_type;
@@ -867,14 +883,12 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params->flags = new_info.flags;
     params->vk_policy = new_vk_policy;
     params->last_vk_visibility_request = last_vk_visibility_request;
+    params->edit_context_control_bounds = control_bounds;
+    params->edit_context_selection_bounds = selection_bounds;
+
     if (!new_info.ime_text_spans.empty()) {
       params->ime_text_spans_info =
           frame_widget->GetImeTextSpansInfo(new_info.ime_text_spans);
-    }
-    if (frame_widget) {
-      frame_widget->GetEditContextBoundsInWindow(
-          &params->edit_context_control_bounds,
-          &params->edit_context_selection_bounds);
     }
 #if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
@@ -917,6 +931,10 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     can_compose_inline_ = new_can_compose_inline;
     always_hide_ime_ = always_hide_ime;
     text_input_flags_ = new_info.flags;
+    frame_control_bounds_ = control_bounds.value_or(gfx::Rect());
+    // Selection bounds are not populated in non-EditContext scenarios.
+    // It is communicated to IMEs via |WidgetBase::UpdateSelectionBounds|.
+    frame_selection_bounds_ = selection_bounds.value_or(gfx::Rect());
     // Reset the show/hide state in the InputMethodController.
     if (frame_widget) {
       if (last_vk_visibility_request !=
@@ -931,7 +949,10 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
     // https://crbug.com/912309
-    LayerTreeHost()->RequestForceSendMetadata();
+    // Compositing might not be initialized but input can still be dispatched
+    // to non-composited widgets so LayerTreeHost may be null.
+    if (IsComposited())
+      LayerTreeHost()->RequestForceSendMetadata();
 #endif
   }
 }
@@ -946,7 +967,7 @@ void WidgetBase::ClearTextInputState() {
 }
 
 void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, virtual keyboard is triggered only when users leave the
   // mouse button or the finger and a text input element is focused at that
   // time. Focus event itself shouldn't trigger virtual keyboard.
@@ -1232,9 +1253,7 @@ void WidgetBase::ImeFinishComposingText(bool keep_selection) {
 
 void WidgetBase::QueueSyntheticEvent(
     std::unique_ptr<WebCoalescedInputEvent> event) {
-  FrameWidget* frame_widget = client_->FrameWidget();
-  if (frame_widget)
-    frame_widget->Client()->WillQueueSyntheticEvent(*event);
+  client_->WillQueueSyntheticEvent(*event);
 
   // TODO(acomminos): If/when we add support for gesture event attribution on
   //                  the impl thread, have the caller provide attribution.
@@ -1302,6 +1321,27 @@ void WidgetBase::OnImeEventGuardFinish(ImeEventGuard* guard) {
 #endif
 }
 
+void WidgetBase::RequestAnimationAfterDelay(const base::TimeDelta& delay) {
+  if (delay.is_zero()) {
+    client_->ScheduleAnimation();
+    return;
+  }
+
+  // Consolidate delayed animation frame requests to keep only the longest
+  // delay.
+  if (request_animation_after_delay_timer_.IsActive() &&
+      request_animation_after_delay_timer_.NextFireInterval() > delay) {
+    request_animation_after_delay_timer_.Stop();
+  }
+  if (!request_animation_after_delay_timer_.IsActive()) {
+    request_animation_after_delay_timer_.StartOneShot(delay, FROM_HERE);
+  }
+}
+
+void WidgetBase::RequestAnimationAfterDelayTimerFired(TimerBase*) {
+  client_->ScheduleAnimation();
+}
+
 void WidgetBase::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Rect& compositor_viewport_pixel_rect,
@@ -1331,9 +1371,10 @@ void WidgetBase::UpdateSurfaceAndScreenInfo(
       compositor_viewport_pixel_rect,
       client_->GetOriginalScreenInfo().device_scale_factor,
       local_surface_id_from_parent_);
-  // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
-  // which is set above.
-  LayerTreeHost()->SetViewportVisibleRect(client_->ViewportVisibleRect());
+  // The VisualDeviceViewportIntersectionRect derives from the LayerTreeView's
+  // viewport size, which is set above.
+  LayerTreeHost()->SetVisualDeviceViewportIntersectionRect(
+      client_->ViewportVisibleRect());
   LayerTreeHost()->SetDisplayColorSpaces(screen_info_.display_color_spaces);
 
   if (orientation_changed)
@@ -1426,7 +1467,7 @@ bool WidgetBase::ComputePreferCompositingToLCDText() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
     return false;
-#if defined(OS_ANDROID) || BUILDFLAG(IS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   // On Android, we never have subpixel antialiasing. On Chrome OS we prefer to
   // composite all scrollers for better scrolling performance.
   return true;

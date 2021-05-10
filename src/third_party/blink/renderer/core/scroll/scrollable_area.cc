@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -95,7 +96,8 @@ mojom::blink::ScrollBehavior ScrollableArea::DetermineScrollBehavior(
   return mojom::blink::ScrollBehavior::kInstant;
 }
 
-ScrollableArea::ScrollableArea()
+ScrollableArea::ScrollableArea(
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
     : scrollbar_overlay_color_theme_(kScrollbarOverlayColorThemeDark),
       horizontal_scrollbar_needs_paint_invalidation_(false),
       vertical_scrollbar_needs_paint_invalidation_(false),
@@ -105,7 +107,10 @@ ScrollableArea::ScrollableArea()
       mouse_over_scrollbar_(false),
       has_been_disposed_(false),
       needs_show_scrollbar_layers_(false),
-      uses_composited_scrolling_(false) {}
+      uses_composited_scrolling_(false),
+      compositor_task_runner_(std::move(compositor_task_runner)) {
+  DCHECK(compositor_task_runner_);
+}
 
 ScrollableArea::~ScrollableArea() = default;
 
@@ -113,7 +118,7 @@ void ScrollableArea::Dispose() {
   if (HasBeenDisposed())
     return;
   DisposeImpl();
-  fade_overlay_scrollbars_timer_.reset();
+  fade_overlay_scrollbars_timer_ = nullptr;
   has_been_disposed_ = true;
 }
 
@@ -125,7 +130,7 @@ void ScrollableArea::ClearScrollableArea() {
   scroll_animator_.Clear();
   programmatic_scroll_animator_.Clear();
   if (fade_overlay_scrollbars_timer_)
-    fade_overlay_scrollbars_timer_->Stop();
+    fade_overlay_scrollbars_timer_->Value().Stop();
 }
 
 ScrollAnimatorBase& ScrollableArea::GetScrollAnimator() const {
@@ -489,7 +494,7 @@ void ScrollableArea::MouseEnteredScrollbar(Scrollbar& scrollbar) {
   GetScrollAnimator().MouseEnteredScrollbar(scrollbar);
   ShowNonMacOverlayScrollbars();
   if (fade_overlay_scrollbars_timer_)
-    fade_overlay_scrollbars_timer_->Stop();
+    fade_overlay_scrollbars_timer_->Value().Stop();
 }
 
 void ScrollableArea::MouseExitedScrollbar(Scrollbar& scrollbar) {
@@ -505,7 +510,7 @@ void ScrollableArea::MouseCapturedScrollbar() {
   scrollbar_captured_ = true;
   ShowNonMacOverlayScrollbars();
   if (fade_overlay_scrollbars_timer_)
-    fade_overlay_scrollbars_timer_->Stop();
+    fade_overlay_scrollbars_timer_->Value().Stop();
 }
 
 void ScrollableArea::MouseReleasedScrollbar() {
@@ -646,14 +651,11 @@ bool ScrollableArea::HasLayerForScrollCorner() const {
   return LayerForScrollCorner();
 }
 
-void ScrollableArea::LayerForScrollingDidChange(
-    CompositorAnimationTimeline* timeline) {
-  if (ProgrammaticScrollAnimator* programmatic_scroll_animator =
-          ExistingProgrammaticScrollAnimator())
-    programmatic_scroll_animator->LayerForCompositedScrollingDidChange(
-        timeline);
-  if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator())
-    scroll_animator->LayerForCompositedScrollingDidChange(timeline);
+void ScrollableArea::MainThreadScrollingDidChange() {
+  if (auto* programmatic_scroll_animator = ExistingProgrammaticScrollAnimator())
+    programmatic_scroll_animator->MainThreadScrollingDidChange();
+  if (auto* scroll_animator = ExistingScrollAnimator())
+    scroll_animator->MainThreadScrollingDidChange();
 }
 
 void ScrollableArea::ServiceScrollAnimations(double monotonic_time) {
@@ -768,14 +770,21 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
     return;
 
   if (!fade_overlay_scrollbars_timer_) {
-    fade_overlay_scrollbars_timer_.reset(new TaskRunnerTimer<ScrollableArea>(
-        ThreadScheduler::Current()->CompositorTaskRunner(), this,
-        &ScrollableArea::FadeOverlayScrollbarsTimerFired));
+    fade_overlay_scrollbars_timer_ = MakeGarbageCollected<
+        DisallowNewWrapper<HeapTaskRunnerTimer<ScrollableArea>>>(
+        GetCompositorTaskRunner(), this,
+        &ScrollableArea::FadeOverlayScrollbarsTimerFired);
   }
 
   if (!scrollbar_captured_ && !mouse_over_scrollbar_) {
-    fade_overlay_scrollbars_timer_->StartOneShot(time_until_disable, FROM_HERE);
+    fade_overlay_scrollbars_timer_->Value().StartOneShot(time_until_disable,
+                                                         FROM_HERE);
   }
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+ScrollableArea::GetCompositorTaskRunner() {
+  return compositor_task_runner_;
 }
 
 Node* ScrollableArea::EventTargetNode() const {
@@ -984,6 +993,7 @@ bool ScrollableArea::PerformSnapping(
 void ScrollableArea::Trace(Visitor* visitor) const {
   visitor->Trace(scroll_animator_);
   visitor->Trace(programmatic_scroll_animator_);
+  visitor->Trace(fade_overlay_scrollbars_timer_);
 }
 
 void ScrollableArea::InjectGestureScrollEvent(

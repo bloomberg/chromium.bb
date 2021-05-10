@@ -62,7 +62,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -554,8 +554,7 @@ public class AutofillAssistantTriggerScriptIntegrationTest {
     @DisableIf.
     Build(message = "Fails on Lollipop and Marshmallow Tablet Tester, https://crbug.com/1158435",
             sdk_is_less_than = VERSION_CODES.N)
-    public void
-    switchToNewTabAndThenBack() {
+    public void switchToNewTabAndThenBack() {
         TriggerScriptProto.Builder triggerScript =
                 TriggerScriptProto
                         .newBuilder()

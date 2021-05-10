@@ -19,7 +19,9 @@
 #include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_permission.h"
 #include "media/base/mime_util.h"
+#include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_media_key_system_configuration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -160,6 +162,32 @@ bool IsSupportedMediaType(const std::string& container_mime_type,
   std::vector<std::string> codec_vector;
   SplitCodecs(codecs, &codec_vector);
 
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  // EME HEVC is supported on CrOS under these build flags, but it is not
+  // supported for clear playback. Remove the HEVC codec strings to avoid asking
+  // IsSupported*MediaFormat() about HEVC. EME support for HEVC profiles
+  // is described via KeySystemProperties::GetSupportedCodecs().
+  // TODO(1156282): Decouple the rest of clear vs EME codec support.
+  if (base::ToLowerASCII(container_mime_type) == "video/mp4" &&
+      !codec_vector.empty()) {
+    auto it = codec_vector.begin();
+    while (it != codec_vector.end()) {
+      VideoCodecProfile profile;
+      uint8_t level_idc;
+      if (ParseHEVCCodecId(*it, &profile, &level_idc))
+        codec_vector.erase(it);
+      else
+        ++it;
+    }
+
+    // Avoid calling IsSupported*MediaFormat() with an empty vector. For
+    // "video/mp4", this will return MaybeSupported, which we would otherwise
+    // consider "false" below.
+    if (codec_vector.empty())
+      return true;
+  }
+#endif
+
   // AesDecryptor decrypts the stream in the demuxer before it reaches the
   // decoder so check whether the media format is supported when clear.
   SupportsType support_result =
@@ -227,6 +255,9 @@ class KeySystemConfigSelector::ConfigState {
         return !are_hw_secure_codecs_required_;
       case EmeConfigRule::HW_SECURE_CODECS_REQUIRED:
         return !are_hw_secure_codecs_not_allowed_;
+      case EmeConfigRule::IDENTIFIER_AND_HW_SECURE_CODECS_REQUIRED:
+        return !is_identifier_not_allowed_ && IsPermissionPossible() &&
+               !are_hw_secure_codecs_not_allowed_;
       case EmeConfigRule::SUPPORTED:
         return true;
     }
@@ -266,6 +297,10 @@ class KeySystemConfigSelector::ConfigState {
       case EmeConfigRule::HW_SECURE_CODECS_REQUIRED:
         are_hw_secure_codecs_required_ = true;
         return;
+      case EmeConfigRule::IDENTIFIER_AND_HW_SECURE_CODECS_REQUIRED:
+        is_identifier_required_ = true;
+        are_hw_secure_codecs_required_ = true;
+        return;
       case EmeConfigRule::SUPPORTED:
         return;
     }
@@ -302,9 +337,11 @@ class KeySystemConfigSelector::ConfigState {
 
 KeySystemConfigSelector::KeySystemConfigSelector(
     KeySystems* key_systems,
-    MediaPermission* media_permission)
+    MediaPermission* media_permission,
+    blink::WebContentSettingsClient* content_settings_client)
     : key_systems_(key_systems),
       media_permission_(media_permission),
+      content_settings_client_(content_settings_client),
       is_supported_media_type_cb_(base::BindRepeating(&IsSupportedMediaType)) {
   DCHECK(key_systems_);
   DCHECK(media_permission_);
@@ -603,8 +640,14 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   // 9. If persistent state requirement is "optional" and persisting state is
   //    not allowed according to restrictions, set persistent state requirement
   //    to "not-allowed".
+  const bool local_storage_allowed =
+      !content_settings_client_ ||
+      content_settings_client_->AllowStorageAccessSync(
+          blink::WebContentSettingsClient::StorageType::kLocalStorage);
   EmeFeatureSupport persistent_state_support =
-      key_systems_->GetPersistentStateSupport(key_system);
+      local_storage_allowed
+          ? key_systems_->GetPersistentStateSupport(key_system)
+          : EmeFeatureSupport::NOT_SUPPORTED;
   if (persistent_state == EmeFeatureRequirement::kOptional) {
     if (persistent_state_support == EmeFeatureSupport::INVALID ||
         persistent_state_support == EmeFeatureSupport::NOT_SUPPORTED) {

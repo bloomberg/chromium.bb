@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,8 +20,6 @@ class SyncUserSettingsMock : public SyncUserSettings {
   ~SyncUserSettingsMock() override;
   MOCK_METHOD(bool, IsSyncRequested, (), (const override));
   MOCK_METHOD(void, SetSyncRequested, (bool), (override));
-  MOCK_METHOD(bool, IsSyncAllowedByPlatform, (), (const override));
-  MOCK_METHOD(void, SetSyncAllowedByPlatform, (bool), (override));
   MOCK_METHOD(bool, IsFirstSetupComplete, (), (const override));
   MOCK_METHOD(void,
               SetFirstSetupComplete,
@@ -37,7 +36,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
               (),
               (const override));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   MOCK_METHOD(bool, IsSyncAllOsTypesEnabled, (), (const override));
   MOCK_METHOD(UserSelectableOsTypeSet,
               GetSelectedOsTypes,
@@ -62,6 +61,14 @@ class SyncUserSettingsMock : public SyncUserSettings {
               IsPassphraseRequiredForPreferredDataTypes,
               (),
               (const override));
+  MOCK_METHOD(bool,
+              IsPassphrasePromptMutedForCurrentProductVersion,
+              (),
+              (const override));
+  MOCK_METHOD(void,
+              MarkPassphrasePromptMutedForCurrentProductVersion,
+              (),
+              (override));
   MOCK_METHOD(bool, IsTrustedVaultKeyRequired, (), (const override));
   MOCK_METHOD(bool,
               IsTrustedVaultKeyRequiredForPreferredDataTypes,

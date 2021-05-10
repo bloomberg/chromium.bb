@@ -9,7 +9,6 @@
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkRect.h"
-#include "include/effects/SkComposeImageFilter.h"
 #include "include/private/SkSafe32.h"
 #include "src/core/SkFuzzLogging.h"
 #include "src/core/SkImageFilterCache.h"
@@ -26,7 +25,7 @@
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #endif
@@ -129,12 +128,6 @@ bool SkImageFilter::asAColorFilter(SkColorFilter** filterPtr) const {
     return true;
 }
 
-sk_sp<SkImageFilter> SkImageFilter::MakeMatrixFilter(const SkMatrix& matrix,
-                                                     SkFilterQuality filterQuality,
-                                                     sk_sp<SkImageFilter> input) {
-    return SkMatrixImageFilter::Make(matrix, filterQuality, std::move(input));
-}
-
 sk_sp<SkImageFilter> SkImageFilter::makeWithLocalMatrix(const SkMatrix& matrix) const {
     return SkLocalMatrixImageFilter::Make(matrix, this->refMe());
 }
@@ -156,11 +149,10 @@ static int32_t next_image_filter_unique_id() {
 }
 
 SkImageFilter_Base::SkImageFilter_Base(sk_sp<SkImageFilter> const* inputs,
-                                       int inputCount, const CropRect* cropRect)
+                                       int inputCount, const SkRect* cropRect)
         : fUsesSrcInput(false)
+        , fCropRect(cropRect)
         , fUniqueID(next_image_filter_unique_id()) {
-    fCropRect = cropRect ? *cropRect : CropRect(SkRect(), 0x0);
-
     fInputs.reset(inputCount);
 
     for (int i = 0; i < inputCount; ++i) {
@@ -204,7 +196,11 @@ bool SkImageFilter_Base::Common::unflatten(SkReadBuffer& buffer, int expectedCou
     }
 
     uint32_t flags = buffer.readUInt();
-    fCropRect = CropRect(rect, flags);
+    if (!buffer.isValid() ||
+        !buffer.validate(flags == 0x0 || flags == CropRect::kHasAll_CropEdge)) {
+        return false;
+    }
+    fCropRect = CropRect(flags ? &rect : nullptr);
     return buffer.isValid();
 }
 
@@ -336,8 +332,8 @@ bool SkImageFilter_Base::canHandleComplexCTM() const {
     return true;
 }
 
-void SkImageFilter::CropRect::applyTo(const SkIRect& imageBounds, const SkMatrix& ctm,
-                                      bool embiggen, SkIRect* cropped) const {
+void SkImageFilter_Base::CropRect::applyTo(const SkIRect& imageBounds, const SkMatrix& ctm,
+                                           bool embiggen, SkIRect* cropped) const {
     *cropped = imageBounds;
     if (fFlags) {
         SkRect devCropR;
@@ -413,7 +409,7 @@ static sk_sp<SkSpecialImage> pad_image(SkSpecialImage* src, const SkImageFilter_
 
     canvas->clear(0x0);
 
-    src->draw(canvas, offX, offY, nullptr);
+    src->draw(canvas, offX, offY);
 
     return surf->makeImageSnapshot();
 }
@@ -591,28 +587,32 @@ sk_sp<SkSpecialImage> SkImageFilter_Base::DrawWithFP(GrRecordingContext* context
                                                      SkColorType colorType,
                                                      const SkColorSpace* colorSpace,
                                                      GrProtected isProtected) {
-    GrPaint paint;
-    paint.setColorFragmentProcessor(std::move(fp));
-    paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
+    GrImageInfo info(SkColorTypeToGrColorType(colorType),
+                     kPremul_SkAlphaType,
+                     sk_ref_sp(colorSpace),
+                     bounds.size());
 
-    auto renderTargetContext = GrRenderTargetContext::Make(
-            context, SkColorTypeToGrColorType(colorType), sk_ref_sp(colorSpace),
-            SkBackingFit::kApprox, bounds.size(), 1, GrMipmapped::kNo, isProtected,
-            kBottomLeft_GrSurfaceOrigin);
-    if (!renderTargetContext) {
+    auto surfaceFillContext = GrSurfaceFillContext::Make(context,
+                                                         info,
+                                                         SkBackingFit::kApprox,
+                                                         1,
+                                                         GrMipmapped::kNo,
+                                                         isProtected,
+                                                         kBottomLeft_GrSurfaceOrigin);
+    if (!surfaceFillContext) {
         return nullptr;
     }
 
     SkIRect dstIRect = SkIRect::MakeWH(bounds.width(), bounds.height());
     SkRect srcRect = SkRect::Make(bounds);
-    SkRect dstRect = SkRect::MakeWH(srcRect.width(), srcRect.height());
-    renderTargetContext->fillRectToRect(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(),
-                                        dstRect, srcRect);
+    surfaceFillContext->fillRectToRectWithFP(srcRect, dstIRect, std::move(fp));
 
-    return SkSpecialImage::MakeDeferredFromGpu(
-            context, dstIRect, kNeedNewImageUniqueID_SpecialImage,
-            renderTargetContext->readSurfaceView(), renderTargetContext->colorInfo().colorType(),
-            renderTargetContext->colorInfo().refColorSpace());
+    return SkSpecialImage::MakeDeferredFromGpu(context,
+                                               dstIRect,
+                                               kNeedNewImageUniqueID_SpecialImage,
+                                               surfaceFillContext->readSurfaceView(),
+                                               surfaceFillContext->colorInfo().colorType(),
+                                               surfaceFillContext->colorInfo().refColorSpace());
 }
 
 sk_sp<SkSpecialImage> SkImageFilter_Base::ImageToColorSpace(SkSpecialImage* src,
@@ -641,7 +641,7 @@ sk_sp<SkSpecialImage> SkImageFilter_Base::ImageToColorSpace(SkSpecialImage* src,
     SkASSERT(canvas);
     SkPaint p;
     p.setBlendMode(SkBlendMode::kSrc);
-    src->draw(canvas, 0, 0, &p);
+    src->draw(canvas, 0, 0, SkSamplingOptions(), &p);
     return surf->makeImageSnapshot();
 }
 #endif
@@ -716,7 +716,7 @@ static sk_sp<SkImageFilter> apply_ctm_to_filter(sk_sp<SkImageFilter> input, cons
         remainder->setIdentity();
     }
 
-    return SkMatrixImageFilter::Make(ctmToEmbed, kLow_SkFilterQuality, input);
+    return SkMatrixImageFilter::Make(ctmToEmbed, SkSamplingOptions(SkFilterMode::kLinear), input);
 }
 
 sk_sp<SkImageFilter> SkImageFilter_Base::applyCTM(const SkMatrix& ctm, SkMatrix* remainder) const {

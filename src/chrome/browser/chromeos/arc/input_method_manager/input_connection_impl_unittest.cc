@@ -32,7 +32,7 @@ class DummyInputMethodEngineObserver
   void OnBlur(int context_id) override {}
   void OnKeyEvent(
       const std::string& engine_id,
-      const chromeos::InputMethodEngineBase::KeyboardEvent& event,
+      const ui::KeyEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {}
@@ -43,8 +43,6 @@ class DummyInputMethodEngineObserver
                                 int cursor_pos,
                                 int anchor_pos,
                                 int offset_pos) override {}
-  void OnInputContextUpdate(
-      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,

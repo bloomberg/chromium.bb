@@ -18,22 +18,20 @@ ServiceInstance::ServiceInstance(TaskRunner* task_runner,
                                  const Config& config,
                                  const Config::NetworkInfo& network_info)
     : task_runner_(task_runner),
-      mdns_service_(
-          MdnsService::Create(task_runner,
-                              reporting_client,
-                              config,
-                              network_info.interface.index,
-                              network_info.supported_address_families)),
+      mdns_service_(MdnsService::Create(task_runner,
+                                        reporting_client,
+                                        config,
+                                        network_info)),
       network_config_(network_info.interface.index,
                       network_info.interface.GetIpAddressV4(),
                       network_info.interface.GetIpAddressV6()) {
   const Config::NetworkInfo::AddressFamilies supported_address_families =
       network_info.supported_address_families;
 
-  OSP_DCHECK((supported_address_families & Config::NetworkInfo::kUseIpV4) ||
-             !network_config_.HasAddressV4());
-  OSP_DCHECK((supported_address_families & Config::NetworkInfo::kUseIpV6) ||
-             !network_config_.HasAddressV6());
+  OSP_DCHECK(!(supported_address_families & Config::NetworkInfo::kUseIpV4) ||
+             network_config_.HasAddressV4());
+  OSP_DCHECK(!(supported_address_families & Config::NetworkInfo::kUseIpV6) ||
+             network_config_.HasAddressV6());
 
   if (config.enable_querying) {
     querier_ = std::make_unique<QuerierImpl>(

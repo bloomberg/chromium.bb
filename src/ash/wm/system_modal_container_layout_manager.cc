@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -48,7 +48,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
     : container_(container) {
   Shelf* shelf = RootWindowController::ForWindow(container_)->shelf();
-  shelf_observer_.Add(shelf);
+  shelf_observation_.Observe(shelf);
 }
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {

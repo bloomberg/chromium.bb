@@ -20,40 +20,31 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/bool_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/unary_op_expression.h"
-#include "src/context.h"
+#include "src/type/bool_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, UnaryOp_Negation_Integer) {
-  ast::type::I32Type i32;
+  auto* expr = create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, Expr(1));
+  WrapInFunction(expr);
 
-  ast::UnaryOpExpression expr(
-      ast::UnaryOp::kNegation,
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1)));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateUnaryOpExpression(&expr), 1u) << b.error();
+  EXPECT_EQ(b.GenerateUnaryOpExpression(expr), 1u) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 1
 %3 = OpConstant %2 1
 )");
@@ -63,22 +54,14 @@ TEST_F(BuilderTest, UnaryOp_Negation_Integer) {
 }
 
 TEST_F(BuilderTest, UnaryOp_Negation_Float) {
-  ast::type::F32Type f32;
+  auto* expr =
+      create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, Expr(1.f));
+  WrapInFunction(expr);
 
-  ast::UnaryOpExpression expr(
-      ast::UnaryOp::kNegation,
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::FloatLiteral>(&f32, 1)));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateUnaryOpExpression(&expr), 1u) << b.error();
+  EXPECT_EQ(b.GenerateUnaryOpExpression(expr), 1u) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
 %3 = OpConstant %2 1
 )");
@@ -88,22 +71,13 @@ TEST_F(BuilderTest, UnaryOp_Negation_Float) {
 }
 
 TEST_F(BuilderTest, UnaryOp_Not) {
-  ast::type::BoolType bool_type;
+  auto* expr = create<ast::UnaryOpExpression>(ast::UnaryOp::kNot, Expr(false));
+  WrapInFunction(expr);
 
-  ast::UnaryOpExpression expr(
-      ast::UnaryOp::kNot,
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::BoolLiteral>(&bool_type, false)));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateUnaryOpExpression(&expr), 1u) << b.error();
+  EXPECT_EQ(b.GenerateUnaryOpExpression(expr), 1u) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeBool
 %3 = OpConstantFalse %2
 )");
@@ -113,25 +87,17 @@ TEST_F(BuilderTest, UnaryOp_Not) {
 }
 
 TEST_F(BuilderTest, UnaryOp_LoadRequired) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* var = Global("param", ty.vec3<f32>(), ast::StorageClass::kFunction);
 
-  ast::Variable var("param", ast::StorageClass::kFunction, &vec);
+  auto* expr =
+      create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, Expr("param"));
+  WrapInFunction(expr);
 
-  ast::UnaryOpExpression expr(
-      ast::UnaryOp::kNegation,
-      std::make_unique<ast::IdentifierExpression>("param"));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&var);
-  EXPECT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&var)) << b.error();
-  EXPECT_EQ(b.GenerateUnaryOpExpression(&expr), 6u) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(var)) << b.error();
+  EXPECT_EQ(b.GenerateUnaryOpExpression(expr), 6u) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32

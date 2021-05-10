@@ -62,8 +62,12 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   sk_sp<const PaintRecord> cached_paint_record_;
 };
 
-DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMasker,
-                                      kMaskerResourceType);
+template <>
+struct DowncastTraits<LayoutSVGResourceMasker> {
+  static bool AllowFrom(const LayoutSVGResourceContainer& container) {
+    return container.ResourceType() == kMaskerResourceType;
+  }
+};
 
 }  // namespace blink
 

@@ -14,190 +14,172 @@
 
 #include "src/ast/case_statement.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/u32_type.h"
+#include "src/ast/test_helper.h"
 #include "src/ast/uint_literal.h"
+#include "src/type/i32_type.h"
+#include "src/type/u32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using CaseStatementTest = testing::Test;
+using CaseStatementTest = TestHelper;
 
 TEST_F(CaseStatementTest, Creation_i32) {
-  ast::type::I32Type i32;
-
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  auto* selector = create<SintLiteral>(ty.i32(), 2);
+  b.push_back(selector);
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* discard = create<DiscardStatement>();
+  auto* body = create<BlockStatement>(StatementList{discard});
 
-  auto* int_ptr = b.back().get();
-  auto* discard_ptr = body->get(0);
-
-  CaseStatement c(std::move(b), std::move(body));
-  ASSERT_EQ(c.selectors().size(), 1u);
-  EXPECT_EQ(c.selectors()[0].get(), int_ptr);
-  ASSERT_EQ(c.body()->size(), 1u);
-  EXPECT_EQ(c.body()->get(0), discard_ptr);
+  auto* c = create<CaseStatement>(b, body);
+  ASSERT_EQ(c->selectors().size(), 1u);
+  EXPECT_EQ(c->selectors()[0], selector);
+  ASSERT_EQ(c->body()->size(), 1u);
+  EXPECT_EQ(c->body()->get(0), discard);
 }
 
 TEST_F(CaseStatementTest, Creation_u32) {
-  ast::type::U32Type u32;
-
   CaseSelectorList b;
-  b.push_back(std::make_unique<UintLiteral>(&u32, 2));
+  auto* selector = create<SintLiteral>(ty.u32(), 2);
+  b.push_back(selector);
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* discard = create<DiscardStatement>();
+  auto* body = create<BlockStatement>(StatementList{discard});
 
-  auto* int_ptr = b.back().get();
-  auto* discard_ptr = body->get(0);
-
-  CaseStatement c(std::move(b), std::move(body));
-  ASSERT_EQ(c.selectors().size(), 1u);
-  EXPECT_EQ(c.selectors()[0].get(), int_ptr);
-  ASSERT_EQ(c.body()->size(), 1u);
-  EXPECT_EQ(c.body()->get(0), discard_ptr);
+  auto* c = create<CaseStatement>(b, body);
+  ASSERT_EQ(c->selectors().size(), 1u);
+  EXPECT_EQ(c->selectors()[0], selector);
+  ASSERT_EQ(c->body()->size(), 1u);
+  EXPECT_EQ(c->body()->get(0), discard);
 }
 
 TEST_F(CaseStatementTest, Creation_WithSource) {
-  ast::type::I32Type i32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  b.push_back(create<SintLiteral>(ty.i32(), 2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-
-  CaseStatement c(Source{Source::Location{20, 2}}, std::move(b),
-                  std::move(body));
-  auto src = c.source();
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(Source{Source::Location{20, 2}}, b, body);
+  auto src = c->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(CaseStatementTest, IsDefault_WithoutSelectors) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-
-  CaseStatement c;
-  c.set_body(std::move(body));
-  EXPECT_TRUE(c.IsDefault());
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(CaseSelectorList{}, body);
+  EXPECT_TRUE(c->IsDefault());
 }
 
 TEST_F(CaseStatementTest, IsDefault_WithSelectors) {
-  ast::type::I32Type i32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  b.push_back(create<SintLiteral>(ty.i32(), 2));
 
-  CaseStatement c;
-  c.set_selectors(std::move(b));
-  EXPECT_FALSE(c.IsDefault());
+  auto* c = create<CaseStatement>(b, create<BlockStatement>(StatementList{}));
+  EXPECT_FALSE(c->IsDefault());
 }
 
 TEST_F(CaseStatementTest, IsCase) {
-  CaseStatement c;
-  EXPECT_TRUE(c.IsCase());
+  auto* c = create<CaseStatement>(CaseSelectorList{},
+                                  create<BlockStatement>(StatementList{}));
+  EXPECT_TRUE(c->Is<CaseStatement>());
 }
 
 TEST_F(CaseStatementTest, IsValid) {
-  CaseStatement c;
-  EXPECT_TRUE(c.IsValid());
+  auto* c = create<CaseStatement>(CaseSelectorList{},
+                                  create<BlockStatement>(StatementList{}));
+  EXPECT_TRUE(c->IsValid());
 }
 
 TEST_F(CaseStatementTest, IsValid_NullBodyStatement) {
-  ast::type::I32Type i32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  b.push_back(create<SintLiteral>(ty.i32(), 2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  body->append(nullptr);
-
-  CaseStatement c(std::move(b), std::move(body));
-  EXPECT_FALSE(c.IsValid());
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+      nullptr,
+  });
+  auto* c = create<CaseStatement>(b, body);
+  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(CaseStatementTest, IsValid_InvalidBodyStatement) {
-  ast::type::I32Type i32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  b.push_back(create<SintLiteral>(ty.i32(), 2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<IfStatement>());
+  auto* body = create<BlockStatement>(
 
-  CaseStatement c({std::move(b)}, std::move(body));
-  EXPECT_FALSE(c.IsValid());
+      StatementList{
+          create<IfStatement>(nullptr, create<BlockStatement>(StatementList{}),
+                              ElseStatementList{}),
+      });
+  auto* c = create<CaseStatement>(CaseSelectorList{b}, body);
+  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(CaseStatementTest, ToStr_WithSelectors_i32) {
-  ast::type::I32Type i32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, -2));
+  b.push_back(create<SintLiteral>(ty.i32(), -2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  CaseStatement c({std::move(b)}, std::move(body));
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(CaseSelectorList{b}, body);
 
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Case -2{
-    Discard{}
-  }
+  EXPECT_EQ(str(c), R"(Case -2{
+  Discard{}
+}
 )");
 }
 
 TEST_F(CaseStatementTest, ToStr_WithSelectors_u32) {
-  ast::type::U32Type u32;
   CaseSelectorList b;
-  b.push_back(std::make_unique<UintLiteral>(&u32, 2));
+  b.push_back(create<UintLiteral>(ty.u32(), 2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  CaseStatement c({std::move(b)}, std::move(body));
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(CaseSelectorList{b}, body);
 
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Case 2{
-    Discard{}
-  }
+  EXPECT_EQ(str(c), R"(Case 2{
+  Discard{}
+}
 )");
 }
 
 TEST_F(CaseStatementTest, ToStr_WithMultipleSelectors) {
-  ast::type::I32Type i32;
-
   CaseSelectorList b;
-  b.push_back(std::make_unique<SintLiteral>(&i32, 1));
-  b.push_back(std::make_unique<SintLiteral>(&i32, 2));
+  b.push_back(create<SintLiteral>(ty.i32(), 1));
+  b.push_back(create<SintLiteral>(ty.i32(), 2));
 
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  CaseStatement c(std::move(b), std::move(body));
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(b, body);
 
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Case 1, 2{
-    Discard{}
-  }
+  EXPECT_EQ(str(c), R"(Case 1, 2{
+  Discard{}
+}
 )");
 }
 
 TEST_F(CaseStatementTest, ToStr_WithoutSelectors) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  CaseStatement c(CaseSelectorList{}, std::move(body));
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+  });
+  auto* c = create<CaseStatement>(CaseSelectorList{}, body);
 
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Default{
-    Discard{}
-  }
+  EXPECT_EQ(str(c), R"(Default{
+  Discard{}
+}
 )");
 }
 

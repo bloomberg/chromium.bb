@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace weblayer {
@@ -18,7 +19,8 @@ namespace weblayer {
 // exercised within the WebLayer autofill flow.
 class AutofillClientImpl
     : public autofill::AutofillClient,
-      public content::WebContentsUserData<AutofillClientImpl> {
+      public content::WebContentsUserData<AutofillClientImpl>,
+      public content::WebContentsObserver {
  public:
   ~AutofillClientImpl() override;
 
@@ -27,6 +29,7 @@ class AutofillClientImpl
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager()
       override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
@@ -35,9 +38,10 @@ class AutofillClientImpl
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;
-  const GURL& GetLastCommittedURL() override;
+  const GURL& GetLastCommittedURL() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   const translate::LanguageState* GetLanguageState() override;
+  translate::TranslateDriver* GetTranslateDriver() override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(
@@ -96,6 +100,9 @@ class AutofillClientImpl
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ConfirmSaveAddressProfile(
+      const autofill::AutofillProfile& profile,
+      AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
@@ -116,9 +123,9 @@ class AutofillClientImpl
       const std::vector<autofill::FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
-  bool IsContextSecure() override;
+  bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() override;
+  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
 
   // RiskDataLoader:

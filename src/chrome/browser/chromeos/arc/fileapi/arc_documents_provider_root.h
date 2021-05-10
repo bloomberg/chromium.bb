@@ -78,6 +78,10 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   using GetExtraMetadataCallback =
       base::OnceCallback<void(base::File::Error error,
                               const ExtraFileMetadata& metadata)>;
+  using GetRootSizeCallback =
+      base::OnceCallback<void(const bool error,
+                              const uint64_t available_bytes,
+                              const uint64_t capacity_bytes)>;
 
   ArcDocumentsProviderRoot(ArcFileSystemOperationRunner* runner,
                            const std::string& authority,
@@ -87,8 +91,12 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                            const std::vector<std::string>& mime_types);
   ~ArcDocumentsProviderRoot() override;
 
-  // Queries information of a file just like AsyncFileUtil.GetFileInfo().
-  void GetFileInfo(const base::FilePath& path, GetFileInfoCallback callback);
+  // Queries information of a file just like AsyncFileUtil.GetFileInfo(). If the
+  // file metadata reports unknown size, it will attempt to open the file and
+  // read the size from the file descriptor.
+  void GetFileInfo(const base::FilePath& path,
+                   int fields,
+                   GetFileInfoCallback callback);
 
   // Queries a list of files under a directory just like
   // AsyncFileUtil.ReadDirectory().
@@ -206,6 +214,9 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // ArcFileSystemOperationRunner::Observer overrides:
   void OnWatchersCleared() override;
 
+  // Get DocumentsProvider root's available bytes.
+  void GetRootSize(GetRootSizeCallback callback);
+
  private:
   struct WatcherData;
   struct DirectoryCache;
@@ -227,7 +238,12 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       base::OnceCallback<void(base::File::Error error,
                               const mojom::DocumentPtr& document)>;
 
+  void OnGetRootSize(GetRootSizeCallback callback,
+                     mojom::RootSizePtr maybe_root_size);
+
   void GetFileInfoFromDocument(GetFileInfoCallback callback,
+                               const base::FilePath& path,
+                               int fields,
                                base::File::Error error,
                                const mojom::DocumentPtr& document);
 

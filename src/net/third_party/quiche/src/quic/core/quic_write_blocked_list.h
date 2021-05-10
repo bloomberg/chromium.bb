@@ -9,16 +9,13 @@
 #include <cstdint>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/spdy/core/fifo_write_scheduler.h"
-#include "net/third_party/quiche/src/spdy/core/http2_priority_write_scheduler.h"
-#include "net/third_party/quiche/src/spdy/core/lifo_write_scheduler.h"
-#include "net/third_party/quiche/src/spdy/core/priority_write_scheduler.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "spdy/core/priority_write_scheduler.h"
 
 namespace quic {
 
@@ -26,9 +23,6 @@ namespace quic {
 // priority.  QUIC stream priority order is:
 // Crypto stream > Headers stream > Data streams by requested priority.
 class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
- private:
-  using QuicPriorityWriteScheduler = spdy::WriteScheduler<QuicStreamId>;
-
  public:
   explicit QuicWriteBlockedList(QuicTransportVersion version);
   QuicWriteBlockedList(const QuicWriteBlockedList&) = delete;
@@ -36,7 +30,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   ~QuicWriteBlockedList();
 
   bool HasWriteBlockedDataStreams() const {
-    return priority_write_scheduler_->HasReadyStreams();
+    return priority_write_scheduler_.HasReadyStreams();
   }
 
   bool HasWriteBlockedSpecialStream() const {
@@ -49,19 +43,14 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
   size_t NumBlockedStreams() const {
     return NumBlockedSpecialStreams() +
-           priority_write_scheduler_->NumReadyStreams();
+           priority_write_scheduler_.NumReadyStreams();
   }
 
   bool ShouldYield(QuicStreamId id) const;
 
   spdy::SpdyPriority GetSpdyPriorityofStream(QuicStreamId id) const {
-    return priority_write_scheduler_->GetStreamPrecedence(id).spdy3_priority();
+    return priority_write_scheduler_.GetStreamPrecedence(id).spdy3_priority();
   }
-
-  // Switches write scheduler. This can only be called before any stream is
-  // registered.
-  bool SwitchWriteScheduler(spdy::WriteSchedulerType type,
-                            QuicTransportVersion version);
 
   // Pops the highest priority stream, special casing crypto and headers
   // streams. Latches the most recently popped data stream for batch writing
@@ -88,13 +77,8 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // Returns true if stream with |stream_id| is write blocked.
   bool IsStreamBlocked(QuicStreamId stream_id) const;
 
-  spdy::WriteSchedulerType scheduler_type() const { return scheduler_type_; }
-
  private:
-  bool PrecedenceMatchesSchedulerType(
-      const spdy::SpdyStreamPrecedence& precedence);
-
-  std::unique_ptr<QuicPriorityWriteScheduler> priority_write_scheduler_;
+  spdy::PriorityWriteScheduler<QuicStreamId> priority_write_scheduler_;
 
   // If performing batch writes, this will be the stream ID of the stream doing
   // batch writes for this priority level.  We will allow this stream to write
@@ -152,8 +136,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   };
 
   StaticStreamCollection static_stream_collection_;
-
-  spdy::WriteSchedulerType scheduler_type_;
 };
 
 }  // namespace quic

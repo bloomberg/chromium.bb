@@ -23,19 +23,18 @@ class StubCupsPrintersManager : public CupsPrintersManager {
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override;
   bool IsPrinterInstalled(const Printer& printer) const override;
   base::Optional<Printer> GetPrinter(const std::string& id) const override;
+  PrintServersManager* GetPrintServersManager() const override;
 
   void SavePrinter(const Printer& printer) override {}
   void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {}
   void PrinterInstalled(const Printer& printer, bool is_automatic) override {}
+  void PrinterIsNotAutoconfigurable(const Printer& printer) override {}
   void RecordSetupAbandoned(const Printer& printer) override {}
   void FetchPrinterStatus(const std::string& printer_id,
                           PrinterStatusCallback cb) override {}
   void RecordNearbyNetworkPrinterCounts() const override {}
-  bool ChoosePrintServer(
-      const base::Optional<std::string>& selected_print_server_id) override;
-  ServerPrintersFetchingMode GetServerPrintersFetchingMode() const override;
 };
 
 class StubPrinterConfigurer : public PrinterConfigurer {

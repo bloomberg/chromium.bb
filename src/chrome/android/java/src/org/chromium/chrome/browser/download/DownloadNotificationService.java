@@ -27,11 +27,13 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
@@ -248,9 +250,12 @@ public class DownloadNotificationService {
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
-
-        mDownloadForegroundServiceManager.updateDownloadStatus(
-                context, DownloadStatus.IN_PROGRESS, notificationId, notification);
+        // If the notification is allowed to start foreground service, or if the app is already
+        // foreground, ask the foreground service manager to handle the notification.
+        if (canStartForegroundService() || mDownloadForegroundServiceManager.isServiceBound()) {
+            mDownloadForegroundServiceManager.updateDownloadStatus(
+                    context, DownloadStatus.IN_PROGRESS, notificationId, notification);
+        }
 
         startTrackingInProgressDownload(id);
     }
@@ -717,7 +722,12 @@ public class DownloadNotificationService {
             if (cancelActualDownload) {
                 DownloadServiceDelegate delegate = getServiceDelegate(id);
                 DownloadMetrics.recordDownloadCancel(DownloadMetrics.CancelFrom.CANCEL_SHUTDOWN);
-                delegate.cancelDownload(id, true);
+                // TODO(crbug.com/1164379): Pass OTRProfileID of the current OTR profile to cancel
+                // non-primary OTR downloads.
+                OTRProfileID otrProfileID = Profile.getLastUsedRegularProfile()
+                                                    .getPrimaryOTRProfile()
+                                                    .getOTRProfileID();
+                delegate.cancelDownload(id, otrProfileID);
                 delegate.destroyServiceDelegate();
             }
         }
@@ -726,5 +736,10 @@ public class DownloadNotificationService {
     private void rescheduleDownloads() {
         if (getResumptionAttemptLeft() <= 0) return;
         DownloadResumptionScheduler.getDownloadResumptionScheduler().scheduleIfNecessary();
+    }
+
+    private boolean canStartForegroundService() {
+        if (AppHooks.get().canStartForegroundServiceWhileInvisible()) return true;
+        return ApplicationStatus.hasVisibleActivities();
     }
 }

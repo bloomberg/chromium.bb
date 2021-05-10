@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
+#include "quic/core/quic_stream_sequencer.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -13,14 +13,14 @@
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_sequencer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_stream_sequencer_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -37,10 +37,19 @@ class MockStream : public QuicStreamSequencer::StreamInterface {
               OnUnrecoverableError,
               (QuicErrorCode error, const std::string& details),
               (override));
+  MOCK_METHOD(void,
+              OnUnrecoverableError,
+              (QuicErrorCode error,
+               QuicIetfTransportErrorCodes ietf_error,
+               const std::string& details),
+              (override));
   MOCK_METHOD(void, Reset, (QuicRstStreamErrorCode error), (override));
   MOCK_METHOD(void, AddBytesConsumed, (QuicByteCount bytes), (override));
 
   QuicStreamId id() const override { return 1; }
+  ParsedQuicVersion version() const override {
+    return CurrentSupportedVersions()[0];
+  }
 };
 
 namespace {
@@ -243,7 +252,11 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
-  EXPECT_CALL(stream_, OnUnrecoverableError(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _));
+  if (!GetQuicReloadableFlag(quic_accept_empty_stream_frame_with_no_fin) ||
+      !stream_.version().HasIetfQuicFrames()) {
+    EXPECT_CALL(stream_,
+                OnUnrecoverableError(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _));
+  }
   OnFrame(0, "");
   EXPECT_EQ(0u, NumBufferedBytes());
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());

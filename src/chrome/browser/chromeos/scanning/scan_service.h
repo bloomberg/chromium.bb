@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -22,6 +23,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace chromeos {
 
@@ -48,6 +53,7 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
                  scanning::mojom::ScanSettingsPtr settings,
                  mojo::PendingRemote<scanning::mojom::ScanJobObserver> observer,
                  StartScanCallback callback) override;
+  void CancelScan() override;
 
   // Binds receiver_ by consuming |pending_receiver|.
   void BindInterface(
@@ -90,6 +96,22 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   // Processes the final result of calling LorgnetteScannerManager::Scan().
   void OnScanCompleted(bool success);
 
+  // Processes the final result of calling
+  // LorgnetteScannerManager::CancelScan().
+  void OnCancelCompleted(bool success);
+
+  // Called once the task runner finishes saving a PDF file.
+  void OnPdfSaved(const bool success);
+
+  // Called once the task runner finishes saving a page of a scan.
+  void OnPageSaved(const base::FilePath& saved_file_path);
+
+  // Called once the task runner finishes saving the last page of a scan.
+  void OnAllPagesSaved(bool success);
+
+  // Sets the local member variables back to their initial empty state.
+  void ClearScanState();
+
   // TODO(jschettler): Replace this with a generic helper function when one is
   // available.
   // Determines whether the service supports saving scanned images to
@@ -121,10 +143,26 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   base::FilePath google_drive_path_;
 
   // Indicates whether there was a failure to save scanned images.
-  bool save_failed_;
+  bool page_save_failed_;
+
+  // The scanned images used to create a multipage PDF.
+  std::vector<std::string> scanned_images_;
 
   // The time a scan was started. Used in filenames when saving scanned images.
   base::Time::Exploded start_time_;
+
+  // The file path of the last page scanned in a scan job.
+  base::FilePath last_scanned_file_path_;
+
+  // Task runner used to convert and save scanned images.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Tracks the number of pages scanned for histogram recording.
+  int num_pages_scanned_;
+
+  // The time at which GetScanners() is called. Used to record the time between
+  // a user launching the Scan app and being able to interact with it.
+  base::TimeTicks get_scanners_time_;
 
   base::WeakPtrFactory<ScanService> weak_ptr_factory_{this};
 };

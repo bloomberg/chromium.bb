@@ -168,7 +168,7 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+  base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&BrowserFrame::OnTouchUiChanged,
                               base::Unretained(this)));
@@ -182,6 +182,14 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // may change, the fast resize strategy will be used to resize its web
   // contents for smoother dragging.
   TabDragKind tab_drag_kind_ = TabDragKind::kNone;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Store the number of virtual desks that currently exist. Used to determine
+  // whether the system menu should be reset. If the value is -1, then either
+  // the ash::DesksHelper does not exist or haven't retrieved the system menu
+  // model yet.
+  int num_desks_ = -1;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

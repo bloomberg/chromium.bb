@@ -12,7 +12,6 @@
 #import "ios/net/protocol_handler_util.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/common/features.h"
-#import "ios/web/navigation/error_page_helper.h"
 #include "ios/web/navigation/web_kit_constants.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -22,15 +21,17 @@
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/error_test_util.h"
-#include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/public/test/fakes/test_web_client.h"
-#include "ios/web/public/test/fakes/test_web_state_observer.h"
+#include "ios/web/public/test/fakes/fake_browser_state.h"
+#import "ios/web/public/test/fakes/fake_web_client.h"
+#include "ios/web/public/test/fakes/fake_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
+#include "ios/web/test/test_url_constants.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "url/gurl.h"
@@ -123,7 +124,7 @@ class TestWebStatePolicyDecider : public WebStatePolicyDecider {
 // test for PrepareErrorPage WebClient method.
 class ErrorPageTest : public WebTestWithWebState {
  protected:
-  ErrorPageTest() : WebTestWithWebState(std::make_unique<TestWebClient>()) {
+  ErrorPageTest() : WebTestWithWebState(std::make_unique<FakeWebClient>()) {
     RegisterDefaultHandlers(&server_);
     server_.RegisterRequestHandler(base::BindRepeating(
         &net::test_server::HandlePrefixedRequest, "/echo-query",
@@ -140,7 +141,7 @@ class ErrorPageTest : public WebTestWithWebState {
   void SetUp() override {
     WebTestWithWebState::SetUp();
 
-    web_state_observer_ = std::make_unique<TestWebStateObserver>(web_state());
+    web_state_observer_ = std::make_unique<FakeWebStateObserver>(web_state());
     ASSERT_TRUE(server_.Start());
   }
 
@@ -152,7 +153,7 @@ class ErrorPageTest : public WebTestWithWebState {
   bool server_responds_with_content_ = false;
 
  private:
-  std::unique_ptr<TestWebStateObserver> web_state_observer_;
+  std::unique_ptr<FakeWebStateObserver> web_state_observer_;
   DISALLOW_COPY_AND_ASSIGN(ErrorPageTest);
 };
 
@@ -165,6 +166,14 @@ class ErrorPageTest : public WebTestWithWebState {
 #define MAYBE_BackForwardErrorPage FLAKY_BackForwardErrorPage
 #endif
 TEST_F(ErrorPageTest, MAYBE_BackForwardErrorPage) {
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    // TODO(crbug.com/1153261): this test should be fixed in newer versions of
+    // WebKit.
+    if (@available(iOS 14.4, *)) {
+    } else {
+      return;
+    }
+  }
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
 
@@ -218,7 +227,14 @@ TEST_F(ErrorPageTest, ReloadErrorPage) {
   server_responds_with_content_ = false;
   test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
-  ASSERT_FALSE(security_state_info());
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    ASSERT_TRUE(security_state_info());
+    ASSERT_TRUE(security_state_info()->visible_ssl_status);
+    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+              security_state_info()->visible_ssl_status->security_style);
+  } else {
+    ASSERT_FALSE(security_state_info());
+  }
 
   // Reload the page, which should load without errors.
   server_responds_with_content_ = true;
@@ -242,8 +258,13 @@ TEST_F(ErrorPageTest, ReloadPageAfterServerIsDown) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-            security_state_info()->visible_ssl_status->security_style);
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+              security_state_info()->visible_ssl_status->security_style);
+  } else {
+    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+              security_state_info()->visible_ssl_status->security_style);
+  }
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -276,8 +297,13 @@ TEST_F(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-            security_state_info()->visible_ssl_status->security_style);
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+              security_state_info()->visible_ssl_status->security_style);
+  } else {
+    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+              security_state_info()->visible_ssl_status->security_style);
+  }
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -302,8 +328,13 @@ TEST_F(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
-  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
-            security_state_info()->visible_ssl_status->security_style);
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED,
+              security_state_info()->visible_ssl_status->security_style);
+  } else {
+    EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+              security_state_info()->visible_ssl_status->security_style);
+  }
 }
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
@@ -355,7 +386,7 @@ TEST_F(ErrorPageTest, ErrorPageInIFrame) {
 
 // Loads the URL with off the record browser state.
 TEST_F(ErrorPageTest, OtrError) {
-  TestBrowserState browser_state;
+  FakeBrowserState browser_state;
   browser_state.SetOffTheRecord(true);
   WebState::CreateParams params(&browser_state);
   auto web_state = WebState::Create(params);
@@ -543,6 +574,58 @@ TEST_F(ErrorPageTest, ShouldAllowResponseCancelAndDisplayErrorBackNav) {
   // Go back to validate going back to error page.
   web_state()->GetNavigationManager()->GoBack();
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), error_text));
+}
+
+// Tests that restoring an invalid WebUI URL doesn't create a new navigation.
+TEST_F(ErrorPageTest, RestorationFromInvalidURL) {
+  server_responds_with_content_ = true;
+
+  std::string scheme = kTestWebUIScheme;
+  GURL invalid_webui = GURL(scheme + "://invalid");
+
+  NSError* error = testing::CreateErrorWithUnderlyingErrorChain(
+      {{@"NSURLErrorDomain", NSURLErrorUnsupportedURL},
+       {net::kNSErrorDomain, net::ERR_INVALID_URL}});
+
+  test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
+  test::LoadUrl(web_state(), invalid_webui);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(), testing::GetErrorText(web_state(), invalid_webui, error,
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
+
+  // Restore the session.
+  WebState::CreateParams params(GetBrowserState());
+  auto restored_web_state = WebState::CreateWithStorageSession(
+      params, web_state()->BuildSessionStorage());
+
+  restored_web_state->GetNavigationManager()->LoadIfNecessary();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      restored_web_state.get(),
+      testing::GetErrorText(restored_web_state.get(), invalid_webui, error,
+                            /*is_post=*/false, /*is_otr=*/false,
+                            /*cert_status=*/0)));
+
+  // Check that there is one item in the back list and no forward item.
+  EXPECT_EQ(
+      1UL,
+      restored_web_state->GetNavigationManager()->GetBackwardItems().size());
+  EXPECT_EQ(
+      0UL,
+      restored_web_state->GetNavigationManager()->GetForwardItems().size());
+
+  restored_web_state->GetNavigationManager()->GoBack();
+  ASSERT_TRUE(
+      test::WaitForWebViewContainingText(restored_web_state.get(), "foo"));
+
+  // Check that there is one item in the forward list and no back item.
+  EXPECT_EQ(
+      0UL,
+      restored_web_state->GetNavigationManager()->GetBackwardItems().size());
+  EXPECT_EQ(
+      1UL,
+      restored_web_state->GetNavigationManager()->GetForwardItems().size());
 }
 
 }  // namespace web

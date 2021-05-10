@@ -14,39 +14,38 @@
 
 #include "src/ast/case_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::CaseStatement);
+
 namespace tint {
 namespace ast {
 
-CaseStatement::CaseStatement()
-    : Statement(), body_(std::make_unique<BlockStatement>()) {}
-
-CaseStatement::CaseStatement(std::unique_ptr<BlockStatement> body)
-    : Statement(), body_(std::move(body)) {}
-
-CaseStatement::CaseStatement(CaseSelectorList selectors,
-                             std::unique_ptr<BlockStatement> body)
-    : Statement(), selectors_(std::move(selectors)), body_(std::move(body)) {}
-
 CaseStatement::CaseStatement(const Source& source,
                              CaseSelectorList selectors,
-                             std::unique_ptr<BlockStatement> body)
-    : Statement(source),
-      selectors_(std::move(selectors)),
-      body_(std::move(body)) {}
+                             BlockStatement* body)
+    : Base(source), selectors_(selectors), body_(body) {}
 
 CaseStatement::CaseStatement(CaseStatement&&) = default;
 
 CaseStatement::~CaseStatement() = default;
 
-bool CaseStatement::IsCase() const {
-  return true;
+CaseStatement* CaseStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto sel = ctx->Clone(selectors_);
+  auto* b = ctx->Clone(body_);
+  return ctx->dst->create<CaseStatement>(src, sel, b);
 }
 
 bool CaseStatement::IsValid() const {
   return body_ != nullptr && body_->IsValid();
 }
 
-void CaseStatement::to_str(std::ostream& out, size_t indent) const {
+void CaseStatement::to_str(const semantic::Info& sem,
+                           std::ostream& out,
+                           size_t indent) const {
   make_indent(out, indent);
 
   if (IsDefault()) {
@@ -54,19 +53,19 @@ void CaseStatement::to_str(std::ostream& out, size_t indent) const {
   } else {
     out << "Case ";
     bool first = true;
-    for (const auto& selector : selectors_) {
+    for (auto* selector : selectors_) {
       if (!first)
         out << ", ";
 
       first = false;
-      out << selector->to_str();
+      out << selector->to_str(sem);
     }
     out << "{" << std::endl;
   }
 
   if (body_ != nullptr) {
-    for (const auto& stmt : *body_) {
-      stmt->to_str(out, indent + 2);
+    for (auto* stmt : *body_) {
+      stmt->to_str(sem, out, indent + 2);
     }
   }
 

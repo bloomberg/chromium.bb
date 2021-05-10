@@ -19,21 +19,23 @@ namespace rx
 {
 namespace
 {
-void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCaps *outTextureCaps)
+void FillTextureFormatCaps(RendererVk *renderer,
+                           angle::FormatID formatID,
+                           gl::TextureCaps *outTextureCaps)
 {
     const VkPhysicalDeviceLimits &physicalDeviceLimits =
         renderer->getPhysicalDeviceProperties().limits;
     bool hasColorAttachmentFeatureBit =
-        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
-    bool hasDepthAttachmentFeatureBit =
-        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        renderer->hasImageFormatFeatureBits(formatID, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
+    bool hasDepthAttachmentFeatureBit = renderer->hasImageFormatFeatureBits(
+        formatID, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
     outTextureCaps->texturable =
-        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+        renderer->hasImageFormatFeatureBits(formatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     outTextureCaps->filterable = renderer->hasImageFormatFeatureBits(
-        format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+        formatID, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
     outTextureCaps->blendable =
-        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
+        renderer->hasImageFormatFeatureBits(formatID, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
 
     // For renderbuffer and texture attachments we require transfer and sampling for
     // GLES 2.0 CopyTexImage support. Sampling is also required for other features like
@@ -62,12 +64,18 @@ void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCap
     }
 }
 
-bool HasFullBufferFormatSupport(RendererVk *renderer, VkFormat vkFormat)
+bool HasFullBufferFormatSupport(RendererVk *renderer, angle::FormatID formatID)
 {
-    return renderer->hasBufferFormatFeatureBits(vkFormat, VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT);
+    // Note: GL_EXT_texture_buffer support uses the same vkBufferFormat that is determined by
+    // Format::initBufferFallback, which uses this function.  That relies on the fact that formats
+    // required for GL_EXT_texture_buffer all have mandatory VERTEX_BUFFER feature support in
+    // Vulkan.  If this function is changed to test for more features in such a way that makes any
+    // of those formats use a fallback format, the implementation of GL_EXT_texture_buffer must be
+    // modified not to use vkBufferFormat.
+    return renderer->hasBufferFormatFeatureBits(formatID, VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT);
 }
 
-using SupportTest = bool (*)(RendererVk *renderer, VkFormat vkFormat);
+using SupportTest = bool (*)(RendererVk *renderer, angle::FormatID formatID);
 
 template <class FormatInitInfo>
 int FindSupportedFormat(RendererVk *renderer,
@@ -82,36 +90,41 @@ int FindSupportedFormat(RendererVk *renderer,
     for (int i = static_cast<int>(skip); i < last; ++i)
     {
         ASSERT(info[i].format != angle::FormatID::NONE);
-        if (hasSupport(renderer, info[i].vkFormat))
+        if (hasSupport(renderer, info[i].format))
             return i;
     }
 
-    if (skip > 0 && !hasSupport(renderer, info[last].vkFormat))
+    if (skip > 0 && !hasSupport(renderer, info[last].format))
     {
         // We couldn't find a valid fallback, try again without skip
         return FindSupportedFormat(renderer, info, 0, numInfo, hasSupport);
     }
 
     ASSERT(info[last].format != angle::FormatID::NONE);
-    ASSERT(hasSupport(renderer, info[last].vkFormat));
+    ASSERT(hasSupport(renderer, info[last].format));
     return last;
 }
 
+bool HasNonFilterableTextureFormatSupport(RendererVk *renderer, angle::FormatID formatID)
+{
+    constexpr uint32_t kBitsColor =
+        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
+    constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    return renderer->hasImageFormatFeatureBits(formatID, kBitsColor) ||
+           renderer->hasImageFormatFeatureBits(formatID, kBitsDepth);
+}
 }  // anonymous namespace
 
 namespace vk
 {
-
 // Format implementation.
 Format::Format()
     : intendedFormatID(angle::FormatID::NONE),
-      internalFormat(GL_NONE),
+      intendedGLFormat(GL_NONE),
       actualImageFormatID(angle::FormatID::NONE),
-      vkImageFormat(VK_FORMAT_UNDEFINED),
       actualBufferFormatID(angle::FormatID::NONE),
-      vkBufferFormat(VK_FORMAT_UNDEFINED),
       actualCompressedBufferFormatID(angle::FormatID::NONE),
-      vkCompressedBufferFormat(VK_FORMAT_UNDEFINED),
       imageInitializerFunction(nullptr),
       textureLoadFunctions(),
       vertexLoadFunction(nullptr),
@@ -146,7 +159,6 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
     int i = FindSupportedFormat(renderer, info, skip, static_cast<uint32_t>(numInfo), testFunction);
 
     actualImageFormatID      = info[i].format;
-    vkImageFormat            = info[i].vkFormat;
     imageInitializerFunction = info[i].initializer;
 }
 
@@ -161,7 +173,6 @@ void Format::initBufferFallback(RendererVk *renderer,
                                     HasFullBufferFormatSupport);
 
         actualBufferFormatID         = info[i].format;
-        vkBufferFormat               = info[i].vkFormat;
         vkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
         vertexLoadFunction           = info[i].vertexLoadFunction;
         vertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
@@ -173,7 +184,6 @@ void Format::initBufferFallback(RendererVk *renderer,
                                     HasFullBufferFormatSupport);
 
         actualCompressedBufferFormatID         = info[i].format;
-        vkCompressedBufferFormat               = info[i].vkFormat;
         vkCompressedBufferFormatIsPacked       = info[i].vkFormatIsPacked;
         compressedVertexLoadFunction           = info[i].vertexLoadFunction;
         compressedVertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
@@ -251,13 +261,12 @@ void FormatTable::initialize(RendererVk *renderer,
 {
     for (size_t formatIndex = 0; formatIndex < angle::kNumANGLEFormats; ++formatIndex)
     {
-        vk::Format &format               = mFormatData[formatIndex];
+        Format &format                   = mFormatData[formatIndex];
         const auto formatID              = static_cast<angle::FormatID>(formatIndex);
         const angle::Format &angleFormat = angle::Format::Get(formatID);
 
         format.initialize(renderer, angleFormat);
-        const GLenum internalFormat = format.internalFormat;
-        format.intendedFormatID     = formatID;
+        format.intendedFormatID = formatID;
 
         if (!format.valid())
         {
@@ -265,30 +274,30 @@ void FormatTable::initialize(RendererVk *renderer,
         }
 
         gl::TextureCaps textureCaps;
-        FillTextureFormatCaps(renderer, format.vkImageFormat, &textureCaps);
+        FillTextureFormatCaps(renderer, format.actualImageFormatID, &textureCaps);
         outTextureCapsMap->set(formatID, textureCaps);
 
         if (textureCaps.texturable)
         {
             format.textureLoadFunctions =
-                GetLoadFunctionsMap(internalFormat, format.actualImageFormatID);
+                GetLoadFunctionsMap(format.intendedGLFormat, format.actualImageFormatID);
         }
 
         if (angleFormat.isBlock)
         {
-            outCompressedTextureFormats->push_back(internalFormat);
+            outCompressedTextureFormats->push_back(format.intendedGLFormat);
         }
     }
 }
 
-VkImageUsageFlags GetMaximalImageUsageFlags(RendererVk *renderer, VkFormat format)
+VkImageUsageFlags GetMaximalImageUsageFlags(RendererVk *renderer, angle::FormatID formatID)
 {
     constexpr VkFormatFeatureFlags kImageUsageFeatureBits =
         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT |
         VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT |
         VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
     VkFormatFeatureFlags featureBits =
-        renderer->getImageFormatFeatureBits(format, kImageUsageFeatureBits);
+        renderer->getImageFormatFeatureBits(formatID, kImageUsageFeatureBits);
     VkImageUsageFlags imageUsageFlags = 0;
     if (featureBits & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
         imageUsageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -305,10 +314,9 @@ VkImageUsageFlags GetMaximalImageUsageFlags(RendererVk *renderer, VkFormat forma
     imageUsageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     return imageUsageFlags;
 }
-
 }  // namespace vk
 
-bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
+bool HasFullTextureFormatSupport(RendererVk *renderer, angle::FormatID formatID)
 {
     constexpr uint32_t kBitsColor = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
                                     VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
@@ -317,11 +325,11 @@ bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
     // In OpenGL ES, all renderable formats except 32-bit floating-point support blending.
     // 32-bit floating-point case validation is handled by ANGLE's frontend.
     uint32_t kBitsColorFull = kBitsColor;
-    switch (vkFormat)
+    switch (formatID)
     {
-        case VK_FORMAT_R32_SFLOAT:
-        case VK_FORMAT_R32G32_SFLOAT:
-        case VK_FORMAT_R32G32B32A32_SFLOAT:
+        case angle::FormatID::R32_FLOAT:
+        case angle::FormatID::R32G32_FLOAT:
+        case angle::FormatID::R32G32B32A32_FLOAT:
             break;
         default:
             kBitsColorFull |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT;
@@ -330,28 +338,18 @@ bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
 
     constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColorFull) ||
-           renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
+    return renderer->hasImageFormatFeatureBits(formatID, kBitsColorFull) ||
+           renderer->hasImageFormatFeatureBits(formatID, kBitsDepth);
 }
 
-bool HasNonFilterableTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
-{
-    constexpr uint32_t kBitsColor =
-        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
-    constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColor) ||
-           renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
-}
-
-bool HasNonRenderableTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
+bool HasNonRenderableTextureFormatSupport(RendererVk *renderer, angle::FormatID formatID)
 {
     constexpr uint32_t kBitsColor =
         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
     constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColor) ||
-           renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
+    return renderer->hasImageFormatFeatureBits(formatID, kBitsColor) ||
+           renderer->hasImageFormatFeatureBits(formatID, kBitsDepth);
 }
 
 size_t GetVertexInputAlignment(const vk::Format &format, bool compressed)

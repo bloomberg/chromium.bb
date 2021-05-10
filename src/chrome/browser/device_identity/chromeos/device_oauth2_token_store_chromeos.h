@@ -7,7 +7,7 @@
 
 #include "chrome/browser/device_identity/device_oauth2_token_store.h"
 
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 
 class PrefRegistrySimple;
 
@@ -64,8 +64,7 @@ class DeviceOAuth2TokenStoreChromeOS : public DeviceOAuth2TokenStore {
 
   PrefService* local_state_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      service_account_identity_subscription_;
+  base::CallbackListSubscription service_account_identity_subscription_;
 
   // The system salt for encrypting and decrypting the refresh token.
   std::string system_salt_;

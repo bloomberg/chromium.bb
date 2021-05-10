@@ -28,6 +28,7 @@ enum Section {
   kReset = 16,
   kAboutChromeOs = 17,
   kKerberos = 18,
+  kOnStartup = 19,
 };
 
 // Chrome OS Settings subpages (i.e., nested pages within a section). Each
@@ -79,6 +80,7 @@ enum Subpage {
   // Note: Value 502 was for deprecated kAmbientModePhotos. Do not reuse.
   kAmbientModeGooglePhotosAlbum = 503,
   kAmbientModeArtGalleryAlbum = 504,
+  kWallpaper = 505,
 
   // Search and Assistant section.
   kAssistant = 600,
@@ -103,7 +105,10 @@ enum Subpage {
   // Date and Time section.
   kTimeZone = 1000,
 
-  // Note: Privacy section has no subpages.
+  // Privacy section.
+  kManageOtherPeopleV2 = 1100,
+  kSecurityAndSignInV2 = 1101,
+  kFingerprintV2 = 1102,
 
   // Languages and Input section.
   kLanguagesAndInputDetails = 1200,
@@ -142,6 +147,7 @@ const string kEthernetDetailsSubpagePath = "networkDetail";
 const string kWifiNetworksSubpagePath = "networks?type=WiFi";
 const string kWifiDetailsSubpagePath = "networkDetail";
 const string kKnownNetworksSubpagePath = "knownNetworks";
+const string kCellularNetworksSubpagePath = "networks?type=Cellular";
 const string kMobileDataNetworksSubpagePath = "networks?type=Tether";
 const string kCellularDetailsSubpagePath = "networkDetail";
 const string kTetherDetailsSubpagePath = "networkDetail";
@@ -181,6 +187,7 @@ const string kPowerSubpagePath = "power";
 // Personalization section.
 const string kPersonalizationSectionPath = "personalization";
 const string kChangePictureSubpagePath = "changePicture";
+const string kWallpaperSubpagePath = "wallpaper";
 const string kAmbientModeSubpagePath = "ambientMode";
 const string kAmbientModeGooglePhotosAlbumSubpagePath =
     "ambientMode/photos?topicSource=0";
@@ -210,12 +217,18 @@ const string kCrostiniBackupAndRestoreSubpagePath = "crostini/exportImport";
 const string kCrostiniDevelopAndroidAppsSubpagePath = "crostini/androidAdb";
 const string kCrostiniPortForwardingSubpagePath = "crostini/portForwarding";
 
+// On Startup section.
+const string kOnStartupSectionPath = "onstartup";
+
 // Date and Time section.
 const string kDateAndTimeSectionPath = "dateTime";
 const string kTimeZoneSubpagePath = "dateTime/timeZone";
 
 // Privacy and Security section.
 const string kPrivacyAndSecuritySectionPath = "osPrivacy";
+const string kManageOtherPeopleSubpagePathV2 = "osPrivacy/accounts";
+const string kSecurityAndSignInSubpagePathV2 = "osPrivacy/lockScreen";
+const string kFingerprintSubpagePathV2 = "osPrivacy/lockScreen/fingerprint";
 
 // Languages and Input section.
 const string kLanguagesAndInputSectionPath = "osLanguages";

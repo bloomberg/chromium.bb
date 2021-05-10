@@ -8,6 +8,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../os_cr_components.gni")
 
 js_type_check("closure_compile") {
+  uses_legacy_modules = true
   deps = [
     ":pin_keyboard",
     ":setup_pin_keyboard",
@@ -82,8 +83,6 @@ js_library("setup_pin_keyboard.m") {
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
   extra_deps = [ ":setup_pin_keyboard_module" ]
 }
-
-import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [

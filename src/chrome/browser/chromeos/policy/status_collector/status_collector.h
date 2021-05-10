@@ -14,7 +14,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 class PrefRegistrySimple;
@@ -61,22 +61,21 @@ struct StatusCollectorParams {
 
 // Called in the UI thread after the statuses have been collected
 // asynchronously.
-using StatusCollectorCallback =
-    base::RepeatingCallback<void(StatusCollectorParams)>;
+using StatusCollectorCallback = base::OnceCallback<void(StatusCollectorParams)>;
 
 // Defines the API for a status collector.
 class StatusCollector {
  public:
   // Passed into asynchronous mojo interface for communicating with Android.
   using AndroidStatusReceiver =
-      base::Callback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(const std::string&, const std::string&)>;
   // Calls the enterprise reporting mojo interface, passing over the
   // AndroidStatusReceiver. Returns false if the mojo interface isn't available,
   // in which case no asynchronous query is emitted and the android status query
   // fails synchronously. The |AndroidStatusReceiver| is not called in this
   // case.
   using AndroidStatusFetcher =
-      base::Callback<bool(const AndroidStatusReceiver&)>;
+      base::RepeatingCallback<bool(AndroidStatusReceiver)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -91,7 +90,7 @@ class StatusCollector {
   virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
-  virtual void GetStatusAsync(const StatusCollectorCallback& callback) = 0;
+  virtual void GetStatusAsync(StatusCollectorCallback callback) = 0;
 
   // Called after the status information has successfully been submitted to
   // the server.
@@ -136,10 +135,8 @@ class StatusCollector {
   bool report_activity_times_ = false;
   bool report_boot_mode_ = false;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      version_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      boot_mode_subscription_;
+  base::CallbackListSubscription version_info_subscription_;
+  base::CallbackListSubscription boot_mode_subscription_;
 
   base::Clock* clock_;
 

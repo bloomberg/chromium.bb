@@ -28,7 +28,6 @@
 
 namespace dawn_native {
 
-    struct BeginRenderPassCmd;
     struct RenderBundleDescriptor;
     class RenderBundleEncoder;
 
@@ -36,7 +35,7 @@ namespace dawn_native {
       public:
         RenderBundleBase(RenderBundleEncoder* encoder,
                          const RenderBundleDescriptor* descriptor,
-                         AttachmentState* attachmentState,
+                         Ref<AttachmentState> attachmentState,
                          PassResourceUsage resourceUsage);
 
         static RenderBundleBase* MakeError(DeviceBase* device);

@@ -8,17 +8,16 @@
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
+#include "chrome/browser/ash/login/screens/chrome_user_selection_screen.h"
+#include "chrome/browser/ash/login/screens/user_selection_screen.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
-#include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_adb_sideloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
@@ -196,15 +195,6 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
                             help_topic_id);
 }
 
-void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
-                                                 const AccountId& account_id) {
-  host_->ShowPasswordChangedDialog(show_password_error, account_id);
-}
-
-void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
-  host_->ShowSigninUI(email);
-}
-
 void LoginDisplayMojo::ShowAllowlistCheckFailedError() {
   host_->ShowAllowlistCheckFailedError();
 }
@@ -230,10 +220,6 @@ void LoginDisplayMojo::ShowEnterpriseEnrollmentScreen() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayMojo::ShowKioskEnableScreen() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::ShowKioskAutolaunchScreen() {
   NOTIMPLEMENTED();
 }
@@ -251,16 +237,6 @@ void LoginDisplayMojo::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
-bool LoginDisplayMojo::IsShowUsers() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool LoginDisplayMojo::ShowUsersHasChanged() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool LoginDisplayMojo::AllowNewUserChanged() const {
   NOTIMPLEMENTED();
   return false;
@@ -270,18 +246,39 @@ bool LoginDisplayMojo::IsUserSigninCompleted() const {
   return is_signin_completed();
 }
 
-void LoginDisplayMojo::HandleGetUsers() {
-  NOTIMPLEMENTED();
-}
-
-void LoginDisplayMojo::CheckUserStatus(const AccountId& account_id) {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
   ash::LoginScreen::Get()->GetModel()->SetAvatarForUser(
       user.GetAccountId(),
       UserSelectionScreen::BuildAshUserAvatarForUser(user));
+}
+
+void LoginDisplayMojo::ShowOwnerPod(const AccountId& owner) {
+  const user_manager::User* device_owner =
+      user_manager::UserManager::Get()->FindUser(owner);
+  CHECK(device_owner);
+
+  std::vector<ash::LoginUserInfo> user_info_list;
+  ash::LoginUserInfo user_info;
+  user_info.basic_user_info.type = device_owner->GetType();
+  user_info.basic_user_info.account_id = device_owner->GetAccountId();
+  user_info.basic_user_info.display_name =
+      base::UTF16ToUTF8(device_owner->GetDisplayName());
+  user_info.basic_user_info.display_email = device_owner->display_email();
+  user_info.basic_user_info.avatar =
+      UserSelectionScreen::BuildAshUserAvatarForUser(*device_owner);
+  user_info.auth_type = proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
+  user_info.is_signed_in = device_owner->is_logged_in();
+  user_info.is_device_owner = true;
+  user_info.can_remove = false;
+  user_info_list.push_back(user_info);
+
+  ash::LoginScreen::Get()->GetModel()->SetUserList(user_info_list);
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
+  ash::LoginScreen::Get()->EnableAddUserButton(false);
+
+  // Disable PIN.
+  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(owner,
+                                                            /*enabled=*/false);
 }
 
 void LoginDisplayMojo::OnPinCanAuthenticate(const AccountId& account_id,

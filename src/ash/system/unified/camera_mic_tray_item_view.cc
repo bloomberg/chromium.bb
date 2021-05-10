@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/system/unified/camera_mic_tray_item_view.h"
+
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/media_controller.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "ash/session/session_controller_impl.h"
@@ -16,7 +18,6 @@
 #include "base/feature_list.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -58,16 +59,17 @@ CameraMicTrayItemView::~CameraMicTrayItemView() {
   shell->session_controller()->RemoveObserver(this);
 }
 
-void CameraMicTrayItemView::OnVmMediaCaptureChanged(
-    MediaCaptureState capture_state) {
+void CameraMicTrayItemView::OnVmMediaNotificationChanged(bool camera,
+                                                         bool mic,
+                                                         bool camera_and_mic) {
   switch (type_) {
     case Type::kCamera:
-      active_ = (capture_state == MediaCaptureState::kVideo ||
-                 capture_state == MediaCaptureState::kAudioVideo);
+      active_ = camera || camera_and_mic;
+      with_mic_ = camera_and_mic;
+      FetchMessage();
       break;
     case Type::kMic:
-      active_ = (capture_state == MediaCaptureState::kAudio ||
-                 capture_state == MediaCaptureState::kAudioVideo);
+      active_ = mic;
       break;
   }
   Update();
@@ -112,7 +114,9 @@ void CameraMicTrayItemView::HandleLocaleChange() {
 void CameraMicTrayItemView::FetchMessage() {
   switch (type_) {
     case Type::kCamera:
-      message_ = l10n_util::GetStringUTF16(IDS_ASH_CAMERA_MIC_VM_USING_CAMERA);
+      message_ = l10n_util::GetStringUTF16(
+          with_mic_ ? IDS_ASH_CAMERA_MIC_VM_USING_CAMERA_AND_MIC
+                    : IDS_ASH_CAMERA_MIC_VM_USING_CAMERA);
       break;
     case Type::kMic:
       message_ = l10n_util::GetStringUTF16(IDS_ASH_CAMERA_MIC_VM_USING_MIC);

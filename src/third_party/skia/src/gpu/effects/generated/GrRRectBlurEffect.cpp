@@ -21,8 +21,8 @@
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrThreadSafeCache.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 
@@ -55,7 +55,7 @@ static bool fillin_view_on_gpu(GrDirectContext* dContext,
                                const SkISize& dimensions,
                                float xformedSigma) {
     SkASSERT(!SkGpuBlurUtils::IsEffectivelyZeroSigma(xformedSigma));
-    std::unique_ptr<GrRenderTargetContext> rtc = GrRenderTargetContext::MakeWithFallback(
+    std::unique_ptr<GrSurfaceDrawContext> rtc = GrSurfaceDrawContext::MakeWithFallback(
             dContext, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions, 1,
             GrMipmapped::kNo, GrProtected::kNo, kBlurredRRectMaskOrigin);
     if (!rtc) {
@@ -69,9 +69,6 @@ static bool fillin_view_on_gpu(GrDirectContext* dContext,
                    GrStyle::SimpleFill());
 
     GrSurfaceProxyView srcView = rtc->readSurfaceView();
-    if (!srcView) {
-        return false;
-    }
     SkASSERT(srcView.asTextureProxy());
     auto rtc2 = SkGpuBlurUtils::GaussianBlur(dContext,
                                              std::move(srcView),
@@ -378,17 +375,13 @@ half2 texCoord = translatedFragPosHalf / proxyDims;)SkSL",
                 args.fUniformHandler->getUniformCStr(blurRadiusVar),
                 args.fUniformHandler->getUniformCStr(cornerRadiusVar));
         SkString _sample0 = this->invokeChild(0, args);
-        fragBuilder->codeAppendf(
-                R"SkSL(
-half4 inputColor = %s;)SkSL",
-                _sample0.c_str());
         SkString _coords1("float2(texCoord)");
         SkString _sample1 = this->invokeChild(1, args, _coords1.c_str());
         fragBuilder->codeAppendf(
                 R"SkSL(
-%s = inputColor * %s;
+return %s * %s.w;
 )SkSL",
-                args.fOutputColor, _sample1.c_str());
+                _sample0.c_str(), _sample1.c_str());
     }
 
 private:
@@ -418,8 +411,8 @@ private:
     UniformHandle blurRadiusVar;
     UniformHandle cornerRadiusVar;
 };
-GrGLSLFragmentProcessor* GrRRectBlurEffect::onCreateGLSLInstance() const {
-    return new GrGLSLRRectBlurEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> GrRRectBlurEffect::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLRRectBlurEffect>();
 }
 void GrRRectBlurEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                               GrProcessorKeyBuilder* b) const {}
@@ -431,7 +424,6 @@ bool GrRRectBlurEffect::onIsEqual(const GrFragmentProcessor& other) const {
     if (cornerRadius != that.cornerRadius) return false;
     return true;
 }
-bool GrRRectBlurEffect::usesExplicitReturn() const { return false; }
 GrRRectBlurEffect::GrRRectBlurEffect(const GrRRectBlurEffect& src)
         : INHERITED(kGrRRectBlurEffect_ClassID, src.optimizationFlags())
         , sigma(src.sigma)

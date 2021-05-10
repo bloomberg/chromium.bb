@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -171,7 +171,7 @@ TEST_F(MTPDeviceDelegateImplWinTest, DISABLED_GalleryNameMTP) {
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(
       web_contents(), extension_.get(),
-      base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
+      base::BindOnce(&GetGalleryInfoCallback, base::Unretained(&results)));
   content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(media_directories_.num_galleries() + 1u, results.size());

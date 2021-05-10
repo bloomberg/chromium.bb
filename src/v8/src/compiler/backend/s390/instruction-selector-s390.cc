@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/base/platform/wrappers.h"
 #include "src/compiler/backend/instruction-selector-impl.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/node-properties.h"
@@ -702,7 +703,7 @@ void InstructionSelector::VisitLoad(Node* node) {
   opcode |= AddressingModeField::encode(mode);
   if (node->opcode() == IrOpcode::kPoisonedLoad) {
     CHECK_NE(poisoning_level_, PoisoningMitigationLevel::kDontPoison);
-    opcode |= MiscField::encode(kMemoryAccessPoisoned);
+    opcode |= AccessModeField::encode(kMemoryAccessPoisoned);
   }
   Emit(opcode, 1, outputs, input_count, inputs);
 }
@@ -721,15 +722,14 @@ static void VisitGeneralStore(
   Node* base = node->InputAt(0);
   Node* offset = node->InputAt(1);
   Node* value = node->InputAt(2);
-  if (write_barrier_kind != kNoWriteBarrier &&
-      V8_LIKELY(!FLAG_disable_write_barriers)) {
+  if (write_barrier_kind != kNoWriteBarrier && !FLAG_disable_write_barriers) {
     DCHECK(CanBeTaggedOrCompressedPointer(rep));
     AddressingMode addressing_mode;
     InstructionOperand inputs[3];
     size_t input_count = 0;
     inputs[input_count++] = g.UseUniqueRegister(base);
-    // OutOfLineRecordWrite uses the offset in an 'AddP' instruction as well as
-    // for the store itself, so we must check compatibility with both.
+    // OutOfLineRecordWrite uses the offset in an 'AddS64' instruction as well
+    // as for the store itself, so we must check compatibility with both.
     if (g.CanBeImmediate(offset, OperandMode::kInt20Imm)) {
       inputs[input_count++] = g.UseImmediate(offset);
       addressing_mode = kMode_MRI;
@@ -1053,114 +1053,6 @@ static inline bool TryMatchSignExtInt16OrInt8FromWord32Sar(
   }
   return false;
 }
-
-#if !V8_TARGET_ARCH_S390X
-void VisitPairBinop(InstructionSelector* selector, InstructionCode opcode,
-                    InstructionCode opcode2, Node* node) {
-  S390OperandGenerator g(selector);
-
-  Node* projection1 = NodeProperties::FindProjection(node, 1);
-  if (projection1) {
-    // We use UseUniqueRegister here to avoid register sharing with the output
-    // registers.
-    InstructionOperand inputs[] = {
-        g.UseRegister(node->InputAt(0)), g.UseUniqueRegister(node->InputAt(1)),
-        g.UseRegister(node->InputAt(2)), g.UseUniqueRegister(node->InputAt(3))};
-
-    InstructionOperand outputs[] = {
-        g.DefineAsRegister(node),
-        g.DefineAsRegister(NodeProperties::FindProjection(node, 1))};
-
-    selector->Emit(opcode, 2, outputs, 4, inputs);
-  } else {
-    // The high word of the result is not used, so we emit the standard 32 bit
-    // instruction.
-    selector->Emit(opcode2, g.DefineSameAsFirst(node),
-                   g.UseRegister(node->InputAt(0)),
-                   g.UseRegister(node->InputAt(2)), g.TempImmediate(0));
-  }
-}
-
-void InstructionSelector::VisitInt32PairAdd(Node* node) {
-  VisitPairBinop(this, kS390_AddPair, kS390_Add32, node);
-}
-
-void InstructionSelector::VisitInt32PairSub(Node* node) {
-  VisitPairBinop(this, kS390_SubPair, kS390_Sub32, node);
-}
-
-void InstructionSelector::VisitInt32PairMul(Node* node) {
-  S390OperandGenerator g(this);
-  Node* projection1 = NodeProperties::FindProjection(node, 1);
-  if (projection1) {
-    InstructionOperand inputs[] = {g.UseUniqueRegister(node->InputAt(0)),
-                                   g.UseUniqueRegister(node->InputAt(1)),
-                                   g.UseUniqueRegister(node->InputAt(2)),
-                                   g.UseUniqueRegister(node->InputAt(3))};
-
-    InstructionOperand outputs[] = {
-        g.DefineAsRegister(node),
-        g.DefineAsRegister(NodeProperties::FindProjection(node, 1))};
-
-    Emit(kS390_MulPair, 2, outputs, 4, inputs);
-  } else {
-    // The high word of the result is not used, so we emit the standard 32 bit
-    // instruction.
-    Emit(kS390_Mul32, g.DefineSameAsFirst(node),
-         g.UseRegister(node->InputAt(0)), g.Use(node->InputAt(2)),
-         g.TempImmediate(0));
-  }
-}
-
-namespace {
-// Shared routine for multiple shift operations.
-void VisitPairShift(InstructionSelector* selector, InstructionCode opcode,
-                    Node* node) {
-  S390OperandGenerator g(selector);
-  // We use g.UseUniqueRegister here to guarantee that there is
-  // no register aliasing of input registers with output registers.
-  Int32Matcher m(node->InputAt(2));
-  InstructionOperand shift_operand;
-  if (m.HasResolvedValue()) {
-    shift_operand = g.UseImmediate(m.node());
-  } else {
-    shift_operand = g.UseUniqueRegister(m.node());
-  }
-
-  InstructionOperand inputs[] = {g.UseUniqueRegister(node->InputAt(0)),
-                                 g.UseUniqueRegister(node->InputAt(1)),
-                                 shift_operand};
-
-  Node* projection1 = NodeProperties::FindProjection(node, 1);
-
-  InstructionOperand outputs[2];
-  InstructionOperand temps[1];
-  int32_t output_count = 0;
-  int32_t temp_count = 0;
-
-  outputs[output_count++] = g.DefineAsRegister(node);
-  if (projection1) {
-    outputs[output_count++] = g.DefineAsRegister(projection1);
-  } else {
-    temps[temp_count++] = g.TempRegister();
-  }
-
-  selector->Emit(opcode, output_count, outputs, 3, inputs, temp_count, temps);
-}
-}  // namespace
-
-void InstructionSelector::VisitWord32PairShl(Node* node) {
-  VisitPairShift(this, kS390_ShiftLeftPair, node);
-}
-
-void InstructionSelector::VisitWord32PairShr(Node* node) {
-  VisitPairShift(this, kS390_ShiftRightPair, node);
-}
-
-void InstructionSelector::VisitWord32PairSar(Node* node) {
-  VisitPairShift(this, kS390_ShiftRightArithPair, node);
-}
-#endif
 
 void InstructionSelector::VisitWord32Rol(Node* node) { UNREACHABLE(); }
 
@@ -2227,36 +2119,15 @@ void InstructionSelector::EmitPrepareArguments(
     }
   } else {
     // Push any stack arguments.
-    int num_slots = 0;
-    int slot = 0;
-
-#define INPUT_SWITCH(param)                            \
-  switch (input.location.GetType().representation()) { \
-    case MachineRepresentation::kSimd128:              \
-      param += kSimd128Size / kSystemPointerSize;      \
-      break;                                           \
-    case MachineRepresentation::kFloat64:              \
-      param += kDoubleSize / kSystemPointerSize;       \
-      break;                                           \
-    default:                                           \
-      param += 1;                                      \
-      break;                                           \
-  }
-    for (PushParameter input : *arguments) {
-      if (input.node == nullptr) continue;
-      INPUT_SWITCH(num_slots)
-    }
-    Emit(kS390_StackClaim, g.NoOutput(), g.TempImmediate(num_slots));
-    for (PushParameter input : *arguments) {
+    int stack_decrement = 0;
+    for (PushParameter input : base::Reversed(*arguments)) {
+      stack_decrement += kSystemPointerSize;
       // Skip any alignment holes in pushed nodes.
-      if (input.node) {
-        Emit(kS390_StoreToStackSlot, g.NoOutput(), g.UseRegister(input.node),
-             g.TempImmediate(slot));
-        INPUT_SWITCH(slot)
-      }
+      if (input.node == nullptr) continue;
+      InstructionOperand decrement = g.UseImmediate(stack_decrement);
+      stack_decrement = 0;
+      Emit(kS390_Push, g.NoOutput(), decrement, g.UseRegister(input.node));
     }
-#undef INPUT_SWITCH
-    DCHECK(num_slots == slot);
   }
 }
 
@@ -2266,8 +2137,6 @@ void InstructionSelector::VisitMemoryBarrier(Node* node) {
 }
 
 bool InstructionSelector::IsTailCallAddressImmediate() { return false; }
-
-int InstructionSelector::GetTempsCountForTailCallFromJSFunction() { return 3; }
 
 void InstructionSelector::VisitWord32AtomicLoad(Node* node) {
   LoadRepresentation load_rep = LoadRepresentationOf(node->op());
@@ -2554,6 +2423,14 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I64x2Sub)              \
   V(I64x2Mul)              \
   V(I64x2Eq)               \
+  V(I64x2ExtMulLowI32x4S)  \
+  V(I64x2ExtMulHighI32x4S) \
+  V(I64x2ExtMulLowI32x4U)  \
+  V(I64x2ExtMulHighI32x4U) \
+  V(I16x8Q15MulRSatS)      \
+  V(I64x2Ne)               \
+  V(I64x2GtS)              \
+  V(I64x2GeS)              \
   V(I32x4Add)              \
   V(I32x4AddHoriz)         \
   V(I32x4Sub)              \
@@ -2569,6 +2446,10 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I32x4GtU)              \
   V(I32x4GeU)              \
   V(I32x4DotI16x8S)        \
+  V(I32x4ExtMulLowI16x8S)  \
+  V(I32x4ExtMulHighI16x8S) \
+  V(I32x4ExtMulLowI16x8U)  \
+  V(I32x4ExtMulHighI16x8U) \
   V(I16x8Add)              \
   V(I16x8AddHoriz)         \
   V(I16x8Sub)              \
@@ -2590,6 +2471,10 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I16x8AddSatU)          \
   V(I16x8SubSatU)          \
   V(I16x8RoundingAverageU) \
+  V(I16x8ExtMulLowI8x16S)  \
+  V(I16x8ExtMulHighI8x16S) \
+  V(I16x8ExtMulLowI8x16U)  \
+  V(I16x8ExtMulHighI8x16U) \
   V(I8x16Add)              \
   V(I8x16Sub)              \
   V(I8x16Mul)              \
@@ -2615,38 +2500,54 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(S128Xor)               \
   V(S128AndNot)
 
-#define SIMD_UNOP_LIST(V)   \
-  V(F64x2Abs)               \
-  V(F64x2Neg)               \
-  V(F64x2Sqrt)              \
-  V(F64x2Ceil)              \
-  V(F64x2Floor)             \
-  V(F64x2Trunc)             \
-  V(F64x2NearestInt)        \
-  V(F32x4Abs)               \
-  V(F32x4Neg)               \
-  V(F32x4RecipApprox)       \
-  V(F32x4RecipSqrtApprox)   \
-  V(F32x4Sqrt)              \
-  V(F32x4Ceil)              \
-  V(F32x4Floor)             \
-  V(F32x4Trunc)             \
-  V(F32x4NearestInt)        \
-  V(I64x2Neg)               \
-  V(I16x8Abs)               \
-  V(I32x4Neg)               \
-  V(I32x4SConvertI16x8Low)  \
-  V(I32x4SConvertI16x8High) \
-  V(I32x4UConvertI16x8Low)  \
-  V(I32x4UConvertI16x8High) \
-  V(I32x4Abs)               \
-  V(I16x8Neg)               \
-  V(I16x8SConvertI8x16Low)  \
-  V(I16x8SConvertI8x16High) \
-  V(I16x8UConvertI8x16Low)  \
-  V(I16x8UConvertI8x16High) \
-  V(I8x16Neg)               \
-  V(I8x16Abs)               \
+#define SIMD_UNOP_LIST(V)      \
+  V(F64x2Abs)                  \
+  V(F64x2Neg)                  \
+  V(F64x2Sqrt)                 \
+  V(F64x2Ceil)                 \
+  V(F64x2Floor)                \
+  V(F64x2Trunc)                \
+  V(F64x2NearestInt)           \
+  V(F64x2ConvertLowI32x4S)     \
+  V(F64x2ConvertLowI32x4U)     \
+  V(F64x2PromoteLowF32x4)      \
+  V(F32x4Abs)                  \
+  V(F32x4Neg)                  \
+  V(F32x4RecipApprox)          \
+  V(F32x4RecipSqrtApprox)      \
+  V(F32x4Sqrt)                 \
+  V(F32x4Ceil)                 \
+  V(F32x4Floor)                \
+  V(F32x4Trunc)                \
+  V(F32x4NearestInt)           \
+  V(F32x4DemoteF64x2Zero)      \
+  V(I64x2Neg)                  \
+  V(I64x2SConvertI32x4Low)     \
+  V(I64x2SConvertI32x4High)    \
+  V(I64x2UConvertI32x4Low)     \
+  V(I64x2UConvertI32x4High)    \
+  V(I64x2Abs)                  \
+  V(I32x4Neg)                  \
+  V(I32x4Abs)                  \
+  V(I32x4SConvertI16x8Low)     \
+  V(I32x4SConvertI16x8High)    \
+  V(I32x4UConvertI16x8Low)     \
+  V(I32x4UConvertI16x8High)    \
+  V(I32x4TruncSatF64x2SZero)   \
+  V(I32x4TruncSatF64x2UZero)   \
+  V(I32x4ExtAddPairwiseI16x8S) \
+  V(I32x4ExtAddPairwiseI16x8U) \
+  V(I16x8Neg)                  \
+  V(I16x8Abs)                  \
+  V(I16x8SConvertI8x16Low)     \
+  V(I16x8SConvertI8x16High)    \
+  V(I16x8UConvertI8x16Low)     \
+  V(I16x8UConvertI8x16High)    \
+  V(I16x8ExtAddPairwiseI8x16S) \
+  V(I16x8ExtAddPairwiseI8x16U) \
+  V(I8x16Neg)                  \
+  V(I8x16Abs)                  \
+  V(I8x16Popcnt)               \
   V(S128Not)
 
 #define SIMD_SHIFT_LIST(V) \
@@ -2664,9 +2565,8 @@ void InstructionSelector::VisitWord64AtomicStore(Node* node) {
   V(I8x16ShrU)
 
 #define SIMD_BOOL_LIST(V) \
-  V(V32x4AnyTrue)         \
-  V(V16x8AnyTrue)         \
-  V(V8x16AnyTrue)         \
+  V(V128AnyTrue)          \
+  V(V64x2AllTrue)         \
   V(V32x4AllTrue)         \
   V(V16x8AllTrue)         \
   V(V8x16AllTrue)
@@ -2794,6 +2694,7 @@ SIMD_VISIT_QFMOP(F32x4Qfms)
 SIMD_VISIT_BITMASK(I8x16BitMask)
 SIMD_VISIT_BITMASK(I16x8BitMask)
 SIMD_VISIT_BITMASK(I32x4BitMask)
+SIMD_VISIT_BITMASK(I64x2BitMask)
 #undef SIMD_VISIT_BITMASK
 
 #define SIMD_VISIT_PMIN_MAX(Type)                                           \
@@ -2817,7 +2718,6 @@ void InstructionSelector::VisitI8x16Shuffle(Node* node) {
   S390OperandGenerator g(this);
   Node* input0 = node->InputAt(0);
   Node* input1 = node->InputAt(1);
-#ifdef V8_TARGET_BIG_ENDIAN
   // Remap the shuffle indices to match IBM lane numbering.
   int max_index = 15;
   int total_lane_count = 2 * kSimd128Size;
@@ -2829,7 +2729,6 @@ void InstructionSelector::VisitI8x16Shuffle(Node* node) {
                                : total_lane_count - current_index + max_index);
   }
   shuffle_p = &shuffle_remapped[0];
-#endif
   Emit(kS390_I8x16Shuffle, g.DefineAsRegister(node),
        g.UseUniqueRegister(input0), g.UseUniqueRegister(input1),
        g.UseImmediate(wasm::SimdShuffle::Pack4Lanes(shuffle_p)),
@@ -2849,7 +2748,7 @@ void InstructionSelector::VisitI8x16Swizzle(Node* node) {
 void InstructionSelector::VisitS128Const(Node* node) {
   S390OperandGenerator g(this);
   uint32_t val[kSimd128Size / sizeof(uint32_t)];
-  memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
+  base::Memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
   // If all bytes are zeros, avoid emitting code for generic constants.
   bool all_zeros = !(val[0] || val[1] || val[2] || val[3]);
   bool all_ones = val[0] == UINT32_MAX && val[1] == UINT32_MAX &&
@@ -2891,7 +2790,6 @@ void InstructionSelector::EmitPrepareResults(
     Node* node) {
   S390OperandGenerator g(this);
 
-  int reverse_slot = 1;
   for (PushParameter output : *results) {
     if (!output.location.IsCallerFrameSlot()) continue;
     // Skip any alignment holes in nodes.
@@ -2904,16 +2802,27 @@ void InstructionSelector::EmitPrepareResults(
       } else if (output.location.GetType() == MachineType::Simd128()) {
         MarkAsSimd128(output.node);
       }
+      int offset = call_descriptor->GetOffsetToReturns();
+      int reverse_slot = -output.location.GetLocation() - offset;
       Emit(kS390_Peek, g.DefineAsRegister(output.node),
            g.UseImmediate(reverse_slot));
     }
-    reverse_slot += output.location.GetSizeInPointers();
   }
+}
+
+void InstructionSelector::VisitLoadLane(Node* node) {
+  // We should never reach here, see http://crrev.com/c/2577820
+  UNIMPLEMENTED();
 }
 
 void InstructionSelector::VisitLoadTransform(Node* node) {
   // We should never reach here, see http://crrev.com/c/2050811
   UNREACHABLE();
+}
+
+void InstructionSelector::VisitStoreLane(Node* node) {
+  // We should never reach here, see http://crrev.com/c/2577820
+  UNIMPLEMENTED();
 }
 
 void InstructionSelector::VisitTruncateFloat32ToInt32(Node* node) {

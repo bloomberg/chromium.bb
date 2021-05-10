@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_VIEW_SYNC_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_VIEW_SYNC_DELEGATE_H_
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class Profile;
+class SigninUIError;
 
 // Handles the sync consent screen for creating a signed-in profile from the
 // profile picker.
@@ -18,7 +19,8 @@ class ProfilePickerViewSyncDelegate : public DiceTurnSyncOnHelper::Delegate,
                                       public LoginUIService::Observer {
  public:
   using OpenBrowserCallback =
-      base::OnceCallback<void(ProfilePickerView::BrowserOpenedCallback)>;
+      base::OnceCallback<void(ProfilePickerView::BrowserOpenedCallback,
+                              bool enterprise_sync_consent_needed)>;
 
   ProfilePickerViewSyncDelegate(Profile* profile,
                                 OpenBrowserCallback open_browser_callback);
@@ -26,8 +28,7 @@ class ProfilePickerViewSyncDelegate : public DiceTurnSyncOnHelper::Delegate,
 
  private:
   // DiceTurnSyncOnHelper::Delegate:
-  void ShowLoginError(const std::string& email,
-                      const std::string& error_message) override;
+  void ShowLoginError(const SigninUIError& error) override;
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
@@ -39,6 +40,7 @@ class ProfilePickerViewSyncDelegate : public DiceTurnSyncOnHelper::Delegate,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
   void ShowSyncDisabledConfirmation(
+      bool is_managed_account,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
   void ShowSyncSettings() override;
@@ -53,8 +55,8 @@ class ProfilePickerViewSyncDelegate : public DiceTurnSyncOnHelper::Delegate,
   OpenBrowserCallback open_browser_callback_;
   base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
       sync_confirmation_callback_;
-  ScopedObserver<LoginUIService, LoginUIService::Observer>
-      scoped_login_ui_service_observer_{this};
+  base::ScopedObservation<LoginUIService, LoginUIService::Observer>
+      scoped_login_ui_service_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePickerViewSyncDelegate);
 };

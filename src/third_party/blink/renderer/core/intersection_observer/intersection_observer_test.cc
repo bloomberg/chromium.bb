@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/intersection_observer_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -29,57 +30,6 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
-
-namespace {
-
-class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
- public:
-  TestIntersectionObserverDelegate(Document& document)
-      : document_(document), call_count_(0) {}
-  // TODO(szager): Add tests for the synchronous delivery code path. There is
-  // already some indirect coverage by unit tests exercising features that rely
-  // on it, but we should have some direct coverage in here.
-  LocalFrameUkmAggregator::MetricId GetUkmMetricId() const override {
-    return LocalFrameUkmAggregator::kJavascriptIntersectionObserver;
-  }
-  IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
-    return IntersectionObserver::kPostTaskToDeliver;
-  }
-  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
-               IntersectionObserver&) override {
-    call_count_++;
-    entries_.AppendVector(entries);
-  }
-  ExecutionContext* GetExecutionContext() const override {
-    return document_->GetExecutionContext();
-  }
-  int CallCount() const { return call_count_; }
-  int EntryCount() const { return entries_.size(); }
-  const IntersectionObserverEntry* LastEntry() const { return entries_.back(); }
-  void Clear() {
-    entries_.clear();
-    call_count_ = 0;
-  }
-  PhysicalRect LastIntersectionRect() const {
-    if (entries_.IsEmpty())
-      return PhysicalRect();
-    const IntersectionGeometry& geometry = entries_.back()->GetGeometry();
-    return geometry.IntersectionRect();
-  }
-
-  void Trace(Visitor* visitor) const override {
-    IntersectionObserverDelegate::Trace(visitor);
-    visitor->Trace(document_);
-    visitor->Trace(entries_);
-  }
-
- private:
-  Member<Document> document_;
-  HeapVector<Member<IntersectionObserverEntry>> entries_;
-  int call_count_;
-};
-
-}  // namespace
 
 class IntersectionObserverTest : public SimTest {};
 
@@ -239,7 +189,8 @@ TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
           *target_observer_delegate, nullptr, Vector<Length>(),
           Vector<float>{kExpectedFractionOfTarget / 2},
           IntersectionObserver::kFractionOfTarget, 0, false, false,
-          IntersectionObserver::kApplyMarginToRoot);
+          IntersectionObserver::kApplyMarginToRoot,
+          /* use_overflow_clip_edge */ false);
   DummyExceptionStateForTesting exception_state;
   target_observer->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -251,7 +202,8 @@ TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
           *root_observer_delegate, nullptr, Vector<Length>(),
           Vector<float>{kExpectedFractionOfRoot / 2},
           IntersectionObserver::kFractionOfRoot, 0, false, false,
-          IntersectionObserver::kApplyMarginToRoot);
+          IntersectionObserver::kApplyMarginToRoot,
+          /* use_overflow_clip_edge */ false);
   root_observer->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
@@ -270,6 +222,56 @@ TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
   EXPECT_TRUE(root_observer_delegate->LastEntry()->isIntersecting());
   EXPECT_NEAR(kExpectedFractionOfRoot,
               root_observer_delegate->LastEntry()->intersectionRatio(), 1e-6);
+}
+
+TEST_F(IntersectionObserverTest, TargetRectIsEmptyAfterMapping) {
+  // Place a 100x100 target element in the middle of a 200x200 main frame.
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 200));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+    .clipper {
+      transform: rotatey(90deg);
+    }
+    .container {
+      overflow: hidden;
+    }
+    #target {
+      width: 10px;
+      height: 10px;
+    }
+    </style>
+    <div class=clipper>
+      <div class=container>
+        <div id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+
+  TestIntersectionObserverDelegate* target_observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  IntersectionObserver* target_observer =
+      MakeGarbageCollected<IntersectionObserver>(
+          *target_observer_delegate, nullptr, Vector<Length>(),
+          Vector<float>{std::numeric_limits<float>::min()},
+          IntersectionObserver::kFractionOfTarget, 0, false, false,
+          IntersectionObserver::kApplyMarginToRoot,
+          /* use_overflow_clip_edge */ false);
+  DummyExceptionStateForTesting exception_state;
+  target_observer->observe(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+
+  EXPECT_EQ(target_observer_delegate->CallCount(), 1);
+  EXPECT_EQ(target_observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(target_observer_delegate->LastEntry()->isIntersecting());
 }
 
 TEST_F(IntersectionObserverTest, ResumePostsTask) {
@@ -980,7 +982,8 @@ TEST_F(IntersectionObserverTest, ApplyMarginToTarget) {
           *root_margin_delegate, nullptr, Vector<Length>{Length::Fixed(10)},
           Vector<float>{std::numeric_limits<float>::min()},
           IntersectionObserver::kFractionOfTarget, 0, false, false,
-          IntersectionObserver::kApplyMarginToRoot);
+          IntersectionObserver::kApplyMarginToRoot,
+          /* use_overflow_clip_edge */ false);
 
   DummyExceptionStateForTesting exception_state;
   root_margin_observer->observe(target, exception_state);
@@ -994,7 +997,8 @@ TEST_F(IntersectionObserverTest, ApplyMarginToTarget) {
           *target_margin_delegate, nullptr, Vector<Length>{Length::Fixed(10)},
           Vector<float>{std::numeric_limits<float>::min()},
           IntersectionObserver::kFractionOfTarget, 0, false, false,
-          IntersectionObserver::kApplyMarginToTarget);
+          IntersectionObserver::kApplyMarginToTarget,
+          /* use_overflow_clip_edge */ false);
 
   target_margin_observer->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -1047,7 +1051,8 @@ TEST_F(IntersectionObserverTest, TargetMarginPercentResolvesAgainstRoot) {
           *target_margin_delegate, nullptr, Vector<Length>{Length::Percent(10)},
           Vector<float>{std::numeric_limits<float>::min()},
           IntersectionObserver::kFractionOfTarget, 0, false, false,
-          IntersectionObserver::kApplyMarginToTarget);
+          IntersectionObserver::kApplyMarginToTarget,
+          /* use_overflow_clip_edge */ false);
 
   DummyExceptionStateForTesting exception_state;
   target_margin_observer->observe(target, exception_state);

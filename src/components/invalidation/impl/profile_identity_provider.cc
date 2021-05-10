@@ -20,6 +20,9 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
                             signin::IdentityManager* identity_manager,
                             const signin::ScopeSet& scopes,
                             ActiveAccountAccessTokenCallback callback);
+  AccessTokenFetcherAdaptor(const AccessTokenFetcherAdaptor& other) = delete;
+  AccessTokenFetcherAdaptor& operator=(const AccessTokenFetcherAdaptor& other) =
+      delete;
   ~AccessTokenFetcherAdaptor() override = default;
 
  private:
@@ -29,8 +32,6 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
 
   ActiveAccountAccessTokenCallback callback_;
   std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcherAdaptor);
 };
 
 AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
@@ -61,6 +62,9 @@ ProfileIdentityProvider::ProfileIdentityProvider(
     signin::IdentityManager* identity_manager)
     : identity_manager_(identity_manager) {
   identity_manager_->AddObserver(this);
+
+  active_account_id_ = identity_manager_->GetPrimaryAccountId(
+      signin::ConsentLevel::kNotRequired);
 }
 
 ProfileIdentityProvider::~ProfileIdentityProvider() {
@@ -73,23 +77,11 @@ CoreAccountId ProfileIdentityProvider::GetActiveAccountId() {
 
 bool ProfileIdentityProvider::IsActiveAccountWithRefreshToken() {
   if (GetActiveAccountId().empty() || !identity_manager_ ||
-      !identity_manager_->HasAccountWithRefreshToken(GetActiveAccountId()))
+      !identity_manager_->HasAccountWithRefreshToken(GetActiveAccountId())) {
     return false;
+  }
 
   return true;
-}
-
-void ProfileIdentityProvider::SetActiveAccountId(
-    const CoreAccountId& account_id) {
-  if (account_id == active_account_id_)
-    return;
-
-  if (!active_account_id_.empty())
-    FireOnActiveAccountLogout();
-
-  active_account_id_ = account_id;
-  if (!active_account_id_.empty())
-    FireOnActiveAccountLogin();
 }
 
 std::unique_ptr<ActiveAccountAccessTokenFetcher>
@@ -107,6 +99,25 @@ void ProfileIdentityProvider::InvalidateAccessToken(
     const std::string& access_token) {
   identity_manager_->RemoveAccessTokenFromCache(GetActiveAccountId(), scopes,
                                                 access_token);
+}
+
+void ProfileIdentityProvider::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  CoreAccountId account_id =
+      event_details.GetCurrentState().primary_account.account_id;
+
+  if (account_id == active_account_id_) {
+    return;
+  }
+
+  if (!active_account_id_.empty()) {
+    FireOnActiveAccountLogout();
+  }
+
+  active_account_id_ = account_id;
+  if (!active_account_id_.empty()) {
+    FireOnActiveAccountLogin();
+  }
 }
 
 void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(

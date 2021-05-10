@@ -22,6 +22,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include "put_bits.h"
 
 /**
@@ -90,7 +91,7 @@ static int xsub_encode_rle(PutBitContext *pb, const uint8_t *bitmap,
         if (color != PADDING_COLOR && (PADDING + (w&1)))
             put_xsub_rle(pb, PADDING + (w&1), PADDING_COLOR);
 
-        avpriv_align_put_bits(pb);
+        align_put_bits(pb);
 
         bitmap += linesize;
     }
@@ -230,4 +231,5 @@ AVCodec ff_xsub_encoder = {
     .id         = AV_CODEC_ID_XSUB,
     .init       = xsub_encoder_init,
     .encode_sub = xsub_encode,
+    .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

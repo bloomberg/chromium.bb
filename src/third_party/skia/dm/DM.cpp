@@ -764,6 +764,10 @@ static void push_codec_srcs(Path path) {
                     push_codec_src(path, CodecSrc::kAnimated_Mode, dstCT, at, 1.0f);
                 }
             }
+            for (float scale : { .5f, .33f }) {
+                push_codec_src(path, CodecSrc::kAnimated_Mode, CodecSrc::kGetFromCanvas_DstColorType,
+                               kPremul_SkAlphaType, scale);
+            }
         }
 
     }
@@ -1324,8 +1328,8 @@ struct Task {
 
             case HLGish_TF:
                 if (eq(tf, SkNamedTransferFn::kHLG)) { return SkString("HLG"); }
-                return SkStringPrintf("HLGish %.3g %.3g %.3g %.3g %.3g",
-                                      tf.a, tf.b, tf.c, tf.d, tf.e);
+                return SkStringPrintf("HLGish %.3g %.3g %.3g %.3g %.3g (%.3g)",
+                                      tf.a, tf.b, tf.c, tf.d, tf.e, tf.f+1);
 
             case HLGinvish_TF: break;
             case Bad_TF: break;

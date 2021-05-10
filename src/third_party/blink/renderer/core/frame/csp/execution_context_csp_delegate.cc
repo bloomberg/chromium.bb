@@ -61,7 +61,7 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(
   WorkerOrWorkletGlobalScope* worklet_or_worker =
       DynamicTo<WorkerOrWorkletGlobalScope>(execution_context_.Get());
   if (worklet_or_worker) {
-    worklet_or_worker->ApplySandboxFlags(mask);
+    worklet_or_worker->SetSandboxFlags(mask);
   }
   // Just check that all the sandbox flags that are set by CSP have
   // already been set on the security context. Meta tags can't set them
@@ -128,6 +128,7 @@ base::Optional<uint16_t> ExecutionContextCSPDelegate::GetStatusCode() {
 
   // TODO(mkwst): We only have status code information for Documents. It would
   // be nice to get them for Workers as well.
+  // TODO(crbug.com/1153336) Use network::IsUrlPotentiallyTrustworthy().
   Document* document = GetDocument();
   if (document && !SecurityOrigin::IsSecure(document->Url()) &&
       document->Loader()) {
@@ -166,7 +167,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
     const Vector<String>& report_endpoints,
     bool use_reporting_api) {
   DCHECK_EQ(is_frame_ancestors_violation,
-            ContentSecurityPolicy::DirectiveType::kFrameAncestors ==
+            network::mojom::blink::CSPDirectiveName::FrameAncestors ==
                 ContentSecurityPolicy::GetDirectiveType(
                     violation_data.effectiveDirective()));
 

@@ -41,6 +41,7 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -95,11 +96,11 @@ class BackgroundAnimation : public AppListFolderView::Animation,
         AppListColorProvider::Get()->GetFolderBackgroundColor(
             folder_view_->GetAppListConfig().folder_background_color());
     const SkColor from_color =
-        show_ ? folder_view_->GetAppListConfig().folder_bubble_color()
+        show_ ? AppListColorProvider::Get()->GetFolderBubbleColor()
               : background_color;
     const SkColor to_color =
         show_ ? background_color
-              : folder_view_->GetAppListConfig().folder_bubble_color();
+              : AppListColorProvider::Get()->GetFolderBubbleColor();
 
     background_view_->layer()->SetColor(from_color);
     background_view_->layer()->SetBackgroundBlur(
@@ -478,7 +479,9 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   page_switcher_ =
       contents_container_->AddChildView(std::make_unique<PageSwitcher>(
           items_grid_view_->pagination_model(), false /* vertical */,
-          contents_view_->app_list_view()->is_tablet_mode()));
+          contents_view_->app_list_view()->is_tablet_mode(),
+          AppListColorProvider::Get()->GetFolderBackgroundColor(
+              items_grid_view_->GetAppListConfig().folder_background_color())));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
@@ -565,10 +568,6 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
   return false;
-}
-
-const char* AppListFolderView::GetClassName() const {
-  return "AppListFolderView";
 }
 
 void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
@@ -745,8 +744,9 @@ void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
           has_native_drag);
 }
 
-bool AppListFolderView::IsPointOutsideOfFolderBoundary(
-    const gfx::Point& point) {
+bool AppListFolderView::IsViewOutsideOfFolder(AppListItemView* view) {
+  gfx::Point point = view->GetLocalBounds().CenterPoint();
+  ConvertPointToTarget(view, this, &point);
   return !GetLocalBounds().Contains(point);
 }
 
@@ -895,5 +895,8 @@ void AppListFolderView::CreateOpenOrCloseFolderAccessibilityEvent(bool open) {
                : IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
+
+BEGIN_METADATA(AppListFolderView, views::View)
+END_METADATA
 
 }  // namespace ash

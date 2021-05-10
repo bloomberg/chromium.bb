@@ -5,6 +5,7 @@
 #include "ui/message_center/views/message_popup_view.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/display/display.h"
@@ -14,13 +15,14 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #endif
@@ -110,7 +112,9 @@ void MessagePopupView::AutoCollapse() {
 void MessagePopupView::Show() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
   // default but we need focus for the inline reply textarea.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
@@ -122,7 +126,7 @@ void MessagePopupView::Show() {
   views::Widget* widget = new views::Widget();
   popup_collection_->ConfigureWidgetInitParamsForContainer(widget, &params);
   widget->set_focus_on_creation(false);
-  observer_.Add(widget);
+  observation_.Observe(widget);
 
 #if defined(OS_WIN)
   // We want to ensure that this toast always goes to the native desktop,
@@ -134,7 +138,7 @@ void MessagePopupView::Show() {
 
   widget->Init(std::move(params));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, this widget is shown in the shelf container. It means this
   // widget would inherit the parent's window targeter (ShelfWindowTarget) by
   // default. But it is not good for popup. So we override it with the normal
@@ -179,10 +183,6 @@ void MessagePopupView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kAlertDialog;
 }
 
-const char* MessagePopupView::GetClassName() const {
-  return "MessagePopupView";
-}
-
 void MessagePopupView::OnDisplayChanged() {
   OnWorkAreaChanged();
 }
@@ -214,11 +214,15 @@ void MessagePopupView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void MessagePopupView::OnWidgetDestroyed(views::Widget* widget) {
-  observer_.Remove(widget);
+  DCHECK(observation_.IsObservingSource(widget));
+  observation_.Reset();
 }
 
 bool MessagePopupView::IsWidgetValid() const {
   return GetWidget() && !GetWidget()->IsClosed();
 }
+
+BEGIN_METADATA(MessagePopupView, views::WidgetDelegateView)
+END_METADATA
 
 }  // namespace message_center

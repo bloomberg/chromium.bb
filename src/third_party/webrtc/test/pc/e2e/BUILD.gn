@@ -13,7 +13,6 @@ if (!build_with_chromium) {
     testonly = true
 
     deps = [
-      ":default_encoded_image_data_injector",
       ":encoded_image_data_injector_api",
       ":example_video_quality_analyzer",
       ":id_generator",
@@ -35,7 +34,6 @@ if (!build_with_chromium) {
       testonly = true
 
       deps = [
-        ":default_encoded_image_data_injector_unittest",
         ":default_video_quality_analyzer_test",
         ":multi_head_queue_test",
         ":peer_connection_e2e_smoke_test",
@@ -61,6 +59,7 @@ if (!build_with_chromium) {
       "../../../api/transport:webrtc_key_value_config",
       "../../../api/video_codecs:video_codecs_api",
       "../../../rtc_base",
+      "../../../rtc_base:threading",
     ]
   }
 
@@ -70,23 +69,6 @@ if (!build_with_chromium) {
     sources = [ "analyzer/video/encoded_image_data_injector.h" ]
 
     deps = [ "../../../api/video:encoded_image" ]
-  }
-
-  rtc_library("default_encoded_image_data_injector") {
-    visibility = [ "*" ]
-    testonly = true
-    sources = [
-      "analyzer/video/default_encoded_image_data_injector.cc",
-      "analyzer/video/default_encoded_image_data_injector.h",
-    ]
-
-    deps = [
-      ":encoded_image_data_injector_api",
-      "../../../api/video:encoded_image",
-      "../../../rtc_base:checks",
-      "../../../rtc_base:criticalsection",
-    ]
-    absl_deps = [ "//third_party/abseil-cpp/absl/memory" ]
   }
 
   rtc_library("single_process_encoded_image_data_injector") {
@@ -328,6 +310,7 @@ if (!build_with_chromium) {
         "../../../api/transport:network_control",
         "../../../api/video_codecs:video_codecs_api",
         "../../../rtc_base",
+        "../../../rtc_base:threading",
       ]
       absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
     }
@@ -404,6 +387,7 @@ if (!build_with_chromium) {
         "../../../rtc_base:rtc_base_approved",
         "../../../rtc_base:safe_conversions",
         "../../../rtc_base:task_queue_for_test",
+        "../../../rtc_base:threading",
         "../../../rtc_base/synchronization:mutex",
         "../../../system_wrappers",
         "../../../system_wrappers:field_trial",
@@ -418,18 +402,6 @@ if (!build_with_chromium) {
       ]
       deps = [
         ":single_process_encoded_image_data_injector",
-        "../../../api/video:encoded_image",
-        "../../../rtc_base:rtc_base_approved",
-        "../../../test:test_support",
-      ]
-    }
-
-    rtc_library("default_encoded_image_data_injector_unittest") {
-      testonly = true
-      sources =
-          [ "analyzer/video/default_encoded_image_data_injector_unittest.cc" ]
-      deps = [
-        ":default_encoded_image_data_injector",
         "../../../api/video:encoded_image",
         "../../../rtc_base:rtc_base_approved",
         "../../../test:test_support",
@@ -544,9 +516,9 @@ if (!build_with_chromium) {
       "analyzer_helper.h",
     ]
     deps = [
+      "../../../api:sequence_checker",
       "../../../api:track_id_stream_info_map",
       "../../../rtc_base:macromagic",
-      "../../../rtc_base/synchronization:sequence_checker",
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
   }
@@ -697,6 +669,7 @@ if (!build_with_chromium) {
       "../../../api/units:data_size",
       "../../../api/units:timestamp",
       "../../../rtc_base",
+      "../../../rtc_base:ip_address",
       "../../../rtc_base:rtc_event",
       "../../../rtc_base:stringutils",
       "../../../rtc_base/synchronization:mutex",

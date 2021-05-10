@@ -8,6 +8,7 @@ import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/args.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
@@ -62,7 +63,9 @@ declare_args() {
 
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
-  fatal_linker_warnings = true
+  # TODO(thakis): Set this to true unconditionally once lld/MachO bring-up
+  # is along far enough that it no longer emits linker warnings.
+  fatal_linker_warnings = !(is_apple && use_lld)
 
   # Build with C++ RTTI enabled. Chromium builds without RTTI by default,
   # but some sanitizers are known to require it, like CFI diagnostics
@@ -116,7 +119,7 @@ declare_args() {
   # the space overhead is too great. We should use some mixture of profiles and
   # optimization settings to better tune the size increase.
   thin_lto_enable_optimizations =
-      (is_chromeos || is_android || is_win) && is_official_build
+      (is_chromeos_ash || is_android || is_win || is_linux) && is_official_build
 
   # Initialize all local variables with a pattern. This flag will fill
   # uninitialized floating-point types (and 32-bit pointers) with 0xFF and the
@@ -145,7 +148,7 @@ declare_args() {
   enable_wmax_tokens =
       !is_official_build &&
       ((is_mac && target_cpu == "x64" && !use_system_xcode) ||
-       (is_linux && !is_chromeos && target_cpu == "x64") ||
+       ((is_linux || is_chromeos_lacros) && target_cpu == "x64") ||
        (is_win && target_cpu == "x86") || (is_win && target_cpu == "x64") ||
        (is_android && target_cpu == "arm") ||
        (is_android && target_cpu == "arm64"))
@@ -153,6 +156,17 @@ declare_args() {
   # Turn off the --call-graph-profile-sort flag for lld by default. Enable
   # selectively for targets where it's beneficial.
   enable_call_graph_profile_sort = chrome_pgo_phase == 2
+
+  # Enable DWARF v5.
+  use_dwarf5 = false
+
+  # Override this to put full paths to PDBs in Windows PE files. This helps
+  # windbg and Windows Performance Analyzer with finding the PDBs in some local-
+  # build scenarios. This is never needed for bots or official builds. Because
+  # this puts the output directory in the DLLs/EXEs it breaks build determinism.
+  # Bugs have been reported to the windbg/WPA teams and this workaround will be
+  # removed when they are fixed.
+  use_full_pdb_paths = false
 }
 
 declare_args() {
@@ -170,13 +184,14 @@ declare_args() {
   # other architectures.
   #
   # lld doesn't have the bug.
-  use_icf = (is_posix || is_fuchsia) && !is_debug && !using_sanitizer &&
-            !use_clang_coverage && !(is_android && use_order_profiling) &&
-            (use_lld || (use_gold && (is_chromeos || !(current_cpu == "x86" ||
-                                                       current_cpu == "x64"))))
+  use_icf =
+      (is_posix || is_fuchsia) && !is_debug && !using_sanitizer &&
+      !use_clang_coverage && !(is_android && use_order_profiling) &&
+      (use_lld || (use_gold && (is_chromeos_ash || !(current_cpu == "x86" ||
+                                                     current_cpu == "x64"))))
 }
 
-if (is_win || is_android || (is_chromeos && is_chromeos_device)) {
+if (is_android || (is_chromeos_ash && is_chromeos_device)) {
   # Set the path to use orderfile for linking Chrome
   # Note that this is for using only one orderfile for linking
   # the Chrome binary/library.
@@ -187,9 +202,7 @@ if (is_win || is_android || (is_chromeos && is_chromeos_device)) {
       # Allow downstream tools to set orderfile path with
       # another variable.
       chrome_orderfile_path = default_chrome_orderfile
-    } else if (is_win && is_clang && is_official_build) {
-      chrome_orderfile_path = "//chrome/build/chrome.$target_cpu.orderfile"
-    } else if (is_chromeos && is_chromeos_device) {
+    } else if (is_chromeos_ash && is_chromeos_device) {
       chrome_orderfile_path = "//chromeos/profiles/chromeos.orderfile.txt"
     }
   }
@@ -237,7 +250,7 @@ config("compiler") {
     configs += [ "//build/config/android:compiler" ]
   } else if (is_linux || is_chromeos) {
     configs += [ "//build/config/linux:compiler" ]
-    if (is_chromeos) {
+    if (is_chromeos_ash) {
       configs += [ "//build/config/chromeos:compiler" ]
     }
   } else if (is_nacl) {
@@ -260,8 +273,20 @@ config("compiler") {
     ":compiler_deterministic",
   ]
 
+  # Here we enable -fno-delete-null-pointer-checks, which makes various nullptr
+  # operations (e.g. dereferencing) into defined behavior. This avoids deletion
+  # of some security-critical code: see https://crbug.com/1139129.
+  # Nacl does not support the flag. And, we still want UBSAN to catch undefined
+  # behavior related to nullptrs, so do not add this flag if UBSAN is enabled.
+  # GCC seems to have some bugs compiling constexpr code when this is defined,
+  # so only enable it if using_clang. See: https://gcc.gnu.org/PR97913
+  # TODO(mpdenton): remove is_clang once GCC bug is fixed.
+  if (!is_nacl && !is_ubsan && is_clang) {
+    cflags += [ "-fno-delete-null-pointer-checks" ]
+  }
+
   # In general, Windows is totally different, but all the other builds share
-  # some common GCC configuration.
+  # some common compiler and linker configuration.
   if (!is_win) {
     # Common POSIX compiler flags setup.
     # --------------------------------
@@ -276,7 +301,7 @@ config("compiler") {
       } else {
         cflags += [ "-fstack-protector" ]
       }
-    } else if ((is_posix && !is_chromeos && !is_nacl) || is_fuchsia) {
+    } else if ((is_posix && !is_chromeos_ash && !is_nacl) || is_fuchsia) {
       # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
       # See also https://crbug.com/533294
       cflags += [ "--param=ssp-buffer-size=4" ]
@@ -290,6 +315,14 @@ config("compiler") {
       }
     }
 
+    if (use_lld) {
+      if (is_apple) {
+        ldflags += [ "-fuse-ld=lld.darwinnew" ]
+      } else {
+        ldflags += [ "-fuse-ld=lld" ]
+      }
+    }
+
     # Linker warnings.
     if (fatal_linker_warnings && !is_apple && current_os != "aix") {
       ldflags += [ "-Wl,--fatal-warnings" ]
@@ -297,7 +330,6 @@ config("compiler") {
     if (fatal_linker_warnings && is_apple) {
       ldflags += [ "-Wl,-fatal_warnings" ]
     }
-  } else {
   }
 
   if (is_clang && is_debug) {
@@ -398,7 +430,6 @@ config("compiler") {
   # Linux-specific compiler flags setup.
   # ------------------------------------
   if ((is_posix || is_fuchsia) && use_lld) {
-    ldflags += [ "-fuse-ld=lld" ]
     if (current_cpu == "arm64") {
       # Reduce the page size from 65536 in order to reduce binary size slightly
       # by shrinking the alignment gap between segments. This also causes all
@@ -434,7 +465,7 @@ config("compiler") {
     #}
   }
 
-  if (use_icf) {
+  if (use_icf && !is_apple) {
     ldflags += [ "-Wl,--icf=all" ]
   }
 
@@ -481,12 +512,19 @@ config("compiler") {
   if (is_clang && !is_nacl && !use_xcode_clang) {
     cflags += [ "-fcrash-diagnostics-dir=" + clang_diagnostic_dir ]
 
+    # TODO(hans): Remove this once Clang generates better optimized debug info
+    # by default. https://crbug.com/765793
     cflags += [
-      # TODO(hans): Remove this once Clang generates better optimized debug info
-      # by default. https://crbug.com/765793
       "-mllvm",
       "-instcombine-lower-dbg-declare=0",
     ]
+    if (!is_debug && use_thin_lto && is_a_target_toolchain) {
+      if (is_win) {
+        ldflags += [ "-mllvm:-instcombine-lower-dbg-declare=0" ]
+      } else {
+        ldflags += [ "-Wl,-mllvm,-instcombine-lower-dbg-declare=0" ]
+      }
+    }
   }
 
   # C11/C++11 compiler flags setup.
@@ -587,26 +625,21 @@ config("compiler") {
       "-fsplit-lto-unit",
     ]
 
-    if (thin_lto_enable_optimizations) {
-      lto_opt_level = 2
-    } else {
-      lto_opt_level = 0
-    }
+    # Limit the size of the ThinLTO cache to the lesser of 10% of
+    # available disk space, 40GB and 100000 files.
+    cache_policy = "cache_size=10%:cache_size_bytes=40g:cache_size_files=100000"
+
+    # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
+    # should be able to better manage binary size increases on its own.
+    import_instr_limit = 5
 
     if (is_win) {
-      # This is a straight translation of the non-Windows flags below,
-      # except we do not use the ThinLTO cache, which leaks temporary
-      # files on Windows (https://crbug.com/871962).
       ldflags += [
-        "/opt:lldlto=" + lto_opt_level,
         "/opt:lldltojobs=all",
-
-        # Experimentally determined to yield a reasonable trade-off between
-        # build time, run-time performance, and binary size.
-        "-mllvm:-import-instr-limit=10",
-
-        # TODO(https://crbug.com/1127713): Investigate, remove.
-        "-mllvm:-enable-dse-memoryssa=false",
+        "-mllvm:-import-instr-limit=$import_instr_limit",
+        "/lldltocache:" +
+            rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+        "/lldltocachepolicy:$cache_policy",
       ]
     } else {
       ldflags += [ "-flto=thin" ]
@@ -621,47 +654,31 @@ config("compiler") {
       # of "all" which means number of hardware threads) is faster.
       ldflags += [ "-Wl,--thinlto-jobs=all" ]
 
-      # Limit the size of the ThinLTO cache to the lesser of 10% of
-      # available disk space, 10GB and 100000 files.
-      cache_policy =
-          "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
       ldflags += [
         "-Wl,--thinlto-cache-dir=" +
             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
         "-Wl,--thinlto-cache-policy,$cache_policy",
       ]
 
-      # TODO(https://crbug.com/1127713): Investigate, remove.
-      ldflags += [ "-Wl,-mllvm,-enable-dse-memoryssa=false" ]
-
-      ldflags += [ "-Wl,--lto-O" + lto_opt_level ]
-      if (thin_lto_enable_optimizations) {
-        # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
-        # should be able to better manage binary size increases on its own.
-        import_instr_limit = -1
-        if (is_android) {
-          import_instr_limit = 5
-        } else if (is_chromeos) {
-          # Not much performance difference was noted between the default (100)
-          # and these. ARM was originally set lower than x86 to keep the size
-          # bloat of ThinLTO to <10%, but that's potentially no longer true.
-          # FIXME(inglorion): maybe tune these?
-          if (target_cpu == "arm" || target_cpu == "arm64") {
-            import_instr_limit = 20
-          } else {
-            import_instr_limit = 30
-          }
-        }
-
-        if (import_instr_limit != -1) {
-          ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
+      if (is_chromeos_ash) {
+        # Not much performance difference was noted between the default (100)
+        # and these. ARM was originally set lower than x86 to keep the size
+        # bloat of ThinLTO to <10%, but that's potentially no longer true.
+        # FIXME(inglorion): maybe tune these?
+        if (target_cpu == "arm" || target_cpu == "arm64") {
+          import_instr_limit = 20
+        } else {
+          import_instr_limit = 30
         }
       }
+
+      ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
     }
 
-    # TODO(pcc): Re-enable this flag on Android. This will require libc++ to be
-    # built with ThinLTO (see https://crbug.com/767901) as well as the GVR shim.
-    if (!is_android) {
+    # Whole-program devirtualization increases android libchrome.so size
+    # by ~100kb on arm32 and reduces it by ~108kb on arm64 instead.
+    # Tracked by llvm bug: https://bugs.llvm.org/show_bug.cgi?id=48245
+    if (!is_android || current_cpu == "arm64") {
       cflags += [ "-fwhole-program-vtables" ]
       if (!is_win) {
         ldflags += [ "-fwhole-program-vtables" ]
@@ -680,11 +697,7 @@ config("compiler") {
 
   if (compiler_timing) {
     if (is_clang && !is_nacl) {
-      if (is_win) {
-        cflags += [ "/clang:-ftime-trace" ]
-      } else {
-        cflags += [ "-ftime-trace" ]
-      }
+      cflags += [ "-ftime-trace" ]
     } else if (is_win) {
       cflags += [
         # "Documented" here:
@@ -707,16 +720,36 @@ config("compiler") {
   if (use_lld && !enable_call_graph_profile_sort) {
     if (is_win) {
       ldflags += [ "/call-graph-profile-sort:no" ]
-    } else {
+    } else if (!is_apple) {
+      # TODO(thakis): Once LLD's Mach-O port basically works, implement call
+      # graph profile sorting for it, add an opt-out flag, and pass it here.
       ldflags += [ "-Wl,--no-call-graph-profile-sort" ]
+    }
+  }
+
+  # Pin to LLVM's legacy pass manager so we can switch independently of a Clang roll.
+  # TODO(https://crbug.com/1173188): remove once we've rolled a Clang with the new PM as the default PM.
+  if ((is_android || is_win) && is_clang && !is_nacl) {
+    cflags += [
+      "-Xclang",
+      "-fno-experimental-new-pass-manager",
+    ]
+    if (use_thin_lto) {
+      if (is_win) {
+        ldflags += [ "-opt:noltonewpassmanager" ]
+      } else {
+        ldflags += [ "-Wl,--lto-legacy-pass-manager" ]
+      }
     }
   }
 
   # This flag enforces that member pointer base types are complete. It helps
   # prevent us from running into problems in the Microsoft C++ ABI (see
   # https://crbug.com/847724).
+  # TODO(crbug/1052397): Remove is_chromeos_lacros once lacros-chrome switches
+  # to target_os="chromeos".
   if (is_clang && !is_nacl && target_os != "chromeos" && !use_xcode_clang &&
-      (is_win || use_custom_libcxx)) {
+      !is_chromeos_lacros && (is_win || use_custom_libcxx)) {
     cflags += [ "-fcomplete-member-pointers" ]
   }
 
@@ -730,6 +763,44 @@ config("compiler") {
   if (is_posix || is_fuchsia) {
     asmflags += cflags
     asmflags += cflags_c
+  }
+}
+
+# The BUILDCONFIG file sets this config on targets by default, which means when
+# building with ThinLTO, no optimization is performed in the link step.
+config("thinlto_optimize_default") {
+  if (!is_debug && use_thin_lto && is_a_target_toolchain) {
+    lto_opt_level = 0
+
+    if (is_win) {
+      ldflags = [ "/opt:lldlto=" + lto_opt_level ]
+    } else {
+      ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
+    }
+  }
+}
+
+# Use this to enable optimization in the ThinLTO link step for select targets
+# when thin_lto_enable_optimizations is set by doing:
+#
+#   configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+#   configs += [ "//build/config/compiler:thinlto_optimize_max" ]
+#
+# Since it makes linking significantly slower and more resource intensive, only
+# use it on important targets such as the main browser executable or dll.
+config("thinlto_optimize_max") {
+  if (!is_debug && use_thin_lto && is_a_target_toolchain) {
+    if (thin_lto_enable_optimizations) {
+      lto_opt_level = 2
+    } else {
+      lto_opt_level = 0
+    }
+
+    if (is_win) {
+      ldflags = [ "/opt:lldlto=" + lto_opt_level ]
+    } else {
+      ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
+    }
   }
 }
 
@@ -750,6 +821,7 @@ config("compiler_cpu_abi") {
       cflags += [
         "-m64",
         "-march=$x64_arch",
+        "-msse3",
       ]
       ldflags += [ "-m64" ]
     } else if (current_cpu == "x86") {
@@ -757,9 +829,8 @@ config("compiler_cpu_abi") {
       ldflags += [ "-m32" ]
       if (!is_nacl) {
         cflags += [
-          "-msse2",
           "-mfpmath=sse",
-          "-mmmx",
+          "-msse3",
         ]
       }
     } else if (current_cpu == "arm") {
@@ -1193,7 +1264,7 @@ config("compiler_arm_thumb") {
 }
 
 config("compiler_arm") {
-  if (current_cpu == "arm" && is_chromeos) {
+  if (current_cpu == "arm" && is_chromeos_ash) {
     # arm is normally the default mode for clang, but on chromeos a wrapper
     # is used to pass -mthumb, and therefor change the default.
     cflags = [ "-marm" ]
@@ -1544,11 +1615,6 @@ config("default_warnings") {
           "-Wno-implicit-fallthrough",
         ]
 
-        if (is_ios) {
-          # TODO(https://crbug.com/1143700): Clean up and re-enable.
-          cflags_objc = [ "-Wno-gnu-folding-constant" ]
-        }
-
         if (enable_wmax_tokens) {
           cflags += [ "-Wmax-tokens" ]
         } else {
@@ -1637,7 +1703,7 @@ config("chromium_code") {
     # ChromeOS: http://crbug.com/940863
     # Chromecast: http://crbug.com/942554
     has_dchecks = is_debug || dcheck_always_on
-    if (!has_dchecks && is_chromeos && is_chrome_branded) {
+    if (!has_dchecks && is_chromeos_ash && is_chrome_branded) {
       # Temporarily disable -Wextra-semi for Chrome on Chrome OS.
     } else if (is_chromecast && chromecast_branding != "public") {
       # Temporarily disable -Wextra-semi for Chromecast.
@@ -1740,7 +1806,8 @@ config("no_rtti") {
 # (de)allocate memory on a different heap, which would spell trouble if pointers
 # to heap-allocated memory are passed over shared library boundaries.
 config("export_dynamic") {
-  if (is_linux || export_libcxxabi_from_executables) {
+  # TODO(crbug.com/1052397): Revisit after target_os flip is completed.
+  if (is_linux || is_chromeos_lacros || export_libcxxabi_from_executables) {
     ldflags = [ "-rdynamic" ]
   }
 }
@@ -1760,10 +1827,9 @@ config("export_dynamic") {
 # 2. Remove the thin_archive config, so that the .a file actually contains all
 #    .o files, instead of just references to .o files in the build directoy
 config("thin_archive") {
-  # Mac and iOS use the mac-specific "libtool" command, not ar, which doesn't
-  # have a "thin archive" mode (it does accept -T, but it means truncating
-  # archive names to 16 characters, which is not what we want).
-  if ((is_posix && !is_nacl && !is_apple) || is_fuchsia) {
+  # The macOS and iOS default linker ld64 does not support reading thin
+  # archives.
+  if ((is_posix && !is_nacl && (!is_apple || use_lld)) || is_fuchsia) {
     arflags = [ "-T" ]
   } else if (is_win && use_lld) {
     arflags = [ "/llvmlibthin" ]
@@ -1880,7 +1946,7 @@ config("no_incompatible_pointer_warnings") {
     cflags += [ "-Wno-incompatible-pointer-types" ]
   } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
     cflags += [ "-w" ]
-  } else if (is_chromeos && current_cpu == "arm") {
+  } else if (is_chromeos_ash && current_cpu == "arm") {
     cflags += [ "-w" ]
   }
 }
@@ -1943,10 +2009,7 @@ if (is_win) {
   }
 
   if (is_apple) {
-    if (symbol_level == 2) {
-      # Mac dead code stripping requires symbols.
-      common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
-    }
+    common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
 
     if (is_official_build) {
       common_optimize_on_ldflags += [
@@ -2026,7 +2089,7 @@ config("optimize") {
     } else {
       cflags = [ "-Os" ] + common_optimize_on_cflags
     }
-  } else if (is_chromeos) {
+  } else if (is_chromeos_ash) {
     # TODO(gbiv): This is partially favoring size over speed. CrOS exclusively
     # uses clang, and -Os in clang is more of a size-conscious -O2 than "size at
     # any cost" (AKA -Oz). It'd be nice to:
@@ -2174,21 +2237,14 @@ if (is_clang && is_a_target_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(
-        is_android || chromeos_is_browser_only || is_chromeos || is_chromecast,
-        "The current platform has no default profile")
+    assert(is_android || is_chromeos_lacros || is_chromeos_ash || is_chromecast,
+           "The current platform has no default profile")
     if (is_android || is_chromecast) {
       _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
     } else {
-      # TODO(crbug/1135245): Remove silvermont, airmont and broadwell after
-      # the change atom and bigcore reaches Chrome OS.
-      assert(
-          chromeos_afdo_platform == "silvermont" ||
-              chromeos_afdo_platform == "airmont" ||
-              chromeos_afdo_platform == "broadwell" ||
-              chromeos_afdo_platform == "atom" ||
-              chromeos_afdo_platform == "bigcore",
-          "Only silvermont, airmont and broadwell are valid Chrome OS profiles.")
+      assert(chromeos_afdo_platform == "atom" ||
+                 chromeos_afdo_platform == "bigcore",
+             "Only atom and bigcore are valid Chrome OS profiles.")
       _clang_sample_profile =
           "//chromeos/profiles/${chromeos_afdo_platform}.afdo.prof"
     }
@@ -2255,14 +2311,11 @@ config("win_pdbaltpath") {
   # path to it in the executable file it generates.  This flag turns that
   # absolute path into just the basename of the pdb file, which helps with
   # build reproducibility. Debuggers look for pdb files next to executables,
-  # so there's no downside to always using this.
-  ldflags = [ "/pdbaltpath:%_PDB%" ]
-
-  if (enable_cet_shadow_stack && use_lld) {
-    # TODO(crbug.com/1136664): Investigate why Windows does not recognize
-    # CET in some binaries linked by LLD with /DEBUG.
-    # This is the best place for work around as it follows all /DEBUG uses.
-    ldflags += [ "/DEBUG:NONE" ]
+  # so there's minimal downside to always using this. However, post-mortem
+  # debugging of Chromium crash dumps and ETW tracing can be complicated by this
+  # switch so an option to omit it is important.
+  if (!use_full_pdb_paths) {
+    ldflags = [ "/pdbaltpath:%_PDB%" ]
   }
 }
 
@@ -2303,11 +2356,15 @@ config("symbols") {
       # version 7 also produces debug data that is incompatible with Breakpad
       # dump_syms, so this is still required (https://crbug.com/622406).
       cflags += [ "-fno-standalone-debug" ]
-    } else if (is_mac) {
+    } else if (is_mac && !use_dwarf5) {
       # clang defaults to DWARF2 on macOS unless mac_deployment_target is
       # at least 10.11.
       # TODO(thakis): Remove this once mac_deployment_target is 10.11.
       cflags += [ "-gdwarf-4" ]
+    }
+
+    if (use_dwarf5 && !is_nacl) {
+      cflags += [ "-gdwarf-5" ]
     }
 
     # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
@@ -2338,8 +2395,9 @@ config("symbols") {
     asmflags = cflags
     ldflags = []
 
-    # TODO(agrieve): Not sure why this is Android-specific.
-    if (use_debug_fission && use_thin_lto && is_android) {
+    # Split debug info with all thinlto builds except nacl and apple.
+    # thinlto requires -gsplit-dwarf in ldflags.
+    if (use_debug_fission && use_thin_lto && !is_nacl && !is_apple) {
       ldflags += [ "-gsplit-dwarf" ]
     }
 
@@ -2382,11 +2440,15 @@ config("minimal_symbols") {
     }
   } else {
     cflags = []
-    if (is_mac) {
+    if (is_mac && !use_dwarf5) {
       # clang defaults to DWARF2 on macOS unless mac_deployment_target is
       # at least 10.11.
       # TODO(thakis): Remove this once mac_deployment_target is 10.11.
       cflags += [ "-gdwarf-4" ]
+    }
+
+    if (use_dwarf5 && !is_nacl) {
+      cflags += [ "-gdwarf-5" ]
     }
 
     # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
@@ -2410,7 +2472,9 @@ config("minimal_symbols") {
       cflags += [ "-fdebug-info-for-profiling" ]
     }
 
-    # Note: -gsplit-dwarf implicitly turns on -g2 with clang, so don't pass it.
+    # Note: debug_fission is no-op with symbol_level=1 since all -g1 debug_info
+    # will stay in the executable.
+
     asmflags = cflags
   }
 }
@@ -2465,7 +2529,7 @@ if (is_apple) {
   }
 }
 
-if (is_chromeos && is_chromeos_device) {
+if (is_chromeos_ash && is_chromeos_device) {
   # This config is intended to be a temporary to facilitate
   # the transition to use orderfile in Chrome OS. Once orderfile
   # use becomes a default in Chrome OS, this config should not
@@ -2477,29 +2541,19 @@ if (is_chromeos && is_chromeos_device) {
   }
 }
 
-if (is_win || is_android || (is_chromeos && is_chromeos_device)) {
-  # Use orderfile for linking Chrome on win, android, and Chrome OS.
+if (is_android || (is_chromeos_ash && is_chromeos_device)) {
+  # Use orderfile for linking Chrome on Android and Chrome OS.
   # This config enables using an orderfile for linking in LLD.
+  # TODO: Consider using call graph sort instead, at least on Android.
   config("chrome_orderfile_config") {
     if (chrome_orderfile_path != "" && !enable_call_graph_profile_sort) {
       assert(use_lld)
       _rebased_orderfile = rebase_path(chrome_orderfile_path, root_build_dir)
-      if (is_android || (is_chromeos && is_chromeos_device)) {
-        ldflags = [
-          "-Wl,--symbol-ordering-file",
-          "-Wl,$_rebased_orderfile",
-          "-Wl,--no-warn-symbol-ordering",
-        ]
-      } else {
-        ldflags = [
-          "/order:@$_rebased_orderfile",
-
-          # Ignore warnings about missing functions or functions not in their
-          # own section.
-          "/ignore:4037",
-          "/ignore:4065",
-        ]
-      }
+      ldflags = [
+        "-Wl,--symbol-ordering-file",
+        "-Wl,$_rebased_orderfile",
+        "-Wl,--no-warn-symbol-ordering",
+      ]
       inputs = [ chrome_orderfile_path ]
     }
   }

@@ -71,7 +71,7 @@ export class RuntimeModel extends SDKModel {
    */
   static isSideEffectFailure(response) {
     const exceptionDetails = 'exceptionDetails' in response && response.exceptionDetails;
-    return !!(
+    return Boolean(
         exceptionDetails && exceptionDetails.exception && exceptionDetails.exception.description &&
         exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'));
   }
@@ -136,8 +136,8 @@ export class RuntimeModel extends SDKModel {
    */
   _executionContextCreated(context) {
     const data = context.auxData || {isDefault: true};
-    const executionContext =
-        new ExecutionContext(this, context.id, context.name, context.origin, data['isDefault'], data['frameId']);
+    const executionContext = new ExecutionContext(
+        this, context.id, context.uniqueId, context.name, context.origin, data['isDefault'], data['frameId']);
     this._executionContextById.set(executionContext.id, executionContext);
     this.dispatchEventToListeners(Events.ExecutionContextCreated, executionContext);
   }
@@ -352,7 +352,7 @@ export class RuntimeModel extends SDKModel {
   _inspectRequested(payload, hints) {
     const object = this.createRemoteObject(payload);
 
-    if (hints && 'copyToClipboard' in hints && !!hints.copyToClipboard) {
+    if (hints && 'copyToClipboard' in hints && Boolean(hints.copyToClipboard)) {
       this._copyRequested(object);
       return;
     }
@@ -394,26 +394,36 @@ export class RuntimeModel extends SDKModel {
           object.unserializableValue() || /** @type {string} */ (object.value));
       return;
     }
-    object.callFunctionJSON(toStringForClipboard, [{value: object.subtype}])
+
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+    object
+        .callFunctionJSON(toStringForClipboard, [{
+                            value: {
+                              subtype: object.subtype,
+                              indent: indent,
+                            }
+                          }])
         .then(Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
             Host.InspectorFrontendHost.InspectorFrontendHostInstance));
 
     /**
-     * @param {string} subtype
+     * @param {{subtype: string, indent: string}} data
      * @this {Object}
-     * @suppressReceiverCheck
      */
-    function toStringForClipboard(subtype) {
+    function toStringForClipboard(data) {
+      const subtype = data.subtype;
+      const indent = data.indent;
+
       if (subtype === 'node') {
         return this instanceof Element ? this.outerHTML : undefined;
       }
       if (subtype && typeof this === 'undefined') {
-        return subtype + '';
+        return String(subtype);
       }
       try {
-        return JSON.stringify(this, null, '  ');
-      } catch (e) {
-        return '' + this;
+        return JSON.stringify(this, null, indent);
+      } catch (error) {
+        return String(this);
       }
     }
   }
@@ -519,7 +529,8 @@ export class RuntimeModel extends SDKModel {
    * @return {!Promise<boolean>}
    */
   async checkSideEffectSupport() {
-    const testContext = this.executionContexts().peekLast();
+    const contexts = this.executionContexts();
+    const testContext = contexts[contexts.length - 1];
     if (!testContext) {
       return false;
     }
@@ -643,13 +654,15 @@ export class ExecutionContext {
   /**
    * @param {!RuntimeModel} runtimeModel
    * @param {number} id
+   * @param {string} uniqueId
    * @param {string} name
    * @param {string} origin
    * @param {boolean} isDefault
    * @param {string=} frameId
    */
-  constructor(runtimeModel, id, name, origin, isDefault, frameId) {
+  constructor(runtimeModel, id, uniqueId, name, origin, isDefault, frameId) {
     this.id = id;
+    this.uniqueId = uniqueId;
     this.name = name;
     /** @type {?string} */
     this._label = null;
@@ -752,29 +765,25 @@ export class ExecutionContext {
    * @param {boolean} awaitPromise
    * @return {!Promise<!EvaluationResult>}
    */
-  evaluate(options, userGesture, awaitPromise) {
+  async evaluate(options, userGesture, awaitPromise) {
     // FIXME: It will be moved to separate ExecutionContext.
     if (this.debuggerModel.selectedCallFrame()) {
       return this.debuggerModel.evaluateOnSelectedCallFrame(options);
     }
     // Assume backends either support both throwOnSideEffect and timeout options or neither.
-    const needsTerminationOptions = !!options.throwOnSideEffect || options.timeout !== undefined;
+    const needsTerminationOptions = Boolean(options.throwOnSideEffect) || options.timeout !== undefined;
     if (!needsTerminationOptions || this.runtimeModel.hasSideEffectSupport()) {
       return this._evaluateGlobal(options, userGesture, awaitPromise);
     }
 
     /** @type {!EvaluationResult} */
-    const unsupportedError = {error: 'Side-effect checks not supported by backend.'};
-    if (this.runtimeModel.hasSideEffectSupport() === false) {
-      return Promise.resolve(unsupportedError);
-    }
-
-    return this.runtimeModel.checkSideEffectSupport().then(() => {
+    if (this.runtimeModel.hasSideEffectSupport() !== false) {
+      await this.runtimeModel.checkSideEffectSupport();
       if (this.runtimeModel.hasSideEffectSupport()) {
         return this._evaluateGlobal(options, userGesture, awaitPromise);
       }
-      return Promise.resolve(unsupportedError);
-    });
+    }
+    return {error: 'Side-effect checks not supported by backend.'};
   }
 
   /**
@@ -813,7 +822,7 @@ export class ExecutionContext {
       objectGroup: options.objectGroup,
       includeCommandLineAPI: options.includeCommandLineAPI,
       silent: options.silent,
-      contextId: this.id,
+      uniqueContextId: this.uniqueId,
       returnByValue: options.returnByValue,
       generatePreview: options.generatePreview,
       userGesture: userGesture,

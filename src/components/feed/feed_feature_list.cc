@@ -16,7 +16,10 @@ const base::Feature kInterestFeedContentSuggestions{
 // InterestFeedV2 is cached in ChromeCachedFlags. If the default value here is
 // changed, please update the cached one's default value in CachedFeatureFlags.
 const base::Feature kInterestFeedV2{"InterestFeedV2",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kInterestFeedV2Hearts{"InterestFeedV2Hearts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<std::string> kDisableTriggerTypes{
     &kInterestFeedContentSuggestions, "disable_trigger_types", ""};
@@ -33,10 +36,6 @@ const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess{
 const base::Feature kReportFeedUserActions{"ReportFeedUserActions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Determines whether conditions should be reached before enabling the upload of
-// click and view actions in the feed (e.g., the user needs to view X cards).
-// For example, This is needed when the notice card is at the second position in
-// the feed.
 const base::Feature kInterestFeedV1ClicksAndViewsConditionalUpload{
     "InterestFeedV1ClickAndViewActionsConditionalUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -44,17 +43,19 @@ const base::Feature kInterestFeedV2ClicksAndViewsConditionalUpload{
     "InterestFeedV2ClickAndViewActionsConditionalUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that allows the client to automatically dismiss the notice card based
-// on the clicks and views on the notice card.
 const base::Feature kInterestFeedNoticeCardAutoDismiss{
     "InterestFeedNoticeCardAutoDismiss", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Used for A:B testing of a bug fix (crbug.com/1151391).
 const base::Feature kInterestFeedSpinnerAlwaysAnimate{
     "InterestFeedSpinnerAlwaysAnimate", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const char kDefaultReferrerUrl[] =
-    "https://www.googleapis.com/auth/chrome-content-suggestions";
+const base::Feature kFeedShare{"FeedShare", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebFeed{"WebFeed", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kXsurfaceMetricsReporting{
+    "XsurfaceMetricsReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kDefaultReferrerUrl[] = "https://www.google.com/";
 
 std::string GetFeedReferrerUrl() {
   const base::Feature* feature = base::FeatureList::IsEnabled(kInterestFeedV2)
@@ -63,23 +64,6 @@ std::string GetFeedReferrerUrl() {
   std::string referrer =
       base::GetFieldTrialParamValueByFeature(*feature, "referrer_url");
   return referrer.empty() ? kDefaultReferrerUrl : referrer;
-}
-
-// Chrome can be built with or without v1 or v2.
-// If both are built-in, use kInterestFeedV2 to decide whether v2 is used.
-// Otherwise use the version available.
-bool IsV2Enabled() {
-#if BUILDFLAG(ENABLE_FEED_V1) && BUILDFLAG(ENABLE_FEED_V2)
-  return base::FeatureList::IsEnabled(feed::kInterestFeedV2);
-#elif BUILDFLAG(ENABLE_FEED_V1)
-  return false;
-#else
-  return true;
-#endif
-}
-
-bool IsV1Enabled() {
-  return !IsV2Enabled();
 }
 
 }  // namespace feed

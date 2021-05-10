@@ -417,7 +417,14 @@ Channel::MessagePtr UserMessageImpl::FinalizeEventMessage(
   if (channel_message) {
     void* data;
     size_t size;
-    NodeChannel::GetEventMessageData(channel_message.get(), &data, &size);
+    // The `channel_message` must either be produced locally or must have
+    // already been validated by the caller, as is done for example by
+    // NodeController::DeserializeEventMessage before
+    // NodeController::OnBroadcast re-serializes each copy of the message it
+    // received.
+    bool result =
+        NodeChannel::GetEventMessageData(*channel_message, &data, &size);
+    DCHECK(result);
     message_event->Serialize(data);
   }
 
@@ -607,7 +614,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
       channel_message_->TakeHandles();
   std::vector<PlatformHandle> msg_handles(handles_in_transit.size());
   for (size_t i = 0; i < handles_in_transit.size(); ++i) {
-    DCHECK(!handles_in_transit[i].owning_process().is_valid());
+    DCHECK(!handles_in_transit[i].owning_process().IsValid());
     msg_handles[i] = handles_in_transit[i].TakeHandle();
   }
   for (size_t i = 0; i < header->num_dispatchers; ++i) {

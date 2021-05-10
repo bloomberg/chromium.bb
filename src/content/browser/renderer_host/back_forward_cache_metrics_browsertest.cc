@@ -680,7 +680,12 @@ class RecordBackForwardCacheMetricsWithoutEnabling
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{kRecordBackForwardCacheMetricsWithoutEnabling,
           {{"allowed_websites", allowed_websites}}}},
-        {features::kBackForwardCache});
+        // Disable BackForwardCacheMemoryControl to only allow URLs passed via
+        // params for all devices irrespective of their memory. As when
+        // DeviceHasEnoughMemoryForBackForwardCache() is false, we allow all
+        // URLs as default.
+        {features::kBackForwardCache,
+         features::kBackForwardCacheMemoryControls});
   }
 
   ~RecordBackForwardCacheMetricsWithoutEnabling() override = default;
@@ -781,14 +786,14 @@ class BackForwardCacheEnabledMetricsBrowserTest
     : public BackForwardCacheMetricsBrowserTest {
  protected:
   BackForwardCacheEnabledMetricsBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache,
-        {
-            // Set a very long TTL before expiration (longer than the test
-            // timeout) so tests that are expecting deletion don't pass when
-            // they shouldn't.
-            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-        });
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {// Set a very long TTL before expiration (longer than the test
+           // timeout) so tests that are expecting deletion don't pass when
+           // they shouldn't.
+           {"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
   }
 
   ~BackForwardCacheEnabledMetricsBrowserTest() override = default;

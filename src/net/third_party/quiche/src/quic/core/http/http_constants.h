@@ -6,8 +6,10 @@
 #define QUICHE_QUIC_CORE_HTTP_HTTP_CONSTANTS_H_
 
 #include <cstdint>
+#include <string>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -34,6 +36,10 @@ enum Http3AndQpackSettingsIdentifiers : uint64_t {
   SETTINGS_QPACK_BLOCKED_STREAMS = 0x07,
 };
 
+// Returns HTTP/3 SETTINGS identifier as a string.
+QUIC_EXPORT std::string H3SettingsToString(
+    Http3AndQpackSettingsIdentifiers identifier);
+
 // Default maximum dynamic table capacity, communicated via
 // SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 const QuicByteCount kDefaultQpackMaxDynamicTableCapacity = 64 * 1024;  // 64 KB
@@ -47,6 +53,7 @@ const QuicByteCount kDefaultMaxUncompressedHeaderSize = 16 * 1024;  // 16 KB
 const uint64_t kDefaultMaximumBlockedStreams = 100;
 
 const char kUserAgentHeaderName[] = "user-agent";
+
 }  // namespace quic
 
 #endif  // QUICHE_QUIC_CORE_HTTP_HTTP_CONSTANTS_H_

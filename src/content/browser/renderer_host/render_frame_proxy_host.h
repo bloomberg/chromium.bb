@@ -17,6 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-forward.h"
@@ -73,15 +74,20 @@ class CONTENT_EXPORT RenderFrameProxyHost
       public blink::mojom::RemoteMainFrameHost {
  public:
   using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+  using DeletedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
 
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
   static RenderFrameProxyHost* FromFrameToken(
       int process_id,
-      const base::UnguessableToken& frame_token);
+      const blink::RemoteFrameToken& frame_token);
 
   // Sets a callback to be called whenever any RenderFrameProxyHost is created.
   static void SetCreatedCallbackForTesting(
       const CreatedCallback& created_callback);
+
+  // Sets a callback to be called whenever any RenderFrameProxyHost is deleted.
+  static void SetDeletedCallbackForTesting(
+      const DeletedCallback& deleted_callback);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
                        scoped_refptr<RenderViewHostImpl> render_view_host,
@@ -157,7 +163,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // blink::mojom::RemoteFrameHost
   void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
-                                    bool subtree_throttled) override;
+                                    bool subtree_throttled,
+                                    bool display_locked) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void DidFocusFrame() override;
   void CheckCompleted() override;
@@ -165,12 +172,12 @@ class CONTENT_EXPORT RenderFrameProxyHost
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
   void SetIsInert(bool inert) override;
-  void DidChangeOpener(const base::Optional<base::UnguessableToken>&
+  void DidChangeOpener(const base::Optional<blink::LocalFrameToken>&
                            opener_frame_token) override;
   void AdvanceFocus(blink::mojom::FocusType focus_type,
-                    const base::UnguessableToken& source_frame_token) override;
+                    const blink::LocalFrameToken& source_frame_token) override;
   void RouteMessageEvent(
-      const base::Optional<base::UnguessableToken>& source_frame_token,
+      const base::Optional<blink::LocalFrameToken>& source_frame_token,
       const base::string16& source_origin,
       const base::string16& target_origin,
       blink::TransferableMessage message) override;
@@ -178,7 +185,11 @@ class CONTENT_EXPORT RenderFrameProxyHost
                                  int document_cookie) override;
   void Detach() override;
   void UpdateViewportIntersection(
-      blink::mojom::ViewportIntersectionStatePtr intersection_state) override;
+      blink::mojom::ViewportIntersectionStatePtr intersection_state,
+      const base::Optional<blink::FrameVisualProperties>& visual_properties)
+      override;
+  void SynchronizeVisualProperties(
+      const blink::FrameVisualProperties& frame_visual_properties) override;
 
   // blink::mojom::RemoteMainFrameHost overrides:
   void FocusPage() override;
@@ -208,13 +219,14 @@ class CONTENT_EXPORT RenderFrameProxyHost
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
   bool IsInertForTesting();
 
-  const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
+  const blink::RemoteFrameToken& GetFrameToken() const { return frame_token_; }
 
  private:
-  // The interceptor needs access to frame_host_receiver_for_testing().
+  // These interceptor need access to frame_host_receiver_for_testing().
   friend class RouteMessageEventInterceptor;
   friend class OpenURLInterceptor;
   friend class UpdateViewportIntersectionMessageFilter;
+  friend class SynchronizeVisualPropertiesInterceptor;
 
   // Helper to retrieve the |AgentSchedulingGroup| this proxy host is associated
   // with.
@@ -295,7 +307,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
   mojo::AssociatedReceiver<blink::mojom::RemoteMainFrameHost>
       remote_main_frame_host_receiver_{this};
 
-  base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
+  blink::RemoteFrameToken frame_token_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

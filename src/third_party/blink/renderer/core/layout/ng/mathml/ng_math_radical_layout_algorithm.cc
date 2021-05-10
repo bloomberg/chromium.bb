@@ -183,7 +183,8 @@ scoped_refptr<const NGLayoutResult> NGMathRadicalLayoutAlgorithm::Layout() {
   auto total_block_size = ascent + descent + BorderScrollbarPadding().block_end;
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), total_block_size,
-      container_builder_.InitialBorderBoxSize().inline_size);
+      container_builder_.InitialBorderBoxSize().inline_size,
+      Node().ShouldBeConsideredAsReplaced());
 
   container_builder_.SetIntrinsicBlockSize(total_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
@@ -233,9 +234,9 @@ MinMaxSizesResult NGMathRadicalLayoutAlgorithm::ComputeMinMaxSizes(
         base_result.depends_on_percentage_block_size;
     sizes += base_result.sizes;
   }
-  sizes += BorderScrollbarPadding().InlineSum();
 
-  return {sizes, depends_on_percentage_block_size};
+  sizes += BorderScrollbarPadding().InlineSum();
+  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
 }
 
 }  // namespace blink

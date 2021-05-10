@@ -38,6 +38,9 @@ public interface Tab extends TabLifecycle {
      */
     void removeObserver(TabObserver observer);
 
+    /** Returns if the given {@link TabObserver} is present. */
+    boolean hasObserver(TabObserver observer);
+
     /**
      * @return {@link UserDataHost} that manages {@link UserData} objects attached to.
      *         This is used for managing Tab-specific attributes/objects without Tab
@@ -122,7 +125,7 @@ public interface Tab extends TabLifecycle {
      * @return Original url of the tab without any Chrome feature modifications applied
      *         (e.g. reader mode).
      */
-    String getOriginalUrl();
+    GURL getOriginalUrl();
 
     /**
      * @return The tab title.
@@ -160,6 +163,16 @@ public interface Tab extends TabLifecycle {
      */
     @TabLaunchType
     int getLaunchType();
+
+    /**
+     * @return The theme color for this tab.
+     */
+    int getThemeColor();
+
+    /**
+     * @return {@code true} if the theme color from contents is valid and can be used for theming.
+     */
+    boolean isThemingAllowed();
 
     /**
      * @return {@code true} if the Tab is in incognito mode.

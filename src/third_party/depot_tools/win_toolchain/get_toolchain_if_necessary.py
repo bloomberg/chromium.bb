@@ -16,21 +16,13 @@ removed and replaced by one without a service pack applied); 2) it would
 require maintaining scripts that can build older not-up-to-date revisions of
 the toolchain. This is likely to be a poorly tested code path that probably
 won't be properly maintained. See http://crbug.com/323300.
-
-This does not extend to major versions of the toolchain however, on the
-assumption that there are more likely to be source incompatibilities between
-major revisions. This script calls a subscript (currently, toolchain2013.py)
-to do the main work. It is expected that toolchain2013.py will always be able
-to acquire/build the most current revision of a VS2013-based toolchain. In the
-future when a hypothetical VS2015 is released, the 2013 script will be
-maintained, and a new 2015 script would be added.
 """
 
 from __future__ import print_function
 
+import argparse
 import hashlib
 import json
-import optparse
 import os
 import platform
 import shutil
@@ -80,18 +72,28 @@ def GetFileList(root):
   file_list = []
   # Ignore WER ReportQueue entries that vctip/cl leave in the bin dir if/when
   # they crash. Also ignores the content of the
-  # win_sdk/debuggers/x(86|64)/(sym|src)/ directories as this is just the
-  # temporarily location that Windbg might use to store the symbol files and
-  # downloaded sources.
+  # Windows Kits/10/debuggers/x(86|64)/(sym|src)/ directories as this is just
+  # the temporarily location that Windbg might use to store the symbol files
+  # and downloaded sources.
   #
   # Note: These files are only created on a Windows host, so the
   # ignored_directories list isn't relevant on non-Windows hosts.
 
+  # The Windows SDK is either in `win_sdk` or in `Windows Kits\10`. This
+  # script must work with both layouts, so check which one it is.
+  # This can be different in each |root|.
+  if os.path.isdir(os.path.join(root, 'Windows Kits', '10')):
+    win_sdk = 'Windows Kits\\10'
+  else:
+    win_sdk = 'win_sdk'
+
   ignored_directories = ['wer\\reportqueue',
-                         'win_sdk\\debuggers\\x86\\sym\\',
-                         'win_sdk\\debuggers\\x64\\sym\\',
-                         'win_sdk\\debuggers\\x86\\src\\',
-                         'win_sdk\\debuggers\\x64\\src\\']
+                         win_sdk + '\\debuggers\\x86\\sym\\',
+                         win_sdk + '\\debuggers\\x64\\sym\\',
+                         win_sdk + '\\debuggers\\x86\\src\\',
+                         win_sdk + '\\debuggers\\x64\\src\\']
+  ignored_directories = [d.lower() for d in ignored_directories]
+
   for base, _, files in os.walk(root):
     paths = [os.path.join(base, f) for f in files]
     for p in paths:
@@ -185,7 +187,7 @@ def CalculateHash(root, expected_hash):
   # Save the timestamp file if the calculated hash is the expected one.
   # The expected hash may be shorter, to reduce path lengths, in which case just
   # compare that many characters.
-  if expected_hash and digest.hexdigest()[:len(expected_hash)] == expected_hash:
+  if expected_hash and digest.hexdigest().startswith(expected_hash):
     SaveTimestampsAndHash(root, digest.hexdigest())
     # Return the (potentially truncated) expected_hash.
     return expected_hash
@@ -449,19 +451,24 @@ def EnableCrashDumpCollection():
 
 
 def main():
-  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
-  parser.add_option('--output-json', metavar='FILE',
-                    help='write information about toolchain to FILE')
-  parser.add_option('--force', action='store_true',
-                    help='force script to run on non-Windows hosts')
-  parser.add_option('--no-download', action='store_true',
-                    help='configure if present but don\'t download')
-  parser.add_option('--toolchain-dir',
-                    default=os.getenv(ENV_TOOLCHAIN_ROOT, BASEDIR),
-                    help='directory to install toolchain into')
-  options, args = parser.parse_args()
+  parser = argparse.ArgumentParser(
+               description=__doc__,
+               formatter_class=argparse.RawDescriptionHelpFormatter,
+               )
+  parser.add_argument('--output-json', metavar='FILE',
+                      help='write information about toolchain to FILE')
+  parser.add_argument('--force', action='store_true',
+                      help='force script to run on non-Windows hosts')
+  parser.add_argument('--no-download', action='store_true',
+                      help='configure if present but don\'t download')
+  parser.add_argument('--toolchain-dir',
+                      default=os.getenv(ENV_TOOLCHAIN_ROOT, BASEDIR),
+                      help='directory to install toolchain into')
+  parser.add_argument('desired_hash', metavar='desired-hash',
+                      help='toolchain hash to download')
+  args = parser.parse_args()
 
-  if not (sys.platform.startswith(('cygwin', 'win32')) or options.force):
+  if not (sys.platform.startswith(('cygwin', 'win32')) or args.force):
     return 0
 
   if sys.platform == 'cygwin':
@@ -470,31 +477,24 @@ def main():
       return subprocess.check_output(['cygpath', '-w', path]).strip()
     python = os.path.join(DEPOT_TOOLS_PATH, 'python.bat')
     cmd = [python, winpath(__file__)]
-    if options.output_json:
-      cmd.extend(['--output-json', winpath(options.output_json)])
-    cmd.extend(args)
+    if args.output_json:
+      cmd.extend(['--output-json', winpath(args.output_json)])
+    cmd.append(args.desired_hash)
     sys.exit(subprocess.call(cmd))
   assert sys.platform != 'cygwin'
 
-  if len(args) == 0:
-    sys.exit('Desired hash is required.')
-  desired_hash = args[0]
-
   # Create our toolchain destination and "chdir" to it.
-  toolchain_dir = os.path.abspath(options.toolchain_dir)
+  toolchain_dir = os.path.abspath(args.toolchain_dir)
   if not os.path.isdir(toolchain_dir):
     os.makedirs(toolchain_dir)
   os.chdir(toolchain_dir)
 
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
-  if os.environ.get('GYP_MSVS_VERSION') == '2013':
-    target_dir = 'vs2013_files'
-  else:
-    target_dir = 'vs_files'
+  target_dir = 'vs_files'
   if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
-  toolchain_target_dir = os.path.join(target_dir, desired_hash)
+  toolchain_target_dir = os.path.join(target_dir, args.desired_hash)
 
   abs_toolchain_target_dir = os.path.abspath(toolchain_target_dir)
 
@@ -505,8 +505,8 @@ def main():
   # directly calling "gclient runhooks" will also run it, so we cache
   # based on timestamps to make that case fast.
   current_hashes = CalculateToolchainHashes(target_dir, True)
-  if desired_hash not in current_hashes:
-    if options.no_download:
+  if args.desired_hash not in current_hashes:
+    if args.no_download:
       raise SystemExit('Toolchain is out of date. Run "gclient runhooks" to '
                        'update the toolchain, or set '
                        'DEPOT_TOOLS_WIN_TOOLCHAIN=0 to use the locally '
@@ -526,11 +526,11 @@ def main():
         RequestGsAuthentication()
     if not should_use_file and not should_use_gs and not should_use_http:
       if sys.platform not in ('win32', 'cygwin'):
-        doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
+        doc = 'https://chromium.googlesource.com/chromium/src/+/HEAD/docs/' \
               'win_cross.md'
         print('\n\n\nPlease follow the instructions at %s\n\n' % doc)
       else:
-        doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
+        doc = 'https://chromium.googlesource.com/chromium/src/+/HEAD/docs/' \
               'windows_build_instructions.md'
         print('\n\n\nNo downloadable toolchain found. In order to use your '
               'locally installed version of Visual Studio to build Chrome '
@@ -540,34 +540,34 @@ def main():
       return 1
     print('Windows toolchain out of date or doesn\'t exist, updating (Pro)...')
     print('  current_hashes: %s' % ', '.join(current_hashes))
-    print('  desired_hash: %s' % desired_hash)
+    print('  desired_hash: %s' % args.desired_hash)
     sys.stdout.flush()
 
-    DoTreeMirror(toolchain_target_dir, desired_hash)
+    DoTreeMirror(toolchain_target_dir, args.desired_hash)
 
     got_new_toolchain = True
 
-  win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
-  try:
-    version_file = os.path.join(toolchain_target_dir, 'VS_VERSION')
-    vc_dir = os.path.join(toolchain_target_dir, 'VC')
-    with open(version_file, 'rb') as f:
-      vs_version = f.read().strip()
-      # Touch the VC directory so we can use its timestamp to know when this
-      # version of the toolchain has been used for the last time.
-    os.utime(vc_dir, None)
-  except IOError:
-    # Older toolchains didn't have the VS_VERSION file, and used 'win8sdk'
-    # instead of just 'win_sdk'.
-    vs_version = '2013'
-    win_sdk = os.path.join(abs_toolchain_target_dir, 'win8sdk')
+  # The Windows SDK is either in `win_sdk` or in `Windows Kits\10`. This
+  # script must work with both layouts, so check which one it is.
+  win_sdk_in_windows_kits = os.path.isdir(
+          os.path.join(abs_toolchain_target_dir, 'Windows Kits', '10'))
+  if win_sdk_in_windows_kits:
+    win_sdk = os.path.join(abs_toolchain_target_dir, 'Windows Kits', '10')
+  else:
+    win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
+
+  version_file = os.path.join(toolchain_target_dir, 'VS_VERSION')
+  vc_dir = os.path.join(toolchain_target_dir, 'VC')
+  with open(version_file, 'rb') as f:
+    vs_version = f.read().strip()
+    # Touch the VC directory so we can use its timestamp to know when this
+    # version of the toolchain has been used for the last time.
+  os.utime(vc_dir, None)
 
   data = {
       'path': abs_toolchain_target_dir,
       'version': vs_version,
       'win_sdk': win_sdk,
-      # Added for backwards compatibility with old toolchain packages.
-      'win8sdk': win_sdk,
       'wdk': os.path.join(abs_toolchain_target_dir, 'wdk'),
       'runtime_dirs': [
         os.path.join(abs_toolchain_target_dir, 'sys64'),
@@ -580,17 +580,17 @@ def main():
 
   if got_new_toolchain:
     current_hashes = CalculateToolchainHashes(target_dir, False)
-    if desired_hash not in current_hashes:
+    if args.desired_hash not in current_hashes:
       print(
           'Got wrong hash after pulling a new toolchain. '
           'Wanted \'%s\', got one of \'%s\'.' % (
-              desired_hash, ', '.join(current_hashes)), file=sys.stderr)
+              args.desired_hash, ', '.join(current_hashes)), file=sys.stderr)
       return 1
-    SaveTimestampsAndHash(target_dir, desired_hash)
+    SaveTimestampsAndHash(target_dir, args.desired_hash)
 
-  if options.output_json:
+  if args.output_json:
     shutil.copyfile(os.path.join(target_dir, '..', 'data.json'),
-                    options.output_json)
+                    args.output_json)
 
   EnableCrashDumpCollection()
 

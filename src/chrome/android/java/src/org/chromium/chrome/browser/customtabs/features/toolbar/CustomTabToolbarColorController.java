@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.customtabs.features.toolbar;
+import android.app.Activity;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
@@ -17,11 +17,12 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -50,21 +51,24 @@ public class CustomTabToolbarColorController {
     public interface BooleanFunction { boolean get(); }
 
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final ChromeActivity<?> mActivity;
+    private final Activity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabActivityTabProvider mTabProvider;
+    private final TopUiThemeColorProvider mTopUiThemeColorProvider;
 
     private ToolbarManager mToolbarManager;
     private boolean mUseTabThemeColor;
 
     @Inject
     public CustomTabToolbarColorController(BrowserServicesIntentDataProvider intentDataProvider,
-            ChromeActivity<?> activity, CustomTabActivityTabProvider tabProvider,
-            TabObserverRegistrar tabObserverRegistrar) {
+            Activity activity, CustomTabActivityTabProvider tabProvider,
+            TabObserverRegistrar tabObserverRegistrar,
+            TopUiThemeColorProvider topUiThemeColorProvider) {
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;
         mTabProvider = tabProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
+        mTopUiThemeColorProvider = topUiThemeColorProvider;
     }
 
     /**
@@ -107,7 +111,7 @@ public class CustomTabToolbarColorController {
     private void observeTabToUpdateColor() {
         mTabObserverRegistrar.registerActivityTabObserver(new CustomTabTabObserver() {
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
+            public void onPageLoadFinished(Tab tab, GURL url) {
                 // Update the color when the page load finishes.
                 updateColor();
             }
@@ -164,8 +168,7 @@ public class CustomTabToolbarColorController {
                 mIntentDataProvider, mUseTabThemeColor, tab, () -> Previews.isPreview(tab));
         switch (toolbarColorType) {
             case ToolbarColorType.THEME_COLOR:
-                assert tab != null;
-                return TabThemeColorHelper.getColor(tab);
+                return mTopUiThemeColorProvider.calculateColor(tab, tab.getThemeColor());
             case ToolbarColorType.DEFAULT_COLOR:
                 return getDefaultColor();
             case ToolbarColorType.INTENT_TOOLBAR_COLOR:

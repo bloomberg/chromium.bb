@@ -148,6 +148,7 @@ DisplayCGL::DisplayCGL(const egl::DisplayState &state)
     : DisplayGL(state),
       mEGLDisplay(nullptr),
       mContext(nullptr),
+      mThreadsWithCurrentContext(),
       mPixelFormat(nullptr),
       mSupportsGPUSwitching(false),
       mCurrentGPUID(0),
@@ -459,12 +460,6 @@ egl::Error DisplayCGL::validateClientBuffer(const egl::Config *configuration,
     return egl::NoError();
 }
 
-std::string DisplayCGL::getVendorString() const
-{
-    // TODO(cwallez) find a useful vendor string
-    return "";
-}
-
 CGLContextObj DisplayCGL::getCGLContext() const
 {
     return mContext;
@@ -479,7 +474,6 @@ void DisplayCGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
     outExtensions->iosurfaceClientBuffer = true;
     outExtensions->surfacelessContext    = true;
-    outExtensions->deviceQuery           = true;
 
     // Contexts are virtualized so textures and semaphores can be shared globally
     outExtensions->displayTextureShareGroup   = true;
@@ -581,6 +575,11 @@ void DisplayCGL::initializeFrontendFeatures(angle::FrontendFeatures *features) c
 void DisplayCGL::populateFeatureList(angle::FeatureList *features)
 {
     mRenderer->getFeatures().populateFeatureList(features);
+}
+
+RendererGL *DisplayCGL::getRenderer() const
+{
+    return mRenderer.get();
 }
 
 egl::Error DisplayCGL::referenceDiscreteGPU()

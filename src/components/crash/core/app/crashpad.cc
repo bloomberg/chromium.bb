@@ -27,6 +27,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/annotation_list.h"
@@ -159,6 +160,7 @@ void InitializeCrashpadImpl(bool initial_client,
 
   crashpad::AnnotationList::Register();
 
+#if !defined(OS_IOS)
   static crashpad::StringAnnotation<24> ptype_key("ptype");
   ptype_key.Set(browser_process ? base::StringPiece("browser")
                                 : base::StringPiece(process_type));
@@ -172,6 +174,11 @@ void InitializeCrashpadImpl(bool initial_client,
 
   static crashpad::StringAnnotation<24> osarch_key("osarch");
   osarch_key.Set(base::SysInfo::OperatingSystemArchitecture());
+#else
+  // "platform" is used to determine device_model on the crash server.
+  static crashpad::StringAnnotation<24> platform("platform");
+  platform.Set(base::SysInfo::HardwareModelName());
+#endif  // OS_IOS
 
   logging::SetLogMessageHandler(LogMessageHandler);
 
@@ -200,7 +207,7 @@ void InitializeCrashpadImpl(bool initial_client,
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
     SetUploadConsent(crash_reporter_client->GetCollectStatsConsent());
 #endif
@@ -240,7 +247,7 @@ crashpad::CrashpadClient& GetCrashpadClient() {
   return *client;
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void SetUploadConsent(bool consent) {
   if (!g_database)
     return;
@@ -261,18 +268,7 @@ void SetUploadConsent(bool consent) {
                               crash_reporter_client->GetCollectStatsInSample());
 }
 
-bool GetUploadsEnabled() {
-  if (g_database) {
-    crashpad::Settings* settings = g_database->GetSettings();
-    bool enable_uploads;
-    if (settings->GetUploadsEnabled(&enable_uploads)) {
-      return enable_uploads;
-    }
-  }
-
-  return false;
-}
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 void DumpWithoutCrashing() {

@@ -15,17 +15,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -42,33 +41,27 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/google/core/common/google_util.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/gfx/animation/animation.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
-#endif
-
-#if defined(OS_MAC)
-#include "chrome/browser/platform_util.h"
 #endif
 
 using content::BrowserThread;
@@ -77,7 +70,7 @@ namespace {
 
 // The URL for the the Learn More page shown on incognito new tab.
 const char kLearnMoreIncognitoUrl[] =
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     "https://support.google.com/chromebook/?p=incognito";
 #else
     "https://support.google.com/chrome/?p=incognito";
@@ -85,7 +78,7 @@ const char kLearnMoreIncognitoUrl[] =
 
 // The URL for the Learn More page shown on guest session new tab.
 const char kLearnMoreGuestSessionUrl[] =
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     "https://support.google.com/chromebook/?p=chromebook_guest";
 #else
     "https://support.google.com/chrome/?p=ui_guest";
@@ -165,18 +158,17 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
 
-  base::Closure callback = base::Bind(&NTPResourceCache::OnPreferenceChanged,
-                                      base::Unretained(this));
+  base::RepeatingClosure callback = base::BindRepeating(
+      &NTPResourceCache::OnPreferenceChanged, base::Unretained(this));
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
   profile_pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
-  profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
   profile_pref_change_registrar_.Add(prefs::kCookieControlsMode, callback);
 
-  theme_observer_.Add(ui::NativeTheme::GetInstanceForNativeUi());
+  theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
 
   policy_change_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
       profile->GetProfilePolicyConnector()->policy_service(),
@@ -189,71 +181,63 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
 
 NTPResourceCache::~NTPResourceCache() = default;
 
-bool NTPResourceCache::NewTabHTMLNeedsRefresh() {
-#if defined(OS_MAC)
-  // Invalidate if the current value is different from the cached value.
-  bool is_enabled = platform_util::IsSwipeTrackingFromScrollEventsEnabled();
-  if (is_enabled != is_swipe_tracking_from_scroll_events_enabled_) {
-    is_swipe_tracking_from_scroll_events_enabled_ = is_enabled;
-    return true;
-  }
-#endif
-  return false;
-}
-
 NTPResourceCache::WindowType NTPResourceCache::GetWindowType(
     Profile* profile, content::RenderProcessHost* render_host) {
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) {
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
     return GUEST;
-  } else if (render_host) {
-    // Sometimes the |profile| is the parent (non-incognito) version of the user
-    // so we check the |render_host| if it is provided.
-    if (render_host->GetBrowserContext()->IsOffTheRecord())
-      return INCOGNITO;
-  } else if (profile->IsOffTheRecord()) {
+
+  // Sometimes the |profile| is the parent (non-incognito) version of the user
+  // so we check the |render_host| if it is provided.
+  if (render_host && render_host->GetBrowserContext()->IsOffTheRecord())
+    profile = Profile::FromBrowserContext(render_host->GetBrowserContext());
+
+  if (profile->IsIncognitoProfile())
     return INCOGNITO;
-  }
+  if (profile->IsOffTheRecord())
+    return NON_PRIMARY_OTR;
+
   return NORMAL;
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabGuestHTML() {
-  if (!profile_->IsEphemeralGuestProfile()) {
-    if (!new_tab_guest_html_) {
-      GuestNTPInfo guest_ntp_info{kLearnMoreGuestSessionUrl, IDR_GUEST_TAB_HTML,
-                                  IDS_NEW_TAB_GUEST_SESSION_HEADING,
-                                  IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION};
-      new_tab_guest_html_ = CreateNewTabGuestHTML(guest_ntp_info);
-    }
-
-    return new_tab_guest_html_.get();
+  // TODO(crbug.com/1134111): For full launch of ephemeral Guest profiles,
+  // instead of the below code block, use IdentityManager for ephemeral Guest
+  // profiles to check sign in status and return either
+  // |CreateNewTabEphemeralGuestSignedInHTML()| or
+  // |CreateNewTabEphemeralGuestSignedOutHTML()|.
+  if (!new_tab_guest_html_) {
+    GuestNTPInfo guest_ntp_info{kLearnMoreGuestSessionUrl, IDR_GUEST_TAB_HTML,
+                                IDS_NEW_TAB_GUEST_SESSION_HEADING,
+                                IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION};
+    new_tab_guest_html_ = CreateNewTabGuestHTML(guest_ntp_info);
   }
 
-  // TODO(crbug.com/1134111): Use IdentityManager to check sign in status when
-  // Ephemeral Guest sign in functioncality is implemented.
-  const bool is_signed_in =
-      signin_util::GuestSignedInUserData::IsSignedIn(profile_);
-  return is_signed_in ? CreateNewTabEphemeralGuestSignedInHTML()
-                      : CreateNewTabEphemeralGuestSignedOutHTML();
+  return new_tab_guest_html_.get();
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (win_type == GUEST) {
-    return GetNewTabGuestHTML();
-  }
+  switch (win_type) {
+    case GUEST:
+      return GetNewTabGuestHTML();
 
-  if (win_type == INCOGNITO) {
-    if (!new_tab_incognito_html_)
-      CreateNewTabIncognitoHTML();
-    return new_tab_incognito_html_.get();
-  }
+    case INCOGNITO:
+      if (!new_tab_incognito_html_)
+        CreateNewTabIncognitoHTML();
+      return new_tab_incognito_html_.get();
 
-  // Refresh the cached HTML if necessary.
-  // NOTE: NewTabHTMLNeedsRefresh() must be called every time the new tab
-  // HTML is fetched, because it needs to initialize cached values.
-  if (NewTabHTMLNeedsRefresh() || !new_tab_html_)
-    CreateNewTabHTML();
-  return new_tab_html_.get();
+    case NON_PRIMARY_OTR:
+      if (!new_tab_non_primary_otr_html_) {
+        std::string empty_html;
+        new_tab_non_primary_otr_html_ =
+            base::RefCountedString::TakeString(&empty_html);
+      }
+      return new_tab_non_primary_otr_html_.get();
+
+    case NORMAL:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
@@ -292,14 +276,12 @@ void NTPResourceCache::OnPreferenceChanged() {
   // A change occurred to one of the preferences we care about, so flush the
   // cache.
   new_tab_incognito_html_ = nullptr;
-  new_tab_html_ = nullptr;
   new_tab_css_ = nullptr;
 }
 
 // TODO(dbeam): why must Invalidate() and OnPreferenceChanged() both exist?
 void NTPResourceCache::Invalidate() {
   new_tab_incognito_html_ = nullptr;
-  new_tab_html_ = nullptr;
   new_tab_incognito_css_ = nullptr;
   new_tab_css_ = nullptr;
   new_tab_guest_html_ = nullptr;
@@ -317,13 +299,17 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   // Ensure passing off-the-record profile; |profile_| is not an OTR profile.
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK(profile_->HasPrimaryOTRProfile());
+  DCHECK(profile_->HasAnyOffTheRecordProfile());
+  // Cookie controls service returns the same result for all off-the-record
+  // profiles, so it doesn't matter which of them we use.
   CookieControlsService* cookie_controls_service =
       CookieControlsServiceFactory::GetForProfile(
-          profile_->GetPrimaryOTRProfile());
+          profile_->GetAllOffTheRecordProfiles()[0]);
 
   replacements["incognitoTabDescription"] =
-      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_SUBTITLE);
+      l10n_util::GetStringUTF8(reading_list::switches::IsReadingListEnabled()
+                                   ? IDS_NEW_TAB_OTR_SUBTITLE_WITH_READING_LIST
+                                   : IDS_NEW_TAB_OTR_SUBTITLE);
   replacements["incognitoTabHeading"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_TITLE);
   replacements["incognitoTabWarning"] =
@@ -410,7 +396,7 @@ scoped_refptr<base::RefCountedString> NTPResourceCache::CreateNewTabGuestHTML(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   int guest_tab_idr = guest_ntp_info.html_idr;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   guest_tab_idr = IDR_GUEST_SESSION_TAB_HTML;
 
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -427,11 +413,11 @@ scoped_refptr<base::RefCountedString> NTPResourceCache::CreateNewTabGuestHTML(
       const std::string enterprise_domain_manager =
           connector->GetEnterpriseDomainManager();
       enterprise_info = l10n_util::GetStringFUTF16(
-          IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+          IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY, ui::GetChromeOSDeviceName(),
           base::UTF8ToUTF16(enterprise_domain_manager));
     } else if (connector->IsActiveDirectoryManaged()) {
-      enterprise_info =
-          l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED);
+      enterprise_info = l10n_util::GetStringFUTF16(
+          IDS_ASH_ENTERPRISE_DEVICE_MANAGED, ui::GetChromeOSDeviceName());
     } else {
       NOTREACHED() << "Unknown management type";
     }
@@ -481,125 +467,6 @@ scoped_refptr<base::RefCountedString> NTPResourceCache::CreateNewTabGuestHTML(
       ReplaceTemplateExpressions(*guest_tab_html, replacements);
 
   return base::RefCountedString::TakeString(&full_html);
-}
-
-// TODO(alancutter): Consider moving this utility function up somewhere where it
-// can be shared with bookmarks_ui.cc.
-// Ampersands are used by menus to determine which characters to use as shortcut
-// keys. This functionality is not implemented for NTP.
-static base::string16 GetLocalizedString(int message_id) {
-  base::string16 result = l10n_util::GetStringUTF16(message_id);
-  base::Erase(result, '&');
-  return result;
-}
-
-void NTPResourceCache::CreateNewTabHTML() {
-  // TODO(estade): these strings should be defined in their relevant handlers
-  // (in GetLocalizedValues) and should have more legible names.
-  // Show the profile name in the title and most visited labels if the current
-  // profile is not the default.
-  PrefService* prefs = profile_->GetPrefs();
-  base::DictionaryValue load_time_data;
-  load_time_data.SetString(
-      "bookmarkbarattached",
-      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ? "true" : "false");
-  load_time_data.SetString("title", GetLocalizedString(IDS_NEW_TAB_TITLE));
-  load_time_data.SetString("webStoreTitle",
-                           GetLocalizedString(IDS_EXTENSION_WEB_STORE_TITLE));
-  load_time_data.SetString(
-      "webStoreTitleShort",
-      GetLocalizedString(IDS_EXTENSION_WEB_STORE_TITLE_SHORT));
-  load_time_data.SetString("attributionintro",
-                           GetLocalizedString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  load_time_data.SetString("appuninstall",
-                           GetLocalizedString(IDS_EXTENSIONS_UNINSTALL));
-  load_time_data.SetString("appoptions",
-                           GetLocalizedString(IDS_NEW_TAB_APP_OPTIONS));
-  load_time_data.SetString("appdetails",
-                           GetLocalizedString(IDS_NEW_TAB_APP_DETAILS));
-  load_time_data.SetString("appinfodialog",
-                           GetLocalizedString(IDS_APP_CONTEXT_MENU_SHOW_INFO));
-  load_time_data.SetString("appcreateshortcut",
-                           GetLocalizedString(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
-  load_time_data.SetString("appinstalllocally",
-                           GetLocalizedString(IDS_NEW_TAB_APP_INSTALL_LOCALLY));
-  load_time_data.SetString("appDefaultPageName",
-                           GetLocalizedString(IDS_APP_DEFAULT_PAGE_NAME));
-  load_time_data.SetString(
-      "applaunchtypepinned",
-      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
-  load_time_data.SetString(
-      "applaunchtyperegular",
-      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
-  load_time_data.SetString(
-      "applaunchtypewindow",
-      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-  load_time_data.SetString(
-      "applaunchtypefullscreen",
-      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
-  load_time_data.SetString(
-      "syncpromotext", GetLocalizedString(IDS_SYNC_START_SYNC_BUTTON_LABEL));
-  load_time_data.SetString("syncLinkText",
-                           GetLocalizedString(IDS_SYNC_ADVANCED_OPTIONS));
-  load_time_data.SetBoolean("shouldShowSyncLogin",
-                            AppLauncherLoginHandler::ShouldShow(profile_));
-  load_time_data.SetString("learnMore", GetLocalizedString(IDS_LEARN_MORE));
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  load_time_data.SetString(
-      "webStoreLink", google_util::AppendGoogleLocaleParam(
-                          extension_urls::GetWebstoreLaunchURL(), app_locale)
-                          .spec());
-  load_time_data.SetString(
-      "appInstallHintText",
-      GetLocalizedString(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  load_time_data.SetString("learn_more", GetLocalizedString(IDS_LEARN_MORE));
-  load_time_data.SetString(
-      "tile_grid_screenreader_accessible_description",
-      GetLocalizedString(IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION));
-  load_time_data.SetString(
-      "page_switcher_change_title",
-      GetLocalizedString(IDS_NEW_TAB_PAGE_SWITCHER_CHANGE_TITLE));
-  load_time_data.SetString(
-      "page_switcher_same_title",
-      GetLocalizedString(IDS_NEW_TAB_PAGE_SWITCHER_SAME_TITLE));
-  load_time_data.SetString(
-      "runonoslogin", GetLocalizedString(IDS_APP_CONTEXT_MENU_RUN_ON_OS_LOGIN));
-
-  // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
-  // forward gesture. Pass through a flag that indicates whether or not that
-  // feature is enabled.
-  load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
-                            is_swipe_tracking_from_scroll_events_enabled_);
-
-  load_time_data.SetBoolean("showWebStoreIcon",
-                            !prefs->GetBoolean(prefs::kHideWebStoreIcon));
-
-  load_time_data.SetBoolean("canShowAppInfoDialog",
-                            CanPlatformShowAppInfoDialog());
-
-  AppLauncherHandler::GetLocalizedValues(profile_, &load_time_data);
-
-  webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
-
-  // Control fade and resize animations.
-  load_time_data.SetBoolean("anim",
-                            gfx::Animation::ShouldRenderRichAnimation());
-
-  load_time_data.SetBoolean(
-      "isUserSignedIn",
-      IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
-
-  // Load the new tab page template and localize it.
-  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
-      new_tab_html(
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_NEW_TAB_4_HTML));
-  CHECK(*new_tab_html);
-  std::string full_html = webui::GetI18nTemplateHtml(
-      base::StringPiece(reinterpret_cast<const char*>((*new_tab_html)->front()),
-                        (*new_tab_html)->size()),
-      &load_time_data);
-  new_tab_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {

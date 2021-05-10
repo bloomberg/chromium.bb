@@ -22,7 +22,7 @@ to see
 [[2](https://chromium-review.googlesource.com/c/554510/8/content/public/common/content_features.h)]
 2. how to use it
 [[1](https://chromium-review.googlesource.com/c/554510/8/content/common/service_worker/service_worker_utils.cc#153)]
-3. how to wire your new base::Feature to a blink runtime feature[[1](https://chromium.googlesource.com/chromium/src/+/HEAD/content/child/InitializeBlinkFeatures.md)]
+3. how to wire your new base::Feature to a blink runtime feature[[1](https://chromium.googlesource.com/chromium/src/+/master/docs/initialize_blink_features.md)]
 4. how to use it in blink
 [[1](https://chromium-review.googlesource.com/c/554510/8/third_party/blnk/renderere/core/workers/worker_thread.cc)]
 
@@ -50,7 +50,8 @@ autoninja -C out/Default unit_tests
 ./out/Default/bin/run_unit_tests --gtest_filter=AboutFlagsHistogramTest.CheckHistograms
 ```
 
-That test will ask you to add several entries to enums.xml.
+That test will ask you to add several entries to enums.xml. After doing so, run `git cl format`
+which will insert the entries in enums.xml in the correct order and run the tests again.
 You can refer to [this CL](https://chromium-review.googlesource.com/c/593707) as an example.
 
 Finally, run the following test.

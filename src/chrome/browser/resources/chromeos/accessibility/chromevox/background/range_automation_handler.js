@@ -6,11 +6,6 @@
  * @fileoverview Handles automation from ChromeVox's current range.
  */
 
-goog.provide('RangeAutomationHandler');
-
-goog.require('BaseAutomationHandler');
-
-goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -21,7 +16,7 @@ const StateType = chrome.automation.StateType;
 /**
  * @implements {ChromeVoxStateObserver}
  */
-RangeAutomationHandler = class extends BaseAutomationHandler {
+export class RangeAutomationHandler extends BaseAutomationHandler {
   constructor() {
     super(undefined);
 
@@ -199,7 +194,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
 
     const event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom,
-        evt.intents);
+        evt.eventFromAction, evt.intents);
     this.onEventIfInRange(event);
   }
 
@@ -243,6 +238,4 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
     return rectA.left === rectB.left && rectA.top === rectB.top &&
         rectA.width === rectB.width && rectA.height === rectB.height;
   }
-};
-
-});  // goog.scope
+}

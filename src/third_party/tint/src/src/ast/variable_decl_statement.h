@@ -26,45 +26,41 @@ namespace tint {
 namespace ast {
 
 /// A variable declaration statement
-class VariableDeclStatement : public Statement {
+class VariableDeclStatement
+    : public Castable<VariableDeclStatement, Statement> {
  public:
-  /// Constructor
-  VariableDeclStatement();
-  /// Constructor
-  /// @param variable the variable
-  explicit VariableDeclStatement(std::unique_ptr<Variable> variable);
   /// Constructor
   /// @param source the variable statement source
   /// @param variable the variable
-  VariableDeclStatement(const Source& source,
-                        std::unique_ptr<Variable> variable);
+  VariableDeclStatement(const Source& source, Variable* variable);
   /// Move constructor
   VariableDeclStatement(VariableDeclStatement&&);
   ~VariableDeclStatement() override;
 
-  /// Sets the variable
-  /// @param variable the variable to set
-  void set_variable(std::unique_ptr<Variable> variable) {
-    variable_ = std::move(variable);
-  }
   /// @returns the variable
-  Variable* variable() const { return variable_.get(); }
+  Variable* variable() const { return variable_; }
 
-  /// @returns true if this is an variable statement
-  bool IsVariableDecl() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  VariableDeclStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   VariableDeclStatement(const VariableDeclStatement&) = delete;
 
-  std::unique_ptr<Variable> variable_;
+  Variable* const variable_;
 };
 
 }  // namespace ast

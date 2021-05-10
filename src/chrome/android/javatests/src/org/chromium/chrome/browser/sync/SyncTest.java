@@ -23,8 +23,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.SigninHelperProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
@@ -48,7 +49,6 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    @DisabledTest(message = "crbug.com/1144221")
     public void testSignInAndOut() {
         CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
 
@@ -58,7 +58,7 @@ public class SyncTest {
 
         // Signing back in should re-enable sync.
         mSyncTestRule.signinAndEnableSync(accountInfo);
-        Assert.assertTrue("Sync should be re-enabled.", SyncTestUtil.isSyncActive());
+        Assert.assertTrue("Sync should be re-enabled.", SyncTestUtil.isSyncFeatureActive());
     }
 
     @Test
@@ -124,14 +124,14 @@ public class SyncTest {
 
             // Starts the rename process. Normally, this is triggered by the broadcast
             // listener as well.
-            SigninHelper.get().validateAccountSettings(true);
+            SigninHelperProvider.get().validateAccountSettings(true);
         });
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(mSyncTestRule.getCurrentSignedInAccount().getEmail(),
                     Matchers.is(newAccount.name));
         });
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     @Test
@@ -155,7 +155,8 @@ public class SyncTest {
                 mSyncTestRule.setUpAccountAndEnableSyncForTesting());
         String authority = AndroidSyncSettings.getContractAuthority();
 
-        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsChromeSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getDoesMasterSyncAllowSyncOnUiThread());
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android sync should turn Chrome sync engine off.
@@ -164,7 +165,7 @@ public class SyncTest {
 
         // Enabling Android sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     @Test
@@ -175,7 +176,8 @@ public class SyncTest {
     public void testStopAndStartSyncThroughAndroidMasterSync() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
 
-        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsChromeSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getDoesMasterSyncAllowSyncOnUiThread());
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android's master sync should turn Chrome sync engine off.
@@ -184,7 +186,7 @@ public class SyncTest {
 
         // Enabling Android's master sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     @Test
@@ -197,7 +199,8 @@ public class SyncTest {
                 mSyncTestRule.setUpAccountAndEnableSyncForTesting());
         String authority = AndroidSyncSettings.getContractAuthority();
 
-        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsChromeSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getDoesMasterSyncAllowSyncOnUiThread());
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
         Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
 
@@ -219,7 +222,7 @@ public class SyncTest {
         // But then re-enabling Chrome sync should.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
         Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     @Test
@@ -231,7 +234,8 @@ public class SyncTest {
                 mSyncTestRule.setUpAccountAndEnableSyncForTesting());
         String authority = AndroidSyncSettings.getContractAuthority();
 
-        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getIsChromeSyncEnabledOnUiThread());
+        Assert.assertTrue(AndroidSyncSettingsTestUtils.getDoesMasterSyncAllowSyncOnUiThread());
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
         Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
 
@@ -253,7 +257,7 @@ public class SyncTest {
         // But then re-enabling master sync should.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     @Test

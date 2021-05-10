@@ -35,10 +35,12 @@
 #include "src/debug/debug-frames.h"
 #include "src/debug/debug.h"
 #include "src/deoptimizer/deoptimizer.h"
+#include "src/deoptimizer/materialized-object-store.h"
 #include "src/diagnostics/basic-block-profiler.h"
 #include "src/diagnostics/compilation-statistics.h"
 #include "src/execution/frames-inl.h"
 #include "src/execution/isolate-inl.h"
+#include "src/execution/local-isolate.h"
 #include "src/execution/messages.h"
 #include "src/execution/microtask-queue.h"
 #include "src/execution/protectors-inl.h"
@@ -62,7 +64,6 @@
 #include "src/objects/backing-store.h"
 #include "src/objects/elements.h"
 #include "src/objects/feedback-vector.h"
-#include "src/objects/frame-array-inl.h"
 #include "src/objects/hash-table-inl.h"
 #include "src/objects/js-array-inl.h"
 #include "src/objects/js-generator-inl.h"
@@ -91,6 +92,7 @@
 #include "src/utils/version.h"
 #include "src/wasm/wasm-code-manager.h"
 #include "src/wasm/wasm-engine.h"
+#include "src/wasm/wasm-module.h"
 #include "src/wasm/wasm-objects.h"
 #include "src/zone/accounting-allocator.h"
 #include "src/zone/type-stats.h"
@@ -103,6 +105,7 @@
 #endif  // V8_OS_WIN64
 
 #ifdef V8_ENABLE_CONSERVATIVE_STACK_SCANNING
+#include "src/base/platform/wrappers.h"
 #include "src/heap/conservative-stack-visitor.h"
 #endif
 
@@ -378,7 +381,7 @@ size_t Isolate::HashIsolateForEmbeddedBlob() {
   DCHECK(builtins_.is_initialized());
   DCHECK(Builtins::AllBuiltinsAreIsolateIndependent());
 
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   static constexpr size_t kSeed = 0;
   size_t hash = kSeed;
@@ -612,84 +615,69 @@ StackTraceFailureMessage::StackTraceFailureMessage(Isolate* isolate, void* ptr1,
   }
 }
 
-class FrameArrayBuilder {
+class StackTraceBuilder {
  public:
   enum FrameFilterMode { ALL, CURRENT_SECURITY_CONTEXT };
 
-  FrameArrayBuilder(Isolate* isolate, FrameSkipMode mode, int limit,
+  StackTraceBuilder(Isolate* isolate, FrameSkipMode mode, int limit,
                     Handle<Object> caller, FrameFilterMode filter_mode)
       : isolate_(isolate),
         mode_(mode),
         limit_(limit),
         caller_(caller),
+        skip_next_frame_(mode != SKIP_NONE),
         check_security_context_(filter_mode == CURRENT_SECURITY_CONTEXT) {
-    switch (mode_) {
-      case SKIP_FIRST:
-        skip_next_frame_ = true;
-        break;
-      case SKIP_UNTIL_SEEN:
-        DCHECK(caller_->IsJSFunction());
-        skip_next_frame_ = true;
-        break;
-      case SKIP_NONE:
-        skip_next_frame_ = false;
-        break;
-    }
-
-    elements_ = isolate->factory()->NewFrameArray(Min(limit, 10));
+    DCHECK_IMPLIES(mode_ == SKIP_UNTIL_SEEN, caller_->IsJSFunction());
+    // Modern web applications are usually built with multiple layers of
+    // framework and library code, and stack depth tends to be more than
+    // a dozen frames, so we over-allocate a bit here to avoid growing
+    // the elements array in the common case.
+    elements_ = isolate->factory()->NewFixedArray(std::min(64, limit));
   }
 
   void AppendAsyncFrame(Handle<JSGeneratorObject> generator_object) {
-    if (full()) return;
     Handle<JSFunction> function(generator_object->function(), isolate_);
     if (!IsVisibleInStackTrace(function)) return;
-    int flags = FrameArray::kIsAsync;
-    if (IsStrictFrame(function)) flags |= FrameArray::kIsStrict;
+    int flags = StackFrameInfo::kIsAsync;
+    if (IsStrictFrame(function)) flags |= StackFrameInfo::kIsStrict;
 
     Handle<Object> receiver(generator_object->receiver(), isolate_);
-    Handle<AbstractCode> code(
-        AbstractCode::cast(function->shared().GetBytecodeArray()), isolate_);
-    int offset = Smi::ToInt(generator_object->input_or_debug_pos());
+    Handle<BytecodeArray> code(function->shared().GetBytecodeArray(isolate_),
+                               isolate_);
     // The stored bytecode offset is relative to a different base than what
     // is used in the source position table, hence the subtraction.
-    offset -= BytecodeArray::kHeaderSize - kHeapObjectTag;
+    int offset = Smi::ToInt(generator_object->input_or_debug_pos()) -
+                 (BytecodeArray::kHeaderSize - kHeapObjectTag);
 
     Handle<FixedArray> parameters = isolate_->factory()->empty_fixed_array();
     if (V8_UNLIKELY(FLAG_detailed_error_stack_trace)) {
-      int param_count = function->shared().internal_formal_parameter_count();
-      parameters = isolate_->factory()->NewFixedArray(param_count);
-      for (int i = 0; i < param_count; i++) {
-        parameters->set(i, generator_object->parameters_and_registers().get(i));
-      }
+      parameters = isolate_->factory()->CopyFixedArrayUpTo(
+          handle(generator_object->parameters_and_registers(), isolate_),
+          function->shared().internal_formal_parameter_count());
     }
 
-    elements_ = FrameArray::AppendJSFrame(elements_, receiver, function, code,
-                                          offset, flags, parameters);
+    AppendFrame(receiver, function, code, offset, flags, parameters);
   }
 
   void AppendPromiseCombinatorFrame(Handle<JSFunction> element_function,
-                                    Handle<JSFunction> combinator,
-                                    FrameArray::Flag combinator_flag,
-                                    Handle<Context> context) {
-    if (full()) return;
-    int flags = FrameArray::kIsAsync | combinator_flag;
-
-    Handle<Context> native_context(context->native_context(), isolate_);
+                                    Handle<JSFunction> combinator) {
     if (!IsVisibleInStackTrace(combinator)) return;
+    int flags =
+        StackFrameInfo::kIsAsync | StackFrameInfo::kIsSourcePositionComputed;
 
-    Handle<Object> receiver(native_context->promise_function(), isolate_);
-    Handle<AbstractCode> code(AbstractCode::cast(combinator->code()), isolate_);
+    Handle<Object> receiver(combinator->native_context().promise_function(),
+                            isolate_);
+    Handle<Code> code(combinator->code(), isolate_);
 
     // TODO(mmarchini) save Promises list from the Promise combinator
     Handle<FixedArray> parameters = isolate_->factory()->empty_fixed_array();
 
     // We store the offset of the promise into the element function's
     // hash field for element callbacks.
-    int const offset =
+    int promise_index =
         Smi::ToInt(Smi::cast(element_function->GetIdentityHash())) - 1;
 
-    elements_ = FrameArray::AppendJSFrame(elements_, receiver, combinator, code,
-                                          offset, flags, parameters);
+    AppendFrame(receiver, combinator, code, promise_index, flags, parameters);
   }
 
   void AppendJavaScriptFrame(
@@ -697,48 +685,37 @@ class FrameArrayBuilder {
     // Filter out internal frames that we do not want to show.
     if (!IsVisibleInStackTrace(summary.function())) return;
 
-    Handle<AbstractCode> abstract_code = summary.abstract_code();
-    const int offset = summary.code_offset();
-
-    const bool is_constructor = summary.is_constructor();
-
     int flags = 0;
     Handle<JSFunction> function = summary.function();
-    if (IsStrictFrame(function)) flags |= FrameArray::kIsStrict;
-    if (is_constructor) flags |= FrameArray::kIsConstructor;
+    if (IsStrictFrame(function)) flags |= StackFrameInfo::kIsStrict;
+    if (summary.is_constructor()) flags |= StackFrameInfo::kIsConstructor;
 
-    Handle<FixedArray> parameters = isolate_->factory()->empty_fixed_array();
-    if (V8_UNLIKELY(FLAG_detailed_error_stack_trace)) {
-      parameters = summary.parameters();
-    }
-
-    elements_ = FrameArray::AppendJSFrame(
-        elements_, TheHoleToUndefined(isolate_, summary.receiver()), function,
-        abstract_code, offset, flags, parameters);
+    AppendFrame(summary.receiver(), function, summary.abstract_code(),
+                summary.code_offset(), flags, summary.parameters());
   }
 
   void AppendWasmFrame(FrameSummary::WasmFrameSummary const& summary) {
     if (summary.code()->kind() != wasm::WasmCode::kFunction) return;
     Handle<WasmInstanceObject> instance = summary.wasm_instance();
-    int flags = 0;
+    int flags = StackFrameInfo::kIsWasm;
     if (instance->module_object().is_asm_js()) {
-      flags |= FrameArray::kIsAsmJsWasmFrame;
+      flags |= StackFrameInfo::kIsAsmJsWasm;
       if (summary.at_to_number_conversion()) {
-        flags |= FrameArray::kAsmJsAtNumberConversion;
+        flags |= StackFrameInfo::kIsAsmJsAtNumberConversion;
       }
-    } else {
-      flags |= FrameArray::kIsWasmFrame;
     }
 
-    elements_ = FrameArray::AppendWasmFrame(
-        elements_, instance, summary.function_index(), summary.code(),
-        summary.code_offset(), flags);
+    auto code = Managed<wasm::GlobalWasmCodeRef>::Allocate(
+        isolate_, 0, summary.code(),
+        instance->module_object().shared_native_module());
+    AppendFrame(instance,
+                handle(Smi::FromInt(summary.function_index()), isolate_), code,
+                summary.code_offset(), flags,
+                isolate_->factory()->empty_fixed_array());
   }
 
   void AppendBuiltinExitFrame(BuiltinExitFrame* exit_frame) {
-    Handle<JSFunction> function = handle(exit_frame->function(), isolate_);
-
-    // Filter out internal frames that we do not want to show.
+    Handle<JSFunction> function(exit_frame->function(), isolate_);
     if (!IsVisibleInStackTrace(function)) return;
 
     // TODO(szuend): Remove this check once the flag is enabled
@@ -754,8 +731,8 @@ class FrameArrayBuilder {
         static_cast<int>(exit_frame->pc() - code->InstructionStart());
 
     int flags = 0;
-    if (IsStrictFrame(function)) flags |= FrameArray::kIsStrict;
-    if (exit_frame->IsConstructor()) flags |= FrameArray::kIsConstructor;
+    if (IsStrictFrame(function)) flags |= StackFrameInfo::kIsStrict;
+    if (exit_frame->IsConstructor()) flags |= StackFrameInfo::kIsConstructor;
 
     Handle<FixedArray> parameters = isolate_->factory()->empty_fixed_array();
     if (V8_UNLIKELY(FLAG_detailed_error_stack_trace)) {
@@ -766,31 +743,13 @@ class FrameArrayBuilder {
       }
     }
 
-    elements_ = FrameArray::AppendJSFrame(elements_, receiver, function,
-                                          Handle<AbstractCode>::cast(code),
-                                          offset, flags, parameters);
+    AppendFrame(receiver, function, code, offset, flags, parameters);
   }
 
-  bool full() { return elements_->FrameCount() >= limit_; }
+  bool Full() { return index_ >= limit_; }
 
-  Handle<FrameArray> GetElements() {
-    elements_->ShrinkToFit(isolate_);
-    return elements_;
-  }
-
-  // Creates a StackTraceFrame object for each frame in the FrameArray.
-  Handle<FixedArray> GetElementsAsStackTraceFrameArray() {
-    elements_->ShrinkToFit(isolate_);
-    const int frame_count = elements_->FrameCount();
-    Handle<FixedArray> stack_trace =
-        isolate_->factory()->NewFixedArray(frame_count);
-
-    for (int i = 0; i < frame_count; ++i) {
-      Handle<StackTraceFrame> frame =
-          isolate_->factory()->NewStackTraceFrame(elements_, i);
-      stack_trace->set(i, *frame);
-    }
-    return stack_trace;
+  Handle<FixedArray> Build() {
+    return FixedArray::ShrinkOrEmpty(isolate_, elements_, index_);
   }
 
  private:
@@ -852,22 +811,34 @@ class FrameArrayBuilder {
     return isolate_->context().HasSameSecurityTokenAs(function->context());
   }
 
-  // TODO(jgruber): Fix all cases in which frames give us a hole value (e.g. the
-  // receiver in RegExp constructor frames.
-  Handle<Object> TheHoleToUndefined(Isolate* isolate, Handle<Object> in) {
-    return (in->IsTheHole(isolate))
-               ? Handle<Object>::cast(isolate->factory()->undefined_value())
-               : in;
+  void AppendFrame(Handle<Object> receiver_or_instance, Handle<Object> function,
+                   Handle<HeapObject> code, int offset, int flags,
+                   Handle<FixedArray> parameters) {
+    DCHECK_LE(index_, elements_->length());
+    DCHECK_LE(elements_->length(), limit_);
+    if (index_ == elements_->length()) {
+      elements_ = isolate_->factory()->CopyFixedArrayAndGrow(
+          elements_, std::min(16, limit_ - elements_->length()));
+    }
+    if (receiver_or_instance->IsTheHole(isolate_)) {
+      // TODO(jgruber): Fix all cases in which frames give us a hole value
+      // (e.g. the receiver in RegExp constructor frames).
+      receiver_or_instance = isolate_->factory()->undefined_value();
+    }
+    auto info = isolate_->factory()->NewStackFrameInfo(
+        receiver_or_instance, function, code, offset, flags, parameters);
+    elements_->set(index_++, *info);
   }
 
   Isolate* isolate_;
   const FrameSkipMode mode_;
-  int limit_;
+  int index_ = 0;
+  const int limit_;
   const Handle<Object> caller_;
-  bool skip_next_frame_ = true;
+  bool skip_next_frame_;
   bool encountered_strict_function_ = false;
   const bool check_security_context_;
-  Handle<FrameArray> elements_;
+  Handle<FixedArray> elements_;
 };
 
 bool GetStackTraceLimit(Isolate* isolate, int* result) {
@@ -878,7 +849,7 @@ bool GetStackTraceLimit(Isolate* isolate, int* result) {
   if (!stack_trace_limit->IsNumber()) return false;
 
   // Ensure that limit is not negative.
-  *result = Max(FastD2IChecked(stack_trace_limit->Number()), 0);
+  *result = std::max(FastD2IChecked(stack_trace_limit->Number()), 0);
 
   if (*result != FLAG_stack_trace_limit) {
     isolate->CountUsage(v8::Isolate::kErrorStackTraceLimit);
@@ -889,6 +860,8 @@ bool GetStackTraceLimit(Isolate* isolate, int* result) {
 
 bool NoExtension(const v8::FunctionCallbackInfo<v8::Value>&) { return false; }
 
+namespace {
+
 bool IsBuiltinFunction(Isolate* isolate, HeapObject object,
                        Builtins::Name builtin_index) {
   if (!object.IsJSFunction()) return false;
@@ -897,8 +870,8 @@ bool IsBuiltinFunction(Isolate* isolate, HeapObject object,
 }
 
 void CaptureAsyncStackTrace(Isolate* isolate, Handle<JSPromise> promise,
-                            FrameArrayBuilder* builder) {
-  while (!builder->full()) {
+                            StackTraceBuilder* builder) {
+  while (!builder->Full()) {
     // Check that the {promise} is not settled.
     if (promise->status() != Promise::kPending) return;
 
@@ -949,8 +922,7 @@ void CaptureAsyncStackTrace(Isolate* isolate, Handle<JSPromise> promise,
       Handle<Context> context(function->context(), isolate);
       Handle<JSFunction> combinator(context->native_context().promise_all(),
                                     isolate);
-      builder->AppendPromiseCombinatorFrame(function, combinator,
-                                            FrameArray::kIsPromiseAll, context);
+      builder->AppendPromiseCombinatorFrame(function, combinator);
 
       // Now peak into the Promise.all() resolve element context to
       // find the promise capability that's being resolved when all
@@ -968,8 +940,7 @@ void CaptureAsyncStackTrace(Isolate* isolate, Handle<JSPromise> promise,
       Handle<Context> context(function->context(), isolate);
       Handle<JSFunction> combinator(context->native_context().promise_any(),
                                     isolate);
-      builder->AppendPromiseCombinatorFrame(function, combinator,
-                                            FrameArray::kIsPromiseAny, context);
+      builder->AppendPromiseCombinatorFrame(function, combinator);
 
       // Now peak into the Promise.any() reject element context to
       // find the promise capability that's being resolved when any of
@@ -1009,36 +980,34 @@ void CaptureAsyncStackTrace(Isolate* isolate, Handle<JSPromise> promise,
   }
 }
 
-namespace {
-
 struct CaptureStackTraceOptions {
   int limit;
   // 'filter_mode' and 'skip_mode' are somewhat orthogonal. 'filter_mode'
   // specifies whether to capture all frames, or just frames in the same
   // security context. While 'skip_mode' allows skipping the first frame.
   FrameSkipMode skip_mode;
-  FrameArrayBuilder::FrameFilterMode filter_mode;
+  StackTraceBuilder::FrameFilterMode filter_mode;
 
   bool capture_builtin_exit_frames;
   bool capture_only_frames_subject_to_debugging;
   bool async_stack_trace;
 };
 
-Handle<Object> CaptureStackTrace(Isolate* isolate, Handle<Object> caller,
-                                 CaptureStackTraceOptions options) {
+Handle<FixedArray> CaptureStackTrace(Isolate* isolate, Handle<Object> caller,
+                                     CaptureStackTraceOptions options) {
   DisallowJavascriptExecution no_js(isolate);
 
   TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("v8.stack_trace"),
                      "CaptureStackTrace", "maxFrameCount", options.limit);
 
   wasm::WasmCodeRefScope code_ref_scope;
-  FrameArrayBuilder builder(isolate, options.skip_mode, options.limit, caller,
+  StackTraceBuilder builder(isolate, options.skip_mode, options.limit, caller,
                             options.filter_mode);
 
   // Build the regular stack trace, and remember the last relevant
   // frame ID and inlined index (for the async stack trace handling
   // below, which starts from this last frame).
-  for (StackFrameIterator it(isolate); !it.done() && !builder.full();
+  for (StackFrameIterator it(isolate); !it.done() && !builder.Full();
        it.Advance()) {
     StackFrame* const frame = it.frame();
     switch (frame->type()) {
@@ -1046,13 +1015,14 @@ Handle<Object> CaptureStackTrace(Isolate* isolate, Handle<Object> caller,
       case StackFrame::JAVA_SCRIPT_BUILTIN_CONTINUATION_WITH_CATCH:
       case StackFrame::OPTIMIZED:
       case StackFrame::INTERPRETED:
+      case StackFrame::BASELINE:
       case StackFrame::BUILTIN:
       case StackFrame::WASM: {
         // A standard frame may include many summarized frames (due to
         // inlining).
         std::vector<FrameSummary> frames;
         CommonFrame::cast(frame)->Summarize(&frames);
-        for (size_t i = frames.size(); i-- != 0 && !builder.full();) {
+        for (size_t i = frames.size(); i-- != 0 && !builder.Full();) {
           auto& summary = frames[i];
           if (options.capture_only_frames_subject_to_debugging &&
               !summary.is_subject_to_debugging()) {
@@ -1152,7 +1122,7 @@ Handle<Object> CaptureStackTrace(Isolate* isolate, Handle<Object> caller,
     }
   }
 
-  Handle<FixedArray> stack_trace = builder.GetElementsAsStackTraceFrameArray();
+  Handle<FixedArray> stack_trace = builder.Build();
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("v8.stack_trace"),
                    "CaptureStackTrace", "frameCount", stack_trace->length());
   return stack_trace;
@@ -1171,7 +1141,7 @@ Handle<Object> Isolate::CaptureSimpleStackTrace(Handle<JSReceiver> error_object,
   options.skip_mode = mode;
   options.capture_builtin_exit_frames = true;
   options.async_stack_trace = FLAG_async_stack_traces;
-  options.filter_mode = FrameArrayBuilder::CURRENT_SECURITY_CONTEXT;
+  options.filter_mode = StackTraceBuilder::CURRENT_SECURITY_CONTEXT;
   options.capture_only_frames_subject_to_debugging = false;
 
   return CaptureStackTrace(this, caller, options);
@@ -1246,8 +1216,8 @@ Address Isolate::GetAbstractPC(int* line, int* column) {
     *column = -1;
   }
 
-  if (frame->is_interpreted()) {
-    InterpretedFrame* iframe = static_cast<InterpretedFrame*>(frame);
+  if (frame->is_unoptimized()) {
+    UnoptimizedFrame* iframe = static_cast<UnoptimizedFrame*>(frame);
     Address bytecode_start =
         iframe->GetBytecodeArray().GetFirstBytecodeAddress();
     return bytecode_start + iframe->GetBytecodeOffset();
@@ -1259,18 +1229,17 @@ Address Isolate::GetAbstractPC(int* line, int* column) {
 Handle<FixedArray> Isolate::CaptureCurrentStackTrace(
     int frame_limit, StackTrace::StackTraceOptions stack_trace_options) {
   CaptureStackTraceOptions options;
-  options.limit = Max(frame_limit, 0);  // Ensure no negative values.
+  options.limit = std::max(frame_limit, 0);  // Ensure no negative values.
   options.skip_mode = SKIP_NONE;
   options.capture_builtin_exit_frames = false;
   options.async_stack_trace = false;
   options.filter_mode =
       (stack_trace_options & StackTrace::kExposeFramesAcrossSecurityOrigins)
-          ? FrameArrayBuilder::ALL
-          : FrameArrayBuilder::CURRENT_SECURITY_CONTEXT;
+          ? StackTraceBuilder::ALL
+          : StackTraceBuilder::CURRENT_SECURITY_CONTEXT;
   options.capture_only_frames_subject_to_debugging = true;
 
-  return Handle<FixedArray>::cast(
-      CaptureStackTrace(this, factory()->undefined_value(), options));
+  return CaptureStackTrace(this, factory()->undefined_value(), options);
 }
 
 void Isolate::PrintStack(FILE* out, PrintStackMode mode) {
@@ -1341,10 +1310,10 @@ void Isolate::ReportFailedAccessCheck(Handle<JSObject> receiver) {
   HandleScope scope(this);
   Handle<Object> data;
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     AccessCheckInfo access_check_info = AccessCheckInfo::Get(this, receiver);
     if (access_check_info.is_null()) {
-      AllowHeapAllocation doesnt_matter_anymore;
+      no_gc.Release();
       return ScheduleThrow(
           *factory()->NewTypeError(MessageTemplate::kNoAccess));
     }
@@ -1367,7 +1336,7 @@ bool Isolate::MayAccess(Handle<Context> accessing_context,
   // During bootstrapping, callback functions are not enabled yet.
   if (bootstrapper()->IsActive()) return true;
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
 
     if (receiver->IsJSGlobalProxy()) {
       Object receiver_context = JSGlobalProxy::cast(*receiver).native_context();
@@ -1389,7 +1358,7 @@ bool Isolate::MayAccess(Handle<Context> accessing_context,
   Handle<Object> data;
   v8::AccessCheckCallback callback = nullptr;
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     AccessCheckInfo access_check_info = AccessCheckInfo::Get(this, receiver);
     if (access_check_info.is_null()) return false;
     Object fun_obj = access_check_info.callback();
@@ -1594,6 +1563,8 @@ Handle<JSMessageObject> Isolate::CreateMessageOrAbort(
 
 Object Isolate::ThrowInternal(Object raw_exception, MessageLocation* location) {
   DCHECK(!has_pending_exception());
+  DCHECK_IMPLIES(trap_handler::IsTrapHandlerEnabled(),
+                 !trap_handler::IsThreadInWasm());
 
   HandleScope scope(this);
   Handle<Object> exception(raw_exception, this);
@@ -1612,8 +1583,7 @@ Object Isolate::ThrowInternal(Object raw_exception, MessageLocation* location) {
 // Script::GetLineNumber and Script::GetColumnNumber can allocate on the heap to
 // initialize the line_ends array, so be careful when calling them.
 #ifdef DEBUG
-      if (AllowHeapAllocation::IsAllowed() &&
-          AllowGarbageCollection::IsAllowed()) {
+      if (AllowGarbageCollection::IsAllowed()) {
 #else
       if ((false)) {
 #endif
@@ -1690,6 +1660,8 @@ Object Isolate::ReThrow(Object exception) {
 
 Object Isolate::UnwindAndFindHandler() {
   Object exception = pending_exception();
+  DCHECK_IMPLIES(trap_handler::IsTrapHandlerEnabled(),
+                 !trap_handler::IsThreadInWasm());
 
   auto FoundHandler = [&](Context context, Address instruction_start,
                           intptr_t handler_offset,
@@ -1763,10 +1735,6 @@ Object Isolate::UnwindAndFindHandler() {
       }
 
       case StackFrame::WASM: {
-        if (trap_handler::IsThreadInWasm()) {
-          trap_handler::ClearThreadInWasm();
-        }
-
         if (!catchable_by_wasm) break;
 
         // For WebAssembly frames we perform a lookup in the handler table.
@@ -1779,14 +1747,14 @@ Object Isolate::UnwindAndFindHandler() {
             wasm_engine()->code_manager()->LookupCode(frame->pc());
         int offset = wasm_frame->LookupExceptionHandlerInTable();
         if (offset < 0) break;
+        wasm_engine()->SampleCatchEvent(this);
         // Compute the stack pointer from the frame pointer. This ensures that
         // argument slots on the stack are dropped as returning would.
         Address return_sp = frame->fp() +
                             StandardFrameConstants::kFixedFrameSizeAboveFp -
                             wasm_code->stack_slots() * kSystemPointerSize;
 
-        // This is going to be handled by Wasm, so we need to set the TLS flag
-        // again. It was cleared above assuming the frame would be unwound.
+        // This is going to be handled by Wasm, so we need to set the TLS flag.
         trap_handler::SetThreadInWasm();
 
         return FoundHandler(Context(), wasm_code->instruction_start(), offset,
@@ -1796,10 +1764,7 @@ Object Isolate::UnwindAndFindHandler() {
       case StackFrame::WASM_COMPILE_LAZY: {
         // Can only fail directly on invocation. This happens if an invalid
         // function was validated lazily.
-        DCHECK_IMPLIES(trap_handler::IsTrapHandlerEnabled(),
-                       trap_handler::IsThreadInWasm());
         DCHECK(FLAG_wasm_lazy_validation);
-        trap_handler::ClearThreadInWasm();
         break;
       }
 
@@ -1858,11 +1823,12 @@ Object Isolate::UnwindAndFindHandler() {
                             code.constant_pool(), return_sp, frame->fp());
       }
 
-      case StackFrame::INTERPRETED: {
+      case StackFrame::INTERPRETED:
+      case StackFrame::BASELINE: {
         // For interpreted frame we perform a range lookup in the handler table.
         if (!catchable_by_js) break;
-        InterpretedFrame* js_frame = static_cast<InterpretedFrame*>(frame);
-        int register_slots = InterpreterFrameConstants::RegisterStackSlotCount(
+        UnoptimizedFrame* js_frame = UnoptimizedFrame::cast(frame);
+        int register_slots = UnoptimizedFrameConstants::RegisterStackSlotCount(
             js_frame->GetBytecodeArray().register_count());
         int context_reg = 0;  // Will contain register index holding context.
         int offset =
@@ -1883,12 +1849,26 @@ Object Isolate::UnwindAndFindHandler() {
         // the correct context for the handler from the interpreter register.
         Context context =
             Context::cast(js_frame->ReadInterpreterRegister(context_reg));
-        js_frame->PatchBytecodeOffset(static_cast<int>(offset));
+        DCHECK(context.IsContext());
 
-        Code code =
-            builtins()->builtin(Builtins::kInterpreterEnterBytecodeDispatch);
-        return FoundHandler(context, code.InstructionStart(), 0,
-                            code.constant_pool(), return_sp, frame->fp());
+        if (frame->is_baseline()) {
+          BaselineFrame* sp_frame = BaselineFrame::cast(js_frame);
+          Code code = sp_frame->LookupCode();
+          intptr_t pc_offset = sp_frame->GetPCForBytecodeOffset(offset);
+          // Patch the context register directly on the frame, so that we don't
+          // need to have a context read + write in the baseline code.
+          sp_frame->PatchContext(context);
+          return FoundHandler(Context(), code.InstructionStart(), pc_offset,
+                              code.constant_pool(), return_sp, sp_frame->fp());
+        } else {
+          InterpretedFrame::cast(js_frame)->PatchBytecodeOffset(
+              static_cast<int>(offset));
+
+          Code code =
+              builtins()->builtin(Builtins::kInterpreterEnterBytecodeDispatch);
+          return FoundHandler(context, code.InstructionStart(), 0,
+                              code.constant_pool(), return_sp, frame->fp());
+        }
       }
 
       case StackFrame::BUILTIN:
@@ -2011,6 +1991,7 @@ Isolate::CatchType Isolate::PredictExceptionCatcher() {
       // For JavaScript frames we perform a lookup in the handler table.
       case StackFrame::OPTIMIZED:
       case StackFrame::INTERPRETED:
+      case StackFrame::BASELINE:
       case StackFrame::BUILTIN: {
         JavaScriptFrame* js_frame = JavaScriptFrame::cast(frame);
         Isolate::CatchType prediction = ToCatchType(PredictException(js_frame));
@@ -2107,17 +2088,16 @@ void Isolate::PrintCurrentStackTrace(FILE* out) {
   options.skip_mode = SKIP_NONE;
   options.capture_builtin_exit_frames = true;
   options.async_stack_trace = FLAG_async_stack_traces;
-  options.filter_mode = FrameArrayBuilder::CURRENT_SECURITY_CONTEXT;
+  options.filter_mode = StackTraceBuilder::CURRENT_SECURITY_CONTEXT;
   options.capture_only_frames_subject_to_debugging = false;
 
-  Handle<FixedArray> frames = Handle<FixedArray>::cast(
-      CaptureStackTrace(this, this->factory()->undefined_value(), options));
+  Handle<FixedArray> frames =
+      CaptureStackTrace(this, this->factory()->undefined_value(), options);
 
   IncrementalStringBuilder builder(this);
   for (int i = 0; i < frames->length(); ++i) {
-    Handle<StackTraceFrame> frame(StackTraceFrame::cast(frames->get(i)), this);
-
-    SerializeStackTraceFrame(this, frame, &builder);
+    Handle<StackFrameInfo> frame(StackFrameInfo::cast(frames->get(i)), this);
+    SerializeStackFrameInfo(this, frame, &builder);
   }
 
   Handle<String> stack_trace = builder.Finish().ToHandleChecked();
@@ -2189,57 +2169,10 @@ bool Isolate::ComputeLocationFromStackTrace(MessageLocation* target,
   Handle<Object> property =
       JSReceiver::GetDataProperty(Handle<JSObject>::cast(exception), key);
   if (!property->IsFixedArray()) return false;
-
-  Handle<FrameArray> elements =
-      GetFrameArrayFromStackTrace(this, Handle<FixedArray>::cast(property));
-
-  const int frame_count = elements->FrameCount();
-  for (int i = 0; i < frame_count; i++) {
-    if (elements->IsWasmFrame(i) || elements->IsAsmJsWasmFrame(i)) {
-      int func_index = elements->WasmFunctionIndex(i).value();
-      int offset = elements->Offset(i).value();
-      bool is_at_number_conversion =
-          elements->IsAsmJsWasmFrame(i) &&
-          elements->Flags(i).value() & FrameArray::kAsmJsAtNumberConversion;
-      if (elements->IsWasmFrame(i) || elements->IsAsmJsWasmFrame(i)) {
-        // WasmCode* held alive by the {GlobalWasmCodeRef}.
-        wasm::WasmCode* code =
-            Managed<wasm::GlobalWasmCodeRef>::cast(elements->WasmCodeObject(i))
-                .get()
-                ->code();
-        offset = code->GetSourcePositionBefore(offset);
-      }
-      Handle<WasmInstanceObject> instance(elements->WasmInstance(i), this);
-      const wasm::WasmModule* module = elements->WasmInstance(i).module();
-      int pos = GetSourcePosition(module, func_index, offset,
-                                  is_at_number_conversion);
-      Handle<Script> script(instance->module_object().script(), this);
-
-      *target = MessageLocation(script, pos, pos + 1);
-      return true;
-    }
-
-    Handle<JSFunction> fun = handle(elements->Function(i), this);
-    if (!fun->shared().IsSubjectToDebugging()) continue;
-
-    Object script = fun->shared().script();
-    if (script.IsScript() &&
-        !(Script::cast(script).source().IsUndefined(this))) {
-      Handle<SharedFunctionInfo> shared = handle(fun->shared(), this);
-
-      AbstractCode abstract_code = elements->Code(i);
-      const int code_offset = elements->Offset(i).value();
-      Handle<Script> casted_script(Script::cast(script), this);
-      if (shared->HasBytecodeArray() &&
-          shared->GetBytecodeArray().HasSourcePositionTable()) {
-        int pos = abstract_code.SourcePosition(code_offset);
-        *target = MessageLocation(casted_script, pos, pos + 1, shared);
-      } else {
-        *target = MessageLocation(casted_script, shared, code_offset);
-      }
-
-      return true;
-    }
+  Handle<FixedArray> stack = Handle<FixedArray>::cast(property);
+  for (int i = 0; i < stack->length(); i++) {
+    Handle<StackFrameInfo> frame(StackFrameInfo::cast(stack->get(i)), this);
+    if (StackFrameInfo::ComputeLocation(frame, target)) return true;
   }
   return false;
 }
@@ -2594,20 +2527,20 @@ void Isolate::SetAbortOnUncaughtExceptionCallback(
   abort_on_uncaught_exception_callback_ = callback;
 }
 
-bool Isolate::AreWasmThreadsEnabled(Handle<Context> context) {
-  if (wasm_threads_enabled_callback()) {
-    v8::Local<v8::Context> api_context = v8::Utils::ToLocal(context);
-    return wasm_threads_enabled_callback()(api_context);
-  }
-  return FLAG_experimental_wasm_threads;
-}
-
 bool Isolate::IsWasmSimdEnabled(Handle<Context> context) {
   if (wasm_simd_enabled_callback()) {
     v8::Local<v8::Context> api_context = v8::Utils::ToLocal(context);
     return wasm_simd_enabled_callback()(api_context);
   }
   return FLAG_experimental_wasm_simd;
+}
+
+bool Isolate::AreWasmExceptionsEnabled(Handle<Context> context) {
+  if (wasm_exceptions_enabled_callback()) {
+    v8::Local<v8::Context> api_context = v8::Utils::ToLocal(context);
+    return wasm_exceptions_enabled_callback()(api_context);
+  }
+  return FLAG_experimental_wasm_eh;
 }
 
 Handle<Context> Isolate::GetIncumbentContext() {
@@ -2910,6 +2843,7 @@ void Isolate::Delete(Isolate* isolate) {
   Isolate* saved_isolate = reinterpret_cast<Isolate*>(
       base::Thread::GetThreadLocal(isolate->isolate_key_));
   SetIsolateThreadLocals(isolate, nullptr);
+  isolate->set_thread_id(ThreadId::Current());
 
   isolate->Deinit();
 
@@ -3108,9 +3042,14 @@ void Isolate::Deinit() {
   // This stops cancelable tasks (i.e. concurrent marking tasks)
   cancelable_task_manager()->CancelAndWait();
 
+  main_thread_local_isolate_->heap()->FreeLinearAllocationArea();
+
   heap_.TearDown();
+
+  main_thread_local_isolate_.reset();
+
   FILE* logfile = logger_->TearDownAndGetLogFile();
-  if (logfile != nullptr) fclose(logfile);
+  if (logfile != nullptr) base::Fclose(logfile);
 
   if (wasm_engine_) {
     wasm_engine_->RemoveIsolate(this);
@@ -3539,6 +3478,10 @@ bool Isolate::Init(SnapshotData* startup_snapshot_data,
   ReadOnlyHeap::SetUp(this, read_only_snapshot_data, can_rehash);
   heap_.SetUpSpaces();
 
+  // Create LocalIsolate/LocalHeap for the main thread and set state to Running.
+  main_thread_local_isolate_.reset(new LocalIsolate(this, ThreadKind::kMain));
+  main_thread_local_heap()->Unpark();
+
   isolate_data_.external_reference_table()->Init(this);
 
   // Setup the wasm engine.
@@ -3839,7 +3782,7 @@ void Isolate::DumpAndResetStats() {
 
 void Isolate::AbortConcurrentOptimization(BlockingBehavior behavior) {
   if (concurrent_recompilation_enabled()) {
-    DisallowHeapAllocation no_recursive_gc;
+    DisallowGarbageCollection no_recursive_gc;
     optimizing_compile_dispatcher()->Flush(behavior);
   }
 }
@@ -3873,7 +3816,8 @@ bool Isolate::NeedsDetailedOptimizedCodeLineInfo() const {
 bool Isolate::NeedsSourcePositionsForProfiling() const {
   return FLAG_trace_deopt || FLAG_trace_turbo || FLAG_trace_turbo_graph ||
          FLAG_turbo_profiling || FLAG_perf_prof || is_profiling() ||
-         debug_->is_active() || logger_->is_logging() || FLAG_trace_maps;
+         debug_->is_active() || logger_->is_logging() || FLAG_log_maps ||
+         FLAG_log_ic;
 }
 
 void Isolate::SetFeedbackVectorsForProfilingTools(Object value) {
@@ -3939,7 +3883,7 @@ Isolate::KnownPrototype Isolate::IsArrayOrObjectOrStringPrototype(
 }
 
 bool Isolate::IsInAnyContext(Object object, uint32_t index) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   Object context = heap()->native_contexts_list();
   while (!context.IsUndefined(this)) {
     Context current_context = Context::cast(context);
@@ -3952,7 +3896,7 @@ bool Isolate::IsInAnyContext(Object object, uint32_t index) {
 }
 
 void Isolate::UpdateNoElementsProtectorOnSetElement(Handle<JSObject> object) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   if (!object->map().is_prototype_map()) return;
   if (!Protectors::IsNoElementsIntact(this)) return;
   KnownPrototype obj_type = IsArrayOrObjectOrStringPrototype(*object);
@@ -3963,11 +3907,6 @@ void Isolate::UpdateNoElementsProtectorOnSetElement(Handle<JSObject> object) {
     this->CountUsage(v8::Isolate::kArrayPrototypeHasElements);
   }
   Protectors::InvalidateNoElements(this);
-}
-
-bool Isolate::IsAnyInitialArrayPrototype(Handle<JSArray> array) {
-  DisallowHeapAllocation no_gc;
-  return IsInAnyContext(*array, Context::INITIAL_ARRAY_PROTOTYPE_INDEX);
 }
 
 static base::RandomNumberGenerator* ensure_rng_exists(
@@ -4139,11 +4078,17 @@ MaybeHandle<JSPromise> NewRejectedPromise(Isolate* isolate,
 }  // namespace
 
 MaybeHandle<JSPromise> Isolate::RunHostImportModuleDynamicallyCallback(
-    Handle<Script> referrer, Handle<Object> specifier) {
+    Handle<Script> referrer, Handle<Object> specifier,
+    MaybeHandle<Object> maybe_import_assertions_argument) {
   v8::Local<v8::Context> api_context =
       v8::Utils::ToLocal(Handle<Context>(native_context()));
+  DCHECK(host_import_module_dynamically_callback_ == nullptr ||
+         host_import_module_dynamically_with_import_assertions_callback_ ==
+             nullptr);
 
-  if (host_import_module_dynamically_callback_ == nullptr) {
+  if (host_import_module_dynamically_callback_ == nullptr &&
+      host_import_module_dynamically_with_import_assertions_callback_ ==
+          nullptr) {
     Handle<Object> exception =
         factory()->NewError(error_function(), MessageTemplate::kUnsupported);
     return NewRejectedPromise(this, api_context, exception);
@@ -4160,20 +4105,129 @@ MaybeHandle<JSPromise> Isolate::RunHostImportModuleDynamicallyCallback(
   DCHECK(!has_pending_exception());
 
   v8::Local<v8::Promise> promise;
-  ASSIGN_RETURN_ON_SCHEDULED_EXCEPTION_VALUE(
-      this, promise,
-      host_import_module_dynamically_callback_(
-          api_context, v8::Utils::ScriptOrModuleToLocal(referrer),
-          v8::Utils::ToLocal(specifier_str)),
-      MaybeHandle<JSPromise>());
-  return v8::Utils::OpenHandle(*promise);
+
+  if (host_import_module_dynamically_with_import_assertions_callback_) {
+    Handle<FixedArray> import_assertions_array;
+    if (GetImportAssertionsFromArgument(maybe_import_assertions_argument)
+            .ToHandle(&import_assertions_array)) {
+      ASSIGN_RETURN_ON_SCHEDULED_EXCEPTION_VALUE(
+          this, promise,
+          host_import_module_dynamically_with_import_assertions_callback_(
+              api_context, v8::Utils::ScriptOrModuleToLocal(referrer),
+              v8::Utils::ToLocal(specifier_str),
+              ToApiHandle<v8::FixedArray>(import_assertions_array)),
+          MaybeHandle<JSPromise>());
+      return v8::Utils::OpenHandle(*promise);
+    } else {
+      Handle<Object> exception(pending_exception(), this);
+      clear_pending_exception();
+
+      return NewRejectedPromise(this, api_context, exception);
+    }
+
+  } else {
+    DCHECK_NOT_NULL(host_import_module_dynamically_callback_);
+    ASSIGN_RETURN_ON_SCHEDULED_EXCEPTION_VALUE(
+        this, promise,
+        host_import_module_dynamically_callback_(
+            api_context, v8::Utils::ScriptOrModuleToLocal(referrer),
+            v8::Utils::ToLocal(specifier_str)),
+        MaybeHandle<JSPromise>());
+    return v8::Utils::OpenHandle(*promise);
+  }
+}
+
+MaybeHandle<FixedArray> Isolate::GetImportAssertionsFromArgument(
+    MaybeHandle<Object> maybe_import_assertions_argument) {
+  Handle<FixedArray> import_assertions_array = factory()->empty_fixed_array();
+  Handle<Object> import_assertions_argument;
+  if (!maybe_import_assertions_argument.ToHandle(&import_assertions_argument) ||
+      import_assertions_argument->IsUndefined()) {
+    return import_assertions_array;
+  }
+
+  // The parser shouldn't have allowed the second argument to import() if
+  // the flag wasn't enabled.
+  DCHECK(FLAG_harmony_import_assertions);
+
+  if (!import_assertions_argument->IsJSReceiver()) {
+    this->Throw(
+        *factory()->NewTypeError(MessageTemplate::kNonObjectImportArgument));
+    return MaybeHandle<FixedArray>();
+  }
+
+  Handle<JSReceiver> import_assertions_argument_receiver =
+      Handle<JSReceiver>::cast(import_assertions_argument);
+  Handle<Name> key = factory()->assert_string();
+
+  Handle<Object> import_assertions_object;
+  if (!JSReceiver::GetProperty(this, import_assertions_argument_receiver, key)
+           .ToHandle(&import_assertions_object)) {
+    // This can happen if the property has a getter function that throws
+    // an error.
+    return MaybeHandle<FixedArray>();
+  }
+
+  // If there is no 'assert' option in the options bag, it's not an error. Just
+  // do the import() as if no assertions were provided.
+  if (import_assertions_object->IsUndefined()) return import_assertions_array;
+
+  if (!import_assertions_object->IsJSReceiver()) {
+    this->Throw(
+        *factory()->NewTypeError(MessageTemplate::kNonObjectAssertOption));
+    return MaybeHandle<FixedArray>();
+  }
+
+  Handle<JSReceiver> import_assertions_object_receiver =
+      Handle<JSReceiver>::cast(import_assertions_object);
+
+  Handle<FixedArray> assertion_keys =
+      KeyAccumulator::GetKeys(import_assertions_object_receiver,
+                              KeyCollectionMode::kOwnOnly, ENUMERABLE_STRINGS,
+                              GetKeysConversion::kConvertToString)
+          .ToHandleChecked();
+
+  // The assertions will be passed to the host in the form: [key1,
+  // value1, key2, value2, ...].
+  constexpr size_t kAssertionEntrySizeForDynamicImport = 2;
+  import_assertions_array = factory()->NewFixedArray(static_cast<int>(
+      assertion_keys->length() * kAssertionEntrySizeForDynamicImport));
+  for (int i = 0; i < assertion_keys->length(); i++) {
+    Handle<String> assertion_key(String::cast(assertion_keys->get(i)), this);
+    Handle<Object> assertion_value;
+    if (!JSReceiver::GetProperty(this, import_assertions_object_receiver,
+                                 assertion_key)
+             .ToHandle(&assertion_value)) {
+      // This can happen if the property has a getter function that throws
+      // an error.
+      return MaybeHandle<FixedArray>();
+    }
+
+    if (!assertion_value->IsString()) {
+      this->Throw(*factory()->NewTypeError(
+          MessageTemplate::kNonStringImportAssertionValue));
+      return MaybeHandle<FixedArray>();
+    }
+
+    import_assertions_array->set((i * kAssertionEntrySizeForDynamicImport),
+                                 *assertion_key);
+    import_assertions_array->set((i * kAssertionEntrySizeForDynamicImport) + 1,
+                                 *assertion_value);
+  }
+
+  return import_assertions_array;
 }
 
 void Isolate::ClearKeptObjects() { heap()->ClearKeptObjects(); }
 
 void Isolate::SetHostImportModuleDynamicallyCallback(
-    HostImportModuleDynamicallyCallback callback) {
+    DeprecatedHostImportModuleDynamicallyCallback callback) {
   host_import_module_dynamically_callback_ = callback;
+}
+
+void Isolate::SetHostImportModuleDynamicallyCallback(
+    HostImportModuleDynamicallyWithImportAssertionsCallback callback) {
+  host_import_module_dynamically_with_import_assertions_callback_ = callback;
 }
 
 MaybeHandle<JSObject> Isolate::RunHostInitializeImportMetaObjectCallback(
@@ -4245,8 +4299,7 @@ void Isolate::PrepareBuiltinLabelInfoMap() {
   if (embedded_file_writer_ != nullptr) {
     embedded_file_writer_->PrepareBuiltinLabelInfoMap(
         heap()->construct_stub_create_deopt_pc_offset().value(),
-        heap()->construct_stub_invoke_deopt_pc_offset().value(),
-        heap()->arguments_adaptor_deopt_pc_offset().value());
+        heap()->construct_stub_invoke_deopt_pc_offset().value());
   }
 }
 
@@ -4543,7 +4596,7 @@ void Isolate::CollectSourcePositionsForAllBytecodeArrays() {
   HandleScope scope(this);
   std::vector<Handle<SharedFunctionInfo>> sfis;
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     HeapObjectIterator iterator(heap());
     for (HeapObject obj = iterator.Next(); !obj.is_null();
          obj = iterator.Next()) {
@@ -4561,13 +4614,41 @@ void Isolate::CollectSourcePositionsForAllBytecodeArrays() {
 }
 
 #ifdef V8_INTL_SUPPORT
-icu::UMemory* Isolate::get_cached_icu_object(ICUObjectCacheType cache_type) {
-  return icu_object_cache_[cache_type].get();
+namespace {
+std::string GetStringFromLocale(Handle<Object> locales_obj) {
+  DCHECK(locales_obj->IsString() || locales_obj->IsUndefined());
+  if (locales_obj->IsString()) {
+    return std::string(String::cast(*locales_obj).ToCString().get());
+  }
+
+  return "";
+}
+}  // namespace
+
+icu::UMemory* Isolate::get_cached_icu_object(ICUObjectCacheType cache_type,
+                                             Handle<Object> locales_obj) {
+  std::string locale = GetStringFromLocale(locales_obj);
+  auto value = icu_object_cache_.find(cache_type);
+  if (value == icu_object_cache_.end()) return nullptr;
+
+  ICUCachePair pair = value->second;
+  if (pair.first != locale) return nullptr;
+
+  return pair.second.get();
 }
 
-void Isolate::set_icu_object_in_cache(ICUObjectCacheType cache_type,
-                                      std::shared_ptr<icu::UMemory> obj) {
-  icu_object_cache_[cache_type] = obj;
+void Isolate::set_icu_object_in_cache(
+    ICUObjectCacheType cache_type, Handle<Object> locales_obj,
+    std::shared_ptr<icu::UMemory> icu_formatter) {
+  std::string locale = GetStringFromLocale(locales_obj);
+  ICUCachePair pair = std::make_pair(locale, icu_formatter);
+
+  auto it = icu_object_cache_.find(cache_type);
+  if (it == icu_object_cache_.end()) {
+    icu_object_cache_.insert({cache_type, pair});
+  } else {
+    it->second = pair;
+  }
 }
 
 void Isolate::clear_cached_icu_object(ICUObjectCacheType cache_type) {
@@ -4725,6 +4806,15 @@ void Isolate::RemoveContextIdCallback(const v8::WeakCallbackInfo<void>& data) {
   Isolate* isolate = reinterpret_cast<Isolate*>(data.GetIsolate());
   uintptr_t context_id = reinterpret_cast<uintptr_t>(data.GetParameter());
   isolate->recorder_context_id_map_.erase(context_id);
+}
+
+LocalHeap* Isolate::main_thread_local_heap() {
+  return main_thread_local_isolate()->heap();
+}
+
+LocalHeap* Isolate::CurrentLocalHeap() {
+  LocalHeap* local_heap = LocalHeap::Current();
+  return local_heap ? local_heap : main_thread_local_heap();
 }
 
 // |chunk| is either a Page or an executable LargePage.

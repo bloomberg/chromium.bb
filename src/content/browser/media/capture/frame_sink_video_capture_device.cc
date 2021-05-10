@@ -16,20 +16,27 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/device_service.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
+#if !defined(OS_ANDROID)
+#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
+#endif
+
 namespace content {
 
 namespace {
 
+#if !defined(OS_ANDROID)
 constexpr int32_t kMouseCursorStackingIndex = 1;
+#endif
 
 // Transfers ownership of an object to a std::unique_ptr with a custom deleter
 // that ensures the object is destroyed on the UI BrowserThread.
@@ -60,11 +67,15 @@ void BindWakeLockProvider(
 
 }  // namespace
 
+#if !defined(OS_ANDROID)
 FrameSinkVideoCaptureDevice::FrameSinkVideoCaptureDevice()
     : cursor_controller_(
           RescopeToUIThread(std::make_unique<MouseCursorOverlayController>())) {
   DCHECK(cursor_controller_);
 }
+#else
+FrameSinkVideoCaptureDevice::FrameSinkVideoCaptureDevice() = default;
+#endif
 
 FrameSinkVideoCaptureDevice::~FrameSinkVideoCaptureDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -110,15 +121,17 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                                       constraints.fixed_aspect_ratio);
 
   if (target_.is_valid()) {
-    capturer_->ChangeTarget(target_);
+    capturer_->ChangeTarget(target_, viz::SubtreeCaptureId());
   }
 
+#if !defined(OS_ANDROID)
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&MouseCursorOverlayController::Start,
                      cursor_controller_->GetWeakPtr(),
                      capturer_->CreateOverlay(kMouseCursorStackingIndex),
                      base::ThreadTaskRunnerHandle::Get()));
+#endif
 
   receiver_->OnStarted();
 
@@ -169,9 +182,11 @@ void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
     wake_lock_.reset();
   }
 
+#if !defined(OS_ANDROID)
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&MouseCursorOverlayController::Stop,
                                 cursor_controller_->GetWeakPtr()));
+#endif
 
   MaybeStopConsuming();
   capturer_.reset();
@@ -231,8 +246,14 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   }
   const BufferId buffer_id = static_cast<BufferId>(index);
 
+#if !defined(OS_ANDROID)
   info->metadata.interactive_content =
       cursor_controller_->IsUserInteractingWithView();
+#else
+  // Since we don't have a cursor controller, on Android we'll just always
+  // assume the user is interacting with the view.
+  info->metadata.interactive_content = true;
+#endif
 
   // Pass the video frame to the VideoFrameReceiver. This is done by first
   // passing the shared memory buffer handle and then notifying it that a new
@@ -241,12 +262,14 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
       buffer_id,
       media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(std::move(data)));
   receiver_->OnFrameReadyInBuffer(
-      buffer_id, buffer_id,
-      std::make_unique<ScopedFrameDoneHelper>(
-          media::BindToCurrentLoop(base::BindOnce(
-              &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
-              weak_factory_.GetWeakPtr(), buffer_id))),
-      std::move(info));
+      media::ReadyFrameInBuffer(
+          buffer_id, buffer_id,
+          std::make_unique<ScopedFrameDoneHelper>(
+              media::BindToCurrentLoop(base::BindOnce(
+                  &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
+                  weak_factory_.GetWeakPtr(), buffer_id))),
+          std::move(info)),
+      {});
 }
 
 void FrameSinkVideoCaptureDevice::OnStopped() {
@@ -280,11 +303,10 @@ void FrameSinkVideoCaptureDevice::OnTargetChanged(
 
   target_ = frame_sink_id;
   if (capturer_) {
-    if (target_.is_valid()) {
-      capturer_->ChangeTarget(target_);
-    } else {
-      capturer_->ChangeTarget(base::nullopt);
-    }
+    capturer_->ChangeTarget(target_.is_valid()
+                                ? base::make_optional<viz::FrameSinkId>(target_)
+                                : base::nullopt,
+                            viz::SubtreeCaptureId());
   }
 }
 

@@ -229,13 +229,6 @@ Polymer({
     },
 
     /** @private */
-    devicePasswordsLinkLabel_: {
-      type: String,
-      value: '',
-      computed: 'computeDevicePasswordsLinkLabel_(numberOfDevicePasswords_)',
-    },
-
-    /** @private */
     profileEmail_: {
       type: String,
       value: '',
@@ -256,12 +249,6 @@ Polymer({
 
     /** @private {SyncStatus} */
     syncStatus_: Object,
-
-    /** @private {!MultiStorePasswordUiEntry} */
-    lastFocused_: Object,
-
-    /** @private */
-    listBlurred_: Boolean,
 
     // <if expr="chromeos">
     /** @private */
@@ -466,17 +453,6 @@ Polymer({
   },
 
   /**
-   * @private
-   * @return {string}
-   */
-  computeDevicePasswordsLinkLabel_() {
-    return this.numberOfDevicePasswords_ === 1 ?
-        this.i18n('devicePasswordsLinkLabelSingular') :
-        this.i18n(
-            'devicePasswordsLinkLabelPlural', this.numberOfDevicePasswords_);
-  },
-
-  /**
    * Shows the check passwords sub page.
    * @private
    */
@@ -530,28 +506,21 @@ Polymer({
   // </if>
 
   /**
-   * @param {string} filter
-   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @return {function(!MultiStorePasswordUiEntry): boolean}
    * @private
    */
-  getFilteredPasswords_(filter) {
-    if (!filter) {
-      return this.savedPasswords.slice();
-    }
-
-    return this.savedPasswords.filter(
-        p => [p.urls.shown, p.username].some(
-            term => term.toLowerCase().includes(filter.toLowerCase())));
+  passwordFilter_() {
+    return password => [password.urls.shown, password.username].some(
+               term => term.toLowerCase().includes(this.filter.toLowerCase()));
   },
 
   /**
-   * @param {string} filter
    * @return {function(!chrome.passwordsPrivate.ExceptionEntry): boolean}
    * @private
    */
-  passwordExceptionFilter_(filter) {
+  passwordExceptionFilter_() {
     return exception => exception.urls.shown.toLowerCase().includes(
-               filter.toLowerCase());
+               this.filter.toLowerCase());
   },
 
   /**

@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {MetadataItem} from './metadata_item.m.js';
+// #import {MetadataProvider} from './metadata_provider.m.js';
+// #import {ThumbnailLoader} from '../thumbnail_loader.m.js';
+// #import * as wrappedUtil from '../../../common/js/util.m.js'; const {util} = wrappedUtil;
+// #import {ImageLoaderClient} from '../../../../image_loader/image_loader_client.m.js';
+// #import {LoadImageRequest, LoadImageResponseStatus} from '../../../../image_loader/load_image_request.m.js';
+// #import {FileType} from '../../../common/js/file_type.m.js';
+// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+// clang-format on
+
 /** @final */
-class ContentMetadataProvider extends MetadataProvider {
+/* #export */ class ContentMetadataProvider extends MetadataProvider {
   /**
    * @param {!MessagePort=} opt_messagePort Message port overriding the default
    *     worker port.
@@ -38,6 +49,9 @@ class ContentMetadataProvider extends MetadataProvider {
      */
     this.dispatcher_ = this.createSharedWorker_(opt_messagePort);
     this.dispatcher_.onmessage = this.onMessage_.bind(this);
+    this.dispatcher_.onmessageerror = (error) => {
+      console.error('ContentMetadataProvider worker msg error:', error);
+    };
     this.dispatcher_.postMessage({verb: 'init'});
     this.dispatcher_.start();
   }
@@ -48,18 +62,45 @@ class ContentMetadataProvider extends MetadataProvider {
    * @param {!MessagePort=} opt_messagePort
    * @private
    * @return {!MessagePort}
+   * @suppress {checkTypes}: crbug.com/1150718
    */
   createSharedWorker_(opt_messagePort) {
     if (opt_messagePort) {
       return opt_messagePort;
     }
 
-    let script = ContentMetadataProvider.WORKER_SCRIPT;
-    if (window.isSWA) {
-      script = 'foreground/js/metadata/metadata_dispatcher.js';
-    }
+    const script = ContentMetadataProvider.getWorkerScript();
 
-    return new SharedWorker(script).port;
+    /** @type {!WorkerOptions} */
+    const options =
+        ContentMetadataProvider.loadAsModule_ ? {type: 'module'} : {};
+
+    const worker = new SharedWorker(script, options);
+    worker.onerror = () => {
+      console.error(
+          'Error to initialize the ContentMetadataProvider ' +
+          'SharedWorker: ' + script);
+    };
+    return worker.port;
+  }
+
+  /**
+   * Configures how the worker should be loaded.
+   *
+   * @param {string} scriptURL URL used to load the worker.
+   * @param {boolean=} isModule Indicate if the worker should be loaded as
+   *   module.
+   */
+  static configure(scriptURL, isModule) {
+    ContentMetadataProvider.workerScript_ = scriptURL;
+    ContentMetadataProvider.loadAsModule_ = !!isModule;
+  }
+
+  /** @public @return {string} */
+  static getWorkerScript() {
+    return ContentMetadataProvider.workerScript_ ?
+        ContentMetadataProvider.workerScript_ :
+        ContentMetadataProvider.DEFAULT_WORKER_SCRIPT_;
   }
 
   /**
@@ -471,8 +512,20 @@ ContentMetadataProvider.PROPERTY_NAMES = [
 
 /**
  * The metadata Worker script URL.
- * @public @const {string}
+ * @const @private {string}
  */
-ContentMetadataProvider.WORKER_SCRIPT =
+ContentMetadataProvider.DEFAULT_WORKER_SCRIPT_ =
     'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
     'foreground/js/metadata/metadata_dispatcher.js';
+
+/**
+ * Worker script URL that is overwritten by client code.
+ * @private {?string}
+ */
+ContentMetadataProvider.workerScript_ = null;
+
+/**
+ * Sets if the SharedWorker should start as a JS Module.
+ * @private {boolean}
+ */
+ContentMetadataProvider.loadAsModule_ = false;

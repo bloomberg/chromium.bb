@@ -35,13 +35,17 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
     WebContents* source,
     const OpenURLParams& params) {
   if (!context)
-    return NULL;
+    return nullptr;
 
   Profile* profile = Profile::FromBrowserContext(context);
 
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser) {
+    if (Browser::GetCreationStatusForProfile(profile) !=
+        Browser::CreationStatus::kOk) {
+      return nullptr;
+    }
     // TODO(erg): OpenURLParams should pass a user_gesture flag, pass it to
     // CreateParams, and pass the real value to nav_params below.
     browser = Browser::Create(
@@ -89,12 +93,10 @@ void ChromeWebContentsHandler::AddNewContents(
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser) {
-    // TODO(https://crbug.com/1141608): Remove when root cause is found.
-    if (Browser::GetBrowserCreationStatusForProfile(profile) !=
-        Browser::BrowserCreationStatus::kOk) {
-      NOTREACHED() << "Browser creation status: "
-                   << static_cast<int>(
-                          Browser::GetBrowserCreationStatusForProfile(profile));
+    // The request can be triggered by Captive portal when browser is not ready
+    // (https://crbug.com/1141608).
+    if (Browser::GetCreationStatusForProfile(profile) !=
+        Browser::CreationStatus::kOk) {
       return;
     }
     browser = Browser::Create(

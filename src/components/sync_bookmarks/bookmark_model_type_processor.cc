@@ -206,10 +206,6 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     // Schedule save just in case one is needed.
     schedule_save_closure_.Run();
   }
-
-  base::UmaHistogramCounts10000(
-      "Sync.BookmarksWithoutFullTitle.OnRemoteUpdate",
-      updates_handler.valid_updates_without_full_title_for_uma());
 }
 
 const SyncedBookmarkTracker* BookmarkModelTypeProcessor::GetTrackerForTest()
@@ -249,20 +245,20 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.ParseFromString(metadata_str);
 
-  const bool initial_sync_done =
-      model_metadata.model_type_state().initial_sync_done();
-  const bool bookmarks_metadata_empty =
-      model_metadata.bookmarks_metadata().empty();
-
   bookmark_tracker_ = SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
       model, std::move(model_metadata));
 
   if (bookmark_tracker_) {
     bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
     StartTrackingMetadata();
-  } else if (!initial_sync_done && !bookmarks_metadata_empty) {
-    DLOG(ERROR)
-        << "Persisted Metadata not empty while initial sync is not done.";
+  } else if (!metadata_str.empty()) {
+    DLOG(WARNING)
+        << "Persisted bookmark sync metadata invalidated when loading.";
+    // Schedule a save to make sure the corrupt metadata is deleted from disk as
+    // soon as possible, to avoid reporting again after restart if nothing else
+    // schedules a save meanwhile (which is common if sync is not running
+    // properly, e.g. auth error).
+    schedule_save_closure_.Run();
   }
 
   ConnectIfReady();
@@ -422,10 +418,6 @@ void BookmarkModelTypeProcessor::OnInitialUpdateReceived(
     BookmarkModelMerger model_merger(std::move(updates), bookmark_model_,
                                      favicon_service_, bookmark_tracker_.get());
     model_merger.Merge();
-
-    base::UmaHistogramCounts1M(
-        "Sync.BookmarksWithoutFullTitle.OnInitialMerge",
-        model_merger.valid_updates_without_full_title_for_uma());
   }
 
   // If any of the permanent nodes is missing, we treat it as failure.
@@ -521,9 +513,9 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
   data.unique_position = metadata->unique_position();
-  data.specifics = CreateSpecificsFromBookmarkNode(node, bookmark_model_,
-                                                   /*force_favicon_load=*/false,
-                                                   entity->has_final_guid());
+  data.specifics =
+      CreateSpecificsFromBookmarkNode(node, bookmark_model_,
+                                      /*force_favicon_load=*/false);
 
   if (node->is_permanent_node()) {
     data.server_defined_unique_tag =

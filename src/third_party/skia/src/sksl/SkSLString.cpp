@@ -9,6 +9,7 @@
 
 #include "src/sksl/SkSLUtil.h"
 #include <algorithm>
+#include <cinttypes>
 #include <errno.h>
 #include <limits.h>
 #include <locale>
@@ -49,16 +50,16 @@ void String::vappendf(const char* fmt, va_list args) {
     va_end(reuse);
 }
 
-bool String::startsWith(const char prefix[]) const {
-    return !strncmp(this->data(), prefix, strlen(prefix));
+bool StringFragment::startsWith(const char prefix[]) const {
+    return !strncmp(fChars, prefix, strlen(prefix));
 }
 
-bool String::endsWith(const char suffix[]) const {
+bool StringFragment::endsWith(const char suffix[]) const {
     size_t suffixLength = strlen(suffix);
-    if (this->length() < suffixLength) {
+    if (fLength < suffixLength) {
         return false;
     }
-    return !strncmp(this->data() + this->size() - suffixLength, suffix, suffixLength);
+    return !strncmp(fChars + fLength - suffixLength, suffix, suffixLength);
 }
 
 bool String::consumeSuffix(const char suffix[]) {
@@ -202,23 +203,19 @@ bool operator!=(const char* s1, StringFragment s2) {
 }
 
 String to_string(int32_t value) {
-    return SkSL::String::printf("%d", value);
+    return SkSL::String::printf("%" PRIi32, value);
 }
 
 String to_string(uint32_t value) {
-    return SkSL::String::printf("%u", value);
+    return SkSL::String::printf("%" PRIu32, value);
 }
 
 String to_string(int64_t value) {
-    std::stringstream buffer;
-    buffer << value;
-    return String(buffer.str().c_str());
+    return SkSL::String::printf("%" PRIi64, value);
 }
 
 String to_string(uint64_t value) {
-    std::stringstream buffer;
-    buffer << value;
-    return String(buffer.str().c_str());
+    return SkSL::String::printf("%" PRIu64, value);
 }
 
 String to_string(double value) {
@@ -241,32 +238,20 @@ String to_string(double value) {
     return String(buffer.str().c_str());
 }
 
-SKSL_INT stoi(const String& s) {
-    char* p;
-    SkDEBUGCODE(errno = 0;)
-    long result = strtoul(s.c_str(), &p, 0);
-    SkASSERT(*p == 0);
-    SkASSERT(!errno);
-    return result;
-}
-
-SKSL_FLOAT stod(const String& s) {
-    double result;
-    std::string str(s.c_str(), s.size());
+bool stod(const StringFragment& s, SKSL_FLOAT* value) {
+    std::string str(s.data(), s.size());
     std::stringstream buffer(str);
     buffer.imbue(std::locale::classic());
-    buffer >> result;
-    SkASSERT(!buffer.fail());
-    return result;
+    buffer >> *value;
+    return !buffer.fail();
 }
 
-long stol(const String& s) {
+bool stoi(const StringFragment& s, SKSL_INT* value) {
     char* p;
-    SkDEBUGCODE(errno = 0;)
-    long result = strtoul(s.c_str(), &p, 0);
-    SkASSERT(*p == 0);
-    SkASSERT(!errno);
-    return result;
+    errno = 0;
+    unsigned long long result = strtoull(s.begin(), &p, /*base=*/0);
+    *value = static_cast<SKSL_INT>(result);
+    return p == s.end() && errno == 0 && result <= 0xFFFFFFFF;
 }
 
 }  // namespace SkSL

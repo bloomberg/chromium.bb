@@ -106,7 +106,6 @@ struct SimulationSettings {
   absl::optional<bool> use_vad;
   absl::optional<bool> use_le;
   absl::optional<bool> use_all;
-  absl::optional<bool> use_analog_agc_agc2_level_estimator;
   absl::optional<bool> analog_agc_disable_digital_adaptive;
   absl::optional<int> agc_mode;
   absl::optional<int> agc_target_level;
@@ -139,11 +138,16 @@ struct SimulationSettings {
   bool dump_internal_data = false;
   WavFile::SampleFormat wav_output_format = WavFile::SampleFormat::kInt16;
   absl::optional<std::string> dump_internal_data_output_dir;
+  absl::optional<int> dump_set_to_use;
   absl::optional<std::string> call_order_input_filename;
   absl::optional<std::string> call_order_output_filename;
   absl::optional<std::string> aec_settings_filename;
   absl::optional<absl::string_view> aec_dump_input_string;
   std::vector<float>* processed_capture_samples = nullptr;
+  bool analysis_only = false;
+  absl::optional<int> dump_start_frame;
+  absl::optional<int> dump_end_frame;
+  absl::optional<int> init_to_process;
 };
 
 // Provides common functionality for performing audioprocessing simulations.
@@ -167,6 +171,9 @@ class AudioProcessingSimulator {
     return api_call_statistics_;
   }
 
+  // Analyzes the data in the input and reports the resulting statistics.
+  virtual void Analyze() = 0;
+
   // Reports whether the processed recording was bitexact.
   bool OutputWasBitexact() { return bitexact_output_; }
 
@@ -188,6 +195,8 @@ class AudioProcessingSimulator {
                                   int output_num_channels,
                                   int reverse_input_num_channels,
                                   int reverse_output_num_channels);
+  void SelectivelyToggleDataDumping(int init_index,
+                                    int capture_frames_since_init) const;
 
   const SimulationSettings settings_;
   rtc::scoped_refptr<AudioProcessing> ap_;

@@ -11,6 +11,7 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xinput.h"
 #include "ui/gfx/x/xproto_types.h"
 
@@ -56,7 +57,7 @@ bool CurtainModeLinux::IsVirtualSession() {
     return false;
   }
 
-  auto devices = connection.xinput().ListInputDevices({}).Sync();
+  auto devices = connection.xinput().ListInputDevices().Sync();
   if (!devices) {
     LOG(ERROR) << "ListInputDevices failed";
     return false;

@@ -14,31 +14,38 @@
 
 #include "src/ast/identifier_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::IdentifierExpression);
+
 namespace tint {
 namespace ast {
 
-IdentifierExpression::IdentifierExpression(const std::string& name)
-    : Expression(), name_(name) {}
-
-IdentifierExpression::IdentifierExpression(const Source& source,
-                                           const std::string& name)
-    : Expression(source), name_(name) {}
+IdentifierExpression::IdentifierExpression(const Source& source, Symbol sym)
+    : Base(source), sym_(sym) {}
 
 IdentifierExpression::IdentifierExpression(IdentifierExpression&&) = default;
 
 IdentifierExpression::~IdentifierExpression() = default;
 
-bool IdentifierExpression::IsIdentifier() const {
-  return true;
+IdentifierExpression* IdentifierExpression::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto sym = ctx->Clone(symbol());
+  return ctx->dst->create<IdentifierExpression>(src, sym);
 }
 
 bool IdentifierExpression::IsValid() const {
-  return !name_.empty();
+  return sym_.IsValid();
 }
 
-void IdentifierExpression::to_str(std::ostream& out, size_t indent) const {
+void IdentifierExpression::to_str(const semantic::Info& sem,
+                                  std::ostream& out,
+                                  size_t indent) const {
   make_indent(out, indent);
-  out << "Identifier{" << name_ << "}" << std::endl;
+  out << "Identifier[" << result_type_str(sem) << "]{" << sym_.to_str() << "}"
+      << std::endl;
 }
 
 }  // namespace ast

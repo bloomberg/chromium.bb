@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "build/chromeos_buildflags.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payer_data.h"
@@ -46,7 +47,7 @@ AndroidPaymentApp::AndroidPaymentApp(
 
 AndroidPaymentApp::~AndroidPaymentApp() = default;
 
-void AndroidPaymentApp::InvokePaymentApp(Delegate* delegate) {
+void AndroidPaymentApp::InvokePaymentApp(base::WeakPtr<Delegate> delegate) {
   // Browser is closing, so no need to invoke a callback.
   if (!communication_)
     return;
@@ -159,20 +160,23 @@ bool AndroidPaymentApp::IsPreferred() const {
   // available is the trusted web application (TWA) that launched this instance
   // of Chrome with a TWA specific payment method, so this app should be
   // preferred.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   NOTREACHED();
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK_EQ(1U, GetAppMethodNames().size());
   DCHECK_EQ(methods::kGooglePlayBilling, *GetAppMethodNames().begin());
   return true;
 }
 
 void AndroidPaymentApp::OnPaymentAppResponse(
-    Delegate* delegate,
+    base::WeakPtr<Delegate> delegate,
     const base::Optional<std::string>& error_message,
     bool is_activity_result_ok,
     const std::string& payment_method_identifier,
     const std::string& stringified_details) {
+  if (!delegate)
+    return;
+
   if (error_message.has_value()) {
     delegate->OnInstrumentDetailsError(error_message.value());
     return;

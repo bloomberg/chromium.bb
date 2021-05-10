@@ -22,13 +22,13 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/quic/core/quic_coalesced_packet.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/frames/quic_stream_frame.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_coalesced_packet.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 namespace test {
@@ -239,7 +239,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // SerializePathChallengeConnectivityProbingPacket will pad the packet to be
   // MTU bytes long.
   std::unique_ptr<SerializedPacket>
-  SerializePathChallengeConnectivityProbingPacket(QuicPathFrameBuffer* payload);
+  SerializePathChallengeConnectivityProbingPacket(
+      const QuicPathFrameBuffer& payload);
 
   // If |is_padded| is true then SerializePathResponseConnectivityProbingPacket
   // will pad the packet to be MTU bytes long, else it will not pad the packet.
@@ -255,7 +256,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Add PATH_CHALLENGE to current packet, flush before or afterwards if needed.
   // This is a best effort adding. It may fail becasue of delegate state, but
   // it's okay because of path validation retry mechanism.
-  void AddPathChallengeFrame(QuicPathFrameBuffer* payload);
+  void AddPathChallengeFrame(const QuicPathFrameBuffer& payload);
 
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();
@@ -432,8 +433,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   size_t BuildPaddedPathChallengePacket(const QuicPacketHeader& header,
                                         char* buffer,
                                         size_t packet_length,
-                                        QuicPathFrameBuffer* payload,
-                                        QuicRandom* randomizer,
+                                        const QuicPathFrameBuffer& payload,
                                         EncryptionLevel level);
 
   // Serialize a probing response packet that uses IETF QUIC's PATH RESPONSE
@@ -468,9 +468,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // different from the current one, flush all the queue frames first.
   void SetDefaultPeerAddress(QuicSocketAddress address);
 
-  bool let_connection_handle_pings() const {
-    return let_connection_handle_pings_;
-  }
+  // Return true if retry_token_ is not empty.
+  bool HasRetryToken() const;
+
+  const QuicSocketAddress& peer_address() const { return packet_.peer_address; }
 
  private:
   friend class test::QuicPacketCreatorPeer;
@@ -670,9 +671,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // accept. There is no limit for QUIC_CRYPTO connections, but QUIC+TLS
   // negotiates this during the handshake.
   QuicByteCount max_datagram_frame_size_;
-
-  const bool let_connection_handle_pings_ =
-      GetQuicReloadableFlag(quic_let_connection_handle_pings);
 };
 
 }  // namespace quic

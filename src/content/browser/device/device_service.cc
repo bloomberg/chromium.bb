@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service.h"
@@ -125,6 +124,7 @@ void BindDeviceServiceReceiver(
       base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
       content::GetNetworkConnectionTracker(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
+      GetContentClient()->browser()->GetLocationPermissionManager(),
       base::BindRepeating(&ContentBrowserClient::OverrideSystemLocationProvider,
                           base::Unretained(GetContentClient()->browser())),
       std::move(receiver));

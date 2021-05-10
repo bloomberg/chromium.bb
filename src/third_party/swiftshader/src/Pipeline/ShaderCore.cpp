@@ -224,22 +224,7 @@ Float4 power(RValue<Float4> x, RValue<Float4> y, bool pp)
 
 Float4 reciprocal(RValue<Float4> x, bool pp, bool finite, bool exactAtPow2)
 {
-	//return Float4(1.0f) / x;
-
-	Float4 rcp = Rcp_pp(x, exactAtPow2);
-
-	if(!pp)
-	{
-		rcp = (rcp + rcp) - (x * rcp * rcp);
-	}
-
-	if(finite)
-	{
-		int big = 0x7F7FFFFF;
-		rcp = Min(rcp, Float4((float &)big));
-	}
-
-	return rcp;
+	return Rcp(x, pp ? Precision::Relaxed : Precision::Full, finite, exactAtPow2);
 }
 
 Float4 reciprocalSquareRoot(RValue<Float4> x, bool absolute, bool pp)
@@ -251,25 +236,7 @@ Float4 reciprocalSquareRoot(RValue<Float4> x, bool absolute, bool pp)
 		abs = Abs(abs);
 	}
 
-	Float4 rsq;
-
-	if(!pp)
-	{
-		rsq = Float4(1.0f) / Sqrt(abs);
-	}
-	else
-	{
-		rsq = RcpSqrt_pp(abs);
-
-		if(!pp)
-		{
-			rsq = rsq * (Float4(3.0f) - rsq * rsq * abs) * Float4(0.5f);
-		}
-
-		rsq = As<Float4>(CmpNEQ(As<Int4>(abs), Int4(0x7F800000)) & As<Int4>(rsq));
-	}
-
-	return rsq;
+	return Rcp(abs, pp ? Precision::Relaxed : Precision::Full);
 }
 
 Float4 modulo(RValue<Float4> x, RValue<Float4> y)

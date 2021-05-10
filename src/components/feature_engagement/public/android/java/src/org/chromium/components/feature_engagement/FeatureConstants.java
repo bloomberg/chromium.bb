@@ -30,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE,
+        FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE,
         FeatureConstants.DOWNLOAD_SETTINGS_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
@@ -40,11 +41,12 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_SWITCHER_BUTTON_FEATURE, FeatureConstants.FEED_CARD_MENU_FEATURE,
         FeatureConstants.IDENTITY_DISC_FEATURE, FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
-        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, FeatureConstants.FEED_HEADER_MENU_FEATURE,
+        FeatureConstants.FEED_HEADER_MENU_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
-        FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE})
+        FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE, FeatureConstants.PAGE_INFO_FEATURE,
+        FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -60,6 +62,7 @@ public @interface FeatureConstants {
     String KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE = "IPH_KeyboardAccessoryAddressFilling";
     String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
+    String KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE = "IPH_KeyboardAccessoryPaymentOffer";
     String KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE = "IPH_KeyboardAccessoryBarSwiping";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
@@ -67,6 +70,7 @@ public @interface FeatureConstants {
     String READ_LATER_CONTEXT_MENU_FEATURE = "IPH_ReadLaterContextMenu";
     String READ_LATER_APP_MENU_BOOKMARK_THIS_PAGE_FEATURE = "IPH_ReadLaterAppMenuBookmarkThisPage";
     String READ_LATER_APP_MENU_BOOKMARKS_FEATURE = "IPH_ReadLaterAppMenuBookmarks";
+    String READ_LATER_BOTTOM_SHEET_FEATURE = "IPH_ReadLaterBottomSheet";
 
     /**
      * An IPH feature that encourages users to get better translations by enabling access to page
@@ -191,12 +195,6 @@ public @interface FeatureConstants {
     String QUIET_NOTIFICATION_PROMPTS_FEATURE = "IPH_QuietNotificationPrompts";
 
     /**
-     * An IPH feature showing up a promo card on new tab page to promote users setting Chrome's new
-     * tab page as their homepage.
-     */
-    String HOMEPAGE_PROMO_CARD_FEATURE = "IPH_HomepagePromoCard";
-
-    /**
      * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
      */
     String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
@@ -220,4 +218,14 @@ public @interface FeatureConstants {
      * An IPH feature to inform users that installing a PWA is an option.
      */
     String PWA_INSTALL_AVAILABLE_FEATURE = "IPH_PwaInstallAvailable";
+
+    /**
+     * An IPH feature to inform about changing permissions in PageInfo.
+     */
+    String PAGE_INFO_FEATURE = "IPH_PageInfo";
+
+    /**
+     * An IPH feature to inform users about the screenshot sharing feature.
+     */
+    String IPH_SHARE_SCREENSHOT_FEATURE = "IPH_ShareScreenshot";
 }

@@ -61,8 +61,9 @@ private:
     }
     UniformHandle uniformColorVar;
 };
-GrGLSLFragmentProcessor* GrOverrideInputFragmentProcessor::onCreateGLSLInstance() const {
-    return new GrGLSLOverrideInputFragmentProcessor();
+std::unique_ptr<GrGLSLFragmentProcessor> GrOverrideInputFragmentProcessor::onMakeProgramImpl()
+        const {
+    return std::make_unique<GrGLSLOverrideInputFragmentProcessor>();
 }
 void GrOverrideInputFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                              GrProcessorKeyBuilder* b) const {
@@ -84,7 +85,6 @@ bool GrOverrideInputFragmentProcessor::onIsEqual(const GrFragmentProcessor& othe
     if (literalColor != that.literalColor) return false;
     return true;
 }
-bool GrOverrideInputFragmentProcessor::usesExplicitReturn() const { return true; }
 GrOverrideInputFragmentProcessor::GrOverrideInputFragmentProcessor(
         const GrOverrideInputFragmentProcessor& src)
         : INHERITED(kGrOverrideInputFragmentProcessor_ClassID, src.optimizationFlags())

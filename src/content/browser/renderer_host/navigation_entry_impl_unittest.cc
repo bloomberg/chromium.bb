@@ -230,8 +230,8 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // Page type
   EXPECT_EQ(PAGE_TYPE_NORMAL, entry1_->GetPageType());
   EXPECT_EQ(PAGE_TYPE_NORMAL, entry2_->GetPageType());
-  entry2_->set_page_type(PAGE_TYPE_INTERSTITIAL);
-  EXPECT_EQ(PAGE_TYPE_INTERSTITIAL, entry2_->GetPageType());
+  entry2_->set_page_type(PAGE_TYPE_ERROR);
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry2_->GetPageType());
 
   // Referrer
   EXPECT_EQ(GURL(), entry1_->GetReferrer().url);
@@ -268,12 +268,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_->GetHasPostData());
 
   // Restored
-  EXPECT_EQ(RestoreType::NONE, entry1_->restore_type());
+  EXPECT_EQ(RestoreType::kNotRestored, entry1_->restore_type());
   EXPECT_FALSE(entry1_->IsRestored());
-  EXPECT_EQ(RestoreType::NONE, entry2_->restore_type());
+  EXPECT_EQ(RestoreType::kNotRestored, entry2_->restore_type());
   EXPECT_FALSE(entry2_->IsRestored());
-  entry2_->set_restore_type(RestoreType::LAST_SESSION_EXITED_CLEANLY);
-  EXPECT_EQ(RestoreType::LAST_SESSION_EXITED_CLEANLY, entry2_->restore_type());
+  entry2_->set_restore_type(RestoreType::kRestored);
+  EXPECT_EQ(RestoreType::kRestored, entry2_->restore_type());
   EXPECT_TRUE(entry2_->IsRestored());
 
   // Original URL

@@ -20,6 +20,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/style/typography.h"
 
 class Browser;
@@ -110,6 +111,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   ProfileMenuViewBase(views::Button* anchor_button,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
+
+  ProfileMenuViewBase(const ProfileMenuViewBase&) = delete;
+  ProfileMenuViewBase& operator=(const ProfileMenuViewBase&) = delete;
 
   // This method is called once to add all menu items.
   virtual void BuildMenu() = 0;
@@ -223,8 +227,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   base::string16 profile_mgmt_heading_;
 
   std::unique_ptr<AXMenuWidgetObserver> ax_widget_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileMenuViewBase);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MENU_VIEW_BASE_H_

@@ -152,12 +152,15 @@ inline FormSubmission::FormSubmission(
     scoped_refptr<EncodedFormData> data,
     const Event* event,
     NavigationPolicy navigation_policy,
-    TriggeringEventInfo triggering_event_info,
+    mojom::blink::TriggeringEventInfo triggering_event_info,
     ClientNavigationReason reason,
     std::unique_ptr<ResourceRequest> resource_request,
     Frame* target_frame,
     WebFrameLoadType load_type,
-    LocalDOMWindow* origin_window)
+    LocalDOMWindow* origin_window,
+    const LocalFrameToken& initiator_frame_token,
+    mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+        initiator_policy_container_keep_alive_handle)
     : method_(method),
       action_(action),
       target_(target),
@@ -170,7 +173,10 @@ inline FormSubmission::FormSubmission(
       resource_request_(std::move(resource_request)),
       target_frame_(target_frame),
       load_type_(load_type),
-      origin_window_(origin_window) {}
+      origin_window_(origin_window),
+      initiator_frame_token_(initiator_frame_token),
+      initiator_policy_container_keep_alive_handle_(
+          std::move(initiator_policy_container_keep_alive_handle)) {}
 
 inline FormSubmission::FormSubmission(const String& result)
     : method_(kDialogMethod), result_(result) {}
@@ -291,15 +297,16 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
   resource_request->SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(form->GetDocument().GetFrame()));
 
-  TriggeringEventInfo triggering_event_info;
+  mojom::blink::TriggeringEventInfo triggering_event_info;
   if (event) {
-    triggering_event_info = event->isTrusted()
-                                ? TriggeringEventInfo::kFromTrustedEvent
-                                : TriggeringEventInfo::kFromUntrustedEvent;
+    triggering_event_info =
+        event->isTrusted()
+            ? mojom::blink::TriggeringEventInfo::kFromTrustedEvent
+            : mojom::blink::TriggeringEventInfo::kFromUntrustedEvent;
     if (event->UnderlyingEvent())
       event = event->UnderlyingEvent();
   } else {
-    triggering_event_info = TriggeringEventInfo::kNotFromEvent;
+    triggering_event_info = mojom::blink::TriggeringEventInfo::kNotFromEvent;
   }
 
   FrameLoadRequest frame_request(form->GetDocument().domWindow(),
@@ -327,7 +334,12 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       encoding_type, form, std::move(form_data), event,
       frame_request.GetNavigationPolicy(), triggering_event_info, reason,
       std::move(resource_request), target_frame, load_type,
-      form->GetDocument().domWindow());
+      form->GetDocument().domWindow(),
+      form->GetDocument().GetFrame()->GetLocalFrameToken(),
+      form->GetDocument()
+          .GetFrame()
+          ->GetPolicyContainer()
+          ->IssueKeepAliveHandle());
 }
 
 void FormSubmission::Trace(Visitor* visitor) const {
@@ -349,6 +361,9 @@ void FormSubmission::Navigate() {
   frame_request.SetClientRedirectReason(reason_);
   frame_request.SetForm(form_);
   frame_request.SetTriggeringEventInfo(triggering_event_info_);
+  frame_request.SetInitiatorFrameToken(initiator_frame_token_);
+  frame_request.SetInitiatorPolicyContainerKeepAliveHandle(
+      std::move(initiator_policy_container_keep_alive_handle_));
 
   if (target_frame_ && !target_frame_->GetPage())
     return;

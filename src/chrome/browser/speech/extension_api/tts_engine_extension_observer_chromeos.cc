@@ -24,6 +24,9 @@
 
 namespace {
 
+using ::ash::AccessibilityManager;
+using ::ash::AccessibilityNotificationType;
+
 void UpdateGoogleSpeechSynthesisKeepAliveCountHelper(
     content::BrowserContext* context,
     bool increment) {
@@ -63,12 +66,12 @@ void UpdateGoogleSpeechSynthesisKeepAliveCount(content::BrowserContext* context,
 
 void UpdateGoogleSpeechSynthesisKeepAliveCountOnReload(
     content::BrowserContext* browser_context) {
-  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+  if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
     UpdateGoogleSpeechSynthesisKeepAliveCount(browser_context,
                                               true /* increment */);
   }
 
-  if (chromeos::AccessibilityManager::Get()->IsSelectToSpeakEnabled()) {
+  if (AccessibilityManager::Get()->IsSelectToSpeakEnabled()) {
     UpdateGoogleSpeechSynthesisKeepAliveCount(browser_context,
                                               true /* increment */);
   }
@@ -135,36 +138,41 @@ TtsEngineExtensionObserverChromeOS::TtsEngineExtensionObserverChromeOS(
   event_router->RegisterObserver(this, tts_engine_events::kOnStop);
 
   accessibility_status_subscription_ =
-      chromeos::AccessibilityManager::Get()->RegisterCallback(
-          base::BindRepeating(
-              &TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged,
-              base::Unretained(this)));
+      AccessibilityManager::Get()->RegisterCallback(base::BindRepeating(
+          &TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged,
+          base::Unretained(this)));
 }
 
 TtsEngineExtensionObserverChromeOS::~TtsEngineExtensionObserverChromeOS() =
     default;
 
-void TtsEngineExtensionObserverChromeOS::BindTtsStream(
-    mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver) {
+void TtsEngineExtensionObserverChromeOS::BindTtsStreamFactory(
+    mojo::PendingReceiver<chromeos::tts::mojom::TtsStreamFactory> receiver) {
   // At this point, the component extension has loaded, and the js has requested
-  // a TtsStream be bound. It's safe now to update the keep alive count for
-  // important accessibility features. This path is also encountered if the
+  // a TtsStreamFactory be bound. It's safe now to update the keep alive count
+  // for important accessibility features. This path is also encountered if the
   // component extension background page forceably window.close(s) on error.
   UpdateGoogleSpeechSynthesisKeepAliveCountOnReload(profile_);
 
-  // Always launch a new TtsService. By assigning below, if |tts_service_| held
-  // a remote, it will be killed and a new one created, ensuring we only ever
-  // have one TtsService running.
-  tts_service_ =
-      content::ServiceProcessHost::Launch<chromeos::tts::mojom::TtsService>(
-          content::ServiceProcessHost::Options()
-              .WithDisplayName("TtsService")
-              .Pass());
+  // Only launch a new TtsService if necessary. By assigning below, if
+  // |tts_service_| held a remote, it will be killed and a new one created,
+  // ensuring we only ever have one TtsService running.
+  if (!tts_service_) {
+    tts_service_ =
+        content::ServiceProcessHost::Launch<chromeos::tts::mojom::TtsService>(
+            content::ServiceProcessHost::Options()
+                .WithDisplayName("TtsService")
+                .Pass());
+  }
 
+  // Always create a new audio stream for the tts stream. It is assumed once the
+  // tts stream is reset by the service, the audio stream is appropriately
+  // cleaned up by the audio service.
   mojo::PendingRemote<audio::mojom::StreamFactory> factory_remote;
   auto factory_receiver = factory_remote.InitWithNewPipeAndPassReceiver();
   content::GetAudioService().BindStreamFactory(std::move(factory_receiver));
-  tts_service_->BindTtsStream(std::move(receiver), std::move(factory_remote));
+  tts_service_->BindTtsStreamFactory(std::move(receiver),
+                                     std::move(factory_remote));
 }
 
 void TtsEngineExtensionObserverChromeOS::Shutdown() {
@@ -221,12 +229,13 @@ void TtsEngineExtensionObserverChromeOS::OnExtensionUnloaded(
 }
 
 void TtsEngineExtensionObserverChromeOS::OnAccessibilityStatusChanged(
-    const chromeos::AccessibilityStatusEventDetails& details) {
-  if (details.notification_type != chromeos::AccessibilityNotificationType::
-                                       ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK &&
-      details.notification_type != chromeos::AccessibilityNotificationType::
-                                       ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK)
+    const ash::AccessibilityStatusEventDetails& details) {
+  if (details.notification_type !=
+          AccessibilityNotificationType::kToggleSpokenFeedback &&
+      details.notification_type !=
+          AccessibilityNotificationType::kToggleSelectToSpeak) {
     return;
+  }
 
   // Google speech synthesis might not be loaded yet. If it isn't, the call in
   // |OnExtensionLoaded| will do the increment. If it is, the call below will

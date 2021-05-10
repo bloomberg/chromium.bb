@@ -32,6 +32,7 @@ struct lookahead_entry {
   YV12_BUFFER_CONFIG img;
   int64_t ts_start;
   int64_t ts_end;
+  int display_idx;
   aom_enc_frame_flags_t flags;
 };
 
@@ -52,6 +53,7 @@ struct lookahead_ctx {
   int write_idx;                         /* Write index */
   struct read_ctx read_ctxs[MAX_STAGES]; /* Read context */
   struct lookahead_entry *buf;           /* Buffer list */
+  int push_frame_count; /* Number of frames has been pushed in the queue*/
 };
 /*!\endcond */
 

@@ -14,6 +14,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
@@ -21,7 +22,6 @@
 #include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
@@ -143,8 +143,8 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_ReservedHostUncached) {
 // provided to it.
 TEST(NetworkQualityEstimatorUtilTest,
      MAYBE_ReservedHostUncachedWithNetworkIsolationKey) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const SchemefulSite kSite(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey(kSite, kSite);
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -214,8 +214,6 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_Localhost) {
   EXPECT_TRUE(IsPrivateHostForTesting(
       resolver.get(), HostPortPair("localhost", 443), NetworkIsolationKey()));
   EXPECT_TRUE(IsPrivateHostForTesting(
-      resolver.get(), HostPortPair("localhost6", 443), NetworkIsolationKey()));
-  EXPECT_TRUE(IsPrivateHostForTesting(
       resolver.get(), HostPortPair("127.0.0.1", 80), NetworkIsolationKey()));
   EXPECT_TRUE(IsPrivateHostForTesting(
       resolver.get(), HostPortPair("0.0.0.0", 80), NetworkIsolationKey()));
@@ -223,6 +221,13 @@ TEST(NetworkQualityEstimatorUtilTest, MAYBE_Localhost) {
                                       NetworkIsolationKey()));
   EXPECT_FALSE(IsPrivateHostForTesting(
       resolver.get(), HostPortPair("google.com", 80), NetworkIsolationKey()));
+
+  // Legacy localhost names.
+  EXPECT_FALSE(IsPrivateHostForTesting(
+      resolver.get(), HostPortPair("localhost6", 443), NetworkIsolationKey()));
+  EXPECT_FALSE(IsPrivateHostForTesting(
+      resolver.get(), HostPortPair("localhost6.localdomain6", 443),
+      NetworkIsolationKey()));
 }
 
 }  // namespace

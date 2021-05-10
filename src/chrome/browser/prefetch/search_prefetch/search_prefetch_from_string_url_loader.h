@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefetch/search_prefetch/prefetched_response_container.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -28,16 +29,11 @@ namespace net {
 class StringIOBuffer;
 }
 
-class SearchPrefetchFromStringURLLoader : public network::mojom::URLLoader {
+class SearchPrefetchFromStringURLLoader : public network::mojom::URLLoader,
+                                          public SearchPrefetchURLLoader {
  public:
-  using RequestHandler = base::OnceCallback<void(
-      const network::ResourceRequest& resource_request,
-      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client)>;
-
-  SearchPrefetchFromStringURLLoader(
-      std::unique_ptr<PrefetchedResponseContainer> response,
-      const network::ResourceRequest& tentative_resource_request);
+  explicit SearchPrefetchFromStringURLLoader(
+      std::unique_ptr<PrefetchedResponseContainer> response);
 
   ~SearchPrefetchFromStringURLLoader() override;
 
@@ -46,8 +42,9 @@ class SearchPrefetchFromStringURLLoader : public network::mojom::URLLoader {
   SearchPrefetchFromStringURLLoader& operator=(
       const SearchPrefetchFromStringURLLoader&) = delete;
 
-  // Called when the response should be served to the user. Returns a handler.
-  RequestHandler ServingResponseHandler();
+  // SearchPrefetchURLLoader:
+  SearchPrefetchURLLoader::RequestHandler ServingResponseHandler(
+      std::unique_ptr<SearchPrefetchURLLoader> loader) override;
 
  private:
   // network::mojom::URLLoader:
@@ -62,8 +59,11 @@ class SearchPrefetchFromStringURLLoader : public network::mojom::URLLoader {
   void ResumeReadingBodyFromNet() override;
 
   // Binds |this| to the mojo handlers and starts the network request using
-  // |request|. After this method is called, |this| manages its own lifetime.
+  // |request|. After this method is called, |this| manages its own lifetime;
+  // |loader| points to |this| and can be released once the mojo connection is
+  // set up.
   void BindAndStart(
+      std::unique_ptr<SearchPrefetchURLLoader> loader,
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client);

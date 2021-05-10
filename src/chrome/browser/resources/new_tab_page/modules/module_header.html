@@ -1,0 +1,87 @@
+<style include="cr-icons">
+  :host {
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+  }
+
+  #titleContainer {
+    align-items: center;
+    display: flex;
+    height: 22px;
+  }
+
+  #title {
+    color: var(--cr-primary-text-color);
+    font-size: 15px;
+  }
+
+  #chip {
+    background-color: var(--ntp-chip-background-color);
+    border-radius: 4px;
+    color: var(--ntp-chip-text-color);
+    font-size: 10px;
+    height: 12px;
+    margin-inline-start: 10px;
+    padding: 2px 6px;
+  }
+
+  #headerSpacer {
+    flex-grow: 1;
+  }
+
+  cr-icon-button {
+    --cr-icon-button-icon-size: 16px;
+    margin-inline-end: -4px;
+    margin-inline-start: 0;
+  }
+
+  #infoButton {
+    --cr-icon-image: url(./icons/info.svg);
+  }
+
+  #menuButton {
+    margin-inline-end: -10px;
+  }
+
+  #description {
+    color: var(--cr-secondary-text-color);
+    font-size: 12px;
+    height: 12px;
+    margin-top: 3px;
+  }
+</style>
+<div id="titleContainer">
+  <span id="title"><slot></slot></span>
+  <template is="dom-if" if="[[chipText]]">
+    <div id="chip">[[chipText]]</div>
+  </template>
+  <div id="headerSpacer"></div>
+  <template is="dom-if" if="[[showInfoButton]]">
+    <cr-icon-button id="infoButton" title="$i18n{moduleInfoButtonTitle}"
+        on-click="onInfoButtonClick_">
+    </cr-icon-button>
+  </template>
+  <cr-icon-button id="menuButton" title="$i18n{moreActions}"
+      class="icon-more-vert" on-click="onMenuButtonClick_">
+  </cr-icon-button>
+</div>
+<template is="dom-if" if="[[descriptionText]]">
+  <span id="description">[[descriptionText]]</span>
+</template>
+<cr-action-menu id="actionMenu">
+  <template is="dom-if" if="[[showDismissButton]]">
+    <button id="dismissButton" class="dropdown-item"
+        on-click="onDismissButtonClick_">
+      [[dismissText]]
+    </button>
+  </template>
+  <button id="disableButton" class="dropdown-item"
+      on-click="onDisableButtonClick_">
+    [[disableText]]
+  </button>
+  <button id="customizeButton" class="dropdown-item"
+      on-click="onCustomizeButtonClick_">
+    $i18n{modulesCustomizeButtonText}
+  </button>
+</cr-action-menu>

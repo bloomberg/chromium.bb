@@ -62,18 +62,16 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return true;
   }
   if (wrapper_type_info == V8FileSystemFileHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::NativeFileSystemEnabled(
+      RuntimeEnabledFeatures::FileSystemAccessEnabled(
           ExecutionContext::From(GetScriptState()))) {
-    return WriteNativeFileSystemHandle(
-        kNativeFileSystemFileHandleTag,
-        wrappable->ToImpl<NativeFileSystemHandle>());
+    return WriteFileSystemHandle(kFileSystemFileHandleTag,
+                                 wrappable->ToImpl<FileSystemHandle>());
   }
   if (wrapper_type_info == V8FileSystemDirectoryHandle::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::NativeFileSystemEnabled(
+      RuntimeEnabledFeatures::FileSystemAccessEnabled(
           ExecutionContext::From(GetScriptState()))) {
-    return WriteNativeFileSystemHandle(
-        kNativeFileSystemDirectoryHandleTag,
-        wrappable->ToImpl<NativeFileSystemHandle>());
+    return WriteFileSystemHandle(kFileSystemDirectoryHandleTag,
+                                 wrappable->ToImpl<FileSystemHandle>());
   }
   if (wrapper_type_info == V8RTCCertificate::GetWrapperTypeInfo()) {
     RTCCertificate* certificate = wrappable->ToImpl<RTCCertificate>();
@@ -110,16 +108,15 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
                                         "storage.");
       return false;
     }
-    auto* video_frame = wrappable->ToImpl<VideoFrame>();
-
-    if (!video_frame->frame()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataCloneError,
-          "Cannot serialize destroyed VideoFrame.");
+    scoped_refptr<VideoFrameHandle> handle =
+        wrappable->ToImpl<VideoFrame>()->handle()->Clone();
+    if (!handle) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "A VideoFrame could not be cloned "
+                                        "because it was closed.");
       return false;
     }
-
-    return WriteVideoFrame(video_frame);
+    return WriteVideoFrameHandle(std::move(handle));
   }
   return false;
 }
@@ -301,20 +298,20 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
   return true;
 }
 
-bool V8ScriptValueSerializerForModules::WriteNativeFileSystemHandle(
+bool V8ScriptValueSerializerForModules::WriteFileSystemHandle(
     SerializationTag tag,
-    NativeFileSystemHandle* native_file_system_handle) {
-  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> token =
-      native_file_system_handle->Transfer();
+    FileSystemHandle* file_system_handle) {
+  mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> token =
+      file_system_handle->Transfer();
 
-  SerializedScriptValue::NativeFileSystemTokensArray& tokens_array =
-      GetSerializedScriptValue()->NativeFileSystemTokens();
+  SerializedScriptValue::FileSystemAccessTokensArray& tokens_array =
+      GetSerializedScriptValue()->FileSystemAccessTokens();
 
   tokens_array.push_back(std::move(token));
   const uint32_t token_index = static_cast<uint32_t>(tokens_array.size() - 1);
 
   WriteTag(tag);
-  WriteUTF8String(native_file_system_handle->name());
+  WriteUTF8String(file_system_handle->name());
   WriteUint32(token_index);
   return true;
 }
@@ -347,12 +344,12 @@ bool V8ScriptValueSerializerForModules::WriteRTCEncodedVideoFrame(
   return true;
 }
 
-bool V8ScriptValueSerializerForModules::WriteVideoFrame(
-    VideoFrame* video_frame) {
+bool V8ScriptValueSerializerForModules::WriteVideoFrameHandle(
+    scoped_refptr<VideoFrameHandle> handle) {
   auto* attachment =
       GetSerializedScriptValue()->GetOrCreateAttachment<VideoFrameAttachment>();
   auto& frames = attachment->Handles();
-  frames.push_back(video_frame->handle());
+  frames.push_back(std::move(handle));
   const uint32_t index = static_cast<uint32_t>(frames.size() - 1);
 
   WriteTag(kVideoFrameTag);

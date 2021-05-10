@@ -20,44 +20,45 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type/i32_type.h"
+#include "src/type/i32_type.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Switch) {
-  auto def = std::make_unique<ast::CaseStatement>();
-  auto def_body = std::make_unique<ast::BlockStatement>();
-  def_body->append(std::make_unique<ast::BreakStatement>());
-  def->set_body(std::move(def_body));
+  auto* def_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
+  auto* def = create<ast::CaseStatement>(ast::CaseSelectorList{}, def_body);
 
-  ast::type::I32Type i32;
   ast::CaseSelectorList case_val;
-  case_val.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
+  case_val.push_back(create<ast::SintLiteral>(ty.i32(), 5));
 
-  auto case_body = std::make_unique<ast::BlockStatement>();
-  case_body->append(std::make_unique<ast::BreakStatement>());
+  auto* case_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
 
-  auto case_stmt = std::make_unique<ast::CaseStatement>(std::move(case_val),
-                                                        std::move(case_body));
+  auto* case_stmt = create<ast::CaseStatement>(case_val, case_body);
 
   ast::CaseStatementList body;
-  body.push_back(std::move(case_stmt));
-  body.push_back(std::move(def));
+  body.push_back(case_stmt);
+  body.push_back(def);
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  ast::SwitchStatement s(std::move(cond), std::move(body));
+  auto* cond = Expr("cond");
+  auto* s = create<ast::SwitchStatement>(cond, body);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&s)) << g.error();
-  EXPECT_EQ(g.result(), R"(  switch(cond) {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(s)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  switch(cond) {
     case 5: {
       break;
     }

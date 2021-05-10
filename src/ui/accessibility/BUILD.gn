@@ -42,6 +42,12 @@ component("ax_base") {
     "accessibility_features.h",
     "accessibility_switches.cc",
     "accessibility_switches.h",
+    "ax_action_data.cc",
+    "ax_action_data.h",
+    "ax_action_handler.cc",
+    "ax_action_handler.h",
+    "ax_action_handler_base.cc",
+    "ax_action_handler_base.h",
     "ax_base_export.h",
     "ax_enum_util.cc",
     "ax_enum_util.h",
@@ -59,8 +65,15 @@ component("ax_base") {
     "ax_relative_bounds.h",
     "ax_role_properties.cc",
     "ax_role_properties.h",
+    "ax_tree_data.cc",
+    "ax_tree_data.h",
     "ax_tree_id.cc",
     "ax_tree_id.h",
+    "ax_tree_id_registry.cc",
+    "ax_tree_id_registry.h",
+    "ax_tree_update.cc",
+    "ax_tree_update.h",
+    "ax_tree_update_forward.h",
   ]
 
   public_deps = [
@@ -74,6 +87,8 @@ component("ax_base") {
     "//ui/gfx/geometry",
     "//ui/strings",
   ]
+
+  deps = [ "//build:chromeos_buildflags" ]
 }
 
 #if (is_win) {
@@ -88,12 +103,6 @@ component("accessibility") {
   defines = [ "AX_IMPLEMENTATION" ]
 
   sources = [
-    "ax_action_data.cc",
-    "ax_action_data.h",
-    "ax_action_handler.cc",
-    "ax_action_handler.h",
-    "ax_action_handler_base.cc",
-    "ax_action_handler_base.h",
     "ax_action_target.h",
     "ax_active_popup.cc",
     "ax_active_popup.h",
@@ -123,10 +132,6 @@ component("accessibility") {
     "ax_tree.h",
     "ax_tree_combiner.cc",
     "ax_tree_combiner.h",
-    "ax_tree_data.cc",
-    "ax_tree_data.h",
-    "ax_tree_id_registry.cc",
-    "ax_tree_id_registry.h",
     "ax_tree_manager.h",
     "ax_tree_manager_map.cc",
     "ax_tree_manager_map.h",
@@ -136,8 +141,6 @@ component("accessibility") {
     "ax_tree_serializer.h",
     "ax_tree_source.h",
     "ax_tree_source_checker.h",
-    "ax_tree_update.h",
-    "ax_tree_update_forward.h",
     "null_ax_action_target.cc",
     "null_ax_action_target.h",
   ]
@@ -206,7 +209,7 @@ static_library("test_support") {
     ]
   }
 
-  deps = [ ":accessibility" ]
+  public_deps = [ ":accessibility" ]
 }
 
 test("accessibility_unittests") {
@@ -218,6 +221,7 @@ test("accessibility_unittests") {
     "ax_language_detection_unittest.cc",
     "ax_node_data_unittest.cc",
     "ax_node_position_unittest.cc",
+    "ax_node_unittest.cc",
     "ax_range_unittest.cc",
     "ax_role_properties_unittest.cc",
     "ax_table_info_unittest.cc",
@@ -238,7 +242,7 @@ test("accessibility_unittests") {
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
     "platform/ax_unique_id_unittest.cc",
-    "platform/inspect/property_node_unittest.cc",
+    "platform/inspect/ax_property_node_unittest.cc",
     "run_all_unittests.cc",
   ]
 

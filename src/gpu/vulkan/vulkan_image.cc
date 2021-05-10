@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
@@ -50,7 +51,7 @@ std::unique_ptr<VulkanImage> VulkanImage::Create(
     VkImageTiling image_tiling,
     void* vk_image_create_info_next,
     void* vk_memory_allocation_info_next) {
-  auto image = std::make_unique<VulkanImage>(util::PassKey<VulkanImage>());
+  auto image = std::make_unique<VulkanImage>(base::PassKey<VulkanImage>());
   if (!image->Initialize(device_queue, size, format, usage, flags, image_tiling,
                          vk_image_create_info_next,
                          vk_memory_allocation_info_next,
@@ -67,10 +68,13 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateWithExternalMemory(
     VkFormat format,
     VkImageUsageFlags usage,
     VkImageCreateFlags flags,
-    VkImageTiling image_tiling) {
-  auto image = std::make_unique<VulkanImage>(util::PassKey<VulkanImage>());
-  if (!image->InitializeWithExternalMemory(device_queue, size, format, usage,
-                                           flags, image_tiling)) {
+    VkImageTiling image_tiling,
+    void* image_create_info_next,
+    void* memory_allocation_info_next) {
+  auto image = std::make_unique<VulkanImage>(base::PassKey<VulkanImage>());
+  if (!image->InitializeWithExternalMemory(
+          device_queue, size, format, usage, flags, image_tiling,
+          image_create_info_next, memory_allocation_info_next)) {
     return nullptr;
   }
   return image;
@@ -85,7 +89,7 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateFromGpuMemoryBufferHandle(
     VkImageUsageFlags usage,
     VkImageCreateFlags flags,
     VkImageTiling image_tiling) {
-  auto image = std::make_unique<VulkanImage>(util::PassKey<VulkanImage>());
+  auto image = std::make_unique<VulkanImage>(base::PassKey<VulkanImage>());
   if (!image->InitializeFromGpuMemoryBufferHandle(
           device_queue, std::move(gmb_handle), size, format, usage, flags,
           image_tiling)) {
@@ -107,7 +111,7 @@ std::unique_ptr<VulkanImage> VulkanImage::Create(
     base::Optional<VulkanYCbCrInfo>& ycbcr_info,
     VkImageUsageFlags usage,
     VkImageCreateFlags flags) {
-  auto image = std::make_unique<VulkanImage>(util::PassKey<VulkanImage>());
+  auto image = std::make_unique<VulkanImage>(base::PassKey<VulkanImage>());
   image->device_queue_ = device_queue;
   image->image_ = vk_image;
   image->device_memory_ = vk_device_memory;
@@ -122,7 +126,7 @@ std::unique_ptr<VulkanImage> VulkanImage::Create(
   return image;
 }
 
-VulkanImage::VulkanImage(util::PassKey<VulkanImage> pass_key) {}
+VulkanImage::VulkanImage(base::PassKey<VulkanImage> pass_key) {}
 
 VulkanImage::~VulkanImage() {
   DCHECK(!device_queue_);
@@ -267,15 +271,34 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
     return false;
   }
 
+  // Get subresource layout for images with VK_IMAGE_TILING_LINEAR.
+  // For images with VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT, the layout is
+  // initialized in InitializeWithExternalMemoryAndModifiers(). For
+  // VK_IMAGE_TILING_OPTIMAL the layout is not usable and
+  // vkGetImageSubresourceLayout() is illegal.
+  if (image_tiling_ != VK_IMAGE_TILING_LINEAR)
+    return true;
+
+  const VkImageSubresource image_subresource = {
+      .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      .mipLevel = 0,
+      .arrayLayer = 0,
+  };
+  vkGetImageSubresourceLayout(device_queue_->GetVulkanDevice(), image_,
+                              &image_subresource, &layouts_[0]);
+
   return true;
 }
 
-bool VulkanImage::InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
-                                               const gfx::Size& size,
-                                               VkFormat format,
-                                               VkImageUsageFlags usage,
-                                               VkImageCreateFlags flags,
-                                               VkImageTiling image_tiling) {
+bool VulkanImage::InitializeWithExternalMemory(
+    VulkanDeviceQueue* device_queue,
+    const gfx::Size& size,
+    VkFormat format,
+    VkImageUsageFlags usage,
+    VkImageCreateFlags flags,
+    VkImageTiling image_tiling,
+    void* image_create_info_next,
+    void* memory_allocation_info_next) {
 #if defined(OS_FUCHSIA)
   constexpr auto kHandleType =
       VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
@@ -293,11 +316,26 @@ bool VulkanImage::InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
       .usage = usage,
       .flags = flags,
   };
+
   VkPhysicalDeviceExternalImageFormatInfo external_info = {
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
       .handleType = kHandleType,
   };
   format_info_2.pNext = &external_info;
+
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  VkPhysicalDeviceImageDrmFormatModifierInfoEXT modifier_info = {
+      .sType =
+          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+  };
+  // If image_tiling is VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT, a modifier_info
+  // struct has to be appended.
+  if (image_tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT)
+    external_info.pNext = &modifier_info;
+#endif
 
   VkImageFormatProperties2 image_format_properties_2 = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,
@@ -332,11 +370,13 @@ bool VulkanImage::InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
 
   VkExternalMemoryImageCreateInfoKHR external_image_create_info = {
       .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
+      .pNext = image_create_info_next,
       .handleTypes = handle_types_,
   };
 
   VkExportMemoryAllocateInfoKHR external_memory_allocate_info = {
       .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
+      .pNext = memory_allocation_info_next,
       .handleTypes = handle_types_,
   };
 

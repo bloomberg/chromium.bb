@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -3771,7 +3771,7 @@
 
             if ( opcode_pointer[i] == opcode_size[i] )
             {
-              FT_TRACE6(( "sph: Function %d, opcode ptrn: %d, %s %s\n",
+              FT_TRACE6(( "sph: Function %d, opcode ptrn: %ld, %s %s\n",
                           i, n,
                           exc->face->root.family_name,
                           exc->face->root.style_name ));
@@ -4362,7 +4362,7 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C = B;   /* counter clockwise rotation */
+      C = B;   /* counter-clockwise rotation */
       B = A;
       A = NEG_LONG( C );
     }
@@ -5050,7 +5050,7 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C = B;   /* counter clockwise rotation */
+      C = B;   /* counter-clockwise rotation */
       B = A;
       A = NEG_LONG( C );
     }
@@ -5074,7 +5074,7 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C = B;   /* counter clockwise rotation */
+      C = B;   /* counter-clockwise rotation */
       B = A;
       A = NEG_LONG( C );
     }
@@ -7781,8 +7781,8 @@
       if ( num_twilight_points > 0xFFFFU )
         num_twilight_points = 0xFFFFU;
 
-      FT_TRACE5(( "TT_RunIns: Resetting number of twilight points\n"
-                  "           from %d to the more reasonable value %ld\n",
+      FT_TRACE5(( "TT_RunIns: Resetting number of twilight points\n" ));
+      FT_TRACE5(( "           from %d to the more reasonable value %ld\n",
                   exc->twilight.n_points,
                   num_twilight_points ));
       exc->twilight.n_points = (FT_UShort)num_twilight_points;

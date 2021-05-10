@@ -15,6 +15,7 @@
 #ifndef DAWNWIRE_CHUNKEDCOMMANDSERIALIZER_H_
 #define DAWNWIRE_CHUNKEDCOMMANDSERIALIZER_H_
 
+#include "common/Alloc.h"
 #include "common/Compiler.h"
 #include "dawn_wire/Wire.h"
 #include "dawn_wire/WireCmd_autogen.h"
@@ -31,7 +32,7 @@ namespace dawn_wire {
 
         template <typename Cmd>
         void SerializeCommand(const Cmd& cmd) {
-            SerializeCommand(cmd, 0, [](char*) {});
+            SerializeCommand(cmd, 0, [](SerializeBuffer*) { return true; });
         }
 
         template <typename Cmd, typename ExtraSizeSerializeFn>
@@ -40,15 +41,15 @@ namespace dawn_wire {
                               ExtraSizeSerializeFn&& SerializeExtraSize) {
             SerializeCommandImpl(
                 cmd,
-                [](const Cmd& cmd, size_t requiredSize, char* allocatedBuffer) {
-                    cmd.Serialize(requiredSize, allocatedBuffer);
+                [](const Cmd& cmd, size_t requiredSize, SerializeBuffer* serializeBuffer) {
+                    return cmd.Serialize(requiredSize, serializeBuffer);
                 },
                 extraSize, std::forward<ExtraSizeSerializeFn>(SerializeExtraSize));
         }
 
         template <typename Cmd>
         void SerializeCommand(const Cmd& cmd, const ObjectIdProvider& objectIdProvider) {
-            SerializeCommand(cmd, objectIdProvider, 0, [](char*) {});
+            SerializeCommand(cmd, objectIdProvider, 0, [](SerializeBuffer*) { return true; });
         }
 
         template <typename Cmd, typename ExtraSizeSerializeFn>
@@ -58,8 +59,9 @@ namespace dawn_wire {
                               ExtraSizeSerializeFn&& SerializeExtraSize) {
             SerializeCommandImpl(
                 cmd,
-                [&objectIdProvider](const Cmd& cmd, size_t requiredSize, char* allocatedBuffer) {
-                    cmd.Serialize(requiredSize, allocatedBuffer, objectIdProvider);
+                [&objectIdProvider](const Cmd& cmd, size_t requiredSize,
+                                    SerializeBuffer* serializeBuffer) {
+                    return cmd.Serialize(requiredSize, serializeBuffer, objectIdProvider);
                 },
                 extraSize, std::forward<ExtraSizeSerializeFn>(SerializeExtraSize));
         }
@@ -76,18 +78,29 @@ namespace dawn_wire {
             if (requiredSize <= mMaxAllocationSize) {
                 char* allocatedBuffer = static_cast<char*>(mSerializer->GetCmdSpace(requiredSize));
                 if (allocatedBuffer != nullptr) {
-                    SerializeCmd(cmd, requiredSize, allocatedBuffer);
-                    SerializeExtraSize(allocatedBuffer + commandSize);
+                    SerializeBuffer serializeBuffer(allocatedBuffer, requiredSize);
+                    bool success = true;
+                    success &= SerializeCmd(cmd, requiredSize, &serializeBuffer);
+                    success &= SerializeExtraSize(&serializeBuffer);
+                    if (DAWN_UNLIKELY(!success)) {
+                        mSerializer->OnSerializeError();
+                    }
                 }
                 return;
             }
 
-            auto cmdSpace = std::unique_ptr<char[]>(new (std::nothrow) char[requiredSize]);
+            auto cmdSpace = std::unique_ptr<char[]>(AllocNoThrow<char>(requiredSize));
             if (!cmdSpace) {
                 return;
             }
-            SerializeCmd(cmd, requiredSize, cmdSpace.get());
-            SerializeExtraSize(cmdSpace.get() + commandSize);
+            SerializeBuffer serializeBuffer(cmdSpace.get(), requiredSize);
+            bool success = true;
+            success &= SerializeCmd(cmd, requiredSize, &serializeBuffer);
+            success &= SerializeExtraSize(&serializeBuffer);
+            if (DAWN_UNLIKELY(!success)) {
+                mSerializer->OnSerializeError();
+                return;
+            }
             SerializeChunkedCommand(cmdSpace.get(), requiredSize);
         }
 

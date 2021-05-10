@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DATA_TRANSFER_DLP_CONTROLLER_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_notifier.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_drag_drop_notifier.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
 
 namespace ui {
@@ -13,6 +15,8 @@ class DataTransferEndpoint;
 }
 
 namespace policy {
+
+class DlpRulesManager;
 
 // DataTransferDlpController is responsible for preventing leaks of confidential
 // data through clipboard data read or drag-and-drop by controlling read
@@ -22,30 +26,43 @@ class DataTransferDlpController : public ui::DataTransferPolicyController {
  public:
   // Creates an instance of the class.
   // Indicates that restricting clipboard content and drag-n-drop is required.
-  static void Init();
+  // It's guaranteed that `dlp_rules_manager` controls the lifetime of
+  // DataTransferDlpController and outlives it.
+  static void Init(const DlpRulesManager& dlp_rules_manager);
 
   DataTransferDlpController(const DataTransferDlpController&) = delete;
   void operator=(const DataTransferDlpController&) = delete;
 
-  // nullptr can be passed instead of `data_src` or `data_dst`. If data read is
-  // not allowed, this function will show a toast to the user.
-  bool IsDataReadAllowed(
+  // ui::DataTransferPolicyController:
+  bool IsClipboardReadAllowed(
       const ui::DataTransferEndpoint* const data_src,
-      const ui::DataTransferEndpoint* const data_dst) const override;
+      const ui::DataTransferEndpoint* const data_dst) override;
+  bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
+                         const ui::DataTransferEndpoint* const data_dst,
+                         const bool is_drop) override;
 
- private:
-  DataTransferDlpController();
+ protected:
+  explicit DataTransferDlpController(const DlpRulesManager& dlp_rules_manager);
   ~DataTransferDlpController() override;
 
-  // Shows toast in case the data read is blocked.
-  // TODO(crbug.com/1131670): Move `ShowBlockToast` to a separate util/helper.
-  void ShowBlockToast(const base::string16& text) const;
-
-  // The text will be different if the data transferred is being shared with
-  // Crostini or Parallels or ARC.
-  base::string16 GetToastText(
+ private:
+  virtual void NotifyBlockedPaste(
       const ui::DataTransferEndpoint* const data_src,
-      const ui::DataTransferEndpoint* const data_dst) const;
+      const ui::DataTransferEndpoint* const data_dst);
+
+  virtual void WarnOnPaste(const ui::DataTransferEndpoint* const data_src,
+                           const ui::DataTransferEndpoint* const data_dst);
+
+  virtual bool ShouldProceedOnWarn(
+      const ui::DataTransferEndpoint* const data_dst);
+
+  virtual void NotifyBlockedDrop(
+      const ui::DataTransferEndpoint* const data_src,
+      const ui::DataTransferEndpoint* const data_dst);
+
+  const DlpRulesManager& dlp_rules_manager_;
+  DlpClipboardNotifier clipboard_notifier_;
+  DlpDragDropNotifier drag_drop_notifier_;
 };
 
 }  // namespace policy

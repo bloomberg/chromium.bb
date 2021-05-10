@@ -311,22 +311,20 @@ string DumpSymbols::Identifier() {
 class DumpSymbols::DumperRangesHandler:
       public DwarfCUToModule::RangesHandler {
  public:
-  DumperRangesHandler(const uint8_t* buffer, uint64_t size,
-                      dwarf2reader::ByteReader* reader)
-      : buffer_(buffer), size_(size), reader_(reader) { }
+  DumperRangesHandler(dwarf2reader::ByteReader* reader) :
+      reader_(reader) { }
 
-  bool ReadRanges(uint64_t offset, Module::Address base_address,
-                  vector<Module::Range>* ranges) {
-    DwarfRangeListHandler handler(base_address, ranges);
-    dwarf2reader::RangeListReader rangelist_reader(buffer_, size_, reader_,
-                                                   &handler);
-
-    return rangelist_reader.ReadRangeList(offset);
+  bool ReadRanges(
+      enum dwarf2reader::DwarfForm form, uint64_t data,
+      dwarf2reader::RangeListReader::CURangesInfo* cu_info,
+      vector<Module::Range>* ranges) {
+    DwarfRangeListHandler handler(ranges);
+    dwarf2reader::RangeListReader range_list_reader(reader_, cu_info,
+                                                    &handler);
+    return range_list_reader.ReadRanges(form, data);
   }
 
  private:
-  const uint8_t* buffer_;
-  uint64_t size_;
   dwarf2reader::ByteReader* reader_;
 };
 
@@ -456,17 +454,8 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
   // Build a line-to-module loader for the root handler to use.
   DumperLineToModule line_to_module(&byte_reader);
 
-  // Optional .debug_ranges reader
-  scoped_ptr<DumperRangesHandler> ranges_handler;
-  dwarf2reader::SectionMap::const_iterator ranges_entry =
-      file_context.section_map().find("__debug_ranges");
-  if (ranges_entry != file_context.section_map().end()) {
-    const std::pair<const uint8_t*, uint64_t>& ranges_section =
-      ranges_entry->second;
-    ranges_handler.reset(
-      new DumperRangesHandler(ranges_section.first, ranges_section.second,
-                              &byte_reader));
-  }
+  // .debug_ranges and .debug_rngslists reader
+  DumperRangesHandler ranges_handler(&byte_reader);
 
   // Walk the __debug_info section, one compilation unit at a time.
   uint64_t debug_info_length = debug_info_section.second;
@@ -476,7 +465,7 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
     DwarfCUToModule::WarningReporter reporter(selected_object_name_,
                                               offset);
     DwarfCUToModule root_handler(&file_context, &line_to_module,
-                                 ranges_handler.get(), &reporter);
+                                 &ranges_handler, &reporter);
     // Make a Dwarf2Handler that drives our DIEHandler.
     dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.

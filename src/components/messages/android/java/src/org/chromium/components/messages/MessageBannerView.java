@@ -97,7 +97,7 @@ public class MessageBannerView extends BoundedLinearLayout {
     }
 
     void setSwipeHandler(SwipeHandler handler) {
-        mSwipeGestureDetector = new SwipeGestureListener(getContext(), handler);
+        mSwipeGestureDetector = new MessageSwipeGestureListener(getContext(), handler);
     }
 
     // TODO(pavely): For the M88 experiment we decided to display single item menu in response to
@@ -140,5 +140,16 @@ public class MessageBannerView extends BoundedLinearLayout {
             return mSwipeGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
         }
         return super.onTouchEvent(event);
+    }
+
+    private class MessageSwipeGestureListener extends SwipeGestureListener {
+        public MessageSwipeGestureListener(Context context, SwipeHandler handler) {
+            super(context, handler);
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
     }
 }

@@ -266,7 +266,6 @@ bool CreateSpatialLayersConfig(
           sl.height = base::checked_cast<int32_t>(rtc_sl.height);
           if (!ConvertKbpsToBps(rtc_sl.targetBitrate, &sl.bitrate_bps))
             return false;
-          sl.bitrate_bps = rtc_sl.targetBitrate * 1000;
           sl.framerate = base::saturated_cast<int32_t>(rtc_sl.maxFramerate);
           sl.max_qp = base::saturated_cast<uint8_t>(rtc_sl.qpMax);
           sl.num_of_temporal_layers =
@@ -622,7 +621,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     // Use import mode for camera when GpuMemoryBuffer-based video capture is
     // enabled.
     pixel_format = media::PIXEL_FORMAT_NV12;
-    storage_type = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+    storage_type =
+        media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
     use_native_input_ = true;
   }
   const media::VideoEncodeAccelerator::Config config(
@@ -804,26 +804,30 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
 
   input_frame_coded_size_ = input_coded_size;
 
-  for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
-    base::UnsafeSharedMemoryRegion shm = base::UnsafeSharedMemoryRegion::Create(
-        media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
-                                          input_coded_size));
-    if (!shm.IsValid()) {
-      LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
-                        media::VideoEncodeAccelerator::kPlatformFailureError);
-      return;
+  // |input_buffers_| is only needed in non import mode.
+  if (!use_native_input_) {
+    for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
+      base::UnsafeSharedMemoryRegion shm =
+          base::UnsafeSharedMemoryRegion::Create(
+              media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                                input_coded_size));
+      if (!shm.IsValid()) {
+        LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
+                          media::VideoEncodeAccelerator::kPlatformFailureError);
+        return;
+      }
+      base::WritableSharedMemoryMapping mapping = shm.Map();
+      if (!mapping.IsValid()) {
+        LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
+                          media::VideoEncodeAccelerator::kPlatformFailureError);
+        return;
+      }
+      input_buffers_.push_back(
+          std::make_unique<std::pair<base::UnsafeSharedMemoryRegion,
+                                     base::WritableSharedMemoryMapping>>(
+              std::move(shm), std::move(mapping)));
+      input_buffers_free_.push_back(i);
     }
-    base::WritableSharedMemoryMapping mapping = shm.Map();
-    if (!mapping.IsValid()) {
-      LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
-                        media::VideoEncodeAccelerator::kPlatformFailureError);
-      return;
-    }
-    input_buffers_.push_back(
-        std::make_unique<std::pair<base::UnsafeSharedMemoryRegion,
-                                   base::WritableSharedMemoryMapping>>(
-            std::move(shm), std::move(mapping)));
-    input_buffers_free_.push_back(i);
   }
 
   for (int i = 0; i < kOutputBufferCount; ++i) {
@@ -928,6 +932,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       bool key_frame =
           image._frameType == webrtc::VideoFrameType::kVideoFrameKey;
       webrtc::CodecSpecificInfoVP9& vp9 = info.codecSpecific.VP9;
+      info.end_of_picture = true;
       if (metadata.vp9) {
         // Temporal layer stream.
         vp9.first_frame_in_picture = true;
@@ -941,7 +946,6 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         vp9.num_ref_pics = metadata.vp9->p_diffs.size();
         for (size_t i = 0; i < metadata.vp9->p_diffs.size(); ++i)
           vp9.p_diff[i] = metadata.vp9->p_diffs[i];
-        vp9.end_of_picture = true;
         vp9.ss_data_available = key_frame;
         vp9.first_active_layer = 0u;
         vp9.spatial_layer_resolution_present = true;
@@ -957,7 +961,6 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         vp9.gof_idx = 0;
         vp9.num_spatial_layers = 1;
         vp9.first_frame_in_picture = true;
-        vp9.end_of_picture = true;
         vp9.spatial_layer_resolution_present = false;
         vp9.inter_pic_predicted = !key_frame;
         vp9.ss_data_available = key_frame;
@@ -1127,6 +1130,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
 void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
   DVLOG(3) << "Impl::EncodeOneFrameWithNativeInput()";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(input_buffers_.IsEmpty() && input_buffers_free_.IsEmpty());
   DCHECK(input_next_frame_);
 
   // EncodeOneFrameWithNativeInput() may re-enter EncodeFrameFinished() if
@@ -1198,7 +1202,7 @@ bool RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
 
   auto gmb = gpu_factories_->CreateGpuMemoryBuffer(
       natural_size, gfx::BufferFormat::YUV_420_BIPLANAR,
-      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+      gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE);
 
   if (!gmb || !gmb->Map()) {
     black_gmb_frame_ = nullptr;
@@ -1300,9 +1304,9 @@ RTCVideoEncoder::~RTCVideoEncoder() {
   DCHECK(!impl_.get());
 }
 
-int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
-                                    int32_t number_of_cores,
-                                    size_t max_payload_size) {
+int32_t RTCVideoEncoder::InitEncode(
+    const webrtc::VideoCodec* codec_settings,
+    const webrtc::VideoEncoder::Settings& settings) {
   DVLOG(1) << __func__ << " codecType=" << codec_settings->codecType
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height

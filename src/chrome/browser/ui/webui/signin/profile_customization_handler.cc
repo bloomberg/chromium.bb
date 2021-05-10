@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -46,34 +47,32 @@ void ProfileCustomizationHandler::RegisterMessages() {
 }
 
 void ProfileCustomizationHandler::OnJavascriptAllowed() {
-  observed_profile_.Add(
+  observed_profile_.Observe(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 }
 
 void ProfileCustomizationHandler::OnJavascriptDisallowed() {
-  observed_profile_.RemoveAll();
+  observed_profile_.Reset();
 }
 
 void ProfileCustomizationHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
-  if (profile_path != profile_path_)
-    return;
-  UpdateProfileInfo();
+  UpdateProfileInfo(profile_path);
 }
 
 void ProfileCustomizationHandler::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
-  if (profile_path != profile_path_)
-    return;
-  UpdateProfileInfo();
+  UpdateProfileInfo(profile_path);
 }
 
 void ProfileCustomizationHandler::OnProfileThemeColorsChanged(
     const base::FilePath& profile_path) {
-  DCHECK(IsJavascriptAllowed());
-  if (profile_path != profile_path_)
-    return;
-  UpdateProfileInfo();
+  UpdateProfileInfo(profile_path);
+}
+
+void ProfileCustomizationHandler::OnProfileHostedDomainChanged(
+    const base::FilePath& profile_path) {
+  UpdateProfileInfo(profile_path);
 }
 
 void ProfileCustomizationHandler::HandleInitialized(
@@ -91,14 +90,18 @@ void ProfileCustomizationHandler::HandleDone(const base::ListValue* args) {
 
   base::TrimWhitespace(profile_name, base::TRIM_ALL, &profile_name);
   DCHECK(!profile_name.empty());
-  GetProfileEntry()->SetLocalProfileName(profile_name);
+  GetProfileEntry()->SetLocalProfileName(profile_name,
+                                         /*is_default_name=*/false);
 
   if (done_closure_)
     std::move(done_closure_).Run();
 }
 
-void ProfileCustomizationHandler::UpdateProfileInfo() {
+void ProfileCustomizationHandler::UpdateProfileInfo(
+    const base::FilePath& profile_path) {
   DCHECK(IsJavascriptAllowed());
+  if (profile_path != profile_path_)
+    return;
   FireWebUIListener("on-profile-info-changed", GetProfileInfoValue());
 }
 
@@ -119,14 +122,16 @@ base::Value ProfileCustomizationHandler::GetProfileInfoValue() {
       profiles::GetSizedAvatarIcon(entry->GetAvatarIcon(avatar_icon_size), true,
                                    avatar_icon_size, avatar_icon_size);
   dict.SetStringKey("pictureUrl", webui::GetBitmapDataUrl(icon.AsBitmap()));
+  dict.SetBoolKey("isManaged",
+                  AccountInfo::IsManaged(entry->GetHostedDomain()));
   return dict;
 }
 
 ProfileAttributesEntry* ProfileCustomizationHandler::GetProfileEntry() const {
-  ProfileAttributesEntry* entry = nullptr;
-  g_browser_process->profile_manager()
-      ->GetProfileAttributesStorage()
-      .GetProfileAttributesWithPath(profile_path_, &entry);
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path_);
   DCHECK(entry);
   return entry;
 }

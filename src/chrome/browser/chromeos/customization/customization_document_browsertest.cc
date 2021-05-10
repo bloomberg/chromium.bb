@@ -32,14 +32,14 @@ namespace {
 class LanguageSwitchedWaiter {
  public:
   explicit LanguageSwitchedWaiter(SwitchLanguageCallback callback)
-      : callback_(callback),
+      : callback_(std::move(callback)),
         finished_(false),
         runner_(new content::MessageLoopRunner) {}
 
   void ExitMessageLoop(const LanguageSwitchResult& result) {
     finished_ = true;
     runner_->Quit();
-    callback_.Run(result);
+    std::move(callback_).Run(result);
   }
 
   void Wait() {
@@ -49,7 +49,7 @@ class LanguageSwitchedWaiter {
   }
 
   SwitchLanguageCallback Callback() {
-    return SwitchLanguageCallback(base::Bind(
+    return SwitchLanguageCallback(base::BindOnce(
         &LanguageSwitchedWaiter::ExitMessageLoop, base::Unretained(this)));
   }
 
@@ -186,7 +186,7 @@ typedef InProcessBrowserTest CustomizationLocaleTest;
 
 IN_PROC_BROWSER_TEST_F(CustomizationLocaleTest, CheckAvailableLocales) {
   for (size_t i = 0; i < languages_available.size(); ++i) {
-    LanguageSwitchedWaiter waiter(base::Bind(&VerifyLanguageSwitched));
+    LanguageSwitchedWaiter waiter(base::BindOnce(&VerifyLanguageSwitched));
     locale_util::SwitchLanguage(languages_available[i], true, true,
                                 waiter.Callback(),
                                 ProfileManager::GetActiveUserProfile());

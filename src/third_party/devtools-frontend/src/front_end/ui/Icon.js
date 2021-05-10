@@ -75,8 +75,8 @@ export class Icon extends HTMLSpanElement {
     if (this._descriptor) {
       this.classList.toggle('spritesheet-' + this._descriptor.spritesheet, value);
       this.classList.toggle(this._iconType, value);
-      this.classList.toggle('icon-mask', value && !!this._descriptor.isMask);
-      this.classList.toggle('icon-invert', value && !!this._descriptor.invert);
+      this.classList.toggle('icon-mask', value && Boolean(this._descriptor.isMask));
+      this.classList.toggle('icon-invert', value && Boolean(this._descriptor.invert));
     }
   }
 
@@ -208,6 +208,8 @@ const initialDescriptors = new Map([
   ['largeicon-copy', {position: 'b6', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-deactivate-breakpoints', {position: 'c6', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-delete', {position: 'd9', spritesheet: 'largeicons', isMask: true}],
+  ['largeicon-delete-filter', {position: 'i5', spritesheet: 'largeicons', isMask: true}],
+  ['largeicon-delete-list', {position: 'i6', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-dock-to-bottom', {position: 'd8', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-dock-to-left', {position: 'd7', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-dock-to-right', {position: 'd6', spritesheet: 'largeicons', isMask: true}],
@@ -215,6 +217,7 @@ const initialDescriptors = new Map([
   ['largeicon-edit', {position: 'a5', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-eyedropper', {position: 'b5', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-filter', {position: 'c5', spritesheet: 'largeicons', isMask: true}],
+  ['largeicon-font-editor', {position: 'i7', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-hide-bottom-sidebar', {position: 'e9', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-hide-left-sidebar', {position: 'e8', spritesheet: 'largeicons', isMask: true}],
   ['largeicon-hide-right-sidebar', {position: 'e7', spritesheet: 'largeicons', isMask: true}],

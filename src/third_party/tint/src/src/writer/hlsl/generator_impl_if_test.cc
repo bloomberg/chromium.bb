@@ -15,8 +15,8 @@
 #include "src/ast/else_statement.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -27,14 +27,16 @@ namespace {
 using HlslGeneratorImplTest_If = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_If, Emit_If) {
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>());
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(cond, body, ast::ElseStatementList{});
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &i)) << gen().error();
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitStatement(out, i)) << gen.error();
   EXPECT_EQ(result(), R"(  if (cond) {
     return;
   }
@@ -42,24 +44,24 @@ TEST_F(HlslGeneratorImplTest_If, Emit_If) {
 }
 
 TEST_F(HlslGeneratorImplTest_If, Emit_IfWithElseIf) {
-  auto else_cond = std::make_unique<ast::IdentifierExpression>("else_cond");
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::ReturnStatement>());
+  auto* else_cond = Expr("else_cond");
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_cond),
-                                                       std::move(else_body)));
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      cond, body,
+      ast::ElseStatementList{create<ast::ElseStatement>(else_cond, else_body)});
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
+  gen.increment_indent();
 
-  gen().increment_indent();
-
-  ASSERT_TRUE(gen().EmitStatement(out(), &i)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, i)) << gen.error();
   EXPECT_EQ(result(), R"(  if (cond) {
     return;
   } else {
@@ -71,22 +73,23 @@ TEST_F(HlslGeneratorImplTest_If, Emit_IfWithElseIf) {
 }
 
 TEST_F(HlslGeneratorImplTest_If, Emit_IfWithElse) {
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::ReturnStatement>());
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_body)));
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      cond, body,
+      ast::ElseStatementList{create<ast::ElseStatement>(nullptr, else_body)});
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
+  gen.increment_indent();
 
-  gen().increment_indent();
-
-  ASSERT_TRUE(gen().EmitStatement(out(), &i)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, i)) << gen.error();
   EXPECT_EQ(result(), R"(  if (cond) {
     return;
   } else {
@@ -96,29 +99,32 @@ TEST_F(HlslGeneratorImplTest_If, Emit_IfWithElse) {
 }
 
 TEST_F(HlslGeneratorImplTest_If, Emit_IfWithMultiple) {
-  auto else_cond = std::make_unique<ast::IdentifierExpression>("else_cond");
+  auto* else_cond = Expr("else_cond");
 
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::ReturnStatement>());
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
 
-  auto else_body_2 = std::make_unique<ast::BlockStatement>();
-  else_body_2->append(std::make_unique<ast::ReturnStatement>());
+  auto* else_body_2 = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_cond),
-                                                       std::move(else_body)));
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_body_2)));
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      cond, body,
+      ast::ElseStatementList{
+          create<ast::ElseStatement>(else_cond, else_body),
+          create<ast::ElseStatement>(nullptr, else_body_2),
+      });
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ReturnStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
+  gen.increment_indent();
 
-  gen().increment_indent();
-
-  ASSERT_TRUE(gen().EmitStatement(out(), &i)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, i)) << gen.error();
   EXPECT_EQ(result(), R"(  if (cond) {
     return;
   } else {

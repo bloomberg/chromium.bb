@@ -35,13 +35,16 @@ namespace dawn_native {
 
         bool HasCompareFunction() const;
 
-        // Functors necessary for the unordered_set<SamplerBase*>-based cache.
-        struct HashFunc {
-            size_t operator()(const SamplerBase* module) const;
-        };
+        // Functions necessary for the unordered_set<SamplerBase*>-based cache.
+        size_t ComputeContentHash() override;
+
         struct EqualityFunc {
             bool operator()(const SamplerBase* a, const SamplerBase* b) const;
         };
+
+        uint16_t GetMaxAnisotropy() const {
+            return mMaxAnisotropy;
+        }
 
       private:
         SamplerBase(DeviceBase* device, ObjectBase::ErrorTag tag);
@@ -56,6 +59,7 @@ namespace dawn_native {
         float mLodMinClamp;
         float mLodMaxClamp;
         wgpu::CompareFunction mCompareFunction;
+        uint16_t mMaxAnisotropy;
     };
 
 }  // namespace dawn_native

@@ -147,6 +147,29 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
             oof_positioned_descendants_->size()};
   }
 
+  // This exposes a mutable part of the fragment for |NGOutOfFlowLayoutPart|.
+  class MutableChildrenForOutOfFlow final {
+    STACK_ALLOCATED();
+
+   protected:
+    friend class NGOutOfFlowLayoutPart;
+    base::span<NGLink> Children() const {
+      return base::make_span(buffer_, num_children_);
+    }
+
+   private:
+    friend class NGPhysicalContainerFragment;
+    MutableChildrenForOutOfFlow(const NGLink* buffer, wtf_size_t num_children)
+        : buffer_(const_cast<NGLink*>(buffer)), num_children_(num_children) {}
+
+    NGLink* buffer_;
+    wtf_size_t num_children_;
+  };
+
+  MutableChildrenForOutOfFlow GetMutableChildrenForOutOfFlow() const {
+    return MutableChildrenForOutOfFlow(buffer_, num_children_);
+  }
+
  protected:
   // block_or_line_writing_mode is used for converting the child offsets.
   NGPhysicalContainerFragment(NGContainerFragmentBuilder*,
@@ -178,6 +201,11 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;
+  void AddOutlineRectsForCursor(Vector<PhysicalRect>* outline_rects,
+                                const PhysicalOffset& additional_offset,
+                                NGOutlineType outline_type,
+                                const LayoutBoxModelObject* containing_block,
+                                NGInlineCursor* cursor) const;
   void AddOutlineRectsForDescendant(
       const NGLink& descendant,
       Vector<PhysicalRect>* rects,

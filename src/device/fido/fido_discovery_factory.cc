@@ -28,9 +28,9 @@
 #include "device/fido/mac/discovery.h"
 #endif  // defined(OSMACOSX)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "device/fido/cros/discovery.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace device {
 
@@ -49,9 +49,16 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
       if (device::BluetoothAdapterFactory::Get()->IsLowEnergySupported() &&
           (cable_data_.has_value() || qr_generator_key_.has_value())) {
         std::unique_ptr<cablev2::Discovery> v2_discovery;
-        if (qr_generator_key_.has_value()) {
+        const bool have_v2_discovery_data =
+            cable_data_.has_value() &&
+            std::any_of(cable_data_->begin(), cable_data_->end(),
+                        [](const CableDiscoveryData& v) -> bool {
+                          return v.version == CableDiscoveryData::Version::V2;
+                        });
+        if (qr_generator_key_.has_value() || have_v2_discovery_data) {
           v2_discovery = std::make_unique<cablev2::Discovery>(
-              network_context_, *qr_generator_key_, std::move(v2_pairings_),
+              network_context_, qr_generator_key_, std::move(v2_pairings_),
+              cable_data_.value_or(std::vector<CableDiscoveryData>()),
               std::move(cable_pairing_callback_));
         }
         std::unique_ptr<FidoDiscoveryBase> v1_discovery =
@@ -71,7 +78,7 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
       // TODO(https://crbug.com/825949): Add NFC support.
       return {};
     case FidoTransportProtocol::kInternal: {
-#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
+#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
       std::unique_ptr<FidoDiscoveryBase> discovery =
           MaybeCreatePlatformDiscovery();
       if (discovery) {
@@ -84,8 +91,11 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
     }
     case FidoTransportProtocol::kAndroidAccessory:
       if (usb_device_manager_) {
-        return SingleDiscovery(std::make_unique<AndroidAccessoryDiscovery>(
-            std::move(usb_device_manager_.value())));
+        auto ret = SingleDiscovery(std::make_unique<AndroidAccessoryDiscovery>(
+            std::move(usb_device_manager_.value()),
+            std::move(aoa_request_description_)));
+        usb_device_manager_.reset();
+        return ret;
       }
       return {};
   }
@@ -107,9 +117,11 @@ void FidoDiscoveryFactory::set_cable_data(
   v2_pairings_ = std::move(v2_pairings);
 }
 
-void FidoDiscoveryFactory::set_usb_device_manager(
-    mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager) {
+void FidoDiscoveryFactory::set_android_accessory_params(
+    mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager,
+    std::string aoa_request_description) {
   usb_device_manager_.emplace(std::move(usb_device_manager));
+  aoa_request_description_ = std::move(aoa_request_description);
 }
 
 void FidoDiscoveryFactory::set_network_context(
@@ -118,8 +130,7 @@ void FidoDiscoveryFactory::set_network_context(
 }
 
 void FidoDiscoveryFactory::set_cable_pairing_callback(
-    base::RepeatingCallback<void(std::unique_ptr<cablev2::Pairing>)>
-        pairing_callback) {
+    base::RepeatingCallback<void(cablev2::PairingEvent)> pairing_callback) {
   cable_pairing_callback_.emplace(std::move(pairing_callback));
 }
 
@@ -174,18 +185,33 @@ FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
 }
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<FidoDiscoveryBase>
 FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
-  return base::FeatureList::IsEnabled(kWebAuthCrosPlatformAuthenticator)
-             ? std::make_unique<FidoChromeOSDiscovery>(
-                   generate_request_id_callback_)
-             : nullptr;
+  if (base::FeatureList::IsEnabled(kWebAuthCrosPlatformAuthenticator)) {
+    auto discovery = std::make_unique<FidoChromeOSDiscovery>(
+        generate_request_id_callback_,
+        std::move(get_assertion_request_for_legacy_credential_check_));
+    discovery->set_require_power_button_mode(
+        require_legacy_cros_authenticator_);
+    return discovery;
+  }
+  return nullptr;
 }
 
 void FidoDiscoveryFactory::set_generate_request_id_callback(
     base::RepeatingCallback<uint32_t()> callback) {
   generate_request_id_callback_ = std::move(callback);
+}
+
+void FidoDiscoveryFactory::set_require_legacy_cros_authenticator(bool value) {
+  require_legacy_cros_authenticator_ = value;
+}
+
+void FidoDiscoveryFactory::
+    set_get_assertion_request_for_legacy_credential_check(
+        CtapGetAssertionRequest request) {
+  get_assertion_request_for_legacy_credential_check_ = std::move(request);
 }
 #endif
 

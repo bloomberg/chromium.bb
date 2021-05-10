@@ -71,7 +71,7 @@ void CloudPrintAuth::AuthenticateWithToken(
   request_ = CloudPrintURLFetcher::Create(partial_traffic_annotation_);
   request_->StartGetRequest(CloudPrintURLFetcher::REQUEST_AUTH_CODE,
                             get_authcode_url, this,
-                            kCloudPrintAuthMaxRetryCount, std::string());
+                            kCloudPrintAuthMaxRetryCount);
 }
 
 void CloudPrintAuth::AuthenticateWithRobotToken(
@@ -217,10 +217,10 @@ CloudPrintURLFetcher::ResponseAction CloudPrintAuth::OnRequestAuthError() {
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
-std::string CloudPrintAuth::GetAuthHeader() {
+std::string CloudPrintAuth::GetAuthHeaderValue() {
   DCHECK(!client_login_token_.empty());
   std::string header;
-  header = "Authorization: GoogleLogin auth=";
+  header = "GoogleLogin auth=";
   header += client_login_token_;
   return header;
 }

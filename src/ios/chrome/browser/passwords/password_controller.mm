@@ -60,13 +60,13 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
+#import "ios/chrome/browser/ui/commands/password_protection_commands.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/navigation/navigation_context.h"
@@ -342,6 +342,13 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
                                                            URL:URL];
 }
 
+- (void)showPasswordProtectionWarning:(NSString*)warningText
+                           completion:(void (^)(safe_browsing::WarningAction))
+                                          completion {
+  [self.passwordProtectionDispatcher showPasswordProtectionWarning:warningText
+                                                        completion:completion];
+}
+
 #pragma mark - Private methods
 
 // The dispatcher used for ApplicationCommands.
@@ -358,6 +365,14 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   DCHECK(self.browser->GetCommandDispatcher());
   return HandlerForProtocol(self.browser->GetCommandDispatcher(),
                             PasswordBreachCommands);
+}
+
+// The dispatcher used for PasswordProtectionCommands.
+- (id<PasswordProtectionCommands>)passwordProtectionDispatcher {
+  DCHECK(self.browser);
+  DCHECK(self.browser->GetCommandDispatcher());
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            PasswordProtectionCommands);
 }
 
 - (InfoBarIOS*)findInfobarOfType:(InfobarType)infobarType manual:(BOOL)manual {
@@ -456,13 +471,20 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             isSyncUser, /*password_update*/ true, std::move(form));
         delegate->set_handler(self.applicationCommandsHandler);
-        InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
-            alloc]
-            initWithInfoBarDelegate:delegate.get()
-                               type:InfobarType::kInfobarTypePasswordUpdate];
+        std::unique_ptr<InfoBarIOS> infobar;
         // If manual save, skip showing banner.
-        std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
-            coordinator, std::move(delegate), /*skip_banner=*/manual);
+        if (IsInfobarOverlayUIEnabled()) {
+          infobar = std::make_unique<InfoBarIOS>(
+              InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
+              /*=skip_banner*/ manual);
+        } else {
+          InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
+              alloc]
+              initWithInfoBarDelegate:delegate.get()
+                                 type:InfobarType::kInfobarTypePasswordUpdate];
+          infobar = std::make_unique<InfoBarIOS>(
+              coordinator, std::move(delegate), /*skip_banner=*/manual);
+        }
         infoBarManager->AddInfoBar(std::move(infobar),
                                    /*replace_existing=*/true);
       break;

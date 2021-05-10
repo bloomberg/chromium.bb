@@ -41,8 +41,7 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   // blink::mojom::RemoteFrame overrides:
   void WillEnterFullscreen(blink::mojom::FullscreenOptionsPtr) override;
   void AddReplicatedContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers)
-      override;
+      std::vector<network::mojom::ContentSecurityPolicyPtr> csps) override;
   void ResetReplicatedContentSecurityPolicy() override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
@@ -85,8 +84,15 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
       const std::vector<blink::ParsedFeaturePolicyDeclaration>&
           parsed_feature_policy) override {}
   void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override {}
-  void UpdateOpener(const base::Optional<base::UnguessableToken>&
-                        opener_frame_token) override;
+  void UpdateOpener(
+      const base::Optional<blink::FrameToken>& opener_frame_token) override;
+  void DetachAndDispose() override;
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize() override;
+  void DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
+  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

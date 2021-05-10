@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "src/api/api.h"
+#include "src/baseline/baseline.h"
 #include "src/builtins/builtins-utils-gen.h"
 #include "src/builtins/builtins.h"
 #include "src/codegen/code-stub-assembler.h"
@@ -486,6 +487,11 @@ TF_BUILTIN(DeleteProperty, DeletePropertyBaseAssembler) {
   Label if_index(this, &var_index), if_unique_name(this), if_notunique(this),
       if_notfound(this), slow(this), if_proxy(this);
 
+  if (V8_DICT_MODE_PROTOTYPES_BOOL) {
+    // TODO(v8:11167) remove once OrderedNameDictionary supported.
+    GotoIf(Int32TrueConstant(), &slow);
+  }
+
   GotoIf(TaggedIsSmi(receiver), &slow);
   TNode<Map> receiver_map = LoadMap(CAST(receiver));
   TNode<Uint16T> instance_type = LoadMapInstanceType(receiver_map);
@@ -660,6 +666,7 @@ TF_BUILTIN(SetDataProperties, SetOrCopyDataPropertiesAssembler) {
   auto context = Parameter<Context>(Descriptor::kContext);
 
   Label if_runtime(this, Label::kDeferred);
+  GotoIfForceSlowPath(&if_runtime);
   Return(SetOrCopyDataProperties(context, target, source, &if_runtime, true));
 
   BIND(&if_runtime);
@@ -679,6 +686,20 @@ TF_BUILTIN(ForInEnumerate, CodeStubAssembler) {
 
   BIND(&if_runtime);
   TailCallRuntime(Runtime::kForInEnumerate, context, receiver);
+}
+
+TF_BUILTIN(ForInPrepare, CodeStubAssembler) {
+  // The {enumerator} is either a Map or a FixedArray.
+  auto enumerator = Parameter<HeapObject>(Descriptor::kEnumerator);
+  auto index = Parameter<TaggedIndex>(Descriptor::kVectorIndex);
+  auto feedback_vector = Parameter<FeedbackVector>(Descriptor::kFeedbackVector);
+  TNode<UintPtrT> vector_index = Unsigned(TaggedIndexToIntPtr(index));
+
+  TNode<FixedArray> cache_array;
+  TNode<Smi> cache_length;
+  ForInPrepare(enumerator, vector_index, feedback_vector, &cache_array,
+               &cache_length, UpdateFeedbackMode::kGuaranteedFeedback);
+  Return(cache_array, cache_length);
 }
 
 TF_BUILTIN(ForInFilter, CodeStubAssembler) {
@@ -744,7 +765,6 @@ TF_BUILTIN(AdaptorWithBuiltinExitFrame, CodeStubAssembler) {
 
   TVARIABLE(Int32T, pushed_argc, actual_argc);
 
-#ifdef V8_NO_ARGUMENTS_ADAPTOR
   TNode<SharedFunctionInfo> shared = LoadJSFunctionSharedFunctionInfo(target);
 
   TNode<Int32T> formal_count =
@@ -764,7 +784,6 @@ TF_BUILTIN(AdaptorWithBuiltinExitFrame, CodeStubAssembler) {
   pushed_argc = formal_count;
   Goto(&done_argc);
   BIND(&done_argc);
-#endif
 
   // Update arguments count for CEntry to contain the number of arguments
   // including the receiver and the extra arguments.
@@ -905,6 +924,28 @@ void Builtins::Generate_MemMove(MacroAssembler* masm) {
 }
 #endif  // V8_TARGET_ARCH_IA32
 
+// TODO(v8:11421): Remove #if once baseline compiler is ported to other
+// architectures.
+#if V8_TARGET_ARCH_X64 || V8_TARGET_ARCH_ARM64
+void Builtins::Generate_BaselineLeaveFrame(MacroAssembler* masm) {
+  EmitReturnBaseline(masm);
+}
+#else
+// Stub out implementations of arch-specific baseline builtins.
+void Builtins::Generate_BaselineOutOfLinePrologue(MacroAssembler* masm) {
+  masm->Trap();
+}
+void Builtins::Generate_BaselineLeaveFrame(MacroAssembler* masm) {
+  masm->Trap();
+}
+void Builtins::Generate_BaselineOnStackReplacement(MacroAssembler* masm) {
+  masm->Trap();
+}
+void Builtins::Generate_TailCallOptimizedCodeSlot(MacroAssembler* masm) {
+  masm->Trap();
+}
+#endif
+
 // ES6 [[Get]] operation.
 TF_BUILTIN(GetProperty, CodeStubAssembler) {
   auto object = Parameter<Object>(Descriptor::kObject);
@@ -914,6 +955,11 @@ TF_BUILTIN(GetProperty, CodeStubAssembler) {
   // object, key, OnNonExistent::kReturnUndefined).
   Label if_notfound(this), if_proxy(this, Label::kDeferred),
       if_slow(this, Label::kDeferred);
+
+  if (V8_DICT_MODE_PROTOTYPES_BOOL) {
+    // TODO(v8:11167) remove once OrderedNameDictionary supported.
+    GotoIf(Int32TrueConstant(), &if_slow);
+  }
 
   CodeStubAssembler::LookupPropertyInHolder lookup_property_in_holder =
       [=](TNode<HeapObject> receiver, TNode<HeapObject> holder,
@@ -969,6 +1015,11 @@ TF_BUILTIN(GetPropertyWithReceiver, CodeStubAssembler) {
   auto on_non_existent = Parameter<Object>(Descriptor::kOnNonExistent);
   Label if_notfound(this), if_proxy(this, Label::kDeferred),
       if_slow(this, Label::kDeferred);
+
+  if (V8_DICT_MODE_PROTOTYPES_BOOL) {
+    // TODO(v8:11167) remove once OrderedNameDictionary supported.
+    GotoIf(Int32TrueConstant(), &if_slow);
+  }
 
   CodeStubAssembler::LookupPropertyInHolder lookup_property_in_holder =
       [=](TNode<HeapObject> receiver, TNode<HeapObject> holder,
@@ -1073,7 +1124,6 @@ TF_BUILTIN(InstantiateAsmJs, CodeStubAssembler) {
       Runtime::kInstantiateAsmJs, context, function, stdlib, foreign, heap);
   GotoIf(TaggedIsSmi(maybe_result_or_smi_zero), &tailcall_to_function);
 
-#ifdef V8_NO_ARGUMENTS_ADAPTOR
   TNode<SharedFunctionInfo> shared = LoadJSFunctionSharedFunctionInfo(function);
   TNode<Int32T> parameter_count =
       UncheckedCast<Int32T>(LoadSharedFunctionInfoFormalParameterCount(shared));
@@ -1081,13 +1131,12 @@ TF_BUILTIN(InstantiateAsmJs, CodeStubAssembler) {
   // pushed is the maximum of actual arguments count and formal parameters
   // count.
   Label argc_lt_param_count(this), argc_ge_param_count(this);
-  Branch(Int32LessThan(arg_count, parameter_count), &argc_lt_param_count,
-         &argc_ge_param_count);
+  Branch(IntPtrLessThan(args.GetLength(), ChangeInt32ToIntPtr(parameter_count)),
+         &argc_lt_param_count, &argc_ge_param_count);
   BIND(&argc_lt_param_count);
   PopAndReturn(Int32Add(parameter_count, Int32Constant(1)),
                maybe_result_or_smi_zero);
   BIND(&argc_ge_param_count);
-#endif
   args.PopAndReturn(maybe_result_or_smi_zero);
 
   BIND(&tailcall_to_function);

@@ -12,6 +12,7 @@
 #include "base/containers/flat_tree.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -76,6 +77,14 @@ std::vector<uint8_t> GetSecurePaymentConfirmationChallenge(
   return output_bytes;
 }
 
+// Records UMA metric for the system prompt result.
+void RecordSystemPromptResult(
+    const SecurePaymentConfirmationSystemPromptResult result) {
+  base::UmaHistogramEnumeration(
+      "PaymentRequest.SecurePaymentConfirmation.Funnel.SystemPromptResult",
+      result);
+}
+
 }  // namespace
 
 SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
@@ -110,7 +119,8 @@ SecurePaymentConfirmationApp::SecurePaymentConfirmationApp(
 
 SecurePaymentConfirmationApp::~SecurePaymentConfirmationApp() = default;
 
-void SecurePaymentConfirmationApp::InvokePaymentApp(Delegate* delegate) {
+void SecurePaymentConfirmationApp::InvokePaymentApp(
+    base::WeakPtr<Delegate> delegate) {
   if (!authenticator_ || !spec_)
     return;
 
@@ -263,16 +273,24 @@ void SecurePaymentConfirmationApp::RenderFrameDeleted(
 }
 
 void SecurePaymentConfirmationApp::OnGetAssertion(
-    Delegate* delegate,
+    base::WeakPtr<Delegate> delegate,
     blink::mojom::AuthenticatorStatus status,
     blink::mojom::GetAssertionAuthenticatorResponsePtr response) {
+  if (!delegate)
+    return;
+
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS || !response) {
     std::stringstream status_string_stream;
     status_string_stream << status;
     delegate->OnInstrumentDetailsError(base::StringPrintf(
         "Authenticator returned %s.", status_string_stream.str().c_str()));
+    RecordSystemPromptResult(
+        SecurePaymentConfirmationSystemPromptResult::kCanceled);
     return;
   }
+
+  RecordSystemPromptResult(
+      SecurePaymentConfirmationSystemPromptResult::kAccepted);
 
   // Serialize response into a JSON string. Browser will pass this string over
   // Mojo IPC into Blink, which will parse it into a JavaScript object for the

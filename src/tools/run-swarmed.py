@@ -41,26 +41,24 @@ def _Spawn(args):
   """Triggers a swarming job. The arguments passed are:
   - The index of the job;
   - The command line arguments object;
-  - The hash of the isolate job used to trigger.
+  - The digest of test files.
 
   The return value is passed to a collect-style map() and consists of:
   - The index of the job;
   - The json file created by triggering and used to collect results;
   - The command line arguments object.
   """
-  index, args, isolated_hash, swarming_command = args
+  index, args, cas_digest, swarming_command = args
   json_file = os.path.join(args.results, '%d.json' % index)
   trigger_args = [
       'tools/luci-go/swarming',
       'trigger',
       '-S',
       'https://chromium-swarm.appspot.com',
-      '-I',
-      'https://isolateserver.appspot.com',
       '-d',
       'pool=' + args.pool,
-      '-s',
-      isolated_hash,
+      '-digest',
+      cas_digest,
       '-dump-json',
       json_file,
       '-d',
@@ -110,7 +108,7 @@ def _Spawn(args):
     if os.path.isfile(filter_file):
       runner_args.append('--test-launcher-filter-file=../../' + filter_file)
 
-  trigger_args.extend(['--relative-cwd', args.out_dir, '--raw-cmd', '--'])
+  trigger_args.extend(['--relative-cwd', args.out_dir, '--'])
   trigger_args.extend(swarming_command)
   trigger_args.extend(runner_args)
 
@@ -157,10 +155,14 @@ def main():
   parser.add_argument('--target-os', default='detect', help='gn target_os')
   parser.add_argument('--arch', '-a', default='detect',
                       help='CPU architecture of the test binary.')
-  parser.add_argument('--build', dest='build', action='store_true',
-                      help='Build before isolating (default).')
-  parser.add_argument( '--no-build', dest='build', action='store_false',
-                      help='Do not build, just isolate.')
+  parser.add_argument('--build',
+                      dest='build',
+                      action='store_true',
+                      help='Build before isolating.')
+  parser.add_argument('--no-build',
+                      dest='build',
+                      action='store_false',
+                      help='Do not build, just isolate (default).')
   parser.add_argument('--isolate-map-file', '-i',
                       help='path to isolate map file if not using default')
   parser.add_argument('--copies', '-n', type=int, default=1,
@@ -240,14 +242,14 @@ def main():
   )
 
   print('Uploading to isolate server, this can take a while...')
-  isolated = os.path.join(args.out_dir, args.target_name + '.isolated')
+  isolate = os.path.join(args.out_dir, args.target_name + '.isolate')
+  archive_json = os.path.join(args.out_dir, args.target_name + '.archive.json')
   subprocess.check_output([
-      'tools/luci-go/isolate', 'archive', '-I',
-      'https://isolateserver.appspot.com', '-i',
-      os.path.join(args.out_dir, args.target_name + '.isolate'), '-s', isolated
+      'tools/luci-go/isolate', 'archive', '-cas-instance', 'chromium-swarm',
+      '-isolate', isolate, '-dump-json', archive_json
   ])
-  with open(isolated) as f:
-    isolated_hash = hashlib.sha1(f.read()).hexdigest()
+  with open(archive_json) as f:
+    cas_digest = json.load(f).get(args.target_name)
 
   mb_cmd = [
       sys.executable, 'tools/mb/mb.py', 'get-swarming-command', '--as-list'
@@ -268,7 +270,7 @@ def main():
     # Use dummy since threadpools give better exception messages
     # than process pools do, and threads work fine for what we're doing.
     pool = multiprocessing.dummy.Pool()
-    spawn_args = map(lambda i: (i, args, isolated_hash, swarming_cmd),
+    spawn_args = map(lambda i: (i, args, cas_digest, swarming_cmd),
                      range(args.copies))
     spawn_results = pool.imap_unordered(_Spawn, spawn_args)
 

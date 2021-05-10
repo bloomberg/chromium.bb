@@ -11,14 +11,17 @@
 #include "ash/ash_export.h"
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_item.h"
+#include "ash/clipboard/clipboard_history_resource_manager.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 
-namespace views {
-enum class MenuAnchorPosition;
-}  // namespace views
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace gfx {
 class Rect;
@@ -35,16 +38,9 @@ class ScopedClipboardHistoryPause;
 // keyboard shortcut is pressed.
 class ASH_EXPORT ClipboardHistoryControllerImpl
     : public ClipboardHistoryController,
-      public ClipboardHistory::Observer {
+      public ClipboardHistory::Observer,
+      public ClipboardHistoryResourceManager::Observer {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called when the clipboard history menu is shown.
-    virtual void OnClipboardHistoryMenuShown() = 0;
-    // Called when the user pastes from the clipboard history menu.
-    virtual void OnClipboardHistoryPasted() = 0;
-  };
-
   ClipboardHistoryControllerImpl();
   ClipboardHistoryControllerImpl(const ClipboardHistoryControllerImpl&) =
       delete;
@@ -52,16 +48,25 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
       const ClipboardHistoryControllerImpl&) = delete;
   ~ClipboardHistoryControllerImpl() override;
 
-  void AddObserver(Observer* observer) const;
-  void RemoveObserver(Observer* observer) const;
+  // Clean up th child widgets prior to destruction.
+  void Shutdown();
 
-  void Init();
+  void AddObserver(
+      ClipboardHistoryController::Observer* observer) const override;
+  void RemoveObserver(
+      ClipboardHistoryController::Observer* observer) const override;
 
   // Returns if the contextual menu is currently showing.
   bool IsMenuShowing() const;
 
+  // Shows the clipboard history menu through the keyboard accelerator.
+  void ShowMenuByAccelerator();
+
   // Returns bounds for the contextual menu in screen coordinates.
   gfx::Rect GetMenuBoundsInScreenForTest() const;
+
+  // Whether the ClipboardHistory has items.
+  bool IsEmpty() const;
 
   // Returns the history which tracks what is being copied to the clipboard.
   const ClipboardHistory* history() const { return clipboard_history_.get(); }
@@ -80,6 +85,16 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
     return context_menu_.get();
   }
 
+  void set_initial_item_selected_callback_for_test(
+      base::RepeatingClosure new_callback) {
+    initial_item_selected_callback_for_test_ = new_callback;
+  }
+
+  void set_confirmed_operation_callback_for_test(
+      base::RepeatingClosure new_callback) {
+    confirmed_operation_callback_for_test_ = new_callback;
+  }
+
  private:
   class AcceleratorTarget;
   class MenuDelegate;
@@ -87,15 +102,28 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
   // ClipboardHistoryController:
   bool CanShowMenu() const override;
   void ShowMenu(const gfx::Rect& anchor_rect,
-                views::MenuAnchorPosition menu_anchor_position,
-                ui::MenuSourceType source_type) override;
+                ui::MenuSourceType source_type,
+                ShowSource show_source) override;
+  bool ShouldShowNewFeatureBadge() const override;
+  void MarkNewFeatureBadgeShown() override;
   std::unique_ptr<ScopedClipboardHistoryPause> CreateScopedPause() override;
+  base::Value GetHistoryValues(
+      const std::set<std::string>& item_id_filter) const override;
+  std::vector<std::string> GetHistoryItemIds() const override;
+  bool PasteClipboardItemById(const std::string& item_id) override;
+  bool DeleteClipboardItemById(const std::string& item_id) override;
+  bool DeleteClipboardItemByClipboardData(ui::ClipboardData* data) override;
 
   // ClipboardHistory::Observer:
+  void OnClipboardHistoryItemAdded(const ClipboardHistoryItem& item,
+                                   bool is_duplicate) override;
+  void OnClipboardHistoryItemRemoved(const ClipboardHistoryItem& item) override;
   void OnClipboardHistoryCleared() override;
+  void OnOperationConfirmed(bool copy) override;
 
-  // Shows the clipboard history menu through the keyboard accelerator.
-  void ShowMenuByAccelerator();
+  // ClipboardHistoryResourceManager:
+  void OnCachedImageModelUpdated(
+      const std::vector<base::UnguessableToken>& menu_item_ids) override;
 
   void ExecuteSelectedMenuItem(int event_flags);
 
@@ -107,12 +135,21 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
   // clipboard data should be pasted.
   void PasteMenuItemData(int command_id, bool paste_plain_text);
 
+  // Pastes the specified clipboard history item, if |intended_window| matches
+  // the active window.
+  void PasteClipboardHistoryItem(aura::Window* intended_window,
+                                 ClipboardHistoryItem item,
+                                 bool paste_plain_text);
+
   // Delete the menu item being selected and its corresponding data. If no item
   // is selected, do nothing.
   void DeleteSelectedMenuItemIfAny();
 
   // Delete the menu item specified by `command_id` and its corresponding data.
   void DeleteItemWithCommandId(int command_id);
+
+  // Deletes the specified clipboard history item.
+  void DeleteClipboardHistoryItem(const ClipboardHistoryItem& item);
 
   // Advances the pseudo focus (backward if `reverse` is true).
   void AdvancePseudoFocus(bool reverse);
@@ -125,7 +162,7 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
 
   // Mutable to allow adding/removing from |observers_| through a const
   // ClipboardHistoryControllerImpl.
-  mutable base::ObserverList<Observer> observers_;
+  mutable base::ObserverList<ClipboardHistoryController::Observer> observers_;
 
   // The menu being shown.
   std::unique_ptr<ClipboardHistoryMenuModelAdapter> context_menu_;
@@ -139,6 +176,26 @@ class ASH_EXPORT ClipboardHistoryControllerImpl
   std::unique_ptr<MenuDelegate> menu_delegate_;
   // Controller that shows contextual nudges for multipaste.
   std::unique_ptr<ClipboardNudgeController> nudge_controller_;
+
+  // Whether a paste is currently being performed.
+  bool currently_pasting_ = false;
+
+  // Used to post asynchronous tasks when opening or closing the clipboard
+  // history menu. Note that those tasks have data races between each other.
+  // The timer can guarantee that at most one task is alive.
+  base::OneShotTimer menu_task_timer_;
+
+  // Indicates the count of pastes which are triggered through the clipboard
+  // history menu and are waiting for the confirmations from `ClipboardHistory`.
+  int pastes_to_be_confirmed_ = 0;
+
+  // Called when the first item view is selected after the clipboard history
+  // menu opens.
+  base::RepeatingClosure initial_item_selected_callback_for_test_;
+
+  // Called when the controller is notified of the confirmed clipboard data
+  // operation.
+  base::RepeatingClosure confirmed_operation_callback_for_test_;
 
   base::WeakPtrFactory<ClipboardHistoryControllerImpl> weak_ptr_factory_{this};
 };

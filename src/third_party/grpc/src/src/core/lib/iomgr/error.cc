@@ -73,6 +73,8 @@ static const char* error_int_name(grpc_error_ints key) {
       return "limit";
     case GRPC_ERROR_INT_OCCURRED_DURING_WRITE:
       return "occurred_during_write";
+    case GRPC_ERROR_INT_CHANNEL_CONNECTIVITY_STATE:
+      return "channel_connectivity_state";
     case GRPC_ERROR_INT_MAX:
       GPR_UNREACHABLE_CODE(return "unknown");
   }
@@ -290,7 +292,7 @@ static void internal_add_error(grpc_error** err, grpc_error* new_err) {
   memcpy((*err)->arena + slot, &new_last, sizeof(grpc_linked_error));
 }
 
-#define SLOTS_PER_INT (sizeof(intptr_t) / sizeof(intptr_t))
+#define SLOTS_PER_INT (1)  // == (sizeof(intptr_t) / sizeof(intptr_t))
 #define SLOTS_PER_STR (sizeof(grpc_slice) / sizeof(intptr_t))
 #define SLOTS_PER_TIME (sizeof(gpr_timespec) / sizeof(intptr_t))
 #define SLOTS_PER_LINKED_ERROR (sizeof(grpc_linked_error) / sizeof(intptr_t))
@@ -422,6 +424,7 @@ static grpc_error* copy_error_and_unref(grpc_error* in) {
     }
 #endif
     // bulk memcpy of the rest of the struct.
+    // NOLINTNEXTLINE(bugprone-sizeof-expression)
     size_t skip = sizeof(&out->atomics);
     memcpy((void*)((uintptr_t)out + skip), (void*)((uintptr_t)in + skip),
            sizeof(*in) + (in->arena_size * sizeof(intptr_t)) - skip);
@@ -444,12 +447,11 @@ grpc_error* grpc_error_set_int(grpc_error* src, grpc_error_ints which,
   return new_err;
 }
 
-typedef struct {
+struct special_error_status_map {
   grpc_status_code code;
   const char* msg;
   size_t len;
-} special_error_status_map;
-
+};
 const special_error_status_map error_status_map[] = {
     {GRPC_STATUS_OK, "", 0},                // GRPC_ERROR_NONE
     {GRPC_STATUS_INVALID_ARGUMENT, "", 0},  // GRPC_ERROR_RESERVED_1
@@ -530,17 +532,15 @@ static const char* no_error_string = "\"No Error\"";
 static const char* oom_error_string = "\"Out of memory\"";
 static const char* cancelled_error_string = "\"Cancelled\"";
 
-typedef struct {
+struct kv_pair {
   char* key;
   char* value;
-} kv_pair;
-
-typedef struct {
+};
+struct kv_pairs {
   kv_pair* kvs;
   size_t num_kvs;
   size_t cap_kvs;
-} kv_pairs;
-
+};
 static void append_chr(char c, char** s, size_t* sz, size_t* cap) {
   if (*sz == *cap) {
     *cap = GPR_MAX(8, 3 * *cap / 2);

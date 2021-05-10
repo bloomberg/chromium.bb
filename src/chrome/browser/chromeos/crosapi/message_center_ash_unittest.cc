@@ -84,7 +84,8 @@ class MessageCenterAshTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     message_center::MessageCenter::Initialize();
-    message_center_ash_ = std::make_unique<MessageCenterAsh>(
+    message_center_ash_ = std::make_unique<MessageCenterAsh>();
+    message_center_ash_->BindReceiver(
         message_center_remote_.BindNewPipeAndPassReceiver());
   }
 
@@ -196,7 +197,8 @@ TEST_F(MessageCenterAshTest, HighDpiImage) {
 
   // Create a high DPI image.
   SkBitmap bitmap = gfx::test::CreateBitmap(2, 4);
-  gfx::ImageSkia high_dpi_image_skia(gfx::ImageSkiaRep(bitmap, 2.0f));
+  gfx::ImageSkia high_dpi_image_skia =
+      gfx::ImageSkia::CreateFromBitmap(bitmap, 2.0f);
   mojo_notification->image = high_dpi_image_skia;
 
   // Display the notification.

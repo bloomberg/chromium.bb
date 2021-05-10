@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -888,7 +889,7 @@ TEST_F(DesktopWidgetTestInteractive, CanActivateFlagIsHonored) {
 
 #if defined(USE_AURA)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(crbug.com/916272): investigate fixing and enabling on Chrome OS.
 #define MAYBE_TouchSelectionQuickMenuIsNotActivated \
   DISABLED_TouchSelectionQuickMenuIsNotActivated
@@ -1218,7 +1219,7 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
       static_cast<internal::RootView*>(widget->GetRootView());
   // This also sets the gesture_handler, and we'll verify that it
   // gets cleared when the widget is minimized.
-  root_view->SetMouseHandler(&mouse_handler_view);
+  root_view->SetMouseAndGestureHandler(&mouse_handler_view);
   EXPECT_TRUE(GetGestureHandler(root_view));
 
   widget->Minimize();
@@ -1652,7 +1653,7 @@ TEST_F(WidgetCaptureTest, GrabUngrab) {
 #if defined(OS_APPLE)
 #define MAYBE_SystemModalWindowReleasesCapture \
   DISABLED_SystemModalWindowReleasesCapture
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
 // Investigate enabling for Chrome OS. It probably requires help from the window
 // service.
 #define MAYBE_SystemModalWindowReleasesCapture \
@@ -1704,7 +1705,7 @@ TEST_F(WidgetCaptureTest, MAYBE_SystemModalWindowReleasesCapture) {
 // Regression test for http://crbug.com/382421 (Linux-Aura issue).
 // TODO(pkotwicz): Make test pass on CrOS and Windows.
 // TODO(tapted): Investigate for toolkit-views on Mac http;//crbug.com/441064.
-#if defined(OS_CHROMEOS) || defined(OS_APPLE)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_APPLE)
 #define MAYBE_MouseExitOnCaptureGrab DISABLED_MouseExitOnCaptureGrab
 #else
 #define MAYBE_MouseExitOnCaptureGrab MouseExitOnCaptureGrab
@@ -1874,7 +1875,7 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details =
-      widget1.GetNativeWindow()->GetHost()->event_sink()->OnEventFromSource(
+      widget1.GetNativeWindow()->GetHost()->GetEventSink()->OnEventFromSource(
           &mouse_event);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());

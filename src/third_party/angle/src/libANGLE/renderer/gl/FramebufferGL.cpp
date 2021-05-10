@@ -86,7 +86,8 @@ void BindFramebufferAttachment(const FunctionsGL *functions,
 
             if (texture->getType() == TextureType::_2D ||
                 texture->getType() == TextureType::_2DMultisample ||
-                texture->getType() == TextureType::Rectangle)
+                texture->getType() == TextureType::Rectangle ||
+                texture->getType() == TextureType::External)
             {
                 functions->framebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint,
                                                 ToGLenum(texture->getType()),
@@ -805,8 +806,8 @@ angle::Result FramebufferGL::blit(const gl::Context *context,
 
     if (features.adjustSrcDstRegionBlitFramebuffer.enabled)
     {
-        angle::Result result =
-            adjustSrcDstRegion(context, sourceArea, destArea, &finalSourceArea, &finalDestArea);
+        angle::Result result = adjustSrcDstRegion(context, finalSourceArea, finalDestArea,
+                                                  &finalSourceArea, &finalDestArea);
         if (result != angle::Result::Continue)
         {
             return result;
@@ -814,8 +815,8 @@ angle::Result FramebufferGL::blit(const gl::Context *context,
     }
     if (features.clipSrcRegionBlitFramebuffer.enabled)
     {
-        angle::Result result =
-            clipSrcRegion(context, sourceArea, destArea, &finalSourceArea, &finalDestArea);
+        angle::Result result = clipSrcRegion(context, finalSourceArea, finalDestArea,
+                                             &finalSourceArea, &finalDestArea);
         if (result != angle::Result::Continue)
         {
             return result;
@@ -1117,7 +1118,10 @@ angle::Result FramebufferGL::clipSrcRegion(const gl::Context *context,
         // If pixels lying outside the read framebuffer, adjust src region
         // and dst region to appropriate in-bounds regions respectively.
         gl::Rectangle realSourceRegion;
-        ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion);
+        if (!ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion))
+        {
+            return angle::Result::Stop;
+        }
         GLuint xOffset = realSourceRegion.x - bounds.sourceRegion.x;
         GLuint yOffset = realSourceRegion.y - bounds.sourceRegion.y;
 
@@ -1314,6 +1318,14 @@ angle::Result FramebufferGL::syncState(const gl::Context *context,
 GLuint FramebufferGL::getFramebufferID() const
 {
     return mFramebufferID;
+}
+
+void FramebufferGL::updateDefaultFramebufferID(GLuint framebufferID)
+{
+    // We only update framebufferID for a default frambuffer, and the framebufferID is created
+    // externally. ANGLE doesn't owne it.
+    ASSERT(isDefault());
+    mFramebufferID = framebufferID;
 }
 
 bool FramebufferGL::isDefault() const

@@ -31,6 +31,7 @@
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_formatted_text.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_formatted_text.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -68,8 +70,8 @@ class HitTestCanvasResult;
 class Path2D;
 class TextMetrics;
 
-typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
-    CanvasImageSourceUnion;
+using CanvasImageSourceUnion =
+    CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvasOrVideoFrame;
 
 class MODULES_EXPORT CanvasRenderingContext2D final
     : public CanvasRenderingContext,
@@ -131,6 +133,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void setTextRendering(const String&);
 
   void setFontKerning(const String&);
+  void setFontStretch(const String&);
   void setFontVariantCaps(const String&);
 
   void fillText(const String& text, double x, double y);
@@ -140,6 +143,11 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   TextMetrics* measureText(const String& text);
 
   CanvasRenderingContext2DSettings* getContextAttributes() const;
+
+  void fillFormattedText(CanvasFormattedText* formatted_text,
+                         double x,
+                         double y,
+                         double wrap_width);
 
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);
@@ -165,8 +173,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   String GetIdFromControl(const Element*) override;
 
   // SVGResourceClient implementation
-  void ResourceContentChanged(InvalidationModeMask) override;
-  void ResourceElementChanged() override;
+  void ResourceContentChanged(SVGResource*) override;
 
   void UpdateFilterReferences(const FilterOperations&);
   void ClearFilterReferences();
@@ -210,13 +217,16 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void Trace(Visitor*) const override;
 
-  ImageData* getImageData(int sx,
-                          int sy,
-                          int sw,
-                          int sh,
-                          ExceptionState&) override;
+  ImageData* getImageDataInternal(int sx,
+                                  int sy,
+                                  int sw,
+                                  int sh,
+                                  ImageDataSettings*,
+                                  ExceptionState&) final;
 
-  CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
+  CanvasColorParams ColorParamsForTest() const {
+    return GetCanvas2DColorParams();
+  }
 
   IdentifiableToken IdentifiableTextToken() const override {
     return identifiability_study_helper_.GetToken();
@@ -231,7 +241,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   }
 
  protected:
-  CanvasColorParams ColorParams() const override;
+  CanvasColorParams GetCanvas2DColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
                    size_t row_bytes,
@@ -267,14 +277,14 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     return CanvasRenderingContext::kContext2D;
   }
 
-  String ColorSpaceAsString() const override;
-  CanvasPixelFormat PixelFormat() const override;
-
   bool IsRenderingContext2D() const override { return true; }
   bool IsComposited() const override;
   bool IsAccelerated() const override;
   bool IsOriginTopLeft() const override;
   bool HasAlpha() const override { return CreationAttributes().alpha; }
+  bool IsDesynchronized() const override {
+    return CreationAttributes().desynchronized;
+  }
   void SetIsInHiddenPage(bool) override;
   void SetIsBeingDisplayed(bool) override;
   void Stop() final;
@@ -289,10 +299,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   LostContextMode context_lost_mode_;
   bool context_restorable_;
   unsigned try_restore_context_attempt_count_;
-  TaskRunnerTimer<CanvasRenderingContext2D> dispatch_context_lost_event_timer_;
-  TaskRunnerTimer<CanvasRenderingContext2D>
+  HeapTaskRunnerTimer<CanvasRenderingContext2D>
+      dispatch_context_lost_event_timer_;
+  HeapTaskRunnerTimer<CanvasRenderingContext2D>
       dispatch_context_restored_event_timer_;
-  TaskRunnerTimer<CanvasRenderingContext2D> try_restore_context_event_timer_;
+  HeapTaskRunnerTimer<CanvasRenderingContext2D>
+      try_restore_context_event_timer_;
 
   FilterOperations filter_operations_;
   HashMap<String, FontDescription> fonts_resolved_using_current_style_;

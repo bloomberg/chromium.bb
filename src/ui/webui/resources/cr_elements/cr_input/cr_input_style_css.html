@@ -55,6 +55,7 @@
         color: var(--cr-input-color);
         font-family: inherit;
         font-size: inherit;
+        font-weight: inherit;
         line-height: inherit;
         min-height: var(--cr-input-min-height, auto);
         outline: none;
@@ -95,7 +96,7 @@
 
       :host([invalid]) #underline,
       :host([force-underline]) #underline,
-      :host([focused_]:not([readonly])) #underline {
+      :host([focused_]) #underline {
         opacity: 1;
         transition: opacity 120ms ease-in, width 180ms ease-out;
         width: 100%;

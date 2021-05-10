@@ -20,14 +20,8 @@ base::Optional<Printer> StubCupsPrintersManager::GetPrinter(
   return {};
 }
 
-bool StubCupsPrintersManager::ChoosePrintServer(
-    const base::Optional<std::string>& selected_print_server_id) {
-  return true;
-}
-
-ServerPrintersFetchingMode StubCupsPrintersManager::GetServerPrintersFetchingMode()
-    const {
-  return ServerPrintersFetchingMode::kStandard;
+PrintServersManager* StubCupsPrintersManager::GetPrintServersManager() const {
+  return nullptr;
 }
 
 }  // namespace chromeos

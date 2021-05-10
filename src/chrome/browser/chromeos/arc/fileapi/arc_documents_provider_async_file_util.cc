@@ -106,7 +106,8 @@ void GetFileInfoOnUIThread(
   }
 
   root->GetFileInfo(
-      path, base::BindOnce(&OnGetFileInfoOnUIThread, std::move(callback)));
+      path, fields,
+      base::BindOnce(&OnGetFileInfoOnUIThread, std::move(callback)));
 }
 
 void ReadDirectoryOnUIThread(
@@ -297,7 +298,7 @@ void ArcDocumentsProviderAsyncFileUtil::CreateOrOpen(
   // TODO(nya): Implement this function if it is ever called.
   NOTIMPLEMENTED();
   std::move(callback).Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
-                          base::Closure());
+                          base::OnceClosure());
 }
 
 void ArcDocumentsProviderAsyncFileUtil::EnsureFileExists(

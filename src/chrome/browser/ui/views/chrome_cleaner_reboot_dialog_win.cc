@@ -20,6 +20,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -52,6 +53,7 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
+  SetModalType(ui::MODAL_TYPE_NONE);
 
   using Controller = safe_browsing::ChromeCleanerRebootDialogController;
   using ControllerClosureFn = void (Controller::*)(void);
@@ -98,10 +100,6 @@ void ChromeCleanerRebootDialog::Show(Browser* browser) {
 
 // WidgetDelegate overrides.
 
-ui::ModalType ChromeCleanerRebootDialog::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
-}
-
 base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
   DCHECK(dialog_controller_);
   return l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_REBOOT_PROMPT_TITLE);
@@ -119,3 +117,6 @@ gfx::Rect ChromeCleanerRebootDialog::GetDialogBounds(Browser* browser) const {
       browser_bounds.x() + (browser_bounds.width() - kDialogWidth) / 2,
       browser_bounds.y() + kDialogYOffset, kDialogWidth, kDialogHeight);
 }
+
+BEGIN_METADATA(ChromeCleanerRebootDialog, views::DialogDelegateView)
+END_METADATA

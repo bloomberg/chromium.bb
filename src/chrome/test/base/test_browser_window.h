@@ -164,7 +164,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ConfirmBrowserCloseWithPendingDownloads(
       int download_count,
       Browser::DownloadCloseType dialog_type,
-      const base::Callback<void(bool)>& callback) override {}
+      base::OnceCallback<void(bool)> callback) override {}
   void UserChangedTheme(BrowserThemeChangeType theme_change_type) override {}
   void CutCopyPaste(int command_id) override {}
   std::unique_ptr<FindBar> CreateFindBar() override;
@@ -177,7 +177,7 @@ class TestBrowserWindow : public BrowserWindow {
 
 #if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_LINUX)
-  void ShowHatsBubble(const std::string& site_id,
+  void ShowHatsDialog(const std::string& site_id,
                       base::OnceClosure success_callback,
                       base::OnceClosure failure_callback) override {}
 #endif
@@ -208,6 +208,9 @@ class TestBrowserWindow : public BrowserWindow {
       std::unique_ptr<FeaturePromoController> feature_promo_controller);
 
   void set_workspace(std::string workspace) { workspace_ = workspace; }
+  void set_visible_on_all_workspaces(bool visible_on_all_workspaces) {
+    visible_on_all_workspaces_ = visible_on_all_workspaces;
+  }
 
  protected:
   void DestroyBrowser() override {}
@@ -222,6 +225,7 @@ class TestBrowserWindow : public BrowserWindow {
 
     // LocationBar:
     GURL GetDestinationURL() const override;
+    bool IsInputTypedUrlWithoutScheme() const override;
     WindowOpenDisposition GetWindowOpenDisposition() const override;
     ui::PageTransition GetPageTransition() const override;
     base::TimeTicks GetMatchSelectionTimestamp() const override;
@@ -243,6 +247,7 @@ class TestBrowserWindow : public BrowserWindow {
   gfx::NativeWindow native_window_ = nullptr;
 
   std::string workspace_;
+  bool visible_on_all_workspaces_ = false;
 
   std::unique_ptr<FeaturePromoController> feature_promo_controller_;
 

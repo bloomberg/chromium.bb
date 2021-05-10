@@ -46,4 +46,38 @@ LayoutUnit NGTableNode::ComputeTableInlineSize(
                                                         border_padding);
 }
 
+bool NGTableNode::AllowColumnPercentages(bool is_layout_pass) const {
+  if (Style().LogicalWidth().IsMaxContent())
+    return false;
+  if (is_layout_pass)
+    return true;
+  // TODO(layout-dev): This function breaks the rule of "no tree-walks".
+  // However for this specific case it adds a lot of overhead for little gain.
+  // In the future, we could have a bit on a LayoutObject which indicates if we
+  // should allow column percentages, and maintain this when adding/removing
+  // from the tree.
+  const LayoutBlock* block = box_->ContainingBlock();
+  while (!block->IsLayoutView()) {
+    if (block->IsTableCell() || block->IsFlexibleBoxIncludingNG() ||
+        block->IsLayoutGridIncludingNG())
+      return false;
+
+    block = block->ContainingBlock();
+  }
+  return true;
+}
+
+// True if table's intrinsic max size can be infinite.
+// Infinite intrinsic sizes are ok inside block layout, but cannot work
+// inside flex and grid layouts.
+bool NGTableNode::AllowsInfiniteMaxInlineSize() const {
+  const LayoutBlock* block = box_->ContainingBlock();
+  while (!block->IsLayoutView()) {
+    if (block->IsFlexibleBoxIncludingNG() || block->IsLayoutGridIncludingNG())
+      return false;
+    block = block->ContainingBlock();
+  }
+  return true;
+}
+
 }  // namespace blink

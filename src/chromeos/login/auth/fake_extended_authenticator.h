@@ -17,15 +17,11 @@ class AuthFailure;
 class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) FakeExtendedAuthenticator
     : public ExtendedAuthenticator {
  public:
-  FakeExtendedAuthenticator(NewAuthStatusConsumer* consumer,
-                            const UserContext& expected_user_context);
   FakeExtendedAuthenticator(AuthStatusConsumer* consumer,
                             const UserContext& expected_user_context);
 
   // ExtendedAuthenticator:
   void SetConsumer(AuthStatusConsumer* consumer) override;
-  void AuthenticateToMount(const UserContext& context,
-                           ResultCallback success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
                            base::OnceClosure success_callback) override;
   void StartFingerprintAuthSession(
@@ -40,10 +36,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) FakeExtendedAuthenticator
               const cryptohome::KeyDefinition& key,
               bool replace_existing,
               base::OnceClosure success_callback) override;
-  void UpdateKeyAuthorized(const UserContext& context,
-                           const cryptohome::KeyDefinition& key,
-                           const std::string& signature,
-                           base::OnceClosure success_callback) override;
   void RemoveKey(const UserContext& context,
                  const std::string& key_to_remove,
                  base::OnceClosure success_callback) override;
@@ -56,8 +48,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) FakeExtendedAuthenticator
   void OnAuthSuccess(const UserContext& context);
   void OnAuthFailure(AuthState state, const AuthFailure& error);
 
-  NewAuthStatusConsumer* consumer_;
-  AuthStatusConsumer* old_consumer_;
+  AuthStatusConsumer* consumer_;
 
   UserContext expected_user_context_;
 

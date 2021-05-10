@@ -12,12 +12,17 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.mockito.Mockito.when;
+
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.lifecycle.Stage;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -27,28 +32,41 @@ import androidx.test.filters.MediumTest;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
+import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.firstrun.FirstRunPageDelegate;
+import org.chromium.chrome.browser.firstrun.SigninFirstRunFragment;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.io.IOException;
 
@@ -58,17 +76,54 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SigninFragmentTest {
+    /**
+     * This class is used to test {@link SigninFirstRunFragment}.
+     */
+    public static class CustomSigninFirstRunFragment extends SigninFirstRunFragment {
+        private FirstRunPageDelegate mFirstRunPageDelegate;
+
+        @Override
+        public FirstRunPageDelegate getPageDelegate() {
+            return mFirstRunPageDelegate;
+        }
+
+        private void setPageDelegate(FirstRunPageDelegate delegate) {
+            mFirstRunPageDelegate = delegate;
+        }
+    }
+
     @Rule
     public final DisableAnimationsTestRule mNoAnimationsRule = new DisableAnimationsTestRule();
 
     @Rule
-    public final SyncTestRule mSyncTestRule = new SyncTestRule();
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule =
+            new AccountManagerTestRule(new FakeProfileDataSource());
+
+    @Rule
+    public final ChromeTabbedActivityTestRule mChromeActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
+    @Rule
+    public final BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
+    @Mock
+    private FirstRunPageDelegate mFirstRunPageDelegateMock;
+
     private SigninActivity mSigninActivity;
+
+    @Before
+    public void setUp() {
+        mActivityTestRule.setFinishActivity(true);
+        mChromeActivityTestRule.startMainActivityOnBlankPage();
+    }
 
     @After
     public void tearDown() throws Exception {
@@ -86,7 +141,8 @@ public class SigninFragmentTest {
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoAddAccountFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER);
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER);
                 });
         mRenderTestRule.render(mSigninActivity.findViewById(R.id.fragment_container),
                 "signin_fragment_new_account");
@@ -96,13 +152,14 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentNotDefaultAccountWithPrimaryAccount() throws IOException {
-        CoreAccountInfo accountInfo = mSyncTestRule.addTestAccount();
-        mSyncTestRule.addAccount("test.second.account@gmail.com");
+        CoreAccountInfo accountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        mAccountManagerTestRule.addAccount("test.second.account@gmail.com");
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoChooseAccountFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
-                            accountInfo.getEmail());
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER, accountInfo.getEmail());
                 });
         mRenderTestRule.render(mSigninActivity.findViewById(R.id.fragment_container),
                 "signin_fragment_choose_primary_account");
@@ -112,14 +169,14 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentNotDefaultAccountWithSecondaryAccount() throws IOException {
-        mSyncTestRule.addTestAccount();
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         String secondAccountName = "test.second.account@gmail.com";
-        mSyncTestRule.addAccount(secondAccountName);
+        mAccountManagerTestRule.addAccount(secondAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoChooseAccountFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
-                            secondAccountName);
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER, secondAccountName);
                 });
         mRenderTestRule.render(mSigninActivity.findViewById(R.id.fragment_container),
                 "signin_fragment_choose_secondary_account");
@@ -129,12 +186,13 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentDefaultAccount() throws IOException {
-        CoreAccountInfo accountInfo = mSyncTestRule.addTestAccount();
+        CoreAccountInfo accountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
-                            accountInfo.getEmail());
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER, accountInfo.getEmail());
                 });
         mRenderTestRule.render(mSigninActivity.findViewById(R.id.fragment_container),
                 "signin_fragment_default_account");
@@ -142,12 +200,101 @@ public class SigninFragmentTest {
 
     @Test
     @LargeTest
+    @Feature("RenderTest")
+    public void testSigninFREFragmentWithNoAccountsOnDevice() throws IOException {
+        HistogramDelta countHistogram =
+                new HistogramDelta("Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", 0);
+        HistogramDelta startPageHistogram =
+                new HistogramDelta("Signin.SigninStartedAccessPoint", SigninAccessPoint.START_PAGE);
+        CustomSigninFirstRunFragment fragment = new CustomSigninFirstRunFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+        when(mFirstRunPageDelegateMock.getProperties()).thenReturn(bundle);
+        fragment.setPageDelegate(mFirstRunPageDelegateMock);
+
+        launchActivityWithFragment(fragment);
+        Assert.assertEquals(1, countHistogram.getDelta());
+        Assert.assertEquals(1, startPageHistogram.getDelta());
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(android.R.id.content),
+                "signin_fre_fragment_with_no_account");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSigninFREFragmentWithAdultAccount() throws IOException {
+        HistogramDelta countHistogram =
+                new HistogramDelta("Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", 1);
+        HistogramDelta startPageHistogram =
+                new HistogramDelta("Signin.SigninStartedAccessPoint", SigninAccessPoint.START_PAGE);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        CustomSigninFirstRunFragment fragment = new CustomSigninFirstRunFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+        when(mFirstRunPageDelegateMock.getProperties()).thenReturn(bundle);
+        fragment.setPageDelegate(mFirstRunPageDelegateMock);
+
+        launchActivityWithFragment(fragment);
+        Assert.assertEquals(1, countHistogram.getDelta());
+        Assert.assertEquals(1, startPageHistogram.getDelta());
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(android.R.id.content),
+                "signin_fre_fragment_with_adult_account");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSigninFragmentForcedSigninWithRegularChild() throws IOException {
+        HistogramDelta countHistogram =
+                new HistogramDelta("Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", 1);
+        HistogramDelta startPageHistogram =
+                new HistogramDelta("Signin.SigninStartedAccessPoint", SigninAccessPoint.START_PAGE);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        CustomSigninFirstRunFragment fragment = new CustomSigninFirstRunFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(
+                SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.REGULAR_CHILD);
+        when(mFirstRunPageDelegateMock.getProperties()).thenReturn(bundle);
+        fragment.setPageDelegate(mFirstRunPageDelegateMock);
+
+        launchActivityWithFragment(fragment);
+        Assert.assertEquals(1, countHistogram.getDelta());
+        Assert.assertEquals(1, startPageHistogram.getDelta());
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(android.R.id.content),
+                "signin_fragment_forced_signin_with_regular_child");
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testSigninFragmentForcedSigninWithUSMChild() throws IOException {
+        HistogramDelta countHistogram =
+                new HistogramDelta("Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", 1);
+        HistogramDelta startPageHistogram =
+                new HistogramDelta("Signin.SigninStartedAccessPoint", SigninAccessPoint.START_PAGE);
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        CustomSigninFirstRunFragment fragment = new CustomSigninFirstRunFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.USM_CHILD);
+        when(mFirstRunPageDelegateMock.getProperties()).thenReturn(bundle);
+        fragment.setPageDelegate(mFirstRunPageDelegateMock);
+
+        launchActivityWithFragment(fragment);
+        Assert.assertEquals(1, countHistogram.getDelta());
+        Assert.assertEquals(1, startPageHistogram.getDelta());
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(android.R.id.content),
+                "signin_fragment_forced_signin_with_usm_child");
+    }
+
+    @Test
+    @LargeTest
     public void testClickingSettingsDoesNotSetFirstSetupComplete() {
-        CoreAccountInfo accountInfo = mSyncTestRule.addTestAccount();
+        CoreAccountInfo accountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS,
+                            mChromeActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS,
                             accountInfo.getEmail());
                 });
         onView(withText(accountInfo.getEmail())).check(matches(isDisplayed()));
@@ -169,26 +316,32 @@ public class SigninFragmentTest {
     @Test
     @MediumTest
     public void testSigninFragmentWithDefaultFlow() {
+        HistogramDelta settingsHistogram =
+                new HistogramDelta("Signin.SigninStartedAccessPoint", SigninAccessPoint.SETTINGS);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivity(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS);
+                            mChromeActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS);
                 });
         onView(withId(R.id.positive_button)).check(matches(withText(R.string.signin_add_account)));
         onView(withId(R.id.negative_button)).check(matches(withText(R.string.cancel)));
+        Assert.assertEquals(1, settingsHistogram.getDelta());
     }
 
     @Test
     @MediumTest
     public void testSelectNonDefaultAccountInAccountPickerDialog() {
-        CoreAccountInfo defaultAccountInfo = mSyncTestRule.addTestAccount();
+        HistogramDelta bookmarkHistogram = new HistogramDelta(
+                "Signin.SigninStartedAccessPoint", SigninAccessPoint.BOOKMARK_MANAGER);
+        CoreAccountInfo defaultAccountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         String nonDefaultAccountName = "test.account.nondefault@gmail.com";
-        mSyncTestRule.addAccount(nonDefaultAccountName);
+        mAccountManagerTestRule.addAccount(nonDefaultAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
-                            mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER,
-                            defaultAccountInfo.getEmail());
+                            mChromeActivityTestRule.getActivity(),
+                            SigninAccessPoint.BOOKMARK_MANAGER, defaultAccountInfo.getEmail());
                 });
         onView(withText(defaultAccountInfo.getEmail()))
                 .check(matches(isDisplayed()))
@@ -198,6 +351,7 @@ public class SigninFragmentTest {
         // not shown anymore.
         onView(withText(defaultAccountInfo.getEmail())).check(doesNotExist());
         onView(withText(nonDefaultAccountName)).check(matches(isDisplayed()));
+        Assert.assertEquals(1, bookmarkHistogram.getDelta());
     }
 
     private ViewAction clickOnClickableSpan() {
@@ -228,5 +382,17 @@ public class SigninFragmentTest {
                 spans[0].onClick(view);
             }
         };
+    }
+
+    private void launchActivityWithFragment(Fragment fragment) {
+        mActivityTestRule.launchActivity(null);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(android.R.id.content, fragment)
+                    .commit();
+        });
+        ApplicationTestUtils.waitForActivityState(mActivityTestRule.getActivity(), Stage.RESUMED);
     }
 }

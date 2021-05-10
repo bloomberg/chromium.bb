@@ -73,6 +73,10 @@ ViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   return ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 }
 
+bool ViewsDelegate::ShouldCloseMenuIfMouseCaptureLost() const {
+  return true;
+}
+
 #if defined(OS_WIN)
 HICON ViewsDelegate::GetDefaultWindowIcon() const {
   return nullptr;
@@ -86,7 +90,7 @@ bool ViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
   return false;
 }
 #elif BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-  (defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || defined(OS_CHROMEOS))
 gfx::ImageSkia* ViewsDelegate::GetDefaultWindowIcon() const {
   return nullptr;
 }

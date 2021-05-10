@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -120,7 +119,6 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflowForLine(
     const NGFragmentItem& line,
     const NGInlineCursor& cursor,
     TextHeightType height_type) const {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_EQ(&line, cursor.CurrentItem());
   DCHECK_EQ(line.LineBoxFragment(), this);
 
@@ -132,15 +130,15 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflowForLine(
   // Make sure we include the inline-size of the line-box in the overflow.
   // Note, the bottom half-leading should not be included. crbug.com/996847
   const WritingMode container_writing_mode = container_style.GetWritingMode();
-  AddInlineSizeToOverflow(line.RectInContainerBlock(), container_writing_mode,
-                          &overflow);
+  AddInlineSizeToOverflow(line.RectInContainerFragment(),
+                          container_writing_mode, &overflow);
 
   return overflow;
 }
 
 bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
-  const auto& break_token = To<NGInlineBreakToken>(*BreakToken());
-  return !break_token.IsFinished() && !break_token.IsForcedBreak();
+  const auto* break_token = To<NGInlineBreakToken>(BreakToken());
+  return break_token && !break_token->IsForcedBreak();
 }
 
 }  // namespace blink

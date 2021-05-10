@@ -23,6 +23,7 @@
 #include "platform/base/prng.h"
 #include "platform/public/logging.h"
 #include "platform/public/mutex_lock.h"
+#include "absl/strings/escaping.h"
 
 namespace location {
 namespace nearby {
@@ -83,8 +84,7 @@ bool Ble::StartAdvertising(const std::string& service_id,
     return false;
   }
 
-  NEARBY_LOGS(INFO) << "Turning on BLE advertising with advertisement bytes="
-                    << advertisement_bytes.data() << "("
+  NEARBY_LOGS(INFO) << "Turning on BLE advertising (advertisement size="
                     << advertisement_bytes.size() << ")"
                     << ", service id=" << service_id
                     << ", fast advertisement service uuid="
@@ -107,10 +107,10 @@ bool Ble::StartAdvertising(const std::string& service_id,
 
   if (!medium_.StartAdvertising(service_id, medium_advertisement_bytes,
                                 fast_advertisement_service_uuid)) {
-    NEARBY_LOGS(INFO)
+    NEARBY_LOGS(ERROR)
         << "Failed to turn on BLE advertising with advertisement bytes="
-        << advertisement_bytes.data() << "(" << advertisement_bytes.size()
-        << ")"
+        << absl::BytesToHexString(advertisement_bytes.data())
+        << ", size=" << advertisement_bytes.size()
         << ", fast advertisement service uuid="
         << fast_advertisement_service_uuid;
     return false;
@@ -186,6 +186,12 @@ bool Ble::StartScanning(const std::string& service_id,
                          const std::string& service_id,
                          const ByteArray& medium_advertisement_bytes,
                          bool fast_advertisement) {
+                    // Don't bother trying to parse zero byte advertisements.
+                    if (medium_advertisement_bytes.size() == 0) {
+                      NEARBY_LOGS(INFO) << "Skipping zero byte advertisement "
+                                        << "with service_id: " << service_id;
+                      return;
+                    }
                     // Unwrap connection BleAdvertisement from medium
                     // BleAdvertisement.
                     auto connection_advertisement_bytes =
@@ -304,8 +310,9 @@ bool Ble::IsAcceptingConnectionsLocked(const std::string& service_id) {
   return accepting_connections_info_.Existed(service_id);
 }
 
-BleSocket Ble::Connect(BlePeripheral& peripheral,
-                       const std::string& service_id) {
+// TODO(b/169303284): Handles Cancellation and registration.
+BleSocket Ble::Connect(BlePeripheral& peripheral, const std::string& service_id,
+                       CancellationFlag* cancellation_flag) {
   MutexLock lock(&mutex_);
   NEARBY_LOGS(INFO) << "BLE::Connect: service=" << &peripheral;
   // Socket to return. To allow for NRVO to work, it has to be a single object.
@@ -328,7 +335,12 @@ BleSocket Ble::Connect(BlePeripheral& peripheral,
     return socket;
   }
 
-  socket = medium_.Connect(peripheral, service_id);
+  if (cancellation_flag->Cancelled()) {
+    NEARBY_LOGS(INFO) << "Can't create client BLE socket due to cancel.";
+    return socket;
+  }
+
+  socket = medium_.Connect(peripheral, service_id, cancellation_flag);
   if (!socket.IsValid()) {
     NEARBY_LOGS(INFO) << "Failed to Connect via BLE [service=" << service_id
                       << "]";

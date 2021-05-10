@@ -224,26 +224,28 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+        public void didFinishLoad(
+                long frameId, GURL url, boolean isKnownValid, boolean isMainFrame) {
+            assert isKnownValid;
             if (mTab.getNativePage() != null) {
                 mTab.pushNativePageStateToNavigationEntry();
             }
-            if (isMainFrame) mTab.didFinishPageLoad(validatedUrl);
+            if (isMainFrame) mTab.didFinishPageLoad(url);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyAuditEvent(ContextUtils.getApplicationContext(),
-                    AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
+                    AuditEvent.OPEN_URL_SUCCESS, url.getSpec(), "");
         }
 
         @Override
-        public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {
+        public void didFailLoad(boolean isMainFrame, int errorCode, GURL failingGurl) {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidFailLoad(mTab, isMainFrame, errorCode, failingUrl);
+                observers.next().onDidFailLoad(mTab, isMainFrame, errorCode, failingGurl);
             }
 
             if (isMainFrame) mTab.didFailPageLoad(errorCode);
 
-            recordErrorInPolicyAuditor(failingUrl, "net error: " + errorCode, errorCode);
+            recordErrorInPolicyAuditor(failingGurl.getSpec(), "net error: " + errorCode, errorCode);
         }
 
         private void recordErrorInPolicyAuditor(
@@ -294,8 +296,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             if (navigation.errorCode() != NetError.OK) {
                 if (navigation.isInMainFrame()) mTab.didFailPageLoad(navigation.errorCode());
 
-                recordErrorInPolicyAuditor(navigation.getUrlString(), navigation.errorDescription(),
-                        navigation.errorCode());
+                recordErrorInPolicyAuditor(navigation.getUrl().getSpec(),
+                        navigation.errorDescription(), navigation.errorCode());
             }
             mLastUrl = navigation.getUrl();
 
@@ -336,7 +338,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void didChangeThemeColor() {
-            TabThemeColorHelper.get(mTab).updateIfNeeded(true);
+            mTab.updateThemeColor(mTab.getWebContents().getThemeColor());
         }
 
         @Override

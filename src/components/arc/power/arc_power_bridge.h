@@ -72,7 +72,7 @@ class ArcPowerBridge : public KeyedService,
 
   // chromeos::PowerManagerClient::Observer overrides.
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
@@ -140,6 +140,11 @@ class ArcPowerBridge : public KeyedService,
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;
+
+  // Represents whether a device suspend is currently underway, ie. a
+  // SuspendImminent event has been observed, but a SuspendDone event has not
+  // yet been observed.
+  bool is_suspending_ = false;
 
   base::WeakPtrFactory<ArcPowerBridge> weak_ptr_factory_{this};
 

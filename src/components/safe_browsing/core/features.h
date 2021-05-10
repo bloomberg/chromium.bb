@@ -37,6 +37,10 @@ extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 // Enables client side detection on Android.
 extern const base::Feature kClientSideDetectionForAndroid;
 
+// Determines the experimental version of client side detection model, for
+// Desktop.
+extern const base::Feature kClientSideDetectionModelVersion;
+
 // Enable the addition of access tokens to download pings for enhanced
 // protection users.
 extern const base::Feature kDownloadRequestWithToken;
@@ -54,6 +58,9 @@ extern const base::Feature kLimitedListSizeForIOS;
 // Enable password protection for non-Google accounts.
 extern const base::Feature kPasswordProtectionForSavedPasswords;
 
+// Include referring app info in password protection requests on Android.
+extern const base::Feature kPasswordProtectionReferringAppEnabledAndroid;
+
 // Enable whether or not to show a list of domains the saved password was used
 // on the modal warning dialog during password protection. This is only checked
 // if the |kPasswordProtectionForSavedPasswords| experiment is on.
@@ -64,6 +71,14 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 
 // Controls whether Chrome prompts Advanced Protection users for deep scanning.
 extern const base::Feature kPromptAppForDeepScanning;
+
+// Controls whether we are performing enterprise download checks for users with
+// the appropriate policies enabled.
+extern const base::Feature kSafeBrowsingEnterpriseCsd;
+
+// Controls whether we are disabling consumer download checks for users using
+// the enterprise download checks.
+extern const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise;
 
 // Controls whether Safe Browsing uses separate NetworkContexts for each
 // profile.
@@ -83,30 +98,17 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
 
-// Controls whether the real time URL lookup is enabled for all Android devices.
-// This flag is in effect only if |kRealTimeUrlLookupEnabled| is true.
-extern const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices;
-
 // Controls whether to do real time URL lookup for enterprise users. If both
 // this feature and the enterprise policies are enabled, the enterprise real
 // time URL lookup will be enabled and the consumer real time URL lookup will be
 // disabled.
 extern const base::Feature kRealTimeUrlLookupEnabledForEnterprise;
 
-// Controls whether the real time URL lookup is enabled for Enhanced Protection
-// users.
-extern const base::Feature kRealTimeUrlLookupEnabledForEP;
-
-// Controls whether the GAIA-keyed real time URL lookup is enabled for Enhanced
-// Protection users.
-extern const base::Feature kRealTimeUrlLookupEnabledForEPWithToken;
+// Controls whether to use the GA endpoint for enterprise real time URL lookup.
+extern const base::Feature kRealTimeUrlLookupEnterpriseGaEndpoint;
 
 // Controls whether the GAIA-keyed real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
-
-// Controls whether the real time URL lookup is enabled for non mainframe URLs
-// for Enhanced Protection users.
-extern const base::Feature kRealTimeUrlLookupNonMainframeEnabledForEP;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -128,6 +130,10 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 
 // Controls whether Chrome uses new download warning UX.
 extern const base::Feature kUseNewDownloadWarnings;
+
+// Controls whether we include visual features in password protection pings on
+// Android.
+extern const base::Feature kVisualFeaturesInPasswordProtectionAndroid;
 
 // Controls whether the delayed warning experiment is enabled.
 extern const base::Feature kDelayedWarnings;

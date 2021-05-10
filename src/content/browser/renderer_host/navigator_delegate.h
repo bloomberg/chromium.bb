@@ -14,7 +14,6 @@
 #include "content/public/browser/reload_type.h"
 
 class GURL;
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace blink {
 struct UserAgentOverride;
@@ -22,7 +21,6 @@ struct UserAgentOverride;
 
 namespace content {
 
-class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class RenderFrameHostImpl;
@@ -68,13 +66,11 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void DidNavigateMainFramePostCommit(
       RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) = 0;
+      const mojom::DidCommitProvisionalLoadParams& params) = 0;
   virtual void DidNavigateAnyFramePostCommit(
       RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) = 0;
-
-  virtual bool CanOverscrollContent() const = 0;
+      const mojom::DidCommitProvisionalLoadParams& params) = 0;
 
   // Notification to the Navigator embedder that navigation state has
   // changed. This method corresponds to
@@ -95,20 +91,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Returns the value to use for NavigationEntry::IsOverridingUserAgent() for
   // a renderer initiated navigation.
   virtual bool ShouldOverrideUserAgentForRendererInitiatedNavigation() = 0;
-
-  // A RenderFrameHost in the specified |frame_tree_node| started loading a new
-  // document. This corresponds to Blink's notion of the throbber starting.
-  // |to_different_document| will be true unless the load is a fragment
-  // navigation, or triggered by history.pushState/replaceState.
-  virtual void DidStartLoading(FrameTreeNode* frame_tree_node,
-                               bool to_different_document) = 0;
-
-  // A document stopped loading. This corresponds to Blink's notion of the
-  // throbber stopping.
-  virtual void DidStopLoading() = 0;
-
-  // The load progress was changed.
-  virtual void DidChangeLoadProgress() = 0;
 
   // Returns the NavigationThrottles to add to this navigation. Normally these
   // are defined by the content/ embedder, except in the case of interstitials

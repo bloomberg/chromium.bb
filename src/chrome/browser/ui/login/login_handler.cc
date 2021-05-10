@@ -18,10 +18,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/prefetch/no_state_prefetch/chrome_prerender_contents_delegate.h"
+#include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/no_state_prefetch/browser/prerender_contents.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -42,6 +42,7 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
@@ -439,7 +440,7 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
     authority_url = request_url;
   }
 
-  if (!blink::network_utils::IsOriginSecure(authority_url)) {
+  if (!network::IsUrlPotentiallyTrustworthy(authority_url)) {
     // TODO(asanka): The string should be different for proxies and servers.
     // http://crbug.com/620756
     *explanation = l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_NOT_PRIVATE);
@@ -519,11 +520,11 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
     CancelAuth();
     return;
   }
-  prerender::PrerenderContents* prerender_contents =
-      prerender::ChromePrerenderContentsDelegate::FromWebContents(
+  prerender::NoStatePrefetchContents* no_state_prefetch_contents =
+      prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
           web_contents());
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
+  if (no_state_prefetch_contents) {
+    no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
     CancelAuth();
     return;
   }

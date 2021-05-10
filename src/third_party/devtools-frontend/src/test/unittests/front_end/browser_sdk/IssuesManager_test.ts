@@ -20,19 +20,18 @@ describeWithEnvironment('IssuesManager', () => {
   it('collects issues from an issues model', () => {
     const issue1 = new StubIssue('StubIssue1', ['id1', 'id2'], []);
     const issue2 = new StubIssue('StubIssue2', ['id1', 'id2'], []);
-    const issue2_1 = new StubIssue('StubIssue2', ['id1', 'id2'], ['id3']);
+    const issue2b = new StubIssue('StubIssue2', ['id1', 'id2'], ['id3']);
 
-    const mockModel = new MockIssuesModel([issue1]);
+    const mockModel = new MockIssuesModel([issue1]) as unknown as SDK.IssuesModel.IssuesModel;
     const issuesManager = new BrowserSDK.IssuesManager.IssuesManager();
-    issuesManager.modelAdded(mockModel as unknown as SDK.IssuesModel.IssuesModel);
+    issuesManager.modelAdded(mockModel);
 
     const dispatchedIssues: SDK.Issue.Issue[] = [];
     issuesManager.addEventListener(
         BrowserSDK.IssuesManager.Events.IssueAdded, event => dispatchedIssues.push(event.data.issue));
 
     mockModel.dispatchEventToListeners(SDK.IssuesModel.Events.IssueAdded, {issuesModel: mockModel, issue: issue2});
-
-    mockModel.dispatchEventToListeners(SDK.IssuesModel.Events.IssueAdded, {issuesModel: mockModel, issue: issue2_1});
+    mockModel.dispatchEventToListeners(SDK.IssuesModel.Events.IssueAdded, {issuesModel: mockModel, issue: issue2b});
 
     assert.deepStrictEqual(dispatchedIssues.map(i => i.code()), ['StubIssue2', 'StubIssue2']);
 
@@ -53,8 +52,8 @@ describeWithEnvironment('IssuesManager', () => {
     SDK.Issue.getShowThirdPartyIssuesSetting().set(false);
 
     const issuesManager = new BrowserSDK.IssuesManager.IssuesManager();
-    const mockModel = new MockIssuesModel([]);
-    issuesManager.modelAdded(mockModel as unknown as SDK.IssuesModel.IssuesModel);
+    const mockModel = new MockIssuesModel([]) as unknown as SDK.IssuesModel.IssuesModel;
+    issuesManager.modelAdded(mockModel);
 
     const firedIssueAddedEventCodes: string[] = [];
     issuesManager.addEventListener(

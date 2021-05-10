@@ -861,7 +861,7 @@ ExtensionFunction::ResponseAction WebViewInternalSetPermissionFunction::Run() {
     user_input = *params->user_input;
 
   WebViewPermissionHelper* web_view_permission_helper =
-      WebViewPermissionHelper::FromWebContents(guest_->web_contents());
+      guest_->web_view_permission_helper();
 
   WebViewPermissionHelper::SetPermissionResult result =
       web_view_permission_helper->SetPermission(
@@ -1051,7 +1051,7 @@ ExtensionFunction::ResponseAction WebViewInternalClearDataFunction::Run() {
   if (remove_mask_) {
     scheduled = guest_->ClearData(
         remove_since_, remove_mask_,
-        base::Bind(&WebViewInternalClearDataFunction::ClearDataDone, this));
+        base::BindOnce(&WebViewInternalClearDataFunction::ClearDataDone, this));
   }
   if (!remove_mask_ || !scheduled) {
     Release();  // Balanced above.

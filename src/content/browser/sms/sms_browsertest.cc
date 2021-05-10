@@ -14,6 +14,7 @@
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/sms/webotp_service.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -21,8 +22,10 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/sms/webotp_service_outcome.h"
@@ -34,6 +37,8 @@ using ::testing::NiceMock;
 using ::testing::Return;
 
 namespace content {
+
+using UserConsent = SmsFetcher::UserConsent;
 
 namespace {
 
@@ -68,6 +73,27 @@ class SmsBrowserTest : public ContentBrowserTest {
       }
     }
     FAIL() << "Expected WebOTPServiceOutcome was not recorded";
+  }
+
+  void ExpectOutcomeWithCrossOriginUKM(blink::WebOTPServiceOutcome outcome,
+                                       bool expect_cross_origin) {
+    auto entries = ukm_recorder()->GetEntriesByName(Entry::kEntryName);
+
+    if (entries.empty())
+      FAIL() << "No WebOTPServiceOutcome was recorded";
+
+    for (const auto* const entry : entries) {
+      const int64_t* metric = ukm_recorder()->GetEntryMetric(entry, "Outcome");
+      if (metric && *metric == static_cast<int>(outcome)) {
+        bool actual_cross_origin =
+            *ukm_recorder()->GetEntryMetric(entry, "IsCrossOriginFrame");
+        if (actual_cross_origin == expect_cross_origin) {
+          SUCCEED();
+          return;
+        }
+      }
+    }
+    FAIL() << "Expected Outcome with cross-origin info was not recorded";
   }
 
   void ExpectTimingUKM(const std::string& metric_name) {
@@ -111,7 +137,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
   void ExpectSmsPrompt() {
     EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
-        .WillOnce(Invoke([&](RenderFrameHost*, const url::Origin&,
+        .WillOnce(Invoke([&](RenderFrameHost*, const OriginList&,
                              const std::string&, base::OnceClosure on_confirm,
                              base::OnceClosure on_cancel) {
           confirm_callback_ = std::move(on_confirm);
@@ -139,7 +165,14 @@ class SmsBrowserTest : public ContentBrowserTest {
 
  protected:
   void SetUpOnMainThread() override {
+    ContentBrowserTest::TearDownOnMainThread();
+
     host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    SetupCrossSiteRedirector(&https_server_);
+    net::test_server::RegisterDefaultHandlers(&https_server_);
+    ASSERT_TRUE(https_server_.Start());
+    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
@@ -167,6 +200,9 @@ class SmsBrowserTest : public ContentBrowserTest {
 
   base::OnceClosure confirm_callback_;
   base::OnceClosure dismiss_callback_;
+
+  FrameTreeVisualizer visualizer_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 }  // namespace
@@ -193,7 +229,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   )";
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello", UserConsent::kNotObtained);
     ConfirmPrompt();
   }));
 
@@ -245,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
       .WillOnce(Return())
       .WillOnce(Invoke([&]() {
-        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+        mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                         "hello", UserConsent::kNotObtained);
         ConfirmPrompt();
       }));
 
@@ -325,7 +363,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello1", UserConsent::kNotObtained);
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -349,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello2", UserConsent::kNotObtained);
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -393,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
-  ExpectNoOutcomeUKM();
+  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kUnhandledRequest);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
@@ -424,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
 
   ASSERT_FALSE(fetcher->HasSubscribers());
 
-  ExpectNoOutcomeUKM();
+  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kUnhandledRequest);
 }
 
 // Disabled test: https://crbug.com/1052385
@@ -471,7 +511,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello1", UserConsent::kNotObtained);
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -495,7 +536,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello2", UserConsent::kNotObtained);
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -553,7 +595,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
     // capture and evaluation.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url1), "hello1");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url1)},
+                                     "hello1", UserConsent::kNotObtained);
     ConfirmPrompt();
     ukm_loop.Run();
   }
@@ -569,7 +612,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
     // capture and evaluation.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url2), "hello2");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url2)},
+                                     "hello2", UserConsent::kNotObtained);
     ConfirmPrompt();
     ukm_loop.Run();
   }
@@ -605,50 +649,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   shell()->Close();
 
-  mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+  mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                   "hello", UserConsent::kObtained);
 
-  ExpectNoOutcomeUKM();
-}
-
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
-  base::HistogramTester histogram_tester;
-  GURL url = GetTestUrl(nullptr, "simple_page.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  auto provider = std::make_unique<MockSmsProvider>();
-  MockSmsProvider* mock_provider_ptr = provider.get();
-  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
-
-  shell()->web_contents()->SetDelegate(&delegate_);
-
-  base::RunLoop ukm_loop;
-
-  ExpectSmsPrompt();
-
-  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
-    DismissPrompt();
-  }));
-
-  // Wait for UKM to be recorded to avoid race condition between outcome
-  // capture and evaluation.
-  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
-                                        ukm_loop.QuitClosure());
-
-  EXPECT_TRUE(ExecJs(shell(), R"(
-     var error = navigator.credentials.get({otp: {transport: ["sms"]}})
-       .catch(({name}) => {
-         return name;
-       });
-    )"));
-
-  ukm_loop.Run();
-
-  EXPECT_EQ("AbortError", EvalJs(shell(), "error"));
-
-  content::FetchHistogramsFromChildProcesses();
-  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kCancelled);
-  histogram_tester.ExpectTotalCount("Blink.Sms.Receive.TimeCancel", 1);
+  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kUnhandledRequest);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
@@ -665,7 +669,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
       .WillOnce(Invoke([&mock_provider_ptr, &url]() {
-        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+        mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                         "hello", UserConsent::kNotObtained);
       }));
 
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -723,11 +728,13 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsFetcherUAF) {
   EXPECT_CALL(*provider, Retrieve(_))
       .WillOnce(Invoke([&]() {
         static_cast<SmsFetcherImpl*>(fetcher)->OnReceive(
-            url::Origin::Create(url), "ABC234");
+            OriginList{url::Origin::Create(url)}, "ABC234",
+            UserConsent::kObtained);
       }))
       .WillOnce(Invoke([&]() {
         static_cast<SmsFetcherImpl*>(fetcher2)->OnReceive(
-            url::Origin::Create(url), "DEF567");
+            OriginList{url::Origin::Create(url)}, "DEF567",
+            UserConsent::kObtained);
       }));
 
   service->Receive(base::BindLambdaForTesting(
@@ -758,7 +765,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReportWebOTPInUseCounter) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello", UserConsent::kNotObtained);
     ConfirmPrompt();
   }));
   base::HistogramTester histogram_tester;
@@ -788,7 +796,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, UpdateRenderFrameHostWithWebOTPUsage) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "hello", UserConsent::kNotObtained);
     ConfirmPrompt();
   }));
 
@@ -807,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, UpdateRenderFrameHostWithWebOTPUsage) {
   EXPECT_TRUE(render_frame_host->DocumentUsedWebOTP());
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordTimeoutAsOutcome) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordBackendNotAvailableAsOutcome) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -819,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordTimeoutAsOutcome) {
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
       .WillOnce(Invoke([&mock_provider_ptr]() {
-        mock_provider_ptr->NotifyFailure(FailureType::kPromptTimeout);
+        mock_provider_ptr->NotifyFailure(FailureType::kBackendNotAvailable);
       }));
 
   base::RunLoop ukm_loop;
@@ -835,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordTimeoutAsOutcome) {
 
   ukm_loop.Run();
 
-  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kTimeout);
+  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kBackendNotAvailable);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
@@ -870,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
         // origin.
       }))
       .WillOnce(Invoke([&]() {
-        mock_provider_ptr->NotifyFailure(FailureType::kPromptTimeout);
+        mock_provider_ptr->NotifyFailure(FailureType::kBackendNotAvailable);
         loop.Quit();
       }));
 
@@ -880,44 +889,6 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
   loop.Run();
 
   ExpectNoOutcomeUKM();
-}
-
-// Disabled test: crbug.com/1146218
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_RecordUserCancelledAsOutcome) {
-  base::HistogramTester histogram_tester;
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWebOtpBackend, switches::kWebOtpBackendUserConsent);
-  GURL url = GetTestUrl(nullptr, "simple_page.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  auto provider = std::make_unique<MockSmsProvider>();
-  MockSmsProvider* mock_provider_ptr = provider.get();
-  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
-
-  shell()->web_contents()->SetDelegate(&delegate_);
-
-  EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
-      .WillOnce(Invoke([&mock_provider_ptr]() {
-        mock_provider_ptr->NotifyFailure(FailureType::kPromptCancelled);
-      }));
-
-  base::RunLoop ukm_loop;
-
-  // Wait for UKM to be recorded to avoid race condition between outcome
-  // capture and evaluation.
-  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
-                                        ukm_loop.QuitClosure());
-
-  EXPECT_TRUE(ExecJs(shell(), R"(
-       navigator.credentials.get({otp: {transport: ["sms"]}});
-     )"));
-
-  ukm_loop.Run();
-
-  content::FetchHistogramsFromChildProcesses();
-  ExpectOutcomeUKM(url, blink::WebOTPServiceOutcome::kUserCancelled);
-  ExpectTimingUKM("TimeUserCancelMs");
-  histogram_tester.ExpectTotalCount("Blink.Sms.Receive.TimeUserCancel", 1);
 }
 
 // Disabled test: https://crbug.com/1134455
@@ -955,12 +926,14 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_RecordPendingOriginCount) {
   EXPECT_TRUE(ExecJs(tab2, script));
 
   ExpectSmsPrompt();
-  mock_provider_ptr->NotifyReceive(url::Origin::Create(url1), "code1");
+  mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url1)},
+                                   "code1", UserConsent::kNotObtained);
   ConfirmPrompt();
   EXPECT_EQ("code1", EvalJs(tab1, "request"));
 
   ExpectSmsPrompt();
-  mock_provider_ptr->NotifyReceive(url::Origin::Create(url2), "code2");
+  mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url2)},
+                                   "code2", UserConsent::kNotObtained);
   ConfirmPrompt();
   EXPECT_EQ("code2", EvalJs(tab2, "request"));
 
@@ -988,7 +961,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordSmsNotParsedMetrics) {
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
     // Calls NotifyReceive with an invalid sms and record sms parse failure
     // metrics.
-    mock_provider_ptr->NotifyReceiveForTesting(invalid_sms);
+    mock_provider_ptr->NotifyReceiveForTesting(invalid_sms,
+                                               UserConsent::kObtained);
     loop.Quit();
   }));
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -1030,7 +1004,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsParsed) {
   const std::string valid_sms = "Your OTP is: 1234.\n@example.com #1234";
   base::RunLoop loop;
   EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceiveForTesting(valid_sms);
+    mock_provider_ptr->NotifyReceiveForTesting(valid_sms,
+                                               UserConsent::kObtained);
     loop.Quit();
   }));
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -1074,7 +1049,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordSmsParsedMetrics) {
     // ports. Therefore we cannot create an SMS with valid origin from the test.
     // Bypassing the issue by calling NotifyReceive directly to test metrics
     // recording logic.
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "1234");
+    mock_provider_ptr->NotifyReceive(OriginList{url::Origin::Create(url)},
+                                     "1234", UserConsent::kNotObtained);
     ConfirmPrompt();
   }));
 
@@ -1098,6 +1074,206 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordSmsParsedMetrics) {
       "Blink.Sms.Receive.SmsParsingStatus",
       static_cast<int>(SmsParser::SmsParsingStatus::kOTPFormatRegexNotMatch),
       0);
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoUniqueOrigins) {
+  GURL main_url(
+      https_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  GURL b_url(https_server_.GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, b_url));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = https://a.com/\n"
+      "      B = https://b.com/",
+      visualizer_.DepictFrameTree(root));
+
+  auto* fetcher = SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::WebOTPService> service;
+  RenderFrameHost* render_frame_host = child->current_frame_host();
+
+  EXPECT_TRUE(WebOTPService::Create(fetcher, render_frame_host,
+                                    service.BindNewPipeAndPassReceiver()));
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ThreeUniqueOrigins) {
+  GURL main_url(
+      https_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  FrameTreeNode* grand_child = child->child_at(0);
+  GURL c_url(https_server_.GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(grand_child, c_url));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = https://a.com/\n"
+      "      B = https://b.com/\n"
+      "      C = https://c.com/",
+      visualizer_.DepictFrameTree(root));
+
+  auto* fetcher = SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::WebOTPService> service;
+  RenderFrameHost* render_frame_host = grand_child->current_frame_host();
+
+  EXPECT_FALSE(WebOTPService::Create(fetcher, render_frame_host,
+                                     service.BindNewPipeAndPassReceiver()));
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoUniqueOriginsConsecutive) {
+  GURL main_url(
+      https_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b(b))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  FrameTreeNode* grand_child = child->child_at(0);
+  GURL b_url(https_server_.GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(grand_child, b_url));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = https://a.com/\n"
+      "      B = https://b.com/",
+      visualizer_.DepictFrameTree(root));
+
+  auto* fetcher = SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::WebOTPService> service;
+  RenderFrameHost* render_frame_host = grand_child->current_frame_host();
+
+  EXPECT_TRUE(WebOTPService::Create(fetcher, render_frame_host,
+                                    service.BindNewPipeAndPassReceiver()));
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoUniqueOriginsInconsecutive) {
+  GURL main_url(
+      https_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b(a))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  FrameTreeNode* grand_child = child->child_at(0);
+  GURL a_url(https_server_.GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(grand_child, a_url));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site A -- proxies for B\n"
+      "Where A = https://a.com/\n"
+      "      B = https://b.com/",
+      visualizer_.DepictFrameTree(root));
+
+  auto* fetcher = SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::WebOTPService> service;
+  RenderFrameHost* render_frame_host = grand_child->current_frame_host();
+
+  EXPECT_FALSE(WebOTPService::Create(fetcher, render_frame_host,
+                                     service.BindNewPipeAndPassReceiver()));
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordOutcomeWithCrossOriginFrame) {
+  GURL main_url(https_server_.GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b{allow-otp-credentials})"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  shell()->web_contents()->SetDelegate(&delegate_);
+  auto provider = std::make_unique<MockSmsProvider>();
+  MockSmsProvider* mock_provider_ptr = provider.get();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
+
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
+    mock_provider_ptr->NotifyFailure(FailureType::kBackendNotAvailable);
+  }));
+
+  // Wait for UKM to be recorded to avoid race condition between outcome
+  // capture and evaluation.
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  GURL b_url(https_server_.GetURL("b.com", "/page_with_webotp.html"));
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, b_url));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = https://a.com/\n"
+      "      B = https://b.com/",
+      visualizer_.DepictFrameTree(root));
+
+  ukm_loop.Run();
+
+  content::FetchHistogramsFromChildProcesses();
+  ExpectOutcomeWithCrossOriginUKM(
+      blink::WebOTPServiceOutcome::kBackendNotAvailable,
+      /* is_cross_origin_frame */ true);
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, RecordOutcomeWithSameOriginFrame) {
+  GURL main_url(
+      https_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  shell()->web_contents()->SetDelegate(&delegate_);
+  auto provider = std::make_unique<MockSmsProvider>();
+  MockSmsProvider* mock_provider_ptr = provider.get();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
+
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
+    mock_provider_ptr->NotifyFailure(FailureType::kBackendNotAvailable);
+  }));
+
+  // Wait for UKM to be recorded to avoid race condition between outcome
+  // capture and evaluation.
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  GURL b_url(https_server_.GetURL("a.com", "/page_with_webotp.html"));
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, b_url));
+
+  EXPECT_EQ(
+      " Site A\n"
+      "   +--Site A\n"
+      "Where A = https://a.com/",
+      visualizer_.DepictFrameTree(root));
+
+  ukm_loop.Run();
+
+  content::FetchHistogramsFromChildProcesses();
+  ExpectOutcomeWithCrossOriginUKM(
+      blink::WebOTPServiceOutcome::kBackendNotAvailable,
+      /* is_cross_origin_frame */ false);
 }
 
 }  // namespace content

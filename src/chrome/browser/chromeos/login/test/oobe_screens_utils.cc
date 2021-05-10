@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 
+#include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/login/screens/sync_consent_screen.h"
+#include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -48,7 +49,11 @@ void WaitForWelcomeScreen() {
 }
 
 void TapWelcomeNext() {
-  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  if (features::IsNewOobeLayoutEnabled()) {
+    test::OobeJS().TapOnPath({"connect", "welcomeScreen", "getStarted"});
+  } else {
+    test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  }
 }
 
 void WaitForNetworkSelectionScreen() {
@@ -105,13 +110,11 @@ void WaitForPinSetupScreen() {
   WaitFor(PinSetupScreenView::kScreenId);
 }
 
-void ExitDiscoverPinSetupScreen() {
+void ExitPinSetupScreen() {
   // This might be the last step in flow. Synchronous execute gets stuck as
   // WebContents may be destroyed in the process. So it may never return.
   // So we use ExecuteAsync() here.
-  test::OobeJS().ExecuteAsync(
-      "$('discover-impl').root.querySelector('discover-pin-setup-module')."
-      "$.setupSkipButton.click()");
+  test::OobeJS().ExecuteAsync("$('pin-setup').$.setupSkipButton.click()");
   WaitForExit(PinSetupScreenView::kScreenId);
 }
 
@@ -144,25 +147,25 @@ void TapUserCreationNext() {
 }
 
 void WaitForEulaScreen() {
-  if (!WizardController::IsBrandedBuildForTesting())
+  if (!WizardController::IsBrandedBuild())
     return;
   WaitFor(EulaView::kScreenId);
 }
 
 void TapEulaAccept() {
-  if (!WizardController::IsBrandedBuildForTesting())
+  if (!WizardController::IsBrandedBuild())
     return;
   test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
 }
 
 void WaitForSyncConsentScreen() {
-  if (!SyncConsentScreen::IsBrandedBuildForTesting())
+  if (!WizardController::IsBrandedBuild())
     return;
   WaitFor(SyncConsentScreenView::kScreenId);
 }
 
 void ExitScreenSyncConsent() {
-  if (!SyncConsentScreen::IsBrandedBuildForTesting())
+  if (!WizardController::IsBrandedBuild())
     return;
   SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
       WizardController::default_controller()->GetScreen(
@@ -171,6 +174,18 @@ void ExitScreenSyncConsent() {
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->OnStateChanged(nullptr);
   WaitForExit(SyncConsentScreenView::kScreenId);
+}
+
+bool IsScanningRequestedOnNetworkScreen() {
+  return test::OobeJS().GetAttributeBool(
+      "enableWifiScans",
+      {"network-selection", "networkSelectLogin", "networkSelect"});
+}
+
+bool IsScanningRequestedOnErrorScreen() {
+  return test::OobeJS().GetAttributeBool(
+      "enableWifiScans",
+      {"error-message", "offline-network-control", "networkSelect"});
 }
 
 LanguageReloadObserver::LanguageReloadObserver(WelcomeScreen* welcome_screen)

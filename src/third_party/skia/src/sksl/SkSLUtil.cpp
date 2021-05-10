@@ -9,6 +9,7 @@
 
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLStringStream.h"
+#include "src/sksl/ir/SkSLType.h"
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
@@ -28,36 +29,58 @@ ShaderCapsPointer ShaderCapsFactory::MakeShaderCaps() {
 }
 #endif  // defined(SKSL_STANDALONE) || !SK_SUPPORT_GPU
 
-void sksl_abort() {
-#ifdef SKSL_STANDALONE
-    abort();
-#else
-    sk_abort_no_print();
-    exit(1);
-#endif
-}
-
 void write_stringstream(const StringStream& s, OutputStream& out) {
     out.write(s.str().c_str(), s.str().size());
 }
 
 #if !defined(SKSL_STANDALONE)
 bool type_to_grsltype(const Context& context, const Type& type, GrSLType* outType) {
-    if (type == *context.fFloat_Type)    { *outType = kFloat_GrSLType;    return true; }
-    if (type == *context.fHalf_Type)     { *outType = kHalf_GrSLType;     return true; }
-    if (type == *context.fFloat2_Type)   { *outType = kFloat2_GrSLType;   return true; }
-    if (type == *context.fHalf2_Type)    { *outType = kHalf2_GrSLType;    return true; }
-    if (type == *context.fFloat3_Type)   { *outType = kFloat3_GrSLType;   return true; }
-    if (type == *context.fHalf3_Type)    { *outType = kHalf3_GrSLType;    return true; }
-    if (type == *context.fFloat4_Type)   { *outType = kFloat4_GrSLType;   return true; }
-    if (type == *context.fHalf4_Type)    { *outType = kHalf4_GrSLType;    return true; }
-    if (type == *context.fFloat2x2_Type) { *outType = kFloat2x2_GrSLType; return true; }
-    if (type == *context.fHalf2x2_Type)  { *outType = kHalf2x2_GrSLType;  return true; }
-    if (type == *context.fFloat3x3_Type) { *outType = kFloat3x3_GrSLType; return true; }
-    if (type == *context.fHalf3x3_Type)  { *outType = kHalf3x3_GrSLType;  return true; }
-    if (type == *context.fFloat4x4_Type) { *outType = kFloat4x4_GrSLType; return true; }
-    if (type == *context.fHalf4x4_Type)  { *outType = kHalf4x4_GrSLType;  return true; }
-    if (type == *context.fVoid_Type)     { *outType = kVoid_GrSLType;     return true; }
+    // If a new GrSL type is added, this function will need to be updated.
+    static_assert(kGrSLTypeCount == 49);
+
+    if (type == *context.fTypes.fVoid    ) { *outType = kVoid_GrSLType;     return true; }
+    if (type == *context.fTypes.fBool    ) { *outType = kBool_GrSLType;     return true; }
+    if (type == *context.fTypes.fBool2   ) { *outType = kBool2_GrSLType;    return true; }
+    if (type == *context.fTypes.fBool3   ) { *outType = kBool3_GrSLType;    return true; }
+    if (type == *context.fTypes.fBool4   ) { *outType = kBool4_GrSLType;    return true; }
+    if (type == *context.fTypes.fByte    ) { *outType = kByte_GrSLType;     return true; }
+    if (type == *context.fTypes.fByte2   ) { *outType = kByte2_GrSLType;    return true; }
+    if (type == *context.fTypes.fByte3   ) { *outType = kByte3_GrSLType;    return true; }
+    if (type == *context.fTypes.fByte4   ) { *outType = kByte4_GrSLType;    return true; }
+    if (type == *context.fTypes.fUByte   ) { *outType = kUByte_GrSLType;    return true; }
+    if (type == *context.fTypes.fUByte2  ) { *outType = kUByte2_GrSLType;   return true; }
+    if (type == *context.fTypes.fUByte3  ) { *outType = kUByte3_GrSLType;   return true; }
+    if (type == *context.fTypes.fUByte4  ) { *outType = kUByte4_GrSLType;   return true; }
+    if (type == *context.fTypes.fShort   ) { *outType = kShort_GrSLType;    return true; }
+    if (type == *context.fTypes.fShort2  ) { *outType = kShort2_GrSLType;   return true; }
+    if (type == *context.fTypes.fShort3  ) { *outType = kShort3_GrSLType;   return true; }
+    if (type == *context.fTypes.fShort4  ) { *outType = kShort4_GrSLType;   return true; }
+    if (type == *context.fTypes.fUShort  ) { *outType = kUShort_GrSLType;   return true; }
+    if (type == *context.fTypes.fUShort2 ) { *outType = kUShort2_GrSLType;  return true; }
+    if (type == *context.fTypes.fUShort3 ) { *outType = kUShort3_GrSLType;  return true; }
+    if (type == *context.fTypes.fUShort4 ) { *outType = kUShort4_GrSLType;  return true; }
+    if (type == *context.fTypes.fFloat   ) { *outType = kFloat_GrSLType;    return true; }
+    if (type == *context.fTypes.fFloat2  ) { *outType = kFloat2_GrSLType;   return true; }
+    if (type == *context.fTypes.fFloat3  ) { *outType = kFloat3_GrSLType;   return true; }
+    if (type == *context.fTypes.fFloat4  ) { *outType = kFloat4_GrSLType;   return true; }
+    if (type == *context.fTypes.fFloat2x2) { *outType = kFloat2x2_GrSLType; return true; }
+    if (type == *context.fTypes.fFloat3x3) { *outType = kFloat3x3_GrSLType; return true; }
+    if (type == *context.fTypes.fFloat4x4) { *outType = kFloat4x4_GrSLType; return true; }
+    if (type == *context.fTypes.fHalf    ) { *outType = kHalf_GrSLType;     return true; }
+    if (type == *context.fTypes.fHalf2   ) { *outType = kHalf2_GrSLType;    return true; }
+    if (type == *context.fTypes.fHalf3   ) { *outType = kHalf3_GrSLType;    return true; }
+    if (type == *context.fTypes.fHalf4   ) { *outType = kHalf4_GrSLType;    return true; }
+    if (type == *context.fTypes.fHalf2x2 ) { *outType = kHalf2x2_GrSLType;  return true; }
+    if (type == *context.fTypes.fHalf3x3 ) { *outType = kHalf3x3_GrSLType;  return true; }
+    if (type == *context.fTypes.fHalf4x4 ) { *outType = kHalf4x4_GrSLType;  return true; }
+    if (type == *context.fTypes.fInt     ) { *outType = kInt_GrSLType;      return true; }
+    if (type == *context.fTypes.fInt2    ) { *outType = kInt2_GrSLType;     return true; }
+    if (type == *context.fTypes.fInt3    ) { *outType = kInt3_GrSLType;     return true; }
+    if (type == *context.fTypes.fInt4    ) { *outType = kInt4_GrSLType;     return true; }
+    if (type == *context.fTypes.fUInt    ) { *outType = kUint_GrSLType;     return true; }
+    if (type == *context.fTypes.fUInt2   ) { *outType = kUint2_GrSLType;    return true; }
+    if (type == *context.fTypes.fUInt3   ) { *outType = kUint3_GrSLType;    return true; }
+    if (type == *context.fTypes.fUInt4   ) { *outType = kUint4_GrSLType;    return true; }
     return false;
 }
 #endif

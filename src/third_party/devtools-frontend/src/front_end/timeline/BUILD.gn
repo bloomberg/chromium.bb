@@ -31,7 +31,6 @@ devtools_module("timeline") {
     "WebVitalsLane.ts",
     "WebVitalsTimeline.ts",
     "WebVitalsTimelineUtils.js",
-    "WebVitalsTimeline_bridge.js",
   ]
 
   deps = [
@@ -40,6 +39,7 @@ devtools_module("timeline") {
     "../data_grid:bundle",
     "../extensions:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../layer_viewer:bundle",
     "../mobile_throttling:bundle",
     "../perf_ui:bundle",
@@ -51,13 +51,19 @@ devtools_module("timeline") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "timeline.js"
+  entrypoint = "timeline.ts"
 
   deps = [ ":timeline" ]
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "timeline-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "timeline-meta.ts"
 
   deps = [ ":bundle" ]
 }

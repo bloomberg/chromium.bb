@@ -32,7 +32,6 @@
 #include "modules/audio_processing/include/config.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/constructor_magic.h"
-#include "rtc_base/deprecation.h"
 #include "rtc_base/ref_count.h"
 #include "rtc_base/system/file_wrapper.h"
 #include "rtc_base/system/rtc_export.h"
@@ -72,32 +71,13 @@ static constexpr int kClippedLevelMin = 70;
 struct ExperimentalAgc {
   ExperimentalAgc() = default;
   explicit ExperimentalAgc(bool enabled) : enabled(enabled) {}
-  ExperimentalAgc(bool enabled,
-                  bool enabled_agc2_level_estimator,
-                  bool digital_adaptive_disabled)
-      : enabled(enabled),
-        enabled_agc2_level_estimator(enabled_agc2_level_estimator),
-        digital_adaptive_disabled(digital_adaptive_disabled) {}
-  // Deprecated constructor: will be removed.
-  ExperimentalAgc(bool enabled,
-                  bool enabled_agc2_level_estimator,
-                  bool digital_adaptive_disabled,
-                  bool analyze_before_aec)
-      : enabled(enabled),
-        enabled_agc2_level_estimator(enabled_agc2_level_estimator),
-        digital_adaptive_disabled(digital_adaptive_disabled) {}
   ExperimentalAgc(bool enabled, int startup_min_volume)
       : enabled(enabled), startup_min_volume(startup_min_volume) {}
-  ExperimentalAgc(bool enabled, int startup_min_volume, int clipped_level_min)
-      : enabled(enabled),
-        startup_min_volume(startup_min_volume),
-        clipped_level_min(clipped_level_min) {}
   static const ConfigOptionID identifier = ConfigOptionID::kExperimentalAgc;
   bool enabled = true;
   int startup_min_volume = kAgcStartupMinVolume;
   // Lowest microphone level that will be applied in response to clipping.
   int clipped_level_min = kClippedLevelMin;
-  bool enabled_agc2_level_estimator = false;
   bool digital_adaptive_disabled = false;
 };
 
@@ -187,7 +167,7 @@ struct ExperimentalNs {
 // analog_level = apm->recommended_stream_analog_level();
 // has_voice = apm->stream_has_voice();
 //
-// // Repeate render and capture processing for the duration of the call...
+// // Repeat render and capture processing for the duration of the call...
 // // Start a new call...
 // apm->Initialize();
 //
@@ -214,13 +194,9 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
 
     // Sets the properties of the audio processing pipeline.
     struct RTC_EXPORT Pipeline {
-      Pipeline();
-
       // Maximum allowed processing rate used internally. May only be set to
-      // 32000 or 48000 and any differing values will be treated as 48000. The
-      // default rate is currently selected based on the CPU architecture, but
-      // that logic may change.
-      int maximum_internal_processing_rate;
+      // 32000 or 48000 and any differing values will be treated as 48000.
+      int maximum_internal_processing_rate = 48000;
       // Allow multi-channel processing of render audio.
       bool multi_channel_render = false;
       // Allow multi-channel processing of capture audio when AEC3 is active
@@ -331,7 +307,6 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
         // Lowest analog microphone level that will be applied in response to
         // clipping.
         int clipped_level_min = kClippedLevelMin;
-        bool enable_agc2_level_estimator = false;
         bool enable_digital_adaptive = true;
       } analog_gain_controller;
     } gain_controller1;
@@ -350,21 +325,24 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
 
       enum LevelEstimator { kRms, kPeak };
       bool enabled = false;
-      struct {
+      struct FixedDigital {
         float gain_db = 0.f;
       } fixed_digital;
-      struct {
+      struct AdaptiveDigital {
         bool enabled = false;
-        float vad_probability_attack = 1.f;
+        float vad_probability_attack = 0.3f;
         LevelEstimator level_estimator = kRms;
-        int level_estimator_adjacent_speech_frames_threshold = 1;
+        int level_estimator_adjacent_speech_frames_threshold = 6;
         // TODO(crbug.com/webrtc/7494): Remove `use_saturation_protector`.
         bool use_saturation_protector = true;
         float initial_saturation_margin_db = 20.f;
-        float extra_saturation_margin_db = 2.f;
-        int gain_applier_adjacent_speech_frames_threshold = 1;
+        float extra_saturation_margin_db = 5.f;
+        int gain_applier_adjacent_speech_frames_threshold = 6;
         float max_gain_change_db_per_second = 3.f;
-        float max_output_noise_level_dbfs = -50.f;
+        float max_output_noise_level_dbfs = -55.f;
+        bool sse2_allowed = true;
+        bool avx2_allowed = true;
+        bool neon_allowed = true;
       } adaptive_digital;
     } gain_controller2;
 
@@ -546,11 +524,16 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
   // Set to true when the output of AudioProcessing will be muted or in some
   // other way not used. Ideally, the captured audio would still be processed,
   // but some components may change behavior based on this information.
-  // Default false.
+  // Default false. This method takes a lock. To achieve this in a lock-less
+  // manner the PostRuntimeSetting can instead be used.
   virtual void set_output_will_be_muted(bool muted) = 0;
 
-  // Enqueue a runtime setting.
+  // Enqueues a runtime setting.
   virtual void SetRuntimeSetting(RuntimeSetting setting) = 0;
+
+  // Enqueues a runtime setting. Returns a bool indicating whether the
+  // enqueueing was successfull.
+  virtual bool PostRuntimeSetting(RuntimeSetting setting) = 0;
 
   // Accepts and produces a 10 ms frame interleaved 16 bit integer audio as
   // specified in |input_config| and |output_config|. |src| and |dest| may use
@@ -713,7 +696,7 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
   static constexpr int kMaxNativeSampleRateHz =
       kNativeSampleRatesHz[kNumNativeSampleRates - 1];
 
-  static const int kChunkSizeMs = 10;
+  static constexpr int kChunkSizeMs = 10;
 };
 
 class RTC_EXPORT AudioProcessingBuilder {

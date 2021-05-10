@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/crypto_test_utils.h"
 
 #include <utility>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/proto/crypto_server_config_proto.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/mock_clock.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -165,8 +165,9 @@ TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
        {"COPT", "SREJ"},
        {"PUBS", pub_hex},
        {"NONC", nonce_hex},
-       {"VER\0", QuicVersionLabelToString(
-                     QuicVersionToQuicVersionLabel(transport_version))}},
+       {"VER\0",
+        QuicVersionLabelToString(CreateQuicVersionLabel(
+            ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, transport_version)))}},
       kClientHelloMinimumSize);
 
   crypto_test_utils::GenerateFullCHLO(inchoate_chlo, &crypto_config,

@@ -5,18 +5,21 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
-#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
+#include "ui/views/view_utils.h"
 
 // Tests web-app windows that use the OpaqueBrowserFrameView implementation
 // for their non client frames.
@@ -50,8 +53,9 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
     // Not all platform configurations use OpaqueBrowserFrameView for their
     // browser windows, see |CreateBrowserNonClientFrameView()|.
     bool is_opaque_browser_frame_view =
-        frame_view->GetClassName() == OpaqueBrowserFrameView::kClassName;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+        views::IsViewClass<OpaqueBrowserFrameView>(frame_view);
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
     DCHECK(is_opaque_browser_frame_view);
 #else
     if (!is_opaque_browser_frame_view)
@@ -102,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, NoThemeColor) {
             gfx::kGoogleGrey900);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
 // The app theme color should be ignored in system theme mode.
 IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
   SetThemeMode(ThemeMode::kSystem);
@@ -133,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
   EXPECT_EQ(web_app_frame_toolbar_->active_color_for_testing(),
             expected_caption_color);
 }
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, LightThemeColor) {
   if (!InstallAndLaunchWebApp(SK_ColorYELLOW))
@@ -165,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, StaticTitleBarHeight) {
 
   // Add taller children to the web app frame toolbar RHS.
   const int container_height = web_app_frame_toolbar_->height();
-  web_app_frame_toolbar_->GetRightContainerForTesting()->AddChildView(
+  web_app_frame_toolbar_->get_right_container_for_testing()->AddChildView(
       new views::StaticSizedView(gfx::Size(1, title_bar_height * 2)));
   opaque_browser_frame_view_->Layout();
 

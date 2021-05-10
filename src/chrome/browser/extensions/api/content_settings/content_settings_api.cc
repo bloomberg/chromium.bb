@@ -63,6 +63,11 @@ bool RemoveContentType(base::ListValue* args,
   // We remove the ContentSettingsType parameter since this is added by the
   // renderer, and is not part of the JSON schema.
   args->Remove(0, nullptr);
+  // PLUGINS have been deprecated, so ignore requests for removing them.
+  if (content_type_str == "plugins") {
+    *content_type = ContentSettingsType::DEPRECATED_PLUGINS;
+    return true;
+  }
   *content_type =
       extensions::content_settings_helpers::StringToContentSettingsType(
           content_type_str);
@@ -81,7 +86,7 @@ ContentSettingsContentSettingClearFunction::Run() {
   std::unique_ptr<Clear::Params> params(Clear::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (content_type == ContentSettingsType::PLUGINS) {
+  if (content_type == ContentSettingsType::DEPRECATED_PLUGINS) {
     return RespondNow(
         Error(content_settings_api_constants::
                   kSettingPluginContentSettingsClearIsDisallowed));
@@ -121,7 +126,7 @@ ContentSettingsContentSettingGetFunction::Run() {
   std::unique_ptr<Get::Params> params(Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (content_type == ContentSettingsType::PLUGINS) {
+  if (content_type == ContentSettingsType::DEPRECATED_PLUGINS) {
     return RespondNow(Error(content_settings_api_constants::
                                 kSettingPluginContentSettingsGetIsDisallowed));
   }
@@ -193,6 +198,12 @@ ContentSettingsContentSettingSetFunction::Run() {
 
   std::unique_ptr<Set::Params> params(Set::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // PLUGINS have been deprecated.
+  if (content_type == ContentSettingsType::DEPRECATED_PLUGINS) {
+    return RespondNow(Error(content_settings_api_constants::
+                                kSettingPluginContentSettingsIsDisallowed));
+  }
 
   std::string primary_error;
   ContentSettingsPattern primary_pattern =
@@ -304,11 +315,6 @@ ContentSettingsContentSettingSetFunction::Run() {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
   }
 
-  if (content_type == ContentSettingsType::PLUGINS) {
-      return RespondNow(Error(content_settings_api_constants::
-                                  kSettingPluginContentSettingsIsDisallowed));
-  }
-
   scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(browser_context())->content_settings_store();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
@@ -323,10 +329,9 @@ ContentSettingsContentSettingGetResourceIdentifiersFunction::Run() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
-  if (content_type != ContentSettingsType::PLUGINS) {
+  if (content_type != ContentSettingsType::DEPRECATED_PLUGINS) {
     return RespondNow(NoArguments());
   }
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   return RespondNow(
       Error(content_settings_api_constants::

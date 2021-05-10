@@ -16,7 +16,7 @@ The following tools must be installed and present in the PATH variable:
 
  * Git (for checking out sources)
  * Python 3.x (for the build related scripts, some other scripts still use Python 2.7.x)
- * CMake 3.0 (3.6 for Android NDK r17+ builds) or newer
+ * CMake 3.10.2 or newer
 
 ### Win32
 
@@ -25,6 +25,9 @@ The following tools must be installed and present in the PATH variable:
 ### Linux
 
  * Standard toolchain (make, gcc/clang)
+ * If you have X11 installed, then the build assumes you also have the `GL/glx.h` header
+   file.
+    * You can get this from the `mesa-common-dev` Ubuntu package.
 
 ### Android
 
@@ -170,6 +173,12 @@ the following command line option may be used:
 
 	--deqp-waiver-file=<path>
 
+Some CTS tests use third-party runners. By default all tests are executed
+regardless of runner type (`any`). To exclude all tests using any of the
+external runners (`none`) or to only include tests using a certain runner:
+
+	--deqp-runner-type=(any|none|amber)
+
 No other command line options are allowed.
 
 ### Win32
@@ -236,10 +245,15 @@ as part of the submission package (3). This can be done by running:
 
 	git format-patch -o <submission pkg dir> <release tag>..HEAD
 
-In general, bugfixes and changes to platform-specific code (mostly under
-`framework/platform`) are allowed. The commit message for each change must
-include a clear description of the change and why it is necessary. Non-porting
-related changes must be accompanied by a waiver (see below).
+Changes to platform-specific code (mostly under `framework/platform`)
+are allowed. The commit message for each change must include a clear
+description of the change and why it is necessary.
+
+Bugfixes to the tests are allowed. Before being used for a submission,
+bugfixes must be accepted and merged into the CTS repository.
+`git cherry-pick` is strongly recommended as a method of applying bug fixes.
+
+Other changes must be accompanied by a waiver (see below).
 
 NOTE: When cherry-picking patches on top of release tag, please use `git cherry-pick -x`
 to include original commit hash in the commit message.
@@ -258,7 +272,7 @@ if `vk::Platform::describePlatform()` is implemented.
 If the submission package covers multiple products, you can list them by appending
 additional `PRODUCT:` lines to the conformance statement. For example:
 
-	CONFORM_VERSION:         vulkan-cts-1.2.4.0
+	CONFORM_VERSION:         vulkan-cts-1.2.5.0
 	PRODUCT:                 Product A
 	PRODUCT:                 Product B
 	...

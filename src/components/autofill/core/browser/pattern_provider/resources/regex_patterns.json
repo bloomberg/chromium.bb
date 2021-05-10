@@ -20,6 +20,16 @@
         "match_field_input_types": 1
       }
     ],
+    "es" : [
+      {
+        "pattern_identifier": "es_street_name",
+        "positive_pattern": "calle",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
     "ru" : [
       {
         "pattern_identifier": "ru_street_name",
@@ -41,6 +51,68 @@
       }
     ]
   },
+  "ADDRESS_HOME_APT_NUM": {
+    "en": [
+      {
+        "pattern_identifier": "en_apartment_number",
+        "positive_pattern": "apartment",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
+    "es": [
+      {
+        "pattern_identifier": "es_apartment_number",
+        "positive_pattern": "interior|número.*apartamento",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
+    "de": [
+      {
+        "pattern_identifier": "de_apartment_number",
+        "positive_pattern": "wohnung",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
+    "ru": [
+      {
+        "pattern_identifier": "ru_apartment_number",
+        "positive_pattern": "квартир",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
+    "it": [
+      {
+        "pattern_identifier": "it_apartment_number",
+        "positive_pattern": "numero.*appartamento",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
+    "fr": [
+      {
+        "pattern_identifier": "fr_apartment_number",
+        "positive_pattern": "numéro.*appartement",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	]
+  },
   "ADDRESS_HOME_HOUSE_NUMBER":{
     "en": [
       {
@@ -49,7 +121,7 @@
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
-        "match_field_input_types": 1
+        "match_field_input_types": 69
       }
     ],
     "de": [
@@ -59,7 +131,7 @@
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
-        "match_field_input_types": 1
+        "match_field_input_types": 69
       }
     ],
     "pt": [
@@ -69,9 +141,19 @@
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
-        "match_field_input_types": 1
+        "match_field_input_types": 69
       }
     ],
+    "es": [
+      {
+        "pattern_identifier": "es_house_number",
+        "positive_pattern": "n(u|ú)mero.*apartamento|exterior",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+	],
     "ru": [
       {
         "pattern_identifier": "ru_house_number",
@@ -79,7 +161,7 @@
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
-        "match_field_input_types": 1
+        "match_field_input_types": 69
       }
     ]
   },
@@ -137,9 +219,39 @@
         "match_field_attributes": 3,
         "match_field_input_types": 1
       }
+    ],
+    "tr": [
+      {
+        "pattern_identifier": "tr_address_name_ignored_preserving",
+        "positive_pattern": "adres ([İi]sim|başlığı|adı)",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
+    "pt": [
+      {
+        "pattern_identifier": "pt_address_name_ignored_preserving",
+        "positive_pattern": "identificação do endereço",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_address_name_ignored_preserving",
+        "positive_pattern": "(label|judul|nama) alamat",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
     ]
   },
-  "COMPANY": {
+  "COMPANY_NAME": {
     "en": [
       {
         "pattern_identifier": "en_company_preserving",
@@ -210,7 +322,7 @@
         "match_field_input_types": 1
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_company_preserving",
         "positive_pattern": "单位|公司",
@@ -239,6 +351,16 @@
         "match_field_attributes": 3,
         "match_field_input_types": 1
       }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_company_preserving",
+        "positive_pattern": "(nama.?)?perusahaan",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
     ]
   },
   "ADDRESS_LINE_1": {
@@ -253,7 +375,7 @@
       },
       {
         "pattern_identifier": "en_address_line_1_label_preserving",
-        "positive_pattern": "(^\\W*address)|(address\\W*$)|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|recipient|home|work|office|school|business|mail)[\\s\\-]+address|address\\s+(of|for|to|from)",
+        "positive_pattern": "(^\\W*address)|(address\\W*$)|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|recipient|home|work|office|school|business|mail)[\\s\\-]+address|address\\s+(of|for|to|from)|street.*(house|building|apartment|floor)|(house|building|apartment|floor).*street",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 1,
@@ -352,9 +474,17 @@
         "negative_pattern": null,
         "match_field_attributes": 3,
         "match_field_input_types": 1
+      },
+      {
+        "pattern_identifier": "ru_address_line_1_label_preserving",
+        "positive_pattern": "улиц.*(дом|корпус|квартир|этаж)|(дом|корпус|квартир|этаж).*улиц",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 1,
+        "match_field_input_types": 1
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_address_line_1_preserving",
         "positive_pattern": "地址",
@@ -362,20 +492,12 @@
         "negative_pattern": null,
         "match_field_attributes": 3,
         "match_field_input_types": 1
-      },
-      {
-        "pattern_identifier": "zh_address_line_1_label_preserving",
-        "positive_pattern": "地址",
-        "positive_score": 1.1,
-        "negative_pattern": null,
-        "match_field_attributes": 1,
-        "match_field_input_types": 1
       }
     ],
     "tr": [
       {
         "pattern_identifier": "tr_address_line_1_preserving",
-        "positive_pattern": "(\\b|_)adres(?! (başlığı(nız)?|tarifi))(\\b|_)",
+        "positive_pattern": "(\\b|_)adres(?! tarifi)(\\b|_)",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -383,7 +505,7 @@
       },
       {
         "pattern_identifier": "tr_address_line_1_label_preserving",
-        "positive_pattern": "(\\b|_)adres(?! (başlığı(nız)?|tarifi))(\\b|_)",
+        "positive_pattern": "(\\b|_)adres(?! tarifi)(\\b|_)|(sokak|cadde).*(apartman|bina|daire|mahalle)|(apartman|bina|daire|mahalle).*(sokak|cadde)",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 1,
@@ -403,6 +525,25 @@
       {
         "pattern_identifier": "ko_address_line_1_label_preserving",
         "positive_pattern": "주소",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 1,
+        "match_field_input_types": 1
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_address_line_1_preserving",
+        "positive_pattern": "^alamat",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ,
+      {
+        "pattern_identifier": "id_address_line_1_label_preserving",
+        "positive_pattern": "^alamat",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 1,
@@ -515,7 +656,7 @@
         "match_field_input_types": 1
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_address_line_2_preserving",
         "positive_pattern": "地址2",
@@ -647,7 +788,7 @@
         "match_field_input_types": 137
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_country_preserving",
         "positive_pattern": "国家",
@@ -681,6 +822,16 @@
       {
         "pattern_identifier": "fa_country_preserving",
         "positive_pattern": "کشور",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_country_preserving",
+        "positive_pattern": "negara",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -801,10 +952,20 @@
         "match_field_input_types": 69
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_zip_code_preserving",
-        "positive_pattern": "邮政编码|邮编|郵遞區號",
+        "positive_pattern": "邮政编码|邮编",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+    ],
+    "zh-TW": [
+      {
+        "pattern_identifier": "zh_tw_zip_code_preserving",
+        "positive_pattern": "郵遞區號",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -825,6 +986,16 @@
       {
         "pattern_identifier": "ko_zip_code_preserving",
         "positive_pattern": "우편.?번호",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_zip_code_preserving",
+        "positive_pattern": "kode.?pos",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -851,6 +1022,48 @@
         "negative_pattern": null,
         "match_field_attributes": 3,
         "match_field_input_types": 69
+      }
+    ]
+  },
+  "ADDRESS_HOME_DEPENDENT_LOCALITY": {
+    "en": [
+      {
+        "pattern_identifier": "en_dependent_locality_preserving",
+        "positive_pattern": "neighbo(u)?rhood",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
+    ],
+    "pt": [
+      {
+        "pattern_identifier": "pt_dependent_locality_preserving",
+        "positive_pattern": "bairro",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
+    ],
+    "tr": [
+      {
+        "pattern_identifier": "tr_dependent_locality_preserving",
+        "positive_pattern": "mahalle|köy",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_dependent_locality_preserving",
+        "positive_pattern": "kecamatan",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
       }
     ]
   },
@@ -928,14 +1141,14 @@
     "ru": [
       {
         "pattern_identifier": "ru_city_preserving",
-        "positive_pattern": "Город|Населённый.?пункт",
+        "positive_pattern": "Город|Насел(е|ё)нный.?пункт",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": 3,
         "match_field_input_types": 137
       }
     ],
-    "zh": [
+    "zh-TW": [
       {
         "pattern_identifier": "zh_city_preserving",
         "positive_pattern": "市|分區",
@@ -994,6 +1207,16 @@
         "match_field_attributes": 3,
         "match_field_input_types": 137
       }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_city_preserving",
+        "positive_pattern": "kota|kabupaten",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
     ]
   },
   "STATE": {
@@ -1037,7 +1260,7 @@
         "match_field_input_types": 137
       }
     ],
-    "zh": [
+    "zh-TW": [
       {
         "pattern_identifier": "zh_state_preserving",
         "positive_pattern": "省|地區",
@@ -1096,6 +1319,16 @@
         "match_field_attributes": 3,
         "match_field_input_types": 137
       }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_state_preserving",
+        "positive_pattern": "provinci",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 137
+      }
     ]
   },
   "SEARCH_TERM": {
@@ -1119,7 +1352,7 @@
         "match_field_input_types": 145
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_search_term_preserving",
         "positive_pattern": "搜索",
@@ -1293,10 +1526,20 @@
         "match_field_input_types": 1
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_name_on_card_preserving",
         "positive_pattern": "信用卡开户名|开户名|持卡人姓名|持卡人姓名",
+        "positive_score": 1.0,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_name_on_card_preserving",
+        "positive_pattern": "nama.*kartu",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1357,10 +1600,20 @@
         "match_field_input_types": 101
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_card_number_preserving",
-        "positive_pattern": "信用卡号|信用卡号码|信用卡卡號",
+        "positive_pattern": "信用卡号|信用卡号码",
+        "positive_score": 1.0,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 101
+      }
+    ],
+    "zh-TW": [
+      {
+        "pattern_identifier": "zh_card_number_preserving",
+        "positive_pattern": "信用卡卡號",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1401,6 +1654,16 @@
       {
         "pattern_identifier": "fr_card_number_preserving",
         "positive_pattern": "(numero|número|numéro)(?!.*(document|fono|phone|réservation))",
+        "positive_score": 1.0,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 101
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_card_number_preserving",
+        "positive_pattern": "no.*kartu",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1501,10 +1764,20 @@
         "match_field_input_types": 205
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_card_exp_month_preserving",
         "positive_pattern": "月",
+        "positive_score": 1.0,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 205
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_card_exp_month_preserving",
+        "positive_pattern": "masa berlaku|berlaku hingga",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1583,7 +1856,7 @@
         "match_field_input_types": 205
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_card_exp_year_preserving",
         "positive_pattern": "年|有效期",
@@ -1693,6 +1966,16 @@
       {
         "pattern_identifier": "ru_card_exp_date_preserving",
         "positive_pattern": "Срок действия карты",
+        "positive_score": 1.0,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 205
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_card_exp_date_preserving",
+        "positive_pattern": "masa berlaku|berlaku hingga",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1816,17 +2099,27 @@
     "ru": [
       {
         "pattern_identifier": "ru_email_preserving",
-        "positive_pattern": "Электронной.?Почты",
+        "positive_pattern": "Электронн(ая|ой).?Почт(а|ы)",
         "positive_score": 1.4,
         "negative_pattern": null,
         "match_field_attributes": 3,
         "match_field_input_types": 3
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_email_preserving",
-        "positive_pattern": "邮件|邮箱|電郵地址",
+        "positive_pattern": "邮件|邮箱",
+        "positive_score": 1.4,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 3
+      }
+    ],
+    "zh-TW": [
+      {
+        "pattern_identifier": "zh_email_preserving",
+        "positive_pattern": "電郵地址",
         "positive_score": 1.4,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1892,16 +2185,6 @@
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
-        "match_field_input_types": 137 
-      }
-    ],
-    "tr": [
-      {
-        "pattern_identifier": "tr_name_ignored_preserving",
-        "positive_pattern": "adres başlığınız",
-        "positive_score": 0.9,
-        "negative_pattern": null,
-        "match_field_attributes": 3,
         "match_field_input_types": 137
       }
     ],
@@ -1915,7 +2198,7 @@
         "match_field_input_types": 137
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_name_ignored_preserving",
         "positive_pattern": "用户名",
@@ -1940,7 +2223,7 @@
     "en": [
       {
         "pattern_identifier": "en_full_name_preserving",
-        "positive_pattern": "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname",
+        "positive_pattern": "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name|name.*first.*last|firstandlastname|contact.?(name|person)",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1960,7 +2243,7 @@
     "fr": [
       {
         "pattern_identifier": "fr_full_name_preserving",
-        "positive_pattern": "^nom(?!bre)",
+        "positive_pattern": "^nom(?![a-zA-Z])",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -1997,10 +2280,20 @@
         "match_field_input_types": 1
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_full_name_preserving",
         "positive_pattern": "姓名",
+        "positive_score": 0.9,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
+    "ru": [
+      {
+        "pattern_identifier": "ru_full_name_preserving",
+        "positive_pattern": "контактное.?лицо",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -2021,6 +2314,16 @@
       {
         "pattern_identifier": "ko_full_name_preserving",
         "positive_pattern": "성명",
+        "positive_score": 0.9,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_full_name_preserving",
+        "positive_pattern": "nama.?(lengkap|penerima|kamu)",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -2180,6 +2483,16 @@
         "match_field_attributes": 3,
         "match_field_input_types": 1
       }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_first_name_preserving",
+        "positive_pattern": "nama depan",
+        "positive_score": 0.9,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
     ]
   },
   "MIDDLE_INITIAL": {
@@ -2240,7 +2553,7 @@
     "fr": [
       {
         "pattern_identifier": "fr_last_name_preserving",
-        "positive_pattern": "famille|^nom(?!bre)",
+        "positive_pattern": "famille|^nom(?![a-zA-Z])",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -2336,6 +2649,16 @@
         "match_field_attributes": 3,
         "match_field_input_types": 1
       }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_last_name_preserving",
+        "positive_pattern": "nama belakang",
+        "positive_score": 0.9,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 1
+      }
     ]
   },
   "LAST_NAME_FIRST": {
@@ -2416,7 +2739,7 @@
     "ru": [
       {
         "pattern_identifier": "ru_honorific_prefix_preserving",
-        "positive_pattern": "обраще́ние|зва́ние",
+        "positive_pattern": "обращение|звание",
         "positive_score": 0.9,
         "negative_pattern": null,
         "match_field_attributes": 3,
@@ -2535,7 +2858,7 @@
         "match_field_input_types": 69
       }
     ],
-    "zh": [
+    "zh-CN": [
       {
         "pattern_identifier": "zh_phone_preserving",
         "positive_pattern": "电话",
@@ -2559,6 +2882,16 @@
       {
         "pattern_identifier": "ko_phone_preserving",
         "positive_pattern": "(?:전화|핸드폰|휴대폰|휴대전화)(?:.?번호)?",
+        "positive_score": 1.2,
+        "negative_pattern": null,
+        "match_field_attributes": 3,
+        "match_field_input_types": 69
+      }
+    ],
+    "id": [
+      {
+        "pattern_identifier": "id_phone_preserving",
+        "positive_pattern": "telepon|ponsel|(nomor|no\\.?).?(hp|handphone)",
         "positive_score": 1.2,
         "negative_pattern": null,
         "match_field_attributes": 3,

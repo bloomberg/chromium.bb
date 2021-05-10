@@ -17,6 +17,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -45,9 +46,9 @@
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 using testing::_;
@@ -308,7 +309,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
   // We aren't interested in if the keep alive works correctly in this test.
   std::unique_ptr<ScopedKeepAlive> test_keep_alive_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS needs extra services to run in the following order.
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
@@ -511,12 +512,12 @@ TEST_F(BackgroundModeManagerTest, ProfileAttributesStorage) {
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
   EXPECT_EQ(2u, storage->GetNumberOfProfiles());
 
-  ProfileAttributesEntry* entry1;
-  ProfileAttributesEntry* entry2;
-  ASSERT_TRUE(storage->GetProfileAttributesWithPath(profile_->GetPath(),
-                                                    &entry1));
-  ASSERT_TRUE(storage->GetProfileAttributesWithPath(profile2->GetPath(),
-                                                    &entry2));
+  ProfileAttributesEntry* entry1 =
+      storage->GetProfileAttributesWithPath(profile_->GetPath());
+  ASSERT_NE(entry1, nullptr);
+  ProfileAttributesEntry* entry2 =
+      storage->GetProfileAttributesWithPath(profile2->GetPath());
+  ASSERT_NE(entry2, nullptr);
 
   EXPECT_FALSE(entry1->GetBackgroundStatus());
   EXPECT_FALSE(entry2->GetBackgroundStatus());
@@ -930,9 +931,10 @@ TEST_F(BackgroundModeManagerTest, TransientBackgroundApp) {
   AdvancedTestBackgroundModeManager manager(
       *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager_->profile_attributes_storage()
-                  ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
+  ProfileAttributesEntry* entry =
+      profile_manager_->profile_attributes_storage()
+          ->GetProfileAttributesWithPath(profile_->GetPath());
+  ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->GetBackgroundStatus());
 
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
@@ -969,9 +971,10 @@ TEST_F(BackgroundModeManagerTest, TransientBackgroundAppWithPersistent) {
   AdvancedTestBackgroundModeManager manager(
       *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager_->profile_attributes_storage()
-                  ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
+  ProfileAttributesEntry* entry =
+      profile_manager_->profile_attributes_storage()
+          ->GetProfileAttributesWithPath(profile_->GetPath());
+  ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->GetBackgroundStatus());
 
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
@@ -1011,9 +1014,10 @@ TEST_F(BackgroundModeManagerTest,
   AdvancedTestBackgroundModeManager manager(
       *command_line_, profile_manager_->profile_attributes_storage(), true);
   manager.RegisterProfile(profile_);
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager_->profile_attributes_storage()
-                  ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
+  ProfileAttributesEntry* entry =
+      profile_manager_->profile_attributes_storage()
+          ->GetProfileAttributesWithPath(profile_->GetPath());
+  ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->GetBackgroundStatus());
 
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());

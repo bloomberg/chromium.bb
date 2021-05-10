@@ -27,6 +27,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -209,17 +210,30 @@ void CflSubsampler444_NEON(
   uint32_t sum;
   if (block_width == 4) {
     assert(max_luma_width >= 4);
+    assert(max_luma_height <= block_height);
+    assert((max_luma_height % 2) == 0);
     uint32x4_t running_sum = vdupq_n_u32(0);
     uint8x8_t row = vdup_n_u8(0);
 
-    for (int y = 0; y < block_height; y += 2) {
+    uint16x8_t row_shifted;
+    int y = 0;
+    do {
       row = Load4<0>(src, row);
       row = Load4<1>(src + stride, row);
       if (y < (max_luma_height - 1)) {
         src += stride << 1;
       }
 
-      const uint16x8_t row_shifted = vshll_n_u8(row, 3);
+      row_shifted = vshll_n_u8(row, 3);
+      running_sum = vpadalq_u16(running_sum, row_shifted);
+      vst1_s16(luma[y], vreinterpret_s16_u16(vget_low_u16(row_shifted)));
+      vst1_s16(luma[y + 1], vreinterpret_s16_u16(vget_high_u16(row_shifted)));
+      y += 2;
+    } while (y < max_luma_height);
+
+    row_shifted =
+        vcombine_u16(vget_high_u16(row_shifted), vget_high_u16(row_shifted));
+    for (; y < block_height; y += 2) {
       running_sum = vpadalq_u16(running_sum, row_shifted);
       vst1_s16(luma[y], vreinterpret_s16_u16(vget_low_u16(row_shifted)));
       vst1_s16(luma[y + 1], vreinterpret_s16_u16(vget_high_u16(row_shifted)));
@@ -463,12 +477,172 @@ void Init8bpp() {
 }  // namespace
 }  // namespace low_bitdepth
 
-void IntraPredCflInit_NEON() { low_bitdepth::Init8bpp(); }
+//------------------------------------------------------------------------------
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
+
+// |luma| can be within +/-(((1 << bitdepth) - 1) << 3), inclusive.
+// |alpha| can be -16 to 16 (inclusive).
+// Clip |dc + ((alpha * luma) >> 6))| to 0, (1 << bitdepth) - 1.
+inline uint16x8_t Combine8(const int16x8_t luma, const int16x8_t alpha_abs,
+                           const int16x8_t alpha_signed, const int16x8_t dc,
+                           const uint16x8_t max_value) {
+  const int16x8_t luma_abs = vabsq_s16(luma);
+  const int16x8_t luma_alpha_sign =
+      vshrq_n_s16(veorq_s16(luma, alpha_signed), 15);
+  // (alpha * luma) >> 6
+  const int16x8_t la_abs = vqrdmulhq_s16(luma_abs, alpha_abs);
+  // Convert back to signed values.
+  const int16x8_t la =
+      vsubq_s16(veorq_s16(la_abs, luma_alpha_sign), luma_alpha_sign);
+  const int16x8_t result = vaddq_s16(la, dc);
+  const int16x8_t zero = vdupq_n_s16(0);
+  // Clip.
+  return vminq_u16(vreinterpretq_u16_s16(vmaxq_s16(result, zero)), max_value);
+}
+
+template <int block_height, int bitdepth = 10>
+inline void CflIntraPredictor4xN_NEON(
+    void* const dest, const ptrdiff_t stride,
+    const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
+    const int alpha) {
+  auto* dst = static_cast<uint16_t*>(dest);
+  const ptrdiff_t dst_stride = stride >> 1;
+  const uint16x8_t max_value = vdupq_n_u16((1 << bitdepth) - 1);
+  const int16x8_t alpha_signed = vdupq_n_s16(alpha << 9);
+  const int16x8_t alpha_abs = vabsq_s16(alpha_signed);
+  const int16x8_t dc = vdupq_n_s16(dst[0]);
+  for (int y = 0; y < block_height; y += 2) {
+    const int16x4_t luma_row0 = vld1_s16(luma[y]);
+    const int16x4_t luma_row1 = vld1_s16(luma[y + 1]);
+    const int16x8_t combined_luma = vcombine_s16(luma_row0, luma_row1);
+    const uint16x8_t sum =
+        Combine8(combined_luma, alpha_abs, alpha_signed, dc, max_value);
+    vst1_u16(dst, vget_low_u16(sum));
+    dst += dst_stride;
+    vst1_u16(dst, vget_high_u16(sum));
+    dst += dst_stride;
+  }
+}
+
+template <int block_height, int bitdepth = 10>
+inline void CflIntraPredictor8xN_NEON(
+    void* const dest, const ptrdiff_t stride,
+    const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
+    const int alpha) {
+  auto* dst = static_cast<uint16_t*>(dest);
+  const ptrdiff_t dst_stride = stride >> 1;
+  const uint16x8_t max_value = vdupq_n_u16((1 << bitdepth) - 1);
+  const int16x8_t alpha_signed = vdupq_n_s16(alpha << 9);
+  const int16x8_t alpha_abs = vabsq_s16(alpha_signed);
+  const int16x8_t dc = vdupq_n_s16(dst[0]);
+  for (int y = 0; y < block_height; ++y) {
+    const int16x8_t luma_row = vld1q_s16(luma[y]);
+    const uint16x8_t sum =
+        Combine8(luma_row, alpha_abs, alpha_signed, dc, max_value);
+    vst1q_u16(dst, sum);
+    dst += dst_stride;
+  }
+}
+
+template <int block_height, int bitdepth = 10>
+inline void CflIntraPredictor16xN_NEON(
+    void* const dest, const ptrdiff_t stride,
+    const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
+    const int alpha) {
+  auto* dst = static_cast<uint16_t*>(dest);
+  const ptrdiff_t dst_stride = stride >> 1;
+  const uint16x8_t max_value = vdupq_n_u16((1 << bitdepth) - 1);
+  const int16x8_t alpha_signed = vdupq_n_s16(alpha << 9);
+  const int16x8_t alpha_abs = vabsq_s16(alpha_signed);
+  const int16x8_t dc = vdupq_n_s16(dst[0]);
+  for (int y = 0; y < block_height; ++y) {
+    const int16x8_t luma_row_0 = vld1q_s16(luma[y]);
+    const int16x8_t luma_row_1 = vld1q_s16(luma[y] + 8);
+    const uint16x8_t sum_0 =
+        Combine8(luma_row_0, alpha_abs, alpha_signed, dc, max_value);
+    const uint16x8_t sum_1 =
+        Combine8(luma_row_1, alpha_abs, alpha_signed, dc, max_value);
+    vst1q_u16(dst, sum_0);
+    vst1q_u16(dst + 8, sum_1);
+    dst += dst_stride;
+  }
+}
+
+template <int block_height, int bitdepth = 10>
+inline void CflIntraPredictor32xN_NEON(
+    void* const dest, const ptrdiff_t stride,
+    const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
+    const int alpha) {
+  auto* dst = static_cast<uint16_t*>(dest);
+  const ptrdiff_t dst_stride = stride >> 1;
+  const uint16x8_t max_value = vdupq_n_u16((1 << bitdepth) - 1);
+  const int16x8_t alpha_signed = vdupq_n_s16(alpha << 9);
+  const int16x8_t alpha_abs = vabsq_s16(alpha_signed);
+  const int16x8_t dc = vdupq_n_s16(dst[0]);
+  for (int y = 0; y < block_height; ++y) {
+    const int16x8_t luma_row_0 = vld1q_s16(luma[y]);
+    const int16x8_t luma_row_1 = vld1q_s16(luma[y] + 8);
+    const int16x8_t luma_row_2 = vld1q_s16(luma[y] + 16);
+    const int16x8_t luma_row_3 = vld1q_s16(luma[y] + 24);
+    const uint16x8_t sum_0 =
+        Combine8(luma_row_0, alpha_abs, alpha_signed, dc, max_value);
+    const uint16x8_t sum_1 =
+        Combine8(luma_row_1, alpha_abs, alpha_signed, dc, max_value);
+    const uint16x8_t sum_2 =
+        Combine8(luma_row_2, alpha_abs, alpha_signed, dc, max_value);
+    const uint16x8_t sum_3 =
+        Combine8(luma_row_3, alpha_abs, alpha_signed, dc, max_value);
+    vst1q_u16(dst, sum_0);
+    vst1q_u16(dst + 8, sum_1);
+    vst1q_u16(dst + 16, sum_2);
+    vst1q_u16(dst + 24, sum_3);
+    dst += dst_stride;
+  }
+}
+
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+  dsp->cfl_intra_predictors[kTransformSize4x4] = CflIntraPredictor4xN_NEON<4>;
+  dsp->cfl_intra_predictors[kTransformSize4x8] = CflIntraPredictor4xN_NEON<8>;
+  dsp->cfl_intra_predictors[kTransformSize4x16] = CflIntraPredictor4xN_NEON<16>;
+
+  dsp->cfl_intra_predictors[kTransformSize8x4] = CflIntraPredictor8xN_NEON<4>;
+  dsp->cfl_intra_predictors[kTransformSize8x8] = CflIntraPredictor8xN_NEON<8>;
+  dsp->cfl_intra_predictors[kTransformSize8x16] = CflIntraPredictor8xN_NEON<16>;
+  dsp->cfl_intra_predictors[kTransformSize8x32] = CflIntraPredictor8xN_NEON<32>;
+
+  dsp->cfl_intra_predictors[kTransformSize16x4] = CflIntraPredictor16xN_NEON<4>;
+  dsp->cfl_intra_predictors[kTransformSize16x8] = CflIntraPredictor16xN_NEON<8>;
+  dsp->cfl_intra_predictors[kTransformSize16x16] =
+      CflIntraPredictor16xN_NEON<16>;
+  dsp->cfl_intra_predictors[kTransformSize16x32] =
+      CflIntraPredictor16xN_NEON<32>;
+  dsp->cfl_intra_predictors[kTransformSize32x8] = CflIntraPredictor32xN_NEON<8>;
+  dsp->cfl_intra_predictors[kTransformSize32x16] =
+      CflIntraPredictor32xN_NEON<16>;
+  dsp->cfl_intra_predictors[kTransformSize32x32] =
+      CflIntraPredictor32xN_NEON<32>;
+  // Max Cfl predictor size is 32x32.
+}
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+void IntraPredCflInit_NEON() {
+  low_bitdepth::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif
+}
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

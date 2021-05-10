@@ -234,13 +234,6 @@ std::unique_ptr<JSONObject> ObjectForSkImage(const SkImage* image) {
   return image_item;
 }
 
-std::unique_ptr<JSONArray> ArrayForSkMatrix(const SkMatrix& matrix) {
-  auto matrix_array = std::make_unique<JSONArray>();
-  for (int i = 0; i < 9; ++i)
-    matrix_array->PushDouble(matrix[i]);
-  return matrix_array;
-}
-
 std::unique_ptr<JSONArray> ArrayForSkScalars(size_t count,
                                              const SkScalar array[]) {
   auto points_array_item = std::make_unique<JSONArray>();
@@ -452,10 +445,11 @@ void LoggingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
   this->SkCanvas::onDrawPath(path, paint);
 }
 
-void LoggingCanvas::onDrawImage(const SkImage* image,
-                                SkScalar left,
-                                SkScalar top,
-                                const SkPaint* paint) {
+void LoggingCanvas::onDrawImage2(const SkImage* image,
+                                 SkScalar left,
+                                 SkScalar top,
+                                 const SkSamplingOptions& sampling,
+                                 const SkPaint* paint) {
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("drawImage");
   params->SetDouble("left", left);
@@ -463,23 +457,24 @@ void LoggingCanvas::onDrawImage(const SkImage* image,
   params->SetObject("image", ObjectForSkImage(image));
   if (paint)
     params->SetObject("paint", ObjectForSkPaint(*paint));
-  this->SkCanvas::onDrawImage(image, left, top, paint);
+  this->SkCanvas::onDrawImage2(image, left, top, sampling, paint);
 }
 
-void LoggingCanvas::onDrawImageRect(const SkImage* image,
-                                    const SkRect* src,
-                                    const SkRect& dst,
-                                    const SkPaint* paint,
-                                    SrcRectConstraint constraint) {
+void LoggingCanvas::onDrawImageRect2(const SkImage* image,
+                                     const SkRect& src,
+                                     const SkRect& dst,
+                                     const SkSamplingOptions& sampling,
+                                     const SkPaint* paint,
+                                     SrcRectConstraint constraint) {
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("drawImageRect");
   params->SetObject("image", ObjectForSkImage(image));
-  if (src)
-    params->SetObject("src", ObjectForSkRect(*src));
+  params->SetObject("src", ObjectForSkRect(src));
   params->SetObject("dst", ObjectForSkRect(dst));
   if (paint)
     params->SetObject("paint", ObjectForSkPaint(*paint));
-  this->SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
+  this->SkCanvas::onDrawImageRect2(image, src, dst, sampling, paint,
+                                   constraint);
 }
 
 void LoggingCanvas::onDrawVerticesObject(const SkVertices* vertices,
@@ -560,10 +555,12 @@ void LoggingCanvas::onDrawPicture(const SkPicture* picture,
   this->UnrollDrawPicture(picture, matrix, paint, nullptr);
 }
 
-void LoggingCanvas::didSetMatrix(const SkMatrix& matrix) {
+void LoggingCanvas::didSetM44(const SkM44& matrix) {
+  SkScalar m[16];
+  matrix.getColMajor(m);
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("setMatrix");
-  params->SetArray("matrix", ArrayForSkMatrix(matrix));
+  params->SetArray("matrix44", ArrayForSkScalars(16, m));
 }
 
 void LoggingCanvas::didConcat44(const SkM44& matrix) {
@@ -572,29 +569,6 @@ void LoggingCanvas::didConcat44(const SkM44& matrix) {
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("concat44");
   params->SetArray("matrix44", ArrayForSkScalars(16, m));
-}
-
-void LoggingCanvas::didConcat(const SkMatrix& matrix) {
-  AutoLogger logger(this);
-  JSONObject* params;
-
-  switch (matrix.getType()) {
-    case SkMatrix::kTranslate_Mask:
-      params = logger.LogItemWithParams("translate");
-      params->SetDouble("dx", matrix.getTranslateX());
-      params->SetDouble("dy", matrix.getTranslateY());
-      break;
-
-    case SkMatrix::kScale_Mask:
-      params = logger.LogItemWithParams("scale");
-      params->SetDouble("scaleX", matrix.getScaleX());
-      params->SetDouble("scaleY", matrix.getScaleY());
-      break;
-
-    default:
-      params = logger.LogItemWithParams("concat");
-      params->SetArray("matrix", ArrayForSkMatrix(matrix));
-  }
 }
 
 void LoggingCanvas::didScale(SkScalar x, SkScalar y) {

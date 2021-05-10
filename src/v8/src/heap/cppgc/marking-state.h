@@ -5,7 +5,10 @@
 #ifndef V8_HEAP_CPPGC_MARKING_STATE_H_
 #define V8_HEAP_CPPGC_MARKING_STATE_H_
 
+#include <algorithm>
+
 #include "include/cppgc/trace-trait.h"
+#include "include/cppgc/visitor.h"
 #include "src/heap/cppgc/compaction-worklists.h"
 #include "src/heap/cppgc/globals.h"
 #include "src/heap/cppgc/heap-object-header.h"
@@ -46,7 +49,8 @@ class MarkingStateBase {
   inline void ProcessWeakContainer(const void*, TraceDescriptor, WeakCallback,
                                    const void*);
 
-  inline void ProcessEphemeron(const void*, TraceDescriptor);
+  inline void ProcessEphemeron(const void*, const void*, TraceDescriptor,
+                               Visitor&);
 
   inline void AccountMarkedBytes(const HeapObjectHeader&);
   inline void AccountMarkedBytes(size_t);
@@ -118,9 +122,7 @@ class MarkingStateBase {
     return movable_slots_worklist_.get();
   }
 
-#ifdef DEBUG
   HeapBase& heap_;
-#endif  // DEBUG
 
   MarkingWorklists::MarkingWorklist::Local marking_worklist_;
   MarkingWorklists::NotFullyConstructedWorklist&
@@ -148,9 +150,7 @@ MarkingStateBase::MarkingStateBase(HeapBase& heap,
                                    MarkingWorklists& marking_worklists,
                                    CompactionWorklists* compaction_worklists)
     :
-#ifdef DEBUG
       heap_(heap),
-#endif  // DEBUG
       marking_worklist_(marking_worklists.marking_worklist()),
       not_fully_constructed_worklist_(
           *marking_worklists.not_fully_constructed_worklist()),
@@ -267,16 +267,23 @@ void MarkingStateBase::ProcessWeakContainer(const void* object,
   if (desc.callback) PushMarked(header, desc);
 }
 
-void MarkingStateBase::ProcessEphemeron(const void* key,
-                                        TraceDescriptor value_desc) {
+void MarkingStateBase::ProcessEphemeron(const void* key, const void* value,
+                                        TraceDescriptor value_desc,
+                                        Visitor& visitor) {
   // Filter out already marked keys. The write barrier for WeakMember
   // ensures that any newly set value after this point is kept alive and does
   // not require the callback.
   if (HeapObjectHeader::FromPayload(key).IsMarked<AccessMode::kAtomic>()) {
-    MarkAndPush(value_desc.base_object_payload, value_desc);
+    if (value_desc.base_object_payload) {
+      MarkAndPush(value_desc.base_object_payload, value_desc);
+    } else {
+      // If value_desc.base_object_payload is nullptr, the value is not GCed and
+      // should be immediately traced.
+      value_desc.callback(&visitor, value);
+    }
     return;
   }
-  discovered_ephemeron_pairs_worklist_.Push({key, value_desc});
+  discovered_ephemeron_pairs_worklist_.Push({key, value, value_desc});
 }
 
 void MarkingStateBase::AccountMarkedBytes(const HeapObjectHeader& header) {
@@ -317,11 +324,28 @@ class MutatorMarkingState : public MarkingStateBase {
                                               WeakCallback, const void*);
 
   inline bool IsMarkedWeakContainer(HeapObjectHeader&);
+
+ private:
+  // Weak containers are strongly retraced during conservative stack scanning.
+  // Stack scanning happens once per GC at the start of the atomic pause.
+  // Because the visitor is not retained between GCs, there is no need to clear
+  // the set at the end of GC.
+  class RecentlyRetracedWeakContainers {
+    static constexpr size_t kMaxCacheSize = 8;
+
+   public:
+    inline bool Contains(const HeapObjectHeader*);
+    inline void Insert(const HeapObjectHeader*);
+
+   private:
+    std::vector<const HeapObjectHeader*> recently_retraced_cache_;
+    size_t last_used_index_ = -1;
+  } recently_retraced_weak_containers_;
 };
 
 void MutatorMarkingState::PushMarkedWeakContainer(HeapObjectHeader& header) {
   DCHECK(weak_containers_worklist_.Contains(&header));
-  weak_containers_worklist_.Erase(&header);
+  recently_retraced_weak_containers_.Insert(&header);
   PushMarked(
       header,
       {header.Payload(),
@@ -354,9 +378,27 @@ void MutatorMarkingState::InvokeWeakRootsCallbackIfNeeded(
 }
 
 bool MutatorMarkingState::IsMarkedWeakContainer(HeapObjectHeader& header) {
-  const bool result = weak_containers_worklist_.Contains(&header);
+  const bool result = weak_containers_worklist_.Contains(&header) &&
+                      !recently_retraced_weak_containers_.Contains(&header);
   DCHECK_IMPLIES(result, header.IsMarked());
+  DCHECK_IMPLIES(result, !header.IsInConstruction());
   return result;
+}
+
+bool MutatorMarkingState::RecentlyRetracedWeakContainers::Contains(
+    const HeapObjectHeader* header) {
+  return std::find(recently_retraced_cache_.begin(),
+                   recently_retraced_cache_.end(),
+                   header) != recently_retraced_cache_.end();
+}
+
+void MutatorMarkingState::RecentlyRetracedWeakContainers::Insert(
+    const HeapObjectHeader* header) {
+  last_used_index_ = (last_used_index_ + 1) % kMaxCacheSize;
+  if (recently_retraced_cache_.size() <= last_used_index_)
+    recently_retraced_cache_.push_back(header);
+  else
+    recently_retraced_cache_[last_used_index_] = header;
 }
 
 class ConcurrentMarkingState : public MarkingStateBase {

@@ -48,10 +48,7 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
                           base::Unretained(this)));
 }
 
-TranslateInternalsHandler::~TranslateInternalsHandler() {
-  // |event_subscription_|, |error_subscription_| and |init_subscription_| are
-  // deleted automatically and un-register the callbacks automatically.
-}
+TranslateInternalsHandler::~TranslateInternalsHandler() = default;
 
 // static.
 void TranslateInternalsHandler::GetLanguages(base::DictionaryValue* dict) {
@@ -95,12 +92,14 @@ void TranslateInternalsHandler::AddLanguageDetectionDetails(
   dict.SetDouble("time", details.time.ToJsTime());
   dict.SetString("url", details.url.spec());
   dict.SetString("content_language", details.content_language);
-  dict.SetString("cld_language", details.cld_language);
-  dict.SetBoolean("is_cld_reliable", details.is_cld_reliable);
+  dict.SetString("model_detected_language", details.model_detected_language);
+  dict.SetBoolean("is_model_reliable", details.is_model_reliable);
+  dict.SetDouble("model_reliability_score", details.model_reliability_score);
   dict.SetBoolean("has_notranslate", details.has_notranslate);
   dict.SetString("html_root_language", details.html_root_language);
   dict.SetString("adopted_language", details.adopted_language);
   dict.SetString("content", details.contents);
+  dict.SetString("detection_model_version", details.detection_model_version);
   SendMessageToJs("languageDetectionInfoAdded", dict);
 }
 
@@ -181,14 +180,14 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     std::string site;
     if (!args->GetString(1, &site))
       return;
-    translate_prefs->RemoveSiteFromBlacklist(site);
+    translate_prefs->RemoveSiteFromNeverPromptList(site);
   } else if (pref_name == "whitelists") {
     std::string from, to;
     if (!args->GetString(1, &from))
       return;
     if (!args->GetString(2, &to))
       return;
-    translate_prefs->RemoveLanguagePairFromWhitelist(from, to);
+    translate_prefs->RemoveLanguagePairFromAlwaysTranslateList(from, to);
   } else if (pref_name == "too_often_denied") {
     translate_prefs->ResetDenialState();
   } else {
@@ -244,9 +243,9 @@ void TranslateInternalsHandler::SendPrefsToJs() {
       language::prefs::kFluentLanguages,
       prefs::kOfferTranslateEnabled,
       translate::TranslatePrefs::kPrefTranslateRecentTarget,
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated,
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklistWithTime,
-      translate::TranslatePrefs::kPrefTranslateWhitelists,
+      translate::TranslatePrefs::kPrefNeverPromptSitesDeprecated,
+      translate::TranslatePrefs::kPrefNeverPromptSitesWithTime,
+      translate::TranslatePrefs::kPrefAlwaysTranslateLists,
       translate::TranslatePrefs::kPrefTranslateDeniedCount,
       translate::TranslatePrefs::kPrefTranslateIgnoredCount,
       translate::TranslatePrefs::kPrefTranslateAcceptedCount,

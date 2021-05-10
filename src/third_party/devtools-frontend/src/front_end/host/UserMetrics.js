@@ -30,9 +30,6 @@
 
 import * as Common from '../common/common.js';
 
-/**
- * @unrestricted
- */
 import {InspectorFrontendHostInstance} from './InspectorFrontendHost.js';
 import {EnumeratedHistogram} from './InspectorFrontendHostAPI.js';
 
@@ -111,7 +108,6 @@ export class UserMetrics {
   /**
    * @param {string} panelName
    * @param {string} histogramName
-   * @suppressGlobalPropertiesCheck
    */
   panelLoaded(panelName, histogramName) {
     if (this._firedLaunchHistogram || panelName !== this._launchPanelName) {
@@ -215,6 +211,19 @@ export class UserMetrics {
   }
 
   /**
+   * @param {string} code
+   */
+  issueCreated(code) {
+    const size = Object.keys(IssueCreated).length + 1;
+    const issueCreated = IssueCreated[code];
+    if (issueCreated === undefined) {
+      return;
+    }
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssueCreated, issueCreated, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.IssueCreated, {value: issueCreated});
+  }
+
+  /**
    * @param {!DualScreenDeviceEmulated} emulationAction
    */
   dualScreenDeviceEmulated(emulationAction) {
@@ -225,42 +234,19 @@ export class UserMetrics {
   }
 
   /**
-   * @param {string} gridSettingId
+   * @param {string} editorName
    */
-  cssGridSettings(gridSettingId) {
-    const size = Object.keys(CSSGridSettings).length + 1;
-    const gridSetting = CSSGridSettings[gridSettingId];
-    if (gridSetting === undefined) {
-      return;
-    }
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.CSSGridSettings, gridSetting, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.CSSGridSettings, {value: gridSetting});
-  }
+  cssEditorOpened(editorName) {
+    const size = Object.keys(CssEditorOpened).length + 1;
+    const key = editorName;
+    const value = CssEditorOpened[key];
 
-  /**
-   * @param {number} count The number of highlighted persistent grids
-   */
-  highlightedPersistentCssGridCount(count) {
-    const size = HighlightedPersistentCSSGridCount.length;
-
-    let code;
-    for (let i = 0; i < size; i++) {
-      const min = HighlightedPersistentCSSGridCount[i];
-      const max = HighlightedPersistentCSSGridCount[i + 1] || {threshold: Infinity};
-
-      if (count >= min.threshold && count < max.threshold) {
-        code = min.code;
-        break;
-      }
-    }
-
-    if (typeof code === 'undefined') {
+    if (value === undefined) {
       return;
     }
 
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-        EnumeratedHistogram.HighlightedPersistentCSSGridCount, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.HighlightedPersistentCSSGridCount, {value: code});
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.CssEditorOpened, value, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.CssEditorOpened, {value});
   }
 
   /**
@@ -293,13 +279,29 @@ export class UserMetrics {
   }
 
   /**
-   * @param {!GridOverlayOpener} gridOverlayOpener
+   * @param {!DeveloperResourceLoaded} developerResourceLoaded
    */
-  gridOverlayOpenedFrom(gridOverlayOpener) {
-    const size = Object.keys(GridOverlayOpener).length + 1;
+  developerResourceLoaded(developerResourceLoaded) {
+    const size = Object.keys(DeveloperResourceLoaded).length + 1;
+    if (developerResourceLoaded >= size) {
+      return;
+    }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
-        EnumeratedHistogram.GridOverlayOpenedFrom, gridOverlayOpener, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.GridOverlayOpenedFrom, {value: gridOverlayOpener});
+        EnumeratedHistogram.DeveloperResourceLoaded, developerResourceLoaded, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceLoaded, {value: developerResourceLoaded});
+  }
+
+  /**
+   * @param {!DeveloperResourceScheme} developerResourceScheme
+   */
+  developerResourceScheme(developerResourceScheme) {
+    const size = Object.keys(DeveloperResourceScheme).length + 1;
+    if (developerResourceScheme >= size) {
+      return;
+    }
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.DeveloperResourceScheme, developerResourceScheme, size);
+    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceScheme, {value: developerResourceScheme});
   }
 }
 
@@ -548,7 +550,8 @@ export const IssueOpener = {
   LearnMoreLinkCOEP: 1,
   StatusBarIssuesCounter: 2,
   HamburgerMenu: 3,
-  Adorner: 4
+  Adorner: 4,
+  CommandMenu: 5
 };
 
 /** @enum {number} */
@@ -559,29 +562,12 @@ export const DualScreenDeviceEmulated = {
 };
 
 /** @type {!Object<string, number>} */
-export const CSSGridSettings = {
-  'showGridLineLabels.none': 0,
-  'showGridLineLabels.lineNumbers': 1,
-  'showGridLineLabels.lineNames': 2,
-  'extendGridLines.false': 3,
-  'extendGridLines.true': 4,
-  'showGridAreas.false': 5,
-  'showGridAreas.true': 6,
-  'showGridTrackSizes.false': 7,
-  'showGridTrackSizes.true': 8,
+export const CssEditorOpened = {
+  'colorPicker': 0,
+  'shadowEditor': 1,
+  'bezierEditor': 2,
+  'fontEditor': 3
 };
-
-export const HighlightedPersistentCSSGridCount = [
-  {threshold: 0, code: 0},   // 0 highlighted grids
-  {threshold: 1, code: 1},   // 1 highlighted grid
-  {threshold: 2, code: 2},   // 2 highlighted grids
-  {threshold: 3, code: 3},   // 3 highlighted grids
-  {threshold: 4, code: 4},   // 4 highlighted grids
-  {threshold: 5, code: 5},   // 5 to 9 highlighted grids
-  {threshold: 10, code: 6},  // 10 to 19 highlighted grids
-  {threshold: 20, code: 7},  // 20 to 49 highlighted grids
-  {threshold: 50, code: 8},  // more than 50 highlighted grids
-];
 
 /**
  * This list should contain the currently active Devtools Experiments.
@@ -617,7 +603,6 @@ export const DevtoolsExperiments = {
   'spotlight': 21,
   'webauthnPane': 22,
   'timelineEventInitiators': 24,
-  'timelineFlowEvents': 25,
   'timelineInvalidationTracking': 26,
   'timelineShowAllEvents': 27,
   'timelineV8RuntimeCallStats': 28,
@@ -625,10 +610,17 @@ export const DevtoolsExperiments = {
   'timelineReplayEvent': 30,
   'wasmDWARFDebugging': 31,
   'dualScreenSupport': 32,
-  'cssGridFeatures': 33,
   'keyboardShortcutEditor': 35,
   'cssFlexboxFeatures': 36,
-  '__lastValidEnumPosition': 37,
+  'recorder': 38,
+  'APCA': 39,
+  'cspViolationsView': 40,
+  'fontEditor': 41,
+  'fullAccessibilityTree': 42,
+  'ignoreListJSFramesOnTimeline': 43,
+  'contrastIssues': 44,
+  'experimentalCookieFeatures': 45,
+  '__lastValidEnumPosition': 45,
 };
 
 /** @type {!Object<string, number>} */
@@ -658,8 +650,74 @@ export const IssueResourceOpened = {
   ContentSecurityPolicyLearnMore: 12
 };
 
+/** @type {!Object<string, number>} */
+export const IssueCreated = {
+  MixedContentIssue: 0,
+  'ContentSecurityPolicyIssue::kInlineViolation': 1,
+  'ContentSecurityPolicyIssue::kEvalViolation': 2,
+  'ContentSecurityPolicyIssue::kURLViolation': 3,
+  'ContentSecurityPolicyIssue::kTrustedTypesSinkViolation': 4,
+  'ContentSecurityPolicyIssue::kTrustedTypesPolicyViolation': 5,
+  'HeavyAdIssue::NetworkTotalLimit': 6,
+  'HeavyAdIssue::CpuTotalLimit': 7,
+  'HeavyAdIssue::CpuPeakLimit': 8,
+  'CrossOriginEmbedderPolicyIssue::CoepFrameResourceNeedsCoepHeader': 9,
+  'CrossOriginEmbedderPolicyIssue::CoopSandboxedIFrameCannotNavigateToCoopPage': 10,
+  'CrossOriginEmbedderPolicyIssue::CorpNotSameOrigin': 11,
+  'CrossOriginEmbedderPolicyIssue::CorpNotSameOriginAfterDefaultedToSameOriginByCoep': 12,
+  'CrossOriginEmbedderPolicyIssue::CorpNotSameSite': 13,
+  'SameSiteCookieIssue::ExcludeSameSiteNoneInsecure::ReadCookie': 14,
+  'SameSiteCookieIssue::ExcludeSameSiteNoneInsecure::SetCookie': 15,
+  'SameSiteCookieIssue::WarnSameSiteNoneInsecure::ReadCookie': 16,
+  'SameSiteCookieIssue::WarnSameSiteNoneInsecure::SetCookie': 17,
+  'SameSiteCookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure': 18,
+  'SameSiteCookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure': 19,
+  'SameSiteCookieIssue::WarnCrossDowngrade::ReadCookie::Secure': 20,
+  'SameSiteCookieIssue::WarnCrossDowngrade::ReadCookie::Insecure': 21,
+  'SameSiteCookieIssue::WarnCrossDowngrade::SetCookie::Secure': 22,
+  'SameSiteCookieIssue::WarnCrossDowngrade::SetCookie::Insecure': 23,
+  'SameSiteCookieIssue::ExcludeNavigationContextDowngrade::Secure': 24,
+  'SameSiteCookieIssue::ExcludeNavigationContextDowngrade::Insecure': 25,
+  'SameSiteCookieIssue::ExcludeContextDowngrade::ReadCookie::Secure': 26,
+  'SameSiteCookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure': 27,
+  'SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Secure': 28,
+  'SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Insecure': 29,
+  'SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie': 30,
+  'SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie': 31,
+  'SameSiteCookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie': 32,
+  'SameSiteCookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::SetCookie': 33,
+  'SameSiteCookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::ReadCookie': 34,
+  'SameSiteCookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie': 35,
+  'SharedArrayBufferIssue::TransferIssue': 36,
+  'SharedArrayBufferIssue::CreationIssue': 37,
+  'TrustedWebActivityIssue::kHttpError': 38,
+  'TrustedWebActivityIssue::kUnavailableOffline': 39,
+  'TrustedWebActivityIssue::kDigitalAssetLinks': 40,
+  LowTextContrastIssue: 41,
+  'CorsIssue::InsecurePrivateNetwork': 42
+};
+
 /** @enum {number} */
-export const GridOverlayOpener = {
-  Adorner: 0,
-  LayoutPane: 1,
+export const DeveloperResourceLoaded = {
+  LoadThroughPageViaTarget: 0,
+  LoadThroughPageViaFrame: 1,
+  LoadThroughPageFailure: 2,
+  LoadThroughPageFallback: 3,
+  FallbackAfterFailure: 4,
+  FallbackPerOverride: 5,
+  FallbackPerProtocol: 6,
+  FallbackFailure: 7,
+};
+
+/** @enum {number} */
+export const DeveloperResourceScheme = {
+  SchemeOther: 0,
+  SchemeUnknown: 1,
+  SchemeHttp: 2,
+  SchemeHttps: 3,
+  SchemeHttpLocalhost: 4,
+  SchemeHttpsLocalhost: 5,
+  SchemeData: 6,
+  SchemeFile: 7,
+  SchemeBlob: 8,
 };

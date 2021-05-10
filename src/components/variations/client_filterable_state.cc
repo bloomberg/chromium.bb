@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace variations {
 
@@ -19,8 +20,10 @@ Study::Platform ClientFilterableState::GetCurrentPlatform() {
   return Study::PLATFORM_IOS;
 #elif defined(OS_APPLE)
   return Study::PLATFORM_MAC;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return Study::PLATFORM_CHROMEOS;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  return Study::PLATFORM_CHROMEOS_LACROS;
 #elif defined(OS_ANDROID)
   return Study::PLATFORM_ANDROID;
 #elif defined(OS_FUCHSIA)

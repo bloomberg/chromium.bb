@@ -39,6 +39,7 @@ int VariableRowCount(GLenum type);
 int VariableColumnCount(GLenum type);
 bool IsSamplerType(GLenum type);
 bool IsSamplerCubeType(GLenum type);
+bool IsSamplerYUVType(GLenum type);
 bool IsImageType(GLenum type);
 bool IsImage2DType(GLenum type);
 bool IsAtomicCounterType(GLenum type);
@@ -60,6 +61,12 @@ int AllocateFirstFreeBits(unsigned int *bits, unsigned int allocationSize, unsig
 // outermost array indices in the back. If an array index is invalid, GL_INVALID_INDEX is added to
 // outSubscripts.
 std::string ParseResourceName(const std::string &name, std::vector<unsigned int> *outSubscripts);
+
+bool IsBuiltInName(const char *name);
+ANGLE_INLINE bool IsBuiltInName(const std::string &name)
+{
+    return IsBuiltInName(name.c_str());
+}
 
 // Strips only the last array index from a resource name.
 std::string StripLastArrayIndex(const std::string &name);
@@ -237,6 +244,12 @@ enum class SrgbOverride
     SRGB,
     Linear
 };
+
+ShaderType GetShaderTypeFromBitfield(size_t singleShaderType);
+bool ShaderTypeSupportsTransformFeedback(ShaderType shaderType);
+// Given a set of shader stages, returns the last vertex processing stage.  This is the stage that
+// interfaces the fragment shader.
+ShaderType GetLastPreFragmentStage(ShaderBitSet shaderTypes);
 
 }  // namespace gl
 

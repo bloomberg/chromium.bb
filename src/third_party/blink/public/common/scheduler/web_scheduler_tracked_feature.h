@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_WEB_SCHEDULER_TRACKED_FEATURE_H_
 
 #include <stdint.h>
-
+#include <string>
+#include "base/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
@@ -75,7 +76,9 @@ enum class WebSchedulerTrackedFeature {
 
   kWebLocks = 33,
   kWebHID = 34,
-  kWakeLock = 35,
+
+  // kWakeLock = 35, Removed because clean-up is done upon visibility change.
+
   kWebShare = 36,
 
   kRequestedStorageAccessGrant = 37,
@@ -106,8 +109,11 @@ static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,
               "This enum is used in a bitmask, so the values should fit into a"
               "64-bit integer");
 
-BLINK_COMMON_EXPORT const char* FeatureToString(
+BLINK_COMMON_EXPORT std::string FeatureToHumanReadableString(
     WebSchedulerTrackedFeature feature);
+
+BLINK_COMMON_EXPORT base::Optional<WebSchedulerTrackedFeature> StringToFeature(
+    const std::string& str);
 
 // Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
 BLINK_COMMON_EXPORT constexpr uint64_t FeatureToBit(

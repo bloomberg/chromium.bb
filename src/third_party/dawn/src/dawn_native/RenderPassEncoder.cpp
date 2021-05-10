@@ -28,6 +28,22 @@
 #include <cstring>
 
 namespace dawn_native {
+    namespace {
+
+        // Check the query at queryIndex is unavailable, otherwise it cannot be written.
+        MaybeError ValidateQueryIndexOverwrite(QuerySetBase* querySet,
+                                               uint32_t queryIndex,
+                                               const QueryAvailabilityMap& queryAvailabilityMap) {
+            auto it = queryAvailabilityMap.find(querySet);
+            if (it != queryAvailabilityMap.end() && it->second[queryIndex]) {
+                return DAWN_VALIDATION_ERROR(
+                    "The same query cannot be written twice in same render pass.");
+            }
+
+            return {};
+        }
+
+    }  // namespace
 
     // The usage tracker is passed in here, because it is prepopulated with usages from the
     // BeginRenderPassCmd. If we had RenderPassEncoder responsible for recording the
@@ -36,12 +52,15 @@ namespace dawn_native {
                                          CommandEncoder* commandEncoder,
                                          EncodingContext* encodingContext,
                                          PassResourceUsageTracker usageTracker,
+                                         Ref<AttachmentState> attachmentState,
+                                         QuerySetBase* occlusionQuerySet,
                                          uint32_t renderTargetWidth,
                                          uint32_t renderTargetHeight)
-        : RenderEncoderBase(device, encodingContext),
+        : RenderEncoderBase(device, encodingContext, std::move(attachmentState)),
           mCommandEncoder(commandEncoder),
           mRenderTargetWidth(renderTargetWidth),
-          mRenderTargetHeight(renderTargetHeight) {
+          mRenderTargetHeight(renderTargetHeight),
+          mOcclusionQuerySet(occlusionQuerySet) {
         mUsageTracker = std::move(usageTracker);
     }
 
@@ -58,10 +77,33 @@ namespace dawn_native {
         return new RenderPassEncoder(device, commandEncoder, encodingContext, ObjectBase::kError);
     }
 
+    void RenderPassEncoder::TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex) {
+        DAWN_ASSERT(querySet != nullptr);
+
+        // Gets the iterator for that querySet or create a new vector of bool set to false
+        // if the querySet wasn't registered.
+        auto it = mQueryAvailabilityMap.emplace(querySet, querySet->GetQueryCount()).first;
+        it->second[queryIndex] = 1;
+
+        // Track it again on command encoder for zero-initializing when resolving unused queries.
+        mCommandEncoder->TrackQueryAvailability(querySet, queryIndex);
+    }
+
+    const QueryAvailabilityMap& RenderPassEncoder::GetQueryAvailabilityMap() const {
+        return mQueryAvailabilityMap;
+    }
+
     void RenderPassEncoder::EndPass() {
         if (mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-                allocator->Allocate<EndRenderPassCmd>(Command::EndRenderPass);
+                if (IsValidationEnabled()) {
+                    DAWN_TRY(ValidateProgrammableEncoderEnd());
+                    if (mOcclusionQueryActive) {
+                        return DAWN_VALIDATION_ERROR(
+                            "The occlusion query must be ended before endPass.");
+                    }
+                }
 
+                allocator->Allocate<EndRenderPassCmd>(Command::EndRenderPass);
                 return {};
             })) {
             mEncodingContext->ExitPass(this, mUsageTracker.AcquireResourceUsage());
@@ -94,24 +136,26 @@ namespace dawn_native {
                                         float minDepth,
                                         float maxDepth) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-            if ((isnan(x) || isnan(y) || isnan(width) || isnan(height) || isnan(minDepth) ||
-                 isnan(maxDepth))) {
-                return DAWN_VALIDATION_ERROR("NaN is not allowed.");
-            }
+            if (IsValidationEnabled()) {
+                if ((isnan(x) || isnan(y) || isnan(width) || isnan(height) || isnan(minDepth) ||
+                     isnan(maxDepth))) {
+                    return DAWN_VALIDATION_ERROR("NaN is not allowed.");
+                }
 
-            if (x < 0 || y < 0 || width < 0 || height < 0) {
-                return DAWN_VALIDATION_ERROR("X, Y, width and height must be non-negative.");
-            }
+                if (x < 0 || y < 0 || width < 0 || height < 0) {
+                    return DAWN_VALIDATION_ERROR("X, Y, width and height must be non-negative.");
+                }
 
-            if (x + width > mRenderTargetWidth || y + height > mRenderTargetHeight) {
-                return DAWN_VALIDATION_ERROR(
-                    "The viewport must be contained in the render targets");
-            }
+                if (x + width > mRenderTargetWidth || y + height > mRenderTargetHeight) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The viewport must be contained in the render targets");
+                }
 
-            // Check for depths being in [0, 1] and min <= max in 3 checks instead of 5.
-            if (minDepth < 0 || minDepth > maxDepth || maxDepth > 1) {
-                return DAWN_VALIDATION_ERROR(
-                    "minDepth and maxDepth must be in [0, 1] and minDepth <= maxDepth.");
+                // Check for depths being in [0, 1] and min <= max in 3 checks instead of 5.
+                if (minDepth < 0 || minDepth > maxDepth || maxDepth > 1) {
+                    return DAWN_VALIDATION_ERROR(
+                        "minDepth and maxDepth must be in [0, 1] and minDepth <= maxDepth.");
+                }
             }
 
             SetViewportCmd* cmd = allocator->Allocate<SetViewportCmd>(Command::SetViewport);
@@ -131,10 +175,12 @@ namespace dawn_native {
                                            uint32_t width,
                                            uint32_t height) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-            if (width > mRenderTargetWidth || height > mRenderTargetHeight ||
-                x > mRenderTargetWidth - width || y > mRenderTargetHeight - height) {
-                return DAWN_VALIDATION_ERROR(
-                    "The scissor rect must be contained in the render targets");
+            if (IsValidationEnabled()) {
+                if (width > mRenderTargetWidth || height > mRenderTargetHeight ||
+                    x > mRenderTargetWidth - width || y > mRenderTargetHeight - height) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The scissor rect must be contained in the render targets");
+                }
             }
 
             SetScissorRectCmd* cmd =
@@ -150,9 +196,19 @@ namespace dawn_native {
 
     void RenderPassEncoder::ExecuteBundles(uint32_t count, RenderBundleBase* const* renderBundles) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-            for (uint32_t i = 0; i < count; ++i) {
-                DAWN_TRY(GetDevice()->ValidateObject(renderBundles[i]));
+            if (IsValidationEnabled()) {
+                for (uint32_t i = 0; i < count; ++i) {
+                    DAWN_TRY(GetDevice()->ValidateObject(renderBundles[i]));
+
+                    if (GetAttachmentState() != renderBundles[i]->GetAttachmentState()) {
+                        return DAWN_VALIDATION_ERROR(
+                            "Render bundle attachment state is not compatible with render pass "
+                            "attachment state");
+                    }
+                }
             }
+
+            mCommandBufferState = CommandBufferStateTracker{};
 
             ExecuteBundlesCmd* cmd =
                 allocator->Allocate<ExecuteBundlesCmd>(Command::ExecuteBundles);
@@ -176,16 +232,77 @@ namespace dawn_native {
         });
     }
 
-    void RenderPassEncoder::WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
+    void RenderPassEncoder::BeginOcclusionQuery(uint32_t queryIndex) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-            if (GetDevice()->IsValidationEnabled()) {
-                DAWN_TRY(GetDevice()->ValidateObject(querySet));
-                DAWN_TRY(ValidateTimestampQuery(querySet, queryIndex,
-                                                mCommandEncoder->GetUsedQueryIndices()));
-                mCommandEncoder->TrackUsedQuerySet(querySet);
+            if (IsValidationEnabled()) {
+                if (mOcclusionQuerySet.Get() == nullptr) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The occlusionQuerySet in RenderPassDescriptor must be set.");
+                }
+
+                // The type of querySet has been validated by ValidateRenderPassDescriptor
+
+                if (queryIndex >= mOcclusionQuerySet->GetQueryCount()) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Query index exceeds the number of queries in query set.");
+                }
+
+                if (mOcclusionQueryActive) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Only a single occlusion query can be begun at a time.");
+                }
+
+                DAWN_TRY(ValidateQueryIndexOverwrite(mOcclusionQuerySet.Get(), queryIndex,
+                                                     GetQueryAvailabilityMap()));
+
+                mCommandEncoder->TrackUsedQuerySet(mOcclusionQuerySet.Get());
             }
 
-            mCommandEncoder->TrackUsedQueryIndex(querySet, queryIndex);
+            // Record the current query index for endOcclusionQuery.
+            mCurrentOcclusionQueryIndex = queryIndex;
+            mOcclusionQueryActive = true;
+
+            BeginOcclusionQueryCmd* cmd =
+                allocator->Allocate<BeginOcclusionQueryCmd>(Command::BeginOcclusionQuery);
+            cmd->querySet = mOcclusionQuerySet.Get();
+            cmd->queryIndex = queryIndex;
+
+            return {};
+        });
+    }
+
+    void RenderPassEncoder::EndOcclusionQuery() {
+        mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            if (IsValidationEnabled()) {
+                if (!mOcclusionQueryActive) {
+                    return DAWN_VALIDATION_ERROR(
+                        "EndOcclusionQuery cannot be called without corresponding "
+                        "BeginOcclusionQuery.");
+                }
+            }
+
+            TrackQueryAvailability(mOcclusionQuerySet.Get(), mCurrentOcclusionQueryIndex);
+            mOcclusionQueryActive = false;
+
+            EndOcclusionQueryCmd* cmd =
+                allocator->Allocate<EndOcclusionQueryCmd>(Command::EndOcclusionQuery);
+            cmd->querySet = mOcclusionQuerySet.Get();
+            cmd->queryIndex = mCurrentOcclusionQueryIndex;
+
+            return {};
+        });
+    }
+
+    void RenderPassEncoder::WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
+        mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            if (IsValidationEnabled()) {
+                DAWN_TRY(GetDevice()->ValidateObject(querySet));
+                DAWN_TRY(ValidateTimestampQuery(querySet, queryIndex));
+                DAWN_TRY(
+                    ValidateQueryIndexOverwrite(querySet, queryIndex, GetQueryAvailabilityMap()));
+            }
+
+            TrackQueryAvailability(querySet, queryIndex);
 
             WriteTimestampCmd* cmd =
                 allocator->Allocate<WriteTimestampCmd>(Command::WriteTimestamp);

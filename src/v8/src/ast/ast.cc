@@ -11,6 +11,7 @@
 #include "src/ast/scopes.h"
 #include "src/base/hashmap.h"
 #include "src/base/logging.h"
+#include "src/base/platform/wrappers.h"
 #include "src/builtins/builtins-constructor.h"
 #include "src/builtins/builtins.h"
 #include "src/common/assert-scope.h"
@@ -235,12 +236,6 @@ LanguageMode FunctionLiteral::language_mode() const {
 
 FunctionKind FunctionLiteral::kind() const { return scope()->function_kind(); }
 
-bool FunctionLiteral::NeedsHomeObject(Expression* expr) {
-  if (expr == nullptr || !expr->IsFunctionLiteral()) return false;
-  DCHECK_NOT_NULL(expr->AsFunctionLiteral()->scope());
-  return expr->AsFunctionLiteral()->scope()->NeedsHomeObject();
-}
-
 std::unique_ptr<char[]> FunctionLiteral::GetDebugName() const {
   const AstConsString* cons_string;
   if (raw_name_ != nullptr && !raw_name_->IsEmpty()) {
@@ -266,7 +261,7 @@ std::unique_ptr<char[]> FunctionLiteral::GetDebugName() const {
     }
   }
   std::unique_ptr<char[]> result(new char[result_vec.size() + 1]);
-  memcpy(result.get(), result_vec.data(), result_vec.size());
+  base::Memcpy(result.get(), result_vec.data(), result_vec.size());
   result[result_vec.size()] = '\0';
   return result;
 }
@@ -580,7 +575,6 @@ int ArrayLiteral::InitDepthAndFlags() {
             break;
           case Literal::kBigInt:
           case Literal::kString:
-          case Literal::kSymbol:
           case Literal::kBoolean:
           case Literal::kUndefined:
           case Literal::kNull:
@@ -654,7 +648,7 @@ void ArrayLiteral::BuildBoilerplateDescription(LocalIsolate* isolate) {
 
       Object boilerplate_value = *GetBoilerplateValue(element, isolate);
       // We shouldn't allocate after creating the boilerplate value.
-      DisallowHeapAllocation no_gc;
+      DisallowGarbageCollection no_gc;
 
       if (boilerplate_value.IsTheHole(isolate)) {
         DCHECK(IsHoleyElementsKind(kind));
@@ -980,8 +974,6 @@ Handle<Object> Literal::BuildValue(LocalIsolate* isolate) const {
           number_);
     case kString:
       return string_->string();
-    case kSymbol:
-      return isolate->factory()->home_object_symbol();
     case kBoolean:
       return isolate->factory()->ToBoolean(boolean_);
     case kNull:
@@ -1027,8 +1019,6 @@ bool Literal::ToBooleanIsTrue() const {
       }
       return false;
     }
-    case kSymbol:
-      return true;
     case kTheHole:
       UNREACHABLE();
   }

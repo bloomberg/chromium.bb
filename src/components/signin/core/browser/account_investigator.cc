@@ -56,14 +56,6 @@ bool WaitingForExtendedInfo(signin::IdentityManager* identity_manager) {
   return !GetExtendedAccountInfo(identity_manager).has_value();
 }
 
-// Returns true if the account is managed.
-// TODO(crbug.com/1122496): Move this helper into AccountInfo to reduce code
-// duplication (replaces other instances of such a helper function as well).
-bool IsManaged(const AccountInfo& account_info) {
-  return !account_info.hosted_domain.empty() &&
-         account_info.hosted_domain != kNoHostedDomainFound;
-}
-
 }  // namespace
 
 const TimeDelta AccountInvestigator::kPeriodicReportingInterval =
@@ -85,7 +77,8 @@ void AccountInvestigator::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void AccountInvestigator::Initialize() {
   identity_manager_->AddObserver(this);
-  previously_authenticated_ = identity_manager_->HasPrimaryAccount();
+  previously_authenticated_ =
+      identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
 
   // TODO(crbug.com/1121923): Refactor to use signin::PersistentRepeatingTimer
   // instead.
@@ -125,7 +118,8 @@ void AccountInvestigator::OnAccountsInCookieUpdated(
   const std::string old_hash(pref_service_->GetString(prefs::kGaiaCookieHash));
   const std::string new_hash(
       HashAccounts(signed_in_accounts, signed_out_accounts));
-  const bool currently_authenticated = identity_manager_->HasPrimaryAccount();
+  const bool currently_authenticated =
+      identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
   if (old_hash != new_hash) {
     SharedCookieJarReport(signed_in_accounts, signed_out_accounts, Time::Now(),
                           ReportingType::ON_CHANGE);
@@ -254,7 +248,7 @@ void AccountInvestigator::DoPeriodicReport(
     base::Optional<AccountInfo> info =
         GetExtendedAccountInfo(identity_manager_);
     signin_metrics::LogSignedInCookiesCountsPerPrimaryAccountType(
-        signed_in_accounts.size(), is_syncing, IsManaged(*info));
+        signed_in_accounts.size(), is_syncing, info->IsManaged());
   }
 
   periodic_pending_ = false;
@@ -281,7 +275,7 @@ void AccountInvestigator::SharedCookieJarReport(
   signin_metrics::LogCookieJarCounts(signed_in_count, signed_out_count,
                                      signed_in_count + signed_out_count, type);
 
-  if (identity_manager_->HasPrimaryAccount()) {
+  if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     SignedInAccountRelationReport(signed_in_accounts, signed_out_accounts,
                                   type);
   }
@@ -297,7 +291,8 @@ void AccountInvestigator::SignedInAccountRelationReport(
     const std::vector<ListedAccount>& signed_out_accounts,
     ReportingType type) {
   signin_metrics::LogAccountRelation(
-      DiscernRelation(identity_manager_->GetPrimaryAccountInfo(),
-                      signed_in_accounts, signed_out_accounts),
+      DiscernRelation(
+          identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync),
+          signed_in_accounts, signed_out_accounts),
       type);
 }

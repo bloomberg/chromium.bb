@@ -8,17 +8,22 @@
 #ifndef SkImageSampling_DEFINED
 #define SkImageSampling_DEFINED
 
-#include "include/core/SkTypes.h"
+#include "include/core/SkFilterQuality.h"
+#include <new>
 
-enum class SkSamplingMode {
+enum class SkFilterMode {
     kNearest,   // single sample point (nearest neighbor)
     kLinear,    // interporate between 2x2 sample points (bilinear interpolation)
+
+    kLast = kLinear,
 };
 
 enum class SkMipmapMode {
     kNone,      // ignore mipmap levels, sample from the "base"
     kNearest,   // sample from the nearest level
     kLinear,    // interpolate between the two nearest levels
+
+    kLast = kLinear,
 };
 
 /*
@@ -40,35 +45,54 @@ enum class SkMipmapMode {
  */
 struct SkCubicResampler {
     float B, C;
+
+    // Historic default for kHigh_SkFilterQuality
+    static constexpr SkCubicResampler Mitchell() { return {1/3.0f, 1/3.0f}; }
+    static constexpr SkCubicResampler CatmullRom() { return {0.0f, 1/2.0f}; }
 };
 
-struct SkFilterOptions {
-    SkSamplingMode  fSampling;
-    SkMipmapMode    fMipmap;
-};
+struct SK_API SkSamplingOptions {
+    const bool             useCubic = false;
+    const SkCubicResampler cubic    = {0, 0};
+    const SkFilterMode     filter   = SkFilterMode::kNearest;
+    const SkMipmapMode     mipmap   = SkMipmapMode::kNone;
 
-struct SkSamplingOptions {
-    bool             fUseCubic;
-    SkCubicResampler fCubic;     //!< use if fUseCubic is true
-    SkFilterOptions  fFilter;    //!< use if fUseCubic is false
+    SkSamplingOptions() = default;
+    SkSamplingOptions(const SkSamplingOptions&) = default;
+    SkSamplingOptions& operator=(const SkSamplingOptions& that) {
+        this->~SkSamplingOptions();   // A pedantic no-op.
+        new (this) SkSamplingOptions(that);
+        return *this;
+    }
 
-    SkSamplingOptions()
-        : fUseCubic(false)
-        , fCubic({0,0})
-        , fFilter({SkSamplingMode::kNearest, SkMipmapMode::kNone})
-    {}
+    SkSamplingOptions(SkFilterMode fm, SkMipmapMode mm)
+        : useCubic(false)
+        , filter(fm)
+        , mipmap(mm) {}
 
-    SkSamplingOptions(const SkFilterOptions& filter)
-        : fUseCubic(false)
-        , fCubic({0,0})     // ignored
-        , fFilter(filter)
-    {}
+    explicit SkSamplingOptions(SkFilterMode fm)
+        : useCubic(false)
+        , filter(fm)
+        , mipmap(SkMipmapMode::kNone) {}
 
-    SkSamplingOptions(const SkCubicResampler& cubic)
-        : fUseCubic(true)
-        , fCubic(cubic)
-        , fFilter({SkSamplingMode::kNearest, SkMipmapMode::kNone})  // ignored
-    {}
+    explicit SkSamplingOptions(const SkCubicResampler& c)
+        : useCubic(true)
+        , cubic(c) {}
+
+    enum MediumBehavior {
+        kMedium_asMipmapNearest,    // historic cpu behavior
+        kMedium_asMipmapLinear,     // historic gpu behavior
+    };
+    explicit SkSamplingOptions(SkFilterQuality, MediumBehavior = kMedium_asMipmapNearest);
+
+    bool operator==(const SkSamplingOptions& other) const {
+        return useCubic == other.useCubic
+            && cubic.B  == other.cubic.B
+            && cubic.C  == other.cubic.C
+            && filter   == other.filter
+            && mipmap   == other.mipmap;
+    }
+    bool operator!=(const SkSamplingOptions& other) const { return !(*this == other); }
 };
 
 #endif

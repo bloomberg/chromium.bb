@@ -6,13 +6,6 @@ import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
-declare_args() {
-  # Defines bounds for the output buffer size (in frames)
-  minimum_output_buffer_size_in_frames = 512
-  maximum_output_buffer_size_in_frames = 8192
-  default_output_buffer_size_in_frames = 2048
-}
-
 cast_source_set("audio_log") {
   sources = [
     "audio_log.cc",
@@ -183,17 +176,24 @@ source_set("fake_external_audio_pipeline") {
 buildflag_header("audio_buildflags") {
   header = "audio_buildflags.h"
 
-  flags = [
-    "MINIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$minimum_output_buffer_size_in_frames",
-    "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
-    "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",
-    "ENABLE_AUDIO_CAPTURE_SERVICE=$enable_audio_capture_service",
-  ]
+  flags = [ "ENABLE_AUDIO_CAPTURE_SERVICE=$enable_audio_capture_service" ]
 
   if (use_alsa) {
     # Currently, this flag will only be used in cast_audio_manager_alsa.cc
     flags += [ "AUDIO_INPUT_SAMPLE_RATE=$audio_input_sample_rate" ]
   }
+}
+
+cast_source_set("rate_adjuster") {
+  sources = [
+    "rate_adjuster.cc",
+    "rate_adjuster.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+  ]
 }
 
 cast_source_set("test_support") {
@@ -212,11 +212,13 @@ cast_source_set("unittests") {
     "audio_clock_simulator_unittest.cc",
     "audio_fader_unittest.cc",
     "interleaved_channel_mixer_unittest.cc",
+    "rate_adjuster_unittest.cc",
   ]
 
   deps = [
     ":interleaved_channel_mixer",
     ":processing",
+    ":rate_adjuster",
     "//base",
     "//media",
     "//testing/gmock",

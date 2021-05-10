@@ -18,21 +18,19 @@
 
 #include "src/ast/stride_decoration.h"
 
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ArrayDecoration);
+
 namespace tint {
 namespace ast {
 
-ArrayDecoration::ArrayDecoration(const Source& source)
-    : Decoration(Kind, source) {}
+constexpr const DecorationKind ArrayDecoration::Kind;
+
+ArrayDecoration::ArrayDecoration(const Source& source) : Base(source) {}
 
 ArrayDecoration::~ArrayDecoration() = default;
 
-bool ArrayDecoration::IsStride() const {
-  return false;
-}
-
-StrideDecoration* ArrayDecoration::AsStride() {
-  assert(IsStride());
-  return static_cast<StrideDecoration*>(this);
+DecorationKind ArrayDecoration::GetKind() const {
+  return Kind;
 }
 
 }  // namespace ast

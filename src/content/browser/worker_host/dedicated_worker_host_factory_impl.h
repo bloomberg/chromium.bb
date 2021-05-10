@@ -10,6 +10,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
@@ -25,8 +26,10 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
   DedicatedWorkerHostFactoryImpl(
       int worker_process_id,
       base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+      base::Optional<blink::DedicatedWorkerToken> creator_worker_token,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& creator_origin,
+      const net::IsolationInfo& isolation_info,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
@@ -37,6 +40,7 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
       const blink::DedicatedWorkerToken& token,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver,
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver,
       base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
           callback) override;
 
@@ -57,9 +61,11 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
 
   // See comments on the corresponding members of DedicatedWorkerHost.
   const base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
+  const base::Optional<blink::DedicatedWorkerToken> creator_worker_token_;
   const GlobalFrameRoutingId ancestor_render_frame_host_id_;
 
   const url::Origin creator_origin_;
+  const net::IsolationInfo isolation_info_;
   const network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
   mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_;

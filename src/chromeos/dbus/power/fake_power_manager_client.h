@@ -102,6 +102,7 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   const base::Optional<power_manager::PowerSupplyProperties>& GetLastStatus()
       override;
   void RequestStatusUpdate() override;
+  void RequestThermalState() override;
   void RequestSuspend() override;
   void RequestRestart(power_manager::RequestRestartReason reason,
                       const std::string& description) override;
@@ -324,5 +325,10 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::FakePowerManagerClient;
+}
 
 #endif  // CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_

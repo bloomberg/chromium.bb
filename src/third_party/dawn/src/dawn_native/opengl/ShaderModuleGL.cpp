@@ -16,10 +16,20 @@
 
 #include "common/Assert.h"
 #include "common/Platform.h"
+#include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/SpirvUtils.h"
 #include "dawn_native/opengl/DeviceGL.h"
+#include "dawn_native/opengl/PipelineLayoutGL.h"
 
 #include <spirv_glsl.hpp>
+
+#ifdef DAWN_ENABLE_WGSL
+// Tint include must be after spirv_glsl.hpp, because spirv-cross has its own
+// version of spirv_headers. We also need to undef SPV_REVISION because SPIRV-Cross
+// is at 3 while spirv-headers is at 4.
+#    undef SPV_REVISION
+#    include <tint/tint.h>
+#endif  // DAWN_ENABLE_WGSL
 
 #include <sstream>
 
@@ -37,15 +47,19 @@ namespace dawn_native { namespace opengl {
     }
 
     bool operator<(const CombinedSampler& a, const CombinedSampler& b) {
-        return std::tie(a.samplerLocation, a.textureLocation) <
-               std::tie(b.samplerLocation, b.textureLocation);
+        return std::tie(a.useDummySampler, a.samplerLocation, a.textureLocation) <
+               std::tie(b.useDummySampler, a.samplerLocation, b.textureLocation);
     }
 
     std::string CombinedSampler::GetName() const {
         std::ostringstream o;
         o << "dawn_combined";
-        o << "_" << static_cast<uint32_t>(samplerLocation.group) << "_"
-          << static_cast<uint32_t>(samplerLocation.binding);
+        if (useDummySampler) {
+            o << "_dummy_sampler";
+        } else {
+            o << "_" << static_cast<uint32_t>(samplerLocation.group) << "_"
+              << static_cast<uint32_t>(samplerLocation.binding);
+        }
         o << "_with_" << static_cast<uint32_t>(textureLocation.group) << "_"
           << static_cast<uint32_t>(textureLocation.binding);
         return o.str();
@@ -53,9 +67,10 @@ namespace dawn_native { namespace opengl {
 
     // static
     ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
-                                                      const ShaderModuleDescriptor* descriptor) {
+                                                      const ShaderModuleDescriptor* descriptor,
+                                                      ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
-        DAWN_TRY(module->InitializeBase());
+        DAWN_TRY(module->Initialize(parseResult));
         return module.Detach();
     }
 
@@ -63,9 +78,49 @@ namespace dawn_native { namespace opengl {
         : ShaderModuleBase(device, descriptor) {
     }
 
+    MaybeError ShaderModule::Initialize(ShaderModuleParseResult* parseResult) {
+        if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
+#ifdef DAWN_ENABLE_WGSL
+            std::ostringstream errorStream;
+            errorStream << "Tint SPIR-V (for GLSL) writer failure:" << std::endl;
+
+            tint::transform::Manager transformManager;
+            transformManager.append(std::make_unique<tint::transform::BoundArrayAccessors>());
+            transformManager.append(std::make_unique<tint::transform::EmitVertexPointSize>());
+            transformManager.append(std::make_unique<tint::transform::Spirv>());
+
+            tint::Program program;
+            DAWN_TRY_ASSIGN(program,
+                            RunTransforms(&transformManager, parseResult->tintProgram.get()));
+
+            tint::writer::spirv::Generator generator(&program);
+            if (!generator.Generate()) {
+                errorStream << "Generator: " << generator.error() << std::endl;
+                return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+            }
+
+            mSpirv = generator.result();
+
+            ShaderModuleParseResult transformedParseResult;
+            transformedParseResult.tintProgram =
+                std::make_unique<tint::Program>(std::move(program));
+            transformedParseResult.spirv = mSpirv;
+
+            DAWN_TRY(InitializeBase(&transformedParseResult));
+#else
+            UNREACHABLE();
+#endif
+        } else {
+            DAWN_TRY(InitializeBase(parseResult));
+        }
+        return {};
+    }
+
     std::string ShaderModule::TranslateToGLSL(const char* entryPointName,
                                               SingleShaderStage stage,
-                                              CombinedSamplerInfo* combinedSamplers) const {
+                                              CombinedSamplerInfo* combinedSamplers,
+                                              const PipelineLayout* layout,
+                                              bool* needsDummySampler) const {
         // If these options are changed, the values in DawnSPIRVCrossGLSLFastFuzzer.cpp need to
         // be updated.
         spirv_cross::CompilerGLSL::Options options;
@@ -77,16 +132,25 @@ namespace dawn_native { namespace opengl {
         options.vertex.flip_vert_y = true;
         options.vertex.fixup_clipspace = true;
 
-        // TODO(cwallez@chromium.org): discover the backing context version and use that.
-#if defined(DAWN_PLATFORM_APPLE)
-        options.version = 410;
-#else
-        options.version = 440;
-#endif
+        const OpenGLVersion& version = ToBackend(GetDevice())->gl.GetVersion();
+        if (version.IsDesktop()) {
+            // The computation of GLSL version below only works for 3.3 and above.
+            ASSERT(version.IsAtLeast(3, 3));
+        }
+        options.es = version.IsES();
+        options.version = version.GetMajor() * 100 + version.GetMinor() * 10;
 
-        spirv_cross::CompilerGLSL compiler(GetSpirv());
+        spirv_cross::CompilerGLSL compiler(
+            GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator) ? mSpirv : GetSpirv());
         compiler.set_common_options(options);
         compiler.set_entry_point(entryPointName, ShaderStageToExecutionModel(stage));
+
+        // Analyzes all OpImageFetch opcodes and checks if there are instances where
+        // said instruction is used without a combined image sampler.
+        // GLSL does not support texelFetch without a sampler.
+        // To workaround this, we must inject a dummy sampler which can be used to form a sampler2D
+        // at the call-site of texelFetch as necessary.
+        spirv_cross::VariableID dummySamplerId = compiler.build_dummy_sampler_for_combined_images();
 
         // Extract bindings names so that it can be used to get its location in program.
         // Now translate the separate sampler / textures into combined ones and store their info. We
@@ -97,10 +161,17 @@ namespace dawn_native { namespace opengl {
             combinedSamplers->emplace_back();
 
             CombinedSampler* info = &combinedSamplers->back();
-            info->samplerLocation.group = BindGroupIndex(
-                compiler.get_decoration(combined.sampler_id, spv::DecorationDescriptorSet));
-            info->samplerLocation.binding =
-                BindingNumber(compiler.get_decoration(combined.sampler_id, spv::DecorationBinding));
+            if (combined.sampler_id == dummySamplerId) {
+                *needsDummySampler = true;
+                info->useDummySampler = true;
+                info->samplerLocation = {};
+            } else {
+                info->useDummySampler = false;
+                info->samplerLocation.group = BindGroupIndex(
+                    compiler.get_decoration(combined.sampler_id, spv::DecorationDescriptorSet));
+                info->samplerLocation.binding = BindingNumber(
+                    compiler.get_decoration(combined.sampler_id, spv::DecorationBinding));
+            }
             info->textureLocation.group = BindGroupIndex(
                 compiler.get_decoration(combined.image_id, spv::DecorationDescriptorSet));
             info->textureLocation.binding =
@@ -108,7 +179,8 @@ namespace dawn_native { namespace opengl {
             compiler.set_name(combined.combined_id, info->GetName());
         }
 
-        const EntryPointMetadata::BindingInfo& bindingInfo = GetEntryPoint(entryPointName).bindings;
+        const EntryPointMetadata::BindingInfoArray& bindingInfo =
+            GetEntryPoint(entryPointName).bindings;
 
         // Change binding names to be "dawn_binding_<group>_<binding>".
         // Also unsets the SPIRV "Binding" decoration as it outputs "layout(binding=)" which
@@ -119,12 +191,10 @@ namespace dawn_native { namespace opengl {
                 const auto& info = it.second;
 
                 uint32_t resourceId;
-                switch (info.type) {
+                switch (info.bindingType) {
                     // When the resource is a uniform or shader storage block, we should change the
                     // block name instead of the instance name.
-                    case wgpu::BindingType::ReadonlyStorageBuffer:
-                    case wgpu::BindingType::StorageBuffer:
-                    case wgpu::BindingType::UniformBuffer:
+                    case BindingInfoType::Buffer:
                         resourceId = info.base_type_id;
                         break;
                     default:
@@ -133,8 +203,20 @@ namespace dawn_native { namespace opengl {
                 }
 
                 compiler.set_name(resourceId, GetBindingName(group, bindingNumber));
-                compiler.unset_decoration(info.id, spv::DecorationBinding);
                 compiler.unset_decoration(info.id, spv::DecorationDescriptorSet);
+                // OpenGL ES has no glShaderStorageBlockBinding call, so we adjust the SSBO binding
+                // decoration here instead.
+                if (version.IsES() && info.bindingType == BindingInfoType::Buffer &&
+                    (info.buffer.type == wgpu::BufferBindingType::Storage ||
+                     info.buffer.type == wgpu::BufferBindingType::ReadOnlyStorage)) {
+                    const auto& indices = layout->GetBindingIndexInfo();
+                    BindingIndex bindingIndex =
+                        layout->GetBindGroupLayout(group)->GetBindingIndex(bindingNumber);
+                    compiler.set_decoration(info.id, spv::DecorationBinding,
+                                            indices[group][bindingIndex]);
+                } else {
+                    compiler.unset_decoration(info.id, spv::DecorationBinding);
+                }
             }
         }
 

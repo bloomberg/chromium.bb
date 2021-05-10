@@ -12,17 +12,18 @@ import collections
 
 from os import path
 _CURRENT_DIR = path.join(path.dirname(__file__))
-TSC_LOCATION = path.join(_CURRENT_DIR, '..', '..', 'node_modules', 'typescript', 'bin', 'tsc')
+ROOT_DIRECTORY_OF_REPOSITORY = path.join(_CURRENT_DIR, '..', '..')
+TSC_LOCATION = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules',
+                         'typescript', 'bin', 'tsc')
 
 try:
     old_sys_path = sys.path[:]
-    sys.path.append(path.join(_CURRENT_DIR, '..', '..', 'scripts'))
+    sys.path.append(path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'scripts'))
     import devtools_paths
 finally:
     sys.path = old_sys_path
 NODE_LOCATION = devtools_paths.node_path()
 
-ROOT_DIRECTORY_OF_REPOSITORY = path.join(_CURRENT_DIR, '..', '..')
 BASE_TS_CONFIG_LOCATION = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'tsconfig.base.json')
 TYPES_NODE_MODULES_DIRECTORY = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', '@types')
 RESOURCES_INSPECTOR_PATH = path.join(os.getcwd(), 'resources', 'inspector')
@@ -36,7 +37,7 @@ GLOBAL_TYPESCRIPT_DEFINITION_FILES = [
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'global_typings',
               'global_defs.d.ts'),
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'global_typings',
-              'resize_observer.d.ts'),
+              'request_idle_callback.d.ts'),
     # generated protocol definitions
     path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'front_end', 'generated',
               'protocol.d.ts'),
@@ -68,6 +69,56 @@ def runTsc(tsconfig_location):
     return process.returncode, stdout + stderr
 
 
+def runTscRemote(tsconfig_location, all_ts_files, rewrapper_binary,
+                 rewrapper_cfg, rewrapper_exec_root, test_only):
+    relative_ts_file_paths = [
+        path.relpath(x, rewrapper_exec_root) for x in all_ts_files
+    ]
+
+    tsc_lib_directory = path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules',
+                                  'typescript', 'lib')
+    all_d_ts_files = [
+        path.relpath(path.join(tsc_lib_directory, f), rewrapper_exec_root)
+        for f in os.listdir(tsc_lib_directory) if f.endswith('.d.ts')
+    ]
+
+    if test_only:
+        # TODO(crbug.com/1139220): Measure whats more performant:
+        #     1) Just specify the `node_modules/@types` directory as an input and upload all files.
+        #     2) Recursively walk `node_modules/@types` and collect all *.d.ts files and list them
+        #        explicitly.
+        all_d_ts_files.append(
+            path.relpath(TYPES_NODE_MODULES_DIRECTORY, rewrapper_exec_root))
+
+    relative_node_location = path.relpath(NODE_LOCATION, os.getcwd())
+    relative_tsc_location = path.relpath(TSC_LOCATION, os.getcwd())
+    relative_tsconfig_location = path.relpath(tsconfig_location, os.getcwd())
+    relative_tsc_directory = path.relpath(
+        path.join(ROOT_DIRECTORY_OF_REPOSITORY, 'node_modules', 'typescript'),
+        rewrapper_exec_root)
+
+    inputs = ','.join([
+        relative_node_location,
+        relative_tsc_location,
+        path.join(relative_tsc_directory, 'lib', 'tsc.js'),
+        path.relpath(tsconfig_location, os.getcwd()),
+    ] + relative_ts_file_paths + all_d_ts_files)
+
+    process = subprocess.Popen([
+        rewrapper_binary, '-cfg', rewrapper_cfg, '-exec_root',
+        rewrapper_exec_root, '-labels=type=tool', '-inputs', inputs,
+        '-output_directories',
+        path.relpath(path.dirname(tsconfig_location),
+                     rewrapper_exec_root), '--', relative_node_location,
+        relative_tsc_location, '-p', relative_tsconfig_location
+    ],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    # TypeScript does not correctly write to stderr because of https://github.com/microsoft/TypeScript/issues/33849
+    return process.returncode, stdout + stderr
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sources', nargs='*', help='List of TypeScript source files')
@@ -75,10 +126,16 @@ def main():
     parser.add_argument('-dir', '--front_end_directory', required=True, help='Folder that contains source files')
     parser.add_argument('-b', '--tsconfig_output_location', required=True)
     parser.add_argument('--test-only', action='store_true')
+    parser.add_argument('--no-emit', action='store_true')
     parser.add_argument('--verify-lib-check', action='store_true')
     parser.add_argument('--is_web_worker', action='store_true')
     parser.add_argument('--module', required=False)
+    parser.add_argument('--use-rbe', action='store_true')
+    parser.add_argument('--rewrapper-binary', required=False)
+    parser.add_argument('--rewrapper-cfg', required=False)
+    parser.add_argument('--rewrapper-exec-root', required=False)
     parser.set_defaults(test_only=False,
+                        no_emit=False,
                         verify_lib_check=False,
                         module='esnext')
 
@@ -113,6 +170,8 @@ def main():
     ] or []
     if opts.test_only:
         tsconfig['compilerOptions']['moduleResolution'] = 'node'
+    if opts.no_emit:
+        tsconfig['compilerOptions']['emitDeclarationOnly'] = True
     tsconfig['compilerOptions']['outDir'] = '.'
     tsconfig['compilerOptions']['tsBuildInfoFile'] = tsbuildinfo_name
     tsconfig['compilerOptions']['lib'] = ['esnext'] + (
@@ -133,7 +192,19 @@ def main():
     if len(sources) == 0 and not opts.verify_lib_check:
         return 0
 
-    found_errors, stderr = runTsc(tsconfig_location=tsconfig_output_location)
+    use_remote_execution = opts.use_rbe and (opts.deps is None
+                                             or len(opts.deps) == 0)
+    if use_remote_execution:
+        found_errors, stderr = runTscRemote(
+            tsconfig_location=tsconfig_output_location,
+            all_ts_files=all_ts_files,
+            rewrapper_binary=opts.rewrapper_binary,
+            rewrapper_cfg=opts.rewrapper_cfg,
+            rewrapper_exec_root=opts.rewrapper_exec_root,
+            test_only=opts.test_only)
+    else:
+        found_errors, stderr = runTsc(
+            tsconfig_location=tsconfig_output_location)
     if found_errors:
         print('')
         print('TypeScript compilation failed. Used tsconfig %s' % opts.tsconfig_output_location)

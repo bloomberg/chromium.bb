@@ -37,6 +37,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -228,9 +229,9 @@ void PluginVmInstallerView::OnStateUpdated(InstallingState new_state) {
 }
 
 void PluginVmInstallerView::OnLinkClicked() {
-  NavigateParams params(
-      profile_, GURL("https://support.google.com/chromebook/?p=pluginvm"),
-      ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile_,
+                        GURL("https://support.google.com/chrome/a/?p=pluginvm"),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
@@ -339,9 +340,10 @@ base::string16 PluginVmInstallerView::GetMessage() const {
           NOTREACHED();
           FALLTHROUGH;
         case InstallingState::kCheckingLicense:
+        case InstallingState::kCheckingForExistingVm:
         case InstallingState::kCheckingDiskSpace:
         case InstallingState::kDownloadingDlc:
-        case InstallingState::kCheckingForExistingVm:
+        case InstallingState::kStartingDispatcher:
           return l10n_util::GetStringUTF16(
               IDS_PLUGIN_VM_INSTALLER_START_DOWNLOADING_MESSAGE);
         case InstallingState::kDownloadingImage:
@@ -413,6 +415,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE, app_name_);
         case Reason::INSUFFICIENT_DISK_SPACE:
         case Reason::DLC_NEED_SPACE:
+        case Reason::OUT_OF_DISK_SPACE:
           return l10n_util::GetStringFUTF16(
               IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE,
               ui::FormatBytesWithUnits(
@@ -588,3 +591,8 @@ void PluginVmInstallerView::StartInstallation() {
   if (failure_reason)
     OnError(failure_reason.value());
 }
+
+BEGIN_METADATA(PluginVmInstallerView, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(base::string16, Title)
+ADD_READONLY_PROPERTY_METADATA(base::string16, Message)
+END_METADATA

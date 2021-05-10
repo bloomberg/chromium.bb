@@ -17,10 +17,13 @@ import '../settings_shared_css.m.js';
 import './avatar_icon.js';
 import './passwords_shared_css.js';
 import './password_list_item.js';
+import './password_move_multiple_passwords_to_account_dialog.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
@@ -109,6 +112,32 @@ Polymer({
           'savedPasswords.splices)',
     },
 
+    /**
+     * Passwords displayed in both the device-only and 'device and account'
+     * subsections.
+     * @private {!Array<!MultiStorePasswordUiEntry>}
+     */
+    allDevicePasswords_: {
+      type: Array,
+      value: () => [],
+      computed: 'computeAllDevicePasswords_(savedPasswords.splices)',
+      observer: 'onAllDevicePasswordsChanged_',
+    },
+
+    /**
+     * Whether the entry point leading to the dialog to move multiple passwords
+     * to the Google Account should be shown. It's shown only where there is at
+     * least one password store on device.
+     * @private
+     */
+    shouldShowMoveMultiplePasswordsBanner_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowMoveMultiplePasswordsBanner_(' +
+          'savedPasswords, savedPasswords.splices)',
+    },
+
+
     /** @private {!MultiStorePasswordUiEntry} */
     lastFocused_: Object,
 
@@ -153,10 +182,19 @@ Polymer({
       value: null,
     },
 
+    /** @private */
+    showMoveMultiplePasswordsDialog_: Boolean,
+
     /** @private {Route?} */
     currentRoute_: {
       type: Object,
       value: null,
+    },
+
+    /** @private */
+    devicePasswordsLabel_: {
+      type: String,
+      value: '',
     },
 
   },
@@ -202,6 +240,14 @@ Polymer({
    * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
+  computeAllDevicePasswords_() {
+    return this.savedPasswords.filter(p => p.isPresentOnDevice());
+  },
+
+  /**
+   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @private
+   */
   computeDeviceOnlyPasswords_() {
     return this.savedPasswords.filter(
         p => p.isPresentOnDevice() && !p.isPresentInAccount());
@@ -227,6 +273,43 @@ Polymer({
         (this.syncDisabled_ === null || !!this.syncDisabled_) &&
         (this.optedInForAccountStorage_ === null ||
          !!this.optedInForAccountStorage_);
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  computeShouldShowMoveMultiplePasswordsBanner_() {
+    if (!loadTimeData.getBoolean('enableMovingMultiplePasswordsToAccount')) {
+      return false;
+    }
+
+    if (this.allDevicePasswords_.length === 0) {
+      return false;
+    }
+
+    // Check if all username, and urls are unique. The existence of two entries
+    // with the same url and username indicate that they must have conflicting
+    // passwords, otherwise, they would have been deduped in
+    // MergePasswordsStoreCopiesBehavior. This however may mistakenly exclude
+    // users who have conflicting duplicates within the same store, which is an
+    // acceptable compromise.
+    return this.savedPasswords.every(
+        p1 =>
+            (this.savedPasswords
+                 .filter(
+                     p2 => p1.username === p2.username &&
+                         p1.urls.origin === p2.urls.origin)
+                 .length === 1));
+  },
+
+  /**
+   * @private
+   */
+  async onAllDevicePasswordsChanged_() {
+    this.devicePasswordsLabel_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'movePasswordsToAccount', this.allDevicePasswords_.length);
   },
 
   /**
@@ -309,6 +392,20 @@ Polymer({
   onManageAccountPasswordsClicked_() {
     OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googlePasswordManagerUrl'));
+  },
+
+  /** @private */
+  onMoveMultiplePasswordsTap_() {
+    this.showMoveMultiplePasswordsDialog_ = true;
+  },
+
+  /** @private */
+  onMoveMultiplePasswordsDialogClose_() {
+    if ((this.$$('password-move-multiple-passwords-to-account-dialog'))
+            .wasConfirmed()) {
+      this.$.toast.show();
+    }
+    this.showMoveMultiplePasswordsDialog_ = false;
   },
 
   /** @private */

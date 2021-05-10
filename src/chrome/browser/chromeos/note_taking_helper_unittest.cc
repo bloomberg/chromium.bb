@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -29,7 +30,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "components/arc/arc_prefs.h"
@@ -99,7 +99,9 @@ IntentHandlerInfoPtr CreateIntentHandlerInfo(const std::string& name,
 // Converts a filesystem path to an ARC URL.
 std::string GetArcUrl(const base::FilePath& path) {
   GURL url;
-  EXPECT_TRUE(file_manager::util::ConvertPathToArcUrl(path, &url));
+  bool requires_sharing = false;
+  EXPECT_TRUE(
+      file_manager::util::ConvertPathToArcUrl(path, &url, &requires_sharing));
   return url.spec();
 }
 
@@ -235,8 +237,9 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
                                       flags & ENABLE_PLAY_STORE);
     NoteTakingHelper::Initialize();
     NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(profile());
-    NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(base::Bind(
-        &NoteTakingHelperTest::LaunchChromeApp, base::Unretained(this)));
+    NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(
+        base::BindRepeating(&NoteTakingHelperTest::LaunchChromeApp,
+                            base::Unretained(this)));
   }
 
   // Creates an extension.
@@ -1224,7 +1227,7 @@ TEST_F(NoteTakingHelperTest,
   EXPECT_EQ(std::vector<Profile*>{profile()}, observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
-  // No-op, becuase the preferred app state is not changing.
+  // No-op, because the preferred app state is not changing.
   EXPECT_FALSE(helper()->SetPreferredAppEnabledOnLockScreen(profile(), true));
   EXPECT_TRUE(observer.preferred_app_updates().empty());
 

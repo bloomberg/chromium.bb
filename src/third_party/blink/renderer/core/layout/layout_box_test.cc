@@ -286,7 +286,10 @@ TEST_P(LayoutBoxTest, LocationContainer) {
   EXPECT_EQ(body, table->LocationContainer());
   EXPECT_EQ(table, tbody->LocationContainer());
   EXPECT_EQ(tbody, row->LocationContainer());
-  EXPECT_EQ(tbody, cell->LocationContainer());
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(row, cell->LocationContainer());
+  else
+    EXPECT_EQ(tbody, cell->LocationContainer());
 }
 
 TEST_P(LayoutBoxTest, TopLeftLocationFlipped) {
@@ -333,14 +336,22 @@ TEST_P(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
 
   const LayoutBox* cell1 = GetLayoutBoxByElementId("cell1");
   EXPECT_EQ(LayoutPoint(0, 0), cell1->Location());
-  EXPECT_EQ(PhysicalOffset(300, 0), cell1->PhysicalLocation());
+  // TablesNG cells are container is row, Legacy is section.
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(PhysicalOffset(0, 0), cell1->PhysicalLocation());
+  else
+    EXPECT_EQ(PhysicalOffset(300, 0), cell1->PhysicalLocation());
 
   const LayoutBox* row2 = GetLayoutBoxByElementId("row2");
   EXPECT_EQ(LayoutPoint(100, 0), row2->Location());
   EXPECT_EQ(PhysicalOffset(0, 0), row2->PhysicalLocation());
 
   const LayoutBox* cell2 = GetLayoutBoxByElementId("cell2");
-  EXPECT_EQ(LayoutPoint(100, 0), cell2->Location());
+  // TablesNG cells are container is row, Legacy is section.
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(LayoutPoint(0, 0), cell2->Location());
+  else
+    EXPECT_EQ(LayoutPoint(100, 0), cell2->Location());
   EXPECT_EQ(PhysicalOffset(0, 0), cell2->PhysicalLocation());
 }
 
@@ -513,12 +524,16 @@ TEST_P(LayoutBoxTest, VisualOverflowRectWithOverflowClipMargin) {
   SetBodyInnerHTML(R"HTML(
     <style>
       .parent { width: 100px; height: 50px; overflow: clip; }
+      .parent2 { width: 100px; height: 50px; contain: paint; }
       .child { width: 110px; height: 55px; }
     </style>
     <div id="clip1" style="overflow-clip-margin: 4px" class="parent">
       <div class="child"></div>
     </div>
     <div id="clip2" style="overflow-clip-margin: 11px" class="parent">
+      <div class="child"></div>
+    </div>
+    <div id="clip3" style="overflow-clip-margin: 11px" class="parent2">
       <div class="child"></div>
     </div>
   )HTML");
@@ -532,12 +547,18 @@ TEST_P(LayoutBoxTest, VisualOverflowRectWithOverflowClipMargin) {
   EXPECT_FALSE(clip2->IsScrollContainer());
   EXPECT_TRUE(clip2->ShouldClipOverflowAlongBothAxis());
   EXPECT_EQ(LayoutRect(0, 0, 110, 55), clip2->VisualOverflowRect());
+
+  LayoutBox* clip3 = GetLayoutBoxByElementId("clip3");
+  EXPECT_FALSE(clip3->IsScrollContainer());
+  EXPECT_TRUE(clip3->ShouldClipOverflowAlongBothAxis());
+  EXPECT_EQ(LayoutRect(0, 0, 110, 55), clip3->VisualOverflowRect());
 }
 
 TEST_P(LayoutBoxTest, LayoutOverflowRectWithOverflowClipMargin) {
   SetBodyInnerHTML(R"HTML(
     <style>
       .parent { width: 100px; height: 50px; overflow: clip; }
+      .parent2 { width: 100px; height: 50px; contain: paint; }
       .child { position: relative; top: -5px; left: -6px; width: 110px;
                height: 112px; }
     </style>
@@ -547,17 +568,28 @@ TEST_P(LayoutBoxTest, LayoutOverflowRectWithOverflowClipMargin) {
     <div id="clip2" style="overflow-clip-margin: 10px" class="parent">
       <div class="child"></div>
     </div>
+    <div id="clip3" style="overflow-clip-margin: 10px" class="parent2">
+      <div class="child"></div>
+    </div>
   )HTML");
 
   LayoutBox* clip1 = GetLayoutBoxByElementId("clip1");
   EXPECT_FALSE(clip1->IsScrollContainer());
   EXPECT_TRUE(clip1->ShouldClipOverflowAlongBothAxis());
-  EXPECT_EQ(LayoutRect(-4, -4, 108, 58), clip1->LayoutOverflowRect());
+  EXPECT_EQ(LayoutRect(-4, -4, 108, 58),
+            clip1->LayoutOverflowRectForPropagation(clip1->Parent()));
 
   LayoutBox* clip2 = GetLayoutBoxByElementId("clip2");
   EXPECT_FALSE(clip2->IsScrollContainer());
   EXPECT_TRUE(clip2->ShouldClipOverflowAlongBothAxis());
-  EXPECT_EQ(LayoutRect(-6, -5, 110, 65), clip2->LayoutOverflowRect());
+  EXPECT_EQ(LayoutRect(-6, -5, 110, 65),
+            clip2->LayoutOverflowRectForPropagation(clip2->Parent()));
+
+  LayoutBox* clip3 = GetLayoutBoxByElementId("clip3");
+  EXPECT_FALSE(clip3->IsScrollContainer());
+  EXPECT_TRUE(clip3->ShouldClipOverflowAlongBothAxis());
+  EXPECT_EQ(LayoutRect(-6, -5, 110, 65),
+            clip3->LayoutOverflowRectForPropagation(clip3->Parent()));
 }
 
 TEST_P(LayoutBoxTest, ContentsVisualOverflowPropagation) {
@@ -1660,6 +1692,35 @@ TEST_P(LayoutBoxTest, PartialInvalidationRect) {
   display_item_client->ClearPartialInvalidationVisualRect();
   EXPECT_FALSE(target->HasPartialInvalidationRect());
   EXPECT_EQ(IntRect(), display_item_client->PartialInvalidationVisualRect());
+}
+
+TEST_P(LayoutBoxTest, HasReflection) {
+  SetBodyInnerHTML(R"HTML(
+    <style>* { -webkit-box-reflect: above; }</style>
+    <table id="table">
+      <colgroup id="colgroup">
+        <col id="col">
+      </colgroup>
+      <tr id="tr"><td id="td">TD</td></tr>
+    </table>
+    <svg id="svg">
+      <text id="svg-text">SVG text</text>
+    </svg>
+  )HTML");
+
+  auto check_has_layer_and_reflection = [&](const char* element_id,
+                                            bool expected) {
+    auto* object = GetLayoutObjectByElementId(element_id);
+    EXPECT_EQ(expected, object->HasLayer()) << element_id;
+    EXPECT_EQ(expected, object->HasReflection()) << element_id;
+  };
+  check_has_layer_and_reflection("table", true);
+  check_has_layer_and_reflection("tr", true);
+  check_has_layer_and_reflection("colgroup", false);
+  check_has_layer_and_reflection("col", false);
+  check_has_layer_and_reflection("td", true);
+  check_has_layer_and_reflection("svg", true);
+  check_has_layer_and_reflection("svg-text", false);
 }
 
 }  // namespace blink

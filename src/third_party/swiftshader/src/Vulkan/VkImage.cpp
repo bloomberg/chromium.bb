@@ -17,6 +17,8 @@
 #include "VkBuffer.hpp"
 #include "VkDevice.hpp"
 #include "VkDeviceMemory.hpp"
+#include "VkImageView.hpp"
+#include "VkStringify.hpp"
 #include "Device/ASTC_Decoder.hpp"
 #include "Device/BC_Decoder.hpp"
 #include "Device/Blitter.hpp"
@@ -24,6 +26,7 @@
 
 #ifdef __ANDROID__
 #	include "System/GrallocAndroid.hpp"
+#	include "VkDeviceMemoryExternalAndroid.hpp"
 #endif
 
 #include <cstring>
@@ -121,6 +124,41 @@ bool GetNoAlphaOrUnsigned(const vk::Format &format)
 	}
 }
 
+VkFormat GetImageFormat(const VkImageCreateInfo *pCreateInfo)
+{
+	auto nextInfo = reinterpret_cast<VkBaseInStructure const *>(pCreateInfo->pNext);
+	while(nextInfo)
+	{
+		switch(nextInfo->sType)
+		{
+#ifdef __ANDROID__
+			case VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID:
+			{
+				const VkExternalFormatANDROID *externalFormatAndroid = reinterpret_cast<const VkExternalFormatANDROID *>(nextInfo);
+
+				// VkExternalFormatANDROID: "If externalFormat is zero, the effect is as if the VkExternalFormatANDROID structure was not present."
+				if(externalFormatAndroid->externalFormat == 0)
+				{
+					break;
+				}
+
+				const VkFormat correspondingVkFormat = AHardwareBufferExternalMemory::GetVkFormatFromAHBFormat(externalFormatAndroid->externalFormat);
+				ASSERT(pCreateInfo->format == VK_FORMAT_UNDEFINED || pCreateInfo->format == correspondingVkFormat);
+				return correspondingVkFormat;
+			}
+			break;
+#endif
+			default:
+				LOG_TRAP("pCreateInfo->pNext->sType = %s", vk::Stringify(nextInfo->sType).c_str());
+				break;
+		}
+
+		nextInfo = nextInfo->pNext;
+	}
+
+	return pCreateInfo->format;
+}
+
 }  // anonymous namespace
 
 namespace vk {
@@ -129,7 +167,7 @@ Image::Image(const VkImageCreateInfo *pCreateInfo, void *mem, Device *device)
     : device(device)
     , flags(pCreateInfo->flags)
     , imageType(pCreateInfo->imageType)
-    , format(pCreateInfo->format)
+    , format(GetImageFormat(pCreateInfo))
     , extent(pCreateInfo->extent)
     , mipLevels(pCreateInfo->mipLevels)
     , arrayLayers(pCreateInfo->arrayLayers)
@@ -751,7 +789,7 @@ int Image::rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const
 {
 	if(deviceMemory && deviceMemory->hasExternalImageProperties())
 	{
-		return deviceMemory->externalImageRowPitchBytes();
+		return deviceMemory->externalImageRowPitchBytes(aspect);
 	}
 
 	// Depth and Stencil pitch should be computed separately
@@ -803,6 +841,11 @@ uint8_t *Image::end() const
 
 VkDeviceSize Image::getMemoryOffset(VkImageAspectFlagBits aspect) const
 {
+	if(deviceMemory && deviceMemory->hasExternalImageProperties())
+	{
+		return deviceMemory->externalImageMemoryOffset(aspect);
+	}
+
 	switch(format)
 	{
 		case VK_FORMAT_D16_UNORM_S8_UINT:
@@ -948,6 +991,11 @@ void Image::copyTo(uint8_t *dst, unsigned int dstPitch) const
 void Image::resolveTo(Image *dstImage, const VkImageResolve &region) const
 {
 	device->getBlitter()->resolve(this, dstImage, region);
+}
+
+void Image::resolveDepthStencilTo(const ImageView *src, ImageView *dst, const VkSubpassDescriptionDepthStencilResolve &dsResolve) const
+{
+	device->getBlitter()->resolveDepthStencil(src, dst, dsResolve);
 }
 
 VkFormat Image::getClearFormat() const

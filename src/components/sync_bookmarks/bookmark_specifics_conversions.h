@@ -6,7 +6,12 @@
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_SPECIFICS_CONVERSIONS_H_
 
 #include <stddef.h>
+
 #include <string>
+
+namespace base {
+class GUID;
+}  // namespace base
 
 namespace bookmarks {
 class BookmarkModel;
@@ -19,6 +24,7 @@ class EntitySpecifics;
 }  // namespace sync_pb
 
 namespace syncer {
+class ClientTagHash;
 struct EntityData;
 }  // namespace syncer
 
@@ -36,14 +42,10 @@ std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title);
 bool IsBookmarkEntityReuploadNeeded(
     const syncer::EntityData& remote_entity_data);
 
-// TODO(crbug.com/978430): Remove argument |include_guid| once the client tag
-// hash is required to be populated during sync metadata validation upon
-// startup in SyncedBookmarkTracker::BookmarkModelMatchesMetadata().
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     const bookmarks::BookmarkNode* node,
     bookmarks::BookmarkModel* model,
-    bool force_favicon_load,
-    bool include_guid);
+    bool force_favicon_load);
 
 // Creates a bookmark node under the given parent node from the given specifics.
 // Returns the newly created node. Callers must verify that
@@ -71,7 +73,7 @@ void UpdateBookmarkNodeFromSpecifics(
 // the newly created node, and the original node gets deleted.
 const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
     const bookmarks::BookmarkNode* node,
-    const std::string& guid,
+    const base::GUID& guid,
     bookmarks::BookmarkModel* model);
 
 // Checks if a bookmark specifics represents a valid bookmark. |is_folder| is
@@ -84,9 +86,8 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
 // Checks if bookmark specifics contain a GUID that matches the value that would
 // be inferred from other redundant fields. |specifics| must be valid as per
 // IsValidBookmarkSpecifics().
-// TODO(crbug.com/1032052): Replace this with an analogous function that
-// verifies that the bookmark's client tag hash matches the GUID.
 bool HasExpectedBookmarkGuid(const sync_pb::BookmarkSpecifics& specifics,
+                             const syncer::ClientTagHash& client_tag_hash,
                              const std::string& originator_cache_guid,
                              const std::string& originator_client_item_id);
 

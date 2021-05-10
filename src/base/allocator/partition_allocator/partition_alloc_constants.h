@@ -10,7 +10,6 @@
 
 #include <algorithm>
 
-#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "build/build_config.h"
 
@@ -117,7 +116,6 @@ MaxSystemPagesPerSlotSpan() {
 //     | Guard page (4 KiB)    |
 //     | Metadata page (4 KiB) |
 //     | Guard pages (8 KiB)   |
-//     | TagBitmap             |
 //     | QuarantineBitmaps     |
 //     | Slot span             |
 //     | Slot span             |
@@ -126,7 +124,6 @@ MaxSystemPagesPerSlotSpan() {
 //     | Guard pages (16 KiB)  |
 //     +-----------------------+
 //
-// TagBitmap is only present when ENABLE_TAG_FOR_MTE_CHECKED_PTR is defined.
 // QuarantineBitmaps are inserted for partitions that may have PCScan enabled.
 //
 // Each slot span is a contiguous range of one or more `PartitionPage`s. Note
@@ -195,7 +192,7 @@ NumPartitionPagesPerSuperPage() {
 // The two are separate on Windows 64 bits, where the first one is 8 bytes, and
 // the second one 16. We could technically return something different for
 // malloc() and operator new(), but this would complicate things, and most of
-// our allocations are presumaly coming from operator new() anyway.
+// our allocations are presumably coming from operator new() anyway.
 //
 // __STDCPP_DEFAULT_NEW_ALIGNMENT__ is C++17. As such, it is not defined on all
 // platforms, as Chrome's requirement is C++14 as of 2020.
@@ -224,13 +221,8 @@ static_assert(kAlignment <= 16,
 //
 // In practice, this means 8 bytes alignment on 32 bit architectures, and 16
 // bytes on 64 bit ones.
-#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
-// MTECheckedPtr requires 16B-alignment because kBytesPerPartitionTag is 16.
-static const size_t kMinBucketedOrder = 5;
-#else
 static const size_t kMinBucketedOrder =
     kAlignment == 16 ? 5 : 4;  // 2^(order - 1), that is 16 or 8.
-#endif
 // The largest bucketed order is 1 << (20 - 1), storing [512 KiB, 1 MiB):
 static const size_t kMaxBucketedOrder = 20;
 static const size_t kNumBucketedOrders =
@@ -256,7 +248,9 @@ static const size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
 // crbug.com/998048 for details.
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 MaxDirectMapped() {
-  return (1UL << 31) - PageAllocationGranularity();
+  // Subtract kSuperPageSize to accommodate for alignment inside
+  // PartitionRoot::GetDirectMapReservedSize.
+  return (1UL << 31) - kSuperPageSize;
 }
 static const size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
@@ -274,13 +268,20 @@ static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1 GiB
 static const unsigned char kUninitializedByte = 0xAB;
 static const unsigned char kFreedByte = 0xCD;
 
+static const unsigned char kQuarantinedByte = 0xEF;
+
 // Flags for `PartitionAllocFlags`.
 enum PartitionAllocFlags {
   PartitionAllocReturnNull = 1 << 0,
   PartitionAllocZeroFill = 1 << 1,
   PartitionAllocNoHooks = 1 << 2,  // Internal only.
+  // If the allocation requires a "slow path" (such as allocating/committing a
+  // new slot span), return nullptr instead. Note this makes all large
+  // allocations return nullptr, such as direct-mapped ones, and even for
+  // smaller ones, a nullptr value is common.
+  PartitionAllocFastPathOrReturnNull = 1 << 3,  // Internal only.
 
-  PartitionAllocLastFlag = PartitionAllocNoHooks
+  PartitionAllocLastFlag = PartitionAllocFastPathOrReturnNull
 };
 
 }  // namespace base

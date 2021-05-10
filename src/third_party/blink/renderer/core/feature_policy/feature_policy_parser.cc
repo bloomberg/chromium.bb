@@ -407,12 +407,19 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
     return {};
   }
 
-  // RFC2616, section 4.2 specifies that headers appearing multiple times can be
-  // combined with a comma. Walk the header string, and parse each comma
-  // separated chunk as a separate header.
   Vector<String> policy_items;
-  // policy_items = [ policy *( "," [ policy ] ) ]
-  policy.Split(',', policy_items);
+
+  if (src_origin_) {
+    // Attribute parsing.
+    policy_items.push_back(policy);
+  } else {
+    // Header parsing.
+    // RFC2616, section 4.2 specifies that headers appearing multiple times can
+    // be combined with a comma. Walk the header string, and parse each comma
+    // separated chunk as a separate header.
+    // policy_items = [ policy *( "," [ policy ] ) ]
+    policy.Split(',', policy_items);
+  }
 
   if (policy_items.size() > 1) {
     UseCounter::Count(
@@ -466,8 +473,8 @@ ParsingContext::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
   auto root = net::structured_headers::ParseDictionary(policy.Utf8());
   if (!root) {
     logger_.Error(
-        "Parse of permission policy failed because of errors reported by "
-        "strctured header parser.");
+        "Parse of permissions policy failed because of errors reported by "
+        "structured header parser.");
     return {};
   }
 

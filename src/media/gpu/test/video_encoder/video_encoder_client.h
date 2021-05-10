@@ -43,6 +43,8 @@ struct VideoEncoderClientConfig {
 
   // The output profile to be used.
   VideoCodecProfile output_profile = VideoCodecProfile::H264PROFILE_MAIN;
+  // The resolution output by VideoEncoderClient.
+  gfx::Size output_resolution;
   // The number of temporal layers of the output stream.
   size_t num_temporal_layers = 1u;
   // The maximum number of bitstream buffer encodes that can be requested
@@ -52,6 +54,10 @@ struct VideoEncoderClientConfig {
   uint32_t bitrate = kDefaultBitrate;
   // The desired framerate in frames/second.
   uint32_t framerate = 30.0;
+  // The interval of calling VideoEncodeAccelerator::Encode(). If this is
+  // base::nullopt, Encode() is called once VideoEncodeAccelerator consumes
+  // the previous VideoFrames.
+  base::Optional<base::TimeDelta> encode_interval = base::nullopt;
   // The number of frames to be encoded. This can be more than the number of
   // frames in the video, and in which case the VideoEncoderClient loops the
   // video during encoding.
@@ -123,6 +129,9 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // Updates bitrate based on the specified |bitrate| and |framerate|.
   void UpdateBitrate(const VideoBitrateAllocation& bitrate, uint32_t framerate);
 
+  // Force the next frame to be encoded to be a key frame.
+  void ForceKeyFrame();
+
   // Wait until all bitstream processors have finished processing. Returns
   // whether processing was successful.
   bool WaitForBitstreamProcessors();
@@ -173,6 +182,8 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   void FlushTask();
   void UpdateBitrateTask(const VideoBitrateAllocation& bitrate,
                          uint32_t framerate);
+  // Instruct the encoder to force a key frame on the |encoder_client_thread_|.
+  void ForceKeyFrameTask();
 
   // Called by the encoder when a frame has been encoded.
   void EncodeDoneTask(base::TimeDelta timestamp);
@@ -237,6 +248,10 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // A counter to track what frame is represented by a bitstream returned on
   // BitstreamBufferReady().
   size_t frame_index_ = 0;
+
+  // Force a key frame on next Encode(), only accessed on the
+  // |encoder_client_thread_|.
+  bool force_keyframe_ = false;
 
   VideoEncoderStats current_stats_ GUARDED_BY(stats_lock_);
   mutable base::Lock stats_lock_;

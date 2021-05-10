@@ -32,6 +32,7 @@
 
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/raw_os_ostream.h"
 
 #include "marl/event.h"
@@ -63,7 +64,9 @@ namespace sz {
 Ice::Cfg *createFunction(Ice::GlobalContext *context, Ice::Type returnType, const std::vector<Ice::Type> &paramTypes)
 {
 	uint32_t sequenceNumber = 0;
-	auto function = Ice::Cfg::create(context, sequenceNumber).release();
+	auto *function = Ice::Cfg::create(context, sequenceNumber).release();
+
+	function->setStackSizeLimit(512 * 1024);  // 512 KiB
 
 	Ice::CfgLocalAllocatorScope allocScope{ function };
 
@@ -98,7 +101,7 @@ Ice::Variable *allocateStackVariable(Ice::Cfg *function, Ice::Type type, int arr
 
 	auto bytes = Ice::ConstantInteger32::create(function->getContext(), Ice::IceType_i32, totalSize);
 	auto address = function->makeVariable(getPointerType(type));
-	auto alloca = Ice::InstAlloca::create(function, address, bytes, typeSize);
+	auto alloca = Ice::InstAlloca::create(function, address, bytes, typeSize);  // SRoA depends on the alignment to match the type size.
 	function->getEntryNode()->getInsts().push_front(alloca);
 
 	return address;
@@ -171,15 +174,6 @@ Ice::Variable *Call(Ice::Cfg *function, Ice::CfgNode *basicBlock, Return(fptr)(C
 	return Call(function, basicBlock, retTy, reinterpret_cast<void const *>(fptr), iceArgs, false);
 }
 
-// Returns a non-const variable copy of const v
-Ice::Variable *createUnconstCast(Ice::Cfg *function, Ice::CfgNode *basicBlock, Ice::Constant *v)
-{
-	Ice::Variable *result = function->makeVariable(v->getType());
-	Ice::InstCast *cast = Ice::InstCast::create(function, Ice::InstCast::Bitcast, result, v);
-	basicBlock->appendInst(cast);
-	return result;
-}
-
 Ice::Variable *createTruncate(Ice::Cfg *function, Ice::CfgNode *basicBlock, Ice::Operand *from, Ice::Type toType)
 {
 	Ice::Variable *to = function->makeVariable(toType);
@@ -190,14 +184,6 @@ Ice::Variable *createTruncate(Ice::Cfg *function, Ice::CfgNode *basicBlock, Ice:
 
 Ice::Variable *createLoad(Ice::Cfg *function, Ice::CfgNode *basicBlock, Ice::Operand *ptr, Ice::Type type, unsigned int align)
 {
-	// TODO(b/148272103): InstLoad assumes that a constant ptr is an offset, rather than an
-	// absolute address. We circumvent this by casting to a non-const variable, and loading
-	// from that.
-	if(auto *cptr = llvm::dyn_cast<Ice::Constant>(ptr))
-	{
-		ptr = sz::createUnconstCast(function, basicBlock, cptr);
-	}
-
 	Ice::Variable *result = function->makeVariable(type);
 	auto load = Ice::InstLoad::create(function, result, ptr, align);
 	basicBlock->appendInst(load);
@@ -214,6 +200,9 @@ class CoroutineGenerator;
 }  // namespace rr
 
 namespace {
+
+// Used to automatically invoke llvm_shutdown() when driver is unloaded
+llvm::llvm_shutdown_obj llvmShutdownObj;
 
 // Default configuration settings. Must be accessed under mutex lock.
 std::mutex defaultConfigLock;
@@ -252,6 +241,9 @@ marl::Scheduler &getOrCreateScheduler()
 
 	return *scheduler;
 }
+
+rr::Nucleus::OptimizerCallback *optimizerCallback = nullptr;
+
 }  // Anonymous namespace
 
 namespace {
@@ -829,6 +821,25 @@ public:
 
 	const void *addConstantData(const void *data, size_t size, size_t alignment = 1)
 	{
+		// Check if we already have a suitable constant.
+		for(const auto &c : constantsPool)
+		{
+			void *ptr = c.data.get();
+			size_t space = c.space;
+
+			void *alignedPtr = std::align(alignment, size, ptr, space);
+
+			if(space < size)
+			{
+				continue;
+			}
+
+			if(memcmp(data, alignedPtr, size) == 0)
+			{
+				return alignedPtr;
+			}
+		}
+
 		// TODO(b/148086935): Replace with a buffer allocator.
 		size_t space = size + alignment;
 		auto buf = std::unique_ptr<uint8_t[]>(new uint8_t[space]);
@@ -836,15 +847,27 @@ public:
 		void *alignedPtr = std::align(alignment, size, ptr, space);
 		ASSERT(alignedPtr);
 		memcpy(alignedPtr, data, size);
-		constantData.emplace_back(std::move(buf));
+		constantsPool.emplace_back(std::move(buf), space);
+
 		return alignedPtr;
 	}
 
 private:
+	struct Constant
+	{
+		Constant(std::unique_ptr<uint8_t[]> data, size_t space)
+		    : data(std::move(data))
+		    , space(space)
+		{}
+
+		std::unique_ptr<uint8_t[]> data;
+		size_t space;
+	};
+
 	std::array<const void *, Nucleus::CoroutineEntryCount> funcs = {};
 	std::vector<uint8_t, ExecutableAllocator<uint8_t>> buffer;
 	std::size_t position;
-	std::vector<std::unique_ptr<uint8_t[]>> constantData;
+	std::vector<Constant> constantsPool;
 };
 
 #ifdef ENABLE_RR_PRINT
@@ -988,7 +1011,17 @@ static std::shared_ptr<Routine> acquireRoutine(Ice::Cfg *const (&functions)[Coun
 
 		currFunc->setFunctionName(Ice::GlobalString::createWithString(::context, names[i]));
 
-		rr::optimize(currFunc);
+		if(::optimizerCallback)
+		{
+			Nucleus::OptimizerReport report;
+			rr::optimize(currFunc, &report);
+			::optimizerCallback(&report);
+			::optimizerCallback = nullptr;
+		}
+		else
+		{
+			rr::optimize(currFunc);
+		}
 
 		currFunc->computeInOutEdges();
 		ASSERT_MSG(!currFunc->hasError(), "%s", currFunc->getError().c_str());
@@ -1004,6 +1037,11 @@ static std::shared_ptr<Routine> acquireRoutine(Ice::Cfg *const (&functions)[Coun
 		}
 
 		currFunc->emitIAS();
+
+		if(currFunc->hasError())
+		{
+			return nullptr;
+		}
 	}
 
 	// Emit items
@@ -1066,7 +1104,7 @@ Value *Nucleus::allocateStackVariable(Type *t, int arraySize)
 
 	auto bytes = Ice::ConstantInteger32::create(::context, Ice::IceType_i32, totalSize);
 	auto address = ::function->makeVariable(T(getPointerType(t)));
-	auto alloca = Ice::InstAlloca::create(::function, address, bytes, typeSize);
+	auto alloca = Ice::InstAlloca::create(::function, address, bytes, typeSize);  // SRoA depends on the alignment to match the type size.
 	::function->getEntryNode()->getInsts().push_front(alloca);
 
 	return V(address);
@@ -1084,9 +1122,7 @@ BasicBlock *Nucleus::getInsertBlock()
 
 void Nucleus::setInsertBlock(BasicBlock *basicBlock)
 {
-	//	ASSERT(::basicBlock->getInsts().back().getTerminatorEdges().size() >= 0 && "Previous basic block must have a terminator");
-
-	Variable::materializeAll();
+	// ASSERT(::basicBlock->getInsts().back().getTerminatorEdges().size() >= 0 && "Previous basic block must have a terminator");
 
 	::basicBlock = basicBlock;
 }
@@ -1402,9 +1438,8 @@ Value *Nucleus::createLoad(Value *ptr, Type *type, bool isVolatile, unsigned int
 		else
 		{
 			const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::LoadSubVector, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-			auto target = ::context->getConstantUndef(Ice::IceType_i32);
 			result = ::function->makeVariable(T(type));
-			auto load = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+			auto load = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 			load->addArg(ptr);
 			load->addArg(::context->getConstantInt32(typeSize(type)));
 			::basicBlock->appendInst(load);
@@ -1474,8 +1509,7 @@ Value *Nucleus::createStore(Value *value, Value *ptr, Type *type, bool isVolatil
 		else
 		{
 			const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::StoreSubVector, Ice::Intrinsics::SideEffects_T, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_T };
-			auto target = ::context->getConstantUndef(Ice::IceType_i32);
-			auto store = Ice::InstIntrinsicCall::create(::function, 3, nullptr, target, intrinsic);
+			auto store = Ice::InstIntrinsic::create(::function, 3, nullptr, intrinsic);
 			store->addArg(value);
 			store->addArg(ptr);
 			store->addArg(::context->getConstantInt32(typeSize(type)));
@@ -1535,8 +1569,7 @@ static Value *createAtomicRMW(Ice::Intrinsics::AtomicRMWOperation rmwOp, Value *
 	Ice::Variable *result = ::function->makeVariable(value->getType());
 
 	const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AtomicRMW, Ice::Intrinsics::SideEffects_T, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_T };
-	auto target = ::context->getConstantUndef(Ice::IceType_i32);
-	auto inst = Ice::InstIntrinsicCall::create(::function, 0, result, target, intrinsic);
+	auto inst = Ice::InstIntrinsic::create(::function, 0, result, intrinsic);
 	auto op = ::context->getConstantInt32(rmwOp);
 	auto order = ::context->getConstantInt32(stdToIceMemoryOrder(memoryOrder));
 	inst->addArg(op);
@@ -1590,8 +1623,7 @@ Value *Nucleus::createAtomicCompareExchange(Value *ptr, Value *value, Value *com
 	Ice::Variable *result = ::function->makeVariable(value->getType());
 
 	const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AtomicCmpxchg, Ice::Intrinsics::SideEffects_T, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_T };
-	auto target = ::context->getConstantUndef(Ice::IceType_i32);
-	auto inst = Ice::InstIntrinsicCall::create(::function, 0, result, target, intrinsic);
+	auto inst = Ice::InstIntrinsic::create(::function, 0, result, intrinsic);
 	auto orderEq = ::context->getConstantInt32(stdToIceMemoryOrder(memoryOrderEqual));
 	auto orderNeq = ::context->getConstantInt32(stdToIceMemoryOrder(memoryOrderUnequal));
 	inst->addArg(ptr);
@@ -1700,12 +1732,6 @@ static Value *createIntCompare(Ice::InstIcmp::ICond condition, Value *lhs, Value
 	::basicBlock->appendInst(cmp);
 
 	return V(result);
-}
-
-Value *Nucleus::createPtrEQ(Value *lhs, Value *rhs)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-	return createIntCompare(Ice::InstIcmp::Eq, lhs, rhs);
 }
 
 Value *Nucleus::createICmpEQ(Value *lhs, Value *rhs)
@@ -2171,6 +2197,11 @@ Value *Nucleus::createConstantString(const char *v)
 	return V(IceConstantData(v, strlen(v) + 1));
 }
 
+void Nucleus::setOptimizerCallback(OptimizerCallback *callback)
+{
+	::optimizerCallback = callback;
+}
+
 Type *Void::type()
 {
 	return T(Ice::IceType_void);
@@ -2249,8 +2280,7 @@ RValue<Byte8> AddSat(RValue<Byte8> x, RValue<Byte8> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AddSaturateUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto paddusb = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto paddusb = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		paddusb->addArg(x.value());
 		paddusb->addArg(y.value());
 		::basicBlock->appendInst(paddusb);
@@ -2280,8 +2310,7 @@ RValue<Byte8> SubSat(RValue<Byte8> x, RValue<Byte8> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SubtractSaturateUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto psubusw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto psubusw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		psubusw->addArg(x.value());
 		psubusw->addArg(y.value());
 		::basicBlock->appendInst(psubusw);
@@ -2345,8 +2374,7 @@ RValue<Int> SignMask(RValue<Byte8> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SignMask, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto movmsk = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto movmsk = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		movmsk->addArg(x.value());
 		::basicBlock->appendInst(movmsk);
 
@@ -2407,8 +2435,7 @@ RValue<SByte8> AddSat(RValue<SByte8> x, RValue<SByte8> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AddSaturateSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto paddsb = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto paddsb = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		paddsb->addArg(x.value());
 		paddsb->addArg(y.value());
 		::basicBlock->appendInst(paddsb);
@@ -2438,8 +2465,7 @@ RValue<SByte8> SubSat(RValue<SByte8> x, RValue<SByte8> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SubtractSaturateSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto psubsb = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto psubsb = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		psubsb->addArg(x.value());
 		psubsb->addArg(y.value());
 		::basicBlock->appendInst(psubsb);
@@ -2460,8 +2486,7 @@ RValue<Int> SignMask(RValue<SByte8> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SignMask, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto movmsk = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto movmsk = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		movmsk->addArg(x.value());
 		::basicBlock->appendInst(movmsk);
 
@@ -2619,8 +2644,7 @@ RValue<Short4> AddSat(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AddSaturateSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto paddsw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto paddsw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		paddsw->addArg(x.value());
 		paddsw->addArg(y.value());
 		::basicBlock->appendInst(paddsw);
@@ -2646,8 +2670,7 @@ RValue<Short4> SubSat(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SubtractSaturateSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto psubsw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto psubsw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		psubsw->addArg(x.value());
 		psubsw->addArg(y.value());
 		::basicBlock->appendInst(psubsw);
@@ -2673,8 +2696,7 @@ RValue<Short4> MulHigh(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::MultiplyHighSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pmulhw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pmulhw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pmulhw->addArg(x.value());
 		pmulhw->addArg(y.value());
 		::basicBlock->appendInst(pmulhw);
@@ -2698,8 +2720,7 @@ RValue<Int2> MulAdd(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::MultiplyAddPairs, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pmaddwd = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pmaddwd = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pmaddwd->addArg(x.value());
 		pmaddwd->addArg(y.value());
 		::basicBlock->appendInst(pmaddwd);
@@ -2729,8 +2750,7 @@ RValue<SByte8> PackSigned(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::VectorPackSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pack = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pack = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pack->addArg(x.value());
 		pack->addArg(y.value());
 		::basicBlock->appendInst(pack);
@@ -2760,8 +2780,7 @@ RValue<Byte8> PackUnsigned(RValue<Short4> x, RValue<Short4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v16i8);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::VectorPackUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pack = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pack = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pack->addArg(x.value());
 		pack->addArg(y.value());
 		::basicBlock->appendInst(pack);
@@ -2914,8 +2933,7 @@ RValue<UShort4> AddSat(RValue<UShort4> x, RValue<UShort4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AddSaturateUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto paddusw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto paddusw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		paddusw->addArg(x.value());
 		paddusw->addArg(y.value());
 		::basicBlock->appendInst(paddusw);
@@ -2941,8 +2959,7 @@ RValue<UShort4> SubSat(RValue<UShort4> x, RValue<UShort4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SubtractSaturateUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto psubusw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto psubusw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		psubusw->addArg(x.value());
 		psubusw->addArg(y.value());
 		::basicBlock->appendInst(psubusw);
@@ -2968,8 +2985,7 @@ RValue<UShort4> MulHigh(RValue<UShort4> x, RValue<UShort4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::MultiplyHighUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pmulhuw = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pmulhuw = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pmulhuw->addArg(x.value());
 		pmulhuw->addArg(y.value());
 		::basicBlock->appendInst(pmulhuw);
@@ -3227,8 +3243,7 @@ RValue<Int> RoundInt(RValue<Float> cast)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Nearbyint, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto nearbyint = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto nearbyint = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		nearbyint->addArg(cast.value());
 		::basicBlock->appendInst(nearbyint);
 
@@ -3580,9 +3595,34 @@ RValue<Int4> RoundInt(RValue<Float4> cast)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Nearbyint, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto nearbyint = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto nearbyint = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		nearbyint->addArg(cast.value());
+		::basicBlock->appendInst(nearbyint);
+
+		return RValue<Int4>(V(result));
+	}
+}
+
+RValue<Int4> RoundIntClamped(RValue<Float4> cast)
+{
+	RR_DEBUG_INFO_UPDATE_LOC();
+
+	// cvtps2dq produces 0x80000000, a negative value, for input larger than
+	// 2147483520.0, so clamp to 2147483520. Values less than -2147483520.0
+	// saturate to 0x80000000.
+	RValue<Float4> clamped = Min(cast, Float4(0x7FFFFF80));
+
+	if(emulateIntrinsics || CPUID::ARM)
+	{
+		// Push the fractional part off the mantissa. Accurate up to +/-2^22.
+		return Int4((clamped + Float4(0x00C00000)) - Float4(0x00C00000));
+	}
+	else
+	{
+		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4i32);
+		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Nearbyint, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
+		auto nearbyint = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
+		nearbyint->addArg(clamped.value());
 		::basicBlock->appendInst(nearbyint);
 
 		return RValue<Int4>(V(result));
@@ -3610,8 +3650,7 @@ RValue<Short8> PackSigned(RValue<Int4> x, RValue<Int4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::VectorPackSigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pack = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pack = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pack->addArg(x.value());
 		pack->addArg(y.value());
 		::basicBlock->appendInst(pack);
@@ -3637,8 +3676,7 @@ RValue<UShort8> PackUnsigned(RValue<Int4> x, RValue<Int4> y)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v8i16);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::VectorPackUnsigned, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto pack = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto pack = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		pack->addArg(x.value());
 		pack->addArg(y.value());
 		::basicBlock->appendInst(pack);
@@ -3659,8 +3697,7 @@ RValue<Int> SignMask(RValue<Int4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SignMask, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto movmsk = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto movmsk = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		movmsk->addArg(x.value());
 		::basicBlock->appendInst(movmsk);
 
@@ -3832,8 +3869,7 @@ RValue<Float> Sqrt(RValue<Float> x)
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Ice::Variable *result = ::function->makeVariable(Ice::IceType_f32);
 	const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Sqrt, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-	auto target = ::context->getConstantUndef(Ice::IceType_i32);
-	auto sqrt = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+	auto sqrt = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 	sqrt->addArg(x.value());
 	::basicBlock->appendInst(sqrt);
 
@@ -3932,6 +3968,45 @@ RValue<Float4> RcpSqrt_pp(RValue<Float4> x)
 	return Rcp_pp(Sqrt(x));
 }
 
+bool HasRcpApprox()
+{
+	// TODO(b/175612820): Update once we implement x86 SSE rcp_ss and rsqrt_ss intrinsics in Subzero
+	return false;
+}
+
+RValue<Float4> RcpApprox(RValue<Float4> x, bool exactAtPow2)
+{
+	// TODO(b/175612820): Update once we implement x86 SSE rcp_ss and rsqrt_ss intrinsics in Subzero
+	UNREACHABLE("RValue<Float4> RcpApprox()");
+	return { 0.0f };
+}
+
+RValue<Float> RcpApprox(RValue<Float> x, bool exactAtPow2)
+{
+	// TODO(b/175612820): Update once we implement x86 SSE rcp_ss and rsqrt_ss intrinsics in Subzero
+	UNREACHABLE("RValue<Float> RcpApprox()");
+	return { 0.0f };
+}
+
+bool HasRcpSqrtApprox()
+{
+	return false;
+}
+
+RValue<Float4> RcpSqrtApprox(RValue<Float4> x)
+{
+	// TODO(b/175612820): Update once we implement x86 SSE rcp_ss and rsqrt_ss intrinsics in Subzero
+	UNREACHABLE("RValue<Float4> RcpSqrtApprox()");
+	return { 0.0f };
+}
+
+RValue<Float> RcpSqrtApprox(RValue<Float> x)
+{
+	// TODO(b/175612820): Update once we implement x86 SSE rcp_ss and rsqrt_ss intrinsics in Subzero
+	UNREACHABLE("RValue<Float> RcpSqrtApprox()");
+	return { 0.0f };
+}
+
 RValue<Float4> Sqrt(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
@@ -3949,8 +4024,7 @@ RValue<Float4> Sqrt(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4f32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Sqrt, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto sqrt = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto sqrt = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		sqrt->addArg(x.value());
 		::basicBlock->appendInst(sqrt);
 
@@ -3970,8 +4044,7 @@ RValue<Int> SignMask(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::SignMask, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto movmsk = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto movmsk = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		movmsk->addArg(x.value());
 		::basicBlock->appendInst(movmsk);
 
@@ -4063,8 +4136,7 @@ RValue<Float4> Round(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4f32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Round, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto round = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto round = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		round->addArg(x.value());
 		round->addArg(::context->getConstantInt32(0));
 		::basicBlock->appendInst(round);
@@ -4084,8 +4156,7 @@ RValue<Float4> Trunc(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4f32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Round, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto round = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto round = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		round->addArg(x.value());
 		round->addArg(::context->getConstantInt32(3));
 		::basicBlock->appendInst(round);
@@ -4126,8 +4197,7 @@ RValue<Float4> Floor(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4f32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Round, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto round = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto round = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		round->addArg(x.value());
 		round->addArg(::context->getConstantInt32(1));
 		::basicBlock->appendInst(round);
@@ -4147,8 +4217,7 @@ RValue<Float4> Ceil(RValue<Float4> x)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_v4f32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Round, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto round = Ice::InstIntrinsicCall::create(::function, 2, result, target, intrinsic);
+		auto round = Ice::InstIntrinsic::create(::function, 2, result, intrinsic);
 		round->addArg(x.value());
 		round->addArg(::context->getConstantInt32(2));
 		::basicBlock->appendInst(round);
@@ -4195,8 +4264,7 @@ void Breakpoint()
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Trap, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-	auto target = ::context->getConstantUndef(Ice::IceType_i32);
-	auto trap = Ice::InstIntrinsicCall::create(::function, 0, nullptr, target, intrinsic);
+	auto trap = Ice::InstIntrinsic::create(::function, 0, nullptr, intrinsic);
 	::basicBlock->appendInst(trap);
 }
 
@@ -4204,8 +4272,7 @@ void Nucleus::createFence(std::memory_order memoryOrder)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::AtomicFence, Ice::Intrinsics::SideEffects_T, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-	auto target = ::context->getConstantUndef(Ice::IceType_i32);
-	auto inst = Ice::InstIntrinsicCall::create(::function, 0, nullptr, target, intrinsic);
+	auto inst = Ice::InstIntrinsic::create(::function, 0, nullptr, intrinsic);
 	auto order = ::context->getConstantInt32(stdToIceMemoryOrder(memoryOrder));
 	inst->addArg(order);
 	::basicBlock->appendInst(inst);
@@ -4385,8 +4452,7 @@ RValue<UInt> Ctlz(RValue<UInt> x, bool isZeroUndef)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Ctlz, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto ctlz = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto ctlz = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		ctlz->addArg(x.value());
 		::basicBlock->appendInst(ctlz);
 
@@ -4426,8 +4492,7 @@ RValue<UInt> Cttz(RValue<UInt> x, bool isZeroUndef)
 	{
 		Ice::Variable *result = ::function->makeVariable(Ice::IceType_i32);
 		const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Cttz, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
-		auto target = ::context->getConstantUndef(Ice::IceType_i32);
-		auto ctlz = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+		auto ctlz = Ice::InstIntrinsic::create(::function, 1, result, intrinsic);
 		ctlz->addArg(x.value());
 		::basicBlock->appendInst(ctlz);
 

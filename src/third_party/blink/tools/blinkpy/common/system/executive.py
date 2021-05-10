@@ -39,6 +39,8 @@ import sys
 import threading
 import time
 
+import six
+
 _log = logging.getLogger(__name__)
 
 
@@ -72,7 +74,7 @@ class ScriptError(Exception):
         self.cwd = cwd
 
     def message_with_output(self):
-        return unicode(self)
+        return six.text_type(self)
 
     def command_name(self):
         command_path = self.script_args
@@ -298,7 +300,7 @@ class Executive(object):
         # See https://bugs.webkit.org/show_bug.cgi?id=37528
         # for an example of a regression caused by passing a unicode string directly.
         # FIXME: We may need to encode differently on different platforms.
-        if isinstance(user_input, unicode):
+        if isinstance(user_input, six.text_type):
             user_input = user_input.encode(self._child_process_encoding())
         return (self.PIPE, user_input)
 
@@ -309,7 +311,7 @@ class Executive(object):
         args = self._stringify_args(args)
         escaped_args = []
         for arg in args:
-            if isinstance(arg, unicode):
+            if isinstance(arg, six.text_type):
                 # Escape any non-ascii characters for easy copy/paste
                 arg = arg.encode('unicode_escape')
             # FIXME: Do we need to fix quotes here?
@@ -329,7 +331,34 @@ class Executive(object):
             ignore_stderr=False,
             decode_output=True,
             debug_logging=True):
-        """Popen wrapper for convenience and to work around python bugs."""
+        """Popen wrapper for convenience and to work around python bugs.
+
+        By default, run_command will expect a zero exit code and will return the
+        program output in that case, or throw a ScriptError if the program has a
+        non-zero exit code. This behavior can be changed by setting the
+        appropriate input parameters.
+
+        Args:
+            args: the program arguments. Passed to Popen.
+            cwd: the current working directory for the program. Passed to Popen.
+            env: the environment for the program. Passed to Popen.
+            input: input to give to the program on stdin. Accepts either a file
+                handler (will be passed directly) or a string (will be passed
+                via a pipe).
+            timeout_seconds: maximum time in seconds to wait for the program to
+                terminate; on a timeout the process will be killed
+            error_handler: a custom error handler called with a ScriptError when
+                the program fails. The default handler raises the error.
+            return_exit_code: instead of returning the program output, return
+                the exit code. Setting this makes non-zero exit codes non-fatal
+                (the error_handler will not be called).
+            return_stderr: if True, include stderr in the returned output. If
+                False, stderr will be printed to the console unless ignore_stderr
+                is also True.
+            ignore_stderr: squash stderr so it doesn't appear in the console.
+            decode_output: whether to decode the program output.
+            debug_logging: whether to log details about program execution.
+        """
         assert isinstance(args, list) or isinstance(args, tuple)
         start_time = time.time()
 
@@ -347,8 +376,13 @@ class Executive(object):
             env=env,
             close_fds=self._should_close_fds())
 
+        def on_command_timeout():
+            _log.error('Error: Command timed out after %s seconds',
+                       timeout_seconds)
+            process.kill()
+
         if timeout_seconds:
-            timer = threading.Timer(timeout_seconds, process.kill)
+            timer = threading.Timer(timeout_seconds, on_command_timeout)
             timer.start()
 
         output = process.communicate(string_to_communicate)[0]
@@ -415,7 +449,7 @@ class Executive(object):
 
     def _stringify_args(self, args):
         # Popen will throw an exception if args are non-strings (like int())
-        string_args = map(unicode, args)
+        string_args = map(six.text_type, args)
         # The Windows implementation of Popen cannot handle unicode strings. :(
         return map(self._encode_argument_if_needed, string_args)
 

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="WebAudio.AudioBuffer.Length" units="frames"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.NumberOfChannels" units="units"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -42,7 +42,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.SampleRate384kHz" units="Hz"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.SampleRateRatio384kHz" units="units"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -63,7 +63,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.HardwareSampleRate" units="Hz"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -72,8 +72,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.AudioContext.latencyHintCategory" units="units"
+    expires_after="2021-06-30">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    If provided, the latencyHint option category of &quot;interactive&quot;,
+    &quot;balanced&quot;, &quot;playback&quot;, or &quot;exact&quot;, in that
+    order where &quot;exact&quot; means an explicit floating point value was
+    provided. Recorded for every AudioContext that is constructed with a
+    latencyHint.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioContext.latencyHintMilliSeconds" units="ms"
+    expires_after="2021-06-30">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    If the latencyHint is provided and is a floating-point number, the value in
+    milliseconds is recorded. This is recorded for every AudioContext that is
+    constructed with a floating-point latencyHint value.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.AudioContext.MaxChannelsAvailable" units="units"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -84,7 +108,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioContextOptions.sampleRate" units="Hz"
-    expires_after="2021-04-18">
+    expires_after="2021-08-09">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -95,7 +119,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioContextOptions.sampleRateRatio" units="units"
-    expires_after="2021-04-18">
+    expires_after="2021-08-09">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -106,7 +130,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.CallbackBufferSize" units="units"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -118,7 +142,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.HardwareBufferSize" units="units"
-    expires_after="2021-04-04">
+    expires_after="2021-08-09">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -128,7 +152,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.Autoplay" enum="WebAudioAutoplayStatus"
-    expires_after="2021-06-01">
+    expires_after="2021-08-09">
   <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <owner>rtoy@chromium.org</owner>
@@ -141,7 +165,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.Autoplay.CrossOrigin" enum="WebAudioAutoplayStatus"
-    expires_after="2021-06-01">
+    expires_after="2021-08-01">
   <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <owner>rtoy@chromium.org</owner>
@@ -165,7 +189,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.BiquadFilter.Type" enum="BiquadFilterType"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -177,7 +201,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.ConvolverNode.ImpulseResponseLength" units="ms"
-    expires_after="2021-02-18">
+    expires_after="2021-08-18">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -187,7 +211,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.IIRFilterNode.Order" units="units"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -198,7 +222,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.OfflineAudioContext.ChannelCount" units="units"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
+  <obsolete>
+    Removed 2021-01-12. See crbug.com/1165240.
+  </obsolete>
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -209,7 +236,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.OfflineAudioContext.Length" units="frames"
-    expires_after="2021-03-21">
+    expires_after="2021-05-23">
+  <obsolete>
+    Removed 2021-01-12. See crbug.com/1165240.
+  </obsolete>
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -221,6 +251,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="WebAudio.OfflineAudioContext.SampleRate384kHz" units="Hz"
     expires_after="2021-02-18">
+  <obsolete>
+    Removed 2021-01-12. See crbug.com/1165240.
+  </obsolete>
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -231,7 +264,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.PannerNode.PanningModel" enum="PanningModelType"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -244,7 +277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.PushPullFIFO.UnderflowGlitches" enum="Boolean"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>
@@ -255,7 +288,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebAudio.PushPullFIFO.UnderflowPercentage" units="%"
-    expires_after="2021-01-06">
+    expires_after="2021-07-06">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
   <summary>

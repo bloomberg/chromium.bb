@@ -6,9 +6,6 @@
 
   // DevToolsAPI ----------------------------------------------------------------
 
-  /**
-   * @unrestricted
-   */
   const DevToolsAPIImpl = class {
     constructor() {
       /**
@@ -357,9 +354,8 @@
 
   /**
    * Enum for recordPerformanceHistogram
-   * Warning: There are two other definitions of this enum in the DevTools code
+   * Warning: There is another definition of this enum in the DevTools code
    * base, keep them in sync:
-   * front_end/extern.js
    * front_end/host/InspectorFrontendHostAPI.js
    * @readonly
    * @enum {string}
@@ -371,22 +367,22 @@
     PanelShown: 'DevTools.PanelShown',
     SidebarPaneShown: 'DevTools.SidebarPaneShown',
     KeyboardShortcutFired: 'DevTools.KeyboardShortcutFired',
+    IssueCreated: 'DevTools.IssueCreated',
     IssuesPanelIssueExpanded: 'DevTools.IssuesPanelIssueExpanded',
     IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
     IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
     KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
     DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
-    CSSGridSettings: 'DevTools.CSSGridSettings2',
-    HighlightedPersistentCSSGridCount: 'DevTools.HighlightedPersistentCSSGridCount',
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
-    GridOverlayOpenedFrom: 'DevTools.GridOverlayOpenedFrom',
+    CssEditorOpened: 'DevTools.CssEditorOpened',
+    DeveloperResourceLoaded: 'DevTools.DeveloperResourceLoaded',
+    DeveloperResourceScheme: 'DevTools.DeveloperResourceScheme',
   };
 
   /**
    * @implements {InspectorFrontendHostAPI}
-   * @unrestricted
    */
   const InspectorFrontendHostImpl = class {
     /**
@@ -974,7 +970,6 @@
       'dataGrid-cookiesTable',
       'dataGrid-DOMStorageItemsView',
       'debuggerSidebarHidden',
-      'disableDataSaverInfobar',
       'disablePausedStateOverlay',
       'domBreakpoints',
       'domWordWrap',
@@ -1151,7 +1146,7 @@
           return;
         }
         scheduled = true;
-        setImmediate(callObserver);
+        queueMicrotask(callObserver);
       }
 
       function callObserver() {
@@ -1396,7 +1391,7 @@
         if (arguments.length === 1) {
           force = !this.contains(token);
         }
-        return originalDOMTokenListToggle.call(this, token, !!force);
+        return originalDOMTokenListToggle.call(this, token, Boolean(force));
       };
     }
 

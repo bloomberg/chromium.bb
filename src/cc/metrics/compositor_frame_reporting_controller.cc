@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/dropped_frame_counter.h"
 #include "cc/metrics/latency_ukm_reporter.h"
@@ -221,6 +222,10 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     AdvanceReporterStage(PipelineStage::kBeginImplFrame,
                          PipelineStage::kActivate);
     impl_reporter = std::move(reporters_[PipelineStage::kActivate]);
+    auto partial_update_decider =
+        HasOutstandingUpdatesFromMain(current_frame_id);
+    if (partial_update_decider)
+      impl_reporter->SetPartialUpdateDecider(partial_update_decider);
   } else if (CanSubmitMainFrame(current_frame_id)) {
     auto& reporter = reporters_[PipelineStage::kBeginMainFrame];
     reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
@@ -235,10 +240,6 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     if (reporter) {
       reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
                            reporter->impl_frame_finish_time());
-      // If the frame does not include any new updates from the main thread,
-      // then flag the frame as containing only partial updates.
-      if (!is_activated_frame_new)
-        reporter->set_has_partial_update(true);
       impl_reporter = std::move(reporter);
     }
   }
@@ -306,20 +307,40 @@ void CompositorFrameReportingController::DidNotProduceFrame(
       // BeginMain stage, but the main-thread can make updates, which can be
       // submitted with the next frame.
       stage_reporter->OnDidNotProduceFrame(skip_reason);
+      if (skip_reason == FrameSkippedReason::kWaitingOnMain)
+        SetPartialUpdateDeciderWhenWaitingOnMain(stage_reporter);
+
       break;
     }
   }
+}
 
-  // If the compositor has no updates, and the main-thread has not responded to
-  // the begin-main-frame yet, then it is essentially a dropped frame. To handle
-  // this case, keep the reporter for the main-thread, but recreate a reporter
-  // for the dropped-frame.
-  if (skip_reason == FrameSkippedReason::kWaitingOnMain) {
-    auto reporter = RestoreReporterAtBeginImpl(id);
-    if (reporter) {
-      reporter->OnDidNotProduceFrame(skip_reason);
-      reporter->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
-                               Now());
+void CompositorFrameReportingController::
+    SetPartialUpdateDeciderWhenWaitingOnMain(
+        std::unique_ptr<CompositorFrameReporter>& stage_reporter) {
+  // If the compositor has no updates, and the main-thread has not responded
+  // to the begin-main-frame yet, then depending on main thread having
+  // update or not this would be a NoFrameProduced or a DroppedFrame. To
+  // handle this case , keep the reporter for the main-thread, but recreate
+  // a reporter for the current frame and link it to the reporter it depends
+  // on.
+  auto reporter = RestoreReporterAtBeginImpl(stage_reporter->frame_id());
+  if (reporter) {
+    reporter->OnDidNotProduceFrame(FrameSkippedReason::kWaitingOnMain);
+    reporter->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
+                             Now());
+    stage_reporter->AdoptReporter(std::move(reporter));
+  } else {
+    // The stage_reporter in this case was waiting for main, so needs to
+    // be adopted by the reporter which is waiting on Main thread's work
+    auto partial_update_decider =
+        HasOutstandingUpdatesFromMain(stage_reporter->frame_id());
+    if (partial_update_decider) {
+      stage_reporter->SetPartialUpdateDecider(partial_update_decider);
+      stage_reporter->OnDidNotProduceFrame(FrameSkippedReason::kWaitingOnMain);
+      stage_reporter->TerminateFrame(
+          FrameTerminationStatus::kDidNotProduceFrame, Now());
+      partial_update_decider->AdoptReporter(std::move(stage_reporter));
     }
   }
 }
@@ -362,8 +383,8 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
     // the original reporter, so that the cloned reporter stays alive until the
     // original reporter is terminated, and the cloned reporter's 'partial
     // update' flag can be unset if necessary.
-    if (reporter->has_partial_update()) {
-      auto orig_reporter = reporter->cloned_from();
+    if (reporter->MightHavePartialUpdate()) {
+      auto orig_reporter = reporter->partial_update_decider();
       if (orig_reporter)
         orig_reporter->AdoptReporter(std::move(reporter));
     }
@@ -409,11 +430,26 @@ void CompositorFrameReportingController::RemoveActiveTracker(
 void CompositorFrameReportingController::SetThreadAffectsSmoothness(
     FrameSequenceMetrics::ThreadType thread_type,
     bool affects_smoothness) {
+  auto current_smooth_thread = GetSmoothThread();
+
   if (thread_type == FrameSequenceMetrics::ThreadType::kCompositor) {
     is_compositor_thread_driving_smoothness_ = affects_smoothness;
   } else {
     DCHECK_EQ(thread_type, FrameSequenceMetrics::ThreadType::kMain);
     is_main_thread_driving_smoothness_ = affects_smoothness;
+  }
+
+  // keep the history for the last 3 seconds.
+  if (!smooth_thread_history_.empty()) {
+    auto expired_smooth_thread = smooth_thread_history_.lower_bound(
+        Now() - base::TimeDelta::FromSeconds(3))--;
+    smooth_thread_history_.erase(smooth_thread_history_.begin(),
+                                 expired_smooth_thread);
+  }
+
+  // Only trackes the history if there is a change in smooth_thread_
+  if (current_smooth_thread != GetSmoothThread()) {
+    smooth_thread_history_.insert(std::make_pair(Now(), current_smooth_thread));
   }
 }
 
@@ -487,6 +523,37 @@ CompositorFrameReportingController::GetSmoothThread() const {
              : SmoothThread::kSmoothNone;
 }
 
+CompositorFrameReporter::SmoothThread
+CompositorFrameReportingController::GetSmoothThreadAtTime(
+    base::TimeTicks timestamp) const {
+  if (smooth_thread_history_.lower_bound(timestamp) ==
+      smooth_thread_history_.end())
+    return GetSmoothThread();
+  return smooth_thread_history_.lower_bound(timestamp)->second;
+}
+
+base::WeakPtr<CompositorFrameReporter>
+CompositorFrameReportingController::HasOutstandingUpdatesFromMain(
+    const viz::BeginFrameId& id) const {
+  // Any unterminated reporter in the 'main frame', or 'commit' stages, then
+  // that indicates some pending updates from the main thread.
+  {
+    const auto& reporter = reporters_[PipelineStage::kBeginMainFrame];
+    if (reporter && reporter->frame_id() < id &&
+        !reporter->did_abort_main_frame()) {
+      return reporter->GetWeakPtr();
+    }
+  }
+  {
+    const auto& reporter = reporters_[PipelineStage::kCommit];
+    if (reporter && reporter->frame_id() < id) {
+      DCHECK(!reporter->did_abort_main_frame());
+      return reporter->GetWeakPtr();
+    }
+  }
+  return {};
+}
+
 void CompositorFrameReportingController::CreateReportersForDroppedFrames(
     const viz::BeginFrameArgs& old_args,
     const viz::BeginFrameArgs& new_args) const {
@@ -512,8 +579,8 @@ void CompositorFrameReportingController::CreateReportersForDroppedFrames(
         viz::BeginFrameArgs::NORMAL);
     auto reporter = std::make_unique<CompositorFrameReporter>(
         active_trackers_, args, latency_ukm_reporter_.get(),
-        should_report_metrics_, GetSmoothThread(), layer_tree_host_id_,
-        dropped_frame_counter_);
+        should_report_metrics_, GetSmoothThreadAtTime(timestamp),
+        layer_tree_host_id_, dropped_frame_counter_);
     reporter->set_tick_clock(tick_clock_);
     reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                          timestamp);

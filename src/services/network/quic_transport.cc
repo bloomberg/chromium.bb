@@ -7,9 +7,11 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/quic/platform/impl/quic_mem_slice_impl.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
+#include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
@@ -350,14 +352,14 @@ void QuicTransport::SendDatagram(base::span<const uint8_t> data,
                                  base::OnceCallback<void(bool)> callback) {
   DCHECK(!torn_down_);
 
+  datagram_callbacks_.emplace(std::move(callback));
+
   auto buffer = base::MakeRefCounted<net::IOBuffer>(data.size());
   memcpy(buffer->data(), data.data(), data.size());
   quic::QuicMemSlice slice(
       quic::QuicMemSliceImpl(std::move(buffer), data.size()));
-  const quic::MessageStatus status =
-      transport_->session()->datagram_queue()->SendOrQueueDatagram(
-          std::move(slice));
-  std::move(callback).Run(status == quic::MESSAGE_STATUS_SUCCESS);
+  transport_->session()->datagram_queue()->SendOrQueueDatagram(
+      std::move(slice));
 }
 
 void QuicTransport::CreateStream(
@@ -445,6 +447,16 @@ void QuicTransport::AbortStream(uint32_t stream, uint64_t code) {
   it->second->Abort(code_to_pass);
 }
 
+void QuicTransport::SetOutgoingDatagramExpirationDuration(
+    base::TimeDelta duration) {
+  if (torn_down_) {
+    return;
+  }
+
+  transport_->session()->datagram_queue()->SetMaxTimeInQueue(
+      quic::QuicTime::Delta::FromMicroseconds(duration.InMicroseconds()));
+}
+
 void QuicTransport::OnConnected() {
   if (torn_down_) {
     return;
@@ -514,14 +526,14 @@ void QuicTransport::OnIncomingBidirectionalStreamAvailable() {
     mojo::ScopedDataPipeProducerHandle writable_for_incoming;
     const MojoCreateDataPipeOptions options = {
         sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 256 * 1024};
-    if (mojo::CreateDataPipe(&options, &writable_for_outgoing,
-                             &readable_for_outgoing) != MOJO_RESULT_OK) {
+    if (mojo::CreateDataPipe(&options, writable_for_outgoing,
+                             readable_for_outgoing) != MOJO_RESULT_OK) {
       stream->Reset(quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
     }
-    if (mojo::CreateDataPipe(&options, &writable_for_incoming,
-                             &readable_for_incoming) != MOJO_RESULT_OK) {
+    if (mojo::CreateDataPipe(&options, writable_for_incoming,
+                             readable_for_incoming) != MOJO_RESULT_OK) {
       stream->Reset(quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
@@ -555,8 +567,8 @@ void QuicTransport::OnIncomingUnidirectionalStreamAvailable() {
     mojo::ScopedDataPipeProducerHandle writable_for_incoming;
     const MojoCreateDataPipeOptions options = {
         sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 256 * 1024};
-    if (mojo::CreateDataPipe(&options, &writable_for_incoming,
-                             &readable_for_incoming) != MOJO_RESULT_OK) {
+    if (mojo::CreateDataPipe(&options, writable_for_incoming,
+                             readable_for_incoming) != MOJO_RESULT_OK) {
       stream->Reset(quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
@@ -584,6 +596,15 @@ void QuicTransport::OnCanCreateNewOutgoingBidirectionalStream() {
 
 void QuicTransport::OnCanCreateNewOutgoingUnidirectionalStream() {
   // TODO(yhirano): Implement this.
+}
+
+void QuicTransport::OnDatagramProcessed(
+    base::Optional<quic::MessageStatus> status) {
+  DCHECK(!datagram_callbacks_.empty());
+
+  std::move(datagram_callbacks_.front())
+      .Run(status == quic::MESSAGE_STATUS_SUCCESS);
+  datagram_callbacks_.pop();
 }
 
 void QuicTransport::TearDown() {

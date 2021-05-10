@@ -22,26 +22,34 @@ namespace tint {
 namespace ast {
 
 /// A builtin decoration
-class BuiltinDecoration : public VariableDecoration {
+class BuiltinDecoration
+    : public Castable<BuiltinDecoration, VariableDecoration> {
  public:
   /// constructor
-  /// @param builtin the builtin value
   /// @param source the source of this decoration
-  BuiltinDecoration(Builtin builtin, const Source& source);
+  /// @param builtin the builtin value
+  BuiltinDecoration(const Source& source, Builtin builtin);
   ~BuiltinDecoration() override;
-
-  /// @returns true if this is a builtin decoration
-  bool IsBuiltin() const override;
 
   /// @returns the builtin value
   Builtin value() const { return builtin_; }
 
   /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  void to_str(std::ostream& out) const override;
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  BuiltinDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  Builtin builtin_ = Builtin::kNone;
+  Builtin const builtin_;
 };
 
 }  // namespace ast

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/http2_structures.h"
+#include "http2/http2_structures.h"
 
 // Tests are focused on Http2FrameHeader because it has by far the most
 // methods of any of the structures.
@@ -19,12 +19,12 @@
 #include <type_traits>
 #include <vector>
 
-#include "net/third_party/quiche/src/http2/http2_structures_test_util.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "absl/strings/str_cat.h"
+#include "http2/http2_structures_test_util.h"
+#include "http2/platform/api/http2_string_utils.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "http2/test_tools/http2_random.h"
+#include "common/platform/api/quiche_test.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -91,8 +91,8 @@ TEST(Http2FrameHeaderTest, Constructor) {
   Http2Random random;
   uint8_t frame_type = 0;
   do {
-    // Only the payload length is DCHECK'd in the constructor, so we need to
-    // make sure it is a "uint24".
+    // Only the payload length is QUICHE_DCHECK'd in the constructor, so we need
+    // to make sure it is a "uint24".
     uint32_t payload_length = random.Rand32() & 0xffffff;
     Http2FrameType type = static_cast<Http2FrameType>(frame_type);
     uint8_t flags = random.Rand8();
@@ -441,8 +441,7 @@ TEST(Http2PushPromiseTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(quiche::QuicheStrCat("promised_stream_id=", promised_stream_id),
-            s.str());
+  EXPECT_EQ(absl::StrCat("promised_stream_id=", promised_stream_id), s.str());
 
   // High-bit is reserved, but not used, so we can set it.
   promised_stream_id |= 0x80000000;
@@ -499,9 +498,8 @@ TEST(Http2WindowUpdateTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(
-      quiche::QuicheStrCat("window_size_increment=", window_size_increment),
-      s.str());
+  EXPECT_EQ(absl::StrCat("window_size_increment=", window_size_increment),
+            s.str());
 
   // High-bit is reserved, but not used, so we can set it.
   window_size_increment |= 0x80000000;
@@ -525,7 +523,7 @@ TEST(Http2AltSvcTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(quiche::QuicheStrCat("origin_length=", origin_length), s.str());
+  EXPECT_EQ(absl::StrCat("origin_length=", origin_length), s.str());
 
   Http2AltSvcFields w{++origin_length};
   EXPECT_EQ(w, w);
@@ -535,6 +533,27 @@ TEST(Http2AltSvcTest, Misc) {
   EXPECT_EQ(v, w);
 
   EXPECT_TRUE(VerifyRandomCalls<Http2AltSvcFields>());
+}
+
+TEST(Http2PriorityUpdateFieldsTest, Eq) {
+  Http2PriorityUpdateFields u(/* prioritized_stream_id = */ 1);
+  Http2PriorityUpdateFields v(/* prioritized_stream_id = */ 3);
+
+  EXPECT_NE(u, v);
+  EXPECT_FALSE(u == v);
+  EXPECT_TRUE(u != v);
+
+  u = v;
+  EXPECT_EQ(u, v);
+  EXPECT_TRUE(u == v);
+  EXPECT_FALSE(u != v);
+}
+
+TEST(Http2PriorityUpdateFieldsTest, Misc) {
+  Http2PriorityUpdateFields u(/* prioritized_stream_id = */ 1);
+  EXPECT_EQ("prioritized_stream_id=1", u.ToString());
+
+  EXPECT_TRUE(VerifyRandomCalls<Http2PriorityUpdateFields>());
 }
 
 }  // namespace

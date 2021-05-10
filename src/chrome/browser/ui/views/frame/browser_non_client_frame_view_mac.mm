@@ -23,7 +23,8 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_utils.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -68,7 +69,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
                             *show_fullscreen_toolbar_)];
   }
 
-  if (browser_view->IsBrowserTypeWebApp()) {
+  if (browser_view->GetIsWebAppType()) {
     if (browser_view->browser()->app_controller()) {
       set_web_app_frame_toolbar(AddChildView(
           std::make_unique<WebAppFrameToolbarView>(frame, browser_view)));
@@ -112,9 +113,9 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
 }
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
-  // In OSX 10.10 and 10.11, caption buttons always get drawn on the left side
-  // of the browser frame instead of the leading edge. This causes a discrepancy
-  // in RTL mode.
+  // In OSX 10.11, caption buttons always get drawn on the left side of the
+  // browser frame instead of the leading edge. This causes a discrepancy in
+  // RTL mode.
   return !base::i18n::IsRTL() || base::mac::IsAtLeastOS10_12();
 }
 
@@ -142,14 +143,14 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   if (web_app_frame_toolbar()) {
-    DCHECK(browser_view()->IsBrowserTypeWebApp());
+    DCHECK(browser_view()->GetIsWebAppType());
     if (ShouldHideTopUIForFullscreen())
       return 0;
     return web_app_frame_toolbar()->GetPreferredSize().height() +
            kWebAppMenuMargin * 2;
   }
 
-  if (!browser_view()->IsTabStripVisible())
+  if (!browser_view()->GetTabStripVisible())
     return 0;
 
   // Mac seems to reserve 1 DIP of the top inset as a resize handle.
@@ -279,7 +280,7 @@ void BrowserNonClientFrameViewMac::UpdateWindowIcon() {
 
 void BrowserNonClientFrameViewMac::UpdateWindowTitle() {
   if (window_title_) {
-    DCHECK(browser_view()->IsBrowserTypeWebApp());
+    DCHECK(browser_view()->GetIsWebAppType());
     window_title_->SetText(browser_view()->GetWindowTitle());
     Layout();
   }
@@ -316,8 +317,8 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 // views::View:
 
 void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
-  if (!browser_view()->IsBrowserTypeNormal() &&
-      !browser_view()->IsBrowserTypeWebApp()) {
+  if (!browser_view()->GetIsNormalType() &&
+      !browser_view()->GetIsWebAppType()) {
     return;
   }
 
@@ -394,7 +395,7 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
   DCHECK(browser_view->IsFullscreen());
 
   CGFloat total_height = 0;
-  if (browser_view->IsTabStripVisible())
+  if (browser_view->GetTabStripVisible())
     total_height += browser_view->GetTabStripHeight();
 
   if (browser_view->IsToolbarVisible())
@@ -404,7 +405,7 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
 }
 
 int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
-  if (!browser_view()->IsTabStripVisible() || !browser_view()->IsFullscreen())
+  if (!browser_view()->GetTabStripVisible() || !browser_view()->IsFullscreen())
     return 0;
 
   CGFloat menu_bar_height =

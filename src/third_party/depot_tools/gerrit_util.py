@@ -75,6 +75,9 @@ class GerritError(Exception):
     self.http_status = http_status
     self.message = '(%d) %s' % (self.http_status, message)
 
+  def __str__(self):
+    return self.message
+
 
 def _QueryString(params, first_param=None):
   """Encodes query parameters in the key:val[+key:val...] format specified here:
@@ -711,7 +714,8 @@ def AbandonChange(host, change, msg=''):
 def MoveChange(host, change, destination_branch):
   """Move a Gerrit change to different destination branch."""
   path = 'changes/%s/move' % change
-  body = {'destination_branch': destination_branch}
+  body = {'destination_branch': destination_branch,
+          'keep_all_votes': True}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn)
 
@@ -765,6 +769,30 @@ def SetCommitMessage(host, change, description, notify='ALL'):
         e.http_status,
         'Received unexpected http status while editing message '
         'in change %s' % change)
+
+
+def IsCodeOwnersEnabled(host):
+  """Check if the code-owners plugin is enabled for the host."""
+  path = 'config/server/capabilities'
+  capabilities = ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return 'code-owners-checkCodeOwner' in capabilities
+
+
+def GetOwnersForFile(host, project, branch, path, limit=100,
+                     resolve_all_users=True, o_params=('DETAILS',)):
+  """Gets information about owners attached to a file."""
+  path = 'projects/%s/branches/%s/code_owners/%s' % (
+      urllib.parse.quote(project, ''),
+      urllib.parse.quote(branch, ''),
+      urllib.parse.quote(path, ''))
+  q = ['resolve-all-users=%s' % json.dumps(resolve_all_users)]
+  if limit:
+    q.append('n=%d' % limit)
+  if o_params:
+    q.extend(['o=%s' % p for p in o_params])
+  if q:
+    path = '%s?%s' % (path, '&'.join(q))
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetReviewers(host, change):
@@ -907,6 +935,39 @@ def CreateGerritBranch(host, project, branch, commit):
   if response:
     return response
   raise GerritError(200, 'Unable to create gerrit branch')
+
+
+def GetHead(host, project):
+  """Retrieves current HEAD of Gerrit project
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-head
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/HEAD' % (project)
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  response = ReadHttpJsonResponse(conn, accept_statuses=[200])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to update gerrit HEAD')
+
+
+def UpdateHead(host, project, branch):
+  """Updates Gerrit HEAD to point to branch
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#set-head
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/HEAD' % (project)
+  body = {'ref': branch}
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  response = ReadHttpJsonResponse(conn, accept_statuses=[200])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to update gerrit HEAD')
 
 
 def GetGerritBranch(host, project, branch):

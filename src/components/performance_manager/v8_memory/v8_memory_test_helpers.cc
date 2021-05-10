@@ -8,11 +8,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "components/performance_manager/embedder/graph_features_helper.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/mojom/v8_contexts.mojom.h"
 #include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/v8_memory/v8_context_tracker.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -157,7 +164,10 @@ constexpr RenderProcessHostId V8MemoryTestBase::kTestProcessID;
 V8MemoryPerformanceManagerTestHarness::V8MemoryPerformanceManagerTestHarness()
     : PerformanceManagerTestHarness(
           // Use MOCK_TIME so that ExpectQueryAndDelayReply can be used.
-          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+  GetGraphFeaturesHelper().EnableExecutionContextRegistry();
+  GetGraphFeaturesHelper().EnableV8ContextTracker();
+}
 
 V8MemoryPerformanceManagerTestHarness::
     ~V8MemoryPerformanceManagerTestHarness() = default;
@@ -208,6 +218,145 @@ constexpr char V8MemoryPerformanceManagerTestHarness::kMainFrameUrl[];
 constexpr char V8MemoryPerformanceManagerTestHarness::kChildFrameUrl[];
 
 ////////////////////////////////////////////////////////////////////////////////
+// WebMemoryTestHarness
+
+WebMemoryTestHarness::WebMemoryTestHarness() = default;
+
+WebMemoryTestHarness::~WebMemoryTestHarness() = default;
+
+void WebMemoryTestHarness::SetUp() {
+  GetGraphFeaturesHelper().EnableV8ContextTracker();
+  Super::SetUp();
+  process_ = CreateNode<ProcessNodeImpl>();
+  other_process_ = CreateNode<ProcessNodeImpl>();
+  pages_.push_back(CreateNode<PageNodeImpl>());
+}
+
+int WebMemoryTestHarness::GetNextUniqueId() {
+  return next_unique_id_++;
+}
+
+FrameNodeImpl* WebMemoryTestHarness::AddFrameNodeImpl(
+    base::Optional<std::string> url,
+    int browsing_instance_id,
+    Bytes memory_usage,
+    FrameNodeImpl* parent,
+    FrameNodeImpl* opener,
+    ProcessNodeImpl* process,
+    base::Optional<std::string> id_attribute,
+    base::Optional<std::string> src_attribute) {
+  // If there's an opener, the new frame is also a new page.
+  auto* page = pages_.front().get();
+  if (opener) {
+    pages_.push_back(CreateNode<PageNodeImpl>());
+    page = pages_.back().get();
+    page->SetOpenerFrameNodeAndOpenedType(opener, PageNode::OpenedType::kPopup);
+  }
+
+  int frame_tree_node_id = GetNextUniqueId();
+  int frame_routing_id = GetNextUniqueId();
+  auto frame_token = blink::LocalFrameToken();
+  auto frame = CreateNode<FrameNodeImpl>(process, page, parent,
+                                         frame_tree_node_id, frame_routing_id,
+                                         frame_token, browsing_instance_id);
+  if (url) {
+    frame->OnNavigationCommitted(GURL(*url), /*same document*/ true);
+  }
+  if (memory_usage) {
+    V8DetailedMemoryExecutionContextData::CreateForTesting(frame.get())
+        ->set_v8_bytes_used(memory_usage.value());
+  }
+  frames_.push_back(std::move(frame));
+  FrameNodeImpl* frame_impl = frames_.back().get();
+
+  // Create a V8ContextDescription with attribution data for this frame. (In
+  // production this is done by PerformanceManager monitoring frame lifetime
+  // events.)
+  auto description = mojom::V8ContextDescription::New();
+  description->token = blink::V8ContextToken();
+  description->world_type = mojom::V8ContextWorldType::kMain;
+  description->execution_context_token = frame_token;
+
+  mojom::IframeAttributionDataPtr attribution;
+  if (parent) {
+    // Frame attribution attributes come from the frame's parent node, so
+    // V8ContextTracker expects an IframeAttributionData. The attribute values
+    // may be empty.
+    attribution = mojom::IframeAttributionData::New();
+    attribution->id = id_attribute;
+    attribution->src = src_attribute;
+  } else {
+    // V8ContextTracker expects no IframeAttributionData.
+    DCHECK(!id_attribute);
+    DCHECK(!src_attribute);
+  }
+
+  // If the frame is in the same process as its parent include the attribution
+  // in OnV8ContextCreated, otherwise it must be attached separately with
+  // OnRemoteIframeAttached.
+  DCHECK(frame_impl->process_node());
+  if (parent && parent->process_node() != frame_impl->process_node()) {
+    frame_impl->process_node()->OnV8ContextCreated(
+        std::move(description), mojom::IframeAttributionDataPtr());
+    V8ContextTracker::GetFromGraph(graph())->OnRemoteIframeAttachedForTesting(
+        frame_impl, parent, blink::RemoteFrameToken(), std::move(attribution));
+  } else {
+    frame_impl->process_node()->OnV8ContextCreated(std::move(description),
+                                                   std::move(attribution));
+  }
+
+  return frame_impl;
+}
+
+WorkerNodeImpl* WebMemoryTestHarness::AddWorkerNode(
+    WorkerNode::WorkerType worker_type,
+    std::string url,
+    Bytes bytes,
+    FrameNodeImpl* parent) {
+  auto* worker_node = AddWorkerNodeImpl(worker_type, url, bytes);
+  worker_node->AddClientFrame(parent);
+  return worker_node;
+}
+
+WorkerNodeImpl* WebMemoryTestHarness::AddWorkerNodeWithoutData(
+    WorkerNode::WorkerType worker_type,
+    FrameNodeImpl* parent) {
+  auto worker_node = CreateNode<WorkerNodeImpl>(worker_type, process_.get());
+  worker_node->AddClientFrame(parent);
+  workers_.push_back(std::move(worker_node));
+  return workers_.back().get();
+}
+
+WorkerNodeImpl* WebMemoryTestHarness::AddWorkerNode(
+    WorkerNode::WorkerType worker_type,
+    std::string url,
+    Bytes bytes,
+    WorkerNodeImpl* parent) {
+  auto* worker_node = AddWorkerNodeImpl(worker_type, url, bytes);
+  worker_node->AddClientWorker(parent);
+  return worker_node;
+}
+
+WorkerNodeImpl* WebMemoryTestHarness::AddWorkerNodeImpl(
+    WorkerNode::WorkerType worker_type,
+    std::string url,
+    Bytes bytes) {
+  auto worker_node = CreateNode<WorkerNodeImpl>(worker_type, process_.get());
+  worker_node->OnFinalResponseURLDetermined(GURL(url));
+  if (bytes) {
+    V8DetailedMemoryExecutionContextData::CreateForTesting(worker_node.get())
+        ->set_v8_bytes_used(*bytes);
+  }
+  workers_.push_back(std::move(worker_node));
+  return workers_.back().get();
+}
+
+void WebMemoryTestHarness::SetBlinkMemory(Bytes bytes) {
+  V8DetailedMemoryProcessData::GetOrCreateForTesting(process_node())
+      ->set_blink_bytes_used(*bytes);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Free functions
 
 blink::mojom::PerProcessV8MemoryUsagePtr NewPerProcessV8MemoryUsage(
@@ -219,18 +368,18 @@ blink::mojom::PerProcessV8MemoryUsagePtr NewPerProcessV8MemoryUsage(
   return data;
 }
 
-void AddIsolateMemoryUsage(const blink::LocalFrameToken& frame_token,
+void AddIsolateMemoryUsage(blink::ExecutionContextToken token,
                            uint64_t bytes_used,
                            blink::mojom::PerIsolateV8MemoryUsage* isolate) {
   for (auto& entry : isolate->contexts) {
-    if (entry->token == blink::ExecutionContextToken(frame_token)) {
+    if (entry->token == token) {
       entry->bytes_used = bytes_used;
       return;
     }
   }
 
   auto context = blink::mojom::PerContextV8MemoryUsage::New();
-  context->token = blink::ExecutionContextToken(frame_token);
+  context->token = token;
   context->bytes_used = bytes_used;
   isolate->contexts.push_back(std::move(context));
 }

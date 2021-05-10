@@ -76,7 +76,8 @@ class RegExpImpl final : public AllStatic {
   // Returns an empty handle in case of an exception.
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> IrregexpExec(
       Isolate* isolate, Handle<JSRegExp> regexp, Handle<String> subject,
-      int index, Handle<RegExpMatchInfo> last_match_info);
+      int index, Handle<RegExpMatchInfo> last_match_info,
+      RegExp::ExecQuirks exec_quirks = RegExp::ExecQuirks::kNone);
 
   static bool CompileIrregexp(Isolate* isolate, Handle<JSRegExp> re,
                               Handle<String> sample_subject, bool is_one_byte);
@@ -127,7 +128,7 @@ bool RegExp::IsUnmodifiedRegExp(Isolate* isolate, Handle<JSRegExp> regexp) {
 // Identifies the sort of regexps where the regexp engine is faster
 // than the code used for atom matches.
 static bool HasFewDifferentCharacters(Handle<String> pattern) {
-  int length = Min(kMaxLookaheadForBoyerMoore, pattern->length());
+  int length = std::min(kMaxLookaheadForBoyerMoore, pattern->length());
   if (length <= kPatternTooShortForBoyerMoore) return false;
   const int kMod = 128;
   bool character_found[kMod];
@@ -268,15 +269,17 @@ bool RegExp::EnsureFullyCompiled(Isolate* isolate, Handle<JSRegExp> re,
 // static
 MaybeHandle<Object> RegExp::ExperimentalOneshotExec(
     Isolate* isolate, Handle<JSRegExp> regexp, Handle<String> subject,
-    int index, Handle<RegExpMatchInfo> last_match_info) {
+    int index, Handle<RegExpMatchInfo> last_match_info,
+    RegExp::ExecQuirks exec_quirks) {
   return ExperimentalRegExp::OneshotExec(isolate, regexp, subject, index,
-                                         last_match_info);
+                                         last_match_info, exec_quirks);
 }
 
 // static
 MaybeHandle<Object> RegExp::Exec(Isolate* isolate, Handle<JSRegExp> regexp,
                                  Handle<String> subject, int index,
-                                 Handle<RegExpMatchInfo> last_match_info) {
+                                 Handle<RegExpMatchInfo> last_match_info,
+                                 ExecQuirks exec_quirks) {
   switch (regexp->TypeTag()) {
     case JSRegExp::NOT_COMPILED:
       UNREACHABLE();
@@ -285,10 +288,10 @@ MaybeHandle<Object> RegExp::Exec(Isolate* isolate, Handle<JSRegExp> regexp,
                                   last_match_info);
     case JSRegExp::IRREGEXP:
       return RegExpImpl::IrregexpExec(isolate, regexp, subject, index,
-                                      last_match_info);
+                                      last_match_info, exec_quirks);
     case JSRegExp::EXPERIMENTAL:
       return ExperimentalRegExp::Exec(isolate, regexp, subject, index,
-                                      last_match_info);
+                                      last_match_info, exec_quirks);
   }
 }
 
@@ -318,7 +321,7 @@ int RegExpImpl::AtomExecRaw(Isolate* isolate, Handle<JSRegExp> regexp,
   DCHECK_LE(index, subject->length());
 
   subject = String::Flatten(isolate, subject);
-  DisallowHeapAllocation no_gc;  // ensure vectors stay valid
+  DisallowGarbageCollection no_gc;  // ensure vectors stay valid
 
   String needle = String::cast(regexp->DataAt(JSRegExp::kAtomPatternIndex));
   int needle_len = needle.length();
@@ -641,7 +644,8 @@ int RegExpImpl::IrregexpExecRaw(Isolate* isolate, Handle<JSRegExp> regexp,
 
 MaybeHandle<Object> RegExpImpl::IrregexpExec(
     Isolate* isolate, Handle<JSRegExp> regexp, Handle<String> subject,
-    int previous_index, Handle<RegExpMatchInfo> last_match_info) {
+    int previous_index, Handle<RegExpMatchInfo> last_match_info,
+    RegExp::ExecQuirks exec_quirks) {
   DCHECK_EQ(regexp->TypeTag(), JSRegExp::IRREGEXP);
 
   subject = String::Flatten(isolate, subject);
@@ -691,6 +695,11 @@ MaybeHandle<Object> RegExpImpl::IrregexpExec(
                                   output_registers, required_registers);
 
   if (res == RegExp::RE_SUCCESS) {
+    if (exec_quirks == RegExp::ExecQuirks::kTreatMatchAtEndAsFailure) {
+      if (output_registers[0] >= subject->length()) {
+        return isolate->factory()->null_value();
+      }
+    }
     int capture_count = regexp->CaptureCount();
     return RegExp::SetLastMatchInfo(isolate, last_match_info, subject,
                                     capture_count, output_registers);
@@ -728,7 +737,7 @@ Handle<RegExpMatchInfo> RegExp::SetLastMatchInfo(
 
   int capture_register_count =
       JSRegExp::RegistersForCaptureCount(capture_count);
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   if (match != nullptr) {
     for (int i = 0; i < capture_register_count; i += 2) {
       result->SetCapture(i, match[i]);
@@ -799,7 +808,7 @@ bool RegExpImpl::Compile(Isolate* isolate, Zone* zone, RegExpCompileData* data,
   sample_subject = String::Flatten(isolate, sample_subject);
   int chars_sampled = 0;
   int half_way = (sample_subject->length() - kSampleSize) / 2;
-  for (int i = Max(0, half_way);
+  for (int i = std::max(0, half_way);
        i < sample_subject->length() && chars_sampled < kSampleSize;
        i++, chars_sampled++) {
     compiler.frequency_collator()->CountCharacter(sample_subject->Get(i));
@@ -847,6 +856,9 @@ bool RegExpImpl::Compile(Isolate* isolate, Zone* zone, RegExpCompileData* data,
 #elif V8_TARGET_ARCH_MIPS64
     macro_assembler.reset(new RegExpMacroAssemblerMIPS(isolate, zone, mode,
                                                        output_register_count));
+#elif V8_TARGET_ARCH_RISCV64
+    macro_assembler.reset(new RegExpMacroAssemblerRISCV(isolate, zone, mode,
+                                                        output_register_count));
 #else
 #error "Unsupported architecture"
 #endif
@@ -975,8 +987,8 @@ RegExpGlobalCache::RegExpGlobalCache(Handle<JSRegExp> regexp,
         register_array_size_ = registers_per_match_;
         max_matches_ = 1;
       } else {
-        register_array_size_ = Max(registers_per_match_,
-                                   Isolate::kJSRegexpStaticOffsetsVectorSize);
+        register_array_size_ = std::max(
+            {registers_per_match_, Isolate::kJSRegexpStaticOffsetsVectorSize});
       }
       break;
     }
@@ -989,8 +1001,8 @@ RegExpGlobalCache::RegExpGlobalCache(Handle<JSRegExp> regexp,
       }
       registers_per_match_ =
           JSRegExp::RegistersForCaptureCount(regexp->CaptureCount());
-      register_array_size_ =
-          Max(registers_per_match_, Isolate::kJSRegexpStaticOffsetsVectorSize);
+      register_array_size_ = std::max(
+          {registers_per_match_, Isolate::kJSRegexpStaticOffsetsVectorSize});
       break;
     }
   }
@@ -1058,7 +1070,7 @@ int32_t* RegExpGlobalCache::FetchNext() {
         break;
       case JSRegExp::EXPERIMENTAL: {
         DCHECK(ExperimentalRegExp::IsCompiled(regexp_, isolate_));
-        DisallowHeapAllocation no_gc;
+        DisallowGarbageCollection no_gc;
         num_matches_ = ExperimentalRegExp::ExecRaw(
             isolate_, RegExp::kFromRuntime, *regexp_, *subject_,
             register_array_, register_array_size_, last_end_index);
@@ -1123,7 +1135,7 @@ Object RegExpResultsCache::Lookup(Heap* heap, String key_string,
     cache = heap->regexp_multiple_cache();
   }
 
-  uint32_t hash = key_string.Hash();
+  uint32_t hash = key_string.hash();
   uint32_t index = ((hash & (kRegExpResultsCacheSize - 1)) &
                     ~(kArrayEntriesPerCacheEntry - 1));
   if (cache.get(index + kStringOffset) != key_string ||
@@ -1158,7 +1170,7 @@ void RegExpResultsCache::Enter(Isolate* isolate, Handle<String> key_string,
     cache = factory->regexp_multiple_cache();
   }
 
-  uint32_t hash = key_string->Hash();
+  uint32_t hash = key_string->hash();
   uint32_t index = ((hash & (kRegExpResultsCacheSize - 1)) &
                     ~(kArrayEntriesPerCacheEntry - 1));
   if (cache->get(index + kStringOffset) == Smi::zero()) {

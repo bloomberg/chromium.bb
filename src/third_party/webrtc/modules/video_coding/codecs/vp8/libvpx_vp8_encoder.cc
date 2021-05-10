@@ -49,11 +49,6 @@ constexpr char kVP8IosMaxNumberOfThreadFieldTrial[] =
 constexpr char kVP8IosMaxNumberOfThreadFieldTrialParameter[] = "max_thread";
 #endif
 
-constexpr char kVp8GetEncoderInfoOverrideFieldTrial[] =
-    "WebRTC-VP8-GetEncoderInfoOverride";
-constexpr char kVp8RequestedResolutionAlignmentFieldTrialParameter[] =
-    "requested_resolution_alignment";
-
 constexpr char kVp8ForcePartitionResilience[] =
     "WebRTC-VP8-ForcePartitionResilience";
 
@@ -165,25 +160,16 @@ void ApplyVp8EncoderConfigToVpxConfig(const Vp8EncoderConfig& encoder_config,
   }
 }
 
-absl::optional<int> GetRequestedResolutionAlignmentOverride() {
-  const std::string trial_string =
-      field_trial::FindFullName(kVp8GetEncoderInfoOverrideFieldTrial);
-  FieldTrialOptional<int> requested_resolution_alignment(
-      kVp8RequestedResolutionAlignmentFieldTrialParameter);
-  ParseFieldTrial({&requested_resolution_alignment}, trial_string);
-  return requested_resolution_alignment.GetOptional();
-}
-
 }  // namespace
 
 std::unique_ptr<VideoEncoder> VP8Encoder::Create() {
-  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::CreateEncoder(),
+  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::Create(),
                                             VP8Encoder::Settings());
 }
 
 std::unique_ptr<VideoEncoder> VP8Encoder::Create(
     VP8Encoder::Settings settings) {
-  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::CreateEncoder(),
+  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::Create(),
                                             std::move(settings));
 }
 
@@ -193,7 +179,7 @@ std::unique_ptr<VideoEncoder> VP8Encoder::Create(
   VP8Encoder::Settings settings;
   settings.frame_buffer_controller_factory =
       std::move(frame_buffer_controller_factory);
-  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::CreateEncoder(),
+  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::Create(),
                                             std::move(settings));
 }
 
@@ -230,8 +216,6 @@ LibvpxVp8Encoder::LibvpxVp8Encoder(std::unique_ptr<LibvpxInterface> interface,
                                    VP8Encoder::Settings settings)
     : libvpx_(std::move(interface)),
       rate_control_settings_(RateControlSettings::ParseFromFieldTrials()),
-      requested_resolution_alignment_override_(
-          GetRequestedResolutionAlignmentOverride()),
       frame_buffer_controller_factory_(
           std::move(settings.frame_buffer_controller_factory)),
       resolution_bitrate_limits_(std::move(settings.resolution_bitrate_limits)),
@@ -1062,9 +1046,25 @@ void LibvpxVp8Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
 
   int qp = 0;
   vpx_codec_control(&encoders_[encoder_idx], VP8E_GET_LAST_QUANTIZER_64, &qp);
-  frame_buffer_controller_->OnEncodeDone(
-      stream_idx, timestamp, encoded_images_[encoder_idx].size(),
-      (pkt.data.frame.flags & VPX_FRAME_IS_KEY) != 0, qp, codec_specific);
+  bool is_keyframe = (pkt.data.frame.flags & VPX_FRAME_IS_KEY) != 0;
+  frame_buffer_controller_->OnEncodeDone(stream_idx, timestamp,
+                                         encoded_images_[encoder_idx].size(),
+                                         is_keyframe, qp, codec_specific);
+  if (is_keyframe && codec_specific->template_structure != absl::nullopt) {
+    // Number of resolutions must match number of spatial layers, VP8 structures
+    // expected to use single spatial layer. Templates must be ordered by
+    // spatial_id, so assumption there is exactly one spatial layer is same as
+    // assumption last template uses spatial_id = 0.
+    // This check catches potential scenario where template_structure is shared
+    // across multiple vp8 streams and they are distinguished using spatial_id.
+    // Assigning single resolution doesn't support such scenario, i.e. assumes
+    // vp8 simulcast is sent using multiple ssrcs.
+    RTC_DCHECK(!codec_specific->template_structure->templates.empty());
+    RTC_DCHECK_EQ(
+        codec_specific->template_structure->templates.back().spatial_id, 0);
+    codec_specific->template_structure->resolutions = {
+        RenderResolution(pkt.data.frame.width[0], pkt.data.frame.height[0])};
+  }
 }
 
 int LibvpxVp8Encoder::GetEncodedPartitions(const VideoFrame& input_image,
@@ -1173,9 +1173,15 @@ VideoEncoder::EncoderInfo LibvpxVp8Encoder::GetEncoderInfo() const {
   if (!resolution_bitrate_limits_.empty()) {
     info.resolution_bitrate_limits = resolution_bitrate_limits_;
   }
-  if (requested_resolution_alignment_override_) {
+  if (encoder_info_override_.requested_resolution_alignment()) {
     info.requested_resolution_alignment =
-        *requested_resolution_alignment_override_;
+        *encoder_info_override_.requested_resolution_alignment();
+    info.apply_alignment_to_all_simulcast_layers =
+        encoder_info_override_.apply_alignment_to_all_simulcast_layers();
+  }
+  if (!encoder_info_override_.resolution_bitrate_limits().empty()) {
+    info.resolution_bitrate_limits =
+        encoder_info_override_.resolution_bitrate_limits();
   }
 
   const bool enable_scaling =

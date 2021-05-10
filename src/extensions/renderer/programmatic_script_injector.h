@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "extensions/renderer/script_injection.h"
 #include "url/gurl.h"
@@ -31,7 +32,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
   bool IsUserGesture() const override;
-  base::Optional<CSSOrigin> GetCssOrigin() const override;
+  CSSOrigin GetCssOrigin() const override;
   bool IsRemovingCSS() const override;
   bool IsAddingCSS() const override;
   const base::Optional<std::string> GetInjectionKey() const override;
@@ -77,8 +78,8 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // is used to provide user-friendly messages.
   std::string origin_for_about_error_;
 
-  // The results of the script execution.
-  base::ListValue results_;
+  // The result of the script execution.
+  base::Optional<base::Value> result_;
 
   // Whether or not this script injection has finished.
   bool finished_;

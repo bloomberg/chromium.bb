@@ -36,6 +36,7 @@
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/ip_address_space.mojom-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -55,6 +56,10 @@ class URLRequestContext;
 }  // namespace net
 
 namespace network {
+
+namespace cors {
+class OriginAccessList;
+}
 
 namespace mojom {
 class OriginPolicyManager;
@@ -101,6 +106,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // have the |obey_origin_policy| flag set.
   // |trust_token_helper_factory| must be non-null exactly when the request has
   // Trust Tokens parameters.
+  //
+  // TODO(mmenke): This parameter list is getting a bit excessive. Either pass
+  // in a struct, or just pass in a pointer to the NetworkContext or
+  // URLLoaderFactory directly.
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
@@ -116,6 +125,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojom::CrossOriginEmbedderPolicyReporter* reporter,
       uint32_t request_id,
       int keepalive_request_size,
+      bool require_network_isolation_key,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
@@ -123,7 +133,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojom::OriginPolicyManager* origin_policy_manager,
       std::unique_ptr<TrustTokenRequestHelperFactory>
           trust_token_helper_factory,
-      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer);
+      const cors::OriginAccessList& origin_access_list,
+      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
+      mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
+          auth_cert_observer);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -293,6 +306,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Continuation of |OnResponseStarted| after possibly asynchronously
   // concluding the request's Trust Tokens operation.
   void ContinueOnResponseStarted();
+  void MaybeSendTrustTokenOperationResultToDevTools();
 
   void ScheduleStart();
   void ReadMore();
@@ -346,6 +360,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void ReportFlaggedResponseCookies();
   void StartReading();
   void OnOriginPolicyManagerRetrieveDone(const OriginPolicy& origin_policy);
+
+  // Whether `force_ignore_site_for_cookies` should be set on net::URLRequest.
+  bool ShouldForceIgnoreSiteForCookies(const ResourceRequest& request);
 
   // Returns whether the request initiator should be allowed to make requests to
   // an endpoint in |resource_address_space|.
@@ -455,11 +472,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // encoded body size was reported to the client.
   int64_t reported_total_encoded_bytes_ = 0;
 
-  // Indicates whether this request was made by a CORB-excluded request type and
-  // was not using CORS. Such requests are exempt from blocking, while other
-  // CORB-excluded requests must be blocked if the CORS check fails.
-  bool is_nocors_corb_excluded_request_ = false;
-
   mojom::RequestMode request_mode_;
 
   bool has_user_activation_;
@@ -510,8 +522,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // specific to one direction.
   base::Optional<mojom::TrustTokenOperationStatus> trust_token_status_;
 
+  // Outlives `this`.
+  const cors::OriginAccessList& origin_access_list_;
+
   // Observer listening to all cookie reads and writes made by this request.
   mojo::Remote<mojom::CookieAccessObserver> cookie_observer_;
+
+  mojo::Remote<mojom::AuthenticationAndCertificateObserver> auth_cert_observer_;
 
   // Client security state copied from the input ResourceRequest.
   //

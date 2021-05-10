@@ -17,8 +17,8 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -182,7 +182,7 @@ ax::mojom::AssistantStructurePtr CloneAssistantStructure(
 AssistantScreenContextControllerImpl::AssistantScreenContextControllerImpl(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_controller_observation_.Observe(AssistantController::Get());
 }
 
 AssistantScreenContextControllerImpl::~AssistantScreenContextControllerImpl() =

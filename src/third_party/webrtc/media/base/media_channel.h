@@ -43,7 +43,6 @@
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/buffer.h"
-#include "rtc_base/callback.h"
 #include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/dscp.h"
 #include "rtc_base/logging.h"
@@ -179,7 +178,7 @@ class MediaChannel : public sigslot::has_slots<> {
   // Sets the abstract interface class for sending RTP/RTCP data.
   virtual void SetInterface(NetworkInterface* iface)
       RTC_LOCKS_EXCLUDED(network_interface_mutex_);
-  // Called when a RTP packet is received.
+  // Called on the network when an RTP packet is received.
   virtual void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                                 int64_t packet_time_us) = 0;
   // Called when the socket's ability to send has changed.
@@ -617,6 +616,7 @@ struct VideoReceiverInfo : public MediaReceiverInfo {
   uint32_t total_pauses_duration_ms = 0;
   uint32_t total_frames_duration_ms = 0;
   double sum_squared_frame_durations = 0.0;
+  uint32_t jitter_ms = 0;
 
   webrtc::VideoContentType content_type = webrtc::VideoContentType::UNSPECIFIED;
 

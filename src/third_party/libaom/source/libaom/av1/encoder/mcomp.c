@@ -34,12 +34,13 @@
 
 static INLINE void init_mv_cost_params(MV_COST_PARAMS *mv_cost_params,
                                        const MvCosts *mv_costs,
-                                       const MV *ref_mv) {
+                                       const MV *ref_mv, int errorperbit,
+                                       int sadperbit) {
   mv_cost_params->ref_mv = ref_mv;
   mv_cost_params->full_ref_mv = get_fullmv_from_mv(ref_mv);
   mv_cost_params->mv_cost_type = MV_COST_ENTROPY;
-  mv_cost_params->error_per_bit = mv_costs->errorperbit;
-  mv_cost_params->sad_per_bit = mv_costs->sadperbit;
+  mv_cost_params->error_per_bit = errorperbit;
+  mv_cost_params->sad_per_bit = sadperbit;
   mv_cost_params->mvjcost = mv_costs->nmv_joint_cost;
   mv_cost_params->mvcost[0] = mv_costs->mv_cost_stack[0];
   mv_cost_params->mvcost[1] = mv_costs->mv_cost_stack[1];
@@ -76,6 +77,13 @@ get_faster_search_method(SEARCH_METHODS search_method) {
     case FAST_BIGDIA: return FAST_BIGDIA;
     default: assert(0 && "Invalid search method!"); return DIAMOND;
   }
+}
+
+void av1_init_obmc_buffer(OBMCBuffer *obmc_buffer) {
+  obmc_buffer->wsrc = NULL;
+  obmc_buffer->mask = NULL;
+  obmc_buffer->above_pred = NULL;
+  obmc_buffer->left_pred = NULL;
 }
 
 void av1_make_default_fullpel_ms_params(
@@ -126,7 +134,8 @@ void av1_make_default_fullpel_ms_params(
   av1_set_mv_search_range(&ms_params->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_costs, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, x->mv_costs, ref_mv,
+                      x->errorperbit, x->sadperbit);
 }
 
 void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
@@ -143,7 +152,8 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
   av1_set_subpel_mv_search_range(&ms_params->mv_limits, &x->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_costs, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, x->mv_costs, ref_mv,
+                      x->errorperbit, x->sadperbit);
 
   // Subpel variance params
   ms_params->var_params.vfp = &cpi->fn_ptr[bsize];

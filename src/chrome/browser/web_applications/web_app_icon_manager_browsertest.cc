@@ -4,12 +4,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     base::RunLoop run_loop;
     install_manager.InstallWebAppFromInfo(
         std::move(web_application_info), ForInstallableSite::kYes,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&app_id, &run_loop](const AppId& installed_app_id,
                                  InstallResultCode code) {
@@ -103,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     run_loop.Run();
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   gfx::ImageSkia image_skia;
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     app_service_test().FlushMojoCalls();
@@ -129,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   base::RunLoop run_loop;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     controller->SetReadIconCallbackForTesting(base::BindLambdaForTesting(
         [controller, &image_skia, &run_loop, this]() {

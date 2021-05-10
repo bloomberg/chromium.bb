@@ -5,15 +5,24 @@
 package org.chromium.components.browser_ui.site_settings;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.device.DeviceFeatureList;
@@ -187,7 +196,9 @@ public class ContentSettingsResources {
             int sensorsBlockedDescription =
                     R.string.website_settings_category_motion_sensors_blocked;
             try {
-                if (DeviceFeatureList.isEnabled(DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                if (FeatureList.isNativeInitialized()
+                        && DeviceFeatureList.isEnabled(
+                                DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                     sensorsPermissionTitle = R.string.sensors_permission_title;
                     sensorsAllowedDescription = R.string.website_settings_category_sensors_allowed;
                     sensorsBlockedDescription = R.string.website_settings_category_sensors_blocked;
@@ -240,15 +251,74 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Returns the Drawable object of the icon for a content type with a disabled tint.
+     * @param context The Context for this drawable.
+     * @param contentSettingsType The ContentSettingsType for this drawable. Returns null if the
+     *         resource for this type cannot be found.
+     * @param value The ContentSettingValues for this drawable. If ContentSettingValues.BLOCK, the
+     *         returned icon will have a strike through it.
+     * @return A {@link Drawable} for this content setting.
      */
-    public static Drawable getDisabledIcon(int contentType, Resources resources) {
-        Drawable icon = ApiCompatibilityUtils.getDrawable(resources, getIcon(contentType));
-        icon.mutate();
-        int disabledColor = ApiCompatibilityUtils.getColor(
-                resources, R.color.primary_text_disabled_material_light);
-        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
+    public static Drawable getContentSettingsIcon(Context context,
+            @ContentSettingsType int contentSettingsType,
+            @ContentSettingValues @Nullable Integer value) {
+        Drawable icon = SettingsUtils.getTintedIcon(context, getIcon(contentSettingsType));
+        if (value != null && value == ContentSettingValues.BLOCK) {
+            return getBlockedSquareIcon(context.getResources(), icon);
+        }
         return icon;
+    }
+
+    /**
+     * @return A {@link Drawable} that is the blocked version of the square icon passed in.
+     *         Achieved by adding a diagonal strike through the icon.
+     */
+    private static Drawable getBlockedSquareIcon(Resources resources, Drawable icon) {
+        if (icon == null) return null;
+        // Save color filter in order to re-apply later
+        ColorFilter filter = icon.getColorFilter();
+
+        // Create bitmap from drawable
+        Bitmap iconBitmap = Bitmap.createBitmap(
+                icon.getIntrinsicWidth(), icon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(iconBitmap);
+        int side = canvas.getWidth();
+        assert side == canvas.getHeight();
+        icon.setBounds(0, 0, side, side);
+        icon.draw(canvas);
+
+        // Thickness of the strikethrough line in pixels, relative to the icon size.
+        float thickness = 0.08f * side;
+        // Determines the axis bounds for where the line should start and finish.
+        float padding = side * 0.15f;
+        // The scaling ratio to get the axis bias. sin(45 degrees).
+        float ratio = 0.7071f;
+        // Calculated axis shift for the line in order to only be on one side of the transparent
+        // line.
+        float bias = (thickness / 2) * ratio;
+
+        // Draw diagonal transparent line
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.TRANSPARENT);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+        // Scale by 1.5 then shift up by half of bias in order to ensure no weird gap between lines
+        // due to rounding.
+        float halfBias = 0.5f * bias;
+        paint.setStrokeWidth(1.5f * thickness);
+        canvas.drawLine(padding + halfBias, padding - halfBias, side - padding + halfBias,
+                side - padding - halfBias, paint);
+
+        // Draw a strikethrough directly below.
+        paint.setColor(Color.BLACK);
+        paint.setXfermode(null);
+        paint.setStrokeWidth(thickness);
+        canvas.drawLine(padding - bias, padding + bias, side - padding - bias,
+                side - padding + bias, paint);
+
+        Drawable blocked = new BitmapDrawable(resources, iconBitmap);
+        // Re-apply color filter
+        blocked.setColorFilter(filter);
+        return blocked;
     }
 
     /**

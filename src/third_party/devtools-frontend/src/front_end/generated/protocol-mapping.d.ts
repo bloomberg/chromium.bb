@@ -230,6 +230,18 @@ export namespace ProtocolMapping {
      */
     'Network.webSocketWillSendHandshakeRequest': [Protocol.Network.WebSocketWillSendHandshakeRequestEvent];
     /**
+     * Fired upon WebTransport creation.
+     */
+    'Network.webTransportCreated': [Protocol.Network.WebTransportCreatedEvent];
+    /**
+     * Fired when WebTransport handshake is finished.
+     */
+    'Network.webTransportConnectionEstablished': [Protocol.Network.WebTransportConnectionEstablishedEvent];
+    /**
+     * Fired when WebTransport is disposed.
+     */
+    'Network.webTransportClosed': [Protocol.Network.WebTransportClosedEvent];
+    /**
      * Fired when additional information about a requestWillBeSent event is available from the
      * network stack. Not every requestWillBeSent event will have an additional
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -242,6 +254,13 @@ export namespace ProtocolMapping {
      * it, and responseReceivedExtraInfo may be fired before or after responseReceived.
      */
     'Network.responseReceivedExtraInfo': [Protocol.Network.ResponseReceivedExtraInfoEvent];
+    /**
+     * Fired exactly once for each Trust Token operation. Depending on
+     * the type of the operation and whether the operation succeeded or
+     * failed, the event is fired before the corresponding request was sent
+     * or after the response was received.
+     */
+    'Network.trustTokenOperationDone': [Protocol.Network.TrustTokenOperationDoneEvent];
     /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
@@ -280,6 +299,10 @@ export namespace ProtocolMapping {
      * Fired once navigation of the frame has completed. Frame is now associated with the new loader.
      */
     'Page.frameNavigated': [Protocol.Page.FrameNavigatedEvent];
+    /**
+     * Fired when opening document to write to.
+     */
+    'Page.documentOpened': [Protocol.Page.DocumentOpenedEvent];
     'Page.frameResized': [];
     /**
      * Fired when a renderer-initiated navigation is requested.
@@ -355,6 +378,10 @@ export namespace ProtocolMapping {
      * Current values of the metrics.
      */
     'Performance.metrics': [Protocol.Performance.MetricsEvent];
+    /**
+     * Sent when a performance timeline event is added. See reportPerformanceTimeline method.
+     */
+    'PerformanceTimeline.timelineEventAdded': [Protocol.PerformanceTimeline.TimelineEventAddedEvent];
     /**
      * There is a certificate error. If overriding certificate errors is enabled, then it should be
      * handled with the `handleCertificateError` command. Note: this event does not fire if the
@@ -526,10 +553,6 @@ export namespace ProtocolMapping {
      */
     'Media.playersCreated': [Protocol.Media.PlayersCreatedEvent];
     /**
-     * Issued when new console message is added.
-     */
-    'Console.messageAdded': [Protocol.Console.MessageAddedEvent];
-    /**
      * Fired when breakpoint is resolved to an actual script and location.
      */
     'Debugger.breakpointResolved': [Protocol.Debugger.BreakpointResolvedEvent];
@@ -628,9 +651,20 @@ export namespace ProtocolMapping {
       returnType: Protocol.Accessibility.GetPartialAXTreeResponse;
     };
     /**
-     * Fetches the entire accessibility tree
+     * Fetches the entire accessibility tree for the root Document
      */
-    'Accessibility.getFullAXTree': {paramsType: []; returnType: Protocol.Accessibility.GetFullAXTreeResponse;};
+    'Accessibility.getFullAXTree': {
+      paramsType: [Protocol.Accessibility.GetFullAXTreeRequest?];
+      returnType: Protocol.Accessibility.GetFullAXTreeResponse;
+    };
+    /**
+     * Fetches a particular accessibility node by AXNodeId.
+     * Requires `enable()` to have been called previously.
+     */
+    'Accessibility.getChildAXNodes': {
+      paramsType: [Protocol.Accessibility.GetChildAXNodesRequest];
+      returnType: Protocol.Accessibility.GetChildAXNodesResponse;
+    };
     /**
      * Query a DOM node's accessibility subtree for accessible name and role.
      * This command computes the name and role for all nodes in the subtree, including those that are
@@ -725,6 +759,11 @@ export namespace ProtocolMapping {
      * `issueAdded` event.
      */
     'Audits.enable': {paramsType: []; returnType: void;};
+    /**
+     * Runs the contrast check for the target page. Found issues are reported
+     * using Audits.issueAdded event.
+     */
+    'Audits.checkContrast': {paramsType: []; returnType: void;};
     /**
      * Enables event updates for the service.
      */
@@ -1254,6 +1293,11 @@ export namespace ProtocolMapping {
      */
     'DOMDebugger.removeXHRBreakpoint':
         {paramsType: [Protocol.DOMDebugger.RemoveXHRBreakpointRequest]; returnType: void;};
+    /**
+     * Sets breakpoint on particular CSP violations.
+     */
+    'DOMDebugger.setBreakOnCSPViolation':
+        {paramsType: [Protocol.DOMDebugger.SetBreakOnCSPViolationRequest]; returnType: void;};
     /**
      * Sets breakpoint on particular operation with DOM.
      */
@@ -1916,6 +1960,7 @@ export namespace ProtocolMapping {
      * Highlight multiple elements with the CSS Grid overlay.
      */
     'Overlay.setShowGridOverlays': {paramsType: [Protocol.Overlay.SetShowGridOverlaysRequest]; returnType: void;};
+    'Overlay.setShowFlexOverlays': {paramsType: [Protocol.Overlay.SetShowFlexOverlaysRequest]; returnType: void;};
     /**
      * Requests that backend shows paint rectangles
      */
@@ -1934,6 +1979,10 @@ export namespace ProtocolMapping {
      * Requests that backend shows hit-test borders on layers
      */
     'Overlay.setShowHitTestBorders': {paramsType: [Protocol.Overlay.SetShowHitTestBordersRequest]; returnType: void;};
+    /**
+     * Request that backend shows an overlay with web vital metrics.
+     */
+    'Overlay.setShowWebVitals': {paramsType: [Protocol.Overlay.SetShowWebVitalsRequest]; returnType: void;};
     /**
      * Paints viewport size upon main frame resize.
      */
@@ -2083,6 +2132,13 @@ export namespace ProtocolMapping {
      */
     'Page.setBypassCSP': {paramsType: [Protocol.Page.SetBypassCSPRequest]; returnType: void;};
     /**
+     * Get Permissions Policy state on given frame.
+     */
+    'Page.getPermissionsPolicyState': {
+      paramsType: [Protocol.Page.GetPermissionsPolicyStateRequest];
+      returnType: Protocol.Page.GetPermissionsPolicyStateResponse;
+    };
+    /**
      * Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
      * window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
      * query results).
@@ -2196,6 +2252,11 @@ export namespace ProtocolMapping {
      */
     'Performance.getMetrics': {paramsType: []; returnType: Protocol.Performance.GetMetricsResponse;};
     /**
+     * Previously buffered events would be reported before method returns.
+     * See also: timelineEventAdded
+     */
+    'PerformanceTimeline.enable': {paramsType: [Protocol.PerformanceTimeline.EnableRequest]; returnType: void;};
+    /**
      * Disables tracking security state changes.
      */
     'Security.disable': {paramsType: []; returnType: void;};
@@ -2284,6 +2345,11 @@ export namespace ProtocolMapping {
      */
     'Storage.untrackIndexedDBForOrigin':
         {paramsType: [Protocol.Storage.UntrackIndexedDBForOriginRequest]; returnType: void;};
+    /**
+     * Returns the number of stored Trust Tokens per issuer for the
+     * current browsing context.
+     */
+    'Storage.getTrustTokens': {paramsType: []; returnType: Protocol.Storage.GetTrustTokensResponse;};
     /**
      * Returns information about the system.
      */
@@ -2537,19 +2603,6 @@ export namespace ProtocolMapping {
      */
     'Media.disable': {paramsType: []; returnType: void;};
     /**
-     * Does nothing.
-     */
-    'Console.clearMessages': {paramsType: []; returnType: void;};
-    /**
-     * Disables console domain, prevents further console messages from being reported to the client.
-     */
-    'Console.disable': {paramsType: []; returnType: void;};
-    /**
-     * Enables console domain, sends the messages collected so far to the client by means of the
-     * `messageAdded` notification.
-     */
-    'Console.enable': {paramsType: []; returnType: void;};
-    /**
      * Continues execution until specific location is reached.
      */
     'Debugger.continueToLocation': {paramsType: [Protocol.Debugger.ContinueToLocationRequest]; returnType: void;};
@@ -2568,13 +2621,6 @@ export namespace ProtocolMapping {
     'Debugger.evaluateOnCallFrame': {
       paramsType: [Protocol.Debugger.EvaluateOnCallFrameRequest];
       returnType: Protocol.Debugger.EvaluateOnCallFrameResponse;
-    };
-    /**
-     * Execute a Wasm Evaluator module on a given call frame.
-     */
-    'Debugger.executeWasmEvaluator': {
-      paramsType: [Protocol.Debugger.ExecuteWasmEvaluatorRequest];
-      returnType: Protocol.Debugger.ExecuteWasmEvaluatorResponse;
     };
     /**
      * Returns possible locations for breakpoint. scriptId in start and end range locations should be

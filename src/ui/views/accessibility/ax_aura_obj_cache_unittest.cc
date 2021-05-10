@@ -18,10 +18,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 namespace test {
@@ -85,8 +88,8 @@ TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
   // from the cache, but leave the widget.
   widget->GetRootView()->RemoveChildView(parent);
   ASSERT_GT(cache.GetID(widget.get()), 0);
-  ASSERT_EQ(ui::AXNode::kInvalidAXID, cache.GetID(parent));
-  ASSERT_EQ(ui::AXNode::kInvalidAXID, cache.GetID(child));
+  ASSERT_EQ(ui::kInvalidAXNodeID, cache.GetID(parent));
+  ASSERT_EQ(ui::kInvalidAXNodeID, cache.GetID(child));
 
   // Explicitly delete |parent| to prevent a memory leak, since calling
   // RemoveChildView() doesn't delete it.
@@ -126,14 +129,12 @@ TEST_F(AXAuraObjCacheTest, ValidTree) {
   ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
   AXTreeSourceViews tree_source(
       cache.GetOrCreate(parent_widget->GetNativeWindow()), tree_id, &cache);
-  ui::AXTreeSerializer<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>
-      serializer(&tree_source);
+  ui::AXTreeSerializer<AXAuraObjWrapper*> serializer(&tree_source);
   ui::AXTreeUpdate serialized_tree;
   serializer.SerializeChanges(tree_source.GetRoot(), &serialized_tree);
 
   // Verify tree is valid.
-  ui::AXTreeSourceChecker<AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>
-      checker(&tree_source);
+  ui::AXTreeSourceChecker<AXAuraObjWrapper*> checker(&tree_source);
   std::string error_string;
   EXPECT_TRUE(checker.CheckAndGetErrorString(&error_string)) << error_string;
   ui::AXTree ax_tree(serialized_tree);
@@ -202,6 +203,70 @@ TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
   ASSERT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
 
   cache.OnRootWindowObjDestroyed(widget->GetNativeWindow());
+}
+
+class TestingWidgetDelegateView : public WidgetDelegateView {
+ public:
+  explicit TestingWidgetDelegateView(base::RunLoop* run_loop)
+      : run_loop_(run_loop) {}
+  ~TestingWidgetDelegateView() override {
+    NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
+    run_loop_->QuitWhenIdle();
+  }
+  TestingWidgetDelegateView(const TestingWidgetDelegateView&) = delete;
+  TestingWidgetDelegateView& operator=(const TestingWidgetDelegateView&) =
+      delete;
+
+ private:
+  // WidgetDelegate:
+  void DeleteDelegate() override { delete this; }
+
+  base::RunLoop* run_loop_;
+};
+
+class TestingAXEventObserver : public AXEventObserver {
+ public:
+  explicit TestingAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
+    observation_.Observe(AXEventManager::Get());
+  }
+  ~TestingAXEventObserver() override = default;
+  TestingAXEventObserver(const TestingAXEventObserver&) = delete;
+  TestingAXEventObserver& operator=(const TestingAXEventObserver&) = delete;
+
+ private:
+  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
+    auto* ax_view = cache_->GetOrCreate(view);
+    while (ax_view != nullptr) {
+      ax_view = ax_view->GetParent();
+    }
+  }
+
+  AXAuraObjCache* cache_;
+  base::ScopedObservation<AXEventManager, AXEventObserver> observation_{this};
+};
+
+TEST_F(AXAuraObjCacheTest, DoNotCreateWidgetWrapperOnDestroyed) {
+  AXAuraObjCache cache;
+  TestingAXEventObserver observer(&cache);
+  auto* widget = new Widget;
+
+  base::RunLoop run_loop;
+  auto* delegate = new TestingWidgetDelegateView(&run_loop);
+
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.delegate = delegate;
+  widget->Init(std::move(params));
+  widget->Show();
+
+  EXPECT_NE(ui::kInvalidAXNodeID, cache.GetID(widget));
+
+  // Widget is closed asynchronously.
+  widget->Close();
+  run_loop.Run();
+
+  EXPECT_EQ(ui::kInvalidAXNodeID, cache.GetID(widget));
 }
 
 }  // namespace

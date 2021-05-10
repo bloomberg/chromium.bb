@@ -69,6 +69,7 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewAndroidDelegate.ContainerViewObserver;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.touch_selection.SelectionEventType;
+import org.chromium.ui.touch_selection.TouchSelectionDraggableType;
 
 import java.util.List;
 
@@ -795,8 +796,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         Context windowContext = mWindowAndroid.getContext().get();
         if (mClassificationResult != null && mAdditionalMenuItemProvider != null
                 && windowContext != null) {
-            mAdditionalMenuItemProvider.addMenuItems(
-                    windowContext, menu, mClassificationResult.textClassification);
+            mAdditionalMenuItemProvider.addMenuItems(windowContext, menu,
+                    mClassificationResult.textClassification,
+                    mClassificationResult.additionalIcons);
         }
 
         if (!hasSelection() || isSelectionPassword()) return;
@@ -1420,7 +1422,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @VisibleForTesting
     @CalledByNative
-    /* package */ void onDragUpdate(float x, float y) {
+    /* package */ void onDragUpdate(@TouchSelectionDraggableType int type, float x, float y) {
+        // If this is for longpress drag selector, we can only have mangifier on S and above.
+        if (type == TouchSelectionDraggableType.LONGPRESS && !BuildInfo.isAtLeastS()) {
+            return;
+        }
+
         if (mHandleObserver != null) {
             final float deviceScale = getDeviceScaleFactor();
             x *= deviceScale;
@@ -1447,7 +1454,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @VisibleForTesting
     /* package */ void performHapticFeedback() {
-        if (BuildInfo.isAtLeastQ() && mView != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && mView != null) {
             mView.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
         }
     }

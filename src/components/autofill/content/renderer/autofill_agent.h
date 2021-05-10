@@ -100,6 +100,7 @@ class AutofillAgent : public content::RenderFrameObserver,
       const std::vector<std::string>& selectors,
       GetElementFormAndFieldDataCallback callback) override;
   void SetAssistantActionState(bool running) override;
+  void EnableHeavyFormDataScraping() override;
 
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
@@ -123,6 +124,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   void TrackAutofilledElement(const blink::WebFormControlElement& element);
 
   FormTracker* form_tracker_for_testing() { return &form_tracker_; }
+
+  bool is_heavy_form_data_scraping_enabled() {
+    return is_heavy_form_data_scraping_enabled_;
+  }
 
   void SelectWasUpdated(const blink::WebFormControlElement& element);
 
@@ -297,6 +302,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   // The element corresponding to the last request sent for form field Autofill.
   blink::WebFormControlElement element_;
 
+  // The elements that currently are being previewed.
+  std::vector<blink::WebFormControlElement> previewed_elements_;
+
   // The form element currently requesting an interactive autocomplete.
   blink::WebFormElement in_flight_request_form_;
 
@@ -305,7 +313,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // When dealing with forms that don't use a <form> tag, we keep track of the
   // elements the user has modified so we can determine when submission occurs.
-  std::set<blink::WebFormControlElement> formless_elements_user_edited_;
+  std::set<FieldRendererId> formless_elements_user_edited_;
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.
@@ -366,6 +374,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Will be set when accessibility mode changes, depending on what the new mode
   // is.
   bool is_screen_reader_enabled_ = false;
+
+  // Whether agents should enable heavy scraping of form data (e.g., button
+  // titles for unowned forms).
+  bool is_heavy_form_data_scraping_enabled_ = false;
 
   const scoped_refptr<FieldDataManager> field_data_manager_;
 

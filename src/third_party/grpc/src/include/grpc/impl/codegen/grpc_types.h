@@ -157,8 +157,9 @@ typedef struct {
 /** Maximum message length that the channel can send. Int valued, bytes.
     -1 means unlimited. */
 #define GRPC_ARG_MAX_SEND_MESSAGE_LENGTH "grpc.max_send_message_length"
-/** Maximum time that a channel may have no outstanding rpcs. Int valued,
-    milliseconds. INT_MAX means unlimited. */
+/** Maximum time that a channel may have no outstanding rpcs, after which the
+ * server will close the connection. Int valued, milliseconds. INT_MAX means
+ * unlimited. */
 #define GRPC_ARG_MAX_CONNECTION_IDLE_MS "grpc.max_connection_idle_ms"
 /** Maximum time that a channel may exist. Int valued, milliseconds.
  * INT_MAX means unlimited. */
@@ -166,9 +167,18 @@ typedef struct {
 /** Grace period after the channel reaches its max age. Int valued,
    milliseconds. INT_MAX means unlimited. */
 #define GRPC_ARG_MAX_CONNECTION_AGE_GRACE_MS "grpc.max_connection_age_grace_ms"
+/** Timeout after the last RPC finishes on the client channel at which the
+ * channel goes back into IDLE state. Int valued, milliseconds. INT_MAX means
+ * unlimited. The default value is 30 minutes and the min value is 1 second. */
+#define GRPC_ARG_CLIENT_IDLE_TIMEOUT_MS "grpc.client_idle_timeout_ms"
 /** Enable/disable support for per-message compression. Defaults to 1, unless
     GRPC_ARG_MINIMAL_STACK is enabled, in which case it defaults to 0. */
 #define GRPC_ARG_ENABLE_PER_MESSAGE_COMPRESSION "grpc.per_message_compression"
+/** Experimental Arg. Enable/disable support for per-message decompression.
+   Defaults to 1. If disabled, decompression will not be performed and the
+   application will see the compressed message in the byte buffer. */
+#define GRPC_ARG_ENABLE_PER_MESSAGE_DECOMPRESSION \
+  "grpc.per_message_decompression"
 /** Enable/disable support for deadline checking. Defaults to 1, unless
     GRPC_ARG_MINIMAL_STACK is enabled, in which case it defaults to 0 */
 #define GRPC_ARG_ENABLE_DEADLINE_CHECKS "grpc.enable_deadline_checking"
@@ -192,19 +202,27 @@ typedef struct {
 #define GRPC_ARG_HTTP2_MAX_FRAME_SIZE "grpc.http2.max_frame_size"
 /** Should BDP probing be performed? */
 #define GRPC_ARG_HTTP2_BDP_PROBE "grpc.http2.bdp_probe"
-/** Minimum time between sending successive ping frames without receiving any
-    data frame, Int valued, milliseconds. */
+/** (DEPRECATED) Does not have any effect.
+    Earlier, this arg configured the minimum time between successive ping frames
+    without receiving any data/header frame, Int valued, milliseconds. This put
+    unnecessary constraints on the configuration of keepalive pings,
+    requiring users to set this channel arg along with
+    GRPC_ARG_KEEPALIVE_TIME_MS. This arg also limited the activity of the other
+    source of pings in gRPC Core - BDP pings, but BDP pings are only sent when
+    there is receive-side data activity, making this arg unuseful for BDP pings
+    too.  */
 #define GRPC_ARG_HTTP2_MIN_SENT_PING_INTERVAL_WITHOUT_DATA_MS \
   "grpc.http2.min_time_between_pings_ms"
 /** Minimum allowed time between a server receiving successive ping frames
-   without sending any data frame. Int valued, milliseconds */
+   without sending any data/header frame. Int valued, milliseconds
+ */
 #define GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS \
   "grpc.http2.min_ping_interval_without_data_ms"
 /** Channel arg to override the http2 :scheme header */
 #define GRPC_ARG_HTTP2_SCHEME "grpc.http2_scheme"
-/** How many pings can we send before needing to send a data frame or header
-    frame? (0 indicates that an infinite number of pings can be sent without
-    sending a data frame or header frame) */
+/** How many pings can we send before needing to send a
+   data/header frame? (0 indicates that an infinite number of
+   pings can be sent without sending a data frame or header frame) */
 #define GRPC_ARG_HTTP2_MAX_PINGS_WITHOUT_DATA \
   "grpc.http2.max_pings_without_data"
 /** How many misbehaving pings the server can bear before sending goaway and
@@ -262,6 +280,14 @@ typedef struct {
     grpc_ssl_session_cache*). (use grpc_ssl_session_cache_arg_vtable() to fetch
     an appropriate pointer arg vtable) */
 #define GRPC_SSL_SESSION_CACHE_ARG "grpc.ssl_session_cache"
+/** If non-zero, it will determine the maximum frame size used by TSI's frame
+ *  protector.
+ *
+ *  NOTE: Be aware that using a large "max_frame_size" is memory inefficient
+ *        for non-zerocopy protectors. Also, increasing this value above 1MiB
+ *        can break old binaries that don't support larger than 1MiB frame
+ *        size. */
+#define GRPC_ARG_TSI_MAX_FRAME_SIZE "grpc.tsi.max_frame_size"
 /** Maximum metadata size, in bytes. Note this limit applies to the max sum of
     all metadata key-value entries in a batch of headers. */
 #define GRPC_ARG_MAX_METADATA_SIZE "grpc.max_metadata_size"
@@ -310,6 +336,20 @@ typedef struct {
   "grpc.experimental.tcp_min_read_chunk_size"
 #define GRPC_ARG_TCP_MAX_READ_CHUNK_SIZE \
   "grpc.experimental.tcp_max_read_chunk_size"
+/* TCP TX Zerocopy enable state: zero is disabled, non-zero is enabled. By
+   default, it is disabled. */
+#define GRPC_ARG_TCP_TX_ZEROCOPY_ENABLED \
+  "grpc.experimental.tcp_tx_zerocopy_enabled"
+/* TCP TX Zerocopy send threshold: only zerocopy if >= this many bytes sent. By
+   default, this is set to 16KB. */
+#define GRPC_ARG_TCP_TX_ZEROCOPY_SEND_BYTES_THRESHOLD \
+  "grpc.experimental.tcp_tx_zerocopy_send_bytes_threshold"
+/* TCP TX Zerocopy max simultaneous sends: limit for maximum number of pending
+   calls to tcp_write() using zerocopy. A tcp_write() is considered pending
+   until the kernel performs the zerocopy-done callback for all sendmsg() calls
+   issued by the tcp_write(). By default, this is set to 4. */
+#define GRPC_ARG_TCP_TX_ZEROCOPY_MAX_SIMULT_SENDS \
+  "grpc.experimental.tcp_tx_zerocopy_max_simultaneous_sends"
 /* Timeout in milliseconds to use for calls to the grpclb load balancer.
    If 0 or unset, the balancer calls will have no deadline. */
 #define GRPC_ARG_GRPCLB_CALL_TIMEOUT_MS "grpc.grpclb_call_timeout_ms"
@@ -317,10 +357,11 @@ typedef struct {
    balancer before using fallback backend addresses from the resolver.
    If 0, enter fallback mode immediately. Default value is 10000. */
 #define GRPC_ARG_GRPCLB_FALLBACK_TIMEOUT_MS "grpc.grpclb_fallback_timeout_ms"
-/* Timeout in milliseconds to wait for the serverlist from the xDS load
-   balancer before using fallback backend addresses from the resolver.
-   If 0, enter fallback mode immediately. Default value is 10000. */
-#define GRPC_ARG_XDS_FALLBACK_TIMEOUT_MS "grpc.xds_fallback_timeout_ms"
+/* Timeout in milliseconds to wait for the child of a specific priority to
+   complete its initial connection attempt before the priority LB policy fails
+   over to the next priority. Default value is 10 seconds. */
+#define GRPC_ARG_PRIORITY_FAILOVER_TIMEOUT_MS \
+  "grpc.priority_failover_timeout_ms"
 /** If non-zero, grpc server's cronet compression workaround will be enabled */
 #define GRPC_ARG_WORKAROUND_CRONET_COMPRESSION \
   "grpc.workaround.cronet_compression"
@@ -348,6 +389,9 @@ typedef struct {
   "grpc.disable_client_authority_filter"
 /** If set to zero, disables use of http proxies. Enabled by default. */
 #define GRPC_ARG_ENABLE_HTTP_PROXY "grpc.enable_http_proxy"
+/** Channel arg to set http proxy per channel. If set, the channel arg
+ *  value will be prefered over the envrionment variable settings. */
+#define GRPC_ARG_HTTP_PROXY "grpc.http_proxy"
 /** If set to non zero, surfaces the user agent string to the server. User
     agent is surfaced by default. */
 #define GRPC_ARG_SURFACE_USER_AGENT "grpc.surface_user_agent"
@@ -632,8 +676,10 @@ typedef struct grpc_op {
       const char** error_string;
     } recv_status_on_client;
     struct grpc_op_recv_close_on_server {
-      /** out argument, set to 1 if the call failed in any way (seen as a
-          cancellation on the server), or 0 if the call succeeded */
+      /** out argument, set to 1 if the call failed at the server for
+          a reason other than a non-OK status (cancel, deadline
+          exceeded, network failure, etc.), 0 otherwise (RPC processing ran to
+          completion and was able to provide any status from the server) */
       int* cancelled;
     } recv_close_on_server;
   } data;
@@ -700,6 +746,10 @@ typedef struct grpc_experimental_completion_queue_functor {
       pointer to this functor and a boolean that indicates whether the
       operation succeeded (non-zero) or failed (zero) */
   void (*functor_run)(struct grpc_experimental_completion_queue_functor*, int);
+
+  /** The inlineable member specifies whether this functor can be run inline.
+      This should only be used for trivial internally-defined functors. */
+  int inlineable;
 
   /** The following fields are not API. They are meant for internal use. */
   int internal_success;

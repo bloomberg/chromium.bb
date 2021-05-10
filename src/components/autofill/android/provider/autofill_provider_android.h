@@ -66,9 +66,11 @@ class AutofillProviderAndroid : public AutofillProvider {
                                  const FormData& form,
                                  base::TimeTicks timestamp) override;
   void OnFormsSeen(AutofillHandlerProxy* handler,
-                   const std::vector<FormData>& forms,
-                   const base::TimeTicks timestamp) override;
+                   const std::vector<FormData>& forms) override;
   void OnHidePopup(AutofillHandlerProxy* handler) override;
+  void OnServerPredictionsAvailable(AutofillHandlerProxy* handler) override;
+  void OnServerQueryRequestError(AutofillHandlerProxy* handler,
+                                 FormSignature form_signature) override;
 
   void Reset(AutofillHandlerProxy* handler) override;
 

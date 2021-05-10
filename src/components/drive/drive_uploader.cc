@@ -20,7 +20,6 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 using google_apis::CancelCallbackOnce;
-using google_apis::CancelCallbackRepeating;
 using google_apis::DRIVE_CANCELLED;
 using google_apis::DRIVE_NO_SPACE;
 using google_apis::DriveApiErrorCode;
@@ -156,7 +155,7 @@ struct DriveUploader::UploadFileInfo {
   // once Cancel() is called. DriveUploader will check this field before after
   // an async task other than HTTP requests and cancels the subsequent requests
   // if this is flagged to true.
-  CancelCallbackRepeating cancel_callback;
+  CancelCallbackOnce cancel_callback;
   bool cancelled;
 
  private:
@@ -325,9 +324,10 @@ void DriveUploader::CallUploadServiceAPINewFile(
     RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
     info_ptr->cancel_callback = drive_service_->InitiateUploadNewFile(
         info_ptr->content_type, info_ptr->content_length, parent_resource_id,
-        title, options, base::Bind(&DriveUploader::OnUploadLocationReceived,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   base::Passed(&upload_file_info)));
+        title, options,
+        base::BindOnce(&DriveUploader::OnUploadLocationReceived,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(upload_file_info)));
   }
 }
 
@@ -360,9 +360,9 @@ void DriveUploader::CallUploadServiceAPIExistingFile(
     RecordDriveUploadProtocol(UPLOAD_METHOD_RESUMABLE);
     info_ptr->cancel_callback = drive_service_->InitiateUploadExistingFile(
         info_ptr->content_type, info_ptr->content_length, resource_id, options,
-        base::Bind(&DriveUploader::OnUploadLocationReceived,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&upload_file_info)));
+        base::BindOnce(&DriveUploader::OnUploadLocationReceived,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(upload_file_info)));
   }
 }
 
@@ -425,9 +425,10 @@ void DriveUploader::UploadNextChunk(
       base::BindOnce(&DriveUploader::OnUploadRangeResponseReceived,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(upload_file_info)),
-      base::Bind(&DriveUploader::OnUploadProgress,
-                 weak_ptr_factory_.GetWeakPtr(), info_ptr->progress_callback,
-                 info_ptr->next_start_position, info_ptr->content_length));
+      base::BindRepeating(
+          &DriveUploader::OnUploadProgress, weak_ptr_factory_.GetWeakPtr(),
+          info_ptr->progress_callback, info_ptr->next_start_position,
+          info_ptr->content_length));
 }
 
 void DriveUploader::OnUploadRangeResponseReceived(

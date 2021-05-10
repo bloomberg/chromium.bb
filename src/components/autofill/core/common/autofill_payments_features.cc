@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
@@ -28,11 +29,6 @@ const base::Feature kAutofillAlwaysReturnCloudTokenizedCard{
     "AutofillAlwaysReturnCloudTokenizedCard",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, when a server card is unmasked, its info will be cached until
-// page navigation to simplify consecutive fills on the same page.
-const base::Feature kAutofillCacheServerCardInfo{
-    "AutofillCacheServerCardInfo", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -40,8 +36,8 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 // credit cards from Google payments.
 const base::Feature kAutofillCreditCardAuthentication{
   "AutofillCreditCardAuthentication",
-#if defined(OS_WIN) || defined(OS_MAC)
-      // Better Auth project is fully launched on Win/Mac.
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
+      // Better Auth project is fully launched on Win/Mac/Clank.
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -54,30 +50,25 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, the credit card nicknames will be manageable. They can be
-// modified locally.
-const base::Feature kAutofillEnableCardNicknameManagement{
-    "AutofillEnableCardNicknameManagement", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, shows the Google Pay logo on CVC prompt on Android.
 const base::Feature kAutofillDownstreamCvcPromptUseGooglePayLogo{
     "AutofillDownstreamCvcPromptUseGooglePayLogo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, the credit card nicknames will be manageable. They can be
-// uploaded to Payments.
-const base::Feature kAutofillEnableCardNicknameUpstream{
-    "AutofillEnableCardNicknameUpstream", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, autofill payments bubbles' result will be recorded as either
-// 'accepted', 'cancelled', 'closed', 'not interacted' or 'lost focus'.
-const base::Feature kAutofillEnableFixedPaymentsBubbleLogging{
-    "AutofillEnableFixedPaymentsBubbleLogging",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether we show a Google-issued card in the suggestions list.
 const base::Feature kAutofillEnableGoogleIssuedCard{
     "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, a notification will be displayed on page navigation if the
+// domain has an eligible credit card linked offer or reward.
+const base::Feature kAutofillEnableOfferNotification{
+    "AutofillEnableOfferNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, offers will be displayed in the Clank keyboard accessory during
+// downstream.
+const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
+    "AutofillEnableOffersInClankKeyboardAccessory",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, offer data will be retrieved during downstream and shown in
 // the dropdown list.
@@ -89,11 +80,6 @@ const base::Feature kAutofillEnableOffersInDownstream{
 const base::Feature kAutofillEnableSaveCardInfoBarAccountIndicationFooter{
     "AutofillEnableSaveCardInfoBarAccountIndicationFooter",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, all payments related bubbles will not be dismissed upon page
-// navigation.
-const base::Feature kAutofillEnableStickyPaymentsBubble{
-    "AutofillEnableStickyPaymentsBubble", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill data related icons will be shown in the status
 // chip in toolbar along with the avatar toolbar button.
@@ -114,6 +100,11 @@ const base::Feature kAutofillSaveCardDismissOnNavigation{
 const base::Feature kAutofillSaveCardInfobarEditSupport{
     "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, suggestions with offers will be shown at the top.
+const base::Feature kAutofillSortSuggestionsBasedOnOfferPresence{
+    "AutofillSortSuggestionsBasedOnOfferPresence",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.
 // There are countries we simply can't turn this on for, and they change over
@@ -128,8 +119,10 @@ const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
 #if defined(OS_WIN) || defined(OS_APPLE) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // The new user consent UI is fully launched on MacOS, Windows and Linux.
   return true;
 #else

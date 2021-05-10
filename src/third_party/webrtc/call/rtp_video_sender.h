@@ -22,6 +22,7 @@
 #include "api/fec_controller.h"
 #include "api/fec_controller_override.h"
 #include "api/rtc_event_log/rtc_event_log.h"
+#include "api/sequence_checker.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/video_codecs/video_encoder.h"
 #include "call/rtp_config.h"
@@ -39,7 +40,6 @@
 #include "rtc_base/rate_limiter.h"
 #include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread_annotations.h"
-#include "rtc_base/thread_checker.h"
 
 namespace webrtc {
 
@@ -169,9 +169,14 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   void ConfigureRids();
   bool NackEnabled() const;
   uint32_t GetPacketizationOverheadRate() const;
+  DataRate CalculateOverheadRate(DataRate data_rate,
+                                 DataSize packet_size,
+                                 DataSize overhead_per_packet,
+                                 Frequency framerate) const;
 
   const FieldTrialBasedConfig field_trials_;
   const bool send_side_bwe_with_overhead_;
+  const bool use_frame_rate_for_overhead_;
   const bool has_packet_feedback_;
 
   // TODO(holmer): Remove mutex_ once RtpVideoSender runs on the
@@ -180,7 +185,7 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   bool active_ RTC_GUARDED_BY(mutex_);
 
   ProcessThread* module_process_thread_;
-  rtc::ThreadChecker module_process_thread_checker_;
+  SequenceChecker module_process_thread_checker_;
   std::map<uint32_t, RtpState> suspended_ssrcs_;
 
   const std::unique_ptr<FecController> fec_controller_;

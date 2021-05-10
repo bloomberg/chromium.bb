@@ -30,6 +30,14 @@ void SandboxedProcessLauncherDelegate::PostSpawnTarget(
 bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
   return false;
 }
+
+bool SandboxedProcessLauncherDelegate::ShouldUnsandboxedRunInJob() {
+  return false;
+}
+
+bool SandboxedProcessLauncherDelegate::CetCompatible() {
+  return true;
+}
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)

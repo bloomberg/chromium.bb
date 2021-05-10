@@ -2,11 +2,18 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <!DOCTYPE html>
-<html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
     <meta charset="utf-8">
     <title>$i18n{appTitle}</title>
   </head>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
   <body>
     <scanning-app></scanning-app>
 

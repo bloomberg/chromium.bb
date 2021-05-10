@@ -31,14 +31,14 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/impression.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/url_pattern.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
+#include "third_party/blink/public/common/navigation/impression.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
 
@@ -54,7 +54,7 @@ namespace {
 static content::ContextMenuParams CreateParams(int contexts) {
   content::ContextMenuParams rv;
   rv.is_editable = false;
-  rv.media_type = blink::ContextMenuDataMediaType::kNone;
+  rv.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
   rv.page_url = GURL("http://test.page/");
 
   static const base::char16 selected_text[] = { 's', 'e', 'l', 0 };
@@ -69,17 +69,17 @@ static content::ContextMenuParams CreateParams(int contexts) {
 
   if (contexts & MenuItem::IMAGE) {
     rv.src_url = GURL("http://test.image/");
-    rv.media_type = blink::ContextMenuDataMediaType::kImage;
+    rv.media_type = blink::mojom::ContextMenuDataMediaType::kImage;
   }
 
   if (contexts & MenuItem::VIDEO) {
     rv.src_url = GURL("http://test.video/");
-    rv.media_type = blink::ContextMenuDataMediaType::kVideo;
+    rv.media_type = blink::mojom::ContextMenuDataMediaType::kVideo;
   }
 
   if (contexts & MenuItem::AUDIO) {
     rv.src_url = GURL("http://test.audio/");
-    rv.media_type = blink::ContextMenuDataMediaType::kAudio;
+    rv.media_type = blink::mojom::ContextMenuDataMediaType::kAudio;
   }
 
   if (contexts & MenuItem::FRAME)
@@ -542,7 +542,7 @@ TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
   EXPECT_EQ(kTestSuggestedFileName, suggested_filename);
 }
 
-// Verify ContextMenu navigations properly set the initiator routing id for a
+// Verify ContextMenu navigations properly set the initiator frame token for a
 // frame.
 TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
   TestNavigationDelegate delegate;
@@ -552,20 +552,40 @@ TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationParamsSet) {
   content::ContextMenuParams params = CreateParams(MenuItem::LINK);
   params.unfiltered_link_url = params.link_url;
   params.link_url = params.link_url;
-  params.impression = content::Impression();
+  params.impression = blink::Impression();
   auto menu = std::make_unique<TestRenderViewContextMenu>(main_frame, params);
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
   EXPECT_TRUE(delegate.last_navigation_params());
 
   // Verify that the ContextMenu source frame is set as the navigation
   // initiator.
-  auto main_frame_id = content::GlobalFrameRoutingId(
-      main_frame->GetProcess()->GetID(), main_frame->GetRoutingID());
-  EXPECT_EQ(main_frame_id,
-            delegate.last_navigation_params()->initiator_routing_id);
+  EXPECT_EQ(main_frame->GetFrameToken(),
+            delegate.last_navigation_params()->initiator_frame_token);
+  EXPECT_EQ(main_frame->GetProcess()->GetID(),
+            delegate.last_navigation_params()->initiator_process_id);
 
   // Verify that the impression is attached to the navigation.
   EXPECT_TRUE(delegate.last_navigation_params()->impression);
+}
+
+// Verify ContextMenu navigations properly set the initiating origin.
+TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationInitiatorSet) {
+  TestNavigationDelegate delegate;
+  web_contents()->SetDelegate(&delegate);
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.unfiltered_link_url = params.link_url;
+  params.link_url = params.link_url;
+  params.impression = blink::Impression();
+  auto menu = std::make_unique<TestRenderViewContextMenu>(main_frame, params);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
+  EXPECT_TRUE(delegate.last_navigation_params());
+
+  // Verify that the initiator is set, and set expectedly.
+  EXPECT_TRUE(delegate.last_navigation_params()->initiator_origin.has_value());
+  EXPECT_EQ(delegate.last_navigation_params()->initiator_origin->GetURL(),
+            params.page_url.GetOrigin());
 }
 
 // Verify that "Show all passwords" is displayed on a password field.
@@ -576,7 +596,8 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
 
   NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-  params.input_field_type = blink::ContextMenuDataInputFieldType::kPassword;
+  params.input_field_type =
+      blink::mojom::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       web_contents()->GetMainFrame(), params);
   menu->Init();
@@ -598,7 +619,8 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
   content::WebContentsTester::For(incognito_web_contents.get())
       ->NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-  params.input_field_type = blink::ContextMenuDataInputFieldType::kPassword;
+  params.input_field_type =
+      blink::mojom::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       incognito_web_contents->GetMainFrame(), params);
   menu->Init();

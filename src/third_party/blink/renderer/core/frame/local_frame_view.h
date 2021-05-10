@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
@@ -74,7 +75,6 @@ class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
 class DocumentLifecycle;
-class FloatRect;
 class FloatSize;
 class FragmentAnchor;
 class Frame;
@@ -255,8 +255,6 @@ class CORE_EXPORT LocalFrameView final
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   bool HasIntrinsicSizingInfo() const override;
 
-  void UpdateCountersAfterStyleChange();
-
   void Dispose() override;
   void PropagateFrameRects() override;
   void InvalidateAllCustomScrollbarsOnActiveChanged();
@@ -348,10 +346,7 @@ class CORE_EXPORT LocalFrameView final
   // LocalFrame.
   void WillBeRemovedFromFrame();
 
-  bool IsUpdatingLifecycle() {
-    return current_update_lifecycle_phases_target_state_ !=
-           DocumentLifecycle::kUninitialized;
-  }
+  bool IsUpdatingLifecycle() const;
 
   // Run all needed lifecycle stages. After calling this method, all frames will
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
@@ -402,7 +397,9 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean(DocumentUpdateReason reason);
 
-  void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
+  void SetTargetStateForTest(DocumentLifecycle::LifecycleState state) {
+    target_state_ = state;
+  }
 
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
@@ -499,11 +496,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
-
-  // Clips the provided rect to the visible content area. For this purpose, we
-  // also query the chrome client for any active overrides to the visible area
-  // (e.g. DevTool's viewport override).
-  void ClipPaintRect(FloatRect*) const;
 
   // Indicates the root layer's scroll offset changed since the last frame
   void SetRootLayerDidScroll() { root_layer_did_scroll_ = true; }
@@ -616,6 +608,7 @@ class CORE_EXPORT LocalFrameView final
   bool CanThrottleRendering() const override;
   void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                     bool subtree_throttled,
+                                    bool display_locked,
                                     bool recurse = false) override;
 
   void BeginLifecycleUpdates();
@@ -662,8 +655,6 @@ class CORE_EXPORT LocalFrameView final
   // Main thread scrolling reasons for this object only. For all reasons,
   // see: mainThreadScrollingReasons().
   MainThreadScrollingReasons MainThreadScrollingReasonsPerFrame() const;
-
-  bool HasVisibleSlowRepaintViewportConstrainedObjects() const;
 
   bool MapToVisualRectInRemoteRootFrame(PhysicalRect& rect,
                                         bool apply_overflow_clip = true);
@@ -852,6 +843,8 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
+  void PrepareForLifecycleUpdateRecursive();
+
   // Returns whether the lifecycle was successfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -907,8 +900,6 @@ class CORE_EXPORT LocalFrameView final
   DoublePoint ConvertFromContainingEmbeddedContentView(
       const DoublePoint&) const;
 
-  void InvalidateForThrottlingChange();
-
   void UpdateGeometriesIfNeeded();
   bool WasViewportResized();
   void SendResizeEventIfNeeded();
@@ -955,6 +946,8 @@ class CORE_EXPORT LocalFrameView final
   bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
   void DeliverSynchronousIntersectionObservations();
 
+  bool RunScrollTimelineSteps();
+
   bool NotifyResizeObservers(DocumentLifecycle::LifecycleState target_state);
   bool RunResizeObserverSteps(DocumentLifecycle::LifecycleState target_state);
   void ClearResizeObserverLimit();
@@ -989,6 +982,12 @@ class CORE_EXPORT LocalFrameView final
   // StyleEngine instead of the base background color.
   bool ShouldUseColorAdjustBackground() const;
 
+  // Appends the document transition from this view into the given vector.
+  void AppendDocumentTransitionRequests(
+      WTF::Vector<std::unique_ptr<DocumentTransition::Request>>&);
+
+  bool AnyFrameIsPrintingOrPaintingPreview();
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -1006,7 +1005,7 @@ class CORE_EXPORT LocalFrameView final
   unsigned layout_count_for_testing_;
   unsigned lifecycle_update_count_for_testing_;
   unsigned nested_layout_count_;
-  TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
+  HeapTaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
   UseColorAdjustBackground use_color_adjust_background_{
@@ -1014,6 +1013,10 @@ class CORE_EXPORT LocalFrameView final
   Color base_background_color_;
   IntSize last_viewport_size_;
   float last_zoom_factor_;
+
+  // Used for tracking the frame's size and replicating it to the browser
+  // process when it changes.
+  base::Optional<IntSize> frame_size_;
 
   AtomicString media_type_;
   AtomicString media_type_when_not_printing_;
@@ -1072,9 +1075,7 @@ class CORE_EXPORT LocalFrameView final
   bool allow_throttling_ = false;
 
   // This is set on the local root frame view only.
-  DocumentLifecycle::LifecycleState
-      current_update_lifecycle_phases_target_state_;
-  bool past_layout_lifecycle_update_;
+  DocumentLifecycle::LifecycleState target_state_;
 
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
@@ -1092,7 +1093,6 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
-  bool in_lifecycle_update_;
 
   // True if the frame has deferred commits at least once per document load.
   // We won't defer again for the same document.

@@ -190,9 +190,9 @@ External library support:
   Using any of the following switches will allow FFmpeg to link to the
   corresponding external library. All the components depending on that library
   will become enabled, if all their other dependencies are met and they are not
-  explicitly disabled. E.g. --enable-libwavpack will enable linking to
-  libwavpack and allow the libwavpack encoder to be built, unless it is
-  specifically disabled with --disable-encoder=libwavpack.
+  explicitly disabled. E.g. --enable-libopus will enable linking to
+  libopus and allow the libopus encoder to be built, unless it is
+  specifically disabled with --disable-encoder=libopus.
 
   Note that only the system libraries are auto-detected. All the other external
   libraries must be explicitly enabled.
@@ -277,6 +277,7 @@ External library support:
   --enable-libtls          enable LibreSSL (via libtls), needed for https support
                            if openssl, gnutls or mbedtls is not used [no]
   --enable-libtwolame      enable MP2 encoding via libtwolame [no]
+  --enable-libuavs3d       enable AVS3 decoding via libuavs3d [no]
   --enable-libv4l2         enable libv4l2/v4l-utils [no]
   --enable-libvidstab      enable video stabilization using vid.stab [no]
   --enable-libvmaf         enable vmaf filter via libvmaf [no]
@@ -284,7 +285,6 @@ External library support:
   --enable-libvorbis       enable Vorbis en/decoding via libvorbis,
                            native implementation exists [no]
   --enable-libvpx          enable VP8 and VP9 de/encoding via libvpx [no]
-  --enable-libwavpack      enable wavpack encoding via libwavpack [no]
   --enable-libwebp         enable WebP encoding via libwebp [no]
   --enable-libx264         enable H.264 encoding via x264 [no]
   --enable-libx265         enable HEVC encoding via x265 [no]
@@ -1811,11 +1811,11 @@ EXTERNAL_LIBRARY_LIST="
     libtesseract
     libtheora
     libtwolame
+    libuavs3d
     libv4l2
     libvmaf
     libvorbis
     libvpx
-    libwavpack
     libwebp
     libxml2
     libzimg
@@ -2635,7 +2635,7 @@ faandct_select="fdctdsp"
 faanidct_deps="faan"
 faanidct_select="idctdsp"
 h264dsp_select="startcode"
-hevcparse_select="golomb"
+hevcparse_select="atsc_a53 golomb"
 frame_thread_encoder_deps="encoders threads"
 intrax8_select="blockdsp idctdsp"
 mdct_select="fft"
@@ -2801,7 +2801,7 @@ msmpeg4v2_encoder_select="h263_encoder"
 msmpeg4v3_decoder_select="h263_decoder"
 msmpeg4v3_encoder_select="h263_encoder"
 mss2_decoder_select="mpegvideo qpeldsp vc1_decoder"
-mts2_decoder_select="mss34dsp"
+mts2_decoder_select="jpegtables mss34dsp"
 mv30_decoder_select="aandcttables blockdsp"
 mvha_decoder_deps="zlib"
 mvha_decoder_select="llviddsp"
@@ -2838,6 +2838,7 @@ rv40_decoder_select="golomb h264pred h264qpel mpegvideo rv34dsp"
 screenpresso_decoder_deps="zlib"
 shorten_decoder_select="bswapdsp"
 sipr_decoder_select="lsp"
+smvjpeg_decoder_select="mjpeg_decoder"
 snow_decoder_select="dwt h264qpel hpeldsp me_cmp rangecoder videodsp"
 snow_encoder_select="dwt h264qpel hpeldsp me_cmp mpegvideoenc rangecoder"
 sonic_decoder_select="golomb rangecoder"
@@ -2918,6 +2919,16 @@ videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
 xvmc_deps="X11_extensions_XvMClib_h"
 
+av1_d3d11va_hwaccel_deps="d3d11va DXVA_PicParams_AV1"
+av1_d3d11va_hwaccel_select="av1_decoder"
+av1_d3d11va2_hwaccel_deps="d3d11va DXVA_PicParams_AV1"
+av1_d3d11va2_hwaccel_select="av1_decoder"
+av1_dxva2_hwaccel_deps="dxva2 DXVA_PicParams_AV1"
+av1_dxva2_hwaccel_select="av1_decoder"
+av1_nvdec_hwaccel_deps="nvdec CUVIDAV1PICPARAMS"
+av1_nvdec_hwaccel_select="av1_decoder"
+av1_vaapi_hwaccel_deps="vaapi VADecPictureParameterBufferAV1_bit_depth_idx"
+av1_vaapi_hwaccel_select="av1_decoder"
 h263_vaapi_hwaccel_deps="vaapi"
 h263_vaapi_hwaccel_select="h263_decoder"
 h263_videotoolbox_hwaccel_deps="videotoolbox"
@@ -3052,6 +3063,7 @@ nvenc_encoder_deps="nvenc"
 
 aac_mf_encoder_deps="mediafoundation"
 ac3_mf_encoder_deps="mediafoundation"
+av1_cuvid_decoder_deps="cuvid CUVIDAV1PICPARAMS"
 h263_v4l2m2m_decoder_deps="v4l2_m2m h263_v4l2_m2m"
 h263_v4l2m2m_encoder_deps="v4l2_m2m h263_v4l2_m2m"
 h264_amf_encoder_deps="amf"
@@ -3145,7 +3157,7 @@ av1_qsv_decoder_select="qsvdec"
 # parsers
 aac_parser_select="adts_header"
 av1_parser_select="cbs_av1"
-h264_parser_select="golomb h264dsp h264parse"
+h264_parser_select="atsc_a53 golomb h264dsp h264parse"
 hevc_parser_select="hevcparse"
 mpegaudio_parser_select="mpegaudioheader"
 mpegvideo_parser_select="mpegvideo"
@@ -3257,6 +3269,7 @@ libspeex_encoder_select="audio_frame_queue"
 libsvtav1_encoder_deps="libsvtav1"
 libtheora_encoder_deps="libtheora"
 libtwolame_encoder_deps="libtwolame"
+libuavs3d_decoder_deps="libuavs3d"
 libvo_amrwbenc_encoder_deps="libvo_amrwbenc"
 libvorbis_decoder_deps="libvorbis"
 libvorbis_encoder_deps="libvorbis libvorbisenc"
@@ -3265,8 +3278,6 @@ libvpx_vp8_decoder_deps="libvpx"
 libvpx_vp8_encoder_deps="libvpx"
 libvpx_vp9_decoder_deps="libvpx"
 libvpx_vp9_encoder_deps="libvpx"
-libwavpack_encoder_deps="libwavpack"
-libwavpack_encoder_select="audio_frame_queue"
 libwebp_encoder_deps="libwebp"
 libwebp_anim_encoder_deps="libwebp"
 libx262_encoder_deps="libx262"
@@ -3499,6 +3510,7 @@ afir_filter_deps="avcodec"
 afir_filter_select="rdft"
 amovie_filter_deps="avcodec avformat"
 aresample_filter_deps="swresample"
+asoftclip_filter_deps="swresample"
 asr_filter_deps="pocketsphinx"
 ass_filter_deps="libass"
 atempo_filter_deps="avcodec"
@@ -6206,6 +6218,7 @@ enabled videotoolbox && {
 
 check_struct "sys/time.h sys/resource.h" "struct rusage" ru_maxrss
 
+check_type "windows.h dxva.h" "DXVA_PicParams_AV1" -DWINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP -D_CRT_BUILD_DESKTOP_APP=0
 check_type "windows.h dxva.h" "DXVA_PicParams_HEVC" -DWINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP -D_CRT_BUILD_DESKTOP_APP=0
 check_type "windows.h dxva.h" "DXVA_PicParams_VP9" -DWINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP -D_CRT_BUILD_DESKTOP_APP=0
 check_type "windows.h d3d11.h" "ID3D11VideoDecoder"
@@ -6416,6 +6429,7 @@ enabled libtls            && require_pkg_config libtls libtls tls.h tls_configur
 enabled libtwolame        && require libtwolame twolame.h twolame_init -ltwolame &&
                              { check_lib libtwolame twolame.h twolame_encode_buffer_float32_interleaved -ltwolame ||
                                die "ERROR: libtwolame must be installed and version must be >= 0.3.10"; }
+enabled libuavs3d         && require_pkg_config libuavs3d "uavs3d >= 1.1.41" uavs3d.h uavs3d_decode
 enabled libv4l2           && require_pkg_config libv4l2 libv4l2 libv4l2.h v4l2_ioctl
 enabled libvidstab        && require_pkg_config libvidstab "vidstab >= 0.98" vid.stab/libvidstab.h vsMotionDetectInit
 enabled libvmaf           && require_pkg_config libvmaf "libvmaf >= 1.5.2" libvmaf.h compute_vmaf
@@ -6445,7 +6459,6 @@ enabled libvpx            && {
     fi
 }
 
-enabled libwavpack        && require libwavpack wavpack/wavpack.h WavpackOpenFileOutput  -lwavpack
 enabled libwebp           && {
     enabled libwebp_encoder      && require_pkg_config libwebp "libwebp >= 0.2.0" webp/encode.h WebPGetEncoderVersion
     enabled libwebp_anim_encoder && check_pkg_config libwebp_anim_encoder "libwebpmux >= 0.4.0" webp/mux.h WebPAnimEncoderOptionsInit; }
@@ -6681,6 +6694,7 @@ if enabled vaapi; then
 
     check_type "va/va.h va/va_dec_hevc.h" "VAPictureParameterBufferHEVC"
     check_struct "va/va.h" "VADecPictureParameterBufferVP9" bit_depth
+    check_struct "va/va.h" "VADecPictureParameterBufferAV1" bit_depth_idx
     check_type   "va/va.h va/va_vpp.h" "VAProcFilterParameterBufferHDRToneMapping"
     check_struct "va/va.h va/va_vpp.h" "VAProcPipelineCaps" rotation_flags
     check_type "va/va.h va/va_enc_hevc.h" "VAEncPictureParameterBufferHEVC"
@@ -6755,6 +6769,10 @@ NV_ENCODE_API_FUNCTION_LIST flist;
 void f(void) { struct { const GUID guid; } s[] = { { NV_ENC_PRESET_HQ_GUID } }; }
 int main(void) { return 0; }
 EOF
+
+if enabled_any nvdec cuvid; then
+    check_type "ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h" "CUVIDAV1PICPARAMS"
+fi
 
 enabled amf &&
     check_cpp_condition amf "AMF/core/Version.h" \

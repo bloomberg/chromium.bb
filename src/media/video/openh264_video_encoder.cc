@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 
 namespace media {
 
@@ -131,10 +132,13 @@ void OpenH264VideoEncoder::Initialize(VideoCodecProfile profile,
     return;
   }
 
+  if (!options.avc.produce_annexb)
+    h264_converter_ = std::make_unique<H264AnnexBToAvcBitstreamConverter>();
+
   options_ = options;
   output_cb_ = BindToCurrentLoop(std::move(output_cb));
   codec_ = std::move(codec);
-  std::move(done_cb).Run(Status());
+  std::move(done_cb).Run(OkStatus());
 }
 
 void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
@@ -152,13 +156,49 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                                   "No frame provided for encoding."));
     return;
   }
-  if (!frame->IsMappable() || frame->format() != PIXEL_FORMAT_I420) {
+  const bool supported_format = frame->format() == PIXEL_FORMAT_NV12 ||
+                                frame->format() == PIXEL_FORMAT_I420 ||
+                                frame->format() == PIXEL_FORMAT_XBGR ||
+                                frame->format() == PIXEL_FORMAT_XRGB ||
+                                frame->format() == PIXEL_FORMAT_ABGR ||
+                                frame->format() == PIXEL_FORMAT_ARGB;
+  if ((!frame->IsMappable() && !frame->HasGpuMemoryBuffer()) ||
+      !supported_format) {
     status =
         Status(StatusCode::kEncoderFailedEncode, "Unexpected frame format.")
             .WithData("IsMappable", frame->IsMappable())
             .WithData("format", frame->format());
     std::move(done_cb).Run(std::move(status));
     return;
+  }
+
+  if (frame->format() == PIXEL_FORMAT_NV12 && frame->HasGpuMemoryBuffer()) {
+    frame = ConvertToMemoryMappedFrame(frame);
+    if (!frame) {
+      std::move(done_cb).Run(
+          Status(StatusCode::kEncoderFailedEncode,
+                 "Convert GMB frame to MemoryMappedFrame failed."));
+      return;
+    }
+  }
+
+  if (frame->format() != PIXEL_FORMAT_I420) {
+    // OpenH264 can resize frame automatically, but since we're converting
+    // pixel fromat anyway we can do resize as well.
+    auto i420_frame = frame_pool_.CreateFrame(
+        PIXEL_FORMAT_I420, options_.frame_size, gfx::Rect(options_.frame_size),
+        options_.frame_size, frame->timestamp());
+    if (i420_frame) {
+      status = ConvertAndScaleFrame(*frame, *i420_frame, conversion_buffer_);
+    } else {
+      status = Status(StatusCode::kEncoderFailedEncode,
+                      "Can't allocate an I420 frame.");
+    }
+    if (!status.is_ok()) {
+      std::move(done_cb).Run(std::move(status));
+      return;
+    }
+    frame = std::move(i420_frame);
   }
 
   SSourcePicture picture = {};
@@ -196,7 +236,16 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
 
   DCHECK_GT(frame_info.iFrameSizeInBytes, 0);
   size_t total_chunk_size = frame_info.iFrameSizeInBytes;
-  conversion_buffer_.resize(total_chunk_size);
+
+  result.data.reset(new uint8_t[total_chunk_size]);
+
+  auto* gather_buffer = result.data.get();
+
+  if (h264_converter_) {
+    // Copy data to a temporary buffer instead.
+    conversion_buffer_.resize(total_chunk_size);
+    gather_buffer = conversion_buffer_.data();
+  }
 
   size_t written_size = 0;
   for (int layer_idx = 0; layer_idx < frame_info.iLayerNum; ++layer_idx) {
@@ -210,16 +259,22 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
       return;
     }
 
-    memcpy(conversion_buffer_.data() + written_size, layer_info.pBsBuf,
-           layer_len);
+    memcpy(gather_buffer + written_size, layer_info.pBsBuf, layer_len);
     written_size += layer_len;
   }
   DCHECK_EQ(written_size, total_chunk_size);
 
+  if (!h264_converter_) {
+    result.size = total_chunk_size;
+
+    output_cb_.Run(std::move(result), base::Optional<CodecDescription>());
+    std::move(done_cb).Run(OkStatus());
+    return;
+  }
+
   size_t converted_output_size = 0;
   bool config_changed = false;
-  result.data.reset(new uint8_t[total_chunk_size]);
-  status = h264_converter_.ConvertChunk(
+  status = h264_converter_->ConvertChunk(
       conversion_buffer_,
       base::span<uint8_t>(result.data.get(), total_chunk_size), &config_changed,
       &converted_output_size);
@@ -228,11 +283,12 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     std::move(done_cb).Run(std::move(status).AddHere(FROM_HERE));
     return;
   }
+
   result.size = converted_output_size;
 
   base::Optional<CodecDescription> desc;
   if (config_changed) {
-    const auto& config = h264_converter_.GetCurrentConfig();
+    const auto& config = h264_converter_->GetCurrentConfig();
     desc = CodecDescription();
     if (!config.Serialize(desc.value())) {
       std::move(done_cb).Run(Status(StatusCode::kEncoderFailedEncode,
@@ -242,7 +298,7 @@ void OpenH264VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
   }
 
   output_cb_.Run(std::move(result), std::move(desc));
-  std::move(done_cb).Run(Status());
+  std::move(done_cb).Run(OkStatus());
 }
 
 void OpenH264VideoEncoder::ChangeOptions(const Options& options,
@@ -279,9 +335,15 @@ void OpenH264VideoEncoder::ChangeOptions(const Options& options,
     return;
   }
 
+  if (options.avc.produce_annexb) {
+    h264_converter_.reset();
+  } else if (!h264_converter_) {
+    h264_converter_ = std::make_unique<H264AnnexBToAvcBitstreamConverter>();
+  }
+
   if (!output_cb.is_null())
     output_cb_ = BindToCurrentLoop(std::move(output_cb));
-  std::move(done_cb).Run(Status());
+  std::move(done_cb).Run(OkStatus());
 }
 
 void OpenH264VideoEncoder::Flush(StatusCB done_cb) {
@@ -292,7 +354,7 @@ void OpenH264VideoEncoder::Flush(StatusCB done_cb) {
   }
 
   // Nothing to do really.
-  std::move(done_cb).Run(Status());
+  std::move(done_cb).Run(OkStatus());
 }
 
 }  // namespace media

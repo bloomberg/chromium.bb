@@ -19,15 +19,17 @@
 //                headers will need to be moved to include/tint/.
 
 #include "src/ast/pipeline_stage.h"
-#include "src/context.h"
+#include "src/demangler.h"
 #include "src/diagnostic/printer.h"
 #include "src/inspector/inspector.h"
+#include "src/namer.h"
 #include "src/reader/reader.h"
-#include "src/transform/bound_array_accessors_transform.h"
+#include "src/transform/bound_array_accessors.h"
+#include "src/transform/emit_vertex_point_size.h"
+#include "src/transform/first_index_offset.h"
 #include "src/transform/manager.h"
-#include "src/transform/vertex_pulling_transform.h"
-#include "src/type_determiner.h"
-#include "src/type_manager.h"
+#include "src/transform/vertex_pulling.h"
+#include "src/type/type_manager.h"
 #include "src/validator/validator.h"
 #include "src/writer/writer.h"
 
@@ -41,6 +43,7 @@
 
 #if TINT_BUILD_SPV_WRITER
 #include "spirv-tools/libspirv.hpp"
+#include "src/transform/spirv.h"
 #include "src/writer/spirv/generator.h"
 #endif  // TINT_BUILD_SPV_WRITER
 
@@ -49,10 +52,12 @@
 #endif  // TINT_BUILD_WGSL_WRITER
 
 #if TINT_BUILD_MSL_WRITER
+#include "src/transform/msl.h"
 #include "src/writer/msl/generator.h"
 #endif  // TINT_BUILD_MSL_WRITER
 
 #if TINT_BUILD_HLSL_WRITER
+#include "src/transform/hlsl.h"
 #include "src/writer/hlsl/generator.h"
 #endif  // TINT_BUILD_HLSL_WRITER
 

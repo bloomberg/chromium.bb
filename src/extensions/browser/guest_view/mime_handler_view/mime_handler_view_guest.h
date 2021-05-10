@@ -143,7 +143,9 @@ class MimeHandlerViewGuest
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) final;
   bool GuestSaveFrame(content::WebContents* guest_web_contents) final;
-  bool SaveFrame(const GURL& url, const content::Referrer& referrer) final;
+  bool SaveFrame(const GURL& url,
+                 const content::Referrer& referrer,
+                 content::RenderFrameHost* rfh) final;
   void OnRenderFrameHostDeleted(int process_id, int routing_id) final;
   void EnterFullscreenModeForTab(
       content::RenderFrameHost* requesting_frame,
@@ -175,6 +177,7 @@ class MimeHandlerViewGuest
   void DocumentOnLoadCompletedInMainFrame() final;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
 
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;

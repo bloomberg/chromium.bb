@@ -31,6 +31,12 @@ Polymer({
     },
 
     /**
+     * Primary / Device account.
+     * @private {?settings.Account}
+     */
+    deviceAccount_: Object,
+
+    /**
      * The targeted account for menu operations.
      * @private {?settings.Account}
      */
@@ -42,6 +48,30 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('isChild');
       },
+    },
+
+    /**
+     * True if device account is managed.
+     * @private {boolean}
+     */
+    isDeviceAccountManaged_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isDeviceAccountManaged');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * True if redesign of account management flows is enabled.
+     * @private
+     */
+    isAccountManagementFlowsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
+      },
+      readOnly: true,
     },
 
     /**
@@ -108,6 +138,15 @@ Polymer({
   },
 
   /**
+   * @return {boolean} whether the additional messages for child user should be
+   *     shown.
+   * @private
+   */
+  showChildMessage_() {
+    return this.isChildUser_ && !this.isAccountManagementFlowsV2Enabled_;
+  },
+
+  /**
    * @return {string} account manager 'add account' label.
    * @private
    */
@@ -116,6 +155,38 @@ Polymer({
       return loadTimeData.getString('addSchoolAccountLabel');
     }
     return loadTimeData.getString('addAccountLabel');
+  },
+
+  /**
+   * @return {string} accounts list header (e.g. 'Secondary accounts' for
+   *     regular users or 'School accounts' for child users).
+   * @private
+   */
+  getAccountListHeader_() {
+    if (this.isAccountManagementFlowsV2Enabled_ && this.isChildUser_) {
+      return loadTimeData.getString('accountListHeaderChild');
+    }
+    return loadTimeData.getString('accountListHeader');
+  },
+
+  /**
+   * @return {string} accounts list description.
+   * @private
+   */
+  getAccountListDescription_() {
+    return this.isChildUser_ ?
+        loadTimeData.getString('accountListChildDescription') :
+        loadTimeData.getString('accountListDescription');
+  },
+
+  /**
+   * @return {boolean} whether 'Secondary Accounts disabled' tooltip should be
+   *     shown.
+   * @private
+   */
+  showSecondaryAccountsDisabledTooltip_() {
+    return this.isAccountManagementFlowsV2Enabled_ &&
+        !this.isSecondaryGoogleAccountSigninAllowed_;
   },
 
   /**
@@ -182,6 +253,24 @@ Polymer({
   },
 
   /**
+   * @return {boolean} True if 'School account' label should be displayed for
+   *     secondary accounts.
+   * @private
+   */
+  shouldDisplayEduSecondaryAccountLabel_() {
+    return this.isChildUser_ && !this.isAccountManagementFlowsV2Enabled_;
+  },
+
+  /**
+   * @return {boolean} True if managed badge should be shown next to the device
+   *     account picture.
+   * @private
+   */
+  shouldShowManagedBadge_() {
+    return this.isDeviceAccountManaged_ && !this.isChildUser_;
+  },
+
+  /**
    * @param {!settings.Account} account
    * @return {string} An appropriate management status label. e.g.
    *    "Primary account" for unmanaged accounts, "Managed by <Domain>"
@@ -194,6 +283,46 @@ Polymer({
     }
 
     return this.i18n('accountManagerUnmanagedLabel');
+  },
+
+  /**
+   * @return {string} icon
+   * @private
+   */
+  getManagedAccountTooltipIcon_() {
+    if (this.isChildUser_) {
+      return 'cr20:kite';
+    }
+    if (this.isDeviceAccountManaged_) {
+      return 'cr20:domain';
+    }
+    return '';
+  },
+
+  /**
+   * @return {string} description text
+   * @private
+   */
+  getManagementDescription_() {
+    if (this.isChildUser_) {
+      return loadTimeData.getString('accountManagerManagementDescription');
+    }
+    if (!this.deviceAccount_) {
+      return '';
+    }
+    if (!this.deviceAccount_.organization) {
+      if (this.isDeviceAccountManaged_) {
+        console.error(
+            'The device account is managed, but the organization is not set.');
+      }
+      return '';
+    }
+    // Format: 'This account is managed by
+    //          <a target="_blank" href="chrome://management">google.com</a>'.
+    // Where href will be set by <settings-localized-link>.
+    return loadTimeData.getStringF(
+        'accountManagerManagementDescription',
+        this.deviceAccount_.organization);
   },
 
   /**
@@ -235,6 +364,33 @@ Polymer({
   },
 
   /**
+   * @return {!Array<settings.Account>} list of accounts.
+   * @private
+   */
+  getAccounts_() {
+    // TODO(crbug.com/1152711): rename the method to `getSecondaryAccounts_`.
+    if (this.isAccountManagementFlowsV2Enabled_) {
+      // Return only secondary accounts.
+      return this.accounts_.filter(account => !account.isDeviceAccount);
+    }
+
+    return this.accounts_;
+  },
+
+
+  /**
+   * @param {string} classList existing class list.
+   * @return {string} new class list.
+   * @private
+   */
+  getAccountManagerDescriptionClassList_(classList) {
+    if (this.isAccountManagementFlowsV2Enabled_) {
+      return classList + ' full-width';
+    }
+    return classList;
+  },
+
+  /**
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */
@@ -252,6 +408,12 @@ Polymer({
   refreshAccounts_() {
     this.browserProxy_.getAccounts().then(accounts => {
       this.set('accounts_', accounts);
+      const deviceAccount = accounts.find(account => account.isDeviceAccount);
+      if (!deviceAccount) {
+        console.error('Cannot find device account.');
+        return;
+      }
+      this.deviceAccount_ = deviceAccount;
     });
   },
 
@@ -283,5 +445,5 @@ Polymer({
     this.browserProxy_.removeAccount(
         /** @type {?settings.Account} */ (this.actionMenuAccount_));
     this.closeActionMenu_();
-  }
+  },
 });

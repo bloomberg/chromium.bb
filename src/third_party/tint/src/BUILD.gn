@@ -75,6 +75,13 @@ config("tint_public_config") {
   ]
 }
 
+config("tint_config") {
+  include_dirs = []
+  if (tint_build_spv_reader || tint_build_spv_writer) {
+    include_dirs += [ "${tint_spirv_tools_dir}/include/" ]
+  }
+}
+
 ###############################################################################
 # Generated - Generated source files
 ###############################################################################
@@ -219,6 +226,8 @@ source_set("libtint_core_src") {
   sources = [
     "src/ast/access_control.cc",
     "src/ast/access_control.h",
+    "src/ast/access_decoration.cc",
+    "src/ast/access_decoration.h",
     "src/ast/array_accessor_expression.cc",
     "src/ast/array_accessor_expression.h",
     "src/ast/array_decoration.cc",
@@ -237,8 +246,6 @@ source_set("libtint_core_src") {
     "src/ast/bool_literal.h",
     "src/ast/break_statement.cc",
     "src/ast/break_statement.h",
-    "src/ast/builder.cc",
-    "src/ast/builder.h",
     "src/ast/builtin.cc",
     "src/ast/builtin.h",
     "src/ast/builtin_decoration.cc",
@@ -255,8 +262,6 @@ source_set("libtint_core_src") {
     "src/ast/constructor_expression.h",
     "src/ast/continue_statement.cc",
     "src/ast/continue_statement.h",
-    "src/ast/decorated_variable.cc",
-    "src/ast/decorated_variable.h",
     "src/ast/decoration.cc",
     "src/ast/decoration.h",
     "src/ast/discard_statement.cc",
@@ -273,14 +278,14 @@ source_set("libtint_core_src") {
     "src/ast/function.h",
     "src/ast/function_decoration.cc",
     "src/ast/function_decoration.h",
+    "src/ast/group_decoration.cc",
+    "src/ast/group_decoration.h",
     "src/ast/identifier_expression.cc",
     "src/ast/identifier_expression.h",
     "src/ast/if_statement.cc",
     "src/ast/if_statement.h",
     "src/ast/int_literal.cc",
     "src/ast/int_literal.h",
-    "src/ast/intrinsic.cc",
-    "src/ast/intrinsic.h",
     "src/ast/literal.cc",
     "src/ast/literal.h",
     "src/ast/location_decoration.cc",
@@ -301,8 +306,6 @@ source_set("libtint_core_src") {
     "src/ast/return_statement.h",
     "src/ast/scalar_constructor_expression.cc",
     "src/ast/scalar_constructor_expression.h",
-    "src/ast/set_decoration.cc",
-    "src/ast/set_decoration.h",
     "src/ast/sint_literal.cc",
     "src/ast/sint_literal.h",
     "src/ast/stage_decoration.cc",
@@ -327,46 +330,10 @@ source_set("libtint_core_src") {
     "src/ast/struct_member_offset_decoration.h",
     "src/ast/switch_statement.cc",
     "src/ast/switch_statement.h",
-    "src/ast/type/access_control_type.cc",
-    "src/ast/type/access_control_type.h",
-    "src/ast/type/alias_type.cc",
-    "src/ast/type/alias_type.h",
-    "src/ast/type/array_type.cc",
-    "src/ast/type/array_type.h",
-    "src/ast/type/bool_type.cc",
-    "src/ast/type/bool_type.h",
-    "src/ast/type/depth_texture_type.cc",
-    "src/ast/type/depth_texture_type.h",
-    "src/ast/type/f32_type.cc",
-    "src/ast/type/f32_type.h",
-    "src/ast/type/i32_type.cc",
-    "src/ast/type/i32_type.h",
-    "src/ast/type/matrix_type.cc",
-    "src/ast/type/matrix_type.h",
-    "src/ast/type/multisampled_texture_type.cc",
-    "src/ast/type/multisampled_texture_type.h",
-    "src/ast/type/pointer_type.cc",
-    "src/ast/type/pointer_type.h",
-    "src/ast/type/sampled_texture_type.cc",
-    "src/ast/type/sampled_texture_type.h",
-    "src/ast/type/sampler_type.cc",
-    "src/ast/type/sampler_type.h",
-    "src/ast/type/storage_texture_type.cc",
-    "src/ast/type/storage_texture_type.h",
-    "src/ast/type/struct_type.cc",
-    "src/ast/type/struct_type.h",
-    "src/ast/type/texture_type.cc",
-    "src/ast/type/texture_type.h",
-    "src/ast/type/type.cc",
-    "src/ast/type/type.h",
-    "src/ast/type/u32_type.cc",
-    "src/ast/type/u32_type.h",
-    "src/ast/type/vector_type.cc",
-    "src/ast/type/vector_type.h",
-    "src/ast/type/void_type.cc",
-    "src/ast/type/void_type.h",
     "src/ast/type_constructor_expression.cc",
     "src/ast/type_constructor_expression.h",
+    "src/ast/type_decoration.cc",
+    "src/ast/type_decoration.h",
     "src/ast/uint_literal.cc",
     "src/ast/uint_literal.h",
     "src/ast/unary_op.cc",
@@ -381,8 +348,15 @@ source_set("libtint_core_src") {
     "src/ast/variable_decoration.h",
     "src/ast/workgroup_decoration.cc",
     "src/ast/workgroup_decoration.h",
-    "src/context.cc",
-    "src/context.h",
+    "src/block_allocator.h",
+    "src/castable.cc",
+    "src/castable.h",
+    "src/clone_context.cc",
+    "src/clone_context.h",
+    "src/debug.cc",
+    "src/debug.h",
+    "src/demangler.cc",
+    "src/demangler.h",
     "src/diagnostic/diagnostic.cc",
     "src/diagnostic/diagnostic.h",
     "src/diagnostic/formatter.cc",
@@ -395,31 +369,103 @@ source_set("libtint_core_src") {
     "src/inspector/inspector.h",
     "src/inspector/scalar.cc",
     "src/inspector/scalar.h",
+    "src/intrinsic_table.cc",
+    "src/intrinsic_table.h",
     "src/namer.cc",
     "src/namer.h",
+    "src/program.cc",
+    "src/program.h",
+    "src/program_builder.cc",
+    "src/program_builder.h",
     "src/reader/reader.cc",
     "src/reader/reader.h",
     "src/scope_stack.h",
+    "src/semantic/call.h",
+    "src/semantic/expression.h",
+    "src/semantic/info.h",
+    "src/semantic/intrinsic.h",
+    "src/semantic/node.h",
+    "src/semantic/sem_call.cc",
+    "src/semantic/sem_call_target.cc",
+    "src/semantic/sem_expression.cc",
+    "src/semantic/sem_function.cc",
+    "src/semantic/sem_info.cc",
+    "src/semantic/sem_intrinsic.cc",
+    "src/semantic/sem_member_accessor_expression.cc",
+    "src/semantic/sem_node.cc",
+    "src/semantic/sem_statement.cc",
+    "src/semantic/sem_variable.cc",
+    "src/semantic/type_mappings.h",
     "src/source.cc",
     "src/source.h",
-    "src/transform/bound_array_accessors_transform.cc",
-    "src/transform/bound_array_accessors_transform.h",
+    "src/symbol.cc",
+    "src/symbol.h",
+    "src/symbol_table.cc",
+    "src/symbol_table.h",
+    "src/traits.h",
+    "src/transform/bound_array_accessors.cc",
+    "src/transform/bound_array_accessors.h",
+    "src/transform/emit_vertex_point_size.cc",
+    "src/transform/emit_vertex_point_size.h",
+    "src/transform/first_index_offset.cc",
+    "src/transform/first_index_offset.h",
     "src/transform/manager.cc",
     "src/transform/manager.h",
-    "src/transform/transformer.cc",
-    "src/transform/transformer.h",
-    "src/transform/vertex_pulling_transform.cc",
-    "src/transform/vertex_pulling_transform.h",
+    "src/transform/transform.cc",
+    "src/transform/transform.h",
+    "src/transform/vertex_pulling.cc",
+    "src/transform/vertex_pulling.h",
+    "src/type/access_control_type.cc",
+    "src/type/access_control_type.h",
+    "src/type/alias_type.cc",
+    "src/type/alias_type.h",
+    "src/type/array_type.cc",
+    "src/type/array_type.h",
+    "src/type/bool_type.cc",
+    "src/type/bool_type.h",
+    "src/type/depth_texture_type.cc",
+    "src/type/depth_texture_type.h",
+    "src/type/f32_type.cc",
+    "src/type/f32_type.h",
+    "src/type/i32_type.cc",
+    "src/type/i32_type.h",
+    "src/type/matrix_type.cc",
+    "src/type/matrix_type.h",
+    "src/type/multisampled_texture_type.cc",
+    "src/type/multisampled_texture_type.h",
+    "src/type/pointer_type.cc",
+    "src/type/pointer_type.h",
+    "src/type/sampled_texture_type.cc",
+    "src/type/sampled_texture_type.h",
+    "src/type/sampler_type.cc",
+    "src/type/sampler_type.h",
+    "src/type/storage_texture_type.cc",
+    "src/type/storage_texture_type.h",
+    "src/type/struct_type.cc",
+    "src/type/struct_type.h",
+    "src/type/texture_type.cc",
+    "src/type/texture_type.h",
+    "src/type/type.cc",
+    "src/type/type.h",
+    "src/type/type_manager.cc",
+    "src/type/type_manager.h",
+    "src/type/u32_type.cc",
+    "src/type/u32_type.h",
+    "src/type/vector_type.cc",
+    "src/type/vector_type.h",
+    "src/type/void_type.cc",
+    "src/type/void_type.h",
     "src/type_determiner.cc",
     "src/type_determiner.h",
-    "src/type_manager.cc",
-    "src/type_manager.h",
+    "src/utils/unique_vector.h",
     "src/validator/validator.cc",
     "src/validator/validator.h",
     "src/validator/validator_impl.cc",
     "src/validator/validator_impl.h",
-    "src/validator/validator_test_helper.cc",
-    "src/validator/validator_test_helper.h",
+    "src/writer/append_vector.cc",
+    "src/writer/append_vector.h",
+    "src/writer/float_to_string.cc",
+    "src/writer/float_to_string.h",
     "src/writer/text.cc",
     "src/writer/text.h",
     "src/writer/text_generator.cc",
@@ -470,6 +516,8 @@ source_set("libtint_spv_reader_src") {
     "src/reader/spirv/parser.h",
     "src/reader/spirv/parser_impl.cc",
     "src/reader/spirv/parser_impl.h",
+    "src/reader/spirv/usage.cc",
+    "src/reader/spirv/usage.h",
   ]
 
   deps = [
@@ -495,6 +543,8 @@ source_set("libtint_spv_reader_src") {
 
 source_set("libtint_spv_writer_src") {
   sources = [
+    "src/transform/spirv.cc",
+    "src/transform/spirv.h",
     "src/writer/spirv/binary_writer.cc",
     "src/writer/spirv/binary_writer.h",
     "src/writer/spirv/builder.cc",
@@ -565,6 +615,8 @@ source_set("libtint_wgsl_writer_src") {
 
 source_set("libtint_msl_writer_src") {
   sources = [
+    "src/transform/msl.cc",
+    "src/transform/msl.h",
     "src/writer/msl/generator.cc",
     "src/writer/msl/generator.h",
     "src/writer/msl/generator_impl.cc",
@@ -586,6 +638,8 @@ source_set("libtint_msl_writer_src") {
 
 source_set("libtint_hlsl_writer_src") {
   sources = [
+    "src/transform/hlsl.cc",
+    "src/transform/hlsl.h",
     "src/writer/hlsl/generator.cc",
     "src/writer/hlsl/generator.h",
     "src/writer/hlsl/generator_impl.cc",
@@ -606,30 +660,30 @@ source_set("libtint_hlsl_writer_src") {
 }
 
 source_set("libtint") {
-  deps = [ ":libtint_core_src" ]
+  public_deps = [ ":libtint_core_src" ]
 
   if (tint_build_spv_reader) {
-    deps += [ ":libtint_spv_reader_src" ]
+    public_deps += [ ":libtint_spv_reader_src" ]
   }
 
   if (tint_build_spv_writer) {
-    deps += [ ":libtint_spv_writer_src" ]
+    public_deps += [ ":libtint_spv_writer_src" ]
   }
 
   if (tint_build_wgsl_reader) {
-    deps += [ ":libtint_wgsl_reader_src" ]
+    public_deps += [ ":libtint_wgsl_reader_src" ]
   }
 
   if (tint_build_wgsl_writer) {
-    deps += [ ":libtint_wgsl_writer_src" ]
+    public_deps += [ ":libtint_wgsl_writer_src" ]
   }
 
   if (tint_build_msl_writer) {
-    deps += [ ":libtint_msl_writer_src" ]
+    public_deps += [ ":libtint_msl_writer_src" ]
   }
 
   if (tint_build_hlsl_writer) {
-    deps += [ ":libtint_hlsl_writer_src" ]
+    public_deps += [ ":libtint_hlsl_writer_src" ]
   }
 
   configs += [ ":tint_common_config" ]
@@ -676,7 +730,6 @@ if (!build_with_chromium) {
     testonly = true
     sources = [
       "${tint_googletest_dir}/googlemock/src/gmock-all.cc",
-      "${tint_googletest_dir}/googlemock/src/gmock_main.cc",
     ]
     public_configs = [ ":gmock_config" ]
   }
@@ -709,11 +762,13 @@ if (!build_with_chromium) {
 # These targets are separated because they are Chromium sources files that
 # can't use the tint_internal config, otherwise Tint's warning flags get
 # applied while compiling a bunch of Chromium's //base (via header inclusion)
-if (build_with_chromium) {
-  source_set("tint_unittests_main") {
-    testonly = true
-    deps = [ ":gmock_and_gtest" ]
+source_set("tint_unittests_main") {
+  testonly = true
+  deps = [ ":gmock_and_gtest" ]
+  if (build_with_chromium) {
     sources = [ "//gpu/tint_unittests_main.cc" ]
+  } else {
+    sources = [ "src/test_main.cc" ]
   }
 }
 
@@ -729,6 +784,7 @@ config("tint_unittests_config") {
 
 source_set("tint_unittests_core_src") {
   sources = [
+    "src/ast/access_decoration_test.cc",
     "src/ast/array_accessor_expression_test.cc",
     "src/ast/assignment_statement_test.cc",
     "src/ast/binary_expression_test.cc",
@@ -743,25 +799,26 @@ source_set("tint_unittests_core_src") {
     "src/ast/case_statement_test.cc",
     "src/ast/constant_id_decoration_test.cc",
     "src/ast/continue_statement_test.cc",
-    "src/ast/decorated_variable_test.cc",
     "src/ast/decoration_test.cc",
     "src/ast/discard_statement_test.cc",
     "src/ast/else_statement_test.cc",
-    "src/ast/expression_test.cc",
     "src/ast/fallthrough_statement_test.cc",
     "src/ast/float_literal_test.cc",
     "src/ast/function_test.cc",
+    "src/ast/group_decoration_test.cc",
     "src/ast/identifier_expression_test.cc",
     "src/ast/if_statement_test.cc",
     "src/ast/int_literal_test.cc",
+    "src/ast/intrinsic_texture_helper_test.cc",
+    "src/ast/intrinsic_texture_helper_test.h",
     "src/ast/location_decoration_test.cc",
     "src/ast/loop_statement_test.cc",
     "src/ast/member_accessor_expression_test.cc",
+    "src/ast/module_clone_test.cc",
     "src/ast/module_test.cc",
     "src/ast/null_literal_test.cc",
     "src/ast/return_statement_test.cc",
     "src/ast/scalar_constructor_expression_test.cc",
-    "src/ast/set_decoration_test.cc",
     "src/ast/sint_literal_test.cc",
     "src/ast/stage_decoration_test.cc",
     "src/ast/stride_decoration_test.cc",
@@ -769,41 +826,77 @@ source_set("tint_unittests_core_src") {
     "src/ast/struct_member_test.cc",
     "src/ast/struct_test.cc",
     "src/ast/switch_statement_test.cc",
-    "src/ast/type/access_control_type_test.cc",
-    "src/ast/type/alias_type_test.cc",
-    "src/ast/type/array_type_test.cc",
-    "src/ast/type/bool_type_test.cc",
-    "src/ast/type/depth_texture_type_test.cc",
-    "src/ast/type/f32_type_test.cc",
-    "src/ast/type/i32_type_test.cc",
-    "src/ast/type/matrix_type_test.cc",
-    "src/ast/type/multisampled_texture_type_test.cc",
-    "src/ast/type/pointer_type_test.cc",
-    "src/ast/type/sampled_texture_type_test.cc",
-    "src/ast/type/sampler_type_test.cc",
-    "src/ast/type/storage_texture_type_test.cc",
-    "src/ast/type/struct_type_test.cc",
-    "src/ast/type/u32_type_test.cc",
-    "src/ast/type/vector_type_test.cc",
+    "src/ast/test_helper.h",
     "src/ast/type_constructor_expression_test.cc",
     "src/ast/uint_literal_test.cc",
     "src/ast/unary_op_expression_test.cc",
     "src/ast/variable_decl_statement_test.cc",
     "src/ast/variable_test.cc",
     "src/ast/workgroup_decoration_test.cc",
+    "src/block_allocator_test.cc",
+    "src/castable_test.cc",
+    "src/clone_context_test.cc",
+    "src/debug_test.cc",
+    "src/demangler_test.cc",
     "src/diagnostic/formatter_test.cc",
     "src/diagnostic/printer_test.cc",
     "src/inspector/inspector_test.cc",
+    "src/intrinsic_table_test.cc",
     "src/namer_test.cc",
+    "src/program_builder_test.cc",
+    "src/program_test.cc",
     "src/scope_stack_test.cc",
-    "src/transform/bound_array_accessors_transform_test.cc",
-    "src/transform/vertex_pulling_transform_test.cc",
+    "src/symbol_table_test.cc",
+    "src/symbol_test.cc",
+    "src/traits_test.cc",
+    "src/transform/bound_array_accessors_test.cc",
+    "src/transform/emit_vertex_point_size_test.cc",
+    "src/transform/first_index_offset_test.cc",
+    "src/transform/test_helper.h",
+    "src/transform/vertex_pulling_test.cc",
+    "src/type/access_control_type_test.cc",
+    "src/type/alias_type_test.cc",
+    "src/type/array_type_test.cc",
+    "src/type/bool_type_test.cc",
+    "src/type/depth_texture_type_test.cc",
+    "src/type/f32_type_test.cc",
+    "src/type/i32_type_test.cc",
+    "src/type/matrix_type_test.cc",
+    "src/type/multisampled_texture_type_test.cc",
+    "src/type/pointer_type_test.cc",
+    "src/type/sampled_texture_type_test.cc",
+    "src/type/sampler_type_test.cc",
+    "src/type/storage_texture_type_test.cc",
+    "src/type/struct_type_test.cc",
+    "src/type/texture_type_test.cc",
+    "src/type/type_manager_test.cc",
+    "src/type/u32_type_test.cc",
+    "src/type/vector_type_test.cc",
     "src/type_determiner_test.cc",
-    "src/type_manager_test.cc",
+    "src/utils/command_test.cc",
+    "src/utils/command.h",
+    "src/utils/tmpfile_test.cc",
+    "src/utils/tmpfile.h",
+    "src/utils/unique_vector_test.cc",
+    "src/validator/validator_builtins_test.cc",
     "src/validator/validator_control_block_test.cc",
     "src/validator/validator_function_test.cc",
     "src/validator/validator_test.cc",
+    "src/validator/validator_test_helper.cc",
+    "src/validator/validator_test_helper.h",
+    "src/writer/float_to_string_test.cc",
   ]
+
+  if (is_linux || is_mac) {
+    sources += [ "src/utils/command_posix.cc" ]
+    sources += [ "src/utils/tmpfile_posix.cc" ]
+  } else if (is_win) {
+    sources += [ "src/utils/command_windows.cc" ]
+    sources += [ "src/utils/tmpfile_windows.cc" ]
+  } else {
+    sources += [ "src/utils/command_other.cc" ]
+    sources += [ "src/utils/tmpfile_other.cc" ]
+  }
 
   configs += [
     ":tint_common_config",
@@ -821,6 +914,8 @@ source_set("tint_unittests_core_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_core_src",
+    ":libtint_wgsl_reader_src",
+    ":libtint_wgsl_writer_src",
   ]
 }
 
@@ -845,6 +940,7 @@ source_set("tint_unittests_spv_reader_src") {
     "src/reader/spirv/parser_impl_convert_type_test.cc",
     "src/reader/spirv/parser_impl_function_decl_test.cc",
     "src/reader/spirv/parser_impl_get_decorations_test.cc",
+    "src/reader/spirv/parser_impl_handle_test.cc",
     "src/reader/spirv/parser_impl_import_test.cc",
     "src/reader/spirv/parser_impl_module_var_test.cc",
     "src/reader/spirv/parser_impl_named_types_test.cc",
@@ -853,6 +949,7 @@ source_set("tint_unittests_spv_reader_src") {
     "src/reader/spirv/parser_test.cc",
     "src/reader/spirv/spirv_tools_helpers_test.cc",
     "src/reader/spirv/spirv_tools_helpers_test.h",
+    "src/reader/spirv/usage_test.cc",
   ]
 
   configs += [
@@ -871,11 +968,13 @@ source_set("tint_unittests_spv_reader_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_spv_reader_src",
+    ":tint_unittests_core_src",
   ]
 }
 
 source_set("tint_unittests_spv_writer_src") {
   sources = [
+    "src/transform/spirv_test.cc",
     "src/writer/spirv/binary_writer_test.cc",
     "src/writer/spirv/builder_accessor_expression_test.cc",
     "src/writer/spirv/builder_assign_test.cc",
@@ -893,6 +992,7 @@ source_set("tint_unittests_spv_writer_src") {
     "src/writer/spirv/builder_ident_expression_test.cc",
     "src/writer/spirv/builder_if_test.cc",
     "src/writer/spirv/builder_intrinsic_test.cc",
+    "src/writer/spirv/builder_intrinsic_texture_test.cc",
     "src/writer/spirv/builder_literal_test.cc",
     "src/writer/spirv/builder_loop_test.cc",
     "src/writer/spirv/builder_return_test.cc",
@@ -904,6 +1004,7 @@ source_set("tint_unittests_spv_writer_src") {
     "src/writer/spirv/operand_test.cc",
     "src/writer/spirv/spv_dump.cc",
     "src/writer/spirv/spv_dump.h",
+    "src/writer/spirv/test_helper.h",
   ]
 
   configs += [
@@ -922,6 +1023,7 @@ source_set("tint_unittests_spv_writer_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_spv_writer_src",
+    ":tint_unittests_core_src",
   ]
 }
 
@@ -934,6 +1036,7 @@ source_set("tint_unittests_wgsl_reader_src") {
     "src/reader/wgsl/parser_impl_assignment_stmt_test.cc",
     "src/reader/wgsl/parser_impl_body_stmt_test.cc",
     "src/reader/wgsl/parser_impl_break_stmt_test.cc",
+    "src/reader/wgsl/parser_impl_bug_cases_test.cc",
     "src/reader/wgsl/parser_impl_call_stmt_test.cc",
     "src/reader/wgsl/parser_impl_case_body_test.cc",
     "src/reader/wgsl/parser_impl_const_expr_test.cc",
@@ -1018,6 +1121,7 @@ source_set("tint_unittests_wgsl_reader_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_wgsl_reader_src",
+    ":tint_unittests_core_src",
   ]
 }
 
@@ -1036,8 +1140,10 @@ source_set("tint_unittests_wgsl_writer_src") {
     "src/writer/wgsl/generator_impl_constructor_test.cc",
     "src/writer/wgsl/generator_impl_continue_test.cc",
     "src/writer/wgsl/generator_impl_discard_test.cc",
+    "src/writer/wgsl/generator_impl_entry_point_test.cc",
     "src/writer/wgsl/generator_impl_fallthrough_test.cc",
     "src/writer/wgsl/generator_impl_function_test.cc",
+    "src/writer/wgsl/generator_impl_global_decl_test.cc",
     "src/writer/wgsl/generator_impl_identifier_test.cc",
     "src/writer/wgsl/generator_impl_if_test.cc",
     "src/writer/wgsl/generator_impl_loop_test.cc",
@@ -1049,6 +1155,7 @@ source_set("tint_unittests_wgsl_writer_src") {
     "src/writer/wgsl/generator_impl_unary_op_test.cc",
     "src/writer/wgsl/generator_impl_variable_decl_statement_test.cc",
     "src/writer/wgsl/generator_impl_variable_test.cc",
+    "src/writer/wgsl/test_helper.h",
   ]
 
   configs += [
@@ -1067,6 +1174,7 @@ source_set("tint_unittests_wgsl_writer_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_wgsl_writer_src",
+    ":tint_unittests_core_src",
   ]
 }
 
@@ -1091,6 +1199,7 @@ source_set("tint_unittests_msl_writer_src") {
     "src/writer/msl/generator_impl_if_test.cc",
     "src/writer/msl/generator_impl_import_test.cc",
     "src/writer/msl/generator_impl_intrinsic_test.cc",
+    "src/writer/msl/generator_impl_intrinsic_texture_test.cc",
     "src/writer/msl/generator_impl_loop_test.cc",
     "src/writer/msl/generator_impl_member_accessor_test.cc",
     "src/writer/msl/generator_impl_module_constant_test.cc",
@@ -1101,6 +1210,7 @@ source_set("tint_unittests_msl_writer_src") {
     "src/writer/msl/generator_impl_unary_op_test.cc",
     "src/writer/msl/generator_impl_variable_decl_statement_test.cc",
     "src/writer/msl/namer_test.cc",
+    "src/writer/msl/test_helper.h",
   ]
 
   configs += [
@@ -1119,11 +1229,13 @@ source_set("tint_unittests_msl_writer_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_msl_writer_src",
+    ":tint_unittests_core_src",
   ]
 }
 
 source_set("tint_unittests_hlsl_writer_src") {
   sources = [
+    "src/transform/hlsl_test.cc",
     "src/writer/hlsl/generator_impl_alias_type_test.cc",
     "src/writer/hlsl/generator_impl_array_accessor_test.cc",
     "src/writer/hlsl/generator_impl_assign_test.cc",
@@ -1143,16 +1255,19 @@ source_set("tint_unittests_hlsl_writer_src") {
     "src/writer/hlsl/generator_impl_if_test.cc",
     "src/writer/hlsl/generator_impl_import_test.cc",
     "src/writer/hlsl/generator_impl_intrinsic_test.cc",
+    "src/writer/hlsl/generator_impl_intrinsic_texture_test.cc",
     "src/writer/hlsl/generator_impl_loop_test.cc",
     "src/writer/hlsl/generator_impl_member_accessor_test.cc",
     "src/writer/hlsl/generator_impl_module_constant_test.cc",
     "src/writer/hlsl/generator_impl_return_test.cc",
+    "src/writer/hlsl/generator_impl_sanitizer_tests.cc",
     "src/writer/hlsl/generator_impl_switch_test.cc",
     "src/writer/hlsl/generator_impl_test.cc",
     "src/writer/hlsl/generator_impl_type_test.cc",
     "src/writer/hlsl/generator_impl_unary_op_test.cc",
     "src/writer/hlsl/generator_impl_variable_decl_statement_test.cc",
     "src/writer/hlsl/namer_test.cc",
+    "src/writer/hlsl/test_helper.cc",
     "src/writer/hlsl/test_helper.h",
   ]
 
@@ -1172,6 +1287,7 @@ source_set("tint_unittests_hlsl_writer_src") {
   deps = [
     ":gmock_and_gtest",
     ":libtint_hlsl_writer_src",
+    ":tint_unittests_core_src",
   ]
 }
 
@@ -1225,9 +1341,7 @@ test("tint_unittests") {
     "${tint_spirv_tools_dir}/:spvtools_val",
   ]
 
-  if (build_with_chromium) {
-    deps += [ ":tint_unittests_main" ]
-  }
+  deps += [ ":tint_unittests_main" ]
 
   configs += [
     ":tint_common_config",
@@ -1255,27 +1369,119 @@ if (build_with_chromium) {
   # source_set.
 
   source_set("tint_fuzzer_common") {
-    configs += [ ":tint_common_config" ]
-    public_configs = [ ":tint_public_config" ]
+    public_configs = [
+      ":tint_config",
+      ":tint_common_config",
+      ":tint_public_config",
+    ]
+
+    public_deps = [ ":libtint" ]
+
+    sources = [
+      "fuzzers/tint_common_fuzzer.cc",
+      "fuzzers/tint_common_fuzzer.h",
+    ]
   }
 
   if (tint_build_wgsl_reader) {
     fuzzer_test("tint_wgsl_reader_fuzzer") {
       sources = [ "fuzzers/tint_wgsl_reader_fuzzer.cc" ]
-      deps = [
-        ":libtint_wgsl_reader_src",
-        ":tint_fuzzer_common",
-      ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_wgsl_reader && tint_build_wgsl_writer) {
+    fuzzer_test("tint_wgsl_reader_wgsl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_wgsl_reader_wgsl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_wgsl_reader && tint_build_spv_writer) {
+    fuzzer_test("tint_wgsl_reader_spv_writer_fuzzer") {
+      sources = [ "fuzzers/tint_wgsl_reader_spv_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+
+    fuzzer_test("tint_all_transforms_fuzzer") {
+      sources = [ "fuzzers/tint_all_transforms_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+
+    fuzzer_test("tint_bound_array_accessors_fuzzer") {
+      sources = [ "fuzzers/tint_bound_array_accessors_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+
+    fuzzer_test("tint_emit_vertex_point_size_fuzzer") {
+      sources = [ "fuzzers/tint_emit_vertex_point_size_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+
+    fuzzer_test("tint_first_index_offset_fuzzer") {
+      sources = [ "fuzzers/tint_first_index_offset_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+
+    fuzzer_test("tint_inspector_fuzzer") {
+      sources = [ "fuzzers/tint_inspector_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_wgsl_reader && tint_build_hlsl_writer) {
+    fuzzer_test("tint_wgsl_reader_hlsl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_wgsl_reader_hlsl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_wgsl_reader && tint_build_msl_writer) {
+    fuzzer_test("tint_wgsl_reader_msl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_wgsl_reader_msl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
     }
   }
 
   if (tint_build_spv_reader) {
     fuzzer_test("tint_spv_reader_fuzzer") {
       sources = [ "fuzzers/tint_spv_reader_fuzzer.cc" ]
-      deps = [
-        ":libtint_spv_reader_src",
-        ":tint_fuzzer_common",
-      ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_spv_reader && tint_build_wgsl_writer) {
+    fuzzer_test("tint_spv_reader_wgsl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_spv_reader_wgsl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_spv_reader && tint_build_spv_writer) {
+    fuzzer_test("tint_spv_reader_spv_writer_fuzzer") {
+      sources = [ "fuzzers/tint_spv_reader_spv_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_spv_reader && tint_build_hlsl_writer) {
+    fuzzer_test("tint_spv_reader_hlsl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_spv_reader_hlsl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_spv_reader && tint_build_msl_writer) {
+    fuzzer_test("tint_spv_reader_msl_writer_fuzzer") {
+      sources = [ "fuzzers/tint_spv_reader_msl_writer_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
+    }
+  }
+
+  if (tint_build_wgsl_reader && tint_build_wgsl_writer) {
+    fuzzer_test("tint_ast_clone_fuzzer") {
+      sources = [ "fuzzers/tint_ast_clone_fuzzer.cc" ]
+      deps = [ ":tint_fuzzer_common" ]
     }
   }
 }
@@ -1283,13 +1489,6 @@ if (build_with_chromium) {
 ###############################################################################
 # Samples - Executables exposing command line functionality
 ###############################################################################
-
-config("tint_config") {
-  include_dirs = []
-  if (tint_build_spv_reader || tint_build_spv_writer) {
-    include_dirs += [ "${tint_spirv_tools_dir}/include/" ]
-  }
-}
 
 executable("tint") {
   sources = [ "samples/main.cc" ]

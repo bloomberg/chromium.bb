@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ProtocolMapping} from '../../../../front_end/generated/protocol-mapping.js';
+import {ProtocolMapping} from '../../../../front_end/generated/protocol-mapping.js';  // eslint-disable-line rulesdir/es_modules_import
 import * as ProtocolClient from '../../../../front_end/protocol_client/protocol_client.js';
 
 import {deinitializeGlobalVars, initializeGlobalVars} from './EnvironmentHelpers.js';
+import type * as SDK from '../../../../front_end/sdk/sdk.js';
 
 type ProtocolCommand = keyof ProtocolMapping.Commands;
 type ProtocolCommandParams<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['paramsType'];
@@ -32,6 +33,25 @@ export function getMockConnectionResponseHandler(method: ProtocolCommand) {
 
 export function clearMockConnectionResponseHandler(method: ProtocolCommand) {
   responseMap.delete(method);
+}
+
+export function clearAllMockConnectionResponseHandlers() {
+  responseMap.clear();
+}
+
+export function dispatchEvent<E extends keyof ProtocolMapping.Events>(
+    target: SDK.SDKModel.Target, event: E, payload: ProtocolMapping.Events[E][0]) {
+  const [domain, method] = event.split('.');
+  if (!target._dispatchers[domain]) {
+    throw new Error(`No dispatcher for domain "${domain}" on provided target`);
+  }
+
+  // Register the event if it doesn't exist already.
+  if (!(method in target._dispatchers[domain]._eventArgs)) {
+    target._dispatchers[domain].registerEvent(method, {});
+  }
+
+  target._dispatchers[domain].dispatch(method, {method, params: payload});
 }
 
 function enable({reset = true} = {}) {

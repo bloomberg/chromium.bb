@@ -87,10 +87,11 @@ scoped_refptr<const ComputedStyle> StyleForHoveredScrollbarPart(
   if (part == kNoPart)
     return nullptr;
   scrollbar->SetHoveredPart(part);
-  scoped_refptr<const ComputedStyle> part_style = element.StyleForPseudoElement(
-      PseudoElementStyleRequest(target_id, To<CustomScrollbar>(scrollbar),
-                                part),
-      style);
+  scoped_refptr<const ComputedStyle> part_style =
+      element.UncachedStyleForPseudoElement(
+          PseudoElementStyleRequest(target_id, To<CustomScrollbar>(scrollbar),
+                                    part),
+          style);
   return part_style;
 }
 
@@ -99,7 +100,7 @@ scoped_refptr<const ComputedStyle> StyleForHoveredScrollbarPart(
 class PopupMenuCSSFontSelector : public CSSFontSelector,
                                  private FontSelectorClient {
  public:
-  PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
+  PopupMenuCSSFontSelector(Document&, CSSFontSelector*);
   ~PopupMenuCSSFontSelector() override;
 
   // We don't override willUseFontData() for now because the old PopupListBox
@@ -116,7 +117,7 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
 };
 
 PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(
-    Document* document,
+    Document& document,
     CSSFontSelector* owner_font_selector)
     : CSSFontSelector(document), owner_font_selector_(owner_font_selector) {
   owner_font_selector_->RegisterForInvalidationCallbacks(this);
@@ -492,11 +493,11 @@ void InternalPopupMenu::AppendOwnerElementPseudoStyles(
   PagePopupClient::AddString(target + "{ \n", data);
 
   const CSSPropertyID serialize_targets[] = {
-      CSSPropertyID::kDisplay,    CSSPropertyID::kBackgroundColor,
-      CSSPropertyID::kWidth,      CSSPropertyID::kBorderBottom,
-      CSSPropertyID::kBorderLeft, CSSPropertyID::kBorderRight,
-      CSSPropertyID::kBorderTop,  CSSPropertyID::kBorderRadius,
-      CSSPropertyID::kBoxShadow};
+      CSSPropertyID::kDisplay,        CSSPropertyID::kBackgroundColor,
+      CSSPropertyID::kWidth,          CSSPropertyID::kBorderBottom,
+      CSSPropertyID::kBorderLeft,     CSSPropertyID::kBorderRight,
+      CSSPropertyID::kBorderTop,      CSSPropertyID::kBorderRadius,
+      CSSPropertyID::kBackgroundClip, CSSPropertyID::kBoxShadow};
 
   for (CSSPropertyID id : serialize_targets) {
     PagePopupClient::AddString(SerializeComputedStyleForProperty(style, id),
@@ -510,7 +511,7 @@ CSSFontSelector* InternalPopupMenu::CreateCSSFontSelector(
     Document& popup_document) {
   Document& owner_document = OwnerElement().GetDocument();
   return MakeGarbageCollected<PopupMenuCSSFontSelector>(
-      &popup_document, owner_document.GetStyleEngine().GetFontSelector());
+      popup_document, owner_document.GetStyleEngine().GetFontSelector());
 }
 
 void InternalPopupMenu::SetValueAndClosePopup(int num_value,

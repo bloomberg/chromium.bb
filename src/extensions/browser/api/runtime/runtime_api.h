@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
@@ -89,7 +90,7 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
 
   void ReloadExtension(const std::string& extension_id);
   bool CheckForUpdates(const std::string& extension_id,
-                       const RuntimeAPIDelegate::UpdateCheckCallback& callback);
+                       RuntimeAPIDelegate::UpdateCheckCallback callback);
   void OpenURL(const GURL& uninstall_url);
   bool GetPlatformInfo(api::runtime::PlatformInfo* info);
   bool RestartDevice(std::string* error_message);

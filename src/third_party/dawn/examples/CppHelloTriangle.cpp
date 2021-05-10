@@ -62,8 +62,7 @@ void initTextures() {
     descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
     texture = device.CreateTexture(&descriptor);
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    sampler = device.CreateSampler(&samplerDesc);
+    sampler = device.CreateSampler();
 
     // Initialize the texture with arbitrary data until we can load images
     std::vector<uint8_t> data(4 * 1024 * 1024, 0);
@@ -87,7 +86,7 @@ void initTextures() {
 void init() {
     device = CreateCppDawnDevice();
 
-    queue = device.GetDefaultQueue();
+    queue = device.GetQueue();
     swapchain = GetSwapChain(device);
     swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
@@ -95,23 +94,23 @@ void init() {
     initBuffers();
     initTextures();
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        layout(location = 0) in vec4 pos;
-        void main() {
-            gl_Position = pos;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[builtin(position)]] var<out> Position : vec4<f32>;
+        [[location(0)]] var<in> pos : vec4<f32>;
+        [[stage(vertex)]] fn main() -> void {
+            Position = pos;
+            return;
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform sampler mySampler;
-        layout(set = 0, binding = 1) uniform texture2D myTexture;
+    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
+        [[group(0), binding(0)]] var mySampler: sampler;
+        [[group(0), binding(1)]] var myTexture : texture_2d<f32>;
 
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = texture(sampler2D(myTexture, mySampler), gl_FragCoord.xy / vec2(640.0, 480.0));
+        [[location(0)]] var<out> FragColor : vec4<f32>;
+        [[stage(fragment)]] fn main() -> void {
+            FragColor = textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0, 480.0));
+            return;
         })");
 
     auto bgl = utils::MakeBindGroupLayout(
@@ -163,7 +162,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(3);
         pass.EndPass();
     }

@@ -34,7 +34,7 @@ service RuntimeApplicationService {
   // "MessageConnectorService" provides the transport for MessagePorts.
   // MessagePorts are connected using other services (e.g. ApiBindings), then
   // registered with the MessageConnectorService to communicate over IPC
-  rpc PostMessage(cast.web.Message) returns (cast.web.ChannelStatus);
+  rpc PostMessage(cast.web.Message) returns (cast.web.MessagePortStatus);
 }
 
 // Request to set the URL rewrite rules on the runtime application.

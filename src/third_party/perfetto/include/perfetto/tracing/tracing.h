@@ -169,6 +169,9 @@ class PERFETTO_EXPORT Tracing {
     InitializeInternal(args_copy);
   }
 
+  // Checks if tracing has been initialized by calling |Initialize|.
+  static bool IsInitialized();
+
   // Start a new tracing session using the given tracing backend. Use
   // |kUnspecifiedBackend| to select an available backend automatically.
   // For the moment this can be used only when initializing tracing in
@@ -215,6 +218,36 @@ class PERFETTO_EXPORT TracingSession {
   // callback will be invoked on an internal perfetto thread.
   virtual void SetOnErrorCallback(std::function<void(TracingError)>) = 0;
 
+  // Issues a flush request, asking all data sources to ack the request, within
+  // the specified timeout. A "flush" is a fence to ensure visibility of data in
+  // the async tracing pipeline. It guarantees that all data written before the
+  // Flush() call will be visible in the trace buffer and hence by the
+  // ReadTrace() / ReadTraceBlocking() methods.
+  // Args:
+  //  callback: will be invoked on an internal perfetto thread when all data
+  //    sources have acked, or the timeout is reached. The bool argument
+  //    will be true if all data sources acked within the timeout, false if
+  //    the timeout was hit or some other error occurred (e.g. the tracing
+  //    session wasn't started or ended).
+  //  timeout_ms: how much time the service will wait for data source acks. If
+  //    0, the global timeout specified in the TraceConfig (flush_timeout_ms)
+  //    will be used. If flush_timeout_ms is also unspecified, a default value
+  //    of 5s will be used.
+  // Known issues:
+  //    Because flushing is still based on service-side scraping, the very last
+  //    trace packet for each data source thread will not be visible. Fixing
+  //    this requires either propagating the Flush() to the data sources or
+  //    changing the order of atomic operations in the service (b/162206162).
+  //    Until then, a workaround is to make sure to call
+  //    DataSource::Trace([](TraceContext ctx) { ctx.Flush(); }) just before
+  //    stopping, on each thread where DataSource::Trace has been previously
+  //    called.
+  virtual void Flush(std::function<void(bool)>, uint32_t timeout_ms = 0) = 0;
+
+  // Blocking version of Flush(). Waits until all data sources have acked and
+  // returns the success/failure status.
+  bool FlushBlocking(uint32_t timeout_ms = 0);
+
   // Disable tracing asynchronously.
   // Use SetOnStopCallback() to get a notification when the tracing session is
   // fully stopped and all data sources have acked.
@@ -228,6 +261,12 @@ class PERFETTO_EXPORT TracingSession {
   // when the trace reaches its |duration_ms| time limit.
   // This callback will be invoked on an internal perfetto thread.
   virtual void SetOnStopCallback(std::function<void()>) = 0;
+
+  // Changes the TraceConfig for an active tracing session. The session must
+  // have been configured and started before. Note that the tracing service
+  // only supports changing a subset of TraceConfig fields,
+  // see ConsumerEndpoint::ChangeTraceConfig().
+  virtual void ChangeTraceConfig(const TraceConfig&) = 0;
 
   // Struct passed as argument to the callback passed to ReadTrace().
   // [data, size] is guaranteed to contain 1 or more full trace packets, which
@@ -246,8 +285,13 @@ class PERFETTO_EXPORT TracingSession {
 
   // Reads back the trace data (raw protobuf-encoded bytes) asynchronously.
   // Can be called at any point during the trace, typically but not necessarily,
-  // after stopping. Reading the trace data is a destructive operation w.r.t.
-  // contents of the trace buffer and is not idempotent.
+  // after stopping. If this is called before the end of the trace (i.e. before
+  // Stop() / StopBlocking()), in almost all cases you need to call
+  // Flush() / FlushBlocking() before Read(). This is to guarantee that tracing
+  // data in-flight in the data sources is committed into the tracing buffers
+  // before reading them.
+  // Reading the trace data is a destructive operation w.r.t. contents of the
+  // trace buffer and is not idempotent.
   // A single ReadTrace() call can yield >1 callback invocations, until
   // |has_more| is false.
   using ReadTraceCallback = std::function<void(ReadTraceCallbackArgs)>;

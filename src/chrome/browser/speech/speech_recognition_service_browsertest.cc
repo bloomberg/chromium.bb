@@ -4,15 +4,19 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/speech_recognition_service.h"
+#include "chrome/browser/speech/chrome_speech_recognition_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/speech/speech_recognition_recognizer_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/pref_names.h"
 #include "content/public/test/browser_test.h"
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/media_switches.h"
@@ -94,7 +98,7 @@ void SpeechRecognitionServiceTest::LaunchService() {
   // Launch the Speech Recognition service.
   auto* browser_context =
       static_cast<content::BrowserContext*>(browser()->profile());
-  auto* service = new SpeechRecognitionService(browser_context);
+  auto* service = new ChromeSpeechRecognitionService(browser_context);
 
   mojo::PendingReceiver<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_receiver =
@@ -124,6 +128,7 @@ void SpeechRecognitionServiceTest::LaunchService() {
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
+  base::HistogramTester histograms;
   g_browser_process->local_state()->SetFilePath(
       prefs::kSodaBinaryPath,
       test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
@@ -132,6 +137,9 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
       prefs::kSodaEnUsConfigPath,
       test_data_dir_.Append(base::FilePath(kSodaResourcesDir))
           .Append(kSodaLanguagePackRelativePath));
+
+  PrefService* profile_prefs = browser()->profile()->GetPrefs();
+  profile_prefs->SetBoolean(prefs::kLiveCaptionEnabled, true);
   LaunchService();
 
   std::string buffer;
@@ -183,13 +191,25 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, RecognizePhrase) {
       // streaming in order to return events.
       usleep(20000);
     }
+
+    speech_recognition_recognizer_->OnCaptionBubbleClosed();
   }
 
+  speech_recognition_recognizer_.reset();
   base::RunLoop().RunUntilIdle();
+
   // Sleep for 50ms to ensure SODA has returned real-time results.
   usleep(50000);
   ASSERT_GT(static_cast<int>(recognition_results_.size()), kReplayAudioCount);
   ASSERT_EQ(recognition_results_.back(), "Hey Google Hey Google");
+
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histograms.ExpectUniqueTimeSample(
+      SpeechRecognitionRecognizerImpl::kCaptionBubbleVisibleHistogramName,
+      base::TimeDelta::FromMilliseconds(1260), 1);
+  histograms.ExpectUniqueTimeSample(
+      SpeechRecognitionRecognizerImpl::kCaptionBubbleHiddenHistogramName,
+      base::TimeDelta::FromMilliseconds(1260), 1);
 }
 
 }  // namespace speech

@@ -38,9 +38,6 @@ import * as Root from '../root/root.js';
  */
 let themeSupportInstance;
 
-/**
- * @unrestricted
- */
 export class ThemeSupport {
   /**
    * @private
@@ -128,7 +125,6 @@ export class ThemeSupport {
    * @param {!Node} node
    * @param {string} cssFile
    * @param {!{enableLegacyPatching:boolean}} options
-   * @suppressGlobalPropertiesCheck
    */
   _appendStyle(node, cssFile, options = {enableLegacyPatching: false}) {
     const content = Root.Runtime.cachedResources.get(cssFile) || '';
@@ -210,7 +206,6 @@ export class ThemeSupport {
    * @param {string} id
    * @param {string} text
    * @return {string}
-   * @suppressGlobalPropertiesCheck
    */
   themeStyleSheet(id, text) {
     if (!this.hasTheme() || this._injectingStyleSheet || this.isForcedColorsMode()) {

@@ -2,23 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
+export const UIStrings = {
+  /**
+  *@description Text in Request Initiator View of the Network panel
+  */
+  thisRequestHasNoInitiatorData: 'This request has no initiator data.',
+  /**
+  *@description Title of a section in Request Initiator view of the Network Panel
+  */
+  requestCallStack: 'Request call stack',
+  /**
+  *@description Title of a section in Request Initiator view of the Network Panel
+  */
+  requestInitiatorChain: 'Request initiator chain',
+};
+const str_ = i18n.i18n.registerUIStrings('network/RequestInitiatorView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RequestInitiatorView extends UI.Widget.VBox {
   /**
    * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   constructor(request) {
     super();
-    this.registerRequiredCSS('network/requestInitiatorView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('network/requestInitiatorView.css', {enableLegacyPatching: false});
     this.element.classList.add('request-initiator-view');
     /** @type {!Components.Linkifier.Linkifier} */
     this._linkifier = new Components.Linkifier.Linkifier();
     this._request = request;
-    this._emptyWidget = new UI.EmptyWidget.EmptyWidget(Common.UIString.UIString('This request has no initiator data.'));
+    this._emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoInitiatorData));
     this._emptyWidget.show(this.element);
     this._hasShown = false;
   }
@@ -43,57 +59,45 @@ export class RequestInitiatorView extends UI.Widget.VBox {
   }
 
   /**
-   * @param {!Element} sectionContent
-   * @param {string} title
-   * @param {boolean} expanded
+   * @return {!UI.TreeOutline.TreeOutlineInShadow}
    */
-  _appendExpandableSection(sectionContent, title, expanded) {
-    const section = document.createElement('div');
-    section.classList.add('request-initiator-view-section');
-    const icon = UI.Icon.Icon.create('smallicon-triangle-right');
-    const clickableElement = section.createChild('div', 'request-initiator-view-section-title');
-    clickableElement.appendChild(icon);
-    UI.UIUtils.createTextChild(clickableElement, title);
-    clickableElement.tabIndex = 0;
-    sectionContent.classList.add('hidden', 'request-initiator-view-section-content');
-    section.appendChild(sectionContent);
+  _createTree() {
+    const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+    treeOutline.registerRequiredCSS('network/requestInitiatorViewTree.css', {enableLegacyPatching: false});
+    treeOutline.contentElement.classList.add('request-initiator-view-tree');
 
-    /** @param {boolean} expanded */
-    const expand = expanded => {
-      icon.setIconType(expanded ? 'smallicon-triangle-down' : 'smallicon-triangle-right');
-      sectionContent.classList.toggle('hidden', !expanded);
-    };
-    self.onInvokeElement(clickableElement, event => {
-      expand(sectionContent.classList.contains('hidden'));
-      event.consume();
-    });
-
-    expand(expanded);
-    this.element.appendChild(section);
+    return treeOutline;
   }
 
   /**
    * @param {!SDK.NetworkLog.InitiatorGraph} initiatorGraph
-   * @return {!UI.TreeOutline.TreeOutlineInShadow}
+   * @param {string} title
+   * @param {!UI.TreeOutline.TreeOutlineInShadow} tree
    */
-  _buildRequestChainTree(initiatorGraph) {
-    const root = new UI.TreeOutline.TreeOutlineInShadow();
+  _buildRequestChainTree(initiatorGraph, title, tree) {
+    const root = new UI.TreeOutline.TreeElement(title);
+
+    tree.appendChild(root);
+
+    if (root.titleElement instanceof HTMLElement) {
+      root.titleElement.classList.add('request-initiator-view-section-title');
+    }
+
     const initiators = initiatorGraph.initiators;
-    /** @type {(!UI.TreeOutline.TreeElement|!UI.TreeOutline.TreeOutlineInShadow)} */
+    /** @type {!UI.TreeOutline.TreeElement} */
     let parent = root;
     for (const request of Array.from(initiators).reverse()) {
       const treeElement = new UI.TreeOutline.TreeElement(request.url());
       parent.appendChild(treeElement);
-      if (parent !== root && parent instanceof UI.TreeOutline.TreeElement) {
-        parent.expand();
-      }
+      parent.expand();
       parent = treeElement;
     }
 
-    // parent should be this._request tree element now
-    if (parent instanceof UI.TreeOutline.TreeElement) {
-      parent.select();
-      parent.titleElement.style.fontWeight = 'bold';
+    root.expand();
+    parent.select();
+    const titleElement = parent.titleElement;
+    if (titleElement instanceof HTMLElement) {
+      titleElement.style.fontWeight = 'bold';
     }
 
     const initiated = initiatorGraph.initiated;
@@ -125,6 +129,27 @@ export class RequestInitiatorView extends UI.Widget.VBox {
   }
 
   /**
+   * @param {!Element} content
+   * @param {string} title
+   * @param {!UI.TreeOutline.TreeOutlineInShadow} tree
+   */
+  _buildStackTraceSection(content, title, tree) {
+    const root = new UI.TreeOutline.TreeElement(title);
+    tree.appendChild(root);
+
+    if (root.titleElement instanceof HTMLElement) {
+      root.titleElement.classList.add('request-initiator-view-section-title');
+    }
+
+    const contentElement = new UI.TreeOutline.TreeElement(content, false);
+    contentElement.selectable = false;
+
+
+    root.appendChild(contentElement);
+    root.expand();
+  }
+
+  /**
    * @override
    */
   wasShown() {
@@ -132,19 +157,30 @@ export class RequestInitiatorView extends UI.Widget.VBox {
       return;
     }
     let initiatorDataPresent = false;
+    const containerTree = this._createTree();
+
     const stackTracePreview = RequestInitiatorView.createStackTracePreview(this._request, this._linkifier, true);
+
     if (stackTracePreview) {
       initiatorDataPresent = true;
-      this._appendExpandableSection(stackTracePreview.element, ls`Request call stack`, true);
+      this._buildStackTraceSection(stackTracePreview.element, i18nString(UIStrings.requestCallStack), containerTree);
     }
 
     const initiatorGraph = SDK.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this._request);
+
     if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {
       initiatorDataPresent = true;
-      this._appendExpandableSection(
-          this._buildRequestChainTree(initiatorGraph).element, ls`Request initiator chain`, true);
+      this._buildRequestChainTree(initiatorGraph, i18nString(UIStrings.requestInitiatorChain), containerTree);
     }
+
+    const firstChild = containerTree.firstChild();
+
+    if (firstChild) {
+      firstChild.select(true);
+    }
+
     if (initiatorDataPresent) {
+      this.element.appendChild(containerTree.element);
       this._emptyWidget.hideWidget();
     }
     this._hasShown = true;

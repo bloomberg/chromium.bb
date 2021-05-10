@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/i18n/time_formatting.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "extensions/buildflags/buildflags.h"

@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkGraphics.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkTextBlob.h"
@@ -54,7 +55,7 @@ public:
         return id <= fLastDeletedHandleId;
     }
 
-    void notifyCacheMiss(SkStrikeClient::CacheMissType type) override {
+    void notifyCacheMiss(SkStrikeClient::CacheMissType type, int fontSize) override {
         SkAutoMutexExclusive l(fMutex);
 
         fCacheMissCount[type]++;

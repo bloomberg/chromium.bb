@@ -277,6 +277,7 @@ class WebRtcVoiceEngineTestFake : public ::testing::TestWithParam<bool> {
   void DeliverPacket(const void* data, int len) {
     rtc::CopyOnWriteBuffer packet(reinterpret_cast<const uint8_t*>(data), len);
     channel_->OnPacketReceived(packet, /* packet_time_us */ -1);
+    rtc::Thread::Current()->ProcessMessages(0);
   }
 
   void TearDown() override { delete channel_; }
@@ -1344,8 +1345,6 @@ TEST_P(WebRtcVoiceEngineTestFake, SetAndGetRtpSendParameters) {
 // Test that max_bitrate_bps in send stream config gets updated correctly when
 // SetRtpSendParameters is called.
 TEST_P(WebRtcVoiceEngineTestFake, SetRtpSendParameterUpdatesMaxBitrate) {
-  webrtc::test::ScopedFieldTrials override_field_trials(
-      "WebRTC-Audio-SendSideBwe/Enabled/");
   EXPECT_TRUE(SetupSendStream());
   cricket::AudioSendParameters send_parameters;
   send_parameters.codecs.push_back(kOpusCodec);
@@ -2127,17 +2126,7 @@ TEST_P(WebRtcVoiceEngineTestFake, SetSendCodecsCaseInsensitive) {
   EXPECT_TRUE(channel_->CanInsertDtmf());
 }
 
-class WebRtcVoiceEngineWithSendSideBweTest : public WebRtcVoiceEngineTestFake {
- public:
-  WebRtcVoiceEngineWithSendSideBweTest()
-      : WebRtcVoiceEngineTestFake("WebRTC-Audio-SendSideBwe/Enabled/") {}
-};
-
-INSTANTIATE_TEST_SUITE_P(UnusedParameter,
-                         WebRtcVoiceEngineWithSendSideBweTest,
-                         ::testing::Values(true));
-
-TEST_P(WebRtcVoiceEngineWithSendSideBweTest,
+TEST_P(WebRtcVoiceEngineTestFake,
        SupportsTransportSequenceNumberHeaderExtension) {
   const std::vector<webrtc::RtpExtension> header_extensions =
       GetDefaultEnabledRtpHeaderExtensions(*engine_);
@@ -2530,9 +2519,7 @@ class WebRtcVoiceEngineWithSendSideBweWithOverheadTest
  public:
   WebRtcVoiceEngineWithSendSideBweWithOverheadTest()
       : WebRtcVoiceEngineTestFake(
-            "WebRTC-Audio-SendSideBwe/Enabled/WebRTC-Audio-Allocation/"
-            "min:6000bps,max:32000bps/WebRTC-SendSideBwe-WithOverhead/"
-            "Enabled/") {}
+            "WebRTC-Audio-Allocation/min:6000bps,max:32000bps/") {}
 };
 
 // Test that we can set the outgoing SSRC properly.
@@ -3457,6 +3444,8 @@ TEST_P(WebRtcVoiceEngineTestFake, DeliverAudioPacket_Call) {
       call_.GetAudioReceiveStream(kAudioSsrc);
   EXPECT_EQ(0, s->received_packets());
   channel_->OnPacketReceived(kPcmuPacket, /* packet_time_us */ -1);
+  rtc::Thread::Current()->ProcessMessages(0);
+
   EXPECT_EQ(1, s->received_packets());
 }
 

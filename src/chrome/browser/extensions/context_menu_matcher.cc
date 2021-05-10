@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "content/public/browser/browser_context.h"
@@ -47,7 +48,7 @@ ContextMenuMatcher::ContextMenuMatcher(
     content::BrowserContext* browser_context,
     ui::SimpleMenuModel::Delegate* delegate,
     ui::SimpleMenuModel* menu_model,
-    const base::Callback<bool(const MenuItem*)>& filter)
+    base::RepeatingCallback<bool(const MenuItem*)> filter)
     : browser_context_(browser_context),
       menu_model_(menu_model),
       delegate_(delegate),
@@ -77,7 +78,7 @@ void ContextMenuMatcher::AppendExtensionItems(
 
   bool prepend_separator = false;
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // If this is the first extension-provided menu item, and there are other
   // items in the menu, and the last item is not a separator add a separator.
   // Also, don't add separators when Smart Text Selection is enabled. Smart
@@ -300,7 +301,7 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 
   bool enable_separators = false;
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   enable_separators = true;
 #endif
 

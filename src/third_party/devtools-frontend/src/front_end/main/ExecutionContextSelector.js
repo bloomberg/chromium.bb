@@ -8,7 +8,6 @@ import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.RuntimeModel.RuntimeModel>}
- * @unrestricted
  */
 export class ExecutionContextSelector {
   /**
@@ -40,7 +39,7 @@ export class ExecutionContextSelector {
   modelAdded(runtimeModel) {
     // Defer selecting default target since we need all clients to get their
     // targetAdded notifications first.
-    setImmediate(deferred.bind(this));
+    queueMicrotask(deferred.bind(this));
 
     /**
      * @this {ExecutionContextSelector}

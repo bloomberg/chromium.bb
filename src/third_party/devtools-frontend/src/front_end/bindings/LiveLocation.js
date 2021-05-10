@@ -26,14 +26,13 @@ export class LiveLocation {
   /**
    * @return {!Promise<boolean>}
    */
-  isBlackboxed() {
+  isIgnoreListed() {
     throw new Error('not implemented');
   }
 }
 
 /**
  * @implements {LiveLocation}
- * @unrestricted
  */
 export class LiveLocationWithPool {
   /**
@@ -89,14 +88,11 @@ export class LiveLocationWithPool {
    * @override
    * @return {!Promise<boolean>}
    */
-  async isBlackboxed() {
+  async isIgnoreListed() {
     throw 'Not implemented';
   }
 }
 
-/**
- * @unrestricted
- */
 export class LiveLocationPool {
   constructor() {
     this._locations = new Set();

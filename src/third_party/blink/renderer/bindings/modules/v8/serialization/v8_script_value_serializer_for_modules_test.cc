@@ -989,8 +989,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripVideoFrame) {
   scoped_refptr<media::VideoFrame> media_frame =
       media::VideoFrame::CreateBlackFrame(kFrameSize);
 
-  // Pass a copy the reference to the video frame.
-  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(
+      media_frame, scope.GetExecutionContext());
 
   // Round trip the frame and make sure the size is the same.
   v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
@@ -1003,13 +1003,16 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripVideoFrame) {
 
   EXPECT_FALSE(media_frame->HasOneRef());
 
-  // Destroying either |blink_frame| or |new_frame| should remove all references
+  // Closing |blink_frame| and |new_frame| should remove all references
   // to |media_frame|.
-  blink_frame->destroy();
+  blink_frame->close();
+  EXPECT_FALSE(media_frame->HasOneRef());
+
+  new_frame->close();
   EXPECT_TRUE(media_frame->HasOneRef());
 }
 
-TEST(V8ScriptValueSerializerForModulesTest, DestroyedVideoFrameThrows) {
+TEST(V8ScriptValueSerializerForModulesTest, ClosedVideoFrameThrows) {
   V8TestingScope scope;
   ExceptionState exception_state(scope.GetIsolate(),
                                  ExceptionState::kExecutionContext, "Window",
@@ -1020,10 +1023,11 @@ TEST(V8ScriptValueSerializerForModulesTest, DestroyedVideoFrameThrows) {
       media::VideoFrame::CreateBlackFrame(kFrameSize);
 
   // Create and destroy the frame.
-  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
-  blink_frame->destroy();
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(
+      media_frame, scope.GetExecutionContext());
+  blink_frame->close();
 
-  // Serializing the destroyed frame should throw an error.
+  // Serializing the closed frame should throw an error.
   v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())
                    .Serialize(wrapper, exception_state));

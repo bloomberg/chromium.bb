@@ -523,11 +523,19 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
 
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+    PresentationTimeCallbackBuffer::PendingCallbacks callbacks,
     const viz::FrameTimingDetails& details) {
-  layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
-                                              details.presentation_feedback);
-
+  std::vector<LayerTreeHost::PresentationTimeCallback> main_thread_callbacks =
+      std::move(callbacks.main_thread_callbacks);
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
+      frame_token, std::move(callbacks), details);
+  {
+    DebugScopedSetMainThread main(task_runner_provider_);
+    layer_tree_host_->DidPresentCompositorFrame(
+        frame_token, std::move(main_thread_callbacks),
+        details.presentation_feedback);
+  }
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token, details);
   }
@@ -547,7 +555,26 @@ void SingleThreadProxy::NotifyPaintWorkletStateChange(
 
 void SingleThreadProxy::NotifyThroughputTrackerResults(
     CustomTrackerResults results) {
-  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
+  DCHECK(task_runner_provider_->IsImplThread());
+  // This method is called from ImplThread side so post a task to
+  // MainThread. This is necessary because the throughput tracker callbacks are
+  // supposed to be executed on MainThread side, which may invok compositor's
+  // method that expected to be executed on MainThread.
+  task_runner_provider_->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SingleThreadProxy::NotifyThroughputTrackerResultsOnMainThread,
+          weak_factory_.GetWeakPtr(), std::move(results)));
+}
+
+bool SingleThreadProxy::IsInSynchronousComposite() const {
+  return inside_synchronous_composite_;
+}
+
+void SingleThreadProxy::FrameSinksToThrottleUpdated(
+    const base::flat_set<viz::FrameSinkId>& ids) {
+  DebugScopedSetMainThread main(task_runner_provider_);
+  single_thread_client_->FrameSinksToThrottleUpdated(ids);
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
@@ -555,10 +582,6 @@ void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
     scheduler_on_impl_thread_->SetMainThreadWantsBeginMainFrameNotExpected(
         new_state);
   }
-}
-
-bool SingleThreadProxy::IsInSynchronousComposite() const {
-  return inside_synchronous_composite_;
 }
 
 void SingleThreadProxy::CompositeImmediatelyForTest(
@@ -638,10 +661,6 @@ void SingleThreadProxy::CompositeImmediatelyForTest(
 
     DidFinishImplFrame(begin_frame_args);
   }
-}
-
-bool SingleThreadProxy::SupportsImplScrolling() const {
-  return false;
 }
 
 bool SingleThreadProxy::ShouldComposite() const {
@@ -963,6 +982,7 @@ void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
 
 void SingleThreadProxy::DidFinishImplFrame(
     const viz::BeginFrameArgs& last_activated_args) {
+  DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->DidFinishImplFrame(last_activated_args);
 #if DCHECK_IS_ON()
   DCHECK(inside_impl_frame_)
@@ -983,6 +1003,11 @@ void SingleThreadProxy::WillNotReceiveBeginFrame() {
 
 void SingleThreadProxy::DidReceiveCompositorFrameAck() {
   layer_tree_host_->DidReceiveCompositorFrameAck();
+}
+
+void SingleThreadProxy::NotifyThroughputTrackerResultsOnMainThread(
+    CustomTrackerResults results) {
+  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
 }  // namespace cc

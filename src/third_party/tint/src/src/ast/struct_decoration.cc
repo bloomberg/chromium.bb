@@ -14,13 +14,20 @@
 
 #include "src/ast/struct_decoration.h"
 
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StructDecoration);
+
 namespace tint {
 namespace ast {
 
-StructDecoration::StructDecoration(const Source& source)
-    : Decoration(Kind, source) {}
+constexpr const DecorationKind StructDecoration::Kind;
+
+StructDecoration::StructDecoration(const Source& source) : Base(source) {}
 
 StructDecoration::~StructDecoration() = default;
+
+DecorationKind StructDecoration::GetKind() const {
+  return Kind;
+}
 
 }  // namespace ast
 }  // namespace tint

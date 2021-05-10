@@ -23,6 +23,8 @@ namespace {
 
 const char kTestPref[] = "enterprise_connectors.test_pref";
 
+const char kTestScopePref[] = "enterprise_connectors.scope.test_pref";
+
 const char kPolicyName[] = "PolicyForTesting";
 
 const char kSchema[] = R"(
@@ -73,11 +75,13 @@ constexpr char kInvalidPolicy[] = R"(
 
 class EnterpriseConnectorsPolicyHandlerTest
     : public testing::TestWithParam<
-          std::tuple<const char*, policy::PolicySource>> {
+          std::tuple<const char*, const char*, policy::PolicySource>> {
  public:
-  const char* policy() const { return std::get<0>(GetParam()); }
+  const char* policy_scope() const { return std::get<0>(GetParam()); }
 
-  policy::PolicySource source() const { return std::get<1>(GetParam()); }
+  const char* policy() const { return std::get<1>(GetParam()); }
+
+  policy::PolicySource source() const { return std::get<2>(GetParam()); }
 
   bool expect_valid_policy() const {
     if (policy() == kEmptyPolicy)
@@ -106,7 +110,7 @@ TEST_P(EnterpriseConnectorsPolicyHandlerTest, Test) {
   }
 
   auto handler = std::make_unique<EnterpriseConnectorsPolicyHandler>(
-      kPolicyName, kTestPref, validation_schema);
+      kPolicyName, kTestPref, policy_scope(), validation_schema);
   policy::PolicyErrorMap errors;
   ASSERT_EQ(expect_valid_policy(),
             handler->CheckPolicySettings(policy_map, &errors));
@@ -117,22 +121,31 @@ TEST_P(EnterpriseConnectorsPolicyHandlerTest, Test) {
   // false, this is just to test that it applies the pref correctly.
   PrefValueMap prefs;
   base::Value* value_set_in_pref;
+  int pref_scope = -1;
   handler->ApplyPolicySettings(policy_map, &prefs);
 
   bool policy_is_set = policy() != kEmptyPolicy;
   ASSERT_EQ(policy_is_set, prefs.GetValue(kTestPref, &value_set_in_pref));
+  if (policy_scope())
+    EXPECT_EQ(policy_is_set, prefs.GetInteger(policy_scope(), &pref_scope));
 
   auto* value_set_in_map = policy_map.GetValue(kPolicyName);
-  if (value_set_in_map)
+  if (value_set_in_map) {
     ASSERT_TRUE(value_set_in_map->Equals(value_set_in_pref));
-  else
+    if (policy_scope())
+      ASSERT_EQ(policy::POLICY_SCOPE_MACHINE, pref_scope);
+  } else {
     ASSERT_FALSE(policy_is_set);
+    if (policy_scope())
+      ASSERT_EQ(-1, pref_scope);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
     EnterpriseConnectorsPolicyHandlerTest,
     EnterpriseConnectorsPolicyHandlerTest,
     testing::Combine(
+        testing::Values(kTestScopePref, nullptr),
         testing::Values(kValidPolicy, kInvalidPolicy, kEmptyPolicy),
         testing::Values(policy::PolicySource::POLICY_SOURCE_CLOUD,
                         policy::PolicySource::POLICY_SOURCE_PRIORITY_CLOUD,

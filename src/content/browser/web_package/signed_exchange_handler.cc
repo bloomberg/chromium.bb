@@ -173,6 +173,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     const net::NetworkIsolationKey& network_isolation_key,
     int load_flags,
+    const net::IPEndPoint& remote_endpoint,
     std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
@@ -184,6 +185,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       network_isolation_key_(network_isolation_key),
       load_flags_(load_flags),
+      remote_endpoint_(remote_endpoint),
       request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
@@ -540,14 +542,10 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
   if (!net::asn1::HasCanSignHttpExchangesDraftExtension(
           net::x509_util::CryptoBufferAsStringPiece(
               verified_cert->cert_buffer())) &&
-      !base::FeatureList::IsEnabled(
-          features::kAllowSignedHTTPExchangeCertsWithoutExtension) &&
       !unverified_cert_chain_->ShouldIgnoreErrors()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
-        "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
-        "this error for testing, enable "
-        "chrome://flags/#allow-sxg-certs-without-extension.",
+        "Certificate must have CanSignHttpExchangesDraft extension.",
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     return SignedExchangeLoadResult::kCertRequirementsNotMet;
@@ -675,6 +673,7 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head->load_timing.send_end = now;
   response_head->load_timing.receive_headers_end = now;
   response_head->content_length = response_head->headers->GetContentLength();
+  response_head->remote_endpoint = remote_endpoint_;
 
   auto body_stream = CreateResponseBodyStream();
   if (!body_stream) {

@@ -53,6 +53,8 @@ class NavigationImpl : public Navigation {
     safe_to_disable_network_error_auto_reload_ = value;
   }
 
+  void set_safe_to_get_page() { safe_to_get_page_ = true; }
+
   void set_was_stopped() { was_stopped_ = true; }
 
   bool set_user_agent_string_called() { return set_user_agent_string_called_; }
@@ -77,6 +79,7 @@ class NavigationImpl : public Navigation {
   bool IsSameDocument(JNIEnv* env) { return IsSameDocument(); }
   bool IsErrorPage(JNIEnv* env) { return IsErrorPage(); }
   bool IsDownload(JNIEnv* env) { return IsDownload(); }
+  bool IsKnownProtocol(JNIEnv* env) { return IsKnownProtocol(); }
   bool WasStopCalled(JNIEnv* env) { return WasStopCalled(); }
   int GetLoadError(JNIEnv* env) { return static_cast<int>(GetLoadError()); }
   jboolean SetRequestHeader(JNIEnv* env,
@@ -87,7 +90,14 @@ class NavigationImpl : public Navigation {
       const base::android::JavaParamRef<jstring>& value);
   jboolean IsPageInitiated(JNIEnv* env) { return IsPageInitiated(); }
   jboolean IsReload(JNIEnv* env) { return IsReload(); }
+  jboolean IsServedFromBackForwardCache(JNIEnv* env) {
+    return IsServedFromBackForwardCache();
+  }
   jboolean DisableNetworkErrorAutoReload(JNIEnv* env);
+  jboolean AreIntentLaunchesAllowedInBackground(JNIEnv* env);
+  jboolean IsFormSubmission(JNIEnv* env) { return IsFormSubmission(); }
+  base::android::ScopedJavaLocalRef<jstring> GetReferrer(JNIEnv* env);
+  jlong GetPage(JNIEnv* env);
 
   void SetResponse(
       std::unique_ptr<embedder_support::WebResourceResponse> response);
@@ -106,6 +116,7 @@ class NavigationImpl : public Navigation {
   bool IsSameDocument() override;
   bool IsErrorPage() override;
   bool IsDownload() override;
+  bool IsKnownProtocol() override;
   bool WasStopCalled() override;
   LoadError GetLoadError() override;
   void SetRequestHeader(const std::string& name,
@@ -114,6 +125,10 @@ class NavigationImpl : public Navigation {
   void DisableNetworkErrorAutoReload() override;
   bool IsPageInitiated() override;
   bool IsReload() override;
+  bool IsServedFromBackForwardCache() override;
+  bool IsFormSubmission() override;
+  GURL GetReferrer() override;
+  Page* GetPage() override;
 
  private:
   content::NavigationHandle* navigation_handle_;
@@ -140,6 +155,9 @@ class NavigationImpl : public Navigation {
 
   // Whether DisableNetworkErrorAutoReload is allowed at this time.
   bool safe_to_disable_network_error_auto_reload_ = false;
+
+  // Whether GetPage is allowed at this time.
+  bool safe_to_get_page_ = false;
 
   bool disable_network_error_auto_reload_ = false;
 

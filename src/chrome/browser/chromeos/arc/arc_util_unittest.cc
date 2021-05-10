@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/system/sys_info.h"
@@ -13,24 +14,22 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -229,10 +228,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
   // false for incognito mode profile.
   EXPECT_FALSE(
       IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
-
-  // false for Legacy supervised user.
-  profile()->SetSupervisedUserId("foo");
-  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
@@ -248,10 +243,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
   // false for incognito mode profile.
   EXPECT_FALSE(
       IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
-
-  // false for Legacy supervised user.
-  profile()->SetSupervisedUserId("foo");
-  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DisableArc) {

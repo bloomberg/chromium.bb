@@ -66,6 +66,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
   bool SupportsSharedImagePictureBuffers() const override;
+  TextureAllocationMode GetSharedImageTextureAllocationMode() const override;
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -116,6 +117,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
     // Slice header information.
     bool has_slice = false;
     bool is_idr = false;
+    bool has_recovery_point = false;
     bool has_mmco5 = false;
     int32_t pic_order_cnt = 0;
     int32_t reorder_window = 0;

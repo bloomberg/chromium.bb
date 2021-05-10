@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_startup.h"
+#include "quic/core/congestion_control/bbr2_startup.h"
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/congestion_control/bbr2_misc.h"
+#include "quic/core/congestion_control/bbr2_sender.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
 Bbr2StartupMode::Bbr2StartupMode(const Bbr2Sender* sender,
                                  Bbr2NetworkModel* model,
                                  QuicTime now)
-    : Bbr2ModeBase(sender, model),
-      full_bandwidth_reached_(false),
-      full_bandwidth_baseline_(QuicBandwidth::Zero()),
-      rounds_without_bandwidth_growth_(0) {
+    : Bbr2ModeBase(sender, model) {
   // Clear some startup stats if |sender_->connection_stats_| has been used by
   // another sender, which happens e.g. when QuicConnection switch send
   // algorithms.
   sender_->connection_stats_->slowstart_count = 1;
   sender_->connection_stats_->slowstart_duration = QuicTimeAccumulator();
   sender_->connection_stats_->slowstart_duration.Start(now);
+  if (sender->Params().bw_startup) {
+    // Enter() is never called for Startup, so the gains needs to be set here.
+    model_->set_pacing_gain(Params().startup_pacing_gain);
+    model_->set_cwnd_gain(Params().startup_cwnd_gain);
+  }
 }
 
 void Bbr2StartupMode::Enter(QuicTime /*now*/,
@@ -35,6 +38,8 @@ void Bbr2StartupMode::Enter(QuicTime /*now*/,
 void Bbr2StartupMode::Leave(QuicTime now,
                             const Bbr2CongestionEvent* /*congestion_event*/) {
   sender_->connection_stats_->slowstart_duration.Stop(now);
+  // Clear bandwidth_lo if it's set during STARTUP.
+  model_->clear_bandwidth_lo();
 }
 
 Bbr2Mode Bbr2StartupMode::OnCongestionEvent(
@@ -43,96 +48,92 @@ Bbr2Mode Bbr2StartupMode::OnCongestionEvent(
     const AckedPacketVector& /*acked_packets*/,
     const LostPacketVector& /*lost_packets*/,
     const Bbr2CongestionEvent& congestion_event) {
-  if (!full_bandwidth_reached_ && congestion_event.end_of_round_trip) {
+  if (!model_->full_bandwidth_reached() && congestion_event.end_of_round_trip) {
     // TCP BBR always exits upon excessive losses. QUIC BBRv1 does not exits
     // upon excessive losses, if enough bandwidth growth is observed.
-    bool has_enough_bw_growth = CheckBandwidthGrowth(congestion_event);
+    Bbr2NetworkModel::BandwidthGrowth bw_growth =
+        model_->CheckBandwidthGrowth(congestion_event);
 
-    if (Params().always_exit_startup_on_excess_loss || !has_enough_bw_growth) {
+    if (Params().always_exit_startup_on_excess_loss ||
+        (bw_growth == Bbr2NetworkModel::NO_GROWTH ||
+         bw_growth == Bbr2NetworkModel::EXIT)) {
       CheckExcessiveLosses(congestion_event);
     }
   }
 
-  model_->set_pacing_gain(Params().startup_pacing_gain);
-  model_->set_cwnd_gain(Params().startup_cwnd_gain);
+  if (Params().decrease_startup_pacing_at_end_of_round) {
+    QUICHE_DCHECK_GT(model_->pacing_gain(), 0);
+    QUICHE_DCHECK(Params().bw_startup);
+    if (congestion_event.end_of_round_trip &&
+        !congestion_event.last_sample_is_app_limited) {
+      // Multiply by startup_pacing_gain, so if the bandwidth doubles,
+      // the pacing gain will be the full startup_pacing_gain.
+      if (max_bw_at_round_beginning_ > QuicBandwidth::Zero()) {
+        const float bandwidth_ratio =
+            std::max(1., model_->MaxBandwidth().ToBitsPerSecond() /
+                             static_cast<double>(
+                                 max_bw_at_round_beginning_.ToBitsPerSecond()));
+        // Even when bandwidth isn't increasing, use a gain large enough to
+        // cause a startup_full_bw_threshold increase.
+        const float new_gain =
+            ((bandwidth_ratio - 1) * (Params().startup_pacing_gain -
+                                      Params().startup_full_bw_threshold)) +
+            Params().startup_full_bw_threshold;
+        // Allow the pacing gain to decrease.
+        model_->set_pacing_gain(
+            std::min(Params().startup_pacing_gain, new_gain));
+        // Clear bandwidth_lo if it's less than the pacing rate.
+        // This avoids a constantly app-limited flow from having it's pacing
+        // gain effectively decreased below 1.25.
+        if (model_->bandwidth_lo() <
+            model_->MaxBandwidth() * model_->pacing_gain()) {
+          model_->clear_bandwidth_lo();
+        }
+      }
+      max_bw_at_round_beginning_ = model_->MaxBandwidth();
+    }
+  } else if (!Params().bw_startup) {
+    // When the flag is enabled, set these in the constructor.
+    model_->set_pacing_gain(Params().startup_pacing_gain);
+    model_->set_cwnd_gain(Params().startup_cwnd_gain);
+  }
 
   // TODO(wub): Maybe implement STARTUP => PROBE_RTT.
-  return full_bandwidth_reached_ ? Bbr2Mode::DRAIN : Bbr2Mode::STARTUP;
-}
-
-bool Bbr2StartupMode::CheckBandwidthGrowth(
-    const Bbr2CongestionEvent& congestion_event) {
-  DCHECK(!full_bandwidth_reached_);
-  DCHECK(congestion_event.end_of_round_trip);
-  if (congestion_event.last_sample_is_app_limited) {
-    // Return true such that when Params().always_exit_startup_on_excess_loss is
-    // false, we'll not check excess loss, which is the behavior of QUIC BBRv1.
-    return true;
-  }
-
-  QuicBandwidth threshold =
-      full_bandwidth_baseline_ * Params().startup_full_bw_threshold;
-
-  if (model_->MaxBandwidth() >= threshold) {
-    QUIC_DVLOG(3) << sender_
-                  << " CheckBandwidthGrowth at end of round. max_bandwidth:"
-                  << model_->MaxBandwidth() << ", threshold:" << threshold
-                  << " (Still growing)  @ " << congestion_event.event_time;
-    full_bandwidth_baseline_ = model_->MaxBandwidth();
-    rounds_without_bandwidth_growth_ = 0;
-    return true;
-  }
-
-  ++rounds_without_bandwidth_growth_;
-  full_bandwidth_reached_ =
-      rounds_without_bandwidth_growth_ >= Params().startup_full_bw_rounds;
-  QUIC_DVLOG(3) << sender_
-                << " CheckBandwidthGrowth at end of round. max_bandwidth:"
-                << model_->MaxBandwidth() << ", threshold:" << threshold
-                << " rounds_without_growth:" << rounds_without_bandwidth_growth_
-                << " full_bw_reached:" << full_bandwidth_reached_ << "  @ "
-                << congestion_event.event_time;
-
-  return false;
+  return model_->full_bandwidth_reached() ? Bbr2Mode::DRAIN : Bbr2Mode::STARTUP;
 }
 
 void Bbr2StartupMode::CheckExcessiveLosses(
     const Bbr2CongestionEvent& congestion_event) {
-  DCHECK(congestion_event.end_of_round_trip);
+  QUICHE_DCHECK(congestion_event.end_of_round_trip);
 
-  if (full_bandwidth_reached_) {
+  if (model_->full_bandwidth_reached()) {
     return;
   }
 
   // At the end of a round trip. Check if loss is too high in this round.
   if (model_->IsInflightTooHigh(congestion_event,
                                 Params().startup_full_loss_count)) {
-    QuicByteCount new_inflight_hi = model_->BDP(model_->MaxBandwidth());
+    QuicByteCount new_inflight_hi = model_->BDP();
     if (Params().startup_loss_exit_use_max_delivered_for_inflight_hi) {
       if (new_inflight_hi < model_->max_bytes_delivered_in_round()) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(
-            quic_bbr2_startup_loss_exit_use_max_delivered, 1, 2);
         new_inflight_hi = model_->max_bytes_delivered_in_round();
-      } else {
-        QUIC_RELOADABLE_FLAG_COUNT_N(
-            quic_bbr2_startup_loss_exit_use_max_delivered, 2, 2);
       }
     }
     QUIC_DVLOG(3) << sender_ << " Exiting STARTUP due to loss. inflight_hi:"
                   << new_inflight_hi;
     // TODO(ianswett): Add a shared method to set inflight_hi in the model.
     model_->set_inflight_hi(new_inflight_hi);
-
-    full_bandwidth_reached_ = true;
+    model_->set_full_bandwidth_reached();
     sender_->connection_stats_->bbr_exit_startup_due_to_loss = true;
   }
 }
 
 Bbr2StartupMode::DebugState Bbr2StartupMode::ExportDebugState() const {
   DebugState s;
-  s.full_bandwidth_reached = full_bandwidth_reached_;
-  s.full_bandwidth_baseline = full_bandwidth_baseline_;
-  s.round_trips_without_bandwidth_growth = rounds_without_bandwidth_growth_;
+  s.full_bandwidth_reached = model_->full_bandwidth_reached();
+  s.full_bandwidth_baseline = model_->full_bandwidth_baseline();
+  s.round_trips_without_bandwidth_growth =
+      model_->rounds_without_bandwidth_growth();
   return s;
 }
 

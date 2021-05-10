@@ -6,33 +6,35 @@
 
 #include <utility>
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/singleton.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/system/automatic_reboot_manager.h"
+#include "chrome/browser/ash/system/device_disabling_manager.h"
+#include "chrome/browser/ash/system/device_disabling_manager_default_delegate.h"
+#include "chrome/browser/ash/system/system_clock.h"
+#include "chrome/browser/ash/system/timezone_resolver_manager.h"
+#include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/system_proxy_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
-#include "chrome/browser/chromeos/system/device_disabling_manager.h"
-#include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
-#include "chrome/browser/chromeos/system/system_clock.h"
-#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
-#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
+#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "components/arc/enterprise/snapshot_hours_policy_service.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -70,8 +72,8 @@ class PrimaryProfileServicesShutdownNotifierFactory
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
-      account_manager_factory_(
-          std::make_unique<chromeos::AccountManagerFactory>()) {}
+      account_manager_factory_(std::make_unique<ash::AccountManagerFactory>()) {
+}
 
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -80,7 +82,7 @@ BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
 void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
   DCHECK(!automatic_reboot_manager_);
 
-  automatic_reboot_manager_.reset(new chromeos::system::AutomaticRebootManager(
+  automatic_reboot_manager_.reset(new ash::system::AutomaticRebootManager(
       base::DefaultTickClock::GetInstance()));
 }
 
@@ -104,8 +106,8 @@ void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
   DCHECK(!device_disabling_manager_);
 
   device_disabling_manager_delegate_.reset(
-      new chromeos::system::DeviceDisablingManagerDefaultDelegate);
-  device_disabling_manager_.reset(new chromeos::system::DeviceDisablingManager(
+      new ash::system::DeviceDisablingManagerDefaultDelegate);
+  device_disabling_manager_.reset(new ash::system::DeviceDisablingManager(
       device_disabling_manager_delegate_.get(), chromeos::CrosSettings::Get(),
       user_manager::UserManager::Get()));
   device_disabling_manager_->Init();
@@ -177,9 +179,19 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
   browser_policy_connector_chromeos()
       ->GetSystemProxyManager()
       ->StartObservingPrimaryProfilePrefs(primary_profile);
+
+  auto* manager = arc::data_snapshotd::ArcDataSnapshotdManager::Get();
+  if (manager) {
+    manager->policy_service()->StartObservingPrimaryProfilePrefs(
+        primary_profile->GetPrefs());
+  }
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
+  auto* manager = arc::data_snapshotd::ArcDataSnapshotdManager::Get();
+  if (manager)
+    manager->policy_service()->StopObservingPrimaryProfilePrefs();
+
   browser_policy_connector_chromeos()
       ->GetSystemProxyManager()
       ->StopObservingPrimaryProfilePrefs();
@@ -197,7 +209,7 @@ void BrowserProcessPlatformPart::UnregisterKeepAlive() {
   keep_alive_.reset();
 }
 
-chromeos::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {
+ash::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!created_profile_helper_)
     CreateProfileHelper();
@@ -225,7 +237,7 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
         GetTimezoneResolverManager(),
         g_browser_process->shared_url_loader_factory(),
         chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
-        base::BindRepeating(&chromeos::system::ApplyTimeZone),
+        base::BindRepeating(&ash::system::ApplyTimeZone),
         base::BindRepeating(&chromeos::DelayNetworkCall,
                             base::TimeDelta::FromMilliseconds(
                                 chromeos::kDefaultNetworkRetryDelayMS)),
@@ -254,10 +266,10 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
 void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);
   created_profile_helper_ = true;
-  profile_helper_ = chromeos::ProfileHelper::CreateInstance();
+  profile_helper_ = ash::ProfileHelper::CreateInstance();
 }
 
-chromeos::AccountManagerFactory*
+ash::AccountManagerFactory*
 BrowserProcessPlatformPart::GetAccountManagerFactory() {
   return account_manager_factory_.get();
 }

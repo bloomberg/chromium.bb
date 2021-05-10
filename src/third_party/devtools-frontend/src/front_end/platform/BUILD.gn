@@ -7,21 +7,23 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("platform") {
   sources = [
-    "UIString.js",
-    "array-utilities.js",
-    "date-utilities.js",
-    "map-utilities.js",
-    "number-utilities.js",
-    "set-utilities.js",
-    "string-utilities.js",
-    "utilities.js",
+    "UIString.ts",
+    "array-utilities.ts",
+    "date-utilities.ts",
+    "keyboard-utilities.ts",
+    "map-utilities.ts",
+    "number-utilities.ts",
+    "set-utilities.ts",
+    "string-utilities.ts",
+    "typescript-utilities.ts",
+    "utilities.ts",
   ]
 
   deps = []
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "platform.js"
+  entrypoint = "platform.ts"
 
   deps = [ ":platform" ]
 }

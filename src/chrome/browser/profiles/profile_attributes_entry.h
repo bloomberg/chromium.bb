@@ -112,8 +112,8 @@ class ProfileAttributesEntry {
   bool IsSupervised() const;
   // Returns true if the profile is signed in as a child account.
   bool IsChild() const;
-  // Returns true if the profile is a supervised user but not a child account.
-  bool IsLegacySupervised() const;
+  // Returns true if the profile should not be displayed to the user in the
+  // list of profiles.
   bool IsOmitted() const;
   bool IsSigninRequired() const;
   // Gets the supervised user ID of the profile's signed in account, if it's a
@@ -121,6 +121,10 @@ class ProfileAttributesEntry {
   std::string GetSupervisedUserId() const;
   // Returns true if the profile is an ephemeral profile.
   bool IsEphemeral() const;
+  // Returns true if the profile is a Guest profile.
+  // Only ephemeral Guest profiles are stored in profile attributes and
+  // therefore a Guest profile here is always ephemeral as well.
+  bool IsGuest() const;
   // Returns true if the profile is using a default name, typically of the
   // format "Person %d".
   bool IsUsingDefaultName() const;
@@ -155,7 +159,8 @@ class ProfileAttributesEntry {
   // value is UTF8 encoded.
   std::string GetHostedDomain() const;
 
-  void SetLocalProfileName(const base::string16& name);
+  // |is_using_default| should be set to false for non default profile names.
+  void SetLocalProfileName(const base::string16& name, bool is_default_name);
   void SetShortcutName(const base::string16& name);
   void SetActiveTimeToNow();
   void SetIsOmitted(bool is_omitted);
@@ -170,6 +175,8 @@ class ProfileAttributesEntry {
   void SetIsSigninRequired(bool value);
   void SetSignedInWithCredentialProvider(bool value);
   void SetIsEphemeral(bool value);
+  void SetIsGuest(bool value);
+  // TODO(msalama): Remove this function.
   void SetIsUsingDefaultName(bool value);
   void SetIsUsingDefaultAvatar(bool value);
   void SetIsAuthError(bool value);
@@ -202,12 +209,13 @@ class ProfileAttributesEntry {
   // via AddAccount* functions).
   void RecordAccountMetrics() const;
 
-  // TODO(crbug.com/866790): Check it is not used anymore and remove it.
+  // TODO(crbug/1155729): Check it is not used anymore for deprecated supervised
+  // users and remove it.
   static const char kSupervisedUserId[];
-  static const char kIsOmittedFromProfileListKey[];
   static const char kAvatarIconKey[];
   static const char kBackgroundAppsKey[];
   static const char kProfileIsEphemeral[];
+  static const char kProfileIsGuest[];
   static const char kUserNameKey[];
   static const char kGAIAIdKey[];
   static const char kIsConsentedPrimaryAccountKey[];
@@ -295,6 +303,12 @@ class ProfileAttributesEntry {
   // from the new data, i.e. whether actual update is done.
   bool ClearValue(const char* key);
 
+  // Migrate/cleanup deprecated keys in profile attributes. Over time, long
+  // deprecated keys should be removed as new ones are added, but this call
+  // should never go away (even if it becomes an empty call for some time) as it
+  // should remain *the* place to drop deprecated profile attributes keys at.
+  void MigrateObsoleteProfileAttributes();
+
   // These members are an implementation detail meant to smooth the migration
   // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can
   // be safely removed once the ProfileInfoCache stops using indices
@@ -314,6 +328,14 @@ class ProfileAttributesEntry {
   // memory only and can be easily reset once the policy is turned off.
   bool is_force_signin_profile_locked_ = false;
   bool is_force_signin_enabled_;
+
+  // Indicates whether the profile should not be displayed to the user in the
+  // list of profiles. This flag is intended to work only with ephemeral
+  // profiles which get removed after the browser restart. Thus, this flag is
+  // stored in memory only. Storing in memory also allows to avoid the risk of
+  // having permanent profiles that the user cannot see or delete, in case the
+  // ephemeral profile deletion fails.
+  bool is_omitted_ = false;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_ENTRY_H_

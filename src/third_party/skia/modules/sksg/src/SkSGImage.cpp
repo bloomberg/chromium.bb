@@ -9,6 +9,7 @@
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkImage.h"
+#include "src/core/SkPaintPriv.h"
 
 namespace sksg {
 
@@ -21,7 +22,6 @@ void Image::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
 
     SkPaint paint;
     paint.setAntiAlias(fAntiAlias);
-    paint.setFilterQuality(fQuality);
 
     sksg::RenderNode::ScopedRenderContext local_ctx(canvas, ctx);
     if (ctx) {
@@ -33,7 +33,7 @@ void Image::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
         local_ctx->modulatePaint(canvas->getTotalMatrix(), &paint);
     }
 
-    canvas->drawImage(fImage, 0, 0, &paint);
+    canvas->drawImage(fImage, 0, 0, fSamplingOptions, &paint);
 }
 
 const RenderNode* Image::onNodeAt(const SkPoint& p) const {

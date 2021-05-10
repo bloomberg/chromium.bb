@@ -132,7 +132,7 @@ class DOMTreeIterator {
     const bool skip_shadow_root =
         current_->GetShadowRoot() && current_->GetShadowRoot()->IsUserAgent();
     if (Node* first_child = skip_shadow_root
-                                ? FirstFlatTreeSibling(current_->firstChild())
+                                ? current_->firstChild()
                                 : FlatTreeTraversal::FirstChild(*current_)) {
       current_ = first_child;
       path_to_current_node_.push_back(next_node_id);
@@ -144,7 +144,7 @@ class DOMTreeIterator {
           current_->ParentElementShadowRoot() &&
           current_->ParentElementShadowRoot()->IsUserAgent();
       if (Node* node = in_ua_shadow_tree
-                           ? FirstFlatTreeSibling(current_->nextSibling())
+                           ? current_->nextSibling()
                            : FlatTreeTraversal::NextSibling(*current_)) {
         path_to_current_node_.back() = next_node_id;
         current_ = node;
@@ -166,11 +166,6 @@ class DOMTreeIterator {
   }
 
  private:
-  static Node* FirstFlatTreeSibling(Node* node) {
-    while (node && !node->CanParticipateInFlatTree())
-      node = node->nextSibling();
-    return node;
-  }
   Node* current_;
   WTF::Vector<int> path_to_current_node_;
 };
@@ -297,10 +292,10 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   // Resolve all property names to CSSProperty references.
   for (String& property_name : *computed_styles) {
     const CSSPropertyID id =
-        unresolvedCSSPropertyID(main_window, property_name);
+        UnresolvedCSSPropertyID(main_window, property_name);
     if (id == CSSPropertyID::kInvalid || id == CSSPropertyID::kVariable)
       return Response::InvalidParams("invalid CSS property");
-    const auto& property = CSSProperty::Get(resolveCSSPropertyID(id));
+    const auto& property = CSSProperty::Get(ResolveCSSPropertyID(id));
     css_property_filter_->push_back(&property);
   }
 

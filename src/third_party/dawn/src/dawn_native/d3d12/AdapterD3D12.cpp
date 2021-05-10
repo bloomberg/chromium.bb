@@ -122,6 +122,7 @@ namespace dawn_native { namespace d3d12 {
         if (mDeviceInfo.supportsShaderFloat16 && GetBackend()->GetFunctions()->IsDXCAvailable()) {
             mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
         }
+        mSupportedExtensions.EnableExtension(Extension::MultiPlanarFormats);
     }
 
     MaybeError Adapter::InitializeDebugLayerFilters() {
@@ -187,7 +188,8 @@ namespace dawn_native { namespace d3d12 {
         filter.DenyList.pIDList = denyIds;
 
         ComPtr<ID3D12InfoQueue> infoQueue;
-        ASSERT_SUCCESS(mD3d12Device.As(&infoQueue));
+        DAWN_TRY(CheckHRESULT(mD3d12Device.As(&infoQueue),
+                              "D3D12 QueryInterface ID3D12Device to ID3D12InfoQueue"));
 
         // To avoid flooding the console, a storage-filter is also used to
         // prevent messages from getting logged.
@@ -212,6 +214,17 @@ namespace dawn_native { namespace d3d12 {
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
         return Device::Create(this, descriptor);
+    }
+
+    // Resets the backend device and creates a new one. If any D3D12 objects belonging to the
+    // current ID3D12Device have not been destroyed, a non-zero value will be returned upon Reset()
+    // and the subequent call to CreateDevice will return a handle the existing device instead of
+    // creating a new one.
+    MaybeError Adapter::ResetInternalDeviceForTestingImpl() {
+        ASSERT(mD3d12Device.Reset() == 0);
+        DAWN_TRY(Initialize());
+
+        return {};
     }
 
 }}  // namespace dawn_native::d3d12

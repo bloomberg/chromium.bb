@@ -268,7 +268,7 @@ TEST_F(ContextProviderImplTest, CreateValidatesDataDirectory) {
   base::RunLoop run_loop;
   context.set_error_handler([&run_loop](zx_status_t status) {
     run_loop.Quit();
-    EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
+    EXPECT_TRUE(status == ZX_ERR_PEER_CLOSED);
   });
   run_loop.Run();
 }

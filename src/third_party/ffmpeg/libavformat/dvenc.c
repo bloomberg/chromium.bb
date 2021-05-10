@@ -307,34 +307,34 @@ static DVMuxContext* dv_init_mux(AVFormatContext* s)
 
     /* We have to sort out where audio and where video stream is */
     for (i=0; i<s->nb_streams; i++) {
-        switch (s->streams[i]->codecpar->codec_type) {
+        AVStream *st = s->streams[i];
+        switch (st->codecpar->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
             if (vst) return NULL;
-            vst = s->streams[i];
+            if (st->codecpar->codec_id != AV_CODEC_ID_DVVIDEO)
+                goto bail_out;
+            vst = st;
             break;
         case AVMEDIA_TYPE_AUDIO:
             if (c->n_ast > 1) return NULL;
-            c->ast[c->n_ast++] = s->streams[i];
+            /* Some checks -- DV format is very picky about its incoming streams */
+            if(st->codecpar->codec_id    != AV_CODEC_ID_PCM_S16LE ||
+               st->codecpar->channels    != 2)
+                goto bail_out;
+            if (st->codecpar->sample_rate != 48000 &&
+                st->codecpar->sample_rate != 44100 &&
+                st->codecpar->sample_rate != 32000    )
+                goto bail_out;
+            c->ast[c->n_ast++] = st;
             break;
         default:
             goto bail_out;
         }
     }
 
-    /* Some checks -- DV format is very picky about its incoming streams */
-    if (!vst || vst->codecpar->codec_id != AV_CODEC_ID_DVVIDEO)
+    if (!vst)
         goto bail_out;
-    for (i=0; i<c->n_ast; i++) {
-        if (c->ast[i]) {
-            if(c->ast[i]->codecpar->codec_id    != AV_CODEC_ID_PCM_S16LE ||
-               c->ast[i]->codecpar->channels    != 2)
-                goto bail_out;
-            if (c->ast[i]->codecpar->sample_rate != 48000 &&
-                c->ast[i]->codecpar->sample_rate != 44100 &&
-                c->ast[i]->codecpar->sample_rate != 32000    )
-                goto bail_out;
-        }
-    }
+
     c->sys = av_dv_codec_profile2(vst->codecpar->width, vst->codecpar->height,
                                   vst->codecpar->format, vst->time_base);
     if (!c->sys)

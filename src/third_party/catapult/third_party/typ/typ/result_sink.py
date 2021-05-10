@@ -26,10 +26,10 @@ import json
 import os
 import sys
 
-if sys.version_info.major == 2:
-  import httplib
-else:
-  import http.client as httplib
+import requests
+
+from typ import json_results
+from typ import expectations_parser
 
 # Valid status taken from the "TestStatus" enum in
 # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
@@ -69,21 +69,21 @@ class ResultSinkReporter(object):
         if not self._sink:
             return
 
-        self._address = self._sink['address']
-        self._url = '/prpc/luci.resultsink.v1.Sink/ReportTestResults'
+        self._url = ('http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults'
+                     % self._sink['address'])
         self._headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'Authorization': 'ResultSink %s' % self._sink['auth_token']
         }
+        self._session = requests.Session()
 
     @property
     def resultdb_supported(self):
         return self._sink is not None
 
     def report_individual_test_result(
-            self, test_name_prefix, result, artifact_output_dir,
-            expectation_tags):
+            self, test_name_prefix, result, artifact_output_dir, expectations):
         """Reports typ results for a single test to ResultSink.
 
         Inputs are typically similar to what is passed to
@@ -99,8 +99,8 @@ class ResultSinkReporter(object):
                     artifacts are saved on disk. If a relative path, will be
                     automatically joined with the cwd. Use '.' instead of '' to
                     point to the cwd.
-            expectation_tags: A list of typ expectation tags that apply to the
-                    run tests.
+            expectations: An expectations_parser.TestExpectations instance, or
+                    None if one is not available.
 
         Returns:
             0 if the result was reported successfully or ResultDB is not
@@ -109,7 +109,14 @@ class ResultSinkReporter(object):
         if not self.resultdb_supported:
             return 0
 
+        expectation_tags = expectations.tags if expectations else []
+
         test_id = test_name_prefix + result.name
+        raw_typ_expected_results = (
+                expectations.expectations_for(result.name).raw_results
+                if expectations
+                else [expectations_parser.RESULT_TAGS[
+                        json_results.ResultType.Pass]])
         result_is_expected = result.actual in result.expected
 
         tag_list = [
@@ -117,6 +124,8 @@ class ResultSinkReporter(object):
         ]
         for expectation in result.expected:
             tag_list.append(('typ_expectation', expectation))
+        for expectation in raw_typ_expected_results:
+            tag_list.append(('raw_typ_expectation', expectation))
         if expectation_tags:
             for tag in expectation_tags:
                 tag_list.append(('typ_tag', tag))
@@ -207,18 +216,11 @@ class ResultSinkReporter(object):
         Returns:
             0 if the POST succeeded, otherwise 1.
         """
-        # The "requests" module would make this simpler, but since we only need
-        # to make a single post and typ prefers to have minimal dependencies,
-        # use the built-in HTTP functionality instead.
-        connection = httplib.HTTPConnection(self._address)
-        connection.request(
-                'POST',
-                self._url,
-                body=content,
-                headers=self._headers)
-        retval = 0 if connection.getresponse().status == httplib.OK else 1
-        connection.close()
-        return retval
+        res = self._session.post(
+            url=self._url,
+            headers=self._headers,
+            data=content)
+        return 0 if res.ok else 1
 
 
 def _create_json_test_result(
@@ -251,7 +253,13 @@ def _create_json_test_result(
             'testId': test_id,
             'status': status,
             'expected': expected,
-            'duration': str(duration) + 's',
+            # If the number is too large or small, python formats the number
+            # in scientific notation, but google.protobuf.duration doesn't
+            # accept an input formatted in scientific notation.
+            #
+            # .9fs because nanosecond is the smallest precision that
+            # google.protobuf.duration supports.
+            'duration': '%.9fs' % duration,
             'summaryHtml': html_summary,
             'artifacts': artifacts,
             'tags': [],

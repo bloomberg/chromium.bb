@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -33,34 +34,6 @@ struct SameSizeAsNGFragmentItem {
 ASSERT_SIZE(NGFragmentItem, SameSizeAsNGFragmentItem);
 
 }  // namespace
-
-NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
-    : layout_object_(text.GetLayoutObject()),
-      text_({text.TextShapeResult(), text.TextOffset()}),
-      rect_({PhysicalOffset(), text.Size()}),
-      type_(kText),
-      sub_type_(static_cast<unsigned>(text.TextType())),
-      style_variant_(static_cast<unsigned>(text.StyleVariant())),
-      is_hidden_for_paint_(text.IsHiddenForPaint()),
-      text_direction_(static_cast<unsigned>(text.ResolvedDirection())),
-      ink_overflow_type_(NGInkOverflow::kNotSet),
-      is_dirty_(false),
-      is_last_for_node_(true) {
-#if DCHECK_IS_ON()
-  if (text_.shape_result) {
-    DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
-    DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
-  }
-#endif
-  if (text.TextType() == NGTextType::kLayoutGenerated) {
-    type_ = kGeneratedText;
-    // Note: Because of |text_| and |generated_text_| are in same union and
-    // we initialize |text_| instead of |generated_text_|, we should construct
-    // |generated_text_.text_| instead copying, |generated_text_.text = ...|.
-    new (&generated_text_.text) String(text.Text().ToString());
-  }
-  DCHECK(!IsFormattingContextRoot());
-}
 
 NGFragmentItem::NGFragmentItem(
     const NGInlineItem& inline_item,
@@ -90,31 +63,45 @@ NGFragmentItem::NGFragmentItem(
 }
 
 NGFragmentItem::NGFragmentItem(
+    const LayoutObject& layout_object,
+    NGTextType text_type,
+    NGStyleVariant style_variant,
+    TextDirection direction,
+    scoped_refptr<const ShapeResultView> shape_result,
+    const String& text_content,
+    const PhysicalSize& size,
+    bool is_hidden_for_paint)
+    : layout_object_(&layout_object),
+      generated_text_({std::move(shape_result), text_content}),
+      rect_({PhysicalOffset(), size}),
+      type_(kGeneratedText),
+      sub_type_(static_cast<unsigned>(text_type)),
+      style_variant_(static_cast<unsigned>(style_variant)),
+      is_hidden_for_paint_(is_hidden_for_paint),
+      text_direction_(static_cast<unsigned>(direction)),
+      ink_overflow_type_(NGInkOverflow::kNotSet),
+      is_dirty_(false),
+      is_last_for_node_(true) {
+  DCHECK(layout_object_);
+  DCHECK_EQ(TextShapeResult()->StartIndex(), StartOffset());
+  DCHECK_EQ(TextShapeResult()->EndIndex(), EndOffset());
+  DCHECK(!IsFormattingContextRoot());
+}
+
+NGFragmentItem::NGFragmentItem(
     const NGInlineItem& inline_item,
     scoped_refptr<const ShapeResultView> shape_result,
     const String& text_content,
     const PhysicalSize& size,
     bool is_hidden_for_paint)
-    : layout_object_(inline_item.GetLayoutObject()),
-      generated_text_({std::move(shape_result), text_content}),
-      rect_({PhysicalOffset(), size}),
-      type_(kGeneratedText),
-      sub_type_(static_cast<unsigned>(inline_item.TextType())),
-      style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
-      is_hidden_for_paint_(is_hidden_for_paint),
-      text_direction_(static_cast<unsigned>(inline_item.Direction())),
-      ink_overflow_type_(NGInkOverflow::kNotSet),
-      is_dirty_(false),
-      is_last_for_node_(true) {
-#if DCHECK_IS_ON()
-  if (text_.shape_result) {
-    DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
-    DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
-  }
-#endif
-  DCHECK_EQ(TextType(), NGTextType::kLayoutGenerated);
-  DCHECK(!IsFormattingContextRoot());
-}
+    : NGFragmentItem(*inline_item.GetLayoutObject(),
+                     inline_item.TextType(),
+                     inline_item.StyleVariant(),
+                     inline_item.Direction(),
+                     std::move(shape_result),
+                     text_content,
+                     size,
+                     is_hidden_for_paint) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line)
     : layout_object_(line.ContainerLayoutObject()),
@@ -150,11 +137,6 @@ NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
                                WritingMode writing_mode) {
   DCHECK(line_item.CanCreateFragmentItem());
 
-  if (line_item.text_fragment) {
-    new (this) NGFragmentItem(*line_item.text_fragment);
-    return;
-  }
-
   if (line_item.inline_item) {
     if (UNLIKELY(line_item.text_content)) {
       new (this) NGFragmentItem(
@@ -177,6 +159,17 @@ NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
     const NGPhysicalBoxFragment& box_fragment =
         To<NGPhysicalBoxFragment>(line_item.layout_result->PhysicalFragment());
     new (this) NGFragmentItem(box_fragment, line_item.ResolvedDirection());
+    return;
+  }
+
+  if (line_item.layout_object) {
+    const TextDirection direction = line_item.shape_result->Direction();
+    new (this) NGFragmentItem(
+        *line_item.layout_object, NGTextType::kLayoutGenerated,
+        line_item.style_variant, direction, std::move(line_item.shape_result),
+        line_item.text_content,
+        ToPhysicalSize(line_item.MarginSize(), writing_mode),
+        line_item.is_hidden_for_paint);
     return;
   }
 
@@ -484,7 +477,6 @@ String NGFragmentItem::ToString() const {
 
 PhysicalRect NGFragmentItem::LocalVisualRectFor(
     const LayoutObject& layout_object) {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
 
   PhysicalRect visual_rect;
@@ -496,7 +488,7 @@ PhysicalRect NGFragmentItem::LocalVisualRectFor(
     if (UNLIKELY(item.IsHiddenForPaint()))
       continue;
     PhysicalRect child_visual_rect = item.SelfInkOverflow();
-    child_visual_rect.offset += item.OffsetInContainerBlock();
+    child_visual_rect.offset += item.OffsetInContainerFragment();
     visual_rect.Unite(child_visual_rect);
   }
   return visual_rect;
@@ -526,7 +518,7 @@ PhysicalRect NGFragmentItem::RecalcInkOverflowForCursor(
     PhysicalRect child_rect;
     item->GetMutableForPainting().RecalcInkOverflow(*cursor, &child_rect);
     if (!child_rect.IsEmpty()) {
-      child_rect.offset += item->OffsetInContainerBlock();
+      child_rect.offset += item->OffsetInContainerFragment();
       contents_ink_overflow.Unite(child_rect);
     }
   }
@@ -584,7 +576,7 @@ void NGFragmentItem::RecalcInkOverflow(
 
   // |contents_rect| is relative to the inline formatting context. Make it
   // relative to |this|.
-  contents_rect.offset -= OffsetInContainerBlock();
+  contents_rect.offset -= OffsetInContainerFragment();
 
   if (Type() == kLine) {
     // Line boxes don't have self overflow. Compute content overflow only.
@@ -610,6 +602,85 @@ void NGFragmentItem::RecalcInkOverflow(
 void NGFragmentItem::SetDeltaToNextForSameLayoutObject(wtf_size_t delta) const {
   DCHECK_NE(Type(), kLine);
   delta_to_next_for_same_layout_object_ = delta;
+}
+
+// Compute the inline position from text offset, in logical coordinate relative
+// to this fragment.
+LayoutUnit NGFragmentItem::InlinePositionForOffset(
+    StringView text,
+    unsigned offset,
+    LayoutUnit (*round_function)(float),
+    AdjustMidCluster adjust_mid_cluster) const {
+  DCHECK_GE(offset, StartOffset());
+  DCHECK_LE(offset, EndOffset());
+  DCHECK_EQ(text.length(), TextLength());
+
+  offset -= StartOffset();
+  if (TextShapeResult()) {
+    // TODO(layout-dev): Move caret position out of ShapeResult and into a
+    // separate support class that can take a ShapeResult or ShapeResultView.
+    // Allows for better code separation and avoids the extra copy below.
+    return round_function(
+        TextShapeResult()->CreateShapeResult()->CaretPositionForOffset(
+            offset, text, adjust_mid_cluster));
+  }
+
+  // This fragment is a flow control because otherwise ShapeResult exists.
+  DCHECK(IsFlowControl());
+  DCHECK_EQ(1u, text.length());
+  if (!offset || UNLIKELY(IsRtl(Style().Direction())))
+    return LayoutUnit();
+  return IsHorizontal() ? Size().width : Size().height;
+}
+
+LayoutUnit NGFragmentItem::InlinePositionForOffset(StringView text,
+                                                   unsigned offset) const {
+  return InlinePositionForOffset(text, offset, LayoutUnit::FromFloatRound,
+                                 AdjustMidCluster::kToEnd);
+}
+
+std::pair<LayoutUnit, LayoutUnit> NGFragmentItem::LineLeftAndRightForOffsets(
+    StringView text,
+    unsigned start_offset,
+    unsigned end_offset) const {
+  DCHECK_LE(start_offset, EndOffset());
+  DCHECK_GE(start_offset, StartOffset());
+  DCHECK_LE(end_offset, EndOffset());
+
+  const LayoutUnit start_position =
+      InlinePositionForOffset(text, start_offset, LayoutUnit::FromFloatFloor,
+                              AdjustMidCluster::kToStart);
+  const LayoutUnit end_position = InlinePositionForOffset(
+      text, end_offset, LayoutUnit::FromFloatCeil, AdjustMidCluster::kToEnd);
+
+  // Swap positions if RTL.
+  return (UNLIKELY(start_position > end_position))
+             ? std::make_pair(end_position, start_position)
+             : std::make_pair(start_position, end_position);
+}
+
+PhysicalRect NGFragmentItem::LocalRect(StringView text,
+                                       unsigned start_offset,
+                                       unsigned end_offset) const {
+  if (start_offset == StartOffset() && end_offset == EndOffset())
+    return LocalRect();
+  LayoutUnit start_position, end_position;
+  std::tie(start_position, end_position) =
+      LineLeftAndRightForOffsets(text, start_offset, end_offset);
+  const LayoutUnit inline_size = end_position - start_position;
+  switch (GetWritingMode()) {
+    case WritingMode::kHorizontalTb:
+      return {start_position, LayoutUnit(), inline_size, Size().height};
+    case WritingMode::kVerticalRl:
+    case WritingMode::kVerticalLr:
+    case WritingMode::kSidewaysRl:
+      return {LayoutUnit(), start_position, Size().width, inline_size};
+    case WritingMode::kSidewaysLr:
+      return {LayoutUnit(), Size().height - end_position, Size().width,
+              inline_size};
+  }
+  NOTREACHED();
+  return {};
 }
 
 PositionWithAffinity NGFragmentItem::PositionForPointInText(

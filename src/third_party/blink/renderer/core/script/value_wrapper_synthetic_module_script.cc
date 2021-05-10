@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet_init.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "v8/include/v8.h"
@@ -24,7 +26,7 @@ namespace blink {
 // https://whatpr.org/html/4898/webappapis.html#creating-a-css-module-script
 ValueWrapperSyntheticModuleScript*
 ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
-    const base::Optional<ModuleScriptCreationParams>& params,
+    const ModuleScriptCreationParams& params,
     Modulator* settings_object) {
   DCHECK(settings_object->HasValidContext());
   ScriptState* script_state = settings_object->GetScriptState();
@@ -34,13 +36,14 @@ ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
                                  "ModuleScriptLoader",
                                  "CreateCSSWrapperSyntheticModuleScript");
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  UseCounter::Count(execution_context, WebFeature::kCreateCSSModuleScript);
   auto* context_window = DynamicTo<LocalDOMWindow>(execution_context);
   if (!context_window) {
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
         isolate, "Cannot create CSS Module in non-document context");
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
-        KURL(), ScriptFetchOptions(), error);
+        v8::Local<v8::Value>(), settings_object, params.SourceURL(), KURL(),
+        ScriptFetchOptions(), error);
   }
   CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
   CSSStyleSheet* style_sheet =
@@ -49,26 +52,26 @@ ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
-        KURL(), ScriptFetchOptions(), error);
+        v8::Local<v8::Value>(), settings_object, params.SourceURL(), KURL(),
+        ScriptFetchOptions(), error);
   }
-  style_sheet->replaceSync(params->GetSourceText().ToString(), exception_state);
+  style_sheet->replaceSync(params.GetSourceText().ToString(), exception_state);
   if (exception_state.HadException()) {
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        v8::Local<v8::Value>(), settings_object, params->GetResponseUrl(),
-        KURL(), ScriptFetchOptions(), error);
+        v8::Local<v8::Value>(), settings_object, params.SourceURL(), KURL(),
+        ScriptFetchOptions(), error);
   }
   v8::Local<v8::Value> v8_value_stylesheet = ToV8(style_sheet, script_state);
   return ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
-      v8_value_stylesheet, settings_object, params->GetResponseUrl(), KURL(),
+      v8_value_stylesheet, settings_object, params.SourceURL(), KURL(),
       ScriptFetchOptions());
 }
 
 ValueWrapperSyntheticModuleScript*
 ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
-    const base::Optional<ModuleScriptCreationParams>& params,
+    const ModuleScriptCreationParams& params,
     Modulator* settings_object) {
   DCHECK(settings_object->HasValidContext());
   ScriptState::Scope scope(settings_object->GetScriptState());
@@ -77,11 +80,13 @@ ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
   v8::Isolate* isolate = context->GetIsolate();
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::String> original_json =
-      V8String(isolate, params->GetSourceText().ToString());
+      V8String(isolate, params.GetSourceText());
   v8::Local<v8::Value> parsed_json;
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScriptLoader",
                                  "CreateJSONWrapperSyntheticModuleScript");
+  UseCounter::Count(ExecutionContext::From(settings_object->GetScriptState()),
+                    WebFeature::kCreateJSONModuleScript);
   // Step 1. "Let script be a new module script that this algorithm will
   // subsequently initialize."
   // [spec text]
@@ -101,11 +106,11 @@ ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        parsed_json, settings_object, params.SourceURL(), KURL(),
         ScriptFetchOptions(), error);
   } else {
     return ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
-        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        parsed_json, settings_object, params.SourceURL(), KURL(),
         ScriptFetchOptions());
   }
 }
@@ -199,7 +204,20 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
   DCHECK(!try_catch.HasCaught());
   DCHECK(!result.IsNothing() && result.FromJust());
 
-  return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
+  if (base::FeatureList::IsEnabled(features::kTopLevelAwait)) {
+    v8::Local<v8::Promise::Resolver> promise_resolver;
+    if (!v8::Promise::Resolver::New(context).ToLocal(&promise_resolver)) {
+      if (!isolate->IsExecutionTerminating()) {
+        LOG(FATAL) << "Cannot recover from failure to create a new "
+                      "v8::Promise::Resolver object (OOM?)";
+      }
+      return v8::MaybeLocal<v8::Value>();
+    }
+    promise_resolver->Resolve(context, v8::Undefined(isolate)).ToChecked();
+    return promise_resolver->GetPromise();
+  }
+
+  return v8::Undefined(isolate);
 }
 
 void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) const {

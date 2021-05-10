@@ -19,15 +19,14 @@
 #include "src/ast/call_expression.h"
 #include "src/ast/float_literal.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/matrix_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
-#include "src/context.h"
+#include "src/program.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/matrix_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/hlsl/test_helper.h"
 
@@ -47,26 +46,77 @@ inline std::ostream& operator<<(std::ostream& out, HlslImportData data) {
   return out;
 }
 
-using HlslImportData_SingleParamTest =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_SingleParamTest = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_SingleParamTest, FloatScalar) {
   auto param = GetParam();
 
-  ast::type::F32Type f32;
+  auto* ident = Expr(param.name);
+  auto* expr = Call(ident, 1.f);
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.f)));
+  GeneratorImpl& gen = Build();
 
-  auto ident = std::make_unique<ast::IdentifierExpression>(param.name);
-  ast::CallExpression expr(std::move(ident), std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.00000000f)");
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_SingleParamTest,
+                         testing::Values(HlslImportData{"abs", "abs"},
+                                         HlslImportData{"acos", "acos"},
+                                         HlslImportData{"asin", "asin"},
+                                         HlslImportData{"atan", "atan"},
+                                         HlslImportData{"cos", "cos"},
+                                         HlslImportData{"cosh", "cosh"},
+                                         HlslImportData{"ceil", "ceil"},
+                                         HlslImportData{"exp", "exp"},
+                                         HlslImportData{"exp2", "exp2"},
+                                         HlslImportData{"floor", "floor"},
+                                         HlslImportData{"fract", "frac"},
+                                         HlslImportData{"inverseSqrt", "rsqrt"},
+                                         HlslImportData{"length", "length"},
+                                         HlslImportData{"log", "log"},
+                                         HlslImportData{"log2", "log2"},
+                                         HlslImportData{"round", "round"},
+                                         HlslImportData{"sign", "sign"},
+                                         HlslImportData{"sin", "sin"},
+                                         HlslImportData{"sinh", "sinh"},
+                                         HlslImportData{"sqrt", "sqrt"},
+                                         HlslImportData{"tan", "tan"},
+                                         HlslImportData{"tanh", "tanh"},
+                                         HlslImportData{"trunc", "trunc"}));
+
+using HlslImportData_SingleIntParamTest = TestParamHelper<HlslImportData>;
+TEST_P(HlslImportData_SingleIntParamTest, IntScalar) {
+  auto param = GetParam();
+
+  auto* expr = Call(param.name, Expr(1));
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1)");
+}
+INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
+                         HlslImportData_SingleIntParamTest,
+                         testing::Values(HlslImportData{"abs", "abs"}));
+
+using HlslImportData_SingleVectorParamTest = TestParamHelper<HlslImportData>;
+TEST_P(HlslImportData_SingleVectorParamTest, FloatVector) {
+  auto param = GetParam();
+
+  auto* ident = Expr(param.name);
+  auto* expr = Call(ident, vec3<f32>(1.f, 2.f, 3.f));
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(),
+            std::string(param.hlsl_name) + "(float3(1.0f, 2.0f, 3.0f))");
+}
+INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
+                         HlslImportData_SingleVectorParamTest,
                          testing::Values(HlslImportData{"abs", "abs"},
                                          HlslImportData{"acos", "acos"},
                                          HlslImportData{"asin", "asin"},
@@ -93,50 +143,17 @@ INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                                          HlslImportData{"tanh", "tanh"},
                                          HlslImportData{"trunc", "trunc"}));
 
-using HlslImportData_SingleIntParamTest =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
-TEST_P(HlslImportData_SingleIntParamTest, IntScalar) {
-  auto param = GetParam();
-
-  ast::type::I32Type i32;
-
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 1)));
-
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1)");
-}
-INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
-                         HlslImportData_SingleIntParamTest,
-                         testing::Values(HlslImportData{"abs", "abs"}));
-
-using HlslImportData_DualParamTest =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_DualParamTest = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_DualParamTest, FloatScalar) {
   auto param = GetParam();
 
-  ast::type::F32Type f32;
+  auto* expr = Call(param.name, 1.f, 2.f);
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.f)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.f)));
+  GeneratorImpl& gen = Build();
 
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
-  EXPECT_EQ(result(),
-            std::string(param.hlsl_name) + "(1.00000000f, 2.00000000f)");
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f, 2.0f)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_DualParamTest,
@@ -148,69 +165,35 @@ INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                                          HlslImportData{"reflect", "reflect"},
                                          HlslImportData{"step", "step"}));
 
-using HlslImportData_DualParam_VectorTest =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_DualParam_VectorTest = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_DualParam_VectorTest, FloatVector) {
   auto param = GetParam();
 
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* expr =
+      Call(param.name, vec3<f32>(1.f, 2.f, 3.f), vec3<f32>(4.f, 5.f, 6.f));
+  WrapInFunction(expr);
 
-  ast::ExpressionList type_params;
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.f)));
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.f)));
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.f)));
+  GeneratorImpl& gen = Build();
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::TypeConstructorExpression>(
-      &vec, std::move(type_params)));
-
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 4.f)));
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 5.f)));
-  type_params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 6.f)));
-  params.push_back(std::make_unique<ast::TypeConstructorExpression>(
-      &vec, std::move(type_params)));
-
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(),
             std::string(param.hlsl_name) +
-                "(vector<float, 3>(1.00000000f, 2.00000000f, 3.00000000f), "
-                "vector<float, 3>(4.00000000f, 5.00000000f, 6.00000000f))");
+                "(float3(1.0f, 2.0f, 3.0f), float3(4.0f, 5.0f, 6.0f))");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_DualParam_VectorTest,
                          testing::Values(HlslImportData{"cross", "cross"}));
 
-using HlslImportData_DualParam_Int_Test =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_DualParam_Int_Test = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_DualParam_Int_Test, IntScalar) {
   auto param = GetParam();
 
-  ast::type::I32Type i32;
+  auto* expr = Call(param.name, 1, 2);
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 1)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 2)));
+  GeneratorImpl& gen = Build();
 
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1, 2)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
@@ -218,29 +201,17 @@ INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          testing::Values(HlslImportData{"max", "max"},
                                          HlslImportData{"min", "min"}));
 
-using HlslImportData_TripleParamTest =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_TripleParamTest = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_TripleParamTest, FloatScalar) {
   auto param = GetParam();
 
-  ast::type::F32Type f32;
+  auto* expr = Call(param.name, 1.f, 2.f, 3.f);
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.f)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.f)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.f)));
+  GeneratorImpl& gen = Build();
 
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) +
-                          "(1.00000000f, 2.00000000f, 3.00000000f)");
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f, 2.0f, 3.0f)");
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Import,
@@ -254,27 +225,16 @@ TEST_F(HlslGeneratorImplTest_Import, DISABLED_HlslImportData_FMix) {
   FAIL();
 }
 
-using HlslImportData_TripleParam_Int_Test =
-    TestHelperBase<testing::TestWithParam<HlslImportData>>;
+using HlslImportData_TripleParam_Int_Test = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_TripleParam_Int_Test, IntScalar) {
   auto param = GetParam();
 
-  ast::type::I32Type i32;
+  auto* expr = Call(param.name, 1, 2, 3);
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 1)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 2)));
-  params.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 3)));
+  GeneratorImpl& gen = Build();
 
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>(param.name),
-      std::move(params));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1, 2, 3)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
@@ -282,25 +242,14 @@ INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          testing::Values(HlslImportData{"clamp", "clamp"}));
 
 TEST_F(HlslGeneratorImplTest_Import, HlslImportData_Determinant) {
-  ast::type::F32Type f32;
-  ast::type::MatrixType mat(&f32, 3, 3);
+  Global("var", ty.mat3x3<f32>(), ast::StorageClass::kFunction);
 
-  auto var = std::make_unique<ast::Variable>(
-      "var", ast::StorageClass::kFunction, &mat);
+  auto* expr = Call("determinant", "var");
+  WrapInFunction(expr);
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::IdentifierExpression>("var"));
+  GeneratorImpl& gen = Build();
 
-  ast::CallExpression expr(
-      std::make_unique<ast::IdentifierExpression>("determinant"),
-      std::move(params));
-
-  mod()->AddGlobalVariable(std::move(var));
-
-  // Register the global
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitCall(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), std::string("determinant(var)"));
 }
 

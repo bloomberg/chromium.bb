@@ -26,7 +26,7 @@ import org.chromium.components.policy.PolicyService;
  *  - Supplies [True] if the ToS dialog is not enabled by policy while device is fully managed;
  *  - Supplies [False] otherwise.
  */
-final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
+class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
     /**
      * Interface that provides histogram to be recorded when signals are available in this listener.
      */
@@ -53,11 +53,17 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
         String getOnPolicyAvailableTimeHistogramName();
     }
 
-    private final CallbackController mCallbackController;
-    private final OneshotSupplierImpl<Boolean> mSkipTosDialogPolicySupplier;
-    private final PolicyLoadListener mPolicyLoadListener;
-    private final HistogramNameProvider mHistNameProvider;
+    private final CallbackController mCallbackController = new CallbackController();
+    private final OneshotSupplierImpl<Boolean> mSkipTosDialogPolicySupplier =
+            new OneshotSupplierImpl<>();
     private final long mObjectCreatedTimeMs;
+
+    private final @Nullable HistogramNameProvider mHistNameProvider;
+
+    /**
+     * This could be null when the policy load listener is provided and owned by other components.
+     */
+    private @Nullable PolicyLoadListener mPolicyLoadListener;
 
     /**
      * The value of whether the ToS dialog is enabled on the device. If the value is false, it means
@@ -80,21 +86,33 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
      */
     public SkipTosDialogPolicyListener(FirstRunAppRestrictionInfo firstRunAppRestrictionInfo,
             OneshotSupplier<PolicyService> policyServiceSupplier, EnterpriseInfo enterpriseInfo,
-            HistogramNameProvider histogramNameProvider) {
-        this(new PolicyLoadListener(firstRunAppRestrictionInfo, policyServiceSupplier),
-                enterpriseInfo, histogramNameProvider);
+            @Nullable HistogramNameProvider histogramNameProvider) {
+        mObjectCreatedTimeMs = SystemClock.elapsedRealtime();
+        mHistNameProvider = histogramNameProvider;
+        mPolicyLoadListener =
+                new PolicyLoadListener(firstRunAppRestrictionInfo, policyServiceSupplier);
+
+        initInternally(enterpriseInfo, mPolicyLoadListener);
     }
 
-    @VisibleForTesting
-    SkipTosDialogPolicyListener(PolicyLoadListener policyLoadListener,
-            EnterpriseInfo enterpriseInfo, HistogramNameProvider histogramNameProvider) {
+    /**
+     * @param policyLoadListener Supplier that provides a boolean value *whether reading policy from
+     *         policy service is necessary*. See {@link PolicyLoadListener} for more information.
+     * @param enterpriseInfo Source that provides whether device is managed.
+     * @param histogramNameProvider Provider that provides histogram names when signals are
+     *         available.
+     */
+    public SkipTosDialogPolicyListener(OneshotSupplier<Boolean> policyLoadListener,
+            EnterpriseInfo enterpriseInfo, @Nullable HistogramNameProvider histogramNameProvider) {
         mObjectCreatedTimeMs = SystemClock.elapsedRealtime();
-        mSkipTosDialogPolicySupplier = new OneshotSupplierImpl<>();
-        mCallbackController = new CallbackController();
         mHistNameProvider = histogramNameProvider;
-        mPolicyLoadListener = policyLoadListener;
 
-        Boolean hasPolicy = mPolicyLoadListener.onAvailable(
+        initInternally(enterpriseInfo, policyLoadListener);
+    }
+
+    private void initInternally(
+            EnterpriseInfo enterpriseInfo, OneshotSupplier<Boolean> policyLoadListener) {
+        Boolean hasPolicy = policyLoadListener.onAvailable(
                 mCallbackController.makeCancelable(this::onPolicyLoadListenerAvailable));
         if (hasPolicy != null) {
             onPolicyLoadListenerAvailable(hasPolicy);
@@ -112,7 +130,10 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
      */
     public void destroy() {
         mCallbackController.destroy();
-        mPolicyLoadListener.destroy();
+        if (mPolicyLoadListener != null) {
+            mPolicyLoadListener.destroy();
+            mPolicyLoadListener = null;
+        }
     }
 
     @Override
@@ -135,11 +156,13 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
             mTosDialogEnabled = true;
         } else {
             mTosDialogEnabled = FirstRunUtils.isCctTosDialogEnabled();
-            String histogramOnPolicyLoaded =
-                    mHistNameProvider.getOnPolicyAvailableTimeHistogramName();
-            assert !TextUtils.isEmpty(histogramOnPolicyLoaded);
-            RecordHistogram.recordTimesHistogram(
-                    histogramOnPolicyLoaded, SystemClock.elapsedRealtime() - mObjectCreatedTimeMs);
+            if (mHistNameProvider != null) {
+                String histogramOnPolicyLoaded =
+                        mHistNameProvider.getOnPolicyAvailableTimeHistogramName();
+                assert !TextUtils.isEmpty(histogramOnPolicyLoaded);
+                RecordHistogram.recordTimesHistogram(histogramOnPolicyLoaded,
+                        SystemClock.elapsedRealtime() - mObjectCreatedTimeMs);
+            }
         }
 
         setSupplierIfDecidable();
@@ -149,11 +172,13 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
         if (mIsDeviceOwned != null) return;
 
         mIsDeviceOwned = ownedState != null && ownedState.mDeviceOwned;
-        String histogramOnEnterpriseInfoLoaded =
-                mHistNameProvider.getOnDeviceOwnedDetectedTimeHistogramName();
-        assert !TextUtils.isEmpty(histogramOnEnterpriseInfoLoaded);
-        RecordHistogram.recordTimesHistogram(histogramOnEnterpriseInfoLoaded,
-                SystemClock.elapsedRealtime() - mObjectCreatedTimeMs);
+        if (mHistNameProvider != null) {
+            String histogramOnEnterpriseInfoLoaded =
+                    mHistNameProvider.getOnDeviceOwnedDetectedTimeHistogramName();
+            assert !TextUtils.isEmpty(histogramOnEnterpriseInfoLoaded);
+            RecordHistogram.recordTimesHistogram(histogramOnEnterpriseInfoLoaded,
+                    SystemClock.elapsedRealtime() - mObjectCreatedTimeMs);
+        }
 
         setSupplierIfDecidable();
     }
@@ -170,5 +195,10 @@ final class SkipTosDialogPolicyListener implements OneshotSupplier<Boolean> {
         } else if (confirmedTosDialogEnabled || confirmedDeviceNotOwned) {
             mSkipTosDialogPolicySupplier.set(false);
         }
+    }
+
+    @VisibleForTesting
+    public PolicyLoadListener getPolicyLoadListenerForTesting() {
+        return mPolicyLoadListener;
     }
 }

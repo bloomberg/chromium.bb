@@ -66,6 +66,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
       UnidirectionalStreamAcceptanceCallback callback) override;
   void SendFin(uint32_t stream_id) override;
   void AbortStream(uint32_t stream_id, uint64_t code) override;
+  void SetOutgoingDatagramExpirationDuration(base::TimeDelta duration) override;
 
   // net::QuicTransportClient::Visitor implementation:
   void OnConnected() override;
@@ -77,6 +78,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   void OnDatagramReceived(base::StringPiece datagram) override;
   void OnCanCreateNewOutgoingBidirectionalStream() override;
   void OnCanCreateNewOutgoingUnidirectionalStream() override;
+  void OnDatagramProcessed(base::Optional<quic::MessageStatus> status) override;
 
   bool torn_down() const { return torn_down_; }
 
@@ -99,6 +101,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   mojo::Receiver<mojom::QuicTransport> receiver_;
   mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
   mojo::Remote<mojom::QuicTransportClient> client_;
+  base::queue<base::OnceCallback<void(bool)>> datagram_callbacks_;
 
   bool torn_down_ = false;
 

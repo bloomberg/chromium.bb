@@ -35,13 +35,14 @@ import androidx.core.util.ObjectsCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.compat.ApiHelperForO;
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.WindowDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,7 +72,7 @@ public abstract class UrlBar extends AutocompleteEditText {
     private UrlTextChangeListener mUrlTextChangeListener;
     private TextWatcher mTextChangedListener;
     private UrlBarTextContextMenuDelegate mTextContextMenuDelegate;
-    private UrlDirectionListener mUrlDirectionListener;
+    private Callback<Integer> mUrlDirectionListener;
 
     /**
      * The gesture detector is used to detect long presses. Long presses require special treatment
@@ -134,20 +135,6 @@ public abstract class UrlBar extends AutocompleteEditText {
      */
     private CharSequence mTextForAutofillServices;
     protected boolean mRequestingAutofillStructure;
-
-    /**
-     * Implement this to get updates when the direction of the text in the URL bar changes.
-     * E.g. If the user is typing a URL, then erases it and starts typing a query in Arabic,
-     * the direction will change from left-to-right to right-to-left.
-     */
-    interface UrlDirectionListener {
-        /**
-         * Called whenever the layout direction of the UrlBar changes.
-         * @param layoutDirection the new direction: android.view.View.LAYOUT_DIRECTION_LTR or
-         *                        android.view.View.LAYOUT_DIRECTION_RTL
-         */
-        public void onUrlDirectionChanged(int layoutDirection);
-    }
 
     /**
      * Delegate used to communicate with the content side and the parent layout.
@@ -236,12 +223,14 @@ public abstract class UrlBar extends AutocompleteEditText {
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public void onLongPress(MotionEvent e) {
+                        if (mUrlBarDelegate == null) return;
                         mUrlBarDelegate.gestureDetected(true);
                         performLongClick();
                     }
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
+                        if (mUrlBarDelegate == null) return true;
                         requestFocus();
                         mUrlBarDelegate.gestureDetected(false);
                         return true;
@@ -256,6 +245,15 @@ public abstract class UrlBar extends AutocompleteEditText {
         });
 
         ApiCompatibilityUtils.disableSmartSelectionTextClassifier(this);
+    }
+
+    public void destroy() {
+        setAllowFocus(false);
+        mUrlBarDelegate = null;
+        setOnFocusChangeListener(null);
+        mTextContextMenuDelegate = null;
+        mUrlTextChangeListener = null;
+        mTextChangedListener = null;
     }
 
     /**
@@ -301,14 +299,6 @@ public abstract class UrlBar extends AutocompleteEditText {
             mPendingScroll = false;
         }
         fixupTextDirection();
-
-        if (!focused && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // https://crbug.com/1103555: On Android Q+, the URL bar can trigger augmented
-            // Autofill, which disables ordinary Autofill requests for the duration of the
-            // Autofill session. This is worked around by canceling the session when the user
-            // focuses another view.
-            ApiHelperForO.cancelAutofillSession();
-        }
     }
 
     /**
@@ -362,10 +352,25 @@ public abstract class UrlBar extends AutocompleteEditText {
 
     @Override
     public View focusSearch(int direction) {
-        if (direction == View.FOCUS_BACKWARD && mUrlBarDelegate.getViewForUrlBackFocus() != null) {
+        if (mUrlBarDelegate != null && direction == View.FOCUS_BACKWARD
+                && mUrlBarDelegate.getViewForUrlBackFocus() != null) {
             return mUrlBarDelegate.getViewForUrlBackFocus();
         } else {
             return super.focusSearch(direction);
+        }
+    }
+
+    @Override
+    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+        super.onTextChanged(text, start, lengthBefore, lengthAfter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Due to crbug.com/1103555, Autofill had to be disabled on the UrlBar to work around
+            // an issue on Android Q+. With Autofill disabled, the Autofill compat mode no longer
+            // learns of changes to the UrlBar, which prevents it from cancelling the session if
+            // the domain changes. We restore this behavior by mimicking the relevant part of
+            // TextView.notifyListeningManagersAfterTextChanged().
+            // https://cs.android.com/android/platform/superproject/+/5d123b67756dffcfdebdb936ab2de2b29c799321:frameworks/base/core/java/android/widget/TextView.java;l=10618;drc=master;bpv=0
+            ApiHelperForO.notifyValueChangedForAutofill(this);
         }
     }
 
@@ -494,7 +499,7 @@ public abstract class UrlBar extends AutocompleteEditText {
         if (urlDirection != mUrlDirection) {
             mUrlDirection = urlDirection;
             if (mUrlDirectionListener != null) {
-                mUrlDirectionListener.onUrlDirectionChanged(urlDirection);
+                mUrlDirectionListener.onResult(urlDirection);
             }
 
             // Ensure the display text is visible after updating the URL direction.
@@ -516,10 +521,10 @@ public abstract class UrlBar extends AutocompleteEditText {
      * @param listener The UrlDirectionListener to receive callbacks when the url direction changes,
      *     or null to unregister any previously registered listener.
      */
-    public void setUrlDirectionListener(UrlDirectionListener listener) {
+    public void setUrlDirectionListener(Callback<Integer> listener) {
         mUrlDirectionListener = listener;
         if (mUrlDirectionListener != null) {
-            mUrlDirectionListener.onUrlDirectionChanged(mUrlDirection);
+            mUrlDirectionListener.onResult(mUrlDirection);
         }
     }
 

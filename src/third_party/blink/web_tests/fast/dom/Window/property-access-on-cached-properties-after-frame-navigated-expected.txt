@@ -32,10 +32,12 @@ PASS window.cached_navigator.productSub is window.navigator.productSub
 PASS window.cached_navigator.userAgent is ''
 PASS window.cached_navigator.vendor is window.navigator.vendor
 PASS window.cached_navigator.vendorSub is ''
+PASS window.cached_navigator.webdriver is false
 PASS window.cached_navigator_bluetooth.onadvertisementreceived is null
 PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_connection.saveData is false
+PASS window.cached_navigator_device.onmanagedconfigurationchange is null
 PASS window.cached_navigator_hid.onconnect is null
 PASS window.cached_navigator_hid.ondisconnect is null
 PASS window.cached_navigator_mediaDevices.ondevicechange is null
@@ -103,6 +105,8 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
+PASS window.cached_screen.isExtended is false
+PASS window.cached_screen.onchange is null
 PASS window.cached_screen.pixelDepth is 0
 PASS window.cached_screen.width is 0
 PASS window.cached_screen_orientation.angle is 0

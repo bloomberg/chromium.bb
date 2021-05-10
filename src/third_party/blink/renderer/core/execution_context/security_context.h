@@ -113,7 +113,7 @@ class CORE_EXPORT SecurityContext {
     return sandbox_flags_;
   }
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
-  void ApplySandboxFlags(network::mojom::blink::WebSandboxFlags flags);
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   void SetRequireTrustedTypes();
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
@@ -145,6 +145,9 @@ class CORE_EXPORT SecurityContext {
 
   const FeaturePolicy* GetFeaturePolicy() const {
     return feature_policy_.get();
+  }
+  const FeaturePolicy* GetReportOnlyFeaturePolicy() const {
+    return report_only_feature_policy_.get();
   }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy>);
   void SetReportOnlyFeaturePolicy(std::unique_ptr<FeaturePolicy>);

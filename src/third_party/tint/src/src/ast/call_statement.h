@@ -25,40 +25,40 @@ namespace tint {
 namespace ast {
 
 /// A call expression
-class CallStatement : public Statement {
+class CallStatement : public Castable<CallStatement, Statement> {
  public:
   /// Constructor
-  CallStatement();
-  /// Constructor
+  /// @param source the input source for the statement
   /// @param call the function
-  explicit CallStatement(std::unique_ptr<CallExpression> call);
+  CallStatement(const Source& source, CallExpression* call);
   /// Move constructor
   CallStatement(CallStatement&&);
   ~CallStatement() override;
 
-  /// Sets the call expression
-  /// @param call the call
-  void set_expr(std::unique_ptr<CallExpression> call) {
-    call_ = std::move(call);
-  }
   /// @returns the call expression
-  CallExpression* expr() const { return call_.get(); }
+  CallExpression* expr() const { return call_; }
 
-  /// @returns true if this is a call statement
-  bool IsCall() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  CallStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   CallStatement(const CallStatement&) = delete;
 
-  std::unique_ptr<CallExpression> call_;
+  CallExpression* const call_;
 };
 
 }  // namespace ast

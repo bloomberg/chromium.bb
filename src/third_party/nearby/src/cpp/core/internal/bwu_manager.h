@@ -74,7 +74,7 @@ class BwuManager : public EndpointManager::FrameProcessor {
              absl::flat_hash_map<Medium, std::unique_ptr<BwuHandler>> handlers,
              Config config);
 
-  ~BwuManager() override = default;
+  ~BwuManager() override;
 
   // This is the point on the outbound BWU protocol where the handler_ is set.
   // Function initiates the bandwidth upgrade and sends an
@@ -99,6 +99,8 @@ class BwuManager : public EndpointManager::FrameProcessor {
   void Shutdown();
 
  private:
+  static constexpr absl::Duration kReadClientIntroductionFrameTimeout =
+      absl::Seconds(5);
   BwuHandler* SetCurrentBwuHandler(Medium medium);
   void InitBwuHandlers();
   void RunOnBwuManagerThread(std::function<void()> runnable);
@@ -112,7 +114,7 @@ class BwuManager : public EndpointManager::FrameProcessor {
   // Processes the BwuNegotiationFrames that come over the
   // EndpointChannel on both initiator and responder side of the upgrade.
   void OnBwuNegotiationFrame(ClientProxy* client,
-                             const BwuNegotiationFrame& frame,
+                             const BwuNegotiationFrame frame,
                              const string& endpoint_id);
 
   // Called to revert any state changed by the Initiator or Responder in the
@@ -143,6 +145,8 @@ class BwuManager : public EndpointManager::FrameProcessor {
                                            const std::string& endpoint_id);
   bool ReadClientIntroductionFrame(EndpointChannel* endpoint_channel,
                                    ClientIntroduction& introduction);
+  bool ReadClientIntroductionAckFrame(EndpointChannel* endpoint_channel);
+  bool WriteClientIntroductionAckFrame(EndpointChannel* endpoint_channel);
   void ProcessEndpointDisconnection(ClientProxy* client,
                                     const std::string& endpoint_id,
                                     CountDownLatch* barrier);

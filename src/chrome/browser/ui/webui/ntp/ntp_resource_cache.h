@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -46,6 +46,8 @@ class NTPResourceCache : public content::NotificationObserver,
     NORMAL,
     INCOGNITO,
     GUEST,
+    // The OTR profile that is not used for Incognito or Guest windows.
+    NON_PRIMARY_OTR,
   };
 
   explicit NTPResourceCache(Profile* profile);
@@ -120,13 +122,13 @@ class NTPResourceCache : public content::NotificationObserver,
 
   Profile* profile_;
 
-  scoped_refptr<base::RefCountedMemory> new_tab_html_;
   scoped_refptr<base::RefCountedMemory> new_tab_css_;
   scoped_refptr<base::RefCountedMemory> new_tab_guest_html_;
   scoped_refptr<base::RefCountedMemory> new_tab_guest_signed_in_html_;
   scoped_refptr<base::RefCountedMemory> new_tab_guest_signed_out_html_;
   scoped_refptr<base::RefCountedMemory> new_tab_incognito_html_;
   scoped_refptr<base::RefCountedMemory> new_tab_incognito_css_;
+  scoped_refptr<base::RefCountedMemory> new_tab_non_primary_otr_html_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar profile_pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;
@@ -134,8 +136,8 @@ class NTPResourceCache : public content::NotificationObserver,
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
 
-  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
-      this};
+  base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
+      theme_observation_{this};
 
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_change_registrar_;
 

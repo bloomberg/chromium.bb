@@ -21,7 +21,7 @@ TCPSocket::TCPSocket(ScriptPromiseResolver& resolver)
               ->RegisterFeature(
                   SchedulingPolicy::Feature::
                       kOutstandingNetworkRequestDirectSocket,
-                  {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
+                  {SchedulingPolicy::DisableBackForwardCache()})) {
   DCHECK(resolver_);
 }
 
@@ -50,41 +50,141 @@ void TCPSocket::Init(int32_t result,
                      mojo::ScopedDataPipeConsumerHandle receive_stream,
                      mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK(resolver_);
+  DCHECK(!tcp_readable_stream_wrapper_);
+  DCHECK(!tcp_writable_stream_wrapper_);
   if (result == net::Error::OK) {
-    // TODO(crbug.com/905818): Finish initialization.
-    NOTIMPLEMENTED();
+    local_addr_ = local_addr;
+    peer_addr_ = peer_addr;
+    tcp_readable_stream_wrapper_ =
+        MakeGarbageCollected<TCPReadableStreamWrapper>(
+            resolver_->GetScriptState(),
+            WTF::Bind(&TCPSocket::OnReadableStreamAbort,
+                      WrapWeakPersistent(this)),
+            std::move(receive_stream));
+    tcp_writable_stream_wrapper_ =
+        MakeGarbageCollected<TCPWritableStreamWrapper>(
+            resolver_->GetScriptState(),
+            WTF::Bind(&TCPSocket::OnWritableStreamAbort,
+                      WrapWeakPersistent(this)),
+            std::move(send_stream));
     resolver_->Resolve(this);
   } else {
     resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Permission denied"));
+    socket_observer_receiver_.reset();
   }
   resolver_ = nullptr;
 }
 
-ScriptPromise TCPSocket::close(ScriptState*, ExceptionState&) {
-  // TODO(crbug.com/905818): Implement close.
-  NOTIMPLEMENTED();
-  return ScriptPromise();
+ScriptPromise TCPSocket::close(ScriptState* script_state, ExceptionState&) {
+  DoClose(/*is_local_close=*/true);
+
+  return ScriptPromise::CastUndefined(script_state);
+}
+
+ReadableStream* TCPSocket::readable() const {
+  DCHECK(tcp_readable_stream_wrapper_);
+  return tcp_readable_stream_wrapper_->Readable();
+}
+
+WritableStream* TCPSocket::writable() const {
+  DCHECK(tcp_writable_stream_wrapper_);
+  return tcp_writable_stream_wrapper_->Writable();
+}
+
+String TCPSocket::remoteAddress() const {
+  DCHECK(peer_addr_);
+  return String::FromUTF8(peer_addr_->ToStringWithoutPort());
+}
+
+uint16_t TCPSocket::remotePort() const {
+  DCHECK(peer_addr_);
+  return peer_addr_->port();
 }
 
 void TCPSocket::OnReadError(int32_t net_error) {
-  // TODO(crbug.com/905818): Implement error handling.
-  NOTIMPLEMENTED();
+  if (net_error > 0 || net_error == net::Error::ERR_IO_PENDING) {
+    return;
+  }
+
+  ResetReadableStream();
 }
 
 void TCPSocket::OnWriteError(int32_t net_error) {
-  // TODO(crbug.com/905818): Implement error handling.
-  NOTIMPLEMENTED();
+  if (net_error > 0 || net_error == net::Error::ERR_IO_PENDING) {
+    return;
+  }
+
+  ResetWritableStream();
 }
 
 void TCPSocket::Trace(Visitor* visitor) const {
   visitor->Trace(resolver_);
+  visitor->Trace(tcp_readable_stream_wrapper_);
+  visitor->Trace(tcp_writable_stream_wrapper_);
   ScriptWrappable::Trace(visitor);
 }
 
 void TCPSocket::OnSocketObserverConnectionError() {
-  // TODO(crbug.com/905818): Implement error handling.
-  NOTIMPLEMENTED();
+  DoClose(/*is_local_close=*/false);
+}
+
+void TCPSocket::OnReadableStreamAbort() {
+  ResetWritableStream();
+}
+
+void TCPSocket::OnWritableStreamAbort() {
+  ResetReadableStream();
+}
+
+void TCPSocket::DoClose(bool is_local_close) {
+  local_addr_ = base::nullopt;
+  peer_addr_ = base::nullopt;
+  tcp_socket_.reset();
+  socket_observer_receiver_.reset();
+  feature_handle_for_scheduler_.reset();
+
+  if (resolver_) {
+    DOMExceptionCode code = is_local_close ? DOMExceptionCode::kAbortError
+                                           : DOMExceptionCode::kNetworkError;
+    String message =
+        String::Format("The request was aborted %s",
+                       is_local_close ? "locally" : "due to connection error");
+    resolver_->Reject(MakeGarbageCollected<DOMException>(code, message));
+    resolver_ = nullptr;
+
+    DCHECK(!tcp_readable_stream_wrapper_);
+    DCHECK(!tcp_writable_stream_wrapper_);
+
+    return;
+  }
+
+  ResetReadableStream();
+  ResetWritableStream();
+}
+
+void TCPSocket::ResetReadableStream() {
+  if (!tcp_readable_stream_wrapper_)
+    return;
+
+  if (tcp_readable_stream_wrapper_->GetState() ==
+      TCPReadableStreamWrapper::State::kAborted) {
+    return;
+  }
+  tcp_readable_stream_wrapper_->Reset();
+  tcp_readable_stream_wrapper_ = nullptr;
+}
+
+void TCPSocket::ResetWritableStream() {
+  if (!tcp_writable_stream_wrapper_)
+    return;
+
+  if (tcp_writable_stream_wrapper_->GetState() ==
+      TCPWritableStreamWrapper::State::kAborted) {
+    return;
+  }
+  tcp_writable_stream_wrapper_->Reset();
+  tcp_writable_stream_wrapper_ = nullptr;
 }
 
 }  // namespace blink

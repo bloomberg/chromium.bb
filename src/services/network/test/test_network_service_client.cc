@@ -34,7 +34,8 @@ void TestNetworkServiceClient::OnRawRequest(
     int32_t routing_id,
     const std::string& devtools_request_id,
     const net::CookieAccessResultList& cookies_with_access_result,
-    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {}
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    network::mojom::ClientSecurityStatePtr client_security_state) {}
 
 void TestNetworkServiceClient::OnRawResponse(
     int32_t process_id,
@@ -42,14 +43,25 @@ void TestNetworkServiceClient::OnRawResponse(
     const std::string& devtools_request_id,
     const net::CookieAndLineAccessResultList& cookies_with_access_result,
     std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
-    const base::Optional<std::string>& raw_response_headers) {}
+    const base::Optional<std::string>& raw_response_headers,
+    network::mojom::IPAddressSpace resource_address_space) {}
+
+void TestNetworkServiceClient::OnPrivateNetworkRequest(
+    int32_t process_id,
+    int32_t routing_id,
+    const base::Optional<std::string>& devtools_request_id,
+    const GURL& url,
+    bool is_warning,
+    network::mojom::IPAddressSpace resource_address_space,
+    network::mojom::ClientSecurityStatePtr client_security_state) {}
 
 void TestNetworkServiceClient::OnCorsPreflightRequest(
     int32_t process_id,
     int32_t routing_id,
     const base::UnguessableToken& devtools_request_id,
     const network::ResourceRequest& request,
-    const GURL& initiator_url) {}
+    const GURL& initiator_url,
+    const std::string& initiator_devtools_request_id) {}
 
 void TestNetworkServiceClient::OnCorsPreflightResponse(
     int32_t process_id,
@@ -63,5 +75,11 @@ void TestNetworkServiceClient::OnCorsPreflightRequestCompleted(
     int32_t routing_id,
     const base::UnguessableToken& devtool_request_id,
     const network::URLLoaderCompletionStatus& status) {}
+
+void TestNetworkServiceClient::OnTrustTokenOperationDone(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtool_request_id,
+    network::mojom::TrustTokenOperationResultPtr result) {}
 
 }  // namespace network

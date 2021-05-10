@@ -17,8 +17,8 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
@@ -87,7 +87,25 @@ Polymer({
     },
 
     /**
+     * The minimum length for the currently set PIN.
+     * @type {number|undefined}
+     * @private
+     */
+    currentMinPinLength_: Number,
+
+    /**
+     * The minimum length to set a new PIN.
+     * @type {number|undefined}
+     * @private
+     */
+    newMinPinLength_: {
+      type: Number,
+      observer: 'newMinPinLengthChanged_',
+    },
+
+    /**
      * The number of PIN attempts remaining.
+     * @type {number|undefined}
      * @private
      */
     retries_: Number,
@@ -95,6 +113,7 @@ Polymer({
     /**
      * A CTAP error code when we don't recognise the specific error. Read by
      * Polymer.
+     * @type {number|undefined}
      * @private
      */
     errorCode_: Number,
@@ -166,6 +185,9 @@ Polymer({
 
     /** @private */
     title_: String,
+
+    /** @private */
+    newPINDialogDescription_: String,
   },
 
   /** @private {?SecurityKeysPINBrowserProxy} */
@@ -177,63 +199,63 @@ Polymer({
     this.browserProxy_ = SecurityKeysPINBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
-    afterNextRender(this, function() {
-      IronA11yAnnouncer.requestAvailability();
-    });
+    this.browserProxy_.startSetPIN().then(
+        ({done, error, currentMinPinLength, newMinPinLength, retries}) => {
+          if (done) {
+            // Operation is complete. error is a CTAP error code. See
+            // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
+            if (error === 1 /* INVALID_COMMAND */) {
+              this.shown_ = SetPINDialogPage.NO_PIN_SUPPORT;
+              this.finish_();
+            } else if (error === 52 /* temporarily locked */) {
+              this.shown_ = SetPINDialogPage.REINSERT;
+              this.finish_();
+            } else if (error === 50 /* locked */) {
+              this.shown_ = SetPINDialogPage.LOCKED;
+              this.finish_();
+            } else {
+              this.errorCode_ = error;
+              this.shown_ = SetPINDialogPage.ERROR;
+              this.finish_();
+            }
+          } else if (retries === 0) {
+            // A device can also signal that it is locked by returning zero
+            // retries.
+            this.shown_ = SetPINDialogPage.LOCKED;
+            this.finish_();
+          } else {
+            // Need to prompt for a pin. Initially set the text boxes to valid
+            // so that they don't all appear red without the user typing
+            // anything.
+            this.currentPINValid_ = true;
+            this.newPINValid_ = true;
+            this.confirmPINValid_ = true;
+            this.setPINButtonValid_ = true;
 
-    this.browserProxy_.startSetPIN().then(([success, errorCode]) => {
-      if (success) {
-        // Operation is complete. errorCode is a CTAP error code. See
-        // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
-        if (errorCode === 1 /* INVALID_COMMAND */) {
-          this.shown_ = SetPINDialogPage.NO_PIN_SUPPORT;
-          this.finish_();
-        } else if (errorCode === 52 /* temporarily locked */) {
-          this.shown_ = SetPINDialogPage.REINSERT;
-          this.finish_();
-        } else if (errorCode === 50 /* locked */) {
-          this.shown_ = SetPINDialogPage.LOCKED;
-          this.finish_();
-        } else {
-          this.errorCode_ = errorCode;
-          this.shown_ = SetPINDialogPage.ERROR;
-          this.finish_();
-        }
-      } else if (errorCode === 0) {
-        // A device can also signal that it is locked by returning zero
-        // retries.
-        this.shown_ = SetPINDialogPage.LOCKED;
-        this.finish_();
-      } else {
-        // Need to prompt for a pin. Initially set the text boxes to valid so
-        // that they don't all appear red without the user typing anything.
-        this.currentPINValid_ = true;
-        this.newPINValid_ = true;
-        this.confirmPINValid_ = true;
-        this.setPINButtonValid_ = true;
+            this.currentMinPinLength_ = currentMinPinLength;
+            this.newMinPinLength_ = newMinPinLength;
+            this.retries_ = retries;
+            // retries_ may be null to indicate that there is currently no PIN
+            // set.
+            let focusTarget;
+            if (this.retries_ === null) {
+              this.showCurrentEntry_ = false;
+              focusTarget = this.$.newPIN;
+              this.title_ = this.i18n('securityKeysSetPINCreateTitle');
+            } else {
+              this.showCurrentEntry_ = true;
+              focusTarget = this.$.currentPIN;
+              this.title_ = this.i18n('securityKeysSetPINChangeTitle');
+            }
 
-        this.retries_ = errorCode;
-        // retries_ may be null to indicate that there is currently no PIN
-        // set.
-        let focusTarget;
-        if (this.retries_ === null) {
-          this.showCurrentEntry_ = false;
-          focusTarget = this.$.newPIN;
-          this.title_ = this.i18n('securityKeysSetPINCreateTitle');
-        } else {
-          this.showCurrentEntry_ = true;
-          focusTarget = this.$.currentPIN;
-          this.title_ = this.i18n('securityKeysSetPINChangeTitle');
-        }
-
-        this.shown_ = SetPINDialogPage.PIN_PROMPT;
-        // Focus cannot be set directly from within a backend callback.
-        window.setTimeout(function() {
-          focusTarget.focus();
-        }, 0);
-        this.fire('ui-ready');  // for test synchronization.
-      }
-    });
+            this.shown_ = SetPINDialogPage.PIN_PROMPT;
+            // Focus cannot be set directly from within a backend callback.
+            window.setTimeout(function() {
+              focusTarget.focus();
+            }, 0);
+            this.fire('ui-ready');  // for test synchronization.
+          }
+        });
   },
 
   /** @private */
@@ -292,11 +314,11 @@ Polymer({
     @return {string} An error string or else '' to indicate validity.
     @private
   */
-  isValidPIN_(pin) {
-    // The UTF-8 encoding of the PIN must be between 4 and 63 bytes, and the
-    // final byte cannot be zero.
+  isValidPIN_(pin, minLength) {
+    // The UTF-8 encoding of the PIN must be between minLength and 63 bytes, and
+    // the final byte cannot be zero.
     const utf8Encoded = new TextEncoder().encode(pin);
-    if (utf8Encoded.length < 4) {
+    if (utf8Encoded.length < minLength) {
       return this.i18n('securityKeysPINTooShort');
     }
     if (utf8Encoded.length > 63 ||
@@ -312,13 +334,13 @@ Polymer({
     // UCS-2 and the |length| property counts UCS-2 elements, not code-points.
     // (For example, '\u{1f6b4}'.length === 2, but it's a single code-point.)
     // Therefore, iterate over the string (which does yield codepoints) and
-    // check that four or more were seen.
+    // check that |minLength| or more were seen.
     let length = 0;
     for (const codepoint of pin) {
       length++;
     }
 
-    if (length < 4) {
+    if (length < minLength) {
       return this.i18n('securityKeysPINTooShort');
     }
 
@@ -366,19 +388,18 @@ Polymer({
    */
   pinSubmitNew_() {
     if (this.showCurrentEntry_) {
-      this.currentPINError_ = this.isValidPIN_(this.currentPIN_);
+      this.currentPINError_ =
+          this.isValidPIN_(this.currentPIN_, this.currentMinPinLength_);
       if (this.currentPINError_ !== '') {
         this.focusOn_(this.$.currentPIN);
-        this.fire('iron-announce', {text: this.currentPINError_});
         this.fire('ui-ready');  // for test synchronization.
         return;
       }
     }
 
-    this.newPINError_ = this.isValidPIN_(this.newPIN_);
+    this.newPINError_ = this.isValidPIN_(this.newPIN_, this.newMinPinLength_);
     if (this.newPINError_ !== '') {
       this.focusOn_(this.$.newPIN);
-      this.fire('iron-announce', {text: this.newPINError_});
       this.fire('ui-ready');  // for test synchronization.
       return;
     }
@@ -386,40 +407,47 @@ Polymer({
     if (this.newPIN_ !== this.confirmPIN_) {
       this.confirmPINError_ = this.i18n('securityKeysPINMismatch');
       this.focusOn_(this.$.confirmPIN);
-      this.fire('iron-announce', {text: this.confirmPINError_});
+      this.fire('ui-ready');  // for test synchronization.
+      return;
+    }
+
+    if (this.newPIN_ === this.currentPIN_) {
+      this.newPINError_ = this.i18n('securityKeysSamePINAsCurrent');
+      this.focusOn_(this.$.newPIN);
       this.fire('ui-ready');  // for test synchronization.
       return;
     }
 
     this.setPINButtonValid_ = false;
-    this.browserProxy_.setPIN(this.currentPIN_, this.newPIN_).then(result => {
-      // This call always completes the process so result[0] is always 1.
-      // result[1] is a CTAP2 error code. See
-      // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
-      if (result[1] === 0 /* SUCCESS */) {
-        this.shown_ = SetPINDialogPage.SUCCESS;
-        this.finish_();
-      } else if (result[1] === 52 /* temporarily locked */) {
-        this.shown_ = SetPINDialogPage.REINSERT;
-        this.finish_();
-      } else if (result[1] === 50 /* locked */) {
-        this.shown_ = SetPINDialogPage.LOCKED;
-        this.finish_();
-      } else if (result[1] === 49 /* PIN_INVALID */) {
-        this.currentPINValid_ = false;
-        this.retries_--;
-        this.currentPINError_ = this.mismatchError_(this.retries_);
-        this.setPINButtonValid_ = true;
-        this.focusOn_(this.$.currentPIN);
-        this.fire('iron-announce', {text: this.currentPINError_});
-        this.fire('ui-ready');  // for test synchronization.
-      } else {
-        // Unknown error.
-        this.errorCode_ = result[1];
-        this.shown_ = SetPINDialogPage.ERROR;
-        this.finish_();
-      }
-    });
+    this.browserProxy_.setPIN(this.currentPIN_, this.newPIN_)
+        .then(({done, error}) => {
+          // This call always completes the process so response.done is always
+          // true. error is a CTAP2 error code. See
+          // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
+          if (error === 0 /* SUCCESS */) {
+            this.shown_ = SetPINDialogPage.SUCCESS;
+            this.finish_();
+          } else if (error === 52 /* temporarily locked */) {
+            this.shown_ = SetPINDialogPage.REINSERT;
+            this.finish_();
+          } else if (error === 50 /* locked */) {
+            this.shown_ = SetPINDialogPage.LOCKED;
+            this.finish_();
+          } else if (error === 49 /* PIN_INVALID */) {
+            this.currentPINValid_ = false;
+            this.retries_--;
+            this.currentPINError_ =
+                this.mismatchError_(/** @type {number} */ (this.retries_));
+            this.setPINButtonValid_ = true;
+            this.focusOn_(this.$.currentPIN);
+            this.fire('ui-ready');  // for test synchronization.
+          } else {
+            // Unknown error.
+            this.errorCode_ = error;
+            this.shown_ = SetPINDialogPage.ERROR;
+            this.finish_();
+          }
+        });
   },
 
   /**
@@ -465,6 +493,15 @@ Polymer({
    */
   closeText_() {
     return this.i18n(this.complete_ ? 'ok' : 'cancel');
+  },
+
+  /**
+   * @private
+   */
+  newMinPinLengthChanged_() {
+    PluralStringProxyImpl.getInstance()
+        .getPluralString('securityKeysNewPIN', this.newMinPinLength_)
+        .then(string => this.newPINDialogDescription_ = string);
   },
 
   /**

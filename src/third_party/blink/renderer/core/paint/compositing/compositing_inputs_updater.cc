@@ -42,9 +42,16 @@ bool CompositingInputsUpdater::LayerOrDescendantShouldBeComposited(
     if (layout_view->AdditionalCompositingReasons())
       return true;
     // The containing frame may call this function for the root layer of a
-    // throttled frame. Return the current compositing status.
-    if (layout_view->GetFrameView()->ShouldThrottleRendering())
-      return layout_view->UsesCompositing();
+    // throttled frame. In that case, look for a pre-existing root GraphicsLayer
+    // in the iframe's compositor.
+    if (layout_view->GetFrameView()->ShouldThrottleRendering()) {
+      DisableCompositingQueryAsserts disabler;
+      if (auto* inner_compositor = layout_view->Compositor()) {
+        if (inner_compositor->RootGraphicsLayer())
+          return true;
+      }
+      return false;
+    }
   }
   DCHECK(!layer->GetLayoutObject().GetFrameView()->ShouldThrottleRendering());
   PaintLayerCompositor* compositor =
@@ -103,9 +110,6 @@ void CompositingInputsUpdater::ApplyAncestorInfoToSelfAndAncestorsRecursively(
   if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
     geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
   UpdateAncestorInfo(layer, update_type, info);
-  if (layer != compositing_inputs_root_ &&
-      layer->GetLayoutObject().IsScrollContainer())
-    info.last_scroll_container_layer = layer;
 }
 
 void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
@@ -113,44 +117,6 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
     UpdateType update_type,
     AncestorInfo info) {
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
-  const ComputedStyle& style = layout_object.StyleRef();
-
-  const PaintLayer* previous_scroll_container_layer =
-      layer->AncestorScrollContainerLayer();
-  layer->UpdateAncestorScrollContainerLayer(info.last_scroll_container_layer);
-  if (info.last_scroll_container_layer &&
-      layer->NeedsCompositingInputsUpdate() &&
-      style.HasStickyConstrainedPosition()) {
-    if (info.last_scroll_container_layer != previous_scroll_container_layer) {
-      // Old ancestor scroller should no longer have these constraints.
-      DCHECK(!previous_scroll_container_layer ||
-             !previous_scroll_container_layer->GetScrollableArea() ||
-             !previous_scroll_container_layer->GetScrollableArea()
-                  ->GetStickyConstraintsMap()
-                  .Contains(layer));
-
-      // If our ancestor scroller has changed and the previous one was the
-      // root layer, we are no longer viewport constrained.
-      if (previous_scroll_container_layer &&
-          previous_scroll_container_layer->IsRootLayer()) {
-        layout_object.View()->GetFrameView()->RemoveViewportConstrainedObject(
-            layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
-      }
-    }
-
-    if (info.last_scroll_container_layer->IsRootLayer()) {
-      layout_object.View()->GetFrameView()->AddViewportConstrainedObject(
-          layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
-    }
-    layout_object.UpdateStickyPositionConstraints();
-
-    // Sticky position constraints and ancestor overflow scroller affect
-    // the sticky layer position, so we need to update it again here.
-    // TODO(flackr): This should be refactored in the future to be clearer
-    // (i.e. update layer position and ancestor inputs updates in the
-    // same walk)
-    layer->UpdateLayerPosition();
-  }
 
   // geometry_map_ has been already updated in ApplyAncestorInfo() and
   // UpdateAncestorInfo has been already computed in ApplyAncestorInfo() for
@@ -160,8 +126,6 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
       geometry_map_->PushMappingsToAncestor(layer, layer->Parent());
     UpdateAncestorInfo(layer, update_type, info);
   }
-  if (layout_object.IsScrollContainer())
-    info.last_scroll_container_layer = layer;
 
   PaintLayerCompositor* compositor =
       layer->GetLayoutObject().View()->Compositor();
@@ -433,8 +397,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
              .IsStackingContext())
       info.escape_clip_to_for_absolute = nullptr;
     if (info.escape_clip_to_for_fixed && style.EffectiveZIndex() < 0 &&
-        !info.escape_clip_to_for_fixed->GetLayoutObject()
-             .IsStackingContext())
+        !info.escape_clip_to_for_fixed->GetLayoutObject().IsStackingContext())
       info.escape_clip_to_for_fixed = nullptr;
 
     info.needs_reparent_scroll = info.needs_reparent_scroll_for_absolute =
@@ -463,13 +426,17 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
 
     properties.unclipped_absolute_bounding_box =
         EnclosingIntRect(geometry_map_->AbsoluteRect(
-            layer->BoundingBoxForCompositingOverlapTest()));
+            layer->LocalBoundingBoxForCompositingOverlapTest()));
 
     bool affected_by_scroll = root_layer_->GetScrollableArea() &&
                               layer->IsAffectedByScrollOf(root_layer_);
 
-    // At ths point, |unclipped_absolute_bounding_box| is in viewport space.
+    // At this point, |unclipped_absolute_bounding_box| is in viewport space.
     // To convert to absolute space, add scroll offset for non-fixed layers.
+    // Content that is not affected by scroll, e.g. fixed-pos content and
+    // children of that content, stays in viewport space so we can expand its
+    // bounds during overlap testing without having a dependency on the scroll
+    // offset at the time these properties are calculated.
     if (affected_by_scroll) {
       properties.unclipped_absolute_bounding_box.Move(
           RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));

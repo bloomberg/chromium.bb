@@ -68,6 +68,11 @@ enum ShouldComputePreferred { kComputeActual, kComputePreferred };
 
 enum ShouldClampToContentBox { kDoNotClampToContentBox, kClampToContentBox };
 
+enum ShouldIncludeScrollbarGutter {
+  kExcludeScrollbarGutter,
+  kIncludeScrollbarGutter
+};
+
 using SnapAreaSet = HashSet<LayoutBox*>;
 
 struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
@@ -1010,6 +1015,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit OverrideLogicalHeight() const;
   LayoutUnit OverrideLogicalWidth() const;
   bool IsOverrideLogicalHeightDefinite() const;
+  bool StretchInlineSizeIfAuto() const;
+  bool StretchBlockSizeIfAuto() const;
   bool HasOverrideLogicalHeight() const;
   bool HasOverrideLogicalWidth() const;
   void SetOverrideLogicalHeight(LayoutUnit);
@@ -1165,8 +1172,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void DeleteLineBoxWrapper();
 
   bool HasInlineFragments() const final;
-  NGPaintFragment* FirstInlineFragment() const final;
-  void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
@@ -1178,8 +1183,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Store one layout result (with its physical fragment) at the specified
   // index, and delete all entries following it.
   void AddLayoutResult(scoped_refptr<const NGLayoutResult>, wtf_size_t index);
+  void AddLayoutResult(scoped_refptr<const NGLayoutResult>);
   void ReplaceLayoutResult(scoped_refptr<const NGLayoutResult>,
                            wtf_size_t index);
+  void ReplaceLayoutResult(scoped_refptr<const NGLayoutResult>,
+                           const NGPhysicalBoxFragment& old_fragment);
 
   void ShrinkLayoutResults(wtf_size_t results_to_keep);
   void ClearLayoutResults();
@@ -1216,6 +1224,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     bool IsEmpty() const { return layout_results_.IsEmpty(); }
 
     bool HasFragmentItems() const;
+
+    wtf_size_t IndexOf(const NGPhysicalBoxFragment& fragment) const;
+    bool Contains(const NGPhysicalBoxFragment& fragment) const;
 
     class CORE_EXPORT Iterator : public std::iterator<std::forward_iterator_tag,
                                                       NGPhysicalBoxFragment> {
@@ -1400,13 +1411,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       SizeType,
       const Length& height,
       LayoutUnit intrinsic_content_height) const;
-  LayoutUnit ComputeReplacedLogicalWidthUsing(SizeType,
-                                              const Length& width) const;
+  LayoutUnit ComputeReplacedLogicalWidthUsing(SizeType, Length width) const;
   LayoutUnit ComputeReplacedLogicalWidthRespectingMinMaxWidth(
       LayoutUnit logical_width,
       ShouldComputePreferred = kComputeActual) const;
-  LayoutUnit ComputeReplacedLogicalHeightUsing(SizeType,
-                                               const Length& height) const;
+  LayoutUnit ComputeReplacedLogicalHeightUsing(SizeType, Length height) const;
   LayoutUnit ComputeReplacedLogicalHeightRespectingMinMaxHeight(
       LayoutUnit logical_height) const;
 
@@ -1608,12 +1617,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                               LogicalExtentComputedValues&);
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
+  PositionWithAffinity PositionForPointInFragments(const PhysicalOffset&) const;
 
   void RemoveFloatingOrPositionedChildFromBlockLists();
 
   PaintLayer* EnclosingFloatPaintingLayer() const;
-
-  const LayoutBlock& EnclosingScrollportBox() const;
 
   virtual LayoutUnit FirstLineBoxBaseline() const {
     NOT_DESTROYED();
@@ -1674,14 +1682,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return !IsInline() && !IsOutOfFlowPositioned() && Parent();
   }
 
-  bool IsGridItemIncludingNG() const {
-    NOT_DESTROYED();
-    return IsGridItem() || (Parent() && Parent()->IsLayoutNGGrid());
-  }
-
   bool IsGridItem() const {
     NOT_DESTROYED();
     return Parent() && Parent()->IsLayoutGrid();
+  }
+  bool IsGridItemIncludingNG() const {
+    NOT_DESTROYED();
+    return Parent() && Parent()->IsLayoutGridIncludingNG();
   }
 
   bool IsMathItem() const {
@@ -2063,11 +2070,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
  protected:
   ~LayoutBox() override;
 
-  // Applies 'overflow:clip' as necessary to the accumulated layout overflow.
-  // During layout overflow is accumulated, once all the overflow has been
-  // accumulated 'overflow:clip' is then applied.
-  void ApplyOverflowClipToLayoutOverflowRect();
-
   virtual OverflowClipAxes ComputeOverflowClipAxes() const;
 
   void WillBeDestroyed() override;
@@ -2121,10 +2123,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool ColumnFlexItemHasStretchAlignment() const;
   bool IsStretchingColumnFlexItem() const;
   bool HasStretchedLogicalWidth() const;
+  bool HasStretchedLogicalHeight() const;
 
   void ExcludeScrollbars(
       PhysicalRect&,
-      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize) const;
+      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
+      ShouldIncludeScrollbarGutter = kIncludeScrollbarGutter) const;
 
   LayoutUnit ContainingBlockLogicalWidthForPositioned(
       const LayoutBoxModelObject* containing_block,
@@ -2177,7 +2181,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return ChildrenInline() && PhysicalFragments().HasFragmentItems();
   }
-
   inline bool LayoutOverflowIsSet() const {
     NOT_DESTROYED();
     return overflow_ && overflow_->layout_overflow;
@@ -2281,7 +2284,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasScrollbarGutters(ScrollbarOrientation orientation) const;
   NGPhysicalBoxStrut ComputeScrollbarsInternal(
       ShouldClampToContentBox = kDoNotClampToContentBox,
-      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize) const;
+      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
+      ShouldIncludeScrollbarGutter = kIncludeScrollbarGutter) const;
 
   LayoutUnit FlipForWritingModeInternal(
       LayoutUnit position,
@@ -2360,10 +2364,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     // The inline box containing this LayoutBox, for atomic inline elements.
     // Valid only when !IsInLayoutNGInlineFormattingContext().
     InlineBox* inline_box_wrapper_;
-    // The first fragment of the inline box containing this LayoutBox, for
-    // atomic inline elements. Valid only when
-    // IsInLayoutNGInlineFormattingContext().
-    NGPaintFragment* first_paint_fragment_;
     // The index of the first fragment item associated with this object in
     // |NGFragmentItems::Items()|. Zero means there are no such item.
     // Valid only when IsInLayoutNGInlineFormattingContext().
@@ -2453,19 +2453,9 @@ inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
   inline_box_wrapper_ = box_wrapper;
 }
 
-inline NGPaintFragment* LayoutBox::FirstInlineFragment() const {
-  if (!IsInLayoutNGInlineFormattingContext())
-    return nullptr;
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return first_paint_fragment_;
-  NOTREACHED();
-  return nullptr;
-}
-
 inline wtf_size_t LayoutBox::FirstInlineFragmentItemIndex() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return 0u;
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   return first_fragment_item_index_;
 }
 

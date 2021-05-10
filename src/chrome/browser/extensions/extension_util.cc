@@ -12,7 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_manager.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
@@ -35,6 +36,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -44,9 +46,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 namespace extensions {
@@ -91,7 +93,7 @@ bool HasIsolatedStorage(const std::string& extension_id,
       ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
           extension_id);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const bool is_policy_extension =
       extension && Manifest::IsPolicyLocation(extension->location());
   Profile* profile = Profile::FromBrowserContext(context);
@@ -122,7 +124,7 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
       // by sync, for syncable component extensions.
       // See http://crbug.com/112290 and associated CLs for the sordid history.
       bool syncable = sync_helper::IsSyncableComponentExtension(extension);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // For some users, the file manager app somehow ended up being synced even
       // though it's supposed to be unsyncable; see crbug.com/576964. If the bad
       // data ever gets cleaned up, this hack should be removed.
@@ -202,6 +204,17 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
 
 bool ShouldSync(const Extension* extension,
                 content::BrowserContext* context) {
+  ExtensionManagement* extension_management =
+      ExtensionManagementFactory::GetForBrowserContext(context);
+  // Update URL is overridden only for non webstore extensions and offstore
+  // extensions should not be synced.
+  if (extension_management->IsUpdateUrlOverridden(extension->id())) {
+    const GURL update_url =
+        extension_management->GetEffectiveUpdateURL(*extension);
+    DCHECK(!extension_urls::IsWebstoreUpdateUrl(update_url))
+        << "Update URL cannot be overridden to be the webstore URL!";
+    return false;
+  }
   return sync_helper::IsSyncable(extension) &&
          !ExtensionPrefs::Get(context)->DoNotSync(extension->id());
 }

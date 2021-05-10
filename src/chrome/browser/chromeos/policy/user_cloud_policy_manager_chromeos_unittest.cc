@@ -24,9 +24,9 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -283,7 +283,7 @@ class UserCloudPolicyManagerChromeOSTest
       // Issue the access token with the former.
       signin::ScopeSet scopes;
       scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-      scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+      scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
 
       identity_test_env()
           ->WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
@@ -1163,7 +1163,7 @@ class UserCloudPolicyManagerChromeOSChildTest
   void IssueOAuth2AccessToken(base::TimeDelta token_lifetime) {
     signin::ScopeSet scopes;
     scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-    scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+    scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
             kOAuthToken, task_runner_->Now() + token_lifetime,

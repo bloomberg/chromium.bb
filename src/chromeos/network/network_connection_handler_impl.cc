@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/network/cellular_esim_connection_handler.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/device_state.h"
@@ -35,6 +37,12 @@
 namespace chromeos {
 
 namespace {
+
+// If connection to a network that may require a client certificate is requested
+// when client certificates are not loaded yet, wait this long until
+// certificates have been loaded.
+constexpr base::TimeDelta kMaxCertLoadTimeSeconds =
+    base::TimeDelta::FromSeconds(15);
 
 bool IsAuthenticationError(const std::string& error) {
   return (error == shill::kErrorBadWEPKey ||
@@ -145,6 +153,12 @@ bool IsVpnProhibited() {
   return base::Contains(prohibited_technologies, shill::kTypeVPN);
 }
 
+// TODO(b/161092818): Add wireguard type when it is supported in shill.
+bool IsBuiltInVpnType(const std::string& vpn_type) {
+  return vpn_type == shill::kProviderL2tpIpsec ||
+         vpn_type == shill::kProviderOpenVpn;
+}
+
 }  // namespace
 
 NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
@@ -169,7 +183,6 @@ NetworkConnectionHandlerImpl::NetworkConnectionHandlerImpl()
     : network_cert_loader_(nullptr),
       network_state_handler_(nullptr),
       configuration_handler_(nullptr),
-      logged_in_(false),
       certificates_loaded_(false) {}
 
 NetworkConnectionHandlerImpl::~NetworkConnectionHandlerImpl() {
@@ -177,17 +190,13 @@ NetworkConnectionHandlerImpl::~NetworkConnectionHandlerImpl() {
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (network_cert_loader_)
     network_cert_loader_->RemoveObserver(this);
-  if (LoginState::IsInitialized())
-    LoginState::Get()->RemoveObserver(this);
 }
 
 void NetworkConnectionHandlerImpl::Init(
     NetworkStateHandler* network_state_handler,
     NetworkConfigurationHandler* network_configuration_handler,
-    ManagedNetworkConfigurationHandler* managed_network_configuration_handler) {
-  if (LoginState::IsInitialized())
-    LoginState::Get()->AddObserver(this);
-
+    ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
+    CellularESimConnectionHandler* cellular_esim_connection_handler) {
   if (NetworkCertLoader::IsInitialized()) {
     network_cert_loader_ = NetworkCertLoader::Get();
     network_cert_loader_->AddObserver(this);
@@ -207,21 +216,10 @@ void NetworkConnectionHandlerImpl::Init(
   }
   configuration_handler_ = network_configuration_handler;
   managed_configuration_handler_ = managed_network_configuration_handler;
+  cellular_esim_connection_handler_ = cellular_esim_connection_handler;
 
   // After this point, the NetworkConnectionHandlerImpl is fully initialized
   // (all handler references set, observers registered, ...).
-
-  if (LoginState::IsInitialized())
-    LoggedInStateChanged();
-}
-
-void NetworkConnectionHandlerImpl::LoggedInStateChanged() {
-  LoginState* login_state = LoginState::Get();
-  if (logged_in_ || !login_state->IsUserLoggedIn())
-    return;
-
-  logged_in_ = true;
-  logged_in_time_ = base::TimeTicks::Now();
 }
 
 void NetworkConnectionHandlerImpl::OnCertificatesLoaded() {
@@ -262,6 +260,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // configured, in which case these checks do not apply anyway.
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
+
+  bool is_non_connectable_esim_network = false;
 
   if (network) {
     // For existing networks, perform some immediate consistency checks.
@@ -308,10 +308,19 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     }
 
     if (NetworkTypePattern::VPN().MatchesType(network->type()) &&
-        IsVpnProhibited()) {
+        IsBuiltInVpnType(network->GetVpnProviderType()) && IsVpnProhibited()) {
       InvokeConnectErrorCallback(service_path, std::move(error_callback),
                                  kErrorBlockedByPolicy);
       return;
+    }
+
+    // eSIM networks are Cellular networks with an associated EID. Note that
+    // |cellular_esim_connection_handler_| is expected to be null if the flag is
+    // disabled.
+    if (cellular_esim_connection_handler_ &&
+        NetworkTypePattern::Cellular().MatchesType(network->type()) &&
+        !network->eid().empty() && !network->connectable()) {
+      is_non_connectable_esim_network = true;
     }
   }
 
@@ -346,6 +355,20 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // NetworkStateHandler when the connection state changes, or cleared if
   // an error occurs before a connect is initialted.
   network_state_handler_->SetNetworkConnectRequested(service_path, true);
+
+  if (is_non_connectable_esim_network) {
+    // eSIM profiles need to be enabled before a connection to them can be
+    // initiated. If this operation is successful, the network's "connectable"
+    // property will be set, and we can invoke CallShillConnect().
+    cellular_esim_connection_handler_->EnableProfileForConnection(
+        service_path,
+        base::BindOnce(&NetworkConnectionHandlerImpl::CallShillConnect,
+                       AsWeakPtr(), service_path),
+        base::BindOnce(
+            &NetworkConnectionHandlerImpl::OnEnableESimProfileFailure,
+            AsWeakPtr(), service_path));
+    return;
+  }
 
   if (call_connect) {
     CallShillConnect(service_path);
@@ -425,6 +448,24 @@ NetworkConnectionHandlerImpl::GetPendingRequest(
   std::map<std::string, ConnectRequest>::iterator iter =
       pending_requests_.find(service_path);
   return iter != pending_requests_.end() ? &(iter->second) : nullptr;
+}
+
+void NetworkConnectionHandlerImpl::OnEnableESimProfileFailure(
+    const std::string& service_path,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  ConnectRequest* request = GetPendingRequest(service_path);
+  if (!request) {
+    NET_LOG(ERROR)
+        << "OnEnableESimProfileFailure called with no pending request: "
+        << NetworkPathId(service_path);
+    return;
+  }
+  network_handler::ErrorCallback error_callback =
+      std::move(request->error_callback);
+  ClearPendingRequest(service_path);
+  InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                             error_name);
 }
 
 // ConnectToNetwork implementation
@@ -561,13 +602,13 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     NET_LOG(DEBUG) << "Client cert type for: " << NetworkPathId(service_path)
                    << ": " << client_cert_type;
 
-    // User must be logged in to connect to a network requiring a certificate.
-    if (!logged_in_ || !network_cert_loader_) {
-      NET_LOG(ERROR) << "User not logged in for: "
-                     << NetworkPathId(service_path);
+    if (!network_cert_loader_ ||
+        !network_cert_loader_->can_have_client_certificates()) {
+      // There can be no certificates in this device state.
       ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
       return;
     }
+
     // If certificates have not been loaded yet, queue the connect request.
     if (!certificates_loaded_) {
       NET_LOG(EVENT) << "Certificates not loaded for: "
@@ -627,10 +668,15 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     return;
   }
 
-  if (*type != shill::kTypeVPN && check_error_state) {
-    // For non VPNs, 'Connectable' must be false here, so fail immediately if
-    // |check_error_state| is true. (For VPNs 'Connectable' is not reliable).
-    NET_LOG(ERROR) << "Non VPN is unconfigured: "
+  // Cellular networks are not "connectable" if they are not on the active SIM
+  // slot. For VPNs, "connectable" is not reliable. In either case, we can still
+  // issue Shill a connection request despite the "connectable" property being
+  // false.
+  bool can_connect_without_connectable =
+      *type == shill::kTypeCellular || *type == shill::kTypeVPN;
+
+  if (!can_connect_without_connectable && check_error_state) {
+    NET_LOG(ERROR) << "Non-connectable network is unconfigured: "
                    << NetworkPathId(service_path);
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
     return;
@@ -650,16 +696,6 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
     return;
   }
 
-  const int kMaxCertLoadTimeSeconds = 15;
-  base::TimeDelta dtime = base::TimeTicks::Now() - logged_in_time_;
-  if (dtime > base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds)) {
-    NET_LOG(ERROR) << "Certificate load timeout: "
-                   << NetworkPathId(service_path);
-    InvokeConnectErrorCallback(service_path, std::move(request->error_callback),
-                               kErrorCertLoadTimeout);
-    return;
-  }
-
   NET_LOG(EVENT) << "Connect Request Queued: " << NetworkPathId(service_path);
   queued_connect_.reset(new ConnectRequest(request->mode, service_path,
                                            request->profile_path,
@@ -674,7 +710,7 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
       FROM_HERE,
       base::BindOnce(&NetworkConnectionHandlerImpl::CheckCertificatesLoaded,
                      AsWeakPtr()),
-      base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds) - dtime);
+      kMaxCertLoadTimeSeconds);
 }
 
 // Called after a delay to check whether certificates loaded. If they did not
@@ -692,14 +728,15 @@ void NetworkConnectionHandlerImpl::CheckCertificatesLoaded() {
 
   // Notify the user that the connect failed, clear the queued network, and
   // clear the connect_requested flag for the NetworkState.
+  std::string queued_connect_service_path = queued_connect_->service_path;
   NET_LOG(ERROR) << "Certificate load timeout: "
-                 << NetworkPathId(queued_connect_->service_path);
+                 << NetworkPathId(queued_connect_service_path);
   InvokeConnectErrorCallback(queued_connect_->service_path,
                              std::move(queued_connect_->error_callback),
                              kErrorCertLoadTimeout);
   queued_connect_.reset();
   network_state_handler_->SetNetworkConnectRequested(
-      queued_connect_->service_path, false);
+      queued_connect_service_path, false);
 }
 
 void NetworkConnectionHandlerImpl::ConnectToQueuedNetwork() {
@@ -801,6 +838,7 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   } else if (dbus_error_name == shill::kErrorResultInProgress) {
     error = kErrorConnecting;
   } else {
+    network_state_handler_->SetShillConnectError(service_path, dbus_error_name);
     error = kErrorConnectFailed;
   }
   NET_LOG(ERROR) << "Connect Failure: " << NetworkPathId(service_path)

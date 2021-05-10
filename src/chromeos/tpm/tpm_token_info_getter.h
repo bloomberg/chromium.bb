@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "components/account_id/account_id.h"
 
 namespace base {
@@ -51,6 +52,8 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
   // called).
   void Start(TpmTokenInfoCallback callback);
 
+  void SetSystemSlotSoftwareFallback(bool use_system_slot_software_fallback);
+
  private:
   enum Type {
     TYPE_SYSTEM,
@@ -61,6 +64,7 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
     STATE_INITIAL,
     STATE_STARTED,
     STATE_TPM_ENABLED,
+    STATE_SYSTEM_SLOT_SOFTWARE_FALLBACK,
     STATE_DONE
   };
 
@@ -78,8 +82,11 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
   // schedules the initialization step retry attempt after a timeout.
   void RetryLater();
 
+  // Callbacks for TpmManagerClient.
+  void OnGetTpmStatus(
+      const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply);
+
   // Cryptohome methods callbacks.
-  void OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled);
   void OnPkcs11GetTpmTokenInfo(
       base::Optional<CryptohomeClient::TpmTokenInfo> token_info);
 
@@ -95,6 +102,12 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
   AccountId account_id_;
 
   TpmTokenInfoCallback callback_;
+
+  // If set and the TPM is disabled, TPMTokenInfoGetter will still get the token
+  // info using cryptohome's Pkcs11GetTpmTokenInfo query. The token info is
+  // needed for falling back to a software-backed initialization of the system
+  // token.
+  bool use_system_slot_software_fallback_ = false;
 
   // The current request delay before the next attempt to initialize the
   // TPM. Will be adapted after each attempt.

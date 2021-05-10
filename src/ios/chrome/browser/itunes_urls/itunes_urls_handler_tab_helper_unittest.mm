@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/test/fakes/fake_store_kit_launcher.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -44,6 +44,7 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
     fake_launcher_.launchedProductParams = nil;
     web::WebStatePolicyDecider::RequestInfo request_info(
         ui::PageTransition::PAGE_TRANSITION_LINK, main_frame,
+        /*target_frame_is_cross_origin=*/false,
         /*has_user_gesture=*/false);
     web::WebStatePolicyDecider::PolicyDecision request_policy =
         web_state_.ShouldAllowRequest(
@@ -56,7 +57,7 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   FakeStoreKitLauncher* fake_launcher_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::HistogramTester histogram_tester_;
 };

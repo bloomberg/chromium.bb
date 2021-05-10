@@ -4,8 +4,6 @@
 
 package org.chromium.components.embedder_support.contextmenu;
 
-import android.text.TextUtils;
-
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -14,6 +12,7 @@ import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
+import org.chromium.url.GURL;
 
 /**
  * A list of parameters that explain what kind of context menu to show the user.  This data is
@@ -22,12 +21,12 @@ import org.chromium.ui.base.MenuSourceType;
 @JNINamespace("context_menu")
 public class ContextMenuParams {
     private final long mNativePtr;
-    private final String mPageUrl;
-    private final String mLinkUrl;
+    private final GURL mPageUrl;
+    private final GURL mLinkUrl;
     private final String mLinkText;
     private final String mTitleText;
-    private final String mUnfilteredLinkUrl;
-    private final String mSrcUrl;
+    private final GURL mUnfilteredLinkUrl;
+    private final GURL mSrcUrl;
     private final Referrer mReferrer;
 
     private final boolean mIsAnchor;
@@ -48,14 +47,14 @@ public class ContextMenuParams {
     /**
      * @return The URL associated with the main frame of the page that triggered the context menu.
      */
-    public String getPageUrl() {
+    public GURL getPageUrl() {
         return mPageUrl;
     }
 
     /**
      * @return The link URL, if any.
      */
-    public String getLinkUrl() {
+    public GURL getLinkUrl() {
         return mLinkUrl;
     }
 
@@ -76,14 +75,14 @@ public class ContextMenuParams {
     /**
      * @return The unfiltered link URL, if any.
      */
-    public String getUnfilteredLinkUrl() {
+    public GURL getUnfilteredLinkUrl() {
         return mUnfilteredLinkUrl;
     }
 
     /**
      * @return The source URL.
      */
-    public String getSrcUrl() {
+    public GURL getSrcUrl() {
         return mSrcUrl;
     }
 
@@ -147,8 +146,7 @@ public class ContextMenuParams {
      * @return Whether or not the context menu is been shown for a download item.
      */
     public boolean isFile() {
-        if (!TextUtils.isEmpty(getSrcUrl())
-                && getSrcUrl().startsWith(ContentUrlConstants.FILE_URL_PREFIX)) {
+        if (getSrcUrl().getScheme().equals(ContentUrlConstants.FILE_SCHEME)) {
             return true;
         }
         return false;
@@ -157,8 +155,8 @@ public class ContextMenuParams {
     /**
      * @return The valid url of a ContextMenuParams.
      */
-    public String getUrl() {
-        if (isAnchor() && !TextUtils.isEmpty(getLinkUrl())) {
+    public GURL getUrl() {
+        if (isAnchor() && !getLinkUrl().isEmpty()) {
             return getLinkUrl();
         } else {
             return getSrcUrl();
@@ -166,10 +164,10 @@ public class ContextMenuParams {
     }
 
     @VisibleForTesting
-    public ContextMenuParams(long nativePtr, @ContextMenuDataMediaType int mediaType,
-            String pageUrl, String linkUrl, String linkText, String unfilteredLinkUrl,
-            String srcUrl, String titleText, Referrer referrer, boolean canSaveMedia,
-            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+    public ContextMenuParams(long nativePtr, @ContextMenuDataMediaType int mediaType, GURL pageUrl,
+            GURL linkUrl, String linkText, GURL unfilteredLinkUrl, GURL srcUrl, String titleText,
+            Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp, int triggeringTouchYDp,
+            @MenuSourceType int sourceType) {
         mNativePtr = nativePtr;
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
@@ -179,7 +177,7 @@ public class ContextMenuParams {
         mSrcUrl = srcUrl;
         mReferrer = referrer;
 
-        mIsAnchor = !TextUtils.isEmpty(linkUrl);
+        mIsAnchor = !linkUrl.isEmpty();
         mIsImage = mediaType == ContextMenuDataMediaType.IMAGE;
         mIsVideo = mediaType == ContextMenuDataMediaType.VIDEO;
         mCanSaveMedia = canSaveMedia;
@@ -190,13 +188,13 @@ public class ContextMenuParams {
 
     @CalledByNative
     private static ContextMenuParams create(long nativePtr, @ContextMenuDataMediaType int mediaType,
-            String pageUrl, String linkUrl, String linkText, String unfilteredLinkUrl,
-            String srcUrl, String titleText, String sanitizedReferrer, int referrerPolicy,
-            boolean canSaveMedia, int triggeringTouchXDp, int triggeringTouchYDp,
-            @MenuSourceType int sourceType) {
-        Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
+            GURL pageUrl, GURL linkUrl, String linkText, GURL unfilteredLinkUrl, GURL srcUrl,
+            String titleText, GURL sanitizedReferrer, int referrerPolicy, boolean canSaveMedia,
+            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+        // TODO(https://crbug.com/783819): Convert Referrer to use GURL.
+        Referrer referrer = sanitizedReferrer.isEmpty()
                 ? null
-                : new Referrer(sanitizedReferrer, referrerPolicy);
+                : new Referrer(sanitizedReferrer.getSpec(), referrerPolicy);
         return new ContextMenuParams(nativePtr, mediaType, pageUrl, linkUrl, linkText,
                 unfilteredLinkUrl, srcUrl, titleText, referrer, canSaveMedia, triggeringTouchXDp,
                 triggeringTouchYDp, sourceType);

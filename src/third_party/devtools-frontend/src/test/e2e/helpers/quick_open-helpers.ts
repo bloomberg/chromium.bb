@@ -67,5 +67,9 @@ export const closeDrawer = async () => {
 export const getSelectedItemText = async () => {
   const quickOpenElement = await waitFor(QUICK_OPEN_SELECTOR);
   const selectedRow = await waitFor(QUICK_OPEN_SELECTED_ITEM_SELECTOR, quickOpenElement);
-  return await (await selectedRow.getProperty('textContent')).jsonValue();
+  const textContent = await selectedRow.getProperty('textContent');
+  if (!textContent) {
+    assert.fail('Quick open: could not get selected item textContent');
+  }
+  return await textContent.jsonValue<string>();
 };

@@ -14,84 +14,73 @@
 
 #include "src/ast/bitcast_expression.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/type/f32_type.h"
+#include "src/ast/test_helper.h"
+#include "src/type/f32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using BitcastExpressionTest = testing::Test;
+using BitcastExpressionTest = TestHelper;
 
 TEST_F(BitcastExpressionTest, Create) {
-  type::F32Type f32;
-  auto expr = std::make_unique<IdentifierExpression>("expr");
+  auto* expr = Expr("expr");
 
-  auto* expr_ptr = expr.get();
-
-  BitcastExpression exp(&f32, std::move(expr));
-  ASSERT_EQ(exp.type(), &f32);
-  ASSERT_EQ(exp.expr(), expr_ptr);
+  auto* exp = create<BitcastExpression>(ty.f32(), expr);
+  ASSERT_EQ(exp->type(), ty.f32());
+  ASSERT_EQ(exp->expr(), expr);
 }
 
 TEST_F(BitcastExpressionTest, CreateWithSource) {
-  type::F32Type f32;
-  auto expr = std::make_unique<IdentifierExpression>("expr");
+  auto* expr = Expr("expr");
 
-  BitcastExpression exp(Source{Source::Location{20, 2}}, &f32, std::move(expr));
-  auto src = exp.source();
+  auto* exp = create<BitcastExpression>(Source{Source::Location{20, 2}},
+                                        ty.f32(), expr);
+  auto src = exp->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(BitcastExpressionTest, IsBitcast) {
-  BitcastExpression exp;
-  EXPECT_TRUE(exp.IsBitcast());
+  auto* expr = Expr("expr");
+
+  auto* exp = create<BitcastExpression>(ty.f32(), expr);
+  EXPECT_TRUE(exp->Is<BitcastExpression>());
 }
 
 TEST_F(BitcastExpressionTest, IsValid) {
-  type::F32Type f32;
-  auto expr = std::make_unique<IdentifierExpression>("expr");
+  auto* expr = Expr("expr");
 
-  BitcastExpression exp(&f32, std::move(expr));
-  EXPECT_TRUE(exp.IsValid());
+  auto* exp = create<BitcastExpression>(ty.f32(), expr);
+  EXPECT_TRUE(exp->IsValid());
 }
 
 TEST_F(BitcastExpressionTest, IsValid_MissingType) {
-  auto expr = std::make_unique<IdentifierExpression>("expr");
+  auto* expr = Expr("expr");
 
-  BitcastExpression exp;
-  exp.set_expr(std::move(expr));
-  EXPECT_FALSE(exp.IsValid());
+  auto* exp = create<BitcastExpression>(nullptr, expr);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(BitcastExpressionTest, IsValid_MissingExpr) {
-  type::F32Type f32;
-
-  BitcastExpression exp;
-  exp.set_type(&f32);
-  EXPECT_FALSE(exp.IsValid());
+  auto* exp = create<BitcastExpression>(ty.f32(), nullptr);
+  EXPECT_FALSE(exp->IsValid());
 }
 
 TEST_F(BitcastExpressionTest, IsValid_InvalidExpr) {
-  type::F32Type f32;
-  auto expr = std::make_unique<IdentifierExpression>("");
-  BitcastExpression e(&f32, std::move(expr));
-  EXPECT_FALSE(e.IsValid());
+  auto* expr = Expr("");
+  auto* e = create<BitcastExpression>(ty.f32(), expr);
+  EXPECT_FALSE(e->IsValid());
 }
 
 TEST_F(BitcastExpressionTest, ToStr) {
-  type::F32Type f32;
-  auto expr = std::make_unique<IdentifierExpression>("expr");
+  auto* expr = Expr("expr");
 
-  BitcastExpression exp(&f32, std::move(expr));
-  std::ostringstream out;
-  exp.to_str(out, 2);
-
-  EXPECT_EQ(out.str(), R"(  Bitcast<__f32>{
-    Identifier{expr}
-  }
+  auto* exp = create<BitcastExpression>(ty.f32(), expr);
+  EXPECT_EQ(str(exp), R"(Bitcast[not set]<__f32>{
+  Identifier[not set]{expr}
+}
 )");
 }
 

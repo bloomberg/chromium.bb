@@ -6,15 +6,17 @@
 
 #include <memory>
 
-#include "ui/base/resource/resource_bundle.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/painter.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace message_center {
 
@@ -38,12 +40,15 @@ std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
 void PaddedButton::OnThemeChanged() {
   ImageButton::OnThemeChanged();
   auto* theme = GetNativeTheme();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
       ui::NativeTheme::kColorId_NotificationButtonBackground)));
 #endif
   SetInkDropBaseColor(theme->GetSystemColor(
       ui::NativeTheme::kColorId_PaddedButtonInkDropColor));
 }
+
+BEGIN_METADATA(PaddedButton, views::ImageButton)
+END_METADATA
 
 }  // namespace message_center

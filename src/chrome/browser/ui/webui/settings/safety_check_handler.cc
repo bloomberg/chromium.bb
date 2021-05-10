@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
@@ -12,12 +13,14 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/version_ui.h"
+#include "chrome/browser/ui/webui/version/version_ui.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -32,6 +35,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "base/win/registry.h"
@@ -39,7 +43,7 @@
 #include "components/chrome_cleaner/public/constants/constants.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/chromeos/devicetype_utils.h"
 #endif
 
@@ -60,9 +64,6 @@ constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
 constexpr char kGetParentRanDisplayString[] = "getSafetyCheckRanDisplayString";
 constexpr char kNewState[] = "newState";
 constexpr char kDisplayString[] = "displayString";
-constexpr char kPasswordsCompromised[] = "passwordsCompromised";
-constexpr char kExtensionsReenabledByUser[] = "extensionsReenabledByUser";
-constexpr char kExtensionsReenabledByAdmin[] = "extensionsReenabledByAdmin";
 
 // Converts the VersionUpdater::Status to the UpdateStatus enum to be passed
 // to the safety check frontend. Note: if the VersionUpdater::Status gets
@@ -252,7 +253,7 @@ void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
                                     GetStringForUpdates(update_status_));
   FireBasicSafetyCheckWebUiListener(
       kPasswordsEvent, static_cast<int>(passwords_status_),
-      GetStringForPasswords(passwords_status_, Compromised(0), Done(0),
+      GetStringForPasswords(passwords_status_, Compromised(0), Weak(0), Done(0),
                             Total(0)));
   FireBasicSafetyCheckWebUiListener(
       kSafeBrowsingEvent, static_cast<int>(safe_browsing_status_),
@@ -387,8 +388,8 @@ void SafetyCheckHandler::HandleGetParentRanDisplayString(
 void SafetyCheckHandler::CheckUpdates() {
   // Usage of base::Unretained(this) is safe, because we own `version_updater_`.
   version_updater_->CheckForUpdate(
-      base::Bind(&SafetyCheckHandler::OnVersionUpdaterResult,
-                 base::Unretained(this)),
+      base::BindRepeating(&SafetyCheckHandler::OnVersionUpdaterResult,
+                          base::Unretained(this)),
       VersionUpdater::PromoteCallback());
 }
 
@@ -399,11 +400,11 @@ void SafetyCheckHandler::CheckPasswords() {
   // registered. This takes care of an edge case when safety check starts twice
   // on the same page. Normally this should not happen, but if it does, the
   // browser should not crash.
-  observed_leak_check_.RemoveAll();
-  observed_leak_check_.Add(leak_service_);
+  observed_leak_check_.Reset();
+  observed_leak_check_.Observe(leak_service_);
   // Start observing the InsecureCredentialsManager.
-  observed_insecure_credentials_manager_.RemoveAll();
-  observed_insecure_credentials_manager_.Add(insecure_credentials_manager_);
+  observed_insecure_credentials_manager_.Reset();
+  observed_insecure_credentials_manager_.Observe(insecure_credentials_manager_);
   passwords_delegate_->StartPasswordCheck(base::BindOnce(
       &SafetyCheckHandler::OnStateChanged, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -502,15 +503,13 @@ void SafetyCheckHandler::OnUpdateCheckResult(UpdateStatus status) {
 
 void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
                                                 Compromised compromised,
+                                                Weak weak,
                                                 Done done,
                                                 Total total) {
   base::DictionaryValue event;
   event.SetIntKey(kNewState, static_cast<int>(status));
-  if (status == PasswordsStatus::kCompromisedExist) {
-    event.SetIntKey(kPasswordsCompromised, compromised.value());
-  }
-  event.SetStringKey(kDisplayString,
-                     GetStringForPasswords(status, compromised, done, total));
+  event.SetStringKey(kDisplayString, GetStringForPasswords(status, compromised,
+                                                           weak, done, total));
   FireWebUIListener(kPasswordsEvent, event);
   if (status != PasswordsStatus::kChecking) {
     base::UmaHistogramEnumeration("Settings.SafetyCheck.PasswordsResult",
@@ -527,14 +526,6 @@ void SafetyCheckHandler::OnExtensionsCheckResult(
     ReenabledAdmin reenabled_admin) {
   base::DictionaryValue event;
   event.SetIntKey(kNewState, static_cast<int>(status));
-  if (status == ExtensionsStatus::kBlocklistedReenabledAllByUser ||
-      status == ExtensionsStatus::kBlocklistedReenabledSomeByUser) {
-    event.SetIntKey(kExtensionsReenabledByUser, reenabled_user.value());
-  }
-  if (status == ExtensionsStatus::kBlocklistedReenabledAllByAdmin ||
-      status == ExtensionsStatus::kBlocklistedReenabledSomeByUser) {
-    event.SetIntKey(kExtensionsReenabledByAdmin, reenabled_admin.value());
-  }
   event.SetStringKey(kDisplayString,
                      GetStringForExtensions(status, Blocklisted(blocklisted),
                                             reenabled_user, reenabled_admin));
@@ -579,7 +570,7 @@ base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
     case UpdateStatus::kChecking:
       return base::UTF8ToUTF16("");
     case UpdateStatus::kUpdated:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       return ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE);
 #else
       return l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE);
@@ -647,6 +638,7 @@ base::string16 SafetyCheckHandler::GetStringForSafeBrowsing(
 base::string16 SafetyCheckHandler::GetStringForPasswords(
     PasswordsStatus status,
     Compromised compromised,
+    Weak weak,
     Done done,
     Total total) {
   switch (status) {
@@ -663,8 +655,30 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(
       return l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, 0);
     case PasswordsStatus::kCompromisedExist:
+      // TODO(crbug.com/1128904): Clean up the old code path.
+      if (!base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords)) {
+        return l10n_util::GetPluralStringFUTF16(
+            IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, compromised.value());
+      }
+      if (weak.value() == 0) {
+        // Only compromised passwords, no weak passwords.
+        return l10n_util::GetPluralStringFUTF16(
+            IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT_SHORT,
+            compromised.value());
+      } else {
+        // Both compromised and weak passwords.
+        return l10n_util::GetStringFUTF16(
+            IDS_CONCAT_TWO_STRINGS_WITH_COMMA,
+            l10n_util::GetPluralStringFUTF16(
+                IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT_SHORT,
+                compromised.value()),
+            l10n_util::GetPluralStringFUTF16(
+                IDS_SETTINGS_WEAK_PASSWORDS_COUNT_SHORT, weak.value()));
+      }
+    case PasswordsStatus::kWeakPasswordsExist:
+      // Only weak passwords.
       return l10n_util::GetPluralStringFUTF16(
-          IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, compromised.value());
+          IDS_SETTINGS_WEAK_PASSWORDS_COUNT_SHORT, weak.value());
     case PasswordsStatus::kOffline:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE);
@@ -709,16 +723,14 @@ base::string16 SafetyCheckHandler::GetStringForExtensions(
           IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER,
           reenabled_user.value());
     case ExtensionsStatus::kBlocklistedReenabledSomeByUser:
-      // TODO(crbug/1060625): Make string concatenation with a period
-      // internationalized (see go/i18n-concatenation).
-      return l10n_util::GetPluralStringFUTF16(
-                 IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER,
-                 reenabled_user.value()) +
-             base::ASCIIToUTF16(". ") +
-             l10n_util::GetPluralStringFUTF16(
-                 IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
-                 reenabled_admin.value()) +
-             base::ASCIIToUTF16(".");
+      return l10n_util::GetStringFUTF16(
+          IDS_CONCAT_TWO_STRINGS_WITH_PERIODS,
+          l10n_util::GetPluralStringFUTF16(
+              IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER,
+              reenabled_user.value()),
+          l10n_util::GetPluralStringFUTF16(
+              IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
+              reenabled_admin.value()));
     case ExtensionsStatus::kBlocklistedReenabledAllByAdmin:
       return l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
@@ -861,25 +873,36 @@ void SafetyCheckHandler::DetermineIfNoPasswordsOrSafe(
         passwords) {
   OnPasswordsCheckResult(passwords.empty() ? PasswordsStatus::kNoPasswords
                                            : PasswordsStatus::kSafe,
-                         Compromised(0), Done(0), Total(0));
+                         Compromised(0), Weak(0), Done(0), Total(0));
 }
 
 void SafetyCheckHandler::UpdatePasswordsResultOnCheckIdle() {
   size_t num_compromised =
       passwords_delegate_->GetCompromisedCredentials().size();
-  if (num_compromised == 0) {
+  size_t num_weak = passwords_delegate_->GetWeakCredentials().size();
+  // TODO(crbug.com/1128904): Clean up the old code path.
+  if (num_compromised == 0 &&
+      (num_weak == 0 ||
+       !base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords))) {
     // If there are no |OnCredentialDone| callbacks with is_leaked = true, no
     // need to wait for InsecureCredentialsManager callbacks any longer, since
     // there should be none for the current password check.
     if (!compromised_passwords_exist_) {
-      observed_insecure_credentials_manager_.RemoveAll();
+      observed_insecure_credentials_manager_.Reset();
     }
     passwords_delegate_->GetSavedPasswordsList(
         base::BindOnce(&SafetyCheckHandler::DetermineIfNoPasswordsOrSafe,
                        base::Unretained(this)));
-  } else {
+  } else if (num_compromised > 0) {
+    // At least one compromised password. Treat as compromises.
     OnPasswordsCheckResult(PasswordsStatus::kCompromisedExist,
-                           Compromised(num_compromised), Done(0), Total(0));
+                           Compromised(num_compromised), Weak(num_weak),
+                           Done(0), Total(0));
+  } else {
+    // No compromised but weak passwords. Treat as weak passwords only.
+    OnPasswordsCheckResult(PasswordsStatus::kWeakPasswordsExist,
+                           Compromised(num_compromised), Weak(num_weak),
+                           Done(0), Total(0));
   }
 }
 
@@ -919,41 +942,41 @@ void SafetyCheckHandler::OnStateChanged(
     case BulkLeakCheckService::State::kIdle:
     case BulkLeakCheckService::State::kCanceled: {
       UpdatePasswordsResultOnCheckIdle();
-      observed_leak_check_.RemoveAll();
+      observed_leak_check_.Reset();
       return;
     }
     case BulkLeakCheckService::State::kRunning:
       OnPasswordsCheckResult(PasswordsStatus::kChecking, Compromised(0),
-                             Done(0), Total(0));
+                             Weak(0), Done(0), Total(0));
       // Non-terminal state, so nothing else needs to be done.
       return;
     case BulkLeakCheckService::State::kSignedOut:
       OnPasswordsCheckResult(PasswordsStatus::kSignedOut, Compromised(0),
-                             Done(0), Total(0));
+                             Weak(0), Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kNetworkError:
-      OnPasswordsCheckResult(PasswordsStatus::kOffline, Compromised(0), Done(0),
-                             Total(0));
+      OnPasswordsCheckResult(PasswordsStatus::kOffline, Compromised(0), Weak(0),
+                             Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kQuotaLimit:
       OnPasswordsCheckResult(PasswordsStatus::kQuotaLimit, Compromised(0),
-                             Done(0), Total(0));
+                             Weak(0), Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kTokenRequestFailure:
       OnPasswordsCheckResult(PasswordsStatus::kFeatureUnavailable,
-                             Compromised(0), Done(0), Total(0));
+                             Compromised(0), Weak(0), Done(0), Total(0));
       break;
     case BulkLeakCheckService::State::kHashingFailure:
     case BulkLeakCheckService::State::kServiceError:
-      OnPasswordsCheckResult(PasswordsStatus::kError, Compromised(0), Done(0),
-                             Total(0));
+      OnPasswordsCheckResult(PasswordsStatus::kError, Compromised(0), Weak(0),
+                             Done(0), Total(0));
       break;
   }
 
   // Stop observing the leak service and credentials manager in all non-idle
   // states.
-  observed_leak_check_.RemoveAll();
-  observed_insecure_credentials_manager_.RemoveAll();
+  observed_leak_check_.Reset();
+  observed_insecure_credentials_manager_.Reset();
 }
 
 void SafetyCheckHandler::OnCredentialDone(
@@ -972,12 +995,12 @@ void SafetyCheckHandler::OnCredentialDone(
       status.already_processed && status.remaining_in_queue) {
     Done done = Done(*(status.already_processed));
     Total total = Total(*(status.remaining_in_queue) + done.value());
-    OnPasswordsCheckResult(PasswordsStatus::kChecking, Compromised(0), done,
-                           total);
+    OnPasswordsCheckResult(PasswordsStatus::kChecking, Compromised(0), Weak(0),
+                           done, total);
   }
 }
 
-void SafetyCheckHandler::OnCompromisedCredentialsChanged(
+void SafetyCheckHandler::OnInsecureCredentialsChanged(
     password_manager::InsecureCredentialsManager::CredentialsView credentials) {
   extensions::api::passwords_private::PasswordCheckStatus status =
       passwords_delegate_->GetPasswordCheckStatus();
@@ -988,7 +1011,7 @@ void SafetyCheckHandler::OnCompromisedCredentialsChanged(
   }
   UpdatePasswordsResultOnCheckIdle();
   // Stop observing the manager to avoid dynamically updating the result.
-  observed_insecure_credentials_manager_.RemoveAll();
+  observed_insecure_credentials_manager_.Reset();
 }
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1037,7 +1060,7 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
   // case when the page is reloaded while the password check is in progress and
   // another safety check is started. Otherwise |observed_leak_check_|
   // automatically calls RemoveAll() on destruction.
-  observed_leak_check_.RemoveAll();
+  observed_leak_check_.Reset();
   // Destroy the version updater to prevent getting a callback and firing a
   // WebUI event, which would cause a crash.
   version_updater_.reset();

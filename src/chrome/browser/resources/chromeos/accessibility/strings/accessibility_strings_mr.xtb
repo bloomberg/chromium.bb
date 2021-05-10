@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">मागील नियंत्रण नाही</translation>
 <translation id="2045606329038304310">फॉर्म भाग नियंत्रण</translation>
 <translation id="2063539687800151747">बोधवाक्य</translation>
+<translation id="2074531330963286860">उपलब्ध क्रिया. पाहण्यासाठी Search+Period वापरा</translation>
 <translation id="2086961585857038472">पुढील शब्द</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
@@ -807,7 +808,7 @@
 <translation id="7039555289296502784">ऑलिव्ह हिरवा</translation>
 <translation id="7041173719775863268">निवड समाप्त करा</translation>
 <translation id="7043850226734279132">गडद खाकी</translation>
-<translation id="7051308646573997571">लाल</translation>
+<translation id="7051308646573997571">Coral</translation>
 <translation id="7062635574500127092">हिरवट निळा</translation>
 <translation id="7086377898680121060">चकाकी वाढवा</translation>
 <translation id="7088743565397416204">ज्यावर फोकस केला आहे ते ॲक्टिव्हेट करण्यासाठी दोनदा टॅप करा</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">पुढील गट</translation>
 <translation id="7813616274030162878">अ‍ॅक्सेस मेनू स्विच करा</translation>
 <translation id="7839679365527550018">मागील शब्द</translation>
+<translation id="7842115774595115751">नेव्हिगेशन नियंत्रणे सुरू करा</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="7851816175263618915">काही विरामचिन्‍ह</translation>
 <translation id="7871691770940645922">व्हर्च्युअल ब्रेल डिस्प्ले</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="8989104346085848538">सध्याचे कोणतेही ChromeVox भाषण थांबवण्यासाठी कंट्रोल की दाबा.</translation>
+<translation id="8993737615451556423">वाचनाच्या आवाजाची गती वाढवण्यासाठी, कमी करण्यासाठी आणि विराम देण्यासाठी नियंत्रणे पुरवते</translation>
 <translation id="9014206344398081366">ChromeVox ट्युटोरियल</translation>
 <translation id="9040132695316389094">मथळा 1</translation>
 <translation id="9061884144798498064">8-बिंदू ब्रेल सारणी निवडा:</translation>

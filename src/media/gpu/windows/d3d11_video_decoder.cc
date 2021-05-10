@@ -28,6 +28,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/win/hresult_status_helper.h"
+#include "media/gpu/windows/d3d11_av1_accelerator.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
@@ -149,6 +150,10 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
   return "D3D11VideoDecoder";
 }
 
+VideoDecoderType D3D11VideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kD3D11;
+}
+
 HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
     ComD3D11VideoDecoder video_decoder) {
@@ -176,6 +181,11 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
         std::make_unique<D3D11H264Accelerator>(
             this, media_log_.get(), video_device_, std::move(video_context)),
         profile_, config.color_space_info());
+  } else if (config.codec() == kCodecAV1) {
+    accelerated_video_decoder_ = std::make_unique<AV1Decoder>(
+        std::make_unique<D3D11AV1Accelerator>(
+            this, media_log_.get(), video_device_, std::move(video_context)),
+        profile_, config.color_space_info());
   } else {
     return E_FAIL;
   }
@@ -187,14 +197,23 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
   return hr;
 }
 
-StatusOr<std::tuple<ComD3D11VideoDecoder>>
-D3D11VideoDecoder::CreateD3D11Decoder() {
-  HRESULT hr;
+StatusOr<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
+  // By default we assume outputs are 8-bit for SDR color spaces and 10 bit for
+  // HDR color spaces (or VP9.2). We'll get a config change once we know the
+  // real bit depth if this turns out to be wrong.
+  bit_depth_ =
+      accelerated_video_decoder_
+          ? accelerated_video_decoder_->GetBitDepth()
+          : (config_.profile() == VP9PROFILE_PROFILE2 ||
+                     config_.color_space_info().ToGfxColorSpace().IsHDR()
+                 ? 10
+                 : 8);
 
   // TODO: supported check?
 
-  decoder_configurator_ = D3D11DecoderConfigurator::Create(
-      gpu_preferences_, gpu_workarounds_, config_, media_log_.get());
+  decoder_configurator_ =
+      D3D11DecoderConfigurator::Create(gpu_preferences_, gpu_workarounds_,
+                                       config_, bit_depth_, media_log_.get());
   if (!decoder_configurator_)
     return StatusCode::kDecoderUnsupportedProfile;
 
@@ -220,7 +239,7 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
     return StatusCode::kCreateTextureSelectorFailed;
 
   UINT config_count = 0;
-  hr = video_device_->GetVideoDecoderConfigCount(
+  auto hr = video_device_->GetVideoDecoderConfigCount(
       decoder_configurator_->DecoderDescriptor(), &config_count);
   if (FAILED(hr)) {
     return Status(StatusCode::kGetDecoderConfigCountFailed)
@@ -241,8 +260,9 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
           .AddCause(HresultToStatus(hr));
     }
 
-    if (config_.codec() == kCodecVP9 && dec_config.ConfigBitstreamRaw == 1) {
-      // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
+    if ((config_.codec() == kCodecVP9 || config_.codec() == kCodecAV1) &&
+        dec_config.ConfigBitstreamRaw == 1) {
+      // DXVA VP9 and AV1 specifications say ConfigBitstreamRaw "shall be 1".
       found = true;
       break;
     }
@@ -394,12 +414,12 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   auto video_decoder_or_error = CreateD3D11Decoder();
   if (video_decoder_or_error.has_error()) {
-    NotifyError(video_decoder_or_error.error());
+    NotifyError(std::move(video_decoder_or_error).error());
     return;
   }
 
-  hr = InitializeAcceleratedDecoder(
-      config, std::move(std::get<0>(video_decoder_or_error.value())));
+  hr = InitializeAcceleratedDecoder(config,
+                                    std::move(video_decoder_or_error).value());
 
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to get device context");
@@ -433,8 +453,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   // the originals on some other thread.
   // Important but subtle note: base::Bind will copy |config_| since it's a
   // const ref.
-  impl_.Post(FROM_HERE, &D3D11VideoDecoderImpl::Initialize,
-             BindToCurrentLoop(std::move(impl_init_cb)));
+  impl_.AsyncCall(&D3D11VideoDecoderImpl::Initialize)
+      .WithArgs(BindToCurrentLoop(std::move(impl_init_cb)));
 }
 
 void D3D11VideoDecoder::AddLifetimeProgressionStage(
@@ -537,7 +557,7 @@ void D3D11VideoDecoder::DoDecode() {
       current_buffer_ = nullptr;
       if (!accelerated_video_decoder_->Flush()) {
         // This will also signal error |current_decode_cb_|.
-        NotifyError("Flush failed");
+        NotifyError(StatusCode::kAcceleratorFlushFailed);
         return;
       }
       // Pictures out output synchronously during Flush.  Signal the decode
@@ -593,6 +613,7 @@ void D3D11VideoDecoder::DoDecode() {
       // Otherwise, stop here.  We'll restart when a picture comes back.
       if (picture_buffers_.size())
         return;
+
       CreatePictureBuffers();
     } else if (result == media::AcceleratedVideoDecoder::kConfigChange) {
       // Before the first frame, we get a config change that we should ignore.
@@ -601,10 +622,12 @@ void D3D11VideoDecoder::DoDecode() {
       // don't, so that init can fail rather than decoding if there's a problem
       // creating it.  We could also unconditionally re-allocate the decoder,
       // but we keep it if it's ready to go.
+      const auto new_bit_depth = accelerated_video_decoder_->GetBitDepth();
       const auto new_profile = accelerated_video_decoder_->GetProfile();
       const auto new_coded_size = accelerated_video_decoder_->GetPicSize();
       if (new_profile == config_.profile() &&
-          new_coded_size == config_.coded_size()) {
+          new_coded_size == config_.coded_size() &&
+          new_bit_depth == bit_depth_ && !picture_buffers_.size()) {
         continue;
       }
 
@@ -622,20 +645,21 @@ void D3D11VideoDecoder::DoDecode() {
       // accelerated decoder asked for any.
       auto video_decoder_or_error = CreateD3D11Decoder();
       if (video_decoder_or_error.has_error()) {
-        NotifyError(video_decoder_or_error.error());
+        NotifyError(std::move(video_decoder_or_error).error());
         return;
       }
       DCHECK(set_accelerator_decoder_cb_);
       set_accelerator_decoder_cb_.Run(
-          std::move(std::get<0>(video_decoder_or_error.value())));
+          std::move(video_decoder_or_error).value());
       picture_buffers_.clear();
     } else if (result == media::AcceleratedVideoDecoder::kTryAgain) {
       LOG(ERROR) << "Try again is not supported";
-      NotifyError("Try again is not supported");
+      NotifyError(StatusCode::kTryAgainNotSupported);
       return;
     } else {
-      LOG(ERROR) << "VDA Error " << result;
-      NotifyError("Accelerated decode failed");
+      std::ostringstream message;
+      message << "VDA Error " << result;
+      NotifyError(Status(StatusCode::kDecoderFailedDecode, message.str()));
       return;
     }
   }
@@ -723,9 +747,9 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
               ? 1
               : D3D11DecoderConfigurator::BUFFER_COUNT);
       if (result.has_value()) {
-        in_texture = std::move(result.value());
+        in_texture = std::move(result).value();
       } else {
-        NotifyError(std::move(result.error()).AddHere());
+        NotifyError(std::move(result).error().AddHere());
         return;
       }
     }
@@ -842,7 +866,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   frame->SetReleaseMailboxCB(
       base::BindOnce(release_mailbox_cb_, std::move(wait_complete_cb)));
 
-  frame->metadata()->power_efficient = true;
+  frame->metadata().power_efficient = true;
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note
   // that ALLOW_OVERLAY is required for encrypted video path.
@@ -857,7 +881,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // presenter decide if it wants to.
   const bool allow_overlay =
       base::FeatureList::IsEnabled(kD3D11VideoDecoderAllowOverlay);
-  frame->metadata()->allow_overlay = allow_overlay;
+  frame->metadata().allow_overlay = allow_overlay;
 
   frame->set_color_space(output_color_space);
   frame->set_hdr_metadata(config_.hdr_metadata());
@@ -878,13 +902,19 @@ void D3D11VideoDecoder::NotifyError(const Status& reason) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::NotifyError");
   state_ = State::kError;
 
-  // TODO(tmathmeyer) - Remove this after plumbing Status through the
-  // decode_cb and input_buffer_queue cb's.
-  MEDIA_LOG(ERROR, media_log_)
-      << "D3D11VideoDecoder error: " << std::hex << reason.code();
+  // Log why this failed.
+  base::UmaHistogramSparse("Media.D3D11.NotifyErrorStatus",
+                           static_cast<int>(reason.code()));
 
-  if (init_cb_)
+  if (init_cb_) {
     std::move(init_cb_).Run(reason);
+  } else {
+    // TODO(tmathmeyer) - Remove this after plumbing Status through the
+    // decode_cb and input_buffer_queue cb's.
+    // Let the init handler set the error string if this is an init failure.
+    MEDIA_LOG(ERROR, media_log_) << "D3D11VideoDecoder error: 0x" << std::hex
+                                 << reason.code() << reason.message();
+  }
 
   current_buffer_ = nullptr;
   if (current_decode_cb_)
@@ -955,8 +985,10 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     return {};
   }
 
-  const auto supported_resolutions =
-      GetSupportedD3D11VideoDecoderResolutions(d3d11_device, gpu_workarounds);
+  const auto supported_resolutions = GetSupportedD3D11VideoDecoderResolutions(
+      d3d11_device, gpu_workarounds,
+      base::FeatureList::IsEnabled(kD3D11VideoDecoderAV1) &&
+          !gpu_workarounds.disable_accelerated_av1_decode_d3d11);
 
   std::vector<SupportedVideoDecoderConfig> configs;
   for (const auto& kv : supported_resolutions) {
@@ -966,11 +998,9 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
       continue;
     }
 
-    // TODO(liberato): Add VP8 and AV1 support to D3D11VideoDecoder.
-    if (profile == VP8PROFILE_ANY ||
-        (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX)) {
+    // TODO(liberato): Add VP8 support to D3D11VideoDecoder.
+    if (profile == VP8PROFILE_ANY)
       continue;
-    }
 
     const auto& resolution_range = kv.second;
     configs.emplace_back(profile, profile, resolution_range.min_resolution,

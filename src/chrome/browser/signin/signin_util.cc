@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_internal.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,6 +171,15 @@ void SetForceSigninPolicy(bool enable) {
 
 }  // namespace
 
+ScopedForceSigninSetterForTesting::ScopedForceSigninSetterForTesting(
+    bool enable) {
+  SetForceSigninForTesting(enable);  // IN-TEST
+}
+
+ScopedForceSigninSetterForTesting::~ScopedForceSigninSetterForTesting() {
+  ResetForceSigninForTesting();  // IN-TEST
+}
+
 bool IsForceSigninEnabled() {
   if (g_is_force_signin_enabled_cache == NOT_CACHED) {
     PrefService* prefs = g_browser_process->local_state();
@@ -211,12 +221,13 @@ void SetUserSignoutAllowedForProfile(Profile* profile, bool is_allowed) {
 void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
 // All primary accounts are allowed on ChromeOS, so this method is a no-op on
 // ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager->HasPrimaryAccount())
+  if (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync))
     return;
 
-  CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo primary_account =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
   if (profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) &&
       signin::IsUsernameAllowedByPatternFromPrefs(
           g_browser_process->local_state(), primary_account.email)) {
@@ -235,7 +246,6 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
       auto* primary_account_mutator =
           identity_manager->GetPrimaryAccountMutator();
       primary_account_mutator->ClearPrimaryAccount(
-          signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       break;
@@ -257,7 +267,7 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
 #endif  // defined(CAN_DELETE_PROFILE)
       break;
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // TODO(crbug.com/1134111): Remove GuestSignedInUserData when Ephemeral Guest

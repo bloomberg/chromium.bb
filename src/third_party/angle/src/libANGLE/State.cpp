@@ -347,7 +347,6 @@ State::State(const State *shareContextState,
       mProvokingVertex(gl::ProvokingVertexConvention::LastVertexConvention),
       mVertexArray(nullptr),
       mActiveSampler(0),
-      mTexturesIncompatibleWithSamplers(0),
       mValidAtomicCounterBufferCount(0),
       mPrimitiveRestart(false),
       mDebug(debug),
@@ -358,6 +357,7 @@ State::State(const State *shareContextState,
       mProgramBinaryCacheEnabled(programBinaryCacheEnabled),
       mTextureRectangleEnabled(true),
       mMaxShaderCompilerThreads(std::numeric_limits<GLuint>::max()),
+      mPatchVertices(3),
       mOverlay(overlay),
       mNoSimultaneousConstantColorAndAlphaBlendFunc(false)
 {}
@@ -414,6 +414,9 @@ void State::initialize(Context *context)
     mViewport.height = 0;
     mNearZ           = 0.0f;
     mFarZ            = 1.0f;
+
+    mClipControlOrigin = GL_LOWER_LEFT_EXT;
+    mClipControlDepth  = GL_NEGATIVE_ONE_TO_ONE_EXT;
 
     mActiveSampler = 0;
 
@@ -585,7 +588,7 @@ void State::reset(const Context *context)
     setAllDirtyBits();
 }
 
-ANGLE_INLINE void State::unsetActiveTextures(ActiveTextureMask textureMask)
+ANGLE_INLINE void State::unsetActiveTextures(const ActiveTextureMask &textureMask)
 {
     // Unset any relevant bound textures.
     for (size_t textureIndex : textureMask)
@@ -636,12 +639,21 @@ ANGLE_INLINE void State::setActiveTextureDirty(size_t textureIndex, Texture *tex
     // If we defer the update until syncState it's too late and we've already passed validation.
     if (texture && mExecutable)
     {
-        const Sampler *sampler = mSamplers[textureIndex].get();
-        const SamplerState &samplerState =
-            sampler ? sampler->getSamplerState() : texture->getSamplerState();
+        // It is invalid to try to sample a non-yuv texture with a yuv sampler.
         mTexturesIncompatibleWithSamplers[textureIndex] =
-            !texture->getTextureState().compatibleWithSamplerFormat(
-                mExecutable->getSamplerFormatForTextureUnitIndex(textureIndex), samplerState);
+            mExecutable->getActiveYUVSamplers().test(textureIndex) && !texture->isYUV();
+
+        if (isWebGL())
+        {
+            const Sampler *sampler = mSamplers[textureIndex].get();
+            const SamplerState &samplerState =
+                sampler ? sampler->getSamplerState() : texture->getSamplerState();
+            if (!texture->getTextureState().compatibleWithSamplerFormatForWebGL(
+                    mExecutable->getSamplerFormatForTextureUnitIndex(textureIndex), samplerState))
+            {
+                mTexturesIncompatibleWithSamplers[textureIndex] = true;
+            }
+        }
     }
     else
     {
@@ -745,26 +757,38 @@ void State::setDepthMask(bool mask)
 
 void State::setRasterizerDiscard(bool enabled)
 {
-    mRasterizer.rasterizerDiscard = enabled;
-    mDirtyBits.set(DIRTY_BIT_RASTERIZER_DISCARD_ENABLED);
+    if (mRasterizer.rasterizerDiscard != enabled)
+    {
+        mRasterizer.rasterizerDiscard = enabled;
+        mDirtyBits.set(DIRTY_BIT_RASTERIZER_DISCARD_ENABLED);
+    }
 }
 
 void State::setCullFace(bool enabled)
 {
-    mRasterizer.cullFace = enabled;
-    mDirtyBits.set(DIRTY_BIT_CULL_FACE_ENABLED);
+    if (mRasterizer.cullFace != enabled)
+    {
+        mRasterizer.cullFace = enabled;
+        mDirtyBits.set(DIRTY_BIT_CULL_FACE_ENABLED);
+    }
 }
 
 void State::setCullMode(CullFaceMode mode)
 {
-    mRasterizer.cullMode = mode;
-    mDirtyBits.set(DIRTY_BIT_CULL_FACE);
+    if (mRasterizer.cullMode != mode)
+    {
+        mRasterizer.cullMode = mode;
+        mDirtyBits.set(DIRTY_BIT_CULL_FACE);
+    }
 }
 
 void State::setFrontFace(GLenum front)
 {
-    mRasterizer.frontFace = front;
-    mDirtyBits.set(DIRTY_BIT_FRONT_FACE);
+    if (mRasterizer.frontFace != front)
+    {
+        mRasterizer.frontFace = front;
+        mDirtyBits.set(DIRTY_BIT_FRONT_FACE);
+    }
 }
 
 void State::setDepthTest(bool enabled)
@@ -792,6 +816,28 @@ void State::setDepthRange(float zNear, float zFar)
         mNearZ = zNear;
         mFarZ  = zFar;
         mDirtyBits.set(DIRTY_BIT_DEPTH_RANGE);
+    }
+}
+
+void State::setClipControl(GLenum origin, GLenum depth)
+{
+    bool updated = false;
+    if (mClipControlOrigin != origin)
+    {
+        mClipControlOrigin = origin;
+        updated            = true;
+    }
+
+    if (mClipControlDepth != depth)
+    {
+        mClipControlDepth = depth;
+        updated           = true;
+    }
+
+    if (updated)
+    {
+        mDirtyBits.set(DIRTY_BIT_EXTENDED);
+        mExtendedDirtyBits.set(EXTENDED_DIRTY_BIT_CLIP_CONTROL);
     }
 }
 
@@ -981,8 +1027,11 @@ void State::setStencilBackOperations(GLenum stencilBackFail,
 
 void State::setPolygonOffsetFill(bool enabled)
 {
-    mRasterizer.polygonOffsetFill = enabled;
-    mDirtyBits.set(DIRTY_BIT_POLYGON_OFFSET_FILL_ENABLED);
+    if (mRasterizer.polygonOffsetFill != enabled)
+    {
+        mRasterizer.polygonOffsetFill = enabled;
+        mDirtyBits.set(DIRTY_BIT_POLYGON_OFFSET_FILL_ENABLED);
+    }
 }
 
 void State::setPolygonOffsetParams(GLfloat factor, GLfloat units)
@@ -995,14 +1044,20 @@ void State::setPolygonOffsetParams(GLfloat factor, GLfloat units)
 
 void State::setSampleAlphaToCoverage(bool enabled)
 {
-    mSampleAlphaToCoverage = enabled;
-    mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_COVERAGE_ENABLED);
+    if (mSampleAlphaToCoverage != enabled)
+    {
+        mSampleAlphaToCoverage = enabled;
+        mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_COVERAGE_ENABLED);
+    }
 }
 
 void State::setSampleCoverage(bool enabled)
 {
-    mSampleCoverage = enabled;
-    mDirtyBits.set(DIRTY_BIT_SAMPLE_COVERAGE_ENABLED);
+    if (mSampleCoverage != enabled)
+    {
+        mSampleCoverage = enabled;
+        mDirtyBits.set(DIRTY_BIT_SAMPLE_COVERAGE_ENABLED);
+    }
 }
 
 void State::setSampleCoverageParams(GLclampf value, bool invert)
@@ -1014,8 +1069,11 @@ void State::setSampleCoverageParams(GLclampf value, bool invert)
 
 void State::setSampleMaskEnabled(bool enabled)
 {
-    mSampleMask = enabled;
-    mDirtyBits.set(DIRTY_BIT_SAMPLE_MASK_ENABLED);
+    if (mSampleMask != enabled)
+    {
+        mSampleMask = enabled;
+        mDirtyBits.set(DIRTY_BIT_SAMPLE_MASK_ENABLED);
+    }
 }
 
 void State::setSampleMaskParams(GLuint maskNumber, GLbitfield mask)
@@ -1028,21 +1086,30 @@ void State::setSampleMaskParams(GLuint maskNumber, GLbitfield mask)
 
 void State::setSampleAlphaToOne(bool enabled)
 {
-    mSampleAlphaToOne = enabled;
-    mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_ONE);
+    if (mSampleAlphaToOne != enabled)
+    {
+        mSampleAlphaToOne = enabled;
+        mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_ONE);
+    }
 }
 
 void State::setMultisampling(bool enabled)
 {
-    mMultiSampling = enabled;
-    mDirtyBits.set(DIRTY_BIT_MULTISAMPLING);
+    if (mMultiSampling != enabled)
+    {
+        mMultiSampling = enabled;
+        mDirtyBits.set(DIRTY_BIT_MULTISAMPLING);
+    }
 }
 
 void State::setSampleShading(bool enabled)
 {
-    mIsSampleShadingEnabled = enabled;
-    mMinSampleShading       = (enabled) ? 1.0f : mMinSampleShading;
-    mDirtyBits.set(DIRTY_BIT_SAMPLE_SHADING);
+    if (mIsSampleShadingEnabled != enabled)
+    {
+        mIsSampleShadingEnabled = enabled;
+        mMinSampleShading       = (enabled) ? 1.0f : mMinSampleShading;
+        mDirtyBits.set(DIRTY_BIT_SAMPLE_SHADING);
+    }
 }
 
 void State::setMinSampleShading(float value)
@@ -1080,14 +1147,20 @@ void State::setScissorParams(GLint x, GLint y, GLsizei width, GLsizei height)
 
 void State::setDither(bool enabled)
 {
-    mRasterizer.dither = enabled;
-    mDirtyBits.set(DIRTY_BIT_DITHER_ENABLED);
+    if (mRasterizer.dither != enabled)
+    {
+        mRasterizer.dither = enabled;
+        mDirtyBits.set(DIRTY_BIT_DITHER_ENABLED);
+    }
 }
 
 void State::setPrimitiveRestart(bool enabled)
 {
-    mPrimitiveRestart = enabled;
-    mDirtyBits.set(DIRTY_BIT_PRIMITIVE_RESTART_ENABLED);
+    if (mPrimitiveRestart != enabled)
+    {
+        mPrimitiveRestart = enabled;
+        mDirtyBits.set(DIRTY_BIT_PRIMITIVE_RESTART_ENABLED);
+    }
 }
 
 void State::setClipDistanceEnable(int idx, bool enable)
@@ -1102,6 +1175,7 @@ void State::setClipDistanceEnable(int idx, bool enable)
     }
 
     mDirtyBits.set(DIRTY_BIT_EXTENDED);
+    mExtendedDirtyBits.set(EXTENDED_DIRTY_BIT_CLIP_DISTANCES);
 }
 
 void State::setEnableFeature(GLenum feature, bool enabled)
@@ -1411,6 +1485,7 @@ void State::setGenerateMipmapHint(GLenum hint)
 {
     mGenerateMipmapHint = hint;
     mDirtyBits.set(DIRTY_BIT_EXTENDED);
+    mExtendedDirtyBits.set(EXTENDED_DIRTY_BIT_MIPMAP_GENERATION_HINT);
 }
 
 GLenum State::getGenerateMipmapHint() const
@@ -1434,6 +1509,7 @@ void State::setFragmentShaderDerivativeHint(GLenum hint)
 {
     mFragmentShaderDerivativeHint = hint;
     mDirtyBits.set(DIRTY_BIT_EXTENDED);
+    mExtendedDirtyBits.set(EXTENDED_DIRTY_BIT_SHADER_DERIVATIVE_HINT);
     // TODO: Propagate the hint to shader translator so we can write
     // ddx, ddx_coarse, or ddx_fine depending on the hint.
     // Ignore for now. It is valid for implementations to ignore hint.
@@ -1677,6 +1753,11 @@ Framebuffer *State::getTargetFramebuffer(GLenum target) const
             UNREACHABLE();
             return nullptr;
     }
+}
+
+Framebuffer *State::getDefaultFramebuffer() const
+{
+    return mFramebufferManager->getDefaultFramebuffer();
 }
 
 bool State::removeReadFramebufferBinding(FramebufferID framebuffer)
@@ -2179,19 +2260,34 @@ void State::setUnpackSkipPixels(GLint skipPixels)
 
 void State::setCoverageModulation(GLenum components)
 {
-    mCoverageModulation = components;
-    mDirtyBits.set(DIRTY_BIT_COVERAGE_MODULATION);
+    if (mCoverageModulation != components)
+    {
+        mCoverageModulation = components;
+        mDirtyBits.set(DIRTY_BIT_COVERAGE_MODULATION);
+    }
 }
 
 void State::setFramebufferSRGB(bool sRGB)
 {
-    mFramebufferSRGB = sRGB;
-    mDirtyBits.set(DIRTY_BIT_FRAMEBUFFER_SRGB);
+    if (mFramebufferSRGB != sRGB)
+    {
+        mFramebufferSRGB = sRGB;
+        mDirtyBits.set(DIRTY_BIT_FRAMEBUFFER_SRGB);
+    }
 }
 
 void State::setMaxShaderCompilerThreads(GLuint count)
 {
     mMaxShaderCompilerThreads = count;
+}
+
+void State::setPatchVertices(GLuint value)
+{
+    if (mPatchVertices != value)
+    {
+        mPatchVertices = value;
+        mDirtyBits.set(DIRTY_BIT_PATCH_VERTICES);
+    }
 }
 
 void State::getBooleanv(GLenum pname, GLboolean *params) const
@@ -2293,6 +2389,19 @@ void State::getBooleanv(GLenum pname, GLboolean *params) const
             break;
         case GL_SAMPLE_SHADING:
             *params = mIsSampleShadingEnabled;
+            break;
+        case GL_PRIMITIVE_RESTART_FOR_PATCHES_SUPPORTED:
+            *params = isPrimitiveRestartEnabled() && getExtensions().tessellationShaderEXT;
+            break;
+        // 2.2.2 Data Conversions For State Query Commands, in GLES 3.2 spec.
+        // If a command returning boolean data is called, such as GetBooleanv, a floating-point or
+        // integer value converts to FALSE if and only if it is zero. Otherwise it converts to TRUE.
+        // GL_EXT_clip_control
+        case GL_CLIP_ORIGIN_EXT:
+            *params = GL_TRUE;
+            break;
+        case GL_CLIP_DEPTH_MODE_EXT:
+            *params = GL_TRUE;
             break;
         default:
             UNREACHABLE();
@@ -2409,6 +2518,15 @@ void State::getFloatv(GLenum pname, GLfloat *params) const
             break;
         case GL_MIN_SAMPLE_SHADING_VALUE:
             *params = mMinSampleShading;
+            break;
+        // 2.2.2 Data Conversions For State Query Commands, in GLES 3.2 spec.
+        // If a command returning floating-point data is called, such as GetFloatv, ... An integer
+        // value is coerced to floating-point.
+        case GL_CLIP_ORIGIN_EXT:
+            *params = static_cast<float>(mClipControlOrigin);
+            break;
+        case GL_CLIP_DEPTH_MODE_EXT:
+            *params = static_cast<float>(mClipControlDepth);
             break;
         default:
             UNREACHABLE();
@@ -2872,7 +2990,17 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
             }
             break;
         }
+        case GL_PATCH_VERTICES:
+            *params = mPatchVertices;
+            break;
 
+        // GL_EXT_clip_control
+        case GL_CLIP_ORIGIN_EXT:
+            *params = mClipControlOrigin;
+            break;
+        case GL_CLIP_DEPTH_MODE_EXT:
+            *params = mClipControlDepth;
+            break;
         default:
             UNREACHABLE();
             break;
@@ -3497,6 +3625,13 @@ AttributesMask State::getAndResetDirtyCurrentValues() const
 {
     AttributesMask retVal = mDirtyCurrentValues;
     mDirtyCurrentValues.reset();
+    return retVal;
+}
+
+State::ExtendedDirtyBits State::getAndResetExtendedDirtyBits() const
+{
+    ExtendedDirtyBits retVal = mExtendedDirtyBits;
+    mExtendedDirtyBits.reset();
     return retVal;
 }
 

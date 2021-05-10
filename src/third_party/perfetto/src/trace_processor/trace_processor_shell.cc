@@ -32,9 +32,12 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/base/time.h"
 #include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/getopt.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/string_splitter.h"
 #include "perfetto/ext/base/string_utils.h"
+#include "perfetto/ext/base/version.h"
+
 #include "perfetto/trace_processor/read_trace.h"
 #include "perfetto/trace_processor/trace_processor.h"
 #include "src/trace_processor/metrics/chrome/all_chrome_metrics.descriptor.h"
@@ -45,7 +48,7 @@
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_HTTPD)
 #include "src/trace_processor/rpc/httpd.h"
 #endif
-
+#include "src/profiling/deobfuscator.h"
 #include "src/profiling/symbolizer/local_symbolizer.h"
 #include "src/profiling/symbolizer/symbolize_database.h"
 #include "src/profiling/symbolizer/symbolizer.h"
@@ -64,21 +67,20 @@
 #include <sys/types.h>
 #endif
 
-#if PERFETTO_BUILDFLAG(PERFETTO_VERSION_GEN)
-#include "perfetto_version.gen.h"
-#else
-#define PERFETTO_GET_GIT_REVISION() "unknown"
-#endif
-
 #if PERFETTO_HAS_SIGNAL_H()
 #include <signal.h>
 #endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+#include <io.h>
 #define ftruncate _chsize
 #else
 #include <dirent.h>
-#include <getopt.h>
+#endif
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_LINENOISE) && \
+    !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+#include <unistd.h>  // For getuid() in GetConfigPath().
 #endif
 
 namespace perfetto {
@@ -90,7 +92,7 @@ TraceProcessor* g_tp;
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_LINENOISE)
 
 bool EnsureDir(const std::string& path) {
-  return mkdir(path.c_str(), 0755) != -1 || errno == EEXIST;
+  return base::Mkdir(path) || errno == EEXIST;
 }
 
 bool EnsureFile(const std::string& path) {
@@ -99,8 +101,15 @@ bool EnsureFile(const std::string& path) {
 
 std::string GetConfigPath() {
   const char* homedir = getenv("HOME");
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
   if (homedir == nullptr)
     homedir = getpwuid(getuid())->pw_dir;
+#elif PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  if (homedir == nullptr)
+    homedir = getenv("USERPROFILE");
+#endif
   if (homedir == nullptr)
     return "";
   return std::string(homedir) + "/.config";
@@ -108,14 +117,14 @@ std::string GetConfigPath() {
 
 std::string GetPerfettoPath() {
   std::string config = GetConfigPath();
-  if (config == "")
+  if (config.empty())
     return "";
   return config + "/perfetto";
 }
 
 std::string GetHistoryPath() {
   std::string perfetto = GetPerfettoPath();
-  if (perfetto == "")
+  if (perfetto.empty())
     return "";
   return perfetto + "/.trace_processor_shell_history";
 }
@@ -124,7 +133,7 @@ void SetupLineEditor() {
   linenoiseSetMultiLine(true);
   linenoiseHistorySetMaxLen(1000);
 
-  bool success = GetHistoryPath() != "";
+  bool success = !GetHistoryPath().empty();
   success = success && EnsureDir(GetConfigPath());
   success = success && EnsureDir(GetPerfettoPath());
   success = success && EnsureFile(GetHistoryPath());
@@ -231,7 +240,7 @@ util::Status PrintStats() {
 }
 
 util::Status ExportTraceToDatabase(const std::string& output_name) {
-  PERFETTO_CHECK(output_name.find("'") == std::string::npos);
+  PERFETTO_CHECK(output_name.find('\'') == std::string::npos);
   {
     base::ScopedFile fd(base::OpenFile(output_name, O_CREAT | O_RDWR, 0600));
     if (!fd)
@@ -256,7 +265,7 @@ util::Status ExportTraceToDatabase(const std::string& output_name) {
       "SELECT name FROM sqlite_master WHERE type='table'");
   for (uint32_t rows = 0; tables_it.Next(); rows++) {
     std::string table_name = tables_it.Get(0).string_value;
-    PERFETTO_CHECK(table_name.find("'") == std::string::npos);
+    PERFETTO_CHECK(table_name.find('\'') == std::string::npos);
     std::string export_sql = "CREATE TABLE perfetto_export." + table_name +
                              " AS SELECT * FROM " + table_name;
 
@@ -659,63 +668,6 @@ struct CommandLineOptions {
   std::string metatrace_path;
 };
 
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-void PrintUsage(char** argv) {
-  PERFETTO_ELOG(R"(
-Interactive trace processor shell.
-Usage: %s [OPTIONS] trace_file.pb
-
-Options:
- -q, --query-file FILE                Read and execute an SQL query from a file.
-                                      If used with --run-metrics, the query is
-                                      executed after the selected metrics and
-                                      the metrics output is suppressed.
- --pre-metrics FILE                   Read and execute an SQL query from a file.
-                                      This query is executed before the selected
-                                      metrics and can't output any results.
- --run-metrics x,y,z                  Runs a comma separated list of metrics and
-                                      prints the result as a TraceMetrics proto
-                                      to stdout. The specified can either be
-                                      in-built metrics or SQL/proto files of
-                                      extension metrics.
- --metrics-output [binary|text|json]  Allows the output of --run-metrics to be
-                                      specified in either proto binary, proto
-                                      text format or JSON format (default: proto
-                                      text).)",
-                argv[0]);
-}
-
-CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
-  CommandLineOptions command_line_options;
-
-  if (argc < 2 || argc % 2 == 1) {
-    PrintUsage(argv);
-    exit(1);
-  }
-
-  for (int i = 1; i < argc - 1; i += 2) {
-    if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--query-file") == 0) {
-      command_line_options.query_file_path = argv[i + 1];
-    } else if (strcmp(argv[i], "--pre-metrics") == 0) {
-      command_line_options.pre_metrics_path = argv[i + 1];
-    } else if (strcmp(argv[i], "--run-metrics") == 0) {
-      command_line_options.metric_names = argv[i + 1];
-    } else if (strcmp(argv[i], "--metrics-output") == 0) {
-      command_line_options.metric_output = argv[i + 1];
-    } else {
-      PrintUsage(argv);
-      exit(1);
-    }
-  }
-  command_line_options.trace_file_path = argv[argc - 1];
-  command_line_options.launch_shell =
-      command_line_options.metric_names.empty() &&
-      command_line_options.query_file_path.empty();
-  return command_line_options;
-}
-
-#else  // PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-
 void PrintUsage(char** argv) {
   PERFETTO_ELOG(R"(
 Interactive trace processor shell.
@@ -774,7 +726,7 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
     OPT_HTTP_PORT,
   };
 
-  static const struct option long_options[] = {
+  static const option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
       {"version", no_argument, nullptr, 'v'},
       {"wide", no_argument, nullptr, 'W'},
@@ -793,16 +745,15 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       {nullptr, 0, nullptr, 0}};
 
   bool explicit_interactive = false;
-  int option_index = 0;
   for (;;) {
     int option =
-        getopt_long(argc, argv, "hvWiDdm:p:q:e:", long_options, &option_index);
+        getopt_long(argc, argv, "hvWiDdm:p:q:e:", long_options, nullptr);
 
     if (option == -1)
       break;  // EOF.
 
     if (option == 'v') {
-      printf("%s\n", PERFETTO_GET_GIT_REVISION());
+      printf("%s\n", base::GetVersionString());
       exit(0);
     }
 
@@ -904,8 +855,6 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
   return command_line_options;
 }
 
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-
 void ExtendPoolWithBinaryDescriptor(google::protobuf::DescriptorPool& pool,
                                     const void* data,
                                     int size) {
@@ -944,6 +893,21 @@ util::Status LoadTrace(const std::string& trace_file_path, double* size_mb) {
           }
         });
     g_tp->NotifyEndOfFile();
+  }
+
+  auto maybe_map = profiling::GetPerfettoProguardMapPath();
+  if (!maybe_map.empty()) {
+    profiling::ReadProguardMapsToDeobfuscationPackets(
+        maybe_map, [](const std::string& trace_proto) {
+          std::unique_ptr<uint8_t[]> buf(new uint8_t[trace_proto.size()]);
+          memcpy(buf.get(), trace_proto.data(), trace_proto.size());
+          auto status = g_tp->Parse(std::move(buf), trace_proto.size());
+          if (!status.ok()) {
+            PERFETTO_DFATAL_OR_ELOG("Failed to parse: %s",
+                                    status.message().c_str());
+            return;
+          }
+        });
   }
   return util::OkStatus();
 }
@@ -993,7 +957,7 @@ util::Status RunMetrics(const CommandLineOptions& options) {
     const std::string& metric_or_path = metrics[i];
 
     // If there is no extension, we assume it is a builtin metric.
-    auto ext_idx = metric_or_path.rfind(".");
+    auto ext_idx = metric_or_path.rfind('.');
     if (ext_idx == std::string::npos)
       continue;
 

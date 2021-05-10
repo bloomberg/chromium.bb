@@ -11,10 +11,10 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/proto/record.pb.h"
+#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/statusor.h"
 
 namespace reporting {
 
@@ -22,13 +22,20 @@ namespace reporting {
 class UploadClient {
  public:
   // ReportSuccessfulUploadCallback is used to pass server responses back to
-  // the owner of |this|.
+  // the owner of |this| (the respone consists of sequencing information and
+  // forceConfirm flag).
   using ReportSuccessfulUploadCallback =
-      base::RepeatingCallback<void(SequencingInformation)>;
+      DmServerUploadService::ReportSuccessfulUploadCallback;
+
+  // ReceivedEncryptionKeyCallback is called if server attached encryption key
+  // to the response.
+  using EncryptionKeyAttachedCallback =
+      base::RepeatingCallback<void(SignedEncryptionInfo)>;
 
   static void Create(
-      std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client,
+      policy::CloudPolicyClient* cloud_policy_client,
       ReportSuccessfulUploadCallback report_upload_success_cb,
+      EncryptionKeyAttachedCallback encryption_key_attached_cb,
       base::OnceCallback<void(StatusOr<std::unique_ptr<UploadClient>>)>
           created_cb);
 
@@ -36,7 +43,8 @@ class UploadClient {
   UploadClient(const UploadClient& other) = delete;
   UploadClient& operator=(const UploadClient& other) = delete;
 
-  Status EnqueueUpload(std::unique_ptr<std::vector<EncryptedRecord>> record);
+  Status EnqueueUpload(bool need_encryption_keys,
+                       std::unique_ptr<std::vector<EncryptedRecord>> record);
 
  private:
   UploadClient();

@@ -390,7 +390,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void DidChangeGlobalRootScroller() override;
 
-  void UpdateAfterStyleChange(const ComputedStyle*);
+  void UpdateAfterStyleChange(const ComputedStyle* old_style);
   void UpdateAfterOverflowRecalc();
 
   bool HasScrollbar() const {
@@ -684,8 +684,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect CornerRect() const;
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-
-  bool HasNonCompositedStickyDescendants() const;
 
   IntSize PixelSnappedBorderBoxSize() const;
 

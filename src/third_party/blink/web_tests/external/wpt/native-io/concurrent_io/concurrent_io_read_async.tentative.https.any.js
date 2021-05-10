@@ -2,6 +2,7 @@
 // META: global=window,worker
 // META: script=operation_helpers.js
 // META: script=../resources/support.js
+// META: timeout=long
 
 'use strict';
 
@@ -9,6 +10,8 @@
 
 for (let op of kOperations) {
   promise_test(async testCase => {
+    await reserveAndCleanupCapacity(testCase);
+
     const file = await createFile(testCase, 'read_file');
 
     const readSharedArrayBuffer = new SharedArrayBuffer(4);

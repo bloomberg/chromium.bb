@@ -69,6 +69,20 @@ class MhtmlArchive {
     content_ += "\n--MHTML_BOUNDARY\n" + content;
   }
 
+  void AddResource(const GURL& url,
+                   const std::string mime_type,
+                   const std::string headers,
+                   const std::string body) {
+    const char* document_template =
+        "Content-Type: $1\n"
+        "Content-Location: $2\n"
+        "$3"
+        "\n"
+        "$4";
+    AddResource(base::ReplaceStringPlaceholders(
+        document_template, {mime_type, url.spec(), headers, body}, nullptr));
+  }
+
   void AddHtmlDocument(const GURL& url,
                        const std::string headers,
                        const std::string body) {
@@ -208,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlNotFound) {
             sub_document->GetLastCommittedURL());
 
   EXPECT_TRUE(main_document->is_mhtml_document());
-  EXPECT_FALSE(sub_document->is_mhtml_document());  // Served from data-url.
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
@@ -237,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlFound) {
             sub_document->GetLastCommittedURL());
 
   EXPECT_TRUE(main_document->is_mhtml_document());
-  EXPECT_FALSE(sub_document->is_mhtml_document());  // Served from data-url.
+  EXPECT_TRUE(sub_document->is_mhtml_document());
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
@@ -529,6 +543,41 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, CspFrameAncestor) {
   ASSERT_EQ(1u, sub_document->child_count());
 }
 
+// Tests CSP embedded enforcement blocking an iframes.
+// Regression test for https://crbug.com/1112965
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, CSPEmbeddedEnforcement) {
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://a.com"),
+      "<iframe csp=\"sandbox\" src=\"http://a.com/\"></iframe>"
+      "<iframe csp=\"sandbox\" src=\"http://b.com/\"></iframe>"
+      "<iframe csp=\"sandbox\" src=\"http://b.com/allow\"></iframe>");
+  mhtml_archive.AddHtmlDocument(GURL("http://a.com/"), "");
+  mhtml_archive.AddHtmlDocument(GURL("http://b.com/"), "");
+  mhtml_archive.AddHtmlDocument(GURL("http://b.com/allow"), "Allow-CSP-From: *",
+                                "");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  RenderFrameHostImpl* main_document = main_frame_host();
+  ASSERT_EQ(3u, main_document->child_count());
+  RenderFrameHostImpl* rfh_1 = main_document->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_2 = main_document->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_3 = main_document->child_at(0)->current_frame_host();
+
+  // Same-origin without Allow-CSP-From:* => response allowed.
+  EXPECT_FALSE(rfh_1->is_error_page());
+
+  // Cross-origin without Allow-CSP-From:* => response blocked;
+  // TODO(https://crbug.com/1112965) Add support for CSPEE in MHTML documents.
+  // An error page should be displayed here.
+  EXPECT_FALSE(rfh_2->is_error_page());
+
+  // Cross-origin with Allow-CSP-From:* => response allowed.
+  EXPECT_FALSE(rfh_3->is_error_page());
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
                        SameDocumentNavigationWhileLoading) {
   // Load a MHTML archive normally so there's a renderer process for file://.
@@ -562,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
   mojo::ScopedDataPipeConsumerHandle consumer;
   mojo::ScopedDataPipeProducerHandle producer;
   ASSERT_EQ(MOJO_RESULT_OK,
-            mojo::CreateDataPipe(/* options */ nullptr, &producer, &consumer));
+            mojo::CreateDataPipe(/* options */ nullptr, producer, consumer));
   using std::swap;
   swap(request->mutable_response_body_for_testing(), consumer);
 
@@ -674,6 +723,58 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, SandboxedIframe) {
   EXPECT_EQ(default_mhtml_sandbox, rfh_main->active_sandbox_flags());
   EXPECT_EQ(default_mhtml_sandbox, rfh_unsandboxed->active_sandbox_flags());
   EXPECT_EQ(strict_sandbox, rfh_sandboxed->active_sandbox_flags());
+}
+
+// Regression test for https://crbug.com/1155862.
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, DataIframe) {
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://127.0.0.1/starte.html"), "",
+      R"( <iframe src="http://8.8.8.8/test.html"></iframe>
+          <iframe src="data:text/html,blah1"></iframe>
+          <iframe src="about:blank?foo=123"></iframe> )");
+  mhtml_archive.AddHtmlDocument(GURL("http://8.8.8.8/test.html"), "", R"(
+          <iframe src="data:text/html,blah2"></iframe>
+          <iframe src="about:blank?foo=123"></iframe> )");
+  mhtml_archive.AddHtmlDocument(GURL("about:blank?foo=123"), "", "foo");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+
+  // The main test verification is that the navigation below succeeds (without
+  // crashing in NavigationRequest::GetOriginForURLLoaderFactory).
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  // All MHTML frames should have an opaque origin.
+  for (RenderFrameHost* frame : shell()->web_contents()->GetAllFrames()) {
+    EXPECT_TRUE(frame->GetLastCommittedOrigin().opaque())
+        << "frame->GetLastCommittedURL() = " << frame->GetLastCommittedURL();
+  }
+}
+
+// Regression test for https://crbug.com/1168249.
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, PreloadedTextTrack) {
+  // The test uses a cross-site subframe, so any HTTP requests that reach the
+  // NetworkService will have `network::ResourceRequest::request_initiator` with
+  // a tuple (or precursor tuple in case of opaque origins expected for MHTML
+  // documents) that is incompatible with `request_initiator_origin_lock` in
+  // `network::mojom::URLLoaderFactoryParams`.
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://main.com/main.html"), "",
+      R"( <iframe src="http://subframe.com/subframe.html"></iframe> )");
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://subframe.com/subframe.html"), "",
+      R"( <link rel="preload" href="http://resource.com/track" as="track"> )");
+  mhtml_archive.AddResource(GURL("http://resource.com/track"), "text/vtt", "",
+                            "fake text track body");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  // The main verification is that ResourceFetcher::StartLoad didn't reach
+  // NOTREACHED assertion (against HTTP resource loads triggered from MHTML
+  // documents). To detect such NOTREACHED (via renderer crash) it is sufficient
+  // for the test to wait for DidStopLoading notification (which is done
+  // underneath NavigateToURL called above).
 }
 
 }  // namespace content

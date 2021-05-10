@@ -1,7 +1,7 @@
 ## Permissions Policy Guide (Previously Feature Policy)
 Permissions policy is the new name for feature policy with a new HTTP header which uses [structured header](https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html) syntax. Code currently under feature_policy directory in chromium repository has not been renamed yet.
 
-### How to add a new feature to permissions poy
+### How to add a new feature to permissions policy
 
 Permissions policy (see [spec](https://w3c.github.io/webappsec-permissions-policy/)) is a
 mechanism that allows developers to selectively enable and disable various
@@ -54,7 +54,10 @@ placing any runtime-enabled feature or origin trial dependencies in its "depends
 described in the file's comments.
 
 2. Append the new feature enum with a brief description as well in
-`third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom`
+`third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom`.
+
+3. Append the new feature name to `PermissionsPolicyFeature` enum in
+`third_party/blink/public/devtools_protocol/browser_protocol.pdl`.
 
 ##### Integrate the feature behaviour with permissions policy
 1. The most common way to check if features are enabled is `ExecutionContext::IsFeatureEnabled`.

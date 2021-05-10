@@ -55,7 +55,8 @@ class PresenterImageGL : public OutputPresenter::Image {
 
   void BeginPresent() final;
   void EndPresent() final;
-  int present_count() const final;
+  int GetPresentCount() const final;
+  void OnContextLost() final;
 
   gl::GLImage* GetGLImage(std::unique_ptr<gfx::GpuFence>* fence);
 
@@ -94,11 +95,13 @@ bool PresenterImageGL::Initialize(
   overlay_representation_ = representation_factory->ProduceOverlay(mailbox);
 
   // If the backing doesn't support overlay, then fallback to GL.
-  if (!overlay_representation_)
+  if (!overlay_representation_) {
+    LOG(ERROR) << "ProduceOverlay() failed";
     gl_representation_ = representation_factory->ProduceGLTexture(mailbox);
+  }
 
   if (!overlay_representation_ && !gl_representation_) {
-    DLOG(ERROR) << "ProduceOverlay() and ProduceGLTexture() failed.";
+    LOG(ERROR) << "ProduceOverlay() and ProduceGLTexture() failed.";
     return false;
   }
 
@@ -136,8 +139,15 @@ void PresenterImageGL::EndPresent() {
   scoped_gl_read_access_.reset();
 }
 
-int PresenterImageGL::present_count() const {
+int PresenterImageGL::GetPresentCount() const {
   return present_count_;
+}
+
+void PresenterImageGL::OnContextLost() {
+  if (overlay_representation_)
+    overlay_representation_->OnContextLost();
+  if (gl_representation_)
+    gl_representation_->OnContextLost();
 }
 
 gl::GLImage* PresenterImageGL::GetGLImage(
@@ -236,6 +246,9 @@ void OutputPresenterGL::InitializeCapabilities(
   capabilities->supports_surfaceless = true;
   // We expect origin of buffers is at top left.
   capabilities->output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
+  // Set resize_based_on_root_surface to omit platform proposed size.
+  capabilities->resize_based_on_root_surface =
+      gl_surface_->SupportsOverridePlatformSize();
 
   // TODO(https://crbug.com/1108406): only add supported formats base on
   // platform, driver, etc.
@@ -402,6 +415,9 @@ void OutputPresenterGL::ScheduleOverlays(
           !overlay.is_opaque, TakeGpuFence(accesses[i]->TakeAcquireFences()));
     }
 #elif defined(OS_APPLE)
+    // For RenderPassDrawQuad the ddl is not nullptr, and the opacity is applied
+    // when the ddl is recorded, so the content already is with opacity applied.
+    float opacity = overlay.ddl ? 1.0 : overlay.shared_state->opacity;
     gl_surface_->ScheduleCALayer(ui::CARendererLayerParams(
         overlay.shared_state->is_clipped,
         gfx::ToEnclosingRect(overlay.shared_state->clip_rect),
@@ -409,8 +425,8 @@ void OutputPresenterGL::ScheduleOverlays(
         overlay.shared_state->sorting_context_id,
         gfx::Transform(overlay.shared_state->transform), gl_image,
         overlay.contents_rect, gfx::ToEnclosingRect(overlay.bounds_rect),
-        overlay.background_color, overlay.edge_aa_mask,
-        overlay.shared_state->opacity, overlay.filter));
+        overlay.background_color, overlay.edge_aa_mask, opacity,
+        overlay.filter));
 #endif
   }
 #endif  //  defined(OS_ANDROID) || defined(OS_APPLE) || defined(USE_OZONE)

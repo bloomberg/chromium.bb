@@ -28,6 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
@@ -91,6 +92,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -113,8 +115,8 @@
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 using content::DevToolsAgentHost;
@@ -387,9 +389,10 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
     content::PrepContentsForBeforeUnloadTest(web_contents);
   }
 
-  void RunBeforeUnloadSanityTest(bool is_docked,
-                                 base::Callback<void(void)> close_method,
-                                 bool wait_for_browser_close = true) {
+  void RunBeforeUnloadSanityTest(
+      bool is_docked,
+      base::RepeatingCallback<void(void)> close_method,
+      bool wait_for_browser_close = true) {
     OpenDevToolsWindow(kDebuggerTestPage, is_docked);
     auto runner = base::MakeRefCounted<content::MessageLoopRunner>();
     DevToolsWindowTesting::Get(window_)->
@@ -603,8 +606,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     registrar.Add(this,
                   extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                   content::NotificationService::AllSources());
-    base::CancelableClosure timeout(
-        base::Bind(&TimeoutCallback, "Extension host load timed out."));
+    base::CancelableOnceClosure timeout(
+        base::BindOnce(&TimeoutCallback, "Extension host load timed out."));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
@@ -656,8 +659,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
    public:
     WorkerCreationObserver(const std::string& path,
                            scoped_refptr<DevToolsAgentHost>* out_host,
-                           base::Closure quit)
-        : path_(path), out_host_(out_host), quit_(quit) {
+                           base::OnceClosure quit)
+        : path_(path), out_host_(out_host), quit_(std::move(quit)) {
       DevToolsAgentHost::AddObserver(this);
     }
 
@@ -670,14 +673,15 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       if (host->GetType() == DevToolsAgentHost::kTypeSharedWorker &&
           host->GetURL().path().rfind(path_) != std::string::npos) {
         *out_host_ = host;
-        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_);
+        content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                     std::move(quit_));
         delete this;
       }
     }
 
     std::string path_;
     scoped_refptr<DevToolsAgentHost>* out_host_;
-    base::Closure quit_;
+    base::OnceClosure quit_;
   };
 
   static scoped_refptr<DevToolsAgentHost> WaitForFirstSharedWorker(
@@ -711,9 +715,11 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
-  RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
-      base::Unretained(this)), false);
+  RunBeforeUnloadSanityTest(
+      true,
+      base::BindRepeating(&DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
+                          base::Unretained(this)),
+      false);
 }
 
 // Tests that BeforeUnload event gets called on docked devtools if
@@ -729,52 +735,56 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
 #endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        MAYBE_TestDockedDevToolsInspectedTabClose) {
-  RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedTab,
-      base::Unretained(this)));
+  RunBeforeUnloadSanityTest(
+      true, base::BindRepeating(&DevToolsBeforeUnloadTest::CloseInspectedTab,
+                                base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close the inspected browser.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestDockedDevToolsInspectedBrowserClose) {
-  RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
-      base::Unretained(this)));
+  RunBeforeUnloadSanityTest(
+      true,
+      base::BindRepeating(&DevToolsBeforeUnloadTest::CloseInspectedBrowser,
+                          base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
-  RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
-      base::Unretained(this)), false);
+  RunBeforeUnloadSanityTest(
+      false,
+      base::BindRepeating(&DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
+                          base::Unretained(this)),
+      false);
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close the inspected page.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedTabClose) {
-  RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedTab,
-      base::Unretained(this)));
+  RunBeforeUnloadSanityTest(
+      false, base::BindRepeating(&DevToolsBeforeUnloadTest::CloseInspectedTab,
+                                 base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close the inspected browser.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedBrowserClose) {
-  RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
-      base::Unretained(this)));
+  RunBeforeUnloadSanityTest(
+      false,
+      base::BindRepeating(&DevToolsBeforeUnloadTest::CloseInspectedBrowser,
+                          base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to exit application.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsApplicationClose) {
-  RunBeforeUnloadSanityTest(false, base::Bind(
-      &chrome::CloseAllBrowsers));
+  RunBeforeUnloadSanityTest(false,
+                            base::BindRepeating(&chrome::CloseAllBrowsers));
 }
 
 // Tests that inspected tab gets closed if devtools renderer
@@ -820,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   LoadTestPage(kDebuggerTestPage);
 
   std::vector<DevToolsWindow*> windows;
-  std::vector<std::unique_ptr<content::WindowedNotificationObserver>>
+  std::vector<std::unique_ptr<content::WebContentsDestroyedWatcher>>
       close_observers;
   content::WebContents* inspected_web_contents = GetInspectedTab();
   for (int i = 0; i < 3; ++i) {
@@ -828,11 +838,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       inspected_web_contents, i == 0);
     windows.push_back(devtools_window);
     close_observers.push_back(
-        std::make_unique<content::WindowedNotificationObserver>(
-            content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-            content::Source<content::WebContents>(
-                DevToolsWindowTesting::Get(devtools_window)
-                    ->main_web_contents())));
+        std::make_unique<content::WebContentsDestroyedWatcher>(
+            DevToolsWindowTesting::Get(devtools_window)->main_web_contents()));
     inspected_web_contents =
         DevToolsWindowTesting::Get(devtools_window)->main_web_contents();
   }
@@ -1582,8 +1589,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenLoadingDevTools) {
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on linux ARM bot: https://crbug/238453
+#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
+#elif ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(MEMORY_SANITIZER))
+// Timing out on Linux and ChromeOS MSan: https://crbug.com/1181692
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
 #else
 #define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
@@ -1648,8 +1659,13 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
     load_timing.push_end = base::TimeTicks::Now();
 
   params->client->OnReceiveResponse(std::move(response));
-  mojo::DataPipe pipe;  // The response's body is empty. The pipe is not filled.
-  params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+
+  // The response's body is empty. The pipe is not filled.
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  EXPECT_EQ(mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle),
+            MOJO_RESULT_OK);
+  params->client->OnStartLoadingResponseBody(std::move(consumer_handle));
   params->client->OnComplete(network::URLLoaderCompletionStatus());
   return true;
 }
@@ -1861,7 +1877,13 @@ class DevToolsAutoOpenerTest : public DevToolsSanityTest {
   std::unique_ptr<DevToolsWindowCreationObserver> observer_;
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
+// TODO(https://crbug.com/1167158): Flaky on debug builds.
+#if !defined(NDEBUG)
+#define MAYBE_TestAutoOpenForTabs DISABLED_TestAutoOpenForTabs
+#else
+#define MAYBE_TestAutoOpenForTabs TestAutoOpenForTabs
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, MAYBE_TestAutoOpenForTabs) {
   {
     DevToolsWindowCreationObserver observer;
     AddTabAtIndexToBrowser(browser(), 0, GURL("about:blank"),
@@ -1976,18 +1998,6 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
   CloseDevToolsWindow();
 }
 
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       InspectSharedWorkerNetworkPanel) {
-  GURL url = embedded_test_server()->GetURL(kSharedWorkerTestPage);
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  scoped_refptr<DevToolsAgentHost> host =
-      WaitForFirstSharedWorker(kSharedWorkerTestWorker);
-  OpenDevToolsWindow(host);
-  RunTestFunction(window_, "testSharedWorkerNetworkPanel");
-  CloseDevToolsWindow();
-}
-
 class DevToolsAgentHostTest : public InProcessBrowserTest {};
 
 // Tests DevToolsAgentHost retention by its target.
@@ -2017,7 +2027,7 @@ class RemoteDebuggingTest : public extensions::ExtensionApiTest {
 };
 
 // Fails on CrOS. crbug.com/431399
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_RemoteDebugger DISABLED_RemoteDebugger
 #else
 // TODO(crbug.com/997911): Flaky on all platforms.
@@ -2119,7 +2129,7 @@ class DevToolsAllowedByCommandLineSwitch : public DevToolsSanityExtensionTest {
     // literal here so it's possible to verify that the switch does not apply on
     // non-ChromeOS platforms.
     const std::string kForceDevToolsAvailableBase = "force-devtools-available";
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     ASSERT_EQ(kForceDevToolsAvailableBase,
               chromeos::switches::kForceDevToolsAvailable);
 #endif
@@ -2139,7 +2149,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 #else
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
@@ -2327,7 +2337,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
 }
 
 // Tests that OpenInNewTab filters URLs.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
+// TODO(https://crbug.com/1127051): Flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_TestOpenInNewTabFilter DISABLED_TestOpenInNewTabFilter
+#else
+#define MAYBE_TestOpenInNewTabFilter TestOpenInNewTabFilter
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestOpenInNewTabFilter) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   DevToolsUIBindings::Delegate* bindings_delegate_ =
       static_cast<DevToolsUIBindings::Delegate*>(window_);
@@ -2497,6 +2513,9 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
   ui_test_utils::WaitForBrowserToClose(browser());
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// Skip for ChromeOS because the keep alive is not created for ChromeOS.
+// See https://crbug.com/1174627.
 class KeepAliveDevToolsTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2520,18 +2539,21 @@ IN_PROC_BROWSER_TEST_F(KeepAliveDevToolsTest, KeepsAliveUntilBrowserClose) {
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::REMOTE_DEBUGGING));
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 class DevToolsPolicyTest : public InProcessBrowserTest {
  protected:
   DevToolsPolicyTest() {
-    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
-  policy::MockConfigurationPolicyProvider provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlackListedDevTools) {

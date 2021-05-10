@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace invalidation {
 
 namespace {
 
@@ -111,8 +111,8 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
 
   void AcknowledgeAll(const Topic& topic) {
     List& list = invalidations_[topic];
-    for (auto it = list.begin(); it != list.end(); ++it) {
-      it->Acknowledge();
+    for (Invalidation& invalidation : list) {
+      invalidation.Acknowledge();
     }
   }
 
@@ -431,4 +431,4 @@ TEST_F(FCMInvalidationListenerTest, ReEnableNotifications) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace invalidation

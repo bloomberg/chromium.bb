@@ -10,11 +10,15 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_notifications.h"
+#include "chrome/browser/apps/app_service/app_web_contents_data.h"
 #include "chrome/browser/apps/app_service/extension_apps_base.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/apps/app_service/media_requests.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -49,12 +53,13 @@ namespace apps {
 class ExtensionAppsChromeOs : public ExtensionAppsBase,
                               public extensions::AppWindowRegistry::Observer,
                               public ArcAppListPrefs::Observer,
-                              public NotificationDisplayService::Observer {
+                              public NotificationDisplayService::Observer,
+                              public MediaCaptureDevicesDispatcher::Observer,
+                              public AppWebContentsData::Client {
  public:
   ExtensionAppsChromeOs(
       const mojo::Remote<apps::mojom::AppService>& app_service,
       Profile* profile,
-      apps::mojom::AppType app_type,
       apps::InstanceRegistry* instance_registry);
   ~ExtensionAppsChromeOs() override;
 
@@ -77,7 +82,7 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
+                           apps::mojom::WindowInfoPtr window_info) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
@@ -104,6 +109,15 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
   void OnArcAppListPrefsDestroyed() override;
+
+  // MediaCaptureDevicesDispatcher::Observer:
+  void OnRequestUpdate(int render_process_id,
+                       int render_frame_id,
+                       blink::mojom::MediaStreamType stream_type,
+                       const content::MediaRequestState state) override;
+
+  // AppWebContentsData::Observer:
+  void OnWebContentsDestroyed(content::WebContents* contents) override;
 
   // NotificationDisplayService::Observer overrides.
   void OnNotificationDisplayed(
@@ -149,9 +163,13 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void GetMenuModelForChromeBrowserApp(apps::mojom::MenuType menu_type,
                                        GetMenuModelCallback callback);
 
-  // web_app::AppRegistrarObserver overrides.
-  void OnWebAppDisabledStateChanged(const std::string& app_id,
-                                    bool is_disabled) override;
+  content::WebContents* LaunchImpl(AppLaunchParams&& params) override;
+
+  void UpdateAppDisabledState(
+      const base::ListValue* disabled_system_features_pref,
+      int feature,
+      const std::string& app_id,
+      bool is_disabled_mode_changed);
 
   apps::InstanceRegistry* instance_registry_;
   ScopedObserver<extensions::AppWindowRegistry,
@@ -162,6 +180,11 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
 
   std::set<std::string> disabled_apps_;
 
+  // Boolean signifying whether the preferred user experience mode of disabled
+  // apps is hidden (true) or blocked (false). The value comes from user pref
+  // and is set by updating SystemDisabledMode policy.
+  bool is_disabled_apps_mode_hidden_ = false;
+
   std::map<extensions::AppWindow*, aura::Window*> app_window_to_aura_window_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
@@ -171,6 +194,12 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
 
   // Registrar used to monitor the local state prefs.
   PrefChangeRegistrar local_state_pref_change_registrar_;
+
+  base::ScopedObservation<MediaCaptureDevicesDispatcher,
+                          MediaCaptureDevicesDispatcher::Observer>
+      media_dispatcher_{this};
+
+  MediaRequests media_requests_;
 
   ScopedObserver<NotificationDisplayService,
                  NotificationDisplayService::Observer>

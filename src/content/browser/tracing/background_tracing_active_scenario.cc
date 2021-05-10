@@ -121,11 +121,13 @@ class BackgroundTracingActiveScenario::TracingSession {
   }
 
   void BeginFinalizing(base::OnceClosure on_success,
-                       base::OnceClosure on_failure) {
+                       base::OnceClosure on_failure,
+                       bool is_crash_scenario) {
     // If the finalization was already in progress, ignore this call.
     if (!tracing_session_)
       return;
-    if (!BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization()) {
+    if (!BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization(
+            is_crash_scenario)) {
       auto on_failure_cb =
           base::MakeRefCounted<base::RefCountedData<base::OnceClosure>>(
               std::move(on_failure));
@@ -241,8 +243,7 @@ class BackgroundTracingActiveScenario::TracingSession {
                       FROM_HERE,
                       base::BindOnce(
                           &BackgroundTracingActiveScenario::OnProtoDataComplete,
-                          parent_scenario,
-                          base::Passed(std::move(raw_data->data))));
+                          parent_scenario, std::move(raw_data->data)));
                 }
               });
         });
@@ -401,7 +402,8 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
       weak_ptr_factory_.GetWeakPtr(), run_callback);
 
   tracing_session_->BeginFinalizing(std::move(on_begin_finalization_success),
-                                    std::move(on_begin_finalization_failure));
+                                    std::move(on_begin_finalization_failure),
+                                    last_triggered_rule_->is_crash());
 }
 
 void BackgroundTracingActiveScenario::OnJSONDataComplete(

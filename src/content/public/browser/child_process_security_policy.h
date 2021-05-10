@@ -213,11 +213,8 @@ class ChildProcessSecurityPolicy {
   // which can happen for any origin when the --site-per-process flag is used,
   // or for isolated origins that require a dedicated process (see
   // AddIsolatedOrigin).
-  //
-  // TODO(lukasza, nasko): https://crbug.com/882053: Convert this method to take
-  // url::Origin instead of GURL (so that CanAccessDataForOrigin can verify
-  // whether precursor of opaque origins also matches the process lock).
-  virtual bool CanAccessDataForOrigin(int child_id, const GURL& url) = 0;
+  virtual bool CanAccessDataForOrigin(int child_id,
+                                      const url::Origin& origin) = 0;
 
   // Defines available sources of isolated origins.  This should be specified
   // when adding isolated origins with the AddIsolatedOrigins() call below.
@@ -327,6 +324,11 @@ class ChildProcessSecurityPolicy {
   virtual std::vector<url::Origin> GetIsolatedOrigins(
       base::Optional<IsolatedOriginSource> source = base::nullopt,
       BrowserContext* browser_context = nullptr) = 0;
+
+  // Returns whether the site of |origin| is isolated and was added by the
+  // |source| to be isolated.
+  virtual bool IsIsolatedSiteFromSource(const url::Origin& origin,
+                                        IsolatedOriginSource source) = 0;
 
   // Clears all isolated origins.  This is unsafe to use outside of testing.
   virtual void ClearIsolatedOriginsForTesting() = 0;

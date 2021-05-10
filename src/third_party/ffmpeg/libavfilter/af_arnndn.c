@@ -127,6 +127,7 @@ typedef struct DenoiseState {
     int last_period;
     float mem_hp_x[2];
     float lastg[NB_BANDS];
+    float history[FRAME_SIZE];
     RNNState rnn;
     AVTXContext *tx, *txi;
     av_tx_fn tx_fn, txi_fn;
@@ -136,6 +137,7 @@ typedef struct AudioRNNContext {
     const AVClass *class;
 
     char *model_name;
+    float mix;
 
     int channels;
     DenoiseState *st;
@@ -496,12 +498,18 @@ static void frame_analysis(AudioRNNContext *s, DenoiseState *st, AVComplexFloat 
 static void frame_synthesis(AudioRNNContext *s, DenoiseState *st, float *out, const AVComplexFloat *y)
 {
     LOCAL_ALIGNED_32(float, x, [WINDOW_SIZE]);
+    const float *src = st->history;
+    const float mix = s->mix;
+    const float imix = 1.f - FFMAX(mix, 0.f);
 
     inverse_transform(st, x, y);
     s->fdsp->vector_fmul(x, x, s->window, WINDOW_SIZE);
     s->fdsp->vector_fmac_scalar(x, st->synthesis_mem, 1.f, FRAME_SIZE);
     RNN_COPY(out, x, FRAME_SIZE);
     RNN_COPY(st->synthesis_mem, &x[FRAME_SIZE], FRAME_SIZE);
+
+    for (int n = 0; n < FRAME_SIZE; n++)
+        out[n] = out[n] * mix + src[n] * imix;
 }
 
 static inline void xcorr_kernel(const float *x, const float *y, float sum[4], int len)
@@ -1338,7 +1346,8 @@ static void compute_rnn(AudioRNNContext *s, RNNState *rnn, float *gains, float *
     compute_dense(rnn->model->denoise_output, gains, rnn->denoise_gru_state);
 }
 
-static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, const float *in)
+static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, const float *in,
+                             int disabled)
 {
     AVComplexFloat X[FREQ_SIZE];
     AVComplexFloat P[WINDOW_SIZE];
@@ -1349,6 +1358,7 @@ static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, c
     float g[NB_BANDS];
     float gf[FREQ_SIZE];
     float vad_prob = 0;
+    float *history = st->history;
     static const float a_hp[2] = {-1.99599, 0.99600};
     static const float b_hp[2] = {-2, 1};
     int silence;
@@ -1356,7 +1366,7 @@ static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, c
     biquad(x, st->mem_hp_x, in, b_hp, a_hp, FRAME_SIZE);
     silence = compute_frame_features(s, st, X, P, Ex, Ep, Exp, features, x);
 
-    if (!silence) {
+    if (!silence && !disabled) {
         compute_rnn(s, &st->rnn, g, &vad_prob, features);
         pitch_filter(X, P, Ex, Ep, Exp, g);
         for (int i = 0; i < NB_BANDS; i++) {
@@ -1375,6 +1385,7 @@ static float rnnoise_channel(AudioRNNContext *s, DenoiseState *st, float *out, c
     }
 
     frame_synthesis(s, st, out, X);
+    memcpy(history, in, FRAME_SIZE * sizeof(*history));
 
     return vad_prob;
 }
@@ -1395,7 +1406,8 @@ static int rnnoise_channels(AVFilterContext *ctx, void *arg, int jobnr, int nb_j
     for (int ch = start; ch < end; ch++) {
         rnnoise_channel(s, &s->st[ch],
                         (float *)out->extended_data[ch],
-                        (const float *)in->extended_data[ch]);
+                        (const float *)in->extended_data[ch],
+                        ctx->is_disabled);
     }
 
     return 0;
@@ -1524,6 +1536,7 @@ static const AVFilterPad outputs[] = {
 static const AVOption arnndn_options[] = {
     { "model", "set model name", OFFSET(model_name), AV_OPT_TYPE_STRING, {.str=NULL}, 0, 0, AF },
     { "m",     "set model name", OFFSET(model_name), AV_OPT_TYPE_STRING, {.str=NULL}, 0, 0, AF },
+    { "mix",   "set output vs input mix", OFFSET(mix), AV_OPT_TYPE_FLOAT, {.dbl=1.0},-1, 1, AF },
     { NULL }
 };
 
@@ -1540,5 +1553,6 @@ AVFilter ff_af_arnndn = {
     .uninit        = uninit,
     .inputs        = inputs,
     .outputs       = outputs,
-    .flags         = AVFILTER_FLAG_SLICE_THREADS,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
+                     AVFILTER_FLAG_SLICE_THREADS,
 };

@@ -172,13 +172,16 @@ bool DwarfCUToModule::FileContext::IsUnhandledInterCUReference(
 struct DwarfCUToModule::CUContext {
   CUContext(FileContext* file_context_arg, WarningReporter* reporter_arg,
             RangesHandler* ranges_handler_arg)
-      : file_context(file_context_arg),
+      : version(0),
+        file_context(file_context_arg),
         reporter(reporter_arg),
         ranges_handler(ranges_handler_arg),
         language(Language::CPlusPlus),
         low_pc(0),
         high_pc(0),
-        ranges(0) {}
+        ranges_form(dwarf2reader::DW_FORM_sec_offset),
+        ranges_data(0),
+        ranges_base(0) { }
 
   ~CUContext() {
     for (vector<Module::Function*>::iterator it = functions.begin();
@@ -186,6 +189,9 @@ struct DwarfCUToModule::CUContext {
       delete *it;
     }
   };
+
+  // Dwarf version of the source CU.
+  uint8_t version;
 
   // The DWARF-bearing file into which this CU was incorporated.
   FileContext* file_context;
@@ -200,11 +206,54 @@ struct DwarfCUToModule::CUContext {
   const Language* language;
 
   // Addresses covered by this CU. If high_pc_ is non-zero then the CU covers
-  // low_pc to high_pc, otherwise ranges is non-zero and low_pc represents
-  // the base address of the ranges covered by the CU.
+  // low_pc to high_pc, otherwise ranges_data is non-zero and low_pc represents
+  // the base address of the ranges covered by the CU. ranges_data will define
+  // the CU's actual ranges.
   uint64_t low_pc;
   uint64_t high_pc;
-  uint64_t ranges;
+
+  // Ranges for this CU are read according to this form.
+  enum dwarf2reader::DwarfForm ranges_form;
+  uint64_t ranges_data;
+
+  // Offset into .debug_rngslists where this CU's ranges are stored.
+  // Data in DW_FORM_rnglistx is relative to this offset.
+  uint64_t ranges_base;
+
+  // Offset into .debug_addr where this CU's addresses are stored. Data in
+  // form DW_FORM_addrxX is relative to this offset.
+  uint64_t addr_base;
+
+  // Collect all the data from the CU that a RangeListReader needs to read a
+  // range.
+  bool AssembleRangeListInfo(
+      dwarf2reader::RangeListReader::CURangesInfo* info) {
+    const dwarf2reader::SectionMap& section_map
+        = file_context->section_map();
+    info->version_ = version;
+    info->base_address_ = low_pc;
+    info->ranges_base_ = ranges_base;
+    const char* section_name = (version <= 4 ?
+                                ".debug_ranges" : ".debug_rnglists");
+    dwarf2reader::SectionMap::const_iterator map_entry
+        = dwarf2reader::GetSectionByName(section_map, section_name);
+    if (map_entry == section_map.end()) {
+      return false;
+    }
+    info->buffer_ = map_entry->second.first;
+    info->size_ = map_entry->second.second;
+    if (version > 4) {
+      dwarf2reader::SectionMap::const_iterator map_entry
+          = dwarf2reader::GetSectionByName(section_map, ".debug_addr");
+      if (map_entry == section_map.end()) {
+        return false;
+      }
+      info->addr_buffer_ = map_entry->second.first;
+      info->addr_buffer_size_ = map_entry->second.second;
+      info->addr_base_ = addr_base;
+    }
+    return true;
+  }
 
   // The functions defined in this compilation unit. We accumulate
   // them here during parsing. Then, in DwarfCUToModule::Finish, we
@@ -470,7 +519,9 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
               uint64_t offset)
       : GenericDIEHandler(cu_context, parent_context, offset),
         low_pc_(0), high_pc_(0), high_pc_form_(dwarf2reader::DW_FORM_addr),
-        ranges_(0), abstract_origin_(NULL), inline_(false) { }
+        ranges_form_(dwarf2reader::DW_FORM_sec_offset), ranges_data_(0),
+        abstract_origin_(NULL), inline_(false) { }
+
   void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                 enum DwarfForm form,
                                 uint64_t data);
@@ -490,7 +541,8 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   string name_;
   uint64_t low_pc_, high_pc_; // DW_AT_low_pc, DW_AT_high_pc
   DwarfForm high_pc_form_; // DW_AT_high_pc can be length or address.
-  uint64_t ranges_; // DW_AT_ranges
+  DwarfForm ranges_form_; // DW_FORM_sec_offset or DW_FORM_rnglistx
+  uint64_t ranges_data_; // DW_AT_ranges
   const AbstractOrigin* abstract_origin_;
   bool inline_;
 };
@@ -511,7 +563,8 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
       high_pc_ = data;
       break;
     case dwarf2reader::DW_AT_ranges:
-      ranges_ = data;
+      ranges_data_ = data;
+      ranges_form_ = form;
       break;
 
     default:
@@ -590,7 +643,7 @@ void DwarfCUToModule::FuncHandler::Finish() {
       iter->second->name = name_;
   }
 
-  if (!ranges_) {
+  if (!ranges_data_) {
     // Make high_pc_ an address, if it isn't already.
     if (high_pc_form_ != dwarf2reader::DW_FORM_addr &&
         high_pc_form_ != dwarf2reader::DW_FORM_GNU_addr_index &&
@@ -606,14 +659,17 @@ void DwarfCUToModule::FuncHandler::Finish() {
     ranges.push_back(range);
   } else {
     RangesHandler* ranges_handler = cu_context_->ranges_handler;
-
     if (ranges_handler) {
-      if (!ranges_handler->ReadRanges(ranges_, cu_context_->low_pc, &ranges)) {
-        ranges.clear();
-        cu_context_->reporter->MalformedRangeList(ranges_);
+      dwarf2reader::RangeListReader::CURangesInfo cu_info;
+      if (cu_context_->AssembleRangeListInfo(&cu_info)) {
+        if (!ranges_handler->ReadRanges(ranges_form_, ranges_data_,
+                                        &cu_info, &ranges)) {
+          ranges.clear();
+          cu_context_->reporter->MalformedRangeList(ranges_data_);
+        }
+      } else {
+        cu_context_->reporter->MissingRanges();
       }
-    } else {
-      cu_context_->reporter->MissingRanges();
     }
   }
 
@@ -843,7 +899,15 @@ void DwarfCUToModule::ProcessAttributeUnsigned(enum DwarfAttribute attr,
       cu_context_->high_pc  = data;
       break;
     case dwarf2reader::DW_AT_ranges:
-      cu_context_->ranges = data;
+      cu_context_->ranges_data = data;
+      cu_context_->ranges_form = form;
+      break;
+    case dwarf2reader::DW_AT_rnglists_base:
+      cu_context_->ranges_base = data;
+      break;
+    case dwarf2reader::DW_AT_addr_base:
+    case dwarf2reader::DW_AT_GNU_addr_base:
+      cu_context_->addr_base = data;
       break;
 
     default:
@@ -1262,6 +1326,7 @@ bool DwarfCUToModule::StartCompilationUnit(uint64_t offset,
                                            uint8_t offset_size,
                                            uint64_t cu_length,
                                            uint8_t dwarf_version) {
+  cu_context_->version = dwarf_version;
   return dwarf_version >= 2;
 }
 

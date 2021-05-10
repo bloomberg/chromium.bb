@@ -18,33 +18,44 @@
 #include <iomanip>
 #include <sstream>
 
+#include "src/symbol.h"
+
 namespace tint {
 
-Namer::Namer() = default;
+Namer::Namer(SymbolTable* symbols) : symbols_(symbols) {}
 
 Namer::~Namer() = default;
 
-std::string Namer::NameFor(const std::string& name) {
-  auto it = name_map_.find(name);
-  if (it != name_map_.end()) {
-    return it->second;
-  }
-
-  std::stringstream ret_name;
-  ret_name << "tint_";
-
-  ret_name << std::hex << std::setfill('0') << std::setw(2);
-  for (size_t i = 0; i < name.size(); ++i) {
-    ret_name << static_cast<uint32_t>(name[i]);
-  }
-
-  name_map_[name] = ret_name.str();
-  return ret_name.str();
+bool Namer::IsUsed(const std::string& name) {
+  auto it = used_.find(name);
+  return it != used_.end();
 }
 
-bool Namer::IsMapped(const std::string& name) {
-  auto it = name_map_.find(name);
-  return it != name_map_.end();
+std::string Namer::GenerateName(const std::string& prefix) {
+  std::string name = prefix;
+  uint32_t i = 0;
+  while (IsUsed(name)) {
+    name = prefix + "_" + std::to_string(i);
+    ++i;
+  }
+  used_.insert(name);
+  return name;
+}
+
+MangleNamer::MangleNamer(SymbolTable* symbols) : Namer(symbols) {}
+
+MangleNamer::~MangleNamer() = default;
+
+std::string MangleNamer::NameFor(const Symbol& sym) {
+  return sym.to_str();
+}
+
+UnsafeNamer::UnsafeNamer(SymbolTable* symbols) : Namer(symbols) {}
+
+UnsafeNamer::~UnsafeNamer() = default;
+
+std::string UnsafeNamer::NameFor(const Symbol& sym) {
+  return symbols_->NameFor(sym);
 }
 
 }  // namespace tint

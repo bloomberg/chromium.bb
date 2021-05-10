@@ -23,6 +23,7 @@ chrome.automation.EventType = {
   ACTIVE_DESCENDANT_CHANGED: 'activeDescendantChanged',
   ALERT: 'alert',
   ARIA_ATTRIBUTE_CHANGED: 'ariaAttributeChanged',
+  ARIA_CURRENT_CHANGED: 'ariaCurrentChanged',
   ATOMIC_CHANGED: 'atomicChanged',
   AUTO_COMPLETE_CHANGED: 'autoCompleteChanged',
   AUTOCORRECTION_OCCURED: 'autocorrectionOccured',
@@ -278,6 +279,7 @@ chrome.automation.RoleType = {
   PANE: 'pane',
   PARAGRAPH: 'paragraph',
   PDF_ACTIONABLE_HIGHLIGHT: 'pdfActionableHighlight',
+  PDF_ROOT: 'pdfRoot',
   PLUGIN_OBJECT: 'pluginObject',
   POP_UP_BUTTON: 'popUpButton',
   PORTAL: 'portal',
@@ -299,7 +301,6 @@ chrome.automation.RoleType = {
   SEARCH_BOX: 'searchBox',
   SECTION: 'section',
   SLIDER: 'slider',
-  SLIDER_THUMB: 'sliderThumb',
   SPIN_BUTTON: 'spinButton',
   SPLITTER: 'splitter',
   STATIC_TEXT: 'staticText',
@@ -327,7 +328,6 @@ chrome.automation.RoleType = {
   TREE_ITEM: 'treeItem',
   UNKNOWN: 'unknown',
   VIDEO: 'video',
-  WEB_AREA: 'webArea',
   WEB_VIEW: 'webView',
   WINDOW: 'window',
 };
@@ -1173,8 +1173,7 @@ chrome.automation.AutomationNode.prototype.unclippedLocation;
 chrome.automation.AutomationNode.prototype.description;
 
 /**
- * Description of the state of the checkbox. Used only when the node is
- * checkable.
+ * Description of the state of the checkbox. Used only when the node is checkable.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-checkedStateDescription
  */
@@ -1255,6 +1254,28 @@ chrome.automation.AutomationNode.prototype.wordStarts;
  * @see https://developer.chrome.com/extensions/automation#type-wordEnds
  */
 chrome.automation.AutomationNode.prototype.wordEnds;
+
+/**
+ * The start indexes of each sentence within the node's name.
+ * @type {(!Array<number>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-sentenceStarts
+ */
+chrome.automation.AutomationNode.prototype.sentenceStarts;
+
+/**
+ * The end indexes of each sentence within the node's name. For most nodes, the
+ * size of sentenceStarts array should be equal to the size of sentenceEnds
+ * array. Two exceptions are (1) node at the begining of a paragraph but the end
+ * of the node's sentences is in its following node. Such a node has one more
+ * start index. (2) Node at the end of a paragraph but the start of the node's
+ * sentences is in its previous node. Such a node has one more end index. For
+ * example, <p><b>Hello</b> world.</p> has two nodes. The first one has one
+ * start index (i.e., 0) but no end index. The second node has one end index
+ * (i.e., 7) but no start index.
+ * @type {(!Array<number>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-sentenceEnds
+ */
+chrome.automation.AutomationNode.prototype.sentenceEnds;
 
 /**
  * The start index of each word within the node's name. This is different from wordStarts because it is not restricted to inline text boxes and can be used for any type of element.

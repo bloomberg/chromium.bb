@@ -25,9 +25,6 @@ This repository is a merger of the formerly separate GoogleTest and GoogleMock
 projects. These were so closely related that it makes sense to maintain and
 release them together.
 
-Please subscribe to the mailing list at googletestframework@googlegroups.com for
-questions, discussions, and development.
-
 ### Getting started:
 
 The information for **Google Test** is available in the
@@ -76,8 +73,6 @@ following notable projects:
 *   [Protocol Buffers](https://github.com/google/protobuf), Google's data
     interchange format.
 *   The [OpenCV](http://opencv.org/) computer vision library.
-*   [tiny-dnn](https://github.com/tiny-dnn/tiny-dnn): header only,
-    dependency-free deep learning framework in C++11.
 
 ## Related Open Source Projects
 
@@ -113,8 +108,9 @@ that generates stub code for Google Test.
 
 Google Test is designed to have fairly minimal requirements to build and use
 with your projects, but there are some. If you notice any problems on your
-platform, please notify
-[googletestframework@googlegroups.com](https://groups.google.com/forum/#!forum/googletestframework).
+platform, please file an issue on the
+[GoogleTest GitHub Issue Tracker](https://github.com/google/googletest/issues).
+
 Patches for fixing them are welcome!
 
 ### Build Requirements

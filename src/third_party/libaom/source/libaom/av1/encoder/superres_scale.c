@@ -236,7 +236,6 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       break;
     }
     case AOM_SUPERRES_AUTO: {
-      // Do not use superres when screen content tools are used.
       if (cpi->common.features.allow_screen_content_tools) break;
       if (rc_cfg->mode == AOM_VBR || rc_cfg->mode == AOM_CQ)
         av1_set_target_rate(cpi, frm_dim_cfg->width, frm_dim_cfg->height);
@@ -247,11 +246,13 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
           cpi, &cpi->rc, frm_dim_cfg->width, frm_dim_cfg->height,
           cpi->gf_group.index, &bottom_index, &top_index);
 
-      const int qthresh = 128;
+      const SUPERRES_AUTO_SEARCH_TYPE sr_search_type =
+          cpi->sf.hl_sf.superres_auto_search_type;
+      const int qthresh = (sr_search_type == SUPERRES_AUTO_SOLO) ? 128 : 0;
       if (q <= qthresh) {
-        new_denom = SCALE_NUMERATOR;
+        new_denom = SCALE_NUMERATOR;  // Don't use superres.
       } else {
-        if (cpi->sf.hl_sf.superres_auto_search_type == SUPERRES_AUTO_ALL) {
+        if (sr_search_type == SUPERRES_AUTO_ALL) {
           if (cpi->common.current_frame.frame_type == KEY_FRAME)
             new_denom = superres_cfg->superres_kf_scale_denominator;
           else

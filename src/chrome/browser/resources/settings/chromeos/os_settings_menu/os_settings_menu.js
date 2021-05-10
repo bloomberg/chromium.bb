@@ -30,15 +30,29 @@ Polymer({
 
     showCrostini: Boolean,
 
+    showStartup: Boolean,
+
     showReset: Boolean,
 
+    showKerberosSection: Boolean,
+
+    /**
+     * True if redesign of account management flows is enabled.
+     * @private
+     */
+    isAccountManagementFlowsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
+      },
+      readOnly: true,
+    },
   },
 
   /** @param {!settings.Route} newRoute */
   currentRouteChanged(newRoute) {
     const urlSearchQuery =
         settings.Router.getInstance().getQueryParameters().get('search');
-
     // If the route navigated to by a search result is in the advanced
     // section, the advanced menu will expand.
     if (urlSearchQuery && settings.routes.ADVANCED &&

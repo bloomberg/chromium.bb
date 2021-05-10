@@ -74,8 +74,25 @@ NSUserActivity* ActivityToMoveTab(NSString* tab_id) {
       base::SysUTF8ToNSString(BUILDFLAG(IOS_MOVE_TAB_ACTIVITY_TYPE));
   NSUserActivity* activity =
       [[NSUserActivity alloc] initWithActivityType:moveTabActivityType];
-  [activity addUserInfoEntriesFromDictionary:@{kTabIdentifierKey : tab_id}];
+  NSNumber* origin = @(WindowActivityOrigin::WindowActivityTabDragOrigin);
+  NSDictionary* params = @{kOriginKey : origin, kTabIdentifierKey : tab_id};
+  [activity addUserInfoEntriesFromDictionary:params];
   return activity;
+}
+
+NSUserActivity* AdaptUserActivityToIncognito(NSUserActivity* activity_to_adapt,
+                                             bool incognito) {
+  if (([activity_to_adapt.activityType
+           isEqualToString:kLoadIncognitoURLActivityType] &&
+       !incognito) ||
+      ([activity_to_adapt.activityType isEqualToString:kLoadURLActivityType] &&
+       incognito)) {
+    NSUserActivity* activity = BaseActivityForURLOpening(incognito);
+    [activity addUserInfoEntriesFromDictionary:activity_to_adapt.userInfo];
+    return activity;
+  }
+
+  return activity_to_adapt;
 }
 
 bool ActivityIsURLLoad(NSUserActivity* activity) {

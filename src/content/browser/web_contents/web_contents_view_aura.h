@@ -30,6 +30,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -103,13 +104,14 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, StartDragging);
 
   class WindowObserver;
 
   ~WebContentsViewAura() override;
 
   void EndDrag(base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
-               blink::DragOperationsMask ops);
+               ui::mojom::DragOperation op);
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
@@ -165,7 +167,7 @@ class CONTENT_EXPORT WebContentsViewAura
                      const gfx::Vector2d& image_offset,
                      const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
-  void UpdateDragCursor(blink::DragOperation operation) override;
+  void UpdateDragCursor(ui::mojom::DragOperation operation) override;
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
@@ -214,10 +216,12 @@ class CONTENT_EXPORT WebContentsViewAura
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event,
-                    std::unique_ptr<ui::OSExchangeData> data) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event,
+      std::unique_ptr<ui::OSExchangeData> data) override;
   void DragEnteredCallback(ui::DropTargetEvent event,
                            std::unique_ptr<DropData> drop_data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
@@ -290,7 +294,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
-  blink::DragOperationsMask current_drag_op_;
+  ui::mojom::DragOperation current_drag_op_;
 
   std::unique_ptr<DropData> current_drop_data_;
 

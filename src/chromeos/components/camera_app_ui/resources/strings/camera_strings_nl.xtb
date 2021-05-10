@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1175958423215084756">Link gevonden. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galerij-afbeeldingen</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1473110567575736769">Timer 3 seconden</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">ONDERBROKEN</translation>
 <translation id="1862930711583847113">Kan <ph name="FILE" /> niet exporteren</translation>
 <translation id="1899697626337024495">Fotoresolutie</translation>
+<translation id="2022953316617983419">QR-code</translation>
 <translation id="2036868001356139588">Timerduur</translation>
 <translation id="2050339315714019657">Staand</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> actief</translation>
+<translation id="2144806332417375165">Aangepaste videoparameters</translation>
 <translation id="229579744168541441">Exporteren naar schijf</translation>
 <translation id="2501278716633472235">Terug</translation>
 <translation id="2501853267655415902">Opname gestopt</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Rastertype</translation>
 <translation id="3227137524299004712">Microfoon</translation>
+<translation id="3240426699337459095">Link gekopieerd</translation>
 <translation id="3259149966178251584">Cameraresolutie</translation>
 <translation id="3517926952904427380">Kan geen portretfoto maken</translation>
 <translation id="3569311554794739032">Weet je zeker dat je <ph name="FILE" /> wilt verwijderen?</translation>
-<translation id="3750315947605636967">De camera wordt gebruikt door een andere app</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3838931309141338733">Streepjescode scannen</translation>
+<translation id="3892148308691398805">Tekst kopiëren</translation>
 <translation id="4000398125663085899">Nieuwe foto's en video's worden nu opgeslagen in een map in de app Bestanden: Mijn bestanden &gt; Camera</translation>
 <translation id="4118525110028899586">Opname onderbreken</translation>
+<translation id="4269820728363426813">Linkadres kopiëren</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4329152592498422850">Schakel over om vierkante foto te maken</translation>
 <translation id="4383571725254449280">Prestatielogboeken afdrukken</translation>
@@ -68,11 +74,15 @@ Als je feedback over de afbeeldings- of videokwaliteit gaat, voeg dan een voorbe
 <translation id="7134221860976209830">Timer van 10 seconden</translation>
 <translation id="7243947652761655814">Videoresolutie</translation>
 <translation id="7337660886763914220">Bestandssysteemfouten.</translation>
+<translation id="7450541714075000668">Tekst gekopieerd</translation>
 <translation id="7557677699350329807">Naar volgende camera</translation>
+<translation id="7607002721634913082">Onderbroken</translation>
 <translation id="7608223098072244877">4 bij 4</translation>
 <translation id="7649070708921625228">Hulp</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">Opties voor schuiven, kantelen en zoomen tonen</translation>
+<translation id="7983668134180549431">Tekst gevonden.</translation>
 <translation id="8067883171444229417">Video afspelen</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8145038249676204903">Naar foto maken</translation>

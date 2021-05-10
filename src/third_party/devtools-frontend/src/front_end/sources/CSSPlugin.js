@@ -30,6 +30,7 @@
 
 import * as ColorPicker from '../color_picker/color_picker.js';
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as InlineEditor from '../inline_editor/inline_editor.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
@@ -41,6 +42,18 @@ import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line 
 
 import {Plugin} from './Plugin.js';
 
+export const UIStrings = {
+  /**
+  *@description Swatch icon element title in CSSPlugin of the Sources panel
+  */
+  openColorPicker: 'Open color picker.',
+  /**
+  *@description Text to open the cubic bezier editor
+  */
+  openCubicBezierEditor: 'Open cubic bezier editor.',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/CSSPlugin.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CSSPlugin extends Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
@@ -217,8 +230,8 @@ export class CSSPlugin extends Plugin {
     if (!color) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.createColorSwatch();
-    swatch.renderColor(color, false, Common.UIString.UIString('Open color picker.'));
+    const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
+    swatch.renderColor(color, false, i18nString(UIStrings.openColorPicker));
     const value = swatch.createChild('span');
     value.textContent = text;
     value.setAttribute('hidden', 'true');
@@ -237,7 +250,7 @@ export class CSSPlugin extends Plugin {
     }
     const swatch = InlineEditor.Swatches.BezierSwatch.create();
     swatch.setBezierText(text);
-    swatch.iconElement().title = Common.UIString.UIString('Open cubic bezier editor.');
+    UI.Tooltip.Tooltip.install(swatch.iconElement(), i18nString(UIStrings.openCubicBezierEditor));
     swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
     swatch.hideText(true);
     return swatch;
@@ -266,15 +279,15 @@ export class CSSPlugin extends Plugin {
     }
     this._currentSwatch = swatch;
 
-    if (swatch.localName === 'devtools-color-swatch') {
-      this._showSpectrum(/** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (swatch));
+    if (InlineEditor.ColorSwatch.ColorSwatch.isColorSwatch(swatch)) {
+      this._showSpectrum(/** @type {!InlineEditor.ColorSwatch.ColorSwatch} */ (swatch));
     } else if (swatch instanceof InlineEditor.Swatches.BezierSwatch) {
       this._showBezierEditor(swatch);
     }
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
    */
   _showSpectrum(swatch) {
     if (!this._spectrum) {
@@ -282,7 +295,7 @@ export class CSSPlugin extends Plugin {
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, this._spectrumResized, this);
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
     }
-    this._spectrum.setColor(/** @type {!Common.Color.Color} */ (swatch.color), swatch.format || '');
+    this._spectrum.setColor(/** @type {!Common.Color.Color} */ (swatch.getColor()), swatch.getFormat() || '');
     this._swatchPopoverHelper.show(this._spectrum, swatch, this._swatchPopoverHidden.bind(this));
   }
 
@@ -303,8 +316,8 @@ export class CSSPlugin extends Plugin {
       return;
     }
 
-    if (this._currentSwatch.localName === 'devtools-color-swatch') {
-      const swatch = /** @type {!InlineEditor.ColorSwatch.ColorSwatchClosureInterface} */ (this._currentSwatch);
+    if (InlineEditor.ColorSwatch.ColorSwatch.isColorSwatch(this._currentSwatch)) {
+      const swatch = /** @type {!InlineEditor.ColorSwatch.ColorSwatch} */ (this._currentSwatch);
       swatch.renderColor(color);
     }
     this._changeSwatchText(colorString);

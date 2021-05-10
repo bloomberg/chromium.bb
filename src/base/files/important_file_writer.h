@@ -11,7 +11,6 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
@@ -65,13 +64,16 @@ class BASE_EXPORT ImportantFileWriter {
   // All non-const methods, ctor and dtor must be called on the same thread.
   ImportantFileWriter(const FilePath& path,
                       scoped_refptr<SequencedTaskRunner> task_runner,
-                      const char* histogram_suffix = nullptr);
+                      StringPiece histogram_suffix = StringPiece());
 
   // Same as above, but with a custom commit interval.
   ImportantFileWriter(const FilePath& path,
                       scoped_refptr<SequencedTaskRunner> task_runner,
                       TimeDelta interval,
-                      const char* histogram_suffix = nullptr);
+                      StringPiece histogram_suffix = StringPiece());
+
+  ImportantFileWriter(const ImportantFileWriter&) = delete;
+  ImportantFileWriter& operator=(const ImportantFileWriter&) = delete;
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -116,6 +118,13 @@ class BASE_EXPORT ImportantFileWriter {
 
   // Overrides the timer to use for scheduling writes with |timer_override|.
   void SetTimerForTesting(OneShotTimer* timer_override);
+
+#if defined(UNIT_TEST)
+  size_t previous_data_size() const { return previous_data_size_; }
+#endif
+  void set_previous_data_size(size_t previous_data_size) {
+    previous_data_size_ = previous_data_size;
+  }
 
  private:
   const OneShotTimer& timer() const {
@@ -169,11 +178,14 @@ class BASE_EXPORT ImportantFileWriter {
   // Custom histogram suffix.
   const std::string histogram_suffix_;
 
+  // Memorizes the amount of data written on the previous write. This helps
+  // preallocating memory for the data serialization. It is only used for
+  // scheduled writes.
+  size_t previous_data_size_ = 0;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   WeakPtrFactory<ImportantFileWriter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ImportantFileWriter);
 };
 
 }  // namespace base

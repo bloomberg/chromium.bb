@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
-
+import {BrowserProxy} from '../browser_proxy.js';
 import {ModuleDescriptor} from './module_descriptor.js';
 
 /**
@@ -17,6 +17,11 @@ export class ModuleRegistry {
     this.descriptors_ = [];
   }
 
+  /** @return {!Array<!ModuleDescriptor>} */
+  getDescriptors() {
+    return this.descriptors_;
+  }
+
   /**
    * Registers modules via their descriptors.
    * @param {!Array<!ModuleDescriptor>} descriptors
@@ -27,12 +32,27 @@ export class ModuleRegistry {
   }
 
   /**
-   * Initializes the modules previously set via |registerModules| and returns
-   * the initialized descriptors.
+   * Initializes enabled modules previously set via |registerModules| and
+   * returns the initialized descriptors.
+   * @param {number} timeout Timeout in milliseconds after which initialization
+   *     of a particular module aborts.
    * @return {!Promise<!Array<!ModuleDescriptor>>}
    */
-  async initializeModules() {
-    await Promise.all(this.descriptors_.map(d => d.initialize()));
+  async initializeModules(timeout) {
+    // Capture updateDisabledModules -> setDisabledModules round trip in a
+    // promise for convenience.
+    const disabledIds = await new Promise((resolve, _) => {
+      const callbackRouter = BrowserProxy.getInstance().callbackRouter;
+      const listenerId =
+          callbackRouter.setDisabledModules.addListener((all, ids) => {
+            callbackRouter.removeListener(listenerId);
+            resolve(all ? this.descriptors_.map(({id}) => id) : ids);
+          });
+      BrowserProxy.getInstance().handler.updateDisabledModules();
+    });
+    await Promise.all(
+        this.descriptors_.filter(d => disabledIds.indexOf(d.id) < 0)
+            .map(d => d.initialize(timeout)));
     return this.descriptors_.filter(descriptor => !!descriptor.element);
   }
 }

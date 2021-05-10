@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_static_table.h"
+#include "spdy/core/hpack/hpack_static_table.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "spdy/core/hpack/hpack_constants.h"
+#include "spdy/core/hpack/hpack_entry.h"
+#include "spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -18,7 +18,7 @@ HpackStaticTable::~HpackStaticTable() = default;
 
 void HpackStaticTable::Initialize(const HpackStaticEntry* static_entry_table,
                                   size_t static_entry_count) {
-  CHECK(!IsInitialized());
+  QUICHE_CHECK(!IsInitialized());
 
   int total_insertions = 0;
   for (const HpackStaticEntry* it = static_entry_table;
@@ -29,7 +29,7 @@ void HpackStaticTable::Initialize(const HpackStaticEntry* static_entry_table,
                    true,  // is_static
                    total_insertions));
     HpackEntry* entry = &static_entries_.back();
-    CHECK(static_index_.insert(entry).second);
+    QUICHE_CHECK(static_index_.insert(entry).second);
     // Multiple static entries may have the same name, so inserts may fail.
     static_name_index_.insert(std::make_pair(entry->name(), entry));
 

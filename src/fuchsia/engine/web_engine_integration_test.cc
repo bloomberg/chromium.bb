@@ -78,7 +78,7 @@ class WebEngineIntegrationMediaTest : public WebEngineIntegrationTest {
   std::unique_ptr<media::FakeAudioConsumerService> fake_audio_consumer_service_;
 };
 
-class WebEngineIntegrationUserAgentTest : public WebEngineIntegrationTestBase {
+class WebEngineIntegrationUserAgentTest : public WebEngineIntegrationTest {
  protected:
   GURL GetEchoUserAgentUrl() {
     static std::string echo_user_agent_header_path =
@@ -88,8 +88,6 @@ class WebEngineIntegrationUserAgentTest : public WebEngineIntegrationTestBase {
 };
 
 TEST_F(WebEngineIntegrationUserAgentTest, ValidProductOnly) {
-  StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-
   // Create a Context with just an embedder product specified.
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
   create_params.set_user_agent_product(kValidUserAgentProduct);
@@ -102,19 +100,12 @@ TEST_F(WebEngineIntegrationUserAgentTest, ValidProductOnly) {
       ExecuteJavaScriptWithStringResult("document.body.innerText;");
   EXPECT_TRUE(result.find(kValidUserAgentProduct) != std::string::npos);
 
-  // The UserAgent header should also include the desktop-ish Fuchsia
-  // platform & OS information, by default.
-  constexpr char kFuchsiaUserAgentContents[] = "(X11; Fuchsia)";
-  EXPECT_TRUE(result.find(kFuchsiaUserAgentContents) != std::string::npos);
-
   // Query & verify that the navigator.userAgent contains the product tag.
   result = ExecuteJavaScriptWithStringResult("navigator.userAgent;");
   EXPECT_TRUE(result.find(kValidUserAgentProduct) != std::string::npos);
 }
 
 TEST_F(WebEngineIntegrationUserAgentTest, ValidProductAndVersion) {
-  StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-
   // Create a Context with both product and version specified.
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
   create_params.set_user_agent_product(kValidUserAgentProduct);
@@ -136,8 +127,6 @@ TEST_F(WebEngineIntegrationUserAgentTest, ValidProductAndVersion) {
 }
 
 TEST_F(WebEngineIntegrationUserAgentTest, InvalidProduct) {
-  StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-
   // Try to create a Context with an invalid embedder product tag.
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
   create_params.set_user_agent_product(kInvalidUserAgentProduct);
@@ -145,8 +134,6 @@ TEST_F(WebEngineIntegrationUserAgentTest, InvalidProduct) {
 }
 
 TEST_F(WebEngineIntegrationUserAgentTest, VersionOnly) {
-  StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-
   // Try to create a Context with an embedder version but no product.
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
   create_params.set_user_agent_version(kValidUserAgentVersion);
@@ -154,32 +141,11 @@ TEST_F(WebEngineIntegrationUserAgentTest, VersionOnly) {
 }
 
 TEST_F(WebEngineIntegrationUserAgentTest, ValidProductAndInvalidVersion) {
-  StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
-
   // Try to create a Context with valid product tag, but invalid version.
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
   create_params.set_user_agent_product(kValidUserAgentProduct);
   create_params.set_user_agent_version(kInvalidUserAgentVersion);
   CreateContextAndExpectError(std::move(create_params), ZX_ERR_INVALID_ARGS);
-}
-
-TEST_F(WebEngineIntegrationUserAgentTest, UseLegacyAndroidUserAgent) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch("use-legacy-android-user-agent");
-  StartWebEngine(std::move(command_line));
-
-  // Create a Context with both product and version specified.
-  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
-  CreateContextAndFrameAndLoadUrl(std::move(create_params),
-                                  GetEchoUserAgentUrl());
-
-  // Query & verify that the UserAgent header echoed into the document body
-  // contains the legacy Android data.
-  constexpr char kLegacyAndroidUserAgentContents[] = "(Linux; Android)";
-  std::string result =
-      ExecuteJavaScriptWithStringResult("document.body.innerText;");
-  EXPECT_TRUE(result.find(kLegacyAndroidUserAgentContents) !=
-              std::string::npos);
 }
 
 TEST_F(WebEngineIntegrationTest, CreateFrameWithUnclonableFrameParamsFails) {

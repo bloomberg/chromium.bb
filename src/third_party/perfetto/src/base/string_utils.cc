@@ -17,7 +17,12 @@
 #include "perfetto/ext/base/string_utils.h"
 
 #include <inttypes.h>
+#include <locale.h>
 #include <string.h>
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
+#include <xlocale.h>
+#endif
 
 #include <algorithm>
 
@@ -25,6 +30,54 @@
 
 namespace perfetto {
 namespace base {
+
+// Locale-independant as possible version of strtod.
+double StrToD(const char* nptr, char** endptr) {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
+    PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
+  static auto c_locale = newlocale(LC_ALL, "C", nullptr);
+  return strtod_l(nptr, endptr, c_locale);
+#else
+  return strtod(nptr, endptr);
+#endif
+}
+
+std::string QuoteAndEscapeControlCodes(const std::string& raw) {
+  std::string ret;
+  for (auto it = raw.cbegin(); it != raw.cend(); it++) {
+    switch (*it) {
+      case '\\':
+        ret += "\\\\";
+        break;
+      case '"':
+        ret += "\\\"";
+        break;
+      case '/':
+        ret += "\\/";
+        break;
+      case '\b':
+        ret += "\\b";
+        break;
+      case '\f':
+        ret += "\\f";
+        break;
+      case '\n':
+        ret += "\\n";
+        break;
+      case '\r':
+        ret += "\\r";
+        break;
+      case '\t':
+        ret += "\\t";
+        break;
+      default:
+        ret += *it;
+        break;
+    }
+  }
+  return '"' + ret + '"';
+}
 
 bool StartsWith(const std::string& str, const std::string& prefix) {
   return str.compare(0, prefix.length(), prefix) == 0;

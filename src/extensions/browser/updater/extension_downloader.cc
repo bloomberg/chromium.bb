@@ -41,7 +41,6 @@
 #include "extensions/browser/updater/request_queue_impl.h"
 #include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/verifier_formats.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
@@ -257,32 +256,6 @@ ExtensionDownloader::ExtensionDownloader(
 
 ExtensionDownloader::~ExtensionDownloader() = default;
 
-bool ExtensionDownloader::AddExtension(
-    const Extension& extension,
-    int request_id,
-    ManifestFetchData::FetchPriority fetch_priority) {
-  // Skip extensions with empty update URLs converted from user
-  // scripts.
-  if (extension.converted_from_user_script() &&
-      ManifestURL::GetUpdateURL(&extension).is_empty()) {
-    return false;
-  }
-
-  ExtraParams extra;
-
-  // If the extension updates itself from the gallery, ignore any update URL
-  // data.  At the moment there is no extra data that an extension can
-  // communicate to the gallery update servers.
-  std::string update_url_data;
-  if (!ManifestURL::UpdatesFromGallery(&extension))
-    extra.update_url_data = delegate_->GetUpdateUrlData(extension.id());
-
-  return AddExtensionData(extension.id(), extension.version(),
-                          extension.GetType(), extension.location(),
-                          ManifestURL::GetUpdateURL(&extension), extra,
-                          request_id, fetch_priority);
-}
-
 bool ExtensionDownloader::AddPendingExtension(
     const std::string& id,
     const GURL& update_url,
@@ -295,7 +268,8 @@ bool ExtensionDownloader::AddPendingExtension(
   // non-zero versions).
   return AddPendingExtensionWithVersion(
       id, update_url, install_location, is_corrupt_reinstall, request_id,
-      fetch_priority, base::Version("0.0.0.0"));
+      fetch_priority, base::Version("0.0.0.0"), Manifest::TYPE_UNKNOWN,
+      std::string());
 }
 
 bool ExtensionDownloader::AddPendingExtensionWithVersion(
@@ -305,16 +279,20 @@ bool ExtensionDownloader::AddPendingExtensionWithVersion(
     bool is_corrupt_reinstall,
     int request_id,
     ManifestFetchData::FetchPriority fetch_priority,
-    base::Version version) {
+    base::Version version,
+    Manifest::Type type,
+    const std::string& update_url_data) {
   DCHECK(version.IsValid());
   ExtraParams extra;
   if (is_corrupt_reinstall)
     extra.is_corrupt_reinstall = true;
+  if (!update_url_data.empty())
+    extra.update_url_data = update_url_data;
 
   delegate_->OnExtensionDownloadStageChanged(
       id, ExtensionDownloaderDelegate::Stage::PENDING);
-  return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, install_location,
-                          update_url, extra, request_id, fetch_priority);
+  return AddExtensionData(id, version, type, install_location, update_url,
+                          extra, request_id, fetch_priority);
 }
 
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
@@ -622,6 +600,8 @@ void ExtensionDownloader::CreateManifestLoader() {
     // Non-webstore sources may require HTTP auth.
     resource_request->credentials_mode =
         network::mojom::CredentialsMode::kInclude;
+    resource_request->site_for_cookies =
+        net::SiteForCookies::FromUrl(active_request->full_url());
   }
 
   manifest_loader_ = network::SimpleURLLoader::Create(
@@ -1168,9 +1148,9 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   crx_info.expected_version = version;
   delegate_->OnExtensionDownloadFinished(
       crx_info, file_ownership_passed, url, ping_results_[id], request_ids,
-      from_cache ? base::BindRepeating(&ExtensionDownloader::CacheInstallDone,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       base::Passed(&fetch_data))
+      from_cache ? base::BindOnce(&ExtensionDownloader::CacheInstallDone,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(fetch_data))
                  : ExtensionDownloaderDelegate::InstallCallback());
   if (!from_cache)
     ping_results_.erase(id);
@@ -1200,6 +1180,9 @@ void ExtensionDownloader::CreateExtensionLoader() {
   if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
     extension_loader_resource_request_->credentials_mode =
         network::mojom::CredentialsMode::kOmit;
+  } else {
+    extension_loader_resource_request_->site_for_cookies =
+        net::SiteForCookies::FromUrl(fetch->url);
   }
 
   if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
@@ -1442,8 +1425,8 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
         signin::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
         identity_manager_->RemoveAccessTokenFromCache(
-            identity_manager_->GetPrimaryAccountId(), webstore_scopes,
-            access_token_);
+            identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync),
+            webstore_scopes, access_token_);
         access_token_.clear();
         return true;
       }

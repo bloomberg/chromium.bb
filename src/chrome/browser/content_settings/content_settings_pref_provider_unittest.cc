@@ -98,28 +98,6 @@ class DeadlockCheckerObserver {
   DISALLOW_COPY_AND_ASSIGN(DeadlockCheckerObserver);
 };
 
-// Synthesizes a plugin content setting exception into |prefs|. Plugin settings
-// are emphemeral as of Chrome M71; this method is used to simulate the scenario
-// where we inherit these legacy values from Chrome versions M70-, when the
-// exceptions were still stored in preferences.
-bool SetLegacyPersistedPluginSetting(
-    PrefService* prefs,
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    std::unique_ptr<base::Value>&& in_value) {
-  auto* registry = ContentSettingsRegistry::GetInstance();
-  auto* content_setting_info = registry->Get(ContentSettingsType::PLUGINS);
-  PrefChangeRegistrar pref_change_registrar;
-  pref_change_registrar.Init(prefs);
-  ContentSettingsPref content_settings_pref(
-      ContentSettingsType::PLUGINS, prefs, &pref_change_registrar,
-      content_setting_info->website_settings_info()->pref_name(),
-      false /* is_incognito */, false /*restore_session*/, base::DoNothing());
-  return content_settings_pref.SetWebsiteSetting(
-      primary_pattern, secondary_pattern, base::Time::Now(),
-      std::move(in_value), {});
-}
-
 class PrefProviderTest : public testing::Test {
  public:
   PrefProviderTest()
@@ -219,51 +197,6 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
       TestUtils::GetContentSetting(&provider, primary_url, primary_url,
                                    ContentSettingsType::GEOLOCATION, false));
 }
-
-#if !defined(OS_ANDROID)
-// Tests that file system preferences are migrated.
-TEST_F(PrefProviderTest, MigrateDeprecatedFileSystemPreferences) {
-  static const char kDeprecatedNativeFileSystemReadGuardPref[] =
-      "profile.content_settings.exceptions.native_file_system_read_guard";
-  static const char kDeprecatedNativeFileSystemWriteGuardPref[] =
-      "profile.content_settings.exceptions.native_file_system_write_guard";
-  static const char kPattern[] = "[*.]example.com";
-
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-
-  // Set some pref data. Each content setting type has the following value:
-  // {"[*.]example.com": {"setting": 1}}
-  base::DictionaryValue pref_data;
-  auto data_for_pattern = std::make_unique<base::DictionaryValue>();
-  data_for_pattern->SetInteger("setting", CONTENT_SETTING_BLOCK);
-  pref_data.SetWithoutPathExpansion(kPattern, std::move(data_for_pattern));
-  prefs->Set(kDeprecatedNativeFileSystemReadGuardPref, pref_data);
-  prefs->Set(kDeprecatedNativeFileSystemWriteGuardPref, pref_data);
-
-  // Instantiate a new PrefProvider here, because we want to test the
-  // constructor's behavior after setting the above.
-  PrefProvider provider(prefs, /*incognito=*/false,
-                        /*store_last_modified=*/true,
-                        /*restore_session=*/false);
-
-  // Check that settings have been migrated.
-  EXPECT_FALSE(prefs->HasPrefPath(kDeprecatedNativeFileSystemReadGuardPref));
-  EXPECT_FALSE(prefs->HasPrefPath(kDeprecatedNativeFileSystemReadGuardPref));
-
-  GURL primary_url("http://example.com/");
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            TestUtils::GetContentSetting(
-                &provider, primary_url, primary_url,
-                ContentSettingsType::FILE_SYSTEM_READ_GUARD, false));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            TestUtils::GetContentSetting(
-                &provider, primary_url, primary_url,
-                ContentSettingsType::FILE_SYSTEM_WRITE_GUARD, false));
-
-  provider.ShutdownOnUIThread();
-}
-#endif  // !defined(OS_ANDROID)
 
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
@@ -704,45 +637,6 @@ TEST_F(PrefProviderTest, LastModified) {
       ContentSettingsType::COOKIES);
   EXPECT_EQ(t1, last_modified);
   provider2.ShutdownOnUIThread();
-}
-
-// Tests if PrefProvider rejects storing ephemeral types.
-TEST_F(PrefProviderTest, RejectEphemeralStorage) {
-  // Find an ephemeral type.
-  ContentSettingsType ephemeral_type = ContentSettingsType::NUM_TYPES;
-  ContentSettingsRegistry* registry = ContentSettingsRegistry::GetInstance();
-  for (const content_settings::ContentSettingsInfo* item : *registry) {
-    if (item->storage_behavior() == ContentSettingsInfo::EPHEMERAL) {
-      ephemeral_type = item->website_settings_info()->type();
-      break;
-    }
-  }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // At the very least, ContentSettingsType::PLUGINS is ephemeral.
-  ASSERT_NE(ContentSettingsType::NUM_TYPES, ephemeral_type);
-#else
-  // There might be no ephemeral setting if plugins are not supported.
-  if (ephemeral_type == ContentSettingsType::NUM_TYPES)
-    return;
-#endif
-
-  sync_preferences::TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterProfilePrefs(prefs.registry());
-  PrefProvider provider(&prefs, false /* regular */,
-                        /*store_last_modified=*/true,
-                        /*restore_session=*/false);
-  ContentSettingsPattern site_pattern =
-      ContentSettingsPattern::FromString("https://example.com");
-
-  std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
-  EXPECT_FALSE(provider.SetWebsiteSetting(
-      site_pattern, site_pattern, ephemeral_type, std::move(value), {}));
-  std::unique_ptr<RuleIterator> rule_iterator =
-      provider.GetRuleIterator(ephemeral_type, false);
-  EXPECT_EQ(nullptr, rule_iterator);
-
-  provider.ShutdownOnUIThread();
 }
 
 // If a setting is constrained to a session scope it should only persist in

@@ -27,14 +27,12 @@
  */
 
 import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
 
-/**
- * @unrestricted
- */
 export class MetricsSidebarPane extends ElementsSidebarPane {
   constructor() {
     super();
@@ -69,6 +67,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
     const cssModel = this.cssModel();
     if (!node || node.nodeType() !== Node.ELEMENT_NODE || !cssModel) {
       this.contentElement.removeChildren();
+      this.element.classList.add('collapsed');
       return Promise.resolve();
     }
 
@@ -103,6 +102,17 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
    */
   onCSSModelChanged() {
     this.update();
+  }
+
+  /**
+   * Toggle the visibility of the Metrics pane. This toggle allows external
+   * callers to control the visibility of this pane, but toggling this on does
+   * not guarantee the pane will always show up, because the pane's visibility
+   * is also controlled by the internal condition that style cannot be empty.
+   * @param {boolean} isVisible
+   */
+  toggleVisibility(isVisible) {
+    this.element.classList.toggle('invisible', !isVisible);
   }
 
   /**
@@ -191,7 +201,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
         value = '\u2012';
       }
       value = value.replace(/px$/, '');
-      value = Number.toFixedIfFloating(value);
+      value = Platform.NumberUtilities.toFixedIfFloating(value);
 
       element.textContent = value;
       element.addEventListener('dblclick', this.startEditing.bind(this, element, name, propertyName, style), false);
@@ -216,7 +226,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
         width = (widthValue - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right).toString();
       }
 
-      return Number.toFixedIfFloating(width);
+      return Platform.NumberUtilities.toFixedIfFloating(width);
     }
 
     /**
@@ -237,7 +247,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
         height = (heightValue - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom).toString();
       }
 
-      return Number.toFixedIfFloating(height);
+      return Platform.NumberUtilities.toFixedIfFloating(height);
     }
 
     // Display types for which margin is ignored.
@@ -269,10 +279,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
       Common.Color.PageHighlight.Content, Common.Color.PageHighlight.Padding, Common.Color.PageHighlight.Border,
       Common.Color.PageHighlight.Margin, Common.Color.Color.fromRGBA([0, 0, 0, 0])
     ];
-    const boxLabels = [
-      Common.UIString.UIString('content'), Common.UIString.UIString('padding'), Common.UIString.UIString('border'),
-      Common.UIString.UIString('margin'), Common.UIString.UIString('position')
-    ];
+    const boxLabels = ['content', 'padding', 'border', 'margin', 'position'];
     let previousBox = null;
     this._boxElements = [];
     for (let i = 0; i < boxes.length; ++i) {
@@ -343,6 +350,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
     metricsElement.addEventListener('mouseleave', this._highlightDOMNode.bind(this, false, 'all'), false);
     this.contentElement.removeChildren();
     this.contentElement.appendChild(metricsElement);
+    this.element.classList.remove('collapsed');
   }
 
   /**

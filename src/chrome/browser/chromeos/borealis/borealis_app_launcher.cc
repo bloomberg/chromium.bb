@@ -5,15 +5,14 @@
 #include "chrome/browser/chromeos/borealis/borealis_app_launcher.h"
 
 #include "base/bind.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/borealis/borealis_context.h"
 #include "chrome/browser/chromeos/borealis/borealis_context_manager.h"
-#include "chrome/browser/chromeos/borealis/borealis_context_manager_factory.h"
 #include "chrome/browser/chromeos/borealis/borealis_features.h"
 #include "chrome/browser/chromeos/borealis/borealis_service.h"
 #include "chrome/browser/chromeos/borealis/borealis_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
@@ -85,19 +84,26 @@ void BorealisAppLauncher::Launch(std::string app_id,
     borealis::ShowBorealisInstallerView(profile_);
     return;
   }
-
-  BorealisContextManagerFactory::GetForProfile(profile_)->StartBorealis(
+  if (!borealis::BorealisService::GetForProfile(profile_)
+           ->ContextManager()
+           .IsRunning())
+    borealis::ShowBorealisSplashScreenView(profile_);
+  BorealisService::GetForProfile(profile_)->ContextManager().StartBorealis(
       base::BindOnce(
           [](std::string app_id,
              BorealisAppLauncher::OnLaunchedCallback callback,
-             BorealisContextManager::Result result) {
-            if (!result.Ok()) {
-              LOG(ERROR) << "Failed to launch " << app_id << ": "
-                         << result.FailureReason();
+             BorealisContextManager::ContextOrFailure result) {
+            if (!result) {
+              LOG(ERROR) << "Failed to launch " << app_id << "(code "
+                         << result.Error().error()
+                         << "): " << result.Error().description();
+              // If splash screen is showing and borealis did not launch
+              // properly, close it.
+              borealis::CloseBorealisSplashScreenView();
               std::move(callback).Run(LaunchResult::kError);
               return;
             }
-            BorealisAppLauncher::Launch(result.Success(), std::move(app_id),
+            BorealisAppLauncher::Launch(*result.Value(), std::move(app_id),
                                         std::move(callback));
           },
           std::move(app_id), std::move(callback)));

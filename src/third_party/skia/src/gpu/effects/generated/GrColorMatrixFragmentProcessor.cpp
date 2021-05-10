@@ -41,32 +41,27 @@ public:
                                                 "v");
         SkString _sample0 = this->invokeChild(0, args);
         fragBuilder->codeAppendf(
-                R"SkSL(half4 inputColor = %s;
+                R"SkSL(half4 color = %s;
 @if (%s) {
-    half4 _0_unpremul;
-    {
-        _0_unpremul = half4(inputColor.xyz / max(inputColor.w, 9.9999997473787516e-05), inputColor.w);
-    }
-
-    inputColor = _0_unpremul;
+    color = half4(color.xyz / max(color.w, 9.9999997473787516e-05), color.w);
 
 }
-%s = %s * inputColor + %s;
+color = %s * color + %s;
 @if (%s) {
-    %s = clamp(%s, 0.0, 1.0);
+    color = clamp(color, 0.0, 1.0);
 } else {
-    %s.w = clamp(%s.w, 0.0, 1.0);
+    color.w = clamp(color.w, 0.0, 1.0);
 }
 @if (%s) {
-    %s.xyz *= %s.w;
+    color.xyz *= color.w;
 }
+return color;
 )SkSL",
-                _sample0.c_str(), (_outer.unpremulInput ? "true" : "false"), args.fOutputColor,
+                _sample0.c_str(), (_outer.unpremulInput ? "true" : "false"),
                 args.fUniformHandler->getUniformCStr(mVar),
                 args.fUniformHandler->getUniformCStr(vVar),
-                (_outer.clampRGBOutput ? "true" : "false"), args.fOutputColor, args.fOutputColor,
-                args.fOutputColor, args.fOutputColor, (_outer.premulOutput ? "true" : "false"),
-                args.fOutputColor, args.fOutputColor);
+                (_outer.clampRGBOutput ? "true" : "false"),
+                (_outer.premulOutput ? "true" : "false"));
     }
 
 private:
@@ -92,8 +87,8 @@ private:
     UniformHandle mVar;
     UniformHandle vVar;
 };
-GrGLSLFragmentProcessor* GrColorMatrixFragmentProcessor::onCreateGLSLInstance() const {
-    return new GrGLSLColorMatrixFragmentProcessor();
+std::unique_ptr<GrGLSLFragmentProcessor> GrColorMatrixFragmentProcessor::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLColorMatrixFragmentProcessor>();
 }
 void GrColorMatrixFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                            GrProcessorKeyBuilder* b) const {
@@ -111,7 +106,6 @@ bool GrColorMatrixFragmentProcessor::onIsEqual(const GrFragmentProcessor& other)
     if (premulOutput != that.premulOutput) return false;
     return true;
 }
-bool GrColorMatrixFragmentProcessor::usesExplicitReturn() const { return false; }
 GrColorMatrixFragmentProcessor::GrColorMatrixFragmentProcessor(
         const GrColorMatrixFragmentProcessor& src)
         : INHERITED(kGrColorMatrixFragmentProcessor_ClassID, src.optimizationFlags())

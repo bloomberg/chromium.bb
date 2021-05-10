@@ -442,6 +442,8 @@ class RTCStatsReportVerifier {
 
   bool VerifyRTCCodecStats(const RTCCodecStats& codec) {
     RTCStatsVerifier verifier(report_, &codec);
+    verifier.TestMemberIsIDReference(codec.transport_id,
+                                     RTCTransportStats::kType);
     verifier.TestMemberIsDefined(codec.payload_type);
     verifier.TestMemberIsDefined(codec.mime_type);
     verifier.TestMemberIsPositive<uint32_t>(codec.clock_rate);
@@ -834,7 +836,7 @@ class RTCStatsReportVerifier {
     verifier.TestMemberIsUndefined(inbound_stream.frame_bit_depth);
     if (inbound_stream.media_type.is_defined() &&
         *inbound_stream.media_type == "video") {
-      verifier.TestMemberIsUndefined(inbound_stream.jitter);
+      verifier.TestMemberIsNonNegative<double>(inbound_stream.jitter);
       verifier.TestMemberIsUndefined(inbound_stream.jitter_buffer_delay);
       verifier.TestMemberIsUndefined(
           inbound_stream.jitter_buffer_emitted_count);
@@ -1089,7 +1091,7 @@ class RTCStatsReportVerifier {
   rtc::scoped_refptr<const RTCStatsReport> report_;
 };
 
-#ifdef HAVE_SCTP
+#ifdef WEBRTC_HAVE_SCTP
 TEST_F(RTCStatsIntegrationTest, GetStatsFromCaller) {
   StartCall();
 
@@ -1252,7 +1254,7 @@ TEST_F(RTCStatsIntegrationTest, GetStatsReferencedIds) {
     }
   }
 }
-#endif  // HAVE_SCTP
+#endif  // WEBRTC_HAVE_SCTP
 
 }  // namespace
 

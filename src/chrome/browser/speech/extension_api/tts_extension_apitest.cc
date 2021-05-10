@@ -57,8 +57,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
       content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
 
-  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {
-    return false;
+  void LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {
   }
 
   void ClearError() override { error_ = ""; }
@@ -259,6 +258,7 @@ class TtsApiTest : public ExtensionApiTest {
     content::TtsController* tts_controller =
         content::TtsController::GetInstance();
     tts_controller->SetTtsPlatform(&mock_platform_impl_);
+    TtsExtensionEngine::GetInstance()->DisableBuiltInTTSEngineForTesting();
     tts_controller->SetTtsEngineDelegate(TtsExtensionEngine::GetInstance());
   }
 
@@ -312,6 +312,10 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, DoSpeak(_, "Echo", _, _, _))
       .WillOnce(Return());
+
+  // Called when the extension unloads.
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking()).WillOnce(Return(false));
+
   ASSERT_TRUE(RunExtensionTest("tts/optional_args")) << message_;
 }
 
@@ -448,9 +452,11 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseResume) {
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseSpeakNoEnqueue) {
   // While paused, one utterance is enqueued, and then a second utterance that
-  // cannot be enqueued cancels both.
+  // cannot be enqueued cancels only the first.
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking()).WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, DoSpeak(_, "text 2", _, _, _));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking()).WillOnce(Return(false));
   ASSERT_TRUE(RunExtensionTest("tts/pause_speak_no_enqueue")) << message_;
 }
 
@@ -484,8 +490,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
 
   // TODO(katie): Expect the deprecated gender warning rather than ignoring
   // warnings.
-  ASSERT_TRUE(RunExtensionTestWithFlags("tts_engine/register_engine",
-                                        kFlagIgnoreManifestWarnings, kFlagNone))
+  ASSERT_TRUE(RunExtensionTest({.name = "tts_engine/register_engine"},
+                               {.ignore_manifest_warnings = true}))
       << message_;
 }
 

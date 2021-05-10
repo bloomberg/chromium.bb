@@ -33,63 +33,6 @@ describe('Font Behavior', () => {
         document.body.removeChild(container);
     });
 
-    gm('text_shaping', (canvas) => {
-        const paint = new CanvasKit.Paint();
-
-        paint.setColor(CanvasKit.BLUE);
-        paint.setStyle(CanvasKit.PaintStyle.Stroke);
-
-        const fontMgr = CanvasKit.FontMgr.RefDefault();
-        const notoSerif = fontMgr.MakeTypefaceFromData(notoSerifFontBuffer);
-
-        const textPaint = new CanvasKit.Paint();
-        const textFont = new CanvasKit.Font(notoSerif, 20);
-
-        canvas.drawRect(CanvasKit.LTRBRect(30, 30, 200, 200), paint);
-        canvas.drawText('This text is not shaped, and overflows the boundary',
-                        35, 50, textPaint, textFont);
-
-        const shapedText = new CanvasKit.ShapedText({
-            font: textFont,
-            leftToRight: true,
-            text: 'This text *is* shaped, and wraps to the right width.',
-            width: 160,
-        });
-        const textBoxX = 35;
-        const textBoxY = 55;
-        canvas.drawText(shapedText, textBoxX, textBoxY, textPaint);
-        const bounds = shapedText.getBounds();
-
-        bounds[0] += textBoxX; // left
-        bounds[2] += textBoxX; // right
-        bounds[1] += textBoxY; // top
-        bounds[3] += textBoxY // bottom
-
-        canvas.drawRect(bounds, paint);
-        const SHAPE_TEST_TEXT = 'VAVAVAVAVAFIfi';
-        const textFont2 = new CanvasKit.Font(notoSerif, 60);
-        const shapedText2 = new CanvasKit.ShapedText({
-            font: textFont2,
-            leftToRight: true,
-            text: SHAPE_TEST_TEXT,
-            width: 600,
-        });
-
-        canvas.drawText('no kerning ↓', 10, 240, textPaint, textFont);
-        canvas.drawText(SHAPE_TEST_TEXT, 10, 300, textPaint, textFont2);
-        canvas.drawText(shapedText2, 10, 300, textPaint);
-        canvas.drawText('kerning ↑', 10, 390, textPaint, textFont);
-
-        paint.delete();
-        notoSerif.delete();
-        textPaint.delete();
-        textFont.delete();
-        shapedText.delete();
-        textFont2.delete();
-        shapedText2.delete();
-        fontMgr.delete();
-    });
-
     gm('monospace_text_on_path', (canvas) => {
         const paint = new CanvasKit.Paint();
         paint.setAntiAlias(true);
@@ -341,15 +284,16 @@ describe('Font Behavior', () => {
         // just update them with the new values. For super-accurate readings, one could
         // run a C++ snippet of code and compare the values, but that is likely unnecessary
         // unless we suspect a bug with the bindings.
-        const expectedSizes = [1178.71143, 458.64258, 50.450683];
+        const expectedSizes = [241.06299, 93.79883, 10.31787];
         for (const idx in fontSizes) {
             const font = new CanvasKit.Font(typeface, fontSizes[idx]);
             font.setHinting(CanvasKit.FontHinting.None);
             font.setLinearMetrics(true);
             font.setSubpixel(true);
 
-            const res = font.measureText('someText');
-            expect(res).toBeCloseTo(expectedSizes[idx], 5);
+            const ids = font.getGlyphIDs('M');
+            const widths = font.getGlyphWidths(ids);
+            expect(widths[0]).toBeCloseTo(expectedSizes[idx], 5);
             font.delete();
         }
 

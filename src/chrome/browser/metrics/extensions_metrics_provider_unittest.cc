@@ -28,7 +28,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/extension_install.pb.h"
@@ -133,7 +132,7 @@ TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::MetricsService::RegisterPrefs(local_state.registry());
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager(
       metrics::MetricsStateManager::Create(
-          &local_state, &enabled_state_provider, base::string16(),
+          &local_state, &enabled_state_provider, std::wstring(),
           base::BindRepeating(&StoreNoClientInfoBackup),
           base::BindRepeating(&ReturnNoBackup)));
   TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
@@ -159,7 +158,7 @@ class ExtensionMetricsProviderInstallsTest
 
   ExtensionInstallProto ConstructProto(const Extension& extension) {
     return ExtensionsMetricsProvider::ConstructInstallProtoForTesting(
-        extension, prefs_, last_sample_time_);
+        extension, prefs_, last_sample_time_, profile());
   }
   std::vector<ExtensionInstallProto> GetInstallsForProfile() {
     return ExtensionsMetricsProvider::GetInstallsForProfileForTesting(
@@ -367,7 +366,6 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   }
   {
     // Test that service worker scripts are reported correctly.
-    extensions::ScopedWorkerBasedExtensionsChannel worker_channel_override;
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("service worker")
             .SetBackgroundContext(

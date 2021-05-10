@@ -35,6 +35,8 @@
 typedef struct Dav1dFrameContext Dav1dFrameContext;
 typedef struct Dav1dTileState Dav1dTileState;
 typedef struct Dav1dTileContext Dav1dTileContext;
+typedef struct Dav1dPostFilterContext Dav1dPostFilterContext;
+typedef struct Dav1dTask Dav1dTask;
 
 #include "common/attributes.h"
 
@@ -76,14 +78,19 @@ struct Dav1dContext {
     Dav1dFrameContext *fc;
     unsigned n_fc;
 
+    Dav1dPostFilterContext *pfc;
+    unsigned n_pfc;
+
     // cache of OBUs that make up a single frame before we submit them
     // to a frame worker to be decoded
     struct Dav1dTileGroup *tile;
     int n_tile_data_alloc;
     int n_tile_data;
     int n_tiles;
+    Dav1dMemPool *seq_hdr_pool;
     Dav1dRef *seq_hdr_ref;
     Dav1dSequenceHeader *seq_hdr;
+    Dav1dMemPool *frame_hdr_pool;
     Dav1dRef *frame_hdr_ref;
     Dav1dFrameHeader *frame_hdr;
 
@@ -97,22 +104,33 @@ struct Dav1dContext {
     // decoded output picture queue
     Dav1dData in;
     Dav1dPicture out;
+    // dummy is a pointer to prevent compiler errors about atomic_load()
+    // not taking const arguments
+    atomic_int flush_mem, *flush;
     struct {
         Dav1dThreadPicture *out_delayed;
         unsigned next;
-        // dummy is a pointer to prevent compiler errors about atomic_load()
-        // not taking const arguments; the const attribute is not taken
-        // from pointers
-        atomic_int flush_mem, *flush;
     } frame_thread;
 
+    // postfilter threading (refer to pfc[] for per_thread thingies)
+    struct PostFilterThreadData {
+        pthread_mutex_t lock;
+        pthread_cond_t cond;
+        struct Dav1dTask *tasks;
+        int frame_cnt;
+        int inited;
+    } postfilter_thread;
+
     // reference/entropy state
+    Dav1dMemPool *segmap_pool;
+    Dav1dMemPool *refmvs_pool;
     struct {
         Dav1dThreadPicture p;
         Dav1dRef *segmap;
         Dav1dRef *refmvs;
         unsigned refpoc[7];
     } refs[8];
+    Dav1dMemPool *cdf_pool;
     CdfThreadContext cdf[8];
 
     Dav1dDSPContext dsp[3 /* 8, 10, 12 bits/component */];
@@ -135,6 +153,8 @@ struct Dav1dContext {
     int drain;
 
     Dav1dLogger logger;
+
+    Dav1dMemPool *picture_pool;
 };
 
 struct Dav1dFrameContext {
@@ -175,6 +195,10 @@ struct Dav1dFrameContext {
         recon_b_intra_fn recon_b_intra;
         recon_b_inter_fn recon_b_inter;
         filter_sbrow_fn filter_sbrow;
+        filter_sbrow_fn filter_sbrow_deblock;
+        filter_sbrow_fn filter_sbrow_cdef;
+        filter_sbrow_fn filter_sbrow_resize;
+        filter_sbrow_fn filter_sbrow_lr;
         backup_ipred_edge_fn backup_ipred_edge;
         read_coef_blocks_fn read_coef_blocks;
     } bd_fn;
@@ -184,7 +208,7 @@ struct Dav1dFrameContext {
     ptrdiff_t b4_stride;
     int w4, h4, bw, bh, sb128w, sb128h, sbh, sb_shift, sb_step, sr_sb128w;
     uint16_t dq[DAV1D_MAX_SEGMENTS][3 /* plane */][2 /* dc/ac */];
-    const uint8_t *qm[2 /* is_1d */][N_RECT_TX_SIZES][3 /* plane */];
+    const uint8_t *qm[N_RECT_TX_SIZES][3 /* plane */];
     BlockContext *a;
     int a_sz /* w*tile_rows */;
     refmvs_frame rf;
@@ -231,6 +255,16 @@ struct Dav1dFrameContext {
         pixel *p[3], *sr_p[3];
         Av1Filter *mask_ptr, *prev_mask_ptr;
         int restore_planes; // enum LrRestorePlanes
+
+        struct {
+            pthread_cond_t cond;
+            struct PostFilterThreadData *pftd;
+            struct Dav1dTask *tasks;
+            int num_tasks;
+            int npf;
+            int done;
+            int inited;
+        } thread;
     } lf;
 
     // threading (refer to tc[] for per-thread things)
@@ -344,6 +378,13 @@ struct Dav1dTileContext {
         struct FrameTileThreadData *fttd;
         int die;
     } tile_thread;
+};
+
+struct Dav1dPostFilterContext {
+    Dav1dContext *c;
+    struct thread_data td;
+    int flushed;
+    int die;
 };
 
 #endif /* DAV1D_SRC_INTERNAL_H */

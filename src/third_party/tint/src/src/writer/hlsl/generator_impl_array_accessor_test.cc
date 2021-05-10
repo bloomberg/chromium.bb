@@ -16,10 +16,10 @@
 
 #include "src/ast/array_accessor_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
+#include "src/program.h"
+#include "src/type/i32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -30,24 +30,20 @@ namespace {
 using HlslGeneratorImplTest_Expression = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Expression, EmitExpression_ArrayAccessor) {
-  ast::type::I32Type i32;
-  auto lit = std::make_unique<ast::SintLiteral>(&i32, 5);
-  auto idx = std::make_unique<ast::ScalarConstructorExpression>(std::move(lit));
-  auto ary = std::make_unique<ast::IdentifierExpression>("ary");
+  auto* expr = IndexAccessor("ary", 5);
 
-  ast::ArrayAccessorExpression expr(std::move(ary), std::move(idx));
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "ary[5]");
 }
 
 TEST_F(HlslGeneratorImplTest_Expression, EmitArrayAccessor) {
-  auto ary = std::make_unique<ast::IdentifierExpression>("ary");
-  auto idx = std::make_unique<ast::IdentifierExpression>("idx");
+  auto* expr = IndexAccessor("ary", "idx");
 
-  ast::ArrayAccessorExpression expr(std::move(ary), std::move(idx));
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "ary[idx]");
 }
 

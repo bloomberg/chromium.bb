@@ -15,11 +15,12 @@ import {resetTestDOM} from '../helpers/DOMHelpers.js';
 beforeEach(resetTestDOM);
 
 interface KarmaConfig {
-  config: {targetDir: string}
+  config: {targetDir: string};
 }
 
 before(async function() {
   /* This value comes from the `client.targetDir` setting in `karma.conf.js` */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const {targetDir} = ((globalThis as unknown as {__karma__: KarmaConfig}).__karma__).config;
 
   /* Larger than normal timeout because we've seen some slowness on the bots */

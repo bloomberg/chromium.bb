@@ -18,7 +18,7 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
   for (size_t i = 0;
        i <= static_cast<size_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
     if (blocklisted_features & (1 << i)) {
-      features.push_back(blink::scheduler::FeatureToString(
+      features.push_back(blink::scheduler::FeatureToHumanReadableString(
           static_cast<WebSchedulerTrackedFeature>(i)));
     }
   }
@@ -131,9 +131,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "BackForwardCache is disabled through command line (may include "
              "cases where the embedder disabled it due to, e.g., enterprise "
              "policy)";
-    case Reason::kFrameTreeNodeStateReset:
-      return "document-associated state stored in FrameTreeNode was lost after "
-             "navigating away";
     case Reason::kNavigationCancelledWhileRestoring:
       return "Navigation request was cancelled after js eviction was disabled";
     case Reason::kNetworkRequestDatapipeDrained:
@@ -145,6 +142,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "Network request is open for too long and exceeds time limit";
     case Reason::kNetworkExceedsBufferLimit:
       return "Network request reads too much data and exceeds buffer limit";
+    case Reason::kBackForwardCacheDisabledForPrerender:
+      return "BackForwardCache is disabled for Prerender";
   }
 }
 
@@ -176,6 +175,19 @@ void BackForwardCacheCanStoreDocumentResult::
                               kDisableForRenderFrameHostCalled));
   for (const std::string& reason : reasons)
     disabled_reasons_.insert(reason);
+}
+
+void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
+    const BackForwardCacheCanStoreDocumentResult& other) {
+  not_stored_reasons_ |= other.not_stored_reasons();
+  blocklisted_features_ |= other.blocklisted_features();
+  if (!browsing_instance_not_swapped_reason_) {
+    browsing_instance_not_swapped_reason_ =
+        other.browsing_instance_not_swapped_reason();
+  }
+  for (const std::string& reason : other.disabled_reasons()) {
+    disabled_reasons_.insert(reason);
+  }
 }
 
 BackForwardCacheCanStoreDocumentResult::

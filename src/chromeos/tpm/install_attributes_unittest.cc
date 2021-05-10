@@ -18,6 +18,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/policy/proto/install_attributes.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,18 +44,23 @@ static const char kTestUserDeprecated[] = "test@example.com";
 class InstallAttributesTest : public testing::Test {
  protected:
   InstallAttributesTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         dbus_paths::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
     CryptohomeClient::InitializeFake();
+    TpmManagerClient::InitializeFake();
     install_attributes_ =
         std::make_unique<InstallAttributes>(CryptohomeClient::Get());
   }
 
-  void TearDown() override { CryptohomeClient::Shutdown(); }
+  void TearDown() override {
+    TpmManagerClient::Shutdown();
+    CryptohomeClient::Shutdown();
+  }
 
   base::FilePath GetTempPath() const {
     base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir_.GetPath());
@@ -91,53 +97,37 @@ class InstallAttributesTest : public testing::Test {
 };
 
 TEST_F(InstallAttributesTest, Lock) {
-  {
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(
-        InstallAttributes::LOCK_SUCCESS,
-        LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
-                                   std::string(),  // realm
-                                   kTestDeviceId));
-    histogram_tester.ExpectUniqueSample(
-        "Enterprise.ExistingInstallAttributesLock", 0, 1);
-  }
+  EXPECT_EQ(
+      InstallAttributes::LOCK_SUCCESS,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
+                                 std::string(),  // realm
+                                 kTestDeviceId));
+  EXPECT_EQ(TpmManagerClient::Get()
+                ->GetTestInterface()
+                ->clear_stored_owner_password_count(),
+            1);
 
-  {
-    // Locking an already locked device should succeed if the parameters match.
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(
-        InstallAttributes::LOCK_SUCCESS,
-        LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
-                                   std::string(),  // realm
-                                   kTestDeviceId));
-    histogram_tester.ExpectUniqueSample(
-        "Enterprise.ExistingInstallAttributesLock", 1, 1);
-  }
+  // Locking an already locked device should succeed if the parameters match.
+  EXPECT_EQ(
+      InstallAttributes::LOCK_SUCCESS,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE, kTestDomain,
+                                 std::string(),  // realm
+                                 kTestDeviceId));
 
-  {
-    // But another domain should fail.
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(InstallAttributes::LOCK_WRONG_DOMAIN,
-              LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE,
-                                         "anotherexample.com",
-                                         std::string(),  // realm
-                                         kTestDeviceId));
-    histogram_tester.ExpectTotalCount(
-        "Enterprise.ExistingInstallAttributesLock", 0);
-  }
+  // But another domain should fail.
+  EXPECT_EQ(InstallAttributes::LOCK_WRONG_DOMAIN,
+            LockDeviceAndWaitForResult(policy::DEVICE_MODE_ENTERPRISE,
+                                       "anotherexample.com",
+                                       std::string(),  // realm
+                                       kTestDeviceId));
 
-  {
-    // A non-matching mode should fail as well.
-    base::HistogramTester histogram_tester;
-    EXPECT_EQ(InstallAttributes::LOCK_WRONG_MODE,
-              LockDeviceAndWaitForResult(
-                  policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
-                  std::string(),    // domain
-                  std::string(),    // realm
-                  std::string()));  // device id
-    histogram_tester.ExpectTotalCount(
-        "Enterprise.ExistingInstallAttributesLock", 0);
-  }
+  // A non-matching mode should fail as well.
+  EXPECT_EQ(
+      InstallAttributes::LOCK_WRONG_MODE,
+      LockDeviceAndWaitForResult(policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
+                                 std::string(),    // domain
+                                 std::string(),    // realm
+                                 std::string()));  // device id
 }
 
 TEST_F(InstallAttributesTest, IsEnterpriseManagedCloud) {
@@ -346,6 +336,52 @@ TEST_F(InstallAttributesTest, CheckSetBlockDevmodeInTpm) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(succeeded);
+}
+
+TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredWithTpmPassword) {
+  TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->mutable_nonsensitive_status_reply()
+      ->set_is_owner_password_present(true);
+  base::HistogramTester histogram_tester;
+  install_attributes_->Init(GetTempPath());
+  base::RunLoop().RunUntilIdle();
+
+  // The expectation is "not locked, not cloud managed, and owner password not
+  // wiped", which is mapped to "0".
+  histogram_tester.ExpectUniqueSample("Enterprise.AttributesTPMConsistency", 0,
+                                      1);
+}
+
+TEST_F(InstallAttributesTest, ConsistencyCheckTriggeredTpmPasswordWiped) {
+  TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->mutable_nonsensitive_status_reply()
+      ->set_is_owner_password_present(false);
+  base::HistogramTester histogram_tester;
+  install_attributes_->Init(GetTempPath());
+  base::RunLoop().RunUntilIdle();
+
+  // The expectation is "not locked, not cloud managed, and owner password
+  // wiped", which is mapped to "4".
+  histogram_tester.ExpectUniqueSample("Enterprise.AttributesTPMConsistency", 4,
+                                      1);
+}
+
+TEST_F(InstallAttributesTest, ConsistencyCheckNotTriggeredDBusError) {
+  TpmManagerClient::Get()
+      ->GetTestInterface()
+      ->mutable_nonsensitive_status_reply()
+      ->set_status(::tpm_manager::STATUS_DBUS_ERROR);
+  base::HistogramTester histogram_tester;
+  install_attributes_->Init(GetTempPath());
+  // Fast-forward the timeline to virtually an infinite value in reality to make
+  // sure retries get exhausted.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(99999));
+
+  // The expectation is "8" when TPM is not reachable.
+  histogram_tester.ExpectUniqueSample("Enterprise.AttributesTPMConsistency", 8,
+                                      1);
 }
 
 }  // namespace chromeos

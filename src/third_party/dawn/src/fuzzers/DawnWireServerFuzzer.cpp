@@ -152,18 +152,18 @@ int DawnWireServerFuzzer::Run(const uint8_t* data,
 
     DevNull devNull;
     dawn_wire::WireServerDescriptor serverDesc = {};
-    serverDesc.device = device.Get();
     serverDesc.procs = &procs;
     serverDesc.serializer = &devNull;
 
     std::unique_ptr<dawn_wire::WireServer> wireServer(new dawn_wire::WireServer(serverDesc));
+    wireServer->InjectDevice(device.Get(), 1, 0);
 
     wireServer->HandleCommands(reinterpret_cast<const char*>(data), size);
 
     // Wait for all previous commands before destroying the server.
     // TODO(enga): Improve this when we improve/finalize how processing events happens.
     {
-        wgpu::Queue queue = device.GetDefaultQueue();
+        wgpu::Queue queue = device.GetQueue();
         wgpu::Fence fence = queue.CreateFence();
         queue.Signal(fence, 1u);
         fence.OnCompletion(1u, CommandsCompleteCallback, 0);
@@ -173,9 +173,7 @@ int DawnWireServerFuzzer::Run(const uint8_t* data,
         }
     }
 
-    // Destroy the server before the device because it needs to free all objects.
     wireServer = nullptr;
-    device = nullptr;
 
     // If we support error injection, and an output directory was provided, output copies of the
     // original testcase data, prepended with the injected error index.

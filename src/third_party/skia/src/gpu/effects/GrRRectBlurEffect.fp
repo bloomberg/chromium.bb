@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 in float sigma;
 layout(ctype=SkRect) in float4 rect;
 in uniform half cornerRadius;
@@ -45,8 +45,8 @@ uniform half blurRadius;
     #include "src/gpu/GrPaint.h"
     #include "src/gpu/GrProxyProvider.h"
     #include "src/gpu/GrRecordingContextPriv.h"
-    #include "src/gpu/GrRenderTargetContext.h"
     #include "src/gpu/GrStyle.h"
+    #include "src/gpu/GrSurfaceDrawContext.h"
     #include "src/gpu/GrThreadSafeCache.h"
     #include "src/gpu/effects/GrTextureEffect.h"
 
@@ -81,7 +81,7 @@ uniform half blurRadius;
                             const SkISize& dimensions,
                             float xformedSigma) {
         SkASSERT(!SkGpuBlurUtils::IsEffectivelyZeroSigma(xformedSigma));
-        std::unique_ptr<GrRenderTargetContext> rtc = GrRenderTargetContext::MakeWithFallback(
+        std::unique_ptr<GrSurfaceDrawContext> rtc = GrSurfaceDrawContext::MakeWithFallback(
                 dContext, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions, 1,
                 GrMipmapped::kNo, GrProtected::kNo, kBlurredRRectMaskOrigin);
         if (!rtc) {
@@ -95,9 +95,6 @@ uniform half blurRadius;
                        GrStyle::SimpleFill());
 
         GrSurfaceProxyView srcView = rtc->readSurfaceView();
-        if (!srcView) {
-            return false;
-        }
         SkASSERT(srcView.asTextureProxy());
         auto rtc2 = SkGpuBlurUtils::GaussianBlur(dContext,
                                                  std::move(srcView),
@@ -371,7 +368,7 @@ uniform half blurRadius;
     return GrRRectBlurEffect::Make(d->inputFP(), d->context(), sigma, sigma, rrect, rrect);
 }
 
-void main() {
+half4 main() {
     // Warp the fragment position to the appropriate part of the 9-patch blur texture by snipping
     // out the middle section of the proxy rect.
     float2 translatedFragPosFloat = sk_FragCoord.xy - proxyRect.LT;
@@ -406,8 +403,7 @@ void main() {
     half2 proxyDims = half2(2.0 * edgeSize);
     half2 texCoord = translatedFragPosHalf / proxyDims;
 
-    half4 inputColor = sample(inputFP);
-    sk_OutColor = inputColor * sample(ninePatchFP, texCoord);
+    return sample(inputFP) * sample(ninePatchFP, texCoord).a;
 }
 
 @setData(pdman) {

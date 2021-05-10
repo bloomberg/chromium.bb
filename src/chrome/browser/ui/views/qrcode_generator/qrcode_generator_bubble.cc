@@ -43,6 +43,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -71,7 +72,7 @@ gfx::ImageSkia GetPlaceholderImageSkia(const SkColor color) {
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
   bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
   bitmap.eraseColor(color);
-  return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
+  return gfx::ImageSkia::CreateFromBitmap(bitmap, 1.0f);
 }
 
 // Adds a new small vertical padding row to the current bottom of |layout|.
@@ -197,10 +198,6 @@ void QRCodeGeneratorBubble::WindowClosing() {
     controller_->OnBubbleClosed();
     controller_ = nullptr;
   }
-}
-
-const char* QRCodeGeneratorBubble::GetClassName() const {
-  return "QRCodeGeneratorBubble";
 }
 
 void QRCodeGeneratorBubble::Init() {
@@ -439,5 +436,8 @@ void QRCodeGeneratorBubble::DownloadButtonPressed() {
   download_manager->DownloadUrl(std::move(params));
   base::RecordAction(base::UserMetricsAction("SharingQRCode.DownloadQRCode"));
 }
+
+BEGIN_METADATA(QRCodeGeneratorBubble, LocationBarBubbleDelegateView)
+END_METADATA
 
 }  // namespace qrcode_generator

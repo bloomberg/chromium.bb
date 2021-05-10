@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
@@ -10,7 +11,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
-assert(is_chromeos)
+assert(is_chromeos_ash)
 
 select_to_speak_out_dir =
     "$root_out_dir/resources/chromeos/accessibility/select_to_speak"
@@ -25,6 +26,7 @@ run_jsbundler("select_to_speak_copied_files") {
   mode = "copy"
   dest_dir = select_to_speak_out_dir
   sources = [
+    "background.html",
     "checked.png",
     "earcons/null_selection.ogg",
     "input_handler.js",
@@ -36,9 +38,10 @@ run_jsbundler("select_to_speak_copied_files") {
     "prefs_manager.js",
     "select_to_speak-2x.svg",
     "select_to_speak.js",
-    "select_to_speak_gdocs_script.js",
+    "select_to_speak_constants.js",
     "select_to_speak_main.js",
     "select_to_speak_options.js",
+    "sentence_utils.js",
     "unchecked.png",
     "word_utils.js",
   ]
@@ -74,10 +77,22 @@ source_set("browser_tests") {
 js2gtest("select_to_speak_extjs_tests") {
   test_type = "extension"
   sources = [
+    # These are end-to-end tests.
     "paragraph_utils_overflow_test.js",
     "select_to_speak_keystroke_selection_test.js",
     "select_to_speak_mouse_selection_test.js",
+    "select_to_speak_navigation_control_test.js",
+    "select_to_speak_options_test.js",
     "select_to_speak_prefs_test.js",
+  ]
+
+  # These are unit tests run under an extension environment to get ES6 module support.
+  sources += [
+    "node_utils_unittest.js",
+    "paragraph_utils_unittest.js",
+    "select_to_speak_unittest.js",
+    "sentence_utils_unittest.js",
+    "word_utils_unittest.js",
   ]
   gen_include_files = [
     "../common/testing/callback_helper.js",
@@ -111,7 +126,9 @@ js_type_check("closure_compile") {
     ":paragraph_utils",
     ":prefs_manager",
     ":select_to_speak",
+    ":select_to_speak_constants",
     ":select_to_speak_options",
+    ":sentence_utils",
     ":word_utils",
     "../common:automation_predicate",
     "../common:automation_util",
@@ -130,6 +147,7 @@ js_library("select_to_speak") {
     ":node_utils",
     ":paragraph_utils",
     ":prefs_manager",
+    ":sentence_utils",
     ":word_utils",
     "../common:automation_util",
     "../common:constants",
@@ -163,6 +181,11 @@ js_library("node_utils") {
   externs_list = [ "$externs_path/automation.js" ]
 }
 
+js_library("sentence_utils") {
+  deps = [ ":paragraph_utils" ]
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
 js_library("word_utils") {
   deps = [ ":paragraph_utils" ]
   externs_list = [ "$externs_path/automation.js" ]
@@ -187,4 +210,7 @@ js_library("prefs_manager") {
 js_library("metrics_utils") {
   deps = [ ":prefs_manager" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
+}
+
+js_library("select_to_speak_constants") {
 }

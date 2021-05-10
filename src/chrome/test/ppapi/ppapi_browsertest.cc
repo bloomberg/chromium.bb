@@ -16,6 +16,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -108,11 +109,14 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-// Disable all NaCl tests for --disable-nacl flag and on Mac ASAN builds.
-// Flaky on Mac ASAN:
-//    http://crbug.com/428670
+// Disable all NaCl tests for --disable-nacl flag and on Mac ASAN and Windows
+// builds.
+//
+// Flaky on Mac ASAN: https://crbug.com/428670
+// Flaky on Win7: https://crbug.com/1003252
 
-#if !BUILDFLAG(ENABLE_NACL) || (defined(OS_MAC) && defined(ADDRESS_SANITIZER))
+#if !BUILDFLAG(ENABLE_NACL) || \
+    (defined(OS_MAC) && defined(ADDRESS_SANITIZER)) || defined(OS_WIN)
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
@@ -127,8 +131,8 @@ using content::RenderViewHost;
 
 #define MAYBE_PPAPI_NACL(test_name) test_name
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(ADDRESS_SANITIZER)
-// http://crbug.com/633067, http://crbug.com/727989
+    defined(OS_MACOSX) || defined(ADDRESS_SANITIZER)
+// http://crbug.com/633067, http://crbug.com/727989, http://crbug.com/1076806
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
 #else
 #define MAYBE_PPAPI_PNACL(test_name) test_name
@@ -398,15 +402,19 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       return;
     }
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
 
     std::move(callback).Run(net::OK, LocalAddress(), RemoteAddress(),
-                            std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle));
+                            std::move(receive_consumer_handle),
+                            std::move(send_producer_handle));
     ClosePipeIfNeeded();
   }
 
@@ -431,16 +439,19 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       return;
     }
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
 
-    std::move(callback).Run(net::OK, RemoteAddress(),
-                            receiver_.BindNewPipeAndPassRemote(),
-                            std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle));
+    std::move(callback).Run(
+        net::OK, RemoteAddress(), receiver_.BindNewPipeAndPassRemote(),
+        std::move(receive_consumer_handle), std::move(send_producer_handle));
     ClosePipeIfNeeded();
   }
 
@@ -483,14 +494,18 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
     // that use a real NetworkContext already make sure that the class correctly
     // closes the sockets when upgrading.
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    std::move(callback).Run(net::OK, std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle),
-                            net::SSLInfo());
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
+
+    std::move(callback).Run(net::OK, std::move(receive_consumer_handle),
+                            std::move(send_producer_handle), net::SSLInfo());
 
     if (tcp_failure_type_ == TCPFailureType::kSSLWriteClosePipe) {
       observer_.reset();
@@ -2118,7 +2133,7 @@ TEST_PPAPI_NACL(MouseCursor)
 TEST_PPAPI_NACL(NetworkProxy)
 
 // TODO(crbug.com/602875), TODO(crbug.com/602876) Flaky on Win and CrOS.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 #define MAYBE_VideoDecoder DISABLED_VideoDecoder
 #else
 #define MAYBE_VideoDecoder VideoDecoder

@@ -197,6 +197,14 @@ void RendererImpl::SetPreservesPitch(bool preserves_pitch) {
     audio_renderer_->SetPreservesPitch(preserves_pitch);
 }
 
+void RendererImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (audio_renderer_)
+    audio_renderer_->SetAutoplayInitiated(autoplay_initiated);
+}
+
 void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -518,7 +526,7 @@ void RendererImpl::OnAudioRendererFlushDone() {
 
   // If we had a deferred video renderer underflow prior to the flush, it should
   // have been cleared by the audio renderer changing to BUFFERING_HAVE_NOTHING.
-  DCHECK(deferred_video_underflow_cb_.IsCancelled());
+  DCHECK(!has_deferred_buffering_state_change_);
   DCHECK_EQ(audio_buffering_state_, BUFFERING_HAVE_NOTHING);
   audio_ended_ = false;
   audio_playing_ = false;
@@ -719,11 +727,12 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
     if (video_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         audio_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         new_buffering_state == BUFFERING_HAVE_NOTHING &&
-        deferred_video_underflow_cb_.IsCancelled()) {
+        !has_deferred_buffering_state_change_) {
       DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
-          base::BindRepeating(&RendererImpl::OnBufferingStateChange, weak_this_,
-                              type, new_buffering_state, reason));
+          base::BindOnce(&RendererImpl::OnBufferingStateChange, weak_this_,
+                         type, new_buffering_state, reason));
+      has_deferred_buffering_state_change_ = true;
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
                                     video_underflow_threshold_.value());
@@ -732,12 +741,14 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
 
     DVLOG(4) << "deferred_video_underflow_cb_.Cancel()";
     deferred_video_underflow_cb_.Cancel();
-  } else if (!deferred_video_underflow_cb_.IsCancelled() &&
+    has_deferred_buffering_state_change_ = false;
+  } else if (has_deferred_buffering_state_change_ &&
              type == DemuxerStream::AUDIO &&
              new_buffering_state == BUFFERING_HAVE_NOTHING) {
     // If audio underflows while we have a deferred video underflow in progress
     // we want to mark video as underflowed immediately and cancel the deferral.
     deferred_video_underflow_cb_.Cancel();
+    has_deferred_buffering_state_change_ = false;
     video_buffering_state_ = BUFFERING_HAVE_NOTHING;
   }
 
@@ -943,7 +954,7 @@ void RendererImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
   client_->OnVideoFrameRateChange(fps);
 }
 
-void RendererImpl::CleanUpTrackChange(base::RepeatingClosure on_finished,
+void RendererImpl::CleanUpTrackChange(base::OnceClosure on_finished,
                                       bool* ended,
                                       bool* playing) {
   *playing = false;
@@ -970,15 +981,15 @@ void RendererImpl::OnSelectedVideoTracksChanged(
 
   // 'fixing' the stream -> restarting if its the same stream,
   //                        reinitializing if it is different.
-  base::RepeatingClosure fix_stream_cb;
+  base::OnceClosure fix_stream_cb;
   if (stream && stream != current_video_stream_) {
-    fix_stream_cb = base::BindRepeating(
-        &RendererImpl::ReinitializeVideoRenderer, weak_this_, stream,
-        GetMediaTime(), base::Passed(&change_completed_cb));
+    fix_stream_cb =
+        base::BindOnce(&RendererImpl::ReinitializeVideoRenderer, weak_this_,
+                       stream, GetMediaTime(), std::move(change_completed_cb));
   } else {
-    fix_stream_cb = base::BindRepeating(
+    fix_stream_cb = base::BindOnce(
         &RendererImpl::RestartVideoRenderer, weak_this_, current_video_stream_,
-        GetMediaTime(), base::Passed(&change_completed_cb));
+        GetMediaTime(), std::move(change_completed_cb));
   }
 
   pending_video_track_change_ = true;
@@ -1003,16 +1014,16 @@ void RendererImpl::OnEnabledAudioTracksChanged(
 
   // 'fixing' the stream -> restarting if its the same stream,
   //                        reinitializing if it is different.
-  base::RepeatingClosure fix_stream_cb;
+  base::OnceClosure fix_stream_cb;
 
   if (stream && stream != current_audio_stream_) {
-    fix_stream_cb = base::BindRepeating(
-        &RendererImpl::ReinitializeAudioRenderer, weak_this_, stream,
-        GetMediaTime(), base::Passed(&change_completed_cb));
+    fix_stream_cb =
+        base::BindOnce(&RendererImpl::ReinitializeAudioRenderer, weak_this_,
+                       stream, GetMediaTime(), std::move(change_completed_cb));
   } else {
-    fix_stream_cb = base::BindRepeating(
+    fix_stream_cb = base::BindOnce(
         &RendererImpl::RestartAudioRenderer, weak_this_, current_audio_stream_,
-        GetMediaTime(), base::Passed(&change_completed_cb));
+        GetMediaTime(), std::move(change_completed_cb));
   }
 
   {

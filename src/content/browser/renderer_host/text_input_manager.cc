@@ -68,6 +68,22 @@ const ui::mojom::TextInputState* TextInputManager::GetTextInputState() const {
   return text_input_state_map_.at(active_view_).get();
 }
 
+gfx::Range TextInputManager::GetAutocorrectRange() const {
+  if (!active_view_)
+    return gfx::Range();
+
+  for (auto const& pair : text_input_state_map_) {
+    for (const auto& ime_text_span_info : pair.second->ime_text_spans_info) {
+      if (ime_text_span_info->span.type ==
+          ui::ImeTextSpan::Type::kAutocorrect) {
+        return gfx::Range(ime_text_span_info->span.start_offset,
+                          ime_text_span_info->span.end_offset);
+      }
+    }
+  }
+  return gfx::Range();
+}
+
 const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(
     RenderWidgetHostViewBase* view) const {
   DCHECK(!view || IsRegistered(view));
@@ -117,6 +133,19 @@ void TextInputManager::UpdateTextInputState(
   // TextInputState.
   bool changed = ShouldUpdateTextInputState(*text_input_state_map_[view],
                                             text_input_state);
+  TRACE_EVENT2(
+      "ime", "TextInputManager::UpdateTextInputState", "changed", changed,
+      "text_input_state - type, selection, composition, "
+      "show_ime_if_needed, control_bounds",
+      std::to_string(text_input_state.type) + ", " +
+          text_input_state.selection.ToString() + ", " +
+          (text_input_state.composition.has_value()
+               ? text_input_state.composition->ToString()
+               : "") +
+          ", " + std::to_string(text_input_state.show_ime_if_needed) + ", " +
+          (text_input_state.edit_context_control_bounds.has_value()
+               ? text_input_state.edit_context_control_bounds->ToString()
+               : ""));
   text_input_state_map_[view] = text_input_state.Clone();
   for (const auto& ime_text_span_info :
        text_input_state_map_[view]->ime_text_spans_info) {

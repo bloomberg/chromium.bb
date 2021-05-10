@@ -163,12 +163,6 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/angleproject/",
         "License": "BSD",
     },
-    os.path.join('third_party', 'angle', 'third_party', 'vulkan-headers'): {
-        "Name": "Vulkan-Headers",
-        "URL": "https://github.com/KhronosGroup/Vulkan-Headers",
-        "License": "Apache 2.0",
-        "License File": "src/LICENSE.txt",
-    },
     os.path.join('third_party', 'cros_system_api'): {
         "Name": "Chromium OS system API",
         "URL": "http://www.chromium.org/chromium-os",
@@ -355,7 +349,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('chrome', 'installer', 'mac', 'third_party', 'xz'),
     os.path.join('chrome', 'test', 'data', 'third_party', 'kraken'),
     os.path.join('chrome', 'test', 'data', 'third_party', 'spaceport'),
-    os.path.join('chrome', 'third_party', 'mock4js'),
     os.path.join('chrome', 'third_party', 'mozilla_security_manager'),
     os.path.join('third_party', 'angle'),
     os.path.join('third_party', 'apple_apsl'),

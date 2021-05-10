@@ -15,21 +15,30 @@
  */
 
 #include "perfetto/tracing/tracing.h"
-#include "perfetto/tracing/internal/track_event_internal.h"
-#include "src/tracing/internal/tracing_muxer_impl.h"
 
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 
+#include "perfetto/ext/base/waitable_event.h"
+#include "perfetto/tracing/internal/track_event_internal.h"
+#include "src/tracing/internal/tracing_muxer_impl.h"
+
 namespace perfetto {
+namespace {
+bool g_was_initialized = false;
+}
 
 // static
 void Tracing::InitializeInternal(const TracingInitArgs& args) {
-  static bool was_initialized = false;
   static TracingInitArgs init_args;
-  if (was_initialized) {
-    // Should not be reinitialized with different args.
-    PERFETTO_DCHECK(init_args == args);
+  if (g_was_initialized) {
+    if (!(init_args == args)) {
+      PERFETTO_ELOG(
+          "Tracing::Initialize() called more than once with different args. "
+          "This is not supported, only the first call will have effect.");
+      PERFETTO_DCHECK(false);
+    }
     return;
   }
 
@@ -37,8 +46,13 @@ void Tracing::InitializeInternal(const TracingInitArgs& args) {
   PERFETTO_CHECK(args.dcheck_is_on_ == PERFETTO_DCHECK_IS_ON());
   internal::TracingMuxerImpl::InitializeInstance(args);
   internal::TrackRegistry::InitializeInstance();
-  was_initialized = true;
+  g_was_initialized = true;
   init_args = args;
+}
+
+// static
+bool Tracing::IsInitialized() {
+  return g_was_initialized;
 }
 
 //  static
@@ -47,10 +61,28 @@ std::unique_ptr<TracingSession> Tracing::NewTrace(BackendType backend) {
       ->CreateTracingSession(backend);
 }
 
+// Can be called from any thread.
+bool TracingSession::FlushBlocking(uint32_t timeout_ms) {
+  std::atomic<bool> flush_result;
+  base::WaitableEvent flush_ack;
+
+  // The non blocking Flush() can be called on any thread. It does the PostTask
+  // internally.
+  Flush(
+      [&flush_ack, &flush_result](bool res) {
+        flush_result = res;
+        flush_ack.Notify();
+      },
+      timeout_ms);
+  flush_ack.Wait();
+  return flush_result;
+}
+
 std::vector<char> TracingSession::ReadTraceBlocking() {
   std::vector<char> raw_trace;
   std::mutex mutex;
   std::condition_variable cv;
+
   bool all_read = false;
 
   ReadTrace([&mutex, &raw_trace, &all_read, &cv](ReadTraceCallbackArgs cb) {

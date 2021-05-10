@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -46,7 +47,6 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -746,15 +746,15 @@ void WallpaperControllerImpl::RestoreWallpaperBlurForLockState(float blur) {
     observer.OnWallpaperBlurChanged();
 }
 
-bool WallpaperControllerImpl::ShouldApplyColorFilter() const {
-  // Apply a color filter on the wallpaper in a blocked user session or overview
-  // or in tablet mode unless during wallpaper preview.
-  const bool should_dim =
+bool WallpaperControllerImpl::ShouldApplyShield() const {
+  // Apply a shield on the wallpaper in a blocked user session or overview or in
+  // tablet mode unless during wallpaper preview.
+  const bool needs_shield =
       Shell::Get()->session_controller()->IsUserSessionBlocked() ||
       Shell::Get()->overview_controller()->InOverviewSession() ||
       (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
        !confirm_preview_wallpaper_callback_);
-  return should_dim && !IsOneShotWallpaper();
+  return needs_shield && !IsOneShotWallpaper();
 }
 
 bool WallpaperControllerImpl::IsBlurAllowedForLockState() const {
@@ -1078,8 +1078,8 @@ void WallpaperControllerImpl::ConfirmPreviewWallpaper() {
   std::move(confirm_preview_wallpaper_callback_).Run();
   reload_preview_wallpaper_callback_.Reset();
 
-  // Ensure color filter is applied after confirming the preview wallpaper.
-  if (ShouldApplyColorFilter())
+  // Ensure shield is applied after confirming the preview wallpaper.
+  if (ShouldApplyShield())
     RepaintWallpaper();
 
   for (auto& observer : observers_)
@@ -1350,7 +1350,7 @@ bool WallpaperControllerImpl::ShouldShowWallpaperSetting() {
   // everything resets.
   user_manager::UserType active_user_type = active_user_session->user_info.type;
   return active_user_type == user_manager::USER_TYPE_REGULAR ||
-         active_user_type == user_manager::USER_TYPE_SUPERVISED ||
+         active_user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          active_user_type == user_manager::USER_TYPE_CHILD;
 }
 

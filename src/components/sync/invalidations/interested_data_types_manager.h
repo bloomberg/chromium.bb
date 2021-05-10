@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_INVALIDATIONS_INTERESTED_DATA_TYPES_MANAGER_H_
 #define COMPONENTS_SYNC_INVALIDATIONS_INTERESTED_DATA_TYPES_MANAGER_H_
 
+#include "base/optional.h"
+
 #include "components/sync/base/model_type.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 
@@ -24,8 +26,12 @@ class InterestedDataTypesManager {
   // unregister any existing handler. There can be at most one handler.
   void SetInterestedDataTypesHandler(InterestedDataTypesHandler* handler);
 
-  // Get or set the interested data types.
-  const ModelTypeSet& GetInterestedDataTypes() const;
+  // Get the interested data types. Returns nullopt if SetInterestedDataTypes()
+  // has never been called.
+  base::Optional<ModelTypeSet> GetInterestedDataTypes() const;
+
+  // Set interested data types. The first call of the method initializes this
+  // object.
   void SetInterestedDataTypes(
       const ModelTypeSet& data_types,
       SyncInvalidationsService::InterestedDataTypesAppliedCallback callback);
@@ -33,7 +39,7 @@ class InterestedDataTypesManager {
  private:
   InterestedDataTypesHandler* interested_data_types_handler_ = nullptr;
 
-  ModelTypeSet data_types_;
+  base::Optional<ModelTypeSet> data_types_;
 };
 
 }  // namespace syncer

@@ -17,26 +17,25 @@
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/time/default_clock.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/status_collector/app_info_generator.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {
-class CrosSettings;
 namespace system {
 class StatisticsProvider;
 }
@@ -119,7 +118,7 @@ class DeviceStatusCollector : public StatusCollector,
                               public chromeos::PowerManagerClient::Observer {
  public:
   using VolumeInfoFetcher =
-      base::Callback<std::vector<enterprise_management::VolumeInfo>(
+      base::RepeatingCallback<std::vector<enterprise_management::VolumeInfo>(
           const std::vector<std::string>& mount_points)>;
 
   // Reads the first CPU line from /proc/stat. Returns an empty string if
@@ -128,12 +127,12 @@ class DeviceStatusCollector : public StatusCollector,
   //
   // The format of this line from /proc/stat is:
   //   cpu  user_time nice_time system_time idle_time
-  using CPUStatisticsFetcher = base::Callback<std::string(void)>;
+  using CPUStatisticsFetcher = base::RepeatingCallback<std::string(void)>;
 
   // Reads CPU temperatures from /sys/class/hwmon/hwmon*/temp*_input and
   // appropriate labels from /sys/class/hwmon/hwmon*/temp*_label.
-  using CPUTempFetcher =
-      base::Callback<std::vector<enterprise_management::CPUTempInfo>()>;
+  using CPUTempFetcher = base::RepeatingCallback<
+      std::vector<enterprise_management::CPUTempInfo>()>;
 
   // Format of the function that asynchronously receives TpmStatusInfo.
   using TpmStatusReceiver = base::OnceCallback<void(const TpmStatusInfo&)>;
@@ -172,7 +171,7 @@ class DeviceStatusCollector : public StatusCollector,
           void)>;
   // Reads the stateful partition info from /home/.shadow
   using StatefulPartitionInfoFetcher =
-      base::Callback<enterprise_management::StatefulPartitionInfo()>;
+      base::RepeatingCallback<enterprise_management::StatefulPartitionInfo()>;
 
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
@@ -202,7 +201,7 @@ class DeviceStatusCollector : public StatusCollector,
   ~DeviceStatusCollector() override;
 
   // StatusCollector:
-  void GetStatusAsync(const StatusCollectorCallback& response) override;
+  void GetStatusAsync(StatusCollectorCallback response) override;
   void OnSubmittedSuccessfully() override;
   bool ShouldReportActivityTimes() const override;
   bool ShouldReportNetworkInterfaces() const override;
@@ -257,8 +256,9 @@ class DeviceStatusCollector : public StatusCollector,
   // Callbacks from chromeos::VersionLoader.
   void OnOSVersion(const std::string& version);
   void OnOSFirmware(std::pair<const std::string&, const std::string&> version);
-  void OnTpmVersion(
-      const chromeos::CryptohomeClient::TpmVersionInfo& tpm_version_info);
+
+  // Callbacks from `chromeos::TpmManagerClient`.
+  void OnGetTpmVersion(const ::tpm_manager::GetVersionInfoReply& reply);
 
   void GetDeviceStatus(scoped_refptr<DeviceStatusCollectorState> state);
   void GetSessionStatus(scoped_refptr<DeviceStatusCollectorState> state);
@@ -380,7 +380,7 @@ class DeviceStatusCollector : public StatusCollector,
   std::string os_version_;
   std::string firmware_version_;
   std::string firmware_fetch_error_;
-  chromeos::CryptohomeClient::TpmVersionInfo tpm_version_info_;
+  ::tpm_manager::GetVersionInfoReply tpm_version_reply_;
 
   struct ResourceUsage {
     // Sample of percentage-of-CPU-used.
@@ -458,50 +458,28 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_system_info_ = false;
   bool stat_reporting_pref_ = false;
 
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      activity_times_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      network_interfaces_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      users_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      hardware_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      session_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      os_update_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      running_kiosk_app_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      power_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      storage_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      board_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      cpu_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      graphics_status_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      timezone_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      memory_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      backlight_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      crash_report_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      bluetooth_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      fan_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      vpd_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      system_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      app_info_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      stats_reporting_pref_subscription_;
+  base::CallbackListSubscription activity_times_subscription_;
+  base::CallbackListSubscription network_interfaces_subscription_;
+  base::CallbackListSubscription users_subscription_;
+  base::CallbackListSubscription hardware_status_subscription_;
+  base::CallbackListSubscription session_status_subscription_;
+  base::CallbackListSubscription os_update_status_subscription_;
+  base::CallbackListSubscription running_kiosk_app_subscription_;
+  base::CallbackListSubscription power_status_subscription_;
+  base::CallbackListSubscription storage_status_subscription_;
+  base::CallbackListSubscription board_status_subscription_;
+  base::CallbackListSubscription cpu_info_subscription_;
+  base::CallbackListSubscription graphics_status_subscription_;
+  base::CallbackListSubscription timezone_info_subscription_;
+  base::CallbackListSubscription memory_info_subscription_;
+  base::CallbackListSubscription backlight_info_subscription_;
+  base::CallbackListSubscription crash_report_info_subscription_;
+  base::CallbackListSubscription bluetooth_info_subscription_;
+  base::CallbackListSubscription fan_info_subscription_;
+  base::CallbackListSubscription vpd_info_subscription_;
+  base::CallbackListSubscription system_info_subscription_;
+  base::CallbackListSubscription app_info_subscription_;
+  base::CallbackListSubscription stats_reporting_pref_subscription_;
 
   AffiliatedSessionService affiliated_session_service_;
 

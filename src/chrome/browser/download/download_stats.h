@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prompt_status.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 
@@ -67,6 +68,9 @@ enum ChromeDownloadOpenMethod {
   // The user chose to open the download using the system handler even though
   // the preferred method was to open the download using the browser.
   DOWNLOAD_OPEN_METHOD_USER_PLATFORM,
+
+  // The download was opened using a rename handler.
+  DOWNLOAD_OPEN_METHOD_RENAME_HANDLER,
 
   DOWNLOAD_OPEN_METHOD_LAST_ENTRY
 };
@@ -150,6 +154,8 @@ enum class DownloadShelfDragEvent {
 };
 
 void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event);
+
+void RecordDownloadStartPerProfileType(Profile* profile);
 
 #ifdef OS_ANDROID
 // Records whether the download dialog is shown to the user.

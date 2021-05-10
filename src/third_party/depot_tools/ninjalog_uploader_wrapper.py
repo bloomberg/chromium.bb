@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -115,7 +115,7 @@ def main():
   creationnflags = 0
   if platform.system() == 'Windows':
     creationnflags = subprocess.CREATE_NEW_PROCESS_GROUP
-  subprocess2.Popen(['vpython', UPLOADER] + sys.argv[1:],
+  subprocess2.Popen([sys.executable, UPLOADER] + sys.argv[1:],
                     stdout=devnull,
                     stderr=devnull,
                     creationflags=creationnflags)

@@ -33,7 +33,6 @@ import * as SDK from '../sdk/sdk.js';
 
 /**
  * @implements {ProtocolProxyApi.StorageDispatcher}
- * @unrestricted
  */
 export class IndexedDBModel extends SDK.SDKModel.SDKModel {
   /**
@@ -115,8 +114,8 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     const keyRange = {};
     keyRange.lower = IndexedDBModel.keyFromIDBKey(idbKeyRange.lower);
     keyRange.upper = IndexedDBModel.keyFromIDBKey(idbKeyRange.upper);
-    keyRange.lowerOpen = !!idbKeyRange.lowerOpen;
-    keyRange.upperOpen = !!idbKeyRange.upperOpen;
+    keyRange.lowerOpen = Boolean(idbKeyRange.lowerOpen);
+    keyRange.upperOpen = Boolean(idbKeyRange.upperOpen);
     return keyRange;
   }
 
@@ -266,7 +265,7 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
    * @param {string} securityOrigin
    */
   _removeOrigin(securityOrigin) {
-    console.assert(!!this._databaseNamesBySecurityOrigin[securityOrigin]);
+    console.assert(Boolean(this._databaseNamesBySecurityOrigin[securityOrigin]));
     for (let i = 0; i < this._databaseNamesBySecurityOrigin[securityOrigin].length; ++i) {
       this._databaseRemoved(securityOrigin, this._databaseNamesBySecurityOrigin[securityOrigin][i]);
     }
@@ -282,7 +281,7 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
    */
   _isValidSecurityOrigin(securityOrigin) {
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(securityOrigin);
-    return !!parsedURL && parsedURL.scheme.startsWith('http');
+    return parsedURL !== null && parsedURL.scheme.startsWith('http');
   }
 
   /**
@@ -538,9 +537,6 @@ export const Events = {
   IndexedDBContentUpdated: Symbol('IndexedDBContentUpdated')
 };
 
-/**
- * @unrestricted
- */
 export class Entry {
   /**
    * @param {!SDK.RemoteObject.RemoteObject} key
@@ -554,9 +550,6 @@ export class Entry {
   }
 }
 
-/**
- * @unrestricted
- */
 export class DatabaseId {
   /**
    * @param {string} securityOrigin
@@ -576,9 +569,6 @@ export class DatabaseId {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Database {
   /**
    * @param {!DatabaseId} databaseId
@@ -592,9 +582,6 @@ export class Database {
   }
 }
 
-/**
- * @unrestricted
- */
 export class ObjectStore {
   /**
    * @param {string} name
@@ -617,9 +604,6 @@ export class ObjectStore {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Index {
   /**
    * @param {string} name

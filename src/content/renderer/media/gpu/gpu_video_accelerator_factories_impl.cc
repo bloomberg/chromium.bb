@@ -14,10 +14,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -416,7 +416,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_OZONE)
   // TODO(sugoi): This configuration is currently used only for testing ChromeOS
   // on Linux and doesn't support hardware acceleration. OSMesa did not support
   // any hardware acceleration here, so this was never an issue, but SwiftShader
@@ -429,11 +429,10 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   auto capabilities = context_provider_->ContextCapabilities();
   const size_t bit_depth = media::BitDepth(pixel_format);
   if (bit_depth > 8) {
-#if !defined(OS_MAC)
-    // TODO(crbug.com/1101041): Enable P010 support for macOS.
     if (capabilities.image_ycbcr_p010 && bit_depth == 10)
       return media::GpuVideoAcceleratorFactories::OutputFormat::P010;
 
+#if !defined(OS_MAC)
     // If high bit depth rendering is enabled, bail here, otherwise try and use
     // XR30 storage, and if not and we support RG textures, use those, albeit at
     // a reduced bit depth of 8 bits per component.
@@ -513,6 +512,11 @@ GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
 void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(
     const gfx::ColorSpace& color_space) {
   rendering_color_space_ = color_space;
+}
+
+const gfx::ColorSpace&
+GpuVideoAcceleratorFactoriesImpl::GetRenderingColorSpace() const {
+  return rendering_color_space_;
 }
 
 bool GpuVideoAcceleratorFactoriesImpl::CheckContextProviderLostOnMainThread() {

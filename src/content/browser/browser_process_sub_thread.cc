@@ -12,6 +12,7 @@
 #include "base/threading/hang_watcher.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/notification_service_impl.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -136,9 +138,8 @@ NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   // up a closure to automatically unregister it when Run() returns.
   base::ScopedClosureRunner unregister_thread_closure;
   if (base::HangWatcher::IsIOThreadHangWatchingEnabled()) {
-    unregister_thread_closure =
-        base::HangWatcher::GetInstance()->RegisterThread(
-            base::HangWatcher::ThreadType::kIOThread);
+    unregister_thread_closure = base::HangWatcher::RegisterThread(
+        base::HangWatcher::ThreadType::kIOThread);
   }
 
   Thread::Run(run_loop);
@@ -159,16 +160,14 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
 
   for (BrowserChildProcessHostIterator it(PROCESS_TYPE_UTILITY); !it.Done();
        ++it) {
-    UtilityProcessHost* utility_process =
-        static_cast<UtilityProcessHost*>(it.GetDelegate());
-    if (utility_process->sandbox_type() ==
-        sandbox::policy::SandboxType::kNetwork) {
+    if (it.GetDelegate()->GetServiceName() ==
+        network::mojom::NetworkService::Name_) {
       // This ensures that cookies and cache are flushed to disk on shutdown.
       // https://crbug.com/841001
 #if BUILDFLAG(CLANG_PROFILING)
       // On profiling build, browser_tests runs 10x slower.
       const int kMaxSecondsToWaitForNetworkProcess = 100;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
       // ChromeOS will kill the browser process if it doesn't shut down within
       // 3 seconds, so make sure we wait for less than that.
       const int kMaxSecondsToWaitForNetworkProcess = 1;

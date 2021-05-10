@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sstream>
+
+#include "gmock/gmock.h"
 #include "src/ast/call_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/vector_type.h"
-#include "src/context.h"
+#include "src/program.h"
+#include "src/semantic/call.h"
+#include "src/type/f32_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/hlsl/test_helper.h"
 
@@ -26,42 +29,229 @@ namespace writer {
 namespace hlsl {
 namespace {
 
+using IntrinsicType = semantic::IntrinsicType;
+
+using ::testing::HasSubstr;
+
 using HlslGeneratorImplTest_Intrinsic = TestHelper;
 
+enum class ParamType {
+  kF32,
+  kU32,
+  kBool,
+};
+
 struct IntrinsicData {
-  ast::Intrinsic intrinsic;
+  IntrinsicType intrinsic;
+  ParamType type;
   const char* hlsl_name;
 };
 inline std::ostream& operator<<(std::ostream& out, IntrinsicData data) {
   out << data.hlsl_name;
+  switch (data.type) {
+    case ParamType::kF32:
+      out << "f32";
+      break;
+    case ParamType::kU32:
+      out << "u32";
+      break;
+    case ParamType::kBool:
+      out << "bool";
+      break;
+  }
+  out << ">";
   return out;
 }
-using HlslIntrinsicTest = TestHelperBase<testing::TestWithParam<IntrinsicData>>;
+
+ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
+                                  ParamType type,
+                                  ProgramBuilder* builder) {
+  std::string name;
+  std::ostringstream str(name);
+  str << intrinsic;
+  switch (intrinsic) {
+    case IntrinsicType::kAcos:
+    case IntrinsicType::kAsin:
+    case IntrinsicType::kAtan:
+    case IntrinsicType::kCeil:
+    case IntrinsicType::kCos:
+    case IntrinsicType::kCosh:
+    case IntrinsicType::kDpdx:
+    case IntrinsicType::kDpdxCoarse:
+    case IntrinsicType::kDpdxFine:
+    case IntrinsicType::kDpdy:
+    case IntrinsicType::kDpdyCoarse:
+    case IntrinsicType::kDpdyFine:
+    case IntrinsicType::kExp:
+    case IntrinsicType::kExp2:
+    case IntrinsicType::kFloor:
+    case IntrinsicType::kFract:
+    case IntrinsicType::kFwidth:
+    case IntrinsicType::kFwidthCoarse:
+    case IntrinsicType::kFwidthFine:
+    case IntrinsicType::kInverseSqrt:
+    case IntrinsicType::kIsFinite:
+    case IntrinsicType::kIsInf:
+    case IntrinsicType::kIsNan:
+    case IntrinsicType::kIsNormal:
+    case IntrinsicType::kLength:
+    case IntrinsicType::kLog:
+    case IntrinsicType::kLog2:
+    case IntrinsicType::kNormalize:
+    case IntrinsicType::kRound:
+    case IntrinsicType::kSin:
+    case IntrinsicType::kSinh:
+    case IntrinsicType::kSqrt:
+    case IntrinsicType::kTan:
+    case IntrinsicType::kTanh:
+    case IntrinsicType::kTrunc:
+    case IntrinsicType::kSign:
+      return builder->Call(str.str(), "f2");
+    case IntrinsicType::kLdexp:
+      return builder->Call(str.str(), "f2", "u2");
+    case IntrinsicType::kAtan2:
+    case IntrinsicType::kDot:
+    case IntrinsicType::kDistance:
+    case IntrinsicType::kPow:
+    case IntrinsicType::kReflect:
+    case IntrinsicType::kStep:
+      return builder->Call(str.str(), "f2", "f2");
+    case IntrinsicType::kCross:
+      return builder->Call(str.str(), "f3", "f3");
+    case IntrinsicType::kFma:
+    case IntrinsicType::kMix:
+    case IntrinsicType::kFaceForward:
+    case IntrinsicType::kSmoothStep:
+      return builder->Call(str.str(), "f2", "f2", "f2");
+    case IntrinsicType::kAll:
+    case IntrinsicType::kAny:
+      return builder->Call(str.str(), "b2");
+    case IntrinsicType::kAbs:
+      if (type == ParamType::kF32) {
+        return builder->Call(str.str(), "f2");
+      } else {
+        return builder->Call(str.str(), "u2");
+      }
+    case IntrinsicType::kCountOneBits:
+    case IntrinsicType::kReverseBits:
+      return builder->Call(str.str(), "u2");
+    case IntrinsicType::kMax:
+    case IntrinsicType::kMin:
+      if (type == ParamType::kF32) {
+        return builder->Call(str.str(), "f2", "f2");
+      } else {
+        return builder->Call(str.str(), "u2", "u2");
+      }
+    case IntrinsicType::kClamp:
+      if (type == ParamType::kF32) {
+        return builder->Call(str.str(), "f2", "f2", "f2");
+      } else {
+        return builder->Call(str.str(), "u2", "u2", "u2");
+      }
+    case IntrinsicType::kSelect:
+      return builder->Call(str.str(), "f2", "f2", "b2");
+    case IntrinsicType::kDeterminant:
+      return builder->Call(str.str(), "m2x2");
+    default:
+      break;
+  }
+  return nullptr;
+}
+using HlslIntrinsicTest = TestParamHelper<IntrinsicData>;
 TEST_P(HlslIntrinsicTest, Emit) {
   auto param = GetParam();
-  EXPECT_EQ(gen().generate_intrinsic_name(param.intrinsic), param.hlsl_name);
+
+  auto* call = GenerateCall(param.intrinsic, param.type, this);
+  ASSERT_NE(nullptr, call) << "Unhandled intrinsic";
+  WrapInFunction(call);
+
+  Global("f2", ty.vec2<float>(), ast::StorageClass::kFunction);
+  Global("f3", ty.vec3<float>(), ast::StorageClass::kFunction);
+  Global("u2", ty.vec2<unsigned int>(), ast::StorageClass::kFunction);
+  Global("b2", ty.vec2<bool>(), ast::StorageClass::kFunction);
+  Global("m2x2", ty.mat2x2<float>(), ast::StorageClass::kFunction);
+
+  GeneratorImpl& gen = Build();
+
+  auto* sem = program->Sem().Get(call);
+  ASSERT_NE(sem, nullptr);
+  auto* target = sem->Target();
+  ASSERT_NE(target, nullptr);
+  auto* intrinsic = target->As<semantic::Intrinsic>();
+  ASSERT_NE(intrinsic, nullptr);
+
+  EXPECT_EQ(gen.generate_builtin_name(intrinsic), param.hlsl_name);
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Intrinsic,
     HlslIntrinsicTest,
-    testing::Values(IntrinsicData{ast::Intrinsic::kAny, "any"},
-                    IntrinsicData{ast::Intrinsic::kAll, "all"},
-                    IntrinsicData{ast::Intrinsic::kCountOneBits, "countbits"},
-                    IntrinsicData{ast::Intrinsic::kDot, "dot"},
-                    IntrinsicData{ast::Intrinsic::kDpdx, "ddx"},
-                    IntrinsicData{ast::Intrinsic::kDpdxCoarse, "ddx_coarse"},
-                    IntrinsicData{ast::Intrinsic::kDpdxFine, "ddx_fine"},
-                    IntrinsicData{ast::Intrinsic::kDpdy, "ddy"},
-                    IntrinsicData{ast::Intrinsic::kDpdyCoarse, "ddy_coarse"},
-                    IntrinsicData{ast::Intrinsic::kDpdyFine, "ddy_fine"},
-                    IntrinsicData{ast::Intrinsic::kFwidth, "fwidth"},
-                    IntrinsicData{ast::Intrinsic::kFwidthCoarse, "fwidth"},
-                    IntrinsicData{ast::Intrinsic::kFwidthFine, "fwidth"},
-                    IntrinsicData{ast::Intrinsic::kIsFinite, "isfinite"},
-                    IntrinsicData{ast::Intrinsic::kIsInf, "isinf"},
-                    IntrinsicData{ast::Intrinsic::kIsNan, "isnan"},
-                    IntrinsicData{ast::Intrinsic::kReverseBits,
-                                  "reversebits"}));
+    testing::Values(
+        IntrinsicData{IntrinsicType::kAbs, ParamType::kF32, "abs"},
+        IntrinsicData{IntrinsicType::kAbs, ParamType::kU32, "abs"},
+        IntrinsicData{IntrinsicType::kAcos, ParamType::kF32, "acos"},
+        IntrinsicData{IntrinsicType::kAll, ParamType::kBool, "all"},
+        IntrinsicData{IntrinsicType::kAny, ParamType::kBool, "any"},
+        IntrinsicData{IntrinsicType::kAsin, ParamType::kF32, "asin"},
+        IntrinsicData{IntrinsicType::kAtan, ParamType::kF32, "atan"},
+        IntrinsicData{IntrinsicType::kAtan2, ParamType::kF32, "atan2"},
+        IntrinsicData{IntrinsicType::kCeil, ParamType::kF32, "ceil"},
+        IntrinsicData{IntrinsicType::kClamp, ParamType::kF32, "clamp"},
+        IntrinsicData{IntrinsicType::kClamp, ParamType::kU32, "clamp"},
+        IntrinsicData{IntrinsicType::kCos, ParamType::kF32, "cos"},
+        IntrinsicData{IntrinsicType::kCosh, ParamType::kF32, "cosh"},
+        IntrinsicData{IntrinsicType::kCountOneBits, ParamType::kU32,
+                      "countbits"},
+        IntrinsicData{IntrinsicType::kCross, ParamType::kF32, "cross"},
+        IntrinsicData{IntrinsicType::kDeterminant, ParamType::kF32,
+                      "determinant"},
+        IntrinsicData{IntrinsicType::kDistance, ParamType::kF32, "distance"},
+        IntrinsicData{IntrinsicType::kDot, ParamType::kF32, "dot"},
+        IntrinsicData{IntrinsicType::kDpdx, ParamType::kF32, "ddx"},
+        IntrinsicData{IntrinsicType::kDpdxCoarse, ParamType::kF32,
+                      "ddx_coarse"},
+        IntrinsicData{IntrinsicType::kDpdxFine, ParamType::kF32, "ddx_fine"},
+        IntrinsicData{IntrinsicType::kDpdy, ParamType::kF32, "ddy"},
+        IntrinsicData{IntrinsicType::kDpdyCoarse, ParamType::kF32,
+                      "ddy_coarse"},
+        IntrinsicData{IntrinsicType::kDpdyFine, ParamType::kF32, "ddy_fine"},
+        IntrinsicData{IntrinsicType::kExp, ParamType::kF32, "exp"},
+        IntrinsicData{IntrinsicType::kExp2, ParamType::kF32, "exp2"},
+        IntrinsicData{IntrinsicType::kFaceForward, ParamType::kF32,
+                      "faceforward"},
+        IntrinsicData{IntrinsicType::kFloor, ParamType::kF32, "floor"},
+        IntrinsicData{IntrinsicType::kFma, ParamType::kF32, "fma"},
+        IntrinsicData{IntrinsicType::kFract, ParamType::kF32, "frac"},
+        IntrinsicData{IntrinsicType::kFwidth, ParamType::kF32, "fwidth"},
+        IntrinsicData{IntrinsicType::kFwidthCoarse, ParamType::kF32, "fwidth"},
+        IntrinsicData{IntrinsicType::kFwidthFine, ParamType::kF32, "fwidth"},
+        IntrinsicData{IntrinsicType::kInverseSqrt, ParamType::kF32, "rsqrt"},
+        IntrinsicData{IntrinsicType::kIsFinite, ParamType::kF32, "isfinite"},
+        IntrinsicData{IntrinsicType::kIsInf, ParamType::kF32, "isinf"},
+        IntrinsicData{IntrinsicType::kIsNan, ParamType::kF32, "isnan"},
+        IntrinsicData{IntrinsicType::kLdexp, ParamType::kF32, "ldexp"},
+        IntrinsicData{IntrinsicType::kLength, ParamType::kF32, "length"},
+        IntrinsicData{IntrinsicType::kLog, ParamType::kF32, "log"},
+        IntrinsicData{IntrinsicType::kLog2, ParamType::kF32, "log2"},
+        IntrinsicData{IntrinsicType::kMax, ParamType::kF32, "max"},
+        IntrinsicData{IntrinsicType::kMax, ParamType::kU32, "max"},
+        IntrinsicData{IntrinsicType::kMin, ParamType::kF32, "min"},
+        IntrinsicData{IntrinsicType::kMin, ParamType::kU32, "min"},
+        IntrinsicData{IntrinsicType::kNormalize, ParamType::kF32, "normalize"},
+        IntrinsicData{IntrinsicType::kPow, ParamType::kF32, "pow"},
+        IntrinsicData{IntrinsicType::kReflect, ParamType::kF32, "reflect"},
+        IntrinsicData{IntrinsicType::kReverseBits, ParamType::kU32,
+                      "reversebits"},
+        IntrinsicData{IntrinsicType::kRound, ParamType::kU32, "round"},
+        IntrinsicData{IntrinsicType::kSign, ParamType::kF32, "sign"},
+        IntrinsicData{IntrinsicType::kSin, ParamType::kF32, "sin"},
+        IntrinsicData{IntrinsicType::kSinh, ParamType::kF32, "sinh"},
+        IntrinsicData{IntrinsicType::kSmoothStep, ParamType::kF32,
+                      "smoothstep"},
+        IntrinsicData{IntrinsicType::kSqrt, ParamType::kF32, "sqrt"},
+        IntrinsicData{IntrinsicType::kStep, ParamType::kF32, "step"},
+        IntrinsicData{IntrinsicType::kTan, ParamType::kF32, "tan"},
+        IntrinsicData{IntrinsicType::kTanh, ParamType::kF32, "tanh"},
+        IntrinsicData{IntrinsicType::kTrunc, ParamType::kF32, "trunc"}));
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, DISABLED_Intrinsic_IsNormal) {
   FAIL();
@@ -71,64 +261,164 @@ TEST_F(HlslGeneratorImplTest_Intrinsic, DISABLED_Intrinsic_Select) {
   FAIL();
 }
 
-TEST_F(HlslGeneratorImplTest_Intrinsic, DISABLED_Intrinsic_OuterProduct) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec2(&f32, 2);
-  ast::type::VectorType vec3(&f32, 3);
-
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &vec2);
-  auto b =
-      std::make_unique<ast::Variable>("b", ast::StorageClass::kNone, &vec3);
-
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::IdentifierExpression>("a"));
-  params.push_back(std::make_unique<ast::IdentifierExpression>("b"));
-
-  ast::CallExpression call(
-      std::make_unique<ast::IdentifierExpression>("outer_product"),
-      std::move(params));
-
-  td().RegisterVariableForTesting(a.get());
-  td().RegisterVariableForTesting(b.get());
-
-  mod()->AddGlobalVariable(std::move(a));
-  mod()->AddGlobalVariable(std::move(b));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&call)) << td().error();
-
-  gen().increment_indent();
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &call)) << gen().error();
-  EXPECT_EQ(result(), "  float3x2(a * b[0], a * b[1], a * b[2])");
-}
-
-TEST_F(HlslGeneratorImplTest_Intrinsic, Intrinsic_Bad_Name) {
-  EXPECT_EQ(gen().generate_intrinsic_name(ast::Intrinsic::kNone), "");
-}
-
 TEST_F(HlslGeneratorImplTest_Intrinsic, Intrinsic_Call) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* call = Call("dot", "param1", "param2");
 
-  ast::ExpressionList params;
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param1"));
-  params.push_back(std::make_unique<ast::IdentifierExpression>("param2"));
+  Global("param1", ty.vec3<f32>(), ast::StorageClass::kFunction);
+  Global("param2", ty.vec3<f32>(), ast::StorageClass::kFunction);
 
-  ast::CallExpression call(std::make_unique<ast::IdentifierExpression>("dot"),
-                           std::move(params));
+  WrapInFunction(call);
 
-  ast::Variable v1("param1", ast::StorageClass::kFunction, &vec);
-  ast::Variable v2("param2", ast::StorageClass::kFunction, &vec);
+  GeneratorImpl& gen = Build();
 
-  td().RegisterVariableForTesting(&v1);
-  td().RegisterVariableForTesting(&v2);
-
-  ASSERT_TRUE(td().DetermineResultType(&call)) << td().error();
-
-  gen().increment_indent();
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &call)) << gen().error();
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
   EXPECT_EQ(result(), "  dot(param1, param2)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Pack4x8Snorm) {
+  auto* call = Call("pack4x8snorm", "p1");
+  Global("p1", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("int4 _tint_tmp = int4(round(clamp(p1, "
+                                      "-1.0, 1.0) * 127.0)) & 0xff;"));
+  EXPECT_THAT(result(), HasSubstr("asuint(_tint_tmp.x | _tint_tmp.y << 8 | "
+                                  "_tint_tmp.z << 16 | _tint_tmp.w << 24)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Pack4x8Unorm) {
+  auto* call = Call("pack4x8unorm", "p1");
+  Global("p1", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint4 _tint_tmp = uint4(round(clamp(p1, "
+                                      "0.0, 1.0) * 255.0));"));
+  EXPECT_THAT(result(), HasSubstr("(_tint_tmp.x | _tint_tmp.y << 8 | "
+                                  "_tint_tmp.z << 16 | _tint_tmp.w << 24)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Snorm) {
+  auto* call = Call("pack2x16snorm", "p1");
+  Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("int2 _tint_tmp = int2(round(clamp(p1, "
+                                      "-1.0, 1.0) * 32767.0)) & 0xffff;"));
+  EXPECT_THAT(result(), HasSubstr("asuint(_tint_tmp.x | _tint_tmp.y << 16)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Unorm) {
+  auto* call = Call("pack2x16unorm", "p1");
+  Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint2 _tint_tmp = uint2(round(clamp(p1, "
+                                      "0.0, 1.0) * 65535.0));"));
+  EXPECT_THAT(result(), HasSubstr("(_tint_tmp.x | _tint_tmp.y << 16)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Float) {
+  auto* call = Call("pack2x16float", "p1");
+  Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint2 _tint_tmp = f32tof16(p1);"));
+  EXPECT_THAT(result(), HasSubstr("(_tint_tmp.x | _tint_tmp.y << 16)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack4x8Snorm) {
+  auto* call = Call("unpack4x8snorm", "p1");
+  Global("p1", ty.u32(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("int _tint_tmp_0 = int(p1);"));
+  EXPECT_THAT(pre_result(),
+              HasSubstr("int4 _tint_tmp = int4(_tint_tmp_0 << 24, _tint_tmp_0 "
+                        "<< 16, _tint_tmp_0 << 8, _tint_tmp_0) >> 24;"));
+  EXPECT_THAT(result(),
+              HasSubstr("clamp(float4(_tint_tmp) / 127.0, -1.0, 1.0)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack4x8Unorm) {
+  auto* call = Call("unpack4x8unorm", "p1");
+  Global("p1", ty.u32(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint _tint_tmp_0 = p1;"));
+  EXPECT_THAT(
+      pre_result(),
+      HasSubstr("uint4 _tint_tmp = uint4(_tint_tmp_0 & 0xff, (_tint_tmp_0 >> "
+                "8) & 0xff, (_tint_tmp_0 >> 16) & 0xff, _tint_tmp_0 >> 24);"));
+  EXPECT_THAT(result(), HasSubstr("float4(_tint_tmp) / 255.0"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Snorm) {
+  auto* call = Call("unpack2x16snorm", "p1");
+  Global("p1", ty.u32(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("int _tint_tmp_0 = int(p1);"));
+  EXPECT_THAT(
+      pre_result(),
+      HasSubstr(
+          "int2 _tint_tmp = int2(_tint_tmp_0 << 16, _tint_tmp_0) >> 16;"));
+  EXPECT_THAT(result(),
+              HasSubstr("clamp(float2(_tint_tmp) / 32767.0, -1.0, 1.0)"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Unorm) {
+  auto* call = Call("unpack2x16unorm", "p1");
+  Global("p1", ty.u32(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint _tint_tmp_0 = p1;"));
+  EXPECT_THAT(
+      pre_result(),
+      HasSubstr(
+          "uint2 _tint_tmp = uint2(_tint_tmp_0 & 0xffff, _tint_tmp_0 >> 16);"));
+  EXPECT_THAT(result(), HasSubstr("float2(_tint_tmp) / 65535.0"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Float) {
+  auto* call = Call("unpack2x16float", "p1");
+  Global("p1", ty.u32(), ast::StorageClass::kPrivate);
+  WrapInFunction(call);
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
+  EXPECT_THAT(pre_result(), HasSubstr("uint _tint_tmp = p1;"));
+  EXPECT_THAT(
+      result(),
+      HasSubstr("f16tof32(uint2(_tint_tmp & 0xffff, _tint_tmp >> 16))"));
 }
 
 }  // namespace

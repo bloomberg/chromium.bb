@@ -16,72 +16,26 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_JSTEMPLATE_COMPILED_JS"
                file="../../../third_party/jstemplate/jstemplate_compiled.js"
                resource_path="js/jstemplate_compiled.js" type="BINDATA"/>
-      <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
-           Android, and Roboto-Medium is not used on Android. All 6 weights of
-           Roboto are available on Chrome OS.-->
-      <if expr="not is_android and not chromeos">
-        <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_WOFF2" file="roboto/roboto-regular.woff2" type="BINDATA" />
-        <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_WOFF2" file="roboto/roboto-medium.woff2" type="BINDATA" />
-        <include name="IDR_WEBUI_ROBOTO_ROBOTO_BOLD_WOFF2" file="roboto/roboto-bold.woff2" type="BINDATA" />
+      <if expr="chromeos">
+        <include name="IDR_WEBUI_CROS_COLORS_CSS"
+                 file="${root_gen_dir}/ui/chromeos/colors/cros_colors.generated.css"
+                 resource_path="chromeos/colors/cros_colors.generated.css"
+                 type="chrome_html"
+                 use_base_dir="false" />
       </if>
-
-      <!-- Component apps common image resources - 1x -->
-      <!-- Misc buttons -->
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_CLOSE_PNG"
-               file="images/apps/topbar_button_close.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MAXIMIZE_PNG"
-               file="images/apps/topbar_button_maximize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MINIMIZE_PNG"
-               file="images/apps/topbar_button_minimize.png" type="BINDATA" />
-
-      <!-- Component apps common image resources - 2x -->
-      <!-- Misc buttons -->
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_CLOSE_PNG"
-               file="images/2x/apps/topbar_button_close.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MAXIMIZE_PNG"
-               file="images/2x/apps/topbar_button_maximize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MINIMIZE_PNG"
-               file="images/2x/apps/topbar_button_minimize.png" type="BINDATA" />
-
-      <!-- Non-apps images -->
-      <include name="IDR_WEBUI_IMAGES_ADD_SVG"
-               file="images/add.svg" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_CHECK_PNG"
-               file="images/check.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_CHECKBOX_BLACK_PNG"
-               file="images/checkbox_black.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_CHECKBOX_WHITE_PNG"
-               file="images/checkbox_white.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_DISABLED_SELECT_PNG"
-               file="images/disabled_select.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_ERROR_SVG"
-               file="images/error.svg" type="BINDATA" />
-      <!-- Similar to IDR_WEBUI_IMAGES_ERROR except that it is white-filled instead of transparent-filled. Useful for badging images where the background may be red. -->
-      <include name="IDR_WEBUI_IMAGES_ERROR_BADGE_SVG"
-               file="images/error_badge.svg" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_SELECT_PNG"
-               file="images/select.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_THROBBER_MEDIUM_SVG"
-               file="images/throbber_medium.svg" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_THROBBER_SMALL_SVG"
-               file="images/throbber_small.svg" type="BINDATA" />
-
-      <if expr="not is_android">
-        <part file="cr_components/cr_components_images.grdp" />
-        <part file="cr_elements_images.grdp" />
+      <if expr="not is_android and not is_ios">
+        <include name="IDR_LOTTIE_LOTTIE_WORKER_MIN_JS"
+                   file="../../../third_party/lottie/lottie_worker.min.js"
+                   resource_path="lottie/lottie_worker.min.js"
+                   type="BINDATA" />
       </if>
     </includes>
     <structures>
-      <structure name="IDR_WEBUI_CSS_CONTROLLED_INDICATOR_CSS"
-                 file="css/controlled_indicator.css" type="chrome_html" flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_MENU_CSS"
                  file="css/menu.css" type="chrome_html"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_MENU_BUTTON_CSS"
                  file="css/menu_button.css" type="chrome_html"
-                 flattenhtml="true" />
-      <structure name="IDR_WEBUI_CSS_OVERLAY_CSS"
-                 file="css/overlay.css" type="chrome_html"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_SPINNER_CSS"
                  file="css/spinner.css" type="chrome_html"
@@ -92,25 +46,10 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_WIDGETS_CSS"
                  file="css/widgets.css" type="chrome_html"
                  flattenhtml="true" />
-
       <if expr="chromeos">
-        <structure name="IDR_WEBUI_CROS_COLORS_CSS"
-                   file="${root_gen_dir}/ui/chromeos/colors/cros_colors.generated.css"
-                   type="chrome_html"
-                   use_base_dir="false" />
-      </if>
-
-      <if expr="is_ios">
-        <structure name="IDR_WEBUI_JS_IOS_WEB_UI"
-                   file="js/ios/web_ui.js" type="chrome_html" />
-        <structure name="IDR_WEBUI_JS_IOS_MOJO_API"
-                   file="js/ios/mojo_api.js" type="chrome_html" />
-      </if>
-
-      <if expr="not is_android and not is_ios">
-        <structure name="IDR_LOTTIE_LOTTIE_WORKER_MIN_JS"
-                   file="../../../third_party/lottie/lottie_worker.min.js"
-                   type="chrome_html" />
+        <structure name="IDR_WEBUI_CSS_OVERLAY_CSS"
+                   file="css/overlay.css" type="chrome_html"
+                   flattenhtml="true" />
       </if>
     </structures>
   </release>

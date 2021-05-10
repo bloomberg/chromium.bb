@@ -19,12 +19,12 @@
 #include <string>
 #include <vector>
 
+#include "api/sequence_checker.h"
 #include "rtc_base/ip_address.h"
 #include "rtc_base/mdns_responder_interface.h"
 #include "rtc_base/message_handler.h"
 #include "rtc_base/network_monitor.h"
 #include "rtc_base/network_monitor_factory.h"
-#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/system/rtc_export.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread_annotations.h"
@@ -293,6 +293,7 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
       nullptr;
   std::unique_ptr<NetworkMonitorInterface> network_monitor_
       RTC_GUARDED_BY(thread_);
+  bool allow_mac_based_ipv6_ = false;
 };
 
 // Represents a Unix-type network interface, with a name and single address.

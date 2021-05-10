@@ -2,11 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ls} from '../platform/platform.js';
+import * as i18n from '../i18n/i18n.js';
 
-import {Issue, IssueCategory, IssueKind, MarkdownIssueDescription} from './Issue.js';  // eslint-disable-line no-unused-vars
+import {Issue, IssueCategory, IssueKind, LazyMarkdownIssueDescription, MarkdownIssueDescription, resolveLazyDescription,} from './Issue.js';  // eslint-disable-line no-unused-vars
 import {IssuesModel} from './IssuesModel.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Title for CSP url link
+  */
+  contentSecurityPolicySource: 'Content Security Policy - Source Allowlists',
+  /**
+  *@description Title for CSP inline issue link
+  */
+  contentSecurityPolicyInlineCode: 'Content Security Policy - Inline Code',
+  /**
+  *@description Title for the CSP eval link
+  */
+  contentSecurityPolicyEval: 'Content Security Policy - Eval',
+  /**
+  *@description Title for Trusted Types policy violation issue link
+  */
+  trustedTypesFixViolations: 'Trusted Types - Fix violations',
+  /**
+  *@description Title for Trusted Types policy violation issue link
+  */
+  trustedTypesPolicyViolation: 'Trusted Types - Policy violation',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/ContentSecurityPolicyIssue.js', UIStrings);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 export class ContentSecurityPolicyIssue extends Issue {
   /**
@@ -14,12 +38,11 @@ export class ContentSecurityPolicyIssue extends Issue {
    * @param {!IssuesModel} issuesModel
    */
   constructor(issueDetails, issuesModel) {
-    const issue_code = [
+    const issueCode = [
       Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue, issueDetails.contentSecurityPolicyViolationType
     ].join('::');
-    super(issue_code);
+    super(issueCode, issuesModel);
     this._issueDetails = issueDetails;
-    this._issuesModel = issuesModel;
   }
 
   /**
@@ -46,18 +69,7 @@ export class ContentSecurityPolicyIssue extends Issue {
    * @returns {?MarkdownIssueDescription}
    */
   getDescription() {
-    const description = issueDescriptions.get(this._issueDetails.contentSecurityPolicyViolationType);
-    if (description) {
-      return description;
-    }
-    return null;
-  }
-
-  /**
-   * @returns {!IssuesModel}
-   */
-  model() {
-    return this._issuesModel;
+    return resolveLazyDescription(issueDescriptions.get(this._issueDetails.contentSecurityPolicyViolationType));
   }
 
   /**
@@ -73,8 +85,8 @@ const cspURLViolation = {
   substitutions: undefined,
   issueKind: IssueKind.BreakingChange,
   links: [{
-    link: 'https://developers.google.com/web/fundamentals/security/csp#source_whitelists',
-    linkTitle: ls`Content Security Policy - Source Allowlists`
+    link: 'https://developers.google.com/web/fundamentals/security/csp#source_allowlists',
+    linkTitle: i18nLazyString(UIStrings.contentSecurityPolicySource)
   }],
 };
 
@@ -84,7 +96,7 @@ const cspInlineViolation = {
   issueKind: IssueKind.BreakingChange,
   links: [{
     link: 'https://developers.google.com/web/fundamentals/security/csp#inline_code_is_considered_harmful',
-    linkTitle: ls`Content Security Policy - Inline Code`
+    linkTitle: i18nLazyString(UIStrings.contentSecurityPolicyInlineCode)
   }],
 };
 
@@ -94,7 +106,7 @@ const cspEvalViolation = {
   issueKind: IssueKind.BreakingChange,
   links: [{
     link: 'https://developers.google.com/web/fundamentals/security/csp#eval_too',
-    linkTitle: ls`Content Security Policy - Eval`
+    linkTitle: i18nLazyString(UIStrings.contentSecurityPolicyEval)
   }],
 };
 
@@ -102,14 +114,17 @@ const cspTrustedTypesSinkViolation = {
   file: 'issues/descriptions/cspTrustedTypesSinkViolation.md',
   substitutions: undefined,
   issueKind: IssueKind.BreakingChange,
-  links: [{link: 'https://web.dev/trusted-types/#fix-the-violations', linkTitle: ls`Trusted Types - Fix violations`}],
+  links: [{
+    link: 'https://web.dev/trusted-types/#fix-the-violations',
+    linkTitle: i18nLazyString(UIStrings.trustedTypesFixViolations)
+  }],
 };
 
 const cspTrustedTypesPolicyViolation = {
   file: 'issues/descriptions/cspTrustedTypesPolicyViolation.md',
   substitutions: undefined,
   issueKind: IssueKind.BreakingChange,
-  links: [{link: 'https://web.dev/trusted-types/', linkTitle: ls`Trusted Types - Policy violation`}],
+  links: [{link: 'https://web.dev/trusted-types/', linkTitle: i18nLazyString(UIStrings.trustedTypesPolicyViolation)}],
 };
 
 /** @type {string} */
@@ -143,7 +158,7 @@ export const trustedTypesPolicyViolationCode = [
 ].join('::');
 
 // TODO(crbug.com/1082628): Add handling of other CSP violation types later as they'll need more work.
-/** @type {!Map<!Protocol.Audits.ContentSecurityPolicyViolationType, !MarkdownIssueDescription>} */
+/** @type {!Map<!Protocol.Audits.ContentSecurityPolicyViolationType, !LazyMarkdownIssueDescription>} */
 const issueDescriptions = new Map([
   [Protocol.Audits.ContentSecurityPolicyViolationType.KURLViolation, cspURLViolation],
   [Protocol.Audits.ContentSecurityPolicyViolationType.KInlineViolation, cspInlineViolation],

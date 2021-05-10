@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/input_ime.h"
@@ -29,9 +30,9 @@
 #include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_flags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_chromeos.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class Profile;
 
@@ -52,7 +53,7 @@ class ImeObserver : public InputMethodEngineBase::Observer {
   void OnBlur(int context_id) override;
   void OnKeyEvent(
       const std::string& component_id,
-      const InputMethodEngineBase::KeyboardEvent& event,
+      const ui::KeyEvent& event,
       IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override;
   void OnReset(const std::string& component_id) override;
   void OnDeactivated(const std::string& component_id) override;

@@ -147,10 +147,10 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   // the Cast SDK to complete the launch sequence. The first messages that the
   // MRP needs to send are the RECEIVER_ACTION and NEW_SESSION.
   std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(internal_message_util_.CreateReceiverActionCastMessage(
-      activity->launch_info, *sink));
-  messages.emplace_back(internal_message_util_.CreateNewSessionMessage(
-      activity->launch_info, *sink));
+  messages.push_back(internal_message_util_.CreateReceiverActionCastMessage(
+      activity->launch_info.client_id, *sink));
+  messages.push_back(internal_message_util_.CreateNewSessionMessage(
+      activity->launch_info.app_name, activity->launch_info.client_id, *sink));
   message_sender_->SendMessages(route_id, std::move(messages));
 }
 
@@ -285,6 +285,8 @@ void DialMediaRouteProvider::HandleParsedRouteMessage(
   } else if (internal_message->type ==
              DialInternalMessageType::kCustomDialLaunch) {
     HandleCustomDialLaunchResponse(*activity, *internal_message);
+  } else if (internal_message->type == DialInternalMessageType::kDialAppInfo) {
+    HandleDiapAppInfoRequest(*activity, *internal_message, *sink);
   } else if (DialInternalMessageUtil::IsStopSessionMessage(*internal_message)) {
     logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
                      "Received a stop session message.", route.media_sink_id(),
@@ -356,14 +358,44 @@ void DialMediaRouteProvider::SendCustomDialLaunchMessage(
 
   auto message_and_seq_number =
       internal_message_util_.CreateCustomDialLaunchMessage(
-          activity->launch_info, *sink, *result.app_info);
+          activity->launch_info.client_id, *sink, *result.app_info);
   pending_dial_launches_.insert(message_and_seq_number.second);
   if (pending_dial_launches_.size() > kMaxPendingDialLaunches) {
     pending_dial_launches_.erase(pending_dial_launches_.begin());
   }
 
   std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(std::move(message_and_seq_number.first));
+  messages.push_back(std::move(message_and_seq_number.first));
+  message_sender_->SendMessages(route_id, std::move(messages));
+}
+
+void DialMediaRouteProvider::SendDialAppInfoResponse(
+    const MediaRoute::Id& route_id,
+    int sequence_number,
+    const MediaSink::Id& sink_id,
+    const std::string& app_name,
+    DialAppInfoResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto* activity = activity_manager_->GetActivity(route_id);
+  auto* sink = media_sink_service_->GetSinkById(sink_id);
+  // If the activity no longer exists, there is no need to inform the sender
+  // client of the activity status.
+  if (!activity || !sink) {
+    return;
+  }
+  mojom::RouteMessagePtr message;
+  if (result.app_info) {
+    message = internal_message_util_.CreateDialAppInfoMessage(
+        activity->launch_info.client_id, *sink, *result.app_info,
+        sequence_number, DialInternalMessageType::kDialAppInfo);
+  } else {
+    message = internal_message_util_.CreateDialAppInfoErrorMessage(
+        result.result_code, activity->launch_info.client_id, sequence_number,
+        result.error_message, result.http_error_code);
+  }
+  std::vector<mojom::RouteMessagePtr> messages;
+  messages.push_back(std::move(message));
   message_sender_->SendMessages(route_id, std::move(messages));
 }
 
@@ -379,6 +411,17 @@ void DialMediaRouteProvider::HandleCustomDialLaunchResponse(
       media_route_id, CustomDialLaunchMessageBody::From(message),
       base::BindOnce(&DialMediaRouteProvider::HandleAppLaunchResult,
                      base::Unretained(this), media_route_id));
+}
+
+void DialMediaRouteProvider::HandleDiapAppInfoRequest(
+    const DialActivity& activity,
+    const DialInternalMessage& message,
+    const MediaSinkInternal& sink) {
+  media_sink_service_->app_discovery_service()->FetchDialAppInfo(
+      sink, activity.launch_info.app_name,
+      base::BindOnce(&DialMediaRouteProvider::SendDialAppInfoResponse,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     activity.route.media_route_id(), message.sequence_number));
 }
 
 void DialMediaRouteProvider::HandleAppLaunchResult(
@@ -410,9 +453,8 @@ void DialMediaRouteProvider::DoTerminateRoute(const DialActivity& activity,
       can_stop_app = activity_manager_->CanStopApp(route_id);
   if (can_stop_app.second == RouteRequestResult::OK) {
     std::vector<mojom::RouteMessagePtr> messages;
-    messages.emplace_back(
-        internal_message_util_.CreateReceiverActionStopMessage(
-            activity.launch_info, sink));
+    messages.push_back(internal_message_util_.CreateReceiverActionStopMessage(
+        activity.launch_info.client_id, sink));
     message_sender_->SendMessages(route_id, std::move(messages));
     activity_manager_->StopApp(
         route_id,
@@ -587,12 +629,6 @@ void DialMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
   media_sink_service_->OnUserGesture();
 }
 
-void DialMediaRouteProvider::ProvideSinks(
-    const std::string& provider_name,
-    const std::vector<media_router::MediaSinkInternal>& sinks) {
-  NOTIMPLEMENTED();
-}
-
 void DialMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,
     mojo::PendingReceiver<mojom::MediaController> media_controller,
@@ -648,7 +684,7 @@ std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(
     const std::string& app_name) {
   static const base::NoDestructor<
       base::flat_map<std::string, std::vector<url::Origin>>>
-      origin_white_list(
+      origin_allowlist(
           {{"YouTube",
             {CreateOrigin("https://tv.youtube.com"),
              CreateOrigin("https://tv-green-qa.youtube.com"),
@@ -664,8 +700,8 @@ std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(
            {"Dailymotion", {CreateOrigin("https://www.dailymotion.com")}},
            {"com.dailymotion", {CreateOrigin("https://www.dailymotion.com")}}});
 
-  auto origins_it = origin_white_list->find(app_name);
-  if (origins_it == origin_white_list->end())
+  auto origins_it = origin_allowlist->find(app_name);
+  if (origins_it == origin_allowlist->end())
     return std::vector<url::Origin>();
 
   return origins_it->second;

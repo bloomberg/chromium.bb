@@ -16,30 +16,29 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
+#include "src/ast/workgroup_decoration.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using StageDecorationTest = testing::Test;
+using StageDecorationTest = TestHelper;
 
 TEST_F(StageDecorationTest, Creation_1param) {
-  StageDecoration d{ast::PipelineStage::kFragment, Source{}};
-  EXPECT_EQ(d.value(), ast::PipelineStage::kFragment);
+  auto* d = create<StageDecoration>(PipelineStage::kFragment);
+  EXPECT_EQ(d->value(), PipelineStage::kFragment);
 }
 
 TEST_F(StageDecorationTest, Is) {
-  StageDecoration d{ast::PipelineStage::kFragment, Source{}};
-  EXPECT_FALSE(d.IsWorkgroup());
-  EXPECT_TRUE(d.IsStage());
+  Decoration* d = create<StageDecoration>(PipelineStage::kFragment);
+  EXPECT_FALSE(d->Is<WorkgroupDecoration>());
+  EXPECT_TRUE(d->Is<StageDecoration>());
 }
 
 TEST_F(StageDecorationTest, ToStr) {
-  StageDecoration d{ast::PipelineStage::kFragment, Source{}};
-  std::ostringstream out;
-  d.to_str(out);
-  EXPECT_EQ(out.str(), R"(StageDecoration{fragment}
+  auto* d = create<StageDecoration>(PipelineStage::kFragment);
+  EXPECT_EQ(str(d), R"(StageDecoration{fragment}
 )");
 }
 

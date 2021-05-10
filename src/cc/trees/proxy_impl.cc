@@ -20,6 +20,7 @@
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/metrics/compositor_timing_history.h"
+#include "cc/metrics/jank_injector.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -248,6 +249,11 @@ void ProxyImpl::RequestBeginMainFrameNotExpected(bool new_state) {
 
 bool ProxyImpl::IsInSynchronousComposite() const {
   return false;
+}
+
+void ProxyImpl::FrameSinksToThrottleUpdated(
+    const base::flat_set<viz::FrameSinkId>& ids) {
+  NOTREACHED();
 }
 
 void ProxyImpl::NotifyReadyToCommitOnImpl(
@@ -516,13 +522,17 @@ void ProxyImpl::NotifyImageDecodeRequestFinished() {
 
 void ProxyImpl::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+    PresentationTimeCallbackBuffer::PendingCallbacks activated,
     const viz::FrameTimingDetails& details) {
+  auto main_thread_callbacks = std::move(activated.main_thread_callbacks);
+  host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
+      frame_token, std::move(activated), details);
+
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
-                     proxy_main_weak_ptr_, frame_token, std::move(callbacks),
-                     details.presentation_feedback));
+      FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
+                                proxy_main_weak_ptr_, frame_token,
+                                std::move(main_thread_callbacks),
+                                details.presentation_feedback));
   if (scheduler_)
     scheduler_->DidPresentCompositorFrame(frame_token, details);
 }
@@ -590,6 +600,11 @@ void ProxyImpl::WillNotReceiveBeginFrame() {
 void ProxyImpl::ScheduledActionSendBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
+
+  if (is_jank_injection_enabled_ && host_impl_->CanInjectJankOnMain()) {
+    jank_injector_.ScheduleJankIfNeeded(args, MainThreadTaskRunner());
+  }
+
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kSendBeginFrame,
       args.frame_id.sequence_number);
@@ -805,6 +820,7 @@ base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
 
 void ProxyImpl::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
   DCHECK(IsImplThread());
+  is_jank_injection_enabled_ = JankInjector::IsEnabled(url);
   host_impl_->SetActiveURL(url, source_id);
 }
 

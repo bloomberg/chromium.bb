@@ -36,14 +36,27 @@ import sys
 import subprocess
 
 
-def _ReceiveFD(sock):
-  """Receives a FD from ash-chrome that will be used to launch lacros-chrome.
+# contextlib.nullcontext is introduced in 3.7, while Python version on
+# CrOS is still 3.6. This is for backward compatibility.
+class NullContext:
+  def __init__(self, enter_ret=None):
+    self.enter_ret = enter_ret
+
+  def __enter__(self):
+    return self.enter_ret
+
+  def __exit__(self, exc_type, exc_value, trace):
+    pass
+
+
+def _ReceiveFDs(sock):
+  """Receives FDs from ash-chrome that will be used to launch lacros-chrome.
 
   Args:
     sock: A connected unix domain socket.
 
   Returns:
-    An integer represeting the received file descriptor.
+    File objects for the mojo connection and maybe startup data file.
   """
   # This function is borrowed from with modifications:
   # https://docs.python.org/3/library/socket.html#socket.socket.recvmsg
@@ -53,12 +66,36 @@ def _ReceiveFD(sock):
   version, ancdata, _, _ = sock.recvmsg(1, socket.CMSG_LEN(fds.itemsize))
   for cmsg_level, cmsg_type, cmsg_data in ancdata:
     if cmsg_level == socket.SOL_SOCKET and cmsg_type == socket.SCM_RIGHTS:
-      assert len(cmsg_data) == fds.itemsize, 'Expecting exactly 1 FD'
-      fds.frombytes(cmsg_data[:fds.itemsize])
+      # There are three versions currently this script supports.
+      # The oldest one: ash-chrome returns one FD, the mojo connection of
+      # old bootstrap procedure (i.e., it will be BrowserService).
+      # The middle one: ash-chrome returns two FDs, the mojo connection of
+      # old bootstrap procedure, and the second for the start up data FD.
+      # The newest one: ash-chrome returns three FDs, the mojo connection of
+      # old bootstrap procedure, the second for the start up data FD, and
+      # the third for another mojo connection of new bootstrap procedure.
+      # TODO(crbug.com/1156033): Clean up the code to drop the support of
+      # oldest one after M91.
+      # TODO(crbug.com/1180712): Clean up the mojo procedure support of the
+      # the middle one after M92.
+      assert len(cmsg_data) in (fds.itemsize, fds.itemsize * 2, fds.itemsize *
+                                3), ('Expecting exactly 1, 2, or 3 FDs')
+      fds.frombytes(cmsg_data[:])
 
   assert version == b'\x00', 'Expecting version code to be 0'
-  assert len(list(fds)) == 1, 'Expecting exactly 1 FD'
-  return os.fdopen(list(fds)[0])
+  assert len(fds) in (1, 2, 3), 'Expecting exactly 1, 2, or 3 FDs'
+  legacy_mojo_fd = os.fdopen(fds[0])
+  startup_fd = None if len(fds) < 2 else os.fdopen(fds[1])
+  mojo_fd = None if len(fds) < 3 else os.fdopen(fds[2])
+  return legacy_mojo_fd, startup_fd, mojo_fd
+
+
+def _MaybeClosing(fileobj):
+  """Returns closing context manager, if given fileobj is not None.
+
+  If the given fileobj is none, return nullcontext.
+  """
+  return (contextlib.closing if fileobj else NullContext)(fileobj)
 
 
 def Main():
@@ -71,20 +108,33 @@ def Main():
       required=True,
       help='Absolute path to the socket that were used to start ash-chrome, '
       'for example: "/tmp/lacros.socket"')
-  args = arg_parser.parse_known_args()
+  flags, args = arg_parser.parse_known_args()
 
   assert 'XDG_RUNTIME_DIR' in os.environ
   assert os.environ.get('EGL_PLATFORM') == 'surfaceless'
 
   with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-    sock.connect(args[0].socket_path.as_posix())
-    file_obj = _ReceiveFD(sock)
-    assert file_obj, ('Failed to connect to the socket: %s' %
-                      args[0].socket_path.as_posix())
+    sock.connect(flags.socket_path.as_posix())
+    legacy_mojo_connection, startup_connection, mojo_connection = (
+        _ReceiveFDs(sock))
 
-  with contextlib.closing(file_obj):
-    cmd = args[1] + ['--mojo-platform-channel-handle=%d' % file_obj.fileno()]
-    proc = subprocess.Popen(cmd, pass_fds=(file_obj.fileno(), ))
+  with _MaybeClosing(legacy_mojo_connection), \
+       _MaybeClosing(startup_connection), \
+       _MaybeClosing(mojo_connection):
+    cmd = args[:]
+    pass_fds = []
+    if legacy_mojo_connection:
+      cmd.append('--mojo-platform-channel-handle=%d' %
+                 legacy_mojo_connection.fileno())
+      pass_fds.append(legacy_mojo_connection.fileno())
+    if startup_connection:
+      cmd.append('--cros-startup-data-fd=%d' % startup_connection.fileno())
+      pass_fds.append(startup_connection.fileno())
+    if mojo_connection:
+      cmd.append('--crosapi-mojo-platform-channel-handle=%d' %
+                 mojo_connection.fileno())
+      pass_fds.append(mojo_connection.fileno())
+    proc = subprocess.Popen(cmd, pass_fds=pass_fds)
 
   return proc.wait()
 

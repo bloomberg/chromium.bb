@@ -22,21 +22,21 @@ class WebMouseEvent;
 class DevToolsEyeDropper : public content::WebContentsObserver,
                            public viz::mojom::FrameSinkVideoConsumer {
  public:
-  typedef base::Callback<void(int, int, int, int)> EyeDropperCallback;
+  typedef base::RepeatingCallback<void(int, int, int, int)> EyeDropperCallback;
 
   DevToolsEyeDropper(content::WebContents* web_contents,
                      EyeDropperCallback callback);
   ~DevToolsEyeDropper() override;
 
  private:
-  void AttachToHost(content::RenderWidgetHost* host);
+  void AttachToHost(content::RenderFrameHost* host);
   void DetachFromHost();
 
   // content::WebContentsObserver.
-  void RenderViewCreated(content::RenderViewHost* host) override;
-  void RenderViewDeleted(content::RenderViewHost* host) override;
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
 
   void ResetFrame();
   void FrameUpdated(const SkBitmap&);
@@ -55,10 +55,10 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
 
   EyeDropperCallback callback_;
   SkBitmap frame_;
-  int last_cursor_x_;
-  int last_cursor_y_;
+  int last_cursor_x_ = -1;
+  int last_cursor_y_ = -1;
   content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
-  content::RenderWidgetHost* host_;
+  content::RenderWidgetHost* host_ = nullptr;
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer_;
   base::WeakPtrFactory<DevToolsEyeDropper> weak_factory_{this};
 

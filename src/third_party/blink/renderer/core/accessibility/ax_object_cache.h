@@ -45,7 +45,6 @@ class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class IntPoint;
 class LayoutRect;
-class LineLayoutItem;
 class LocalFrameView;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
@@ -63,6 +62,12 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void Dispose() = 0;
 
+  // A Freeze() occurs during a serialization run.
+  // Used here as a hint for DCHECKS to enforce the following behavior:
+  // objects in the ax hierarchy should not be destroyed during serialization.
+  virtual void Freeze() = 0;
+  virtual void Thaw() = 0;
+
   // Register/remove popups
   virtual void InitializePopup(Document* document) = 0;
   virtual void DisposePopup(Document* document) = 0;
@@ -76,7 +81,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
   virtual void LocationChanged(const LayoutObject*) = 0;
-  virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
   virtual void ImageLoaded(const LayoutObject*) = 0;
 
   virtual void Remove(AccessibleNode*) = 0;
@@ -139,7 +143,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                      Element*,
                                      const LayoutRect&) = 0;
 
-  virtual void InlineTextBoxesUpdated(LineLayoutItem) = 0;
+  virtual void InlineTextBoxesUpdated(LayoutObject*) = 0;
 
   // Called when the scroll offset changes.
   virtual void HandleScrollPositionChanged(LocalFrameView*) = 0;

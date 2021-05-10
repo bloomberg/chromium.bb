@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
@@ -24,6 +25,7 @@ class PortAllocator;
 }
 
 namespace media {
+class DecoderFactory;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -78,7 +80,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       blink::WebLocalFrame* web_frame,
-      webrtc::PeerConnectionObserver* observer);
+      webrtc::PeerConnectionObserver* observer,
+      ExceptionState& exception_state);
 
   // Creates a PortAllocator that uses Chrome IPC sockets and enforces privacy
   // controls according to the permissions granted on the page.
@@ -88,13 +91,6 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Creates an AsyncResolverFactory that uses the networking Mojo service.
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateAsyncResolverFactory();
-
-  // Creates a libjingle representation of a Session description. Used by a
-  // RTCPeerConnectionHandler instance.
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const String& type,
-      const String& sdp,
-      webrtc::SdpParseError* error);
 
   // Creates a libjingle representation of an ice candidate.
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
@@ -119,6 +115,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetWebRtcSignalingTaskRunner();
+
+  media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
  protected:
   PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
@@ -147,7 +145,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   void InitializeSignalingThread(
       media::GpuVideoAcceleratorFactories* gpu_factories,
+      media::DecoderFactory* media_decoder_factory,
       base::WaitableEvent* event);
+
+  void InitializeWorkerThread(rtc::Thread** thread, base::WaitableEvent* event);
 
   void CreateIpcNetworkManagerOnNetworkThread(
       base::WaitableEvent* event,
@@ -170,11 +171,15 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   std::unique_ptr<blink::StunProberTrial> stun_trial_;
 
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
+
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.
   rtc::Thread* signaling_thread_ = nullptr;
+  rtc::Thread* worker_thread_ = nullptr;
   rtc::Thread* network_thread_ = nullptr;
   base::Thread chrome_signaling_thread_;
+  base::Optional<base::Thread> chrome_worker_thread_;
   base::Thread chrome_network_thread_;
 
   THREAD_CHECKER(thread_checker_);

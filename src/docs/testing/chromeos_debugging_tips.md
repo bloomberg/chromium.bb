@@ -35,6 +35,8 @@ system log filename. For instance, the previous `ui.WindowControl` failure
 matches the [system_logs/chrome/chrome_20201029-195153] browser log, which
 contains the culprit Chrome crash and backtrace.
 
+- **Symbolizing a browser crash dump**: See [below](#symbolizing-a-crash-dump).
+
 ### Disabling a test
 
 There a couple ways to disable a test on Chrome's builders:
@@ -49,6 +51,40 @@ disabled tests for the step's GN target. For example, to disable a test in the
 
 In both cases, please make sure a bug is filed for the test, and route it to
 the appropriate owners.
+
+### Symbolizing a crash dump
+
+If a test fails due to a browser crash, there should be a Minidump crash report
+present in the test's isolated out under the prefix `crashes/chrome...`. These
+reports aren't very useful by themselves, but with a few commands you can
+symbolize the report locally to get insight into what conditions caused Chrome
+to crash.
+
+To do so, first download both the task's input isolate (this provides the
+symbols and the symbolizing tools) as well as the task's output isolate (this
+provides the crash reports). See the commands listed under the *Reproducing the
+task locally* section on the task page. For example, to download them for
+[this task](https://chrome-swarming.appspot.com/task?id=506a01dd12c8a610), `cd`
+into a tmp directory and run:
+```
+$CHROME_DIR/tools/luci-go/isolated download -I https://chrome-isolated.appspot.com --namespace default-gzip -isolated 64919fee8b02d826df2401544a9dc0f7dfa2172d -output-dir input
+python $CHROME_DIR/tools/swarming_client/swarming.py collect -S chrome-swarming.appspot.com 506a01dd12c8a610 --task-output-dir output
+```
+
+Once both isolates have been fetched you must then generate the breakpad
+symbols by pointing the `generate_breakpad_symbols.py` script to the input's
+build dir:
+```
+python input/components/crash/content/tools/generate_breakpad_symbols.py --symbols-dir symbols --build-dir input/out/Release/ --binary input/out/Release/chrome
+```
+
+That will generate the symbols in the `symbols/` dir. Then to symbolize a Chrome
+crash report present in the task's output (such as
+`chrome.20201211.041043.31022.5747.dmp`):
+```
+./input/out/Release/minidump_stackwalk output/0/crashes/chrome.20201211.041043.31022.5747.dmp symbols/
+```
+
 
 ### Running a test locally
 
@@ -87,7 +123,7 @@ To run a Tast test the same way it's ran on Chrome's builders:
 [tests/ui.WindowControl/messages]: https://isolateserver.appspot.com/browse?namespace=default-gzip&digest=baefbcfd24c02b3ada4617d259dc6b4220b413b9&as=messages
 [system_logs/chrome/chrome_20201029-195153]: https://isolateserver.appspot.com/browse?namespace=default-gzip&digest=272166c85f190c336a9885f0267cbdea912e31da&as=chrome_20201029-195153
 [Tast attributes]: https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/test_attributes.md
-[this list]: https://codesearch.chromium.org/chromium/src/chromeos/BUILD.gn?rcl=7b0393a9091fd02edc9ae773739124f7be5a0782&l=242
+[this list]: https://codesearch.chromium.org/chromium/src/chromeos/tast_control.gni
 [Simple Chrome]: https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
 [deploy_chrome.py]: https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md#Deploying-Chrome-to-the-device
 [here]: https://chromium.googlesource.com/chromiumos/docs/+/master/cros_vm.md#in-simple-chrome

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -28,7 +29,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_store.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
@@ -100,14 +100,14 @@ class PrefStoreReadObserver : public PrefStore::Observer {
   void OnPrefValueChanged(const std::string& key) override {}
 
   void OnInitializationCompleted(bool succeeded) override {
-    if (!stop_waiting_.is_null()) {
+    if (stop_waiting_) {
       std::move(stop_waiting_).Run();
     }
   }
 
  private:
   scoped_refptr<PersistentPrefStore> pref_store_;
-  base::Closure stop_waiting_;
+  base::OnceClosure stop_waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreReadObserver);
 };

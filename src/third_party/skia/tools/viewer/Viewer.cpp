@@ -28,6 +28,7 @@
 #include "src/gpu/GrPersistentCacheUtils.h"
 #include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
+#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 #include "src/image/SkImage_Base.h"
 #include "src/utils/SkJSONWriter.h"
 #include "src/utils/SkOSPath.h"
@@ -169,6 +170,7 @@ static DEFINE_bool(skvm, false, "Force skvm blitters for raster.");
 static DEFINE_bool(jit, true, "JIT SkVM?");
 static DEFINE_bool(dylib, false, "JIT via dylib (much slower compile but easier to debug/profile)");
 static DEFINE_bool(stats, false, "Display stats overlay on startup.");
+static DEFINE_bool(binaryarchive, false, "Enable MTLBinaryArchive use (if available).");
 
 #ifndef SK_GL
 static_assert(false, "viewer requires GL backend for raster.")
@@ -319,6 +321,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     , fColorSpacePrimaries(gSrgbPrimaries)
     // Our UI can only tweak gamma (currently), so start out gamma-only
     , fColorSpaceTransferFn(SkNamedTransferFn::k2Dot2)
+    , fApplyBackingScale(true)
     , fZoomLevel(0.0f)
     , fRotation(0.0f)
     , fOffset{0.5f, 0.5f}
@@ -363,6 +366,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
 
     DisplayParams displayParams;
     displayParams.fMSAASampleCount = FLAGS_msaa;
+    displayParams.fEnableBinaryArchive = FLAGS_binaryarchive;
     SetCtxOptionsFromCommonFlags(&displayParams.fGrContextOptions);
     displayParams.fGrContextOptions.fPersistentCache = &fPersistentCache;
     displayParams.fGrContextOptions.fShaderCacheStrategy =
@@ -372,6 +376,9 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     fWindow->setRequestedDisplayParams(displayParams);
     fDisplay = fWindow->getRequestedDisplayParams();
     fRefresh = FLAGS_redraw;
+
+    fImGuiLayer.setScaleFactor(fWindow->scaleFactor());
+    fStatsLayer.setDisplayScale((fZoomUI ? 2.0f : 1.0f) * fWindow->scaleFactor());
 
     // Configure timers
     fStatsLayer.setActive(FLAGS_stats);
@@ -662,7 +669,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     });
     fCommands.addCommand('u', "GUI", "Zoom UI", [this]() {
         fZoomUI = !fZoomUI;
-        fStatsLayer.setDisplayScale(fZoomUI ? 2.0f : 1.0f);
+        fStatsLayer.setDisplayScale((fZoomUI ? 2.0f : 1.0f) * fWindow->scaleFactor());
         fWindow->inval();
     });
     fCommands.addCommand('$', "ViaSerialize", "Toggle ViaSerialize", [this]() {
@@ -695,10 +702,9 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
 
     auto gamutImage = GetResourceAsImage("images/gamut.png");
     if (gamutImage) {
-        fImGuiGamutPaint.setShader(gamutImage->makeShader());
+        fImGuiGamutPaint.setShader(gamutImage->makeShader(SkSamplingOptions(SkFilterMode::kLinear)));
     }
     fImGuiGamutPaint.setColor(SK_ColorWHITE);
-    fImGuiGamutPaint.setFilterQuality(kLow_SkFilterQuality);
 
     fWindow->attach(backend_type_for_window(fBackendType));
     this->setCurrentSlide(this->startupSlide());
@@ -944,22 +950,6 @@ void Viewer::updateTitle() {
 
     paintFlag(&SkPaintFields::fAntiAlias, &SkPaint::isAntiAlias, "Antialias", "Alias");
     paintFlag(&SkPaintFields::fDither, &SkPaint::isDither, "DITHER", "No Dither");
-    if (fPaintOverrides.fFilterQuality) {
-        switch (fPaint.getFilterQuality()) {
-            case kNone_SkFilterQuality:
-                paintTitle.append("NoFilter");
-                break;
-            case kLow_SkFilterQuality:
-                paintTitle.append("LowFilter");
-                break;
-            case kMedium_SkFilterQuality:
-                paintTitle.append("MediumFilter");
-                break;
-            case kHigh_SkFilterQuality:
-                paintTitle.append("HighFilter");
-                break;
-        }
-    }
 
     fontFlag(&SkFontFields::fForceAutoHinting, &SkFont::isForceAutoHinting,
              "Force Autohint", "No Force Autohint");
@@ -1113,8 +1103,12 @@ void Viewer::setCurrentSlide(int slide) {
         fSlides[fCurrentSlide]->unload();
     }
 
-    fSlides[slide]->load(SkIntToScalar(fWindow->width()),
-                         SkIntToScalar(fWindow->height()));
+    SkScalar scaleFactor = 1.0;
+    if (fApplyBackingScale) {
+        scaleFactor = fWindow->scaleFactor();
+    }
+    fSlides[slide]->load(SkIntToScalar(fWindow->width()) / scaleFactor,
+                         SkIntToScalar(fWindow->height()) / scaleFactor);
     fCurrentSlide = slide;
     this->setupCurrentSlide();
 }
@@ -1132,7 +1126,8 @@ void Viewer::setupCurrentSlide() {
         // Start with a matrix that scales the slide to the available screen space
         if (fWindow->scaleContentToFit()) {
             if (windowRect.width() > 0 && windowRect.height() > 0) {
-                fDefaultMatrix.setRectToRect(slideBounds, windowRect, SkMatrix::kStart_ScaleToFit);
+                fDefaultMatrix = SkMatrix::RectToRect(slideBounds, windowRect,
+                                                      SkMatrix::kStart_ScaleToFit);
             }
         }
 
@@ -1183,6 +1178,9 @@ SkMatrix Viewer::computePreTouchMatrix() {
     SkMatrix m = fDefaultMatrix;
 
     SkScalar zoomScale = exp(fZoomLevel);
+    if (fApplyBackingScale) {
+        zoomScale *= fWindow->scaleFactor();
+    }
     m.preTranslate((fOffset.x() - 0.5f) * 2.0f, (fOffset.y() - 0.5f) * 2.0f);
     m.preScale(zoomScale, zoomScale);
 
@@ -1280,14 +1278,15 @@ public:
 
             const SkTextBlobBuilder::RunBuffer& runBuffer
                 = it.positioning() == SkTextBlobRunIterator::kDefault_Positioning
-                    ? SkTextBlobBuilderPriv::AllocRunText(&builder, font,
-                        it.glyphCount(), it.offset().x(),it.offset().y(), it.textSize(), SkString())
+                    ? builder.allocRunText(font, it.glyphCount(), it.offset().x(),it.offset().y(),
+                                           it.textSize())
                 : it.positioning() == SkTextBlobRunIterator::kHorizontal_Positioning
-                    ? SkTextBlobBuilderPriv::AllocRunTextPosH(&builder, font,
-                        it.glyphCount(), it.offset().y(), it.textSize(), SkString())
+                    ? builder.allocRunTextPosH(font, it.glyphCount(), it.offset().y(),
+                                               it.textSize())
                 : it.positioning() == SkTextBlobRunIterator::kFull_Positioning
-                    ? SkTextBlobBuilderPriv::AllocRunTextPos(&builder, font,
-                        it.glyphCount(), it.textSize(), SkString())
+                    ? builder.allocRunTextPos(font, it.glyphCount(), it.textSize())
+                : it.positioning() == SkTextBlobRunIterator::kRSXform_Positioning
+                    ? builder.allocRunTextRSXform(font, it.glyphCount(), it.textSize())
                 : (SkASSERT_RELEASE(false), SkTextBlobBuilder::RunBuffer());
             uint32_t glyphCount = it.glyphCount();
             if (it.glyphs()) {
@@ -1296,8 +1295,8 @@ public:
             }
             if (it.pos()) {
                 size_t posSize = sizeof(decltype(*it.pos()));
-                uint8_t positioning = it.positioning();
-                memcpy(runBuffer.pos, it.pos(), glyphCount * positioning * posSize);
+                unsigned posPerGlyph = it.scalarsPerGlyph();
+                memcpy(runBuffer.pos, it.pos(), glyphCount * posPerGlyph * posSize);
             }
             if (it.text()) {
                 size_t textSize = sizeof(decltype(*it.text()));
@@ -1362,8 +1361,20 @@ public:
         if (fPaintOverrides->fDither) {
             paint.setDither(fPaint->isDither());
         }
-        if (fPaintOverrides->fFilterQuality) {
-            paint.setFilterQuality(fPaint->getFilterQuality());
+        if (fPaintOverrides->fStyle) {
+            paint.setStyle(fPaint->getStyle());
+        }
+        if (fPaintOverrides->fWidth) {
+            paint.setStrokeWidth(fPaint->getStrokeWidth());
+        }
+        if (fPaintOverrides->fMiterLimit) {
+            paint.setStrokeMiter(fPaint->getStrokeMiter());
+        }
+        if (fPaintOverrides->fCapType) {
+            paint.setStrokeCap(fPaint->getStrokeCap());
+        }
+        if (fPaintOverrides->fJoinType) {
+            paint.setStrokeJoin(fPaint->getStrokeJoin());
         }
         return true;
     }
@@ -1510,13 +1521,14 @@ void Viewer::drawSlide(SkSurface* surface) {
         SkCanvas* canvas = surface->getCanvas();
         SkPaint paint;
         paint.setBlendMode(SkBlendMode::kSrc);
+        SkSamplingOptions sampling;
         int prePerspectiveCount = canvas->save();
         if (kPerspective_Fake == fPerspectiveMode) {
-            paint.setFilterQuality(kHigh_SkFilterQuality);
+            sampling = SkSamplingOptions({1.0f/3, 1.0f/3});
             canvas->clear(SK_ColorWHITE);
             canvas->concat(this->computePerspectiveMatrix());
         }
-        canvas->drawImage(fLastImage, 0, 0, &paint);
+        canvas->drawImage(fLastImage, 0, 0, sampling, &paint);
         canvas->restoreToCount(prePerspectiveCount);
     }
 
@@ -1550,7 +1562,11 @@ void Viewer::onPaint(SkSurface* surface) {
 
 void Viewer::onResize(int width, int height) {
     if (fCurrentSlide >= 0) {
-        fSlides[fCurrentSlide]->resize(width, height);
+        SkScalar scaleFactor = 1.0;
+        if (fApplyBackingScale) {
+            scaleFactor = fWindow->scaleFactor();
+        }
+        fSlides[fCurrentSlide]->resize(width / scaleFactor, height / scaleFactor);
     }
 }
 
@@ -1785,7 +1801,7 @@ void Viewer::drawImGui() {
                 ImGui::SameLine();
                 ImGui::RadioButton("Dawn", &newBackend, sk_app::Window::kDawn_BackendType);
 #endif
-#if defined(SK_VULKAN)
+#if defined(SK_VULKAN) && !defined(SK_BUILD_FOR_MAC)
                 ImGui::SameLine();
                 ImGui::RadioButton("Vulkan", &newBackend, sk_app::Window::kVulkan_BackendType);
 #endif
@@ -1887,7 +1903,7 @@ void Viewer::drawImGui() {
                         const auto* caps = ctx->priv().caps();
                         prButton(GpuPathRenderers::kDefault);
                         if (fWindow->sampleCount() > 1 || caps->mixedSamplesSupport()) {
-                            if (caps->shaderCaps()->tessellationSupport()) {
+                            if (GrTessellationPathRenderer::IsSupported(*caps)) {
                                 prButton(GpuPathRenderers::kTessellation);
                             }
                             if (caps->shaderCaps()->pathRenderingSupport()) {
@@ -1915,6 +1931,12 @@ void Viewer::drawImGui() {
             }
 
             if (ImGui::CollapsingHeader("Transform")) {
+                if (ImGui::Checkbox("Apply Backing Scale", &fApplyBackingScale)) {
+                    this->preTouchMatrixChanged();
+                    this->onResize(fWindow->width(), fWindow->height());
+                    paramsChanged = true;
+                }
+
                 float zoom = fZoomLevel;
                 if (ImGui::SliderFloat("Zoom", &zoom, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)) {
                     fZoomLevel = zoom;
@@ -2008,19 +2030,71 @@ void Viewer::drawImGui() {
                           &SkPaintFields::fDither,
                           &SkPaint::isDither, &SkPaint::setDither);
 
-                int filterQualityIdx = 0;
-                if (fPaintOverrides.fFilterQuality) {
-                    filterQualityIdx = SkTo<int>(fPaint.getFilterQuality()) + 1;
+                int styleIdx = 0;
+                if (fPaintOverrides.fStyle) {
+                    styleIdx = SkTo<int>(fPaint.getStyle()) + 1;
                 }
-                if (ImGui::Combo("Filter Quality", &filterQualityIdx,
-                                 "Default\0None\0Low\0Medium\0High\0\0"))
+                if (ImGui::Combo("Style", &styleIdx,
+                                 "Default\0Fill\0Stroke\0Stroke and Fill\0\0"))
                 {
-                    if (filterQualityIdx == 0) {
-                        fPaintOverrides.fFilterQuality = false;
-                        fPaint.setFilterQuality(kNone_SkFilterQuality);
+                    if (styleIdx == 0) {
+                        fPaintOverrides.fStyle = false;
+                        fPaint.setStyle(SkPaint::kFill_Style);
                     } else {
-                        fPaint.setFilterQuality(SkTo<SkFilterQuality>(filterQualityIdx - 1));
-                        fPaintOverrides.fFilterQuality = true;
+                        fPaint.setStyle(SkTo<SkPaint::Style>(styleIdx - 1));
+                        fPaintOverrides.fStyle = true;
+                    }
+                    paramsChanged = true;
+                }
+
+                ImGui::Checkbox("Override Stroke Width", &fPaintOverrides.fWidth);
+                if (fPaintOverrides.fWidth) {
+                    float width = fPaint.getStrokeWidth();
+                    if (ImGui::SliderFloat("Stroke Width", &width, 0, 20)) {
+                        fPaint.setStrokeWidth(width);
+                        paramsChanged = true;
+                    }
+                }
+
+                ImGui::Checkbox("Override Miter Limit", &fPaintOverrides.fMiterLimit);
+                if (fPaintOverrides.fMiterLimit) {
+                    float miterLimit = fPaint.getStrokeMiter();
+                    if (ImGui::SliderFloat("Miter Limit", &miterLimit, 0, 20)) {
+                        fPaint.setStrokeMiter(miterLimit);
+                        paramsChanged = true;
+                    }
+                }
+
+                int capIdx = 0;
+                if (fPaintOverrides.fCapType) {
+                    capIdx = SkTo<int>(fPaint.getStrokeCap()) + 1;
+                }
+                if (ImGui::Combo("Cap Type", &capIdx,
+                                 "Default\0Butt\0Round\0Square\0\0"))
+                {
+                    if (capIdx == 0) {
+                        fPaintOverrides.fCapType = false;
+                        fPaint.setStrokeCap(SkPaint::kDefault_Cap);
+                    } else {
+                        fPaint.setStrokeCap(SkTo<SkPaint::Cap>(capIdx - 1));
+                        fPaintOverrides.fCapType = true;
+                    }
+                    paramsChanged = true;
+                }
+
+                int joinIdx = 0;
+                if (fPaintOverrides.fJoinType) {
+                    joinIdx = SkTo<int>(fPaint.getStrokeJoin()) + 1;
+                }
+                if (ImGui::Combo("Join Type", &joinIdx,
+                                 "Default\0Miter\0Round\0Bevel\0\0"))
+                {
+                    if (joinIdx == 0) {
+                        fPaintOverrides.fJoinType = false;
+                        fPaint.setStrokeJoin(SkPaint::kDefault_Join);
+                    } else {
+                        fPaint.setStrokeJoin(SkTo<SkPaint::Join>(joinIdx - 1));
+                        fPaintOverrides.fJoinType = true;
                     }
                     paramsChanged = true;
                 }
@@ -2563,7 +2637,7 @@ void Viewer::updateUIState() {
                 const auto* caps = ctx->priv().caps();
                 writer.appendString(gPathRendererNames[GpuPathRenderers::kDefault].c_str());
                 if (fWindow->sampleCount() > 1 || caps->mixedSamplesSupport()) {
-                    if (caps->shaderCaps()->tessellationSupport()) {
+                    if (GrTessellationPathRenderer::IsSupported(*caps)) {
                         writer.appendString(
                                 gPathRendererNames[GpuPathRenderers::kTessellation].c_str());
                     }

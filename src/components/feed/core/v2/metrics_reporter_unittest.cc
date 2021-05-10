@@ -43,8 +43,7 @@ class MetricsReporterTest : public testing::Test {
   }
 
   void RecreateMetricsReporter() {
-    reporter_ = std::make_unique<MetricsReporter>(
-        task_environment_.GetMockTickClock(), &profile_prefs_);
+    reporter_ = std::make_unique<MetricsReporter>(&profile_prefs_);
   }
 
  protected:
@@ -94,7 +93,7 @@ TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
-  reporter_->RemoveAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedHideStory);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -105,7 +104,7 @@ TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
-  reporter_->NotInterestedInAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedNotInterestedIn);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -116,7 +115,7 @@ TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
-  reporter_->ManageInterestsAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedManageInterests);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -161,6 +160,8 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
   reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
                           LoadStreamStatus::kLoadedFromNetwork,
+                          /*loaded_new_content_from_network=*/true,
+                          /*stored_content_age=*/base::TimeDelta::FromDays(5),
                           std::make_unique<LoadLatencyTimes>());
 
   histogram_.ExpectUniqueSample(
@@ -174,6 +175,8 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
   reporter_->OnLoadStream(LoadStreamStatus::kNoStatus,
                           LoadStreamStatus::kLoadedFromNetwork,
+                          /*loaded_new_content_from_network=*/true,
+                          /*stored_content_age=*/base::TimeDelta(),
                           std::make_unique<LoadLatencyTimes>());
 
   histogram_.ExpectUniqueSample(
@@ -183,6 +186,47 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
       "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore", 0);
 }
 
+TEST_F(MetricsReporterTest, ReportsContentAgeBlockingRefresh) {
+  reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
+                          LoadStreamStatus::kLoadedFromNetwork,
+                          /*loaded_new_content_from_network=*/true,
+                          /*stored_content_age=*/base::TimeDelta::FromDays(5),
+                          std::make_unique<LoadLatencyTimes>());
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh",
+      base::TimeDelta::FromDays(5), 1);
+}
+
+TEST_F(MetricsReporterTest, ReportsContentAgeNoRefresh) {
+  reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
+                          LoadStreamStatus::kLoadedFromStore,
+                          /*loaded_new_content_from_network=*/false,
+                          /*stored_content_age=*/base::TimeDelta::FromDays(5),
+                          std::make_unique<LoadLatencyTimes>());
+
+  histogram_.ExpectUniqueTimeSample(
+      "ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed",
+      base::TimeDelta::FromDays(5), 1);
+}
+
+TEST_F(MetricsReporterTest, DoNotReportContentAgeWhenNotPositive) {
+  reporter_->OnLoadStream(
+      LoadStreamStatus::kDataInStoreIsStale, LoadStreamStatus::kLoadedFromStore,
+      /*loaded_new_content_from_network=*/false,
+      /*stored_content_age=*/-base::TimeDelta::FromSeconds(1),
+      std::make_unique<LoadLatencyTimes>());
+  reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
+                          LoadStreamStatus::kLoadedFromStore,
+                          /*loaded_new_content_from_network=*/false,
+                          /*stored_content_age=*/base::TimeDelta(),
+                          std::make_unique<LoadLatencyTimes>());
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed", 0);
+  histogram_.ExpectTotalCount(
+      "ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh", 0);
+}
+
 TEST_F(MetricsReporterTest, ReportsLoadStepLatenciesOnFirstView) {
   {
     auto latencies = std::make_unique<LoadLatencyTimes>();
@@ -190,9 +234,10 @@ TEST_F(MetricsReporterTest, ReportsLoadStepLatenciesOnFirstView) {
     latencies->StepComplete(LoadLatencyTimes::kLoadFromStore);
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(50));
     latencies->StepComplete(LoadLatencyTimes::kUploadActions);
-    reporter_->OnLoadStream(LoadStreamStatus::kNoStatus,
-                            LoadStreamStatus::kLoadedFromNetwork,
-                            std::move(latencies));
+    reporter_->OnLoadStream(
+        LoadStreamStatus::kNoStatus, LoadStreamStatus::kLoadedFromNetwork,
+        /*loaded_new_content_from_network=*/true,
+        /*stored_content_age=*/base::TimeDelta(), std::move(latencies));
   }
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(300));
   reporter_->FeedViewed(kSurfaceId);
@@ -258,7 +303,7 @@ TEST_F(MetricsReporterTest, OpenInNewTabAction) {
 }
 
 TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
-  reporter_->OpenInNewIncognitoTabAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedOpenInNewIncognitoTab);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -275,7 +320,7 @@ TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
 }
 
 TEST_F(MetricsReporterTest, SendFeedbackAction) {
-  reporter_->SendFeedbackAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedSendFeedback);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -290,7 +335,7 @@ TEST_F(MetricsReporterTest, SendFeedbackAction) {
 }
 
 TEST_F(MetricsReporterTest, DownloadAction) {
-  reporter_->DownloadAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedDownload);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -305,7 +350,7 @@ TEST_F(MetricsReporterTest, DownloadAction) {
 }
 
 TEST_F(MetricsReporterTest, LearnMoreAction) {
-  reporter_->LearnMoreAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedLearnMore);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -320,7 +365,7 @@ TEST_F(MetricsReporterTest, LearnMoreAction) {
 }
 
 TEST_F(MetricsReporterTest, RemoveAction) {
-  reporter_->RemoveAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedHideStory);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -335,7 +380,7 @@ TEST_F(MetricsReporterTest, RemoveAction) {
 }
 
 TEST_F(MetricsReporterTest, NotInterestedInAction) {
-  reporter_->NotInterestedInAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedNotInterestedIn);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -350,7 +395,7 @@ TEST_F(MetricsReporterTest, NotInterestedInAction) {
 }
 
 TEST_F(MetricsReporterTest, ManageInterestsAction) {
-  reporter_->ManageInterestsAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedManageInterests);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -365,7 +410,7 @@ TEST_F(MetricsReporterTest, ManageInterestsAction) {
 }
 
 TEST_F(MetricsReporterTest, ContextMenuOpened) {
-  reporter_->ContextMenuOpened();
+  reporter_->OtherUserAction(FeedUserActionType::kOpenedContextMenu);
 
   std::map<FeedEngagementType, int> want_empty;
   EXPECT_EQ(want_empty, ReportedEngagementType());
@@ -534,13 +579,13 @@ TEST_F(MetricsReporterTest, TimeSpentInFeedTracksWholeScrollTime) {
 }
 
 TEST_F(MetricsReporterTest, TurnOnAction) {
-  reporter_->TurnOnAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedTurnOn);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedTurnOn, 1);
 }
 
 TEST_F(MetricsReporterTest, TurnOffAction) {
-  reporter_->TurnOffAction();
+  reporter_->OtherUserAction(FeedUserActionType::kTappedTurnOff);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserActions",
                                 FeedUserActionType::kTappedTurnOff, 1);
 }

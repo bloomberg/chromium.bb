@@ -1,4 +1,4 @@
-# correct use of switch statement  
+// correct use of switch statement
 
 [[stage(vertex)]]
 fn main() -> void {

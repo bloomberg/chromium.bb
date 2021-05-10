@@ -89,8 +89,8 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
       {dnr_api::RULE_ACTION_TYPE_REDIRECT,
        std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
        kMinValidPriority},
-      {dnr_api::RULE_ACTION_TYPE_REDIRECT, nullptr,
-       ParseResult::ERROR_EMPTY_RULE_PRIORITY, kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT, nullptr, ParseResult::SUCCESS,
+       kDefaultPriority},
       {dnr_api::RULE_ACTION_TYPE_REDIRECT,
        std::make_unique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
        kMinValidPriority + 1},
@@ -142,11 +142,11 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
        std::make_unique<bool>(true),
-       flat_rule::OptionFlag_IS_WHITELIST |
+       flat_rule::OptionFlag_IS_ALLOWLIST |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
        std::make_unique<bool>(false),
-       flat_rule::OptionFlag_IS_WHITELIST |
+       flat_rule::OptionFlag_IS_ALLOWLIST |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY |
            flat_rule::OptionFlag_IS_CASE_INSENSITIVE},
   };

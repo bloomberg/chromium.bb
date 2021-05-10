@@ -42,6 +42,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/transform_util.h"
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
@@ -288,7 +289,7 @@ void LayerImpl::GetContentsResourceId(viz::ResourceId* resource_id,
                                       gfx::Size* resource_size,
                                       gfx::SizeF* resource_uv_size) const {
   NOTREACHED();
-  *resource_id = 0;
+  *resource_id = viz::kInvalidResourceId;
 }
 
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
@@ -555,20 +556,6 @@ void LayerImpl::SetSafeOpaqueBackgroundColor(SkColor background_color) {
   safe_opaque_background_color_ = background_color;
 }
 
-SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
-  if (contents_opaque()) {
-    // TODO(936906): We should uncomment this DCHECK, since the
-    // |safe_opaque_background_color_| could be transparent if it is never set
-    // (the default is 0). But to do that, one test needs to be fixed.
-    // DCHECK_EQ(SkColorGetA(safe_opaque_background_color_), SK_AlphaOPAQUE);
-    return safe_opaque_background_color_;
-  }
-  SkColor color = background_color();
-  if (SkColorGetA(color) == 255)
-    color = SK_ColorTRANSPARENT;
-  return color;
-}
-
 void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
   contents_opaque_for_text_ = opaque;
@@ -812,7 +799,7 @@ float LayerImpl::GetIdealContentsScale() const {
 
   const auto& transform = ScreenSpaceTransform();
   if (transform.HasPerspective()) {
-    float scale = MathUtil::ComputeApproximateMaxScale(transform);
+    float scale = gfx::ComputeApproximateMaxScale(transform);
 
     const int kMaxTilesToCoverLayerDimension = 5;
     // Cap the scale in a way that it should be covered by at most
@@ -842,7 +829,7 @@ float LayerImpl::GetIdealContentsScale() const {
   }
 
   gfx::Vector2dF transform_scales =
-      MathUtil::ComputeTransform2dScaleComponents(transform, default_scale);
+      gfx::ComputeTransform2dScaleComponents(transform, default_scale);
 
   return GetPreferredRasterScale(transform_scales);
 }

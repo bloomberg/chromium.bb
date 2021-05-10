@@ -27,6 +27,7 @@ class CSSParserTokenStream;
 class StyleRule;
 class StyleRuleBase;
 class StyleRuleCharset;
+class StyleRuleCounterStyle;
 class StyleRuleFontFace;
 class StyleRuleImport;
 class StyleRuleKeyframe;
@@ -167,6 +168,7 @@ class CORE_EXPORT CSSParserImpl {
   StyleRuleProperty* ConsumePropertyRule(CSSParserTokenStream&);
   StyleRuleCounterStyle* ConsumeCounterStyleRule(CSSParserTokenStream&);
   StyleRuleScrollTimeline* ConsumeScrollTimelineRule(CSSParserTokenStream&);
+  StyleRuleContainer* ConsumeContainerRule(CSSParserTokenStream&);
 
   StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,
                                               const RangeOffset& prelude_offset,

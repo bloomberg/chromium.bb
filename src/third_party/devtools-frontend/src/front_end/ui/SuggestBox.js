@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 
 import * as ARIAUtils from './ARIAUtils.js';
@@ -40,6 +42,17 @@ import {measurePreferredSize} from './UIUtils.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 import {measuredScrollbarWidth} from './utils/measured-scrollbar-width.js';
 
+export const UIStrings = {
+  /**
+  *@description Aria alert to read the suggestion for the suggestion box when typing in text editor
+  *@example {name} PH1
+  *@example {2} PH2
+  *@example {5} PH3
+  */
+  sSuggestionSOfS: '{PH1}, suggestion {PH2} of {PH3}',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/SuggestBox.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @interface
  */
@@ -148,10 +161,6 @@ export class SuggestBox {
         measurePreferredSize(element, this._element).width + measuredScrollbarWidth(this._element.ownerDocument);
     return Math.min(kMaxWidth, preferredWidth);
   }
-
-  /**
-   * @suppressGlobalPropertiesCheck
-   */
   _show() {
     if (this.visible()) {
       return;
@@ -175,17 +184,25 @@ export class SuggestBox {
    */
   _applySuggestion(isIntermediateSuggestion) {
     if (this._onlyCompletion) {
-      ARIAUtils.alert(ls`${this._onlyCompletion.text}, suggestion`, this._element);
+      ARIAUtils.alert(
+          i18nString(
+              UIStrings.sSuggestionSOfS,
+              {PH1: this._onlyCompletion.text, PH2: this._list.selectedIndex() + 1, PH3: this._items.length}),
+          this._element);
       this._suggestBoxDelegate.applySuggestion(this._onlyCompletion, isIntermediateSuggestion);
       return true;
     }
     const suggestion = this._list.selectedItem();
     if (suggestion && suggestion.text) {
-      ARIAUtils.alert(ls`${suggestion.title || suggestion.text}, suggestion`, this._element);
+      ARIAUtils.alert(
+          i18nString(
+              UIStrings.sSuggestionSOfS,
+              {PH1: suggestion.title || suggestion.text, PH2: this._list.selectedIndex() + 1, PH3: this._items.length}),
+          this._element);
     }
     this._suggestBoxDelegate.applySuggestion(suggestion, isIntermediateSuggestion);
 
-    return this.visible() && !!suggestion;
+    return this.visible() && Boolean(suggestion);
   }
 
   /**
@@ -222,7 +239,8 @@ export class SuggestBox {
     }
     element.tabIndex = -1;
     const maxTextLength = 50 + query.length;
-    const displayText = (item.title || item.text).trim().trimEndWithMaxLength(maxTextLength).replace(/\n/g, '\u21B5');
+    const displayText = Platform.StringUtilities.trimEndWithMaxLength((item.title || item.text).trim(), maxTextLength)
+                            .replace(/\n/g, '\u21B5');
 
     const titleElement = element.createChild('span', 'suggestion-title');
     const index = displayText.toLowerCase().indexOf(query.toLowerCase());
@@ -240,7 +258,8 @@ export class SuggestBox {
       element.appendChild(subtitleElement);
     } else if (item.subtitle) {
       const subtitleElement = element.createChild('span', 'suggestion-subtitle');
-      subtitleElement.textContent = item.subtitle.trimEndWithMaxLength(maxTextLength - displayText.length);
+      subtitleElement.textContent =
+          Platform.StringUtilities.trimEndWithMaxLength(item.subtitle, maxTextLength - displayText.length);
     }
     if (item.iconElement) {
       element.appendChild(item.iconElement);
@@ -391,7 +410,7 @@ export class SuggestBox {
    * @return {boolean}
    */
   enterKeyPressed() {
-    const hasSelectedItem = !!this._list.selectedItem() || !!this._onlyCompletion;
+    const hasSelectedItem = Boolean(this._list.selectedItem()) || Boolean(this._onlyCompletion);
     this.acceptSuggestion();
 
     // Report the event as non-handled if there is no selected item,

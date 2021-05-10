@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed.v2;
 
 import android.content.Context;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.BundleUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -13,9 +15,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.base.SplitCompatUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.xsurface.ImageFetchClient;
+import org.chromium.chrome.browser.xsurface.PersistentKeyValueCache;
 import org.chromium.chrome.browser.xsurface.ProcessScopeDependencyProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -29,14 +35,19 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
 
     private Context mContext;
     private ImageFetchClient mImageFetchClient;
+    private FeedPersistentKeyValueCache mPersistentKeyValueCache;
     private LibraryResolver mLibraryResolver;
+
+    @VisibleForTesting
+    static PrivacyPreferencesManager sPrivacyPreferencesManagerForTest;
 
     FeedProcessScopeDependencyProvider() {
         mContext = createFeedContext(ContextUtils.getApplicationContext());
         mImageFetchClient = new FeedImageFetchClient();
+        mPersistentKeyValueCache = new FeedPersistentKeyValueCache();
         if (BundleUtils.isIsolatedSplitInstalled(mContext, FEED_SPLIT_NAME)) {
             mLibraryResolver = (libName) -> {
-                return BundleUtils.getNativeLibraryPath(libName);
+                return BundleUtils.getNativeLibraryPath(libName, FEED_SPLIT_NAME);
             };
         }
     }
@@ -77,6 +88,11 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
     }
 
     @Override
+    public PersistentKeyValueCache getPersistentKeyValueCache() {
+        return mPersistentKeyValueCache;
+    }
+
+    @Override
     public void logError(String tag, String format, Object... args) {
         Log.e(tag, format, args);
     }
@@ -106,6 +122,16 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
     @Override
     public LibraryResolver getLibraryResolver() {
         return mLibraryResolver;
+    }
+
+    @Override
+    public boolean isXsurfaceUsageAndCrashReportingEnabled() {
+        PrivacyPreferencesManager manager = sPrivacyPreferencesManagerForTest;
+        if (manager == null) {
+            manager = PrivacyPreferencesManagerImpl.getInstance();
+        }
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.XSURFACE_METRICS_REPORTING)
+                && manager.isMetricsReportingEnabled();
     }
 
     public static Context createFeedContext(Context context) {

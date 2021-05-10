@@ -47,16 +47,6 @@ using testing::Return;
 
 namespace {
 
-std::unique_ptr<KeyedService> CreateSyncSetupService(
-    web::BrowserState* context) {
-  ChromeBrowserState* chrome_browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
-  return std::make_unique<testing::NiceMock<SyncSetupServiceMock>>(
-      sync_service);
-}
-
 class SessionSyncServiceMockForRecentTabsTableCoordinator
     : public sync_sessions::SessionSyncService {
  public:
@@ -65,15 +55,14 @@ class SessionSyncServiceMockForRecentTabsTableCoordinator
 
   MOCK_CONST_METHOD0(GetGlobalIdMapper, syncer::GlobalIdMapper*());
   MOCK_METHOD0(GetOpenTabsUIDelegate, sync_sessions::OpenTabsUIDelegate*());
-  MOCK_METHOD1(SubscribeToForeignSessionsChanged,
-               std::unique_ptr<base::CallbackList<void()>::Subscription>(
-                   const base::RepeatingClosure& cb));
+  MOCK_METHOD1(
+      SubscribeToForeignSessionsChanged,
+      base::CallbackListSubscription(const base::RepeatingClosure& cb));
   MOCK_METHOD0(ScheduleGarbageCollection, void());
   MOCK_METHOD0(GetControllerDelegate,
                base::WeakPtr<syncer::ModelTypeControllerDelegate>());
   MOCK_METHOD1(ProxyTabsStateChanged,
                void(syncer::DataTypeController::State state));
-  MOCK_METHOD1(SetSyncSessionsGUID, void(const std::string& guid));
 };
 
 std::unique_ptr<KeyedService>
@@ -130,7 +119,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
-        base::BindRepeating(&CreateSyncSetupService));
+        base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     test_cbs_builder.AddTestingFactory(
         SessionSyncServiceFactory::GetInstance(),
         base::BindRepeating(
@@ -154,14 +143,14 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
                       BOOL hasForeignSessions) {
     if (signedIn) {
       identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
-    } else if (identity_test_env_.identity_manager()->HasPrimaryAccount()) {
+    } else if (identity_test_env_.identity_manager()->HasPrimaryAccount(
+                   signin::ConsentLevel::kSync)) {
       auto* account_mutator =
           identity_test_env_.identity_manager()->GetPrimaryAccountMutator();
 
       // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
       DCHECK(account_mutator);
       account_mutator->ClearPrimaryAccount(
-          signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
     }

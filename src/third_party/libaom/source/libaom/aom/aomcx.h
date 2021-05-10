@@ -22,6 +22,18 @@
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the
  *        aom Codec Interface.
+ *
+ * Several interfaces are excluded with CONFIG_REALTIME_ONLY build:
+ * Global motion
+ * Warped motion
+ * OBMC
+ * TPL model
+ * Loop restoration
+ *
+ * The following features are also disabled with CONFIG_REALTIME_ONLY:
+ * CNN
+ * 4X rectangular blocks
+ * 4X rectangular transform in intra prediction
  */
 
 #ifdef __cplusplus
@@ -193,7 +205,7 @@ enum aome_enc_control_id {
    * encoding process, values greater than 0 will increase encoder speed at
    * the expense of quality.
    *
-   * Valid range: 0..8. 0 runs the slowest, and 8 runs the fastest;
+   * Valid range: 0..9. 0 runs the slowest, and 9 runs the fastest;
    * quality improves as speed decreases (since more compression
    * possibilities are explored).
    */
@@ -376,6 +388,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ENABLE_TPL_MODEL = 35,
 
@@ -383,7 +397,8 @@ enum aome_enc_control_id {
    * unsigned int parameter
    *
    * - 0 = disable
-   * - 1 = enable (default)
+   * - 1 = enable without overlay (default)
+   * - 2 = enable with overlay
    */
   AV1E_SET_ENABLE_KEYFRAME_FILTERING = 36,
 
@@ -463,6 +478,7 @@ enum aome_enc_control_id {
    *
    *  - AOM_CONTENT_DEFAULT = Regular video content (default)
    *  - AOM_CONTENT_SCREEN  = Screen capture content
+   *  - AOM_CONTENT_FILM = Film content
    */
   AV1E_SET_TUNE_CONTENT = 43,
 
@@ -639,6 +655,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ENABLE_RESTORATION = 59,
 
@@ -654,6 +672,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ENABLE_OBMC = 61,
 
@@ -983,6 +1003,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ENABLE_GLOBAL_MOTION = 95,
 
@@ -991,6 +1013,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ENABLE_WARPED_MOTION = 96,
 
@@ -1002,6 +1026,8 @@ enum aome_enc_control_id {
    *
    * - 0 = disable
    * - 1 = enable (default)
+   *
+   * \note Excluded from CONFIG_REALTIME_ONLY build.
    */
   AV1E_SET_ALLOW_WARPED_MOTION = 97,
 
@@ -1161,7 +1187,7 @@ enum aome_enc_control_id {
   /*!\brief Control to select maximum height for the GF group pyramid structure,
    * unsigned int parameter
    *
-   * Valid range: 0..4
+   * Valid range: 0..5
    */
   AV1E_SET_GF_MAX_PYRAMID_HEIGHT = 123,
 
@@ -1271,7 +1297,7 @@ enum aome_enc_control_id {
   /*!\brief Control to select minimum height for the GF group pyramid structure,
    * unsigned int parameter
    *
-   * Valid values: 0..4
+   * Valid values: 0..5
    */
   AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 156,
 
@@ -1283,6 +1309,13 @@ enum aome_enc_control_id {
   /*!\brief Control to get baseline gf interval
    */
   AV1E_GET_BASELINE_GF_INTERVAL = 158,
+
+  /*\brief Control to set encoding the denoised frame from denoise-noise-level
+   *
+   * - 0 = disabled/encode the original frame
+   * - 1 = enabled/encode the denoised frame (default)
+   */
+  AV1E_SET_ENABLE_DNL_DENOISING = 159,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1353,6 +1386,7 @@ typedef struct aom_scaling_mode {
 typedef enum {
   AOM_CONTENT_DEFAULT,
   AOM_CONTENT_SCREEN,
+  AOM_CONTENT_FILM,
   AOM_CONTENT_INVALID
 } aom_tune_content;
 
@@ -1804,6 +1838,9 @@ AOM_CTRL_USE_TYPE(AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP, unsigned int)
 #define AOM_CTRL_AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DNL_DENOISING, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DNL_DENOISING
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

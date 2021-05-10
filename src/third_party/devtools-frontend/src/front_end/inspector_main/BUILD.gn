@@ -29,13 +29,19 @@ copy_to_gen("legacy_css") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "inspector_main.js"
+  entrypoint = "inspector_main.ts"
 
   deps = [ ":inspector_main" ]
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "inspector_main-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "inspector_main-meta.ts"
 
   deps = [ ":bundle" ]
 }

@@ -55,9 +55,8 @@ BrailleControllerImpl* BrailleControllerImpl::GetInstance() {
 }
 
 BrailleControllerImpl::BrailleControllerImpl() {
-  create_brlapi_connection_function_ = base::Bind(
-      &BrailleControllerImpl::CreateBrlapiConnection,
-      base::Unretained(this));
+  create_brlapi_connection_function_ = base::BindOnce(
+      &BrailleControllerImpl::CreateBrlapiConnection, base::Unretained(this));
 }
 
 BrailleControllerImpl::~BrailleControllerImpl() = default;
@@ -141,13 +140,12 @@ void BrailleControllerImpl::RemoveObserver(BrailleObserver* observer) {
 }
 
 void BrailleControllerImpl::SetCreateBrlapiConnectionForTesting(
-    const CreateBrlapiConnectionFunction& function) {
+    CreateBrlapiConnectionFunction function) {
   if (function.is_null()) {
-    create_brlapi_connection_function_ = base::Bind(
-        &BrailleControllerImpl::CreateBrlapiConnection,
-        base::Unretained(this));
+    create_brlapi_connection_function_ = base::BindOnce(
+        &BrailleControllerImpl::CreateBrlapiConnection, base::Unretained(this));
   } else {
-    create_brlapi_connection_function_ = function;
+    create_brlapi_connection_function_ = std::move(function);
   }
 }
 
@@ -189,9 +187,10 @@ void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
-          brlapi_dir, false,
-          base::Bind(&BrailleControllerImpl::OnSocketDirChangedOnTaskThread,
-                     base::Unretained(this)))) {
+          brlapi_dir, base::FilePathWatcher::Type::kNonRecursive,
+          base::BindRepeating(
+              &BrailleControllerImpl::OnSocketDirChangedOnTaskThread,
+              base::Unretained(this)))) {
     LOG(WARNING) << "Couldn't watch brlapi directory " << BRLAPI_SOCKETPATH;
   }
 }
@@ -225,13 +224,17 @@ void BrailleControllerImpl::TryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
   connect_scheduled_ = false;
-  if (!connection_.get())
-    connection_ = create_brlapi_connection_function_.Run();
-  if (connection_.get() && !connection_->Connected()) {
+  if (!connection_.get()) {
+    DCHECK(!create_brlapi_connection_function_.is_null());
+    connection_ = std::move(create_brlapi_connection_function_).Run();
+  }
+
+  DCHECK(connection_);
+  if (!connection_->Connected()) {
     VLOG(1) << "Trying to connect to brlapi";
-    BrlapiConnection::ConnectResult result = connection_->Connect(base::Bind(
-        &BrailleControllerImpl::DispatchKeys,
-        base::Unretained(this)));
+    BrlapiConnection::ConnectResult result =
+        connection_->Connect(base::BindRepeating(
+            &BrailleControllerImpl::DispatchKeys, base::Unretained(this)));
     switch (result) {
       case BrlapiConnection::CONNECT_SUCCESS:
         DispatchOnDisplayStateChanged(GetDisplayState());

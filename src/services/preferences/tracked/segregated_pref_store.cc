@@ -8,8 +8,8 @@
 
 #include "base/barrier_closure.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 
 SegregatedPrefStore::AggregatingObserver::AggregatingObserver(
@@ -74,7 +74,7 @@ void SegregatedPrefStore::RemoveObserver(Observer* observer) {
 }
 
 bool SegregatedPrefStore::HasObservers() const {
-  return observers_.might_have_observers();
+  return !observers_.empty();
 }
 
 bool SegregatedPrefStore::IsInitializationComplete() const {

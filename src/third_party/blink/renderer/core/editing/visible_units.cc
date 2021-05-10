@@ -40,6 +40,8 @@
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_iterator.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/selection_adjuster.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
@@ -75,7 +77,32 @@ static PositionType CanonicalizeCandidate(const PositionType& candidate) {
 }
 
 template <typename PositionType>
-static PositionType SnapFallbackTemplate(const PositionType& position) {
+static PositionType CanonicalPosition(const PositionType& position) {
+  // Sometimes updating selection positions can be extremely expensive and
+  // occur frequently.  Often calling preventDefault on mousedown events can
+  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
+  TRACE_EVENT0("input", "VisibleUnits::canonicalPosition");
+
+  // FIXME (9535):  Canonicalizing to the leftmost candidate means that if
+  // we're at a line wrap, we will ask layoutObjects to paint downstream
+  // carets for other layoutObjects. To fix this, we need to either a) add
+  // code to all paintCarets to pass the responsibility off to the appropriate
+  // layoutObject for VisiblePosition's like these, or b) canonicalize to the
+  // rightmost candidate unless the affinity is upstream.
+  if (position.IsNull())
+    return PositionType();
+
+  DCHECK(position.GetDocument());
+  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
+
+  const PositionType& backward_candidate = MostBackwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(backward_candidate))
+    return backward_candidate;
+
+  const PositionType& forward_candidate = MostForwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(forward_candidate))
+    return forward_candidate;
+
   // When neither upstream or downstream gets us to a candidate
   // (upstream/downstream won't leave blocks or enter new ones), we search
   // forward and backward until we find one.
@@ -128,93 +155,12 @@ static PositionType SnapFallbackTemplate(const PositionType& position) {
   return next;
 }
 
-template <typename Strategy>
-static PositionWithAffinityTemplate<Strategy> SnapBackwardTemplate(
-    const PositionTemplate<Strategy>& position) {
-  // Sometimes updating selection positions can be extremely expensive and
-  // occur frequently.  Often calling preventDefault on mousedown events can
-  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
-  TRACE_EVENT0("input", "VisibleUnits::SnapBackward");
-
-  if (position.IsNull())
-    return PositionWithAffinityTemplate<Strategy>();
-
-  DCHECK(position.GetDocument());
-  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
-
-  const PositionTemplate<Strategy>& candidate1 =
-      MostBackwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate1)) {
-    return PositionWithAffinityTemplate<Strategy>(candidate1,
-                                                  TextAffinity::kUpstream);
-  }
-
-  const PositionTemplate<Strategy>& candidate2 =
-      MostForwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate2)) {
-    return PositionWithAffinityTemplate<Strategy>(candidate2,
-                                                  TextAffinity::kDownstream);
-  }
-
-  return PositionWithAffinityTemplate<Strategy>(SnapFallbackTemplate(position),
-                                                TextAffinity::kDownstream);
-}
-
-PositionWithAffinity SnapBackward(const Position& position) {
-  return SnapBackwardTemplate(position);
-}
-
-PositionInFlatTreeWithAffinity SnapBackward(
-    const PositionInFlatTree& position) {
-  return SnapBackwardTemplate(position);
-}
-
-template <typename Strategy>
-static PositionWithAffinityTemplate<Strategy> SnapForwardTemplate(
-    const PositionTemplate<Strategy>& position) {
-  // Sometimes updating selection positions can be extremely expensive and
-  // occur frequently.  Often calling preventDefault on mousedown events can
-  // avoid doing unnecessary text selection work.  http://crbug.com/472258.
-  TRACE_EVENT0("input", "VisibleUnits::SnapForward");
-
-  if (position.IsNull())
-    return PositionWithAffinityTemplate<Strategy>();
-
-  DCHECK(position.GetDocument());
-  DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
-
-  const PositionTemplate<Strategy>& candidate1 =
-      MostForwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate1)) {
-    return PositionWithAffinityTemplate<Strategy>(candidate1,
-                                                  TextAffinity::kDownstream);
-  }
-
-  const PositionTemplate<Strategy>& candidate2 =
-      MostBackwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate2)) {
-    return PositionWithAffinityTemplate<Strategy>(candidate2,
-                                                  TextAffinity::kDownstream);
-  }
-
-  return PositionWithAffinityTemplate<Strategy>(SnapFallbackTemplate(position),
-                                                TextAffinity::kDownstream);
-}
-
-PositionWithAffinity SnapForward(const Position& position) {
-  return SnapForwardTemplate(position);
-}
-
-PositionInFlatTreeWithAffinity SnapForward(const PositionInFlatTree& position) {
-  return SnapForwardTemplate(position);
-}
-
 Position CanonicalPositionOf(const Position& position) {
-  return SnapBackward(position).GetPosition();
+  return CanonicalPosition(position);
 }
 
 PositionInFlatTree CanonicalPositionOf(const PositionInFlatTree& position) {
-  return SnapBackward(position).GetPosition();
+  return CanonicalPosition(position);
 }
 
 template <typename Strategy>
@@ -266,32 +212,6 @@ AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTree& anchor) {
   return AdjustBackwardPositionToAvoidCrossingEditingBoundariesTemplate(pos,
                                                                         anchor);
-}
-
-template <typename Strategy>
-VisiblePositionTemplate<Strategy>
-AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
-    const VisiblePositionTemplate<Strategy>& pos,
-    const PositionTemplate<Strategy>& anchor) {
-  DCHECK(pos.IsValid()) << pos;
-  return CreateVisiblePosition(
-      AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-          pos.ToPositionWithAffinity(), anchor));
-}
-
-VisiblePosition AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePosition& visiblePosition,
-    const Position& anchor) {
-  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
-      visiblePosition, anchor);
-}
-
-VisiblePositionInFlatTree
-AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePositionInFlatTree& visiblePosition,
-    const PositionInFlatTree& anchor) {
-  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
-      visiblePosition, anchor);
 }
 
 template <typename Strategy>
@@ -352,24 +272,6 @@ AdjustForwardPositionToAvoidCrossingEditingBoundaries(
       PositionInFlatTreeWithAffinity(pos), anchor);
 }
 
-VisiblePosition AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePosition& pos,
-    const Position& anchor) {
-  DCHECK(pos.IsValid()) << pos;
-  return CreateVisiblePosition(
-      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-          pos.ToPositionWithAffinity(), anchor));
-}
-
-VisiblePositionInFlatTree AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-    const VisiblePositionInFlatTree& pos,
-    const PositionInFlatTree& anchor) {
-  DCHECK(pos.IsValid()) << pos;
-  return CreateVisiblePosition(
-      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-          pos.ToPositionWithAffinity(), anchor));
-}
-
 template <typename Strategy>
 static ContainerNode* NonShadowBoundaryParentNode(Node* node) {
   ContainerNode* parent = Strategy::Parent(*node);
@@ -399,22 +301,21 @@ static Node* ParentEditingBoundary(const PositionTemplate<Strategy>& position) {
 // ---------
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> StartOfDocumentAlgorithm(
-    const VisiblePositionTemplate<Strategy>& visible_position) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  Node* node = visible_position.DeepEquivalent().AnchorNode();
+static PositionTemplate<Strategy> StartOfDocumentAlgorithm(
+    const PositionTemplate<Strategy>& position) {
+  const Node* const node = position.AnchorNode();
   if (!node || !node->GetDocument().documentElement())
-    return VisiblePositionTemplate<Strategy>();
+    return PositionTemplate<Strategy>();
 
-  return CreateVisiblePosition(PositionTemplate<Strategy>::FirstPositionInNode(
-      *node->GetDocument().documentElement()));
+  return PositionTemplate<Strategy>::FirstPositionInNode(
+      *node->GetDocument().documentElement());
 }
 
-VisiblePosition StartOfDocument(const VisiblePosition& c) {
+Position StartOfDocument(const Position& c) {
   return StartOfDocumentAlgorithm<EditingStrategy>(c);
 }
 
-VisiblePositionInFlatTree StartOfDocument(const VisiblePositionInFlatTree& c) {
+PositionInFlatTree StartOfDocument(const PositionInFlatTree& c) {
   return StartOfDocumentAlgorithm<EditingInFlatTreeStrategy>(c);
 }
 
@@ -452,25 +353,20 @@ bool IsEndOfDocument(const VisiblePosition& p) {
 
 // ---------
 
-VisiblePosition StartOfEditableContent(
-    const VisiblePosition& visible_position) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  ContainerNode* highest_root =
-      HighestEditableRoot(visible_position.DeepEquivalent());
+PositionInFlatTree StartOfEditableContent(const PositionInFlatTree& position) {
+  ContainerNode* highest_root = HighestEditableRoot(position);
   if (!highest_root)
-    return VisiblePosition();
+    return PositionInFlatTree();
 
-  return VisiblePosition::FirstPositionInNode(*highest_root);
+  return PositionInFlatTree::FirstPositionInNode(*highest_root);
 }
 
-VisiblePosition EndOfEditableContent(const VisiblePosition& visible_position) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  ContainerNode* highest_root =
-      HighestEditableRoot(visible_position.DeepEquivalent());
+PositionInFlatTree EndOfEditableContent(const PositionInFlatTree& position) {
+  ContainerNode* highest_root = HighestEditableRoot(position);
   if (!highest_root)
-    return VisiblePosition();
+    return PositionInFlatTree();
 
-  return VisiblePosition::LastPositionInNode(*highest_root);
+  return PositionInFlatTree::LastPositionInNode(*highest_root);
 }
 
 bool IsEndOfEditableOrNonEditableContent(const VisiblePosition& position) {
@@ -494,11 +390,6 @@ bool IsEndOfEditableOrNonEditableContent(
   if (!next_position.DeepEquivalent().IsAfterAnchor())
     return false;
   return IsTextControl(next_position.DeepEquivalent().AnchorNode());
-}
-
-static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
-                                           const LayoutRect& rect) {
-  return o->Style()->IsHorizontalWritingMode() ? rect.Height() : rect.Width();
 }
 
 // TODO(editing-dev): The semantics seems wrong when we're in a one-letter block
@@ -533,9 +424,7 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
           (o->IsLayoutInline() && IsEmptyInline(LineLayoutItem(o)) &&
            // TODO(crbug.com/771398): Find alternative ways to check whether an
            // empty LayoutInline is rendered, without checking InlineBox.
-           BoundingBoxLogicalHeight(
-               o,
-               To<LayoutInline>(o)->PhysicalLinesBoundingBox().ToLayoutRect())))
+           !To<LayoutInline>(o)->PhysicalLinesBoundingBox().IsEmpty()))
         return true;
     }
   }
@@ -553,20 +442,21 @@ PositionWithAffinity PositionForContentsPointRespectingEditingBoundary(
   HitTestResult result(request, location);
   frame->GetDocument()->GetLayoutView()->HitTest(location, result);
 
-  if (Node* node = result.InnerNode()) {
+  if (result.InnerNode()) {
     return PositionRespectingEditingBoundary(
         frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start(),
-        result.LocalPoint(), node);
+        result);
   }
   return PositionWithAffinity();
 }
 
 // TODO(yosin): We should use |AssociatedLayoutObjectOf()| in "visible_units.cc"
 // where it takes |LayoutObject| from |Position|.
-
 int CaretMinOffset(const Node* node) {
   const LayoutObject* layout_object = AssociatedLayoutObjectOf(*node, 0);
-  return layout_object ? layout_object->CaretMinOffset() : 0;
+  if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_object))
+    return layout_text->CaretMinOffset();
+  return 0;
 }
 
 int CaretMaxOffset(const Node* n) {
@@ -662,6 +552,58 @@ static bool IsStreamer(const PositionIteratorAlgorithm<Strategy>& pos) {
   return pos.AtStartOfNode();
 }
 
+template <typename F>
+static Position MostBackwardOrForwardCaretPosition(
+    const Position& position,
+    EditingBoundaryCrossingRule rule,
+    F AlgorithmInFlatTree) {
+  Node* position_anchor = position.AnchorNode();
+  if (!position_anchor)
+    return Position();
+  DCHECK(position.IsValidFor(*position.GetDocument()));
+
+  // Find the most backward or forward caret position in the flat tree.
+  const Position& candidate = ToPositionInDOMTree(
+      AlgorithmInFlatTree(ToPositionInFlatTree(position), rule));
+  Node* candidate_anchor = candidate.AnchorNode();
+  if (!candidate_anchor)
+    return position;
+
+  // Fast path for common cases when there is no shadow involved.
+  if (!position_anchor->IsInShadowTree() && !IsShadowHost(position_anchor) &&
+      !candidate_anchor->IsInShadowTree() && !IsShadowHost(candidate_anchor)) {
+    return candidate;
+  }
+
+  // Adjust the candidate to avoid crossing shadow boundaries.
+  const SelectionInDOMTree& selection =
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(position, candidate)
+          .Build();
+  if (selection.IsCaret())
+    return candidate;
+  const SelectionInDOMTree& shadow_adjusted_selection =
+      SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
+          selection);
+  const Position& adjusted_candidate = shadow_adjusted_selection.Extent();
+
+  // The adjusted candidate should be between the candidate and the original
+  // position. Otherwise, return the original position.
+  if (position.CompareTo(candidate) == candidate.CompareTo(adjusted_candidate))
+    return position;
+
+  // If we have to adjust the position, the editability may change, so avoid
+  // crossing editing boundaries if it's not allowed.
+  if (rule == kCannotCrossEditingBoundary &&
+      selection != shadow_adjusted_selection) {
+    const SelectionInDOMTree& editing_adjusted_selection =
+        SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
+            shadow_adjusted_selection);
+    return editing_adjusted_selection.Extent();
+  }
+  return adjusted_candidate;
+}
+
 template <typename Strategy>
 static PositionTemplate<Strategy> AdjustPositionForBackwardIteration(
     const PositionTemplate<Strategy>& position) {
@@ -674,6 +616,14 @@ static PositionTemplate<Strategy> AdjustPositionForBackwardIteration(
       position.AnchorNode(), Strategy::CaretMaxOffset(*position.AnchorNode()));
 }
 
+// TODO(yosin): We should make |Most{Back,For}kwardCaretPosition()| to work for
+// positions other than |kOffsetInAnchor|. When we convert |position| to
+// |kOffsetInAnchor|, following tests are failed:
+//  * editing/execCommand/delete-non-editable-range-crash.html
+//  * editing/execCommand/keep_typing_style.html
+//  * editing/selection/skip-over-contenteditable.html
+// See also |AdjustForEditingBoundary()|. It has workaround for before/after
+// positions.
 template <typename Strategy>
 static PositionTemplate<Strategy> MostBackwardCaretPosition(
     const PositionTemplate<Strategy>& position,
@@ -771,7 +721,8 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       // Until we resolve that, disable this so we can run the web tests!
       // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
       return PositionTemplate<Strategy>(
-          current_node, layout_object->CaretMaxOffset() + text_start_offset);
+          current_node,
+          text_layout_object->CaretMaxOffset() + text_start_offset);
     }
 
     DCHECK_GE(current_pos.OffsetInLeafNode(),
@@ -786,7 +737,8 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
 
 Position MostBackwardCaretPosition(const Position& position,
                                    EditingBoundaryCrossingRule rule) {
-  return MostBackwardCaretPosition<EditingStrategy>(position, rule);
+  return MostBackwardOrForwardCaretPosition(
+      position, rule, MostBackwardCaretPosition<EditingInFlatTreeStrategy>);
 }
 
 PositionInFlatTree MostBackwardCaretPosition(const PositionInFlatTree& position,
@@ -892,9 +844,8 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
     // ignored.
     if (EditingIgnoresContent(*current_node) ||
         IsDisplayInsideTable(current_node)) {
-      if (current_pos.OffsetInLeafNode() <= layout_object->CaretMinOffset())
-        return PositionTemplate<Strategy>::EditingPositionOf(
-            current_node, layout_object->CaretMinOffset());
+      if (current_pos.OffsetInLeafNode() <= 0)
+        return PositionTemplate<Strategy>::EditingPositionOf(current_node, 0);
       continue;
     }
 
@@ -909,7 +860,8 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
       DCHECK(current_pos.AtStartOfNode() ||
              HasInvisibleFirstLetter(current_node));
       return PositionTemplate<Strategy>(
-          current_node, layout_object->CaretMinOffset() + text_start_offset);
+          current_node,
+          text_layout_object->CaretMinOffset() + text_start_offset);
     }
 
     DCHECK_GE(current_pos.OffsetInLeafNode(),
@@ -924,7 +876,8 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
 
 Position MostForwardCaretPosition(const Position& position,
                                   EditingBoundaryCrossingRule rule) {
-  return MostForwardCaretPosition<EditingStrategy>(position, rule);
+  return MostBackwardOrForwardCaretPosition(
+      position, rule, MostForwardCaretPosition<EditingInFlatTreeStrategy>);
 }
 
 PositionInFlatTree MostForwardCaretPosition(const PositionInFlatTree& position,
@@ -1020,7 +973,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
 
   if (layout_object->IsLayoutBlockFlow() ||
       layout_object->IsFlexibleBoxIncludingNG() ||
-      layout_object->IsLayoutGrid()) {
+      layout_object->IsLayoutGridIncludingNG()) {
     if (To<LayoutBlock>(layout_object)->LogicalHeight() ||
         anchor_node->GetDocument().body() == anchor_node) {
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
@@ -1128,15 +1081,15 @@ static VisiblePositionTemplate<Strategy> NextPositionOfAlgorithm(
     case kCanCrossEditingBoundary:
       return next;
     case kCannotCrossEditingBoundary:
-      return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-          next, position.GetPosition());
+      return CreateVisiblePosition(
+          AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+              next.ToPositionWithAffinity(), position.GetPosition()));
     case kCanSkipOverEditingBoundary:
       return CreateVisiblePosition(SkipToEndOfEditingBoundary(
           next.DeepEquivalent(), position.GetPosition()));
   }
   NOTREACHED();
-  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-      next, position.GetPosition());
+  return next;
 }
 
 VisiblePosition NextPositionOf(const VisiblePosition& visible_position,
@@ -1207,15 +1160,16 @@ static VisiblePositionTemplate<Strategy> PreviousPositionOfAlgorithm(
     case kCanCrossEditingBoundary:
       return prev;
     case kCannotCrossEditingBoundary:
-      return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(prev,
-                                                                    position);
+      return CreateVisiblePosition(
+          AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+              prev.ToPositionWithAffinity(), position));
     case kCanSkipOverEditingBoundary:
       return CreateVisiblePosition(
           SkipToStartOfEditingBoundary(prev.DeepEquivalent(), position));
   }
 
   NOTREACHED();
-  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(prev, position);
+  return prev;
 }
 
 VisiblePosition PreviousPositionOf(const VisiblePosition& visible_position,

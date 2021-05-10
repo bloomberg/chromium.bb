@@ -396,13 +396,16 @@ TEST(DisasmX64) {
     __ cvttps2dq(xmm0, xmm1);
     __ cvttps2dq(xmm0, Operand(rbx, rcx, times_4, 10000));
     __ movaps(xmm0, xmm1);
+    __ movaps(xmm0, Operand(rbx, rcx, times_4, 10000));
     __ movdqa(xmm0, Operand(rsp, 12));
     __ movdqa(Operand(rsp, 12), xmm0);
     __ movdqu(xmm0, Operand(rsp, 12));
     __ movdqu(Operand(rsp, 12), xmm0);
     __ movdqu(xmm1, xmm0);
+    __ movhlps(xmm5, xmm1);
     __ movlps(xmm8, Operand(rbx, rcx, times_4, 10000));
     __ movlps(Operand(rbx, rcx, times_4, 10000), xmm9);
+    __ movlhps(xmm5, xmm1);
     __ movhps(xmm8, Operand(rbx, rcx, times_4, 10000));
     __ movhps(Operand(rbx, rcx, times_4, 10000), xmm9);
     __ shufps(xmm0, xmm9, 0x0);
@@ -428,6 +431,7 @@ TEST(DisasmX64) {
 
   // SSE2 instructions
   {
+    __ cvtdq2pd(xmm3, xmm4);
     __ cvttsd2si(rdx, Operand(rbx, rcx, times_4, 10000));
     __ cvttsd2si(rdx, xmm1);
     __ cvttsd2siq(rdx, xmm1);
@@ -448,6 +452,7 @@ TEST(DisasmX64) {
     __ movupd(Operand(rbx, rcx, times_4, 10000), xmm0);
     __ movdqa(xmm0, Operand(rbx, rcx, times_4, 10000));
     __ movdqa(Operand(rbx, rcx, times_4, 10000), xmm0);
+    __ movdqa(xmm0, xmm1);
 
     __ ucomisd(xmm0, xmm1);
     __ ucomisd(xmm8, Operand(rbx, rdx, times_4, 10000));
@@ -510,6 +515,7 @@ TEST(DisasmX64) {
       __ lddqu(xmm1, Operand(rdx, 4));
       __ movddup(xmm1, Operand(rax, 5));
       __ movddup(xmm1, xmm2);
+      __ movshdup(xmm1, xmm2);
     }
   }
 
@@ -577,7 +583,6 @@ TEST(DisasmX64) {
       __ movups(xmm5, xmm1);
       __ movups(xmm5, Operand(rdx, 4));
       __ movups(Operand(rdx, 4), xmm5);
-      __ movlhps(xmm5, xmm1);
       __ pmulld(xmm5, xmm1);
       __ pmulld(xmm5, Operand(rdx, 4));
       __ pmullw(xmm5, xmm1);
@@ -656,11 +661,17 @@ TEST(DisasmX64) {
       __ vmovsd(xmm9, Operand(rbx, rcx, times_4, 10000));
       __ vmovsd(Operand(rbx, rcx, times_4, 10000), xmm0);
 
+      __ vmovdqa(xmm4, xmm5);
+      __ vmovdqa(xmm4, Operand(rbx, rcx, times_4, 10000));
+
       __ vmovdqu(xmm9, Operand(rbx, rcx, times_4, 10000));
       __ vmovdqu(Operand(rbx, rcx, times_4, 10000), xmm0);
+      __ vmovdqu(xmm4, xmm5);
 
+      __ vmovhlps(xmm1, xmm3, xmm5);
       __ vmovlps(xmm8, xmm9, Operand(rbx, rcx, times_4, 10000));
       __ vmovlps(Operand(rbx, rcx, times_4, 10000), xmm9);
+      __ vmovlhps(xmm1, xmm3, xmm5);
       __ vmovhps(xmm8, xmm9, Operand(rbx, rcx, times_4, 10000));
       __ vmovhps(Operand(rbx, rcx, times_4, 10000), xmm12);
 
@@ -671,6 +682,7 @@ TEST(DisasmX64) {
       __ vucomisd(xmm9, xmm1);
       __ vucomisd(xmm8, Operand(rbx, rdx, times_2, 10981));
 
+      __ vcvtdq2pd(xmm9, xmm11);
       __ vcvtss2sd(xmm4, xmm9, xmm11);
       __ vcvtss2sd(xmm4, xmm9, Operand(rbx, rcx, times_1, 10000));
       __ vcvttps2dq(xmm4, xmm11);
@@ -684,6 +696,7 @@ TEST(DisasmX64) {
       __ vcvtsd2si(rdi, xmm9);
 
       __ vmovaps(xmm10, xmm11);
+      __ vmovaps(xmm0, Operand(rbx, rcx, times_4, 10000));
       __ vmovapd(xmm7, xmm0);
       __ vmovupd(xmm0, Operand(rbx, rcx, times_4, 10000));
       __ vmovupd(Operand(rbx, rcx, times_4, 10000), xmm0);
@@ -693,7 +706,6 @@ TEST(DisasmX64) {
       __ vmovups(xmm5, xmm1);
       __ vmovups(xmm5, Operand(rdx, 4));
       __ vmovups(Operand(rdx, 4), xmm5);
-      __ vmovlhps(xmm1, xmm3, xmm5);
 
       __ vandps(xmm0, xmm9, xmm2);
       __ vandps(xmm9, xmm1, Operand(rbx, rcx, times_4, 10000));
@@ -839,7 +851,28 @@ TEST(DisasmX64) {
 
       __ vmovddup(xmm1, xmm2);
       __ vmovddup(xmm1, Operand(rbx, rcx, times_4, 10000));
+      __ vmovshdup(xmm1, xmm2);
       __ vbroadcastss(xmm1, Operand(rbx, rcx, times_4, 10000));
+    }
+  }
+
+  // AVX2 instruction
+  {
+    if (CpuFeatures::IsSupported(AVX2)) {
+      CpuFeatureScope scope(&assm, AVX2);
+      __ vbroadcastss(xmm1, xmm2);
+    }
+  }
+
+  // AVX2 instructions.
+  {
+    if (CpuFeatures::IsSupported(AVX2)) {
+      CpuFeatureScope scope(&assm, AVX2);
+#define EMIT_AVX2_BROADCAST(instruction, notUsed1, notUsed2, notUsed3, \
+                            notUsed4)                                  \
+  __ instruction(xmm0, xmm1);                                          \
+  __ instruction(xmm0, Operand(rbx, rcx, times_4, 10000));
+      AVX2_BROADCAST_LIST(EMIT_AVX2_BROADCAST)
     }
   }
 

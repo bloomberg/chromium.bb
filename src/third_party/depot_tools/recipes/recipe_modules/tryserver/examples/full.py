@@ -15,6 +15,8 @@ DEPS = [
   'tryserver',
 ]
 
+from PB.go.chromium.org.luci.buildbucket.proto.common import GerritChange
+
 
 def RunSteps(api):
   api.path['checkout'] = api.path['start_dir']
@@ -37,7 +39,9 @@ def RunSteps(api):
   if api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
   api.tryserver.get_files_affected_by_patch(
-      api.properties.get('test_patch_root'))
+      api.properties.get('test_patch_root'),
+      report_files_via_property='affected_files',
+  )
 
   if api.tryserver.is_tryserver:
     api.tryserver.set_subproject_tag('v8')
@@ -50,6 +54,15 @@ def RunSteps(api):
   api.tryserver.set_test_expired_tryjob_result()
 
   api.tryserver.normalize_footer_name('Cr-Commit-Position')
+
+  api.tryserver.set_change(
+      GerritChange(host='chromium-review.googlesource.com',
+                   project='infra/luci/recipes-py',
+                   change=1234567,
+                   patchset=1))
+  assert (api.tryserver.gerrit_change_repo_url ==
+          'https://chromium.googlesource.com/infra/luci/recipes-py')
+  assert api.tryserver.gerrit_change_fetch_ref == 'refs/changes/67/1234567/1'
 
 
 def GenTests(api):

@@ -11,6 +11,10 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
+namespace net {
+class NetworkIsolationKey;
+}  // namespace net
+
 namespace content {
 class CrossOriginOpenerPolicyReporter;
 class FrameTreeNode;
@@ -32,7 +36,8 @@ class CrossOriginOpenerPolicyStatus {
       network::mojom::URLResponseHead* response_head,
       const url::Origin& response_origin,
       const GURL& response_url,
-      const GURL& response_referrer_url);
+      const GURL& response_referrer_url,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
   // "BrowsingContext group" swap:
@@ -87,11 +92,6 @@ class CrossOriginOpenerPolicyStatus {
   bool require_browsing_instance_swap_ = false;
 
   int virtual_browsing_context_group_;
-
-  // When a page has a reachable opener and COOP triggers a browsing instance
-  // swap we sever the window.open relationship. This is one of the cases that
-  // can be reported using the COOP reporting API.
-  const bool had_opener_;
 
   // Whether this is the first navigation happening in the browsing context.
   const bool is_initial_navigation_;

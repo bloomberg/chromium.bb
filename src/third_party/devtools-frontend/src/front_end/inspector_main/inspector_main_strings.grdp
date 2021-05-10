@@ -75,14 +75,8 @@
   <message name="IDS_DEVTOOLS_7962fd6013e985379fd3a4964d769703" desc="Text in Rendering Options">
     Hit-test borders
   </message>
-  <message name="IDS_DEVTOOLS_7e9495c56e55fa2c5236512bf80e5d2b" desc="Title of a setting under the Appearance category in Settings">
-    Don&apos;t show <ph name="LOCKED_1">Chrome Data Saver</ph> warning
-  </message>
   <message name="IDS_DEVTOOLS_8339f28e0c74e2c821b05332280c754b" desc="Title of a setting under the Network category in Settings">
     Force ad blocking on this site
-  </message>
-  <message name="IDS_DEVTOOLS_846495f9ceed11accf8879f555936a7d" desc="A title of the 'Navigation' action category">
-    Navigation
   </message>
   <message name="IDS_DEVTOOLS_8634af2a16e41305fc8dca2d67360810" desc="Title of button in inspector main">
     Open dedicated <ph name="LOCKED_1">DevTools</ph> for Node.js
@@ -90,8 +84,17 @@
   <message name="IDS_DEVTOOLS_86f849e1a655c2df19f28cb3dfe07bc9" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Block ads on this site
   </message>
+  <message name="IDS_DEVTOOLS_886f598a8a9e6a4bfe0c09fcf7779611" desc="Title of a Rendering setting that can be invoked through the Command Menu">
+    Emulate a focused page
+  </message>
+  <message name="IDS_DEVTOOLS_8d9527c8877888035e66d174475c7af7" desc="Title of checkbox in Rendering Options">
+    Core Web Vitals
+  </message>
   <message name="IDS_DEVTOOLS_960568e27eb66ea554c3be4cfbefe3d0" desc="Text in Rendering Options">
     Layer borders
+  </message>
+  <message name="IDS_DEVTOOLS_9f703f62e9f4a65a9d118ddb2511f05c" desc="Command for showing the 'Rendering' tool">
+    Show Rendering
   </message>
   <message name="IDS_DEVTOOLS_a15932c4dfbbcbc1ac6f5c27c6fa530f" desc="Text in Rendering Options">
     Highlights elements (teal) that can slow down scrolling, including touch &amp; wheel event handlers and other main-thread scrolling situations.
@@ -99,8 +102,17 @@
   <message name="IDS_DEVTOOLS_a4c766a2e6eb33e7575331b6affd9778" desc="Checkbox subtitle for 'Paint flashing' in the Rendering tool">
     Highlights areas of the page (green) that need to be repainted. May not be suitable for people prone to photosensitive epilepsy.
   </message>
+  <message name="IDS_DEVTOOLS_a6e8f9aed2ac6481dc25a18a33342d03" desc="Title of the Rendering tool">
+    Rendering
+  </message>
   <message name="IDS_DEVTOOLS_acedccca82f1cf8be95ce70905a0c9be" desc="Subtitle for a select box under the Rendering drawer">
     Forces CSS prefers-reduced-data media feature
+  </message>
+  <message name="IDS_DEVTOOLS_bea298cdd1ce1733c227ca2ff2484114" desc="Text in Rendering Options">
+    Shows an overlay with Core Web Vitals.
+  </message>
+  <message name="IDS_DEVTOOLS_bec25a46972e4fa86df9413508add5c2" desc="Text that refers to disabling local fonts">
+    Disable local fonts
   </message>
   <message name="IDS_DEVTOOLS_c1940aeeb9693a02e28c52eb85ce261c" desc="Command Menu search query that points to the Rendering tool">
     paint
@@ -120,8 +132,14 @@
   <message name="IDS_DEVTOOLS_6ee3313644e1b7cc6200e5f5a10f4c06" desc="Title for a checkbox in the Rendering panel">
     Disable WebP image format
   </message>
+  <message name="IDS_DEVTOOLS_ef95393ad48336d7c3543625354a3d56" desc="Text to highlight the rendering frames for ads">
+    Highlight ad frames
+  </message>
   <message name="IDS_DEVTOOLS_f23c9ba06e7123f0b4c906de90fbcc9f" desc="Title of a setting under the DevTools category that can be invoked through the Command Menu">
     Auto-open <ph name="LOCKED_1">DevTools</ph> for popups
+  </message>
+  <message name="IDS_DEVTOOLS_fdd352b84ad218eaa84a853f2c9477bf" desc="Accessibility subtitle for color-gamut select element in Rendering tool">
+    Forces CSS color-gamut media feature
   </message>
   <message name="IDS_DEVTOOLS_fe904c39945840470511a9ff798e9812" desc="Accessibility subtitle for vision deficiency select element in Rendering tool">
     Forces vision deficiency emulation

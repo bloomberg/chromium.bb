@@ -10,8 +10,17 @@
 #include <utility>
 #include <vector>
 
+#include "absl/types/optional.h"
+#include "absl/types/variant.h"
 #include "cast/common/public/message_port.h"
+#include "cast/streaming/answer_messages.h"
+#include "cast/streaming/offer_messages.h"
+#include "cast/streaming/receiver_message.h"
+#include "cast/streaming/sender_message.h"
 #include "json/value.h"
+#include "platform/api/task_runner.h"
+#include "util/flat_map.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
 namespace cast {
@@ -20,40 +29,47 @@ namespace cast {
 // and Sender session classes.
 class SessionMessager : public MessagePort::Client {
  public:
-  struct Message {
-    // |sender_id| is always the other side of the message port connection:
-    // the source if an incoming message, or the destination if an outgoing
-    // message. The sender ID of this side of the message port is passed in
-    // through the SessionMessager constructor.
-    std::string sender_id = {};
-
-    // The namespace of the message. Currently only kCastWebrtcNamespace
-    // is supported--when new namespaces are added this class will have to be
-    // updated.
-    std::string message_namespace = {};
-
-    // The sequence number of the message. This is important currently for
-    // ensuring we reply to the proper request message, such as for OFFER/ANSWER
-    // exchanges.
-    int sequence_number = 0;
-
-    // The body of the message, as a JSON object.
-    Json::Value body;
-  };
-
-  using MessageCallback = std::function<void(Message)>;
   using ErrorCallback = std::function<void(Error)>;
 
   SessionMessager(MessagePort* message_port,
                   std::string source_id,
                   ErrorCallback cb);
-  ~SessionMessager();
+  ~SessionMessager() override;
 
-  // Set a message callback, such as OnOffer or OnAnswer.
-  void SetHandler(std::string message_type, MessageCallback cb);
+ protected:
+  // Barebones message sending method shared by both children.
+  Error SendMessage(const std::string& destination_id,
+                    const std::string& namespace_,
+                    const Json::Value& message_root);
 
-  // Send a JSON message.
-  Error SendMessage(Message message);
+  // Used to report errors in subclasses.
+  void ReportError(Error error);
+
+ private:
+  MessagePort* const message_port_;
+  ErrorCallback error_callback_;
+};
+
+class SenderSessionMessager final : public SessionMessager {
+ public:
+  using ReplyCallback = std::function<void(ReceiverMessage)>;
+
+  SenderSessionMessager(MessagePort* message_port,
+                        std::string source_id,
+                        std::string receiver_id,
+                        ErrorCallback cb,
+                        TaskRunner* task_runner);
+
+  // Set receiver message handler. Note that this should only be
+  // applied for messages that don't have sequence numbers, like RPC
+  // and status messages.
+  void SetHandler(ReceiverMessage::Type type, ReplyCallback cb);
+
+  // Send a request (with optional reply callback).
+  [[nodiscard]] Error SendOutboundMessage(SenderMessage message);
+  [[nodiscard]] Error SendRequest(SenderMessage message,
+                                  ReceiverMessage::Type reply_type,
+                                  ReplyCallback cb);
 
   // MessagePort::Client overrides
   void OnMessage(const std::string& source_id,
@@ -62,12 +78,48 @@ class SessionMessager : public MessagePort::Client {
   void OnError(Error error) override;
 
  private:
-  // Since the number of message callbacks is expected to be low,
-  // we use a vector of key, value pairs instead of a map.
-  std::vector<std::pair<std::string, MessageCallback>> callbacks_;
+  TaskRunner* const task_runner_;
 
-  MessagePort* const message_port_;
-  ErrorCallback error_callback_;
+  // This messager should only be connected to one receiver, so |receiver_id_|
+  // should not change.
+  const std::string receiver_id_;
+
+  // We keep a list here of replies we are expecting--if the reply is
+  // received for this sequence number, we call its respective callback,
+  // otherwise it is called after an internally specified timeout.
+  FlatMap<int, ReplyCallback> awaiting_replies_;
+
+  // Currently we can only set a handler for RPC messages, so no need for
+  // a flatmap here.
+  ReplyCallback rpc_callback_;
+
+  WeakPtrFactory<SenderSessionMessager> weak_factory_{this};
+};
+
+class ReceiverSessionMessager final : public SessionMessager {
+ public:
+  using RequestCallback = std::function<void(SenderMessage)>;
+  ReceiverSessionMessager(MessagePort* message_port,
+                          std::string source_id,
+                          ErrorCallback cb);
+
+  // Set sender message handler.
+  void SetHandler(SenderMessage::Type type, RequestCallback cb);
+
+  // Send a JSON message.
+  [[nodiscard]] Error SendMessage(ReceiverMessage message);
+
+  // MessagePort::Client overrides
+  void OnMessage(const std::string& source_id,
+                 const std::string& message_namespace,
+                 const std::string& message) override;
+  void OnError(Error error) override;
+
+ private:
+  // The sender ID of the SenderSession we are connected to. Set on the
+  // first message we receive.
+  std::string sender_session_id_;
+  FlatMap<SenderMessage::Type, RequestCallback> callbacks_;
 };
 
 }  // namespace cast

@@ -37,7 +37,6 @@ import {ToolbarButton} from './Toolbar.js';
 import {Widget} from './Widget.js';
 import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
 
-
 export class SplitWidget extends Widget {
   /**
    * @param {boolean} isVertical
@@ -70,7 +69,7 @@ export class SplitWidget extends Widget {
 
     this._defaultSidebarWidth = defaultSidebarWidth || 200;
     this._defaultSidebarHeight = defaultSidebarHeight || this._defaultSidebarWidth;
-    this._constraintsInDip = !!constraintsInDip;
+    this._constraintsInDip = Boolean(constraintsInDip);
     this._resizeStartSizeDIP = 0;
     this._setting = settingName ? Common.Settings.Settings.instance().createSetting(settingName, {}) : null;
 
@@ -83,7 +82,8 @@ export class SplitWidget extends Widget {
     this._animationFrameHandle = 0;
     /** @type {?function():void} */
     this._animationCallback = null;
-    this._showHideSidebarButtonTitle = '';
+    this._showSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
+    this._hideSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
     /** @type {?ToolbarButton} */
     this._showHideSidebarButton = null;
     this._isVertical = false;
@@ -163,7 +163,7 @@ export class SplitWidget extends Widget {
     this._sidebarElement.style.removeProperty('width');
     this._sidebarElement.style.removeProperty('height');
 
-    this._innerSetSidebarSizeDIP(this._preferredSidebarSizeDIP(), !!animate);
+    this._innerSetSidebarSizeDIP(this._preferredSidebarSizeDIP(), Boolean(animate));
   }
 
   /**
@@ -816,7 +816,7 @@ export class SplitWidget extends Widget {
    */
   hideDefaultResizer(noSplitter) {
     this.uninstallResizer(this._resizerElement);
-    this._sidebarElement.classList.toggle('no-default-splitter', !!noSplitter);
+    this._sidebarElement.classList.toggle('no-default-splitter', Boolean(noSplitter));
   }
 
   /**
@@ -938,11 +938,13 @@ export class SplitWidget extends Widget {
   }
 
   /**
-   * @param {string} title
+   * @param {Common.UIString.LocalizedString} showTitle
+   * @param {Common.UIString.LocalizedString} hideTitle
    * @return {!ToolbarButton}
    */
-  createShowHideSidebarButton(title) {
-    this._showHideSidebarButtonTitle = title;
+  createShowHideSidebarButton(showTitle, hideTitle) {
+    this._showSidebarButtonTitle = showTitle;
+    this._hideSidebarButtonTitle = hideTitle;
     this._showHideSidebarButton = new ToolbarButton('', '');
     this._showHideSidebarButton.addEventListener(ToolbarButton.Events.Click, buttonClicked, this);
     this._updateShowHideSidebarButton();
@@ -978,9 +980,7 @@ export class SplitWidget extends Widget {
           (this.isSidebarSecond() ? 'largeicon-hide-bottom-sidebar' : 'largeicon-hide-top-sidebar');
     }
     this._showHideSidebarButton.setGlyph(glyph);
-    this._showHideSidebarButton.setTitle(
-        sidebarHidden ? Common.UIString.UIString('Show %s', this._showHideSidebarButtonTitle) :
-                        Common.UIString.UIString('Hide %s', this._showHideSidebarButtonTitle));
+    this._showHideSidebarButton.setTitle(sidebarHidden ? this._showSidebarButtonTitle : this._hideSidebarButtonTitle);
   }
 }
 

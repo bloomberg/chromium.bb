@@ -22,13 +22,16 @@
 #include <grpcpp/channel.h>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
+#include <grpcpp/ext/channelz_service_plugin.h>
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
 
-#include <grpcpp/ext/channelz_service_plugin.h>
+#include "absl/memory/memory.h"
+
+#include "src/core/lib/gpr/env.h"
 #include "src/proto/grpc/channelz/channelz.grpc.pb.h"
 #include "src/proto/grpc/testing/echo.grpc.pb.h"
 #include "test/core/util/port.h"
@@ -104,7 +107,12 @@ class Proxy : public ::grpc::testing::EchoTestService::Service {
 class ChannelzServerTest : public ::testing::Test {
  public:
   ChannelzServerTest() {}
-
+  static void SetUpTestCase() {
+#if TARGET_OS_IPHONE
+    // Workaround Apple CFStream bug
+    gpr_setenv("grpc_cfstream", "0");
+#endif
+  }
   void SetUp() override {
     // ensure channel server is brought up on all severs we build.
     ::grpc::channelz::experimental::InitChannelzService();
@@ -112,7 +120,7 @@ class ChannelzServerTest : public ::testing::Test {
     // We set up a proxy server with channelz enabled.
     proxy_port_ = grpc_pick_unused_port_or_die();
     ServerBuilder proxy_builder;
-    grpc::string proxy_server_address = "localhost:" + to_string(proxy_port_);
+    std::string proxy_server_address = "localhost:" + to_string(proxy_port_);
     proxy_builder.AddListeningPort(proxy_server_address,
                                    InsecureServerCredentials());
     // forces channelz and channel tracing to be enabled.
@@ -130,11 +138,11 @@ class ChannelzServerTest : public ::testing::Test {
       // create a new backend.
       backends_[i].port = grpc_pick_unused_port_or_die();
       ServerBuilder backend_builder;
-      grpc::string backend_server_address =
+      std::string backend_server_address =
           "localhost:" + to_string(backends_[i].port);
       backend_builder.AddListeningPort(backend_server_address,
                                        InsecureServerCredentials());
-      backends_[i].service.reset(new TestServiceImpl);
+      backends_[i].service = absl::make_unique<TestServiceImpl>();
       // ensure that the backend itself has channelz disabled.
       backend_builder.AddChannelArgument(GRPC_ARG_ENABLE_CHANNELZ, 0);
       backend_builder.RegisterService(backends_[i].service.get());
@@ -571,6 +579,8 @@ TEST_F(ChannelzServerTest, ManySubchannelsAndSockets) {
         get_subchannel_resp.subchannel().socket_ref(0).socket_id());
     s = channelz_stub_->GetSocket(&get_socket_ctx, get_socket_req,
                                   &get_socket_resp);
+    EXPECT_TRUE(
+        get_subchannel_resp.subchannel().socket_ref(0).name().find("http"));
     EXPECT_TRUE(s.ok()) << s.error_message();
     // calls started == streams started AND stream succeeded. Since none of
     // these RPCs were canceled, all of the streams will succeeded even though
@@ -626,6 +636,8 @@ TEST_F(ChannelzServerTest, StreamingRPC) {
   ClientContext get_socket_context;
   get_socket_request.set_socket_id(
       get_subchannel_response.subchannel().socket_ref(0).socket_id());
+  EXPECT_TRUE(
+      get_subchannel_response.subchannel().socket_ref(0).name().find("http"));
   s = channelz_stub_->GetSocket(&get_socket_context, get_socket_request,
                                 &get_socket_response);
   EXPECT_TRUE(s.ok()) << "s.error_message() = " << s.error_message();
@@ -659,6 +671,7 @@ TEST_F(ChannelzServerTest, GetServerSocketsTest) {
                                        &get_server_sockets_response);
   EXPECT_TRUE(s.ok()) << "s.error_message() = " << s.error_message();
   EXPECT_EQ(get_server_sockets_response.socket_ref_size(), 1);
+  EXPECT_TRUE(get_server_sockets_response.socket_ref(0).name().find("http"));
 }
 
 TEST_F(ChannelzServerTest, GetServerSocketsPaginationTest) {
@@ -738,6 +751,8 @@ TEST_F(ChannelzServerTest, GetServerListenSocketsTest) {
   GetSocketResponse get_socket_response;
   get_socket_request.set_socket_id(
       get_server_response.server(0).listen_socket(0).socket_id());
+  EXPECT_TRUE(
+      get_server_response.server(0).listen_socket(0).name().find("http"));
   ClientContext get_socket_context;
   s = channelz_stub_->GetSocket(&get_socket_context, get_socket_request,
                                 &get_socket_response);

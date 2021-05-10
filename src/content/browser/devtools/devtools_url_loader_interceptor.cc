@@ -1117,8 +1117,8 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
           create_loader_params_->request.url,
           create_loader_params_->request.site_for_cookies,
           create_loader_params_->request.request_initiator,
-          (create_loader_params_->request.force_ignore_site_for_cookies ||
-           should_treat_as_first_party)));
+          create_loader_params_->request.is_main_frame,
+          should_treat_as_first_party));
 
   // |this| might be deleted here if |cookies| is empty!
   auto on_cookie_set = base::BindRepeating(
@@ -1169,13 +1169,16 @@ void InterceptionJob::SendResponse(scoped_refptr<base::RefCountedMemory> body,
     // but just in case...
     DCHECK_LE(body_size, UINT32_MAX)
         << "Response bodies larger than " << UINT32_MAX << " are not supported";
-    mojo::DataPipe pipe(body_size);
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    CHECK_EQ(mojo::CreateDataPipe(body_size, producer_handle, consumer_handle),
+             MOJO_RESULT_OK);
     uint32_t num_bytes = body_size;
-    MojoResult res = pipe.producer_handle->WriteData(
+    MojoResult res = producer_handle->WriteData(
         body->front() + offset, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     DCHECK_EQ(0u, res);
     DCHECK_EQ(num_bytes, body_size);
-    client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+    client_->OnStartLoadingResponseBody(std::move(consumer_handle));
   }
   if (response_metadata_->transfer_size)
     client_->OnTransferSizeUpdated(response_metadata_->transfer_size);
@@ -1263,9 +1266,8 @@ void InterceptionJob::FetchCookies(
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForRequest(
           request.method, request.url, request.site_for_cookies,
-          request.request_initiator,
-          (request.force_ignore_site_for_cookies ||
-           should_treat_as_first_party)));
+          request.request_initiator, request.is_main_frame,
+          should_treat_as_first_party));
 
   cookie_manager_->GetCookieList(request.url, options, std::move(callback));
 }
@@ -1321,8 +1323,9 @@ void InterceptionJob::FollowRedirect(
   network::ResourceRequest* request = &create_loader_params_->request;
   const net::RedirectInfo& info = *response_metadata_->redirect_info;
   const auto current_origin = url::Origin::Create(request->url);
+  const auto new_origin = url::Origin::Create(info.new_url);
   if (request->request_initiator &&
-      (!url::Origin::Create(info.new_url).IsSameOriginWith(current_origin) &&
+      (!new_origin.IsSameOriginWith(current_origin) &&
        !request->request_initiator->IsSameOriginWith(current_origin))) {
     tainted_origin_ = true;
   }
@@ -1342,6 +1345,10 @@ void InterceptionJob::FollowRedirect(
   request->site_for_cookies = info.new_site_for_cookies;
   request->referrer_policy = info.new_referrer_policy;
   request->referrer = GURL(info.new_referrer);
+  if (request->trusted_params) {
+    request->trusted_params->isolation_info =
+        request->trusted_params->isolation_info.CreateForRedirect(new_origin);
+  }
   response_metadata_.reset();
 
   UpdateCORSFlag();

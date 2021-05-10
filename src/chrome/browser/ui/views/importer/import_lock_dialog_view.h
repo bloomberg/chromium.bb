@@ -8,12 +8,17 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // ImportLockDialogView asks the user to shut down Firefox before starting the
 // profile import.
 class ImportLockDialogView : public views::DialogDelegateView {
  public:
+  METADATA_HEADER(ImportLockDialogView);
+  ImportLockDialogView(const ImportLockDialogView&) = delete;
+  ImportLockDialogView& operator=(const ImportLockDialogView&) = delete;
+
   static void Show(gfx::NativeWindow parent,
                    base::OnceCallback<void(bool)> callback);
 
@@ -21,20 +26,9 @@ class ImportLockDialogView : public views::DialogDelegateView {
   explicit ImportLockDialogView(base::OnceCallback<void(bool)> callback);
   ~ImportLockDialogView() override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::DialogDelegate:
-  base::string16 GetWindowTitle() const override;
-
-  // views::WidgetDelegate:
-  bool ShouldShowCloseButton() const override;
-
  private:
   // Called with the result of the dialog.
   base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImportLockDialogView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_LOCK_DIALOG_VIEW_H_

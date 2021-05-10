@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -2267,6 +2266,42 @@ TEST_F(NetworkStateHandlerTest, Hostname) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(network_state_handler_->hostname().empty());
   EXPECT_TRUE(test_observer_->hostname().empty());
+}
+
+TEST_F(NetworkStateHandlerTest, IsProfileNetworksLoaded) {
+  // Ensure that the network list is the expected size.
+  const size_t kNumShillManagerClientStubImplServices = 4;
+  EXPECT_EQ(kNumShillManagerClientStubImplServices,
+            test_observer_->network_count());
+  // Add a non-visible network to a private profile.
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_favorite_path = "/service/wifi_faviorite";
+  service_test_->AddService(wifi_favorite_path, "wifi_faviorite_guid",
+                            "wifi_faviorite", shill::kTypeWifi,
+                            shill::kStateIdle, false /* add_to_visible */);
+
+  NetworkStateHandler::NetworkStateList networks;
+
+  // Get networks before user is logged in.
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(), false /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
+  EXPECT_EQ(4u, networks.size());
+  EXPECT_FALSE(network_state_handler_->IsProfileNetworksLoaded());
+
+  // Simulate a user logging in.
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_favorite_path));
+  // Wait for login to complete and profile networks to get loaded
+  UpdateManagerProperties();
+  // Get networks after user is logged in.
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(), false /* configured_only */,
+      false /* visible_only */, 0 /* no limit */, &networks);
+  base::RunLoop().RunUntilIdle();
+  // User is logged in and private network has been loaded.
+  EXPECT_TRUE(network_state_handler_->IsProfileNetworksLoaded());
+  EXPECT_EQ(5u, networks.size());
 }
 
 }  // namespace chromeos

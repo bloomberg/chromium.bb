@@ -14,57 +14,26 @@
 
 import("../../gn/perfetto.gni")
 
+# This GN file should not be referenced in chromium builds.
+assert(!build_with_chromium)
+
 # This target is supported only in in-tree builds of Android. It contains
 # code that is not NDK-clean and references other repos in the Android tree.
-shared_library("libperfetto_android_internal") {
-  deps = [
-    ":android_internal",
-    "../../gn:default_deps",
-  ]
-}
-
-source_set("headers") {
-  deps = [
-    "../../gn:default_deps",
-    "../../src/perfetto_cmd:perfetto_atoms",
-  ]
-  sources = [
-    "atrace_hal.h",
-    "health_hal.h",
-    "incident_service.h",
-    "power_stats_hal.h",
-    "statsd_logging.h",
-  ]
-}
-
-source_set("lazy_library_loader") {
-  public_deps = [ ":headers" ]
-  deps = [
-    "../../gn:default_deps",
-    "../../src/base",
-  ]
-  sources = [
-    "lazy_library_loader.cc",
-    "lazy_library_loader.h",
-  ]
-  libs = [ "dl" ]
-}
-
-# This target proxies calls to Android internal libraries that are not part of
-# the NDK. See README.md.
-source_set("android_internal") {
-  visibility = [ ":libperfetto_android_internal" ]
-  deps = [
-    ":headers",
-    "../../gn:default_deps",
-  ]
-  if (perfetto_build_with_android) {
+# perfetto_build_with_android is only true when running the GN -> Android.bp
+# build file translator //tools/gen_android_bp .
+if (perfetto_build_with_android) {
+  shared_library("libperfetto_android_internal") {
+    deps = [
+      ":headers",
+      "../../gn:default_deps",
+    ]
     sources = [
       "atrace_hal.cc",
       "health_hal.cc",
       "incident_service.cc",
       "power_stats_hal.cc",
       "statsd_logging.cc",
+      "tracing_service_proxy.cc",
     ]
     libs = [
       "android.hardware.health@2.0",
@@ -79,15 +48,46 @@ source_set("android_internal") {
       "hidlbase",
       "incident",
       "services",
+      "tracingproxy",
       "utils",
     ]
-  }
 
-  # This target should never depend on any other perfetto target to avoid ODR
-  # violation by doubly linking code in two .so(s) loaded in the same exe.
-  assert_no_deps = [
-    "//include/*",
-    "//src/base/*",
-    "//src/tracing/*",
+    # This target should never depend on any other perfetto target to avoid ODR
+    # violation by doubly linking code in two .so(s) loaded in the same exe.
+    assert_no_deps = [
+      "//include/*",
+      "//src/base/*",
+      "//src/tracing/*",
+    ]
+  }
+}  # if (perfetto_build_with_android)
+
+source_set("headers") {
+  deps = [
+    "../../gn:default_deps",
+    "../android_stats:perfetto_atoms",
   ]
+  sources = [
+    "atrace_hal.h",
+    "health_hal.h",
+    "incident_service.h",
+    "power_stats_hal.h",
+    "statsd_logging.h",
+    "tracing_service_proxy.h",
+  ]
+}
+
+source_set("lazy_library_loader") {
+  public_deps = [ ":headers" ]
+  deps = [
+    "../../gn:default_deps",
+    "../../src/base",
+  ]
+  sources = [
+    "lazy_library_loader.cc",
+    "lazy_library_loader.h",
+  ]
+  if (!is_win) {
+    libs = [ "dl" ]
+  }
 }

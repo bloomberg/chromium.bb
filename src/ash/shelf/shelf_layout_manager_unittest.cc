@@ -17,8 +17,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
-#include "ash/home_screen/home_launcher_gesture_handler.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -60,7 +58,6 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/window_factory.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -71,9 +68,9 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -3560,8 +3557,8 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
   ui::ScopedAnimationDurationScaleMode regular_animations(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  std::unique_ptr<aura::Window> window1(AshTestBase::CreateTestWindow());
-  std::unique_ptr<aura::Window> fullscreen(AshTestBase::CreateTestWindow());
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> fullscreen(CreateTestWindow());
   fullscreen->SetProperty(aura::client::kShowStateKey,
                           ui::SHOW_STATE_FULLSCREEN);
   wm::ActivateWindow(fullscreen.get());

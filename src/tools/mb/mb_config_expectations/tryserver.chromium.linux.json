@@ -1,4 +1,12 @@
 {
+  "cast-binary-size": {
+    "gn_args": {
+      "is_chromecast": true,
+      "is_official_build": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
   "cast_shell_audio_linux": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -122,11 +130,42 @@
       "use_goma": true
     }
   },
+  "gpu-fyi-try-lacros-amd-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_platform": "headless",
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_bundled_weston": true,
+      "use_goma": true,
+      "use_ozone": true,
+      "use_x11": false
+    }
+  },
+  "gpu-fyi-try-lacros-intel-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_platform": "headless",
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_bundled_weston": true,
+      "use_goma": true,
+      "use_ozone": true,
+      "use_x11": false
+    }
+  },
   "gpu-fyi-try-linux-amd-rel": {
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -151,6 +190,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -165,6 +205,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -192,6 +233,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -205,6 +247,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": true,
@@ -229,6 +272,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -243,6 +287,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -257,6 +302,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -371,6 +417,18 @@
       "use_goma": true
     }
   },
+  "linux-blink-v8-oilpan": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_blink_heap_use_v8_oilpan": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
   "linux-blink-web-tests-force-accessibility-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -400,6 +458,25 @@
   "linux-dcheck-off-rel": {
     "gn_args": {
       "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "linux-example-builder": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "linux-extended-tracing-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "extended_tracing_enabled": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
@@ -440,21 +517,13 @@
       "ozone_platform": "wayland",
       "ozone_platform_wayland": true,
       "symbol_level": 1,
+      "target_os": "chromeos",
       "use_goma": true,
       "use_gtk": false,
       "use_ozone": true
     }
   },
   "linux-layout-tests-edit-ng": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "linux-layout-tests-fragment-item": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,
@@ -480,6 +549,30 @@
       "use_libfuzzer": true
     }
   },
+  "linux-mbi-mode-per-render-process-host-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "mbi_mode": "per_render_process_host",
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
+  "linux-mbi-mode-per-site-instance-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "mbi_mode": "per_site_instance",
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_goma": true
+    }
+  },
   "linux-ozone-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -503,20 +596,6 @@
     }
   },
   "linux-rel": {
-    "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_dummy_lastchange": true,
-      "use_goma": true
-    }
-  },
-  "linux-rel-builderful": {
     "gn_args": {
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,
@@ -578,7 +657,7 @@
       "use_goma": true
     }
   },
-  "linux-wpt-payments-fyi-rel": {
+  "linux-wpt-input-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,
@@ -769,6 +848,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,

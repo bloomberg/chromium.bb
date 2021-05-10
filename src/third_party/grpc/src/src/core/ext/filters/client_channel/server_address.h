@@ -21,17 +21,13 @@
 
 #include <grpc/support/port_platform.h>
 
+#include <map>
+#include <memory>
+
+#include "absl/container/inlined_vector.h"
+
 #include "src/core/lib/channel/channel_args.h"
-#include "src/core/lib/gprpp/inlined_vector.h"
 #include "src/core/lib/iomgr/resolve_address.h"
-#include "src/core/lib/uri/uri_parser.h"
-
-// Channel arg key for a bool indicating whether an address is a grpclb
-// load balancer (as opposed to a backend).
-#define GRPC_ARG_ADDRESS_IS_BALANCER "grpc.address_is_balancer"
-
-// Channel arg key for a string indicating an address's balancer name.
-#define GRPC_ARG_ADDRESS_BALANCER_NAME "grpc.address_balancer_name"
 
 namespace grpc_core {
 
@@ -44,52 +40,73 @@ namespace grpc_core {
 // args when a subchannel is created for this address.
 class ServerAddress {
  public:
+  // Base class for resolver-supplied attributes.
+  // Unlike channel args, these attributes don't affect subchannel
+  // uniqueness or behavior.  They are for use by LB policies only.
+  //
+  // Attributes are keyed by a C string that is unique by address, not
+  // by value.  All attributes added with the same key must be of the
+  // same type.
+  class AttributeInterface {
+   public:
+    virtual ~AttributeInterface() = default;
+
+    // Creates a copy of the attribute.
+    virtual std::unique_ptr<AttributeInterface> Copy() const = 0;
+
+    // Compares this attribute with another.
+    virtual int Cmp(const AttributeInterface* other) const = 0;
+
+    // Returns a human-readable representation of the attribute.
+    virtual std::string ToString() const = 0;
+  };
+
   // Takes ownership of args.
-  ServerAddress(const grpc_resolved_address& address, grpc_channel_args* args);
+  ServerAddress(const grpc_resolved_address& address, grpc_channel_args* args,
+                std::map<const char*, std::unique_ptr<AttributeInterface>>
+                    attributes = {});
   ServerAddress(const void* address, size_t address_len,
-                grpc_channel_args* args);
+                grpc_channel_args* args,
+                std::map<const char*, std::unique_ptr<AttributeInterface>>
+                    attributes = {});
 
   ~ServerAddress() { grpc_channel_args_destroy(args_); }
 
   // Copyable.
-  ServerAddress(const ServerAddress& other)
-      : address_(other.address_), args_(grpc_channel_args_copy(other.args_)) {}
-  ServerAddress& operator=(const ServerAddress& other) {
-    address_ = other.address_;
-    grpc_channel_args_destroy(args_);
-    args_ = grpc_channel_args_copy(other.args_);
-    return *this;
-  }
+  ServerAddress(const ServerAddress& other);
+  ServerAddress& operator=(const ServerAddress& other);
 
   // Movable.
-  ServerAddress(ServerAddress&& other)
-      : address_(other.address_), args_(other.args_) {
-    other.args_ = nullptr;
-  }
-  ServerAddress& operator=(ServerAddress&& other) {
-    address_ = other.address_;
-    args_ = other.args_;
-    other.args_ = nullptr;
-    return *this;
-  }
+  ServerAddress(ServerAddress&& other) noexcept;
+  ServerAddress& operator=(ServerAddress&& other) noexcept;
 
-  bool operator==(const ServerAddress& other) const;
+  bool operator==(const ServerAddress& other) const { return Cmp(other) == 0; }
+
+  int Cmp(const ServerAddress& other) const;
 
   const grpc_resolved_address& address() const { return address_; }
   const grpc_channel_args* args() const { return args_; }
 
-  bool IsBalancer() const;
+  const AttributeInterface* GetAttribute(const char* key) const;
+
+  // Returns a copy of the address with a modified attribute.
+  // If the new value is null, the attribute is removed.
+  ServerAddress WithAttribute(const char* key,
+                              std::unique_ptr<AttributeInterface> value) const;
+
+  std::string ToString() const;
 
  private:
   grpc_resolved_address address_;
   grpc_channel_args* args_;
+  std::map<const char*, std::unique_ptr<AttributeInterface>> attributes_;
 };
 
 //
 // ServerAddressList
 //
 
-typedef InlinedVector<ServerAddress, 1> ServerAddressList;
+typedef absl::InlinedVector<ServerAddress, 1> ServerAddressList;
 
 }  // namespace grpc_core
 

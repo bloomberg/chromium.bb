@@ -15,6 +15,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
@@ -51,7 +52,7 @@ class WebRtcEncodedVideoFrame : public EncodedVideoFrame {
  public:
   explicit WebRtcEncodedVideoFrame(const webrtc::RecordableEncodedFrame& frame)
       : buffer_(frame.encoded_buffer()),
-        codec_(FromWebRtcVideoCodec(frame.codec())),
+        codec_(WebRtcToMediaVideoCodec(frame.codec())),
         is_key_frame_(frame.is_key_frame()),
         resolution_(frame.resolution().width, frame.resolution().height) {
     if (frame.color_space()) {
@@ -74,19 +75,6 @@ class WebRtcEncodedVideoFrame : public EncodedVideoFrame {
   gfx::Size Resolution() const override { return resolution_; }
 
  private:
-  static media::VideoCodec FromWebRtcVideoCodec(webrtc::VideoCodecType codec) {
-    switch (codec) {
-      case webrtc::kVideoCodecVP8:
-        return media::kCodecVP8;
-      case webrtc::kVideoCodecVP9:
-        return media::kCodecVP9;
-      case webrtc::kVideoCodecH264:
-        return media::kCodecH264;
-      default:
-        return media::kUnknownVideoCodec;
-    }
-  }
-
   rtc::scoped_refptr<const webrtc::EncodedImageBufferInterface> buffer_;
   media::VideoCodec codec_;
   bool is_key_frame_;
@@ -136,22 +124,17 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   EncodedVideoFrameCB encoded_frame_callback_;
 
   // Timestamp of the first received frame.
-  base::TimeDelta start_timestamp_;
-
-  // WebRTC Chromium timestamp diff
-  const base::TimeDelta time_diff_;
-
-  // Timestamp of the first received encoded frame.
-  base::TimeDelta start_timestamp_encoded_;
-
-  // WebRTC Chromium timestamp diff
-  const base::TimeDelta time_diff_encoded_;
+  base::Optional<base::TimeTicks> start_timestamp_;
 
   // WebRTC real time clock, needed to determine NTP offset.
   webrtc::Clock* clock_;
 
   // Offset between NTP clock and WebRTC clock.
   const int64_t ntp_offset_;
+
+  // Determined from a feature flag; if set WebRTC won't forward an unspecified
+  // color space.
+  const bool ignore_unspecified_color_space_;
 };
 
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
@@ -162,18 +145,11 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     : io_task_runner_(io_task_runner),
       frame_callback_(std::move(new_frame_callback)),
       encoded_frame_callback_(std::move(encoded_frame_callback)),
-      start_timestamp_(media::kNoTimestamp),
-      // TODO(qiangchen): There can be two differences between clocks: 1)
-      // the offset, 2) the rate (i.e., one clock runs faster than the other).
-      // See http://crbug/516700
-      time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
-                 base::TimeDelta::FromMicroseconds(rtc::TimeMicros())),
-      start_timestamp_encoded_(media::kNoTimestamp),
-      time_diff_encoded_(base::TimeTicks::Now() - base::TimeTicks() -
-                         base::TimeDelta::FromMicroseconds(rtc::TimeMicros())),
       clock_(webrtc::Clock::GetRealTimeClock()),
       ntp_offset_(clock_->TimeInMilliseconds() -
-                  clock_->CurrentNtpInMilliseconds()) {}
+                  clock_->CurrentNtpInMilliseconds()),
+      ignore_unspecified_color_space_(base::FeatureList::IsEnabled(
+          features::kWebRtcIgnoreUnspecifiedColorSpace)) {}
 
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     ~RemoteVideoSourceDelegate() = default;
@@ -182,17 +158,14 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const webrtc::VideoFrame& incoming_frame) {
   const bool render_immediately = incoming_frame.timestamp_us() == 0;
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  const base::TimeDelta incoming_timestamp =
-      render_immediately
-          ? current_time - base::TimeTicks()
-          : base::TimeDelta::FromMicroseconds(incoming_frame.timestamp_us());
   const base::TimeTicks render_time =
-      render_immediately ? base::TimeTicks() + incoming_timestamp
-                         : base::TimeTicks() + incoming_timestamp + time_diff_;
-  if (start_timestamp_ == media::kNoTimestamp)
-    start_timestamp_ = incoming_timestamp;
-  const base::TimeDelta elapsed_timestamp =
-      incoming_timestamp - start_timestamp_;
+      render_immediately
+          ? current_time
+          : base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                                    incoming_frame.timestamp_us());
+  if (!start_timestamp_)
+    start_timestamp_ = render_time;
+  const base::TimeDelta elapsed_timestamp = render_time - *start_timestamp_;
   TRACE_EVENT2("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
                "Ideal Render Instant", render_time.ToInternalValue(),
                "Timestamp", elapsed_timestamp.InMicroseconds());
@@ -284,11 +257,23 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   // Rotation may be explicitly set sometimes.
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
-    video_frame->metadata()->rotation =
+    video_frame->metadata().transformation =
         WebRtcToMediaVideoRotation(incoming_frame.rotation());
   }
 
-  if (incoming_frame.color_space()) {
+  // The second clause of the condition is controlled by the feature flag
+  // WebRtcIgnoreUnspecifiedColorSpace. If the feature is enabled we won't try
+  // to guess a color space if the webrtc::ColorSpace is unspecified. If the
+  // feature is disabled (default), an unspecified color space will get
+  // converted into a gfx::ColorSpace set to BT709.
+  if (incoming_frame.color_space() &&
+      !(ignore_unspecified_color_space_ &&
+        incoming_frame.color_space()->primaries() ==
+            webrtc::ColorSpace::PrimaryID::kUnspecified &&
+        incoming_frame.color_space()->transfer() ==
+            webrtc::ColorSpace::TransferID::kUnspecified &&
+        incoming_frame.color_space()->matrix() ==
+            webrtc::ColorSpace::MatrixID::kUnspecified)) {
     video_frame->set_color_space(
         WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
             .ToGfxColorSpace());
@@ -297,36 +282,33 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   // Run render smoothness algorithm only when we don't have to render
   // immediately.
   if (!render_immediately)
-    video_frame->metadata()->reference_time = render_time;
+    video_frame->metadata().reference_time = render_time;
 
   if (incoming_frame.max_composition_delay_in_frames()) {
-    video_frame->metadata()->maximum_composition_delay_in_frames =
+    video_frame->metadata().maximum_composition_delay_in_frames =
         *incoming_frame.max_composition_delay_in_frames();
   }
 
-  video_frame->metadata()->decode_end_time = current_time;
+  video_frame->metadata().decode_end_time = current_time;
 
   // RTP_TIMESTAMP, PROCESSING_TIME, and CAPTURE_BEGIN_TIME are all exposed
   // through the JavaScript callback mechanism
   // video.requestVideoFrameCallback().
-  video_frame->metadata()->rtp_timestamp =
+  video_frame->metadata().rtp_timestamp =
       static_cast<double>(incoming_frame.timestamp());
 
   if (incoming_frame.processing_time()) {
-    video_frame->metadata()->processing_time =
-        base::TimeDelta::FromMicroseconds(
-            incoming_frame.processing_time()->Elapsed().us());
+    video_frame->metadata().processing_time = base::TimeDelta::FromMicroseconds(
+        incoming_frame.processing_time()->Elapsed().us());
   }
 
   // Set capture time to the NTP time, which is the estimated capture time
   // converted to the local clock.
   if (incoming_frame.ntp_time_ms() > 0) {
     const base::TimeTicks capture_time =
-        base::TimeTicks() +
-        base::TimeDelta::FromMilliseconds(incoming_frame.ntp_time_ms() +
-                                          ntp_offset_) +
-        time_diff_;
-    video_frame->metadata()->capture_begin_time = capture_time;
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(
+                                incoming_frame.ntp_time_ms() + ntp_offset_);
+    video_frame->metadata().capture_begin_time = capture_time;
   }
 
   // Set receive time to arrival of last packet.
@@ -341,8 +323,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
             ->receive_time_ms();
     const base::TimeTicks receive_time =
         base::TimeTicks() +
-        base::TimeDelta::FromMilliseconds(last_packet_arrival_ms) + time_diff_;
-    video_frame->metadata()->receive_time = receive_time;
+        base::TimeDelta::FromMilliseconds(last_packet_arrival_ms);
+    video_frame->metadata().receive_time = receive_time;
   }
 
   // Use our computed render time as estimated capture time. If timestamp_us()
@@ -361,21 +343,18 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
                             base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::DoRenderFrameOnIOThread");
-  frame_callback_.Run(std::move(video_frame), estimated_capture_time);
+  frame_callback_.Run(std::move(video_frame), {}, estimated_capture_time);
 }
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const webrtc::RecordableEncodedFrame& frame) {
   const bool render_immediately = frame.render_time().us() == 0;
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  const base::TimeDelta incoming_timestamp =
-      render_immediately
-          ? current_time - base::TimeTicks()
-          : base::TimeDelta::FromMicroseconds(frame.render_time().us());
   const base::TimeTicks render_time =
       render_immediately
-          ? base::TimeTicks() + incoming_timestamp
-          : base::TimeTicks() + incoming_timestamp + time_diff_encoded_;
+          ? current_time
+          : base::TimeTicks() +
+                base::TimeDelta::FromMicroseconds(frame.render_time().us());
 
   // Use our computed render time as estimated capture time. If render_time()
   // is set by WebRTC, it's based on the RTP timestamps in the frame's packets,
@@ -492,6 +471,11 @@ void MediaStreamRemoteVideoSource::RequestRefreshFrame() {
   if (video_track->GetSource()) {
     video_track->GetSource()->GenerateKeyFrame();
   }
+}
+
+base::WeakPtr<MediaStreamVideoSource> MediaStreamRemoteVideoSource::GetWeakPtr()
+    const {
+  return weak_factory_.GetWeakPtr();
 }
 
 void MediaStreamRemoteVideoSource::OnEncodedSinkEnabled() {

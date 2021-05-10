@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
-#import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
@@ -67,11 +66,11 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
+#include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/invalid_url_tab_helper.h"
-#import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
@@ -101,7 +100,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   WebStateDelegateTabHelper::CreateForWebState(web_state);
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
-  NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
@@ -109,7 +107,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   FindTabHelper::CreateForWebState(web_state);
   U2FTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
-  JavaScriptConsoleTabHelper::CreateForWebState(web_state);
   ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
@@ -120,6 +117,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state);
   password_manager::WellKnownChangePasswordTabHelper::CreateForWebState(
       web_state);
+  ErrorPageControllerBridge::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
     InvalidUrlTabHelper::CreateForWebState(web_state);
@@ -186,12 +184,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(
-          web::features::kIOSLookalikeUrlNavigationSuggestionsUI)) {
-    LookalikeUrlTabHelper::CreateForWebState(web_state);
-    LookalikeUrlTabAllowList::CreateForWebState(web_state);
-    LookalikeUrlContainer::CreateForWebState(web_state);
-  }
+  LookalikeUrlTabHelper::CreateForWebState(web_state);
+  LookalikeUrlTabAllowList::CreateForWebState(web_state);
+  LookalikeUrlContainer::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
     LegacyTLSTabAllowList::CreateForWebState(web_state);

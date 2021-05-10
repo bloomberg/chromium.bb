@@ -13,14 +13,6 @@ class NewTabPageBrowserTest extends PolymerTest {
   get browsePreload() {
     throw 'this is abstract and should be overriden by subclasses';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 }
 
 // eslint-disable-next-line no-var
@@ -120,22 +112,10 @@ TEST_F('NewTabPageVoiceSearchOverlayTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var NewTabPageFakeboxTest = class extends NewTabPageBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/fakebox_test.js';
-  }
-};
-
-TEST_F('NewTabPageFakeboxTest', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var NewTabPageRealboxTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/realbox_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/realbox/realbox_test.js';
   }
 };
 
@@ -204,6 +184,19 @@ TEST_F('NewTabPageImgTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var NewTabPageModulesModuleDescriptorTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_descriptor_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesModuleDescriptorTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var NewTabPageModulesModuleRegistryTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -212,6 +205,18 @@ var NewTabPageModulesModuleRegistryTest = class extends NewTabPageBrowserTest {
 };
 
 TEST_F('NewTabPageModulesModuleRegistryTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var NewTabPageModulesModuleHeaderTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/module_header_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesModuleHeaderTest', 'All', function() {
   mocha.run();
 });
 
@@ -244,6 +249,17 @@ TEST_F('NewTabPageMiddleSlotPromoTest', 'All', function() {
   mocha.run();
 });
 
+var NewTabPageModulesDriveModuleTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive/module_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesDriveModuleTest', 'All', function() {
+  mocha.run();
+});
+
 // eslint-disable-next-line no-var
 var NewTabPageModulesTaskModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
@@ -253,5 +269,18 @@ var NewTabPageModulesTaskModuleTest = class extends NewTabPageBrowserTest {
 };
 
 TEST_F('NewTabPageModulesTaskModuleTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var NewTabPageModulesChromeCartModuleTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart/module_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesChromeCartModuleTest', 'All', function() {
   mocha.run();
 });

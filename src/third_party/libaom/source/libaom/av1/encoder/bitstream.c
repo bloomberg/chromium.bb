@@ -1907,7 +1907,7 @@ static AOM_INLINE void loop_restoration_write_sb_coeffs(
     aom_writer *const w, int plane, FRAME_COUNTS *counts) {
   const RestorationInfo *rsi = cm->rst_info + plane;
   RestorationType frame_rtype = rsi->frame_restoration_type;
-  if (frame_rtype == RESTORE_NONE) return;
+  assert(frame_rtype != RESTORE_NONE);
 
   (void)counts;
   assert(!cm->features.all_lossless);
@@ -2505,7 +2505,6 @@ static AOM_INLINE void write_film_grain_params(
     const AV1_COMP *const cpi, struct aom_write_bit_buffer *wb) {
   const AV1_COMMON *const cm = &cpi->common;
   const aom_film_grain_t *const pars = &cm->cur_frame->film_grain_params;
-
   aom_wb_write_bit(wb, pars->apply_grain);
   if (!pars->apply_grain) return;
 

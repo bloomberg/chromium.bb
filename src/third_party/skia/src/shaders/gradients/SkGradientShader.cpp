@@ -473,8 +473,8 @@ skvm::Color SkGradientShaderBase::onProgram(skvm::Builder* p,
     }
 
     std::vector<float> rgba(4*fColorCount);  // TODO: SkSTArray?
-    SkConvertPixels(dst,   rgba.data(), dst.minRowBytes(),
-                    src, fOrigColors4f, src.minRowBytes());
+    SkAssertResult(SkConvertPixels(dst,   rgba.data(), dst.minRowBytes(),
+                                   src, fOrigColors4f, src.minRowBytes()));
 
     // Transform our colors into a scale factor f and bias b such that for
     // any t between stops i and i+1, the color we want is mad(t, f[i], b[i]).
@@ -593,10 +593,10 @@ skvm::Color SkGradientShaderBase::onProgram(skvm::Builder* p,
     }
 
     return {
-        bit_cast(mask & bit_cast(color.r)),
-        bit_cast(mask & bit_cast(color.g)),
-        bit_cast(mask & bit_cast(color.b)),
-        bit_cast(mask & bit_cast(color.a)),
+        pun_to_F32(mask & pun_to_I32(color.r)),
+        pun_to_F32(mask & pun_to_I32(color.g)),
+        pun_to_F32(mask & pun_to_I32(color.b)),
+        pun_to_F32(mask & pun_to_I32(color.a)),
     };
 }
 
@@ -637,8 +637,10 @@ SkColor4fXformer::SkColor4fXformer(const SkColor4f* colors, int colorCount,
 
         auto info = SkImageInfo::Make(colorCount,1, kRGBA_F32_SkColorType, kUnpremul_SkAlphaType);
 
-        SkConvertPixels(info.makeColorSpace(sk_ref_sp(dst)), fStorage.begin(), info.minRowBytes(),
-                        info.makeColorSpace(sk_ref_sp(src)), fColors         , info.minRowBytes());
+        auto dstInfo = info.makeColorSpace(sk_ref_sp(dst));
+        auto srcInfo = info.makeColorSpace(sk_ref_sp(src));
+        SkAssertResult(SkConvertPixels(dstInfo, fStorage.begin(), info.minRowBytes(),
+                                       srcInfo, fColors         , info.minRowBytes()));
 
         fColors = fStorage.begin();
     }
@@ -703,26 +705,36 @@ static SkColor4f average_gradient_color(const SkColor4f colors[], const SkScalar
 
         // when pos == null, there are colorCount uniformly distributed stops, going from 0 to 1,
         // so pos[i + 1] - pos[i] = 1/(colorCount-1)
-        SkScalar w = pos ? (pos[i + 1] - pos[i])
-                         : (1.0f / (colorCount - 1));
+        SkScalar w;
+        if (pos) {
+            // Match position fixing in SkGradientShader's constructor, clamping positions outside
+            // [0, 1] and forcing the sequence to be monotonic
+            SkScalar p0 = SkTPin(pos[i], 0.f, 1.f);
+            SkScalar p1 = SkTPin(pos[i + 1], p0, 1.f);
+            w = p1 - p0;
+
+            // And account for any implicit intervals at the start or end of the positions
+            if (i == 0) {
+                if (p0 > 0.0f) {
+                    // The first color is fixed between p = 0 to pos[0], so 0.5*(ci + cj)*(pj - pi)
+                    // becomes 0.5*(c + c)*(pj - 0) = c * pj
+                    Sk4f c = Sk4f::Load(&colors[0]);
+                    blend += p0 * c;
+                }
+            }
+            if (i == colorCount - 2) {
+                if (p1 < 1.f) {
+                    // The last color is fixed between pos[n-1] to p = 1, so 0.5*(ci + cj)*(pj - pi)
+                    // becomes 0.5*(c + c)*(1 - pi) = c * (1 - pi)
+                    Sk4f c = Sk4f::Load(&colors[colorCount - 1]);
+                    blend += (1.f - p1) * c;
+                }
+            }
+        } else {
+            w = 1.f / (colorCount - 1);
+        }
 
         blend += 0.5f * w * (c1 + c0);
-    }
-
-    // Now account for any implicit intervals at the start or end of the stop definitions
-    if (pos) {
-        if (pos[0] > 0.0) {
-            // The first color is fixed between p = 0 to pos[0], so 0.5 * (ci + cj) * (pj - pi)
-            // becomes 0.5 * (c + c) * (pj - 0) = c * pj
-            Sk4f c = Sk4f::Load(&colors[0]);
-            blend += pos[0] * c;
-        }
-        if (pos[colorCount - 1] < SK_Scalar1) {
-            // The last color is fixed between pos[n-1] to p = 1, so 0.5 * (ci + cj) * (pj - pi)
-            // becomes 0.5 * (c + c) * (1 - pi) = c * (1 - pi)
-            Sk4f c = Sk4f::Load(&colors[colorCount - 1]);
-            blend += (1 - pos[colorCount - 1]) * c;
-        }
     }
 
     SkColor4f avg;

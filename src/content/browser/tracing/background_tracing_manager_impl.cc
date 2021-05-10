@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_active_scenario.h"
 #include "content/browser/tracing/background_tracing_agent_client_impl.h"
@@ -87,7 +86,6 @@ void BackgroundTracingManagerImpl::ActivateForProcess(
 BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
     : delegate_(GetContentClient()->browser()->GetTracingDelegate()),
       trigger_handle_ids_(0) {
-  AddEnabledStateObserver(BackgroundMemoryTracingObserver::GetInstance());
   AddEnabledStateObserver(BackgroundStartupTracingObserver::GetInstance());
 #if defined(OS_ANDROID)
   AddEnabledStateObserver(&BackgroundReachedCodeTracingObserver::GetInstance());
@@ -454,12 +452,14 @@ void BackgroundTracingManagerImpl::WhenIdle(
   }
 }
 
-bool BackgroundTracingManagerImpl::IsAllowedFinalization() const {
+bool BackgroundTracingManagerImpl::IsAllowedFinalization(
+    bool is_crash_scenario) const {
   return !delegate_ ||
          (active_scenario_ &&
           delegate_->IsAllowedToEndBackgroundScenario(
               *active_scenario_->GetConfig(),
-              active_scenario_->GetConfig()->requires_anonymized_data()));
+              active_scenario_->GetConfig()->requires_anonymized_data(),
+              is_crash_scenario));
 }
 
 std::unique_ptr<base::DictionaryValue>

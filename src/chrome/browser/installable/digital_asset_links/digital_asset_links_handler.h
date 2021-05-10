@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -24,7 +25,7 @@ namespace digital_asset_links {
 
 extern const char kDigitalAssetLinksCheckResponseKeyLinked[];
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices.verification
 enum class RelationshipCheckResult {
   kSuccess = 0,
   kFailure,
@@ -75,7 +76,6 @@ class DigitalAssetLinksHandler : public content::WebContentsObserver {
       const std::string& manifest_url,
       RelationshipCheckResultCallback callback);
 
- private:
   // Generic DAL verifier.
   bool CheckDigitalAssetLinkRelationship(
       const std::string& web_domain,
@@ -84,6 +84,12 @@ class DigitalAssetLinksHandler : public content::WebContentsObserver {
       const std::map<std::string, std::string>& target_values,
       RelationshipCheckResultCallback callback);
 
+  // The amount of time to wait before giving up on a given network request and
+  // considering it an error. If not set, then the request is allowed to take
+  // as much time as it wants. Passed directly to the URL loader.
+  void SetTimeoutDuration(base::TimeDelta timeout_duration);
+
+ private:
   void OnURLLoadComplete(std::string relationship,
                          base::Optional<std::string> fingerprint,
                          std::map<std::string, std::string> target_values,
@@ -102,6 +108,8 @@ class DigitalAssetLinksHandler : public content::WebContentsObserver {
   // The per request callback for receiving a URLFetcher result. This gets
   // reset every time we get a new CheckDigitalAssetLinkRelationship call.
   RelationshipCheckResultCallback callback_;
+
+  base::TimeDelta timeout_duration_ = base::TimeDelta();
 
   base::WeakPtrFactory<DigitalAssetLinksHandler> weak_ptr_factory_{this};
 

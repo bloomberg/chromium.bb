@@ -27,14 +27,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
     : public ExtendedAuthenticator {
  public:
   static scoped_refptr<ExtendedAuthenticatorImpl> Create(
-      NewAuthStatusConsumer* consumer);
-  static scoped_refptr<ExtendedAuthenticatorImpl> Create(
       AuthStatusConsumer* consumer);
 
   // ExtendedAuthenticator:
   void SetConsumer(AuthStatusConsumer* consumer) override;
-  void AuthenticateToMount(const UserContext& context,
-                           ResultCallback success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
                            base::OnceClosure success_callback) override;
   void StartFingerprintAuthSession(
@@ -49,10 +45,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
               const cryptohome::KeyDefinition& key,
               bool clobber_if_exists,
               base::OnceClosure success_callback) override;
-  void UpdateKeyAuthorized(const UserContext& context,
-                           const cryptohome::KeyDefinition& key,
-                           const std::string& signature,
-                           base::OnceClosure success_callback) override;
   void RemoveKey(const UserContext& context,
                  const std::string& key_to_remove,
                  base::OnceClosure success_callback) override;
@@ -60,7 +52,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
                             ContextCallback callback) override;
 
  private:
-  explicit ExtendedAuthenticatorImpl(NewAuthStatusConsumer* consumer);
   explicit ExtendedAuthenticatorImpl(AuthStatusConsumer* consumer);
   ~ExtendedAuthenticatorImpl() override;
 
@@ -68,27 +59,17 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
   void OnSaltObtained(const std::string& system_salt);
 
   // Performs actual operation with fully configured |context|.
-  void DoAuthenticateToMount(ResultCallback success_callback,
-                             const UserContext& context);
   void DoAuthenticateToCheck(base::OnceClosure success_callback,
                              const UserContext& context);
   void DoAddKey(const cryptohome::KeyDefinition& key,
                 bool clobber_if_exists,
                 base::OnceClosure success_callback,
                 const UserContext& context);
-  void DoUpdateKeyAuthorized(const cryptohome::KeyDefinition& key,
-                             const std::string& signature,
-                             base::OnceClosure success_callback,
-                             const UserContext& context);
   void DoRemoveKey(const std::string& key_to_remove,
                    base::OnceClosure success_callback,
                    const UserContext& context);
 
   // Inner operation callbacks.
-  void OnMountComplete(const std::string& time_marker,
-                       const UserContext& context,
-                       ResultCallback success_callback,
-                       base::Optional<cryptohome::BaseReply> reply);
   void OnOperationComplete(const std::string& time_marker,
                            const UserContext& context,
                            base::OnceClosure success_callback,
@@ -105,8 +86,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
   std::string system_salt_;
   std::vector<base::OnceClosure> system_salt_callbacks_;
 
-  NewAuthStatusConsumer* consumer_;
-  AuthStatusConsumer* old_consumer_;
+  AuthStatusConsumer* consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtendedAuthenticatorImpl);
 };

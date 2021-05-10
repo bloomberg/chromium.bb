@@ -17,190 +17,153 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/struct.h"
 #include "src/ast/struct_decoration.h"
 #include "src/ast/struct_member.h"
 #include "src/ast/struct_member_decoration.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/array_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/matrix_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
+#include "src/program.h"
+#include "src/type/array_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/matrix_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/vector_type.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement) {
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &f32);
+  auto* var = Var("a", ty.f32(), ast::StorageClass::kNone);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  float a = 0.0f;\n");
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  float a = 0.0f;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Const) {
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &f32);
-  var->set_is_const(true);
+  auto* var = Const("a", ty.f32());
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  const float a = 0.0f;\n");
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  const float a = 0.0f;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Array) {
-  ast::type::F32Type f32;
-  ast::type::ArrayType ary(&f32, 5);
+  type::Array ary(ty.f32(), 5, ast::ArrayDecorationList{});
 
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &ary);
+  auto* var = Var("a", &ary, ast::StorageClass::kNone);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  float a[5] = {0.0f};\n");
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  float a[5] = {0.0f};\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Struct) {
-  ast::type::F32Type f32;
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.f32()),
+                            Member("b", ty.f32(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  members.push_back(std::make_unique<ast::StructMember>(
-      "a", &f32, ast::StructMemberDecorationList{}));
+  auto* s = ty.struct_("S", str);
+  auto* var = Var("a", s, ast::StorageClass::kNone);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(b_deco)));
+  GeneratorImpl& gen = Build();
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  gen.increment_indent();
 
-  ast::type::StructType s("S", std::move(str));
-
-  auto var = std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &s);
-
-  ast::VariableDeclStatement stmt(std::move(var));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), R"(  S a = {};
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  S a = {};
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Vector) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 2);
+  auto* var = Var("a", ty.vec2<f32>(), ast::StorageClass::kFunction);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kFunction, &vec);
+  GeneratorImpl& gen = Build();
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  gen.increment_indent();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  float2 a = 0.0f;\n");
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  float2 a = 0.0f;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Matrix) {
-  ast::type::F32Type f32;
-  ast::type::MatrixType mat(&f32, 2, 3);
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kFunction, &mat);
+  auto* var = Var("a", ty.mat3x2<f32>(), ast::StorageClass::kFunction);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  float3x2 a = 0.0f;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  float3x2 a = 0.0f;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Private) {
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &f32);
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kPrivate);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
 
-  ast::VariableDeclStatement stmt(std::move(var));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), "  float a = 0.0f;\n");
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), "  float a = 0.0f;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Initializer_Private) {
-  auto ident = std::make_unique<ast::IdentifierExpression>("initializer");
+  Global("initializer", ty.f32(), ast::StorageClass::kNone);
+  auto* var =
+      Global("a", ty.f32(), ast::StorageClass::kPrivate, Expr("initializer"));
+  auto* stmt = create<ast::VariableDeclStatement>(var);
 
-  ast::type::F32Type f32;
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &f32);
-  var->set_constructor(std::move(ident));
+  GeneratorImpl& gen = Build();
 
-  ast::VariableDeclStatement stmt(std::move(var));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), R"(float a = initializer;
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float a = initializer;
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Initializer_ZeroVec) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* zero_vec = vec3<f32>();
 
-  ast::ExpressionList values;
-  auto zero_vec =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(values));
+  auto* var = Var("a", ty.vec3<f32>(), ast::StorageClass::kFunction, zero_vec);
+  auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
-  auto var =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kNone, &vec);
-  var->set_constructor(std::move(zero_vec));
+  GeneratorImpl& gen = Build();
 
-  ast::VariableDeclStatement stmt(std::move(var));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitStatement(&stmt)) << g.error();
-  EXPECT_EQ(g.result(), R"(float3 a = float3(0.0f);
+  ASSERT_TRUE(gen.EmitStatement(stmt)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float3 a = float3(0.0f);
 )");
 }
 

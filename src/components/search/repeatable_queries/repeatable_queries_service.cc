@@ -8,10 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -128,7 +131,8 @@ RepeatableQueriesService::RepeatableQueriesService(
       search_provider_observer_(std::make_unique<SearchProviderObserver>(
           template_url_service,
           base::BindRepeating(&RepeatableQueriesService::SearchProviderChanged,
-                              base::Unretained(this)))) {
+                              base::Unretained(this)))),
+      deletion_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {
   DCHECK(history_service_);
   DCHECK(template_url_service_);
   DCHECK(url_loader_factory_);
@@ -180,8 +184,12 @@ void RepeatableQueriesService::DeleteQueryWithDestinationURL(const GURL& url) {
   }
 
   // Delete all the Google search URLs for the given query from history.
-  history_service_->DeleteMatchingURLsForKeyword(
-      template_url_service_->GetDefaultSearchProvider()->id(), it->query);
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  if (default_provider) {
+    history_service_->DeleteMatchingURLsForKeyword(default_provider->id(),
+                                                   it->query);
+  }
 
   // Make sure the query is not suggested again.
   MarkQueryAsDeleted(it->query);
@@ -223,10 +231,12 @@ void RepeatableQueriesService::SigninStatusChanged() {
 }
 
 GURL RepeatableQueriesService::GetQueryDestinationURL(
-    const base::string16& query) {
+    const base::string16& query,
+    const TemplateURL* search_provider) {
+  DCHECK(search_provider);
+
   TemplateURLRef::SearchTermsArgs search_terms_args(query);
-  const TemplateURLRef& search_url_ref =
-      template_url_service_->GetDefaultSearchProvider()->url_ref();
+  const TemplateURLRef& search_url_ref = search_provider->url_ref();
   const SearchTermsData& search_terms_data =
       template_url_service_->search_terms_data();
   DCHECK(search_url_ref.SupportsReplacement(search_terms_data));
@@ -238,6 +248,8 @@ GURL RepeatableQueriesService::GetQueryDeletionURL(
     const std::string& deletion_url) {
   const auto* default_provider =
       template_url_service_->GetDefaultSearchProvider();
+  if (!default_provider)
+    return GURL();
   const SearchTermsData& search_terms_data =
       template_url_service_->search_terms_data();
   GURL request_url = default_provider->GenerateSearchURL(search_terms_data);
@@ -254,6 +266,11 @@ GURL RepeatableQueriesService::GetRequestURL() {
   DCHECK(suggestion_url_ref.SupportsReplacement(search_terms_data));
   return GURL(suggestion_url_ref.ReplaceSearchTerms(search_terms_args,
                                                     search_terms_data));
+}
+
+void RepeatableQueriesService::FlushForTesting(base::OnceClosure flushed) {
+  deletion_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                          std::move(flushed));
 }
 
 void RepeatableQueriesService::GetRepeatableQueriesFromServer() {
@@ -336,6 +353,11 @@ void RepeatableQueriesService::RepeatableQueriesResponseLoaded(
 
 void RepeatableQueriesService::RepeatableQueriesParsed(
     data_decoder::DataDecoder::ValueOrError result) {
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  if (!default_provider)
+    return;
+
   repeatable_queries_.clear();
 
   std::vector<RepeatableQuery> queries;
@@ -343,7 +365,8 @@ void RepeatableQueriesService::RepeatableQueriesParsed(
     for (auto& query : queries) {
       if (IsQueryDeleted(query.query))
         continue;
-      query.destination_url = GetQueryDestinationURL(query.query);
+      query.destination_url =
+          GetQueryDestinationURL(query.query, default_provider);
       repeatable_queries_.push_back(query);
       if (repeatable_queries_.size() >= kMaxQueries)
         break;
@@ -354,9 +377,14 @@ void RepeatableQueriesService::RepeatableQueriesParsed(
 }
 
 void RepeatableQueriesService::GetRepeatableQueriesFromURLDatabase() {
+  const TemplateURL* default_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  if (!default_provider)
+    return;
+
   repeatable_queries_.clear();
 
-  // Fail if the in-memory URL database is not available.
+  // Fail if the in-memory URLDatabase is not available.
   history::URLDatabase* url_db = history_service_->InMemoryDatabase();
   if (!url_db)
     return;
@@ -383,7 +411,7 @@ void RepeatableQueriesService::GetRepeatableQueriesFromURLDatabase() {
     if (IsQueryDeleted(repeatable_query.query))
       continue;
     repeatable_query.destination_url =
-        GetQueryDestinationURL(repeatable_query.query);
+        GetQueryDestinationURL(repeatable_query.query, default_provider);
     repeatable_queries_.push_back(repeatable_query);
     if (repeatable_queries_.size() >= kMaxQueries)
       break;
@@ -435,6 +463,9 @@ void RepeatableQueriesService::DeleteRepeatableQueryFromServer(
         })");
 
   GURL request_url = GetQueryDeletionURL(deletion_url);
+  if (!request_url.is_valid())
+    return;
+
   auto deletion_request = std::make_unique<network::ResourceRequest>();
   variations::AppendVariationsHeaderUnknownSignedIn(
       request_url, variations::InIncognito::kNo, deletion_request.get());
@@ -461,13 +492,23 @@ void RepeatableQueriesService::DeletionResponseLoaded(
 
 void RepeatableQueriesService::DeleteRepeatableQueryFromURLDatabase(
     const base::string16& query) {
-  // Fail if the in-memory URL database is not available.
-  history::URLDatabase* url_db = history_service_->InMemoryDatabase();
+  deletion_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RepeatableQueriesService::DeleteRepeatableQueryFromURLDatabaseTask,
+          weak_ptr_factory_.GetWeakPtr(), query,
+          history_service_->InMemoryDatabase()));
+}
+
+void RepeatableQueriesService::DeleteRepeatableQueryFromURLDatabaseTask(
+    const base::string16& query,
+    history::URLDatabase* url_db) {
+  // Fail if the in-memory URLDatabase is not available.
   if (!url_db)
     return;
 
   // Delete all the search terms matching the repeatable query suggestion from
-  // the in-memory URL database.
+  // the in-memory URLDatabase.
   url_db->DeleteKeywordSearchTermForNormalizedTerm(
       template_url_service_->GetDefaultSearchProvider()->id(), query);
 }

@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.5)
 # and find_package()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
-project(libavif LANGUAGES C VERSION 0.8.3)
+project(libavif LANGUAGES C VERSION 0.9.0)
 
 # Set C99 as the default
 set(CMAKE_C_STANDARD 99)
@@ -19,7 +19,7 @@ set(CMAKE_C_STANDARD 99)
 #     Increment MINOR. Set PATCH to 0
 #   If the source code was changed, but there were no interface changes:
 #     Increment PATCH.
-set(LIBRARY_VERSION_MAJOR 8)
+set(LIBRARY_VERSION_MAJOR 10)
 set(LIBRARY_VERSION_MINOR 0)
 set(LIBRARY_VERSION_PATCH 0)
 set(LIBRARY_VERSION "${LIBRARY_VERSION_MAJOR}.${LIBRARY_VERSION_MINOR}.${LIBRARY_VERSION_PATCH}")
@@ -131,15 +131,23 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     )
     # The detection of cross compilation by -Wpoison-system-directories has false positives on macOS because
     # --sysroot is implicitly added. Turn the warning off.
-    check_c_compiler_flag(-Wpoison-system-directories HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
+    if(NOT DEFINED HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
+        check_c_compiler_flag(-Wpoison-system-directories HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
+    endif()
     if(HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
         add_definitions(-Wno-poison-system-directories)
+    endif()
+    # MINGW declares printf with __attribute__ ((__unused__)) in stdio.h.
+    # It is out of our control so we just ignore it.
+    # See https://sourceforge.net/p/mingw-w64/bugs/868/
+    if(MINGW)
+        add_definitions(-Wno-used-but-marked-unused)
     endif()
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
     MESSAGE(STATUS "libavif: Enabling warnings for GCC")
     add_definitions(-Wall -Wextra)
 elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-    MESSAGE(STATUS "libavif: Enabling warnings for MS CL")
+    MESSAGE(STATUS "libavif: Enabling warnings for MSVC")
     add_definitions(
         /Wall   # All warnings
         /wd4255 # Disable: no function prototype given
@@ -151,6 +159,13 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
         /wd4820 # Disable: bytes padding added after data member
         /wd4996 # Disable: potentially unsafe stdlib methods
         /wd5045 # Disable: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+        # This tells MSVC to read source code as UTF-8 and assume console can only use ASCII (minimal safe).
+        # libavif uses ANSI API to print to console, which is not portable between systems using different
+        # languages and results in mojibake unless we only use codes shared by every code page: ASCII.
+        # A C4556 warning will be generated on violation.
+        # Commonly used /utf-8 flag assumes UTF-8 for both source and console, which is usually not the case.
+        # Warnings can be suppressed but there will still be random characters printed to the console.
+        /source-charset:utf-8 /execution-charset:us-ascii
     )
 else()
     MESSAGE(FATAL_ERROR "libavif: Unknown compiler, bailing out")
@@ -294,7 +309,7 @@ if(AVIF_CODEC_RAV1E)
         endif()
 
         set(AVIF_CODEC_INCLUDES ${AVIF_CODEC_INCLUDES}
-            "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/target/release/include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ext/rav1e/target/release"
         )
         set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${LIB_FILENAME})
     else()
@@ -386,7 +401,8 @@ add_library(avif ${AVIF_SRCS})
 set_target_properties(avif
                       PROPERTIES
                           VERSION ${LIBRARY_VERSION}
-                          SOVERSION ${LIBRARY_SOVERSION})
+                          SOVERSION ${LIBRARY_SOVERSION}
+                          C_VISIBILITY_PRESET hidden)
 target_compile_definitions(avif
                            PRIVATE ${AVIF_PLATFORM_DEFINITIONS} ${AVIF_CODEC_DEFINITIONS})
 target_link_libraries(avif
@@ -395,6 +411,15 @@ target_include_directories(avif
                            PUBLIC $<BUILD_INTERFACE:${libavif_SOURCE_DIR}/include>
                                   $<INSTALL_INTERFACE:include>
                            PRIVATE ${AVIF_PLATFORM_INCLUDES} ${AVIF_CODEC_INCLUDES})
+set(AVIF_PKG_CONFIG_EXTRA_CFLAGS "")
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(avif PUBLIC AVIF_DLL
+                                    PRIVATE AVIF_BUILDING_SHARED_LIBS)
+    set(AVIF_PKG_CONFIG_EXTRA_CFLAGS " -DAVIF_DLL")
+    if(AVIF_LOCAL_LIBGAV1)
+        set_target_properties(avif PROPERTIES LINKER_LANGUAGE "CXX")
+    endif()
+endif()
 
 option(AVIF_BUILD_EXAMPLES "Build avif Examples." OFF)
 if(AVIF_BUILD_EXAMPLES)

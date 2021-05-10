@@ -15,8 +15,6 @@
 #ifndef SRC_AST_ARRAY_DECORATION_H_
 #define SRC_AST_ARRAY_DECORATION_H_
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include "src/ast/decoration.h"
@@ -27,21 +25,15 @@ namespace ast {
 class StrideDecoration;
 
 /// A decoration attached to an array
-class ArrayDecoration : public Decoration {
+class ArrayDecoration : public Castable<ArrayDecoration, Decoration> {
  public:
   /// The kind of decoration that this type represents
-  static constexpr DecorationKind Kind = DecorationKind::kArray;
+  static constexpr const DecorationKind Kind = DecorationKind::kArray;
 
   ~ArrayDecoration() override;
 
-  /// @returns true if this is a stride decoration
-  virtual bool IsStride() const;
-
-  /// @returns the decoration as a stride decoration
-  StrideDecoration* AsStride();
-
-  /// @returns the decoration as a string
-  virtual std::string to_str() const = 0;
+  /// @return the decoration kind
+  DecorationKind GetKind() const override;
 
  protected:
   /// Constructor
@@ -49,8 +41,8 @@ class ArrayDecoration : public Decoration {
   explicit ArrayDecoration(const Source& source);
 };
 
-/// A list of unique array decorations
-using ArrayDecorationList = std::vector<std::unique_ptr<ArrayDecoration>>;
+/// A list of array decorations
+using ArrayDecorationList = std::vector<ArrayDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

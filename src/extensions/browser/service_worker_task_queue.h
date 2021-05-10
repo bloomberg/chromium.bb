@@ -19,11 +19,11 @@
 #include "extensions/browser/service_worker/worker_id.h"
 #include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
-class ServiceWorkerContext;
 }
 
 namespace extensions {
@@ -132,8 +132,10 @@ class ServiceWorkerTaskQueue : public KeyedService,
     // registered.
     virtual void OnActivateExtension(const ExtensionId& extension_id,
                                      bool will_register_service_worker) {}
-    virtual void DidStartWorkerFail(const ExtensionId& extension_id,
-                                    size_t num_pending_tasks) {}
+    virtual void DidStartWorkerFail(
+        const ExtensionId& extension_id,
+        size_t num_pending_tasks,
+        blink::ServiceWorkerStatusCode status_code) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -148,26 +150,11 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   class WorkerState;
 
-  static void DidStartWorkerForScopeOnCoreThread(
-      const SequencedContextId& context_id,
-      base::Time start_time,
-      base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
-      int64_t version_id,
-      int process_id,
-      int thread_id);
-  static void DidStartWorkerFailOnCoreThread(
-      const SequencedContextId& context_id,
-      base::WeakPtr<ServiceWorkerTaskQueue> task_queue);
-  static void StartServiceWorkerOnCoreThreadToRunTasks(
-      base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
-      const SequencedContextId& context_id,
-      content::ServiceWorkerContext* service_worker_context);
-
   void RunTasksAfterStartWorker(const SequencedContextId& context_id);
 
   void DidRegisterServiceWorker(const SequencedContextId& context_id,
                                 base::Time start_time,
-                                bool success);
+                                blink::ServiceWorkerStatusCode status);
   void DidUnregisterServiceWorker(const ExtensionId& extension_id,
                                   ActivationSequence sequence,
                                   bool success);
@@ -177,7 +164,8 @@ class ServiceWorkerTaskQueue : public KeyedService,
                               int64_t version_id,
                               int process_id,
                               int thread_id);
-  void DidStartWorkerFail(const SequencedContextId& context_id);
+  void DidStartWorkerFail(const SequencedContextId& context_id,
+                          blink::ServiceWorkerStatusCode status_code);
 
   // The following three methods retrieve, store, and remove information
   // about Service Worker registration of SW based background pages:

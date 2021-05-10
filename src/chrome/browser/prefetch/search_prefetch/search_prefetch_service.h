@@ -8,32 +8,75 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/prefetch/search_prefetch/base_search_prefetch_request.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-class Profile;
-class GURL;
-class PrefetchedResponseContainer;
-
 class AutocompleteController;
+struct OmniboxLog;
+class PrefRegistrySimple;
+class Profile;
+class SearchPrefetchURLLoader;
 
-enum class SearchPrefetchStatus {
-  // The request is on the network and may move to any other state.
-  kInFlight = 1,
-  // The request received all the data and is ready to serve.
-  kSuccessfullyCompleted = 2,
-  // The request hit an error and cannot be served.
-  kRequestFailed = 3,
-  // The request was cancelled before completion.
-  kRequestCancelled = 4,
+namespace network {
+struct ResourceRequest;
+}
+
+// Any updates to this class need to be propagated to enums.xml.
+enum class SearchPrefetchEligibilityReason {
+  // The prefetch was started.
+  kPrefetchStarted = 0,
+  // The user has disabled prefetching and preconnecting in their client.
+  kPrefetchDisabled = 1,
+  // The user has disabled javascript overall or on the DSE.
+  kJavascriptDisabled = 2,
+  // The default search engine is not set.
+  kSearchEngineNotValid = 3,
+  // The entry has no search terms in the suggestion.
+  kNotDefaultSearchWithTerms = 4,
+  // We have seen an error in a network request recently.
+  kErrorBackoff = 5,
+  // This query was issued recently as a prefetch and was not served (can be
+  // failed, cancelled, or complete).
+  kAttemptedQueryRecently = 6,
+  // Too many prefetches have been cancelled, failed, or not served recently.
+  kMaxAttemptsReached = 7,
+  // A URLLoaderThrottle decided this request should not be issued.
+  kThrottled = 8,
+  kMaxValue = kThrottled,
+};
+
+// Any updates to this class need to be propagated to enums.xml.
+enum class SearchPrefetchServingReason {
+  // The prefetch was started.
+  kServed = 0,
+  // The default search engine is not set.
+  kSearchEngineNotValid = 1,
+  // The user has disabled javascript overall or on the DSE.
+  kJavascriptDisabled = 2,
+  // The entry has no search terms in the suggestion.
+  kNotDefaultSearchWithTerms = 3,
+  // There wasn't a prefetch issued for the search terms.
+  kNoPrefetch = 4,
+  // The prefetch for the search terms was for a different origin than the DSE.
+  kPrefetchWasForDifferentOrigin = 5,
+  // The request was canceled before completion.
+  kRequestWasCancelled = 6,
+  // The request failed due to some network/service error.
+  kRequestFailed = 7,
+  // The request wasn't served unexpectantly.
+  kNotServedOtherReason = 8,
+  // The navigation was a POST request, reload or link navigation.
+  kPostReloadOrLink = 9,
+  kMaxValue = kPostReloadOrLink,
 };
 
 class SearchPrefetchService : public KeyedService,
@@ -61,71 +104,59 @@ class SearchPrefetchService : public KeyedService,
   // Clear all prefetches from the service.
   void ClearPrefetches();
 
+  // Clear the disk cache entry for |url|.
+  void ClearCacheEntry(const GURL& navigation_url);
+
+  // Update the last serving time of |url|, so it's eviction priority is
+  // lowered.
+  void UpdateServeTime(const GURL& navigation_url);
+
   // Takes the response from this object if |url| matches a prefetched URL.
-  std::unique_ptr<PrefetchedResponseContainer> TakePrefetchResponse(
-      const GURL& url);
+  std::unique_ptr<SearchPrefetchURLLoader> TakePrefetchResponseFromMemoryCache(
+      const network::ResourceRequest& tentative_resource_request);
+
+  // Creates a cache loader to serve a cache only response with fallback to
+  // network fetch.
+  std::unique_ptr<SearchPrefetchURLLoader> TakePrefetchResponseFromDiskCache(
+      const GURL& navigation_url);
 
   // Reports the status of a prefetch for a given search term.
   base::Optional<SearchPrefetchStatus> GetSearchPrefetchStatusForTesting(
       base::string16 search_terms);
 
+  // Calls |LoadFromPrefs()|.
+  bool LoadFromPrefsForTesting();
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
  private:
+  // Records a cache entry for a navigation that is being served.
+  void AddCacheEntry(const GURL& navigation_url, const GURL& prefetch_url);
+
   // Removes the prefetch and prefetch timers associated with |search_terms|.
   void DeletePrefetch(base::string16 search_terms);
 
   // Records the current time to prevent prefetches for a set duration.
   void ReportError();
 
-  // Internal class to represent an ongoing or completed prefetch.
-  class PrefetchRequest {
-   public:
-    // |service| must outlive this class and be able to manage this class's
-    // lifetime.
-    PrefetchRequest(const GURL& prefetch_url,
-                    base::OnceClosure report_error_callback);
-    ~PrefetchRequest();
+  // If the navigation URL matches with a prefetch that can be served, this
+  // function marks that prefetch as clicked to prevent deletion when omnibox
+  // closes.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
-    PrefetchRequest(const PrefetchRequest&) = delete;
-    PrefetchRequest& operator=(const PrefetchRequest&) = delete;
-
-    // Starts the network request to prefetch |prefetch_url_|.
-    void StartPrefetchRequest(Profile* profile);
-
-    // Cancels the on-going prefetch and marks the status appropriately.
-    void CancelPrefetch();
-
-    SearchPrefetchStatus current_status() const { return current_status_; }
-
-    const GURL& prefetch_url() const { return prefetch_url_; }
-
-    // Takes ownership of the prefetched data.
-    std::unique_ptr<PrefetchedResponseContainer> TakePrefetchResponse();
-
-   private:
-    // Called as a callback when the prefetch request is complete. Stores the
-    // response and other metadata in |prefetch_response_container_|.
-    void LoadDone(std::unique_ptr<std::string> response_body);
-
-    SearchPrefetchStatus current_status_ = SearchPrefetchStatus::kInFlight;
-
-    // The URL to prefetch the search terms from.
-    const GURL prefetch_url_;
-
-    // The ongoing prefetch request. Null before and after the fetch.
-    std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-
-    // Once a prefetch is completed successfully, the associated prefetch data
-    // and metadata about the request.
-    std::unique_ptr<PrefetchedResponseContainer> prefetch_response_container_;
-
-    // Called when there is a network/server error on the prefetch request.
-    base::OnceClosure report_error_callback_;
-  };
+  // These methods serialize and deserialize |prefetch_cache_| to
+  // |profile_| pref service in a dictionary value.
+  //
+  // Returns true iff loading the prefs removed at least one entry, so the pref
+  // should be saved.
+  bool LoadFromPrefs();
+  void SaveToPrefs() const;
 
   // Prefetches that are started are stored using search terms as a key. Only
   // one prefetch should be started for a given search term until the old
   // prefetch expires.
-  std::map<base::string16, std::unique_ptr<PrefetchRequest>> prefetches_;
+  std::map<base::string16, std::unique_ptr<BaseSearchPrefetchRequest>>
+      prefetches_;
 
   // A group of timers to expire |prefetches_| based on the same key.
   std::map<base::string16, std::unique_ptr<base::OneShotTimer>>
@@ -137,10 +168,19 @@ class SearchPrefetchService : public KeyedService,
   // The current state of the DSE.
   base::Optional<TemplateURLData> template_url_service_data_;
 
+  // A subscription to the omnibox log service to track when a navigation is
+  // about to happen.
+  base::CallbackListSubscription omnibox_subscription_;
+
   base::ScopedObservation<TemplateURLService, TemplateURLServiceObserver>
       observer_{this};
 
   Profile* profile_;
+
+  // A map of previously handled URLs that allows certain navigations to be
+  // served from cache. The value is the prefetch URL in cache and the latest
+  // serving time of the response.
+  std::map<GURL, std::pair<GURL, base::Time>> prefetch_cache_;
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_SEARCH_PREFETCH_SERVICE_H_

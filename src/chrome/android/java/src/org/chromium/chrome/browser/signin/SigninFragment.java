@@ -12,16 +12,19 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -29,7 +32,7 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** This fragment implements sign-in screen for {@link SigninActivity}. */
+/** Implementation of {@link SigninFragmentBase} for {@link SigninActivity}. */
 public class SigninFragment extends SigninFragmentBase {
     private static final String TAG = "SigninFragment";
 
@@ -103,7 +106,7 @@ public class SigninFragment extends SigninFragmentBase {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int accessPoint = getSigninArguments().getInt(ARGUMENT_ACCESS_POINT, -1);
+        int accessPoint = getArguments().getInt(ARGUMENT_ACCESS_POINT, -1);
         assert accessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
                 || accessPoint == SigninAccessPoint.BOOKMARK_MANAGER
                 || accessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
@@ -112,17 +115,11 @@ public class SigninFragment extends SigninFragmentBase {
                 || accessPoint
                         == SigninAccessPoint.SIGNIN_PROMO : "invalid access point: " + accessPoint;
         mSigninAccessPoint = accessPoint;
-        mPromoAction =
-                getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);
+        mPromoAction = getArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);
 
-        SigninManager.logSigninStartAccessPoint(mSigninAccessPoint);
+        SigninMetricsUtils.logSigninStartAccessPoint(mSigninAccessPoint);
+        SigninMetricsUtils.logSigninUserActionForAccessPoint(mSigninAccessPoint);
         recordSigninStartedHistogramAccountInfo();
-        recordSigninStartedUserAction();
-    }
-
-    @Override
-    protected Bundle getSigninArguments() {
-        return getArguments();
     }
 
     @Override
@@ -236,30 +233,5 @@ public class SigninFragment extends SigninFragmentBase {
 
         RecordHistogram.recordEnumeratedHistogram(
                 histogram, mSigninAccessPoint, SigninAccessPoint.MAX);
-    }
-
-    private void recordSigninStartedUserAction() {
-        switch (mSigninAccessPoint) {
-            case SigninAccessPoint.AUTOFILL_DROPDOWN:
-                RecordUserAction.record("Signin_Signin_FromAutofillDropdown");
-                break;
-            case SigninAccessPoint.BOOKMARK_MANAGER:
-                RecordUserAction.record("Signin_Signin_FromBookmarkManager");
-                break;
-            case SigninAccessPoint.RECENT_TABS:
-                RecordUserAction.record("Signin_Signin_FromRecentTabs");
-                break;
-            case SigninAccessPoint.SETTINGS:
-                RecordUserAction.record("Signin_Signin_FromSettings");
-                break;
-            case SigninAccessPoint.SIGNIN_PROMO:
-                RecordUserAction.record("Signin_Signin_FromSigninPromo");
-                break;
-            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
-                RecordUserAction.record("Signin_Signin_FromNTPContentSuggestions");
-                break;
-            default:
-                assert false : "Invalid access point.";
-        }
     }
 }

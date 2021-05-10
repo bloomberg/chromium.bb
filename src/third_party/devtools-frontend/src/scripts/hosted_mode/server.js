@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const fs = require('fs');
-const http = require('http');
+const https = require('https');
 const path = require('path');
 const parseURL = require('url').parse;
 
@@ -11,7 +11,14 @@ const port = parseInt(process.env.PORT, 10);
 const requestedPort = port || port === 0 ? port : 8090;
 const devtoolsFolder = path.resolve(path.join(__dirname, '..', '..'));
 
-const server = http.createServer(requestHandler);
+// The certificate is taken from
+// https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/tools/apache_config/webkit-httpd.pem
+const options = {
+  key: fs.readFileSync(__dirname + '/key.pem'),
+  cert: fs.readFileSync(__dirname + '/cert.pem'),
+};
+
+const server = https.createServer(options, requestHandler);
 server.once('error', error => {
   if (process.send) {
     process.send('ERROR');
@@ -39,7 +46,7 @@ function requestHandler(request, response) {
     return;
   }
 
-  const replacedName = filePath.replace('front_end', '../resources/inspector');
+  const replacedName = filePath.replace('front_end', '../gen/front_end');
 
   const absoluteFilePath = path.join(devtoolsFolder, replacedName);
   if (!path.resolve(absoluteFilePath).startsWith(path.join(devtoolsFolder, '..'))) {
@@ -58,7 +65,8 @@ function requestHandler(request, response) {
     }
 
     let encoding = 'utf8';
-    if (absoluteFilePath.endsWith('.wasm') || absoluteFilePath.endsWith('.png') || absoluteFilePath.endsWith('.jpg')) {
+    if (absoluteFilePath.endsWith('.wasm') || absoluteFilePath.endsWith('.png') || absoluteFilePath.endsWith('.jpg') ||
+        absoluteFilePath.endsWith('.avif')) {
       encoding = 'binary';
     }
 
@@ -97,6 +105,9 @@ function requestHandler(request, response) {
       encoding = 'binary';
     } else if (path.endsWith('.jpg')) {
       response.setHeader('Content-Type', 'image/jpg');
+      encoding = 'binary';
+    } else if (path.endsWith('.avif')) {
+      response.setHeader('Content-Type', 'image/avif');
       encoding = 'binary';
     }
 

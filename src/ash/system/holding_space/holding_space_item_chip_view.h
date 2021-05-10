@@ -35,12 +35,25 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView {
   ~HoldingSpaceItemChipView() override;
 
  private:
-  void UpdateImage();
+  // HoldingSpaceItemView:
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override;
+  void OnPinVisibilityChanged(bool pin_visible) override;
+  void OnSelectionUiChanged() override;
+  void OnThemeChanged() override;
 
+  // Invoked during `label_`'s paint sequence to paint its optional mask. Note
+  // that `label_` is only masked when `pin_` is visible to avoid overlapping.
+  void OnPaintLabelMask(gfx::Canvas* canvas);
+
+  void UpdateImage();
+  void UpdateLabel();
+
+  // Owned by view hierarchy.
   RoundedImageView* image_ = nullptr;
   views::Label* label_ = nullptr;
 
-  std::unique_ptr<HoldingSpaceImage::Subscription> image_subscription_;
+  base::CallbackListSubscription image_subscription_;
 };
 
 }  // namespace ash

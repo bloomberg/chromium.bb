@@ -5,6 +5,7 @@
 #include "components/permissions/permissions_client.h"
 
 #include "base/callback.h"
+#include "build/chromeos_buildflags.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 
 #if !defined(OS_ANDROID)
@@ -44,7 +45,7 @@ void PermissionsClient::AreSitesImportant(
     entry.second = false;
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 bool PermissionsClient::IsCookieDeletionDisabled(
     content::BrowserContext* browser_context,
     const GURL& origin) {
@@ -59,8 +60,7 @@ void PermissionsClient::GetUkmSourceId(content::BrowserContext* browser_context,
   std::move(callback).Run(base::nullopt);
 }
 
-PermissionRequest::IconId PermissionsClient::GetOverrideIconId(
-    ContentSettingsType type) {
+IconId PermissionsClient::GetOverrideIconId(RequestType request_type) {
 #if defined(OS_ANDROID)
   return 0;
 #else
@@ -76,7 +76,7 @@ PermissionsClient::CreateNotificationPermissionUiSelectors(
 
 void PermissionsClient::OnPromptResolved(
     content::BrowserContext* browser_context,
-    PermissionRequestType request_type,
+    RequestType request_type,
     PermissionAction action,
     const GURL& origin,
     base::Optional<QuietUiReason> quiet_ui_reason) {}

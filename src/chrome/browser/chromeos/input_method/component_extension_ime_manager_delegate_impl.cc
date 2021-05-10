@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -24,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/ime/input_methods.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -150,7 +153,24 @@ void OnFilePathChecked(Profile* profile,
                        const base::FilePath* file_path,
                        bool result) {
   if (result) {
-    DoLoadExtension(profile, *extension_id, *manifest, *file_path);
+    std::string manifest_str = *manifest;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    // Load Mojo-only background page for ChromeOS IME extension when feature
+    // 'ImeMojoDecoder' is enabled. See http://b/181170189 for more details.
+    // TODO(http://b/170278753): Remove this once NaCl decoder is removed.
+    if ((*extension_id == extension_ime_util::kXkbExtensionId) &&
+        base::FeatureList::IsEnabled(chromeos::features::kImeMojoDecoder)) {
+      const std::string bg_page = "background.html";
+      const std::string mojo_bg_page = "background_mojo.html";
+
+      // Don't update if the IME extension hasn't Mojo background page.
+      if (base::PathExists(file_path->Append(mojo_bg_page))) {
+        base::ReplaceFirstSubstringAfterOffset(&manifest_str, 0, bg_page,
+                                               mojo_bg_page);
+      }
+    }
+#endif
+    DoLoadExtension(profile, *extension_id, manifest_str, *file_path);
   } else {
     LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
         << "IME extension file path does not exist: " << file_path->value();
@@ -162,6 +182,8 @@ void OnFilePathChecked(Profile* profile,
 ComponentExtensionIMEManagerDelegateImpl::
     ComponentExtensionIMEManagerDelegateImpl() {
   ReadComponentExtensionsInfo(&component_extension_list_);
+  login_layout_set_.insert(std::begin(input_method::kLoginXkbLayoutIds),
+                           std::end(input_method::kLoginXkbLayoutIds));
 }
 
 ComponentExtensionIMEManagerDelegateImpl::
@@ -190,6 +212,11 @@ void ComponentExtensionIMEManagerDelegateImpl::Load(
                      base::Owned(new std::string(extension_id)),
                      base::Owned(new std::string(manifest)),
                      base::Owned(copied_file_path)));
+}
+
+bool ComponentExtensionIMEManagerDelegateImpl::IsInLoginLayoutAllowlist(
+    const std::string& layout) {
+  return login_layout_set_.find(layout) != login_layout_set_.end();
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -223,11 +250,6 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
     const base::DictionaryValue& dict,
     ComponentExtensionEngine* out) {
   DCHECK(out);
-  std::string type;
-  if (!dict.GetString(extensions::manifest_keys::kType, &type))
-    return false;
-  if (type != "ime")
-    return false;
   if (!dict.GetString(extensions::manifest_keys::kId, &out->engine_id))
     return false;
   if (!dict.GetString(extensions::manifest_keys::kName, &out->display_name))
@@ -255,14 +277,17 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
   DCHECK(!languages.empty());
   out->language_codes.assign(languages.begin(), languages.end());
 
+  // For legacy reasons, multiple physical keyboard XKB layouts can be specified
+  // in the IME extension manifest for each input method. However, CrOS only
+  // supports one layout per input method. Thus use the "first" layout if
+  // specified, else default to "us". CrOS IME extension manifests should
+  // specify one and only one layout per input method to avoid confusion.
   const base::ListValue* layouts = nullptr;
   if (!dict.GetList(extensions::manifest_keys::kLayouts, &layouts))
     return false;
 
-  for (size_t i = 0; i < layouts->GetSize(); ++i) {
-    std::string buffer;
-    if (layouts->GetString(i, &buffer))
-      out->layouts.push_back(buffer);
+  if (layouts->empty() || !layouts->GetString(0, &out->layout)) {
+    out->layout = "us";
   }
 
   std::string url_string;
@@ -380,6 +405,14 @@ void ComponentExtensionIMEManagerDelegateImpl::ReadComponentExtensionsInfo(
 
       ComponentExtensionEngine engine;
       ReadEngineComponent(component_ime, *dictionary, &engine);
+
+      if (base::StartsWith(engine.engine_id, "experimental_",
+                           base::CompareCase::SENSITIVE) &&
+          !base::FeatureList::IsEnabled(
+              chromeos::features::kMultilingualTyping)) {
+        continue;
+      }
+
       component_ime.engines.push_back(engine);
     }
     out_imes->push_back(component_ime);

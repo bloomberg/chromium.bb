@@ -24,7 +24,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
    */
   constructor() {
     super('resources');
-    this.registerRequiredCSS('resources/resourcesPanel.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('resources/resourcesPanel.css', {enableLegacyPatching: false});
 
     this._resourcesLastSelectedItemSetting =
         Common.Settings.Settings.instance().createSetting('resourcesLastSelectedElementPath', []);
@@ -133,6 +133,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     this.visibleView = view;
 
     this._storageViewToolbar.removeToolbarItems();
+    this._storageViewToolbar.element.classList.toggle('hidden', true);
     if (view instanceof UI.View.SimpleView) {
       view.toolbarItems().then(items => {
         items.map(item => this._storageViewToolbar.appendToolbarItem(item));
@@ -219,9 +220,26 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
 }
 
 /**
+ * @type {!ResourceRevealer}
+ */
+let resourceRevealerInstance;
+
+/**
  * @implements {Common.Revealer.Revealer}
  */
 export class ResourceRevealer {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!resourceRevealerInstance || forceNew) {
+      resourceRevealerInstance = new ResourceRevealer();
+    }
+
+    return resourceRevealerInstance;
+  }
+
   /**
    * @override
    * @param {!Object} resource
@@ -236,11 +254,26 @@ export class ResourceRevealer {
     await sidebar.showResource(resource);
   }
 }
+/**
+ * @type {!CookieReferenceRevealer}
+ */
+let cookieReferenceRevealerInstance;
 
 /**
  * @implements {Common.Revealer.Revealer}
  */
 export class CookieReferenceRevealer {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!cookieReferenceRevealerInstance || forceNew) {
+      cookieReferenceRevealerInstance = new CookieReferenceRevealer();
+    }
+
+    return cookieReferenceRevealerInstance;
+  }
   /**
    * @override
    * @param {!Object} cookie

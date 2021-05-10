@@ -2,21 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {ElementsPanel} from './ElementsPanel.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  * @description Title of a section in the Element State Pane Widget of the Elements panel. The
+  * controls in this section allow users to force a particular state on the selected element, e.g. a
+  * focused state via :focus or a hover state via :hover.
+  */
+  forceElementState: 'Force element state',
+  /**
+  * @description Tooltip text in Element State Pane Widget of the Elements panel. For a button that
+  * opens a tool that toggles the various states of the selected element on/off.
+  */
+  toggleElementState: 'Toggle Element State',
+  /**
+  * @description Text in Element State Pane Widget of the Elements panel. Activates the :hov state.
+  */
+  hov: '`:hov`',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/ElementStatePaneWidget.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ElementStatePaneWidget extends UI.Widget.Widget {
   constructor() {
     super(true);
     this.registerRequiredCSS('elements/elementStatePaneWidget.css', {enableLegacyPatching: true});
     this.contentElement.className = 'styles-element-state-pane';
-    UI.UIUtils.createTextChild(this.contentElement.createChild('div'), Common.UIString.UIString('Force element state'));
+    UI.UIUtils.createTextChild(this.contentElement.createChild('div'), i18nString(UIStrings.forceElementState));
     const table = document.createElement('table');
     table.classList.add('source-code');
     UI.ARIAUtils.markAsPresentation(table);
@@ -70,6 +86,9 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
     tr.appendChild(createCheckbox('focus-within'));
     tr.appendChild(createCheckbox('focus-visible'));
 
+    tr = table.createChild('tr');
+    tr.appendChild(createCheckbox('target'));
+
     this.contentElement.appendChild(table);
     UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._update, this);
   }
@@ -112,7 +131,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
     if (node) {
       const nodePseudoState = node.domModel().cssModel().pseudoState(node);
       for (const input of this._inputs) {
-        input.disabled = !!node.pseudoType();
+        input.disabled = Boolean(node.pseudoType());
         const state = this._inputStates.get(input);
         input.checked = nodePseudoState && state !== undefined ? nodePseudoState.indexOf(state) >= 0 : false;
       }
@@ -125,17 +144,32 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
   }
 }
 
+/** @type {!ButtonProvider} */
+let buttonProviderInstance;
+
 /**
  * @implements {UI.Toolbar.Provider}
- * @unrestricted
  */
 export class ButtonProvider {
+  /** @private */
   constructor() {
-    this._button = new UI.Toolbar.ToolbarToggle(Common.UIString.UIString('Toggle Element State'), '');
-    this._button.setText(Common.UIString.UIString(':hov'));
+    this._button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleElementState), '');
+    this._button.setText(i18nString(UIStrings.hov));
     this._button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._clicked, this);
     this._button.element.classList.add('monospace');
     this._view = new ElementStatePaneWidget();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!buttonProviderInstance || forceNew) {
+      buttonProviderInstance = new ButtonProvider();
+    }
+
+    return buttonProviderInstance;
   }
 
   _clicked() {

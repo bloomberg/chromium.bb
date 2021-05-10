@@ -207,53 +207,6 @@ TEST_F(ManifestParserTest, DescriptionParseRules) {
   }
 }
 
-TEST_F(ManifestParserTest, CategoriesParseRules) {
-  // Smoke test.
-  {
-    auto& manifest = ParseManifest(R"({ "categories": ["cats", "memes"] })");
-    ASSERT_EQ(2u, manifest->categories.size());
-    ASSERT_EQ(manifest->categories[0], "cats");
-    ASSERT_EQ(manifest->categories[1], "memes");
-    ASSERT_FALSE(IsManifestEmpty(manifest));
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Trim whitespaces.
-  {
-    auto& manifest =
-        ParseManifest(R"({ "categories": ["  cats  ", "  memes  "] })");
-    ASSERT_EQ(2u, manifest->categories.size());
-    ASSERT_EQ(manifest->categories[0], "cats");
-    ASSERT_EQ(manifest->categories[1], "memes");
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Categories should be lower-cased.
-  {
-    auto& manifest = ParseManifest(R"({ "categories": ["CaTs", "Memes"] })");
-    ASSERT_EQ(2u, manifest->categories.size());
-    ASSERT_EQ(manifest->categories[0], "cats");
-    ASSERT_EQ(manifest->categories[1], "memes");
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Empty array.
-  {
-    auto& manifest = ParseManifest(R"({ "categories": [] })");
-    ASSERT_EQ(0u, manifest->categories.size());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Detect error if categories isn't an array.
-  {
-    auto& manifest = ParseManifest(R"({ "categories": {} })");
-    ASSERT_EQ(0u, manifest->categories.size());
-    ASSERT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'categories' ignored, type array expected.",
-              errors()[0]);
-  }
-}
-
 TEST_F(ManifestParserTest, ShortNameParseRules) {
   // Smoke test.
   {
@@ -4047,6 +4000,122 @@ TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'gcm_sender_id' ignored, type string expected.",
               errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, CaptureLinksParseRules) {
+  // Feature not enabled, should not be parsed.
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
+class ManifestCaptureLinksParserTest : public ManifestParserTest {
+ public:
+  ManifestCaptureLinksParserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAppEnableLinkCapturing);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(ManifestCaptureLinksParserTest, CaptureLinksParseRules) {
+  // Smoke test.
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": ["new-client"] })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNewClient);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Empty array is fine.
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": [] })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Unknown single string.
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": "unknown" })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
+              errors()[0]);
+  }
+
+  // First known value in array is used.
+  {
+    auto& manifest = ParseManifest(
+        R"({ "capture_links": ["none", "existing-client-navigate"] })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+  {
+    auto& manifest = ParseManifest(R"({
+      "capture_links": [
+        "unknown",
+        "existing-client-navigate",
+        "also-unknown",
+        "none"
+      ]
+    })");
+    EXPECT_EQ(manifest->capture_links,
+              mojom::blink::CaptureLinks::kExistingClientNavigate);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
+              errors()[0]);
+  }
+  {
+    auto& manifest = ParseManifest(R"({
+      "capture_links": [
+        1234,
+        "new-client",
+        null,
+        "none"
+      ]
+    })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNewClient);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("capture_links value '1234' ignored, string expected.",
+              errors()[0]);
+  }
+
+  // Don't parse if the property isn't a string or array of strings.
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": null })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'capture_links' ignored, type string or array of strings "
+        "expected.",
+        errors()[0]);
+  }
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": 1234 })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'capture_links' ignored, type string or array of strings "
+        "expected.",
+        errors()[0]);
+  }
+  {
+    auto& manifest = ParseManifest(R"({ "capture_links": [12, 34] })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("capture_links value '12' ignored, string expected.",
+              errors()[0]);
+    EXPECT_EQ("capture_links value '34' ignored, string expected.",
+              errors()[1]);
   }
 }
 

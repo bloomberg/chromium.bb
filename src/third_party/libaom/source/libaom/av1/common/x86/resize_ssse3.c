@@ -13,6 +13,7 @@
 #include <tmmintrin.h>  // SSSE3
 
 #include "aom_dsp/x86/convolve_sse2.h"
+#include "aom_dsp/x86/convolve_ssse3.h"
 #include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "av1/common/resize.h"

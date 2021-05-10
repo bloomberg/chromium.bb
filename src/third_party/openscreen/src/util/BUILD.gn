@@ -21,6 +21,8 @@ source_set("util") {
   sources = [
     "alarm.cc",
     "alarm.h",
+    "base64.cc",
+    "base64.h",
     "big_endian.cc",
     "big_endian.h",
     "chrono_helpers.h",
@@ -40,6 +42,8 @@ source_set("util") {
     "crypto/secure_hash.h",
     "crypto/sha2.cc",
     "crypto/sha2.h",
+    "enum_name_table.h",
+    "flat_map.h",
     "hashing.h",
     "integer_division.h",
     "json/json_helpers.h",
@@ -53,6 +57,7 @@ source_set("util") {
     "saturate_cast.h",
     "simple_fraction.cc",
     "simple_fraction.h",
+    "std_util.cc",
     "std_util.h",
     "stringprintf.cc",
     "stringprintf.h",
@@ -67,12 +72,20 @@ source_set("util") {
     "yet_another_bit_vector.h",
   ]
 
-  public_deps = [ "../third_party/jsoncpp" ]
+  public_deps = [
+    "../platform:api",
+    "../platform:base",
+    "../third_party/abseil",
+    "../third_party/jsoncpp",
+  ]
 
   deps = [
-    "../third_party/abseil",
     "../third_party/boringssl",
     "../third_party/mozilla",
+
+    # We do a clone of Chrome's modp_b64 in order to share their BUILD.gn
+    # and license files, so this should always be an absolute reference.
+    "//third_party/modp_b64",
   ]
 
   public_configs = [
@@ -86,11 +99,14 @@ source_set("unittests") {
 
   sources = [
     "alarm_unittest.cc",
+    "base64_unittest.cc",
     "big_endian_unittest.cc",
     "crypto/random_bytes_unittest.cc",
     "crypto/rsa_private_key_unittest.cc",
     "crypto/secure_hash_unittest.cc",
     "crypto/sha2_unittest.cc",
+    "enum_name_table_unittest.cc",
+    "flat_map_unittest.cc",
     "integer_division_unittest.cc",
     "json/json_helpers_unittest.cc",
     "json/json_serialization_unittest.cc",

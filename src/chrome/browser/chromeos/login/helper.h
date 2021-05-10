@@ -78,7 +78,7 @@ class NetworkStateHelper {
   virtual bool IsConnecting() const;
 
  private:
-  void OnCreateConfiguration(const base::Closure& success_callback,
+  void OnCreateConfiguration(base::OnceClosure success_callback,
                              network_handler::ErrorCallback error_callback,
                              const std::string& service_path,
                              const std::string& guid) const;
@@ -110,6 +110,11 @@ scoped_refptr<network::SharedURLLoaderFactory> GetSigninURLLoaderFactory();
 // detect Gaia password reuses.
 void SaveSyncPasswordDataToProfile(const UserContext& user_context,
                                    Profile* profile);
+
+// Returns time remaining to the next online login. The value can be negative
+// which means that online login should have been already happened in the past.
+base::TimeDelta TimeToOnlineSignIn(base::Time last_online_signin,
+                                   base::TimeDelta offline_signin_limit);
 
 }  // namespace login
 

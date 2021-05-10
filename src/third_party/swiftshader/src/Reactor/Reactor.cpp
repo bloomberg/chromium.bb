@@ -14,6 +14,7 @@
 
 #include "Reactor.hpp"
 
+#include "CPUID.hpp"
 #include "Debug.hpp"
 #include "Print.hpp"
 
@@ -25,6 +26,12 @@
 #		define WIN32_LEAN_AND_MEAN
 #	endif
 #	include <windows.h>
+#endif
+
+// Define REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION to non-zero to ensure all
+// variables have a stack location obtained throuch alloca().
+#ifndef REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION
+#	define REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION 0
 #endif
 
 namespace rr {
@@ -104,21 +111,33 @@ void Variable::UnmaterializedVariables::materializeAll()
 	variables.clear();
 }
 
-Variable::Variable()
+Variable::Variable(Type *type, int arraySize)
+    : type(type)
+    , arraySize(arraySize)
 {
+#if REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION
+	materialize();
+#else
 	unmaterializedVariables->add(this);
+#endif
 }
 
 Variable::~Variable()
 {
-	unmaterializedVariables->remove(this);
+	// `unmaterializedVariables` can be null at this point due to the function
+	// already having been finalized, while classes derived from `Function<>`
+	// can have member `Variable` fields which are destructed afterwards.
+	if(unmaterializedVariables)
+	{
+		unmaterializedVariables->remove(this);
+	}
 }
 
 void Variable::materialize() const
 {
 	if(!address)
 	{
-		address = allocate();
+		address = Nucleus::allocateStackVariable(getType(), arraySize);
 		RR_DEBUG_INFO_EMIT_VAR(address);
 
 		if(rvalue)
@@ -167,11 +186,6 @@ Value *Variable::getBaseAddress() const
 Value *Variable::getElementPointer(Value *index, bool unsignedIndex) const
 {
 	return Nucleus::createGEP(getBaseAddress(), getType(), index, unsignedIndex);
-}
-
-Value *Variable::allocate() const
-{
-	return Nucleus::allocateStackVariable(getType());
 }
 
 void Variable::materializeAll()
@@ -4651,5 +4665,122 @@ int DebugPrintf(const char *format, ...)
 }
 
 #endif  // ENABLE_RR_PRINT
+
+// Functions implemented by backends
+bool HasRcpApprox();
+RValue<Float4> RcpApprox(RValue<Float4> x, bool exactAtPow2 = false);
+RValue<Float> RcpApprox(RValue<Float> x, bool exactAtPow2 = false);
+
+template<typename T>
+static RValue<T> DoRcp(RValue<T> x, Precision p, bool finite, bool exactAtPow2)
+{
+#if defined(__i386__) || defined(__x86_64__)  // On x86, 1/x is fast enough, except for lower precision
+	bool approx = HasRcpApprox() && (p != Precision::Full);
+#else
+	bool approx = HasRcpApprox();
+#endif
+
+	T rcp;
+
+	if(approx)
+	{
+		rcp = RcpApprox(x, exactAtPow2);
+
+		if(p == Precision::Full)
+		{
+			// Perform one more iteration of Newton-Rhapson division to increase precision
+			rcp = (rcp + rcp) - (x * rcp * rcp);
+		}
+	}
+	else
+	{
+		rcp = T(1.0f) / x;
+	}
+
+	if(finite)
+	{
+		constexpr int big = 0x7F7FFFFF;
+		rcp = Min(rcp, T((float &)big));
+	}
+
+	return rcp;
+}
+
+RValue<Float4> Rcp(RValue<Float4> x, Precision p, bool finite, bool exactAtPow2)
+{
+	RR_DEBUG_INFO_UPDATE_LOC();
+	return DoRcp(x, p, finite, exactAtPow2);
+}
+
+RValue<Float> Rcp(RValue<Float> x, Precision p, bool finite, bool exactAtPow2)
+{
+	RR_DEBUG_INFO_UPDATE_LOC();
+	return DoRcp(x, p, finite, exactAtPow2);
+}
+
+// Functions implemented by backends
+bool HasRcpSqrtApprox();
+RValue<Float4> RcpSqrtApprox(RValue<Float4> x);
+RValue<Float> RcpSqrtApprox(RValue<Float> x);
+
+template<typename T>
+struct CastToIntType;
+
+template<>
+struct CastToIntType<Float4>
+{
+	using type = Int4;
+};
+
+template<>
+struct CastToIntType<Float>
+{
+	using type = Int;
+};
+
+// TODO: move to Reactor.hpp?
+RValue<Int> CmpNEQ(RValue<Int> x, RValue<Int> y)
+{
+	return IfThenElse(x != y, Int(~0), Int(0));
+}
+
+template<typename T>
+static RValue<T> DoRcpSqrt(RValue<T> x, Precision p)
+{
+#if defined(__i386__) || defined(__x86_64__)  // On x86, 1/x is fast enough, except for lower precision
+	bool approx = HasRcpApprox() && (p != Precision::Full);
+#else
+	bool approx = HasRcpApprox();
+#endif
+
+	if(approx)
+	{
+		using IntType = typename CastToIntType<T>::type;
+
+		T rsq = RcpSqrtApprox(x);
+
+		if(p == Precision::Full)
+		{
+			rsq = rsq * (T(3.0f) - rsq * rsq * x) * T(0.5f);
+			rsq = As<T>(CmpNEQ(As<IntType>(x), IntType(0x7F800000)) & As<IntType>(rsq));
+		}
+
+		return rsq;
+	}
+	else
+	{
+		return T(1.0f) / Sqrt(x);
+	}
+}
+
+RValue<Float4> RcpSqrt(RValue<Float4> x, Precision p)
+{
+	return DoRcpSqrt(x, p);
+}
+
+RValue<Float> RcpSqrt(RValue<Float> x, Precision p)
+{
+	return DoRcpSqrt(x, p);
+}
 
 }  // namespace rr

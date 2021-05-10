@@ -35,11 +35,11 @@
 #include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_inspector_overlay_host.h"
@@ -56,7 +56,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -111,7 +111,7 @@ bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
 
 // OverlayNames ----------------------------------------------------------------
 const char* OverlayNames::OVERLAY_HIGHLIGHT = "highlight";
-const char* OverlayNames::OVERLAY_HIGHLIGHT_GRID = "highlightGrid";
+const char* OverlayNames::OVERLAY_PERSISTENT = "persistent";
 const char* OverlayNames::OVERLAY_SOURCE_ORDER = "sourceOrder";
 const char* OverlayNames::OVERLAY_DISTANCES = "distances";
 const char* OverlayNames::OVERLAY_VIEWPORT_SIZE = "viewportSize";
@@ -280,7 +280,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     // The overlay frame is has a standalone paint property tree. Paint it in
     // its root space into a paint record, then draw the record into the proper
     // target space in the overlaid frame.
-    PaintRecordBuilder paint_record_builder(nullptr, &graphics_context);
+    PaintRecordBuilder paint_record_builder(graphics_context);
     overlay_->OverlayMainFrame()->View()->PaintOutsideOfLifecycle(
         paint_record_builder.Context(), kGlobalPaintNormalPhase);
     graphics_context.DrawRecord(paint_record_builder.EndRecording());
@@ -295,7 +295,9 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 
  private:
   // cc::ContentLayerClient implementation
-  gfx::Rect PaintableRegion() override { return gfx::Rect(layer_->bounds()); }
+  gfx::Rect PaintableRegion() const override {
+    return gfx::Rect(layer_->bounds());
+  }
   bool FillsBoundsCompletely() const override { return false; }
 
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() override {
@@ -360,6 +362,9 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       v8_session_(v8_session),
       dom_agent_(dom_agent),
       swallow_next_mouse_up_(false),
+      original_layer_tree_debug_state_(
+          std::make_unique<cc::LayerTreeDebugState>(
+              GetFrame()->GetWidgetForLocalRoot()->GetLayerTreeDebugState())),
       backend_node_id_to_inspect_(0),
       enabled_(&agent_state_, false),
       show_ad_highlights_(&agent_state_, false),
@@ -369,6 +374,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       show_layout_shift_regions_(&agent_state_, false),
       show_scroll_bottleneck_rects_(&agent_state_, false),
       show_hit_test_borders_(&agent_state_, false),
+      show_web_vitals_(&agent_state_, false),
       show_size_on_resize_(&agent_state_, false),
       paused_in_debugger_message_(&agent_state_, String()),
       inspect_mode_(&agent_state_, protocol::Overlay::InspectModeEnum::None),
@@ -384,6 +390,7 @@ void InspectorOverlayAgent::Trace(Visitor* visitor) const {
   visitor->Trace(overlay_page_);
   visitor->Trace(overlay_chrome_client_);
   visitor->Trace(overlay_host_);
+  visitor->Trace(resize_timer_);
   visitor->Trace(dom_agent_);
   visitor->Trace(inspect_tool_);
   visitor->Trace(persistent_tool_);
@@ -435,16 +442,14 @@ void InspectorOverlayAgent::EnsureAXContext(Node* node) {
 Response InspectorOverlayAgent::disable() {
   enabled_.Clear();
   setShowAdHighlights(false);
-  setShowDebugBorders(false);
-  setShowFPSCounter(false);
-  setShowPaintRects(false);
-  setShowLayoutShiftRegions(false);
-  setShowScrollBottleneckRects(false);
-  setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
   paused_in_debugger_message_.Clear();
   inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
   inspect_mode_protocol_config_.Set(std::vector<uint8_t>());
+
+  GetFrame()->GetWidgetForLocalRoot()->SetLayerTreeDebugState(
+      *original_layer_tree_debug_state_);
+
   if (overlay_page_) {
     overlay_page_->WillBeDestroyed();
     overlay_page_.Clear();
@@ -475,18 +480,13 @@ Response InspectorOverlayAgent::setShowDebugBorders(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    if (show)
-      debug_state.show_debug_borders.set();
-    else
-      debug_state.show_debug_borders.reset();
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  if (show)
+    debug_state.show_debug_borders.set();
+  else
+    debug_state.show_debug_borders.reset();
+  widget->SetLayerTreeDebugState(debug_state);
   return Response::Success();
 }
 
@@ -497,15 +497,10 @@ Response InspectorOverlayAgent::setShowFPSCounter(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    debug_state.show_fps_counter = show;
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_fps_counter = show;
+  widget->SetLayerTreeDebugState(debug_state);
   return Response::Success();
 }
 
@@ -516,15 +511,10 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    debug_state.show_paint_rects = show;
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_paint_rects = show;
+  widget->SetLayerTreeDebugState(debug_state);
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::Success();
@@ -537,15 +527,10 @@ Response InspectorOverlayAgent::setShowLayoutShiftRegions(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    debug_state.show_layout_shift_regions = show;
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_layout_shift_regions = show;
+  widget->SetLayerTreeDebugState(debug_state);
 
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
@@ -559,18 +544,13 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    debug_state.show_touch_event_handler_rects = show;
-    debug_state.show_wheel_event_handler_rects = show;
-    debug_state.show_non_fast_scrollable_rects = show;
-    debug_state.show_main_thread_scrolling_reason_rects = show;
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_touch_event_handler_rects = show;
+  debug_state.show_wheel_event_handler_rects = show;
+  debug_state.show_non_fast_scrollable_rects = show;
+  debug_state.show_main_thread_scrolling_reason_rects = show;
+  widget->SetLayerTreeDebugState(debug_state);
 
   return Response::Success();
 }
@@ -582,20 +562,29 @@ Response InspectorOverlayAgent::setShowHitTestBorders(bool show) {
     if (!response.IsSuccess())
       return response;
   }
-  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
-  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
-  // While a frame is being detached the inspector will shutdown and
-  // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl) {
-    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
-    debug_state.show_hit_test_borders = show;
-    widget_impl->SetLayerTreeDebugState(debug_state);
-  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_hit_test_borders = show;
+  widget->SetLayerTreeDebugState(debug_state);
   return Response::Success();
 }
 
 Response InspectorOverlayAgent::setShowViewportSizeOnResize(bool show) {
   show_size_on_resize_.Set(show);
+  return Response::Success();
+}
+
+Response InspectorOverlayAgent::setShowWebVitals(bool show) {
+  show_web_vitals_.Set(show);
+  if (show) {
+    Response response = CompositingEnabled();
+    if (!response.IsSuccess())
+      return response;
+  }
+  FrameWidget* widget = GetFrame()->GetWidgetForLocalRoot();
+  cc::LayerTreeDebugState debug_state = widget->GetLayerTreeDebugState();
+  debug_state.show_web_vital_metrics = show;
+  widget->SetLayerTreeDebugState(debug_state);
   return Response::Success();
 }
 
@@ -706,23 +695,55 @@ Response InspectorOverlayAgent::highlightNode(
 Response InspectorOverlayAgent::setShowGridOverlays(
     std::unique_ptr<protocol::Array<protocol::Overlay::GridNodeHighlightConfig>>
         grid_node_highlight_configs) {
-  persistent_tool_ = nullptr;
-
-  if (grid_node_highlight_configs->size()) {
-    GridHighlightTool* grid_tool =
-        MakeGarbageCollected<GridHighlightTool>(this, GetFrontend());
-    for (std::unique_ptr<protocol::Overlay::GridNodeHighlightConfig>& config :
-         *grid_node_highlight_configs) {
-      Node* node = nullptr;
-      Response response = dom_agent_->AssertNode(config->getNodeId(), node);
-      if (!response.IsSuccess())
-        return response;
-      grid_tool->AddGridConfig(node,
-                               InspectorOverlayAgent::ToGridHighlightConfig(
-                                   config->getGridHighlightConfig()));
-    }
-    persistent_tool_ = grid_tool;
+  if (!persistent_tool_) {
+    persistent_tool_ =
+        MakeGarbageCollected<PersistentTool>(this, GetFrontend());
   }
+
+  Vector<std::pair<Member<Node>, std::unique_ptr<InspectorGridHighlightConfig>>>
+      configs;
+  for (std::unique_ptr<protocol::Overlay::GridNodeHighlightConfig>& config :
+       *grid_node_highlight_configs) {
+    Node* node = nullptr;
+    Response response = dom_agent_->AssertNode(config->getNodeId(), node);
+    if (!response.IsSuccess())
+      return response;
+    configs.push_back(
+        std::make_pair(node, InspectorOverlayAgent::ToGridHighlightConfig(
+                                 config->getGridHighlightConfig())));
+  }
+
+  persistent_tool_->SetGridConfigs(std::move(configs));
+
+  PickTheRightTool();
+
+  return Response::Success();
+}
+
+Response InspectorOverlayAgent::setShowFlexOverlays(
+    std::unique_ptr<protocol::Array<protocol::Overlay::FlexNodeHighlightConfig>>
+        flex_node_highlight_configs) {
+  if (!persistent_tool_) {
+    persistent_tool_ =
+        MakeGarbageCollected<PersistentTool>(this, GetFrontend());
+  }
+
+  Vector<std::pair<Member<Node>,
+                   std::unique_ptr<InspectorFlexContainerHighlightConfig>>>
+      configs;
+
+  for (std::unique_ptr<protocol::Overlay::FlexNodeHighlightConfig>& config :
+       *flex_node_highlight_configs) {
+    Node* node = nullptr;
+    Response response = dom_agent_->AssertNode(config->getNodeId(), node);
+    if (!response.IsSuccess())
+      return response;
+    configs.push_back(std::make_pair(
+        node, InspectorOverlayAgent::ToFlexContainerHighlightConfig(
+                  config->getFlexContainerHighlightConfig())));
+  }
+
+  persistent_tool_->SetFlexContainerConfigs(std::move(configs));
 
   PickTheRightTool();
 
@@ -810,6 +831,8 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
     config->color_format = ColorFormat::HEX;
   }
 
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   NodeHighlightTool tool(this, GetFrontend(), node, "" /* selector_list */,
                          std::move(config));
   *result = tool.GetNodeInspectorHighlightAsJson(
@@ -820,17 +843,20 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
 Response InspectorOverlayAgent::getGridHighlightObjectsForTest(
     std::unique_ptr<protocol::Array<int>> node_ids,
     std::unique_ptr<protocol::DictionaryValue>* highlights) {
-  GridHighlightTool grid_highlight_tool(this, GetFrontend());
+  PersistentTool persistent_tool(this, GetFrontend());
+  Vector<std::pair<Member<Node>, std::unique_ptr<InspectorGridHighlightConfig>>>
+      configs;
   for (const int node_id : *node_ids) {
     Node* node = nullptr;
     Response response = dom_agent_->AssertNode(node_id, node);
     if (!response.IsSuccess())
       return response;
-    grid_highlight_tool.AddGridConfig(
-        node, std::make_unique<InspectorGridHighlightConfig>(
-                  InspectorHighlight::DefaultGridConfig()));
+    configs.push_back(
+        std::make_pair(node, std::make_unique<InspectorGridHighlightConfig>(
+                                 InspectorHighlight::DefaultGridConfig())));
   }
-  *highlights = grid_highlight_tool.GetGridInspectorHighlightsAsJson();
+  persistent_tool.SetGridConfigs(std::move(configs));
+  *highlights = persistent_tool.GetGridInspectorHighlightsAsJson();
   return Response::Success();
 }
 
@@ -880,6 +906,10 @@ void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
   if (!inspect_tool_)
     return;
   OverlayMainFrame()->GetEventHandler().DispatchBufferedTouchEvents();
+}
+
+void InspectorOverlayAgent::SetPageIsScrolling(bool is_scrolling) {
+  is_page_scrolling_ = is_scrolling;
 }
 
 WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
@@ -1009,9 +1039,13 @@ void InspectorOverlayAgent::PaintOverlayPage() {
   float scale = WindowToViewportScale();
 
   if (inspect_tool_) {
-    inspect_tool_->Draw(scale);
-    if (persistent_tool_ && inspect_tool_->SupportsPersistentOverlays())
+    // Skip drawing persistent_tool_ on page scroll.
+    if (!(inspect_tool_ == persistent_tool_ && is_page_scrolling_))
+      inspect_tool_->Draw(scale);
+    if (persistent_tool_ && inspect_tool_->SupportsPersistentOverlays() &&
+        !is_page_scrolling_) {
       persistent_tool_->Draw(scale);
+    }
   }
 
   if (hinge_)
@@ -1050,7 +1084,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   overlay_chrome_client_ = MakeGarbageCollected<InspectorOverlayChromeClient>(
       GetFrame()->GetPage()->GetChromeClient(), *this);
   page_clients.chrome_client = overlay_chrome_client_.Get();
-  overlay_page_ = Page::CreateNonOrdinary(page_clients);
+  overlay_page_ = Page::CreateNonOrdinary(
+      page_clients, *GetFrame()->GetFrameScheduler()->GetAgentGroupScheduler());
   overlay_host_ = MakeGarbageCollected<InspectorOverlayHost>(this);
 
   Settings& settings = GetFrame()->GetPage()->GetSettings();
@@ -1081,8 +1116,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
   auto* frame = MakeGarbageCollected<LocalFrame>(
       dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr,
-      FrameInsertType::kInsertInConstructor, base::UnguessableToken::Create(),
-      nullptr, nullptr, /* policy_container */ nullptr);
+      FrameInsertType::kInsertInConstructor, LocalFrameToken(), nullptr,
+      nullptr, /* policy_container */ nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init(nullptr);
   frame->View()->SetCanHaveScrollbars(false);
@@ -1171,7 +1206,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
               ")",
           ScriptSourceLocationType::kInspector))
       ->RunScript(To<LocalFrame>(OverlayMainFrame())->DomWindow(),
-                  ScriptController::kExecuteScriptWhenScriptsDisabled);
+                  ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlayAgent::EvaluateInOverlay(
@@ -1190,7 +1225,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(
               ")",
           ScriptSourceLocationType::kInspector))
       ->RunScript(To<LocalFrame>(OverlayMainFrame())->DomWindow(),
-                  ScriptController::kExecuteScriptWhenScriptsDisabled);
+                  ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
 }
 
 String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
@@ -1201,7 +1236,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
           ScriptSourceCode(script, ScriptSourceLocationType::kInspector))
           ->RunScriptAndReturnValue(
               To<LocalFrame>(OverlayMainFrame())->DomWindow(),
-              ScriptController::kExecuteScriptWhenScriptsDisabled);
+              ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
   return ToCoreStringWithUndefinedOrNullCheck(string);
 }
 
@@ -1299,6 +1334,9 @@ Response InspectorOverlayAgent::setInspectMode(
 
 void InspectorOverlayAgent::PickTheRightTool() {
   InspectTool* inspect_tool = nullptr;
+
+  if (persistent_tool_ && persistent_tool_->IsEmpty())
+    persistent_tool_ = nullptr;
 
   String inspect_mode = inspect_mode_.Get();
   if (inspect_mode == protocol::Overlay::InspectModeEnum::SearchForNode ||
@@ -1495,20 +1533,77 @@ InspectorOverlayAgent::ToFlexContainerHighlightConfig(
   highlight_config->item_separator =
       InspectorOverlayAgent::ToLineStyle(config->getItemSeparator(nullptr));
 
+  highlight_config->main_distributed_space = InspectorOverlayAgent::ToBoxStyle(
+      config->getMainDistributedSpace(nullptr));
+  highlight_config->cross_distributed_space = InspectorOverlayAgent::ToBoxStyle(
+      config->getCrossDistributedSpace(nullptr));
+  highlight_config->row_gap_space =
+      InspectorOverlayAgent::ToBoxStyle(config->getRowGapSpace(nullptr));
+  highlight_config->column_gap_space =
+      InspectorOverlayAgent::ToBoxStyle(config->getColumnGapSpace(nullptr));
+  highlight_config->cross_alignment =
+      InspectorOverlayAgent::ToLineStyle(config->getCrossAlignment(nullptr));
+
   return highlight_config;
 }
 
 // static
-std::unique_ptr<LineStyle> InspectorOverlayAgent::ToLineStyle(
-    protocol::Overlay::LineStyle* config) {
+std::unique_ptr<InspectorFlexItemHighlightConfig>
+InspectorOverlayAgent::ToFlexItemHighlightConfig(
+    protocol::Overlay::FlexItemHighlightConfig* config) {
   if (!config) {
     return nullptr;
   }
-  std::unique_ptr<LineStyle> line_style = std::make_unique<LineStyle>();
+  std::unique_ptr<InspectorFlexItemHighlightConfig> highlight_config =
+      std::make_unique<InspectorFlexItemHighlightConfig>();
+
+  highlight_config->base_size_box =
+      InspectorOverlayAgent::ToBoxStyle(config->getBaseSizeBox(nullptr));
+  highlight_config->base_size_border =
+      InspectorOverlayAgent::ToLineStyle(config->getBaseSizeBorder(nullptr));
+  highlight_config->flexibility_arrow =
+      InspectorOverlayAgent::ToLineStyle(config->getFlexibilityArrow(nullptr));
+
+  return highlight_config;
+}
+
+// static
+base::Optional<LineStyle> InspectorOverlayAgent::ToLineStyle(
+    protocol::Overlay::LineStyle* config) {
+  if (!config) {
+    return base::nullopt;
+  }
+  base::Optional<LineStyle> line_style = LineStyle();
   line_style->color = InspectorDOMAgent::ParseColor(config->getColor(nullptr));
   line_style->pattern = config->getPattern("solid");
 
   return line_style;
+}
+
+// static
+base::Optional<BoxStyle> InspectorOverlayAgent::ToBoxStyle(
+    protocol::Overlay::BoxStyle* config) {
+  if (!config) {
+    return base::nullopt;
+  }
+  base::Optional<BoxStyle> box_style = BoxStyle();
+  box_style->fill_color =
+      InspectorDOMAgent::ParseColor(config->getFillColor(nullptr));
+  box_style->hatch_color =
+      InspectorDOMAgent::ParseColor(config->getHatchColor(nullptr));
+
+  return box_style;
+}
+
+ContrastAlgorithm GetContrastAlgorithm(const String& contrast_algorithm) {
+  namespace ContrastAlgorithmEnum = protocol::Overlay::ContrastAlgorithmEnum;
+  if (contrast_algorithm == ContrastAlgorithmEnum::Aaa) {
+    return ContrastAlgorithm::AAA;
+  } else if (contrast_algorithm == ContrastAlgorithmEnum::Apca) {
+    return ContrastAlgorithm::APCA;
+  } else {
+    return ContrastAlgorithm::AA;
+  }
 }
 
 // static
@@ -1552,6 +1647,10 @@ InspectorOverlayAgent::ToHighlightConfig(
     highlight_config->color_format = ColorFormat::HEX;
   }
 
+  namespace ContrastAlgorithmEnum = protocol::Overlay::ContrastAlgorithmEnum;
+  highlight_config->contrast_algorithm = GetContrastAlgorithm(
+      config->getContrastAlgorithm(ContrastAlgorithmEnum::Aa));
+
   highlight_config->grid_highlight_config =
       InspectorOverlayAgent::ToGridHighlightConfig(
           config->getGridHighlightConfig(nullptr));
@@ -1559,6 +1658,11 @@ InspectorOverlayAgent::ToHighlightConfig(
   highlight_config->flex_container_highlight_config =
       InspectorOverlayAgent::ToFlexContainerHighlightConfig(
           config->getFlexContainerHighlightConfig(nullptr));
+
+  highlight_config->flex_item_highlight_config =
+      InspectorOverlayAgent::ToFlexItemHighlightConfig(
+          config->getFlexItemHighlightConfig(nullptr));
+
   return highlight_config;
 }
 

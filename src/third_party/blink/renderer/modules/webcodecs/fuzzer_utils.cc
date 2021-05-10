@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_init.h"
@@ -56,9 +56,9 @@ VideoDecoderConfig* MakeVideoDecoderConfig(
   return config;
 }
 
-EncodedAudioConfig* MakeAudioDecoderConfig(
+AudioDecoderConfig* MakeAudioDecoderConfig(
     const wc_fuzzer::ConfigureAudioDecoder& proto) {
-  EncodedAudioConfig* config = EncodedAudioConfig::Create();
+  AudioDecoderConfig* config = AudioDecoderConfig::Create();
   config->setCodec(proto.codec().c_str());
   config->setSampleRate(proto.sample_rate());
   config->setNumberOfChannels(proto.number_of_channels());
@@ -75,7 +75,7 @@ VideoEncoderConfig* MakeEncoderConfig(
     const wc_fuzzer::ConfigureVideoEncoder& proto) {
   VideoEncoderConfig* config = VideoEncoderConfig::Create();
   config->setCodec(proto.codec().c_str());
-  config->setAcceleration(ToAccelerationType(proto.acceleration()));
+  config->setHardwareAcceleration(ToAccelerationType(proto.acceleration()));
   config->setFramerate(proto.framerate());
   config->setWidth(proto.width());
   config->setHeight(proto.height());
@@ -146,7 +146,8 @@ VideoEncoderEncodeOptions* MakeEncodeOptions(
   return options;
 }
 
-VideoFrame* MakeVideoFrame(const wc_fuzzer::VideoFrameBitmapInit& proto) {
+VideoFrame* MakeVideoFrame(ScriptState* script_state,
+                           const wc_fuzzer::VideoFrameBitmapInit& proto) {
   NotShared<DOMUint8ClampedArray> data_u8(DOMUint8ClampedArray::Create(
       reinterpret_cast<const unsigned char*>(proto.rgb_bitmap().data()),
       proto.rgb_bitmap().size()));
@@ -164,7 +165,10 @@ VideoFrame* MakeVideoFrame(const wc_fuzzer::VideoFrameBitmapInit& proto) {
   video_frame_init->setTimestamp(proto.timestamp());
   video_frame_init->setDuration(proto.duration());
 
-  return VideoFrame::Create(image_bitmap, video_frame_init,
+  CanvasImageSourceUnion source;
+  source.SetImageBitmap(image_bitmap);
+
+  return VideoFrame::Create(script_state, source, video_frame_init,
                             IGNORE_EXCEPTION_FOR_TESTING);
 }
 

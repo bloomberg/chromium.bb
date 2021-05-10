@@ -28,6 +28,9 @@ namespace dawn_native {
         Ref<RenderPipelineBase> copyTextureForBrowserPipeline;
         Ref<ShaderModuleBase> copyTextureForBrowserVS;
         Ref<ShaderModuleBase> copyTextureForBrowserFS;
+
+        Ref<ComputePipelineBase> timestampComputePipeline;
+        Ref<ShaderModuleBase> timestampCS;
     };
 }  // namespace dawn_native
 

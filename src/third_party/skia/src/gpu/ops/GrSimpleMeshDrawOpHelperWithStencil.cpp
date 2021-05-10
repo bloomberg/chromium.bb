@@ -47,12 +47,13 @@ bool GrSimpleMeshDrawOpHelperWithStencil::isCompatible(
 GrProgramInfo* GrSimpleMeshDrawOpHelperWithStencil::createProgramInfoWithStencil(
                                             const GrCaps* caps,
                                             SkArenaAlloc* arena,
-                                            const GrSurfaceProxyView* writeViewSwizzle,
+                                            const GrSurfaceProxyView& writeViewSwizzle,
                                             GrAppliedClip&& appliedClip,
                                             const GrXferProcessor::DstProxyView& dstProxyView,
                                             GrGeometryProcessor* gp,
                                             GrPrimitiveType primType,
-                                            GrXferBarrierFlags renderPassXferBarriers) {
+                                            GrXferBarrierFlags renderPassXferBarriers,
+                                            GrLoadOp colorLoadOp) {
     return CreateProgramInfo(caps,
                              arena,
                              writeViewSwizzle,
@@ -62,6 +63,7 @@ GrProgramInfo* GrSimpleMeshDrawOpHelperWithStencil::createProgramInfoWithStencil
                              this->detachProcessorSet(),
                              primType,
                              renderPassXferBarriers,
+                             colorLoadOp,
                              this->pipelineFlags(),
                              this->stencilSettings());
 }

@@ -286,7 +286,7 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       // current thread.
 
       // As in ProcessNextWindowsMessage().
-      const auto scoped_do_native_work = state_->delegate->BeginNativeWork();
+      auto scoped_do_native_work = state_->delegate->BeginNativeWork();
       {
         TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork GetQueueStatus");
         if (HIWORD(::GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE)
@@ -464,7 +464,7 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     // (GetQueueStatus() itself not being expected to do work; it's fine to use
     // only on ScopedDoNativeWork for both calls -- we trace them independently
     // just in case internal work stalls).
-    const auto scoped_do_native_work = state_->delegate->BeginNativeWork();
+    auto scoped_do_native_work = state_->delegate->BeginNativeWork();
 
     {
       // Individually trace ::GetQueueStatus and ::PeekMessage because sampling
@@ -529,7 +529,7 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
-  const auto scoped_do_native_work = state_->delegate->BeginNativeWork();
+  auto scoped_do_native_work = state_->delegate->BeginNativeWork();
 
   for (Observer& observer : observers_)
     observer.WillDispatchMSG(msg);
@@ -557,7 +557,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   bool have_message = false;
   {
     // ::PeekMessage may process internal events. Consider it native work.
-    const auto scoped_do_native_work = state_->delegate->BeginNativeWork();
+    auto scoped_do_native_work = state_->delegate->BeginNativeWork();
 
     TRACE_EVENT0("base",
                  "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
@@ -781,9 +781,22 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
     // Save this item for later
     completed_io_.push_back(item);
   } else {
-    TRACE_EVENT2("base,toplevel", "IOHandler::OnIOCompleted", "dest_file",
-                 item.handler->io_handler_location().file_name(), "dest_func",
-                 item.handler->io_handler_location().function_name());
+    TRACE_EVENT(
+        "base,toplevel", "IOHandler::OnIOCompleted",
+        [&](perfetto::EventContext ctx) {
+          ctx.event()->set_chrome_message_pump()->set_io_handler_location_iid(
+              base::trace_event::InternedSourceLocation::Get(
+                  &ctx, base::trace_event::TraceSourceLocation(
+                            item.handler->io_handler_location())));
+        });
+
+    // |state_| can be null when WaitForIOCompletion() is invoked outside of
+    // Run() in rare unit tests that statically invoke
+    // CurrentIOThread::WaitForIOCompletion(). In all other circumstances,
+    // report the upcoming IO item handling as native work.
+    Delegate::ScopedDoNativeWork scoped_do_native_work;
+    if (state_)
+      scoped_do_native_work = state_->delegate->BeginNativeWork();
     item.handler->OnIOCompleted(item.context, item.bytes_transfered,
                                 item.error);
   }

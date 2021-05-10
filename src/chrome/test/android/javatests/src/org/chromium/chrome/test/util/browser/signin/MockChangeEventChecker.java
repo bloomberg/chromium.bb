@@ -6,7 +6,7 @@ package org.chromium.chrome.test.util.browser.signin;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.services.SigninHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public final class MockChangeEventChecker
         implements SigninHelper.AccountChangeEventChecker {
-    private Map<String, List<String>> mEvents = new HashMap<>();
+    private final Map<String, List<String>> mEvents = new HashMap<>();
 
     @Override
     public List<String> getAccountChangeEvents(

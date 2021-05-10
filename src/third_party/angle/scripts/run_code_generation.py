@@ -40,15 +40,25 @@ def rebase_script_path(script_path, relative_path):
 
 # Check if we need a module from vpython
 def get_executable_name(first_line):
-    if 'vpython' in first_line:
-        return 'vpython.bat' if platform.system() == 'Windows' else 'vpython'
-    return 'python'
+    binary = os.path.basename(first_line.strip().replace(' ', '/'))
+    if platform.system() == 'Windows':
+        if binary == 'python2':
+            return 'python.bat'
+        else:
+            return binary + '.bat'
+    else:
+        return binary
 
 
 def grab_from_script(script, param):
     res = ''
-    f = open(os.path.basename(script), "r")
-    res = subprocess.check_output([get_executable_name(f.readline()), script, param]).strip()
+    f = open(os.path.basename(script), 'r')
+    exe = get_executable_name(f.readline())
+    try:
+        res = subprocess.check_output([exe, script, param]).strip()
+    except Exception:
+        print('Error grabbing script output: %s, executable %s' % (script, exe))
+        raise
     f.close()
     if res == '':
         return []
@@ -115,16 +125,18 @@ generators = {
         'scripts/gen_proc_table.py',
     'restricted traces':
         'src/tests/restricted_traces/gen_restricted_traces.py',
+    'SPIR-V helpers':
+        'src/common/spirv/gen_spirv_builder_and_parser.py',
     'Static builtins':
         'src/compiler/translator/gen_builtin_symbols.py',
     'uniform type':
         'src/common/gen_uniform_type_table.py',
     'Vulkan format':
         'src/libANGLE/renderer/vulkan/gen_vk_format_table.py',
-    'Vulkan mandatory format support table':
-        'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
     'Vulkan internal shader programs':
         'src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py',
+    'Vulkan mandatory format support table':
+        'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
 }
 
 
@@ -182,7 +194,10 @@ def load_hashes():
     for file in os.listdir(hash_dir):
         hash_fname = os.path.join(hash_dir, file)
         with open(hash_fname) as hash_file:
-            hashes[file] = json.load(open(hash_fname))
+            try:
+                hashes[file] = json.load(hash_file)
+            except ValueError:
+                raise Exception("Could not decode JSON from %s" % file)
     return hashes
 
 
@@ -208,10 +223,10 @@ def main():
             any_dirty = True
 
             if not verify_only:
+                print('Running ' + name + ' code generator')
+
                 # Set the CWD to the script directory.
                 os.chdir(get_child_script_dirname(script))
-
-                print('Running ' + name + ' code generator')
 
                 f = open(os.path.basename(script), "r")
                 if subprocess.call([get_executable_name(f.readline()),

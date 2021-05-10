@@ -615,6 +615,14 @@ void HttpCache::Transaction::GetConnectionAttempts(
               network_transaction_info_.old_connection_attempts.end());
 }
 
+void HttpCache::Transaction::CloseConnectionOnDestruction() {
+  if (network_trans_) {
+    network_trans_->CloseConnectionOnDestruction();
+  } else if (InWriters()) {
+    entry_->writers->CloseConnectionOnDestruction();
+  }
+}
+
 void HttpCache::Transaction::SetValidatingCannotProceed() {
   DCHECK(!reading_);
   // Ensure this transaction is waiting for a callback.
@@ -1881,6 +1889,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.unused_since_prefetch = new_response_->unused_since_prefetch;
   response_.restricted_prefetch = new_response_->restricted_prefetch;
   response_.ssl_info = new_response_->ssl_info;
+  response_.dns_aliases = new_response_->dns_aliases;
   if (new_response_->vary_data.is_valid()) {
     response_.vary_data = new_response_->vary_data;
   } else if (response_.vary_data.is_valid()) {

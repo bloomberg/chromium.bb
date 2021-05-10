@@ -78,32 +78,32 @@ void AwPrintManager::UpdateParam(
   cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
-void AwPrintManager::OnScriptedPrint(
-    content::RenderFrameHost* render_frame_host,
-    const printing::mojom::ScriptedPrintParams& scripted_params,
-    IPC::Message* reply_msg) {
+void AwPrintManager::ScriptedPrint(
+    printing::mojom::ScriptedPrintParamsPtr scripted_params,
+    ScriptedPrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  printing::mojom::PrintPagesParams params;
-  params.params = printing::mojom::PrintParams::New();
-  printing::RenderParamsFromPrintSettings(*settings_, params.params.get());
-  params.params->document_cookie = scripted_params.cookie;
-  params.pages = printing::PageRange::GetPages(settings_->ranges());
-  PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
-  render_frame_host->Send(reply_msg);
+  auto params = printing::mojom::PrintPagesParams::New();
+  params->params = printing::mojom::PrintParams::New();
+  printing::RenderParamsFromPrintSettings(*settings_, params->params.get());
+  params->params->document_cookie = scripted_params->cookie;
+  params->pages = printing::PageRange::GetPages(settings_->ranges());
+  std::move(callback).Run(std::move(params));
 }
 
-void AwPrintManager::OnDidPrintDocument(
-    content::RenderFrameHost* render_frame_host,
-    const printing::mojom::DidPrintDocumentParams& params,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper) {
-  if (params.document_cookie != cookie_)
+void AwPrintManager::DidPrintDocument(
+    printing::mojom::DidPrintDocumentParamsPtr params,
+    DidPrintDocumentCallback callback) {
+  if (params->document_cookie != cookie_) {
+    std::move(callback).Run(false);
     return;
+  }
 
-  const printing::mojom::DidPrintContentParams& content = *params.content;
+  const printing::mojom::DidPrintContentParams& content = *params->content;
   if (!content.metafile_data_region.IsValid()) {
     NOTREACHED() << "invalid memory handle";
     web_contents()->Stop();
     PdfWritingDone(0);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -113,12 +113,14 @@ void AwPrintManager::OnDidPrintDocument(
     NOTREACHED() << "couldn't map";
     web_contents()->Stop();
     PdfWritingDone(0);
+    std::move(callback).Run(false);
     return;
   }
 
   if (number_pages_ > printing::kMaxPageCount) {
     web_contents()->Stop();
     PdfWritingDone(0);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -130,18 +132,18 @@ void AwPrintManager::OnDidPrintDocument(
           .get(),
       FROM_HERE, base::BindOnce(&SaveDataToFd, fd_, number_pages_, data),
       base::BindOnce(&AwPrintManager::OnDidPrintDocumentWritingDone,
-                     pdf_writing_done_callback_, std::move(helper)));
+                     pdf_writing_done_callback_, std::move(callback)));
 }
 
 // static
 void AwPrintManager::OnDidPrintDocumentWritingDone(
     const PdfWritingDoneCallback& callback,
-    std::unique_ptr<DelayedFrameDispatchHelper> helper,
+    DidPrintDocumentCallback did_print_document_cb,
     uint32_t page_count) {
   DCHECK_LE(page_count, printing::kMaxPageCount);
   if (callback)
     callback.Run(base::checked_cast<int>(page_count));
-  helper->SendCompleted();
+  std::move(did_print_document_cb).Run(true);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AwPrintManager)

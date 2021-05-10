@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -29,15 +30,24 @@ std::string GetLocale() {
 
 }  // namespace
 
-class PaymentRequestContactInfoEditorTest
+#if defined(OS_MAC)
+// Entire test suite is flaky on MacOS: https://crbug.com/1164438
+#define MAYBE_PaymentRequestContactInfoEditorTest \
+  DISABLED_PaymentRequestContactInfoEditorTest
+#else
+#define MAYBE_PaymentRequestContactInfoEditorTest \
+  PaymentRequestContactInfoEditorTest
+#endif
+
+class MAYBE_PaymentRequestContactInfoEditorTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestContactInfoEditorTest() {}
+  MAYBE_PaymentRequestContactInfoEditorTest() {}
 
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest, HappyPath) {
   NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();
@@ -58,6 +68,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -79,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
             request->state()->selected_contact_profile());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
                        EnterAcceleratorHappyPath) {
   NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
@@ -104,6 +115,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -120,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
                              GetLocale()));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest, Validation) {
   NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();
@@ -158,6 +170,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -174,7 +187,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
                              GetLocale()));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
+                       ModifyExisting) {
   NavigateTo("/payment_request_contact_details_test.html");
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
@@ -207,6 +221,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
   save_data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -223,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
                              GetLocale()));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
                        ModifyExistingSelectsIt) {
   NavigateTo("/payment_request_contact_details_test.html");
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -264,6 +279,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
   save_data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   autofill::AutofillProfile* profile =
       request->state()->selected_contact_profile();
   DCHECK(profile);
@@ -281,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   EXPECT_EQ(request->state()->contact_profiles().back(), profile);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
                        HappyPathInIncognito) {
   SetIncognito();
   NavigateTo("/payment_request_contact_details_test.html");
@@ -300,6 +316,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   // In incognito, the profile should be available in contact_profiles but it
   // shouldn't be saved to the PersonalDataManager.
   ASSERT_EQ(0UL, personal_data_manager->GetProfiles().size());
@@ -324,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
                              GetLocale()));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
                        RetryWithPayerErrors) {
   NavigateTo("/payment_request_retry_with_payer_errors.html");
 
@@ -356,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    PaymentRequestContactInfoEditorTest,
+    MAYBE_PaymentRequestContactInfoEditorTest,
     RetryWithPayerErrors_HasSameValueButDifferentErrorsShown) {
   NavigateTo("/payment_request_retry_with_payer_errors.html");
 
@@ -392,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(
             GetErrorLabelForType(autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestContactInfoEditorTest,
                        RetryWithPayerErrors_NoPaymentOptions) {
   NavigateTo("/payment_request_retry_with_no_payment_options.html");
 

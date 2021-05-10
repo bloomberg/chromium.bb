@@ -16,12 +16,15 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
 class RemoveSuggestionBubbleDialogDelegateView
     : public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(RemoveSuggestionBubbleDialogDelegateView);
   RemoveSuggestionBubbleDialogDelegateView(
       TemplateURLService* template_url_service,
       views::View* anchor_view,
@@ -37,6 +40,7 @@ class RemoveSuggestionBubbleDialogDelegateView
     SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_REMOVE));
     SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                    l10n_util::GetStringUTF16(IDS_CANCEL));
+    SetModalType(ui::MODAL_TYPE_WINDOW);
 
     auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
@@ -88,7 +92,6 @@ class RemoveSuggestionBubbleDialogDelegateView
   }
 
   // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
   base::string16 GetWindowTitle() const override {
     return l10n_util::GetStringUTF16(
         IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_TITLE);
@@ -98,6 +101,10 @@ class RemoveSuggestionBubbleDialogDelegateView
   AutocompleteMatch match_;
   base::OnceClosure remove_closure_;
 };
+
+BEGIN_METADATA(RemoveSuggestionBubbleDialogDelegateView,
+               views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace
 

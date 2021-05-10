@@ -17,16 +17,13 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/common/host_id.h"
+#include "extensions/test/test_content_script_load_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::URLPatternSet;
@@ -43,38 +40,19 @@ namespace extensions {
 
 // Test bringing up a script loader on a specific directory, putting a script
 // in there, etc.
-class ExtensionUserScriptLoaderTest : public testing::Test,
-                                      public content::NotificationObserver {
+class ExtensionUserScriptLoaderTest : public testing::Test {
  public:
-  ExtensionUserScriptLoaderTest() : shared_memory_(nullptr) {}
+  ExtensionUserScriptLoaderTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    // Register for all user script notifications.
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-                   content::NotificationService::AllSources());
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK(type == extensions::NOTIFICATION_USER_SCRIPTS_UPDATED);
-
-    shared_memory_ =
-        content::Details<base::ReadOnlySharedMemoryRegion>(details).ptr();
   }
 
   // Directory containing user scripts.
   base::ScopedTempDir temp_dir_;
 
-  // Updated to the script shared memory when we get notified.
-  base::ReadOnlySharedMemoryRegion* shared_memory_;
-
  private:
   content::BrowserTaskEnvironment task_environment_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUserScriptLoaderTest);
 };
@@ -82,13 +60,13 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
 // Test that we get notified even when there are no scripts.
 TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(&profile, HostID(),
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
                                    /*listen_for_extension_system_loaded=*/true,
                                    /*content_verifier=*/nullptr);
+  ContentScriptLoadWaiter waiter(&loader);
   loader.StartLoad();
+  waiter.Wait();
   content::RunAllTasksUntilIdle();
-
-  ASSERT_TRUE(shared_memory_ != nullptr && shared_memory_->IsValid());
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, Parse1) {
@@ -229,7 +207,7 @@ TEST_F(ExtensionUserScriptLoaderTest, SkipBOMAtTheBeginning) {
   user_scripts->push_back(std::move(user_script));
 
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(&profile, HostID(),
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
                                    /*listen_for_extension_system_loaded=*/true,
                                    /*content_verifier=*/nullptr);
   user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));
@@ -252,7 +230,7 @@ TEST_F(ExtensionUserScriptLoaderTest, LeaveBOMNotAtTheBeginning) {
   user_scripts->push_back(std::move(user_script));
 
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(&profile, HostID(),
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
                                    /*listen_for_extension_system_loaded=*/true,
                                    /*content_verifier=*/nullptr);
   user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));
@@ -266,8 +244,7 @@ TEST_F(ExtensionUserScriptLoaderTest, ComponentExtensionContentScriptIsLoaded) {
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &resources_dir));
 
   const base::FilePath extension_path = resources_dir.AppendASCII("pdf");
-  const base::FilePath resource_path(
-      FILE_PATH_LITERAL("elements/shared-vars.js"));
+  const base::FilePath resource_path(FILE_PATH_LITERAL("main.js"));
 
   auto user_script = std::make_unique<UserScript>();
   user_script->js_scripts().push_back(std::make_unique<UserScript::File>(
@@ -277,7 +254,7 @@ TEST_F(ExtensionUserScriptLoaderTest, ComponentExtensionContentScriptIsLoaded) {
   user_scripts->push_back(std::move(user_script));
 
   TestingProfile profile;
-  ExtensionUserScriptLoader loader(&profile, HostID(),
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
                                    /*listen_for_extension_system_loaded=*/true,
                                    /*content_verifier=*/nullptr);
   user_scripts = loader.LoadScriptsForTest(std::move(user_scripts));

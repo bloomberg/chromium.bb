@@ -16,6 +16,7 @@
 #include "fxjs/xfa/cfxjse_context.h"
 #include "fxjs/xfa/cfxjse_isolatetracker.h"
 #include "fxjs/xfa/cfxjse_value.h"
+#include "third_party/base/check.h"
 
 using pdfium::fxjse::kClassTag;
 using pdfium::fxjse::kFuncTag;
@@ -52,7 +53,7 @@ void V8ConstructorCallback_Wrapper(
   if (!lpClassDefinition)
     return;
 
-  ASSERT(info.Holder()->InternalFieldCount() == 2);
+  DCHECK(info.Holder()->InternalFieldCount() == 2);
   info.Holder()->SetAlignedPointerInInternalField(0, nullptr);
   info.Holder()->SetAlignedPointerInInternalField(1, nullptr);
 }
@@ -117,15 +118,17 @@ void DynPropGetterAdapter(v8::Isolate* pIsolate,
                           v8::Local<v8::Object> pObject,
                           ByteStringView szPropName,
                           CFXJSE_Value* pValue) {
-  ASSERT(lpClass);
+  DCHECK(lpClass);
 
   int32_t nPropType =
       lpClass->dynPropTypeGetter == nullptr
           ? FXJSE_ClassPropType_Property
           : lpClass->dynPropTypeGetter(pIsolate, pObject, szPropName, false);
   if (nPropType == FXJSE_ClassPropType_Property) {
-    if (lpClass->dynPropGetter)
-      lpClass->dynPropGetter(pIsolate, pObject, szPropName, pValue);
+    if (lpClass->dynPropGetter) {
+      pValue->ForceSetValue(
+          pIsolate, lpClass->dynPropGetter(pIsolate, pObject, szPropName));
+    }
   } else if (nPropType == FXJSE_ClassPropType_Method) {
     if (lpClass->dynMethodCall && pValue) {
       v8::HandleScope hscope(pIsolate);
@@ -154,14 +157,16 @@ void DynPropSetterAdapter(v8::Isolate* pIsolate,
                           v8::Local<v8::Object> pObject,
                           ByteStringView szPropName,
                           CFXJSE_Value* pValue) {
-  ASSERT(lpClass);
+  DCHECK(lpClass);
   int32_t nPropType =
       lpClass->dynPropTypeGetter == nullptr
           ? FXJSE_ClassPropType_Property
           : lpClass->dynPropTypeGetter(pIsolate, pObject, szPropName, false);
   if (nPropType != FXJSE_ClassPropType_Method) {
-    if (lpClass->dynPropSetter)
-      lpClass->dynPropSetter(pIsolate, pObject, szPropName, pValue);
+    if (lpClass->dynPropSetter) {
+      lpClass->dynPropSetter(pIsolate, pObject, szPropName,
+                             pValue->GetValue(pIsolate));
+    }
   }
 }
 
@@ -169,7 +174,7 @@ bool DynPropQueryAdapter(v8::Isolate* pIsolate,
                          const FXJSE_CLASS_DESCRIPTOR* lpClass,
                          v8::Local<v8::Object> pObject,
                          ByteStringView szPropName) {
-  ASSERT(lpClass);
+  DCHECK(lpClass);
   int32_t nPropType =
       lpClass->dynPropTypeGetter == nullptr
           ? FXJSE_ClassPropType_Property

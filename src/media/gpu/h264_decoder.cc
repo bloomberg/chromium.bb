@@ -17,6 +17,73 @@
 #include "media/video/h264_level_limits.h"
 
 namespace media {
+namespace {
+
+bool ParseBitDepth(const H264SPS& sps, uint8_t& bit_depth) {
+  // Spec 7.4.2.1.1
+  if (sps.bit_depth_luma_minus8 != sps.bit_depth_chroma_minus8) {
+    DVLOG(1) << "H264Decoder doesn't support different bit depths between luma"
+             << "and chroma, bit_depth_luma_minus8="
+             << sps.bit_depth_luma_minus8
+             << ", bit_depth_chroma_minus8=" << sps.bit_depth_chroma_minus8;
+    return false;
+  }
+  DCHECK_GE(sps.bit_depth_luma_minus8, 0);
+  DCHECK_LE(sps.bit_depth_luma_minus8, 6);
+  switch (sps.bit_depth_luma_minus8) {
+    case 0:
+      bit_depth = 8u;
+      break;
+    case 2:
+      bit_depth = 10u;
+      break;
+    case 4:
+      bit_depth = 12u;
+      break;
+    case 6:
+      bit_depth = 14u;
+      break;
+    default:
+      DVLOG(1) << "Invalid bit depth: "
+               << base::checked_cast<int>(sps.bit_depth_luma_minus8 + 8);
+      return false;
+  }
+  return true;
+}
+
+bool IsValidBitDepth(uint8_t bit_depth, VideoCodecProfile profile) {
+  // Spec A.2.
+  switch (profile) {
+    case H264PROFILE_BASELINE:
+    case H264PROFILE_MAIN:
+    case H264PROFILE_EXTENDED:
+    case H264PROFILE_HIGH:
+      return bit_depth == 8u;
+    case H264PROFILE_HIGH10PROFILE:
+    case H264PROFILE_HIGH422PROFILE:
+      return bit_depth == 8u || bit_depth == 10u;
+    case H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return bit_depth == 8u || bit_depth == 10u || bit_depth == 12u ||
+             bit_depth == 14u;
+    case H264PROFILE_SCALABLEBASELINE:
+    case H264PROFILE_SCALABLEHIGH:
+      // Spec G.10.1.
+      return bit_depth == 8u;
+    case H264PROFILE_STEREOHIGH:
+    case H264PROFILE_MULTIVIEWHIGH:
+      // Spec H.10.1.1 and H.10.1.2.
+      return bit_depth == 8u;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool IsYUV420Sequence(const H264SPS& sps) {
+  // Spec 6.2
+  return sps.chroma_format_idc == 1;
+}
+}  // namespace
 
 H264Decoder::H264Accelerator::H264Accelerator() = default;
 
@@ -25,6 +92,16 @@ H264Decoder::H264Accelerator::~H264Accelerator() = default;
 H264Decoder::H264Accelerator::Status H264Decoder::H264Accelerator::SetStream(
     base::span<const uint8_t> stream,
     const DecryptConfig* decrypt_config) {
+  return H264Decoder::H264Accelerator::Status::kNotSupported;
+}
+
+H264Decoder::H264Accelerator::Status
+H264Decoder::H264Accelerator::ParseEncryptedSliceHeader(
+    const std::vector<base::span<const uint8_t>>& data,
+    const std::vector<SubsampleEntry>& subsamples,
+    const std::vector<uint8_t>& sps_nalu_data,
+    const std::vector<uint8_t>& pps_nalu_data,
+    H264SliceHeader* slice_header_out) {
   return H264Decoder::H264Accelerator::Status::kNotSupported;
 }
 
@@ -41,8 +118,6 @@ H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
       profile_(profile),
       accelerator_(std::move(accelerator)) {
   DCHECK(accelerator_);
-  decoder_buffer_is_complete_frame_ =
-      base::FeatureList::IsEnabled(media::kH264DecoderBufferIsCompleteFrame);
   Reset();
 }
 
@@ -74,14 +149,22 @@ void H264Decoder::Reset() {
   accelerator_->Reset();
   last_output_poc_ = std::numeric_limits<int>::min();
 
+  encrypted_sei_nalus_.clear();
+  sei_subsamples_.clear();
+
+  recovery_frame_num_.reset();
+  recovery_frame_cnt_.reset();
+
   // If we are in kDecoding, we can resume without processing an SPS.
+  // The state becomes kDecoding again, (1) at the first IDR slice or (2) at
+  // the first slice after the recovery point SEI.
   if (state_ == kDecoding)
     state_ = kAfterReset;
 }
 
-void H264Decoder::PrepareRefPicLists(const H264SliceHeader* slice_hdr) {
-  ConstructReferencePicListsP(slice_hdr);
-  ConstructReferencePicListsB(slice_hdr);
+void H264Decoder::PrepareRefPicLists() {
+  ConstructReferencePicListsP();
+  ConstructReferencePicListsB();
 }
 
 bool H264Decoder::ModifyReferencePicLists(const H264SliceHeader* slice_hdr,
@@ -360,8 +443,7 @@ struct LongTermPicNumAscCompare {
   }
 };
 
-void H264Decoder::ConstructReferencePicListsP(
-    const H264SliceHeader* slice_hdr) {
+void H264Decoder::ConstructReferencePicListsP() {
   // RefPicList0 (8.2.4.2.1) [[1] [2]], where:
   // [1] shortterm ref pics sorted by descending pic_num,
   // [2] longterm ref pics by ascending long_term_pic_num.
@@ -395,8 +477,7 @@ struct POCDescCompare {
   }
 };
 
-void H264Decoder::ConstructReferencePicListsB(
-    const H264SliceHeader* slice_hdr) {
+void H264Decoder::ConstructReferencePicListsB() {
   // RefPicList0 (8.2.4.2.3) [[1] [2] [3]], where:
   // [1] shortterm ref pics with POC < curr_pic's POC sorted by descending POC,
   // [2] shortterm ref pics with POC > curr_pic's POC by ascending POC,
@@ -726,7 +807,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::StartNewFrame(
     return H264Accelerator::Status::kFail;
 
   UpdatePicNums(frame_num);
-  PrepareRefPicLists(slice_hdr);
+  PrepareRefPicLists();
 
   return accelerator_->SubmitFrameMetadata(sps, pps, dpb_, ref_pic_list_p0_,
                                            ref_pic_list_b0_, ref_pic_list_b1_,
@@ -922,6 +1003,14 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
 
   DVLOG(4) << "Finishing picture frame_num: " << pic->frame_num
            << ", entries in DPB: " << dpb_.size();
+  if (recovery_frame_cnt_) {
+    // This is the first picture after the recovery point SEI message. Computes
+    // the frame_num of the frame that should be output from (Spec D.2.8).
+    recovery_frame_num_ =
+        (*recovery_frame_cnt_ + pic->frame_num) % max_frame_num_;
+    DVLOG(3) << "recovery_frame_num_" << *recovery_frame_num_;
+    recovery_frame_cnt_.reset();
+  }
 
   // The ownership of pic will either be transferred to DPB - if the picture is
   // still needed (for output and/or reference) - or we will release it
@@ -955,8 +1044,15 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
     DVLOG_IF(1, num_remaining <= max_num_reorder_frames_)
         << "Invalid stream: max_num_reorder_frames not preserved";
 
-    if (!OutputPic(*output_candidate))
-      return false;
+    if (!recovery_frame_num_ ||
+        // If we are decoding ahead to reach a SEI recovery point, skip
+        // outputting all pictures before it, to avoid outputting corrupted
+        // frames.
+        (*output_candidate)->frame_num == *recovery_frame_num_) {
+      recovery_frame_num_ = base::nullopt;
+      if (!OutputPic(*output_candidate))
+        return false;
+    }
 
     if (!(*output_candidate)->ref) {
       // Current picture hasn't been inserted into DPB yet, so don't remove it
@@ -1086,18 +1182,33 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     DVLOG(1) << "Invalid DPB size: " << max_dpb_size;
     return false;
   }
+  if (!IsYUV420Sequence(*sps)) {
+    DVLOG(1) << "Only YUV 4:2:0 is supported";
+    return false;
+  }
 
   VideoCodecProfile new_profile =
       H264Parser::ProfileIDCToVideoCodecProfile(sps->profile_idc);
+  uint8_t new_bit_depth = 0;
+  if (!ParseBitDepth(*sps, new_bit_depth))
+    return false;
+  if (!IsValidBitDepth(new_bit_depth, new_profile)) {
+    DVLOG(1) << "Invalid bit depth=" << base::strict_cast<int>(new_bit_depth)
+             << ", profile=" << GetProfileName(new_profile);
+    return false;
+  }
+
   if (pic_size_ != new_pic_size || dpb_.max_num_pics() != max_dpb_size ||
-      profile_ != new_profile) {
+      profile_ != new_profile || bit_depth_ != new_bit_depth) {
     if (!Flush())
       return false;
     DVLOG(1) << "Codec profile: " << GetProfileName(new_profile)
              << ", level: " << level << ", DPB size: " << max_dpb_size
-             << ", Picture size: " << new_pic_size.ToString();
+             << ", Picture size: " << new_pic_size.ToString()
+             << ", bit depth: " << base::strict_cast<int>(new_bit_depth);
     *need_new_buffers = true;
     profile_ = new_profile;
+    bit_depth_ = new_bit_depth;
     pic_size_ = new_pic_size;
     dpb_.set_max_num_pics(max_dpb_size);
   }
@@ -1168,6 +1279,22 @@ bool H264Decoder::HandleFrameNumGap(int frame_num) {
   return true;
 }
 
+H264Decoder::H264Accelerator::Status H264Decoder::ProcessEncryptedSliceHeader(
+    const std::vector<SubsampleEntry>& subsamples) {
+  DCHECK(curr_nalu_);
+  DCHECK(curr_slice_hdr_);
+  std::vector<base::span<const uint8_t>> spans(encrypted_sei_nalus_.size() + 1);
+  spans.assign(encrypted_sei_nalus_.begin(), encrypted_sei_nalus_.end());
+  spans.emplace_back(curr_nalu_->data, curr_nalu_->size);
+  std::vector<SubsampleEntry> all_subsamples(sei_subsamples_.size() + 1);
+  all_subsamples.assign(sei_subsamples_.begin(), sei_subsamples_.end());
+  all_subsamples.insert(all_subsamples.end(), subsamples.begin(),
+                        subsamples.end());
+  return accelerator_->ParseEncryptedSliceHeader(spans, all_subsamples,
+                                                 last_sps_nalu_, last_pps_nalu_,
+                                                 curr_slice_hdr_.get());
+}
+
 H264Decoder::H264Accelerator::Status H264Decoder::PreprocessCurrentSlice() {
   const H264SliceHeader* slice_hdr = curr_slice_hdr_.get();
   DCHECK(slice_hdr);
@@ -1215,8 +1342,13 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessCurrentSlice() {
     max_pic_num_ = 2 * max_frame_num_;
 
   H264Picture::Vector ref_pic_list0, ref_pic_list1;
-  if (!ModifyReferencePicLists(slice_hdr, &ref_pic_list0, &ref_pic_list1))
+  // If we are using full sample encryption then we do not have the information
+  // we need to update the ref pic lists here, but that's OK because the
+  // accelerator doesn't actually need to submit them in this case.
+  if (!slice_hdr->full_sample_encryption &&
+      !ModifyReferencePicLists(slice_hdr, &ref_pic_list0, &ref_pic_list1)) {
     return H264Accelerator::Status::kFail;
+  }
 
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   if (!pps)
@@ -1263,6 +1395,8 @@ void H264Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
   current_stream_ = ptr;
   current_stream_size_ = size;
   current_stream_has_been_changed_ = true;
+  encrypted_sei_nalus_.clear();
+  sei_subsamples_.clear();
   if (decrypt_config) {
     parser_.SetEncryptedStream(ptr, size, decrypt_config->subsamples());
     current_decrypt_config_ = decrypt_config->Clone();
@@ -1309,9 +1443,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
       curr_nalu_.reset(new H264NALU());
       par_res = parser_.AdvanceToNextNALU(curr_nalu_.get());
       if (par_res == H264Parser::kEOStream) {
-        if (decoder_buffer_is_complete_frame_)
-          CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
-
+        CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
         return kRanOutOfStreamData;
       } else if (par_res != H264Parser::kOk) {
         SET_ERROR_AND_RETURN();
@@ -1322,8 +1454,9 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
 
     switch (curr_nalu_->nal_unit_type) {
       case H264NALU::kNonIDRSlice:
-        // We can't resume from a non-IDR slice.
-        if (state_ == kError || state_ == kAfterReset)
+        // We can't resume from a non-IDR slice unless recovery point SEI
+        // process is going.
+        if (state_ == kError || (state_ == kAfterReset && !recovery_frame_cnt_))
           break;
 
         FALLTHROUGH;
@@ -1344,11 +1477,32 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         // additional key has been provided, for example), then the remaining
         // steps will be executed.
         if (!curr_slice_hdr_) {
-          curr_slice_hdr_.reset(new H264SliceHeader());
-          par_res =
-              parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get());
-          if (par_res != H264Parser::kOk)
-            SET_ERROR_AND_RETURN();
+          curr_slice_hdr_ = std::make_unique<H264SliceHeader>();
+          state_ = kParseSliceHeader;
+        }
+
+        if (state_ == kParseSliceHeader) {
+          // Check if the slice header is encrypted.
+          bool parsed_header = false;
+          if (current_decrypt_config_) {
+            const std::vector<SubsampleEntry>& subsamples =
+                parser_.GetCurrentSubsamples();
+            // There is only a single clear byte for the NALU information for
+            // full sample encryption, and the rest is encrypted.
+            if (!subsamples.empty() && subsamples[0].clear_bytes == 1) {
+              CHECK_ACCELERATOR_RESULT(ProcessEncryptedSliceHeader(subsamples));
+              parsed_header = true;
+              curr_slice_hdr_->pic_parameter_set_id = last_parsed_pps_id_;
+              encrypted_sei_nalus_.clear();
+              sei_subsamples_.clear();
+            }
+          }
+          if (!parsed_header) {
+            par_res =
+                parser_.ParseSliceHeader(*curr_nalu_, curr_slice_hdr_.get());
+            if (par_res != H264Parser::kOk)
+              SET_ERROR_AND_RETURN();
+          }
           state_ = kTryPreprocessCurrentSlice;
         }
 
@@ -1398,6 +1552,8 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         if (!ProcessSPS(sps_id, &need_new_buffers))
           SET_ERROR_AND_RETURN();
 
+        last_sps_nalu_.assign(curr_nalu_->data,
+                              curr_nalu_->data + curr_nalu_->size);
         if (state_ == kNeedStreamMetadata)
           state_ = kAfterReset;
 
@@ -1414,13 +1570,13 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
       }
 
       case H264NALU::kPPS: {
-        int pps_id;
-
         CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
-        par_res = parser_.ParsePPS(&pps_id);
+        par_res = parser_.ParsePPS(&last_parsed_pps_id_);
         if (par_res != H264Parser::kOk)
           SET_ERROR_AND_RETURN();
 
+        last_pps_nalu_.assign(curr_nalu_->data,
+                              curr_nalu_->data + curr_nalu_->size);
         break;
       }
 
@@ -1433,6 +1589,47 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
         break;
 
+      case H264NALU::kSEIMessage:
+        if (current_decrypt_config_) {
+          // If there are encrypted SEI NALUs as part of CENCv1, then we also
+          // need to save those so we can send them into the accelerator so it
+          // can decrypt the sample properly (otherwise it would be starting
+          // partway into a block).
+          const std::vector<SubsampleEntry>& subsamples =
+              parser_.GetCurrentSubsamples();
+          if (!subsamples.empty()) {
+            encrypted_sei_nalus_.emplace_back(curr_nalu_->data,
+                                              curr_nalu_->size);
+            DCHECK_EQ(1u, subsamples.size());
+            sei_subsamples_.push_back(subsamples[0]);
+          }
+        }
+        if (state_ == kAfterReset && !recovery_frame_cnt_ &&
+            !recovery_frame_num_) {
+          // If we are after reset, we can also resume from a SEI recovery point
+          // (spec D.2.8) if one is present. However, if we are already in the
+          // process of handling one, skip any subsequent ones until we are done
+          // processing.
+          H264SEIMessage sei{};
+          if (parser_.ParseSEI(&sei) != H264Parser::kOk)
+            SET_ERROR_AND_RETURN();
+
+          if (sei.type == H264SEIMessage::kSEIRecoveryPoint) {
+            recovery_frame_cnt_ = sei.recovery_point.recovery_frame_cnt;
+            if (0 > *recovery_frame_cnt_ ||
+                *recovery_frame_cnt_ >= max_frame_num_) {
+              DVLOG(1) << "Invalid recovery_frame_cnt=" << *recovery_frame_cnt_
+                       << " (it must be [0, max_frame_num_-1="
+                       << max_frame_num_ - 1 << "])";
+              SET_ERROR_AND_RETURN();
+            }
+            DVLOG(3) << "Recovery point SEI is found, recovery_frame_cnt_="
+                     << *recovery_frame_cnt_;
+            break;
+          }
+        }
+
+        FALLTHROUGH;
       default:
         DVLOG(4) << "Skipping NALU type: " << curr_nalu_->nal_unit_type;
         break;
@@ -1453,6 +1650,10 @@ gfx::Rect H264Decoder::GetVisibleRect() const {
 
 VideoCodecProfile H264Decoder::GetProfile() const {
   return profile_;
+}
+
+uint8_t H264Decoder::GetBitDepth() const {
+  return bit_depth_;
 }
 
 size_t H264Decoder::GetRequiredNumOfPictures() const {

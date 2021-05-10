@@ -22,13 +22,9 @@ class GrGLSLFPFragmentBuilder;
 
 class GrGLSLFragmentProcessor {
 public:
-    GrGLSLFragmentProcessor() {}
+    GrGLSLFragmentProcessor() = default;
 
-    virtual ~GrGLSLFragmentProcessor() {
-        for (int i = 0; i < fChildProcessors.count(); ++i) {
-            delete fChildProcessors[i];
-        }
-    }
+    virtual ~GrGLSLFragmentProcessor() = default;
 
     using UniformHandle      = GrGLSLUniformHandler::UniformHandle;
     using SamplerHandle      = GrGLSLUniformHandler::SamplerHandle;
@@ -101,7 +97,6 @@ public:
                  GrGLSLUniformHandler* uniformHandler,
                  const GrShaderCaps* caps,
                  const GrFragmentProcessor& fp,
-                 const char* outputColor,
                  const char* inputColor,
                  const char* sampleCoord,
                  const TransformedCoordVars& transformedCoordVars,
@@ -110,7 +105,6 @@ public:
                 , fUniformHandler(uniformHandler)
                 , fShaderCaps(caps)
                 , fFp(fp)
-                , fOutputColor(outputColor)
                 , fInputColor(inputColor ? inputColor : "half4(1.0)")
                 , fSampleCoord(sampleCoord)
                 , fTransformedCoords(transformedCoordVars)
@@ -119,7 +113,6 @@ public:
         GrGLSLUniformHandler* fUniformHandler;
         const GrShaderCaps* fShaderCaps;
         const GrFragmentProcessor& fFp;
-        const char* fOutputColor;
         const char* fInputColor;
         const char* fSampleCoord;
         const TransformedCoordVars& fTransformedCoords;
@@ -134,7 +127,9 @@ public:
 
     int numChildProcessors() const { return fChildProcessors.count(); }
 
-    GrGLSLFragmentProcessor* childProcessor(int index) const { return fChildProcessors[index]; }
+    GrGLSLFragmentProcessor* childProcessor(int index) const {
+        return fChildProcessors[index].get();
+    }
 
     void emitChildFunction(int childIndex, EmitArgs& parentArgs);
 
@@ -250,7 +245,7 @@ private:
     // one per child; either not present or empty string if not yet emitted
     SkTArray<SkString> fFunctionNames;
 
-    SkTArray<GrGLSLFragmentProcessor*, true> fChildProcessors;
+    SkTArray<std::unique_ptr<GrGLSLFragmentProcessor>, true> fChildProcessors;
 
     friend class GrFragmentProcessor;
 };

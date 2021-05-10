@@ -14,9 +14,9 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,8 +33,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/dbus_appmenu_registrar.h"
 #include "chrome/grit/generated_resources.h"
@@ -265,8 +265,8 @@ void DbusAppmenu::Initialize(DbusMenu::InitializedCallback callback) {
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(
       bookmarks::prefs::kShowBookmarkBar,
-      base::Bind(&DbusAppmenu::OnBookmarkBarVisibilityChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&DbusAppmenu::OnBookmarkBarVisibilityChanged,
+                          base::Unretained(this)));
 
   top_sites_ = TopSitesFactory::GetForProfile(profile_);
   if (top_sites_) {
@@ -274,7 +274,7 @@ void DbusAppmenu::Initialize(DbusMenu::InitializedCallback callback) {
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites_.get());
+    scoped_observation_.Observe(top_sites_.get());
   }
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -561,8 +561,7 @@ void DbusAppmenu::ExecuteCommand(int command_id, int event_flags) {
   } else if (command_id == kTagProfileEdit) {
     avatar_menu_->EditProfile(active_profile_index_);
   } else if (command_id == kTagProfileCreate) {
-    UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
-                      profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+    ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
   } else if (base::Contains(history_items_, command_id)) {
     HistoryItem* item = history_items_[command_id].get();
     // If this item can be restored using TabRestoreService, do so.

@@ -22,6 +22,9 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_cursor.h"
@@ -32,6 +35,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -104,8 +108,7 @@ class SimpleTestDragDropClient : public aura::client::DragDropClient,
                                  public ui::XDragDropClient::Delegate,
                                  public ui::X11MoveLoopDelegate {
  public:
-  SimpleTestDragDropClient(aura::Window*,
-                           DesktopNativeCursorManager* cursor_manager);
+  explicit SimpleTestDragDropClient(aura::Window*);
   ~SimpleTestDragDropClient() override;
 
   // Sets |window| as the topmost window for all mouse positions.
@@ -171,8 +174,7 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   static constexpr int kMouseMoveX = 100;
   static constexpr int kMouseMoveY = 200;
 
-  TestDragDropClient(aura::Window* window,
-                     DesktopNativeCursorManager* cursor_manager);
+  explicit TestDragDropClient(aura::Window* window);
   ~TestDragDropClient() override;
 
   // Returns the x11::Window of the window which initiated the drag.
@@ -281,9 +283,7 @@ void TestMoveLoop::EndMoveLoop() {
 ///////////////////////////////////////////////////////////////////////////////
 // SimpleTestDragDropClient
 
-SimpleTestDragDropClient::SimpleTestDragDropClient(
-    aura::Window* window,
-    DesktopNativeCursorManager* cursor_manager)
+SimpleTestDragDropClient::SimpleTestDragDropClient(aura::Window* window)
     : ui::XDragDropClient(
           this,
           static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
@@ -319,15 +319,13 @@ int SimpleTestDragDropClient::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  auto cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
+  ui::CursorLoader cursor_loader;
+  ui::Cursor grabbing = ui::mojom::CursorType::kGrabbing;
+  cursor_loader.SetPlatformCursor(&grabbing);
   auto* last_cursor = static_cast<ui::X11Cursor*>(
       source_window->GetHost()->last_cursor().platform());
-  loop_->RunMoveLoop(
-      !source_window->HasCapture(), last_cursor,
-      static_cast<ui::X11Cursor*>(
-          cursor_manager_
-              ->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
-              .platform()));
+  loop_->RunMoveLoop(!source_window->HasCapture(), last_cursor,
+                     static_cast<ui::X11Cursor*>(grabbing.platform()));
 
   auto resulting_operation = negotiated_operation();
   CleanupDrag();
@@ -386,10 +384,8 @@ void SimpleTestDragDropClient::OnMoveLoopEnded() {
 ///////////////////////////////////////////////////////////////////////////////
 // TestDragDropClient
 
-TestDragDropClient::TestDragDropClient(
-    aura::Window* window,
-    DesktopNativeCursorManager* cursor_manager)
-    : SimpleTestDragDropClient(window, cursor_manager),
+TestDragDropClient::TestDragDropClient(aura::Window* window)
+    : SimpleTestDragDropClient(window),
       source_window_(
           static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
 }
@@ -397,7 +393,7 @@ TestDragDropClient::TestDragDropClient(
 TestDragDropClient::~TestDragDropClient() = default;
 
 x11::Atom TestDragDropClient::GetAtom(const char* name) {
-  return gfx::GetAtom(name);
+  return x11::GetAtom(name);
 }
 
 bool TestDragDropClient::MessageHasType(const x11::ClientMessageEvent& event,
@@ -497,16 +493,12 @@ class X11DragDropClientTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
-
-    client_ = std::make_unique<TestDragDropClient>(widget_->GetNativeWindow(),
-                                                   cursor_manager_.get());
+    client_ = std::make_unique<TestDragDropClient>(widget_->GetNativeWindow());
     // client_->Init();
   }
 
   void TearDown() override {
     client_.reset();
-    cursor_manager_.reset();
     widget_.reset();
     ViewsTestBase::TearDown();
   }
@@ -515,7 +507,6 @@ class X11DragDropClientTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<TestDragDropClient> client_;
-  std::unique_ptr<DesktopNativeCursorManager> cursor_manager_;
 
   // The widget used to initiate drags.
   std::unique_ptr<Widget> widget_;
@@ -541,7 +532,8 @@ void BasicStep2(TestDragDropClient* client, x11::Window toplevel) {
             static_cast<x11::Window>(events[0].data.data32[0]));
   EXPECT_EQ(1u, events[0].data.data32[1] & 1);
   std::vector<x11::Atom> targets;
-  ui::GetAtomArrayProperty(client->source_xwindow(), "XdndTypeList", &targets);
+  GetArrayProperty(client->source_xwindow(), x11::GetAtom("XdndTypeList"),
+                   &targets);
   EXPECT_FALSE(targets.empty());
 
   EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));

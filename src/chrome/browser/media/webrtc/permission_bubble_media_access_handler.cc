@@ -26,8 +26,6 @@
 #include "components/webrtc/media_stream_devices_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_ANDROID)
@@ -133,18 +131,11 @@ struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   RepeatingMediaResponseCallback callback;
 };
 
-PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
-  // PermissionBubbleMediaAccessHandler should be created on UI thread.
-  // Otherwise, it will not receive
-  // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
-  // possible use after free.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  notifications_registrar_.Add(this,
-                               content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                               content::NotificationService::AllSources());
-}
+PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler()
+    : web_contents_collection_(this) {}
 
-PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
+PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() =
+    default;
 
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
@@ -154,7 +145,8 @@ bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
   return type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE ||
          type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
          type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
-         type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+         type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB;
 #else
   return type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE ||
          type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
@@ -204,6 +196,9 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   }
 #endif  // defined(OS_ANDROID)
 
+  // Ensure we are observing the deletion of |web_contents|.
+  web_contents_collection_.StartObserving(web_contents);
+
   RequestsMap& requests_map = pending_requests_[web_contents];
   requests_map.emplace(
       next_request_id_++,
@@ -228,7 +223,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
-  const int request_id = it->second.begin()->first;
+  const int64_t request_id = it->second.begin()->first;
   const content::MediaStreamRequest& request =
       it->second.begin()->second.request;
 #if defined(OS_ANDROID)
@@ -289,7 +284,7 @@ void PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(
 
 void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
     content::WebContents* web_contents,
-    int request_id,
+    int64_t request_id,
     content::MediaStreamRequest request,
     const blink::MediaStreamDevices& devices,
     blink::mojom::MediaStreamRequestResult result,
@@ -321,7 +316,7 @@ void PermissionBubbleMediaAccessHandler::OnMediaStreamRequestResponse(
 
 void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     content::WebContents* web_contents,
-    int request_id,
+    int64_t request_id,
     const blink::MediaStreamDevices& devices,
     blink::mojom::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
@@ -426,12 +421,9 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
   std::move(callback).Run(devices, final_result, std::move(ui));
 }
 
-void PermissionBubbleMediaAccessHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void PermissionBubbleMediaAccessHandler::WebContentsDestroyed(
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
 
-  pending_requests_.erase(content::Source<content::WebContents>(source).ptr());
+  pending_requests_.erase(web_contents);
 }

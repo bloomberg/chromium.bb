@@ -2,17 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(crbug.com.1052397): Remove this and |chromeos_is_browser_only| usage once
-# |is_chromeos| is true in a LaCrOS build.
-import("//build/config/chromeos/ui_mode.gni")
-
 # This file contains common system config stuff for the Android build.
 
 # NOTE: Because Chrome OS builds may depend on targets built with the Android
 # toolchain, this GNI file may be read and processed from within Chrome OS
 # toolchains. Checking |is_android| here would therefore be too restrictive.
-if (is_android || is_chromeos ||
-    (is_linux && chromeos_is_browser_only && also_build_ash_chrome)) {
+if (is_android || is_chromeos) {
   import("//build/config/chromecast_build.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
@@ -79,8 +74,8 @@ if (is_android || is_chromeos ||
 
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_ndk"
-    default_android_ndk_version = "r20"
-    default_android_ndk_major_version = 20
+    default_android_ndk_version = "r22"
+    default_android_ndk_major_version = 22
   } else {
     assert(defined(default_android_ndk_version))
     assert(defined(default_android_ndk_major_version))
@@ -127,6 +122,21 @@ if (is_android || is_chromeos ||
     } else {
       google_play_services_package = "//third_party/android_deps"
     }
+  }
+
+  if (!defined(dagger_java_target)) {
+    dagger_java_target =
+        "//third_party/android_deps:com_google_dagger_dagger_java"
+  }
+
+  if (!defined(dagger_annotation_processor_target)) {
+    dagger_annotation_processor_target =
+        "//third_party/android_deps:com_google_dagger_dagger_compiler_java"
+  }
+
+  if (!defined(guava_android_target)) {
+    guava_android_target =
+        "//third_party/android_deps:com_google_guava_guava_android_java"
   }
 
   if (!defined(material_design_target)) {

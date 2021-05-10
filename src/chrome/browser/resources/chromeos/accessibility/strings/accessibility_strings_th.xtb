@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">ไม่มีการควบคุมก่อนหน้า</translation>
 <translation id="2045606329038304310">การควบคุมช่องในฟอร์ม</translation>
 <translation id="2063539687800151747">คำจารึก</translation>
+<translation id="2074531330963286860">มีการทำงานที่ใช้ได้ กดแป้นค้นหา+จุดเพื่อดู</translation>
 <translation id="2086961585857038472">คำถัดไป</translation>
 <translation id="2087981446621639008">รายละเอียดรายการคำอธิบาย</translation>
 <translation id="2089387485033699258">th</translation>
@@ -913,6 +914,7 @@
 <translation id="7810781339813764006">กลุ่มถัดไป</translation>
 <translation id="7813616274030162878">เมนูการเข้าถึงด้วยสวิตช์</translation>
 <translation id="7839679365527550018">คำก่อนหน้า</translation>
+<translation id="7842115774595115751">เปิดใช้ตัวควบคุมไปยังส่วนต่างๆ</translation>
 <translation id="7846634333498149051">แป้นพิมพ์</translation>
 <translation id="7851816175263618915">เครื่องหมายวรรคตอนบางอย่าง</translation>
 <translation id="7871691770940645922">แสดงผลอักษรเบรลล์เสมือน</translation>
@@ -1054,8 +1056,9 @@
 <translation id="8970172509886453271">ไม่มีส่วนก่อนหน้า</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">ไม่จำ</translation>
+<translation id="8986362086234534611">เลิกจำ</translation>
 <translation id="8989104346085848538">หากต้องการหยุดเสียงพูดของ ChromeVox ให้กดแป้น Control</translation>
+<translation id="8993737615451556423">ให้ตัวควบคุมเพื่อปรับเสียงที่อ่านให้เร็วขึ้น ช้าลง และหยุดชั่วคราว</translation>
 <translation id="9014206344398081366">บทแนะนำ ChromeVox</translation>
 <translation id="9040132695316389094">ส่วนหัวระดับ 1</translation>
 <translation id="9061884144798498064">เลือกตารางเบรลล์แบบ 8 จุด:</translation>

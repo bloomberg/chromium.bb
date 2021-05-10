@@ -7,22 +7,23 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("media") {
   sources = [
-    "EventDisplayTable.js",
-    "EventTimelineView.js",
-    "MainView.js",
-    "MediaModel.js",
-    "PlayerDetailView.js",
-    "PlayerListView.js",
-    "PlayerMessagesView.js",
-    "PlayerPropertiesView.js",
-    "TickingFlameChart.js",
-    "TickingFlameChartHelpers.js",
+    "EventDisplayTable.ts",
+    "EventTimelineView.ts",
+    "MainView.ts",
+    "MediaModel.ts",
+    "PlayerDetailView.ts",
+    "PlayerListView.ts",
+    "PlayerMessagesView.ts",
+    "PlayerPropertiesView.ts",
+    "TickingFlameChart.ts",
+    "TickingFlameChartHelpers.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../data_grid:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../perf_ui:bundle",
     "../sdk:bundle",
     "../theme_support:bundle",
@@ -37,7 +38,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "media-legacy.js"
+  entrypoint = "media-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "media-meta.ts"
 
   deps = [ ":bundle" ]
 }

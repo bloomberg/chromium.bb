@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../test_runner/test_runner.js';
+import '../data_grid/data_grid-legacy.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.DataGridTestRunner = self.DataGridTestRunner || {};
 

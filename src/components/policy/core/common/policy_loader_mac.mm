@@ -77,7 +77,8 @@ PolicyLoaderMac::~PolicyLoaderMac() {
 
 void PolicyLoaderMac::InitOnBackgroundThread() {
   if (!managed_policy_path_.empty()) {
-    watcher_.Watch(managed_policy_path_, false,
+    watcher_.Watch(managed_policy_path_,
+                   base::FilePathWatcher::Type::kNonRecursive,
                    base::BindRepeating(&PolicyLoaderMac::OnFileUpdated,
                                        base::Unretained(this)));
   }
@@ -187,7 +188,7 @@ base::FilePath PolicyLoaderMac::GetManagedPolicyPath(CFStringRef bundle_id) {
 void PolicyLoaderMac::LoadPolicyForDomain(PolicyDomain domain,
                                           const std::string& domain_name,
                                           PolicyBundle* bundle) {
-  std::string id_prefix(base::mac::BaseBundleID());
+  std::string id_prefix(base::SysCFStringRefToUTF8(application_id_));
   id_prefix.append(".").append(domain_name).append(".");
 
   const ComponentMap* components = schema_map()->GetComponents(domain);

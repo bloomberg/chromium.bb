@@ -274,8 +274,9 @@ std::unique_ptr<LinkEvent> ProgramVk::link(const gl::Context *context,
                                       &mExecutable.mVariableInfoMap);
 
     // Compile the shaders.
-    angle::Result status = mOriginalShaderInfo.initShaders(
-        contextVk, mState.getExecutable().getLinkedShaderStages(), shaderSources, &mExecutable);
+    angle::Result status =
+        mOriginalShaderInfo.initShaders(contextVk, mState.getExecutable().getLinkedShaderStages(),
+                                        shaderSources, mExecutable.mVariableInfoMap);
     if (status != angle::Result::Continue)
     {
         return std::make_unique<LinkEventDone>(status);
@@ -353,7 +354,8 @@ void ProgramVk::initDefaultUniformLayoutMapping(gl::ShaderMap<sh::BlockLayoutMap
         if (location.used() && !location.ignored)
         {
             const auto &uniform = uniforms[location.index];
-            if (uniform.isInDefaultBlock() && !uniform.isSampler() && !uniform.isImage())
+            if (uniform.isInDefaultBlock() && !uniform.isSampler() && !uniform.isImage() &&
+                !uniform.isFragmentInOut)
             {
                 std::string uniformName = uniform.name;
                 if (uniform.isArray())

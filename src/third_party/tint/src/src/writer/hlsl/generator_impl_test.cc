@@ -16,8 +16,8 @@
 
 #include "src/ast/function.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/type/void_type.h"
+#include "src/program.h"
+#include "src/type/void_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -28,12 +28,12 @@ namespace {
 using HlslGeneratorImplTest = TestHelper;
 
 TEST_F(HlslGeneratorImplTest, Generate) {
-  ast::type::VoidType void_type;
-  auto func = std::make_unique<ast::Function>("my_func", ast::VariableList{},
-                                              &void_type);
-  mod()->AddFunction(std::move(func));
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::FunctionDecorationList{});
 
-  ASSERT_TRUE(gen().Generate(out())) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
   EXPECT_EQ(result(), R"(void my_func() {
 }
 
@@ -41,22 +41,28 @@ TEST_F(HlslGeneratorImplTest, Generate) {
 }
 
 TEST_F(HlslGeneratorImplTest, InputStructName) {
-  ASSERT_EQ(gen().generate_name("func_main_in"), "func_main_in");
+  GeneratorImpl& gen = Build();
+
+  ASSERT_EQ(gen.generate_name("func_main_in"), "func_main_in");
 }
 
 TEST_F(HlslGeneratorImplTest, InputStructName_ConflictWithExisting) {
   // Register the struct name as existing.
-  auto* namer = gen().namer_for_testing();
+  GeneratorImpl& gen = Build();
+
+  auto* namer = gen.namer_for_testing();
   namer->NameFor("func_main_out");
 
-  ASSERT_EQ(gen().generate_name("func_main_out"), "func_main_out_0");
+  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out_0");
 }
 
 TEST_F(HlslGeneratorImplTest, NameConflictWith_InputStructName) {
-  ASSERT_EQ(gen().generate_name("func_main_in"), "func_main_in");
+  auto* expr = Expr("func_main_in");
 
-  ast::IdentifierExpression ident("func_main_in");
-  ASSERT_TRUE(gen().EmitIdentifier(pre(), out(), &ident));
+  GeneratorImpl& gen = Build();
+
+  ASSERT_EQ(gen.generate_name("func_main_in"), "func_main_in");
+  ASSERT_TRUE(gen.EmitIdentifier(pre, out, expr));
   EXPECT_EQ(result(), "func_main_in_0");
 }
 
@@ -68,11 +74,12 @@ inline std::ostream& operator<<(std::ostream& out, HlslBuiltinData data) {
   out << data.builtin;
   return out;
 }
-using HlslBuiltinConversionTest =
-    TestHelperBase<testing::TestWithParam<HlslBuiltinData>>;
+using HlslBuiltinConversionTest = TestParamHelper<HlslBuiltinData>;
 TEST_P(HlslBuiltinConversionTest, Emit) {
   auto params = GetParam();
-  EXPECT_EQ(gen().builtin_to_attribute(params.builtin),
+  GeneratorImpl& gen = Build();
+
+  EXPECT_EQ(gen.builtin_to_attribute(params.builtin),
             std::string(params.attribute_name));
 }
 INSTANTIATE_TEST_SUITE_P(
@@ -80,15 +87,18 @@ INSTANTIATE_TEST_SUITE_P(
     HlslBuiltinConversionTest,
     testing::Values(
         HlslBuiltinData{ast::Builtin::kPosition, "SV_Position"},
-        HlslBuiltinData{ast::Builtin::kVertexIdx, "SV_VertexID"},
-        HlslBuiltinData{ast::Builtin::kInstanceIdx, "SV_InstanceID"},
+        HlslBuiltinData{ast::Builtin::kVertexIndex, "SV_VertexID"},
+        HlslBuiltinData{ast::Builtin::kInstanceIndex, "SV_InstanceID"},
         HlslBuiltinData{ast::Builtin::kFrontFacing, "SV_IsFrontFacing"},
         HlslBuiltinData{ast::Builtin::kFragCoord, "SV_Position"},
         HlslBuiltinData{ast::Builtin::kFragDepth, "SV_Depth"},
         HlslBuiltinData{ast::Builtin::kLocalInvocationId, "SV_GroupThreadID"},
-        HlslBuiltinData{ast::Builtin::kLocalInvocationIdx, "SV_GroupIndex"},
+        HlslBuiltinData{ast::Builtin::kLocalInvocationIndex, "SV_GroupIndex"},
         HlslBuiltinData{ast::Builtin::kGlobalInvocationId,
-                        "SV_DispatchThreadID"}));
+                        "SV_DispatchThreadID"},
+        HlslBuiltinData{ast::Builtin::kSampleIndex, "SV_SampleIndex"},
+        HlslBuiltinData{ast::Builtin::kSampleMaskIn, "SV_Coverage"},
+        HlslBuiltinData{ast::Builtin::kSampleMaskOut, "SV_Coverage"}));
 
 }  // namespace
 }  // namespace hlsl

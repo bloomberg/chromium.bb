@@ -18,7 +18,8 @@
 #include "ui/base/glib/glib_signal.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xkb.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_types.h"
@@ -42,7 +43,7 @@ class GtkThreadDeleter {
 
 // Can be constructed on any thread, but must be started and destroyed on the
 // main GTK+ thread (i.e., the GLib global default main context).
-class GdkLayoutMonitorOnGtkThread : public ui::XEventDispatcher {
+class GdkLayoutMonitorOnGtkThread : public x11::EventObserver {
  public:
   GdkLayoutMonitorOnGtkThread(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -53,8 +54,8 @@ class GdkLayoutMonitorOnGtkThread : public ui::XEventDispatcher {
   void Start();
 
  private:
-  // ui::XEventDispatcher:
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
   void QueryLayout();
   CHROMEG_CALLBACK_0(GdkLayoutMonitorOnGtkThread,
@@ -120,7 +121,7 @@ GdkLayoutMonitorOnGtkThread::~GdkLayoutMonitorOnGtkThread() {
   DCHECK(g_main_context_is_owner(g_main_context_default()));
   if (handler_id_) {
     g_signal_handler_disconnect(keymap_, handler_id_);
-    ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
+    connection_->RemoveEventObserver(this);
   }
 }
 
@@ -158,7 +159,7 @@ void GdkLayoutMonitorOnGtkThread::Start() {
     });
     connection_->Flush();
   }
-  ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
+  connection_->AddEventObserver(this);
 
   keymap_ = gdk_keymap_get_for_display(display_);
   handler_id_ = g_signal_connect(keymap_, "keys-changed",
@@ -166,18 +167,16 @@ void GdkLayoutMonitorOnGtkThread::Start() {
   QueryLayout();
 }
 
-bool GdkLayoutMonitorOnGtkThread::DispatchXEvent(x11::Event* event) {
-  if (event->As<x11::MappingNotifyEvent>() ||
-      event->As<x11::Xkb::NewKeyboardNotifyEvent>()) {
+void GdkLayoutMonitorOnGtkThread::OnEvent(const x11::Event& event) {
+  if (event.As<x11::MappingNotifyEvent>() ||
+      event.As<x11::Xkb::NewKeyboardNotifyEvent>()) {
     QueryLayout();
-  } else if (auto* notify = event->As<x11::Xkb::StateNotifyEvent>()) {
+  } else if (auto* notify = event.As<x11::Xkb::StateNotifyEvent>()) {
     int new_group = notify->baseGroup + notify->latchedGroup +
                     static_cast<int16_t>(notify->lockedGroup);
     if (new_group != current_group_)
       QueryLayout();
-    return true;
   }
-  return false;
 }
 
 void GdkLayoutMonitorOnGtkThread::QueryLayout() {

@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
@@ -21,7 +22,7 @@ SettingSyncData::SettingSyncData(const syncer::SyncChange& sync_change)
 }
 
 SettingSyncData::SettingSyncData(const syncer::SyncData& sync_data)
-    : change_type_(syncer::SyncChange::ACTION_INVALID) {
+    : change_type_(base::nullopt) {
   ExtractSyncData(sync_data);
 }
 

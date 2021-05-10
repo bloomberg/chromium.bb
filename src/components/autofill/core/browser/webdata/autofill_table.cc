@@ -213,8 +213,10 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
         "conjunction_last_name, conjunction_last_name_status, "
         "second_last_name, second_last_name_status, "
         "last_name, last_name_status, "
-        "full_name, full_name_status) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+        "full_name, full_name_status, "
+        "full_name_with_honorific_prefix, "
+        "full_name_with_honorific_prefix_status) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
     s.BindString(0, profile.guid());
     s.BindString16(1, profile.GetRawInfo(NAME_HONORIFIC_PREFIX));
     s.BindInt(2, profile.GetVerificationStatusInt(NAME_HONORIFIC_PREFIX));
@@ -232,6 +234,9 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
     s.BindInt(14, profile.GetVerificationStatusInt(NAME_LAST));
     s.BindString16(15, profile.GetRawInfo(NAME_FULL));
     s.BindInt(16, profile.GetVerificationStatusInt(NAME_FULL));
+    s.BindString16(17, profile.GetRawInfo(NAME_FULL_WITH_HONORIFIC_PREFIX));
+    s.BindInt(
+        18, profile.GetVerificationStatusInt(NAME_FULL_WITH_HONORIFIC_PREFIX));
     return s.Run();
   }
   // Add the new name.
@@ -271,8 +276,10 @@ bool AddAutofillProfileAddresses(const AutofillProfile& profile,
         "state, state_status, "
         "zip_code, zip_code_status, "
         "sorting_code, sorting_code_status, "
-        "country_code, country_code_status) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+        "country_code, country_code_status, "
+        "apartment_number, apartment_number_status, "
+        "floor, floor_status) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
 
     s.BindString(0, profile.guid());
     s.BindString16(1, profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
@@ -301,6 +308,10 @@ bool AddAutofillProfileAddresses(const AutofillProfile& profile,
     s.BindInt(22, profile.GetVerificationStatusInt(ADDRESS_HOME_SORTING_CODE));
     s.BindString16(23, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
     s.BindInt(24, profile.GetVerificationStatusInt(ADDRESS_HOME_COUNTRY));
+    s.BindString16(25, profile.GetRawInfo(ADDRESS_HOME_APT_NUM));
+    s.BindInt(26, profile.GetVerificationStatusInt(ADDRESS_HOME_APT_NUM));
+    s.BindString16(27, profile.GetRawInfo(ADDRESS_HOME_FLOOR));
+    s.BindInt(28, profile.GetVerificationStatusInt(ADDRESS_HOME_FLOOR));
 
     return s.Run();
   }
@@ -319,7 +330,8 @@ bool AddAutofillProfileNamesToProfile(sql::Database* db,
       "conjunction_last_name, conjunction_last_name_status, "
       "second_last_name, second_last_name_status, "
       "last_name, last_name_status, "
-      "full_name, full_name_status "
+      "full_name, full_name_status, "
+      "full_name_with_honorific_prefix, full_name_with_honorific_prefix_status "
       "FROM autofill_profile_names "
       "WHERE guid=? "
       "LIMIT 1"));
@@ -352,6 +364,9 @@ bool AddAutofillProfileNamesToProfile(sql::Database* db,
           NAME_LAST, s.ColumnString16(13), s.ColumnInt(14));
       profile->SetRawInfoWithVerificationStatusInt(
           NAME_FULL, s.ColumnString16(15), s.ColumnInt(16));
+      profile->SetRawInfoWithVerificationStatusInt(
+          NAME_FULL_WITH_HONORIFIC_PREFIX, s.ColumnString16(17),
+          s.ColumnInt(18));
     } else {
       // If structured components are not enabled, only use the legacy
       // structure.
@@ -388,7 +403,9 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
         "state, state_status, "
         "zip_code, zip_code_status, "
         "sorting_code, sorting_code_status, "
-        "country_code, country_code_status "
+        "country_code, country_code_status, "
+        "apartment_number, apartment_number_status, "
+        "floor, floor_status "
         "FROM autofill_profile_addresses "
         "WHERE guid=? "
         "LIMIT 1"));
@@ -455,6 +472,10 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
             ADDRESS_HOME_SORTING_CODE, sorting_code, s.ColumnInt(22));
         profile->SetRawInfoWithVerificationStatusInt(ADDRESS_HOME_COUNTRY,
                                                      country, s.ColumnInt(24));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_APT_NUM, s.ColumnString16(25), s.ColumnInt(26));
+        profile->SetRawInfoWithVerificationStatusInt(
+            ADDRESS_HOME_FLOOR, s.ColumnString16(27), s.ColumnInt(28));
       } else {
         // Remove the structured information from the table for
         // eventual deletion consistency.
@@ -759,6 +780,12 @@ bool AutofillTable::MigrateToVersion(int version,
     case 90:
       *update_compatible_version = false;
       return MigrateToVersion90AddNewStructuredAddressColumns();
+    case 91:
+      *update_compatible_version = false;
+      return MigrateToVersion91AddMoreStructuredAddressColumns();
+    case 92:
+      *update_compatible_version = false;
+      return MigrateToVersion92AddNewPrefixedNameColumn();
   }
   return true;
 }
@@ -3260,6 +3287,27 @@ bool AutofillTable::MigrateToVersion88AddNewNameColumns() {
   return true;
 }
 
+bool AutofillTable::MigrateToVersion92AddNewPrefixedNameColumn() {
+  if (!db_->DoesColumnExist("autofill_profile_names",
+                            "full_name_with_honorific_prefix") &&
+      !db_->Execute(
+          base::StrCat({"ALTER TABLE autofill_profile_names ADD COLUMN ",
+                        "full_name_with_honorific_prefix", " VARCHAR"})
+              .c_str())) {
+    return false;
+  }
+  if (!db_->DoesColumnExist("autofill_profile_names",
+                            "full_name_with_honorific_prefix_status") &&
+      !db_->Execute(
+          base::StrCat({"ALTER TABLE autofill_profile_names ADD COLUMN ",
+                        "full_name_with_honorific_prefix_status",
+                        " INTEGER DEFAULT 0"})
+              .c_str())) {
+    return false;
+  }
+  return true;
+}
+
 bool AutofillTable::MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns() {
   // Sqlite does not support "alter table drop column" syntax, so it has be
   // done manually.
@@ -3317,6 +3365,35 @@ bool AutofillTable::MigrateToVersion90AddNewStructuredAddressColumns() {
   }
   return true;
 }
+
+bool AutofillTable::MigrateToVersion91AddMoreStructuredAddressColumns() {
+  if (!db_->DoesTableExist("autofill_profile_addresses"))
+    InitProfileAddressesTable();
+
+  for (const char* column : {"apartment_number", "floor"}) {
+    if (!db_->DoesColumnExist("autofill_profile_addresses", column) &&
+        !db_->Execute(
+            base::StrCat({"ALTER TABLE autofill_profile_addresses ADD COLUMN ",
+                          column, " VARCHAR"})
+                .c_str())) {
+      return false;
+    }
+  }
+
+  for (const char* column : {"apartment_number_status", "floor_status"}) {
+    // The default value of 0 corresponds to the verification status
+    // |kNoStatus|.
+    if (!db_->DoesColumnExist("autofill_profile_addresses", column) &&
+        !db_->Execute(
+            base::StrCat({"ALTER TABLE autofill_profile_addresses ADD COLUMN ",
+                          column, " INTEGER DEFAULT 0"})
+                .c_str())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool AutofillTable::
     MigrateToVersion89AddInstrumentIdColumnToMaskedCreditCard() {
   // Add the new instrument_id column to the masked_credit_cards table and set
@@ -3633,24 +3710,27 @@ bool AutofillTable::InitProfileNamesTable() {
   if (!db_->DoesTableExist("autofill_profile_names")) {
     // The default value of 0 corresponds to the verification status
     // |kNoStatus|.
-    if (!db_->Execute("CREATE TABLE autofill_profile_names ( "
-                      "guid VARCHAR, "
-                      "first_name VARCHAR, "
-                      "middle_name VARCHAR, "
-                      "last_name VARCHAR, "
-                      "full_name VARCHAR, "
-                      "honorific_prefix VARCHAR, "
-                      "first_last_name VARCHAR, "
-                      "conjunction_last_name VARCHAR, "
-                      "second_last_name VARCHAR, "
-                      "honorific_prefix_status INTEGER DEFAULT 0, "
-                      "first_name_status INTEGER DEFAULT 0, "
-                      "middle_name_status INTEGER DEFAULT 0, "
-                      "last_name_status INTEGER DEFAULT 0, "
-                      "first_last_name_status INTEGER DEFAULT 0, "
-                      "conjunction_last_name_status INTEGER DEFAULT 0, "
-                      "second_last_name_status INTEGER DEFAULT 0, "
-                      "full_name_status INTEGER DEFAULT 0)")) {
+    if (!db_->Execute(
+            "CREATE TABLE autofill_profile_names ( "
+            "guid VARCHAR, "
+            "first_name VARCHAR, "
+            "middle_name VARCHAR, "
+            "last_name VARCHAR, "
+            "full_name VARCHAR, "
+            "honorific_prefix VARCHAR, "
+            "first_last_name VARCHAR, "
+            "conjunction_last_name VARCHAR, "
+            "second_last_name VARCHAR, "
+            "honorific_prefix_status INTEGER DEFAULT 0, "
+            "first_name_status INTEGER DEFAULT 0, "
+            "middle_name_status INTEGER DEFAULT 0, "
+            "last_name_status INTEGER DEFAULT 0, "
+            "first_last_name_status INTEGER DEFAULT 0, "
+            "conjunction_last_name_status INTEGER DEFAULT 0, "
+            "second_last_name_status INTEGER DEFAULT 0, "
+            "full_name_status INTEGER DEFAULT 0, "
+            "full_name_with_honorific_prefix VARCHAR, "
+            "full_name_with_honorific_prefix_status INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -3687,7 +3767,11 @@ bool AutofillTable::InitProfileAddressesTable() {
                       "state_status INTEGER DEFAULT 0, "
                       "zip_code_status INTEGER DEFAULT 0, "
                       "sorting_code_status INTEGER DEFAULT 0, "
-                      "country_code_status INTEGER DEFAULT 0)")) {
+                      "country_code_status INTEGER DEFAULT 0, "
+                      "apartment_number VARCHAR, "
+                      "floor VARCHAR, "
+                      "apartment_number_status INTEGER DEFAULT 0, "
+                      "floor_status INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }

@@ -18,7 +18,7 @@
 #include "components/password_manager/ios/test_helpers.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -49,6 +49,10 @@ class MockPasswordManager : public PasswordManagerInterface {
               (override));
   MOCK_METHOD(void,
               OnPasswordFormSubmitted,
+              (PasswordManagerDriver*, const autofill::FormData&),
+              (override));
+  MOCK_METHOD(void,
+              OnPasswordFormCleared,
               (PasswordManagerDriver*, const autofill::FormData&),
               (override));
   MOCK_METHOD(void,
@@ -115,7 +119,7 @@ class SharedPasswordControllerTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   testing::StrictMock<MockPasswordManager> password_manager_;
   id form_helper_;
   id suggestion_helper_;
@@ -212,9 +216,6 @@ TEST_F(SharedPasswordControllerTest,
                              isMainFrame:YES
                                 webState:&web_state_
                        completionHandler:mock_completion_handler];
-  EXPECT_CALL(password_manager_,
-              UpdateStateOnUserInput(_, form_query.uniqueFormID,
-                                     form_query.uniqueFieldID, _));
 
   __block BOOL completion_was_called = NO;
   [controller_ checkIfSuggestionsAvailableForForm:form_query

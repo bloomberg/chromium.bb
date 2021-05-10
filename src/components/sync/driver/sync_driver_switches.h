@@ -25,13 +25,15 @@ extern const char kSyncIncludeSpecificsInProtocolLog[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncShortNudgeDelayForTest[];
 
-extern const base::Feature kStopSyncInPausedState;
 extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncAutofillWalletOfferData;
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kDecoupleSyncFromAndroidMasterSync;
 extern const base::Feature kFollowTrustedVaultKeyRotation;
+extern const base::Feature kAllowSilentTrustedVaultDeviceRegistration;
+extern const base::FeatureParam<base::TimeDelta>
+    kTrustedVaultServiceThrottlingDuration;
 
 extern const base::Feature kSyncRequiresPoliciesLoaded;
 extern const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout;

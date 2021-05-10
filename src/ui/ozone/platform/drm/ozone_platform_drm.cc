@@ -18,6 +18,7 @@
 #include "base/notreached.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/buildflags.h"
@@ -58,7 +59,7 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/base/ime/chromeos/input_method_chromeos.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
@@ -174,7 +175,7 @@ class OzonePlatformDrm : public OzonePlatform {
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     return std::make_unique<InputMethodChromeOS>(delegate);
 #else
     return std::make_unique<InputMethodMinimal>(delegate);
@@ -230,6 +231,12 @@ class OzonePlatformDrm : public OzonePlatform {
   }
 
   void InitializeGPU(const InitParams& args) override {
+    // Check if buffer bandwidth compression is disabled
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableBufferBWCompression)) {
+      setenv("MINIGBM_DEBUG", "nocompression", 1);
+    }
+
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
     // NOTE: Can't start the thread here since this is called before sandbox
@@ -239,8 +246,9 @@ class OzonePlatformDrm : public OzonePlatform {
     surface_factory_ =
         std::make_unique<GbmSurfaceFactory>(drm_thread_proxy_.get());
 
-    overlay_manager_ =
-        std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
+    overlay_manager_ = std::make_unique<DrmOverlayManagerGpu>(
+        drm_thread_proxy_.get(),
+        args.allow_sync_and_real_buffer_page_flip_testing);
 
     // If gpu is in a separate process, rest of the initialization happens after
     // entering the sandbox.

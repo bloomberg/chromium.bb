@@ -57,42 +57,80 @@ namespace dawn_wire { namespace client {
     }
 
     void Client::DestroyAllObjects() {
-        while (!mDevices.empty()) {
-            // Note: We don't send a DestroyObject command for the device
-            // since freeing a device object is done out of band.
-            DeviceAllocator().Free(static_cast<Device*>(mDevices.head()->value()));
+        for (auto& objectList : mObjects) {
+            ObjectType objectType = static_cast<ObjectType>(&objectList - mObjects.data());
+            if (objectType == ObjectType::Device) {
+                continue;
+            }
+            while (!objectList.empty()) {
+                ObjectBase* object = objectList.head()->value();
+
+                DestroyObjectCmd cmd;
+                cmd.objectType = objectType;
+                cmd.objectId = object->id;
+                SerializeCommand(cmd);
+                FreeObject(objectType, object);
+            }
+        }
+
+        while (!mObjects[ObjectType::Device].empty()) {
+            ObjectBase* object = mObjects[ObjectType::Device].head()->value();
+
+            DestroyObjectCmd cmd;
+            cmd.objectType = ObjectType::Device;
+            cmd.objectId = object->id;
+            SerializeCommand(cmd);
+            FreeObject(ObjectType::Device, object);
         }
     }
 
-    WGPUDevice Client::GetDevice() {
-        if (mDevice == nullptr) {
-            mDevice = DeviceAllocator().New(this)->object.get();
-        }
-        return reinterpret_cast<WGPUDeviceImpl*>(mDevice);
-    }
-
-    ReservedTexture Client::ReserveTexture(WGPUDevice cDevice) {
-        Device* device = FromAPI(cDevice);
-        auto* allocation = TextureAllocator().New(device);
+    ReservedTexture Client::ReserveTexture(WGPUDevice device) {
+        auto* allocation = TextureAllocator().New(this);
 
         ReservedTexture result;
         result.texture = ToAPI(allocation->object.get());
         result.id = allocation->object->id;
         result.generation = allocation->generation;
+        result.deviceId = FromAPI(device)->id;
+        result.deviceGeneration = DeviceAllocator().GetGeneration(FromAPI(device)->id);
         return result;
+    }
+
+    ReservedDevice Client::ReserveDevice() {
+        auto* allocation = DeviceAllocator().New(this);
+
+        ReservedDevice result;
+        result.device = ToAPI(allocation->object.get());
+        result.id = allocation->object->id;
+        result.generation = allocation->generation;
+        return result;
+    }
+
+    void Client::ReclaimTextureReservation(const ReservedTexture& reservation) {
+        TextureAllocator().Free(FromAPI(reservation.texture));
+    }
+
+    void Client::ReclaimDeviceReservation(const ReservedDevice& reservation) {
+        DeviceAllocator().Free(FromAPI(reservation.device));
     }
 
     void Client::Disconnect() {
         mDisconnected = true;
         mSerializer = ChunkedCommandSerializer(NoopCommandSerializer::GetInstance());
-        if (mDevice != nullptr) {
-            mDevice->HandleDeviceLost("GPU connection lost");
-            mDevice->CancelCallbacksForDisconnect();
-        }
-    }
 
-    void Client::TrackObject(Device* device) {
-        mDevices.Append(device);
+        auto& deviceList = mObjects[ObjectType::Device];
+        {
+            for (LinkNode<ObjectBase>* device = deviceList.head(); device != deviceList.end();
+                 device = device->next()) {
+                static_cast<Device*>(device->value())->HandleDeviceLost("GPU connection lost");
+            }
+        }
+        for (auto& objectList : mObjects) {
+            for (LinkNode<ObjectBase>* object = objectList.head(); object != objectList.end();
+                 object = object->next()) {
+                object->value()->CancelCallbacksForDisconnect();
+            }
+        }
     }
 
     bool Client::IsDisconnected() const {

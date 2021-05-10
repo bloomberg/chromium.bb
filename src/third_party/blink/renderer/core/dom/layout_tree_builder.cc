@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -51,7 +50,6 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(
     const ComputedStyle* style,
     LegacyLayout legacy)
     : LayoutTreeBuilder(element, context, style), legacy_(legacy) {
-  DCHECK(element.CanParticipateInFlatTree());
   DCHECK(style_);
   DCHECK(!style_->IsEnsuredInDisplayNone());
 }

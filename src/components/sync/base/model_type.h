@@ -5,13 +5,11 @@
 #ifndef COMPONENTS_SYNC_BASE_MODEL_TYPE_H_
 #define COMPONENTS_SYNC_BASE_MODEL_TYPE_H_
 
+#include <iosfwd>
 #include <map>
 #include <memory>
-#include <ostream>
-#include <set>
 #include <string>
 
-#include "base/logging.h"
 #include "components/sync/base/enum_set.h"
 
 namespace base {
@@ -99,10 +97,6 @@ enum ModelType {
   HISTORY_DELETE_DIRECTIVES,
   // Custom spelling dictionary entries.
   DICTIONARY,
-  // Favicon images, including both the image URL and the actual pixels.
-  DEPRECATED_FAVICON_IMAGES,
-  // Favicon tracking information, i.e. metadata such as last visit date.
-  DEPRECATED_FAVICON_TRACKING,
   // Client-specific metadata, synced before other user types.
   DEVICE_INFO,
   // These preferences are synced before other user types and are never
@@ -112,9 +106,10 @@ enum ModelType {
   SUPERVISED_USER_SETTINGS,
   // App List items, used by the ChromeOS app launcher.
   APP_LIST,
+  // TODO(crbug.com/1155257): Remove the deprecated type, because it isn't used.
   // Supervised user allowlists. Each item contains a CRX ID (like an extension
   // ID) and a name.
-  SUPERVISED_USER_ALLOWLISTS,
+  DEPRECATED_SUPERVISED_USER_ALLOWLISTS,
   // ARC package items, i.e. Android apps on ChromeOS.
   ARC_PACKAGE,
   // Printer device information. ChromeOS only.
@@ -204,8 +199,8 @@ enum class ModelTypeForHistograms {
   // kDeprecatedSyncedNotifications = 20,
   kPriorityPreferences = 21,
   kDictionary = 22,
-  kFaviconImages = 23,
-  kFaviconTracking = 24,
+  // kFaviconImages = 23,
+  // kFaviconTracking = 24,
   kProxyTabs = 25,
   kSupervisedUserSettings = 26,
   // kDeprecatedSupervisedUsers = 27,
@@ -214,7 +209,7 @@ enum class ModelTypeForHistograms {
   // kDeprecatedSupervisedUserSharedSettings = 30,
   // kDeprecatedSyncedNotificationAppInfo = 31,
   // kDeprecatedWifiCredentials = 32,
-  kSupervisedUserAllowlists = 33,
+  kDeprecatedSupervisedUserAllowlists = 33,
   kAutofillWalletData = 34,
   kAutofillWalletMetadata = 35,
   kArcPackage = 36,
@@ -257,12 +252,11 @@ constexpr ModelTypeSet ProtocolTypes() {
       AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, AUTOFILL_WALLET_OFFER,
       THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS,
       APP_SETTINGS, EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
-      DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, DEVICE_INFO,
-      PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
-      SUPERVISED_USER_ALLOWLISTS, ARC_PACKAGE, PRINTERS, READING_LIST,
-      USER_EVENTS, NIGORI, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
-      SHARING_MESSAGE);
+      DEVICE_INFO, PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
+      DEPRECATED_SUPERVISED_USER_ALLOWLISTS, ARC_PACKAGE, PRINTERS,
+      READING_LIST, USER_EVENTS, NIGORI, USER_CONSENTS, SEND_TAB_TO_SELF,
+      SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES,
+      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -275,8 +269,8 @@ constexpr ModelTypeSet UserTypes() {
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_ALLOWLISTS,
-                      SHARING_MESSAGE);
+                      SUPERVISED_USER_SETTINGS,
+                      DEPRECATED_SUPERVISED_USER_ALLOWLISTS, SHARING_MESSAGE);
 }
 
 // User types which are always encrypted.
@@ -299,7 +293,7 @@ constexpr ModelTypeSet PriorityUserTypes() {
       DEVICE_INFO, SHARING_MESSAGE,
       // For supervised users, it is important to quickly deliver changes in
       // settings and in allowed sites to the supervised user.
-      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_ALLOWLISTS,
+      SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USER_ALLOWLISTS,
       // These are by definition preferences for which it is important that the
       // client picks them up quickly (also because these can get changed
       // server-side). For example, such a pref could control whether a

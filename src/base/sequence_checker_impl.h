@@ -12,6 +12,9 @@
 #include "base/thread_annotations.h"
 
 namespace base {
+namespace debug {
+class StackTrace;
+}
 
 // Real implementation of SequenceChecker for use in debug mode or for temporary
 // use in release mode (e.g. to CHECK on a threading issue seen only in the
@@ -19,10 +22,13 @@ namespace base {
 //
 // Note: You should almost always use the SequenceChecker class to get the right
 // version for your build configuration.
-// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
-// order to support thread_annotations.h.
-class LOCKABLE BASE_EXPORT SequenceCheckerImpl {
+// Note: This is marked with "context" capability in order to support
+// thread_annotations.h.
+class THREAD_ANNOTATION_ATTRIBUTE__(capability("context"))
+    BASE_EXPORT SequenceCheckerImpl {
  public:
+  static void EnableStackLogging();
+
   SequenceCheckerImpl();
 
   // Allow move construct/assign. This must be called on |other|'s associated
@@ -39,7 +45,13 @@ class LOCKABLE BASE_EXPORT SequenceCheckerImpl {
 
   // Returns true if called in sequence with previous calls to this method and
   // the constructor.
-  bool CalledOnValidSequence() const WARN_UNUSED_RESULT;
+  // On returning false, if logging is enabled with EnableStackLogging() and
+  // `out_bound_at` is not null, this method allocates a StackTrace and returns
+  // it in the out-parameter, storing inside it the stack from where the failing
+  // SequenceChecker was bound to its sequence. Otherwise, out_bound_at is left
+  // untouched.
+  bool CalledOnValidSequence(std::unique_ptr<debug::StackTrace>* out_bound_at =
+                                 nullptr) const WARN_UNUSED_RESULT;
 
   // Unbinds the checker from the currently associated sequence. The checker
   // will be re-bound on the next call to CalledOnValidSequence().

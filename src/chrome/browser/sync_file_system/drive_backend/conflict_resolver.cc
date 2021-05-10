@@ -41,8 +41,8 @@ void ConflictResolver::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
   task_blocker->exclusive = true;
   SyncTaskManager::UpdateTaskBlocker(
       std::move(token), std::move(task_blocker),
-      base::Bind(&ConflictResolver::RunExclusive,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ConflictResolver::RunExclusive,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ConflictResolver::RunExclusive(std::unique_ptr<SyncTaskToken> token) {
@@ -286,7 +286,7 @@ void ConflictResolver::UpdateFileMetadata(
   drive_service()->GetFileResource(
       file_id, base::BindOnce(&ConflictResolver::DidGetRemoteMetadata,
                               weak_ptr_factory_.GetWeakPtr(), file_id,
-                              base::Passed(&token)));
+                              std::move(token)));
 }
 
 void ConflictResolver::DidGetRemoteMetadata(

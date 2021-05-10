@@ -10,8 +10,8 @@
 #include "ash/metrics/histogram_macros.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 
@@ -24,9 +24,13 @@ constexpr char kFileSystemSourcesType[] = "fs/sources";
 
 // The array of formats in order of decreasing priority.
 constexpr ui::ClipboardInternalFormat kPrioritizedFormats[] = {
-    ui::ClipboardInternalFormat::kBitmap,   ui::ClipboardInternalFormat::kHtml,
-    ui::ClipboardInternalFormat::kText,     ui::ClipboardInternalFormat::kRtf,
-    ui::ClipboardInternalFormat::kBookmark, ui::ClipboardInternalFormat::kWeb,
+    ui::ClipboardInternalFormat::kBitmap,
+    ui::ClipboardInternalFormat::kHtml,
+    ui::ClipboardInternalFormat::kText,
+    ui::ClipboardInternalFormat::kRtf,
+    ui::ClipboardInternalFormat::kFilenames,
+    ui::ClipboardInternalFormat::kBookmark,
+    ui::ClipboardInternalFormat::kWeb,
     ui::ClipboardInternalFormat::kCustom};
 
 }  // namespace
@@ -35,13 +39,6 @@ base::Optional<ui::ClipboardInternalFormat> CalculateMainFormat(
     const ui::ClipboardData& data) {
   for (const auto& format : kPrioritizedFormats) {
     if (ContainsFormat(data, format)) {
-      if (chromeos::features::IsClipboardHistorySimpleRenderEnabled()) {
-        if (format == ui::ClipboardInternalFormat::kHtml &&
-            (data.markup_data().find("<img") == std::string::npos) &&
-            (data.markup_data().find("<table") == std::string::npos)) {
-          continue;
-        }
-      }
       return format;
     }
   }
@@ -54,14 +51,22 @@ ClipboardHistoryDisplayFormat CalculateDisplayFormat(
     case ui::ClipboardInternalFormat::kBitmap:
       return ClipboardHistoryDisplayFormat::kBitmap;
     case ui::ClipboardInternalFormat::kHtml:
+      if ((data.markup_data().find("<img") == std::string::npos) &&
+          (data.markup_data().find("<table") == std::string::npos)) {
+        return ClipboardHistoryDisplayFormat::kText;
+      }
       return ClipboardHistoryDisplayFormat::kHtml;
     case ui::ClipboardInternalFormat::kText:
     case ui::ClipboardInternalFormat::kSvg:
     case ui::ClipboardInternalFormat::kRtf:
+    case ui::ClipboardInternalFormat::kFilenames:
     case ui::ClipboardInternalFormat::kBookmark:
     case ui::ClipboardInternalFormat::kWeb:
-    case ui::ClipboardInternalFormat::kCustom:
       return ClipboardHistoryDisplayFormat::kText;
+    case ui::ClipboardInternalFormat::kCustom:
+      return ContainsFileSystemData(data)
+                 ? ClipboardHistoryDisplayFormat::kFile
+                 : ClipboardHistoryDisplayFormat::kText;
   }
 }
 
@@ -84,6 +89,39 @@ void RecordClipboardHistoryItemPasted(const ClipboardHistoryItem& item) {
 
 bool ContainsFileSystemData(const ui::ClipboardData& data) {
   return !GetFileSystemSources(data).empty();
+}
+
+void GetSplitFileSystemData(const ui::ClipboardData& data,
+                            std::vector<base::StringPiece16>* source_list,
+                            base::string16* sources) {
+  DCHECK(sources);
+  DCHECK(sources->empty());
+  DCHECK(source_list);
+  DCHECK(source_list->empty());
+
+  *sources = GetFileSystemSources(data);
+  if (sources->empty()) {
+    // Not a file system data.
+    return;
+  }
+
+  // Split sources into a list.
+  *source_list =
+      base::SplitStringPiece(*sources, base::UTF8ToUTF16("\n"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+}
+
+size_t GetCountOfCopiedFiles(const ui::ClipboardData& data) {
+  base::string16 sources;
+  std::vector<base::StringPiece16> source_list;
+  GetSplitFileSystemData(data, &source_list, &sources);
+
+  if (sources.empty()) {
+    // Not a file system data.
+    return 0;
+  }
+
+  return source_list.size();
 }
 
 base::string16 GetFileSystemSources(const ui::ClipboardData& data) {
@@ -115,7 +153,16 @@ bool IsSupported(const ui::ClipboardData& data) {
 }
 
 bool IsEnabledInCurrentMode() {
-  switch (Shell::Get()->session_controller()->login_status()) {
+  const auto* session_controller = Shell::Get()->session_controller();
+
+  // The clipboard history menu is enabled only when a user has logged in and
+  // login UI is hidden.
+  if (session_controller->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return false;
+  }
+
+  switch (session_controller->login_status()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
     case LoginStatus::KIOSK_APP:
@@ -123,7 +170,7 @@ bool IsEnabledInCurrentMode() {
       return false;
     case LoginStatus::USER:
     case LoginStatus::GUEST:
-    case LoginStatus::SUPERVISED:
+    case LoginStatus::CHILD:
       return true;
   }
 }

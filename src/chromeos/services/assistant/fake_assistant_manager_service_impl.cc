@@ -43,8 +43,6 @@ void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
 void FakeAssistantManagerServiceImpl::EnableHotword(bool enable) {}
 
-void FakeAssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {}
-
 void FakeAssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enabled) {}
 
 void FakeAssistantManagerServiceImpl::SetAssistantContextEnabled(bool enabled) {
@@ -71,9 +69,7 @@ void FakeAssistantManagerServiceImpl::RemoveStateObserver(
 }
 
 void FakeAssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
-    MediaSessionAction action) {
-  action_ = action;
-}
+    MediaSessionAction action) {}
 
 void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {}

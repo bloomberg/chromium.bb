@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_METRICS_REPORTING_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_METRICS_REPORTING_HANDLER_H_
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#include "build/chromeos_buildflags.h"
+
+#if defined(GOOGLE_CHROME_BUILD) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #include <memory>
 
@@ -13,6 +15,11 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_member.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"  // nogncheck
+#include "mojo/public/cpp/bindings/remote.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace base {
 class DictionaryValue;
@@ -63,11 +70,16 @@ class MetricsReportingHandler : public SettingsPageUIHandler {
   // enabled or managed.
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // The metrics reporting interface in ash-chrome.
+  mojo::Remote<crosapi::mojom::MetricsReporting> metrics_reporting_remote_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   DISALLOW_COPY_AND_ASSIGN(MetricsReportingHandler);
 };
 
 }  // namespace settings
 
-#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#endif  // defined(GOOGLE_CHROME_BUILD) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_METRICS_REPORTING_HANDLER_H_

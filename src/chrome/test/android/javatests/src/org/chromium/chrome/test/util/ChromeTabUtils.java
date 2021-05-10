@@ -111,8 +111,8 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onPageLoadFinished(Tab tab, String url) {
-            if (mExpectedUrl == null || TextUtils.equals(url, mExpectedUrl)) {
+        public void onPageLoadFinished(Tab tab, GURL url) {
+            if (mExpectedUrl == null || TextUtils.equals(url.getSpec(), mExpectedUrl)) {
                 mCallback.notifyCalled();
                 tab.removeObserver(this);
             }
@@ -234,7 +234,7 @@ public class ChromeTabUtils {
                         "Page did not load.  Tab information at time of failure -- "
                                 + "expected url: '%s', actual URL: '%s', load progress: %d, is "
                                 + "loading: %b, web contents init: %b, web contents loading: %b",
-                        url, tab.getUrlString(), Math.round(100 * tab.getProgress()),
+                        url, getUrlStringOnUiThread(tab), Math.round(100 * tab.getProgress()),
                         tab.isLoading(), webContents != null,
                         webContents == null ? false : webContents.isLoadingToDifferentDocument()));
             }
@@ -271,8 +271,8 @@ public class ChromeTabUtils {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             tab.addObserver(new EmptyTabObserver() {
                 @Override
-                public void onPageLoadStarted(Tab tab, String url) {
-                    if (expectedUrl == null || TextUtils.equals(url, expectedUrl)) {
+                public void onPageLoadStarted(Tab tab, GURL url) {
+                    if (expectedUrl == null || TextUtils.equals(url.getSpec(), expectedUrl)) {
                         startedCallback.notifyCalled();
                         tab.removeObserver(this);
                     }

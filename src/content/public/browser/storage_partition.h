@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -56,16 +57,17 @@ namespace content {
 class AppCacheService;
 class BackgroundSyncContext;
 class BrowserContext;
-class CacheStorageContext;
 class ContentIndexContext;
 class DedicatedWorkerService;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
+class FontAccessContext;
 class GeneratedCodeCacheContext;
-class NativeFileSystemEntryFactory;
+class FileSystemAccessEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
+class NativeIOContext;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -116,22 +118,32 @@ class CONTENT_EXPORT StoragePartition {
       mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
       const url::Origin& top_frame_origin) = 0;
 
+  virtual mojo::PendingRemote<
+      network::mojom::AuthenticationAndCertificateObserver>
+  CreateAuthAndCertObserverForFrame(int process_id, int frame_routing_id) = 0;
+
+  virtual mojo::PendingRemote<
+      network::mojom::AuthenticationAndCertificateObserver>
+  CreateAuthAndCertObserverForNavigationRequest(int frame_tree_node_id) = 0;
+
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
+  virtual FontAccessContext* GetFontAccessContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
-  virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
+  virtual FileSystemAccessEntryFactory* GetFileSystemAccessEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual DedicatedWorkerService* GetDedicatedWorkerService() = 0;
   virtual SharedWorkerService* GetSharedWorkerService() = 0;
-  virtual CacheStorageContext* GetCacheStorageContext() = 0;
+  virtual storage::mojom::CacheStorageControl* GetCacheStorageControl() = 0;
   virtual GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() = 0;
   virtual DevToolsBackgroundServicesContext*
   GetDevToolsBackgroundServicesContext() = 0;
   virtual ContentIndexContext* GetContentIndexContext() = 0;
+  virtual NativeIOContext* GetNativeIOContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;

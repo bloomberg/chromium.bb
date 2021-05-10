@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_transferring_optimizer.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -93,6 +94,14 @@ size_t ReadVersionEnvelope(SerializedScriptValue* serialized_script_value,
   // Otherwise, we did read the envelope. Hurray!
   *out_version = version;
   return i;
+}
+
+MessagePort* CreateEntangledPort(ScriptState* script_state,
+                                 const MessagePortChannel& channel) {
+  MessagePort* const port =
+      MakeGarbageCollected<MessagePort>(*ExecutionContext::From(script_state));
+  port->Entangle(channel);
+  return port;
 }
 
 }  // namespace
@@ -183,12 +192,7 @@ void V8ScriptValueDeserializer::Transfer() {
     // TODO(ricea): Make ExtendableMessageEvent store an
     // UnpackedSerializedScriptValue like MessageEvent does, and then this
     // special case won't be necessary.
-    Vector<MessagePortChannel> channels;
-    for (auto& stream : serialized_script_value_->GetStreams()) {
-      channels.push_back(stream.channel);
-    }
-    transferred_stream_ports_ = MessagePort::EntanglePorts(
-        *ExecutionContext::From(script_state_), channels);
+    streams_ = std::move(serialized_script_value_->GetStreams());
   }
 
   // There's nothing else to transfer if the deserializer was not given an
@@ -354,14 +358,12 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!ReadUint32(&width) || !ReadUint32(&height) ||
           !ReadUint32(&byte_length) || !ReadRawBytes(byte_length, &pixels))
         return nullptr;
-      CanvasColorParams color_params =
-          SerializedColorParams(canvas_color_space, canvas_pixel_format,
-                                canvas_opacity_mode,
-                                SerializedImageDataStorageFormat::kUint8Clamped)
-              .GetCanvasColorParams();
-      base::CheckedNumeric<uint32_t> computed_byte_length = width;
-      computed_byte_length *= height;
-      computed_byte_length *= color_params.BytesPerPixel();
+      SkImageInfo info =
+          SerializedImageBitmapSettings(canvas_color_space, canvas_pixel_format,
+                                        canvas_opacity_mode, is_premultiplied)
+              .GetSkImageInfo(width, height);
+      base::CheckedNumeric<uint32_t> computed_byte_length =
+          info.computeMinByteSize();
       if (!computed_byte_length.IsValid() ||
           computed_byte_length.ValueOrDie() != byte_length)
         return nullptr;
@@ -370,8 +372,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         // been deprecated.
         return nullptr;
       }
-      return MakeGarbageCollected<ImageBitmap>(
-          pixels, width, height, is_premultiplied, origin_clean, color_params);
+      SkPixmap pixmap(info, pixels, info.minRowBytes());
+      return MakeGarbageCollected<ImageBitmap>(pixmap, origin_clean);
     }
     case kImageBitmapTransferTag: {
       uint32_t index = 0;
@@ -426,24 +428,23 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         return nullptr;
       }
 
-      SerializedColorParams color_params(
-          canvas_color_space, SerializedPixelFormat::kNative8_LegacyObsolete,
-          SerializedOpacityMode::kNonOpaque, image_data_storage_format);
-      ImageDataStorageFormat storage_format = color_params.GetStorageFormat();
+      SerializedImageDataSettings settings(canvas_color_space,
+                                           image_data_storage_format);
       base::CheckedNumeric<size_t> computed_byte_length = width;
       computed_byte_length *= height;
       computed_byte_length *=
-          ImageData::StorageFormatBytesPerPixel(storage_format);
+          ImageData::StorageFormatBytesPerPixel(settings.GetStorageFormat());
       if (!computed_byte_length.IsValid() ||
           computed_byte_length.ValueOrDie() != byte_length)
         return nullptr;
-      ImageData* image_data = ImageData::Create(
-          IntSize(width, height), color_params.GetColorSpace(), storage_format);
+      ImageData* image_data = ImageData::ValidateAndCreate(
+          width, height, base::nullopt, settings.GetImageDataSettings(),
+          exception_state);
       if (!image_data)
         return nullptr;
-      DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
-      DCHECK_EQ(pixel_buffer->ByteLength(), byte_length);
-      memcpy(pixel_buffer->Data(), pixels, byte_length);
+      SkPixmap image_data_pixmap = image_data->GetSkPixmap();
+      DCHECK_EQ(image_data_pixmap.computeByteSize(), byte_length);
+      memcpy(image_data_pixmap.writable_addr(), pixels, byte_length);
       return image_data;
     }
     case kDOMPointTag: {
@@ -558,52 +559,56 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
-      if (!ReadUint32(&index) || !transferred_stream_ports_ ||
-          index >= transferred_stream_ports_->size()) {
+      if (!ReadUint32(&index) || index >= streams_.size()) {
         return nullptr;
       }
       return ReadableStream::Deserialize(
-          script_state_, (*transferred_stream_ports_)[index].Get(),
-          exception_state);
+          script_state_,
+          CreateEntangledPort(GetScriptState(), streams_[index].channel),
+          std::move(streams_[index].readable_optimizer), exception_state);
     }
     case kWritableStreamTransferTag: {
       if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
-      if (!ReadUint32(&index) || !transferred_stream_ports_ ||
-          index >= transferred_stream_ports_->size()) {
+      if (!ReadUint32(&index) || index >= streams_.size()) {
         return nullptr;
       }
       return WritableStream::Deserialize(
-          script_state_, (*transferred_stream_ports_)[index].Get(),
-          exception_state);
+          script_state_,
+          CreateEntangledPort(GetScriptState(), streams_[index].channel),
+          std::move(streams_[index].writable_optimizer), exception_state);
     }
     case kTransformStreamTransferTag: {
       if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
-      if (!ReadUint32(&index) || !transferred_stream_ports_ ||
+      if (!ReadUint32(&index) ||
           index == std::numeric_limits<decltype(index)>::max() ||
-          index + 1 >= transferred_stream_ports_->size()) {
+          index + 1 >= streams_.size()) {
         return nullptr;
       }
+      MessagePort* const port_for_readable =
+          CreateEntangledPort(GetScriptState(), streams_[index].channel);
+      MessagePort* const port_for_writable =
+          CreateEntangledPort(GetScriptState(), streams_[index + 1].channel);
 
       // https://streams.spec.whatwg.org/#ts-transfer
       // 1. Let readableRecord be !
       //    StructuredDeserializeWithTransfer(dataHolder.[[readable]], the
       //    current Realm).
-      ReadableStream* readable = ReadableStream::Deserialize(
-          script_state_, (*transferred_stream_ports_)[index].Get(),
-          exception_state);
+      ReadableStream* readable =
+          ReadableStream::Deserialize(script_state_, port_for_readable,
+                                      /*optimizer=*/nullptr, exception_state);
       if (!readable)
         return nullptr;
 
       // 2. Let writableRecord be !
       //    StructuredDeserializeWithTransfer(dataHolder.[[writable]], the
       //    current Realm).
-      WritableStream* writable = WritableStream::Deserialize(
-          script_state_, (*transferred_stream_ports_)[index + 1].Get(),
-          exception_state);
+      WritableStream* writable =
+          WritableStream::Deserialize(script_state_, port_for_writable,
+                                      /*optimizer=*/nullptr, exception_state);
       if (!writable)
         return nullptr;
 
@@ -746,6 +751,14 @@ v8::MaybeLocal<v8::WasmModuleObject>
 V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
                                                uint32_t id) {
   if (id < serialized_script_value_->WasmModules().size()) {
+    ExecutionContext* execution_context = ExecutionContext::From(script_state_);
+    DCHECK(serialized_script_value_->origin());
+    UseCounter::Count(execution_context, WebFeature::kWasmModuleSharing);
+    if (!serialized_script_value_->origin()->IsSameOriginWith(
+            execution_context->GetSecurityOrigin())) {
+      UseCounter::Count(execution_context,
+                        WebFeature::kCrossOriginWasmModuleSharing);
+    }
     return v8::WasmModuleObject::FromCompiledModule(
         isolate, serialized_script_value_->WasmModules()[id]);
   }

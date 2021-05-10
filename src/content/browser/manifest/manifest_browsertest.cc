@@ -12,6 +12,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -359,7 +361,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, FileHandlerManifest) {
 // If a page's manifest lives in a different origin, it should follow the CORS
 // rules and requesting the manifest should return an empty manifest (unless the
 // response contains CORS headers).
-IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifest) {
+// Flaky: crbug.com/1122546
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DISABLED_CorsManifest) {
   ASSERT_TRUE(cors_embedded_test_server()->Start());
   ASSERT_NE(embedded_test_server()->port(),
             cors_embedded_test_server()->port());
@@ -426,7 +429,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifestWithAcessControls) {
 
 // If a page's manifest is in an insecure origin while the page is in a secure
 // origin, requesting the manifest should return the empty manifest.
-IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
+// TODO(crbug.com/1167226): Flaky test.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DISABLED_MixedContentManifest) {
   ASSERT_TRUE(cors_embedded_test_server()->Start());
   std::unique_ptr<net::EmbeddedTestServer> https_server(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));

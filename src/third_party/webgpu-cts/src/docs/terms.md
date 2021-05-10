@@ -1,4 +1,4 @@
-# Writing Tests
+# Terminology
 
 Each test suite is organized as a tree, both in the filesystem and further within each file.
 

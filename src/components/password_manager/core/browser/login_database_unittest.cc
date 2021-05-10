@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -57,8 +58,8 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
 PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form,
                                             const bool password_changed) {
   return PasswordStoreChangeList(
-      1,
-      PasswordStoreChange(PasswordStoreChange::UPDATE, form, password_changed));
+      1, PasswordStoreChange(PasswordStoreChange::UPDATE, form,
+                             FormPrimaryKey(1), password_changed));
 }
 
 PasswordStoreChangeList RemoveChangeForForm(const PasswordForm& form) {
@@ -300,7 +301,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // correctly.
   PasswordStoreChangeList changes = db().AddLogin(form);
   ASSERT_EQ(AddChangeForForm(form), changes);
-  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(1, changes[0].primary_key().value());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
@@ -309,7 +310,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
   EXPECT_EQ(1U, key_to_form_map.size());
-  EXPECT_EQ(form, *key_to_form_map[1]);
+  EXPECT_EQ(form, *key_to_form_map[FormPrimaryKey(1)]);
   key_to_form_map.clear();
 
   // Match against an exact copy.
@@ -348,7 +349,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Let's imagine the user logs into the secure site.
   changes = db().AddLogin(form4);
   ASSERT_EQ(AddChangeForForm(form4), changes);
-  EXPECT_EQ(2, changes[0].primary_key());
+  EXPECT_EQ(2, changes[0].primary_key().value());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
   result.clear();
@@ -361,7 +362,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // The user chose to forget the original but not the new.
   EXPECT_TRUE(db().RemoveLogin(form, &changes));
   ASSERT_EQ(1U, changes.size());
-  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(1, changes[0].primary_key().value());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   result.clear();
@@ -378,7 +379,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // We update, and check to make sure it matches the
   // old form, and there is only one record.
-  EXPECT_EQ(UpdateChangeForForm(form5, /*passwordchanged=*/true),
+  EXPECT_EQ(UpdateChangeForForm(form5, /*password_changed=*/true),
             db().UpdateLogin(form5));
   // matches
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form5), &result));
@@ -396,7 +397,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Make sure everything can disappear.
   EXPECT_TRUE(db().RemoveLogin(form4, &changes));
   ASSERT_EQ(1U, changes.size());
-  EXPECT_EQ(2, changes[0].primary_key());
+  EXPECT_EQ(2, changes[0].primary_key().value());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
   EXPECT_TRUE(db().IsEmpty());
@@ -418,7 +419,7 @@ TEST_F(LoginDatabaseTest, AddLoginReturnsPrimaryKey) {
   PasswordStoreChangeList change_list = db().AddLogin(form);
   ASSERT_EQ(1U, change_list.size());
   EXPECT_EQ(AddChangeForForm(form), change_list);
-  EXPECT_EQ(1, change_list[0].primary_key());
+  EXPECT_EQ(1, change_list[0].primary_key().value());
 }
 
 TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
@@ -436,7 +437,7 @@ TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
   // correctly.
   PasswordStoreChangeList change_list = db().AddLogin(form);
   ASSERT_EQ(1U, change_list.size());
-  int primary_key = change_list[0].primary_key();
+  FormPrimaryKey primary_key = change_list[0].primary_key();
   EXPECT_EQ(AddChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
@@ -462,7 +463,7 @@ TEST_F(LoginDatabaseTest, ShouldNotRecyclePrimaryKeys) {
   // Add the form.
   PasswordStoreChangeList change_list = db().AddLogin(form);
   ASSERT_EQ(1U, change_list.size());
-  int primary_key1 = change_list[0].primary_key();
+  FormPrimaryKey primary_key1 = change_list[0].primary_key();
   change_list.clear();
   // Delete the form
   EXPECT_TRUE(db().RemoveLoginByPrimaryKey(primary_key1, &change_list));
@@ -1009,8 +1010,8 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   db().RemoveLoginsCreatedBetween(now, base::Time(), &changes);
   ASSERT_EQ(2U, changes.size());
   // The 3rd and the 4th should have been deleted.
-  EXPECT_EQ(3, changes[0].primary_key());
-  EXPECT_EQ(4, changes[1].primary_key());
+  EXPECT_EQ(3, changes[0].primary_key().value());
+  EXPECT_EQ(4, changes[1].primary_key().value());
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1021,8 +1022,8 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   db().RemoveLoginsCreatedBetween(base::Time(), back_30_days, &changes);
   ASSERT_EQ(2U, changes.size());
   // The 1st and the 5th should have been deleted.
-  EXPECT_EQ(1, changes[0].primary_key());
-  EXPECT_EQ(5, changes[1].primary_key());
+  EXPECT_EQ(1, changes[0].primary_key().value());
+  EXPECT_EQ(5, changes[1].primary_key().value());
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1033,7 +1034,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   db().RemoveLoginsCreatedBetween(base::Time(), base::Time(), &changes);
   ASSERT_EQ(1U, changes.size());
   // The 2nd should have been deleted.
-  EXPECT_EQ(2, changes[0].primary_key());
+  EXPECT_EQ(2, changes[0].primary_key().value());
 
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1086,14 +1087,14 @@ TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
   }
 }
 
-TEST_F(LoginDatabaseTest, BlacklistedLogins) {
+TEST_F(LoginDatabaseTest, BlocklistedLogins) {
   std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
-  EXPECT_TRUE(db().GetBlacklistLogins(&result));
+  EXPECT_TRUE(db().GetBlocklistLogins(&result));
   ASSERT_EQ(0U, result.size());
 
-  // Save a form as blacklisted.
+  // Save a form as blocklisted.
   PasswordForm form;
   form.url = GURL("http://accounts.google.com/LoginAuth");
   form.action = GURL("http://accounts.google.com/Login");
@@ -1112,21 +1113,21 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.skip_zero_click = true;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
-  // Get all non-blacklisted logins (should be none).
+  // Get all non-blocklisted logins (should be none).
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(0U, result.size());
 
   // When we retrieve the form from the store, it should have |in_store| set.
   form.in_store = PasswordForm::Store::kProfileStore;
 
-  // GetLogins should give the blacklisted result.
+  // GetLogins should give the blocklisted result.
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
-  // So should GetBlacklistedLogins.
-  EXPECT_TRUE(db().GetBlacklistLogins(&result));
+  // So should GetBlocklistedLogins.
+  EXPECT_TRUE(db().GetBlocklistLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
   result.clear();
@@ -1275,7 +1276,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   // Simulate the user changing their password.
   complete_form.password_value = ASCIIToUTF16("new_password");
   complete_form.date_synced = base::Time::Now();
-  EXPECT_EQ(UpdateChangeForForm(complete_form, /*passwordchanged=*/true),
+  EXPECT_EQ(UpdateChangeForForm(complete_form, /*password_changed=*/true),
             db().UpdateLogin(complete_form));
 
   // When we retrieve the forms from the store, |in_store| should be set.
@@ -1358,9 +1359,9 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("gaia_id"));
 
   PasswordStoreChangeList changes = db().UpdateLogin(form);
-  EXPECT_EQ(UpdateChangeForForm(form, /*passwordchanged=*/true), changes);
+  EXPECT_EQ(UpdateChangeForForm(form, /*password_changed=*/true), changes);
   ASSERT_EQ(1U, changes.size());
-  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(1, changes[0].primary_key().value());
 
   // When we retrieve the form from the store, it should have |in_store| set.
   form.in_store = PasswordForm::Store::kProfileStore;
@@ -1396,9 +1397,9 @@ TEST_F(LoginDatabaseTest, UpdateLoginWithoutPassword) {
   form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("gaia_id"));
 
   PasswordStoreChangeList changes = db().UpdateLogin(form);
-  EXPECT_EQ(UpdateChangeForForm(form, /*passwordchanged=*/false), changes);
+  EXPECT_EQ(UpdateChangeForForm(form, /*password_changed=*/false), changes);
   ASSERT_EQ(1U, changes.size());
-  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(1, changes[0].primary_key().value());
 
   // When we retrieve the form from the store, it should have |in_store| set.
   form.in_store = PasswordForm::Store::kProfileStore;
@@ -1623,8 +1624,6 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       "PasswordManager.TimesPasswordUsed.Overall.WithoutCustomPassphrase", 3,
       2);
 
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.EmptyUsernames.CountInDatabase", 1, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
                                       0, 1);
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -1745,8 +1744,6 @@ TEST_F(LoginDatabaseTest, ReportAccountStoreMetricsTest) {
       3, 2);
 
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountStore.EmptyUsernames.CountInDatabase", 1, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountStore.InaccessiblePasswords", 0, 1);
 }
 
@@ -1768,8 +1765,8 @@ TEST_F(LoginDatabaseTest, DuplicatesMetrics_NoDuplicates) {
   password_form.username_value = ASCIIToUTF16("username_2");
   ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
-  // Blacklisted forms don't count as duplicates (neither against other
-  // blacklisted forms nor against actual saved credentials).
+  // Blocklisted forms don't count as duplicates (neither against other
+  // blocklisted forms nor against actual saved credentials).
   password_form.signon_realm = "http://example3.com/";
   password_form.url = GURL("http://example3.com/");
   password_form.username_value = ASCIIToUTF16("username_1");
@@ -2026,7 +2023,7 @@ TEST_F(LoginDatabaseTest, EncryptionDisabled) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 // On Android and ChromeOS there is a mix of plain-text and obfuscated
 // passwords. Verify that they can both be accessed. Obfuscated passwords start
 // with "v10". Some password values also start with "v10". Test that both are
@@ -2075,7 +2072,7 @@ TEST_F(LoginDatabaseTest, HandleObfuscationMix) {
   EXPECT_EQ(k_plain_text_pw1, UTF16ToASCII(forms[1]->password_value));
   EXPECT_EQ(k_plain_text_pw2, UTF16ToASCII(forms[2]->password_value));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#endif  // defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 // If the database initialisation fails, the initialisation transaction should
 // roll back without crashing.
@@ -2601,6 +2598,73 @@ TEST_F(LoginDatabaseTest, GetLoginsEncryptedPassword) {
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_FALSE(forms[0]->encrypted_password.empty());
+}
+
+TEST_F(LoginDatabaseTest, RemovingLoginRemovesCompromisedCredentials) {
+  PasswordForm form;
+  GenerateExamplePasswordForm(&form);
+
+  ignore_result(db().AddLogin(form));
+  CompromisedCredentials credential1{form.signon_realm, form.username_value,
+                                     base::Time(), InsecureType::kLeaked,
+                                     IsMuted(false)};
+  CompromisedCredentials credential2 = credential1;
+  credential2.insecure_type = InsecureType::kPhished;
+
+  db().insecure_credentials_table().AddRow(credential1);
+  db().insecure_credentials_table().AddRow(credential2);
+
+  EXPECT_THAT(db().insecure_credentials_table().GetAllRows(),
+              testing::ElementsAre(credential1, credential2));
+
+  EXPECT_TRUE(db().RemoveLogin(form, nullptr));
+  EXPECT_THAT(db().insecure_credentials_table().GetAllRows(),
+              testing::IsEmpty());
+}
+
+// Test retrieving password forms by supplied signon_realm and username.
+TEST_F(LoginDatabaseTest, GetLoginsBySignonRealmAndUsername) {
+  std::string signon_realm = "https://test.com";
+  base::string16 username1 = base::ASCIIToUTF16("username1");
+  base::string16 username2 = base::ASCIIToUTF16("username2");
+
+  // Insert first login.
+  PasswordForm form1;
+  GenerateExamplePasswordForm(&form1);
+  form1.signon_realm = signon_realm;
+  form1.username_value = username1;
+  ASSERT_EQ(AddChangeForForm(form1), db().AddLogin(form1));
+
+  PasswordForm form2;
+  GenerateExamplePasswordForm(&form2);
+  form2.signon_realm = signon_realm;
+  form2.username_value = username2;
+  ASSERT_EQ(AddChangeForForm(form2), db().AddLogin(form2));
+
+  PrimaryKeyToFormMap key_to_form_map;
+  // Check if there is exactly one form with this signon_realm & username1.
+  EXPECT_EQ(FormRetrievalResult::kSuccess,
+            db().GetLoginsBySignonRealmAndUsername(signon_realm, username1,
+                                                   key_to_form_map));
+  EXPECT_THAT(key_to_form_map, testing::ElementsAre(testing::Pair(
+                                   FormPrimaryKey(1), Pointee(form1))));
+
+  // Insert another form with the same username as form1.
+  PasswordForm form3;
+  GenerateExamplePasswordForm(&form3);
+  form3.signon_realm = signon_realm;
+  form3.username_value = username1;
+  form3.username_element = base::ASCIIToUTF16("another_element");
+  ASSERT_EQ(AddChangeForForm(form3), db().AddLogin(form3));
+
+  // Check if there are exactly two forms with given username and signon_realm.
+  EXPECT_EQ(FormRetrievalResult::kSuccess,
+            db().GetLoginsBySignonRealmAndUsername(signon_realm, username1,
+                                                   key_to_form_map));
+  EXPECT_THAT(
+      key_to_form_map,
+      testing::ElementsAre(testing::Pair(FormPrimaryKey(1), Pointee(form1)),
+                           testing::Pair(FormPrimaryKey(3), Pointee(form3))));
 }
 
 class LoginDatabaseForAccountStoreTest : public testing::Test {

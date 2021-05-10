@@ -25,7 +25,7 @@ ReceiverPacketRouter::~ReceiverPacketRouter() {
 
 void ReceiverPacketRouter::OnReceiverCreated(Ssrc sender_ssrc,
                                              Receiver* receiver) {
-  OSP_DCHECK(FindEntry(sender_ssrc) == receivers_.end());
+  OSP_DCHECK(receivers_.find(sender_ssrc) == receivers_.end());
   receivers_.emplace_back(sender_ssrc, receiver);
 
   // If there were no Receiver instances before, resume receiving packets for
@@ -38,10 +38,7 @@ void ReceiverPacketRouter::OnReceiverCreated(Ssrc sender_ssrc,
 }
 
 void ReceiverPacketRouter::OnReceiverDestroyed(Ssrc sender_ssrc) {
-  const auto it = FindEntry(sender_ssrc);
-  OSP_DCHECK(it != receivers_.end());
-  receivers_.erase(it);
-
+  receivers_.erase_key(sender_ssrc);
   // If there are no longer any Receivers, suspend receiving packets.
   if (receivers_.empty()) {
     environment_->DropIncomingPackets();
@@ -82,29 +79,22 @@ void ReceiverPacketRouter::OnReceivedPacket(const IPEndpoint& source,
                         0, kMaxPartiaHexDumpSize));
     return;
   }
-  const auto it = FindEntry(seems_like.second);
-  if (it != receivers_.end()) {
-    // At this point, a valid packet has been matched with a receiver. Lock-in
-    // the remote endpoint as the |source| of this |packet| so that only packets
-    // from the same source are permitted from here onwards.
-    if (environment_->remote_endpoint().port == 0) {
-      environment_->set_remote_endpoint(source);
-    }
-
-    if (seems_like.first == ApparentPacketType::RTP) {
-      it->second->OnReceivedRtpPacket(arrival_time, std::move(packet));
-    } else if (seems_like.first == ApparentPacketType::RTCP) {
-      it->second->OnReceivedRtcpPacket(arrival_time, std::move(packet));
-    }
+  auto it = receivers_.find(seems_like.second);
+  if (it == receivers_.end()) {
+    return;
   }
-}
+  // At this point, a valid packet has been matched with a receiver. Lock-in
+  // the remote endpoint as the |source| of this |packet| so that only packets
+  // from the same source are permitted from here onwards.
+  if (environment_->remote_endpoint().port == 0) {
+    environment_->set_remote_endpoint(source);
+  }
 
-ReceiverPacketRouter::ReceiverEntries::iterator ReceiverPacketRouter::FindEntry(
-    Ssrc sender_ssrc) {
-  return std::find_if(receivers_.begin(), receivers_.end(),
-                      [sender_ssrc](const ReceiverEntries::value_type& entry) {
-                        return entry.first == sender_ssrc;
-                      });
+  if (seems_like.first == ApparentPacketType::RTP) {
+    it->second->OnReceivedRtpPacket(arrival_time, std::move(packet));
+  } else if (seems_like.first == ApparentPacketType::RTCP) {
+    it->second->OnReceivedRtcpPacket(arrival_time, std::move(packet));
+  }
 }
 
 }  // namespace cast

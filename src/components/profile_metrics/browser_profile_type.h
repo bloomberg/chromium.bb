@@ -9,13 +9,16 @@ namespace profile_metrics {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.profile_metrics
 enum class BrowserProfileType {
   kRegular = 0,
   kIncognito = 1,
   kGuest = 2,
   kSystem = 3,
   kOtherOffTheRecordProfile = 4,
-  kMaxValue = kOtherOffTheRecordProfile,
+  kEphemeralGuest = 5,
+  kMaxValue = kEphemeralGuest,
 };
 
 }  // namespace profile_metrics

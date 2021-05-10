@@ -66,6 +66,15 @@ const float kMaxIdealContentsScale = 10000.f;
 // the native scale.
 const float kMinScaleRatioForWillChangeTransform = 0.25f;
 
+// Used to avoid raster scale adjustment during a transform animation by
+// using the maximum animation scale, but sometimes the maximum animation scale
+// can't be accurately calculated (e.g. with nested scale transforms). We'll
+// adjust raster scale if it is not affected by invalid scale and is smaller
+// than the ideal scale divided by this ratio. The situation is rare.
+// See PropertyTrees::MaximumAnimationToScreenScale() and
+// AnimationAffectedByInvalidScale().
+const float kRatioToAdjustRasterScaleForTransformAnimation = 1.5f;
+
 // Intersect rects which may have right() and bottom() that overflow integer
 // boundaries. This code is similar to gfx::Rect::Intersect with the exception
 // that the types are promoted to int64_t when there is a chance of overflow.
@@ -512,7 +521,7 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
     if (!has_draw_quad) {
       // Checkerboard.
-      SkColor color = SafeOpaqueBackgroundColor();
+      SkColor color = safe_opaque_background_color();
       if (ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::DefaultCheckerboardColor();
@@ -582,6 +591,7 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   // better scheme would be to maintain a tighter visible_layer_rect for the
   // finer tilings.
   CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
+  SanityCheckTilingState();
 }
 
 bool PictureLayerImpl::UpdateTiles() {
@@ -658,6 +668,8 @@ bool PictureLayerImpl::UpdateTiles() {
       viewport_rect_for_tile_priority_in_content_space_, ideal_contents_scale_,
       current_frame_time_in_seconds, occlusion_in_content_space,
       can_require_tiles_for_activation);
+  DCHECK_GT(tilings_->num_tilings(), 0u);
+  SanityCheckTilingState();
   return updated;
 }
 
@@ -1037,7 +1049,7 @@ void PictureLayerImpl::GetContentsResourceId(
     gfx::SizeF* resource_uv_size) const {
   // We need contents resource for backdrop filter masks only.
   if (!is_backdrop_filter_mask()) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1055,7 +1067,7 @@ void PictureLayerImpl::GetContentsResourceId(
 
   // Mask resource not ready yet.
   if (!iter || !*iter) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1067,7 +1079,7 @@ void PictureLayerImpl::GetContentsResourceId(
   const TileDrawInfo& draw_info = iter->draw_info();
   if (!draw_info.IsReadyToDraw() ||
       draw_info.mode() != TileDrawInfo::RESOURCE_MODE) {
-    *resource_id = 0;
+    *resource_id = viz::kInvalidResourceId;
     return;
   }
 
@@ -1349,13 +1361,30 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
   if (raster_contents_scale_ < MinimumContentsScale())
     return true;
 
-  // Don't change the raster scale if any of the following are true:
-  //  - We have an animating transform.
-  //  - The raster scale is already ideal.
-  if (draw_properties().screen_space_transform_is_animating ||
-      raster_source_scale_ == ideal_source_scale_) {
+  // Avoid frequent raster scale changes if we have an animating transform.
+  if (draw_properties().screen_space_transform_is_animating) {
+    // Except when the device viewport rect has changed because the raster scale
+    // may depend on the rect.
+    if (layer_tree_impl()->device_viewport_rect_changed())
+      return true;
+    // Or when the raster scale is not affected by invalid scale and is too
+    // small compared to the ideal scale.
+    if (ideal_contents_scale_ >
+        raster_contents_scale_ *
+            kRatioToAdjustRasterScaleForTransformAnimation) {
+      auto* property_trees = layer_tree_impl()->property_trees();
+      int transform_id = transform_tree_index();
+      if (property_trees->AnimationScaleCacheIsInvalid(transform_id) ||
+          !property_trees->AnimationAffectedByInvalidScale(transform_id)) {
+        return true;
+      }
+    }
     return false;
   }
+
+  // Don't change the raster scale if the raster scale is already ideal.
+  if (raster_source_scale_ == ideal_source_scale_)
+    return false;
 
   // Don't update will-change: transform layers if the raster contents scale is
   // bigger than the minimum scale.
@@ -1493,38 +1522,34 @@ void PictureLayerImpl::AdjustRasterScaleForTransformAnimation(
     float preserved_raster_contents_scale) {
   DCHECK(draw_properties().screen_space_transform_is_animating);
 
-  CombinedAnimationScale animation_scales =
-      layer_tree_impl()->property_trees()->GetAnimationScales(
-          transform_tree_index(), layer_tree_impl());
-  float maximum_scale = animation_scales.maximum_animation_scale;
-  float starting_scale = animation_scales.starting_animation_scale;
-  // Adjust raster scale only if the animation scale is known.
-  if (maximum_scale == kNotScaled && starting_scale == kNotScaled) {
-    // Use at least the native scale if the animation scale is unknown.
-    raster_contents_scale_ = std::max(raster_contents_scale_,
-                                      ideal_page_scale_ * ideal_device_scale_);
-  } else {
-    // We rasterize at the maximum scale that will occur during the animation.
-    raster_contents_scale_ = std::max(maximum_scale, starting_scale);
-  }
-  DCHECK_NE(raster_contents_scale_, kNotScaled);
-
-  // We will cap the adjusted scale with the viewport area, which is impossible
-  // if the viewport is empty.
-  gfx::Size viewport = layer_tree_impl()->GetDeviceViewport().size();
-  if (viewport.IsEmpty())
-    return;
+  float maximum_animation_scale =
+      layer_tree_impl()->property_trees()->MaximumAnimationToScreenScale(
+          transform_tree_index());
+  raster_contents_scale_ =
+      std::max(raster_contents_scale_, maximum_animation_scale);
 
   // However we want to avoid excessive memory use. Choose a scale at which this
   // layer's rastered content is not larger than the viewport.
-  float max_viewport_dimension = std::max(viewport.width(), viewport.height());
+  gfx::Size viewport = layer_tree_impl()->GetDeviceViewport().size();
+  // To avoid too small scale in a small viewport.
+  constexpr int kMinViewportDimension = 500;
+  float max_viewport_dimension =
+      std::max({viewport.width(), viewport.height(), kMinViewportDimension});
   DCHECK(max_viewport_dimension);
   // Use square to compensate for viewports with different aspect ratios.
   float squared_viewport_area = max_viewport_dimension * max_viewport_dimension;
-  gfx::Size bounds_at_maximum_scale =
-      gfx::ScaleToCeiledSize(raster_source_->GetSize(), raster_contents_scale_);
-  float maximum_area = static_cast<float>(bounds_at_maximum_scale.width()) *
-                       bounds_at_maximum_scale.height();
+
+  gfx::SizeF raster_source_size(raster_source_->GetSize());
+  // Clamp raster_source_size by max_viewport_dimension to avoid too small
+  // scale for huge layers for which the far from viewport area won't be
+  // rasterized and out of viewport area is rasterized in low priority.
+  gfx::SizeF max_visible_bounds(
+      std::min(raster_source_size.width(), max_viewport_dimension),
+      std::min(raster_source_size.height(), max_viewport_dimension));
+  gfx::SizeF max_visible_bounds_at_max_scale =
+      gfx::ScaleSize(max_visible_bounds, raster_contents_scale_);
+  float maximum_area = max_visible_bounds_at_max_scale.width() *
+                       max_visible_bounds_at_max_scale.height();
   // Clamp the scale to make the rastered content not larger than the viewport.
   if (UNLIKELY(maximum_area > squared_viewport_area))
     raster_contents_scale_ /= std::sqrt(maximum_area / squared_viewport_area);
@@ -1563,8 +1588,6 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   tilings_->CleanUpTilings(min_acceptable_high_res_scale,
                            max_acceptable_high_res_scale, used_tilings,
                            twin_set);
-  DCHECK_GT(tilings_->num_tilings(), 0u);
-  SanityCheckTilingState();
 }
 
 float PictureLayerImpl::MinimumRasterContentsScaleForWillChangeTransform()

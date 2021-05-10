@@ -8,9 +8,9 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_operation.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_operation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
@@ -41,7 +41,7 @@ class NotificationResponseBuilderMacTest : public testing::Test {
     [builder setTitle:@"Title"];
     [builder setSubTitle:@"https://www.miguel.com"];
     [builder setContextMessage:@""];
-    [builder setTag:@"tag1"];
+    [builder setIdentifier:@"identifier"];
     [builder setIcon:[NSImage imageNamed:NSImageNameApplicationIcon]];
     [builder setNotificationId:@"notificationId"];
     [builder setProfileId:@"profileId"];

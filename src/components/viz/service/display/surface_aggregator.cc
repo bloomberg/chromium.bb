@@ -577,7 +577,7 @@ void SurfaceAggregator::EmitSurfaceContent(
   referenced_surfaces_.insert(surface_id);
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
-  std::unordered_map<ResourceId, ResourceId> empty_map;
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> empty_map;
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
@@ -761,8 +761,8 @@ void SurfaceAggregator::EmitSurfaceContent(
       auto* quad =
           dest_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
       quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
-                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                   gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
+                   remapped_pass_id, kInvalidResourceId, gfx::RectF(),
+                   gfx::Size(), gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
                    /*force_anti_aliasing_off=*/false,
                    /* backdrop_filter_quality*/ 1.0f);
     }
@@ -894,8 +894,9 @@ void SurfaceAggregator::AddColorConversionPass() {
   auto* quad = color_conversion_pass
                    ->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
-               root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               root_render_pass->id, kInvalidResourceId, gfx::RectF(),
+               gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+               gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
@@ -951,8 +952,9 @@ void SurfaceAggregator::AddDisplayTransformPass() {
   auto* quad = display_transform_pass
                    ->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
-               root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               root_render_pass->id, kInvalidResourceId, gfx::RectF(),
+               gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+               gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(display_transform_pass));
@@ -1010,7 +1012,8 @@ void SurfaceAggregator::CopyQuadsToPass(
     const CompositorRenderPass& source_pass,
     AggregatedRenderPass* dest_pass,
     float parent_device_scale_factor,
-    const std::unordered_map<ResourceId, ResourceId>& child_to_parent_map,
+    const std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>&
+        child_to_parent_map,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     const SurfaceId& surface_id,
@@ -1184,7 +1187,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
-  std::unordered_map<ResourceId, ResourceId> empty_map;
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> empty_map;
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
@@ -1193,7 +1196,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
       IsRootSurface(surface) ? root_surface_transform_ : gfx::Transform();
 
   if (frame.metadata.delegated_ink_metadata) {
-    DCHECK(surface->GetActiveFrame().metadata.delegated_ink_metadata ==
+    DCHECK(surface->GetActiveFrameMetadata().delegated_ink_metadata ==
            frame.metadata.delegated_ink_metadata);
     // The metadata must be taken off of the surface, rather than a copy being
     // made, in order to ensure that the delegated ink metadata is used for
@@ -1433,22 +1436,21 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // |damage_rect|, |damage_from_parent| and |surface_root_rp_damage|
       // either are or can possible contain damage from under the quad, so if
       // they intersect the quad render pass output rect, we have to invalidate
-      // the |can_use_backdrop_filter_cache| flag. Note the intersection test
-      // can be done against backdrop filter bounds as an improvement.
+      // the |intersects_damage_under| flag. Note the intersection test can be
+      // done against backdrop filter bounds as an improvement.
       bool intersects_current_damage =
           rect_in_target_space.Intersects(damage_rect);
       bool intersects_damage_from_parent =
           rect_in_target_space.Intersects(damage_from_parent);
-      // The |can_use_backdrop_filter_cache| flag hints if the current quad
-      // intersects any damage from any quads below in the same surface. If the
-      // flag is false, it means the intersecting damage is from quads above it
-      // or from itself.
+      // The |intersects_damage_under| flag hints if the current quad intersects
+      // any damage from any quads below in the same surface. If the flag is
+      // false, it means the intersecting damage is from quads above it or from
+      // itself.
       bool intersects_damage_from_surface =
-          rect_in_target_space.Intersects(surface_root_rp_damage) &&
-          !render_pass_quad->can_use_backdrop_filter_cache;
+          rect_in_target_space.Intersects(surface_root_rp_damage);
       if (intersects_current_damage || intersects_damage_from_parent ||
           intersects_damage_from_surface) {
-        render_pass_quad->can_use_backdrop_filter_cache = false;
+        render_pass_quad->intersects_damage_under = true;
 
         if (child_render_pass.backdrop_filters.HasFilterThatMovesPixels()) {
           // The damage from under the quad intersects quad render pass output
@@ -1542,7 +1544,8 @@ bool SurfaceAggregator::DeclareResourcesToProvider(
 
   // Ref the resources in the surface, and let the provider know we've received
   // new resources from the compositor frame.
-  surface->RefResources(resource_list);
+  if (surface->client())
+    surface->client()->RefResources(resource_list);
   provider_->ReceiveFromChild(child_id, resource_list);
 
   // Figure out which resources are actually used in the render pass.
@@ -2041,7 +2044,7 @@ void SurfaceAggregator::TransformAndStoreDelegatedInkMetadata(
   parent_quad_to_root_target_transform.TransformRect(&area);
   delegated_ink_metadata_ = std::make_unique<DelegatedInkMetadata>(
       point, metadata->diameter(), metadata->color(), metadata->timestamp(),
-      area, metadata->frame_time());
+      area, metadata->frame_time(), metadata->is_hovering());
 
   TRACE_EVENT_INSTANT2(
       "viz", "SurfaceAggregator::TransformAndStoreDelegatedInkMetadata",
@@ -2272,8 +2275,8 @@ void SurfaceAggregator::AppendDeJellyRenderPass(
   auto* quad =
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   quad->SetNew(new_state, render_pass->output_rect, render_pass->output_rect,
-               render_pass->id, 0, gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
-               gfx::PointF(),
+               render_pass->id, kInvalidResourceId, gfx::RectF(), gfx::Size(),
+               gfx::Vector2dF(), gfx::PointF(),
                gfx::RectF(gfx::SizeF(render_pass->output_rect.size())), false,
                1.0f);
   gfx::Transform skew_transform;

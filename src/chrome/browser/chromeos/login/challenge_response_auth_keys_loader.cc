@@ -17,10 +17,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/challenge_response/known_user_pref_utils.h"
@@ -54,7 +54,7 @@ base::flat_set<std::string> GetLoginScreenPolicyExtensionIds() {
             PrefService::INITIALIZATION_STATUS_SUCCESS);
 
   const PrefService::Preference* const pref =
-      prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
+      prefs->FindPreference(extensions::pref_names::kInstallForceList);
   if (!pref || !pref->IsManaged() ||
       pref->GetType() != base::Value::Type::DICTIONARY)
     return {};

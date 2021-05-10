@@ -21,7 +21,7 @@ enum class ContentSettingsType : int32_t {
   COOKIES = 0,
   IMAGES,
   JAVASCRIPT,
-  PLUGINS,
+  DEPRECATED_PLUGINS,
 
   // This setting governs both popups and unwanted redirects like tab-unders and
   // framebusting.
@@ -126,6 +126,8 @@ enum class ContentSettingsType : int32_t {
   // Nothing is stored in this setting at present. Please refer to
   // PeriodicBackgroundSyncPermissionContext for details on how this permission
   // is ascertained.
+  // This content setting is not registered because it does not require access
+  // to any existing providers.
   PERIODIC_BACKGROUND_SYNC,
 
   // Content setting which stores whether to allow sites to ask for permission
@@ -228,6 +230,12 @@ enum class ContentSettingsType : int32_t {
   // Stores per-origin state of the most recently selected directory for the use
   // by the File System Access API.
   FILE_SYSTEM_LAST_PICKED_DIRECTORY,
+
+  // Capture the current tab using getCurrentBrowsingContextMedia().
+  // TODO(crbug.com/1150788): Apply this to getDisplayMedia() as well.
+  // No values are stored for this type, this is solely needed to be able to
+  // register the PermissionContext.
+  DISPLAY_CAPTURE,
 
   NUM_TYPES,
 };

@@ -4,7 +4,9 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/python.gni")
@@ -112,16 +114,24 @@ if (!is_android && !is_mac) {
   group("chrome") {
     public_deps = [ ":chrome_initial" ]
     data_deps = [ ":chrome_initial" ]
+
+    # Do not add any more deps or data_deps to group("chrome").
+    # Because chrome_initial sets its output name to "chrome", running commands
+    # such as `ninja chrome` causes chrome_initial to be built instead. All
+    # deps and data_deps should be added to the chrome_initial target instead.
+    # Targets added here can only be built by explicitly using //chrome:chrome.
+    # Windows-only deps are OK because chrome_initial uses initialexe/chrome as
+    # the output name for that platform.
+    # See crbug.com/1146571.
     if (is_win) {
       public_deps += [ ":reorder_imports" ]
       data_deps += [ ":reorder_imports" ]
     }
-    if (is_chromeos) {
-      data_deps += [ "//sandbox/linux:chrome_sandbox" ]
-    }
   }
 
   executable("chrome_initial") {
+    configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+    configs += [ "//build/config/compiler:thinlto_optimize_max" ]
     if (is_win) {
       output_name = "initialexe/chrome"
     } else {
@@ -134,11 +144,18 @@ if (!is_android && !is_mac) {
     sources = [ "app/chrome_exe_resource.h" ]
     defines = []
     public_deps = []
-    deps = [ "//printing/buildflags" ]
+    deps = [
+      "//build:chromeos_buildflags",
+      "//printing/buildflags",
+    ]
     data = [ "$root_out_dir/resources.pak" ]
     data_deps = []
 
-    if (chromeos_is_browser_only && also_build_ash_chrome) {
+    if (is_chromeos_ash) {
+      data_deps += [ "//sandbox/linux:chrome_sandbox" ]
+    }
+
+    if (is_chromeos_lacros && also_build_ash_chrome) {
       data_deps += [ "//chrome:chrome(//build/toolchain/linux:ash_clang_x64)" ]
     }
 
@@ -238,13 +255,15 @@ if (!is_android && !is_mac) {
         ":browser_dependencies",
         ":child_dependencies",
 
+        # For configuring PartitionAlloc
+        "//base/allocator:buildflags",
+
         # For the sampling profiler.
         "//chrome/common/profiler",
 
         # Needed to use the master_preferences functions
         "//chrome/installer/util:with_no_strings",
         "//content/public/app",
-        "//content/public/common:service_names",
 
         # For headless mode.
         "//headless:headless_shell_lib",
@@ -259,11 +278,12 @@ if (!is_android && !is_mac) {
 
       # Chrome OS debug builds for arm need to pass --long-plt to the linker.
       # See https://bugs.chromium.org/p/chromium/issues/detail?id=583532
-      if (is_chromeos && is_debug && target_cpu == "arm") {
+      if (is_chromeos_ash && is_debug && target_cpu == "arm") {
         ldflags += [ "-Wl,--long-plt" ]
       }
 
-      if (is_linux && !is_component_build && !using_sanitizer) {
+      if ((is_linux || is_chromeos_lacros) && !is_component_build &&
+          !using_sanitizer) {
         version_script = "//build/linux/chrome.map"
         inputs = [ version_script ]
         ldflags += [ "-Wl,--version-script=" +
@@ -271,11 +291,11 @@ if (!is_android && !is_mac) {
       }
     }
 
-    if (is_chromeos || is_win) {
+    if (is_chromeos_ash || is_win) {
       data_deps += [ "//mojo/core:shared_library" ]
     }
 
-    if (is_chromeos) {
+    if (is_chromeos_ash) {
       data_deps += [ "//mojo/core:shared_libraries_for_arc" ]
       if (is_chromeos_device) {
         configs += [ "//build/config/chromeos:print_orderfile" ]
@@ -289,16 +309,9 @@ if (!is_android && !is_mac) {
     # The step's output are needed at runtime, so we also need a data_dep.
     data_deps += [ ":packed_resources" ]
 
-    # Only ChromeOS has precompiled Flash that needs to get copied to the output
-    # directory. On other platforms, Flash is either component-updated only or
-    # not supported at all.
-    if (is_chromeos) {
-      deps += [ "//third_party/adobe/flash:flapper_binaries" ]
-    }
-
     # ChromeOS by design is safe to have rpath=$ORIGIN. This simplifies shared
     # library usage.
-    if (is_chromeos && !is_component_build) {
+    if (is_chromeos_ash && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
 
@@ -312,6 +325,8 @@ if (!is_android && !is_mac) {
 if (is_win) {
   shared_library("chrome_dll") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+    configs += [ "//build/config/compiler:thinlto_optimize_max" ]
     defines = []
 
     sources = [
@@ -327,6 +342,7 @@ if (is_win) {
       ":browser_dependencies",
       ":chrome_dll_manifest",
       ":chrome_dll_version",
+      "//base/allocator:buildflags",
       "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//chrome/app/theme:chrome_unscaled_resources",
@@ -339,7 +355,6 @@ if (is_win) {
       "//components/crash/core/app",
       "//components/policy:generated",
       "//content/app/resources",
-      "//content/public/common:service_names",
       "//crypto",
       "//headless:headless_shell_browser_lib",
       "//net:net_resources",
@@ -361,8 +376,6 @@ if (is_win) {
       "//content/public/app",
       "//headless:headless_renderer",
     ]
-
-    configs += [ "//build/config/compiler:chrome_orderfile_config" ]
   }
 
   copy("copy_first_run") {
@@ -375,6 +388,11 @@ if (is_win) {
   chrome_framework_version = chrome_version_full
 
   verify_dynamic_libraries = !is_component_build && !is_asan
+  if (host_os == "mac") {
+    objdump_path = mac_bin_path
+  } else {
+    objdump_path = rebase_path("$clang_base_path/bin/", root_build_dir)
+  }
 
   group("chrome") {
     deps = [ ":chrome_app" ]
@@ -471,22 +489,20 @@ if (is_win) {
         "--stamp",
         rebase_path(outputs[0], root_out_dir),
         "-B",
-        mac_bin_path,
+        objdump_path,
         "--image",
         rebase_path(inputs[0], root_out_dir),
         "--allow",
         "/usr/lib/libSystem.B.dylib",
-        "--allow",
-        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
       ]
       deps = [ ":chrome_app" ]
     }
   }
 
   compiled_action("chrome_app_strings") {
-    tool = "//chrome/tools/build/mac:infoplist_strings_tool"
+    tool = "//chrome/tools/build/mac:infoplist_strings_util"
 
-    inputs = [ chrome_version_file ]
+    inputs = []
 
     outputs = []
 
@@ -511,7 +527,7 @@ if (is_win) {
           "-b",
           "${branding_path_component}_strings",
           "-v",
-          rebase_path(chrome_version_file, root_build_dir),
+          chrome_version_full,
           "-g",
           rebase_path("$root_gen_dir/chrome", root_build_dir),
           "-o",
@@ -692,7 +708,7 @@ if (is_win) {
           "--stamp",
           rebase_path(outputs[0], root_out_dir),
           "-B",
-          mac_bin_path,
+          objdump_path,
           "--image",
           rebase_path(inputs[0], root_out_dir),
 
@@ -702,8 +718,6 @@ if (is_win) {
           "/usr/lib/libsandbox.1.dylib",
           "--allow",
           "/usr/lib/libSystem.B.dylib",
-          "--allow",
-          "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
         ]
         deps = [ ":chrome_helper_app_${_helper_target}" ]
       }
@@ -962,13 +976,14 @@ if (is_win) {
     deps = [
       ":browser_dependencies",
       ":child_dependencies",
+      "//base/allocator:buildflags",
+      "//build:chromeos_buildflags",
       "//chrome/app:command_ids",
       "//chrome/common:buildflags",
       "//chrome/common/profiler",
       "//components/crash/core/app",
       "//components/policy:generated",
       "//content/public/app",
-      "//content/public/common:service_names",
       "//headless:headless_shell_lib",
       "//third_party/cld_3/src/src:cld_3",
     ]
@@ -984,6 +999,8 @@ if (is_win) {
     ]
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+    configs += [ "//build/config/compiler:thinlto_optimize_max" ]
   }
 
   mac_framework_bundle("chrome_framework") {
@@ -1060,22 +1077,18 @@ if (is_win) {
   assert(_framework_binary_path != "",
          "Ignore configuration-dependent unused variable warning")
 
-  if (!is_asan && !is_component_build) {
+  # TOOD(crbug/1163903#c8) - thakis@ look into why profile and coverage
+  # instrumentation adds these symbols in different orders
+  if (!is_component_build && chrome_pgo_phase != 1) {
     action("verify_chrome_framework_order") {
-      script = "//chrome/tools/build/mac/run_verify_order.py"
+      script = "//chrome/tools/build/mac/verify_order.py"
       stamp_file = "$target_out_dir/run_$target_name.stamp"
-      inputs = [
-        script,
-        "//chrome/tools/build/mac/verify_order",
-      ]
+      inputs = [ script ]
       args = [
-        "--stamp",
-        rebase_path(stamp_file, root_out_dir),
-      ]
-      args += [
-        "_ChromeMain",
-        rebase_path(_framework_binary_path, root_out_dir),
-        mac_bin_path,
+        "--stamp=" + rebase_path(stamp_file, root_out_dir),
+        "--binary=" + rebase_path(_framework_binary_path, root_out_dir),
+        "--mac-bin-path=" + mac_bin_path,
+        "--symbol-file=" + rebase_path("app/framework.order", root_build_dir),
       ]
       outputs = [ stamp_file ]
       public_deps = [ ":chrome_framework" ]
@@ -1099,6 +1112,8 @@ if (is_win) {
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
       "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
       "$root_out_dir/chrome_crashpad_handler",
+      "$root_out_dir/libEGL.dylib",
+      "$root_out_dir/libGLESv2.dylib",
       "$root_out_dir/libswiftshader_libEGL.dylib",
       "$root_out_dir/libswiftshader_libGLESv2.dylib",
       _framework_binary_path,
@@ -1131,6 +1146,8 @@ if (is_win) {
         ":chrome_framework",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//components/crash/core/app:chrome_crashpad_handler",
+        "//third_party/angle:libEGL",
+        "//third_party/angle:libGLESv2",
         "//third_party/breakpad:dump_syms",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
@@ -1153,6 +1170,8 @@ if (is_win) {
         "$root_out_dir/$chrome_framework_name.dSYM",
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/chrome_crashpad_handler.dSYM",
+        "$root_out_dir/libEGL.dylib.dSYM",
+        "$root_out_dir/libGLESv2.dylib.dSYM",
         "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
         "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
       ]
@@ -1162,6 +1181,8 @@ if (is_win) {
         ":chrome_framework",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//components/crash/core/app:chrome_crashpad_handler",
+        "//third_party/angle:libEGL",
+        "//third_party/angle:libGLESv2",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
@@ -1211,7 +1232,7 @@ group("browser_dependencies") {
 
   if (enable_basic_printing) {
     public_deps += [ "//printing" ]
-    if (enable_print_preview && !is_chromeos) {
+    if (enable_print_preview && !is_chromeos_ash) {
       public_deps += [ "//chrome/service" ]
     }
   }
@@ -1224,15 +1245,16 @@ group("browser_dependencies") {
     public_deps += [ "//components/nacl/browser" ]
   }
 
-  if (chromeos_is_browser_only) {
+  if (is_chromeos_lacros) {
     public_deps += [ "//chromeos/lacros" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     public_deps += [
+      "//ash/constants",
       "//chrome/browser/chromeos",
       "//chromeos",
-      "//chromeos/constants",
+      "//chromeos/dbus/constants",
       "//chromeos/memory",
     ]
   }
@@ -1356,61 +1378,13 @@ group("resources") {
 group("extra_resources") {
   # Deps should be same as those in chrome_extra_paks() within chrome_paks.gni.
   public_deps = [
+    "//chrome/browser/resources:resources",
     "//components/autofill/core/browser:autofill_address_rewriter_resources",
   ]
 
-  if (!is_android) {
-    public_deps += [
-      "//chrome/browser/resources:component_extension_resources",
-      "//chrome/browser/resources:dev_ui_paks",
-      "//chrome/browser/resources:gaia_auth_host_resources",
-      "//chrome/browser/resources:local_ntp_resources",
-      "//chrome/browser/resources:new_tab_page_resources",
-      "//chrome/browser/resources/bookmarks:bookmarks_resources",
-      "//chrome/browser/resources/commander:commander_resources",
-      "//chrome/browser/resources/downloads:downloads_resources",
-      "//chrome/browser/resources/history:history_resources",
-      "//chrome/browser/resources/read_later:read_later_resources",
-      "//chrome/browser/resources/settings:settings_resources",
-      "//chrome/browser/resources/tab_search:tab_search_resources",
-    ]
-  }
-
-  if (is_chromeos) {
-    public_deps += [
-      "//chrome/browser/resources:bluetooth_pairing_dialog_resources",
-      "//chrome/browser/resources:multidevice_internals_resources",
-      "//chrome/browser/resources/chromeos:cellular_setup_resources",
-      "//chrome/browser/resources/chromeos:multidevice_setup_resources",
-      "//chrome/browser/resources/chromeos/accessibility:build",
-      "//chrome/browser/resources/nearby_internals:nearby_internals_resources",
-      "//chrome/browser/resources/nearby_share:nearby_share_dialog_resources",
-      "//chrome/browser/resources/settings/chromeos:os_settings_resources",
-      "//third_party/ink:ink_resources",
-    ]
-  }
-
-  if (is_linux || is_chromeos) {
-    public_deps += [ "//chrome/browser/resources/webui_js_exception:webui_js_exception_resources" ]
-  }
-
-  if (!is_android && !is_chromeos) {
-    public_deps += [
-      "//chrome/browser/resources/signin/profile_picker:profile_picker_resources",
-      "//chrome/browser/resources/welcome:welcome_resources",
-    ]
-  }
-
-  if (enable_extensions) {
-    public_deps += [
-      "//chrome/browser/resources:sync_file_system_internals_resources",
-      "//chrome/browser/resources/extensions:extensions_resources",
-    ]
-  }
-
-  if (enable_print_preview) {
-    public_deps +=
-        [ "//chrome/browser/resources/print_preview:print_preview_resources" ]
+  if (is_chromeos_ash && !enable_use_media_app_ink) {
+    # TODO(crbug/1150244): Remove when enable_use_media_app_ink is default true.
+    public_deps += [ "//third_party/ink:ink_resources" ]
   }
 }
 
@@ -1469,6 +1443,12 @@ if (!is_android) {
   }
 }
 
+repack("unit_tests_pak") {
+  sources = [ "$root_gen_dir/chrome/chrome_test_resources.pak" ]
+  output = "$root_out_dir/unit_tests.pak"
+  deps = [ "//chrome/test/data:chrome_test_resources" ]
+}
+
 repack("browser_tests_pak") {
   sources = [ "$root_gen_dir/chrome/webui_test_resources.pak" ]
   output = "$root_out_dir/browser_tests.pak"
@@ -1525,8 +1505,6 @@ if (is_android) {
 
   source_set("chrome_android_core") {
     sources = [
-      "app/android/chrome_android_initializer.cc",
-      "app/android/chrome_android_initializer.h",
       "app/android/chrome_jni_onload.cc",
       "app/android/chrome_jni_onload.h",
       "app/android/chrome_main_delegate_android.cc",
@@ -1562,7 +1540,6 @@ if (is_android) {
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
       "//content/public/app",
-      "//content/public/common:service_names",
     ]
 
     # Explicit dependency required for JNI registration to be able to

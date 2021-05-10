@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
     let table = document.getElementById("impression-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
-          table.children[0].children[0].innerText === "0x100") {
+          table.children[0].children[0].innerText === "100") {
         document.title = $1;
       }
     });
@@ -215,8 +215,8 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   ConversionReport report(
       ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
-      "7" /* conversion_data */, base::Time::Now() /* report_time */,
-      1 /* conversion_id */);
+      "7" /* conversion_data */, base::Time::Now() /* conversion_time */,
+      base::Time::Now() /* report_time */, 1 /* conversion_id */);
   manager.SetReportsForWebUI({report});
   OverrideWebUIConversionManager(&manager);
 
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "0x7") {
+          table.children[0].children[1].innerText === "7") {
         document.title = $1;
       }
     });
@@ -243,8 +243,8 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   ConversionReport report(
       ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
-      "7" /* conversion_data */, base::Time::Now() /* report_time */,
-      1 /* conversion_id */);
+      "7" /* conversion_data */, base::Time::Now() /* conversion_time */,
+      base::Time::Now() /* report_time */, 1 /* conversion_id */);
   manager.SetReportsForWebUI({report});
   OverrideWebUIConversionManager(&manager);
 
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "0x7") {
+          table.children[0].children[1].innerText === "7") {
         document.title = $1;
       }
     });
@@ -283,8 +283,8 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   ConversionReport report(
       ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
-      "7" /* conversion_data */, base::Time::Now() /* report_time */,
-      1 /* conversion_id */);
+      "7" /* conversion_data */, base::Time::Now() /* conversion_time */,
+      base::Time::Now() /* report_time */, 1 /* conversion_id */);
   manager.SetReportsForWebUI({report});
   OverrideWebUIConversionManager(&manager);
 
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "0x7") {
+          table.children[0].children[1].innerText === "7") {
         document.title = $1;
       }
     });

@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/v2/common_enums.h"
 #include "components/feed/core/v2/prefs.h"
@@ -74,9 +74,8 @@ void ReportLoadLatencies(std::unique_ptr<LoadLatencyTimes> latencies) {
 
 }  // namespace
 
-MetricsReporter::MetricsReporter(const base::TickClock* clock,
-                                 PrefService* profile_prefs)
-    : clock_(clock), profile_prefs_(profile_prefs) {
+MetricsReporter::MetricsReporter(PrefService* profile_prefs)
+    : profile_prefs_(profile_prefs) {
   persistent_data_ = prefs::GetPersistentMetricsData(*profile_prefs_);
   ReportPersistentDataIfDayIsDone();
 }
@@ -101,12 +100,12 @@ void MetricsReporter::TrackTimeSpentInFeed(bool interacted_or_scrolled) {
     ReportPersistentDataIfDayIsDone();
     persistent_data_.accumulated_time_spent_in_feed +=
         std::min(kTimeSpentInFeedInteractionTimeout,
-                 clock_->NowTicks() - *time_in_feed_start_);
+                 base::TimeTicks::Now() - *time_in_feed_start_);
     time_in_feed_start_ = base::nullopt;
   }
 
   if (interacted_or_scrolled) {
-    time_in_feed_start_ = clock_->NowTicks();
+    time_in_feed_start_ = base::TimeTicks::Now();
   }
 }
 
@@ -123,7 +122,7 @@ void MetricsReporter::RecordEngagement(int scroll_distance_dp,
                                        bool interacted) {
   scroll_distance_dp = std::abs(scroll_distance_dp);
   // Determine if this interaction is part of a new 'session'.
-  auto now = clock_->NowTicks();
+  base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeDelta kVisitTimeout = base::TimeDelta::FromMinutes(5);
   if (now - visit_start_time_ > kVisitTimeout) {
     FinalizeVisit();
@@ -222,88 +221,104 @@ void MetricsReporter::OpenInNewTabAction(int index_in_stream) {
   RecordInteraction();
 }
 
-void MetricsReporter::OpenInNewIncognitoTabAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewIncognitoTab);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.OpenInNewIncognitoTab"));
-  RecordInteraction();
-}
-
-void MetricsReporter::SendFeedbackAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedSendFeedback);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.SendFeedback"));
-  RecordInteraction();
-}
-
-void MetricsReporter::DownloadAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedDownload);
-  base::RecordAction(
-      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Download"));
-  RecordInteraction();
-}
-
-void MetricsReporter::LearnMoreAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedLearnMore);
-  base::RecordAction(
-      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.LearnMore"));
-  RecordInteraction();
-}
-
-void MetricsReporter::TurnOnAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedTurnOn);
-}
-
-void MetricsReporter::TurnOffAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedTurnOff);
-}
-
-void MetricsReporter::NavigationStarted() {
-  // TODO(harringtond): Use this or remove it.
-}
-
 void MetricsReporter::PageLoaded() {
   ReportCardOpenEndIfNeeded(true);
 }
 
-void MetricsReporter::RemoveAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedHideStory);
-  base::RecordAction(
-      base::UserMetricsAction("ContentSuggestions.Feed.CardAction.HideStory"));
-  RecordInteraction();
-}
+void MetricsReporter::OtherUserAction(FeedUserActionType action_type) {
+  ReportUserActionHistogram(action_type);
+  switch (action_type) {
+    case FeedUserActionType::kTappedOnCard:
+      DCHECK(false) << "This should be reported with OpenAction() instead";
+      break;
+    case FeedUserActionType::kShownCard_DEPRECATED:
+      DCHECK(false) << "deprecated";
+      break;
+    case FeedUserActionType::kTappedOpenInNewTab:
+      DCHECK(false)
+          << "This should be reported with OpenInNewTabAction() instead";
+      break;
+    case FeedUserActionType::kOpenedFeedSurface:
+      DCHECK(false) << "This should be reported with SurfaceOpened() instead";
+      break;
+    case FeedUserActionType::kTappedSendFeedback:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.SendFeedback"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedLearnMore:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.LearnMore"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedHideStory:
+      // TODO(crbug.com/1111101): This action is not visible to client code, so
+      // not yet used.
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.HideStory"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedNotInterestedIn:
+      // TODO(crbug.com/1111101): This action is not visible to client code, so
+      // not yet used.
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.NotInterestedIn"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedManageInterests:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.ManageInterests"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedDownload:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.Download"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kOpenedContextMenu:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.ContextMenu"));
+      break;
+    case FeedUserActionType::kTappedOpenInNewIncognitoTab:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.OpenInNewIncognitoTab"));
+      RecordInteraction();
+      break;
 
-void MetricsReporter::NotInterestedInAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedNotInterestedIn);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.NotInterestedIn"));
-  RecordInteraction();
-}
-
-void MetricsReporter::ManageInterestsAction() {
-  ReportUserActionHistogram(FeedUserActionType::kTappedManageInterests);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.ManageInterests"));
-  RecordInteraction();
-}
-
-void MetricsReporter::ContextMenuOpened() {
-  ReportUserActionHistogram(FeedUserActionType::kOpenedContextMenu);
-  base::RecordAction(base::UserMetricsAction(
-      "ContentSuggestions.Feed.CardAction.ContextMenu"));
-}
-
-void MetricsReporter::EphemeralStreamChange() {
-  ReportUserActionHistogram(FeedUserActionType::kEphemeralChange);
-}
-
-void MetricsReporter::EphemeralStreamChangeRejected() {
-  ReportUserActionHistogram(FeedUserActionType::kEphemeralChangeRejected);
+    case FeedUserActionType::kTappedManageActivity:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.ManageActivity"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kTappedManageReactions:
+      base::RecordAction(base::UserMetricsAction(
+          "ContentSuggestions.Feed.CardAction.ManageReactions"));
+      RecordInteraction();
+      break;
+    case FeedUserActionType::kEphemeralChange:
+    case FeedUserActionType::kEphemeralChangeRejected:
+    case FeedUserActionType::kTappedTurnOn:
+    case FeedUserActionType::kTappedTurnOff:
+    case FeedUserActionType::kAddedToReadLater:
+    case FeedUserActionType::kClosedContextMenu:
+    case FeedUserActionType::kEphemeralChangeCommited:
+    case FeedUserActionType::kOpenedDialog:
+    case FeedUserActionType::kClosedDialog:
+    case FeedUserActionType::kShowSnackbar:
+    case FeedUserActionType::kOpenedNativeActionSheet:
+    case FeedUserActionType::kOpenedNativeContextMenu:
+    case FeedUserActionType::kClosedNativeContextMenu:
+    case FeedUserActionType::kOpenedNativePulldownMenu:
+    case FeedUserActionType::kClosedNativePulldownMenu:
+      // Nothing additional for these actions. Note that some of these are iOS
+      // only.
+      break;
+  }
 }
 
 void MetricsReporter::SurfaceOpened(SurfaceId surface_id) {
   ReportPersistentDataIfDayIsDone();
-  surfaces_waiting_for_content_.emplace(surface_id, clock_->NowTicks());
+  surfaces_waiting_for_content_.emplace(surface_id, base::TimeTicks::Now());
   ReportUserActionHistogram(FeedUserActionType::kOpenedFeedSurface);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -336,7 +351,7 @@ void MetricsReporter::ReportOpenFeedIfNeeded(SurfaceId surface_id,
   auto iter = surfaces_waiting_for_content_.find(surface_id);
   if (iter == surfaces_waiting_for_content_.end())
     return;
-  base::TimeDelta latency = clock_->NowTicks() - iter->second;
+  base::TimeDelta latency = base::TimeTicks::Now() - iter->second;
   surfaces_waiting_for_content_.erase(iter);
 
   if (success) {
@@ -355,7 +370,7 @@ void MetricsReporter::ReportGetMoreIfNeeded(SurfaceId surface_id,
   auto iter = surfaces_waiting_for_more_content_.find(surface_id);
   if (iter == surfaces_waiting_for_more_content_.end())
     return;
-  base::TimeDelta latency = clock_->NowTicks() - iter->second;
+  base::TimeDelta latency = base::TimeTicks::Now() - iter->second;
   surfaces_waiting_for_more_content_.erase(iter);
   if (success) {
     base::UmaHistogramCustomTimes(
@@ -370,7 +385,7 @@ void MetricsReporter::ReportGetMoreIfNeeded(SurfaceId surface_id,
 
 void MetricsReporter::CardOpenBegin() {
   ReportCardOpenEndIfNeeded(false);
-  pending_open_ = clock_->NowTicks();
+  pending_open_ = base::TimeTicks::Now();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&MetricsReporter::CardOpenTimeout, GetWeakPtr(),
@@ -386,7 +401,7 @@ void MetricsReporter::CardOpenTimeout(base::TimeTicks start_ticks) {
 void MetricsReporter::ReportCardOpenEndIfNeeded(bool success) {
   if (!pending_open_)
     return;
-  base::TimeDelta latency = clock_->NowTicks() - *pending_open_;
+  base::TimeDelta latency = base::TimeTicks::Now() - *pending_open_;
   pending_open_.reset();
   if (success) {
     base::UmaHistogramCustomTimes(
@@ -411,12 +426,29 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
           "ContentSuggestions.Feed.Network.ResponseStatus.UploadActions",
           http_status_code);
       return;
+    case NetworkRequestType::kNextPage:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.NextPage",
+          http_status_code);
+      return;
+    case NetworkRequestType::kListFollowedWebFeeds:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.ListFollowedWebFeeds",
+          http_status_code);
+      return;
+    case NetworkRequestType::kUnfollowWebFeed:
+      base::UmaHistogramSparse(
+          "ContentSuggestions.Feed.Network.ResponseStatus.UnfollowWebFeed",
+          http_status_code);
+      return;
   }
 }
 
 void MetricsReporter::OnLoadStream(
     LoadStreamStatus load_from_store_status,
     LoadStreamStatus final_status,
+    bool loaded_new_content_from_network,
+    base::TimeDelta stored_content_age,
     std::unique_ptr<LoadLatencyTimes> load_latencies) {
   DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
            << " final_status=" << final_status;
@@ -428,6 +460,26 @@ void MetricsReporter::OnLoadStream(
         "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore",
         load_from_store_status);
   }
+
+  // For stored_content_age, the zero-value means there was no content loaded
+  // from the store. A negative value means there was content loaded, but it had
+  // a timestamp from the future. In either case, we'll avoid recording the
+  // content age.
+  if (stored_content_age > base::TimeDelta()) {
+    if (loaded_new_content_from_network) {
+      base::UmaHistogramCustomTimes(
+          "ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh",
+          stored_content_age, base::TimeDelta::FromMinutes(5),
+          base::TimeDelta::FromDays(7),
+          /*buckets=*/50);
+    } else {
+      base::UmaHistogramCustomTimes(
+          "ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed",
+          stored_content_age, base::TimeDelta::FromSeconds(5),
+          base::TimeDelta::FromDays(7),
+          /*buckets=*/50);
+    }
+  }
 }
 
 void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
@@ -438,7 +490,8 @@ void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
 
 void MetricsReporter::OnLoadMoreBegin(SurfaceId surface_id) {
   ReportGetMoreIfNeeded(surface_id, false);
-  surfaces_waiting_for_more_content_.emplace(surface_id, clock_->NowTicks());
+  surfaces_waiting_for_more_content_.emplace(surface_id,
+                                             base::TimeTicks::Now());
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

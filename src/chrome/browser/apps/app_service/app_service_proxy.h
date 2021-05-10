@@ -8,14 +8,16 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
@@ -26,7 +28,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/app_service/borealis_apps.h"
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
 #include "chrome/browser/apps/app_service/crostini_apps.h"
@@ -37,7 +39,7 @@
 #else
 #include "chrome/browser/apps/app_service/extension_apps.h"
 #include "chrome/browser/apps/app_service/web_apps.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class Profile;
 
@@ -45,7 +47,7 @@ namespace apps {
 
 class AppServiceImpl;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class LacrosApps;
 class UninstallDialog;
 
@@ -78,19 +80,22 @@ class AppServiceProxy : public KeyedService,
                         public apps::mojom::Subscriber,
                         public apps::AppRegistryCache::Observer {
  public:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
 #endif
 
   explicit AppServiceProxy(Profile* profile);
+  AppServiceProxy(const AppServiceProxy&) = delete;
+  AppServiceProxy& operator=(const AppServiceProxy&) = delete;
   ~AppServiceProxy() override;
 
   void ReInitializeForTesting(Profile* profile);
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
+  apps::AppCapabilityAccessCache& AppCapabilityAccessCache();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::InstanceRegistry& InstanceRegistry();
 #endif
 
@@ -112,14 +117,12 @@ class AppServiceProxy : public KeyedService,
   // Launches the app for the given |app_id|. |event_flags| provides additional
   // context about the action which launches the app (e.g. a middle click
   // indicating opening a background tab). |launch_source| is the possible app
-  // launch sources, e.g. from Shelf, from the search box, etc. |display_id| is
-  // the id of the display from which the app is launched.
-  // display::kInvalidDisplayId means that the display does not exist or is not
-  // set.
+  // launch sources, e.g. from Shelf, from the search box, etc. |window_info| is
+  // the window information to launch an app, e.g. display_id, window bounds.
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id);
+              apps::mojom::WindowInfoPtr window_info = nullptr);
 
   // Launches the app for the given |app_id| with files from |file_paths|.
   // |event_flags| provides additional context about the action which launches
@@ -147,24 +150,24 @@ class AppServiceProxy : public KeyedService,
   // Launches an app for the given |app_id|, passing |intent| to the app.
   // |event_flags| provides additional context about the action which launch the
   // app (e.g. a middle click indicating opening a background tab).
-  // |launch_source| is the possible app launch sources. |display_id| is the id
-  // of the display from which the app is launched.
+  // |launch_source| is the possible app launch sources. |window_info| is the
+  // window information to launch an app, e.g. display_id, window bounds.
   void LaunchAppWithIntent(const std::string& app_id,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           int64_t display_id);
+                           apps::mojom::WindowInfoPtr window_info = nullptr);
 
   // Launches an app for the given |app_id|, passing |url| to the app.
   // |event_flags| provides additional context about the action which launch the
   // app (e.g. a middle click indicating opening a background tab).
-  // |launch_source| is the possible app launch sources. |display_id| is the id
-  // of the display from which the app is launched.
+  // |launch_source| is the possible app launch sources. |window_info| is the
+  // window information to launch an app, e.g. display_id, window bounds.
   void LaunchAppWithUrl(const std::string& app_id,
                         int32_t event_flags,
                         GURL url,
                         apps::mojom::LaunchSource launch_source,
-                        int64_t display_id);
+                        apps::mojom::WindowInfoPtr window_info = nullptr);
 
   // Sets |permission| for the app identified by |app_id|.
   void SetPermission(const std::string& app_id,
@@ -180,7 +183,7 @@ class AppServiceProxy : public KeyedService,
   void UninstallSilently(const std::string& app_id,
                          apps::mojom::UninstallSource uninstall_source);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
   // dialog. AppService sets the paused status directly. If the app is running,
@@ -217,7 +220,7 @@ class AppServiceProxy : public KeyedService,
   void FlushMojoCallsForTesting();
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void ReInitializeCrostiniForTesting(Profile* profile);
   void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
   void UninstallForTesting(const std::string& app_id,
@@ -316,7 +319,7 @@ class AppServiceProxy : public KeyedService,
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   static void CreateBlockDialog(const std::string& app_name,
                                 const gfx::ImageSkia& image,
                                 Profile* profile);
@@ -336,7 +339,11 @@ class AppServiceProxy : public KeyedService,
   void Shutdown() override;
 
   // apps::mojom::Subscriber overrides.
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
+  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
+              apps::mojom::AppType app_type,
+              bool should_notify_initialized) override;
+  void OnCapabilityAccesses(
+      std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter) override;
@@ -346,7 +353,7 @@ class AppServiceProxy : public KeyedService,
   void InitializePreferredApps(
       PreferredAppsList::PreferredApps preferred_apps) override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void UninstallImpl(const std::string& app_id,
                      gfx::NativeWindow parent_window,
                      base::OnceClosure callback);
@@ -404,7 +411,8 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<apps::AppServiceImpl> app_service_impl_;
 
   mojo::Remote<apps::mojom::AppService> app_service_;
-  apps::AppRegistryCache cache_;
+  apps::AppRegistryCache app_registry_cache_;
+  apps::AppCapabilityAccessCache app_capability_access_cache_;
 
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
@@ -419,7 +427,7 @@ class AppServiceProxy : public KeyedService,
 
   apps::PreferredAppsList preferred_apps_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionAppsChromeOs> extension_apps_;
@@ -443,8 +451,6 @@ class AppServiceProxy : public KeyedService,
                                     base::UniquePtrComparator>;
   UninstallDialogs uninstall_dialogs_;
 #else
-  // TODO(crbug.com/877898): Erase extension_web_apps_ when BMO is on.
-  std::unique_ptr<ExtensionApps> extension_web_apps_;
   std::unique_ptr<WebApps> web_apps_;
   std::unique_ptr<ExtensionApps> extension_apps_;
 #endif
@@ -460,8 +466,6 @@ class AppServiceProxy : public KeyedService,
   base::OnceClosure dialog_created_callback_;
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);
 };
 
 class ScopedOmitBuiltInAppsForTesting {

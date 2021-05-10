@@ -35,6 +35,8 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
   bool GetAppContainerId(std::string* appcontainer_id) override;
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
   void PostSpawnTarget(base::ProcessHandle process) override;
+  bool ShouldUnsandboxedRunInJob() override;
+  bool CetCompatible() override;
 
   // Override to return true if the process should be launched as an elevated
   // process (which implies no sandbox).

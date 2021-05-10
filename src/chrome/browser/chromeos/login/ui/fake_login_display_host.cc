@@ -92,6 +92,8 @@ void FakeLoginDisplayHost::StartDemoAppLaunch() {}
 void FakeLoginDisplayHost::StartKiosk(const KioskAppId& kiosk_app_id,
                                       bool is_auto_launch) {}
 
+void FakeLoginDisplayHost::AttemptShowEnableConsumerKioskScreen() {}
+
 void FakeLoginDisplayHost::CompleteLogin(const UserContext& user_context) {}
 
 void FakeLoginDisplayHost::OnGaiaScreenReady() {}
@@ -116,6 +118,8 @@ void FakeLoginDisplayHost::ShowGaiaDialog(const AccountId& prefilled_account) {}
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 
+void FakeLoginDisplayHost::SetShelfButtonsEnabled(bool enabled) {}
+
 void FakeLoginDisplayHost::UpdateOobeDialogState(ash::OobeDialogState state) {}
 
 void FakeLoginDisplayHost::CancelPasswordChangedFlow() {}
@@ -139,9 +143,15 @@ bool FakeLoginDisplayHost::HasUserPods() {
   return false;
 }
 
+void FakeLoginDisplayHost::VerifyOwnerForKiosk(base::OnceClosure) {}
+
 void FakeLoginDisplayHost::AddObserver(LoginDisplayHost::Observer* observer) {}
 
 void FakeLoginDisplayHost::RemoveObserver(
     LoginDisplayHost::Observer* observer) {}
+
+SigninUI* FakeLoginDisplayHost::GetSigninUI() {
+  return nullptr;
+}
 
 }  // namespace chromeos

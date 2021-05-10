@@ -82,7 +82,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Memory.BackgroundTask.Browser.PrivateMemoryFootprint" units="MiB"
-    expires_after="2021-03-28">
+    expires_after="2021-08-01">
 <!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -111,7 +111,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Memory.BackgroundTask.Browser.ResidentSet"
-    units="MiB" expires_after="2021-03-28">
+    units="MiB" expires_after="2021-08-01">
 <!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -228,7 +228,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Memory.Browser.MemoryFootprint.Active" units="MB"
     expires_after="2021-08-27">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     This metric is only recorded on iOS. Same as Memory.Browser.MemoryFootprint
@@ -239,7 +239,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Memory.Browser.MemoryFootprint.Active.Over200MBWatermark"
     enum="BooleanGreaterOrEqualThan200MB" expires_after="2021-08-27">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     This metric is only recorded on iOS when
@@ -255,7 +255,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Memory.Browser.MemoryFootprint.Background" units="MB"
     expires_after="2021-08-27">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     This metric is only recorded on iOS. Same as Memory.Browser.MemoryFootprint
@@ -271,7 +271,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Memory.Browser.MemoryFootprint.Inactive" units="MB"
     expires_after="2021-08-27">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     This metric is only recorded on iOS. Same as Memory.Browser.MemoryFootprint
@@ -283,9 +283,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.NumLiveOverscroll" units="tabs"
-    expires_after="M88">
+    expires_after="2021-07-11">
+  <owner>ajuma@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
-  <owner>eugenebut@chromium.org</owner>
   <summary>
     Investigation into crbug.com/1102494 shows that OverscrollActionsController
     is allocating thousands of objects in it's -initWithScrollView:. This is
@@ -298,9 +298,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.NumOpenTabs" units="tabs"
-    expires_after="M88">
+    expires_after="2021-07-11">
+  <owner>ajuma@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
-  <owner>eugenebut@chromium.org</owner>
   <summary>
     Investigation into crbug.com/1102494 shows that OverscrollActionsController
     is allocating thousands of objects in it's -initWithScrollView:. This is
@@ -314,7 +314,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Memory.Browser.MemoryFootprint.OnBackground" units="MiB"
     expires_after="2021-08-27">
-  <owner>eugenebut@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     This metric is only recorded on iOS. Same as Memory.Browser.MemoryFootprint
@@ -388,8 +388,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>TBD.</summary>
 </histogram>
 
+<histogram name="Memory.Discardable.FreeListReleaseTime" units="ms"
+    expires_after="2021-08-01">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Records how long it takes for memory to be released from the freelist of the
+    discardable shared memory allocator with |madvise|.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Discardable.FreelistSize.Foreground" units="KiB"
-    expires_after="2021-03-28">
+    expires_after="2021-08-01">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -399,7 +409,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.LargeAllocationFromFreelist"
-    enum="BooleanLargeAllocationFromFreelist" expires_after="2021-05-09">
+    enum="BooleanLargeAllocationFromFreelist" expires_after="2021-07-11">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -409,7 +419,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.LockingSuccess"
-    enum="BooleanLockingSuccess" expires_after="2021-05-09">
+    enum="BooleanLockingSuccess" expires_after="2021-07-11">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -419,7 +429,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.Size.Foreground" units="KiB"
-    expires_after="2021-03-28">
+    expires_after="2021-08-01">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -429,7 +439,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.VirtualSize.Foreground" units="KiB"
-    expires_after="2021-03-28">
+    expires_after="2021-08-01">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -705,7 +715,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Memory.Experimental.GpuChannelManagerPressureHandlerDuration"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="2021-08-22">
 <!-- Name completed by histogram_suffixes name="GpuChannelManagerPressureHandlerDetails" -->
 
   <owner>sebmarchand@chromium.org</owner>
@@ -1006,7 +1016,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"
-    units="MB" expires_after="2021-05-09">
+    units="MB" expires_after="2021-07-11">
   <owner>tasak@google.com</owner>
   <owner>bartekn@google.com</owner>
   <summary>
@@ -1028,7 +1038,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Memory.Experimental.Renderer.PeakResidentSet.AtHighestPrivateMemoryFootprint"
-    units="MB" expires_after="2021-04-04">
+    units="MB" expires_after="2021-08-09">
   <owner>tasak@google.com</owner>
   <owner>bartekn@google.com</owner>
   <summary>
@@ -1038,7 +1048,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.Uptime" units="ms"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>keishi@chromium.org</owner>
   <summary>
     The uptime of a render process in time ticks (excludes extensions). Emitted
@@ -1146,7 +1156,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.RendererPrivateMemoryFootprintBefore"
-    units="MB" expires_after="2021-04-18">
+    units="MB" expires_after="2021-08-22">
   <owner>keishi@chromium.org</owner>
   <owner>tasak@chromium.org</owner>
   <summary>
@@ -1283,7 +1293,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Memory.GPU.PeakMemoryAllocationSource" units="KB"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
 <!-- Name completed by a combination of the following two histogram_suffixes: -->
 
 <!-- histogram_suffixes name="GPU.PeakMemoryAllocationSourceBase" -->
@@ -1301,7 +1311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Memory.GPU.PeakMemoryUsage" units="KB"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
 <!-- Name completed by histogram_suffixes name="GPU.PeakMemoryUsage" -->
 
   <owner>jonross@chromium.org</owner>
@@ -1445,7 +1455,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Memory.NativeLibrary.MappedAndResidentMemoryFootprintCollectionStatus"
-    enum="MappedAndResidentPagesDumpState" expires_after="2021-04-18">
+    enum="MappedAndResidentPagesDumpState" expires_after="2021-08-22">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1461,7 +1471,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint"
-    units="KB" expires_after="2021-03-28">
+    units="KB" expires_after="2021-08-01">
   <owner>lizeb@chromium.org</owner>
   <summary>
     The size of the native library code which was ordered, yet is not resident
@@ -1557,7 +1567,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Contents.MemAllocatedMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1568,7 +1578,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Contents.MemAvailableMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1581,7 +1591,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Contents.MemGraphicsMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1602,7 +1612,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Extensions.MemAllocatedMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1626,7 +1636,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Extensions.MemGraphicsMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1636,7 +1646,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.OOMKill.Extensions.MemShmemMB" units="MB"
-    expires_after="2021-05-02">
+    expires_after="2021-08-01">
   <owner>oshima@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
   <summary>
@@ -1677,7 +1687,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateMemoryFootprint"
-    units="MB" expires_after="2021-04-10">
+    units="MB" expires_after="2021-08-15">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
@@ -1691,7 +1701,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateSwapFootprint" units="MB"
-    expires_after="2021-04-10">
+    expires_after="2021-08-15">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
@@ -1722,7 +1732,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.SharedMemoryFootprint"
-    units="MB" expires_after="2021-04-10">
+    units="MB" expires_after="2021-08-15">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
@@ -1732,6 +1742,134 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Recorded at Poisson sampled time intervals with a mean of 5 minutes on
     Android and 30 minutes on other platforms.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.DiskIsUsable.5min" enum="BooleanYesNo"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Whether the disk allocator is usable. Recorded at the same time as
+    &quot;Memory.ParkableImage.*.5min&quot;. The disk may not be usable for
+    several reasons, including the profile being an Incognito one, permssions
+    error, or disk write error.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.OnDiskSize.5min" units="KiB"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Size of encoded image data of ParkableImages that are on disk. Collected
+    once, 5 minutes after the first ParkableImage is created.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Read.Latency" units="microseconds"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is read from disk. Records the time taken
+    to read a ParkableImage from disk. Note: This metric drops reports on
+    clients with low-resolution clocks, which means these reports will be biased
+    against a portion of the population on Windows. See
+    Windows.HasHighResolutionTimeTicks for the affected sample.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Read.Size" units="KiB"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is read from disk. Records the size of
+    the read, in KiB.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Read.Throughput" units="MiBps"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is read from disk. Records the throughput
+    of reading the ParkableImage from disk, in MiB/s.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.TotalReadTime.5min" units="ms"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Total time spent reading images from disk. Collected once, 5 minutes after
+    the first ParkableImage is created.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.TotalSize.5min" units="KiB"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Total size of encoded image data of ParkableImages. Collected once, 5
+    minutes after the first ParkableImage is created.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.TotalWriteTime.5min" units="ms"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Total time spent writing images to disk. Collected once, 5 minutes after the
+    first ParkableImage is created.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.UnparkedSize.5min" units="KiB"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Size of encoded image data of ParkableImages that are not written to disk.
+    Collected once, 5 minutes after the first ParkableImage is created.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Write.Latency" units="microseconds"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is written to disk. Records the time
+    taken to write the ParkableImage to disk. Note: This metric drops reports on
+    clients with low-resolution clocks, which means these reports will be biased
+    against a portion of the population on Windows. See
+    Windows.HasHighResolutionTimeTicks for the affected sample.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Write.Size" units="KiB"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is written to disk. Records the size of
+    the write, in KiB.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ParkableImage.Write.Throughput" units="MiBps"
+    expires_after="M95">
+  <owner>thiabaud@google.com</owner>
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Recorded each time a ParkableImage is written to disk. Records the
+    throughput of writing the ParkableImage to disk, in MiB/s.
   </summary>
 </histogram>
 
@@ -1985,8 +2123,39 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Throughput of a ParkableString disk write.</summary>
 </histogram>
 
+<histogram name="Memory.PartitionAlloc.ThreadCache.BatchFillRate{ThreadType}"
+    units="%" expires_after="M92">
+  <owner>lizeb@chromium.org</owner>
+  <owner>bartekn@chromium.org</owner>
+  <summary>
+    Fraction of PartitionAlloc's thread cache allocations requests that required
+    a batch fill, that is cache hits touching the central allocator. Recorded
+    during memory dumps, at the same time as the Memory.*.PartitionAlloc.*
+    histograms. Data is collected for {ThreadType}.
+  </summary>
+  <token key="ThreadType">
+    <variant name="" summary="all threads"/>
+    <variant name=".MainThread" summary="the main thread only"/>
+  </token>
+</histogram>
+
+<histogram name="Memory.PartitionAlloc.ThreadCache.HitRate{ThreadType}"
+    units="%" expires_after="M92">
+  <owner>lizeb@chromium.org</owner>
+  <owner>bartekn@chromium.org</owner>
+  <summary>
+    Hit rate for PartitionAlloc's thread cache. Recorded during memory dumps, at
+    the same time as the Memory.*.PartitionAlloc.* histograms. Data is collected
+    for {ThreadType}.
+  </summary>
+  <token key="ThreadType">
+    <variant name="" summary="all threads"/>
+    <variant name=".MainThread" summary="the main thread only"/>
+  </token>
+</histogram>
+
 <histogram name="Memory.PressureLevel" enum="MemoryPressureLevel"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>chrisha@chromium.org</owner>
   <summary>
     The memory pressure level, which is recorded periodically. This shows the
@@ -2005,7 +2174,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Memory.PressureWindowDuration" units="ms"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
 <!-- Name completed by histogram_suffixes name="Memory.Pressure.TransitionType" -->
 
   <owner>sebmarchand@chromium.org</owner>
@@ -2098,7 +2267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.RendererProcessCount" units="processes"
-    expires_after="2021-04-18">
+    expires_after="2021-08-22">
   <owner>creis@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -2137,7 +2306,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.InitializedAndNotDead"
-    units="processes" expires_after="2021-04-18">
+    units="processes" expires_after="2021-08-22">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -2238,7 +2407,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Total.SystemCommitLimit" units="GB"
-    expires_after="2021-05-02">
+    expires_after="2021-07-27">
   <owner>sadrul@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -2370,15 +2539,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="MemoryAndroid.LowRamDevice" enum="Boolean" expires_after="M85">
+<histogram name="MemoryAndroid.LowRamDevice" enum="Boolean"
+    expires_after="never">
+<!-- expires-never: used internally for filtering -->
+
   <owner>ssid@chromium.org</owner>
+  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     Whether Chrome is running in low ram mode. This histogram is reported on
     every upload by Android devices. A device is considered low-RAM if it has
     512MiB of RAM or lower (see SysUtils.detectLowEndDevice()).
-
-    Note: The low-RAM determination has changed in M-49, it used to be given
-    directly by the Android OS.
   </summary>
 </histogram>
 

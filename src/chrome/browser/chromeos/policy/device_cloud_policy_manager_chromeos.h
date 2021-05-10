@@ -63,7 +63,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
     virtual void OnDeviceCloudPolicyManagerDisconnected() = 0;
   };
 
-  using UnregisterCallback = base::Callback<void(bool)>;
+  using UnregisterCallback = base::OnceCallback<void(bool)>;
 
   // |task_runner| is the runner for policy refresh, heartbeat, and status
   // upload tasks.
@@ -100,7 +100,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Sends the unregister request. |callback| is invoked with a boolean
   // parameter indicating the result when done.
-  virtual void Unregister(const UnregisterCallback& callback);
+  virtual void Unregister(UnregisterCallback callback);
 
   // Disconnects the manager.
   virtual void Disconnect();
@@ -181,7 +181,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // The TaskRunner used to do device status and log uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
+  base::CallbackListSubscription state_keys_update_subscription_;
 
   // PrefService instance to read the policy refresh rate from.
   PrefService* local_state_;

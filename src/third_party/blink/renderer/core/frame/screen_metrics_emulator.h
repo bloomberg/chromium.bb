@@ -10,22 +10,24 @@
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/widget/device_emulation_params.mojom-blink.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
 struct VisualProperties;
-class WebViewFrameWidget;
+class WebFrameWidgetImpl;
 
 // ScreenMetricsEmulator class manages screen emulation inside a
-// WebViewFrameWidget. This includes resizing, placing view on the screen at
+// WebFrameWidgetImpl. This includes resizing, placing view on the screen at
 // desired position, changing device scale factor, and scaling down the whole
 // widget if required to fit into the browser window.
 class ScreenMetricsEmulator : public GarbageCollected<ScreenMetricsEmulator> {
  public:
-  ScreenMetricsEmulator(WebViewFrameWidget* delegate,
+  ScreenMetricsEmulator(WebFrameWidgetImpl* frame_widget,
                         const ScreenInfo& screen_info,
                         const gfx::Size& widget_size,
                         const gfx::Size& visible_viewport_size,
@@ -55,10 +57,10 @@ class ScreenMetricsEmulator : public GarbageCollected<ScreenMetricsEmulator> {
   gfx::Point ViewRectOrigin();
 
   // Disables emulation and applies non-emulated values to the
-  // WebViewFrameWidget. Call this before destroying the ScreenMetricsEmulator.
+  // WebFrameWidgetImpl. Call this before destroying the ScreenMetricsEmulator.
   void DisableAndApply();
 
-  // Sets new parameters and applies them to the WebViewFrameWidget.
+  // Sets new parameters and applies them to the WebFrameWidgetImpl.
   void ChangeEmulationParams(const DeviceEmulationParams& params);
 
   void UpdateVisualProperties(const VisualProperties& visual_properties);
@@ -77,9 +79,9 @@ class ScreenMetricsEmulator : public GarbageCollected<ScreenMetricsEmulator> {
   // Applies emulated values to the WidgetBase.
   void Apply();
 
-  Member<WebViewFrameWidget> const delegate_;
+  Member<WebFrameWidgetImpl> const frame_widget_;
 
-  // Parameters as passed by WebViewFrameWidget::EnableDeviceEmulation.
+  // Parameters as passed by `WebFrameWidgetImpl::EnableDeviceEmulation()`
   DeviceEmulationParams emulation_params_;
 
   // Original values to restore back after emulation ends.

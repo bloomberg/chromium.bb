@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//media/cdm/library_cdm/cdm_paths.gni")
 import("//media/media_options.gni")
@@ -31,11 +32,11 @@ widevine_cdm_manifest_and_license_files = []
 # TODO(xhwang): widevine_cdm_version.h is only used in few places. Clean this up
 # so we don't need to copy it in most cases.
 if (bundle_widevine_cdm) {
-  if (is_ash) {
+  if (is_chromeos_ash) {
     widevine_cdm_version_h_file =
         "chromeos/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "chromeos/$widevine_arch/libwidevinecdm.so" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos_lacros) {
     widevine_cdm_version_h_file = "linux/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "linux/$widevine_arch/libwidevinecdm.so" ]
     widevine_cdm_manifest_and_license_files = [

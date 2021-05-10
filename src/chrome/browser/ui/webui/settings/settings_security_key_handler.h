@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "device/fido/fido_constants.h"
-
 #include "device/fido/bio/enrollment.h"
+#include "device/fido/fido_constants.h"
+#include "device/fido/fido_discovery_factory.h"
 
 namespace base {
 class ListValue;
@@ -22,7 +22,6 @@ class ListValue;
 
 namespace device {
 struct AggregatedEnumerateCredentialsResponse;
-class FidoDiscoveryFactory;
 class CredentialManagementHandler;
 enum class CredentialManagementStatus;
 class SetPINRequestHandler;
@@ -35,18 +34,30 @@ namespace settings {
 
 // Base class for message handlers on the "Security Keys" settings subpage.
 class SecurityKeysHandlerBase : public SettingsPageUIHandler {
+ public:
+  SecurityKeysHandlerBase(const SecurityKeysHandlerBase&) = delete;
+  SecurityKeysHandlerBase& operator=(const SecurityKeysHandlerBase&) = delete;
+
  protected:
-  SecurityKeysHandlerBase() = default;
+  SecurityKeysHandlerBase();
+  explicit SecurityKeysHandlerBase(
+      std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory);
+  ~SecurityKeysHandlerBase() override;
 
   // Subclasses must implement close to invalidate all pending callbacks.
   virtual void Close() = 0;
+
+  // Returns the discovery factory to be used for the request.
+  device::FidoDiscoveryFactory* discovery_factory() {
+    return discovery_factory_.get();
+  }
 
  private:
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  SecurityKeysHandlerBase(const SecurityKeysHandlerBase&) = delete;
-  SecurityKeysHandlerBase& operator=(const SecurityKeysHandlerBase&) = delete;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_ =
+      std::make_unique<device::FidoDiscoveryFactory>();
 };
 
 // SecurityKeysPINHandler processes messages from the "Create a PIN" dialog of
@@ -71,7 +82,9 @@ class SecurityKeysPINHandler : public SecurityKeysHandlerBase {
   void Close() override;
 
   void HandleStartSetPIN(const base::ListValue* args);
-  void OnGatherPIN(base::Optional<int64_t> num_retries);
+  void OnGatherPIN(uint32_t current_min_pin_length,
+                   uint32_t new_min_pin_length,
+                   base::Optional<int64_t> num_retries);
   void OnSetPINComplete(device::CtapDeviceResponseCode code);
   void HandleSetPIN(const base::ListValue* args);
 
@@ -127,6 +140,11 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
   SecurityKeysCredentialHandler();
   ~SecurityKeysCredentialHandler() override;
 
+ protected:
+  explicit SecurityKeysCredentialHandler(
+      std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory);
+  void HandleStart(const base::ListValue* args);
+
  private:
   enum class State {
     kNone,
@@ -140,7 +158,6 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
   void RegisterMessages() override;
   void Close() override;
 
-  void HandleStart(const base::ListValue* args);
   void HandlePIN(const base::ListValue* args);
   void HandleEnumerate(const base::ListValue* args);
   void HandleDelete(const base::ListValue* args);
@@ -152,14 +169,15 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
           std::vector<device::AggregatedEnumerateCredentialsResponse>>
           responses,
       base::Optional<size_t> remaining_credentials);
-  void OnGatherPIN(int64_t num_retries, base::OnceCallback<void(std::string)>);
+  void OnGatherPIN(uint32_t min_pin_length,
+                   int64_t num_retries,
+                   base::OnceCallback<void(std::string)>);
   void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
   void OnFinished(device::CredentialManagementStatus status);
 
   State state_ = State::kNone;
   base::OnceCallback<void(std::string)> credential_management_provide_pin_cb_;
 
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   std::unique_ptr<device::CredentialManagementHandler> credential_management_;
 
   std::string callback_id_;
@@ -174,6 +192,11 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
  public:
   SecurityKeysBioEnrollmentHandler();
   ~SecurityKeysBioEnrollmentHandler() override;
+
+ protected:
+  explicit SecurityKeysBioEnrollmentHandler(
+      std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory);
+  void HandleStart(const base::ListValue* args);
 
  private:
   enum class State {
@@ -190,10 +213,11 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   void RegisterMessages() override;
   void Close() override;
 
-  void HandleStart(const base::ListValue* args);
   void OnReady();
   void OnError(device::BioEnrollmentStatus status);
-  void OnGatherPIN(int64_t retries, base::OnceCallback<void(std::string)>);
+  void OnGatherPIN(uint32_t min_pin_length,
+                   int64_t retries,
+                   base::OnceCallback<void(std::string)>);
 
   void HandleProvidePIN(const base::ListValue* args);
 
@@ -222,7 +246,6 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   State state_ = State::kNone;
   std::string callback_id_;
   base::OnceCallback<void(std::string)> provide_pin_cb_;
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   std::unique_ptr<device::BioEnrollmentHandler> bio_;
   base::WeakPtrFactory<SecurityKeysBioEnrollmentHandler> weak_factory_{this};
 };

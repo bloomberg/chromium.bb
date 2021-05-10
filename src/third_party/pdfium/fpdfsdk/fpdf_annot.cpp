@@ -33,6 +33,7 @@
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
+#include "third_party/base/check.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
@@ -164,8 +165,8 @@ bool HasAPStream(CPDF_Dictionary* pAnnotDict) {
 }
 
 void UpdateContentStream(CPDF_Form* pForm, CPDF_Stream* pStream) {
-  ASSERT(pForm);
-  ASSERT(pStream);
+  DCHECK(pForm);
+  DCHECK(pStream);
 
   CPDF_PageContentGenerator generator(pForm);
   std::ostringstream buf;
@@ -176,9 +177,9 @@ void UpdateContentStream(CPDF_Form* pForm, CPDF_Stream* pStream) {
 void SetQuadPointsAtIndex(CPDF_Array* array,
                           size_t quad_index,
                           const FS_QUADPOINTSF* quad_points) {
-  ASSERT(array);
-  ASSERT(quad_points);
-  ASSERT(IsValidQuadPointsIndex(array, quad_index));
+  DCHECK(array);
+  DCHECK(quad_points);
+  DCHECK(IsValidQuadPointsIndex(array, quad_index));
 
   size_t nIndex = quad_index * 8;
   array->SetNewAt<CPDF_Number>(nIndex, quad_points->x1);
@@ -192,8 +193,8 @@ void SetQuadPointsAtIndex(CPDF_Array* array,
 }
 
 void AppendQuadPoints(CPDF_Array* array, const FS_QUADPOINTSF* quad_points) {
-  ASSERT(quad_points);
-  ASSERT(array);
+  DCHECK(quad_points);
+  DCHECK(array);
 
   array->AppendNew<CPDF_Number>(quad_points->x1);
   array->AppendNew<CPDF_Number>(quad_points->y1);
@@ -206,7 +207,7 @@ void AppendQuadPoints(CPDF_Array* array, const FS_QUADPOINTSF* quad_points) {
 }
 
 void UpdateBBox(CPDF_Dictionary* annot_dict) {
-  ASSERT(annot_dict);
+  DCHECK(annot_dict);
   // Update BBox entry in appearance stream based on the bounding rectangle
   // of the annotation's quadpoints.
   CPDF_Stream* pStream =
@@ -294,6 +295,18 @@ CPDFSDK_Widget* GetRadioButtonOrCheckBoxWidget(FPDF_FORMHANDLE hHandle,
 
   CPDF_FormControl* pFormControl = pPDFForm->GetControlByDict(pAnnotDict);
   return pFormControl ? pForm->GetWidget(pFormControl) : nullptr;
+}
+
+CPDF_Array* GetInkList(FPDF_ANNOTATION annot) {
+  FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annot);
+  if (subtype != FPDF_ANNOT_INK)
+    return 0;
+
+  CPDF_Dictionary* annot_dict = GetAnnotDictFromFPDFAnnotation(annot);
+  if (!annot_dict)
+    return 0;
+
+  return annot_dict->GetArrayFor(pdfium::annotation::kInkList);
 }
 
 }  // namespace
@@ -835,6 +848,93 @@ FPDFAnnot_GetVertices(FPDF_ANNOTATION annot,
   }
 
   return points_len;
+}
+
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetInkListCount(FPDF_ANNOTATION annot) {
+  CPDF_Array* ink_list = GetInkList(annot);
+  if (!ink_list)
+    return 0;
+
+  return ink_list->size();
+}
+
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetInkListPath(FPDF_ANNOTATION annot,
+                         unsigned long path_index,
+                         FS_POINTF* buffer,
+                         unsigned long length) {
+  unsigned long path_count = FPDFAnnot_GetInkListCount(annot);
+  if (path_index >= path_count)
+    return 0;
+
+  CPDF_Array* ink_list = GetInkList(annot);
+  if (!ink_list)
+    return 0;
+
+  CPDF_Array* path = ink_list->GetArrayAt(path_index);
+  if (!path)
+    return 0;
+
+  // Truncate to an even number.
+  unsigned long points_len = path->size() / 2;
+  if (buffer && length >= points_len) {
+    for (unsigned long i = 0; i < points_len; ++i) {
+      buffer[i].x = path->GetNumberAt(i * 2);
+      buffer[i].y = path->GetNumberAt(i * 2 + 1);
+    }
+  }
+
+  return points_len;
+}
+
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_GetLine(FPDF_ANNOTATION annot,
+                                                      FS_POINTF* start,
+                                                      FS_POINTF* end) {
+  if (!start || !end)
+    return false;
+
+  FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annot);
+  if (subtype != FPDF_ANNOT_LINE)
+    return false;
+
+  CPDF_Dictionary* annot_dict = GetAnnotDictFromFPDFAnnotation(annot);
+  if (!annot_dict)
+    return false;
+
+  CPDF_Array* line = annot_dict->GetArrayFor(pdfium::annotation::kL);
+  if (!line || line->size() < 4)
+    return false;
+
+  start->x = line->GetNumberAt(0);
+  start->y = line->GetNumberAt(1);
+  end->x = line->GetNumberAt(2);
+  end->y = line->GetNumberAt(3);
+
+  return true;
+}
+
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_GetBorder(FPDF_ANNOTATION annot,
+                    float* horizontal_radius,
+                    float* vertical_radius,
+                    float* border_width) {
+  if (!horizontal_radius || !vertical_radius || !border_width)
+    return false;
+
+  CPDF_Dictionary* annot_dict = GetAnnotDictFromFPDFAnnotation(annot);
+  if (!annot_dict)
+    return false;
+
+  CPDF_Array* border = annot_dict->GetArrayFor(pdfium::annotation::kBorder);
+  if (!border || border->size() < 3)
+    return false;
+
+  *horizontal_radius = border->GetNumberAt(0);
+  *vertical_radius = border->GetNumberAt(1);
+  *border_width = border->GetNumberAt(2);
+
+  return true;
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_HasKey(FPDF_ANNOTATION annot,

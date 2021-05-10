@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
+#include "chrome/browser/ui/views/user_education/tip_marquee_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,6 +22,10 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -50,6 +56,7 @@ std::unique_ptr<views::ImageButton> CreateScrollButton(
 
 class FrameGrabHandle : public views::View {
  public:
+  METADATA_HEADER(FrameGrabHandle);
   gfx::Size CalculatePreferredSize() const override {
     // Reserve some space for the frame to be grabbed by, even if the tabstrip
     // is full.
@@ -58,6 +65,70 @@ class FrameGrabHandle : public views::View {
   }
 };
 
+BEGIN_METADATA(FrameGrabHandle, views::View)
+END_METADATA
+
+// A customized overflow indicator that fades the tabs into the frame
+// background.
+class TabStripContainerOverflowIndicator : public views::View {
+ public:
+  METADATA_HEADER(TabStripContainerOverflowIndicator);
+  TabStripContainerOverflowIndicator(TabStrip* tab_strip,
+                                     views::OverflowIndicatorAlignment side)
+      : tab_strip_(tab_strip), side_(side) {
+    DCHECK(side_ == views::OverflowIndicatorAlignment::kLeft ||
+           side_ == views::OverflowIndicatorAlignment::kRight);
+  }
+
+  // Making this smaller than the margin provided by the leftmost/rightmost
+  // tab's tail (TabStyle::kTabOverlap / 2) makes the transition in and out of
+  // the scroll state smoother.
+  static constexpr int kOpaqueWidth = 5;
+  static constexpr int kFadeWidth = 15;
+  static constexpr int kTotalWidth = kOpaqueWidth + kFadeWidth;
+
+  // views::View overrides:
+  void OnPaint(gfx::Canvas* canvas) override {
+    // TODO(tbergquist): Handle themes with titlebar background images.
+    SkColor frame_color = tab_strip_->controller()->GetFrameColor(
+        BrowserFrameActiveState::kUseCurrent);
+
+    SkPoint points[2];
+    points[0].iset(GetContentsBounds().origin().x(), GetContentsBounds().y());
+    points[1].iset(GetContentsBounds().right(), GetContentsBounds().y());
+
+    SkColor colors[3];
+    SkScalar color_positions[3];
+    if (side_ == views::OverflowIndicatorAlignment::kLeft) {
+      colors[0] = frame_color;
+      colors[1] = frame_color;
+      colors[2] = SkColorSetA(frame_color, SK_AlphaTRANSPARENT);
+      color_positions[0] = 0;
+      color_positions[1] = static_cast<float>(kOpaqueWidth) / kTotalWidth;
+      color_positions[2] = 1;
+    } else {
+      colors[0] = SkColorSetA(frame_color, SK_AlphaTRANSPARENT);
+      colors[1] = frame_color;
+      colors[2] = frame_color;
+      color_positions[0] = 0;
+      color_positions[1] = static_cast<float>(kFadeWidth) / kTotalWidth;
+      color_positions[2] = 1;
+    }
+
+    cc::PaintFlags flags;
+    flags.setShader(cc::PaintShader::MakeLinearGradient(
+        points, colors, color_positions, 3, SkTileMode::kClamp));
+    canvas->DrawRect(GetContentsBounds(), flags);
+  }
+
+ private:
+  TabStrip* tab_strip_;
+  views::OverflowIndicatorAlignment side_;
+};
+
+BEGIN_METADATA(TabStripContainerOverflowIndicator, views::View)
+END_METADATA
+
 }  // namespace
 
 TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
@@ -65,9 +136,8 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal);
 
   tab_strip_ = tab_strip.get();
-  tab_strip->SetAvailableWidthCallback(
-      base::BindRepeating(&TabStripRegionView::CalculateTabStripAvailableWidth,
-                          base::Unretained(this)));
+  tab_strip->SetAvailableWidthCallback(base::BindRepeating(
+      &TabStripRegionView::GetTabStripAvailableWidth, base::Unretained(this)));
   if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
     // TODO(https://crbug.com/1132488): ScrollView doesn't propagate changes to
     // the TabStrip's preferred size; observe that manually.
@@ -82,6 +152,21 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
     tab_strip_scroll_container->SetTreatAllScrollEventsAsHorizontal(true);
     tab_strip_container_ = tab_strip_scroll_container;
     tab_strip_scroll_container->SetContents(std::move(tab_strip));
+
+    tab_strip_scroll_container->SetDrawOverflowIndicator(true);
+    left_overflow_indicator_ =
+        tab_strip_scroll_container->SetCustomOverflowIndicator(
+            views::OverflowIndicatorAlignment::kLeft,
+            std::make_unique<TabStripContainerOverflowIndicator>(
+                tab_strip_, views::OverflowIndicatorAlignment::kLeft),
+            TabStripContainerOverflowIndicator::kTotalWidth, false);
+    right_overflow_indicator_ =
+        tab_strip_scroll_container->SetCustomOverflowIndicator(
+            views::OverflowIndicatorAlignment::kRight,
+            std::make_unique<TabStripContainerOverflowIndicator>(
+                tab_strip_, views::OverflowIndicatorAlignment::kRight),
+            TabStripContainerOverflowIndicator::kTotalWidth, false);
+
     // This base::Unretained is safe because the callback is called by the
     // layout manager, which is cleaned up before view children like
     // |tab_strip_scroll_container| (which owns |tab_strip_|).
@@ -129,10 +214,29 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
   reserved_grab_handle_space_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kUnbounded));
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(3));
 
-  if (base::FeatureList::IsEnabled(features::kTabSearch) &&
-      tab_strip_->controller()->GetBrowser()->is_type_normal()) {
+  // This is the margin necessary to ensure correct spacing between right-
+  // aligned control and the end of the TabStripRegionView.
+  const gfx::Insets control_padding = gfx::Insets(
+      0, 0, 0, GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING));
+
+  tip_marquee_view_ = AddChildView(
+      std::make_unique<TipMarqueeView>(views::style::CONTEXT_LABEL));
+  tip_marquee_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(
+          views::LayoutOrientation::kHorizontal,
+          views::MinimumFlexSizeRule::kPreferredSnapToMinimum)
+          .WithOrder(2));
+  tip_marquee_view_->SetProperty(views::kCrossAxisAlignmentKey,
+                                 views::LayoutAlignment::kCenter);
+  tip_marquee_view_->SetProperty(views::kMarginsKey, control_padding);
+
+  const Browser* browser = tab_strip_->controller()->GetBrowser();
+  if (base::FeatureList::IsEnabled(features::kTabSearch) && browser &&
+      browser->is_type_normal()) {
     auto tab_search_button = std::make_unique<TabSearchButton>(tab_strip_);
     tab_search_button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_SEARCH));
@@ -141,11 +245,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
     tab_search_button->SetProperty(views::kCrossAxisAlignmentKey,
                                    views::LayoutAlignment::kCenter);
     tab_search_button_ = AddChildView(std::move(tab_search_button));
-
-    // Add the margin necessary to ensure correct spacing between right-aligned
-    // controls and the end of the TabStripRegionView.
-    layout_manager_->SetInteriorMargin(gfx::Insets(
-        0, 0, 0, GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING)));
+    tab_search_button_->SetProperty(views::kMarginsKey, control_padding);
   }
 }
 
@@ -201,11 +301,11 @@ void TabStripRegionView::FrameColorsChanged() {
                                            foreground_color);
   }
   tab_strip_->FrameColorsChanged();
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
+    left_overflow_indicator_->SchedulePaint();
+    right_overflow_indicator_->SchedulePaint();
+  }
   SchedulePaint();
-}
-
-const char* TabStripRegionView::GetClassName() const {
-  return "TabStripRegionView";
 }
 
 void TabStripRegionView::ChildPreferredSizeChanged(views::View* child) {
@@ -248,17 +348,16 @@ void TabStripRegionView::OnViewPreferredSizeChanged(View* view) {
   PreferredSizeChanged();
 }
 
-int TabStripRegionView::CalculateTabStripAvailableWidth() {
+int TabStripRegionView::GetTabStripAvailableWidth() const {
   // The tab strip can occupy the space not currently taken by its fixed-width
-  // sibling views.
-  int reserved_width = 0;
-  for (View* const child : children()) {
-    if (child != tab_strip_container_)
-      reserved_width += child->GetMinimumSize().width();
-  }
+  // sibling views. First ask for the available size of the container.
+  views::SizeBound width_bound = GetAvailableSize(tab_strip_container_).width();
 
-  return size().width() - reserved_width -
-         layout_manager_->interior_margin().width();
+  // Because we can't return a null value, and we can't return zero, for cases
+  // where we have never been laid out we will return something arbitrary (the
+  // width of the region view is as good a choice as any, as it's strictly
+  // larger than the tabstrip should be able to display).
+  return width_bound.min_of(width());
 }
 
 void TabStripRegionView::ScrollTowardsLeadingTab() {
@@ -302,3 +401,8 @@ void TabStripRegionView::UpdateNewTabButtonBorder() {
   new_tab_button_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(extra_vertical_space / 2, 0, 0, kHorizontalInset)));
 }
+
+BEGIN_METADATA(TabStripRegionView, views::AccessiblePaneView)
+// TODO(crbug.com/1169051): Uncomment when bug is fixed
+// ADD_READONLY_PROPERTY_METADATA(int, TabStripAvailableWidth)
+END_METADATA

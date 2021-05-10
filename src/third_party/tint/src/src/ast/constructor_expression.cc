@@ -16,40 +16,17 @@
 
 #include <assert.h>
 
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type_constructor_expression.h"
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ConstructorExpression);
 
 namespace tint {
 namespace ast {
 
-ConstructorExpression::ConstructorExpression() = default;
-
 ConstructorExpression::~ConstructorExpression() = default;
 
+ConstructorExpression::ConstructorExpression(ConstructorExpression&&) = default;
+
 ConstructorExpression::ConstructorExpression(const Source& source)
-    : Expression(source) {}
-
-bool ConstructorExpression::IsConstructor() const {
-  return true;
-}
-
-bool ConstructorExpression::IsScalarConstructor() const {
-  return false;
-}
-
-bool ConstructorExpression::IsTypeConstructor() const {
-  return false;
-}
-
-ScalarConstructorExpression* ConstructorExpression::AsScalarConstructor() {
-  assert(IsScalarConstructor());
-  return static_cast<ScalarConstructorExpression*>(this);
-}
-
-TypeConstructorExpression* ConstructorExpression::AsTypeConstructor() {
-  assert(IsTypeConstructor());
-  return static_cast<TypeConstructorExpression*>(this);
-}
+    : Base(source) {}
 
 }  // namespace ast
 }  // namespace tint

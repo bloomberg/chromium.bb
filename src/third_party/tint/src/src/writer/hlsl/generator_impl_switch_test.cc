@@ -17,10 +17,10 @@
 #include "src/ast/break_statement.h"
 #include "src/ast/case_statement.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type/i32_type.h"
+#include "src/program.h"
+#include "src/type/i32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -31,30 +31,32 @@ namespace {
 using HlslGeneratorImplTest_Switch = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Switch, Emit_Switch) {
-  auto def = std::make_unique<ast::CaseStatement>();
-  auto def_body = std::make_unique<ast::BlockStatement>();
-  def_body->append(std::make_unique<ast::BreakStatement>());
-  def->set_body(std::move(def_body));
+  auto* def_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
+  auto* def = create<ast::CaseStatement>(ast::CaseSelectorList{}, def_body);
 
-  ast::type::I32Type i32;
   ast::CaseSelectorList case_val;
-  case_val.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
+  case_val.push_back(Literal(5));
 
-  auto case_body = std::make_unique<ast::BlockStatement>();
-  case_body->append(std::make_unique<ast::BreakStatement>());
+  auto* case_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
 
-  auto case_stmt = std::make_unique<ast::CaseStatement>(std::move(case_val),
-                                                        std::move(case_body));
+  auto* case_stmt = create<ast::CaseStatement>(case_val, case_body);
 
   ast::CaseStatementList body;
-  body.push_back(std::move(case_stmt));
-  body.push_back(std::move(def));
+  body.push_back(case_stmt);
+  body.push_back(def);
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  ast::SwitchStatement s(std::move(cond), std::move(body));
-  gen().increment_indent();
+  auto* cond = Expr("cond");
+  auto* s = create<ast::SwitchStatement>(cond, body);
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &s)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, s)) << gen.error();
   EXPECT_EQ(result(), R"(  switch(cond) {
     case 5: {
       break;

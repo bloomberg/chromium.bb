@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
+class HTMLAreaElement;
 
 // Returns true if items builder is used for other than offset mapping.
 template <typename OffsetMappingBuilder>
@@ -1095,8 +1096,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
                      kPopDirectionalFormattingCharacter);
   }
 
-  if (style->Display() == EDisplay::kListItem &&
-      style->ListStyleType() != EListStyleType::kNone) {
+  if (style->Display() == EDisplay::kListItem && style->GetListStyleType()) {
     is_empty_inline_ = false;
     is_block_level_ = false;
   }

@@ -4,9 +4,18 @@
 
 import * as Common from '../common/common.js';
 import * as ComponentHelpers from '../component_helpers/component_helpers.js';
+import * as i18n from '../i18n/i18n.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
-const ls = Common.ls;
+export const UIStrings = {
+  /**
+  *@description Icon element title in Color Swatch of the inline editor in the Styles tab
+  */
+  shiftclickToChangeColorFormat: 'Shift-click to change color format',
+};
+const str_ = i18n.i18n.registerUIStrings('inline_editor/ColorSwatch.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+
 const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 interface KeyboardModifiedEvent extends Event {
@@ -24,25 +33,35 @@ export class FormatChangedEvent extends Event {
 
 export class ColorSwatch extends HTMLElement {
   private readonly shadow = this.attachShadow({mode: 'open'});
-  private tooltip: string = ls`Shift-click to change color format`;
+  private tooltip: string = i18nString(UIStrings.shiftclickToChangeColorFormat);
   private text: string|null = null;
-  private _color: Common.Color.Color|null = null;
-  private _format: string|null = null;
+  private color: Common.Color.Color|null = null;
+  private format: string|null = null;
 
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('inline_editor/colorSwatch.css', {patchThemeSupport: false}),
+      ...getStyleSheets('inline_editor/colorSwatch.css', {enableLegacyPatching: false}),
     ];
   }
 
-  get color(): Common.Color.Color|null {
-    return this._color;
+  static isColorSwatch(element: Element): element is ColorSwatch {
+    return element.localName === 'devtools-color-swatch';
   }
 
-  get format(): string|null {
-    return this._format;
+  getColor(): Common.Color.Color|null {
+    return this.color;
   }
+
+  getFormat(): string|null {
+    return this.format;
+  }
+
+  get anchorBox(): AnchorBox|null {
+    const swatch = this.shadow.querySelector('.color-swatch');
+    return swatch ? swatch.boxInWindow() : null;
+  }
+
   /**
    * Render this swatch given a color object or text to be parsed as a color.
    * @param color The color object or string to use for this swatch.
@@ -51,25 +70,25 @@ export class ColorSwatch extends HTMLElement {
    */
   renderColor(color: Common.Color.Color|string, formatOrUseUserSetting?: string|boolean, tooltip?: string): void {
     if (typeof color === 'string') {
-      this._color = Common.Color.Color.parse(color);
+      this.color = Common.Color.Color.parse(color);
       this.text = color;
-      if (!this._color) {
+      if (!this.color) {
         this.renderTextOnly();
         return;
       }
     } else {
-      this._color = color;
+      this.color = color;
     }
 
     if (typeof formatOrUseUserSetting === 'boolean' && formatOrUseUserSetting) {
-      this._format = Common.Settings.detectColorFormat(this._color);
+      this.format = Common.Settings.detectColorFormat(this.color);
     } else if (typeof formatOrUseUserSetting === 'string') {
-      this._format = formatOrUseUserSetting;
+      this.format = formatOrUseUserSetting;
     } else {
-      this._format = this._color.format();
+      this.format = this.color.format();
     }
 
-    this.text = this._color.asString(this._format);
+    this.text = this.color.asString(this.format);
 
     if (tooltip) {
       this.tooltip = tooltip;
@@ -78,12 +97,12 @@ export class ColorSwatch extends HTMLElement {
     this.render();
   }
 
-  private renderTextOnly() {
+  private renderTextOnly(): void {
     // Non-color values can be passed to the component (like 'none' from border style).
     LitHtml.render(this.text, this.shadow, {eventContext: this});
   }
 
-  private render() {
+  private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
 
@@ -93,7 +112,7 @@ export class ColorSwatch extends HTMLElement {
     // re-format the HTML code.
     LitHtml.render(
       LitHtml.html`<span class="color-swatch" title="${this.tooltip}"><span class="color-swatch-inner"
-        style="background-color:${this.text};"
+        style="background-color: ${this.text};"
         @click=${this.onClick}
         @mousedown=${this.consume}
         @dblclick=${this.consume}></span></span><slot><span>${this.text}</span></slot>`,
@@ -101,7 +120,7 @@ export class ColorSwatch extends HTMLElement {
     // clang-format on
   }
 
-  private onClick(e: KeyboardModifiedEvent) {
+  private onClick(e: KeyboardModifiedEvent): void {
     e.stopPropagation();
 
     if (e.shiftKey) {
@@ -112,26 +131,26 @@ export class ColorSwatch extends HTMLElement {
     this.dispatchEvent(new Event('swatch-click'));
   }
 
-  private consume(e: Event) {
+  private consume(e: Event): void {
     e.stopPropagation();
   }
 
-  private toggleNextFormat() {
-    if (!this._color || !this._format) {
+  private toggleNextFormat(): void {
+    if (!this.color || !this.format) {
       return;
     }
 
     let currentValue;
     do {
-      this._format = nextColorFormat(this._color, this._format);
-      currentValue = this._color.asString(this._format);
+      this.format = nextColorFormat(this.color, this.format);
+      currentValue = this.color.asString(this.format);
     } while (currentValue === this.text);
 
     if (currentValue) {
       this.text = currentValue;
       this.render();
 
-      this.dispatchEvent(new FormatChangedEvent(this._format, this.text));
+      this.dispatchEvent(new FormatChangedEvent(this.format, this.text));
     }
   }
 }
@@ -141,6 +160,7 @@ if (!customElements.get('devtools-color-swatch')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-color-swatch': ColorSwatch;
   }

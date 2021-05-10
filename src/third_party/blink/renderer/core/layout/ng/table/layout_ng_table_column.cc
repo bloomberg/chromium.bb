@@ -36,7 +36,7 @@ void LayoutNGTableColumn::StyleDidChange(StyleDifference diff,
       }
     }
   }
-  LayoutBoxModelObject::StyleDidChange(diff, old_style);
+  LayoutBox::StyleDidChange(diff, old_style);
 }
 
 void LayoutNGTableColumn::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
@@ -45,6 +45,22 @@ void LayoutNGTableColumn::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
     table->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
         PaintInvalidationReason::kImage);
   }
+}
+
+void LayoutNGTableColumn::InsertedIntoTree() {
+  NOT_DESTROYED();
+  LayoutBox::InsertedIntoTree();
+  DCHECK(Table());
+  if (StyleRef().HasBackground())
+    Table()->SetBackgroundNeedsFullPaintInvalidation();
+}
+
+void LayoutNGTableColumn::WillBeRemovedFromTree() {
+  NOT_DESTROYED();
+  LayoutBox::WillBeRemovedFromTree();
+  DCHECK(Table());
+  if (StyleRef().HasBackground())
+    Table()->SetBackgroundNeedsFullPaintInvalidation();
 }
 
 bool LayoutNGTableColumn::IsChildAllowed(LayoutObject* child,

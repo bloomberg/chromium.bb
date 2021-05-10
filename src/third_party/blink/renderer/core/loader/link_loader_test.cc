@@ -52,10 +52,6 @@ class MockLinkLoaderClient final
 
   void LinkLoaded() override {}
   void LinkLoadingErrored() override {}
-  void DidStartLinkPrerender() override {}
-  void DidStopLinkPrerender() override {}
-  void DidSendLoadForLinkPrerender() override {}
-  void DidSendDOMContentLoadedForLinkPrerender() override {}
 
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override {
     return Thread::Current()->GetTaskRunner();
@@ -381,9 +377,11 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   dummy_page_holder_->GetFrame()
       .DomWindow()
       ->GetContentSecurityPolicy()
-      ->DidReceiveHeader(test_case.content_security_policy,
-                         network::mojom::ContentSecurityPolicyType::kEnforce,
-                         network::mojom::ContentSecurityPolicySource::kHTTP);
+      ->DidReceiveHeader(
+          test_case.content_security_policy,
+          *(dummy_page_holder_->GetFrame().DomWindow()->GetSecurityOrigin()),
+          network::mojom::ContentSecurityPolicyType::kEnforce,
+          network::mojom::ContentSecurityPolicySource::kHTTP);
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, String(),
       "script", String(), test_case.nonce, String(), String(),

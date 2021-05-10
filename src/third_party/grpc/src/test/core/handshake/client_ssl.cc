@@ -19,7 +19,7 @@
 #include "src/core/lib/iomgr/port.h"
 
 // This test won't work except with posix sockets enabled
-#ifdef GRPC_POSIX_SOCKET
+#ifdef GRPC_POSIX_SOCKET_TCP
 
 #include <arpa/inet.h>
 #include <openssl/err.h>
@@ -29,11 +29,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <string>
+
+#include "absl/strings/str_cat.h"
+
 #include <grpc/grpc.h>
 #include <grpc/grpc_security.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
-#include <grpc/support/string_util.h>
 
 #include "src/core/lib/gprpp/thd.h"
 #include "src/core/lib/iomgr/load_file.h"
@@ -98,7 +101,7 @@ static int create_socket(int* out_port) {
 
 // Server callback during ALPN negotiation. See man page for
 // SSL_CTX_set_alpn_select_cb.
-static int alpn_select_cb(SSL* ssl, const uint8_t** out, uint8_t* out_len,
+static int alpn_select_cb(SSL* /*ssl*/, const uint8_t** out, uint8_t* out_len,
                           const uint8_t* in, unsigned in_len, void* arg) {
   const uint8_t* alpn_preferred = static_cast<const uint8_t*>(arg);
 
@@ -195,10 +198,14 @@ static void server_thread(void* arg) {
     gpr_log(GPR_INFO, "Handshake successful.");
   }
 
+  // Send out the settings frame.
+  const char settings_frame[] = "\x00\x00\x00\x04\x00\x00\x00\x00\x00";
+  SSL_write(ssl, settings_frame, sizeof(settings_frame) - 1);
+
   // Wait until the client drops its connection.
   char buf;
-  while (SSL_read(ssl, &buf, sizeof(buf)) > 0)
-    ;
+  while (SSL_read(ssl, &buf, sizeof(buf)) > 0) {
+  }
 
   SSL_free(ssl);
   close(client);
@@ -256,8 +263,7 @@ static bool client_ssl_test(char* server_alpn_preferred) {
 
   // Establish a channel pointing at the TLS server. Since the gRPC runtime is
   // lazy, this won't necessarily establish a connection yet.
-  char* target;
-  gpr_asprintf(&target, "127.0.0.1:%d", port);
+  std::string target = absl::StrCat("127.0.0.1:", port);
   grpc_arg ssl_name_override = {
       GRPC_ARG_STRING,
       const_cast<char*>(GRPC_SSL_TARGET_NAME_OVERRIDE_ARG),
@@ -265,10 +271,9 @@ static bool client_ssl_test(char* server_alpn_preferred) {
   grpc_channel_args grpc_args;
   grpc_args.num_args = 1;
   grpc_args.args = &ssl_name_override;
-  grpc_channel* channel =
-      grpc_secure_channel_create(ssl_creds, target, &grpc_args, nullptr);
+  grpc_channel* channel = grpc_secure_channel_create(ssl_creds, target.c_str(),
+                                                     &grpc_args, nullptr);
   GPR_ASSERT(channel);
-  gpr_free(target);
 
   // Initially the channel will be idle, the
   // grpc_channel_check_connectivity_state triggers an attempt to connect.
@@ -310,6 +315,7 @@ static bool client_ssl_test(char* server_alpn_preferred) {
 }
 
 int main(int argc, char* argv[]) {
+  grpc::testing::TestEnvironment env(argc, argv);
   // Handshake succeeeds when the server has grpc-exp as the ALPN preference.
   GPR_ASSERT(client_ssl_test(const_cast<char*>("grpc-exp")));
   // Handshake succeeeds when the server has h2 as the ALPN preference. This
@@ -322,8 +328,8 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-#else /* GRPC_POSIX_SOCKET */
+#else /* GRPC_POSIX_SOCKET_TCP */
 
 int main(int argc, char** argv) { return 1; }
 
-#endif /* GRPC_POSIX_SOCKET */
+#endif /* GRPC_POSIX_SOCKET_TCP */

@@ -5,8 +5,13 @@
 #include "chrome/updater/configurator.h"
 
 #include <utility>
+
+#include "base/numerics/ranges.h"
+#include "base/rand_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/activity.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/crx_downloader_factory.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/patcher.h"
@@ -38,15 +43,22 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
+// TODO(crbug.com/1096654): Add support for machine `activity_data_service_`.
 Configurator::Configurator(std::unique_ptr<UpdaterPrefs> prefs)
     : prefs_(std::move(prefs)),
       external_constants_(CreateExternalConstants()),
+      activity_data_service_(std::make_unique<ActivityDataService>(false)),
       unzip_factory_(base::MakeRefCounted<UnzipperFactory>()),
       patch_factory_(base::MakeRefCounted<PatcherFactory>()) {}
 Configurator::~Configurator() = default;
 
-int Configurator::InitialDelay() const {
-  return 0;
+double Configurator::InitialDelay() const {
+  return base::RandDouble() * external_constants_->InitialDelay();
+}
+
+int Configurator::ServerKeepAliveSeconds() const {
+  return base::ClampToRange(external_constants_->ServerKeepAliveSeconds(), 1,
+                            kServerKeepAliveSeconds);
 }
 
 int Configurator::NextCheckDelay() const {
@@ -149,7 +161,7 @@ PrefService* Configurator::GetPrefService() const {
 
 update_client::ActivityDataService* Configurator::GetActivityDataService()
     const {
-  return nullptr;
+  return activity_data_service_.get();
 }
 
 bool Configurator::IsPerUserInstall() const {

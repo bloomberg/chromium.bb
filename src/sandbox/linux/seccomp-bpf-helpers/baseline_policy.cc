@@ -40,9 +40,11 @@ namespace sandbox {
 namespace {
 
 bool IsBaselinePolicyAllowed(int sysno) {
+  // clang-format off
   return SyscallSets::IsAllowedAddressSpaceAccess(sysno) ||
          SyscallSets::IsAllowedBasicScheduler(sysno) ||
          SyscallSets::IsAllowedEpoll(sysno) ||
+         SyscallSets::IsEventFd(sysno) ||
          SyscallSets::IsAllowedFileSystemAccessViaFd(sysno) ||
          SyscallSets::IsAllowedFutex(sysno) ||
          SyscallSets::IsAllowedGeneralIo(sysno) ||
@@ -59,6 +61,7 @@ bool IsBaselinePolicyAllowed(int sysno) {
          SyscallSets::IsMipsPrivate(sysno) ||
 #endif
          SyscallSets::IsAllowedOperationOnFd(sysno);
+  // clang-format on
 }
 
 // System calls that will trigger the crashing SIGSYS handler.
@@ -68,7 +71,6 @@ bool IsBaselinePolicyWatched(int sysno) {
          SyscallSets::IsAdvancedTimer(sysno) ||
          SyscallSets::IsAsyncIo(sysno) ||
          SyscallSets::IsDebug(sysno) ||
-         SyscallSets::IsEventFd(sysno) ||
          SyscallSets::IsExtendedAttributes(sysno) ||
          SyscallSets::IsFaNotify(sysno) ||
          SyscallSets::IsFsControl(sysno) ||
@@ -205,17 +207,21 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 
   if (sysno == __NR_madvise) {
-    // Only allow MADV_DONTNEED, MADV_RANDOM, MADV_NORMAL and MADV_FREE.
+    // Only allow MADV_DONTNEED, MADV_RANDOM, MADV_REMOVE, MADV_NORMAL and
+    // MADV_FREE.
     const Arg<int> advice(2);
-    return If(AnyOf(advice == MADV_DONTNEED,
-                    advice == MADV_RANDOM,
+    return If(AnyOf(advice == MADV_DONTNEED, advice == MADV_RANDOM,
+                    advice == MADV_REMOVE,
                     advice == MADV_NORMAL
 #if defined(MADV_FREE)
                     // MADV_FREE was introduced in Linux 4.5 and started being
                     // defined in glibc 2.24.
-                    , advice == MADV_FREE
+                    ,
+                    advice == MADV_FREE
 #endif
-                    ), Allow()).Else(Error(EPERM));
+                    ),
+              Allow())
+        .Else(Error(EPERM));
   }
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__) || \
@@ -255,6 +261,12 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 
   if (SyscallSets::IsKill(sysno)) {
     return RestrictKillTarget(current_pid, sysno);
+  }
+
+  // memfd_create is considered a file system syscall which below will be denied
+  // with fs_denied_errno, we need memfd_create for Mojo shared memory channels.
+  if (sysno == __NR_memfd_create) {
+    return Allow();
   }
 
   if (SyscallSets::IsFileSystem(sysno) ||

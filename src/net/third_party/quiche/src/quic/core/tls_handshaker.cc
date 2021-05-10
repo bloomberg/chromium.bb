@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/tls_handshaker.h"
+#include "quic/core/tls_handshaker.h"
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/tls_client_handshaker.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -114,8 +114,16 @@ void TlsHandshaker::AdvanceHandshake() {
 
 void TlsHandshaker::CloseConnection(QuicErrorCode error,
                                     const std::string& reason_phrase) {
-  DCHECK(!reason_phrase.empty());
+  QUICHE_DCHECK(!reason_phrase.empty());
   stream()->OnUnrecoverableError(error, reason_phrase);
+  is_connection_closed_ = true;
+}
+
+void TlsHandshaker::CloseConnection(QuicErrorCode error,
+                                    QuicIetfTransportErrorCodes ietf_error,
+                                    const std::string& reason_phrase) {
+  QUICHE_DCHECK(!reason_phrase.empty());
+  stream()->OnUnrecoverableError(error, ietf_error, reason_phrase);
   is_connection_closed_ = true;
 }
 
@@ -204,7 +212,7 @@ void TlsHandshaker::SetWriteSecret(EncryptionLevel level,
       absl::string_view(reinterpret_cast<char*>(header_protection_key.data()),
                         header_protection_key.size()));
   if (level == ENCRYPTION_FORWARD_SECURE) {
-    DCHECK(latest_write_secret_.empty());
+    QUICHE_DCHECK(latest_write_secret_.empty());
     latest_write_secret_ = write_secret;
     one_rtt_write_header_protection_key_ = header_protection_key;
   }
@@ -227,7 +235,7 @@ bool TlsHandshaker::SetReadSecret(EncryptionLevel level,
       absl::string_view(reinterpret_cast<char*>(header_protection_key.data()),
                         header_protection_key.size()));
   if (level == ENCRYPTION_FORWARD_SECURE) {
-    DCHECK(latest_read_secret_.empty());
+    QUICHE_DCHECK(latest_read_secret_.empty());
     latest_read_secret_ = read_secret;
     one_rtt_read_header_protection_key_ = header_protection_key;
   }
@@ -290,17 +298,19 @@ void TlsHandshaker::WriteMessage(EncryptionLevel level,
 void TlsHandshaker::FlushFlight() {}
 
 void TlsHandshaker::SendAlert(EncryptionLevel level, uint8_t desc) {
-  // TODO(b/151676147): Alerts should be sent on the wire as a varint QUIC error
-  // code computed to be 0x100 | desc (draft-ietf-quic-tls-27, section 4.9).
-  // This puts it in the range reserved for CRYPTO_ERROR
-  // (draft-ietf-quic-transport-27, section 20). However, according to
-  // quic_error_codes.h, this QUIC implementation only sends 1-byte error codes
-  // right now.
-  std::string error_details = quiche::QuicheStrCat(
+  std::string error_details = absl::StrCat(
       "TLS handshake failure (", EncryptionLevelToString(level), ") ",
       static_cast<int>(desc), ": ", SSL_alert_desc_string_long(desc));
   QUIC_DLOG(ERROR) << error_details;
-  CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
+  if (GetQuicReloadableFlag(quic_send_tls_crypto_error_code)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_send_tls_crypto_error_code);
+    CloseConnection(
+        TlsAlertToQuicErrorCode(desc),
+        static_cast<QuicIetfTransportErrorCodes>(CRYPTO_ERROR_FIRST + desc),
+        error_details);
+  } else {
+    CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
+  }
 }
 
 }  // namespace quic

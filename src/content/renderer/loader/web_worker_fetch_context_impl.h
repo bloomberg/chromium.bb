@@ -38,7 +38,6 @@ class WebFrameRequestBlocker;
 
 namespace content {
 
-class ResourceDispatcher;
 class ServiceWorkerProviderContext;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -247,6 +246,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   void ResetWeakWrapperResourceLoadInfoNotifier();
 
+  blink::WebVector<blink::WebString> cors_exempt_header_list();
+
   // |receiver_| and |service_worker_worker_client_registry_| may be null if
   // this context can't use service workers. See comments for Create().
   mojo::Receiver<blink::mojom::ServiceWorkerWorkerClient> receiver_{this};
@@ -284,9 +285,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // dedicated workers are not yet service worker clients, it is the parent
   // document's id in that case). Passed to ControllerServiceWorkerConnector.
   std::string client_id_;
-
-  // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   // |loader_factory_| is used for regular loading by the worker. In

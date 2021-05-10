@@ -23,6 +23,7 @@
 #include "dawn_wire/client/ObjectBase.h"
 
 #include <map>
+#include <memory>
 
 namespace dawn_wire { namespace client {
 
@@ -34,7 +35,6 @@ namespace dawn_wire { namespace client {
         Device(Client* client, uint32_t refcount, uint32_t id);
         ~Device();
 
-        Client* GetClient();
         void SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata);
         void SetDeviceLostCallback(WGPUDeviceLostCallback errorCallback, void* errorUserdata);
         void InjectError(WGPUErrorType type, const char* message);
@@ -42,11 +42,11 @@ namespace dawn_wire { namespace client {
         bool PopErrorScope(WGPUErrorCallback callback, void* userdata);
         WGPUBuffer CreateBuffer(const WGPUBufferDescriptor* descriptor);
         WGPUBuffer CreateErrorBuffer();
-        void CreateReadyComputePipeline(WGPUComputePipelineDescriptor const* descriptor,
-                                        WGPUCreateReadyComputePipelineCallback callback,
+        void CreateComputePipelineAsync(WGPUComputePipelineDescriptor const* descriptor,
+                                        WGPUCreateComputePipelineAsyncCallback callback,
                                         void* userdata);
-        void CreateReadyRenderPipeline(WGPURenderPipelineDescriptor const* descriptor,
-                                       WGPUCreateReadyRenderPipelineCallback callback,
+        void CreateRenderPipelineAsync(WGPURenderPipelineDescriptor const* descriptor,
+                                       WGPUCreateRenderPipelineAsyncCallback callback,
                                        void* userdata);
 
         void HandleError(WGPUErrorType errorType, const char* message);
@@ -54,25 +54,22 @@ namespace dawn_wire { namespace client {
         bool OnPopErrorScopeCallback(uint64_t requestSerial,
                                      WGPUErrorType type,
                                      const char* message);
-        bool OnCreateReadyComputePipelineCallback(uint64_t requestSerial,
-                                                  WGPUCreateReadyPipelineStatus status,
+        bool OnCreateComputePipelineAsyncCallback(uint64_t requestSerial,
+                                                  WGPUCreatePipelineAsyncStatus status,
                                                   const char* message);
-        bool OnCreateReadyRenderPipelineCallback(uint64_t requestSerial,
-                                                 WGPUCreateReadyPipelineStatus status,
+        bool OnCreateRenderPipelineAsyncCallback(uint64_t requestSerial,
+                                                 WGPUCreatePipelineAsyncStatus status,
                                                  const char* message);
 
+        // TODO(dawn:22): Remove once the deprecation period is finished.
         WGPUQueue GetDefaultQueue();
-
-        template <typename T>
-        void TrackObject(T* object) {
-            mObjects[ObjectTypeToTypeEnum<T>].Append(object);
-        }
+        WGPUQueue GetQueue();
 
         void CancelCallbacksForDisconnect() override;
 
-      private:
-        void DestroyAllObjects();
+        std::weak_ptr<bool> GetAliveWeakPtr();
 
+      private:
         struct ErrorScopeData {
             WGPUErrorCallback callback = nullptr;
             void* userdata = nullptr;
@@ -81,25 +78,24 @@ namespace dawn_wire { namespace client {
         uint64_t mErrorScopeRequestSerial = 0;
         uint64_t mErrorScopeStackSize = 0;
 
-        struct CreateReadyPipelineRequest {
-            WGPUCreateReadyComputePipelineCallback createReadyComputePipelineCallback = nullptr;
-            WGPUCreateReadyRenderPipelineCallback createReadyRenderPipelineCallback = nullptr;
+        struct CreatePipelineAsyncRequest {
+            WGPUCreateComputePipelineAsyncCallback createComputePipelineAsyncCallback = nullptr;
+            WGPUCreateRenderPipelineAsyncCallback createRenderPipelineAsyncCallback = nullptr;
             void* userdata = nullptr;
             ObjectId pipelineObjectID;
         };
-        std::map<uint64_t, CreateReadyPipelineRequest> mCreateReadyPipelineRequests;
-        uint64_t mCreateReadyPipelineRequestSerial = 0;
+        std::map<uint64_t, CreatePipelineAsyncRequest> mCreatePipelineAsyncRequests;
+        uint64_t mCreatePipelineAsyncRequestSerial = 0;
 
-        Client* mClient = nullptr;
         WGPUErrorCallback mErrorCallback = nullptr;
         WGPUDeviceLostCallback mDeviceLostCallback = nullptr;
         bool mDidRunLostCallback = false;
         void* mErrorUserdata = nullptr;
         void* mDeviceLostUserdata = nullptr;
 
-        Queue* mDefaultQueue = nullptr;
+        Queue* mQueue = nullptr;
 
-        PerObjectType<LinkedList<ObjectBase>> mObjects;
+        std::shared_ptr<bool> mIsAlive;
     };
 
 }}  // namespace dawn_wire::client

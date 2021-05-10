@@ -80,17 +80,16 @@ std::unique_ptr<syncer::EntityData> MoveToEntityData(
 std::string GetSessionTagWithPrefs(const std::string& cache_guid,
                                    SessionSyncPrefs* sync_prefs) {
   DCHECK(sync_prefs);
-  const std::string persisted_guid = sync_prefs->GetSyncSessionsGUID();
+
+  // If a legacy GUID exists, keep honoring it.
+  const std::string persisted_guid = sync_prefs->GetLegacySyncSessionsGUID();
   if (!persisted_guid.empty()) {
     DVLOG(1) << "Restoring persisted session sync guid: " << persisted_guid;
     return persisted_guid;
   }
 
-  const std::string new_guid =
-      base::StringPrintf("session_sync%s", cache_guid.c_str());
-  DVLOG(1) << "Creating session sync guid: " << new_guid;
-  sync_prefs->SetSyncSessionsGUID(new_guid);
-  return new_guid;
+  DVLOG(1) << "Using sync cache guid as session sync guid: " << cache_guid;
+  return cache_guid;
 }
 
 void ForwardError(syncer::OnceModelErrorHandler error_handler,
@@ -407,6 +406,7 @@ SessionStore::SessionStore(
     SyncSessionsClient* sessions_client)
     : local_session_info_(local_session_info),
       store_(std::move(underlying_store)),
+      sessions_client_(sessions_client),
       session_tracker_(sessions_client) {
   session_tracker_.InitLocalSession(local_session_info_.session_tag,
                                     local_session_info_.client_name,
@@ -541,6 +541,7 @@ std::unique_ptr<SessionStore::WriteBatch> SessionStore::CreateWriteBatch(
 void SessionStore::DeleteAllDataAndMetadata() {
   session_tracker_.Clear();
   store_->DeleteAllDataAndMetadata(base::DoNothing());
+  sessions_client_->GetSessionSyncPrefs()->ClearLegacySyncSessionsGUID();
 
   // At all times, the local session must be tracked.
   session_tracker_.InitLocalSession(local_session_info_.session_tag,

@@ -150,9 +150,10 @@
 <translation id="2045055672832940894">אין פקד קודם</translation>
 <translation id="2045606329038304310">פקד של שדה בטופס</translation>
 <translation id="2063539687800151747">רשומת</translation>
+<translation id="2074531330963286860">פעולות שאפשר לבצע. יש ללחוץ על חיפוש+נקודה כדי לצפות</translation>
 <translation id="2086961585857038472">המילה הבאה</translation>
 <translation id="2087981446621639008">פרטי רשימת תיאורים</translation>
-<translation id="2089387485033699258">en</translation>
+<translation id="2089387485033699258">iw</translation>
 <translation id="2091933974477985526">אזור טקסט קודם הניתן לעריכה</translation>
 <translation id="2100350898815792233">כל סימני הפיסוק</translation>
 <translation id="2110480898214777136">הגדרת גלישת טקסט מההתחלה לסוף או מהסוף להתחלה בתוך דף, תיבת דו-שיח או גורם מכיל אחר</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">הקבוצה הבאה</translation>
 <translation id="7813616274030162878">התפריט 'גישה באמצעות מתג'</translation>
 <translation id="7839679365527550018">המילה הקודמת</translation>
+<translation id="7842115774595115751">הפעלת לחצני הניווט</translation>
 <translation id="7846634333498149051">מקלדת</translation>
 <translation id="7851816175263618915">חלק מסימני הפיסוק</translation>
 <translation id="7871691770940645922">תצוגת ברייל וירטואלית</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">לשכוח</translation>
 <translation id="8989104346085848538">‏כדי להפסיק את הדיבור הפעיל של ChromeVox, יש להקיש על מקש Control.</translation>
+<translation id="8993737615451556423">מספקת פקדים כדי להאיץ, להאט ולהשהות את קול ההקראה</translation>
 <translation id="9014206344398081366">‏מדריך של ChromeVox</translation>
 <translation id="9040132695316389094">כותרת 1</translation>
 <translation id="9061884144798498064">יש לבחור טבלת ברייל 8 נקודות:</translation>

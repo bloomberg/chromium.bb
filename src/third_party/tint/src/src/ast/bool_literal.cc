@@ -14,24 +14,32 @@
 
 #include "src/ast/bool_literal.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BoolLiteral);
+
 namespace tint {
 namespace ast {
 
-BoolLiteral::BoolLiteral(ast::type::Type* type, bool value)
-    : Literal(type), value_(value) {}
+BoolLiteral::BoolLiteral(const Source& source, type::Type* type, bool value)
+    : Base(source, type), value_(value) {}
 
 BoolLiteral::~BoolLiteral() = default;
 
-bool BoolLiteral::IsBool() const {
-  return true;
-}
-
-std::string BoolLiteral::to_str() const {
+std::string BoolLiteral::to_str(const semantic::Info&) const {
   return value_ ? "true" : "false";
 }
 
 std::string BoolLiteral::name() const {
   return value_ ? "__bool_true" : "__bool_false";
+}
+
+BoolLiteral* BoolLiteral::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type());
+  return ctx->dst->create<BoolLiteral>(src, ty, value_);
 }
 
 }  // namespace ast

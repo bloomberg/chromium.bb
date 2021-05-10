@@ -20,6 +20,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
@@ -53,9 +54,9 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
-#include "chrome/browser/ui/app_list/icon_standardizer.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -66,7 +67,7 @@ namespace {
 
 static const int kInvalidIconResource = 0;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Copy from Android code, all four sides of the ARC foreground and background
 // images are padded 25% of it's width and height.
@@ -187,7 +188,7 @@ gfx::ImageSkia ExtractSubsetForArcImage(const gfx::ImageSkia& image_skia) {
   return subset_image;
 }
 
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache() {
   static base::NoDestructor<std::map<std::pair<int, int>, gfx::ImageSkia>>
@@ -225,7 +226,7 @@ SkBitmap DecompressToSkBitmap(const unsigned char* data, size_t size) {
 }
 
 gfx::ImageSkia SkBitmapToImageSkia(SkBitmap bitmap, float icon_scale) {
-  return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, icon_scale));
+  return gfx::ImageSkia::CreateFromBitmap(bitmap, icon_scale);
 }
 
 // Returns a callback that converts a gfx::Image to an ImageSkia.
@@ -314,7 +315,7 @@ base::Optional<IconPurpose> GetIconPurpose(
     }
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
       icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
                                    max_icon_size_in_px)) {
@@ -404,7 +405,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void LoadIconFromResource(int icon_resource);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // For ARC icons, converts an icon png data to an ImageSkia using
   // arc::IconDecodeRequest.
   void LoadArcIconPngData(const std::vector<uint8_t>& icon_png_data);
@@ -417,7 +418,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   // Loads icons for ARC activities.
   void LoadArcActivityIcons(
       const std::vector<arc::mojom::ActivityIconPtr>& icons);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   friend class base::RefCounted<IconLoadingPipeline>;
@@ -435,7 +436,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
     }
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<arc::IconDecodeRequest> CreateArcIconDecodeRequest(
       base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
       const std::vector<uint8_t>& icon_png_data);
@@ -447,7 +448,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void OnArcActivityIconLoaded(gfx::ImageSkia* arc_activity_icon,
                                const gfx::ImageSkia& icon);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void MaybeApplyEffectsAndComplete(const gfx::ImageSkia image);
 
@@ -503,11 +504,11 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icon)>
       arc_activity_icons_callback_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<arc::IconDecodeRequest> arc_icon_decode_request_;
   std::unique_ptr<arc::IconDecodeRequest> arc_foreground_icon_decode_request_;
   std::unique_ptr<arc::IconDecodeRequest> arc_background_icon_decode_request_;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 void IconLoadingPipeline::LoadWebAppIcon(
@@ -695,8 +696,8 @@ void IconLoadingPipeline::LoadIconFromCompressedData(
 void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-#if defined(OS_CHROMEOS)
-  if (icon_resource == IDR_LOGO_CROSTINI_DEFAULT_192 ||
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (icon_resource == IDR_LOGO_CROSTINI_DEFAULT ||
       icon_resource == IDR_APP_DEFAULT_ICON) {
     // For the Crostini penguin icon, clear the standard icon effects, and use
     // the raw icon.
@@ -762,7 +763,7 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
   MaybeLoadFallbackOrCompleteEmpty();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void IconLoadingPipeline::LoadArcIconPngData(
     const std::vector<uint8_t>& icon_png_data) {
   arc_icon_decode_request_ = CreateArcIconDecodeRequest(
@@ -874,7 +875,7 @@ void IconLoadingPipeline::OnArcActivityIconLoaded(
     std::move(arc_activity_icons_callback_).Run(arc_activity_icons_);
   }
 }
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     const gfx::ImageSkia image) {
@@ -1094,7 +1095,7 @@ std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
   return image_data;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 gfx::ImageSkia LoadMaskImage(const ScaleToSize& scale_to_size) {
   gfx::ImageSkia mask_image;
@@ -1199,13 +1200,65 @@ void ArcActivityIconsToImageSkias(
       base::MakeRefCounted<IconLoadingPipeline>(std::move(callback));
   icon_loader->LoadArcActivityIcons(icons);
 }
-#endif  // OS_CHROMEOS
+
+gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    IconEffects icon_effects,
+    int size_hint_in_dip) {
+  if (icon_bitmaps.empty()) {
+    return gfx::ImageSkia{};
+  }
+
+  gfx::ImageSkia image_skia;
+  auto it = icon_bitmaps.begin();
+
+  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+    float icon_scale = ui::GetScaleForScaleFactor(scale_factor);
+
+    SquareSizePx icon_size_in_px =
+        gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip, size_hint_in_dip),
+                                icon_scale)
+            .width();
+
+    while (it != icon_bitmaps.end() && it->first < icon_size_in_px) {
+      ++it;
+    }
+
+    if (it == icon_bitmaps.end() || it->second.empty()) {
+      continue;
+    }
+
+    SkBitmap bitmap = it->second;
+    // Resize |bitmap| to match |icon_scale|.
+    //
+    // TODO(crbug.com/1140356): All conversions in app_icon_factory.cc must
+    // perform CPU-heavy operations off the Browser UI thread.
+    if (bitmap.width() != icon_size_in_px) {
+      bitmap = skia::ImageOperations::Resize(
+          bitmap, skia::ImageOperations::RESIZE_LANCZOS3, icon_size_in_px,
+          icon_size_in_px);
+    }
+
+    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, icon_scale));
+  }
+
+  if (image_skia.isNull()) {
+    return gfx::ImageSkia{};
+  }
+
+  image_skia.EnsureRepsForSupportedScales();
+  ApplyIconEffects(icon_effects, size_hint_in_dip, &image_skia);
+
+  return image_skia;
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
                       gfx::ImageSkia* image_skia) {
   extensions::ChromeAppIcon::ResizeFunction resize_function;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (icon_effects & IconEffects::kResizeAndPad) {
     // TODO(crbug.com/826982): MD post-processing is not always applied: "See
     // legacy code:
@@ -1226,7 +1279,7 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 
   if (icon_effects & IconEffects::kCrOsStandardIcon) {
-    *image_skia = app_list::CreateStandardIconImage(*image_skia);
+    *image_skia = apps::CreateStandardIconImage(*image_skia);
   }
 #endif
 

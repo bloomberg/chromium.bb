@@ -18,7 +18,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 
 /**
  * Mainly sets up session stats for chrome. A session is defined as the duration when the
@@ -110,7 +111,7 @@ public class UmaSessionStats {
                     .keyboard != Configuration.KEYBOARD_NOKEYS;
             mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
                 @Override
-                public void onPageLoadFinished(Tab tab, String url) {
+                public void onPageLoadFinished(Tab tab, GURL url) {
                     recordPageLoadStats(tab);
                 }
             };
@@ -148,7 +149,7 @@ public class UmaSessionStats {
      * flow, and when the user changes their preferences.
      */
     public static void changeMetricsReportingConsent(boolean consent) {
-        PrivacyPreferencesManager privacyManager = PrivacyPreferencesManager.getInstance();
+        PrivacyPreferencesManagerImpl privacyManager = PrivacyPreferencesManagerImpl.getInstance();
         // Update the metrics reporting preference.
         privacyManager.setUsageAndCrashReporting(consent);
 
@@ -183,7 +184,7 @@ public class UmaSessionStats {
      * Updates the state of MetricsService to account for the user's preferences.
      */
     public static void updateMetricsServiceState() {
-        PrivacyPreferencesManager privacyManager = PrivacyPreferencesManager.getInstance();
+        PrivacyPreferencesManagerImpl privacyManager = PrivacyPreferencesManagerImpl.getInstance();
 
         // Ensure Android and Chrome local state prefs are in sync.
         privacyManager.syncUsageAndCrashReportingPrefs();
@@ -198,7 +199,7 @@ public class UmaSessionStats {
      * Updates relevant Android and native preferences.
      */
     private void updatePreferences() {
-        PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance();
+        PrivacyPreferencesManagerImpl prefManager = PrivacyPreferencesManagerImpl.getInstance();
 
         // Update the metrics sampling state so it's available before the native feature list is
         // available.

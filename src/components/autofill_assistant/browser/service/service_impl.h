@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
+#include "components/autofill_assistant/browser/service/server_url_fetcher.h"
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/service/service_request_sender.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -41,8 +42,11 @@ class ServiceImpl : public Service {
   // flag.
   static std::unique_ptr<ServiceImpl> Create(content::BrowserContext* context,
                                              Client* client);
-
-  bool IsLiteService() const override;
+  // Same as above, but allows injecting a specific endpoint.
+  static std::unique_ptr<ServiceImpl> Create(
+      content::BrowserContext* context,
+      Client* client,
+      const ServerUrlFetcher& url_fetcher);
 
   ServiceImpl(std::unique_ptr<ServiceRequestSender> request_sender,
               const GURL& script_server_url,
@@ -75,6 +79,9 @@ class ServiceImpl : public Service {
       const RoundtripTimingStats& timing_stats,
       ResponseCallback callback) override;
 
+  void SetScriptStoreConfig(
+      const ScriptStoreConfig& script_store_config) override;
+
  private:
   // The request sender responsible for communicating with a remote endpoint.
   std::unique_ptr<ServiceRequestSender> request_sender_;
@@ -85,6 +92,10 @@ class ServiceImpl : public Service {
 
   // The client context to send to the backend.
   std::unique_ptr<ClientContext> client_context_;
+
+  // The script store config used for GetActions request. This is set by the
+  // controller, obtained from the GetScriptsForUrl's response.
+  base::Optional<ScriptStoreConfig> script_store_config_;
 
   base::WeakPtrFactory<ServiceImpl> weak_ptr_factory_{this};
 };

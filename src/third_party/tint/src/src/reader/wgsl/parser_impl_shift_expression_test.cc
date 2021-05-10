@@ -26,53 +26,71 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, ShiftExpression_Parses_ShiftLeft) {
-  auto* p = parser("a << true");
+  auto p = parser("a << true");
   auto e = p->shift_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  ASSERT_TRUE(e->IsBinary());
-  auto* rel = e->AsBinary();
+  ASSERT_TRUE(e->Is<ast::BinaryExpression>());
+  auto* rel = e->As<ast::BinaryExpression>();
   EXPECT_EQ(ast::BinaryOp::kShiftLeft, rel->op());
 
-  ASSERT_TRUE(rel->lhs()->IsIdentifier());
-  auto* ident = rel->lhs()->AsIdentifier();
-  EXPECT_EQ(ident->name(), "a");
+  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(rel->rhs()->IsConstructor());
-  ASSERT_TRUE(rel->rhs()->AsConstructor()->IsScalarConstructor());
-  auto* init = rel->rhs()->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(init->literal()->IsBool());
-  ASSERT_TRUE(init->literal()->AsBool()->IsTrue());
+  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
+  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
+  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
 }
 
 TEST_F(ParserImplTest, ShiftExpression_Parses_ShiftRight) {
-  auto* p = parser("a >> true");
+  auto p = parser("a >> true");
   auto e = p->shift_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
 
-  ASSERT_TRUE(e->IsBinary());
-  auto* rel = e->AsBinary();
+  ASSERT_TRUE(e->Is<ast::BinaryExpression>());
+  auto* rel = e->As<ast::BinaryExpression>();
   EXPECT_EQ(ast::BinaryOp::kShiftRight, rel->op());
 
-  ASSERT_TRUE(rel->lhs()->IsIdentifier());
-  auto* ident = rel->lhs()->AsIdentifier();
-  EXPECT_EQ(ident->name(), "a");
+  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
 
-  ASSERT_TRUE(rel->rhs()->IsConstructor());
-  ASSERT_TRUE(rel->rhs()->AsConstructor()->IsScalarConstructor());
-  auto* init = rel->rhs()->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(init->literal()->IsBool());
-  ASSERT_TRUE(init->literal()->AsBool()->IsTrue());
+  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
+  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
+  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
+}
+
+TEST_F(ParserImplTest, ShiftExpression_InvalidSpaceLeft) {
+  auto p = parser("a < < true");
+  auto e = p->shift_expression();
+  EXPECT_TRUE(e.matched);
+  EXPECT_FALSE(e.errored);
+  ASSERT_NE(e.value, nullptr);
+  EXPECT_FALSE(e.value->Is<ast::BinaryExpression>());
+}
+
+TEST_F(ParserImplTest, ShiftExpression_InvalidSpaceRight) {
+  auto p = parser("a > > true");
+  auto e = p->shift_expression();
+  EXPECT_TRUE(e.matched);
+  EXPECT_FALSE(e.errored);
+  ASSERT_NE(e.value, nullptr);
+  EXPECT_FALSE(e.value->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, ShiftExpression_InvalidLHS) {
-  auto* p = parser("if (a) {} << true");
+  auto p = parser("if (a) {} << true");
   auto e = p->shift_expression();
   EXPECT_FALSE(e.matched);
   EXPECT_FALSE(e.errored);
@@ -81,7 +99,7 @@ TEST_F(ParserImplTest, ShiftExpression_InvalidLHS) {
 }
 
 TEST_F(ParserImplTest, ShiftExpression_InvalidRHS) {
-  auto* p = parser("true << if (a) {}");
+  auto p = parser("true << if (a) {}");
   auto e = p->shift_expression();
   EXPECT_FALSE(e.matched);
   EXPECT_TRUE(e.errored);
@@ -91,13 +109,13 @@ TEST_F(ParserImplTest, ShiftExpression_InvalidRHS) {
 }
 
 TEST_F(ParserImplTest, ShiftExpression_NoOr_ReturnsLHS) {
-  auto* p = parser("a true");
+  auto p = parser("a true");
   auto e = p->shift_expression();
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
-  ASSERT_TRUE(e->IsIdentifier());
+  ASSERT_TRUE(e->Is<ast::IdentifierExpression>());
 }
 
 }  // namespace

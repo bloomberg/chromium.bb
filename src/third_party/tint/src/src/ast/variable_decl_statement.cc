@@ -14,34 +14,39 @@
 
 #include "src/ast/variable_decl_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::VariableDeclStatement);
+
 namespace tint {
 namespace ast {
 
-VariableDeclStatement::VariableDeclStatement() : Statement() {}
-
-VariableDeclStatement::VariableDeclStatement(std::unique_ptr<Variable> variable)
-    : Statement(), variable_(std::move(variable)) {}
-
 VariableDeclStatement::VariableDeclStatement(const Source& source,
-                                             std::unique_ptr<Variable> variable)
-    : Statement(source), variable_(std::move(variable)) {}
+                                             Variable* variable)
+    : Base(source), variable_(variable) {}
 
 VariableDeclStatement::VariableDeclStatement(VariableDeclStatement&&) = default;
 
 VariableDeclStatement::~VariableDeclStatement() = default;
 
-bool VariableDeclStatement::IsVariableDecl() const {
-  return true;
+VariableDeclStatement* VariableDeclStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* var = ctx->Clone(variable());
+  return ctx->dst->create<VariableDeclStatement>(src, var);
 }
 
 bool VariableDeclStatement::IsValid() const {
   return variable_ != nullptr && variable_->IsValid();
 }
 
-void VariableDeclStatement::to_str(std::ostream& out, size_t indent) const {
+void VariableDeclStatement::to_str(const semantic::Info& sem,
+                                   std::ostream& out,
+                                   size_t indent) const {
   make_indent(out, indent);
   out << "VariableDeclStatement{" << std::endl;
-  variable_->to_str(out, indent + 2);
+  variable_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

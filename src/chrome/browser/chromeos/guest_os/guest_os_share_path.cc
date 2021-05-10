@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -138,14 +137,14 @@ void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
   // If |path| exists, remove |vm_name| from list of VMs.
   base::Value* found = shared_paths->FindKey(path.value());
   if (!found) {
-    LOG(WARNING) << "Path not in prefs to ushare path " << path.value()
+    LOG(WARNING) << "Path not in prefs to unshare path " << path.value()
                  << " for VM " << vm_name;
     return;
   }
   auto it = std::find(found->GetList().begin(), found->GetList().end(),
                       base::Value(vm_name));
   if (!found->EraseListIter(it)) {
-    LOG(WARNING) << "VM not in prefs to ushare path " << path.value()
+    LOG(WARNING) << "VM not in prefs to unshare path " << path.value()
                  << " for VM " << vm_name;
     return;
   }
@@ -184,6 +183,9 @@ GuestOsSharePath::GuestOsSharePath(Profile* profile)
       file_watcher_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       seneschal_callback_(base::BindRepeating(LogErrorResult)) {
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->AddVmShutdownObserver(this);
+
   if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
   }
@@ -202,6 +204,9 @@ GuestOsSharePath::~GuestOsSharePath() = default;
 
 void GuestOsSharePath::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->RemoveVmShutdownObserver(this);
+
   for (auto& shared_path : shared_paths_) {
     if (shared_path.second.watcher) {
       file_watcher_task_runner_->DeleteSoon(
@@ -470,7 +475,7 @@ void GuestOsSharePath::SharePaths(const std::string& vm_name,
           base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
   for (const auto& path : paths) {
     CallSeneschalSharePath(vm_name, path, persist,
-                           base::BindOnce(barrier, std::move(path)));
+                           base::BindOnce(barrier, path));
   }
 }
 
@@ -480,12 +485,7 @@ void GuestOsSharePath::UnsharePath(const std::string& vm_name,
                                    SuccessCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (auto* info = FindSharedPathInfo(path)) {
-    info->vm_names.erase(vm_name);
-    if (info->vm_names.empty()) {
-      if (info->watcher) {
-        file_watcher_task_runner_->DeleteSoon(FROM_HERE,
-                                              info->watcher.release());
-      }
+    if (RemoveSharedPathInfo(*info, vm_name)) {
       shared_paths_.erase(path);
     }
   }
@@ -589,6 +589,17 @@ bool GuestOsSharePath::IsPathShared(const std::string& vm_name,
   }
 }
 
+void GuestOsSharePath::OnVmShutdown(const std::string& vm_name) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto it = shared_paths_.begin(); it != shared_paths_.end();) {
+    if (RemoveSharedPathInfo(it->second, vm_name)) {
+      shared_paths_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+}
+
 void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
                                        const file_manager::Volume& volume) {
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
@@ -671,11 +682,9 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   file_watcher_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          base::IgnoreResult(static_cast<bool (base::FilePathWatcher::*)(
-                                 const base::FilePath&, bool,
-                                 const base::FilePathWatcher::Callback&)>(
-              &base::FilePathWatcher::Watch)),
-          base::Unretained(watcher.get()), path, false,
+          base::IgnoreResult(&base::FilePathWatcher::Watch),
+          base::Unretained(watcher.get()), path,
+          base::FilePathWatcher::Type::kNonRecursive,
           base::BindRepeating(std::move(changed), std::move(deleted))));
   shared_paths_.emplace(path, SharedPathInfo(std::move(watcher), vm_name));
 }
@@ -756,6 +765,18 @@ SharedPathInfo* GuestOsSharePath::FindSharedPathInfo(
     return nullptr;
   }
   return &it->second;
+}
+
+bool GuestOsSharePath::RemoveSharedPathInfo(SharedPathInfo& info,
+                                            const std::string& vm_name) {
+  info.vm_names.erase(vm_name);
+  if (info.vm_names.empty()) {
+    if (info.watcher) {
+      file_watcher_task_runner_->DeleteSoon(FROM_HERE, info.watcher.release());
+    }
+    return true;
+  }
+  return false;
 }
 
 }  // namespace guest_os

@@ -1,24 +1,5 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "elements-sidebar",
-      "id": "accessibility.view",
-      "title": "Accessibility",
-      "order": 10,
-      "persistence": "permanent",
-      "className": "Accessibility.AccessibilitySidebarView"
-    }
-  ],
-  "dependencies": [
-    "elements"
-  ],
-  "modules": [
-    "accessibility-legacy.js"
-  ],
-  "skip_compilation": [
-    "accessibility-legacy.js"
-  ],
+  "modules": [],
   "resources": [
     "accessibilityNode.css",
     "accessibilityProperties.css",

@@ -19,6 +19,8 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -315,6 +317,19 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   } else if (key == kWindowBackdropKey) {
     // kWindowBackdropKey is not supposed to be cleared.
     DCHECK(window->GetProperty(kWindowBackdropKey));
+  } else if (key == aura::client::kVisibleOnAllWorkspacesKey) {
+    auto* desks_controller = Shell::Get()->desks_controller();
+
+    if (window->type() != aura::client::WindowType::WINDOW_TYPE_NORMAL ||
+        window->GetProperty(aura::client::kZOrderingKey) !=
+            ui::ZOrderLevel::kNormal) {
+      return;
+    }
+
+    if (window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey))
+      desks_controller->AddVisibleOnAllDesksWindow(window);
+    else
+      desks_controller->MaybeRemoveVisibleOnAllDesksWindow(window);
   }
 }
 
@@ -333,6 +348,7 @@ void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
     settings_bubble_container_ = nullptr;
   if (accessibility_bubble_container_ == window)
     accessibility_bubble_container_ = nullptr;
+  Shell::Get()->desks_controller()->MaybeRemoveVisibleOnAllDesksWindow(window);
 }
 
 void WorkspaceLayoutManager::OnWindowBoundsChanged(

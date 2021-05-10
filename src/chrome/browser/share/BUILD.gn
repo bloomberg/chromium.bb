@@ -10,9 +10,7 @@ source_set("share") {
   sources = [
     "bitmap_download_request.cc",
     "editor_screenshot_task.cc",
-    "features.cc",
-    "features.h",
-    "link_to_text_metrics_bridge.cc",
+    "link_to_text_bridge.cc",
     "qr_code_generation_request.cc",
     "qr_code_generation_request.h",
   ]
@@ -27,6 +25,7 @@ source_set("share") {
     "//ui/android",
     "//ui/gfx",
     "//ui/snapshot",
+    "//url:gurl_android",
   ]
 }
 
@@ -36,5 +35,8 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/share/share_sheet/ChromeOptionShareCallback.java",
   ]
 
-  deps = [ "//components/browser_ui/share/android:java" ]
+  deps = [
+    "//components/browser_ui/share/android:java",
+    "//url:gurl_java",
+  ]
 }

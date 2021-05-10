@@ -21,11 +21,10 @@
 #include <tuple>
 #include <vector>
 
-#include "src/ast/module.h"
 #include "src/ast/pipeline_stage.h"
 #include "src/inspector/entry_point.h"
 #include "src/inspector/scalar.h"
-#include "src/namer.h"
+#include "src/program.h"
 
 namespace tint {
 namespace inspector {
@@ -38,8 +37,6 @@ struct ResourceBinding {
     kNone = -1,
     /// 1 dimensional texture
     k1d,
-    /// 1 dimenstional array texture
-    k1dArray,
     /// 2 dimensional texture
     k2d,
     /// 2 dimensional array texture
@@ -52,6 +49,65 @@ struct ResourceBinding {
     kCubeArray,
   };
 
+  /// Component type of the texture's data. Same as the Sampled Type parameter
+  /// in SPIR-V OpTypeImage.
+  enum class SampledKind { kUnknown = -1, kFloat, kUInt, kSInt };
+
+  /// Enumerator of texture image formats
+  enum class ImageFormat {
+    kNone = -1,
+    kR8Unorm,
+    kR8Snorm,
+    kR8Uint,
+    kR8Sint,
+    kR16Uint,
+    kR16Sint,
+    kR16Float,
+    kRg8Unorm,
+    kRg8Snorm,
+    kRg8Uint,
+    kRg8Sint,
+    kR32Uint,
+    kR32Sint,
+    kR32Float,
+    kRg16Uint,
+    kRg16Sint,
+    kRg16Float,
+    kRgba8Unorm,
+    kRgba8UnormSrgb,
+    kRgba8Snorm,
+    kRgba8Uint,
+    kRgba8Sint,
+    kBgra8Unorm,
+    kBgra8UnormSrgb,
+    kRgb10A2Unorm,
+    kRg11B10Float,
+    kRg32Uint,
+    kRg32Sint,
+    kRg32Float,
+    kRgba16Uint,
+    kRgba16Sint,
+    kRgba16Float,
+    kRgba32Uint,
+    kRgba32Sint,
+    kRgba32Float,
+  };
+
+  /// kXXX maps to entries returned by GetXXXResourceBindings call.
+  enum class ResourceType {
+    kUniformBuffer,
+    kStorageBuffer,
+    kReadOnlyStorageBuffer,
+    kSampler,
+    kComparisonSampler,
+    kSampledTexture,
+    kMulitsampledTexture,
+    kReadOnlyStorageTexture,
+    kWriteOnlyStorageTexture,
+  };
+
+  /// Type of resource that is bound.
+  ResourceType resource_type;
   /// Bind group the binding belongs
   uint32_t bind_group;
   /// Identifier to identify this binding within the bind group
@@ -60,14 +116,20 @@ struct ResourceBinding {
   uint64_t min_buffer_binding_size;
   /// Dimensionality of this binding, if defined.
   TextureDimension dim;
+  /// Kind of data being sampled, if defined.
+  SampledKind sampled_kind;
+  /// Format of data, if defined.
+  ImageFormat image_format;
 };
 
-/// Extracts information from a module
+/// Extracts information from a program
 class Inspector {
  public:
   /// Constructor
-  /// @param module Shader module to extract information from.
-  explicit Inspector(const ast::Module& module);
+  /// @param program Shader program to extract information from.
+  explicit Inspector(const Program* program);
+
+  /// Destructor
   ~Inspector();
 
   /// @returns error messages from the Inspector
@@ -85,6 +147,11 @@ class Inspector {
 
   /// @returns map of const_id to initial value
   std::map<uint32_t, Scalar> GetConstantIDs();
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the resource bindings.
+  std::vector<ResourceBinding> GetResourceBindings(
+      const std::string& entry_point);
 
   /// @param entry_point name of the entry point to get information about.
   /// @returns vector of all of the bindings for uniform buffers.
@@ -116,10 +183,24 @@ class Inspector {
   std::vector<ResourceBinding> GetSampledTextureResourceBindings(
       const std::string& entry_point);
 
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the bindings for multisampled textures.
+  std::vector<ResourceBinding> GetMultisampledTextureResourceBindings(
+      const std::string& entry_point);
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the bindings for read-only storage textures.
+  std::vector<ResourceBinding> GetReadOnlyStorageTextureResourceBindings(
+      const std::string& entry_point);
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the bindings for write-only storage textures.
+  std::vector<ResourceBinding> GetWriteOnlyStorageTextureResourceBindings(
+      const std::string& entry_point);
+
  private:
-  const ast::Module& module_;
+  const Program* program_;
   std::string error_;
-  tint::Namer namer_;
 
   /// @param name name of the entry point to find
   /// @returns a pointer to the entry point if it exists, otherwise returns
@@ -127,10 +208,26 @@ class Inspector {
   ast::Function* FindEntryPointByName(const std::string& name);
 
   /// @param entry_point name of the entry point to get information about.
-  /// @param read_only get only read only if true, otherwise get everything
-  ///                  else.
-  /// @returns vector of all of the bindings for the request storage buffers.
+  /// @param read_only if true get only read-only bindings, if false get
+  ///                  write-only bindings.
+  /// @returns vector of all of the bindings for the requested storage buffers.
   std::vector<ResourceBinding> GetStorageBufferResourceBindingsImpl(
+      const std::string& entry_point,
+      bool read_only);
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @param multisampled_only only get multisampled textures if true, otherwise
+  ///                          only get sampled textures.
+  /// @returns vector of all of the bindings for the request storage buffers.
+  std::vector<ResourceBinding> GetSampledTextureResourceBindingsImpl(
+      const std::string& entry_point,
+      bool multisampled_only);
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @param read_only if true get only read-only bindings, otherwise get
+  ///                  write-only bindings.
+  /// @returns vector of all of the bindings for the requested storage textures.
+  std::vector<ResourceBinding> GetStorageTextureResourceBindingsImpl(
       const std::string& entry_point,
       bool read_only);
 };

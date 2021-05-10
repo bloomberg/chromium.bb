@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Platform from '../platform/platform.js';
 
 import {GlassPane} from './GlassPane.js';
@@ -12,9 +9,6 @@ import {ShortcutRegistry} from './ShortcutRegistry.js';
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
 
-/**
- * @unrestricted
- */
 export class Tooltip {
   /**
    * @param {!Document} doc
@@ -24,14 +18,18 @@ export class Tooltip {
     this._shadowRoot = createShadowRootWithCoreStyles(
         this.element, {cssFile: 'ui/tooltip.css', enableLegacyPatching: true, delegatesFocus: undefined});
 
-    this._tooltipElement = this._shadowRoot.createChild('div', 'tooltip');
+    /** @type {!HTMLElement} */
+    this._tooltipElement = /** @type {!HTMLElement} */ (this._shadowRoot.createChild('div', 'tooltip'));
     doc.addEventListener('mousemove', this._mouseMove.bind(this), true);
     doc.addEventListener('mousedown', this._hide.bind(this, true), true);
     doc.addEventListener('mouseleave', this._hide.bind(this, false), true);
     doc.addEventListener('keydown', this._hide.bind(this, true), true);
+    // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
     doc[_symbol] = this;
     ZoomManager.instance().addEventListener(ZoomManagerEvents.ZoomChanged, this._reset, this);
-    doc.defaultView.addEventListener('resize', this._reset.bind(this), false);
+    if (doc.defaultView) {
+      doc.defaultView.addEventListener('resize', this._reset.bind(this), false);
+    }
   }
 
   /**
@@ -49,15 +47,19 @@ export class Tooltip {
    */
   static install(element, tooltipContent, actionId, options) {
     if (!tooltipContent) {
+      // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
       delete element[_symbol];
       return;
     }
+    // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
     element[_symbol] = {content: tooltipContent, actionId: actionId, options: options || {}};
+    /** @type {?number} */
     let timeout;
-    element.addEventListener('focus', event => {
+    element.addEventListener('focus', /** @param {!Event} event */ event => {
+      // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
       const tooltipInstance = element.ownerDocument[_symbol];
       if (tooltipInstance) {
-        timeout = setTimeout(() => {
+        timeout = window.setTimeout(() => {
           if (element.matches(':focus-visible')) {
             tooltipInstance._show(element, event);
           }
@@ -70,11 +72,22 @@ export class Tooltip {
         clearTimeout(timeout);
         timeout = null;
       }
+      // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
       const tooltipInstance = element.ownerDocument[_symbol];
       if (tooltipInstance) {
         tooltipInstance._hide();
       }
     });
+  }
+
+  /**
+   * @param {(!Element|!Document)} element
+   * @return {string}
+   */
+  static getContent(element) {
+    // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
+    const tooltip = element[_symbol];
+    return tooltip ? tooltip.content : '';
   }
 
   /**
@@ -103,10 +116,10 @@ export class Tooltip {
         return;
       }
       // The offsetParent is null when the element or an ancestor has 'display: none'.
-      if (!(element instanceof Element) || element.offsetParent === null) {
+      if (!(element instanceof HTMLElement) || element.offsetParent === null) {
         continue;
       }
-      if (element[_symbol]) {
+      if (Tooltip.getContent(element)) {
         this._show(element, mouseEvent);
         return;
       }
@@ -115,7 +128,7 @@ export class Tooltip {
 
   /**
    * @param {!Element} anchorElement
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _reposition(anchorElement, event) {
     // Reposition to ensure text doesn't overflow unnecessarily.
@@ -124,11 +137,12 @@ export class Tooltip {
     const container = GlassPane.container(/** @type {!Document} */ (anchorElement.ownerDocument));
     // Position tooltip based on the anchor element.
     const containerBox = container.boxInWindow(this.element.window());
-    const anchorBox = this._anchorElement.boxInWindow(this.element.window());
+    const anchorBox = /** @type {!Element} */ (this._anchorElement).boxInWindow(this.element.window());
     const anchorOffset = 2;
     const pageMargin = 2;
     const cursorOffset = 10;
-    this._tooltipElement.classList.toggle('tooltip-breakword', !this._tooltipElement.textContent.match('\\s'));
+    const textContentMatchesWhitespace = this._tooltipElement && (this._tooltipElement.textContent || '').match('\\s');
+    this._tooltipElement.classList.toggle('tooltip-breakword', !textContentMatchesWhitespace);
     this._tooltipElement.style.maxWidth = (containerBox.width - pageMargin * 2) + 'px';
     this._tooltipElement.style.maxHeight = '';
     const tooltipWidth = this._tooltipElement.offsetWidth;
@@ -154,6 +168,10 @@ export class Tooltip {
    * @returns {boolean}
    */
   _anchorTooltipAtElement() {
+    if (!this._anchorElement) {
+      throw new Error('No _anchorElement set');
+    }
+    // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
     const tooltip = this._anchorElement[_symbol];
 
     if (tooltip.options.anchorTooltipAtElement !== undefined) {
@@ -166,17 +184,17 @@ export class Tooltip {
 
   /**
    * @param {!Element} anchorElement
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    */
   _show(anchorElement, event) {
+    // @ts-ignore crbug.com/1150762: HTMLElement#title magic override.
     const tooltip = anchorElement[_symbol];
     this._anchorElement = anchorElement;
     this._tooltipElement.removeChildren();
 
     // Check if native tooltips should be used.
     if (this._shouldUseNativeTooltips()) {
-      Object.defineProperty(this._anchorElement, 'title', /** @type {!Object} */ (_nativeTitle));
-      this._anchorElement.title = tooltip.content;
+      Tooltip.install(this._anchorElement, tooltip.content);
       return;
     }
 
@@ -196,7 +214,7 @@ export class Tooltip {
 
     // Show tooltip instantly if a tooltip was shown recently.
     const now = Date.now();
-    const instant = (this._tooltipLastClosed && now - this._tooltipLastClosed < Timing.InstantThreshold);
+    const instant = (this._tooltipLastClosed !== undefined && now - this._tooltipLastClosed < Timing.InstantThreshold);
     this._tooltipElement.classList.toggle('instant', instant);
     this._tooltipLastOpened = instant ? now : now + Timing.OpeningDelay;
 
@@ -209,7 +227,7 @@ export class Tooltip {
    */
   _shouldUseNativeTooltips() {
     for (const element of _nativeOverrideContainer) {
-      if (this._anchorElement.isSelfOrDescendant(element)) {
+      if (this._anchorElement && this._anchorElement.isSelfOrDescendant(element)) {
         return true;
       }
     }
@@ -222,7 +240,7 @@ export class Tooltip {
   _hide(removeInstant) {
     delete this._anchorElement;
     this._tooltipElement.classList.remove('shown');
-    if (Date.now() > this._tooltipLastOpened) {
+    if (this._tooltipLastOpened && Date.now() > this._tooltipLastOpened) {
       this._tooltipLastClosed = Date.now();
     }
     if (removeInstant) {
@@ -243,6 +261,7 @@ export class Tooltip {
  * anchorTooltipAtElement: (boolean|undefined)
  * }}
  */
+// @ts-ignore typedef
 export let TooltipOptions;
 
 const Timing = {
@@ -259,24 +278,3 @@ export const TooltipSymbol = _symbol;
 
 /** @type {!Array.<!Element>} */
 const _nativeOverrideContainer = [];
-
-const _nativeTitle = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'title');
-
-Object.defineProperty(HTMLElement.prototype, 'title', {
-  /**
-   * @return {!Element|string}
-   * @this {!Element}
-   */
-  get: function() {
-    const tooltip = this[_symbol];
-    return tooltip ? tooltip.content : '';
-  },
-
-  /**
-   * @param {!Element|string} x
-   * @this {!Element}
-   */
-  set: function(x) {
-    Tooltip.install(this, x);
-  }
-});

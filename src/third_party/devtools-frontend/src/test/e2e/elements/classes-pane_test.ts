@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {beforeEach, describe, it} from 'mocha';
+import {beforeEach} from 'mocha';
 
-import {goToResource} from '../../shared/helper.js';
+import {goToResource, timeout} from '../../shared/helper.js';
+import {describe, it} from '../../shared/mocha-extensions.js';
 import {assertSelectedNodeClasses, toggleClassesPane, toggleClassesPaneCheckbox, typeInClassesPaneInput} from '../helpers/elements-helpers.js';
 
 describe('The Classes pane', async () => {
@@ -36,6 +37,8 @@ describe('The Classes pane', async () => {
   });
 
   it('removes the previewed classes on ESC', async () => {
+    // Allow win64 bot to settle.
+    await timeout(500);
     await typeInClassesPaneInput('foo');
     await typeInClassesPaneInput('bar', 'Escape', false);
     await typeInClassesPaneInput('baz');

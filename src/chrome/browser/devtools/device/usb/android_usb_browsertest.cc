@@ -137,16 +137,12 @@ UsbConfigurationInfoPtr ConstructAndroidConfig(uint8_t class_code,
 class FakeAndroidUsbDeviceInfo : public FakeUsbDeviceInfo {
  public:
   explicit FakeAndroidUsbDeviceInfo(bool is_broken)
-      : FakeUsbDeviceInfo(0x0200,  // usb_version
-                          0,       // device_class
-                          0,       // device_subclass
-                          0,       // device_protocol
-                          0,       // vendor_id
-                          0,       // product_id
-                          0x0100,  // device_version
+      : FakeUsbDeviceInfo(/*vendor_id=*/0,
+                          /*product_id=*/0,
                           kDeviceManufacturer,
                           kDeviceModel,
-                          kDeviceSerial),
+                          kDeviceSerial,
+                          std::vector<UsbConfigurationInfoPtr>()),
         broken_traits_(is_broken) {}
 
   bool broken_traits() const { return broken_traits_; }
@@ -504,10 +500,9 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     adb_bridge_ =
         DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
     DCHECK(adb_bridge_);
-    adb_bridge_->set_task_scheduler_for_test(base::Bind(
+    adb_bridge_->set_task_scheduler_for_test(base::BindRepeating(
         &AndroidUsbDiscoveryTest::ScheduleDeviceCountRequest,
         base::Unretained(this)));
-
 
     AndroidDeviceManager::DeviceProviders providers;
     providers.push_back(
@@ -523,10 +518,10 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     adb_bridge_->set_usb_device_manager_for_test(std::move(manager));
   }
 
-  void ScheduleDeviceCountRequest(const base::Closure& request) {
+  void ScheduleDeviceCountRequest(base::OnceClosure request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     scheduler_invoked_++;
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, request);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(request));
   }
 
   virtual std::unique_ptr<FakeUsbDeviceManager> CreateFakeUsbManager() {

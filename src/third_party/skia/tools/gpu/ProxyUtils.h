@@ -15,26 +15,29 @@
 
 class GrDirectContext;
 class GrProgramInfo;
+class GrPixmap;
 
 namespace sk_gpu_test {
+
+/** Returns the proxy backing an image if it is texture backed, otherwise nullptr. */
+GrTextureProxy* GetTextureImageProxy(SkImage*, GrRecordingContext*);
 
 /** Makes a texture proxy containing the passed in color data. */
 GrSurfaceProxyView MakeTextureProxyViewFromData(GrDirectContext*,
                                                 GrRenderable,
                                                 GrSurfaceOrigin,
-                                                const GrImageInfo&,
-                                                const void* data,
-                                                size_t rowBytes);
+                                                GrPixmap pixmap);
 
 GrProgramInfo* CreateProgramInfo(const GrCaps*,
                                  SkArenaAlloc*,
-                                 const GrSurfaceProxyView* writeView,
+                                 const GrSurfaceProxyView& writeView,
                                  GrAppliedClip&&,
                                  const GrXferProcessor::DstProxyView&,
                                  GrGeometryProcessor*,
                                  SkBlendMode,
                                  GrPrimitiveType,
                                  GrXferBarrierFlags renderPassXferBarriers,
+                                 GrLoadOp colorLoadOp,
                                  GrPipeline::InputFlags flags = GrPipeline::InputFlags::kNone,
                                  const GrUserStencilSettings* stencil =
                                                                 &GrUserStencilSettings::kUnused);

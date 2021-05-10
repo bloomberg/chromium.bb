@@ -15,6 +15,7 @@
 #include "build/chromeos_buildflags.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/credential_management.h"
+#include "device/fido/ctap_authenticator_selection_request.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/features.h"
@@ -175,7 +176,26 @@ void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
       GetAssertionTask::StringFixupPredicate);
 }
 
-void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
+void FidoDeviceAuthenticator::GetTouch(base::OnceClosure callback) {
+  if (device()->device_info() &&
+      device()->device_info()->SupportsAtLeast(Ctap2Version::kCtap2_1)) {
+    RunOperation<CtapAuthenticatorSelectionRequest, pin::EmptyResponse>(
+        CtapAuthenticatorSelectionRequest(),
+        base::BindOnce(
+            [](std::string authenticator_id, base::OnceClosure callback,
+               CtapDeviceResponseCode status,
+               base::Optional<pin::EmptyResponse> _) {
+              if (status == CtapDeviceResponseCode::kSuccess) {
+                std::move(callback).Run();
+                return;
+              }
+              FIDO_LOG(DEBUG) << "Ignoring status " << static_cast<int>(status)
+                              << " from " << authenticator_id;
+            },
+            GetId(), std::move(callback)),
+        base::BindOnce(&pin::EmptyResponse::Parse));
+    return;
+  }
   MakeCredential(
       MakeCredentialTask::GetTouchRequest(device()),
       base::BindOnce(
@@ -329,7 +349,7 @@ void FidoDeviceAuthenticator::OnHaveEphemeralKeyForChangePIN(
       std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse));
 }
 
-FidoAuthenticator::MakeCredentialPINUVDisposition
+FidoAuthenticator::PINUVDisposition
 FidoDeviceAuthenticator::PINUVDispositionForMakeCredential(
     const CtapMakeCredentialRequest& request,
     const FidoRequestHandlerBase::Observer* observer) {
@@ -343,9 +363,6 @@ FidoDeviceAuthenticator::PINUVDispositionForMakeCredential(
       Options()->user_verification_availability ==
       UserVerificationAvailability::kSupportedAndConfigured;
 
-  const bool can_get_token =
-      (can_collect_pin && pin_supported) || CanGetUvToken();
-
   // CTAP 2.0 requires a PIN for credential creation once a PIN has been set.
   // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.
   const bool u2f_fallback_possible =
@@ -353,73 +370,74 @@ FidoDeviceAuthenticator::PINUVDispositionForMakeCredential(
       device()->device_info()->versions.contains(ProtocolVersion::kU2f) &&
       IsConvertibleToU2fRegisterCommand(request) &&
       !ShouldPreferCTAP2EvenIfItNeedsAPIN(request);
-  const bool uv_required =
-      request.user_verification == UserVerificationRequirement::kRequired ||
-      (pin_configured && !u2f_fallback_possible);
-  const bool uv_preferred =
-      request.user_verification == UserVerificationRequirement::kPreferred;
 
-  if (!uv_required && !(uv_preferred && (pin_configured || uv_configured))) {
-    return MakeCredentialPINUVDisposition::kNoUV;
+  const UserVerificationRequirement uv_requirement =
+      (pin_configured && !u2f_fallback_possible)
+          ? UserVerificationRequirement::kRequired
+          : request.user_verification;
+
+  if (uv_requirement == UserVerificationRequirement::kDiscouraged ||
+      (uv_requirement == UserVerificationRequirement::kPreferred &&
+       ((!pin_configured || !can_collect_pin) && !uv_configured))) {
+    return PINUVDisposition::kNoUV;
   }
 
   // Authenticators with built-in UV that don't support UV token should try
   // sending the request as-is with uv=true first.
   if (uv_configured && !CanGetUvToken()) {
     return (can_collect_pin && pin_supported)
-               ? MakeCredentialPINUVDisposition::kNoTokenInternalUVPINFallback
-               : MakeCredentialPINUVDisposition::kNoTokenInternalUV;
+               ? PINUVDisposition::kNoTokenInternalUVPINFallback
+               : PINUVDisposition::kNoTokenInternalUV;
   }
+
+  const bool can_get_token =
+      (can_collect_pin && pin_supported) || CanGetUvToken();
 
   if (can_get_token) {
-    return MakeCredentialPINUVDisposition::kGetToken;
+    return PINUVDisposition::kGetToken;
   }
 
-  return MakeCredentialPINUVDisposition::kUnsatisfiable;
+  return PINUVDisposition::kUnsatisfiable;
 }
 
-FidoAuthenticator::GetAssertionPINDisposition
-FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
+FidoAuthenticator::PINUVDisposition
+FidoDeviceAuthenticator::PINUVDispositionForGetAssertion(
     const CtapGetAssertionRequest& request,
     const FidoRequestHandlerBase::Observer* observer) {
-  const bool can_use_pin = (Options()->client_pin_availability ==
-                            AuthenticatorSupportedOptions::
-                                ClientPinAvailability::kSupportedAndPinSet) &&
-                           // The PIN is effectively unavailable if there's no
-                           // UI support for collecting it.
-                           observer && observer->SupportsPIN();
+  // TODO(crbug.com/1149405): GetAssertion requests don't allow in-line UV
+  // enrollment. Perhaps we should change this and align with MakeCredential
+  // behavior.
+  const bool can_collect_pin = observer && observer->SupportsPIN();
+  const bool pin_configured = Options()->client_pin_availability ==
+                              ClientPinAvailability::kSupportedAndPinSet;
 
-  // Authenticators with built-in UV can use that.
-  if (Options()->user_verification_availability ==
-      UserVerificationAvailability::kSupportedAndConfigured) {
-    return can_use_pin ? GetAssertionPINDisposition::kUsePINForFallback
-                       : GetAssertionPINDisposition::kNoPIN;
+  const bool uv_configured =
+      Options()->user_verification_availability ==
+      UserVerificationAvailability::kSupportedAndConfigured;
+
+  const UserVerificationRequirement uv_requirement =
+      request.allow_list.empty() ? UserVerificationRequirement::kRequired
+                                 : request.user_verification;
+
+  if (uv_requirement == UserVerificationRequirement::kDiscouraged ||
+      (uv_requirement == UserVerificationRequirement::kPreferred &&
+       ((!pin_configured || !can_collect_pin) && !uv_configured))) {
+    return PINUVDisposition::kNoUV;
   }
 
-  const bool resident_key_request = request.allow_list.empty();
-
-  if (resident_key_request) {
-    if (can_use_pin) {
-      return GetAssertionPINDisposition::kUsePIN;
-    }
-    return GetAssertionPINDisposition::kUnsatisfiable;
+  // Authenticators with built-in UV that don't support UV token should try
+  // sending the request as-is with uv=true first.
+  if (uv_configured && !CanGetUvToken()) {
+    return (can_collect_pin && pin_configured)
+               ? PINUVDisposition::kNoTokenInternalUVPINFallback
+               : PINUVDisposition::kNoTokenInternalUV;
   }
 
-  // If UV is required then the PIN must be used if set, or else this request
-  // cannot be satisfied.
-  if (request.user_verification == UserVerificationRequirement::kRequired) {
-    if (can_use_pin) {
-      return GetAssertionPINDisposition::kUsePIN;
-    }
-    return GetAssertionPINDisposition::kUnsatisfiable;
+  if ((can_collect_pin && pin_configured) || CanGetUvToken()) {
+    return PINUVDisposition::kGetToken;
   }
 
-  // If UV is preferred and a PIN is set, use it.
-  if (request.user_verification == UserVerificationRequirement::kPreferred &&
-      can_use_pin) {
-    return GetAssertionPINDisposition::kUsePIN;
-  }
-  return GetAssertionPINDisposition::kNoPIN;
+  return PINUVDisposition::kUnsatisfiable;
 }
 
 void FidoDeviceAuthenticator::GetCredentialsMetadata(
@@ -811,8 +829,14 @@ void FidoDeviceAuthenticator::OnHaveLargeBlobArrayForWrite(
     large_blob_array->emplace_back(std::move(new_large_blob_data));
   }
 
-  WriteLargeBlobArray(std::move(pin_uv_auth_token),
-                      LargeBlobArrayWriter(*large_blob_array),
+  LargeBlobArrayWriter writer(*large_blob_array);
+  if (writer.size() >
+      *device_->device_info()->max_serialized_large_blob_array) {
+    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrRequestTooLarge);
+    return;
+  }
+
+  WriteLargeBlobArray(std::move(pin_uv_auth_token), std::move(writer),
                       std::move(callback));
 }
 
@@ -933,7 +957,7 @@ std::string FidoDeviceAuthenticator::GetId() const {
   return device_->GetId();
 }
 
-base::string16 FidoDeviceAuthenticator::GetDisplayName() const {
+std::string FidoDeviceAuthenticator::GetDisplayName() const {
   return device_->GetDisplayName();
 }
 
@@ -993,11 +1017,11 @@ bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
 }
 #endif  // defined(OS_MAC)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool FidoDeviceAuthenticator::IsChromeOSAuthenticator() const {
   return false;
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
@@ -1030,6 +1054,18 @@ void FidoDeviceAuthenticator::GetUvToken(
       base::BindOnce(&FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken,
                      weak_factory_.GetWeakPtr(), std::move(rp_id),
                      std::move(permissions), std::move(callback)));
+}
+
+uint32_t FidoDeviceAuthenticator::CurrentMinPINLength() {
+  return ForcePINChange() ? kMinPinLength : NewMinPINLength();
+}
+
+uint32_t FidoDeviceAuthenticator::NewMinPINLength() {
+  return device()->device_info()->min_pin_length.value_or(kMinPinLength);
+}
+
+bool FidoDeviceAuthenticator::ForcePINChange() {
+  return device()->device_info()->force_pin_change.value_or(false);
 }
 
 void FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken(

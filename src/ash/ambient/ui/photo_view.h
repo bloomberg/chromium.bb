@@ -5,12 +5,15 @@
 #ifndef ASH_AMBIENT_UI_PHOTO_VIEW_H_
 #define ASH_AMBIENT_UI_PHOTO_VIEW_H_
 
+#include <array>
 #include <memory>
 
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/scoped_observation.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 
@@ -29,16 +32,15 @@ class ASH_EXPORT PhotoView : public views::View,
                              public AmbientBackendModelObserver,
                              public ui::ImplicitAnimationObserver {
  public:
+  METADATA_HEADER(PhotoView);
+
   explicit PhotoView(AmbientViewDelegate* delegate);
   PhotoView(const PhotoView&) = delete;
   PhotoView& operator=(PhotoView&) = delete;
   ~PhotoView() override;
 
-  // views::View:
-  const char* GetClassName() const override;
-
   // AmbientBackendModelObserver:
-  void OnImagesChanged() override;
+  void OnImageAdded() override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -55,17 +57,20 @@ class ASH_EXPORT PhotoView : public views::View,
   // Return if can start transition animation.
   bool NeedToAnimateTransition() const;
 
-  const gfx::ImageSkia& GetCurrentImagesForTesting();
+  const gfx::ImageSkia& GetVisibleImageForTesting();
 
   // Note that we should be careful when using |delegate_|, as there is no
   // strong guarantee on the life cycle.
   AmbientViewDelegate* const delegate_ = nullptr;
 
   // Image containers used for animation. Owned by view hierarchy.
-  AmbientBackgroundImageView* image_views_[2]{nullptr, nullptr};
+  std::array<AmbientBackgroundImageView*, 2> image_views_{nullptr, nullptr};
 
   // The index of |image_views_| to update the next image.
   int image_index_ = 0;
+
+  base::ScopedObservation<AmbientBackendModel, AmbientBackendModelObserver>
+      scoped_backend_model_observer_{this};
 };
 
 }  // namespace ash

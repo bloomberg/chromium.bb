@@ -9,9 +9,11 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/download/public/common/download_item.h"
 #include "components/security_state/core/security_state.h"
@@ -30,9 +32,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/download/notification/download_notification_manager.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -118,14 +120,14 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   if (!delegate_) {
     // The Profile is guaranteed to be valid since DownloadUIController is owned
     // by DownloadService, which in turn is a profile keyed service.
     delegate_.reset(new DownloadNotificationManager(
         Profile::FromBrowserContext(manager->GetBrowserContext())));
   }
-#else  // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
   if (!delegate_) {
     delegate_.reset(new DownloadShelfUIControllerDelegate(
         Profile::FromBrowserContext(manager->GetBrowserContext())));
@@ -162,6 +164,12 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
           security_state::GetLegacyTLSWarningStatus(
               *security_state_tab_helper->GetVisibleSecurityState()));
     }
+  }
+
+  if (web_contents) {
+    // TODO(crbug.com/1179196): Add test for this metric.
+    RecordDownloadStartPerProfileType(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   }
 
   // SavePackage downloads are created in a state where they can be shown in the

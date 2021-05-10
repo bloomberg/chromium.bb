@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018, VideoLAN and dav1d authors
+ * Copyright © 2018-2021, VideoLAN and dav1d authors
  * Copyright © 2018, Two Orioles, LLC
  * All rights reserved.
  *
@@ -29,10 +29,9 @@
 
 #include <string.h>
 
-#include "src/thread.h"
-#include "common/intops.h"
+#include "common/frame.h"
 
-#include "src/cdf.h"
+#include "src/internal.h"
 #include "src/tables.h"
 
 #define CDF1(x) (32768-(x))
@@ -4015,7 +4014,7 @@ void dav1d_cdf_thread_update(const Dav1dFrameHeader *const hdr,
     update_cdf_1d(11, m.txtp_inter2);
     update_bit_1d(4, m.txtp_inter3);
 
-    if (!(hdr->frame_type & 1)) {
+    if (IS_KEY_OR_INTRA(hdr)) {
         update_bit_0d(m.intrabc);
 
         update_cdf_1d(N_MV_JOINTS - 1, dmv.joint);
@@ -4096,11 +4095,11 @@ void dav1d_cdf_thread_copy(CdfContext *const dst, const CdfThreadContext *const 
     }
 }
 
-int dav1d_cdf_thread_alloc(CdfThreadContext *const cdf,
+int dav1d_cdf_thread_alloc(Dav1dContext *const c, CdfThreadContext *const cdf,
                            struct thread_data *const t)
 {
-    cdf->ref = dav1d_ref_create(sizeof(CdfContext) +
-                                (t != NULL) * sizeof(atomic_uint));
+    cdf->ref = dav1d_ref_create_using_pool(c->cdf_pool,
+                                           sizeof(CdfContext) + sizeof(atomic_uint));
     if (!cdf->ref) return DAV1D_ERR(ENOMEM);
     cdf->data.cdf = cdf->ref->data;
     if (t) {

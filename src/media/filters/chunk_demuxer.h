@@ -33,6 +33,9 @@ class MEDIA_EXPORT SourceBufferStream;
 
 namespace media {
 
+class AudioDecoderConfig;
+class VideoDecoderConfig;
+
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
@@ -199,7 +202,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   };
 
   // |open_cb| Run when Initialize() is called to signal that the demuxer
-  //   is ready to receive media data via AppendData().
+  //   is ready to receive media data via AppendData/Chunks().
   // |progress_cb| Run each time data is appended.
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
   //   encryption key is needed to decrypt the content.
@@ -233,17 +236,25 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
   void CancelPendingSeek(base::TimeDelta seek_time) override;
 
-  // Registers a new |id| to use for AppendData() calls. |content_type|
+  // Registers a new |id| to use for AppendData/Chunks() calls. |content_type|
   // indicates the MIME type's ContentType and |codecs| indicates the MIME
   // type's "codecs" parameter string (if any) for the data that we intend to
   // append for this ID.  kOk is returned if the demuxer has enough resources to
   // support another ID and supports the format indicated by |content_type| and
-  // |codecs|.  kReachedIdLimit is returned if the demuxer cannot handle another
-  // ID right now.  kNotSupported is returned if |content_type| and |codecs| is
+  // |codecs|. kReachedIdLimit is returned if the demuxer cannot handle another
+  // ID right now. kNotSupported is returned if |content_type| and |codecs| is
   // not a supported format.
+  // The |audio_config| and |video_config| overloads behave similarly, except
+  // the caller must provide valid, supported decoder configs; those overloads'
+  // usage indicates that we intend to append WebCodecs encoded audio or video
+  // chunks for this ID.
   Status AddId(const std::string& id,
                const std::string& content_type,
                const std::string& codecs);
+  Status AddId(const std::string& id,
+               std::unique_ptr<AudioDecoderConfig> audio_config);
+  Status AddId(const std::string& id,
+               std::unique_ptr<VideoDecoderConfig> video_config);
 
   // Notifies a caller via |tracks_updated_cb| that the set of media tracks
   // for a given |id| has changed.
@@ -285,6 +296,16 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                   base::TimeDelta append_window_start,
                   base::TimeDelta append_window_end,
                   base::TimeDelta* timestamp_offset);
+
+  // Appends webcodecs encoded chunks (already converted by caller into a
+  // BufferQueue of StreamParserBuffers) to the source buffer associated with
+  // |id|, with same semantic for other parameters and return value as
+  // AppendData().
+  bool AppendChunks(const std::string& id,
+                    std::unique_ptr<StreamParser::BufferQueue> buffer_queue,
+                    base::TimeDelta append_window_start,
+                    base::TimeDelta append_window_end,
+                    base::TimeDelta* timestamp_offset);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.
@@ -393,6 +414,14 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
     SHUTDOWN,
   };
 
+  // Helper for AddId's creation of FrameProcessor, and
+  // SourceBufferState creation, initialization and tracking in
+  // source_state_map_.
+  ChunkDemuxer::Status AddIdInternal(
+      const std::string& id,
+      std::unique_ptr<media::StreamParser> stream_parser,
+      std::string expected_codecs);
+
   // Helper for vide and audio track changing.
   void FindAndEnableProperTracks(const std::vector<MediaTrack::Id>& track_ids,
                                  base::TimeDelta curr_time,
@@ -499,7 +528,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::TimeDelta duration_;
 
   // The duration passed to the last SetDuration(). If
-  // SetDuration() is never called or an AppendData() call or
+  // SetDuration() is never called or an AppendData/Chunks() call or
   // a EndOfStream() call changes |duration_|, then this
   // variable is set to < 0 to indicate that the |duration_| represents
   // the actual duration instead of a user specified value.

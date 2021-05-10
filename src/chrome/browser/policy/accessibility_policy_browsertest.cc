@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnifier_type.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,13 +16,16 @@
 
 namespace policy {
 
+using ::ash::AccessibilityManager;
+using ::ash::MagnificationManager;
+using ::ash::MagnifierType;
+
 class AccessibilityPolicyTest : public PolicyTest {};
 
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, LargeCursorEnabled) {
   // Verifies that the large cursor accessibility feature can be controlled
   // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Manually enable the large cursor.
   accessibility_manager->EnableLargeCursor(true);
@@ -44,8 +47,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, LargeCursorEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SpokenFeedbackEnabled) {
   // Verifies that the spoken feedback accessibility feature can be controlled
   // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Manually enable spoken feedback.
   accessibility_manager->EnableSpokenFeedback(true);
@@ -67,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SpokenFeedbackEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, HighContrastEnabled) {
   // Verifies that the high contrast mode accessibility feature can be
   // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Manually enable high contrast mode.
   accessibility_manager->EnableHighContrast(true);
@@ -89,8 +90,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, HighContrastEnabled) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeNone) {
   // Verifies that the screen magnifier can be disabled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
+  MagnificationManager* magnification_manager = MagnificationManager::Get();
 
   // Manually enable the full-screen magnifier.
   magnification_manager->SetMagnifierEnabled(true);
@@ -113,8 +113,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeNone) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeFull) {
   // Verifies that the full-screen magnifier can be enabled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
+  MagnificationManager* magnification_manager = MagnificationManager::Get();
 
   // Verify that the screen magnifier is initially disabled.
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
@@ -123,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeFull) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(chromeos::MAGNIFIER_FULL), nullptr);
+               base::Value(static_cast<int>(MagnifierType::kFull)), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 
@@ -135,8 +134,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeFull) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeDocked) {
   // Verifies that the docked magnifier accessibility feature can be
   // controlled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
+  MagnificationManager* magnification_manager = MagnificationManager::Get();
 
   // Verify that the docked magnifier is initially disabled
   EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
@@ -145,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeDocked) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::Value(chromeos::MAGNIFIER_DOCKED), nullptr);
+               base::Value(static_cast<int>(MagnifierType::kDocked)), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
 
@@ -158,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest,
                        AccessibilityVirtualKeyboardEnabled) {
   // Verifies that the on-screen keyboard accessibility feature can be
   // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Manually enable the on-screen keyboard.
   accessibility_manager->EnableVirtualKeyboard(true);
@@ -181,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest,
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, StickyKeysEnabled) {
   // Verifies that the sticky keys accessibility feature can be
   // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Verify that the sticky keys is initially disabled
   EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
@@ -242,8 +238,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, VirtualKeyboardEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SelectToSpeakEnabled) {
   // Verifies that the select to speak accessibility feature can be
   // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Verify that the select to speak is initially disabled
   EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
@@ -268,8 +263,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SelectToSpeakEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, DictationEnabled) {
   // Verifies that the dictation accessibility feature can be
   // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   // Verify that the dictation is initially disabled
@@ -295,8 +289,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, DictationEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, KeyboardFocusHighlightEnabled) {
   // Verifies that the keyboard focus highlight objects accessibility feature
   // can be controlled through policy.
-  chromeos::AccessibilityManager* const accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* const accessibility_manager =
+      AccessibilityManager::Get();
 
   // Verify that the keyboard focus highlight objects is initially disabled.
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
@@ -322,8 +316,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, KeyboardFocusHighlightEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CursorHighlightEnabled) {
   // Verifies that the cursor highlight accessibility feature accessibility
   // feature can be controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Verify that the cursor highlight is initially disabled.
   EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
@@ -348,8 +341,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CursorHighlightEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CaretHighlightEnabled) {
   // Verifies that the caret highlight accessibility feature can be controlled
   // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   // Verify that the caret highlight is initially disabled.
   EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
@@ -384,8 +376,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CaretHighlightEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, MonoAudioEnabled) {
   // Verifies that the mono audio accessibility feature can be controlled
   // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   accessibility_manager->EnableMonoAudio(false);
   // Verify that the mono audio is initially disabled.
@@ -421,8 +412,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, MonoAudioEnabled) {
 IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, AutoclickEnabled) {
   // Verifies that the autoclick accessibility feature can be controlled through
   // policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
 
   accessibility_manager->EnableAutoclick(false);
   // Verify that the autoclick is initially disabled.

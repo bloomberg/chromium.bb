@@ -308,7 +308,7 @@ bool TopSitesDatabase::Init(const base::FilePath& db_name) {
 bool TopSitesDatabase::InitImpl(const base::FilePath& db_name) {
   const bool file_existed = base::PathExists(db_name);
 
-  db_.reset(CreateDB(db_name));
+  db_ = CreateDB(db_name);
   if (!db_)
     return false;
 
@@ -563,18 +563,18 @@ bool TopSitesDatabase::RemoveURLNoTransaction(const MostVisitedURL& url) {
   return delete_statement.Run();
 }
 
-sql::Database* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
-  std::unique_ptr<sql::Database> db(new sql::Database());
+std::unique_ptr<sql::Database> TopSitesDatabase::CreateDB(
+    const base::FilePath& db_name) {
   // Settings copied from FaviconDatabase.
+  auto db = std::make_unique<sql::Database>(sql::DatabaseOptions{
+      .exclusive_locking = true, .page_size = 4096, .cache_size = 32});
   db->set_histogram_tag("TopSites");
   db->set_error_callback(
       base::BindRepeating(&DatabaseErrorCallback, db.get(), db_name));
-  db->set_page_size(4096);
-  db->set_cache_size(32);
 
   if (!db->Open(db_name))
     return nullptr;
-  return db.release();
+  return db;
 }
 
 }  // namespace history

@@ -6,12 +6,16 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/apps/user_type_filter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -147,38 +151,39 @@ constexpr char kOfflineManifestIconAnyPngs[] = "icon_any_pngs";
 //   "theme_color": "red"
 constexpr char kOfflineManifestThemeColorArgbHex[] = "theme_color_argb_hex";
 
+// Contains numeric milestone number M like 89 (the Chrome version). The app
+// gets updated if browser's binary milestone number goes from <M to >=M.
+constexpr char kForceReinstallForMilestone[] = "force_reinstall_for_milestone";
+
 }  // namespace
 
-base::Optional<ExternalInstallOptions> ParseConfig(
-    FileUtilsWrapper& file_utils,
-    const base::FilePath& dir,
-    const base::FilePath& file,
-    const base::Value& app_config) {
+OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
+                           const base::FilePath& dir,
+                           const base::FilePath& file,
+                           const base::Value& app_config) {
   ExternalInstallOptions options(GURL(), DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalDefault);
   options.require_manifest = true;
 
   if (app_config.type() != base::Value::Type::DICTIONARY) {
-    LOG(ERROR) << file << " was not a dictionary as the top level";
-    return base::nullopt;
+    return base::StrCat(
+        {file.AsUTF8Unsafe(), " was not a dictionary as the top level"});
   }
 
   // user_type
   const base::Value* value = app_config.FindListKey(kUserType);
   if (!value) {
-    VLOG(1) << file << " missing " << kUserType;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " missing ", kUserType});
   }
   for (const auto& item : value->GetList()) {
     if (!item.is_string()) {
-      VLOG(1) << file << " has invalid " << kUserType << item;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " has invalid ", kUserType,
+                           item.DebugString()});
     }
     options.user_type_allowlist.push_back(item.GetString());
   }
   if (options.user_type_allowlist.empty()) {
-    VLOG(1) << file << " has empty " << kUserType;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " has empty ", kUserType});
   }
 
   // feature_name
@@ -189,21 +194,19 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   // app_url
   value = app_config.FindKeyOfType(kAppUrl, base::Value::Type::STRING);
   if (!value) {
-    LOG(ERROR) << file << " had a missing " << kAppUrl;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " had a missing ", kAppUrl});
   }
   options.install_url = GURL(value->GetString());
   if (!options.install_url.is_valid()) {
-    LOG(ERROR) << file << " had an invalid " << kAppUrl;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ", kAppUrl});
   }
 
   // only_for_new_users
   value = app_config.FindKey(kOnlyForNewUsers);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kOnlyForNewUsers;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kOnlyForNewUsers});
     }
     options.only_for_new_users = value->GetBool();
   }
@@ -213,8 +216,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kHideFromUser);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kHideFromUser;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kHideFromUser});
     }
     hide_from_user = value->GetBool();
   }
@@ -227,8 +230,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kCreateShortcuts);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kCreateShortcuts;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kCreateShortcuts});
     }
     create_shortcuts = value->GetBool();
   }
@@ -242,8 +245,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kDisableIfArcSupported);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kDisableIfArcSupported;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kDisableIfArcSupported});
     }
     options.disable_if_arc_supported = value->GetBool();
   }
@@ -252,8 +255,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kDisableIfTabletFormFactor);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kDisableIfTabletFormFactor;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kDisableIfTabletFormFactor});
     }
     options.disable_if_tablet_form_factor = value->GetBool();
   }
@@ -261,8 +264,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   // launch_container
   value = app_config.FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
   if (!value) {
-    LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
-    return base::nullopt;
+    return base::StrCat(
+        {file.AsUTF8Unsafe(), " had an invalid ", kLaunchContainer});
   }
   std::string launch_container_str = value->GetString();
   if (launch_container_str == kLaunchContainerTab) {
@@ -270,16 +273,16 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   } else if (launch_container_str == kLaunchContainerWindow) {
     options.user_display_mode = DisplayMode::kStandalone;
   } else {
-    LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                         kLaunchContainer, ": ", launch_container_str});
   }
 
   // launch_query_params
   value = app_config.FindKey(kLaunchQueryParams);
   if (value) {
     if (!value->is_string()) {
-      LOG(ERROR) << file << " had an invalid " << kLaunchQueryParams;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kLaunchQueryParams});
     }
     options.launch_query_params = value->GetString();
   }
@@ -288,9 +291,8 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kLoadAndAwaitServiceWorkerRegistration);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid "
-                 << kLoadAndAwaitServiceWorkerRegistration;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kLoadAndAwaitServiceWorkerRegistration});
     }
     options.load_and_await_service_worker_registration = value->GetBool();
   }
@@ -299,18 +301,19 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kServiceWorkerRegistrationUrl);
   if (value) {
     if (!options.load_and_await_service_worker_registration) {
-      LOG(ERROR) << file << " should not specify a "
-                 << kServiceWorkerRegistrationUrl << " while "
-                 << kLoadAndAwaitServiceWorkerRegistration << " is disabled";
+      return base::StrCat({file.AsUTF8Unsafe(), " should not specify a ",
+                           kServiceWorkerRegistrationUrl, " while ",
+                           kLoadAndAwaitServiceWorkerRegistration,
+                           " is disabled"});
     }
     if (!value->is_string()) {
-      LOG(ERROR) << file << " had an invalid " << kServiceWorkerRegistrationUrl;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kServiceWorkerRegistrationUrl});
     }
     options.service_worker_registration_url.emplace(value->GetString());
     if (!options.service_worker_registration_url->is_valid()) {
-      LOG(ERROR) << file << " had an invalid " << kServiceWorkerRegistrationUrl;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kServiceWorkerRegistrationUrl});
     }
   }
 
@@ -318,31 +321,26 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   value = app_config.FindKey(kUninstallAndReplace);
   if (value) {
     if (!value->is_list()) {
-      LOG(ERROR) << file << " had an invalid " << kUninstallAndReplace;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kUninstallAndReplace});
     }
     base::Value::ConstListView uninstall_and_replace_values = value->GetList();
 
-    bool had_error = false;
     for (const auto& app_id_value : uninstall_and_replace_values) {
       if (!app_id_value.is_string()) {
-        had_error = true;
-        LOG(ERROR) << file << " had an invalid " << kUninstallAndReplace
-                   << " entry";
-        break;
+        return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                             kUninstallAndReplace, " entry"});
       }
       options.uninstall_and_replace.push_back(app_id_value.GetString());
     }
-    if (had_error)
-      return base::nullopt;
   }
 
   // only_use_offline_manifest
   value = app_config.FindKey(kOnlyUseOfflineManifest);
   if (value) {
     if (!value->is_bool()) {
-      LOG(ERROR) << file << " had an invalid " << kOnlyUseOfflineManifest;
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kOnlyUseOfflineManifest});
     }
     options.only_use_app_info_factory = value->GetBool();
   }
@@ -350,25 +348,35 @@ base::Optional<ExternalInstallOptions> ParseConfig(
   // offline_manifest
   value = app_config.FindDictKey(kOfflineManifest);
   if (value) {
-    base::Optional<WebApplicationInfoFactory> offline_manifest_result =
+    WebApplicationInfoFactoryOrError offline_manifest_result =
         ParseOfflineManifest(file_utils, dir, file, *value);
-    if (!offline_manifest_result.has_value()) {
-      // Error already logged by |ParseOfflineManifest|.
-      return base::nullopt;
+    if (std::string* error =
+            absl::get_if<std::string>(&offline_manifest_result)) {
+      return std::move(*error);
     }
-    options.app_info_factory = std::move(offline_manifest_result.value());
+    options.app_info_factory = std::move(
+        absl::get<WebApplicationInfoFactory>(offline_manifest_result));
   }
 
   if (options.only_use_app_info_factory && !options.app_info_factory) {
-    LOG(ERROR) << file << kOnlyUseOfflineManifest << " set with no "
-               << kOfflineManifest << " available";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), kOnlyUseOfflineManifest,
+                         " set with no ", kOfflineManifest, " available"});
+  }
+
+  // force_reinstall_for_milestone
+  value = app_config.FindKey(kForceReinstallForMilestone);
+  if (value) {
+    if (!value->is_int()) {
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kForceReinstallForMilestone});
+    }
+    options.force_reinstall_for_milestone = value->GetInt();
   }
 
   return options;
 }
 
-base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
+WebApplicationInfoFactoryOrError ParseOfflineManifest(
     FileUtilsWrapper& file_utils,
     const base::FilePath& dir,
     const base::FilePath& file,
@@ -379,69 +387,62 @@ base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
   const std::string* name_string =
       offline_manifest.FindStringKey(kOfflineManifestName);
   if (!name_string) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " " << kOfflineManifestName
-               << " missing or invalid.";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestName, " missing or invalid."});
   }
   if (!base::UTF8ToUTF16(name_string->data(), name_string->size(),
                          &app_info.title) ||
       app_info.title.empty()) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " " << kOfflineManifestName
-               << " invalid: " << *name_string;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestName, " invalid: ", *name_string});
   }
 
   // start_url
   const std::string* start_url_string =
       offline_manifest.FindStringKey(kOfflineManifestStartUrl);
   if (!start_url_string) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestStartUrl << " missing or invalid.";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestStartUrl, " missing or invalid."});
   }
   app_info.start_url = GURL(*start_url_string);
   if (!app_info.start_url.is_valid()) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestStartUrl << " invalid: " << *start_url_string;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestStartUrl,
+                         " invalid: ", *start_url_string});
   }
 
   // scope
   const std::string* scope_string =
       offline_manifest.FindStringKey(kOfflineManifestScope);
   if (!scope_string) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestScope << " missing or invalid.";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestScope, " missing or invalid."});
   }
   app_info.scope = GURL(*scope_string);
   if (!app_info.scope.is_valid()) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestScope << " invalid: " << *scope_string;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestScope, " invalid: ", *scope_string});
   }
   if (!base::StartsWith(app_info.start_url.path(), app_info.scope.path(),
                         base::CompareCase::SENSITIVE)) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestScope << " (" << app_info.start_url
-               << ") not within " << kOfflineManifestScope << " ("
-               << app_info.scope << ").";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestScope, " (", app_info.start_url.spec(),
+                         ") not within ", kOfflineManifestScope, " (",
+                         app_info.scope.spec(), ")."});
   }
 
   // display
   const std::string* display_string =
       offline_manifest.FindStringKey(kOfflineManifestDisplay);
   if (!display_string) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestDisplay << " missing or invalid.";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestDisplay, " missing or invalid."});
   }
   DisplayMode display = blink::DisplayModeFromString(*display_string);
   if (display == DisplayMode::kUndefined) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestDisplay << " invalid: " << display_string;
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestDisplay,
+                         " invalid: ", *display_string});
   }
   app_info.display_mode = display;
 
@@ -449,43 +450,40 @@ base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
   const base::Value* icon_files =
       offline_manifest.FindListKey(kOfflineManifestIconAnyPngs);
   if (!icon_files || icon_files->GetList().empty()) {
-    LOG(ERROR) << file << " " << kOfflineManifest << " "
-               << kOfflineManifestIconAnyPngs << " missing, empty or invalid.";
-    return base::nullopt;
+    return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                         kOfflineManifestIconAnyPngs,
+                         " missing, empty or invalid."});
   }
   for (const base::Value& icon_file : icon_files->GetList()) {
     if (!icon_file.is_string()) {
-      LOG(ERROR) << file << " " << kOfflineManifest << " "
-                 << kOfflineManifestIconAnyPngs << " " << icon_file
-                 << " invalid.";
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                           kOfflineManifestIconAnyPngs, " ",
+                           icon_file.DebugString(), " invalid."});
     }
 
     base::FilePath icon_path = dir.AppendASCII(icon_file.GetString());
     std::string icon_data;
     if (!file_utils.ReadFileToString(icon_path, &icon_data)) {
-      LOG(ERROR) << file << " " << kOfflineManifest << " "
-                 << kOfflineManifestIconAnyPngs << " " << icon_file
-                 << " failed to read.";
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                           kOfflineManifestIconAnyPngs, " ",
+                           icon_file.DebugString(), " failed to read."});
     }
 
     SkBitmap bitmap;
     if (!gfx::PNGCodec::Decode(
             reinterpret_cast<const unsigned char*>(icon_data.c_str()),
             icon_data.size(), &bitmap)) {
-      LOG(ERROR) << file << " " << kOfflineManifest << " "
-                 << kOfflineManifestIconAnyPngs << " " << icon_file
-                 << " failed to decode.";
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                           kOfflineManifestIconAnyPngs, " ",
+                           icon_file.DebugString(), " failed to decode."});
     }
 
     if (bitmap.width() != bitmap.height()) {
-      LOG(ERROR) << file << " " << kOfflineManifest << " "
-                 << kOfflineManifestIconAnyPngs << " " << icon_file
-                 << " must be square: " << bitmap.width() << "x"
-                 << bitmap.height();
-      return base::nullopt;
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+           kOfflineManifestIconAnyPngs, " ", icon_file.DebugString(),
+           " must be square: ", base::NumberToString(bitmap.width()), "x",
+           base::NumberToString(bitmap.height())});
     }
 
     app_info.icon_bitmaps_any[bitmap.width()] = std::move(bitmap);
@@ -502,10 +500,9 @@ base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
     SkColor theme_color;
     if (!theme_color_argb_hex ||
         !base::HexStringToUInt(*theme_color_argb_hex, &theme_color)) {
-      LOG(ERROR) << file << " " << kOfflineManifest << " "
-                 << kOfflineManifestThemeColorArgbHex
-                 << " invalid: " << *theme_color_value;
-      return base::nullopt;
+      return base::StrCat({file.AsUTF8Unsafe(), " ", kOfflineManifest, " ",
+                           kOfflineManifestThemeColorArgbHex,
+                           " invalid: ", theme_color_value->DebugString()});
     }
     app_info.theme_color = SkColorSetA(theme_color, SK_AlphaOPAQUE);
   }
@@ -515,4 +512,94 @@ base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
       std::move(app_info));
 }
 
+bool IsReinstallPastMilestoneNeeded(
+    base::StringPiece last_preinstall_synchronize_milestone_str,
+    base::StringPiece current_milestone_str,
+    int force_reinstall_for_milestone) {
+  int last_preinstall_synchronize_milestone = 0;
+  if (!base::StringToInt(last_preinstall_synchronize_milestone_str,
+                         &last_preinstall_synchronize_milestone)) {
+    return false;
+  }
+
+  int current_milestone = 0;
+  if (!base::StringToInt(current_milestone_str, &current_milestone))
+    return false;
+
+  return last_preinstall_synchronize_milestone <
+             force_reinstall_for_milestone &&
+         current_milestone >= force_reinstall_for_milestone;
+}
+
+bool WasAppMigratedToWebApp(Profile* profile, const std::string& app_id) {
+  const base::ListValue* migrated_apps =
+      profile->GetPrefs()->GetList(prefs::kWebAppsMigratedDefaultApps);
+  if (!migrated_apps)
+    return false;
+
+  for (const auto& val : migrated_apps->GetList()) {
+    if (val.is_string() && val.GetString() == app_id)
+      return true;
+  }
+
+  return false;
+}
+
+void MarkAppAsMigratedToWebApp(Profile* profile,
+                               const std::string& app_id,
+                               bool was_migrated) {
+  ListPrefUpdate update(profile->GetPrefs(),
+                        prefs::kWebAppsMigratedDefaultApps);
+  if (was_migrated)
+    update->Append(app_id);
+  else
+    update->EraseListValue(base::Value(app_id));
+}
+
+bool WasMigrationRun(Profile* profile, base::StringPiece feature_name) {
+  const base::ListValue* migrated_features =
+      profile->GetPrefs()->GetList(prefs::kWebAppsDidMigrateDefaultChromeApps);
+  if (!migrated_features)
+    return false;
+
+  for (const auto& val : migrated_features->GetList()) {
+    if (val.is_string() && val.GetString() == feature_name)
+      return true;
+  }
+
+  return false;
+}
+
+void SetMigrationRun(Profile* profile,
+                     base::StringPiece feature_name,
+                     bool was_migrated) {
+  ListPrefUpdate update(profile->GetPrefs(),
+                        prefs::kWebAppsDidMigrateDefaultChromeApps);
+  if (was_migrated)
+    update->Append(feature_name);
+  else
+    update->EraseListValue(base::Value(feature_name));
+}
+
+bool WasDefaultAppUninstalled(Profile* profile, const std::string& app_id) {
+  const base::ListValue* uninstalled_apps =
+      profile->GetPrefs()->GetList(prefs::kWebAppsUninstalledDefaultChromeApps);
+  if (!uninstalled_apps)
+    return false;
+
+  for (const auto& val : uninstalled_apps->GetList()) {
+    if (val.is_string() && val.GetString() == app_id)
+      return true;
+  }
+
+  return false;
+}
+
+void MarkDefaultAppAsUninstalled(Profile* profile, const std::string& app_id) {
+  if (WasDefaultAppUninstalled(profile, app_id))
+    return;
+  ListPrefUpdate update(profile->GetPrefs(),
+                        prefs::kWebAppsUninstalledDefaultChromeApps);
+  update->Append(app_id);
+}
 }  // namespace web_app

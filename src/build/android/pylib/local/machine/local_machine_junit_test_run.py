@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import json
 import logging
 import multiprocessing
 import os
+import select
 import subprocess
+import sys
 import zipfile
 
 from pylib import constants
@@ -24,6 +27,13 @@ from py_utils import tempfile_ext
 _EXCLUDED_CLASSES_PREFIXES = ('android', 'junit', 'org/bouncycastle/util',
                               'org/hamcrest', 'org/junit', 'org/mockito')
 
+# Suites we shouldn't shard, usually because they don't contain enough test
+# cases.
+_EXCLUDED_SUITES = {
+    'password_check_junit_tests',
+    'touch_to_fill_junit_tests',
+}
+
 # Running time for chrome_junit_tests locally:
 # 1 shard: 3 min 15 sec, 4 shards: 1 min 29 sec,
 # 6 shards: 1 min 10 sec, 8 shards 1 min 6 sec,
@@ -33,7 +43,7 @@ _MAX_SHARDS = 10
 # It can actually take longer to run if you shard too much, especially on
 # smaller suites. Locally media_base_junit_tests takes 4.3 sec with 1 shard,
 # and 6 sec with 2 or more shards.
-_MIN_CLASSES_PER_SHARD = 4
+_MIN_CLASSES_PER_SHARD = 8
 
 
 class LocalMachineJunitTestRun(test_run.TestRun):
@@ -115,13 +125,15 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
     # This avoids searching through the classparth jars for tests classes,
     # which takes about 1-2 seconds.
-    if self._test_instance.shards == 1 or self._test_instance.test_filter:
+    if (self._test_instance.shards == 1 or self._test_instance.test_filter
+        or self._test_instance.suite in _EXCLUDED_SUITES):
       test_classes = []
       shards = 1
     else:
       test_classes = _GetTestClasses(wrapper_path)
       shards = ChooseNumOfShards(test_classes, self._test_instance.shards)
 
+    logging.info('Running tests on %d shard(s).', shards)
     group_test_list = GroupTestsForShard(shards, test_classes)
 
     with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
@@ -141,9 +153,12 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
       AddPropertiesJar(cmd_list, temp_dir, self._test_instance.resource_apk)
 
-      procs = [subprocess.Popen(cmd) for cmd in cmd_list]
-      for proc in procs:
-        proc.wait()
+      procs = [
+          subprocess.Popen(cmd,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT) for cmd in cmd_list
+      ]
+      PrintProcessesStdout(procs)
 
       results_list = []
       try:
@@ -218,6 +233,38 @@ def GroupTestsForShard(num_of_shards, test_classes):
   return test_dict
 
 
+def PrintProcessesStdout(procs):
+  """Prints the stdout of all the processes.
+
+  Buffers the stdout of the processes and prints it when finished.
+
+  Args:
+    procs: A list of subprocesses.
+
+  Returns: N/A
+  """
+  streams = [p.stdout for p in procs]
+  outputs = collections.defaultdict(list)
+  first_fd = streams[0].fileno()
+
+  while streams:
+    rstreams, _, _ = select.select(streams, [], [])
+    for stream in rstreams:
+      line = stream.readline()
+      if line:
+        # Print out just one output so user can see work being done rather
+        # than waiting for it all at the end.
+        if stream.fileno() == first_fd:
+          sys.stdout.write(line)
+        else:
+          outputs[stream.fileno()].append(line)
+      else:
+        streams.remove(stream)  # End of stream.
+
+  for p in procs:
+    sys.stdout.write(''.join(outputs[p.stdout.fileno()]))
+
+
 def _GetTestClasses(file_path):
   test_jar_paths = subprocess.check_output([file_path, '--print-classpath'])
   test_jar_paths = test_jar_paths.split(':')
@@ -233,8 +280,10 @@ def _GetTestClasses(file_path):
 
     # Bots write the classpath indexed from src.
     if not os.path.exists(test_jar_path):
-      if test_jar.startswith('src' + os.path.sep):
-        test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT, test_jar[4:])
+      src_relpath = os.path.relpath(constants.DIR_SOURCE_ROOT) + os.path.sep
+      if test_jar.startswith(src_relpath):
+        test_jar_path = os.path.join(constants.DIR_SOURCE_ROOT,
+                                     test_jar[len(src_relpath):])
 
     test_classes += _GetTestClassesFromJar(test_jar_path)
 

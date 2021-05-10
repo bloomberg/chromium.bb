@@ -10,6 +10,7 @@
 #include "test_utils/gl_raii.h"
 #include "util/random_utils.h"
 #include "util/shader_utils.h"
+#include "util/test_utils.h"
 
 using namespace angle;
 
@@ -992,6 +993,9 @@ TEST_P(ClearTestES3, MaskedClearHeterogeneousAttachments)
     // http://anglebug.com/4855
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     constexpr uint32_t kSize                              = 16;
     constexpr uint32_t kAttachmentCount                   = 3;
     constexpr float kDepthClearValue                      = 0.256f;
@@ -1113,6 +1117,9 @@ TEST_P(ClearTestES3, ScissoredClearHeterogeneousAttachments)
 
     // http://anglebug.com/5237
     ANGLE_SKIP_TEST_IF(IsWindows7() && IsD3D11() && IsNVIDIA());
+
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr uint32_t kSize                              = 16;
     constexpr uint32_t kHalfSize                          = kSize / 2;
@@ -1896,6 +1903,8 @@ TEST_P(ClearTestES3, ClearMaxAttachments)
 {
     // http://anglebug.com/4612
     ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
+    // http://anglebug.com/5397
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
 
     constexpr GLsizei kSize = 16;
 
@@ -2425,6 +2434,27 @@ TEST_P(ClearTest, ClearThenScissoredMaskedClear)
     EXPECT_PIXEL_RECT_EQ(kSize / 2, 0, kSize / 2, kSize, GLColor::red);
 }
 
+// This is a test that must be verified visually.
+//
+// Tests that clear of the default framebuffer applies to the window.
+TEST_P(ClearTest, DISABLED_ClearReachesWindow)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    // Draw blue.
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    swapBuffers();
+
+    // Use glClear to clear to red.  Regression test for the Vulkan backend where this clear
+    // remained "deferred" and didn't make it to the window on swap.
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    swapBuffers();
+
+    // Wait for visual verification.
+    angle::Sleep(2000);
+}
+
 #ifdef Bool
 // X11 craziness.
 #    undef Bool
@@ -2451,6 +2481,8 @@ ANGLE_INSTANTIATE_TEST_COMBINE_4(MaskedScissoredClearTest,
                                  ES3_VULKAN(),
                                  ES2_METAL(),
                                  ES3_METAL());
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VulkanClearTest);
 ANGLE_INSTANTIATE_TEST_COMBINE_4(VulkanClearTest,
                                  MaskedScissoredClearVariationsTestPrint,
                                  testing::Range(0, 3),
@@ -2461,6 +2493,7 @@ ANGLE_INSTANTIATE_TEST_COMBINE_4(VulkanClearTest,
                                  ES3_VULKAN());
 
 // Not all ANGLE backends support RGB backbuffers
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ClearTestRGB);
 ANGLE_INSTANTIATE_TEST(ClearTestRGB,
                        ES2_D3D11(),
                        ES3_D3D11(),

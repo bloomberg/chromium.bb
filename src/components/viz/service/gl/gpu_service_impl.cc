@@ -18,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -74,7 +75,7 @@
 #include "media/base/android/media_codec_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
 #include "components/arc/video_accelerator/gpu_arc_video_protected_buffer_allocator.h"
@@ -83,7 +84,7 @@
 #include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
 #include "components/chromeos_camera/mojo_jpeg_encode_accelerator_service.h"
 #include "components/chromeos_camera/mojo_mjpeg_decode_accelerator_service.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
 #include "ui/gl/direct_composition_surface_win.h"
@@ -243,12 +244,12 @@ bool PostInitializeLogHandler(int severity,
 }
 
 bool IsAcceleratedJpegDecodeSupported() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return chromeos_camera::GpuMjpegDecodeAcceleratorFactory::
       IsAcceleratedJpegDecodeSupported();
 #else
   return false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
@@ -344,9 +345,9 @@ GpuServiceImpl::GpuServiceImpl(
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   GrContextOptions context_options =
       GetDefaultGrContextOptions(gpu_preferences_.gr_context_type);
@@ -508,6 +509,12 @@ void GpuServiceImpl::UpdateGPUInfo() {
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
 }
 
+void GpuServiceImpl::UpdateGPUInfoGL() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  gpu::CollectGraphicsInfoGL(&gpu_info_);
+  gpu_host_->DidUpdateGPUInfo(gpu_info_);
+}
+
 void GpuServiceImpl::InitializeWithHost(
     mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     gpu::GpuProcessActivityFlags activity_flags,
@@ -624,7 +631,7 @@ void GpuServiceImpl::RecordLogMessage(int severity,
   gpu_host_->RecordLogMessage(severity, std::move(header), std::move(message));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void GpuServiceImpl::CreateArcVideoDecodeAccelerator(
     mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
@@ -723,7 +730,7 @@ void GpuServiceImpl::CreateJpegEncodeAccelerator(
   chromeos_camera::MojoJpegEncodeAcceleratorService::Create(
       std::move(jea_receiver));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
     mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -759,6 +766,16 @@ void GpuServiceImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
     return;
   }
   gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
+}
+
+void GpuServiceImpl::CopyGpuMemoryBuffer(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion shared_memory,
+    CopyGpuMemoryBufferCallback callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  std::move(callback).Run(
+      gpu_memory_buffer_factory_->FillSharedMemoryRegionWithBufferContents(
+          std::move(buffer_handle), std::move(shared_memory)));
 }
 
 void GpuServiceImpl::GetVideoMemoryUsageStats(
@@ -990,9 +1007,16 @@ void GpuServiceImpl::WakeUpGpu() {
 
 void GpuServiceImpl::GpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   DVLOG(1) << "GPU: GPU has switched";
-  if (!in_host_process())
+  if (!in_host_process()) {
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
         active_gpu_heuristic);
+  }
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::UpdateGPUInfoGL, weak_ptr_));
+    return;
+  }
+  GpuServiceImpl::UpdateGPUInfoGL();
 }
 
 void GpuServiceImpl::DisplayAdded() {

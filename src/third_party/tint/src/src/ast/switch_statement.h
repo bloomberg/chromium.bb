@@ -27,58 +27,49 @@ namespace tint {
 namespace ast {
 
 /// A switch statement
-class SwitchStatement : public Statement {
+class SwitchStatement : public Castable<SwitchStatement, Statement> {
  public:
-  /// Constructor
-  SwitchStatement();
-  /// Constructor
-  /// @param condition the switch condition
-  /// @param body the switch body
-  SwitchStatement(std::unique_ptr<Expression> condition,
-                  CaseStatementList body);
   /// Constructor
   /// @param source the source information
   /// @param condition the switch condition
   /// @param body the switch body
   SwitchStatement(const Source& source,
-                  std::unique_ptr<Expression> condition,
+                  Expression* condition,
                   CaseStatementList body);
   /// Move constructor
   SwitchStatement(SwitchStatement&&);
   ~SwitchStatement() override;
 
-  /// Sets the condition for the switch statement
-  /// @param condition the condition to set
-  void set_condition(std::unique_ptr<Expression> condition) {
-    condition_ = std::move(condition);
-  }
   /// @returns the switch condition or nullptr if none set
-  Expression* condition() const { return condition_.get(); }
+  Expression* condition() const { return condition_; }
   /// @returns true if this is a default statement
   bool IsDefault() const { return condition_ == nullptr; }
 
-  /// Sets the switch body
-  /// @param body the switch body
-  void set_body(CaseStatementList body) { body_ = std::move(body); }
   /// @returns the Switch body
   const CaseStatementList& body() const { return body_; }
 
-  /// @returns true if this is a switch statement
-  bool IsSwitch() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  SwitchStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   SwitchStatement(const SwitchStatement&) = delete;
 
-  std::unique_ptr<Expression> condition_;
-  CaseStatementList body_;
+  Expression* const condition_;
+  CaseStatementList const body_;
 };
 
 }  // namespace ast

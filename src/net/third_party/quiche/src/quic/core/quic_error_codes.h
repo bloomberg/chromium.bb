@@ -9,7 +9,7 @@
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -321,6 +321,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR = 100,
   // Network changed, but handshake is not confirmed yet.
   QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED = 111,
+  QUIC_PEER_PORT_CHANGE_HANDSHAKE_UNCONFIRMED = 194,
 
   // Stream frames arrived too discontiguously so that stream sequencer buffer
   // maintains too many intervals.
@@ -347,6 +348,10 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_BLOCKED_DATA = 106,
   // NEW CONNECTION ID frame data is malformed.
   QUIC_INVALID_NEW_CONNECTION_ID_DATA = 107,
+  // More connection IDs than allowed are issued.
+  QUIC_CONNECTION_ID_LIMIT_ERROR = 203,
+  // The peer retires connection IDs too quickly.
+  QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE = 204,
   // Received a MAX STREAM DATA frame with errors.
   QUIC_INVALID_STOP_SENDING_FRAME_DATA = 108,
   // Error deframing PATH CHALLENGE or PATH RESPONSE frames.
@@ -393,7 +398,6 @@ enum QuicErrorCode {
   QUIC_QPACK_DECOMPRESSION_FAILED = 126,
 
   // Obsolete generic QPACK encoder and decoder stream error codes.
-  // (Obsoleted by gfe2_reloadable_flag_quic_granular_qpack_error_codes.)
   QUIC_QPACK_ENCODER_STREAM_ERROR = 127,
   QUIC_QPACK_DECODER_STREAM_ERROR = 128,
 
@@ -563,8 +567,27 @@ enum QuicErrorCode {
   // timeout.
   QUIC_MAX_AGE_TIMEOUT = 191,
 
+  // Decrypted a 0-RTT packet with a higher packet number than a 1-RTT packet.
+  QUIC_INVALID_0RTT_PACKET_NUMBER_OUT_OF_ORDER = 192,
+
+  // Received PRIORITY_UPDATE frame with invalid payload.
+  QUIC_INVALID_PRIORITY_UPDATE = 193,
+
+  // Maps to specific errors from the CRYPTO_ERROR range from
+  // https://quicwg.org/base-drafts/draft-ietf-quic-transport.html#name-transport-error-codes
+  // This attempts to choose a subset of the most interesting errors rather
+  // than mapping every possible CRYPTO_ERROR code.
+  QUIC_TLS_BAD_CERTIFICATE = 195,
+  QUIC_TLS_UNSUPPORTED_CERTIFICATE = 196,
+  QUIC_TLS_CERTIFICATE_REVOKED = 197,
+  QUIC_TLS_CERTIFICATE_EXPIRED = 198,
+  QUIC_TLS_CERTIFICATE_UNKNOWN = 199,
+  QUIC_TLS_INTERNAL_ERROR = 200,
+  QUIC_TLS_UNRECOGNIZED_NAME = 201,
+  QUIC_TLS_CERTIFICATE_REQUIRED = 202,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 192,
+  QUIC_LAST_ERROR = 205,
 };
 // QuicErrorCodes is encoded as four octets on-the-wire when doing Google QUIC,
 // or a varint62 when doing IETF QUIC. Ensure that its value does not exceed
@@ -572,6 +595,9 @@ enum QuicErrorCode {
 static_assert(static_cast<uint64_t>(QUIC_LAST_ERROR) <=
                   static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()),
               "QuicErrorCode exceeds four octets");
+
+// Convert TLS alert code to QuicErrorCode.
+QUIC_EXPORT_PRIVATE QuicErrorCode TlsAlertToQuicErrorCode(uint8_t desc);
 
 // Returns the name of the QuicRstStreamErrorCode as a char*
 QUIC_EXPORT_PRIVATE const char* QuicRstStreamErrorCodeToString(

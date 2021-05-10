@@ -204,6 +204,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return rare_data_->tallest_unbreakable_block_size;
   }
 
+  // Return true if we weren't able to honor all break avoidance hints requested
+  // by break-{after,before,inside}:avoid or orphans / widows. This is used for
+  // column balancing.
+  bool HasViolatingBreak() const {
+    return HasRareData() && rare_data_->has_violating_break;
+  }
+
   // Return whether this result is single-use only (true), or if it is allowed
   // to be involved in cache hits in future layout passes (false).
   // For example, this happens when a block is fragmented, since we don't yet
@@ -334,7 +341,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                                     bool check_same_block_size = true) const;
 #endif
 
-  using NGBoxFragmentBuilderPassKey = util::PassKey<NGBoxFragmentBuilder>;
+  using NGBoxFragmentBuilderPassKey = base::PassKey<NGBoxFragmentBuilder>;
   // This constructor is for a non-success status.
   NGLayoutResult(NGBoxFragmentBuilderPassKey, EStatus, NGBoxFragmentBuilder*);
   // This constructor requires a non-null fragment and sets a success status.
@@ -343,7 +350,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
       NGBoxFragmentBuilder*);
   using NGLineBoxFragmentBuilderPassKey =
-      util::PassKey<NGLineBoxFragmentBuilder>;
+      base::PassKey<NGLineBoxFragmentBuilder>;
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(
       NGLineBoxFragmentBuilderPassKey,
@@ -425,6 +432,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     LayoutUnit annotation_overflow;
     LayoutUnit block_end_annotation_space;
     bool is_single_use = false;
+    bool has_violating_break = false;
     int lines_until_clamp = 0;
     wtf_size_t table_column_count_ = 0;
     base::Optional<MathData> math_layout_data_;

@@ -11,12 +11,14 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
@@ -29,8 +31,10 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.SelectionClient;
@@ -52,10 +56,17 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 // can be tested too.  Or just remove this whole suite if it's not useful for
 // these experimental triggering changes.
 @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
-        ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS})
+        ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS,
+        ChromeFeatureList.CONTEXTUAL_SEARCH_LITERAL_SEARCH_TAP})
+@Batch(Batch.PER_CLASS)
 public class ContextualSearchTapEventTest {
+    @ClassRule
+    public static ChromeTabbedActivityTestRule sActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public BlankCTATabInitialStateRule mInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -100,7 +111,8 @@ public class ContextualSearchTapEventTest {
             super(activity, null, activity.getRootUiCoordinatorForTesting().getScrimCoordinator(),
                     activity.getActivityTabProvider());
             setSelectionController(new MockCSSelectionController(activity, this));
-            WebContents webContents = WebContentsFactory.createWebContents(false, false);
+            WebContents webContents = WebContentsFactory.createWebContents(
+                    Profile.getLastUsedRegularProfile(), false);
             ContentView cv = ContentView.createContentView(
                     activity, null /* eventOffsetHandler */, webContents);
             webContents.initialize(null, ViewAndroidDelegate.createBasicDelegate(cv), null,
@@ -115,10 +127,11 @@ public class ContextualSearchTapEventTest {
         }
 
         @Override
-        public void startSearchTermResolutionRequest(String selection, boolean isExactResolve) {
+        public void startSearchTermResolutionRequest(
+                String selection, boolean isExactResolve, ContextualSearchContext searchContext) {
             // Skip native calls and immediately "resolve" the search term.
             onSearchTermResolutionResponse(true, 200, selection, selection, "", "", false, 0, 10,
-                    "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0);
+                    "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0, new String[0]);
         }
 
         /**
@@ -232,8 +245,7 @@ public class ContextualSearchTapEventTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        final ChromeActivity activity = mActivityTestRule.getActivity();
+        final ChromeActivity activity = sActivityTestRule.getActivity();
         MockitoAnnotations.initMocks(this);
         mocker.mock(ContextualSearchManagerJni.TEST_HOOKS, mContextualSearchManagerJniMock);
 

@@ -456,7 +456,23 @@ void CopyRowsToNV12Buffer(int first_row,
   DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
   DCHECK_EQ(0, first_row % 2);
   DCHECK(source_frame->format() == PIXEL_FORMAT_I420 ||
-         source_frame->format() == PIXEL_FORMAT_YV12);
+         source_frame->format() == PIXEL_FORMAT_YV12 ||
+         source_frame->format() == PIXEL_FORMAT_NV12);
+  if (source_frame->format() == PIXEL_FORMAT_NV12) {
+    libyuv::CopyPlane(source_frame->visible_data(VideoFrame::kYPlane) +
+                          first_row * source_frame->stride(VideoFrame::kYPlane),
+                      source_frame->stride(VideoFrame::kYPlane),
+                      dest_y + first_row * dest_stride_y, dest_stride_y,
+                      bytes_per_row, rows);
+    libyuv::CopyPlane(
+        source_frame->visible_data(VideoFrame::kUVPlane) +
+            first_row / 2 * source_frame->stride(VideoFrame::kUVPlane),
+        source_frame->stride(VideoFrame::kUVPlane),
+        dest_uv + first_row / 2 * dest_stride_uv, dest_stride_uv, bytes_per_row,
+        rows / 2);
+
+    return;
+  }
   libyuv::I420ToNV12(
       source_frame->visible_data(VideoFrame::kYPlane) +
           first_row * source_frame->stride(VideoFrame::kYPlane),
@@ -642,6 +658,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   if (!IOSurfaceCanSetColorSpace(video_frame->ColorSpace()))
     passthrough = true;
 #endif
+
+  if (!video_frame->IsMappable()) {
+    // Already a hardware frame.
+    passthrough = true;
+  }
+
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     passthrough = true;
   switch (pixel_format) {
@@ -650,11 +672,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YUV420P10:
     case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_NV12:
       break;
     // Unsupported cases.
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
-    case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
@@ -677,6 +699,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_P016LE:
     case PIXEL_FORMAT_XR30:
     case PIXEL_FORMAT_XB30:
+    case PIXEL_FORMAT_RGBAF16:
     case PIXEL_FORMAT_UNKNOWN:
       if (is_software_backed_video_frame) {
         UMA_HISTOGRAM_ENUMERATION(
@@ -753,6 +776,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
       plane_resource.gpu_memory_buffer->Unmap();
       plane_resource.gpu_memory_buffer->SetColorSpace(
           video_frame->ColorSpace());
+      if (video_frame->hdr_metadata()) {
+        plane_resource.gpu_memory_buffer->SetHDRMetadata(
+            video_frame->hdr_metadata().value());
+      }
     }
   }
 
@@ -1006,7 +1033,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 #else
   switch (output_format_) {
     case GpuVideoAcceleratorFactories::OutputFormat::I420:
-      allow_overlay = video_frame->metadata()->allow_overlay;
+      allow_overlay = video_frame->metadata().allow_overlay;
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::P010:
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
@@ -1036,9 +1063,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       break;
   }
 #endif  // OS_WIN
-  frame->metadata()->MergeMetadataFrom(video_frame->metadata());
-  frame->metadata()->allow_overlay = allow_overlay;
-  frame->metadata()->read_lock_fences_enabled = true;
+  frame->metadata().MergeMetadataFrom(video_frame->metadata());
+  frame->metadata().allow_overlay = allow_overlay;
+  frame->metadata().read_lock_fences_enabled = true;
 
   CompleteCopyRequestAndMaybeStartNextCopy(std::move(frame));
 }

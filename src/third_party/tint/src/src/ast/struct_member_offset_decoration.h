@@ -17,33 +17,40 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "src/ast/struct_member_decoration.h"
 
 namespace tint {
 namespace ast {
 
 /// A struct member offset decoration
-class StructMemberOffsetDecoration : public StructMemberDecoration {
+class StructMemberOffsetDecoration
+    : public Castable<StructMemberOffsetDecoration, StructMemberDecoration> {
  public:
   /// constructor
-  /// @param offset the offset value
   /// @param source the source of this decoration
-  StructMemberOffsetDecoration(uint32_t offset, const Source& source);
+  /// @param offset the offset value
+  StructMemberOffsetDecoration(const Source& source, uint32_t offset);
   ~StructMemberOffsetDecoration() override;
-
-  /// @returns true if this is an offset decoration
-  bool IsOffset() const override;
 
   /// @returns the offset value
   uint32_t offset() const { return offset_; }
 
-  /// @returns the decoration as a string
-  std::string to_str() const override;
+  /// Outputs the decoration to the given stream
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  StructMemberOffsetDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  uint32_t offset_;
+  uint32_t const offset_;
 };
 
 }  // namespace ast

@@ -10,13 +10,10 @@
 
 #include "include/private/SkIDChangeListener.h"
 #include "include/private/SkMutex.h"
-#include "src/gpu/SkGr.h"
 #include "src/image/SkImage_Base.h"
 
 #if SK_SUPPORT_GPU
-#include "include/core/SkYUVAIndex.h"
 #include "include/core/SkYUVAPixmaps.h"
-#include "include/core/SkYUVASizeInfo.h"
 #include "src/gpu/GrTextureMaker.h"
 #endif
 
@@ -37,11 +34,14 @@ public:
 
     SkImage_Lazy(Validator* validator);
 
+    bool onHasMipmaps() const override {
+        // TODO: Should we defer to the generator? The generator interface currently doesn't have
+        // a way to provide content for levels other than via SkImageGenerator::generateTexture().
+        return false;
+    }
+
     bool onReadPixels(GrDirectContext*, const SkImageInfo&, void*, size_t, int srcX, int srcY,
                       CachingHint) const override;
-#if SK_SUPPORT_GPU
-    GrSurfaceProxyView refView(GrRecordingContext*, GrMipmapped) const override;
-#endif
     sk_sp<SkData> onRefEncoded() const override;
     sk_sp<SkImage> onMakeSubset(const SkIRect&, GrDirectContext*) const override;
     bool getROPixels(GrDirectContext*, SkBitmap*, CachingHint) const override;
@@ -69,9 +69,12 @@ public:
 private:
     void addUniqueIDListener(sk_sp<SkIDChangeListener>) const;
 #if SK_SUPPORT_GPU
+    std::tuple<GrSurfaceProxyView, GrColorType> onAsView(GrRecordingContext*,
+                                                         GrMipmapped,
+                                                         GrImageTexGenPolicy) const override;
+    GrSurfaceProxyView textureProxyViewFromPlanes(GrRecordingContext*, SkBudgeted) const;
     sk_sp<SkCachedData> getPlanes(const SkYUVAPixmapInfo::SupportedDataTypes& supportedDataTypes,
                                   SkYUVAPixmaps* pixmaps) const;
-    GrSurfaceProxyView textureProxyViewFromPlanes(GrRecordingContext*, SkBudgeted) const;
 #endif
 
     class ScopedGenerator;

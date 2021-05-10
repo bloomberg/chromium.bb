@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "quic/core/quic_packets.h"
 
 #include <utility>
 
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -75,8 +74,8 @@ QuicConnectionIdIncluded GetClientConnectionIdIncludedAsSender(
 QuicConnectionIdLength GetIncludedConnectionIdLength(
     QuicConnectionId connection_id,
     QuicConnectionIdIncluded connection_id_included) {
-  DCHECK(connection_id_included == CONNECTION_ID_PRESENT ||
-         connection_id_included == CONNECTION_ID_ABSENT);
+  QUICHE_DCHECK(connection_id_included == CONNECTION_ID_PRESENT ||
+                connection_id_included == CONNECTION_ID_ABSENT);
   return connection_id_included == CONNECTION_ID_PRESENT
              ? static_cast<QuicConnectionIdLength>(connection_id.length())
              : PACKET_0BYTE_CONNECTION_ID;
@@ -128,9 +127,9 @@ size_t GetPacketHeaderSize(
       if (VersionHasLengthPrefixedConnectionIds(version)) {
         size += kConnectionIdLengthSize;
       }
-      DCHECK(QuicVersionHasLongHeaderLengths(version) ||
-             retry_token_length_length + retry_token_length + length_length ==
-                 0);
+      QUICHE_DCHECK(
+          QuicVersionHasLongHeaderLengths(version) ||
+          retry_token_length_length + retry_token_length + length_length == 0);
       if (QuicVersionHasLongHeaderLengths(version)) {
         size += retry_token_length_length + retry_token_length + length_length;
       }
@@ -141,8 +140,8 @@ size_t GetPacketHeaderSize(
            packet_number_length;
   }
   // Google QUIC versions <= 43 can only carry one connection ID.
-  DCHECK(destination_connection_id_length == 0 ||
-         source_connection_id_length == 0);
+  QUICHE_DCHECK(destination_connection_id_length == 0 ||
+                source_connection_id_length == 0);
   return kPublicFlagsSize + destination_connection_id_length +
          source_connection_id_length +
          (include_version ? kQuicVersionSize : 0) + packet_number_length +
@@ -535,7 +534,7 @@ SerializedPacket* CopySerializedPacket(const SerializedPacket& serialized,
   // Copy underlying frames.
   copy->retransmittable_frames =
       CopyQuicFrames(allocator, serialized.retransmittable_frames);
-  DCHECK(copy->nonretransmittable_frames.empty());
+  QUICHE_DCHECK(copy->nonretransmittable_frames.empty());
   for (const auto& frame : serialized.nonretransmittable_frames) {
     if (frame.type == ACK_FRAME) {
       copy->has_ack_frame_copy = true;
@@ -574,15 +573,15 @@ ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
 ReceivedPacketInfo::~ReceivedPacketInfo() {}
 
 std::string ReceivedPacketInfo::ToString() const {
-  std::string output = quiche::QuicheStrCat(
-      "{ self_address: ", self_address.ToString(),
-      ", peer_address: ", peer_address.ToString(),
-      ", packet_length: ", packet.length(), ", header_format: ", form,
-      ", version_flag: ", version_flag);
+  std::string output =
+      absl::StrCat("{ self_address: ", self_address.ToString(),
+                   ", peer_address: ", peer_address.ToString(),
+                   ", packet_length: ", packet.length(),
+                   ", header_format: ", form, ", version_flag: ", version_flag);
   if (version_flag) {
-    QuicStrAppend(&output, ", version: ", ParsedQuicVersionToString(version));
+    absl::StrAppend(&output, ", version: ", ParsedQuicVersionToString(version));
   }
-  QuicStrAppend(
+  absl::StrAppend(
       &output,
       ", destination_connection_id: ", destination_connection_id.ToString(),
       ", source_connection_id: ", source_connection_id.ToString(), " }\n");

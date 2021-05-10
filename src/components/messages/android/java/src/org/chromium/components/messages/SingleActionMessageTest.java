@@ -5,8 +5,11 @@
 package org.chromium.components.messages;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
+import android.animation.Animator;
 import android.app.Activity;
 
 import androidx.test.filters.MediumTest;
@@ -16,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -34,9 +38,12 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 public class SingleActionMessageTest extends DummyUiActivityTestCase {
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Mock
+    private Callback<Animator> mAnimatorStartCallback;
 
     private CallbackHelper mDismissCallback;
-    private Callback<PropertyModel> mEmptyDismissCallback = (model) -> {};
+    private SingleActionMessage.DismissCallback mEmptyDismissCallback =
+            (model, dismissReason) -> {};
 
     @Override
     public void setUpTest() throws Exception {
@@ -49,29 +56,42 @@ public class SingleActionMessageTest extends DummyUiActivityTestCase {
     public void testAddAndRemoveSingleActionMessage() throws Exception {
         MessageContainer container = new MessageContainer(getActivity(), null);
         PropertyModel model = createBasicSingleActionMessageModel();
-        SingleActionMessage message =
-                new SingleActionMessage(container, model, mEmptyDismissCallback, () -> 0);
+        SingleActionMessage message = new SingleActionMessage(
+                container, model, mEmptyDismissCallback, () -> 0, () -> 0L, mAnimatorStartCallback);
         final MessageBannerCoordinator messageBanner = Mockito.mock(MessageBannerCoordinator.class);
         doNothing().when(messageBanner).show(any(Runnable.class));
         doNothing().when(messageBanner).setOnTouchRunnable(any(Runnable.class));
-        final MessageBannerView view = Mockito.mock(MessageBannerView.class);
+        final MessageBannerView view = new MessageBannerView(getActivity(), null);
+        view.setId(R.id.message_banner);
         message.setMessageBannerForTesting(messageBanner);
         message.setViewForTesting(view);
         message.show();
         Assert.assertEquals(
                 "Message container should have one message view after the message is shown.", 1,
                 container.getChildCount());
-        final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        doNothing().when(messageBanner).hide(runnableCaptor.capture());
         message.hide(true, () -> {});
         // Let's pretend the animation ended, and the mediator called the callback as a result.
+        final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(messageBanner).hide(anyBoolean(), runnableCaptor.capture());
         runnableCaptor.getValue().run();
         Assert.assertEquals(
                 "Message container should not have any view after the message is hidden.", 0,
                 container.getChildCount());
-        message.dismiss();
+        message.dismiss(DismissReason.UNKNOWN);
         mDismissCallback.waitForFirst(
                 "Dismiss callback should be called when message is dismissed");
+    }
+
+    @Test
+    @MediumTest
+    public void testAutoDismissDuration() {
+        MessageContainer container = new MessageContainer(getActivity(), null);
+        PropertyModel model = createBasicSingleActionMessageModel();
+        long duration = 42;
+        SingleActionMessage message = new SingleActionMessage(container, model,
+                mEmptyDismissCallback, () -> 0, () -> duration, mAnimatorStartCallback);
+        Assert.assertEquals("Autodismiss duration is not propagated correctly.", duration,
+                message.getAutoDismissDuration());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -80,20 +100,22 @@ public class SingleActionMessageTest extends DummyUiActivityTestCase {
         MessageContainer container = new MessageContainer(getActivity(), null);
         PropertyModel m1 = createBasicSingleActionMessageModel();
         PropertyModel m2 = createBasicSingleActionMessageModel();
-        SingleActionMessage message1 =
-                new SingleActionMessage(container, m1, mEmptyDismissCallback, () -> 0);
+        SingleActionMessage message1 = new SingleActionMessage(
+                container, m1, mEmptyDismissCallback, () -> 0, () -> 0L, mAnimatorStartCallback);
         final MessageBannerCoordinator messageBanner1 =
                 Mockito.mock(MessageBannerCoordinator.class);
         doNothing().when(messageBanner1).show(any(Runnable.class));
-        final MessageBannerView view1 = Mockito.mock(MessageBannerView.class);
+        final MessageBannerView view1 = new MessageBannerView(getActivity(), null);
+        view1.setId(R.id.message_banner);
         message1.setMessageBannerForTesting(messageBanner1);
         message1.setViewForTesting(view1);
-        SingleActionMessage message2 =
-                new SingleActionMessage(container, m2, mEmptyDismissCallback, () -> 0);
+        SingleActionMessage message2 = new SingleActionMessage(
+                container, m2, mEmptyDismissCallback, () -> 0, () -> 0L, mAnimatorStartCallback);
         final MessageBannerCoordinator messageBanner2 =
                 Mockito.mock(MessageBannerCoordinator.class);
         doNothing().when(messageBanner2).show(any(Runnable.class));
-        final MessageBannerView view2 = Mockito.mock(MessageBannerView.class);
+        final MessageBannerView view2 = new MessageBannerView(getActivity(), null);
+        view2.setId(R.id.message_banner);
         message2.setMessageBannerForTesting(messageBanner2);
         message2.setViewForTesting(view2);
         message1.show();
@@ -111,7 +133,7 @@ public class SingleActionMessageTest extends DummyUiActivityTestCase {
                 .with(MessageBannerProperties.ON_PRIMARY_ACTION, () -> {})
                 .with(MessageBannerProperties.ON_TOUCH_RUNNABLE, () -> {})
                 .with(MessageBannerProperties.ON_DISMISSED,
-                        () -> { mDismissCallback.notifyCalled(); })
+                        (dismissReason) -> { mDismissCallback.notifyCalled(); })
                 .build();
     }
 }

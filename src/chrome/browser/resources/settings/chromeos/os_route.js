@@ -81,7 +81,7 @@ cr.define('settings', function() {
       r.SMART_LOCK = createSubpage(
           r.MULTIDEVICE_FEATURES, mojom.SMART_LOCK_SUBPAGE_PATH,
           Subpage.kSmartLock);
-      if (loadTimeData.getBoolean('nearbySharingFeatureFlag')) {
+      if (loadTimeData.getBoolean('isNearbyShareSupported')) {
         r.NEARBY_SHARE = createSubpage(
             r.MULTIDEVICE, mojom.NEARBY_SHARE_SUBPAGE_PATH,
             Subpage.kNearbyShare);
@@ -106,17 +106,35 @@ cr.define('settings', function() {
             r.SYNC, mojom.SYNC_DEPRECATED_ADVANCED_SUBPAGE_PATH,
             Subpage.kSyncDeprecatedAdvanced);
       }
-      r.LOCK_SCREEN = createSubpage(
-          r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
-          Subpage.kSecurityAndSignIn);
-      r.FINGERPRINT = createSubpage(
-          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH, Subpage.kFingerprint);
-      r.ACCOUNTS = createSubpage(
-          r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
-          Subpage.kManageOtherPeople);
+      if (!loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled')) {
+        r.LOCK_SCREEN = createSubpage(
+            r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
+            Subpage.kSecurityAndSignIn);
+        r.FINGERPRINT = createSubpage(
+            r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH,
+            Subpage.kFingerprint);
+        r.ACCOUNTS = createSubpage(
+            r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
+            Subpage.kManageOtherPeople);
+      }
       r.KERBEROS_ACCOUNTS = createSubpage(
           r.OS_PEOPLE, mojom.KERBEROS_ACCOUNTS_SUBPAGE_PATH,
           Subpage.kKerberosAccounts);
+    }
+
+    const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
+        loadTimeData.getBoolean('isKerberosEnabled');
+    const isKerberosSettingsSectionEnabled =
+        loadTimeData.valueExists('isKerberosSettingsSectionEnabled') &&
+        loadTimeData.getBoolean('isKerberosSettingsSectionEnabled');
+
+    // Kerberos section.
+    if (isKerberosEnabled && isKerberosSettingsSectionEnabled) {
+      r.KERBEROS = createSection(
+          r.BASIC, mojom.KERBEROS_SECTION_PATH, Section.kKerberos);
+      r.KERBEROS_ACCOUNTS_V2 = createSubpage(
+          r.KERBEROS, mojom.KERBEROS_ACCOUNTS_V2_SUBPAGE_PATH,
+          Subpage.kKerberosAccountsV2);
     }
 
     // Device section.
@@ -145,6 +163,8 @@ cr.define('settings', function() {
       r.CHANGE_PICTURE = createSubpage(
           r.PERSONALIZATION, mojom.CHANGE_PICTURE_SUBPAGE_PATH,
           Subpage.kChangePicture);
+      r.WALLPAPER = createSubpage(
+          r.PERSONALIZATION, mojom.WALLPAPER_SUBPAGE_PATH, Subpage.kWallpaper);
       r.AMBIENT_MODE = createSubpage(
           r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
           Subpage.kAmbientMode);
@@ -189,7 +209,7 @@ cr.define('settings', function() {
     if (loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = createSection(
-          r.BASIC, mojom.CROSTINI_SECTION_PATH, Section.kCrostini);
+          r.ADVANCED, mojom.CROSTINI_SECTION_PATH, Section.kCrostini);
       r.CROSTINI_DETAILS = createSubpage(
           r.CROSTINI, mojom.CROSTINI_DETAILS_SUBPAGE_PATH,
           Subpage.kCrostiniDetails);
@@ -213,6 +233,10 @@ cr.define('settings', function() {
           Subpage.kCrostiniPortForwarding);
     }
 
+    // On Startup section.
+    r.ON_STARTUP = createSection(
+        r.BASIC, mojom.ON_STARTUP_SECTION_PATH, Section.kOnStartup);
+
     // Date and Time section.
     r.DATETIME = createSection(
         r.ADVANCED, mojom.DATE_AND_TIME_SECTION_PATH, Section.kDateAndTime);
@@ -220,9 +244,25 @@ cr.define('settings', function() {
         r.DATETIME, mojom.TIME_ZONE_SUBPAGE_PATH, Subpage.kTimeZone);
 
     // Privacy and Security section.
-    r.OS_PRIVACY = createSection(
-        r.ADVANCED, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
-        Section.kPrivacyAndSecurity);
+
+    if (loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled')) {
+      r.OS_PRIVACY = createSection(
+          r.BASIC, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
+          Section.kPrivacyAndSecurity);
+      r.LOCK_SCREEN = createSubpage(
+          r.OS_PRIVACY, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH_V2,
+          Subpage.kSecurityAndSignInV2);
+      r.FINGERPRINT = createSubpage(
+          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH_V2,
+          Subpage.kFingerprintV2);
+      r.ACCOUNTS = createSubpage(
+          r.OS_PRIVACY, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH_V2,
+          Subpage.kManageOtherPeopleV2);
+    } else {
+      r.OS_PRIVACY = createSection(
+          r.ADVANCED, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
+          Section.kPrivacyAndSecurity);
+    }
 
     // Languages and Input section.
     r.OS_LANGUAGES = createSection(

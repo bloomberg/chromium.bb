@@ -2055,15 +2055,15 @@ GTEST_DISABLE_MSC_DEPRECATED_PUSH_()
 inline int ChDir(const char* dir) { return chdir(dir); }
 #endif
 inline FILE* FOpen(const char* path, const char* mode) {
-#if GTEST_OS_WINDOWS
+#if GTEST_OS_WINDOWS && !GTEST_OS_WINDOWS_MINGW
   struct wchar_codecvt : public std::codecvt<wchar_t, char, std::mbstate_t> {};
   std::wstring_convert<wchar_codecvt> converter;
   std::wstring wide_path = converter.from_bytes(path);
   std::wstring wide_mode = converter.from_bytes(mode);
   return _wfopen(wide_path.c_str(), wide_mode.c_str());
-#else
+#else  // GTEST_OS_WINDOWS && !GTEST_OS_WINDOWS_MINGW
   return fopen(path, mode);
-#endif  // GTEST_OS_WINDOWS
+#endif  // GTEST_OS_WINDOWS && !GTEST_OS_WINDOWS_MINGW
 }
 #if !GTEST_OS_WINDOWS_MOBILE
 inline FILE *FReopen(const char* path, const char* mode, FILE* stream) {
@@ -2220,7 +2220,8 @@ using TimeInMillis = int64_t;  // Represents time in milliseconds.
 // Parses 'str' for a 32-bit signed integer.  If successful, writes the result
 // to *value and returns true; otherwise leaves *value unchanged and returns
 // false.
-bool ParseInt32(const Message& src_text, const char* str, int32_t* value);
+GTEST_API_ bool ParseInt32(const Message& src_text, const char* str,
+                           int32_t* value);
 
 // Parses a bool/int32_t/string from the environment variable
 // corresponding to the given Google Test flag.

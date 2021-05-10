@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -78,7 +79,7 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 std::string GetWindowName(const Browser* browser) {
   switch (browser->type()) {
     case Browser::TYPE_NORMAL:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case Browser::TYPE_CUSTOM_TAB:
 #endif
       return prefs::kBrowserWindowPlacement;
@@ -153,6 +154,16 @@ void SaveWindowWorkspace(const Browser* browser, const std::string& workspace) {
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
     session_service->SetWindowWorkspace(browser->session_id(), workspace);
+}
+
+void SaveWindowVisibleOnAllWorkspaces(const Browser* browser,
+                                      bool visible_on_all_workspaces) {
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
+  if (session_service) {
+    session_service->SetWindowVisibleOnAllWorkspaces(browser->session_id(),
+                                                     visible_on_all_workspaces);
+  }
 }
 
 void GetSavedWindowBoundsAndShowState(const Browser* browser,

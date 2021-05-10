@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <array>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -279,7 +280,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // Check for the validity of the data. Leave the field empty if the data is
   // invalid and the relevant feature is enabled.
-  bool ShouldSkipFillingOrSuggesting(ServerFieldType type) const override;
+  bool ShouldSkipFillingOrSuggesting(ServerFieldType type) const;
 
   base::WeakPtr<const AutofillProfile> GetWeakPtr() const {
     return weak_ptr_factory_.GetWeakPtr();
@@ -300,8 +301,6 @@ class AutofillProfile : public AutofillDataModel {
   const Address& GetAddress() const { return address_; }
 
  private:
-  typedef std::vector<const FormGroup*> FormGroupList;
-
   // FormGroup:
   base::string16 GetInfoImpl(const AutofillType& type,
                              const std::string& app_locale) const override;
@@ -330,7 +329,11 @@ class AutofillProfile : public AutofillDataModel {
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
-  FormGroupList FormGroups() const;
+  std::array<const FormGroup*, 5> FormGroups() const {
+    // Adjust the return type size as necessary.
+    return {&name_, &email_, &company_, &phone_number_, &address_};
+  }
+
   const FormGroup* FormGroupForType(const AutofillType& type) const;
   FormGroup* MutableFormGroupForType(const AutofillType& type);
 

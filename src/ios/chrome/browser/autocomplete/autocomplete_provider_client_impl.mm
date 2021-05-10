@@ -185,6 +185,11 @@ AutocompleteProviderClientImpl::GetComponentUpdateService() {
   return GetApplicationContext()->GetComponentUpdateService();
 }
 
+signin::IdentityManager* AutocompleteProviderClientImpl::GetIdentityManager()
+    const {
+  return IdentityManagerFactory::GetForBrowserState(browser_state_);
+}
+
 bool AutocompleteProviderClientImpl::IsOffTheRecord() const {
   return browser_state_->IsOffTheRecord();
 }
@@ -201,7 +206,8 @@ bool AutocompleteProviderClientImpl::IsPersonalizedUrlDataCollectionActive()
 bool AutocompleteProviderClientImpl::IsAuthenticated() const {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state_);
-  return identity_manager != nullptr && identity_manager->HasPrimaryAccount();
+  return identity_manager &&
+         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 bool AutocompleteProviderClientImpl::IsSyncActive() const {

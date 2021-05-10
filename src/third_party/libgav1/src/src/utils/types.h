@@ -18,6 +18,7 @@
 #define LIBGAV1_SRC_UTILS_TYPES_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 
@@ -512,6 +513,10 @@ struct ObuFrameHeader {
   Delta delta_lf;
   // A valid value of reference_frame_index[i] is in the range [0, 7]. -1
   // indicates an invalid value.
+  //
+  // NOTE: When the frame is an intra frame (frame_type is kFrameKey or
+  // kFrameIntraOnly), reference_frame_index is not used and may be
+  // uninitialized.
   int8_t reference_frame_index[kNumInterReferenceFrameTypes];
   // The ref_order_hint[ i ] syntax element in the uncompressed header.
   // Specifies the expected output order hint for each reference frame.

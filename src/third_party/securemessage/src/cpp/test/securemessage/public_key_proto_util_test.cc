@@ -28,7 +28,7 @@ class PublicKeyProtoUtilTest : public testing::Test {
   unique_ptr<CryptoOps::PublicKey> public_key_;
 
   // A byte string representing the zero byte.
-  string zero_byte_;
+  std::string zero_byte_;
 
  protected:
   void SetEcP256PublicKey() {
@@ -38,7 +38,7 @@ class PublicKeyProtoUtilTest : public testing::Test {
         CryptoOps::GenerateEcP256KeyPair();
     public_key_ = unique_ptr<CryptoOps::PublicKey>(new CryptoOps::PublicKey(
         key_pair->public_key->data(), key_pair->public_key->algorithm()));
-    zero_byte_ = string("", 1);
+    zero_byte_ = std::string("", 1);
   }
 
   void SetRsa2048PublicKey() {
@@ -46,7 +46,7 @@ class PublicKeyProtoUtilTest : public testing::Test {
         CryptoOps::GenerateRsa2048KeyPair();
     public_key_ = unique_ptr<CryptoOps::PublicKey>(new CryptoOps::PublicKey(
         key_pair->public_key->data(), key_pair->public_key->algorithm()));
-    zero_byte_ = string("", 1);
+    zero_byte_ = std::string("", 1);
   }
 
   void AssertKeyHasSimpleRsaStructure(const unique_ptr<GenericPublicKey>& key) {
@@ -104,7 +104,7 @@ TEST_F(PublicKeyProtoUtilTest, InvalidEncodingEcP256) {
   // Mess up the X coordinate by repeating it twice
   invalid_proto = unique_ptr<GenericPublicKey>(
       new GenericPublicKey(*valid_proto));
-  string new_x = valid_proto->ec_p256_public_key().x();
+  std::string new_x = valid_proto->ec_p256_public_key().x();
   new_x += new_x;
   invalid_proto->mutable_ec_p256_public_key()->set_x(new_x);
   restored_public_key =
@@ -202,7 +202,7 @@ TEST_F(PublicKeyProtoUtilTest,
   AssertKeyHasSimpleRsaStructure(generic_key);
 
   generic_key->mutable_rsa2048_public_key()->set_n(
-      string("\x00\x00\x80", 3).append(string(255, '0')));
+      std::string("\x00\x00\x80", 3).append(std::string(255, '0')));
 
   unique_ptr<CryptoOps::PublicKey> restored_public_key =
       PublicKeyProtoUtil::ParsePublicKey(*generic_key);
@@ -219,7 +219,7 @@ TEST_F(PublicKeyProtoUtilTest, ParseInvalidEncodingRsa2048_ModulusNot2048bit) {
   AssertKeyHasSimpleRsaStructure(generic_key);
 
   generic_key->mutable_rsa2048_public_key()->set_n(
-      string("\x7F").append(string(255, '0')));
+      std::string("\x7F").append(std::string(255, '0')));
 
   unique_ptr<CryptoOps::PublicKey> restored_public_key =
       PublicKeyProtoUtil::ParsePublicKey(*generic_key);

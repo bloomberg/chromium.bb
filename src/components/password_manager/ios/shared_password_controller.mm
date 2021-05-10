@@ -37,9 +37,9 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
+#include "components/password_manager/ios/password_manager_ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/navigation/navigation_context.h"
@@ -58,6 +58,7 @@ using autofill::PasswordFormGenerationData;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using base::SysNSStringToUTF16;
+using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
@@ -66,6 +67,7 @@ using password_manager::metrics_util::PasswordDropdownState;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
+using password_manager::JsonStringToFormData;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManagerInterface;
@@ -290,14 +292,15 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _lastTypedfieldIdentifier = formQuery.uniqueFieldID;
     _lastTypedValue = formQuery.typedValue;
 
-    if ([formQuery.type isEqual:@"input"]) {
+    if ([formQuery.type isEqual:@"input"] ||
+        [formQuery.type isEqual:@"keyup"]) {
       [self.formHelper updateFieldDataOnUserInput:formQuery.uniqueFieldID
                                        inputValue:formQuery.typedValue];
-    }
 
-    _passwordManager->UpdateStateOnUserInput(
-        _delegate.passwordManagerDriver, formQuery.uniqueFormID,
-        formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
+      _passwordManager->UpdateStateOnUserInput(
+          _delegate.passwordManagerDriver, formQuery.uniqueFormID,
+          formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
+    }
   }
 }
 
@@ -410,6 +413,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       }
 
       [self.formHelper fillPasswordFormWithFillData:*fillData
+                                   triggeredOnField:uniqueFieldID
                                   completionHandler:^(BOOL success) {
                                     completion();
                                   }];
@@ -626,7 +630,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                     inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
 
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+  GURL pageURL;
+  if (!GetPageURLAndCheckTrustLevel(webState, &pageURL))
     return;
 
   if (!frame || !frame->CanCallJavaScriptFunction())
@@ -647,6 +652,19 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _passwordManager->OnPasswordFormRemoved(
         _delegate.passwordManagerDriver, self.formHelper.fieldDataManager.get(),
         params.unique_form_id);
+  }
+
+  // If the form was cleared PasswordManager should be informed to decide
+  // whether it's a change password form that was submitted.
+  if (params.type == "password_form_cleared") {
+    FormData formData;
+    if (!JsonStringToFormData(SysUTF8ToNSString(params.value), &formData,
+                              pageURL)) {
+      return;
+    }
+
+    _passwordManager->OnPasswordFormCleared(_delegate.passwordManagerDriver,
+                                            formData);
   }
 }
 

@@ -39,7 +39,7 @@ class Jbig2Decoder {
  public:
   static FXCODEC_STATUS StartDecode(
       Jbig2Context* pJbig2Context,
-      std::unique_ptr<JBig2_DocumentContext>* pContextHolder,
+      JBig2_DocumentContext* pJbig2DocumentContext,
       uint32_t width,
       uint32_t height,
       pdfium::span<const uint8_t> src_span,

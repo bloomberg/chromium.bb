@@ -45,15 +45,15 @@ protected:
 	// Depth output
 	Float4 oDepth;
 
-	virtual void setBuiltins(Int &x, Int &y, Float4 (&z)[4], Float4 &w, Int cMask[4]) = 0;
-	virtual void applyShader(Int cMask[4], Int sMask[4], Int zMask[4]) = 0;
-	virtual Bool alphaTest(Int cMask[4]) = 0;
-	virtual void rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4]) = 0;
+	virtual void setBuiltins(Int &x, Int &y, Float4 (&z)[4], Float4 &w, Int cMask[4], int sampleId) = 0;
+	virtual void applyShader(Int cMask[4], Int sMask[4], Int zMask[4], int sampleId) = 0;
+	virtual Bool alphaTest(Int cMask[4], int sampleId) = 0;
+	virtual void rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], int sampleId) = 0;
 
 	void quad(Pointer<Byte> cBuffer[4], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y) override;
 
 	void alphaTest(Int &aMask, const Short4 &alpha);
-	void alphaToCoverage(Int cMask[4], const Float4 &alpha);
+	void alphaToCoverage(Int cMask[4], const Float4 &alpha, int sampleId);
 
 	// Raster operations
 	void alphaBlend(int index, const Pointer<Byte> &cBuffer, Vector4s &current, const Int &x);
@@ -66,7 +66,6 @@ protected:
 	void linearToSRGB12_16(Vector4s &c);
 
 private:
-	Float4 interpolateCentroid(const Float4 &x, const Float4 &y, const Float4 &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective);
 	Byte8 stencilReplaceRef(bool isBack);
 	void stencilTest(const Pointer<Byte> &sBuffer, int q, const Int &x, Int &sMask, const Int &cMask);
 	void stencilTest(Byte8 &value, VkCompareOp stencilCompareMode, bool isBack);

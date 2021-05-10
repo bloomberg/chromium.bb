@@ -1,24 +1,5 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "drawer-view",
-      "id": "animations",
-      "title": "Animations",
-      "persistence": "closeable",
-      "order": 0,
-      "className": "Animation.AnimationTimeline"
-    }
-  ],
-  "dependencies": [
-    "elements"
-  ],
-  "modules": [
-    "animation-legacy.js"
-  ],
-  "skip_compilation": [
-    "animation-legacy.js"
-  ],
+  "modules": [],
   "resources": [
     "animationScreenshotPopover.css",
     "animationTimeline.css"

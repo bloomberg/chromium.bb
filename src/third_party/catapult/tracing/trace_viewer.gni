@@ -199,11 +199,14 @@ tracing_js_html_files = [
   "tracing/metrics/blink/gc_metric.html",
   "tracing/metrics/blink/leak_detection_metric.html",
   "tracing/metrics/console_error_metric.html",
+  "tracing/metrics/count_sum_metric.html",
   "tracing/metrics/cpu_process_metric.html",
+  "tracing/metrics/custom_metric.html",
   "tracing/metrics/media_metric.html",
   "tracing/metrics/memory_ablation_metric.html",
   "tracing/metrics/metric_map_function.html",
   "tracing/metrics/metric_registry.html",
+  "tracing/metrics/partition_alloc/pcscan_metric.html",
   "tracing/metrics/rendering/cpu_utilization.html",
   "tracing/metrics/rendering/frame_time.html",
   "tracing/metrics/rendering/image_decode_time.html",
@@ -232,6 +235,7 @@ tracing_js_html_files = [
   "tracing/metrics/system_health/responsiveness_metric.html",
   "tracing/metrics/system_health/screenshots_based_speed_index_metric.html",
   "tracing/metrics/system_health/utils.html",
+  "tracing/metrics/system_health/weblayer_startup_metric.html",
   "tracing/metrics/system_health/webview_startup_metric.html",
   "tracing/metrics/tabs_metric.html",
   "tracing/metrics/tracing_metric.html",
@@ -246,7 +250,6 @@ tracing_js_html_files = [
   "tracing/metrics/vr/webvr_metric.html",
   "tracing/metrics/vr/webxr_metric.html",
   "tracing/metrics/webrtc/webrtc_rendering_metric.html",
-  "tracing/metrics/webui_metric.html",
   "tracing/model/activity.html",
   "tracing/model/alert.html",
   "tracing/model/annotation.html",
@@ -558,6 +561,7 @@ tracing_js_html_files = [
   "tracing/ui/tracks/x_axis_track.html",
   "tracing/ui/view_specific_brushing_state.html",
   "tracing/value/csv_builder.html",
+  "tracing/value/diagnostics/alert_groups.html",
   "tracing/value/diagnostics/all_diagnostics.html",
   "tracing/value/diagnostics/breakdown.html",
   "tracing/value/diagnostics/collected_related_event_set.html",
@@ -686,9 +690,8 @@ py_vulcanize_files = [
   "../common/py_vulcanize/third_party/rjsmin/rjsmin.py",
   "../common/py_vulcanize/third_party/rjsmin/setup.py",
 ]
-other_python_files = [
-  "tracing_project.py",
-]
+other_python_files = [ "tracing_project.py" ]
+
 # python files needed for deterministic builds. See https://crbug.com/1025132.
 # This list is manually generated and may become out of date. Please fix it if
 # it does so.

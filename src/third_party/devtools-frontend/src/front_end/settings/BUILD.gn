@@ -7,10 +7,9 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("settings") {
   sources = [
-    "FrameworkBlackboxSettingsTab.js",
-    "KeybindsSettingsTab.js",
-    "ModuleUIStrings.js",
-    "SettingsScreen.js",
+    "FrameworkIgnoreListSettingsTab.ts",
+    "KeybindsSettingsTab.ts",
+    "SettingsScreen.ts",
   ]
 
   deps = [
@@ -23,13 +22,19 @@ devtools_module("settings") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "settings.js"
+  entrypoint = "settings.ts"
 
   deps = [ ":settings" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "settings-legacy.js"
+  entrypoint = "settings-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "settings-meta.ts"
 
   deps = [ ":bundle" ]
 }

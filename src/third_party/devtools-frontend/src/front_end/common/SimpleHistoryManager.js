@@ -43,9 +43,6 @@ export class HistoryEntry {
   }
 }
 
-/**
- * @unrestricted
- */
 export class SimpleHistoryManager {
   /**
    * @param {number} historyDepth
@@ -74,7 +71,7 @@ export class SimpleHistoryManager {
    * @return {boolean}
    */
   readOnly() {
-    return !!this._coalescingReadonly;
+    return Boolean(this._coalescingReadonly);
   }
 
   /**

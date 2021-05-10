@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
@@ -287,12 +287,6 @@ void CastMediaRouteProvider::EnableMdnsDiscovery() {
 
 void CastMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
   app_discovery_service_->Refresh();
-}
-
-void CastMediaRouteProvider::ProvideSinks(
-    const std::string& provider_name,
-    const std::vector<media_router::MediaSinkInternal>& sinks) {
-  NOTIMPLEMENTED();
 }
 
 void CastMediaRouteProvider::CreateMediaRouteController(

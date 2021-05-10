@@ -261,6 +261,13 @@ enum BadMessageReason {
   RWH_CLOSE_PORTAL = 233,
   MSDH_INVALID_STREAM_TYPE = 234,
   RFH_CREATE_CHILD_FRAME_TOKENS_NOT_FOUND = 235,
+  ASGH_ASSOCIATED_INTERFACE_REQUEST = 236,
+  ASGH_RECEIVED_CONTROL_MESSAGE = 237,
+  CSDH_BAD_OWNER = 238,
+  SYNC_COMPOSITOR_NO_LOCAL_SURFACE_ID = 239,
+  WCI_INVALID_FULLSCREEN_OPTIONS = 240,
+  PAYMENTS_WITHOUT_PERMISSION = 241,
+  WEB_BUNDLE_INVALID_NAVIGATION_URL = 242,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

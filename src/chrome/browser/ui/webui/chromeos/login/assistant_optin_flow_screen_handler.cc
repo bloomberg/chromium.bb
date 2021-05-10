@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
@@ -55,7 +55,7 @@ AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
-  if (voice_match_enrollment_started_)
+  if (assistant::AssistantSettings::Get() && voice_match_enrollment_started_)
     StopSpeakerIdEnrollment();
   if (ash::AssistantState::Get())
     ash::AssistantState::Get()->RemoveObserver(this);
@@ -86,9 +86,10 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
                IDS_ASSISTANT_SCREEN_CONTEXT_TITLE);
   builder->Add("assistantScreenContextDesc", IDS_ASSISTANT_SCREEN_CONTEXT_DESC);
   builder->Add("assistantVoiceMatchTitle", IDS_ASSISTANT_VOICE_MATCH_TITLE);
-  builder->Add("assistantVoiceMatchMessage", IDS_ASSISTANT_VOICE_MATCH_MESSAGE);
-  builder->Add("assistantVoiceMatchNoDspMessage",
-               IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE);
+  builder->Add("assistantVoiceMatchMessage",
+               chromeos::IsHotwordDspAvailable() && !DeviceHasBattery()
+                   ? IDS_ASSISTANT_VOICE_MATCH_MESSAGE
+                   : IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE);
   builder->Add("assistantVoiceMatchRecording",
                IDS_ASSISTANT_VOICE_MATCH_RECORDING);
   builder->Add("assistantVoiceMatchCompleted",
@@ -163,8 +164,6 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
 
 void AssistantOptInFlowScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
-  dict->SetBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
-  dict->SetBoolean("deviceHasNoBattery", !DeviceHasBattery());
   dict->SetBoolean("voiceMatchDisabled",
                    chromeos::assistant::features::IsVoiceMatchDisabled());
   dict->SetBoolean("betterAssistantEnabled",
@@ -571,6 +570,9 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     assistant::AssistantSettings::Get()->StartSpeakerIdEnrollment(
         flow_type_ == ash::FlowType::kSpeakerIdRetrain,
         weak_factory_.GetWeakPtr());
+  } else if (action == kReloadRequested) {
+    if (voice_match_enrollment_started_)
+      StopSpeakerIdEnrollment();
   }
 }
 

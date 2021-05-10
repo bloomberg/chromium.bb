@@ -49,8 +49,8 @@
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "components/sync/model/sync_error_factory.h"
-#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 
@@ -331,13 +331,12 @@ void HistoryService::AddPage(const GURL& url,
                              ui::PageTransition transition,
                              VisitSource visit_source,
                              bool did_replace_entry,
-                             bool publicly_routable) {
+                             bool floc_allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AddPage(HistoryAddPageArgs(
       url, time, context_id, nav_entry_id, referrer, redirects, transition,
       !ui::PageTransitionIsMainFrame(transition), visit_source,
-      did_replace_entry, /*consider_for_ntp_most_visited=*/true,
-      publicly_routable));
+      did_replace_entry, /*consider_for_ntp_most_visited=*/true, floc_allowed));
 }
 
 void HistoryService::AddPage(const GURL& url,
@@ -349,7 +348,7 @@ void HistoryService::AddPage(const GURL& url,
       /*referrer=*/GURL(), RedirectList(), ui::PAGE_TRANSITION_LINK,
       /*hidden=*/false, visit_source,
       /*did_replace_entry=*/false, /*consider_for_ntp_most_visited=*/true,
-      /*publicly_routable=*/false));
+      /*floc_allowed=*/false));
 }
 
 void HistoryService::AddPage(const HistoryAddPageArgs& add_page_args) {
@@ -412,6 +411,17 @@ void HistoryService::UpdateWithPageEndTime(ContextID context_id,
       PRIORITY_NORMAL,
       base::BindOnce(&HistoryBackend::UpdateWithPageEndTime, history_backend_,
                      context_id, nav_entry_id, url, end_ts));
+}
+
+void HistoryService::SetFlocAllowed(ContextID context_id,
+                                    int nav_entry_id,
+                                    const GURL& url) {
+  TRACE_EVENT0("browser", "HistoryService::SetFlocAllowed");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(PRIORITY_NORMAL,
+               base::BindOnce(&HistoryBackend::SetFlocAllowed, history_backend_,
+                              context_id, nav_entry_id, url));
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,
@@ -923,7 +933,7 @@ void HistoryService::Cleanup() {
 bool HistoryService::Init(
     bool no_db,
     const HistoryDatabaseParams& history_database_params) {
-  TRACE_EVENT0("browser,startup", "HistoryService::Init")
+  TRACE_EVENT0("browser,startup", "HistoryService::Init");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Unit tests can inject |backend_task_runner_| before this is called.
@@ -1248,8 +1258,7 @@ void HistoryService::NotifyKeywordSearchTermDeleted(URLID url_id) {
     observer.OnKeywordSearchTermDeleted(this, url_id);
 }
 
-std::unique_ptr<HistoryService::FaviconsChangedCallbackList::Subscription>
-HistoryService::AddFaviconsChangedCallback(
+base::CallbackListSubscription HistoryService::AddFaviconsChangedCallback(
     const HistoryService::FaviconsChangedCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return favicons_changed_callback_list_.Add(callback);

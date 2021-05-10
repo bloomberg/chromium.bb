@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
@@ -38,8 +37,8 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
@@ -150,6 +149,8 @@ namespace apps {
 struct AppShimManager::ProfileState {
   ProfileState(AppShimManager::AppState* in_app_state,
                std::unique_ptr<AppShimHost> in_single_profile_host);
+  ProfileState(const ProfileState&) = delete;
+  ProfileState& operator=(const ProfileState&) = delete;
   ~ProfileState() = default;
 
   AppShimHost* GetHost() const;
@@ -162,9 +163,6 @@ struct AppShimManager::ProfileState {
 
   // All browser instances for this (app, Profile) pair.
   std::set<Browser*> browsers;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileState);
 };
 
 // The state for an individual app. This includes the state for all
@@ -173,6 +171,8 @@ struct AppShimManager::AppState {
   AppState(const web_app::AppId& app_id,
            std::unique_ptr<AppShimHost> multi_profile_host)
       : app_id(app_id), multi_profile_host(std::move(multi_profile_host)) {}
+  AppState(const AppState&) = delete;
+  AppState& operator=(const AppState&) = delete;
   ~AppState() = default;
 
   bool IsMultiProfile() const;
@@ -192,9 +192,6 @@ struct AppShimManager::AppState {
 
   // The profile state for the profiles currently running this app.
   std::map<Profile*, std::unique_ptr<ProfileState>> profiles;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppState);
 };
 
 AppShimManager::ProfileState::ProfileState(
@@ -555,7 +552,7 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
     chrome::mojom::AppShimLaunchResult result) {
   // If we failed because the profile was locked, launch the profile manager.
   if (result == chrome::mojom::AppShimLaunchResult::kProfileLocked)
-    LaunchUserManager();
+    LaunchProfilePicker();
 
   // If the app specified a URL, but we tried and failed to launch it, then
   // open that URL in a new browser window.
@@ -760,9 +757,8 @@ void AppShimManager::OpenAppURLInBrowserWindow(
   Navigate(&params);
 }
 
-void AppShimManager::LaunchUserManager() {
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+void AppShimManager::LaunchProfilePicker() {
+  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileLocked);
 }
 
 void AppShimManager::MaybeTerminate() {

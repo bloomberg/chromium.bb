@@ -109,6 +109,7 @@ namespace cricket {
 
 using webrtc::RTCError;
 using webrtc::RTCErrorType;
+using webrtc::ToQueuedTask;
 
 bool IceCredentialsChanged(const std::string& old_ufrag,
                            const std::string& old_pwd,
@@ -192,6 +193,7 @@ P2PTransportChannel::P2PTransportChannel(
 }
 
 P2PTransportChannel::~P2PTransportChannel() {
+  RTC_DCHECK_RUN_ON(network_thread_);
   std::vector<Connection*> copy(connections().begin(), connections().end());
   for (Connection* con : copy) {
     con->Destroy();
@@ -200,7 +202,6 @@ P2PTransportChannel::~P2PTransportChannel() {
     p.resolver_->Destroy(false);
   }
   resolvers_.clear();
-  RTC_DCHECK_RUN_ON(network_thread_);
 }
 
 // Add the allocator session to our list so that we know which sessions
@@ -283,10 +284,11 @@ bool P2PTransportChannel::MaybeSwitchSelectedConnection(
     // threshold, the new connection is in a better receiving state than the
     // currently selected connection. So we need to re-check whether it needs
     // to be switched at a later time.
-    invoker_.AsyncInvokeDelayed<void>(
-        RTC_FROM_HERE, thread(),
-        rtc::Bind(&P2PTransportChannel::SortConnectionsAndUpdateState, this,
-                  *result.recheck_event),
+    network_thread_->PostDelayedTask(
+        ToQueuedTask(task_safety_,
+                     [this, recheck = *result.recheck_event]() {
+                       SortConnectionsAndUpdateState(recheck);
+                     }),
         result.recheck_event->recheck_delay_ms);
   }
 
@@ -703,7 +705,10 @@ void P2PTransportChannel::SetIceConfig(const IceConfig& config) {
       "send_ping_on_nomination_ice_controlled",
       &field_trials_.send_ping_on_nomination_ice_controlled,
       // Allow connections to live untouched longer that 30s.
-      "dead_connection_timeout_ms", &field_trials_.dead_connection_timeout_ms)
+      "dead_connection_timeout_ms", &field_trials_.dead_connection_timeout_ms,
+      // Stop gathering on strongly connected.
+      "stop_gather_on_strongly_connected",
+      &field_trials_.stop_gather_on_strongly_connected)
       ->Parse(webrtc::field_trial::FindFullName("WebRTC-IceFieldTrials"));
 
   if (field_trials_.dead_connection_timeout_ms < 30000) {
@@ -838,6 +843,13 @@ void P2PTransportChannel::MaybeStartGathering() {
                                 static_cast<int>(IceRestartState::MAX_VALUE));
     }
 
+    for (const auto& session : allocator_sessions_) {
+      if (session->IsStopped()) {
+        continue;
+      }
+      session->StopGettingPorts();
+    }
+
     // Time for a new allocator.
     std::unique_ptr<PortAllocatorSession> pooled_session =
         allocator_->TakePooledSession(transport_name(), component(),
@@ -891,7 +903,8 @@ void P2PTransportChannel::OnPortReady(PortAllocatorSession* session,
   ports_.push_back(port);
   port->SignalUnknownAddress.connect(this,
                                      &P2PTransportChannel::OnUnknownAddress);
-  port->SignalDestroyed.connect(this, &P2PTransportChannel::OnPortDestroyed);
+  port->SubscribePortDestroyed(
+      [this](PortInterface* port) { OnPortDestroyed(port); });
 
   port->SignalRoleConflict.connect(this, &P2PTransportChannel::OnRoleConflict);
   port->SignalSentPacket.connect(this, &P2PTransportChannel::OnSentPacket);
@@ -1235,8 +1248,8 @@ void P2PTransportChannel::OnCandidateResolved(
   Candidate candidate = p->candidate_;
   resolvers_.erase(p);
   AddRemoteCandidateWithResolver(candidate, resolver);
-  thread()->PostTask(
-      webrtc::ToQueuedTask([] {}, [resolver] { resolver->Destroy(false); }));
+  network_thread_->PostTask(
+      ToQueuedTask([resolver]() { resolver->Destroy(false); }));
 }
 
 void P2PTransportChannel::AddRemoteCandidateWithResolver(
@@ -1609,10 +1622,10 @@ void P2PTransportChannel::RequestSortAndStateUpdate(
     IceControllerEvent reason_to_sort) {
   RTC_DCHECK_RUN_ON(network_thread_);
   if (!sort_dirty_) {
-    invoker_.AsyncInvoke<void>(
-        RTC_FROM_HERE, thread(),
-        rtc::Bind(&P2PTransportChannel::SortConnectionsAndUpdateState, this,
-                  reason_to_sort));
+    network_thread_->PostTask(
+        ToQueuedTask(task_safety_, [this, reason_to_sort]() {
+          SortConnectionsAndUpdateState(reason_to_sort);
+        }));
     sort_dirty_ = true;
   }
 }
@@ -1627,9 +1640,8 @@ void P2PTransportChannel::MaybeStartPinging() {
     RTC_LOG(LS_INFO) << ToString()
                      << ": Have a pingable connection for the first time; "
                         "starting to ping.";
-    invoker_.AsyncInvoke<void>(
-        RTC_FROM_HERE, thread(),
-        rtc::Bind(&P2PTransportChannel::CheckAndPing, this));
+    network_thread_->PostTask(
+        ToQueuedTask(task_safety_, [this]() { CheckAndPing(); }));
     regathering_controller_->Start();
     started_pinging_ = true;
   }
@@ -1946,9 +1958,8 @@ void P2PTransportChannel::CheckAndPing() {
     MarkConnectionPinged(conn);
   }
 
-  invoker_.AsyncInvokeDelayed<void>(
-      RTC_FROM_HERE, thread(),
-      rtc::Bind(&P2PTransportChannel::CheckAndPing, this), delay);
+  network_thread_->PostDelayedTask(
+      ToQueuedTask(task_safety_, [this]() { CheckAndPing(); }), delay);
 }
 
 // This method is only for unit testing.
@@ -2015,11 +2026,13 @@ void P2PTransportChannel::OnConnectionStateChange(Connection* connection) {
   // the connection is at the latest generation. It is not enough to check
   // that the connection becomes weakly connected because the connection may be
   // changing from (writable, receiving) to (writable, not receiving).
-  bool strongly_connected = !connection->weak();
-  bool latest_generation = connection->local_candidate().generation() >=
-                           allocator_session()->generation();
-  if (strongly_connected && latest_generation) {
-    MaybeStopPortAllocatorSessions();
+  if (field_trials_.stop_gather_on_strongly_connected) {
+    bool strongly_connected = !connection->weak();
+    bool latest_generation = connection->local_candidate().generation() >=
+                             allocator_session()->generation();
+    if (strongly_connected && latest_generation) {
+      MaybeStopPortAllocatorSessions();
+    }
   }
   // We have to unroll the stack before doing this because we may be changing
   // the state of connections while sorting.

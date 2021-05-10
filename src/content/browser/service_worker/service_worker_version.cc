@@ -93,16 +93,6 @@ void RunSoon(base::OnceClosure callback) {
   }
 }
 
-template <typename CallbackArray, typename Arg>
-void RunCallbacks(ServiceWorkerVersion* version,
-                  CallbackArray* callbacks_ptr,
-                  const Arg& arg) {
-  CallbackArray callbacks;
-  callbacks.swap(*callbacks_ptr);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(arg);
-}
-
 // An adapter to run a |callback| after StartWorker.
 void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
                                  ServiceWorkerVersion::StatusCallback callback,
@@ -460,6 +450,14 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
                             blink::ServiceWorkerStatusCode::kErrorDisallowed);
     RunSoon(base::BindOnce(std::move(callback),
                            blink::ServiceWorkerStatusCode::kErrorDisallowed));
+    return;
+  }
+
+  if (is_running_start_callbacks_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ServiceWorkerVersion::StartWorker,
+                                  weak_factory_.GetWeakPtr(), purpose,
+                                  std::move(callback)));
     return;
   }
 
@@ -1016,9 +1014,10 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
   // TODO(https://crbug.com/1039613): Update the loader factories passed to the
   // script loader factory too.
   DCHECK_EQ(NEW, status());
-  embedded_worker_->CreateFactoryBundles(
-      base::BindOnce(&ServiceWorkerVersion::InitializeGlobalScope,
-                     weak_factory_.GetWeakPtr()));
+  EmbeddedWorkerInstance::CreateFactoryBundlesResult result =
+      embedded_worker_->CreateFactoryBundles();
+  InitializeGlobalScope(std::move(result.script_bundle),
+                        std::move(result.subresource_bundle));
 }
 
 void ServiceWorkerVersion::InitializeGlobalScope(
@@ -1879,6 +1878,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->ua_metadata = GetContentClient()->browser()->GetUserAgentMetadata();
   params->is_installed = IsInstalled(status_);
   params->script_url_to_skip_throttling = updated_script_url_;
+  params->main_script_load_params = std::move(main_script_load_params_);
 
   if (IsInstalled(status())) {
     DCHECK(!installed_scripts_sender_);
@@ -2284,7 +2284,12 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
 void ServiceWorkerVersion::FinishStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  RunCallbacks(this, &start_callbacks_, status);
+  std::vector<StatusCallback> callbacks;
+  callbacks.swap(start_callbacks_);
+  is_running_start_callbacks_ = true;
+  for (auto& callback : callbacks)
+    std::move(callback).Run(status);
+  is_running_start_callbacks_ = false;
 }
 
 void ServiceWorkerVersion::CleanUpExternalRequest(

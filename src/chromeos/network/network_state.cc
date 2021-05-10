@@ -25,8 +25,13 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "net/http/http_status_code.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace {
+
+// Cellular Service EID property.
+// TODO(crbug.com/1093185): Use dbus-constants when property is added in shill.
+const char kCellularEidProperty[] = "Cellular.EID";
 
 const char kDefaultCellularNetworkPath[] = "/cellular";
 
@@ -136,8 +141,14 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &bssid_);
   } else if (key == shill::kPriorityProperty) {
     return GetIntegerValue(key, value, &priority_);
+  } else if (key == shill::kWifiHiddenSsid) {
+    return GetBooleanValue(key, value, &hidden_ssid_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
+  } else if (key == shill::kIccidProperty) {
+    return GetStringValue(key, value, &iccid_);
+  } else if (key == kCellularEidProperty) {
+    return GetStringValue(key, value, &eid_);
   } else if (key == shill::kProxyConfigProperty) {
     std::string proxy_config_str;
     if (!value.GetAsString(&proxy_config_str)) {
@@ -182,8 +193,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     SetVpnProvider(vpn_provider_id, vpn_provider_type);
     return true;
-  } else if (key == shill::kTetheringProperty) {
-    return GetStringValue(key, value, &tethering_state_);
   } else if (key == shill::kUIDataProperty) {
     std::unique_ptr<NetworkUIData> ui_data =
         chromeos::shill_property_util::GetUIDataFromValue(value);
@@ -285,8 +294,6 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
     dictionary->SetKey(shill::kEapMethodProperty, base::Value(eap_method()));
     dictionary->SetKey(shill::kWifiFrequency, base::Value(frequency_));
     dictionary->SetKey(shill::kWifiHexSsid, base::Value(GetHexSsid()));
-    dictionary->SetKey(shill::kTetheringProperty,
-                       base::Value(tethering_state_));
   }
 
   // Mobile properties

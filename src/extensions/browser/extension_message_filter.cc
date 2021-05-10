@@ -65,10 +65,10 @@ ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
       render_process_id_(render_process_id),
       browser_context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  shutdown_notifier_ =
+  shutdown_notifier_subscription_ =
       ShutdownNotifierFactory::GetInstance()->Get(context)->Subscribe(
-          base::Bind(&ExtensionMessageFilter::ShutdownOnUIThread,
-                     base::Unretained(this)));
+          base::BindRepeating(&ExtensionMessageFilter::ShutdownOnUIThread,
+                              base::Unretained(this)));
 }
 
 void ExtensionMessageFilter::EnsureShutdownNotifierFactoryBuilt() {
@@ -86,7 +86,7 @@ EventRouter* ExtensionMessageFilter::GetEventRouter() {
 
 void ExtensionMessageFilter::ShutdownOnUIThread() {
   browser_context_ = nullptr;
-  shutdown_notifier_.reset();
+  shutdown_notifier_subscription_ = {};
 }
 
 void ExtensionMessageFilter::OverrideThreadForMessage(

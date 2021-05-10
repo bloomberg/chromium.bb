@@ -32,17 +32,19 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
+import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -117,7 +119,6 @@ public class MainSettings extends PreferenceFragmentCompat
     public void onDestroy() {
         super.onDestroy();
         mSyncPromoPreference.onPreferenceFragmentDestroyed();
-        mSignInPreference.onPreferenceFragmentDestroyed();
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
         // by the system.
@@ -170,7 +171,7 @@ public class MainSettings extends PreferenceFragmentCompat
 
         cachePreferences();
 
-        mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);
+        mSyncPromoPreference.setOnStateChangedCallback(this::onSyncPromoPreferenceStateChanged);
 
         updatePasswordsPreference();
 
@@ -205,9 +206,8 @@ public class MainSettings extends PreferenceFragmentCompat
             TemplateUrlServiceFactory.get().load();
         }
 
-        // Only show the Safety check section if both Safety check and Password check flags are on.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SAFETY_CHECK_ANDROID)
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)) {
+        // Only show the Safety check section if the Safety check flag is on.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SAFETY_CHECK_ANDROID)) {
             getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
         } else {
             findPreference(PREF_SAFETY_CHECK)
@@ -383,15 +383,15 @@ public class MainSettings extends PreferenceFragmentCompat
         updatePreferences();
     }
 
-    private void onSignInPreferenceStateChanged() {
-        // Remove "Account" section header if the personalized sign-in promo is shown. Remove
-        // "You and Google" section header if the personalized sync promo is shown.
-        boolean isShowingPersonalizedPromo =
-                mSignInPreference.getState() == SignInPreference.State.PERSONALIZED_PROMO;
+    private void onSyncPromoPreferenceStateChanged() {
+        // Remove "Account" section header if the personalized sign-in promo is shown.
+        boolean isShowingPersonalizedSigninPromo =
+                mSyncPromoPreference.getState() == State.PERSONALIZED_SIGNIN_PROMO;
         String prefName = ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
                 ? PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION
                 : PREF_ACCOUNT_SECTION;
-        findPreference(prefName).setVisible(!isShowingPersonalizedPromo);
+        findPreference(prefName).setVisible(!isShowingPersonalizedSigninPromo);
+        mSignInPreference.setVisible(!isShowingPersonalizedSigninPromo);
     }
 
     // TemplateUrlService.LoadListener implementation.

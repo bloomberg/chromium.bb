@@ -27,6 +27,7 @@ cc_library(
         "byte_array.h",
         "callable.h",
         "exception.h",
+        "feature_flags.h",
         "input_stream.h",
         "listeners.h",
         "nsd_service_info.h",
@@ -48,6 +49,7 @@ cc_library(
         "//absl/meta:type_traits",
         "//absl/strings",
         "//absl/strings:str_format",
+        "//absl/synchronization",
         "//absl/time",
     ],
 )
@@ -66,7 +68,6 @@ cc_library(
         "byte_utils.h",
     ],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//core:__subpackages__",
         "//platform/impl:__subpackages__",
         "//platform/public:__pkg__",
@@ -91,6 +92,28 @@ cc_library(
     deps = [
         "//platform/api:platform",
         "//platform/api:types",
+    ],
+)
+
+cc_library(
+    name = "cancellation_flag",
+    srcs = [
+        "cancellation_flag.cc",
+    ],
+    hdrs = [
+        "cancellation_flag.h",
+    ],
+    visibility = [
+        "//core/internal:__subpackages__",
+        "//platform/api:__subpackages__",
+        "//platform/impl:__subpackages__",
+        "//platform/public:__pkg__",
+    ],
+    deps = [
+        ":base",
+        ":util",
+        "//absl/container:flat_hash_set",
+        "//absl/synchronization",
     ],
 )
 
@@ -123,10 +146,13 @@ cc_test(
     srcs = [
         "bluetooth_utils_test.cc",
         "byte_array_test.cc",
+        "feature_flags_test.cc",
         "prng_test.cc",
     ],
     deps = [
         ":base",
+        ":test_util",
+        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
     ],
 )
@@ -139,6 +165,20 @@ cc_test(
     deps = [
         ":base",
         ":util",
+        "//testing/base/public:gunit_main",
+    ],
+)
+
+cc_test(
+    name = "cancellation_flag_test",
+    srcs = [
+        "cancellation_flag_test.cc",
+    ],
+    deps = [
+        ":base",
+        ":cancellation_flag",
+        ":test_util",
+        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
     ],
 )

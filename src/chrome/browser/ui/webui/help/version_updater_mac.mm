@@ -78,7 +78,7 @@ int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
 }
 
 void UpdateStatusFromChromiumUpdater(
-    const VersionUpdater::StatusCallback& status_callback,
+    VersionUpdater::StatusCallback status_callback,
     updater::UpdateService::UpdateState update_state) {
   VersionUpdater::Status status = VersionUpdater::Status::CHECKING;
   int progress = 0;
@@ -135,19 +135,18 @@ VersionUpdaterMac::VersionUpdaterMac()
 
 VersionUpdaterMac::~VersionUpdaterMac() {}
 
-void VersionUpdaterMac::CheckForUpdate(
-    const StatusCallback& status_callback,
-    const PromoteCallback& promote_callback) {
+void VersionUpdaterMac::CheckForUpdate(StatusCallback status_callback,
+                                       PromoteCallback promote_callback) {
 #if BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
   if (!update_client_)
     update_client_ = BrowserUpdaterClient::Create();
 
-  update_client_->CheckForUpdate(
-      base::BindRepeating(&UpdateStatusFromChromiumUpdater, status_callback));
+  update_client_->CheckForUpdate(base::BindRepeating(
+      &UpdateStatusFromChromiumUpdater, std::move(status_callback)));
   return;
 #else
-  status_callback_ = status_callback;
-  promote_callback_ = promote_callback;
+  status_callback_ = std::move(status_callback);
+  promote_callback_ = std::move(promote_callback);
 
   KeystoneGlue* keystone_glue = [KeystoneGlue defaultKeystoneGlue];
   if (keystone_glue && ![keystone_glue isOnReadOnlyFilesystem]) {

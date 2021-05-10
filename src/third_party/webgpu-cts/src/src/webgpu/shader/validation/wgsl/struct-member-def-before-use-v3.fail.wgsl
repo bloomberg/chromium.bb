@@ -1,5 +1,5 @@
-# v-0006 -  This fails because `fn Foo()` returns `struct goo`, which does not
-# have a member `s.z`.
+// v-0007 -  This fails because `fn Foo()` returns `struct goo`, which does not
+// have a member `s.z`.
 
 struct goo {
   s : vec2<i32>;

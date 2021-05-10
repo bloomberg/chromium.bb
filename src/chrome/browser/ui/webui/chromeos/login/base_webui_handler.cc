@@ -20,6 +20,7 @@ BaseWebUIHandler::~BaseWebUIHandler() = default;
 
 void BaseWebUIHandler::InitializeBase() {
   page_is_ready_ = true;
+  AllowJavascript();
   Initialize();
 }
 
@@ -58,6 +59,10 @@ OobeScreenId BaseWebUIHandler::GetCurrentScreen() const {
   if (!oobe_ui)
     return OobeScreen::SCREEN_UNKNOWN;
   return oobe_ui->current_screen();
+}
+
+void BaseWebUIHandler::OnJavascriptDisallowed() {
+  javascript_disallowed_ = true;
 }
 
 void BaseWebUIHandler::InsertIntoList(std::vector<base::Value>*) {}

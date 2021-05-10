@@ -35,6 +35,7 @@ import * as Root from '../root/root.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
+import * as WebComponents from '../ui/components/components.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -44,6 +45,7 @@ import {DebuggerPlugin} from './DebuggerPlugin.js';
 import {GutterDiffPlugin} from './GutterDiffPlugin.js';
 import {JavaScriptCompilerPlugin} from './JavaScriptCompilerPlugin.js';
 import {Plugin} from './Plugin.js';  // eslint-disable-line no-unused-vars
+import {RecorderPlugin} from './RecorderPlugin.js';
 import {ScriptOriginPlugin} from './ScriptOriginPlugin.js';
 import {SnippetsPlugin} from './SnippetsPlugin.js';
 import {SourcesPanel} from './SourcesPanel.js';
@@ -387,6 +389,9 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     if (SnippetsPlugin.accepts(pluginUISourceCode)) {
       this._plugins.push(new SnippetsPlugin(this.textEditor, pluginUISourceCode));
     }
+    if (Root.Runtime.experiments.isEnabled('recorder') && RecorderPlugin.accepts(pluginUISourceCode)) {
+      this._plugins.push(new RecorderPlugin(this.textEditor, pluginUISourceCode));
+    }
     if (ScriptOriginPlugin.accepts(pluginUISourceCode)) {
       this._plugins.push(new ScriptOriginPlugin(this.textEditor, pluginUISourceCode));
     }
@@ -546,30 +551,13 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   _getErrorPopoverContent(event) {
     const mouseEvent = /** @type {!MouseEvent} */ (event);
     const eventTarget = /** @type {!HTMLElement} */ (mouseEvent.target);
-    const element = eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ||
-        eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-wave');
-    if (!element) {
+
+    const messageBucket = elementToMessageBucket.get(
+        /** @type {!Element} */ (eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration')));
+    if (!messageBucket) {
       return null;
     }
-    const anchor = element.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon') ?
-        element.boxInWindow() :
-        new AnchorBox(mouseEvent.clientX, mouseEvent.clientY, 1, 1);
-    return {
-      box: anchor,
-      hide() {},
-      /**
-       * @param {!UI.GlassPane.GlassPane} popover
-       */
-      show: popover => {
-        const messageBucket = elementToMessageBucket.get(
-            /** @type {!Element} */ (element.enclosingNodeOrSelfWithClass('text-editor-line-decoration')));
-        if (messageBucket) {
-          const messagesOutline = messageBucket.messagesDescription();
-          popover.contentElement.appendChild(messagesOutline);
-        }
-        return Promise.resolve(true);
-      }
-    };
+    return messageBucket.getPopover(eventTarget, mouseEvent);
   }
 
   _updateBucketDecorations() {
@@ -597,16 +585,17 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   /**
    * @param {string} type
    */
-  async _decorateTypeThrottled(type) {
+  _decorateTypeThrottled(type) {
     if (this._typeDecorationsPending.has(type)) {
       return;
     }
     this._typeDecorationsPending.add(type);
-    const extension = /** @type {!Root.Runtime.Extension} */ (
-        Root.Runtime.Runtime.instance()
-            .extensions(SourceFrame.SourceFrame.LineDecorator)
-            .find(extension => extension.descriptor()['decoratorType'] === type));
-    const decorator = /** @type {!SourceFrame.SourceFrame.LineDecorator} */ (await extension.instance());
+    const extension =
+        SourceFrame.SourceFrame.getRegisteredLineDecorators().find(extension => extension.decoratorType === type);
+    const decorator = extension && extension.lineDecorator();
+    if (!decorator) {
+      return;
+    }
     this._typeDecorationsPending.delete(type);
     /** @type {*} */ (this.textEditor.codeMirror()).operation(() => {
       decorator.decorate(
@@ -618,8 +607,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     if (!this.loaded) {
       return;
     }
-    for (const extension of Root.Runtime.Runtime.instance().extensions(SourceFrame.SourceFrame.LineDecorator)) {
-      const type = extension.descriptor()['decoratorType'];
+    for (const extension of SourceFrame.SourceFrame.getRegisteredLineDecorators()) {
+      const type = extension.decoratorType;
       if (type !== null && this._uiSourceCode.decorationsForType(type)) {
         this._decorateTypeThrottled(type);
       }
@@ -659,24 +648,36 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   }
 }
 
-/** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
-const iconClassPerLevel = new Map();
-iconClassPerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'smallicon-error');
-iconClassPerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'smallicon-warning');
+/**
+ *
+ * @param {!Workspace.UISourceCode.Message.Level} level
+ * @return {WebComponents.Icon.IconData}
+ */
+function getIconClassPerLevel(level) {
+  if (level === Workspace.UISourceCode.Message.Level.Error) {
+    return {color: '', width: '11px', height: '11px', iconName: 'error_icon'};
+  }
+  if (level === Workspace.UISourceCode.Message.Level.Warning) {
+    return {color: '', width: '11px', height: '11px', iconName: 'warning_icon'};
+  }
+  if (level === Workspace.UISourceCode.Message.Level.Issue) {
+    return {color: '', width: '11px', height: '11px', iconName: 'breaking_change_icon'};
+  }
+  return {color: '', width: '11px', height: '11px', iconName: 'error_icon'};
+}
 
 /** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
 const bubbleTypePerLevel = new Map();
 bubbleTypePerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'error');
 bubbleTypePerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'warning');
+bubbleTypePerLevel.set(Workspace.UISourceCode.Message.Level.Issue, 'warning');
 
 /** @type {!Map<!Workspace.UISourceCode.Message.Level, string>} */
 const lineClassPerLevel = new Map();
 lineClassPerLevel.set(Workspace.UISourceCode.Message.Level.Error, 'text-editor-line-with-error');
 lineClassPerLevel.set(Workspace.UISourceCode.Message.Level.Warning, 'text-editor-line-with-warning');
+lineClassPerLevel.set(Workspace.UISourceCode.Message.Level.Issue, 'text-editor-line-with-warning');
 
-/**
- * @unrestricted
- */
 export class RowMessage {
   /**
    * @param {!Workspace.UISourceCode.Message} message
@@ -686,9 +687,12 @@ export class RowMessage {
     this._repeatCount = 1;
     this.element = document.createElement('div');
     this.element.classList.add('text-editor-row-message');
-    /** @type {!UI.UIUtils.DevToolsIconLabel} */
-    this._icon = /** @type {?} */ (this.element.createChild('label', '', 'dt-icon-label'));
-    this._icon.type = /** @type {string} */ (iconClassPerLevel.get(message.level()));
+    this._icon = new WebComponents.Icon.Icon();
+    this._icon.data = getIconClassPerLevel(message.level());
+    this._icon.classList.add('text-editor-row-message-icon');
+    this._icon.addEventListener('click', () => this.callClickHandler());
+
+    this.element.append(this._icon);
     /** @type {!UI.UIUtils.DevToolsSmallBubble} */
     this._repeatCountElement =
         /** @type {?} */ (
@@ -707,6 +711,13 @@ export class RowMessage {
    */
   message() {
     return this._message;
+  }
+
+  callClickHandler() {
+    const handler = this._message.clickHandler();
+    if (handler) {
+      handler();
+    }
   }
 
   /**
@@ -752,8 +763,22 @@ export class RowMessageBucket {
     this._decoration.classList.add('text-editor-line-decoration');
     elementToMessageBucket.set(this._decoration, this);
     this._wave = this._decoration.createChild('div', 'text-editor-line-decoration-wave');
-    /** @type {!UI.UIUtils.DevToolsIconLabel} */
-    this._icon = /** @type {?} */ (this._wave.createChild('span', 'text-editor-line-decoration-icon', 'dt-icon-label'));
+
+    this._errorIcon = new WebComponents.Icon.Icon();
+    this._errorIcon.data = getIconClassPerLevel(Workspace.UISourceCode.Message.Level.Warning);
+    this._errorIcon.classList.add('text-editor-line-decoration-icon-error', 'hidden');
+    this._issueIcon = new WebComponents.Icon.Icon();
+    this._issueIcon.data = getIconClassPerLevel(Workspace.UISourceCode.Message.Level.Issue);
+    this._issueIcon.classList.add('text-editor-line-decoration-icon-issue', 'hidden');
+    this._issueIcon.addEventListener('click', () => this._issueClickHandler());
+
+    const iconsElement = this._wave.createChild('span');
+    iconsElement.append(this._errorIcon);
+    iconsElement.append(this._issueIcon);
+    iconsElement.classList.add('text-editor-line-decoration-icon');
+
+    this._wave.append(iconsElement);
+
     /** @type {?number} */
     this._decorationStartColumn = null;
 
@@ -786,16 +811,16 @@ export class RowMessageBucket {
   }
 
   /**
+   * @param {Set<Workspace.UISourceCode.Message.Level>} levels
    * @return {!Element}
    */
-  messagesDescription() {
+  _messageDescription(levels) {
     this._messagesDescriptionElement.removeChildren();
     UI.Utils.appendStyle(
-        this._messagesDescriptionElement, 'source_frame/messagesPopover.css', {enableLegacyPatching: true});
-    for (let i = 0; i < this._messages.length; ++i) {
-      this._messagesDescriptionElement.appendChild(this._messages[i].element);
+        this._messagesDescriptionElement, 'source_frame/messagesPopover.css', {enableLegacyPatching: false});
+    for (const message of this._messages.filter(m => levels.has(m.message().level()))) {
+      this._messagesDescriptionElement.append(message.element);
     }
-
     return this._messagesDescriptionElement;
   }
 
@@ -820,6 +845,13 @@ export class RowMessageBucket {
    */
   uniqueMessagesCount() {
     return this._messages.length;
+  }
+
+  _issueClickHandler() {
+    const firstIssue = this._messages.find(m => m.message().level() === Workspace.UISourceCode.Message.Level.Issue);
+    if (firstIssue) {
+      firstIssue.callClickHandler();
+    }
   }
 
   /**
@@ -872,6 +904,8 @@ export class RowMessageBucket {
     const editorLineNumber = position.lineNumber;
     let columnNumber = Number.MAX_VALUE;
     let maxMessage = null;
+    let showIssues = false;
+    let showErrors = false;
     for (let i = 0; i < this._messages.length; ++i) {
       const message = this._messages[i].message();
       const {columnNumber: editorColumnNumber} =
@@ -880,28 +914,85 @@ export class RowMessageBucket {
       if (!maxMessage || messageLevelComparator(maxMessage, message) < 0) {
         maxMessage = message;
       }
+      showIssues = showIssues || message.level() === Workspace.UISourceCode.Message.Level.Issue;
+      showErrors = showErrors || message.level() !== Workspace.UISourceCode.Message.Level.Issue;
     }
     this._updateWavePosition(editorLineNumber, columnNumber);
 
-    if (!maxMessage || this._level === maxMessage.level()) {
+    if (!maxMessage) {
       return;
     }
     if (this._level) {
       this.textEditor.toggleLineClass(
           editorLineNumber, /** @type {string} */ (lineClassPerLevel.get(this._level)), false);
-      this._icon.type = '';
+      this._errorIcon.classList.add('hidden');
+      this._issueIcon.classList.add('hidden');
     }
     this._level = maxMessage.level();
     if (!this._level) {
       return;
     }
     this.textEditor.toggleLineClass(editorLineNumber, /** @type {string} */ (lineClassPerLevel.get(this._level)), true);
-    this._icon.type = /** @type {string} */ (iconClassPerLevel.get(this._level));
+    if (showErrors) {
+      this._errorIcon.data = getIconClassPerLevel(this._level);
+      this._errorIcon.classList.remove('hidden');
+    }
+    if (showIssues) {
+      this._issueIcon.classList.remove('hidden');
+    }
+  }
+
+  /**
+   * @param {!HTMLElement} eventTarget
+   * @return {?Element}
+  */
+  _getPopoverMessages(eventTarget) {
+    /** @type {?Element} */
+    let messagesOutline = null;
+    if (eventTarget.classList.contains('text-editor-line-decoration-icon-error')) {
+      messagesOutline = this._messageDescription(
+          new Set([Workspace.UISourceCode.Message.Level.Error, Workspace.UISourceCode.Message.Level.Warning]));
+    } else if (eventTarget.classList.contains('text-editor-line-decoration-icon-issue')) {
+      messagesOutline = this._messageDescription(new Set([Workspace.UISourceCode.Message.Level.Issue]));
+    } else if (
+        eventTarget.classList.contains('text-editor-line-decoration-wave') &&
+        !eventTarget.classList.contains('text-editor-line-decoration-icon')) {
+      messagesOutline = this._messageDescription(
+          new Set([Workspace.UISourceCode.Message.Level.Error, Workspace.UISourceCode.Message.Level.Warning]));
+    }
+    return messagesOutline;
+  }
+  /**
+   * @param {!HTMLElement} eventTarget
+   * @param {!MouseEvent} mouseEvent
+   * @return {?UI.PopoverHelper.PopoverRequest}
+  */
+  getPopover(eventTarget, mouseEvent) {
+    const anchorElement = eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon-error') ||
+        eventTarget.enclosingNodeOrSelfWithClass('text-editor-line-decoration-icon-issue');
+    const anchor =
+        anchorElement ? anchorElement.boxInWindow() : new AnchorBox(mouseEvent.clientX, mouseEvent.clientY, 1, 1);
+    const messagesOutline = this._getPopoverMessages(eventTarget);
+    if (!messagesOutline) {
+      return null;
+    }
+    return {
+      box: anchor,
+      hide() {},
+      /**
+     * @param {!UI.GlassPane.GlassPane} popover
+     */
+      show: popover => {
+        popover.contentElement.append(messagesOutline);
+        return Promise.resolve(true);
+      }
+    };
   }
 }
 
 /** @type {!Object<string, number>} */
 const MessageLevelPriority = {
+  'Issue': 2,
   'Warning': 3,
   'Error': 4,
 };

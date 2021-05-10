@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -53,7 +54,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/known_user.h"
@@ -113,9 +113,6 @@ constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 // Horizontal and vertical padding of auth error bubble.
 constexpr int kHorizontalPaddingAuthErrorBubbleDp = 8;
 constexpr int kVerticalPaddingAuthErrorBubbleDp = 8;
-
-// The font color of the bottom status indicator for ADB warning.
-constexpr SkColor kBottomStatusAdbFontColor = gfx::kGoogleRed300;
 
 // Spacing between the bottom status indicator and the shelf.
 constexpr int kBottomStatusIndicatorBottomMarginDp = 16;
@@ -398,7 +395,7 @@ class LockContentsView::AutoLoginUserActivityHandler
     : public ui::UserActivityObserver {
  public:
   AutoLoginUserActivityHandler() {
-    observer_.Add(ui::UserActivityDetector::Get());
+    observation_.Observe(ui::UserActivityDetector::Get());
   }
 
   ~AutoLoginUserActivityHandler() override = default;
@@ -410,8 +407,8 @@ class LockContentsView::AutoLoginUserActivityHandler
   }
 
  private:
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver> observer_{
-      this};
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginUserActivityHandler);
 };
@@ -473,11 +470,6 @@ LoginErrorBubble* LockContentsView::TestApi::detachable_base_error_bubble()
 
 LoginErrorBubble* LockContentsView::TestApi::warning_banner_bubble() const {
   return view_->warning_banner_bubble_;
-}
-
-LoginErrorBubble*
-LockContentsView::TestApi::supervised_user_deprecation_bubble() const {
-  return view_->supervised_user_deprecation_bubble_;
 }
 
 views::View* LockContentsView::TestApi::user_adding_screen_indicator() const {
@@ -584,7 +576,7 @@ LockContentsView::LockContentsView(
         std::make_unique<AutoLoginUserActivityHandler>();
 
   data_dispatcher_->AddObserver(this);
-  display_observer_.Add(display::Screen::GetScreen());
+  display_observation_.Observe(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
@@ -642,10 +634,6 @@ LockContentsView::LockContentsView(
           base::BindRepeating(&LockContentsView::SetDisplayStyle,
                               base::Unretained(this), DisplayStyle::kAll)));
   expanded_view_->SetVisible(false);
-
-  supervised_user_deprecation_bubble_ =
-      AddChildView(std::make_unique<LoginErrorBubble>());
-  supervised_user_deprecation_bubble_->set_persistent(true);
 
   detachable_base_error_bubble_ =
       AddChildView(std::make_unique<LoginErrorBubble>());
@@ -797,7 +785,9 @@ void LockContentsView::ShowAdbEnabled() {
       AshColorProvider::ContentLayerType::kIconColorAlert);
   bottom_status_indicator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING));
-  bottom_status_indicator_->SetEnabledTextColors(kBottomStatusAdbFontColor);
+  bottom_status_indicator_->SetEnabledTextColors(
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorAlert));
   bottom_status_indicator_->set_role_for_accessibility(
       ax::mojom::Role::kStaticText);
   bottom_status_indicator_status_ =
@@ -1993,20 +1983,6 @@ void LockContentsView::OnBigUserChanged() {
 
   Shell::Get()->login_screen_controller()->OnFocusPod(big_user_account_id);
   UpdateEasyUnlockIconForUser(big_user_account_id);
-
-  // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (big_user.basic_user_info.type == user_manager::USER_TYPE_SUPERVISED) {
-    base::string16 message = l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);
-    // Shows supervised user deprecation message as a persistent error bubble.
-
-    supervised_user_deprecation_bubble_->SetTextContent(message);
-    supervised_user_deprecation_bubble_->SetAnchorView(
-        CurrentBigUserView()->auth_user()->GetActiveInputView());
-    supervised_user_deprecation_bubble_->Show();
-  } else if (supervised_user_deprecation_bubble_->GetVisible()) {
-    supervised_user_deprecation_bubble_->Hide();
-  }
 
   // The new auth user might have different last used detachable base - make
   // sure the detachable base pairing error is updated if needed.

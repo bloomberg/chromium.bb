@@ -53,9 +53,12 @@ namespace dawn_native { namespace metal {
             }
         }
 
-        // Creates an autoreleased MTLRenderPassDescriptor matching desc
-        MTLRenderPassDescriptor* CreateMTLRenderPassDescriptor(BeginRenderPassCmd* renderPass) {
-            MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+        NSRef<MTLRenderPassDescriptor> CreateMTLRenderPassDescriptor(
+            BeginRenderPassCmd* renderPass) {
+            // Note that this creates a descriptor that's autoreleased so we don't use AcquireNSRef
+            NSRef<MTLRenderPassDescriptor> descriptorRef =
+                [MTLRenderPassDescriptor renderPassDescriptor];
+            MTLRenderPassDescriptor* descriptor = descriptorRef.Get();
 
             for (ColorAttachmentIndex attachment :
                  IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
@@ -80,28 +83,34 @@ namespace dawn_native { namespace metal {
                 descriptor.colorAttachments[i].level = attachmentInfo.view->GetBaseMipLevel();
                 descriptor.colorAttachments[i].slice = attachmentInfo.view->GetBaseArrayLayer();
 
-                bool hasResolveTarget = attachmentInfo.resolveTarget.Get() != nullptr;
+                bool hasResolveTarget = attachmentInfo.resolveTarget != nullptr;
+                if (hasResolveTarget) {
+                    descriptor.colorAttachments[i].resolveTexture =
+                        ToBackend(attachmentInfo.resolveTarget->GetTexture())->GetMTLTexture();
+                    descriptor.colorAttachments[i].resolveLevel =
+                        attachmentInfo.resolveTarget->GetBaseMipLevel();
+                    descriptor.colorAttachments[i].resolveSlice =
+                        attachmentInfo.resolveTarget->GetBaseArrayLayer();
 
-                switch (attachmentInfo.storeOp) {
-                    case wgpu::StoreOp::Store:
-                        if (hasResolveTarget) {
-                            descriptor.colorAttachments[i].resolveTexture =
-                                ToBackend(attachmentInfo.resolveTarget->GetTexture())
-                                    ->GetMTLTexture();
-                            descriptor.colorAttachments[i].resolveLevel =
-                                attachmentInfo.resolveTarget->GetBaseMipLevel();
-                            descriptor.colorAttachments[i].resolveSlice =
-                                attachmentInfo.resolveTarget->GetBaseArrayLayer();
+                    switch (attachmentInfo.storeOp) {
+                        case wgpu::StoreOp::Store:
                             descriptor.colorAttachments[i].storeAction =
                                 kMTLStoreActionStoreAndMultisampleResolve;
-                        } else {
+                            break;
+                        case wgpu::StoreOp::Clear:
+                            descriptor.colorAttachments[i].storeAction =
+                                MTLStoreActionMultisampleResolve;
+                            break;
+                    }
+                } else {
+                    switch (attachmentInfo.storeOp) {
+                        case wgpu::StoreOp::Store:
                             descriptor.colorAttachments[i].storeAction = MTLStoreActionStore;
-                        }
-                        break;
-
-                    case wgpu::StoreOp::Clear:
-                        descriptor.colorAttachments[i].storeAction = MTLStoreActionDontCare;
-                        break;
+                            break;
+                        case wgpu::StoreOp::Clear:
+                            descriptor.colorAttachments[i].storeAction = MTLStoreActionDontCare;
+                            break;
+                    }
                 }
             }
 
@@ -167,7 +176,12 @@ namespace dawn_native { namespace metal {
                 }
             }
 
-            return descriptor;
+            if (renderPass->occlusionQuerySet.Get() != nullptr) {
+                descriptor.visibilityResultBuffer =
+                    ToBackend(renderPass->occlusionQuerySet.Get())->GetVisibilityBuffer();
+            }
+
+            return descriptorRef;
         }
 
         // Helper function for Toggle EmulateStoreAndMSAAResolve
@@ -175,10 +189,13 @@ namespace dawn_native { namespace metal {
             CommandRecordingContext* commandContext,
             const MTLRenderPassDescriptor* mtlRenderPass,
             const std::array<id<MTLTexture>, kMaxColorAttachments>& resolveTextures) {
-            MTLRenderPassDescriptor* mtlRenderPassForResolve =
+            // Note that this creates a descriptor that's autoreleased so we don't use AcquireNSRef
+            NSRef<MTLRenderPassDescriptor> mtlRenderPassForResolveRef =
                 [MTLRenderPassDescriptor renderPassDescriptor];
+            MTLRenderPassDescriptor* mtlRenderPassForResolve = mtlRenderPassForResolveRef.Get();
+
             for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
-                if (resolveTextures[i] == nil) {
+                if (resolveTextures[i] == nullptr) {
                     continue;
                 }
 
@@ -199,11 +216,13 @@ namespace dawn_native { namespace metal {
         }
 
         // Helper functions for Toggle AlwaysResolveIntoZeroLevelAndLayer
-        id<MTLTexture> CreateResolveTextureForWorkaround(Device* device,
-                                                         MTLPixelFormat mtlFormat,
-                                                         uint32_t width,
-                                                         uint32_t height) {
-            MTLTextureDescriptor* mtlDesc = [MTLTextureDescriptor new];
+        NSPRef<id<MTLTexture>> CreateResolveTextureForWorkaround(Device* device,
+                                                                 MTLPixelFormat mtlFormat,
+                                                                 uint32_t width,
+                                                                 uint32_t height) {
+            NSRef<MTLTextureDescriptor> mtlDescRef = AcquireNSRef([MTLTextureDescriptor new]);
+            MTLTextureDescriptor* mtlDesc = mtlDescRef.Get();
+
             mtlDesc.textureType = MTLTextureType2D;
             mtlDesc.usage = MTLTextureUsageRenderTarget;
             mtlDesc.pixelFormat = mtlFormat;
@@ -214,10 +233,8 @@ namespace dawn_native { namespace metal {
             mtlDesc.arrayLength = 1;
             mtlDesc.storageMode = MTLStorageModePrivate;
             mtlDesc.sampleCount = 1;
-            id<MTLTexture> resolveTexture =
-                [device->GetMTLDevice() newTextureWithDescriptor:mtlDesc];
-            [mtlDesc release];
-            return resolveTexture;
+
+            return AcquireNSPRef([device->GetMTLDevice() newTextureWithDescriptor:mtlDesc]);
         }
 
         void CopyIntoTrueResolveTarget(CommandRecordingContext* commandContext,
@@ -350,11 +367,11 @@ namespace dawn_native { namespace metal {
                         group->GetLayout()->GetBindingInfo(bindingIndex);
 
                     bool hasVertStage =
-                        bindingInfo.visibility & wgpu::ShaderStage::Vertex && render != nil;
+                        bindingInfo.visibility & wgpu::ShaderStage::Vertex && render != nullptr;
                     bool hasFragStage =
-                        bindingInfo.visibility & wgpu::ShaderStage::Fragment && render != nil;
+                        bindingInfo.visibility & wgpu::ShaderStage::Fragment && render != nullptr;
                     bool hasComputeStage =
-                        bindingInfo.visibility & wgpu::ShaderStage::Compute && compute != nil;
+                        bindingInfo.visibility & wgpu::ShaderStage::Compute && compute != nullptr;
 
                     uint32_t vertIndex = 0;
                     uint32_t fragIndex = 0;
@@ -373,10 +390,8 @@ namespace dawn_native { namespace metal {
                             SingleShaderStage::Compute)[index][bindingIndex];
                     }
 
-                    switch (bindingInfo.type) {
-                        case wgpu::BindingType::UniformBuffer:
-                        case wgpu::BindingType::StorageBuffer:
-                        case wgpu::BindingType::ReadonlyStorageBuffer: {
+                    switch (bindingInfo.bindingType) {
+                        case BindingInfoType::Buffer: {
                             const BufferBinding& binding =
                                 group->GetBindingAsBufferBinding(bindingIndex);
                             const id<MTLBuffer> buffer = ToBackend(binding.buffer)->GetMTLBuffer();
@@ -384,7 +399,7 @@ namespace dawn_native { namespace metal {
 
                             // TODO(shaobo.yan@intel.com): Record bound buffer status to use
                             // setBufferOffset to achieve better performance.
-                            if (bindingInfo.hasDynamicOffset) {
+                            if (bindingInfo.buffer.hasDynamicOffset) {
                                 offset += dynamicOffsets[currentDynamicBufferIndex];
                                 currentDynamicBufferIndex++;
                             }
@@ -417,8 +432,7 @@ namespace dawn_native { namespace metal {
                             break;
                         }
 
-                        case wgpu::BindingType::Sampler:
-                        case wgpu::BindingType::ComparisonSampler: {
+                        case BindingInfoType::Sampler: {
                             auto sampler = ToBackend(group->GetBindingAsSampler(bindingIndex));
                             if (hasVertStage) {
                                 [render setVertexSamplerState:sampler->GetMTLSamplerState()
@@ -435,10 +449,8 @@ namespace dawn_native { namespace metal {
                             break;
                         }
 
-                        case wgpu::BindingType::SampledTexture:
-                        case wgpu::BindingType::MultisampledTexture:
-                        case wgpu::BindingType::ReadonlyStorageTexture:
-                        case wgpu::BindingType::WriteonlyStorageTexture: {
+                        case BindingInfoType::Texture:
+                        case BindingInfoType::StorageTexture: {
                             auto textureView =
                                 ToBackend(group->GetBindingAsTextureView(bindingIndex));
                             if (hasVertStage) {
@@ -461,12 +473,12 @@ namespace dawn_native { namespace metal {
 
             template <typename... Args>
             void ApplyBindGroup(id<MTLRenderCommandEncoder> encoder, Args&&... args) {
-                ApplyBindGroupImpl(encoder, nil, std::forward<Args&&>(args)...);
+                ApplyBindGroupImpl(encoder, nullptr, std::forward<Args&&>(args)...);
             }
 
             template <typename... Args>
             void ApplyBindGroup(id<MTLComputeCommandEncoder> encoder, Args&&... args) {
-                ApplyBindGroupImpl(nil, encoder, std::forward<Args&&>(args)...);
+                ApplyBindGroupImpl(nullptr, encoder, std::forward<Args&&>(args)...);
             }
 
             StorageBufferLengthTracker* mLengthTracker;
@@ -544,12 +556,16 @@ namespace dawn_native { namespace metal {
                                    CommandRecordingContext* commandContext) {
             for (size_t i = 0; i < usages.textures.size(); ++i) {
                 Texture* texture = ToBackend(usages.textures[i]);
-                // Clear textures that are not output attachments. Output attachments will be
-                // cleared in CreateMTLRenderPassDescriptor by setting the loadop to clear when the
-                // texture subresource has not been initialized before the render pass.
-                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::RenderAttachment)) {
-                    texture->EnsureSubresourceContentInitialized(texture->GetAllSubresources());
-                }
+
+                // Clear subresources that are not render attachments. Render attachments will be
+                // cleared in RecordBeginRenderPass by setting the loadop to clear when the texture
+                // subresource has not been initialized before the render pass.
+                usages.textureUsages[i].Iterate(
+                    [&](const SubresourceRange& range, wgpu::TextureUsage usage) {
+                        if (usage & ~wgpu::TextureUsage::RenderAttachment) {
+                            texture->EnsureSubresourceContentInitialized(range);
+                        }
+                    });
             }
             for (BufferBase* bufferBase : usages.buffers) {
                 ToBackend(bufferBase)->EnsureDataInitialized(commandContext);
@@ -578,8 +594,9 @@ namespace dawn_native { namespace metal {
                     commandContext->EndBlit();
 
                     LazyClearRenderPassAttachments(cmd);
-                    MTLRenderPassDescriptor* descriptor = CreateMTLRenderPassDescriptor(cmd);
-                    DAWN_TRY(EncodeRenderPass(commandContext, descriptor, cmd->width, cmd->height));
+                    NSRef<MTLRenderPassDescriptor> descriptor = CreateMTLRenderPassDescriptor(cmd);
+                    DAWN_TRY(EncodeRenderPass(commandContext, descriptor.Get(), cmd->width,
+                                              cmd->height));
 
                     nextPassNumber++;
                     break;
@@ -744,15 +761,24 @@ namespace dawn_native { namespace metal {
                     destination->EnsureDataInitializedAsDestination(
                         commandContext, cmd->destinationOffset, cmd->queryCount * sizeof(uint64_t));
 
-                    if (@available(macos 10.15, iOS 14.0, *)) {
+                    if (querySet->GetQueryType() == wgpu::QueryType::Occlusion) {
                         [commandContext->EnsureBlit()
-                              resolveCounters:querySet->GetCounterSampleBuffer()
-                                      inRange:NSMakeRange(cmd->firstQuery,
-                                                          cmd->firstQuery + cmd->queryCount)
-                            destinationBuffer:destination->GetMTLBuffer()
-                            destinationOffset:NSUInteger(cmd->destinationOffset)];
+                               copyFromBuffer:querySet->GetVisibilityBuffer()
+                                 sourceOffset:NSUInteger(cmd->firstQuery * sizeof(uint64_t))
+                                     toBuffer:destination->GetMTLBuffer()
+                            destinationOffset:NSUInteger(cmd->destinationOffset)
+                                         size:NSUInteger(cmd->queryCount * sizeof(uint64_t))];
                     } else {
-                        UNREACHABLE();
+                        if (@available(macos 10.15, iOS 14.0, *)) {
+                            [commandContext->EnsureBlit()
+                                  resolveCounters:querySet->GetCounterSampleBuffer()
+                                          inRange:NSMakeRange(cmd->firstQuery,
+                                                              cmd->firstQuery + cmd->queryCount)
+                                destinationBuffer:destination->GetMTLBuffer()
+                                destinationOffset:NSUInteger(cmd->destinationOffset)];
+                        } else {
+                            UNREACHABLE();
+                        }
                     }
                     break;
                 }
@@ -792,9 +818,9 @@ namespace dawn_native { namespace metal {
                     char* label = mCommands.NextData<char>(cmd->length + 1);
 
                     if (@available(macos 10.13, *)) {
-                        NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
-                        [commandContext->GetCommands() pushDebugGroup:mtlLabel];
-                        [mtlLabel release];
+                        NSRef<NSString> mtlLabel =
+                            AcquireNSRef([[NSString alloc] initWithUTF8String:label]);
+                        [commandContext->GetCommands() pushDebugGroup:mtlLabel.Get()];
                     }
 
                     break;
@@ -876,10 +902,9 @@ namespace dawn_native { namespace metal {
                 case Command::InsertDebugMarker: {
                     InsertDebugMarkerCmd* cmd = mCommands.NextCommand<InsertDebugMarkerCmd>();
                     char* label = mCommands.NextData<char>(cmd->length + 1);
-                    NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
-
-                    [encoder insertDebugSignpost:mtlLabel];
-                    [mtlLabel release];
+                    NSRef<NSString> mtlLabel =
+                        AcquireNSRef([[NSString alloc] initWithUTF8String:label]);
+                    [encoder insertDebugSignpost:mtlLabel.Get()];
                     break;
                 }
 
@@ -893,10 +918,9 @@ namespace dawn_native { namespace metal {
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = mCommands.NextCommand<PushDebugGroupCmd>();
                     char* label = mCommands.NextData<char>(cmd->length + 1);
-                    NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
-
-                    [encoder pushDebugGroup:mtlLabel];
-                    [mtlLabel release];
+                    NSRef<NSString> mtlLabel =
+                        AcquireNSRef([[NSString alloc] initWithUTF8String:label]);
+                    [encoder pushDebugGroup:mtlLabel.Get()];
                     break;
                 }
 
@@ -944,9 +968,9 @@ namespace dawn_native { namespace metal {
             // Use temporary resolve texture on the resolve targets with non-zero resolveLevel or
             // resolveSlice.
             bool useTemporaryResolveTexture = false;
-            std::array<id<MTLTexture>, kMaxColorAttachments> temporaryResolveTextures = {};
+            std::array<NSPRef<id<MTLTexture>>, kMaxColorAttachments> temporaryResolveTextures = {};
             for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
-                if (mtlRenderPass.colorAttachments[i].resolveTexture == nil) {
+                if (mtlRenderPass.colorAttachments[i].resolveTexture == nullptr) {
                     continue;
                 }
 
@@ -963,7 +987,8 @@ namespace dawn_native { namespace metal {
                 temporaryResolveTextures[i] =
                     CreateResolveTextureForWorkaround(device, mtlFormat, width, height);
 
-                mtlRenderPass.colorAttachments[i].resolveTexture = temporaryResolveTextures[i];
+                mtlRenderPass.colorAttachments[i].resolveTexture =
+                    temporaryResolveTextures[i].Get();
                 mtlRenderPass.colorAttachments[i].resolveLevel = 0;
                 mtlRenderPass.colorAttachments[i].resolveSlice = 0;
                 useTemporaryResolveTexture = true;
@@ -974,16 +999,14 @@ namespace dawn_native { namespace metal {
             if (useTemporaryResolveTexture) {
                 DAWN_TRY(EncodeRenderPass(commandContext, mtlRenderPass, width, height));
                 for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
-                    if (trueResolveTextures[i] == nil) {
+                    if (trueResolveTextures[i] == nullptr) {
                         continue;
                     }
 
-                    ASSERT(temporaryResolveTextures[i] != nil);
+                    ASSERT(temporaryResolveTextures[i] != nullptr);
                     CopyIntoTrueResolveTarget(commandContext, trueResolveTextures[i],
                                               trueResolveLevels[i], trueResolveSlices[i],
-                                              temporaryResolveTextures[i], width, height);
-                    [temporaryResolveTextures[i] release];
-                    temporaryResolveTextures[i] = nil;
+                                              temporaryResolveTextures[i].Get(), width, height);
                 }
                 return {};
             }
@@ -1002,7 +1025,7 @@ namespace dawn_native { namespace metal {
                     resolveTextures[i] = mtlRenderPass.colorAttachments[i].resolveTexture;
 
                     mtlRenderPass.colorAttachments[i].storeAction = MTLStoreActionStore;
-                    mtlRenderPass.colorAttachments[i].resolveTexture = nil;
+                    mtlRenderPass.colorAttachments[i].resolveTexture = nullptr;
                 }
             }
 
@@ -1024,9 +1047,11 @@ namespace dawn_native { namespace metal {
                                                        uint32_t height) {
         bool enableVertexPulling = GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling);
         RenderPipeline* lastPipeline = nullptr;
-        id<MTLBuffer> indexBuffer = nil;
+        id<MTLBuffer> indexBuffer = nullptr;
         uint32_t indexBufferBaseOffset = 0;
-        wgpu::IndexFormat indexBufferFormat = wgpu::IndexFormat::Undefined;
+        MTLIndexType indexBufferType;
+        uint64_t indexFormatSize = 0;
+
         StorageBufferLengthTracker storageBufferLengths = {};
         VertexBufferTracker vertexBuffers(&storageBufferLengths);
         BindGroupTracker bindGroups(&storageBufferLengths);
@@ -1068,15 +1093,6 @@ namespace dawn_native { namespace metal {
                     bindGroups.Apply(encoder);
                     storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
 
-                    // If a index format was specified in setIndexBuffer always use it.
-                    wgpu::IndexFormat indexFormat = indexBufferFormat;
-                    if (indexFormat == wgpu::IndexFormat::Undefined) {
-                        // Otherwise use the pipeline's index format.
-                        // TODO(crbug.com/dawn/502): This path is deprecated.
-                        indexFormat = lastPipeline->GetVertexStateDescriptor()->indexFormat;
-                    }
-                    size_t formatSize = IndexFormatSize(indexFormat);
-
                     // The index and instance count must be non-zero, otherwise no-op
                     if (draw->indexCount != 0 && draw->instanceCount != 0) {
                         // MTLFeatureSet_iOS_GPUFamily3_v1 does not support baseInstance and
@@ -1084,18 +1100,18 @@ namespace dawn_native { namespace metal {
                         if (draw->baseVertex == 0 && draw->firstInstance == 0) {
                             [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
                                                 indexCount:draw->indexCount
-                                                 indexType:MTLIndexFormat(indexFormat)
+                                                 indexType:indexBufferType
                                                indexBuffer:indexBuffer
                                          indexBufferOffset:indexBufferBaseOffset +
-                                                           draw->firstIndex * formatSize
+                                                           draw->firstIndex * indexFormatSize
                                              instanceCount:draw->instanceCount];
                         } else {
                             [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
                                                 indexCount:draw->indexCount
-                                                 indexType:MTLIndexFormat(indexFormat)
+                                                 indexType:indexBufferType
                                                indexBuffer:indexBuffer
                                          indexBufferOffset:indexBufferBaseOffset +
-                                                           draw->firstIndex * formatSize
+                                                           draw->firstIndex * indexFormatSize
                                              instanceCount:draw->instanceCount
                                                 baseVertex:draw->baseVertex
                                               baseInstance:draw->firstInstance];
@@ -1126,18 +1142,10 @@ namespace dawn_native { namespace metal {
                     bindGroups.Apply(encoder);
                     storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
 
-                    // If a index format was specified in setIndexBuffer always use it.
-                    wgpu::IndexFormat indexFormat = indexBufferFormat;
-                    if (indexFormat == wgpu::IndexFormat::Undefined) {
-                        // Otherwise use the pipeline's index format.
-                        // TODO(crbug.com/dawn/502): This path is deprecated.
-                        indexFormat = lastPipeline->GetVertexStateDescriptor()->indexFormat;
-                    }
-
                     Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
                     id<MTLBuffer> indirectBuffer = buffer->GetMTLBuffer();
                     [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
-                                         indexType:MTLIndexFormat(indexFormat)
+                                         indexType:indexBufferType
                                        indexBuffer:indexBuffer
                                  indexBufferOffset:indexBufferBaseOffset
                                     indirectBuffer:indirectBuffer
@@ -1148,10 +1156,9 @@ namespace dawn_native { namespace metal {
                 case Command::InsertDebugMarker: {
                     InsertDebugMarkerCmd* cmd = iter->NextCommand<InsertDebugMarkerCmd>();
                     char* label = iter->NextData<char>(cmd->length + 1);
-                    NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
-
-                    [encoder insertDebugSignpost:mtlLabel];
-                    [mtlLabel release];
+                    NSRef<NSString> mtlLabel =
+                        AcquireNSRef([[NSString alloc] initWithUTF8String:label]);
+                    [encoder insertDebugSignpost:mtlLabel.Get()];
                     break;
                 }
 
@@ -1165,10 +1172,9 @@ namespace dawn_native { namespace metal {
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = iter->NextCommand<PushDebugGroupCmd>();
                     char* label = iter->NextData<char>(cmd->length + 1);
-                    NSString* mtlLabel = [[NSString alloc] initWithUTF8String:label];
-
-                    [encoder pushDebugGroup:mtlLabel];
-                    [mtlLabel release];
+                    NSRef<NSString> mtlLabel =
+                        AcquireNSRef([[NSString alloc] initWithUTF8String:label]);
+                    [encoder pushDebugGroup:mtlLabel.Get()];
                     break;
                 }
 
@@ -1208,9 +1214,8 @@ namespace dawn_native { namespace metal {
                     auto b = ToBackend(cmd->buffer.Get());
                     indexBuffer = b->GetMTLBuffer();
                     indexBufferBaseOffset = cmd->offset;
-                    // TODO(crbug.com/dawn/502): Once setIndexBuffer is required to specify an
-                    // index buffer format store as an MTLIndexType.
-                    indexBufferFormat = cmd->format;
+                    indexBufferType = MTLIndexFormat(cmd->format);
+                    indexFormatSize = IndexFormatSize(cmd->format);
                     break;
                 }
 
@@ -1289,6 +1294,22 @@ namespace dawn_native { namespace metal {
                             EncodeRenderBundleCommand(iter, type);
                         }
                     }
+                    break;
+                }
+
+                case Command::BeginOcclusionQuery: {
+                    BeginOcclusionQueryCmd* cmd = mCommands.NextCommand<BeginOcclusionQueryCmd>();
+
+                    [encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean
+                                              offset:cmd->queryIndex * sizeof(uint64_t)];
+                    break;
+                }
+
+                case Command::EndOcclusionQuery: {
+                    EndOcclusionQueryCmd* cmd = mCommands.NextCommand<EndOcclusionQueryCmd>();
+
+                    [encoder setVisibilityResultMode:MTLVisibilityResultModeDisabled
+                                              offset:cmd->queryIndex * sizeof(uint64_t)];
                     break;
                 }
 

@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @unrestricted
- */
+import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
+
 export class ParsedURL {
   /**
    * @param {string} url
@@ -287,8 +287,7 @@ export class ParsedURL {
     if (hrefPath.charAt(0) !== '/') {
       hrefPath = parsedURL.folderPathComponents + '/' + hrefPath;
     }
-    // @ts-ignore Runtime needs to be properly exported
-    return securityOrigin + Root.Runtime.normalizePath(hrefPath) + hrefSuffix;
+    return securityOrigin + Root.Runtime.Runtime.normalizePath(hrefPath) + hrefSuffix;
   }
 
   /**
@@ -309,7 +308,7 @@ export class ParsedURL {
     const lineColumnMatch = lineColumnRegEx.exec(pathAndAfter);
     let lineNumber;
     let columnNumber;
-    console.assert(!!lineColumnMatch);
+    console.assert(Boolean(lineColumnMatch));
     if (!lineColumnMatch) {
       return { url: string, lineNumber: 0, columnNumber: 0 };
     }
@@ -387,7 +386,7 @@ export class ParsedURL {
     if (!this.isDataURL()) {
       return '';
     }
-    this._dataURLDisplayName = this.url.trimEndWithMaxLength(20);
+    this._dataURLDisplayName = Platform.StringUtilities.trimEndWithMaxLength(this.url, 20);
     return this._dataURLDisplayName;
   }
 

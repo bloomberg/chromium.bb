@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom/aomcx.h"
+
 #include "aom_ports/system_state.h"
 
 #include "av1/encoder/bitstream.h"
@@ -595,6 +597,13 @@ void av1_update_film_grain_parameters(struct AV1_COMP *cpi,
 
     aom_film_grain_table_read(cpi->film_grain_table,
                               tune_cfg->film_grain_table_filename, &cm->error);
+  } else if (tune_cfg->content == AOM_CONTENT_FILM) {
+    cm->seq_params.film_grain_params_present = 1;
+    cm->film_grain_params.bit_depth = cm->seq_params.bit_depth;
+    if (oxcf->tool_cfg.enable_monochrome)
+      reset_film_grain_chroma_params(&cm->film_grain_params);
+    if (cm->seq_params.color_range == AOM_CR_FULL_RANGE)
+      cm->film_grain_params.clip_to_restricted_range = 0;
   } else {
 #if CONFIG_DENOISE
     cm->seq_params.film_grain_params_present = (cpi->oxcf.noise_level > 0);
@@ -948,7 +957,7 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
                       q_for_screen_content_quick_run,
                       q_cfg->enable_chroma_deltaq);
     av1_set_speed_features_qindex_dependent(cpi, oxcf->speed);
-    if (q_cfg->deltaq_mode != NO_DELTA_Q)
+    if (q_cfg->deltaq_mode != NO_DELTA_Q || q_cfg->enable_chroma_deltaq)
       av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
                          cm->seq_params.bit_depth);
 
@@ -966,28 +975,6 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   // Set partition speed feature back.
   cpi->sf.part_sf.partition_search_type = partition_search_type_orig;
   cpi->sf.part_sf.fixed_partition_size = fixed_partition_block_size_orig;
-}
-
-#define GM_RECODE_LOOP_NUM4X4_FACTOR 192
-int av1_recode_loop_test_global_motion(WarpedMotionParams *const global_motion,
-                                       const int *const global_motion_used,
-                                       int *const gm_params_cost) {
-  int i;
-  int recode = 0;
-  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    if (global_motion[i].wmtype != IDENTITY &&
-        global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
-            gm_params_cost[i]) {
-      global_motion[i] = default_warp_params;
-      assert(global_motion[i].wmtype == IDENTITY);
-      gm_params_cost[i] = 0;
-      recode = 1;
-      // TODO(sarahparker): The earlier condition for recoding here was:
-      // "recode |= (rdc->global_motion_used[i] > 0);". Can we bring something
-      // similar to that back to speed up global motion?
-    }
-  }
-  return recode;
 }
 #endif  // CONFIG_REALTIME_ONLY
 
@@ -1235,24 +1222,6 @@ void av1_set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   }
 }
 
-static void save_cur_buf(AV1_COMP *cpi) {
-  CODING_CONTEXT *const cc = &cpi->coding_context;
-  AV1_COMMON *cm = &cpi->common;
-  const YV12_BUFFER_CONFIG *ybf = &cm->cur_frame->buf;
-  memset(&cc->copy_buffer, 0, sizeof(cc->copy_buffer));
-  if (ybf->y_crop_width == 0 && ybf->y_crop_height == 0) return;
-  if (aom_alloc_frame_buffer(&cc->copy_buffer, ybf->y_crop_width,
-                             ybf->y_crop_height, ybf->subsampling_x,
-                             ybf->subsampling_y,
-                             ybf->flags & YV12_FLAG_HIGHBITDEPTH, ybf->border,
-                             cm->features.byte_alignment) != AOM_CODEC_OK) {
-    aom_internal_error(
-        &cm->error, AOM_CODEC_MEM_ERROR,
-        "Failed to allocate copy buffer for saving coding context");
-  }
-  aom_yv12_copy_frame(ybf, &cc->copy_buffer, av1_num_planes(cm));
-}
-
 // Coding context that only needs to be saved when recode loop includes
 // filtering (deblocking, CDEF, superres post-encode upscale and/or loop
 // restoraton).
@@ -1267,7 +1236,6 @@ static void save_extra_coding_context(AV1_COMP *cpi) {
 }
 
 void av1_save_all_coding_context(AV1_COMP *cpi) {
-  save_cur_buf(cpi);
   save_extra_coding_context(cpi);
   if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
 }

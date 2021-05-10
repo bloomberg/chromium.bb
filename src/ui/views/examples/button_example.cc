@@ -23,6 +23,7 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 
 using base::ASCIIToUTF16;
 
@@ -127,12 +128,13 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
       label_button->IsAccessibilityFocusable()
           ? label_button->SetFocusBehavior(View::FocusBehavior::NEVER)
           : label_button->SetFocusBehavior(
-                PlatformStyle::DefaultFocusBehavior());
+                PlatformStyle::kDefaultFocusBehavior);
     }
   } else if (event.IsAltDown()) {
     label_button->SetIsDefault(!label_button->GetIsDefault());
   }
   example_view()->GetLayoutManager()->Layout(example_view());
+  PrintViewHierarchy(example_view());
 }
 
 void ButtonExample::ImageButtonPressed() {

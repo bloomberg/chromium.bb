@@ -69,6 +69,8 @@ declare namespace ProtocolProxyApi {
 
     Performance: PerformanceApi;
 
+    PerformanceTimeline: PerformanceTimelineApi;
+
     Security: SecurityApi;
 
     ServiceWorker: ServiceWorkerApi;
@@ -90,8 +92,6 @@ declare namespace ProtocolProxyApi {
     WebAuthn: WebAuthnApi;
 
     Media: MediaApi;
-
-    Console: ConsoleApi;
 
     Debugger: DebuggerApi;
 
@@ -124,9 +124,17 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Accessibility.GetPartialAXTreeResponse>;
 
     /**
-     * Fetches the entire accessibility tree
+     * Fetches the entire accessibility tree for the root Document
      */
-    invoke_getFullAXTree(): Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
+    invoke_getFullAXTree(params: Protocol.Accessibility.GetFullAXTreeRequest):
+        Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
+
+    /**
+     * Fetches a particular accessibility node by AXNodeId.
+     * Requires `enable()` to have been called previously.
+     */
+    invoke_getChildAXNodes(params: Protocol.Accessibility.GetChildAXNodesRequest):
+        Promise<Protocol.Accessibility.GetChildAXNodesResponse>;
 
     /**
      * Query a DOM node's accessibility subtree for accessible name and role.
@@ -261,6 +269,12 @@ declare namespace ProtocolProxyApi {
      * `issueAdded` event.
      */
     invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Runs the contrast check for the target page. Found issues are reported
+     * using Audits.issueAdded event.
+     */
+    invoke_checkContrast(): Promise<Protocol.ProtocolResponseWithError>;
   }
   export interface AuditsDispatcher {
     issueAdded(params: Protocol.Audits.IssueAddedEvent): void;
@@ -1018,6 +1032,12 @@ declare namespace ProtocolProxyApi {
      * Removes breakpoint from XMLHttpRequest.
      */
     invoke_removeXHRBreakpoint(params: Protocol.DOMDebugger.RemoveXHRBreakpointRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Sets breakpoint on particular CSP violations.
+     */
+    invoke_setBreakOnCSPViolation(params: Protocol.DOMDebugger.SetBreakOnCSPViolationRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -1908,6 +1928,21 @@ declare namespace ProtocolProxyApi {
     webSocketWillSendHandshakeRequest(params: Protocol.Network.WebSocketWillSendHandshakeRequestEvent): void;
 
     /**
+     * Fired upon WebTransport creation.
+     */
+    webTransportCreated(params: Protocol.Network.WebTransportCreatedEvent): void;
+
+    /**
+     * Fired when WebTransport handshake is finished.
+     */
+    webTransportConnectionEstablished(params: Protocol.Network.WebTransportConnectionEstablishedEvent): void;
+
+    /**
+     * Fired when WebTransport is disposed.
+     */
+    webTransportClosed(params: Protocol.Network.WebTransportClosedEvent): void;
+
+    /**
      * Fired when additional information about a requestWillBeSent event is available from the
      * network stack. Not every requestWillBeSent event will have an additional
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -1921,6 +1956,14 @@ declare namespace ProtocolProxyApi {
      * it, and responseReceivedExtraInfo may be fired before or after responseReceived.
      */
     responseReceivedExtraInfo(params: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
+
+    /**
+     * Fired exactly once for each Trust Token operation. Depending on
+     * the type of the operation and whether the operation succeeded or
+     * failed, the event is fired before the corresponding request was sent
+     * or after the response was received.
+     */
+    trustTokenOperationDone(params: Protocol.Network.TrustTokenOperationDoneEvent): void;
   }
 
   export interface OverlayApi {
@@ -2018,6 +2061,9 @@ declare namespace ProtocolProxyApi {
     invoke_setShowGridOverlays(params: Protocol.Overlay.SetShowGridOverlaysRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
+    invoke_setShowFlexOverlays(params: Protocol.Overlay.SetShowFlexOverlaysRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
     /**
      * Requests that backend shows paint rectangles
      */
@@ -2040,6 +2086,12 @@ declare namespace ProtocolProxyApi {
      * Requests that backend shows hit-test borders on layers
      */
     invoke_setShowHitTestBorders(params: Protocol.Overlay.SetShowHitTestBordersRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Request that backend shows an overlay with web vital metrics.
+     */
+    invoke_setShowWebVitals(params: Protocol.Overlay.SetShowWebVitalsRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -2249,6 +2301,12 @@ declare namespace ProtocolProxyApi {
     invoke_setBypassCSP(params: Protocol.Page.SetBypassCSPRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Get Permissions Policy state on given frame.
+     */
+    invoke_getPermissionsPolicyState(params: Protocol.Page.GetPermissionsPolicyStateRequest):
+        Promise<Protocol.Page.GetPermissionsPolicyStateResponse>;
+
+    /**
      * Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
      * window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
      * query results).
@@ -2401,6 +2459,11 @@ declare namespace ProtocolProxyApi {
      */
     frameNavigated(params: Protocol.Page.FrameNavigatedEvent): void;
 
+    /**
+     * Fired when opening document to write to.
+     */
+    documentOpened(params: Protocol.Page.DocumentOpenedEvent): void;
+
     frameResized(): void;
 
     /**
@@ -2520,6 +2583,20 @@ declare namespace ProtocolProxyApi {
      * Current values of the metrics.
      */
     metrics(params: Protocol.Performance.MetricsEvent): void;
+  }
+
+  export interface PerformanceTimelineApi {
+    /**
+     * Previously buffered events would be reported before method returns.
+     * See also: timelineEventAdded
+     */
+    invoke_enable(params: Protocol.PerformanceTimeline.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
+  }
+  export interface PerformanceTimelineDispatcher {
+    /**
+     * Sent when a performance timeline event is added. See reportPerformanceTimeline method.
+     */
+    timelineEventAdded(params: Protocol.PerformanceTimeline.TimelineEventAddedEvent): void;
   }
 
   export interface SecurityApi {
@@ -2670,6 +2747,12 @@ declare namespace ProtocolProxyApi {
      */
     invoke_untrackIndexedDBForOrigin(params: Protocol.Storage.UntrackIndexedDBForOriginRequest):
         Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Returns the number of stored Trust Tokens per issuer for the
+     * current browsing context.
+     */
+    invoke_getTrustTokens(): Promise<Protocol.Storage.GetTrustTokensResponse>;
   }
   export interface StorageDispatcher {
     /**
@@ -3183,30 +3266,7 @@ declare namespace ProtocolProxyApi {
      * list of player ids and all events again.
      */
     playersCreated(params: Protocol.Media.PlayersCreatedEvent): void;
-  }
 
-  export interface ConsoleApi {
-    /**
-     * Does nothing.
-     */
-    invoke_clearMessages(): Promise<Protocol.ProtocolResponseWithError>;
-
-    /**
-     * Disables console domain, prevents further console messages from being reported to the client.
-     */
-    invoke_disable(): Promise<Protocol.ProtocolResponseWithError>;
-
-    /**
-     * Enables console domain, sends the messages collected so far to the client by means of the
-     * `messageAdded` notification.
-     */
-    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
-  }
-  export interface ConsoleDispatcher {
-    /**
-     * Issued when new console message is added.
-     */
-    messageAdded(params: Protocol.Console.MessageAddedEvent): void;
   }
 
   export interface DebuggerApi {
@@ -3232,12 +3292,6 @@ declare namespace ProtocolProxyApi {
      */
     invoke_evaluateOnCallFrame(params: Protocol.Debugger.EvaluateOnCallFrameRequest):
         Promise<Protocol.Debugger.EvaluateOnCallFrameResponse>;
-
-    /**
-     * Execute a Wasm Evaluator module on a given call frame.
-     */
-    invoke_executeWasmEvaluator(params: Protocol.Debugger.ExecuteWasmEvaluatorRequest):
-        Promise<Protocol.Debugger.ExecuteWasmEvaluatorResponse>;
 
     /**
      * Returns possible locations for breakpoint. scriptId in start and end range locations should be

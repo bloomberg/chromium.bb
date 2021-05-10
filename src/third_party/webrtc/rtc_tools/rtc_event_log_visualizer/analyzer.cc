@@ -21,6 +21,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/strings/string_view.h"
 #include "api/function_view.h"
+#include "api/network_state_predictor.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/goog_cc_factory.h"
 #include "call/audio_receive_stream.h"
@@ -38,7 +39,6 @@
 #include "modules/congestion_controller/rtp/transport_feedback_adapter.h"
 #include "modules/pacing/paced_sender.h"
 #include "modules/pacing/packet_router.h"
-#include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_packet.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/common_header.h"
@@ -445,6 +445,8 @@ void EventLogAnalyzer::CreateRtcpTypeGraph(PacketDirection direction,
       CreateRtcpTypeTimeSeries(parsed_log_.firs(direction), config_, "FIR", 7));
   plot->AppendTimeSeries(
       CreateRtcpTypeTimeSeries(parsed_log_.plis(direction), config_, "PLI", 8));
+  plot->AppendTimeSeries(
+      CreateRtcpTypeTimeSeries(parsed_log_.byes(direction), config_, "BYE", 9));
   plot->SetXAxis(config_.CallBeginTimeSec(), config_.CallEndTimeSec(),
                  "Time (s)", kLeftMargin, kRightMargin);
   plot->SetSuggestedYAxis(0, 1, "RTCP type", kBottomMargin, kTopMargin);
@@ -456,7 +458,8 @@ void EventLogAnalyzer::CreateRtcpTypeGraph(PacketDirection direction,
                             {5, "NACK"},
                             {6, "REMB"},
                             {7, "FIR"},
-                            {8, "PLI"}});
+                            {8, "PLI"},
+                            {9, "BYE"}});
 }
 
 template <typename IterableType>

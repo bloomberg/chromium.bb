@@ -51,11 +51,11 @@ public:
         fragBuilder->codeAppendf(
                 R"SkSL(float2 zoom_coord = float2(%s) + %s * float2(%s, %s);
 float2 delta = (%s - %s.xy) * %s.zw;
-delta = min(delta, float2(half2(1.0, 1.0)) - delta);
+delta = min(delta, float2(1.0) - delta);
 delta *= float2(%s, %s);
 float weight = 0.0;
 if (delta.x < 2.0 && delta.y < 2.0) {
-    delta = float2(half2(2.0, 2.0)) - delta;
+    delta = float2(2.0) - delta;
     float dist = length(delta);
     dist = max(2.0 - dist, 0.0);
     weight = min(dist * dist, 1.0);
@@ -117,8 +117,8 @@ private:
     UniformHandle xInvInsetVar;
     UniformHandle yInvInsetVar;
 };
-GrGLSLFragmentProcessor* GrMagnifierEffect::onCreateGLSLInstance() const {
-    return new GrGLSLMagnifierEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> GrMagnifierEffect::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLMagnifierEffect>();
 }
 void GrMagnifierEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                               GrProcessorKeyBuilder* b) const {}
@@ -133,7 +133,6 @@ bool GrMagnifierEffect::onIsEqual(const GrFragmentProcessor& other) const {
     if (yInvInset != that.yInvInset) return false;
     return true;
 }
-bool GrMagnifierEffect::usesExplicitReturn() const { return true; }
 GrMagnifierEffect::GrMagnifierEffect(const GrMagnifierEffect& src)
         : INHERITED(kGrMagnifierEffect_ClassID, src.optimizationFlags())
         , bounds(src.bounds)

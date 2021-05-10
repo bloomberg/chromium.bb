@@ -35,8 +35,11 @@ class SerialChooserController final
   ~SerialChooserController() override;
 
   // ChooserController:
+  bool ShouldShowHelpButton() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;
+  std::pair<base::string16, base::string16> GetThrobberLabelAndTooltip()
+      const override;
   size_t NumOptions() const override;
   base::string16 GetOption(size_t index) const override;
   bool IsPaired(size_t index) const override;
@@ -52,13 +55,14 @@ class SerialChooserController final
 
  private:
   void OnGetDevices(std::vector<device::mojom::SerialPortInfoPtr> ports);
-  bool FilterMatchesAny(const device::mojom::SerialPortInfo& port) const;
+  bool DisplayDevice(const device::mojom::SerialPortInfo& port) const;
   void RunCallback(device::mojom::SerialPortInfoPtr port);
 
   std::vector<blink::mojom::SerialPortFilterPtr> filters_;
   content::SerialChooser::Callback callback_;
   url::Origin requesting_origin_;
   url::Origin embedding_origin_;
+  const int frame_tree_node_id_;
 
   base::WeakPtr<SerialChooserContext> chooser_context_;
   ScopedObserver<SerialChooserContext,

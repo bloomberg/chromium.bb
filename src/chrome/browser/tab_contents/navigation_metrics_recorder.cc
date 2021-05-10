@@ -6,11 +6,11 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,7 +30,7 @@
 NavigationMetricsRecorder::NavigationMetricsRecorder(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      site_engagement_service_(SiteEngagementService::Get(
+      site_engagement_service_(site_engagement::SiteEngagementService::Get(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
 #if defined(OS_ANDROID)
   // The site isolation synthetic field trial is only needed on Android, as on

@@ -154,6 +154,10 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
     case LoadStreamStatus::kLoadNotAllowedDisabledByEnterprisePolicy:
     case LoadStreamStatus::kCannotLoadMoreNoNextPageToken:
+    case LoadStreamStatus::kDataInStoreStaleMissedLastRefresh:
+    case LoadStreamStatus::kLoadedStaleDataFromStoreDueToNetworkFailure:
+      break;
+    case LoadStreamStatus::kDataInStoreIsExpired:
       break;
   }
   return feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
@@ -244,7 +248,7 @@ int SurfaceUpdater::GetSliceIndexFromSliceId(const std::string& slice_id) {
 }
 
 bool SurfaceUpdater::HasSurfaceAttached() const {
-  return surfaces_.might_have_observers();
+  return !surfaces_.empty();
 }
 
 void SurfaceUpdater::SetLoadingMore(bool is_loading) {

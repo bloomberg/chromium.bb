@@ -10,7 +10,7 @@
 #include "include/pathops/SkPathOps.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/ccpr/GrCCClipProcessor.h"
 #include "src/gpu/ccpr/GrCCDrawPathsOp.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
@@ -38,6 +38,7 @@ bool GrCoverageCountingPathRenderer::IsSupported(const GrCaps& caps, CoverageTyp
         return true;
     }
 
+#if 0
     if (!caps.driverDisableMSAACCPR() &&
         caps.internalMultisampleCount(defaultA8Format) > 1 &&
         caps.sampleLocationsSupport() &&
@@ -47,6 +48,7 @@ bool GrCoverageCountingPathRenderer::IsSupported(const GrCaps& caps, CoverageTyp
         }
         return true;
     }
+#endif
 
     return false;
 }

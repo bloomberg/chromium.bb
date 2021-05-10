@@ -31,6 +31,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
@@ -38,7 +39,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "skia/ext/image_operations.h"
@@ -76,6 +76,18 @@ namespace ash {
 namespace {
 
 const char* kLoginShelfButtonClassName = "LoginShelfButton";
+
+constexpr LoginShelfView::ButtonId kButtonIds[] = {
+    LoginShelfView::kShutdown,
+    LoginShelfView::kRestart,
+    LoginShelfView::kSignOut,
+    LoginShelfView::kCloseNote,
+    LoginShelfView::kCancel,
+    LoginShelfView::kParentAccess,
+    LoginShelfView::kBrowseAsGuest,
+    LoginShelfView::kAddUser,
+    LoginShelfView::kEnterpriseEnrollment,
+};
 
 SkColor GetButtonTextColor() {
   return DeprecatedGetContentLayerColor(
@@ -181,7 +193,8 @@ class LoginShelfButton : public views::LabelButton {
         text_resource_id_(text_resource_id),
         icon_(icon) {
     SetAccessibleName(GetText());
-    AshColorProvider::Get()->DecoratePillButton(this, &icon);
+    AshColorProvider* color_provider = AshColorProvider::Get();
+    color_provider->DecoratePillButton(this, &icon);
 
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
@@ -191,10 +204,10 @@ class LoginShelfButton : public views::LabelButton {
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    SetInkDropBaseColor(
-        DeprecatedGetInkDropBaseColor(kDefaultShelfInkDropColor));
-    SetInkDropVisibleOpacity(
-        DeprecatedGetInkDropOpacity(kDefaultShelfInkDropOpacity));
+    AshColorProvider::RippleAttributes ripple_attributes =
+        color_provider->GetRippleAttributes();
+    SetInkDropBaseColor(ripple_attributes.base_color);
+    SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -302,10 +315,11 @@ class KioskAppsButton : public views::MenuButton,
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    SetInkDropBaseColor(
-        DeprecatedGetInkDropBaseColor(kDefaultShelfInkDropColor));
-    SetInkDropVisibleOpacity(
-        DeprecatedGetInkDropOpacity(kDefaultShelfInkDropOpacity));
+
+    const AshColorProvider::RippleAttributes ripple_attributes =
+        AshColorProvider::Get()->GetRippleAttributes();
+    SetInkDropBaseColor(ripple_attributes.base_color);
+    SetInkDropVisibleOpacity(ripple_attributes.inkdrop_opacity);
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -548,11 +562,12 @@ LoginShelfView::LoginShelfView(
                  ash::LoginAcceleratorAction::kStartEnrollment),
              IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON, chromeos::kEnterpriseIcon);
 
-  // Adds observers for states that affect the visiblity of different buttons.
-  tray_action_observer_.Add(Shell::Get()->tray_action());
-  shutdown_controller_observer_.Add(Shell::Get()->shutdown_controller());
-  lock_screen_action_background_observer_.Add(lock_screen_action_background);
-  login_data_dispatcher_observer_.Add(
+  // Adds observers for states that affect the visibility of different buttons.
+  tray_action_observation_.Observe(Shell::Get()->tray_action());
+  shutdown_controller_observation_.Observe(Shell::Get()->shutdown_controller());
+  lock_screen_action_background_observation_.Observe(
+      lock_screen_action_background);
+  login_data_dispatcher_observation_.Observe(
       Shell::Get()->login_screen_controller()->data_dispatcher());
   UpdateUi();
 }
@@ -579,12 +594,16 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     // Focus should leave the system tray.
     Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
   } else {
-    // Focus goes to status area.
     StatusAreaWidget* status_area_widget =
         Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
-    status_area_widget->status_area_widget_delegate()
-        ->set_default_last_focusable_child(reverse);
-    Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
+    // Focus goes to status area if it is visible.
+    if (status_area_widget->IsVisible()) {
+      status_area_widget->status_area_widget_delegate()
+          ->set_default_last_focusable_child(reverse);
+      Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
+    } else {
+      Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
+    }
   }
 }
 
@@ -651,18 +670,42 @@ void LoginShelfView::SetAddUserButtonEnabled(bool enable_add_user) {
 void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
   GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
 }
+
+void LoginShelfView::SetButtonEnabled(bool enabled) {
+  // Only allow enabling shelf buttons when shelf is temporarily disabled and
+  // only allow temporarily disabling shelf buttons when shelf is not already
+  // disabled.
+  if (enabled != is_shelf_temp_disabled_)
+    return;
+  is_shelf_temp_disabled_ = !enabled;
+
+  for (const auto& button_id : kButtonIds) {
+    GetViewByID(button_id)->SetEnabled(enabled);
+  }
+
+  StatusAreaWidget* status_area_widget =
+      Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
+  if (enabled) {
+    for (TrayBackgroundView* tray_button : status_area_widget->tray_buttons()) {
+      // Do not enable the button if it is already in disabled state before we
+      // temporarily disable it.
+      if (disabled_tray_buttons_.count(tray_button))
+        continue;
+      tray_button->SetEnabled(true);
+    }
+    disabled_tray_buttons_.clear();
+  } else {
+    for (TrayBackgroundView* tray_button : status_area_widget->tray_buttons()) {
+      // Record the tray button if it is already in disabled state before we
+      // temporarily disable it.
+      if (!tray_button->GetEnabled())
+        disabled_tray_buttons_.insert(tray_button);
+      tray_button->SetEnabled(false);
+    }
+  }
+}
+
 void LoginShelfView::SetButtonOpacity(float target_opacity) {
-  static constexpr ButtonId kButtonIds[] = {
-      kShutdown,
-      kRestart,
-      kSignOut,
-      kCloseNote,
-      kCancel,
-      kParentAccess,
-      kBrowseAsGuest,
-      kAddUser,
-      kEnterpriseEnrollment
-  };
   for (const auto& button_id : kButtonIds) {
     AnimateButtonOpacity(GetViewByID(button_id)->layer(), target_opacity,
                          ShelfConfig::Get()->DimAnimationDuration(),

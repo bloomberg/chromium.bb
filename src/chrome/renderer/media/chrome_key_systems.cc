@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
@@ -39,6 +40,9 @@
 // TODO(crbug.com/663554): Needed for WIDEVINE_CDM_MIN_GLIBC_VERSION.
 // component updated CDM on all desktop platforms and remove this.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR. // nogncheck
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(IS_CHROMEOS_ASH)
 // The following must be after widevine_cdm_version.h.
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 #include <gnu/libc-version.h>
@@ -176,6 +180,17 @@ static SupportedCodecs GetSupportedCodecs(
         supported_codecs |= media::EME_CODEC_AVC1;
         break;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+      case media::VideoCodec::kCodecHEVC:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        if (is_secure && base::FeatureList::IsEnabled(
+                             chromeos::features::kCdmFactoryDaemon)) {
+          supported_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN;
+          supported_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN10;
+        }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+        break;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
       default:
         DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
         break;
@@ -201,7 +216,7 @@ static EmeSessionTypeSupport GetPersistentLicenseSupport(
   }
 
 // On ChromeOS, platform verification is similar to CDM host verification.
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || BUILDFLAG(IS_CHROMEOS_ASH)
   bool cdm_host_verification_potentially_supported = true;
 #else
   bool cdm_host_verification_potentially_supported = false;
@@ -214,7 +229,7 @@ static EmeSessionTypeSupport GetPersistentLicenseSupport(
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, platform verification (similar to CDM host verification)
   // requires identifier to be allowed.
   // TODO(jrummell): Currently the ChromeOS CDM does not require storage ID
@@ -228,7 +243,7 @@ static EmeSessionTypeSupport GetPersistentLicenseSupport(
   // Storage ID not implemented, so no support for persistent license.
   DVLOG(2) << __func__ << ": Not supported without CDM storage ID.";
   return EmeSessionTypeSupport::NOT_SUPPORTED;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 static void AddWidevine(
@@ -251,9 +266,14 @@ static void AddWidevine(
                                    capability->supports_vp9_profile2,
                                    /*is_secure=*/false);
   const auto& encryption_schemes = capability->encryption_schemes;
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  const bool hw_supports_vp9_profile2 = true;
+#else
   // TODO(xhwang): Investigate whether hardware VP9 profile 2 is supported.
+  const bool hw_supports_vp9_profile2 = false;
+#endif
   auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
-                                             /*supports_vp9_profile2=*/false,
+                                             hw_supports_vp9_profile2,
                                              /*is_secure=*/true);
   const auto& hw_secure_encryption_schemes =
       capability->hw_secure_encryption_schemes;
@@ -263,7 +283,7 @@ static void AddWidevine(
   auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
   auto max_video_robustness = Robustness::SW_SECURE_DECODE;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, we support HW_SECURE_ALL even without hardware secure codecs.
   // See WidevineKeySystemProperties::GetRobustnessConfigRule().
   max_audio_robustness = Robustness::HW_SECURE_ALL;
@@ -298,7 +318,7 @@ static void AddWidevine(
   // Others.
   auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
   auto distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   distinctive_identifier_support = EmeFeatureSupport::REQUESTABLE;
 #endif
 

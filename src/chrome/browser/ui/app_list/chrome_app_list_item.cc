@@ -7,17 +7,19 @@
 #include <utility>
 
 #include "ash/public/cpp/tablet_mode.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #endif
 
 namespace {
@@ -83,7 +85,7 @@ std::unique_ptr<ash::AppListItemMetadata> ChromeAppListItem::CloneMetadata()
 }
 
 void ChromeAppListItem::PerformActivate(int event_flags) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Handle recording app launch source from the AppList in Demo Mode.
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
       chromeos::DemoSession::AppLaunchSource::kAppList);
@@ -170,6 +172,17 @@ void ChromeAppListItem::SetIcon(const gfx::ImageSkia& icon) {
   AppListModelUpdater* updater = model_updater();
   if (updater)
     updater->SetItemIcon(id(), metadata_->icon);
+
+  // Calculate and set the notification badge color.
+  ChromeLauncherController* chrome_launcher_controller =
+      ChromeLauncherController::instance();
+  if (chrome_launcher_controller) {
+    SkColor current_badge_color =
+        chrome_launcher_controller->CalculateNotificationBadgeColorForApp(id(),
+                                                                          icon);
+    if (updater)
+      updater->SetNotificationBadgeColor(id(), current_badge_color);
+  }
 }
 
 void ChromeAppListItem::SetName(const std::string& name) {
@@ -185,6 +198,13 @@ void ChromeAppListItem::SetNameAndShortName(const std::string& name,
   AppListModelUpdater* updater = model_updater();
   if (updater)
     updater->SetItemNameAndShortName(id(), name, short_name);
+}
+
+void ChromeAppListItem::SetAppStatus(ash::AppStatus app_status) {
+  metadata_->app_status = app_status;
+  AppListModelUpdater* updater = model_updater();
+  if (updater)
+    updater->SetAppStatus(id(), app_status);
 }
 
 void ChromeAppListItem::SetFolderId(const std::string& folder_id) {

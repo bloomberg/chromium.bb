@@ -163,12 +163,20 @@ bool IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
                                   ColorSpace::TransferID::SMPTEST2084,
                                   ColorSpace::MatrixID::BT2020_NCL,
                                   ColorSpace::RangeID::LIMITED)) {
-      return true;
+      if (__builtin_available(macos 11.0, *)) {
+        color_space_name = kCGColorSpaceITUR_2100_PQ;
+      } else {
+        return true;
+      }
     } else if (color_space == ColorSpace(ColorSpace::PrimaryID::BT2020,
                                          ColorSpace::TransferID::ARIB_STD_B67,
                                          ColorSpace::MatrixID::BT2020_NCL,
                                          ColorSpace::RangeID::LIMITED)) {
-      return true;
+      if (__builtin_available(macos 11.0, *)) {
+        color_space_name = kCGColorSpaceITUR_2100_HLG;
+      } else {
+        return true;
+      }
     }
   }
   if (color_space_name) {
@@ -279,11 +287,6 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
                << ".";
     return nullptr;
   }
-
-  // IOSurface clearing causes significant performance regression on about half
-  // of all devices running Yosemite. https://crbug.com/606850#c22.
-  if (base::mac::IsOS10_10())
-    should_clear = false;
 
   if (should_clear) {
     // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock

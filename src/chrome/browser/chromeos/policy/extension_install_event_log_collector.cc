@@ -6,13 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/enterprise/reporting/extension_info.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -34,21 +33,6 @@ std::unique_ptr<em::ExtensionInstallReportLogEvent> CreateSessionChangeEvent(
       em::ExtensionInstallReportLogEvent::SESSION_STATE_CHANGE);
   event->set_session_state_change_type(type);
   return event;
-}
-
-bool GetOnlineState() {
-  chromeos::NetworkStateHandler::NetworkStateList network_state_list;
-  chromeos::NetworkHandler::Get()
-      ->network_state_handler()
-      ->GetNetworkListByType(
-          chromeos::NetworkTypePattern::Default(), true /* configured_only */,
-          false /* visible_only */, 0 /* limit */, &network_state_list);
-  for (const chromeos::NetworkState* network_state : network_state_list) {
-    if (network_state->connection_state() == shill::kStateOnline) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // Helper method to convert InstallStageTracker::FailureReason to the failure
@@ -127,6 +111,8 @@ em::ExtensionInstallReportLogEvent_FailureReason ConvertFailureReasonToProto(
       return em::ExtensionInstallReportLogEvent::CRX_FETCH_URL_INVALID;
     case extensions::InstallStageTracker::FailureReason::OVERRIDDEN_BY_SETTINGS:
       return em::ExtensionInstallReportLogEvent::OVERRIDDEN_BY_SETTINGS;
+    case extensions::InstallStageTracker::FailureReason::REPLACED_BY_SYSTEM_APP:
+      return em::ExtensionInstallReportLogEvent::REPLACED_BY_SYSTEM_APP;
     default:
       NOTREACHED();
   }
@@ -164,8 +150,9 @@ em::ExtensionInstallReportLogEvent_UserType ConvertUserTypeToProto(
       return em::ExtensionInstallReportLogEvent::USER_TYPE_GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
       return em::ExtensionInstallReportLogEvent::USER_TYPE_PUBLIC_ACCOUNT;
-    case user_manager::USER_TYPE_SUPERVISED:
-      return em::ExtensionInstallReportLogEvent::USER_TYPE_SUPERVISED;
+    case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
+      return em::ExtensionInstallReportLogEvent::
+          USER_TYPE_SUPERVISED_DEPRECATED;
     case user_manager::USER_TYPE_KIOSK_APP:
       return em::ExtensionInstallReportLogEvent::USER_TYPE_KIOSK_APP;
     case user_manager::USER_TYPE_CHILD:
@@ -372,6 +359,17 @@ ConvertUnpackerFailureReasonToProto(
       return em::ExtensionInstallReportLogEvent::ERROR_INDEXING_DNR_RULESET;
     case FailureReason::CRX_REQUIRED_PROOF_MISSING:
       return em::ExtensionInstallReportLogEvent::CRX_REQUIRED_PROOF_MISSING;
+    case FailureReason::CRX_HEADER_VERIFIED_CONTENTS_UNCOMPRESSING_FAILURE:
+      return em::ExtensionInstallReportLogEvent::
+          CRX_HEADER_VERIFIED_CONTENTS_UNCOMPRESSING_FAILURE;
+    case FailureReason::MALFORMED_VERIFIED_CONTENTS:
+      return em::ExtensionInstallReportLogEvent::MALFORMED_VERIFIED_CONTENTS;
+    case FailureReason::COULD_NOT_CREATE_METADATA_DIRECTORY:
+      return em::ExtensionInstallReportLogEvent::
+          COULD_NOT_CREATE_METADATA_DIRECTORY;
+    case FailureReason::COULD_NOT_WRITE_VERIFIED_CONTENTS_INTO_FILE:
+      return em::ExtensionInstallReportLogEvent::
+          COULD_NOT_WRITE_VERIFIED_CONTENTS_INTO_FILE;
     default:
       NOTREACHED();
       return em::ExtensionInstallReportLogEvent::
@@ -505,12 +503,9 @@ ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
     extensions::ExtensionRegistry* registry,
     Delegate* delegate,
     Profile* profile)
-    : registry_(registry),
-      delegate_(delegate),
-      profile_(profile),
-      online_(GetOnlineState()) {
-  chromeos::PowerManagerClient::Get()->AddObserver(this);
-  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+    : InstallEventLogCollectorBase(profile),
+      registry_(registry),
+      delegate_(delegate) {
   registry_observer_.Add(registry_);
   stage_tracker_observer_.Add(extensions::InstallStageTracker::Get(profile_));
 }
@@ -520,14 +515,7 @@ ExtensionInstallEventLogCollector::~ExtensionInstallEventLogCollector() {
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
-void ExtensionInstallEventLogCollector::AddLoginEvent() {
-  // Don't log in case session is restarted or recovered from crash.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kLoginUser) ||
-      profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
-    return;
-  }
-  online_ = GetOnlineState();
+void ExtensionInstallEventLogCollector::OnLoginInternal() {
   std::unique_ptr<em::ExtensionInstallReportLogEvent> event =
       CreateSessionChangeEvent(em::ExtensionInstallReportLogEvent::LOGIN);
   if (chromeos::ProfileHelper::Get()->GetUserByProfile(profile_)) {
@@ -540,11 +528,7 @@ void ExtensionInstallEventLogCollector::AddLoginEvent() {
   delegate_->AddForAllExtensions(std::move(event));
 }
 
-void ExtensionInstallEventLogCollector::AddLogoutEvent() {
-  // Don't log in case session is restared.
-  if (g_browser_process->local_state()->GetBoolean(prefs::kWasRestarted))
-    return;
-
+void ExtensionInstallEventLogCollector::OnLogoutInternal() {
   delegate_->AddForAllExtensions(
       CreateSessionChangeEvent(em::ExtensionInstallReportLogEvent::LOGOUT));
 }
@@ -556,18 +540,13 @@ void ExtensionInstallEventLogCollector::SuspendImminent(
 }
 
 void ExtensionInstallEventLogCollector::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
+    base::TimeDelta sleep_duration) {
   delegate_->AddForAllExtensions(
       CreateSessionChangeEvent(em::ExtensionInstallReportLogEvent::RESUME));
 }
 
-void ExtensionInstallEventLogCollector::OnConnectionChanged(
+void ExtensionInstallEventLogCollector::OnConnectionStateChanged(
     network::mojom::ConnectionType type) {
-  const bool currently_online = GetOnlineState();
-  if (currently_online == online_)
-    return;
-  online_ = currently_online;
-
   std::unique_ptr<em::ExtensionInstallReportLogEvent> event =
       std::make_unique<em::ExtensionInstallReportLogEvent>();
   event->set_event_type(

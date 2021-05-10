@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
@@ -11,13 +12,16 @@ import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
 
-assert(is_chromeos || is_chromecast)
+assert(is_chromeos_ash || is_chromecast)
 
 accessibility_common_out_dir =
     "$root_out_dir/resources/chromeos/accessibility/common"
 
 group("build") {
-  deps = [ ":accessibility_common_copied_files" ]
+  deps = [
+    ":accessibility_common_copied_files",
+    "tutorial:build",
+  ]
 }
 
 run_jsbundler("accessibility_common_copied_files") {
@@ -29,13 +33,18 @@ run_jsbundler("accessibility_common_copied_files") {
     "automation_util.js",
     "closure_shim.js",
     "constants.js",
+    "cursors/cursor.js",
+    "cursors/range.js",
+    "cursors/recovery_strategy.js",
     "event_generator.js",
     "event_handler.js",
+    "gdocs_script.js",
     "instance_checker.js",
     "key_code.js",
     "rect_util.js",
     "repeated_event_handler.js",
     "repeated_tree_change_handler.js",
+    "string_util.js",
     "tree_walker.js",
   ]
   rewrite_rules = [ rebase_path(".", root_build_dir) + ":" ]
@@ -143,6 +152,8 @@ js2gtest("accessibility_tests") {
   sources = [
     "array_util_test.js",
     "automation_util_test.js",
+    "cursors/cursors_test.js",
+    "cursors/recovery_strategy_test.js",
     "event_generator_test.js",
     "repeated_event_handler_test.js",
     "repeated_tree_change_handler_test.js",
@@ -159,7 +170,7 @@ js2gtest("accessibility_tests") {
     "testing/e2e_test_base.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     # The test base classes generate C++ code with these deps.
     deps = [
       "//ash",

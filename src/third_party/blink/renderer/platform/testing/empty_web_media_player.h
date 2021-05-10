@@ -22,7 +22,10 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
  public:
   ~EmptyWebMediaPlayer() override = default;
 
-  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override;
+  LoadTiming Load(LoadType,
+                  const WebMediaPlayerSource&,
+                  CorsMode,
+                  bool is_cache_disabled) override;
   void Play() override {}
   void Pause() override {}
   void Seek(double seconds) override {}
@@ -30,15 +33,17 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void SetVolume(double) override {}
   void SetLatencyHint(double) override {}
   void SetPreservesPitch(bool) override {}
+  void SetAutoplayInitiated(bool) override {}
   void OnRequestPictureInPicture() override {}
-  void OnPictureInPictureAvailabilityChanged(bool available) override {}
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
     return SurfaceLayerMode::kNever;
   }
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
-  void SetSinkId(const WebString& sink_id,
-                 WebSetSinkIdCompleteCallback) override {}
+  bool SetSinkId(const WebString& sink_id,
+                 WebSetSinkIdCompleteCallback) override {
+    return false;
+  }
   bool HasVideo() const override { return false; }
   bool HasAudio() const override { return false; }
   gfx::Size NaturalSize() const override;
@@ -60,11 +65,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   unsigned DroppedFrameCount() const override { return 0; }
   uint64_t AudioDecodedByteCount() const override { return 0; }
   uint64_t VideoDecodedByteCount() const override { return 0; }
-  void Paint(cc::PaintCanvas*,
-             const WebRect&,
-             cc::PaintFlags&,
-             int already_uploaded_id,
-             VideoFrameUploadMetadata*) override {}
+  void Paint(cc::PaintCanvas*, const gfx::Rect&, cc::PaintFlags&) override {}
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   bool HasAvailableVideoFrame() const override { return false; }
   base::WeakPtr<WebMediaPlayer> AsWeakPtr() override { return nullptr; }

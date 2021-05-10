@@ -20,6 +20,7 @@
 #include "dawn/webgpu_cpp.h"
 #include "dawn_native/DawnNative.h"
 
+#include <dawn_platform/DawnPlatform.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -48,6 +49,9 @@
     EXPECT_BUFFER(buffer, offset, sizeof(uint32_t) * (count),       \
                   new ::detail::ExpectEq<uint32_t>(expected, count))
 
+#define EXPECT_BUFFER_U64_EQ(expected, buffer, offset) \
+    EXPECT_BUFFER(buffer, offset, sizeof(uint64_t), new ::detail::ExpectEq<uint64_t>(expected))
+
 #define EXPECT_BUFFER_U64_RANGE_EQ(expected, buffer, offset, count) \
     EXPECT_BUFFER(buffer, offset, sizeof(uint64_t) * (count),       \
                   new ::detail::ExpectEq<uint64_t>(expected, count))
@@ -72,6 +76,9 @@
 #define EXPECT_TEXTURE_FLOAT_EQ(expected, texture, x, y, width, height, level, slice) \
     AddTextureExpectation(__FILE__, __LINE__, expected, texture, x, y, width, height, level, slice)
 
+#define EXPECT_PIXEL_RGBA8_BETWEEN(color0, color1, texture, x, y) \
+    AddTextureBetweenColorsExpectation(__FILE__, __LINE__, color0, color1, texture, x, y)
+
 // TODO(enga): Migrate other texure expectation helpers to this common one.
 #define EXPECT_TEXTURE_EQ(...) AddTextureExpectation(__FILE__, __LINE__, __VA_ARGS__)
 
@@ -94,6 +101,8 @@ struct RGBA8 {
     }
     bool operator==(const RGBA8& other) const;
     bool operator!=(const RGBA8& other) const;
+    bool operator<=(const RGBA8& other) const;
+    bool operator>=(const RGBA8& other) const;
 
     uint8_t r, g, b, a;
 
@@ -151,12 +160,18 @@ BackendTestConfig NullBackend(std::initializer_list<const char*> forceEnabledWor
 BackendTestConfig OpenGLBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
                                 std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
+BackendTestConfig OpenGLESBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                                  std::initializer_list<const char*> forceDisabledWorkarounds = {});
+
 BackendTestConfig VulkanBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
                                 std::initializer_list<const char*> forceDisabledWorkarounds = {});
+
+struct GLFWwindow;
 
 namespace utils {
     class PlatformDebugLogger;
     class TerribleCommandBuffer;
+    class WireHelper;
 }  // namespace utils
 
 namespace detail {
@@ -164,6 +179,8 @@ namespace detail {
 
     template <typename T>
     class ExpectEq;
+    template <typename T>
+    class ExpectBetweenColors;
 }  // namespace detail
 
 namespace dawn_wire {
@@ -189,33 +206,46 @@ class DawnTestEnvironment : public testing::Environment {
     void TearDown() override;
 
     bool UsesWire() const;
-    bool IsBackendValidationEnabled() const;
-    bool IsDawnValidationSkipped() const;
+    dawn_native::BackendValidationLevel GetBackendValidationLevel() const;
     dawn_native::Instance* GetInstance() const;
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
+    bool HasBackendTypeFilter() const;
+    wgpu::BackendType GetBackendTypeFilter() const;
     const char* GetWireTraceDir() const;
+    GLFWwindow* GetOpenGLWindow() const;
+    GLFWwindow* GetOpenGLESWindow() const;
+
+    const std::vector<std::string>& GetEnabledToggles() const;
+    const std::vector<std::string>& GetDisabledToggles() const;
 
   protected:
     std::unique_ptr<dawn_native::Instance> mInstance;
 
   private:
     void ParseArgs(int argc, char** argv);
-    std::unique_ptr<dawn_native::Instance> CreateInstanceAndDiscoverAdapters() const;
+    std::unique_ptr<dawn_native::Instance> CreateInstanceAndDiscoverAdapters();
     void SelectPreferredAdapterProperties(const dawn_native::Instance* instance);
-    void PrintTestConfigurationAndAdapterInfo() const;
+    void PrintTestConfigurationAndAdapterInfo(dawn_native::Instance* instance) const;
 
     bool mUseWire = false;
-    bool mEnableBackendValidation = false;
-    bool mSkipDawnValidation = false;
+    dawn_native::BackendValidationLevel mBackendValidationLevel =
+        dawn_native::BackendValidationLevel::Disabled;
     bool mBeginCaptureOnStartup = false;
     bool mHasVendorIdFilter = false;
     uint32_t mVendorIdFilter = 0;
+    bool mHasBackendTypeFilter = false;
+    wgpu::BackendType mBackendTypeFilter;
     std::string mWireTraceDir;
+
+    std::vector<std::string> mEnabledToggles;
+    std::vector<std::string> mDisabledToggles;
     std::vector<dawn_native::DeviceType> mDevicePreferences;
     std::vector<TestAdapterProperties> mAdapterProperties;
 
     std::unique_ptr<utils::PlatformDebugLogger> mPlatformDebugLogger;
+    GLFWwindow* mOpenGLWindow;
+    GLFWwindow* mOpenGLESWindow;
 };
 
 class DawnTestBase {
@@ -232,6 +262,7 @@ class DawnTestBase {
     bool IsMetal() const;
     bool IsNull() const;
     bool IsOpenGL() const;
+    bool IsOpenGLES() const;
     bool IsVulkan() const;
 
     bool IsAMD() const;
@@ -241,6 +272,7 @@ class DawnTestBase {
     bool IsNvidia() const;
     bool IsQualcomm() const;
     bool IsSwiftshader() const;
+    bool IsANGLE() const;
     bool IsWARP() const;
 
     bool IsWindows() const;
@@ -249,7 +281,6 @@ class DawnTestBase {
 
     bool UsesWire() const;
     bool IsBackendValidationEnabled() const;
-    bool IsDawnValidationSkipped() const;
     bool HasWGSL() const;
 
     bool IsAsan() const;
@@ -262,8 +293,13 @@ class DawnTestBase {
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
 
+    bool HasBackendTypeFilter() const;
+    wgpu::BackendType GetBackendTypeFilter() const;
+
     wgpu::Instance GetInstance() const;
     dawn_native::Adapter GetAdapter() const;
+
+    virtual std::unique_ptr<dawn_platform::Platform> CreateTestPlatform();
 
   protected:
     wgpu::Device device;
@@ -315,6 +351,24 @@ class DawnTestBase {
                                          x, y, 1, 1, level, slice, aspect, sizeof(T), bytesPerRow);
     }
 
+    template <typename T>
+    std::ostringstream& AddTextureBetweenColorsExpectation(
+        const char* file,
+        int line,
+        const T& color0,
+        const T& color1,
+        const wgpu::Texture& texture,
+        uint32_t x,
+        uint32_t y,
+        uint32_t level = 0,
+        uint32_t slice = 0,
+        wgpu::TextureAspect aspect = wgpu::TextureAspect::All,
+        uint32_t bytesPerRow = 0) {
+        return AddTextureExpectationImpl(
+            file, line, new detail::ExpectBetweenColors<T>(color0, color1), texture, x, y, 1, 1,
+            level, slice, aspect, sizeof(T), bytesPerRow);
+    }
+
     void WaitABit();
     void FlushWire();
     void WaitForAllOperations();
@@ -331,14 +385,7 @@ class DawnTestBase {
 
   private:
     AdapterTestParam mParam;
-
-    // Things used to set up testing through the Wire.
-    std::unique_ptr<dawn_wire::WireServer> mWireServer;
-    std::unique_ptr<dawn_wire::WireClient> mWireClient;
-    std::unique_ptr<utils::TerribleCommandBuffer> mC2sBuf;
-    std::unique_ptr<utils::TerribleCommandBuffer> mS2cBuf;
-
-    std::unique_ptr<dawn_wire::CommandHandler> mWireServerTraceLayer;
+    std::unique_ptr<utils::WireHelper> mWireHelper;
 
     // Tracking for validation errors
     static void OnDeviceError(WGPUErrorType type, const char* message, void* userdata);
@@ -400,6 +447,8 @@ class DawnTestBase {
     void ResolveExpectations();
 
     dawn_native::Adapter mBackendAdapter;
+
+    std::unique_ptr<dawn_platform::Platform> mTestPlatform;
 };
 
 // Skip a test when the given condition is satisfied.
@@ -423,7 +472,7 @@ class DawnTestBase {
             size_t warningsAfter =                                               \
                 dawn_native::GetDeprecationWarningCountForTesting(device.Get()); \
             EXPECT_EQ(mLastWarningCount, warningsBefore);                        \
-            if (!IsDawnValidationSkipped()) {                                    \
+            if (!HasToggleEnabled("skip_validation")) {                          \
                 EXPECT_EQ(warningsAfter, warningsBefore + 1);                    \
             }                                                                    \
             mLastWarningCount = warningsAfter;                                   \
@@ -500,6 +549,26 @@ namespace detail {
     extern template class ExpectEq<uint64_t>;
     extern template class ExpectEq<RGBA8>;
     extern template class ExpectEq<float>;
+
+    template <typename T>
+    class ExpectBetweenColors : public Expectation {
+      public:
+        // Inclusive for now
+        ExpectBetweenColors(T value0, T value1);
+        testing::AssertionResult Check(const void* data, size_t size) override;
+
+      private:
+        std::vector<T> mLowerColorChannels;
+        std::vector<T> mHigherColorChannels;
+
+        // used for printing error
+        std::vector<T> mValues0;
+        std::vector<T> mValues1;
+    };
+    // A color is considered between color0 and color1 when all channel values are within range of
+    // each counterparts. It doesn't matter which value is higher or lower. Essentially color =
+    // lerp(color0, color1, t) where t is [0,1]. But I don't want to be too strict here.
+    extern template class ExpectBetweenColors<RGBA8>;
 }  // namespace detail
 
 #endif  // TESTS_DAWNTEST_H_

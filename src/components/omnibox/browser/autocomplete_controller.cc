@@ -45,6 +45,7 @@
 #include "components/omnibox/browser/query_tile_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
+#include "components/omnibox/browser/voice_suggest_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -230,6 +231,32 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
          match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
+// Returns if rich autocompletion had (or would have had for counterfactual
+// variations) an impact; i.e. whether the top scoring rich autocompleted
+// suggestion outscores the top scoring default suggestion.
+bool TopMatchWouldHaveBeenRichAutocompletion(const AutocompleteResult& result) {
+  // Trigger rich autocompletion logging if the highest scoring match has
+  // |rich_autocompletion_triggered| set to true indicating it is, or could have
+  // been, rich autocompleted. It's not sufficient to check the default match
+  // since counterfactual variations will not allow rich autocompleted matches
+  // to be the default match.
+  if (result.empty())
+    return false;
+
+  auto get_sort_key = [](const AutocompleteMatch& match) {
+    return std::make_tuple(match.allowed_to_be_default_match ||
+                               match.rich_autocompletion_triggered,
+                           match.relevance);
+  };
+
+  auto top_match = std::max_element(
+      result.begin(), result.end(),
+      [&](const AutocompleteMatch& match1, const AutocompleteMatch& match2) {
+        return get_sort_key(match1) < get_sort_key(match2);
+      });
+  return top_match->rich_autocompletion_triggered;
+}
+
 }  // namespace
 
 AutocompleteController::AutocompleteController(
@@ -317,7 +344,6 @@ AutocompleteController::AutocompleteController(
         OnDeviceHeadProvider::Create(provider_client_.get(), this);
     if (on_device_head_provider_) {
       providers_.push_back(on_device_head_provider_);
-      on_device_head_provider_->AddModelUpdateCallback();
     }
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
@@ -345,6 +371,12 @@ AutocompleteController::AutocompleteController(
 
   if (provider_types & AutocompleteProvider::TYPE_QUERY_TILE)
     providers_.push_back(new QueryTileProvider(provider_client_.get(), this));
+
+  if (provider_types & AutocompleteProvider::TYPE_VOICE_SUGGEST) {
+    voice_suggest_provider_ =
+        new VoiceSuggestProvider(provider_client_.get(), this);
+    providers_.push_back(voice_suggest_provider_);
+  }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "AutocompleteController", base::ThreadTaskRunnerHandle::Get());
@@ -564,10 +596,8 @@ void AutocompleteController::AddProviderAndTriggeringLogs(
   }
 
   // Add any features that have been triggered.
-  // |GetOmniboxTriggeredFeatureService()| can be null in tests.
-  if (provider_client_->GetOmniboxTriggeredFeatureService())
-    provider_client_->GetOmniboxTriggeredFeatureService()->RecordToLogs(
-        &logs->feature_triggered_in_session);
+  provider_client_->GetOmniboxTriggeredFeatureService()->RecordToLogs(
+      &logs->feature_triggered_in_session);
 }
 
 void AutocompleteController::ResetSession() {
@@ -583,9 +613,7 @@ void AutocompleteController::ResetSession() {
     provider_client_->GetPedalProvider()->ResetSession();
   }
 
-  // |GetOmniboxTriggeredFeatureService()| can be null in tests.
-  if (provider_client_->GetOmniboxTriggeredFeatureService())
-    provider_client_->GetOmniboxTriggeredFeatureService()->ResetSession();
+  provider_client_->GetOmniboxTriggeredFeatureService()->ResetSession();
 }
 
 void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
@@ -754,6 +782,11 @@ void AutocompleteController::UpdateResult(
         (result_.default_match()->keyword != last_default_match->keyword)));
   if (notify_default_match)
     last_time_default_match_changed_ = base::TimeTicks::Now();
+
+  if (TopMatchWouldHaveBeenRichAutocompletion(result_)) {
+    provider_client_->GetOmniboxTriggeredFeatureService()->TriggerFeature(
+        OmniboxTriggeredFeatureService::Feature::kRichAutocompletion);
+  }
 
   NotifyChanged(force_notify_default_match_changed || notify_default_match);
 }

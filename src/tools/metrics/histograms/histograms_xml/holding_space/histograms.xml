@@ -21,6 +21,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="HoldingSpace.Animation.BubbleResize.Smoothness" units="%"
+    expires_after="2021-09-24">
+  <owner>dmblack@google.com</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the smoothness of the holding space bubble resize animation. Note
+    that smoothness is expected be be between 0 and 100 (inclusively) with 100
+    representing ideal smoothness of &gt;= 60 frames per second. This histogram
+    is emitted when the resize animation ends.
+  </summary>
+</histogram>
+
+<histogram name="HoldingSpace.Animation.PodResize.Smoothness" units="%"
+    expires_after="2021-09-24">
+  <owner>dmblack@google.com</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the smoothness of the holding space pod resize animation. Note that
+    smoothness is expected be be between 0 and 100 (inclusively) with 100
+    representing ideal smoothness of &gt;= 60 frames per second. This histogram
+    is emitted when the resize animation ends.
+  </summary>
+</histogram>
+
 <histogram name="HoldingSpace.Downloads.Action.All"
     enum="HoldingSpaceDownloadsAction" expires_after="2021-09-24">
   <owner>dmblack@google.com</owner>
@@ -31,9 +55,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="HoldingSpace.FilesAppChip.Action.All"
+    enum="HoldingSpaceFilesAppChipAction" expires_after="2021-09-24">
+  <owner>dmblack@google.com</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records an action taken on the Files app chip in holding space UI at the
+    moment the action is performed.
+  </summary>
+</histogram>
+
 <histogram base="true" name="HoldingSpace.Item.Action"
     enum="HoldingSpaceItemType" expires_after="2021-09-24">
-<!-- Name completed by histogram_suffixes name="HoldingSpaceActionType" -->
+<!-- Name completed by histogram_suffixes name="HoldingSpaceItemAction" -->
 
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
@@ -62,6 +96,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the count of all visible items of a specific type in holding space
     at the moment holding space UI is shown.
+  </summary>
+</histogram>
+
+<histogram name="HoldingSpace.Item.FailureToLaunch" enum="HoldingSpaceItemType"
+    expires_after="2021-09-24">
+  <owner>dmblack@google.com</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records a failure to launch a holding space item of a specific type at the
+    moment of failure.
   </summary>
 </histogram>
 
@@ -115,6 +159,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Drag" label="The user dragged the item."/>
   <suffix name="Launch" label="The user launched the item."/>
   <suffix name="Pin" label="The user pinned the item."/>
+  <suffix name="Remove" label="The user removed the item."/>
   <suffix name="ShowInFolder" label="The user showed the item in its folder."/>
   <suffix name="Unpin" label="The user unpinned the item."/>
   <affected-histogram name="HoldingSpace.Item.Action"/>

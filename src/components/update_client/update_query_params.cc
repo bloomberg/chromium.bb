@@ -9,6 +9,7 @@
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/update_client/update_query_params_delegate.h"
 #include "components/version_info/version_info.h"
 
@@ -31,9 +32,9 @@ const char kOs[] =
     "win";
 #elif defined(OS_ANDROID)
     "android";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     "cros";
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     "linux";
 #elif defined(OS_FUCHSIA)
     "fuchsia";
@@ -65,9 +66,11 @@ const char kArch[] =
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kChrome[] = "chrome";
 const char kCrx[] = "chromecrx";
+const char kWebView[] = "googleandroidwebview";
 #else
 const char kChrome[] = "chromium";
 const char kCrx[] = "chromiumcrx";
+const char kWebView[] = "androidwebview";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 UpdateQueryParamsDelegate* g_delegate = nullptr;
@@ -90,6 +93,8 @@ const char* UpdateQueryParams::GetProdIdString(UpdateQueryParams::ProdId prod) {
       return kChrome;
     case UpdateQueryParams::CRX:
       return kCrx;
+    case UpdateQueryParams::WEBVIEW:
+      return kWebView;
   }
   return kUnknown;
 }

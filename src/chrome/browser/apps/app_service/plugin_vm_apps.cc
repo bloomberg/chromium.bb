@@ -13,12 +13,12 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/common/chrome_features.h"
@@ -170,7 +170,8 @@ void PluginVmApps::Connect(
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kPluginVm,
+                     true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
 }
 
@@ -189,7 +190,7 @@ void PluginVmApps::LoadIcon(const std::string& app_id,
 void PluginVmApps::Launch(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
-                          int64_t display_id) {
+                          apps::mojom::WindowInfoPtr window_info) {
   DCHECK_EQ(plugin_vm::kPluginVmShelfAppId, app_id);
   if (plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile_)) {
     plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->LaunchPluginVm(

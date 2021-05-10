@@ -14,9 +14,10 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/function.h"
-#include "src/ast/type/type.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/type.h"
+#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -24,97 +25,88 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, FunctionHeader) {
-  auto* p = parser("fn main(a : i32, b: f32) -> void");
+  auto p = parser("fn main(a : i32, b: f32) -> void");
   auto f = p->function_header();
   ASSERT_FALSE(p->has_error()) << p->error();
   EXPECT_TRUE(f.matched);
   EXPECT_FALSE(f.errored);
-  ASSERT_NE(f.value, nullptr);
 
-  EXPECT_EQ(f->name(), "main");
-  ASSERT_EQ(f->params().size(), 2u);
-  EXPECT_EQ(f->params()[0]->name(), "a");
-  EXPECT_EQ(f->params()[1]->name(), "b");
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_EQ(f->name, "main");
+  ASSERT_EQ(f->params.size(), 2u);
+  EXPECT_EQ(f->params[0]->symbol(), p->builder().Symbols().Get("a"));
+  EXPECT_EQ(f->params[1]->symbol(), p->builder().Symbols().Get("b"));
+  EXPECT_TRUE(f->return_type->Is<type::Void>());
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingIdent) {
-  auto* p = parser("fn () -> void");
+  auto p = parser("fn () -> void");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:4: expected identifier for function declaration");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_InvalidIdent) {
-  auto* p = parser("fn 133main() -> i32");
+  auto p = parser("fn 133main() -> i32");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:4: expected identifier for function declaration");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingParenLeft) {
-  auto* p = parser("fn main) -> i32");
+  auto p = parser("fn main) -> i32");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:8: expected '(' for function declaration");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_InvalidParamList) {
-  auto* p = parser("fn main(a :i32,) -> i32");
+  auto p = parser("fn main(a :i32,) -> i32");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:16: expected identifier for parameter");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingParenRight) {
-  auto* p = parser("fn main( -> i32");
+  auto p = parser("fn main( -> i32");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:10: expected ')' for function declaration");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingArrow) {
-  auto* p = parser("fn main() i32");
+  auto p = parser("fn main() i32");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:11: expected '->' for function declaration");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_InvalidReturnType) {
-  auto* p = parser("fn main() -> invalid");
+  auto p = parser("fn main() -> invalid");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:14: unknown constructed type 'invalid'");
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingReturnType) {
-  auto* p = parser("fn main() ->");
+  auto p = parser("fn main() ->");
   auto f = p->function_header();
   EXPECT_FALSE(f.matched);
   EXPECT_TRUE(f.errored);
   EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(f.value, nullptr);
   EXPECT_EQ(p->error(), "1:13: unable to determine function return type");
 }
 

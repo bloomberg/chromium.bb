@@ -6,6 +6,7 @@ module chromeos.ime.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
 import "url/mojom/url.mojom";
+import "ui/gfx/range/mojom/range.mojom";
 
 // IME on ChromeOS consists of three parts:
 // - The IME running in an extension to provide a soft keyboard
@@ -134,6 +135,63 @@ struct InputFieldInfo {
   PersonalizationMode personalization;
 };
 
+enum CommitTextCursorBehavior {
+  kMoveCursorAfterText = 0,
+  kMoveCursorBeforeText = 1,
+};
+
+struct AutocorrectSpan {
+  // The range to set the autocorrect span to.
+  gfx.mojom.Range autocorrect_range;
+
+  // The original text that was replaced by autocorrect.
+  string original_text;
+};
+
+// Proposed candidate for completing some text.
+// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
+struct CompletionCandidate {
+  // The candidate text
+  string text;
+
+  // Normalized confidence scoring for the candidate
+  float normalized_score;
+};
+
+// Single request to generate suggestion candidates from the given context.
+// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
+struct SuggestionsRequest {
+  // The preceding text used to produced the suggestions.
+  string text;
+
+  // Optional: any candidates generated to complete the current text.
+  array<CompletionCandidate> completion_candidates;
+};
+
+// A suggestion candidate containing multiple predicted words.
+// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
+struct MultiWordSuggestionCandidate {
+  // The words predicted.
+  string text;
+
+  // The normalized confidence scoring for the prediction.
+  float normalized_score;
+};
+
+// Represents a single generated suggestion candidate.
+// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
+union SuggestionCandidate {
+  // A suggestion candidate that contains multiple words.
+  MultiWordSuggestionCandidate multi_word;
+};
+
+// Encapsulates the results of a suggestions request.
+// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
+struct SuggestionsResponse {
+  // A list of suggestion candidates generated.
+  array<SuggestionCandidate> candidates;
+};
+
 // Manages access to a set of IME engines, implemented by the IME service
 // itself. The IME framework in the browser process is responsible for brokering
 // the connection between the IME service and the IME extension, but does not
@@ -212,7 +270,7 @@ interface InputChannel {
   // composition is removed and `text` is inserted. Otherwise, `text` is
   // inserted at the current cursor position, deleting any text in the current
   // selection if any. In both cases, the cursor moves to the end of `text`.
-  CommitText(string text);
+  CommitText(string text, CommitTextCursorBehavior cursor_behavior);
 
   // Asks the input field to set composition with `text`. Replaces the current
   // composition if there is one. Otherwise, start a composition at the current
@@ -243,6 +301,15 @@ interface InputChannel {
   // TODO(b/161490915): Determine the right behaviour when there is a selection.
   DeleteSurroundingText(uint32 num_bytes_before_cursor,
                         uint32 num_bytes_after_cursor);
+
+  // Asks the input field to mark the region represented by `autocorrect_span`
+  // as having been autocorrected. This usually involves showing some UI
+  // (e.g. flashing the text or showing an underline).
+  // There can only be at most one active autocorrect span. If this method is
+  // called when there is already an active autocorrect span, any UI related to
+  // the old span is removed first.
+  // This method does not modify the input field text.
+  HandleAutocorrect(AutocorrectSpan autocorrect_span);
 };
 
 // Implemented in the browser process, used to perform network requests or

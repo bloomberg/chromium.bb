@@ -37,12 +37,12 @@ Resources.BackgroundServiceView = ResourcesModule.BackgroundServiceView.Backgrou
 Resources.BackgroundServiceView.ActionDelegate = ResourcesModule.BackgroundServiceView.ActionDelegate;
 
 /** @constructor */
-Resources.ClearStorageView = ResourcesModule.ClearStorageView.ClearStorageView;
+Resources.StorageView = ResourcesModule.StorageView.StorageView;
 
-Resources.ClearStorageView.AllStorageTypes = ResourcesModule.ClearStorageView.AllStorageTypes;
+Resources.StorageView.AllStorageTypes = ResourcesModule.StorageView.AllStorageTypes;
 
 /** @constructor */
-Resources.ClearStorageView.ActionDelegate = ResourcesModule.ClearStorageView.ActionDelegate;
+Resources.StorageView.ActionDelegate = ResourcesModule.StorageView.ActionDelegate;
 
 /** @constructor */
 Resources.CookieItemsView = ResourcesModule.CookieItemsView.CookieItemsView;
@@ -69,9 +69,6 @@ Resources.DatabaseQueryView.Events = ResourcesModule.DatabaseQueryView.Events;
 Resources.DatabaseTableView = ResourcesModule.DatabaseTableView.DatabaseTableView;
 
 /** @constructor */
-Resources.FrameDetailsView = ResourcesModule.FrameDetailsView.FrameDetailsView;
-
-/** @constructor */
 Resources.IndexedDBModel = ResourcesModule.IndexedDBModel.IndexedDBModel;
 
 /** @enum {symbol} */
@@ -91,6 +88,9 @@ Resources.IDBDatabaseView = ResourcesModule.IndexedDBViews.IDBDatabaseView;
 
 /** @constructor */
 Resources.IDBDataView = ResourcesModule.IndexedDBViews.IDBDataView;
+
+/** @constructor */
+Resources.OpenedWindowDetailsView = ResourcesModule.OpenedWindowDetailsView.OpenedWindowDetailsView;
 
 /** @constructor */
 Resources.ResourcesPanel = ResourcesModule.ResourcesPanel.ResourcesPanel;

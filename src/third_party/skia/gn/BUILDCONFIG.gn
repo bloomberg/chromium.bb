@@ -29,6 +29,8 @@ declare_args() {
 
   clang_win = ""
   clang_win_version = ""
+
+  ios_min_target = ""
 }
 declare_args() {
   is_debug = !is_official_build
@@ -62,6 +64,9 @@ is_win = current_os == "win"
 # This is just to make the Dawn build files happy. Skia itself uses target_os = "linux"
 # for ChromeOS, so this variable will not affect Skia proper.
 is_chromeos = false
+
+# This is to make the ANGLE build files happy. Skia always uses is_mac and/or is_ios.
+is_apple = is_mac || is_ios
 
 if (target_cpu == "") {
   target_cpu = host_cpu

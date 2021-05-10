@@ -152,11 +152,23 @@ FtraceParser::FtraceParser(TraceProcessorContext* context)
   }
 
   // Array initialization causes a spurious warning due to llvm bug.
-  // See https://bugs.llvm.org/show_bug.cgi?id=21629 
-  fast_rpc_counter_names_[0] = context->storage->InternString("mem.fastrpc[ASDP]");
-  fast_rpc_counter_names_[1] = context->storage->InternString("mem.fastrpc[MDSP]");
-  fast_rpc_counter_names_[2] = context->storage->InternString("mem.fastrpc[SDSP]");
-  fast_rpc_counter_names_[3] = context->storage->InternString("mem.fastrpc[CDSP]");
+  // See https://bugs.llvm.org/show_bug.cgi?id=21629
+  fast_rpc_delta_names_[0] =
+      context->storage->InternString("mem.fastrpc_change[ASDP]");
+  fast_rpc_delta_names_[1] =
+      context->storage->InternString("mem.fastrpc_change[MDSP]");
+  fast_rpc_delta_names_[2] =
+      context->storage->InternString("mem.fastrpc_change[SDSP]");
+  fast_rpc_delta_names_[3] =
+      context->storage->InternString("mem.fastrpc_change[CDSP]");
+  fast_rpc_total_names_[0] =
+      context->storage->InternString("mem.fastrpc[ASDP]");
+  fast_rpc_total_names_[1] =
+      context->storage->InternString("mem.fastrpc[MDSP]");
+  fast_rpc_total_names_[2] =
+      context->storage->InternString("mem.fastrpc[SDSP]");
+  fast_rpc_total_names_[3] =
+      context->storage->InternString("mem.fastrpc[CDSP]");
 
   mm_event_counter_names_ = {
       {MmEventCounterNames(
@@ -1333,17 +1345,34 @@ void FtraceParser::ParseFastRpcDmaStat(int64_t timestamp,
 
   StringId name;
   if (0 <= evt.cid() && evt.cid() < static_cast<int32_t>(kFastRpcCounterSize)) {
-    name = fast_rpc_counter_names_[static_cast<size_t>(evt.cid())];
+    name = fast_rpc_delta_names_[static_cast<size_t>(evt.cid())];
   } else {
     char str[64];
-    sprintf(str, "mem.fastrpc[%" PRId32 "]", evt.cid());
+    snprintf(str, sizeof(str), "mem.fastrpc[%" PRId32 "]", evt.cid());
     name = context_->storage->InternString(str);
   }
 
-  UniqueTid utid = context_->process_tracker->GetOrCreateThread(pid);
-  TrackId track = context_->track_tracker->InternThreadCounterTrack(name, utid);
+  StringId total_name;
+  if (0 <= evt.cid() && evt.cid() < static_cast<int32_t>(kFastRpcCounterSize)) {
+    total_name = fast_rpc_total_names_[static_cast<size_t>(evt.cid())];
+  } else {
+    char str[64];
+    snprintf(str, sizeof(str), "mem.fastrpc[%" PRId32 "]", evt.cid());
+    total_name = context_->storage->InternString(str);
+  }
+
+  // Push the global counter.
+  TrackId track = context_->track_tracker->InternGlobalCounterTrack(total_name);
   context_->event_tracker->PushCounter(
       timestamp, static_cast<double>(evt.total_allocated()), track);
+
+  // Push the change counter.
+  // TODO(b/121331269): these should really be instant events.
+  UniqueTid utid = context_->process_tracker->GetOrCreateThread(pid);
+  TrackId delta_track =
+      context_->track_tracker->InternThreadCounterTrack(name, utid);
+  context_->event_tracker->PushCounter(
+      timestamp, static_cast<double>(evt.len()), delta_track);
 }
 
 }  // namespace trace_processor

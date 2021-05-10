@@ -61,6 +61,7 @@ struct lookahead_ctx *av1_lookahead_init(
   if (ctx) {
     unsigned int i;
     ctx->max_sz = depth;
+    ctx->push_frame_count = 0;
     ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - MAX_PRE_FRAMES;
     ctx->read_ctxs[ENCODE_STAGE].valid = 1;
     if (num_lap_buffers) {
@@ -136,7 +137,9 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, const YV12_BUFFER_CONFIG *src,
 
   buf->ts_start = ts_start;
   buf->ts_end = ts_end;
+  buf->display_idx = ctx->push_frame_count;
   buf->flags = flags;
+  ++ctx->push_frame_count;
   aom_remove_metadata_from_frame_buffer(&buf->img);
   aom_copy_metadata_to_frame_buffer(&buf->img, src->metadata);
   return 0;

@@ -24,30 +24,16 @@
 namespace tint {
 namespace ast {
 
-class StageDecoration;
-class WorkgroupDecoration;
-
 /// A decoration attached to a function
-class FunctionDecoration : public Decoration {
+class FunctionDecoration : public Castable<FunctionDecoration, Decoration> {
  public:
   /// The kind of decoration that this type represents
-  static constexpr DecorationKind Kind = DecorationKind::kFunction;
+  static constexpr const DecorationKind Kind = DecorationKind::kFunction;
 
   ~FunctionDecoration() override;
 
-  /// @returns true if this is a stage decoration
-  virtual bool IsStage() const;
-  /// @returns true if this is a workgroup decoration
-  virtual bool IsWorkgroup() const;
-
-  /// @returns the decoration as a stage decoration
-  const StageDecoration* AsStage() const;
-  /// @returns the decoration as a workgroup decoration
-  const WorkgroupDecoration* AsWorkgroup() const;
-
-  /// Outputs the function decoration to the given stream
-  /// @param out the stream to output too
-  virtual void to_str(std::ostream& out) const = 0;
+  /// @return the decoration kind
+  DecorationKind GetKind() const override;
 
  protected:
   /// Constructor
@@ -55,8 +41,8 @@ class FunctionDecoration : public Decoration {
   explicit FunctionDecoration(const Source& source);
 };
 
-/// A list of unique function decorations
-using FunctionDecorationList = std::vector<std::unique_ptr<FunctionDecoration>>;
+/// A list of function decorations
+using FunctionDecorationList = std::vector<FunctionDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

@@ -43,9 +43,6 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidRuleKey, base::NumberToString(*rule_id), kIDKey,
           base::NumberToString(kMinValidID));
-    case ParseResult::ERROR_EMPTY_RULE_PRIORITY:
-      return ErrorUtils::FormatErrorMessage(kErrorEmptyRulePriority,
-                                            base::NumberToString(*rule_id));
     case ParseResult::ERROR_INVALID_RULE_PRIORITY:
       return ErrorUtils::FormatErrorMessage(
           kErrorInvalidRuleKey, base::NumberToString(*rule_id), kPriorityKey,
@@ -177,13 +174,15 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
 
 ParseInfo::ParseInfo(size_t rules_count,
                      size_t regex_rules_count,
-                     int ruleset_checksum,
-                     std::vector<int> regex_limit_exceeded_rules)
+                     std::vector<int> regex_limit_exceeded_rules,
+                     flatbuffers::DetachedBuffer buffer,
+                     int ruleset_checksum)
     : has_error_(false),
       rules_count_(rules_count),
       regex_rules_count_(regex_rules_count),
-      ruleset_checksum_(ruleset_checksum),
-      regex_limit_exceeded_rules_(std::move(regex_limit_exceeded_rules)) {}
+      regex_limit_exceeded_rules_(std::move(regex_limit_exceeded_rules)),
+      buffer_(std::move(buffer)),
+      ruleset_checksum_(ruleset_checksum) {}
 
 ParseInfo::ParseInfo(ParseResult error_reason, const int* rule_id)
     : has_error_(true),

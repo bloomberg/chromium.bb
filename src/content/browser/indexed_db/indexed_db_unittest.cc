@@ -86,19 +86,20 @@ class IndexedDBTest : public testing::Test {
       : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
         kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
         quota_manager_proxy_(
-            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
-                                                                 nullptr)),
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(
+                nullptr,
+                base::SequencedTaskRunnerHandle::Get())),
         context_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
             /*blob_storage_context=*/mojo::NullRemote(),
-            /*native_file_system_context=*/mojo::NullRemote(),
+            /*file_system_access_context=*/mojo::NullRemote(),
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
-    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr> policy_updates;
+    std::vector<storage::mojom::StoragePolicyUpdatePtr> policy_updates;
     bool should_purge_on_shutdown = true;
-    policy_updates.push_back(storage::mojom::IndexedDBStoragePolicyUpdate::New(
+    policy_updates.emplace_back(storage::mojom::StoragePolicyUpdate::New(
         kSessionOnlyOrigin, should_purge_on_shutdown));
     context_->ApplyPolicyUpdates(std::move(policy_updates));
   }
@@ -153,11 +154,10 @@ class IndexedDBTest : public testing::Test {
 
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
-  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
- private:
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> context_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTest);
@@ -218,7 +218,6 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
         origin_(origin) {}
 
   void OnSuccess() override {}
-  void OnSuccess(const std::vector<base::string16>&) override {}
   void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override {
     connection_ = std::move(connection);

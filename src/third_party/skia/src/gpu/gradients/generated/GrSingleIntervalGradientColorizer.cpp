@@ -64,8 +64,9 @@ private:
     UniformHandle startVar;
     UniformHandle endVar;
 };
-GrGLSLFragmentProcessor* GrSingleIntervalGradientColorizer::onCreateGLSLInstance() const {
-    return new GrGLSLSingleIntervalGradientColorizer();
+std::unique_ptr<GrGLSLFragmentProcessor> GrSingleIntervalGradientColorizer::onMakeProgramImpl()
+        const {
+    return std::make_unique<GrGLSLSingleIntervalGradientColorizer>();
 }
 void GrSingleIntervalGradientColorizer::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                               GrProcessorKeyBuilder* b) const {}
@@ -76,7 +77,6 @@ bool GrSingleIntervalGradientColorizer::onIsEqual(const GrFragmentProcessor& oth
     if (end != that.end) return false;
     return true;
 }
-bool GrSingleIntervalGradientColorizer::usesExplicitReturn() const { return true; }
 GrSingleIntervalGradientColorizer::GrSingleIntervalGradientColorizer(
         const GrSingleIntervalGradientColorizer& src)
         : INHERITED(kGrSingleIntervalGradientColorizer_ClassID, src.optimizationFlags())

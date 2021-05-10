@@ -5,17 +5,22 @@
 import {assert} from 'chai';
 import * as puppeteer from 'puppeteer';
 
-import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, reloadDevTools, scrollElementIntoView, waitFor} from '../../shared/helper.js';
+import {$, click, enableExperiment, getBrowserAndPages, goToResource, platform, pressKey, reloadDevTools, scrollElementIntoView, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {navigateToCssOverviewTab} from '../helpers/css-overview-helpers.js';
-import {editCSSProperty, expandSelectedNodeRecursively, focusElementsTree, INACTIVE_GRID_ADORNER_SELECTOR, navigateToSidePane, openLayoutPane, toggleElementCheckboxInLayoutPane, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {editCSSProperty, focusElementsTree, navigateToSidePane, waitForContentOfSelectedElementsNode, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
 import {clickToggleButton, selectDualScreen, startEmulationWithDualScreenFlag} from '../helpers/emulation-helpers.js';
+import {openCommandMenu} from '../helpers/quick_open-helpers.js';
 import {closeSecurityTab, navigateToSecurityTab} from '../helpers/security-helpers.js';
 import {openPanelViaMoreTools, openSettingsTab} from '../helpers/settings-helpers.js';
 
 interface UserMetric {
   name: string;
   value: string|number|LoadMetric;
+}
+interface UserMetricWithOptionalValue {
+  name: string;
+  value?: string|number|LoadMetric;
 }
 
 interface LoadMetric {
@@ -24,11 +29,14 @@ interface LoadMetric {
 }
 
 interface UserMetrics {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Action: {[name: string]: number};
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    /* eslint-disable @typescript-eslint/naming-convention */
     __caughtEvents: UserMetric[];
     __beginCatchEvents: () => void;
     __endCatchEvents: () => void;
@@ -41,95 +49,51 @@ declare global {
     __issuesPanelOpenedFrom: (evt: Event) => void;
     __keybindSetSettingChanged: (evt: Event) => void;
     __dualScreenDeviceEmulated: (evt: Event) => void;
+    __cssEditorOpened: (evt: Event) => void;
     __experimentDisabled: (evt: Event) => void;
     __experimentEnabled: (evt: Event) => void;
     __colorFixed: (evt: Event) => void;
     __issuesPanelIssueExpanded: (evt: Event) => void;
     __issuesPanelResourceOpened: (evt: Event) => void;
-    __gridOverlayOpenedFrom: (evt: Event) => void;
+    __issuesPanelIssueCreated: (evt: Event) => void;
+    __developerResourceLoaded: (evt: Event) => void;
+    __developerResourceScheme: (evt: Event) => void;
     Host: {
-      UserMetrics: UserMetrics; userMetrics: {actionTaken(name: number): void; colorFixed(threshold: string): void;}
+      UserMetrics: UserMetrics,
+      userMetrics: {
+        actionTaken(name: number): void,
+        colorFixed(threshold: string): void,
+        cssEditorOpened(editorName: string): void,
+      },
     };
   }
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 async function beginCatchEvents(frontend: puppeteer.Page) {
   await frontend.evaluate(() => {
-    window.__panelShown = (evt: Event) => {
+    const makeHandler = (eventName: string) => (evt: Event) => {
       const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.PanelShown', value: customEvt.detail.value});
+      window.__caughtEvents.push({name: eventName, value: customEvt.detail.value});
     };
-
-    window.__panelClosed = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.PanelClosed', value: customEvt.detail.value});
-    };
-
-    window.__panelLoaded = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.PanelLoaded', value: customEvt.detail.value});
-    };
-
-    window.__sidebarPaneShown = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.SidebarPaneShown', value: customEvt.detail.value});
-    };
-
-    window.__actionTaken = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.ActionTaken', value: customEvt.detail.value});
-    };
-
-    window.__keyboardShortcutFired = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.KeyboardShortcutFired', value: customEvt.detail.value});
-    };
-
-    window.__issuesPanelOpenedFrom = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.IssuesPanelOpenedFrom', value: customEvt.detail.value});
-    };
-
-    window.__keybindSetSettingChanged = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.KeybindSetSettingChanged', value: customEvt.detail.value});
-    };
-
-    window.__dualScreenDeviceEmulated = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.DualScreenDeviceEmulated', value: customEvt.detail.value});
-    };
-
-    window.__experimentDisabled = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.ExperimentDisabled', value: customEvt.detail.value});
-    };
-
-    window.__experimentEnabled = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.ExperimentEnabled', value: customEvt.detail.value});
-    };
-
-    window.__colorFixed = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.ColorPicker.FixedColor', value: customEvt.detail.value});
-    };
-
-    window.__issuesPanelIssueExpanded = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.IssuesPanelIssueExpanded', value: customEvt.detail.value});
-    };
-
-    window.__issuesPanelResourceOpened = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.IssuesPanelResourceOpened', value: customEvt.detail.value});
-    };
-
-    window.__gridOverlayOpenedFrom = (evt: Event) => {
-      const customEvt = evt as CustomEvent;
-      window.__caughtEvents.push({name: 'DevTools.GridOverlayOpenedFrom', value: customEvt.detail.value});
-    };
-
+    window.__panelShown = makeHandler('DevTools.PanelShown');
+    window.__panelClosed = makeHandler('DevTools.PanelClosed');
+    window.__panelLoaded = makeHandler('DevTools.PanelLoaded');
+    window.__sidebarPaneShown = makeHandler('DevTools.SidebarPaneShown');
+    window.__actionTaken = makeHandler('DevTools.ActionTaken');
+    window.__keyboardShortcutFired = makeHandler('DevTools.KeyboardShortcutFired');
+    window.__issuesPanelOpenedFrom = makeHandler('DevTools.IssuesPanelOpenedFrom');
+    window.__keybindSetSettingChanged = makeHandler('DevTools.KeybindSetSettingChanged');
+    window.__dualScreenDeviceEmulated = makeHandler('DevTools.DualScreenDeviceEmulated');
+    window.__cssEditorOpened = makeHandler('DevTools.CssEditorOpened');
+    window.__experimentDisabled = makeHandler('DevTools.ExperimentDisabled');
+    window.__experimentEnabled = makeHandler('DevTools.ExperimentEnabled');
+    window.__colorFixed = makeHandler('DevTools.ColorPicker.FixedColor');
+    window.__issuesPanelIssueExpanded = makeHandler('DevTools.IssuesPanelIssueExpanded');
+    window.__issuesPanelResourceOpened = makeHandler('DevTools.IssuesPanelResourceOpened');
+    window.__issuesPanelIssueCreated = makeHandler('DevTools.IssueCreated');
+    window.__developerResourceLoaded = makeHandler('DevTools.DeveloperResourceLoaded');
+    window.__developerResourceScheme = makeHandler('DevTools.DeveloperResourceScheme');
     window.__caughtEvents = [];
     window.__beginCatchEvents = () => {
       window.addEventListener('DevTools.PanelShown', window.__panelShown);
@@ -141,12 +105,15 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.addEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
       window.addEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
       window.addEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
+      window.addEventListener('DevTools.CssEditorOpened', window.__cssEditorOpened);
       window.addEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
       window.addEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
       window.addEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
       window.addEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
       window.addEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
-      window.addEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
+      window.addEventListener('DevTools.IssueCreated', window.__issuesPanelIssueCreated);
+      window.addEventListener('DevTools.DeveloperResourceLoaded', window.__developerResourceLoaded);
+      window.addEventListener('DevTools.DeveloperResourceScheme', window.__developerResourceScheme);
     };
 
     window.__endCatchEvents = () => {
@@ -159,12 +126,14 @@ async function beginCatchEvents(frontend: puppeteer.Page) {
       window.removeEventListener('DevTools.IssuesPanelOpenedFrom', window.__issuesPanelOpenedFrom);
       window.removeEventListener('DevTools.KeybindSetSettingChanged', window.__keybindSetSettingChanged);
       window.removeEventListener('DevTools.DualScreenDeviceEmulated', window.__dualScreenDeviceEmulated);
+      window.removeEventListener('DevTools.CssEditorOpened', window.__cssEditorOpened);
       window.removeEventListener('DevTools.ExperimentDisabled', window.__experimentDisabled);
       window.removeEventListener('DevTools.ExperimentEnabled', window.__experimentEnabled);
       window.removeEventListener('DevTools.ColorPicker.FixedColor', window.__colorFixed);
       window.removeEventListener('DevTools.IssuesPanelIssueExpanded', window.__issuesPanelIssueExpanded);
       window.removeEventListener('DevTools.IssuesPanelResourceOpened', window.__issuesPanelResourceOpened);
-      window.removeEventListener('DevTools.GridOverlayOpenedFrom', window.__gridOverlayOpenedFrom);
+      window.removeEventListener('DevTools.DeveloperResourceLoaded', window.__developerResourceLoaded);
+      window.removeEventListener('DevTools.DeveloperResourceScheme', window.__developerResourceScheme);
     };
 
     window.__beginCatchEvents();
@@ -188,15 +157,12 @@ async function assertCapturedEvents(expected: UserMetric[]) {
   assert.deepEqual(events, expected);
 }
 
-// Check if the given expected UserMetric events have been fired,
-// but do not care if they are the entirety of the events fired,
-// i.e. expected ∈ events, not necessarily expected === events.
-// The purpose of this helper is to ignore unrelated collateral events.
-async function assertEventsHaveBeenFired(events: UserMetric[]) {
+async function awaitCapturedEvent(expected: UserMetricWithOptionalValue) {
   const {frontend} = getBrowserAndPages();
-  const allEvents = await retrieveCapturedEvents(frontend);
-
-  assert.includeDeepMembers(allEvents, events);
+  await waitForFunction(async () => {
+    const events = await retrieveCapturedEvents(frontend);
+    return events.find(e => e.name === expected.name && (!('value' in expected) || e.value === expected.value));
+  });
 }
 
 describe('User Metrics', () => {
@@ -291,6 +257,22 @@ describe('User Metrics', () => {
         value: 37,  // 'issues-pane'.
       },
     ]);
+  });
+
+  it('dispatches event when opening issues drawer via command menu', async () => {
+    const {frontend} = getBrowserAndPages();
+
+    await openCommandMenu();
+    await typeText('issues');
+    await waitFor('.filtered-list-widget-title');
+    await pressKey('Enter');
+    await waitFor('[aria-label="Issues panel"]');
+
+    const events = await retrieveCapturedEvents(frontend);
+    assert.deepInclude(events, {
+      name: 'DevTools.IssuesPanelOpenedFrom',
+      value: 5,  // CommandMenu
+    });
   });
 
   it('dispatches an event when F1 is used to open settings', async () => {
@@ -529,6 +511,96 @@ describe('User Metrics for CSS Overview', () => {
   });
 });
 
+
+describe('User Metrics for CSS Editors in Styles Pane', () => {
+  it('dispatch CssEditorOpened events', async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+
+    await frontend.evaluate(() => {
+      self.Host.userMetrics.cssEditorOpened('colorPicker');
+      self.Host.userMetrics.cssEditorOpened('shadowEditor');
+      self.Host.userMetrics.cssEditorOpened('bezierEditor');
+      self.Host.userMetrics.cssEditorOpened('fontEditor');
+    });
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 0,  // colorPicker
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 1,  // shadowEditor
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 2,  // bezierEditor
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 3,  // fontEditor
+      },
+    ]);
+  });
+
+  it('click swatches and listen for events', async () => {
+    await enableExperiment('fontEditor');
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+    await goToResource('host/css-editor.html');
+    await waitForElementsStyleSection();
+    await waitFor('.color-swatch-inner');
+    await click('.color-swatch-inner');
+    await frontend.keyboard.press('Escape');
+    await waitFor('.shadow-swatch-icon');
+    await click('.shadow-swatch-icon');
+    await frontend.keyboard.press('Escape');
+    await waitFor('.bezier-swatch-icon');
+    await click('.bezier-swatch-icon');
+    await frontend.keyboard.press('Escape');
+    await waitFor('.largeicon-font-editor');
+    await click('.largeicon-font-editor');
+    await frontend.keyboard.press('Escape');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 0,  // colorPicker
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 14,  // StyleRuleEdited
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 1,  // shadowEditor
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 14,  // StyleRuleEdited
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 2,  // bezierEditor
+      },
+      {
+        name: 'DevTools.ActionTaken',
+        value: 14,  // StyleRuleEdited
+      },
+      {
+        name: 'DevTools.CssEditorOpened',
+        value: 3,  // fontEditor
+      },
+    ]);
+  });
+
+  afterEach(async () => {
+    const {frontend} = getBrowserAndPages();
+    await endCatchEvents(frontend);
+  });
+});
+
 describe('User Metrics for Color Picker', () => {
   beforeEach(async () => {
     const {frontend} = getBrowserAndPages();
@@ -591,6 +663,7 @@ describe('User Metrics for sidebar panes', () => {
 
 describe('User Metrics for Issue Panel', () => {
   beforeEach(async () => {
+    await enableExperiment('contrastIssues');
     await openPanelViaMoreTools('Issues');
     const {frontend} = getBrowserAndPages();
     await beginCatchEvents(frontend);
@@ -604,8 +677,56 @@ describe('User Metrics for Issue Panel', () => {
 
     await assertCapturedEvents([
       {
+        name: 'DevTools.IssueCreated',
+        value: 15,  // SameSiteCookieIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 15,  // SameSiteCookieIssue
+      },
+      {
         name: 'DevTools.IssuesPanelIssueExpanded',
         value: 2,  // SameSiteCookie
+      },
+    ]);
+  });
+
+  it('dispatches an event when a LowTextContrastIssue is created', async () => {
+    await goToResource('elements/low-contrast.html');
+    await waitFor('.issue');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssueCreated',
+        value: 41,  // LowTextContrastIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 41,  // LowTextContrastIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 41,  // LowTextContrastIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 41,  // LowTextContrastIssue
+      },
+    ]);
+  });
+
+  it('dispatches an event when a SharedArrayBufferIssue is created', async () => {
+    await goToResource('issues/sab-issue.html');
+    await waitFor('.issue');
+
+    await assertCapturedEvents([
+      {
+        name: 'DevTools.IssueCreated',
+        value: 37,  // SharedArrayBufferIssue::CreationIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 36,  // SharedArrayBufferIssue::TransferIssue
       },
     ]);
   });
@@ -620,6 +741,14 @@ describe('User Metrics for Issue Panel', () => {
     await click('.element-reveal-icon');
 
     await assertCapturedEvents([
+      {
+        name: 'DevTools.IssueCreated',
+        value: 1,  // ContentSecurityPolicyIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 1,  // ContentSecurityPolicyIssue
+      },
       {
         name: 'DevTools.IssuesPanelIssueExpanded',
         value: 4,  // ContentSecurityPolicy
@@ -642,55 +771,20 @@ describe('User Metrics for Issue Panel', () => {
 
     await assertCapturedEvents([
       {
+        name: 'DevTools.IssueCreated',
+        value: 1,  // ContentSecurityPolicyIssue
+      },
+      {
+        name: 'DevTools.IssueCreated',
+        value: 1,  // ContentSecurityPolicyIssue
+      },
+      {
         name: 'DevTools.IssuesPanelIssueExpanded',
         value: 4,  // ContentSecurityPolicy
       },
       {
         name: 'DevTools.IssuesPanelResourceOpened',
         value: 12,  // ContentSecurityPolicyLearnMore
-      },
-    ]);
-  });
-
-  afterEach(async () => {
-    const {frontend} = getBrowserAndPages();
-    await endCatchEvents(frontend);
-  });
-});
-
-describe('User Metrics for Grid Overlay', () => {
-  beforeEach(async () => {
-    await goToResource('elements/adornment.html');
-    await enableExperiment('cssGridFeatures');
-
-    const {frontend} = getBrowserAndPages();
-    await beginCatchEvents(frontend);
-
-    await waitForElementsStyleSection();
-    await waitForContentOfSelectedElementsNode('<body>\u200B');
-    await expandSelectedNodeRecursively();
-  });
-
-  // Flaky test
-  it.skip('[crbug.com/1134593] dispatch events when opening Grid overlay from adorner', async () => {
-    await click(INACTIVE_GRID_ADORNER_SELECTOR);
-
-    await assertEventsHaveBeenFired([
-      {
-        name: 'DevTools.GridOverlayOpenedFrom',
-        value: 0,  // adorner
-      },
-    ]);
-  });
-
-  it('dispatch events when opening Grid overlay from Layout pane', async () => {
-    await openLayoutPane();
-    await toggleElementCheckboxInLayoutPane();
-
-    await assertEventsHaveBeenFired([
-      {
-        name: 'DevTools.GridOverlayOpenedFrom',
-        value: 1,  // layout pane
       },
     ]);
   });
@@ -744,6 +838,26 @@ describe('User Metrics for CSS custom properties in the Styles pane', () => {
       },
     ]);
 
+    await endCatchEvents(frontend);
+  });
+});
+
+describe('User Metrics for the Page Resource Loader', () => {
+  it('dispatches an event when a source map is loaded', async () => {
+    const {frontend} = getBrowserAndPages();
+    await beginCatchEvents(frontend);
+    await goToResource('sources/script-with-sourcemap-without-mappings.html');
+    await awaitCapturedEvent(
+        {
+          name: 'DevTools.DeveloperResourceLoaded',
+          value: 0,  // LoadThroughPageViaTarget
+        },
+    );
+    await awaitCapturedEvent(
+        {
+          name: 'DevTools.DeveloperResourceScheme',
+        },
+    );
     await endCatchEvents(frontend);
   });
 });

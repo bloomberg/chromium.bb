@@ -199,7 +199,7 @@ void ExtensionEventObserver::DarkSuspendImminent() {
     OnSuspendImminent(true);
 }
 
-void ExtensionEventObserver::SuspendDone(const base::TimeDelta& duration) {
+void ExtensionEventObserver::SuspendDone(base::TimeDelta duration) {
   block_suspend_token_ = {};
   suspend_readiness_callback_.Cancel();
 }
@@ -214,8 +214,8 @@ void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
                                           "ExtensionEventObserver");
 
   suspend_readiness_callback_.Reset(
-      base::Bind(&ExtensionEventObserver::MaybeReportSuspendReadiness,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ExtensionEventObserver::MaybeReportSuspendReadiness,
+                     weak_factory_.GetWeakPtr()));
 
   // Unfortunately, there is a race between the arrival of the
   // DarkSuspendImminent signal and OnBackgroundEventDispatched.  As a result,

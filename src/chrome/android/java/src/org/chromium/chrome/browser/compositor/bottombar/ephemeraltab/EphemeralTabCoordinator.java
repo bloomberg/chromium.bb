@@ -72,7 +72,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private EphemeralTabSheetContent mSheetContent;
     private EmptyBottomSheetObserver mSheetObserver;
 
-    private String mUrl;
+    private GURL mUrl;
     private int mCurrentMaxViewHeight;
     private boolean mPeeked;
     private boolean mViewed; // Moved up from peek state by user
@@ -126,7 +126,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      * @param title The title to be shown.
      * @param isIncognito Whether we are currently in incognito mode.
      */
-    public void requestOpenSheet(String url, String title, boolean isIncognito) {
+    public void requestOpenSheet(GURL url, String title, boolean isIncognito) {
         mUrl = url;
         Profile profile = getProfile(isIncognito);
         if (mMediator == null) {
@@ -226,7 +226,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow,
                 WebContents.createDefaultInternalsHolder());
-        ContentUtils.setUserAgentOverride(mWebContents);
+        ContentUtils.setUserAgentOverride(mWebContents, /* overrideInNewTabs= */ false);
     }
 
     private void destroyWebContents() {
@@ -248,7 +248,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         if (mCanPromoteToNewTab && mUrl != null) {
             mBottomSheetController.hideContent(
                     mSheetContent, /* animate= */ true, StateChangeReason.PROMOTE_TAB);
-            mTabCreator.get().createNewTab(new LoadUrlParams(mUrl, PageTransition.LINK),
+            mTabCreator.get().createNewTab(new LoadUrlParams(mUrl.getSpec(), PageTransition.LINK),
                     TabLaunchType.FROM_LINK, mTabProvider.get());
             mMetrics.recordOpenInNewTab();
         }

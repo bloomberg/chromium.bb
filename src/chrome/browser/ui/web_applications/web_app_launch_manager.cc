@@ -11,11 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/share_target_utils.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
@@ -39,6 +39,8 @@
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/site_engagement/content/site_engagement_service.h"
+#include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -71,34 +73,8 @@ void SetTabHelperAppId(content::WebContents* web_contents,
   tab_helper->SetAppId(app_id);
 }
 
-}  // namespace
-
-Browser* CreateWebApplicationWindow(Profile* profile,
-                                    const std::string& app_id,
-                                    WindowOpenDisposition disposition,
-                                    bool can_resize) {
-  std::string app_name = GenerateApplicationNameFromAppId(app_id);
-  gfx::Rect initial_bounds;
-  Browser::CreateParams browser_params =
-      disposition == WindowOpenDisposition::NEW_POPUP
-          ? Browser::CreateParams::CreateForAppPopup(
-                app_name, /*trusted_source=*/true, initial_bounds, profile,
-                /*user_gesture=*/true)
-          : Browser::CreateParams::CreateForApp(
-                app_name, /*trusted_source=*/true, initial_bounds, profile,
-                /*user_gesture=*/true);
-  browser_params.initial_show_state = DetermineWindowShowState();
-  browser_params.can_resize = can_resize;
-  return Browser::Create(browser_params);
-}
-
-content::WebContents* NavigateWebApplicationWindow(
-    Browser* browser,
-    const std::string& app_id,
-    const GURL& url,
-    WindowOpenDisposition disposition) {
-  NavigateParams nav_params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  nav_params.disposition = disposition;
+content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
+                                                NavigateParams& nav_params) {
   Navigate(&nav_params);
 
   content::WebContents* const web_contents =
@@ -110,6 +86,57 @@ content::WebContents* NavigateWebApplicationWindow(
   return web_contents;
 }
 
+GURL GetLaunchUrl(WebAppProvider& provider,
+                  const apps::AppLaunchParams& params,
+                  const apps::ShareTarget* share_target) {
+  if (!params.override_url.is_empty())
+    return params.override_url;
+
+  const GURL app_url =
+      share_target ? share_target->action
+                   : provider.registrar().GetAppLaunchUrl(params.app_id);
+  return provider.os_integration_manager()
+      .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
+      .value_or(app_url);
+}
+
+}  // namespace
+
+Browser* CreateWebApplicationWindow(Profile* profile,
+                                    const std::string& app_id,
+                                    WindowOpenDisposition disposition,
+                                    int32_t restore_id,
+                                    bool can_resize,
+                                    bool can_maximize) {
+  std::string app_name = GenerateApplicationNameFromAppId(app_id);
+  gfx::Rect initial_bounds;
+  Browser::CreateParams browser_params =
+      disposition == WindowOpenDisposition::NEW_POPUP
+          ? Browser::CreateParams::CreateForAppPopup(
+                app_name, /*trusted_source=*/true, initial_bounds, profile,
+                /*user_gesture=*/true)
+          : Browser::CreateParams::CreateForApp(
+                app_name, /*trusted_source=*/true, initial_bounds, profile,
+                /*user_gesture=*/true);
+  browser_params.initial_show_state = DetermineWindowShowState();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  browser_params.restore_id = restore_id;
+#endif
+  browser_params.can_resize = can_resize;
+  browser_params.can_maximize = can_maximize;
+  return Browser::Create(browser_params);
+}
+
+content::WebContents* NavigateWebApplicationWindow(
+    Browser* browser,
+    const std::string& app_id,
+    const GURL& url,
+    WindowOpenDisposition disposition) {
+  NavigateParams nav_params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  nav_params.disposition = disposition;
+  return NavigateWebAppUsingParams(app_id, nav_params);
+}
+
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
     : profile_(profile), provider_(WebAppProvider::Get(profile)) {}
 
@@ -117,8 +144,11 @@ WebAppLaunchManager::~WebAppLaunchManager() = default;
 
 content::WebContents* WebAppLaunchManager::OpenApplication(
     apps::AppLaunchParams&& params) {
-  if (!provider_->registrar().IsInstalled(params.app_id))
+  if (Browser::GetCreationStatusForProfile(profile_) !=
+          Browser::CreationStatus::kOk ||
+      !provider_->registrar().IsInstalled(params.app_id)) {
     return nullptr;
+  }
 
   if (params.container == apps::mojom::LaunchContainer::kLaunchContainerWindow)
     RecordAppWindowLaunch(profile_, params.app_id);
@@ -126,15 +156,11 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   if (GetOpenApplicationCallback())
     return GetOpenApplicationCallback().Run(std::move(params));
 
-  web_app::OsIntegrationManager& os_integration_manager =
-      provider_->os_integration_manager();
-
-  const GURL url =
-      params.override_url.is_empty()
-          ? os_integration_manager
-                .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
-                .value_or(provider_->registrar().GetAppLaunchUrl(params.app_id))
-          : params.override_url;
+  const apps::ShareTarget* const share_target =
+      params.intent ? provider_->registrar().GetAppShareTarget(params.app_id)
+                    : nullptr;
+  const GURL url = GetLaunchUrl(*provider_, params, share_target);
+  DCHECK(url.is_valid());
 
   // Place new windows on the specified display.
   display::ScopedDisplayForNewWindows scoped_display(params.display_id);
@@ -144,7 +170,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
       GetSystemWebAppTypeForAppId(profile_, params.app_id);
   if (system_app_type) {
     Browser* browser =
-        LaunchSystemWebApp(profile_, *system_app_type, url, std::move(params));
+        LaunchSystemWebAppImpl(profile_, *system_app_type, url, params);
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
@@ -167,21 +193,25 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
         provider_->registrar().IsInExperimentalTabbedWindowMode(
             params.app_id)) {
       for (Browser* open_browser : *BrowserList::GetInstance()) {
-        if (AppBrowserController::IsForWebAppBrowser(open_browser,
-                                                     params.app_id)) {
+        if (AppBrowserController::IsForWebApp(open_browser, params.app_id)) {
           browser = open_browser;
           break;
         }
       }
     }
     if (!browser) {
-      browser = CreateWebApplicationWindow(profile_, params.app_id,
-                                           params.disposition);
+      browser = CreateWebApplicationWindow(
+          profile_, params.app_id, params.disposition, params.restore_id);
     }
   }
 
   content::WebContents* web_contents;
-  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+  if (share_target) {
+    NavigateParams nav_params =
+        NavigateParamsForShareTarget(browser, *share_target, *params.intent);
+    nav_params.disposition = disposition;
+    web_contents = NavigateWebAppUsingParams(params.app_id, nav_params);
+  } else if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     TabStripModel* const model = browser->tab_strip_model();
     content::WebContents* existing_tab = model->GetActiveWebContents();
     const int tab_index = model->GetIndexOfWebContents(existing_tab);
@@ -204,6 +234,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
         browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   }
 
+  web_app::OsIntegrationManager& os_integration_manager =
+      provider_->os_integration_manager();
   if (os_integration_manager.IsFileHandlingAPIAvailable(params.app_id)) {
     web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
                                                      params.launch_files);
@@ -212,9 +244,6 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   browser->window()->Show();
 
   // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
-                            params.container);
   if (params.container == apps::mojom::LaunchContainer::kLaunchContainerTab) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType",
                               extensions::LAUNCH_TYPE_REGULAR, 100);
@@ -226,8 +255,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
 
   // Record the launch time in the site engagement service. A recent web
   // app launch will provide an engagement boost to the origin.
-  SiteEngagementService::Get(profile_)->SetLastShortcutLaunchTime(web_contents,
-                                                                  url);
+  site_engagement::SiteEngagementService::Get(profile_)
+      ->SetLastShortcutLaunchTime(web_contents, url);
   provider_->registry_controller().SetAppLastLaunchTime(params.app_id,
                                                         base::Time::Now());
   // Refresh the app banner added to homescreen event. The user may have

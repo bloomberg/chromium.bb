@@ -17,6 +17,7 @@
 #ifndef AOM_AV1_ENCODER_INTRA_MODE_SEARCH_UTILS_H_
 #define AOM_AV1_ENCODER_INTRA_MODE_SEARCH_UTILS_H_
 
+#include "av1/common/enums.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconintra.h"
 
@@ -30,12 +31,12 @@ extern "C" {
 
 /*!\cond */
 #define BINS 32
-static const float intra_hog_model_bias[DIRECTIONAL_MODES] = {
+static const float av1_intra_hog_model_bias[DIRECTIONAL_MODES] = {
   0.450578f,  0.695518f,  -0.717944f, -0.639894f,
   -0.602019f, -0.453454f, 0.055857f,  -0.465480f,
 };
 
-static const float intra_hog_model_weights[BINS * DIRECTIONAL_MODES] = {
+static const float av1_intra_hog_model_weights[BINS * DIRECTIONAL_MODES] = {
   -3.076402f, -3.757063f, -3.275266f, -3.180665f, -3.452105f, -3.216593f,
   -2.871212f, -3.134296f, -1.822324f, -2.401411f, -1.541016f, -1.195322f,
   -0.434156f, 0.322868f,  2.260546f,  3.368715f,  3.989290f,  3.308487f,
@@ -79,6 +80,19 @@ static const float intra_hog_model_weights[BINS * DIRECTIONAL_MODES] = {
   -1.430687f, 0.872896f,  2.766550f,  3.610080f,  3.578041f,  3.334928f,
   2.586680f,  1.895721f,  1.122195f,  0.488519f,  -0.140689f, -0.799076f,
   -1.222860f, -1.502437f, -1.900969f, -3.206816f,
+};
+
+static const NN_CONFIG av1_intra_hog_model_nnconfig = {
+  BINS,               // num_inputs
+  DIRECTIONAL_MODES,  // num_outputs
+  0,                  // num_hidden_layers
+  { 0 },
+  {
+      av1_intra_hog_model_weights,
+  },
+  {
+      av1_intra_hog_model_bias,
+  },
 };
 
 #define FIX_PREC_BITS (16)
@@ -189,34 +203,52 @@ static AOM_INLINE void generate_hog_hbd(const uint8_t *src8, int stride,
   for (int i = 0; i < BINS; ++i) hist[i] /= total;
 }
 
-static AOM_INLINE void prune_intra_mode_with_hog(
-    const MACROBLOCK *x, BLOCK_SIZE bsize, float th,
-    uint8_t *directional_mode_skip_mask) {
-  aom_clear_system_state();
-
+static INLINE void collect_hog_data(const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                    int plane, float *hog) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int ss_x = pd->subsampling_x;
+  const int ss_y = pd->subsampling_y;
   const int bh = block_size_high[bsize];
   const int bw = block_size_wide[bsize];
-  const MACROBLOCKD *xd = &x->e_mbd;
   const int rows =
-      (xd->mb_to_bottom_edge >= 0) ? bh : (xd->mb_to_bottom_edge >> 3) + bh;
+      ((xd->mb_to_bottom_edge >= 0) ? bh : (xd->mb_to_bottom_edge >> 3) + bh) >>
+      ss_y;
   const int cols =
-      (xd->mb_to_right_edge >= 0) ? bw : (xd->mb_to_right_edge >> 3) + bw;
-  const int src_stride = x->plane[0].src.stride;
-  const uint8_t *src = x->plane[0].src.buf;
-  float hist[BINS] = { 0.0f };
+      ((xd->mb_to_right_edge >= 0) ? bw : (xd->mb_to_right_edge >> 3) + bw) >>
+      ss_x;
+  const int src_stride = x->plane[plane].src.stride;
+  const uint8_t *src = x->plane[plane].src.buf;
   if (is_cur_buf_hbd(xd)) {
-    generate_hog_hbd(src, src_stride, rows, cols, hist);
+    generate_hog_hbd(src, src_stride, rows, cols, hog);
   } else {
-    generate_hog(src, src_stride, rows, cols, hist);
+    generate_hog(src, src_stride, rows, cols, hog);
   }
 
-  for (int i = 0; i < DIRECTIONAL_MODES; ++i) {
-    float this_score = intra_hog_model_bias[i];
-    const float *weights = &intra_hog_model_weights[i * BINS];
-    for (int j = 0; j < BINS; ++j) {
-      this_score += weights[j] * hist[j];
+  // Scale the hog so the luma and chroma are on the same scale
+  for (int b = 0; b < BINS; ++b) {
+    hog[b] *= (1 + ss_x) * (1 + ss_y);
+  }
+}
+
+static AOM_INLINE void prune_intra_mode_with_hog(
+    const MACROBLOCK *x, BLOCK_SIZE bsize, float th,
+    uint8_t *directional_mode_skip_mask, int is_chroma) {
+  aom_clear_system_state();
+
+  const int plane = is_chroma ? AOM_PLANE_U : AOM_PLANE_Y;
+  float hist[BINS] = { 0.0f };
+  collect_hog_data(x, bsize, plane, hist);
+
+  // Make prediction for each of the mode
+  float scores[DIRECTIONAL_MODES] = { 0.0f };
+  aom_clear_system_state();
+  av1_nn_predict(hist, &av1_intra_hog_model_nnconfig, 1, scores);
+  for (UV_PREDICTION_MODE uv_mode = UV_V_PRED; uv_mode <= UV_D67_PRED;
+       uv_mode++) {
+    if (scores[uv_mode - UV_V_PRED] <= th) {
+      directional_mode_skip_mask[uv_mode] = 1;
     }
-    if (this_score < th) directional_mode_skip_mask[i + 1] = 1;
   }
 
   aom_clear_system_state();
@@ -358,48 +390,47 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  assert(!is_inter_block(mbmi));
-  RD_STATS this_rd_stats;
   int row, col;
-  int64_t temp_sse, this_rd;
-  const ModeCosts *mode_costs = &x->mode_costs;
-  const TxfmSearchParams *txfm_params = &x->txfm_search_params;
-  TX_SIZE tx_size =
-      tx_size_from_tx_mode(bsize, txfm_params->tx_mode_search_type);
+  assert(!is_inter_block(mbmi));
+  (void)mode_cost;
+  TX_SIZE tx_size = AOMMIN(TX_32X32, max_txsize_lookup[bsize]);
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
+  const int txbw = tx_size_wide[tx_size];
+  const int txbh = tx_size_high[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   const int max_blocks_high = max_block_high(xd, bsize, 0);
   mbmi->tx_size = tx_size;
+  int64_t satd_cost = 0;
+  struct macroblock_plane *p = &x->plane[0];
+  struct macroblockd_plane *pd = &xd->plane[0];
   // Prediction.
   for (row = 0; row < max_blocks_high; row += stepr) {
     for (col = 0; col < max_blocks_wide; col += stepc) {
       av1_predict_intra_block_facade(cm, xd, 0, col, row, tx_size);
+      av1_subtract_block(
+          xd, txbh, txbw, p->src_diff, block_size_wide[bsize],
+          p->src.buf + (((row * p->src.stride) + col) << 2), p->src.stride,
+          pd->dst.buf + (((row * pd->dst.stride) + col) << 2), pd->dst.stride);
+      switch (tx_size) {
+        case TX_4X4:
+          aom_hadamard_4x4(p->src_diff, block_size_wide[bsize], p->coeff);
+          break;
+        case TX_8X8:
+          aom_hadamard_8x8(p->src_diff, block_size_wide[bsize], p->coeff);
+          break;
+        case TX_16X16:
+          aom_hadamard_16x16(p->src_diff, block_size_wide[bsize], p->coeff);
+          break;
+        case TX_32X32:
+          aom_hadamard_32x32(p->src_diff, block_size_wide[bsize], p->coeff);
+          break;
+        default: assert(0);
+      }
+      satd_cost += aom_satd(p->coeff, tx_size_2d[tx_size]);
     }
   }
-  // RD estimation.
-  model_rd_sb_fn[cpi->sf.rt_sf.use_simple_rd_model ? MODELRD_LEGACY
-                                                   : MODELRD_TYPE_INTRA](
-      cpi, bsize, x, xd, 0, 0, &this_rd_stats.rate, &this_rd_stats.dist,
-      &this_rd_stats.skip_txfm, &temp_sse, NULL, NULL, NULL);
-  if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
-    mode_cost += mode_costs->angle_delta_cost[mbmi->mode - V_PRED]
-                                             [MAX_ANGLE_DELTA +
-                                              mbmi->angle_delta[PLANE_TYPE_Y]];
-  }
-  if (mbmi->mode == DC_PRED &&
-      av1_filter_intra_allowed_bsize(cm, mbmi->bsize)) {
-    if (mbmi->filter_intra_mode_info.use_filter_intra) {
-      const int mode = mbmi->filter_intra_mode_info.filter_intra_mode;
-      mode_cost += mode_costs->filter_intra_cost[mbmi->bsize][1] +
-                   mode_costs->filter_intra_mode_cost[mode];
-    } else {
-      mode_cost += mode_costs->filter_intra_cost[mbmi->bsize][0];
-    }
-  }
-  this_rd =
-      RDCOST(x->rdmult, this_rd_stats.rate + mode_cost, this_rd_stats.dist);
-  return this_rd;
+  return satd_cost;
 }
 /*!\endcond */
 
@@ -409,7 +440,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
  * \callergraph
  * This function first makes a quick luma prediction and estimates the rdcost
  * with a model without going through the txfm, then try to prune the current
- * mode if the new estimate y_rd > 1.5 * best_model_rd.
+ * mode if the new estimate y_rd > 1.25 * best_model_rd.
  *
  * \return Returns 1 if the given mode is prune; 0 otherwise.
  */
@@ -419,7 +450,7 @@ static AOM_INLINE int model_intra_yrd_and_prune(const AV1_COMP *const cpi,
                                                 int64_t *best_model_rd) {
   const int64_t this_model_rd = intra_model_yrd(cpi, x, bsize, mode_info_cost);
   if (*best_model_rd != INT64_MAX &&
-      this_model_rd > *best_model_rd + (*best_model_rd >> 1)) {
+      this_model_rd > *best_model_rd + (*best_model_rd >> 2)) {
     return 1;
   } else if (this_model_rd < *best_model_rd) {
     *best_model_rd = this_model_rd;

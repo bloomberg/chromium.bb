@@ -280,9 +280,13 @@ void MojoVideoDecoderService::OnDecoderInitialized(Status status) {
   TRACE_EVENT_ASYNC_END1("media", kInitializeTraceName, this, "success",
                          status.code());
 
-  std::move(init_cb_).Run(
-      status, status.is_ok() ? decoder_->NeedsBitstreamConversion() : false,
-      status.is_ok() ? decoder_->GetMaxDecodeRequests() : 1);
+  if (!status.is_ok()) {
+    std::move(init_cb_).Run(status, false, 1, VideoDecoderType::kUnknown);
+    return;
+  }
+  std::move(init_cb_).Run(status, decoder_->NeedsBitstreamConversion(),
+                          decoder_->GetMaxDecodeRequests(),
+                          decoder_->GetDecoderType());
 }
 
 void MojoVideoDecoderService::OnReaderRead(
@@ -339,12 +343,12 @@ void MojoVideoDecoderService::OnDecoderOutput(scoped_refptr<VideoFrame> frame) {
   DCHECK(client_);
   DCHECK(decoder_);
   TRACE_EVENT1("media", "MojoVideoDecoderService::OnDecoderOutput",
-               "video_frame", frame->AsHumanReadableString())
+               "video_frame", frame->AsHumanReadableString());
 
   // All MojoVideoDecoder-based decoders are hardware decoders. If you're the
   // first to implement an out-of-process decoder that is not power efficent,
   // you can remove this DCHECK.
-  DCHECK(frame->metadata()->power_efficient);
+  DCHECK(frame->metadata().power_efficient);
 
   base::Optional<base::UnguessableToken> release_token;
   if (frame->HasReleaseMailboxCB() && video_frame_handle_releaser_) {

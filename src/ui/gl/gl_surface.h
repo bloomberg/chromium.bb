@@ -107,6 +107,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;
 
+  // Android SurfaceControl specific, notifies that we should not detach child
+  // surface controls during destruction.
+  virtual void PreserveChildSurfaceControls() {}
+
   // Returns whether or not the surface supports SwapBuffersWithBounds
   virtual bool SupportsSwapBuffersWithBounds();
 
@@ -267,6 +271,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
 
   virtual bool SupportsProtectedVideo() const;
 
+  // Returns true if we are allowed to adopt a size different from the
+  // platform's proposed surface size.
+  virtual bool SupportsOverridePlatformSize() const;
+
   // Set the rectangle that will be drawn into on the surface, returning
   // success. If failed, it is possible that the context is no longer current.
   virtual bool SetDrawRectangle(const gfx::Rect& rect);
@@ -308,6 +316,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
   virtual bool IsCurrent();
 
   static bool ExtensionsContain(const char* extensions, const char* name);
+
+  virtual bool SupportsDelegatedInk();
 
  protected:
   virtual ~GLSurface();
@@ -387,6 +397,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool BuffersFlipped() const override;
   bool SupportsDCLayers() const override;
   bool SupportsProtectedVideo() const override;
+  bool SupportsOverridePlatformSize() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void SetRelyOnImplicitSync() override;
@@ -401,6 +412,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void SetFrameRate(float frame_rate) override;
   void SetCurrent() override;
   bool IsCurrent() override;
+
+  bool SupportsDelegatedInk() override;
 
   GLSurface* surface() const { return surface_.get(); }
 

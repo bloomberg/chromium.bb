@@ -184,6 +184,11 @@ NET_EXPORT GURL SimplifyUrlForRequest(const GURL& url);
 // than "ws" or "wss".
 NET_EXPORT GURL ChangeWebSocketSchemeToHttpScheme(const GURL& url);
 
+// Returns whether the given url scheme is of a standard scheme type that can
+// have hostnames representing domains (i.e. network hosts).
+// See url::SchemeType.
+NET_EXPORT bool IsStandardSchemeWithNetworkHost(base::StringPiece scheme);
+
 // Extracts the unescaped username/password from |url|, saving the results
 // into |*username| and |*password|.
 NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
@@ -203,11 +208,8 @@ NET_EXPORT_PRIVATE bool IsGoogleHost(base::StringPiece host);
 NET_EXPORT_PRIVATE bool IsTLS13ExperimentHost(base::StringPiece host);
 
 // This function tests |host| to see if it is of any local hostname form.
-// |host| is normalized before being tested and if |is_local6| is not NULL then
-// it it will be set to true if the localhost name implies an IPv6 interface (
-// for instance localhost6.localdomain6).
-NET_EXPORT_PRIVATE bool IsLocalHostname(base::StringPiece host,
-                                        bool* is_local6);
+// |host| is normalized before being tested.
+NET_EXPORT_PRIVATE bool IsLocalHostname(base::StringPiece host);
 
 }  // namespace net
 

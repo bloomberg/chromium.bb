@@ -538,6 +538,9 @@ static int parse_time_sequence(struct sbg_parser *p, int inblock)
         return AVERROR_INVALIDDATA;
     }
     ts.type = p->current_time.type;
+
+    if (av_sat_add64(p->current_time.t, rel_ts) != p->current_time.t + (uint64_t)rel_ts)
+        return AVERROR_INVALIDDATA;
     ts.t    = p->current_time.t + rel_ts;
     r = parse_fade(p, &fade);
     if (r < 0)
@@ -1412,6 +1415,11 @@ static av_cold int sbg_read_header(AVFormatContext *avf)
     r = generate_intervals(avf, &script, sbg->sample_rate, &inter);
     if (r < 0)
         goto fail;
+
+    if (script.end_ts != AV_NOPTS_VALUE && script.end_ts < script.start_ts) {
+        r = AVERROR_INVALIDDATA;
+        goto fail;
+    }
 
     st = avformat_new_stream(avf, NULL);
     if (!st)

@@ -41,7 +41,7 @@
     std::vector<FT_String>  string_buffer;
 
     FT_Int   num_char_strings;
-    FT_Int   num_subrs;
+    FT_Int   num_subrs = 0;
     FT_Byte  num_blue_values;
     FT_Byte  num_other_blues;
     FT_Byte  num_family_blues;
@@ -258,7 +258,7 @@
                PS_Dict_Keys             key,
                std::vector<FT_String>&  value )
   {
-    for ( auto  index = 0;
+    for ( size_t  index = 0;
           index < max_value_computed &&
             index < max_value_static;
           index++ )

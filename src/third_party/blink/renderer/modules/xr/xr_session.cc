@@ -13,6 +13,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/types/pass_key.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
@@ -32,7 +33,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_anchor_set.h"
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 #include "third_party/blink/renderer/modules/xr/xr_depth_information.h"
+#include "third_party/blink/renderer/modules/xr/xr_depth_manager.h"
 #include "third_party/blink/renderer/modules/xr/xr_dom_overlay_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
@@ -40,7 +43,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
-#include "third_party/blink/renderer/modules/xr/xr_plane.h"
+#include "third_party/blink/renderer/modules/xr/xr_plane_manager.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -51,8 +54,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
-#include "third_party/blink/renderer/modules/xr/xr_world_information.h"
-#include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
@@ -241,6 +242,8 @@ constexpr char XRSession::kNoRigidTransformSpecified[];
 constexpr char XRSession::kUnableToRetrieveMatrix[];
 constexpr char XRSession::kNoSpaceSpecified[];
 constexpr char XRSession::kAnchorsFeatureNotSupported[];
+constexpr char XRSession::kPlanesFeatureNotSupported[];
+constexpr char XRSession::kDepthSensingFeatureNotSupported[];
 
 class XRSession::XRSessionResizeObserverDelegate final
     : public ResizeObserver::Delegate {
@@ -303,9 +306,29 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::PLANE_DETECTION:
     case XRSessionFeature::DEPTH:
     case XRSessionFeature::IMAGE_TRACKING:
+    case XRSessionFeature::HAND_INPUT:
       // Not recording metrics for these features currently.
       break;
   }
+}
+
+XRDepthManager* XRSession::CreateDepthManagerIfEnabled(
+    const XRSessionFeatureSet& feature_set,
+    const device::mojom::blink::XRSessionDeviceConfig& device_config) {
+  DVLOG(2) << __func__;
+
+  if (!base::Contains(feature_set, device::mojom::XRSessionFeature::DEPTH)) {
+    return nullptr;
+  }
+
+  if (!device_config.depth_configuration) {
+    DCHECK(false) << "The session reports that depth sensing is supported but "
+                     "did not report depth sensing API configuration!";
+    return nullptr;
+  }
+
+  return MakeGarbageCollected<XRDepthManager>(
+      base::PassKey<XRSession>{}, this, *device_config.depth_configuration);
 }
 
 XRSession::XRSession(
@@ -322,8 +345,12 @@ XRSession::XRSession(
       mode_(mode),
       environment_integration_(
           mode == device::mojom::blink::XRSessionMode::kImmersiveAr),
-      world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       enabled_features_(std::move(enabled_features)),
+      plane_manager_(
+          MakeGarbageCollected<XRPlaneManager>(base::PassKey<XRSession>{},
+                                               this)),
+      depth_manager_(
+          CreateDepthManagerIfEnabled(enabled_features_, *device_config)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_receiver_(this, xr->GetExecutionContext()),
       input_receiver_(this, xr->GetExecutionContext()),
@@ -346,9 +373,6 @@ XRSession::XRSession(
   default_framebuffer_scale_ = base::ClampToRange(
       device_config->default_framebuffer_scale, kMinDefaultFramebufferScale,
       kMaxDefaultFramebufferScale);
-
-  world_tracking_state_ = MakeGarbageCollected<XRWorldTrackingState>(
-      IsFeatureEnabled(device::mojom::XRSessionFeature::PLANE_DETECTION));
 
   DVLOG(2) << __func__
            << ": supports_viewport_scaling_=" << supports_viewport_scaling_;
@@ -470,6 +494,26 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
   // should be requesting frames again. Kick off a new frame request in case
   // there are any pending callbacks to flush them out.
   MaybeRequestFrame();
+}
+
+const String& XRSession::depthUsage(ExceptionState& exception_state) {
+  if (!depth_manager_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kDepthSensingFeatureNotSupported);
+    return g_empty_string;
+  }
+
+  return depth_manager_->depthUsage();
+}
+
+const String& XRSession::depthDataFormat(ExceptionState& exception_state) {
+  if (!depth_manager_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kDepthSensingFeatureNotSupported);
+    return g_empty_string;
+  }
+
+  return depth_manager_->depthDataFormat();
 }
 
 void XRSession::UpdateEyeParameters(
@@ -1123,6 +1167,10 @@ void XRSession::ProcessAnchorsData(
       << " anchors that have not been updated";
 }
 
+XRPlaneSet* XRSession::GetDetectedPlanes() const {
+  return plane_manager_->GetDetectedPlanes();
+}
+
 void XRSession::CleanUpUnusedHitTestSources() {
   auto unused_hit_test_source_ids = GetIdsOfUnusedHitTestSources(
       hit_test_source_ids_to_hit_test_sources_, hit_test_source_ids_);
@@ -1208,39 +1256,28 @@ void XRSession::ProcessHitTestData(
   }
 }
 
-void XRSession::ProcessDepthData(
-    device::mojom::blink::XRDepthDataPtr depth_data) {
-  DVLOG(3) << __func__ << ": depth_data valid? " << !!depth_data;
-
-  if (depth_data) {
-    switch (depth_data->which()) {
-      case device::mojom::blink::XRDepthData::Tag::DATA_STILL_VALID:
-        // Stale depth buffer is still the most recent information we have.
-        // Current API shape is not well-suited to return data pertaining to
-        // older frames, so just discard what we have.
-        depth_data_ = nullptr;
-        break;
-      case device::mojom::blink::XRDepthData::Tag::UPDATED_DEPTH_DATA:
-        // Just store the current depth data as a member - we will need to
-        // construct instances of XRDepthInformation once the app requests them
-        // anyway.
-        depth_data_ = std::move(depth_data->get_updated_depth_data());
-        break;
-    }
-  } else {
-    // Device did not return new pixel data.
-    depth_data_ = nullptr;
-  }
-}
-
-XRDepthInformation* XRSession::GetDepthInformation() const {
-  DVLOG(2) << __func__;
-
-  if (!depth_data_) {
+XRCPUDepthInformation* XRSession::GetCpuDepthInformation(
+    const XRFrame* xr_frame,
+    ExceptionState& exception_state) const {
+  if (!depth_manager_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kDepthSensingFeatureNotSupported);
     return nullptr;
   }
 
-  return MakeGarbageCollected<XRDepthInformation>(*depth_data_);
+  return depth_manager_->GetCpuDepthInformation(xr_frame, exception_state);
+}
+
+XRWebGLDepthInformation* XRSession::GetWebGLDepthInformation(
+    const XRFrame* xr_frame,
+    ExceptionState& exception_state) const {
+  if (!depth_manager_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kDepthSensingFeatureNotSupported);
+    return nullptr;
+  }
+
+  return depth_manager_->GetWebGLDepthInformation(xr_frame, exception_state);
 }
 
 ScriptPromise XRSession::requestLightProbe(ScriptState* script_state,
@@ -1260,10 +1297,11 @@ ScriptPromise XRSession::requestLightProbe(ScriptState* script_state,
 
   if (light_probe_init->reflectionFormat() != "srgba8" &&
       light_probe_init->reflectionFormat() != "rgba16f") {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Reflection format \"" +
-                                          light_probe_init->reflectionFormat() +
-                                          "\" not supported.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Reflection format \"" +
+            IDLEnumAsString(light_probe_init->reflectionFormat()) +
+            "\" not supported.");
     return ScriptPromise();
   }
 
@@ -1746,11 +1784,16 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
     const device::mojom::blink::XRFrameDataPtr& frame_data) {
   // Update objects that might change on per-frame basis.
   if (frame_data) {
-    world_information_->ProcessPlaneInformation(
+    plane_manager_->ProcessPlaneInformation(
         frame_data->detected_planes_data.get(), timestamp);
     ProcessAnchorsData(frame_data->anchors_data.get(), timestamp);
     ProcessHitTestData(frame_data->hit_test_subscription_results.get());
-    ProcessDepthData(std::move(frame_data->depth_data));
+
+    if (depth_manager_) {
+      depth_manager_->ProcessDepthInformation(
+          std::move(frame_data->depth_data));
+    }
+
     ProcessTrackedImagesData(frame_data->tracked_images.get());
 
     const device::mojom::blink::XRLightEstimationData* light_data =
@@ -1759,10 +1802,14 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
       world_light_probe_->ProcessLightEstimationData(light_data, timestamp);
     }
   } else {
-    world_information_->ProcessPlaneInformation(nullptr, timestamp);
+    plane_manager_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
     ProcessHitTestData(nullptr);
-    ProcessDepthData(nullptr);
+
+    if (depth_manager_) {
+      depth_manager_->ProcessDepthInformation(nullptr);
+    }
+
     ProcessTrackedImagesData(nullptr);
 
     if (world_light_probe_) {
@@ -1843,8 +1890,7 @@ void XRSession::OnFrame(
       return;
     }
 
-    XRFrame* presentation_frame = CreatePresentationFrame();
-    presentation_frame->SetAnimationFrame(true);
+    XRFrame* presentation_frame = CreatePresentationFrame(true);
 
     // Make sure that any frame-bounded changed to the views array take effect.
     if (update_views_next_frame_) {
@@ -1932,11 +1978,11 @@ base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
   }
 }
 
-XRFrame* XRSession::CreatePresentationFrame() {
-  DVLOG(2) << __func__;
+XRFrame* XRSession::CreatePresentationFrame(bool is_animation_frame) {
+  DVLOG(2) << __func__ << ": is_animation_frame=" << is_animation_frame;
 
   XRFrame* presentation_frame =
-      MakeGarbageCollected<XRFrame>(this, world_information_);
+      MakeGarbageCollected<XRFrame>(this, is_animation_frame);
   return presentation_frame;
 }
 
@@ -2286,8 +2332,6 @@ bool XRSession::HasPendingActivity() const {
 void XRSession::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
   visitor->Trace(render_state_);
-  visitor->Trace(world_tracking_state_);
-  visitor->Trace(world_information_);
   visitor->Trace(world_light_probe_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(end_session_resolver_);
@@ -2302,6 +2346,8 @@ void XRSession::Trace(Visitor* visitor) const {
   visitor->Trace(create_anchor_promises_);
   visitor->Trace(request_hit_test_source_promises_);
   visitor->Trace(reference_spaces_);
+  visitor->Trace(plane_manager_);
+  visitor->Trace(depth_manager_);
   visitor->Trace(anchor_ids_to_anchors_);
   visitor->Trace(anchor_ids_to_pending_anchor_promises_);
   visitor->Trace(prev_base_layer_);

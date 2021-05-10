@@ -12,6 +12,14 @@
 #include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/page_load_metrics_observer_impl.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
+namespace page_load_metrics {
+class PageLoadMetricsMemoryTracker;
+}  // namespace page_load_metrics
+
 namespace weblayer {
 
 namespace {
@@ -31,9 +39,14 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   bool IsNewTabPageUrl(const GURL& url) override { return false; }
   bool IsPrerender(content::WebContents* web_contents) override {
-    return PrerenderContentsFromWebContents(web_contents);
+    return NoStatePrefetchContentsFromWebContents(web_contents);
   }
   bool IsExtensionUrl(const GURL& url) override { return false; }
+  page_load_metrics::PageLoadMetricsMemoryTracker*
+  GetMemoryTrackerForBrowserContext(
+      content::BrowserContext* browser_context) override {
+    return nullptr;
+  }
 
  protected:
   // page_load_metrics::PageLoadMetricsEmbedderBase:
@@ -45,7 +58,7 @@ class PageLoadMetricsEmbedder
       (*g_callback_for_testing).Run(tracker);
   }
   bool IsPrerendering() const override {
-    return PrerenderContentsFromWebContents(web_contents());
+    return NoStatePrefetchContentsFromWebContents(web_contents());
   }
 };
 

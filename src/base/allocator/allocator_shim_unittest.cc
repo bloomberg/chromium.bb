@@ -8,8 +8,10 @@
 #include <string.h>
 
 #include <atomic>
+#include <iomanip>
 #include <memory>
 #include <new>
+#include <sstream>
 #include <vector>
 
 #include "base/allocator/buildflags.h"
@@ -550,6 +552,23 @@ TEST_F(AllocatorShimTest, InterceptCppSymbols) {
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 }
 
+// PartitionAlloc disallows large allocations to avoid errors with int
+// overflows.
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+struct TooLarge {
+  char padding1[1UL << 31];
+  int padding2;
+};
+
+TEST_F(AllocatorShimTest, NewNoThrowTooLarge) {
+  char* too_large_array = new (std::nothrow) char[(1UL << 31) + 100];
+  EXPECT_EQ(nullptr, too_large_array);
+
+  TooLarge* too_large_struct = new (std::nothrow) TooLarge;
+  EXPECT_EQ(nullptr, too_large_struct);
+}
+#endif
+
 // This test exercises the case of concurrent OOM failure, which would end up
 // invoking std::new_handler concurrently. This is to cover the CallNewHandler()
 // paths of allocator_shim.cc and smoke-test its thread safey.
@@ -668,8 +687,29 @@ TEST_F(AllocatorShimTest, InterceptCLibraryFunctions) {
   counts_after = total_counts(allocs_intercepted_by_size);
   EXPECT_GT(counts_after, counts_before);
 
+  // Calls vasprintf() indirectly, see below.
+  counts_before = counts_after;
+  std::stringstream stream;
+  stream << std::setprecision(1) << std::showpoint << std::fixed << 1.e38;
+  EXPECT_GT(stream.str().size(), 30u);
+  counts_after = total_counts(allocs_intercepted_by_size);
+  EXPECT_GT(counts_after, counts_before);
+
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 }
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+// Non-regression test for crbug.com/1166558.
+TEST_F(AllocatorShimTest, InterceptVasprintf) {
+  // Printing a float which expands to >=30 characters calls vasprintf() in
+  // libc, which we should intercept.
+  std::stringstream stream;
+  stream << std::setprecision(1) << std::showpoint << std::fixed << 1.e38;
+  EXPECT_GT(stream.str().size(), 30u);
+  // Should not crash.
+}
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
 #endif  // defined(OS_ANDROID)
 
 }  // namespace

@@ -24,6 +24,13 @@
 
 namespace chromeos {
 
+namespace {
+
+constexpr char kHandlerFunctionName[] = "handlerFunctionName";
+constexpr char kTestFilePath[] = "/test/file/path";
+
+}  // namespace
+
 class TestSelectFilePolicy : public ui::SelectFilePolicy {
  public:
   TestSelectFilePolicy& operator=(const TestSelectFilePolicy&) = delete;
@@ -115,7 +122,18 @@ class TestScanningPathsProvider : public ScanningPathsProvider {
                                   const base::FilePath& path) override {
     return path.BaseName().value();
   }
+
+  base::FilePath GetMyFilesPath(content::WebUI* web_ui) override {
+    return base::FilePath(kTestFilePath);
+  }
 };
+
+bool ShowFileInFilesApp(const base::FilePath& drive_path,
+                        const base::FilePath& my_files_path,
+                        content::WebUI* web_ui,
+                        const base::FilePath& path_to_file) {
+  return kTestFilePath == path_to_file.value();
+}
 
 class ScanningHandlerTest : public testing::Test {
  public:
@@ -128,7 +146,9 @@ class ScanningHandlerTest : public testing::Test {
   void SetUp() override {
     scanning_handler_ = std::make_unique<ScanningHandler>(
         base::BindRepeating(&CreateTestSelectFilePolicy),
-        std::make_unique<chromeos::TestScanningPathsProvider>());
+        std::make_unique<chromeos::TestScanningPathsProvider>(),
+        base::BindRepeating(&ShowFileInFilesApp, base::FilePath(),
+                            base::FilePath()));
     scanning_handler_->SetWebUIForTest(&web_ui_);
     scanning_handler_->RegisterMessages();
 
@@ -138,8 +158,20 @@ class ScanningHandlerTest : public testing::Test {
 
   void TearDown() override { ui::SelectFileDialog::SetFactory(nullptr); }
 
-  const content::TestWebUI::CallData& CallDataAtIndex(size_t index) {
-    return *web_ui_.call_data()[index];
+  // Gets the call data after a ScanningHandler WebUI call and asserts the
+  // expected response.
+  const content::TestWebUI::CallData& GetCallData(int size_before_call) {
+    const std::vector<std::unique_ptr<content::TestWebUI::CallData>>&
+        call_data_list = web_ui_.call_data();
+    EXPECT_EQ(size_before_call + 1u, call_data_list.size());
+
+    const content::TestWebUI::CallData& call_data = *call_data_list.back();
+    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+    EXPECT_EQ(kHandlerFunctionName, call_data.arg1()->GetString());
+    // True if ResolveJavascriptCallback and false if RejectJavascriptCallback
+    // is called by the handler.
+    EXPECT_TRUE(call_data.arg2()->GetBool());
+    return call_data;
   }
 
  protected:
@@ -158,16 +190,11 @@ TEST_F(ScanningHandlerTest, SelectDirectory) {
 
   const size_t call_data_count_before_call = web_ui_.call_data().size();
   base::ListValue args;
-  args.Append("handlerFunctionName");
+  args.Append(kHandlerFunctionName);
   web_ui_.HandleReceivedMessage("requestScanToLocation", &args);
 
-  EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
   const content::TestWebUI::CallData& call_data =
-      CallDataAtIndex(call_data_count_before_call);
-  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
-  EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
-  EXPECT_TRUE(call_data.arg2()->GetBool());
-
+      GetCallData(call_data_count_before_call);
   const base::DictionaryValue* selected_path_dict;
   EXPECT_TRUE(call_data.arg3()->GetAsDictionary(&selected_path_dict));
   EXPECT_EQ(base_file_path.value(),
@@ -184,20 +211,44 @@ TEST_F(ScanningHandlerTest, CancelDialog) {
 
   const size_t call_data_count_before_call = web_ui_.call_data().size();
   base::ListValue args;
-  args.Append("handlerFunctionName");
+  args.Append(kHandlerFunctionName);
   web_ui_.HandleReceivedMessage("requestScanToLocation", &args);
 
-  EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
   const content::TestWebUI::CallData& call_data =
-      CallDataAtIndex(call_data_count_before_call);
-  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
-  EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
-  EXPECT_TRUE(call_data.arg2()->GetBool());
-
+      GetCallData(call_data_count_before_call);
   const base::DictionaryValue* selected_path_dict;
   EXPECT_TRUE(call_data.arg3()->GetAsDictionary(&selected_path_dict));
   EXPECT_EQ("", *selected_path_dict->FindStringPath("filePath"));
   EXPECT_EQ("", *selected_path_dict->FindStringPath("baseName"));
+}
+
+// Validates that invoking the showFileInLocation Web UI event calls the
+// OpenFilesAppFunction function and returns the callback with the boolean.
+TEST_F(ScanningHandlerTest, ShowFileInLocation) {
+  const size_t call_data_count_before_call = web_ui_.call_data().size();
+  base::ListValue args;
+  args.Append(kHandlerFunctionName);
+  args.Append(kTestFilePath);
+  web_ui_.HandleReceivedMessage("showFileInLocation", &args);
+
+  const content::TestWebUI::CallData& call_data =
+      GetCallData(call_data_count_before_call);
+  // Expect true from call to ShowFileInFilesApp().
+  EXPECT_TRUE(call_data.arg3()->GetBool());
+}
+
+// Validates that invoking the getMyFilesPath Web UI event returns the correct
+// path.
+TEST_F(ScanningHandlerTest, GetMyFilesPath) {
+  const size_t call_data_count_before_call = web_ui_.call_data().size();
+  base::ListValue args;
+  args.Append(kHandlerFunctionName);
+  web_ui_.HandleReceivedMessage("getMyFilesPath", &args);
+
+  const content::TestWebUI::CallData& call_data =
+      GetCallData(call_data_count_before_call);
+  EXPECT_EQ(base::FilePath(kTestFilePath).value(),
+            call_data.arg3()->GetString());
 }
 
 }  // namespace chromeos.

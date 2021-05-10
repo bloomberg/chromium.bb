@@ -28,10 +28,10 @@
 
 #include <iostream>
 
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "common/platform/api/quiche_text_utils.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/escaping.h"
 
@@ -80,9 +80,9 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnUnauthenticatedHeader: " << header;
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {
+  void OnDecryptedPacket(size_t /*length*/, EncryptionLevel level) override {
     // This only currently supports "decrypting" null encrypted packets.
-    DCHECK_EQ(ENCRYPTION_INITIAL, level);
+    QUICHE_DCHECK_EQ(ENCRYPTION_INITIAL, level);
     std::cerr << "OnDecryptedPacket\n";
   }
   bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
@@ -270,13 +270,10 @@ int main(int argc, char* argv[]) {
   quic::QuicTime start(quic::QuicTime::Zero());
   quic::QuicFramer framer(versions, start, perspective,
                           quic::kQuicDefaultConnectionIdLength);
-  if (!GetQuicFlag(FLAGS_quic_version).empty()) {
-    for (const quic::ParsedQuicVersion& version : versions) {
-      if (quic::QuicVersionToString(version.transport_version) ==
-          GetQuicFlag(FLAGS_quic_version)) {
-        framer.set_version(version);
-      }
-    }
+  const quic::ParsedQuicVersion& version =
+      quic::ParseQuicVersionString(GetQuicFlag(FLAGS_quic_version));
+  if (version != quic::ParsedQuicVersion::Unsupported()) {
+    framer.set_version(version);
   }
   quic::QuicPacketPrinter visitor(&framer);
   framer.set_visitor(&visitor);

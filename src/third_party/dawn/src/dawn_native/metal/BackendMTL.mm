@@ -14,7 +14,9 @@
 
 #include "dawn_native/metal/BackendMTL.h"
 
+#include "common/CoreFoundationRef.h"
 #include "common/GPUInfo.h"
+#include "common/NSRef.h"
 #include "common/Platform.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/MetalBackend.h"
@@ -22,6 +24,7 @@
 
 #if defined(DAWN_PLATFORM_MACOS)
 #    import <IOKit/IOKitLib.h>
+#    include "common/IOKitRef.h"
 #endif
 
 namespace dawn_native { namespace metal {
@@ -71,18 +74,17 @@ namespace dawn_native { namespace metal {
 
             // Recursively search registry entry and its parents for property name
             // The data should release with CFRelease
-            CFDataRef data = static_cast<CFDataRef>(IORegistryEntrySearchCFProperty(
-                entry, kIOServicePlane, name, kCFAllocatorDefault,
-                kIORegistryIterateRecursively | kIORegistryIterateParents));
+            CFRef<CFDataRef> data =
+                AcquireCFRef(static_cast<CFDataRef>(IORegistryEntrySearchCFProperty(
+                    entry, kIOServicePlane, name, kCFAllocatorDefault,
+                    kIORegistryIterateRecursively | kIORegistryIterateParents)));
 
             if (data == nullptr) {
                 return value;
             }
 
             // CFDataGetBytePtr() is guaranteed to return a read-only pointer
-            value = *reinterpret_cast<const uint32_t*>(CFDataGetBytePtr(data));
-
-            CFRelease(data);
+            value = *reinterpret_cast<const uint32_t*>(CFDataGetBytePtr(data.Get()));
             return value;
         }
 
@@ -106,37 +108,34 @@ namespace dawn_native { namespace metal {
         MaybeError API_AVAILABLE(macos(10.13))
             GetDeviceIORegistryPCIInfo(id<MTLDevice> device, PCIIDs* ids) {
             // Get a matching dictionary for the IOGraphicsAccelerator2
-            CFMutableDictionaryRef matchingDict = IORegistryEntryIDMatching([device registryID]);
+            CFRef<CFMutableDictionaryRef> matchingDict =
+                AcquireCFRef(IORegistryEntryIDMatching([device registryID]));
             if (matchingDict == nullptr) {
                 return DAWN_INTERNAL_ERROR("Failed to create the matching dict for the device");
             }
 
             // IOServiceGetMatchingService will consume the reference on the matching dictionary,
             // so we don't need to release the dictionary.
-            io_registry_entry_t acceleratorEntry =
-                IOServiceGetMatchingService(kIOMasterPortDefault, matchingDict);
+            IORef<io_registry_entry_t> acceleratorEntry = AcquireIORef(
+                IOServiceGetMatchingService(kIOMasterPortDefault, matchingDict.Detach()));
             if (acceleratorEntry == IO_OBJECT_NULL) {
                 return DAWN_INTERNAL_ERROR(
                     "Failed to get the IO registry entry for the accelerator");
             }
 
             // Get the parent entry that will be the IOPCIDevice
-            io_registry_entry_t deviceEntry = IO_OBJECT_NULL;
-            if (IORegistryEntryGetParentEntry(acceleratorEntry, kIOServicePlane, &deviceEntry) !=
-                kIOReturnSuccess) {
-                IOObjectRelease(acceleratorEntry);
+            IORef<io_registry_entry_t> deviceEntry;
+            if (IORegistryEntryGetParentEntry(acceleratorEntry.Get(), kIOServicePlane,
+                                              deviceEntry.InitializeInto()) != kIOReturnSuccess) {
                 return DAWN_INTERNAL_ERROR("Failed to get the IO registry entry for the device");
             }
 
             ASSERT(deviceEntry != IO_OBJECT_NULL);
-            IOObjectRelease(acceleratorEntry);
 
-            uint32_t vendorId = GetEntryProperty(deviceEntry, CFSTR("vendor-id"));
-            uint32_t deviceId = GetEntryProperty(deviceEntry, CFSTR("device-id"));
+            uint32_t vendorId = GetEntryProperty(deviceEntry.Get(), CFSTR("vendor-id"));
+            uint32_t deviceId = GetEntryProperty(deviceEntry.Get(), CFSTR("device-id"));
 
             *ids = PCIIDs{vendorId, deviceId};
-
-            IOObjectRelease(deviceEntry);
 
             return {};
         }
@@ -176,8 +175,8 @@ namespace dawn_native { namespace metal {
     class Adapter : public AdapterBase {
       public:
         Adapter(InstanceBase* instance, id<MTLDevice> device)
-            : AdapterBase(instance, wgpu::BackendType::Metal), mDevice([device retain]) {
-            mPCIInfo.name = std::string([mDevice.name UTF8String]);
+            : AdapterBase(instance, wgpu::BackendType::Metal), mDevice(device) {
+            mPCIInfo.name = std::string([[*mDevice name] UTF8String]);
 
             PCIIDs ids;
             if (!instance->ConsumedError(GetDevicePCIInfo(device, &ids))) {
@@ -206,10 +205,6 @@ namespace dawn_native { namespace metal {
             InitializeSupportedExtensions();
         }
 
-        ~Adapter() override {
-            [mDevice release];
-        }
-
       private:
         ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
             return Device::Create(this, mDevice, descriptor);
@@ -217,23 +212,26 @@ namespace dawn_native { namespace metal {
 
         void InitializeSupportedExtensions() {
 #if defined(DAWN_PLATFORM_MACOS)
-            if ([mDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1]) {
+            if ([*mDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1]) {
                 mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
             }
 #endif
 
             if (@available(macOS 10.15, iOS 14.0, *)) {
-                if ([mDevice supportsFamily:MTLGPUFamilyMac2] ||
-                    [mDevice supportsFamily:MTLGPUFamilyApple5]) {
+                if ([*mDevice supportsFamily:MTLGPUFamilyMac2] ||
+                    [*mDevice supportsFamily:MTLGPUFamilyApple5]) {
                     mSupportedExtensions.EnableExtension(Extension::PipelineStatisticsQuery);
-                    mSupportedExtensions.EnableExtension(Extension::TimestampQuery);
+
+                    // TODO(hao.x.li@intel.com): Not enable timestamp query here becuase it's not
+                    // clear how to convert timestamps to nanoseconds on Metal.
+                    // See https://github.com/gpuweb/gpuweb/issues/1325
                 }
             }
 
             mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
         }
 
-        id<MTLDevice> mDevice = nil;
+        NSPRef<id<MTLDevice>> mDevice;
     };
 
     // Implementation of the Metal backend's BackendConnection
@@ -251,13 +249,12 @@ namespace dawn_native { namespace metal {
 #if defined(DAWN_PLATFORM_MACOS)
         if (@available(macOS 10.11, *)) {
             supportedVersion = YES;
-            NSArray<id<MTLDevice>>* devices = MTLCopyAllDevices();
 
-            for (id<MTLDevice> device in devices) {
+            NSRef<NSArray<id<MTLDevice>>> devices = AcquireNSRef(MTLCopyAllDevices());
+
+            for (id<MTLDevice> device in devices.Get()) {
                 adapters.push_back(std::make_unique<Adapter>(GetInstance(), device));
             }
-
-            [devices release];
         }
 #endif
 

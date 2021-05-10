@@ -5,77 +5,18 @@
 #include "fuchsia/cast_streaming/public/cast_streaming_session.h"
 
 #include "base/bind.h"
-#include "base/notreached.h"
 #include "base/timer/timer.h"
-#include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/network_util.h"
 #include "components/openscreen_platform/task_runner.h"
 #include "fuchsia/cast_streaming/cast_message_port_impl.h"
+#include "fuchsia/cast_streaming/config_conversions.h"
 #include "fuchsia/cast_streaming/stream_consumer.h"
-#include "media/base/media_util.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/openscreen/src/cast/streaming/receiver.h"
 #include "third_party/openscreen/src/cast/streaming/receiver_session.h"
 
 namespace {
-
-media::AudioDecoderConfig AudioCaptureConfigToAudioDecoderConfig(
-    const openscreen::cast::AudioCaptureConfig& audio_capture_config) {
-  // Gather data for the audio decoder config.
-  media::AudioCodec media_audio_codec = media::AudioCodec::kUnknownAudioCodec;
-  switch (audio_capture_config.codec) {
-    case openscreen::cast::AudioCodec::kAac:
-      media_audio_codec = media::AudioCodec::kCodecAAC;
-      break;
-    case openscreen::cast::AudioCodec::kOpus:
-      media_audio_codec = media::AudioCodec::kCodecOpus;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return media::AudioDecoderConfig(
-      media_audio_codec, media::SampleFormat::kSampleFormatF32,
-      media::GuessChannelLayout(audio_capture_config.channels),
-      audio_capture_config.sample_rate /* samples_per_second */,
-      media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted);
-}
-
-media::VideoDecoderConfig VideoCaptureConfigToVideoDecoderConfig(
-    const openscreen::cast::VideoCaptureConfig& video_capture_config) {
-  // Gather data for the video decoder config.
-  uint32_t video_width = video_capture_config.resolutions[0].width;
-  uint32_t video_height = video_capture_config.resolutions[0].height;
-  gfx::Size video_size(video_width, video_height);
-  gfx::Rect video_rect(video_width, video_height);
-
-  media::VideoCodec media_video_codec = media::VideoCodec::kUnknownVideoCodec;
-  media::VideoCodecProfile video_codec_profile =
-      media::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN;
-  switch (video_capture_config.codec) {
-    case openscreen::cast::VideoCodec::kH264:
-      media_video_codec = media::VideoCodec::kCodecH264;
-      video_codec_profile = media::VideoCodecProfile::H264PROFILE_BASELINE;
-      break;
-    case openscreen::cast::VideoCodec::kVp8:
-      media_video_codec = media::VideoCodec::kCodecVP8;
-      video_codec_profile = media::VideoCodecProfile::VP8PROFILE_MIN;
-      break;
-    case openscreen::cast::VideoCodec::kHevc:
-    case openscreen::cast::VideoCodec::kVp9:
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return media::VideoDecoderConfig(
-      media_video_codec, video_codec_profile,
-      media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
-      media::VideoTransformation(), video_size, video_rect, video_size,
-      media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted);
-}
 
 // Timeout to stop the Session when no data is received.
 constexpr base::TimeDelta kNoDataTimeout = base::TimeDelta::FromSeconds(15);
@@ -88,7 +29,7 @@ bool CreateDataPipeForStreamType(media::DemuxerStream::Type type,
       1u /* element_num_bytes */,
       media::GetDefaultDecoderBufferConverterCapacity(type)};
   MojoResult result =
-      mojo::CreateDataPipe(&data_pipe_options, producer, consumer);
+      mojo::CreateDataPipe(&data_pipe_options, *producer, *consumer);
   return result == MOJO_RESULT_OK;
 }
 
@@ -98,12 +39,6 @@ constexpr base::TimeDelta kInitTimeout = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
 namespace cast_streaming {
-
-// static
-void CastStreamingSession::SetNetworkContextGetter(
-    NetworkContextGetter getter) {
-  openscreen_platform::SetNetworkContextGetter(std::move(getter));
-}
 
 // Owns the Open Screen ReceiverSession. The Cast Streaming Session is tied to
 // the lifespan of this object.
@@ -115,7 +50,10 @@ class CastStreamingSession::Internal
            scoped_refptr<base::SequencedTaskRunner> task_runner)
       : task_runner_(task_runner),
         environment_(&openscreen::Clock::now, &task_runner_),
-        cast_message_port_impl_(std::move(message_port)),
+        cast_message_port_impl_(
+            std::move(message_port),
+            base::BindOnce(&CastStreamingSession::Internal::OnCastChannelClosed,
+                           base::Unretained(this))),
         client_(client) {
     DCHECK(task_runner);
     DCHECK(client_);
@@ -324,6 +262,11 @@ class CastStreamingSession::Internal
     receiver_session_.reset();
   }
 
+  void OnCastChannelClosed() {
+    DVLOG(1) << __func__;
+    receiver_session_.reset();
+  }
+
   openscreen_platform::TaskRunner task_runner_;
   openscreen::cast::Environment environment_;
   CastMessagePortImpl cast_message_port_impl_;
@@ -347,6 +290,7 @@ void CastStreamingSession::Start(
     Client* client,
     std::unique_ptr<cast_api_bindings::MessagePort> message_port,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(!internal_);
   internal_ =
@@ -354,6 +298,7 @@ void CastStreamingSession::Start(
 }
 
 void CastStreamingSession::Stop() {
+  DVLOG(1) << __func__;
   DCHECK(internal_);
   internal_.reset();
 }

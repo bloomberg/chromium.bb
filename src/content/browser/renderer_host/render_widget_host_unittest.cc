@@ -29,8 +29,8 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
+#include "content/browser/renderer_host/data_transfer_util.h"
 #include "content/browser/renderer_host/display_feature.h"
-#include "content/browser/renderer_host/drop_data_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -40,7 +40,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/input_messages.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -52,6 +51,7 @@
 #include "content/test/mock_widget_input_handler.h"
 #include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
+#include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -89,7 +89,6 @@
 #include "ui/events/event.h"
 #endif
 
-using base::TimeDelta;
 using blink::WebGestureDevice;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -97,7 +96,6 @@ using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
-using blink::WebTouchPoint;
 
 using testing::_;
 using testing::Return;
@@ -544,9 +542,10 @@ class RenderWidgetHostTest : public testing::Test {
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     display::Screen::SetScreenInstance(screen_.get());
 #endif
-    host_.reset(MockRenderWidgetHost::Create(
-        delegate_.get(), *agent_scheduling_group_host_,
-        process_->GetNextRoutingID(), widget_.GetNewRemote()));
+    host_ = MockRenderWidgetHost::Create(
+        /* frame_tree= */ nullptr, delegate_.get(),
+        *agent_scheduling_group_host_, process_->GetNextRoutingID(),
+        widget_.GetNewRemote());
     // Set up the RenderWidgetHost as being for a main frame.
     host_->set_owner_delegate(&mock_owner_delegate_);
     // Act like there is no RenderWidget present in the renderer yet.
@@ -561,8 +560,6 @@ class RenderWidgetHostTest : public testing::Test {
     host_->GetInitialVisualProperties();
     EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
         .WillRepeatedly(Return(true));
-    // Init() happens once the navigation completes.
-    host_->Init();
 
     mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
@@ -581,6 +578,15 @@ class RenderWidgetHostTest : public testing::Test {
     host_->RegisterRenderFrameMetadataObserver(
         std::move(render_frame_metadata_observer_client_receiver),
         std::move(renderer_render_frame_metadata_observer_remote));
+
+    // The blink::mojom::Widget is already set during MockRenderWidgetHost
+    // construction.
+    host_->BindFrameWidgetInterfaces(
+        mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>()
+            .InitWithNewEndpointAndPassReceiver(),
+        TestRenderWidgetHost::CreateStubFrameWidgetRemote());
+
+    host_->RendererWidgetCreated(/*for_frame_widget=*/true);
   }
 
   void TearDown() override {
@@ -611,20 +617,16 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void ReinitalizeHost() {
-    mojo::AssociatedRemote<blink::mojom::WidgetHost> widget_host;
     host_->BindWidgetInterfaces(
-        widget_host.BindNewEndpointAndPassDedicatedReceiver(),
+        mojo::AssociatedRemote<blink::mojom::WidgetHost>()
+            .BindNewEndpointAndPassDedicatedReceiver(),
         widget_.GetNewRemote());
-
-    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
-    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
-    auto frame_widget_receiver =
-        frame_widget.BindNewEndpointAndPassDedicatedReceiver();
     host_->BindFrameWidgetInterfaces(
-        frame_widget_host.BindNewEndpointAndPassDedicatedReceiver(),
-        frame_widget.Unbind());
+        mojo::AssociatedRemote<blink::mojom::FrameWidgetHost>()
+            .BindNewEndpointAndPassDedicatedReceiver(),
+        TestRenderWidgetHost::CreateStubFrameWidgetRemote());
 
-    host_->Init();
+    host_->RendererWidgetCreated(/*for_frame_widget=*/true);
   }
 
   base::TimeTicks GetNextSimulatedEventTime() {
@@ -987,8 +989,8 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
 TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   blink::ScreenInfo screen_info;
   screen_info.device_scale_factor = 1.f;
-  screen_info.rect = blink::WebRect(0, 0, 800, 600);
-  screen_info.available_rect = blink::WebRect(0, 0, 800, 600);
+  screen_info.rect = gfx::Rect(0, 0, 800, 600);
+  screen_info.available_rect = gfx::Rect(0, 0, 800, 600);
   screen_info.orientation_angle = 0;
   screen_info.orientation_type =
       blink::mojom::ScreenOrientation::kPortraitPrimary;
@@ -1190,7 +1192,7 @@ TEST_F(RenderWidgetHostTest, RootWindowSegments) {
 
 TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
   // The Renderer sends a monotonically increasing frame token.
-  host_->DidProcessFrame(2);
+  host_->DidProcessFrame(2, base::TimeTicks::Now());
 
   // Simulate a renderer crash.
   host_->SetView(nullptr);
@@ -1198,7 +1200,7 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
 
   // Receive an in-flight frame token (it needs to monotonically increase)
   // while the RenderWidget is gone.
-  host_->DidProcessFrame(3);
+  host_->DidProcessFrame(3, base::TimeTicks::Now());
 
   // The renderer is recreated.
   host_->SetView(view_.get());
@@ -1211,12 +1213,12 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
   // The new RenderWidget sends a frame token, which is lower than what the
   // previous RenderWidget sent. This should be okay, as the expected token has
   // been reset.
-  host_->DidProcessFrame(1);
+  host_->DidProcessFrame(1, base::TimeTicks::Now());
 }
 
 TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
   // The RenderWidget sends a monotonically increasing frame token.
-  host_->DidProcessFrame(2);
+  host_->DidProcessFrame(2, base::TimeTicks::Now());
 
   // The RenderWidget is destroyed in the renderer process as the main frame
   // is removed from this RenderWidgetHost's RenderWidgetView, but the
@@ -1226,7 +1228,7 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
 
   // Receive an in-flight frame token (it needs to monotonically increase)
   // while the RenderWidget is gone.
-  host_->DidProcessFrame(3);
+  host_->DidProcessFrame(3, base::TimeTicks::Now());
 
   // Make a new RenderWidget when the renderer is recreated and inform that a
   // RenderWidget is being created.
@@ -1238,7 +1240,7 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
   // The new RenderWidget sends a frame token, which is lower than what the
   // previous RenderWidget sent. This should be okay, as the expected token has
   // been reset.
-  host_->DidProcessFrame(1);
+  host_->DidProcessFrame(1, base::TimeTicks::Now());
 }
 
 // Unable to include render_widget_host_view_mac.h and compile.
@@ -2015,9 +2017,9 @@ TEST_F(RenderWidgetHostTest, RendererExitedNoDrag) {
   DropData drop_data;
   drop_data.url = http_url;
   drop_data.html_base_url = http_url;
-  NativeFileSystemManagerImpl* file_system_manager =
+  FileSystemAccessManagerImpl* file_system_manager =
       static_cast<StoragePartitionImpl*>(process_->GetStoragePartition())
-          ->GetNativeFileSystemManager();
+          ->GetFileSystemAccessManager();
   blink::DragOperationsMask drag_operation = blink::kDragOperationEvery;
   host_->StartDragging(
       DropDataToDragData(drop_data, file_system_manager, process_->GetID()),
@@ -2249,7 +2251,8 @@ TEST_F(RenderWidgetHostTest, OnVerticalScrollDirectionChanged) {
   const auto NotifyVerticalScrollDirectionChanged =
       [this](viz::VerticalScrollDirection scroll_direction) {
         static uint32_t frame_token = 1u;
-        host_->frame_token_message_queue_->DidProcessFrame(frame_token);
+        host_->frame_token_message_queue_->DidProcessFrame(
+            frame_token, base::TimeTicks::Now());
 
         cc::RenderFrameMetadata metadata;
         metadata.new_vertical_scroll_direction = scroll_direction;
@@ -2292,25 +2295,6 @@ TEST_F(RenderWidgetHostTest, SetCursorWithBitmap) {
   cursor.set_custom_bitmap(bitmap);
 
   host_->SetCursor(cursor);
-  EXPECT_EQ(WebCursor(cursor), view_->last_cursor());
-}
-
-TEST_F(RenderWidgetHostTest, SetCursorWithInvalidBitmap) {
-  ui::Cursor cursor;
-
-  SkBitmap badbitmap;
-  badbitmap.allocPixels(
-      SkImageInfo::Make(1, 1, kARGB_4444_SkColorType, kPremul_SkAlphaType));
-  badbitmap.eraseColor(SK_ColorGREEN);
-
-  SkBitmap n32bitmap;
-  EXPECT_TRUE(skia::SkBitmapToN32OpaqueOrPremul(badbitmap, &n32bitmap));
-
-  // A non-N32 32bpp bitmap will be converted on receipt from IPC.
-  cursor.set_custom_bitmap(badbitmap);
-  host_->SetCursor(cursor);
-  // Compare to the `n32bitmap`.
-  cursor.set_custom_bitmap(n32bitmap);
   EXPECT_EQ(WebCursor(cursor), view_->last_cursor());
 }
 

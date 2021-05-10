@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -69,7 +70,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void DeleteProfileFromCache(const base::FilePath& profile_path);
 
   // ProfileInfoInterface:
-  size_t GetNumberOfProfiles() const override;
+  size_t GetNumberOfProfiles(bool include_guest_profile = false) const override;
   // Don't cache this value and reuse, because resorting the menu could cause
   // the item being referred to to change out from under you.
   // Deprecated. Prefer using the ProfileAttributesStorage interface instead of
@@ -120,8 +121,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void RemoveProfileByAccountId(const AccountId& account_id) override;
   void RemoveProfile(const base::FilePath& profile_path) override;
 
-  bool GetProfileAttributesWithPath(const base::FilePath& path,
-                                    ProfileAttributesEntry** entry) override;
+  ProfileAttributesEntry* GetProfileAttributesWithPath(
+      const base::FilePath& path) override;
   void DisableProfileMetricsForTesting() override;
 
   void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
@@ -129,6 +130,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void NotifyProfileSupervisedUserIdChanged(const base::FilePath& profile_path);
   void NotifyProfileIsOmittedChanged(const base::FilePath& profile_path);
   void NotifyProfileThemeColorsChanged(const base::FilePath& profile_path);
+  void NotifyProfileHostedDomainChanged(const base::FilePath& profile_path);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
@@ -176,7 +178,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void LoadGAIAPictureIfNeeded();
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Migrate any legacy profile names ("First user", "Default Profile") to
   // new style default names ("Person 1"). Rename any duplicates of "Person n"
   // i.e. Two or more profiles with the profile name "Person 1" would be
@@ -185,7 +187,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   static void SetLegacyProfileMigrationForTesting(bool value);
 
   std::unique_ptr<signin::PersistentRepeatingTimer> repeating_timer_;
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;

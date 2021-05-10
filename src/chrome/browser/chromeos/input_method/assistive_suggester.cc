@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
@@ -13,8 +15,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/exo/wm_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -25,7 +25,6 @@ namespace chromeos {
 namespace {
 
 const char kMaxTextBeforeCursorLength = 50;
-const char kKeydown[] = "keydown";
 
 const char* kAllowedDomainsForPersonalInfoSuggester[] = {
     "discord.com",      "messenger.com",       "web.whatsapp.com",
@@ -129,6 +128,10 @@ void RecordAssistiveUserPrefForPersonalInfo(bool value) {
 
 void RecordAssistiveUserPrefForEmoji(bool value) {
   base::UmaHistogramBoolean("InputMethod.Assistive.UserPref.Emoji", value);
+}
+
+void RecordAssistiveNotAllowed(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.NotAllowed", type);
 }
 
 void RecordAssistiveCoverage(AssistiveType type) {
@@ -309,8 +312,7 @@ void AssistiveSuggester::OnBlur() {
   emoji_suggester_.OnBlur();
 }
 
-bool AssistiveSuggester::OnKeyEvent(
-    const InputMethodEngineBase::KeyboardEvent& event) {
+bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
   if (context_id_ == -1)
     return false;
 
@@ -318,7 +320,7 @@ bool AssistiveSuggester::OnKeyEvent(
   // surrounding text change, which is triggered by a keydown event. As a
   // result, the next key event after suggesting would be a keyup event of the
   // same key, and that event is meaningless to us.
-  if (IsSuggestionShown() && event.type == kKeydown) {
+  if (IsSuggestionShown() && event.type() == ui::ET_KEY_PRESSED) {
     SuggestionStatus status = current_suggester_->HandleKeyEvent(event);
     switch (status) {
       case SuggestionStatus::kAccept:
@@ -340,8 +342,11 @@ bool AssistiveSuggester::OnKeyEvent(
 void AssistiveSuggester::RecordAssistiveMatchMetricsForAction(
     AssistiveType action) {
   RecordAssistiveMatch(action);
-  if (!IsActionEnabled(action))
+  if (!IsActionEnabled(action)) {
     RecordAssistiveDisabled(action);
+  } else if (!IsAllowedUrlOrAppForEmojiSuggestion()) {
+    RecordAssistiveNotAllowed(action);
+  }
 }
 
 void AssistiveSuggester::RecordAssistiveMatchMetrics(const base::string16& text,

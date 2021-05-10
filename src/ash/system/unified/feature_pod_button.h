@@ -23,6 +23,15 @@ class FeaturePodControllerBase;
 // A toggle button with an icon used by feature pods and in other places.
 class FeaturePodIconButton : public views::ImageButton {
  public:
+  // Used to determine how the button will behave when disabled.
+  enum class DisabledButtonBehavior {
+    // The button will display toggle button as off.
+    kNone = 0,
+
+    // The button will display on/off status of toggle.
+    kCanDisplayDisabledToggleValue = 1,
+  };
+
   FeaturePodIconButton(PressedCallback callback, bool is_togglable);
   ~FeaturePodIconButton() override;
 
@@ -31,6 +40,10 @@ class FeaturePodIconButton : public views::ImageButton {
 
   // Sets the button's icon.
   void SetVectorIcon(const gfx::VectorIcon& icon);
+
+  void set_button_behavior(DisabledButtonBehavior button_behavior) {
+    button_behavior_ = button_behavior;
+  }
 
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
@@ -54,6 +67,8 @@ class FeaturePodIconButton : public views::ImageButton {
 
   // True if the button is currently toggled.
   bool toggled_ = false;
+
+  DisabledButtonBehavior button_behavior_ = DisabledButtonBehavior::kNone;
 
   const gfx::VectorIcon* icon_ = nullptr;
 
@@ -99,7 +114,7 @@ class FeaturePodLabelButton : public views::Button {
   views::Label* const label_;
   views::Label* const sub_label_;
   views::ImageView* const detailed_view_arrow_;
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
+  base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
           base::BindRepeating(&FeaturePodLabelButton::OnEnabledChanged,
                               base::Unretained(this)));
@@ -191,7 +206,7 @@ class ASH_EXPORT FeaturePodButton : public views::View {
   // expanded.
   bool visible_preferred_ = true;
 
-  views::PropertyChangedSubscription enabled_changed_subscription_ =
+  base::CallbackListSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
           base::BindRepeating(&FeaturePodButton::OnEnabledChanged,
                               base::Unretained(this)));

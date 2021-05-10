@@ -20,8 +20,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cycle_solver.h"
+#include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 
@@ -55,13 +54,24 @@ void LayoutSVGResourceContainer::UpdateLayout() {
   ClearInvalidationMask();
 }
 
+void LayoutSVGResourceContainer::InvalidateClientsIfActiveResource() {
+  NOT_DESTROYED();
+  // If this is the 'active' resource (the first element with the specified 'id'
+  // in tree order), notify any clients that they need to reevaluate the
+  // resource's contents.
+  const LocalSVGResource* resource = ResourceForContainer(*this);
+  if (!resource || resource->Target() != GetElement())
+    return;
+  // Pass all available flags. This may be performing unnecessary invalidations
+  // in some cases.
+  MarkAllClientsForInvalidation(kInvalidateAll);
+}
+
 void LayoutSVGResourceContainer::WillBeDestroyed() {
   NOT_DESTROYED();
-  LayoutSVGHiddenContainer::WillBeDestroyed();
   // The resource is being torn down.
-  // TODO(fs): Remove this when SVGResources is gone.
-  if (LocalSVGResource* resource = ResourceForContainer(*this))
-    resource->NotifyResourceDestroyed(*this);
+  InvalidateClientsIfActiveResource();
+  LayoutSVGHiddenContainer::WillBeDestroyed();
 }
 
 void LayoutSVGResourceContainer::StyleDidChange(
@@ -69,54 +79,75 @@ void LayoutSVGResourceContainer::StyleDidChange(
     const ComputedStyle* old_style) {
   NOT_DESTROYED();
   LayoutSVGHiddenContainer::StyleDidChange(diff, old_style);
-  // The resource has been attached. Notify any pending clients that
-  // they can now try to add themselves as clients to the resource.
-  // TODO(fs): Remove this when SVGResources is gone.
   if (old_style)
     return;
-  if (LocalSVGResource* resource = ResourceForContainer(*this))
-    resource->NotifyResourceAttached(*this);
+  // The resource has been attached.
+  InvalidateClientsIfActiveResource();
 }
 
-bool LayoutSVGResourceContainer::FindCycle(
-    SVGResourcesCycleSolver& solver) const {
+bool LayoutSVGResourceContainer::FindCycle() const {
   NOT_DESTROYED();
-  if (solver.IsKnownAcyclic(this))
-    return false;
-  SVGResourcesCycleSolver::Scope scope(solver);
-  if (!scope.Enter(this) || FindCycleFromSelf(solver))
-    return true;
-  solver.AddAcyclicSubgraph(this);
-  return false;
+  return FindCycleFromSelf();
+}
+
+static HeapVector<Member<SVGResource>> CollectResources(
+    const LayoutObject& layout_object) {
+  const ComputedStyle& style = layout_object.StyleRef();
+  HeapVector<Member<SVGResource>> resources;
+  if (auto* reference_clip =
+          DynamicTo<ReferenceClipPathOperation>(style.ClipPath())) {
+    resources.push_back(reference_clip->Resource());
+  }
+  for (const auto& operation : style.Filter().Operations()) {
+    if (auto* reference_operation =
+            DynamicTo<ReferenceFilterOperation>(*operation))
+      resources.push_back(reference_operation->Resource());
+  }
+  if (auto* masker = style.MaskerResource())
+    resources.push_back(masker->Resource());
+  if (auto* marker = style.MarkerStartResource())
+    resources.push_back(marker->Resource());
+  if (auto* marker = style.MarkerMidResource())
+    resources.push_back(marker->Resource());
+  if (auto* marker = style.MarkerEndResource())
+    resources.push_back(marker->Resource());
+  if (auto* paint_resource = style.FillPaint().Resource())
+    resources.push_back(paint_resource->Resource());
+  if (auto* paint_resource = style.StrokePaint().Resource())
+    resources.push_back(paint_resource->Resource());
+  return resources;
 }
 
 bool LayoutSVGResourceContainer::FindCycleInResources(
-    SVGResourcesCycleSolver& solver,
     const LayoutObject& layout_object) {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
-  if (!resources)
+  if (!layout_object.IsSVG() || layout_object.IsText())
+    return false;
+  SVGResourceClient* client = SVGResources::GetClient(layout_object);
+  // Without an associated client, we will not reference any resources.
+  if (!client)
     return false;
   // Fetch all the referenced resources.
-  HashSet<LayoutSVGResourceContainer*> local_resources;
-  resources->BuildSetOfResources(local_resources);
+  HeapVector<Member<SVGResource>> resources = CollectResources(layout_object);
   // This performs a depth-first search for a back-edge in all the
   // (potentially disjoint) graphs formed by the referenced resources.
-  for (auto* local_resource : local_resources) {
-    if (local_resource->FindCycle(solver))
+  for (const auto& local_resource : resources) {
+    // The resource can be null if the reference is external but external
+    // references are not allowed.
+    if (local_resource && local_resource->FindCycle(*client))
       return true;
   }
   return false;
 }
 
-bool LayoutSVGResourceContainer::FindCycleFromSelf(
-    SVGResourcesCycleSolver& solver) const {
+bool LayoutSVGResourceContainer::FindCycleFromSelf() const {
   NOT_DESTROYED();
-  return FindCycleInSubtree(solver, *this);
+  // Resources don't generally apply to other resources, so require
+  // the specific cases that do (like <clipPath>) to implement an
+  // override.
+  return FindCycleInDescendants(*this);
 }
 
 bool LayoutSVGResourceContainer::FindCycleInDescendants(
-    SVGResourcesCycleSolver& solver,
     const LayoutObject& root) {
   LayoutObject* node = root.SlowFirstChild();
   while (node) {
@@ -126,7 +157,7 @@ bool LayoutSVGResourceContainer::FindCycleInDescendants(
       node = node->NextInPreOrderAfterChildren(&root);
       continue;
     }
-    if (FindCycleInResources(solver, *node))
+    if (FindCycleInResources(*node))
       return true;
     node = node->NextInPreOrder(&root);
   }
@@ -134,11 +165,10 @@ bool LayoutSVGResourceContainer::FindCycleInDescendants(
 }
 
 bool LayoutSVGResourceContainer::FindCycleInSubtree(
-    SVGResourcesCycleSolver& solver,
     const LayoutObject& root) {
-  if (FindCycleInResources(solver, root))
+  if (FindCycleInResources(root))
     return true;
-  return FindCycleInDescendants(solver, root);
+  return FindCycleInDescendants(root);
 }
 
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
@@ -159,7 +189,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   is_invalidating_ = true;
 
   // Invalidate clients registered via an SVGResource.
-  resource->NotifyContentChanged(invalidation_mask);
+  resource->NotifyContentChanged();
 
   is_invalidating_ = false;
 }
@@ -168,9 +198,6 @@ void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
     LayoutInvalidationReasonForTracing reason,
     SubtreeLayoutScope* layout_scope) {
   NOT_DESTROYED();
-  if (SelfNeedsLayout())
-    return;
-
   SetNeedsLayoutAndFullPaintInvalidation(reason, kMarkContainerChain,
                                          layout_scope);
 
@@ -242,8 +269,8 @@ static inline bool IsLayoutObjectOfResourceContainer(
   return false;
 }
 
-void LayoutSVGResourceContainer::StyleDidChange(LayoutObject& object,
-                                                StyleDifference diff) {
+void LayoutSVGResourceContainer::StyleChanged(LayoutObject& object,
+                                              StyleDifference diff) {
   // If this LayoutObject is the child of a resource container and
   // it requires repainting because of changes to CSS properties
   // such as 'visibility', upgrade to invalidate layout.

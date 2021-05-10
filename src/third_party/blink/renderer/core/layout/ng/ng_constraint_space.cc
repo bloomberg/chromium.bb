@@ -63,7 +63,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     // The flexbox-specific behavior is in addition to regular definite-ness, so
     // if the flex item would normally have a definite height it should keep it.
     fixed_block_is_definite =
-        ToLayoutFlexibleBox(block.Parent())
+        To<LayoutFlexibleBox>(block.Parent())
             ->UseOverrideLogicalHeightForPerentageResolution(block) ||
         block.HasDefiniteLogicalHeight();
   }
@@ -79,7 +79,6 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   if (!block.IsWritingModeRoot() || block.IsGridItem()) {
     // We don't know if the parent layout will require our baseline, so always
     // request it.
-    builder.SetNeedsBaseline(true);
     builder.SetBaselineAlgorithmType(block.IsInline() &&
                                              block.IsAtomicInlineLevel()
                                          ? NGBaselineAlgorithmType::kInlineBlock
@@ -98,7 +97,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
         !cell_style.LogicalHeight().IsAuto() ||
         !table_style.LogicalHeight().IsAuto());
     const LayoutBlock& cell_block = To<LayoutBlock>(*cell.ToLayoutObject());
-    if (RuntimeEnabledFeatures::TableCellNewPercentsEnabled() && fixed_block) {
+    if (fixed_block) {
       fixed_block_is_definite = cell_block.HasDefiniteLogicalHeight() ||
                                 !table_style.LogicalHeight().IsAuto();
     }
@@ -125,9 +124,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   builder.SetIsFixedInlineSize(fixed_inline);
   builder.SetIsFixedBlockSize(fixed_block);
   builder.SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite);
-  builder.SetIsShrinkToFit(
-      style.LogicalWidth().IsAuto() &&
-      block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
+  builder.SetStretchInlineSizeIfAuto(
+      !block.SizesLogicalWidthToFitContent(style.LogicalWidth()));
   return builder.ToConstraintSpace();
 }
 

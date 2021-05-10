@@ -15,8 +15,6 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
@@ -141,7 +139,8 @@ class AppInfoGeneratorTest : public ::testing::Test {
     app->version = version;
     app->app_type = app_type;
     deltas.push_back(std::move(app));
-    GetCache().OnApps(std::move(deltas));
+    GetCache().OnApps(std::move(deltas), app_type,
+                      false /* should_notify_initialized */);
   }
 
   class Instance {

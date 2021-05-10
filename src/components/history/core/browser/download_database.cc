@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -61,10 +61,10 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 void BindFilePath(sql::Statement& statement,
                   const base::FilePath& path,
                   int col) {
-  statement.BindString16(col, path.value());
+  statement.BindString(col, path.AsUTF8Unsafe());
 }
 base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
-  return base::FilePath(statement.ColumnString16(col));
+  return base::FilePath::FromUTF8Unsafe(statement.ColumnString(col));
 }
 
 #endif

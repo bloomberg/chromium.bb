@@ -51,7 +51,8 @@ class ModuleRecordResolverImplTestModulator final : public DummyModulator {
     return KURL(base_url, module_request);
   }
 
-  ModuleScript* GetFetchedModuleScript(const KURL&) override;
+  ModuleScript* GetFetchedModuleScript(const KURL&,
+                                       ModuleType module_type) override;
 
   Member<ScriptState> script_state_;
   int get_fetched_module_script_called_ = 0;
@@ -66,7 +67,8 @@ void ModuleRecordResolverImplTestModulator::Trace(Visitor* visitor) const {
 }
 
 ModuleScript* ModuleRecordResolverImplTestModulator::GetFetchedModuleScript(
-    const KURL& url) {
+    const KURL& url,
+    ModuleType module_type) {
   get_fetched_module_script_called_++;
   fetched_url_ = url;
   return module_script_.Get();
@@ -75,10 +77,8 @@ ModuleScript* ModuleRecordResolverImplTestModulator::GetFetchedModuleScript(
 ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
   KURL js_url("https://example.com/referrer.js");
-  v8::Local<v8::Module> referrer_record = ModuleRecord::Compile(
-      scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url,
-      js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
-      ASSERT_NO_EXCEPTION);
+  v8::Local<v8::Module> referrer_record = ModuleTestBase::CompileModule(
+      scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
       JSModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
@@ -89,10 +89,8 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                                        V8TestingScope& scope,
                                        bool has_parse_error = false) {
   KURL js_url("https://example.com/target.js");
-  v8::Local<v8::Module> record = ModuleRecord::Compile(
-      scope.GetIsolate(), "export const pi = 3.14;", js_url, js_url,
-      ScriptFetchOptions(), TextPosition::MinimumPosition(),
-      ASSERT_NO_EXCEPTION);
+  v8::Local<v8::Module> record = ModuleTestBase::CompileModule(
+      scope.GetIsolate(), "export const pi = 3.14;", js_url);
   KURL url("https://example.com/target.js");
   auto* module_script = JSModuleScript::CreateForTest(modulator, record, url);
   if (has_parse_error) {
@@ -147,9 +145,9 @@ TEST_P(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
       CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
 
-  v8::Local<v8::Module> resolved =
-      resolver->Resolve("./target.js", referrer_module_script->V8Module(),
-                        scope.GetExceptionState());
+  v8::Local<v8::Module> resolved = resolver->Resolve(
+      ModuleRequest("./target.js", TextPosition(), Vector<ImportAssertion>()),
+      referrer_module_script->V8Module(), scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(resolved, target_module_script->V8Module());
   EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());

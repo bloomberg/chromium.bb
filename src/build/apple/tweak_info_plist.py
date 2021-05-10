@@ -35,6 +35,7 @@ TOP = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 def _ConvertPlist(source_plist, output_plist, fmt):
   """Convert |source_plist| to |fmt| and save as |output_plist|."""
+  assert sys.version_info.major == 2, "Use plistlib directly in Python 3"
   return subprocess.call(
       ['plutil', '-convert', fmt, '-o', output_plist, source_plist])
 
@@ -278,7 +279,7 @@ def Main(argv):
       'like key=value (can be passed multiple time to configure '
       'more than one override)')
   parser.add_option('--format',
-                    choices=('binary1', 'xml1', 'json'),
+                    choices=('binary1', 'xml1'),
                     default='xml1',
                     help='Format to use when writing property list '
                     '(default: %(default)s)')
@@ -301,10 +302,14 @@ def Main(argv):
   # Read the plist into its parsed format. Convert the file to 'xml1' as
   # plistlib only supports that format in Python 2.7.
   with tempfile.NamedTemporaryFile() as temp_info_plist:
-    retcode = _ConvertPlist(options.plist_path, temp_info_plist.name, 'xml1')
-    if retcode != 0:
-      return retcode
-    plist = plistlib.readPlist(temp_info_plist.name)
+    if sys.version_info.major == 2:
+      retcode = _ConvertPlist(options.plist_path, temp_info_plist.name, 'xml1')
+      if retcode != 0:
+        return retcode
+      plist = plistlib.readPlist(temp_info_plist.name)
+    else:
+      with open(options.plist_path, 'rb') as f:
+        plist = plistlib.load(f)
 
   # Convert overrides.
   overrides = {}
@@ -397,12 +402,15 @@ def Main(argv):
     output_path = options.plist_output
 
   # Now that all keys have been mutated, rewrite the file.
-  with tempfile.NamedTemporaryFile() as temp_info_plist:
-    plistlib.writePlist(plist, temp_info_plist.name)
-
-    # Convert Info.plist to the format requested by the --format flag. Any
-    # format would work on Mac but iOS requires specific format.
-    return _ConvertPlist(temp_info_plist.name, output_path, options.format)
+  # Convert Info.plist to the format requested by the --format flag. Any
+  # format would work on Mac but iOS requires specific format.
+  if sys.version_info.major == 2:
+    with tempfile.NamedTemporaryFile() as temp_info_plist:
+      plistlib.writePlist(plist, temp_info_plist.name)
+      return _ConvertPlist(temp_info_plist.name, output_path, options.format)
+  with open(output_path, 'wb') as f:
+    plist_format = {'binary1': plistlib.FMT_BINARY, 'xml1': plistlib.FMT_XML}
+    plistlib.dump(plist, f, fmt=plist_format[options.format])
 
 
 if __name__ == '__main__':

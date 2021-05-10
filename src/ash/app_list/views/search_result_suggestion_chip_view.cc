@@ -33,8 +33,6 @@ namespace ash {
 
 namespace {
 
-constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
-constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
 constexpr int kMaxTextWidth = 192;
 constexpr int kBlurRadius = 5;
 constexpr int kIconMarginDip = 8;
@@ -61,7 +59,7 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
                           base::Unretained(this)));
 
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(kFocusRingColor);
+  focus_ring()->SetColor(AppListColorProvider::Get()->GetFocusRingColor());
 
   SetInkDropMode(InkDropMode::ON);
   views::InstallPillHighlightPathGenerator(this);
@@ -126,9 +124,10 @@ void SearchResultSuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Focus Ring should only be visible when keyboard traversal is occurring.
   if (view_delegate_->KeyboardTraversalEngaged())
-    focus_ring()->SetColor(kFocusRingColor);
+    focus_ring()->SetColor(AppListColorProvider::Get()->GetFocusRingColor());
   else
-    focus_ring()->SetColor(SkColorSetA(kFocusRingColor, 0));
+    focus_ring()->SetColor(
+        SkColorSetA(AppListColorProvider::Get()->GetFocusRingColor(), 0));
 }
 
 void SearchResultSuggestionChipView::OnFocus() {
@@ -144,6 +143,13 @@ bool SearchResultSuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE)
     return false;
   return Button::OnKeyPressed(event);
+}
+
+void SearchResultSuggestionChipView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  text_view_->SetEnabledColor(
+      AppListColorProvider::Get()->GetSuggestionChipTextColor());
+  SchedulePaint();
 }
 
 std::unique_ptr<views::InkDrop>
@@ -162,9 +168,13 @@ SearchResultSuggestionChipView::CreateInkDropRipple() const {
   const int ripple_radius = width() / 2;
   gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
                    2 * ripple_radius, 2 * ripple_radius);
+  const AppListColorProvider* color_provider = AppListColorProvider::Get();
+  const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), kRippleColor, 1.0f);
+      GetInkDropCenterBasedOnLastEvent(),
+      color_provider->GetRippleAttributesBaseColor(bg_color),
+      color_provider->GetRippleAttributesInkDropOpacity(bg_color));
 }
 
 std::unique_ptr<ui::Layer> SearchResultSuggestionChipView::RecreateLayer() {

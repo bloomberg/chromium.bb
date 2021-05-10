@@ -58,12 +58,8 @@ const kAllowedOrigins = [
 /** @type {?ExtensionServer} */
 let extensionServerInstance;
 
-/**
- * @unrestricted
- */
 export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @suppressGlobalPropertiesCheck
    * @private
    */
   constructor() {
@@ -119,7 +115,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     this._registerHandler(commands.RegisterLanguageExtensionPlugin, this._registerLanguageExtensionEndpoint.bind(this));
     window.addEventListener('message', this._onWindowMessage.bind(this), false);  // Only for main window.
 
-    /** @suppress {checkTypes} */
     const existingTabId =
         window.DevToolsAPI && window.DevToolsAPI.getInspectedTabId && window.DevToolsAPI.getInspectedTabId();
 
@@ -130,8 +125,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
 
     this._languageExtensionRequests = new Map();
-    /** @type {!Array<!LanguageExtensionEndpoint>} */
-    this._languageExtensionEndpoints = [];
     this._initExtensions();
   }
 
@@ -155,7 +148,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
    * @return {boolean}
    */
   hasExtensions() {
-    return !!this._registeredExtensions.size;
+    return Boolean(this._registeredExtensions.size);
   }
 
   /**
@@ -190,20 +183,17 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   _registerLanguageExtensionEndpoint(message, shared_port) {
-    if (!Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
+    const {pluginManager} = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    if (!pluginManager) {
       return this._status.E_FAILED('WebAssembly DWARF support needs to be enabled to use this extension');
     }
 
     const {pluginName, port, supportedScriptTypes: {language, symbol_types}} = message;
     const symbol_types_array = /** @type !Array<string> */
         (Array.isArray(symbol_types) && symbol_types.every(e => typeof e === 'string') ? symbol_types : []);
-    const extension = new LanguageExtensionEndpoint(pluginName, {language, symbol_types: symbol_types_array}, port);
-    this._languageExtensionEndpoints.push(extension);
-    this.dispatchEventToListeners(Events.LanguageExtensionEndpointAdded, extension);
-  }
-
-  get languageExtensionEndpoints() {
-    return this._languageExtensionEndpoints;
+    const endpoint = new LanguageExtensionEndpoint(pluginName, {language, symbol_types: symbol_types_array}, port);
+    pluginManager.addPlugin(endpoint);
+    return this._status.OK();
   }
 
   _inspectedURLChanged(event) {
@@ -315,7 +305,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {*} message
-   * @suppressGlobalPropertiesCheck
    */
   _onApplyStyleSheet(message) {
     if (!Root.Runtime.experiments.isEnabled('applyCustomStylesheet')) {
@@ -508,7 +497,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     if (options.injectedScript) {
       injectedScript = '(function(){' + options.injectedScript + '})()';
     }
-    SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(!!options.ignoreCache, injectedScript);
+    SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(Boolean(options.ignoreCache), injectedScript);
     return this._status.OK();
   }
 
@@ -669,7 +658,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 
     /**
      * @param {*} entry
-     * @suppressGlobalPropertiesCheck
      */
     function handleEventEntry(entry) {
       // Fool around closure compiler -- it has its own notion of both KeyboardEvent constructor
@@ -784,7 +772,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {!Root.Runtime.RuntimeExtensionDescriptor} extensionInfo
-   * @suppressGlobalPropertiesCheck
    */
   _addExtension(extensionInfo) {
     const startPage = extensionInfo.startPage;
@@ -1053,7 +1040,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         callback(result.error, null, false);
         return;
       }
-      callback(null, result.object || null, !!result.exceptionDetails);
+      callback(null, result.object || null, Boolean(result.exceptionDetails));
     }
   }
 
@@ -1091,13 +1078,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 /** @enum {symbol} */
 export const Events = {
   SidebarPaneAdded: Symbol('SidebarPaneAdded'),
-  TraceProviderAdded: Symbol('TraceProviderAdded'),
-  LanguageExtensionEndpointAdded: Symbol('LanguageExtensionEndpointAdded')
+  TraceProviderAdded: Symbol('TraceProviderAdded')
 };
 
-/**
- * @unrestricted
- */
 class ExtensionServerPanelView extends UI.View.SimpleView {
   /**
    * @param {string} name
@@ -1127,9 +1110,6 @@ class ExtensionServerPanelView extends UI.View.SimpleView {
   }
 }
 
-/**
- * @unrestricted
- */
 export class ExtensionStatus {
   constructor() {
     /**

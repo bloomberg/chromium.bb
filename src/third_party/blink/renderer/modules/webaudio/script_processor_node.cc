@@ -30,6 +30,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -41,6 +43,28 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
+
+namespace {
+
+bool IsAudioBufferDetached(AudioBuffer* buffer) {
+  bool is_buffer_detached = false;
+  for (unsigned channel = 0; channel < buffer->numberOfChannels(); ++channel) {
+    if (buffer->getChannelData(channel)->buffer()->IsDetached()) {
+      is_buffer_detached = true;
+      break;
+    }
+  }
+
+  return is_buffer_detached;
+}
+
+bool BufferTopologyMatches(AudioBuffer* buffer_1, AudioBuffer* buffer_2) {
+  return (buffer_1->numberOfChannels() == buffer_2->numberOfChannels()) &&
+         (buffer_1->length() == buffer_2->length()) &&
+         (buffer_1->sampleRate() == buffer_2->sampleRate());
+}
+
+}  // namespace
 
 ScriptProcessorHandler::ScriptProcessorHandler(
     AudioNode& node,
@@ -84,6 +108,15 @@ ScriptProcessorHandler::ScriptProcessorHandler(
   }
 
   Initialize();
+
+  LocalDOMWindow* window = To<LocalDOMWindow>(Context()->GetExecutionContext());
+  if (window) {
+    window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kDeprecation,
+          mojom::blink::ConsoleMessageLevel::kWarning,
+          "The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead."
+          " (https://bit.ly/audio-worklet)"));
+  }
 }
 
 scoped_refptr<ScriptProcessorHandler> ScriptProcessorHandler::Create(
@@ -335,6 +368,12 @@ ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context,
     input_buffers_.push_back(input_buffer);
     output_buffers_.push_back(output_buffer);
   }
+
+  external_input_buffer_ = AudioBuffer::Create(
+      number_of_input_channels, buffer_size, sample_rate);
+  external_output_buffer_ = AudioBuffer::Create(
+      number_of_output_channels, buffer_size, sample_rate);
+
   SetHandler(ScriptProcessorHandler::Create(
       *this, sample_rate, buffer_size, number_of_input_channels,
       number_of_output_channels, input_buffers_, output_buffers_));
@@ -427,19 +466,15 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
     case 0:
       // Choose an appropriate size.  For an AudioContext, we need to
       // choose an appropriate size based on the callback buffer size.
-      // For OfflineAudioContext, there's no callback buffer size, so
-      // just use the minimum valid buffer size.
       if (context.HasRealtimeConstraint()) {
-        // TODO(crbug.com/854229): Due to the incompatible constructor between
-        // AudioDestinationNode and RealtimeAudioDestinationNode, casting
-        // directly from |destination()| is impossible. This is a temporary
-        // workaround until the refactoring is completed.
         RealtimeAudioDestinationHandler& destination_handler =
             static_cast<RealtimeAudioDestinationHandler&>(
                 context.destination()->GetAudioDestinationHandler());
         buffer_size =
             ChooseBufferSize(destination_handler.GetCallbackBufferSize());
       } else {
+        // For OfflineAudioContext, there's no callback buffer size, so
+        // just use the minimum valid buffer size.
         buffer_size = 256;
       }
       break;
@@ -476,11 +511,62 @@ uint32_t ScriptProcessorNode::bufferSize() const {
 
 void ScriptProcessorNode::DispatchEvent(double playback_time,
                                         uint32_t double_buffer_index) {
-  AudioBuffer* input_buffer = input_buffers_.at(double_buffer_index).Get();
-  AudioBuffer* output_buffer = output_buffers_.at(double_buffer_index).Get();
-  DCHECK(output_buffer);
+  DCHECK(IsMainThread());
+
+  AudioBuffer* backing_input_buffer =
+      input_buffers_.at(double_buffer_index).Get();
+
+  // The backing buffer can be nullptr, when the number of input channels is 0.
+  if (backing_input_buffer) {
+    // Also the author code might have transferred |external_input_buffer| to
+    // other threads or replaced it with a different AudioBuffer object. Then
+    // re-create a new buffer instance.
+    if (IsAudioBufferDetached(external_input_buffer_) ||
+        !BufferTopologyMatches(backing_input_buffer,
+                               external_input_buffer_)) {
+      external_input_buffer_ = AudioBuffer::Create(
+          backing_input_buffer->numberOfChannels(),
+          backing_input_buffer->length(),
+          backing_input_buffer->sampleRate());
+    }
+
+    for (unsigned channel = 0;
+         channel < backing_input_buffer->numberOfChannels(); ++channel) {
+      const float* source = static_cast<float*>(
+          backing_input_buffer->getChannelData(channel)->buffer()->Data());
+      float* destination = static_cast<float*>(
+          external_input_buffer_->getChannelData(channel)->buffer()->Data());
+      memcpy(destination, source,
+             backing_input_buffer->length() * sizeof(float));
+    }
+  }
+
   AudioNode::DispatchEvent(*AudioProcessingEvent::Create(
-      input_buffer, output_buffer, playback_time));
+      external_input_buffer_, external_output_buffer_, playback_time));
+
+  AudioBuffer* backing_output_buffer =
+      output_buffers_.at(double_buffer_index).Get();
+
+  if (backing_output_buffer) {
+    if (IsAudioBufferDetached(external_output_buffer_) ||
+        !BufferTopologyMatches(backing_output_buffer,
+                               external_output_buffer_)) {
+      external_output_buffer_ = AudioBuffer::Create(
+          backing_output_buffer->numberOfChannels(),
+          backing_output_buffer->length(),
+          backing_output_buffer->sampleRate());
+    }
+
+    for (unsigned channel = 0;
+         channel < backing_output_buffer->numberOfChannels(); ++channel) {
+      const float* source = static_cast<float*>(
+          external_output_buffer_->getChannelData(channel)->buffer()->Data());
+      float* destination = static_cast<float*>(
+          backing_output_buffer->getChannelData(channel)->buffer()->Data());
+      memcpy(destination, source,
+             backing_output_buffer->length() * sizeof(float));
+    }
+  }
 }
 
 bool ScriptProcessorNode::HasPendingActivity() const {
@@ -499,6 +585,8 @@ bool ScriptProcessorNode::HasPendingActivity() const {
 void ScriptProcessorNode::Trace(Visitor* visitor) const {
   visitor->Trace(input_buffers_);
   visitor->Trace(output_buffers_);
+  visitor->Trace(external_input_buffer_);
+  visitor->Trace(external_output_buffer_);
   AudioNode::Trace(visitor);
 }
 

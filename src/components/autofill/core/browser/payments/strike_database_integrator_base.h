@@ -57,13 +57,13 @@ class StrikeDatabaseIntegratorBase {
  protected:
   // Removes all strikes in which it has been longer than GetExpiryTimeMicros()
   // past |last_update_timestamp|.
-  // TODO(crbug/1061639): Provide option to NOT expire strikes, perhaps by
-  //                      GetExpiryTimeMicros() return a base::Optional.
   void RemoveExpiredStrikes();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
                            StrikeDatabaseEmptyOnAutofillRemoveEverything);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           NonExpiringStrikesDoNotExpire);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesTest);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
@@ -98,8 +98,9 @@ class StrikeDatabaseIntegratorBase {
   // opportunity stops being offered.
   virtual int GetMaxStrikesLimit() = 0;
 
-  // Returns the time after which the most recent strike should expire.
-  virtual int64_t GetExpiryTimeMicros() = 0;
+  // Returns the time after which the most recent strike should expire. If the
+  // Optional is empty, then strikes don't expire.
+  virtual base::Optional<int64_t> GetExpiryTimeMicros() = 0;
 
   // Returns whether or not a unique string identifier is required for every
   // strike in this project.

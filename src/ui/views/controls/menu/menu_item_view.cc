@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_features.h"
@@ -50,6 +51,10 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_APPLE)
+#include "ui/views/accessibility/view_accessibility.h"
+#endif  //  defined(OS_APPLE)
 
 namespace views {
 
@@ -181,6 +186,8 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   switch (type_) {
     case Type::kSubMenu:
     case Type::kActionableSubMenu:
+      // Note: This is neither necessary nor sufficient for macOS. See
+      // CreateSubmenu() for virtual child creation and explanation.
       node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
       break;
     case Type::kCheckbox:
@@ -205,6 +212,11 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
         ax::mojom::StringAttribute::kKeyShortcuts,
         base::UTF16ToUTF8(base::string16(1, mnemonic)));
   }
+
+  if (IsTraversableByKeyboard()) {
+    node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                                IsSelected());
+  }
 }
 
 bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
@@ -223,9 +235,33 @@ bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
   return true;
 }
 
+View::FocusBehavior MenuItemView::GetFocusBehavior() const {
+  // If the creator/owner of the MenuItemView has explicitly set the focus
+  // behavior to something other than the default NEVER, don't override it.
+  View::FocusBehavior focus_behavior = View::GetFocusBehavior();
+  if (focus_behavior != FocusBehavior::NEVER)
+    return focus_behavior;
+
+  // Some MenuItemView types are presumably never focusable, even by assistive
+  // technologies.
+  if (type_ == Type::kEmpty || type_ == Type::kSeparator)
+    return FocusBehavior::NEVER;
+
+  // The rest of the MenuItemView types are presumably focusable, at least by
+  // assistive technologies. But if they lack presentable information, then
+  // there won't be anything for ATs to convey to the user. Filter those out.
+  if (title_.empty() && secondary_title_.empty() && minor_text_.empty() &&
+      vector_icon_.empty()) {
+    return FocusBehavior::NEVER;
+  }
+
+  return FocusBehavior::ACCESSIBLE_ONLY;
+}
+
 // static
 bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
   return anchor == MenuAnchorPosition::kBubbleAbove ||
+         anchor == MenuAnchorPosition::kBubbleBelow ||
          anchor == MenuAnchorPosition::kBubbleLeft ||
          anchor == MenuAnchorPosition::kBubbleRight;
 }
@@ -376,6 +412,18 @@ SubmenuView* MenuItemView::CreateSubmenu() {
   if (!submenu_) {
     submenu_ = new SubmenuView(this);
 
+#if defined(OS_APPLE)
+    // All MenuItemViews of Type kSubMenu have a respective SubmenuView.
+    // However, in the Views hierarchy, this SubmenuView is not a child of the
+    // MenuItemView. This confuses VoiceOver, because it expects the submenu
+    // itself to be a child of the menu item. To allow VoiceOver to recognize
+    // submenu items, we create a virtual child of type Menu.
+    std::unique_ptr<AXVirtualView> virtual_child =
+        std::make_unique<AXVirtualView>();
+    virtual_child->GetCustomData().role = ax::mojom::Role::kMenu;
+    GetViewAccessibility().AddVirtualChildView(std::move(virtual_child));
+#endif  //  defined(OS_APPLE)
+
     // Initialize the submenu indicator icon (arrow).
     submenu_arrow_image_view_ = AddChildView(std::make_unique<ImageView>());
   }
@@ -420,7 +468,7 @@ void MenuItemView::SetSelected(bool selected) {
   OnPropertyChanged(&selected_, kPropertyEffectsPaint);
 }
 
-PropertyChangedSubscription MenuItemView::AddSelectedChangedCallback(
+base::CallbackListSubscription MenuItemView::AddSelectedChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&selected_, std::move(callback));
 }
@@ -565,7 +613,7 @@ const MenuItemView* MenuItemView::GetRootMenuItem() const {
 
 base::char16 MenuItemView::GetMnemonic() {
   if (!GetRootMenuItem()->has_mnemonics_ ||
-      !MenuConfig::instance().use_mnemonics) {
+      !MenuConfig::instance().use_mnemonics || !may_have_mnemonics()) {
     return 0;
   }
 
@@ -736,6 +784,12 @@ bool MenuItemView::ShouldShowNewBadge() const {
   return feature_enabled && is_new_;
 }
 
+bool MenuItemView::IsTraversableByKeyboard() const {
+  bool ignore_enabled = ui::AXPlatformNode::GetAccessibilityMode().has_mode(
+      ui::AXMode::kNativeAPIs);
+  return GetVisible() && (ignore_enabled || GetEnabled());
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type) {
@@ -863,7 +917,7 @@ int MenuItemView::GetDrawStringFlags() {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
-  if (GetRootMenuItem()->has_mnemonics_) {
+  if (GetRootMenuItem()->has_mnemonics_ && may_have_mnemonics()) {
     if (MenuConfig::instance().show_mnemonics ||
         GetRootMenuItem()->show_mnemonics_) {
       flags |= gfx::Canvas::SHOW_PREFIX;
@@ -1195,6 +1249,9 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   dimensions.children_width = child_size.width();
   const MenuConfig& menu_config = MenuConfig::instance();
 
+  MenuDelegate::LabelStyle style;
+  GetLabelStyle(&style);
+
   if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
     dimensions.height = menu_config.touchable_menu_height;
 
@@ -1205,7 +1262,15 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     if (IsContainer())
       return dimensions;
 
-    dimensions.standard_width = menu_config.touchable_menu_width;
+    // Calculate total item width to make sure the current |title_|
+    // has enough room within the context menu.
+    int label_start = GetLabelStartForThisItem();
+    int string_width = gfx::GetStringWidth(title_, style.font_list);
+    int item_width = string_width + label_start + item_right_margin_;
+
+    item_width = std::max(item_width, menu_config.touchable_menu_min_width);
+    item_width = std::min(item_width, menu_config.touchable_menu_max_width);
+    dimensions.standard_width = item_width;
 
     if (icon_view_) {
       dimensions.height = icon_view_->GetPreferredSize().height() +
@@ -1214,8 +1279,6 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     return dimensions;
   }
 
-  MenuDelegate::LabelStyle style;
-  GetLabelStyle(&style);
   base::string16 minor_text = GetMinorText();
 
   dimensions.height = child_size.height();
@@ -1304,7 +1367,8 @@ int MenuItemView::GetLabelStartForThisItem() const {
   // Touchable items with icons do not respect |label_start_|.
   if (GetMenuController() && GetMenuController()->use_touchable_layout() &&
       icon_view_) {
-    return 2 * config.touchable_item_horizontal_padding + icon_view_->width();
+    return 2 * config.touchable_item_horizontal_padding +
+           icon_view_->GetPreferredSize().width();
   }
 
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;

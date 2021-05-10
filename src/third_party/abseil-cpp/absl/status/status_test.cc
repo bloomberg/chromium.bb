@@ -397,6 +397,12 @@ TEST(Status, MoveAssignment) {
     assignee = std::move(status);
     EXPECT_EQ(assignee, copy);
   }
+  {
+    absl::Status status(absl::StatusCode::kInvalidArgument, "message");
+    absl::Status copy(status);
+    status = static_cast<absl::Status&&>(status);
+    EXPECT_EQ(status, copy);
+  }
 }
 
 TEST(Status, Update) {
@@ -454,5 +460,4 @@ TEST(Status, Swap) {
   test_swap(no_payload, with_payload);
   test_swap(with_payload, no_payload);
 }
-
 }  // namespace

@@ -12,6 +12,7 @@ import contextlib
 import itertools
 import logging
 import os
+import re
 import shutil
 import signal
 import sys
@@ -656,7 +657,7 @@ def AddJUnitTestOptions(parser):
       help='Filters tests by runner class. Must be fully qualified.')
   parser.add_argument(
       '--shards',
-      default=1,
+      default=-1,
       type=int,
       help='Number of shards to run junit tests in parallel on. Only 1 shard '
       'is supported when test-filter is specified. Values less than 1 will '
@@ -732,6 +733,31 @@ def AddPythonTestOptions(parser):
       dest='suite_name', metavar='SUITE_NAME',
       choices=constants.PYTHON_UNIT_TEST_SUITES.keys(),
       help='Name of the test suite to run.')
+
+
+def _CreateClassToFileNameDict(test_apk):
+  """Creates a dict mapping classes to file names from size-info apk."""
+  constants.CheckOutputDirectory()
+  test_apk_size_info = os.path.join(constants.GetOutDirectory(), 'size-info',
+                                    os.path.basename(test_apk) + '.jar.info')
+
+  class_to_file_dict = {}
+  # Some tests such as webview_cts_tests use a separately downloaded apk to run
+  # tests. This means the apk may not have been built by the system and hence
+  # no size info file exists.
+  if not os.path.exists(test_apk_size_info):
+    logging.debug('Apk size file not found. %s', test_apk_size_info)
+    return class_to_file_dict
+
+  with open(test_apk_size_info, 'r') as f:
+    for line in f:
+      file_class, file_name = line.rstrip().split(',', 1)
+      # Only want files that are not prebuilt.
+      if file_name.startswith('../../'):
+        class_to_file_dict[file_class] = str(
+            file_name.replace('../../', '//', 1))
+
+  return class_to_file_dict
 
 
 def _RunPythonTests(args):
@@ -866,7 +892,9 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
       raise
     finally:
       if args.isolated_script_test_output:
+        interrupted = 'UNRELIABLE_RESULTS' in global_results_tags
         json_results.GenerateJsonTestResultFormatFile(all_raw_results,
+                                                      interrupted,
                                                       json_file.name,
                                                       indent=2)
       else:
@@ -937,14 +965,26 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
           iteration_results.AddTestRunResults(r)
         all_iteration_results.append(iteration_results)
 
+        test_class_to_file_name_dict = {}
+        # Test Location is only supported for instrumentation tests as it
+        # requires the size-info file.
+        if test_instance.TestType() == 'instrumentation':
+          test_class_to_file_name_dict = _CreateClassToFileNameDict(
+              args.test_apk)
+
         iteration_count += 1
         for r in iteration_results.GetAll():
           if result_sink_client:
+            # Matches chrome.page_info.PageInfoViewTest#testChromePage
+            match = re.search(r'^(.+\..+)#', r.GetName())
+            test_file_name = test_class_to_file_name_dict.get(
+                match.group(1)) if match else None
             # Some tests put in non utf-8 char as part of the test
             # which breaks uploads, so need to decode and re-encode.
             result_sink_client.Post(
                 r.GetName(), r.GetType(),
-                r.GetLog().decode('utf-8', 'replace').encode('utf-8'))
+                r.GetLog().decode('utf-8', 'replace').encode('utf-8'),
+                test_file_name)
 
           result_counts[r.GetName()][r.GetType()] += 1
         report_results.LogFull(

@@ -37,6 +37,8 @@
 
 namespace {
 
+constexpr char kTextPlain[] = "text/plain";
+
 // Only supporting important permissions for now.
 const ContentSettingsType kSupportedPermissionTypes[] = {
     ContentSettingsType::MEDIASTREAM_MIC,
@@ -64,6 +66,7 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
 apps::mojom::IntentFilterPtr CreateShareFileFilter(
     const std::vector<std::string>& intent_actions,
     const std::vector<std::string>& content_types) {
+  DCHECK(!content_types.empty());
   auto intent_filter = apps::mojom::IntentFilter::New();
 
   std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
@@ -81,7 +84,7 @@ apps::mojom::IntentFilterPtr CreateShareFileFilter(
   std::vector<apps::mojom::ConditionValuePtr> mime_type_condition_values;
   for (auto& mime_type : content_types) {
     mime_type_condition_values.push_back(apps_util::MakeConditionValue(
-        mime_type, apps::mojom::PatternMatchType::kNone));
+        mime_type, apps::mojom::PatternMatchType::kMimeType));
   }
   if (!mime_type_condition_values.empty()) {
     auto mime_type_condition =
@@ -120,7 +123,7 @@ const web_app::WebApp* WebAppsBase::GetWebApp(
   return GetRegistrar() ? GetRegistrar()->GetAppById(app_id) : nullptr;
 }
 
-void WebAppsBase::OnWebAppUninstalled(const web_app::AppId& app_id) {
+void WebAppsBase::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
     return;
@@ -153,6 +156,9 @@ apps::mojom::AppPtr WebAppsBase::ConvertImpl(const web_app::WebApp* web_app,
   app->additional_search_terms = web_app->additional_search_terms();
   app->last_launch_time = web_app->last_launch_time();
   app->install_time = web_app->install_time();
+
+  // Web App's publisher_id the start url.
+  app->publisher_id = web_app->start_url().spec();
 
   // app->version is left empty here.
   PopulatePermissions(web_app, &app->permissions);
@@ -191,7 +197,10 @@ content::WebContents* WebAppsBase::LaunchAppWithIntentImpl(
       web_app::ConvertDisplayModeToAppLaunchContainer(
           GetRegistrar()->GetAppEffectiveDisplayMode(app_id)),
       std::move(intent));
-  params.launch_source = launch_source;
+  return LaunchAppWithParams(std::move(params));
+}
+
+content::WebContents* WebAppsBase::LaunchAppWithParams(AppLaunchParams params) {
   return web_app_launch_manager_->OpenApplication(std::move(params));
 }
 
@@ -228,8 +237,7 @@ void WebAppsBase::Connect(
 
   provider_->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&WebAppsBase::StartPublishingWebApps,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                std::move(subscriber_remote)));
+                                AsWeakPtr(), std::move(subscriber_remote)));
 }
 
 void WebAppsBase::LoadIcon(const std::string& app_id,
@@ -253,7 +261,7 @@ void WebAppsBase::LoadIcon(const std::string& app_id,
 void WebAppsBase::Launch(const std::string& app_id,
                          int32_t event_flags,
                          apps::mojom::LaunchSource launch_source,
-                         int64_t display_id) {
+                         apps::mojom::WindowInfoPtr window_info) {
   if (!profile_) {
     return;
   }
@@ -294,6 +302,7 @@ void WebAppsBase::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromArc:
     case apps::mojom::LaunchSource::kFromSharesheet:
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
+    case apps::mojom::LaunchSource::kFromFullRestore:
       break;
   }
 
@@ -302,15 +311,12 @@ void WebAppsBase::Launch(const std::string& app_id,
 
   AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       web_app->app_id(), event_flags, GetAppLaunchSource(launch_source),
-      display_id,
+      window_info ? window_info->display_id : display::kInvalidDisplayId,
       /*fallback_container=*/
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
-  // This is used only in the case that a SystemWebApp is being opened. We
-  // avoided recording the metrics above, in app_service_proxy.cc, and will
-  // record the launch metrics as part of the call to LaunchSystemWebApp.
-  params.launch_source = launch_source;
-  // The app will be created for the currently active profile.
-  web_app_launch_manager_->OpenApplication(std::move(params));
+
+  // The app will be launched for the currently active profile.
+  LaunchAppWithParams(std::move(params));
 }
 
 void WebAppsBase::LaunchAppWithFiles(const std::string& app_id,
@@ -321,22 +327,22 @@ void WebAppsBase::LaunchAppWithFiles(const std::string& app_id,
   apps::AppLaunchParams params(
       app_id, container, ui::DispositionFromEventFlags(event_flags),
       GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
-  params.launch_source = launch_source;
   for (const auto& file_path : file_paths->file_paths) {
     params.launch_files.push_back(file_path);
   }
 
-  // The app will be created for the currently active profile.
-  web_app_launch_manager_->OpenApplication(std::move(params));
+  // The app will be launched for the currently active profile.
+  LaunchAppWithParams(std::move(params));
 }
 
 void WebAppsBase::LaunchAppWithIntent(const std::string& app_id,
                                       int32_t event_flags,
                                       apps::mojom::IntentPtr intent,
                                       apps::mojom::LaunchSource launch_source,
-                                      int64_t display_id) {
-  LaunchAppWithIntentImpl(app_id, event_flags, std::move(intent), launch_source,
-                          display_id);
+                                      apps::mojom::WindowInfoPtr window_info) {
+  LaunchAppWithIntentImpl(
+      app_id, event_flags, std::move(intent), launch_source,
+      window_info ? window_info->display_id : display::kInvalidDisplayId);
 }
 
 void WebAppsBase::SetPermission(const std::string& app_id,
@@ -440,7 +446,11 @@ void WebAppsBase::OnWebAppLastLaunchTimeChanged(
     const base::Time& last_launch_time) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
-    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
+    apps::mojom::AppPtr app = apps::mojom::App::New();
+    app->app_type = apps::mojom::AppType::kWeb;
+    app->app_id = app_id;
+    app->last_launch_time = web_app->last_launch_time();
+    Publish(std::move(app), subscribers_);
   }
 }
 
@@ -557,7 +567,9 @@ void WebAppsBase::StartPublishingWebApps(
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kWeb,
+                     true /* should_notify_initialized */);
+
   subscribers_.Add(std::move(subscriber));
 }
 
@@ -577,11 +589,10 @@ void PopulateIntentFilters(const web_app::WebApp& web_app,
 
   const apps::ShareTarget& share_target = web_app.share_target().value();
 
-  // TODO(crbug.com/1127670): Support title/text/url sharing on ChromeOS
-  if (share_target.params.files.empty() ||
-      share_target.method != apps::ShareTarget::Method::kPost ||
-      share_target.enctype != apps::ShareTarget::Enctype::kMultipartFormData) {
-    return;
+  if (!share_target.params.text.empty()) {
+    // The share target accepts navigator.share() calls with text.
+    target.push_back(
+        CreateShareFileFilter({apps_util::kIntentActionSend}, {kTextPlain}));
   }
 
   std::vector<std::string> content_types;
@@ -597,12 +608,11 @@ void PopulateIntentFilters(const web_app::WebApp& web_app,
     }
   }
 
-  if (content_types.empty())
-    return;
-
-  const std::vector<std::string> intent_actions(
-      {apps_util::kIntentActionSend, apps_util::kIntentActionSendMultiple});
-  target.push_back(CreateShareFileFilter(intent_actions, content_types));
+  if (!content_types.empty()) {
+    const std::vector<std::string> intent_actions(
+        {apps_util::kIntentActionSend, apps_util::kIntentActionSendMultiple});
+    target.push_back(CreateShareFileFilter(intent_actions, content_types));
+  }
 }
 
 }  // namespace apps

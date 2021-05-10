@@ -14,28 +14,31 @@
 
 #include "src/ast/type_constructor_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::TypeConstructorExpression);
+
 namespace tint {
 namespace ast {
-
-TypeConstructorExpression::TypeConstructorExpression()
-    : ConstructorExpression() {}
-
-TypeConstructorExpression::TypeConstructorExpression(type::Type* type,
-                                                     ExpressionList values)
-    : ConstructorExpression(), type_(type), values_(std::move(values)) {}
 
 TypeConstructorExpression::TypeConstructorExpression(const Source& source,
                                                      type::Type* type,
                                                      ExpressionList values)
-    : ConstructorExpression(source), type_(type), values_(std::move(values)) {}
+    : Base(source), type_(type), values_(std::move(values)) {}
 
 TypeConstructorExpression::TypeConstructorExpression(
     TypeConstructorExpression&&) = default;
 
 TypeConstructorExpression::~TypeConstructorExpression() = default;
 
-bool TypeConstructorExpression::IsTypeConstructor() const {
-  return true;
+TypeConstructorExpression* TypeConstructorExpression::Clone(
+    CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type());
+  auto vals = ctx->Clone(values());
+  return ctx->dst->create<TypeConstructorExpression>(src, ty, vals);
 }
 
 bool TypeConstructorExpression::IsValid() const {
@@ -45,7 +48,7 @@ bool TypeConstructorExpression::IsValid() const {
   if (type_ == nullptr) {
     return false;
   }
-  for (const auto& val : values_) {
+  for (auto* val : values_) {
     if (val == nullptr || !val->IsValid()) {
       return false;
     }
@@ -53,14 +56,16 @@ bool TypeConstructorExpression::IsValid() const {
   return true;
 }
 
-void TypeConstructorExpression::to_str(std::ostream& out, size_t indent) const {
+void TypeConstructorExpression::to_str(const semantic::Info& sem,
+                                       std::ostream& out,
+                                       size_t indent) const {
   make_indent(out, indent);
-  out << "TypeConstructor{" << std::endl;
+  out << "TypeConstructor[" << result_type_str(sem) << "]{" << std::endl;
   make_indent(out, indent + 2);
   out << type_->type_name() << std::endl;
 
-  for (const auto& val : values_) {
-    val->to_str(out, indent + 2);
+  for (auto* val : values_) {
+    val->to_str(sem, out, indent + 2);
   }
   make_indent(out, indent);
   out << "}" << std::endl;

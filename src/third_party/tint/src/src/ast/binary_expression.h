@@ -48,17 +48,8 @@ enum class BinaryOp {
 };
 
 /// An binary expression
-class BinaryExpression : public Expression {
+class BinaryExpression : public Castable<BinaryExpression, Expression> {
  public:
-  /// Constructor
-  BinaryExpression();
-  /// Constructor
-  /// @param op the operation type
-  /// @param lhs the left side of the expression
-  /// @param rhs the right side of the expression
-  BinaryExpression(BinaryOp op,
-                   std::unique_ptr<Expression> lhs,
-                   std::unique_ptr<Expression> rhs);
   /// Constructor
   /// @param source the binary expression source
   /// @param op the operation type
@@ -66,15 +57,12 @@ class BinaryExpression : public Expression {
   /// @param rhs the right side of the expression
   BinaryExpression(const Source& source,
                    BinaryOp op,
-                   std::unique_ptr<Expression> lhs,
-                   std::unique_ptr<Expression> rhs);
+                   Expression* lhs,
+                   Expression* rhs);
   /// Move constructor
   BinaryExpression(BinaryExpression&&);
   ~BinaryExpression() override;
 
-  /// Sets the binary op type
-  /// @param op the binary op type
-  void set_op(BinaryOp op) { op_ = op; }
   /// @returns the binary op type
   BinaryOp op() const { return op_; }
 
@@ -115,35 +103,34 @@ class BinaryExpression : public Expression {
   /// @returns true if the op is modulo
   bool IsModulo() const { return op_ == BinaryOp::kModulo; }
 
-  /// Sets the left side of the expression
-  /// @param lhs the left side to set
-  void set_lhs(std::unique_ptr<Expression> lhs) { lhs_ = std::move(lhs); }
   /// @returns the left side expression
-  Expression* lhs() const { return lhs_.get(); }
-
-  /// Sets the right side of the expression
-  /// @param rhs the right side to set
-  void set_rhs(std::unique_ptr<Expression> rhs) { rhs_ = std::move(rhs); }
+  Expression* lhs() const { return lhs_; }
   /// @returns the right side expression
-  Expression* rhs() const { return rhs_.get(); }
+  Expression* rhs() const { return rhs_; }
 
-  /// @returns true if this is a op expression
-  bool IsBinary() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  BinaryExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   BinaryExpression(const BinaryExpression&) = delete;
 
-  BinaryOp op_ = BinaryOp::kNone;
-  std::unique_ptr<Expression> lhs_;
-  std::unique_ptr<Expression> rhs_;
+  BinaryOp const op_;
+  Expression* const lhs_;
+  Expression* const rhs_;
 };
 
 inline std::ostream& operator<<(std::ostream& out, BinaryOp op) {

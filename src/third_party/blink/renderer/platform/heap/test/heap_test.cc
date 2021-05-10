@@ -38,6 +38,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2191,7 +2192,7 @@ TEST_F(HeapTest, MAYBE_LargeHashMap) {
 
   // Try to allocate a HashTable larger than kMaxHeapObjectSize
   // (crbug.com/597953).
-  wtf_size_t size = kMaxHeapObjectSize /
+  wtf_size_t size = HeapAllocator::kMaxHeapObjectSize /
                     sizeof(HeapHashMap<int, Member<IntWrapper>>::ValueType);
   Persistent<HeapHashMap<int, Member<IntWrapper>>> map =
       MakeGarbageCollected<HeapHashMap<int, Member<IntWrapper>>>();
@@ -2204,7 +2205,8 @@ TEST_F(HeapTest, LargeVector) {
 
   // Try to allocate a HeapVectors larger than kMaxHeapObjectSize
   // (crbug.com/597953).
-  const wtf_size_t size = kMaxHeapObjectSize / sizeof(Member<IntWrapper>);
+  const wtf_size_t size =
+      HeapAllocator::kMaxHeapObjectSize / sizeof(Member<IntWrapper>);
   Persistent<HeapVector<Member<IntWrapper>>> vector =
       MakeGarbageCollected<HeapVector<Member<IntWrapper>>>(size);
   EXPECT_LE(size, vector->capacity());
@@ -5071,7 +5073,7 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
     Persistent<IntWrapper>& handle = *int_wrapper;
     if (!handle) {
       handle = MakeGarbageCollected<IntWrapper>(42);
-      handle.RegisterAsStaticReference();
+      LEAK_SANITIZER_IGNORE_OBJECT(&handle);
     }
     return *handle;
   }
@@ -5110,7 +5112,7 @@ ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
   Persistent<WeakHeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
     singleton_persistent = MakeGarbageCollected<WeakHeapObjectSet>();
-    singleton_persistent.RegisterAsStaticReference();
+    LEAK_SANITIZER_IGNORE_OBJECT(&singleton_persistent);
   }
   return *singleton_persistent;
 }
@@ -5122,7 +5124,7 @@ ThreadedClearOnShutdownTester::GetHeapObjectSet() {
   Persistent<HeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
     singleton_persistent = MakeGarbageCollected<HeapObjectSet>();
-    singleton_persistent.RegisterAsStaticReference();
+    LEAK_SANITIZER_IGNORE_OBJECT(&singleton_persistent);
   }
   return *singleton_persistent;
 }
@@ -5370,5 +5372,68 @@ TEST_F(HeapTest, SuccessfulUnsanitizedAccessToObjectHeader) {
   internal::AsUnsanitizedAtomic(low)->store(half);
 }
 #endif  // ADDRESS_SANITIZER
+
+namespace {
+class FakeCSSValue : public GarbageCollected<FakeCSSValue> {
+ public:
+  template <typename T>
+  static void* AllocateObject(size_t size) {
+    return ThreadState::Current()->Heap().AllocateOnArenaIndex(
+        ThreadState::Current(), size, BlinkGC::kCSSValueArenaIndex,
+        GCInfoTrait<GCInfoFoldedType<FakeCSSValue>>::Index(), "FakeCSSValue");
+  }
+  virtual void Trace(Visitor*) const {}
+  char* Data() { return data_; }
+
+ private:
+  static const size_t kLength = 16;
+  char data_[kLength];
+};
+
+class FakeNode : public GarbageCollected<FakeNode> {
+ public:
+  template <typename T>
+  static void* AllocateObject(size_t size) {
+    return ThreadState::Current()->Heap().AllocateOnArenaIndex(
+        ThreadState::Current(), size, BlinkGC::kNodeArenaIndex,
+        GCInfoTrait<GCInfoFoldedType<FakeNode>>::Index(), "FakeNode");
+  }
+  virtual void Trace(Visitor*) const {}
+  char* Data() { return data_; }
+
+ private:
+  static const size_t kLength = 32;
+  char data_[kLength];
+};
+
+}  // anonymous namespace
+
+// TODO(1181269): Enable for the library once implemented.
+#if !BUILDFLAG(USE_V8_OILPAN)
+TEST_F(HeapTest, CollectNodeAndCssStatistics) {
+  PreciselyCollectGarbage();
+  size_t node_bytes_before, css_bytes_before;
+  ThreadState::Current()->CollectNodeAndCssStatistics(
+      base::BindLambdaForTesting([&node_bytes_before, &css_bytes_before](
+                                     size_t node_bytes, size_t css_bytes) {
+        node_bytes_before = node_bytes;
+        css_bytes_before = css_bytes;
+      }));
+  auto* node = MakeGarbageCollected<FakeNode>();
+  auto* css = MakeGarbageCollected<FakeCSSValue>();
+  ConservativelyCollectGarbage();
+  size_t node_bytes_after, css_bytes_after;
+  ThreadState::Current()->CollectNodeAndCssStatistics(
+      base::BindLambdaForTesting([&node_bytes_after, &css_bytes_after](
+                                     size_t node_bytes, size_t css_bytes) {
+        node_bytes_after = node_bytes;
+        css_bytes_after = css_bytes;
+      }));
+  EXPECT_TRUE(node);
+  EXPECT_TRUE(css);
+  EXPECT_LE(node_bytes_before + sizeof(FakeNode), node_bytes_after);
+  EXPECT_LE(css_bytes_before + sizeof(FakeCSSValue), css_bytes_after);
+}
+#endif
 
 }  // namespace blink

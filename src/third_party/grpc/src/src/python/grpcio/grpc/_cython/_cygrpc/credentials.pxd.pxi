@@ -97,3 +97,14 @@ cdef class ServerCredentials:
   cdef object cert_config_fetcher
   # whether C-core has asked for the initial_cert_config
   cdef bint initial_cert_config_fetched
+
+
+cdef class LocalChannelCredentials(ChannelCredentials):
+
+  cdef grpc_local_connect_type _local_connect_type
+
+
+cdef class ALTSChannelCredentials(ChannelCredentials):
+  cdef grpc_alts_credentials_options *c_options
+
+  cdef grpc_channel_credentials *c(self) except *

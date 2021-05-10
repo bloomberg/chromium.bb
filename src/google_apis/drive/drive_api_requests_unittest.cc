@@ -69,7 +69,8 @@ const char kTestDownloadFileQuery[] = "alt=media&supportsTeamDrives=true";
 // Used as a GetContentCallback.
 void AppendContent(std::string* out,
                    DriveApiErrorCode error,
-                   std::unique_ptr<std::string> content) {
+                   std::unique_ptr<std::string> content,
+                   bool first_chunk) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   out->append(*content);
 }
@@ -79,11 +80,11 @@ class TestBatchableDelegate : public BatchableDelegate {
   TestBatchableDelegate(const GURL url,
                         const std::string& content_type,
                         const std::string& content_data,
-                        const base::Closure& callback)
+                        base::OnceClosure callback)
       : url_(url),
         content_type_(content_type),
         content_data_(content_data),
-        callback_(callback) {}
+        callback_(std::move(callback)) {}
   GURL GetURL() const override { return url_; }
   std::string GetRequestType() const override { return "PUT"; }
   std::vector<std::string> GetExtraRequestHeaders() const override {
@@ -98,11 +99,13 @@ class TestBatchableDelegate : public BatchableDelegate {
     upload_content->assign(content_data_);
     return true;
   }
-  void NotifyError(DriveApiErrorCode code) override { callback_.Run(); }
+  void NotifyError(DriveApiErrorCode code) override {
+    std::move(callback_).Run();
+  }
   void NotifyResult(DriveApiErrorCode code,
                     const std::string& body,
                     base::OnceClosure closure) override {
-    callback_.Run();
+    std::move(callback_).Run();
     std::move(closure).Run();
   }
   void NotifyUploadProgress(int64_t current, int64_t total) override {
@@ -116,7 +119,7 @@ class TestBatchableDelegate : public BatchableDelegate {
   GURL url_;
   std::string content_type_;
   std::string content_data_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   std::vector<int64_t> progress_values_;
 };
 

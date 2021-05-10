@@ -131,8 +131,9 @@ void DevToolsFileWatcher::SharedFileWatcher::AddWatch(
     return;
   watchers_[path].reset(new base::FilePathWatcher());
   bool success = watchers_[path]->Watch(
-      path, true,
-      base::Bind(&SharedFileWatcher::DirectoryChanged, base::Unretained(this)));
+      path, base::FilePathWatcher::Type::kRecursive,
+      base::BindRepeating(&SharedFileWatcher::DirectoryChanged,
+                          base::Unretained(this)));
   if (!success)
     return;
 

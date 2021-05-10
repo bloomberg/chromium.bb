@@ -17,36 +17,27 @@
 
 #include <memory>
 #include <ostream>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "src/ast/node.h"
 #include "src/ast/struct_member_decoration.h"
-#include "src/ast/type/type.h"
+#include "src/symbol.h"
+#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
 /// A struct member statement.
-class StructMember : public Node {
+class StructMember : public Castable<StructMember, Node> {
  public:
-  /// Create a new empty struct member statement
-  StructMember();
-  /// Create a new struct member statement
-  /// @param name The struct member name
-  /// @param type The struct member type
-  /// @param decorations The struct member decorations
-  StructMember(const std::string& name,
-               type::Type* type,
-               StructMemberDecorationList decorations);
   /// Create a new struct member statement
   /// @param source The input source for the struct member statement
-  /// @param name The struct member name
+  /// @param sym The struct member symbol
   /// @param type The struct member type
   /// @param decorations The struct member decorations
   StructMember(const Source& source,
-               const std::string& name,
+               const Symbol& sym,
                type::Type* type,
                StructMemberDecorationList decorations);
   /// Move constructor
@@ -54,21 +45,11 @@ class StructMember : public Node {
 
   ~StructMember() override;
 
-  /// Sets the name
-  /// @param name the name to set
-  void set_name(const std::string& name) { name_ = name; }
-  /// @returns the name
-  const std::string& name() const { return name_; }
-  /// Sets the type
-  /// @param type the type to set
-  void set_type(type::Type* type) { type_ = type; }
+  /// @returns the symbol
+  const Symbol& symbol() const { return symbol_; }
   /// @returns the type
   type::Type* type() const { return type_; }
-  /// Sets the decorations
-  /// @param decorations the decorations
-  void set_decorations(StructMemberDecorationList decorations) {
-    decorations_ = std::move(decorations);
-  }
+
   /// @returns the decorations
   const StructMemberDecorationList& decorations() const { return decorations_; }
 
@@ -77,24 +58,33 @@ class StructMember : public Node {
   /// @returns the offset decoration value.
   uint32_t offset() const;
 
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  StructMember* Clone(CloneContext* ctx) const override;
+
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   StructMember(const StructMember&) = delete;
 
-  std::string name_;
-  type::Type* type_ = nullptr;
-  StructMemberDecorationList decorations_;
+  Symbol const symbol_;
+  type::Type* const type_;
+  StructMemberDecorationList const decorations_;
 };
 
-/// A list of unique struct members
-using StructMemberList = std::vector<std::unique_ptr<StructMember>>;
+/// A list of struct members
+using StructMemberList = std::vector<StructMember*>;
 
 }  // namespace ast
 }  // namespace tint

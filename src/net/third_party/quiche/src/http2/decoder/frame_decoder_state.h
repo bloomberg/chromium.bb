@@ -16,14 +16,14 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener.h"
-#include "net/third_party/quiche/src/http2/decoder/http2_structure_decoder.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "http2/decoder/decode_buffer.h"
+#include "http2/decoder/decode_status.h"
+#include "http2/decoder/http2_frame_decoder_listener.h"
+#include "http2/decoder/http2_structure_decoder.h"
+#include "http2/http2_constants.h"
+#include "http2/http2_structures.h"
+#include "http2/platform/api/http2_logging.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace test {
@@ -107,7 +107,7 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // after the variables have been initialized, which in practice means once a
   // payload decoder has called InitializeRemainders and/or ReadPadLength.
   size_t remaining_total_payload() const {
-    DCHECK(IsPaddable() || remaining_padding_ == 0) << frame_header();
+    QUICHE_DCHECK(IsPaddable() || remaining_padding_ == 0) << frame_header();
     return remaining_payload_ + remaining_padding_;
   }
 
@@ -125,7 +125,7 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // which in practice means once a payload decoder has called
   // InitializeRemainders and/or ReadPadLength.
   size_t remaining_payload_and_padding() const {
-    DCHECK(IsPaddable()) << frame_header();
+    QUICHE_DCHECK(IsPaddable()) << frame_header();
     return remaining_payload_ + remaining_padding_;
   }
 
@@ -135,7 +135,7 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // practice means once a payload decoder has called InitializeRemainders,
   // and isn't set to a non-zero value until ReadPadLength has been called.
   uint32_t remaining_padding() const {
-    DCHECK(IsPaddable()) << frame_header();
+    QUICHE_DCHECK(IsPaddable()) << frame_header();
     return remaining_padding_;
   }
 
@@ -147,7 +147,7 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // How many bytes of the remaining payload and padding are in db?
   // Call only for frames whose type is paddable.
   size_t AvailablePayloadAndPadding(DecodeBuffer* db) const {
-    DCHECK(IsPaddable()) << frame_header();
+    QUICHE_DCHECK(IsPaddable()) << frame_header();
     return db->MinLengthRemaining(remaining_payload_ + remaining_padding_);
   }
 
@@ -156,8 +156,8 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // been cleared (for unpadded frames); and after all of the non-padding
   // payload has been decoded.
   size_t AvailablePadding(DecodeBuffer* db) const {
-    DCHECK(IsPaddable()) << frame_header();
-    DCHECK_EQ(remaining_payload_, 0u);
+    QUICHE_DCHECK(IsPaddable()) << frame_header();
+    QUICHE_DCHECK_EQ(remaining_payload_, 0u);
     return db->MinLengthRemaining(remaining_padding_);
   }
 
@@ -166,7 +166,7 @@ class QUICHE_EXPORT_PRIVATE FrameDecoderState {
   // listener; remaining_payload_ will be automatically reduced when fixed
   // size structures and padding, including the Pad Length field, are decoded.
   void ConsumePayload(size_t amount) {
-    DCHECK_LE(amount, remaining_payload_);
+    QUICHE_DCHECK_LE(amount, remaining_payload_);
     remaining_payload_ -= amount;
   }
 

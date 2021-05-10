@@ -16,6 +16,8 @@
 
 #include "src/profiling/memory/heapprofd_producer.h"
 
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/temp_file.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
@@ -168,6 +170,36 @@ TEST(HeapprofdConfigToClientConfigurationTest, ZeroSamplingMultiple) {
   cfg.add_heap_sampling_intervals(0);
   ClientConfiguration cli_config;
   EXPECT_FALSE(HeapprofdConfigToClientConfiguration(cfg, &cli_config));
+}
+
+TEST(HeapprofdConfigToClientConfigurationTest, AdaptiveSampling) {
+  HeapprofdConfig cfg;
+  cfg.add_heaps("foo");
+  cfg.set_sampling_interval_bytes(4096);
+  cfg.set_adaptive_sampling_shmem_threshold(1024u);
+  ClientConfiguration cli_config;
+  ASSERT_TRUE(HeapprofdConfigToClientConfiguration(cfg, &cli_config));
+  EXPECT_EQ(cli_config.num_heaps, 1u);
+  EXPECT_STREQ(cli_config.heaps[0].name, "foo");
+  EXPECT_EQ(cli_config.heaps[0].interval, 4096u);
+  EXPECT_EQ(cli_config.adaptive_sampling_shmem_threshold, 1024u);
+  EXPECT_EQ(cli_config.adaptive_sampling_max_sampling_interval_bytes, 0u);
+}
+
+TEST(HeapprofdConfigToClientConfigurationTest, AdaptiveSamplingWithMax) {
+  HeapprofdConfig cfg;
+  cfg.add_heaps("foo");
+  cfg.set_sampling_interval_bytes(4096);
+  cfg.set_adaptive_sampling_shmem_threshold(1024u);
+  cfg.set_adaptive_sampling_max_sampling_interval_bytes(4 * 4096u);
+  ClientConfiguration cli_config;
+  ASSERT_TRUE(HeapprofdConfigToClientConfiguration(cfg, &cli_config));
+  EXPECT_EQ(cli_config.num_heaps, 1u);
+  EXPECT_STREQ(cli_config.heaps[0].name, "foo");
+  EXPECT_EQ(cli_config.heaps[0].interval, 4096u);
+  EXPECT_EQ(cli_config.adaptive_sampling_shmem_threshold, 1024u);
+  EXPECT_EQ(cli_config.adaptive_sampling_max_sampling_interval_bytes,
+            4 * 4096u);
 }
 
 }  // namespace profiling

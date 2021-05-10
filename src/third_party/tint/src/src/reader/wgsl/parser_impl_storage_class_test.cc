@@ -35,7 +35,7 @@ class StorageClassTest : public ParserImplTestWithParam<StorageClassData> {};
 
 TEST_P(StorageClassTest, Parses) {
   auto params = GetParam();
-  auto* p = parser(params.input);
+  auto p = parser(params.input);
 
   auto sc = p->expect_storage_class("test");
   EXPECT_FALSE(sc.errored);
@@ -55,13 +55,14 @@ INSTANTIATE_TEST_SUITE_P(
         StorageClassData{"workgroup", ast::StorageClass::kWorkgroup},
         StorageClassData{"uniform_constant",
                          ast::StorageClass::kUniformConstant},
-        StorageClassData{"storage_buffer", ast::StorageClass::kStorageBuffer},
+        StorageClassData{"storage", ast::StorageClass::kStorage},
+        StorageClassData{"storage_buffer", ast::StorageClass::kStorage},
         StorageClassData{"image", ast::StorageClass::kImage},
         StorageClassData{"private", ast::StorageClass::kPrivate},
         StorageClassData{"function", ast::StorageClass::kFunction}));
 
 TEST_F(ParserImplTest, StorageClass_NoMatch) {
-  auto* p = parser("not-a-storage-class");
+  auto p = parser("not-a-storage-class");
   auto sc = p->expect_storage_class("test");
   EXPECT_EQ(sc.errored, true);
   EXPECT_TRUE(p->has_error());

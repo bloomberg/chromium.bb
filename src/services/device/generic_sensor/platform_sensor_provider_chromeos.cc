@@ -9,23 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromeos/components/sensors/sensor_hal_dispatcher.h"
-#include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
-#include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
-#include "services/device/generic_sensor/linux/sensor_data_linux.h"
-#include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
+#include "chromeos/components/sensors/sensor_util.h"
 #include "services/device/generic_sensor/platform_sensor_chromeos.h"
-#include "services/device/generic_sensor/platform_sensor_fusion.h"
-#include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
-#include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_gyroscope.h"
 
 namespace device {
 namespace {
@@ -187,15 +178,19 @@ void PlatformSensorProviderChromeOS::RegisterSensorClient() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!sensor_hal_client_.is_bound());
 
-  chromeos::sensors::SensorHalDispatcher::GetInstance()->RegisterClient(
-      sensor_hal_client_.BindNewPipeAndPassRemote());
+  if (!chromeos::sensors::BindSensorHalClient(
+          sensor_hal_client_.BindNewPipeAndPassRemote())) {
+    LOG(ERROR) << "Failed to bind SensorHalClient via Crosapi";
+    return;
+  }
 
   sensor_hal_client_.set_disconnect_handler(
       base::BindOnce(&PlatformSensorProviderChromeOS::OnSensorHalClientFailure,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), kReconnectDelay));
 }
 
-void PlatformSensorProviderChromeOS::OnSensorHalClientFailure() {
+void PlatformSensorProviderChromeOS::OnSensorHalClientFailure(
+    base::TimeDelta reconnection_delay) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   LOG(ERROR) << "OnSensorHalClientFailure";
@@ -207,7 +202,7 @@ void PlatformSensorProviderChromeOS::OnSensorHalClientFailure() {
       FROM_HERE,
       base::BindOnce(&PlatformSensorProviderChromeOS::RegisterSensorClient,
                      weak_ptr_factory_.GetWeakPtr()),
-      kReconnectDelay);
+      reconnection_delay);
 }
 
 void PlatformSensorProviderChromeOS::OnSensorServiceDisconnect() {
@@ -369,7 +364,10 @@ bool PlatformSensorProviderChromeOS::AreAllSensorsReady() const {
 void PlatformSensorProviderChromeOS::OnSensorDeviceDisconnect(int32_t id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  sensors_[id].remote.reset();
+  LOG(ERROR) << "OnSensorDeviceDisconnect: " << id;
+
+  // Assumes IIO Service has crashed and waits for its relaunch.
+  ResetSensorService();
 }
 
 void PlatformSensorProviderChromeOS::ProcessSensorsIfPossible() {

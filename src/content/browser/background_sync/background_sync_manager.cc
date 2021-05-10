@@ -22,7 +22,6 @@
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/background_sync_controller.h"
@@ -404,16 +403,10 @@ void BackgroundSyncManager::Register(
   DCHECK(options.min_interval >= 0 ||
          options.min_interval == kMinIntervalForOneShotSync);
 
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(
-          &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
-          weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-          std::move(options),
-          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
+      weak_ptr_factory_.GetWeakPtr(), sw_registration_id, std::move(options),
+      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::UnregisterPeriodicSync(
@@ -429,15 +422,10 @@ void BackgroundSyncManager::UnregisterPeriodicSync(
     return;
   }
 
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(
-          &BackgroundSyncManager::UnregisterPeriodicSyncImpl,
-          weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
-          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
+      base::BindOnce(&BackgroundSyncManager::UnregisterPeriodicSyncImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
+                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::DidResolveRegistration(
@@ -446,14 +434,9 @@ void BackgroundSyncManager::DidResolveRegistration(
 
   if (disabled_)
     return;
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(&BackgroundSyncManager::DidResolveRegistrationImpl,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(registration_info), id));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::DidResolveRegistrationImpl,
+      weak_ptr_factory_.GetWeakPtr(), std::move(registration_info)));
 }
 
 void BackgroundSyncManager::GetOneShotSyncRegistrations(
@@ -474,14 +457,10 @@ void BackgroundSyncManager::UnregisterPeriodicSyncForOrigin(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::UnregisterForOriginImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(origin),
-                     MakeEmptyCompletion(id)));
+                     MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::UnregisterForOriginImpl(
@@ -571,15 +550,10 @@ void BackgroundSyncManager::GetRegistrations(
     return;
   }
 
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(
-          &BackgroundSyncManager::GetRegistrationsImpl,
-          weak_ptr_factory_.GetWeakPtr(), sync_type, sw_registration_id,
-          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::GetRegistrationsImpl,
+      weak_ptr_factory_.GetWeakPtr(), sync_type, sw_registration_id,
+      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
@@ -589,14 +563,10 @@ void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
   // Operations already in the queue will either fail when they write to storage
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service worker is gone.
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::OnRegistrationDeletedImpl,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     MakeEmptyCompletion(id)));
+                     MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::OnStorageWiped() {
@@ -605,13 +575,9 @@ void BackgroundSyncManager::OnStorageWiped() {
   // Operations already in the queue will either fail when they write to storage
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service workers are gone.
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::OnStorageWipedImpl,
-                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::EmulateDispatchSyncEvent(
@@ -664,8 +630,7 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
 BackgroundSyncManager::BackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
-    : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync,
-                    base::ThreadTaskRunnerHandle::Get()),
+    : op_scheduler_(base::ThreadTaskRunnerHandle::Get()),
       service_worker_context_(std::move(service_worker_context)),
       proxy_(std::make_unique<BackgroundSyncProxy>(service_worker_context_)),
       devtools_context_(std::move(devtools_context)),
@@ -696,13 +661,9 @@ void BackgroundSyncManager::Init() {
   DCHECK(!op_scheduler_.ScheduledOperations());
   DCHECK(!disabled_);
 
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::InitImpl,
-                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
@@ -714,24 +675,11 @@ void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
     return;
   }
 
-  // TODO(crbug.com/824858): Remove the else branch after the feature is
-  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-  // function so the if/else isn't needed.
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    InitDidGetControllerParameters(
-        std::move(callback),
-        GetControllerParameters(
-            service_worker_context_,
-            std::make_unique<BackgroundSyncParameters>(*parameters_)));
-  } else {
-    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(
-            &GetControllerParameters, service_worker_context_,
-            std::make_unique<BackgroundSyncParameters>(*parameters_)),
-        base::BindOnce(&BackgroundSyncManager::InitDidGetControllerParameters,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
+  InitDidGetControllerParameters(
+      std::move(callback),
+      GetControllerParameters(
+          service_worker_context_,
+          std::make_unique<BackgroundSyncParameters>(*parameters_)));
 }
 
 void BackgroundSyncManager::InitDidGetControllerParameters(
@@ -904,28 +852,12 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  // TODO(crbug.com/824858): Remove the else branch after the feature is
-  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-  // function so the if/else isn't needed.
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    SyncAndNotificationPermissions permission =
-        GetBackgroundSyncPermissionOnUIThread(
-            service_worker_context_,
-            url::Origin::Create(sw_registration->scope().GetOrigin()),
-            sync_type);
-    RegisterDidAskForPermission(sw_registration_id, std::move(options),
-                                std::move(callback), permission);
-  } else {
-    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(
-            &GetBackgroundSyncPermissionOnUIThread, service_worker_context_,
-            url::Origin::Create(sw_registration->scope().GetOrigin()),
-            sync_type),
-        base::BindOnce(&BackgroundSyncManager::RegisterDidAskForPermission,
-                       weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                       std::move(options), std::move(callback)));
-  }
+  SyncAndNotificationPermissions permission =
+      GetBackgroundSyncPermissionOnUIThread(
+          service_worker_context_,
+          url::Origin::Create(sw_registration->scope().GetOrigin()), sync_type);
+  RegisterDidAskForPermission(sw_registration_id, std::move(options),
+                              std::move(callback), permission);
 }
 
 void BackgroundSyncManager::RegisterDidAskForPermission(
@@ -1025,29 +957,13 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   // schedule time of this registration soon anyway, so considering its
   // schedule time would cause us to calculate incorrect delay.
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
-    // TODO(crbug.com/824858): Remove the else branch after the feature is
-    // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-    // function so the if/else isn't needed.
-    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-      base::TimeDelta delay = GetNextEventDelay(
-          service_worker_context_, registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_),
-          GetSmallestPeriodicSyncEventDelayForOrigin(
-              origin, registration.options()->tag));
-      RegisterDidGetDelay(sw_registration_id, registration, std::move(callback),
-                          delay);
-    } else {
-      GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-          FROM_HERE,
-          base::BindOnce(
-              &GetNextEventDelay, service_worker_context_, registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_),
-              GetSmallestPeriodicSyncEventDelayForOrigin(
-                  origin, registration.options()->tag)),
-          base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
-                         weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                         registration, std::move(callback)));
-    }
+    base::TimeDelta delay = GetNextEventDelay(
+        service_worker_context_, registration,
+        std::make_unique<BackgroundSyncParameters>(*parameters_),
+        GetSmallestPeriodicSyncEventDelayForOrigin(
+            origin, registration.options()->tag));
+    RegisterDidGetDelay(sw_registration_id, registration, std::move(callback),
+                        delay);
     return;
   }
 
@@ -1300,8 +1216,7 @@ void BackgroundSyncManager::RegisterDidStore(
 }
 
 void BackgroundSyncManager::DidResolveRegistrationImpl(
-    blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
-    CacheStorageSchedulerId id) {
+    blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   BackgroundSyncRegistration* registration =
@@ -1310,38 +1225,24 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
     // There might not be a registration if the client ack's a registration that
     // was a duplicate in the first place and was already firing and finished by
     // the time the client acknowledged the second registration.
-    op_scheduler_.CompleteOperationAndRunNext(id);
+    op_scheduler_.CompleteOperationAndRunNext();
     return;
   }
 
   registration->set_resolved();
 
-  // TODO(crbug.com/824858): Remove the else branch after the feature is
-  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-  // function so the if/else isn't needed.
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    ResolveRegistrationDidCreateKeepAlive(
-        id, CreateBackgroundSyncEventKeepAliveOnUIThread(
-                service_worker_context_, std::move(*registration_info)));
-  } else {
-    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(&CreateBackgroundSyncEventKeepAliveOnUIThread,
-                       service_worker_context_, std::move(*registration_info)),
-        base::BindOnce(
-            &BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive,
-            weak_ptr_factory_.GetWeakPtr(), id));
-  }
+  ResolveRegistrationDidCreateKeepAlive(
+      CreateBackgroundSyncEventKeepAliveOnUIThread(
+          service_worker_context_, std::move(*registration_info)));
 }
 
 void BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive(
-    CacheStorageSchedulerId id,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   FireReadyEvents(BackgroundSyncType::ONE_SHOT, /* reschedule= */ true,
                   base::DoNothing::Once(), std::move(keepalive));
-  op_scheduler_.CompleteOperationAndRunNext(id);
+  op_scheduler_.CompleteOperationAndRunNext();
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(
@@ -1796,14 +1697,9 @@ void BackgroundSyncManager::RevivePeriodicSyncRegistrations(
   if (disabled_)
     return;
 
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(&BackgroundSyncManager::ReviveOriginImpl,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(origin),
-                     MakeEmptyCompletion(id)));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::ReviveOriginImpl, weak_ptr_factory_.GetWeakPtr(),
+      std::move(origin), MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
@@ -1852,31 +1748,14 @@ void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
   for (const auto* registration : to_revive) {
-    // TODO(crbug.com/824858): Remove the else branch after the feature is
-    // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-    // function so the if/else isn't needed.
-    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-      base::TimeDelta delay = GetNextEventDelay(
-          service_worker_context_, *registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_),
-          GetSmallestPeriodicSyncEventDelayForOrigin(
-              origin, registration->options()->tag));
-      ReviveDidGetNextEventDelay(service_worker_registration_ids[registration],
-                                 *registration, received_new_delays_closure,
-                                 delay);
-    } else {
-      GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-          FROM_HERE,
-          base::BindOnce(
-              &GetNextEventDelay, service_worker_context_, *registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_),
-              GetSmallestPeriodicSyncEventDelayForOrigin(
-                  origin, registration->options()->tag)),
-          base::BindOnce(&BackgroundSyncManager::ReviveDidGetNextEventDelay,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         service_worker_registration_ids[registration],
-                         *registration, received_new_delays_closure));
-    }
+    base::TimeDelta delay = GetNextEventDelay(
+        service_worker_context_, *registration,
+        std::make_unique<BackgroundSyncParameters>(*parameters_),
+        GetSmallestPeriodicSyncEventDelayForOrigin(
+            origin, registration->options()->tag));
+    ReviveDidGetNextEventDelay(service_worker_registration_ids[registration],
+                               *registration, received_new_delays_closure,
+                               delay);
   }
 }
 
@@ -1974,28 +1853,22 @@ void BackgroundSyncManager::FireReadyEvents(
     delayed_processing_scheduled(sync_type) = false;
   }
 
-  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule, id,
+                     weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule,
                      std::move(callback), std::move(keepalive)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(
     blink::mojom::BackgroundSyncType sync_type,
     bool reschedule,
-    int scheduler_id,
     base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback)));
+        FROM_HERE, op_scheduler_.WrapCallbackToRunNext(std::move(callback)));
     return;
   }
 
@@ -2038,8 +1911,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(
     if (reschedule)
       ScheduleOrCancelDelayedProcessing(sync_type);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback)));
+        FROM_HERE, op_scheduler_.WrapCallbackToRunNext(std::move(callback)));
     return;
   }
 
@@ -2054,11 +1926,11 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   bool keep_browser_awake_till_events_complete =
       !reschedule && parameters_->keep_browser_awake_till_events_complete;
   if (keep_browser_awake_till_events_complete) {
-    events_fired_callback = MakeEmptyCompletion(scheduler_id);
+    events_fired_callback = MakeEmptyCompletion();
     events_completed_callback = std::move(callback);
   } else {
     events_fired_callback =
-        op_scheduler_.WrapCallbackToRunNext(scheduler_id, std::move(callback));
+        op_scheduler_.WrapCallbackToRunNext(std::move(callback));
     events_completed_callback = base::DoNothing::Once();
   }
 
@@ -2205,16 +2077,10 @@ void BackgroundSyncManager::EventComplete(
                      registration_info->sync_type,
                      status_code == blink::ServiceWorkerStatusCode::kOk));
 
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      CacheStorageSchedulerPriority::kNormal,
-      base::BindOnce(
-          &BackgroundSyncManager::EventCompleteImpl,
-          weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),
-          std::move(keepalive), status_code, origin,
-          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::EventCompleteImpl, weak_ptr_factory_.GetWeakPtr(),
+      std::move(registration_info), std::move(keepalive), status_code, origin,
+      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::EventCompleteImpl(
@@ -2251,31 +2117,13 @@ void BackgroundSyncManager::EventCompleteImpl(
   if (registration->sync_type() == BackgroundSyncType::PERIODIC ||
       (!succeeded &&
        registration->num_attempts() < registration->max_attempts())) {
-    // TODO(crbug.com/824858): Remove the else branch after the feature is
-    // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
-    // function so the if/else isn't needed.
-    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-      base::TimeDelta delay = GetNextEventDelay(
-          service_worker_context_, *registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_),
-          GetSmallestPeriodicSyncEventDelayForOrigin(
-              origin, registration->options()->tag));
-      EventCompleteDidGetDelay(std::move(registration_info), status_code,
-                               origin, std::move(callback), delay);
-
-    } else {
-      GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
-          FROM_HERE,
-          base::BindOnce(
-              &GetNextEventDelay, service_worker_context_, *registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_),
-              GetSmallestPeriodicSyncEventDelayForOrigin(
-                  origin, registration->options()->tag)),
-          base::BindOnce(&BackgroundSyncManager::EventCompleteDidGetDelay,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(registration_info), status_code, origin,
-                         std::move(callback)));
-    }
+    base::TimeDelta delay = GetNextEventDelay(
+        service_worker_context_, *registration,
+        std::make_unique<BackgroundSyncParameters>(*parameters_),
+        GetSmallestPeriodicSyncEventDelayForOrigin(
+            origin, registration->options()->tag));
+    EventCompleteDidGetDelay(std::move(registration_info), status_code, origin,
+                             std::move(callback), delay);
     return;
   }
 
@@ -2463,10 +2311,9 @@ void BackgroundSyncManager::OnNetworkChanged() {
                   base::DoNothing::Once());
 }
 
-base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion(
-    CacheStorageSchedulerId id) {
+base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  return op_scheduler_.WrapCallbackToRunNext(id, base::DoNothing::Once());
+  return op_scheduler_.WrapCallbackToRunNext(base::DoNothing::Once());
 }
 
 blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(

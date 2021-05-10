@@ -203,6 +203,8 @@ typedef struct {
   aom_sad_multi_d_fn_t sdx4df;
 } FULLPEL_MOTION_SEARCH_PARAMS;
 
+void av1_init_obmc_buffer(OBMCBuffer *obmc_buffer);
+
 void av1_make_default_fullpel_ms_params(
     FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const struct AV1_COMP *cpi,
     const MACROBLOCK *x, BLOCK_SIZE bsize, const MV *ref_mv,

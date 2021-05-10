@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/quic_tag.h"
+#include "quic/core/quic_tag.h"
 
 // Version and Crypto tags are written to the wire with a big-endian
 // representation of the name of the tag.  For example
@@ -28,7 +28,7 @@ using ServerConfigID = std::string;
 
 // The following tags have been deprecated and should not be reused:
 // "1CON", "BBQ4", "NCON", "RCID", "SREJ", "TBKP", "TB10", "SCLS", "SMHL",
-// "QNZR", "B2HI"
+// "QNZR", "B2HI", "H2PR", "FIFO", "LIFO", "RRWS"
 
 // clang-format off
 const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello
@@ -108,6 +108,14 @@ const QuicTag kBBQ3 = TAG('B', 'B', 'Q', '3');   // BBR with ack aggregation
 const QuicTag kBBQ5 = TAG('B', 'B', 'Q', '5');   // Expire ack aggregation upon
                                                  // bandwidth increase in
                                                  // STARTUP.
+const QuicTag kBBQ6 = TAG('B', 'B', 'Q', '6');   // Reduce STARTUP gain to 25%
+                                                 // more than BW increase.
+const QuicTag kBBQ7 = TAG('B', 'B', 'Q', '7');   // Reduce bw_lo by
+                                                 // bytes_lost/min_rtt.
+const QuicTag kBBQ8 = TAG('B', 'B', 'Q', '8');   // Reduce bw_lo by
+                                                 // bw_lo * bytes_lost/inflight
+const QuicTag kBBQ9 = TAG('B', 'B', 'Q', '9');   // Reduce bw_lo by
+                                                 // bw_lo * bytes_lost/cwnd
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kTPCC = TAG('P', 'C', 'C', '\0');  // Performance-Oriented
                                                  // Congestion Control
@@ -137,9 +145,13 @@ const QuicTag kB2H2 = TAG('B', '2', 'H', '2');   // When exiting PROBE_UP due to
                                                  // loss, set inflight_hi to the
                                                  // max of inflight@send and max
                                                  // bytes delivered in round.
+const QuicTag kB2RC = TAG('B', '2', 'R', 'C');   // Disable Reno-coexistence for
+                                                 // BBR2.
 const QuicTag kBSAO = TAG('B', 'S', 'A', 'O');   // Avoid Overestimation in
                                                  // Bandwidth Sampler with ack
                                                  // aggregation
+const QuicTag kB2DL = TAG('B', '2', 'D', 'L');   // Increase inflight_hi based
+                                                 // on delievered, not inflight.
 const QuicTag kNTLP = TAG('N', 'T', 'L', 'P');   // No tail loss probe
 const QuicTag k1TLP = TAG('1', 'T', 'L', 'P');   // 1 tail loss probe
 const QuicTag k1RTO = TAG('1', 'R', 'T', 'O');   // Send 1 packet upon RTO
@@ -266,6 +278,9 @@ const QuicTag kMPTH = TAG('M', 'P', 'T', 'H');   // Enable multipath.
 const QuicTag kNCMR = TAG('N', 'C', 'M', 'R');   // Do not attempt connection
                                                  // migration.
 
+// Allows disabling defer_send_in_response_to_packets in QuicConnection.
+const QuicTag kDFER = TAG('D', 'F', 'E', 'R');   // Do not defer sending.
+
 // Disable Pacing offload option.
 const QuicTag kNPCO = TAG('N', 'P', 'C', 'O');    // No pacing offload.
 
@@ -322,14 +337,6 @@ const QuicTag k10AF = TAG('1', '0', 'A', 'F');  // 10 anti amplification factor.
 const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
 const QuicTag kMTUL = TAG('M', 'T', 'U', 'L');  // Low-target MTU discovery.
 
-// Enable Priority scheme experiment.
-const QuicTag kH2PR = TAG('H', '2', 'P', 'R');  // HTTP2 priorities.
-const QuicTag kFIFO = TAG('F', 'I', 'F', 'O');  // Stream with the smallest ID
-                                                // has the highest priority.
-const QuicTag kLIFO = TAG('L', 'I', 'F', 'O');  // Stream with the largest ID
-                                                // has the highest priority.
-const QuicTag kRRWS = TAG('R', 'R', 'W', 'S');  // Round robin write scheduling.
-
 const QuicTag kNSLC = TAG('N', 'S', 'L', 'C');  // Always send connection close
                                                 // for idle timeout.
 
@@ -377,12 +384,32 @@ const QuicTag kXLCT = TAG('X', 'L', 'C', 'T');   // Expected leaf certificate.
 const QuicTag kQLVE = TAG('Q', 'L', 'V', 'E');   // Legacy Version
                                                  // Encapsulation.
 
+const QuicTag kPDP2 = TAG('P', 'D', 'P', '2');   // Path degrading triggered
+                                                 // at 2PTO.
+
+const QuicTag kPDP3 = TAG('P', 'D', 'P', '3');   // Path degrading triggered
+                                                 // at 3PTO.
+
+const QuicTag kPDP4 = TAG('P', 'D', 'P', '4');   // Path degrading triggered
+                                                 // at 4PTO.
+
+const QuicTag kPDP5 = TAG('P', 'D', 'P', '5');   // Path degrading triggered
+                                                 // at 5PTO.
+
 const QuicTag kQNZ2 = TAG('Q', 'N', 'Z', '2');   // Turn off QUIC crypto 0-RTT.
 
 const QuicTag kQNSP = TAG('Q', 'N', 'S', 'P');   // Turn off server push in
                                                  // gQUIC.
 
 const QuicTag kMAD  = TAG('M', 'A', 'D', 0);     // Max Ack Delay (IETF QUIC)
+
+const QuicTag kIGNP = TAG('I', 'G', 'N', 'P');   // Do not use PING only packet
+                                                 // for RTT measure or
+                                                 // congestion control.
+
+const QuicTag kSRWP = TAG('S', 'R', 'W', 'P');   // Enable retransmittable on
+                                                 // wire PING (ROWP) on the
+                                                 // server side.
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending

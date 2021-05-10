@@ -465,6 +465,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
     initialize_global_scope_after_main_script_loaded_ = true;
   }
 
+  void set_main_script_load_params(
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params) {
+    main_script_load_params_ = std::move(main_script_load_params);
+  }
+
   void set_outside_fetch_client_settings_object(
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object) {
@@ -478,6 +483,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // evaluation doesn't happen in the renderer until the browser calls
   // InitializeGlobalScope() to tell it's ready to proceed.
   void OnMainScriptLoaded();
+
+  // Returns the reason the embedded worker failed to start, using internal
+  // information that may not be available to the caller. Returns
+  // |default_code| if it can't deduce a reason.
+  blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
+      blink::ServiceWorkerStatusCode default_code);
 
   // Returns nullptr if the main script is not loaded yet and:
   //  1) The worker is a new one.
@@ -843,12 +854,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
-  // Returns the reason the embedded worker failed to start, using information
-  // inaccessible to EmbeddedWorkerInstance. Returns |default_code| if it can't
-  // deduce a reason.
-  blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
-      blink::ServiceWorkerStatusCode default_code);
-
   // Sets |stale_time_| if this worker is stale, causing an update to eventually
   // occur once the worker stops or is running too long.
   void MarkIfStale();
@@ -939,6 +944,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // True if endpoint() is ready to dispatch events, which means
   // InitializeGlobalScope() is already called.
   bool is_endpoint_ready_ = false;
+  // True while running `start_callbacks_`. When true, StartWorker() will be
+  // delayed until all `start_callbacks_` are executed. This prevents callbacks
+  // from calling nested StartWorker(). A nested StartWorker() call makes `this`
+  // enter an invalid state (i.e., `start_callbacks_` is empty even when
+  // `running_status()` is STARTING) so it should not happen.
+  // TODO(crbug.com/1161800): Figure out a way to disallow a callback to
+  // re-enter StartWorker().
+  bool is_running_start_callbacks_ = false;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<base::OnceClosure> stop_callbacks_;
   std::vector<base::OnceClosure> status_change_callbacks_;
@@ -1099,6 +1112,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   blink::mojom::FetchClientSettingsObjectPtr
       outside_fetch_client_settings_object_;
+
+  // Parameter used for starting a new worker with the worker script loaded in
+  // the browser process beforehand. This is valid only when it's a new worker
+  // that is going to be registered from now on.
+  blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params_;
 
   // Callback to stop service worker small seconds after all controllees are
   // gone. This callback can be canceled when the service worker starts to

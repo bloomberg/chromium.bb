@@ -28,6 +28,22 @@ class NativeThemeAndroid : public NativeThemeBase {
 
   // NativeThemeBase:
   void AdjustCheckboxRadioRectForPadding(SkRect* rect) const override;
+  float AdjustBorderWidthByZoom(float border_width,
+                                float zoom_level) const override;
+  // TODO(crbug.com/1165342): Refine hover state behavior on available pointing
+  // devices.
+  SkColor ControlsAccentColorForState(State state,
+                                      ColorScheme color_scheme) const override;
+  SkColor ControlsSliderColorForState(State state,
+                                      ColorScheme color_scheme) const override;
+  SkColor ButtonBorderColorForState(State state,
+                                    ColorScheme color_scheme) const override;
+  SkColor ButtonFillColorForState(State state,
+                                  ColorScheme color_scheme) const override;
+  SkColor ControlsBorderColorForState(State state,
+                                      ColorScheme color_scheme) const override;
+  SkColor ControlsFillColorForState(State state,
+                                    ColorScheme color_scheme) const override;
 
  private:
   NativeThemeAndroid();

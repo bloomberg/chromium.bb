@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as ComponentHelpers from '../component_helpers/component_helpers.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
 import {Angle, AngleUnit, get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, getRadiansFromAngle} from './CSSAngleUtils.js';
@@ -10,7 +11,7 @@ import {Angle, AngleUnit, get2DTranslationsForAngle, getAngleFromRadians, getNew
 const {render, html} = LitHtml;
 const styleMap = LitHtml.Directives.styleMap;
 
-const ClockDialLength = 6;
+const CLOCK_DIAL_LENGTH = 6;
 
 export interface CSSAngleEditorData {
   angle: Angle;
@@ -30,6 +31,9 @@ export class CSSAngleEditor extends HTMLElement {
   private dialTemplates?: LitHtml.TemplateResult[];
   private mousemoveThrottler = new Common.Throttler.Throttler(16.67 /* 60fps */);
 
+  connectedCallback(): void {
+    ComponentHelpers.SetCSSProperty.set(this, '--clock-dial-length', `${CLOCK_DIAL_LENGTH}px`);
+  }
   set data(data: CSSAngleEditorData) {
     this.angle = data.angle;
     this.onAngleUpdate = data.onAngleUpdate;
@@ -90,7 +94,7 @@ export class CSSAngleEditor extends HTMLElement {
     event.preventDefault();
   }
 
-  private render() {
+  private render(): void {
     const clockStyles = {
       background: this.background,
     };
@@ -104,7 +108,11 @@ export class CSSAngleEditor extends HTMLElement {
     // clang-format off
     render(html`
       <style>
-        .clock, .pointer, .center, .hand, .dial {
+        .clock,
+        .pointer,
+        .center,
+        .hand,
+        .dial {
           position: absolute;
         }
 
@@ -112,15 +120,19 @@ export class CSSAngleEditor extends HTMLElement {
           top: 6px;
           width: 6em;
           height: 6em;
-          background-color: white;
-          border: 0.5em solid var(--border-color);
+          background-color: var(--color-background);
+          border: 0.5em solid var(--border-color); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
           border-radius: 9em;
-          box-shadow: var(--drop-shadow), inset 0 0 15px hsl(0 0% 0% / 25%);
+          box-shadow: var(--drop-shadow), inset 0 0 15px hsl(0deg 0% 0% / 25%); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
           transform: translateX(-3em);
         }
 
-        :host-context(.-theme-with-dark-background) .clock {
-          background-color: hsl(225 5% 27%);
+        .center,
+        .hand {
+          box-shadow: 0 0 2px hsl(0deg 0% 0% / 20%); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
 
         .pointer {
@@ -135,21 +147,14 @@ export class CSSAngleEditor extends HTMLElement {
           border-color: transparent transparent var(--border-color) transparent;
         }
 
-        .center, .hand, .dial {
+        .center,
+        .hand,
+        .dial {
           margin: auto;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-        }
-
-        .center, .hand {
-          box-shadow: 0 0 2px hsl(0 0% 0% / 20%);
-        }
-
-        :host-context(.-theme-with-dark-background) .center,
-        :host-context(.-theme-with-dark-background) .hand {
-          box-shadow: 0 0 2px hsl(0 0% 0% / 60%);
         }
 
         .center {
@@ -160,8 +165,9 @@ export class CSSAngleEditor extends HTMLElement {
 
         .dial {
           width: 2px;
-          height: ${ClockDialLength}px;
-          background-color: var(--dial-color);
+          height: var(--clock-dial-length);
+          background-color: var(--dial-color); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
           border-radius: 1px;
         }
 
@@ -181,16 +187,26 @@ export class CSSAngleEditor extends HTMLElement {
           height: 1em;
           border-radius: 1em;
           cursor: pointer;
-          box-shadow: 0 0 5px hsl(0 0% 0% / 30%);
-        }
-
-        :host-context(.-theme-with-dark-background) .hand::before {
-          box-shadow: 0 0 5px hsl(0 0% 0% / 80%);
+          box-shadow: 0 0 5px hsl(0deg 0% 0% / 30%); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
 
         .hand::before,
         .center {
           background-color: var(--accent-fg-color);
+        }
+
+        :host-context(.-theme-with-dark-background) .hand::before {
+          box-shadow: 0 0 5px hsl(0deg 0% 0% / 80%);
+        }
+
+        :host-context(.-theme-with-dark-background) .center,
+        :host-context(.-theme-with-dark-background) .hand {
+          box-shadow: 0 0 2px hsl(0deg 0% 0% / 60%);
+        }
+
+        :host-context(.-theme-with-dark-background) .clock {
+          background-color: hsl(225deg 5% 27%);
         }
       </style>
 
@@ -213,12 +229,12 @@ export class CSSAngleEditor extends HTMLElement {
     // clang-format on
   }
 
-  private renderDials() {
+  private renderDials(): LitHtml.TemplateResult[] {
     if (!this.dialTemplates) {
       // Disabled until https://crbug.com/1079231 is fixed.
       // clang-format off
       this.dialTemplates = [0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
-        const radius = this.clockRadius - ClockDialLength - 3 /* clock border */;
+        const radius = this.clockRadius - CLOCK_DIAL_LENGTH - 3 /* clock border */;
         const {translateX, translateY} = get2DTranslationsForAngle({
           value: deg,
           unit: AngleUnit.Deg,
@@ -240,6 +256,7 @@ if (!customElements.get('devtools-css-angle-editor')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-css-angle-editor': CSSAngleEditor;
   }

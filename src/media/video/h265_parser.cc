@@ -548,8 +548,8 @@ H265Parser::Result H265Parser::ParseSPS(int* sps_id) {
     TRUE_OR_RETURN(width_crop.ValueOrDefault(0) <
                    sps->pic_width_in_luma_samples);
     base::CheckedNumeric<int> height_crop = sps->conf_win_top_offset;
-    width_crop += sps->conf_win_bottom_offset;
-    width_crop *= sps->sub_height_c;
+    height_crop += sps->conf_win_bottom_offset;
+    height_crop *= sps->sub_height_c;
     if (!height_crop.IsValid())
       return kInvalidStream;
     TRUE_OR_RETURN(height_crop.ValueOrDefault(0) <
@@ -583,10 +583,8 @@ H265Parser::Result H265Parser::ParseSPS(int* sps_id) {
       TRUE_OR_RETURN(sps->sps_max_num_reorder_pics[i] >=
                      sps->sps_max_num_reorder_pics[i - 1]);
     }
-    READ_UE_OR_RETURN(&sps->sps_max_latency_increase_plus1[i]);
-    sps->sps_max_latency_pictures[i] = sps->sps_max_num_reorder_pics[i] +
-                                       sps->sps_max_latency_increase_plus1[i] -
-                                       1;
+    int sps_max_latency_increase_plus1;
+    READ_UE_OR_RETURN(&sps_max_latency_increase_plus1);
   }
   if (!sps_sub_layer_ordering_info_present_flag) {
     // Fill in the default values for the other sublayers.
@@ -597,36 +595,43 @@ H265Parser::Result H265Parser::ParseSPS(int* sps_id) {
           sps->sps_max_num_reorder_pics[sps->sps_max_sub_layers_minus1];
       sps->sps_max_latency_increase_plus1[i] =
           sps->sps_max_latency_increase_plus1[sps->sps_max_sub_layers_minus1];
-      sps->sps_max_latency_pictures[i] =
-          sps->sps_max_num_reorder_pics[i] +
-          sps->sps_max_latency_increase_plus1[i] - 1;
     }
   }
   READ_UE_OR_RETURN(&sps->log2_min_luma_coding_block_size_minus3);
+  // This enforces that min_cb_log2_size_y below will be <= 30 and prevents
+  // integer overflow math there.
+  TRUE_OR_RETURN(sps->log2_min_luma_coding_block_size_minus3 <= 27);
   READ_UE_OR_RETURN(&sps->log2_diff_max_min_luma_coding_block_size);
 
   int min_cb_log2_size_y = sps->log2_min_luma_coding_block_size_minus3 + 3;
-  sps->ctb_log2_size_y =
-      min_cb_log2_size_y + sps->log2_diff_max_min_luma_coding_block_size;
-  TRUE_OR_RETURN(min_cb_log2_size_y <= 31 && sps->ctb_log2_size_y <= 31);
+  base::CheckedNumeric<int> ctb_log2_size_y = min_cb_log2_size_y;
+  ctb_log2_size_y += sps->log2_diff_max_min_luma_coding_block_size;
+  if (!ctb_log2_size_y.IsValid())
+    return kInvalidStream;
+
+  sps->ctb_log2_size_y = ctb_log2_size_y.ValueOrDefault(0);
+  TRUE_OR_RETURN(sps->ctb_log2_size_y <= 30);
   int min_cb_size_y = 1 << min_cb_log2_size_y;
   int ctb_size_y = 1 << sps->ctb_log2_size_y;
   sps->pic_width_in_ctbs_y = base::ClampCeil(
       static_cast<float>(sps->pic_width_in_luma_samples) / ctb_size_y);
   sps->pic_height_in_ctbs_y = base::ClampCeil(
       static_cast<float>(sps->pic_height_in_luma_samples) / ctb_size_y);
-  sps->pic_size_in_ctbs_y =
-      sps->pic_width_in_ctbs_y * sps->pic_height_in_ctbs_y;
+  base::CheckedNumeric<int> pic_size_in_ctbs_y = sps->pic_width_in_ctbs_y;
+  pic_size_in_ctbs_y *= sps->pic_height_in_ctbs_y;
+  if (!pic_size_in_ctbs_y.IsValid())
+    return kInvalidStream;
+  sps->pic_size_in_ctbs_y = pic_size_in_ctbs_y.ValueOrDefault(0);
 
   TRUE_OR_RETURN(sps->pic_width_in_luma_samples % min_cb_size_y == 0);
   TRUE_OR_RETURN(sps->pic_height_in_luma_samples % min_cb_size_y == 0);
   READ_UE_OR_RETURN(&sps->log2_min_luma_transform_block_size_minus2);
+  TRUE_OR_RETURN(sps->log2_min_luma_transform_block_size_minus2 <
+                 min_cb_log2_size_y - 2);
   int min_tb_log2_size_y = sps->log2_min_luma_transform_block_size_minus2 + 2;
-  TRUE_OR_RETURN(min_tb_log2_size_y < min_cb_log2_size_y);
   READ_UE_OR_RETURN(&sps->log2_diff_max_min_luma_transform_block_size);
-  sps->max_tb_log2_size_y =
-      min_tb_log2_size_y + sps->log2_diff_max_min_luma_transform_block_size;
-  TRUE_OR_RETURN(sps->max_tb_log2_size_y <= std::min(sps->ctb_log2_size_y, 5));
+  TRUE_OR_RETURN(sps->log2_diff_max_min_luma_transform_block_size <=
+                 std::min(sps->ctb_log2_size_y, 5) - min_tb_log2_size_y);
   READ_UE_OR_RETURN(&sps->max_transform_hierarchy_depth_inter);
   IN_RANGE_OR_RETURN(sps->max_transform_hierarchy_depth_inter, 0,
                      sps->ctb_log2_size_y - min_tb_log2_size_y);
@@ -660,16 +665,14 @@ H265Parser::Result H265Parser::ParseSPS(int* sps_id) {
     TRUE_OR_RETURN(sps->pcm_sample_bit_depth_chroma_minus1 + 1 <=
                    sps->bit_depth_c);
     READ_UE_OR_RETURN(&sps->log2_min_pcm_luma_coding_block_size_minus3);
+    IN_RANGE_OR_RETURN(sps->log2_min_pcm_luma_coding_block_size_minus3, 0, 2);
     int log2_min_ipcm_cb_size_y =
         sps->log2_min_pcm_luma_coding_block_size_minus3 + 3;
     IN_RANGE_OR_RETURN(log2_min_ipcm_cb_size_y, std::min(min_cb_log2_size_y, 5),
                        std::min(sps->ctb_log2_size_y, 5));
     READ_UE_OR_RETURN(&sps->log2_diff_max_min_pcm_luma_coding_block_size);
-    int log2_max_ipcm_cb_size_y =
-        log2_min_ipcm_cb_size_y +
-        sps->log2_diff_max_min_pcm_luma_coding_block_size;
-    TRUE_OR_RETURN(log2_max_ipcm_cb_size_y <=
-                   std::min(sps->ctb_log2_size_y, 5));
+    TRUE_OR_RETURN(sps->log2_diff_max_min_pcm_luma_coding_block_size <=
+                   std::min(sps->ctb_log2_size_y, 5) - log2_min_ipcm_cb_size_y);
     READ_BOOL_OR_RETURN(&sps->pcm_loop_filter_disabled_flag);
   }
   READ_UE_OR_RETURN(&sps->num_short_term_ref_pic_sets);
@@ -836,6 +839,9 @@ H265Parser::Result H265Parser::ParsePPS(const H265NALU& nalu, int* pps_id) {
           sps->pic_width_in_ctbs_y - 1;
       for (int i = 0; i < pps->num_tile_columns_minus1; ++i) {
         READ_UE_OR_RETURN(&pps->column_width_minus1[i]);
+        IN_RANGE_OR_RETURN(
+            pps->column_width_minus1[i], 0,
+            pps->column_width_minus1[pps->num_tile_columns_minus1] - 1);
         pps->column_width_minus1[pps->num_tile_columns_minus1] -=
             pps->column_width_minus1[i] + 1;
       }
@@ -843,6 +849,9 @@ H265Parser::Result H265Parser::ParsePPS(const H265NALU& nalu, int* pps_id) {
           sps->pic_height_in_ctbs_y - 1;
       for (int i = 0; i < pps->num_tile_rows_minus1; ++i) {
         READ_UE_OR_RETURN(&pps->row_height_minus1[i]);
+        IN_RANGE_OR_RETURN(
+            pps->row_height_minus1[i], 0,
+            pps->row_height_minus1[pps->num_tile_rows_minus1] - 1);
         pps->row_height_minus1[pps->num_tile_rows_minus1] -=
             pps->row_height_minus1[i] + 1;
       }
@@ -932,7 +941,8 @@ const H265PPS* H265Parser::GetPPS(int pps_id) const {
 }
 
 H265Parser::Result H265Parser::ParseSliceHeader(const H265NALU& nalu,
-                                                H265SliceHeader* shdr) {
+                                                H265SliceHeader* shdr,
+                                                H265SliceHeader* prior_shdr) {
   // 7.4.7 Slice segment header
   DVLOG(4) << "Parsing slice header";
   Result res = kOk;
@@ -959,20 +969,6 @@ H265Parser::Result H265Parser::ParseSliceHeader(const H265NALU& nalu,
   sps = GetSPS(pps->pps_seq_parameter_set_id);
   DCHECK(sps);  // We already validated this when we parsed the PPS.
 
-  // Set these defaults if they are not present here.
-  shdr->pic_output_flag = 1;
-  shdr->num_ref_idx_l0_active_minus1 =
-      pps->num_ref_idx_l0_default_active_minus1;
-  shdr->num_ref_idx_l1_active_minus1 =
-      pps->num_ref_idx_l1_default_active_minus1;
-  shdr->collocated_from_l0_flag = 1;
-  shdr->slice_deblocking_filter_disabled_flag =
-      pps->pps_deblocking_filter_disabled_flag;
-  shdr->slice_beta_offset_div2 = pps->pps_beta_offset_div2;
-  shdr->slice_tc_offset_div2 = pps->pps_tc_offset_div2;
-  shdr->slice_loop_filter_across_slices_enabled_flag =
-      pps->pps_loop_filter_across_slices_enabled_flag;
-
   if (!shdr->first_slice_segment_in_pic_flag) {
     if (pps->dependent_slice_segments_enabled_flag)
       READ_BOOL_OR_RETURN(&shdr->dependent_slice_segment_flag);
@@ -981,8 +977,33 @@ H265Parser::Result H265Parser::ParseSliceHeader(const H265NALU& nalu,
     IN_RANGE_OR_RETURN(shdr->slice_segment_address, 0,
                        sps->pic_size_in_ctbs_y - 1);
   }
-  shdr->curr_rps_idx = sps->num_short_term_ref_pic_sets;
-  if (!shdr->dependent_slice_segment_flag) {
+  if (shdr->dependent_slice_segment_flag) {
+    if (!prior_shdr) {
+      DVLOG(1) << "Cannot parse dependent slice w/out prior slice data";
+      return kInvalidStream;
+    }
+    // Copy everything in the structure starting at |slice_type| going forward.
+    // This is copying the dependent slice data that we do not parse below.
+    size_t skip_amount = offsetof(H265SliceHeader, slice_type);
+    memcpy(reinterpret_cast<uint8_t*>(shdr) + skip_amount,
+           reinterpret_cast<uint8_t*>(prior_shdr) + skip_amount,
+           sizeof(H265SliceHeader) - skip_amount);
+  } else {
+    // Set these defaults if they are not present here.
+    shdr->pic_output_flag = 1;
+    shdr->num_ref_idx_l0_active_minus1 =
+        pps->num_ref_idx_l0_default_active_minus1;
+    shdr->num_ref_idx_l1_active_minus1 =
+        pps->num_ref_idx_l1_default_active_minus1;
+    shdr->collocated_from_l0_flag = 1;
+    shdr->slice_deblocking_filter_disabled_flag =
+        pps->pps_deblocking_filter_disabled_flag;
+    shdr->slice_beta_offset_div2 = pps->pps_beta_offset_div2;
+    shdr->slice_tc_offset_div2 = pps->pps_tc_offset_div2;
+    shdr->slice_loop_filter_across_slices_enabled_flag =
+        pps->pps_loop_filter_across_slices_enabled_flag;
+    shdr->curr_rps_idx = sps->num_short_term_ref_pic_sets;
+
     // slice_reserved_flag
     SKIP_BITS_OR_RETURN(pps->num_extra_slice_header_bits);
     READ_UE_OR_RETURN(&shdr->slice_type);
@@ -1040,8 +1061,8 @@ H265Parser::Result H265Parser::ParseSliceHeader(const H265NALU& nalu,
                shdr->GetStRefPicSet(sps).num_positive_pics -
                shdr->num_long_term_sps));
         }
-        IN_RANGE_OR_RETURN(shdr->num_long_term_sps + shdr->num_long_term_pics,
-                           0, kMaxLongTermRefPicSets);
+        IN_RANGE_OR_RETURN(shdr->num_long_term_pics, 0,
+                           kMaxLongTermRefPicSets - shdr->num_long_term_sps);
         for (int i = 0; i < shdr->num_long_term_sps + shdr->num_long_term_pics;
              ++i) {
           if (i < shdr->num_long_term_sps) {
@@ -1113,6 +1134,7 @@ H265Parser::Result H265Parser::ParseSliceHeader(const H265NALU& nalu,
           shdr->num_pic_total_curr++;
       }
 
+      TRUE_OR_RETURN(shdr->num_pic_total_curr);
       if (pps->lists_modification_present_flag &&
           shdr->num_pic_total_curr > 1) {
         res = ParseRefPicListsModifications(*shdr,
@@ -1450,6 +1472,7 @@ H265Parser::Result H265Parser::ParseStRefPicSet(
     int abs_delta_rps_minus1;
     READ_BOOL_OR_RETURN(&delta_rps_sign);
     READ_UE_OR_RETURN(&abs_delta_rps_minus1);
+    IN_RANGE_OR_RETURN(abs_delta_rps_minus1, 0, 0x7FFF);
     int delta_rps = (1 - 2 * delta_rps_sign) * (abs_delta_rps_minus1 + 1);
     const H265StRefPicSet& ref_set = sps.st_ref_pic_set[ref_rps_idx];
     bool used_by_curr_pic_flag[kMaxShortTermRefPicSets];
@@ -1511,6 +1534,13 @@ H265Parser::Result H265Parser::ParseStRefPicSet(
       }
     }
     st_ref_pic_set->num_positive_pics = i;
+    IN_RANGE_OR_RETURN(
+        st_ref_pic_set->num_negative_pics, 0,
+        sps.sps_max_dec_pic_buffering_minus1[sps.sps_max_sub_layers_minus1]);
+    IN_RANGE_OR_RETURN(
+        st_ref_pic_set->num_positive_pics, 0,
+        sps.sps_max_dec_pic_buffering_minus1[sps.sps_max_sub_layers_minus1] -
+            st_ref_pic_set->num_negative_pics);
   } else {
     READ_UE_OR_RETURN(&st_ref_pic_set->num_negative_pics);
     READ_UE_OR_RETURN(&st_ref_pic_set->num_positive_pics);
@@ -1524,6 +1554,7 @@ H265Parser::Result H265Parser::ParseStRefPicSet(
     for (int i = 0; i < st_ref_pic_set->num_negative_pics; ++i) {
       int delta_poc_s0_minus1;
       READ_UE_OR_RETURN(&delta_poc_s0_minus1);
+      IN_RANGE_OR_RETURN(delta_poc_s0_minus1, 0, 0x7FFF);
       if (i == 0) {
         st_ref_pic_set->delta_poc_s0[i] = -(delta_poc_s0_minus1 + 1);
       } else {
@@ -1535,6 +1566,7 @@ H265Parser::Result H265Parser::ParseStRefPicSet(
     for (int i = 0; i < st_ref_pic_set->num_positive_pics; ++i) {
       int delta_poc_s1_minus1;
       READ_UE_OR_RETURN(&delta_poc_s1_minus1);
+      IN_RANGE_OR_RETURN(delta_poc_s1_minus1, 0, 0x7FFF);
       if (i == 0) {
         st_ref_pic_set->delta_poc_s1[i] = delta_poc_s1_minus1 + 1;
       } else {
@@ -1683,6 +1715,7 @@ H265Parser::Result H265Parser::ParseAndIgnoreHrdParameters(
     int cpb_cnt = 1;
     if (!low_delay_hrd_flag) {
       READ_UE_OR_RETURN(&cpb_cnt);
+      IN_RANGE_OR_RETURN(cpb_cnt, 0, 31);
       cpb_cnt += 1;  // parsed as minus1
     }
     if (nal_hrd_parameters_present_flag) {

@@ -2,151 +2,186 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/performance_manager/public/execution_context_priority/override_vote_aggregator.h"
+#include "components/performance_manager/execution_context_priority/override_vote_aggregator.h"
 
 namespace performance_manager {
 namespace execution_context_priority {
 
-OverrideVoteAggregator::OverrideVoteAggregator() : factory_(this) {}
+OverrideVoteAggregator::OverrideVoteAggregator() = default;
 
 OverrideVoteAggregator::~OverrideVoteAggregator() = default;
 
 VotingChannel OverrideVoteAggregator::GetOverrideVotingChannel() {
   DCHECK(vote_data_map_.empty());
-  DCHECK_EQ(voting::kInvalidVoterId<Vote>, override_voter_id_);
-  DCHECK_GT(2u, factory_.voting_channels_issued());
-  auto channel = factory_.BuildVotingChannel();
+  DCHECK(!override_voter_id_);
+  DCHECK_GT(2u, voting_channel_factory_.voting_channels_issued());
+  auto channel = voting_channel_factory_.BuildVotingChannel();
   override_voter_id_ = channel.voter_id();
   return channel;
 }
 
 VotingChannel OverrideVoteAggregator::GetDefaultVotingChannel() {
   DCHECK(vote_data_map_.empty());
-  DCHECK_EQ(voting::kInvalidVoterId<Vote>, default_voter_id_);
-  DCHECK_GT(2u, factory_.voting_channels_issued());
-  auto channel = factory_.BuildVotingChannel();
+  DCHECK(!default_voter_id_);
+  DCHECK_GT(2u, voting_channel_factory_.voting_channels_issued());
+  auto channel = voting_channel_factory_.BuildVotingChannel();
   default_voter_id_ = channel.voter_id();
   return channel;
 }
 
-void OverrideVoteAggregator::SetUpstreamVotingChannel(VotingChannel&& channel) {
-  DCHECK(channel.IsValid());
-  DCHECK(vote_data_map_.empty());
-  DCHECK(!channel_.IsValid());
+void OverrideVoteAggregator::SetUpstreamVotingChannel(VotingChannel channel) {
   channel_ = std::move(channel);
 }
 
 bool OverrideVoteAggregator::IsSetup() const {
-  return override_voter_id_ != voting::kInvalidVoterId<Vote> &&
-         default_voter_id_ != voting::kInvalidVoterId<Vote> &&
-         channel_.IsValid();
+  return override_voter_id_ && default_voter_id_ && channel_.IsValid();
 }
 
-VoteReceipt OverrideVoteAggregator::SubmitVote(
-    util::PassKey<VotingChannel>,
-    voting::VoterId<Vote> voter_id,
+void OverrideVoteAggregator::OnVoteSubmitted(
+    VoterId voter_id,
     const ExecutionContext* execution_context,
     const Vote& vote) {
-  DCHECK(vote.IsValid());
   DCHECK(IsSetup());
-
+  // Create the VoteData for this execution context, if necessary.
   VoteData& vote_data = vote_data_map_[execution_context];
-  if (voter_id == override_voter_id_) {
-    DCHECK(!vote_data.override_vote.IsValid());
-    vote_data.override_vote =
-        AcceptedVote(this, voter_id, execution_context, vote);
-    UpstreamVote(execution_context, vote, &vote_data);
-    return vote_data.override_vote.IssueReceipt();
-  } else {
-    DCHECK_EQ(default_voter_id_, voter_id);
-    DCHECK(!vote_data.default_vote.IsValid());
-    vote_data.default_vote =
-        AcceptedVote(this, voter_id, execution_context, vote);
-    if (!vote_data.override_vote.IsValid())
-      UpstreamVote(execution_context, vote, &vote_data);
-    return vote_data.default_vote.IssueReceipt();
+
+  // Remember the previous chosen vote before adding the new vote. There could
+  // be none if the this the first vote submitted for |execution_context|.
+  base::Optional<Vote> old_chosen_vote;
+  if (vote_data.HasChosenVote())
+    old_chosen_vote = vote_data.GetChosenVote();
+
+  vote_data.AddVote(GetVoterType(voter_id), vote);
+
+  // If there was no previous chosen vote, the vote must be submitted.
+  if (!old_chosen_vote) {
+    channel_.SubmitVote(execution_context, vote);
+    return;
   }
+
+  // Since there is a previous chosen vote, it must be modified if the chosen
+  // vote changed.
+  const Vote new_chosen_vote = vote_data.GetChosenVote();
+  if (old_chosen_vote.value() != new_chosen_vote)
+    channel_.ChangeVote(execution_context, new_chosen_vote);
 }
 
-void OverrideVoteAggregator::ChangeVote(util::PassKey<AcceptedVote>,
-                                        AcceptedVote* old_vote,
-                                        const Vote& new_vote) {
-  DCHECK(old_vote->IsValid());
-  VoteData& vote_data = GetVoteData(old_vote)->second;
+void OverrideVoteAggregator::OnVoteChanged(
+    VoterId voter_id,
+    const ExecutionContext* execution_context,
+    const Vote& new_vote) {
+  // The VoteData for this execution context is guaranteed to exist.
+  VoteData& vote_data = GetVoteData(execution_context)->second;
 
-  // Update the vote in place.
-  old_vote->UpdateVote(new_vote);
+  // Remember the previous chosen vote before updating the vote for this
+  // |voter_id|.
+  const Vote old_chosen_vote = vote_data.GetChosenVote();
 
-  // The vote being changed is the upstream vote if:
-  // (1) It is the override vote, or
-  // (2) There is no override vote.
-  if (old_vote == &vote_data.override_vote ||
-      !vote_data.override_vote.IsValid()) {
-    UpstreamVote(old_vote->context(), new_vote, &vote_data);
-  }
+  vote_data.ChangeVote(GetVoterType(voter_id), new_vote);
+
+  // If the chosen vote changed, the upstream vote must also be changed.
+  const Vote new_chosen_vote = vote_data.GetChosenVote();
+  if (old_chosen_vote != new_chosen_vote)
+    channel_.ChangeVote(execution_context, new_chosen_vote);
 }
 
-void OverrideVoteAggregator::VoteInvalidated(util::PassKey<AcceptedVote>,
-                                             AcceptedVote* vote) {
-  DCHECK(!vote->IsValid());
-  auto it = GetVoteData(vote);
+void OverrideVoteAggregator::OnVoteInvalidated(
+    VoterId voter_id,
+    const ExecutionContext* execution_context) {
+  // The VoteData for this execution context is guaranteed to exist.
+  auto it = GetVoteData(execution_context);
   VoteData& vote_data = it->second;
 
-  // Figure out which is the "other" vote in this case.
-  bool is_override_vote = false;
-  AcceptedVote* other = nullptr;
-  if (vote == &vote_data.override_vote) {
-    is_override_vote = true;
-    other = &vote_data.default_vote;
-  } else {
-    DCHECK_EQ(&vote_data.default_vote, vote);
-    other = &vote_data.override_vote;
-  }
+  // Remember the previous chosen vote before removing the vote for this
+  // |voter_id|.
+  const Vote old_chosen_vote = vote_data.GetChosenVote();
 
-  // If the other vote is invalid the whole entry is being erased, which will
-  // cancel the upstream vote as well.
-  if (!other->IsValid()) {
+  vote_data.RemoveVote(GetVoterType(voter_id));
+
+  // In case the last vote for |execution_context| was invalidated, the upstream
+  // vote must also be invalidated.
+  if (!vote_data.HasChosenVote()) {
+    channel_.InvalidateVote(execution_context);
+
+    // Clean up the VoteData for |execution_context| since it is empty.
     vote_data_map_.erase(it);
     return;
   }
 
-  // Otherwise, the other vote is valid. If the other vote is the
-  // |override_vote| (ie, the vote being invalidated is not) then the upstream
-  // vote doesn't need to change. The last case is that the |override_vote| is
-  // being invalidated, and the default is valid. In this case we need to
-  // upstream a new vote.
-  if (is_override_vote)
-    UpstreamVote(other->context(), other->vote(), &vote_data);
+  // If the top vote changed, the upstream vote must also be changed.
+  const Vote new_chosen_vote = vote_data.GetChosenVote();
+  if (old_chosen_vote != new_chosen_vote)
+    channel_.ChangeVote(execution_context, new_chosen_vote);
 }
 
 OverrideVoteAggregator::VoteData::VoteData() = default;
 OverrideVoteAggregator::VoteData::VoteData(VoteData&& rhs) = default;
 OverrideVoteAggregator::VoteData::~VoteData() = default;
 
-OverrideVoteAggregator::VoteDataMap::iterator
-OverrideVoteAggregator::GetVoteData(AcceptedVote* vote) {
-  // The vote being retrieved should have us as its consumer, and have been
-  // emitted by one of our known voters.
-  DCHECK(vote);
-  DCHECK_EQ(this, vote->consumer());
-  DCHECK(vote->voter_id() == override_voter_id_ ||
-         vote->voter_id() == default_voter_id_);
-  DCHECK(IsSetup());
+void OverrideVoteAggregator::VoteData::AddVote(VoterType voter_type,
+                                               const Vote& vote) {
+  switch (voter_type) {
+    case VoterType::kDefault:
+      DCHECK(!default_vote_.has_value());
+      default_vote_ = vote;
+      break;
+    case VoterType::kOverride:
+      DCHECK(!override_vote_.has_value());
+      override_vote_ = vote;
+      break;
+  }
+}
 
-  auto it = vote_data_map_.find(vote->context());
+void OverrideVoteAggregator::VoteData::ChangeVote(VoterType voter_type,
+                                                  const Vote& new_vote) {
+  switch (voter_type) {
+    case VoterType::kDefault:
+      DCHECK(default_vote_.has_value());
+      default_vote_ = new_vote;
+      break;
+    case VoterType::kOverride:
+      DCHECK(override_vote_.has_value());
+      override_vote_ = new_vote;
+      break;
+  }
+}
+
+void OverrideVoteAggregator::VoteData::RemoveVote(VoterType voter_type) {
+  switch (voter_type) {
+    case VoterType::kDefault:
+      DCHECK(default_vote_.has_value());
+      default_vote_ = base::nullopt;
+      break;
+    case VoterType::kOverride:
+      DCHECK(override_vote_.has_value());
+      override_vote_ = base::nullopt;
+      break;
+  }
+}
+
+bool OverrideVoteAggregator::VoteData::HasChosenVote() const {
+  return default_vote_.has_value() || override_vote_.has_value();
+}
+
+const Vote& OverrideVoteAggregator::VoteData::GetChosenVote() const {
+  // The |override_vote| is always chosen first.
+  if (override_vote_.has_value())
+    return override_vote_.value();
+  return default_vote_.value();
+}
+
+OverrideVoteAggregator::VoteDataMap::iterator
+OverrideVoteAggregator::GetVoteData(const ExecutionContext* execution_context) {
+  auto it = vote_data_map_.find(execution_context);
   DCHECK(it != vote_data_map_.end());
   return it;
 }
 
-void OverrideVoteAggregator::UpstreamVote(
-    const ExecutionContext* execution_context,
-    const Vote& vote,
-    VoteData* vote_data) {
-  // Change our existing vote, or create a new one as necessary.
-  if (vote_data->receipt.HasVote())
-    vote_data->receipt.ChangeVote(vote.value(), vote.reason());
-  else
-    vote_data->receipt = channel_.SubmitVote(execution_context, vote);
+OverrideVoteAggregator::VoteData::VoterType
+OverrideVoteAggregator::GetVoterType(VoterId voter_id) const {
+  DCHECK(voter_id == default_voter_id_ || voter_id == override_voter_id_);
+  return voter_id == default_voter_id_ ? VoteData::VoterType::kDefault
+                                       : VoteData::VoterType::kOverride;
 }
 
 }  // namespace execution_context_priority

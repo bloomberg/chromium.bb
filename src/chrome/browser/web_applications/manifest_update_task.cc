@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
@@ -21,7 +20,9 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
+#include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/gfx/skia_util.h"
 
 namespace web_app {
@@ -95,11 +96,11 @@ void ManifestUpdateTask::DidFinishLoad(
     return;
 
   stage_ = Stage::kPendingInstallableData;
-  InstallableParams params;
+  webapps::InstallableParams params;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
   params.check_webapp_manifest_display = false;
-  InstallableManager::FromWebContents(web_contents())
+  webapps::InstallableManager::FromWebContents(web_contents())
       ->GetData(params,
                 base::BindOnce(&ManifestUpdateTask::OnDidGetInstallableData,
                                AsWeakPtr()));
@@ -123,17 +124,30 @@ void ManifestUpdateTask::WebContentsDestroyed() {
   }
 }
 
-void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
+void ManifestUpdateTask::OnDidGetInstallableData(
+    const webapps::InstallableData& data) {
   DCHECK_EQ(stage_, Stage::kPendingInstallableData);
 
-  if (!data.errors.empty()) {
+  if (!data.NoBlockingErrors()) {
     DestroySelf(ManifestUpdateResult::kAppNotEligible);
     return;
   }
 
-  DCHECK(data.manifest);
   web_application_info_.emplace();
-  UpdateWebAppInfoFromManifest(*data.manifest, &web_application_info_.value());
+  UpdateWebAppInfoFromManifest(data.manifest, data.manifest_url,
+                               &web_application_info_.value());
+
+  // We cannot allow the app ID to change via the manifest changing. We rely on
+  // fixed app IDs to determine whether web apps installed in the user sync
+  // profile has been sync installed across devices. If we allowed the app ID to
+  // change then the sync system would try to redeploy the old app indefinitely,
+  // additionally the new app ID would get added to the sync profile. This has
+  // the potential to flood the user sync profile with an infinite number of
+  // apps should the site be serving a random start_url on every navigation.
+  if (app_id_ != GenerateAppIdFromURL(web_application_info_->start_url)) {
+    DestroySelf(ManifestUpdateResult::kAppIdMismatch);
+    return;
+  }
 
   if (IsUpdateNeededForManifest()) {
     UpdateAfterWindowsClose();
@@ -145,9 +159,6 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
 
 bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
   DCHECK(web_application_info_.has_value());
-
-  if (app_id_ != GenerateAppIdFromURL(web_application_info_->start_url))
-    return false;
 
   if (web_application_info_->theme_color !=
       registrar_.GetAppThemeColor(app_id_))
@@ -188,6 +199,14 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
     return true;
   }
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableLinkCapturing) &&
+      web_application_info_->capture_links !=
+          registrar_.GetAppCaptureLinks(app_id_)) {
+    return true;
+  }
+
+  // TODO(crbug.com/1072058): Check the manifest URL.
   // TODO(crbug.com/926083): Check more manifest fields.
   return false;
 }

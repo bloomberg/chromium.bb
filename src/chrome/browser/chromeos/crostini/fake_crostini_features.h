@@ -23,8 +23,8 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   ~FakeCrostiniFeatures() override;
 
   // CrostiniFeatures:
-  bool IsAllowed(Profile* profile) override;
-  bool IsUIAllowed(Profile* profile, bool check_policy) override;
+  bool CouldBeAllowed(Profile* profile, std::string* reason) override;
+  bool IsAllowedNow(Profile* profile, std::string* reason) override;
   bool IsEnabled(Profile* profile) override;
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
@@ -37,21 +37,13 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   void SetAll(bool flag);
   void ClearAll();
 
-  void set_allowed(bool allowed) {
-    allowed_ = allowed;
-  }
-  void set_ui_allowed(bool allowed) {
-    ui_allowed_ = allowed;
-  }
-  void set_enabled(bool enabled) {
-    enabled_ = enabled;
-  }
+  void set_could_be_allowed(bool allowed) { could_be_allowed_ = allowed; }
+  void set_is_allowed_now(bool allowed) { allowed_now_ = allowed; }
+  void set_enabled(bool enabled) { enabled_ = enabled; }
   void set_export_import_ui_allowed(bool allowed) {
     export_import_ui_allowed_ = allowed;
   }
-  void set_root_access_allowed(bool allowed) {
-    root_access_allowed_ = allowed;
-  }
+  void set_root_access_allowed(bool allowed) { root_access_allowed_ = allowed; }
   void set_container_upgrade_ui_allowed(bool allowed) {
     container_upgrade_ui_allowed_ = allowed;
   }
@@ -69,8 +61,8 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   // FakeCrostiniFeatures is created and replaced at destruction.
   CrostiniFeatures* original_features_;
 
-  base::Optional<bool> allowed_;
-  base::Optional<bool> ui_allowed_;
+  base::Optional<bool> could_be_allowed_;
+  base::Optional<bool> allowed_now_;
   base::Optional<bool> enabled_;
   base::Optional<bool> export_import_ui_allowed_;
   base::Optional<bool> root_access_allowed_;

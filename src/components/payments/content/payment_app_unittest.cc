@@ -41,6 +41,12 @@ enum class RequiredPaymentOptions {
   kContactInformationAndShippingAddress,
 };
 
+static const RequiredPaymentOptions kRequiredPaymentOptionsValues[]{
+    RequiredPaymentOptions::kNone, RequiredPaymentOptions::kShippingAddress,
+    RequiredPaymentOptions::kContactInformation,
+    RequiredPaymentOptions::kPayerEmail,
+    RequiredPaymentOptions::kContactInformationAndShippingAddress};
+
 }  // namespace
 
 class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
@@ -53,6 +59,11 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
         required_options_(GetParam()) {
     local_card_.set_billing_address_id(address_.guid());
     CreateSpec();
+  }
+
+  void SetUp() override {
+    // Must be initialized after the ScopedFeatureList of the subclass test
+    // DownRankJustInTimePaymentAppTest (crbug.com/1172599)
     web_contents_ =
         test_web_contents_factory_.CreateWebContents(&browser_context_);
   }
@@ -181,15 +192,9 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
   DISALLOW_COPY_AND_ASSIGN(PaymentAppTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PaymentAppTest,
-    ::testing::Values(
-        RequiredPaymentOptions::kNone,
-        RequiredPaymentOptions::kShippingAddress,
-        RequiredPaymentOptions::kContactInformation,
-        RequiredPaymentOptions::kPayerEmail,
-        RequiredPaymentOptions::kContactInformationAndShippingAddress));
+INSTANTIATE_TEST_SUITE_P(All,
+                         PaymentAppTest,
+                         ::testing::ValuesIn(kRequiredPaymentOptionsValues));
 
 TEST_P(PaymentAppTest, SortApps) {
   std::vector<PaymentApp*> apps;
@@ -370,10 +375,21 @@ TEST_P(PaymentAppTest, SortAppsBasedOnSupportedDelegations) {
   }
 }
 
-TEST_P(PaymentAppTest, SortApps_DownRankJustInTimePaymentApp) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDownRankJustInTimePaymentApp);
+class DownRankJustInTimePaymentAppTest : public PaymentAppTest {
+ public:
+  DownRankJustInTimePaymentAppTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDownRankJustInTimePaymentApp);
+  }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DownRankJustInTimePaymentAppTest,
+                         ::testing::ValuesIn(kRequiredPaymentOptionsValues));
+
+TEST_P(DownRankJustInTimePaymentAppTest, SortApps) {
   std::vector<PaymentApp*> apps;
 
   // Add a card with no billing address.

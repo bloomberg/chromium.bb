@@ -1,4 +1,8 @@
 specific_include_rules = {
+  "browser_manager\.cc": [
+    # Only needed for merge to M90
+    "+ash",
+  ],
   "message_center_ash(\.cc|_unittest\.cc)": [
     # Provides a mojo interface around the message center, but lives in this
     # directory for consistency with other crosapi classes.
@@ -17,5 +21,13 @@ specific_include_rules = {
     "+ash/wm/desks/desks_util.h",
     # For Chrome OS-specific file manager parameters.
     "+chrome/browser/ui/views/select_file_dialog_extension.h",
+  ],
+  "test_controller_ash\.cc": [
+    # Glue for tests.
+    "+ash/shell.h",
+    "+ash/wm",
+  ],
+  "window_util\.cc":[
+    "+ash/shell.h",
   ],
 }

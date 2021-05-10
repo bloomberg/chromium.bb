@@ -14,9 +14,8 @@
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrSkSLFP.h"
@@ -39,29 +38,37 @@ void GrDirectContextPriv::addOnFlushCallbackObject(GrOnFlushCallbackObject* onFl
     fContext->addOnFlushCallbackObject(onFlushCBObject);
 }
 
-GrSemaphoresSubmitted GrDirectContextPriv::flushSurfaces(SkSpan<GrSurfaceProxy*> proxies,
-                                                         const GrFlushInfo& info) {
+GrSemaphoresSubmitted GrDirectContextPriv::flushSurfaces(
+                                                    SkSpan<GrSurfaceProxy*> proxies,
+                                                    SkSurface::BackendSurfaceAccess access,
+                                                    const GrFlushInfo& info,
+                                                    const GrBackendSurfaceMutableState* newState) {
     ASSERT_SINGLE_OWNER
-    RETURN_VALUE_IF_ABANDONED(GrSemaphoresSubmitted::kNo)
     GR_CREATE_TRACE_MARKER_CONTEXT("GrDirectContextPriv", "flushSurfaces", fContext);
+
+    if (fContext->abandoned()) {
+        if (info.fSubmittedProc) {
+            info.fSubmittedProc(info.fSubmittedContext, false);
+        }
+        if (info.fFinishedProc) {
+            info.fFinishedProc(info.fFinishedContext);
+        }
+        return GrSemaphoresSubmitted::kNo;
+    }
+
 #ifdef SK_DEBUG
     for (GrSurfaceProxy* proxy : proxies) {
         SkASSERT(proxy);
         ASSERT_OWNED_PROXY(proxy);
     }
 #endif
-    return fContext->drawingManager()->flushSurfaces(
-            proxies, SkSurface::BackendSurfaceAccess::kNoAccess, info, nullptr);
+    return fContext->drawingManager()->flushSurfaces(proxies, access, info, newState);
 }
 
-void GrDirectContextPriv::flushSurface(GrSurfaceProxy* proxy) {
-    size_t size = proxy ? 1 : 0;
-    this->flushSurfaces({&proxy, size}, {});
-}
-
-void GrDirectContextPriv::copyRenderTasksFromDDL(sk_sp<const SkDeferredDisplayList> ddl,
-                                                 GrRenderTargetProxy* newDest) {
-    fContext->drawingManager()->copyRenderTasksFromDDL(std::move(ddl), newDest);
+void GrDirectContextPriv::createDDLTask(sk_sp<const SkDeferredDisplayList> ddl,
+                                        sk_sp<GrRenderTargetProxy> newDest,
+                                        SkIPoint offset) {
+    fContext->drawingManager()->createDDLTask(std::move(ddl), std::move(newDest), offset);
 }
 
 bool GrDirectContextPriv::compile(const GrProgramDesc& desc, const GrProgramInfo& info) {

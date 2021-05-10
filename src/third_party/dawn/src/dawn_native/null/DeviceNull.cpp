@@ -127,9 +127,10 @@ namespace dawn_native { namespace null {
         return new Sampler(this, descriptor);
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(this, descriptor));
-        DAWN_TRY(module->Initialize());
+        DAWN_TRY(module->Initialize(parseResult));
         return module.Detach();
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
@@ -383,11 +384,11 @@ namespace dawn_native { namespace null {
         TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
         mTexture = AcquireRef(
             new Texture(GetDevice(), &textureDesc, TextureBase::TextureState::OwnedInternal));
-        return mTexture->CreateView(nullptr);
+        return mTexture->CreateView();
     }
 
     void SwapChain::DetachFromSurfaceImpl() {
-        if (mTexture.Get() != nullptr) {
+        if (mTexture != nullptr) {
             mTexture->Destroy();
             mTexture = nullptr;
         }
@@ -395,8 +396,8 @@ namespace dawn_native { namespace null {
 
     // ShaderModule
 
-    MaybeError ShaderModule::Initialize() {
-        return InitializeBase();
+    MaybeError ShaderModule::Initialize(ShaderModuleParseResult* parseResult) {
+        return InitializeBase(parseResult);
     }
 
     // OldSwapChain
@@ -467,6 +468,10 @@ namespace dawn_native { namespace null {
 
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return 1.0f;
     }
 
 }}  // namespace dawn_native::null

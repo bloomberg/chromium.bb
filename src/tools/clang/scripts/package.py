@@ -158,13 +158,6 @@ def main():
                       help='Upload the target archive to Google Cloud Storage.')
   args = parser.parse_args()
 
-  # Check that the script is not going to upload a toolchain built from HEAD.
-  use_head_revision = bool(int(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')))
-  if args.upload and use_head_revision:
-    print ("--upload and LLVM_FORCE_HEAD_REVISION could not be used "
-           "at the same time.")
-    return 1
-
   expected_stamp = GetExpectedStamp()
   pdir = 'clang-' + expected_stamp
   print(pdir)
@@ -189,7 +182,7 @@ def main():
         os.path.join(THIS_DIR, 'build.py'), '--bootstrap', '--disable-asserts',
         '--run-tests', '--pgo'
     ]
-    if sys.platform.startswith('linux'):
+    if sys.platform != 'darwin':
       build_cmd.append('--thinlto')
 
     TeeCmd(build_cmd, log)
@@ -226,6 +219,7 @@ def main():
       # Include libclang_rt.builtins.a for Fuchsia targets.
       'lib/clang/$V/lib/aarch64-fuchsia/libclang_rt.builtins.a',
       'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.builtins.a',
+      'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.profile.a',
     ])
   if sys.platform == 'darwin':
     want.extend([
@@ -397,6 +391,8 @@ def main():
 
   if sys.platform.startswith('linux'):
     os.symlink('lld', os.path.join(pdir, 'bin', 'ld.lld'))
+    os.symlink('lld', os.path.join(pdir, 'bin', 'ld64.lld'))
+    os.symlink('lld', os.path.join(pdir, 'bin', 'ld64.lld.darwinnew'))
     os.symlink('lld', os.path.join(pdir, 'bin', 'lld-link'))
 
   # Copy libc++ headers.
@@ -473,8 +469,10 @@ def main():
                 os.path.join(llddir, 'bin'))
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-ar'),
                 os.path.join(llddir, 'bin'))
-    os.symlink('lld', os.path.join(llddir, 'bin', 'lld-link'))
     os.symlink('lld', os.path.join(llddir, 'bin', 'ld.lld'))
+    os.symlink('lld', os.path.join(llddir, 'bin', 'ld64.lld'))
+    os.symlink('lld', os.path.join(llddir, 'bin', 'ld64.lld.darwinnew'))
+    os.symlink('lld', os.path.join(llddir, 'bin', 'lld-link'))
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)

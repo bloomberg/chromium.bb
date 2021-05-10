@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/extensions/extension_checkup.h"
@@ -46,7 +47,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
 #endif
@@ -69,7 +70,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
   webui::SetupWebUIDataSource(
       source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
-      "", IDR_EXTENSIONS_EXTENSIONS_HTML);
+      IDR_EXTENSIONS_EXTENSIONS_HTML);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     // Add common strings.
@@ -227,6 +228,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"packDialogKeyFile", IDS_EXTENSIONS_PACK_DIALOG_KEY_FILE_LABEL},
     {"packDialogContent", IDS_EXTENSION_PACK_DIALOG_HEADING},
     {"packDialogConfirm", IDS_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON},
+    {"editShortcut", IDS_EXTENSIONS_EDIT_SHORTCUT},
     {"shortcutNotSet", IDS_EXTENSIONS_SHORTCUT_NOT_SET},
     {"shortcutScopeGlobal", IDS_EXTENSIONS_SHORTCUT_SCOPE_GLOBAL},
     {"shortcutScopeLabel", IDS_EXTENSIONS_SHORTCUT_SCOPE_LABEL},
@@ -253,7 +255,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"viewIframe", IDS_EXTENSIONS_VIEW_IFRAME},
     {"viewServiceWorker", IDS_EXTENSIONS_SERVICE_WORKER_BACKGROUND},
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"manageKioskApp", IDS_EXTENSIONS_MANAGE_KIOSK_APP},
     {"kioskAddApp", IDS_EXTENSIONS_KIOSK_ADD_APP},
     {"kioskAddAppHint", IDS_EXTENSIONS_KIOSK_ADD_APP_HINT},
@@ -267,7 +269,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
      IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_TITLE},
 #endif
   };
-  AddLocalizedStringsBulk(source, kLocalizedStrings);
+  source->AddLocalizedStrings(kLocalizedStrings);
 
   source->AddString("errorLinesNotShownSingular",
                     l10n_util::GetPluralStringFUTF16(
@@ -286,7 +288,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                              GURL(chrome::kRemoveNonCWSExtensionURL),
                              g_browser_process->GetApplicationLocale())
                              .spec()));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   source->AddString(
       "kioskDisableBailoutWarningBody",
       l10n_util::GetStringFUTF16(
@@ -362,7 +364,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   source = CreateMdExtensionsSource(profile, *in_dev_mode_);
   ManagedUIHandler::Initialize(web_ui, source);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile));

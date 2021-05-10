@@ -134,7 +134,8 @@ Sources.OutlineQuickOpen = SourcesModule.OutlineQuickOpen.OutlineQuickOpen;
 /** @constructor */
 Sources.ScopeChainSidebarPane = SourcesModule.ScopeChainSidebarPane.ScopeChainSidebarPane;
 
-Sources.ScopeChainSidebarPane._pathSymbol = SourcesModule.ScopeChainSidebarPane.pathSymbol;
+/** @constructor */
+Sources.ScopeChainSidebarPane.OpenLinearMemoryInspector = SourcesModule.ScopeChainSidebarPane.OpenLinearMemoryInspector;
 
 /** @constructor */
 Sources.ScriptFormatterEditorAction = SourcesModule.ScriptFormatterEditorAction.ScriptFormatterEditorAction;
@@ -153,6 +154,10 @@ Sources.SearchSourcesView.ActionDelegate = SourcesModule.SearchSourcesView.Actio
 /** @constructor */
 Sources.SnippetsPlugin = SourcesModule.SnippetsPlugin.SnippetsPlugin;
 
+/** @constructor */
+Sources.RecorderPlugin = SourcesModule.RecorderPlugin.RecorderPlugin;
+
+
 Sources.SourceMapNamesResolver = {};
 
 Sources.SourceMapNamesResolver.setScopeResolvedForTest = SourcesModule.SourceMapNamesResolver.setScopeResolvedForTest;
@@ -167,7 +172,6 @@ Sources.SourceMapNamesResolver._scopeIdentifiers = SourcesModule.SourceMapNamesR
 Sources.SourceMapNamesResolver._resolveScope = SourcesModule.SourceMapNamesResolver.resolveScope;
 Sources.SourceMapNamesResolver._allVariablesInCallFrame = SourcesModule.SourceMapNamesResolver.allVariablesInCallFrame;
 Sources.SourceMapNamesResolver.resolveExpression = SourcesModule.SourceMapNamesResolver.resolveExpression;
-Sources.SourceMapNamesResolver._resolveExpression = SourcesModule.SourceMapNamesResolver.resolveExpressionAsync;
 Sources.SourceMapNamesResolver.resolveThisObject = SourcesModule.SourceMapNamesResolver.resolveThisObject;
 Sources.SourceMapNamesResolver.resolveScopeInObject = SourcesModule.SourceMapNamesResolver.resolveScopeInObject;
 
@@ -191,6 +195,9 @@ Sources.ContentScriptsNavigatorView = SourcesModule.SourcesNavigator.ContentScri
 
 /** @constructor */
 Sources.SnippetsNavigatorView = SourcesModule.SourcesNavigator.SnippetsNavigatorView;
+
+/** @constructor */
+Sources.RecordingsNavigatorView = SourcesModule.SourcesNavigator.RecordingsNavigatorView;
 
 /** @constructor */
 Sources.ActionDelegate = SourcesModule.SourcesNavigator.ActionDelegate;
@@ -236,6 +243,8 @@ Sources.SourcesView.Events = SourcesModule.SourcesView.Events;
 
 /** @interface */
 Sources.SourcesView.EditorAction = SourcesModule.SourcesView.EditorAction;
+
+Sources.SourcesView.getRegisteredEditorActions = SourcesModule.SourcesView.getRegisteredEditorActions;
 
 /** @constructor */
 Sources.SourcesView.SwitchFileActionDelegate = SourcesModule.SourcesView.SwitchFileActionDelegate;

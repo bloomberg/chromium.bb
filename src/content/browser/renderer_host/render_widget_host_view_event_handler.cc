@@ -147,15 +147,6 @@ void RenderWidgetHostViewEventHandler::SetPopupChild(
   popup_child_event_handler_ = popup_child_event_handler;
 }
 
-void RenderWidgetHostViewEventHandler::TrackHost(
-    aura::Window* reference_window) {
-  if (!reference_window)
-    return;
-  DCHECK(!host_tracker_);
-  host_tracker_.reset(new aura::WindowTracker);
-  host_tracker_->Add(reference_window);
-}
-
 #if defined(OS_WIN)
 void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
   RECT window_rect =
@@ -304,51 +295,29 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
       return;
   }
 
-  bool mark_event_as_handled = true;
-  // We need to handle the Escape key for Pepper Flash.
-  if (host_view_->is_fullscreen() && event->key_code() == ui::VKEY_ESCAPE) {
-    // Focus the window we were created from.
-    if (host_tracker_.get() && !host_tracker_->windows().empty()) {
-      aura::Window* host = *(host_tracker_->windows().begin());
-      aura::client::FocusClient* client = aura::client::GetFocusClient(host);
-      if (client) {
-        // Calling host->Focus() may delete |this|. We create a local observer
-        // for that. In that case we exit without further access to any members.
-        auto local_tracker = std::move(host_tracker_);
-        local_tracker->Add(window_);
-        host->Focus();
-        if (!local_tracker->Contains(window_)) {
-          event->SetHandled();
-          return;
-        }
-      }
-    }
-    delegate_->Shutdown();
-    host_tracker_.reset();
-  } else {
-    if (event->key_code() == ui::VKEY_RETURN) {
-      // Do not forward return key release events if no press event was handled.
-      if (event->type() == ui::ET_KEY_RELEASED && !accept_return_character_)
-        return;
-      // Accept return key character events between press and release events.
-      accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
-    }
-
-    // Call SetKeyboardFocus() for not only ET_KEY_PRESSED but also
-    // ET_KEY_RELEASED. If a user closed the hotdog menu with ESC key press,
-    // we need to notify focus to Blink on ET_KEY_RELEASED for ESC key.
-    SetKeyboardFocus();
-    // We don't have to communicate with an input method here.
-    NativeWebKeyboardEvent webkit_event(*event);
-
-    // If the key has been reserved as part of the active KeyboardLock request,
-    // then we want to mark it as such so it is not intercepted by the browser.
-    if (IsKeyLocked(*event))
-      webkit_event.skip_in_browser = true;
-
-    delegate_->ForwardKeyboardEventWithLatencyInfo(
-        webkit_event, *event->latency(), &mark_event_as_handled);
+  if (event->key_code() == ui::VKEY_RETURN) {
+    // Do not forward return key release events if no press event was handled.
+    if (event->type() == ui::ET_KEY_RELEASED && !accept_return_character_)
+      return;
+    // Accept return key character events between press and release events.
+    accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
   }
+
+  // Call SetKeyboardFocus() for not only ET_KEY_PRESSED but also
+  // ET_KEY_RELEASED. If a user closed the hotdog menu with ESC key press,
+  // we need to notify focus to Blink on ET_KEY_RELEASED for ESC key.
+  SetKeyboardFocus();
+  // We don't have to communicate with an input method here.
+  NativeWebKeyboardEvent webkit_event(*event);
+
+  // If the key has been reserved as part of the active KeyboardLock request,
+  // then we want to mark it as such so it is not intercepted by the browser.
+  if (IsKeyLocked(*event))
+    webkit_event.skip_in_browser = true;
+
+  bool mark_event_as_handled = true;
+  delegate_->ForwardKeyboardEventWithLatencyInfo(
+      webkit_event, *event->latency(), &mark_event_as_handled);
   if (mark_event_as_handled)
     event->SetHandled();
 }
@@ -395,10 +364,14 @@ void RenderWidgetHostViewEventHandler::HandleMouseWheelEvent(
 }
 
 void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
-    ui::LocatedEvent* event) {
+    ui::LocatedEvent* event,
+    bool hovering,
+    int32_t pointer_id) {
   const cc::RenderFrameMetadata& last_metadata =
       host_->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  if (last_metadata.has_delegated_ink_metadata) {
+  if (last_metadata.delegated_ink_metadata.has_value() &&
+      hovering == last_metadata.delegated_ink_metadata.value()
+                      .delegated_ink_is_hovering) {
     if (!delegated_ink_point_renderer_.is_bound()) {
       ui::Compositor* compositor = window_ && window_->layer()
                                        ? window_->layer()->GetCompositor()
@@ -419,7 +392,8 @@ void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
 
     gfx::PointF point = event->root_location_f();
     point.Scale(host_view_->GetDeviceScaleFactor());
-    viz::DelegatedInkPoint delegated_ink_point(point, event->time_stamp());
+    viz::DelegatedInkPoint delegated_ink_point(point, event->time_stamp(),
+                                               pointer_id);
     TRACE_EVENT_INSTANT1("input",
                          "Forwarding delegated ink point from browser.",
                          TRACE_EVENT_SCOPE_THREAD, "delegated point",
@@ -433,6 +407,16 @@ void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
     // DrawAndSwap() is called, allowing more points to be drawn as part of
     // the delegated ink trail, and thus reducing user perceived latency.
     delegated_ink_point_renderer_->StoreDelegatedInkPoint(delegated_ink_point);
+    ended_delegated_ink_trail_ = false;
+  } else if (delegated_ink_point_renderer_.is_bound() &&
+             !ended_delegated_ink_trail_) {
+    // Let viz know that the most recent point it received from us is probably
+    // the last point the user is inking, so it shouldn't predict anything
+    // beyond it.
+    TRACE_EVENT_INSTANT0("input", "Delegated ink trail ended",
+                         TRACE_EVENT_SCOPE_THREAD);
+    delegated_ink_point_renderer_->ResetPrediction();
+    ended_delegated_ink_trail_ = true;
   }
 }
 
@@ -479,7 +463,9 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
     if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
         !(event->flags() & ui::EF_FROM_TOUCH)) {
-      ForwardDelegatedInkPoint(event);
+      bool hovering = (event->type() ^ ui::ET_MOUSE_DRAGGED) &&
+                      (event->type() ^ ui::ET_MOUSE_PRESSED);
+      ForwardDelegatedInkPoint(event, hovering, event->pointer_details().id);
 
       // Confirm existing composition text on mouse press, to make sure
       // the input caret won't be moved with an ongoing composition text.
@@ -604,7 +590,8 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   if (handled)
     return;
 
-  ForwardDelegatedInkPoint(event);
+  ForwardDelegatedInkPoint(event, event->hovering(),
+                           event->pointer_details().id);
 
   if (had_no_pointer)
     delegate_->selection_controller_client()->OnTouchDown();
@@ -631,6 +618,11 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
 void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewBase::OnGestureEvent");
+
+  // Ensure that we get keyboard focus on tap down as page may lose focus
+  // state previously (e.g. tapping outside to dismiss a select pop-up menu).
+  if (event->type() == ui::ET_GESTURE_TAP)
+    SetKeyboardFocus();
 
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
        event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
@@ -761,7 +753,7 @@ void RenderWidgetHostViewEventHandler::FinishImeCompositionSession() {
   // otherwise the following call to cancel composition will lead to an extra
   // IPC for finishing the ongoing composition (see https://crbug.com/723024).
   host_view_->GetTextInputClient()->ConfirmCompositionText(
-      /* keep_selection */ false);
+      /* keep_selection */ true);
   host_view_->ImeCancelComposition();
 }
 
@@ -770,11 +762,6 @@ void RenderWidgetHostViewEventHandler::ForwardMouseEventToParent(
   // Needed to propagate mouse event to |window_->parent()->delegate()|, but
   // note that it might be something other than a WebContentsViewAura instance.
   // TODO(pkotwicz): Find a better way of doing this.
-  // In fullscreen mode which is typically used by flash, don't forward
-  // the mouse events to the parent. The renderer and the plugin process
-  // handle these events.
-  if (host_view_->is_fullscreen())
-    return;
 
   if (event->flags() & ui::EF_FROM_TOUCH)
     return;

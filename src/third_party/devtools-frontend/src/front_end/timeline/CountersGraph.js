@@ -29,6 +29,7 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
@@ -37,9 +38,36 @@ import * as UI from '../ui/ui.js';
 import {Events, PerformanceModel, Window} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
 import {TimelineModeViewDelegate} from './TimelinePanel.js';             // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text for a heap profile type
+  */
+  jsHeap: 'JS Heap',
+  /**
+  *@description Text for documents, a type of resources
+  */
+  documents: 'Documents',
+  /**
+  *@description Text in Counters Graph of the Performance panel
+  */
+  nodes: 'Nodes',
+  /**
+  *@description Text in Counters Graph of the Performance panel
+  */
+  listeners: 'Listeners',
+  /**
+  *@description Text in Counters Graph of the Performance panel
+  */
+  gpuMemory: 'GPU Memory',
+  /**
+  *@description Range text content in Counters Graph of the Performance panel
+  *@example {2} PH1
+  *@example {10} PH2
+  */
+  ss: '[{PH1} – {PH2}]',
+};
+const str_ = i18n.i18n.registerUIStrings('timeline/CountersGraph.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CountersGraph extends UI.Widget.VBox {
   /**
    * @param {!TimelineModeViewDelegate} delegate
@@ -89,24 +117,14 @@ export class CountersGraph extends UI.Widget.VBox {
     this._countersByName.set(
         'jsHeapSizeUsed',
         this._createCounter(
-            Common.UIString.UIString('JS Heap'), Common.UIString.UIString('JS Heap: %s'), 'hsl(220, 90%, 43%)',
-            Platform.NumberUtilities.bytesToString));
+            i18nString(UIStrings.jsHeap), 'hsl(220, 90%, 43%)', Platform.NumberUtilities.bytesToString));
+    this._countersByName.set('documents', this._createCounter(i18nString(UIStrings.documents), 'hsl(0, 90%, 43%)'));
+    this._countersByName.set('nodes', this._createCounter(i18nString(UIStrings.nodes), 'hsl(120, 90%, 43%)'));
     this._countersByName.set(
-        'documents',
-        this._createCounter(
-            Common.UIString.UIString('Documents'), Common.UIString.UIString('Documents: %s'), 'hsl(0, 90%, 43%)'));
-    this._countersByName.set(
-        'nodes',
-        this._createCounter(
-            Common.UIString.UIString('Nodes'), Common.UIString.UIString('Nodes: %s'), 'hsl(120, 90%, 43%)'));
-    this._countersByName.set(
-        'jsEventListeners',
-        this._createCounter(
-            Common.UIString.UIString('Listeners'), Common.UIString.UIString('Listeners: %s'), 'hsl(38, 90%, 43%)'));
+        'jsEventListeners', this._createCounter(i18nString(UIStrings.listeners), 'hsl(38, 90%, 43%)'));
 
     this._gpuMemoryCounter = this._createCounter(
-        Common.UIString.UIString('GPU Memory'), Common.UIString.UIString('GPU Memory: %s'), 'hsl(300, 90%, 43%)',
-        Platform.NumberUtilities.bytesToString);
+        i18nString(UIStrings.gpuMemory), 'hsl(300, 90%, 43%)', Platform.NumberUtilities.bytesToString);
     this._countersByName.set('gpuMemoryUsedKB', this._gpuMemoryCounter);
   }
 
@@ -166,15 +184,14 @@ export class CountersGraph extends UI.Widget.VBox {
 
   /**
    * @param {string} uiName
-   * @param {string} uiValueTemplate
    * @param {string} color
    * @param {function(number):string=} formatter
    * @return {!Counter}
    */
-  _createCounter(uiName, uiValueTemplate, color, formatter) {
+  _createCounter(uiName, color, formatter) {
     const counter = new Counter();
     this._counters.push(counter);
-    this._counterUI.push(new CounterUI(this, uiName, uiValueTemplate, color, counter, formatter));
+    this._counterUI.push(new CounterUI(this, uiName, color, counter, formatter));
     return counter;
   }
 
@@ -288,9 +305,6 @@ export class CountersGraph extends UI.Widget.VBox {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Counter {
   constructor() {
     /** @type {!Array<number>} */
@@ -310,7 +324,7 @@ export class Counter {
    * @param {number} value
    */
   appendSample(time, value) {
-    if (this.values.length && this.values.peekLast() === value) {
+    if (this.values.length && this.values[this.values.length - 1] === value) {
       return;
     }
     this.times.push(time);
@@ -363,10 +377,14 @@ export class Counter {
     const end = calculator.maximumBoundary();
 
     // Maximum index of element whose time <= start.
-    this._minimumIndex = Platform.NumberUtilities.clamp(this.times.upperBound(start) - 1, 0, this.times.length - 1);
+    this._minimumIndex = Platform.NumberUtilities.clamp(
+        Platform.ArrayUtilities.upperBound(this.times, start, Platform.ArrayUtilities.DEFAULT_COMPARATOR) - 1, 0,
+        this.times.length - 1);
 
     // Minimum index of element whose time >= end.
-    this._maximumIndex = Platform.NumberUtilities.clamp(this.times.lowerBound(end), 0, this.times.length - 1);
+    this._maximumIndex = Platform.NumberUtilities.clamp(
+        Platform.ArrayUtilities.lowerBound(this.times, end, Platform.ArrayUtilities.DEFAULT_COMPARATOR), 0,
+        this.times.length - 1);
 
     // Current window bounds.
     this._minTime = start;
@@ -390,19 +408,15 @@ export class Counter {
   }
 }
 
-/**
- * @unrestricted
- */
 export class CounterUI {
   /**
    * @param {!CountersGraph} countersPane
    * @param {string} title
-   * @param {string} currentValueLabel
    * @param {string} graphColor
    * @param {!Counter} counter
    * @param {(function(number): string)|undefined} formatter
    */
-  constructor(countersPane, title, currentValueLabel, graphColor, counter, formatter) {
+  constructor(countersPane, title, graphColor, counter, formatter) {
     this._countersPane = countersPane;
     this.counter = counter;
     this._formatter = formatter || Number.withThousandsSeparator;
@@ -435,7 +449,7 @@ export class CounterUI {
     this.graphYValues = [];
     this._verticalPadding = 10;
 
-    this._currentValueLabel = currentValueLabel;
+    this._currentValueLabel = title;
     this._marker = countersPane._canvasContainer.createChild('div', 'memory-counter-marker');
     this._marker.style.backgroundColor = graphColor;
     this._clearCurrentValueAndMarker();
@@ -452,13 +466,10 @@ export class CounterUI {
   setRange(minValue, maxValue) {
     const min = this._formatter(minValue);
     const max = this._formatter(maxValue);
-    this._range.textContent = Common.UIString.UIString('[%s\xa0\u2013\xa0%s]', min, max);
+    this._range.textContent = i18nString(UIStrings.ss, {PH1: min, PH2: max});
   }
 
-  /**
-   * @param {!Common.EventTarget.EventTargetEvent} event
-   */
-  _toggleCounterGraph(event) {
+  _toggleCounterGraph() {
     this._value.classList.toggle('hidden', !this._filter.checked());
     this._countersPane.refresh();
   }
@@ -468,8 +479,9 @@ export class CounterUI {
    * @return {number}
    */
   _recordIndexAt(x) {
-    return this.counter.x.upperBound(
-               x * window.devicePixelRatio, undefined, this.counter._minimumIndex + 1, this.counter._maximumIndex + 1) -
+    return Platform.ArrayUtilities.upperBound(
+               this.counter.x, x * window.devicePixelRatio, Platform.ArrayUtilities.DEFAULT_COMPARATOR,
+               this.counter._minimumIndex + 1, this.counter._maximumIndex + 1) -
         1;
   }
 
@@ -482,7 +494,7 @@ export class CounterUI {
     }
     const index = this._recordIndexAt(x);
     const value = Number.withThousandsSeparator(this.counter.values[index]);
-    this._value.textContent = Common.UIString.UIString(this._currentValueLabel, value);
+    this._value.textContent = `${this._currentValueLabel}: ${value}`;
     const y = this.graphYValues[index] / window.devicePixelRatio;
     this._marker.style.left = x + 'px';
     this._marker.style.top = y + 'px';
@@ -577,7 +589,6 @@ export class CounterUI {
 
 /**
  * @implements {PerfUI.TimelineGrid.Calculator}
- * @unrestricted
  */
 export class Calculator {
   constructor() {

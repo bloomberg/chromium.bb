@@ -10,6 +10,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/power_scheduler/power_mode_voter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -68,8 +69,12 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   };
 
  public:
+  // The `widget` and `frame_widget_input_handler` should be invalidated
+  // at the same time.
   static scoped_refptr<WidgetInputHandlerManager> Create(
       base::WeakPtr<WidgetBase> widget_base,
+      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+          frame_widget_input_handler,
       bool never_composited,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       scheduler::WebThreadScheduler* main_thread_scheduler,
@@ -117,6 +122,7 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   mojom::blink::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
 
+#if defined(OS_ANDROID)
   void AttachSynchronousCompositor(
       mojo::PendingRemote<mojom::blink::SynchronousCompositorControlHost>
           control_host,
@@ -125,7 +131,6 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
       mojo::PendingAssociatedReceiver<mojom::blink::SynchronousCompositor>
           compositor_request);
 
-#if defined(OS_ANDROID)
   SynchronousCompositorRegistry* GetSynchronousCompositorRegistry();
 #endif
 
@@ -168,6 +173,8 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
  private:
   WidgetInputHandlerManager(
       base::WeakPtr<WidgetBase> widget,
+      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+          frame_widget_input_handler,
       bool never_composited,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       scheduler::WebThreadScheduler* main_thread_scheduler);
@@ -251,6 +258,8 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   // Only valid to be called on the main thread.
   base::WeakPtr<WidgetBase> widget_;
+  base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+      frame_widget_input_handler_;
   std::unique_ptr<scheduler::WebWidgetScheduler> widget_scheduler_;
   scheduler::WebThreadScheduler* main_thread_scheduler_;
 
@@ -312,6 +321,8 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   // is the first one in a scroll sequence or not. This variable is only used on
   // the input handling thread (i.e. on the compositor thread if it exists).
   bool has_seen_first_gesture_scroll_update_after_begin_ = false;
+
+  std::unique_ptr<power_scheduler::PowerModeVoter> response_power_mode_voter_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>

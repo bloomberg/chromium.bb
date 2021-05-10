@@ -27,6 +27,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -59,7 +60,6 @@
 #endif
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
-#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "components/safe_browsing/content/password_protection/password_protection_service.h"
 #endif
 
@@ -67,7 +67,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
-#include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 #endif
 
 using content::BrowserThread;
@@ -237,7 +236,7 @@ TriggerManager* SafeBrowsingService::trigger_manager() const {
 PasswordProtectionService* SafeBrowsingService::GetPasswordProtectionService(
     Profile* profile) const {
   if (IsSafeBrowsingEnabled(*profile->GetPrefs()))
-    return services_delegate_->GetPasswordProtectionService(profile);
+    return ChromePasswordProtectionServiceFactory::GetForProfile(profile);
   return nullptr;
 }
 
@@ -400,7 +399,6 @@ void SafeBrowsingService::OnOffTheRecordProfileCreated(
 
 void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   observed_profiles_.Remove(profile);
-  services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveSafeBrowsingNetworkContext(profile);
 
@@ -411,13 +409,11 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
   services_delegate_->CreateSafeBrowsingNetworkContext(profile);
-  services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
   observed_profiles_.Add(profile);
 }
 
-std::unique_ptr<SafeBrowsingService::StateSubscription>
-SafeBrowsingService::RegisterStateCallback(
+base::CallbackListSubscription SafeBrowsingService::RegisterStateCallback(
     const base::RepeatingClosure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return state_callback_list_.Add(callback);

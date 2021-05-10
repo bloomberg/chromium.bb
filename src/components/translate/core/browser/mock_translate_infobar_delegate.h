@@ -55,10 +55,27 @@ class MockTranslateInfoBarDelegate
   MOCK_METHOD0(Translate, void());
   MOCK_METHOD0(ToggleAlwaysTranslate, void());
   MOCK_METHOD0(ToggleTranslatableLanguageByPrefs, void());
-  MOCK_METHOD0(ToggleSiteBlacklist, void());
+  MOCK_METHOD0(ToggleNeverPrompt, void());
   MOCK_METHOD0(RevertWithoutClosingInfobar, void());
   MOCK_METHOD1(UpdateTargetLanguage, void(const std::string& language_code));
   MOCK_METHOD1(UpdateOriginalLanguage, void(const std::string& language_code));
+
+  void GetLanguagesNames(std::vector<base::string16>* languages) const override;
+  void GetLanguagesCodes(
+      std::vector<std::string>* languages_codes) const override;
+  void SetTranslateLanguagesForTest(
+      std::vector<std::pair<std::string, base::string16>> languages);
+
+  void SetContentLanguagesForTest(std::vector<LanguageNameTriple> languages);
+  void GetContentLanguagesNames(
+      std::vector<base::string16>* languages) const override;
+  void GetContentLanguagesNativeNames(
+      std::vector<base::string16>* native_languages) const override;
+  void GetContentLanguagesCodes(std::vector<std::string>* codes) const override;
+
+ private:
+  std::vector<std::pair<std::string, base::string16>> languages_;
+  std::vector<LanguageNameTriple> content_languages_;
 };
 
 class MockTranslateInfoBarDelegateFactory {

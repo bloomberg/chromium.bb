@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
+#include "quic/core/http/quic_spdy_client_session.h"
 
 #include <memory>
 #include <string>
@@ -10,35 +10,35 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/http/http_frames.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_quic_spdy_client_stream.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_packet_creator_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/http/http_frames.h"
+#include "quic/core/http/quic_spdy_client_stream.h"
+#include "quic/core/http/spdy_server_push_utils.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/core/tls_client_handshaker.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/mock_quic_spdy_client_stream.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_packet_creator_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_session_cache.h"
 
 using spdy::SpdyHeaderBlock;
 using ::testing::_;
@@ -230,10 +230,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
 
 std::string ParamNameFormatter(
     const testing::TestParamInfo<QuicSpdyClientSessionTest::ParamType>& info) {
-  const ParsedQuicVersion& version = info.param;
-  return quiche::QuicheStrCat(
-      QuicVersionToString(version.transport_version), "_",
-      HandshakeProtocolToString(version.handshake_protocol));
+  return ParsedQuicVersionToString(info.param);
 }
 
 INSTANTIATE_TEST_SUITE_P(Tests,
@@ -583,7 +580,7 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
       QuicConnectionPeer::GetFramer(connection_), destination_connection_id);
   bool version_flag = false;
   QuicConnectionIdIncluded scid_included = CONNECTION_ID_ABSENT;
-  if (VersionHasIetfInvariantHeader(version.transport_version)) {
+  if (version.HasIetfInvariantHeader()) {
     version_flag = true;
     source_connection_id = destination_connection_id;
     scid_included = CONNECTION_ID_PRESENT;
@@ -771,7 +768,7 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseDuplicateUrl) {
 TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   CompleteCryptoHandshake();
   for (size_t i = 0u; i < session_->get_max_promises(); i++) {
-    push_promise_[":path"] = quiche::QuicheStringPrintf("/bar%zu", i);
+    push_promise_[":path"] = absl::StrCat("/bar", i);
 
     QuicStreamId id =
         promised_stream_id_ +
@@ -789,7 +786,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
 
   // One more promise, this should be refused.
   int i = session_->get_max_promises();
-  push_promise_[":path"] = quiche::QuicheStringPrintf("/bar%d", i);
+  push_promise_[":path"] = absl::StrCat("/bar", i);
 
   QuicStreamId id =
       promised_stream_id_ +
@@ -953,7 +950,7 @@ TEST_P(QuicSpdyClientSessionTest, TooManyPushPromises) {
         connection_->transport_version(), promise_count);
     auto headers = QuicHeaderList();
     headers.OnHeaderBlockStart();
-    headers.OnHeader(":path", quiche::QuicheStrCat("/", promise_count));
+    headers.OnHeader(":path", absl::StrCat("/", promise_count));
     headers.OnHeader(":authority", "www.google.com");
     headers.OnHeader(":method", "GET");
     headers.OnHeader(":scheme", "https");

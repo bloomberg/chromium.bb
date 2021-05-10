@@ -28,9 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as i18n from '../i18n/i18n.js';
+
 import {VBox} from './Widget.js';
 import {XLink} from './XLink.js';
 
+export const UIStrings = {
+  /**
+  *@description Text that is usually a hyperlink to more documentation
+  */
+  learnMore: 'Learn more',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/EmptyWidget.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export class EmptyWidget extends VBox {
   /**
@@ -38,7 +48,7 @@ export class EmptyWidget extends VBox {
    */
   constructor(text) {
     super();
-    this.registerRequiredCSS('ui/emptyWidget.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/emptyWidget.css', {enableLegacyPatching: false});
     this.element.classList.add('empty-view-scroller');
     this._contentElement = this.element.createChild('div', 'empty-view');
     this._textElement = this._contentElement.createChild('div', 'empty-bold-text');
@@ -54,10 +64,11 @@ export class EmptyWidget extends VBox {
 
   /**
    * @param {string} link
-   * @return {!Node}
+   * @return {!HTMLElement}
    */
   appendLink(link) {
-    return this._contentElement.appendChild(XLink.create(link, ls`Learn more`));
+    return /** @type {!HTMLElement} */ (
+        this._contentElement.appendChild(XLink.create(link, i18nString(UIStrings.learnMore))));
   }
 
   /**

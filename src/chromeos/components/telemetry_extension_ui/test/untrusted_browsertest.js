@@ -47,14 +47,13 @@ UNTRUSTED_TEST('UntrustedCanSpawnWorkers', async () => {
   worker.postMessage(MESSAGE);
 
   const response = /** @type {string} */ (await workerResponse);
-  assertEquals(response, MESSAGE);
+  assertEquals(MESSAGE, response);
 });
 
 // Tests that array of available routines can be successfully
 // requested from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestAvailableRoutines', async () => {
-  const response = await chromeos.diagnostics.getAvailableRoutines();
-  assertDeepEquals(response, [
+  const expectedResult = [
     'battery-capacity',
     'battery-health',
     'smartctl-check',
@@ -68,7 +67,13 @@ UNTRUSTED_TEST('UntrustedDiagnosticsRequestAvailableRoutines', async () => {
     'prime-search',
     'battery-discharge',
     'battery-charge',
-  ]);
+  ];
+
+  const chromeosResponse = await chromeos.diagnostics.getAvailableRoutines();
+  assertDeepEquals(expectedResult, chromeosResponse);
+
+  const dpslResponse = await dpsl.diagnostics.getAvailableRoutines();
+  assertDeepEquals(expectedResult, dpslResponse);
 });
 
 // Tests that sendCommandToRoutine throws the correct errors
@@ -83,10 +88,10 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'RangeError');
+      assertEquals('RangeError', caughtError.name);
       assertEquals(
-          caughtError.message,
-          `Diagnostic routine id '9007199254740991' is out of int32 range.`);
+          `Diagnostic routine id '9007199254740991' is out of int32 range.`,
+          caughtError.message);
 
       try {
         await chromeos.diagnostics.sendCommandToRoutine(
@@ -95,10 +100,10 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'RangeError');
+      assertEquals('RangeError', caughtError.name);
       assertEquals(
-          caughtError.message,
-          `Diagnostic routine id '-9007199254740991' is out of int32 range.`);
+          `Diagnostic routine id '-9007199254740991' is out of int32 range.`,
+          caughtError.message);
 
       try {
         await chromeos.diagnostics.sendCommandToRoutine(
@@ -107,10 +112,10 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'TypeError');
+      assertEquals('TypeError', caughtError.name);
       assertEquals(
-          caughtError.message,
-          `Diagnostic command \'this-command-must-not-exist\' is unknown.`);
+          `Diagnostic command \'this-command-must-not-exist\' is unknown.`,
+          caughtError.message);
     });
 
 // Tests that runBatteryCapacityRoutine returns the correct Object.
@@ -118,7 +123,7 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryCapacityRoutine', async () => {
       const response =
           await chromeos.diagnostics.runBatteryCapacityRoutine();
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that runBatteryHealthRoutine returns the correct Object.
@@ -126,14 +131,14 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryHealthRoutine', async () => {
       const response =
           await chromeos.diagnostics.runBatteryHealthRoutine();
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that runSmartctlCheckRoutine returns the correct Object.
 UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunSmartctlCheckRoutine', async () => {
       const response = await chromeos.diagnostics.runSmartctlCheckRoutine();
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that runAcPowerRoutine throws the correct error
@@ -147,25 +152,25 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'TypeError');
+      assertEquals('TypeError', caughtError.name);
       assertEquals(
-          caughtError.message,
-          `Diagnostic expected status \'this-does-not-exist\' is unknown.`);
+          `Diagnostic expected status \'this-does-not-exist\' is unknown.`,
+          caughtError.message);
     });
 
 // Tests that runAcPowerRoutine returns the correct Object when one or two
 // parameters are given as input.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunAcPowerRoutine', async () => {
   const response1 = await chromeos.diagnostics.runAcPowerRoutine('connected');
-  assertDeepEquals(response1, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response1);
 
   const response2 =
       await chromeos.diagnostics.runAcPowerRoutine('connected', 'Mains');
-  assertDeepEquals(response2, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response2);
 
   const response3 =
       await chromeos.diagnostics.runAcPowerRoutine('disconnected', 'Battery');
-  assertDeepEquals(response3, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response3);
 });
 
 // Tests that runCpuCacheRoutine throws the correct error
@@ -179,14 +184,14 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'RangeError');
-      assertEquals(caughtError.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError.name);
+      assertEquals(`Parameter must be positive.`, caughtError.message);
     });
 
 // Tests that runCpuCacheRoutine returns the correct Object.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunCpuCacheRoutine', async () => {
   const response = await chromeos.diagnostics.runCpuCacheRoutine(10);
-  assertDeepEquals(response, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response);
 });
 
 // Tests that runCpuStressRoutine throws the correct error when invalid number
@@ -200,14 +205,14 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'RangeError');
-      assertEquals(caughtError.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError.name);
+      assertEquals(`Parameter must be positive.`, caughtError.message);
     });
 
 // Tests that runCpuStressRoutine returns the correct Object.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunCpuStressRoutine', async () => {
   const response = await chromeos.diagnostics.runCpuStressRoutine(5);
-  assertDeepEquals(response, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response);
 });
 
 // Tests that runFloatingPointAccuracyRoutine throws the correct error when
@@ -221,8 +226,8 @@ UNTRUSTED_TEST(
         caughtError1 = error;
       }
 
-      assertEquals(caughtError1.name, 'RangeError');
-      assertEquals(caughtError1.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError1.name);
+      assertEquals(`Parameter must be positive.`, caughtError1.message);
 
       let caughtError2;
       try {
@@ -231,22 +236,22 @@ UNTRUSTED_TEST(
         caughtError2 = error;
       }
 
-      assertEquals(caughtError2.name, 'RangeError');
-      assertEquals(caughtError2.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError2.name);
+      assertEquals(`Parameter must be positive.`, caughtError2.message);
     });
 
 // Tests that runFloatingPointAccuracyRoutine returns the correct Object.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunFPAccuracyRoutine', async () => {
   const response =
       await chromeos.diagnostics.runFloatingPointAccuracyRoutine(5);
-  assertDeepEquals(response, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response);
 });
 
 // Tests that runNVMEWearLevelRoutine returns the correct Object.
 UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunNvmeWearLevelRoutine', async () => {
       const response = await chromeos.diagnostics.runNvmeWearLevelRoutine(25);
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that runNvmeSelfTestRoutine throws the correct error when invalid enum
@@ -262,10 +267,10 @@ UNTRUSTED_TEST(
         caughtError = error;
       }
 
-      assertEquals(caughtError.name, 'TypeError');
+      assertEquals('TypeError', caughtError.name);
       assertEquals(
-          caughtError.message,
-          `Diagnostic NVMe self test type \'this-does-not-exist\' is unknown.`);
+          `Diagnostic NVMe self test type \'this-does-not-exist\' is unknown.`,
+          caughtError.message);
     });
 
 // Tests that runNvmeSelfTestRoutine returns the correct Object.
@@ -273,11 +278,11 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunNvmeSelfTestRoutine', async () => {
       const response1 =
           await chromeos.diagnostics.runNvmeSelfTestRoutine('short-self-test');
-      assertDeepEquals(response1, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response1);
 
       const response2 =
           await chromeos.diagnostics.runNvmeSelfTestRoutine('long-self-test');
-      assertDeepEquals(response2, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response2);
     });
 
 // Tests that runDiskReadRoutine throws the correct error when invalid enum
@@ -292,10 +297,10 @@ UNTRUSTED_TEST(
         caughtError1 = error;
       }
 
-      assertEquals(caughtError1.name, 'TypeError');
+      assertEquals('TypeError', caughtError1.name);
       assertEquals(
-          caughtError1.message,
-          `Diagnostic disk read type \'this-does-not-exist\' is unknown.`);
+          `Diagnostic disk read type \'this-does-not-exist\' is unknown.`,
+          caughtError1.message);
 
       let caughtError2;
       try {
@@ -311,8 +316,8 @@ UNTRUSTED_TEST(
         caughtError3 = error;
       }
 
-      assertEquals(caughtError3.name, 'RangeError');
-      assertEquals(caughtError3.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError3.name);
+      assertEquals(`Parameter must be positive.`, caughtError3.message);
 
       let caughtError4;
       try {
@@ -322,22 +327,22 @@ UNTRUSTED_TEST(
         caughtError4 = error;
       }
 
-      assertEquals(caughtError4.name, 'RangeError');
+      assertEquals('RangeError', caughtError4.name);
       assertEquals(
-          caughtError4.message,
           `Diagnostic disk read routine does not allow file sizes greater ` +
-              `than '10000'.`);
+              `than '10000'.`,
+          caughtError4.message);
     });
 
 // Tests that runDiskReadRoutine returns the correct Object.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunDiskReadRoutine', async () => {
   const response1 =
       await chromeos.diagnostics.runDiskReadRoutine('linear-read', 12, 20);
-  assertDeepEquals(response1, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response1);
 
   const response2 =
       await chromeos.diagnostics.runDiskReadRoutine('random-read', 20, 10);
-  assertDeepEquals(response2, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response2);
 });
 
 // Tests that runPrimeSearchRoutine throws the correct error when invalid enum
@@ -352,8 +357,8 @@ UNTRUSTED_TEST(
         caughtError1 = error;
       }
 
-      assertEquals(caughtError1.name, 'RangeError');
-      assertEquals(caughtError1.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError1.name);
+      assertEquals(`Parameter must be positive.`, caughtError1.message);
 
       let caughtError2;
       try {
@@ -362,15 +367,15 @@ UNTRUSTED_TEST(
         caughtError2 = error;
       }
 
-      assertEquals(caughtError2.name, 'RangeError');
-      assertEquals(caughtError2.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError2.name);
+      assertEquals(`Parameter must be positive.`, caughtError2.message);
     });
 
 // Tests that runPrimeSearchRoutine returns the correct Object.
 UNTRUSTED_TEST('UntrustedDiagnosticsRequestRunPrimeSearchRoutine', async () => {
   const response =
       await chromeos.diagnostics.runPrimeSearchRoutine(12, 1110987654321);
-  assertDeepEquals(response, {id: 123456789, status: 'ready'});
+  assertDeepEquals({id: 123456789, status: 'ready'}, response);
 });
 
 // Tests that runBatteryDischargeRoutine throws the correct error when invalid
@@ -385,8 +390,8 @@ UNTRUSTED_TEST(
         caughtError1 = error;
       }
 
-      assertEquals(caughtError1.name, 'RangeError');
-      assertEquals(caughtError1.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError1.name);
+      assertEquals(`Parameter must be positive.`, caughtError1.message);
 
       let caughtError2;
       try {
@@ -395,8 +400,8 @@ UNTRUSTED_TEST(
         caughtError2 = error;
       }
 
-      assertEquals(caughtError2.name, 'RangeError');
-      assertEquals(caughtError2.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError2.name);
+      assertEquals(`Parameter must be positive.`, caughtError2.message);
     });
 
 // Tests that runBatteryDischargeRoutine returns the correct Object.
@@ -404,7 +409,7 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryDischargeRoutine', async () => {
       const response =
           await chromeos.diagnostics.runBatteryDischargeRoutine(12, 2);
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that runBatteryChargeRoutine throws the correct error when invalid
@@ -419,8 +424,8 @@ UNTRUSTED_TEST(
         caughtError1 = error;
       }
 
-      assertEquals(caughtError1.name, 'RangeError');
-      assertEquals(caughtError1.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError1.name);
+      assertEquals(`Parameter must be positive.`, caughtError1.message);
 
       let caughtError2;
       try {
@@ -429,8 +434,8 @@ UNTRUSTED_TEST(
         caughtError2 = error;
       }
 
-      assertEquals(caughtError2.name, 'RangeError');
-      assertEquals(caughtError2.message, `Parameter must be positive.`);
+      assertEquals('RangeError', caughtError2.name);
+      assertEquals(`Parameter must be positive.`, caughtError2.message);
     });
 
 // Tests that runBatteryChargeRoutine returns the correct Object.
@@ -438,7 +443,7 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryChargeRoutine', async () => {
       const response =
           await chromeos.diagnostics.runBatteryChargeRoutine(12, 5);
-      assertDeepEquals(response, {id: 123456789, status: 'ready'});
+      assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
 // Tests that addEventListener receives system bluetooth adapter added event.
@@ -533,25 +538,20 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfoUnknownCategory', async () => {
     caughtError = error;
   }
 
-  assertEquals(caughtError.name, 'TypeError');
+  assertEquals('TypeError', caughtError.name);
   assertEquals(
-      caughtError.message,
-      'Telemetry category \'unknown-category\' is unknown.');
+      'Telemetry category \'unknown-category\' is unknown.',
+      caughtError.message);
 });
 
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
-  const response = await chromeos.telemetry.probeTelemetryInfo([
-    'battery', 'non-removable-block-devices', 'cached-vpd-data', 'cpu',
-    'timezone', 'memory', 'backlight', 'fan', 'stateful-partition', 'bluetooth'
-  ]);
-
   // Rounded down to the nearest 100MiB due to privacy requirement.
   const availableSpace = BigInt(
       Math.floor(1125899906842624 / (100 * 1024 * 1024)) * (100 * 1024 * 1024));
 
-  assertDeepEquals(response, {
+  const expectedResult = {
     batteryResult: {
       batteryInfo: {
         cycleCount: BigInt(100000000000000),
@@ -586,7 +586,13 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
         discardTimeSecondsSinceLastBoot: BigInt(77777777777777)
       }]
     },
-    vpdResult: {vpdInfo: {skuNumber: 'sku-18'}},
+    vpdResult: {
+      vpdInfo: {
+        skuNumber: 'sku-18',
+        serialNumber: '5CD9132880',
+        modelName: 'XX ModelName 007 XY'
+      }
+    },
     cpuResult: {
       cpuInfo: {
         numTotalThreads: 2147483759,
@@ -664,7 +670,39 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
         numConnectedDevices: 4294967295
       }]
     }
-  });
+  };
+
+  await Promise
+      .all([
+        chromeos.telemetry.probeTelemetryInfo([
+          'battery', 'non-removable-block-devices', 'cached-vpd-data', 'cpu',
+          'timezone', 'memory', 'backlight', 'fan', 'stateful-partition',
+          'bluetooth'
+        ]),
+        dpsl.telemetry.getBatteryInfo(),
+        dpsl.telemetry.getNonRemovableBlockDevicesInfo(),
+        dpsl.telemetry.getCachedVpdInfo(), dpsl.telemetry.getCpuInfo(),
+        dpsl.telemetry.getTimezoneInfo(), dpsl.telemetry.getMemoryInfo(),
+        dpsl.telemetry.getBacklightInfo(), dpsl.telemetry.getFanInfo(),
+        dpsl.telemetry.getStatefulPartitionInfo(),
+        dpsl.telemetry.getBluetoothInfo()
+      ])
+      .then((values) => {
+        assertDeepEquals(
+            [
+              expectedResult, expectedResult.batteryResult.batteryInfo,
+              expectedResult.blockDeviceResult.blockDeviceInfo,
+              expectedResult.vpdResult.vpdInfo,
+              expectedResult.cpuResult.cpuInfo,
+              expectedResult.timezoneResult.timezoneInfo,
+              expectedResult.memoryResult.memoryInfo,
+              expectedResult.backlightResult.backlightInfo,
+              expectedResult.fanResult.fanInfo,
+              expectedResult.statefulPartitionResult.partitionInfo,
+              expectedResult.bluetoothResult.bluetoothAdapterInfo
+            ],
+            values);
+      });
 });
 
 // Tests that sendCommandToRoutine returns the correct Object
@@ -673,12 +711,14 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestInteractiveRoutineUpdate', async () => {
       const response = await chromeos.diagnostics.sendCommandToRoutine(
           987654321, 'remove', true);
-      assertDeepEquals(response, {
-        progressPercent: 0,
-        output: 'This routine is running!',
-        routineUpdateUnion:
-            {interactiveUpdate: {userMessage: 'unplug-ac-power'}}
-      });
+      assertDeepEquals(
+          {
+            progressPercent: 0,
+            output: 'This routine is running!',
+            routineUpdateUnion:
+                {interactiveUpdate: {userMessage: 'unplug-ac-power'}}
+          },
+          response);
     });
 
 // Tests that sendCommandToRoutine returns the correct Object
@@ -687,35 +727,53 @@ UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate', async () => {
       const response = await chromeos.diagnostics.sendCommandToRoutine(
           135797531, 'remove', true);
-      assertDeepEquals(response, {
-        progressPercent: 3147483771,
-        output: '',
-        routineUpdateUnion: {
-          noninteractiveUpdate:
-              {status: 'ready', statusMessage: 'Routine ran by Google.'}
-        }
-      });
+      assertDeepEquals(
+          {
+            progressPercent: 3147483771,
+            output: '',
+            routineUpdateUnion: {
+              noninteractiveUpdate:
+                  {status: 'ready', statusMessage: 'Routine ran by Google.'}
+            }
+          },
+          response);
     });
 
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedRequestTelemetryInfoWithInterceptor', async () => {
-  const response = await chromeos.telemetry.probeTelemetryInfo([
+  const probeTelemetryResponse = await chromeos.telemetry.probeTelemetryInfo([
     'battery', 'non-removable-block-devices', 'cached-vpd-data', 'cpu',
     'timezone', 'memory', 'backlight', 'fan', 'stateful-partition', 'bluetooth'
   ]);
-  assertDeepEquals(response, {});
+  assertDeepEquals({}, probeTelemetryResponse);
+
+  const expectedResult = JSON.stringify(
+      {type: 'no-result-error', msg: 'Backend returned no result'});
+
+  // The order must be kept.
+  // See UntrustedRequestTelemetryInfoWithInterceptor test in
+  // telemetry_extension_ui_browsertests.js.
+  await Promise.all([
+    verifyErrorMessage(dpsl.telemetry.getBacklightInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getBatteryInfo(), expectedResult),
+    verifyErrorMessage(
+        dpsl.telemetry.getNonRemovableBlockDevicesInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getCachedVpdInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getCpuInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getTimezoneInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getMemoryInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getFanInfo(), expectedResult),
+    verifyErrorMessage(
+        dpsl.telemetry.getStatefulPartitionInfo(), expectedResult),
+    verifyErrorMessage(dpsl.telemetry.getBluetoothInfo(), expectedResult)
+  ]);
 });
 
 // Tests that TelemetryInfo with errors can be successfully requested from
 // from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedRequestTelemetryInfoWithErrors', async () => {
-  const response = await chromeos.telemetry.probeTelemetryInfo([
-    'battery', 'non-removable-block-devices', 'cached-vpd-data', 'cpu',
-    'timezone', 'memory', 'backlight', 'fan', 'stateful-partition', 'bluetooth'
-  ]);
-
-  assertDeepEquals(response, {
+  const expectedResult = {
     batteryResult: {
       error: {
         type: 'file-read-error',
@@ -776,5 +834,58 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfoWithErrors', async () => {
         msg: 'bluetooth error',
       }
     }
-  });
+  };
+
+  const probeTelemetryResponse = await chromeos.telemetry.probeTelemetryInfo([
+    'battery', 'non-removable-block-devices', 'cached-vpd-data', 'cpu',
+    'timezone', 'memory', 'backlight', 'fan', 'stateful-partition', 'bluetooth'
+  ]);
+  assertDeepEquals(expectedResult, probeTelemetryResponse);
+
+  // Tests for dpsl.telemetry.*:
+  await Promise.all([
+    verifyErrorMessage(
+        dpsl.telemetry.getBacklightInfo(),
+        JSON.stringify(expectedResult.backlightResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getBatteryInfo(),
+        JSON.stringify(expectedResult.batteryResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getNonRemovableBlockDevicesInfo(),
+        JSON.stringify(expectedResult.blockDeviceResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getCachedVpdInfo(),
+        JSON.stringify(expectedResult.vpdResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getCpuInfo(),
+        JSON.stringify(expectedResult.cpuResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getTimezoneInfo(),
+        JSON.stringify(expectedResult.timezoneResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getMemoryInfo(),
+        JSON.stringify(expectedResult.memoryResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getFanInfo(),
+        JSON.stringify(expectedResult.fanResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getStatefulPartitionInfo(),
+        JSON.stringify(expectedResult.statefulPartitionResult.error)),
+    verifyErrorMessage(
+        dpsl.telemetry.getBluetoothInfo(),
+        JSON.stringify(expectedResult.bluetoothResult.error))
+  ]);
+});
+
+// Tests that dpsl.system_events.getAvailableEvents() return the correct list.
+UNTRUSTED_TEST('UntrustedEventsServiceGetAvailableEvents', async () => {
+  assertDeepEquals(
+      [
+        'ac-inserted', 'ac-removed', 'bluetooth-adapter-added',
+        'bluetooth-adapter-property-changed', 'bluetooth-adapter-removed',
+        'bluetooth-device-added', 'bluetooth-device-property-changed',
+        'bluetooth-device-removed', 'lid-closed', 'lid-opened', 'os-resume',
+        'os-suspend'
+      ],
+      dpsl.system_events.getAvailableEvents());
 });

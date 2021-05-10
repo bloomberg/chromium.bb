@@ -19,9 +19,6 @@ const base::Feature kSettingsRefresh{"SettingsRefresh",
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDisableProgressBarAnimation{
-    "DisableProgressBarAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kVoiceOverUnstackedTabstrip{
     "VoiceOverUnstackedTabstrip", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -31,20 +28,6 @@ const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
 const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kFirstResponderSendAction{
-    "FirstResponderSendAction", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableNativeContextMenus{
-    "EnableNativeContextMenus", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if defined(__IPHONE_13_4)
-const base::Feature kPointerSupport{"PointerSupport",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(__IPHONE_13_4)
-
-const base::Feature kEnableMyGoogle{"EnableMyGoogle",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableIOSManagedSettingsUI{
     "EnableIOSManagedSettingsUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -52,16 +35,13 @@ const base::Feature kSafetyCheckIOS{"SafetyCheckIOS",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIllustratedEmptyStates{"IllustratedEmptyStates",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSharedHighlightingIOS{"SharedHighlightingIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableFullPageScreenshot{
     "EnableFullPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDefaultBrowserFullscreenPromo{
-    "DefaultBrowserFullscreenPromo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDefaultBrowserSettings{"DefaultBrowserSettings",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -76,6 +56,17 @@ const base::Feature kIncognitoAuthentication{
 
 const base::Feature kLocationPermissionsPrompt{
     "LocationPermissionsPrompt", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDefaultBrowserFullscreenPromoExperiment{
+    "DefaultBrowserFullscreenPromoExperiment",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDefaultBrowserFullscreenPromoCTAExperiment{
+    "DefaultBrowserFullscreenPromoCTAExperiment",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIOSNewOmniboxImplementation{
+    "kIOSNewOmniboxImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIOSPersistCrashRestore{"IOSPersistCrashRestore",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

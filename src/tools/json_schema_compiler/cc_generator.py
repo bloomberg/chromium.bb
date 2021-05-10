@@ -39,7 +39,8 @@ class _Generator(object):
     c = Code()
     (c.Append(cpp_util.CHROMIUM_LICENSE)
       .Append()
-      .Append(cpp_util.GENERATED_FILE_MESSAGE % self._namespace.source_file)
+      .Append(cpp_util.GENERATED_FILE_MESSAGE %
+              cpp_util.ToPosixPath(self._namespace.source_file))
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "base/check.h"')
@@ -49,7 +50,8 @@ class _Generator(object):
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "base/values.h"')
       .Append('#include "%s/%s.h"' %
-              (self._namespace.source_file_dir, self._namespace.short_filename))
+              (cpp_util.ToPosixPath(self._namespace.source_file_dir),
+               self._namespace.short_filename))
       .Append('#include <set>')
       .Append('#include <utility>')
       .Cblock(self._GenerateManifestKeysIncludes())
@@ -999,11 +1001,21 @@ class _Generator(object):
                      failure_value,
                      is_ptr=is_ptr))
       else:
-        c.Sblock('if (!%s(%s)) {' % (
+        args = ['*list', '&%(dst_var)s']
+        if self._generate_error_messages:
+          c.Append('base::string16 array_parse_error;')
+          args.append('&array_parse_error')
+
+        c.Append('if (!%s(%s)) {' % (
             self._util_cc_helper.PopulateArrayFromListFunction(is_ptr),
-            self._GenerateArgs(('*list', '&%(dst_var)s'))))
-        c.Concat(self._GenerateError(
-            '"unable to populate array \'%%(key)s\'"'))
+            self._GenerateArgs(args, generate_error_messages=False)))
+        c.Sblock()
+        if self._generate_error_messages:
+          c.Append(
+            'array_parse_error = base::UTF8ToUTF16("Error at key '
+            '\'%(key)s\': ") + array_parse_error;'
+          )
+          c.Concat(self._AppendError16('array_parse_error'))
         c.Append('return %(failure_value)s;')
         c.Eblock('}')
       c.Eblock('}')
@@ -1258,18 +1270,21 @@ class _Generator(object):
         self._type_helper.GetEnumNoneValue(prop.type_)))
     return c
 
-  def _GenerateError(self, body):
-    """Generates an error message pertaining to population failure.
-
-    E.g 'expected bool, got int'
+  def _AppendError16(self, error16):
+    """Appends the given |error16| expression/variable to |error|.
     """
     c = Code()
     if not self._generate_error_messages:
       return c
-    (c.Append('if (error->length())')
-      .Append('  error->append(UTF8ToUTF16("; "));')
-      .Append('error->append(UTF8ToUTF16(%s));' % body))
+    c.Append('DCHECK(error->empty());')
+    c.Append('*error = %s;' % error16)
     return c
+
+  def _GenerateError(self, body):
+    """Generates an error message pertaining to population failure.
+    E.g 'expected bool, got int'
+    """
+    return self._AppendError16('UTF8ToUTF16(%s)' % body)
 
   def _GenerateParams(self, params, generate_error_messages=None):
     """Builds the parameter list for a function, given an array of parameters.
@@ -1282,9 +1297,13 @@ class _Generator(object):
       params = list(params) + ['base::string16* error']
     return ', '.join(str(p) for p in params)
 
-  def _GenerateArgs(self, args):
+  def _GenerateArgs(self, args, generate_error_messages=None):
     """Builds the argument list for a function, given an array of arguments.
+    If |generate_error_messages| is specified, it overrides
+    |self._generate_error_messages|.
     """
-    if self._generate_error_messages:
+    if generate_error_messages is None:
+      generate_error_messages = self._generate_error_messages
+    if generate_error_messages:
       args = list(args) + ['error']
     return ', '.join(str(a) for a in args)

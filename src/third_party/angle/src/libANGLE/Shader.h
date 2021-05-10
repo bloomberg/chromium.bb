@@ -90,6 +90,7 @@ class ShaderState final : angle::NonCopyable
     const sh::WorkGroupSize &getLocalSize() const { return mLocalSize; }
 
     bool getEarlyFragmentTestsOptimization() const { return mEarlyFragmentTestsOptimization; }
+    rx::SpecConstUsageBits getSpecConstUsageBits() const { return mSpecConstUsageBits; }
 
     int getNumViews() const { return mNumViews; }
 
@@ -131,6 +132,7 @@ class ShaderState final : angle::NonCopyable
     std::vector<sh::ShaderVariable> mActiveOutputVariables;
 
     bool mEarlyFragmentTestsOptimization;
+    rx::SpecConstUsageBits mSpecConstUsageBits;
 
     // ANGLE_multiview.
     int mNumViews;
@@ -140,6 +142,13 @@ class ShaderState final : angle::NonCopyable
     Optional<PrimitiveMode> mGeometryShaderOutputPrimitiveType;
     Optional<GLint> mGeometryShaderMaxVertices;
     int mGeometryShaderInvocations;
+
+    // Tessellation Shader
+    int mTessControlShaderVertices;
+    GLenum mTessGenMode;
+    GLenum mTessGenSpacing;
+    GLenum mTessGenVertexOrder;
+    GLenum mTessGenPointMode;
 
     // Indicates if this shader has been successfully compiled
     CompileStatus mCompileStatus;
@@ -190,6 +199,7 @@ class Shader final : angle::NonCopyable, public LabeledObject
     {
         return mState.mEarlyFragmentTestsOptimization;
     }
+    rx::SpecConstUsageBits getSpecConstUsageBits() const { return mState.mSpecConstUsageBits; }
 
     int getShaderVersion();
 
@@ -215,6 +225,11 @@ class Shader final : angle::NonCopyable, public LabeledObject
     Optional<PrimitiveMode> getGeometryShaderOutputPrimitiveType();
     int getGeometryShaderInvocations();
     Optional<GLint> getGeometryShaderMaxVertices();
+    int getTessControlShaderVertices();
+    GLenum getTessGenMode();
+    GLenum getTessGenSpacing();
+    GLenum getTessGenVertexOrder();
+    GLenum getTessGenPointMode();
 
     const std::string &getCompilerResourcesString() const;
 

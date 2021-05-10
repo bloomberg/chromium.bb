@@ -20,9 +20,9 @@ struct App {
   string? name;
   string? short_name;
 
-  // The publisher-specific ID for this app, e.g. for Android apps, this field
-  // contains the Android package name. May be empty if AppId() should be
-  // considered as the canonical publisher ID.
+  // An optional, publisher-specific ID for this app, e.g. for Android apps,
+  // this field contains the Android package name, and for web apps, it
+  // contains the start URL.
   string? publisher_id;
 
   string? description;
@@ -108,6 +108,11 @@ enum Readiness {
   kDisabledByUser,       // Disabled by explicit user action.
   kTerminated,           // Renderer process crashed.
   kUninstalledByUser,
+  // Removed apps are purged from the registry cache and have their
+  // associated memory freed. Subscribers are not notified of removed
+  // apps, so publishers must set the app as uninstalled before
+  // removing it.
+  kRemoved,
 };
 
 // How the app was installed.
@@ -215,6 +220,7 @@ enum LaunchSource {
   kFromArc = 17,                      // Arc.
   kFromSharesheet = 18,               // Sharesheet.
   kFromReleaseNotesNotification = 19, // Release Notes Notification.
+  kFromFullRestore = 20,              // Full restore.
 };
 
 enum TriState {
@@ -318,7 +324,9 @@ struct IntentFilter {
 };
 
 // Action and resource handling request. This includes the scheme and URL at
-// the moment, and will be extended to handle files in the future.
+// the moment, and will be extended to handle files in the future. This should
+// be kept in sync with ConvertIntentToValue and ConvertValueToIntent in
+// components/services/app_service/public/cpp/intent_util.*
 struct Intent {
   string? action; // Intent action. e.g. view, send.
   url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
@@ -330,6 +338,7 @@ struct Intent {
   // from Google Drive.
   url.mojom.Url? drive_share_url;
   string? share_text; // Text to share. e.g. Share link to other app.
+  string? share_title; // Title for the share.
 };
 
 // Represents a group of |app_ids| that is no longer preferred app of their
@@ -390,4 +399,37 @@ enum LaunchContainer {
   // For platform apps, which don't actually have a container (they just get a
   // "onLaunched" event).
   kLaunchContainerNone = 3,
+};
+
+// Information about whether an app is accessing some capability, e.g. camera,
+// microphone.
+struct CapabilityAccess {
+  string app_id;
+
+  // The fields above are mandatory. Everything else below is optional.
+
+  // Whether the app is accessing camera.
+  OptionalBool camera;
+
+  // Whether the app is accessing microphone.
+  OptionalBool microphone;
+
+  // When adding new fields, also update the Merge method and other helpers in
+  // components/services/app_service/public/cpp/access_update.*
+};
+
+// The window bounds information.
+struct Rect {
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
+};
+
+// The window information to launch an app.
+struct WindowInfo {
+  int32 window_id = -1;
+  int32 state = -1;
+  int64 display_id = -1;
+  Rect? bounds;
 };

@@ -19,8 +19,8 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/containers/contains.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
@@ -332,8 +332,12 @@ void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
   if (!base::Contains(observed_windows_, window)) {
     window->AddObserver(this);
-    ::wm::TransientWindowManager::GetOrCreate(window)->AddObserver(this);
     observed_windows_.push_back(window);
+    ::wm::TransientWindowManager* transient_manager =
+        ::wm::TransientWindowManager::GetOrCreate(window);
+    transient_manager->AddObserver(this);
+    for (auto* transient_window : transient_manager->transient_children())
+      StartObservingTransientChild(transient_window);
   }
 }
 
@@ -342,8 +346,12 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
       std::find(observed_windows_.begin(), observed_windows_.end(), window);
   if (iter != observed_windows_.end()) {
     window->RemoveObserver(this);
-    ::wm::TransientWindowManager::GetOrCreate(window)->RemoveObserver(this);
     observed_windows_.erase(iter);
+    ::wm::TransientWindowManager* transient_manager =
+        ::wm::TransientWindowManager::GetOrCreate(window);
+    transient_manager->RemoveObserver(this);
+    for (auto* transient_window : transient_manager->transient_children())
+      StopObservingTransientChild(transient_window);
   }
 }
 
@@ -372,8 +380,8 @@ void SplitViewDivider::OnWindowBoundsChanged(aura::Window* window,
     return;
 
   // We only care about the bounds change of windows in
-  // |transient_windows_observer_|.
-  if (!transient_windows_observer_.IsObserving(window))
+  // |transient_windows_observations_|.
+  if (!transient_windows_observations_.IsObservingSource(window))
     return;
 
   // |window|'s transient parent must be one of the windows in
@@ -410,22 +418,12 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
 
 void SplitViewDivider::OnTransientChildAdded(aura::Window* window,
                                              aura::Window* transient) {
-  // For now, we only care about dialog bubbles type transient child. We may
-  // observe other types transient child window as well if need arises in the
-  // future.
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(transient);
-  if (!widget || !widget->widget_delegate()->AsBubbleDialogDelegate())
-    return;
-
-  // At this moment, the transient window may not have the valid bounds yet.
-  // Start observe the transient window.
-  transient_windows_observer_.Add(transient);
+  StartObservingTransientChild(transient);
 }
 
 void SplitViewDivider::OnTransientChildRemoved(aura::Window* window,
                                                aura::Window* transient) {
-  if (transient_windows_observer_.IsObserving(transient))
-    transient_windows_observer_.Remove(transient);
+  StopObservingTransientChild(transient);
 }
 
 void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
@@ -446,6 +444,24 @@ void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
       std::make_unique<DividerView>(controller, this));
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();
+}
+
+void SplitViewDivider::StartObservingTransientChild(aura::Window* transient) {
+  // For now, we only care about dialog bubbles type transient child. We may
+  // observe other types transient child window as well if need arises in the
+  // future.
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(transient);
+  if (!widget || !widget->widget_delegate()->AsBubbleDialogDelegate())
+    return;
+
+  // At this moment, the transient window may not have the valid bounds yet.
+  // Start observe the transient window.
+  transient_windows_observations_.AddObservation(transient);
+}
+
+void SplitViewDivider::StopObservingTransientChild(aura::Window* transient) {
+  if (transient_windows_observations_.IsObservingSource(transient))
+    transient_windows_observations_.RemoveObservation(transient);
 }
 
 }  // namespace ash

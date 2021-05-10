@@ -43,11 +43,6 @@ template <typename Strategy>
 SelectionTemplate<Strategy> ComputeAdjustedSelection(
     const SelectionTemplate<Strategy> selection,
     const EphemeralRangeTemplate<Strategy>& range) {
-  if (selection.ComputeRange() == range) {
-    // To pass "editing/deleting/delete_after_block_image.html", we need to
-    // return original selection.
-    return selection;
-  }
   if (range.StartPosition().CompareTo(range.EndPosition()) == 0) {
     return typename SelectionTemplate<Strategy>::Builder()
         .Collapse(selection.IsBaseFirst() ? range.StartPosition()
@@ -132,8 +127,7 @@ class GranularityAdjuster final {
         return CreateVisiblePosition(word_start).DeepEquivalent();
       }
       case TextGranularity::kSentence:
-        return StartOfSentence(CreateVisiblePosition(passed_start))
-            .DeepEquivalent();
+        return StartOfSentencePosition(passed_start.GetPosition());
       case TextGranularity::kLine:
         return StartOfLine(CreateVisiblePosition(passed_start))
             .DeepEquivalent();
@@ -148,14 +142,14 @@ class GranularityAdjuster final {
         return StartOfParagraph(pos).DeepEquivalent();
       }
       case TextGranularity::kDocumentBoundary:
-        return StartOfDocument(CreateVisiblePosition(passed_start))
+        return CreateVisiblePosition(
+                   StartOfDocument(passed_start.GetPosition()))
             .DeepEquivalent();
       case TextGranularity::kParagraphBoundary:
         return StartOfParagraph(CreateVisiblePosition(passed_start))
             .DeepEquivalent();
       case TextGranularity::kSentenceBoundary:
-        return StartOfSentence(CreateVisiblePosition(passed_start))
-            .DeepEquivalent();
+        return StartOfSentencePosition(passed_start.GetPosition());
     }
 
     NOTREACHED();
@@ -231,7 +225,7 @@ class GranularityAdjuster final {
             .DeepEquivalent();
       case TextGranularity::kLine: {
         const VisiblePositionTemplate<Strategy> end =
-            EndOfLine(CreateVisiblePosition(passed_end));
+            CreateVisiblePosition(EndOfLine(passed_end));
         if (!IsEndOfParagraph(end))
           return end.DeepEquivalent();
         // If the end of this line is at the end of a paragraph, include the
@@ -242,7 +236,7 @@ class GranularityAdjuster final {
         return next.DeepEquivalent();
       }
       case TextGranularity::kLineBoundary:
-        return EndOfLine(CreateVisiblePosition(passed_end)).DeepEquivalent();
+        return EndOfLine(passed_end).GetPosition();
       case TextGranularity::kParagraph: {
         const VisiblePositionTemplate<Strategy> visible_paragraph_end =
             EndOfParagraph(CreateVisiblePosition(passed_end));
@@ -418,11 +412,6 @@ class ShadowBoundaryAdjuster final {
     return FlatTreeTraversal::IsDescendantOf(*anchor_node, node);
   }
 
-  static bool IsSelectionBoundary(const Node& node) {
-    return IsA<HTMLTextAreaElement>(node) || IsA<HTMLInputElement>(node) ||
-           IsA<HTMLSelectElement>(node);
-  }
-
   static Node* EnclosingShadowHostForStart(const PositionInFlatTree& position) {
     Node* node = position.NodeAsRangeFirstNode();
     if (!node)
@@ -432,7 +421,7 @@ class ShadowBoundaryAdjuster final {
       return nullptr;
     if (!IsEnclosedBy(position, *shadow_host))
       return nullptr;
-    return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
+    return IsUserSelectContain(*shadow_host) ? shadow_host : nullptr;
   }
 
   static Node* EnclosingShadowHostForEnd(const PositionInFlatTree& position) {
@@ -444,7 +433,7 @@ class ShadowBoundaryAdjuster final {
       return nullptr;
     if (!IsEnclosedBy(position, *shadow_host))
       return nullptr;
-    return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
+    return IsUserSelectContain(*shadow_host) ? shadow_host : nullptr;
   }
 
   static PositionInFlatTree AdjustPositionInFlatTreeForStart(
@@ -751,7 +740,7 @@ class SelectionTypeAdjuster final {
     const EphemeralRangeTemplate<Strategy> minimal_range(
         MostForwardCaretPosition(range.StartPosition()),
         MostBackwardCaretPosition(range.EndPosition()));
-    if (selection.IsBaseFirst()) {
+    if (minimal_range.IsCollapsed() || selection.IsBaseFirst()) {
       return typename SelectionTemplate<Strategy>::Builder()
           .SetAsForwardSelection(minimal_range)
           .Build();

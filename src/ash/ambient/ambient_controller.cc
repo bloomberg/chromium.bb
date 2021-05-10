@@ -7,11 +7,13 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/constants/ash_features.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
@@ -22,6 +24,7 @@
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_status.h"
@@ -33,7 +36,6 @@
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -44,7 +46,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/events/types/event_type.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -74,11 +75,6 @@ std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {
 #else
   return std::make_unique<FakeAmbientBackendControllerImpl>();
 #endif  // BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
-}
-
-aura::Window* GetWidgetContainer() {
-  return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                             kShellWindowId_AmbientModeContainer);
 }
 
 // Returns the name of the ambient widget.
@@ -175,24 +171,13 @@ AmbientController::AmbientController(
     : fingerprint_(std::move(fingerprint)) {
   ambient_backend_controller_ = CreateAmbientBackendController();
 
-  ambient_ui_model_observer_.Add(&ambient_ui_model_);
-  // |SessionController| is initialized before |this| in Shell.
-  session_observer_.Add(Shell::Get()->session_controller());
-
-  auto* power_manager_client = chromeos::PowerManagerClient::Get();
-  DCHECK(power_manager_client);
-  power_manager_client_observer_.Add(power_manager_client);
-
-  ambient_backend_model_observer_.Add(
-      ambient_photo_controller_.ambient_backend_model());
-
-  fingerprint_->AddFingerprintObserver(
-      fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
+  // |SessionController| is initialized before |this| in Shell. Necessary to
+  // bind observer here to monitor |OnActiveUserPrefServiceChanged|.
+  session_observer_.Observe(Shell::Get()->session_controller());
 }
 
 AmbientController::~AmbientController() {
-  if (container_view_)
-    container_view_->GetWidget()->CloseNow();
+  CloseAllWidgets(/*immediately=*/true);
 }
 
 void AmbientController::OnAmbientUiVisibilityChanged(
@@ -217,18 +202,19 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       }
       // Observes the |PowerStatus| on the battery charging status change for
       // the current ambient session.
-      if (!power_status_observer_.IsObserving(PowerStatus::Get())) {
-        power_status_observer_.Add(PowerStatus::Get());
-      }
+      if (!power_status_observer_.IsObserving())
+        power_status_observer_.Observe(PowerStatus::Get());
 
-      if (!user_activity_observer_.IsObserving(ui::UserActivityDetector::Get()))
-        user_activity_observer_.Add(ui::UserActivityDetector::Get());
+      if (!user_activity_observer_.IsObserving())
+        user_activity_observer_.Observe(ui::UserActivityDetector::Get());
+
+      Shell::Get()->AddPreTargetHandler(this);
 
       StartRefreshingImages();
       break;
     case AmbientUiVisibility::kHidden:
     case AmbientUiVisibility::kClosed:
-      CloseWidget(/*immediately=*/false);
+      CloseAllWidgets(/*immediately=*/false);
 
       // TODO(wutao): This will clear the image cache currently. It will not
       // work with `kHidden` if the token has expired and ambient mode is shown
@@ -244,6 +230,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // Should do nothing if the wake lock has already been released.
       ReleaseWakeLock();
 
+      Shell::Get()->RemovePreTargetHandler(this);
+
       // |start_time_| may be empty in case of |AmbientUiVisibility::kHidden| if
       // ambient mode has just started.
       if (start_time_) {
@@ -258,10 +246,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       if (visibility == AmbientUiVisibility::kHidden) {
         if (LockScreen::HasInstance()) {
           // Add observer for user activity.
-          if (!user_activity_observer_.IsObserving(
-                  ui::UserActivityDetector::Get())) {
-            user_activity_observer_.Add(ui::UserActivityDetector::Get());
-          }
+          if (!user_activity_observer_.IsObserving())
+            user_activity_observer_.Observe(ui::UserActivityDetector::Get());
 
           // Start timer to show ambient mode.
           inactivity_timer_.Start(
@@ -271,13 +257,10 @@ void AmbientController::OnAmbientUiVisibilityChanged(
         }
       } else {
         DCHECK(visibility == AmbientUiVisibility::kClosed);
+        GetAmbientBackendModel()->ResetImageFailures();
         inactivity_timer_.Stop();
-        if (user_activity_observer_.IsObserving(
-                ui::UserActivityDetector::Get())) {
-          user_activity_observer_.Remove(ui::UserActivityDetector::Get());
-        }
-        if (power_status_observer_.IsObserving(PowerStatus::Get()))
-          power_status_observer_.Remove(PowerStatus::Get());
+        user_activity_observer_.Reset();
+        power_status_observer_.Reset();
       }
 
       break;
@@ -286,10 +269,9 @@ void AmbientController::OnAmbientUiVisibilityChanged(
 
 void AmbientController::OnAutoShowTimeOut() {
   DCHECK(IsUiHidden(ambient_ui_model_.ui_visibility()));
-  DCHECK(!container_view_);
 
   // Show ambient screen after time out.
-  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
+  ShowUi();
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
@@ -336,40 +318,27 @@ void AmbientController::OnLockStateChanged(bool locked) {
   }
 }
 
-void AmbientController::OnFirstSessionStarted() {
-  if (IsAmbientModeEnabled())
-    ambient_photo_controller_.ScheduleFetchBackupImages();
-}
-
 void AmbientController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
-  if (!IsAmbientModeEnabled() || GetPrimaryUserPrefService() != pref_service)
+  if (!AmbientClient::Get()->IsAmbientModeAllowed() ||
+      GetPrimaryUserPrefService() != pref_service) {
+    return;
+  }
+
+  // Do not continue if pref_change_registrar has already been set up. This
+  // prevents re-binding observers when secondary profiles are activated.
+  if (pref_change_registrar_)
     return;
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);
 
   pref_change_registrar_->Add(
-      ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
-      base::BindRepeating(
-          &AmbientController::OnLockScreenInactivityTimeoutPrefChanged,
-          weak_ptr_factory_.GetWeakPtr()));
-
-  pref_change_registrar_->Add(
-      ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
-      base::BindRepeating(
-          &AmbientController::OnLockScreenBackgroundTimeoutPrefChanged,
-          weak_ptr_factory_.GetWeakPtr()));
-
-  pref_change_registrar_->Add(
-      ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
-      base::BindRepeating(&AmbientController::OnPhotoRefreshIntervalPrefChanged,
+      ambient::prefs::kAmbientModeEnabled,
+      base::BindRepeating(&AmbientController::OnEnabledPrefChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  // Trigger the callbacks manually the first time to init AmbientUiModel.
-  OnLockScreenInactivityTimeoutPrefChanged();
-  OnLockScreenBackgroundTimeoutPrefChanged();
-  OnPhotoRefreshIntervalPrefChanged();
+  OnEnabledPrefChanged();
 }
 
 void AmbientController::OnPowerStatusChanged() {
@@ -385,48 +354,6 @@ void AmbientController::OnPowerStatusChanged() {
   }
 }
 
-void AmbientController::ScreenBrightnessChanged(
-    const power_manager::BacklightBrightnessChange& change) {
-  DVLOG(1) << "ScreenBrightnessChanged: "
-           << (change.has_percent() ? change.percent() : -1);
-
-  if (!change.has_percent())
-    return;
-
-  constexpr double kMinBrightness = 0.01;
-  if (change.percent() < kMinBrightness) {
-    if (is_screen_off_)
-      return;
-
-    DVLOG(1) << "Screen is off, close ambient mode.";
-    is_screen_off_ = true;
-    // If screen is off, turn everything off. This covers:
-    //   1. Manually turn screen off.
-    //   2. Clicking tablet power button.
-    //   3. Close lid.
-    // Need to specially close the widget immediately here to be able to close
-    // the UI before device goes to suspend. Otherwise when opening lid after
-    // lid closed, there may be a flash of the old window before previous
-    // closing finished.
-    CloseWidget(/*immediately=*/true);
-    CloseUi();
-    return;
-  }
-
-  // change.percent() > kMinBrightness
-  if (!is_screen_off_)
-    return;
-  is_screen_off_ = false;
-
-  // Reset image failures to allow retrying ambient mode because screen has
-  // turned back on.
-  GetAmbientBackendModel()->ResetImageFailures();
-
-  // If screen is back on, turn on ambient mode for lock screen.
-  if (LockScreen::HasInstance())
-    ShowHiddenUi();
-}
-
 void AmbientController::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& idle_state) {
   DVLOG(1) << "ScreenIdleStateChanged: dimmed(" << idle_state.dimmed()
@@ -435,25 +362,57 @@ void AmbientController::ScreenIdleStateChanged(
   if (!IsAmbientModeEnabled())
     return;
 
-  // "off" state should already be handled by the screen brightness handler.
-  if (idle_state.off())
-    return;
+  if (idle_state.off()) {
+    DVLOG(1) << "Screen is off, close ambient mode.";
 
-  if (!idle_state.dimmed())
-    return;
-
-  // Do not show the UI if lockscreen is active. The inactivity monitor should
-  // have activated ambient mode.
-  if (LockScreen::HasInstance())
-    return;
-
-  // Do not show UI if loading images was unsuccessful.
-  if (GetAmbientBackendModel()->ImageLoadingFailed()) {
-    VLOG(1) << "Skipping ambient mode activation due to prior failure";
+    CloseAllWidgets(/*immediately=*/true);
+    CloseUi();
     return;
   }
 
-  ShowUi();
+  if (idle_state.dimmed()) {
+    // Do not show the UI if lockscreen is active. The inactivity monitor should
+    // have activated ambient mode.
+    if (LockScreen::HasInstance())
+      return;
+
+    // Do not show UI if loading images was unsuccessful.
+    if (GetAmbientBackendModel()->ImageLoadingFailed()) {
+      VLOG(1) << "Skipping ambient mode activation due to prior failure";
+      return;
+    }
+
+    ShowUi();
+    return;
+  }
+
+  if (LockScreen::HasInstance() &&
+      ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kClosed) {
+    // Restart hidden ui if the screen is back on and lockscreen is shown.
+    ShowHiddenUi();
+  }
+}
+
+void AmbientController::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  // If about to suspend, turn everything off. This covers:
+  //   1. Clicking power button.
+  //   2. Close lid.
+  // Need to specially close the widget immediately here to be able to close
+  // the UI before device goes to suspend. Otherwise when opening lid after
+  // lid closed, there may be a flash of the old window before previous
+  // closing finished.
+  CloseAllWidgets(/*immediately=*/true);
+  CloseUi();
+  is_suspend_imminent_ = true;
+}
+
+void AmbientController::SuspendDone(base::TimeDelta sleep_duration) {
+  is_suspend_imminent_ = false;
+  // |DismissUI| will restart the lock screen timer if lock screen is active and
+  // if Ambient mode is enabled, so call it when resuming from suspend to
+  // restart Ambient mode if applicable.
+  DismissUI();
 }
 
 void AmbientController::OnAuthScanDone(
@@ -463,6 +422,12 @@ void AmbientController::OnAuthScanDone(
 }
 
 void AmbientController::OnUserActivity(const ui::Event* event) {
+  DismissUI();
+}
+
+void AmbientController::OnKeyEvent(ui::KeyEvent* event) {
+  // Prevent dispatching key press event to the login UI.
+  event->StopPropagation();
   DismissUI();
 }
 
@@ -486,6 +451,11 @@ void AmbientController::ShowUi() {
     return;
   }
 
+  if (is_suspend_imminent_) {
+    VLOG(1) << "Do not show UI when suspend imminent";
+    return;
+  }
+
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
 }
 
@@ -494,6 +464,11 @@ void AmbientController::ShowHiddenUi() {
 
   if (!IsAmbientModeEnabled()) {
     LOG(WARNING) << "Ambient mode is not allowed.";
+    return;
+  }
+
+  if (is_suspend_imminent_) {
+    VLOG(1) << "Do not start hidden UI when suspend imminent";
     return;
   }
 
@@ -514,7 +489,7 @@ void AmbientController::ToggleInSessionUi() {
 }
 
 bool AmbientController::IsShown() const {
-  return container_view_ && container_view_->IsDrawn();
+  return ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kShown;
 }
 
 void AmbientController::AcquireWakeLock() {
@@ -555,16 +530,75 @@ void AmbientController::ReleaseWakeLock() {
   delayed_lock_timer_.Stop();
 }
 
-void AmbientController::CloseWidget(bool immediately) {
-  if (!container_view_)
-    return;
+void AmbientController::CloseAllWidgets(bool immediately) {
+  for (auto* root_window_controller :
+       RootWindowController::root_window_controllers()) {
+    root_window_controller->CloseAmbientWidget(immediately);
+  }
+}
 
-  if (immediately)
-    container_view_->GetWidget()->CloseNow();
-  else
-    container_view_->GetWidget()->Close();
+void AmbientController::OnEnabledPrefChanged() {
+  if (IsAmbientModeEnabled()) {
+    DVLOG(1) << "Ambient mode enabled";
 
-  container_view_ = nullptr;
+    pref_change_registrar_->Add(
+        ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
+        base::BindRepeating(
+            &AmbientController::OnLockScreenInactivityTimeoutPrefChanged,
+            weak_ptr_factory_.GetWeakPtr()));
+
+    pref_change_registrar_->Add(
+        ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
+        base::BindRepeating(
+            &AmbientController::OnLockScreenBackgroundTimeoutPrefChanged,
+            weak_ptr_factory_.GetWeakPtr()));
+
+    pref_change_registrar_->Add(
+        ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
+        base::BindRepeating(
+            &AmbientController::OnPhotoRefreshIntervalPrefChanged,
+            weak_ptr_factory_.GetWeakPtr()));
+
+    // Trigger the callbacks manually the first time to init AmbientUiModel.
+    OnLockScreenInactivityTimeoutPrefChanged();
+    OnLockScreenBackgroundTimeoutPrefChanged();
+    OnPhotoRefreshIntervalPrefChanged();
+
+    ambient_photo_controller_ = std::make_unique<AmbientPhotoController>();
+
+    ambient_ui_model_observer_.Observe(&ambient_ui_model_);
+
+    ambient_backend_model_observer_.Observe(GetAmbientBackendModel());
+
+    auto* power_manager_client = chromeos::PowerManagerClient::Get();
+    DCHECK(power_manager_client);
+    power_manager_client_observer_.Observe(power_manager_client);
+
+    fingerprint_->AddFingerprintObserver(
+        fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
+
+  } else {
+    DVLOG(1) << "Ambient mode disabled";
+
+    CloseUi();
+
+    for (const auto* pref_name :
+         {ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
+          ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
+          ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds}) {
+      if (pref_change_registrar_->IsObserved(pref_name))
+        pref_change_registrar_->Remove(pref_name);
+    }
+
+    ambient_ui_model_observer_.Reset();
+    ambient_backend_model_observer_.Reset();
+    power_manager_client_observer_.Reset();
+
+    if (fingerprint_observer_receiver_.is_bound())
+      fingerprint_observer_receiver_.reset();
+
+    ambient_photo_controller_.reset();
+  }
 }
 
 void AmbientController::OnLockScreenInactivityTimeoutPrefChanged() {
@@ -624,11 +658,12 @@ void AmbientController::DismissUI() {
 }
 
 AmbientBackendModel* AmbientController::GetAmbientBackendModel() {
-  return ambient_photo_controller_.ambient_backend_model();
+  DCHECK(ambient_photo_controller_);
+  return ambient_photo_controller_->ambient_backend_model();
 }
 
 void AmbientController::OnImagesReady() {
-  CreateAndShowWidget();
+  CreateAndShowWidgets();
 }
 
 void AmbientController::OnImagesFailed() {
@@ -636,27 +671,27 @@ void AmbientController::OnImagesFailed() {
   CloseUi();
 }
 
-std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
-  DCHECK(!container_view_);
-
-  auto container = std::make_unique<AmbientContainerView>(&delegate_);
-  container_view_ = container.get();
-  return container;
-}
-
-void AmbientController::CreateAndShowWidget() {
-  DCHECK(!container_view_);
+std::unique_ptr<views::Widget> AmbientController::CreateWidget(
+    aura::Window* container) {
+  auto container_view = std::make_unique<AmbientContainerView>(&delegate_);
+  auto* widget_delegate = new AmbientWidgetDelegate();
+  widget_delegate->SetInitiallyFocusedView(container_view.get());
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.name = GetWidgetName();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.parent = GetWidgetContainer();
-  params.delegate = new AmbientWidgetDelegate();
+  params.parent = container;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = widget_delegate;
+  params.visible_on_all_workspaces = true;
 
-  views::Widget* widget = new views::Widget;
+  // Do not change the video wake lock.
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+
+  auto widget = std::make_unique<views::Widget>();
   widget->Init(std::move(params));
-  widget->SetContentsView(CreateContainerView());
+  widget->SetContentsView(std::move(container_view));
 
   widget->SetVisibilityAnimationTransition(
       views::Widget::VisibilityTransition::ANIMATE_BOTH);
@@ -666,19 +701,26 @@ void AmbientController::CreateAndShowWidget() {
 
   widget->Show();
 
+  return widget;
+}
+
+void AmbientController::CreateAndShowWidgets() {
   // Hide cursor.
   Shell::Get()->cursor_manager()->HideCursor();
-
-  // Requests keyboard focus for |container_view_| to receive keyboard events.
-  container_view_->RequestFocus();
+  for (auto* root_window_controller :
+       RootWindowController::root_window_controllers()) {
+    root_window_controller->CreateAmbientWidget();
+  }
 }
 
 void AmbientController::StartRefreshingImages() {
-  ambient_photo_controller_.StartScreenUpdate();
+  DCHECK(ambient_photo_controller_);
+  ambient_photo_controller_->StartScreenUpdate();
 }
 
 void AmbientController::StopRefreshingImages() {
-  ambient_photo_controller_.StopScreenUpdate();
+  DCHECK(ambient_photo_controller_);
+  ambient_photo_controller_->StopScreenUpdate();
 }
 
 void AmbientController::set_backend_controller_for_testing(

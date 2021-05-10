@@ -4,6 +4,19 @@
 
 import("../../scripts/build/ninja/copy.gni")
 
-copy_sources_to_resources("bundle") {
+group("bundle") {
+  public_deps = [
+    ":gen",
+    ":resources",
+  ]
+
+  data_deps = [ ":gen" ]
+}
+
+copy_to_gen("gen") {
+  sources = [ "sdk_test_runner.js" ]
+}
+
+copy_sources_to_resources("resources") {
   sources = [ "sdk_test_runner.js" ]
 }

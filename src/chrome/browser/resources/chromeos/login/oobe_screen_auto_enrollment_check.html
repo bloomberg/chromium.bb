@@ -1,9 +1,13 @@
-<div class="step hidden" id="auto-enrollment-check" role="group"
-     i18n-values="aria-label:autoEnrollmentCheckScreenHeader" hidden>
-  <div class="step-contents">
-    <div id="auto-enrollment-check-progress" aria-live="polite">
-      <div class="throbber"></div>
-      <div i18n-content="autoEnrollmentCheckMessage"></div>
-    </div>
-  </div>
-</div>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="/components/oobe_loading_dialog.html">
+<link rel="import" href="/components/oobe_dialog_host_behavior.html">
+
+<dom-module id="auto-enrollment-check-element">
+  <template>
+    <oobe-loading-dialog text-key="autoEnrollmentCheckMessage">
+    </oobe-loading-dialog>
+  </template>
+</dom-module>

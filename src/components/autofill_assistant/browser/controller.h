@@ -32,6 +32,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -106,6 +107,7 @@ class Controller : public ScriptExecutorDelegate,
   const GURL& GetScriptURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
+  ElementStore* GetElementStore() const override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginManager* GetWebsiteLoginManager() override;
@@ -118,7 +120,9 @@ class Controller : public ScriptExecutorDelegate,
   std::string GetStatusMessage() const override;
   void SetBubbleMessage(const std::string& message) override;
   std::string GetBubbleMessage() const override;
-  void SetDetails(std::unique_ptr<Details> details) override;
+  void SetDetails(std::unique_ptr<Details>, base::TimeDelta delay) override;
+  void AppendDetails(std::unique_ptr<Details> details,
+                     base::TimeDelta delay) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
@@ -150,6 +154,7 @@ class Controller : public ScriptExecutorDelegate,
           view_inflation_finished_callback) override;
   void ClearGenericUi() override;
   void SetBrowseModeInvisible(bool invisible) override;
+  bool ShouldShowWarning() override;
   void SetShowFeedbackChip(bool show_feedback_chip) override;
 
   // Show the UI if it's not already shown. This is only meaningful while in
@@ -179,11 +184,13 @@ class Controller : public ScriptExecutorDelegate,
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
+  void OnNavigationShutdownOrError(const GURL& url,
+                                   Metrics::DropOutReason reason);
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() const override;
   void OnUserInteractionInsideTouchableArea() override;
-  const Details* GetDetails() const override;
+  std::vector<Details> GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
   base::Optional<int> GetProgressActiveStep() const override;
@@ -252,11 +259,38 @@ class Controller : public ScriptExecutorDelegate,
   const GenericUserInterfaceProto* GetGenericUiProto() const override;
   bool ShouldShowOverlay() const override;
   void ShutdownIfNecessary() override;
-  bool IsRunningLiteScript() const override;
   void OnKeyboardVisibilityChanged(bool visible) override;
 
  private:
   friend ControllerTest;
+
+  // A holder class which contains some details and, optionally, a timer that
+  // will "enable" them later on.
+  class DetailsHolder {
+   public:
+    DetailsHolder(std::unique_ptr<Details> details,
+                  std::unique_ptr<base::OneShotTimer> timer);
+    ~DetailsHolder();
+    DetailsHolder(DetailsHolder&& other);
+    DetailsHolder& operator=(DetailsHolder&& other);
+
+    // The details held by this object.
+    const Details& GetDetails() const;
+
+    // Whether the details held by this object are visible. Will return false if
+    // a timer was set and was not reached yet.
+    bool CurrentlyVisible() const;
+
+    // Enable the details held by this object so that they are shown (i.e.
+    // CurrentlyVisible() returns true).
+    //
+    // In practice, this is called at most once when |timer_| is triggered.
+    void Enable();
+
+   private:
+    std::unique_ptr<Details> details_;
+    std::unique_ptr<base::OneShotTimer> timer_;
+  };
 
   void SetWebControllerForTest(std::unique_ptr<WebController> web_controller);
 
@@ -363,6 +397,9 @@ class Controller : public ScriptExecutorDelegate,
 
   void SetVisibilityAndUpdateUserActions();
 
+  void MakeDetailsVisible(size_t details_index);
+  void NotifyDetailsChanged();
+
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
@@ -370,6 +407,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
+
+  // Lazily initiate in GetElementStore();
+  mutable std::unique_ptr<ElementStore> element_store_;
 
   // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;
@@ -415,8 +455,8 @@ class Controller : public ScriptExecutorDelegate,
   // Current bubble / tooltip message, may be empty.
   std::string bubble_message_;
 
-  // Current details, may be null.
-  std::unique_ptr<Details> details_;
+  // Current details, may be empty.
+  std::vector<DetailsHolder> details_;
 
   // Current info box, may be null.
   std::unique_ptr<InfoBox> info_box_;

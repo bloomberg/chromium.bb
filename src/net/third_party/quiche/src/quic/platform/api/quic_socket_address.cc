@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 #include <cstring>
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address_family.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_ip_address_family.h"
 
 namespace quic {
 
@@ -70,9 +70,9 @@ bool QuicSocketAddress::IsInitialized() const {
 std::string QuicSocketAddress::ToString() const {
   switch (host_.address_family()) {
     case IpAddressFamily::IP_V4:
-      return quiche::QuicheStrCat(host_.ToString(), ":", port_);
+      return absl::StrCat(host_.ToString(), ":", port_);
     case IpAddressFamily::IP_V6:
-      return quiche::QuicheStrCat("[", host_.ToString(), "]:", port_);
+      return absl::StrCat("[", host_.ToString(), "]:", port_);
     default:
       return "";
   }

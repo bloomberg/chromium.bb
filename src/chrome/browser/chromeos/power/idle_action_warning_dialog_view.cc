@@ -20,6 +20,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -34,6 +35,11 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
     base::TimeTicks idle_action_time)
     : idle_action_time_(idle_action_time) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  SetModalType(ui::MODAL_TYPE_SYSTEM);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   SetBorder(views::CreateEmptyBorder(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
@@ -66,10 +72,6 @@ void IdleActionWarningDialogView::Update(base::TimeTicks idle_action_time) {
   UpdateTitle();
 }
 
-ui::ModalType IdleActionWarningDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
-
 base::string16 IdleActionWarningDialogView::GetWindowTitle() const {
   const base::TimeDelta time_until_idle_action =
       std::max(idle_action_time_ - base::TimeTicks::Now(), base::TimeDelta());
@@ -80,22 +82,13 @@ base::string16 IdleActionWarningDialogView::GetWindowTitle() const {
                                time_until_idle_action));
 }
 
-bool IdleActionWarningDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-gfx::Size IdleActionWarningDialogView::CalculatePreferredSize() const {
-  const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
-  return gfx::Size(
-      default_width,
-      GetLayoutManager()->GetPreferredHeightForWidth(this, default_width));
-}
-
 IdleActionWarningDialogView::~IdleActionWarningDialogView() = default;
 
 void IdleActionWarningDialogView::UpdateTitle() {
   GetWidget()->UpdateWindowTitle();
 }
+
+BEGIN_METADATA(IdleActionWarningDialogView, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace chromeos

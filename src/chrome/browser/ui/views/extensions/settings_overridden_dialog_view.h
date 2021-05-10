@@ -10,12 +10,14 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // A dialog that displays a warning to the user that their settings have been
 // overridden by an extension.
 class SettingsOverriddenDialogView : public views::DialogDelegateView {
  public:
+  METADATA_HEADER(SettingsOverriddenDialogView);
   explicit SettingsOverriddenDialogView(
       std::unique_ptr<SettingsOverriddenDialogController> controller);
   SettingsOverriddenDialogView(const SettingsOverriddenDialogView&) = delete;
@@ -27,10 +29,6 @@ class SettingsOverriddenDialogView : public views::DialogDelegateView {
   void Show(gfx::NativeWindow parent);
 
  private:
-  // views::DialogDelegateView:
-  ui::ModalType GetModalType() const override;
-  gfx::Size CalculatePreferredSize() const override;
-
   // Notifies the |controller_| of the |result|.
   void NotifyControllerOfResult(
       SettingsOverriddenDialogController::DialogResult result);

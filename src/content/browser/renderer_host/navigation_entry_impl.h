@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/frame_navigation_entry.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/favicon_status.h"
@@ -36,6 +35,7 @@
 
 namespace content {
 
+class FrameTreeNode;
 class WebBundleNavigationInfo;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
@@ -233,7 +233,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const std::string& method,
       int64_t post_id,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
+      std::unique_ptr<PolicyContainerPolicies> policy_container_policies);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.

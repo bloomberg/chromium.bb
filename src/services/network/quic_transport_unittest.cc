@@ -7,8 +7,9 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -293,8 +294,9 @@ class QuicTransportTest : public testing::Test {
   }
 
   GURL GetURL(base::StringPiece suffix) {
-    return GURL(quiche::QuicheStrCat("quic-transport://test.example.com:",
-                                     server_.server_address().port(), suffix));
+    return GURL(base::StrCat(
+        {"quic-transport://test.example.com:",
+         base::NumberToString(server_.server_address().port()), suffix}));
   }
 
   const url::Origin& origin() const { return origin_; }
@@ -467,8 +469,8 @@ TEST_F(QuicTransportTest, EchoOnUnidirectionalStreams) {
   const MojoCreateDataPipeOptions options = {
       sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 4 * 1024};
   ASSERT_EQ(MOJO_RESULT_OK,
-            mojo::CreateDataPipe(&options, &writable_for_outgoing,
-                                 &readable_for_outgoing));
+            mojo::CreateDataPipe(&options, writable_for_outgoing,
+                                 readable_for_outgoing));
   uint32_t size = 5;
   ASSERT_EQ(MOJO_RESULT_OK, writable_for_outgoing->WriteData(
                                 "hello", &size, MOJO_WRITE_DATA_FLAG_NONE));
@@ -545,11 +547,11 @@ TEST_F(QuicTransportTest, DISABLED_EchoOnBidirectionalStream) {
   const MojoCreateDataPipeOptions options = {
       sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 4 * 1024};
   ASSERT_EQ(MOJO_RESULT_OK,
-            mojo::CreateDataPipe(&options, &writable_for_outgoing,
-                                 &readable_for_outgoing));
+            mojo::CreateDataPipe(&options, writable_for_outgoing,
+                                 readable_for_outgoing));
   ASSERT_EQ(MOJO_RESULT_OK,
-            mojo::CreateDataPipe(&options, &writable_for_incoming,
-                                 &readable_for_incoming));
+            mojo::CreateDataPipe(&options, writable_for_incoming,
+                                 readable_for_incoming));
   uint32_t size = 5;
   ASSERT_EQ(MOJO_RESULT_OK, writable_for_outgoing->WriteData(
                                 "hello", &size, MOJO_WRITE_DATA_FLAG_NONE));

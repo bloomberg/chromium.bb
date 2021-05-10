@@ -4,11 +4,12 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 
+#include "base/containers/contains.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -32,7 +33,7 @@
 #include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -1031,7 +1032,7 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
   scoped_refptr<const Extension> extension_with_tabs_permission =
       CreateTabsExtension();
@@ -1073,7 +1074,7 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
 
   // Setup Data Leak Prevention restriction.
   policy::MockDlpContentManager mock_dlp_content_manager;
-  policy::DlpContentManager::SetDlpContentManagerForTesting(
+  policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager_(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, IsScreenshotRestricted(testing::_))
       .Times(1)
@@ -1086,8 +1087,7 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
 
   // Clean up.
   browser()->tab_strip_model()->CloseAllTabs();
-  policy::DlpContentManager::ResetDlpContentManagerForTesting();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace extensions

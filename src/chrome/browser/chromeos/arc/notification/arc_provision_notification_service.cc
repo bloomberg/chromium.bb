@@ -8,9 +8,9 @@
 
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,8 +149,7 @@ void ArcProvisionNotificationService::OnArcSessionStopped(
 }
 
 void ArcProvisionNotificationService::OnArcErrorShowRequested(
-    ArcSupportHost::Error error,
-    int error_code) {
+    ArcSupportHost::ErrorInfo error_info) {
   // If an error happens during the opt-in flow, then the provision fails, and
   // the notification should be therefore removed if it is shown. Do this here
   // unconditionally as there should be no notification displayed otherwise

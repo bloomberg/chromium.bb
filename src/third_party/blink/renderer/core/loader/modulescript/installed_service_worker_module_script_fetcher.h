@@ -19,10 +19,11 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
       public ModuleScriptFetcher {
  public:
   InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope*,
-                                            util::PassKey<ModuleScriptLoader>);
+                                            base::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
+             ModuleType,
              ResourceFetcher*,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
@@ -35,6 +36,7 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
   }
 
   const Member<WorkerGlobalScope> global_scope_;
+  ModuleType expected_module_type_;
 };
 
 }  // namespace blink

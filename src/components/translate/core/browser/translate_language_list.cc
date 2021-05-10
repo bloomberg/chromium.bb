@@ -36,9 +36,7 @@ namespace {
 
 // The default list of languages the Google translation server supports.
 // We use this list until we receive the list that the server exposes.
-// Server also supports "hmm" (Hmong) and "jw" (Javanese), but these are
-// excluded because Chrome l10n library does not support it. This list must be
-// sorted in alphabetical order and contain no duplicates.
+// This list must be sorted in alphabetical order and contain no duplicates.
 const char* const kDefaultSupportedLanguages[] = {
     "af",     // Afrikaans
     "am",     // Amharic
@@ -72,6 +70,7 @@ const char* const kDefaultSupportedLanguages[] = {
     "ha",     // Hausa
     "haw",    // Hawaiian
     "hi",     // Hindi
+    "hmn",    // Hmong
     "hr",     // Croatian
     "ht",     // Haitian Creole
     "hu",     // Hungarian
@@ -82,6 +81,7 @@ const char* const kDefaultSupportedLanguages[] = {
     "it",     // Italian
     "iw",     // Hebrew
     "ja",     // Japanese
+    "jv",     // Javanese
     "ka",     // Georgian
     "kk",     // Kazakh
     "km",     // Khmer
@@ -107,12 +107,14 @@ const char* const kDefaultSupportedLanguages[] = {
     "nl",     // Dutch
     "no",     // Norwegian
     "ny",     // Nyanja
+    "or",     // Odia (Oriya)
     "pa",     // Punjabi
     "pl",     // Polish
     "ps",     // Pashto
     "pt",     // Portuguese
     "ro",     // Romanian
     "ru",     // Russian
+    "rw",     // Kinyarwanda
     "sd",     // Sindhi
     "si",     // Sinhala
     "sk",     // Slovak
@@ -130,8 +132,11 @@ const char* const kDefaultSupportedLanguages[] = {
     "te",     // Telugu
     "tg",     // Tajik
     "th",     // Thai
+    "tk",     // Turkmen
     "tl",     // Tagalog
     "tr",     // Turkish
+    "tt",     // Tatar
+    "ug",     // Uyghur
     "uk",     // Ukrainian
     "ur",     // Urdu
     "uz",     // Uzbek
@@ -209,8 +214,8 @@ bool TranslateLanguageList::IsSupportedLanguage(base::StringPiece language) {
 
 // static
 GURL TranslateLanguageList::TranslateLanguageUrl() {
-  std::string url = translate::GetTranslateSecurityOrigin().spec() +
-      kLanguageListFetchPath;
+  std::string url =
+      translate::GetTranslateSecurityOrigin().spec() + kLanguageListFetchPath;
   return GURL(url);
 }
 
@@ -254,8 +259,8 @@ void TranslateLanguageList::SetResourceRequestsAllowed(bool allowed) {
   }
 }
 
-std::unique_ptr<TranslateLanguageList::EventCallbackList::Subscription>
-TranslateLanguageList::RegisterEventCallback(const EventCallback& callback) {
+base::CallbackListSubscription TranslateLanguageList::RegisterEventCallback(
+    const EventCallback& callback) {
   return callback_list_.Add(callback);
 }
 
@@ -336,7 +341,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   for (const auto& kv_pair : target_languages->DictItems()) {
     const std::string& lang = kv_pair.first;
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
-      TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
+      // Don't include languages not displayable in current UI language.
       continue;
     }
     supported_languages_.push_back(lang);

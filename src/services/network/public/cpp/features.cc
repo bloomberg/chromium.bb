@@ -57,6 +57,13 @@ const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P{
     "PauseBrowserInitiatedHeavyTrafficForP2P",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kPauseLowPriorityBrowserRequestsOnWeakSignal is enabled, then a subset
+// of the browser initiated requests may be deferred if the device is using
+// cellular connection and the signal quality is low. Android only.
+const base::Feature kPauseLowPriorityBrowserRequestsOnWeakSignal{
+    "PauseLowPriorityBrowserRequestsOnWeakSignal",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When kCORBProtectionSniffing is enabled CORB sniffs additional same-origin
 // resources if they look sensitive.
 const base::Feature kCORBProtectionSniffing{"CORBProtectionSniffing",
@@ -85,7 +92,7 @@ const base::Feature kCrossOriginOpenerPolicyReportingOriginTrial{
 // Enables Cross-Origin Opener Policy (COOP) reporting.
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 const base::Feature kCrossOriginOpenerPolicyReporting{
-    "CrossOriginOpenerPolicyReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrossOriginOpenerPolicyReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Cross-Origin Opener Policy (COOP) access reporting.
 // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#report-blocked-accesses-to-other-windows
@@ -96,14 +103,6 @@ const base::Feature kCrossOriginOpenerPolicyAccessReporting{
 // https://github.com/mikewest/coop-by-default/
 const base::Feature kCrossOriginOpenerPolicyByDefault{
     "CrossOriginOpenerPolicyByDefault", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables Cross-Origin Embedder Policy (COEP).
-// https://html.spec.whatwg.org/#coep
-// Currently this feature is enabled for all platforms (including webview).
-// TODO(https://crbug.com/1140432): Remove this flag after M88 Stable + 1 week =
-// 2021-02-01.
-const base::Feature kCrossOriginEmbedderPolicy{
-    "CrossOriginEmbedderPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the most recent developments on the crossOriginIsolated property.
 // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated
@@ -118,7 +117,7 @@ const base::Feature kSplitAuthCacheByNetworkIsolationKey{
 // Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
 const base::Feature kDnsOverHttpsUpgrade {
   "DnsOverHttpsUpgrade",
-#if BUILDFLAG(IS_ASH) || defined(OS_MAC) || defined(OS_ANDROID) || \
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_ANDROID) || \
     defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -146,12 +145,6 @@ const base::FeatureParam<std::string>
 const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Attach the origin of the destination URL to the "origin" header
-const base::Feature
-    kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess{
-        "DeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess",
-        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether a |request_initiator| that mismatches
 // |request_initiator_origin_lock| leads to 1) failing the HTTP request and 2)
 // calling mojo::ReportBadMessage (on desktop platforms, where NetworkService
@@ -161,17 +154,7 @@ const base::Feature
 // See also https://crbug.com/920634
 const base::Feature kRequestInitiatorSiteLockEnfocement = {
     "RequestInitiatorSiteLockEnfocement",
-#if defined(OS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT};
-#else
     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-// When the CertVerifierService is enabled, certificate verification will not be
-// performed in the network service, but will instead be brokered to a separate
-// cert verification service potentially running in a different process.
-const base::Feature kCertVerifierService{"CertVerifierService",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables preprocessing requests with the Trust Tokens API Fetch flags set,
 // and handling their responses, according to the protocol.
@@ -212,19 +195,14 @@ const base::FeatureParam<TrustTokenOriginTrialSpec>
 // Determines whether Trust Tokens issuance requests should be diverted, at the
 // corresponding issuers' request, to the operating system instead of sent
 // to the issuers' servers.
+//
+// WARNING: If you rename this param, you must update the corresponding flag
+// entry in about_flags.cc.
 const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance{
     &kTrustTokens, "PlatformProvidedTrustTokenIssuance", false};
 
-// Enables the Content Security Policy Embedded Enforcement check out of blink
-const base::Feature kOutOfBlinkCSPEE{"OutOfBlinkCSPEE",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kWebSocketReassembleShortMessages{
     "WebSocketReassembleShortMessages", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables usage of First Party Sets to determine cookie availability.
-constexpr base::Feature kFirstPartySets{"FirstPartySets",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

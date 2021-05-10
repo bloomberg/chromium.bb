@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,6 +208,8 @@ export const generatedProperties = [
     'longhands': ['border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'],
     'name': 'border-color'
   },
+  {'name': 'border-end-end-radius'},
+  {'name': 'border-end-start-radius'},
   {
     'longhands': [
       'border-image-source', 'border-image-slice', 'border-image-width', 'border-image-outset', 'border-image-repeat'
@@ -268,6 +270,8 @@ export const generatedProperties = [
     'name': 'border-spacing',
     'inherited': true
   },
+  {'name': 'border-start-end-radius'},
+  {'name': 'border-start-start-radius'},
   {
     'keywords': ['none'],
     'longhands': ['border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style'],
@@ -527,10 +531,14 @@ export const generatedProperties = [
   {'name': 'list-style-image', 'inherited': true, 'keywords': ['none']},
   {'name': 'list-style-position', 'inherited': true, 'keywords': ['outside', 'inside']},
   {
+    'name': 'list-style-type',
+    'inherited': true,
     'keywords': [
       'disc',
       'circle',
       'square',
+      'disclosure-open',
+      'disclosure-closed',
       'decimal',
       'decimal-leading-zero',
       'arabic-indic',
@@ -584,9 +592,7 @@ export const generatedProperties = [
       'hiragana-iroha',
       'katakana-iroha',
       'none'
-    ],
-    'name': 'list-style-type',
-    'inherited': true
+    ]
   },
   {'longhands': ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], 'name': 'margin'},
   {'longhands': ['margin-block-start', 'margin-block-end'], 'name': 'margin-block'},
@@ -1084,6 +1090,8 @@ export const generatedPropertyValues = {
       'disc',
       'circle',
       'square',
+      'disclosure-open',
+      'disclosure-closed',
       'decimal',
       'decimal-leading-zero',
       'arabic-indic',

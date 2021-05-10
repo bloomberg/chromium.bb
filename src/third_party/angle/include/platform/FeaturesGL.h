@@ -37,6 +37,10 @@ struct FeaturesGL : FeatureSetBase
                                                     FeatureCategory::OpenGLWorkarounds,
                                                     "GL_RGBA4 is not color renderable", &members};
 
+    // Newer Intel GPUs natively support ETC2/EAC compressed texture formats.
+    Feature allowEtcFormats = {"allow_etc_formats", FeatureCategory::OpenGLWorkarounds,
+                               "Enable ETC2/EAC on desktop OpenGL", &members};
+
     // When clearing a framebuffer on Intel or AMD drivers, when GL_FRAMEBUFFER_SRGB is enabled, the
     // driver clears to the linearized clear color despite the framebuffer not supporting SRGB
     // blending.  It only seems to do this when the framebuffer has only linear attachments, mixed
@@ -505,6 +509,19 @@ struct FeaturesGL : FeatureSetBase
         "set_zero_level_before_generating_mipmap", FeatureCategory::OpenGLWorkarounds,
         "glGenerateMipmap fails if the zero texture level is not set on some Mac drivers.",
         &members};
+
+    // On macOS with AMD GPUs, packed color formats like RGB565 and RGBA4444 are buggy. Promote them
+    // to 8 bit per channel formats.
+    Feature promotePackedFormatsTo8BitPerChannel = {
+        "promote_packed_formats_to_8_bit_per_channel", FeatureCategory::OpenGLWorkarounds,
+        "Packed color formats are buggy on Macs with AMD GPUs", &members,
+        "http://anglebug.com/5469"};
+
+    // If gl_FragColor is not written by fragment shader, it may cause context lost with Adreno 42x
+    // and 3xx.
+    Feature initFragmentOutputVariables = {
+        "init_fragment_output_variables", FeatureCategory::OpenGLWorkarounds,
+        "No init gl_FragColor causes context lost", &members, "http://crbug.com/1171371"};
 };
 
 inline FeaturesGL::FeaturesGL()  = default;

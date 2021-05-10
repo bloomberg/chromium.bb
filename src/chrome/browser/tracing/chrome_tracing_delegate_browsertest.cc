@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -16,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/tracing/common/trace_startup_config.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
@@ -35,7 +37,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
         started_finalizations_count_(0),
         last_on_started_finalizing_success_(false) {}
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void SetUpOnMainThread() override {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
@@ -49,7 +51,8 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     base::DictionaryValue dict;
 
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
-    dict.SetString("category", "BENCHMARK");
+    dict.SetString("custom_categories",
+                   tracing::TraceStartupConfig::kDefaultStartupCategories);
 
     std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
     {
@@ -252,8 +255,8 @@ class ChromeTracingDelegateBrowserTestOnStartup
     // We need to replace the config JSON with the full one here, as we can't
     // pass JSON through the fieldtrial switch parsing.
     if (config_text == "default_config_for_testing") {
-      return "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
-             "\"BENCHMARK\",\"configs\": [{\"rule\": "
+      return "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"custom_categories\": "
+             "\"base,toplevel\",\"configs\": [{\"rule\": "
              "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
              "\"test\"}]}";
     }

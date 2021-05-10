@@ -14,20 +14,30 @@
 
 #include "src/ast/stride_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StrideDecoration);
+
 namespace tint {
 namespace ast {
 
-StrideDecoration::StrideDecoration(uint32_t stride, const Source& source)
-    : ArrayDecoration(source), stride_(stride) {}
-
-bool StrideDecoration::IsStride() const {
-  return true;
-}
+StrideDecoration::StrideDecoration(const Source& source, uint32_t stride)
+    : Base(source), stride_(stride) {}
 
 StrideDecoration::~StrideDecoration() = default;
 
-std::string StrideDecoration::to_str() const {
-  return "stride " + std::to_string(stride_);
+void StrideDecoration::to_str(const semantic::Info&,
+                              std::ostream& out,
+                              size_t indent) const {
+  make_indent(out, indent);
+  out << "stride " << stride_;
+}
+
+StrideDecoration* StrideDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<StrideDecoration>(src, stride_);
 }
 
 }  // namespace ast

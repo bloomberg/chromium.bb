@@ -28,25 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @unrestricted
- */
 export class WorkerWrapper {
   /**
-   * @param {string} appName
+   * @private
+   * @param {!URL} workerLocation
    */
-  constructor(appName) {
-    const url = appName + '.js' + location.search;
-
+  constructor(workerLocation) {
     /** @type {!Promise<!Worker>} */
     this._workerPromise = new Promise(fulfill => {
-      const worker = new Worker(url, {type: 'module'});
+      const worker = new Worker(workerLocation, {type: 'module'});
       worker.onmessage = event => {
         console.assert(event.data === 'workerReady');
         worker.onmessage = null;
         fulfill(worker);
       };
     });
+  }
+
+  /**
+   * @param {!URL} url
+   */
+  static fromURL(url) {
+    return new WorkerWrapper(url);
   }
 
   /**

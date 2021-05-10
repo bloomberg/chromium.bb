@@ -31,11 +31,44 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text in Linkifier
+  */
+  unknown: '(unknown)',
+  /**
+  *@description Text short for automatic
+  */
+  auto: 'auto',
+  /**
+  *@description Text in Linkifier
+  *@example {Sources panel} PH1
+  */
+  revealInS: 'Reveal in {PH1}',
+  /**
+  *@description Text for revealing an item in its destination
+  */
+  reveal: 'Reveal',
+  /**
+  *@description A context menu item in the Linkifier
+  *@example {Extension} PH1
+  */
+  openUsingS: 'Open using {PH1}',
+  /**
+  * @description The name of a setting which controls how links are handled in the UI. 'Handling'
+  * refers to the ability of extensions to DevTools to be able to intercept link clicks so that they
+  * can react to them.
+  */
+  linkHandling: 'Link handling:',
+};
+const str_ = i18n.i18n.registerUIStrings('components/Linkifier.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** @type {!Set<!Linkifier>} */
 const instances = new Set();
 
@@ -59,7 +92,6 @@ let linkHandlerSettingInstance;
 
 /**
  * @implements {SDK.SDKModel.Observer}
- * @unrestricted
  */
 export class Linkifier {
   /**
@@ -74,7 +106,7 @@ export class Linkifier {
     /** @type {!Map<!SDK.SDKModel.Target, !Bindings.LiveLocation.LiveLocationPool>} */
     this._locationPoolByTarget = new Map();
     this._onLiveLocationUpdate = onLiveLocationUpdate;
-    this._useLinkDecorator = !!useLinkDecorator;
+    this._useLinkDecorator = Boolean(useLinkDecorator);
     instances.add(this);
     SDK.SDKModel.TargetManager.instance().observeTargets(this);
   }
@@ -115,7 +147,7 @@ export class Linkifier {
    * @param {!Workspace.UISourceCode.UILocation} uiLocation
    */
   static _bindUILocation(anchor, uiLocation) {
-    const linkInfo = Linkifier._linkInfo(anchor);
+    const linkInfo = Linkifier.linkInfo(anchor);
     if (!linkInfo) {
       return;
     }
@@ -136,7 +168,7 @@ export class Linkifier {
    * @param {!Element} anchor
    */
   static _unbindUILocation(anchor) {
-    const info = Linkifier._linkInfo(anchor);
+    const info = Linkifier.linkInfo(anchor);
     if (!info || !info.uiLocation) {
       return;
     }
@@ -175,7 +207,7 @@ export class Linkifier {
     }
     this._anchorsByTarget.delete(target);
     for (const anchor of anchors) {
-      const info = Linkifier._linkInfo(anchor);
+      const info = Linkifier.linkInfo(anchor);
       if (!info) {
         continue;
       }
@@ -185,7 +217,7 @@ export class Linkifier {
       if (fallback) {
         // @ts-ignore
         anchor.href = fallback.href;
-        anchor.title = fallback.title;
+        UI.Tooltip.Tooltip.install(anchor, UI.Tooltip.Tooltip.getContent(fallback));
         anchor.className = fallback.className;
         anchor.textContent = fallback.textContent;
         const fallbackInfo = infoByAnchor.get(fallback);
@@ -232,8 +264,12 @@ export class Linkifier {
     if (scriptId) {
       rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, lineNumber || 0, columnNumber);
     }
-    if (!rawLocation) {
-      rawLocation = debuggerModel.createRawLocationByURL(sourceURL, lineNumber || 0, columnNumber);
+    // The function createRawLocationByScriptId will always return a raw location. Normally
+    // we rely on the live location that is created from it to update missing information
+    // to create the link. If we, however, already have a similar script with the same source url,
+    // use that one.
+    if (!rawLocation?.script()) {
+      rawLocation = debuggerModel.createRawLocationByURL(sourceURL, lineNumber || 0, columnNumber) || rawLocation;
     }
 
     if (!rawLocation) {
@@ -251,17 +287,19 @@ export class Linkifier {
     // Not initialising the anchor element with 'zero width space' (\u200b) causes a crash
     // in the layout engine.
     // TODO(szuend): Remove comment and workaround once the crash is fixed.
-    const anchor = /** @type {!HTMLElement} */ (Linkifier._createLink('\u200b', className, createLinkOptions));
-    const info = Linkifier._linkInfo(anchor);
+    const anchor = Linkifier._createLink(
+        fallbackAnchor && fallbackAnchor.textContent ? fallbackAnchor.textContent : '\u200b', className,
+        createLinkOptions);
+    const info = Linkifier.linkInfo(anchor);
     if (!info) {
-      return null;
+      return fallbackAnchor;
     }
     info.enableDecorator = this._useLinkDecorator;
     info.fallback = fallbackAnchor;
 
     const pool = this._locationPoolByTarget.get(rawLocation.debuggerModel.target());
     if (!pool) {
-      return null;
+      return fallbackAnchor;
     }
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
         .createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor), pool)
@@ -336,7 +374,7 @@ export class Linkifier {
    * @return {!HTMLElement}
    */
   linkifyStackTraceTopFrame(target, stackTrace, classes) {
-    console.assert(!!stackTrace.callFrames && !!stackTrace.callFrames.length);
+    console.assert(Boolean(stackTrace.callFrames) && Boolean(stackTrace.callFrames.length));
 
     const topFrame = stackTrace.callFrames[0];
     const fallbackAnchor = Linkifier.linkifyURL(topFrame.url, {
@@ -365,8 +403,8 @@ export class Linkifier {
     // Not initialising the anchor element with 'zero width space' (\u200b) causes a crash
     // in the layout engine.
     // TODO(szuend): Remove comment and workaround once the crash is fixed.
-    const anchor = /** @type {!HTMLElement} */ (Linkifier._createLink('\u200b', classes || ''));
-    const info = Linkifier._linkInfo(anchor);
+    const anchor = Linkifier._createLink('\u200b', classes || '');
+    const info = Linkifier.linkInfo(anchor);
     if (!info) {
       return fallbackAnchor;
     }
@@ -399,7 +437,7 @@ export class Linkifier {
     // in the layout engine.
     // TODO(szuend): Remove comment and workaround once the crash is fixed.
     const anchor = /** @type {!HTMLElement} */ (Linkifier._createLink('\u200b', classes || ''));
-    const info = Linkifier._linkInfo(anchor);
+    const info = Linkifier.linkInfo(anchor);
     if (!info) {
       return anchor;
     }
@@ -465,12 +503,16 @@ export class Linkifier {
 
     let titleText = uiLocation.uiSourceCode.url();
     if (uiLocation.uiSourceCode.mimeType() === 'application/wasm') {
-      titleText += `:0x${uiLocation.columnNumber.toString(16)}`;
+      // For WebAssembly locations, we follow the conventions described in
+      // github.com/WebAssembly/design/blob/master/Web.md#developer-facing-display-conventions
+      if (typeof uiLocation.columnNumber === 'number') {
+        titleText += `:0x${uiLocation.columnNumber.toString(16)}`;
+      }
     } else if (typeof uiLocation.lineNumber === 'number') {
       titleText += ':' + (uiLocation.lineNumber + 1);
     }
-    anchor.title = titleText;
-    anchor.classList.toggle('webkit-html-blackbox-link', await liveLocation.isBlackboxed());
+    UI.Tooltip.Tooltip.install(anchor, titleText);
+    anchor.classList.toggle('webkit-html-ignore-list-link', await liveLocation.isIgnoreListed());
     Linkifier._updateLinkDecorations(anchor);
   }
 
@@ -485,7 +527,7 @@ export class Linkifier {
    * @param {!Element} anchor
    */
   static _updateLinkDecorations(anchor) {
-    const info = Linkifier._linkInfo(anchor);
+    const info = Linkifier.linkInfo(anchor);
     if (!info || !info.enableDecorator) {
       return;
     }
@@ -531,7 +573,7 @@ export class Linkifier {
       if (className) {
         element.className = className;
       }
-      element.textContent = text || url || Common.UIString.UIString('(unknown)');
+      element.textContent = text || url || i18nString(UIStrings.unknown);
       return element;
     }
 
@@ -542,7 +584,7 @@ export class Linkifier {
     const title = linkText !== url ? url : '';
     const linkOptions = {maxLength, title, href: url, preventClick, tabStop: options.tabStop, bypassURLTrimming};
     const link = Linkifier._createLink(linkText, className, linkOptions);
-    const info = Linkifier._linkInfo(link);
+    const info = Linkifier.linkInfo(link);
     if (!info) {
       return link;
     }
@@ -557,21 +599,23 @@ export class Linkifier {
 
   /**
    * @param {!Object} revealable
-   * @param {string} text
+   * @param {string|!HTMLElement} text
    * @param {string=} fallbackHref
+   * @param {string=} title
+   * @param {string=} className
    * @return {!HTMLElement}
    */
-  static linkifyRevealable(revealable, text, fallbackHref) {
+  static linkifyRevealable(revealable, text, fallbackHref, title, className) {
     const createLinkOptions = {
       maxLength: UI.UIUtils.MaxLengthForDisplayedURLs,
       href: fallbackHref,
-      title: undefined,
+      title,
       preventClick: undefined,
       tabStop: undefined,
       bypassURLTrimming: undefined
     };
-    const link = Linkifier._createLink(text, '', createLinkOptions);
-    const linkInfo = Linkifier._linkInfo(link);
+    const link = Linkifier._createLink(text, className || '', createLinkOptions);
+    const linkInfo = Linkifier.linkInfo(link);
     if (!linkInfo) {
       return link;
     }
@@ -580,7 +624,7 @@ export class Linkifier {
   }
 
   /**
-   * @param {string} text
+   * @param {string|!HTMLElement} text
    * @param {string} className
    * @param {!_CreateLinkOptions=} options
    * @returns {!HTMLElement}
@@ -601,21 +645,23 @@ export class Linkifier {
     }
     link.classList.add('devtools-link');
     if (title) {
-      link.title = title;
+      UI.Tooltip.Tooltip.install(link, title);
     }
     if (href) {
       // @ts-ignore
       link.href = href;
     }
 
-    if (bypassURLTrimming) {
-      link.classList.add('devtools-link-styled-trim');
-      Linkifier._appendTextWithoutHashes(link, text);
+    if (text instanceof HTMLElement) {
+      link.appendChild(text);
     } else {
-      Linkifier._setTrimmedText(link, text, maxLength);
+      if (bypassURLTrimming) {
+        link.classList.add('devtools-link-styled-trim');
+        Linkifier._appendTextWithoutHashes(link, text);
+      } else {
+        Linkifier._setTrimmedText(link, text, maxLength);
+      }
     }
-
-    // Linkifier._appendTextWithoutHashes(link, text);
 
     const linkInfo = {
       icon: null,
@@ -636,7 +682,7 @@ export class Linkifier {
         }
       }, false);
       link.addEventListener('keydown', event => {
-        if (isEnterKey(event) && Linkifier._handleClick(event)) {
+        if (event.key === 'Enter' && Linkifier._handleClick(event)) {
           event.consume(true);
         }
       }, false);
@@ -724,7 +770,7 @@ export class Linkifier {
    * @param {?Element} link
    * @return {?_LinkInfo}
    */
-  static _linkInfo(link) {
+  static linkInfo(link) {
     return /** @type {?_LinkInfo} */ (link ? infoByAnchor.get(link) || null : null);
   }
 
@@ -737,15 +783,27 @@ export class Linkifier {
     if (UI.UIUtils.isBeingEdited(/** @type {!Node} */ (event.target)) || link.hasSelection()) {
       return false;
     }
-    return Linkifier.invokeFirstAction(link);
+    const linkInfo = Linkifier.linkInfo(link);
+    if (!linkInfo) {
+      return false;
+    }
+    return Linkifier.invokeFirstAction(linkInfo);
   }
 
   /**
-   * @param {!Element} link
+   *
+   * @param {!_LinkInfo} linkInfo
+   */
+  static _handleClickFromNewComponentLand(linkInfo) {
+    Linkifier.invokeFirstAction(linkInfo);
+  }
+
+  /**
+   * @param {!_LinkInfo} linkInfo
    * @return {boolean}
    */
-  static invokeFirstAction(link) {
-    const actions = Linkifier._linkActions(link);
+  static invokeFirstAction(linkInfo) {
+    const actions = Linkifier._linkActions(linkInfo);
     if (actions.length) {
       actions[0].handler.call(null);
       return true;
@@ -758,7 +816,8 @@ export class Linkifier {
    */
   static _linkHandlerSetting() {
     if (!linkHandlerSettingInstance) {
-      linkHandlerSettingInstance = Common.Settings.Settings.instance().createSetting('openLinkHandler', ls`auto`);
+      linkHandlerSettingInstance =
+          Common.Settings.Settings.instance().createSetting('openLinkHandler', i18nString(UIStrings.auto));
     }
     return linkHandlerSettingInstance;
   }
@@ -785,18 +844,18 @@ export class Linkifier {
    * @return {?Workspace.UISourceCode.UILocation}
    */
   static uiLocation(link) {
-    const info = Linkifier._linkInfo(link);
+    const info = Linkifier.linkInfo(link);
     return info ? info.uiLocation : null;
   }
 
   /**
-   * @param {?Element} link
+   * @param {!_LinkInfo} info
    * @return {!Array<{section: string, title: string, handler: function()}>}
    */
-  static _linkActions(link) {
-    const info = Linkifier._linkInfo(link);
+  static _linkActions(info) {
     /** @type {!Array<{section: string, title: string, handler: function():*}>} */
     const result = [];
+
     if (!info) {
       return result;
     }
@@ -821,7 +880,7 @@ export class Linkifier {
       const destination = Common.Revealer.revealDestination(revealable);
       result.push({
         section: 'reveal',
-        title: destination ? ls`Reveal in ${destination}` : ls`Reveal`,
+        title: destination ? i18nString(UIStrings.revealInS, {PH1: destination}) : i18nString(UIStrings.reveal),
         handler: () => Common.Revealer.reveal(revealable)
       });
     }
@@ -834,7 +893,7 @@ export class Linkifier {
         }
         const action = {
           section: 'reveal',
-          title: Common.UIString.UIString('Open using %s', title),
+          title: i18nString(UIStrings.openUsingS, {PH1: title}),
           handler: handler.bind(null, contentProvider, lineNumber)
         };
         if (title === Linkifier._linkHandlerSetting().get()) {
@@ -856,6 +915,16 @@ export class Linkifier {
         handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(url)
       });
     }
+
+    if (uiLocation && uiLocation.uiSourceCode) {
+      const contentProvider = /** @type {!Workspace.UISourceCode.UISourceCode} */ uiLocation.uiSourceCode;
+      result.push({
+        section: 'clipboard',
+        title: UI.UIUtils.copyFileNameLabel(),
+        handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName())
+      });
+    }
+
     return result;
   }
 }
@@ -879,10 +948,25 @@ LinkDecorator.Events = {
 };
 
 /**
+ * @type {LinkContextMenuProvider}
+ */
+let linkContextMenuProviderInstance;
+
+/**
  * @implements {UI.ContextMenu.Provider}
- * @unrestricted
  */
 export class LinkContextMenuProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!linkContextMenuProviderInstance || forceNew) {
+      linkContextMenuProviderInstance = new LinkContextMenuProvider();
+    }
+
+    return linkContextMenuProviderInstance;
+  }
   /**
    * @override
    * @param {!Event} event
@@ -895,7 +979,12 @@ export class LinkContextMenuProvider {
       targetNode = targetNode.parentNodeOrShadowHost();
     }
     const link = /** @type {?Element} */ (targetNode);
-    const actions = Linkifier._linkActions(link);
+    const linkInfo = Linkifier.linkInfo(link);
+    if (!linkInfo) {
+      return;
+    }
+
+    const actions = Linkifier._linkActions(linkInfo);
     for (const action of actions) {
       contextMenu.section(action.section).appendItem(action.title, action.handler);
     }
@@ -907,7 +996,6 @@ let linkHandlerSettingUIInstance;
 
 /**
  * @implements {UI.SettingsUI.SettingUI}
- * @unrestricted
  */
 export class LinkHandlerSettingUI {
   /**
@@ -935,7 +1023,7 @@ export class LinkHandlerSettingUI {
   _update() {
     this._element.removeChildren();
     const names = [...linkHandlers.keys()];
-    names.unshift(Common.UIString.UIString('auto'));
+    names.unshift(i18nString(UIStrings.auto));
     for (const name of names) {
       const option = document.createElement('option');
       option.textContent = name;
@@ -961,15 +1049,54 @@ export class LinkHandlerSettingUI {
    * @return {?Element}
    */
   settingElement() {
-    return UI.SettingsUI.createCustomSetting(Common.UIString.UIString('Link handling:'), this._element);
+    return UI.SettingsUI.createCustomSetting(i18nString(UIStrings.linkHandling), this._element);
   }
 }
 
+let listeningToNewEvents = false;
+function listenForNewComponentLinkifierEvents() {
+  if (listeningToNewEvents) {
+    return;
+  }
+
+  listeningToNewEvents = true;
+
+  window.addEventListener(
+      'linkifier-activated',
+      /**
+   *
+   * @param {!Event} event
+   */
+      function(event) {
+        const unknownEvent = /** @type {?} */ (event);
+        const eventWithData = /** @type {!{data: !_LinkInfo}} */ (unknownEvent);
+        Linkifier._handleClickFromNewComponentLand(eventWithData.data);
+      });
+}
+
+listenForNewComponentLinkifierEvents();
+
+/**
+ * @type {ContentProviderContextMenuProvider}
+ */
+let contentProviderContextMenuProviderInstance;
+
 /**
  * @implements {UI.ContextMenu.Provider}
- * @unrestricted
  */
 export class ContentProviderContextMenuProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!contentProviderContextMenuProviderInstance || forceNew) {
+      contentProviderContextMenuProviderInstance = new ContentProviderContextMenuProvider();
+    }
+
+    return contentProviderContextMenuProviderInstance;
+  }
+
   /**
    * @override
    * @param {!Event} event
@@ -977,7 +1104,7 @@ export class ContentProviderContextMenuProvider {
    * @param {!Object} target
    */
   appendApplicableItems(event, contextMenu, target) {
-    const contentProvider = /** @type {!TextUtils.ContentProvider.ContentProvider} */ (target);
+    const contentProvider = /** @type {!Workspace.UISourceCode.UISourceCode} */ (target);
     if (!contentProvider.contentURL()) {
       return;
     }
@@ -991,7 +1118,7 @@ export class ContentProviderContextMenuProvider {
         continue;
       }
       contextMenu.revealSection().appendItem(
-          Common.UIString.UIString('Open using %s', title), handler.bind(null, contentProvider, 0));
+          i18nString(UIStrings.openUsingS, {PH1: title}), handler.bind(null, contentProvider, 0));
     }
     if (contentProvider instanceof SDK.NetworkRequest.NetworkRequest) {
       return;
@@ -1000,6 +1127,10 @@ export class ContentProviderContextMenuProvider {
     contextMenu.clipboardSection().appendItem(
         UI.UIUtils.copyLinkAddressLabel(),
         () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.contentURL()));
+
+    contextMenu.clipboardSection().appendItem(
+        UI.UIUtils.copyFileNameLabel(),
+        () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()));
   }
 }
 

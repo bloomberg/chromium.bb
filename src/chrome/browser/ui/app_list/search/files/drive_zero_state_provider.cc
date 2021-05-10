@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/drive/file_errors.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -53,12 +53,17 @@ void LogStatus(Status status) {
                             status);
 }
 
+bool IsSuggestedContentEnabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      chromeos::prefs::kSuggestedContentEnabled);
+}
+
 // Given an absolute path representing a file in the user's Drive, returns a
 // reparented version of the path within the user's drive fs mount.
 base::FilePath ReparentToDriveMount(
     const base::FilePath& path,
     const drive::DriveIntegrationService* drive_service) {
-  DCHECK(path.IsAbsolute());
+  DCHECK(!path.IsAbsolute());
   return drive_service->GetMountPointPath().Append(path.value());
 }
 
@@ -100,6 +105,10 @@ DriveZeroStateProvider::DriveZeroStateProvider(
       // OnFileSystemMounted.
       drive_service_->AddObserver(this);
     }
+  }
+  if (base::FeatureList::IsEnabled(
+          app_list_features::kEnableLauncherSearchNormalization)) {
+    normalizer_.emplace("drive_zero_state_provider", profile, 25);
   }
 }
 
@@ -199,7 +208,7 @@ void DriveZeroStateProvider::OnFilePathsLocated(
 
     provider_results.emplace_back(
         MakeListResult(path_or_error->get_path(), score));
-    if (suggested_files_enabled_) {
+    if (suggested_files_enabled_ && IsSuggestedContentEnabled(profile_)) {
       provider_results.emplace_back(
           MakeChipResult(path_or_error->get_path(), score));
     }
@@ -214,6 +223,12 @@ void DriveZeroStateProvider::OnFilePathsLocated(
   }
 
   cache_results_.reset();
+
+  if (normalizer_.has_value()) {
+    normalizer_->RecordResults(provider_results);
+    normalizer_->NormalizeResults(&provider_results);
+  }
+
   SwapResults(&provider_results);
 
   LogStatus(Status::kOk);

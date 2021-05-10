@@ -19,11 +19,12 @@
 #include "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #include "components/ukm/ios/features.h"
+#include "components/ukm/ios/ukm_reporting_ios_util.h"
 #import "ios/chrome/app/application_delegate/metric_kit_subscriber.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
@@ -155,6 +156,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
                                connectedScenes:(NSArray<SceneState*>*)scenes {
+  RecordAndResetUkmLogSizeOnSuccessCounter();
+
   int numTabs = 0;
   int numNTPTabs = 0;
   for (SceneState* scene in scenes) {
@@ -330,9 +333,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setBreakpadEnabled:(BOOL)enabled withUploading:(BOOL)allowUploading {
-  breakpad_helper::SetUserEnabledUploading(enabled);
+  crash_helper::SetUserEnabledUploading(enabled);
   if (enabled) {
-    breakpad_helper::SetEnabled(true);
+    crash_helper::SetEnabled(true);
 
     // Do some processing of the crash reports present at startup. Note that
     // this processing must be done before uploading is enabled because once
@@ -347,7 +350,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
                                            isFirstSessionAfterUpgrade] &&
                                        allowUploading)];
   } else {
-    breakpad_helper::SetEnabled(false);
+    crash_helper::SetEnabled(false);
   }
 }
 
@@ -389,7 +392,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 + (void)disableReporting {
-  breakpad_helper::SetUploadingEnabled(false);
+  crash_helper::SetUploadingEnabled(false);
   metrics::MetricsService* metrics =
       GetApplicationContext()->GetMetricsService();
   DCHECK(metrics);
@@ -456,7 +459,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setBreakpadUploadingEnabled:(BOOL)enableUploading {
-  breakpad_helper::SetUploadingEnabled(enableUploading);
+  crash_helper::SetUploadingEnabled(enableUploading);
 }
 
 - (void)setReporting:(BOOL)enableReporting {

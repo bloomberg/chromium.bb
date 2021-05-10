@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/arc_apps.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
@@ -27,12 +28,15 @@
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -42,11 +46,11 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/display/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
+using apps::mojom::OptionalBool;
 using extensions::Extension;
 using extensions::ExtensionNotificationDisplayHelper;
 using extensions::ExtensionNotificationDisplayHelperFactory;
@@ -85,9 +89,8 @@ std::vector<arc::mojom::AppInfoPtr> GetTestAppsList() {
   return apps;
 }
 
-apps::mojom::OptionalBool HasBadge(Profile* profile,
-                                   const std::string& app_id) {
-  auto has_badge = apps::mojom::OptionalBool::kUnknown;
+OptionalBool HasBadge(Profile* profile, const std::string& app_id) {
+  auto has_badge = OptionalBool::kUnknown;
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
@@ -139,7 +142,7 @@ class AppNotificationsExtensionApiTest : public extensions::ExtensionApiTest {
     ExtensionTestMessageListener launched_listener("launched", true);
     apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
         extension->id(), ui::EF_SHIFT_DOWN,
-        apps::mojom::LaunchSource::kFromTest, display::kInvalidDisplayId);
+        apps::mojom::LaunchSource::kFromTest);
     EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
     launched_listener.Reply(create_window_options);
 
@@ -174,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   const Extension* extension1 =
       LoadExtensionAndWait("notifications/api/permission");
   ASSERT_TRUE(extension1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
 
   // Load the basic app to generate a notification.
   ExtensionTestMessageListener notification_created_listener("created", false);
@@ -184,20 +186,16 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   ASSERT_TRUE(extension2);
   ASSERT_TRUE(notification_created_listener.WaitUntilSatisfied());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue,
-            HasBadge(profile(), extension2->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), extension2->id()));
 
   message_center::Notification* notification =
       GetNotificationForExtension(extension2);
   ASSERT_TRUE(notification);
 
   RemoveNotification(profile(), notification->id());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension2->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension2->id()));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
@@ -206,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   const Extension* extension1 =
       LoadExtensionAndWait("notifications/api/permission");
   ASSERT_TRUE(extension1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
 
   // Load the basic app to generate a notification.
   ExtensionTestMessageListener notification_created_listener1("created", false);
@@ -216,16 +213,13 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   ASSERT_TRUE(extension2);
   ASSERT_TRUE(notification_created_listener1.WaitUntilSatisfied());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue,
-            HasBadge(profile(), extension2->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), extension2->id()));
 
   // Uninstall the basic app.
   UninstallApp(profile(), extension2->id());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
 
   // Re-load the basic app to generate a notification again.
   ExtensionTestMessageListener notification_created_listener2("created", false);
@@ -234,10 +228,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   ASSERT_TRUE(extension3);
   ASSERT_TRUE(notification_created_listener2.WaitUntilSatisfied());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue,
-            HasBadge(profile(), extension3->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), extension3->id()));
 
   // Remove the notification.
   message_center::Notification* notification =
@@ -245,10 +237,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsExtensionApiTest,
   ASSERT_TRUE(notification);
 
   RemoveNotification(profile(), notification->id());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension1->id()));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse,
-            HasBadge(profile(), extension3->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension1->id()));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), extension3->id()));
 }
 
 class AppNotificationsWebNotificationTest
@@ -256,6 +246,13 @@ class AppNotificationsWebNotificationTest
  protected:
   AppNotificationsWebNotificationTest() = default;
   ~AppNotificationsWebNotificationTest() override = default;
+
+  void SetUp() override {
+    base::test::ScopedFeatureList scoped_feature_list_;
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDesktopPWAsAttentionBadgingCrOS);
+    extensions::PlatformAppBrowserTest::SetUp();
+  }
 
   // extensions::PlatformAppBrowserTest:
   void SetUpOnMainThread() override {
@@ -326,8 +323,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
                        AddAndRemovePersistentNotification) {
   std::string app_id1 = CreateWebApp(GetUrl1(), GetScope1());
   std::string app_id2 = CreateWebApp(GetUrl2(), GetScope2());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   const GURL origin = GetOrigin();
   std::string notification_id = "notification-id1";
@@ -339,13 +336,13 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_PERSISTENT, *notification,
       std::move(metadata));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   notification_id = "notification-id2";
   notification = CreateNotification(notification_id, origin);
@@ -355,13 +352,13 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_PERSISTENT, *notification,
       std::move(metadata));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
@@ -381,14 +378,14 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   // Install apps, and verify the notification badge is not set.
   std::string app_id1 = CreateWebApp(GetUrl1(), GetScope1());
   std::string app_id2 = CreateWebApp(GetUrl2(), GetScope2());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Remove the notification. It should not affect the notification badge.
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Send a notification for the installed app 2.
   notification_id = "notification-id3";
@@ -400,22 +397,22 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_PERSISTENT, *notification,
       std::move(metadata));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Uninstall the app 2.
   UninstallApp(profile(), app_id2);
 
   // Re-install the app 2.
   app_id2 = CreateWebApp(GetUrl2(), GetScope2());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Remove the notification.
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Resend the notifications for both apps.
   std::string notification_id1 = "notification-id4";
@@ -428,8 +425,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
       NotificationHandler::Type::WEB_PERSISTENT, *notification,
       std::move(metadata));
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   std::string notification_id2 = "notification-id5";
   notification = CreateNotification(notification_id2, origin);
@@ -441,21 +438,21 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
       NotificationHandler::Type::WEB_PERSISTENT, *notification,
       std::move(metadata));
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Remove notifications.
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id1);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   NotificationDisplayService::GetForProfile(profile())->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id2);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
@@ -466,8 +463,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   std::string app_id1 = CreateWebApp(GetUrl1(), GetScope1());
   std::string app_id3 = CreateWebApp(GetUrl3(), GetScope3());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   const std::string notification_id = "notification-id";
   auto notification = CreateNotification(notification_id, origin);
@@ -475,15 +472,15 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_NON_PERSISTENT, *notification,
       /*metadata=*/nullptr);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   histogram_tester.ExpectUniqueSample(
       "ChromeOS.Apps.NumberOfAppsForNotification", false, 1);
 
   RemoveNotification(profile(), notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
@@ -495,9 +492,9 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   std::string app_id2 = CreateWebApp(GetUrl2(), GetScope2());
   std::string app_id3 = CreateWebApp(GetUrl3(), GetScope3());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   const std::string notification_id = "notification-id";
   auto notification = CreateNotification(notification_id, origin);
@@ -505,17 +502,17 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_NON_PERSISTENT, *notification,
       /*metadata=*/nullptr);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   histogram_tester.ExpectUniqueSample(
       "ChromeOS.Apps.NumberOfAppsForNotification", true, 1);
 
   RemoveNotification(profile(), notification_id);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
@@ -536,9 +533,9 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   std::string app_id2 = CreateWebApp(GetUrl2(), GetScope2());
   std::string app_id3 = CreateWebApp(GetUrl3(), GetScope3());
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   histogram_tester.ExpectTotalCount("ChromeOS.Apps.NumberOfAppsForNotification",
                                     0);
@@ -551,9 +548,9 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
       NotificationHandler::Type::WEB_NON_PERSISTENT, *notification,
       /*metadata=*/nullptr);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   histogram_tester.ExpectUniqueSample(
       "ChromeOS.Apps.NumberOfAppsForNotification", true, 1);
@@ -561,14 +558,14 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   // Uninstall the app 1. The notification badge for app 2 and app 3 should not
   // be affected.
   UninstallWebApp(app_id1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   // Re-install the app 1.
   app_id1 = CreateWebApp(GetUrl1(), GetScope1());
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   // Send the notification 3.
   const std::string notification_id3 = "notification-id3";
@@ -577,31 +574,114 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   NotificationDisplayService::GetForProfile(profile())->Display(
       NotificationHandler::Type::WEB_NON_PERSISTENT, *notification,
       /*metadata=*/nullptr);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   histogram_tester.ExpectUniqueSample(
       "ChromeOS.Apps.NumberOfAppsForNotification", true, 2);
 
   // Remove the notification 3
   RemoveNotification(profile(), notification_id3);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   // Remove the notification 1
   RemoveNotification(profile(), notification_id1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 
   // Remove the notification 2
   RemoveNotification(profile(), notification_id2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id3));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id3));
 }
+
+class WebAppBadgingTest : public AppNotificationsWebNotificationTest,
+                          public ::testing::WithParamInterface<std::string> {
+ protected:
+  WebAppBadgingTest() = default;
+  ~WebAppBadgingTest() override = default;
+
+  void SetUp() override {
+    base::test::ScopedFeatureList scoped_feature_list_;
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kDesktopPWAsAttentionBadgingCrOS,
+        {{"badge-source", GetParam()}});
+    extensions::PlatformAppBrowserTest::SetUp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebAppBadgingTest, SetAndClearBadgeWithApi) {
+  ukm::TestUkmRecorder test_recorder;
+  badging::BadgeManager* badge_manager_ =
+      badging::BadgeManagerFactory::GetForProfile(profile());
+
+  std::string app_id = CreateWebApp(GetUrl1(), GetScope1());
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+
+  badge_manager_->SetBadgeForTesting(app_id, 1, &test_recorder);
+  if (GetParam() ==
+      switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly) {
+    ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+  } else {
+    ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id));
+  }
+
+  badge_manager_->ClearBadgeForTesting(app_id, &test_recorder);
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppBadgingTest,
+                       SetAndClearBadgeWithApiAndNotifications) {
+  ukm::TestUkmRecorder test_recorder;
+  badging::BadgeManager* badge_manager_ =
+      badging::BadgeManagerFactory::GetForProfile(profile());
+
+  std::string app_id = CreateWebApp(GetUrl1(), GetScope1());
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+
+  badge_manager_->SetBadgeForTesting(app_id, 1, &test_recorder);
+  if (GetParam() ==
+      switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly) {
+    ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+  } else {
+    ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id));
+  }
+
+  const std::string notification_id = "notification-id";
+  auto notification = CreateNotification(notification_id, GetOrigin());
+
+  auto metadata = std::make_unique<PersistentNotificationMetadata>();
+  metadata->service_worker_scope = GetScope1();
+
+  NotificationDisplayService::GetForProfile(profile())->Display(
+      NotificationHandler::Type::WEB_PERSISTENT, *notification,
+      std::move(metadata));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id));
+
+  badge_manager_->ClearBadgeForTesting(app_id, &test_recorder);
+  if (GetParam() == switches::kDesktopPWAsAttentionBadgingCrOSApiOnly) {
+    ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+  } else {
+    ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id));
+  }
+
+  NotificationDisplayService::GetForProfile(profile())->Close(
+      NotificationHandler::Type::WEB_PERSISTENT, notification_id);
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppBadgingTest,
+    ::testing::Values(
+        switches::kDesktopPWAsAttentionBadgingCrOSApiOnly,
+        switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications,
+        switches::kDesktopPWAsAttentionBadgingCrOSNotificationsOnly));
 
 class FakeArcNotificationManagerDelegate
     : public ash::ArcNotificationManagerDelegate {
@@ -734,26 +814,26 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
   const std::string app_id1 = GetTestAppId(kTestAppPackage1, kTestAppActivity1);
   const std::string app_id2 = GetTestAppId(kTestAppPackage2, kTestAppActivity2);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   const std::string notification_key1 = "notification_key1";
   CreateNotificationWithKey(notification_key1, kTestAppPackage1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   const std::string notification_key2 = "notification_key2";
   CreateNotificationWithKey(notification_key2, kTestAppPackage2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 }
 
 IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
@@ -763,20 +843,20 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
   const std::string app_id1 = GetTestAppId(kTestAppPackage1, kTestAppActivity1);
   const std::string app_id2 = GetTestAppId(kTestAppPackage2, kTestAppActivity2);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Sent 2 notifications for the app 1.
   const std::string notification_key1 = "notification_key1";
   CreateNotificationWithKey(notification_key1, kTestAppPackage1);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   const std::string notification_key2 = "notification_key2";
   CreateNotificationWithKey(notification_key2, kTestAppPackage1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Remove the app 1.
   SendPackageRemoved(app_id1);
@@ -784,27 +864,27 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
   // Sent 1 notification for the app 2.
   const std::string notification_key3 = "notification_key3";
   CreateNotificationWithKey(notification_key3, kTestAppPackage2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Remove the notification for the app 2.
   RemoveNotificationWithKey(notification_key3);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Sent 2 notifications for the app 2.
   const std::string notification_key4 = "notification_key4";
   CreateNotificationWithKey(notification_key4, kTestAppPackage2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   const std::string notification_key5 = "notification_key5";
   CreateNotificationWithKey(notification_key5, kTestAppPackage1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Remove notifications for the app2.
   RemoveNotificationWithKey(notification_key5);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key4);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Remove the app 2.
   SendPackageRemoved(app_id2);
@@ -817,34 +897,34 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
   const std::string app_id1 = GetTestAppId(kTestAppPackage1, kTestAppActivity1);
   const std::string app_id2 = GetTestAppId(kTestAppPackage2, kTestAppActivity2);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Sent 2 notifications for the app 1, and 1 notification for the app 2.
   const std::string notification_key1 = "notification_key1";
   CreateNotificationWithKey(notification_key1, kTestAppPackage1);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   const std::string notification_key2 = "notification_key2";
   CreateNotificationWithKey(notification_key2, kTestAppPackage1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Sent 1 notification for the app 2.
   const std::string notification_key3 = "notification_key3";
   CreateNotificationWithKey(notification_key3, kTestAppPackage2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Uninstall the app 2.
   UninstallApp(profile(), app_id2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
 
   // Uninstall the app 1.
   UninstallApp(profile(), app_id1);
@@ -852,36 +932,36 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsArcNotificationTest,
   // Reinstall apps
   InstallTestApps();
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 
   // Sent 2 notifications for the app 2, and 1 notification for the app 1.
   const std::string notification_key4 = "notification_key4";
   CreateNotificationWithKey(notification_key4, kTestAppPackage2);
 
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   const std::string notification_key5 = "notification_key5";
   CreateNotificationWithKey(notification_key5, kTestAppPackage1);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   const std::string notification_key6 = "notification_key6";
   CreateNotificationWithKey(notification_key6, kTestAppPackage2);
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   // Remove notifications
   RemoveNotificationWithKey(notification_key5);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key4);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kTrue, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kTrue, HasBadge(profile(), app_id2));
 
   RemoveNotificationWithKey(notification_key6);
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id1));
-  ASSERT_EQ(apps::mojom::OptionalBool::kFalse, HasBadge(profile(), app_id2));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id1));
+  ASSERT_EQ(OptionalBool::kFalse, HasBadge(profile(), app_id2));
 }

@@ -88,7 +88,7 @@ Move<VkImageView> makeImageView (const DeviceInterface&					vk,
 								 const VkImageViewType					imageViewType,
 								 const VkFormat							format,
 								 const VkImageSubresourceRange			subresourceRange,
-								 const vk::VkImageViewUsageCreateInfo*	imageUsageCreateInfoKHR = DE_NULL);
+								 const vk::VkImageViewUsageCreateInfo*	imageUsageCreateInfo = DE_NULL);
 
 Move<VkBufferView> makeBufferView (const DeviceInterface&	vk,
 								   const VkDevice			vkDevice,
@@ -110,10 +110,21 @@ Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
 										   const VkDevice				device,
 										   const VkDescriptorSetLayout	descriptorSetLayout = DE_NULL);
 
+Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&								vk,
+										   const VkDevice										device,
+										   const std::vector<vk::Move<VkDescriptorSetLayout>>	&descriptorSetLayouts);
+
 Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
 										   const VkDevice				device,
 										   const deUint32				setLayoutCount,
 										   const VkDescriptorSetLayout*	descriptorSetLayout);
+
+Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
+										   const VkDevice				device,
+										   const deUint32				setLayoutCount,
+										   const VkDescriptorSetLayout*	descriptorSetLayout,
+										   const deUint32               pushConstantRangeCount,
+										   const VkPushConstantRange*   pPushConstantRanges);
 
 Move<VkFramebuffer> makeFramebuffer (const DeviceInterface&	vk,
 									 const VkDevice			device,

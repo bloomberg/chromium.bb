@@ -9,6 +9,7 @@
 
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/public/persistent_key_value_store.h"
 
 namespace feed {
 
@@ -16,7 +17,8 @@ ClearAllTask::ClearAllTask(FeedStream* stream) : stream_(stream) {}
 ClearAllTask::~ClearAllTask() = default;
 
 void ClearAllTask::Run() {
-  stream_->UnloadModel();
+  stream_->UnloadModels();
+  stream_->GetPersistentKeyValueStore()->ClearAll(base::DoNothing());
   stream_->GetStore()->ClearAll(
       base::BindOnce(&ClearAllTask::StoreClearComplete, GetWeakPtr()));
 }
@@ -24,9 +26,6 @@ void ClearAllTask::Run() {
 void ClearAllTask::StoreClearComplete(bool ok) {
   DLOG_IF(ERROR, !ok) << "FeedStore::ClearAll failed";
   stream_->FinishClearAll();
-  if (stream_->HasSurfaceAttached()) {
-    stream_->TriggerStreamLoad();
-  }
   TaskComplete();
 }
 

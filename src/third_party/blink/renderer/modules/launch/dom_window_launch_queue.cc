@@ -5,10 +5,9 @@
 #include "third_party/blink/renderer/modules/launch/dom_window_launch_queue.h"
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/modules/file_system_access/native_file_system_handle.h"
+#include "third_party/blink/renderer/modules/file_system_access/file_system_handle.h"
 #include "third_party/blink/renderer/modules/launch/launch_params.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -24,7 +23,7 @@ Member<LaunchQueue> DOMWindowLaunchQueue::launchQueue(LocalDOMWindow& window) {
 
 void DOMWindowLaunchQueue::UpdateLaunchFiles(
     LocalDOMWindow* window,
-    HeapVector<Member<NativeFileSystemHandle>> files) {
+    HeapVector<Member<FileSystemHandle>> files) {
   FromState(window)->launch_queue_->Enqueue(
       MakeGarbageCollected<LaunchParams>(std::move(files)));
 }

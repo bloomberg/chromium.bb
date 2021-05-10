@@ -12,15 +12,14 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -124,9 +123,9 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
-    create_drive_integration_service_ =
-        base::Bind(&FileSystemApiTestForDrive::CreateDriveIntegrationService,
-                   base::Unretained(this));
+    create_drive_integration_service_ = base::BindRepeating(
+        &FileSystemApiTestForDrive::CreateDriveIntegrationService,
+        base::Unretained(this));
     service_factory_for_test_.reset(
         new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
             &create_drive_integration_service_));
@@ -275,7 +274,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
         base::CreateDirectory(mount_point_path.Append(kChildDirectory)));
     ASSERT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
                     ->RegisterFileSystem(
-                        mount_point_name, storage::kFileSystemTypeNativeLocal,
+                        mount_point_name, storage::kFileSystemTypeLocal,
                         storage::FileSystemMountOption(), mount_point_path));
     VolumeManager* const volume_manager =
         VolumeManager::Get(browser()->profile());

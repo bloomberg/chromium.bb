@@ -23,11 +23,11 @@ export class ElementsPanelLink extends HTMLElement {
     this.update();
   }
 
-  private update() {
+  private update(): void {
     this.render();
   }
 
-  private render() {
+  private render(): void {
     // clang-format off
       LitHtml.render(LitHtml.html`
       <style>
@@ -35,9 +35,10 @@ export class ElementsPanelLink extends HTMLElement {
           display: inline-block;
           width: 28px;
           height: 24px;
-          -webkit-mask-position:-140px 96px;
+          -webkit-mask-position: -140px 96px;
           -webkit-mask-image: url(Images/largeIcons.svg);
-          background-color: rgb(110 110 110);
+          background-color: rgb(110 110 110); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
       </style>
       <span
@@ -53,6 +54,7 @@ export class ElementsPanelLink extends HTMLElement {
 customElements.define('devtools-elements-panel-link', ElementsPanelLink);
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-elements-panel-link': ElementsPanelLink;
   }

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_util.h"
 #include "components/query_tiles/switches.h"
 
 namespace query_tiles {
@@ -58,6 +59,8 @@ constexpr char kNumTrendingTilesKey[] = "num_trending_tiles_to_display";
 constexpr char kMaxTrendingTileImpressionsKey[] =
     "max_trending_tile_impressions";
 
+constexpr char kTileShufflePositionKey[] = "tile_shuffle_position";
+
 // Default expire duration.
 constexpr int kDefaultExpireDurationInSeconds = 48 * 60 * 60;  // 2 days.
 
@@ -91,14 +94,21 @@ constexpr int kDefaultNumTrendingTilesToDisplay = 2;
 // Default number of impressions a trending tile to be displayed .
 constexpr int kDefaultMaxTrendingTileImpressions = 2;
 
+// Default position to start shuffling unclicked tile.
+constexpr int kDefaultTileShufflePosition = 2;
+
 namespace {
 
 // For testing. Json string for single tier experiment tag.
-const char kQueryTilesSingleTierExperimentTag[] = "{\"maxLevels\": \"1\"}";
+const char kQueryTilesSingleTierExperimentTag[] = "\"maxLevels\": \"1\"";
 
 // Json Experiment tag for enabling trending queries.
 const char kQueryTilesEnableTrendingExperimentTag[] =
-    "{\"enableTrending\": \"true\"}";
+    "\"enableTrending\": \"true\"";
+
+// Json Experiment tag for getting more trending queries.
+const char kQueryTilesMoreTrendingExperimentTag[] =
+    "\"maxTrendingQueries\": \"10\"";
 
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
@@ -128,14 +138,24 @@ bool TileConfig::GetIsUnMeteredNetworkRequired() {
 
 // static
 std::string TileConfig::GetExperimentTag() {
+  std::vector<std::string> experiment_tag;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kQueryTilesSingleTier)) {
-    return kQueryTilesSingleTierExperimentTag;
+    experiment_tag.emplace_back(kQueryTilesSingleTierExperimentTag);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kQueryTilesEnableTrending)) {
-    return kQueryTilesEnableTrendingExperimentTag;
+    experiment_tag.emplace_back(kQueryTilesEnableTrendingExperimentTag);
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesMoreTrending)) {
+    experiment_tag.emplace_back(kQueryTilesMoreTrendingExperimentTag);
+  }
+
+  if (!experiment_tag.empty()) {
+    return "{" + base::JoinString(experiment_tag, ",") + "}";
   }
 
   return base::GetFieldTrialParamValueByFeature(features::kQueryTiles,
@@ -222,6 +242,13 @@ int TileConfig::GetMaxTrendingTileImpressions() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kQueryTiles, kMaxTrendingTileImpressionsKey,
       kDefaultMaxTrendingTileImpressions);
+}
+
+// static
+int TileConfig::GetTileShufflePosition() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kQueryTiles,
+                                                kTileShufflePositionKey,
+                                                kDefaultTileShufflePosition);
 }
 
 }  // namespace query_tiles

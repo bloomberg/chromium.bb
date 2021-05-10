@@ -248,7 +248,7 @@ static int jpg_decode_block(JPGContext *c, GetBitContext *gb,
         return AVERROR_INVALIDDATA;
 
     c->bdsp.clear_block(block);
-    dc = get_vlc2(gb, c->dc_vlc[is_chroma].table, 9, 3);
+    dc = get_vlc2(gb, c->dc_vlc[is_chroma].table, 9, 2);
     if (dc < 0)
         return AVERROR_INVALIDDATA;
     if (dc)
@@ -259,7 +259,7 @@ static int jpg_decode_block(JPGContext *c, GetBitContext *gb,
 
     pos = 0;
     while (pos < 63) {
-        val = get_vlc2(gb, c->ac_vlc[is_chroma].table, 9, 3);
+        val = get_vlc2(gb, c->ac_vlc[is_chroma].table, 9, 2);
         if (val < 0)
             return AVERROR_INVALIDDATA;
         pos += val >> 4;
@@ -560,7 +560,7 @@ static uint32_t epic_decode_pixel_pred(ePICContext *dc, int x, int y,
     }
 
     if (R<0 || G<0 || B<0 || R > 255 || G > 255 || B > 255) {
-        avpriv_request_sample(NULL, "RGB %d %d %d is out of range\n", R, G, B);
+        avpriv_request_sample(NULL, "RGB %d %d %d (out of range)", R, G, B);
         return 0;
     }
 

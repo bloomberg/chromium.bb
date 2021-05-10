@@ -10,14 +10,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/web_applications/components/external_app_install_features.h"
@@ -32,7 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -44,13 +45,12 @@ namespace {
 
 constexpr char kUserTypesTestDir[] = "user_types";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kGoodJsonTestDir[] = "good_json";
 constexpr char kAppAllUrl[] = "https://www.google.com/all";
 constexpr char kAppChildUrl[] = "https://www.google.com/child";
 constexpr char kAppGuestUrl[] = "https://www.google.com/guest";
 constexpr char kAppManagedUrl[] = "https://www.google.com/managed";
-constexpr char kAppSupervisedUrl[] = "https://www.google.com/supervised";
 constexpr char kAppUnmanagedUrl[] = "https://www.google.com/unmanaged";
 #endif
 
@@ -67,14 +67,14 @@ class ExternalWebAppManagerTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
 #endif
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_enabler_.reset();
 #endif
     testing::Test::TearDown();
@@ -85,7 +85,7 @@ class ExternalWebAppManagerTest : public testing::Test {
                                                Profile* profile = nullptr) {
     std::unique_ptr<TestingProfile> testing_profile;
     if (!profile) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       testing_profile = CreateProfileAndLogin();
       profile = testing_profile.get();
 #else
@@ -127,7 +127,7 @@ class ExternalWebAppManagerTest : public testing::Test {
     return profile_builder.Build();
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Helper that creates simple test guest profile.
   std::unique_ptr<TestingProfile> CreateGuestProfile() {
     TestingProfile::Builder profile_builder;
@@ -177,7 +177,7 @@ class ExternalWebAppManagerTest : public testing::Test {
   ScopedTestingPreinstalledAppData preinstalled_web_app_override_;
 
  private:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::FakeChromeUserManager* user_manager() {
     return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
@@ -241,7 +241,7 @@ TEST_F(ExternalWebAppManagerTest, ReplacementExtensionBlockedByPolicy) {
 }
 
 // Only Chrome OS parses config files.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ExternalWebAppManagerTest, GoodJson) {
   const auto install_options_list = LoadApps(kGoodJsonTestDir);
 
@@ -454,25 +454,20 @@ TEST_F(ExternalWebAppManagerTest, ManagedUser) {
   VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppManagedUrl)});
 }
 
-TEST_F(ExternalWebAppManagerTest, SupervisedUser) {
-  const auto profile = CreateProfileAndLogin();
-  profile->SetSupervisedUserId("asdf");
-  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppSupervisedUrl)});
-}
-
 TEST_F(ExternalWebAppManagerTest, UnmanagedUser) {
   VerifySetOfApps(CreateProfileAndLogin().get(),
                   {GURL(kAppAllUrl), GURL(kAppUnmanagedUrl)});
 }
 
 TEST_F(ExternalWebAppManagerTest, NonPrimaryProfile) {
-  EXPECT_TRUE(LoadApps(kUserTypesTestDir, CreateProfile().get()).empty());
+  VerifySetOfApps(CreateProfile().get(),
+                  {GURL(kAppAllUrl), GURL(kAppUnmanagedUrl)});
 }
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
 // No app is expected for non-ChromeOS builds.
 TEST_F(ExternalWebAppManagerTest, NoApp) {
   EXPECT_TRUE(LoadApps(kUserTypesTestDir, CreateProfile().get()).empty());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace web_app

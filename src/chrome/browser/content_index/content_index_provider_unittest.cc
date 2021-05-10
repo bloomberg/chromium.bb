@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,6 +19,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/browser_task_environment.h"
@@ -66,8 +66,8 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 std::unique_ptr<KeyedService> BuildTestSiteEngagementService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<SiteEngagementService> service(
-      std::make_unique<SiteEngagementService>(profile));
+  std::unique_ptr<site_engagement::SiteEngagementService> service(
+      std::make_unique<site_engagement::SiteEngagementService>(profile));
   service->ResetBaseScoreForURL(Origin().GetURL(), kEngagementScore);
   return std::move(service);
 }
@@ -82,7 +82,7 @@ class ContentIndexProviderImplTest : public testing::Test,
     builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildTestHistoryService));
     builder.AddTestingFactory(
-        SiteEngagementServiceFactory::GetInstance(),
+        site_engagement::SiteEngagementServiceFactory::GetInstance(),
         base::BindRepeating(&BuildTestSiteEngagementService));
 
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
@@ -105,6 +105,7 @@ class ContentIndexProviderImplTest : public testing::Test,
                      const base::Optional<UpdateDelta>& update_delta) override {
     NOTREACHED();
   }
+  void OnContentProviderGoingDown() override {}
 
   content::ContentIndexEntry CreateEntry(const std::string& id) {
     auto description = blink::mojom::ContentDescription::New(

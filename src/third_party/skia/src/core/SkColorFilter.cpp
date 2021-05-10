@@ -8,6 +8,7 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkString.h"
 #include "include/core/SkUnPreMultiply.h"
+#include "include/effects/SkRuntimeEffect.h"
 #include "include/private/SkNx.h"
 #include "include/private/SkTDArray.h"
 #include "src/core/SkArenaAlloc.h"
@@ -21,9 +22,9 @@
 #include "src/core/SkWriteBuffer.h"
 
 #if SK_SUPPORT_GPU
+#include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrMixerEffect.h"
 #endif
 
 bool SkColorFilter::asColorMode(SkColor* color, SkBlendMode* mode) const {
@@ -102,13 +103,31 @@ SkColor4f SkColorFilter::filterColor4f(const SkColor4f& origSrcColor, SkColorSpa
     SkStageRec rec = {
         &pipeline, &alloc, kRGBA_F32_SkColorType, dstCS, dummyPaint, nullptr, matrixProvider
     };
-    as_CFB(this)->onAppendStages(rec, color.fA == 1);
 
-    SkPMColor4f dst;
-    SkRasterPipeline_MemoryCtx dstPtr = { &dst, 0 };
-    pipeline.append(SkRasterPipeline::store_f32, &dstPtr);
-    pipeline.run(0,0, 1,1);
-    return dst.unpremul();
+    if (as_CFB(this)->onAppendStages(rec, color.fA == 1)) {
+        SkPMColor4f dst;
+        SkRasterPipeline_MemoryCtx dstPtr = { &dst, 0 };
+        pipeline.append(SkRasterPipeline::store_f32, &dstPtr);
+        pipeline.run(0,0, 1,1);
+        return dst.unpremul();
+    }
+
+    // This filter doesn't support SkRasterPipeline... try skvm.
+    skvm::Builder b;
+    skvm::Uniforms uni(b.uniform(), 4);
+    if (skvm::Color filtered =
+            as_CFB(this)->program(&b, b.uniformColor(color, &uni), dstCS, &uni, &alloc)) {
+
+        b.store({skvm::PixelFormat::FLOAT, 32,32,32,32, 0,32,64,96},
+                b.varying<SkColor4f>(), unpremul(filtered));
+
+        const bool allow_jit = false;  // We're only filtering one color, no point JITing.
+        b.done("filterColor4f", allow_jit).eval(1, uni.buf.data(), &color);
+        return color;
+    }
+
+    SkASSERT(false);
+    return SkColor4f{0,0,0,0};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,121 +312,116 @@ sk_sp<SkColorFilter> SkColorFilters::SRGBToLinearGamma() {
     return MakeSRGBGammaCF<SkSRGBGammaColorFilter::Direction::kSRGBToLinear>();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+struct SkWorkingFormatColorFilter : public SkColorFilterBase {
+    sk_sp<SkColorFilter>   fChild;
+    skcms_TransferFunction fTF;     bool fUseDstTF    = true;
+    skcms_Matrix3x3        fGamut;  bool fUseDstGamut = true;
+    SkAlphaType            fAT;     bool fUseDstAT    = true;
 
-class SkMixerColorFilter : public SkColorFilterBase {
-public:
-    SkMixerColorFilter(sk_sp<SkColorFilter> cf0, sk_sp<SkColorFilter> cf1, float weight)
-        : fCF0(as_CFB_sp(std::move(cf0)))
-        , fCF1(as_CFB_sp(std::move(cf1)))
-        , fWeight(weight)
-    {
-        SkASSERT(fCF0);
-        SkASSERT(fWeight >= 0 && fWeight <= 1);
+    SkWorkingFormatColorFilter(sk_sp<SkColorFilter>          child,
+                               const skcms_TransferFunction* tf,
+                               const skcms_Matrix3x3*        gamut,
+                               const SkAlphaType*            at) {
+        fChild = std::move(child);
+        if (tf)    { fTF    = *tf;    fUseDstTF    = false; }
+        if (gamut) { fGamut = *gamut; fUseDstGamut = false; }
+        if (at)    { fAT    = *at;    fUseDstAT    = false; }
     }
 
-    uint32_t onGetFlags() const override {
-        uint32_t f0 = fCF0->onGetFlags();
-        uint32_t f1 = fCF1 ? fCF1->onGetFlags() : ~0U;
-        return f0 & f1;
-    }
 
-    bool onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const override {
-        // want cf0 * (1 - w) + cf1 * w == lerp(w)
-        // which means
-        //      dr,dg,db,da <-- cf0
-        //      r,g,b,a     <-- cf1
-        struct State {
-            float     orig_rgba[4 * SkRasterPipeline_kMaxStride];
-            float filtered_rgba[4 * SkRasterPipeline_kMaxStride];
-        };
-        auto state = rec.fAlloc->make<State>();
-        SkRasterPipeline* p = rec.fPipeline;
+    sk_sp<SkColorSpace> workingFormat(const sk_sp<SkColorSpace>& dstCS, SkAlphaType* at) const {
+        skcms_TransferFunction tf    = fTF;
+        skcms_Matrix3x3        gamut = fGamut;
 
-        p->append(SkRasterPipeline::store_src, state->orig_rgba);
-        if (!fCF1) {
-            if (!fCF0->appendStages(rec, shaderIsOpaque)) {
-                return false;
-            }
-            p->append(SkRasterPipeline::move_src_dst);
-            p->append(SkRasterPipeline::load_src, state->orig_rgba);
-        } else {
-            if (!fCF0->appendStages(rec, shaderIsOpaque)) {
-                return false;
-            }
-            p->append(SkRasterPipeline::store_src, state->filtered_rgba);
-            p->append(SkRasterPipeline::load_src, state->orig_rgba);
-            if (!fCF1->appendStages(rec, shaderIsOpaque)) {
-                return false;
-            }
-            p->append(SkRasterPipeline::load_dst, state->filtered_rgba);
-        }
-        float* storage = rec.fAlloc->make<float>(fWeight);
-        p->append(SkRasterPipeline::lerp_1_float, storage);
-        return true;
-    }
+        if (fUseDstTF   ) { SkAssertResult(dstCS->isNumericalTransferFn(&tf)); }
+        if (fUseDstGamut) { SkAssertResult(dstCS->toXYZD50             (&gamut)); }
 
-    skvm::Color onProgram(skvm::Builder* p, skvm::Color c,
-                          SkColorSpace* dstCS,
-                          skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const override {
-        skvm::Color c0 =        fCF0->program(p, c, dstCS, uniforms, alloc);
-        skvm::Color c1 = fCF1 ? fCF1->program(p, c, dstCS, uniforms, alloc) : c;
-        return (c0 && c1)
-               ? lerp(c0, c1, p->uniformF(uniforms->pushF(fWeight)))
-               : skvm::Color{};
+        *at = fUseDstAT ? kPremul_SkAlphaType : fAT;
+        return SkColorSpace::MakeRGB(tf, gamut);
     }
 
 #if SK_SUPPORT_GPU
     GrFPResult asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> inputFP,
                                    GrRecordingContext* context,
                                    const GrColorInfo& dstColorInfo) const override {
-        bool success;
-        std::unique_ptr<GrFragmentProcessor> fp0, fp1;
+        sk_sp<SkColorSpace> dstCS = dstColorInfo.refColorSpace();
+        if (!dstCS) { dstCS = SkColorSpace::MakeSRGB(); }
 
-        std::tie(success, fp0) = fCF0->asFragmentProcessor(/*inputFP=*/nullptr,
-                                                           context, dstColorInfo);
-        if (!success) {
-            return GrFPFailure(std::move(inputFP));
-        }
+        SkAlphaType workingAT;
+        sk_sp<SkColorSpace> workingCS = this->workingFormat(dstCS, &workingAT);
 
-        if (fCF1) {
-            std::tie(success, fp1) = fCF1->asFragmentProcessor(/*inputFP=*/nullptr,
-                                                               context, dstColorInfo);
-            if (!success) {
-                return GrFPFailure(std::move(inputFP));
-            }
-        }
+        GrColorInfo dst = {dstColorInfo.colorType(), dstColorInfo.alphaType(), dstCS},
+                working = {dstColorInfo.colorType(), workingAT, workingCS};
 
-        return GrFPSuccess(GrMixerEffect::Make(std::move(inputFP), std::move(fp0),
-                                               std::move(fp1), fWeight));
+        auto [ok, fp] = as_CFB(fChild)->asFragmentProcessor(
+                GrColorSpaceXformEffect::Make(std::move(inputFP), dst,working), context, working);
+
+        return ok ? GrFPSuccess(GrColorSpaceXformEffect::Make(std::move(fp), working,dst))
+                  : GrFPFailure(std::move(fp));
     }
 #endif
 
-    SK_FLATTENABLE_HOOKS(SkMixerColorFilter)
+    bool onAppendStages(const SkStageRec&, bool) const override { return false; }
 
-protected:
-    void flatten(SkWriteBuffer& buffer) const override {
-        buffer.writeFlattenable(fCF0.get());
-        buffer.writeFlattenable(fCF1.get());
-        buffer.writeScalar(fWeight);
+    skvm::Color onProgram(skvm::Builder* p, skvm::Color c, SkColorSpace* rawDstCS,
+                          skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const override {
+        sk_sp<SkColorSpace> dstCS = sk_ref_sp(rawDstCS);
+        if (!dstCS) { dstCS = SkColorSpace::MakeSRGB(); }
+
+        SkAlphaType workingAT;
+        sk_sp<SkColorSpace> workingCS = this->workingFormat(dstCS, &workingAT);
+
+        SkColorInfo dst = {kUnknown_SkColorType, kPremul_SkAlphaType, dstCS},
+                working = {kUnknown_SkColorType, workingAT, workingCS};
+
+        c = SkColorSpaceXformSteps{dst,working}.program(p, uniforms, c);
+        c = as_CFB(fChild)->program(p, c, working.colorSpace(), uniforms, alloc);
+        return c ? SkColorSpaceXformSteps{working,dst}.program(p, uniforms, c)
+                 : c;
     }
 
-private:
-    sk_sp<SkColorFilterBase> fCF0;
-    sk_sp<SkColorFilterBase> fCF1;
-    const float              fWeight;
+    uint32_t onGetFlags() const override { return fChild->getFlags(); }
 
-    friend class SkColorFilter;
-
-    using INHERITED = SkColorFilterBase;
+    SK_FLATTENABLE_HOOKS(SkWorkingFormatColorFilter)
+    void flatten(SkWriteBuffer& buffer) const override {
+        buffer.writeFlattenable(fChild.get());
+        buffer.writeBool(fUseDstTF);
+        buffer.writeBool(fUseDstGamut);
+        buffer.writeBool(fUseDstAT);
+        if (!fUseDstTF)    { buffer.writeScalarArray(&fTF.g, 7); }
+        if (!fUseDstGamut) { buffer.writeScalarArray(&fGamut.vals[0][0], 9); }
+        if (!fUseDstAT)    { buffer.writeInt(fAT); }
+    }
 };
 
-sk_sp<SkFlattenable> SkMixerColorFilter::CreateProc(SkReadBuffer& buffer) {
-    sk_sp<SkColorFilter> cf0(buffer.readColorFilter());
-    sk_sp<SkColorFilter> cf1(buffer.readColorFilter());
-    const float weight = buffer.readScalar();
-    return SkColorFilters::Lerp(weight, std::move(cf0), std::move(cf1));
+sk_sp<SkFlattenable> SkWorkingFormatColorFilter::CreateProc(SkReadBuffer& buffer) {
+    sk_sp<SkColorFilter> child = buffer.readColorFilter();
+    bool useDstTF    = buffer.readBool(),
+         useDstGamut = buffer.readBool(),
+         useDstAT    = buffer.readBool();
+
+    skcms_TransferFunction tf;
+    skcms_Matrix3x3        gamut;
+    SkAlphaType            at;
+
+    if (!useDstTF)    { buffer.readScalarArray(&tf.g, 7); }
+    if (!useDstGamut) { buffer.readScalarArray(&gamut.vals[0][0], 9); }
+    if (!useDstAT)    { at = buffer.read32LE(kLastEnum_SkAlphaType); }
+
+    return SkColorFilters::WithWorkingFormat(std::move(child),
+                                             useDstTF    ? nullptr : &tf,
+                                             useDstGamut ? nullptr : &gamut,
+                                             useDstAT    ? nullptr : &at);
 }
+
+sk_sp<SkColorFilter> SkColorFilters::WithWorkingFormat(sk_sp<SkColorFilter>          child,
+                                                       const skcms_TransferFunction* tf,
+                                                       const skcms_Matrix3x3*        gamut,
+                                                       const SkAlphaType*            at) {
+    return sk_make_sp<SkWorkingFormatColorFilter>(std::move(child), tf, gamut, at);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 sk_sp<SkColorFilter> SkColorFilters::Lerp(float weight, sk_sp<SkColorFilter> cf0,
                                                         sk_sp<SkColorFilter> cf1) {
@@ -429,9 +443,17 @@ sk_sp<SkColorFilter> SkColorFilters::Lerp(float weight, sk_sp<SkColorFilter> cf0
         return cf1;
     }
 
-    return sk_sp<SkColorFilter>(cf0
-            ? new SkMixerColorFilter(std::move(cf0), std::move(cf1), weight)
-            : new SkMixerColorFilter(std::move(cf1), nullptr, 1 - weight));
+    auto [effect,err] = SkRuntimeEffect::Make(SkString{
+        "uniform shader cf0;"
+        "uniform shader cf1;"
+        "uniform half   weight;"
+        "half4 main() { return mix(sample(cf0), sample(cf1), weight); }"
+    });
+    SkASSERT(effect && err.isEmpty());
+
+    sk_sp<SkColorFilter> inputs[] = {cf0,cf1};
+    return effect->makeColorFilter(SkData::MakeWithCopy(&weight, sizeof(weight)),
+                                   inputs, SK_ARRAY_COUNT(inputs));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -442,5 +464,5 @@ void SkColorFilterBase::RegisterFlattenables() {
     SK_REGISTER_FLATTENABLE(SkComposeColorFilter);
     SK_REGISTER_FLATTENABLE(SkModeColorFilter);
     SK_REGISTER_FLATTENABLE(SkSRGBGammaColorFilter);
-    SK_REGISTER_FLATTENABLE(SkMixerColorFilter);
+    SK_REGISTER_FLATTENABLE(SkWorkingFormatColorFilter);
 }

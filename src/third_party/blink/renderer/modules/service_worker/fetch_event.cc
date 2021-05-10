@@ -153,18 +153,24 @@ void FetchEvent::OnNavigationPreloadResponse(
           ? FetchResponseData::CreateWithBuffer(BodyStreamBuffer::Create(
                 script_state, bytes_consumer,
                 MakeGarbageCollected<AbortSignal>(
-                    ExecutionContext::From(script_state))))
+                    ExecutionContext::From(script_state)),
+                /*cached_metadata_handler=*/nullptr))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
   url_list[0] = preload_response_->CurrentRequestUrl();
 
+  auto response_type =
+      network_utils::IsRedirectResponseCode(preload_response_->HttpStatusCode())
+          ? network::mojom::FetchResponseType::kOpaqueRedirect
+          : network::mojom::FetchResponseType::kBasic;
+
   response_data->InitFromResourceResponse(
-      url_list, http_names::kGET, network::mojom::CredentialsMode::kInclude,
-      FetchRequestData::kBasicTainting,
+      ExecutionContext::From(script_state), response_type, url_list,
+      http_names::kGET, network::mojom::CredentialsMode::kInclude,
       preload_response_->ToResourceResponse());
 
   FetchResponseData* tainted_response =
-      network_utils::IsRedirectResponseCode(preload_response_->HttpStatusCode())
+      response_type == network::mojom::FetchResponseType::kOpaqueRedirect
           ? response_data->CreateOpaqueRedirectFilteredResponse()
           : response_data->CreateBasicFilteredResponse();
   preload_response_property_->Resolve(

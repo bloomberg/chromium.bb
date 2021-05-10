@@ -14,52 +14,42 @@
 
 #include "src/ast/scalar_constructor_expression.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/bool_literal.h"
-#include "src/ast/type/bool_type.h"
+#include "src/ast/test_helper.h"
+#include "src/type/bool_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ScalarConstructorExpressionTest = testing::Test;
+using ScalarConstructorExpressionTest = TestHelper;
 
 TEST_F(ScalarConstructorExpressionTest, Creation) {
-  ast::type::BoolType bool_type;
-  auto b = std::make_unique<BoolLiteral>(&bool_type, true);
-  auto* b_ptr = b.get();
-  ScalarConstructorExpression c(std::move(b));
-  EXPECT_EQ(c.literal(), b_ptr);
+  auto* b = create<BoolLiteral>(ty.bool_(), true);
+  auto* c = create<ScalarConstructorExpression>(b);
+  EXPECT_EQ(c->literal(), b);
 }
 
 TEST_F(ScalarConstructorExpressionTest, Creation_WithSource) {
-  ast::type::BoolType bool_type;
-  auto b = std::make_unique<BoolLiteral>(&bool_type, true);
-  ScalarConstructorExpression c(Source{Source::Location{20, 2}}, std::move(b));
-  auto src = c.source();
+  SetSource(Source{Source::Location{20, 2}});
+  auto src = Expr(true)->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(ScalarConstructorExpressionTest, IsValid) {
-  ast::type::BoolType bool_type;
-  auto b = std::make_unique<BoolLiteral>(&bool_type, true);
-  ScalarConstructorExpression c(std::move(b));
-  EXPECT_TRUE(c.IsValid());
+  auto* c = Expr(true);
+  EXPECT_TRUE(c->IsValid());
 }
 
 TEST_F(ScalarConstructorExpressionTest, IsValid_MissingLiteral) {
-  ScalarConstructorExpression c;
-  EXPECT_FALSE(c.IsValid());
+  auto* c = create<ScalarConstructorExpression>(nullptr);
+  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(ScalarConstructorExpressionTest, ToStr) {
-  ast::type::BoolType bool_type;
-  auto b = std::make_unique<BoolLiteral>(&bool_type, true);
-  ScalarConstructorExpression c(std::move(b));
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  ScalarConstructor{true}
+  auto* c = Expr(true);
+  EXPECT_EQ(str(c), R"(ScalarConstructor[not set]{true}
 )");
 }
 

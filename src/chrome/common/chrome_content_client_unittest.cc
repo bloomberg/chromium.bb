@@ -14,10 +14,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_util.h"
@@ -103,14 +104,34 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
   EXPECT_EQ("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef",
             origin.Serialize());
 
-  EXPECT_TRUE(
-      blink::network_utils::IsOriginSecure(GURL("chrome-native://newtab/")));
+  // IsUrlPotentiallyTrustworthy assertions test for https://crbug.com/734581.
+  constexpr const char* kChromeLayerUrlsRegisteredAsSecure[] = {
+    // The schemes below are registered both as secure and no-access.  Product
+    // code needs to treat such URLs as trustworthy, even though no-access
+    // schemes translate into an opaque origin (which is untrustworthy).
+    "chrome-native://newtab/",
+    "chrome-error://foo/",
+    // The schemes below are registered as secure (but not as no-access).
+    "chrome://foo/",
+    "chrome-untrusted://foo/",
+    "chrome-search://foo/",
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    "chrome-extension://foo/",
+#endif
+    "devtools://foo/",
+  };
+  for (const std::string& str : kChromeLayerUrlsRegisteredAsSecure) {
+    SCOPED_TRACE(str);
+    GURL url(str);
+    EXPECT_TRUE(base::Contains(url::GetSecureSchemes(), url.scheme()));
+    EXPECT_TRUE(network::IsUrlPotentiallyTrustworthy(url));
+  }
 
   GURL chrome_url(content::GetWebUIURL("dummyurl"));
-  EXPECT_TRUE(blink::network_utils::IsOriginSecure(chrome_url));
+  EXPECT_TRUE(network::IsUrlPotentiallyTrustworthy(chrome_url));
   EXPECT_FALSE(content::OriginCanAccessServiceWorkers(chrome_url));
   EXPECT_TRUE(
-      content::IsPotentiallyTrustworthyOrigin(url::Origin::Create(chrome_url)));
+      network::IsOriginPotentiallyTrustworthy(url::Origin::Create(chrome_url)));
 }
 
 class OriginTrialInitializationTestThread

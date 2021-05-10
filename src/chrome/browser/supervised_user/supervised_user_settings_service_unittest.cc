@@ -123,9 +123,10 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   void SetUp() override {
     TestingPrefStore* pref_store = new TestingPrefStore;
     settings_service_.Init(pref_store);
-    user_settings_subscription_ = settings_service_.SubscribeForSettingsChange(
-        base::Bind(&SupervisedUserSettingsServiceTest::OnNewSettingsAvailable,
-                   base::Unretained(this)));
+    user_settings_subscription_ =
+        settings_service_.SubscribeForSettingsChange(base::BindRepeating(
+            &SupervisedUserSettingsServiceTest::OnNewSettingsAvailable,
+            base::Unretained(this)));
     pref_store->SetInitializationCompleted();
     ASSERT_FALSE(settings_);
     settings_service_.SetActive(true);
@@ -139,9 +140,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   std::unique_ptr<base::Value> atomic_setting_value_;
   SupervisedUserSettingsService settings_service_;
   std::unique_ptr<base::DictionaryValue> settings_;
-  std::unique_ptr<
-      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
-      user_settings_subscription_;
+  base::CallbackListSubscription user_settings_subscription_;
 
   std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };

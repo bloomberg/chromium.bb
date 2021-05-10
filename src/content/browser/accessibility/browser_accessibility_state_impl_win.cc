@@ -41,7 +41,7 @@ class WindowsAccessibilityEnabler
     // enable basic web accessibility support. (Full screen reader support is
     // detected later when specific more advanced APIs are accessed.)
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
+        ui::kAXModeBasic);
   }
 
   void OnScreenReaderHoneyPotQueried() override {
@@ -53,7 +53,7 @@ class WindowsAccessibilityEnabler
     screen_reader_honeypot_queried_ = true;
     if (acc_name_called_) {
       BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-          ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
+          ui::kAXModeBasic);
     }
   }
 
@@ -64,7 +64,7 @@ class WindowsAccessibilityEnabler
     acc_name_called_ = true;
     if (screen_reader_honeypot_queried_) {
       BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-          ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
+          ui::kAXModeBasic);
     }
   }
 
@@ -162,7 +162,7 @@ void BrowserAccessibilityStateImpl::
   for (size_t i = 0; i < module_count; i++) {
     TCHAR filename[MAX_PATH];
     GetModuleFileName(modules[i], filename, base::size(filename));
-    base::string16 module_name(base::FilePath(filename).BaseName().value());
+    std::string module_name(base::FilePath(filename).BaseName().AsUTF8Unsafe());
     if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       g_jaws = true;
     if (base::LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll") ||

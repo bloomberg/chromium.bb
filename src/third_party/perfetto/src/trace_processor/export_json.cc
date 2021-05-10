@@ -113,6 +113,10 @@ class JsonExporter {
     if (!status.ok())
       return status;
 
+    status = ExportProcessUptimes();
+    if (!status.ok())
+      return status;
+
     status = ExportSlices();
     if (!status.ok())
       return status;
@@ -311,7 +315,8 @@ class JsonExporter {
     }
 
     void WriteMetadataEvent(const char* metadata_type,
-                            const char* metadata_value,
+                            const char* metadata_arg_name,
+                            const char* metadata_arg_value,
                             uint32_t pid,
                             uint32_t tid) {
       if (label_filter_ && !label_filter_("traceEvents"))
@@ -330,7 +335,7 @@ class JsonExporter {
       value["tid"] = Json::Int(tid);
 
       Json::Value args;
-      args["name"] = metadata_value;
+      args[metadata_arg_name] = metadata_arg_value;
       value["args"] = args;
 
       writer_->write(value, &ss);
@@ -694,7 +699,7 @@ class JsonExporter {
       if (!opt_name.is_null()) {
         const char* thread_name = GetNonNullString(storage_, opt_name);
         auto pid_and_tid = UtidToPidAndTid(utid);
-        writer_.WriteMetadataEvent("thread_name", thread_name,
+        writer_.WriteMetadataEvent("thread_name", "name", thread_name,
                                    pid_and_tid.first, pid_and_tid.second);
       }
     }
@@ -707,11 +712,54 @@ class JsonExporter {
       auto opt_name = process_table.name()[upid];
       if (!opt_name.is_null()) {
         const char* process_name = GetNonNullString(storage_, opt_name);
-        writer_.WriteMetadataEvent("process_name", process_name,
+        writer_.WriteMetadataEvent("process_name", "name", process_name,
                                    UpidToPid(upid), /*tid=*/0);
       }
     }
     return util::OkStatus();
+  }
+
+  // For each process it writes an approximate uptime, based on the process'
+  // start time and the last slice in the entire trace. This same last slice is
+  // used with all processes, so the process could have ended earlier.
+  util::Status ExportProcessUptimes() {
+    int64_t last_timestamp_ns = FindLastSliceTimestamp();
+    if (last_timestamp_ns <= 0)
+      return util::OkStatus();
+
+    const auto& process_table = storage_->process_table();
+    for (UniquePid upid = 0; upid < process_table.row_count(); ++upid) {
+      base::Optional<int64_t> start_timestamp_ns =
+          process_table.start_ts()[upid];
+      if (!start_timestamp_ns.has_value())
+        continue;
+
+      int64_t process_uptime_seconds =
+          (last_timestamp_ns - start_timestamp_ns.value()) /
+          (1000 * 1000 * 1000);
+
+      writer_.WriteMetadataEvent("process_uptime_seconds", "uptime",
+                                 std::to_string(process_uptime_seconds).c_str(),
+                                 UpidToPid(upid), /*tid=*/0);
+    }
+
+    return util::OkStatus();
+  }
+
+  // Returns the last slice's end timestamp for the entire trace. If no slices
+  // are found 0 is returned.
+  int64_t FindLastSliceTimestamp() {
+    int64_t last_ts = 0;
+    const auto& slices = storage_->slice_table();
+    for (uint32_t i = 0; i < slices.row_count(); ++i) {
+      int64_t duration_ns = slices.dur()[i];
+      int64_t timestamp_ns = slices.ts()[i];
+
+      if (duration_ns + timestamp_ns > last_ts) {
+        last_ts = duration_ns + timestamp_ns;
+      }
+    }
+    return last_ts;
   }
 
   util::Status ExportSlices() {
@@ -733,16 +781,18 @@ class JsonExporter {
       event["tid"] = 0;
 
       base::Optional<UniqueTid> legacy_utid;
+      std::string legacy_phase;
 
       event["args"] =
           args_builder_.GetArgs(slices.arg_set_id()[i]);  // Makes a copy.
       if (event["args"].isMember(kLegacyEventArgsKey)) {
+        const auto& legacy_args = event["args"][kLegacyEventArgsKey];
 
-        if (event["args"][kLegacyEventArgsKey].isMember(
-                kLegacyEventPassthroughUtidKey)) {
-          legacy_utid =
-              event["args"][kLegacyEventArgsKey][kLegacyEventPassthroughUtidKey]
-                  .asUInt();
+        if (legacy_args.isMember(kLegacyEventPassthroughUtidKey)) {
+          legacy_utid = legacy_args[kLegacyEventPassthroughUtidKey].asUInt();
+        }
+        if (legacy_args.isMember(kLegacyEventPhaseKey)) {
+          legacy_phase = legacy_args[kLegacyEventPhaseKey].asString();
         }
 
         event["args"].removeMember(kLegacyEventArgsKey);
@@ -764,7 +814,8 @@ class JsonExporter {
       if (track_args_id) {
         track_args = &args_builder_.GetArgs(*track_args_id);
         legacy_chrome_track = (*track_args)["source"].asString() == "chrome";
-        is_child_track = track_args->isMember("parent_track_id");
+        is_child_track = track_args->isMember("is_root_in_scope") &&
+                         !(*track_args)["is_root_in_scope"].asBool();
       }
 
       const auto& thread_track = storage_->thread_track_table();
@@ -923,16 +974,23 @@ class JsonExporter {
           event["use_async_tts"] = Json::Int(1);
         }
 
-        if (duration_ns == 0) {  // Instant async event.
-          event["ph"] = "n";
-          writer_.AddAsyncInstantEvent(event);
+        if (duration_ns == 0) {
+          if (legacy_phase.empty()) {
+            // Instant async event.
+            event["ph"] = "n";
+            writer_.AddAsyncInstantEvent(event);
+          } else {
+            // Async step events.
+            event["ph"] = legacy_phase;
+            writer_.AddAsyncBeginEvent(event);
+          }
         } else {  // Async start and end.
-          event["ph"] = "b";
+          event["ph"] = legacy_phase.empty() ? "b" : legacy_phase;
           writer_.AddAsyncBeginEvent(event);
           // If the slice didn't finish, the duration may be negative. Don't
           // write the end event in this case.
           if (duration_ns > 0) {
-            event["ph"] = "e";
+            event["ph"] = legacy_phase.empty() ? "e" : "F";
             event["ts"] = Json::Int64((slices.ts()[i] + duration_ns) / 1000);
             if (thread_ts_ns > 0) {
               event["tts"] =
@@ -1456,9 +1514,25 @@ class JsonExporter {
           continue;
 
         auto process_snapshot_id = process_snapshots.id()[process_index].value;
-        UniquePid upid = process_snapshots.upid()[process_index];
-        Json::Value event =
-            FillInProcessEventDetails(event_base, UpidToPid(upid));
+        uint32_t pid = UpidToPid(process_snapshots.upid()[process_index]);
+
+        // Shared memory nodes are imported into a fake process with pid 0.
+        // Catapult expects them to be associated with one of the real processes
+        // of the snapshot, so we choose the first one we can find and replace
+        // the pid.
+        if (pid == 0) {
+          for (uint32_t i = 0; i < process_snapshots.row_count(); ++i) {
+            if (process_snapshots.snapshot_id()[i].value != snapshot_id)
+              continue;
+            uint32_t new_pid = UpidToPid(process_snapshots.upid()[i]);
+            if (new_pid != 0) {
+              pid = new_pid;
+              break;
+            }
+          }
+        }
+
+        Json::Value event = FillInProcessEventDetails(event_base, pid);
 
         const auto& snapshot_nodes = storage_->memory_snapshot_node_table();
 

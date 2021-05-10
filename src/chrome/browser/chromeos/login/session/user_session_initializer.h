@@ -45,12 +45,17 @@ class UserSessionInitializer : public session_manager::SessionManagerObserver {
   void OnUserProfileLoaded(const AccountId& account_id) override;
   void OnUserSessionStarted(bool is_primary_user) override;
 
+  // Called before a session begins loading.
+  void PreStartSession();
+
   // Initialize child user profile services that depend on the policy.
   void InitializeChildUserServices(Profile* profile);
 
   void set_init_rlz_impl_closure_for_testing(base::OnceClosure closure) {
     init_rlz_impl_closure_for_testing_ = std::move(closure);
   }
+
+  bool get_inited_for_testing() { return inited_for_testing_; }
 
  private:
   // Initialize RLZ.
@@ -76,6 +81,7 @@ class UserSessionInitializer : public session_manager::SessionManagerObserver {
 
   Profile* primary_profile_ = nullptr;
 
+  bool inited_for_testing_ = false;
   base::OnceClosure init_rlz_impl_closure_for_testing_;
 
   // Clipboard html image generator for the primary user.

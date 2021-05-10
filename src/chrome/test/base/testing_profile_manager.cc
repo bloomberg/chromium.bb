@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -22,8 +23,8 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #endif
 
 const char kGuestProfileName[] = "Guest";
@@ -79,14 +80,15 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     int avatar_id,
     const std::string& supervised_user_id,
     TestingProfile::TestingFactories testing_factories,
-    base::Optional<bool> override_new_profile,
+    base::Optional<bool> is_new_profile,
     base::Optional<std::unique_ptr<policy::PolicyService>> policy_service) {
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
   base::FilePath profile_path(profiles_path_);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (profile_name != chrome::kInitialProfile &&
+      profile_name != chrome::kLockScreenProfile &&
       profile_name != chromeos::ProfileHelper::GetLockScreenAppProfileName()) {
     profile_path =
         profile_path.Append(chromeos::ProfileHelper::Get()->GetUserProfileDir(
@@ -105,8 +107,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetPrefService(std::move(prefs));
   builder.SetSupervisedUserId(supervised_user_id);
   builder.SetProfileName(profile_name);
-  if (override_new_profile)
-    builder.OverrideIsNewProfile(*override_new_profile);
+  builder.SetIsNewProfile(is_new_profile.value_or(false));
   if (policy_service)
     builder.SetPolicyService(std::move(*policy_service));
 
@@ -119,13 +120,13 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   profile_manager_->AddProfile(std::move(profile));
 
   // Update the user metadata.
-  ProfileAttributesEntry* entry;
-  bool success = profile_manager_->GetProfileAttributesStorage()
-                     .GetProfileAttributesWithPath(profile_path, &entry);
-  DCHECK(success);
+  ProfileAttributesEntry* entry =
+      profile_manager_->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path);
+  DCHECK(entry);
   entry->SetAvatarIconIndex(avatar_id);
   entry->SetSupervisedUserId(supervised_user_id);
-  entry->SetLocalProfileName(user_name);
+  entry->SetLocalProfileName(user_name, entry->IsUsingDefaultName());
 
   testing_profiles_.insert(std::make_pair(profile_name, profile_ptr));
 

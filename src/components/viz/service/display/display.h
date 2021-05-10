@@ -111,8 +111,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
                   bool enable_shared_images = kEnableSharedImages,
-                  bool hw_support_for_multiple_refresh_rates = false,
-                  size_t num_of_frames_to_toggle_interval = 60);
+                  bool hw_support_for_multiple_refresh_rates = false);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
@@ -179,11 +178,16 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
 
+  bool resize_based_on_root_surface() const {
+    return output_surface_->capabilities().resize_based_on_root_surface;
+  }
+
   void ForceImmediateDrawAndSwapIfPossible();
   void SetNeedsOneBeginFrame();
   void RemoveOverdrawQuads(AggregatedFrame* frame);
 
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
+  void PreserveChildSurfaceControls();
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
@@ -294,6 +298,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t last_presented_trace_id_ = 0;
   int pending_swaps_ = 0;
 
+  uint64_t frame_sequence_number_ = 0;
   // The height of the top-controls in the previously drawn frame.
   float last_top_controls_visible_height_ = 0.f;
 

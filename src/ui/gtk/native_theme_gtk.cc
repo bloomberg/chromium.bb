@@ -9,9 +9,9 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gtk/gtk_util.h"
+#include "ui/native_theme/native_theme_aura.h"
 
 namespace gtk {
 
@@ -459,6 +459,19 @@ void NativeThemeGtk::SetThemeCssOverride(ScopedCssProvider provider) {
   }
 }
 
+void NativeThemeGtk::NotifyObservers() {
+  NativeTheme::NotifyObservers();
+
+  // Update the preferred contrast settings for the NativeThemeAura instance and
+  // notify its observers about the change.
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  native_theme->set_preferred_contrast(
+      UserHasContrastPreference()
+          ? ui::NativeThemeBase::PreferredContrast::kMore
+          : ui::NativeThemeBase::PreferredContrast::kNoPreference);
+  native_theme->NotifyObservers();
+}
+
 void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
                                     GtkParamSpec* param) {
   SetThemeCssOverride(ScopedCssProvider());
@@ -496,8 +509,11 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
   // case-insensitive.
   std::transform(theme_name.begin(), theme_name.end(), theme_name.begin(),
                  ::tolower);
-  set_high_contrast(theme_name.find("high") != std::string::npos &&
-                    theme_name.find("contrast") != std::string::npos);
+  bool high_contrast = theme_name.find("high") != std::string::npos &&
+                       theme_name.find("contrast") != std::string::npos;
+  set_preferred_contrast(
+      high_contrast ? ui::NativeThemeBase::PreferredContrast::kMore
+                    : ui::NativeThemeBase::PreferredContrast::kNoPreference);
 
   NotifyObservers();
 }
@@ -708,13 +724,7 @@ void NativeThemeGtk::PaintFrameTopArea(
 
   SkBitmap bitmap =
       GetWidgetBitmap(rect.size(), context, BG_RENDER_RECURSIVE, false);
-
-  if (frame_top_area.incognito) {
-    bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
-        bitmap, kDefaultTintFrameIncognito);
-    bitmap.setImmutable();
-  }
-
+  bitmap.setImmutable();
   canvas->drawImage(cc::PaintImage::CreateFromBitmap(std::move(bitmap)),
                     rect.x(), rect.y());
 }

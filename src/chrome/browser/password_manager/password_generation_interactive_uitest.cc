@@ -68,6 +68,8 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
   void WaitForStatus(GenerationPopup status) {
     if (status == popup_showing_)
       return;
+    SCOPED_TRACE(::testing::Message()
+                 << "WaitForStatus " << static_cast<int>(status));
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
     run_loop_->Run();
@@ -76,6 +78,7 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
 
   // Waits until the popup is either shown or hidden.
   void WaitForStatusChange() {
+    SCOPED_TRACE(::testing::Message() << "WaitForStatusChange");
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
     run_loop_->Run();

@@ -401,10 +401,6 @@ TEST_P(ComputeShaderTest, BufferImageBuffer)
     // See http://anglebug.com/3536
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsWindows());
 
-    // Skipping due to a bug on the Qualcomm Vulkan Android driver.
-    // http://anglebug.com/3726
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr char kCS0[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 layout(binding = 0, offset = 4) uniform atomic_uint ac[2];
@@ -475,10 +471,6 @@ TEST_P(ComputeShaderTest, ImageAtomicCounterBuffer)
 {
     // Flaky hang. http://anglebug.com/3636
     ANGLE_SKIP_TEST_IF(IsWindows() && IsNVIDIA() && IsDesktopOpenGL());
-
-    // Skipping due to a bug on the Qualcomm Vulkan Android driver.
-    // http://anglebug.com/3726
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
 
     constexpr char kCS0[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
@@ -3507,8 +3499,8 @@ TEST_P(ComputeShaderTest, DrawDispatchDispatchDraw)
     // http://anglebug.com/5072
     ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
 
-    // Fails on Intel and AMD windows drivers.  http://anglebug.com/3871
-    ANGLE_SKIP_TEST_IF(IsWindows() && (IsIntel() || IsAMD()) && IsVulkan());
+    // Fails on AMD windows drivers.  http://anglebug.com/3871
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsVulkan());
 
     const char kCSSource[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
@@ -3934,10 +3926,6 @@ TEST_P(ComputeShaderTest, DispatchConvertVertexDispatch)
 {
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_vertex_type_10_10_10_2"));
 
-    // Skipping due to a bug on the Qualcomm Vulkan Android driver.
-    // http://anglebug.com/3726
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     constexpr uint32_t kVertexCount = 6;
 
     constexpr char kCS[] = R"(#version 310 es
@@ -4048,6 +4036,420 @@ void main() {
         glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT));
     EXPECT_EQ(kVertexCount * 2, mappedBuffer[0]);
     glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+}
+
+// Validate that on Vulkan, compute pipeline is correctly bound after an internal dispatch call is
+// made.  Blit stencil may issue a dispatch call.
+TEST_P(ComputeShaderTest, DispatchBlitStencilDispatch)
+{
+    // http://anglebug.com/5533
+    ANGLE_SKIP_TEST_IF(IsQualcomm() && IsOpenGLES());
+
+    constexpr GLsizei kSize = 1;
+
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=6, local_size_y=1, local_size_z=1) in;
+
+uniform vec4 data;
+
+layout(rgba8, binding = 0) writeonly uniform highp image2D image;
+
+void main()
+{
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), data);
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(programCS, kCS);
+    EXPECT_GL_NO_ERROR();
+
+    // Create a framebuffer with stencil buffer.  Use multisampled textures so the future blit
+    // cannot use vkCmdBlitImage.
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, color);
+    glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, kSize, kSize, true);
+
+    GLTexture depthStencil;
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthStencil);
+    glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_DEPTH24_STENCIL8, kSize, kSize,
+                              true);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, color,
+                           0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE,
+                           depthStencil, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    // Clear the stencil and make sure it's done.
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearStencil(0x55);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_EQUAL, 0x55, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilMask(0xFF);
+
+    ANGLE_GL_PROGRAM(drawRed, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    GLTexture colorCopy;
+    glBindTexture(GL_TEXTURE_2D, colorCopy);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+
+    GLFramebuffer copyFbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorCopy, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_DRAW_FRAMEBUFFER);
+    glBlitFramebuffer(0, 0, kSize, kSize, 0, 0, kSize, kSize, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFbo);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    // Setup image for compute call
+    GLTexture computeOut;
+    glBindTexture(GL_TEXTURE_2D, computeOut);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    glBindImageTexture(0, computeOut, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    ASSERT_GL_NO_ERROR();
+
+    // Issue a dispatch call.
+    glUseProgram(programCS);
+    GLint uniformLoc = glGetUniformLocation(programCS, "data");
+    ASSERT_NE(uniformLoc, -1);
+
+    glUniform4f(uniformLoc, 0.0f, 0.0f, 1.0f, 1.0f);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    // Blit the stencil texture.  This may use a compute shader internally.
+    GLTexture depthStencilCopy;
+    glBindTexture(GL_TEXTURE_2D, depthStencilCopy);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, kSize, kSize);
+    ASSERT_GL_NO_ERROR();
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, copyFbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+                           depthStencilCopy, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_DRAW_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glBlitFramebuffer(0, 0, kSize, kSize, 0, 0, kSize, kSize, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    // Issue another dispatch call.
+    glUniform4f(uniformLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+    glDispatchCompute(1, 1, 1);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify the results.
+    glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, copyFbo);
+    glBindTexture(GL_TEXTURE_2D, computeOut);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, computeOut, 0);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Verify the blit copy results.
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Validate that on Vulkan, compute pipeline is correctly bound after an internal dispatch call is
+// made.  Generate mipmap may issue a dispatch call.
+TEST_P(ComputeShaderTest, DispatchGenerateMipmapDispatch)
+{
+    constexpr GLsizei kSize = 8;
+
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=6, local_size_y=1, local_size_z=1) in;
+
+uniform vec4 data;
+
+layout(rgba8, binding = 0) writeonly uniform highp image2D image;
+
+void main()
+{
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), data);
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(programCS, kCS);
+    EXPECT_GL_NO_ERROR();
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, kSize, kSize);
+
+    const std::vector<GLColor> kInitialColor(kSize * kSize, GLColor::green);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kSize, kSize, GL_RGBA, GL_UNSIGNED_BYTE,
+                    kInitialColor.data());
+
+    // Setup image for compute call
+    GLTexture computeOut;
+    glBindTexture(GL_TEXTURE_2D, computeOut);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    glBindImageTexture(0, computeOut, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    ASSERT_GL_NO_ERROR();
+
+    // Issue a dispatch call.
+    glUseProgram(programCS);
+    GLint uniformLoc = glGetUniformLocation(programCS, "data");
+    ASSERT_NE(uniformLoc, -1);
+
+    glUniform4f(uniformLoc, 0.0f, 0.0f, 1.0f, 1.0f);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    // Generate mipmap on the texture.  This may use a compute shader internally.
+    glBindTexture(GL_TEXTURE_2D, color);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Issue another dispatch call.
+    glUniform4f(uniformLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+    glDispatchCompute(1, 1, 1);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify the results.
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindTexture(GL_TEXTURE_2D, computeOut);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, computeOut, 0);
+    ASSERT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Write to image array with an aliasing format.
+TEST_P(ComputeShaderTest, AliasingFormatForImageArray)
+{
+    // http://anglebug.com/5352
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=2) in;
+layout(r32ui, binding = 0) writeonly uniform highp uimage2DArray image;
+void main()
+{
+    uint yellow = 0xFF00FFFFu;
+    imageStore(image, ivec3(gl_LocalInvocationID.xyz), uvec4(yellow, 0, 0, 0));
+})";
+
+    constexpr int kWidth = 1, kHeight = 1, kDepth = 2;
+
+    const std::vector<GLColor> kInitData(kWidth * kHeight * kDepth, GLColor::black);
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, kWidth, kHeight, kDepth);
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, kWidth, kHeight, kDepth, GL_RGBA,
+                    GL_UNSIGNED_BYTE, kInitData.data());
+    EXPECT_GL_NO_ERROR();
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    glUseProgram(program);
+
+    // Output yellow to both layers.
+    glBindImageTexture(0, texture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify results.
+    glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, 0);
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture, 0, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+}
+
+// Write to one layer of image array with an aliasing format.
+TEST_P(ComputeShaderTest, AliasingFormatForOneLayerOfImageArray)
+{
+    // http://anglebug.com/5352
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(r32ui, binding = 0) writeonly uniform highp uimage2D image;
+void main()
+{
+    uint yellow = 0xFF00FFFFu;
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), uvec4(yellow, 0, 0, 0));
+})";
+
+    constexpr int kWidth = 1, kHeight = 1, kDepth = 2;
+
+    const std::vector<GLColor> kInitData(kWidth * kHeight * kDepth, GLColor::black);
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, kWidth, kHeight, kDepth);
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, kWidth, kHeight, kDepth, GL_RGBA,
+                    GL_UNSIGNED_BYTE, kInitData.data());
+    EXPECT_GL_NO_ERROR();
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, 0);
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture, 0, 1);
+    EXPECT_GL_NO_ERROR();
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    glUseProgram(program);
+
+    // Output yellow to layer 0.
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32UI);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that only layer 0 was changed.
+    glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Reset texture back to black.
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, kWidth, kHeight, kDepth, GL_RGBA,
+                    GL_UNSIGNED_BYTE, kInitData.data());
+
+    // Output yellow to layer 1.
+    glBindImageTexture(0, texture, 0, GL_FALSE, 1, GL_WRITE_ONLY, GL_R32UI);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that only layer 1 was changed.
+    glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+}
+
+// Test glMemoryBarrier(CLIENT_MAPPED_BUFFER_BARRIER_BIT_EXT) by writing to persistenly mapped
+// buffer from a compute shader.
+TEST_P(ComputeShaderTest, WriteToPersistentBuffer)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_buffer_storage"));
+
+    constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(std140, binding = 0) buffer block {
+    uvec4 data;
+} outBlock;
+void main()
+{
+    outBlock.data += uvec4(1);
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
+    glUseProgram(program);
+
+    constexpr std::array<uint32_t, 4> kInitData = {};
+
+    GLBuffer coherentBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, coherentBuffer);
+    glBufferStorageEXT(
+        GL_SHADER_STORAGE_BUFFER, sizeof(kInitData), kInitData.data(),
+        GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT);
+
+    GLBuffer nonCoherentBuffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, nonCoherentBuffer);
+    glBufferStorageEXT(GL_SHADER_STORAGE_BUFFER, sizeof(kInitData), kInitData.data(),
+                       GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT);
+
+    // Map the buffers for read and write.
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, coherentBuffer);
+    uint32_t *coherentMapped = reinterpret_cast<uint32_t *>(glMapBufferRange(
+        GL_SHADER_STORAGE_BUFFER, 0, sizeof(kInitData),
+        GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT));
+    ASSERT_GL_NO_ERROR();
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, nonCoherentBuffer);
+    uint32_t *nonCoherentMapped = reinterpret_cast<uint32_t *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kInitData),
+                         GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT));
+    ASSERT_GL_NO_ERROR();
+
+    constexpr std::array<uint32_t, 4> kCoherentExpectedData = {
+        0x12354678u,
+        0x2468ACE0u,
+        0x13579BDFu,
+        0x76543210u,
+    };
+
+    constexpr std::array<uint32_t, 4> kNonCoherentExpectedData = {
+        0x9ABCDEF0u,
+        0xFDB97531u,
+        0x1F2E3D4Bu,
+        0x5A697887u,
+    };
+
+    coherentMapped[0] = kCoherentExpectedData[0] - 1;
+    coherentMapped[1] = kCoherentExpectedData[1] - 1;
+    coherentMapped[2] = kCoherentExpectedData[2] - 1;
+    coherentMapped[3] = kCoherentExpectedData[3] - 1;
+
+    nonCoherentMapped[0] = kNonCoherentExpectedData[0] - 1;
+    nonCoherentMapped[1] = kNonCoherentExpectedData[1] - 1;
+    nonCoherentMapped[2] = kNonCoherentExpectedData[2] - 1;
+    nonCoherentMapped[3] = kNonCoherentExpectedData[3] - 1;
+
+    // Test coherent write
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, coherentBuffer);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glFinish();
+    EXPECT_EQ(coherentMapped[0], kCoherentExpectedData[0]);
+    EXPECT_EQ(coherentMapped[1], kCoherentExpectedData[1]);
+    EXPECT_EQ(coherentMapped[2], kCoherentExpectedData[2]);
+    EXPECT_EQ(coherentMapped[3], kCoherentExpectedData[3]);
+
+    // Test non-coherent write
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, nonCoherentBuffer);
+    glDispatchCompute(1, 1, 1);
+
+    glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT_EXT);
+    EXPECT_GL_NO_ERROR();
+
+    glFinish();
+    EXPECT_EQ(nonCoherentMapped[0], kNonCoherentExpectedData[0]);
+    EXPECT_EQ(nonCoherentMapped[1], kNonCoherentExpectedData[1]);
+    EXPECT_EQ(nonCoherentMapped[2], kNonCoherentExpectedData[2]);
+    EXPECT_EQ(nonCoherentMapped[3], kNonCoherentExpectedData[3]);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, coherentBuffer);
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, nonCoherentBuffer);
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    EXPECT_GL_NO_ERROR();
 }
 
 ANGLE_INSTANTIATE_TEST_ES31(ComputeShaderTest);

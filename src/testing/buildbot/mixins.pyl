@@ -152,6 +152,13 @@
       },
     },
   },
+  'android_r': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'R',
+      },
+    },
+  },
   'angle_skia_gold_test': {
     '$mixin_append': {
       'args': [
@@ -168,15 +175,6 @@
         '--buildbucket-id=${buildbucket_build_id}',
       ],
     }
-  },
-  'angler': {
-    # Nexus 6P
-    'swarming': {
-      'dimensions': {
-        'device_type': 'angler',
-        'os': 'Android',
-      },
-    },
   },
   'arm64': {
     'swarming': {
@@ -316,6 +314,22 @@
       'enable': True,
     },
   },
+  'femu-additional-ram': {
+    '$mixin_append': {
+      'args': [
+        '--ram-size-mb=16384',
+      ],
+    },
+  },
+  'flame': {
+    # Pixel 4
+    'swarming': {
+      'dimensions': {
+        'device_type': 'flame',
+        'os': 'Android',
+      },
+    },
+  },
   'flounder': {
     # Nexus 9
     'swarming': {
@@ -333,6 +347,14 @@
         'device_type': 'foster',
         'os': 'Android',
       },
+    },
+  },
+  'fuchsia-code-coverage': {
+    '$mixin_append': {
+      'args': [
+        '--code-coverage',
+        '--code-coverage-dir=${ISOLATED_OUTDIR}'
+      ],
     },
   },
   'fuchsia_runner_logs': {
@@ -425,15 +447,6 @@
       },
     },
   },
-  'linux_amd_r7_240': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6613',
-        'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
   'linux_amd_rx_5500_xt': {
     'swarming': {
       'dimensions': {
@@ -456,8 +469,8 @@
     # Similar to stable, but with a newer Mesa version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-19.0.2',
-        'os': 'Ubuntu-19.04',
+        'gpu': '8086:5912-20.0.8',
+        'os': 'Ubuntu-18.04.5',
         'pool': 'chromium.tests.gpu',
       },
     },
@@ -474,8 +487,8 @@
   'linux_intel_uhd_630_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:3e92-19.0.8',
-        'os': 'Ubuntu-19.04',
+        'gpu': '8086:3e92-20.0.8',
+        'os': 'Ubuntu-18.04.5',
         'pool': 'chromium.tests.gpu',
       },
       # Same long expiration as win10_intel_uhd_630_stable due to capacity.
@@ -549,6 +562,13 @@
       },
     },
   },
+  'mac_11': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-11.0|Mac-10.16',
+      },
+    },
+  },
   'mac_11.0_beta': {
     'swarming': {
       'dimensions': {
@@ -560,7 +580,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-11.0|Mac-10.16',
+        'os': 'Mac-11.0',
         'pool': 'chromium.tests.mac-arm64',
       },
     },
@@ -614,7 +634,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:3e9b',
-        'os': 'Mac-10.15.5',
+        'os': 'Mac-10.15.7',
       },
     },
   },
@@ -690,7 +710,7 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a',
+          'revision': 'git_revision:8811b82233df02ee372cae1e19e379ca8c6a2776',
         },
       ],
     },
@@ -749,6 +769,25 @@
       },
     },
   },
+  'oreo-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android27.textpb',
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'avd_generic_android27',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_27_google_apis_x86',
+          'path': '.emulator_sdk',
+        },
+      ]
+    },
+  },
   'oreo_fleet': {
     'swarming': {
       'dimensions': {
@@ -789,6 +828,13 @@
       'dimensions': {
         'device_os': 'PQ3A.190801.002',
         'device_os_flavor': 'google',
+      },
+    },
+  },
+  'robocrop-swarming-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.robocrop',
       },
     },
   },
@@ -862,30 +908,6 @@
       },
     },
   },
-  # TODO(crbug.com/1087153): Remove this once the fleet is upgraded to 1909.
-  'win10_1803_intel_hd_630': {
-    'swarming': {
-      # We use explicit 'dimension_sets' instead of 'dimensions' since this is
-      # used in conjunction with 'win10_nvidia_quadro_p400_stable_dimension_set'
-      # to trigger tests on multiple configurations.
-      'dimension_sets': [
-        {
-          'gpu': '8086:5912-24.20.100.6286|8086:5912-26.20.100.8141',
-          'os': 'Windows-10-17134|Windows-10-18363',
-          'pool': 'chromium.tests.gpu',
-        },
-      ],
-    },
-  },
-  'win10_amd_rx_550': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:699f',
-        'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
   'win10_amd_rx_5500_xt': {
     'swarming': {
       'dimensions': {
@@ -917,25 +939,24 @@
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-24.20.100.6286|8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+        'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu',
       },
     },
   },
-  'win10_intel_uhd_630_stable': {
+  'win10_intel_hd_630_stable_dimension_set': {
     'swarming': {
-      'dimensions': {
-        'gpu': '8086:3e92-24.20.100.6286',
-        'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu',
-      },
-      # ~50% of the WebGL2 conformance tests time out with the default
-      # 1 hour expiration, but the last shard times out with a 3 hour
-      # expiration, so use 4 hours.
-      # TODO(https://crbug.com/986939): Remove this when more devices
-      # are added.
-      'expiration': 14400,
+      # We use explicit 'dimension_sets' instead of 'dimensions' since this is
+      # used in conjunction with 'win10_nvidia_quadro_p400_stable_dimension_set'
+      # to trigger tests on multiple configurations.
+      'dimension_sets': [
+        {
+          'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+          'os': 'Windows-10',
+          'pool': 'chromium.tests.gpu',
+        },
+      ],
     },
   },
   'win10_nvidia_geforce_gtx_1660': {
@@ -1059,8 +1080,8 @@
       ],
     },
   },
-  # (default) xcode 12 gm seed
-  'xcode_12a7209': {
+  # (default in other projects) xcode 12.0 gm seed
+    'xcode_12a7209': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
@@ -1076,18 +1097,18 @@
       ],
     },
   },
-  # latest Xcode 12 beta version.
-  'xcode_12b5035g': {
+  # (default in Chromium iOS) xcode 12.4 gm seed
+  'xcode_12d4e': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12b5035g'
+        '12d4e'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_12b5035g',
+          'name': 'xcode_ios_12d4e',
           'path': 'Xcode.app',
         },
       ],

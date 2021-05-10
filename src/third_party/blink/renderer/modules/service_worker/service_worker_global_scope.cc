@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -47,6 +48,7 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
@@ -74,6 +76,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
@@ -198,8 +201,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin,
-    const ServiceWorkerToken& service_worker_token,
-    ukm::SourceId ukm_source_id) {
+    const ServiceWorkerToken& service_worker_token) {
 #if DCHECK_IS_ON()
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
@@ -207,7 +209,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
                                        creation_params->script_url)) {
     // CSP headers, referrer policy, and origin trial tokens will be provided by
     // the InstalledScriptsManager in EvaluateClassicScript().
-    DCHECK(creation_params->outside_content_security_policy_headers.IsEmpty());
+    DCHECK(creation_params->outside_content_security_policies.IsEmpty());
     DCHECK_EQ(network::mojom::ReferrerPolicy::kDefault,
               creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
@@ -216,8 +218,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
 
   return MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(installed_scripts_manager),
-      std::move(cache_storage_remote), time_origin, service_worker_token,
-      ukm_source_id);
+      std::move(cache_storage_remote), time_origin, service_worker_token);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
@@ -227,12 +228,8 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin,
-    const ServiceWorkerToken& service_worker_token,
-    ukm::SourceId ukm_source_id)
-    : WorkerGlobalScope(std::move(creation_params),
-                        thread,
-                        time_origin,
-                        ukm_source_id),
+    const ServiceWorkerToken& service_worker_token)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)),
       token_(service_worker_token) {
@@ -328,6 +325,10 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsContextThread());
   DCHECK(!reject_coep_unsafe_none);
+  if (worker_main_script_load_params) {
+    SetWorkerMainScriptLoadingParametersForModules(
+        std::move(worker_main_script_load_params));
+  }
   ModuleScriptCustomFetchType fetch_type =
       installed_scripts_manager_
           ? ModuleScriptCustomFetchType::kInstalledServiceWorker
@@ -469,8 +470,9 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
       classic_script_loader->ResponseURL(), referrer_policy,
       classic_script_loader->ResponseAddressSpace(),
       classic_script_loader->GetContentSecurityPolicy()
-          ? classic_script_loader->GetContentSecurityPolicy()->Headers()
-          : Vector<CSPHeaderAndType>(),
+          ? mojo::Clone(classic_script_loader->GetContentSecurityPolicy()
+                            ->GetParsedPolicies())
+          : Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
       classic_script_loader->OriginTrialTokens(),
       classic_script_loader->SourceText(),
       classic_script_loader->ReleaseCachedMetadata(), stack_id);
@@ -481,7 +483,7 @@ void ServiceWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
     network::mojom::IPAddressSpace response_address_space,
-    const Vector<CSPHeaderAndType>& response_csp_headers,
+    Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
     const Vector<String>* response_origin_trial_tokens,
     int64_t appcache_id) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
@@ -511,7 +513,7 @@ void ServiceWorkerGlobalScope::Initialize(
   //
   // These should be called after SetAddressSpace() to correctly override the
   // address space by the "treat-as-public-address" CSP directive.
-  InitContentSecurityPolicyFromVector(response_csp_headers);
+  InitContentSecurityPolicyFromVector(std::move(response_csp));
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
@@ -554,16 +556,10 @@ void ServiceWorkerGlobalScope::LoadAndRunInstalledClassicScript(
         kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
   }
 
-  // Construct a ContentSecurityPolicy object to convert
-  // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
-  // TODO(nhiroki): Find an efficient way to do this.
-  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
-  content_security_policy->DidReceiveHeaders(
-      script_data->GetContentSecurityPolicyResponseHeaders());
-
   RunClassicScript(
       script_url, referrer_policy, script_data->GetResponseAddressSpace(),
-      content_security_policy->Headers(),
+      ContentSecurityPolicy::ParseHeaders(
+          script_data->GetContentSecurityPolicyResponseHeaders()),
       script_data->CreateOriginTrialTokens().get(),
       script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
 }
@@ -573,14 +569,14 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
     network::mojom::IPAddressSpace response_address_space,
-    const Vector<CSPHeaderAndType> response_csp_headers,
+    Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
     const Vector<String>* response_origin_trial_tokens,
     const String& source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   // Step 4.5-4.11 are implemented in Initialize().
   Initialize(response_url, response_referrer_policy, response_address_space,
-             response_csp_headers, response_origin_trial_tokens,
+             std::move(response_csp), response_origin_trial_tokens,
              mojom::blink::kAppCacheNoCacheId);
 
   // Step 4.12. "Let evaluationStatus be the result of running the classic
@@ -672,15 +668,11 @@ void ServiceWorkerGlobalScope::OnNavigationPreloadError(
   DCHECK(IsContextThread());
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
   DCHECK(fetch_event);
-  // Display an error message to the console, preferring the unsanitized one if
-  // available.
-  const WebString& error_message = error->unsanitized_message.IsEmpty()
-                                       ? error->message
-                                       : error->unsanitized_message;
-  if (!error_message.IsEmpty()) {
+  // Display an error message to the console directly.
+  if (error->mode == WebServiceWorkerError::Mode::kShownInConsole) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kWorker,
-        mojom::ConsoleMessageLevel::kError, error_message));
+        mojom::ConsoleMessageLevel::kError, error->message));
   }
   // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(ScriptController()->GetScriptState(),
@@ -2405,6 +2397,18 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
         event_data->payment_options->request_shipping);
   }
 
+  // Count standardized payment method identifiers, such as "basic-card" or
+  // "tokenized-card". Omit counting the URL-based payment method identifiers,
+  // such as "https://bobpay.xyz".
+  if (std::any_of(
+          event_data->method_data.begin(), event_data->method_data.end(),
+          [](const payments::mojom::blink::PaymentMethodDataPtr& datum) {
+            return datum && !datum->supported_method.StartsWith("http");
+          })) {
+    UseCounter::Count(
+        this, WebFeature::kPaymentHandlerStandardizedPaymentMethodIdentifier);
+  }
+
   mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost>
       payment_handler_host = std::move(event_data->payment_handler_host);
   Event* event = PaymentRequestEvent::Create(
@@ -2412,8 +2416,7 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           ScriptController()->GetScriptState(), std::move(event_data)),
       std::move(payment_handler_host), respond_with_observer,
-      wait_until_observer,
-      ExecutionContext::From(ScriptController()->GetScriptState()));
+      wait_until_observer, this);
 
   DispatchExtendableEventWithRespondWith(event, wait_until_observer,
                                          respond_with_observer);

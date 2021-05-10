@@ -7,6 +7,7 @@ import("//components/spellcheck/spellcheck_build_features.gni")
 
 java_cpp_enum("browser_enums") {
   sources = [
+    "aw_apk_type.h",
     "aw_renderer_priority.h",
     "aw_settings.h",
     "permission/aw_permission_request.h",
@@ -19,6 +20,7 @@ source_set("browser") {
   sources = [
     "android_protocol_handler.cc",
     "android_protocol_handler.h",
+    "aw_apk_type.h",
     "aw_autofill_client.cc",
     "aw_autofill_client.h",
     "aw_browser_context.cc",
@@ -246,6 +248,8 @@ source_set("browser") {
     "//content/public/browser",
     "//media/mojo:buildflags",
     "//printing",
+    "//services/cert_verifier/public/mojom",
+    "//services/network/public/mojom",
     "//services/preferences/tracked",
     "//services/proxy_resolver:lib",
     "//third_party/blink/public/common",
@@ -255,6 +259,7 @@ source_set("browser") {
     "//ui/gl",
     "//ui/resources",
     "//ui/touch_selection",
+    "//url:gurl_android",
   ]
 
   if (enable_spellcheck) {

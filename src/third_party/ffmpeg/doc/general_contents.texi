@@ -119,6 +119,14 @@ libdavs2 is under the GNU Public License Version 2 or later
 details), you must upgrade FFmpeg's license to GPL in order to use it.
 @end float
 
+@section uavs3d
+
+FFmpeg can make use of the uavs3d library for AVS3-P2/IEEE1857.10 video decoding.
+
+Go to @url{https://github.com/uavs3/uavs3d} and follow the instructions for
+installing the library. Then pass @code{--enable-libuavs3d} to configure to
+enable it.
+
 @section Game Music Emu
 
 FFmpeg can make use of the Game Music Emu library to read audio from supported video game
@@ -277,14 +285,6 @@ See @url{http://www.vapoursynth.com/}.
 Due to security concerns, Vapoursynth scripts will not
 be autodetected so the input format has to be forced. For ff* CLI tools,
 add @code{-f vapoursynth} before the input @code{-i yourscript.vpy}.
-
-@section WavPack
-
-FFmpeg can make use of the libwavpack library for WavPack encoding.
-
-Go to @url{http://www.wavpack.com/} and follow the instructions for
-installing the library. Then pass @code{--enable-libwavpack} to configure to
-enable it.
 
 @section x264
 
@@ -735,6 +735,8 @@ following image formats are supported:
 @item JPEG-LS      @tab X @tab X
 @item LJPEG        @tab X @tab
     @tab Lossless JPEG
+@item MSP          @tab   @tab X
+    @tab Microsoft Paint image
 @item PAM          @tab X @tab X
     @tab PAM is a PNM extension with alpha support.
 @item PBM          @tab X @tab X
@@ -824,6 +826,8 @@ following image formats are supported:
     @tab Video encoding used by the Creature Shock game.
 @item AVS2-P2/IEEE1857.4     @tab  E  @tab  E
     @tab Supported through external libraries libxavs2 and libdavs2
+@item AVS3-P2/IEEE1857.10    @tab     @tab  E
+    @tab Supported through external library libuavs3d
 @item AYUV                   @tab  X  @tab  X
     @tab Microsoft uncompressed packed 4:4:4:4
 @item Beam Software VB       @tab     @tab  X
@@ -970,7 +974,7 @@ following image formats are supported:
 @item MPEG-4 part 2 Microsoft variant version 1  @tab     @tab  X
 @item MPEG-4 part 2 Microsoft variant version 2  @tab  X  @tab  X
 @item MPEG-4 part 2 Microsoft variant version 3  @tab  X  @tab  X
-@item Newtek SpeedHQ               @tab     @tab  X
+@item Newtek SpeedHQ               @tab  X  @tab  X
 @item Nintendo Gamecube THP video  @tab     @tab  X
 @item NotchLC                @tab     @tab  X
 @item NuppelVideo/RTjpeg     @tab     @tab  X
@@ -1104,13 +1108,13 @@ following image formats are supported:
 @item ADPCM Electronic Arts XAS @tab     @tab  X
 @item ADPCM G.722            @tab  X  @tab  X
 @item ADPCM G.726            @tab  X  @tab  X
-@item ADPCM IMA AMV          @tab     @tab  X
+@item ADPCM IMA AMV          @tab  X  @tab  X
     @tab Used in AMV files
 @item ADPCM IMA Cunning Developments  @tab     @tab  X
 @item ADPCM IMA Electronic Arts EACS  @tab     @tab  X
 @item ADPCM IMA Electronic Arts SEAD  @tab     @tab  X
 @item ADPCM IMA Funcom       @tab     @tab  X
-@item ADPCM IMA High Voltage Software ALP   @tab     @tab  X
+@item ADPCM IMA High Voltage Software ALP      @tab  X  @tab  X
 @item ADPCM IMA QuickTime    @tab  X  @tab  X
 @item ADPCM IMA Simon & Schuster Interactive   @tab  X  @tab  X
 @item ADPCM IMA Ubisoft APM  @tab  X  @tab  X

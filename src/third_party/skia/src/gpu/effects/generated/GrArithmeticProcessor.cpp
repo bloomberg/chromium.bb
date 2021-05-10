@@ -37,17 +37,17 @@ public:
         fragBuilder->codeAppendf(
                 R"SkSL(
 half4 dst = %s;
-%s = clamp((((half(%s.x) * src) * dst + half(%s.y) * src) + half(%s.z) * dst) + half(%s.w), 0.0, 1.0);
+half4 color = clamp((((half(%s.x) * src) * dst + half(%s.y) * src) + half(%s.z) * dst) + half(%s.w), 0.0, 1.0);
 @if (%s) {
-    %s.xyz = min(%s.xyz, %s.w);
+    color.xyz = min(color.xyz, color.w);
 }
+return color;
 )SkSL",
-                _sample1.c_str(), args.fOutputColor, args.fUniformHandler->getUniformCStr(kVar),
+                _sample1.c_str(), args.fUniformHandler->getUniformCStr(kVar),
                 args.fUniformHandler->getUniformCStr(kVar),
                 args.fUniformHandler->getUniformCStr(kVar),
                 args.fUniformHandler->getUniformCStr(kVar),
-                (_outer.enforcePMColor ? "true" : "false"), args.fOutputColor, args.fOutputColor,
-                args.fOutputColor);
+                (_outer.enforcePMColor ? "true" : "false"));
     }
 
 private:
@@ -58,8 +58,8 @@ private:
     }
     UniformHandle kVar;
 };
-GrGLSLFragmentProcessor* GrArithmeticProcessor::onCreateGLSLInstance() const {
-    return new GrGLSLArithmeticProcessor();
+std::unique_ptr<GrGLSLFragmentProcessor> GrArithmeticProcessor::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLArithmeticProcessor>();
 }
 void GrArithmeticProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                   GrProcessorKeyBuilder* b) const {
@@ -72,7 +72,6 @@ bool GrArithmeticProcessor::onIsEqual(const GrFragmentProcessor& other) const {
     if (enforcePMColor != that.enforcePMColor) return false;
     return true;
 }
-bool GrArithmeticProcessor::usesExplicitReturn() const { return false; }
 GrArithmeticProcessor::GrArithmeticProcessor(const GrArithmeticProcessor& src)
         : INHERITED(kGrArithmeticProcessor_ClassID, src.optimizationFlags())
         , k(src.k)
@@ -93,7 +92,7 @@ GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrArithmeticProcessor);
 std::unique_ptr<GrFragmentProcessor> GrArithmeticProcessor::TestCreate(GrProcessorTestData* d) {
     return GrArithmeticProcessor::Make(
             GrProcessorUnitTest::MakeChildFP(d), GrProcessorUnitTest::MakeChildFP(d),
-            ArithmeticFPInputs{d->fRandom->nextF(), d->fRandom->nextF(), d->fRandom->nextF(),
-                               d->fRandom->nextF(), d->fRandom->nextBool()});
+            {d->fRandom->nextF(), d->fRandom->nextF(), d->fRandom->nextF(), d->fRandom->nextF()},
+            d->fRandom->nextBool());
 }
 #endif

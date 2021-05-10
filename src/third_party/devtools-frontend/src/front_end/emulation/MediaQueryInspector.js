@@ -11,7 +11,6 @@ import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line 
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.CSSModel.CSSModel>}
- * @unrestricted
  */
 export class MediaQueryInspector extends UI.Widget.Widget {
   /**
@@ -137,8 +136,10 @@ export class MediaQueryInspector extends UI.Widget.Widget {
       if (!uiLocation) {
         continue;
       }
-      const descriptor = Platform.StringUtilities.sprintf(
-          '%s:%d:%d', uiLocation.uiSourceCode.url(), uiLocation.lineNumber + 1, uiLocation.columnNumber + 1);
+      const descriptor = typeof uiLocation.columnNumber === 'number' ?
+          Platform.StringUtilities.sprintf(
+              '%s:%d:%d', uiLocation.uiSourceCode.url(), uiLocation.lineNumber + 1, uiLocation.columnNumber + 1) :
+          Platform.StringUtilities.sprintf('%s:%d', uiLocation.uiSourceCode.url(), uiLocation.lineNumber + 1);
       uiLocations.set(descriptor, uiLocation);
     }
 
@@ -185,7 +186,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
   _squashAdjacentEqual(models) {
     const filtered = [];
     for (let i = 0; i < models.length; ++i) {
-      const last = filtered.peekLast();
+      const last = filtered[filtered.length - 1];
       if (!last || !last.equals(models[i])) {
         filtered.push(models[i]);
       }
@@ -309,7 +310,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
       result.createChild('div', 'media-inspector-marker-spacer');
       const markerElement = result.createChild('div', 'media-inspector-marker media-inspector-marker-max-width');
       markerElement.style.width = maxWidthValue + 'px';
-      markerElement.title = model.mediaText();
+      UI.Tooltip.Tooltip.install(markerElement, model.mediaText());
       appendLabel(markerElement, model.maxWidthExpression(), false, false);
       appendLabel(markerElement, model.maxWidthExpression(), true, true);
       result.createChild('div', 'media-inspector-marker-spacer');
@@ -319,13 +320,13 @@ export class MediaQueryInspector extends UI.Widget.Widget {
       result.createChild('div', 'media-inspector-marker-spacer');
       const leftElement = result.createChild('div', 'media-inspector-marker media-inspector-marker-min-max-width');
       leftElement.style.width = (maxWidthValue - minWidthValue) * 0.5 + 'px';
-      leftElement.title = model.mediaText();
+      UI.Tooltip.Tooltip.install(leftElement, model.mediaText());
       appendLabel(leftElement, model.maxWidthExpression(), true, false);
       appendLabel(leftElement, model.minWidthExpression(), false, true);
       result.createChild('div', 'media-inspector-marker-spacer').style.flex = '0 0 ' + minWidthValue + 'px';
       const rightElement = result.createChild('div', 'media-inspector-marker media-inspector-marker-min-max-width');
       rightElement.style.width = (maxWidthValue - minWidthValue) * 0.5 + 'px';
-      rightElement.title = model.mediaText();
+      UI.Tooltip.Tooltip.install(rightElement, model.mediaText());
       appendLabel(rightElement, model.minWidthExpression(), true, false);
       appendLabel(rightElement, model.maxWidthExpression(), false, true);
       result.createChild('div', 'media-inspector-marker-spacer');
@@ -334,12 +335,12 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     if (model.section() === Section.Min) {
       const leftElement = result.createChild(
           'div', 'media-inspector-marker media-inspector-marker-min-width media-inspector-marker-min-width-left');
-      leftElement.title = model.mediaText();
+      UI.Tooltip.Tooltip.install(leftElement, model.mediaText());
       appendLabel(leftElement, model.minWidthExpression(), false, false);
       result.createChild('div', 'media-inspector-marker-spacer').style.flex = '0 0 ' + minWidthValue + 'px';
       const rightElement = result.createChild(
           'div', 'media-inspector-marker media-inspector-marker-min-width media-inspector-marker-min-width-right');
-      rightElement.title = model.mediaText();
+      UI.Tooltip.Tooltip.install(rightElement, model.mediaText());
       appendLabel(rightElement, model.minWidthExpression(), true, true);
     }
 
@@ -354,7 +355,6 @@ export class MediaQueryInspector extends UI.Widget.Widget {
       if (!expression) {
         return;
       }
-
       marker
           .createChild(
               'div',
@@ -379,9 +379,6 @@ export const Section = {
   Min: 2
 };
 
-/**
- * @unrestricted
- */
 export class MediaQueryUIModel {
   /**
    * @param {!SDK.CSSMedia.CSSMedia} cssMedia
@@ -455,17 +452,17 @@ export class MediaQueryUIModel {
   dimensionsEqual(other) {
     const thisMinWidthExpression = this.minWidthExpression();
     const otherMinWidthExpression = other.minWidthExpression();
-
     const thisMaxWidthExpression = this.maxWidthExpression();
     const otherMaxWidthExpression = other.maxWidthExpression();
 
-    return this.section() === other.section() &&
-        (!thisMinWidthExpression ||
-         (thisMinWidthExpression.computedLength() ===
-          (otherMinWidthExpression ? otherMinWidthExpression.computedLength() : null)) &&
-             (!thisMaxWidthExpression ||
-              (thisMaxWidthExpression.computedLength() ===
-               (otherMaxWidthExpression ? otherMaxWidthExpression.computedLength() : null))));
+    const sectionsEqual = this.section() === other.section();
+    // If there isn't an other min width expression, they aren't equal, so the optional chaining operator is safe to use here.
+    const minWidthEqual = !thisMinWidthExpression ||
+        thisMinWidthExpression.computedLength() === otherMinWidthExpression?.computedLength();
+    const maxWidthEqual = !thisMaxWidthExpression ||
+        thisMaxWidthExpression.computedLength() === otherMaxWidthExpression?.computedLength();
+
+    return sectionsEqual && minWidthEqual && maxWidthEqual;
   }
 
   /**
@@ -480,7 +477,7 @@ export class MediaQueryUIModel {
       const myLocation = this.rawLocation();
       const otherLocation = other.rawLocation();
       if (!myLocation && !otherLocation) {
-        return this.mediaText().compareTo(other.mediaText());
+        return Platform.StringUtilities.compare(this.mediaText(), other.mediaText());
       }
       if (myLocation && !otherLocation) {
         return 1;
@@ -493,14 +490,14 @@ export class MediaQueryUIModel {
       }
 
       if (!myLocation || !otherLocation) {
-        // This conditional never uns, because it's dealt with above, but
+        // This conditional never runs, because it's dealt with above, but
         // TypeScript can't follow that by this point both myLocation and
         // otherLocation must exist.
         return 0;
       }
 
-      return myLocation.url.compareTo(otherLocation.url) || myLocation.lineNumber - otherLocation.lineNumber ||
-          myLocation.columnNumber - otherLocation.columnNumber;
+      return Platform.StringUtilities.compare(myLocation.url, otherLocation.url) ||
+          myLocation.lineNumber - otherLocation.lineNumber || myLocation.columnNumber - otherLocation.columnNumber;
     }
 
     const thisMaxWidthExpression = this.maxWidthExpression();

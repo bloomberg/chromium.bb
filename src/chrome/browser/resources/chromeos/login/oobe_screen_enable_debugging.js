@@ -26,7 +26,7 @@ const UI_STATE = {
 };
 
 Polymer({
-  is: 'oobe-debugging',
+  is: 'oobe-debugging-element',
 
   behaviors: [
     OobeI18nBehavior,
@@ -87,7 +87,7 @@ Polymer({
    * network settings.
    */
   cancel() {
-    chrome.send('enableDebuggingOnCancel');
+    this.userActed('cancel');
   },
 
   /**
@@ -112,11 +112,11 @@ Polymer({
   },
 
   onHelpLinkClicked_() {
-    chrome.send('enableDebuggingOnLearnMore');
+    this.userActed('learnMore');
   },
 
   onRemoveButtonClicked_() {
-    chrome.send('enableDebuggingOnRemoveRootFSProtection');
+    this.userActed('removeRootFSProtection');
   },
 
   onEnableButtonClicked_() {
@@ -126,7 +126,7 @@ Polymer({
   },
 
   onOKButtonClicked_() {
-    chrome.send('enableDebuggingOnDone');
+    this.userActed('done');
   },
 
 });

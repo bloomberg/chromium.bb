@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -24,9 +25,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -198,13 +201,15 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
                        DebuggerAllowedOnFileUrlsWithFileAccess) {
-  EXPECT_TRUE(RunExtensionTestWithArg("debugger_file_access", "enabled"))
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "debugger_file_access", .custom_arg = "enabled"},
+      {.allow_file_access = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
                        DebuggerNotAllowedOnFileUrlsWithoutAccess) {
-  EXPECT_TRUE(RunExtensionTestNoFileAccess("debugger_file_access")) << message_;
+  EXPECT_TRUE(RunExtensionTest("debugger_file_access")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
@@ -417,6 +422,19 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
   EXPECT_EQ(1u, service->infobar_count());
 }
 
+// Tests that policy blocked hosts supersede the `debugger`
+// permission. Regression test for crbug.com/1139156.
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest, TestDefaultPolicyBlockedHosts) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url("https://example.com");
+  EXPECT_TRUE(RunAttachFunction(url, std::string()));
+  policy::MockConfigurationPolicyProvider policy_provider;
+  ExtensionManagementPolicyUpdater pref(&policy_provider);
+  pref.AddPolicyBlockedHost("*", url.spec());
+  EXPECT_FALSE(
+      RunAttachFunction(url, manifest_errors::kCannotAccessExtensionUrl));
+}
+
 class DebuggerExtensionApiTest : public ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
@@ -433,9 +451,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, Debugger) {
 
 IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, ParentTargetPermissions) {
   // Run test with file access disabled.
-  ASSERT_TRUE(RunExtensionTestWithFlags("parent_target_permissions", kFlagNone,
-                                        kFlagNone))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("parent_target_permissions")) << message_;
 }
 
 // Tests that an extension is not allowed to inspect a worker through the
@@ -446,13 +462,22 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest,
   GURL url(embedded_test_server()->GetURL(
       "/extensions/api_test/debugger_inspect_worker/inspected_page.html"));
 
-  EXPECT_TRUE(
-      RunExtensionTestWithArg("debugger_inspect_worker", url.spec().c_str()))
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "debugger_inspect_worker", .custom_arg = url.spec().c_str()}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToEmptyUrls) {
   ASSERT_TRUE(RunExtensionTest("debugger_attach_to_empty_urls")) << message_;
+}
+
+// Tests that navigation to a forbidden URL is properly denied and
+// does not cause a crash.
+// This is a regression test for https://crbug.com/1188889.
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, NavigateToForbiddenUrl) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  ASSERT_TRUE(RunExtensionTest("debugger_navigate_to_forbidden_url"))
+      << message_;
 }
 
 class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
@@ -478,8 +503,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
   navigation_manager_iframe.WaitForNavigationFinished();
   EXPECT_TRUE(content::WaitForLoadStop(tab));
 
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("debugger", "oopif.html;oopif_frame.html"))
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "debugger", .custom_arg = "oopif.html;oopif_frame.html"}))
       << message_;
 }
 
@@ -488,8 +513,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
   GURL url(embedded_test_server()->GetURL(
       "a.com",
       "/extensions/api_test/debugger_navigate_subframe/inspected_page.html"));
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("debugger_navigate_subframe", url.spec().c_str()))
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "debugger_navigate_subframe", .custom_arg = url.spec().c_str()}))
       << message_;
 }
 
@@ -498,8 +523,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
   GURL url(embedded_test_server()->GetURL(
       "a.com",
       "/extensions/api_test/debugger_auto_attach_permissions/page.html"));
-  ASSERT_TRUE(RunExtensionTestWithArg("debugger_auto_attach_permissions",
-                                      url.spec().c_str()))
+  ASSERT_TRUE(RunExtensionTest({.name = "debugger_auto_attach_permissions",
+                                .custom_arg = url.spec().c_str()}))
       << message_;
 }
 

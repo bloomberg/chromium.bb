@@ -5,18 +5,33 @@
 import * as Common from '../common/common.js';
 import * as Diff from '../diff/diff.js';
 import * as Host from '../host/host.js';
-import * as Root from '../root/root.js';
+import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
-import {FilteredListWidget, Provider} from './FilteredListWidget.js';
+import {FilteredListWidget, Provider, registerProvider} from './FilteredListWidget.js';
 import {QuickOpenImpl} from './QuickOpen.js';
+
+export const UIStrings = {
+  /**
+  * @description Message to display if a setting change requires a reload of DevTools
+  */
+  oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect.',
+  /**
+  * @description Text in Command Menu of the Command Menu
+  */
+  noCommandsFound: 'No commands found',
+  /**
+  * @description Text in Command Menu of the Command Menu
+  */
+  runCommand: 'Run Command',
+};
+const str_ = i18n.i18n.registerUIStrings('quick_open/CommandMenu.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /** @type {!CommandMenu} */
 let commandMenuInstance;
 
-/**
- * @unrestricted
- */
 export class CommandMenu {
   /** @private */
   constructor() {
@@ -24,9 +39,12 @@ export class CommandMenu {
     this._commands = [];
     this._loadCommands();
   }
-
-  static instance() {
-    if (!commandMenuInstance) {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!commandMenuInstance || forceNew) {
       commandMenuInstance = new CommandMenu();
     }
     return commandMenuInstance;
@@ -39,13 +57,6 @@ export class CommandMenu {
   static createCommand(options) {
     const {category, keys, title, shortcut, executeHandler, availableHandler, userActionCode} = options;
 
-    // Get localized keys and separate by null character to prevent fuzzy matching from matching across them.
-    const keyList = keys.split(',');
-    let key = '';
-    keyList.forEach(k => {
-      key += (ls(k.trim()) + '\0');
-    });
-
     let handler = executeHandler;
     if (userActionCode) {
       const actionCode = userActionCode;
@@ -54,24 +65,33 @@ export class CommandMenu {
         executeHandler();
       };
     }
+    if (title === 'Show Issues') {
+      const cached_handler = handler;
+      handler = () => {
+        Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.CommandMenu);
+        cached_handler();
+      };
+    }
 
-    return new Command(category, title, key, shortcut, handler, availableHandler);
+    return new Command(category, title, keys, shortcut, handler, availableHandler);
   }
 
   /**
-   * @param {!Root.Runtime.Extension} extension
+   * @param {!Common.Settings.Setting<*>} setting
    * @param {string} title
    * @param {V} value
    * @return {!Command}
    * @template V
    */
-  static createSettingCommand(extension, title, value) {
-    const category = extension.descriptor()['category'] || '';
-    const tags = extension.descriptor()['tags'] || '';
-    const reloadRequired = !!extension.descriptor()['reloadRequired'];
-    const setting = Common.Settings.Settings.instance().moduleSetting(extension.descriptor()['settingName']);
+  static createSettingCommand(setting, title, value) {
+    const category = setting.category();
+    if (!category) {
+      throw new Error(`Creating '${title}' setting command failed. Setting has no category.`);
+    }
+    const tags = setting.tags() || '';
+    const reloadRequired = Boolean(setting.reloadRequired());
     return CommandMenu.createCommand({
-      category: ls(category),
+      category: Common.Settings.getLocalizedSettingsCategory(category),
       keys: tags,
       title,
       shortcut: '',
@@ -79,7 +99,7 @@ export class CommandMenu {
         setting.set(value);
         if (reloadRequired) {
           UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(
-              ls`One or more settings have changed which requires a reload to take effect.`);
+              i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
         }
       },
       availableHandler,
@@ -104,8 +124,8 @@ export class CommandMenu {
 
     return CommandMenu.createCommand({
       category: action.category(),
-      keys: action.tags(),
-      title: action.title(),
+      keys: action.tags() || '',
+      title: action.title() || '',
       shortcut,
       executeHandler: action.execute.bind(action),
       userActionCode,
@@ -122,8 +142,8 @@ export class CommandMenu {
 
     return CommandMenu.createCommand({
       category,
-      keys: tags || '',
-      title: Common.UIString.UIString('Show %s', title),
+      keys: tags,
+      title,
       shortcut: '',
       executeHandler: UI.ViewManager.ViewManager.instance().showView.bind(
           UI.ViewManager.ViewManager.instance(), id, /* userGesture */ true),
@@ -134,69 +154,42 @@ export class CommandMenu {
 
   _loadCommands() {
     const locations = new Map();
-    Root.Runtime.Runtime.instance().extensions(UI.View.ViewLocationResolver).forEach(extension => {
-      const category = extension.descriptor()['category'];
-      const name = extension.descriptor()['name'];
+    for (const {category, name} of UI.ViewManager.getRegisteredLocationResolvers()) {
       if (category && name) {
         locations.set(name, category);
       }
-    });
-    // TODO(crbug.com/1134103): Remove this call when all views are migrated
-    const viewExtensions = Root.Runtime.Runtime.instance().extensions('view');
-    for (const extension of viewExtensions) {
-      const category = locations.get(extension.descriptor()['location']);
-      if (!category) {
-        continue;
-      }
-      const extensionDescriptor = extension.descriptor();
-      /** @type {!RevealViewCommandOptions} */
-      const options = {
-        id: extensionDescriptor.id,
-        title: extensionDescriptor.title,
-        tags: extensionDescriptor.tags,
-        category: ls(category),
-        userActionCode: undefined
-      };
-      this._commands.push(CommandMenu.createRevealViewCommand(options));
     }
-
-    // Populate allowlisted settings.
-    const settingExtensions = Root.Runtime.Runtime.instance().extensions('setting');
-    for (const extension of settingExtensions) {
-      const options = extension.descriptor()['options'];
-      if (!options || !extension.descriptor()['category']) {
-        continue;
-      }
-      for (const pair of options) {
-        this._commands.push(CommandMenu.createSettingCommand(extension, ls(pair['title']), pair['value']));
-      }
-    }
-    this._loadCommandsFromPreRegisteredExtensions(locations);
-  }
-
-  /**
-   * @param {!Map<string,string>} locations
-   */
-  _loadCommandsFromPreRegisteredExtensions(locations) {
     const views = UI.ViewManager.getRegisteredViewExtensions();
     for (const view of views) {
-      const category = locations.get(view.location());
+      const viewLocation = view.location();
+      const category = viewLocation && locations.get(viewLocation);
       if (!category) {
         continue;
       }
 
       /** @type {!RevealViewCommandOptions} */
       const options = {
-        title: view.title(),
-        tags: view.tags(),
-        category: ls(category),
+        title: view.commandPrompt(),
+        tags: view.tags() || '',
+        category,
         userActionCode: undefined,
         id: view.viewId()
       };
       this._commands.push(CommandMenu.createRevealViewCommand(options));
     }
+    // Populate allowlisted settings.
+    const settingsRegistrations = Common.Settings.getRegisteredSettings();
+    for (const settingRegistration of settingsRegistrations) {
+      const options = settingRegistration.options;
+      if (!options || !settingRegistration.category) {
+        continue;
+      }
+      for (const pair of options) {
+        const setting = Common.Settings.Settings.instance().moduleSetting(settingRegistration.settingName);
+        this._commands.push(CommandMenu.createSettingCommand(setting, pair.title(), pair.value));
+      }
+    }
   }
-
 
   /**
    * @return {!Array.<!Command>}
@@ -208,7 +201,7 @@ export class CommandMenu {
 
 /**
  * @typedef {{
- *   action: !UI.Action.Action,
+ *   action: !UI.ActionRegistration.Action,
  *   userActionCode: (!Host.UserMetrics.Action|undefined),
  * }}
  */
@@ -218,8 +211,8 @@ export let ActionCommandOptions;
 /**
  * @typedef {{
  *   id: string,
- *   title: ?string,
- *   tags: ?string,
+ *   title: string,
+ *   tags: string,
  *   category: string,
  *   userActionCode: (!Host.UserMetrics.Action|undefined)
  * }}
@@ -241,11 +234,27 @@ export let RevealViewCommandOptions;
 // @ts-ignore typedef
 export let CreateCommandOptions;
 
+/** @type {!CommandMenuProvider} */
+let commandMenuProviderInstance;
+
+
 export class CommandMenuProvider extends Provider {
+  /** @private */
   constructor() {
     super();
     /** @type {!Array<!Command>} */
     this._commands = [];
+  }
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!commandMenuProviderInstance || forceNew) {
+      commandMenuProviderInstance = new CommandMenuProvider();
+    }
+
+    return commandMenuProviderInstance;
   }
 
   /**
@@ -281,8 +290,8 @@ export class CommandMenuProvider extends Provider {
      * @return {number}
      */
     function commandComparator(left, right) {
-      const cats = left.category().compareTo(right.category());
-      return cats ? cats : left.title().compareTo(right.title());
+      const cats = Platform.StringUtilities.compare(left.category(), right.category());
+      return cats ? cats : Platform.StringUtilities.compare(left.title(), right.title());
     }
   }
 
@@ -341,7 +350,7 @@ export class CommandMenuProvider extends Provider {
     const command = this._commands[itemIndex];
     titleElement.removeChildren();
     const tagElement = /** @type {!HTMLElement} */ (titleElement.createChild('span', 'tag'));
-    const index = String.hashCode(command.category()) % MaterialPaletteColors.length;
+    const index = Platform.StringUtilities.hashCode(command.category()) % MaterialPaletteColors.length;
     tagElement.style.backgroundColor = MaterialPaletteColors[index];
     tagElement.textContent = command.category();
     UI.UIUtils.createTextChild(titleElement, command.title());
@@ -367,7 +376,7 @@ export class CommandMenuProvider extends Provider {
    * @return {string}
    */
   notFoundText() {
-    return ls`No commands found`;
+    return i18nString(UIStrings.noCommandsFound);
   }
 }
 
@@ -376,9 +385,6 @@ export const MaterialPaletteColors = [
   '#CDDC39', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B'
 ];
 
-/**
- * @unrestricted
- */
 export class Command {
   /**
    * @param {string} category
@@ -437,11 +443,24 @@ export class Command {
   }
 }
 
+/** @type {!ShowActionDelegate} */
+let showActionDelegateInstance;
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ShowActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!showActionDelegateInstance || forceNew) {
+      showActionDelegateInstance = new ShowActionDelegate();
+    }
+
+    return showActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context
@@ -454,3 +473,9 @@ export class ShowActionDelegate {
     return true;
   }
 }
+
+registerProvider({
+  prefix: '>',
+  title: () => i18nString(UIStrings.runCommand),
+  provider: CommandMenuProvider.instance,
+});

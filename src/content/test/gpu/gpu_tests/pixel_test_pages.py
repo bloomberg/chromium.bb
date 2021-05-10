@@ -72,7 +72,7 @@ class PixelTestPage(object):
     self.restart_browser_after_test = restart_browser_after_test
     # These are used to pass additional arguments to the test harness.
     # VideoPathTraceTest and OverlayModeTest support the following boolean
-    # arguments: pixel_format, zero_copy, no_overlay, and presentation_mode.
+    # arguments: pixel_format, zero_copy, no_overlay and video_is_rotated.
     self.other_args = other_args
     # This allows a newly added test to be exempted from failures for a
     # (hopefully) short period after being added. This is so that any slightly
@@ -330,6 +330,10 @@ class PixelTestPages(object):
                       base_name + '_OffscreenCanvasIBRCWebGLWorker',
                       test_rect=[0, 0, 300, 300],
                       optional_action='RunOffscreenCanvasIBRCWebGLTest'),
+        PixelTestPage('pixel_webgl_preserved_after_tab_switch.html',
+                      base_name + '_WebGLPreservedAfterTabSwitch',
+                      test_rect=[0, 0, 300, 300],
+                      optional_action='SwitchTabsAndCopyImage'),
     ]
 
   # Pages that should be run with GPU rasterization enabled.
@@ -712,10 +716,12 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_MP4',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
+                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_DirectComposition_Video_MP4_DXVA',
                       browser_args=browser_args_DXVA,
+                      other_args={'zero_copy': False},
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_fullsize.html',
@@ -727,7 +733,10 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_MP4_NV12',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args_NV12,
-                      other_args={'pixel_format': 'NV12'},
+                      other_args={
+                          'pixel_format': 'NV12',
+                          'zero_copy': False
+                      },
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_DirectComposition_Video_MP4_YUY2',
@@ -752,36 +761,39 @@ class PixelTestPages(object):
                       '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
+                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
                       base_name +
                       '_DirectComposition_Video_MP4_FourColors_Rot_90',
                       test_rect=[0, 0, 270, 240],
                       browser_args=browser_args,
-                      other_args={'presentation_mode': 'COMPOSED'},
+                      other_args={'video_is_rotated': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_four_colors_rot_180.html',
                       base_name +
                       '_DirectComposition_Video_MP4_FourColors_Rot_180',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'presentation_mode': 'COMPOSED'},
+                      other_args={'video_is_rotated': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_four_colors_rot_270.html',
                       base_name +
                       '_DirectComposition_Video_MP4_FourColors_Rot_270',
                       test_rect=[0, 0, 270, 240],
                       browser_args=browser_args,
-                      other_args={'presentation_mode': 'COMPOSED'},
+                      other_args={'video_is_rotated': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_DirectComposition_Video_VP9',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
+                      other_args={'zero_copy': False},
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_DirectComposition_Video_VP9_DXVA',
                       browser_args=browser_args_DXVA,
+                      other_args={'zero_copy': False},
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage(
@@ -800,7 +812,10 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_VP9_NV12',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args_NV12,
-                      other_args={'pixel_format': 'NV12'},
+                      other_args={
+                          'pixel_format': 'NV12',
+                          'zero_copy': False
+                      },
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_DirectComposition_Video_VP9_YUY2',
@@ -830,11 +845,13 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Underlay',
                       test_rect=[0, 0, 240, 136],
                       browser_args=browser_args,
+                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_underlay.html',
                       base_name + '_DirectComposition_Underlay_DXVA',
                       test_rect=[0, 0, 240, 136],
                       browser_args=browser_args_DXVA,
+                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_underlay_fullsize.html',
                       base_name + '_DirectComposition_Underlay_Fullsize',

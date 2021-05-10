@@ -21,16 +21,20 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/screens/user_selection_screen.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_credentials_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -38,22 +42,22 @@
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/mock_signin_ui.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
@@ -65,6 +69,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -116,9 +121,7 @@ const char kManager[] = "admin@example.com";
 const char kManagedDomain[] = "example.com";
 const char kUserAllowlist[] = "*@ad-domain.com";
 const char kUserNotMatchingAllowlist[] = "user@another_mail.com";
-const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
-const char kHash[] = "test_hash";
 
 const char kPublicSessionUserEmail[] = "public_session_user@localhost";
 const char kPublicSessionSecondUserEmail[] =
@@ -128,14 +131,16 @@ const int kAutoLoginShortDelay = 1;
 const int kAutoLoginLongDelay = 10000;
 
 // Wait for cros settings to become permanently untrusted and run `callback`.
-void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
+void WaitForPermanentlyUntrustedStatusAndRun(base::OnceClosure callback) {
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   while (true) {
     const CrosSettingsProvider::TrustedStatus status =
         CrosSettings::Get()->PrepareTrustedValues(
-            base::BindOnce(&WaitForPermanentlyUntrustedStatusAndRun, callback));
+            base::BindOnce(&WaitForPermanentlyUntrustedStatusAndRun,
+                           std::move(split_callback.first)));
     switch (status) {
       case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
-        callback.Run();
+        std::move(split_callback.second).Run();
         return;
       case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
         return;
@@ -156,6 +161,17 @@ base::FilePath GetKerberosCredentialsCachePath() {
   base::FilePath path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_HOME, &path));
   return path.Append("kerberos").Append("krb5cc");
+}
+
+void EnableArcForProfile(Profile* profile) {
+  arc::SetArcAvailableCommandLineForTesting(
+      base::CommandLine::ForCurrentProcess());
+  arc::ResetArcAllowedCheckForTesting(profile);
+  arc::SetArcPlayStoreEnabledForProfile(profile, true);
+
+  ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
+      profile);
+  arc::ArcSessionManager::Get()->SetProfile(profile);
 }
 
 arc::data_snapshotd::ArcDataSnapshotdManager* arc_data_snapshotd_manager() {
@@ -181,6 +197,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
     mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
     mock_login_display_ = std::make_unique<MockLoginDisplay>();
+    mock_signin_ui_ = std::make_unique<MockSigninUI>();
     SetUpLoginDisplay();
   }
 
@@ -188,6 +205,9 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
+    EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_signin_ui_.get()));
     EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, true, true, true)).Times(1);
   }
@@ -257,6 +277,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
+  std::unique_ptr<MockSigninUI> mock_signin_ui_;
   std::unique_ptr<MockLoginDisplay> mock_login_display_;
   std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
@@ -323,15 +344,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   existing_user_controller()->Login(
       UserContext(user_manager::USER_TYPE_GUEST, EmptyAccountId()),
       SigninSpecifics());
-}
-
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       SupervisedUserLoginForbidden) {
-  UserContext user_context(user_manager::UserType::USER_TYPE_SUPERVISED,
-                           AccountId::FromUserEmail(kSupervisedUserID));
-  user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(kHash);
-  existing_user_controller()->Login(user_context, SigninSpecifics());
 }
 
 MATCHER_P(HasDetails, expected, "") {
@@ -414,6 +426,9 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
+    EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_signin_ui_.get()));
     EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, Init(_, _, _, _)).Times(AnyNumber());
@@ -443,7 +458,7 @@ class ExistingUserControllerPublicSessionTest
     // There may be in-session oobe or an initial login screen created from
     // --login-manager.
     EXPECT_CALL(*mock_login_display_host_,
-                StartWizard(TermsOfServiceScreenView::kScreenId.AsId()))
+                StartWizard(LocaleSwitchView::kScreenId.AsId()))
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(AnyNumber());
@@ -459,7 +474,7 @@ class ExistingUserControllerPublicSessionTest
     // If both settings have changed we need to wait for both to
     // propagate, so check the new values against the old ones.
     scoped_refptr<content::MessageLoopRunner> runner1;
-    std::unique_ptr<CrosSettings::ObserverSubscription> subscription1;
+    base::CallbackListSubscription subscription1;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_id() ||
         proto.device_local_accounts().auto_login_id() != user_email) {
@@ -469,7 +484,7 @@ class ExistingUserControllerPublicSessionTest
           base::BindLambdaForTesting([&]() { runner1->Quit(); }));
     }
     scoped_refptr<content::MessageLoopRunner> runner2;
-    std::unique_ptr<CrosSettings::ObserverSubscription> subscription2;
+    base::CallbackListSubscription subscription2;
     if (!proto.has_device_local_accounts() ||
         !proto.device_local_accounts().has_auto_login_delay() ||
         proto.device_local_accounts().auto_login_delay() != delay) {
@@ -763,7 +778,11 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // Start auto-login and wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
 
-  arc_data_snapshotd_manager()->OnSessionStateChanged();
+  // Setup profile before changing the state.
+  EXPECT_TRUE(user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+  EnableArcForProfile(ProfileManager::GetActiveUserProfile());
+
+  arc_data_snapshotd_manager()->OnSnapshotSessionStarted();
 
   EXPECT_TRUE(auto_login_account_id().is_valid());
   EXPECT_EQ(0, auto_login_delay());
@@ -847,8 +866,10 @@ class ExistingUserControllerActiveDirectoryTest
     chromeos::CryptohomeClient::InitializeFake();
 
     RefreshDevicePolicy();
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillByDefault(Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
+        .WillByDefault(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
   }
@@ -958,7 +979,7 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
  private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
 class ExistingUserControllerActiveDirectoryUserAllowlistTest
@@ -979,6 +1000,9 @@ class ExistingUserControllerActiveDirectoryUserAllowlistTest
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
+    EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_signin_ui_.get()));
     EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, true, true, false)).Times(1);
   }
@@ -1142,8 +1166,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
 }
 
 // Tests different auth failures for an existing user login attempts.
-class ExistingUserControllerAuthFailureTest
-    : public MixinBasedInProcessBrowserTest {
+class ExistingUserControllerAuthFailureTest : public OobeBaseTest {
  public:
   ExistingUserControllerAuthFailureTest() = default;
   ~ExistingUserControllerAuthFailureTest() override = default;
@@ -1189,6 +1212,7 @@ class ExistingUserControllerAuthFailureTest
   }
 
  protected:
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
   const LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId("user@gmail.com", "user")};
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
@@ -1198,7 +1222,26 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
                        CryptohomeMissing) {
   SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::MISSING_CRYPTOHOME);
 
-  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
+  WaitForGaiaPageLoad();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(),
+            test_user_.account_id.GetUserEmail());
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(test_user_.account_id);
+  ASSERT_TRUE(user);
+  EXPECT_TRUE(user->force_online_signin());
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
+                       CryptohomeUnrecoverable) {
+  SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::UNRECOVERABLE_CRYPTOHOME);
+
+  WaitForGaiaPageLoad();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(),
+            test_user_.account_id.GetUserEmail());
+
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(test_user_.account_id);
   ASSERT_TRUE(user);

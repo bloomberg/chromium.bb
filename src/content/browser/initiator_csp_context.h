@@ -24,14 +24,12 @@ class InitiatorCSPContext : public network::CSPContext {
  public:
   InitiatorCSPContext(
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies,
-      network::mojom::CSPSourcePtr self_source,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator);
   ~InitiatorCSPContext() override;
 
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation_params) override;
-  bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;
   void SetReportingRenderFrameHost(RenderFrameHostImpl* rfh);
   void SanitizeDataForUseInCspViolation(
       bool is_redirect,

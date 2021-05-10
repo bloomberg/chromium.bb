@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
@@ -26,6 +26,9 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if !defined(OS_ANDROID)
+#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
+#endif
 namespace content {
 
 // Threading note: This is constructed on the device thread, while the
@@ -43,7 +46,13 @@ class WebContentsVideoCaptureDevice::FrameTracker final
         device_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         cursor_controller_(cursor_controller) {
     DCHECK(device_task_runner_);
+#if !defined(OS_ANDROID)
     DCHECK(cursor_controller_);
+#else
+    // On Android |cursor_controller_| must be used or get an unused private
+    // variable compiler error.
+    (void)cursor_controller_;
+#endif
 
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -77,24 +86,22 @@ class WebContentsVideoCaptureDevice::FrameTracker final
     // preferred size override during its capture. The preferred size is a
     // strong suggestion to UI layout code to size the view such that its
     // physical rendering size matches the exact capture size. This helps to
-    // eliminate redundant scaling operations during capture.
+    // eliminate redundant scaling operations during capture. Note that if
+    // there are multiple capturers, a "first past the post" system is used and
+    // the first capturer's preferred size is set.
     //
-    // TODO(crbug.com/350491): Propagate capture frame size changes as new
-    // "preferred size" updates, rather than just using the max frame size. This
-    // would also fix an issue where the view may move to a different screen
-    // that has a different device scale factor while being captured.
-    gfx::Size preferred_size;
+    // The preferred size is the same as the capture size, as it
+    // generally factors in the device scale factor of the view implicitly.
+    gfx::Size preferred_size = capture_size;
     if (auto* view = GetCurrentView()) {
-      // TODO(danakj): Should this be rounded?
-      preferred_size = gfx::ToFlooredSize(
-          gfx::ConvertSizeToDips(capture_size, view->GetDeviceScaleFactor()));
+      // If we know the available size of the screen, we don't want to exceed
+      // it as it may result in strange capture behavior in some cases.
+      blink::ScreenInfo info;
+      view->GetScreenInfo(&info);
+
+      // The |rect| on ScreenInfo is the size of the display.
+      preferred_size.SetToMin(info.rect.size());
     }
-    if (preferred_size.IsEmpty()) {
-      preferred_size = capture_size;
-    }
-    VLOG(1) << "Computed preferred WebContents size as "
-            << preferred_size.ToString() << " from a capture size of "
-            << capture_size.ToString();
     contents->IncrementCapturerCount(preferred_size, /* stay_hidden */ false);
     is_capturing_ = true;
   }
@@ -179,7 +186,9 @@ class WebContentsVideoCaptureDevice::FrameTracker final
         // Note: MouseCursorOverlayController runs on the UI thread. It's also
         // important that SetTargetView() be called in the current stack while
         // |native_view| is known to be a valid pointer. http://crbug.com/818679
+#if !defined(OS_ANDROID)
         cursor_controller_->SetTargetView(native_view);
+#endif
       }
     } else {
       device_task_runner_->PostTask(
@@ -187,7 +196,9 @@ class WebContentsVideoCaptureDevice::FrameTracker final
           base::BindOnce(
               &WebContentsVideoCaptureDevice::OnTargetPermanentlyLost,
               device_));
+#if !defined(OS_ANDROID)
       cursor_controller_->SetTargetView(gfx::NativeView());
+#endif
     }
   }
 

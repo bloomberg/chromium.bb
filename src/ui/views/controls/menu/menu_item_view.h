@@ -123,6 +123,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
+  FocusBehavior GetFocusBehavior() const override;
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.
@@ -239,7 +240,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Adds a callback subscription associated with the above selected property.
   // The callback will be invoked whenever the selected property changes.
-  PropertyChangedSubscription AddSelectedChangedCallback(
+  base::CallbackListSubscription AddSelectedChangedCallback(
       PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // Sets whether the submenu area of an ACTIONABLE_SUBMENU is selected.
@@ -278,6 +279,11 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   void set_is_new(bool is_new) { is_new_ = is_new; }
   bool is_new() const { return is_new_; }
+
+  void set_may_have_mnemonics(bool may_have_mnemonics) {
+    may_have_mnemonics_ = may_have_mnemonics;
+  }
+  bool may_have_mnemonics() const { return may_have_mnemonics_; }
 
   // Paints the menu item.
   void OnPaint(gfx::Canvas* canvas) override;
@@ -362,6 +368,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns whether or not a "new" badge should be shown on this menu item.
   // Takes into account whether the badging feature is enabled.
   bool ShouldShowNewBadge() const;
+
+  // Returns whether keyboard navigation through the menu should stop on this
+  // item.
+  bool IsTraversableByKeyboard() const;
 
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
@@ -527,6 +537,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Whether the menu item should be badged as "New" (if badging is enabled) as
   // a way to highlight a new feature for users.
   bool is_new_ = false;
+
+  // Whether the menu item contains user-created text.
+  bool may_have_mnemonics_ = true;
 
   // Submenu, created via CreateSubmenu.
   SubmenuView* submenu_ = nullptr;

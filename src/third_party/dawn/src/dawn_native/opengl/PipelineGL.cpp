@@ -17,10 +17,12 @@
 #include "common/BitSetIterator.h"
 #include "common/Log.h"
 #include "dawn_native/BindGroupLayout.h"
+#include "dawn_native/Device.h"
 #include "dawn_native/Pipeline.h"
 #include "dawn_native/opengl/Forward.h"
 #include "dawn_native/opengl/OpenGLFunctions.h"
 #include "dawn_native/opengl/PipelineLayoutGL.h"
+#include "dawn_native/opengl/SamplerGL.h"
 #include "dawn_native/opengl/ShaderModuleGL.h"
 
 #include <set>
@@ -42,8 +44,8 @@ namespace dawn_native { namespace opengl {
 
     }  // namespace
 
-    PipelineGL::PipelineGL() {
-    }
+    PipelineGL::PipelineGL() = default;
+    PipelineGL::~PipelineGL() = default;
 
     void PipelineGL::Initialize(const OpenGLFunctions& gl,
                                 const PipelineLayout* layout,
@@ -82,12 +84,23 @@ namespace dawn_native { namespace opengl {
 
         // Create an OpenGL shader for each stage and gather the list of combined samplers.
         PerStage<CombinedSamplerInfo> combinedSamplers;
+        bool needsDummySampler = false;
         for (SingleShaderStage stage : IterateStages(activeStages)) {
             const ShaderModule* module = ToBackend(stages[stage].module.Get());
-            std::string glsl = module->TranslateToGLSL(stages[stage].entryPoint.c_str(), stage,
-                                                       &combinedSamplers[stage]);
+            std::string glsl =
+                module->TranslateToGLSL(stages[stage].entryPoint.c_str(), stage,
+                                        &combinedSamplers[stage], layout, &needsDummySampler);
             GLuint shader = CreateShader(gl, GLShaderType(stage), glsl.c_str());
             gl.AttachShader(mProgram, shader);
+        }
+
+        if (needsDummySampler) {
+            SamplerDescriptor desc = {};
+            ASSERT(desc.minFilter == wgpu::FilterMode::Nearest);
+            ASSERT(desc.magFilter == wgpu::FilterMode::Nearest);
+            ASSERT(desc.mipmapFilter == wgpu::FilterMode::Nearest);
+            mDummySampler = AcquireRef(
+                ToBackend(layout->GetDevice()->GetOrCreateSampler(&desc).AcquireSuccess()));
         }
 
         // Link all the shaders together.
@@ -119,40 +132,52 @@ namespace dawn_native { namespace opengl {
                 BindingIndex bindingIndex = it.second;
 
                 std::string name = GetBindingName(group, bindingNumber);
-                switch (bgl->GetBindingInfo(bindingIndex).type) {
-                    case wgpu::BindingType::UniformBuffer: {
-                        GLint location = gl.GetUniformBlockIndex(mProgram, name.c_str());
-                        if (location != -1) {
-                            gl.UniformBlockBinding(mProgram, location,
-                                                   indices[group][bindingIndex]);
+                const BindingInfo& bindingInfo = bgl->GetBindingInfo(bindingIndex);
+                switch (bindingInfo.bindingType) {
+                    case BindingInfoType::Buffer:
+                        switch (bindingInfo.buffer.type) {
+                            case wgpu::BufferBindingType::Uniform: {
+                                GLint location = gl.GetUniformBlockIndex(mProgram, name.c_str());
+                                if (location != -1) {
+                                    gl.UniformBlockBinding(mProgram, location,
+                                                           indices[group][bindingIndex]);
+                                }
+                                break;
+                            }
+                            case wgpu::BufferBindingType::Storage:
+                            case wgpu::BufferBindingType::ReadOnlyStorage: {
+                                // Since glShaderStorageBlockBinding doesn't exist in OpenGL ES, we
+                                // skip that call and handle it during shader translation by
+                                // modifying the location decoration. Contrary to all other binding
+                                // types, OpenGL ES's SSBO binding index in the SSBO table is the
+                                // value of the location= decoration in GLSL.
+                                if (gl.GetVersion().IsDesktop()) {
+                                    GLuint location = gl.GetProgramResourceIndex(
+                                        mProgram, GL_SHADER_STORAGE_BLOCK, name.c_str());
+                                    if (location != GL_INVALID_INDEX) {
+                                        gl.ShaderStorageBlockBinding(mProgram, location,
+                                                                     indices[group][bindingIndex]);
+                                    }
+                                }
+                                break;
+                            }
+                            case wgpu::BufferBindingType::Undefined:
+                                UNREACHABLE();
                         }
                         break;
-                    }
 
-                    case wgpu::BindingType::StorageBuffer:
-                    case wgpu::BindingType::ReadonlyStorageBuffer: {
-                        GLuint location = gl.GetProgramResourceIndex(
-                            mProgram, GL_SHADER_STORAGE_BLOCK, name.c_str());
-                        if (location != GL_INVALID_INDEX) {
-                            gl.ShaderStorageBlockBinding(mProgram, location,
-                                                         indices[group][bindingIndex]);
-                        }
-                        break;
-                    }
-
-                    case wgpu::BindingType::Sampler:
-                    case wgpu::BindingType::ComparisonSampler:
-                    case wgpu::BindingType::SampledTexture:
-                    case wgpu::BindingType::MultisampledTexture:
+                    case BindingInfoType::Sampler:
+                    case BindingInfoType::Texture:
                         // These binding types are handled in the separate sampler and texture
                         // emulation
                         break;
 
-                    case wgpu::BindingType::ReadonlyStorageTexture:
-                    case wgpu::BindingType::WriteonlyStorageTexture: {
-                        GLint location = gl.GetUniformLocation(mProgram, name.c_str());
-                        if (location != -1) {
-                            gl.Uniform1i(location, indices[group][bindingIndex]);
+                    case BindingInfoType::StorageTexture: {
+                        if (gl.GetVersion().IsDesktop()) {
+                            GLint location = gl.GetUniformLocation(mProgram, name.c_str());
+                            if (location != -1) {
+                                gl.Uniform1i(location, indices[group][bindingIndex]);
+                            }
                         }
                         break;
                     }
@@ -193,17 +218,22 @@ namespace dawn_native { namespace opengl {
                     GLuint textureIndex = indices[combined.textureLocation.group][bindingIndex];
                     mUnitsForTextures[textureIndex].push_back(textureUnit);
 
-                    shouldUseFiltering = bgl->GetBindingInfo(bindingIndex).textureComponentType ==
-                                         wgpu::TextureComponentType::Float;
+                    shouldUseFiltering = bgl->GetBindingInfo(bindingIndex).texture.sampleType ==
+                                         wgpu::TextureSampleType::Float;
                 }
                 {
-                    const BindGroupLayoutBase* bgl =
-                        layout->GetBindGroupLayout(combined.samplerLocation.group);
-                    BindingIndex bindingIndex =
-                        bgl->GetBindingIndex(combined.samplerLocation.binding);
+                    if (combined.useDummySampler) {
+                        mDummySamplerUnits.push_back(textureUnit);
+                    } else {
+                        const BindGroupLayoutBase* bgl =
+                            layout->GetBindGroupLayout(combined.samplerLocation.group);
+                        BindingIndex bindingIndex =
+                            bgl->GetBindingIndex(combined.samplerLocation.binding);
 
-                    GLuint samplerIndex = indices[combined.samplerLocation.group][bindingIndex];
-                    mUnitsForSamplers[samplerIndex].push_back({textureUnit, shouldUseFiltering});
+                        GLuint samplerIndex = indices[combined.samplerLocation.group][bindingIndex];
+                        mUnitsForSamplers[samplerIndex].push_back(
+                            {textureUnit, shouldUseFiltering});
+                    }
                 }
 
                 textureUnit++;
@@ -228,6 +258,10 @@ namespace dawn_native { namespace opengl {
 
     void PipelineGL::ApplyNow(const OpenGLFunctions& gl) {
         gl.UseProgram(mProgram);
+        for (GLuint unit : mDummySamplerUnits) {
+            ASSERT(mDummySampler.Get() != nullptr);
+            gl.BindSampler(unit, mDummySampler->GetNonFilteringHandle());
+        }
     }
 
 }}  // namespace dawn_native::opengl

@@ -36,6 +36,7 @@ void PopulateRtpWithCodecSpecifics(const CodecSpecificInfo& info,
                                    absl::optional<int> spatial_index,
                                    RTPVideoHeader* rtp) {
   rtp->codec = info.codecType;
+  rtp->is_last_frame_in_picture = info.end_of_picture;
   switch (info.codecType) {
     case kVideoCodecVP8: {
       auto& vp8_header = rtp->video_type_header.emplace<RTPVideoHeaderVP8>();
@@ -155,7 +156,7 @@ RTPVideoHeader RtpPayloadParams::GetRtpVideoHeader(
     PopulateRtpWithCodecSpecifics(*codec_specific_info, image.SpatialIndex(),
                                   &rtp_video_header);
   }
-  rtp_video_header.frame_type = image._frameType,
+  rtp_video_header.frame_type = image._frameType;
   rtp_video_header.rotation = image.rotation_;
   rtp_video_header.content_type = image.content_type_;
   rtp_video_header.playout_delay = image.playout_delay_;
@@ -234,12 +235,11 @@ void RtpPayloadParams::SetCodecSpecific(RTPVideoHeader* rtp_video_header,
 RTPVideoHeader::GenericDescriptorInfo
 RtpPayloadParams::GenericDescriptorFromFrameInfo(
     const GenericFrameInfo& frame_info,
-    int64_t frame_id,
-    VideoFrameType frame_type) {
+    int64_t frame_id) {
   RTPVideoHeader::GenericDescriptorInfo generic;
   generic.frame_id = frame_id;
   generic.dependencies = dependencies_calculator_.FromBuffersUsage(
-      frame_type, frame_id, frame_info.encoder_buffers);
+      frame_id, frame_info.encoder_buffers);
   generic.chain_diffs =
       chains_calculator_.From(frame_id, frame_info.part_of_chain);
   generic.spatial_index = frame_info.spatial_id;
@@ -260,9 +260,8 @@ void RtpPayloadParams::SetGeneric(const CodecSpecificInfo* codec_specific_info,
       chains_calculator_.Reset(
           codec_specific_info->generic_frame_info->part_of_chain);
     }
-    rtp_video_header->generic =
-        GenericDescriptorFromFrameInfo(*codec_specific_info->generic_frame_info,
-                                       frame_id, rtp_video_header->frame_type);
+    rtp_video_header->generic = GenericDescriptorFromFrameInfo(
+        *codec_specific_info->generic_frame_info, frame_id);
     return;
   }
 

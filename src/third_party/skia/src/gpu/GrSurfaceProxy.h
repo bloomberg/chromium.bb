@@ -299,7 +299,7 @@ public:
     // will be the same as the src. Therefore, the copy can be used in a view with the same swizzle
     // as the original for use with a given color type.
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
-                                      GrSurfaceProxy* src,
+                                      sk_sp<GrSurfaceProxy> src,
                                       GrSurfaceOrigin,
                                       GrMipmapped,
                                       SkIRect srcRect,
@@ -309,7 +309,7 @@ public:
 
     // Same as above Copy but copies the entire 'src'
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
-                                      GrSurfaceProxy* src,
+                                      sk_sp<GrSurfaceProxy> src,
                                       GrSurfaceOrigin,
                                       GrMipmapped,
                                       SkBackingFit,
@@ -318,13 +318,22 @@ public:
 #if GR_TEST_UTILS
     int32_t testingOnly_getBackingRefCnt() const;
     GrInternalSurfaceFlags testingOnly_getFlags() const;
+    SkString dump() const;
 #endif
 
-    SkDEBUGCODE(void validate(GrContext_Base*) const;)
+#ifdef SK_DEBUG
+    void validate(GrContext_Base*) const;
+    SkString getDebugName() {
+        return fDebugName.isEmpty() ? SkStringPrintf("%d", this->uniqueID().asUInt()) : fDebugName;
+    }
+    void setDebugName(SkString name) { fDebugName = std::move(name); }
+#endif
 
     // Provides access to functions that aren't part of the public API.
     inline GrSurfaceProxyPriv priv();
     inline const GrSurfaceProxyPriv priv() const;  // NOLINT(readability-const-return-type)
+
+    bool isDDLTarget() const { return fIsDDLTarget; }
 
     GrProtected isProtected() const { return fIsProtected; }
 
@@ -423,6 +432,7 @@ private:
     virtual LazySurfaceDesc callbackDesc() const = 0;
 
     bool                   fIgnoredByResourceAllocator = false;
+    bool                   fIsDDLTarget = false;
     GrProtected            fIsProtected;
 
     // This entry is lazily evaluated so, when the proxy wraps a resource, the resource
@@ -430,6 +440,7 @@ private:
     // If the proxy computes its own answer that answer is checked (in debug mode) in
     // the instantiation method.
     mutable size_t         fGpuMemorySize;
+    SkDEBUGCODE(SkString   fDebugName;)
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrSurfaceProxy::ResolveFlags)

@@ -105,8 +105,6 @@ source_set("audio") {
     "audio_output_resampler.h",
     "audio_output_stream_sink.cc",
     "audio_output_stream_sink.h",
-    "audio_pcm_encoder.cc",
-    "audio_pcm_encoder.h",
     "audio_sink_parameters.cc",
     "audio_sink_parameters.h",
     "audio_source_diverter.h",
@@ -268,13 +266,13 @@ source_set("audio") {
       "cras/cras_unified.h",
     ]
     configs += [ ":libcras" ]
-    if (is_ash) {
+    if (is_chromeos_ash) {
       sources += [
         "cras/audio_manager_chromeos.cc",
         "cras/audio_manager_chromeos.h",
       ]
-      deps += [ "//chromeos/audio" ]
-    } else if (is_linux) {
+      deps += [ "//ash/components/audio" ]
+    } else if (is_linux || is_chromeos_lacros) {
       sources += [
         "cras/audio_manager_cras.cc",
         "cras/audio_manager_cras.h",
@@ -432,7 +430,7 @@ source_set("unit_tests") {
     ]
   }
 
-  if (is_ash || is_chromecast) {
+  if (is_chromeos_ash || is_chromecast) {
     sources += [
       "test_data.h",
       "wav_audio_handler_unittest.cc",
@@ -440,7 +438,7 @@ source_set("unit_tests") {
 
     if (!is_chromecast) {
       deps += [
-        "//chromeos/audio",
+        "//ash/components/audio",
         "//chromeos/dbus/audio",
       ]
     }

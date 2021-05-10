@@ -1135,6 +1135,10 @@ class DownloadAsStreamBodyHandler : public BodyHandler,
                                     weak_ptr_factory_.GetWeakPtr()));
       return;
     }
+    if (!body_reader_) {
+      // If Resume was delayed, body_reader_ could have been deleted.
+      return;
+    }
     body_reader_->Resume();
   }
 
@@ -1168,8 +1172,8 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
 
       // Bytes should be attached with AttachStringForUpload to allow
       // streaming of large byte buffers to the network process when uploading.
-      DCHECK(element.type() != mojom::DataElementType::kFile &&
-             element.type() != mojom::DataElementType::kBytes);
+      DCHECK(element.type() != mojom::DataElementDataView::Tag::kFile &&
+             element.type() != mojom::DataElementDataView::Tag::kBytes);
     }
   }
 #endif  // DCHECK_IS_ON()
@@ -1357,7 +1361,7 @@ void SimpleURLLoaderImpl::SetRetryOptions(int max_retries, int retry_mode) {
       // pipe.
       // TODO(mmenke):  Data pipes can be Cloned(), though, so maybe update code
       // to do that?
-      DCHECK(element.type() != mojom::DataElementType::kDataPipe);
+      DCHECK(element.type() != mojom::DataElementDataView::Tag::kDataPipe);
     }
   }
 #endif  // DCHECK_IS_ON()

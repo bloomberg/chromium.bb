@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="12">
+  <interface name="zaura_shell" version="16">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -83,9 +83,19 @@
       </description>
       <arg name="layout_mode" type="uint" summary="layout_mode enum"/>
     </event>
+
+    <!-- Version 14 additions -->
+
+    <event name="bug_fix" since="14">
+      <description summary="sends a bug fix ID">
+        Sends a monorail ID of a bug fixed on the exo server that clients can
+        use to gate functionality.
+      </description>
+      <arg name="id" type="uint" summary="ID of a single bug fix"/>
+    </event>
   </interface>
 
-  <interface name="zaura_surface" version="12">
+  <interface name="zaura_surface" version="16">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -252,6 +262,52 @@
       <arg name="client_surface_id" type="string" />
     </request>
 
+    <!-- Version 15 additions -->
+
+    <request name="set_server_start_resize" since="15">
+      <description summary="request a server-side shadow for surface">
+	Suggests a surface to have client-side decoration, but
+	server-side decides when and where to start the resize. The server may also
+	apply visual effects to indicate that the resize operation is ongoing.
+      </description>
+    </request>
+
+    <!-- Version 16 additions -->
+
+    <enum name="snap_direction">
+      <description summary="surface snap directions">
+        Surface snap directions.
+      </description>
+      <entry name="none" value="0" summary=""/>
+      <entry name="left" value="1" summary=""/>
+      <entry name="right" value="2" summary=""/>
+    </enum>
+
+    <request name="intent_to_snap" since="16">
+      <description summary="client intents to snap the surface.">
+        Notify (or inform) the server the client's intent to snap the window.
+        To inform it's no longer willing to snap, send 'none'.
+      </description>
+      <arg name="direction" type="uint" enum="snap_direction"/>
+    </request>
+
+    <request name="set_snap_left" since="16">
+      <description summary="snap the surface to the left.">
+        Request that surface is snapped to the left.
+      </description>
+    </request>
+
+    <request name="set_snap_right" since="16">
+      <description summary="snap the surface to the right.">
+        Request that surface is snapped to the right.
+      </description>
+    </request>
+
+    <request name="unset_snap" since="16">
+      <description summary="Unset the surface snap.">
+        Request that surface resets snapping.
+      </description>
+    </request>
   </interface>
 
   <interface name="zaura_output" version="6">

@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <unordered_map>
 #include <vector>
 

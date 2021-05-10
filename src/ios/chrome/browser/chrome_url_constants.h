@@ -18,6 +18,7 @@ extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIInspectURL[];
 extern const char kChromeUIIntersitialsURL[];
+extern const char kChromeUIManagementURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUINTPTilesInternalsURL[];
 extern const char kChromeUIOfflineURL[];
@@ -66,9 +67,6 @@ extern const size_t kNumberOfChromeHostURLs;
 
 // URL to the sync google dashboard.
 extern const char kSyncGoogleDashboardURL[];
-
-// URL to the Google account configuration page.
-extern const char kManageYourGoogleAccountURL[];
 
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];

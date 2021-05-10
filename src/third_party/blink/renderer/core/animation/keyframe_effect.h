@@ -136,6 +136,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void Trace(Visitor*) const override;
 
   bool UpdateBoxSizeAndCheckTransformAxisAlignment(const FloatSize& box_size);
+  bool IsIdentityOrTranslation() const;
 
   ActiveInterpolationsMap InterpolationsForCommitStyles();
 
@@ -165,6 +166,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
       AnimationTimeDelta time_to_next_iteration) const override;
   bool HasIncompatibleStyle() const;
   bool HasMultipleTransformProperties() const;
+  void RestartRunningAnimationOnCompositor();
 
   Member<Element> effect_target_;
   Member<Element> target_element_;

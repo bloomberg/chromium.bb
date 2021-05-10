@@ -21,6 +21,8 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
@@ -41,6 +43,7 @@ std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
 // badged part of the icon to extend into the padding.
 class IconWrapper : public views::View {
  public:
+  METADATA_HEADER(IconWrapper);
   explicit IconWrapper(std::unique_ptr<views::View> icon, int vertical_spacing)
       : icon_(AddChildView(std::move(icon))) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -68,6 +71,9 @@ class IconWrapper : public views::View {
  private:
   views::View* icon_;
 };
+
+BEGIN_METADATA(IconWrapper, views::View)
+END_METADATA
 
 }  // namespace
 
@@ -162,7 +168,7 @@ HoverButton::HoverButton(PressedCallback callback,
   label_wrapper_ = AddChildView(std::move(label_wrapper));
   // Observe |label_wrapper_| bounds changes to ensure the HoverButton tooltip
   // is kept in sync with the size.
-  observed_label_.Add(label_wrapper_);
+  label_observation_.Observe(label_wrapper_);
 
   if (secondary_view) {
     secondary_view->SetCanProcessEventsWithinSubtree(
@@ -298,3 +304,6 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
   return this;
 }
+
+BEGIN_METADATA(HoverButton, views::LabelButton)
+END_METADATA

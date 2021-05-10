@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/component_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -40,11 +41,13 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
       std::unique_ptr<ClipboardData> data);
 
   // Clipboard overrides:
+  DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
 
  private:
   friend class Clipboard;
   friend class ClipboardNonBackedTest;
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, TextURIList);
   ClipboardNonBacked();
   ~ClipboardNonBacked() override;
 
@@ -85,6 +88,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
                       const base::string16& type,
                       const DataTransferEndpoint* data_dst,
                       base::string16* result) const override;
+  void ReadFilenames(ClipboardBuffer buffer,
+                     const DataTransferEndpoint* data_dst,
+                     std::vector<ui::FileInfo>* result) const override;
   void ReadBookmark(const DataTransferEndpoint* data_dst,
                     base::string16* title,
                     std::string* url) const override;
@@ -107,6 +113,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
                  size_t url_len) override;
   void WriteSvg(const char* markup_data, size_t markup_len) override;
   void WriteRTF(const char* rtf_data, size_t data_len) override;
+  void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
   void WriteBookmark(const char* title_data,
                      size_t title_len,
                      const char* url_data,

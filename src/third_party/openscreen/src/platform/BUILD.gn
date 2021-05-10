@@ -17,7 +17,6 @@ source_set("base") {
     "base/ip_address.h",
     "base/location.cc",
     "base/location.h",
-    "base/socket_state.h",
     "base/tls_connect_options.h",
     "base/tls_credentials.cc",
     "base/tls_credentials.h",
@@ -72,6 +71,7 @@ if (!build_with_chromium) {
       "impl/socket_handle.h",
       "impl/socket_handle_waiter.cc",
       "impl/socket_handle_waiter.h",
+      "impl/socket_state.h",
       "impl/stream_socket.h",
       "impl/task_runner.cc",
       "impl/task_runner.h",
@@ -96,7 +96,7 @@ if (!build_with_chromium) {
         "__APPLE_USE_RFC_3542",
       ]
 
-      libs = [
+      frameworks = [
         "CoreFoundation.framework",
         "IOKit.framework",
       ]
@@ -185,6 +185,11 @@ source_set("test") {
     # for other platforms, but nothing in here is called.
     sources += [ "test/paths_internal_other.cc" ]
   }
+
+  public_deps = [
+    ":api",
+    ":base",
+  ]
 
   deps = [
     ":platform",

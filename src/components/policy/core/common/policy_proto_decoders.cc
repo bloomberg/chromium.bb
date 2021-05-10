@@ -10,11 +10,13 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/cloud_policy.pb.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
 
@@ -140,7 +142,9 @@ void DecodeProtoFields(
     map->Set(access->policy_key, level, scope, source,
              DecodeIntegerProto(proto, &error), nullptr);
     if (!error.empty())
-      map->AddError(access->policy_key, error);
+      map->AddMessage(access->policy_key, PolicyMap::MessageType::kError,
+                      IDS_POLICY_PROTO_PARSING_ERROR,
+                      {base::UTF8ToUTF16(error)});
   }
 
   for (const StringPolicyAccess* access = &kStringPolicyAccess[0];
@@ -166,7 +170,9 @@ void DecodeProtoFields(
     map->Set(access->policy_key, level, scope, source, std::move(value),
              std::move(external_data_fetcher));
     if (!error.empty())
-      map->AddError(access->policy_key, error);
+      map->AddMessage(access->policy_key, PolicyMap::MessageType::kError,
+                      IDS_POLICY_PROTO_PARSING_ERROR,
+                      {base::UTF8ToUTF16(error)});
   }
 
   for (const StringListPolicyAccess* access = &kStringListPolicyAccess[0];

@@ -9,9 +9,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_data_layout.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_texture.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_data_layout.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_index_format.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
@@ -50,6 +51,73 @@ WGPUBindingType AsDawnEnum<WGPUBindingType>(const WTF::String& webgpu_enum) {
   }
   NOTREACHED();
   return WGPUBindingType_Force32;
+}
+
+template <>
+WGPUBufferBindingType AsDawnEnum<WGPUBufferBindingType>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "uniform") {
+    return WGPUBufferBindingType_Uniform;
+  }
+  if (webgpu_enum == "storage") {
+    return WGPUBufferBindingType_Storage;
+  }
+  if (webgpu_enum == "read-only-storage") {
+    return WGPUBufferBindingType_ReadOnlyStorage;
+  }
+  NOTREACHED();
+  return WGPUBufferBindingType_Force32;
+}
+
+template <>
+WGPUSamplerBindingType AsDawnEnum<WGPUSamplerBindingType>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "filtering") {
+    return WGPUSamplerBindingType_Filtering;
+  }
+  if (webgpu_enum == "non-filtering") {
+    return WGPUSamplerBindingType_NonFiltering;
+  }
+  if (webgpu_enum == "comparison") {
+    return WGPUSamplerBindingType_Comparison;
+  }
+  NOTREACHED();
+  return WGPUSamplerBindingType_Force32;
+}
+
+template <>
+WGPUTextureSampleType AsDawnEnum<WGPUTextureSampleType>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "float") {
+    return WGPUTextureSampleType_Float;
+  }
+  if (webgpu_enum == "unfilterable-float") {
+    return WGPUTextureSampleType_UnfilterableFloat;
+  }
+  if (webgpu_enum == "depth") {
+    return WGPUTextureSampleType_Depth;
+  }
+  if (webgpu_enum == "sint") {
+    return WGPUTextureSampleType_Sint;
+  }
+  if (webgpu_enum == "uint") {
+    return WGPUTextureSampleType_Uint;
+  }
+  NOTREACHED();
+  return WGPUTextureSampleType_Force32;
+}
+
+template <>
+WGPUStorageTextureAccess AsDawnEnum<WGPUStorageTextureAccess>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "read-only") {
+    return WGPUStorageTextureAccess_ReadOnly;
+  }
+  if (webgpu_enum == "write-only") {
+    return WGPUStorageTextureAccess_WriteOnly;
+  }
+  NOTREACHED();
+  return WGPUStorageTextureAccess_Force32;
 }
 
 template <>
@@ -231,10 +299,6 @@ WGPUTextureFormat AsDawnEnum<WGPUTextureFormat>(
   if (webgpu_enum == "rgb10a2unorm") {
     return WGPUTextureFormat_RGB10A2Unorm;
   }
-  if (webgpu_enum == "rg11b10float") {
-    // Deprecated.
-    return WGPUTextureFormat_RG11B10Ufloat;
-  }
   if (webgpu_enum == "rg11b10ufloat") {
     return WGPUTextureFormat_RG11B10Ufloat;
   }
@@ -316,10 +380,6 @@ WGPUTextureFormat AsDawnEnum<WGPUTextureFormat>(
     return WGPUTextureFormat_BC6HRGBUfloat;
   }
   if (webgpu_enum == "bc6h-rgb-float") {
-    return WGPUTextureFormat_BC6HRGBFloat;
-  }
-  if (webgpu_enum == "bc6h-rgb-sfloat") {
-    // Deprecated.
     return WGPUTextureFormat_BC6HRGBFloat;
   }
   if (webgpu_enum == "bc7-rgba-unorm") {
@@ -441,6 +501,15 @@ WGPUIndexFormat AsDawnEnum<WGPUIndexFormat>(const WTF::String& webgpu_enum) {
   }
   NOTREACHED();
   return WGPUIndexFormat_Force32;
+}
+
+WGPUIndexFormat AsDawnEnum(const V8GPUIndexFormat& webgpu_enum) {
+  switch (webgpu_enum.AsEnum()) {
+    case V8GPUIndexFormat::Enum::kUint16:
+      return WGPUIndexFormat_Uint16;
+    case V8GPUIndexFormat::Enum::kUint32:
+      return WGPUIndexFormat_Uint32;
+  }
 }
 
 template <>
@@ -764,7 +833,8 @@ WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict* webgpu_color) {
 }
 
 WGPUExtent3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict* webgpu_extent) {
+    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict* webgpu_extent,
+    GPUDevice* device) {
   DCHECK(webgpu_extent);
 
   WGPUExtent3D dawn_extent = {1, 1, 1};
@@ -794,7 +864,14 @@ WGPUExtent3D AsDawnType(
         webgpu_extent->GetAsGPUExtent3DDict();
     dawn_extent.width = webgpu_extent_3d_dict->width();
     dawn_extent.height = webgpu_extent_3d_dict->height();
-    dawn_extent.depth = webgpu_extent_3d_dict->depth();
+
+    if (webgpu_extent_3d_dict->hasDepth()) {
+      device->AddConsoleWarning(
+          "Specifying an extent depth is deprecated. Use depthOrArrayLayers.");
+      dawn_extent.depth = webgpu_extent_3d_dict->depth();
+    } else {
+      dawn_extent.depth = webgpu_extent_3d_dict->depthOrArrayLayers();
+    }
 
   } else {
     NOTREACHED();
@@ -843,7 +920,7 @@ WGPUOrigin3D AsDawnType(
   return dawn_origin;
 }
 
-WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
+WGPUTextureCopyView AsDawnType(const GPUImageCopyTexture* webgpu_view,
                                GPUDevice* device) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->texture());
@@ -861,7 +938,7 @@ WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
 // WGPU_STRIDE_UNDEFINED (0xFFFF'FFFF). Blink must make sure that an actual
 // value of 0xFFFF'FFFF coming in from JS is not treated as
 // WGPU_STRIDE_UNDEFINED, so it injects an error in that case.
-const char* ValidateTextureDataLayout(const GPUTextureDataLayout* webgpu_layout,
+const char* ValidateTextureDataLayout(const GPUImageDataLayout* webgpu_layout,
                                       WGPUTextureDataLayout* dawn_layout) {
   DCHECK(webgpu_layout);
 
@@ -894,7 +971,7 @@ const char* ValidateTextureDataLayout(const GPUTextureDataLayout* webgpu_layout,
 }
 
 OwnedProgrammableStageDescriptor AsDawnType(
-    const GPUProgrammableStageDescriptor* webgpu_stage) {
+    const GPUProgrammableStage* webgpu_stage) {
   DCHECK(webgpu_stage);
 
   std::string entry_point = webgpu_stage->entryPoint().Ascii();

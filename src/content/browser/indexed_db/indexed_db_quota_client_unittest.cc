@@ -57,7 +57,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         temp_dir_.GetPath(), quota_manager->proxy(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
-        /*native_file_system_context=*/mojo::NullRemote(),
+        /*file_system_access_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     base::RunLoop().RunUntilIdle();
@@ -67,10 +67,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   void CreateTempDir() { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void SetupTempDir() {
-    base::FilePath indexeddb_dir =
-        temp_dir_.GetPath().Append(IndexedDBContextImpl::kIndexedDBDirectory);
-    ASSERT_TRUE(base::CreateDirectory(indexeddb_dir));
-    idb_context()->set_data_path_for_testing(indexeddb_dir);
+    ASSERT_TRUE(base::CreateDirectory(idb_context_->data_path()));
   }
 
   ~IndexedDBQuotaClientTest() override {

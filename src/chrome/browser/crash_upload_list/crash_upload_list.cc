@@ -5,15 +5,16 @@
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_MAC) || defined(OS_WIN)
-#include "chrome/browser/crash_upload_list/crash_upload_list_crashpad.h"
+#include "components/crash/core/browser/crash_upload_list_crashpad.h"
 #else
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "chrome/browser/crash_upload_list/crash_upload_list_crashpad.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/crash/core/app/crashpad.h"
+#include "components/crash/core/browser/crash_upload_list_crashpad.h"
 #include "components/upload_list/crash_upload_list.h"
 #include "components/upload_list/text_log_upload_list.h"
 #endif
@@ -38,7 +39,7 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
 // ChromeOS uses crash_sender as its uploader even when Crashpad is enabled,
 // which isn't compatible with CrashUploadListCrashpad. crash_sender continues
 // to log uploads in CrashUploadList::kReporterLogFilename.
-#if !defined(OS_CHROMEOS)
+#if !(BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS))
   if (crash_reporter::IsCrashpadEnabled()) {
     return new CrashUploadListCrashpad();
   }

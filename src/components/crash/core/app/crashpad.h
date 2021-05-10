@@ -13,6 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_APPLE)
 #include "base/mac/scoped_mach_port.h"
@@ -38,9 +39,6 @@ class CrashReportDatabase;
 namespace crash_reporter {
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// TODO(jperaza): Remove kEnableCrashpad and IsCrashpadEnabled() when Crashpad
-// is fully enabled on Linux.
-extern const char kEnableCrashpad[];
 bool IsCrashpadEnabled();
 #endif
 
@@ -107,7 +105,7 @@ crashpad::CrashpadClient& GetCrashpadClient();
 
 // ChromeOS has its own, OS-level consent system; Chrome does not maintain a
 // separate Upload Consent on ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables or disables crash report upload, taking the given consent to upload
 // into account. Consent may be ignored, uploads may not be enabled even with
@@ -119,10 +117,7 @@ crashpad::CrashpadClient& GetCrashpadClient();
 // running.
 void SetUploadConsent(bool consent);
 
-// Determines whether uploads are enabled or disabled. This information is only
-// available in the browser process.
-bool GetUploadsEnabled();
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 enum class ReportUploadState {
   NotUploaded,
@@ -175,10 +170,19 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 // The implementation function for ClearReportsBetween.
 void ClearReportsBetweenImpl(time_t begin, time_t end);
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 // Captures a minidump for the process named by its |task_port| and stores it
 // in the current crash report database.
 void DumpProcessWithoutCrashing(task_t task_port);
+#endif
+
+#if defined(OS_IOS)
+// Convert intermediate dumps into minidumps and trigger an upload. Optional
+// |annotations| will be merged with any process annotations. These are useful
+// for adding annotations detected on the next run after a crash but before
+// upload.
+void ProcessIntermediateDumps(
+    const std::map<std::string, std::string>& annotations = {});
 #endif
 
 #if defined(OS_ANDROID)

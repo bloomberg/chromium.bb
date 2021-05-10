@@ -11,6 +11,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "cast/streaming/message_fields.h"
 #include "cast/streaming/rtp_defines.h"
 #include "cast/streaming/session_config.h"
 #include "json/value.h"
@@ -26,9 +27,9 @@ namespace cast {
 // [kMinTargetDelay, kMaxTargetDelay], it will be set to
 // kDefaultTargetPlayoutDelay.
 constexpr auto kMinTargetPlayoutDelay = std::chrono::milliseconds(0);
-constexpr auto kMaxTargetPlayoutDelay = std::chrono::milliseconds(2000);
+constexpr auto kMaxTargetPlayoutDelay = std::chrono::milliseconds(5000);
 
-// If the sender provides an invalid maximum frame rate, it will
+// If the sender provides an invalid maximum frame rate, it ill
 // be set to kDefaultMaxFrameRate.
 constexpr int kDefaultMaxFrameRate = 30;
 
@@ -51,7 +52,6 @@ struct Stream {
 
   // Default channel count is 1, e.g. for video.
   int channels = 0;
-  std::string codec_name = {};
   RtpPayloadType rtp_payload_type = {};
   Ssrc ssrc = {};
   std::chrono::milliseconds target_delay = {};
@@ -69,6 +69,7 @@ struct AudioStream {
   ErrorOr<Json::Value> ToJson() const;
 
   Stream stream = {};
+  AudioCodec codec;
   int bit_rate = 0;
 };
 
@@ -83,6 +84,7 @@ struct VideoStream {
   ErrorOr<Json::Value> ToJson() const;
 
   Stream stream = {};
+  VideoCodec codec;
   SimpleFraction max_frame_rate;
   int max_bit_rate = 0;
   std::string protection = {};
@@ -92,22 +94,13 @@ struct VideoStream {
   std::string error_recovery_mode = {};
 };
 
-struct CastMode {
- public:
-  enum class Type : uint8_t { kMirroring, kRemoting };
-
-  static CastMode Parse(absl::string_view value);
-  std::string ToString() const;
-
-  // Default cast mode is mirroring.
-  Type type = Type::kMirroring;
-};
+enum class CastMode : uint8_t { kMirroring, kRemoting };
 
 struct Offer {
   static ErrorOr<Offer> Parse(const Json::Value& root);
   ErrorOr<Json::Value> ToJson() const;
 
-  CastMode cast_mode = {};
+  CastMode cast_mode = CastMode::kMirroring;
   // This field is poorly named in the spec (receiverGetStatus), so we use
   // a more descriptive name here.
   bool supports_wifi_status_reporting = {};

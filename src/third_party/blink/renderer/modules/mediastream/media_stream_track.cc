@@ -89,12 +89,9 @@ bool ConstraintSetHasImageCapture(
          constraint_set->hasColorTemperature() || constraint_set->hasIso() ||
          constraint_set->hasBrightness() || constraint_set->hasContrast() ||
          constraint_set->hasSaturation() || constraint_set->hasSharpness() ||
-         constraint_set->hasFocusDistance() ||
-         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
-          constraint_set->hasPan()) ||
-         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
-          constraint_set->hasTilt()) ||
-         constraint_set->hasZoom() || constraint_set->hasTorch();
+         constraint_set->hasFocusDistance() || constraint_set->hasPan() ||
+         constraint_set->hasTilt() || constraint_set->hasZoom() ||
+         constraint_set->hasTorch();
 }
 
 bool ConstraintSetHasNonImageCapture(
@@ -405,12 +402,27 @@ String MediaStreamTrack::readyState() const {
   return String();
 }
 
+void MediaStreamTrack::setReadyState(
+    MediaStreamSource::ReadyState ready_state) {
+  if (ready_state_ != MediaStreamSource::kReadyStateEnded &&
+      ready_state_ != ready_state) {
+    ready_state_ = ready_state;
+
+    // Observers may dispatch events which create and add new Observers;
+    // take a snapshot so as to safely iterate.
+    HeapVector<Member<Observer>> observers;
+    CopyToVector(observers_, observers);
+    for (auto observer : observers)
+      observer->TrackChangedState();
+  }
+}
+
 void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
   SendLogMessage(base::StringPrintf("stopTrack([id=%s])", id().Utf8().c_str()));
   if (Ended())
     return;
 
-  ready_state_ = MediaStreamSource::kReadyStateEnded;
+  setReadyState(MediaStreamSource::kReadyStateEnded);
   feature_handle_for_scheduler_.reset();
   UserMediaController* user_media =
       UserMediaController::From(To<LocalDOMWindow>(execution_context));
@@ -426,6 +438,9 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
       ExecutionContext::From(script_state), cloned_component, ready_state_,
       base::DoNothing());
   DidCloneMediaStreamTrack(Component(), cloned_component);
+  if (image_capture_) {
+    cloned_track->image_capture_ = image_capture_->Clone();
+  }
   return cloned_track;
 }
 
@@ -743,7 +758,7 @@ void MediaStreamTrack::SourceChangedState() {
   // Note that both 'live' and 'muted' correspond to a 'live' ready state in the
   // web API, hence the following logic around |feature_handle_for_scheduler_|.
 
-  ready_state_ = component_->Source()->GetReadyState();
+  setReadyState(component_->Source()->GetReadyState());
   switch (ready_state_) {
     case MediaStreamSource::kReadyStateLive:
       component_->SetMuted(false);
@@ -826,6 +841,7 @@ void MediaStreamTrack::Trace(Visitor* visitor) const {
   visitor->Trace(component_);
   visitor->Trace(image_capture_);
   visitor->Trace(execution_context_);
+  visitor->Trace(observers_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
@@ -844,6 +860,10 @@ void MediaStreamTrack::EnsureFeatureHandleForScheduler() {
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           SchedulingPolicy::DisableAggressiveThrottling());
+}
+
+void MediaStreamTrack::AddObserver(MediaStreamTrack::Observer* observer) {
+  observers_.insert(observer);
 }
 
 }  // namespace blink

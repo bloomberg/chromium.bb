@@ -17,7 +17,7 @@
 
 #include "src/ast/assignment_statement.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -28,13 +28,15 @@ namespace {
 using HlslGeneratorImplTest_Assign = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Assign, Emit_Assign) {
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
   EXPECT_EQ(result(), "  lhs = rhs;\n");
 }
 

@@ -39,6 +39,9 @@
 #include "perfetto/tracing/internal/basic_types.h"
 #include "perfetto/tracing/internal/tracing_muxer.h"
 #include "perfetto/tracing/tracing.h"
+
+#include "protos/perfetto/common/interceptor_descriptor.gen.h"
+
 namespace perfetto {
 
 class ConsumerEndpoint;
@@ -100,9 +103,15 @@ class TracingMuxerImpl : public TracingMuxer {
                           DataSourceFactory,
                           DataSourceStaticState*) override;
   std::unique_ptr<TraceWriterBase> CreateTraceWriter(
+      DataSourceStaticState*,
+      uint32_t data_source_instance_index,
       DataSourceState*,
       BufferExhaustedPolicy buffer_exhausted_policy) override;
   void DestroyStoppedTraceWritersForCurrentThread() override;
+  void RegisterInterceptor(const InterceptorDescriptor&,
+                           InterceptorFactory,
+                           InterceptorBase::TLSFactory,
+                           InterceptorBase::TracePacketCallback) override;
 
   std::unique_ptr<TracingSession> CreateTracingSession(BackendType);
 
@@ -122,8 +131,12 @@ class TracingMuxerImpl : public TracingMuxer {
                            const std::shared_ptr<TraceConfig>&,
                            base::ScopedFile trace_fd = base::ScopedFile());
   void StartTracingSession(TracingSessionGlobalID);
+  void ChangeTracingSessionConfig(TracingSessionGlobalID, const TraceConfig&);
   void StopTracingSession(TracingSessionGlobalID);
   void DestroyTracingSession(TracingSessionGlobalID);
+  void FlushTracingSession(TracingSessionGlobalID,
+                           uint32_t,
+                           std::function<void(bool)>);
   void ReadTracingSessionData(
       TracingSessionGlobalID,
       std::function<void(TracingSession::ReadTraceCallbackArgs)>);
@@ -142,6 +155,8 @@ class TracingMuxerImpl : public TracingMuxer {
   // operation succeeded for all backends with type |backend_type|, false
   // otherwise.
   bool EnableDirectSMBPatchingForTesting(BackendType backend_type);
+
+  void SetMaxProducerReconnectionsForTesting(uint32_t count);
 
  private:
   // For each TracingBackend we create and register one ProducerImpl instance.
@@ -312,7 +327,7 @@ class TracingMuxerImpl : public TracingMuxer {
   // Tracing::CreateTracingSession().
   class TracingSessionImpl : public TracingSession {
    public:
-    TracingSessionImpl(TracingMuxerImpl*, TracingSessionGlobalID);
+    TracingSessionImpl(TracingMuxerImpl*, TracingSessionGlobalID, BackendType);
     ~TracingSessionImpl() override;
     void Setup(const TraceConfig&, int fd) override;
     void Start() override;
@@ -321,20 +336,30 @@ class TracingMuxerImpl : public TracingMuxer {
     void SetOnErrorCallback(std::function<void(TracingError)>) override;
     void Stop() override;
     void StopBlocking() override;
+    void Flush(std::function<void(bool)>, uint32_t timeout_ms) override;
     void ReadTrace(ReadTraceCallback) override;
     void SetOnStopCallback(std::function<void()>) override;
     void GetTraceStats(GetTraceStatsCallback) override;
     void QueryServiceState(QueryServiceStateCallback) override;
+    void ChangeTraceConfig(const TraceConfig&) override;
 
    private:
     TracingMuxerImpl* const muxer_;
     TracingSessionGlobalID const session_id_;
+    BackendType const backend_type_;
   };
 
   struct RegisteredDataSource {
     DataSourceDescriptor descriptor;
     DataSourceFactory factory{};
     DataSourceStaticState* static_state = nullptr;
+  };
+
+  struct RegisteredInterceptor {
+    protos::gen::InterceptorDescriptor descriptor;
+    InterceptorFactory factory{};
+    InterceptorBase::TLSFactory tls_factory{};
+    InterceptorBase::TracePacketCallback packet_callback{};
   };
 
   struct RegisteredBackend {
@@ -372,8 +397,13 @@ class TracingMuxerImpl : public TracingMuxer {
   std::unique_ptr<base::TaskRunner> task_runner_;
   std::vector<RegisteredDataSource> data_sources_;
   std::vector<RegisteredBackend> backends_;
+  std::vector<RegisteredInterceptor> interceptors_;
 
   std::atomic<TracingSessionGlobalID> next_tracing_session_id_{};
+
+  // Maximum number of times we will try to reconnect producer backend.
+  // Should only be modified for testing purposes.
+  std::atomic<uint32_t> max_producer_reconnections_{100u};
 
   PERFETTO_THREAD_CHECKER(thread_checker_)
 };

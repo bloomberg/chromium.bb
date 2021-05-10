@@ -11,7 +11,9 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -34,6 +36,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/themed_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -44,9 +47,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
@@ -161,6 +166,8 @@ gfx::ImageSkia SizeImageModel(const ui::ImageModel& image_model,
 // TODO(crbug.com/1146998): Adjust button size to be 16x16.
 class CircularImageButton : public views::ImageButton {
  public:
+  METADATA_HEADER(CircularImageButton);
+
   CircularImageButton(PressedCallback callback,
                       const gfx::VectorIcon& icon,
                       const base::string16& text,
@@ -207,6 +214,9 @@ class CircularImageButton : public views::ImageButton {
   const SkColor background_profile_color_;
   bool show_border_;
 };
+
+BEGIN_METADATA(CircularImageButton, views::ImageButton)
+END_METADATA
 
 class FeatureButtonIconView : public views::ImageView {
  public:
@@ -305,6 +315,7 @@ class AvatarImageView : public views::ImageView {
 
 class SyncButton : public HoverButton {
  public:
+  METADATA_HEADER(SyncButton);
   SyncButton(PressedCallback callback,
              ProfileMenuViewBase* root_view,
              const base::string16& clickable_text)
@@ -320,6 +331,9 @@ class SyncButton : public HoverButton {
  private:
   const ProfileMenuViewBase* root_view_;
 };
+
+BEGIN_METADATA(SyncButton, HoverButton)
+END_METADATA
 
 class SyncImageView : public views::ImageView {
  public:
@@ -412,7 +426,7 @@ void BuildProfileBackgroundContainer(
           std::make_unique<views::View>());
   heading_and_image_container->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(1));
   heading_and_image_container
@@ -570,12 +584,14 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
 
   auto avatar_image_view = std::make_unique<AvatarImageView>(image_model, this);
 
-  // Use the profile identity info to label the entire menu, for accessibility
-  // users to get the user account as context information when they open it.
-  const base::string16& accessible_menu_name =
-      title.empty() ? (subtitle.empty() ? GetAccessibleWindowTitle() : subtitle)
-                    : title;
-  GetViewAccessibility().OverrideName(accessible_menu_name);
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // crbug.com/1161166: Orca does not read the accessible window title of the
+  // bubble, so we duplicate it in the top-level menu item. To be revisited
+  // after considering other options, including fixes on the AT side.
+  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
+#endif
 
   if (!new_design) {
     if (!profile_name.empty()) {
@@ -625,6 +641,10 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
     heading_label = std::make_unique<views::Label>(profile_name, font);
     heading_label->SetElideBehavior(gfx::ELIDE_TAIL);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    heading_label->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
     if (background_color) {
       heading_label->SetAutoColorReadabilityEnabled(false);
       heading_label->SetEnabledColor(
@@ -1048,7 +1068,7 @@ class ProfileMenuViewBase::AXMenuWidgetObserver : public views::WidgetObserver {
  public:
   AXMenuWidgetObserver(ProfileMenuViewBase* owner, views::Widget* widget)
       : owner_(owner) {
-    observer_.Add(widget);
+    observation_.Observe(widget);
   }
   ~AXMenuWidgetObserver() override = default;
 
@@ -1064,5 +1084,6 @@ class ProfileMenuViewBase::AXMenuWidgetObserver : public views::WidgetObserver {
 
  private:
   ProfileMenuViewBase* owner_;
-  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver> observation_{
+      this};
 };

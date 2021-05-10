@@ -2,11 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+// #import {MultiMenuButton} from './ui/multi_menu_button.m.js';
+// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
+// #import {Crostini} from '../../../externs/background/crostini.m.js';
+// #import {NamingController} from './naming_controller.m.js';
+// #import {TaskHistory} from './task_history.m.js';
+// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
+// #import {DirectoryModel} from './directory_model.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.m.js';
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {FilesMenuItem} from './ui/files_menu.m.js';
+// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+// #import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
+// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
+// #import {FileTransferController} from './file_transfer_controller.m.js';
+// #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
+// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {constants} from './constants.m.js';
+// #import {util, strf, str} from '../../common/js/util.m.js';
+// #import {AsyncUtil} from '../../common/js/async_util.m.js'
+// #import {metrics} from '../../common/js/metrics.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {DefaultTaskDialog} from './ui/default_task_dialog.m.js';
+// #import {ComboButton} from './ui/combobutton.m.js';
+// clang-format on
+
 /**
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
  */
-class FileTasks {
+/* #export */ class FileTasks {
   /**
    * @param {!VolumeManager} volumeManager
    * @param {!MetadataModel} metadataModel
@@ -173,48 +203,6 @@ class FileTasks {
    */
   getNonOpenTaskItems() {
     return this.tasks_.filter(task => !FileTasks.isOpenTask(task));
-  }
-
-  /**
-   * Opens the suggest file dialog.
-   *
-   * @param {function()} onSuccess Success callback.
-   * @param {function()} onCancelled User-cancelled callback.
-   * @param {function()} onFailure Failure callback.
-   */
-  openSuggestAppsDialog(onSuccess, onCancelled, onFailure) {
-    if (this.entries_.length !== 1) {
-      onFailure();
-      return;
-    }
-
-    const entry = this.entries_[0];
-    const mimeType = this.mimeTypes_[0];
-    const basename = entry.name;
-    const splitted = util.splitExtension(basename);
-    const extension = splitted[1];
-
-    // Returns with failure if the file has neither extension nor MIME type.
-    if (!extension && !mimeType) {
-      onFailure();
-      return;
-    }
-
-    const onDialogClosed = (result, itemId) => {
-      switch (result) {
-        case SuggestAppsDialog.Result.SUCCESS:
-          onSuccess();
-          break;
-        case SuggestAppsDialog.Result.FAILED:
-          onFailure();
-          break;
-        default:
-          onCancelled();
-      }
-    };
-
-    this.ui_.suggestAppsDialog.showByExtensionAndMime(
-        extension, mimeType, onDialogClosed);
   }
 
   /**
@@ -482,6 +470,60 @@ class FileTasks {
   }
 
   /**
+   * @param {!Entry} entry
+   * @param {!VolumeManager} volumeManager
+   * @return {boolean} True if the entry is from MyFiles.
+   */
+  static isMyFilesEntry(entry, volumeManager) {
+    const location = volumeManager.getLocationInfo(entry);
+    return !!location &&
+        location.rootType === VolumeManagerCommon.RootType.DOWNLOADS;
+  }
+
+  /**
+   * @param {!Array<!Entry>} entries Selected entries to be moved or copied.
+   * @param {!VolumeManager} volumeManager
+   * @param {!FileManagerUI} ui FileManager UI to show dialog.
+   * @param {string} title Dialog title.
+   * @param {?FileTransferController} fileTransferController
+   * @param {!DirectoryModel} directoryModel
+   */
+  static showPluginVmMoveDialog(
+      entries, volumeManager, ui, title, fileTransferController,
+      directoryModel) {
+    if (entries.length == 0) {
+      return;
+    }
+    const isMyFiles = FileTasks.isMyFilesEntry(entries[0], volumeManager);
+    const [messageId, buttonId, toMove] = isMyFiles ?
+        [
+          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
+          'CONFIRM_MOVE_BUTTON_LABEL',
+          true,
+        ] :
+        [
+          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
+          'CONFIRM_COPY_BUTTON_LABEL',
+          false,
+        ];
+    const dialog = new FilesConfirmDialog(ui.element);
+    dialog.setOkLabel(strf(buttonId));
+    dialog.show(strf(messageId, title), async () => {
+      if (!fileTransferController) {
+        console.error('FileTransferController not set');
+        return;
+      }
+
+      const pvmDir = await FileTasks.getPvmSharedDir_(volumeManager);
+
+      fileTransferController.executePaste(new FileTransferController.PastePlan(
+          entries.map(e => e.toURL()), [], pvmDir,
+          assert(volumeManager.getLocationInfo(pvmDir)), toMove));
+      directoryModel.changeDirectoryEntry(pvmDir);
+    });
+  }
+
+  /**
    * Executes default task.
    *
    * @param {function(boolean, Array<!Entry>)=} opt_callback Called when the
@@ -553,45 +595,14 @@ class FileTasks {
           textMessageId = 'NO_TASK_FOR_FILE';
       }
 
-      const webStoreUrl = webStoreUtils.createWebStoreLink(extension, mimeType);
-      const text =
-          strf(textMessageId, webStoreUrl, str('NO_TASK_FOR_FILE_URL'));
+      const text = strf(textMessageId, str('NO_TASK_FOR_FILE_URL'));
       const title = titleMessageId ? str(titleMessageId) : filename;
       this.ui_.alertDialog.showHtml(title, text, null, null, null);
       callback(false, this.entries_);
     };
 
     const onViewFilesFailure = () => {
-      if (extension &&
-          (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !==
-               -1 ||
-           constants.EXECUTABLE_EXTENSIONS.indexOf(assert(extension)) !== -1)) {
-        showAlert();
-        return;
-      }
-
-      this.openSuggestAppsDialog(
-          () => {
-            FileTasks
-                .create(
-                    this.volumeManager_, this.metadataModel_,
-                    this.directoryModel_, this.ui_,
-                    this.fileTransferController_, this.entries_,
-                    this.mimeTypes_, this.taskHistory_, this.namingController_,
-                    this.crostini_, this.progressCenter_)
-                .then(
-                    tasks => {
-                      tasks.executeDefault();
-                      callback(true, this.entries_);
-                    },
-                    () => {
-                      callback(false, this.entries_);
-                    });
-          },
-          () => {
-            callback(false, this.entries_);
-          },
-          showAlert);
+      showAlert();
     };
 
     const onViewFiles = result => {
@@ -666,38 +677,10 @@ class FileTasks {
             }
           });
           break;
-        case taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
-        case taskResult.FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE:
-          const [messageId, buttonId, toMove] =
-              result == taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED ?
-              [
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
-                'CONFIRM_MOVE_BUTTON_LABEL',
-                true,
-              ] :
-              [
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
-                'CONFIRM_COPY_BUTTON_LABEL',
-                false,
-              ];
-          const dialog = new FilesConfirmDialog(this.ui_.element);
-          dialog.setOkLabel(strf(buttonId));
-          dialog.show(
-              strf(messageId, task.title), async () => {
-                if (!this.fileTransferController_) {
-                  console.error('FileTransferController not set');
-                  return;
-                }
-
-                const pvmDir = await this.getPvmSharedDir_();
-
-                this.fileTransferController_.executePaste(
-                    new FileTransferController.PastePlan(
-                        this.entries_.map(e => e.toURL()), pvmDir,
-                        assert(this.volumeManager_.getLocationInfo(pvmDir)),
-                        toMove));
-                this.directoryModel_.changeDirectoryEntry(pvmDir);
-              });
+        case taskResult.FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
+          FileTasks.showPluginVmMoveDialog(
+              this.entries_, this.volumeManager_, this.ui_, task.title,
+              this.fileTransferController_, this.directoryModel_);
           break;
       }
     };
@@ -1280,9 +1263,12 @@ class FileTasks {
     return null;
   }
 
-  async getPvmSharedDir_() {
+  /**
+   * @param {!VolumeManager} volumeManager
+   */
+  static async getPvmSharedDir_(volumeManager) {
     return new Promise((resolve, reject) => {
-      this.volumeManager_
+      volumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
           .fileSystem.root.getDirectory(
               'PvmDefault', {create: false},
@@ -1400,17 +1386,6 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.dng',      '.nef',         '.nrw',
   '.orf',      '.raf',         '.rw2',
   '.tini'
-]);
-
-/**
- * The list of extensions to skip the suggest app dialog.
- * @private @const {Array<string>}
- */
-FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
-  '.crdownload',
-  '.dsc',
-  '.inf',
-  '.crx',
 ]);
 
 /**

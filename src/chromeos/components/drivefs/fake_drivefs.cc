@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -288,6 +289,13 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   if (shared) {
     stored_metadata.shared = true;
   }
+}
+
+void FakeDriveFs::DisplayConfirmDialog(
+    drivefs::mojom::DialogReasonPtr reason,
+    drivefs::mojom::DriveFsDelegate::DisplayConfirmDialogCallback callback) {
+  DCHECK(delegate_);
+  delegate_->DisplayConfirmDialog(std::move(reason), std::move(callback));
 }
 
 void FakeDriveFs::Init(

@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -208,6 +209,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
              type == PopupMenuTypeNavigationForward) {
     tableViewController.tableView.accessibilityIdentifier =
         kPopupMenuNavigationTableViewId;
+  } else if (type == PopupMenuTypeTabGrid) {
+    tableViewController.tableView.accessibilityIdentifier =
+        kPopupMenuTabGridMenuTableViewId;
   }
 
   self.viewController = tableViewController;
@@ -258,7 +262,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       static_cast<id<ApplicationCommands, BrowserCommands, FindInPageCommands,
                      LoadQueryCommands, TextZoomCommands>>(
           self.browser->GetCommandDispatcher());
-  self.actionHandler.commandHandler = self.mediator;
+  self.actionHandler.delegate = self.mediator;
+  self.actionHandler.navigationAgent =
+      WebNavigationBrowserAgent::FromBrowser(self.browser);
   tableViewController.delegate = self.actionHandler;
 
   self.presenter = [[PopupMenuPresenter alloc] init];

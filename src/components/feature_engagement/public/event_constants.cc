@@ -13,13 +13,16 @@ namespace events {
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 const char kNewTabOpened[] = "new_tab_opened";
-#endif  // defined(OS_WIN) || defined(OS_APPLE) ||
-        // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 const char kSixthTabOpened[] = "sixth_tab_opened";
 const char kTabGroupCreated[] = "tab_group_created";
+
+const char kReadingListItemAdded[] = "reading_list_item_added";
+const char kReadingListMenuOpened[] = "reading_list_menu_opened";
 
 const char kReopenTabConditionsMet[] = "reopen_tab_conditions_met";
 const char kTabReopened[] = "tab_reopened";

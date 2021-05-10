@@ -246,13 +246,12 @@ gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
 
   // Get the java surface object from the Android native window.
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject j_surface = loader_.ANativeWindow_toSurface(env, window);
+  auto j_surface = base::android::ScopedJavaLocalRef<jobject>::Adopt(
+      env, loader_.ANativeWindow_toSurface(env, window));
   DCHECK(j_surface);
 
-  // Get the scoped java surface that is owned externally.
-  // TODO(1146071): use of JavaParamRef temporary to try to debug crash.
-  return gl::ScopedJavaSurface::AcquireExternalSurface(
-      base::android::JavaParamRef<jobject>(env, j_surface));
+  // Get the scoped java surface that will call release() on destruction.
+  return gl::ScopedJavaSurface(j_surface);
 }
 
 void ImageReaderGLOwner::UpdateTexImage() {
@@ -408,6 +407,9 @@ void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
   }
 
   image_refs_.erase(it);
+  DCHECK_GT(max_images_, static_cast<int32_t>(image_refs_.size()));
+  if (buffer_available_cb_)
+    std::move(buffer_available_cb_).Run();
 }
 
 void ImageReaderGLOwner::ReleaseBackBuffers() {
@@ -433,6 +435,20 @@ void ImageReaderGLOwner::OnFrameAvailable(void* context, AImageReader* reader) {
 
   // It is safe to run this callback on any thread.
   image_reader_ptr->frame_available_cb_.Run();
+}
+
+void ImageReaderGLOwner::RunWhenBufferIsAvailable(base::OnceClosure callback) {
+  // Note that we handle only one simultaneous request, this is not issue
+  // because FrameInfoHelper maintain request queue and has only single
+  // outstanding request on GPU thread.
+  DCHECK(!buffer_available_cb_);
+  // If `max_images` == 1 we will drop it before acquiring new buffer. Note that
+  // this must never happen with SurfaceControl and the ImageReaderGLOwner is
+  // the sole owner of the images.
+  if (max_images_ == 1 || static_cast<int>(image_refs_.size()) < max_images_)
+    std::move(callback).Run();
+  else
+    buffer_available_cb_ = std::move(callback);
 }
 
 bool ImageReaderGLOwner::GetCodedSizeAndVisibleRect(

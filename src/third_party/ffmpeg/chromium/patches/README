@@ -911,13 +911,34 @@ Affects:
     libavformat/oggdec.c
 
 ------------------------------------------------------------------
-commit 0493b979dfcfb2b028b9f6c6ffbaa4a5b27b64cf
+commit 0ef84f22f26645569fdaf886258c018fd0738f95
 Author: Will Cassella <cassew@google.com>
-Date:   Thu Oct 1 16:21:01 2020 -0700
+Date:   Fri Oct 2 16:39:15 2020 -0700
 
-    Remove UNCHECKED_BITSTREAM_READER
+    Roll FFMPEG 2-10-20
+
+    git diff origin/master configure | grep '\+.*\[autodetect\]':
+    (empty)
+
+    Change-Id: Id9d6f0b2dfe1cee6f178dc07df943048e6eb3f08
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2447032
+    Reviewed-by: Xiaohan Wang <xhwang@chromium.org>
 
 Affects:
     libavcodec/fraps.c
     libavcodec/smacker.c
+
+------------------------------------------------------------------
+commit 2e5e8668e9e636c5bebbb2bb68b751133830af7f
+Merge: a54c8b6b9e adf72718a4
+Author: Eugene Zemtsov <eugene@chromium.org>
+Date:   Fri Dec 11 14:28:26 2020 -0800
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2020-12-11-14-24-46
+
+    Conflicts:
+       libavformat/mp3dec.c - change in the code that was commented out
+
+Affects:
+    libavformat/mp3dec.c
 

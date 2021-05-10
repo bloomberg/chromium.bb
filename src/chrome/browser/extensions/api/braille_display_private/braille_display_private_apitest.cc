@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -65,9 +64,10 @@ class MockBrlapiConnection : public BrlapiConnection {
  public:
   explicit MockBrlapiConnection(MockBrlapiConnectionData* data)
       : data_(data) {}
-  ConnectResult Connect(const OnDataReadyCallback& on_data_ready) override {
+
+  ConnectResult Connect(OnDataReadyCallback on_data_ready) override {
     data_->connected = true;
-    on_data_ready_ = on_data_ready;
+    on_data_ready_ = std::move(on_data_ready);
     if (!data_->pending_keys.empty()) {
       content::GetIOThreadTaskRunner({})->PostTask(
           FROM_HERE, base::BindOnce(&MockBrlapiConnection::NotifyDataReady,
@@ -154,9 +154,8 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
     connection_data_.error.brlerrno = BRLAPI_ERROR_SUCCESS;
     connection_data_.reappear_on_disconnect = false;
     BrailleControllerImpl::GetInstance()->SetCreateBrlapiConnectionForTesting(
-        base::Bind(
-            &BrailleDisplayPrivateApiTest::CreateBrlapiConnection,
-            base::Unretained(this)));
+        base::BindOnce(&BrailleDisplayPrivateApiTest::CreateBrlapiConnection,
+                       base::Unretained(this)));
     BrailleControllerImpl::GetInstance()->skip_libbrlapi_so_load_ = true;
     DisableAccessibilityManagerBraille();
   }
@@ -168,7 +167,7 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
   // steal events.  Some tests override this to keep the normal behaviour
   // of the accessibility manager.
   virtual void DisableAccessibilityManagerBraille() {
-    chromeos::AccessibilityManager::SetBrailleControllerForTest(
+    ash::AccessibilityManager::SetBrailleControllerForTest(
         &stub_braille_controller_);
   }
 

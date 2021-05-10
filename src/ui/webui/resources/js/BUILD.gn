@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("../tools/js_modulizer.gni")
 
@@ -32,7 +33,7 @@ group("preprocess") {
   ]
 }
 
-preprocess_grit("preprocess_src") {
+preprocess_if_expr("preprocess_src") {
   in_folder = "./"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
@@ -52,11 +53,12 @@ preprocess_grit("preprocess_src") {
     "plural_string_proxy.js",
     "promise_resolver.js",
     "test_loader.js",
+    "test_loader_util.js",
     "util.js",
     "webui_resource_test.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [ "i18n_template_process.js" ]
   }
 
@@ -69,9 +71,16 @@ preprocess_grit("preprocess_src") {
       "web_ui_listener_behavior.js",
     ]
   }
+
+  if (is_ios) {
+    in_files += [
+      "ios/mojo_api.js",
+      "ios/web_ui.js",
+    ]
+  }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":modulize" ]
   in_folder = target_gen_dir
   out_folder = "$preprocess_folder"
@@ -107,6 +116,7 @@ group("closure_compile") {
 }
 
 js_type_check("js_resources") {
+  uses_legacy_modules = true
   deps = [
     ":action_link",
     ":assert",
@@ -124,7 +134,7 @@ js_type_check("js_resources") {
     ":web_ui_listener_behavior",
     ":webui_resource_test",
   ]
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [ ":i18n_template_process" ]
   }
   if (is_ios) {

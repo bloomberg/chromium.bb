@@ -24,7 +24,9 @@
 #include "core/options.h"
 #include "core/params.h"
 #include "core/payload.h"
+#include "platform/base/feature_flags.h"
 #include "platform/public/logging.h"
+#include "absl/memory/memory.h"
 #include "absl/time/clock.h"
 
 namespace location {
@@ -48,7 +50,9 @@ const std::size_t kMaxEndpointInfoLength = 131u;
 ServiceControllerRouter::~ServiceControllerRouter() {
   NEARBY_LOG(INFO, "ServiceControllerRouter going down.");
 
-  service_controller_.reset();
+  if (service_controller_) {
+    service_controller_->Stop();
+  }
   // And make sure that cleanup is the last thing we do.
   serializer_.Shutdown();
 }
@@ -124,9 +128,8 @@ void ServiceControllerRouter::InjectEndpoint(
     ClientProxy* client, absl::string_view service_id,
     const OutOfBandConnectionMetadata& metadata,
     const ResultCallback& callback) {
-  RouteToServiceController(
-      [this, client, service_id = std::string(service_id), metadata,
-       callback]() {
+  RouteToServiceController([this, client, service_id = std::string(service_id),
+                            metadata, callback]() {
     // Currently, Bluetooth is the only supported medium for endpoint injection.
     if (metadata.medium != Medium::BLUETOOTH ||
         metadata.remote_bluetooth_mac_address.size() != kMacAddressLength) {
@@ -160,6 +163,10 @@ void ServiceControllerRouter::RequestConnection(
     ClientProxy* client, absl::string_view endpoint_id,
     const ConnectionRequestInfo& info, const ConnectionOptions& options,
     const ResultCallback& callback) {
+  // Cancellations can be fired from clients anytime, need to add the
+  // CancellationListener as soon as possible.
+  client->AddCancellationFlag(std::string(endpoint_id));
+
   RouteToServiceController([this, client,
                             endpoint_id = std::string(endpoint_id), info,
                             options, callback]() {
@@ -174,8 +181,12 @@ void ServiceControllerRouter::RequestConnection(
       return;
     }
 
-    callback.result_cb(service_controller_->RequestConnection(
-        client, endpoint_id, info, options));
+    Status status = service_controller_->RequestConnection(client, endpoint_id,
+                                                           info, options);
+    if (!status.Ok()) {
+      client->CancelEndpoint(endpoint_id);
+    }
+    callback.result_cb(status);
   });
 }
 
@@ -213,6 +224,8 @@ void ServiceControllerRouter::AcceptConnection(ClientProxy* client,
 void ServiceControllerRouter::RejectConnection(ClientProxy* client,
                                                absl::string_view endpoint_id,
                                                const ResultCallback& callback) {
+  client->CancelEndpoint(std::string(endpoint_id));
+
   RouteToServiceController(
       [this, client, endpoint_id = std::string(endpoint_id), callback]() {
         if (!ClientHasAcquiredServiceController(client)) {
@@ -310,6 +323,10 @@ void ServiceControllerRouter::CancelPayload(ClientProxy* client,
 void ServiceControllerRouter::DisconnectFromEndpoint(
     ClientProxy* client, absl::string_view endpoint_id,
     const ResultCallback& callback) {
+  // Client can emit the cancellation at anytime, we need to execute the request
+  // without further posting it.
+  client->CancelEndpoint(std::string(endpoint_id));
+
   RouteToServiceController(
       [this, client, endpoint_id = std::string(endpoint_id), callback]() {
         if (ClientHasAcquiredServiceController(client)) {
@@ -326,6 +343,10 @@ void ServiceControllerRouter::DisconnectFromEndpoint(
 
 void ServiceControllerRouter::StopAllEndpoints(ClientProxy* client,
                                                const ResultCallback& callback) {
+  // Client can emit the cancellation at anytime, we need to execute the request
+  // without further posting it.
+  client->CancelAllEndpoints();
+
   RouteToServiceController([this, client, callback]() {
     if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
@@ -336,6 +357,10 @@ void ServiceControllerRouter::StopAllEndpoints(ClientProxy* client,
 
 void ServiceControllerRouter::ClientDisconnecting(
     ClientProxy* client, const ResultCallback& callback) {
+  // Client can emit the cancellation at anytime, we need to execute the request
+  // without further posting it.
+  client->CancelAllEndpoints();
+
   RouteToServiceController([this, client, callback]() {
     if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
@@ -405,7 +430,9 @@ void ServiceControllerRouter::ReleaseServiceControllerForClient(
     ClientProxy* client) {
   clients_.erase(client);
 
-  // service_controller_ won't be released here. Instead, in desctructor.
+  // service_controller_ won't be released here. Instead, in destructor.
+  service_controller_->Stop();
+
   if (clients_.empty()) {
     current_strategy_ = Strategy{};
   }

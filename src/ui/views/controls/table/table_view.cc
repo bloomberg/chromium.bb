@@ -251,8 +251,25 @@ void TableView::Select(int model_row) {
   SelectByViewIndex(model_row == -1 ? -1 : ModelToView(model_row));
 }
 
+void TableView::SetSelectionAll(bool select) {
+  if (!GetRowCount())
+    return;
+
+  ui::ListSelectionModel selection_model;
+
+  if (select)
+    selection_model.AddIndexRangeToSelection(0, GetRowCount() - 1);
+
+  selection_model.set_anchor(selection_model_.anchor());
+  selection_model.set_active(selection_model_.active());
+
+  SetSelectionModel(std::move(selection_model));
+}
+
 int TableView::GetFirstSelectedRow() const {
-  return selection_model_.empty() ? -1 : selection_model_.selected_indices()[0];
+  return selection_model_.empty()
+             ? -1
+             : *selection_model_.selected_indices().begin();
 }
 
 void TableView::SetColumnVisibility(int id, bool is_visible) {
@@ -470,11 +487,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_A:
       // control-a selects all.
       if (IsCmdOrCtrl(event) && !single_selection_ && GetRowCount()) {
-        ui::ListSelectionModel selection_model;
-        selection_model.SetSelectedIndex(selection_model_.active());
-        for (int i = 0; i < GetRowCount(); ++i)
-          selection_model.AddIndexToSelection(i);
-        SetSelectionModel(std::move(selection_model));
+        SetSelectionAll(/*select=*/true);
         return true;
       }
       break;
@@ -747,14 +760,18 @@ void TableView::OnItemsRemoved(int start, int length) {
   for (int i = 0; i < length; ++i)
     selection_model_.DecrementFrom(start);
 
-  // Remove the virtual views that are no longer needed.
-  auto& virtual_children = GetViewAccessibility().virtual_children();
-  for (int i = start; i < start + length; i++)
-    virtual_children[virtual_children.size() - 1]->RemoveFromParentView();
-
+  // Update the `view_to_model_` and `model_to_view_` mappings prior to updating
+  // TableView's virtual children below. We do this because at this point the
+  // table model has changed but the model-view mappings have not yet been
+  // updated to reflect this. `RemoveFromParentView()` below may trigger calls
+  // back into TableView and this would happen before the model-view mappings
+  // have been updated. This can result in memory overflow errors.
+  // See (https://crbug.com/1173373).
   SortItemsAndUpdateMapping(/*schedule_paint=*/true);
-  PreferredSizeChanged();
-  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
+  if (GetIsSorted()) {
+    DCHECK_EQ(GetRowCount(), int{view_to_model_.size()});
+    DCHECK_EQ(GetRowCount(), int{model_to_view_.size()});
+  }
 
   // If the selection was empty and is no longer empty select the same visual
   // index.
@@ -768,6 +785,15 @@ void TableView::OnItemsRemoved(int start, int length) {
   if (!selection_model_.empty() && selection_model_.anchor() == -1)
     selection_model_.set_anchor(GetFirstSelectedRow());
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+
+  // Remove the virtual views that are no longer needed.
+  auto& virtual_children = GetViewAccessibility().virtual_children();
+  for (int i = start; i < start + length; i++)
+    virtual_children[virtual_children.size() - 1]->RemoveFromParentView();
+
+  UpdateVirtualAccessibilityChildrenBounds();
+  PreferredSizeChanged();
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
   if (observer_)
     observer_->OnSelectionChanged();
 }
@@ -1092,8 +1118,10 @@ void TableView::SchedulePaintForSelection() {
   if (selection_model_.size() == 1) {
     const int first_model_row = GetFirstSelectedRow();
     SchedulePaintInRect(GetRowBounds(ModelToView(first_model_row)));
-    if (first_model_row != selection_model_.active())
-      SchedulePaintInRect(GetRowBounds(ModelToView(selection_model_.active())));
+
+    const int active_row = selection_model_.active();
+    if (active_row >= 0 && first_model_row != active_row)
+      SchedulePaintInRect(GetRowBounds(ModelToView(active_row)));
   } else if (selection_model_.size() > 1) {
     SchedulePaint();
   }

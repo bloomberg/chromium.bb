@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1175958423215084756">Tuvastati link. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galerii pildid</translation>
 <translation id="1430915738399379752">Printimine</translation>
 <translation id="1473110567575736769">3-sekundiline taimer</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">PEATATUD</translation>
 <translation id="1862930711583847113">Faili <ph name="FILE" /> ei saa eksportida</translation>
 <translation id="1899697626337024495">Foto eraldusvõime</translation>
+<translation id="2022953316617983419">QR-kood</translation>
 <translation id="2036868001356139588">Taimeri kestus</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> on aktiivne</translation>
+<translation id="2144806332417375165">Video kohandatud parameetrid</translation>
 <translation id="229579744168541441">Ekspordi kettale</translation>
 <translation id="2501278716633472235">Mine tagasi</translation>
 <translation id="2501853267655415902">Salvestamine on peatatud</translation>
@@ -27,13 +30,16 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Võrgustiku tüüp</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3240426699337459095">Link on kopeeritud</translation>
 <translation id="3259149966178251584">Kaamera eraldusvõime</translation>
 <translation id="3517926952904427380">Vertikaalpaigutuses fotot ei saa jäädvustada</translation>
 <translation id="3569311554794739032">Kas soovite faili <ph name="FILE" /> kindlasti eemaldada?</translation>
-<translation id="3750315947605636967">Kaamerat kasutab muu rakendus</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3838931309141338733">Skannige ribakood</translation>
+<translation id="3892148308691398805">Kopeeri tekst</translation>
 <translation id="4000398125663085899">Uued fotod ja videod salvestatakse nüüd rakenduse Failid kausta: Minu failid &gt; Kaamera</translation>
 <translation id="4118525110028899586">Peata salvestamine</translation>
+<translation id="4269820728363426813">Kopeeri lingi aadress</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4329152592498422850">Vaheta ruudukujulise foto jäädvustamiseks</translation>
 <translation id="4383571725254449280">Printimise toimivuslogid</translation>
@@ -68,11 +74,15 @@ Kui teie tagasiside on seotud pildi- või videokvaliteediga, lisage manusena nä
 <translation id="7134221860976209830">10-sekundiline taimer</translation>
 <translation id="7243947652761655814">Video eraldusvõime</translation>
 <translation id="7337660886763914220">Failisüsteemi vead.</translation>
+<translation id="7450541714075000668">Tekst on kopeeritud</translation>
 <translation id="7557677699350329807">Vaheta järgmisele kaamerale</translation>
+<translation id="7607002721634913082">Peatatud</translation>
 <translation id="7608223098072244877">4 korda 4</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">Paanimise, kallutamise ja suumimise valikute kuvamine</translation>
+<translation id="7983668134180549431">Tuvastati tekst.</translation>
 <translation id="8067883171444229417">Esita video</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8145038249676204903">Vaheta foto jäädvustamise režiimile</translation>

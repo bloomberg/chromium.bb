@@ -47,7 +47,7 @@ export class CSSWorkspaceBinding {
     if (!cssWorkspaceBindingInstance || forceNew) {
       if (!targetManager || !workspace) {
         throw new Error(
-            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+            `Unable to create CSSWorkspaceBinding: targetManager and workspace must be provided: ${new Error().stack}`);
       }
 
       cssWorkspaceBindingInstance = new CSSWorkspaceBinding(targetManager, workspace);
@@ -237,10 +237,10 @@ export class ModelInfo {
     const sourceMapManager = cssModel.sourceMapManager();
     this._sassSourceMapping = new SASSSourceMapping(cssModel.target(), sourceMapManager, workspace);
 
-    /** @type {!Platform.Multimap<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, !LiveLocation>} */
-    this._locations = new Platform.Multimap();
-    /** @type {!Platform.Multimap<string, !LiveLocation>} */
-    this._unboundLocations = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, !LiveLocation>} */
+    this._locations = new Platform.MapUtilities.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<string, !LiveLocation>} */
+    this._unboundLocations = new Platform.MapUtilities.Multimap();
   }
 
   /**
@@ -353,9 +353,6 @@ export class ModelInfo {
   }
 }
 
-/**
- * @unrestricted
- */
 export class LiveLocation extends LiveLocationWithPool {
   /**
    * @param {!SDK.CSSModel.CSSLocation} rawLocation
@@ -404,7 +401,7 @@ export class LiveLocation extends LiveLocationWithPool {
    * @override
    * @return {!Promise<boolean>}
    */
-  async isBlackboxed() {
+  async isIgnoreListed() {
     return false;
   }
 }

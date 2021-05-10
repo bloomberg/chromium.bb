@@ -5,12 +5,117 @@
 import * as Bindings from '../bindings/bindings.js';
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
 import * as DataGrid from '../data_grid/data_grid.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {BackgroundServiceModel, Events} from './BackgroundServiceModel.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  backgroundFetch: 'Background Fetch',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  backgroundSync: 'Background Sync',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  pushMessaging: 'Push Messaging',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  notifications: 'Notifications',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  paymentHandler: 'Payment Handler',
+  /**
+  *@description Text in the Periodic Background Service View of the Application panel
+  */
+  periodicBackgroundSync: 'Periodic Background Sync',
+  /**
+  *@description Text to clear content
+  */
+  clear: 'Clear',
+  /**
+  *@description Tooltip text that appears when hovering over the largeicon download button in the Background Service View of the Application panel
+  */
+  saveEvents: 'Save events',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  showEventsFromOtherDomains: 'Show events from other domains',
+  /**
+  *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+  */
+  stopRecordingEvents: 'Stop recording events',
+  /**
+  *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+  */
+  startRecordingEvents: 'Start recording events',
+  /**
+  *@description Text for timestamps of items
+  */
+  timestamp: 'Timestamp',
+  /**
+  *@description Text that refers to some events
+  */
+  event: 'Event',
+  /**
+  *@description Text for the origin of something
+  */
+  origin: 'Origin',
+  /**
+  *@description Text in Background Service View of the Application panel. The Scope is a URL associated with the Service Worker, which limits which pages/sites the Service Worker operates on.
+  */
+  swScope: 'Service Worker Scope',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  instanceId: 'Instance ID',
+  /**
+  *@description Text in Application Panel Sidebar of the Application panel
+  */
+  backgroundServices: 'Background Services',
+  /**
+  *@description Text that is usually a hyperlink to more documentation
+  */
+  learnMore: 'Learn more',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  selectAnEntryToViewMetadata: 'Select an entry to view metadata',
+  /**
+  *@description Text in Background Service View of the Application panel
+  *@example {Background Fetch} PH1
+  */
+  recordingSActivity: 'Recording {PH1} activity...',
+  /**
+  *@description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
+  *@example {Background Fetch} PH1
+  */
+  devtoolsWillRecordAllSActivity: 'DevTools will record all {PH1} activity for up to 3 days, even when closed.',
+  /**
+  *@description Text in Background Service View of the Application panel
+  *@example {record} PH1
+  *@example {Ctrl + R} PH2
+  */
+  clickTheRecordButtonSOrHitSTo: 'Click the record button {PH1} or hit {PH2} to start recording.',
+  /**
+  *@description Text to show an item is empty
+  */
+  empty: 'empty',
+  /**
+  *@description Text in Background Service View of the Application panel
+  */
+  noMetadataForThisEvent: 'No metadata for this event',
+};
+const str_ = i18n.i18n.registerUIStrings('resources/BackgroundServiceView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BackgroundServiceView extends UI.Widget.VBox {
   /**
    * @param {string} serviceName The name of the background service.
@@ -19,17 +124,17 @@ export class BackgroundServiceView extends UI.Widget.VBox {
   static getUIString(serviceName) {
     switch (serviceName) {
       case Protocol.BackgroundService.ServiceName.BackgroundFetch:
-        return ls`Background Fetch`;
+        return i18nString(UIStrings.backgroundFetch);
       case Protocol.BackgroundService.ServiceName.BackgroundSync:
-        return ls`Background Sync`;
+        return i18nString(UIStrings.backgroundSync);
       case Protocol.BackgroundService.ServiceName.PushMessaging:
-        return ls`Push Messaging`;
+        return i18nString(UIStrings.pushMessaging);
       case Protocol.BackgroundService.ServiceName.Notifications:
-        return ls`Notifications`;
+        return i18nString(UIStrings.notifications);
       case Protocol.BackgroundService.ServiceName.PaymentHandler:
-        return ls`Payment Handler`;
+        return i18nString(UIStrings.paymentHandler);
       case Protocol.BackgroundService.ServiceName.PeriodicBackgroundSync:
-        return ls`Periodic Background Sync`;
+        return i18nString(UIStrings.periodicBackgroundSync);
       default:
         return '';
     }
@@ -42,7 +147,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
   constructor(serviceName, model) {
     super(true);
     this.registerRequiredCSS('resources/backgroundServiceView.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('ui/emptyWidget.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/emptyWidget.css', {enableLegacyPatching: false});
 
     /** @const {!Protocol.BackgroundService.ServiceName} */
     this._serviceName = serviceName;
@@ -65,9 +170,9 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, () => this._onOriginChanged());
 
 
-    /** @type {!UI.Action.Action} */
+    /** @type {!UI.ActionRegistration.Action} */
     this._recordAction =
-        /** @type {!UI.Action.Action} */ (
+        /** @type {!UI.ActionRegistration.Action} */ (
             UI.ActionRegistry.ActionRegistry.instance().action('background-service.toggle-recording'));
 
     /**
@@ -126,13 +231,13 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         /** @type {!UI.Toolbar.ToolbarToggle} */ (UI.Toolbar.Toolbar.createActionButton(this._recordAction));
     this._toolbar.appendToolbarItem(this._recordButton);
 
-    const clearButton = new UI.Toolbar.ToolbarButton(ls`Clear`, 'largeicon-clear');
+    const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'largeicon-clear');
     clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._clearEvents());
     this._toolbar.appendToolbarItem(clearButton);
 
     this._toolbar.appendSeparator();
 
-    this._saveButton = new UI.Toolbar.ToolbarButton(ls`Save events`, 'largeicon-download');
+    this._saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveEvents), 'largeicon-download');
     this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
       this._saveToFile();
     });
@@ -142,7 +247,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     this._toolbar.appendSeparator();
 
     this._originCheckbox = new UI.Toolbar.ToolbarCheckbox(
-        ls`Show events from other domains`, ls`Show events from other domains`, () => this._refreshView());
+        i18nString(UIStrings.showEventsFromOtherDomains), i18nString(UIStrings.showEventsFromOtherDomains),
+        () => this._refreshView());
     this._toolbar.appendToolbarItem(this._originCheckbox);
   }
 
@@ -201,7 +307,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
   }
 
   _updateRecordButtonTooltip() {
-    const buttonTooltip = this._recordButton.toggled() ? ls`Stop recording events` : ls`Start recording events`;
+    const buttonTooltip = this._recordButton.toggled() ? i18nString(UIStrings.stopRecordingEvents) :
+                                                         i18nString(UIStrings.startRecordingEvents);
     this._recordButton.setTitle(buttonTooltip, 'background-service.toggle-recording');
   }
 
@@ -243,15 +350,15 @@ export class BackgroundServiceView extends UI.Widget.VBox {
    */
   _createDataGrid() {
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'id', title: ls`#`, weight: 1},
-      {id: 'timestamp', title: ls`Timestamp`, weight: 8},
-      {id: 'eventName', title: ls`Event`, weight: 10},
-      {id: 'origin', title: ls`Origin`, weight: 10},
-      {id: 'swScope', title: ls`SW Scope`, weight: 2},
-      {id: 'instanceId', title: ls`Instance ID`, weight: 10},
+      {id: 'id', title: '#', weight: 1},
+      {id: 'timestamp', title: i18nString(UIStrings.timestamp), weight: 8},
+      {id: 'eventName', title: i18nString(UIStrings.event), weight: 10},
+      {id: 'origin', title: i18nString(UIStrings.origin), weight: 10},
+      {id: 'swScope', title: i18nString(UIStrings.swScope), weight: 5},
+      {id: 'instanceId', title: i18nString(UIStrings.instanceId), weight: 10},
     ]);
     const dataGrid = new DataGrid.DataGrid.DataGridImpl({
-      displayName: ls`Background Services`,
+      displayName: i18nString(UIStrings.backgroundServices),
       columns,
       editCallback: undefined,
       refreshCallback: undefined,
@@ -335,7 +442,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         break;
     }
 
-    return UI.XLink.XLink.create(url, ls`Learn more`);
+    return UI.XLink.XLink.create(url, i18nString(UIStrings.learnMore));
   }
 
   /**
@@ -364,13 +471,12 @@ export class BackgroundServiceView extends UI.Widget.VBox {
 
     if (this._dataGrid.rootNode().children.length) {
       // Inform users that grid entries are clickable.
-      centered.createChild('p').textContent = ls`Select an entry to view metadata`;
+      centered.createChild('p').textContent = i18nString(UIStrings.selectAnEntryToViewMetadata);
     } else if (this._recordButton.toggled()) {
       // Inform users that we are recording/waiting for events.
       const featureName = BackgroundServiceView.getUIString(this._serviceName);
-      centered.createChild('p').textContent = ls`Recording ${featureName} activity...`;
-      centered.createChild('p').textContent =
-          ls`DevTools will record all ${featureName} activity for up to 3 days, even when closed.`;
+      centered.createChild('p').textContent = i18nString(UIStrings.recordingSActivity, {PH1: featureName});
+      centered.createChild('p').textContent = i18nString(UIStrings.devtoolsWillRecordAllSActivity, {PH1: featureName});
     } else {
       const landingRecordButton = UI.Toolbar.Toolbar.createActionButton(this._recordAction);
 
@@ -382,8 +488,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
 
       const inlineButton = UI.UIUtils.createInlineButton(landingRecordButton);
       inlineButton.classList.add('background-service-record-inline-button');
-      centered.createChild('p').appendChild(UI.UIUtils.formatLocalized(
-          'Click the record button %s or hit %s to start recording.', [inlineButton, recordKey]));
+      centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(
+          str_, UIStrings.clickTheRecordButtonSOrHitSTo, {PH1: inlineButton, PH2: recordKey}));
 
       centered.appendChild(this._createLearnMoreLink());
     }
@@ -421,7 +527,7 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
     super(data);
 
     /** @const {!Array<!Protocol.BackgroundService.EventMetadata>} */
-    this._eventMetadata = eventMetadata.sort((m1, m2) => m1.key.compareTo(m2.key));
+    this._eventMetadata = eventMetadata.sort((m1, m2) => Platform.StringUtilities.compare(m1.key, m2.key));
   }
 
   /**
@@ -439,7 +545,7 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
         div.createChild('div', 'background-service-metadata-value source-code').textContent = entry.value;
       } else {
         div.createChild('div', 'background-service-metadata-value background-service-empty-value').textContent =
-            ls`empty`;
+            i18nString(UIStrings.empty);
       }
       preview.element.appendChild(div);
     }
@@ -447,7 +553,8 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
     if (!preview.element.children.length) {
       const div = document.createElement('div');
       div.classList.add('background-service-metadata-entry');
-      div.createChild('div', 'background-service-metadata-name').textContent = ls`No metadata for this event`;
+      div.createChild('div', 'background-service-metadata-name').textContent =
+          i18nString(UIStrings.noMetadataForThisEvent);
       preview.element.appendChild(div);
     }
 
@@ -455,11 +562,25 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
   }
 }
 
+/** @type {!ActionDelegate} */
+let actionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
+    }
+
+    return actionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context

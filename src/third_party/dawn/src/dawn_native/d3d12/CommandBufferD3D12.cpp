@@ -14,17 +14,11 @@
 
 #include "dawn_native/d3d12/CommandBufferD3D12.h"
 
-#include "common/Assert.h"
 #include "dawn_native/BindGroupTracker.h"
-#include "dawn_native/CommandEncoder.h"
 #include "dawn_native/CommandValidation.h"
-#include "dawn_native/Commands.h"
-#include "dawn_native/EnumMaskIterator.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
-#include "dawn_native/d3d12/BufferD3D12.h"
-#include "dawn_native/d3d12/CommandRecordingContext.h"
 #include "dawn_native/d3d12/ComputePipelineD3D12.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
@@ -32,15 +26,9 @@
 #include "dawn_native/d3d12/QuerySetD3D12.h"
 #include "dawn_native/d3d12/RenderPassBuilderD3D12.h"
 #include "dawn_native/d3d12/RenderPipelineD3D12.h"
-#include "dawn_native/d3d12/SamplerD3D12.h"
-#include "dawn_native/d3d12/SamplerHeapCacheD3D12.h"
 #include "dawn_native/d3d12/ShaderVisibleDescriptorAllocatorD3D12.h"
 #include "dawn_native/d3d12/StagingDescriptorAllocatorD3D12.h"
-#include "dawn_native/d3d12/TextureCopySplitter.h"
-#include "dawn_native/d3d12/TextureD3D12.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
-
-#include <deque>
 
 namespace dawn_native { namespace d3d12 {
 
@@ -60,7 +48,7 @@ namespace dawn_native { namespace d3d12 {
         D3D12_QUERY_TYPE D3D12QueryType(wgpu::QueryType type) {
             switch (type) {
                 case wgpu::QueryType::Occlusion:
-                    return D3D12_QUERY_TYPE_OCCLUSION;
+                    return D3D12_QUERY_TYPE_BINARY_OCCLUSION;
                 case wgpu::QueryType::PipelineStatistics:
                     return D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
                 case wgpu::QueryType::Timestamp:
@@ -136,6 +124,29 @@ namespace dawn_native { namespace d3d12 {
             ASSERT(D3D12QueryType(querySet->GetQueryType()) == D3D12_QUERY_TYPE_TIMESTAMP);
             commandList->EndQuery(querySet->GetQueryHeap(), D3D12_QUERY_TYPE_TIMESTAMP,
                                   cmd->queryIndex);
+        }
+
+        void RecordFirstIndexOffset(ID3D12GraphicsCommandList* commandList,
+                                    RenderPipeline* pipeline,
+                                    uint32_t firstVertex,
+                                    uint32_t firstInstance) {
+            const FirstOffsetInfo& firstOffsetInfo = pipeline->GetFirstOffsetInfo();
+            if (!firstOffsetInfo.usesVertexIndex && !firstOffsetInfo.usesInstanceIndex) {
+                return;
+            }
+            std::array<uint32_t, 2> offsets{};
+            uint32_t count = 0;
+            if (firstOffsetInfo.usesVertexIndex) {
+                offsets[firstOffsetInfo.vertexIndexOffset / sizeof(uint32_t)] = firstVertex;
+                ++count;
+            }
+            if (firstOffsetInfo.usesInstanceIndex) {
+                offsets[firstOffsetInfo.instanceIndexOffset / sizeof(uint32_t)] = firstInstance;
+                ++count;
+            }
+            PipelineLayout* layout = ToBackend(pipeline->GetLayout());
+            commandList->SetGraphicsRoot32BitConstants(layout->GetFirstIndexOffsetParameterIndex(),
+                                                       count, offsets.data(), 0);
         }
     }  // anonymous namespace
 
@@ -223,51 +234,57 @@ namespace dawn_native { namespace d3d12 {
                 for (BindGroupIndex index : IterateBitSet(mBindGroupLayoutsMask)) {
                     BindGroupLayoutBase* layout = mBindGroups[index]->GetLayout();
                     for (BindingIndex binding{0}; binding < layout->GetBindingCount(); ++binding) {
-                        switch (layout->GetBindingInfo(binding).type) {
-                            case wgpu::BindingType::StorageBuffer: {
+                        const BindingInfo& bindingInfo = layout->GetBindingInfo(binding);
+                        switch (bindingInfo.bindingType) {
+                            case BindingInfoType::Buffer: {
                                 D3D12_RESOURCE_BARRIER barrier;
+                                wgpu::BufferUsage usage;
+                                switch (bindingInfo.buffer.type) {
+                                    case wgpu::BufferBindingType::Uniform:
+                                        usage = wgpu::BufferUsage::Uniform;
+                                        break;
+                                    case wgpu::BufferBindingType::Storage:
+                                        usage = wgpu::BufferUsage::Storage;
+                                        break;
+                                    case wgpu::BufferBindingType::ReadOnlyStorage:
+                                        usage = kReadOnlyStorageBuffer;
+                                        break;
+                                    case wgpu::BufferBindingType::Undefined:
+                                        UNREACHABLE();
+                                }
                                 if (ToBackend(mBindGroups[index]
                                                   ->GetBindingAsBufferBinding(binding)
                                                   .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(
-                                            commandContext, &barrier, wgpu::BufferUsage::Storage)) {
+                                        ->TrackUsageAndGetResourceBarrier(commandContext, &barrier,
+                                                                          usage)) {
                                     barriers.push_back(barrier);
                                 }
                                 break;
                             }
 
-                            case wgpu::BindingType::ReadonlyStorageTexture: {
+                            case BindingInfoType::StorageTexture: {
                                 TextureViewBase* view =
                                     mBindGroups[index]->GetBindingAsTextureView(binding);
-                                ToBackend(view->GetTexture())
-                                    ->TransitionUsageAndGetResourceBarrier(
-                                        commandContext, &barriers, kReadonlyStorageTexture,
-                                        view->GetSubresourceRange());
-                                break;
-                            }
-                            case wgpu::BindingType::WriteonlyStorageTexture: {
-                                TextureViewBase* view =
-                                    mBindGroups[index]->GetBindingAsTextureView(binding);
-                                ToBackend(view->GetTexture())
-                                    ->TransitionUsageAndGetResourceBarrier(
-                                        commandContext, &barriers, wgpu::TextureUsage::Storage,
-                                        view->GetSubresourceRange());
-                                break;
-                            }
-                            case wgpu::BindingType::ReadonlyStorageBuffer: {
-                                D3D12_RESOURCE_BARRIER barrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(commandContext, &barrier,
-                                                                          kReadOnlyStorageBuffer)) {
-                                    barriers.push_back(barrier);
+                                wgpu::TextureUsage usage;
+                                switch (bindingInfo.storageTexture.access) {
+                                    case wgpu::StorageTextureAccess::ReadOnly:
+                                        usage = kReadOnlyStorageTexture;
+                                        break;
+                                    case wgpu::StorageTextureAccess::WriteOnly:
+                                        usage = wgpu::TextureUsage::Storage;
+                                        break;
+                                    case wgpu::StorageTextureAccess::Undefined:
+                                        UNREACHABLE();
                                 }
+                                ToBackend(view->GetTexture())
+                                    ->TransitionUsageAndGetResourceBarrier(
+                                        commandContext, &barriers, usage,
+                                        view->GetSubresourceRange());
                                 break;
                             }
-                            case wgpu::BindingType::SampledTexture:
-                            case wgpu::BindingType::MultisampledTexture: {
-                                    TextureViewBase* view =
+
+                            case BindingInfoType::Texture: {
+                                TextureViewBase* view =
                                     mBindGroups[index]->GetBindingAsTextureView(binding);
                                 ToBackend(view->GetTexture())
                                     ->TransitionUsageAndGetResourceBarrier(
@@ -275,20 +292,8 @@ namespace dawn_native { namespace d3d12 {
                                         view->GetSubresourceRange());
                                 break;
                             }
-                            case wgpu::BindingType::UniformBuffer: {
-                                D3D12_RESOURCE_BARRIER barrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(
-                                            commandContext, &barrier, wgpu::BufferUsage::Uniform)) {
-                                    barriers.push_back(barrier);
-                                }
-                                break;
-                            }
 
-                            case wgpu::BindingType::Sampler:
-                            case wgpu::BindingType::ComparisonSampler:
+                            case BindingInfoType::Sampler:
                                 // Don't require barriers.
                                 break;
                         }
@@ -350,8 +355,9 @@ namespace dawn_native { namespace d3d12 {
                     D3D12_GPU_VIRTUAL_ADDRESS bufferLocation =
                         ToBackend(binding.buffer)->GetVA() + offset;
 
-                    switch (bindingInfo.type) {
-                        case wgpu::BindingType::UniformBuffer:
+                    ASSERT(bindingInfo.bindingType == BindingInfoType::Buffer);
+                    switch (bindingInfo.buffer.type) {
+                        case wgpu::BufferBindingType::Uniform:
                             if (mInCompute) {
                                 commandList->SetComputeRootConstantBufferView(parameterIndex,
                                                                               bufferLocation);
@@ -360,7 +366,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::StorageBuffer:
+                        case wgpu::BufferBindingType::Storage:
                             if (mInCompute) {
                                 commandList->SetComputeRootUnorderedAccessView(parameterIndex,
                                                                                bufferLocation);
@@ -369,7 +375,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                 bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::ReadonlyStorageBuffer:
+                        case wgpu::BufferBindingType::ReadOnlyStorage:
                             if (mInCompute) {
                                 commandList->SetComputeRootShaderResourceView(parameterIndex,
                                                                               bufferLocation);
@@ -378,12 +384,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::SampledTexture:
-                        case wgpu::BindingType::MultisampledTexture:
-                        case wgpu::BindingType::Sampler:
-                        case wgpu::BindingType::ComparisonSampler:
-                        case wgpu::BindingType::ReadonlyStorageTexture:
-                        case wgpu::BindingType::WriteonlyStorageTexture:
+                        case wgpu::BufferBindingType::Undefined:
                             UNREACHABLE();
                     }
                 }
@@ -505,46 +506,6 @@ namespace dawn_native { namespace d3d12 {
                 mD3D12BufferViews = {};
         };
 
-        class IndexBufferTracker {
-          public:
-            void OnSetIndexBuffer(Buffer* buffer,
-                                  wgpu::IndexFormat format,
-                                  uint64_t offset,
-                                  uint64_t size) {
-                mD3D12BufferView.BufferLocation = buffer->GetVA() + offset;
-                mD3D12BufferView.SizeInBytes = size;
-                mBufferIndexFormat = DXGIIndexFormat(format);
-
-                // We don't need to dirty the state unless BufferLocation or SizeInBytes
-                // change, but most of the time this will always be the case.
-                mLastAppliedIndexFormat = DXGI_FORMAT_UNKNOWN;
-            }
-
-            void OnSetPipeline(const RenderPipelineBase* pipeline) {
-                mPipelineIndexFormat =
-                    DXGIIndexFormat(pipeline->GetVertexStateDescriptor()->indexFormat);
-            }
-
-            void Apply(ID3D12GraphicsCommandList* commandList) {
-                DXGI_FORMAT newIndexFormat = mBufferIndexFormat;
-                if (newIndexFormat == DXGI_FORMAT_UNKNOWN) {
-                    newIndexFormat = mPipelineIndexFormat;
-                }
-
-                if (newIndexFormat != mLastAppliedIndexFormat) {
-                    mD3D12BufferView.Format = newIndexFormat;
-                    commandList->IASetIndexBuffer(&mD3D12BufferView);
-                    mLastAppliedIndexFormat = newIndexFormat;
-                }
-            }
-
-          private:
-            DXGI_FORMAT mBufferIndexFormat = DXGI_FORMAT_UNKNOWN;
-            DXGI_FORMAT mPipelineIndexFormat = DXGI_FORMAT_UNKNOWN;
-            DXGI_FORMAT mLastAppliedIndexFormat = DXGI_FORMAT_UNKNOWN;
-            D3D12_INDEX_BUFFER_VIEW mD3D12BufferView = {};
-        };
-
         void ResolveMultisampledRenderPass(CommandRecordingContext* commandContext,
                                            BeginRenderPassCmd* renderPass) {
             ASSERT(renderPass != nullptr);
@@ -626,18 +587,21 @@ namespace dawn_native { namespace d3d12 {
 
             for (size_t i = 0; i < usages.textures.size(); ++i) {
                 Texture* texture = ToBackend(usages.textures[i]);
-                // Clear textures that are not output attachments. Output attachments will be
-                // cleared during record render pass if the texture subresource has not been
-                // initialized before the render pass.
-                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::RenderAttachment)) {
-                    texture->EnsureSubresourceContentInitialized(commandContext,
-                                                                 texture->GetAllSubresources());
-                }
+
+                // Clear subresources that are not render attachments. Render attachments will be
+                // cleared in RecordBeginRenderPass by setting the loadop to clear when the texture
+                // subresource has not been initialized before the render pass.
+                usages.textureUsages[i].Iterate(
+                    [&](const SubresourceRange& range, wgpu::TextureUsage usage) {
+                        if (usage & ~wgpu::TextureUsage::RenderAttachment) {
+                            texture->EnsureSubresourceContentInitialized(commandContext, range);
+                        }
+                        textureUsages |= usage;
+                    });
 
                 ToBackend(usages.textures[i])
                     ->TrackUsageAndGetResourceBarrierForPass(commandContext, &barriers,
                                                              usages.textureUsages[i]);
-                textureUsages |= usages.textureUsages[i].usage;
             }
 
             if (barriers.size()) {
@@ -1102,7 +1066,7 @@ namespace dawn_native { namespace d3d12 {
                 i, attachmentInfo.loadOp, attachmentInfo.clearColor, view->GetD3D12Format());
 
             // Set color store operation.
-            if (attachmentInfo.resolveTarget.Get() != nullptr) {
+            if (attachmentInfo.resolveTarget != nullptr) {
                 TextureView* resolveDestinationView = ToBackend(attachmentInfo.resolveTarget.Get());
                 Texture* resolveDestinationTexture =
                     ToBackend(resolveDestinationView->GetTexture());
@@ -1269,7 +1233,6 @@ namespace dawn_native { namespace d3d12 {
         RenderPipeline* lastPipeline = nullptr;
         PipelineLayout* lastLayout = nullptr;
         VertexBufferTracker vertexBufferTracker = {};
-        IndexBufferTracker indexBufferTracker = {};
 
         auto EncodeRenderBundleCommand = [&](CommandIterator* iter, Command type) -> MaybeError {
             switch (type) {
@@ -1278,6 +1241,8 @@ namespace dawn_native { namespace d3d12 {
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
                     vertexBufferTracker.Apply(commandList, lastPipeline);
+                    RecordFirstIndexOffset(commandList, lastPipeline, draw->firstVertex,
+                                           draw->firstInstance);
                     commandList->DrawInstanced(draw->vertexCount, draw->instanceCount,
                                                draw->firstVertex, draw->firstInstance);
                     break;
@@ -1287,8 +1252,9 @@ namespace dawn_native { namespace d3d12 {
                     DrawIndexedCmd* draw = iter->NextCommand<DrawIndexedCmd>();
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
-                    indexBufferTracker.Apply(commandList);
                     vertexBufferTracker.Apply(commandList, lastPipeline);
+                    RecordFirstIndexOffset(commandList, lastPipeline, draw->baseVertex,
+                                           draw->firstInstance);
                     commandList->DrawIndexedInstanced(draw->indexCount, draw->instanceCount,
                                                       draw->firstIndex, draw->baseVertex,
                                                       draw->firstInstance);
@@ -1312,7 +1278,6 @@ namespace dawn_native { namespace d3d12 {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
-                    indexBufferTracker.Apply(commandList);
                     vertexBufferTracker.Apply(commandList, lastPipeline);
                     Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
                     ComPtr<ID3D12CommandSignature> signature =
@@ -1371,7 +1336,6 @@ namespace dawn_native { namespace d3d12 {
                     commandList->IASetPrimitiveTopology(pipeline->GetD3D12PrimitiveTopology());
 
                     bindingTracker->OnSetPipeline(pipeline);
-                    indexBufferTracker.OnSetPipeline(pipeline);
 
                     lastPipeline = pipeline;
                     lastLayout = layout;
@@ -1395,8 +1359,12 @@ namespace dawn_native { namespace d3d12 {
                 case Command::SetIndexBuffer: {
                     SetIndexBufferCmd* cmd = iter->NextCommand<SetIndexBufferCmd>();
 
-                    indexBufferTracker.OnSetIndexBuffer(ToBackend(cmd->buffer.Get()), cmd->format,
-                                                        cmd->offset, cmd->size);
+                    D3D12_INDEX_BUFFER_VIEW bufferView;
+                    bufferView.Format = DXGIIndexFormat(cmd->format);
+                    bufferView.BufferLocation = ToBackend(cmd->buffer)->GetVA() + cmd->offset;
+                    bufferView.SizeInBytes = cmd->size;
+
+                    commandList->IASetIndexBuffer(&bufferView);
                     break;
                 }
 
@@ -1479,6 +1447,26 @@ namespace dawn_native { namespace d3d12 {
                             DAWN_TRY(EncodeRenderBundleCommand(iter, type));
                         }
                     }
+                    break;
+                }
+
+                case Command::BeginOcclusionQuery: {
+                    BeginOcclusionQueryCmd* cmd = mCommands.NextCommand<BeginOcclusionQueryCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    ASSERT(D3D12QueryType(querySet->GetQueryType()) ==
+                           D3D12_QUERY_TYPE_BINARY_OCCLUSION);
+                    commandList->BeginQuery(querySet->GetQueryHeap(),
+                                            D3D12_QUERY_TYPE_BINARY_OCCLUSION, cmd->queryIndex);
+                    break;
+                }
+
+                case Command::EndOcclusionQuery: {
+                    EndOcclusionQueryCmd* cmd = mCommands.NextCommand<EndOcclusionQueryCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    ASSERT(D3D12QueryType(querySet->GetQueryType()) ==
+                           D3D12_QUERY_TYPE_BINARY_OCCLUSION);
+                    commandList->EndQuery(querySet->GetQueryHeap(),
+                                          D3D12_QUERY_TYPE_BINARY_OCCLUSION, cmd->queryIndex);
                     break;
                 }
 

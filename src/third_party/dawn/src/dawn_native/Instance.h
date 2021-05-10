@@ -30,6 +30,7 @@
 namespace dawn_native {
 
     class Surface;
+    class XlibXcbFunctions;
 
     // This is called InstanceBase for consistency across the frontend, even if the backends don't
     // specialize this class.
@@ -57,17 +58,18 @@ namespace dawn_native {
         ExtensionsSet ExtensionNamesToExtensionsSet(
             const std::vector<const char*>& requiredExtensions);
 
-        void EnableBackendValidation(bool enableBackendValidation);
         bool IsBackendValidationEnabled() const;
-
-        void EnableGPUBasedBackendValidation(bool enableGPUBasedBackendValidation);
-        bool IsGPUBasedBackendValidationEnabled() const;
+        void SetBackendValidationLevel(BackendValidationLevel level);
+        BackendValidationLevel GetBackendValidationLevel() const;
 
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
         bool IsBeginCaptureOnStartupEnabled() const;
 
         void SetPlatform(dawn_platform::Platform* platform);
         dawn_platform::Platform* GetPlatform() const;
+
+        // Get backend-independent libraries that need to be loaded dynamically.
+        const XlibXcbFunctions* GetOrCreateXlibXcbFunctions();
 
         // Dawn API
         Surface* CreateSurface(const SurfaceDescriptor* descriptor);
@@ -89,9 +91,8 @@ namespace dawn_native {
         bool mBackendsConnected = false;
         bool mDiscoveredDefaultAdapters = false;
 
-        bool mEnableBackendValidation = false;
         bool mBeginCaptureOnStartup = false;
-        bool mEnableGPUValidation = false;
+        BackendValidationLevel mBackendValidationLevel = BackendValidationLevel::Disabled;
 
         dawn_platform::Platform* mPlatform = nullptr;
 
@@ -100,6 +101,10 @@ namespace dawn_native {
 
         ExtensionsInfo mExtensionsInfo;
         TogglesInfo mTogglesInfo;
+
+#if defined(DAWN_USE_X11)
+        std::unique_ptr<XlibXcbFunctions> mXlibXcbFunctions;
+#endif  // defined(DAWN_USE_X11)
     };
 
 }  // namespace dawn_native

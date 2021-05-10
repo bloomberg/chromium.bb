@@ -18,7 +18,11 @@ using content::DesktopMediaID;
 DesktopMediaListBase::DesktopMediaListBase(base::TimeDelta update_period)
     : update_period_(update_period) {}
 
-DesktopMediaListBase::~DesktopMediaListBase() {}
+DesktopMediaListBase::DesktopMediaListBase(base::TimeDelta update_period,
+                                           DesktopMediaListObserver* observer)
+    : update_period_(update_period), observer_(observer) {}
+
+DesktopMediaListBase::~DesktopMediaListBase() = default;
 
 void DesktopMediaListBase::SetUpdatePeriod(base::TimeDelta period) {
   DCHECK(!observer_);
@@ -68,7 +72,7 @@ const DesktopMediaList::Source& DesktopMediaListBase::GetSource(
   return sources_[index];
 }
 
-DesktopMediaID::Type DesktopMediaListBase::GetMediaListType() const {
+DesktopMediaList::Type DesktopMediaListBase::GetMediaListType() const {
   return type_;
 }
 

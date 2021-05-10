@@ -7,16 +7,17 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_paths.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -112,16 +113,16 @@ void DeviceStateMixin::SetUpLocalState() {
     case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
     case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
       local_state->SetBoolean(prefs::kOobeComplete, true);
-      local_state->SetInteger(prefs::kDeviceRegistered, 1);
-      local_state->SetBoolean(prefs::kEnrollmentRecoveryRequired, false);
+      local_state->SetInteger(::prefs::kDeviceRegistered, 1);
+      local_state->SetBoolean(::prefs::kEnrollmentRecoveryRequired, false);
       break;
     case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
       local_state->SetBoolean(prefs::kOobeComplete, true);
-      local_state->SetInteger(prefs::kDeviceRegistered, 0);
-      local_state->SetBoolean(prefs::kEnrollmentRecoveryRequired, false);
+      local_state->SetInteger(::prefs::kDeviceRegistered, 0);
+      local_state->SetBoolean(::prefs::kEnrollmentRecoveryRequired, false);
       break;
     case DeviceStateMixin::State::BEFORE_OOBE:
-      local_state->SetInteger(prefs::kDeviceRegistered, 0);
+      local_state->SetInteger(::prefs::kDeviceRegistered, 0);
       break;
   }
 }

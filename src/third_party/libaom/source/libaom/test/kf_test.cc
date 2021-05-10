@@ -180,8 +180,7 @@ class ForcedKeyTestLarge
   bool is_kf_placement_violated_;
 };
 
-// TODO(crbug.com/aomedia/2810): Fix and re-enable the test.
-TEST_P(ForcedKeyTestLarge, DISABLED_Frame1IsKey) {
+TEST_P(ForcedKeyTestLarge, Frame1IsKey) {
   const aom_rational timebase = { 1, 30 };
   const int lag_values[] = { 3, 15, 25, -1 };
 
@@ -201,8 +200,7 @@ TEST_P(ForcedKeyTestLarge, DISABLED_Frame1IsKey) {
 
 // This class checks the presence and placement of application
 // forced key frames.
-// TODO(crbug.com/aomedia/2808): Fix and re-enable the test.
-TEST_P(ForcedKeyTestLarge, DISABLED_ForcedFrameIsKey) {
+TEST_P(ForcedKeyTestLarge, ForcedFrameIsKey) {
   const aom_rational timebase = { 1, 30 };
   const int lag_values[] = { 3, 15, 25, -1 };
 
@@ -231,8 +229,7 @@ TEST_P(ForcedKeyTestLarge, DISABLED_ForcedFrameIsKey) {
   }
 }
 
-// TODO(crbug.com/aomedia/2809): Fix and re-enable the test.
-TEST_P(ForcedKeyTestLarge, DISABLED_ForcedFrameIsKeyCornerCases) {
+TEST_P(ForcedKeyTestLarge, ForcedFrameIsKeyCornerCases) {
   const aom_rational timebase = { 1, 30 };
   const int kf_offsets[] = { -2, -1, 1, 2, 0 };
   cfg_.g_lag_in_frames = 35;

@@ -17,19 +17,20 @@
 
 #include <memory>
 #include <ostream>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "src/ast/expression.h"
 #include "src/ast/node.h"
 #include "src/ast/storage_class.h"
-#include "src/ast/type/type.h"
+#include "src/ast/variable_decoration.h"
+#include "src/symbol.h"
+#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
-class DecoratedVariable;
+class LocationDecoration;
 
 /// A Variable statement.
 ///
@@ -78,103 +79,110 @@ class DecoratedVariable;
 /// defaulting syntax for a "var" declared inside a function.
 /// The storage class for a "const" is always StorageClass::kNone.
 /// The storage class for a formal parameter is always StorageClass::kNone.
-class Variable : public Node {
+class Variable : public Castable<Variable, Node> {
  public:
-  /// Create a new empty variable statement
-  Variable();
-  /// Create a variable
-  /// @param name the variables name
-  /// @param sc the variable storage class
-  /// @param type the value type
-  Variable(const std::string& name, StorageClass sc, type::Type* type);
   /// Create a variable
   /// @param source the variable source
-  /// @param name the variables name
-  /// @param sc the variable storage class
+  /// @param sym the variable symbol
+  /// @param sc the declared storage class
   /// @param type the value type
+  /// @param is_const true if the variable is const
+  /// @param constructor the constructor expression
+  /// @param decorations the variable decorations
   Variable(const Source& source,
-           const std::string& name,
+           const Symbol& sym,
            StorageClass sc,
-           type::Type* type);
+           type::Type* type,
+           bool is_const,
+           Expression* constructor,
+           VariableDecorationList decorations);
   /// Move constructor
   Variable(Variable&&);
 
   ~Variable() override;
 
-  /// Sets the variable name
-  /// @param name the name to set
-  void set_name(const std::string& name) { name_ = name; }
-  /// @returns the variable name
-  const std::string& name() const { return name_; }
+  /// @returns the variable symbol
+  const Symbol& symbol() const { return symbol_; }
 
-  /// Sets the value type if a const or formal parameter, or the
-  /// store type if a var.
-  /// @param type the type
-  void set_type(type::Type* type) { type_ = type; }
   /// @returns the variable's type.
   type::Type* type() const { return type_; }
 
-  /// Sets the storage class
-  /// @param sc the storage class
-  void set_storage_class(StorageClass sc) { storage_class_ = sc; }
-  /// @returns the storage class
-  StorageClass storage_class() const { return storage_class_; }
-
-  /// Sets the constructor
-  /// @param expr the constructor expression
-  void set_constructor(std::unique_ptr<Expression> expr) {
-    constructor_ = std::move(expr);
+  /// @returns the declared storage class
+  StorageClass declared_storage_class() const {
+    return declared_storage_class_;
   }
   /// @returns the constructor expression or nullptr if none set
-  Expression* constructor() const { return constructor_.get(); }
+  Expression* constructor() const { return constructor_; }
   /// @returns true if the variable has an constructor
   bool has_constructor() const { return constructor_ != nullptr; }
 
-  /// Sets if the variable is constant
-  /// @param val the value to be set
-  void set_is_const(bool val) { is_const_ = val; }
   /// @returns true if this is a constant, false otherwise
   bool is_const() const { return is_const_; }
 
-  /// @returns true if this is a decorated variable
-  virtual bool IsDecorated() const;
+  /// @returns the decorations attached to this variable
+  const VariableDecorationList& decorations() const { return decorations_; }
 
-  /// @returns the expression as a decorated variable
-  DecoratedVariable* AsDecorated();
-  /// @returns the expression as a decorated variable
-  const DecoratedVariable* AsDecorated() const;
+  /// @returns true if the decorations include a LocationDecoration
+  bool HasLocationDecoration() const;
+  /// @returns true if the decorations include a BuiltinDecoration
+  bool HasBuiltinDecoration() const;
+  /// @returns true if the decorations include a ConstantIdDecoration
+  bool HasConstantIdDecoration() const;
 
-  /// @returns true if the name and path are both present
+  /// @returns pointer to LocationDecoration in decorations, otherwise NULL.
+  LocationDecoration* GetLocationDecoration() const;
+
+  /// @returns the constant_id value for the variable. Assumes that
+  /// HasConstantIdDecoration() has been called first.
+  uint32_t constant_id() const;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  Variable* Clone(CloneContext* ctx) const override;
+
+  /// @returns true if the variable is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  protected:
   /// Output information for this variable.
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void info_to_str(std::ostream& out, size_t indent) const;
+  void info_to_str(const semantic::Info& sem,
+                   std::ostream& out,
+                   size_t indent) const;
   /// Output constructor for this variable.
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void constructor_to_str(std::ostream& out, size_t indent) const;
+  void constructor_to_str(const semantic::Info& sem,
+                          std::ostream& out,
+                          size_t indent) const;
 
  private:
   Variable(const Variable&) = delete;
 
-  bool is_const_ = false;
-  std::string name_;
-  StorageClass storage_class_ = StorageClass::kNone;
+  Symbol const symbol_;
   // The value type if a const or formal paramter, and the store type if a var
-  type::Type* type_ = nullptr;
-  std::unique_ptr<Expression> constructor_;
+  type::Type* const type_;
+  bool const is_const_;
+  Expression* const constructor_;
+  VariableDecorationList const decorations_;
+  StorageClass const declared_storage_class_;
 };
 
-/// A list of unique variables
-using VariableList = std::vector<std::unique_ptr<Variable>>;
+/// A list of variables
+using VariableList = std::vector<Variable*>;
 
 }  // namespace ast
 }  // namespace tint

@@ -24,6 +24,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/clamped_math.h"
+#include "third_party/blink/renderer/core/css/counter_style.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -203,8 +205,8 @@ bool PlanCounter(LayoutObject& object,
         return true;
       }
       if (auto* olist = DynamicTo<HTMLOListElement>(*e)) {
-        value =
-            olist->StartConsideringItemCount() + (olist->IsReversed() ? 1 : -1);
+        value = base::ClampAdd(olist->StartConsideringItemCount(),
+                               olist->IsReversed() ? 1 : -1);
         type_mask = CounterNode::kResetType;
         return true;
       }
@@ -480,10 +482,21 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
   return new_node.get();
 }
 
+String GenerateCounterText(const CounterStyle* counter_style,
+                           EListStyleType deprecated_list_style_type,
+                           int value) {
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+    if (!counter_style)
+      return g_empty_string;
+    return counter_style->GenerateRepresentation(value);
+  }
+  return list_marker_text::GetText(deprecated_list_style_type, value);
+}
+
 }  // namespace
 
 LayoutCounter::LayoutCounter(PseudoElement& pseudo,
-                             const CounterContent& counter)
+                             const CounterContentData& counter)
     : LayoutText(nullptr, StringImpl::empty_),
       counter_(counter),
       counter_node_(nullptr),
@@ -513,7 +526,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
 
   // Find a container on which to create the counter if one needs creating.
   LayoutObject* container = Parent();
-  bool should_create_counter = counter_.Separator().IsNull();
+  bool should_create_counter = counter_->Separator().IsNull();
   // Optimization: the only reason we need a proper container is if we might not
   // need to create a counter (in which case, we navigate container's
   // ancestors), or if we don't have a counter_node_ (in which case we need to
@@ -550,7 +563,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
       if (style.ContainsStyle())
         break;
       const CounterDirectives directives =
-          style.GetCounterDirectives(counter_.Identifier());
+          style.GetCounterDirectives(counter_->Identifier());
       if (directives.IsDefined()) {
         should_create_counter = true;
         break;
@@ -563,7 +576,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
     // as the child, without needing to create a counter on `this`. If we don't
     // have such an ancestor, we need to create a `counter_node_` on `this`.
     if (auto* node = CounterNode::AncestorNodeAcrossStyleContainment(
-            *this, counter_.Identifier())) {
+            *this, counter_->Identifier())) {
       child = node;
     } else {
       should_create_counter = true;
@@ -572,7 +585,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
 
   if (should_create_counter) {
     if (!counter_node_) {
-      MakeCounterNodeIfNeeded(*container, counter_.Identifier(), true)
+      MakeCounterNodeIfNeeded(*container, counter_->Identifier(), true)
           ->AddLayoutObject(const_cast<LayoutCounter*>(this));
       DCHECK(counter_node_);
     }
@@ -584,20 +597,33 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
   DCHECK(child);
 
   int value = ValueForText(child);
-  String text = list_marker_text::GetText(counter_.ListStyle(), value);
+  const CounterStyle* counter_style = nullptr;
+  EListStyleType list_style = EListStyleType::kNone;
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
+    // Note: CSS3 spec doesn't allow 'none' but CSS2.1 allows it. We currently
+    // allow it for backward compatibility.
+    // See https://github.com/w3c/csswg-drafts/issues/5795 for details.
+    if (counter_->ListStyle() != "none") {
+      counter_style =
+          &GetDocument().GetStyleEngine().FindCounterStyleAcrossScopes(
+              counter_->ListStyle(), counter_->GetTreeScope());
+    }
+  } else {
+    list_style = counter_->ToDeprecatedListStyleTypeEnum();
+  }
+  String text = GenerateCounterText(counter_style, list_style, value);
   // If the separator exists, we need to append all of the parent values as well,
   // including the ones that cross the style containment boundary.
-  if (!counter_.Separator().IsNull()) {
+  if (!counter_->Separator().IsNull()) {
     if (!child->ActsAsReset())
-      child = child->ParentCrossingStyleContainment(counter_.Identifier());
+      child = child->ParentCrossingStyleContainment(counter_->Identifier());
     bool next_result_uses_parent_value = !child->Parent();
     while (CounterNode* parent =
-               child->ParentCrossingStyleContainment(counter_.Identifier())) {
-      text = list_marker_text::GetText(counter_.ListStyle(),
-                                       next_result_uses_parent_value
-                                           ? ValueForText(parent)
-                                           : child->CountInParent()) +
-             counter_.Separator() + text;
+               child->ParentCrossingStyleContainment(counter_->Identifier())) {
+      int next_value = next_result_uses_parent_value ? ValueForText(parent)
+                                                     : child->CountInParent();
+      text = GenerateCounterText(counter_style, list_style, next_value) +
+             counter_->Separator() + text;
       child = parent;
       next_result_uses_parent_value = !child->Parent();
     }
@@ -648,7 +674,7 @@ void LayoutCounter::DestroyCounterNodes(LayoutObject& owner) {
   maps.erase(maps_iterator);
   owner.SetHasCounterNodeMap(false);
   if (owner.View())
-    owner.View()->SetNeedsCounterUpdate();
+    owner.View()->SetNeedsMarkerOrCounterUpdate();
 }
 
 void LayoutCounter::DestroyCounterNode(LayoutObject& owner,
@@ -765,6 +791,8 @@ void LayoutCounter::LayoutObjectSubtreeAttached(LayoutObject* layout_object) {
 void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,
                                              const ComputedStyle* old_style,
                                              const ComputedStyle& new_style) {
+  if (layout_object.IsListItemIncludingNG())
+    ListItemOrdinal::ItemCounterStyleUpdated(layout_object);
   Node* node = layout_object.GeneratingNode();
   if (!node || node->NeedsReattachLayoutTree())
     return;  // cannot have generated content or if it can have, it will be

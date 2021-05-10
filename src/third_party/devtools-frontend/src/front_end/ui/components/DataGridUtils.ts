@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../platform/platform.js';
 import * as LitHtml from '../../third_party/lit-html/lit-html.js';
 import * as DataGridRenderers from './DataGridRenderers.js';
 
@@ -9,8 +10,8 @@ import * as DataGridRenderers from './DataGridRenderers.js';
   *
   * - `id`: a unique ID for that column.
   * - `title`: the user visible title.
-  * - `hidden`: an optional flag to mark the column as hidden, so it won't
-  *   render.
+  * - `visible`: if the column is visible when rendered
+  * - `hideable`: if the user is able to show/hide the column via the context menu.
   * - `width`: a number that denotes the width of the column. This is percentage
   *   based, out of 100.
   * - `sortable`: an optional property to denote if the  column is sortable.
@@ -23,8 +24,11 @@ export interface Column {
   title: string;
   sortable?: boolean;
   widthWeighting: number;
-  hidden?: boolean;
+  hideable: boolean;
+  visible: boolean;
 }
+
+export type CellValue = string|number|boolean|null;
 
 /**
  * A cell contains a `columnId`, which is the ID of the column the cell
@@ -35,17 +39,15 @@ export interface Column {
  */
 export interface Cell {
   columnId: string;
-  value: unknown;
-  // The renderer function actually returns LitHtml.TemplateResult but it's a
-  // lot of work to teach the bridges generator about that.
-  // TODO (crbug.com/1011811): Fix types once TypeScriptification is complete.
-  renderer?: (value: unknown) => unknown
+  value: CellValue;
+  title?: string;
+  renderer?: (value: CellValue) => LitHtml.TemplateResult;
 }
 
 export type Row = {
-  cells: Cell[];
-  hidden?: boolean;
-}
+  cells: Cell[],
+  hidden?: boolean,
+};
 
 export const enum SortDirection {
   ASC = 'ASC',
@@ -59,23 +61,6 @@ export interface SortState {
 
 export type CellPosition = readonly [columnIndex: number, rowIndex: number];
 
-export const enum ArrowKey {
-  UP = 'ArrowUp',
-  DOWN = 'ArrowDown',
-  LEFT = 'ArrowLeft',
-  RIGHT = 'ArrowRight',
-}
-export const ARROW_KEYS = new Set<ArrowKey>([
-  ArrowKey.UP,
-  ArrowKey.DOWN,
-  ArrowKey.LEFT,
-  ArrowKey.RIGHT,
-]);
-
-export function keyIsArrowKey(key: string): key is ArrowKey {
-  return ARROW_KEYS.has(key as ArrowKey);
-}
-
 export function getRowEntryForColumnId(row: Row, id: string): Cell {
   const rowEntry = row.cells.find(r => r.columnId === id);
   if (rowEntry === undefined) {
@@ -86,21 +71,13 @@ export function getRowEntryForColumnId(row: Row, id: string): Cell {
 }
 
 export function renderCellValue(cell: Cell): LitHtml.TemplateResult {
-  const output = cell.renderer ? cell.renderer(cell.value) as LitHtml.TemplateResult :
-                                 DataGridRenderers.stringRenderer(cell.value);
-  return output;
-}
-
-export function stringValueForCell(cell: Cell): string {
-  if (typeof cell.value === 'string') {
-    return cell.value;
+  if (cell.renderer) {
+    return cell.renderer(cell.value);
   }
 
-  const output = renderCellValue(cell);
-  const div = document.createElement('div');
-  LitHtml.render(output, div);
-  return div.innerText;
+  return DataGridRenderers.primitiveRenderer(cell.value);
 }
+
 
 /**
  * When the user passes in columns we want to know how wide each one should be.
@@ -124,10 +101,9 @@ export function stringValueForCell(cell: Cell): string {
  * @param allColumns
  * @param columnId
  */
-export function calculateColumnWidthPercentageFromWeighting(
-    allColumns: ReadonlyArray<Column>, columnId: string): number {
+export function calculateColumnWidthPercentageFromWeighting(allColumns: readonly Column[], columnId: string): number {
   const totalWeights =
-      allColumns.filter(c => !c.hidden).reduce((sumOfWeights, col) => sumOfWeights + col.widthWeighting, 0);
+      allColumns.filter(c => c.visible).reduce((sumOfWeights, col) => sumOfWeights + col.widthWeighting, 0);
   const matchingColumn = allColumns.find(c => c.id === columnId);
   if (!matchingColumn) {
     throw new Error(`Could not find column with ID ${columnId}`);
@@ -135,7 +111,7 @@ export function calculateColumnWidthPercentageFromWeighting(
   if (matchingColumn.widthWeighting < 1) {
     throw new Error(`Error with column ${columnId}: width weightings must be >= 1.`);
   }
-  if (matchingColumn.hidden) {
+  if (!matchingColumn.visible) {
     return 0;
   }
 
@@ -143,7 +119,10 @@ export function calculateColumnWidthPercentageFromWeighting(
 }
 
 export interface HandleArrowKeyOptions {
-  key: ArrowKey, currentFocusedCell: readonly[number, number], columns: readonly Column[], rows: readonly Row[],
+  key: Platform.KeyboardUtilities.ArrowKey;
+  currentFocusedCell: readonly[number, number];
+  columns: readonly Column[];
+  rows: readonly Row[];
 }
 
 export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPosition {
@@ -151,8 +130,8 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
   const [selectedColIndex, selectedRowIndex] = currentFocusedCell;
 
   switch (key) {
-    case ArrowKey.LEFT: {
-      const firstVisibleColumnIndex = columns.findIndex(c => !c.hidden);
+    case Platform.KeyboardUtilities.ArrowKey.LEFT: {
+      const firstVisibleColumnIndex = columns.findIndex(c => c.visible);
       if (selectedColIndex === firstVisibleColumnIndex) {
         // User is as far left as they can go, so don't move them.
         return [selectedColIndex, selectedRowIndex];
@@ -165,7 +144,7 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
       let nextColIndex = selectedColIndex;
       for (let i = nextColIndex - 1; i >= 0; i--) {
         const col = columns[i];
-        if (!col.hidden) {
+        if (col.visible) {
           nextColIndex = i;
           break;
         }
@@ -174,7 +153,7 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
       return [nextColIndex, selectedRowIndex];
     }
 
-    case ArrowKey.RIGHT: {
+    case Platform.KeyboardUtilities.ArrowKey.RIGHT: {
       // Set the next index to first be the column we are already on, and then
       // iterate through all columns to our right, breaking the loop if we
       // find one that's not hidden. If we don't find one, we'll stay where we
@@ -182,7 +161,7 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
       let nextColIndex = selectedColIndex;
       for (let i = nextColIndex + 1; i < columns.length; i++) {
         const col = columns[i];
-        if (!col.hidden) {
+        if (col.visible) {
           nextColIndex = i;
           break;
         }
@@ -191,7 +170,7 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
       return [nextColIndex, selectedRowIndex];
     }
 
-    case ArrowKey.UP: {
+    case Platform.KeyboardUtilities.ArrowKey.UP: {
       const columnsSortable = columns.some(col => col.sortable === true);
       const minRowIndex = columnsSortable ? 0 : 1;
       if (selectedRowIndex === minRowIndex) {
@@ -220,7 +199,7 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
       return [selectedColIndex, rowIndexToMoveTo];
     }
 
-    case ArrowKey.DOWN: {
+    case Platform.KeyboardUtilities.ArrowKey.DOWN: {
       if (selectedRowIndex === 0) {
         // The user is on the column header. So find the first visible body row and take them there!
         const firstVisibleBodyRowIndex = rows.findIndex(row => !row.hidden);
@@ -243,6 +222,9 @@ export function handleArrowKeyNavigation(options: HandleArrowKeyOptions): CellPo
 
       return [selectedColIndex, rowIndexToMoveTo];
     }
+
+    default:
+      return Platform.assertNever(key, `Unknown arrow key: ${key}`);
   }
 }
 
@@ -251,7 +233,27 @@ export const calculateFirstFocusableCell =
       const {columns, rows} = options;
       const someColumnsSortable = columns.some(col => col.sortable === true);
       const focusableRowIndex = someColumnsSortable ? 0 : rows.findIndex(row => !row.hidden) + 1;
-      const focusableColIndex = columns.findIndex(col => !col.hidden);
+      const focusableColIndex = columns.findIndex(col => col.visible);
 
       return [focusableColIndex, focusableRowIndex];
     };
+
+
+export class ContextMenuColumnSortClickEvent extends Event {
+  data: {
+    column: Column,
+  };
+
+  constructor(column: Column) {
+    super('context-menu-column-sort-click');
+    this.data = {
+      column,
+    };
+  }
+}
+
+export class ContextMenuHeaderResetClickEvent extends Event {
+  constructor() {
+    super('context-menu-header-reset-click');
+  }
+}

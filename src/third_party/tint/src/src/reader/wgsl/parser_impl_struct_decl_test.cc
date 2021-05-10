@@ -13,9 +13,10 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "src/ast/type/struct_type.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/struct_type.h"
 
 namespace tint {
 namespace reader {
@@ -23,7 +24,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, StructDecl_Parses) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 struct S {
   a : i32;
   [[offset(4)]] b : f32;
@@ -38,14 +39,16 @@ struct S {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), "S");
+  ASSERT_EQ(s->symbol(), p->builder().Symbols().Register("S"));
   ASSERT_EQ(s->impl()->members().size(), 2u);
-  EXPECT_EQ(s->impl()->members()[0]->name(), "a");
-  EXPECT_EQ(s->impl()->members()[1]->name(), "b");
+  EXPECT_EQ(s->impl()->members()[0]->symbol(),
+            p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->impl()->members()[1]->symbol(),
+            p->builder().Symbols().Register("b"));
 }
 
 TEST_F(ParserImplTest, StructDecl_ParsesWithDecoration) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 [[block]] struct B {
   a : f32;
   b : f32;
@@ -60,16 +63,18 @@ TEST_F(ParserImplTest, StructDecl_ParsesWithDecoration) {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), "B");
+  ASSERT_EQ(s->symbol(), p->builder().Symbols().Register("B"));
   ASSERT_EQ(s->impl()->members().size(), 2u);
-  EXPECT_EQ(s->impl()->members()[0]->name(), "a");
-  EXPECT_EQ(s->impl()->members()[1]->name(), "b");
+  EXPECT_EQ(s->impl()->members()[0]->symbol(),
+            p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->impl()->members()[1]->symbol(),
+            p->builder().Symbols().Register("b"));
   ASSERT_EQ(s->impl()->decorations().size(), 1u);
-  EXPECT_TRUE(s->impl()->decorations()[0]->IsBlock());
+  EXPECT_TRUE(s->impl()->decorations()[0]->Is<ast::StructBlockDecoration>());
 }
 
 TEST_F(ParserImplTest, StructDecl_ParsesWithMultipleDecoration) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 [[block]]
 [[block]] struct S {
   a : f32;
@@ -85,17 +90,19 @@ TEST_F(ParserImplTest, StructDecl_ParsesWithMultipleDecoration) {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), "S");
+  ASSERT_EQ(s->symbol(), p->builder().Symbols().Register("S"));
   ASSERT_EQ(s->impl()->members().size(), 2u);
-  EXPECT_EQ(s->impl()->members()[0]->name(), "a");
-  EXPECT_EQ(s->impl()->members()[1]->name(), "b");
+  EXPECT_EQ(s->impl()->members()[0]->symbol(),
+            p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->impl()->members()[1]->symbol(),
+            p->builder().Symbols().Register("b"));
   ASSERT_EQ(s->impl()->decorations().size(), 2u);
-  EXPECT_TRUE(s->impl()->decorations()[0]->IsBlock());
-  EXPECT_TRUE(s->impl()->decorations()[1]->IsBlock());
+  EXPECT_TRUE(s->impl()->decorations()[0]->Is<ast::StructBlockDecoration>());
+  EXPECT_TRUE(s->impl()->decorations()[1]->Is<ast::StructBlockDecoration>());
 }
 
 TEST_F(ParserImplTest, StructDecl_EmptyMembers) {
-  auto* p = parser("struct S {}");
+  auto p = parser("struct S {}");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -110,7 +117,7 @@ TEST_F(ParserImplTest, StructDecl_EmptyMembers) {
 }
 
 TEST_F(ParserImplTest, StructDecl_MissingIdent) {
-  auto* p = parser("struct {}");
+  auto p = parser("struct {}");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -126,7 +133,7 @@ TEST_F(ParserImplTest, StructDecl_MissingIdent) {
 }
 
 TEST_F(ParserImplTest, StructDecl_MissingBracketLeft) {
-  auto* p = parser("struct S }");
+  auto p = parser("struct S }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -142,7 +149,7 @@ TEST_F(ParserImplTest, StructDecl_MissingBracketLeft) {
 }
 
 TEST_F(ParserImplTest, StructDecl_InvalidStructBody) {
-  auto* p = parser("struct S { a : B; }");
+  auto p = parser("struct S { a : B; }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -158,7 +165,7 @@ TEST_F(ParserImplTest, StructDecl_InvalidStructBody) {
 }
 
 TEST_F(ParserImplTest, StructDecl_InvalidStructDecorationDecl) {
-  auto* p = parser("[[block struct S { a : i32; }");
+  auto p = parser("[[block struct S { a : i32; }");
   auto decos = p->decoration_list();
   EXPECT_TRUE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -173,7 +180,7 @@ TEST_F(ParserImplTest, StructDecl_InvalidStructDecorationDecl) {
 }
 
 TEST_F(ParserImplTest, StructDecl_MissingStruct) {
-  auto* p = parser("[[block]] S {}");
+  auto p = parser("[[block]] S {}");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);

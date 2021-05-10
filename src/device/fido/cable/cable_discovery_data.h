@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/fido_constants.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace cbor {
 class Value;
@@ -50,6 +51,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   enum class Version {
     INVALID,
     V1,
+    V2,
   };
 
   CableDiscoveryData(Version version,
@@ -78,6 +80,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
     CableSessionPreKeyArray session_pre_key;
   };
   base::Optional<V1Data> v1;
+
+  // For caBLEv2, the payload is the server-link data provided in the extension
+  // as the "sessionPreKey".
+  base::Optional<std::vector<uint8_t>> v2;
 };
 
 namespace cablev2 {
@@ -118,6 +124,11 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) Pairing {
   // authenticator. (For example "Pixel 3".)
   std::string name;
 };
+
+// A PairingEvent is either a new |Pairing|, learnt from a device, or else the
+// public key of a pairing that has been discovered to be invalid.
+using PairingEvent = absl::variant<std::unique_ptr<Pairing>,
+                                   std::array<uint8_t, kP256X962Length>>;
 
 }  // namespace cablev2
 

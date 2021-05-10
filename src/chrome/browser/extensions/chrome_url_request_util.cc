@@ -31,6 +31,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -148,14 +149,24 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   void OnMimeTypeRead(scoped_refptr<base::RefCountedMemory> data,
                       std::string* read_mime_type,
                       bool read_result) {
+    if (!client_) {
+      // At this point, it is possible for |client_| to have disconnected, but
+      // the |receiver_| disconnect either hasn't been received, or is pending
+      // in the task queue. If |client_| is disconnected, there's nothing to do
+      // so wait for the |receiver_| disconnect to destroy us.
+      return;
+    }
+
     auto head = network::mojom::URLResponseHead::New();
     head->request_start = base::TimeTicks::Now();
     head->response_start = base::TimeTicks::Now();
     head->content_length = data->size();
     head->mime_type = *read_mime_type;
     DetermineCharset(head->mime_type, data.get(), &head->charset);
-    mojo::DataPipe pipe(data->size());
-    if (!pipe.consumer_handle.is_valid()) {
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    if (mojo::CreateDataPipe(data->size(), producer_handle, consumer_handle) !=
+        MOJO_RESULT_OK) {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       client_.reset();
       MaybeDeleteSelf();
@@ -169,11 +180,11 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
                                head->mime_type.c_str());
     }
     client_->OnReceiveResponse(std::move(head));
-    client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+    client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
     uint32_t write_size = data->size();
-    MojoResult result = pipe.producer_handle->WriteData(
-        data->front(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = producer_handle->WriteData(data->front(), &write_size,
+                                                   MOJO_WRITE_DATA_FLAG_NONE);
     OnFileWritten(result);
   }
 
@@ -216,17 +227,18 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
 namespace extensions {
 namespace chrome_url_request_util {
 
-bool AllowCrossRendererResourceLoad(const GURL& url,
-                                    blink::mojom::ResourceType resource_type,
-                                    ui::PageTransition page_transition,
-                                    int child_id,
-                                    bool is_incognito,
-                                    const Extension* extension,
-                                    const ExtensionSet& extensions,
-                                    const ProcessMap& process_map,
-                                    bool* allowed) {
+bool AllowCrossRendererResourceLoad(
+    const network::ResourceRequest& request,
+    network::mojom::RequestDestination destination,
+    ui::PageTransition page_transition,
+    int child_id,
+    bool is_incognito,
+    const Extension* extension,
+    const ExtensionSet& extensions,
+    const ProcessMap& process_map,
+    bool* allowed) {
   if (url_request_util::AllowCrossRendererResourceLoad(
-          url, resource_type, page_transition, child_id, is_incognito,
+          request, destination, page_transition, child_id, is_incognito,
           extension, extensions, process_map, allowed)) {
     return true;
   }

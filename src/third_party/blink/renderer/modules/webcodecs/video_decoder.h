@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_output_callback.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/decoder_template.h"
@@ -48,6 +48,7 @@ class VideoDecoderConfig;
 class VideoDecoderInit;
 class VideoFrame;
 class V8VideoFrameOutputCallback;
+class ScriptPromise;
 
 class MODULES_EXPORT VideoDecoderTraits {
  public:
@@ -74,6 +75,8 @@ class MODULES_EXPORT VideoDecoderTraits {
   static void UpdateDecoderLog(const MediaDecoderType& decoder,
                                const MediaConfigType& media_config,
                                media::MediaLog* media_log);
+  static OutputType* MakeOutput(scoped_refptr<MediaOutputType>,
+                                ExecutionContext*);
 };
 
 class MODULES_EXPORT VideoDecoder : public DecoderTemplate<VideoDecoderTraits> {
@@ -83,6 +86,24 @@ class MODULES_EXPORT VideoDecoder : public DecoderTemplate<VideoDecoderTraits> {
   static VideoDecoder* Create(ScriptState*,
                               const VideoDecoderInit*,
                               ExceptionState&);
+
+  static ScriptPromise isConfigSupported(ScriptState*,
+                                         const VideoDecoderConfig*,
+                                         ExceptionState&);
+
+  static HardwarePreference GetHardwareAccelerationPreference(
+      const ConfigType& config);
+
+  // For use by MediaSource and by ::MakeMediaConfig.
+  static CodecConfigEval MakeMediaVideoDecoderConfig(
+      const ConfigType& config,
+      MediaConfigType& out_media_config,
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+      std::unique_ptr<media::H264ToAnnexBBitstreamConverter>&
+          out_h264_converter,
+      std::unique_ptr<media::mp4::AVCDecoderConfigurationRecord>& out_h264_avcc,
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+      String& out_console_message);
 
   VideoDecoder(ScriptState*, const VideoDecoderInit*, ExceptionState&);
   ~VideoDecoder() override = default;
@@ -94,10 +115,19 @@ class MODULES_EXPORT VideoDecoder : public DecoderTemplate<VideoDecoderTraits> {
   media::StatusOr<scoped_refptr<media::DecoderBuffer>> MakeDecoderBuffer(
       const InputType& input) override;
 
+  static ScriptPromise IsAcceleratedConfigSupported(ScriptState* script_state,
+                                                    const VideoDecoderConfig*,
+                                                    ExceptionState&);
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   std::unique_ptr<media::H264ToAnnexBBitstreamConverter> h264_converter_;
   std::unique_ptr<media::mp4::AVCDecoderConfigurationRecord> h264_avcc_;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+ private:
+  // DecoderTemplate implementation.
+  HardwarePreference GetHardwarePreference(const ConfigType& config) override;
+  void SetHardwarePreference(HardwarePreference preference) override;
 };
 
 }  // namespace blink

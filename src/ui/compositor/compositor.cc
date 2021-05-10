@@ -11,14 +11,15 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
@@ -28,6 +29,7 @@
 #include "cc/layers/layer.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/web_vital_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/features.h"
@@ -81,7 +83,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                        bool enable_pixel_canvas,
                        bool use_external_begin_frame_control,
-                       bool force_software_compositor)
+                       bool force_software_compositor,
+                       bool enable_compositing_based_throttling)
     : context_factory_(context_factory),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
@@ -219,6 +222,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   if (base::FeatureList::IsEnabled(features::kPercentBasedScrolling)) {
     settings.percent_based_scrolling = true;
   }
+
+  settings.enable_compositing_based_throttling =
+      enable_compositing_based_throttling;
 
 #if DCHECK_IS_ON()
   if (command_line->HasSwitch(cc::switches::kLogOnUIDoubleBackgroundBlur))
@@ -574,13 +580,23 @@ bool Compositor::HasObserver(const CompositorObserver* observer) const {
 }
 
 void Compositor::AddAnimationObserver(CompositorAnimationObserver* observer) {
+  if (animation_observer_list_.empty()) {
+    for (auto& obs : observer_list_)
+      obs.OnFirstAnimationStarted(this);
+  }
   animation_observer_list_.AddObserver(observer);
   host_->SetNeedsAnimate();
 }
 
 void Compositor::RemoveAnimationObserver(
     CompositorAnimationObserver* observer) {
+  if (!animation_observer_list_.HasObserver(observer))
+    return;
   animation_observer_list_.RemoveObserver(observer);
+  if (animation_observer_list_.empty()) {
+    for (auto& obs : observer_list_)
+      obs.OnLastAnimationEnded(this);
+  }
 }
 
 bool Compositor::HasAnimationObserver(
@@ -623,7 +639,7 @@ void Compositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
   DCHECK(!IsLocked());
   for (auto& observer : animation_observer_list_)
     observer.OnAnimationStep(args.frame_time);
-  if (animation_observer_list_.might_have_observers())
+  if (!animation_observer_list_.empty())
     host_->SetNeedsAnimate();
 }
 
@@ -671,6 +687,10 @@ Compositor::GetBeginMainFrameMetrics() {
   return nullptr;
 }
 
+std::unique_ptr<cc::WebVitalMetrics> Compositor::GetWebVitalMetrics() {
+  return nullptr;
+}
+
 void Compositor::NotifyThroughputTrackerResults(
     cc::CustomTrackerResults results) {
   for (auto& pair : results)
@@ -703,12 +723,20 @@ void Compositor::FrameIntervalUpdated(base::TimeDelta interval) {
   refresh_rate_ = interval.ToHz();
 }
 
+void Compositor::FrameSinksToThrottleUpdated(
+    const base::flat_set<viz::FrameSinkId>& ids) {
+  for (auto& observer : observer_list_) {
+    observer.OnFrameSinksToThrottleUpdated(ids);
+  }
+}
+
 void Compositor::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   NOTREACHED();
 }
 
-void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
+void Compositor::OnFrameTokenChanged(uint32_t frame_token,
+                                     base::TimeTicks activation_time) {
   // TODO(yiyix, fsamuel): Implement frame token propagation for Compositor.
   NOTREACHED();
 }
@@ -732,7 +760,9 @@ void Compositor::CancelThroughtputTracker(TrackerId tracker_id) {
   throughput_tracker_map_.erase(tracker_id);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
     observer.OnCompositingCompleteSwapWithNewSize(this, size);
@@ -766,8 +796,11 @@ void Compositor::ReportMetricsForTracker(
   if (it == throughput_tracker_map_.end())
     return;
 
-  std::move(it->second).Run(data);
+  // Callback may modify `throughput_tracker_map_` so update the map first.
+  // See https://crbug.com/1193382.
+  auto callback = std::move(it->second);
   throughput_tracker_map_.erase(it);
+  std::move(callback).Run(data);
 }
 
 void Compositor::SetDelegatedInkPointRenderer(

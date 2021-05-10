@@ -28,11 +28,11 @@ GlslangSourceOptions GlslangWrapperVk::CreateSourceOptions(const angle::Features
 {
     GlslangSourceOptions options;
 
-    options.useOldRewriteStructSamplers = features.forceOldRewriteStructSamplers.enabled;
     options.supportsTransformFeedbackExtension =
         features.supportsTransformFeedbackExtension.enabled;
-    options.emulateTransformFeedback = features.emulateTransformFeedback.enabled;
-    options.emulateBresenhamLines    = features.basicGLLineRasterization.enabled;
+    options.supportsTransformFeedbackEmulation = features.emulateTransformFeedback.enabled;
+    options.enableTransformFeedbackEmulation   = options.supportsTransformFeedbackEmulation;
+    options.emulateBresenhamLines              = features.basicGLLineRasterization.enabled;
 
     return options;
 }
@@ -62,7 +62,7 @@ void GlslangWrapperVk::GetShaderSource(const angle::FeaturesVk &features,
                                        const gl::ProgramLinkedResources &resources,
                                        GlslangProgramInterfaceInfo *programInterfaceInfo,
                                        gl::ShaderMap<std::string> *shaderSourcesOut,
-                                       ShaderMapInterfaceVariableInfoMap *variableInfoMapOut)
+                                       ShaderInterfaceVariableInfoMap *variableInfoMapOut)
 {
     GlslangSourceOptions options = CreateSourceOptions(features);
     GlslangGetShaderSource(options, programState, resources, programInterfaceInfo, shaderSourcesOut,
@@ -84,18 +84,14 @@ angle::Result GlslangWrapperVk::GetShaderCode(vk::Context *context,
 // static
 angle::Result GlslangWrapperVk::TransformSpirV(
     vk::Context *context,
-    const gl::ShaderType shaderType,
-    bool removeEarlyFragmentTestsOptimization,
+    const GlslangSpirvOptions &options,
     const ShaderInterfaceVariableInfoMap &variableInfoMap,
     const SpirvBlob &initialSpirvBlob,
     SpirvBlob *shaderCodeOut)
 {
-    const bool removeDebugInfo = !context->getRenderer()->getEnableValidationLayers();
-
     return GlslangTransformSpirvCode(
-        [context](GlslangError error) { return ErrorHandler(context, error); }, shaderType,
-        removeEarlyFragmentTestsOptimization, removeDebugInfo, variableInfoMap, initialSpirvBlob,
-        shaderCodeOut);
+        [context](GlslangError error) { return ErrorHandler(context, error); }, options,
+        variableInfoMap, initialSpirvBlob, shaderCodeOut);
 }
 
 // static

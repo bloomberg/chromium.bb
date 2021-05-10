@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/process_proxy/process_proxy_registry.h"
+#include "base/strings/string_number_conversions.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -30,7 +31,9 @@ const char* ProcessOutputTypeToString(ProcessOutputType type) {
   }
 }
 
-static base::LazyInstance<ProcessProxyRegistry>::DestructorAtExit
+// This instance must be leaked because the destructor would be run on the main
+// thread, and not the task runner.
+static base::LazyInstance<ProcessProxyRegistry>::Leaky
     g_process_proxy_registry = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -48,14 +51,14 @@ ProcessProxyRegistry::ProcessProxyInfo::~ProcessProxyInfo() = default;
 ProcessProxyRegistry::ProcessProxyRegistry() = default;
 
 ProcessProxyRegistry::~ProcessProxyRegistry() {
-  // TODO(tbarzic): Fix issue with ProcessProxyRegistry being destroyed
-  // on a different thread (it's a LazyInstance).
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ShutDown();
 }
 
 void ProcessProxyRegistry::ShutDown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Close all proxies we own.
   while (!proxy_map_.empty())
     CloseProcess(proxy_map_.begin()->first);
@@ -70,6 +73,14 @@ void ProcessProxyRegistry::ShutDown() {
 ProcessProxyRegistry* ProcessProxyRegistry::Get() {
   DCHECK(ProcessProxyRegistry::GetTaskRunner()->RunsTasksInCurrentSequence());
   return g_process_proxy_registry.Pointer();
+}
+
+// static
+int ProcessProxyRegistry::ConvertToSystemPID(const std::string& id) {
+  // The `id` is <pid>-<guid>. `base::StringToInt()` will parse until the '-'.
+  int out;
+  base::StringToInt(id, &out);
+  return out;
 }
 
 // static
@@ -176,6 +187,7 @@ void ProcessProxyRegistry::OnProcessOutput(const std::string& id,
 }
 
 bool ProcessProxyRegistry::EnsureWatcherThreadStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (watcher_thread_.get())
     return true;
 
@@ -187,13 +199,14 @@ bool ProcessProxyRegistry::EnsureWatcherThreadStarted() {
       base::Thread::Options(base::MessagePumpType::IO, 0));
 }
 
-base::ProcessHandle ProcessProxyRegistry::GetProcessHandleForTesting(
+const base::Process* ProcessProxyRegistry::GetProcessForTesting(
     const std::string& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<std::string, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
-    return base::kNullProcessHandle;
+    return nullptr;
 
-  return it->second.proxy->GetProcessHandleForTesting();
+  return it->second.proxy->GetProcessForTesting();  // IN-TEST
 }
 
 }  // namespace chromeos

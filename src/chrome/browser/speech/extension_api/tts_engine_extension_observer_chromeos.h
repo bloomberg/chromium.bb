@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/audio_service.h"
@@ -33,8 +33,8 @@ class TtsEngineExtensionObserverChromeOS
 
   Profile* profile() { return profile_; }
 
-  void BindTtsStream(
-      mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver);
+  void BindTtsStreamFactory(
+      mojo::PendingReceiver<chromeos::tts::mojom::TtsStreamFactory> receiver);
 
   // Implementation of KeyedService.
   void Shutdown() override;
@@ -56,7 +56,7 @@ class TtsEngineExtensionObserverChromeOS
   bool IsLoadedTtsEngine(const std::string& extension_id);
 
   void OnAccessibilityStatusChanged(
-      const chromeos::AccessibilityStatusEventDetails& details);
+      const ash::AccessibilityStatusEventDetails& details);
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
@@ -66,8 +66,7 @@ class TtsEngineExtensionObserverChromeOS
 
   std::set<std::string> engine_extension_ids_;
 
-  std::unique_ptr<chromeos::AccessibilityStatusSubscription>
-      accessibility_status_subscription_;
+  base::CallbackListSubscription accessibility_status_subscription_;
 
   mojo::Remote<chromeos::tts::mojom::TtsService> tts_service_;
 

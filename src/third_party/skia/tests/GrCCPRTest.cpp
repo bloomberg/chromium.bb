@@ -21,8 +21,7 @@
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrPathRenderer.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
@@ -42,13 +41,12 @@ public:
 
 private:
     SkIRect getConservativeBounds() const final { return fPath.getBounds().roundOut(); }
-    Effect apply(GrRecordingContext* context, GrRenderTargetContext* rtc, GrAAType,
+    Effect apply(GrRecordingContext* context, GrSurfaceDrawContext* rtc, GrAAType,
                  bool hasUserStencilSettings, GrAppliedClip* out,
                  SkRect* bounds) const override {
-        out->addCoverageFP(fCCPR->makeClipProcessor(/*inputFP=*/nullptr,
-                                                    rtc->priv().testingOnly_getOpsTaskID(), fPath,
-                                                    SkIRect::MakeWH(rtc->width(), rtc->height()),
-                                                    *context->priv().caps()));
+        out->addCoverageFP(fCCPR->makeClipProcessor(
+                /*inputFP=*/nullptr, rtc->getOpsTask()->uniqueID(), fPath,
+                SkIRect::MakeWH(rtc->width(), rtc->height()), *context->priv().caps()));
         return Effect::kClipped;
     }
 
@@ -61,15 +59,17 @@ public:
     CCPRPathDrawer(sk_sp<GrDirectContext> dContext, skiatest::Reporter* reporter, DoStroke doStroke)
             : fDContext(dContext)
             , fCCPR(fDContext->priv().drawingManager()->getCoverageCountingPathRenderer())
-            , fRTC(GrRenderTargetContext::Make(
+            , fRTC(GrSurfaceDrawContext::Make(
                       fDContext.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
                       {kCanvasSize, kCanvasSize}))
             , fDoStroke(DoStroke::kYes == doStroke) {
+#if 0
         if (!fCCPR) {
             ERRORF(reporter, "ccpr not enabled in GrDirectContext for ccpr tests");
         }
+#endif
         if (!fRTC) {
-            ERRORF(reporter, "failed to create GrRenderTargetContext for ccpr tests");
+            ERRORF(reporter, "failed to create GrSurfaceDrawContext for ccpr tests");
         }
     }
 
@@ -129,7 +129,7 @@ public:
 private:
     sk_sp<GrDirectContext> fDContext;
     GrCoverageCountingPathRenderer* fCCPR;
-    std::unique_ptr<GrRenderTargetContext> fRTC;
+    std::unique_ptr<GrSurfaceDrawContext> fRTC;
     const bool fDoStroke;
 };
 

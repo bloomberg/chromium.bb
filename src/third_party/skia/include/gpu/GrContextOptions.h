@@ -44,7 +44,7 @@ struct SK_API GrContextOptions {
      */
     class SK_API PersistentCache {
     public:
-        virtual ~PersistentCache() {}
+        virtual ~PersistentCache() = default;
 
         /**
          * Returns the data for the key if it exists in the cache, otherwise returns null.
@@ -52,6 +52,11 @@ struct SK_API GrContextOptions {
         virtual sk_sp<SkData> load(const SkData& key) = 0;
 
         virtual void store(const SkData& key, const SkData& data) = 0;
+
+    protected:
+        PersistentCache() = default;
+        PersistentCache(const PersistentCache&) = delete;
+        PersistentCache& operator=(const PersistentCache&) = delete;
     };
 
     /**
@@ -61,8 +66,14 @@ struct SK_API GrContextOptions {
      */
     class SK_API ShaderErrorHandler {
     public:
-        virtual ~ShaderErrorHandler() {}
+        virtual ~ShaderErrorHandler() = default;
+
         virtual void compileError(const char* shader, const char* errors) = 0;
+
+    protected:
+        ShaderErrorHandler() = default;
+        ShaderErrorHandler(const ShaderErrorHandler&) = delete;
+        ShaderErrorHandler& operator=(const ShaderErrorHandler&) = delete;
     };
 
     GrContextOptions() {}
@@ -174,8 +185,7 @@ struct SK_API GrContextOptions {
     Enable fUseDrawInsteadOfClear = Enable::kDefault;
 
     /**
-     * Allow Ganesh to more aggressively reorder operations.
-     * Eventually this will just be what is done and will not be optional.
+     * Experimental: Allow Ganesh to more aggressively reorder operations.
      */
     Enable fReduceOpsTaskSplitting = Enable::kDefault;
 
@@ -247,12 +257,6 @@ struct SK_API GrContextOptions {
      */
 
     /**
-     * If non-zero, overrides the maximum size of a tile for sw-backed images and bitmaps rendered
-     * by SkGpuDevice.
-     */
-    int  fMaxTileSizeOverride = 0;
-
-    /**
      * Prevents use of dual source blending, to test that all xfer modes work correctly without it.
      */
     bool fSuppressDualSourceBlending = false;
@@ -265,7 +269,7 @@ struct SK_API GrContextOptions {
     /**
      * If true, the caps will never support tessellation shaders.
      */
-    bool fSuppressTessellationShaders = false;
+    bool fSuppressTessellationShaders = true;
 
     /**
      * If greater than zero and less than the actual hardware limit, overrides the maximum number of
@@ -292,6 +296,11 @@ struct SK_API GrContextOptions {
      * Randomly generate a (false) GL_OUT_OF_MEMORY error
      */
     bool fRandomGLOOM = false;
+
+    /**
+     * Force off support for write pixels row bytes in caps.
+     */
+    bool fDisallowWritePixelRowBytes = false;
 
     /**
      * Include or exclude specific GPU path renderers.

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -64,12 +65,12 @@ class FeedbackTest : public ExtensionBrowserTest {
                        const std::string& extra_diagnostics,
                        bool from_assistant = false,
                        bool include_bluetooth_logs = false) {
-    base::Closure callback = base::Bind(&StopMessageLoopCallback);
+    base::OnceClosure callback = base::BindOnce(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
     InvokeFeedbackUI(flow, extra_diagnostics, from_assistant,
                      include_bluetooth_logs);
     content::RunMessageLoop();
-    extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
+    extensions::FeedbackPrivateGetStringsFunction::set_test_callback(nullptr);
   }
 
   void VerifyFeedbackAppLaunch() {
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedbackFromAssistant) {
   EXPECT_TRUE(bool_result);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Ensures that when triggered from a Google account and a Bluetooth related
 // string is entered into the description, that we provide the option for
 // uploading Bluetooth logs as well.
@@ -323,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_GetTargetTabUrl) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, SubmissionTest) {
+// Disabled due to flake: https://crbug.com/1180373
+IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_SubmissionTest) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());

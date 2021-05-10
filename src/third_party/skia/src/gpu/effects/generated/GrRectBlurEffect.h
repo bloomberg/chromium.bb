@@ -152,7 +152,6 @@ public:
     GrRectBlurEffect(const GrRectBlurEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "RectBlurEffect"; }
-    bool usesExplicitReturn() const override;
     SkRect rect;
     bool applyInvVM;
     SkMatrix invVM;
@@ -174,10 +173,9 @@ private:
             , invVM(invVM)
             , isFast(isFast) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
-        SkASSERT(integral);
         this->registerChild(std::move(integral), SkSL::SampleUsage::Explicit());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

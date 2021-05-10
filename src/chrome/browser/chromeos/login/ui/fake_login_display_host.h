@@ -45,6 +45,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void PrewarmAuthentication() override;
   void StartDemoAppLaunch() override;
   void StartKiosk(const KioskAppId& kiosk_app_id, bool is_auto_launch) override;
+  void AttemptShowEnableConsumerKioskScreen() override;
   void CompleteLogin(const chromeos::UserContext& user_context) override;
   void OnGaiaScreenReady() override;
   void SetDisplayEmail(const std::string& email) override;
@@ -57,6 +58,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
       const base::Optional<user_manager::UserType>& user_type) override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
+  void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;
@@ -66,8 +68,10 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
   bool HasUserPods() override;
+  void VerifyOwnerForKiosk(base::OnceClosure on_success) override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
+  SigninUI* GetSigninUI() override;
 
  private:
   class FakeBaseScreen;

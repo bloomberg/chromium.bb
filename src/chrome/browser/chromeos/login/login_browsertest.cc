@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -21,19 +23,21 @@
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
-#include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
+#include "chrome/browser/chromeos/login/test/offline_login_test_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
+#include "chrome/browser/chromeos/login/test/user_adding_screen_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
@@ -50,6 +54,8 @@ using ::testing::Return;
 
 namespace chromeos {
 namespace {
+
+const test::UIPath kOfflineLoginBackButton = {"offline-login", "backButton"};
 
 class LoginUserTest : public InProcessBrowserTest {
  protected:
@@ -83,7 +89,7 @@ class LoginOfflineTest : public LoginManagerTest {
  protected:
   AccountId test_account_id_;
   LoginManagerMixin login_manager_{&mixin_host_};
-  OfflineGaiaTestMixin offline_gaia_test_mixin_{&mixin_host_};
+  OfflineLoginTestMixin offline_login_test_mixin_{&mixin_host_};
   // We need Fake gaia to avoid network errors that can be caused by
   // attempts to load real GAIA.
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
@@ -121,7 +127,7 @@ class LoginOfflineManagedTest : public LoginManagerTest {
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   LoginManagerMixin login_manager_{&mixin_host_};
-  OfflineGaiaTestMixin offline_gaia_test_mixin_{&mixin_host_};
+  OfflineLoginTestMixin offline_login_test_mixin_{&mixin_host_};
   // We need Fake gaia to avoid network errors that can be caused by
   // attempts to load real GAIA.
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
@@ -129,7 +135,7 @@ class LoginOfflineManagedTest : public LoginManagerTest {
 
 // Used to make sure that the system tray is visible and within the screen
 // bounds after login.
-void TestSystemTrayIsVisible(bool otr) {
+void TestSystemTrayIsVisible() {
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
   ash::Shelf* shelf = ash::Shelf::ForWindow(primary_win);
   ash::TrayBackgroundView* tray =
@@ -142,8 +148,6 @@ void TestSystemTrayIsVisible(bool otr) {
       shelf->GetStatusAreaWidget());
   EXPECT_TRUE(tray->GetVisible());
 
-  if (otr)
-    return;
   // Wait for the system tray be inside primary bounds.
   chromeos::test::TestPredicateWaiter(
       base::BindRepeating(
@@ -172,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   EXPECT_EQ(profile_base_path, profile->GetPath().BaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
 
-  TestSystemTrayIsVisible(false);
+  TestSystemTrayIsVisible();
 }
 
 // After a guest login, we should get the OTR default profile.
@@ -182,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   // Ensure there's extension service for this profile.
   EXPECT_TRUE(extensions::ExtensionSystem::Get(profile)->extension_service());
 
-  TestSystemTrayIsVisible(true);
+  TestSystemTrayIsVisible();
 }
 
 // Verifies the cursor is hidden at startup on login screen.
@@ -195,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
-  TestSystemTrayIsVisible(false);
+  TestSystemTrayIsVisible();
 }
 
 // Verifies that the webui for login comes up successfully.
@@ -206,21 +210,21 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
       .Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_GaiaAuthOffline) {
-  offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_AuthOffline) {
+  offline_login_test_mixin_.PrepareOfflineLogin();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, AuthOffline) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
-  offline_gaia_test_mixin_.GoOffline();
-  offline_gaia_test_mixin_.InitOfflineLogin(test_account_id_,
-                                            LoginManagerTest::kPassword);
-  offline_gaia_test_mixin_.CheckManagedStatus(false);
-  offline_gaia_test_mixin_.SubmitGaiaAuthOfflineForm(
+  offline_login_test_mixin_.GoOffline();
+  offline_login_test_mixin_.InitOfflineLogin(test_account_id_,
+                                             LoginManagerTest::kPassword);
+  offline_login_test_mixin_.CheckManagedStatus(false);
+  offline_login_test_mixin_.SubmitLoginAuthOfflineForm(
       test_account_id_.GetUserEmail(), LoginManagerTest::kPassword,
       true /* wait for sign-in */);
-  TestSystemTrayIsVisible(false);
+  TestSystemTrayIsVisible();
 }
 
 IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, CorrectDomainCompletion) {
@@ -234,28 +238,61 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, CorrectDomainCompletion) {
               separator_pos < email.length() - 1);
   std::string prefix = email.substr(0, separator_pos);
 
-  offline_gaia_test_mixin_.GoOffline();
-  offline_gaia_test_mixin_.InitOfflineLogin(managed_user_id_,
-                                            LoginManagerTest::kPassword);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  offline_login_test_mixin_.GoOffline();
+  offline_login_test_mixin_.InitOfflineLogin(managed_user_id_,
+                                             LoginManagerTest::kPassword);
 
-  offline_gaia_test_mixin_.CheckManagedStatus(true);
+  offline_login_test_mixin_.CheckManagedStatus(true);
 
-  offline_gaia_test_mixin_.SubmitGaiaAuthOfflineForm(
+  offline_login_test_mixin_.SubmitLoginAuthOfflineForm(
       prefix, LoginManagerTest::kPassword, true /* wait for sign-in */);
-  TestSystemTrayIsVisible(false);
+  TestSystemTrayIsVisible();
 }
 
 IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, FullEmailDontMatchProvided) {
   ConfigurePolicy("another.domain");
 
-  offline_gaia_test_mixin_.GoOffline();
-  offline_gaia_test_mixin_.InitOfflineLogin(managed_user_id_,
-                                            LoginManagerTest::kPassword);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  offline_login_test_mixin_.GoOffline();
+  offline_login_test_mixin_.InitOfflineLogin(managed_user_id_,
+                                             LoginManagerTest::kPassword);
 
-  offline_gaia_test_mixin_.SubmitGaiaAuthOfflineForm(
+  offline_login_test_mixin_.SubmitLoginAuthOfflineForm(
       managed_user_id_.GetUserEmail(), LoginManagerTest::kPassword,
       true /* wait for sign-in */);
-  TestSystemTrayIsVisible(false);
+  TestSystemTrayIsVisible();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginOfflineManagedTest, BackButtonTest) {
+  std::string domain = gaia::ExtractDomainName(managed_user_id_.GetUserEmail());
+
+  ConfigurePolicy(domain);
+
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  offline_login_test_mixin_.GoOffline();
+  offline_login_test_mixin_.InitOfflineLogin(managed_user_id_,
+                                             LoginManagerTest::kPassword);
+
+  test::OobeJS().ClickOnPath(kOfflineLoginBackButton);
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+}
+
+class UserAddingScreenTrayTest : public LoginManagerTest {
+ public:
+  UserAddingScreenTrayTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(3);
+  }
+
+ protected:
+  LoginManagerMixin login_mixin_{&mixin_host_};
+};
+
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTrayTest, TrayVisible) {
+  LoginUser(login_mixin_.users()[0].account_id);
+  test::ShowUserAddingScreen();
+  TestSystemTrayIsVisible();
 }
 
 }  // namespace chromeos

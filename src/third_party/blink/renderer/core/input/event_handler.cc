@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 
 namespace blink {
 
@@ -250,6 +251,8 @@ EventHandler::EventHandler(LocalFrame& frame)
 void EventHandler::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(selection_controller_);
+  visitor->Trace(hover_timer_);
+  visitor->Trace(cursor_update_timer_);
   visitor->Trace(capturing_mouse_events_element_);
   visitor->Trace(capturing_subframe_element_);
   visitor->Trace(last_mouse_move_event_subframe_);
@@ -263,6 +266,7 @@ void EventHandler::Trace(Visitor* visitor) const {
   visitor->Trace(keyboard_event_manager_);
   visitor->Trace(pointer_event_manager_);
   visitor->Trace(gesture_manager_);
+  visitor->Trace(active_interval_timer_);
   visitor->Trace(last_deferred_tap_element_);
 }
 
@@ -299,8 +303,10 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (!controller)
     return;
+
   LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
       layout_object, /*is_middle_click_autoscroll*/ true);
+
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(), scrollable,
       LastKnownMousePositionInRootFrame(),
@@ -2304,8 +2310,9 @@ void EventHandler::DefaultKeyboardEventHandler(KeyboardEvent* event) {
       event, mouse_event_manager_->MousePressNode());
 }
 
-void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
-                                     DragOperation operation) {
+void EventHandler::DragSourceEndedAt(
+    const WebMouseEvent& event,
+    ui::mojom::blink::DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an
   // opportunity for Layer to update the :hover and :active pseudoclasses.
   HitTestRequest request(HitTestRequest::kRelease |

@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -130,8 +130,7 @@ class SessionRestorePageLoadMetricsObserverTest
     entries.emplace_back(std::move(entry));
 
     content::NavigationController& controller = contents->GetController();
-    controller.Restore(0, content::RestoreType::LAST_SESSION_EXITED_CLEANLY,
-                       &entries);
+    controller.Restore(0, content::RestoreType::kRestored, &entries);
     ASSERT_EQ(0u, entries.size());
     ASSERT_EQ(1, controller.GetEntryCount());
 

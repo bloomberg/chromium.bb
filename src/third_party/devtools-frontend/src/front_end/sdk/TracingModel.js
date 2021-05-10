@@ -443,7 +443,7 @@ export class TracingModel {
 
       case phase.NestableAsyncInstant: {
         if (openEventsStack && openEventsStack.length) {
-          const event = openEventsStack.peekLast();
+          const event = openEventsStack[openEventsStack.length - 1];
           if (event) {
             event._addStep(event);
           }
@@ -497,7 +497,7 @@ export class TracingModel {
       return;
     }
     if (event.phase === phase.AsyncStepInto || event.phase === phase.AsyncStepPast) {
-      const lastStep = asyncEvent.steps.peekLast();
+      const lastStep = asyncEvent.steps[asyncEvent.steps.length - 1];
       if (lastStep && lastStep.phase !== phase.AsyncBegin && lastStep.phase !== event.phase) {
         console.assert(
             false, 'Async event step phase mismatch: ' + lastStep.phase + ' at ' + lastStep.startTime + ' vs. ' +
@@ -598,9 +598,6 @@ export class BackingStorage {
 /** @typedef {*} */
 let Args;  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class Event {
   /**
    * @param {string|undefined} categories
@@ -715,8 +712,8 @@ export class Event {
         console.error('Same argument name (' + name + ') is used for begin and end phases of ' + this.name);
       }
       /** @typedef {Object<string, string|number|ObjectSnapshot>} */
-      let BlackboxArgs;  // eslint-disable-line no-unused-vars
-      /** @type {!BlackboxArgs} */ (this.args)[name] = /** @type {!BlackboxArgs} */ (args)[name];
+      let IgnoreListArgs;  // eslint-disable-line no-unused-vars
+      /** @type {!IgnoreListArgs} */ (this.args)[name] = /** @type {!IgnoreListArgs} */ (args)[name];
     }
   }
 
@@ -834,9 +831,6 @@ export class ObjectSnapshot extends Event {
   }
 }
 
-/**
- * @unrestricted
- */
 export class AsyncEvent extends Event {
   /**
    * @param {!Event} startEvent
@@ -845,6 +839,7 @@ export class AsyncEvent extends Event {
     super(startEvent.categoriesString, startEvent.name, startEvent.phase, startEvent.startTime, startEvent.thread);
     this.addArgs(startEvent.args);
     this.steps = [startEvent];
+    this.causedFrame = false;
   }
 
   /**

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
+#include "quic/tools/quic_memory_cache_backend.h"
 
 #include "absl/strings/match.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_file_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "absl/strings/str_cat.h"
+#include "quic/platform/api/quic_file_utils.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/tools/quic_backend_response.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -189,7 +189,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseWithServerPushResources) {
     std::string url = scheme + "://" + request_host + path;
     QuicUrl resource_url(url);
     std::string body =
-        quiche::QuicheStrCat("This is server push response body for ", path);
+        absl::StrCat("This is server push response body for ", path);
     spdy::Http2HeaderBlock response_headers;
     response_headers[":status"] = "200";
     response_headers["content-length"] =

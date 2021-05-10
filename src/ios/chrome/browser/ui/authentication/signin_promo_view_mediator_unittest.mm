@@ -7,8 +7,21 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
+#import "components/signin/public/base/signin_pref_names.h"
+#import "components/sync/driver/mock_sync_service.h"
+#import "components/sync_preferences/pref_service_mock_factory.h"
+#import "components/sync_preferences/pref_service_syncable.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/prefs/browser_prefs.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#import "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
@@ -17,6 +30,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -31,14 +45,33 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
+using sync_preferences::PrefServiceMockFactory;
+using sync_preferences::PrefServiceSyncable;
+using user_prefs::PrefRegistrySyncable;
+using web::WebTaskEnvironment;
 
 namespace {
+std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
+  return std::make_unique<syncer::MockSyncService>();
+}
 
 class SigninPromoViewMediatorTest : public PlatformTest {
  protected:
   void SetUp() override {
     user_full_name_ = @"John Doe";
     close_button_hidden_ = YES;
+
+    TestChromeBrowserState::Builder builder;
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              base::BindRepeating(&BuildMockSyncService));
+    builder.AddTestingFactory(
+        SyncSetupServiceFactory::GetInstance(),
+        base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
+    builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &AuthenticationServiceFake::CreateAuthenticationService));
+    chrome_browser_state_ = builder.Build();
   }
 
   void TearDown() override {
@@ -59,10 +92,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   void CreateMediator(signin_metrics::AccessPoint accessPoint) {
     consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
-    mediator_ =
-        [[SigninPromoViewMediator alloc] initWithBrowserState:nil
-                                                  accessPoint:accessPoint
-                                                    presenter:nil];
+    mediator_ = [[SigninPromoViewMediator alloc]
+        initWithBrowserState:chrome_browser_state_.get()
+                 accessPoint:accessPoint
+                   presenter:nil];
     mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
@@ -72,6 +105,15 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMStub([signin_promo_view_ secondaryButton]).andReturn(secondary_button_);
     close_button_ = OCMStrictClassMock([UIButton class]);
     OCMStub([signin_promo_view_ closeButton]).andReturn(close_button_);
+  }
+
+  std::unique_ptr<PrefServiceSyncable> CreatePrefService() {
+    PrefServiceMockFactory factory;
+    scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
+    std::unique_ptr<PrefServiceSyncable> prefs =
+        factory.CreateSyncable(registry.get());
+    RegisterBrowserStatePrefs(registry.get());
+    return prefs;
   }
 
   // Creates the default identity and adds it into the ChromeIdentityService.
@@ -84,21 +126,22 @@ class SigninPromoViewMediatorTest : public PlatformTest {
         ->AddIdentity(expected_default_identity_);
   }
 
-  // Tests the mediator as a cold state with a new created configurator.
-  void TestColdState() {
+  // Tests the mediator with a new created configurator when no accounts are on
+  // the device.
+  void TestSigninPromoWithNoAccounts() {
     EXPECT_EQ(nil, mediator_.defaultIdentity);
-    CheckColdStateConfigurator([mediator_ createConfigurator]);
+    CheckNoAccountsConfigurator([mediator_ createConfigurator]);
   }
 
-  // Adds an identity and tests the mediator as a warm state.
-  void TestWarmState() {
+  // Adds an identity and tests the mediator.
+  void TestSigninPromoWithAccount() {
     // Expect to receive an update to the consumer with a configurator.
     ExpectConfiguratorNotification(YES /* identity changed */);
     AddDefaultIdentity();
     // Check the configurator received by the consumer.
-    CheckWarmStateConfigurator(configurator_);
+    CheckSigninWithAccountConfigurator(configurator_);
     // Check a new created configurator.
-    CheckWarmStateConfigurator([mediator_ createConfigurator]);
+    CheckSigninWithAccountConfigurator([mediator_ createConfigurator]);
     // The consumer should receive a notification related to the image.
     CheckForImageNotification();
   }
@@ -117,35 +160,38 @@ class SigninPromoViewMediatorTest : public PlatformTest {
                              identityChanged:identity_changed]);
   }
 
-  // Expects the signin promo view to be configured in a cold state.
-  void ExpectColdStateConfiguration() {
-    OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeColdState]);
+  // Expects the signin promo view to be configured with no accounts on the
+  // device.
+  void ExpectNoAccountsConfiguration() {
+    OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeNoAccounts]);
     NSString* title = GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
     OCMExpect([signin_promo_view_ setAccessibilityLabel:title]);
     OCMExpect([primary_button_ setTitle:title forState:UIControlStateNormal]);
     image_view_profile_image_ = nil;
   }
 
-  // Checks a cold state configurator.
-  void CheckColdStateConfigurator(SigninPromoViewConfigurator* configurator) {
+  // Checks a configurator with no accounts on the device.
+  void CheckNoAccountsConfigurator(SigninPromoViewConfigurator* configurator) {
     EXPECT_NE(nil, configurator);
-    ExpectColdStateConfiguration();
+    ExpectNoAccountsConfiguration();
     OCMExpect([close_button_ setHidden:close_button_hidden_]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_EQ(nil, image_view_profile_image_);
   }
 
-  // Expects the signin promo view to be configured in a warm state.
-  void ExpectWarmStateConfiguration() {
+  // Expects the signin promo view to be configured when accounts are on the
+  // device.
+  void ExpectSigninWithAccountConfiguration() {
     EXPECT_EQ(expected_default_identity_, mediator_.defaultIdentity);
-    OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeWarmState]);
+    OCMExpect(
+        [signin_promo_view_ setMode:SigninPromoViewModeSigninWithAccount]);
     OCMExpect([signin_promo_view_
         setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
           image_view_profile_image_ = value;
           return YES;
         }]]);
-    NSString* name = expected_default_identity_.userFullName.length
-                         ? expected_default_identity_.userFullName
+    NSString* name = expected_default_identity_.userGivenName.length
+                         ? expected_default_identity_.userGivenName
                          : expected_default_identity_.userEmail;
     base::string16 name16 = SysNSStringToUTF16(name);
     NSString* accessibilityLabel =
@@ -159,10 +205,11 @@ class SigninPromoViewMediatorTest : public PlatformTest {
         forState:UIControlStateNormal]);
   }
 
-  // Checks a warm state configurator.
-  void CheckWarmStateConfigurator(SigninPromoViewConfigurator* configurator) {
+  // Checks a configurator with accounts on the device.
+  void CheckSigninWithAccountConfigurator(
+      SigninPromoViewConfigurator* configurator) {
     EXPECT_NE(nil, configurator);
-    ExpectWarmStateConfiguration();
+    ExpectSigninWithAccountConfiguration();
     OCMExpect([close_button_ setHidden:YES]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
@@ -176,15 +223,19 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_TRUE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
                     ->WaitForServiceCallbacksToComplete());
     // Check the configurator received by the consumer.
-    CheckWarmStateConfigurator(configurator_);
+    CheckSigninWithAccountConfigurator(configurator_);
   }
+
+  // Task environment.
+  WebTaskEnvironment task_environment_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 
   // Mediator used for the tests.
   SigninPromoViewMediator* mediator_;
 
   // User full name for the identity;
   NSString* user_full_name_;
-  // Identity used for the warm state.
+  // Identity used for sign-in.
   FakeChromeIdentity* expected_default_identity_;
 
   // Configurator received from the consumer.
@@ -203,48 +254,49 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   BOOL close_button_hidden_;
 };
 
-// Tests signin promo view and its configurator in cold state.
-TEST_F(SigninPromoViewMediatorTest, ColdStateConfigureSigninPromoView) {
+// Tests signin promo view and its configurator with no accounts on the device.
+TEST_F(SigninPromoViewMediatorTest, NoAccountsConfigureSigninPromoView) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestColdState();
+  TestSigninPromoWithNoAccounts();
 }
 
-// Tests signin promo view and its configurator in cold state in settings view.
+// Tests signin promo view and its configurator settings view with no accounts
+// on the device.
 TEST_F(SigninPromoViewMediatorTest,
-       ColdStateConfigureSigninPromoViewFromSettings) {
+       NoAccountsConfigureSigninPromoViewFromSettings) {
   close_button_hidden_ = NO;
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
-  TestColdState();
+  TestSigninPromoWithNoAccounts();
 }
 
-// Tests signin promo view and its configurator in warm state.
-TEST_F(SigninPromoViewMediatorTest, WarmStateConfigureSigninPromoView) {
+// Tests signin promo view and its configurator with accounts on the device.
+TEST_F(SigninPromoViewMediatorTest, SigninWithAccountConfigureSigninPromoView) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestWarmState();
+  TestSigninPromoWithAccount();
 }
 
-// Tests signin promo view and its configurator in warm state, with an identity
+// Tests signin promo view and its configurator with an identity
 // without full name.
 TEST_F(SigninPromoViewMediatorTest,
-       WarmStateConfigureSigninPromoViewWithoutFullName) {
+       SigninWithAccountConfigureSigninPromoViewWithoutName) {
   user_full_name_ = nil;
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestWarmState();
+  TestSigninPromoWithAccount();
 }
 
-// Tests the scenario with the sign-in promo in cold state, and then adding an
-// identity to update the view in warm state.
+// Tests the scenario with the sign-in promo when no accounts on the device, and
+// then add an identity to update the view.
 TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithColdAndWarm) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestColdState();
-  TestWarmState();
+  TestSigninPromoWithNoAccounts();
+  TestSigninPromoWithAccount();
 }
 
-// Tests the scenario with the sign-in promo in warm state, and then removing
-// the identity to update the view in cold state.
+// Tests the scenario with the sign-in promo with accounts on the device, and
+// then removing the identity to update the view.
 TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestWarmState();
+  TestSigninPromoWithAccount();
   // Expect to receive a new configuration from -[Consumer
   // configureSigninPromoWithConfigurator:identityChanged:].
   ExpectConfiguratorNotification(YES /* identity changed */);
@@ -252,7 +304,7 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
       ->ForgetIdentity(expected_default_identity_, nil);
   expected_default_identity_ = nil;
   // Check the received configurator.
-  CheckColdStateConfigurator(configurator_);
+  CheckNoAccountsConfigurator(configurator_);
 }
 
 // Tests the view state before and after calling -[SigninPromoViewMediator
@@ -361,6 +413,20 @@ TEST_F(SigninPromoViewMediatorTest,
   // Finishs the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
   completion(YES);
+}
+
+// Tests that promos aren't shown if browser sign-in is disabled by policy
+TEST_F(SigninPromoViewMediatorTest,
+       ShouldNotDisplaySigninPromoViewIfDisabledByPolicy) {
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  TestChromeBrowserState::Builder builder;
+  builder.SetPrefService(CreatePrefService());
+  std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
+  browser_state->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE([SigninPromoViewMediator
+      shouldDisplaySigninPromoViewWithAccessPoint:signin_metrics::AccessPoint::
+                                                      ACCESS_POINT_RECENT_TABS
+                                     browserState:browser_state.get()]);
 }
 
 }  // namespace

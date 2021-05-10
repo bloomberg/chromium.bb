@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/media_notification_provider.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -13,6 +14,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,18 +23,17 @@
 #include "chrome/browser/chromeos/policy/display_resolution_handler.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/policy/display_settings_handler.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
-#include "chrome/browser/ui/ash/arc_chrome_actions_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
+#include "chrome/browser/ui/ash/launcher/app_service/exo_app_type_resolver.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
+#include "chrome/browser/ui/ash/projector/projector_client_impl.h"
 #include "chrome/browser/ui/ash/quick_answers/quick_answers_browser_client_impl.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
@@ -50,7 +52,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/session_manager/core/session_manager.h"
@@ -175,15 +176,21 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
 
-  arc_chrome_actions_client_ = std::make_unique<ArcChromeActionsClient>();
-
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   exo_parts_ = ExoParts::CreateIfNecessary();
+  if (exo_parts_) {
+    exo::WMHelper::GetInstance()->RegisterAppPropertyResolver(
+        std::make_unique<ExoAppTypeResolver>());
+  }
 #endif
 
   night_light_client_ = std::make_unique<NightLightClient>(
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
+
+  if (chromeos::features::IsProjectorEnabled()) {
+    projector_client_ = std::make_unique<ProjectorClientImpl>();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
@@ -282,8 +289,7 @@ class ChromeBrowserMainExtraPartsAsh::NotificationObserver
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
         Profile* profile = content::Details<Profile>(details).ptr();
-        if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
-            !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
+        if (chromeos::ProfileHelper::IsRegularProfile(profile) &&
             !profile->IsGuestSession()) {
           // Start the error notifier services to show auth/sync notifications.
           SigninErrorNotifierFactory::GetForProfile(profile);

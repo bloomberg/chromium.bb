@@ -77,9 +77,9 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       custom_themes_(StrDupParam(params, 19)),
       resources_version_(StrDupParam(params, 20)),
       extracted_file_suffix_(params[21]),
-      is_at_least_q_(GetIntParam(params, 22)),
-      targets_at_least_r_(GetIntParam(params, 23)),
-      is_debug_android_(GetIntParam(params, 24)) {}
+      target_sdk_version_(GetIntParam(params, 22)),
+      is_debug_android_(GetIntParam(params, 23)),
+      is_tv_(GetIntParam(params, 24)) {}
 
 // static
 BuildInfo* BuildInfo::GetInstance() {

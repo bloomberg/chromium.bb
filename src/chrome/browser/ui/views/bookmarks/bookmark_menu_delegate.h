@@ -8,12 +8,14 @@
 #include <map>
 #include <set>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class Browser;
@@ -54,9 +56,10 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
     HIDE_PERMANENT_FOLDERS
   };
 
-  BookmarkMenuDelegate(Browser* browser,
-                       content::PageNavigator* navigator,
-                       views::Widget* parent);
+  BookmarkMenuDelegate(
+      Browser* browser,
+      base::RepeatingCallback<content::PageNavigator*()> get_navigator,
+      views::Widget* parent);
   ~BookmarkMenuDelegate() override;
 
   // Creates the menus from the model.
@@ -66,9 +69,6 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
             size_t start_child_index,
             ShowOptions show_options,
             BookmarkLaunchLocation location);
-
-  // Sets the PageNavigator.
-  void SetPageNavigator(content::PageNavigator* navigator);
 
   // Returns the id given to the next menu.
   int next_menu_id() const { return next_menu_id_; }
@@ -110,12 +110,14 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
                       std::set<ui::ClipboardFormatType>* format_types);
   bool AreDropTypesRequired(views::MenuItemView* menu);
   bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
-  int GetDropOperation(views::MenuItemView* item,
-                       const ui::DropTargetEvent& event,
-                       views::MenuDelegate::DropPosition* position);
-  int OnPerformDrop(views::MenuItemView* menu,
-                    views::MenuDelegate::DropPosition position,
-                    const ui::DropTargetEvent& event);
+  ui::mojom::DragOperation GetDropOperation(
+      views::MenuItemView* item,
+      const ui::DropTargetEvent& event,
+      views::MenuDelegate::DropPosition* position);
+  ui::mojom::DragOperation OnPerformDrop(
+      views::MenuItemView* menu,
+      views::MenuDelegate::DropPosition position,
+      const ui::DropTargetEvent& event);
   bool ShowContextMenu(views::MenuItemView* source,
                        int id,
                        const gfx::Point& p,
@@ -184,7 +186,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   Browser* const browser_;
   Profile* profile_;
 
-  content::PageNavigator* page_navigator_;
+  base::RepeatingCallback<content::PageNavigator*()> get_navigator_;
 
   // Parent of menus.
   views::Widget* parent_;

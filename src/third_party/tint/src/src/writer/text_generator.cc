@@ -14,6 +14,8 @@
 
 #include "src/writer/text_generator.h"
 
+#include <assert.h>
+
 #include <utility>
 
 namespace tint {
@@ -24,8 +26,12 @@ TextGenerator::TextGenerator() = default;
 TextGenerator::~TextGenerator() = default;
 
 void TextGenerator::make_indent() {
+  make_indent(out_);
+}
+
+void TextGenerator::make_indent(std::ostream& out) const {
   for (size_t i = 0; i < indent_; i++) {
-    out_ << " ";
+    out << " ";
   }
 }
 

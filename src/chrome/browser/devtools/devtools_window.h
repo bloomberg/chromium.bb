@@ -256,7 +256,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   friend class DevToolsWindowCreationObserver;
   friend class HatsNextWebDialogBrowserTest;
 
-  using CreationCallback = base::Callback<void(DevToolsWindow*)>;
+  using CreationCallback = base::RepeatingCallback<void(DevToolsWindow*)>;
   static void AddCreationCallbackForTest(const CreationCallback& callback);
   static void RemoveCreationCallbackForTest(const CreationCallback& callback);
 
@@ -335,6 +335,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action,
       const std::string& settings,
       DevToolsOpenedByAction opened_by = DevToolsOpenedByAction::kUnknown);
+  static Profile* GetProfileForDevToolsWindow(
+      content::WebContents* web_contents);
 
   // content::WebContentsDelegate:
   void ActivateContents(content::WebContents* contents) override;
@@ -397,8 +399,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   void ColorPickedInEyeDropper(int r, int g, int b, int a);
 
-  // This method create a new Browser object, and passes ownership of
-  // owned_main_web_contents_ to the tab strip of the Browser.
+  // This method creates a new Browser object (if possible), and passes
+  // ownership of owned_main_web_contents_ to the tab strip of the Browser.
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
   void ScheduleShow(const DevToolsToggleAction& action);

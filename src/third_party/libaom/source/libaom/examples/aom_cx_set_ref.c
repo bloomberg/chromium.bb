@@ -108,7 +108,7 @@ static void testing_decode(aom_codec_ctx_t *encoder, aom_codec_ctx_t *decoder,
     }
 
     printf(
-        "Encode/decode mismatch on frame %d at"
+        "Encode/decode mismatch on frame %u at"
         " Y[%d, %d] {%d/%d},"
         " U[%d, %d] {%d/%d},"
         " V[%d, %d] {%d/%d}",
@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
 
   printf("\n");
   fclose(infile);
-  printf("Processed %d frames.\n", frame_out);
+  printf("Processed %u frames.\n", frame_out);
 
   if (test_decode) {
     if (!mismatch_seen)

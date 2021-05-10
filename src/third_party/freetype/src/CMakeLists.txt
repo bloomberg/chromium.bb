@@ -1,6 +1,6 @@
 # CMakeLists.txt
 #
-# Copyright (C) 2013-2020 by
+# Copyright (C) 2013-2021 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # Written originally by John Cary <cary@txcorp.com>
@@ -205,7 +205,7 @@ endif ()
 
 
 # Find dependencies
-set(HARFBUZZ_MIN_VERSION "1.8.0")
+set(HARFBUZZ_MIN_VERSION "2.0.0")
 if (FT_WITH_HARFBUZZ)
   find_package(HarfBuzz ${HARFBUZZ_MIN_VERSION} REQUIRED)
 else ()
@@ -347,6 +347,7 @@ set(BASE_SRCS
   src/pshinter/pshinter.c
   src/psnames/psnames.c
   src/raster/raster.c
+  src/sdf/sdf.c
   src/sfnt/sfnt.c
   src/smooth/smooth.c
   src/truetype/truetype.c
@@ -357,6 +358,8 @@ set(BASE_SRCS
 
 if (UNIX)
   list(APPEND BASE_SRCS "builds/unix/ftsystem.c")
+elseif (WIN32)
+  list(APPEND BASE_SRCS "builds/windows/ftsystem.c")
 else ()
   list(APPEND BASE_SRCS "src/base/ftsystem.c")
 endif ()
@@ -440,6 +443,7 @@ endif ()
 
 
 set(PKG_CONFIG_REQUIRED_PRIVATE "")
+set(PKG_CONFIG_LIBS_PRIVATE "")
 
 if (ZLIB_FOUND)
   target_link_libraries(freetype PRIVATE ${ZLIB_LIBRARIES})
@@ -449,7 +453,7 @@ endif ()
 if (BZIP2_FOUND)
   target_link_libraries(freetype PRIVATE ${BZIP2_LIBRARIES})
   target_include_directories(freetype PRIVATE ${BZIP2_INCLUDE_DIR}) # not BZIP2_INCLUDE_DIRS
-  list(APPEND PKG_CONFIG_REQUIRED_PRIVATE "bzip2")
+  list(APPEND PKG_CONFIG_LIBS_PRIVATE "-lbz2")
 endif ()
 if (PNG_FOUND)
   target_link_libraries(freetype PRIVATE ${PNG_LIBRARIES})
@@ -508,7 +512,7 @@ if (NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
            FREETYPE2_PC_IN ${FREETYPE2_PC_IN})
     string(REPLACE "%REQUIRES_PRIVATE%" "${PKG_CONFIG_REQUIRED_PRIVATE}"
            FREETYPE2_PC_IN ${FREETYPE2_PC_IN})
-    string(REPLACE "%LIBS_PRIVATE%" ""  # All libs support pkg-config
+    string(REPLACE "%LIBS_PRIVATE%" "${PKG_CONFIG_LIBS_PRIVATE}"
            FREETYPE2_PC_IN ${FREETYPE2_PC_IN})
 
     set(FREETYPE2_PC_IN_NAME "${PROJECT_BINARY_DIR}/freetype2.pc")
@@ -557,7 +561,7 @@ endif ()
 set(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The FreeType font rendering library.")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/docs/LICENSE.TXT")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.TXT")
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})

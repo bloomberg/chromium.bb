@@ -15,7 +15,7 @@ from string import Template
 from subprocess import call
 
 vulkan_reg_path = path.join(path.dirname(__file__), "..", "..", "third_party",
-                            "vulkan_headers", "registry")
+                            "vulkan-deps", "vulkan-headers", "src", "registry")
 sys.path.append(vulkan_reg_path)
 from reg import Registry
 
@@ -47,10 +47,12 @@ VULKAN_INSTANCE_FUNCTIONS = [
       'vkGetDeviceProcAddr',
       'vkGetPhysicalDeviceFeatures2',
       'vkGetPhysicalDeviceFormatProperties',
+      'vkGetPhysicalDeviceFormatProperties2',
       'vkGetPhysicalDeviceImageFormatProperties2',
       'vkGetPhysicalDeviceMemoryProperties',
       'vkGetPhysicalDeviceMemoryProperties2',
       'vkGetPhysicalDeviceProperties',
+      'vkGetPhysicalDeviceProperties2',
       'vkGetPhysicalDeviceQueueFamilyProperties',
     ]
   },
@@ -127,6 +129,7 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkCreateDescriptorSetLayout',
       'vkCreateFence',
       'vkCreateFramebuffer',
+      'vkCreateGraphicsPipelines',
       'vkCreateImage',
       'vkCreateImageView',
       'vkCreateRenderPass',
@@ -160,6 +163,7 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkGetFenceStatus',
       'vkGetImageMemoryRequirements',
       'vkGetImageMemoryRequirements2',
+      'vkGetImageSubresourceLayout',
       'vkMapMemory',
       'vkQueueSubmit',
       'vkQueueWaitIdle',
@@ -244,8 +248,14 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkGetSwapchainImagesKHR',
       'vkQueuePresentKHR',
     ]
+  },
+  {
+    'ifdef': 'defined(OS_LINUX) || defined(OS_CHROMEOS)',
+    'extension': 'VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME',
+    'functions': [
+      'vkGetImageDrmFormatModifierPropertiesEXT',
+    ]
   }
-
 ]
 
 SELF_LOCATION = os.path.dirname(os.path.abspath(__file__))

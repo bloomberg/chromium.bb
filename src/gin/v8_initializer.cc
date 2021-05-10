@@ -288,6 +288,32 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
     v8::V8::SetFlagsFromString(no_direct_access, sizeof(no_direct_access) - 1);
   }
 
+  if (!base::FeatureList::IsEnabled(features::kV8ExperimentalRegexpEngine)) {
+    // The --enable-experimental-regexp-engine-on-excessive-backtracks flag is
+    // enabled by default, so we need to explicitly disable it if
+    // kV8ExperimentalRegexpEngine is disabled.
+    static constexpr char no_experimental_regexp_engine[] =
+        "--no-enable-experimental-regexp-engine-on-excessive-backtracks";
+    v8::V8::SetFlagsFromString(no_experimental_regexp_engine,
+                               sizeof(no_experimental_regexp_engine) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8TurboFastApiCalls)) {
+    static const char turbo_fast_api_calls[] = "--turbo-fast-api-calls";
+    v8::V8::SetFlagsFromString(turbo_fast_api_calls,
+                               sizeof(turbo_fast_api_calls) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8Turboprop)) {
+    static const char turboprop[] = "--turboprop";
+    v8::V8::SetFlagsFromString(turboprop, sizeof(turboprop) - 1);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8Sparkplug)) {
+    static const char sparkplug[] = "--sparkplug";
+    v8::V8::SetFlagsFromString(sparkplug, sizeof(sparkplug) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);

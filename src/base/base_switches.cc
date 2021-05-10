@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace switches {
 
@@ -117,7 +118,10 @@ const char kDisableHighResTimer[] = "disable-highres-timer";
 const char kDisableUsbKeyboardDetect[]      = "disable-usb-keyboard-detect";
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
 // The /dev/shm partition is too small in certain VM environments, causing
 // Chrome to fail or crash (see http://crbug.com/715363). Use this flag to
 // work-around this issue (a temporary directory will always be used to create
@@ -158,6 +162,20 @@ const char kForceFieldTrialParams[] = "force-fieldtrial-params";
 //
 // This flag requires the BPF sandbox to be disabled.
 const char kEnableThreadInstructionCount[] = "enable-thread-instruction-count";
+
+// TODO(crbug.com/1176772): Remove kEnableCrashpad and IsCrashpadEnabled() when
+// Crashpad is fully enabled on Linux. Indicates that Crashpad should be
+// enabled.
+extern const char kEnableCrashpad[] = "enable-crashpad";
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// Override the default scheduling boosting value for urgent tasks.
+// This can be adjusted if a specific chromeos device shows better perf/power
+// ratio (e.g. by running video conference tests).
+// Currently, this values directs to linux scheduler's utilization min clamp.
+// Range is 0(no biased load) ~ 100(mamximum load value).
+const char kSchedulerBoostUrgent[] = "scheduler-boost-urgent";
 #endif
 
 }  // namespace switches

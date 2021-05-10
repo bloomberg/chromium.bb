@@ -52,7 +52,7 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   DCHECK(client_);
 
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
-  set_shadow(BubbleBorder::SMALL_SHADOW);
+  set_shadow(BubbleBorder::STANDARD_SHADOW);
   set_parent_window(context);
   constexpr gfx::Insets kMenuMargins = gfx::Insets(1);
   set_margins(kMenuMargins);
@@ -147,8 +147,7 @@ void TouchSelectionMenuViews::CreateButtons() {
 LabelButton* TouchSelectionMenuViews::CreateButton(
     const base::string16& title,
     Button::PressedCallback callback) {
-  base::string16 label =
-      gfx::RemoveAcceleratorChar(title, '&', nullptr, nullptr);
+  base::string16 label = gfx::RemoveAccelerator(title);
   auto* button = AddChildView(std::make_unique<LabelButton>(
       std::move(callback), label, style::CONTEXT_TOUCH_MENU));
   constexpr gfx::Size kMenuButtonMinSize = gfx::Size(63, 38);

@@ -25,18 +25,27 @@ specific_include_rules = {
     "+cc/tiles/frame_viewer_instrumentation.h",
     "+components/paint_preview/common/paint_preview_tracker.h",
   ],
+  "mhtml_archive_test\.cc": [
+    "+services/network/public/cpp/is_potentially_trustworthy.h",
+  ],
+  "remote_frame\.h": [
+    "+components/viz/common/surfaces/parent_local_surface_id_allocator.h",
+  ],
   "remote_frame_view\.cc": [
+    "+cc/base/math_util.h",
     "+components/paint_preview/common/paint_preview_tracker.h",
     "+printing/buildflags/buildflags.h",
     "+printing/metafile_skia.h",
+    "+ui/gfx/transform_util.h",
   ],
   "visual_viewport\.cc": [
     "+cc/layers/solid_color_scrollbar_layer.h",
   ],
-  "web_frame_widget_base\.cc": [
+  "web_frame_widget_impl\.cc": [
     "+cc/trees/swap_promise.h",
+    "+cc/trees/compositor_commit_data.h",
   ],
-  "web_frame_widget_base\.h": [
+  "web_frame_widget_impl\.h": [
     "+services/viz/public/mojom/hit_test/input_target_client.mojom-blink.h",
     "+ui/base/mojom/ui_base_types.mojom-shared.h",
   ],

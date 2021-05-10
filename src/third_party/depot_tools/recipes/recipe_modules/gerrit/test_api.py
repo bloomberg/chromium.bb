@@ -14,7 +14,7 @@ EXAMPLE_CHANGE = {
   'change_id': 'Ideadbeef',
   'project': 'chromium/src',
   'has_review_started': False,
-  'branch': 'master',
+  'branch': 'main',
   'subject': 'Change title',
   'revisions': {
     '184ebe53805e102605d11f6b143486d15c23a09c': {
@@ -40,7 +40,7 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
 
   def make_gerrit_get_branch_response_data(self):
     return self._make_gerrit_response_json({
-      "ref": "refs/heads/master",
+      "ref": "refs/heads/main",
       "revision": "67ebf73496383c6777035e374d2d664009e2aa5c"
     })
 

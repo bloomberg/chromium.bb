@@ -45,14 +45,12 @@ class PrefService;
 class Profile;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
-class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
-class SupervisedUserAllowlistService;
 
 namespace base {
 class FilePath;
 class Version;
-}
+}  // namespace base
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 namespace extensions {
@@ -69,8 +67,8 @@ class Browser;
 #endif  // !defined(OS_ANDROID)
 
 // This class handles all the information related to a given supervised profile
-// (e.g. the installed content packs, the default URL filtering behavior, or
-// manual allowlist/denylist overrides).
+// (e.g. the default URL filtering behavior, or manual allowlist/denylist
+// overrides).
 class SupervisedUserService : public KeyedService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                               public extensions::ExtensionRegistryObserver,
@@ -117,13 +115,6 @@ class SupervisedUserService : public KeyedService,
   // the history view. Both this method and the returned filter may only be used
   // on the UI thread.
   SupervisedUserURLFilter* GetURLFilter();
-
-  // Returns the allowlist service.
-  SupervisedUserAllowlistService* GetAllowlistService();
-
-  const std::vector<scoped_refptr<SupervisedUserSiteList>>& allowlists() const {
-    return allowlists_;
-  }
 
   // Whether the user can request to get access to blocked URLs or to new
   // extensions.
@@ -232,6 +223,10 @@ class SupervisedUserService : public KeyedService,
 
   void RecordExtensionEnablementUmaMetrics(bool enabled) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  // Returns true if prefs::kDefaultSupervisedUserFilteringBehavior is set to
+  // default value.
+  bool IsFilteringBehaviorPrefDefault() const;
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;
@@ -343,9 +338,6 @@ class SupervisedUserService : public KeyedService,
 
   void UpdateAsyncUrlChecker();
 
-  void OnSiteListsChanged(
-      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
-
   // Asynchronously loads a denylist from a binary file at |path| and applies
   // it to the URL filters. If no file exists at |path| yet, downloads a file
   // from |url| and stores it at |path| first.
@@ -405,10 +397,6 @@ class SupervisedUserService : public KeyedService,
 
   SupervisedUserDenylist denylist_;
   std::unique_ptr<FileDownloader> denylist_downloader_;
-
-  std::unique_ptr<SupervisedUserAllowlistService> allowlist_service_;
-
-  std::vector<scoped_refptr<SupervisedUserSiteList>> allowlists_;
 
   // Used to create permission requests.
   std::vector<std::unique_ptr<PermissionRequestCreator>> permissions_creators_;

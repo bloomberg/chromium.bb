@@ -55,7 +55,7 @@ void LogWithLevel(LogLevel level,
 // embedder could invoke its infrastructure for performing "dumps," consisting
 // of thread stack traces and other relevant process state information, before
 // aborting the process.
-void Break();
+[[noreturn]] void Break();
 
 }  // namespace openscreen
 

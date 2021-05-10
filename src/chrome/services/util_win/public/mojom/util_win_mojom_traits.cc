@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 

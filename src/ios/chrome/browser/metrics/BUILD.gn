@@ -63,7 +63,6 @@ source_set("metrics") {
     "//components/omnibox/browser",
     "//components/prefs",
     "//components/previous_session_info",
-    "//components/rappor",
     "//components/signin/core/browser",
     "//components/sync",
     "//components/sync_device_info",
@@ -87,7 +86,6 @@ source_set("metrics") {
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/overscroll_actions",
-    "//ios/chrome/browser/ui/util:multiwindow_util",
     "//ios/chrome/browser/ui/whats_new:utils",
     "//ios/chrome/browser/variations",
     "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
@@ -180,8 +178,6 @@ source_set("metrics_browser_agent") {
 source_set("metrics_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "drag_and_drop_recorder.h",
-    "drag_and_drop_recorder.mm",
     "first_user_action_recorder.cc",
     "first_user_action_recorder.h",
     "new_tab_page_uma.h",

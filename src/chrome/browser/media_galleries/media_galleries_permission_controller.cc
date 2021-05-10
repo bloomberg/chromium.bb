@@ -6,9 +6,9 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -67,7 +67,7 @@ MediaGalleriesPermissionController::MediaGalleriesPermissionController(
       preferences_(
           g_browser_process->media_file_system_registry()->GetPreferences(
               GetProfile())),
-      create_dialog_callback_(base::Bind(&MediaGalleriesDialog::Create)) {
+      create_dialog_callback_(base::BindOnce(&MediaGalleriesDialog::Create)) {
   // Passing unretained pointer is safe, since the dialog controller
   // is self-deleting, and so won't be deleted until it can be shown
   // and then closed.
@@ -92,19 +92,19 @@ void MediaGalleriesPermissionController::OnPreferencesInitialized() {
     InitializePermissions();
   }
 
-  dialog_.reset(create_dialog_callback_.Run(this));
+  dialog_.reset(std::move(create_dialog_callback_).Run(this));
 }
 
 MediaGalleriesPermissionController::MediaGalleriesPermissionController(
     const extensions::Extension& extension,
     MediaGalleriesPreferences* preferences,
-    const CreateDialogCallback& create_dialog_callback,
+    CreateDialogCallback create_dialog_callback,
     base::OnceClosure on_finish)
     : web_contents_(nullptr),
       extension_(&extension),
       on_finish_(std::move(on_finish)),
       preferences_(preferences),
-      create_dialog_callback_(create_dialog_callback) {
+      create_dialog_callback_(std::move(create_dialog_callback)) {
   OnPreferencesInitialized();
 }
 

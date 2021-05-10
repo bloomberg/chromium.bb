@@ -1,8 +1,4 @@
-# TEAM: media-dev@chromium.org
-# COMPONENT: Internals>Media>History
-
 evliu@google.com
-beccahughes@chromium.org
 steimel@chromium.org
 
 per-file *.mojom=set noparent

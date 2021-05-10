@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/server_thread.h"
+#include "quic/test_tools/server_thread.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_server_peer.h"
+#include "quic/core/quic_dispatcher.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_dispatcher_peer.h"
+#include "quic/test_tools/quic_server_peer.h"
 
 namespace quic {
 namespace test {
@@ -60,7 +61,7 @@ int ServerThread::GetPort() {
 }
 
 void ServerThread::Schedule(std::function<void()> action) {
-  DCHECK(!quit_.HasBeenNotified());
+  QUICHE_DCHECK(!quit_.HasBeenNotified());
   QuicWriterMutexLock lock(&scheduled_actions_lock_);
   scheduled_actions_.push_back(std::move(action));
 }
@@ -88,14 +89,14 @@ bool ServerThread::WaitUntil(std::function<bool()> termination_predicate,
 }
 
 void ServerThread::Pause() {
-  DCHECK(!pause_.HasBeenNotified());
+  QUICHE_DCHECK(!pause_.HasBeenNotified());
   pause_.Notify();
   paused_.WaitForNotification();
 }
 
 void ServerThread::Resume() {
-  DCHECK(!resume_.HasBeenNotified());
-  DCHECK(pause_.HasBeenNotified());
+  QUICHE_DCHECK(!resume_.HasBeenNotified());
+  QUICHE_DCHECK(pause_.HasBeenNotified());
   resume_.Notify();
 }
 
@@ -114,11 +115,11 @@ void ServerThread::MaybeNotifyOfHandshakeConfirmation() {
     return;
   }
   QuicDispatcher* dispatcher = QuicServerPeer::GetDispatcher(server());
-  if (dispatcher->session_map().empty()) {
+  if (dispatcher->NumSessions() == 0) {
     // Wait for a session to be created.
     return;
   }
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
+  QuicSession* session = QuicDispatcherPeer::GetFirstSessionIfAny(dispatcher);
   if (session->OneRttKeysAvailable()) {
     confirmed_.Notify();
   }

@@ -7,14 +7,15 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("node_main") {
   sources = [
-    "NodeConnectionsPanel.js",
-    "NodeMain.js",
+    "NodeConnectionsPanel.ts",
+    "NodeMain.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../components:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../protocol_client:bundle",
     "../sdk:bundle",
     "../ui:bundle",
@@ -22,13 +23,19 @@ devtools_module("node_main") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "node_main.js"
+  entrypoint = "node_main.ts"
 
   deps = [ ":node_main" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "node_main-legacy.js"
+  entrypoint = "node_main-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "node_main-meta.ts"
 
   deps = [ ":bundle" ]
 }

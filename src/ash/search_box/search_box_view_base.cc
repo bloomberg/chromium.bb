@@ -338,16 +338,15 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
 
   is_search_box_active_ = active;
   UpdateSearchIcon();
-  UpdateBackgroundColor(
-      ash::AppListColorProvider::Get()->GetSearchBoxBackgroundColor());
   search_box_->set_placeholder_text_draw_flags(
       active ? (base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT
                                     : gfx::Canvas::TEXT_ALIGN_LEFT)
              : gfx::Canvas::TEXT_ALIGN_CENTER);
   search_box_->set_placeholder_text_color(
-      ash::AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          active ? kZeroQuerySearchboxColor
-                 : kDefaultSearchboxPlaceholderTextColor));
+      active ? AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+                   kZeroQuerySearchboxColor)
+             : ash::AppListColorProvider::Get()->GetSearchBoxTextColor(
+                   kDefaultSearchboxPlaceholderTextColor));
   search_box_->SetCursorEnabled(active);
 
   if (active) {

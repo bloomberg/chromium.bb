@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">உள்ளமைந்த டிஸ்பிளே</translation>
 <translation id="335581015389089642">பேச்சு</translation>
 <translation id="3389286852084373014">உரையின் அளவு மிகப் பெரியதாக உள்ளது</translation>
+<translation id="3406306243914553062">HTML உள்ளடக்கம்</translation>
 <translation id="348799646910989694">ஷெல்ஃப் தானாகவே மறைக்கப்படும்</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ஷெல்ஃபில் நிலையாகப் பொருத்தப்பட்டது</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 நாள் உள்ளது}other{# நாட்கள் உள்ளன}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">எண்</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ஜி.பை/வி</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">உங்கள் மொபைல் ஃபோனில் தொடர்ந்து <ph name="TITLE" />ஐப் படிக்கவும்</translation>
 <translation id="385051799172605136">திரும்பு</translation>
 <translation id="3889424535448813030">வலது அம்பு</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 மாதத்திற்கு முன்}other{# மாதங்களுக்கு முன்}}</translation>
 <translation id="4289300219472526559">பேச்சைத் தொடங்கு</translation>
 <translation id="430191667033048642"><ph name="FOLDER_NAME" /> கோப்புறைக்கு <ph name="MOVED_APP_NAME" /> ஆப்ஸ் நகர்த்தப்பட்டது.</translation>
+<translation id="4306392492252714209">கிளிப்போர்டிலிருந்து அகற்றும்.</translation>
 <translation id="4316910396681052118">எல்லாப் பயன்பாடுகளும்</translation>
 <translation id="4491109536499578614">படம்</translation>
 <translation id="4588090240171750605">வலப்புறம் நகர்த்து</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">இதுவரை தேடியவற்றிலிருந்து இந்தத் தேடலை நீக்கவா?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> டெ.பை</translation>
 <translation id="7507604095951736240">ஈமோஜி</translation>
+<translation id="7620655452534002301">அகற்றப்பட்டது.</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>
 <translation id="8134065097954893699">இந்தப் பக்கம் ரெஃப்ரெஷ் செய்யப்படுகிறது</translation>
-<translation id="8144660977431427332">உங்கள் தேடல்கள் Google அசிஸ்டண்ட்டைப் பயன்படுத்தி தேடப்படுகின்றன. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, தானே நிரப்பியது</translation>
 <translation id="815598010540052116">கீழே நகர்த்து</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">பக்கத்தின் கீழே</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">தாவல்</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ஆப்ஸ்</translation>
 <translation id="8259556432390118667">ஹெக்ஸ் வண்ண மதிப்பு</translation>

@@ -9,7 +9,7 @@
 // Includes the items from GENRB_ALIAS_SOURCE and GENRB_SOURCE
   "localeFilter": {
     "filterType": "language",
-    "whitelist": [
+    "includelist": [
 // Need to explicitly add "root"
       "root",
 
@@ -130,13 +130,13 @@
   },
   "featureFilters": {
     "brkitr_dictionaries": {
-      "blacklist": [
+      "excludelist": [
 // Filtered by android/brkitr.patch        "cjdict",
         "cjdict"
       ]
     },
     "brkitr_rules": {
-      "blacklist": [
+      "excludelist": [
 // Exclude line_cj till we upgrade to 68.1 due to size impact.
         "line_cj",
         "title",
@@ -144,14 +144,14 @@
       ]
     },
     "brkitr_tree": {
-      "blacklist": [
+      "excludelist": [
         "en_US_POSIX"
       ]
     },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/mappings/ucmlocal.mk?rcl=797b7c
     "conversion_mappings": {
-      "whitelist": [
+      "includelist": [
 // UCM_SOURCE_CORE=...
         "iso-8859-2-html",
         "iso-8859-3-html",
@@ -195,7 +195,7 @@
 // "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
     "curr_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
         "root",
 
@@ -256,14 +256,14 @@
       "filterType": "union",
       "unionOf": [
         {
-          "whitelist": [
+          "includelist": [
             "en",
             "en_US"
           ]
         },
         {
           "filterType": "language",
-          "whitelist": [
+          "includelist": [
 // Need to explicitly add "root"
     	    "root",
 
@@ -317,7 +317,7 @@
       ]
     },
     "rbnf_tree": {
-      "whitelist": [
+      "includelist": [
 // Needed by "y=jpanyear" in locales/ja.txt for calendar="japanese"
         "ja",
 // Needed by "d=hanidays" in locales/zh*.txt for calendar="chinese"
@@ -329,7 +329,7 @@
 // Includes the items from REGION_ALIAS_SOURCE and REGION_SOURCE
     "region_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -392,7 +392,7 @@
 // "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
     "unit_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 
@@ -451,7 +451,7 @@
 // "bn", "et", "gu", "kn", "ml", "mr", "ms", "ta", "te"
     "zone_tree": {
       "filterType": "language",
-      "whitelist": [
+      "includelist": [
 // Need to explicitly add "root"
 	"root",
 // Need to explicitly add "tzdbNames"
@@ -708,7 +708,7 @@
         "coll_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "zh"
 	]
       },
@@ -1238,7 +1238,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "th"
 	]
       },
@@ -1255,7 +1255,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "zh"
 	]
       },
@@ -1272,7 +1272,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "ko"
 	]
       },
@@ -1289,7 +1289,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "am"
 	]
       },
@@ -1307,7 +1307,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "he"
 	]
       },
@@ -1324,7 +1324,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "ar"
 	]
       },
@@ -1344,7 +1344,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "fa"
 	]
       },
@@ -1362,7 +1362,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "ja"
 	]
       },
@@ -1379,7 +1379,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 //     # When adding other Indian locales for Android,
 //     # add 'indian' calendar to them as well.
 	  "hi"
@@ -1398,7 +1398,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "zh_Hant"
 	]
       },
@@ -1415,7 +1415,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 	  "root"
 	]
       },
@@ -1452,7 +1452,7 @@
         "locales_tree"
       ],
       "files": {
-        "blacklist": [
+        "excludelist": [
 	  "root",
 
 	  "am",
@@ -1481,7 +1481,7 @@
         "locales_tree"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
 // 1. Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
 // 2. Add EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te" based on
 //    https://cs.chromium.org/chromium/src/third_party/icu/cast/patch_locale.sh?rcl=797b7c
@@ -1660,7 +1660,7 @@
         "misc"
       ],
       "files": {
-        "whitelist": [
+        "includelist": [
           "supplementalData"
 	]
       },

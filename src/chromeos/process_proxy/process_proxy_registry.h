@@ -11,20 +11,20 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/component_export.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/process_proxy/process_proxy.h"
 
 namespace chromeos {
 
 // Keeps track of all created ProcessProxies. It is created lazily and should
 // live on a single thread (where all methods must be called).
-class CHROMEOS_EXPORT ProcessProxyRegistry {
+class COMPONENT_EXPORT(CHROMEOS_PROCESS_PROXY) ProcessProxyRegistry {
  public:
   using OutputCallback =
       base::RepeatingCallback<void(const std::string& id,
@@ -43,6 +43,9 @@ class CHROMEOS_EXPORT ProcessProxyRegistry {
   };
 
   static ProcessProxyRegistry* Get();
+
+  // Converts the id returned by OpenProcess() to the system pid.
+  static int ConvertToSystemPID(const std::string& id);
 
   // Returns a SequencedTaskRunner where the singleton instance of
   // ProcessProxyRegistry lives.
@@ -68,8 +71,8 @@ class CHROMEOS_EXPORT ProcessProxyRegistry {
   // Shuts down registry, closing all associated processed.
   void ShutDown();
 
-  // Get the process handle for testing purposes.
-  base::ProcessHandle GetProcessHandleForTesting(const std::string& id);
+  // Get the process for testing purposes.
+  const base::Process* GetProcessForTesting(const std::string& id);
 
  private:
   friend struct ::base::LazyInstanceTraitsBase<ProcessProxyRegistry>;

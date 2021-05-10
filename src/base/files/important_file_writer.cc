@@ -35,12 +35,22 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 
 namespace {
 
 constexpr auto kDefaultCommitInterval = TimeDelta::FromSeconds(10);
+#if defined(OS_WIN)
+// This is how many times we will retry ReplaceFile on Windows.
+constexpr int kReplaceRetries = 5;
+// This is the result code recorded if ReplaceFile still fails.
+// It should stay constant even if we change kReplaceRetries.
+constexpr int kReplaceRetryFailure = 10;
+static_assert(kReplaceRetryFailure > kReplaceRetries, "No overlap allowed");
+constexpr auto kReplacePauseInterval = TimeDelta::FromMilliseconds(100);
+#endif
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -75,6 +85,19 @@ void UmaHistogramExactLinearWithSuffix(const char* histogram_name,
                           static_cast<int>(max_sample));
 }
 
+void UmaHistogramTimesWithSuffix(const char* histogram_name,
+                                 StringPiece histogram_suffix,
+                                 base::TimeDelta sample) {
+  DCHECK(histogram_name);
+  std::string histogram_full_name(histogram_name);
+  if (!histogram_suffix.empty()) {
+    histogram_full_name.append(".");
+    histogram_full_name.append(histogram_suffix.data(),
+                               histogram_suffix.length());
+  }
+  UmaHistogramTimes(histogram_full_name, sample);
+}
+
 void LogFailure(const FilePath& path,
                 StringPiece histogram_suffix,
                 TempFileFailure failure_code,
@@ -101,12 +124,9 @@ void DeleteTmpFileWithRetry(File tmp_file,
   if (tmp_file.IsValid()) {
     if (tmp_file.DeleteOnClose(true))
       return;
-    // The file was opened with exclusive r/w access, so it would be very odd
-    // for this to fail.
-    UmaHistogramExactLinearWithSuffix(
-        "ImportantFile.DeleteOnCloseError", histogram_suffix,
-        -File::GetLastFileError(), -File::FILE_ERROR_MAX);
-    // Go ahead and close the file. The call to DeleteFile below will basically
+    // The file was opened with exclusive r/w access, so failures are primarily
+    // due to I/O errors or other phenomena out of the process's control. Go
+    // ahead and close the file. The call to DeleteFile below will basically
     // repeat the above, but maybe it will somehow succeed.
     tmp_file.Close();
   }
@@ -198,7 +218,7 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
   base::debug::Alias(path_copy);
 #endif  // defined(OS_WIN) && DCHECK_IS_ON()
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, chrome gets killed when it cannot finish shutdown quickly,
   // and this function seems to be one of the slowest shutdown steps.
   // Include some info to the report for investigation. crbug.com/418627
@@ -271,16 +291,41 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
     PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
 #endif  // defined(OS_WIN)
   tmp_file.Close();
-  const bool result = ReplaceFile(tmp_file_path, path, &replace_file_error);
+  bool result = ReplaceFile(tmp_file_path, path, &replace_file_error);
 #if defined(OS_WIN)
+  // Save and restore the last error code so that it's not polluted by the
+  // thread priority change.
+  auto last_error = ::GetLastError();
+  int retry_count = 0;
+  for (/**/; !result && retry_count < kReplaceRetries; ++retry_count) {
+    // The race condition between closing the temporary file and moving it gets
+    // hit on a regular basis on some systems (https://crbug.com/1099284), so
+    // we retry a few times before giving up.
+    PlatformThread::Sleep(kReplacePauseInterval);
+    result = ReplaceFile(tmp_file_path, path, &replace_file_error);
+    last_error = ::GetLastError();
+  }
   if (reset_priority)
     PlatformThread::SetCurrentThreadPriority(previous_priority);
+
+  // Log how many times we had to retry the ReplaceFile operation before it
+  // succeeded. If we never succeeded then return a special value.
+  if (!result)
+    retry_count = kReplaceRetryFailure;
+  UmaHistogramExactLinear("ImportantFile.FileReplaceRetryCount", retry_count,
+                          kReplaceRetryFailure);
 #endif  // defined(OS_WIN)
 
   if (!result) {
     UmaHistogramExactLinearWithSuffix("ImportantFile.FileRenameError",
                                       histogram_suffix, -replace_file_error,
                                       -File::FILE_ERROR_MAX);
+#if defined(OS_WIN)
+    // Restore the error code from ReplaceFile so that it will be available for
+    // LogFailure, otherwise failures in SetCurrrentThreadPriority may be
+    // reported instead.
+    ::SetLastError(last_error);
+#endif
     LogFailure(path, histogram_suffix, FAILED_RENAMING,
                "could not rename temporary file");
     DeleteTmpFileWithRetry(File(), tmp_file_path, histogram_suffix);
@@ -292,7 +337,7 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
 ImportantFileWriter::ImportantFileWriter(
     const FilePath& path,
     scoped_refptr<SequencedTaskRunner> task_runner,
-    const char* histogram_suffix)
+    StringPiece histogram_suffix)
     : ImportantFileWriter(path,
                           std::move(task_runner),
                           kDefaultCommitInterval,
@@ -302,12 +347,12 @@ ImportantFileWriter::ImportantFileWriter(
     const FilePath& path,
     scoped_refptr<SequencedTaskRunner> task_runner,
     TimeDelta interval,
-    const char* histogram_suffix)
+    StringPiece histogram_suffix)
     : path_(path),
       task_runner_(std::move(task_runner)),
       serializer_(nullptr),
       commit_interval_(interval),
-      histogram_suffix_(histogram_suffix ? histogram_suffix : "") {
+      histogram_suffix_(histogram_suffix) {
   DCHECK(task_runner_);
   ImportantFileWriterCleaner::AddDirectory(path.DirName());
 }
@@ -365,8 +410,21 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
 
 void ImportantFileWriter::DoScheduledWrite() {
   DCHECK(serializer_);
-  std::unique_ptr<std::string> data(new std::string);
-  if (serializer_->SerializeData(data.get())) {
+  auto data = std::make_unique<std::string>();
+
+  // Pre-allocate previously needed memory plus 1kB for potential growth of
+  // data. Reduces the number of memory allocations to grow |data| step by step
+  // from tiny to very large.
+  data->reserve(previous_data_size_ + 1024);
+
+  const TimeTicks serialization_start = TimeTicks::Now();
+  const bool success = serializer_->SerializeData(data.get());
+  const TimeDelta serialization_duration =
+      TimeTicks::Now() - serialization_start;
+  if (success) {
+    UmaHistogramTimesWithSuffix("ImportantFile.SerializationDuration",
+                                histogram_suffix_, serialization_duration);
+    previous_data_size_ = data->size();
     WriteNow(std::move(data));
   } else {
     DLOG(WARNING) << "failed to serialize data to be saved in "

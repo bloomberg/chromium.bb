@@ -149,4 +149,21 @@ crbug.com/1066647 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/bre
 crbug.com/1095518 [ Linux ] crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Crash ]
 
 # Sheriff 2020-10-05
-crbug.com/1134580 [ Linux ] virtual/eye-dropper/color-picker-show-eye-dropper.html [ Pass Timeout ]
+crbug.com/1134580 [ Linux ] virtual/eye-dropper/http/tests/eye-dropper/color-picker-show-eye-dropper.html [ Pass Timeout ]
+
+# Sheriff 2020-11-25
+crbug.com/1152088 [ Linux ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
+
+# Flaky timeouts on MSan.
+crbug.com/1174822 [ Linux ] http/tests/mojo/bindings-lite-sw.https.html [ Pass Timeout ]
+
+# Sheriff 2021-02-11
+crbug.com/1177358 [ Linux ] fast/forms/form-invalid-url.html [ Pass Crash ]
+crbug.com/1177358 [ Linux ] http/tests/devtools/console/console-viewport-indices.js [ Pass Timeout ]
+crbug.com/1177358 [ Linux ] http/tests/devtools/console/console-search-reveals-messages.js [ Pass Timeout ]
+crbug.com/1177358 [ Linux ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Timeout ]
+
+# Sheriff 2021-02-18
+crbug.com/1179829 [ Linux ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
+crbug.com/1179829 [ Linux ] http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Pass Timeout ]
+crbug.com/1179829 [ Linux ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]

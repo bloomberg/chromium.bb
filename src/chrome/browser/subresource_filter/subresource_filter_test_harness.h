@@ -13,7 +13,6 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 
-class ChromeSubresourceFilterClient;
 class GURL;
 
 namespace content {
@@ -55,8 +54,6 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
 
   void ConfigureAsSubresourceFilterOnlyURL(const GURL& url);
 
-  ChromeSubresourceFilterClient* GetClient();
-
   void RemoveURLFromBlocklist(const GURL& url);
 
   subresource_filter::SubresourceFilterContentSettingsManager*
@@ -70,6 +67,8 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
   FakeSafeBrowsingDatabaseManager* fake_safe_browsing_database() {
     return fake_safe_browsing_database_.get();
   }
+
+  void TagSubframeAsAd(content::RenderFrameHost* render_frame_host);
 
  private:
   base::ScopedTempDir ruleset_service_dir_;

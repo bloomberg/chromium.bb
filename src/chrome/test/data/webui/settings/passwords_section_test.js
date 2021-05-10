@@ -29,7 +29,12 @@ const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
  * @private
  */
 function validateMultiStorePasswordList(passwordsSection, expectedPasswords) {
-  assertDeepEquals(expectedPasswords, passwordsSection.$.passwordList.items);
+  // `passwordList.items` will always contain all items, even when there is a
+  // filter to be applied. Thus apply `passwordList.filter` to obtain the list
+  // of items that are user visible.
+  const passwordList = passwordsSection.$.passwordList;
+  assertDeepEquals(
+      expectedPasswords, passwordList.items.filter(passwordList.filter));
   const listItems =
       passwordsSection.shadowRoot.querySelectorAll('password-list-item');
   for (let index = 0; index < expectedPasswords.length; ++index) {
@@ -239,6 +244,7 @@ async function openPasswordEditDialogHelper(
   passwordListItem.$$('#showPasswordButton').click();
   flush();
   await passwordManager.whenCalled('requestPlaintextPassword');
+  passwordManager.resetResolver('requestPlaintextPassword');
   flush();
 
   assertEquals('text', passwordListItem.$$('#password').type);
@@ -252,11 +258,10 @@ async function openPasswordEditDialogHelper(
   flush();
   if (isEditDialog) {
     await passwordManager.whenCalled('requestPlaintextPassword');
+    passwordManager.resetResolver('requestPlaintextPassword');
     flush();
-  }
-
-  // Verify that list item password is hidden.
-  if (!isEditDialog) {
+  } else {
+    // Verify that list item password is hidden.
     assertEquals('', passwordListItem.entry.password);
   }
   assertEquals('password', passwordListItem.$$('#password').type);
@@ -275,6 +280,7 @@ async function openPasswordEditDialogHelper(
   flush();
   if (!isEditDialog) {
     await passwordManager.whenCalled('requestPlaintextPassword');
+    passwordManager.resetResolver('requestPlaintextPassword');
     flush();
   }
 
@@ -467,6 +473,7 @@ suite('PasswordsSection', function() {
     passwordListItems[0].$$('#showPasswordButton').click();
     flush();
     await passwordManager.whenCalled('requestPlaintextPassword');
+    passwordManager.resetResolver('requestPlaintextPassword');
     flush();
 
     passwordListItems[1].$$('#showPasswordButton').click();
@@ -1626,8 +1633,7 @@ suite('PasswordsSection', function() {
     });
 
     // Test verifies that the button linking to the 'device passwords' page is
-    // only visible when there is at least one device password, and that it has
-    // the appropriate text.
+    // only visible when there is at least one device password.
     test('verifyDevicePasswordsButtonVisibility', function() {
       // Set up user eligible to the account-scoped password storage, not
       // opted in and with no device passwords. Button should be hidden.
@@ -1646,28 +1652,13 @@ suite('PasswordsSection', function() {
       flush();
       assertTrue(passwordsSection.$.devicePasswordsLink.hidden);
 
-      // Add a device password. The button shows up, with the text in singular
-      // form.
+      // Add a device password. The button shows up.
       passwordList.unshift(
           createPasswordEntry({fromAccountStore: false, id: 20}));
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       flush();
       assertFalse(passwordsSection.$.devicePasswordsLink.hidden);
-      assertEquals(
-          passwordsSection.i18n('devicePasswordsLinkLabelSingular'),
-          passwordsSection.$.devicePasswordsLinkLabel.innerText);
-
-      // Add a second device password. The text nows says '2 passwords'.
-      passwordList.unshift(
-          createPasswordEntry({fromAccountStore: false, id: 30}));
-      passwordManager.lastCallback.addSavedPasswordListChangedListener(
-          passwordList);
-      flush();
-      assertFalse(passwordsSection.$.devicePasswordsLink.hidden);
-      assertEquals(
-          passwordsSection.i18n('devicePasswordsLinkLabelPlural', 2),
-          passwordsSection.$.devicePasswordsLinkLabel.innerText);
     });
 
     // Test verifies that, for account-scoped password storage users, removing

@@ -147,6 +147,11 @@ message ClientPhishingRequest {
   // The visual feature match results.
   // Allow multiple results if there are more than one matched target.
   repeated VisionMatchResult vision_match = 20;
+
+  // Indicates whether the request is due to a match on the DOM features.
+  optional bool is_dom_match = 21;
+
+  // next available tag number: 22.
 }
 
 // Vision match result for one target image.
@@ -370,6 +375,38 @@ message LoginReputationClientRequest {
     optional bool simplified_url_display_enabled = 6;
   };
   optional UrlDisplayExperiment url_display_experiment = 14;
+
+  // The referring app info that launches Chrome. Only used on Android.
+  // This information may be spoofed so do not rely solely on its correctness
+  // for anti-abuse purposes. For more details, see:
+  // go/phishguard-referring-app-android.
+  message ReferringAppInfo {
+    // The source of the referring_app_name.
+    enum ReferringAppSource {
+      REFERRING_APP_SOURCE_UNSPECIFIED = 0;
+      // The referring app is known to Chrome. If the referring app info is from
+      // this source, the referring_app_name is a hardcoded string that is
+      // predefined in Chrome.
+      KNOWN_APP_ID = 1;
+      // The referring app is unknown to Chrome. The referring app name is
+      // obtained from
+      // https://developer.android.com/reference/android/provider/Browser?hl=en#EXTRA_APPLICATION_ID.
+      // If the referring app info is from this source, the referring_app_name
+      // is volatile and can be changed by the referring app.
+      UNKNOWN_APP_ID = 2;
+      // The referring app info is obtained from
+      // https://developer.android.com/reference/android/app/Activity#getReferrer().
+      // If the referring app info is from this source, the referring_app_name
+      // is volatile and can be changed by the referring app.
+      ACTIVITY_REFERRER = 3;
+    }
+
+    optional ReferringAppSource referring_app_source = 1;
+
+    optional string referring_app_name = 2;
+  }
+
+  optional ReferringAppInfo referring_app_info = 15;
 }
 
 // The message is used for client response for login reputation requests.
@@ -381,7 +418,7 @@ message LoginReputationClientResponse {
     SAFE = 1;
     // The site has low reputation or low popularity.
     LOW_REPUTATION = 2;
-    // The url matches with blacklist entries.
+    // The url matches with blocklist entries.
     PHISHING = 3;
   }
   optional VerdictType verdict_type = 1;
@@ -1088,7 +1125,7 @@ message ClientIncidentReport {
         optional ClientDownloadRequest.ImageHeaders image_headers = 5;
       }
       repeated Dll dll = 9;
-      repeated string blacklisted_dll = 10;
+      repeated string blocklisted_dll = 10;
       message ModuleState {
         enum ModifiedState {
           UNKNOWN = 0;
@@ -1121,7 +1158,7 @@ message ClientIncidentReport {
         STATE_UNKNOWN = 0;
         STATE_ENABLED = 1;
         STATE_DISABLED = 2;
-        STATE_BLACKLISTED = 3;
+        STATE_BLOCKLISTED = 3;
         STATE_BLOCKED = 4;
         STATE_TERMINATED = 5;
       }
@@ -1304,14 +1341,16 @@ message ClientSafeBrowsingReportRequest {
   enum SafeBrowsingUrlApiType {
     SAFE_BROWSING_URL_API_TYPE_UNSPECIFIED = 0;
     // Native implementation of Safe Browsing API v3 protocol.
-    PVER3_NATIVE = 1;
+    // Deprecated as of 2021-1. V3 protocol is not used anymore.
+    PVER3_NATIVE = 1 [deprecated = true];
     // Native implementation of Safe Browsing API v4 protocol.
     PVER4_NATIVE = 2;
     // Android SafetyNet API.
     // https://developer.android.com/training/safetynet/safebrowsing.html
     ANDROID_SAFETYNET = 3;
     // Flywheel (data compression service).
-    FLYWHEEL = 4;
+    // Deprecated as of 2021-1. Data saver has been completely turned down.
+    FLYWHEEL = 4 [deprecated = true];
     // Safe Browsing real time API.
     REAL_TIME = 5;
   }

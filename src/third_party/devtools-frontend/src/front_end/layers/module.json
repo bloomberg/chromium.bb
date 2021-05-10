@@ -1,22 +1,8 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "panel",
-      "id": "layers",
-      "title": "Layers",
-      "order": 100,
-      "persistence": "closeable",
-      "className": "Layers.LayersPanel"
-    }
-  ],
   "dependencies": [
     "layer_viewer"
   ],
   "modules": [
-    "layers-legacy.js"
-  ],
-  "skip_compilation": [
     "layers-legacy.js"
   ]
 }

@@ -24,6 +24,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
@@ -48,6 +49,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kKeyframes,
     kKeyframe,
     kNamespace,
+    kContainer,
     kCounterStyle,
     kScrollTimeline,
     kSupports,
@@ -57,6 +59,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   RuleType GetType() const { return static_cast<RuleType>(type_); }
 
   bool IsCharsetRule() const { return GetType() == kCharset; }
+  bool IsContainerRule() const { return GetType() == kContainer; }
   bool IsCounterStyleRule() const { return GetType() == kCounterStyle; }
   bool IsFontFaceRule() const { return GetType() == kFontFace; }
   bool IsKeyframesRule() const { return GetType() == kKeyframes; }
@@ -317,6 +320,24 @@ class StyleRuleSupports : public StyleRuleCondition {
   bool condition_is_supported_;
 };
 
+class CORE_EXPORT StyleRuleContainer : public StyleRuleCondition {
+ public:
+  StyleRuleContainer(ContainerQuery&,
+                     HeapVector<Member<StyleRuleBase>>& adopt_rules);
+  StyleRuleContainer(const StyleRuleContainer&);
+
+  ContainerQuery& GetContainerQuery() const { return *container_query_; }
+
+  StyleRuleContainer* Copy() const {
+    return MakeGarbageCollected<StyleRuleContainer>(*this);
+  }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  Member<ContainerQuery> container_query_;
+};
+
 class StyleRuleViewport : public StyleRuleBase {
  public:
   explicit StyleRuleViewport(CSSPropertyValueSet*);
@@ -344,63 +365,6 @@ class StyleRuleCharset : public StyleRuleBase {
   }
 
  private:
-};
-
-class CORE_EXPORT StyleRuleCounterStyle : public StyleRuleBase {
- public:
-  StyleRuleCounterStyle(const AtomicString&, CSSPropertyValueSet*);
-  StyleRuleCounterStyle(const StyleRuleCounterStyle&);
-  ~StyleRuleCounterStyle();
-
-  AtomicString GetName() const { return name_; }
-  const CSSValue* GetSystem() const { return system_; }
-  const CSSValue* GetNegative() const { return negative_; }
-  const CSSValue* GetPrefix() const { return prefix_; }
-  const CSSValue* GetSuffix() const { return suffix_; }
-  const CSSValue* GetRange() const { return range_; }
-  const CSSValue* GetPad() const { return pad_; }
-  const CSSValue* GetFallback() const { return fallback_; }
-  const CSSValue* GetSymbols() const { return symbols_; }
-  const CSSValue* GetAdditiveSymbols() const { return additive_symbols_; }
-  const CSSValue* GetSpeakAs() const { return speak_as_; }
-
-  void SetName(const AtomicString& name) { name_ = name; }
-  void SetSystem(const CSSValue* system) { system_ = system; }
-  void SetNegative(const CSSValue* negative) { negative_ = negative; }
-  void SetPrefix(const CSSValue* prefix) { prefix_ = prefix; }
-  void SetSuffix(const CSSValue* suffix) { suffix_ = suffix; }
-  void SetRange(const CSSValue* range) { range_ = range; }
-  void SetPad(const CSSValue* pad) { pad_ = pad; }
-  void SetFallback(const CSSValue* fallback) { fallback_ = fallback; }
-  void SetSymbols(const CSSValue* symbols) { symbols_ = symbols; }
-  void SetAdditiveSymbols(const CSSValue* additive_symbols) {
-    additive_symbols_ = additive_symbols;
-  }
-  void SetSpeakAs(const CSSValue* speak_as) { speak_as_ = speak_as; }
-
-  bool HasFailedOrCanceledSubresources() const {
-    // TODO(crbug.com/687225): Implement.
-    return false;
-  }
-
-  StyleRuleCounterStyle* Copy() const {
-    return MakeGarbageCollected<StyleRuleCounterStyle>(*this);
-  }
-
-  void TraceAfterDispatch(blink::Visitor*) const;
-
- private:
-  AtomicString name_;
-  Member<const CSSValue> system_;
-  Member<const CSSValue> negative_;
-  Member<const CSSValue> prefix_;
-  Member<const CSSValue> suffix_;
-  Member<const CSSValue> range_;
-  Member<const CSSValue> pad_;
-  Member<const CSSValue> fallback_;
-  Member<const CSSValue> symbols_;
-  Member<const CSSValue> additive_symbols_;
-  Member<const CSSValue> speak_as_;
 };
 
 template <>
@@ -437,6 +401,14 @@ struct DowncastTraits<StyleRuleScrollTimeline> {
 };
 
 template <>
+struct DowncastTraits<StyleRuleGroup> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsMediaRule() || rule.IsSupportsRule() ||
+           rule.IsContainerRule();
+  }
+};
+
+template <>
 struct DowncastTraits<StyleRuleMedia> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsMediaRule();
@@ -451,6 +423,13 @@ struct DowncastTraits<StyleRuleSupports> {
 };
 
 template <>
+struct DowncastTraits<StyleRuleContainer> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsContainerRule();
+  }
+};
+
+template <>
 struct DowncastTraits<StyleRuleViewport> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsViewportRule();
@@ -461,13 +440,6 @@ template <>
 struct DowncastTraits<StyleRuleCharset> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsCharsetRule();
-  }
-};
-
-template <>
-struct DowncastTraits<StyleRuleCounterStyle> {
-  static bool AllowFrom(const StyleRuleBase& rule) {
-    return rule.IsCounterStyleRule();
   }
 };
 

@@ -56,6 +56,11 @@ class ActionTracker {
   void SetTimerForTest(
       std::unique_ptr<base::RetainingOneShotTimer> injected_trim_rules_timer);
 
+  // Disables checking whether a tab ID corresponds to an existing tab when a
+  // rule is matched. Used for unit tests where WebContents/actual tabs do not
+  // exist.
+  void SetCheckTabIdOnRuleMatchForTest(bool check_tab_id);
+
   // Called whenever a request matches with a rule.
   void OnRuleMatched(const RequestAction& request_action,
                      const WebRequestInfo& request_info);
@@ -63,8 +68,8 @@ class ActionTracker {
   // Updates the action count for all tabs for the specified |extension_id|'s
   // extension action. Called when the extension calls setExtensionActionOptions
   // to enable setting the action count as badge text.
-  // TODO(karandeepb): Rename to OnActionCountAsBadgeTextPreferenceEnabled.
-  void OnPreferenceEnabled(const ExtensionId& extension_id) const;
+  void OnActionCountAsBadgeTextPreferenceEnabled(
+      const ExtensionId& extension_id) const;
 
   // Clears the TrackedInfo for the specified |extension_id| for all tabs.
   // Called when an extension's ruleset is removed.
@@ -102,6 +107,13 @@ class ActionTracker {
   // tests.
   int GetPendingRuleCountForTest(const ExtensionId& extension_id,
                                  int64_t navigation_id);
+
+  // Increments the action count for the given |extension_id| and |tab_id|.
+  // A negative value for |increment| will decrement the action count, but the
+  // action count will never be less than 0.
+  void IncrementActionCountForTab(const ExtensionId& extension_id,
+                                  int tab_id,
+                                  int increment);
 
  private:
   // Template key type used for TrackedInfo, specified by an extension_id and

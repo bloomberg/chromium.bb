@@ -28,13 +28,13 @@ decorated with `NonWritable` or each member of the struct can be decorated with
 | Name | SPIR-V | MSL | HLSL |
 |------|--------|-----|------|
 | position | SpvBuiltInPosition |position | SV_Position |
-| vertex_idx | SpvBuiltInVertexIndex |vertex_id | SV_VertexID |
-| instance_idx | SpvBuiltInInstanceIndex | instance_id| SV_InstanceID |
+| vertex_index | SpvBuiltInVertexIndex |vertex_id | SV_VertexID |
+| instance_index | SpvBuiltInInstanceIndex | instance_id| SV_InstanceID |
 | front_facing | SpvBuiltInFrontFacing | front_facing | SV_IsFrontFacing |
 | frag_coord | SpvBuiltInFragCoord | position | SV_Position |
 | frag_depth | SpvBuiltInFragDepth | depth(any) | SV_Depth |
 | local_invocation_id | SpvBuiltInLocalInvocationId | thread_position_in_threadgroup | SV_GroupThreadID |
-| local_invocation_idx | SpvBuiltInLocalInvocationIndex | thread_index_in_threadgroup | SV_GroupIndex |
+| local_invocation_index | SpvBuiltInLocalInvocationIndex | thread_index_in_threadgroup | SV_GroupIndex |
 | global_invocation_id | SpvBuiltInGlobalInvocationId | thread_position_in_grid | SV_DispatchThreadID |
 
 
@@ -88,7 +88,6 @@ decorated with `NonWritable` or each member of the struct can be decorated with
 | mix | GLSLstd450FMix | mix | mix |
 | modf | GLSLstd450Modf | | |
 | normalize | GLSLstd450Normalize | normalize | normalize |
-| outerProduct | SpvOpOuterProduct | | |
 | pow | GLSLstd450Pow | pow | pow |
 | reflect | GLSLstd450Reflect | reflect | reflect |
 | reverseBits | SpvOpBitReverse | reverse_bits | reversebits |
@@ -115,7 +114,6 @@ decorated with `NonWritable` or each member of the struct can be decorated with
 | WGSL | SPIR-V | MSL | HLSL |
 |------|--------|-----|------|
 | texture_1d&lt;type&gt; | OpTypeImage 1D Sampled=1 | texture1d&lt;type, access::sample&gt; | Texture1D |
-| texture_1d_array&lt;type&gt; | OpTypeImage 1D Arrayed=1 Sampled=1 | texture1d_array&lt;type, access::sample&gt; | Texture1DArray |
 | texture_2d&lt;type&gt; | OpTypeImage 2D Sampled=1 | texture2d&lt;type, access::sample&gt; | Texture2D |
 | texture_2d_array&lt;type&gt; | OpTypeImage 2D Arrayed=1 Sampled=1 | texture2d_array&lt;type, access::sample&gt; | Texture2DArray |
 | texture_3d&lt;type&gt; | OpTypeImage 3D Sampled=1 | texture3d&lt;type, access::sample&gt; | Texture3D |
@@ -129,17 +127,15 @@ decorated with `NonWritable` or each member of the struct can be decorated with
 | texture_depth_cube | OpTypeImage Cube Depth=1 Sampled=1 | depthcube&lt;float, access::sample&gt; | TextureCube |
 | texture_depth_cube_array | OpTypeImage Cube Depth=1 Arrayed=1 Sampled=1 | depthcube_array&lt;float, access::sample&gt; | TextureCubeArray |
 | | | |
-| texture_storage_ro_1d&lt;image_storage_type&gt; | OpTypeImage 1D Sampled=2| texture1d&lt;type, access::read&gt; | RWTexture1D |
-| texture_storage_ro_1d_array&lt;image_storage_type&gt; | OpTypeImage 1D Arrayed=1 Sampled=2 | texture1d_array&lt;type, access::read&gt; | RWTexture1DArray |
-| texture_storage_ro_2d&lt;image_storage_type&gt; | OpTypeImage 2D Sampled=2 | texture2d&lt;type, access::read&gt; | RWTexture2D |
-| texture_storage_ro_2d_array&lt;image_storage_type&gt; | OpTypeImage 2D Arrayed=1 Sampled=2 | texture2d_array&lt;type, access::read&gt; | RWTexture2DArray |
-| texture_storage_ro_3d&lt;image_storage_type&gt; | OpTypeImage 3D Sampled=2 | texture3d&lt;type, access::read&gt; | RWTexture3D |
+| texture_storage_1d&lt;image_storage_type&gt; | OpTypeImage 1D Sampled=2| texture1d&lt;type, access::read&gt; | RWTexture1D |
+| texture_storage_2d&lt;image_storage_type&gt; | OpTypeImage 2D Sampled=2 | texture2d&lt;type, access::read&gt; | RWTexture2D |
+| texture_storage_2d_array&lt;image_storage_type&gt; | OpTypeImage 2D Arrayed=1 Sampled=2 | texture2d_array&lt;type, access::read&gt; | RWTexture2DArray |
+| texture_storage_3d&lt;image_storage_type&gt; | OpTypeImage 3D Sampled=2 | texture3d&lt;type, access::read&gt; | RWTexture3D |
 | | | |
-| texture_storage_wo_1d&lt;image_storage_type&gt; | OpTypeImage 1D Sampled=2 | texture1d&lt;type, access::write&gt; | RWTexture1D |
-| texture_storage_wo_1d_array&lt;image_storage_type&gt; | OpTypeImage 1D Arrayed=1 Sampled=2 | texture1d_array&lt;type, access::write&gt; | RWTexture1DArray |
-| texture_storage_wo_2d&lt;image_storage_type&gt; | OpTypeImage 2D Sampled=1 | texture2d&lt;type, access::write&gt; | RWTexture2D |
-| texture_storage_wo_2d_array&lt;image_storage_type&gt; | OpTypeImage 2D Arrayed=1 Sampled=2 | texture2d_array&lt;type, access::write&gt; | RWTexture2DArray |
-| texture_storage_wo_3d&lt;image_storage_type&gt; | OpTypeImage 3D Sampled=2 | texture3d&lt;type, access::write&gt; | RWTexture3D|
+| texture_storage_1d&lt;image_storage_type&gt; | OpTypeImage 1D Sampled=2 | texture1d&lt;type, access::write&gt; | RWTexture1D |
+| texture_storage_2d&lt;image_storage_type&gt; | OpTypeImage 2D Sampled=1 | texture2d&lt;type, access::write&gt; | RWTexture2D |
+| texture_storage_2d_array&lt;image_storage_type&gt; | OpTypeImage 2D Arrayed=1 Sampled=2 | texture2d_array&lt;type, access::write&gt; | RWTexture2DArray |
+| texture_storage_3d&lt;image_storage_type&gt; | OpTypeImage 3D Sampled=2 | texture3d&lt;type, access::write&gt; | RWTexture3D|
 
 # Short-circuting
 ## HLSL

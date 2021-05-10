@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_TRACE_VISITOR_H_
 #define QUICHE_QUIC_CORE_QUIC_TRACE_VISITOR_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_types.h"
 #include "third_party/quic_trace/lib/quic_trace.pb.h"
 
 namespace quic {
@@ -17,12 +17,6 @@ namespace quic {
 class QUIC_NO_EXPORT QuicTraceVisitor : public QuicConnectionDebugVisitor {
  public:
   explicit QuicTraceVisitor(const QuicConnection* connection);
-
-  // TODO(wub): Delete when deprecating
-  // --quic_give_sent_packet_to_debug_visitor_after_sent.
-  void OnPacketSent(const SerializedPacket& serialized_packet,
-                    TransmissionType transmission_type,
-                    QuicTime sent_time) override;
 
   void OnPacketSent(QuicPacketNumber packet_number,
                     QuicPacketLength packet_length,

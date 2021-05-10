@@ -14,109 +14,144 @@
 
 #include "src/ast/variable.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/constant_id_decoration.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
+#include "src/ast/test_helper.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using VariableTest = testing::Test;
+using VariableTest = TestHelper;
 
 TEST_F(VariableTest, Creation) {
-  type::I32Type t;
-  Variable v("my_var", StorageClass::kFunction, &t);
+  auto* v = Var("my_var", ty.i32(), StorageClass::kFunction);
 
-  EXPECT_EQ(v.name(), "my_var");
-  EXPECT_EQ(v.storage_class(), StorageClass::kFunction);
-  EXPECT_EQ(v.type(), &t);
-  EXPECT_EQ(v.source().range.begin.line, 0u);
-  EXPECT_EQ(v.source().range.begin.column, 0u);
-  EXPECT_EQ(v.source().range.end.line, 0u);
-  EXPECT_EQ(v.source().range.end.column, 0u);
+  EXPECT_EQ(v->symbol(), Symbol(1));
+  EXPECT_EQ(v->declared_storage_class(), StorageClass::kFunction);
+  EXPECT_EQ(v->type(), ty.i32());
+  EXPECT_EQ(v->source().range.begin.line, 0u);
+  EXPECT_EQ(v->source().range.begin.column, 0u);
+  EXPECT_EQ(v->source().range.end.line, 0u);
+  EXPECT_EQ(v->source().range.end.column, 0u);
 }
 
 TEST_F(VariableTest, CreationWithSource) {
-  Source s{Source::Range{Source::Location{27, 4}, Source::Location{27, 5}}};
-  type::F32Type t;
-  Variable v(s, "i", StorageClass::kPrivate, &t);
+  auto* v = Var(
+      Source{Source::Range{Source::Location{27, 4}, Source::Location{27, 5}}},
+      "i", ty.f32(), StorageClass::kPrivate, nullptr, VariableDecorationList{});
 
-  EXPECT_EQ(v.name(), "i");
-  EXPECT_EQ(v.storage_class(), StorageClass::kPrivate);
-  EXPECT_EQ(v.type(), &t);
-  EXPECT_EQ(v.source().range.begin.line, 27u);
-  EXPECT_EQ(v.source().range.begin.column, 4u);
-  EXPECT_EQ(v.source().range.end.line, 27u);
-  EXPECT_EQ(v.source().range.end.column, 5u);
+  EXPECT_EQ(v->symbol(), Symbol(1));
+  EXPECT_EQ(v->declared_storage_class(), StorageClass::kPrivate);
+  EXPECT_EQ(v->type(), ty.f32());
+  EXPECT_EQ(v->source().range.begin.line, 27u);
+  EXPECT_EQ(v->source().range.begin.column, 4u);
+  EXPECT_EQ(v->source().range.end.line, 27u);
+  EXPECT_EQ(v->source().range.end.column, 5u);
 }
 
 TEST_F(VariableTest, CreationEmpty) {
-  Source s{Source::Range{Source::Location{27, 4}, Source::Location{27, 7}}};
-  Variable v;
-  v.set_source(s);
-  v.set_storage_class(StorageClass::kWorkgroup);
-  v.set_name("a_var");
+  auto* v = Var(
+      Source{Source::Range{Source::Location{27, 4}, Source::Location{27, 7}}},
+      "a_var", ty.i32(), StorageClass::kWorkgroup, nullptr,
+      VariableDecorationList{});
 
-  type::I32Type t;
-  v.set_type(&t);
-
-  EXPECT_EQ(v.name(), "a_var");
-  EXPECT_EQ(v.storage_class(), StorageClass::kWorkgroup);
-  EXPECT_EQ(v.type(), &t);
-  EXPECT_EQ(v.source().range.begin.line, 27u);
-  EXPECT_EQ(v.source().range.begin.column, 4u);
-  EXPECT_EQ(v.source().range.end.line, 27u);
-  EXPECT_EQ(v.source().range.end.column, 7u);
+  EXPECT_EQ(v->symbol(), Symbol(1));
+  EXPECT_EQ(v->declared_storage_class(), StorageClass::kWorkgroup);
+  EXPECT_EQ(v->type(), ty.i32());
+  EXPECT_EQ(v->source().range.begin.line, 27u);
+  EXPECT_EQ(v->source().range.begin.column, 4u);
+  EXPECT_EQ(v->source().range.end.line, 27u);
+  EXPECT_EQ(v->source().range.end.column, 7u);
 }
 
 TEST_F(VariableTest, IsValid) {
-  type::I32Type t;
-  Variable v{"my_var", StorageClass::kNone, &t};
-  EXPECT_TRUE(v.IsValid());
+  auto* v = Var("my_var", ty.i32(), StorageClass::kNone);
+  EXPECT_TRUE(v->IsValid());
 }
 
 TEST_F(VariableTest, IsValid_WithConstructor) {
-  type::I32Type t;
-  Variable v{"my_var", StorageClass::kNone, &t};
-  v.set_constructor(std::make_unique<IdentifierExpression>("ident"));
-  EXPECT_TRUE(v.IsValid());
+  auto* v = Var("my_var", ty.i32(), StorageClass::kNone, Expr("ident"));
+  EXPECT_TRUE(v->IsValid());
 }
 
-TEST_F(VariableTest, IsValid_MissinName) {
-  type::I32Type t;
-  Variable v{"", StorageClass::kNone, &t};
-  EXPECT_FALSE(v.IsValid());
+TEST_F(VariableTest, IsValid_MissingSymbol) {
+  auto* v = Var("", ty.i32(), StorageClass::kNone);
+  EXPECT_FALSE(v->IsValid());
 }
 
 TEST_F(VariableTest, IsValid_MissingType) {
-  Variable v{"x", StorageClass::kNone, nullptr};
-  EXPECT_FALSE(v.IsValid());
+  auto* v = Var("x", nullptr, StorageClass::kNone);
+  EXPECT_FALSE(v->IsValid());
 }
 
 TEST_F(VariableTest, IsValid_MissingBoth) {
-  Variable v;
-  EXPECT_FALSE(v.IsValid());
+  auto* v = Var("", nullptr, StorageClass::kNone);
+  EXPECT_FALSE(v->IsValid());
 }
 
 TEST_F(VariableTest, IsValid_InvalidConstructor) {
-  type::I32Type t;
-  Variable v{"my_var", StorageClass::kNone, &t};
-  v.set_constructor(std::make_unique<IdentifierExpression>(""));
-  EXPECT_FALSE(v.IsValid());
+  auto* v = Var("my_var", ty.i32(), StorageClass::kNone, Expr(""));
+  EXPECT_FALSE(v->IsValid());
 }
 
 TEST_F(VariableTest, to_str) {
-  type::F32Type t;
-  Variable v{"my_var", StorageClass::kFunction, &t};
-  std::ostringstream out;
-  v.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Variable{
-    my_var
-    function
-    __f32
+  auto* v = Var("my_var", ty.f32(), StorageClass::kFunction);
+  EXPECT_EQ(str(v), R"(Variable{
+  my_var
+  function
+  __f32
+}
+)");
+}
+
+TEST_F(VariableTest, WithDecorations) {
+  auto* var = Var("my_var", ty.i32(), StorageClass::kFunction, nullptr,
+                  VariableDecorationList{
+                      create<LocationDecoration>(1),
+                      create<BuiltinDecoration>(Builtin::kPosition),
+                      create<ConstantIdDecoration>(1200),
+                  });
+
+  EXPECT_TRUE(var->HasLocationDecoration());
+  EXPECT_TRUE(var->HasBuiltinDecoration());
+  EXPECT_TRUE(var->HasConstantIdDecoration());
+
+  auto* location = var->GetLocationDecoration();
+  ASSERT_NE(nullptr, location);
+  EXPECT_EQ(1u, location->value());
+}
+
+TEST_F(VariableTest, ConstantId) {
+  auto* var = Var("my_var", ty.i32(), StorageClass::kFunction, nullptr,
+                  VariableDecorationList{
+                      create<ConstantIdDecoration>(1200),
+                  });
+
+  EXPECT_EQ(var->constant_id(), 1200u);
+}
+
+TEST_F(VariableTest, Decorated_to_str) {
+  auto* var = Var("my_var", ty.f32(), StorageClass::kFunction, Expr("expr"),
+                  VariableDecorationList{
+                      create<BindingDecoration>(2),
+                      create<GroupDecoration>(1),
+                  });
+
+  EXPECT_EQ(str(var), R"(Variable{
+  Decorations{
+    BindingDecoration{2}
+    GroupDecoration{1}
   }
+  my_var
+  function
+  __f32
+  {
+    Identifier[not set]{expr}
+  }
+}
 )");
 }
 

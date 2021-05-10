@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/notreached.h"
-#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -48,6 +47,21 @@ void FidoAuthenticator::GetUvToken(
   NOTREACHED();
 }
 
+uint32_t FidoAuthenticator::CurrentMinPINLength() {
+  NOTREACHED();
+  return kMinPinLength;
+}
+
+uint32_t FidoAuthenticator::NewMinPINLength() {
+  NOTREACHED();
+  return kMinPinLength;
+}
+
+bool FidoAuthenticator::ForcePINChange() {
+  NOTREACHED();
+  return false;
+}
+
 void FidoAuthenticator::SetPIN(const std::string& pin,
                                FidoAuthenticator::SetPINCallback callback) {
   NOTREACHED();
@@ -59,18 +73,18 @@ void FidoAuthenticator::ChangePIN(const std::string& old_pin,
   NOTREACHED();
 }
 
-FidoAuthenticator::MakeCredentialPINUVDisposition
+FidoAuthenticator::PINUVDisposition
 FidoAuthenticator::PINUVDispositionForMakeCredential(
     const CtapMakeCredentialRequest& request,
     const FidoRequestHandlerBase::Observer* observer) {
-  return MakeCredentialPINUVDisposition::kNoUV;
+  return PINUVDisposition::kNoUV;
 }
 
-FidoAuthenticator::GetAssertionPINDisposition
-FidoAuthenticator::WillNeedPINToGetAssertion(
+FidoAuthenticator::PINUVDisposition
+FidoAuthenticator::PINUVDispositionForGetAssertion(
     const CtapGetAssertionRequest& request,
     const FidoRequestHandlerBase::Observer* observer) {
-  return GetAssertionPINDisposition::kNoPIN;
+  return PINUVDisposition::kNoUV;
 }
 
 void FidoAuthenticator::GetCredentialsMetadata(
@@ -155,6 +169,10 @@ bool FidoAuthenticator::DiscoverableCredentialStorageFull() const {
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);
+}
+
+std::string FidoAuthenticator::GetDisplayName() const {
+  return GetId();
 }
 
 ProtocolVersion FidoAuthenticator::SupportedProtocol() const {

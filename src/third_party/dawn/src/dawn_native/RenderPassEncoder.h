@@ -28,12 +28,17 @@ namespace dawn_native {
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
                           PassResourceUsageTracker usageTracker,
+                          Ref<AttachmentState> attachmentState,
+                          QuerySetBase* occlusionQuerySet,
                           uint32_t renderTargetWidth,
                           uint32_t renderTargetHeight);
 
         static RenderPassEncoder* MakeError(DeviceBase* device,
                                             CommandEncoder* commandEncoder,
                                             EncodingContext* encodingContext);
+
+        void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
+        const QueryAvailabilityMap& GetQueryAvailabilityMap() const;
 
         void EndPass();
 
@@ -47,6 +52,9 @@ namespace dawn_native {
                          float maxDepth);
         void SetScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         void ExecuteBundles(uint32_t count, RenderBundleBase* const* renderBundles);
+
+        void BeginOcclusionQuery(uint32_t queryIndex);
+        void EndOcclusionQuery();
 
         void WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
@@ -63,6 +71,16 @@ namespace dawn_native {
 
         uint32_t mRenderTargetWidth;
         uint32_t mRenderTargetHeight;
+
+        // This map is to indicate the availability of the queries used in render pass. The same
+        // query cannot be written twice in same render pass, so each render pass also need to have
+        // its own query availability map.
+        QueryAvailabilityMap mQueryAvailabilityMap;
+
+        // The resources for occlusion query
+        Ref<QuerySetBase> mOcclusionQuerySet;
+        uint32_t mCurrentOcclusionQueryIndex = 0;
+        bool mOcclusionQueryActive = false;
     };
 
 }  // namespace dawn_native

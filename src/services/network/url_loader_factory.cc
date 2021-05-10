@@ -29,6 +29,7 @@
 #include "services/network/trust_tokens/local_trust_token_operation_delegate_impl.h"
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
+#include "services/network/web_bundle_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -77,7 +78,8 @@ URLLoaderFactory::URLLoaderFactory(
       header_client_(std::move(params_->header_client)),
       coep_reporter_(std::move(params_->coep_reporter)),
       cors_url_loader_factory_(cors_url_loader_factory),
-      cookie_observer_(std::move(params_->cookie_observer)) {
+      cookie_observer_(std::move(params_->cookie_observer)),
+      auth_cert_observer_(std::move(params_->auth_cert_observer)) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
   DCHECK(!params_->factory_override);
@@ -127,6 +129,24 @@ void URLLoaderFactory::CreateLoaderAndStart(
     UMA_HISTOGRAM_BOOLEAN(
         "NetworkService.URLLoaderFactory.OriginHeaderSameAsRequestOrigin",
         origin_head_same_as_request_origin);
+  }
+
+  if (url_request.web_bundle_token_params.has_value() &&
+      url_request.destination !=
+          network::mojom::RequestDestination::kWebBundle) {
+    mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client;
+    if (header_client_ && (options & mojom::kURLLoadOptionUseHeaderClient)) {
+      // CORS preflight request must not come here.
+      DCHECK(!(options & mojom::kURLLoadOptionAsCorsPreflight));
+      header_client_->OnLoaderCreated(
+          request_id, trusted_header_client.BindNewPipeAndPassReceiver());
+    }
+
+    // Load a subresource from a WebBundle.
+    context_->GetWebBundleManager().StartSubresourceRequest(
+        std::move(receiver), url_request, std::move(client),
+        params_->process_id, std::move(trusted_header_client));
+    return;
   }
 
   mojom::NetworkServiceClient* network_service_client = nullptr;
@@ -246,6 +266,18 @@ void URLLoaderFactory::CreateLoaderAndStart(
   } else if (cookie_observer_) {
     cookie_observer_->Clone(cookie_observer.InitWithNewPipeAndPassReceiver());
   }
+  mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
+      auth_cert_observer;
+  if (url_request.trusted_params &&
+      url_request.trusted_params->auth_cert_observer) {
+    auth_cert_observer = std::move(
+        const_cast<
+            mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>&>(
+            url_request.trusted_params->auth_cert_observer));
+  } else if (auth_cert_observer_) {
+    auth_cert_observer_->Clone(
+        auth_cert_observer.InitWithNewPipeAndPassReceiver());
+  }
 
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
@@ -256,12 +288,14 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(data_pipe_use_tracker),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), coep_reporter_ ? coep_reporter_.get() : nullptr,
-      request_id, keepalive_request_size, resource_scheduler_client_,
+      request_id, keepalive_request_size,
+      context_->require_network_isolation_key(), resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
       context_->origin_policy_manager(), std::move(trust_token_factory),
-      std::move(cookie_observer));
+      context_->cors_origin_access_list(), std::move(cookie_observer),
+      std::move(auth_cert_observer));
 
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }

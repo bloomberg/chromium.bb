@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "content/public/browser/content_browser_client.h"
@@ -89,13 +90,13 @@ class ContentCaptureReceiverManagerHelper
         session_removed_test_helper_(session_removed_test_helper) {}
 
   void DidCaptureContent(const ContentCaptureSession& parent_session,
-                         const ContentCaptureData& data) override {
+                         const ContentCaptureFrame& data) override {
     parent_session_ = parent_session;
     captured_data_ = data;
   }
 
   void DidUpdateContent(const ContentCaptureSession& parent_session,
-                        const ContentCaptureData& data) override {
+                        const ContentCaptureFrame& data) override {
     updated_parent_session_ = parent_session;
     updated_data_ = data;
   }
@@ -112,6 +113,10 @@ class ContentCaptureReceiverManagerHelper
     removed_sessions_.push_back(data);
   }
 
+  void DidUpdateTitle(const ContentCaptureFrame& main_frame) override {
+    updated_title_ = main_frame.title;
+  }
+
   bool ShouldCapture(const GURL& url) override { return false; }
 
   const ContentCaptureSession& parent_session() const {
@@ -124,15 +129,16 @@ class ContentCaptureReceiverManagerHelper
 
   const ContentCaptureSession& session() const { return session_; }
 
-  const ContentCaptureData& captured_data() const { return captured_data_; }
+  const ContentCaptureFrame& captured_data() const { return captured_data_; }
 
-  const ContentCaptureData& updated_data() const { return updated_data_; }
+  const ContentCaptureFrame& updated_data() const { return updated_data_; }
 
   const std::vector<ContentCaptureSession>& removed_sessions() const {
     return removed_sessions_;
   }
 
   const std::vector<int64_t>& removed_ids() const { return removed_ids_; }
+  const base::string16& updated_title() const { return updated_title_; }
 
   void Reset() { removed_sessions_.clear(); }
 
@@ -145,11 +151,12 @@ class ContentCaptureReceiverManagerHelper
   ContentCaptureSession parent_session_;
   ContentCaptureSession updated_parent_session_;
   ContentCaptureSession session_;
-  ContentCaptureData captured_data_;
-  ContentCaptureData updated_data_;
+  ContentCaptureFrame captured_data_;
+  ContentCaptureFrame updated_data_;
   std::vector<int64_t> removed_ids_;
   std::vector<ContentCaptureSession> removed_sessions_;
   SessionRemovedTestHelper* session_removed_test_helper_;
+  base::string16 updated_title_;
 };
 
 }  // namespace
@@ -161,8 +168,10 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
     // TODO (crbug.com/1115234): Remove the param when BFCache same site feature
     // launched.
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          features::kBackForwardCache, {{"enable_same_site", "true"}});
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{{features::kBackForwardCache}, {{"enable_same_site", "true"}}}},
+          // Allow BackForwardCache for all devices regardless of their memory.
+          {features::kBackForwardCacheMemoryControls});
     }
     content::RenderViewHostTestHarness::SetUp();
     ContentCaptureReceiverManagerHelper::Create(web_contents(),
@@ -254,31 +263,31 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
     return expected_removed_ids_;
   }
 
-  ContentCaptureData GetExpectedTestData(bool main_frame) const {
-    ContentCaptureData expected(test_data_);
+  ContentCaptureFrame GetExpectedTestData(bool main_frame) const {
+    ContentCaptureFrame expected(test_data_);
     // Replaces the id with expected id.
     expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
                                                                : child_frame_);
     return expected;
   }
 
-  ContentCaptureData GetExpectedTestDataChange(int64_t expected_id) const {
-    ContentCaptureData expected(test_data_change_);
+  ContentCaptureFrame GetExpectedTestDataChange(int64_t expected_id) const {
+    ContentCaptureFrame expected(test_data_change_);
     // Replaces the id with expected id.
     expected.id = expected_id;
     return expected;
   }
 
-  ContentCaptureData GetExpectedTestData2(bool main_frame) const {
-    ContentCaptureData expected(test_data2_);
+  ContentCaptureFrame GetExpectedTestData2(bool main_frame) const {
+    ContentCaptureFrame expected(test_data2_);
     // Replaces the id with expected id.
     expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
                                                                : child_frame_);
     return expected;
   }
 
-  ContentCaptureData GetExpectedTestDataUpdate(bool main_frame) const {
-    ContentCaptureData expected(test_data_update_);
+  ContentCaptureFrame GetExpectedTestDataUpdate(bool main_frame) const {
+    ContentCaptureFrame expected(test_data_update_);
     // Replaces the id with expected id.
     expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
                                                                : child_frame_);
@@ -299,7 +308,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
     EXPECT_EQ(expected.size(), result.size());
     for (size_t i = 0; i < expected.size(); i++) {
       EXPECT_EQ(expected[i].id, result[i].id);
-      EXPECT_EQ(expected[i].value, result[i].value);
+      EXPECT_EQ(expected[i].url, result[i].url);
       EXPECT_EQ(expected[i].bounds, result[i].bounds);
       EXPECT_TRUE(result[i].children.empty());
     }
@@ -334,9 +343,9 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness,
   }
 
   void BuildChildSession(const ContentCaptureSession& parent,
-                         const ContentCaptureData& data,
+                         const ContentCaptureFrame& data,
                          ContentCaptureSession* child) {
-    ContentCaptureData child_frame = data;
+    ContentCaptureFrame child_frame = data;
     child_frame.children.clear();
     child->clear();
     child->push_back(child_frame);
@@ -420,7 +429,8 @@ TEST_P(ContentCaptureReceiverTest, MAYBE_DidUpdateContent) {
       content_capture_receiver_manager_helper()->parent_session().empty());
   EXPECT_TRUE(
       content_capture_receiver_manager_helper()->removed_sessions().empty());
-  ContentCaptureData expected_data = GetExpectedTestData(true /* main_frame */);
+  ContentCaptureFrame expected_data =
+      GetExpectedTestData(true /* main_frame */);
   EXPECT_EQ(expected_data,
             content_capture_receiver_manager_helper()->captured_data());
 
@@ -451,7 +461,7 @@ TEST_P(ContentCaptureReceiverTest, DidRemoveSession) {
   // Verifies that the previous session was removed.
   EXPECT_EQ(
       1u, content_capture_receiver_manager_helper()->removed_sessions().size());
-  std::vector<ContentCaptureData> expected{
+  std::vector<ContentCaptureFrame> expected{
       GetExpectedTestData(true /* main_frame */)};
   VerifySession(
       expected,
@@ -479,7 +489,7 @@ TEST_P(ContentCaptureReceiverTest, DidRemoveContent) {
   // Verifies that the removed_ids() was removed from the correct session.
   EXPECT_EQ(expected_removed_ids(),
             content_capture_receiver_manager_helper()->removed_ids());
-  std::vector<ContentCaptureData> expected{
+  std::vector<ContentCaptureFrame> expected{
       GetExpectedTestData(true /* main_frame */)};
   VerifySession(expected, content_capture_receiver_manager_helper()->session());
 }
@@ -501,7 +511,7 @@ TEST_P(ContentCaptureReceiverTest, ChildFrameDidCaptureContent) {
   // Verifies that the parent_session was set correctly.
   EXPECT_FALSE(
       content_capture_receiver_manager_helper()->parent_session().empty());
-  std::vector<ContentCaptureData> expected{
+  std::vector<ContentCaptureFrame> expected{
       GetExpectedTestData(true /* main_frame */)};
   VerifySession(expected,
                 content_capture_receiver_manager_helper()->parent_session());
@@ -527,6 +537,57 @@ TEST_P(ContentCaptureReceiverTest, RenderFrameHostGone) {
   DidRemoveContent(expected_removed_ids());
 }
 
+TEST_P(ContentCaptureReceiverTest, TitleUpdateTaskDelay) {
+  auto* receiver =
+      content_capture_receiver_manager_helper()->GetContentCaptureReceiver(
+          web_contents()->GetMainFrame());
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  // Uses TestMockTimeTaskRunner to check the task state.
+  receiver->title_update_task_runner_ = task_runner;
+
+  receiver->SetTitle(base::ASCIIToUTF16("title 1"));
+  // No task scheduled because no content has been captured.
+  EXPECT_FALSE(receiver->notify_title_update_callback_);
+  EXPECT_FALSE(task_runner->HasPendingTask());
+
+  // Capture content, then update the title.
+  DidCaptureContent(test_data(), /*first_data=*/true);
+  base::string16 title2 = base::ASCIIToUTF16("title 2");
+  receiver->SetTitle(title2);
+  // A task should be scheduled.
+  EXPECT_TRUE(receiver->notify_title_update_callback_);
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(2u, receiver->exponential_delay_);
+  // Run the pending task.
+  task_runner->FastForwardBy(
+      base::TimeDelta::FromSeconds(receiver->exponential_delay_ / 2));
+  task_runner->RunUntilIdle();
+  // Verify the title is updated and the task is reset.
+  EXPECT_EQ(title2, content_capture_receiver_manager_helper()->updated_title());
+  EXPECT_FALSE(receiver->notify_title_update_callback_);
+  EXPECT_FALSE(task_runner->HasPendingTask());
+
+  // Set the task_runner again since it is reset after task runs.
+  receiver->title_update_task_runner_ = task_runner;
+
+  // Change title again and verify the result.
+  receiver->SetTitle(base::ASCIIToUTF16("title 3"));
+  EXPECT_TRUE(receiver->notify_title_update_callback_);
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(4u, receiver->exponential_delay_);
+
+  // Remove the session to verify the pending task cancelled.
+  receiver->RemoveSession();
+  EXPECT_FALSE(receiver->notify_title_update_callback_);
+  // The cancelled task isn't removed from the TaskRunner, prune it.
+  task_runner->TakePendingTasks();
+  EXPECT_FALSE(task_runner->HasPendingTask());
+  // The delay time is reset after session is removed.
+  EXPECT_EQ(1u, receiver->exponential_delay_);
+  // Verify the latest task isn't run.
+  EXPECT_EQ(title2, content_capture_receiver_manager_helper()->updated_title());
+}
+
 // TODO(https://crbug.com/1010416): Fix flakes on win10_chromium_x64_rel_ng and
 // re-enable this test.
 #if defined(OS_WIN)
@@ -544,7 +605,7 @@ TEST_P(ContentCaptureReceiverTest, MAYBE_ChildFrameCaptureContentFirst) {
   EXPECT_FALSE(
       content_capture_receiver_manager_helper()->parent_session().empty());
 
-  ContentCaptureData data = GetExpectedTestData(true /* main_frame */);
+  ContentCaptureFrame data = GetExpectedTestData(true /* main_frame */);
   // Currently, there is no way to fake frame size, set it to 0.
   data.bounds = gfx::Rect();
   ContentCaptureSession expected{data};
@@ -559,7 +620,7 @@ TEST_P(ContentCaptureReceiverTest, MAYBE_ChildFrameCaptureContentFirst) {
 
   // Get the child session, so we can verify that it has been removed in next
   // navigation
-  ContentCaptureData child_frame = GetExpectedTestData2(false);
+  ContentCaptureFrame child_frame = GetExpectedTestData2(false);
   // child_frame.children.clear();
   ContentCaptureSession removed_child_session;
   BuildChildSession(expected,
@@ -603,7 +664,7 @@ TEST_P(ContentCaptureReceiverTest, MAYBE_ChildFrameCaptureContentFirst) {
   if (content::CanSameSiteMainFrameNavigationsChangeRenderFrameHosts())
     data = GetExpectedTestData(/* main_frame =*/true);
 
-  data.value = base::ASCIIToUTF16(kMainFrameUrl2);
+  data.url = base::ASCIIToUTF16(kMainFrameUrl2);
   // Currently, there is no way to fake frame size, set it to 0.
   data.bounds = gfx::Rect();
   expected.clear();

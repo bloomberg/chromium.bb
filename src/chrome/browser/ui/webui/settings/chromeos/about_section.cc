@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
@@ -13,17 +14,17 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
-#include "chrome/browser/ui/webui/management_ui.h"
+#include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_name_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/version_ui.h"
+#include "chrome/browser/ui/webui/version/version_ui.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -92,6 +93,22 @@ const std::vector<SearchConcept>& GetAboutSearchConcepts() {
        {.setting = mojom::Setting::kSeeWhatsNew},
        {IDS_OS_SETTINGS_TAG_ABOUT_RELEASE_NOTES_ALT1,
         SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetDiagnosticsAppSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_ABOUT_DIAGNOSTICS,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDiagnostics},
+       {IDS_OS_SETTINGS_TAG_ABOUT_DIAGNOSTICS_ALT1,
+        IDS_OS_SETTINGS_TAG_ABOUT_DIAGNOSTICS_ALT2,
+        IDS_OS_SETTINGS_TAG_ABOUT_DIAGNOSTICS_ALT3,
+        IDS_OS_SETTINGS_TAG_ABOUT_DIAGNOSTICS_ALT4, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -165,6 +182,10 @@ AboutSection::AboutSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.AddSearchTags(GetAboutSearchConcepts());
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
+    updater.AddSearchTags(GetDiagnosticsAppSearchConcepts());
+  }
 }
 
 AboutSection::~AboutSection() = default;
@@ -176,6 +197,7 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
+    {"aboutDiagnostics", IDS_SETTINGS_ABOUT_PAGE_DIAGNOSTICS},
     {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
     {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
     {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
@@ -258,7 +280,7 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     {"aboutReleaseNotesOffline", IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES},
     {"aboutShowReleaseNotes", IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddString("aboutTPMFirmwareUpdateLearnMoreURL",
                          chrome::kTPMFirmwareUpdateLearnMoreURL);
@@ -326,6 +348,10 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   std::string safetyInfoLink = GetSafetyInfoLink();
   html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
 
+  html_source->AddBoolean(
+      "diagnosticsAppEnabled",
+      base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp));
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
   html_source->AddLocalizedString("aboutProductTos",
@@ -341,6 +367,7 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 void AboutSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<::settings::AboutHandler>(profile()));
+  web_ui->AddMessageHandler(std::make_unique<DeviceNameHandler>());
 }
 
 int AboutSection::GetSectionNameMessageId() const {
@@ -371,9 +398,9 @@ void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kChrome, mojom::SearchResultDefaultRank::kMedium,
       mojom::kAboutChromeOsDetailsSubpagePath);
   static constexpr mojom::Setting kAboutChromeOsDetailsSettings[] = {
-      mojom::Setting::kCheckForOsUpdate, mojom::Setting::kSeeWhatsNew,
+      mojom::Setting::kCheckForOsUpdate,    mojom::Setting::kSeeWhatsNew,
       mojom::Setting::kGetHelpWithChromeOs, mojom::Setting::kReportAnIssue,
-      mojom::Setting::kTermsOfService};
+      mojom::Setting::kTermsOfService,      mojom::Setting::kDiagnostics};
   RegisterNestedSettingBulk(mojom::Subpage::kAboutChromeOsDetails,
                             kAboutChromeOsDetailsSettings, generator);
 

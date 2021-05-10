@@ -130,6 +130,9 @@ class P2pClusterPcpHandler : public BasePcpHandler {
   void BluetoothDeviceDiscoveredHandler(ClientProxy* client,
                                         const std::string& service_id,
                                         BluetoothDevice device);
+  void BluetoothNameChangedHandler(ClientProxy* client,
+                                   const std::string& service_id,
+                                   BluetoothDevice device);
   void BluetoothDeviceLostHandler(ClientProxy* client,
                                   const std::string& service_id,
                                   BluetoothDevice& device);
@@ -200,8 +203,8 @@ class P2pClusterPcpHandler : public BasePcpHandler {
   WifiLan& wifi_lan_medium_;
   mediums::WebRtc& webrtc_medium_;
   InjectedBluetoothDeviceStore& injected_bluetooth_device_store_;
-  std::int64_t bluetooth_classic_discoverer_client_id_;
-  std::int64_t bluetooth_classic_advertiser_client_id_;
+  std::int64_t bluetooth_classic_discoverer_client_id_{0};
+  std::int64_t bluetooth_classic_advertiser_client_id_{0};
 };
 
 }  // namespace connections

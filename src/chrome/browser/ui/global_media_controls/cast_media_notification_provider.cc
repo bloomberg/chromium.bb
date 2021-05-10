@@ -50,14 +50,51 @@ CastMediaNotificationProvider::CastMediaNotificationProvider(
       profile_(profile),
       router_(router),
       notification_controller_(notification_controller),
-      items_changed_callback_(std::move(items_changed_callback)) {}
+      items_changed_callback_(std::move(items_changed_callback)),
+      container_observer_set_(this) {}
 
 CastMediaNotificationProvider::~CastMediaNotificationProvider() = default;
+
+base::WeakPtr<media_message_center::MediaNotificationItem>
+CastMediaNotificationProvider::GetNotificationItem(const std::string& id) {
+  const auto item_it = items_.find(id);
+  if (item_it == items_.end())
+    return nullptr;
+  return item_it->second.GetWeakPtr();
+}
+
+std::set<std::string>
+CastMediaNotificationProvider::GetActiveControllableNotificationIds() const {
+  std::set<std::string> ids;
+  for (const auto& item : items_) {
+    if (item.second.is_active())
+      ids.insert(item.first);
+  }
+  return ids;
+}
+
+void CastMediaNotificationProvider::OnItemShown(
+    const std::string& id,
+    MediaNotificationContainerImpl* container) {
+  if (container)
+    container_observer_set_.Observe(id, container);
+}
+
+void CastMediaNotificationProvider::OnContainerDismissed(
+    const std::string& id) {
+  auto item = GetNotificationItem(id);
+  if (item) {
+    item->Dismiss();
+  }
+  if (!HasActiveItems()) {
+    items_changed_callback_.Run();
+  }
+}
 
 void CastMediaNotificationProvider::OnRoutesUpdated(
     const std::vector<media_router::MediaRoute>& routes,
     const std::vector<media_router::MediaRoute::Id>& joinable_route_ids) {
-  const bool had_items = HasItems();
+  const bool had_items = HasActiveItems();
 
   base::EraseIf(items_, [&routes](const auto& item) {
     return std::find_if(routes.begin(), routes.end(),
@@ -92,22 +129,16 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
       item_it->second.OnRouteUpdated(route);
     }
   }
-  if (HasItems() != had_items)
+  if (HasActiveItems() != had_items)
     items_changed_callback_.Run();
 }
 
-base::WeakPtr<media_message_center::MediaNotificationItem>
-CastMediaNotificationProvider::GetNotificationItem(const std::string& id) {
-  const auto item_it = items_.find(id);
-  if (item_it == items_.end())
-    return nullptr;
-  return item_it->second.GetWeakPtr();
+size_t CastMediaNotificationProvider::GetActiveItemCount() const {
+  return std::count_if(items_.begin(), items_.end(), [](const auto& item) {
+    return item.second.is_active();
+  });
 }
 
-bool CastMediaNotificationProvider::HasItems() const {
-  return !items_.empty();
-}
-
-size_t CastMediaNotificationProvider::GetItemCount() const {
-  return items_.size();
+bool CastMediaNotificationProvider::HasActiveItems() const {
+  return GetActiveItemCount() != 0;
 }

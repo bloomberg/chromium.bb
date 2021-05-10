@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_MAC_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_MAC_H_
 
-#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 
 namespace ui {
@@ -30,7 +29,15 @@ class CONTENT_EXPORT LineIndexer final {
  private:
   void Build(const gfx::NativeViewAccessible node, int* counter);
 
-  std::map<const gfx::NativeViewAccessible, std::string> map;
+  struct NodeIdentifier {
+    std::string line_index;
+    std::string DOMid;
+  };
+
+  // Map between accessible objects and their identificators which can be a line
+  // index the object is placed at in an accessible tree or its DOM id
+  // attribute.
+  std::map<const gfx::NativeViewAccessible, NodeIdentifier> map;
 };
 
 // Implements stateful id values. Can be either id or be in
@@ -70,6 +77,7 @@ class CONTENT_EXPORT OptionalNSObject final {
 // Invokes attributes matching the given property filter.
 class CONTENT_EXPORT AttributeInvoker final {
  public:
+  AttributeInvoker(const LineIndexer* line_indexer);
   AttributeInvoker(const id node, const LineIndexer* line_indexer);
 
   // Invokes an attribute matching to a property filter.
@@ -84,6 +92,9 @@ class CONTENT_EXPORT AttributeInvoker final {
                 const OptionalNSObject& value) const;
 
  private:
+  // Returns an accessible object of the given property node or default one.
+  id TargetOf(const ui::AXPropertyNode& property_node) const;
+
   // Returns a parameterized attribute parameter by a property node.
   OptionalNSObject ParamByPropertyNode(const ui::AXPropertyNode&) const;
 
@@ -102,8 +113,6 @@ class CONTENT_EXPORT AttributeInvoker final {
 
   const id node;
   const LineIndexer* line_indexer;
-  const NSArray* attributes;
-  const NSArray* parameterized_attributes;
 };
 
 // bindings

@@ -48,7 +48,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -124,7 +124,8 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
     String characters = it.GetTextState().GetTextForTesting();
     characters.Ensure16Bit();
     NSString* substring =
-        [[[NSString alloc] initWithCharacters:characters.Characters16()
+        [[[NSString alloc] initWithCharacters:reinterpret_cast<const UniChar*>(
+                                                  characters.Characters16())
                                        length:characters.length()] autorelease];
     [string replaceCharactersInRange:NSMakeRange(position, 0)
                           withString:substring];
@@ -153,7 +154,7 @@ gfx::Point GetBaselinePoint(LocalFrameView* frame_view,
 }  // namespace
 
 NSAttributedString* SubstringUtil::AttributedWordAtPoint(
-    WebFrameWidgetBase* frame_widget,
+    WebFrameWidgetImpl* frame_widget,
     gfx::Point point,
     gfx::Point& baseline_point) {
   HitTestResult result =
@@ -168,10 +169,10 @@ NSAttributedString* SubstringUtil::AttributedWordAtPoint(
     return nil;
 
   // Expand to word under point.
-  const VisibleSelection& selection = CreateVisibleSelectionWithGranularity(
+  const SelectionInDOMTree selection = ExpandWithGranularity(
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
       TextGranularity::kWord);
-  const EphemeralRange word_range = selection.ToNormalizedEphemeralRange();
+  const EphemeralRange word_range = NormalizeRange(selection);
 
   // Convert to NSAttributedString.
   NSAttributedString* string = AttributedSubstringFromRange(

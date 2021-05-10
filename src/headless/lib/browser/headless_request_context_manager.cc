@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_context.h"
@@ -16,17 +17,25 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
+#if defined(HEADLESS_USE_PREFS)
+#include "components/os_crypt/os_crypt.h"
+#include "content/public/common/network_service_util.h"
+#endif
+
 namespace headless {
 
 namespace {
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 constexpr char kProductName[] = "HeadlessChrome";
 #endif
 
@@ -56,13 +65,15 @@ net::NetworkTrafficAnnotationTag GetProxyConfigTrafficAnnotationTag() {
   return traffic_annotation;
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-::network::mojom::CryptConfigPtr BuildCryptConfigOnce(
-    const base::FilePath& user_data_path) {
+void SetCryptConfigOnce(const base::FilePath& user_data_path) {
   static bool done_once = false;
   if (done_once)
-    return nullptr;
+    return;
   done_once = true;
+
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   ::network::mojom::CryptConfigPtr config =
       ::network::mojom::CryptConfig::New();
   config->store = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -70,9 +81,17 @@ net::NetworkTrafficAnnotationTag GetProxyConfigTrafficAnnotationTag() {
   config->product_name = kProductName;
   config->should_use_preference = false;
   config->user_data_path = user_data_path;
-  return config;
-}
+  content::GetNetworkService()->SetCryptConfig(std::move(config));
+#elif defined(OS_WIN) && defined(HEADLESS_USE_PREFS)
+  // The OSCrypt keys are process bound, so if network service is out of
+  // process, send it the required key if it is available.
+  if (content::IsOutOfProcessNetworkService() &&
+      OSCrypt::IsEncryptionAvailable()) {
+    content::GetNetworkService()->SetEncryptionKey(
+        OSCrypt::GetRawEncryptionKey());
+  }
 #endif
+}
 
 }  // namespace
 
@@ -174,9 +193,9 @@ HeadlessRequestContextManager::CreateSystemContext(
 
   ::network::mojom::NetworkContextParamsPtr network_context_params =
       ::network::mojom::NetworkContextParams::New();
-  ::network::mojom::CertVerifierCreationParamsPtr
+  ::cert_verifier::mojom::CertVerifierCreationParamsPtr
       cert_verifier_creation_params =
-          ::network::mojom::CertVerifierCreationParams::New();
+          ::cert_verifier::mojom::CertVerifierCreationParams::New();
   manager->ConfigureNetworkContextParamsInternal(
       network_context_params.get(), cert_verifier_creation_params.get());
   network_context_params->cert_verifier_params =
@@ -192,9 +211,8 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
     const HeadlessBrowserContextOptions* options,
     base::FilePath user_data_path)
     :
-// On Windows, Cookie encryption requires access to local_state prefs, which are
-// unavailable.
-#if defined(OS_WIN)
+// On Windows, Cookie encryption requires access to local_state prefs.
+#if defined(OS_WIN) && !defined(HEADLESS_USE_PREFS)
       cookie_encryption_enabled_(false),
 #else
       cookie_encryption_enabled_(
@@ -218,11 +236,8 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
           base::ThreadTaskRunnerHandle::Get());
     }
   }
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  auto crypt_config = BuildCryptConfigOnce(user_data_path_);
-  if (crypt_config)
-    content::GetNetworkService()->SetCryptConfig(std::move(crypt_config));
-#endif
+
+  SetCryptConfigOnce(user_data_path_);
 }
 
 HeadlessRequestContextManager::~HeadlessRequestContextManager() {
@@ -235,7 +250,7 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     ::network::mojom::NetworkContextParams* network_context_params,
-    ::network::mojom::CertVerifierCreationParams*
+    ::cert_verifier::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
   ConfigureNetworkContextParamsInternal(network_context_params,
                                         cert_verifier_creation_params);
@@ -243,7 +258,7 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParams(
 
 void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
     ::network::mojom::NetworkContextParams* context_params,
-    ::network::mojom::CertVerifierCreationParams*
+    ::cert_verifier::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;

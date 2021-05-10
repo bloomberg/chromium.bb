@@ -135,7 +135,9 @@ cr.define('settings_people_page_account_manager', function() {
     let accountManager = null;
     let accountList = null;
 
-    suiteSetup(function() {});
+    suiteSetup(function() {
+      loadTimeData.overrideValues({isDeviceAccountManaged: true});
+    });
 
     setup(function() {
       browserProxy = new TestAccountManagerBrowserProxy();
@@ -148,6 +150,7 @@ cr.define('settings_people_page_account_manager', function() {
       assertTrue(!!accountList);
 
       settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
+      Polymer.dom.flush();
     });
 
     teardown(function() {
@@ -155,66 +158,70 @@ cr.define('settings_people_page_account_manager', function() {
       settings.Router.getInstance().resetRouteForTesting();
     });
 
-    test('AccountListIsPopulatedAtStartup', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
+    test('AccountListIsPopulatedAtStartup', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        // 1 device account + 3 secondary accounts were added in
+        // |getAccounts()| mock above.
+        assertEquals(3, accountList.items.length);
+      } else {
         // 4 accounts were added in |getAccounts()| mock above.
         assertEquals(4, accountList.items.length);
-      });
+      }
     });
 
     test('AddAccount', function() {
       assertFalse(accountManager.$$('#add-account-button').disabled);
-      assertTrue(accountManager.$$('#settings-box-user-message').hidden);
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        assertTrue(
+            accountManager.$$('.secondary-accounts-disabled-tooltip') === null);
+      } else {
+        assertTrue(accountManager.$$('#settings-box-user-message').hidden);
+      }
       accountManager.$$('#add-account-button').click();
       assertEquals(1, browserProxy.getCallCount('addAccount'));
     });
 
-    test('ReauthenticateAccount', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
-        accountManager.root.querySelectorAll('.reauth-button')[0].click();
-        assertEquals(1, browserProxy.getCallCount('reauthenticateAccount'));
-        return browserProxy.whenCalled('reauthenticateAccount')
-            .then((account_email) => {
-              assertEquals('user2@example.com', account_email);
-            });
-      });
+    test('ReauthenticateAccount', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+      accountManager.root.querySelectorAll('.reauth-button')[0].click();
+      assertEquals(1, browserProxy.getCallCount('reauthenticateAccount'));
+      const accountEmail =
+          await browserProxy.whenCalled('reauthenticateAccount');
+      assertEquals('user2@example.com', accountEmail);
     });
 
-    test('UnauthenticatedAccountLabel', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
-        assertEquals(
-            loadTimeData.getString('accountManagerReauthenticationLabel'),
-            accountManager.root.querySelectorAll('.reauth-button')[0]
-                .textContent.trim());
-      });
+    test('UnauthenticatedAccountLabel', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+      assertEquals(
+          loadTimeData.getString('accountManagerReauthenticationLabel'),
+          accountManager.root.querySelectorAll('.reauth-button')[0]
+              .textContent.trim());
     });
 
-    test('UnmigratedAccountLabel', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
-        assertEquals(
-            loadTimeData.getString('accountManagerMigrationLabel'),
-            accountManager.root.querySelectorAll('.reauth-button')[1]
-                .textContent.trim());
-      });
+    test('UnmigratedAccountLabel', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+      assertEquals(
+          loadTimeData.getString('accountManagerMigrationLabel'),
+          accountManager.root.querySelectorAll('.reauth-button')[1]
+              .textContent.trim());
     });
 
-    test('RemoveAccount', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
-        // Click on 'More Actions' for the second account (First one (index 0)
-        // to have the hamburger menu).
-        accountManager.root.querySelectorAll('cr-icon-button')[0].click();
-        // Click on 'Remove account'
-        accountManager.$$('cr-action-menu').querySelector('button').click();
+    test('RemoveAccount', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
+      // Click on 'More Actions' for the second account (First one (index 0)
+      // to have the hamburger menu).
+      accountManager.root.querySelectorAll('cr-icon-button')[0].click();
+      // Click on 'Remove account'
+      accountManager.$$('cr-action-menu').querySelector('button').click();
 
-        return browserProxy.whenCalled('removeAccount').then((account) => {
-          assertEquals('456', account.id);
-        });
-      });
+      const account = await browserProxy.whenCalled('removeAccount');
+      assertEquals('456', account.id);
     });
 
     test('Deep link to remove account button', async () => {
@@ -248,15 +255,21 @@ cr.define('settings_people_page_account_manager', function() {
       assertGT(browserProxy.getCallCount('showWelcomeDialogIfRequired'), 0);
     });
 
-    test('ManagementStatusForManagedAccounts', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
+    test('ManagementStatusForManagedAccounts', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
 
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        const managedBadge = accountManager.root.querySelector(
+            '.device-account-icon .managed-badge');
+        // Managed badge should be shown for managed accounts.
+        assertFalse(managedBadge.hidden);
+      } else {
         const managementLabel =
             accountManager.root.querySelectorAll('.management-status')[0]
                 .innerHTML.trim();
         assertEquals('Managed by Family Link', managementLabel);
-      });
+      }
     });
   });
 
@@ -264,6 +277,10 @@ cr.define('settings_people_page_account_manager', function() {
     let browserProxy = null;
     let accountManager = null;
     let accountList = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({isDeviceAccountManaged: false});
+    });
 
     setup(function() {
       browserProxy = new TestAccountManagerBrowserProxyForUnmanagedAccounts();
@@ -282,15 +299,21 @@ cr.define('settings_people_page_account_manager', function() {
       accountManager.remove();
     });
 
-    test('ManagementStatusForUnmanagedAccounts', function() {
-      return browserProxy.whenCalled('getAccounts').then(() => {
-        Polymer.dom.flush();
+    test('ManagementStatusForUnmanagedAccounts', async function() {
+      await browserProxy.whenCalled('getAccounts');
+      Polymer.dom.flush();
 
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        const managedBadge = accountManager.root.querySelector(
+            '.device-account-icon .managed-badge');
+        // Managed badge should not be shown for unmanaged accounts.
+        assertEquals(null, managedBadge);
+      } else {
         const managementLabel =
             accountManager.root.querySelectorAll('.management-status')[0]
                 .innerHTML.trim();
         assertEquals('Primary account', managementLabel);
-      });
+      }
     });
   });
 
@@ -315,6 +338,7 @@ cr.define('settings_people_page_account_manager', function() {
       assertTrue(!!accountList);
 
       settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
+      Polymer.dom.flush();
     });
 
     teardown(function() {
@@ -323,13 +347,27 @@ cr.define('settings_people_page_account_manager', function() {
 
     test('AddAccountCanBeDisabledByPolicy', function() {
       assertTrue(accountManager.$$('#add-account-button').disabled);
-      assertFalse(accountManager.$$('#settings-box-user-message').hidden);
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        assertFalse(
+            accountManager.$$('.secondary-accounts-disabled-tooltip') === null);
+      } else {
+        assertFalse(accountManager.$$('#settings-box-user-message').hidden);
+      }
     });
 
     test('UserMessageSetForAccountType', function() {
-      assertEquals(
-          loadTimeData.getString('accountManagerSecondaryAccountsDisabledText'),
-          accountManager.$$('#user-message-text').textContent.trim());
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        assertEquals(
+            loadTimeData.getString(
+                'accountManagerSecondaryAccountsDisabledText'),
+            accountManager.$$('.secondary-accounts-disabled-tooltip')
+                .tooltipText);
+      } else {
+        assertEquals(
+            loadTimeData.getString(
+                'accountManagerSecondaryAccountsDisabledText'),
+            accountManager.$$('#user-message-text').textContent.trim());
+      }
     });
   });
 
@@ -354,6 +392,7 @@ cr.define('settings_people_page_account_manager', function() {
       assertTrue(!!accountList);
 
       settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
+      Polymer.dom.flush();
     });
 
     teardown(function() {
@@ -361,10 +400,18 @@ cr.define('settings_people_page_account_manager', function() {
     });
 
     test('UserMessageSetForAccountType', function() {
-      assertEquals(
-          loadTimeData.getString(
-              'accountManagerSecondaryAccountsDisabledChildText'),
-          accountManager.$$('#user-message-text').textContent.trim());
+      if (accountManager.isAccountManagementFlowsV2Enabled_) {
+        assertEquals(
+            loadTimeData.getString(
+                'accountManagerSecondaryAccountsDisabledChildText'),
+            accountManager.$$('.secondary-accounts-disabled-tooltip')
+                .tooltipText);
+      } else {
+        assertEquals(
+            loadTimeData.getString(
+                'accountManagerSecondaryAccountsDisabledChildText'),
+            accountManager.$$('#user-message-text').textContent.trim());
+      }
     });
   });
 

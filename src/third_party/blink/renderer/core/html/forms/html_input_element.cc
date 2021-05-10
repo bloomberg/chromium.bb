@@ -41,10 +41,10 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
@@ -596,7 +596,7 @@ void HTMLInputElement::SubtreeHasChanged() {
   input_type_view_->SubtreeHasChanged();
   // When typing in an input field, childrenChanged is not called, so we need to
   // force the directionality check.
-  CalculateAndAdjustDirectionality();
+  CalculateAndAdjustAutoDirectionality(this);
 }
 
 const AtomicString& HTMLInputElement::FormControlType() const {
@@ -730,8 +730,9 @@ void HTMLInputElement::SetSelectionRangeForTesting(
   TextControlElement::setSelectionRangeForBinding(start, end);
 }
 
-void HTMLInputElement::AccessKeyAction(bool send_mouse_events) {
-  input_type_view_->AccessKeyAction(send_mouse_events);
+void HTMLInputElement::AccessKeyAction(
+    SimulatedClickCreationScope creation_scope) {
+  input_type_view_->AccessKeyAction(creation_scope);
 }
 
 bool HTMLInputElement::IsPresentationAttribute(
@@ -759,11 +760,19 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     if (input_type_->ShouldRespectAlignAttribute())
       ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == html_names::kWidthAttr) {
-    if (input_type_->ShouldRespectHeightAndWidthAttributes())
+    if (input_type_->ShouldRespectHeightAndWidthAttributes()) {
       AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+      const AtomicString& height = FastGetAttribute(html_names::kHeightAttr);
+      if (height)
+        ApplyAspectRatioToStyle(value, height, style);
+    }
   } else if (name == html_names::kHeightAttr) {
-    if (input_type_->ShouldRespectHeightAndWidthAttributes())
+    if (input_type_->ShouldRespectHeightAndWidthAttributes()) {
       AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
+      const AtomicString& width = FastGetAttribute(html_names::kWidthAttr);
+      if (width)
+        ApplyAspectRatioToStyle(width, value, style);
+    }
   } else if (name == html_names::kBorderAttr &&
              type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
@@ -1127,8 +1136,12 @@ void HTMLInputElement::SetValueForUser(const String& value) {
 }
 
 void HTMLInputElement::SetSuggestedValue(const String& value) {
-  if (!input_type_->CanSetSuggestedValue())
+  if (!input_type_->CanSetSuggestedValue()) {
+    // Clear the suggested value because it may have been set when
+    // `input_type_->CanSetSuggestedValue()` was true.
+    TextControlElement::SetSuggestedValue(String());
     return;
+  }
   needs_to_update_view_value_ = true;
   TextControlElement::SetSuggestedValue(SanitizeValue(value));
   SetNeedsStyleRecalc(
@@ -1849,7 +1862,7 @@ bool HTMLInputElement::SupportsPlaceholder() const {
 }
 
 void HTMLInputElement::UpdatePlaceholderText() {
-  return input_type_view_->UpdatePlaceholderText();
+  return input_type_view_->UpdatePlaceholderText(!SuggestedValue().IsEmpty());
 }
 
 String HTMLInputElement::GetPlaceholderValue() const {
@@ -2043,8 +2056,10 @@ bool HTMLInputElement::IsInteractiveContent() const {
   return input_type_->IsInteractiveContent();
 }
 
-scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
-  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject(
+    const StyleRecalcContext& style_recalc_context) {
+  scoped_refptr<ComputedStyle> style =
+      OriginalStyleForLayoutObject(style_recalc_context);
   input_type_view_->CustomStyleForLayoutObject(*style);
   return style;
 }

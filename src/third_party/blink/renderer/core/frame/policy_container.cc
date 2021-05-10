@@ -8,18 +8,30 @@ namespace blink {
 
 PolicyContainer::PolicyContainer(
     mojo::PendingAssociatedRemote<mojom::blink::PolicyContainerHost> remote,
-    mojom::blink::PolicyContainerDocumentPoliciesPtr policies)
+    mojom::blink::PolicyContainerPoliciesPtr policies)
     : policies_(std::move(policies)),
       policy_container_host_remote_(std::move(remote)) {}
+
+// static
+std::unique_ptr<PolicyContainer> PolicyContainer::CreateEmpty() {
+  // Create a dummy PolicyContainerHost remote. All the messages will be
+  // ignored.
+  mojo::AssociatedRemote<mojom::blink::PolicyContainerHost> dummy_host;
+  ignore_result(dummy_host.BindNewEndpointAndPassDedicatedReceiver());
+
+  return std::make_unique<PolicyContainer>(
+      dummy_host.Unbind(), mojom::blink::PolicyContainerPolicies::New());
+}
 
 // static
 std::unique_ptr<PolicyContainer> PolicyContainer::CreateFromWebPolicyContainer(
     std::unique_ptr<WebPolicyContainer> container) {
   if (!container)
     return nullptr;
-  mojom::blink::PolicyContainerDocumentPoliciesPtr policies =
-      mojom::blink::PolicyContainerDocumentPolicies::New(
-          container->policies.referrer_policy);
+  mojom::blink::PolicyContainerPoliciesPtr policies =
+      mojom::blink::PolicyContainerPolicies::New(
+          container->policies.referrer_policy,
+          container->policies.ip_address_space);
   return std::make_unique<PolicyContainer>(std::move(container->remote),
                                            std::move(policies));
 }
@@ -29,15 +41,29 @@ network::mojom::blink::ReferrerPolicy PolicyContainer::GetReferrerPolicy()
   return policies_->referrer_policy;
 }
 
+network::mojom::blink::IPAddressSpace PolicyContainer::GetIPAddressSpace()
+    const {
+  return policies_->ip_address_space;
+}
+
 void PolicyContainer::UpdateReferrerPolicy(
     network::mojom::blink::ReferrerPolicy policy) {
   policies_->referrer_policy = policy;
   policy_container_host_remote_->SetReferrerPolicy(policy);
 }
 
-const mojom::blink::PolicyContainerDocumentPoliciesPtr&
-PolicyContainer::GetPolicies() const {
+const mojom::blink::PolicyContainerPoliciesPtr& PolicyContainer::GetPolicies()
+    const {
   return policies_;
+}
+
+mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+PolicyContainer::IssueKeepAliveHandle() {
+  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+      keep_alive_remote;
+  policy_container_host_remote_->IssueKeepAliveHandle(
+      keep_alive_remote.InitWithNewPipeAndPassReceiver());
+  return keep_alive_remote;
 }
 
 }  // namespace blink

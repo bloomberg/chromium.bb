@@ -225,7 +225,6 @@ chromevox_out_dir = "$root_out_dir/chromevoxclassic"
 
 group("chromevox") {
   deps = [
-    ":accessibility_strings",
     ":chromevox_background_script",
     ":chromevox_content_script",
     ":chromevox_copied_files",
@@ -316,6 +315,7 @@ run_jsbundler("chromevox_copied_files") {
     "chromevox/injected/api_util.js",
     "chromevox/injected/mathjax.js",
     "chromevox/injected/mathjax_external_util.js",
+    "chromevox/injected/shadydom_loader.js",
     "cvox2/background/background.html",
     "cvox2/background/earcons/control.wav",
     "cvox2/background/earcons/selection.wav",
@@ -519,9 +519,11 @@ test("chromevox_tests") {
 
   deps = [
     ":chromevox_unitjs_tests",
+    "//ash/constants",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//chrome:browser_tests_pak",
     "//chrome:packed_resources",
     "//chrome:resources",
@@ -533,7 +535,7 @@ test("chromevox_tests") {
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
     "//chrome/test/data:web_ui_test_bindings",
-    "//chromeos/constants:constants",
+    "//components/webapps/browser",
     "//content/test:test_support",
     "//extensions/browser:test_support",
     "//testing/gmock",

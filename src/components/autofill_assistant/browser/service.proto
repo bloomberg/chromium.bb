@@ -10,6 +10,9 @@ option java_multiple_files = true;
 
 package autofill_assistant;
 
+import "action_strategy.proto";
+import "action_value.proto";
+import "dom_action.proto";
 import "generic_ui.proto";
 import "model.proto";
 import "view_layout.proto";
@@ -120,6 +123,11 @@ message SupportsScriptResponseProto {
   optional ScriptTimeoutError script_timeout_error = 2;
 
   optional ClientSettingsProto client_settings = 3;
+
+  // The ScriptStoreConfig to use with the initial GetActions request.
+  optional ScriptStoreConfig script_store_config = 6;
+
+  reserved 4, 5;
 }
 
 // Overlay image to be drawn on top of full overlays.
@@ -147,6 +155,7 @@ message OverlayImageProto {
   optional ClientDimensionProto text_size = 7;
 }
 
+// Next ID: 22
 message ClientSettingsProto {
   message IntegrationTestSettings {
     // Disables animations for the poodle and the progress bar.
@@ -223,6 +232,50 @@ message ClientSettingsProto {
   }
   optional BackButtonSettings back_button_settings = 19;
 
+  // Settings to define the behavior for showing warnings about slow connection
+  // and/or websites to users.
+  message SlowWarningSettings {
+    enum MessageMode {
+      UNKNOWN = 0;
+      // The warning message will be appended to the existing status message.
+      CONCATENATE = 1;
+      // The warning message will replace the current status message.
+      REPLACE = 2;
+    }
+    // Whether to show warnings related to a slow connection to the user.
+    optional bool enable_slow_connection_warnings = 1;
+    // Whether to show warnings related to a slow website to the user.
+    optional bool enable_slow_website_warnings = 2;
+    // If true, only one warning will be shown to the user, i.e. either the slow
+    // connection or website, depending on which one triggers first.
+    optional bool only_show_warning_once = 3;
+    // If true, the slow connection warning will be shown only once.
+    optional bool only_show_connection_warning_once = 4;
+    // If true, the website warning will be shown only once.
+    optional bool only_show_website_warning_once = 5;
+    // Defines the maximum wait on a dom find element operation before showing
+    // the slow website warning.
+    optional int32 warning_delay_ms = 6;
+    // Defines the threshold above which a roundtrip is considered too slow.
+    optional int32 slow_roundtrip_threshold_ms = 7;
+    // Defines the number of consecutive slow roundtrips allowed before showing
+    // the slow connection warning.
+    optional int32 max_consecutive_slow_roundtrips = 8;
+    // The message to show as a warning to inform the user of a slow connection.
+    // If this is not set, no warning will be shown in case of slow connection.
+    optional string slow_connection_message = 9;
+    // The message to show as a warning to inform the user of a slow website.
+    // If this is not set, no warning will be shown in case of a slow website.
+    optional string slow_website_message = 10;
+    // The minimum duration that the message will be shown for (only applies to
+    // the slow connection messages).
+    optional int32 minimum_warning_message_duration_ms = 11;
+    // Whether the warning message should replace the current status message or
+    // should be concatenated.
+    optional MessageMode message_mode = 12;
+  }
+  optional SlowWarningSettings slow_warning_settings = 21;
+
   reserved 8 to 11;
 }
 
@@ -278,8 +331,12 @@ message SupportedScriptProto {
     // Show the UI if it's not shown yet. Setting this to false is useful for
     // scripts started by direct actions.
     optional bool needs_ui = 15 [default = true];
+
+    reserved 1, 2, 6, 7, 10, 11, 16 to 18;
   }
   optional PresentationProto presentation = 2;
+
+  reserved 3;
 }
 
 enum ScriptStatusProto {
@@ -368,6 +425,13 @@ message ScriptActionRequestProto {
   }
 }
 
+// Message specifying how to retrieve the scripts. If bundle_path is set, it
+// will read that bundle with the associated version.
+message ScriptStoreConfig {
+  optional string bundle_path = 2;
+  optional int64 bundle_version = 3;
+}
+
 // Initial request to get a script's actions.
 message InitialScriptActionsRequestProto {
   message QueryProto {
@@ -381,6 +445,9 @@ message InitialScriptActionsRequestProto {
   optional QueryProto query = 3;
 
   repeated ScriptParameterProto script_parameters = 2;
+
+  // Specify a bundle and version to run.
+  optional ScriptStoreConfig script_store_config = 6;
 }
 
 message RoundtripTimingStats {
@@ -399,6 +466,9 @@ message NextScriptActionsRequestProto {
   repeated ProcessedActionProto processed_actions = 1;
   // Contains all roundtrip level (as opposed to action level) timing stats.
   optional RoundtripTimingStats timing_stats = 2;
+  // Tracks whether the last roundtrip triggered a slow connection warning and
+  // whether it was shown to the user.
+  optional SlowWarningStatus slow_connection_warning = 34;
 }
 
 // Response of a script's actions.
@@ -502,7 +572,22 @@ message TriggerScriptProto {
   optional TriggerScriptAction on_swipe_to_dismiss = 4
       [default = CANCEL_SESSION];
 
+  // An identifier for the type of trigger UI this trigger represents, for UKM.
+  optional TriggerUIType trigger_ui_type = 5;
+
   reserved 2;
+}
+
+// Set of TriggerUIType to group UKM metrics by.
+//
+// The set of available values is defined by AutofillAssistantTriggerUIType in
+// tools/metrics/histograms/enums.xml
+enum TriggerUIType {
+  UNSPECIFIED_TRIGGER_UI_TYPE = 0;
+  CART_FIRST_TIME_USER = 1;
+  CART_RETURNING_USER = 2;
+  CHECKOUT_FIRST_TIME_USER = 3;
+  CHECKOUT_RETURNING_USER = 4;
 }
 
 message TriggerScriptConditionProto {
@@ -525,6 +610,13 @@ message TriggerScriptConditionProto {
     int32 experiment_id = 7;
     // The condition matches if the keyboard is hidden.
     Empty keyboard_hidden = 9;
+    // The condition describes a parameter value that must be set to trigger.
+    ScriptParameterMatchProto script_parameter_match = 10;
+    // Pattern of the path parts of the URL, including query and '#'.
+    string path_pattern = 11;
+    // Domain (exact match), including the scheme (e.g.
+    // "https://www.example.com").
+    string domain_with_scheme = 12;
   }
 
   reserved 4;
@@ -583,69 +675,6 @@ message TriggerScriptUIProto {
   optional bool scroll_to_hide = 9;
 }
 
-enum KeyboardValueFillStrategy {
-  UNSPECIFIED_KEYBAORD_STRATEGY = 0;
-
-  // Send a `node.value = "<value>"` JS command.
-  SET_VALUE = 1;
-
-  // Send a `node.value = ""` JS command to clear the field, then click the
-  // field to focus it and send single key strokes.
-  SIMULATE_KEY_PRESSES = 2;
-
-  // Send a `node.select()` JS command to select the current field value, then
-  // send single key strokes overwriting the current value.
-  SIMULATE_KEY_PRESSES_SELECT_VALUE = 3;
-
-  // Send a `node.value = ""` JS command to clear the field, then send a
-  // `node.focus()` JS command to focus the field and send single key strokes.
-  SIMULATE_KEY_PRESSES_FOCUS = 4;
-}
-
-// Note: On multiple matches, the first one will be selected.
-enum DropdownSelectStrategy {
-  UNSPECIFIED_SELECT_STRATEGY = 0;
-
-  // Match by the option's value, case insensitive.
-  VALUE_MATCH = 1;
-
-  // Match by the option's label, case insensitive.
-  LABEL_MATCH = 2;
-
-  // Match by the option's label by `label.startsWith`, case insensitive.
-  LABEL_STARTS_WITH = 3;
-}
-
-// This type disambiguates the term "clicking" on a node in the DOM by defining
-// what strategy should be used to execute the "click".
-enum ClickType {
-  NOT_SET = 0;
-
-  // Send a tap event to the node.
-  TAP = 1;
-
-  // Use JavaScript's `node.click()` to click the element.
-  JAVASCRIPT = 2;
-
-  // Send a click event to the node.
-  CLICK = 3;
-}
-
-message AutofillValue {
-  message Profile { optional string identifier = 1; }
-
-  // The profile to be used. This has to be requested with a
-  // |CollectUserDataAction| first.
-  optional Profile profile = 1;
-
-  // A string containing any number of "${key}" placeholders, where the key is
-  // an integer corresponding to entries from field_types.h or
-  // |AutofillFormatProto::AutofillAssistantCustomField|.
-  // Note that the set of actually available fields are outside of our
-  // control and are retrieved automatically from the provided profile.
-  optional string value_expression = 2;
-}
-
 // An action could be performed.
 message ActionProto {
   // Wait these many milliseconds before executing the action, if set.
@@ -686,6 +715,23 @@ message ActionProto {
     ConfigureUiStateProto configure_ui_state = 54;
     PresaveGeneratedPasswordProto presave_generated_password = 55;
     GetElementStatusProto get_element_status = 56;
+    ScrollIntoViewProto scroll_into_view = 57;
+    WaitForDocumentToBecomeInteractiveProto
+        wait_for_document_to_become_interactive = 58;
+    WaitForDocumentToBecomeCompleteProto wait_for_document_to_become_complete =
+        59;
+    SendClickEventProto send_click_event = 60;
+    SendTapEventProto send_tap_event = 61;
+    JsClickProto js_click = 62;
+    SendKeystrokeEventsProto send_keystroke_events = 63;
+    SendChangeEventProto send_change_event = 64;
+    SetElementAttributeProto set_element_attribute = 65;
+    SelectFieldValueProto select_field_value = 66;
+    FocusFieldProto focus_field = 67;
+    WaitForElementToBecomeStableProto wait_for_element_to_become_stable = 68;
+    CheckElementIsOnTopProto check_element_is_on_top = 69;
+    ReleaseElementsProto release_elements = 70;
+    DispatchJsEventProto dispatch_js_event = 72;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -693,7 +739,7 @@ message ActionProto {
   // action sent to the client after this one. Default is false.
   optional bool clean_contextual_ui = 33;
 
-  reserved 8, 13 to 17, 20 to 23, 25 to 27, 30, 34, 38, 46 to 48, 50, 51;
+  reserved 8, 13 to 17, 20 to 23, 25 to 27, 30, 34, 38, 46 to 48, 50, 51, 71;
 }
 
 // Result of |CollectUserDataProto| to be sent to the server.
@@ -753,6 +799,17 @@ message ActionTimingStats {
   optional int64 wait_time_ms = 3;
 }
 
+// Enum used to track the slow warnings that can trigger due to slow connection
+// or long running wait for dom actions.
+enum SlowWarningStatus {
+  // The warning wasn't triggered.
+  NO_WARNING = 0;
+  // The warning was triggered but not shown to the user.
+  WARNING_TRIGGERED = 1;
+  // The warning was triggered and shown to the user.
+  WARNING_SHOWN = 2;
+}
+
 message ProcessedActionProto {
   // The action that was processed.
   optional ActionProto action = 1;
@@ -795,6 +852,10 @@ message ProcessedActionProto {
   // action, such as a prompt choice, through a direct action instead of
   // selecting a chip on the UI. This is meant for monitoring and debugging.
   optional bool direct_action = 24;
+
+  // Tracks whether the action triggered a slow website warning and whether it
+  // was shown to the user.
+  optional SlowWarningStatus slow_warning_status = 34;
 
   reserved 3, 4, 6 to 14, 16, 18, 26, 27, 29, 30;
 }
@@ -924,6 +985,28 @@ message AutofillErrorInfoProto {
 
   // Errors that occurred during fallback filling of autofill fields.
   repeated AutofillFieldError autofill_field_error = 5;
+
+  // These values should match the values in FullCardRequest::FailureType.
+  enum GetFullCardFailureType {
+    UNKNOWN_FAILURE_TYPE = 0;
+
+    // The user closed the prompt. The following scenarios are possible:
+    // 1) The user declined to enter their CVC and closed the prompt.
+    // 2) The user provided their CVC, got auth declined and then closed the
+    //    prompt without attempting a second time.
+    // 3) The user provided their CVC and closed the prompt before waiting for
+    //    the result.
+    PROMPT_CLOSED = 1;
+
+    // The card could not be looked up due to card auth declined or failed.
+    VERIFICATION_DECLINED = 2;
+
+    // The request failed for technical reasons, such as a closing page or lack
+    // of network connection.
+    GENERIC_FAILURE = 3;
+  }
+  // Failure type from the |FullCardRequest|.
+  optional GetFullCardFailureType get_full_card_failure_type = 6;
 }
 
 // Message to report |SetFormFieldValueProto| related errors for debugging
@@ -997,6 +1080,12 @@ message WebControllerErrorInfoProto {
 
     // Waiting for a certain document ready state failed.
     WAIT_FOR_DOCUMENT_READY_STATE = 18;
+
+    // Trigger a change event.
+    SEND_CHANGE_EVENT = 19;
+
+    // Dispatch a 'duplexweb' event on document.
+    DISPATCH_EVENT_ON_DOCUMENT = 20;
   }
 
   // The web-action that failed. This is usually a step in an execution chain
@@ -1147,18 +1236,6 @@ message SelectorProto {
       // frame element before calling enter_frame.
       OnTopFilter on_top = 13;
     }
-  }
-
-  // A way of filtering elements by their text.
-  message TextFilter {
-    // Javascript RE2 regular expression to apply to the text. This is evaluated
-    // with Regexp.test, so it's a "find" and will be satisfied whenever the
-    // text contains at least one substring that matches the given regular
-    // expression.
-    optional string re2 = 1;
-
-    // If true, the regular expression is case-sensitive.
-    optional bool case_sensitive = 2;
   }
 
   // A way of filtering elements by their pseudo-element content.
@@ -1328,18 +1405,24 @@ message SelectOptionProto {
 
   oneof value {
     // Value of the option to use.
-    string selected_option = 3;
-    // A value from an Autofill source. Note that this must be proceeded by a
+    TextFilter text_filter_value = 7;
+    // A value from an Autofill source. Note that this must be preceded by a
     // |CollectUserDataAction|.
-    AutofillValue autofill_value = 5;
+    AutofillValueRegexp autofill_value = 8;
   }
 
-  // The strategy used to select a value option. This defaults to
-  // |LABEL_STARTS_WITH| for the legacy case.
-  optional DropdownSelectStrategy select_strategy = 4
-      [default = LABEL_STARTS_WITH];
+  // Defines which attribute to use for comparing the option to the expected
+  // value.
+  enum OptionComparisonAttribute {
+    NOT_SET = 0;
+    // Compare the option's value.
+    VALUE = 1;
+    // Compare the option's label.
+    LABEL = 2;
+  }
+  optional OptionComparisonAttribute option_comparison_attribute = 6;
 
-  reserved 1;
+  reserved 1, 3 to 5;
 }
 
 // Contain a localized text message from the server.
@@ -1383,6 +1466,8 @@ message ShowCastProto {
   optional ElementAreaProto touchable_element_area = 6;
 
   // The padding that will be added between the focused element and the top.
+  // If |container| is specified, this will indicate the padding between the
+  // focused element and the top of the container instead.
   optional TopPadding top_padding = 7;
 
   // Configure whether the scrolling should wait for the element to be stable
@@ -1396,6 +1481,10 @@ message ShowCastProto {
 
   // Interval for stable check in ms.
   optional int32 stable_check_interval_ms = 11 [default = 200];
+
+  // Optional: the container to be scrolled to focus |element_to_present|. If
+  // not set, the window will be scrolled.
+  optional SelectorProto container = 12;
 
   reserved 3, 4, 8;
 }
@@ -1556,6 +1645,11 @@ message WaitForDomProto {
 
   // Wait until this condition becomes true. If, at the end of the timeout, the
   // condition is not true, returns ELEMENT_RESOLUTION_FAILED.
+  // The |wait_condition| can be used to store matches on the client by
+  // annotating a |match| condition with a |client_id|. Note that matches that
+  // were not found will be removed from the store, e.g. if they were entered
+  // by a previous |WaitForDomProto|. The store also gets updated if the action
+  // fails.
   optional ElementConditionProto wait_condition = 9;
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
@@ -1592,6 +1686,10 @@ message ElementConditionProto {
   // A payload that identifies this condition. WaitForDom puts this payload
   // into the result. This is ignored outside of WaitForDom.
   optional bytes payload = 5;
+
+  // Optional. If set, the element of |match| will be stored under this
+  // identifier on the client.
+  optional ClientIdProto client_id = 6;
 }
 
 message ElementConditionsProto {
@@ -2006,6 +2104,14 @@ message LoginDetailsProto {
     optional string sublabel = 7;
     optional string sublabel_accessibility_hint = 8;
 
+    // The optional content description of the edit button. There are three
+    // possible states:
+    // - unset: the content description will be inferred from the button.
+    // - set to empty string: this button is not important for a11y.
+    // - set to non-empty string: the button will have the specified content
+    // description.
+    optional string edit_button_content_description = 10;
+
     // If the option was chosen, this payload will be returned to the server.
     optional bytes payload = 1;
 
@@ -2020,6 +2126,8 @@ message LoginDetailsProto {
       LoginOptionCustomProto custom = 4;
       LoginOptionPasswordManagerProto password_manager = 5;
     }
+
+    reserved 9;
   }
   // The title for the login selection (e.g., 'Login details for <domain>').
   optional string section_title = 1;
@@ -2275,11 +2383,8 @@ message DetailsChangesProto {
 message DetailsProto {
   optional string title = 1;
 
-  oneof image {
-    string image_url = 2;
-    // When set to true shows placeholder in place of an image.
-    bool show_image_placeholder = 10;
-  }
+  optional string image_url = 2;
+
   // Specifies the hint for accessibility. If set to empty, the image will not
   // be announced by accessibility.
   optional string image_accessibility_hint = 14;
@@ -2318,17 +2423,30 @@ message DetailsProto {
   optional DateTimeProto datetime = 3;
   optional string description = 4;
 
-  // Asks the UI to show animated placeholders for missing fields.
-  // The placeholder will be shown on effectively missing:
-  // * title
-  // * image
-  // * description line (1, 2 or 3)
-  // TODO(crbug.com/806868): Make the fields for displaying placeholders
-  // configurable by the server.
-  optional bool animate_placeholders = 11;
+  // The configuration for the placeholders.
+  message PlaceholdersConfiguration {
+    // Show a placeholder if |DetailsProto.image_url| is empty.
+    optional bool show_image_placeholder = 1;
+
+    // Show a placeholder if |DetailsProto.title| is empty.
+    optional bool show_title_placeholder = 2;
+
+    // Show a placeholder if |DetailsProto.description_line_1| is empty.
+    optional bool show_description_line_1_placeholder = 3;
+
+    // Show a placeholder if |DetailsProto.description_line_2| is empty.
+    optional bool show_description_line_2_placeholder = 4;
+
+    // Show a placeholder if |DetailsProto.description_line_3| is empty.
+    optional bool show_description_line_3_placeholder = 5;
+  }
+
+  // The placeholders configuration. Note that a placeholder will be shown only
+  // if the associated data is empty.
+  optional PlaceholdersConfiguration placeholders = 15;
 
   // Deprecated, no longer supported.
-  reserved 5;
+  reserved 5, 10, 11;
 }
 
 // Show contextual information.
@@ -2345,6 +2463,19 @@ message ShowDetailsProto {
   // Flags indicating which parts of the details (if any) have changed.
   // This field is taken into account only if |details| is filled.
   optional DetailsChangesProto change_flags = 2;
+
+  // Whether the details should be added/appended instead of replacing the
+  // current details.
+  optional bool append = 6;
+
+  // If set, add a delay of |delay_ms| before setting/appending the details.
+  //
+  // The details will never be shown if another ShowDetailsProto action with
+  // |append| = false is sent after this action and before the delay is reached.
+  //
+  // Note that it's not possible to delay the clearing of the details. If
+  // |data_to_show| is not set, then the details will be cleared directly.
+  optional int32 delay_ms = 7;
 }
 
 // Set the value of an form element.
@@ -2368,7 +2499,7 @@ message SetFormFieldValueProto {
       bool use_password = 5;
       // Use the value stored at the specified memory location.
       string client_memory_key = 6;
-      // A value from an Autofill source. Note that this must be proceeded by a
+      // A value from an Autofill source. Note that this must be preceded by a
       // |CollectUserDataAction|.
       AutofillValue autofill_value = 8;
     }
@@ -2820,7 +2951,7 @@ message GetElementStatusProto {
     oneof value_source {
       // The value to check against.
       string value = 1;
-      // A value from an Autofill source. Note that this must be proceeded by a
+      // A value from an Autofill source. Note that this must be preceded by a
       // |CollectUserDataAction|.
       AutofillValue autofill_value = 2;
       // A regular expression.
@@ -2846,3 +2977,10 @@ message GetElementStatusProto {
     optional bool expected_empty_match = 7;
   }
 }
+
+message ReleaseElementsProto {
+  repeated ClientIdProto client_ids = 1;
+}
+
+// Action to unconditionally dispatch a custom JS event 'duplexweb' on document.
+message DispatchJsEventProto {}

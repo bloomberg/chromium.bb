@@ -23,13 +23,12 @@
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/service_scope.h"
 #include "chrome/updater/update_service.h"
-#include "chrome/updater/updater_version.h"
 #include "components/update_client/update_client_errors.h"
 
 using base::SysUTF8ToNSString;
 
 // Interface to communicate with the XPC Updater Service.
-@interface CRUUpdateServiceProxyImpl : NSObject <CRUUpdateChecking>
+@interface CRUUpdateServiceProxyImpl : NSObject <CRUUpdateServicing>
 
 - (instancetype)initPrivileged;
 
@@ -50,18 +49,18 @@ using base::SysUTF8ToNSString;
 - (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
   if ((self = [super init])) {
     _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:updater::GetServiceMachName().get()
+        initWithMachServiceName:updater::GetUpdateServiceMachName().get()
                         options:options]);
 
     _updateCheckXPCConnection.get().remoteObjectInterface =
-        updater::GetXPCUpdateCheckingInterface();
+        updater::GetXPCUpdateServicingInterface();
 
     _updateCheckXPCConnection.get().interruptionHandler = ^{
-      LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
+      LOG(WARNING) << "CRUUpdateServicingService: XPC connection interrupted.";
     };
 
     _updateCheckXPCConnection.get().invalidationHandler = ^{
-      LOG(WARNING) << "CRUUpdateCheckingService: XPC connection invalidated.";
+      LOG(WARNING) << "CRUUpdateServicingService: XPC connection invalidated.";
     };
 
     [_updateCheckXPCConnection resume];

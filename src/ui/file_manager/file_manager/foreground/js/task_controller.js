@@ -2,7 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class TaskController {
+// clang-format off
+// #import {FileTransferController} from './file_transfer_controller.m.js';
+// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
+// #import {Crostini} from '../../../externs/background/crostini.m.js';
+// #import {NamingController} from './naming_controller.m.js';
+// #import {MetadataUpdateController} from './metadata_update_controller.m.js';
+// #import {DirectoryModel} from './directory_model.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.m.js';
+// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {DialogType} from './dialog_type.m.js';
+// #import {strf, util, str} from '../../common/js/util.m.js';
+// #import {FileTasks} from './file_tasks.m.js';
+// #import {FileSelectionHandler, FileSelection} from './file_selection.m.js';
+// #import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+// #import {assert, assertInstanceof, assertNotReached} from 'chrome://resources/js/assert.m.js';
+// #import {TaskHistory} from './task_history.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format on
+
+/* #export */ class TaskController {
   /**
    * @param {DialogType} dialogType
    * @param {!VolumeManager} volumeManager
@@ -469,6 +489,7 @@ class TaskController {
   updateContextMenuTaskItems_(openTasks, nonOpenTasks) {
     const defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
     if (defaultTask) {
+      this.ui_.defaultTaskMenuItem.removeAttribute('file-type-icon');
       if (defaultTask.iconType) {
         this.ui_.defaultTaskMenuItem.style.backgroundImage = '';
         this.ui_.defaultTaskMenuItem.setAttribute(

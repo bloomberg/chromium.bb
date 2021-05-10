@@ -19,13 +19,13 @@
 #include <utility>
 #include <vector>
 
+#include "api/sequence_checker.h"
 #include "p2p/base/port_interface.h"
 #include "rtc_base/async_invoker.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/socket_address.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread.h"
-#include "rtc_base/thread_checker.h"
 
 namespace rtc {
 class ByteBufferWriter;
@@ -316,7 +316,7 @@ class TurnServer : public sigslot::has_slots<> {
   typedef std::map<rtc::AsyncSocket*, ProtocolType> ServerSocketMap;
 
   rtc::Thread* thread_;
-  rtc::ThreadChecker thread_checker_;
+  webrtc::SequenceChecker thread_checker_;
   std::string nonce_key_;
   std::string realm_;
   std::string software_;

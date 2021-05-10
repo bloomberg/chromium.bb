@@ -91,7 +91,6 @@
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/unique_name/unique_name_helper.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -178,25 +177,23 @@ std::string DumpHistoryForWebContents(WebContents* web_contents) {
 }
 
 std::vector<std::string> DumpTitleWasSet(WebContents* web_contents) {
-  base::Optional<bool> load = WebTestControlHost::Get()
-                                  ->accumulated_web_test_runtime_flags_changes()
-                                  .FindBoolPath("dump_frame_load_callbacks");
+  WebTestControlHost* control_host = WebTestControlHost::Get();
+  bool load =
+      control_host->web_test_runtime_flags().dump_frame_load_callbacks();
 
-  base::Optional<bool> title_changed =
-      WebTestControlHost::Get()
-          ->accumulated_web_test_runtime_flags_changes()
-          .FindBoolPath("dump_title_changes");
+  bool title_changed =
+      control_host->web_test_runtime_flags().dump_title_changes();
 
   std::vector<std::string> logs;
 
-  if (load.has_value() && load.value()) {
+  if (load) {
     // TitleWasSet is only available on top-level frames.
     std::string log = "main frame";
     logs.emplace_back(
         log + " - TitleWasSet: " + base::UTF16ToUTF8(web_contents->GetTitle()));
   }
 
-  if (title_changed.has_value() && title_changed.value()) {
+  if (title_changed) {
     logs.emplace_back("TITLE CHANGED: '" +
                       base::UTF16ToUTF8(web_contents->GetTitle()) + "'");
   }
@@ -205,12 +202,11 @@ std::vector<std::string> DumpTitleWasSet(WebContents* web_contents) {
 
 std::string DumpFailLoad(WebContents* web_contents,
                          RenderFrameHost* render_frame_host) {
-  base::Optional<bool> result =
-      WebTestControlHost::Get()
-          ->accumulated_web_test_runtime_flags_changes()
-          .FindBoolPath("dump_frame_load_callbacks");
+  WebTestControlHost* control_host = WebTestControlHost::Get();
+  bool result =
+      control_host->web_test_runtime_flags().dump_frame_load_callbacks();
 
-  if (!result.has_value())
+  if (!result)
     return std::string();
 
   std::string log = (web_contents->GetMainFrame() == render_frame_host)
@@ -222,7 +218,7 @@ std::string DumpFailLoad(WebContents* web_contents,
 }
 
 // Draws a selection rect into a bitmap.
-void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
+void DrawSelectionRect(const SkBitmap& bitmap, const gfx::Rect& wr) {
   // Render a red rectangle bounding selection rect
   cc::SkiaPaintCanvas canvas(bitmap);
   cc::PaintFlags flags;
@@ -231,7 +227,7 @@ void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
   flags.setAntiAlias(true);
   flags.setStrokeWidth(1.0f);
   SkIRect rect;  // Bounding rect
-  rect.setXYWH(wr.x, wr.y, wr.width, wr.height);
+  rect.setXYWH(wr.x(), wr.y(), wr.width(), wr.height());
   canvas.drawIRect(rect, flags);
 }
 
@@ -555,6 +551,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   printer_->reset();
 
   accumulated_web_test_runtime_flags_changes_.Clear();
+  web_test_runtime_flags_.Reset();
   main_window_render_view_hosts_.clear();
   main_window_render_process_hosts_.clear();
   all_observed_render_process_hosts_.clear();
@@ -597,7 +594,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   // TODO(danakj): We no longer run web tests on android, and this is an android
   // feature, so maybe this isn't needed anymore.
   main_window_->web_contents()->GetMainFrame()->UpdateBrowserControlsState(
-      BROWSER_CONTROLS_STATE_BOTH, BROWSER_CONTROLS_STATE_HIDDEN, false);
+      cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kHidden,
+      false);
 
   // We did not track the |main_window_| RenderFrameHost during the creation of
   // |main_window_|, since we need the pointer value in this class set first. So
@@ -683,7 +681,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   test_url_ = GURL();
   prefs_ = blink::web_pref::WebPreferences();
   should_override_prefs_ = false;
-  WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
+  WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(true);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHosts();
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();
@@ -1070,10 +1068,7 @@ void WebTestControlHost::WebContentsDestroyed() {
 void WebTestControlHost::DidUpdateFaviconURL(
     RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
-  bool should_dump_icon_changes = false;
-  accumulated_web_test_runtime_flags_changes_.GetBoolean(
-      "dump_icon_changes", &should_dump_icon_changes);
-  if (should_dump_icon_changes) {
+  if (web_test_runtime_flags_.dump_icon_changes()) {
     std::string log = IsMainWindow(web_contents()) ? "main frame " : "frame ";
     printer_->AddMessageRaw(log + "- didChangeIcons\n");
   }
@@ -1090,7 +1085,7 @@ void WebTestControlHost::RenderViewDeleted(RenderViewHost* render_view_host) {
   main_window_render_view_hosts_.erase(render_view_host);
 }
 
-void WebTestControlHost::DidFinishNavigation(
+void WebTestControlHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
   RenderFrameHostImpl* rfh = request->rfh_restored_from_back_forward_cache();
@@ -1249,6 +1244,7 @@ void WebTestControlHost::OnTestFinished() {
   devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
   accumulated_web_test_runtime_flags_changes_.Clear();
+  web_test_runtime_flags_.Reset();
   work_queue_states_.Clear();
 
   ShellBrowserContext* browser_context =
@@ -1612,8 +1608,7 @@ void WebTestControlHost::ClearAllDatabases() {
   auto run_on_database_sequence =
       [](scoped_refptr<storage::DatabaseTracker> db_tracker) {
         DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
-        db_tracker->DeleteDataModifiedSince(base::Time(),
-                                            net::CompletionOnceCallback());
+        db_tracker->DeleteDataModifiedSince(base::Time(), base::DoNothing());
       };
 
   BrowserContext* browser_context =
@@ -1676,6 +1671,8 @@ void WebTestControlHost::WebTestRuntimeFlagsChanged(
   // Stash the accumulated changes for future, not-yet-created renderers.
   accumulated_web_test_runtime_flags_changes_.MergeDictionary(
       &changed_web_test_runtime_flags);
+  web_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
+      accumulated_web_test_runtime_flags_changes_);
 
   // Propagate the changes to all the tracked renderer processes.
   for (RenderProcessHost* process : all_observed_render_process_hosts_) {
@@ -1740,8 +1737,10 @@ void WebTestControlHost::WorkItemAdded(mojom::WorkItemPtr work_item) {
 
 void WebTestControlHost::RequestWorkItem() {
   DCHECK(main_window_);
-  RenderProcessHost* main_frame_process =
-      main_window_->web_contents()->GetRenderViewHost()->GetProcess();
+  RenderProcessHost* main_frame_process = main_window_->web_contents()
+                                              ->GetMainFrame()
+                                              ->GetRenderViewHost()
+                                              ->GetProcess();
   if (work_queue_.empty()) {
     work_queue_states_.SetBoolPath(kDictKeyWorkQueueHasItems, false);
     GetWebTestRenderThreadRemote(main_frame_process)

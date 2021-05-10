@@ -43,7 +43,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
-#ifdef HEADLESS_USE_EMBEDDED_RESOURCES
+#if defined(HEADLESS_USE_EMBEDDED_RESOURCES)
 #include "headless/embedded_resource_pak.h"
 #endif
 
@@ -369,9 +369,12 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #else
   if (command_line.HasSwitch(::switches::kEnableLogging))
     InitLogging(command_line);
+
+  // Initializing the crash reporter fails in multiple ways on Windows. See
+  // https://crbug.com/1147063
+  InitCrashReporter(command_line);
 #endif  // defined(OS_WIN)
 
-  InitCrashReporter(command_line);
   InitializeResourceBundle(command_line);
 
   // Even though InitializeResourceBundle() has indirectly done the locale

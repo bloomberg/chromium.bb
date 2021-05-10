@@ -46,13 +46,24 @@ class PolymerModulizerTest(unittest.TestCase):
     actual_js = self._read_out_file(js_out_file)
     expected_js = open(os.path.join(
         _HERE_DIR, 'tests', js_file_expected), 'rb').read()
-    self.assertEquals(expected_js, actual_js)
+    self.assertEquals(expected_js.split('\n'), actual_js.split('\n'))
 
   # Test case where HTML is extracted from a Polymer2 <dom-module>.
   def testDomModule(self):
     self._run_test(
         'dom-module', 'dom_module.html', 'dom_module.js',
         'dom_module.m.js', 'dom_module_expected.js')
+
+  # Test case where a commented out HTML import exists in the original HTML
+  # file. It is purposefully picked up and converted to a JS module, to address
+  # a unique use case of the FilesApp where an HTML import does not actually
+  # exist in the Polymer2 code.
+  # TODO(crbug.com/1133186): Remove after FilesApp Polymer3 migration is
+  # completed.
+  def testDomModuleWithCommentedOutImport(self):
+    self._run_test('dom-module', 'dom_module_with_commented_out_import.html',
+                   'dom_module.js', 'dom_module.m.js',
+                   'dom_module_with_commented_out_import_expected.js')
 
   # Test case where HTML is extracted from a Polymer2 <dom-module> that is
   # wrapped in an IIFE function.
@@ -67,6 +78,14 @@ class PolymerModulizerTest(unittest.TestCase):
     self._run_test(
         'dom-module', 'dom_module.html', 'dom_module_iife_arrow.js',
         'dom_module_iife_arrow.m.js', 'dom_module_iife_expected.js')
+
+  # Test case where HTML is extracted from a Polymer2 <dom-module> that is
+  # assigned to a variable.
+  def testDomModuleIifeAndAssigned(self):
+    self._run_test(
+        'dom-module', 'dom_module.html', 'dom_module_with_assignment.js',
+        'dom_module_with_assignment.m.js',
+        'dom_module_with_assignment_expected.js')
 
   # Test case where HTML is extracted from a Polymer2 <dom-module> that also
   # has a 'cr.define()' in its JS file.

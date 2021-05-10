@@ -72,8 +72,9 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ImageContext*>& contexts,
       sk_sp<SkColorSpace> image_color_space,
-      bool has_alpha) override;
-  void SwapBuffersSkipped() override {}
+      SkYUVAInfo::PlaneConfig plane_config,
+      SkYUVAInfo::Subsampling subsampling) override;
+  void SwapBuffersSkipped(const gfx::Rect root_pass_damage_rect) override {}
   SkCanvas* BeginPaintRenderPass(const AggregatedRenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
@@ -111,6 +112,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   sk_sp<SkDeferredDisplayList> EndPaintRenderPassOverlay() override;
 #endif
 
+  void PreserveChildSurfaceControls() override {}
+
   // ExternalUseClient implementation:
   gpu::SyncToken ReleaseImageContexts(
       const std::vector<std::unique_ptr<ImageContext>> image_contexts) override;
@@ -118,6 +121,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
       ResourceFormat format,
+      bool concurrent_reads,
       const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 

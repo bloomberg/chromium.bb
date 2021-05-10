@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_packet_creator.h"
+#include "quic/core/quic_packet_creator.h"
 
 #include <cstdint>
 #include <limits>
@@ -12,28 +12,28 @@
 #include <utility>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_simple_buffer_allocator.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_packet_creator_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_data_producer.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_quic_framer.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/frames/quic_stream_frame.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_simple_buffer_allocator.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_packet_creator_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_data_producer.h"
+#include "quic/test_tools/simple_quic_framer.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 using testing::_;
 using testing::DoAll;
@@ -66,9 +66,8 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quiche::QuicheStrCat(ParsedQuicVersionToString(p.version), "_",
-                              (p.version_serialization ? "Include" : "No"),
-                              "Version");
+  return absl::StrCat(ParsedQuicVersionToString(p.version), "_",
+                      (p.version_serialization ? "Include" : "No"), "Version");
 }
 
 // Constructs various test permutations.
@@ -102,7 +101,7 @@ class TestPacketCreator : public QuicPacketCreator {
                     SimpleDataProducer* producer)
       : QuicPacketCreator(connection_id, framer, delegate),
         producer_(producer),
-        version_(framer->transport_version()) {}
+        version_(framer->version()) {}
 
   bool ConsumeDataToFillCurrentPacket(QuicStreamId id,
                                       const struct iovec* iov,
@@ -125,7 +124,7 @@ class TestPacketCreator : public QuicPacketCreator {
   }
 
   void StopSendingVersion() {
-    if (VersionHasIetfInvariantHeader(version_)) {
+    if (version_.HasIetfInvariantHeader()) {
       set_encryption_level(ENCRYPTION_FORWARD_SECURE);
       return;
     }
@@ -133,7 +132,7 @@ class TestPacketCreator : public QuicPacketCreator {
   }
 
   SimpleDataProducer* producer_;
-  QuicTransportVersion version_;
+  ParsedQuicVersion version_;
 };
 
 class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
@@ -317,7 +316,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       EXPECT_CALL(framer_visitor_, OnPacket());
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
       EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _))
           .WillOnce(Return(true));
@@ -341,7 +340,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
 
 TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame(
-      creator_.transport_version(), QUIC_NO_ERROR, "error",
+      creator_.transport_version(), QUIC_NO_ERROR, NO_IETF_QUIC_ERROR, "error",
       /*transport_close_frame_type=*/0);
 
   QuicFrames frames;
@@ -355,7 +354,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   EXPECT_CALL(framer_visitor_, OnPacket());
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -592,7 +591,9 @@ TEST_P(QuicPacketCreatorTest, BuildPathChallengePacket) {
   header.reset_flag = false;
   header.version_flag = false;
   header.packet_number = kPacketNumber;
+  MockRandom randomizer;
   QuicPathFrameBuffer payload;
+  randomizer.RandBytes(payload.data(), payload.size());
 
   // clang-format off
   unsigned char packet[] = {
@@ -614,10 +615,9 @@ TEST_P(QuicPacketCreatorTest, BuildPathChallengePacket) {
   // clang-format on
 
   std::unique_ptr<char[]> buffer(new char[kMaxOutgoingPacketSize]);
-  MockRandom randomizer;
 
   size_t length = creator_.BuildPaddedPathChallengePacket(
-      header, buffer.get(), ABSL_ARRAYSIZE(packet), &payload, &randomizer,
+      header, buffer.get(), ABSL_ARRAYSIZE(packet), payload,
       ENCRYPTION_INITIAL);
   EXPECT_EQ(length, ABSL_ARRAYSIZE(packet));
 
@@ -921,7 +921,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
     QuicPathFrameBuffer payload = {
         {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xfe}};
     encrypted =
-        creator_.SerializePathChallengeConnectivityProbingPacket(&payload);
+        creator_.SerializePathChallengeConnectivityProbingPacket(payload);
   } else {
     encrypted = creator_.SerializeConnectivityProbingPacket();
   }
@@ -930,7 +930,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     if (VersionHasIetfQuicFrames(creator_.transport_version())) {
       EXPECT_CALL(framer_visitor_, OnPathChallengeFrame(_));
@@ -956,13 +956,13 @@ TEST_P(QuicPacketCreatorTest, SerializePathChallengeProbePacket) {
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
 
   std::unique_ptr<SerializedPacket> encrypted(
-      creator_.SerializePathChallengeConnectivityProbingPacket(&payload));
+      creator_.SerializePathChallengeConnectivityProbingPacket(payload));
   {
     InSequence s;
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathChallengeFrame(_));
     EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
@@ -992,7 +992,7 @@ TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket1PayloadPadded) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_));
     EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
@@ -1022,7 +1022,7 @@ TEST_P(QuicPacketCreatorTest,
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -1053,7 +1053,7 @@ TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket2PayloadsPadded) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(2);
     EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
@@ -1086,7 +1086,7 @@ TEST_P(QuicPacketCreatorTest,
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(2);
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -1120,7 +1120,7 @@ TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket3PayloadsPadded) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(3);
     EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
@@ -1155,7 +1155,7 @@ TEST_P(QuicPacketCreatorTest,
   EXPECT_CALL(framer_visitor_, OnPacket());
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(3);
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -1165,7 +1165,7 @@ TEST_P(QuicPacketCreatorTest,
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
-  if (VersionHasIetfInvariantHeader(creator_.transport_version()) &&
+  if (creator_.version().HasIetfInvariantHeader() &&
       !GetParam().version.SendsVariableLengthPacketNumberInLongHeader()) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
@@ -1203,7 +1203,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 1);
-  if (VersionHasIetfInvariantHeader(creator_.transport_version()) &&
+  if (creator_.version().HasIetfInvariantHeader() &&
       !GetParam().version.SendsVariableLengthPacketNumberInLongHeader()) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
@@ -1237,7 +1237,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
 
 TEST_P(QuicPacketCreatorTest, SkipNPacketNumbers) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 1);
-  if (VersionHasIetfInvariantHeader(creator_.transport_version()) &&
+  if (creator_.version().HasIetfInvariantHeader() &&
       !GetParam().version.SendsVariableLengthPacketNumberInLongHeader()) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
@@ -1288,7 +1288,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
         .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     if (QuicVersionUsesCryptoFrames(client_framer_.transport_version())) {
@@ -1325,7 +1325,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrameShortData) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
         .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     if (QuicVersionUsesCryptoFrames(client_framer_.transport_version())) {
@@ -1513,7 +1513,7 @@ TEST_P(QuicPacketCreatorTest, SerializeStreamFrameWithPadding) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
     if (client_framer_.version().HasHeaderProtection()) {
@@ -1603,7 +1603,7 @@ TEST_P(QuicPacketCreatorTest, PendingPadding) {
       EXPECT_CALL(framer_visitor_, OnPacket());
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
       EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
       EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -1968,7 +1968,7 @@ TEST_P(QuicPacketCreatorTest, RetryToken) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
         .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
     if (QuicVersionUsesCryptoFrames(client_framer_.transport_version())) {
@@ -2077,7 +2077,7 @@ TEST_P(QuicPacketCreatorTest, CoalesceStreamFrames) {
   EXPECT_CALL(framer_visitor_, OnPacket());
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   // The packet should only have 2 stream frames.
   EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
@@ -2154,7 +2154,7 @@ TEST_P(QuicPacketCreatorTest, SerializeCoalescedPacket) {
           }));
     }
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _)).WillOnce(Return(true));
     EXPECT_CALL(framer_visitor_,
@@ -2442,7 +2442,7 @@ class QuicPacketCreatorMultiplePacketsTest : public QuicTest {
   ~QuicPacketCreatorMultiplePacketsTest() override {}
 
   void SavePacket(SerializedPacket packet) {
-    DCHECK(packet.release_encrypted_buffer == nullptr);
+    QUICHE_DCHECK(packet.release_encrypted_buffer == nullptr);
     packet.encrypted_buffer = CopyBuffer(packet);
     packet.release_encrypted_buffer = [](const char* p) { delete[] p; };
     packets_.push_back(std::move(packet));
@@ -3229,7 +3229,7 @@ TEST_F(QuicPacketCreatorMultiplePacketsTest, TestConnectionIdLength) {
 
   for (size_t i = 1; i < 10; i++) {
     creator_.SetServerConnectionIdLength(i);
-    if (VersionHasIetfInvariantHeader(framer_.transport_version())) {
+    if (framer_.version().HasIetfInvariantHeader()) {
       EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
                 creator_.GetDestinationConnectionIdLength());
     } else {
@@ -3413,7 +3413,7 @@ TEST_F(QuicPacketCreatorMultiplePacketsTest,
     QuicPathFrameBuffer payload = {
         {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xfe}};
     probing_packet =
-        creator_.SerializePathChallengeConnectivityProbingPacket(&payload);
+        creator_.SerializePathChallengeConnectivityProbingPacket(payload);
   } else {
     probing_packet = creator_.SerializeConnectivityProbingPacket();
   }
@@ -3554,7 +3554,8 @@ TEST_F(QuicPacketCreatorMultiplePacketsTest,
   const QuicErrorCode kQuicErrorCode = QUIC_PACKET_WRITE_ERROR;
 
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame(
-      framer_.transport_version(), kQuicErrorCode, std::string(error_details),
+      framer_.transport_version(), kQuicErrorCode, NO_IETF_QUIC_ERROR,
+      std::string(error_details),
       /*transport_close_frame_type=*/0);
   creator_.ConsumeRetransmittableControlFrame(QuicFrame(frame),
                                               /*bundle_ack=*/false);

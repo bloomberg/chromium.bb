@@ -19,19 +19,20 @@
 #include "gtest/gtest.h"
 #include "spirv/unified1/spirv.h"
 #include "spirv/unified1/spirv.hpp11"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, InsertsPreamble) {
-  ast::Module m;
-  Builder b(&m);
+  spirv::Builder& b = Build();
+
   ASSERT_TRUE(b.Build());
   EXPECT_EQ(DumpBuilder(b), R"(OpCapability Shader
 OpMemoryModel Logical GLSL450
@@ -39,14 +40,23 @@ OpMemoryModel Logical GLSL450
 }
 
 TEST_F(BuilderTest, TracksIdBounds) {
-  ast::Module mod;
-  Builder b(&mod);
+  spirv::Builder& b = Build();
 
   for (size_t i = 0; i < 5; i++) {
     EXPECT_EQ(b.next_id(), i + 1);
   }
 
   EXPECT_EQ(6u, b.id_bound());
+}
+
+TEST_F(BuilderTest, Capabilities_Dedup) {
+  spirv::Builder& b = Build();
+
+  b.push_capability(SpvCapabilityShader);
+  b.push_capability(SpvCapabilityShader);
+  b.push_capability(SpvCapabilityShader);
+
+  EXPECT_EQ(DumpInstructions(b.capabilities()), "OpCapability Shader\n");
 }
 
 }  // namespace

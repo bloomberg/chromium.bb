@@ -13,6 +13,7 @@ module chromeos.cros_healthd.mojom;
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom";
+import "chromeos/services/cros_healthd/public/mojom/nullable_primitives.mojom";
 import "chromeos/services/network_health/public/mojom/network_diagnostics.mojom";
 import "chromeos/services/network_health/public/mojom/network_health.mojom";
 
@@ -36,6 +37,9 @@ interface CrosHealthdServiceFactory {
       pending_remote<
           chromeos.network_diagnostics.mojom.NetworkDiagnosticsRoutines>
               network_diagnostics_routines);
+  // TODO(http://b/181133872): Move this service out of this interface
+  // Returns a bound interface to the system service.
+  GetSystemService(CrosHealthdSystemService& service);
 };
 
 // Diagnostics interface exposed by the cros_healthd daemon. Consumed in Chrome
@@ -72,12 +76,13 @@ interface CrosHealthdDiagnosticsService {
   // * |length_seconds| - length of time, in seconds, to run the urandom routine
   //                      for. If all reads from /dev/urandom for this length of
   //                      time are successful, then the test  will pass. This
-  //                      parameter needs to be strictly greater than zero.
+  //                      parameter needs to be strictly greater than zero. If
+  //                      not specified, the routine will default to 10 seconds.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunUrandomRoutine(uint32 length_seconds)
+  RunUrandomRoutine(NullableUint32? length_seconds)
       => (RunRoutineResponse response);
 
   // Requests that the BatteryCapacity routine is created and started on the
@@ -142,12 +147,13 @@ interface CrosHealthdDiagnosticsService {
   // The request:
   // * |length_seconds| - length of time, in seconds, to run the CPU cache
   //                      routine. This parameter needs to be strictly greater
-  //                      than zero.
+  //                      than zero. If not specified, the routine will default
+  //                      to 1 minute.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunCpuCacheRoutine(uint32 length_seconds)
+  RunCpuCacheRoutine(NullableUint32? length_seconds)
       => (RunRoutineResponse response);
 
   // Requests that the CPU stress routine is created and started on the
@@ -158,12 +164,13 @@ interface CrosHealthdDiagnosticsService {
   // The request:
   // * |length_seconds| - length of time, in seconds, to run the CPU stress
   //                      routine. This parameter needs to be strictly greater
-  //                      than zero.
+  //                      than zero. If not specified, the routine will default
+  //                      to 1 minute.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunCpuStressRoutine(uint32 length_seconds)
+  RunCpuStressRoutine(NullableUint32? length_seconds)
       => (RunRoutineResponse response);
 
   // Requests that the FloatingPointAccuracy routine is created and started
@@ -178,11 +185,13 @@ interface CrosHealthdDiagnosticsService {
   //                      floating-point operations in length seconds and get
   //                      the result to compare with known accurate results.
   //                      This parameter needs to be strictly greater than zero.
+  //                      If not specified, the routine will default to
+  //                      1 minute.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunFloatingPointAccuracyRoutine(uint32 length_seconds)
+  RunFloatingPointAccuracyRoutine(NullableUint32? length_seconds)
       => (RunRoutineResponse response);
 
   // Requests that the NvmeWearLevel routine is created and started on the
@@ -238,21 +247,20 @@ interface CrosHealthdDiagnosticsService {
       => (RunRoutineResponse response);
 
   // Requests that the PrimeSearch routine is created and started on the
-  // platform. Calculate prime numbers between 3 to max_num and verify the
-  // calculation repeatedly in a duration. This routine is only available
-  // if GetAvailableRoutines returned kPrimeSearch.
+  // platform. Calculate prime numbers and verifies the calculation repeatedly
+  // in a duration. This routine is only available if GetAvailableRoutines
+  // returned kPrimeSearch.
   //
   // The request:
   // * |length_seconds| - length of time, in seconds, to run the PrimeSearch
   //                      routine for. This parameter needs to be strictly
-  //                      greater than zero.
-  // * |max_num| - largest number that routine will calculate prime numbers up
-  //               to.
+  //                      greater than zero. If not specified, the routine will
+  //                      default to 1 minute.
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunPrimeSearchRoutine(uint32 length_seconds, uint64 max_num)
+  RunPrimeSearchRoutine(NullableUint32? length_seconds)
       => (RunRoutineResponse response);
 
   // Requests that the BatteryDischarge routine is created and started on the
@@ -389,6 +397,45 @@ interface CrosHealthdDiagnosticsService {
   // * |response| - contains a unique identifier and status for the created
   //                routine.
   RunHttpFirewallRoutine() => (RunRoutineResponse response);
+
+  // Requests that the HttpsFirewall routine is created and started on the
+  // platform. This routine checks whether a firewall is blocking HTTPS port
+  // 443. This routine is only available if GetAvailableRoutines returned
+  // kHttpsFirewall.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunHttpsFirewallRoutine() => (RunRoutineResponse response);
+
+  // Requests that the HttpsLatency routine is created and started on the
+  // platform. This routine checks whether the HTTPS latency is within
+  // established tolerance levels for the system. This routine is only
+  // available if GetAvailableRoutines returned kHttpsLatency.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunHttpsLatencyRoutine() => (RunRoutineResponse response);
+
+  // Requests that the VideoConferencing routine is created and started on the
+  // platform. This routine checks the device's video conferencing capabalities
+  // by testing whether the device can:
+  // (1) Contact either a default or specified STUN server via UDP.
+  // (2) Contact either a default or specified STUN server via TCP.
+  // (3) Reach common media endpoints.
+  // This routine is only available if GetAvailableRoutines returned
+  // kVideoConferencing.
+  //
+  // The request:
+  // * |stun_server_hostname| - if specified, represents the custom STUN server
+  //                            hostname.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  RunVideoConferencingRoutine(string? stun_server_hostname)
+      => (RunRoutineResponse response);
 };
 
 // Event interface exposed by the cros_healthd daemon.
@@ -413,6 +460,15 @@ interface CrosHealthdEventService {
   // The request:
   // * |observer| - power observer to be added to cros_healthd.
   AddPowerObserver(CrosHealthdPowerObserver observer);
+
+  // Adds an observer to be notified on network events. The caller can remove
+  // the observer created by this call by closing their end of the message pipe.
+  //
+  // The request:
+  // * |observer| - network observer to be added to cros_healthd.
+  AddNetworkObserver(
+      pending_remote<
+          chromeos.network_health.mojom.NetworkEventsObserver> observer);
 };
 
 // Probe interface exposed by the cros_healthd daemon.
@@ -438,4 +494,20 @@ interface CrosHealthdProbeService {
   //                      will be non-null.
   ProbeTelemetryInfo(array<ProbeCategoryEnum> categories)
       => (TelemetryInfo telemetry_info);
+};
+
+// Contains data about the current service instance of cros_healthd.
+struct ServiceStatus {
+  // Boolean flag if the NetworkHealthService mojo remote has been sent from
+  // Chrome and bound in cros_healthd.
+  bool network_health_bound;
+  // Boolean flag if the NetworkDiagnosticsService mojo remote has been sent
+  // from Chrome and bound in cros_healthd.
+  bool network_diagnostics_bound;
+};
+
+// Interface to query the status of the cros_healthd service.
+interface CrosHealthdSystemService {
+  // Returns the status of the cros_healthd service and external mojo remotes.
+  GetServiceStatus() => (ServiceStatus response);
 };

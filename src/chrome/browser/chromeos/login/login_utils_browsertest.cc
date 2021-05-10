@@ -66,6 +66,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
   {
     base::RunLoop loop;
     WizardController::SkipPostLoginScreensForTesting();
+    EXPECT_FALSE(UserSessionInitializer::Get()->get_inited_for_testing());
     UserSessionInitializer::Get()->set_init_rlz_impl_closure_for_testing(
         loop.QuitClosure());
 
@@ -86,8 +87,8 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
     base::string16 rlz_string;
     base::ThreadPool::PostTaskAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&GetAccessPointRlzInBackgroundThread,
-                   rlz::RLZTracker::ChromeHomePage(), &rlz_string),
+        base::BindOnce(&GetAccessPointRlzInBackgroundThread,
+                       rlz::RLZTracker::ChromeHomePage(), &rlz_string),
         loop.QuitClosure());
     loop.Run();
     EXPECT_EQ(base::string16(), rlz_string);

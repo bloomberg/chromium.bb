@@ -299,6 +299,26 @@ to `index`, and the symbolizer will recursively search the given directory for
 an ELF file with the given build id. This way, you will not have to worry
 about correct filenames.
 
+## Deobfuscation
+
+If your profile contains obfuscated Java methods (like `fsd.a`), you can
+provide a deobfuscation map to turn them back into human readable.
+To do so, use the `PERFETTO_PROGUARD_MAP` environment variable, using the
+format `packagename=filename[:packagename=filename...]`, e.g.
+`PERFETTO_PROGUARD_MAP=com.example.pkg1=foo.txt:com.example.pkg2=bar.txt`.
+All tools
+(traceconv, trace_processor_shell, the heap_profile script) support specifying
+the `PERFETTO_PROGUARD_MAP` as an environment variable.
+
+You can get a deobfuscation map for your trace using
+`tools/traceconv deobfuscate`. Then concatenate the resulting file to your
+trace to get a deobfuscated version of it.
+
+```
+PERFETTO_PROGUARD_MAP=com.example.pkg tools/traceconv deobfuscate ${TRACE} > deobfuscation_map
+cat ${TRACE} deobfuscation_map > deobfuscated_trace
+```
+
 ## Troubleshooting
 
 ### Buffer overrun
@@ -421,7 +441,7 @@ EOF
 Finally, run your target (e.g. trace_processor_shell) with LD_PRELOAD
 
 ```
-LD_PRELOAD=out/linux_clang_release/libheapprofd_preload.so out/linux_clang_release/trace_processor_shell <trace>
+LD_PRELOAD=out/linux_clang_release/libheapprofd_glibc_preload.so out/linux_clang_release/trace_processor_shell <trace>
 ```
 
 Then, Ctrl-C the Perfetto invocation and upload ~/heapprofd-trace to the
@@ -429,20 +449,27 @@ Then, Ctrl-C the Perfetto invocation and upload ~/heapprofd-trace to the
 
 ## Known Issues
 
-### Android 11
+### {#known-issues-android11} Android 11
 
 * 32-bit programs cannot be targeted on 64-bit devices.
 * Setting `sampling_interval_bytes` to 0 crashes the target process.
   This is an invalid config that should be rejected instead.
 * For startup profiles, some frame names might be missing. This will be
   resolved in Android 12.
+* `Failed to send control socket byte.` is displayed in logcat at the end of
+  every profile. This is benign.
+* The object count may be incorrect in `dump_at_max` profiles.
 
-### Android 10
-
-* On ARM32, the bottom-most frame is always `ERROR 2`. This is harmless and
-  the callstacks are still complete.
+### {#known-issues-android10} Android 10
+* Function names in libraries with load bias might be incorrect. Use
+  [offline symbolization](#symbolization) to resolve this issue.
+* For startup profiles, some frame names might be missing. This will be
+  resolved in Android 12.
+* 32-bit programs cannot be targeted on 64-bit devices.
 * x86 platforms are not supported. This includes the Android _Cuttlefish_
   emulator.
+* On ARM32, the bottom-most frame is always `ERROR 2`. This is harmless and
+  the callstacks are still complete.
 * If heapprofd is run standalone (by running `heapprofd` in a root shell, rather
   than through init), `/dev/socket/heapprofd` get assigned an incorrect SELinux
   domain. You will not be able to profile any processes unless you disable
@@ -452,13 +479,11 @@ Then, Ctrl-C the Perfetto invocation and upload ~/heapprofd-trace to the
   memory in the child process will prematurely end the profile.
   `java.lang.Runtime.exec` does this, calling it will prematurely end
   the profile. Note that this is in violation of the POSIX standard.
-* 32-bit programs cannot be targeted on 64-bit devices.
 * Setting `sampling_interval_bytes` to 0 crashes the target process.
   This is an invalid config that should be rejected instead.
-* Function names in libraries with load bias might be incorrect. Use
-  [offline symbolization](#symbolization) to resolve this issue.
-* For startup profiles, some frame names might be missing. This will be
-  resolved in Android 12.
+* `Failed to send control socket byte.` is displayed in logcat at the end of
+  every profile. This is benign.
+* The object count may be incorrect in `dump_at_max` profiles.
 
 ## Heapprofd vs malloc_info() vs RSS
 

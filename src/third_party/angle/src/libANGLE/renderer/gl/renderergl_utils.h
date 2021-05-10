@@ -164,6 +164,11 @@ struct ContextCreationTry
 };
 
 std::vector<ContextCreationTry> GenerateContextCreationToTry(EGLint requestedType, bool isMesaGLX);
+
+std::string GetRendererString(const FunctionsGL *functions);
+std::string GetVendorString(const FunctionsGL *functions);
+std::string GetVersionString(const FunctionsGL *functions);
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_GL_RENDERERGLUTILS_H_

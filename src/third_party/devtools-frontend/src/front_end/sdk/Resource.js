@@ -35,7 +35,6 @@ import {ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  //
 
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
- * @unrestricted
  */
 export class Resource {
   /**
@@ -63,6 +62,7 @@ export class Resource {
     this._loaderId = loaderId;
     this._type = type || Common.ResourceType.resourceTypes.Other;
     this._mimeType = mimeType;
+    this._isGenerated = false;
 
     this._lastModified = lastModified && Platfrom.DateUtilities.isValid(lastModified) ? lastModified : null;
     this._contentSize = contentSize;
@@ -173,6 +173,20 @@ export class Resource {
    */
   get content() {
     return this._content;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  get isGenerated() {
+    return this._isGenerated;
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  set isGenerated(val) {
+    this._isGenerated = val;
   }
 
   /**
@@ -313,7 +327,7 @@ export class Resource {
       return true;
     }
     if (this._type === Common.ResourceType.resourceTypes.Other) {
-      return !!this._content && !this._contentEncoded;
+      return Boolean(this._content) && !this._contentEncoded;
     }
     return false;
   }
@@ -323,5 +337,12 @@ export class Resource {
    */
   frame() {
     return this._resourceTreeModel.frameForId(this._frameId);
+  }
+
+  /**
+   * @return {number}
+   */
+  statusCode() {
+    return this._request ? this._request.statusCode : 0;
   }
 }

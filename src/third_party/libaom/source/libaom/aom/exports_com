@@ -6,6 +6,7 @@ text aom_codec_error
 text aom_codec_error_detail
 text aom_codec_get_caps
 text aom_codec_iface_name
+text aom_codec_set_option
 text aom_codec_version
 text aom_codec_version_extra_str
 text aom_codec_version_str

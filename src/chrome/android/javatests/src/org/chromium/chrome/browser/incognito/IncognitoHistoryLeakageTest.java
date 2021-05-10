@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.incognito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
@@ -26,8 +27,8 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.customtabs.IncognitoCustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
@@ -58,19 +59,20 @@ import java.util.concurrent.TimeoutException;
 @EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class IncognitoHistoryLeakageTest {
+    private static final String TEST_PAGE_1 = "/chrome/test/data/android/google.html";
+    private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
+
     private EmbeddedTestServer mTestServer;
     private String mTestPage1;
     private String mTestPage2;
-
-    private static final String TEST_PAGE_1 = "/chrome/test/data/android/google.html";
-    private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
 
     @Rule
     public ChromeTabbedActivityTestRule mChromeActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    public IncognitoCustomTabActivityTestRule mCustomTabActivityTestRule =
+            new IncognitoCustomTabActivityTestRule();
 
     @Before
     public void setUp() throws TimeoutException {
@@ -119,46 +121,26 @@ public class IncognitoHistoryLeakageTest {
         }
     }
 
-    /**
-     * We test history leaks from Incognito Tab/CCT to Regular Tab/CCT and not the other way
-     * round because incognito session don't have a history service of their own and rely on the
-     * history service of their original regular profile. So, if we open a regular profile
-     * first and visit a url and test for the url visibility in the history service provided by
-     * incognito session it would always be visible as they both share the same history service.
-     */
     @Test
     @LargeTest
-    @UseMethodParameter(TestParams.IncognitoToRegular.class)
-    @DisabledTest(message = "Flaky - https://crbug.com/1140751")
-    public void testBrowsingHistoryDoNotLeakFromIncognitoToRegular(
-            String incognitoActivityType, String regularActivityType) throws TimeoutException {
-        ActivityType incognitoActivity = ActivityType.valueOf(incognitoActivityType);
-        ActivityType regularActivity = ActivityType.valueOf(regularActivityType);
-
-        // We visit the mTestPage1 from incognito
-        Tab tab1 = incognitoActivity.launchUrl(
-                mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage1);
-
-        List<HistoryItem> historyEntriesOfIncognitoMode = getBrowsingHistory(tab1);
+    public void testBrowsingHistoryDoNotLeakFromIncognitoTabbedActivity() throws TimeoutException {
+        mChromeActivityTestRule.startMainActivityOnBlankPage();
+        mChromeActivityTestRule.loadUrlInNewTab(mTestPage1, /*incognito=*/true);
+        List<HistoryItem> historyEntriesOfIncognitoMode =
+                getBrowsingHistory(mChromeActivityTestRule.getActivity().getActivityTab());
         assertTrue(historyEntriesOfIncognitoMode.isEmpty());
+    }
 
-        // History from regular should also be empty as well, as currently, incognito and regular
-        // both share the same history service.
-        assertTrue(getBrowsingHistory(null).isEmpty());
-
-        // We visit mTestPage2 from regular
-        Tab tab2 = regularActivity.launchUrl(
-                mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
-
-        List<HistoryItem> regularBrowsingHistory = getBrowsingHistory(tab2);
-        assertEquals(1, regularBrowsingHistory.size());
-        assertEquals(mTestPage2, regularBrowsingHistory.get(0).getUrl());
-
-        // Since the history service is shared with incognito, getting browsing history for
-        // incognito should return that of regular.
-        List<HistoryItem> incognitoBrowsingHistory = getBrowsingHistory(tab1);
-        assertEquals(1, incognitoBrowsingHistory.size());
-        assertEquals(mTestPage2, incognitoBrowsingHistory.get(0).getUrl());
+    @Test
+    @LargeTest
+    public void testBrowsingHistoryDoNotLeakFromIncognitoCustomTabActivity()
+            throws TimeoutException {
+        Intent intent = CustomTabsTestUtils.createMinimalIncognitoCustomTabIntent(
+                InstrumentationRegistry.getContext(), mTestPage1);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        List<HistoryItem> historyEntriesOfIncognitoMode =
+                getBrowsingHistory(mCustomTabActivityTestRule.getActivity().getActivityTab());
+        assertTrue(historyEntriesOfIncognitoMode.isEmpty());
     }
 
     @Test
@@ -189,7 +171,7 @@ public class IncognitoHistoryLeakageTest {
         NavigationEntry entry1 = navigationHistory1.getEntryAtIndex(0);
         NavigationEntry entry2 = navigationHistory2.getEntryAtIndex(0);
 
-        assertEquals(entry1.getOriginalUrl(), mTestPage1);
-        assertEquals(entry2.getOriginalUrl(), mTestPage2);
+        assertEquals(mTestPage1, entry1.getOriginalUrl().getSpec());
+        assertEquals(mTestPage2, entry2.getOriginalUrl().getSpec());
     }
 }

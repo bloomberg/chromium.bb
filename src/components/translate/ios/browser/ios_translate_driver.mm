@@ -14,13 +14,11 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
-#import "components/translate/ios/browser/js_language_detection_manager.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #import "components/translate/ios/browser/translate_controller.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/navigation/navigation_context.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
@@ -61,21 +59,14 @@ IOSTranslateDriver::IOSTranslateDriver(
       language::IOSLanguageDetectionTabHelper::FromWebState(web_state_);
   language_detection_tab_helper->AddObserver(this);
 
-  CRWJSInjectionReceiver* receiver = web_state->GetJSInjectionReceiver();
-  DCHECK(receiver);
-
   // Create the language detection controller.
-  JsLanguageDetectionManager* language_detection_manager =
-      static_cast<JsLanguageDetectionManager*>(
-          [receiver instanceOfClass:[JsLanguageDetectionManager class]]);
   language_detection_controller_ =
       std::make_unique<LanguageDetectionController>(
-          web_state, language_detection_manager,
-          translate_manager_->translate_client()->GetPrefs());
+          web_state, translate_manager_->translate_client()->GetPrefs());
 
   // Create the translate controller.
-  JsTranslateManager* js_translate_manager = static_cast<JsTranslateManager*>(
-      [receiver instanceOfClass:[JsTranslateManager class]]);
+  JsTranslateManager* js_translate_manager =
+      [[JsTranslateManager alloc] initWithWebState:web_state];
   translate_controller_ =
       std::make_unique<TranslateController>(web_state, js_translate_manager);
 
@@ -98,6 +89,9 @@ void IOSTranslateDriver::OnLanguageDetermined(
 
   if (web_state_)
     translate_manager_->InitiateTranslation(details.adopted_language);
+
+  for (auto& observer : language_detection_observers())
+    observer.OnLanguageDetermined(details);
 }
 
 void IOSTranslateDriver::IOSLanguageDetectionTabHelperWasDestroyed(

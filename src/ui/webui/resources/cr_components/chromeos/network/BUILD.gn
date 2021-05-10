@@ -8,7 +8,9 @@ import("../os_cr_components.gni")
 assert(is_chromeos, "Only ChromeOS components belong here.")
 
 js_type_check("closure_compile") {
+  uses_legacy_modules = true
   deps = [
+    ":cellular_utils",
     ":cr_policy_network_behavior_mojo",
     ":cr_policy_network_indicator_mojo",
     ":mojo_interface_provider",
@@ -212,6 +214,7 @@ js_library("network_list") {
 js_library("network_list_item") {
   deps = [
     ":cr_policy_network_behavior_mojo",
+    ":mojo_interface_provider",
     ":network_list_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
@@ -249,9 +252,17 @@ js_library("onc_mojo") {
   ]
 }
 
+js_library("cellular_utils") {
+  deps = [
+    ":mojo_interface_provider",
+    ":onc_mojo",
+  ]
+}
+
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
+    ":cellular_utils.m",
     ":cr_policy_network_behavior_mojo.m",
     ":cr_policy_network_indicator_mojo.m",
     ":mojo_interface_provider.m",
@@ -440,6 +451,7 @@ js_library("network_list.m") {
   deps = [
     ":network_list_item.m",
     ":network_list_types.m",
+    ":onc_mojo.m",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior.m",
@@ -451,7 +463,11 @@ js_library("network_list.m") {
 js_library("network_list_item.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_list_item.m.js" ]
   deps = [
+    ":cr_policy_network_behavior_mojo.m",
+    ":mojo_interface_provider.m",
     ":network_list_types.m",
+    ":onc_mojo.m",
+    "//third_party/polymer/v3_0/components-chromium/paper-spinner:paper-spinner-lite",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
   ]
@@ -460,6 +476,7 @@ js_library("network_list_item.m") {
 
 js_library("network_list_types.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_list_types.m.js" ]
+  deps = [ ":onc_mojo.m" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -610,6 +627,15 @@ js_library("onc_mojo.m") {
   extra_deps = [ ":modulize" ]
 }
 
+js_library("cellular_utils.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/cellular_utils.m.js" ]
+  deps = [
+    ":mojo_interface_provider.m",
+    ":onc_mojo.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
 import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
@@ -729,6 +755,7 @@ polymer_modulizer("network_list_item") {
   html_file = "network_list_item.html"
   html_type = "dom-module"
   auto_imports = cr_components_chromeos_auto_imports
+  namespace_rewrites = cr_components_chromeos_namespace_rewrites
 }
 
 polymer_modulizer("network_nameservers") {
@@ -805,6 +832,7 @@ js_modulizer("modulize") {
     "cr_policy_network_behavior_mojo.js",
     "mojo_interface_provider.js",
     "network_config_element_behavior.js",
+    "cellular_utils.js",
     "network_listener_behavior.js",
     "network_list_types.js",
     "onc_mojo.js",

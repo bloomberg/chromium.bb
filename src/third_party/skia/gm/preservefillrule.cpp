@@ -13,7 +13,7 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 #include "tools/ToolUtils.h"
@@ -59,7 +59,7 @@ private:
         ctxOptions->fAllowPathMaskCaching = true;
     }
 
-    DrawResult onDraw(GrRecordingContext* rContext, GrRenderTargetContext* rtc, SkCanvas* canvas,
+    DrawResult onDraw(GrRecordingContext* rContext, GrSurfaceDrawContext* rtc, SkCanvas* canvas,
                       SkString* errorMsg) override {
         using CoverageType = GrCCAtlas::CoverageType;
 
@@ -113,7 +113,7 @@ private:
             canvas->drawPath(star7_evenOdd, paint);
             canvas->drawPath(star5_winding, paint);
             canvas->drawPath(star5_evenOdd, paint);
-            rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(), nullptr);
+            dContext->priv().flushSurface(rtc->asSurfaceProxy());
 
             // Ensure the path cache is behaving in such a way that we are actually testing what we
             // think we are.

@@ -8,6 +8,17 @@ GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
  * Browser tests for select-to-speak's feature to filter out overflow text.
  */
 SelectToSpeakParagraphOverflowTest = class extends SelectToSpeakE2ETest {
+  /** @override */
+  setUp() {
+    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+    (async function() {
+      const module = await import('/select_to_speak/paragraph_utils.js');
+      window.ParagraphUtils = module.ParagraphUtils;
+
+      runTest();
+    })();
+  }
+
   generateHorizentalOverflowText(text) {
     return (
         '<div style="width: 50px; overflow: hidden">' +
@@ -43,12 +54,11 @@ TEST_F(
       this.runWithLoadedTree(
           this.generateHorizentalOverflowText(inputText), function(root) {
             const overflowText = root.find({
-              role: 'inlineTextBox',
+              role: chrome.automation.RoleType.INLINE_TEXT_BOX,
               attributes: {name: inputText},
             });
             var nodeGroup = ParagraphUtils.buildNodeGroup(
-                [overflowText], 0, false /* do not split on language */
-            );
+                [overflowText], 0 /* index */, {clipOverflowWords: true});
 
             // The output text should have the same length of the input text
             // plus a space character at the end.
@@ -72,12 +82,11 @@ TEST_F(
           function(root) {
             // Find the visible text.
             const visibleTextNode = root.find({
-              role: 'inlineTextBox',
+              role: chrome.automation.RoleType.INLINE_TEXT_BOX,
               attributes: {name: visibleText},
             });
             var nodeGroup = ParagraphUtils.buildNodeGroup(
-                [visibleTextNode], 0, false /* do not split on language */
-            );
+                [visibleTextNode], 0 /* index */, {clipOverflowWords: true});
             // The output text should have the same length of the visible text
             // plus a space character at the end.
             assertEquals(nodeGroup.text.length, visibleText.length + 1);
@@ -88,12 +97,11 @@ TEST_F(
 
             // Find the overflow text.
             const overflowTextNode = root.find({
-              role: 'inlineTextBox',
+              role: chrome.automation.RoleType.INLINE_TEXT_BOX,
               attributes: {name: overflowText},
             });
             var nodeGroup = ParagraphUtils.buildNodeGroup(
-                [overflowTextNode], 0, false /* do not split on language */
-            );
+                [overflowTextNode], 0 /* index */, {clipOverflowWords: true});
 
             // The output text should have the same length of the overflow text
             // plus a space character at the end.
@@ -110,12 +118,11 @@ TEST_F(
       this.runWithLoadedTree(
           this.generateEntirelyOverflowText(inputText), function(root) {
             const overflowText = root.find({
-              role: 'inlineTextBox',
+              role: chrome.automation.RoleType.INLINE_TEXT_BOX,
               attributes: {name: inputText},
             });
             var nodeGroup = ParagraphUtils.buildNodeGroup(
-                [overflowText], 0, false /* do not split on language */
-            );
+                [overflowText], 0 /* index */, {clipOverflowWords: true});
 
             // The output text should have the same length of the input text
             // plus a space character at the end.
@@ -129,12 +136,11 @@ TEST_F('SelectToSpeakParagraphOverflowTest', 'OutputsVisibleText', function() {
   const inputText = 'This text is visible';
   this.runWithLoadedTree(this.generateVisibleText(inputText), function(root) {
     const visibleText = root.find({
-      role: 'inlineTextBox',
+      role: chrome.automation.RoleType.INLINE_TEXT_BOX,
       attributes: {name: inputText},
     });
     var nodeGroup = ParagraphUtils.buildNodeGroup(
-        [visibleText], 0, false /* do not split on language */
-    );
+        [visibleText], 0 /* index */, {clipOverflowWords: true});
 
     // The output text should have the same length of the input text plus a
     // space character at the end.
@@ -143,3 +149,26 @@ TEST_F('SelectToSpeakParagraphOverflowTest', 'OutputsVisibleText', function() {
     assertEquals(nodeGroup.text.replace(/ /g, ''), inputText.replace(/ /g, ''));
   });
 });
+
+TEST_F(
+    'SelectToSpeakParagraphOverflowTest',
+    'DoesNotClipOverflowWordsWhenDisabled', function() {
+      const inputText = 'This text overflows entirely';
+      this.runWithLoadedTree(
+          this.generateEntirelyOverflowText(inputText), function(root) {
+            const overflowText = root.find({
+              role: chrome.automation.RoleType.INLINE_TEXT_BOX,
+              attributes: {name: inputText},
+            });
+            var nodeGroup = ParagraphUtils.buildNodeGroup(
+                [overflowText], 0 /* index */, {clipOverflowWords: false});
+
+            // The output text should have the same length of the input text
+            // plus a space character at the end.
+            assertEquals(nodeGroup.text.length, inputText.length + 1);
+            // The output text should have same non-empty words as the input
+            // text.
+            assertEquals(
+                nodeGroup.text.replace(/ /g, ''), inputText.replace(/ /g, ''));
+          });
+    });

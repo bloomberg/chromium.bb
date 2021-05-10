@@ -25,19 +25,15 @@ namespace tint {
 namespace ast {
 
 /// The struct decorations
-class StructDecoration : public Decoration {
+class StructDecoration : public Castable<StructDecoration, Decoration> {
  public:
   /// The kind of decoration that this type represents
-  static constexpr DecorationKind Kind = DecorationKind::kStruct;
+  static constexpr const DecorationKind Kind = DecorationKind::kStruct;
 
   ~StructDecoration() override;
 
-  /// @returns true if this is a block struct
-  virtual bool IsBlock() const = 0;
-
-  /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  virtual void to_str(std::ostream& out) const = 0;
+  /// @return the decoration kind
+  DecorationKind GetKind() const override;
 
  protected:
   /// Constructor
@@ -46,7 +42,7 @@ class StructDecoration : public Decoration {
 };
 
 /// List of struct decorations
-using StructDecorationList = std::vector<std::unique_ptr<StructDecoration>>;
+using StructDecorationList = std::vector<StructDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

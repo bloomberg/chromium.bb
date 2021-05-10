@@ -78,7 +78,7 @@ void LayoutTextControl::StyleDidChange(HTMLElement* inner_editor,
     }
 
     // The inner editor element uses the LayoutTextControl's ::selection style
-    // (see: GetUncachedSelectionStyle in SelectionPaintingUtils.cpp) so ensure
+    // (see: HighlightPseudoStyle in highlight_painting_utils.cc) so ensure
     // the inner editor selection is invalidated anytime style changes and a
     // ::selection style is or was present on LayoutTextControl.
     if (new_style.HasPseudoElementStyle(kPseudoIdSelection) ||
@@ -101,7 +101,6 @@ void LayoutTextControl::HitInnerEditorElement(
     HitTestResult& result,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset) {
-  NOT_DESTROYED();
   if (!inner_editor.GetLayoutObject())
     return;
 
@@ -109,7 +108,7 @@ void LayoutTextControl::HitInnerEditorElement(
       hit_test_location.Point() - accumulated_offset -
       inner_editor.GetLayoutObject()->LocalToAncestorPoint(PhysicalOffset(),
                                                            &box);
-  result.SetNodeAndPosition(&inner_editor, local_point);
+  result.OverrideNodeAndPosition(&inner_editor, local_point);
 }
 
 static const char* const kFontFamiliesWithInvalidCharWidth[] = {

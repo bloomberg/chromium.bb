@@ -50,26 +50,26 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void WaitForRequestRedirected();
   void WaitForResponseStarted();
   void WaitForRequestFailed();
-  void WaitForRequestStarted();
 
   void ReleaseURLLoaderClientEndpoints();
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::URLResponseHeadPtr response) override;
   void OnResponseStarted(
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
-      const GlobalRequestID& request_id,
+      GlobalRequestID request_id,
       bool is_download,
-      NavigationDownloadPolicy download_policy,
+      blink::NavigationDownloadPolicy download_policy,
+      net::NetworkIsolationKey network_isolation_key,
       base::Optional<SubresourceLoaderParams> subresource_loader_params)
       override;
   void OnRequestFailed(
       const network::URLLoaderCompletionStatus& status) override;
-  void OnRequestStarted(base::TimeTicks timestamp) override;
 
  private:
   net::RedirectInfo redirect_info_;
@@ -85,7 +85,6 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   std::unique_ptr<base::RunLoop> request_redirected_;
   std::unique_ptr<base::RunLoop> response_started_;
   std::unique_ptr<base::RunLoop> request_failed_;
-  std::unique_ptr<base::RunLoop> request_started_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationURLLoaderDelegate);
 };

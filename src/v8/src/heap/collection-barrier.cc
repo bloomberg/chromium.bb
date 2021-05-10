@@ -5,6 +5,7 @@
 #include "src/heap/collection-barrier.h"
 
 #include "src/base/platform/time.h"
+#include "src/common/globals.h"
 #include "src/heap/gc-tracer.h"
 #include "src/heap/heap-inl.h"
 #include "src/heap/heap.h"
@@ -31,13 +32,16 @@ class BackgroundCollectionInterruptTask : public CancelableTask {
       : CancelableTask(heap->isolate()), heap_(heap) {}
 
   ~BackgroundCollectionInterruptTask() override = default;
+  BackgroundCollectionInterruptTask(const BackgroundCollectionInterruptTask&) =
+      delete;
+  BackgroundCollectionInterruptTask& operator=(
+      const BackgroundCollectionInterruptTask&) = delete;
 
  private:
   // v8::internal::CancelableTask overrides.
   void RunInternal() override { heap_->CheckCollectionRequested(); }
 
   Heap* heap_;
-  DISALLOW_COPY_AND_ASSIGN(BackgroundCollectionInterruptTask);
 };
 
 void CollectionBarrier::AwaitCollectionBackground() {
@@ -66,9 +70,13 @@ void CollectionBarrier::StopTimeToCollectionTimer() {
     DCHECK(timer_.IsStarted());
     base::TimeDelta delta = timer_.Elapsed();
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
-                         "V8.TimeToCollection", TRACE_EVENT_SCOPE_THREAD,
-                         "duration", delta.InMillisecondsF());
-    heap_->isolate()->counters()->time_to_collection()->AddTimedSample(delta);
+                         "V8.GC.TimeToCollectionOnBackground",
+                         TRACE_EVENT_SCOPE_THREAD, "duration",
+                         delta.InMillisecondsF());
+    heap_->isolate()
+        ->counters()
+        ->gc_time_to_collection_on_background()
+        ->AddTimedSample(delta);
     timer_.Stop();
   } else {
     DCHECK_EQ(old_state, RequestState::kDefault);
@@ -87,8 +95,8 @@ void CollectionBarrier::ActivateStackGuardAndPostTask() {
 }
 
 void CollectionBarrier::BlockUntilCollected() {
-  TRACE_BACKGROUND_GC(heap_->tracer(),
-                      GCTracer::BackgroundScope::BACKGROUND_COLLECTION);
+  TRACE_GC1(heap_->tracer(), GCTracer::Scope::BACKGROUND_COLLECTION,
+            ThreadKind::kBackground);
   base::MutexGuard guard(&mutex_);
 
   while (CollectionRequested()) {

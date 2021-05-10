@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
@@ -41,8 +42,8 @@
 #include "extensions/common/extension.h"
 #include "services/preferences/public/cpp/tracked/tracked_preference_histogram_names.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -69,7 +70,7 @@ enum AllowedBuckets {
 };
 
 #if defined(OS_WIN)
-base::string16 GetRegistryPathForTestProfile() {
+std::wstring GetRegistryPathForTestProfile() {
   // Cleanup follow-up to http://crbug.com/721245 for the previous location of
   // this test key which had similar problems (to a lesser extent). It's
   // redundant but harmless to have multiple callers hit this on the same
@@ -144,7 +145,7 @@ int GetTrackedPrefHistogramCount(const char* histogram_name,
   return GetTrackedPrefHistogramCount(histogram_name, "", allowed_buckets);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
     const base::FilePath& pref_file) {
   JSONFileValueDeserializer deserializer(pref_file);
@@ -205,7 +206,7 @@ class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
@@ -217,7 +218,7 @@ class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
     if (content::IsPreTest())
       return extensions::ExtensionBrowserTest::SetUpUserDataDirectory();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // For some reason, the Preferences file does not exist in the location
     // below on Chrome OS. Since protection is disabled on Chrome OS, it's okay
     // to simply not attack preferences at all (and still assert that no
@@ -311,7 +312,7 @@ class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
 #if defined(OS_WIN)
     // When done, delete the Registry key to avoid polluting the registry.
     if (!content::IsPreTest()) {
-      base::string16 registry_key = GetRegistryPathForTestProfile();
+      std::wstring registry_key = GetRegistryPathForTestProfile();
       base::win::RegKey key;
       if (key.Open(HKEY_CURRENT_USER, registry_key.c_str(),
                    KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
@@ -427,7 +428,7 @@ class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
   int num_tracked_prefs_;
 
 #if defined(OS_WIN)
-  base::string16 registry_key_for_external_validation_;
+  std::wstring registry_key_for_external_validation_;
 #endif
 };
 
@@ -788,7 +789,7 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
 
 // TODO(gab): This doesn't work on OS_CHROMEOS because we fail to attack
 // Preferences.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Explicitly verify the result of reported resets.
     EXPECT_EQ(protection_level_ >= PROTECTION_ENABLED_BASIC ? 0U : 2U,
               profile()
@@ -1115,7 +1116,7 @@ class PrefHashBrowserTestRegistryValidationFailure
   void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
       base::DictionaryValue* protected_preferences) override {
-    base::string16 registry_key =
+    std::wstring registry_key =
         GetRegistryPathForTestProfile() + L"\\PreferenceMACs\\Default";
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, registry_key.c_str(),
@@ -1232,7 +1233,7 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
 
     if (protection_level_ < PROTECTION_ENABLED_DSE) {
 // This doesn't work on OS_CHROMEOS because we fail to attack Preferences.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
       // Attack is successful.
       EXPECT_EQ(DefaultSearchManager::FROM_USER, dse_source);
       EXPECT_EQ(current_dse->keyword(), base::UTF8ToUTF16("badkeyword"));

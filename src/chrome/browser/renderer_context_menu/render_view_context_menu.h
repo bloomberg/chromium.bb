@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
@@ -188,6 +189,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendCurrentExtensionItems();
 #endif
   void AppendPrintPreviewItems();
+  void AppendSearchLensForImageItems();
   void AppendSearchWebForImageItems();
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
@@ -227,6 +229,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecExitFullscreen();
   void ExecCopyLinkText();
   void ExecCopyImageAt();
+  void ExecSearchLensForImage();
   void ExecSearchWebForImage();
   void ExecLoadImage();
   void ExecPlayPause();
@@ -279,7 +282,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
       spelling_options_submenu_observer_;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // An observer that handles "Open with <app>" items.
   std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
   // An observer that handles smart text selection action items.

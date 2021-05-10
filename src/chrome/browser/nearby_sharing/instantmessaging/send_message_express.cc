@@ -4,20 +4,29 @@
 
 #include "chrome/browser/nearby_sharing/instantmessaging/send_message_express.h"
 
+#include <sstream>
+
+#include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/instantmessaging/constants.h"
 #include "chrome/browser/nearby_sharing/instantmessaging/proto/instantmessaging.pb.h"
 #include "chrome/browser/nearby_sharing/instantmessaging/token_fetcher.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "net/base/load_flags.h"
-#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
+
 // 256 KB as max response size.
 constexpr int kMaxSendResponseSize = 256;
+
+// Timeout for network calls to instantmessaging servers.
+const base::TimeDelta kNetworkTimeout = base::TimeDelta::FromMilliseconds(2500);
 
 // TODO(crbug.com/1123164) - Add nearby sharing policy when available.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -50,25 +59,31 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
             }
           })");
 
-bool IsLoaderSuccessful(const network::SimpleURLLoader* loader) {
-  if (!loader || loader->NetError() != net::OK)
-    return false;
-
-  if (!loader->ResponseInfo() || !loader->ResponseInfo()->headers)
-    return false;
-
-  return network::cors::IsOkStatus(
-      loader->ResponseInfo()->headers->response_code());
+void LogSendResult(bool success, const NearbyShareHttpStatus& http_status) {
+  std::stringstream ss;
+  ss << "Instant messaging send express " << (success ? "succeeded" : "failed")
+     << ". HTTP status: " << http_status;
+  if (success) {
+    NS_LOG(VERBOSE) << ss.str();
+  } else {
+    NS_LOG(ERROR) << ss.str();
+  }
+  base::UmaHistogramBoolean(
+      "Nearby.Connections.InstantMessaging.SendExpress.Result", success);
+  if (!success) {
+    base::UmaHistogramSparse(
+        "Nearby.Connections.InstantMessaging.SendExpress.Result.FailureReason",
+        http_status.GetResultCodeForMetrics());
+  }
 }
+
 }  // namespace
 
 SendMessageExpress::SendMessageExpress(
-    TokenFetcher* token_fetcher,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : token_fetcher_(token_fetcher),
-      url_loader_factory_(std::move(url_loader_factory)) {
-  DCHECK(token_fetcher_);
-}
+    : token_fetcher_(identity_manager),
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 SendMessageExpress::~SendMessageExpress() = default;
 
@@ -76,7 +91,7 @@ void SendMessageExpress::SendMessage(
     const chrome_browser_nearby_sharing_instantmessaging::
         SendMessageExpressRequest& request,
     SuccessCallback callback) {
-  token_fetcher_->GetAccessToken(base::BindOnce(
+  token_fetcher_.GetAccessToken(base::BindOnce(
       &SendMessageExpress::DoSendMessage, weak_ptr_factory_.GetWeakPtr(),
       request, std::move(callback)));
 }
@@ -86,8 +101,13 @@ void SendMessageExpress::DoSendMessage(
         SendMessageExpressRequest& request,
     SuccessCallback callback,
     const std::string& oauth_token) {
+  base::UmaHistogramBoolean(
+      "Nearby.Connections.InstantMessaging.SendExpress.OAuthTokenFetchResult",
+      !oauth_token.empty());
   if (oauth_token.empty()) {
+    NS_LOG(ERROR) << __func__ << ": Failed to fetch OAuth token.";
     std::move(callback).Run(false);
+    // NOTE: |this| might be destroyed here after running the callback
     return;
   }
 
@@ -122,9 +142,11 @@ void SendMessageExpress::OnSendMessageResponse(
     std::unique_ptr<network::SimpleURLLoader> url_loader,
     SuccessCallback callback,
     std::unique_ptr<std::string> response_body) {
-  // TODO(crbug.com/1123172) - Add metrics for success and failures, with error
-  // codes for failures.
-  bool success = response_body && !response_body->empty();
-  success &= IsLoaderSuccessful(url_loader.get());
+  NearbyShareHttpStatus http_status(url_loader->NetError(),
+                                    url_loader->ResponseInfo());
+  bool success =
+      http_status.IsSuccess() && response_body && !response_body->empty();
+  LogSendResult(success, http_status);
   std::move(callback).Run(success);
+  // NOTE: |this| might be destroyed here after running the callback
 }

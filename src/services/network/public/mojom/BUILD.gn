@@ -123,7 +123,10 @@ mojom("mojom_network_isolation_key") {
   generate_java = true
   sources = [ "network_isolation_key.mojom" ]
 
-  public_deps = [ "//url/mojom:url_mojom_origin" ]
+  public_deps = [
+    ":mojom_schemeful_site",
+    "//url/mojom:url_mojom_origin",
+  ]
 
   if (!is_ios) {
     export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
@@ -153,6 +156,7 @@ mojom("mojom_network_isolation_key") {
 mojom("url_loader_base") {
   generate_java = true
   sources = [
+    "auth_and_certificate_observer.mojom",
     "chunked_data_pipe_getter.mojom",
     "client_security_state.mojom",
     "cross_origin_embedder_policy.mojom",
@@ -162,9 +166,11 @@ mojom("url_loader_base") {
     "mutable_network_traffic_annotation_tag.mojom",
     "mutable_partial_network_traffic_annotation_tag.mojom",
     "trust_tokens.mojom",
+    "web_bundle_handle.mojom",
   ]
 
   public_deps = [
+    ":mojom_network_param",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
@@ -247,19 +253,12 @@ mojom("mojom_schemeful_site") {
   ]
 }
 
-# This target is split from "mojom" target as the lazy serialization may
-# cause problems. See https://crbug.com/822732.
-mojom("websocket_mojom") {
+mojom("mojom_network_param") {
   generate_java = true
-  sources = [
-    "network_param.mojom",
-    "websocket.mojom",
-  ]
+  sources = [ "network_param.mojom" ]
 
   public_deps = [
-    ":mojom_ip_address",
     "//mojo/public/mojom/base",
-    "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
 
@@ -269,13 +268,25 @@ mojom("websocket_mojom") {
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
 
-  cpp_typemaps = [
+  # Typemaps which apply to both Blink and non-Blink bindings.
+  shared_cpp_typemaps = [
     {
       types = [
         {
           mojom = "network.mojom.AuthChallengeInfo"
           cpp = "::net::AuthChallengeInfo"
         },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/network_param_mojom_traits.h" ]
+      traits_public_deps =
+          [ "//services/network/public/cpp:network_param_mojom_support" ]
+    },
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
         {
           mojom = "network.mojom.AuthCredentials"
           cpp = "::net::AuthCredentials"
@@ -320,14 +331,33 @@ mojom("websocket_mojom") {
         "//services/network/public/cpp/net_ipc_param_traits.h",
         "//services/network/public/cpp/network_param_mojom_traits.h",
       ]
-      traits_sources =
-          [ "//services/network/public/cpp/network_param_mojom_traits.cc" ]
-      traits_public_deps = [
-        "//ipc",
-        "//net",
-        "//services/network/public/cpp:cpp_base",
-      ]
+      traits_public_deps =
+          [ "//services/network/public/cpp:network_param_mojom_support" ]
     },
+  ]
+  cpp_typemaps += shared_cpp_typemaps
+  blink_cpp_typemaps = []
+  blink_cpp_typemaps += shared_cpp_typemaps
+}
+
+# This target is split from "mojom" target as the lazy serialization may
+# cause problems. See https://crbug.com/822732.
+mojom("websocket_mojom") {
+  generate_java = true
+  sources = [ "websocket.mojom" ]
+
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/blink/public/platform/web_common.h"
+  }
+
+  public_deps = [
+    ":mojom_ip_address",
+    ":mojom_network_param",
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 }
 
@@ -511,12 +541,14 @@ mojom("mojom") {
     "url_response_head.mojom",
     "web_client_hints_types.mojom",
     "web_sandbox_flags.mojom",
+    "x_frame_options.mojom",
   ]
 
   public_deps = [
     ":cookies_mojom",
     ":mojom_ip_address",
     ":mojom_network_isolation_key",
+    ":mojom_network_param",
     ":mojom_schemeful_site",
     ":url_loader_base",
     ":websocket_mojom",
@@ -545,11 +577,11 @@ mojom("mojom") {
 
   # This is only needed on desktop linux, but the defines make this difficult
   # because IS_CHROMECAST is not available in build/build_config.h.
-  if (is_linux || is_lacros) {
+  if (is_linux || is_chromeos_lacros) {
     enabled_features += [ "needs_crypt_config" ]
   }
 
-  if (is_android || is_ash) {
+  if (is_android || is_chromeos_ash) {
     enabled_features += [ "network_change_notifier_in_browser" ]
   }
 
@@ -580,6 +612,10 @@ mojom("mojom") {
           cpp = "::network::ResourceRequest::TrustedParams"
         },
         {
+          mojom = "network.mojom.WebBundleTokenParams"
+          cpp = "::network::ResourceRequest::WebBundleTokenParams"
+        },
+        {
           mojom = "network.mojom.URLRequest"
           cpp = "::network::ResourceRequest"
         },
@@ -596,6 +632,26 @@ mojom("mojom") {
         {
           mojom = "network.mojom.RequestPriority"
           cpp = "::net::RequestPriority"
+        },
+        {
+          mojom = "network.mojom.DataElementBytes"
+          cpp = "::network::DataElementBytes"
+          move_only = true
+        },
+        {
+          mojom = "network.mojom.DataElementDataPipe"
+          cpp = "::network::DataElementDataPipe"
+          move_only = true
+        },
+        {
+          mojom = "network.mojom.DataElementChunkedDataPipe"
+          cpp = "::network::DataElementChunkedDataPipe"
+          move_only = true
+        },
+        {
+          mojom = "network.mojom.DataElementFile"
+          cpp = "::network::DataElementFile"
+          move_only = true
         },
         {
           mojom = "network.mojom.DataElement"

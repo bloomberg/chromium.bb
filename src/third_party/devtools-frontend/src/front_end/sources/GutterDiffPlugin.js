@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as Diff from '../diff/diff.js';  // eslint-disable-line no-unused-vars
+import * as i18n from '../i18n/i18n.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as SourceFrame from '../source_frame/source_frame.js';
 import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
@@ -13,6 +14,14 @@ import * as WorkspaceDiff from '../workspace_diff/workspace_diff.js';
 
 import {Plugin} from './Plugin.js';
 
+export const UIStrings = {
+  /**
+  *@description A context menu item in the Gutter Diff Plugin of the Sources panel
+  */
+  localModifications: 'Local Modifications...',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/GutterDiffPlugin.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class GutterDiffPlugin extends Plugin {
   /**
    * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
@@ -201,7 +210,7 @@ export class GutterDiffPlugin extends Plugin {
     if (!WorkspaceDiff.WorkspaceDiff.workspaceDiff().isUISourceCodeModified(uiSourceCode)) {
       return;
     }
-    contextMenu.revealSection().appendItem(ls`Local Modifications...`, () => {
+    contextMenu.revealSection().appendItem(i18nString(UIStrings.localModifications), () => {
       Common.Revealer.reveal(new WorkspaceDiff.WorkspaceDiff.DiffUILocation(uiSourceCode));
     });
   }
@@ -274,10 +283,26 @@ export class GutterDecoration {
 export const DiffGutterType = 'CodeMirror-gutter-diff';
 
 /**
+ * @type {ContextMenuProvider}
+ */
+let contextMenuProviderInstance;
+
+/**
  * @implements {UI.ContextMenu.Provider}
- * @unrestricted
  */
 export class ContextMenuProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!contextMenuProviderInstance || forceNew) {
+      contextMenuProviderInstance = new ContextMenuProvider();
+    }
+
+    return contextMenuProviderInstance;
+  }
+
   /**
    * @override
    * @param {!Event} event

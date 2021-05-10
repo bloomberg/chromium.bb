@@ -120,7 +120,7 @@ class Array2D {
   const T* operator[](int row) const { return data_view_[row]; }
 
  private:
-  std::unique_ptr<T[]> data_ = nullptr;
+  std::unique_ptr<T[]> data_;
   size_t allocated_size_ = 0;
   size_t size_ = 0;
   Array2DView<T> data_view_;

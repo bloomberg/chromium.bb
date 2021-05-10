@@ -10,9 +10,11 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +57,9 @@ class PrimaryAccountAccessTokenFetcherTest
       AccessTokenFetcher::TokenCallback callback,
       PrimaryAccountAccessTokenFetcher::Mode mode,
       ConsentLevel consent) {
-    std::set<std::string> scopes{"scope"};
+    // API scope that does not require consent.
+    std::set<std::string> scopes = {
+        GaiaConstants::kChromeSafeBrowsingOAuth2Scope};
     return std::make_unique<PrimaryAccountAccessTokenFetcher>(
         "test_consumer", identity_test_env_.identity_manager(), scopes,
         std::move(callback), mode, consent);
@@ -329,7 +333,7 @@ TEST_P(PrimaryAccountAccessTokenFetcherTest,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfSignedOut) {
@@ -406,7 +410,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(ConsentLevel::kNotRequired,
                                          ConsentLevel::kSync));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Chrome OS can directly set the unconsented primary account during login,
 // so it has additional tests.
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
@@ -467,6 +471,6 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       access_token_info().token, access_token_info().expiration_time,
       access_token_info().id_token);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace signin

@@ -14,27 +14,33 @@
 
 #include "src/ast/continue_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ContinueStatement);
+
 namespace tint {
 namespace ast {
 
-ContinueStatement::ContinueStatement() : Statement() {}
-
-ContinueStatement::ContinueStatement(const Source& source)
-    : Statement(source) {}
+ContinueStatement::ContinueStatement(const Source& source) : Base(source) {}
 
 ContinueStatement::ContinueStatement(ContinueStatement&&) = default;
 
 ContinueStatement::~ContinueStatement() = default;
 
-bool ContinueStatement::IsContinue() const {
-  return true;
+ContinueStatement* ContinueStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<ContinueStatement>(src);
 }
 
 bool ContinueStatement::IsValid() const {
   return true;
 }
 
-void ContinueStatement::to_str(std::ostream& out, size_t indent) const {
+void ContinueStatement::to_str(const semantic::Info&,
+                               std::ostream& out,
+                               size_t indent) const {
   make_indent(out, indent);
   out << "Continue{}" << std::endl;
 }

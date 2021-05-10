@@ -31,11 +31,9 @@ DrmWindow::DrmWindow(gfx::AcceleratedWidget widget,
                      ScreenManager* screen_manager)
     : widget_(widget),
       device_manager_(device_manager),
-      screen_manager_(screen_manager) {
-}
+      screen_manager_(screen_manager) {}
 
-DrmWindow::~DrmWindow() {
-}
+DrmWindow::~DrmWindow() {}
 
 void DrmWindow::Initialize() {
   TRACE_EVENT1("drm", "DrmWindow::Initialize", "widget", widget_);

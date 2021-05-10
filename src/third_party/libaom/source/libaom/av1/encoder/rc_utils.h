@@ -229,6 +229,11 @@ static AOM_INLINE void recode_loop_update_q(
   const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
   *loop = 0;
 
+  // Special case for overlay frame.
+  if (rc->is_src_frame_alt_ref &&
+      rc->projected_frame_size < rc->max_frame_bandwidth)
+    return;
+
   const int min_cr = rc_cfg->min_cr;
   if (min_cr > 0) {
     aom_clear_system_state();

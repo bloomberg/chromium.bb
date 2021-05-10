@@ -64,6 +64,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager()
       override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
@@ -72,9 +73,10 @@ class AwAutofillClient : public autofill::AutofillClient,
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;
-  const GURL& GetLastCommittedURL() override;
+  const GURL& GetLastCommittedURL() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   const translate::LanguageState* GetLanguageState() override;
+  translate::TranslateDriver* GetTranslateDriver() override;
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(
       const autofill::CreditCard& card,
@@ -99,6 +101,9 @@ class AwAutofillClient : public autofill::AutofillClient,
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ConfirmSaveAddressProfile(
+      const autofill::AutofillProfile& profile,
+      AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
@@ -119,9 +124,9 @@ class AwAutofillClient : public autofill::AutofillClient,
       const std::vector<autofill::FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
-  bool IsContextSecure() override;
+  bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() override;
+  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
 
   // RiskDataLoader:

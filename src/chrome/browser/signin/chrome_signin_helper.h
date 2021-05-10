@@ -10,10 +10,11 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -48,7 +49,9 @@ class ChromeRequestAdapter : public RequestAdapter {
 
   virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
 
-  virtual blink::mojom::ResourceType GetResourceType() const = 0;
+  virtual network::mojom::RequestDestination GetRequestDestination() const = 0;
+
+  virtual bool IsFetchLikeAPI() const = 0;
 
   virtual GURL GetReferrerOrigin() const = 0;
 
@@ -96,7 +99,7 @@ void FixAccountConsistencyRequestHeader(
     AccountConsistencyMethod account_consistency,
     std::string gaia_id,
     const base::Optional<bool>& is_child_account,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     bool is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

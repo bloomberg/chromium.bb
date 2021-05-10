@@ -14,23 +14,31 @@
 
 #include "src/ast/block_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BlockStatement);
+
 namespace tint {
 namespace ast {
 
-BlockStatement::BlockStatement() : Statement() {}
-
-BlockStatement::BlockStatement(const Source& source) : Statement(source) {}
+BlockStatement::BlockStatement(const Source& source,
+                               const StatementList& statements)
+    : Base(source), statements_(std::move(statements)) {}
 
 BlockStatement::BlockStatement(BlockStatement&&) = default;
 
 BlockStatement::~BlockStatement() = default;
 
-bool BlockStatement::IsBlock() const {
-  return true;
+BlockStatement* BlockStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto stmts = ctx->Clone(statements_);
+  return ctx->dst->create<BlockStatement>(src, stmts);
 }
 
 bool BlockStatement::IsValid() const {
-  for (const auto& stmt : *this) {
+  for (auto* stmt : *this) {
     if (stmt == nullptr || !stmt->IsValid()) {
       return false;
     }
@@ -38,12 +46,14 @@ bool BlockStatement::IsValid() const {
   return true;
 }
 
-void BlockStatement::to_str(std::ostream& out, size_t indent) const {
+void BlockStatement::to_str(const semantic::Info& sem,
+                            std::ostream& out,
+                            size_t indent) const {
   make_indent(out, indent);
   out << "Block{" << std::endl;
 
-  for (const auto& stmt : *this) {
-    stmt->to_str(out, indent + 2);
+  for (auto* stmt : *this) {
+    stmt->to_str(sem, out, indent + 2);
   }
 
   make_indent(out, indent);

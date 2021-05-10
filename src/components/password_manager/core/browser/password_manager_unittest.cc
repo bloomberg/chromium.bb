@@ -74,8 +74,10 @@ using base::ASCIIToUTF16;
 using base::Feature;
 using base::TestMockTimeTaskRunner;
 using testing::_;
+using testing::AllOf;
 using testing::AnyNumber;
 using testing::ByMove;
+using testing::Field;
 using testing::Invoke;
 using testing::IsNull;
 using testing::Mock;
@@ -340,11 +342,14 @@ class PasswordManagerTest : public testing::TestWithParam<bool> {
   PasswordManagerTest() : task_runner_(new TestMockTimeTaskRunner) {
     bool enable_passwords_account_storage = GetParam();
     if (enable_passwords_account_storage) {
-      feature_list_.InitAndEnableFeature(
-          features::kEnablePasswordsAccountStorage);
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{features::kPasswordReuseDetectionEnabled,
+                                features::kEnablePasswordsAccountStorage},
+          /*disabled_features=*/{});
     } else {
-      feature_list_.InitAndDisableFeature(
-          features::kEnablePasswordsAccountStorage);
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{features::kPasswordReuseDetectionEnabled},
+          /*disabled_features=*/{features::kEnablePasswordsAccountStorage});
     }
   }
   ~PasswordManagerTest() override = default;
@@ -1277,17 +1282,17 @@ TEST_P(PasswordManagerTest, SyncCredentialsNotSaved) {
   // User should not be prompted and password should not be saved.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
+
   ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
       .WillByDefault(Return(true));
   ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
       .WillByDefault(Return(true));
-  EXPECT_CALL(
-      *store_,
-      SaveGaiaPasswordHash(
-          "googleuser", form_data.fields[1].value, /*is_primary_account=*/true,
-          metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
-#endif
+  EXPECT_CALL(*store_,
+              SaveGaiaPasswordHash(
+                  "googleuser", form_data.fields[1].value,
+                  /*is_primary_account=*/true,
+                  metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
+
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form_data.url))
       .WillRepeatedly(Return(true));
 
@@ -1299,7 +1304,6 @@ TEST_P(PasswordManagerTest, SyncCredentialsNotSaved) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_P(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
   for (bool did_stop_loading : {false, true}) {
     SCOPED_TRACE(testing::Message("did_stop_loading = ") << did_stop_loading);
@@ -1373,7 +1377,6 @@ TEST_P(PasswordManagerTest,
   OnPasswordFormSubmitted(form_data);
   manager()->DidNavigateMainFrame(false);
 }
-#endif
 
 // On a successful login with an updated password,
 // CredentialsFilter::ReportFormLoginSuccess and CredentialsFilter::ShouldSave
@@ -1436,7 +1439,6 @@ TEST_P(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.url))
       .WillRepeatedly(Return(true));
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
       .WillByDefault(Return(true));
   ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
@@ -1446,7 +1448,7 @@ TEST_P(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
       SaveGaiaPasswordHash(
           "googleuser", form.password_value, /*is_primary_account=*/true,
           metrics_util::GaiaPasswordHashChange::SAVED_IN_CONTENT_AREA));
-#endif
+
   manager()->OnPasswordFormSubmitted(&driver_, form.form_data);
 
   // Chrome should not remove the sync credential, because it was successfully
@@ -1774,7 +1776,7 @@ TEST_P(PasswordManagerTest, SameDocumentBlockedSite) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, form.submission_event);
-  EXPECT_TRUE(form_manager_to_save->IsBlacklisted());
+  EXPECT_TRUE(form_manager_to_save->IsBlocklisted());
 }
 
 TEST_P(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
@@ -2313,7 +2315,6 @@ TEST_P(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 // Check that no sync password hash is saved when no username is available,
 // because we it's not clear whether the submitted credentials are sync
 // credentials.
@@ -2366,7 +2367,6 @@ TEST_P(PasswordManagerTest, NotSavingSyncPasswordHash_NotSyncCredentials) {
   observed.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
-#endif
 
 TEST_P(PasswordManagerTest, ManualFallbackForSaving) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
@@ -2509,7 +2509,6 @@ TEST_P(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form_data.url))
       .WillRepeatedly(Return(true));
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
       .WillByDefault(Return(true));
   ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
@@ -2517,9 +2516,10 @@ TEST_P(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
   EXPECT_CALL(
       *store_,
       SaveGaiaPasswordHash(
-          "googleuser", form_data.fields[1].value, /*is_primary_account=*/true,
+          "googleuser", form_data.fields[1].value,
+          /*is_primary_account=*/true,
           metrics_util::GaiaPasswordHashChange::CHANGED_IN_CONTENT_AREA));
-#endif
+
   client_.FilterAllResultsForSaving();
   OnPasswordFormSubmitted(form_data);
 
@@ -2528,7 +2528,6 @@ TEST_P(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 // Non-Sync Gaia password hash should be saved upon submission of Gaia login
 // page.
 TEST_P(PasswordManagerTest, SaveOtherGaiaPasswordHash) {
@@ -2618,7 +2617,6 @@ TEST_P(PasswordManagerTest, SaveEnterprisePasswordHash) {
   observed.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
-#endif
 
 // If there are no forms to parse, certificate errors should not be reported.
 TEST_P(PasswordManagerTest, CertErrorReported_NoForms) {
@@ -2799,11 +2797,11 @@ TEST_P(PasswordManagerTest, MetricForSchemeOfSuccessfulLogins) {
     std::vector<FormData> observed = {form_data};
     EXPECT_CALL(*store_, GetLogins(_, _))
         .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled(form_data.url))
+        .WillRepeatedly(Return(true));
     manager()->OnPasswordFormsParsed(&driver_, observed);
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-    EXPECT_CALL(client_, IsSavingAndFillingEnabled(form_data.url))
-        .WillRepeatedly(Return(true));
     OnPasswordFormSubmitted(form_data);
 
     std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
@@ -3414,11 +3412,12 @@ TEST_P(PasswordManagerTest, UsernameFirstFlow) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+      .WillRepeatedly(
+          WithArg<1>(InvokeConsumer(store_.get(), MakeSavedForm())));
 
   PasswordForm form(MakeSimpleFormWithOnlyPasswordField());
   // Simulate the user typed a username in username form.
-  const base::string16 username = ASCIIToUTF16("username1");
+  const base::string16 username = ASCIIToUTF16("googleuser@gmail.com");
   EXPECT_CALL(driver_, GetLastCommittedURL()).WillOnce(ReturnRef(form.url));
   manager()->OnUserModifiedNonPasswordField(&driver_, FieldRendererId(1001),
                                             username /* value */);
@@ -3442,21 +3441,24 @@ TEST_P(PasswordManagerTest, UsernameFirstFlow) {
   // Simulates successful submission.
   manager()->OnPasswordFormsRendered(&driver_, {} /* observed */, true);
 
-  // Simulate saving the form, as if the info bar was accepted.
-  PasswordForm saved_form;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved_form));
   ASSERT_TRUE(form_manager_to_save);
-  form_manager_to_save->Save();
-
-#if defined(OS_ANDROID)
-  // Local heuristics on Android for username first flow are not supported, so
-  // the username should not be taken from the username form.
-  EXPECT_TRUE(saved_form.username_value.empty());
+#if !defined(OS_ANDROID)
+  EXPECT_CALL(*store_,
+              AddLogin(AllOf(Field(&PasswordForm::username_value, username),
+                             Field(&PasswordForm::password_value, password))));
 #else
-  EXPECT_EQ(username, saved_form.username_value);
+  // Local heuristics on Android for username first flow are not supported, so
+  // the username should not be taken from the username form. Furthermore, since
+  // there is no change to the already saved username, this should trigger an
+  // update flow, rather than a save flow.
+  EXPECT_CALL(
+      *store_,
+      UpdateLogin(AllOf(
+          Field(&PasswordForm::username_value, MakeSavedForm().username_value),
+          Field(&PasswordForm::password_value, password))));
 #endif  // defined(OS_ANDROID)
-
-  EXPECT_EQ(password, saved_form.password_value);
+  // Simulate saving the form, as if the info bar was accepted.
+  form_manager_to_save->Save();
 }
 
 #if !defined(OS_IOS)
@@ -3724,7 +3726,6 @@ TEST_P(PasswordManagerTest, GenerationOnChangedForm) {
   }
 }
 
-#if !defined(OS_IOS)
 TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedForm) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDetectFormSubmissionOnFormClear);
@@ -3772,6 +3773,48 @@ TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedForm) {
   manager()->OnPasswordFormCleared(&driver_, form_data);
 }
 
+// Similar test as above with fields that have empty names.
+TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedNamelessForm) {
+  constexpr base::char16 kEmptyName[] = STRING16_LITERAL("");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDetectFormSubmissionOnFormClear);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  PasswordForm saved_match(MakeSavedForm());
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(store_.get(), saved_match)));
+
+  FormData form_data;
+  form_data.unique_renderer_id = FormRendererId(0);
+  form_data.url = GURL("http://www.google.com/a/LoginAuth");
+
+  FormFieldData old_password_field;
+  old_password_field.form_control_type = "password";
+  old_password_field.unique_renderer_id = FieldRendererId(1);
+  old_password_field.name = kEmptyName;
+  old_password_field.value = ASCIIToUTF16("oldpass");
+  form_data.fields.push_back(old_password_field);
+
+  FormFieldData new_password_field;
+  new_password_field.form_control_type = "password";
+  new_password_field.unique_renderer_id = FieldRendererId(2);
+  new_password_field.name = kEmptyName;
+  new_password_field.autocomplete_attribute = "new-password";
+  form_data.fields.push_back(new_password_field);
+
+  manager()->OnPasswordFormsParsed(&driver_, {form_data});
+
+  form_data.fields[0].value = ASCIIToUTF16("oldpass");
+  form_data.fields[1].value = ASCIIToUTF16("newpass");
+
+  manager()->OnInformAboutUserInput(&driver_, form_data);
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr)
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->OnPasswordFormCleared(&driver_, form_data);
+}
+
+#if !defined(OS_IOS)
 TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedFormlessFields) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDetectFormSubmissionOnFormClear);
@@ -3822,6 +3865,63 @@ TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedFormlessFields) {
     form_data.fields[2].value = base::string16();
     if (new_password_field_was_cleared)
       form_data.fields[1].value = base::string16();
+
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    if (new_password_field_was_cleared) {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr)
+          .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    } else {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+    }
+
+    manager()->OnPasswordFormCleared(&driver_, form_data);
+  }
+}
+
+// Similar test as above with fields that have empty names.
+TEST_P(PasswordManagerTest, SubmissionDetectedOnClearedNameAndFormlessFields) {
+  constexpr base::char16 kEmptyName[] = STRING16_LITERAL("");
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDetectFormSubmissionOnFormClear);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  PasswordForm saved_match(MakeSavedForm());
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(store_.get(), saved_match)));
+
+  for (bool new_password_field_was_cleared : {true, false}) {
+    SCOPED_TRACE(testing::Message("#new password field was cleared = ")
+                 << new_password_field_was_cleared);
+
+    // Create FormData for a form with 1 password field and process it.
+    FormData form_data;
+    form_data.is_form_tag = false;
+    form_data.unique_renderer_id = FormRendererId(0);
+    form_data.url = GURL("http://www.google.com/a/LoginAuth");
+
+    FormFieldData old_password_field;
+    old_password_field.form_control_type = "password";
+    old_password_field.unique_renderer_id = FieldRendererId(1);
+    old_password_field.name = kEmptyName;
+    old_password_field.value = ASCIIToUTF16("oldpass");
+    form_data.fields.push_back(old_password_field);
+
+    FormFieldData new_password_field;
+    new_password_field.form_control_type = "password";
+    new_password_field.unique_renderer_id = FieldRendererId(2);
+    new_password_field.name = kEmptyName;
+    new_password_field.autocomplete_attribute = "new-password";
+    form_data.fields.push_back(new_password_field);
+
+    manager()->OnPasswordFormsParsed(&driver_, {form_data});
+
+    form_data.fields[0].value = ASCIIToUTF16("oldpass");
+    form_data.fields[1].value = ASCIIToUTF16("newpass");
+
+    manager()->OnInformAboutUserInput(&driver_, form_data);
+
+    form_data.fields[0].value.clear();
+    if (new_password_field_was_cleared)
+      form_data.fields[1].value.clear();
 
     std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
     if (new_password_field_was_cleared) {

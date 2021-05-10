@@ -82,10 +82,18 @@ set_aom_config_var(CONFIG_PIC 0 "Build with PIC enabled.")
 set_aom_config_var(CONFIG_RUNTIME_CPU_DETECT 1 "Runtime CPU detection support.")
 set_aom_config_var(CONFIG_SHARED 0 "Build shared libs.")
 set_aom_config_var(CONFIG_WEBM_IO 1 "Enables WebM support.")
+set_aom_config_var(CONFIG_REALTIME_ONLY 0
+                   "Build for RTC-only. See aomcx.h for all disabled features.")
+set_aom_config_var(CONFIG_AV1_HIGHBITDEPTH 1
+                   "Build with high bitdepth support.")
+set_aom_config_var(CONFIG_AV1_TEMPORAL_DENOISING 0
+                   "Build with temporal denoising support.")
 
 # Debugging flags.
 set_aom_config_var(CONFIG_DEBUG 0 "Enable debug-only code.")
 set_aom_config_var(CONFIG_MISMATCH_DEBUG 0 "Mismatch debugging flag.")
+set_aom_config_var(CONFIG_EXCLUDE_SIMD_MISMATCH 0
+                   "Exclude mismatch in SIMD functions for testing/debugging.")
 
 # AV1 feature flags.
 set_aom_config_var(CONFIG_ACCOUNTING 0 "Enables bit accounting.")
@@ -122,20 +130,17 @@ set_aom_config_var(CONFIG_SHARP_SETTINGS 0 "AV1 experiment flag.")
 set_aom_config_var(CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
                    "Disable full_pixel_motion_search_based_split on BLOCK_8X8.")
 set_aom_config_var(CONFIG_COLLECT_PARTITION_STATS 0
-                   "Collect stats on partition decisions.")
+                   "Collect partition timing stats. Can be 1 or 2.")
 set_aom_config_var(CONFIG_COLLECT_COMPONENT_TIMING 0
                    "Collect encoding component timing information.")
 set_aom_config_var(CONFIG_LPF_MASK 0
                    "Enable the use loop filter bitmasks for optimizations.")
-set_aom_config_var(CONFIG_REALTIME_ONLY 0
-                   "Build for RTC-only to reduce binary size.")
-set_aom_config_var(CONFIG_AV1_HIGHBITDEPTH 1
-                   "Build with high bitdepth support.")
-set_aom_config_var(CONFIG_AV1_TEMPORAL_DENOISING 0
-                   "Build with temporal denoising support.")
 set_aom_config_var(CONFIG_NN_V2 0 "Fully-connected neural nets ver.2.")
 set_aom_config_var(CONFIG_OPTICAL_FLOW_API 0
                    "AV1 experiment flag for optical flow API.")
+set_aom_config_var(CONFIG_RT_ML_PARTITIONING 0
+                   "Build with ML-based partitioning for Real Time.")
+
 #
 # Variables in this section control optional features of the build system.
 #

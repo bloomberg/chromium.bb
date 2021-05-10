@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -44,6 +45,12 @@ enum TrustedTypeViolationKind {
   kScriptExecution,
   kScriptExecutionAndDefaultPolicyFailed,
 };
+
+// String to determine whether an incoming eval-ish call is comig from
+// an actual eval or a Function constructor. The value is derived from
+// from how JS builds up a string in the Function constructor, which in
+// turn is defined in the TC39 spec.
+const char* kAnonymousPrefix = "(function anonymous";
 
 const char kFunctionConstructorFailureConsoleMessage[] =
     "The JavaScript Function constructor does not accept TrustedString "
@@ -98,7 +105,8 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
   return "";
 }
 
-String GetSamplePrefix(const ExceptionState& exception_state) {
+String GetSamplePrefix(const ExceptionState& exception_state,
+                       const String& value) {
   const char* interface_name = exception_state.InterfaceName();
   const char* property_name = exception_state.PropertyName();
 
@@ -109,7 +117,9 @@ String GetSamplePrefix(const ExceptionState& exception_state) {
   if (!interface_name) {
     // No interface name? Then we have no prefix to use.
   } else if (strcmp("eval", interface_name) == 0) {
-    sample_prefix.Append("eval");
+    // eval? Try to distinguish between eval and Function constructor.
+    sample_prefix.Append(value.StartsWith(kAnonymousPrefix) ? "Function"
+                                                            : "eval");
   } else if ((strcmp("Worker", interface_name) == 0 ||
               strcmp("SharedWorker", interface_name) == 0) &&
              !property_name) {
@@ -138,12 +148,13 @@ const char* GetElementName(const ScriptElementBase::Type type) {
 HeapVector<ScriptValue> GetDefaultCallbackArgs(
     v8::Isolate* isolate,
     const char* type,
-    const ExceptionState& exception_state) {
+    const ExceptionState& exception_state,
+    const String& value = g_empty_string) {
   ScriptState* script_state = ScriptState::Current(isolate);
   HeapVector<ScriptValue> args;
   args.push_back(ScriptValue::From(script_state, type));
   args.push_back(
-      ScriptValue::From(script_state, GetSamplePrefix(exception_state)));
+      ScriptValue::From(script_state, GetSamplePrefix(exception_state, value)));
   return args;
 }
 
@@ -167,11 +178,7 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 
-  const char* kAnonymousPrefix = "(function anonymous";
-  String prefix = GetSamplePrefix(exception_state);
-  if (prefix == "eval" && value.StartsWith(kAnonymousPrefix)) {
-    prefix = "Function";
-  }
+  String prefix = GetSamplePrefix(exception_state, value);
   bool allow =
       execution_context->GetContentSecurityPolicy()
           ->AllowTrustedTypeAssignmentFailure(
@@ -184,7 +191,8 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   // constructor failures, to warn the developer of the outstanding issues
   // with TT and Function  constructors. This should be removed once the
   // underlying issue has been fixed.
-  if (prefix == "Function" && !allow) {
+  if (prefix == "Function" && !allow &&
+      !RuntimeEnabledFeatures::TrustedTypesUseCodeLikeEnabled()) {
     DCHECK(kind == kTrustedScriptAssignment ||
            kind == kTrustedScriptAssignmentAndDefaultPolicyFailed ||
            kind == kTrustedScriptAssignmentAndNoDefaultPolicyExisted);
@@ -194,6 +202,10 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
             mojom::blink::ConsoleMessageLevel::kInfo,
             kFunctionConstructorFailureConsoleMessage));
   }
+  probe::OnContentSecurityPolicyViolation(
+      const_cast<ExecutionContext*>(execution_context),
+      ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+          kTrustedTypesSinkViolation);
 
   if (!allow) {
     exception_state.ThrowTypeError(GetMessage(kind));
@@ -260,7 +272,7 @@ String GetStringFromScriptHelper(
   TrustedScript* result = default_policy->CreateScript(
       context->GetIsolate(), script,
       GetDefaultCallbackArgs(context->GetIsolate(), "TrustedScript",
-                             exception_state),
+                             exception_state, script),
       exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
@@ -365,7 +377,7 @@ String TrustedTypesCheckForScript(String script,
   TrustedScript* result = default_policy->CreateScript(
       execution_context->GetIsolate(), script,
       GetDefaultCallbackArgs(execution_context->GetIsolate(), "TrustedScript",
-                             exception_state),
+                             exception_state, script),
       exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {

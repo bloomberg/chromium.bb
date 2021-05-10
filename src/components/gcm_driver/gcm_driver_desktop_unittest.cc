@@ -738,7 +738,7 @@ TEST_F(GCMDriverFunctionalTest, DISABLED_RegisterAfterUnfinishedUnregister) {
   // Start unregistration without waiting for it to complete.
   Unregister(kTestAppID1, GCMDriverTest::DO_NOT_WAIT);
 
-  // Register immeidately after unregistration is not completed.
+  // Register immediately after unregistration is not completed.
   sender_ids.push_back("sender2");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
 
@@ -902,9 +902,15 @@ class GCMDriverInstanceIDTest : public GCMDriverTest {
   std::string instance_id() const { return instance_id_; }
   std::string extra_data() const { return extra_data_; }
 
+  int instance_id_resolved_counter() const {
+    return instance_id_resolved_counter_;
+  }
+
  private:
   std::string instance_id_;
   std::string extra_data_;
+
+  int instance_id_resolved_counter_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriverInstanceIDTest);
 };
@@ -938,6 +944,9 @@ void GCMDriverInstanceIDTest::GetInstanceIDDataCompleted(
     const std::string& instance_id, const std::string& extra_data) {
   instance_id_ = instance_id;
   extra_data_ = extra_data;
+
+  instance_id_resolved_counter_++;
+
   AsyncOperationCompleted();
 }
 
@@ -947,10 +956,8 @@ void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
                                        WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   set_async_operation_completed_callback(run_loop.QuitClosure());
-  std::map<std::string, std::string> options;
   driver()->GetInstanceIDHandlerInternal()->GetToken(
       app_id, authorized_entity, scope, /*time_to_live=*/base::TimeDelta(),
-      options,
       base::BindOnce(&GCMDriverTest::RegisterCompleted,
                      base::Unretained(this)));
   if (wait_to_finish == WAIT)
@@ -990,12 +997,25 @@ TEST_F(GCMDriverInstanceIDTest, InstanceIDData) {
 
   EXPECT_EQ(kInstanceID1, instance_id());
   EXPECT_EQ("Foo", extra_data());
+  EXPECT_EQ(1, instance_id_resolved_counter());
 
   RemoveInstanceIDData(kTestAppID1);
   GetInstanceID(kTestAppID1, GCMDriverTest::WAIT);
 
   EXPECT_TRUE(instance_id().empty());
   EXPECT_TRUE(extra_data().empty());
+  EXPECT_EQ(2, instance_id_resolved_counter());
+
+  AddInstanceIDData(kTestAppID1, kInstanceID1, "Bar");
+  GetInstanceID(kTestAppID1, GCMDriverTest::DO_NOT_WAIT);
+  GetInstanceID(kTestAppID1, GCMDriverTest::DO_NOT_WAIT);
+
+  WaitForAsyncOperation();
+  WaitForAsyncOperation();
+
+  EXPECT_EQ(kInstanceID1, instance_id());
+  EXPECT_EQ("Bar", extra_data());
+  EXPECT_EQ(4, instance_id_resolved_counter());
 }
 
 // This test is flaky, see https://crbug.com/1010462

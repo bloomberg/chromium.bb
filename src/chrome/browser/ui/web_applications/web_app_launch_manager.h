@@ -70,13 +70,14 @@ class WebAppLaunchManager {
   WebAppProvider* const provider_;
 
   base::WeakPtrFactory<WebAppLaunchManager> weak_ptr_factory_{this};
-
 };
 
 Browser* CreateWebApplicationWindow(Profile* profile,
                                     const std::string& app_id,
                                     WindowOpenDisposition disposition,
-                                    bool can_resize = true);
+                                    int32_t restore_id,
+                                    bool can_resize = true,
+                                    bool can_maximize = true);
 
 content::WebContents* NavigateWebApplicationWindow(
     Browser* browser,

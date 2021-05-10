@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/accessibility/accessibility_tools_utils_mac.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
-#include "ui/accessibility/platform/inspect/property_node.h"
+#include "ui/accessibility/platform/inspect/ax_property_node.h"
 
 using ui::AXPropertyNode;
 
@@ -60,12 +60,12 @@ std::string LineIndexer::IndexBy(const gfx::NativeViewAccessible node) const {
   if (IsBrowserAccessibilityCocoa(node)) {
     auto iter = map.find(node);
     if (iter != map.end()) {
-      line_index = iter->second;
+      line_index = iter->second.line_index;
     }
   } else if (IsAXUIElement(node)) {
     for (auto& iter : map) {
       if (CFEqual(iter.first, node)) {
-        line_index = iter.second;
+        line_index = iter.second.line_index;
         break;
       }
     }
@@ -74,9 +74,12 @@ std::string LineIndexer::IndexBy(const gfx::NativeViewAccessible node) const {
 }
 
 gfx::NativeViewAccessible LineIndexer::NodeBy(
-    const std::string& line_index) const {
-  for (std::pair<const gfx::NativeViewAccessible, std::string> item : map) {
-    if (item.second == line_index) {
+    const std::string& identifier) const {
+  // Finds a first match either by a line number in :LINE_NUM format or by DOM
+  // id.
+  for (auto& item : map) {
+    if (item.second.line_index == identifier ||
+        item.second.DOMid == identifier) {
       return item.first;
     }
   }
@@ -86,7 +89,13 @@ gfx::NativeViewAccessible LineIndexer::NodeBy(
 void LineIndexer::Build(const gfx::NativeViewAccessible node, int* counter) {
   const std::string line_index =
       std::string(1, ':') + base::NumberToString(++(*counter));
-  map.insert({node, line_index});
+
+  const id domid_value =
+      AttributeValueOf(node, base::SysUTF8ToNSString("AXDOMIdentifier"));
+  const std::string domid =
+      base::SysNSStringToUTF8(static_cast<NSString*>(domid_value));
+
+  map.insert({node, {line_index, domid}});
   NSArray* children = ChildrenOf(node);
   for (gfx::NativeViewAccessible child in children) {
     Build(child, counter);
@@ -109,30 +118,40 @@ std::string OptionalNSObject::ToString() const {
 
 // AttributeInvoker
 
+AttributeInvoker::AttributeInvoker(const LineIndexer* line_indexer)
+    : node(nullptr), line_indexer(line_indexer) {}
+
 AttributeInvoker::AttributeInvoker(const id node,
                                    const LineIndexer* line_indexer)
     : node(node), line_indexer(line_indexer) {
-  attributes = AttributeNamesOf(node);
-  parameterized_attributes = ParameterizedAttributeNamesOf(node);
 }
 
 OptionalNSObject AttributeInvoker::Invoke(
     const AXPropertyNode& property_node) const {
+  id target = TargetOf(property_node);
+  if (!target) {
+    // TODO(alexs): failing the tests when filters are incorrect is a good idea,
+    // however crashing ax_dump tools on wrong input might be not. Figure out
+    // a working solution that works nicely in both cases.
+    LOG(ERROR) << "No target to invoke attribute";
+    return OptionalNSObject::Error();
+  }
+
   // Attributes
-  for (NSString* attribute : attributes) {
+  for (NSString* attribute : AttributeNamesOf(target)) {
     if (property_node.IsMatching(base::SysNSStringToUTF8(attribute))) {
       return OptionalNSObject::NotNullOrNotApplicable(
-          AttributeValueOf(node, attribute));
+          AttributeValueOf(target, attribute));
     }
   }
 
   // Parameterized attributes
-  for (NSString* attribute : parameterized_attributes) {
+  for (NSString* attribute : ParameterizedAttributeNamesOf(target)) {
     if (property_node.IsMatching(base::SysNSStringToUTF8(attribute))) {
       OptionalNSObject param = ParamByPropertyNode(property_node);
       if (param.IsNotNil()) {
         return OptionalNSObject(
-            ParameterizedAttributeValueOf(node, attribute, *param));
+            ParameterizedAttributeValueOf(target, attribute, *param));
       }
       return param;
     }
@@ -145,7 +164,8 @@ OptionalNSObject AttributeInvoker::GetValue(
     const std::string& property_name,
     const OptionalNSObject& param) const {
   NSString* attribute = base::SysUTF8ToNSString(property_name);
-  if ([parameterized_attributes containsObject:attribute]) {
+  NSArray* attributes = ParameterizedAttributeNamesOf(node);
+  if ([attributes containsObject:attribute]) {
     if (param.IsNotNil()) {
       return OptionalNSObject(
           ParameterizedAttributeValueOf(node, attribute, *param));
@@ -159,7 +179,8 @@ OptionalNSObject AttributeInvoker::GetValue(
 OptionalNSObject AttributeInvoker::GetValue(
     const std::string& property_name) const {
   NSString* attribute = base::SysUTF8ToNSString(property_name);
-  if ([attributes containsObject:attribute]) {
+  NSArray* parameterized_attributes = AttributeNamesOf(node);
+  if ([parameterized_attributes containsObject:attribute]) {
     return OptionalNSObject::NotNullOrNotApplicable(
         AttributeValueOf(node, attribute));
   }
@@ -169,10 +190,17 @@ OptionalNSObject AttributeInvoker::GetValue(
 void AttributeInvoker::SetValue(const std::string& property_name,
                                 const OptionalNSObject& value) const {
   NSString* attribute = base::SysUTF8ToNSString(property_name);
+  NSArray* attributes = AttributeNamesOf(node);
   if ([attributes containsObject:attribute] &&
       IsAttributeSettable(node, attribute)) {
     SetAttributeValueOf(node, attribute, *value);
   }
+}
+
+id AttributeInvoker::TargetOf(const AXPropertyNode& property_node) const {
+  return property_node.target.empty()
+             ? node
+             : line_indexer->NodeBy(property_node.target);
 }
 
 OptionalNSObject AttributeInvoker::ParamByPropertyNode(
@@ -351,36 +379,39 @@ OptionalNSObject TextMarkerRangeGetStartMarker(const OptionalNSObject& obj) {
   if (!IsAXTextMarkerRange(*obj))
     return OptionalNSObject::NotApplicable();
 
-  BrowserAccessibilityPosition::AXRangeType range =
-      AXTextMarkerRangeToRange(*obj);
+  const BrowserAccessibility::AXRange range = AXTextMarkerRangeToAXRange(*obj);
   if (range.IsNull())
     return OptionalNSObject::Error();
 
-  BrowserAccessibilityPosition::AXPositionInstance::pointer position =
-      range.anchor();
-  const BrowserAccessibility* node = position->GetAnchor();
+  auto* manager =
+      BrowserAccessibilityManager::FromID(range.anchor()->tree_id());
+  DCHECK(manager) << "A non-null range should have an associated AX tree.";
+  const BrowserAccessibility* node =
+      manager->GetFromID(range.anchor()->anchor_id());
+  DCHECK(node) << "A non-null range should have a non-null anchor node.";
   const BrowserAccessibilityCocoa* cocoa_node =
       ToBrowserAccessibilityCocoa(node);
   return OptionalNSObject::NotNilOrError(content::AXTextMarkerFrom(
-      cocoa_node, position->text_offset(), position->affinity()));
+      cocoa_node, range.anchor()->text_offset(), range.anchor()->affinity()));
 }
 
 OptionalNSObject TextMarkerRangeGetEndMarker(const OptionalNSObject& obj) {
   if (!IsAXTextMarkerRange(*obj))
     return OptionalNSObject::NotApplicable();
 
-  BrowserAccessibilityPosition::AXRangeType range =
-      AXTextMarkerRangeToRange(*obj);
+  const BrowserAccessibility::AXRange range = AXTextMarkerRangeToAXRange(*obj);
   if (range.IsNull())
     return OptionalNSObject::Error();
 
-  BrowserAccessibilityPosition::AXPositionInstance::pointer position =
-      range.focus();
-  const BrowserAccessibility* node = position->GetAnchor();
+  auto* manager = BrowserAccessibilityManager::FromID(range.focus()->tree_id());
+  DCHECK(manager) << "A non-null range should have an associated AX tree.";
+  const BrowserAccessibility* node =
+      manager->GetFromID(range.focus()->anchor_id());
+  DCHECK(node) << "A non-null range should have a non-null focus node.";
   const BrowserAccessibilityCocoa* cocoa_node =
       ToBrowserAccessibilityCocoa(node);
   return OptionalNSObject::NotNilOrError(content::AXTextMarkerFrom(
-      cocoa_node, position->text_offset(), position->affinity()));
+      cocoa_node, range.focus()->text_offset(), range.focus()->affinity()));
 }
 
 OptionalNSObject MakePairArray(const OptionalNSObject& obj1,

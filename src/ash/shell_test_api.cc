@@ -118,10 +118,6 @@ MessageCenterController* ShellTestApi::message_center_controller() {
   return shell_->message_center_controller_.get();
 }
 
-SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
-  return shell_->system_gesture_filter_.get();
-}
-
 WorkspaceController* ShellTestApi::workspace_controller() {
   // TODO(afakhry): Split this into two, one for root, and one for context.
   return GetActiveWorkspaceController(shell_->GetPrimaryRootWindow());
@@ -161,8 +157,7 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
   return Shell::IsSystemModalWindowOpen();
 }
 
-void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
-                                               bool wait_for_completion) {
+void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
   // Detach mouse devices, so we can enter tablet mode.
   // Calling RunUntilIdle() here is necessary before setting the mouse devices
   // to prevent the callback from evdev thread from overwriting whatever we set
@@ -183,10 +178,6 @@ void ShellTestApi::EnableVirtualKeyboard() {
 
 void ShellTestApi::ToggleFullscreen() {
   accelerators::ToggleFullscreen();
-}
-
-bool ShellTestApi::IsOverviewSelecting() {
-  return shell_->overview_controller()->InOverviewSession();
 }
 
 void ShellTestApi::AddRemoveDisplay() {
@@ -260,10 +251,8 @@ PaginationModel* ShellTestApi::GetAppListPaginationModel() {
   return view->GetAppsPaginationModel();
 }
 
-std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
-  return Shell::Get()
-      ->overview_controller()
-      ->GetItemWindowListInOverviewGridsForTest();
+bool ShellTestApi::IsContextMenuShown() const {
+  return Shell::GetPrimaryRootWindowController()->IsContextMenuShown();
 }
 
 }  // namespace ash

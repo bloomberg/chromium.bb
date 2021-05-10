@@ -34,7 +34,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -256,7 +256,7 @@ std::vector<api::passwords_private::InsecureCredential>
 PasswordCheckDelegate::GetCompromisedCredentials() {
   std::vector<CompromisedCredentialAndType>
       ordered_compromised_credential_and_types = OrderCompromisedCredentials(
-          insecure_credentials_manager_.GetCompromisedCredentials());
+          insecure_credentials_manager_.GetInsecureCredentials());
 
   std::vector<api::passwords_private::InsecureCredential>
       compromised_credentials;
@@ -347,14 +347,10 @@ void PasswordCheckDelegate::StartPasswordCheck(
     return;
   }
 
-  // In case the Weakness Check feature is enabled start the check, and notify
-  // observers once done.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsWeaknessCheck)) {
-    insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
-        &PasswordCheckDelegate::RecordAndNotifyAboutCompletedWeakPasswordCheck,
-        weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Start the weakness check, and notify observers once done.
+  insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
+      &PasswordCheckDelegate::RecordAndNotifyAboutCompletedWeakPasswordCheck,
+      weak_ptr_factory_.GetWeakPtr()));
 
   auto progress = base::MakeRefCounted<PasswordCheckProgress>();
   for (const auto& password : saved_passwords_presenter_->GetSavedPasswords())
@@ -443,7 +439,7 @@ void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
   NotifyPasswordCheckStatusChanged();
 }
 
-void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
+void PasswordCheckDelegate::OnInsecureCredentialsChanged(
     InsecureCredentialsView credentials) {
   if (auto* event_router =
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
@@ -476,7 +472,7 @@ void PasswordCheckDelegate::OnCredentialDone(
     const LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
   if (is_leaked) {
-    insecure_credentials_manager_.SaveCompromisedCredential(credential);
+    insecure_credentials_manager_.SaveInsecureCredential(credential);
   }
 
   // Update the progress in case there is one.

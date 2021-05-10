@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -812,9 +811,6 @@ void UserMediaProcessor::SetupVideoInput() {
 // static
 bool UserMediaProcessor::IsPanTiltZoomPermissionRequested(
     const MediaConstraints& constraints) {
-  if (!RuntimeEnabledFeatures::MediaCapturePanTiltEnabled())
-    return false;
-
   if (constraints.Basic().pan.IsPresent() ||
       constraints.Basic().tilt.IsPresent() ||
       constraints.Basic().zoom.IsPresent()) {
@@ -948,7 +944,8 @@ UserMediaProcessor::GetMediaStreamDeviceObserver() {
   auto* media_stream_device_observer =
       media_stream_device_observer_for_testing_;
   if (frame_) {  // Can be null for tests.
-    auto* web_frame = static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_));
+    auto* web_frame =
+        static_cast<WebLocalFrame*>(WebFrame::FromCoreFrame(frame_));
     if (!web_frame || !web_frame->Client())
       return nullptr;
 
@@ -1063,7 +1060,7 @@ gfx::Size UserMediaProcessor::GetScreenSize() {
   gfx::Size screen_size(blink::kDefaultScreenCastWidth,
                         blink::kDefaultScreenCastHeight);
   if (frame_) {  // Can be null in tests.
-    blink::ScreenInfo info = frame_->GetChromeClient().GetScreenInfo(*frame_);
+    const ScreenInfo& info = frame_->GetChromeClient().GetScreenInfo(*frame_);
     screen_size = info.rect.size();
   }
   return screen_size;
@@ -1277,8 +1274,8 @@ MediaStreamSource* UserMediaProcessor::InitializeVideoSourceObject(
         // operate over WTF::Vector.
         String::FromUTF8(device.id),
         ToStdVector(*current_request_info_->GetNativeVideoFormats(device_id)),
-        device.video_facing, current_request_info_->is_video_device_capture(),
-        device.group_id));
+        static_cast<mojom::blink::FacingMode>(device.video_facing),
+        current_request_info_->is_video_device_capture(), device.group_id));
     local_sources_.push_back(source);
   }
   return source;

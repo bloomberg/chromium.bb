@@ -1,4 +1,4 @@
-# v-0006 - Fails because 'f' is not a struct.
+// v-0007 - Fails because 'f' is not a struct.
 
 [[stage(vertex)]]
 fn main() -> void {

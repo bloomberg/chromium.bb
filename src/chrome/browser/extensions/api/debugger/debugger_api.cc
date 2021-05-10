@@ -105,6 +105,10 @@ bool ExtensionMayAttachToURL(const Extension& extension,
   if (extension.permissions_data()->IsRestrictedUrl(url, error))
     return false;
 
+  // Policy blocked hosts supersede the `debugger` permission.
+  if (extension.permissions_data()->IsPolicyBlockedHost(url))
+    return false;
+
   if (url.SchemeIsFile() && !util::AllowFileAccess(extension.id(), profile)) {
     *error = debugger_api_constants::kRestrictedError;
     return false;
@@ -216,8 +220,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   content::NotificationRegistrar registrar_;
   int last_request_id_ = 0;
   PendingRequests pending_requests_;
-  std::unique_ptr<ExtensionDevToolsInfoBarDelegate::CallbackList::Subscription>
-      subscription_;
+  base::CallbackListSubscription subscription_;
   api::debugger::DetachReason detach_reason_ =
       api::debugger::DETACH_REASON_TARGET_CLOSED;
 
@@ -471,8 +474,9 @@ bool DebuggerFunction::InitAgentHost(std::string* error) {
         ProcessManager::Get(browser_context())
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
-      if (extension()->permissions_data()->IsRestrictedUrl(
-              extension_host->GetLastCommittedURL(), error)) {
+      const GURL& url = extension_host->GetLastCommittedURL();
+      if (extension()->permissions_data()->IsRestrictedUrl(url, error) ||
+          extension()->permissions_data()->IsPolicyBlockedHost(url)) {
         return false;
       }
       agent_host_ =

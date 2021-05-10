@@ -69,15 +69,17 @@ class MediaStreamManager::StreamUi : public content::MediaStreamUI {
   }
   void OnDeviceStopped(const std::string& label,
                        const content::DesktopMediaID& media_id) override {}
-  void SetStopCallback(base::OnceClosure stop) override {
-    stop_ = std::move(stop);
-  }
 
   bool streaming_audio() const { return streaming_audio_; }
 
   bool streaming_video() const { return streaming_video_; }
 
-  void Stop() { std::move(stop_).Run(); }
+  void Stop() {
+    // The `stop_` callback does async processing. This means Stop() may be
+    // called multiple times.
+    if (stop_)
+      std::move(stop_).Run();
+  }
 
  private:
   base::WeakPtr<MediaStreamManager> manager_;

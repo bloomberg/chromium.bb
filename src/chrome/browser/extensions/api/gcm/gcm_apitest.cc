@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
@@ -73,9 +73,7 @@ class GcmApiTest : public ExtensionApiTest {
  private:
   void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 };
 
 void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -268,7 +266,8 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Incognito) {
   ResultCatcher incognito_catcher;
   incognito_catcher.RestrictToBrowserContext(profile()->GetPrimaryOTRProfile());
 
-  ASSERT_TRUE(RunExtensionTestIncognito("gcm/functions/incognito"));
+  ASSERT_TRUE(RunExtensionTest({.name = "gcm/functions/incognito"},
+                               {.allow_in_incognito = true}));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(incognito_catcher.GetNextResult()) << incognito_catcher.message();

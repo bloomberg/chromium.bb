@@ -4,9 +4,12 @@
 
 #include "components/viz/host/gpu_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -164,7 +167,7 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
                      weak_factory_.GetWeakPtr()));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void GpuClient::CreateJpegDecodeAccelerator(
     mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
         jda_receiver) {
@@ -173,7 +176,7 @@ void GpuClient::CreateJpegDecodeAccelerator(
         std::move(jda_receiver));
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void GpuClient::CreateVideoEncodeAcceleratorProvider(
     mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -210,6 +213,21 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
     gpu_memory_buffer_manager->DestroyGpuMemoryBuffer(id, client_id_,
                                                       sync_token);
   }
+}
+
+void GpuClient::CopyGpuMemoryBuffer(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion shared_memory,
+    CopyGpuMemoryBufferCallback callback) {
+  auto* gpu_memory_buffer_manager = delegate_->GetGpuMemoryBufferManager();
+
+  if (!gpu_memory_buffer_manager) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  gpu_memory_buffer_manager->CopyGpuMemoryBufferAsync(
+      std::move(buffer_handle), std::move(shared_memory), std::move(callback));
 }
 
 void GpuClient::CreateGpuMemoryBufferFactory(

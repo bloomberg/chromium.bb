@@ -53,7 +53,7 @@ const float FormField::kBaseSearchParserScore = 0.8f;
 // static
 FieldCandidatesMap FormField::ParseFormFields(
     const std::vector<std::unique_ptr<AutofillField>>& fields,
-    const std::string& page_language,
+    const LanguageCode& page_language,
     bool is_form_tag,
     LogManager* log_manager) {
   // Set up a working copy of the fields to be processed.
@@ -133,7 +133,7 @@ FieldCandidatesMap FormField::ParseFormFields(
       }
       for (const auto& candidate : field_candidates) {
         LogBuffer name;
-        name << "Type candidate for: " << candidate.first;
+        name << "Type candidate for renderer ID: " << candidate.first.value();
         LogBuffer description;
         ServerFieldType field_type = candidate.second.BestHeuristicType();
         description << "BestHeuristicType: "
@@ -174,10 +174,9 @@ bool FormField::ParseField(AutofillScanner* scanner,
                            AutofillField** match,
                            const RegExLogging& logging) {
   if (base::FeatureList::IsEnabled(
-          features::kAutofillUsePageLanguageToSelectFieldParsingPatterns) ||
+          features::kAutofillParsingPatternsLanguageDependent) ||
       base::FeatureList::IsEnabled(
-          features::
-              kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
+          features::kAutofillParsingPatternsNegativeMatching)) {
     return ParseField(scanner, patterns, match, logging);
   } else {
     return ParseField(scanner, pattern, match, logging);
@@ -221,18 +220,17 @@ bool FormField::ParseFieldSpecifics(
 
     // TODO(crbug.com/1132831): Remove feature check once launched.
     if (base::FeatureList::IsEnabled(
-            features::
-                kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
-      if (pattern.negative_pattern.has_value() &&
-          FormField::Match(field,
-                           base::UTF8ToUTF16(pattern.negative_pattern.value()),
+            features::kAutofillParsingPatternsNegativeMatching)) {
+      if (!pattern.negative_pattern.empty() &&
+          FormField::Match(field, base::UTF8ToUTF16(pattern.negative_pattern),
                            pattern.match_field_attributes,
                            pattern.match_field_input_types, logging)) {
         continue;
       }
     }
 
-    if (MatchAndAdvance(scanner, base::UTF8ToUTF16(pattern.positive_pattern),
+    if (!pattern.positive_pattern.empty() &&
+        MatchAndAdvance(scanner, base::UTF8ToUTF16(pattern.positive_pattern),
                         pattern.match_field_attributes,
                         pattern.match_field_input_types, match, logging)) {
       return true;
@@ -263,22 +261,19 @@ bool FormField::ParseFieldSpecifics(
     const RegExLogging& logging,
     MatchFieldBitmasks match_field_bitmasks) {
   if (base::FeatureList::IsEnabled(
-          features::kAutofillUsePageLanguageToSelectFieldParsingPatterns) ||
+          features::kAutofillParsingPatternsLanguageDependent) ||
       base::FeatureList::IsEnabled(
-          features::
-              kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
+          features::kAutofillParsingPatternsNegativeMatching)) {
     // TODO(crbug/1142936): This hack is to allow
     // AddressField::ParseNameAndLabelSeparately().
     if (match_field_bitmasks.restrict_attributes != ~0 ||
         match_field_bitmasks.augment_types != 0) {
-      std::vector<MatchingPattern> patterns_with_restricted_match_type =
-          patterns;
-      for (MatchingPattern& mp : patterns_with_restricted_match_type) {
+      std::vector<MatchingPattern> modified_patterns = patterns;
+      for (MatchingPattern& mp : modified_patterns) {
         mp.match_field_attributes &= match_field_bitmasks.restrict_attributes;
         mp.match_field_input_types |= match_field_bitmasks.augment_types;
       }
-      return ParseFieldSpecifics(scanner, patterns_with_restricted_match_type,
-                                 match, logging);
+      return ParseFieldSpecifics(scanner, modified_patterns, match, logging);
     }
     return ParseFieldSpecifics(scanner, patterns, match, logging);
   } else {
@@ -302,7 +297,7 @@ void FormField::AddClassification(const AutofillField* field,
   if (field == nullptr)
     return;
 
-  FieldCandidates& candidates = (*field_candidates)[field->unique_name()];
+  FieldCandidates& candidates = (*field_candidates)[field->unique_renderer_id];
   candidates.AddFieldCandidate(type, score);
 }
 
@@ -347,16 +342,25 @@ bool FormField::Match(const AutofillField* field,
   base::StringPiece16 value;
   base::string16 match;
 
+  // TODO(crbug/1165780): Remove once shared labels are launched.
+  const base::string16& label =
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForParsingWithSharedLabels)
+          ? field->parseable_label()
+          : field->label;
+
+  const base::string16& name = field->parseable_name();
+
   if ((match_field_attributes & MATCH_LABEL) &&
-      MatchesPattern(field->label, pattern, &match)) {
+      MatchesPattern(label, pattern, &match)) {
     found_match = true;
     match_type_string = "Match in label";
-    value = field->label;
+    value = label;
   } else if ((match_field_attributes & MATCH_NAME) &&
-             MatchesPattern(field->parseable_name(), pattern, &match)) {
+             MatchesPattern(name, pattern, &match)) {
     found_match = true;
     match_type_string = "Match in name";
-    value = field->parseable_name();
+    value = name;
   }
 
   if (found_match && logging.log_manager) {
@@ -391,7 +395,7 @@ bool FormField::Match(const AutofillField* field,
 void FormField::ParseFormFieldsPass(ParseFunction parse,
                                     const std::vector<AutofillField*>& fields,
                                     FieldCandidatesMap* field_candidates,
-                                    const std::string& page_language,
+                                    const LanguageCode& page_language,
                                     LogManager* log_manager) {
   AutofillScanner scanner(fields);
   while (!scanner.IsEnd()) {

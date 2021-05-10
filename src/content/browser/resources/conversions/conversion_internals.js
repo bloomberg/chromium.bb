@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
+import {$} from 'chrome://resources/js/util.m.js';
+import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
+
+import {ConversionInternalsHandler, ConversionInternalsHandlerRemote, WebUIImpression} from './conversion_internals.mojom-webui.js';
 
 /**
  * Reference to the backend providing all the data.
- * @type {mojom.ConversionInternalsHandlerRemote}
+ * @type {ConversionInternalsHandlerRemote}
  */
 let pageHandler = null;
 
 /**
  * All impressions held in storage at last update.
- * @type {!Array<!mojom.Impression>}
+ * @type {!Array<!WebUIImpression>}
  */
 let impressions = null;
 
 /**
  * All impressions held in storage at last update.
- * @type {!Array<!mojom.Impression>}
+ * @type {!Array<!WebUIImpression>}
  */
 let reports = null;
 
@@ -33,7 +35,7 @@ function clearTable(table) {
 
 /**
  * Converts a mojo origin into a user-readable string, omitting default ports.
- * @param {url.mojom.Origin} origin Origin to convert
+ * @param {Origin} origin Origin to convert
  * @return {string}
  */
 function UrlToText(origin) {
@@ -52,14 +54,14 @@ function UrlToText(origin) {
 
 /**
  * Creates a single row for the impression table.
- * @param {!mojom.Impression} impression The info to create the row.
+ * @param {!WebIUIImpression} impression The info to create the row.
  * @return {!HTMLElement}
  */
 function createImpressionRow(impression) {
   const template = $('impressionrow').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
-  td[0].textContent = '0x' + impression.impressionData;
+  td[0].textContent = impression.impressionData;
   td[1].textContent = UrlToText(impression.impressionOrigin);
   td[2].textContent = UrlToText(impression.conversionDestination);
   td[3].textContent = UrlToText(impression.reportingOrigin);
@@ -70,15 +72,15 @@ function createImpressionRow(impression) {
 
 /**
  * Creates a single row for the impression table.
- * @param {!mojom.Impression} impression The info to create the row.
+ * @param {!WebUIImpression} impression The info to create the row.
  * @return {!HTMLElement}
  */
 function createReportRow(report) {
   const template = $('reportrow').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
-  td[0].textContent = '0x' + report.impressionData;
-  td[1].textContent = '0x' + report.conversionData;
+  td[0].textContent = report.impressionData;
+  td[1].textContent = report.conversionData;
   td[2].textContent = UrlToText(report.conversionOrigin);
   td[3].textContent = UrlToText(report.reportingOrigin);
   td[4].textContent = new Date(report.reportTime).toLocaleString();
@@ -175,7 +177,7 @@ function sendReports() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup the mojo interface.
-  pageHandler = mojom.ConversionInternalsHandler.getRemote();
+  pageHandler = ConversionInternalsHandler.getRemote();
 
   $('refresh').addEventListener('click', updatePageData);
   $('clear-data').addEventListener('click', clearStorage);
@@ -185,4 +187,3 @@ document.addEventListener('DOMContentLoaded', function() {
   setInterval(updatePageData, 2 * 60 * 1000);
   updatePageData();
 });
-})();

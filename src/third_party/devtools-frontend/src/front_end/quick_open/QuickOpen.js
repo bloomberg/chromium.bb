@@ -2,10 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Root from '../root/root.js';
+import * as i18n from '../i18n/i18n.js';
 import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
 
-import {FilteredListWidget, Provider} from './FilteredListWidget.js';
+import {FilteredListWidget, getRegisteredProviders, Provider} from './FilteredListWidget.js';  // eslint-disable-line no-unused-vars
+
+export const UIStrings = {
+  /**
+  * @description Text in Quick Open of the Command Menu
+  */
+  typeToSeeAvailableCommands: 'Type \'?\' to see available commands',
+  /**
+  * @description Aria-placeholder text for quick open dialog prompt
+  */
+  typeQuestionMarkToSeeAvailable: 'Type question mark to see available commands',
+};
+const str_ = i18n.i18n.registerUIStrings('quick_open/QuickOpen.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /** @type {!Array<string>} */
 export const history = [];
@@ -15,13 +28,14 @@ export class QuickOpenImpl {
     /** @type {?string} */
     this._prefix = null;
     this._query = '';
-    /** @type {!Map<string, function():!Promise<!Provider>>} */
+    /** @type {!Map<string, function():!Provider>} */
     this._providers = new Map();
     /** @type {!Array<string>} */
     this._prefixes = [];
     /** @type {?FilteredListWidget} */
     this._filteredListWidget = null;
-    Root.Runtime.Runtime.instance().extensions(Provider).forEach(this._addProvider.bind(this));
+
+    getRegisteredProviders().forEach(this._addProvider.bind(this));
     this._prefixes.sort((a, b) => b.length - a.length);
   }
 
@@ -33,23 +47,21 @@ export class QuickOpenImpl {
     const filteredListWidget = new FilteredListWidget(null, history, quickOpen._queryChanged.bind(quickOpen));
     quickOpen._filteredListWidget = filteredListWidget;
     filteredListWidget.setPlaceholder(
-        ls`Type '?' to see available commands`, ls`Type question mark to see available commands`);
+        i18nString(UIStrings.typeToSeeAvailableCommands), i18nString(UIStrings.typeQuestionMarkToSeeAvailable));
     filteredListWidget.showAsDialog();
     filteredListWidget.setQuery(query);
   }
 
   /**
-   * @param {!Root.Runtime.Extension} extension
+   * @param {!{prefix: string, provider: function(): !Provider}} extension
    */
   _addProvider(extension) {
-    const prefix = extension.descriptor().prefix;
+    const prefix = extension.prefix;
     if (prefix === null) {
       return;
     }
     this._prefixes.push(prefix);
-    this._providers.set(
-        prefix, /** @type {function():!Promise<!Provider>} */
-        (extension.instance.bind(extension)));
+    this._providers.set(prefix, extension.provider);
   }
 
   /**
@@ -67,17 +79,16 @@ export class QuickOpenImpl {
     }
     this._filteredListWidget.setPrefix(prefix);
     this._filteredListWidget.setProvider(null);
-    const provider = this._providers.get(prefix);
-    if (!provider) {
+    const providerFunction = this._providers.get(prefix);
+    if (!providerFunction) {
       return;
     }
-    provider().then(provider => {
-      if (this._prefix !== prefix || !this._filteredListWidget) {
-        return;
-      }
+    const provider = providerFunction();
+    if (this._prefix !== prefix || !this._filteredListWidget) {
+      return;
+    }
       this._filteredListWidget.setProvider(provider);
       this._providerLoadedForTest(provider);
-    });
   }
 
   /**
@@ -87,10 +98,25 @@ export class QuickOpenImpl {
   }
 }
 
+/** @type {!ShowActionDelegate} */
+let showActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ShowActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!showActionDelegateInstance || forceNew) {
+      showActionDelegateInstance = new ShowActionDelegate();
+    }
+
+    return showActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context

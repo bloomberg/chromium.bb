@@ -16,10 +16,10 @@
 #include "base/synchronization/lock.h"
 #include "media/base/decode_status.h"
 #include "media/base/status.h"
+#include "media/base/supported_video_decoder_config.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
-#include "media/video/supported_video_decoder_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the worker thread and on the DecodingThread.
   int32_t Release() override;
   // Called on the worker thread and on the DecodingThread.
-  const char* ImplementationName() const override;
+  DecoderInfo GetDecoderInfo() const override;
 
  private:
   using CreateVideoDecoderCB =

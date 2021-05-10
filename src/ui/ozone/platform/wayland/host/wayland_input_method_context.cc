@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/events/base_event_utils.h"
@@ -24,7 +25,14 @@
 #include "ui/ozone/public/ozone_switches.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/check.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 namespace ui {
@@ -40,6 +48,41 @@ base::Optional<size_t> OffsetFromUTF8Offset(const base::StringPiece& text,
     return base::nullopt;
 
   return converted.size();
+}
+
+bool IsImeEnabled() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  // We do not expect both switches are set at the same time.
+  DCHECK(!cmd_line->HasSwitch(switches::kEnableWaylandIme) ||
+         !cmd_line->HasSwitch(switches::kDisableWaylandIme));
+  // Force enable/disable wayland IMEs, when explictly specified via commandline
+  // arguments.
+  if (cmd_line->HasSwitch(switches::kEnableWaylandIme))
+    return true;
+  if (cmd_line->HasSwitch(switches::kDisableWaylandIme))
+    return false;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Lacros chrome, we check whether ash-chrome supports IME, then
+  // enable IME if so. This allows us to control IME enabling state in
+  // Lacros-chrome side, which helps us on releasing.
+  // TODO(crbug.com/1159237): In the future, we may want to unify the behavior
+  // of ozone/wayland across platforms.
+  const auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+
+  // Note: |init_params| may be null, if ash-chrome is too old.
+  // TODO(crbug.com/1156033): Clean up the condition, after ash-chrome in the
+  // world becomes new enough.
+  const crosapi::mojom::BrowserInitParams* init_params =
+      lacros_chrome_service->init_params();
+  if (init_params && init_params->exo_ime_support !=
+                         crosapi::mojom::ExoImeSupport::kUnsupported) {
+    return true;
+  }
+#endif
+
+  // Do not enable wayland IME by default.
+  return false;
 }
 
 }  // namespace
@@ -65,10 +108,8 @@ WaylandInputMethodContext::~WaylandInputMethodContext() {
 }
 
 void WaylandInputMethodContext::Init(bool initialize_for_testing) {
-  bool use_ozone_wayland_vkb =
-      initialize_for_testing ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWaylandIme);
+  bool use_ozone_wayland_vkb = initialize_for_testing || IsImeEnabled();
+
   // If text input instance is not created then all ime context operations
   // are noop. This option is because in some environments someone might not
   // want to enable ime/virtual keyboard even if it's available.
@@ -215,16 +256,24 @@ void WaylandInputMethodContext::OnKeysym(uint32_t keysym,
                                          uint32_t state,
                                          uint32_t modifiers) {
 #if BUILDFLAG(USE_XKBCOMMON)
+  auto* layout_engine = KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
+  if (!layout_engine)
+    return;
+
   // TODO(crbug.com/1079353): Handle modifiers.
-  DomCode dom_code =
-      connection_->keyboard()->layout_engine()->GetDomCodeByKeysym(keysym);
+  DomCode dom_code = static_cast<XkbKeyboardLayoutEngine*>(layout_engine)
+                         ->GetDomCodeByKeysym(keysym);
   if (dom_code == DomCode::NONE)
     return;
+
+  // Keyboard might not exist.
+  int device_id =
+      connection_->keyboard() ? connection_->keyboard()->device_id() : 0;
 
   EventType type =
       state == WL_KEYBOARD_KEY_STATE_PRESSED ? ET_KEY_PRESSED : ET_KEY_RELEASED;
   key_delegate_->OnKeyboardKeyEvent(type, dom_code, /*repeat=*/false,
-                                    EventTimeForNow());
+                                    EventTimeForNow(), device_id);
 #else
   NOTIMPLEMENTED();
 #endif

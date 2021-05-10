@@ -75,11 +75,11 @@ String SVGAElement::title() const {
   return SVGElement::title();
 }
 
-void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGAElement::SvgAttributeChanged(const SvgAttributeChangedParams& params) {
   // Unlike other SVG*Element classes, SVGAElement only listens to
   // SVGURIReference changes as none of the other properties changes the linking
   // behaviour for our <a> element.
-  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+  if (SVGURIReference::IsKnownAttribute(params.name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
     bool was_link = IsLink();
@@ -94,7 +94,7 @@ void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
@@ -141,8 +141,9 @@ void SVGAElement::DefaultEventHandler(Event& event) {
           ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
-          event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
-                            : TriggeringEventInfo::kFromUntrustedEvent);
+          event.isTrusted()
+              ? mojom::blink::TriggeringEventInfo::kFromTrustedEvent
+              : mojom::blink::TriggeringEventInfo::kFromUntrustedEvent);
       frame_request.GetResourceRequest().SetHasUserGesture(
           LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 

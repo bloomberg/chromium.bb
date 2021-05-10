@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -18,12 +17,12 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 
@@ -65,7 +64,7 @@ class AppListSearchBrowserTest : public InProcessBrowserTest {
   void SearchAndWaitForProviders(const std::string& query,
                                  const std::set<ResultType> providers) {
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     std::set<ResultType> finished_providers;
     const SearchController::ResultsChangedCallback callback =
         base::BindLambdaForTesting([&](ResultType provider) {
@@ -142,9 +141,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest,
 
   auto* result = FindResult("help-app://updates");
   ASSERT_TRUE(result);
-  // Has Release notes title.
-  EXPECT_EQ(base::UTF16ToASCII(result->title()),
-            "See what's new on your Chrome device");
+  EXPECT_EQ(base::UTF16ToASCII(result->title()), "What's new with Chrome OS");
   // Displayed in first position.
   EXPECT_EQ(result->position_priority(), 1.0f);
   EXPECT_EQ(result->display_type(), DisplayType::kChip);
@@ -181,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest, AppListSearchHasApp) {
   SearchAndWaitForProviders("", {ResultType::kInstalledApp,
                                  ResultType::kLauncher, ResultType::kHelpApp});
 
-  auto* result = FindResult(chromeos::default_web_apps::kHelpAppId);
+  auto* result = FindResult(web_app::kHelpAppId);
   ASSERT_TRUE(result);
   // Has regular app name as title.
   EXPECT_EQ(base::UTF16ToASCII(result->title()), "Explore");

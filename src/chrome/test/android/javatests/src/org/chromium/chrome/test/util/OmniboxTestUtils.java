@@ -19,12 +19,12 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemViewInfo;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -90,9 +90,6 @@ public class OmniboxTestUtils {
         }
 
         @Override
-        public void groupSuggestionsBySearchVsURL(int firstIndex, int lastIndex) {}
-
-        @Override
         public void startZeroSuggest(Profile profile, String omniboxText, String url,
                 int pageClassification, String title) {
             if (sendSuggestions(omniboxText)) return;
@@ -132,9 +129,6 @@ public class OmniboxTestUtils {
         @Override
         public void startZeroSuggest(Profile profile, String omniboxText, String url,
                 int pageClassification, String title) {}
-
-        @Override
-        public void groupSuggestionsBySearchVsURL(int firstIndex, int lastIndex) {}
 
         @Override
         public void stop(boolean clear) {}

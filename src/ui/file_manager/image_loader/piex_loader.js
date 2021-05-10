@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-console.log('[PiexLoader] loaded');
-
 /**
  * Declares the piex-wasm Module interface. The Module has many interfaces
  * but only declare the parts required for PIEX work.
  *
  * @typedef {{
  *  calledRun: boolean,
- *  onAbort: function((!Error|string)):undefined,
  *  HEAP8: !Uint8Array,
  *  _malloc: function(number):number,
  *  _free: function(number):undefined,
@@ -20,10 +17,29 @@ console.log('[PiexLoader] loaded');
 let PiexWasmModule;
 
 /**
- * Module defined by 'piex.js.wasm' script.
+ * Subset of the Emscripten Module API required for initialization. See
+ * https://emscripten.org/docs/api_reference/module.html#module.
+ * @typedef {{
+ *  onAbort: function((!Error|string)):undefined,
+ * }}
+ */
+let ModuleInitParams;
+
+/**
+ * Module defined by 'piex.js.wasm' script upon initialization.
  * @type {!PiexWasmModule}
  */
-const PiexModule = /** @type {!PiexWasmModule} */ (globalThis['Module']) || {};
+let PiexModule;
+
+/**
+ * Module constructor defined by 'piex.js.wasm' script.
+ * @type {function(!ModuleInitParams): !Promise<!PiexWasmModule>}
+ */
+const initPiexModule =
+    /** @type {function(!ModuleInitParams): !Promise<!PiexWasmModule>} */ (
+        globalThis['createPiexModule']);
+
+console.log(`[PiexLoader] available [init=${typeof initPiexModule}]`);
 
 /**
  * Set true if the Module.onAbort() handler is called.
@@ -31,17 +47,39 @@ const PiexModule = /** @type {!PiexWasmModule} */ (globalThis['Module']) || {};
  */
 let piexFailed = false;
 
-/**
- * Installs an (Emscripten) Module.onAbort handler. Record that the Module
- * has failed in piexFailed and re-throw the error.
- *
- * @param {!Error|string} error
- * @throws {!Error|string}
- */
-PiexModule.onAbort = (error) => {
-  piexFailed = true;
-  throw error;
+const MODULE_SETTINGS = {
+  /**
+   * Installs an (Emscripten) Module.onAbort handler. Record that the
+   * Module has failed in piexFailed and re-throw the error.
+   *
+   * @param {!Error|string} error
+   * @throws {!Error|string}
+   */
+  onAbort: (error) => {
+    piexFailed = true;
+    throw error;
+  }
 };
+
+/** @type {?Promise<undefined>} */
+let initPiexModulePromise = null;
+/**
+ * Returns a promise that resolves once initialization is complete. PiexModule
+ * may be undefined before this promise resolves.
+ * @return {!Promise<undefined>}
+ */
+function piexModuleInitialized() {
+  if (!initPiexModulePromise) {
+    initPiexModulePromise = new Promise(resolve => {
+      initPiexModule(MODULE_SETTINGS).then(module => {
+        PiexModule = module;
+        console.log(`[PiexLoader] loaded [module=${typeof module}]`);
+        resolve();
+      });
+    });
+  }
+  return initPiexModulePromise;
+}
 
 /**
  * Module failure recovery: if piexFailed is set via onAbort due to OOM in
@@ -193,7 +231,7 @@ const adobeProfile = new Uint8Array([
   // APP2 ICC_PROFILE\0 segment header.
   0xff, 0xe2, 0x02, 0x40, 0x49, 0x43, 0x43, 0x5f, 0x50, 0x52, 0x4f, 0x46,
   0x49, 0x4c, 0x45, 0x00, 0x01, 0x01,
-  // AdobeRGB98 ICC Color Profile data.
+  // AdobeRGB1998 ICC Color Profile data.
   0x00, 0x00, 0x02, 0x30, 0x41, 0x44, 0x42, 0x45, 0x02, 0x10, 0x00, 0x00,
   0x6d, 0x6e, 0x74, 0x72, 0x52, 0x47, 0x42, 0x20, 0x58, 0x59, 0x5a, 0x20,
   0x07, 0xd0, 0x00, 0x08, 0x00, 0x0b, 0x00, 0x13, 0x00, 0x33, 0x00, 0x3b,
@@ -435,13 +473,18 @@ class ImageBuffer {
 
     const view = new Uint8Array(this.source.buffer, offset, length);
 
+    // Compute output image width and height.
+    const usesWidthAsHeight = thumbnail.orientation >= 5;
+    const height = usesWidthAsHeight ? thumbnail.width : thumbnail.height;
+    const width = usesWidthAsHeight ? thumbnail.height : thumbnail.width;
+
     // Compute pixel row stride.
-    const rowPad = thumbnail.width & 3;
-    const rowStride = 3 * thumbnail.width + rowPad;
+    const rowPad = width & 3;
+    const rowStride = 3 * width + rowPad;
 
     // Create bitmap image.
     const pixelDataOffset = 14 + 108;
-    const fileSize = pixelDataOffset + rowStride * thumbnail.height;
+    const fileSize = pixelDataOffset + rowStride * height;
     const bitmap = new DataView(new ArrayBuffer(fileSize));
 
     // BITMAPFILEHEADER 14 bytes.
@@ -453,8 +496,8 @@ class ImageBuffer {
 
     // DIB BITMAPV4HEADER 108 bytes.
     bitmap.setUint32(14, /* HeaderSize */ 108, true);
-    bitmap.setInt32(18, thumbnail.width, true);
-    bitmap.setInt32(22, -thumbnail.height /* top-down DIB */, true);
+    bitmap.setInt32(18, width, true);
+    bitmap.setInt32(22, -height /* top-down DIB */, true);
     bitmap.setInt16(26, /* ColorPlanes */ 1, true);
     bitmap.setInt16(28, /* BitsPerPixel BI_RGB */ 24, true);
     bitmap.setUint32(30, /* Compression: BI_RGB none */ 0, true);
@@ -508,24 +551,80 @@ class ImageBuffer {
     bitmap.setUint32(118, /* B Gamma */ gg, true);
 
     // Write RGB row pixels in top-down DIB order.
-    let output = pixelDataOffset;
-    for (let i = 0, y = thumbnail.height; y > 0; --y) {
-      for (let x = thumbnail.width; x > 0; --x) {
-        const R = view[i++];
-        const G = view[i++];
-        const B = view[i++];
-        bitmap.setUint8(output++, B);  // B
-        bitmap.setUint8(output++, G);  // G
-        bitmap.setUint8(output++, R);  // R
+    const h = thumbnail.height - 1;
+    const w = thumbnail.width - 1;
+    let dx = 0;
+
+    for (let input = 0, y = 0; y <= h; ++y) {
+      let output = pixelDataOffset;
+
+      /**
+       * Compute affine(a,b,c,d,tx,ty) transform of pixel (x,y)
+       *   { x': a * x + c * y + tx, y': d * y + b * x + ty }
+       * a,b,c,d in [-1,0,1], to apply the image orientation at
+       * (0,y) to find the output location of the input row.
+       * The transform derivative in x is used to calculate the
+       * relative output location of adjacent input row pixels.
+       */
+      switch (thumbnail.orientation) {
+        case 1:  // affine(+1, 0, 0, +1, 0, 0)
+          output += y * rowStride;
+          dx = 3;
+          break;
+        case 2:  // affine(-1, 0, 0, +1, w, 0)
+          output += y * rowStride + 3 * w;
+          dx = -3;
+          break;
+        case 3:  // affine(-1, 0, 0, -1, w, h)
+          output += (h - y) * rowStride + 3 * w;
+          dx = -3;
+          break;
+        case 4:  // affine(+1, 0, 0, -1, 0, h)
+          output += (h - y) * rowStride;
+          dx = 3;
+          break;
+        case 5:  // affine(0, +1, +1, 0, 0, 0)
+          output += 3 * y;
+          dx = rowStride;
+          break;
+        case 6:  // affine(0, +1, -1, 0, h, 0)
+          output += 3 * (h - y);
+          dx = rowStride;
+          break;
+        case 7:  // affine(0, -1, -1, 0, h, w)
+          output += w * rowStride + 3 * (h - y);
+          dx = -rowStride;
+          break;
+        case 8:  // affine(0, -1, +1, 0, 0, w)
+          output += w * rowStride + 3 * y;
+          dx = -rowStride;
+          break;
       }
 
-      switch (rowPad) {
-        case 3:
-          bitmap.setUint8(output++, 0);
-        case 2:
-          bitmap.setUint8(output++, 0);
-        case 1:
-          bitmap.setUint8(output++, 0);
+      for (let x = 0; x <= w; ++x, input += 3, output += dx) {
+        bitmap.setUint8(output + 0, view[input + 2]);  // B
+        bitmap.setUint8(output + 1, view[input + 1]);  // G
+        bitmap.setUint8(output + 2, view[input + 0]);  // R
+      }
+    }
+
+    // Write pixel row padding bytes if needed.
+    if (rowPad) {
+      let paddingOffset = pixelDataOffset + 3 * width;
+
+      for (let y = 0; y < height; ++y) {
+        let output = paddingOffset;
+
+        switch (rowPad) {
+          case 3:
+            bitmap.setUint8(output++, 0);
+          case 2:
+            bitmap.setUint8(output++, 0);
+          case 1:
+            bitmap.setUint8(output++, 0);
+        }
+
+        paddingOffset += rowStride;
       }
     }
 
@@ -533,8 +632,8 @@ class ImageBuffer {
       thumbnail: bitmap.buffer,
       mimeType: 'image/bmp',
       ifd: this.details_(result, thumbnail.orientation),
-      orientation: thumbnail.orientation,
       colorSpace: thumbnail.colorSpace,
+      orientation: 1,
     };
   }
 
@@ -619,7 +718,7 @@ class ImageBuffer {
 /**
  * PiexLoader: is a namespace.
  */
-const PiexLoader = {};
+/* #export */ const PiexLoader = {};
 
 /**
  * Loads a RAW image. Returns the image metadata and the image thumbnail in a
@@ -631,25 +730,24 @@ const PiexLoader = {};
  * the caller should initiate failure recovery steps.
  *
  * @param {!ArrayBuffer|!File|string} source
- * @param {function()} onPiexModuleFailed
+ * @param {!function()} onPiexModuleFailed
  * @return {!Promise<!PiexLoaderResponse>}
  */
 PiexLoader.load = function(source, onPiexModuleFailed) {
   /** @type {?ImageBuffer} */
   let imageBuffer;
 
-  return readSourceData(source)
-      .then((buffer) => {
+  return piexModuleInitialized()
+      .then(() => readSourceData(source))
+      .then((/** !ArrayBuffer */ buffer) => {
         if (piexModuleFailed()) {
-          // Just reject here: handle in the .catch() clause below.
-          return Promise.reject('piex wasm module failed');
+          throw new Error('piex wasm module failed');
         }
         imageBuffer = new ImageBuffer(buffer);
         return imageBuffer.process();
       })
       .then((/** !PiexWasmImageResult */ result) => {
         const buffer = /** @type {!ImageBuffer} */ (imageBuffer);
-        buffer.close();
         return new PiexLoaderResponse(buffer.preview(result));
       })
       .catch((error) => {
@@ -657,8 +755,10 @@ PiexLoader.load = function(source, onPiexModuleFailed) {
           setTimeout(onPiexModuleFailed, 0);
           return Promise.reject('piex wasm module failed');
         }
-        imageBuffer && imageBuffer.close();
         console.error('[PiexLoader] ' + error);
         return Promise.reject(error);
+      })
+      .finally(() => {
+        imageBuffer && imageBuffer.close();
       });
 };

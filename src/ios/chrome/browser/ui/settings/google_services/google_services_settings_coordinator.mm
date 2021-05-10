@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -92,13 +93,9 @@ using signin_metrics::PromoAction;
 }
 
 - (void)start {
-  self.authService->WaitUntilCacheIsPopulated();
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-
   GoogleServicesSettingsViewController* viewController =
-      [[GoogleServicesSettingsViewController alloc] initWithStyle:style];
+      [[GoogleServicesSettingsViewController alloc]
+          initWithStyle:ChromeTableViewStyle()];
   viewController.presentationDelegate = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =
@@ -299,16 +296,6 @@ using signin_metrics::PromoAction;
       ->PresentAccountDetailsController(
           self.authService->GetAuthenticatedIdentity(),
           self.googleServicesSettingsViewController, /*animated=*/YES);
-}
-
-- (void)openManageGoogleAccountWebPage {
-  GURL url = google_util::AppendGoogleLocaleParam(
-      GURL(kManageYourGoogleAccountURL),
-      GetApplicationContext()->GetApplicationLocale());
-  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
-  id<ApplicationCommands> handler = HandlerForProtocol(
-      self.browser->GetCommandDispatcher(), ApplicationCommands);
-  [handler closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

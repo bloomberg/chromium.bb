@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <tuple>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -20,7 +21,6 @@
 #include "base/version.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -184,11 +184,6 @@ SmartDimComponentInstallerPolicy::GetInstallerAttributes() const {
   // Append a '$' for exact matching.
   attrs["targetversionprefix"] = expected_version_ + "$";
   return attrs;
-}
-
-std::vector<std::string> SmartDimComponentInstallerPolicy::GetMimeTypes()
-    const {
-  return std::vector<std::string>();
 }
 
 void RegisterSmartDimComponent(ComponentUpdateService* cus) {

@@ -18,7 +18,7 @@
 namespace ui {
 
 InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate,
-                                       gfx::AcceleratedWidget widget)
+                                       fuchsia::ui::views::ViewRef view_ref)
     : InputMethodBase(delegate),
       event_converter_(this),
       ime_client_binding_(this),
@@ -29,8 +29,7 @@ InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate,
 
 InputMethodFuchsia::~InputMethodFuchsia() {}
 
-InputMethodKeyboardController*
-InputMethodFuchsia::GetInputMethodKeyboardController() {
+VirtualKeyboardController* InputMethodFuchsia::GetVirtualKeyboardController() {
   return &virtual_keyboard_controller_;
 }
 

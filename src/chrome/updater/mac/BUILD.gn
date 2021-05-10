@@ -26,6 +26,7 @@ source_set("network_fetcher_sources") {
 
   deps = [
     "//base",
+    "//chrome/updater:base",
     "//components/crash/core/common:crash_key_lib",
     "//components/update_client",
     "//net",
@@ -35,7 +36,7 @@ source_set("network_fetcher_sources") {
 source_set("updater_tests") {
   testonly = true
 
-  sources = [ "net/network_unittest.mm" ]
+  sources = [ "net/network_unittest.cc" ]
 
   deps = [
     ":network_fetcher_sources",
@@ -73,6 +74,7 @@ source_set("xpc_names") {
 
   deps = [
     "//base",
+    "//chrome/updater:branding_header",
     "//chrome/updater:version_header",
   ]
 
@@ -87,6 +89,8 @@ source_set("util") {
 
   deps = [
     "//base",
+    "//chrome/updater:base",
+    "//chrome/updater:branding_header",
     "//chrome/updater:version_header",
   ]
 
@@ -106,6 +110,7 @@ source_set("updater_setup_sources") {
     "//base",
     "//chrome/common/mac:launchd",
     "//chrome/updater:base",
+    "//chrome/updater:branding_header",
     "//chrome/updater:version_header",
     "//components/crash/core/common:crash_key_lib",
     "//mojo/public/cpp/platform",
@@ -120,8 +125,7 @@ source_set("updater_setup_sources") {
   ]
 }
 
-# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-python2_action("updater_install_script") {
+action("updater_install_script") {
   script = "embed_variables.py"
 
   inputs = [
@@ -141,8 +145,7 @@ python2_action("updater_install_script") {
   ]
 }
 
-# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-python2_action("browser_install_script") {
+action("browser_install_script") {
   script = "embed_variables.py"
 
   inputs = [

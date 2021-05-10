@@ -17,9 +17,10 @@
 
 #include "dawn_native/ShaderModule.h"
 
-#import <Metal/Metal.h>
-
+#include "common/NSRef.h"
 #include "dawn_native/Error.h"
+
+#import <Metal/Metal.h>
 
 namespace spirv_cross {
     class CompilerMSL;
@@ -34,14 +35,12 @@ namespace dawn_native { namespace metal {
     class ShaderModule final : public ShaderModuleBase {
       public:
         static ResultOrError<ShaderModule*> Create(Device* device,
-                                                   const ShaderModuleDescriptor* descriptor);
+                                                   const ShaderModuleDescriptor* descriptor,
+                                                   ShaderModuleParseResult* parseResult);
 
         struct MetalFunctionData {
-            id<MTLFunction> function = nil;
+            NSPRef<id<MTLFunction>> function;
             bool needsStorageBufferLength;
-            ~MetalFunctionData() {
-                [function release];
-            }
         };
         MaybeError CreateFunction(const char* entryPointName,
                                   SingleShaderStage stage,
@@ -51,9 +50,29 @@ namespace dawn_native { namespace metal {
                                   const RenderPipeline* renderPipeline = nullptr);
 
       private:
+        ResultOrError<std::string> TranslateToMSLWithTint(const char* entryPointName,
+                                                          SingleShaderStage stage,
+                                                          const PipelineLayout* layout,
+                                                          uint32_t sampleMask,
+                                                          const RenderPipeline* renderPipeline,
+                                                          std::string* remappedEntryPointName,
+                                                          bool* needsStorageBufferLength);
+        ResultOrError<std::string> TranslateToMSLWithSPIRVCross(
+            const char* entryPointName,
+            SingleShaderStage stage,
+            const PipelineLayout* layout,
+            uint32_t sampleMask,
+            const RenderPipeline* renderPipeline,
+            std::string* remappedEntryPointName,
+            bool* needsStorageBufferLength);
+
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
-        MaybeError Initialize();
+        MaybeError Initialize(ShaderModuleParseResult* parseResult);
+
+#ifdef DAWN_ENABLE_WGSL
+        std::unique_ptr<tint::Program> mTintProgram;
+#endif
     };
 
 }}  // namespace dawn_native::metal

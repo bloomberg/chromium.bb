@@ -5,9 +5,9 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -38,11 +38,12 @@ namespace sync_file_system {
 namespace {
 
 void PrepareForProcessRemoteChangeCallbackAdapter(
-    const RemoteChangeProcessor::PrepareChangeCallback& callback,
+    RemoteChangeProcessor::PrepareChangeCallback callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
     storage::ScopedFile snapshot) {
-  callback.Run(status, sync_file_info.metadata, sync_file_info.changes);
+  std::move(callback).Run(status, sync_file_info.metadata,
+                          sync_file_info.changes);
 }
 
 void InvokeCallbackOnNthInvocation(int* count, const base::Closure& callback) {
@@ -117,8 +118,7 @@ std::unique_ptr<LocalFileSyncService> LocalFileSyncService::Create(
 std::unique_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
     Profile* profile,
     leveldb::Env* env) {
-  std::unique_ptr<LocalFileSyncService> sync_service(
-      new LocalFileSyncService(profile, env));
+  auto sync_service = base::WrapUnique(new LocalFileSyncService(profile, env));
   sync_service->sync_context_->set_mock_notify_changes_duration_in_sec(0);
   return sync_service;
 }
@@ -136,12 +136,13 @@ void LocalFileSyncService::Shutdown() {
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const GURL& app_origin,
     storage::FileSystemContext* file_system_context,
-    const SyncStatusCallback& callback) {
+    SyncStatusCallback callback) {
   sync_context_->MaybeInitializeFileSystemContext(
       app_origin, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
                  AsWeakPtr(), app_origin,
-                 base::RetainedRef(file_system_context), callback));
+                 base::RetainedRef(file_system_context),
+                 base::Passed(&callback)));
 }
 
 void LocalFileSyncService::AddChangeObserver(Observer* observer) {
@@ -154,12 +155,11 @@ void LocalFileSyncService::RegisterURLForWaitingSync(
   sync_context_->RegisterURLForWaitingSync(url, on_syncable_callback);
 }
 
-void LocalFileSyncService::ProcessLocalChange(
-    const SyncFileCallback& callback) {
+void LocalFileSyncService::ProcessLocalChange(SyncFileCallback callback) {
   // Pick an origin to process next.
   GURL origin;
   if (!origin_change_map_.NextOriginToProcess(&origin)) {
-    callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
+    std::move(callback).Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
     return;
   }
   DCHECK(!origin.is_empty());
@@ -169,8 +169,8 @@ void LocalFileSyncService::ProcessLocalChange(
 
   sync_context_->GetFileForLocalSync(
       origin_to_contexts_[origin],
-      base::Bind(&LocalFileSyncService::DidGetFileForLocalSync,
-                 AsWeakPtr(), callback));
+      base::BindOnce(&LocalFileSyncService::DidGetFileForLocalSync, AsWeakPtr(),
+                     std::move(callback)));
 }
 
 void LocalFileSyncService::SetLocalChangeProcessor(
@@ -179,21 +179,21 @@ void LocalFileSyncService::SetLocalChangeProcessor(
 }
 
 void LocalFileSyncService::SetLocalChangeProcessorCallback(
-    const GetLocalChangeProcessorCallback& get_local_change_processor) {
-  get_local_change_processor_ = get_local_change_processor;
+    GetLocalChangeProcessorCallback get_local_change_processor) {
+  get_local_change_processor_ = std::move(get_local_change_processor);
 }
 
 void LocalFileSyncService::HasPendingLocalChanges(
     const FileSystemURL& url,
-    const HasPendingLocalChangeCallback& callback) {
+    HasPendingLocalChangeCallback callback) {
   if (!base::Contains(origin_to_contexts_, url.origin().GetURL())) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, SYNC_FILE_ERROR_INVALID_URL, false));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  SYNC_FILE_ERROR_INVALID_URL, false));
     return;
   }
   sync_context_->HasPendingLocalChanges(
-      origin_to_contexts_[url.origin().GetURL()], url, callback);
+      origin_to_contexts_[url.origin().GetURL()], url, std::move(callback));
 }
 
 void LocalFileSyncService::PromoteDemotedChanges(
@@ -215,15 +215,16 @@ void LocalFileSyncService::PromoteDemotedChanges(
 }
 
 void LocalFileSyncService::GetLocalFileMetadata(
-    const FileSystemURL& url, const SyncFileMetadataCallback& callback) {
+    const FileSystemURL& url,
+    SyncFileMetadataCallback callback) {
   DCHECK(base::Contains(origin_to_contexts_, url.origin().GetURL()));
   sync_context_->GetFileMetadata(origin_to_contexts_[url.origin().GetURL()],
-                                 url, callback);
+                                 url, std::move(callback));
 }
 
 void LocalFileSyncService::PrepareForProcessRemoteChange(
     const FileSystemURL& url,
-    const PrepareChangeCallback& callback) {
+    PrepareChangeCallback callback) {
   DVLOG(1) << "PrepareForProcessRemoteChange: " << url.DebugString();
 
   if (!base::Contains(origin_to_contexts_, url.origin().GetURL())) {
@@ -243,8 +244,8 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
 
       // The extension has been uninstalled and this method is called
       // before the remote changes for the origin are removed.
-      callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC,
-                   SyncFileMetadata(), FileChangeList());
+      std::move(callback).Run(SYNC_STATUS_NO_CHANGE_TO_SYNC, SyncFileMetadata(),
+                              FileChangeList());
       return;
     }
     scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -253,9 +254,9 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
             ->GetFileSystemContext();
     MaybeInitializeFileSystemContext(
         url.origin().GetURL(), file_system_context.get(),
-        base::Bind(&LocalFileSyncService::DidInitializeForRemoteSync,
-                   AsWeakPtr(), url, base::RetainedRef(file_system_context),
-                   callback));
+        base::BindOnce(&LocalFileSyncService::DidInitializeForRemoteSync,
+                       AsWeakPtr(), url, base::RetainedRef(file_system_context),
+                       std::move(callback)));
     return;
   }
 
@@ -263,14 +264,14 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
   sync_context_->PrepareForSync(
       origin_to_contexts_[url.origin().GetURL()], url,
       LocalFileSyncContext::SYNC_EXCLUSIVE,
-      base::Bind(&PrepareForProcessRemoteChangeCallbackAdapter, callback));
+      base::BindOnce(&PrepareForProcessRemoteChangeCallbackAdapter,
+                     std::move(callback)));
 }
 
-void LocalFileSyncService::ApplyRemoteChange(
-    const FileChange& change,
-    const base::FilePath& local_path,
-    const FileSystemURL& url,
-    const SyncStatusCallback& callback) {
+void LocalFileSyncService::ApplyRemoteChange(const FileChange& change,
+                                             const base::FilePath& local_path,
+                                             const FileSystemURL& url,
+                                             SyncStatusCallback callback) {
   DCHECK(base::Contains(origin_to_contexts_, url.origin().GetURL()));
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Remote -> Local] ApplyRemoteChange: %s on %s",
@@ -279,8 +280,8 @@ void LocalFileSyncService::ApplyRemoteChange(
 
   sync_context_->ApplyRemoteChange(
       origin_to_contexts_[url.origin().GetURL()], change, local_path, url,
-      base::Bind(&LocalFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
-                 callback));
+      base::BindOnce(&LocalFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
+                     std::move(callback)));
 }
 
 void LocalFileSyncService::FinalizeRemoteSync(
@@ -293,13 +294,13 @@ void LocalFileSyncService::FinalizeRemoteSync(
       completion_callback);
 }
 
-void LocalFileSyncService::RecordFakeLocalChange(
-    const FileSystemURL& url,
-    const FileChange& change,
-    const SyncStatusCallback& callback) {
+void LocalFileSyncService::RecordFakeLocalChange(const FileSystemURL& url,
+                                                 const FileChange& change,
+                                                 SyncStatusCallback callback) {
   DCHECK(base::Contains(origin_to_contexts_, url.origin().GetURL()));
   sync_context_->RecordFakeLocalChange(
-      origin_to_contexts_[url.origin().GetURL()], url, change, callback);
+      origin_to_contexts_[url.origin().GetURL()], url, change,
+      std::move(callback));
 }
 
 void LocalFileSyncService::OnChangesAvailableInOrigins(
@@ -353,10 +354,10 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
 void LocalFileSyncService::DidInitializeFileSystemContext(
     const GURL& app_origin,
     storage::FileSystemContext* file_system_context,
-    const SyncStatusCallback& callback,
+    SyncStatusCallback callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    std::move(callback).Run(status);
     return;
   }
   DCHECK(file_system_context);
@@ -376,46 +377,45 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
     for (auto& observer : change_observers_)
       observer.OnLocalChangeAvailable(num_changes);
   }
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 void LocalFileSyncService::DidInitializeForRemoteSync(
     const FileSystemURL& url,
     storage::FileSystemContext* file_system_context,
-    const PrepareChangeCallback& callback,
+    PrepareChangeCallback callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     DVLOG(1) << "FileSystemContext initialization failed for remote sync:"
              << url.DebugString() << " status=" << status
              << " (" << SyncStatusCodeToString(status) << ")";
-    callback.Run(status, SyncFileMetadata(), FileChangeList());
+    std::move(callback).Run(status, SyncFileMetadata(), FileChangeList());
     return;
   }
   origin_to_contexts_[url.origin().GetURL()] = file_system_context;
-  PrepareForProcessRemoteChange(url, callback);
+  PrepareForProcessRemoteChange(url, std::move(callback));
 }
 
-void LocalFileSyncService::DidApplyRemoteChange(
-    const SyncStatusCallback& callback,
-    SyncStatusCode status) {
+void LocalFileSyncService::DidApplyRemoteChange(SyncStatusCallback callback,
+                                                SyncStatusCode status) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Remote -> Local] ApplyRemoteChange finished --> %s",
             SyncStatusCodeToString(status));
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 void LocalFileSyncService::DidGetFileForLocalSync(
-    const SyncFileCallback& callback,
+    SyncFileCallback callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
     storage::ScopedFile snapshot) {
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status, sync_file_info.url);
+    std::move(callback).Run(status, sync_file_info.url);
     return;
   }
   if (sync_file_info.changes.empty()) {
     // There's a slight chance this could happen.
-    ProcessLocalChange(callback);
+    ProcessLocalChange(std::move(callback));
     return;
   }
 
@@ -423,19 +423,18 @@ void LocalFileSyncService::DidGetFileForLocalSync(
   DVLOG(1) << "ProcessLocalChange: " << sync_file_info.url.DebugString()
            << " change:" << next_change.DebugString();
 
-  GetLocalChangeProcessor(sync_file_info.url)->ApplyLocalChange(
-      next_change,
-      sync_file_info.local_file_path,
-      sync_file_info.metadata,
-      sync_file_info.url,
-      base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), callback,
-                 base::Passed(&snapshot), sync_file_info,
-                 next_change, sync_file_info.changes.PopAndGetNewList()));
+  GetLocalChangeProcessor(sync_file_info.url)
+      ->ApplyLocalChange(
+          next_change, sync_file_info.local_file_path, sync_file_info.metadata,
+          sync_file_info.url,
+          base::BindOnce(&LocalFileSyncService::ProcessNextChangeForURL,
+                         AsWeakPtr(), std::move(callback), std::move(snapshot),
+                         sync_file_info, next_change,
+                         sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
-    const SyncFileCallback& callback,
+    SyncFileCallback callback,
     storage::ScopedFile snapshot,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& processed_change,
@@ -447,14 +446,14 @@ void LocalFileSyncService::ProcessNextChangeForURL(
            << " status:" << status;
 
   if (status == SYNC_STATUS_RETRY) {
-    GetLocalChangeProcessor(sync_file_info.url)->ApplyLocalChange(
-        processed_change,
-        sync_file_info.local_file_path,
-        sync_file_info.metadata,
-        sync_file_info.url,
-        base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                   AsWeakPtr(), callback, base::Passed(&snapshot),
-                   sync_file_info, processed_change, changes));
+    GetLocalChangeProcessor(sync_file_info.url)
+        ->ApplyLocalChange(
+            processed_change, sync_file_info.local_file_path,
+            sync_file_info.metadata, sync_file_info.url,
+            base::BindOnce(&LocalFileSyncService::ProcessNextChangeForURL,
+                           AsWeakPtr(), std::move(callback),
+                           std::move(snapshot), sync_file_info,
+                           processed_change, changes));
     return;
   }
 
@@ -469,20 +468,17 @@ void LocalFileSyncService::ProcessNextChangeForURL(
     DCHECK(base::Contains(origin_to_contexts_, url.origin().GetURL()));
     sync_context_->FinalizeSnapshotSync(
         origin_to_contexts_[url.origin().GetURL()], url, status,
-        base::Bind(callback, status, url));
+        base::BindOnce(std::move(callback), status, url));
     return;
   }
 
   FileChange next_change = changes.front();
   GetLocalChangeProcessor(url)->ApplyLocalChange(
-      changes.front(),
-      sync_file_info.local_file_path,
-      sync_file_info.metadata,
+      changes.front(), sync_file_info.local_file_path, sync_file_info.metadata,
       url,
-      base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), callback,
-                 base::Passed(&snapshot), sync_file_info,
-                 next_change, changes.PopAndGetNewList()));
+      base::BindOnce(&LocalFileSyncService::ProcessNextChangeForURL,
+                     AsWeakPtr(), std::move(callback), std::move(snapshot),
+                     sync_file_info, next_change, changes.PopAndGetNewList()));
 }
 
 LocalChangeProcessor* LocalFileSyncService::GetLocalChangeProcessor(

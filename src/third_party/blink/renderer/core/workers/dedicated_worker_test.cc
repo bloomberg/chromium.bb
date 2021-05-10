@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -36,15 +37,24 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(ExecutionContext* parent_execution_context,
                                DedicatedWorkerObjectProxy& worker_object_proxy)
-      : DedicatedWorkerThread(parent_execution_context, worker_object_proxy) {
+      : DedicatedWorkerThread(
+            parent_execution_context,
+            worker_object_proxy,
+            mojo::PendingRemote<mojom::blink::DedicatedWorkerHost>()) {
     worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
         ThreadCreationParams(ThreadType::kTestThread));
   }
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
+    // Needed to avoid calling into an uninitialized broker.
+    if (!creation_params->browser_interface_broker) {
+      (void)creation_params->browser_interface_broker
+          .InitWithNewPipeAndPassReceiver();
+    }
     auto* global_scope = DedicatedWorkerGlobalScope::Create(
-        std::move(creation_params), this, time_origin_, ukm::kInvalidSourceId);
+        std::move(creation_params), this, time_origin_,
+        mojo::PendingRemote<mojom::blink::DedicatedWorkerHost>());
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
     // check console messages (i.e., UseCounter tests).
@@ -124,15 +134,13 @@ class DedicatedWorkerMessagingProxyForTest
   void StartWithSourceCode(const String& source) {
     KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
-    Vector<CSPHeaderAndType> headers{
-        {"contentSecurityPolicy",
-         network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
         To<LocalDOMWindow>(GetExecutionContext())->GetFrame()->GetSettings());
     auto params = std::make_unique<GlobalScopeCreationParams>(
         script_url, mojom::blink::ScriptType::kClassic,
         "fake global scope name", "fake user agent", UserAgentMetadata(),
-        nullptr /* web_worker_fetch_context */, headers,
+        nullptr /* web_worker_fetch_context */,
+        Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
         network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin_.get()),

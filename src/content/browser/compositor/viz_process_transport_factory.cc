@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/common/features.h"
@@ -108,7 +109,9 @@ class HostDisplayClient : public viz::HostDisplayClient {
   HostDisplayClient& operator=(const HostDisplayClient&) = delete;
 
   // viz::HostDisplayClient:
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void DidCompleteSwapWithNewSize(const gfx::Size& size) override {
     compositor_->OnCompleteSwapWithNewSize(size);
   }
@@ -278,6 +281,10 @@ viz::FrameSinkId VizProcessTransportFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
+viz::SubtreeCaptureId VizProcessTransportFactory::AllocateSubtreeCaptureId() {
+  return subtree_capture_id_allocator_.NextSubtreeCaptureId();
+}
+
 viz::HostFrameSinkManager*
 VizProcessTransportFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
@@ -294,7 +301,7 @@ ui::ContextFactory* VizProcessTransportFactory::GetContextFactory() {
 
 void VizProcessTransportFactory::DisableGpuCompositing(
     ui::Compositor* guilty_compositor) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ALLOW_UNUSED_LOCAL(compositing_mode_reporter_);
   // A fatal error has occurred and we can't fall back to software compositing
   // on CrOS. These can be unrecoverable hardware errors, or bugs that should
@@ -431,8 +438,6 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
 
   root_params->use_preferred_interval_for_video =
       features::IsUsingPreferredIntervalForVideo();
-  root_params->num_of_frames_to_toggle_interval =
-      features::NumOfFramesToToggleInterval();
 #if defined(OS_WIN)
   root_params->set_present_duration_allowed =
       features::ShouldUseSetPresentDuration();

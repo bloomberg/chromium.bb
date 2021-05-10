@@ -4,136 +4,205 @@
 
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 
-#include <vector>
-
-#include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/toast_manager.h"
 #include "base/notreached.h"
-#include "base/optional.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "base/syslog_logging.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/strings/grit/components_strings.h"
+#include "extensions/common/constants.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace policy {
 
 namespace {
 
-const char kToastId[] = "clipboard_dlp_block";
-constexpr int kToastDurationMs = 2500;
+bool IsFilesApp(const ui::DataTransferEndpoint* const data_dst) {
+  if (!data_dst || !data_dst->IsUrlType())
+    return false;
+
+  GURL url = data_dst->origin()->GetURL();
+  return url.has_scheme() && url.SchemeIs(extensions::kExtensionScheme) &&
+         url.has_host() && url.host() == extension_misc::kFilesManagerAppId;
+}
+
+bool IsClipboardHistory(const ui::DataTransferEndpoint* const data_dst) {
+  return data_dst && data_dst->type() == ui::EndpointType::kClipboardHistory;
+}
+
+DlpRulesManager::Level IsDataTransferAllowed(
+    const DlpRulesManager& dlp_rules_manager,
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst) {
+  if (!data_src || !data_src->IsUrlType()) {  // Currently we only handle URLs.
+    return DlpRulesManager::Level::kAllow;
+  }
+
+  const GURL src_url = data_src->origin()->GetURL();
+  ui::EndpointType dst_type =
+      data_dst ? data_dst->type() : ui::EndpointType::kDefault;
+
+  DlpRulesManager::Level level = DlpRulesManager::Level::kAllow;
+
+  switch (dst_type) {
+    case ui::EndpointType::kDefault:
+    case ui::EndpointType::kUnknownVm:
+    case ui::EndpointType::kBorealis: {
+      // Passing empty URL will return restricted if there's a rule restricting
+      // the src against any dst (*), otherwise it will return ALLOW.
+      level = dlp_rules_manager.IsRestrictedDestination(
+          src_url, GURL(), DlpRulesManager::Restriction::kClipboard);
+      break;
+    }
+
+    case ui::EndpointType::kUrl: {
+      GURL dst_url = data_dst->origin()->GetURL();
+      level = dlp_rules_manager.IsRestrictedDestination(
+          src_url, dst_url, DlpRulesManager::Restriction::kClipboard);
+      break;
+    }
+
+    case ui::EndpointType::kCrostini: {
+      level = dlp_rules_manager.IsRestrictedComponent(
+          src_url, DlpRulesManager::Component::kCrostini,
+          DlpRulesManager::Restriction::kClipboard);
+      break;
+    }
+
+    case ui::EndpointType::kPluginVm: {
+      level = dlp_rules_manager.IsRestrictedComponent(
+          src_url, DlpRulesManager::Component::kPluginVm,
+          DlpRulesManager::Restriction::kClipboard);
+      break;
+    }
+
+    case ui::EndpointType::kArc: {
+      level = dlp_rules_manager.IsRestrictedComponent(
+          src_url, DlpRulesManager::Component::kArc,
+          DlpRulesManager::Restriction::kClipboard);
+      break;
+    }
+
+    case ui::EndpointType::kClipboardHistory: {
+      level = DlpRulesManager::Level::kAllow;
+      break;
+    }
+
+    default:
+      NOTREACHED();
+  }
+
+  return level;
+}
 
 }  // namespace
 
 // static
-void DataTransferDlpController::Init() {
-  if (!HasInstance())
-    new DataTransferDlpController();
+void DataTransferDlpController::Init(const DlpRulesManager& dlp_rules_manager) {
+  if (!HasInstance()) {
+    DlpBooleanHistogram(dlp::kDataTransferControllerStartedUMA, true);
+    new DataTransferDlpController(dlp_rules_manager);
+  }
 }
 
-bool DataTransferDlpController::IsDataReadAllowed(
+bool DataTransferDlpController::IsClipboardReadAllowed(
     const ui::DataTransferEndpoint* const data_src,
-    const ui::DataTransferEndpoint* const data_dst) const {
-  if (!data_src || data_src->type() == ui::EndpointType::kClipboardHistory) {
-    return true;
-  }
-
-  DlpRulesManager::Level level = DlpRulesManager::Level::kAllow;
-
-  if (!data_dst || data_dst->type() == ui::EndpointType::kDefault) {
-    // Passing empty URL will return restricted if there's a rule restricting
-    // the src against any dst (*), otherwise it will return ALLOW.
-    level = DlpRulesManager::Get()->IsRestrictedDestination(
-        data_src->origin()->GetURL(), GURL(),
-        DlpRulesManager::Restriction::kClipboard);
-  } else if (data_dst->IsUrlType()) {
-    level = DlpRulesManager::Get()->IsRestrictedDestination(
-        data_src->origin()->GetURL(), data_dst->origin()->GetURL(),
-        DlpRulesManager::Restriction::kClipboard);
-  } else if (data_dst->type() == ui::EndpointType::kGuestOs) {
-    level = DlpRulesManager::Get()->IsRestrictedAnyOfComponents(
-        data_src->origin()->GetURL(),
-        std::vector<DlpRulesManager::Component>{
-            DlpRulesManager::Component::kPluginVm,
-            DlpRulesManager::Component::kCrostini},
-        DlpRulesManager::Restriction::kClipboard);
-  } else if (data_dst->type() == ui::EndpointType::kArc) {
-    level = DlpRulesManager::Get()->IsRestrictedComponent(
-        data_src->origin()->GetURL(), DlpRulesManager::Component::kArc,
-        DlpRulesManager::Restriction::kClipboard);
-  } else {
-    NOTREACHED();
-  }
+    const ui::DataTransferEndpoint* const data_dst) {
+  DlpRulesManager::Level level =
+      IsDataTransferAllowed(dlp_rules_manager_, data_src, data_dst);
 
   bool notify_on_paste = !data_dst || data_dst->notify_if_restricted();
+  // Files Apps continuously reads the clipboard data which triggers a lot of
+  // notifications while the user isn't actually initiating any copy/paste.
+  // In BLOCK mode, data access by Files app will be denied silently.
+  // In WARN mode, data access by Files app will be allowed silently.
+  // TODO(crbug.com/1152475): Find a better way to handle File app.
+  // When ClipboardHistory tries to read the clipboard we should allow it
+  // silently.
+  if (IsFilesApp(data_dst) || IsClipboardHistory(data_dst))
+    notify_on_paste = false;
 
-  if (level == DlpRulesManager::Level::kBlock && notify_on_paste) {
-    ShowBlockToast(GetToastText(data_src, data_dst));
+  bool is_read_allowed = true;
+
+  switch (level) {
+    case DlpRulesManager::Level::kBlock:
+      if (notify_on_paste) {
+        SYSLOG(INFO) << "DLP blocked paste from clipboard";
+        NotifyBlockedPaste(data_src, data_dst);
+      }
+      is_read_allowed = false;
+      break;
+
+    case DlpRulesManager::Level::kWarn:
+      if (notify_on_paste) {
+        // In case the clipboard data is in warning mode, it will be allowed to
+        // be shared with Arc, Crostini, and Plugin VM without waiting for the
+        // user decision.
+        if (data_dst && (data_dst->type() == ui::EndpointType::kArc ||
+                         data_dst->type() == ui::EndpointType::kPluginVm ||
+                         data_dst->type() == ui::EndpointType::kCrostini)) {
+          WarnOnPaste(data_src, data_dst);
+        } else if (!ShouldProceedOnWarn(data_dst)) {
+          SYSLOG(INFO) << "DLP warned on paste from clipboard";
+          WarnOnPaste(data_src, data_dst);
+          is_read_allowed = false;
+        }
+      }
+      break;
+
+    default:
+      break;
   }
-
-  return level == DlpRulesManager::Level::kAllow;
+  DlpBooleanHistogram(dlp::kClipboardReadBlockedUMA, !is_read_allowed);
+  return is_read_allowed;
 }
 
-DataTransferDlpController::DataTransferDlpController() = default;
+bool DataTransferDlpController::IsDragDropAllowed(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst,
+    const bool is_drop) {
+  DlpRulesManager::Level level =
+      IsDataTransferAllowed(dlp_rules_manager_, data_src, data_dst);
+
+  if (level == DlpRulesManager::Level::kBlock && is_drop) {
+    SYSLOG(INFO) << "DLP blocked drop of dragged data";
+    NotifyBlockedPaste(data_src, data_dst);
+  }
+
+  const bool is_drop_allowed = level == DlpRulesManager::Level::kAllow;
+  DlpBooleanHistogram(dlp::kDragDropBlockedUMA, !is_drop_allowed);
+  return is_drop_allowed;
+}
+
+DataTransferDlpController::DataTransferDlpController(
+    const DlpRulesManager& dlp_rules_manager)
+    : dlp_rules_manager_(dlp_rules_manager) {}
 
 DataTransferDlpController::~DataTransferDlpController() = default;
 
-void DataTransferDlpController::ShowBlockToast(
-    const base::string16& text) const {
-  ash::ToastData toast(kToastId, text, kToastDurationMs, base::nullopt);
-  toast.is_managed = true;
-
-  ash::ToastManager::Get()->Show(toast);
+void DataTransferDlpController::NotifyBlockedPaste(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst) {
+  clipboard_notifier_.NotifyBlockedAction(data_src, data_dst);
 }
 
-base::string16 DataTransferDlpController::GetToastText(
+void DataTransferDlpController::WarnOnPaste(
     const ui::DataTransferEndpoint* const data_src,
-    const ui::DataTransferEndpoint* const data_dst) const {
-  DCHECK(data_src);
-  DCHECK(data_src->origin());
-  base::string16 host_name = base::UTF8ToUTF16(data_src->origin()->host());
+    const ui::DataTransferEndpoint* const data_dst) {
+  clipboard_notifier_.WarnOnAction(data_src, data_dst);
+}
 
-  if (data_dst && data_dst->type() == ui::EndpointType::kGuestOs) {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    Profile* profile =
-        profile_manager ? profile_manager->GetActiveUserProfile() : nullptr;
+bool DataTransferDlpController::ShouldProceedOnWarn(
+    const ui::DataTransferEndpoint* const data_dst) {
+  return clipboard_notifier_.DidUserProceedOnWarn(data_dst);
+}
 
-    bool is_crostini_running = crostini::IsCrostiniRunning(profile);
-    bool is_plugin_vm_running = plugin_vm::IsPluginVmRunning(profile);
-
-    if (is_crostini_running && is_plugin_vm_running) {
-      return l10n_util::GetStringFUTF16(
-          IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_TWO_VMS, host_name,
-          l10n_util::GetStringUTF16(IDS_CROSTINI_LINUX),
-          l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME));
-    } else if (is_crostini_running) {
-      return l10n_util::GetStringFUTF16(
-          IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM, host_name,
-          l10n_util::GetStringUTF16(IDS_CROSTINI_LINUX));
-    } else if (is_plugin_vm_running) {
-      return l10n_util::GetStringFUTF16(
-          IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM, host_name,
-          l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME));
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  if (data_dst && data_dst->type() == ui::EndpointType::kArc) {
-    return l10n_util::GetStringFUTF16(
-        IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM, host_name,
-        l10n_util::GetStringUTF16(IDS_POLICY_DLP_ANDROID_APPS));
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE,
-                                    host_name);
+void DataTransferDlpController::NotifyBlockedDrop(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst) {
+  drag_drop_notifier_.NotifyBlockedAction(data_src, data_dst);
 }
 
 }  // namespace policy

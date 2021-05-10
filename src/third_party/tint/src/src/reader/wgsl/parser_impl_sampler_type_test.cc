@@ -13,9 +13,9 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "src/ast/type/sampler_type.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/sampler_type.h"
 
 namespace tint {
 namespace reader {
@@ -23,7 +23,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, SamplerType_Invalid) {
-  auto* p = parser("1234");
+  auto p = parser("1234");
   auto t = p->sampler_type();
   EXPECT_FALSE(t.matched);
   EXPECT_FALSE(t.errored);
@@ -32,24 +32,24 @@ TEST_F(ParserImplTest, SamplerType_Invalid) {
 }
 
 TEST_F(ParserImplTest, SamplerType_Sampler) {
-  auto* p = parser("sampler");
+  auto p = parser("sampler");
   auto t = p->sampler_type();
   EXPECT_TRUE(t.matched);
   EXPECT_FALSE(t.errored);
   ASSERT_NE(t.value, nullptr);
-  ASSERT_TRUE(t->IsSampler());
-  EXPECT_FALSE(t->AsSampler()->IsComparison());
+  ASSERT_TRUE(t->Is<type::Sampler>());
+  EXPECT_FALSE(t->As<type::Sampler>()->IsComparison());
   EXPECT_FALSE(p->has_error());
 }
 
 TEST_F(ParserImplTest, SamplerType_ComparisonSampler) {
-  auto* p = parser("sampler_comparison");
+  auto p = parser("sampler_comparison");
   auto t = p->sampler_type();
   EXPECT_TRUE(t.matched);
   EXPECT_FALSE(t.errored);
   ASSERT_NE(t.value, nullptr);
-  ASSERT_TRUE(t->IsSampler());
-  EXPECT_TRUE(t->AsSampler()->IsComparison());
+  ASSERT_TRUE(t->Is<type::Sampler>());
+  EXPECT_TRUE(t->As<type::Sampler>()->IsComparison());
   EXPECT_FALSE(p->has_error());
 }
 

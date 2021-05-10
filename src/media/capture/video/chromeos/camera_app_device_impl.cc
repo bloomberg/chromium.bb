@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/camera_app_device_impl.h"
 
+#include "media/base/bind_to_current_loop.h"
+#include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 
 namespace media {
@@ -61,20 +63,36 @@ CameraAppDeviceImpl::CameraAppDeviceImpl(const std::string& device_id,
                                          cros::mojom::CameraInfoPtr camera_info)
     : device_id_(device_id),
       camera_info_(std::move(camera_info)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       capture_intent_(cros::mojom::CaptureIntent::DEFAULT),
       next_metadata_observer_id_(0),
-      next_camera_event_observer_id_(0),
-      weak_ptr_factory_(
-          std::make_unique<base::WeakPtrFactory<CameraAppDeviceImpl>>(this)) {}
+      next_camera_event_observer_id_(0) {}
 
 CameraAppDeviceImpl::~CameraAppDeviceImpl() {
-  task_runner_->DeleteSoon(FROM_HERE, std::move(weak_ptr_factory_));
+  // If the instance is bound, then this instance should only be destroyed when
+  // the mojo connection is dropped, which also happens on the mojo thread.
+  DCHECK(!mojo_task_runner_ || mojo_task_runner_->BelongsToCurrentThread());
+
+  // All the weak pointers of |weak_ptr_factory_| should be invalidated on
+  // camera device IPC thread before destroying CameraAppDeviceImpl.
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
 void CameraAppDeviceImpl::BindReceiver(
     mojo::PendingReceiver<cros::mojom::CameraAppDevice> receiver) {
   receivers_.Add(this, std::move(receiver));
+  receivers_.set_disconnect_handler(
+      base::BindRepeating(&CameraAppDeviceImpl::OnMojoConnectionError,
+                          weak_ptr_factory_for_mojo_.GetWeakPtr()));
+  mojo_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+}
+
+base::WeakPtr<CameraAppDeviceImpl> CameraAppDeviceImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void CameraAppDeviceImpl::InvalidatePtrs(base::OnceClosure callback) {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  std::move(callback).Run();
 }
 
 void CameraAppDeviceImpl::ConsumeReprocessOptions(
@@ -130,26 +148,30 @@ void CameraAppDeviceImpl::OnResultMetadataAvailable(
 }
 
 void CameraAppDeviceImpl::OnShutterDone() {
-  base::AutoLock lock(camera_event_observers_lock_);
-
-  for (auto& observer : camera_event_observers_) {
-    observer.second->OnShutterDone();
-  }
+  mojo_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CameraAppDeviceImpl::NotifyShutterDoneOnMojoThread,
+                     weak_ptr_factory_for_mojo_.GetWeakPtr()));
 }
 
 void CameraAppDeviceImpl::GetCameraInfo(GetCameraInfoCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
   DCHECK(camera_info_);
+
   std::move(callback).Run(camera_info_.Clone());
 }
 
 void CameraAppDeviceImpl::SetReprocessOption(
     cros::mojom::Effect effect,
     SetReprocessOptionCallback reprocess_result_callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   ReprocessTask task;
   task.effect = effect;
-  task.callback = base::BindOnce(&CameraAppDeviceImpl::SetReprocessResult,
-                                 weak_ptr_factory_->GetWeakPtr(),
-                                 std::move(reprocess_result_callback));
+  task.callback = media::BindToCurrentLoop(
+      base::BindOnce(&CameraAppDeviceImpl::SetReprocessResultOnMojoThread,
+                     weak_ptr_factory_for_mojo_.GetWeakPtr(),
+                     std::move(reprocess_result_callback)));
 
   if (effect == cros::mojom::Effect::PORTRAIT_MODE) {
     auto e = BuildMetadataEntry(
@@ -165,6 +187,8 @@ void CameraAppDeviceImpl::SetReprocessOption(
 
 void CameraAppDeviceImpl::SetFpsRange(const gfx::Range& fps_range,
                                       SetFpsRangeCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   const int entry_length = 2;
 
   auto& static_metadata = camera_info_->static_camera_characteristics;
@@ -198,6 +222,8 @@ void CameraAppDeviceImpl::SetFpsRange(const gfx::Range& fps_range,
 void CameraAppDeviceImpl::SetStillCaptureResolution(
     const gfx::Size& resolution,
     SetStillCaptureResolutionCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(still_capture_resolution_lock_);
   still_capture_resolution_ = resolution;
   std::move(callback).Run();
@@ -206,6 +232,8 @@ void CameraAppDeviceImpl::SetStillCaptureResolution(
 void CameraAppDeviceImpl::SetCaptureIntent(
     cros::mojom::CaptureIntent capture_intent,
     SetCaptureIntentCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(capture_intent_lock_);
   capture_intent_ = capture_intent;
   std::move(callback).Run();
@@ -215,6 +243,8 @@ void CameraAppDeviceImpl::AddResultMetadataObserver(
     mojo::PendingRemote<cros::mojom::ResultMetadataObserver> observer,
     cros::mojom::StreamType stream_type,
     AddResultMetadataObserverCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(metadata_observers_lock_);
 
   uint32_t id = next_metadata_observer_id_++;
@@ -228,6 +258,8 @@ void CameraAppDeviceImpl::AddResultMetadataObserver(
 void CameraAppDeviceImpl::RemoveResultMetadataObserver(
     uint32_t id,
     RemoveResultMetadataObserverCallback callback) {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
   base::AutoLock lock(metadata_observers_lock_);
 
   if (metadata_observers_.erase(id) == 0) {
@@ -245,7 +277,7 @@ void CameraAppDeviceImpl::RemoveResultMetadataObserver(
 void CameraAppDeviceImpl::AddCameraEventObserver(
     mojo::PendingRemote<cros::mojom::CameraEventObserver> observer,
     AddCameraEventObserverCallback callback) {
-  base::AutoLock lock(camera_event_observers_lock_);
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
 
   uint32_t id = next_camera_event_observer_id_++;
   camera_event_observers_[id] =
@@ -256,7 +288,7 @@ void CameraAppDeviceImpl::AddCameraEventObserver(
 void CameraAppDeviceImpl::RemoveCameraEventObserver(
     uint32_t id,
     RemoveCameraEventObserverCallback callback) {
-  base::AutoLock lock(camera_event_observers_lock_);
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
 
   bool is_success = camera_event_observers_.erase(id) == 1;
   std::move(callback).Run(is_success);
@@ -274,17 +306,26 @@ void CameraAppDeviceImpl::DisableEeNr(ReprocessTask* task) {
   task->extra_metadata.push_back(std::move(nr_entry));
 }
 
-void CameraAppDeviceImpl::SetReprocessResult(
+void CameraAppDeviceImpl::OnMojoConnectionError() {
+  CameraAppDeviceBridgeImpl::GetInstance()->OnDeviceMojoDisconnected(
+      device_id_);
+}
+
+void CameraAppDeviceImpl::SetReprocessResultOnMojoThread(
     SetReprocessOptionCallback callback,
     const int32_t status,
     media::mojom::BlobPtr blob) {
-  auto callback_on_mojo_thread = base::BindOnce(
-      [](const int32_t status, media::mojom::BlobPtr blob,
-         SetReprocessOptionCallback callback) {
-        std::move(callback).Run(status, std::move(blob));
-      },
-      status, std::move(blob), std::move(callback));
-  task_runner_->PostTask(FROM_HERE, std::move(callback_on_mojo_thread));
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
+  std::move(callback).Run(status, std::move(blob));
+}
+
+void CameraAppDeviceImpl::NotifyShutterDoneOnMojoThread() {
+  DCHECK(mojo_task_runner_->BelongsToCurrentThread());
+
+  for (auto& observer : camera_event_observers_) {
+    observer.second->OnShutterDone();
+  }
 }
 
 }  // namespace media

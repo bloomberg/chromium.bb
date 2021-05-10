@@ -4,14 +4,14 @@
 
 #include <algorithm>
 
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_send_buffer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_interval.h"
+#include "quic/core/quic_stream_send_buffer.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -58,7 +58,7 @@ void QuicStreamSendBuffer::SaveStreamData(const struct iovec* iov,
                                           int iov_count,
                                           size_t iov_offset,
                                           QuicByteCount data_length) {
-  DCHECK_LT(0u, data_length);
+  QUICHE_DCHECK_LT(0u, data_length);
   // Latch the maximum data slice size.
   const QuicByteCount max_data_slice_size =
       GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size);

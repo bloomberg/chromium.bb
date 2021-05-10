@@ -5,15 +5,12 @@
 import {VBox} from './Widget.js';
 import {ZoomManager} from './ZoomManager.js';
 
-/**
- * @unrestricted
- */
 export class RootView extends VBox {
   constructor() {
     super();
     this.markAsRoot();
     this.element.classList.add('root-view');
-    this.registerRequiredCSS('ui/rootView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/rootView.css', {enableLegacyPatching: false});
     this.element.setAttribute('spellcheck', 'false');
   }
 

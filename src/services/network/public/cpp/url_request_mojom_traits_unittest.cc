@@ -4,7 +4,9 @@
 
 #include "services/network/public/cpp/url_request_mojom_traits.h"
 
+#include "base/optional.h"
 #include "base/test/gtest_util.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/isolation_info.h"
@@ -47,7 +49,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies =
       net::SiteForCookies::FromUrl(GURL("https://example.com/index.html"));
-  original.force_ignore_site_for_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
   original.isolated_world_origin =
@@ -102,11 +103,103 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       mojom::TrustTokenSignRequestData::kInclude;
   original.trust_token_params->additional_signed_headers.push_back(
       "some_header");
+  original.web_bundle_token_params =
+      base::make_optional(ResourceRequest::WebBundleTokenParams(
+          GURL("https://bundle.test/"), base::UnguessableToken::Create(),
+          mojo::PendingRemote<network::mojom::WebBundleHandle>()));
 
   network::ResourceRequest copied;
-  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,
-                                                                     &copied));
+  EXPECT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::URLRequest>(original, copied));
   EXPECT_TRUE(original.EqualsForTesting(copied));
+}
+
+class DataElementDeserializationTest : public testing::Test {
+ protected:
+  base::test::TaskEnvironment task_environment_;
+};
+
+TEST_F(DataElementDeserializationTest, DataPipe) {
+  mojo::PendingRemote<mojom::DataPipeGetter> pending_remote;
+  auto pending_receiver = pending_remote.InitWithNewPipeAndPassReceiver();
+  DataElement src{DataElementDataPipe(std::move(pending_remote))};
+
+  DataElement dest;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::DataElement>(src, dest));
+  ASSERT_EQ(dest.type(), network::DataElement::Tag::kDataPipe);
+
+  mojo::Remote<mojom::DataPipeGetter> remote(
+      dest.As<DataElementDataPipe>().ReleaseDataPipeGetter());
+
+  // Make sure that `remote` and `pending_receiver` is connected to each other.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(remote.is_bound());
+  EXPECT_TRUE(remote.is_connected());
+
+  pending_receiver.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(remote.is_bound());
+  EXPECT_FALSE(remote.is_connected());
+}
+
+TEST_F(DataElementDeserializationTest, ChunkedDataPipe) {
+  mojo::PendingRemote<mojom::ChunkedDataPipeGetter> pending_remote;
+  auto pending_receiver = pending_remote.InitWithNewPipeAndPassReceiver();
+  DataElement src(DataElementChunkedDataPipe(
+      std::move(pending_remote),
+      DataElementChunkedDataPipe::ReadOnlyOnce(true)));
+  DataElement dest;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::DataElement>(src, dest));
+  ASSERT_EQ(dest.type(), network::DataElement::Tag::kChunkedDataPipe);
+  EXPECT_TRUE(dest.As<DataElementChunkedDataPipe>().read_only_once());
+  mojo::Remote<mojom::ChunkedDataPipeGetter> remote(
+      dest.As<DataElementChunkedDataPipe>().ReleaseChunkedDataPipeGetter());
+
+  // Make sure that `remote` and `pending_receiver` is connected to each other.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(remote.is_bound());
+  EXPECT_TRUE(remote.is_connected());
+
+  pending_receiver.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(remote.is_bound());
+  EXPECT_FALSE(remote.is_connected());
+}
+
+TEST_F(DataElementDeserializationTest, Bytes) {
+  const std::vector<uint8_t> kData = {8, 1, 9};
+  DataElement src{DataElementBytes(kData)};
+  DataElement dest;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::DataElement>(src, dest));
+  ASSERT_EQ(mojom::DataElementDataView::Tag::kBytes, dest.type());
+  EXPECT_EQ(kData, dest.As<DataElementBytes>().bytes());
+}
+
+TEST_F(DataElementDeserializationTest, File) {
+  const base::FilePath kPath = base::FilePath::FromUTF8Unsafe("foobar");
+  DataElement src(DataElementFile(
+      kPath, /*offset=*/3, /*length=*/8,
+      base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(2)));
+  DataElement dest;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::DataElement>(src, dest));
+  ASSERT_EQ(mojom::DataElementDataView::Tag::kFile, dest.type());
+
+  const auto& src_file = src.As<DataElementFile>();
+  const auto& dest_file = dest.As<DataElementFile>();
+
+  EXPECT_EQ(src_file.path(), dest_file.path());
+  EXPECT_EQ(src_file.offset(), dest_file.offset());
+  EXPECT_EQ(src_file.length(), dest_file.length());
+  EXPECT_EQ(src_file.expected_modification_time(),
+            dest_file.expected_modification_time());
 }
 
 }  // namespace

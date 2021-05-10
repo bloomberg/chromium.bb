@@ -19,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safety_check/safety_check.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
@@ -37,10 +38,10 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/upgrade/upgrade_constants.h"
@@ -466,8 +467,12 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     case PasswordItemType:
       return [self passwordCheckErrorInfo];
     case SafeBrowsingItemType: {
-      NSString* message = l10n_util::GetNSString(
-          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_INFO);
+      NSString* message =
+          signin::IsMobileIdentityConsistencyEnabled()
+              ? l10n_util::GetNSString(
+                    IDS_IOS_SETTINGS_SAFETY_CHECK_OPEN_SAFE_BROWSING_INFO)
+              : l10n_util::GetNSString(
+                    IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_INFO);
       GURL safeBrowsingURL(
           base::SysNSStringToUTF8(kSafeBrowsingSafetyCheckStringURL));
       return [self attributedStringWithText:message link:safeBrowsingURL];

@@ -5,7 +5,7 @@
 // This file is based on and intended as a replacement for Chrome's
 // /media/remoting/media_remoting_rpc.proto file. Structurally, the messaging
 // and enums are a reflection of Chrome's media stack. NOTE: all content
-// encryption relacted messaging has been removed, and replaced with `reserved`
+// encryption related messaging has been removed, and replaced with `reserved`
 // keyword usages below.
 
 syntax = "proto2";

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_service.h"
@@ -146,16 +147,6 @@ class TestRepeatableQueriesService : public RepeatableQueriesService {
     return &search_provider_observer_;
   }
 
-  GURL GetQueryDestinationURL(const base::string16& query) {
-    return RepeatableQueriesService::GetQueryDestinationURL(query);
-  }
-
-  GURL GetQueryDeletionURL(const std::string& deletion_url) {
-    return RepeatableQueriesService::GetQueryDeletionURL(deletion_url);
-  }
-
-  GURL GetRequestURL() { return RepeatableQueriesService::GetRequestURL(); }
-
   void SearchProviderChanged() {
     RepeatableQueriesService::SearchProviderChanged();
   }
@@ -163,6 +154,22 @@ class TestRepeatableQueriesService : public RepeatableQueriesService {
   void SigninStatusChanged() {
     RepeatableQueriesService::SigninStatusChanged();
   }
+
+  void FlushForTesting(base::OnceClosure flushed) {
+    RepeatableQueriesService::FlushForTesting(std::move(flushed));
+  }
+
+  GURL GetQueryDestinationURL(const base::string16& query,
+                              const TemplateURL* search_provider) {
+    return RepeatableQueriesService::GetQueryDestinationURL(query,
+                                                            search_provider);
+  }
+
+  GURL GetQueryDeletionURL(const std::string& deletion_url) {
+    return RepeatableQueriesService::GetQueryDeletionURL(deletion_url);
+  }
+
+  GURL GetRequestURL() { return RepeatableQueriesService::GetRequestURL(); }
 
   testing::NiceMock<MockSearchProviderObserver> search_provider_observer_;
 };
@@ -220,8 +227,10 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
     // InMemoryURLIndex must be explicitly shut down or it will DCHECK() in
     // its destructor.
     in_memory_url_index_->Shutdown();
-    // Needed to prevent leaks due to posted history index rebuild task.
-    task_environment_.RunUntilIdle();
+
+    WaitForRepeatableQueriesService();
+    WaitForHistoryService();
+    WaitForInMemoryURLIndex();
   }
 
   const TemplateURL* default_search_provider() {
@@ -245,7 +254,8 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
   void SignOut() { identity_env_->SetCookieAccounts({}); }
 
   GURL GetQueryDestinationURL(const std::string& query) {
-    return service_->GetQueryDestinationURL(base::ASCIIToUTF16(query));
+    return service_->GetQueryDestinationURL(base::ASCIIToUTF16(query),
+                                            default_search_provider());
   }
 
   void RefreshAndMaybeWaitForService() {
@@ -284,12 +294,20 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
     }
   }
 
+  // Waits for RepeatableQueriesService's async operations.
+  void WaitForRepeatableQueriesService() {
+    base::RunLoop run_loop;
+    service_->FlushForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   // Waits for history::HistoryService's async operations.
   void WaitForHistoryService() {
     history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+  }
 
-    // MemoryURLIndex schedules tasks to rebuild its index on the history
-    // thread. Block here to make sure they are complete.
+  // Waits for InMemoryURLIndex's async operations.
+  void WaitForInMemoryURLIndex() {
     BlockUntilInMemoryURLIndexIsRefreshed(in_memory_url_index_.get());
   }
 
@@ -323,7 +341,9 @@ void RepeatableQueriesServiceTest::OnRepeatableQueriesServiceShuttingDown() {
   service_->RemoveObserver(this);
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1177139) Re-enable test
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -342,7 +362,13 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn) {
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_BadResponse) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedIn_BadResponse DISABLED_SignedIn_BadResponse
+#else
+#define MAYBE_SignedIn_BadResponse SignedIn_BadResponse
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedIn_BadResponse) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -376,7 +402,13 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_BadResponse) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_ErrorResponse) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedIn_ErrorResponse DISABLED_SignedIn_ErrorResponse
+#else
+#define MAYBE_SignedIn_ErrorResponse SignedIn_ErrorResponse
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedIn_ErrorResponse) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -403,7 +435,11 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_ErrorResponse) {
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_DefaultSearchProviderChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1158533): This test is disabled because it has been failing
+// intermittently on all platforms.
+TEST_F(RepeatableQueriesServiceTest,
+       DISABLED_SignedIn_DefaultSearchProviderChanged) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -429,7 +465,13 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_DefaultSearchProviderChanged) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedIn_SigninStatusChanged DISABLED_SignedIn_SigninStatusChanged
+#else
+#define MAYBE_SignedIn_SigninStatusChanged SignedIn_SigninStatusChanged
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedIn_SigninStatusChanged) {
   base::HistogramTester histogram_tester;
 
   SignIn();
@@ -482,7 +524,13 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
       RepeatableQueriesService::kExtractedCountHistogram, 2, 1);
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_Deletion) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedIn_Deletion DISABLED_SignedIn_Deletion
+#else
+#define MAYBE_SignedIn_Deletion SignedIn_Deletion
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedIn_Deletion) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -534,7 +582,16 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_Deletion) {
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_DefaultSearchProviderChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS simulators
+#if defined(OS_IOS)
+#define MAYBE_SignedOut_DefaultSearchProviderChanged \
+  DISABLED_SignedOut_DefaultSearchProviderChanged
+#else
+#define MAYBE_SignedOut_DefaultSearchProviderChanged \
+  SignedOut_DefaultSearchProviderChanged
+#endif
+TEST_F(RepeatableQueriesServiceTest,
+       MAYBE_SignedOut_DefaultSearchProviderChanged) {
   int original_query_age =
       history::kAutocompleteDuplicateVisitIntervalThreshold.InSeconds() + 3;
   FillURLDatabase({
@@ -571,7 +628,14 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_DefaultSearchProviderChanged) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_SigninStatusChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedOut_SigninStatusChanged \
+  DISABLED_SignedOut_SigninStatusChanged
+#else
+#define MAYBE_SignedOut_SigninStatusChanged SignedOut_SigninStatusChanged
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedOut_SigninStatusChanged) {
   int original_query_age =
       history::kAutocompleteDuplicateVisitIntervalThreshold.InSeconds() + 3;
   FillURLDatabase({
@@ -614,7 +678,13 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_SigninStatusChanged) {
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_Deletion) {
+// TODO(crbug.com/1151909) Test fails on iOS
+#if defined(OS_IOS)
+#define MAYBE_SignedOut_Deletion DISABLED_SignedOut_Deletion
+#else
+#define MAYBE_SignedOut_Deletion SignedOut_Deletion
+#endif
+TEST_F(RepeatableQueriesServiceTest, MAYBE_SignedOut_Deletion) {
   FillURLDatabase({{default_search_provider(), "local query 1",
                     /*age_in_seconds=*/1},
                    {default_search_provider(), "local query 2",
@@ -650,6 +720,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_Deletion) {
                              GetQueryDestinationURL("local query 2"), ""}};
   // The deleted suggestion is not offered anymore.
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
+
+  // Make sure there is no pending deletion task.
+  WaitForRepeatableQueriesService();
 
   // Request a refresh.
   RefreshAndMaybeWaitForService();

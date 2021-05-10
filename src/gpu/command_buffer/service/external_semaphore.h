@@ -7,7 +7,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
+#include "gpu/gpu_gles2_export.h"
 #include "gpu/vulkan/semaphore_handle.h"
 
 namespace viz {
@@ -16,7 +17,7 @@ class VulkanContextProvider;
 
 namespace gpu {
 
-class ExternalSemaphore {
+class GPU_GLES2_EXPORT ExternalSemaphore {
  public:
   static ExternalSemaphore Create(viz::VulkanContextProvider* context_provider);
 
@@ -26,7 +27,7 @@ class ExternalSemaphore {
 
   ExternalSemaphore();
   ExternalSemaphore(ExternalSemaphore&& other);
-  ExternalSemaphore(util::PassKey<ExternalSemaphore>,
+  ExternalSemaphore(base::PassKey<ExternalSemaphore>,
                     viz::VulkanContextProvider* context_provider,
                     VkSemaphore semaphore,
                     SemaphoreHandle handle);

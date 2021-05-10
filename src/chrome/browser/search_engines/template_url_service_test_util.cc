@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -60,6 +61,33 @@ void SetManagedDefaultSearchPreferences(const TemplateURLData& managed_data,
 void RemoveManagedDefaultSearchPreferences(TestingProfile* profile) {
   profile->GetTestingPrefService()->RemoveManagedPref(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
+}
+
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    const base::string16& keyword,
+    const std::string& url,
+    const std::string& guid,
+    base::Time last_modified,
+    bool safe_for_autoreplace,
+    bool created_by_policy,
+    int prepopulate_id) {
+  DCHECK(!base::StartsWith(guid, "key"))
+      << "Don't use test GUIDs with the form \"key1\". Use \"guid1\" instead "
+         "for clarity.";
+
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16("unittest"));
+  data.SetKeyword(keyword);
+  data.SetURL(url);
+  data.favicon_url = GURL("http://favicon.url");
+  data.safe_for_autoreplace = safe_for_autoreplace;
+  data.date_created = base::Time::FromTimeT(100);
+  data.last_modified = last_modified;
+  data.created_by_policy = created_by_policy;
+  data.prepopulate_id = prepopulate_id;
+  if (!guid.empty())
+    data.sync_guid = guid;
+  return std::make_unique<TemplateURL>(data);
 }
 
 TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() {

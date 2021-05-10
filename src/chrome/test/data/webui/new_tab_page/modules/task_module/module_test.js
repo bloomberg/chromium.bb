@@ -4,7 +4,7 @@
 
 import {shoppingTasksDescriptor, TaskModuleHandlerProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageModulesTaskModuleTest', () => {
   /**
@@ -90,7 +90,7 @@ suite('NewTabPageModulesTaskModuleTest', () => {
         '1 gazillion dollars', products[0].querySelector('.price').innerText);
     assertEquals('foo', products[0].querySelector('.name').innerText);
     assertEquals('foo', products[0].querySelector('.name').title);
-    assertEquals('foo info', products[0].querySelector('.info').innerText);
+    assertEquals('foo info', products[0].querySelector('.secondary').innerText);
     assertEquals('https://bar.com/', products[1].href);
     assertEquals(
         'https://bar.com/img.png', products[1].querySelector('img').autoSrc);
@@ -98,7 +98,7 @@ suite('NewTabPageModulesTaskModuleTest', () => {
         '2 gazillion dollars', products[1].querySelector('.price').innerText);
     assertEquals('bar', products[1].querySelector('.name').innerText);
     assertEquals('bar', products[1].querySelector('.name').title);
-    assertEquals('bar info', products[1].querySelector('.info').innerText);
+    assertEquals('bar info', products[1].querySelector('.secondary').innerText);
     assertEquals('https://baz.com/', pills[0].href);
     assertEquals('baz', pills[0].querySelector('.search-text').innerText);
     assertEquals('https://blub.com/', pills[1].href);
@@ -180,25 +180,30 @@ suite('NewTabPageModulesTaskModuleTest', () => {
     };
     testProxy.handler.setResultFor('getPrimaryTask', Promise.resolve({task}));
 
-
-    // Act.
+    // Arrange.
     await shoppingTasksDescriptor.initialize();
-
-    // Assert.
-    assertEquals('function', typeof shoppingTasksDescriptor.actions.dismiss);
-    assertEquals('function', typeof shoppingTasksDescriptor.actions.restore);
+    const moduleElement = shoppingTasksDescriptor.element;
+    document.body.append(moduleElement);
+    await flushTasks();
 
     // Act.
-    const toastMessage = shoppingTasksDescriptor.actions.dismiss();
+    const waitForDismissEvent = eventToPromise('dismiss-module', moduleElement);
+    const dismissButton =
+        moduleElement.shadowRoot.querySelector('ntp-module-header')
+            .shadowRoot.querySelector('#dismissButton');
+    dismissButton.click();
+    const dismissEvent = await waitForDismissEvent;
+    const toastMessage = dismissEvent.detail.message;
+    const restoreCallback = dismissEvent.detail.restoreCallback;
 
     // Assert.
-    assertEquals('Removed Hello world', toastMessage);
+    assertEquals('Hello world hidden', toastMessage);
     assertDeepEquals(
         [taskModule.mojom.TaskModuleType.kShopping, 'Hello world'],
         await testProxy.handler.whenCalled('dismissTask'));
 
     // Act.
-    shoppingTasksDescriptor.actions.restore();
+    restoreCallback();
 
     // Assert.
     assertDeepEquals(

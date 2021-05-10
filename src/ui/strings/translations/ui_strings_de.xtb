@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Integriertes Display</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
 <translation id="3389286852084373014">SMS zu lang</translation>
+<translation id="3406306243914553062">HTML-Inhalte</translation>
 <translation id="348799646910989694">Ablage automatisch ausgeblendet</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> wurde angepinnt</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 Tag übrig}other{# Tage übrig}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Nummer</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783"><ph name="TITLE" /> auf meinem Mobilgerät weiterlesen</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3889424535448813030">Rechtspfeil</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{vor 1 Monat}other{vor # Monaten}}</translation>
 <translation id="4289300219472526559">Sprachausgabe starten</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> verschoben in <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Aus der Zwischenablage entfernen.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4491109536499578614">Bild</translation>
 <translation id="4588090240171750605">Nach rechts blättern</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Diese Suchanfrage aus dem Verlauf löschen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
+<translation id="7620655452534002301">Entfernt.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7814458197256864873">&amp;Kopieren</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 Stunde her}other{# Stunden her}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Noch 1 s}other{Noch # s}}</translation>
 <translation id="8134065097954893699">Diese Seite neu laden</translation>
-<translation id="8144660977431427332">Ihre Suchanfragen werden mit Google Assistant durchgeführt. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatische Vervollständigung</translation>
 <translation id="815598010540052116">Nach unten blättern</translation>
 <translation id="8179976553408161302">Eingabetaste</translation>
 <translation id="8210608804940886430">Nach unten</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tabulatortaste</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, App</translation>
 <translation id="8259556432390118667">Hex-Farbwert</translation>

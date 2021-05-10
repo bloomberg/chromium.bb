@@ -140,7 +140,9 @@ std::string CreateSerializedStreamBodyWithStatusCode(
 
 class ProtobufHttpClientTest : public testing::Test {
  protected:
-  void ExpectCallWithToken(bool success);
+  void ExpectCallWithTokenSuccess();
+  void ExpectCallWithTokenAuthError();
+  void ExpectCallWithTokenNetworkError();
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -153,12 +155,22 @@ class ProtobufHttpClientTest : public testing::Test {
                              test_shared_loader_factory_};
 };
 
-void ProtobufHttpClientTest::ExpectCallWithToken(bool success) {
+void ProtobufHttpClientTest::ExpectCallWithTokenSuccess() {
   EXPECT_CALL(mock_token_getter_, CallWithToken(_))
-      .WillOnce(RunOnceCallback<0>(success
-                                       ? OAuthTokenGetter::Status::SUCCESS
-                                       : OAuthTokenGetter::Status::AUTH_ERROR,
-                                   "", success ? kFakeAccessToken : ""));
+      .WillOnce(RunOnceCallback<0>(OAuthTokenGetter::Status::SUCCESS, "",
+                                   kFakeAccessToken));
+}
+
+void ProtobufHttpClientTest::ExpectCallWithTokenAuthError() {
+  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
+      .WillOnce(
+          RunOnceCallback<0>(OAuthTokenGetter::Status::AUTH_ERROR, "", ""));
+}
+
+void ProtobufHttpClientTest::ExpectCallWithTokenNetworkError() {
+  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
+      .WillOnce(
+          RunOnceCallback<0>(OAuthTokenGetter::Status::NETWORK_ERROR, "", ""));
 }
 
 // Unary request tests.
@@ -166,7 +178,7 @@ void ProtobufHttpClientTest::ExpectCallWithToken(bool success) {
 TEST_F(ProtobufHttpClientTest, SendRequestAndDecodeResponse) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback, Run(HasErrorCode(ProtobufHttpStatus::Code::OK),
@@ -185,10 +197,11 @@ TEST_F(ProtobufHttpClientTest, SendRequestAndDecodeResponse) {
   ASSERT_TRUE(pending_request->request.headers.GetHeader(
       kAuthorizationHeaderKey, &auth_header));
   ASSERT_EQ(kFakeAccessTokenHeaderValue, auth_header);
-  auto& data_element =
+  const auto& data_element =
       pending_request->request.request_body->elements()->front();
-  std::string request_body_data =
-      std::string(data_element.bytes(), data_element.length());
+  ASSERT_EQ(data_element.type(), network::DataElement::Tag::kBytes);
+  std::string request_body_data(
+      data_element.As<network::DataElementBytes>().AsStringPiece());
   EchoRequest request_message;
   ASSERT_TRUE(request_message.ParseFromString(request_body_data));
   ASSERT_EQ(kRequestText, request_message.text());
@@ -223,7 +236,7 @@ TEST_F(ProtobufHttpClientTest,
        FailedToFetchAuthToken_RejectsWithUnauthorizedError) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ false);
+  ExpectCallWithTokenAuthError();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -239,10 +252,30 @@ TEST_F(ProtobufHttpClientTest,
   ASSERT_FALSE(client_.HasPendingRequests());
 }
 
+TEST_F(ProtobufHttpClientTest,
+       FailedToFetchAuthToken_RejectsWithUnavailableError) {
+  base::RunLoop run_loop;
+
+  ExpectCallWithTokenNetworkError();
+
+  MockEchoResponseCallback response_callback;
+  EXPECT_CALL(response_callback,
+              Run(HasErrorCode(ProtobufHttpStatus::Code::UNAVAILABLE),
+                  IsNullResponse()))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  auto request = CreateDefaultTestRequest();
+  request->SetResponseCallback(response_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
 TEST_F(ProtobufHttpClientTest, FailedToParseResponse_GetsInvalidResponseError) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(
@@ -263,7 +296,7 @@ TEST_F(ProtobufHttpClientTest, FailedToParseResponse_GetsInvalidResponseError) {
 TEST_F(ProtobufHttpClientTest, ServerRespondsWithErrorStatusMessage) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -292,7 +325,7 @@ TEST_F(ProtobufHttpClientTest, ServerRespondsWithErrorStatusMessage) {
 TEST_F(ProtobufHttpClientTest, ServerRespondsWithHttpErrorCode) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -339,7 +372,7 @@ TEST_F(ProtobufHttpClientTest,
        CancelPendingRequestsAfterTokenCallback_CallbackNotCalled) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   client_.ExecuteRequest(CreateDefaultTestRequest());
 
@@ -356,7 +389,7 @@ TEST_F(ProtobufHttpClientTest,
 TEST_F(ProtobufHttpClientTest, RequestTimeout_ReturnsDeadlineExceeded) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -379,7 +412,7 @@ TEST_F(ProtobufHttpClientTest, RequestTimeout_ReturnsDeadlineExceeded) {
 }
 
 TEST_F(ProtobufHttpClientTest, DeletesRequestHolderWhenRequestIsCanceled) {
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback never_called_response_callback;
 
@@ -405,7 +438,7 @@ TEST_F(ProtobufHttpClientTest, DeletesRequestHolderWhenRequestIsCanceled) {
 TEST_F(ProtobufHttpClientTest, DeletesRequestHolderAfterResponseIsReceived) {
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ true);
+  ExpectCallWithTokenSuccess();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback, Run(HasErrorCode(ProtobufHttpStatus::Code::OK),
@@ -441,11 +474,36 @@ TEST_F(ProtobufHttpClientTest,
 
   base::RunLoop run_loop;
 
-  ExpectCallWithToken(/* success= */ false);
+  ExpectCallWithTokenAuthError();
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(stream_closed_callback,
               Run(HasErrorCode(ProtobufHttpStatus::Code::UNAUTHENTICATED)))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  auto request = CreateDefaultTestStreamRequest();
+  request->SetStreamReadyCallback(stream_ready_callback.Get());
+  request->SetMessageCallback(message_callback.Get());
+  request->SetStreamClosedCallback(stream_closed_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest,
+       StreamRequestFailedToFetchAuthToken_RejectsWithUnavailableError) {
+  base::MockOnceClosure stream_ready_callback;
+  MockEchoMessageCallback message_callback;
+  MockStreamClosedCallback stream_closed_callback;
+
+  base::RunLoop run_loop;
+
+  ExpectCallWithTokenNetworkError();
+
+  MockEchoResponseCallback response_callback;
+  EXPECT_CALL(stream_closed_callback,
+              Run(HasErrorCode(ProtobufHttpStatus::Code::UNAVAILABLE)))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestStreamRequest();
@@ -466,7 +524,7 @@ TEST_F(ProtobufHttpClientTest, StartStreamRequestAndDecodeMessages) {
   {
     InSequence s;
 
-    ExpectCallWithToken(/* success= */ true);
+    ExpectCallWithTokenSuccess();
     EXPECT_CALL(stream_ready_callback, Run());
     EXPECT_CALL(message_callback, Run(IsResponseText("response text 1")));
     EXPECT_CALL(message_callback, Run(IsResponseText("response text 2")));
@@ -507,7 +565,7 @@ TEST_F(ProtobufHttpClientTest, InvalidStreamData_Ignored) {
   {
     InSequence s;
 
-    ExpectCallWithToken(/* success= */ true);
+    ExpectCallWithTokenSuccess();
     EXPECT_CALL(stream_ready_callback, Run());
     EXPECT_CALL(stream_closed_callback,
                 Run(HasErrorCode(ProtobufHttpStatus::Code::OK)))
@@ -536,7 +594,7 @@ TEST_F(ProtobufHttpClientTest, SendHttpStatusOnly_StreamClosesWithHttpStatus) {
   {
     InSequence s;
 
-    ExpectCallWithToken(/* success= */ true);
+    ExpectCallWithTokenSuccess();
     EXPECT_CALL(stream_closed_callback,
                 Run(HasErrorCode(ProtobufHttpStatus::Code::UNAUTHENTICATED)))
         .WillOnce([&]() { run_loop.Quit(); });
@@ -563,7 +621,7 @@ TEST_F(ProtobufHttpClientTest, SendStreamStatusAndHttpStatus_StreamStatusWins) {
   {
     InSequence s;
 
-    ExpectCallWithToken(/* success= */ true);
+    ExpectCallWithTokenSuccess();
     EXPECT_CALL(stream_ready_callback, Run());
     EXPECT_CALL(stream_closed_callback,
                 Run(HasErrorCode(ProtobufHttpStatus::Code::CANCELLED)))
@@ -593,7 +651,7 @@ TEST_F(ProtobufHttpClientTest, StreamReadyTimeout) {
   {
     InSequence s;
 
-    ExpectCallWithToken(/* success= */ true);
+    ExpectCallWithTokenSuccess();
     EXPECT_CALL(stream_closed_callback,
                 Run(HasErrorCode(ProtobufHttpStatus::Code::DEADLINE_EXCEEDED)));
   }

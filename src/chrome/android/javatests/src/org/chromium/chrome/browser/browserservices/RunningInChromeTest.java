@@ -34,6 +34,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -86,7 +87,9 @@ public class RunningInChromeTest {
                     compositorViewHolderSupplier, tabCreatorManager, tabCreatorSupplier,
                     isPromotableToTabSupplier, statusBarColorController, screenOrientationProvider,
                     notificationManagerProxySupplier, tabContentManagerSupplier,
-                    compositorViewHolderInitializer) -> {
+                    activityTabStartupMetricsTrackerSupplier, compositorViewHolderInitializer,
+                    chromeActivityNativeDelegate, modalDialogManagerSupplier,
+                    browserControlsStateProvider) -> {
                 return new ChromeActivityCommonsModule(activity, bottomSheetController,
                         tabModelSelectorSupplier, browserControlsManager,
                         browserControlsVisibilityManager, browserControlsSizer, fullscreenManager,
@@ -97,7 +100,9 @@ public class RunningInChromeTest {
                         screenOrientationProvider,
                         ()
                                 -> mMockNotificationManager,
-                        tabContentManagerSupplier, compositorViewHolderInitializer);
+                        tabContentManagerSupplier, activityTabStartupMetricsTrackerSupplier,
+                        compositorViewHolderInitializer, chromeActivityNativeDelegate,
+                        modalDialogManagerSupplier, browserControlsStateProvider);
             });
 
     @Rule
@@ -127,6 +132,7 @@ public class RunningInChromeTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1164424")
     public void showsNewRunningInChrome() throws TimeoutException {
         launch(createTrustedWebActivityIntent(mTestPage));
 

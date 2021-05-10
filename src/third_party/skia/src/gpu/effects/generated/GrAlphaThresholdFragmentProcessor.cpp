@@ -51,14 +51,14 @@ if (mask_color.w < 0.5) {
     color.xyz *= scale;
     color.w = %s;
 }
-%s = color;
+return color;
 )SkSL",
                 _sample1.c_str(), args.fUniformHandler->getUniformCStr(outerThresholdVar),
                 args.fUniformHandler->getUniformCStr(outerThresholdVar),
                 args.fUniformHandler->getUniformCStr(outerThresholdVar),
                 args.fUniformHandler->getUniformCStr(innerThresholdVar),
                 args.fUniformHandler->getUniformCStr(innerThresholdVar),
-                args.fUniformHandler->getUniformCStr(innerThresholdVar), args.fOutputColor);
+                args.fUniformHandler->getUniformCStr(innerThresholdVar));
     }
 
 private:
@@ -74,8 +74,9 @@ private:
     UniformHandle innerThresholdVar;
     UniformHandle outerThresholdVar;
 };
-GrGLSLFragmentProcessor* GrAlphaThresholdFragmentProcessor::onCreateGLSLInstance() const {
-    return new GrGLSLAlphaThresholdFragmentProcessor();
+std::unique_ptr<GrGLSLFragmentProcessor> GrAlphaThresholdFragmentProcessor::onMakeProgramImpl()
+        const {
+    return std::make_unique<GrGLSLAlphaThresholdFragmentProcessor>();
 }
 void GrAlphaThresholdFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                               GrProcessorKeyBuilder* b) const {}
@@ -86,7 +87,6 @@ bool GrAlphaThresholdFragmentProcessor::onIsEqual(const GrFragmentProcessor& oth
     if (outerThreshold != that.outerThreshold) return false;
     return true;
 }
-bool GrAlphaThresholdFragmentProcessor::usesExplicitReturn() const { return false; }
 GrAlphaThresholdFragmentProcessor::GrAlphaThresholdFragmentProcessor(
         const GrAlphaThresholdFragmentProcessor& src)
         : INHERITED(kGrAlphaThresholdFragmentProcessor_ClassID, src.optimizationFlags())

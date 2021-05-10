@@ -18,22 +18,24 @@
 #include "gtest/gtest.h"
 #include "src/ast/continue_statement.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Continue) {
-  ast::ContinueStatement c;
+  auto* c = create<ast::ContinueStatement>();
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&c)) << g.error();
-  EXPECT_EQ(g.result(), "  continue;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(c)) << gen.error();
+  EXPECT_EQ(gen.result(), "  continue;\n");
 }
 
 }  // namespace

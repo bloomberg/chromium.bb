@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_CROSTINI_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_CROSTINI_APPS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
@@ -35,6 +35,8 @@ class CrostiniApps : public KeyedService,
  public:
   CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                Profile* profile);
+  CrostiniApps(const CrostiniApps&) = delete;
+  CrostiniApps& operator=(const CrostiniApps&) = delete;
   ~CrostiniApps() override;
 
   void ReInitializeForTesting(
@@ -56,7 +58,7 @@ class CrostiniApps : public KeyedService,
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
+              apps::mojom::WindowInfoPtr window_info) override;
   void Uninstall(const std::string& app_id,
                  apps::mojom::UninstallSource uninstall_source,
                  bool clear_site_data,
@@ -96,8 +98,6 @@ class CrostiniApps : public KeyedService,
   bool crostini_enabled_;
 
   base::WeakPtrFactory<CrostiniApps> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniApps);
 };
 
 }  // namespace apps

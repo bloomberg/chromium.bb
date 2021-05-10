@@ -48,7 +48,7 @@
 #error "This file requires ARC support."
 #endif
 
-using password_manager::CompromiseType;
+using password_manager::InsecureType;
 using password_manager::TestPasswordStore;
 using password_manager::MockBulkLeakCheckService;
 using ::testing::Return;
@@ -153,7 +153,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   void ChangePasswordCheckState(PasswordCheckUIState state) {
     PasswordsTableViewController* passwords_controller =
         static_cast<PasswordsTableViewController*>(controller());
-    NSInteger count = GetTestStore().compromised_credentials().size();
+    NSInteger count = GetTestStore().insecure_credentials().size();
     [passwords_controller setPasswordCheckUIState:state
                         compromisedPasswordsCount:count];
   }
@@ -233,16 +233,14 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   password_manager::CompromisedCredentials MakeCompromised(
       base::StringPiece signon_realm,
       base::StringPiece username) {
-    return {
-        std::string(signon_realm),
-        base::ASCIIToUTF16(username),
-        base::Time::Now(),
-        CompromiseType::kLeaked,
-    };
+    return password_manager::CompromisedCredentials(
+        std::string(signon_realm), base::ASCIIToUTF16(username),
+        base::Time::Now(), InsecureType::kLeaked,
+        password_manager::IsMuted(false));
   }
 
   void AddCompromisedCredential1() {
-    GetTestStore().AddCompromisedCredentials(
+    GetTestStore().AddInsecureCredential(
         MakeCompromised("http://www.example.com/", "test@egmail.com"));
     RunUntilIdle();
   }
@@ -422,7 +420,7 @@ TEST_F(PasswordsTableViewControllerTest,
   CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS,
                           GetSectionIndex(SavedPasswords), 0);
 
-  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 
@@ -430,7 +428,7 @@ TEST_F(PasswordsTableViewControllerTest,
   AddBlockedForm1();
   // The export button should still be disabled as exporting blocked forms
   // is not currently supported.
-  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }
@@ -467,7 +465,7 @@ TEST_F(PasswordsTableViewControllerTest, TestExportButtonDisabledEditMode) {
 
   [passwords_controller setEditing:YES animated:NO];
 
-  EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColor.cr_secondaryLabelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }

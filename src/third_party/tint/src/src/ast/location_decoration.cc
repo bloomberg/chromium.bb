@@ -14,20 +14,30 @@
 
 #include "src/ast/location_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::LocationDecoration);
+
 namespace tint {
 namespace ast {
 
-LocationDecoration::LocationDecoration(uint32_t val, const Source& source)
-    : VariableDecoration(source), value_(val) {}
+LocationDecoration::LocationDecoration(const Source& source, uint32_t val)
+    : Base(source), value_(val) {}
 
 LocationDecoration::~LocationDecoration() = default;
 
-bool LocationDecoration::IsLocation() const {
-  return true;
+void LocationDecoration::to_str(const semantic::Info&,
+                                std::ostream& out,
+                                size_t indent) const {
+  make_indent(out, indent);
+  out << "LocationDecoration{" << value_ << "}" << std::endl;
 }
 
-void LocationDecoration::to_str(std::ostream& out) const {
-  out << "LocationDecoration{" << value_ << "}" << std::endl;
+LocationDecoration* LocationDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<LocationDecoration>(src, value_);
 }
 
 }  // namespace ast

@@ -17,8 +17,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 SearchPrefetchFromStringURLLoader::SearchPrefetchFromStringURLLoader(
-    std::unique_ptr<PrefetchedResponseContainer> response,
-    const network::ResourceRequest& tentative_resource_request)
+    std::unique_ptr<PrefetchedResponseContainer> response)
     : head_(response->TakeHead()),
       body_buffer_(
           base::MakeRefCounted<net::StringIOBuffer>(response->TakeBody())),
@@ -78,31 +77,41 @@ void SearchPrefetchFromStringURLLoader::TransferRawData() {
   }
 }
 
-SearchPrefetchFromStringURLLoader::RequestHandler
-SearchPrefetchFromStringURLLoader::ServingResponseHandler() {
+SearchPrefetchURLLoader::RequestHandler
+SearchPrefetchFromStringURLLoader::ServingResponseHandler(
+    std::unique_ptr<SearchPrefetchURLLoader> loader) {
   return base::BindOnce(&SearchPrefetchFromStringURLLoader::BindAndStart,
-                        weak_ptr_factory_.GetWeakPtr());
+                        weak_ptr_factory_.GetWeakPtr(), std::move(loader));
 }
 
 void SearchPrefetchFromStringURLLoader::BindAndStart(
+    std::unique_ptr<SearchPrefetchURLLoader> loader,
     const network::ResourceRequest& request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK(!receiver_.is_bound());
+
+  // At this point, we are bound to the mojo receiver, so we can release
+  // |loader|, which points to |this|.
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
       base::BindOnce(&SearchPrefetchFromStringURLLoader::OnMojoDisconnect,
                      weak_ptr_factory_.GetWeakPtr()));
   client_.Bind(std::move(client));
+  loader.release();
 
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   MojoResult rv =
-      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+      mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle);
 
   if (rv != MOJO_RESULT_OK) {
     Finish(net::ERR_FAILED);
     return;
+  }
+
+  if (!request.report_raw_headers) {
+    head_->raw_request_response_info = nullptr;
   }
 
   client_->OnReceiveResponse(std::move(head_));

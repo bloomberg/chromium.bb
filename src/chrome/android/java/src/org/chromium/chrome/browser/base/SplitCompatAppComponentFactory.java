@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.base;
 
+import static org.chromium.chrome.browser.base.SplitCompatUtils.CHROME_SPLIT_NAME;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AppComponentFactory;
@@ -32,6 +34,9 @@ public class SplitCompatAppComponentFactory extends AppComponentFactory {
     @Override
     public Activity instantiateActivity(ClassLoader cl, String className, Intent intent)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        // Activities will not call createContextForSplit() which will normally ensure the preload
+        // is finished, so we have to manually ensure that here.
+        SplitChromeApplication.finishPreload(CHROME_SPLIT_NAME);
         return super.instantiateActivity(getComponentClassLoader(cl, className), className, intent);
     }
 
@@ -44,6 +49,9 @@ public class SplitCompatAppComponentFactory extends AppComponentFactory {
     @Override
     public BroadcastReceiver instantiateReceiver(ClassLoader cl, String className, Intent intent)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        // Receivers call createContextForSplit() on the ContextImpl, which will not run the logic
+        // in SplitChromeApplication which makes sure the preload has finished.
+        SplitChromeApplication.finishPreload(CHROME_SPLIT_NAME);
         return super.instantiateReceiver(getComponentClassLoader(cl, className), className, intent);
     }
 

@@ -45,6 +45,7 @@ class NavigationSheetMediator {
     private final Drawable mHistoryIcon;
     private final Drawable mDefaultIcon;
     private final String mNewTabText;
+    private final Profile mProfile;
 
     private NavigationHistory mHistory;
 
@@ -75,9 +76,11 @@ class NavigationSheetMediator {
         public static final PropertyKey[] ALL_KEYS = {ICON, LABEL, CLICK_LISTENER};
     }
 
-    NavigationSheetMediator(Context context, ModelList modelList, ClickListener listener) {
+    NavigationSheetMediator(
+            Context context, ModelList modelList, Profile profile, ClickListener listener) {
         mModelList = modelList;
         mClickListener = listener;
+        mProfile = profile;
         mFaviconHelper = new FaviconHelper();
         mIconGenerator = FaviconUtils.createCircularIconGenerator(context.getResources());
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
@@ -104,16 +107,13 @@ class NavigationSheetMediator {
                     (view) -> { mClickListener.click(position, entry.getIndex()); });
             mModelList.add(new ListItem(NAVIGATION_LIST_ITEM_TYPE_ID, model));
             if (entry.getFavicon() != null) continue;
-            final String pageUrl = entry.getUrl();
+            final String pageUrl = entry.getUrl().getSpec();
             if (!requestedUrls.contains(pageUrl)) {
                 FaviconHelper.FaviconImageCallback imageCallback =
                         (bitmap, iconUrl) -> onFaviconAvailable(pageUrl, bitmap);
                 if (!pageUrl.equals(UrlConstants.HISTORY_URL)) {
-                    // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular
-                    // profile or incognito profile) instead of always using regular profile. It
-                    // works correctly now, but it is not safe.
-                    mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedRegularProfile(),
-                            pageUrl, mFaviconSize, imageCallback);
+                    mFaviconHelper.getLocalFaviconImageForURL(
+                            mProfile, pageUrl, mFaviconSize, imageCallback);
                     requestedUrls.add(pageUrl);
                 } else {
                     mModelList.get(i).model.set(ItemProperties.ICON, mHistoryIcon);
@@ -139,7 +139,7 @@ class NavigationSheetMediator {
         // Do nothing if that happens.
         if (mModelList.size() == 0) return;
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
-            if (TextUtils.equals(pageUrl, mHistory.getEntryAtIndex(i).getUrl())) {
+            if (TextUtils.equals(pageUrl, mHistory.getEntryAtIndex(i).getUrl().getSpec())) {
                 Drawable drawable;
                 if (favicon == null) {
                     drawable = UrlUtilities.isNTPUrl(pageUrl)
@@ -156,8 +156,8 @@ class NavigationSheetMediator {
     private String getEntryText(NavigationEntry entry) {
         String entryText = entry.getTitle();
         if (UrlUtilities.isNTPUrl(entry.getUrl())) entryText = mNewTabText;
-        if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
-        if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl().getSpec();
+        if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl().getSpec();
         return entryText;
     }
 }

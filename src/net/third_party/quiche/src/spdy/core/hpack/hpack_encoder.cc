@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
+#include "spdy/core/hpack/hpack_encoder.h"
 
 #include <algorithm>
 #include <limits>
 #include <utility>
 
-#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_encoder.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_huffman_table.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_output_stream.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_flags.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "http2/hpack/huffman/hpack_huffman_encoder.h"
+#include "spdy/core/hpack/hpack_constants.h"
+#include "spdy/core/hpack/hpack_header_table.h"
+#include "spdy/core/hpack/hpack_output_stream.h"
+#include "spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "spdy/platform/api/spdy_flag_utils.h"
+#include "spdy/platform/api/spdy_flags.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -78,14 +78,11 @@ bool DefaultPolicy(absl::string_view name, absl::string_view /* value */) {
 
 HpackEncoder::HpackEncoder()
     : output_stream_(),
-      huffman_table_(ObtainHpackHuffmanTable()),
       min_table_size_setting_received_(std::numeric_limits<size_t>::max()),
       listener_(NoOpListener),
       should_index_(DefaultPolicy),
       enable_compression_(true),
-      should_emit_table_size_(false),
-      use_fast_huffman_encoder_(
-          GetSpdyReloadableFlag(http2_use_fast_huffman_encoder)) {}
+      should_emit_table_size_(false) {}
 
 HpackEncoder::~HpackEncoder() = default;
 
@@ -129,7 +126,6 @@ void HpackEncoder::ApplyHeaderTableSizeSetting(size_t size_setting) {
 }
 
 size_t HpackEncoder::EstimateMemoryUsage() const {
-  // |huffman_table_| is a singleton. It's accounted for in spdy_session_pool.cc
   return SpdyEstimateMemoryUsage(header_table_) +
          SpdyEstimateMemoryUsage(output_stream_);
 }
@@ -200,22 +196,13 @@ void HpackEncoder::EmitLiteral(const Representation& representation) {
 
 void HpackEncoder::EmitString(absl::string_view str) {
   size_t encoded_size =
-      enable_compression_
-          ? (use_fast_huffman_encoder_ ? http2::HuffmanSize(str)
-                                       : huffman_table_.EncodedSize(str))
-          : str.size();
+      enable_compression_ ? http2::HuffmanSize(str) : str.size();
   if (encoded_size < str.size()) {
     SPDY_DVLOG(2) << "Emitted Huffman-encoded string of length "
                   << encoded_size;
     output_stream_.AppendPrefix(kStringLiteralHuffmanEncoded);
     output_stream_.AppendUint32(encoded_size);
-    if (use_fast_huffman_encoder_) {
-      SPDY_CODE_COUNT(http2_use_fast_huffman_encoder);
-      http2::HuffmanEncodeFast(str, encoded_size,
-                               output_stream_.MutableString());
-    } else {
-      huffman_table_.EncodeString(str, &output_stream_);
-    }
+    http2::HuffmanEncodeFast(str, encoded_size, output_stream_.MutableString());
   } else {
     SPDY_DVLOG(2) << "Emitted literal string of length " << str.size();
     output_stream_.AppendPrefix(kStringLiteralIdentityEncoded);

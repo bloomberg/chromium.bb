@@ -48,15 +48,13 @@ class WorkerFetchContext final : public BaseFetchContext {
   scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
 
   SubresourceFilter* GetSubresourceFilter() const override;
-  PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
-      const override;
   bool AllowScriptFromSource(const KURL&) const override;
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
                                ResourceType) const override;
-  const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
       const DOMWrapperWorld* world) const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -74,7 +72,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                                                  const KURL&) const override;
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
-  const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
+  ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:

@@ -109,12 +109,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       }
     }
     if (should_paint_background) {
-      if (layout_replaced_.HasLayer() &&
-          layout_replaced_.Layer()->GetCompositingState() ==
-              kPaintsIntoOwnBacking &&
-          layout_replaced_.Layer()
-              ->GetCompositedLayerMapping()
-              ->DrawsBackgroundOntoContentLayer()) {
+      if (layout_replaced_.DrawsBackgroundOntoContentLayer()) {
         // If the background paints into the content layer, we can skip painting
         // the background but still need to paint the hit test rects.
         BoxPainter(layout_replaced_)
@@ -176,7 +171,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   bool draw_selection_tint =
       local_paint_info.phase == PaintPhase::kForeground &&
       layout_replaced_.IsSelected() && layout_replaced_.CanBeSelectionLeaf() &&
-      !local_paint_info.IsPrinting();
+      !layout_replaced_.GetDocument().Printing();
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,
                                  DisplayItem::kSelectionTint)) {

@@ -124,6 +124,16 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateDirectFBSurfaceEXT),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceDirectFBPresentationSupportEXT),
 #endif
+#ifdef VK_USE_PLATFORM_DISPLAY_KHR
+	// VK_KHR_display
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateDisplayModeKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateDisplayPlaneSurfaceKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetDisplayModePropertiesKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetDisplayPlaneCapabilitiesKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetDisplayPlaneSupportedDisplaysKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceDisplayPlanePropertiesKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceDisplayPropertiesKHR),
+#endif
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 	// VK_MVK_macos_surface
 	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateMacOSSurfaceMVK),
@@ -137,6 +147,7 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateWin32SurfaceKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceWin32PresentationSupportKHR),
 #endif
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateHeadlessSurfaceEXT),
 };
 #undef MAKE_VULKAN_INSTANCE_ENTRY
 
@@ -303,6 +314,7 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> deviceFunctionP
 	MAKE_VULKAN_DEVICE_ENTRY(vkCmdBeginRenderPass2),
 	MAKE_VULKAN_DEVICE_ENTRY(vkCmdEndRenderPass2),
 	MAKE_VULKAN_DEVICE_ENTRY(vkCmdNextSubpass2),
+	MAKE_VULKAN_DEVICE_ENTRY(vkResetQueryPool),
 };
 
 static const std::vector<std::pair<const char *, std::unordered_map<std::string, PFN_vkVoidFunction>>> deviceExtensionFunctionPointers = {
@@ -370,6 +382,12 @@ static const std::vector<std::pair<const char *, std::unordered_map<std::string,
 	    VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
 	    {
 	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdSetLineStippleEXT),
+	    } },
+	// VK_EXT_host_query_reset
+	{
+	    VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
+	    {
+	        MAKE_VULKAN_DEVICE_ENTRY(vkResetQueryPoolEXT),
 	    } },
 #ifndef __ANDROID__
 	// VK_KHR_swapchain

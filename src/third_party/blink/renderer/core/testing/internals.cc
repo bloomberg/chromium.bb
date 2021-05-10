@@ -26,11 +26,15 @@
 
 #include "third_party/blink/renderer/core/testing/internals.h"
 
+#include <atomic>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/process/process_handle.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
@@ -58,7 +62,6 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
@@ -102,7 +105,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
-#include "third_party/blink/renderer/core/html/html_content_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -139,6 +141,13 @@
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_transferring_optimizer.h"
+#include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
+#include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_transferring_optimizer.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -222,6 +231,373 @@ class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
   WebFeature feature_;
   DISALLOW_COPY_AND_ASSIGN(UseCounterHelperObserverImpl);
 };
+
+class TestReadableStreamSource : public UnderlyingSourceBase {
+ public:
+  class Generator;
+
+  using Reply = CrossThreadOnceFunction<void(std::unique_ptr<Generator>)>;
+  using OptimizerCallback =
+      CrossThreadOnceFunction<void(scoped_refptr<base::SingleThreadTaskRunner>,
+                                   Reply)>;
+
+  enum class Type {
+    kWithNullOptimizer,
+    kWithPerformNullOptimizer,
+    kWithObservableOptimizer,
+    kWithPerfectOptimizer,
+  };
+
+  class Generator final {
+    USING_FAST_MALLOC(Generator);
+
+   public:
+    explicit Generator(int max_count) : max_count_(max_count) {}
+
+    base::Optional<int> Generate() {
+      if (count_ >= max_count_) {
+        return base::nullopt;
+      }
+      ++count_;
+      return current_++;
+    }
+
+    void Add(int n) { current_ += n; }
+
+   private:
+    friend class Optimizer;
+
+    int current_ = 0;
+    int count_ = 0;
+    const int max_count_;
+  };
+
+  class Optimizer final : public ReadableStreamTransferringOptimizer {
+    USING_FAST_MALLOC(Optimizer);
+
+   public:
+    Optimizer(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+              OptimizerCallback callback,
+              Type type)
+        : task_runner_(std::move(task_runner)),
+          callback_(std::move(callback)),
+          type_(type) {}
+
+    UnderlyingSourceBase* PerformInProcessOptimization(
+        ScriptState* script_state) override;
+
+   private:
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    OptimizerCallback callback_;
+    const Type type_;
+  };
+
+  TestReadableStreamSource(ScriptState* script_state, Type type)
+      : UnderlyingSourceBase(script_state), type_(type) {}
+
+  ScriptPromise Start(ScriptState* script_state) override {
+    if (generator_) {
+      return ScriptPromise::CastUndefined(script_state);
+    }
+    resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+    return resolver_->Promise();
+  }
+
+  ScriptPromise pull(ScriptState* script_state) override {
+    if (!generator_) {
+      return ScriptPromise::CastUndefined(script_state);
+    }
+
+    const auto result = generator_->Generate();
+    if (!result) {
+      Controller()->Close();
+      return ScriptPromise::CastUndefined(script_state);
+    }
+    Controller()->Enqueue(*result);
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
+  std::unique_ptr<ReadableStreamTransferringOptimizer>
+  CreateTransferringOptimizer(ScriptState* script_state) {
+    switch (type_) {
+      case Type::kWithNullOptimizer:
+        return nullptr;
+      case Type::kWithPerformNullOptimizer:
+        return std::make_unique<ReadableStreamTransferringOptimizer>();
+      case Type::kWithObservableOptimizer:
+      case Type::kWithPerfectOptimizer:
+        ExecutionContext* context = ExecutionContext::From(script_state);
+        return std::make_unique<Optimizer>(
+            context->GetTaskRunner(TaskType::kInternalDefault),
+            CrossThreadBindOnce(&TestReadableStreamSource::Detach,
+                                WrapCrossThreadWeakPersistent(this)),
+            type_);
+    }
+  }
+
+  void Attach(std::unique_ptr<Generator> generator) {
+    if (type_ == Type::kWithObservableOptimizer) {
+      generator->Add(100);
+    }
+    generator_ = std::move(generator);
+    if (resolver_) {
+      resolver_->Resolve();
+    }
+  }
+
+  void Detach(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+              Reply reply) {
+    Controller()->Close();
+    PostCrossThreadTask(
+        *task_runner, FROM_HERE,
+        CrossThreadBindOnce(std::move(reply), std::move(generator_)));
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(resolver_);
+    UnderlyingSourceBase::Trace(visitor);
+  }
+
+ private:
+  const Type type_;
+  std::unique_ptr<Generator> generator_;
+  Member<ScriptPromiseResolver> resolver_;
+};
+
+UnderlyingSourceBase*
+TestReadableStreamSource::Optimizer::PerformInProcessOptimization(
+    ScriptState* script_state) {
+  TestReadableStreamSource* source =
+      MakeGarbageCollected<TestReadableStreamSource>(script_state, type_);
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
+  Reply reply = CrossThreadBindOnce(&TestReadableStreamSource::Attach,
+                                    WrapCrossThreadPersistent(source));
+
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(std::move(callback_),
+                          context->GetTaskRunner(TaskType::kInternalDefault),
+                          std::move(reply)));
+  return source;
+}
+
+class TestWritableStreamSink final : public UnderlyingSinkBase {
+ public:
+  class InternalSink;
+
+  using Reply = CrossThreadOnceFunction<void(std::unique_ptr<InternalSink>)>;
+  using OptimizerCallback =
+      CrossThreadOnceFunction<void(scoped_refptr<base::SingleThreadTaskRunner>,
+                                   Reply)>;
+  enum class Type {
+    kWithNullOptimizer,
+    kWithPerformNullOptimizer,
+    kWithObservableOptimizer,
+    kWithPerfectOptimizer,
+  };
+
+  class InternalSink final {
+    USING_FAST_MALLOC(InternalSink);
+
+   public:
+    InternalSink(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 CrossThreadOnceFunction<void(std::string)> success_callback,
+                 CrossThreadOnceFunction<void()> error_callback)
+        : task_runner_(std::move(task_runner)),
+          success_callback_(std::move(success_callback)),
+          error_callback_(std::move(error_callback)) {}
+
+    void Append(const std::string& s) { result_.append(s); }
+    void Close() {
+      PostCrossThreadTask(
+          *task_runner_, FROM_HERE,
+          CrossThreadBindOnce(std::move(success_callback_), result_));
+    }
+    void Abort() {
+      PostCrossThreadTask(*task_runner_, FROM_HERE, std::move(error_callback_));
+    }
+
+    // We don't use WTF::String because this object can be accessed from
+    // multiple threads.
+    std::string result_;
+
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    CrossThreadOnceFunction<void(std::string)> success_callback_;
+    CrossThreadOnceFunction<void()> error_callback_;
+  };
+
+  class Optimizer final : public WritableStreamTransferringOptimizer {
+    USING_FAST_MALLOC(Optimizer);
+
+   public:
+    Optimizer(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+        OptimizerCallback callback,
+        scoped_refptr<base::RefCountedData<std::atomic_bool>> optimizer_flag,
+        Type type)
+        : task_runner_(std::move(task_runner)),
+          callback_(std::move(callback)),
+          optimizer_flag_(std::move(optimizer_flag)),
+          type_(type) {}
+
+    UnderlyingSinkBase* PerformInProcessOptimization(
+        ScriptState* script_state) override;
+
+   private:
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    OptimizerCallback callback_;
+    scoped_refptr<base::RefCountedData<std::atomic_bool>> optimizer_flag_;
+    const Type type_;
+  };
+
+  explicit TestWritableStreamSink(ScriptState* script_state, Type type)
+      : type_(type),
+        optimizer_flag_(
+            base::MakeRefCounted<base::RefCountedData<std::atomic_bool>>(
+                base::in_place,
+                false)) {}
+
+  ScriptPromise start(ScriptState* script_state,
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override {
+    if (internal_sink_) {
+      return ScriptPromise::CastUndefined(script_state);
+    }
+    start_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+    return start_resolver_->Promise();
+  }
+  ScriptPromise write(ScriptState* script_state,
+                      ScriptValue chunk,
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override {
+    DCHECK(internal_sink_);
+    internal_sink_->Append(
+        ToCoreString(chunk.V8Value()
+                         ->ToString(script_state->GetContext())
+                         .ToLocalChecked())
+            .Utf8());
+    return ScriptPromise::CastUndefined(script_state);
+  }
+  ScriptPromise close(ScriptState* script_state, ExceptionState&) override {
+    DCHECK(internal_sink_);
+    closed_ = true;
+    if (!optimizer_flag_->data.load()) {
+      // The normal closure case.
+      internal_sink_->Close();
+      return ScriptPromise::CastUndefined(script_state);
+    }
+
+    // When the optimizer is active, we need to detach `internal_sink_` and
+    // pass it to the optimizer (i.e., the sink in the destination realm).
+    if (detached_) {
+      PostCrossThreadTask(
+          *reply_task_runner_, FROM_HERE,
+          CrossThreadBindOnce(std::move(reply_), std::move(internal_sink_)));
+    }
+    return ScriptPromise::CastUndefined(script_state);
+  }
+  ScriptPromise abort(ScriptState* script_state,
+                      ScriptValue reason,
+                      ExceptionState&) override {
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
+  void Attach(std::unique_ptr<InternalSink> internal_sink) {
+    DCHECK(!internal_sink_);
+
+    if (type_ == Type::kWithObservableOptimizer) {
+      internal_sink->Append("A");
+    }
+
+    internal_sink_ = std::move(internal_sink);
+    if (start_resolver_) {
+      start_resolver_->Resolve();
+    }
+  }
+
+  void Detach(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+              Reply reply) {
+    detached_ = true;
+
+    // We need to wait for the close signal before actually detaching
+    // `internal_sink_`.
+    if (closed_) {
+      PostCrossThreadTask(
+          *task_runner, FROM_HERE,
+          CrossThreadBindOnce(std::move(reply), std::move(internal_sink_)));
+    } else {
+      reply_ = std::move(reply);
+      reply_task_runner_ = std::move(task_runner);
+    }
+  }
+
+  std::unique_ptr<WritableStreamTransferringOptimizer>
+  CreateTransferringOptimizer(ScriptState* script_state) {
+    DCHECK(internal_sink_);
+
+    if (type_ == Type::kWithNullOptimizer) {
+      return nullptr;
+    }
+
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    return std::make_unique<Optimizer>(
+        context->GetTaskRunner(TaskType::kInternalDefault),
+        CrossThreadBindOnce(&TestWritableStreamSink::Detach,
+                            WrapCrossThreadWeakPersistent(this)),
+        optimizer_flag_, type_);
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(start_resolver_);
+    UnderlyingSinkBase::Trace(visitor);
+  }
+
+  static void Resolve(ScriptPromiseResolver* resolver, std::string result) {
+    resolver->Resolve(String::FromUTF8(result));
+  }
+  static void Reject(ScriptPromiseResolver* resolver) {
+    ScriptState* script_state = resolver->GetScriptState();
+    ScriptState::Scope scope(script_state);
+    resolver->Reject(
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(), "error"));
+  }
+
+ private:
+  const Type type_;
+  // `optimizer_flag_` is always non_null. The flag referenced is false
+  // initially, and set atomically when the associated optimizer is activated.
+  scoped_refptr<base::RefCountedData<std::atomic_bool>> optimizer_flag_;
+  std::unique_ptr<InternalSink> internal_sink_;
+  Member<ScriptPromiseResolver> start_resolver_;
+  bool closed_ = false;
+  bool detached_ = false;
+  Reply reply_;
+  scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner_;
+};
+
+UnderlyingSinkBase*
+TestWritableStreamSink::Optimizer::PerformInProcessOptimization(
+    ScriptState* script_state) {
+  if (type_ == Type::kWithPerformNullOptimizer) {
+    return nullptr;
+  }
+  TestWritableStreamSink* sink =
+      MakeGarbageCollected<TestWritableStreamSink>(script_state, type_);
+
+  // Set the flag atomically, to notify that this optimizer is active.
+  optimizer_flag_->data.store(true);
+
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  Reply reply = CrossThreadBindOnce(&TestWritableStreamSink::Attach,
+                                    WrapCrossThreadPersistent(sink));
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(std::move(callback_),
+                          context->GetTaskRunner(TaskType::kInternalDefault),
+                          std::move(reply)));
+  return sink;
+}
 
 }  // namespace
 
@@ -503,8 +879,7 @@ ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
   DCHECK(document);
 
   auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
-                            WTF::Passed(WrapPersistent(this)),
-                            WTF::Passed(WrapPersistent(resolver)));
+                            WrapPersistent(this), WrapPersistent(resolver));
   ResourceFetcher::AddPriorityObserverForTesting(resource_url,
                                                  std::move(callback));
 
@@ -530,19 +905,6 @@ String Internals::getResourceHeader(const String& url,
   if (!resource)
     return String();
   return resource->GetResourceRequest().HttpHeaderField(AtomicString(header));
-}
-
-bool Internals::isValidContentSelect(Element* insertion_point,
-                                     ExceptionState& exception_state) {
-  DCHECK(insertion_point);
-  if (!insertion_point->IsV0InsertionPoint()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
-                                      "The element is not an insertion point.");
-    return false;
-  }
-
-  auto* html_content_element = DynamicTo<HTMLContentElement>(insertion_point);
-  return html_content_element && html_content_element->IsSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node) {
@@ -598,7 +960,8 @@ void Internals::pauseAnimations(double pause_time,
     return;
 
   GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
-  GetFrame()->GetDocument()->Timeline().PauseAnimationsForTesting(pause_time);
+  GetFrame()->GetDocument()->Timeline().PauseAnimationsForTesting(
+      AnimationTimeDelta::FromSecondsD(pause_time));
 }
 
 bool Internals::isCompositedAnimation(Animation* animation) {
@@ -633,30 +996,6 @@ void Internals::advanceImageAnimation(Element* image,
 
   Image* image_data = content->GetImage();
   image_data->AdvanceAnimationForTesting();
-}
-
-bool Internals::hasShadowInsertionPoint(const Node* root,
-                                        ExceptionState& exception_state) const {
-  DCHECK(root);
-  if (!IsA<ShadowRoot>(root)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument is not a shadow root.");
-    return false;
-  }
-  return To<ShadowRoot>(root)->V0().ContainsShadowElements();
-}
-
-bool Internals::hasContentElement(const Node* root,
-                                  ExceptionState& exception_state) const {
-  DCHECK(root);
-  if (!IsA<ShadowRoot>(root)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The node argument is not a shadow root.");
-    return false;
-  }
-  return To<ShadowRoot>(root)->V0().ContainsContentElements();
 }
 
 uint32_t Internals::countElementShadow(const Node* root,
@@ -798,8 +1137,6 @@ String Internals::shadowRootType(const Node* root,
   switch (shadow_root->GetType()) {
     case ShadowRootType::kUserAgent:
       return String("UserAgentShadowRoot");
-    case ShadowRootType::V0:
-      return String("V0ShadowRoot");
     case ShadowRootType::kOpen:
       return String("OpenShadowRoot");
     case ShadowRootType::kClosed:
@@ -2989,6 +3326,15 @@ void Internals::forceCompositingUpdate(Document* document,
   document->GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
 }
 
+void Internals::setForcedColorsAndDarkPreferredColorScheme(Document* document) {
+  DCHECK(document);
+  ColorSchemeHelper color_scheme_helper(*document);
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+  color_scheme_helper.SetForcedColors(*document, ForcedColors::kActive);
+  document->GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
+}
+
 void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
@@ -3005,25 +3351,16 @@ void Internals::setShouldRevealPassword(Element* element,
 
 namespace {
 
-class AddOneFunction : public ScriptFunction {
+class AddOneFunction : public NewScriptFunction::Callable {
  public:
-  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    AddOneFunction* self = MakeGarbageCollected<AddOneFunction>(script_state);
-    return self->BindToV8Function();
-  }
-
-  explicit AddOneFunction(ScriptState* script_state)
-      : ScriptFunction(script_state) {}
-
- private:
-  ScriptValue Call(ScriptValue value) override {
+  ScriptValue Call(ScriptState* script_state, ScriptValue value) override {
     v8::Local<v8::Value> v8_value = value.V8Value();
     DCHECK(v8_value->IsNumber());
     int32_t int_value =
         static_cast<int32_t>(v8_value.As<v8::Integer>()->Value());
     return ScriptValue(
-        GetScriptState()->GetIsolate(),
-        v8::Integer::New(GetScriptState()->GetIsolate(), int_value + 1));
+        script_state->GetIsolate(),
+        v8::Integer::New(script_state->GetIsolate(), int_value + 1));
   }
 };
 
@@ -3047,7 +3384,8 @@ ScriptPromise Internals::createRejectedPromise(ScriptState* script_state,
 
 ScriptPromise Internals::addOneToPromise(ScriptState* script_state,
                                          ScriptPromise promise) {
-  return promise.Then(AddOneFunction::CreateFunction(script_state));
+  return promise.Then(MakeGarbageCollected<NewScriptFunction>(
+      script_state, MakeGarbageCollected<AddOneFunction>()));
 }
 
 ScriptPromise Internals::promiseCheck(ScriptState* script_state,
@@ -3193,8 +3531,14 @@ String Internals::selectedTextForClipboard() {
 void Internals::setVisualViewportOffset(int x, int y) {
   if (!GetFrame())
     return;
+  FloatPoint offset(x, y);
 
-  GetFrame()->GetPage()->GetVisualViewport().SetLocation(FloatPoint(x, y));
+  // `setVisualViewportOffset()` inputs are in physical pixels, but
+  // `SetLocation()` gets positions in DIPs when --use-zoom-for-dsf disabled.
+  GetFrame()->GetPage()->GetVisualViewport().SetLocation(
+      Platform::Current()->IsUseZoomForDSFEnabled()
+          ? offset
+          : offset.ScaledBy(1 / GetFrame()->DevicePixelRatio()));
 }
 
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
@@ -3206,13 +3550,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
   return document->IsPropertyCounted(
-      unresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
+      UnresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return document->IsAnimatedPropertyCounted(
-      unresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
+      UnresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
@@ -3246,7 +3590,7 @@ Vector<String> Internals::getCSSPropertyShorthands() const {
 Vector<String> Internals::getCSSPropertyAliases() const {
   Vector<String> result;
   for (CSSPropertyID alias : kCSSPropertyAliasList) {
-    DCHECK(isPropertyAlias(alias));
+    DCHECK(IsPropertyAlias(alias));
     result.push_back(CSSUnresolvedProperty::GetAliasProperty(alias)
                          ->GetPropertyNameString());
   }
@@ -3395,10 +3739,6 @@ bool Internals::isTrackingOcclusionForIFrame(HTMLIFrameElement* iframe) const {
   return remote_frame->View()->NeedsOcclusionTracking();
 }
 
-void Internals::DisableFrequencyCappingForOverlayPopupDetection() const {
-  OverlayInterstitialAdDetector::DisableFrequencyCappingForTesting();
-}
-
 void Internals::addEmbedderCustomElementName(const AtomicString& name,
                                              ExceptionState& exception_state) {
   CustomElement::AddEmbedderCustomElementNameForTesting(name, exception_state);
@@ -3475,10 +3815,8 @@ String Internals::getAgentId(DOMWindow* window) {
   if (!window->IsLocalDOMWindow())
     return String();
 
-  // Sounds like there's no notion of "process ID" in Blink, but the main
-  // thread's thread ID serves for that purpose.
-  PlatformThreadId process_id = Thread::MainThread()->ThreadId();
-
+  // Create a unique id from the process id and the address of the agent.
+  const base::ProcessId process_id = base::GetCurrentProcId();
   uintptr_t agent_address =
       reinterpret_cast<uintptr_t>(To<LocalDOMWindow>(window)->GetAgent());
 
@@ -3520,6 +3858,83 @@ void Internals::setIsAdSubframe(HTMLIFrameElement* iframe,
   child_frame->SetIsAdSubframe(parent_is_ad
                                    ? blink::mojom::AdFrameType::kChildAd
                                    : blink::mojom::AdFrameType::kRootAd);
+}
+
+ReadableStream* Internals::createReadableStream(
+    ScriptState* script_state,
+    int32_t queue_size,
+    const String& optimizer,
+    ExceptionState& exception_state) {
+  TestReadableStreamSource::Type type;
+  if (optimizer.IsEmpty()) {
+    type = TestReadableStreamSource::Type::kWithNullOptimizer;
+  } else if (optimizer == "perform-null") {
+    type = TestReadableStreamSource::Type::kWithPerformNullOptimizer;
+  } else if (optimizer == "observable") {
+    type = TestReadableStreamSource::Type::kWithObservableOptimizer;
+  } else if (optimizer == "perfect") {
+    type = TestReadableStreamSource::Type::kWithPerformNullOptimizer;
+  } else {
+    exception_state.ThrowRangeError(
+        "The \"optimizer\" parameter is not correctly set.");
+    return nullptr;
+  }
+  auto* source =
+      MakeGarbageCollected<TestReadableStreamSource>(script_state, type);
+  source->Attach(std::make_unique<TestReadableStreamSource::Generator>(10));
+  return ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, source, queue_size,
+      source->CreateTransferringOptimizer(script_state));
+}
+
+ScriptValue Internals::createWritableStreamAndSink(
+    ScriptState* script_state,
+    int32_t queue_size,
+    const String& optimizer,
+    ExceptionState& exception_state) {
+  TestWritableStreamSink::Type type;
+  if (optimizer.IsEmpty()) {
+    type = TestWritableStreamSink::Type::kWithNullOptimizer;
+  } else if (optimizer == "perform-null") {
+    type = TestWritableStreamSink::Type::kWithPerformNullOptimizer;
+  } else if (optimizer == "observable") {
+    type = TestWritableStreamSink::Type::kWithObservableOptimizer;
+  } else if (optimizer == "perfect") {
+    type = TestWritableStreamSink::Type::kWithPerfectOptimizer;
+  } else {
+    exception_state.ThrowRangeError(
+        "The \"optimizer\" parameter is not correctly set.");
+    return ScriptValue();
+  }
+
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto internal_sink = std::make_unique<TestWritableStreamSink::InternalSink>(
+      context->GetTaskRunner(TaskType::kInternalDefault),
+      CrossThreadBindOnce(&TestWritableStreamSink::Resolve,
+                          WrapCrossThreadPersistent(resolver)),
+      CrossThreadBindOnce(&TestWritableStreamSink::Reject,
+                          WrapCrossThreadPersistent(resolver)));
+  auto* sink = MakeGarbageCollected<TestWritableStreamSink>(script_state, type);
+
+  sink->Attach(std::move(internal_sink));
+  auto* stream = WritableStream::CreateWithCountQueueingStrategy(
+      script_state, sink, queue_size,
+      sink->CreateTransferringOptimizer(script_state));
+
+  v8::Local<v8::Object> object = v8::Object::New(script_state->GetIsolate());
+  object
+      ->Set(script_state->GetContext(),
+            V8String(script_state->GetIsolate(), "stream"),
+            ToV8(stream, script_state))
+
+      .Check();
+  object
+      ->Set(script_state->GetContext(),
+            V8String(script_state->GetIsolate(), "sink"),
+            ToV8(resolver->Promise(), script_state))
+      .Check();
+  return ScriptValue(script_state->GetIsolate(), object);
 }
 
 }  // namespace blink

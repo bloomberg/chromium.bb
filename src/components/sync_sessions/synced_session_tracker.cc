@@ -17,6 +17,8 @@ namespace sync_sessions {
 
 const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced{
     "DeferRecyclingOfSyncTabNodesIfUnsynced", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSyncPopulateTabBrowserTypeInGetData{
+    "SyncPopulateTabBrowserTypeInGetData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -223,6 +225,23 @@ const sessions::SessionTab* SyncedSessionTracker::LookupSessionTab(
   return tab_iter->second;
 }
 
+base::Optional<sync_pb::SessionWindow::BrowserType>
+SyncedSessionTracker::LookupWindowType(const std::string& session_tag,
+                                       SessionID window_id) const {
+  if (!base::FeatureList::IsEnabled(kSyncPopulateTabBrowserTypeInGetData))
+    return base::nullopt;
+
+  const TrackedSession* session = LookupTrackedSession(session_tag);
+  if (!session)
+    return base::nullopt;
+
+  auto window_iter = session->synced_window_map.find(window_id);
+  if (window_iter == session->synced_window_map.end())
+    return base::nullopt;  // We have no record of this window.
+
+  return window_iter->second->window_type;
+}
+
 std::set<int> SyncedSessionTracker::LookupTabNodeIds(
     const std::string& session_tag) const {
   const TrackedSession* session = LookupTrackedSession(session_tag);
@@ -326,7 +345,13 @@ std::vector<const SyncedSession*> SyncedSessionTracker::LookupSessions(
     if (lookup == PRESENTABLE && !IsPresentable(sessions_client_, session)) {
       continue;
     }
-    if (exclude_local_session && session_pair.first == local_session_tag_) {
+    // The comparison against |local_session_tag_| deals with the currently
+    // active sync session (cache GUID or legacy session tag) but in addition
+    // IsRecentLocalCacheGuid() is used to filter out older values of the
+    // local cache GUID.
+    if (exclude_local_session &&
+        (session_pair.first == local_session_tag_ ||
+         sessions_client_->IsRecentLocalCacheGuid(session_pair.first))) {
       continue;
     }
     sessions.push_back(&session);
@@ -833,7 +858,8 @@ void SerializePartialTrackerToSpecifics(
         sync_pb::SessionSpecifics tab_pb;
         tab_pb.set_session_tag(session_tag);
         tab_pb.set_tab_node_id(tab_node_id);
-        SessionTabToSyncData(*tab).Swap(tab_pb.mutable_tab());
+        *tab_pb.mutable_tab() = SessionTabToSyncData(
+            *tab, tracker.LookupWindowType(session_tag, tab->window_id));
         output_cb.Run(session->session_name, &tab_pb);
         continue;
       }

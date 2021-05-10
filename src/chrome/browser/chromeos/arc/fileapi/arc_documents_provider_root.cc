@@ -12,8 +12,10 @@
 #include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_size_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -28,6 +30,33 @@ namespace {
 
 // Directory cache will be cleared this duration after it is built.
 constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(60);
+
+void OnGetFileSizeFromOpenFile(
+    ArcDocumentsProviderRoot::GetFileInfoCallback callback,
+    base::File::Info info,
+    base::File::Error error,
+    int64_t size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (error == base::File::FILE_OK) {
+    info.size = size;
+    std::move(callback).Run(error, info);
+  } else {
+    std::move(callback).Run(error, base::File::Info());
+  }
+}
+
+void OnResolveToContentUrl(
+    ArcDocumentsProviderRoot::GetFileInfoCallback callback,
+    ArcFileSystemOperationRunner* runner,
+    const base::File::Info& info,
+    const GURL& content_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetFileSizeFromOpenFileOnUIThread(
+      content_url, runner,
+      base::BindOnce(&OnGetFileSizeFromOpenFile, std::move(callback), info));
+}
 
 }  // namespace
 
@@ -95,6 +124,7 @@ ArcDocumentsProviderRoot::~ArcDocumentsProviderRoot() {
 }
 
 void ArcDocumentsProviderRoot::GetFileInfo(const base::FilePath& path,
+                                           int fields,
                                            GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (path.IsAbsolute()) {
@@ -117,9 +147,10 @@ void ArcDocumentsProviderRoot::GetFileInfo(const base::FilePath& path,
     return;
   }
 
-  GetDocument(path, base::BindOnce(
-                        &ArcDocumentsProviderRoot::GetFileInfoFromDocument,
-                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  GetDocument(
+      path, base::BindOnce(&ArcDocumentsProviderRoot::GetFileInfoFromDocument,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           path, fields));
 }
 
 void ArcDocumentsProviderRoot::ReadDirectory(const base::FilePath& path,
@@ -288,8 +319,43 @@ void ArcDocumentsProviderRoot::OnWatchersCleared() {
     entry.second = kInvalidWatcherData;
 }
 
+void ArcDocumentsProviderRoot::GetRootSize(GetRootSizeCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (root_id_.empty()) {
+    // Exit early if ID is missing for the given provider authority.
+    std::move(callback).Run(true /* error */, 0, 0);
+    return;
+  }
+
+  runner_->GetRootSize(
+      authority_, root_id_,
+      base::BindOnce(&ArcDocumentsProviderRoot::OnGetRootSize,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ArcDocumentsProviderRoot::OnGetRootSize(GetRootSizeCallback callback,
+                                             mojom::RootSizePtr root_size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (root_size.is_null() || root_size->available_bytes < 0) {
+    // The root_size and its available bytes are required from the file system.
+    std::move(callback).Run(true /* error */, 0, 0);
+    return;
+  }
+  if (root_size->capacity_bytes < 0) {
+    // If available bytes is provided but not capacity bytes, it's still valid.
+    std::move(callback).Run(false, root_size->available_bytes, 0);
+    return;
+  }
+
+  std::move(callback).Run(false,
+                          static_cast<uint64_t>(root_size->available_bytes),
+                          static_cast<uint64_t>(root_size->capacity_bytes));
+}
+
 void ArcDocumentsProviderRoot::GetFileInfoFromDocument(
     GetFileInfoCallback callback,
+    const base::FilePath& path,
+    int fields,
     base::File::Error error,
     const mojom::DocumentPtr& document) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -300,13 +366,29 @@ void ArcDocumentsProviderRoot::GetFileInfoFromDocument(
   DCHECK(document);
 
   base::File::Info info;
-  info.size = document->size;
-  info.is_directory = document->mime_type == kAndroidDirectoryMimeType;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_SIZE) {
+    info.size = document->size;
+  }
+  bool is_directory = document->mime_type == kAndroidDirectoryMimeType;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY) {
+    info.is_directory = is_directory;
+  }
   info.is_symbolic_link = false;
-  info.last_modified = info.last_accessed = info.creation_time =
-      base::Time::FromJavaTime(document->last_modified);
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED) {
+    info.last_modified = info.last_accessed = info.creation_time =
+        base::Time::FromJavaTime(document->last_modified);
+  }
 
-  std::move(callback).Run(base::File::FILE_OK, info);
+  if ((fields & storage::FileSystemOperation::GET_METADATA_FIELD_SIZE) &&
+      info.size == kUnknownFileSize && !is_directory) {
+    // We don't know the size from metadata and the size is requested, find it
+    // out by opening the file
+    ResolveToContentUrl(
+        path, base::BindOnce(&OnResolveToContentUrl, std::move(callback),
+                             runner_, info));
+  } else {
+    std::move(callback).Run(base::File::FILE_OK, info);
+  }
 }
 
 void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(

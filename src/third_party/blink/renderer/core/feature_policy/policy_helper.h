@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -79,6 +80,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap();
 // policy object.
 const DocumentPolicyFeatureSet& GetAvailableDocumentPolicyFeatures();
 
+// Refresh the set content based on current RuntimeFeatures environment.
+CORE_EXPORT void ResetAvailableDocumentPolicyFeaturesForTest();
+
 // Returns true if this FeaturePolicyFeature is currently disabled by an origin
 // trial (it is origin trial controlled, and the origin trial is not enabled).
 // The first String param should be a name of FeaturePolicyFeature.
@@ -88,6 +92,11 @@ bool DisabledByOriginTrial(const String&, FeatureContext*);
 // trial (it is origin trial controlled, and the origin trial is not enabled).
 bool DisabledByOriginTrial(mojom::blink::DocumentPolicyFeature,
                            FeatureContext*);
+
+// Converts |mojom::blink::FeaturePolicyFeature| to enum used in devtools
+// protocol.
+String PermissionsPolicyFeatureToProtocol(mojom::blink::FeaturePolicyFeature);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_HELPER_H_

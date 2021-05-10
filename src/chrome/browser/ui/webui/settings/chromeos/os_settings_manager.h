@@ -14,6 +14,10 @@ class ArcAppListPrefs;
 class Profile;
 class SupervisedUserService;
 
+namespace apps {
+class AppServiceProxy;
+}  // namespace apps
+
 namespace content {
 class WebUI;
 class WebUIDataSource;
@@ -37,7 +41,7 @@ class AndroidSmsService;
 }  // namespace android_sms
 
 namespace local_search_service {
-class LocalSearchServiceSync;
+class LocalSearchServiceProxy;
 }  // namespace local_search_service
 
 namespace multidevice_setup {
@@ -64,7 +68,7 @@ class SettingsUserActionTracker;
 //
 // (1) Support search queries for settings content. OsSettingsManager is
 //     responsible for updating the kCroSettings index of the
-//     LocalSearchServiceSync
+//     LocalSearchService
 //     with search tags corresponding to all settings which are available.
 //
 //     The availability of settings depends on the user's account (e.g.,
@@ -86,7 +90,7 @@ class OsSettingsManager : public KeyedService {
  public:
   OsSettingsManager(
       Profile* profile,
-      local_search_service::LocalSearchServiceSync* local_search_service,
+      local_search_service::LocalSearchServiceProxy* local_search_service_proxy,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       phonehub::PhoneHubManager* phone_hub_manager,
       syncer::SyncService* sync_service,
@@ -95,7 +99,8 @@ class OsSettingsManager : public KeyedService {
       ArcAppListPrefs* arc_app_list_prefs,
       signin::IdentityManager* identity_manager,
       android_sms::AndroidSmsService* android_sms_service,
-      CupsPrintersManager* printers_manager);
+      CupsPrintersManager* printers_manager,
+      apps::AppServiceProxy* app_service_proxy);
   OsSettingsManager(const OsSettingsManager& other) = delete;
   OsSettingsManager& operator=(const OsSettingsManager& other) = delete;
   ~OsSettingsManager() override;

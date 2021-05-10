@@ -9,11 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/reconintra.h"
 
 #include "av1/encoder/intra_mode_search.h"
 #include "av1/encoder/intra_mode_search_utils.h"
 #include "av1/encoder/palette.h"
+#include "av1/encoder/speed_features.h"
 #include "av1/encoder/tx_search.h"
 
 /*!\cond */
@@ -472,6 +474,8 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  cpi->optimize_seg_arr[mbmi->segment_id]);
     xd->cfl.store_y = 0;
   }
+  IntraModeSearchState intra_search_state;
+  init_intra_mode_search_state(&intra_search_state);
 
   // Search through all non-palette modes.
   for (int mode_idx = 0; mode_idx < UV_INTRA_MODES; ++mode_idx) {
@@ -503,6 +507,26 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (is_directional_mode && av1_use_angle_delta(mbmi->bsize) &&
         intra_mode_cfg->enable_angle_delta) {
+      const SPEED_FEATURES *sf = &cpi->sf;
+      if (sf->intra_sf.chroma_intra_pruning_with_hog &&
+          !intra_search_state.dir_mode_skip_mask_ready) {
+        static const float thresh[2][4] = {
+          { -1.2f, 0.0f, 0.0f, 1.2f },    // Interframe
+          { -1.2f, -1.2f, -0.6f, 0.4f },  // Intraframe
+        };
+        const int is_chroma = 1;
+        const int is_intra_frame = frame_is_intra_only(cm);
+        prune_intra_mode_with_hog(
+            x, bsize,
+            thresh[is_intra_frame]
+                  [sf->intra_sf.chroma_intra_pruning_with_hog - 1],
+            intra_search_state.directional_mode_skip_mask, is_chroma);
+        intra_search_state.dir_mode_skip_mask_ready = 1;
+      }
+      if (intra_search_state.directional_mode_skip_mask[mode]) {
+        continue;
+      }
+
       // Search through angle delta
       const int rate_overhead =
           mode_costs->intra_uv_mode_cost[is_cfl_allowed(xd)][mbmi->mode][mode];
@@ -591,6 +615,8 @@ int av1_search_palette_mode(IntraModeSearchState *intra_search_state,
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
+  av1_zero(pmi->palette_size);
+
   RD_STATS rd_stats_y;
   av1_invalid_rd_stats(&rd_stats_y);
   av1_rd_pick_palette_intra_sby(
@@ -881,9 +907,11 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
       cpi->oxcf.intra_mode_cfg.enable_angle_delta) {
     if (sf->intra_sf.intra_pruning_with_hog &&
         !intra_search_state->dir_mode_skip_mask_ready) {
-      prune_intra_mode_with_hog(x, bsize,
-                                cpi->sf.intra_sf.intra_pruning_with_hog_thresh,
-                                intra_search_state->directional_mode_skip_mask);
+      const float thresh[4] = { -1.2f, 0.0f, 0.0f, 1.2f };
+      const int is_chroma = 0;
+      prune_intra_mode_with_hog(
+          x, bsize, thresh[sf->intra_sf.intra_pruning_with_hog - 1],
+          intra_search_state->directional_mode_skip_mask, is_chroma);
       intra_search_state->dir_mode_skip_mask_ready = 1;
     }
     if (intra_search_state->directional_mode_skip_mask[mode]) return 0;
@@ -1024,9 +1052,13 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   mbmi->angle_delta[PLANE_TYPE_Y] = 0;
   if (cpi->sf.intra_sf.intra_pruning_with_hog) {
-    prune_intra_mode_with_hog(x, bsize,
-                              cpi->sf.intra_sf.intra_pruning_with_hog_thresh,
-                              directional_mode_skip_mask);
+    // Less aggressive thresholds are used here than those used in inter frame
+    // encoding.
+    const float thresh[4] = { -1.2f, -1.2f, -0.6f, 0.4f };
+    const int is_chroma = 0;
+    prune_intra_mode_with_hog(
+        x, bsize, thresh[cpi->sf.intra_sf.intra_pruning_with_hog - 1],
+        directional_mode_skip_mask, is_chroma);
   }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
@@ -1044,10 +1076,22 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd;
     mbmi->mode = intra_rd_search_mode_order[mode_idx];
+    // The smooth prediction mode appears to be more frequently picked
+    // than horizontal / vertical smooth prediction modes. Hence treat
+    // them differently in speed features.
     if ((!cpi->oxcf.intra_mode_cfg.enable_smooth_intra ||
          cpi->sf.intra_sf.disable_smooth_intra) &&
-        (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
-         mbmi->mode == SMOOTH_V_PRED))
+        (mbmi->mode == SMOOTH_H_PRED || mbmi->mode == SMOOTH_V_PRED))
+      continue;
+    if (!cpi->oxcf.intra_mode_cfg.enable_smooth_intra &&
+        mbmi->mode == SMOOTH_PRED)
+      continue;
+
+    // The functionality of filter intra modes and smooth prediction
+    // overlap. Retain the smooth prediction if filter intra modes are
+    // disabled.
+    if (cpi->sf.intra_sf.disable_smooth_intra &&
+        !cpi->sf.intra_sf.disable_filter_intra && mbmi->mode == SMOOTH_PRED)
       continue;
     if (!cpi->oxcf.intra_mode_cfg.enable_paeth_intra &&
         mbmi->mode == PAETH_PRED)
@@ -1122,7 +1166,8 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   // Searches filter_intra
-  if (beat_best_rd && av1_filter_intra_allowed_bsize(&cpi->common, bsize)) {
+  if (beat_best_rd && av1_filter_intra_allowed_bsize(&cpi->common, bsize) &&
+      !cpi->sf.intra_sf.disable_filter_intra) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd, ctx)) {

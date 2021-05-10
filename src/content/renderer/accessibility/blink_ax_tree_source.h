@@ -39,8 +39,7 @@ class ScopedFreezeBlinkAXTreeSource {
 };
 
 class CONTENT_EXPORT BlinkAXTreeSource
-    : public ui::
-          AXTreeSource<blink::WebAXObject, ui::AXNodeData, ui::AXTreeData> {
+    : public ui::AXTreeSource<blink::WebAXObject> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;
@@ -63,6 +62,9 @@ class CONTENT_EXPORT BlinkAXTreeSource
   ui::AXMode accessibility_mode() { return accessibility_mode_; }
   void SetAccessibilityMode(ui::AXMode new_mode);
 
+  bool exclude_offscreen() const { return exclude_offscreen_; }
+  void set_exclude_offscreen(bool exclude) { exclude_offscreen_ = exclude; }
+
   // Set the id of the node to fetch image data for. Normally the content
   // of images is not part of the accessibility tree, but one node at a
   // time can be designated as the image data node, which will send the
@@ -78,8 +80,6 @@ class CONTENT_EXPORT BlinkAXTreeSource
   // The following methods add or remove an image annotator which is used to
   // provide automatic labels for images.
   void AddImageAnnotator(AXImageAnnotator* const annotator) {
-    DCHECK_EQ(image_annotator_, nullptr);
-    DCHECK(!first_unlabeled_image_id_.has_value());
     image_annotator_ = annotator;
   }
   void RemoveImageAnnotator() {
@@ -138,31 +138,14 @@ class CONTENT_EXPORT BlinkAXTreeSource
 
   void SerializeBoundingBoxAttributes(blink::WebAXObject src,
                                       ui::AXNodeData* dst) const;
-  void SerializeSparseAttributes(blink::WebAXObject src,
-                                 ui::AXNodeData* dst) const;
   void SerializeNameAndDescriptionAttributes(blink::WebAXObject src,
                                              ui::AXNodeData* dst) const;
   void SerializeInlineTextBoxAttributes(blink::WebAXObject src,
                                         ui::AXNodeData* dst) const;
-  void SerializeMarkerAttributes(blink::WebAXObject src,
-                                 ui::AXNodeData* dst) const;
   void SerializeLiveRegionAttributes(blink::WebAXObject src,
                                      ui::AXNodeData* dst) const;
-  void SerializeListAttributes(blink::WebAXObject src,
-                               ui::AXNodeData* dst) const;
-  void SerializeScrollAttributes(blink::WebAXObject src,
-                                 ui::AXNodeData* dst) const;
-  void SerializeChooserPopupAttributes(blink::WebAXObject src,
-                                       ui::AXNodeData* dst) const;
   void SerializeOtherScreenReaderAttributes(blink::WebAXObject src,
                                             ui::AXNodeData* dst) const;
-  void SerializeElementAttributes(blink::WebAXObject src,
-                                  blink::WebElement element,
-                                  ui::AXNodeData* dst) const;
-  void SerializeHTMLAttributes(blink::WebAXObject src,
-                               blink::WebElement element,
-                               ui::AXNodeData* dst) const;
-
   blink::WebAXObject ComputeRoot() const;
 
   // Max length for attributes such as aria-label.
@@ -181,6 +164,11 @@ class CONTENT_EXPORT BlinkAXTreeSource
   RenderFrameImpl* render_frame_;
 
   ui::AXMode accessibility_mode_;
+
+  // If true, excludes nodes and their entire subtrees if they're entirely
+  // offscreen. This is only meant to be used when snapshotting the
+  // accessibility tree.
+  bool exclude_offscreen_ = false;
 
   // An explicit root to use, otherwise it's taken from the WebDocument.
   blink::WebAXObject explicit_root_;

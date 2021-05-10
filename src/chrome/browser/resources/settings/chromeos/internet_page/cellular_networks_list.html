@@ -1,13 +1,21 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_utils.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_eid_popup.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_list_types.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../../chromeos/os_settings_icons_css.html">
+<link rel="import" href="esim_install_error_dialog.html">
 
 <dom-module id="cellular-networks-list">
   <template>
@@ -18,8 +26,16 @@
         padding: 16px 0 8px 0;
       }
 
+      .esim-list-header {
+        padding-top: 6px;
+      }
+
+      .esim-list-title {
+        align-self: center;
+      }
+
       .cellular-network-content {
-       margin: 8px 0 8px 32px;
+       margin: 0 0 0 32px;
       }
 
       .cellular-not-setup {
@@ -27,29 +43,66 @@
         font-size: smaller;
         margin-bottom: 16px;
       }
+
+      .flex {
+        display: flex;
+      }
+
+      .flex-column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #eidPopupButton {
+        cursor: pointer;
+        margin-inline-start: 0;
+      }
+
+      network-list {
+        --cr-network-row-padding-bottom: 8px;
+        --cr-network-row-padding-top: 8px;
+        --cr-network-row-height: auto;
+      }
     </style>
-    <div class="cellular-network-list-header">
-      $i18n{cellularNetworkEsimLabel}
-    </div>
-    <template is="dom-if"
-        if="[[shouldShowNetworkSublist_(eSimNetworks_)]]" restamp>
-      <div class="cellular-network-content">
-        <network-list id="esimNetworkList" show-buttons
-            show-technology-badge="[[showTechnologyBadge]]"
-            networks="[[eSimNetworks_]]"
-            device-state="[[deviceState]]">
-        </network-list>
+    <template is="dom-if" if="[[!!euicc_]]" restamp>
+      <div class="cellular-network-list-header esim-list-header flex">
+        <div class="esim-list-title">$i18n{cellularNetworkEsimLabel}</div>
+        <div class="flex-column">
+          <cr-icon-button
+              id="eidPopupButton"
+              iron-icon="cr:info-outline"
+              title="$i18n{showEidPopupButtonLabel}"
+              aria-label="$i18n{showEidPopupButtonLabel}"
+              on-click="toggleEidPopup_">
+          </cr-icon-button>
+          <template is="dom-if" if="[[shouldShowEidPopup_]]" restamp>
+            <cellular-eid-popup class="eid-popup" euicc="[[euicc_]]">
+            </cellular-eid-popup>
+          </template>
+        </div>
       </div>
-    </template>
-    <template
-        is="dom-if"
-        if="[[!shouldShowNetworkSublist_(eSimNetworks_)]]" restamp>
-      <div class="cellular-network-content cellular-not-setup">
-        <settings-localized-link
-            on-link-clicked="onEsimLearnMoreClicked_"
-            localized-string="$i18n{eSimNetworkNotSetup}">
-        </settings-localized-link>
-      </div>
+      <template is="dom-if"
+          if="[[shouldShowNetworkSublist_(eSimNetworks_, eSimPendingProfileItems_)]]" restamp>
+        <div class="cellular-network-content">
+          <network-list id="esimNetworkList" show-buttons
+              show-technology-badge="[[showTechnologyBadge]]"
+              networks="[[eSimNetworks_]]"
+              custom-items="[[eSimPendingProfileItems_]]"
+              device-state="[[deviceState]]">
+          </network-list>
+        </div>
+      </template>
+      <template
+          is="dom-if"
+          if="[[!shouldShowNetworkSublist_(eSimNetworks_, eSimPendingProfileItems_)]]" restamp>
+        <div id="eSimNoNetworkFound"
+            class="cellular-network-content cellular-not-setup">
+          <settings-localized-link
+              on-link-clicked="onEsimLearnMoreClicked_"
+              localized-string="$i18n{eSimNetworkNotSetup}">
+          </settings-localized-link>
+        </div>
+      </template>
     </template>
     <div class="cellular-network-list-header">
       $i18n{cellularNetworkPsimLabel}
@@ -69,7 +122,8 @@
     <template
         is="dom-if"
         if="[[!shouldShowNetworkSublist_(pSimNetworks_)]]" restamp>
-      <div class="cellular-network-content cellular-not-setup">
+      <div id="pSimNoNetworkFound"
+          class="cellular-network-content cellular-not-setup">
         <settings-localized-link
             on-link-clicked="onPsimLearnMoreClicked_"
             localized-string="$i18n{pSimNetworkNotSetup}">
@@ -98,6 +152,13 @@
             localized-string="[[i18nAdvanced('tetherNetworkNotSetup')]]">
         </settings-localized-link>
       </div>
+    </template>
+
+    <template is="dom-if" if="[[shouldShowInstallErrorDialog_]]" restamp>
+      <esim-install-error-dialog id="installErrorDialog"
+          on-close="onCloseInstallErrorDialog_"
+          profile="[[installingESimProfile_]]">
+      </esim-install-error-dialog>
     </template>
   </template>
   <script src="cellular_networks_list.js"></script>

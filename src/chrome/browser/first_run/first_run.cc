@@ -151,7 +151,7 @@ void ImportFromFile(Profile* profile,
 
   const base::FilePath::StringType& import_bookmarks_path_str =
 #if defined(OS_WIN)
-      base::UTF8ToUTF16(import_bookmarks_path);
+      base::UTF8ToWide(import_bookmarks_path);
 #else
       import_bookmarks_path;
 #endif
@@ -412,7 +412,7 @@ ProcessInitialPreferencesResult ProcessInitialPreferences(
       return EULA_EXIT_NOW;
 
     std::unique_ptr<base::DictionaryValue> initial_dictionary =
-        initial_prefs->master_dictionary().CreateDeepCopy();
+        initial_prefs->initial_dictionary().CreateDeepCopy();
     // The distribution dictionary (and any prefs below it) are never registered
     // for use in Chrome's PrefService. Strip them from the initial dictionary
     // before mapping it to prefs.

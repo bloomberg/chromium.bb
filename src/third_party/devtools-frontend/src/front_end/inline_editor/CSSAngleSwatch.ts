@@ -22,12 +22,12 @@ export class CSSAngleSwatch extends HTMLElement {
     unit: AngleUnit.Rad,
   };
 
-  set data(data: {angle: Angle}) {
+  set data(data: CSSAngleSwatchData) {
     this.angle = data.angle;
     this.render();
   }
 
-  private render() {
+  private render(): void {
     const {translateX, translateY} = get2DTranslationsForAngle(this.angle, swatchWidth / 4);
     const miniHandStyle = {
       transform: `translate(${translateX}px, ${translateY}px) rotate(${this.angle.value}${this.angle.unit})`,
@@ -79,6 +79,7 @@ if (!customElements.get('devtools-css-angle-swatch')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-css-angle-swatch': CSSAngleSwatch;
   }

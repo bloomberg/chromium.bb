@@ -20,11 +20,11 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "content/common/content_export.h"
+#include "media/base/supported_video_decoder_config.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "media/video/supported_video_decoder_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
@@ -123,6 +123,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   viz::RasterContextProvider* GetMediaContextProvider() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
+  const gfx::ColorSpace& GetRenderingColorSpace() const override;
 
   // Called on the main thread. Returns whether the media thread has seen the
   // ContextProvider become lost, in which case this class should be replaced

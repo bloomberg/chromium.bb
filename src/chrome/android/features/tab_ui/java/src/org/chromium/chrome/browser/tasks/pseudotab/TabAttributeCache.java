@@ -15,7 +15,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -25,6 +24,7 @@ import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.url.GURL;
 
 /**
  * Cache for attributes of {@link PseudoTab} to be available before native is ready.
@@ -84,6 +84,13 @@ public class TabAttributeCache {
             }
 
             @Override
+            public void onTimestampChanged(Tab tab, long timestampMillis) {
+                if (tab.isIncognito()) return;
+                assert timestampMillis == CriticalPersistedTabData.from(tab).getTimestampMillis();
+                cacheTimestampMillis(tab.getId(), timestampMillis);
+            }
+
+            @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
                 if (tab.isIncognito()) return;
                 if (!navigationHandle.isInMainFrame()) return;
@@ -103,16 +110,18 @@ public class TabAttributeCache {
                         .remove(getUrlKey(id))
                         .remove(getTitleKey(id))
                         .remove(getRootIdKey(id))
+                        .remove(getTimestampMillisKey(id))
                         .remove(getLastSearchTermKey(id))
                         .apply();
             }
         };
 
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
             public void onTabStateInitialized() {
                 // TODO(wychen): after this cache is enabled by default, we only need to populate it
                 //  once.
+                getSharedPreferences().edit().clear().apply();
                 TabModelFilter filter =
                         mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false);
                 for (int i = 0; i < filter.getCount(); i++) {
@@ -120,6 +129,8 @@ public class TabAttributeCache {
                     cacheUrl(tab.getId(), tab.getUrlString());
                     cacheTitle(tab.getId(), tab.getTitle());
                     cacheRootId(tab.getId(), CriticalPersistedTabData.from(tab).getRootId());
+                    cacheTimestampMillis(
+                            tab.getId(), CriticalPersistedTabData.from(tab).getTimestampMillis());
                 }
                 Tab currentTab = mTabModelSelector.getCurrentTab();
                 if (currentTab != null) cacheLastSearchTerm(currentTab);
@@ -209,6 +220,34 @@ public class TabAttributeCache {
         cacheRootId(id, rootId);
     }
 
+    private static String getTimestampMillisKey(int id) {
+        return id + "_timestampMillis";
+    }
+
+    /**
+     * Get the timestamp of a {@link PseudoTab}.
+     * @param id The ID of the {@link PseudoTab}.
+     * @return The timestamp
+     */
+    public static long getTimestampMillis(int id) {
+        return getSharedPreferences().getLong(
+                getTimestampMillisKey(id), CriticalPersistedTabData.INVALID_TIMESTAMP);
+    }
+
+    private static void cacheTimestampMillis(int id, long timestampMillis) {
+        getSharedPreferences().edit().putLong(getTimestampMillisKey(id), timestampMillis).apply();
+    }
+
+    /**
+     * Set the timestamp for a {@link PseudoTab}.
+     * @param id The ID of the {@link PseudoTab}.
+     * @param timestampMillis The timestamp
+     */
+    @VisibleForTesting
+    public static void setTimestampMillisForTesting(int id, long timestampMillis) {
+        cacheTimestampMillis(id, timestampMillis);
+    }
+
     private static String getLastSearchTermKey(int id) {
         return id + "_last_search_term";
     }
@@ -248,13 +287,13 @@ public class TabAttributeCache {
         NavigationHistory history = controller.getNavigationHistory();
 
         if (!TextUtils.isEmpty(
-                    TemplateUrlServiceFactory.get().getSearchQueryForUrl(tab.getUrlString()))) {
+                    TemplateUrlServiceFactory.get().getSearchQueryForUrl(tab.getUrl()))) {
             // If we are already at a search result page, do not show the last search term.
             return null;
         }
 
         for (int i = history.getCurrentEntryIndex() - 1; i >= 0; i--) {
-            String url = history.getEntryAtIndex(i).getOriginalUrl();
+            GURL url = history.getEntryAtIndex(i).getOriginalUrl();
             String query = TemplateUrlServiceFactory.get().getSearchQueryForUrl(url);
             if (!TextUtils.isEmpty(query)) {
                 return removeEscapedCodePoints(query);

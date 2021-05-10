@@ -40,6 +40,7 @@
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -92,6 +93,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/reputation/core/safety_tip_test_utils.h"
@@ -131,6 +133,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -168,6 +171,24 @@ using net::test_server::EmbeddedTestServer;
 // deprecated base::RunLoop::QuitCurrentWhenIdleDeprecated().
 
 namespace {
+
+class InnerWebContentsAttachedWaiter : public content::WebContentsObserver {
+ public:
+  // Observes navigation for the specified |web_contents|.
+  explicit InnerWebContentsAttachedWaiter(WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+
+  void InnerWebContentsAttached(WebContents* inner_web_contents,
+                                content::RenderFrameHost* render_frame_host,
+                                bool is_full_page) override {
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
+};
 
 const char kDownloadTest1Path[] = "download-test1.lib";
 
@@ -392,7 +413,7 @@ bool IsDownloadExternallyRemoved(DownloadItem* item) {
   return item->GetFileExternallyRemoved();
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item,
                                download::DownloadInterruptReason reason) {
@@ -2620,6 +2641,349 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TransientDownload) {
   ASSERT_FALSE(downloads[0]->IsTemporary());
 }
 
+class DownloadTestSplitCacheEnabled : public DownloadTest {
+ public:
+  DownloadTestSplitCacheEnabled() {
+    feature_list_.InitWithFeatures(
+        {net::features::kSplitCacheByNetworkIsolationKey}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
+                       SaveMainFramePdfFromContextMenu_IsolationInfo) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+
+  net::SiteForCookies expected_site_for_cookies =
+      net::SiteForCookies::FromOrigin(
+          url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")));
+
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kMainFrame,
+      url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")),
+      url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")),
+      expected_site_for_cookies, std::set<net::SchemefulSite>());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Set up a PDF page.
+  InnerWebContentsAttachedWaiter waiter(web_contents);
+  GURL url = embedded_test_server()->GetURL("foo.com", "/pdf/test.pdf");
+  ui_test_utils::NavigateToURL(browser(), url);
+  waiter.Wait();
+
+  std::vector<content::WebContents*> inner_web_contents_vector =
+      web_contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents_vector.size());
+  content::WebContents* inner_web_contents = inner_web_contents_vector.front();
+
+  // Wait for the page to finish loading.
+  if (inner_web_contents->IsLoading()) {
+    content::TestNavigationObserver inner_navigation_waiter(inner_web_contents);
+    inner_navigation_waiter.Wait();
+    ASSERT_TRUE(!inner_web_contents->IsLoading());
+  }
+
+  // Stop the server. This makes sure we really are pulling from the cache for
+  // the download request.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  net::SiteForCookies site_for_cookies;
+
+  base::RunLoop request_waiter;
+  URLLoaderInterceptor request_listener(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == url) {
+          trusted_params = params->url_request.trusted_params;
+          site_for_cookies = params->url_request.site_for_cookies;
+          request_waiter.Quit();
+        }
+        return false;
+      }));
+
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      CreateWaiter(browser(), 1));
+
+  // Simulate saving the PDF from the context menu "Save As...".
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kPlugin;
+  context_menu_params.src_url = url;
+  context_menu_params.page_url = inner_web_contents->GetLastCommittedURL();
+  TestRenderViewContextMenu menu(inner_web_contents->GetMainFrame(),
+                                 context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_SAVE_PAGE, 0);
+
+  request_waiter.Run();
+
+  EXPECT_TRUE(trusted_params.has_value());
+  EXPECT_TRUE(trusted_params->isolation_info.IsEqualForTesting(
+      expected_isolation_info));
+  EXPECT_TRUE(site_for_cookies.IsEquivalent(expected_site_for_cookies));
+
+  download_waiter->WaitForFinished();
+
+  EXPECT_EQ(1u,
+            download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
+                       SaveSubframePdfFromPdfUI_IsolationInfo) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+
+  net::SiteForCookies expected_site_for_cookies =
+      net::SiteForCookies::FromOrigin(
+          url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")));
+
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kSubFrame,
+      url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")),
+      url::Origin::Create(embedded_test_server()->GetURL("bar.com", "/")),
+      expected_site_for_cookies, std::set<net::SchemefulSite>());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Set up a page with a cross-origin iframe hosting a PDF.
+  GURL url = embedded_test_server()->GetURL("foo.com", "/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  GURL subframe_url(embedded_test_server()->GetURL("bar.com", "/pdf/test.pdf"));
+
+  InnerWebContentsAttachedWaiter waiter(web_contents);
+  content::BeginNavigateIframeToURL(web_contents,
+                                    /*iframe_id=*/"test", subframe_url);
+  waiter.Wait();
+
+  std::vector<content::WebContents*> inner_web_contents_vector =
+      web_contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents_vector.size());
+  content::WebContents* inner_web_contents = inner_web_contents_vector.front();
+
+  // Wait for the page to finish loading.
+  if (inner_web_contents->IsLoading()) {
+    content::TestNavigationObserver inner_navigation_waiter(inner_web_contents);
+    inner_navigation_waiter.Wait();
+    ASSERT_TRUE(!inner_web_contents->IsLoading());
+  }
+
+  // Stop the server. This makes sure we really are pulling from the cache for
+  // the download request.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  net::SiteForCookies site_for_cookies;
+
+  base::RunLoop request_waiter;
+  URLLoaderInterceptor request_listener(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == subframe_url) {
+          trusted_params = params->url_request.trusted_params;
+          site_for_cookies = params->url_request.site_for_cookies;
+          request_waiter.Quit();
+        }
+        return false;
+      }));
+
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      CreateWaiter(browser(), 1));
+
+  // Simulate saving the PDF from the UI.
+  pdf::PDFWebContentsHelper* pdf_helper =
+      pdf::PDFWebContentsHelper::FromWebContents(inner_web_contents);
+  blink::mojom::ReferrerPtr referrer = blink::mojom::Referrer::New();
+  referrer->url = subframe_url;
+  referrer->policy =
+      network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
+  static_cast<pdf::mojom::PdfService*>(pdf_helper)
+      ->SaveUrlAs(subframe_url, std::move(referrer));
+
+  request_waiter.Run();
+
+  EXPECT_TRUE(trusted_params.has_value());
+  EXPECT_TRUE(trusted_params->isolation_info.IsEqualForTesting(
+      expected_isolation_info));
+  EXPECT_TRUE(site_for_cookies.IsEquivalent(expected_site_for_cookies));
+
+  download_waiter->WaitForFinished();
+  EXPECT_EQ(1u,
+            download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
+                       SaveSubframeImageFromContextMenu_IsolationInfo) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+
+  net::SiteForCookies expected_site_for_cookies =
+      net::SiteForCookies::FromOrigin(
+          url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")));
+
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kSubFrame,
+      url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")),
+      url::Origin::Create(embedded_test_server()->GetURL("bar.com", "/")),
+      expected_site_for_cookies, std::set<net::SchemefulSite>());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Set up a page with a cross-origin iframe hosting a PDF.
+  GURL url = embedded_test_server()->GetURL("foo.com", "/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  GURL subframe_url(
+      embedded_test_server()->GetURL("bar.com", "/downloads/image.jpg"));
+  content::NavigateIframeToURL(web_contents,
+                               /*iframe_id=*/"test", subframe_url);
+
+  // Stop the server. This makes sure we really are pulling from the cache for
+  // the download request.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  net::SiteForCookies site_for_cookies;
+
+  base::RunLoop request_waiter;
+  URLLoaderInterceptor request_listener(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == subframe_url) {
+          trusted_params = params->url_request.trusted_params;
+          site_for_cookies = params->url_request.site_for_cookies;
+          request_waiter.Quit();
+        }
+        return false;
+      }));
+
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      CreateWaiter(browser(), 1));
+
+  // Simulate saving the image from the context menu "Save As..."
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kImage;
+  context_menu_params.src_url = subframe_url;
+  context_menu_params.page_url =
+      content::ChildFrameAt(web_contents->GetMainFrame(), 0)
+          ->GetLastCommittedURL();
+  TestRenderViewContextMenu menu(
+      content::ChildFrameAt(web_contents->GetMainFrame(), 0),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
+
+  request_waiter.Run();
+
+  EXPECT_TRUE(trusted_params.has_value());
+  EXPECT_TRUE(trusted_params->isolation_info.IsEqualForTesting(
+      expected_isolation_info));
+  EXPECT_TRUE(site_for_cookies.IsEquivalent(expected_site_for_cookies));
+
+  download_waiter->WaitForFinished();
+
+  EXPECT_EQ(1u,
+            download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
+                       SaveSubframePdfFromContextMenu_IsolationInfo) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+
+  net::SiteForCookies expected_site_for_cookies =
+      net::SiteForCookies::FromOrigin(
+          url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")));
+
+  net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kSubFrame,
+      url::Origin::Create(embedded_test_server()->GetURL("foo.com", "/")),
+      url::Origin::Create(embedded_test_server()->GetURL("bar.com", "/")),
+      expected_site_for_cookies, std::set<net::SchemefulSite>());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Set up a page with a cross-origin iframe hosting a PDF.
+  GURL url = embedded_test_server()->GetURL("foo.com", "/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  GURL subframe_url(embedded_test_server()->GetURL("bar.com", "/pdf/test.pdf"));
+
+  InnerWebContentsAttachedWaiter waiter(web_contents);
+  content::BeginNavigateIframeToURL(web_contents,
+                                    /*iframe_id=*/"test", subframe_url);
+  waiter.Wait();
+
+  std::vector<content::WebContents*> inner_web_contents_vector =
+      web_contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents_vector.size());
+  content::WebContents* inner_web_contents = inner_web_contents_vector.front();
+
+  // Wait for the page to finish loading.
+  if (inner_web_contents->IsLoading()) {
+    content::TestNavigationObserver inner_navigation_waiter(inner_web_contents);
+    inner_navigation_waiter.Wait();
+    ASSERT_TRUE(!inner_web_contents->IsLoading());
+  }
+
+  // Stop the server. This makes sure we really are pulling from the cache for
+  // the download request.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  base::Optional<network::ResourceRequest::TrustedParams> trusted_params;
+  net::SiteForCookies site_for_cookies;
+
+  base::RunLoop request_waiter;
+  URLLoaderInterceptor request_listener(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == subframe_url) {
+          trusted_params = params->url_request.trusted_params;
+          site_for_cookies = params->url_request.site_for_cookies;
+          request_waiter.Quit();
+        }
+        return false;
+      }));
+
+  std::unique_ptr<content::DownloadTestObserver> download_waiter(
+      CreateWaiter(browser(), 1));
+
+  // Simulate saving the PDF from the context menu "Save As..."
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kPlugin;
+  context_menu_params.src_url = subframe_url;
+  context_menu_params.page_url = inner_web_contents->GetLastCommittedURL();
+  TestRenderViewContextMenu menu(inner_web_contents->GetMainFrame(),
+                                 context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEAVAS, 0);
+
+  request_waiter.Run();
+
+  EXPECT_TRUE(trusted_params.has_value());
+  EXPECT_TRUE(trusted_params->isolation_info.IsEqualForTesting(
+      expected_isolation_info));
+  EXPECT_TRUE(site_for_cookies.IsEquivalent(expected_site_for_cookies));
+
+  download_waiter->WaitForFinished();
+
+  EXPECT_EQ(1u,
+            download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+}
+
 class DownloadTestWithHistogramTester : public DownloadTest {
  public:
   void SetUp() override {
@@ -2686,7 +3050,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester,
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
-  context_menu_params.media_type = blink::ContextMenuDataMediaType::kImage;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kImage;
   context_menu_params.src_url = url;
   context_menu_params.page_url = url;
   TestRenderViewContextMenu menu(
@@ -2719,10 +3084,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester,
 }
 
 // Times out often on debug ChromeOS because test is slow.
-#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(MEMORY_SANITIZER))
+#if BUILDFLAG(IS_CHROMEOS_ASH) && \
+    (!defined(NDEBUG) || defined(MEMORY_SANITIZER))
 #define MAYBE_SaveLargeImage DISABLED_SaveLargeImage
-#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
-// Flaking on Windows, macOS, and Linux. https://crbug.com/1141263
+#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+// Flaking on Windows, macOS, Linux, ChromeOS. https://crbug.com/1141263
 #define MAYBE_SaveLargeImage DISABLED_SaveLargeImage
 #else
 #define MAYBE_SaveLargeImage SaveLargeImage
@@ -2756,7 +3123,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_SaveLargeImage) {
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
-  context_menu_params.media_type = blink::ContextMenuDataMediaType::kImage;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kImage;
   context_menu_params.src_url = GURL(data_url);
   context_menu_params.page_url = url;
   TestRenderViewContextMenu menu(
@@ -2823,15 +3191,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
   content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
   ASSERT_TRUE(render_frame_host);
-  render_frame_host->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("SubmitForm()"), base::NullCallback());
-  observer.Wait();
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  EXPECT_TRUE(content::ExecJs(render_frame_host, "SubmitForm()"));
+  navigation_observer.Wait();
   EXPECT_EQ(jpeg_url, web_contents->GetURL());
 
   // Stop the test server, and then try to save the page. If cache validation
@@ -2860,7 +3224,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
-  context_menu_params.media_type = blink::ContextMenuDataMediaType::kImage;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kImage;
   context_menu_params.src_url = jpeg_url;
   context_menu_params.page_url = jpeg_url;
   TestRenderViewContextMenu menu(web_contents->GetMainFrame(),
@@ -3364,7 +3729,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
-  context_menu_params.media_type = blink::ContextMenuDataMediaType::kImage;
+  context_menu_params.media_type =
+      blink::mojom::ContextMenuDataMediaType::kImage;
   context_menu_params.page_url = url;
   context_menu_params.src_url = img_url;
   TestRenderViewContextMenu menu(
@@ -3791,7 +4157,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
 // quarantining files on Mac because it is not a cocoa app.
 // TODO(benjhayden) test the equivalents on other platforms.
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux: http://crbug.com/238459
 #define MAYBE_DownloadTest_PercentComplete DISABLED_DownloadTest_PercentComplete
 #else
@@ -4260,7 +4627,50 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadLargeDataURL) {
 // Testing the behavior of resuming with only in-progress download manager.
 class InProgressDownloadTest : public DownloadTest {
  public:
-  void SetUpOnMainThread() override { EXPECT_TRUE(CheckTestDir()); }
+  InProgressDownloadTest() {
+    // The in progress download manager will be released from
+    // `DownloadManagerUtils` during creation of the `DownloadManagerImpl`. As
+    // the `DownloadManagerImpl` may be created before test bodies can run,
+    // register a callback to cache a pointer before release occurs.
+    DownloadManagerUtils::
+        SetRetrieveInProgressDownloadManagerCallbackForTesting(
+            base::BindRepeating(
+                &InProgressDownloadTest::set_in_progress_manager,
+                base::Unretained(this)));
+  }
+
+  // DownloadTest:
+  void SetUpOnMainThread() override {
+    EXPECT_TRUE(CheckTestDir());
+
+    if (!in_progress_manager_) {
+      // This will only occur if `DownloadManagerImpl` has not already been
+      // created in which case the in progress download manager has not yet been
+      // released from `DownloadManagerUtils`.
+      set_in_progress_manager(
+          DownloadManagerUtils::GetInProgressDownloadManager(
+              browser()->profile()->GetProfileKey()));
+    }
+
+    // As a pointer to the in progress download manager has now been cached,
+    // watching for release from `DownloadManagerUtils` (if it has not already
+    // occurred) is no longer necessary.
+    DownloadManagerUtils::
+        SetRetrieveInProgressDownloadManagerCallbackForTesting(
+            base::NullCallback());
+  }
+
+  download::InProgressDownloadManager* in_progress_manager() {
+    return in_progress_manager_;
+  }
+
+  void set_in_progress_manager(
+      download::InProgressDownloadManager* in_progress_manager) {
+    in_progress_manager_ = in_progress_manager;
+  }
+
+ private:
+  download::InProgressDownloadManager* in_progress_manager_ = nullptr;
 };
 
 // Check that if a download exists in both in-progress and history DB,
@@ -4282,9 +4692,6 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   std::string guid = base::GenerateGUID();
 
   // Wait for in-progress download manager to initialize.
-  download::InProgressDownloadManager* in_progress_manager =
-      DownloadManagerUtils::GetInProgressDownloadManager(
-          browser()->profile()->GetProfileKey());
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(
           browser()->profile()->GetProfileKey());
@@ -4299,9 +4706,9 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   std::vector<GURL> url_chain;
   url_chain.emplace_back(url);
   base::Time current_time = base::Time::Now();
-  in_progress_manager->AddInProgressDownloadForTest(
+  in_progress_manager()->AddInProgressDownloadForTest(
       std::make_unique<download::DownloadItemImpl>(
-          in_progress_manager, guid, 1 /* id */,
+          in_progress_manager(), guid, 1 /* id */,
           target_path.AddExtensionASCII("crdownload"), target_path, url_chain,
           GURL() /* referrer_url */, GURL() /* site_url */,
           GURL() /* tab_url */, GURL() /* tab_referrer_url */,
@@ -4351,9 +4758,6 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   std::string guid = base::GenerateGUID();
 
   // Wait for in-progress download manager to initialize.
-  download::InProgressDownloadManager* in_progress_manager =
-      DownloadManagerUtils::GetInProgressDownloadManager(
-          browser()->profile()->GetProfileKey());
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(
           browser()->profile()->GetProfileKey());
@@ -4374,14 +4778,14 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   params->set_file_path(target_path);
   params->set_transient(true);
   params->set_require_safety_checks(false);
-  in_progress_manager->DownloadUrl(std::move(params));
+  in_progress_manager()->DownloadUrl(std::move(params));
   auto params2 = std::make_unique<DownloadUrlParameters>(
       url, TRAFFIC_ANNOTATION_FOR_TESTS);
   params2->set_guid(guid);
   params2->set_file_path(target_path);
   params2->set_transient(true);
   params2->set_require_safety_checks(false);
-  in_progress_manager->DownloadUrl(std::move(params2));
+  in_progress_manager()->DownloadUrl(std::move(params2));
   coordinator_waiter.WaitForDownloadCreation(1);
   download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
   ASSERT_TRUE(download);
@@ -4392,6 +4796,45 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
 
   // Only 1 download is created above, no more new downloads are created.
   ASSERT_EQ(coordinator_waiter.num_download_created(), 1);
+}
+
+// Tests that download a canvas image will show the file chooser.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SaveCanvasImage) {
+  EnableFileChooser(true);
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/downloads/page_with_canvas_image.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Try to download a canvas image via a context menu.
+  std::unique_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  // Right-click on the link and choose Save Image As. This will download the
+  // canvas image.
+  ContextMenuNotificationObserver context_menu_observer(
+      IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(15, 15);
+  mouse_event.click_count = 1;
+  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
+  tab->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+  waiter->WaitForFinished();
+  EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+  EXPECT_TRUE(DidShowFileChooser());
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -4721,7 +5164,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // The rest of these tests rely on the download shelf, which ChromeOS doesn't
 // use.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Test that the download shelf is shown by starting a download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadAndWait) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
@@ -4988,4 +5431,4 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstallClosesShelf) {
   // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -65,14 +65,27 @@ class V8_EXPORT_PRIVATE Compiler : public AllStatic {
   // whereas successful compilation ensures the {is_compiled} predicate on the
   // given function holds (except for live-edit, which compiles the world).
 
-  static bool Compile(Handle<SharedFunctionInfo> shared,
+  static bool Compile(Isolate* isolate, Handle<SharedFunctionInfo> shared,
                       ClearExceptionFlag flag,
                       IsCompiledScope* is_compiled_scope);
-  static bool Compile(Handle<JSFunction> function, ClearExceptionFlag flag,
+  static bool Compile(Isolate* isolate, Handle<JSFunction> function,
+                      ClearExceptionFlag flag,
                       IsCompiledScope* is_compiled_scope);
-  static bool CompileOptimized(Handle<JSFunction> function,
+  static bool CompileBaseline(Isolate* isolate, Handle<JSFunction> function,
+                              ClearExceptionFlag flag,
+                              IsCompiledScope* is_compiled_scope);
+  static bool CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
                                ConcurrencyMode mode, CodeKind code_kind);
+  static MaybeHandle<SharedFunctionInfo> CompileToplevel(
+      ParseInfo* parse_info, Handle<Script> script, Isolate* isolate,
+      IsCompiledScope* is_compiled_scope);
 
+  static void LogFunctionCompilation(Isolate* isolate,
+                                     CodeEventListener::LogEventsAndTags tag,
+                                     Handle<SharedFunctionInfo> shared,
+                                     Handle<Script> script,
+                                     Handle<AbstractCode> abstract_code,
+                                     CodeKind kind, double time_taken_ms);
   // Collect source positions for a function that has already been compiled to
   // bytecode, but for which source positions were not collected (e.g. because
   // they were not immediately needed).
@@ -192,7 +205,7 @@ class V8_EXPORT_PRIVATE Compiler : public AllStatic {
 
   // Generate and return optimized code for OSR, or empty handle on failure.
   V8_WARN_UNUSED_RESULT static MaybeHandle<Code> GetOptimizedCodeForOSR(
-      Handle<JSFunction> function, BailoutId osr_offset,
+      Handle<JSFunction> function, BytecodeOffset osr_offset,
       JavaScriptFrame* osr_frame);
 };
 
@@ -330,15 +343,15 @@ class OptimizedCompilationJob : public CompilationJob {
         compiler_name_(compiler_name) {}
 
   // Prepare the compile job. Must be called on the main thread.
-  V8_WARN_UNUSED_RESULT Status PrepareJob(Isolate* isolate);
+  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT Status PrepareJob(Isolate* isolate);
 
   // Executes the compile job. Can be called on a background thread if
   // can_execute_on_background_thread() returns true.
-  V8_WARN_UNUSED_RESULT Status
+  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT Status
   ExecuteJob(RuntimeCallStats* stats, LocalIsolate* local_isolate = nullptr);
 
   // Finalizes the compile job. Must be called on the main thread.
-  V8_WARN_UNUSED_RESULT Status FinalizeJob(Isolate* isolate);
+  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT Status FinalizeJob(Isolate* isolate);
 
   // Report a transient failure, try again next time. Should only be called on
   // optimization compilation jobs.
@@ -438,12 +451,12 @@ class DeferredFinalizationJobData {
 // A wrapper around a OptimizedCompilationInfo that detaches the Handles from
 // the underlying PersistentHandlesScope and stores them in info_ on
 // destruction.
-class CompilationHandleScope final {
+class V8_NODISCARD CompilationHandleScope final {
  public:
   explicit CompilationHandleScope(Isolate* isolate,
                                   OptimizedCompilationInfo* info)
       : persistent_(isolate), info_(info) {}
-  ~CompilationHandleScope();
+  V8_EXPORT_PRIVATE ~CompilationHandleScope();
 
  private:
   PersistentHandlesScope persistent_;
@@ -459,7 +472,10 @@ class V8_EXPORT_PRIVATE BackgroundCompileTask {
   // script associated with |data| and can be finalized with
   // Compiler::GetSharedFunctionInfoForStreamedScript.
   // Note: does not take ownership of |data|.
-  BackgroundCompileTask(ScriptStreamingData* data, Isolate* isolate);
+  BackgroundCompileTask(ScriptStreamingData* data, Isolate* isolate,
+                        v8::ScriptType type);
+  BackgroundCompileTask(const BackgroundCompileTask&) = delete;
+  BackgroundCompileTask& operator=(const BackgroundCompileTask&) = delete;
   ~BackgroundCompileTask();
 
   // Creates a new task that when run will parse and compile the
@@ -533,8 +549,6 @@ class V8_EXPORT_PRIVATE BackgroundCompileTask {
   WorkerThreadRuntimeCallStats* worker_thread_runtime_call_stats_;
   TimedHistogram* timer_;
   LanguageMode language_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundCompileTask);
 };
 
 // Contains all data which needs to be transmitted between threads for
@@ -543,6 +557,8 @@ struct ScriptStreamingData {
   ScriptStreamingData(
       std::unique_ptr<ScriptCompiler::ExternalSourceStream> source_stream,
       ScriptCompiler::StreamedSource::Encoding encoding);
+  ScriptStreamingData(const ScriptStreamingData&) = delete;
+  ScriptStreamingData& operator=(const ScriptStreamingData&) = delete;
   ~ScriptStreamingData();
 
   void Release();
@@ -553,8 +569,6 @@ struct ScriptStreamingData {
 
   // Task that performs background parsing and compilation.
   std::unique_ptr<BackgroundCompileTask> task;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptStreamingData);
 };
 
 }  // namespace internal

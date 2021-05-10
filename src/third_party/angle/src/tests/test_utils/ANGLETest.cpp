@@ -316,6 +316,7 @@ constexpr char kUseConfig[]                      = "--use-config=";
 constexpr char kReuseDisplays[]                  = "--reuse-displays";
 constexpr char kEnableANGLEPerTestCaptureLabel[] = "--angle-per-test-capture-label";
 constexpr char kBatchId[]                        = "--batch-id=";
+constexpr char kDelayTestStart[]                 = "--delay-test-start=";
 
 void SetupEnvironmentVarsForCaptureReplay()
 {
@@ -327,6 +328,18 @@ void SetupEnvironmentVarsForCaptureReplay()
                       (std::string{testInfo->test_case_name()} + "_" + testName).c_str());
 }
 }  // anonymous namespace
+
+int gTestStartDelaySeconds = 0;
+
+int GetTestStartDelaySeconds()
+{
+    return gTestStartDelaySeconds;
+}
+
+void SetTestStartDelay(const char *testStartDelay)
+{
+    gTestStartDelaySeconds = std::stoi(testStartDelay);
+}
 
 // static
 std::array<Vector3, 6> ANGLETestBase::GetQuadVertices()
@@ -488,6 +501,12 @@ void ANGLETestBase::ANGLETestSetUp()
 {
     mSetUpCalled = true;
 
+    // Delay test startup to allow a debugger to attach.
+    if (GetTestStartDelaySeconds())
+    {
+        angle::Sleep(GetTestStartDelaySeconds() * 1000);
+    }
+
     gDefaultPlatformMethods.overrideWorkaroundsD3D = TestPlatform_overrideWorkaroundsD3D;
     gDefaultPlatformMethods.overrideFeaturesVk     = TestPlatform_overrideFeaturesVk;
     gDefaultPlatformMethods.logError               = TestPlatform_logError;
@@ -498,14 +517,6 @@ void ANGLETestBase::ANGLETestSetUp()
     gPlatformContext.ignoreMessages   = false;
     gPlatformContext.warningsAsErrors = false;
     gPlatformContext.currentTest      = this;
-
-    // TODO(geofflang): Nexus6P generates GL errors during initialization. Suppress error messages
-    // temporarily until enough logging is in place to figure out exactly which calls generate
-    // errors.  http://crbug.com/998503
-    if (IsNexus6P())
-    {
-        gPlatformContext.ignoreMessages = true;
-    }
 
     if (IsWindows())
     {
@@ -843,6 +854,34 @@ void ANGLETestBase::drawQuad(GLuint program,
     {
         glUseProgram(previousProgram);
     }
+}
+
+void ANGLETestBase::drawQuadPPO(GLuint vertProgram,
+                                const std::string &positionAttribName,
+                                const GLfloat positionAttribZ,
+                                const GLfloat positionAttribXYScale)
+{
+    glUseProgram(0);
+
+    std::array<Vector3, 6> quadVertices = GetQuadVertices();
+
+    for (Vector3 &vertex : quadVertices)
+    {
+        vertex.x() *= positionAttribXYScale;
+        vertex.y() *= positionAttribXYScale;
+        vertex.z() = positionAttribZ;
+    }
+
+    GLint positionLocation = glGetAttribLocation(vertProgram, positionAttribName.c_str());
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, quadVertices.data());
+    glEnableVertexAttribArray(positionLocation);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDisableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 }
 
 void ANGLETestBase::drawIndexedQuad(GLuint program,
@@ -1395,6 +1434,10 @@ void ANGLEProcessTestArgs(int *argc, char *argv[])
                          strlen(kEnableANGLEPerTestCaptureLabel)) == 0)
         {
             gEnableANGLEPerTestCaptureLabel = true;
+        }
+        else if (strncmp(argv[argIndex], kDelayTestStart, strlen(kDelayTestStart)) == 0)
+        {
+            SetTestStartDelay(argv[argIndex] + strlen(kDelayTestStart));
         }
     }
 }

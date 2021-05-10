@@ -17,26 +17,54 @@
 #include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/member_accessor_expression.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor) {
-  auto str = std::make_unique<ast::IdentifierExpression>("str");
-  auto mem = std::make_unique<ast::IdentifierExpression>("mem");
+  Global("str",
+         ty.struct_("my_str", create<ast::Struct>(
+                                  ast::StructMemberList{
+                                      Member("mem", ty.f32()),
+                                  },
+                                  ast::StructDecorationList{})),
+         ast::StorageClass::kPrivate);
+  auto* expr = MemberAccessor("str", "mem");
+  WrapInFunction(expr);
 
-  ast::MemberAccessorExpression expr(std::move(str), std::move(mem));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitExpression(&expr)) << g.error();
-  EXPECT_EQ(g.result(), "str.mem");
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), "str.mem");
+}
+
+TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_xyz) {
+  Global("my_vec", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+
+  auto* expr = MemberAccessor("my_vec", "xyz");
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), "my_vec.xyz");
+}
+
+TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_gbr) {
+  Global("my_vec", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+
+  auto* expr = MemberAccessor("my_vec", "gbr");
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), "my_vec.gbr");
 }
 
 }  // namespace

@@ -10,7 +10,6 @@
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPath.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/geometry/GrStyledShape.h"
@@ -273,15 +272,16 @@ static GrUserStencilSettings const* const* get_stencil_passes(
     return gUserToClipTable[fillInverted][op];
 }
 
-static void draw_stencil_rect(GrRenderTargetContext* rtc, const GrHardClip& clip,
+static void draw_stencil_rect(GrSurfaceDrawContext* rtc, const GrHardClip& clip,
                               const GrUserStencilSettings* ss, const SkMatrix& matrix,
                               const SkRect& rect, GrAA aa) {
     GrPaint paint;
     paint.setXPFactory(GrDisableColorXPFactory::Get());
-    rtc->priv().stencilRect(&clip, ss, std::move(paint), aa, matrix, rect);
+    rtc->stencilRect(&clip, ss, std::move(paint), aa, matrix, rect);
 }
 
-static void draw_path(GrRecordingContext* context, GrRenderTargetContext* rtc,
+static void draw_path(GrRecordingContext* context,
+                      GrSurfaceDrawContext* rtc,
                       GrPathRenderer* pr, const GrHardClip& clip, const SkIRect& bounds,
                       const GrUserStencilSettings* ss,  const SkMatrix& matrix,
                       const GrStyledShape& shape, GrAA aa) {
@@ -305,7 +305,8 @@ static void draw_path(GrRecordingContext* context, GrRenderTargetContext* rtc,
     pr->drawPath(args);
 }
 
-static void stencil_path(GrRecordingContext* context, GrRenderTargetContext* rtc,
+static void stencil_path(GrRecordingContext* context,
+                         GrSurfaceDrawContext* rtc,
                          GrPathRenderer* pr, const GrFixedClip& clip, const SkMatrix& matrix,
                          const GrStyledShape& shape, GrAA aa) {
     GrPathRenderer::StencilPathArgs args;
@@ -320,7 +321,7 @@ static void stencil_path(GrRecordingContext* context, GrRenderTargetContext* rtc
     pr->stencilPath(args);
 }
 
-static GrAA supported_aa(GrRenderTargetContext* rtc, GrAA aa) {
+static GrAA supported_aa(GrSurfaceDrawContext* rtc, GrAA aa) {
     // MIXED SAMPLES TODO: We can use stencil with mixed samples as well.
     if (rtc->numSamples() > 1) {
         if (rtc->caps()->multisampleDisableSupport()) {
@@ -337,7 +338,7 @@ static GrAA supported_aa(GrRenderTargetContext* rtc, GrAA aa) {
 
 bool GrStencilMaskHelper::init(const SkIRect& bounds, uint32_t genID,
                                const GrWindowRectangles& windowRects, int numFPs) {
-    if (!fRTC->priv().mustRenderClip(genID, bounds, numFPs)) {
+    if (!fRTC->mustRenderClip(genID, bounds, numFPs)) {
         return false;
     }
 
@@ -478,10 +479,10 @@ void GrStencilMaskHelper::clear(bool insideStencil) {
                           GrStencilSettings::SetClipBitSettings(insideStencil), SkMatrix::I(),
                           SkRect::Make(fClip.fixedClip().scissorRect()), GrAA::kNo);
     } else {
-        fRTC->priv().clearStencilClip(fClip.fixedClip().scissorRect(), insideStencil);
+        fRTC->clearStencilClip(fClip.fixedClip().scissorRect(), insideStencil);
     }
 }
 
 void GrStencilMaskHelper::finish() {
-    fRTC->priv().setLastClip(fClip.stencilStackID(), fClip.fixedClip().scissorRect(), fNumFPs);
+    fRTC->setLastClip(fClip.stencilStackID(), fClip.fixedClip().scissorRect(), fNumFPs);
 }

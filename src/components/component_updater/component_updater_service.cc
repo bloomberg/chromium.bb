@@ -95,7 +95,7 @@ void CrxUpdateService::Start() {
           << config_->NextCheckDelay() << " seconds. ";
 
   scheduler_->Schedule(
-      base::TimeDelta::FromSeconds(config_->InitialDelay()),
+      base::TimeDelta::FromSecondsD(config_->InitialDelay()),
       base::TimeDelta::FromSeconds(config_->NextCheckDelay()),
       base::BindRepeating(
           base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
@@ -129,8 +129,6 @@ bool CrxUpdateService::RegisterComponent(const CrxComponent& component) {
 
   components_.insert(std::make_pair(component.app_id, component));
   components_order_.push_back(component.app_id);
-  for (const auto& mime_type : component.handled_mime_types)
-    component_ids_by_mime_type_[mime_type] = component.app_id;
 
   // Create an initial state for this component. The state is mutated in
   // response to events from the UpdateClient instance.
@@ -193,20 +191,6 @@ std::vector<std::string> CrxUpdateService::GetComponentIDs() const {
   for (const auto& it : components_)
     ids.push_back(it.first);
   return ids;
-}
-
-std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
-    const std::string& mime_type) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const auto it = component_ids_by_mime_type_.find(mime_type);
-  if (it == component_ids_by_mime_type_.end())
-    return nullptr;
-  const auto component = GetComponent(it->second);
-  if (!component)
-    return nullptr;
-  return std::make_unique<ComponentInfo>(
-      GetCrxComponentID(*component), component->fingerprint,
-      base::UTF8ToUTF16(component->name), component->version);
 }
 
 std::vector<ComponentInfo> CrxUpdateService::GetComponents() const {
@@ -319,9 +303,6 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
 bool CrxUpdateService::CheckForUpdates(
     UpdateScheduler::OnFinishedCallback on_finished) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
-  VLOG(1) << "CheckForUpdates: automatic updatecheck for components.";
 
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_AUTOMATIC,
                             UPDATE_TYPE_COUNT);

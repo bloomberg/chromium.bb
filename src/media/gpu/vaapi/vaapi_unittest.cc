@@ -19,11 +19,14 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_suite.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/media_buildflags.h"
 
@@ -40,14 +43,10 @@ base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-#if BUILDFLAG(IS_ASH)
-    // TODO(hiroh): Remove if-macro once libva for linux-chrome is upreved to
-    // 2.9.0 or newer.
-    // https://source.chromium.org/chromium/chromium/src/+/master:build/linux/sysroot_scripts/generated_package_lists/sid.amd64
     {AV1PROFILE_PROFILE_MAIN, VAProfileAV1Profile0},
-#endif
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     {HEVCPROFILE_MAIN, VAProfileHEVCMain},
+    {HEVCPROFILE_MAIN10, VAProfileHEVCMain10},
 #endif
   };
   auto it = kProfileMap.find(profile);
@@ -69,14 +68,10 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
     {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
     {"VAProfileVP9Profile0", VAProfileVP9Profile0},
     {"VAProfileVP9Profile2", VAProfileVP9Profile2},
-#if BUILDFLAG(IS_ASH)
-    // TODO(hiroh): Remove if-macro once libva for linux-chrome is upreved to
-    // 2.9.0 or newer.
-    // https://source.chromium.org/chromium/chromium/src/+/master:build/linux/sysroot_scripts/generated_package_lists/sid.amd64
     {"VAProfileAV1Profile0", VAProfileAV1Profile0},
-#endif
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     {"VAProfileHEVCMain", VAProfileHEVCMain},
+    {"VAProfileHEVCMain10", VAProfileHEVCMain10},
 #endif
   };
 
@@ -101,12 +96,23 @@ base::Optional<VAEntrypoint> StringToVAEntrypoint(
              ? base::make_optional<VAEntrypoint>(it->second)
              : base::nullopt;
 }
+
+std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList() {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitWithFeatures(
+      /*enabled_features=*/{media::kVaapiAV1Decoder},
+      /*disabled_features=*/{});
+  return scoped_feature_list;
+}
 }  // namespace
 
 class VaapiTest : public testing::Test {
  public:
-  VaapiTest() = default;
+  VaapiTest() : scoped_feature_list_(CreateScopedFeatureList()) {}
   ~VaapiTest() override = default;
+
+ private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
@@ -245,14 +251,102 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
     }
   }
 }
+
+// Verifies that VaapiWrapper::CreateContext() will queue up a buffer to set the
+// encoder to its lowest quality setting if a given VAProfile and VAEntrypoint
+// claims to support configuring it.
+TEST_F(VaapiTest, LowQualityEncodingSetting) {
+  // This test only applies to low powered Intel processors.
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  const base::CPU cpuid;
+  const bool is_core_y_processor =
+      base::MatchPattern(cpuid.cpu_brand(), "Intel(R) Core(TM) *Y CPU*");
+  const bool is_low_power_intel =
+      cpuid.family() == kPentiumAndLaterFamily &&
+      (base::Contains(cpuid.cpu_brand(), "Pentium") ||
+       base::Contains(cpuid.cpu_brand(), "Celeron") || is_core_y_processor);
+  if (!is_low_power_intel)
+    GTEST_SKIP() << "Not an Intel low power processor";
+
+  std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+      VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+          VaapiWrapper::kEncode);
+
+  for (const auto& codec_mode :
+       {VaapiWrapper::kEncode,
+        VaapiWrapper::kEncodeConstantQuantizationParameter}) {
+    std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+            codec_mode);
+
+    for (const auto& profile_and_entrypoints : configurations) {
+      const VAProfile va_profile = profile_and_entrypoints.first;
+      scoped_refptr<VaapiWrapper> wrapper = VaapiWrapper::Create(
+          VaapiWrapper::kEncode, va_profile, EncryptionScheme::kUnencrypted,
+          base::DoNothing());
+
+      // Depending on the GPU Gen, flags and policies, we may or may not utilize
+      // all entrypoints (e.g. we might always want VAEntrypointEncSliceLP if
+      // supported and enabled). Query VaapiWrapper's mandated entry point.
+      const VAEntrypoint entrypoint =
+          VaapiWrapper::GetDefaultVaEntryPoint(codec_mode, va_profile);
+      ASSERT_TRUE(base::Contains(profile_and_entrypoints.second, entrypoint));
+
+      VAConfigAttrib attrib{};
+      attrib.type = VAConfigAttribEncQualityRange;
+      {
+        base::AutoLock auto_lock(*wrapper->va_lock_);
+        VAStatus va_res = vaGetConfigAttributes(
+            wrapper->va_display_, va_profile, entrypoint, &attrib, 1);
+        ASSERT_EQ(va_res, VA_STATUS_SUCCESS);
+      }
+      const auto quality_level = attrib.value;
+      if (quality_level == VA_ATTRIB_NOT_SUPPORTED || quality_level <= 1u)
+        continue;
+      DLOG(INFO) << vaProfileStr(va_profile)
+                 << " supports encoding quality setting, with max value "
+                 << quality_level;
+
+      // If we get here it means the |va_profile| and |entrypoint| support
+      // the quality setting. We cannot inspect what the driver does with this
+      // number (it could ignore it), so instead just make sure there's a
+      // |pending_va_buffers_| that, when mapped, looks correct. That buffer
+      // should be created by CreateContext().
+      ASSERT_TRUE(wrapper->CreateContext(gfx::Size(640, 368)));
+      ASSERT_EQ(wrapper->pending_va_buffers_.size(), 1u);
+      {
+        base::AutoLock auto_lock(*wrapper->va_lock_);
+        ScopedVABufferMapping mapping(wrapper->va_lock_, wrapper->va_display_,
+                                      wrapper->pending_va_buffers_.front());
+        ASSERT_TRUE(mapping.IsValid());
+
+        auto* const va_buffer =
+            reinterpret_cast<VAEncMiscParameterBuffer*>(mapping.data());
+        EXPECT_EQ(va_buffer->type, VAEncMiscParameterTypeQualityLevel);
+
+        auto* const enc_quality =
+            reinterpret_cast<VAEncMiscParameterBufferQualityLevel*>(
+                va_buffer->data);
+        EXPECT_EQ(enc_quality->quality_level, quality_level)
+            << vaProfileStr(va_profile) << " " << vaEntrypointStr(entrypoint);
+      }
+    }
+  }
+}
 }  // namespace media
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-
-  // PreSandboxInitialization() loads and opens the driver, queries its
-  // capabilities and fills in the VASupportedProfiles.
-  media::VaapiWrapper::PreSandboxInitialization();
+  {
+    // Enables/Disables features during PreSandboxInitialization(). We have to
+    // destruct ScopedFeatureList after it because base::TestSuite::Run()
+    // creates a ScopedFeatureList and multiple concurrent ScopedFeatureLists
+    // are not allowed.
+    auto scoped_feature_list = media::CreateScopedFeatureList();
+    // PreSandboxInitialization() loads and opens the driver, queries its
+    // capabilities and fills in the VASupportedProfiles.
+    media::VaapiWrapper::PreSandboxInitialization();
+  }
 
   return base::LaunchUnitTests(
       argc, argv,

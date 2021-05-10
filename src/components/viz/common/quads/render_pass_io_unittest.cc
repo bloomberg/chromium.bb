@@ -213,8 +213,8 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(10, 10, 300, 400), gfx::Rect(10, 10, 200, 400),
-                   false, 100, gfx::Size(600, 800), gfx::PointF(0.f, 0.f),
-                   gfx::PointF(1.f, 1.f));
+                   false, ResourceId(100), gfx::Size(600, 800),
+                   gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f));
       ++sqs_index;
       ++quad_count;
     }
@@ -240,7 +240,8 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->shared_quad_state_list.ElementAt(sqs_index),
           gfx::Rect(0, 0, 800, 600), gfx::Rect(10, 15, 780, 570), false,
           gfx::RectF(0.f, 0.f, 0.5f, 0.6f), gfx::RectF(0.1f, 0.2f, 0.7f, 0.8f),
-          gfx::Size(400, 200), gfx::Size(800, 400), 1u, 2u, 3u, 4u,
+          gfx::Size(400, 200), gfx::Size(800, 400), ResourceId(1u),
+          ResourceId(2u), ResourceId(3u), ResourceId(4u),
           gfx::ColorSpace::CreateCustom(primary_matrix, transfer_func), 3.f,
           1.1f, 12u, gfx::ProtectedVideoType::kClear, gfx::HDRMetadata());
       ++sqs_index;
@@ -253,9 +254,10 @@ TEST(RenderPassIOTest, QuadList) {
       float vertex_opacity[4] = {1.f, 0.5f, 0.6f, 1.f};
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(0, 0, 100, 50), gfx::Rect(0, 0, 100, 50), false,
-                   9u, gfx::Size(100, 50), false, gfx::PointF(0.f, 0.f),
-                   gfx::PointF(1.f, 1.f), SK_ColorBLUE, vertex_opacity, false,
-                   true, false, gfx::ProtectedVideoType::kHardwareProtected);
+                   ResourceId(9u), gfx::Size(100, 50), false,
+                   gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorBLUE,
+                   vertex_opacity, false, true, false,
+                   gfx::ProtectedVideoType::kHardwareProtected);
       ++sqs_index;
       ++quad_count;
     }
@@ -265,7 +267,7 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->CreateAndAppendDrawQuad<CompositorRenderPassDrawQuad>();
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(2, 3, 100, 50), gfx::Rect(2, 3, 100, 50), true,
-                   CompositorRenderPassId{198u}, 81u,
+                   CompositorRenderPassId{198u}, ResourceId(81u),
                    gfx::RectF(0.1f, 0.2f, 0.5f, 0.6f), gfx::Size(800, 600),
                    gfx::Vector2dF(1.1f, 0.9f), gfx::PointF(0.01f, 0.02f),
                    gfx::RectF(0.2f, 0.3f, 0.3f, 0.4f), true, 0.88f, true);
@@ -278,7 +280,7 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->CreateAndAppendDrawQuad<TileDrawQuad>();
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(0, 0, 256, 512), gfx::Rect(2, 2, 250, 500), true,
-                   512u, gfx::RectF(0.0f, 0.0f, 0.9f, 0.8f),
+                   ResourceId(512u), gfx::RectF(0.0f, 0.0f, 0.9f, 0.8f),
                    gfx::Size(256, 512), true, true, true);
       ++quad_count;
     }
@@ -317,18 +319,18 @@ TEST(RenderPassIOTest, CompositorRenderPassList) {
       CompositorRenderPassListFromDict(dict0.value(), &render_pass_list));
   base::Value dict1 = CompositorRenderPassListToDict(render_pass_list);
   // Since the test file doesn't contain the field
-  // 'can_use_backdrop_filter_cache' in its CompositorRenderPassDrawQuad, I'm
+  // 'intersects_damage_under' in its CompositorRenderPassDrawQuad, I'm
   // removing the field on dict1 for the exact comparison to work.
   base::Value* list = dict1.FindListKey("render_pass_list");
   for (size_t i = 0; i < list->GetList().size(); ++i) {
     base::Value* quad_list = list->GetList()[i].FindListKey("quad_list");
 
     for (size_t ii = 0; ii < quad_list->GetList().size(); ++ii) {
-      if (const base::Value* extra_value = quad_list->GetList()[ii].FindKey(
-              "can_use_backdrop_filter_cache")) {
+      if (const base::Value* extra_value =
+              quad_list->GetList()[ii].FindKey("intersects_damage_under")) {
         EXPECT_FALSE(extra_value->GetBool());
-        ASSERT_TRUE(quad_list->GetList()[ii].RemoveKey(
-            "can_use_backdrop_filter_cache"));
+        ASSERT_TRUE(
+            quad_list->GetList()[ii].RemoveKey("intersects_damage_under"));
       }
     }
   }

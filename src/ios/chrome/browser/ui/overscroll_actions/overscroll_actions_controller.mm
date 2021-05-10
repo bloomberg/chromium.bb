@@ -452,8 +452,12 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   self.scrollViewDragged = NO;
   // Content is now hidden behind toolbar, make sure that contentInset is
   // restored to initial value.
+  // If Overscroll actions are triggered and dismissed quickly, it is
+  // possible to be in a state where drag is enough to be in STARTED_PULLING
+  // or ACTION_READY state, but with no selectedAction.
   if (contentOffset.y >= 0 ||
-      self.overscrollState == OverscrollState::NO_PULL_STARTED) {
+      self.overscrollState == OverscrollState::NO_PULL_STARTED ||
+      self.overscrollActionView.selectedAction == OverscrollAction::NONE) {
     [self resetScrollViewTopContentInset];
   }
 
@@ -574,9 +578,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (BOOL)viewportAdjustsContentInset {
   if (_webViewProxy.shouldUseViewContentInset)
     return YES;
-  return ios::GetChromeBrowserProvider()
-      ->GetFullscreenProvider()
-      ->IsInitialized();
+  return fullscreen::features::ShouldUseSmoothScrolling();
 }
 
 - (void)recordMetricForTriggeredAction:(OverscrollAction)action {
@@ -767,11 +769,19 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
                  switch (self.overscrollState) {
                    case OverscrollState::NO_PULL_STARTED: {
                      [self.overscrollActionView removeFromSuperview];
-                     SetViewFrameHeight(self.overscrollActionView,
-                                        self.initialContentInset +
-                                            [UIApplication sharedApplication]
-                                                .statusBarFrame.size.height,
-                                        0);
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+                     CGRect statusBarFrame =
+                         [UIApplication sharedApplication].statusBarFrame;
+#else
+                     CGRect statusBarFrame =
+                         [self scrollView]
+                             .window.windowScene.statusBarManager
+                             .statusBarFrame;
+#endif
+                     SetViewFrameHeight(
+                         self.overscrollActionView,
+                         self.initialContentInset + statusBarFrame.size.height,
+                         0);
                      self.panPointScreenOrigin = CGPointZero;
                      [[NSNotificationCenter defaultCenter]
                          postNotificationName:kOverscrollActionsDidEnd

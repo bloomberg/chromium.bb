@@ -17,93 +17,78 @@
 #include <memory>
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using BlockStatementTest = testing::Test;
+using BlockStatementTest = TestHelper;
 
 TEST_F(BlockStatementTest, Creation) {
-  auto d = std::make_unique<DiscardStatement>();
-  auto* ptr = d.get();
+  auto* d = create<DiscardStatement>();
+  auto* ptr = d;
 
-  BlockStatement b;
-  b.append(std::move(d));
+  auto* b = create<BlockStatement>(StatementList{d});
 
-  ASSERT_EQ(b.size(), 1u);
-  EXPECT_EQ(b[0], ptr);
-}
-
-TEST_F(BlockStatementTest, Creation_WithInsert) {
-  auto s1 = std::make_unique<DiscardStatement>();
-  auto s2 = std::make_unique<DiscardStatement>();
-  auto s3 = std::make_unique<DiscardStatement>();
-  auto* p1 = s1.get();
-  auto* p2 = s2.get();
-  auto* p3 = s3.get();
-
-  BlockStatement b;
-  b.insert(0, std::move(s1));
-  b.insert(0, std::move(s2));
-  b.insert(1, std::move(s3));
-
-  // |b| should contain s2, s3, s1
-
-  ASSERT_EQ(b.size(), 3u);
-  EXPECT_EQ(b[0], p2);
-  EXPECT_EQ(b[1], p3);
-  EXPECT_EQ(b[2], p1);
+  ASSERT_EQ(b->size(), 1u);
+  EXPECT_EQ((*b)[0], ptr);
 }
 
 TEST_F(BlockStatementTest, Creation_WithSource) {
-  BlockStatement b(Source{Source::Location{20, 2}});
-  auto src = b.source();
+  auto* b = create<BlockStatement>(Source{Source::Location{20, 2}},
+                                   ast::StatementList{});
+  auto src = b->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(BlockStatementTest, IsBlock) {
-  BlockStatement b;
-  EXPECT_TRUE(b.IsBlock());
+  auto* b = create<BlockStatement>(ast::StatementList{});
+  EXPECT_TRUE(b->Is<BlockStatement>());
 }
 
 TEST_F(BlockStatementTest, IsValid) {
-  BlockStatement b;
-  b.append(std::make_unique<DiscardStatement>());
-  EXPECT_TRUE(b.IsValid());
+  auto* b = create<BlockStatement>(ast::StatementList{
+      create<DiscardStatement>(),
+  });
+  EXPECT_TRUE(b->IsValid());
 }
 
 TEST_F(BlockStatementTest, IsValid_Empty) {
-  BlockStatement b;
-  EXPECT_TRUE(b.IsValid());
+  auto* b = create<BlockStatement>(ast::StatementList{});
+  EXPECT_TRUE(b->IsValid());
 }
 
 TEST_F(BlockStatementTest, IsValid_NullBodyStatement) {
-  BlockStatement b;
-  b.append(std::make_unique<DiscardStatement>());
-  b.append(nullptr);
-  EXPECT_FALSE(b.IsValid());
+  auto* b = create<BlockStatement>(ast::StatementList{
+      create<DiscardStatement>(),
+      nullptr,
+  });
+
+  EXPECT_FALSE(b->IsValid());
 }
 
 TEST_F(BlockStatementTest, IsValid_InvalidBodyStatement) {
-  BlockStatement b;
-  b.append(std::make_unique<IfStatement>());
-  EXPECT_FALSE(b.IsValid());
+  auto* b = create<BlockStatement>(
+
+      ast::StatementList{
+          create<IfStatement>(nullptr, create<BlockStatement>(StatementList{}),
+                              ElseStatementList{}),
+      });
+  EXPECT_FALSE(b->IsValid());
 }
 
 TEST_F(BlockStatementTest, ToStr) {
-  BlockStatement b;
-  b.append(std::make_unique<DiscardStatement>());
+  auto* b = create<BlockStatement>(ast::StatementList{
+      create<DiscardStatement>(),
+  });
 
-  std::ostringstream out;
-  b.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Block{
-    Discard{}
-  }
+  EXPECT_EQ(str(b), R"(Block{
+  Discard{}
+}
 )");
 }
 

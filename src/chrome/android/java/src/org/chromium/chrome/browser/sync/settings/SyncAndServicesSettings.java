@@ -45,13 +45,13 @@ import org.chromium.chrome.browser.password_manager.settings.PasswordUIView;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
@@ -74,7 +74,13 @@ import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
- * Settings fragment to enable Sync and other services that communicate with Google.
+ * WARNING: This class will be REMOVED after MobileIdentityConsistency launches.
+ * SyncAndServicesAndSettings is a view in settings containing three sections: "User" (information
+ * about the signed-in account), "Sync" (entry point to ManageSyncSettings and toggle to
+ * enable/disable sync) and "Other Google services" (toggles controlling a variety of features
+ * employing Google services, such as search autocomplete). With the MobileIdentityConsistency
+ * feature, this view disappears and the "Sync" and "Google services" sections are split into
+ * separate views, accessible directly from top-level settings. The "User" section disappears.
  */
 public class SyncAndServicesSettings extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, Preference.OnPreferenceChangeListener,
@@ -124,8 +130,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
     private final PrefService mPrefService = UserPrefs.get(getProfile());
-    private final PrivacyPreferencesManager mPrivacyPrefManager =
-            PrivacyPreferencesManager.getInstance();
+    private final PrivacyPreferencesManagerImpl mPrivacyPrefManager =
+            PrivacyPreferencesManagerImpl.getInstance();
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
     private final SharedPreferencesManager mSharedPreferencesManager =
@@ -173,8 +179,6 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         mIsFromSigninScreen =
                 IntentUtils.safeGetBoolean(getArguments(), IS_FROM_SIGNIN_SCREEN, false);
 
-        mPrivacyPrefManager.migrateNetworkPredictionPreferences();
-
         getActivity().setTitle(R.string.prefs_sync_and_services);
         setHasOptionsMenu(true);
         if (mIsFromSigninScreen) {
@@ -188,7 +192,6 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         SettingsUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
-        mSigninPreference.setPersonalizedPromoEnabled(false);
         mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
         mManageYourGoogleAccount.setOnPreferenceClickListener(SyncSettingsUtils.toOnClickListener(
                 this, () -> SyncSettingsUtils.openGoogleMyAccount(getActivity())));
@@ -506,7 +509,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
                 return getString(R.string.sync_error_card_title);
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
-                return getString(R.string.sync_passwords_error_card_title);
+                return getString(R.string.password_sync_error_summary);
             default:
                 return getString(R.string.sync_error_card_title);
         }
@@ -700,7 +703,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
                 return mPrefService.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();
+                return PrivacyPreferencesManagerImpl.getInstance().isMetricsReportingManaged();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
                 return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(

@@ -32,7 +32,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LifetimeAssert;
@@ -227,7 +226,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         // if the API is used. See crbug.com/990646.
         // Disable refresh rate change on TV platforms, as it may cause black screen flicker due to
         // display mode changes.
-        mAllowChangeRefreshRate = BuildInfo.isAtLeastQ() && !isTv(context);
+        mAllowChangeRefreshRate = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !isTv(context);
 
         // Multiple refresh rate support is only available on M+.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) recomputeSupportedRefreshRates();
@@ -372,7 +371,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     @CalledByNative
     @Override
-    public final boolean hasPermission(String permission) {
+    public boolean hasPermission(String permission) {
         if (mPermissionDelegate != null) return mPermissionDelegate.hasPermission(permission);
 
         return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
@@ -394,7 +393,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      */
     @CalledByNative
     @Override
-    public final boolean canRequestPermission(String permission) {
+    public boolean canRequestPermission(String permission) {
         if (mPermissionDelegate != null) {
             return mPermissionDelegate.canRequestPermission(permission);
         }
@@ -413,7 +412,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * @return Whether the permission is revoked by policy and the user has no ability to change it.
      */
     @Override
-    public final boolean isPermissionRevokedByPolicy(String permission) {
+    public boolean isPermissionRevokedByPolicy(String permission) {
         if (mPermissionDelegate != null) {
             return mPermissionDelegate.isPermissionRevokedByPolicy(permission);
         }
@@ -431,7 +430,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * @param callback The callback to be notified whether the permissions were granted.
      */
     @Override
-    public final void requestPermissions(String[] permissions, PermissionCallback callback) {
+    public void requestPermissions(String[] permissions, PermissionCallback callback) {
         if (mPermissionDelegate != null) {
             mPermissionDelegate.requestPermissions(permissions, callback);
             return;
@@ -712,7 +711,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // gamut (on supported hardware and os). However it is important for embedders like WebView
     // which do not make the wide gamut decision to check this at run time.
     private boolean getWindowIsWideColorGamut() {
-        if (!BuildInfo.isAtLeastQ()) return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;
         Window window = getWindow();
         if (window == null) return false;
         return ApiHelperForOMR1.isWideColorGamut(window);
@@ -976,11 +975,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
         params.preferredDisplayModeId = preferredModeId;
         window.setAttributes(params);
-    }
-
-    @CalledByNative
-    private boolean applyDisableSurfaceControlWorkaround() {
-        return mDisplayAndroid.applyDisableSurfaceControlWorkaround();
     }
 
     @SuppressLint("NewApi")

@@ -4,13 +4,9 @@
 
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-import {TabSearchAppElement} from 'chrome://tab-search/app.js';
-import {ProfileTabs} from 'chrome://tab-search/tab_search.mojom-webui.js';
-import {TabSearchApiProxy, TabSearchApiProxyImpl} from 'chrome://tab-search/tab_search_api_proxy.js';
-import {TabSearchItem} from 'chrome://tab-search/tab_search_item.js';
-import {TabSearchSearchField} from 'chrome://tab-search/tab_search_search_field.js';
+import {ProfileData, TabSearchApiProxyImpl, TabSearchAppElement, TabSearchItem, TabSearchSearchField} from 'chrome://tab-search.top-chrome/tab_search.js';
 
-import {assertEquals, assertGT} from '../../chai_assert.js';
+import {assertEquals, assertGT, assertNotEquals} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.m.js';
 
 import {generateSampleDataFromSiteNames, sampleData, sampleSiteNames} from './tab_search_test_data.js';
@@ -26,12 +22,12 @@ suite('TabSearchAppFocusTest', () => {
   disableScrollIntoViewAnimations(TabSearchItem);
 
   /**
-   * @param {ProfileTabs} sampleData
+   * @param {ProfileData} sampleData
    * @param {Object=} loadTimeOverriddenData
    */
   async function setupTest(sampleData, loadTimeOverriddenData) {
     testProxy = new TestTabSearchApiProxy();
-    testProxy.setProfileTabs(sampleData);
+    testProxy.setProfileData(sampleData);
     TabSearchApiProxyImpl.instance_ = testProxy;
 
     initLoadTimeDataWithDefaults(loadTimeOverriddenData);
@@ -56,7 +52,7 @@ suite('TabSearchAppFocusTest', () => {
 
     const tabSearchItems = /** @type {!NodeList<!HTMLElement>} */
         (tabSearchApp.shadowRoot.querySelector('#tabsList')
-             .shadowRoot.querySelectorAll('tab-search-item'));
+             .querySelectorAll('tab-search-item'));
 
     tabSearchItems[0].focus();
     // Once an item is focused, arrow keys should change focus too.
@@ -90,7 +86,7 @@ suite('TabSearchAppFocusTest', () => {
 
     const tabSearchItem = /** @type {!HTMLElement} */
         (tabSearchApp.shadowRoot.querySelector('#tabsList')
-             .shadowRoot.querySelector('tab-search-item'));
+             .querySelector('tab-search-item'));
     tabSearchItem.focus();
 
     keyDownOn(tabSearchItem, 0, [], 'Enter');
@@ -107,14 +103,13 @@ suite('TabSearchAppFocusTest', () => {
     await setupTest(generateSampleDataFromSiteNames(sampleSiteNames()));
 
     const tabsDiv = /** @type {!HTMLElement} */
-        (tabSearchApp.shadowRoot.querySelector('#tabsList')
-             .shadowRoot.querySelector('#container'));
+        (tabSearchApp.shadowRoot.querySelector('#tabsList'));
     // Assert that the tabs are in a overflowing state.
     assertGT(tabsDiv.scrollHeight, tabsDiv.clientHeight);
 
     const tabItems = /** @type {!NodeList<HTMLElement>} */
         (tabSearchApp.shadowRoot.querySelector('#tabsList')
-             .shadowRoot.querySelectorAll('tab-search-item'));
+             .querySelectorAll('tab-search-item'));
     for (let i = 0; i < tabItems.length; i++) {
       tabItems[i].focus();
 
@@ -122,4 +117,39 @@ suite('TabSearchAppFocusTest', () => {
       assertTabItemAndNeighborsInViewBounds(tabsDiv, tabItems, i);
     }
   });
+
+  test('Search field input element focused when revealed ', async () => {
+    await setupTest(sampleData());
+
+    // Set the current focus to the search input element.
+    const searchField = /** @type {!TabSearchSearchField} */
+        (tabSearchApp.shadowRoot.querySelector('#searchField'));
+    const searchInput = /** @type {!HTMLInputElement} */
+        (searchField.shadowRoot.querySelector('#searchInput'));
+    searchInput.focus();
+    assertEquals(searchInput, getDeepActiveElement());
+
+    // Focus an item in the list, search input should not be focused.
+    const tabSearchItem = /** @type {!HTMLElement} */ (
+        tabSearchApp.shadowRoot.querySelector('#tabsList')
+            .querySelector('tab-search-item'));
+    tabSearchItem.focus();
+    assertEquals(tabSearchItem, getDeepActiveElement());
+    assertNotEquals(searchInput, getDeepActiveElement());
+
+    // When hidden visibilitychange should revert focus to the search input.
+    Object.defineProperty(
+        document, 'visibilityState', {value: 'hidden', writable: true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushTasks();
+    assertEquals(searchInput, getDeepActiveElement());
+
+    // When visible the focused element should still be the search input.
+    Object.defineProperty(
+        document, 'visibilityState', {value: 'visible', writable: true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushTasks();
+    assertEquals(searchInput, getDeepActiveElement());
+  });
+
 });

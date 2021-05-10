@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -19,7 +19,36 @@ namespace {
 
 const std::vector<SearchConcept>& GetKerberosSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(fsandrade): add Kerberos search tags here.
+      {IDS_OS_SETTINGS_TAG_KERBEROS_SECTION,
+       mojom::kKerberosSectionPath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kKerberos}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kKerberosAccountsV2}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ADD,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddKerberosTicketV2}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_REMOVE,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveKerberosTicketV2}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ACTIVE,
+       mojom::kKerberosAccountsV2SubpagePath,
+       mojom::SearchResultIcon::kAuthKey,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSetActiveKerberosTicketV2}},
   });
   return *tags;
 }
@@ -53,8 +82,8 @@ KerberosSection::~KerberosSection() {
 }
 
 void KerberosSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  // TODO(fsandrade): add Kerberos section title to corresponding UI element,
-  // when it's created.
+  html_source->AddLocalizedString("kerberosPageTitle",
+                                  IDS_OS_SETTINGS_KERBEROS);
 
   KerberosAccountsHandler::AddLoadTimeKerberosStrings(
       html_source, kerberos_credentials_manager_);

@@ -42,9 +42,6 @@ static constexpr ::cast::channel::CastMessage_ProtocolVersion
 
 // JSON message key strings.
 static constexpr char kMessageKeyType[] = "type";
-static constexpr char kMessageKeyConnType[] = "connType";
-static constexpr char kMessageKeyUserAgent[] = "userAgent";
-static constexpr char kMessageKeySenderInfo[] = "senderInfo";
 static constexpr char kMessageKeyProtocolVersion[] = "protocolVersion";
 static constexpr char kMessageKeyProtocolVersionList[] = "protocolVersionList";
 static constexpr char kMessageKeyReasonCode[] = "reasonCode";
@@ -60,6 +57,17 @@ static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
 static constexpr char kMessageValueAppAvailable[] = "APP_AVAILABLE";
 static constexpr char kMessageValueAppUnavailable[] = "APP_UNAVAILABLE";
+
+// JSON message key strings specific to CONNECT messages.
+static constexpr char kMessageKeyBrowserVersion[] = "browserVersion";
+static constexpr char kMessageKeyConnType[] = "connType";
+static constexpr char kMessageKeyConnectionType[] = "connectionType";
+static constexpr char kMessageKeyUserAgent[] = "userAgent";
+static constexpr char kMessageKeyOrigin[] = "origin";
+static constexpr char kMessageKeyPlatform[] = "platform";
+static constexpr char kMessageKeySdkType[] = "skdType";
+static constexpr char kMessageKeySenderInfo[] = "senderInfo";
+static constexpr char kMessageKeyVersion[] = "version";
 
 // JSON message key strings specific to application control messages.
 static constexpr char kMessageKeyAvailability[] = "availability";

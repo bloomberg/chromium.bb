@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -22,7 +21,6 @@ const char kTokenHandleLastCheckedPref[] = "TokenHandleLastChecked";
 
 const char kHandleStatusValid[] = "valid";
 const char kHandleStatusInvalid[] = "invalid";
-const char* const kDefaultHandleStatus = kHandleStatusValid;
 
 constexpr int kMaxRetries = 3;
 
@@ -32,7 +30,7 @@ const char* g_invalid_token_for_testing = nullptr;
 
 bool MaybeReturnCachedStatus(
     const AccountId& account_id,
-    const TokenHandleUtil::TokenValidationCallback& callback) {
+    TokenHandleUtil::TokenValidationCallback* callback) {
   std::string saved_status;
   if (!user_manager::known_user::GetStringPref(
           account_id, kTokenHandleStatusPref, &saved_status)) {
@@ -40,12 +38,12 @@ bool MaybeReturnCachedStatus(
   }
 
   if (saved_status == kHandleStatusValid) {
-    callback.Run(account_id, TokenHandleUtil::VALID);
+    std::move(*callback).Run(account_id, TokenHandleUtil::VALID);
     return true;
   }
 
   if (saved_status == kHandleStatusInvalid) {
-    callback.Run(account_id, TokenHandleUtil::INVALID);
+    std::move(*callback).Run(account_id, TokenHandleUtil::INVALID);
     return true;
   }
 
@@ -53,9 +51,26 @@ bool MaybeReturnCachedStatus(
   return false;
 }
 
-void OnStatusChecked(const TokenHandleUtil::TokenValidationCallback& callback,
+void OnStatusChecked(TokenHandleUtil::TokenValidationCallback callback,
+                     const std::string& token,
                      const AccountId& account_id,
                      TokenHandleUtil::TokenHandleStatus status) {
+  // Check that the token that was checked matches the latest known token.
+  // (This may happen if token check took too long, and user went through
+  // online sign-in and obtained new token during that time.
+  const base::DictionaryValue* dict = nullptr;
+  std::string latest_token;
+  if (user_manager::known_user::FindPrefs(account_id, &dict)) {
+    auto* latest_token = dict->FindStringPath(kTokenHandlePref);
+    if (latest_token) {
+      if (token != *latest_token) {
+        LOG(WARNING) << "Outdated token, assuming status is unknown";
+        std::move(callback).Run(account_id, TokenHandleUtil::UNKNOWN);
+        return;
+      }
+    }
+  }
+
   if (status != TokenHandleUtil::UNKNOWN) {
     // Update last checked timestamp.
     user_manager::known_user::SetPref(account_id, kTokenHandleLastCheckedPref,
@@ -66,7 +81,17 @@ void OnStatusChecked(const TokenHandleUtil::TokenValidationCallback& callback,
     user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
                                             kHandleStatusInvalid);
   }
-  callback.Run(account_id, status);
+  std::move(callback).Run(account_id, status);
+}
+
+// Checks if token handle is explicitly marked as INVALID for |account_id|.
+bool HasTokenStatusInvalid(const AccountId& account_id) {
+  const base::DictionaryValue* dict = nullptr;
+  std::string token;
+  if (!user_manager::known_user::FindPrefs(account_id, &dict))
+    return false;
+  auto* status = dict->FindStringPath(kTokenHandleStatusPref);
+  return status && *status == kHandleStatusInvalid;
 }
 
 }  // namespace
@@ -78,12 +103,10 @@ TokenHandleUtil::~TokenHandleUtil() {}
 // static
 bool TokenHandleUtil::HasToken(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
-  std::string token;
   if (!user_manager::known_user::FindPrefs(account_id, &dict))
     return false;
-  if (!dict->GetString(kTokenHandlePref, &token))
-    return false;
-  return !token.empty();
+  auto* token = dict->FindStringPath(kTokenHandlePref);
+  return token && !token->empty();
 }
 
 // static
@@ -104,49 +127,47 @@ bool TokenHandleUtil::IsRecentlyChecked(const AccountId& account_id) {
 
 // static
 bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
-  const base::DictionaryValue* dict = nullptr;
-  std::string token;
-  if (!user_manager::known_user::FindPrefs(account_id, &dict))
-    return true;
-  if (!dict->GetString(kTokenHandlePref, &token))
-    return true;
-  if (token.empty())
-    return true;
-  std::string status(kDefaultHandleStatus);
-  dict->GetString(kTokenHandleStatusPref, &status);
-  return kHandleStatusInvalid == status;
+  return !HasToken(account_id) || HasTokenStatusInvalid(account_id);
 }
 
 // static
 void TokenHandleUtil::CheckToken(
     const AccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const TokenValidationCallback& callback) {
+    TokenValidationCallback callback) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
   if (!user_manager::known_user::FindPrefs(account_id, &dict)) {
-    callback.Run(account_id, UNKNOWN);
+    std::move(callback).Run(account_id, UNKNOWN);
     return;
   }
   if (!dict->GetString(kTokenHandlePref, &token)) {
-    callback.Run(account_id, UNKNOWN);
+    std::move(callback).Run(account_id, UNKNOWN);
     return;
   }
 
   if (g_invalid_token_for_testing && g_invalid_token_for_testing == token) {
-    callback.Run(account_id, INVALID);
+    std::move(callback).Run(account_id, INVALID);
     return;
   }
 
   if (IsRecentlyChecked(account_id) &&
-      MaybeReturnCachedStatus(account_id, callback)) {
+      MaybeReturnCachedStatus(account_id, &callback)) {
+    return;
+  }
+
+  // If token is explicitly marked as invalid, it does not make sense to check
+  // it again.
+  if (HasTokenStatusInvalid(account_id)) {
+    std::move(callback).Run(account_id, INVALID);
     return;
   }
 
   // Constructor starts validation.
   validation_delegates_[token] = std::make_unique<TokenDelegate>(
       weak_factory_.GetWeakPtr(), account_id, token,
-      std::move(url_loader_factory), base::Bind(&OnStatusChecked, callback));
+      std::move(url_loader_factory),
+      base::BindOnce(&OnStatusChecked, std::move(callback), token));
 }
 
 // static
@@ -180,12 +201,12 @@ TokenHandleUtil::TokenDelegate::TokenDelegate(
     const AccountId& account_id,
     const std::string& token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const TokenValidationCallback& callback)
+    TokenValidationCallback callback)
     : owner_(owner),
       account_id_(account_id),
       token_(token),
       tokeninfo_response_start_time_(base::TimeTicks::Now()),
-      callback_(callback),
+      callback_(std::move(callback)),
       gaia_client_(std::move(url_loader_factory)) {
   gaia_client_.GetTokenHandleInfo(token_, kMaxRetries, this);
 }
@@ -193,7 +214,7 @@ TokenHandleUtil::TokenDelegate::TokenDelegate(
 TokenHandleUtil::TokenDelegate::~TokenDelegate() {}
 
 void TokenHandleUtil::TokenDelegate::OnOAuthError() {
-  callback_.Run(account_id_, INVALID);
+  std::move(callback_).Run(account_id_, INVALID);
   NotifyDone();
 }
 
@@ -204,7 +225,7 @@ void TokenHandleUtil::TokenDelegate::NotifyDone() {
 }
 
 void TokenHandleUtil::TokenDelegate::OnNetworkError(int response_code) {
-  callback_.Run(account_id_, UNKNOWN);
+  std::move(callback_).Run(account_id_, UNKNOWN);
   NotifyDone();
 }
 
@@ -220,6 +241,6 @@ void TokenHandleUtil::TokenDelegate::OnGetTokenInfoResponse(
   const base::TimeDelta duration =
       base::TimeTicks::Now() - tokeninfo_response_start_time_;
   UMA_HISTOGRAM_TIMES("Login.TokenCheckResponseTime", duration);
-  callback_.Run(account_id_, outcome);
+  std::move(callback_).Run(account_id_, outcome);
   NotifyDone();
 }

@@ -72,8 +72,8 @@ target_sources(dawn_native PRIVATE
     "ComputePipeline.h"
     "CopyTextureForBrowserHelper.cpp"
     "CopyTextureForBrowserHelper.h"
-    "CreateReadyPipelineTracker.cpp"
-    "CreateReadyPipelineTracker.h"
+    "CreatePipelineAsyncTracker.cpp"
+    "CreatePipelineAsyncTracker.h"
     "Device.cpp"
     "Device.h"
     "DynamicUploader.cpp"
@@ -90,10 +90,10 @@ target_sources(dawn_native PRIVATE
     "ErrorInjector.h"
     "ErrorScope.cpp"
     "ErrorScope.h"
-    "ErrorScopeTracker.cpp"
-    "ErrorScopeTracker.h"
     "Extensions.cpp"
     "Extensions.h"
+    "ObjectContentHasher.cpp"
+    "ObjectContentHasher.h"
     "Fence.cpp"
     "Fence.h"
     "Format.cpp"
@@ -108,6 +108,8 @@ target_sources(dawn_native PRIVATE
     "PassResourceUsage.h"
     "PassResourceUsageTracker.cpp"
     "PassResourceUsageTracker.h"
+    "PersistentCache.cpp"
+    "PersistentCache.h"
     "PerStage.cpp"
     "PerStage.h"
     "Pipeline.cpp"
@@ -118,6 +120,8 @@ target_sources(dawn_native PRIVATE
     "PooledResourceMemoryAllocator.h"
     "ProgrammablePassEncoder.cpp"
     "ProgrammablePassEncoder.h"
+    "QueryHelper.cpp"
+    "QueryHelper.h"
     "QuerySet.cpp"
     "QuerySet.h"
     "Queue.cpp"
@@ -146,6 +150,9 @@ target_sources(dawn_native PRIVATE
     "SpirvUtils.h"
     "StagingBuffer.cpp"
     "StagingBuffer.h"
+    "Subresource.cpp"
+    "Subresource.h"
+    "SubresourceStorage.h"
     "Surface.cpp"
     "Surface.h"
     "SwapChain.cpp"
@@ -172,6 +179,7 @@ target_link_libraries(dawn_native
 if (DAWN_USE_X11)
     find_package(X11 REQUIRED)
     target_link_libraries(dawn_native PRIVATE ${X11_LIBRARIES})
+    target_include_directories(dawn_native PRIVATE ${X11_INCLUDE_DIR})
 endif()
 
 if (WIN32)
@@ -356,6 +364,8 @@ if (DAWN_ENABLE_OPENGL)
         "opengl/NativeSwapChainImplGL.h"
         "opengl/OpenGLFunctions.cpp"
         "opengl/OpenGLFunctions.h"
+        "opengl/OpenGLVersion.cpp"
+        "opengl/OpenGLVersion.h"
         "opengl/PersistentPipelineStateGL.cpp"
         "opengl/PersistentPipelineStateGL.h"
         "opengl/PipelineGL.cpp"

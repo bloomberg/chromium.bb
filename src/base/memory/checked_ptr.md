@@ -128,40 +128,40 @@ Due to implementation difficulties,
 This means that the following code will not compile:
 
 ```cpp
-    void GetSomeClassPtr(SomeClass** out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(SomeClass** out_arg) {
+  *out_arg = ...;
+}
 
-    struct MyStruct {
-      void Example() {
-        GetSomeClassPtr(&checked_ptr_);  // <- won't compile
-      }
+struct MyStruct {
+  void Example() {
+    GetSomeClassPtr(&checked_ptr_);  // <- won't compile
+  }
 
-      CheckedPtr<SomeClass> checked_ptr_;
-    };
+  CheckedPtr<SomeClass> checked_ptr_;
+};
 ```
 
 The typical fix is to change the type of the out argument:
 
 ```cpp
-    void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
+  *out_arg = ...;
+}
 ```
 
 If `GetSomeClassPtr` can be invoked _both_ with raw pointers
 and with `CheckedPtr`, then both overloads might be needed:
 
 ```cpp
-    void GetSomeClassPtr(SomeClass** out_arg) {
-      *out_arg = ...;
-    }
+void GetSomeClassPtr(SomeClass** out_arg) {
+  *out_arg = ...;
+}
 
-    void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
-      SomeClass* tmp = **out_arg;
-      GetSomeClassPtr(&tmp);
-      *out_arg = tmp;
-    }
+void GetSomeClassPtr(CheckedPtr<SomeClass>* out_arg) {
+  SomeClass* tmp = **out_arg;
+  GetSomeClassPtr(&tmp);
+  *out_arg = tmp;
+}
 ```
 
 #### Global scope
@@ -209,6 +209,105 @@ field 'checked_ptr' has a non-trivial destructor
 
 
 ### Runtime errors
+
+#### Assignment via reinterpret_cast
+
+`CheckedPtr` maintains an internal ref-count associated with the piece of memory
+that it points to (see the `PartitionRefCount` class).  The assignment operator
+of `CheckedPtr` takes care to update the ref-count as needed, but the ref-count
+may become unbalanced if the `CheckedPtr` value is assigned to without going
+through the assignment operator.  An unbalanced ref-count may lead to crashes or
+memory leaks.
+
+One way to execute such an incorrect assignment is `reinterpret_cast` of
+a pointer to a `CheckedPtr`.  For example, see https://crbug.com/1154799
+where the `reintepret_cast` is/was used in the `Extract` method
+[here](https://source.chromium.org/chromium/chromium/src/+/master:device/fido/cbor_extract.h;l=318;drc=16f9768803e17c90901adce97b3153cfd39fdde2)).
+Simplified example:
+
+```cpp
+CheckedPtr<int> checked_int_ptr;
+int** ptr_to_raw_int_ptr = reinterpret_cast<int**>(&checked_int_ptr);
+
+// Incorrect code: the assignment below won't update the ref-count internally
+// maintained by CheckedPtr.
+*ptr_to_raw_int_ptr = new int(123);
+```
+
+Another way is to `reinterpret_cast` a struct containing `CheckedPtr` fields.
+For example, see https://crbug.com/1165613#c5 where `reinterpret_cast` was
+used to treat a `buffer` of data as `FunctionInfo` struct (where
+`interceptor_address` field might be a `CheckedPtr`). Simplified example:
+
+```cpp
+struct MyStruct {
+  CheckedPtr<int> checked_int_ptr_;
+};
+
+void foo(void* buffer) {
+  // During the assignment, parts of `buffer` will be interpreted as an
+  // already initialized/constructed `CheckedPtr<int>` field.
+  MyStruct* my_struct_ptr = reinterpret_cast<MyStruct*>(buffer);
+
+  // The assignment below will try to decrement the ref-count of the old
+  // pointee.  This may crash if the old pointer is pointing to a
+  // PartitionAlloc-managed allocation that has a ref-count already set to 0.
+  my_struct_ptr->checked_int_ptr_ = nullptr;
+}
+```
+
+#### Fields order leading to dereferencing a destructed CheckedPtr
+
+Fields are destructed in the reverse order of their declarations:
+
+```cpp
+    struct S {
+      Bar bar_;  // Bar is destructed last.
+      CheckedPtr<Foo> foo_ptr_;  // CheckedPtr (not Foo) is destructed first.
+    };
+```
+
+If destructor of `Bar` has a pointer to `S`, then it may try to dereference
+`s->foo_ptr_` after `CheckedPtr` has been already destructed.
+In practice this will lead to a null dereference and a crash
+(e.g. see https://crbug.com/1157988).
+
+Note that this code pattern would have resulted in an Undefined Behavior,
+even if `foo_ptr_` was a raw `Foo*` pointer (see the
+[memory-safete-dev@ discussion](https://groups.google.com/a/chromium.org/g/memory-safety-dev/c/3sEmSnFc61I/m/Ng6PyqDiAAAJ)
+for more details).
+
+Possible solutions (in no particular order):
+- Declare the `bar_` field as the very last field.
+- Declare the `foo_` field (and other POD or raw-pointer-like fields)
+  before any other fields.
+- Avoid accessing `S` from the destructor of `Bar`
+  (and in general, avoid doing significant work from destructors).
+
+#### Non-PA allocation address space reuse
+
+An address goes from the "outside GigaCage" state to "inside GigaCage" while a `CheckedPtr` is pointing at it.
+
+```cpp
+  CheckedPtr<void> checked_ptr = mmap([...]);
+  munmap(checked_ptr); // must be safe to keep checked_ptr alive since it's not going to be dereferenced
+  void* ptr = allocator.root()->Alloc(16, ""); // PA creates a new superpage, which is by coincidence around the address checked_ptr points to
+  checked_ptr = nullptr;
+```
+
+When this happens, it is like we skipped an `AddRef()` and `Release()` may decrement a non-existent ref count field. There is not enough address space to avoid the reuse on 32-bit platforms. In theory, we could store whether `CheckedPtr` pointed to a non-PA allocation during initialization and, therefore, should act like a no-op pointer, but we don't have a single spare bit in 32-bit pointers.
+
+#### Past-the-end pointers with non-PA allocations
+
+If we increment a `CheckedPtr` pointing at a non-PA allocation until it points past the end of the allocation, that pointer may happen to be pointing at the beginning of a PA superpage. Advancing the pointer through `operator+=()` assumes that the pointer stays within an allocation. So when this happens, it is as if we skipped an `AddRef()`, and `Release()` may decrement a non-existent ref count field.
+
+#### Pointers to address in another process
+
+If `CheckedPtr` is used to store an address in another process. The same address could be used in PA for the current process. Resulting in CheckedPtr trying to increment the ref count that doesn't exist.
+
+`sandbox::GetProcessBaseAddress()` was an example of a function that returns an address in another process as `void*`, resulting in this issue.
+
+#### Other
 
 TODO(bartekn): Document runtime errors encountered by BackupRefPtr
 (they are more rare than for CheckedPtr2,

@@ -68,8 +68,7 @@ class ThumbnailCache : ThumbnailDelegate {
   void UpdateVisibleIds(const TabIdList& priority, TabId primary_tab_id);
   void DecompressThumbnailFromFile(
       TabId tab_id,
-      const base::Callback<void(bool, const SkBitmap&)>&
-          post_decompress_callback);
+      base::OnceCallback<void(bool, const SkBitmap&)> post_decompress_callback);
 
   // Called when resident textures were evicted, which requires paging
   // in bitmaps.
@@ -109,7 +108,7 @@ class ThumbnailCache : ThumbnailDelegate {
                                      std::vector<uint8_t> compressed_data);
   void SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap);
   void ForkToSaveAsJpeg(
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      base::OnceCallback<void(bool, const SkBitmap&)> callback,
       int tab_id,
       bool result,
       const SkBitmap& bitmap);
@@ -125,35 +124,34 @@ class ThumbnailCache : ThumbnailDelegate {
                         sk_sp<SkPixelRef> compressed_data,
                         float scale,
                         const gfx::Size& content_size,
-                        const base::Callback<void()>& post_write_task);
+                        base::OnceClosure post_write_task);
   static void WriteJpegTask(TabId tab_id,
                             std::vector<uint8_t> compressed_data,
-                            const base::Callback<void()>& post_write_task);
+                            base::OnceClosure post_write_task);
   void PostWriteTask();
   static void CompressionTask(
       SkBitmap raw_data,
       gfx::Size encoded_size,
-      const base::Callback<void(sk_sp<SkPixelRef>, const gfx::Size&)>&
+      base::OnceCallback<void(sk_sp<SkPixelRef>, const gfx::Size&)>
           post_compression_task);
   static void JpegProcessingTask(
       double jpeg_aspect_ratio,
       SkBitmap bitmap,
-      const base::Callback<void(std::vector<uint8_t>)>& post_processing_task);
+      base::OnceCallback<void(std::vector<uint8_t>)> post_processing_task);
   void PostCompressionTask(TabId tab_id,
                            const base::Time& time_stamp,
                            float scale,
                            sk_sp<SkPixelRef> compressed_data,
                            const gfx::Size& content_size);
   static void DecompressionTask(
-      const base::Callback<void(bool, const SkBitmap&)>&
-          post_decompress_callback,
+      base::OnceCallback<void(bool, const SkBitmap&)> post_decompress_callback,
       sk_sp<SkPixelRef> compressed_data,
       float scale,
       const gfx::Size& encoded_size);
   static void ReadTask(
       bool decompress,
       TabId tab_id,
-      const base::Callback<void(sk_sp<SkPixelRef>, float, const gfx::Size&)>&
+      base::OnceCallback<void(sk_sp<SkPixelRef>, float, const gfx::Size&)>
           post_read_task);
   void PostReadTask(TabId tab_id,
                     sk_sp<SkPixelRef> compressed_data,

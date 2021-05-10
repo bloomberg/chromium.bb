@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/crosapi/browser_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
@@ -18,10 +20,10 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -33,7 +35,6 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/window.h"
-#include "ui/base/base_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
@@ -83,6 +84,7 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
   // Crostini shouldn't need to know about ARC app windows.
   if (wm::GetTransientParent(window) ||
       arc::GetWindowTaskId(window) != arc::kNoTaskId ||
+      crosapi::browser_util::IsLacrosWindow(window) ||
       plugin_vm::IsPluginVmAppWindow(window)) {
     return;
   }
@@ -164,9 +166,7 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
 
 void AppServiceAppWindowCrostiniTracker::OnWindowDestroying(
     aura::Window* window) {
-  base::EraseIf(activation_permissions_, [&window](const auto& element) {
-    return element.first == window;
-  });
+  activation_permissions_.erase(window);
 }
 
 void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
@@ -175,6 +175,8 @@ void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
   crostini_app_display_.Register(app_id, display_id);
   // Remove the old permissions and add a permission for every window the app
   // currently has open.
+  for (aura::Window* window : activation_permissions_)
+    exo::RevokePermissionToActivate(window);
   activation_permissions_.clear();
   ash::ShelfModel* model = app_service_controller_->owner()->shelf_model();
   int index = model->ItemIndexByAppID(app_id);
@@ -189,26 +191,20 @@ void AppServiceAppWindowCrostiniTracker::OnAppLaunchRequested(
   // necessary.
   if (!launcher_item_controller)
     return;
-  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
-    activation_permissions_.emplace(
-        app_window->GetNativeWindow(),
-        exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
-                                       kSelfActivationTimeout));
+  for (AppWindowBase* app_window : launcher_item_controller->windows()) {
+    exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
+                                   kSelfActivationTimeout);
+    activation_permissions_.insert(app_window->GetNativeWindow());
   }
 }
 
 std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(
     aura::Window* window) const {
-  // Only handle the app associated with the primary user.
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(
-          app_service_controller_->owner()->profile())) {
-    return std::string();
-  }
-
   // Transient windows are set up after window init, so remove them here.
   // Crostini shouldn't need to know about ARC app windows.
   if (wm::GetTransientParent(window) ||
       arc::GetWindowTaskId(window) != arc::kNoTaskId ||
+      crosapi::browser_util::IsLacrosWindow(window) ||
       plugin_vm::IsPluginVmAppWindow(window)) {
     return std::string();
   }

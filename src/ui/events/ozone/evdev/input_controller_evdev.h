@@ -24,7 +24,8 @@ class MouseButtonMapEvdev;
 class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
  public:
   InputControllerEvdev(KeyboardEvdev* keyboard,
-                       MouseButtonMapEvdev* button_map);
+                       MouseButtonMapEvdev* mouse_button_map,
+                       MouseButtonMapEvdev* pointing_stick_button_map);
   ~InputControllerEvdev() override;
 
   // Initialize device factory. This would be in the constructor if it was
@@ -67,6 +68,9 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void SuspendMouseAcceleration() override;
   void EndMouseAccelerationSuspension() override;
   void SetMouseScrollAcceleration(bool enabled) override;
+  void SetPointingStickSensitivity(int value) override;
+  void SetPointingStickPrimaryButtonRight(bool right) override;
+  void SetPointingStickAcceleration(bool enabled) override;
   void SetTouchpadAcceleration(bool enabled) override;
   void SetTouchpadScrollAcceleration(bool enabled) override;
   void SetTapToClickPaused(bool state) override;
@@ -87,6 +91,15 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void StopVibration(int id) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InputControllerEvdevTest, AccelerationSuspension);
+  FRIEND_TEST_ALL_PREFIXES(InputControllerEvdevTest,
+                           AccelerationChangeDuringSuspension);
+
+  struct StoredAccelerationSettings {
+    bool mouse = false;
+    bool pointing_stick = false;
+  };
+
   // Post task to update settings.
   void ScheduleUpdateDeviceSettings();
 
@@ -96,15 +109,17 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   // Send caps lock update to input_device_factory_.
   void UpdateCapsLockLed();
 
+  // Indicates whether the mouse acceleration is turned off for PointerLock.
+  bool is_mouse_acceleration_suspended() {
+    return stored_acceleration_settings_.get() != nullptr;
+  }
+
   // Configuration that needs to be passed on to InputDeviceFactory.
   InputDeviceSettingsEvdev input_device_settings_;
 
-  // Indicates when the mouse acceleration is turned off for PointerLock.
-  bool mouse_acceleration_suspended_ = false;
-  // Holds mouse acceleration setting while suspended.
-  // Should only be considered a valid setting while
-  // |mouse_acceleration_suspended| is true.
-  bool stored_mouse_acceleration_setting_ = false;
+  // Holds acceleration settings while suspended. Should only be considered
+  // valid while |mouse_acceleration_suspended| is true.
+  std::unique_ptr<StoredAccelerationSettings> stored_acceleration_settings_;
 
   // Task to update config from input_device_settings_ is pending.
   bool settings_update_pending_ = false;
@@ -116,7 +131,10 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   KeyboardEvdev* const keyboard_;
 
   // Mouse button map.
-  MouseButtonMapEvdev* const button_map_;
+  MouseButtonMapEvdev* const mouse_button_map_;
+
+  // Pointing stick button map.
+  MouseButtonMapEvdev* const pointing_stick_button_map_;
 
   // Device presence.
   bool has_mouse_ = false;

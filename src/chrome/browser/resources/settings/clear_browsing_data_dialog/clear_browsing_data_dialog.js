@@ -22,6 +22,7 @@ import '../settings_shared_css.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.m.js';
@@ -31,6 +32,19 @@ import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
 import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_browser_proxy.js';
+
+/**
+ * InstalledAppsDialogActions enum.
+ * These values are persisted to logs and should not be renumbered or
+ * re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const InstalledAppsDialogActions = {
+  CLOSE: 0,
+  CANCEL_BUTTON: 1,
+  CLEAR_BUTTON: 2,
+};
 
 /**
  * @param {!CrDialogElement} dialog the dialog to close
@@ -123,6 +137,12 @@ Polymer({
     },
 
     /** @private */
+    clearingDataAlertString_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
     clearButtonDisabled_: {
       type: Boolean,
       value: false,
@@ -194,15 +214,6 @@ Polymer({
           'computeHasOtherError_(syncStatus, isSyncPaused_, hasPassphraseError_)',
     },
 
-    /**
-     * Time in ms, when the dialog was opened.
-     * @private
-     */
-    dialogOpenedTime_: {
-      type: Number,
-      value: 0,
-    },
-
     /** @private {Array<string>} */
     tabsNames_: {
       type: Array,
@@ -254,7 +265,6 @@ Polymer({
   /** @override */
   attached() {
     this.browserProxy_ = ClearBrowsingDataBrowserProxyImpl.getInstance();
-    this.dialogOpenedTime_ = Date.now();
     this.browserProxy_.initialize().then(() => {
       this.$.clearBrowsingDataDialog.showModal();
     });
@@ -304,7 +314,6 @@ Polymer({
   currentRouteChanged(currentRoute) {
     if (currentRoute === routes.CLEAR_BROWSER_DATA) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_DialogCreated');
-      this.dialogOpenedTime_ = Date.now();
     }
   },
 
@@ -446,6 +455,7 @@ Polymer({
    */
   clearBrowsingData_: async function() {
     this.clearingInProgress_ = true;
+    this.clearingDataAlertString_ = loadTimeData.getString('clearingData');
     const tab = this.$.tabs.selectedItem;
     const dataTypes = this.getSelectedDataTypes_(tab);
     const timePeriod = tab.querySelector('.time-range-select').pref.value;
@@ -459,11 +469,12 @@ Polymer({
     this.shadowRoot.querySelectorAll('settings-checkbox[no-set-pref]')
         .forEach(checkbox => checkbox.sendPrefChange());
 
-    this.recordInstalledAppsInteractions_();
     const {showHistoryNotice, showPasswordsNotice} =
         await this.browserProxy_.clearBrowsingData(
             dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;
+    IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {text: loadTimeData.getString('clearedData')});
     this.showHistoryDeletionDialog_ = showHistoryNotice;
     // If both the history notice and the passwords notice should be shown, show
     // the history notice first, and then show the passwords notice once the
@@ -472,9 +483,6 @@ Polymer({
         showPasswordsNotice && !showHistoryNotice;
     this.showPasswordsDeletionDialogLater_ =
         showPasswordsNotice && showHistoryNotice;
-    chrome.metricsPrivate.recordMediumTime(
-        'History.ClearBrowsingData.TimeSpentInDialog',
-        Date.now() - this.dialogOpenedTime_);
 
     // Close the clear browsing data or installed apps dialog if they are open.
     const isLastDialog = !showHistoryNotice && !showPasswordsNotice;
@@ -619,6 +627,21 @@ Polymer({
 
   /** @private */
   hideInstalledApps_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CLOSE,
+        Object.keys(InstalledAppsDialogActions).length);
+    replaceDialog(
+        /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
+        /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog));
+  },
+
+  /** @private */
+  onCancelInstalledApps_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CANCEL_BUTTON,
+        Object.keys(InstalledAppsDialogActions).length);
     replaceDialog(
         /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
         /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog));
@@ -629,6 +652,11 @@ Polymer({
    * @private
    */
   onInstalledAppsConfirmClick_: async function() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CLEAR_BUTTON,
+        Object.keys(InstalledAppsDialogActions).length);
+    this.recordInstalledAppsInteractions_();
     await this.clearBrowsingData_();
   }
 });

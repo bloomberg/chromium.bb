@@ -17,14 +17,14 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_intrusive_list.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/core/write_scheduler.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_containers.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
+#include "absl/strings/str_cat.h"
+#include "spdy/core/spdy_intrusive_list.h"
+#include "spdy/core/spdy_protocol.h"
+#include "spdy/core/write_scheduler.h"
+#include "spdy/platform/api/spdy_bug_tracker.h"
+#include "spdy/platform/api/spdy_containers.h"
+#include "spdy/platform/api/spdy_logging.h"
+#include "spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
 
@@ -253,7 +253,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
       child->parent = new_stream_info_ptr;
     }
     // Clear parent's old child data.
-    DCHECK(parent->children.empty());
+    QUICHE_DCHECK(parent->children.empty());
     parent->total_child_weights = 0;
   }
   // Add new stream to parent.
@@ -265,7 +265,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
   UpdatePrioritiesUnder(parent);
 
   // Stream starts with ready == false, so no need to schedule it yet.
-  DCHECK(!new_stream_info_ptr->ready);
+  QUICHE_DCHECK(!new_stream_info_ptr->ready);
 }
 
 template <typename StreamIdType>
@@ -630,7 +630,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdatePrioritiesUnder(
 template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::Schedule(
     StreamInfo* stream_info) {
-  DCHECK(!stream_info->ready);
+  QUICHE_DCHECK(!stream_info->ready);
   for (StreamInfo& s : scheduling_queue_) {
     if (stream_info->SchedulesBefore(s)) {
       scheduling_queue_.insert(&s, stream_info);
@@ -645,7 +645,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::Schedule(
 template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::Unschedule(
     StreamInfo* stream_info) {
-  DCHECK(stream_info->ready);
+  QUICHE_DCHECK(stream_info->ready);
   scheduling_queue_.erase(stream_info);
   stream_info->ready = false;
 }
@@ -713,9 +713,9 @@ size_t Http2PriorityWriteScheduler<StreamIdType>::NumRegisteredStreams() const {
 
 template <typename StreamIdType>
 std::string Http2PriorityWriteScheduler<StreamIdType>::DebugString() const {
-  return quiche::QuicheStrCat(
-      "Http2PriorityWriteScheduler {num_registered_streams=",
-      NumRegisteredStreams(), " num_ready_streams=", NumReadyStreams(), "}");
+  return absl::StrCat("Http2PriorityWriteScheduler {num_registered_streams=",
+                      NumRegisteredStreams(),
+                      " num_ready_streams=", NumReadyStreams(), "}");
 }
 
 template <typename StreamIdType>
@@ -782,7 +782,7 @@ bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
   }
   // Validate the validation function; we should have visited each stream twice
   // (except for the root)
-  DCHECK(streams_visited == 2 * NumRegisteredStreams() - 1);
+  QUICHE_DCHECK(streams_visited == 2 * NumRegisteredStreams() - 1);
   return true;
 }
 

@@ -33,9 +33,12 @@ const char kUserActivityScreenDimDelayScale[] =
 
 const char kActionSuspend[] = "Suspend";
 const char kActionLogout[] = "Logout";
-const char kActionShutdown[]  = "Shutdown";
+const char kActionShutdown[] = "Shutdown";
 const char kActionDoNothing[] = "DoNothing";
 
+// All policies in this list should have a pref mapping test case in
+// chrome/test/data/policy/policy_test_cases.json with location
+// "signin_profile".
 const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenAutoSelectCertificateForUrls,
      key::kAutoSelectCertificateForUrls},
@@ -62,6 +65,9 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenAccessibilityShortcutsEnabled,
      key::kAccessibilityShortcutsEnabled},
     {key::kDeviceLoginScreenPrivacyScreenEnabled, key::kPrivacyScreenEnabled},
+    {key::kDeviceLoginScreenWebUsbAllowDevicesForUrls,
+     key::kWebUsbAllowDevicesForUrls},
+    {key::kDeviceLoginScreenExtensions, key::kExtensionInstallForcelist},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {
@@ -148,8 +154,7 @@ LoginProfilePolicyProvider::LoginProfilePolicyProvider(
     : device_policy_service_(device_policy_service),
       waiting_for_device_policy_refresh_(false) {}
 
-LoginProfilePolicyProvider::~LoginProfilePolicyProvider() {
-}
+LoginProfilePolicyProvider::~LoginProfilePolicyProvider() {}
 
 void LoginProfilePolicyProvider::Init(SchemaRegistry* registry) {
   ConfigurationPolicyProvider::Init(registry);
@@ -228,8 +233,8 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
     if (policy_value->GetString(kLidCloseAction, &lid_close_action)) {
       std::unique_ptr<base::Value> action = GetAction(lid_close_action);
       if (action) {
-        ApplyValueAsMandatoryPolicy(
-            action.get(), key::kLidCloseAction, &user_policy_map);
+        ApplyValueAsMandatoryPolicy(action.get(), key::kLidCloseAction,
+                                    &user_policy_map);
       }
       policy_value->Remove(kLidCloseAction, NULL);
     }

@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">没有上一个控件</translation>
 <translation id="2045606329038304310">表单字段控件</translation>
 <translation id="2063539687800151747">题词</translation>
+<translation id="2074531330963286860">有多项可执行的操作。按搜索键 + 句点键即可查看</translation>
 <translation id="2086961585857038472">下一个字词</translation>
 <translation id="2087981446621639008">说明表详情</translation>
 <translation id="2089387485033699258">zh-CN</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">下一个群组</translation>
 <translation id="7813616274030162878">“开关控制”菜单</translation>
 <translation id="7839679365527550018">上一个字词</translation>
+<translation id="7842115774595115751">启用导航控件</translation>
 <translation id="7846634333498149051">键盘</translation>
 <translation id="7851816175263618915">读出部分标点符号</translation>
 <translation id="7871691770940645922">虚拟盲文显示器</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8989104346085848538">若要停止任何当前 ChromeVox 语音，请按 Ctrl 键。</translation>
+<translation id="8993737615451556423">提供用于加快语速、减慢语速和暂停朗读的控件</translation>
 <translation id="9014206344398081366">ChromeVox 教程</translation>
 <translation id="9040132695316389094">1级标题标记</translation>
 <translation id="9061884144798498064">请选择一个 8 点式盲文表：</translation>

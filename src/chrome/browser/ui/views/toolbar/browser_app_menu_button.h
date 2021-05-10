@@ -10,10 +10,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 class ToolbarView;
@@ -23,6 +24,7 @@ enum class InProductHelpFeature;
 // windows, which is implemented in WebAppMenuButton).
 class BrowserAppMenuButton : public AppMenuButton {
  public:
+  METADATA_HEADER(BrowserAppMenuButton);
   BrowserAppMenuButton(PressedCallback callback, ToolbarView* toolbar_view);
   BrowserAppMenuButton(const BrowserAppMenuButton&) = delete;
   BrowserAppMenuButton& operator=(const BrowserAppMenuButton&) = delete;
@@ -30,10 +32,6 @@ class BrowserAppMenuButton : public AppMenuButton {
 
   void SetTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity);
-
-  AppMenuIconController::Severity severity() {
-    return type_and_severity_.severity;
-  }
 
   // Shows the app menu. |run_types| denotes the MenuRunner::RunTypes associated
   // with the menu.
@@ -44,7 +42,6 @@ class BrowserAppMenuButton : public AppMenuButton {
   static bool g_open_app_immediately_for_testing;
 
   // AppMenuButton:
-  const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
   bool AreDropTypesRequired() override;
@@ -52,25 +49,14 @@ class BrowserAppMenuButton : public AppMenuButton {
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event) override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-  SkColor GetInkDropBaseColor() const override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void OnThemeChanged() override;
   // Updates the presentation according to |severity_| and the theme provider.
   void UpdateIcon() override;
   void HandleMenuClosed() override;
-
-  // ui::PropertyHandler:
-  void AfterPropertyChange(const void* key, int64_t old_value) override;
-
- protected:
-  // If the button is being used as an anchor for a promo, returns the best
-  // promo color given the current background color. Otherwise, returns the
-  // standard ToolbarButton foreground color for the given |state|.
-  SkColor GetForegroundColor(ButtonState state) const override;
 
  private:
   void OnTouchUiChanged();
@@ -86,12 +72,9 @@ class BrowserAppMenuButton : public AppMenuButton {
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
 
-  // Determines whether to highlight the button for in-product help.
-  bool has_in_product_help_promo_ = false;
-
   base::Optional<FeaturePromoController::PromoHandle> reopen_tab_promo_handle_;
 
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+  base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&BrowserAppMenuButton::OnTouchUiChanged,
                               base::Unretained(this)));

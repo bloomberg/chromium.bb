@@ -52,6 +52,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -771,8 +772,9 @@ public class OfflinePageUtils {
         if (OfflinePageUtils.isShowingTrustedOfflinePage(webContents) || offlinePage == null) {
             // TODO(crbug.com/1033178): dedupe the
             // DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl() calls.
-            String distilledUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                    webContents.getVisibleUrlString());
+            String distilledUrl =
+                    DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(webContents.getVisibleUrl())
+                            .getSpec();
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
             LoadUrlParams params = new LoadUrlParams(distilledUrl, transitionTypeForReload);
@@ -875,7 +877,7 @@ public class OfflinePageUtils {
          * contents.
          */
         @Override
-        public void onPageLoadFinished(Tab tab, String url) {
+        public void onPageLoadFinished(Tab tab, GURL url) {
             if (!tab.isBeingRestored()) return;
 
             // We first compute the bitwise tab restore context.

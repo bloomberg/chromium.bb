@@ -5,11 +5,12 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_CONTROL_FRAME_MANAGER_H_
 #define QUICHE_QUIC_CORE_QUIC_CONTROL_FRAME_MANAGER_H_
 
+#include <cstdint>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/frames/quic_frame.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_connection_id.h"
 
 namespace quic {
 
@@ -89,8 +90,20 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   void WriteOrBufferAckFrequency(
       const QuicAckFrequencyFrame& ack_frequency_frame);
 
-  // Sends a PING_FRAME. Do not send PING if there is buffered frames.
-  void WritePing();
+  // Tries to send a NEW_CONNECTION_ID frame. The frame is buffered if it cannot
+  // be sent immediately.
+  void WriteOrBufferNewConnectionId(const QuicConnectionId& connection_id,
+                                    uint64_t sequence_number,
+                                    uint64_t retire_prior_to,
+                                    QuicUint128 stateless_reset_token);
+
+  // Tries to send a RETIRE_CONNNECTION_ID frame. The frame is buffered if it
+  // cannot be sent immediately.
+  void WriteOrBufferRetireConnectionId(uint64_t sequence_number);
+
+  // Tries to send a NEW_TOKEN frame. Buffers the frame if it cannot be sent
+  // immediately.
+  void WriteOrBufferNewToken(absl::string_view token);
 
   // Called when |frame| gets acked. Returns true if |frame| gets acked for the
   // first time, return false otherwise.

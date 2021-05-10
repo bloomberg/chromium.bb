@@ -17,6 +17,7 @@ extern "C" {
 #endif
 /*!\cond */
 struct AV1_COMP;
+struct ThreadData;
 // TODO(any): These two variables are only used in avx2, sse2, sse4
 // implementations, where the block size is still hard coded. This should be
 // fixed to align with the c implementation.
@@ -66,6 +67,60 @@ struct AV1_COMP;
 
 #define NOISE_ESTIMATION_EDGE_THRESHOLD 50
 
+/*!\endcond */
+
+/*!
+ * \brief Parameters related to temporal filtering.
+ */
+typedef struct {
+  /*!
+   * Frame buffers used for temporal filtering.
+   */
+  YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS];
+  /*!
+   * Number of frames in the frame buffer.
+   */
+  int num_frames;
+  /*!
+   * Index of the frame to be filtered.
+   */
+  int filter_frame_idx;
+  /*!
+   * Whether to accumulate diff for show existing condition check.
+   */
+  int check_show_existing;
+  /*!
+   * Frame scaling factor.
+   */
+  struct scale_factors sf;
+  /*!
+   * Estimated noise levels for each plane in the frame.
+   */
+  double noise_levels[MAX_MB_PLANE];
+  /*!
+   * Number of pixels in the temporal filtering block across all planes.
+   */
+  int num_pels;
+  /*!
+   * Number of temporal filtering block rows.
+   */
+  int mb_rows;
+  /*!
+   * Number of temporal filtering block columns.
+   */
+  int mb_cols;
+  /*!
+   * Whether the frame is high-bitdepth or not.
+   */
+  int is_highbitdepth;
+  /*!
+   * Quantization factor used in temporal filtering.
+   */
+  int q_factor;
+} TemporalFilterCtx;
+
+/*!\cond */
+
 // Sum and SSE source vs filtered frame difference returned by
 // temporal filter.
 typedef struct {
@@ -88,6 +143,16 @@ typedef struct {
   uint8_t *pred;
 } TemporalFilterData;
 
+// Data related to temporal filter multi-thread synchronization.
+typedef struct {
+#if CONFIG_MULTITHREAD
+  // Mutex lock used for dispatching jobs.
+  pthread_mutex_t *mutex_;
+#endif  // CONFIG_MULTITHREAD
+  // Next temporal filter block row to be filtered.
+  int next_tf_row;
+} AV1TemporalFilterSync;
+
 // Estimates noise level from a given frame using a single plane (Y, U, or V).
 // This is an adaptation of the mehtod in the following paper:
 // Shen-Chuan Tai, Shih-Ming Yang, "A fast method for image noise
@@ -104,10 +169,22 @@ typedef struct {
 double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
                                             const int plane,
                                             const int bit_depth);
-
-#define TF_QINDEX 128  // Q-index used in temporal filtering.
-
 /*!\endcond */
+
+/*!\brief Does temporal filter for a given macroblock row.
+*
+* \ingroup src_frame_proc
+* \param[in]   cpi                   Top level encoder instance structure
+* \param[in]   td                    Pointer to thread data
+* \param[in]   mb_row                Macroblock row to be filtered
+filtering
+*
+* \return Nothing will be returned, but the contents of td->diff will be
+modified.
+*/
+void av1_tf_do_filtering_row(struct AV1_COMP *cpi, struct ThreadData *td,
+                             int mb_row);
+
 /*!\brief Performs temporal filtering if needed on a source frame.
  * For example to create a filtered alternate reference frame (ARF)
  *
@@ -125,6 +202,9 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
  * \param[in]   cpi                        Top level encoder instance structure
  * \param[in]   filter_frame_lookahead_idx The index of the to-filter frame in
  *                                         the lookahead buffer cpi->lookahead.
+ * \param[in]   update_type                This frame's update type.
+ * \param[in]   is_forward_keyframe        Indicate whether this is a forward
+ *                                         keyframe.
  * \param[in,out]   show_existing_arf      Whether to show existing ARF. This
  *                                         field is updated in this function.
  *
@@ -132,8 +212,109 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
  */
 int av1_temporal_filter(struct AV1_COMP *cpi,
                         const int filter_frame_lookahead_idx,
+                        FRAME_UPDATE_TYPE update_type, int is_forward_keyframe,
                         int *show_existing_arf);
 
+/*!\cond */
+// Helper function to get `q` used for encoding.
+int av1_get_q(const struct AV1_COMP *cpi);
+
+// Allocates memory for members of TemporalFilterData.
+// Inputs:
+//   tf_data: Pointer to the structure containing temporal filter related data.
+//   num_pels: Number of pixels in the block across all planes.
+//   is_high_bitdepth: Whether the frame is high-bitdepth or not.
+// Returns:
+//   Nothing will be returned. But the contents of tf_data will be modified.
+static AOM_INLINE void tf_alloc_and_reset_data(TemporalFilterData *tf_data,
+                                               int num_pels,
+                                               int is_high_bitdepth) {
+  tf_data->tmp_mbmi = (MB_MODE_INFO *)malloc(sizeof(*tf_data->tmp_mbmi));
+  memset(tf_data->tmp_mbmi, 0, sizeof(*tf_data->tmp_mbmi));
+  tf_data->accum =
+      (uint32_t *)aom_memalign(16, num_pels * sizeof(*tf_data->accum));
+  tf_data->count =
+      (uint16_t *)aom_memalign(16, num_pels * sizeof(*tf_data->count));
+  memset(&tf_data->diff, 0, sizeof(tf_data->diff));
+  if (is_high_bitdepth)
+    tf_data->pred = CONVERT_TO_BYTEPTR(
+        aom_memalign(32, num_pels * 2 * sizeof(*tf_data->pred)));
+  else
+    tf_data->pred =
+        (uint8_t *)aom_memalign(32, num_pels * sizeof(*tf_data->pred));
+}
+
+// Setup macroblockd params for temporal filtering process.
+// Inputs:
+//   mbd: Pointer to the block for filtering.
+//   tf_data: Pointer to the structure containing temporal filter related data.
+//   scale: Scaling factor.
+// Returns:
+//   Nothing will be returned. Contents of mbd will be modified.
+static AOM_INLINE void tf_setup_macroblockd(MACROBLOCKD *mbd,
+                                            TemporalFilterData *tf_data,
+                                            const struct scale_factors *scale) {
+  mbd->block_ref_scale_factors[0] = scale;
+  mbd->block_ref_scale_factors[1] = scale;
+  mbd->mi = &tf_data->tmp_mbmi;
+  mbd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
+}
+
+// Deallocates the memory allocated for members of TemporalFilterData.
+// Inputs:
+//   tf_data: Pointer to the structure containing temporal filter related data.
+//   is_high_bitdepth: Whether the frame is high-bitdepth or not.
+// Returns:
+//   Nothing will be returned.
+static AOM_INLINE void tf_dealloc_data(TemporalFilterData *tf_data,
+                                       int is_high_bitdepth) {
+  if (is_high_bitdepth)
+    tf_data->pred = (uint8_t *)CONVERT_TO_SHORTPTR(tf_data->pred);
+  free(tf_data->tmp_mbmi);
+  aom_free(tf_data->accum);
+  aom_free(tf_data->count);
+  aom_free(tf_data->pred);
+}
+
+// Helper function to compute number of blocks on either side of the frame.
+static INLINE int get_num_blocks(const int frame_length, const int mb_length) {
+  return (frame_length + mb_length - 1) / mb_length;
+}
+
+// Saves the state prior to temporal filter process.
+// Inputs:
+//   mbd: Pointer to the block for filtering.
+//   input_mbmi: Backup block info to save input state.
+//   input_buffer: Backup buffer pointer to save input state.
+//   num_planes: Number of planes.
+// Returns:
+//   Nothing will be returned. Contents of input_mbmi and input_buffer will be
+//   modified.
+static INLINE void tf_save_state(MACROBLOCKD *mbd, MB_MODE_INFO ***input_mbmi,
+                                 uint8_t **input_buffer, int num_planes) {
+  for (int i = 0; i < num_planes; i++) {
+    input_buffer[i] = mbd->plane[i].pre[0].buf;
+  }
+  *input_mbmi = mbd->mi;
+}
+
+// Restores the initial state after temporal filter process.
+// Inputs:
+//   mbd: Pointer to the block for filtering.
+//   input_mbmi: Backup block info from where input state is restored.
+//   input_buffer: Backup buffer pointer from where input state is restored.
+//   num_planes: Number of planes.
+// Returns:
+//   Nothing will be returned. Contents of mbd will be modified.
+static INLINE void tf_restore_state(MACROBLOCKD *mbd, MB_MODE_INFO **input_mbmi,
+                                    uint8_t **input_buffer, int num_planes) {
+  for (int i = 0; i < num_planes; i++) {
+    mbd->plane[i].pre[0].buf = input_buffer[i];
+  }
+  mbd->mi = input_mbmi;
+}
+
+/*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"
 #endif

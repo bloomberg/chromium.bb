@@ -134,6 +134,7 @@ static void highbd_fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                        txfm_param->bd);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void highbd_fwd_txfm_16x4(const int16_t *src_diff, tran_low_t *coeff,
                                  int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
@@ -161,6 +162,7 @@ static void highbd_fwd_txfm_8x32(const int16_t *src_diff, tran_low_t *coeff,
   av1_fwd_txfm2d_8x32(src_diff, dst_coeff, diff_stride, txfm_param->tx_type,
                       txfm_param->bd);
 }
+#endif
 
 static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
@@ -204,6 +206,7 @@ static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
                        bd);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void highbd_fwd_txfm_16x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   assert(txfm_param->tx_type == DCT_DCT);
@@ -219,6 +222,7 @@ static void highbd_fwd_txfm_64x16(const int16_t *src_diff, tran_low_t *coeff,
   const int bd = txfm_param->bd;
   av1_fwd_txfm2d_64x16(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
 }
+#endif
 
 static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
@@ -255,12 +259,7 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_64X32:
       highbd_fwd_txfm_64x32(src_diff, coeff, diff_stride, txfm_param);
       break;
-    case TX_16X64:
-      highbd_fwd_txfm_16x64(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_64X16:
-      highbd_fwd_txfm_64x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
+
     case TX_32X32:
       highbd_fwd_txfm_32x32(src_diff, coeff, diff_stride, txfm_param);
       break;
@@ -291,6 +290,7 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_4X4:
       highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param);
       break;
+#if !CONFIG_REALTIME_ONLY
     case TX_4X16:
       highbd_fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
       break;
@@ -303,6 +303,13 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_32X8:
       highbd_fwd_txfm_32x8(src_diff, coeff, diff_stride, txfm_param);
       break;
+    case TX_16X64:
+      highbd_fwd_txfm_16x64(src_diff, coeff, diff_stride, txfm_param);
+      break;
+    case TX_64X16:
+      highbd_fwd_txfm_64x16(src_diff, coeff, diff_stride, txfm_param);
+      break;
+#endif
     default: assert(0); break;
   }
 }

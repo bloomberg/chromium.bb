@@ -5,14 +5,15 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 
 #include "base/run_loop.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/app_service/arc_apps.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace apps {
 
@@ -41,7 +42,9 @@ void AppServiceTest::UninstallAllApps(Profile* profile) {
         app->readiness = apps::mojom::Readiness::kUninstalledByUser;
         apps.push_back(app.Clone());
       });
-  app_service_proxy_->AppRegistryCache().OnApps(std::move(apps));
+  app_service_proxy_->AppRegistryCache().OnApps(
+      std::move(apps), apps::mojom::AppType::kUnknown,
+      false /* should_notify_initialized */);
 
   // Allow async callbacks to run.
   WaitForAppService();

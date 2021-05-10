@@ -16,7 +16,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -163,7 +163,7 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
     content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                                                  std::move(callback_));
     master_settings_.reset();
-    template_url_service_sub_.reset();
+    template_url_service_subscription_ = {};
   }
 }
 
@@ -190,9 +190,10 @@ void ProfileResetter::ResetDefaultSearchEngine() {
 
     MarkAsDone(DEFAULT_SEARCH_ENGINE);
   } else {
-    template_url_service_sub_ = template_url_service_->RegisterOnLoadedCallback(
-        base::BindRepeating(&ProfileResetter::OnTemplateURLServiceLoaded,
-                            weak_ptr_factory_.GetWeakPtr()));
+    template_url_service_subscription_ =
+        template_url_service_->RegisterOnLoadedCallback(
+            base::BindOnce(&ProfileResetter::OnTemplateURLServiceLoaded,
+                           weak_ptr_factory_.GetWeakPtr()));
     template_url_service_->Load();
   }
 }
@@ -245,15 +246,14 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 
   cookies_remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_);
   cookies_remover_->AddObserver(this);
-  uint64_t remove_mask =
-      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-      content::BrowsingDataRemover::DATA_TYPE_CACHE;
+  uint64_t remove_mask = chrome_browsing_data_remover::DATA_TYPE_SITE_DATA |
+                         content::BrowsingDataRemover::DATA_TYPE_CACHE;
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
 
   // Don't try to clear LSO data if it's not supported.
   if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
-    remove_mask &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
+    remove_mask &= ~chrome_browsing_data_remover::DATA_TYPE_PLUGIN_DATA;
   cookies_remover_->RemoveAndReply(
       base::Time(), base::Time::Max(), remove_mask,
       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, this);
@@ -361,7 +361,7 @@ void ProfileResetter::OnTemplateURLServiceLoaded() {
   // TemplateURLService has loaded. If we need to clean search engines, it's
   // time to go on.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  template_url_service_sub_.reset();
+  template_url_service_subscription_ = {};
   if (pending_reset_flags_ & DEFAULT_SEARCH_ENGINE)
     ResetDefaultSearchEngine();
 }

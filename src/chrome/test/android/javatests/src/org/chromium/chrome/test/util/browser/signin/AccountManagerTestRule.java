@@ -23,9 +23,9 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.core.browser.javatests.R;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
+import org.chromium.components.signin.test.util.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -113,9 +113,16 @@ public class AccountManagerTestRule implements TestRule {
      * @return The account added.
      */
     public CoreAccountInfo addAccount(ProfileDataSource.ProfileData profileData) {
-        CoreAccountInfo coreAccountInfo = addAccount(profileData.getAccountName());
-        mFakeAccountManagerFacade.setProfileData(profileData.getAccountName(), profileData);
+        CoreAccountInfo coreAccountInfo = addAccount(profileData.getAccountEmail());
+        mFakeAccountManagerFacade.addProfileData(profileData);
         return coreAccountInfo;
+    }
+
+    /**
+     * Removes an account with the given account email.
+     */
+    public void removeAccount(String accountEmail) {
+        mFakeAccountManagerFacade.removeAccount(AccountUtils.createAccountFromName(accountEmail));
     }
 
     /**
@@ -144,8 +151,8 @@ public class AccountManagerTestRule implements TestRule {
      *
      * This method invokes native code. It shouldn't be called in a Robolectric test.
      */
-    public void removeAccountAndWaitForSeeding(String accountName) {
-        mFakeAccountManagerFacade.removeAccount(AccountUtils.createAccountFromName(accountName));
+    public void removeAccountAndWaitForSeeding(String accountEmail) {
+        removeAccount(accountEmail);
         waitForSeeding();
     }
 

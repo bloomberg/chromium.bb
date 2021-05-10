@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
+#include "components/autofill/core/common/language_code.h"
 
 namespace autofill {
 
@@ -35,16 +36,24 @@ struct RegExLogging {
 // name, phone number, or address field.
 class FormField {
  public:
-  virtual ~FormField() {}
+  virtual ~FormField() = default;
 
   // Classifies each field in |fields| with its heuristically detected type.
   // Each field has a derived unique name that is used as the key into the
   // returned FieldCandidatesMap.
   static FieldCandidatesMap ParseFormFields(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
-      const std::string& page_language,
+      const LanguageCode& page_language,
       bool is_form_tag,
       LogManager* log_manager = nullptr);
+
+#if defined(UNIT_TEST)
+  // Assign types to the fields for the testing purposes.
+  void AddClassificationsForTesting(
+      FieldCandidatesMap* field_candidates_for_testing) const {
+    AddClassifications(field_candidates_for_testing);
+  }
+#endif
 
  protected:
   // Initial values assigned to FieldCandidates by their corresponding parsers.
@@ -102,6 +111,7 @@ class FormField {
                                   int match_field_input_types,
                                   AutofillField** match,
                                   const RegExLogging& logging = {});
+
   struct MatchFieldBitmasks {
     int restrict_attributes = ~0;
     int augment_types = 0;
@@ -141,12 +151,13 @@ class FormField {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FormFieldTest, Match);
+  FRIEND_TEST_ALL_PREFIXES(FormFieldTest, TestParseableLabels);
 
   // Function pointer type for the parsing function that should be passed to the
   // ParseFormFieldsPass() helper function.
   typedef std::unique_ptr<FormField> ParseFunction(
       AutofillScanner* scanner,
-      const std::string& page_language,
+      const LanguageCode& page_language,
       LogManager* log_manager);
 
   // Matches |pattern| to the contents of the field at the head of the
@@ -192,7 +203,7 @@ class FormField {
   static void ParseFormFieldsPass(ParseFunction parse,
                                   const std::vector<AutofillField*>& fields,
                                   FieldCandidatesMap* field_candidates,
-                                  const std::string& page_language,
+                                  const LanguageCode& page_language,
                                   LogManager* log_manager = nullptr);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);

@@ -25,9 +25,11 @@ public:
     bool generateCode() override;
 
 private:
-    void writef(const char* s, va_list va) SKSL_PRINTF_LIKE(2, 0);
+    using Precedence = Operator::Precedence;
 
-    void writef(const char* s, ...) SKSL_PRINTF_LIKE(2, 3);
+    void writef(const char* s, va_list va) SK_PRINTF_LIKE(2, 0);
+
+    void writef(const char* s, ...) SK_PRINTF_LIKE(2, 3);
 
     bool writeSection(const char* name, const char* prefix = "");
 
@@ -42,8 +44,6 @@ private:
     void writeIntLiteral(const IntLiteral& i) override;
 
     void writeSwizzle(const Swizzle& swizzle) override;
-
-    void writeFieldAccess(const FieldAccess& access) override;
 
     void writeVariableReference(const VariableReference& ref) override;
 
@@ -127,15 +127,6 @@ private:
     // Append CPP code to the current extra emit code block.
     void addExtraEmitCodeLine(const String& toAppend);
 
-    // Called when we encounter `sk_OutColor = xxxxx` or `return xxxxx` during the parse. If both
-    // return types are encountered in a single file, an error is generated.
-    enum class ReturnType {
-        kNothing,
-        kUsesExplicitReturn,
-        kUsesSkOutColor
-    };
-    void setReturnType(int offset, ReturnType typeToSet);
-
     int getChildFPIndex(const Variable& var) const;
 
     String fName;
@@ -156,9 +147,6 @@ private:
 
     // Gives unique but predictable names to invocations of sample().
     int fSampleCounter = 0;
-
-    // Keeps track of how main() returns a color to the caller. An FP file cannot mix return types.
-    ReturnType fReturnType = ReturnType::kNothing;
 
     // if not null, we are accumulating SkSL for emitCode into fOut, which
     // replaced the original buffer with a StringStream. The original buffer is

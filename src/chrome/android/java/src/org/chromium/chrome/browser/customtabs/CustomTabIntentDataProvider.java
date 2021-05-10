@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -37,7 +38,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -257,15 +257,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private final CustomTabColorProvider mColorProvider;
 
     /**
-     * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
-     */
-    public static void addPaymentRequestUIExtras(Intent intent) {
-        intent.putExtra(EXTRA_UI_TYPE, CustomTabsUiType.PAYMENT_REQUEST);
-        intent.putExtra(EXTRA_IS_OPENED_BY_CHROME, true);
-        IntentHandler.addTrustedIntentExtras(intent);
-    }
-
-    /**
      * Add extras to customize menu items for opening Reader Mode UI custom tab from Chrome.
      */
     public static void addReaderModeUIExtras(Intent intent) {
@@ -396,14 +387,14 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     /**
      * Triggers the client-defined action when the user clicks a custom menu item.
-     * @param activity The {@link ChromeActivity} to use for sending the {@link PendingIntent}.
+     * @param activity The {@link Activity} to use for sending the {@link PendingIntent}.
      * @param menuIndex The index that the menu item is shown in the result of
      *                  {@link #getMenuTitles()}.
      * @param url The URL to attach as additional data to the {@link PendingIntent}.
      * @param title The title to attach as additional data to the {@link PendingIntent}.
      */
     public void clickMenuItemWithUrlAndTitle(
-            ChromeActivity activity, int menuIndex, String url, String title) {
+            Activity activity, int menuIndex, String url, String title) {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
         addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
@@ -439,12 +430,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         if (!isTrustedIntent()) {
             if (ChromeVersionInfo.isLocalBuild()) Log.w(TAG, FIRST_PARTY_PITFALL_MSG);
             return CustomTabsUiType.DEFAULT;
-        }
-
-        if (requestedUiType == CustomTabsUiType.PAYMENT_REQUEST) {
-            if (!mIsOpenedByChrome) {
-                return CustomTabsUiType.DEFAULT;
-            }
         }
 
         return requestedUiType;
@@ -651,7 +636,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public boolean shouldEnableUrlBarHiding() {
-        return mEnableUrlBarHiding && !isForPaymentRequest();
+        return mEnableUrlBarHiding;
     }
 
     @Override

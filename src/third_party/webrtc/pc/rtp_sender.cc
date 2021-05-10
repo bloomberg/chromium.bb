@@ -10,18 +10,22 @@
 
 #include "pc/rtp_sender.h"
 
+#include <algorithm>
 #include <atomic>
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "api/audio_options.h"
 #include "api/media_stream_interface.h"
+#include "api/priority.h"
 #include "media/base/media_engine.h"
 #include "pc/stats_collector_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/ref_counted_object.h"
 #include "rtc_base/trace_event.h"
 
 namespace webrtc {
@@ -405,6 +409,7 @@ void LocalAudioSinkAdapter::OnData(
   if (sink_) {
     sink_->OnData(audio_data, bits_per_sample, sample_rate, number_of_channels,
                   number_of_frames, absolute_capture_timestamp_ms);
+    num_preferred_channels_ = sink_->NumPreferredChannels();
   }
 }
 

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -31,7 +32,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #endif
 
@@ -57,7 +58,7 @@ void BookmarkBubbleSignInDelegateTest::ReplaceBlank(Browser* browser) {
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL("chrome:version")));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  ShowSingletonTabOverwritingNTP(browser, &params);
 }
 
 void BookmarkBubbleSignInDelegateTest::SignInBrowser(Browser* browser) {

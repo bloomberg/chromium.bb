@@ -19,6 +19,7 @@
 
 #include "absl/types/optional.h"
 #include "api/call/transport.h"
+#include "api/sequence_checker.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "api/video/video_frame.h"
@@ -30,12 +31,11 @@
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
 #include "media/base/media_engine.h"
-#include "media/engine/constants.h"
 #include "media/engine/unhandled_packets_buffer.h"
 #include "rtc_base/network_route.h"
 #include "rtc_base/synchronization/mutex.h"
+#include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/thread_annotations.h"
-#include "rtc_base/thread_checker.h"
 
 namespace webrtc {
 class VideoDecoderFactory;
@@ -397,7 +397,7 @@ class WebRtcVideoChannel : public VideoMediaChannel,
     webrtc::DegradationPreference GetDegradationPreference() const
         RTC_EXCLUSIVE_LOCKS_REQUIRED(&thread_checker_);
 
-    rtc::ThreadChecker thread_checker_;
+    webrtc::SequenceChecker thread_checker_;
     rtc::Thread* worker_thread_;
     const std::vector<uint32_t> ssrcs_ RTC_GUARDED_BY(&thread_checker_);
     const std::vector<SsrcGroup> ssrc_groups_ RTC_GUARDED_BY(&thread_checker_);
@@ -483,13 +483,8 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
    private:
     void RecreateWebRtcVideoStream();
-    void MaybeRecreateWebRtcFlexfecStream();
-
-    void MaybeAssociateFlexfecWithVideo();
-    void MaybeDissociateFlexfecFromVideo();
 
     void ConfigureCodecs(const std::vector<VideoCodecSettings>& recv_codecs);
-    void ConfigureFlexfecCodec(int flexfec_payload_type);
 
     std::string GetCodecNameFromPayloadType(int payload_type);
 
@@ -554,11 +549,13 @@ class WebRtcVideoChannel : public VideoMediaChannel,
       RTC_EXCLUSIVE_LOCKS_REQUIRED(thread_checker_);
 
   rtc::Thread* const worker_thread_;
-  rtc::ThreadChecker thread_checker_;
+  webrtc::ScopedTaskSafety task_safety_;
+  webrtc::SequenceChecker network_thread_checker_;
+  webrtc::SequenceChecker thread_checker_;
 
   uint32_t rtcp_receiver_report_ssrc_ RTC_GUARDED_BY(thread_checker_);
   bool sending_ RTC_GUARDED_BY(thread_checker_);
-  webrtc::Call* const call_ RTC_GUARDED_BY(thread_checker_);
+  webrtc::Call* const call_;
 
   DefaultUnsignalledSsrcHandler default_unsignalled_ssrc_handler_
       RTC_GUARDED_BY(thread_checker_);

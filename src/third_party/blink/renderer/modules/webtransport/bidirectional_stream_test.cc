@@ -154,6 +154,8 @@ class StubQuicTransport : public network::mojom::blink::QuicTransport {
     was_abort_stream_called_ = true;
   }
 
+  void SetOutgoingDatagramExpirationDuration(base::TimeDelta) override {}
+
  private:
   base::OnceCallback<void(uint32_t,
                           mojo::ScopedDataPipeConsumerHandle,
@@ -264,7 +266,7 @@ class ScopedQuicTransport : public mojom::blink::QuicTransportConnector {
   // |browser_interface_broker_| is cached here because we need to use it in the
   // destructor. This means ScopedQuicTransport must always be destroyed before
   // the V8TestingScope object that owns the BrowserInterfaceBrokerProxy.
-  BrowserInterfaceBrokerProxy* browser_interface_broker_;
+  const BrowserInterfaceBrokerProxy* browser_interface_broker_;
   QuicTransport* quic_transport_;
   std::unique_ptr<StubQuicTransport> stub_;
   mojo::Remote<network::mojom::blink::QuicTransportClient> client_remote_;

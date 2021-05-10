@@ -106,7 +106,8 @@ class TextInput : public ui::TextInputClient,
   void SetCompositionText(const ui::CompositionText& composition) override;
   uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
-  void InsertText(const base::string16& text) override;
+  void InsertText(const base::string16& text,
+                  InsertTextCursorBehavior cursor_behavior) override;
   void InsertChar(const ui::KeyEvent& event) override;
   ui::TextInputType GetTextInputType() const override;
   ui::TextInputMode GetTextInputMode() const override;
@@ -139,9 +140,7 @@ class TextInput : public ui::TextInputClient,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
   gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           const gfx::Range& range) override;
-  void ClearAutocorrectRange() override;
+  bool SetAutocorrectRange(const gfx::Range& range) override;
 
   // ash::KeyboardControllerObserver:
   void OnKeyboardVisibilityChanged(bool is_visible) override;

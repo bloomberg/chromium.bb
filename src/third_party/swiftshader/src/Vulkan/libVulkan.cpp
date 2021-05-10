@@ -65,9 +65,15 @@
 #	include "WSI/DirectFBSurfaceEXT.hpp"
 #endif
 
+#ifdef VK_USE_PLATFORM_DISPLAY_KHR
+#	include "WSI/DisplaySurfaceKHR.hpp"
+#endif
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 #	include "WSI/Win32SurfaceKHR.hpp"
 #endif
+
+#include "WSI/HeadlessSurfaceKHR.hpp"
 
 #ifdef __ANDROID__
 #	include "commit.h"
@@ -92,6 +98,7 @@
 #include "System/CPUID.hpp"
 
 #include <algorithm>
+#include <cinttypes>
 #include <cstring>
 #include <map>
 #include <string>
@@ -296,113 +303,158 @@ VK_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vk_icdInitializeConnectToServiceCallbac
 
 #endif  // VK_USE_PLATFORM_FUCHSIA
 
-static const VkExtensionProperties instanceExtensionProperties[] = {
-	{ VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME, VK_KHR_DEVICE_GROUP_CREATION_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_FENCE_CAPABILITIES_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_SPEC_VERSION },
-	{ VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_SPEC_VERSION },
-	{ VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION },
+struct ExtensionProperties : public VkExtensionProperties
+{
+	bool isSupported = true;
+};
+
+static const ExtensionProperties instanceExtensionProperties[] = {
+	{ { VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME, VK_KHR_DEVICE_GROUP_CREATION_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_FENCE_CAPABILITIES_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_SPEC_VERSION } },
+	{ { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_SPEC_VERSION } },
+	{ { VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_SPEC_VERSION } },
+	{ { VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME, VK_EXT_HEADLESS_SURFACE_SPEC_VERSION } },
 #ifndef __ANDROID__
-	{ VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_SURFACE_SPEC_VERSION },
+	{ { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_SURFACE_SPEC_VERSION } },
 #endif
 #ifdef VK_USE_PLATFORM_XCB_KHR
-	{ VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_SPEC_VERSION },
+	{ { VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_SPEC_VERSION }, vk::XcbSurfaceKHR::hasLibXCB() },
 #endif
 #ifdef VK_USE_PLATFORM_XLIB_KHR
-	{ VK_KHR_XLIB_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_SPEC_VERSION },
+	{ { VK_KHR_XLIB_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_SPEC_VERSION }, static_cast<bool>(libX11) },
 #endif
 #ifdef VK_USE_PLATFORM_WAYLAND_KHR
-	{ VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_SPEC_VERSION },
+	{ { VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_SPEC_VERSION } },
 #endif
 #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
-	{ VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME, VK_EXT_DIRECTFB_SURFACE_SPEC_VERSION },
+	{ { VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME, VK_EXT_DIRECTFB_SURFACE_SPEC_VERSION } },
+#endif
+#ifdef VK_USE_PLATFORM_DISPLAY_KHR
+	{ { VK_KHR_DISPLAY_EXTENSION_NAME, VK_KHR_DISPLAY_SPEC_VERSION } },
 #endif
 #ifdef VK_USE_PLATFORM_MACOS_MVK
-	{ VK_MVK_MACOS_SURFACE_EXTENSION_NAME, VK_MVK_MACOS_SURFACE_SPEC_VERSION },
+	{ { VK_MVK_MACOS_SURFACE_EXTENSION_NAME, VK_MVK_MACOS_SURFACE_SPEC_VERSION } },
 #endif
 #ifdef VK_USE_PLATFORM_METAL_EXT
-	{ VK_EXT_METAL_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_SPEC_VERSION },
+	{ { VK_EXT_METAL_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_SPEC_VERSION } },
 #endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-	{ VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_SPEC_VERSION },
+	{ { VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_SPEC_VERSION } },
 #endif
 };
 
-static const VkExtensionProperties deviceExtensionProperties[] = {
-	{ VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_KHR_DRIVER_PROPERTIES_SPEC_VERSION },
+static const ExtensionProperties deviceExtensionProperties[] = {
+	{ { VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_KHR_DRIVER_PROPERTIES_SPEC_VERSION } },
 	// Vulkan 1.1 promoted extensions
-	{ VK_KHR_BIND_MEMORY_2_EXTENSION_NAME, VK_KHR_BIND_MEMORY_2_SPEC_VERSION },
-	{ VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, VK_KHR_CREATE_RENDERPASS_2_SPEC_VERSION },
-	{ VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME, VK_KHR_DEDICATED_ALLOCATION_SPEC_VERSION },
-	{ VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME, VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_SPEC_VERSION },
-	{ VK_KHR_DEVICE_GROUP_EXTENSION_NAME, VK_KHR_DEVICE_GROUP_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_FENCE_EXTENSION_NAME, VK_KHR_EXTERNAL_FENCE_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_SPEC_VERSION },
-	{ VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_SPEC_VERSION },
-	{ VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME, VK_KHR_GET_MEMORY_REQUIREMENTS_2_SPEC_VERSION },
-	{ VK_KHR_MAINTENANCE1_EXTENSION_NAME, VK_KHR_MAINTENANCE1_SPEC_VERSION },
-	{ VK_KHR_MAINTENANCE2_EXTENSION_NAME, VK_KHR_MAINTENANCE2_SPEC_VERSION },
-	{ VK_KHR_MAINTENANCE3_EXTENSION_NAME, VK_KHR_MAINTENANCE3_SPEC_VERSION },
-	{ VK_KHR_MULTIVIEW_EXTENSION_NAME, VK_KHR_MULTIVIEW_SPEC_VERSION },
-	{ VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME, VK_KHR_RELAXED_BLOCK_LAYOUT_SPEC_VERSION },
-	{ VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, VK_KHR_SAMPLER_YCBCR_CONVERSION_SPEC_VERSION },
-	{ VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_EXTENSION_NAME, VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_SPEC_VERSION },
+	{ { VK_KHR_BIND_MEMORY_2_EXTENSION_NAME, VK_KHR_BIND_MEMORY_2_SPEC_VERSION } },
+	{ { VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, VK_KHR_CREATE_RENDERPASS_2_SPEC_VERSION } },
+	{ { VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME, VK_KHR_DEDICATED_ALLOCATION_SPEC_VERSION } },
+	{ { VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME, VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_SPEC_VERSION } },
+	{ { VK_KHR_DEVICE_GROUP_EXTENSION_NAME, VK_KHR_DEVICE_GROUP_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_FENCE_EXTENSION_NAME, VK_KHR_EXTERNAL_FENCE_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_SPEC_VERSION } },
+	{ { VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_SPEC_VERSION } },
+	{ { VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME, VK_KHR_GET_MEMORY_REQUIREMENTS_2_SPEC_VERSION } },
+	{ { VK_KHR_MAINTENANCE1_EXTENSION_NAME, VK_KHR_MAINTENANCE1_SPEC_VERSION } },
+	{ { VK_KHR_MAINTENANCE2_EXTENSION_NAME, VK_KHR_MAINTENANCE2_SPEC_VERSION } },
+	{ { VK_KHR_MAINTENANCE3_EXTENSION_NAME, VK_KHR_MAINTENANCE3_SPEC_VERSION } },
+	{ { VK_KHR_MULTIVIEW_EXTENSION_NAME, VK_KHR_MULTIVIEW_SPEC_VERSION } },
+	{ { VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME, VK_KHR_RELAXED_BLOCK_LAYOUT_SPEC_VERSION } },
+	{ { VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, VK_KHR_SAMPLER_YCBCR_CONVERSION_SPEC_VERSION } },
+	{ { VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_EXTENSION_NAME, VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_SPEC_VERSION } },
 	// Only 1.1 core version of this is supported. The extension has additional requirements
-	//{ VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_SPEC_VERSION },
-	{ VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_SPEC_VERSION },
+	//{{ VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_SPEC_VERSION }},
+	{ { VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_SPEC_VERSION } },
 	// Only 1.1 core version of this is supported. The extension has additional requirements
-	//{ VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, VK_KHR_VARIABLE_POINTERS_SPEC_VERSION },
-	{ VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME, VK_EXT_QUEUE_FAMILY_FOREIGN_SPEC_VERSION },
+	//{{ VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, VK_KHR_VARIABLE_POINTERS_SPEC_VERSION }},
+	{ { VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME, VK_EXT_QUEUE_FAMILY_FOREIGN_SPEC_VERSION } },
 	// The following extension is only used to add support for Bresenham lines
-	{ VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, VK_EXT_LINE_RASTERIZATION_SPEC_VERSION },
+	{ { VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, VK_EXT_LINE_RASTERIZATION_SPEC_VERSION } },
 	// The following extension is used by ANGLE to emulate blitting the stencil buffer
-	{ VK_EXT_SHADER_STENCIL_EXPORT_EXTENSION_NAME, VK_EXT_SHADER_STENCIL_EXPORT_SPEC_VERSION },
-	{ VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME, VK_EXT_IMAGE_ROBUSTNESS_SPEC_VERSION },
+	{ { VK_EXT_SHADER_STENCIL_EXPORT_EXTENSION_NAME, VK_EXT_SHADER_STENCIL_EXPORT_SPEC_VERSION } },
+	{ { VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME, VK_EXT_IMAGE_ROBUSTNESS_SPEC_VERSION } },
 #ifndef __ANDROID__
 	// We fully support the KHR_swapchain v70 additions, so just track the spec version.
-	{ VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SWAPCHAIN_SPEC_VERSION },
+	{ { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SWAPCHAIN_SPEC_VERSION } },
 #else
 	// We only support V7 of this extension. Missing functionality: in V8,
 	// it becomes possible to pass a VkNativeBufferANDROID structure to
 	// vkBindImageMemory2. Android's swapchain implementation does this in
 	// order to support passing VkBindImageMemorySwapchainInfoKHR
 	// (from KHR_swapchain v70) to vkBindImageMemory2.
-	{ VK_ANDROID_NATIVE_BUFFER_EXTENSION_NAME, 7 },
+	{ { VK_ANDROID_NATIVE_BUFFER_EXTENSION_NAME, 7 } },
 #endif
 #if SWIFTSHADER_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER
-	{ VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME, VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_SPEC_VERSION },
+	{ { VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME, VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_SPEC_VERSION } },
 #endif
 #if SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD
-	{ VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_FD_SPEC_VERSION },
+	{ { VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_FD_SPEC_VERSION } },
 #endif
 #if SWIFTSHADER_EXTERNAL_MEMORY_OPAQUE_FD
-	{ VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_FD_SPEC_VERSION },
+	{ { VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, VK_KHR_EXTERNAL_MEMORY_FD_SPEC_VERSION } },
 #endif
 
-	{ VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, VK_EXT_EXTERNAL_MEMORY_HOST_SPEC_VERSION },
+	{ { VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, VK_EXT_EXTERNAL_MEMORY_HOST_SPEC_VERSION } },
 
 #if VK_USE_PLATFORM_FUCHSIA
-	{ VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME, VK_FUCHSIA_EXTERNAL_SEMAPHORE_SPEC_VERSION },
-	{ VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME, VK_FUCHSIA_EXTERNAL_MEMORY_SPEC_VERSION },
+	{ { VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME, VK_FUCHSIA_EXTERNAL_SEMAPHORE_SPEC_VERSION } },
+	{ { VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME, VK_FUCHSIA_EXTERNAL_MEMORY_SPEC_VERSION } },
 #endif
-	{ VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, VK_EXT_PROVOKING_VERTEX_SPEC_VERSION },
-	{ VK_GOOGLE_SAMPLER_FILTERING_PRECISION_EXTENSION_NAME, VK_GOOGLE_SAMPLER_FILTERING_PRECISION_SPEC_VERSION },
-	{ VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, VK_EXT_DEPTH_RANGE_UNRESTRICTED_SPEC_VERSION },
+	{ { VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, VK_EXT_PROVOKING_VERTEX_SPEC_VERSION } },
+#if !defined(__ANDROID__)
+	{ { VK_GOOGLE_SAMPLER_FILTERING_PRECISION_EXTENSION_NAME, VK_GOOGLE_SAMPLER_FILTERING_PRECISION_SPEC_VERSION } },
+#endif
+	{ { VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, VK_EXT_DEPTH_RANGE_UNRESTRICTED_SPEC_VERSION } },
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+	{ { VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, VK_EXT_DEVICE_MEMORY_REPORT_SPEC_VERSION } },
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
 	// Vulkan 1.2 promoted extensions
-	{ VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, VK_KHR_IMAGE_FORMAT_LIST_SPEC_VERSION },
-	{ VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME, VK_KHR_IMAGELESS_FRAMEBUFFER_SPEC_VERSION },
-	{ VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME, VK_KHR_SHADER_FLOAT_CONTROLS_SPEC_VERSION },
-	{ VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME, VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_SPEC_VERSION }
+	{ { VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME, VK_EXT_HOST_QUERY_RESET_SPEC_VERSION } },
+	{ { VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME, VK_EXT_SCALAR_BLOCK_LAYOUT_SPEC_VERSION } },
+	{ { VK_EXT_SEPARATE_STENCIL_USAGE_EXTENSION_NAME, VK_EXT_SEPARATE_STENCIL_USAGE_SPEC_VERSION } },
+	{ { VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, VK_KHR_DEPTH_STENCIL_RESOLVE_SPEC_VERSION } },
+	{ { VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, VK_KHR_IMAGE_FORMAT_LIST_SPEC_VERSION } },
+	{ { VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME, VK_KHR_IMAGELESS_FRAMEBUFFER_SPEC_VERSION } },
+	{ { VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME, VK_KHR_SHADER_FLOAT_CONTROLS_SPEC_VERSION } },
+	{ { VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME, VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_SPEC_VERSION } },
+	{ { VK_KHR_SPIRV_1_4_EXTENSION_NAME, VK_KHR_SPIRV_1_4_SPEC_VERSION } },
+	{ { VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME, VK_KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_SPEC_VERSION } },
 };
 
-static bool hasExtension(const char *extensionName, const VkExtensionProperties *extensionProperties, uint32_t extensionPropertiesCount)
+static uint32_t numSupportedExtensions(const ExtensionProperties *extensionProperties, uint32_t extensionPropertiesCount)
+{
+	uint32_t count = 0;
+
+	for(uint32_t i = 0; i < extensionPropertiesCount; i++)
+	{
+		if(extensionProperties[i].isSupported)
+		{
+			count++;
+		}
+	}
+
+	return count;
+}
+
+static uint32_t numInstanceSupportedExtensions()
+{
+	return numSupportedExtensions(instanceExtensionProperties, sizeof(instanceExtensionProperties) / sizeof(instanceExtensionProperties[0]));
+}
+
+static uint32_t numDeviceSupportedExtensions()
+{
+	return numSupportedExtensions(deviceExtensionProperties, sizeof(deviceExtensionProperties) / sizeof(deviceExtensionProperties[0]));
+}
+
+static bool hasExtension(const char *extensionName, const ExtensionProperties *extensionProperties, uint32_t extensionPropertiesCount)
 {
 	for(uint32_t i = 0; i < extensionPropertiesCount; i++)
 	{
 		if(strcmp(extensionName, extensionProperties[i].extensionName) == 0)
 		{
-			return true;
+			return extensionProperties[i].isSupported;
 		}
 	}
 
@@ -417,6 +469,31 @@ static bool hasInstanceExtension(const char *extensionName)
 static bool hasDeviceExtension(const char *extensionName)
 {
 	return hasExtension(extensionName, deviceExtensionProperties, sizeof(deviceExtensionProperties) / sizeof(deviceExtensionProperties[0]));
+}
+
+static void copyExtensions(VkExtensionProperties *pProperties, uint32_t toCopy, const ExtensionProperties *extensionProperties, uint32_t extensionPropertiesCount)
+{
+	for(uint32_t i = 0, j = 0; i < toCopy; i++, j++)
+	{
+		while((j < extensionPropertiesCount) && !extensionProperties[j].isSupported)
+		{
+			j++;
+		}
+		if(j < extensionPropertiesCount)
+		{
+			pProperties[i] = extensionProperties[j];
+		}
+	}
+}
+
+static void copyInstanceExtensions(VkExtensionProperties *pProperties, uint32_t toCopy)
+{
+	copyExtensions(pProperties, toCopy, instanceExtensionProperties, sizeof(instanceExtensionProperties) / sizeof(instanceExtensionProperties[0]));
+}
+
+static void copyDeviceExtensions(VkExtensionProperties *pProperties, uint32_t toCopy)
+{
+	copyExtensions(pProperties, toCopy, deviceExtensionProperties, sizeof(deviceExtensionProperties) / sizeof(deviceExtensionProperties[0]));
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCreateInfo *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkInstance *pInstance)
@@ -765,6 +842,30 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 				(void)imagelessFramebufferFeatures->imagelessFramebuffer;
 			}
 			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES:
+			{
+				const VkPhysicalDeviceScalarBlockLayoutFeatures *scalarBlockLayoutFeatures = reinterpret_cast<const VkPhysicalDeviceScalarBlockLayoutFeatures *>(extensionCreateInfo);
+
+				// VK_EXT_scalar_block_layout is supported, allowing C-like structure layout for SPIR-V blocks.
+				(void)scalarBlockLayoutFeatures->scalarBlockLayout;
+			}
+			break;
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT:
+			{
+				const VkPhysicalDeviceDeviceMemoryReportFeaturesEXT *deviceMemoryReportFeatures = reinterpret_cast<const VkPhysicalDeviceDeviceMemoryReportFeaturesEXT *>(extensionCreateInfo);
+				(void)deviceMemoryReportFeatures->deviceMemoryReport;
+			}
+			break;
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
+			{
+				const VkPhysicalDeviceHostQueryResetFeatures *hostQueryResetFeatures = reinterpret_cast<const VkPhysicalDeviceHostQueryResetFeatures *>(extensionCreateInfo);
+
+				// VK_EXT_host_query_reset is always enabled.
+				(void)hostQueryResetFeatures->hostQueryReset;
+				break;
+			}
 			default:
 				// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"
 				LOG_TRAP("pCreateInfo->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
@@ -821,7 +922,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char
 	TRACE("(const char* pLayerName = %p, uint32_t* pPropertyCount = %p, VkExtensionProperties* pProperties = %p)",
 	      pLayerName, pPropertyCount, pProperties);
 
-	uint32_t extensionPropertiesCount = sizeof(instanceExtensionProperties) / sizeof(instanceExtensionProperties[0]);
+	uint32_t extensionPropertiesCount = numInstanceSupportedExtensions();
 
 	if(!pProperties)
 	{
@@ -830,10 +931,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char
 	}
 
 	auto toCopy = std::min(*pPropertyCount, extensionPropertiesCount);
-	for(uint32_t i = 0; i < toCopy; i++)
-	{
-		pProperties[i] = instanceExtensionProperties[i];
-	}
+	copyInstanceExtensions(pProperties, toCopy);
 
 	*pPropertyCount = toCopy;
 	return (toCopy < extensionPropertiesCount) ? VK_INCOMPLETE : VK_SUCCESS;
@@ -843,7 +941,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDe
 {
 	TRACE("(VkPhysicalDevice physicalDevice = %p, const char* pLayerName, uint32_t* pPropertyCount = %p, VkExtensionProperties* pProperties = %p)", physicalDevice, pPropertyCount, pProperties);
 
-	uint32_t extensionPropertiesCount = sizeof(deviceExtensionProperties) / sizeof(deviceExtensionProperties[0]);
+	uint32_t extensionPropertiesCount = numDeviceSupportedExtensions();
 
 	if(!pProperties)
 	{
@@ -852,10 +950,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDe
 	}
 
 	auto toCopy = std::min(*pPropertyCount, extensionPropertiesCount);
-	for(uint32_t i = 0; i < toCopy; i++)
-	{
-		pProperties[i] = deviceExtensionProperties[i];
-	}
+	copyDeviceExtensions(pProperties, toCopy);
 
 	*pPropertyCount = toCopy;
 	return (toCopy < extensionPropertiesCount) ? VK_INCOMPLETE : VK_SUCCESS;
@@ -1316,8 +1411,8 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetFenceStatus(VkDevice device, VkFence fence)
 
 VKAPI_ATTR VkResult VKAPI_CALL vkWaitForFences(VkDevice device, uint32_t fenceCount, const VkFence *pFences, VkBool32 waitAll, uint64_t timeout)
 {
-	TRACE("(VkDevice device = %p, uint32_t fenceCount = %d, const VkFence* pFences = %p, VkBool32 waitAll = %d, uint64_t timeout = %d)",
-	      device, int(fenceCount), pFences, int(waitAll), int(timeout));
+	TRACE("(VkDevice device = %p, uint32_t fenceCount = %d, const VkFence* pFences = %p, VkBool32 waitAll = %d, uint64_t timeout = %" PRIu64 ")",
+	      device, int(fenceCount), pFences, int(waitAll), timeout);
 
 	return vk::Cast(device)->waitForFences(fenceCount, pFences, waitAll, timeout);
 }
@@ -1604,6 +1699,14 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateImage(VkDevice device, const VkImageCreat
 				// by the application. Swiftshader is not impacted from lacking this information,
 				// so we don't need to track the format list.
 				break;
+			case VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO:
+			{
+				// SwiftShader does not use an image's usage info for non-debug purposes outside of
+				// vkGetPhysicalDeviceImageFormatProperties2. This also applies to separate stencil usage.
+				const VkImageStencilUsageCreateInfo *stencilUsageInfo = reinterpret_cast<const VkImageStencilUsageCreateInfo *>(extensionCreateInfo);
+				(void)stencilUsageInfo->stencilUsage;
+			}
+			break;
 			default:
 				// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"
 				LOG_TRAP("pCreateInfo->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
@@ -1934,6 +2037,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateSampler(VkDevice device, const VkSamplerC
 				ycbcrConversion = vk::Cast(samplerYcbcrConversionInfo->conversion);
 			}
 			break;
+#if !defined(__ANDROID__)
 			case VK_STRUCTURE_TYPE_SAMPLER_FILTERING_PRECISION_GOOGLE:
 			{
 				const VkSamplerFilteringPrecisionGOOGLE *filteringInfo =
@@ -1941,6 +2045,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateSampler(VkDevice device, const VkSamplerC
 				filteringPrecision = filteringInfo->samplerFilteringPrecisionMode;
 			}
 			break;
+#endif
 			default:
 				LOG_TRAP("pCreateInfo->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
 				break;
@@ -2221,7 +2326,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkEndCommandBuffer(VkCommandBuffer commandBuffer)
 
 VKAPI_ATTR VkResult VKAPI_CALL vkResetCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBufferResetFlags flags)
 {
-	TRACE("VkCommandBuffer commandBuffer = %p, VkCommandBufferResetFlags flags = %d", commandBuffer, int(flags));
+	TRACE("(VkCommandBuffer commandBuffer = %p, VkCommandBufferResetFlags flags = %d)", commandBuffer, int(flags));
 
 	return vk::Cast(commandBuffer)->reset(flags);
 }
@@ -2732,9 +2837,16 @@ VKAPI_ATTR void VKAPI_CALL vkCmdDispatchBase(VkCommandBuffer commandBuffer, uint
 	vk::Cast(commandBuffer)->dispatchBase(baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ);
 }
 
+VKAPI_ATTR void VKAPI_CALL vkResetQueryPool(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount)
+{
+	TRACE("(VkDevice device = %p, VkQueryPool queryPool = %p, uint32_t firstQuery = %d, uint32_t queryCount = %d)",
+	      device, static_cast<void *>(queryPool), firstQuery, queryCount);
+	vk::Cast(queryPool)->reset(firstQuery, queryCount);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL vkEnumeratePhysicalDeviceGroups(VkInstance instance, uint32_t *pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties *pPhysicalDeviceGroupProperties)
 {
-	TRACE("VkInstance instance = %p, uint32_t* pPhysicalDeviceGroupCount = %p, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties = %p",
+	TRACE("(VkInstance instance = %p, uint32_t* pPhysicalDeviceGroupCount = %p, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties = %p)",
 	      instance, pPhysicalDeviceGroupCount, pPhysicalDeviceGroupProperties);
 
 	return vk::Cast(instance)->getPhysicalDeviceGroups(pPhysicalDeviceGroupCount, pPhysicalDeviceGroupProperties);
@@ -2764,6 +2876,7 @@ VKAPI_ATTR void VKAPI_CALL vkGetImageMemoryRequirements2(VkDevice device, const 
 #if SWIFTSHADER_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER
 				if(vk::Cast(pInfo->image)->getSupportedExternalMemoryHandleTypes() == VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
 				{
+					requirements->prefersDedicatedAllocation = VK_TRUE;
 					requirements->requiresDedicatedAllocation = VK_TRUE;
 				}
 #endif
@@ -2936,6 +3049,42 @@ VKAPI_ATTR void VKAPI_CALL vkGetPhysicalDeviceProperties2(VkPhysicalDevice physi
 				vk::Cast(physicalDevice)->getProperties(properties);
 			}
 			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceVulkan11Properties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceSamplerFilterMinmaxProperties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceTimelineSemaphoreProperties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceVulkan12Properties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceDescriptorIndexingProperties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES:
+			{
+				auto properties = reinterpret_cast<VkPhysicalDeviceDepthStencilResolveProperties *>(extensionProperties);
+				vk::Cast(physicalDevice)->getProperties(properties);
+			}
+			break;
 			default:
 				// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"
 				LOG_TRAP("pProperties->pNext sType = %s", vk::Stringify(extensionProperties->sType).c_str());
@@ -2963,6 +3112,47 @@ VKAPI_ATTR void VKAPI_CALL vkGetPhysicalDeviceFormatProperties2(VkPhysicalDevice
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &(pFormatProperties->formatProperties));
 }
 
+static bool checkFormatUsage(VkImageUsageFlags usage, VkFormatFeatureFlags features)
+{
+	// Check for usage conflict with features
+	if((usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !(features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_STORAGE_BIT) && !(features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT) && !(features & (VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT))
+	{
+		return false;
+	}
+
+	if((usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2 *pImageFormatInfo, VkImageFormatProperties2 *pImageFormatProperties)
 {
 	TRACE("(VkPhysicalDevice physicalDevice = %p, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo = %p, VkImageFormatProperties2* pImageFormatProperties = %p)",
@@ -2975,6 +3165,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2(VkPhysi
 	const VkBaseInStructure *extensionFormatInfo = reinterpret_cast<const VkBaseInStructure *>(pImageFormatInfo->pNext);
 
 	const VkExternalMemoryHandleTypeFlagBits *handleType = nullptr;
+	VkImageUsageFlags stencilUsage = 0;
 	while(extensionFormatInfo)
 	{
 		switch(extensionFormatInfo->sType)
@@ -2985,10 +3176,10 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2(VkPhysi
 				ASSERT(!hasDeviceExtension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME));
 			}
 			break;
-			case VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO_EXT:
+			case VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO:
 			{
-				// Explicitly ignored, since VK_EXT_separate_stencil_usage is not supported
-				ASSERT(!hasDeviceExtension(VK_EXT_SEPARATE_STENCIL_USAGE_EXTENSION_NAME));
+				const VkImageStencilUsageCreateInfo *stencilUsageInfo = reinterpret_cast<const VkImageStencilUsageCreateInfo *>(extensionFormatInfo);
+				stencilUsage = stencilUsageInfo->stencilUsage;
 			}
 			break;
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO:
@@ -3086,38 +3277,14 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2(VkPhysi
 		return VK_ERROR_FORMAT_NOT_SUPPORTED;
 	}
 
-	// Check for usage conflict with features
-	if((usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !(features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+	// Reject any usage or separate stencil usage that is not compatible with the specified format.
+	if(!checkFormatUsage(usage, features))
 	{
 		return VK_ERROR_FORMAT_NOT_SUPPORTED;
 	}
-
-	if((usage & VK_IMAGE_USAGE_STORAGE_BIT) && !(features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
-	{
-		return VK_ERROR_FORMAT_NOT_SUPPORTED;
-	}
-
-	if((usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT))
-	{
-		return VK_ERROR_FORMAT_NOT_SUPPORTED;
-	}
-
-	if((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
-	{
-		return VK_ERROR_FORMAT_NOT_SUPPORTED;
-	}
-
-	if((usage & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT) && !(features & (VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)))
-	{
-		return VK_ERROR_FORMAT_NOT_SUPPORTED;
-	}
-
-	if((usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT))
-	{
-		return VK_ERROR_FORMAT_NOT_SUPPORTED;
-	}
-
-	if((usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT) && !(features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+	// If stencilUsage is 0 then no separate usage was provided and it takes on the same value as usage,
+	// which has already been checked. So only check non-zero stencilUsage.
+	if(stencilUsage != 0 && !checkFormatUsage(stencilUsage, features))
 	{
 		return VK_ERROR_FORMAT_NOT_SUPPORTED;
 	}
@@ -3131,6 +3298,25 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2(VkPhysi
 	                              VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 	                              VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
 	ASSERT(!(usage & ~(allRecognizedUsageBits)));
+
+	if(usage & VK_IMAGE_USAGE_SAMPLED_BIT)
+	{
+		if(tiling == VK_IMAGE_TILING_LINEAR)
+		{
+			// TODO(b/171299814): Compressed formats and cube maps are not supported for sampling using VK_IMAGE_TILING_LINEAR; otherwise, sampling
+			// in linear tiling is always supported as long as it can be sampled when using VK_IMAGE_TILING_OPTIMAL.
+			if(!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) ||
+			   vk::Format(format).isCompressed() ||
+			   (flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT))
+			{
+				return VK_ERROR_FORMAT_NOT_SUPPORTED;
+			}
+		}
+		else if(!(features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+		{
+			return VK_ERROR_FORMAT_NOT_SUPPORTED;
+		}
+	}
 
 	// "Images created with tiling equal to VK_IMAGE_TILING_LINEAR have further restrictions on their limits and capabilities
 	//  compared to images created with tiling equal to VK_IMAGE_TILING_OPTIMAL."
@@ -3471,6 +3657,9 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateXcbSurfaceKHR(VkInstance instance, const 
 	TRACE("(VkInstance instance = %p, VkXcbSurfaceCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
 	      instance, pCreateInfo, pAllocator, pSurface);
 
+	// VUID-VkXcbSurfaceCreateInfoKHR-connection-01310 : connection must point to a valid X11 xcb_connection_t
+	ASSERT(pCreateInfo->connection);
+
 	return vk::XcbSurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
 }
 
@@ -3488,6 +3677,9 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateXlibSurfaceKHR(VkInstance instance, const
 {
 	TRACE("(VkInstance instance = %p, VkXlibSurfaceCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
 	      instance, pCreateInfo, pAllocator, pSurface);
+
+	// VUID-VkXlibSurfaceCreateInfoKHR-dpy-01313: dpy must point to a valid Xlib Display
+	ASSERT(pCreateInfo->dpy);
 
 	return vk::XlibSurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
 }
@@ -3537,6 +3729,64 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceDirectFBPresentationSupportEXT
 }
 #endif
 
+#ifdef VK_USE_PLATFORM_DISPLAY_KHR
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateDisplayModeKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, const VkDisplayModeCreateInfoKHR *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDisplayModeKHR *pMode)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, VkDisplayKHR display = %p, VkDisplayModeCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkDisplayModeKHR* pModei = %p)",
+	      physicalDevice, static_cast<void *>(display), pCreateInfo, pAllocator, pMode);
+
+	return VK_SUCCESS;
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateDisplayPlaneSurfaceKHR(VkInstance instance, const VkDisplaySurfaceCreateInfoKHR *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface)
+{
+	TRACE("(VkInstance instance = %p, VkDisplaySurfaceCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
+	      instance, pCreateInfo, pAllocator, pSurface);
+
+	return vk::DisplaySurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetDisplayModePropertiesKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t *pPropertyCount, VkDisplayModePropertiesKHR *pProperties)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, VkDisplayKHR display = %p, uint32_t* pPropertyCount = %p, VkDisplayModePropertiesKHR* pProperties = %p)",
+	      physicalDevice, static_cast<void *>(display), pPropertyCount, pProperties);
+
+	return vk::DisplaySurfaceKHR::GetDisplayModeProperties(pPropertyCount, pProperties);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetDisplayPlaneCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkDisplayModeKHR mode, uint32_t planeIndex, VkDisplayPlaneCapabilitiesKHR *pCapabilities)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, VkDisplayModeKHR mode = %p, uint32_t planeIndex = %d, VkDisplayPlaneCapabilitiesKHR* pCapabilities = %p)",
+	      physicalDevice, static_cast<void *>(mode), planeIndex, pCapabilities);
+
+	return vk::DisplaySurfaceKHR::GetDisplayPlaneCapabilities(pCapabilities);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetDisplayPlaneSupportedDisplaysKHR(VkPhysicalDevice physicalDevice, uint32_t planeIndex, uint32_t *pDisplayCount, VkDisplayKHR *pDisplays)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, uint32_t planeIndex = %d, uint32_t* pDisplayCount = %p, VkDisplayKHR* pDisplays = %p)",
+	      physicalDevice, planeIndex, pDisplayCount, pDisplays);
+
+	return vk::DisplaySurfaceKHR::GetDisplayPlaneSupportedDisplays(pDisplayCount, pDisplays);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t *pPropertyCount, VkDisplayPlanePropertiesKHR *pProperties)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, uint32_t* pPropertyCount = %p, VkDisplayPlanePropertiesKHR* pProperties = %p)",
+	      physicalDevice, pPropertyCount, pProperties);
+
+	return vk::DisplaySurfaceKHR::GetPhysicalDeviceDisplayPlaneProperties(pPropertyCount, pProperties);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t *pPropertyCount, VkDisplayPropertiesKHR *pProperties)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, uint32_t* pPropertyCount = %p, VkDisplayPropertiesKHR* pProperties = %p)",
+	      physicalDevice, pPropertyCount, pProperties);
+
+	return vk::DisplaySurfaceKHR::GetPhysicalDeviceDisplayProperties(pPropertyCount, pProperties);
+}
+#endif
+
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateMacOSSurfaceMVK(VkInstance instance, const VkMacOSSurfaceCreateInfoMVK *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface)
 {
@@ -3574,6 +3824,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceWin32PresentationSupportKHR(Vk
 }
 #endif
 
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateHeadlessSurfaceEXT(VkInstance instance, const VkHeadlessSurfaceCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface)
+{
+	TRACE("(VkInstance instance = %p, VkHeadlessSurfaceCreateInfoEXT* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
+	      instance, pCreateInfo, pAllocator, pSurface);
+
+	return vk::HeadlessSurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
+}
+
 #ifndef __ANDROID__
 VKAPI_ATTR void VKAPI_CALL vkDestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, const VkAllocationCallbacks *pAllocator)
 {
@@ -3597,8 +3855,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysi
 	TRACE("(VkPhysicalDevice physicalDevice = %p, VkSurfaceKHR surface = %p, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities = %p)",
 	      physicalDevice, static_cast<void *>(surface), pSurfaceCapabilities);
 
-	vk::Cast(surface)->getSurfaceCapabilities(pSurfaceCapabilities);
-	return VK_SUCCESS;
+	return vk::Cast(surface)->getSurfaceCapabilities(pSurfaceCapabilities);
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t *pSurfaceFormatCount, VkSurfaceFormatKHR *pSurfaceFormats)
@@ -3689,8 +3946,8 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetSwapchainImagesKHR(VkDevice device, VkSwapch
 
 VKAPI_ATTR VkResult VKAPI_CALL vkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t *pImageIndex)
 {
-	TRACE("(VkDevice device = %p, VkSwapchainKHR swapchain = %p, uint64_t timeout = %d, VkSemaphore semaphore = %p, VkFence fence = %p, uint32_t* pImageIndex = %p)",
-	      device, static_cast<void *>(swapchain), int(timeout), static_cast<void *>(semaphore), static_cast<void *>(fence), pImageIndex);
+	TRACE("(VkDevice device = %p, VkSwapchainKHR swapchain = %p, uint64_t timeout = %" PRIu64 ", VkSemaphore semaphore = %p, VkFence fence = %p, uint32_t* pImageIndex = %p)",
+	      device, static_cast<void *>(swapchain), timeout, static_cast<void *>(semaphore), static_cast<void *>(fence), pImageIndex);
 
 	return vk::Cast(swapchain)->getNextImage(timeout, vk::Cast(semaphore), vk::Cast(fence), pImageIndex);
 }

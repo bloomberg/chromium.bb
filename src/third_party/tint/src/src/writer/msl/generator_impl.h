@@ -19,17 +19,41 @@
 #include <string>
 #include <unordered_map>
 
-#include "src/ast/intrinsic.h"
+#include "src/ast/array_accessor_expression.h"
+#include "src/ast/assignment_statement.h"
+#include "src/ast/binary_expression.h"
+#include "src/ast/bitcast_expression.h"
+#include "src/ast/break_statement.h"
+#include "src/ast/call_expression.h"
+#include "src/ast/case_statement.h"
+#include "src/ast/continue_statement.h"
+#include "src/ast/discard_statement.h"
+#include "src/ast/else_statement.h"
+#include "src/ast/identifier_expression.h"
+#include "src/ast/if_statement.h"
 #include "src/ast/literal.h"
-#include "src/ast/module.h"
+#include "src/ast/loop_statement.h"
+#include "src/ast/member_accessor_expression.h"
+#include "src/ast/return_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/struct_type.h"
+#include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
+#include "src/ast/unary_op_expression.h"
+#include "src/program.h"
 #include "src/scope_stack.h"
+#include "src/semantic/intrinsic.h"
+#include "src/type/struct_type.h"
 #include "src/writer/msl/namer.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
+
+// Forward declarations
+namespace semantic {
+class Call;
+class Intrinsic;
+}  // namespace semantic
+
 namespace writer {
 namespace msl {
 
@@ -37,27 +61,27 @@ namespace msl {
 class GeneratorImpl : public TextGenerator {
  public:
   /// Constructor
-  /// @param module the module to generate
-  explicit GeneratorImpl(ast::Module* module);
+  /// @param program the program to generate
+  explicit GeneratorImpl(const Program* program);
   ~GeneratorImpl();
 
   /// @returns true on successful generation; false otherwise
   bool Generate();
 
-  /// Calculates the alignment size of the given |type|. This returns 0
+  /// Calculates the alignment size of the given `type`. This returns 0
   /// for pointers as the size is unknown.
   /// @param type the type to calculate the alignment size for
-  /// @returns the number of bytes used to align |type| or 0 on error
-  uint32_t calculate_alignment_size(ast::type::Type* type);
+  /// @returns the number of bytes used to align `type` or 0 on error
+  uint32_t calculate_alignment_size(type::Type* type);
   /// Calculates the largest alignment seen within a struct
   /// @param type the struct to calculate
   /// @returns the largest alignment value
-  uint32_t calculate_largest_alignment(ast::type::StructType* type);
+  uint32_t calculate_largest_alignment(type::Struct* type);
 
   /// Handles generating a constructed
   /// @param ty the constructed type to generate
   /// @returns true if the constructed type was emitted
-  bool EmitConstructedType(const ast::type::Type* ty);
+  bool EmitConstructedType(const type::Type* ty);
   /// Handles an array accessor expression
   /// @param expr the expression to emit
   /// @returns true if the array accessor was emitted
@@ -94,6 +118,13 @@ class GeneratorImpl : public TextGenerator {
   /// @param expr the call expression
   /// @returns true if the call expression is emitted
   bool EmitCall(ast::CallExpression* expr);
+  /// Handles generating a call to a texture function (`textureSample`,
+  /// `textureSampleGrad`, etc)
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the texture intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitTextureCall(ast::CallExpression* expr,
+                       const semantic::Intrinsic* intrinsic);
   /// Handles a case statement
   /// @param stmt the statement
   /// @returns true if the statement was emitted successfully
@@ -134,11 +165,11 @@ class GeneratorImpl : public TextGenerator {
   /// @param func the function to emit
   /// @param emit_duplicate_functions set true if we need to duplicate per entry
   /// point
-  /// @param ep_name the current entry point or blank if none set
+  /// @param ep_sym the current entry point or symbol::kInvalid if not set
   /// @returns true if the function was emitted.
   bool EmitFunctionInternal(ast::Function* func,
                             bool emit_duplicate_functions,
-                            const std::string& ep_name);
+                            Symbol ep_sym);
   /// Handles generating an identifier expression
   /// @param expr the identifier expression
   /// @returns true if the identifier was emitted
@@ -182,11 +213,11 @@ class GeneratorImpl : public TextGenerator {
   /// @param type the type to generate
   /// @param name the name of the variable, only used for array emission
   /// @returns true if the type is emitted
-  bool EmitType(ast::type::Type* type, const std::string& name);
+  bool EmitType(type::Type* type, const std::string& name);
   /// Handles generating a struct declaration
   /// @param str the struct to generate
   /// @returns true if the struct is emitted
-  bool EmitStructType(const ast::type::StructType* str);
+  bool EmitStructType(const type::Struct* str);
   /// Handles emitting a type constructor
   /// @param expr the type constructor expression
   /// @returns true if the constructor is emitted
@@ -199,7 +230,7 @@ class GeneratorImpl : public TextGenerator {
   /// @param var the variable to generate
   /// @param skip_constructor set true if the constructor should be skipped
   /// @returns true if the variable was emitted
-  bool EmitVariable(ast::Variable* var, bool skip_constructor);
+  bool EmitVariable(const semantic::Variable* var, bool skip_constructor);
   /// Handles generating a program scope constant variable
   /// @param var the variable to emit
   /// @returns true if the variable was emitted
@@ -207,7 +238,7 @@ class GeneratorImpl : public TextGenerator {
   /// Emits the zero value for the given type
   /// @param type the type to emit the value for
   /// @returns true if the zero value was successfully emitted.
-  bool EmitZeroValue(ast::type::Type* type);
+  bool EmitZeroValue(type::Type* type);
 
   /// Determines if the function needs the input struct passed to it.
   /// @param func the function to check
@@ -226,26 +257,22 @@ class GeneratorImpl : public TextGenerator {
   /// @param prefix the prefix of the name to generate
   /// @returns the name
   std::string generate_name(const std::string& prefix);
-  /// Generates an intrinsic name from the given name
-  /// @param intrinsic the intrinsic to convert to an method name
-  /// @returns the intrinsic name or blank on error
-  std::string generate_intrinsic_name(ast::Intrinsic intrinsic);
   /// Handles generating a builtin name
-  /// @param ident the identifier to build the name from
+  /// @param intrinsic the semantic info for the intrinsic
   /// @returns the name or "" if not valid
-  std::string generate_builtin_name(ast::IdentifierExpression* ident);
+  std::string generate_builtin_name(const semantic::Intrinsic* intrinsic);
 
   /// Checks if the global variable is in an input or output struct
   /// @param var the variable to check
   /// @returns true if the global is in an input or output struct
-  bool global_is_in_struct(ast::Variable* var) const;
+  bool global_is_in_struct(const semantic::Variable* var) const;
 
   /// Converts a builtin to an attribute name
   /// @param builtin the builtin to convert
   /// @returns the string name of the builtin or blank on error
   std::string builtin_to_attribute(ast::Builtin builtin) const;
 
-  /// @returns the namer for testing
+  /// @returns the namer for testing purposes
   Namer* namer_for_testing() { return &namer_; }
 
  private:
@@ -258,15 +285,21 @@ class GeneratorImpl : public TextGenerator {
 
   std::string current_ep_var_name(VarType type);
 
+  /// @returns the resolved type of the ast::Expression `expr`
+  /// @param expr the expression
+  type::Type* TypeOf(ast::Expression* expr) const {
+    return program_->TypeOf(expr);
+  }
+
   Namer namer_;
-  ScopeStack<ast::Variable*> global_variables_;
-  std::string current_ep_name_;
+  ScopeStack<const semantic::Variable*> global_variables_;
+  Symbol current_ep_sym_;
   bool generating_entry_point_ = false;
-  const ast::Module* module_ = nullptr;
+  const Program* program_ = nullptr;
   uint32_t loop_emission_counter_ = 0;
 
-  std::unordered_map<std::string, EntryPointData> ep_name_to_in_data_;
-  std::unordered_map<std::string, EntryPointData> ep_name_to_out_data_;
+  std::unordered_map<Symbol, EntryPointData> ep_sym_to_in_data_;
+  std::unordered_map<Symbol, EntryPointData> ep_sym_to_out_data_;
 
   // This maps an input of "<entry_point_name>_<function_name>" to a remapped
   // function name. If there is no entry for a given key then function did

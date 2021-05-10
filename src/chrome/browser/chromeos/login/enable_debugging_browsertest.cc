@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
@@ -25,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -49,9 +50,6 @@ const test::UIPath kDoneDialog = {kDebuggingScreenId, "doneDialog"};
 const test::UIPath kErrorDialog = {kDebuggingScreenId, "errorDialog"};
 
 const test::UIPath kHelpLink = {kDebuggingScreenId, "help-link"};
-const test::UIPath kSetUpDetails = {kDebuggingScreenId, "setup-details"};
-const test::UIPath kPasswordContainer = {kDebuggingScreenId,
-                                         "password-container"};
 const test::UIPath kPasswordInput = {kDebuggingScreenId, "password"};
 const test::UIPath kPassword2Input = {kDebuggingScreenId, "passwordRepeat"};
 const test::UIPath kPasswordNote = {kDebuggingScreenId, "password-note"};
@@ -234,10 +232,8 @@ class EnableDebuggingTestBase : public OobeBaseTest {
     debug_daemon_client_->WaitUntilCalled();
     base::RunLoop().RunUntilIdle();
 
-    test::OobeJS().ExpectVisiblePath(kPasswordContainer);
     test::OobeJS().ExpectVisiblePath(kPasswordInput);
     test::OobeJS().ExpectVisiblePath(kPassword2Input);
-    test::OobeJS().ExpectVisiblePath(kSetUpDetails);
     test::OobeJS().ExpectVisiblePath(kPasswordNote);
   }
 

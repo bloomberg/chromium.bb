@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -47,7 +48,9 @@ bool GetWindowClientRect(HWND window_handle,
 
 }  // namespace
 
-TSFTextStore::TSFTextStore() {}
+TSFTextStore::TSFTextStore() {
+  TRACE_EVENT0("ime", "TSFTextStore::TSFTextStore");
+}
 
 TSFTextStore::~TSFTextStore() {}
 
@@ -214,6 +217,9 @@ HRESULT TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
     rect->right = right_bottom.x;
     rect->bottom = right_bottom.y;
   }
+
+  TRACE_EVENT1("ime", "TSFTextStore::GetScreenExt", "control_bounding_rect",
+               gfx::Rect(*rect).ToString());
   return S_OK;
 }
 
@@ -242,12 +248,7 @@ HRESULT TSFTextStore::GetSelection(ULONG selection_index,
 HRESULT TSFTextStore::GetStatus(TS_STATUS* status) {
   if (!status)
     return E_INVALIDARG;
-  // TODO(snianu): Uncomment this once TSF fix for input pane policy is
-  // serviced.
-  // if (input_panel_policy_manual_)
-  //   status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
-  // else
-  //   status->dwDynamicFlags &= ~TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+
   status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
   // We don't support hidden text.
   // TODO(IME): Remove TS_SS_TRANSITORY to support Korean reconversion
@@ -408,6 +409,8 @@ HRESULT TSFTextStore::GetTextExt(TsViewCookie view_cookie,
                                                    result_rect.value())
               .ToRECT();
   *clipped = FALSE;
+  TRACE_EVENT1("ime", "TSFTextStore::GetTextExt", "selection_bounding_rect",
+               gfx::Rect(*rect).ToString());
   return S_OK;
 }
 
@@ -619,7 +622,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   if (!text_input_client_)
     return E_UNEXPECTED;
 
-  // If string_pending_insertion_ is empty, then there are three cases:
+  // If string_pending_insertion_ is empty, then there are four cases:
   // 1. there is no composition We only need to do comparison between our
   //    cache and latest textinputstate and send notifications accordingly.
   // 2. A new composition is about to start on existing text. We need to start
@@ -627,16 +630,20 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // 3. There is composition. User cancels the composition by deleting all of
   //    the composing text, we need to reset the composition_start_ and call
   //    into blink to complete the existing composition(later in this method).
+  // 4. There is no composition. IME removes previous inserted text. We need to
+  //    ask tic to delete the text range.
   if (string_pending_insertion_.empty()) {
     if (!text_input_client_->HasCompositionText()) {
+      // Remove replacing text.
+      if (new_text_inserted_ && !replace_text_range_.is_empty() &&
+          !replace_text_size_) {
+        is_tic_write_in_progress_ = true;
+        text_input_client_->SetEditableSelectionRange(replace_text_range_);
+        text_input_client_->ExtendSelectionAndDelete(0, 0);
+        is_tic_write_in_progress_ = false;
+      }
       if (has_composition_range_ && on_start_composition_called_) {
         is_tic_write_in_progress_ = true;
-        // Remove replacing text first before starting composition.
-        if (new_text_inserted_ && !replace_text_range_.is_empty() &&
-            !replace_text_size_) {
-          text_input_client_->SetEditableSelectionRange(replace_text_range_);
-          text_input_client_->ExtendSelectionAndDelete(0, 0);
-        }
         string_pending_insertion_ = string_buffer_document_.substr(
             composition_range_.GetMin(), composition_range_.length());
         StartCompositionOnExistingText();
@@ -802,6 +809,7 @@ HRESULT TSFTextStore::SetText(DWORD flags,
                               const wchar_t* text_buffer,
                               ULONG text_buffer_size,
                               TS_TEXTCHANGE* text_change) {
+  TRACE_EVENT0("ime", "TSFTextStore::SetText");
   if (!HasReadWriteLock())
     return TS_E_NOLOCK;
 
@@ -838,6 +846,7 @@ HRESULT TSFTextStore::UnadviseSink(IUnknown* unknown) {
 
 HRESULT TSFTextStore::OnStartComposition(ITfCompositionView* composition_view,
                                          BOOL* ok) {
+  TRACE_EVENT0("ime", "TSFTextStore::OnStartComposition");
   if (ok)
     *ok = TRUE;
 
@@ -851,6 +860,7 @@ HRESULT TSFTextStore::OnUpdateComposition(ITfCompositionView* composition_view,
 }
 
 HRESULT TSFTextStore::OnEndComposition(ITfCompositionView* composition_view) {
+  TRACE_EVENT0("ime", "TSFTextStore::OnEndComposition");
   return S_OK;
 }
 
@@ -911,6 +921,7 @@ void TSFTextStore::DispatchKeyEvent(ui::EventType type,
 HRESULT TSFTextStore::OnEndEdit(ITfContext* context,
                                 TfEditCookie read_only_edit_cookie,
                                 ITfEditRecord* edit_record) {
+  TRACE_EVENT0("ime", "TSFTextStore::OnEndEdit");
   if (!context || !edit_record)
     return E_INVALIDARG;
 
@@ -980,6 +991,7 @@ HRESULT TSFTextStore::OnEndEdit(ITfContext* context,
 
 bool TSFTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
                                        TF_DISPLAYATTRIBUTE* attribute) {
+  TRACE_EVENT0("ime", "TSFTextStore::GetDisplayAttribute");
   GUID guid;
   if (FAILED(category_manager_->GetGUID(guid_atom, &guid)))
     return false;
@@ -1073,7 +1085,6 @@ bool TSFTextStore::GetCompositionStatus(
       ImeTextSpan span;
       span.start_offset = start_pos;
       span.end_offset = start_pos + length;
-      span.underline_color = SK_ColorBLACK;
       span.background_color = SK_ColorTRANSPARENT;
       if (selection_.EqualsIgnoringDirection(
               gfx::Range(span.start_offset, span.end_offset))) {
@@ -1087,12 +1098,29 @@ bool TSFTextStore::GetCompositionStatus(
   return true;
 }
 
+void TSFTextStore::ResetCompositionState() {
+  previous_composition_string_.clear();
+  previous_composition_start_ = 0;
+  previous_composition_selection_range_ = gfx::Range::InvalidRange();
+  previous_text_spans_.clear();
+
+  string_pending_insertion_.clear();
+  composition_range_.set_start(0);
+  composition_range_.set_end(0);
+
+  selection_ = gfx::Range(composition_from_client_.end(),
+                          composition_from_client_.end());
+  composition_start_ = selection_.end();
+}
+
 bool TSFTextStore::TerminateComposition() {
+  TRACE_EVENT0("ime", "TSFTextStore::TerminateComposition");
   if (context_ && has_composition_range_) {
     Microsoft::WRL::ComPtr<ITfContextOwnerCompositionServices> service;
 
     if (SUCCEEDED(context_->QueryInterface(IID_PPV_ARGS(&service)))) {
       service->TerminateComposition(nullptr);
+      has_composition_range_ = false;
       return true;
     }
   }
@@ -1108,6 +1136,10 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
       is_tic_write_in_progress_)
     return;
 
+  // TODO(snianu) Perhaps we can do the diff at the TextInputManager layer and
+  // only report the diffs?
+  TRACE_EVENT0("ime",
+               "TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded");
   gfx::Range latest_buffer_range_from_client;
   base::string16 latest_buffer_from_client;
   gfx::Range latest_selection_from_client;
@@ -1212,10 +1244,17 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
     // into us during notification.
     is_notification_in_progress_ = true;
     if (notify_text_change && text_changed) {
+      TRACE_EVENT2(
+          "ime", "TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded",
+          "text_change_start", std::to_string(text_change.acpStart),
+          "text_change_end", std::to_string(text_change.acpNewEnd));
       text_store_acp_sink_->OnTextChange(0, &text_change);
     }
 
     if (notify_selection_change && selection_changed) {
+      TRACE_EVENT1(
+          "ime", "TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded",
+          "new_selection", selection_.ToString());
       text_store_acp_sink_->OnSelectionChange();
     }
     is_notification_in_progress_ = false;
@@ -1261,7 +1300,14 @@ bool TSFTextStore::CancelComposition() {
   // TODO(IME): Check other platforms to see if |CancelComposition()| is
   //            actually working or not.
 
-  return ConfirmComposition();
+  if (edit_flag_ || !text_input_client_)
+    return false;
+
+  TRACE_EVENT0("ime", "TSFTextStore::CancelComposition");
+
+  ResetCompositionState();
+
+  return TerminateComposition();
 }
 
 bool TSFTextStore::ConfirmComposition() {
@@ -1275,24 +1321,9 @@ bool TSFTextStore::ConfirmComposition() {
   if (!text_input_client_)
     return false;
 
-  previous_composition_string_.clear();
-  previous_composition_start_ = 0;
-  previous_composition_selection_range_ = gfx::Range::InvalidRange();
-  previous_text_spans_.clear();
-  string_pending_insertion_.clear();
-  selection_ = gfx::Range(composition_from_client_.end(),
-                          composition_from_client_.end());
-  composition_start_ = selection_.end();
+  ResetCompositionState();
 
   return TerminateComposition();
-}
-
-void TSFTextStore::SetInputPanelPolicy(bool input_panel_policy_manual) {
-  input_panel_policy_manual_ = input_panel_policy_manual;
-  // This notification tells TSF that the input pane flag has changed.
-  // TSF queries for the status of this flag using GetStatus and gets
-  // the updated value.
-  text_store_acp_sink_->OnStatusChange(TS_SD_INPUTPANEMANUALDISPLAYENABLE);
 }
 
 void TSFTextStore::SendOnLayoutChange() {
@@ -1301,8 +1332,11 @@ void TSFTextStore::SendOnLayoutChange() {
   if (is_notification_in_progress_)
     return;
   CalculateTextandSelectionDiffAndNotifyIfNeeded();
-  if (text_store_acp_sink_ && (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE))
+  if (text_store_acp_sink_ &&
+      (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)) {
+    TRACE_EVENT0("ime", "TSFTextStore::SendOnLayoutChange");
     text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
+  }
 }
 
 bool TSFTextStore::HasReadLock() const {
@@ -1408,7 +1442,9 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
       composition_text.selection.set_end(new_committed_string.size());
       text_input_client_->SetCompositionText(composition_text);
     }
-    text_input_client_->InsertText(new_committed_string);
+    text_input_client_->InsertText(
+        new_committed_string,
+        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   } else {
     text_input_client_->ClearCompositionText();
   }

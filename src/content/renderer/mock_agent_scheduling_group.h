@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_MOCK_AGENT_SCHEDULING_GROUP_H_
 #define CONTENT_RENDERER_MOCK_AGENT_SCHEDULING_GROUP_H_
 
+#include <memory>
+
 #include "base/callback.h"
+#include "base/types/pass_key.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/renderer/agent_scheduling_group.h"
@@ -22,15 +25,20 @@ class RenderThread;
 // in the browser process.
 class MockAgentSchedulingGroup : public AgentSchedulingGroup {
  public:
-  // `mojo_disconnect_handler` is an optional callback that will be called with
-  // `this` when `receiver` is disconnected.
+  static std::unique_ptr<MockAgentSchedulingGroup> Create(
+      RenderThread& render_thread);
   MockAgentSchedulingGroup(
+      base::PassKey<MockAgentSchedulingGroup> pass_key,
       RenderThread& render_thread,
-      mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost>
-          host_remote,
-      mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver);
+      mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup>
+          pending_receiver);
+  MockAgentSchedulingGroup(
+      base::PassKey<MockAgentSchedulingGroup> pass_key,
+      RenderThread& render_thread,
+      mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> pending_receiver);
 
-  mojom::RouteProvider* GetRemoteRouteProvider() override;
+ private:
+  void Init();
 };
 
 }  // namespace content

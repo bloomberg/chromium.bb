@@ -4,8 +4,6 @@
 
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 
-#include "ash/home_screen/home_launcher_gesture_handler.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -149,11 +147,12 @@ class HomeToOverviewNudgeControllerTest : public AshTestBase {
 
     HotseatWidget* const hotseat = GetHotseatWidget();
     gfx::RectF hotseat_bounds_f(hotseat->GetNativeWindow()->GetTargetBounds());
-    hotseat->GetLayer()->transform().TransformRect(&hotseat_bounds_f);
+    hotseat->GetLayerForNudgeAnimation()->transform().TransformRect(
+        &hotseat_bounds_f);
     const gfx::Rect hotseat_bounds = gfx::ToEnclosingRect(hotseat_bounds_f);
 
     // Nudge and hotseat should have the same transform.
-    EXPECT_EQ(hotseat->GetLayer()->transform(),
+    EXPECT_EQ(hotseat->GetLayerForNudgeAnimation()->transform(),
               nudge_widget->GetLayer()->transform());
 
     // Nudge should be under the hotseat.
@@ -264,7 +263,8 @@ TEST_F(HomeToOverviewNudgeControllerTest, ShownOnHomeScreen) {
   // the nudge.
   Shell::Get()->overview_controller()->EndOverview();
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(), GetHotseatWidget()->GetLayer()->transform());
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayerForNudgeAnimation()->transform());
 
   // Advance time for more than a day (which should enable the nudge again).
   test_clock_.Advance(base::TimeDelta::FromHours(25));
@@ -292,7 +292,8 @@ TEST_F(HomeToOverviewNudgeControllerTest, ShownOnHomeScreen) {
   ASSERT_TRUE(GetNudgeController()->HasHideTimerForTesting());
   GetNudgeController()->FireHideTimerForTesting();
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(), GetHotseatWidget()->GetLayer()->transform());
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayerForNudgeAnimation()->transform());
   histogram_tester.ExpectBucketCount(
       "Ash.ContextualNudgeDismissContext.HomeToOverview",
       contextual_tooltip::DismissNudgeReason::kTimeout, 1);
@@ -342,8 +343,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, HiddenOnTabletModeExit) {
 
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   histogram_tester.ExpectBucketCount(
       "Ash.ContextualNudgeDismissContext.HomeToOverview",
@@ -363,8 +365,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, ShowCanceledOnTabletModeExit) {
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetNudgeController()->HasShowTimerForTesting());
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 }
 
 // Tests that the nudge show animation is canceled when tablet mode exits.
@@ -387,8 +390,9 @@ TEST_F(HomeToOverviewNudgeControllerTest,
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetNudgeController()->HasShowTimerForTesting());
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 }
 
 // Tests that the nudge is hidden when the screen is locked.
@@ -405,8 +409,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, HiddenOnScreenLock) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   // Nudge should not be shown if a window is shown and hidden behind a lock
   // screen.
@@ -472,14 +477,19 @@ TEST_F(HomeToOverviewNudgeControllerTest, NudgeHiddenDuringShowAnimation) {
 
   EXPECT_FALSE(GetNudgeWidget());
   EXPECT_FALSE(nudge_widget->IsVisible());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   EXPECT_TRUE(widget_close_observer.WidgetClosed());
 
-  EXPECT_TRUE(GetHotseatWidget()->GetLayer()->GetAnimator()->is_animating());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_TRUE(GetHotseatWidget()
+                  ->GetLayerForNudgeAnimation()
+                  ->GetAnimator()
+                  ->is_animating());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   // When the nudge is shown again, it should be hidden after a timeout.
   test_clock_.Advance(base::TimeDelta::FromHours(25));
@@ -532,8 +542,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeClosesTheNudge) {
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
   EXPECT_TRUE(widget_close_observer.WidgetClosed());
 
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   histogram_tester.ExpectBucketCount(
       "Ash.ContextualNudgeDismissContext.HomeToOverview",
@@ -566,8 +577,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeDuringShowAnimation) {
   ASSERT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
   EXPECT_TRUE(nudge_widget->IsVisible());
   EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
   EXPECT_FALSE(widget_close_observer.WidgetClosed());
 
   ASSERT_TRUE(nudge->label()->layer()->GetAnimator()->is_animating());
@@ -576,14 +588,19 @@ TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeDuringShowAnimation) {
 
   EXPECT_FALSE(GetNudgeWidget());
   EXPECT_FALSE(nudge_widget->IsVisible());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   EXPECT_TRUE(widget_close_observer.WidgetClosed());
 
-  EXPECT_TRUE(GetHotseatWidget()->GetLayer()->GetAnimator()->is_animating());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_TRUE(GetHotseatWidget()
+                  ->GetLayerForNudgeAnimation()
+                  ->GetAnimator()
+                  ->is_animating());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 }
 
 // Tests that the nudge stops showing up if the user performs the gesture few
@@ -625,9 +642,8 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoNudgeAfterSuccessfulGestures) {
               // transition to overview (which happens after swipe moves far
               // enough), run it to trigger transition to overview.
               SwipeHomeToOverviewController* swipe_controller =
-                  Shell::Get()
-                      ->home_screen_controller()
-                      ->home_launcher_gesture_handler()
+                  GetPrimaryShelf()
+                      ->shelf_layout_manager()
                       ->swipe_home_to_overview_controller_for_testing();
               ASSERT_TRUE(swipe_controller);
 
@@ -647,8 +663,9 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoNudgeAfterSuccessfulGestures) {
 
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
   EXPECT_FALSE(GetNudgeController()->HasShowTimerForTesting());
-  EXPECT_EQ(gfx::Transform(),
-            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(
+      gfx::Transform(),
+      GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 }
 
 // Tests that swipe up and hold gesture that starts on top of contextual nudge
@@ -678,9 +695,8 @@ TEST_F(HomeToOverviewNudgeControllerTest, HomeToOverviewGestureFromNudge) {
         // transition to overview (which happens after swipe moves far
         // enough), run it to trigger transition to overview.
         SwipeHomeToOverviewController* swipe_controller =
-            Shell::Get()
-                ->home_screen_controller()
-                ->home_launcher_gesture_handler()
+            GetPrimaryShelf()
+                ->shelf_layout_manager()
                 ->swipe_home_to_overview_controller_for_testing();
         ASSERT_TRUE(swipe_controller);
 

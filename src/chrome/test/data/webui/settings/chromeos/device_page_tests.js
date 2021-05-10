@@ -2,6 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+// #import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
+// #import {setDisplayApiForTesting, Router, routes, DevicePageBrowserProxyImpl, IdleBehavior, NoteAppLockScreenSupport, LidClosedBehavior, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {FakeSystemDisplay} from './fake_system_display.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('device_page_tests', function() {
   /** @enum {string} */
   const TestNames = {
@@ -14,6 +29,7 @@ cr.define('device_page_tests', function() {
     Power: 'power',
     Storage: 'storage',
     Stylus: 'stylus',
+    KeyboardArrangementDisabled: 'arrow_key_arrangement_disabled',
   };
 
   /**
@@ -356,6 +372,23 @@ cr.define('device_page_tests', function() {
             value: 4,
           },
         },
+        pointing_stick: {
+          primary_right: {
+            key: 'settings.pointing_stick.primary_right',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          acceleration: {
+            key: 'settings.pointing_stick.acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+          sensitivity: {
+            key: 'settings.pointing_stick.sensitivity',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 4,
+          },
+        },
         language: {
           xkb_remap_search_key_to: {
             key: 'settings.language.xkb_remap_search_key_to',
@@ -426,7 +459,7 @@ cr.define('device_page_tests', function() {
 
     setup(function(done) {
       fakeSystemDisplay = new settings.FakeSystemDisplay();
-      settings.display.systemDisplayApi = fakeSystemDisplay;
+      settings.setDisplayApiForTesting(fakeSystemDisplay);
 
       PolymerTest.clearBody();
       settings.Router.getInstance().navigateTo(settings.routes.BASIC);
@@ -600,6 +633,30 @@ cr.define('device_page_tests', function() {
       return !!element && element.offsetWidth > 0 && element.offsetHeight > 0;
     }
 
+    /**
+     * Checks that the deep link to a setting focuses the correct element.
+     * @param {!settings.Route} route
+     * @param {!string} settingId
+     * @param {!Element} deepLinkElement The element that should be focused by
+     *                                   the deep link
+     * @param {!string} elementDesc A human-readable description of the element,
+     *                              for assertion messages
+     */
+    async function checkDeepLink(
+        route, settingId, deepLinkElement, elementDesc) {
+      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
+      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+      const params = new URLSearchParams;
+      params.append('settingId', settingId);
+      settings.Router.getInstance().navigateTo(route, params);
+
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          `${elementDesc} should be focused for settingId=${settingId}.`);
+    }
+
     test(assert(TestNames.DevicePage), function() {
       expectTrue(isVisible(devicePage.$$('#pointersRow')));
       expectTrue(isVisible(devicePage.$$('#keyboardRow')));
@@ -619,6 +676,9 @@ cr.define('device_page_tests', function() {
       let pointersPage;
 
       setup(function() {
+        // TODO(crbug.com/1114828): remove this flag setting once the flag has
+        // been removed and this suite merged with the PointingStick suite.
+        loadTimeData.overrideValues({separatePointingStickSettings: false});
         return showAndGetDeviceSubpage('pointers', settings.routes.POINTERS)
             .then(function(page) {
               pointersPage = page;
@@ -692,6 +752,47 @@ cr.define('device_page_tests', function() {
         expectEquals(5, slider.pref.value);
       });
 
+      test('mouse primary button also sets pointing stick', function() {
+        // TODO(crbug.com/1114828): remove once the feature is launched.
+        const dropdown = assert(pointersPage.$$('#mouseSwapButtonDropdown'));
+        function simulateChangeEvent(value) {
+          // TODO(crbug.com/1045266): This code should be deduplicated from
+          // dropdown_menu_tests.js once there's a good place to put it (i.e.
+          // once this test uses Polymer3 so ../test_util.js can be used).
+          const selectElement = dropdown.$$('select');
+          selectElement.value = value;
+          selectElement.dispatchEvent(new CustomEvent('change'));
+          return new Promise(function(resolve) {
+            dropdown.async(resolve);
+          });
+        }
+        expectEquals(false, dropdown.pref.value);
+        return simulateChangeEvent('true').then(function() {
+          expectEquals(
+              true,
+              devicePage.prefs.settings.pointing_stick.primary_right.value);
+        });
+      });
+
+      test('mouse acceleration also sets pointing stick', function() {
+        // TODO(crbug.com/1114828): remove once the feature is launched.
+        const toggle = assert(pointersPage.$$('#mouseAcceleration'));
+        expectEquals(true, toggle.pref.value);
+        toggle.click();
+        expectEquals(
+            false, devicePage.prefs.settings.pointing_stick.acceleration.value);
+      });
+
+      test('mouse speed also sets pointing stick speed', function() {
+        // TODO(crbug.com/1114828): remove once the feature is launched.
+        const slider = assert(pointersPage.$$('#mouse settings-slider'));
+        expectEquals(4, slider.pref.value);
+        MockInteractions.pressAndReleaseKeyOn(
+            slider.$$('cr-slider'), 37, [], 'ArrowLeft');
+        expectEquals(
+            3, devicePage.prefs.settings.pointing_stick.sensitivity.value);
+      });
+
       test('touchpad', function() {
         expectTrue(isVisible(pointersPage.$$('#touchpad')));
 
@@ -738,20 +839,10 @@ cr.define('device_page_tests', function() {
       });
 
       test('Deep link to touchpad speed', async () => {
-        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
-        const params = new URLSearchParams;
-        params.append('settingId', '405');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.POINTERS, params);
-
-        const deepLinkElement =
-            pointersPage.$$('#touchpadSensitivity').$$('cr-slider');
-        await test_util.waitAfterNextRender(deepLinkElement);
-        assertEquals(
-            deepLinkElement, getDeepActiveElement(),
-            'Touchpad speed slider should be focused for settingId=405.');
+        return checkDeepLink(
+            settings.routes.POINTERS, '405',
+            pointersPage.$$('#touchpadSensitivity').$$('cr-slider'),
+            'Touchpad speed slider');
       });
     });
 
@@ -831,6 +922,52 @@ cr.define('device_page_tests', function() {
               assertTrue(isVisible(page.$$('#touchpad')));
               assertTrue(isVisible(page.$$('#touchpad h2')));
             });
+      });
+
+      test('acceleration toggle sets and responds to preference', function() {
+        const toggle = assert(pointersPage.$$('#pointingStickAcceleration'));
+        expectEquals(true, toggle.pref.value);
+        toggle.click();
+        expectEquals(
+            false, devicePage.prefs.settings.pointing_stick.acceleration.value);
+
+        pointersPage.set(
+            'prefs.settings.pointing_stick.acceleration.value', true);
+        expectEquals(true, toggle.pref.value);
+      });
+
+      test('speed slider sets and responds to preference', function() {
+        const slider =
+            assert(pointersPage.$$('#pointingStick settings-slider'));
+        expectEquals(4, slider.pref.value);
+        MockInteractions.pressAndReleaseKeyOn(
+            slider.$$('cr-slider'), 37, [], 'ArrowLeft');
+        expectEquals(
+            3, devicePage.prefs.settings.pointing_stick.sensitivity.value);
+
+        pointersPage.set('prefs.settings.pointing_stick.sensitivity.value', 5);
+        expectEquals(5, slider.pref.value);
+      });
+
+      test('deep link to primary button setting', async () => {
+        return checkDeepLink(
+            settings.routes.POINTERS, '437',
+            pointersPage.$$('#pointingStickSwapButtonDropdown').$$('select'),
+            'Pointing stick primary button dropdown');
+      });
+
+      test('deep link to acceleration setting', async () => {
+        return checkDeepLink(
+            settings.routes.POINTERS, '436',
+            pointersPage.$$('#pointingStickAcceleration').$$('cr-toggle'),
+            'Pointing stick acceleration slider');
+      });
+
+      test('deep link to speed setting', async () => {
+        return checkDeepLink(
+            settings.routes.POINTERS, '435',
+            pointersPage.$$('#pointingStickSpeedSlider').$$('cr-slider'),
+            'Pointing stick speed slider');
       });
     });
 
@@ -929,6 +1066,7 @@ cr.define('device_page_tests', function() {
         MockInteractions.pressAndReleaseKeyOn(
             keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
             'ArrowRight');
+        await test_util.flushTasks();
         expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
         expectEquals(300, get('xkb_auto_repeat_interval_r2'));
 
@@ -960,20 +1098,10 @@ cr.define('device_page_tests', function() {
       });
 
       test('Deep link to keyboard shortcuts', async () => {
-        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
-        const params = new URLSearchParams;
-        params.append('settingId', '413');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.KEYBOARD, params);
-
-        const deepLinkElement =
-            keyboardPage.$$('#keyboardShortcutViewer').$$('cr-icon-button');
-        await test_util.waitAfterNextRender(deepLinkElement);
-        assertEquals(
-            deepLinkElement, getDeepActiveElement(),
-            'Keyboard shortcuts button should be focused for settingId=413.');
+        return checkDeepLink(
+            settings.routes.KEYBOARD, '413',
+            keyboardPage.$$('#keyboardShortcutViewer').$$('cr-icon-button'),
+            'Keyboard shortcuts button');
       });
     });
 
@@ -1229,6 +1357,149 @@ cr.define('device_page_tests', function() {
             deepLinkElement, getDeepActiveElement(),
             'Display mirroring checkbox should be focused for settingId=428.');
       });
+
+      test('Keyboard display arrangement', async () => {
+        addDisplay(1);
+        addDisplay(2);
+        fakeSystemDisplay.onDisplayChanged.callListeners();
+
+        return Promise
+            .all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+            ])
+            .then(() => {
+              return new Promise(resolve => {
+                Polymer.dom.flush();
+
+                assert(displayPage);
+                assertEquals(2, displayPage.displays.length);
+                assertTrue(displayPage.shouldShowArrangementSection_());
+
+                expectTrue(!!displayPage.$$('#arrangement-section'));
+
+                expectTrue(
+                    displayPage.showMirror_(false, displayPage.displays));
+                expectFalse(displayPage.isMirrored_(displayPage.displays));
+
+                Polymer.dom.flush();
+
+                displayPage.async(resolve);
+              });
+            })
+            .then(() => {
+              const displayLayout = displayPage.$$('#displayLayout');
+              const display = displayLayout.$$('#_fakeDisplayId2');
+              const layout =
+                  displayLayout.displayLayoutMap_.get('fakeDisplayId2');
+
+              expectEquals(layout.parentId, 'fakeDisplayId1');
+              expectEquals(layout.position, 'right');
+
+              const offset = displayLayout.keyboardDragStepSize /
+                  displayLayout.visualScale;
+
+              display.focus();
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowDown', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(offset, layout.offset);
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowDown', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(offset * 2, layout.offset);
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowUp', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(offset, layout.offset);
+            });
+      });
+    });
+
+    suite(assert(TestNames.KeyboardArrangementDisabled), function() {
+      let displayPage;
+      let browserProxy;
+
+      setup(async () => {
+        displayPage =
+            await showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
+        browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
+        await fakeSystemDisplay.getInfoCalled.promise;
+      });
+
+      test('Arrow key arrangement diasabled test', async () => {
+        addDisplay(1);
+        addDisplay(2);
+        fakeSystemDisplay.onDisplayChanged.callListeners();
+
+        return Promise
+            .all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+            ])
+            .then(() => {
+              return new Promise(resolve => {
+                Polymer.dom.flush();
+
+                assert(displayPage);
+                assertEquals(2, displayPage.displays.length);
+                assertTrue(displayPage.shouldShowArrangementSection_());
+
+                expectTrue(!!displayPage.$$('#arrangement-section'));
+
+                expectTrue(
+                    displayPage.showMirror_(false, displayPage.displays));
+                expectFalse(displayPage.isMirrored_(displayPage.displays));
+
+                Polymer.dom.flush();
+
+                displayPage.async(resolve);
+              });
+            })
+            .then(() => {
+              const displayLayout = displayPage.$$('#displayLayout');
+              const display = displayLayout.$$('#_fakeDisplayId2');
+              const layout =
+                  displayLayout.displayLayoutMap_.get('fakeDisplayId2');
+
+              expectEquals(layout.parentId, 'fakeDisplayId1');
+              expectEquals(layout.position, 'right');
+
+              display.focus();
+
+              // All keyboard interaction should be ignored
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowUp', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(0, layout.offset);
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowDown', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(0, layout.offset);
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowLeft', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(0, layout.offset);
+
+              display.dispatchEvent(new KeyboardEvent(
+                  'keydown', {key: 'ArrowRight', bubbles: true}));
+              display.dispatchEvent(
+                  new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+              expectEquals(0, layout.offset);
+            });
+      });
     });
 
     test(assert(TestNames.NightLight), async function() {
@@ -1295,7 +1566,6 @@ cr.define('device_page_tests', function() {
                     settings.DevicePageBrowserProxyImpl.getInstance()
                         .updatePowerStatusCalled_);
 
-                acIdleSelect = assert(powerPage.$$('#acIdleSelect'));
                 lidClosedToggle = assert(powerPage.$$('#lidClosedToggle'));
 
                 assertEquals(
@@ -1335,9 +1605,21 @@ cr.define('device_page_tests', function() {
 
           // Power source row is hidden since there's no battery.
           assertTrue(powerSourceRow.hidden);
-          // Idle settings while on battery should not be visible if the
-          // battery is not present.
+          // Idle settings while on battery and while charging should not be
+          // visible if the battery is not present.
           assertEquals(null, powerPage.$$('#batteryIdleSettingBox'));
+          assertEquals(null, powerPage.$$('#acIdleSettingBox'));
+
+          const acIdleSelect = assert(powerPage.$$('#noBatteryAcIdleSelect'));
+          // Expect the "When idle" dropdown options to appear instead.
+          assert(acIdleSelect);
+
+          // Select a "When idle" selection and expect it to be set.
+          selectValue(acIdleSelect, settings.IdleBehavior.DISPLAY_ON);
+          expectEquals(
+              settings.IdleBehavior.DISPLAY_ON,
+              settings.DevicePageBrowserProxyImpl.getInstance()
+                  .acIdleBehavior_);
         });
 
         test('power sources', function() {
@@ -1414,6 +1696,19 @@ cr.define('device_page_tests', function() {
         });
 
         test('set AC idle behavior', function() {
+          const batteryStatus = {
+            present: true,
+            charging: false,
+            calculating: false,
+            percent: 50,
+            statusText: '5 hours left',
+          };
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          setPowerSources([], '', false);
+          Polymer.dom.flush();
+
+          acIdleSelect = assert(powerPage.$$('#acIdleSelect'));
           selectValue(acIdleSelect, settings.IdleBehavior.DISPLAY_ON);
           expectEquals(
               settings.IdleBehavior.DISPLAY_ON,
@@ -1633,6 +1928,7 @@ cr.define('device_page_tests', function() {
                 });
               })
               .then(function() {
+                acIdleSelect = assert(powerPage.$$('#acIdleSelect'));
                 const batteryIdleSelect =
                     assert(powerPage.$$('#batteryIdleSelect'));
                 expectEquals(
@@ -1719,6 +2015,7 @@ cr.define('device_page_tests', function() {
                    powerPage.async(resolve);
                  })
               .then(function() {
+                acIdleSelect = assert(powerPage.$$('#acIdleSelect'));
                 const batteryIdleSelect =
                     assert(powerPage.$$('#batteryIdleSelect'));
                 expectEquals(
@@ -1822,19 +2119,9 @@ cr.define('device_page_tests', function() {
                   });
             });
         test('Deep link to sleep when laptop lid closed', async () => {
-          loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-          assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
-          const params = new URLSearchParams;
-          params.append('settingId', '424');
-          settings.Router.getInstance().navigateTo(
-              settings.routes.POWER, params);
-
-          const deepLinkElement = lidClosedToggle.$$('cr-toggle');
-          await test_util.waitAfterNextRender(deepLinkElement);
-          assertEquals(
-              deepLinkElement, getDeepActiveElement(),
-              'Sleep when closed toggle should be focused for settingId=424.');
+          return checkDeepLink(
+              settings.routes.POWER, '424', lidClosedToggle.$$('cr-toggle'),
+              'Sleep when closed toggle');
         });
       });
     });
@@ -2005,16 +2292,9 @@ cr.define('device_page_tests', function() {
         ]);
         browserProxy.setAndroidAppsReceived(true);
 
-        const params = new URLSearchParams;
-        params.append('settingId', '417');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.STYLUS, params);
-
-        const deepLinkElement = stylusPage.$$('#selectApp');
-        await test_util.waitAfterNextRender(deepLinkElement);
-        assertEquals(
-            deepLinkElement, getDeepActiveElement(),
-            'Note-taking apps dropdown should be focused for settingId=417.');
+        return checkDeepLink(
+            settings.routes.STYLUS, '417', stylusPage.$$('#selectApp'),
+            'Note-taking apps dropdown');
       });
 
       test('app-visibility', function() {
@@ -2559,5 +2839,6 @@ cr.define('device_page_tests', function() {
     });
   });
 
+  // #cr_define_end
   return {TestNames: TestNames};
 });

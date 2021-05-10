@@ -753,20 +753,26 @@ Polymer({
     if (state.connectionState !== mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
+
     if (this.isBlockedByPolicy_(state)) {
       return false;
     }
+
+    // VPNs can only be connected if there is an existing network connection to
+    // use with the VPN.
     if (state.type === mojom.NetworkType.kVPN &&
         (!this.defaultNetwork ||
          !OncMojo.connectionStateIsConnected(
              this.defaultNetwork.connectionState))) {
       return false;
     }
-    // Cellular networks do not have a configuration flow, so it's not possible
-    // to attempt a connection if the network is not conncetable.
-    if (state.type === mojom.NetworkType.kCellular && !state.connectable) {
+
+    // Locked SIM profiles must be unlocked before a connection can occur.
+    if (state.type === mojom.NetworkType.kCellular &&
+        state.typeState.cellular.simLocked) {
       return false;
     }
+
     return true;
   },
 
@@ -859,12 +865,9 @@ Polymer({
       return false;
     }
 
-    if (this.deviceState.type === mojom.NetworkType.kCellular ||
-        this.deviceState.type === mojom.NetworkType.kTether) {
-      return this.networkStateList_.length > 0;
-    }
-
-    return false;
+    // Only shown if the currently-active subpage is for Cellular networks.
+    return !!this.deviceState &&
+        this.deviceState.type === mojom.NetworkType.kCellular;
   },
 
   /**

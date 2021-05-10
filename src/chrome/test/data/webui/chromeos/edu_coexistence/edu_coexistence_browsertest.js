@@ -18,14 +18,6 @@ const EduCoexistenceTest = class extends PolymerTest {
     throw 'this is abstract and should be overridden by subclasses';
   }
 
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
-
   /** @param {string} testName The name of the test to run. */
   runMochaTest(testName) {
     runMochaTest(this.suiteName, testName);
@@ -68,4 +60,40 @@ TEST_F('EduCoexistenceAppTest', 'ShowError', function() {
 TEST_F('EduCoexistenceAppTest', 'DontSwitchViewIfDisplayingError', function() {
   this.runMochaTest(
       edu_coexistence_app_tests.TestNames.DontSwitchViewIfDisplayingError);
+});
+
+var EduCoexistenceControllerTest = class extends EduCoexistenceTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=' +
+        'chromeos/edu_coexistence/edu_coexistence_controller_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_coexistence_controller_tests.suiteName;
+  }
+};
+
+TEST_F('EduCoexistenceControllerTest', 'GetSigninTimeDelta', function() {
+  this.runMochaTest(
+      edu_coexistence_controller_tests.TestNames.GetSigninTimeDelta);
+});
+
+var EduCoexistenceUiTest = class extends EduCoexistenceTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=' +
+        'chromeos/edu_coexistence/edu_coexistence_ui_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_coexistence_ui_tests.suiteName;
+  }
+};
+
+TEST_F('EduCoexistenceUiTest', 'DisableGaiaBackButtonAfterClick', function() {
+  this.runMochaTest(
+      edu_coexistence_ui_tests.TestNames.DisableGaiaBackButtonAfterClick);
 });

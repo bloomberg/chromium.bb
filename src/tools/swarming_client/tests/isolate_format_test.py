@@ -362,6 +362,7 @@ class IsolateFormatTest(auto_stub.TestCase):
     }
     self.assertEqual(expected, flatten)
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_ConfigSettings_union(self):
     lhs_values = {}
     rhs_values = {'files': ['data/', 'test/data/']}

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -25,6 +24,8 @@ class BuiltInChromeOsApps : public apps::PublisherBase {
  public:
   BuiltInChromeOsApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                       Profile* profile);
+  BuiltInChromeOsApps(const BuiltInChromeOsApps&) = delete;
+  BuiltInChromeOsApps& operator=(const BuiltInChromeOsApps&) = delete;
   ~BuiltInChromeOsApps() override;
 
  private:
@@ -40,15 +41,13 @@ class BuiltInChromeOsApps : public apps::PublisherBase {
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
+              apps::mojom::WindowInfoPtr window_info) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
 
   Profile* const profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuiltInChromeOsApps);
 };
 
 }  // namespace apps

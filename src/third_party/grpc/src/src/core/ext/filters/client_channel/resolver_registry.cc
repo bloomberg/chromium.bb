@@ -22,6 +22,9 @@
 
 #include <string.h>
 
+#include "absl/container/inlined_vector.h"
+#include "absl/strings/str_cat.h"
+
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/string_util.h>
@@ -40,7 +43,7 @@ class RegistryState {
     default_prefix_.reset(gpr_strdup(default_resolver_prefix));
   }
 
-  void RegisterResolverFactory(UniquePtr<ResolverFactory> factory) {
+  void RegisterResolverFactory(std::unique_ptr<ResolverFactory> factory) {
     for (size_t i = 0; i < factories_.size(); ++i) {
       GPR_ASSERT(strcmp(factories_[i]->scheme(), factory->scheme()) != 0);
     }
@@ -63,22 +66,22 @@ class RegistryState {
   // If \a default_prefix_ needs to be prepended, sets \a canonical_target
   // to the canonical target string.
   ResolverFactory* FindResolverFactory(const char* target, grpc_uri** uri,
-                                       char** canonical_target) const {
+                                       std::string* canonical_target) const {
     GPR_ASSERT(uri != nullptr);
-    *uri = grpc_uri_parse(target, 1);
+    *uri = grpc_uri_parse(target, true);
     ResolverFactory* factory =
         *uri == nullptr ? nullptr : LookupResolverFactory((*uri)->scheme);
     if (factory == nullptr) {
       grpc_uri_destroy(*uri);
-      gpr_asprintf(canonical_target, "%s%s", default_prefix_.get(), target);
-      *uri = grpc_uri_parse(*canonical_target, 1);
+      *canonical_target = absl::StrCat(default_prefix_.get(), target);
+      *uri = grpc_uri_parse(canonical_target->c_str(), true);
       factory =
           *uri == nullptr ? nullptr : LookupResolverFactory((*uri)->scheme);
       if (factory == nullptr) {
-        grpc_uri_destroy(grpc_uri_parse(target, 0));
-        grpc_uri_destroy(grpc_uri_parse(*canonical_target, 0));
+        grpc_uri_destroy(grpc_uri_parse(target, false));
+        grpc_uri_destroy(grpc_uri_parse(canonical_target->c_str(), false));
         gpr_log(GPR_ERROR, "don't know how to resolve '%s' or '%s'", target,
-                *canonical_target);
+                canonical_target->c_str());
       }
     }
     return factory;
@@ -90,8 +93,8 @@ class RegistryState {
   // more factories are needed and the additional allocations are
   // hurting performance (which is unlikely, since these allocations
   // only occur at gRPC initialization time).
-  InlinedVector<UniquePtr<ResolverFactory>, 10> factories_;
-  UniquePtr<char> default_prefix_;
+  absl::InlinedVector<std::unique_ptr<ResolverFactory>, 10> factories_;
+  grpc_core::UniquePtr<char> default_prefix_;
 };
 
 static RegistryState* g_state = nullptr;
@@ -103,11 +106,11 @@ static RegistryState* g_state = nullptr;
 //
 
 void ResolverRegistry::Builder::InitRegistry() {
-  if (g_state == nullptr) g_state = New<RegistryState>();
+  if (g_state == nullptr) g_state = new RegistryState();
 }
 
 void ResolverRegistry::Builder::ShutdownRegistry() {
-  Delete(g_state);
+  delete g_state;
   g_state = nullptr;
 }
 
@@ -118,7 +121,7 @@ void ResolverRegistry::Builder::SetDefaultPrefix(
 }
 
 void ResolverRegistry::Builder::RegisterResolverFactory(
-    UniquePtr<ResolverFactory> factory) {
+    std::unique_ptr<ResolverFactory> factory) {
   InitRegistry();
   g_state->RegisterResolverFactory(std::move(factory));
 }
@@ -134,59 +137,60 @@ ResolverFactory* ResolverRegistry::LookupResolverFactory(const char* scheme) {
 
 bool ResolverRegistry::IsValidTarget(const char* target) {
   grpc_uri* uri = nullptr;
-  char* canonical_target = nullptr;
+  std::string canonical_target;
   ResolverFactory* factory =
       g_state->FindResolverFactory(target, &uri, &canonical_target);
   bool result = factory == nullptr ? false : factory->IsValidUri(uri);
   grpc_uri_destroy(uri);
-  gpr_free(canonical_target);
   return result;
 }
 
 OrphanablePtr<Resolver> ResolverRegistry::CreateResolver(
     const char* target, const grpc_channel_args* args,
-    grpc_pollset_set* pollset_set, grpc_combiner* combiner,
-    UniquePtr<Resolver::ResultHandler> result_handler) {
+    grpc_pollset_set* pollset_set,
+    std::shared_ptr<WorkSerializer> work_serializer,
+    std::unique_ptr<Resolver::ResultHandler> result_handler) {
   GPR_ASSERT(g_state != nullptr);
   grpc_uri* uri = nullptr;
-  char* canonical_target = nullptr;
+  std::string canonical_target;
   ResolverFactory* factory =
       g_state->FindResolverFactory(target, &uri, &canonical_target);
   ResolverArgs resolver_args;
   resolver_args.uri = uri;
   resolver_args.args = args;
   resolver_args.pollset_set = pollset_set;
-  resolver_args.combiner = combiner;
+  resolver_args.work_serializer = std::move(work_serializer);
   resolver_args.result_handler = std::move(result_handler);
   OrphanablePtr<Resolver> resolver =
       factory == nullptr ? nullptr
                          : factory->CreateResolver(std::move(resolver_args));
   grpc_uri_destroy(uri);
-  gpr_free(canonical_target);
   return resolver;
 }
 
-UniquePtr<char> ResolverRegistry::GetDefaultAuthority(const char* target) {
+grpc_core::UniquePtr<char> ResolverRegistry::GetDefaultAuthority(
+    const char* target) {
   GPR_ASSERT(g_state != nullptr);
   grpc_uri* uri = nullptr;
-  char* canonical_target = nullptr;
+  std::string canonical_target;
   ResolverFactory* factory =
       g_state->FindResolverFactory(target, &uri, &canonical_target);
-  UniquePtr<char> authority =
+  grpc_core::UniquePtr<char> authority =
       factory == nullptr ? nullptr : factory->GetDefaultAuthority(uri);
   grpc_uri_destroy(uri);
-  gpr_free(canonical_target);
   return authority;
 }
 
-UniquePtr<char> ResolverRegistry::AddDefaultPrefixIfNeeded(const char* target) {
+grpc_core::UniquePtr<char> ResolverRegistry::AddDefaultPrefixIfNeeded(
+    const char* target) {
   GPR_ASSERT(g_state != nullptr);
   grpc_uri* uri = nullptr;
-  char* canonical_target = nullptr;
+  std::string canonical_target;
   g_state->FindResolverFactory(target, &uri, &canonical_target);
   grpc_uri_destroy(uri);
-  return UniquePtr<char>(canonical_target == nullptr ? gpr_strdup(target)
-                                                     : canonical_target);
+  return grpc_core::UniquePtr<char>(canonical_target.empty()
+                                        ? gpr_strdup(target)
+                                        : gpr_strdup(canonical_target.c_str()));
 }
 
 }  // namespace grpc_core

@@ -17,10 +17,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/policy/device_local_account_extension_tracker.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
@@ -66,7 +66,7 @@ class DeviceLocalAccountPolicyBroker
       std::unique_ptr<DeviceLocalAccountPolicyStore> store,
       scoped_refptr<DeviceLocalAccountExternalDataManager>
           external_data_manager,
-      const base::Closure& policy_updated_callback,
+      const base::RepeatingClosure& policy_updated_callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>&
           resource_cache_task_runner,
@@ -138,7 +138,7 @@ class DeviceLocalAccountPolicyBroker
       extension_loader_;
   CloudPolicyCore core_;
   std::unique_ptr<ComponentCloudPolicyService> component_policy_service_;
-  base::Closure policy_update_callback_;
+  base::RepeatingClosure policy_update_callback_;
   std::unique_ptr<AffiliatedCloudPolicyInvalidator> invalidator_;
   const scoped_refptr<base::SequencedTaskRunner> resource_cache_task_runner_;
 
@@ -271,8 +271,7 @@ class DeviceLocalAccountPolicyService {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  const std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      local_accounts_subscription_;
+  const base::CallbackListSubscription local_accounts_subscription_;
 
   // Path to the directory that contains the cached policy for components
   // for device-local accounts.

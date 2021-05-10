@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/auto_reset.h"
@@ -49,6 +50,11 @@ constexpr base::TimeDelta kAnimationDuration =
 constexpr int kRemovedDeskWindowYTranslation = 20;
 constexpr base::TimeDelta kRemovedDeskWindowTranslationDuration =
     base::TimeDelta::FromMilliseconds(100);
+
+// When ending a swipe that is deemed fast, the target desk only needs to be
+// 10% shown for us to animate to that desk, compared to 50% shown for a non
+// fast swipe.
+constexpr float kFastSwipeVisibilityRatio = 0.1f;
 
 // Create the layer that will be the parent of the screenshot layer, with a
 // solid black color to act as the background showing behind the two
@@ -117,8 +123,7 @@ std::string GetScreenshotLayerName(int index) {
 // units. Convert these units so that what is considered a full touchpad swipe
 // shifts the animation layer one entire desk length.
 float TouchpadToXTranslation(float touchpad_x, int desk_length) {
-  return desk_length * touchpad_x /
-         RootWindowDeskSwitchAnimator::kTouchpadSwipeLengthForDeskChange;
+  return desk_length * touchpad_x / kTouchpadSwipeLengthForDeskChange;
 }
 
 }  // namespace
@@ -132,7 +137,6 @@ RootWindowDeskSwitchAnimator::RootWindowDeskSwitchAnimator(
     : root_window_(root),
       starting_desk_index_(starting_desk_index),
       ending_desk_index_(ending_desk_index),
-      visible_desk_index_(starting_desk_index),
       delegate_(delegate),
       animation_layer_owner_(CreateAnimationLayerOwner(root)),
       root_window_size_(
@@ -145,7 +149,7 @@ RootWindowDeskSwitchAnimator::RootWindowDeskSwitchAnimator(
   DCHECK_NE(starting_desk_index_, ending_desk_index_);
   DCHECK(delegate_);
 
-  screenshot_layers_.resize(desks_util::kMaxNumberOfDesks);
+  screenshot_layers_.resize(desks_util::GetMaxNumberOfDesks());
 }
 
 RootWindowDeskSwitchAnimator::~RootWindowDeskSwitchAnimator() {
@@ -305,20 +309,13 @@ base::Optional<int> RootWindowDeskSwitchAnimator::UpdateSwipeAnimation(
           : transformed_animation_layer_bounds.x() >
                 -kMinDistanceBeforeScreenshotDp;
 
-  // TODO(sammiequon): Make GetIndexOfMostVisibleDeskScreenshot() public and
-  // have DeskActivationAnimation keep track of |visible_desk_index_|. Right now
-  // OnVisibleDeskChanged will get called once for each display.
-  const int old_visible_desk_index = visible_desk_index_;
-  visible_desk_index_ = GetIndexOfMostVisibleDeskScreenshot();
-  if (old_visible_desk_index != visible_desk_index_)
-    delegate_->OnVisibleDeskChanged();
-
   if (!going_out_of_bounds)
     return base::nullopt;
 
   // The upcoming desk we need to show will be an adjacent desk to the desk at
-  // |visible_desk_index_| based on |moving_left|.
-  const int new_desk_index = visible_desk_index_ + (moving_left ? 1 : -1);
+  // the visible desk index based on |moving_left|.
+  const int new_desk_index =
+      GetIndexOfMostVisibleDeskScreenshot() + (moving_left ? 1 : -1);
 
   if (new_desk_index < 0 ||
       new_desk_index >= int{DesksController::Get()->desks().size()}) {
@@ -335,7 +332,7 @@ void RootWindowDeskSwitchAnimator::PrepareForEndingDeskScreenshot(
   ending_desk_screenshot_taken_ = false;
 }
 
-int RootWindowDeskSwitchAnimator::EndSwipeAnimation() {
+int RootWindowDeskSwitchAnimator::EndSwipeAnimation(bool is_fast_swipe) {
   // If the starting screenshot has not finished, just let our delegate know
   // that the desk animation is finished (and |this| will soon be deleted), and
   // go back to the starting desk.
@@ -348,7 +345,8 @@ int RootWindowDeskSwitchAnimator::EndSwipeAnimation() {
     return ending_desk_index;
   }
 
-  // If the ending desk screenshot has not finished, |visible_desk_index_| will
+  // If the ending desk screenshot has not finished,
+  // GetIndexOfMostVisibleDeskScreenshot() will
   // still return a valid desk index that we can animate to, but we need to make
   // sure the ending desk screenshot callback does not get called.
   if (!ending_desk_screenshot_taken_)
@@ -357,10 +355,63 @@ int RootWindowDeskSwitchAnimator::EndSwipeAnimation() {
   // In tests, StartAnimation() may trigger OnDeskSwitchAnimationFinished()
   // right away which may delete |this|. Store the target index in a
   // local so we do not try to access a member of a deleted object.
-  const int ending_desk_index = visible_desk_index_;
-  ending_desk_index_ = ending_desk_index;
+  int local_ending_desk_index = -1;
+
+  // If the swipe we are ending with is deemed a fast swipe, we animate to
+  // |ending_desk_index_| if more than 10% of it is currently visible.
+  // Otherwise, we animate to the most visible desk.
+  if (is_fast_swipe) {
+    ui::Layer* layer = screenshot_layers_[ending_desk_index_];
+    if (layer) {
+      const gfx::Transform transform =
+          animation_layer_owner_->root()->transform();
+      gfx::RectF screenshot_bounds(layer->bounds());
+      transform.TransformRect(&screenshot_bounds);
+
+      const gfx::RectF root_window_bounds(root_window_->bounds());
+      const gfx::RectF intersection_rect =
+          gfx::IntersectRects(screenshot_bounds, root_window_bounds);
+      if (intersection_rect.width() >
+          root_window_bounds.width() * kFastSwipeVisibilityRatio) {
+        local_ending_desk_index = ending_desk_index_;
+      }
+    }
+  }
+
+  if (local_ending_desk_index == -1)
+    local_ending_desk_index = GetIndexOfMostVisibleDeskScreenshot();
+
+  ending_desk_index_ = local_ending_desk_index;
   StartAnimation();
-  return ending_desk_index;
+  return local_ending_desk_index;
+}
+
+int RootWindowDeskSwitchAnimator::GetIndexOfMostVisibleDeskScreenshot() const {
+  int index = -1;
+
+  // The most visible desk is the one whose screenshot layer bounds, including
+  // the transform of its parent that has its origin closest to the root window
+  // origin (0, 0).
+  const gfx::Transform transform = animation_layer_owner_->root()->transform();
+  int min_distance = INT_MAX;
+  for (int i = 0; i < int{screenshot_layers_.size()}; ++i) {
+    ui::Layer* layer = screenshot_layers_[i];
+    if (!layer)
+      continue;
+
+    gfx::RectF bounds(layer->bounds());
+    transform.TransformRect(&bounds);
+    const int distance = std::abs(bounds.x());
+    if (distance < min_distance) {
+      min_distance = distance;
+      index = i;
+    }
+  }
+
+  // TODO(crbug.com/1134390): Convert back to DCHECK when the issue is fixed.
+  CHECK_GE(index, 0);
+  CHECK_LT(index, int{DesksController::Get()->desks().size()});
+  return index;
 }
 
 void RootWindowDeskSwitchAnimator::OnImplicitAnimationsCompleted() {
@@ -599,34 +650,6 @@ int RootWindowDeskSwitchAnimator::GetXPositionOfScreenshot(int index) {
   ui::Layer* layer = screenshot_layers_[index];
   DCHECK(layer);
   return layer->bounds().x();
-}
-
-int RootWindowDeskSwitchAnimator::GetIndexOfMostVisibleDeskScreenshot() const {
-  int index = -1;
-
-  // The most visible desk is the one whose screenshot layer bounds, including
-  // the transform of its parent that has its origin closest to the root window
-  // origin (0, 0).
-  const gfx::Transform transform = animation_layer_owner_->root()->transform();
-  int min_distance = INT_MAX;
-  for (int i = 0; i < int{screenshot_layers_.size()}; ++i) {
-    ui::Layer* layer = screenshot_layers_[i];
-    if (!layer)
-      continue;
-
-    gfx::RectF bounds(layer->bounds());
-    transform.TransformRect(&bounds);
-    const int distance = std::abs(bounds.x());
-    if (distance < min_distance) {
-      min_distance = distance;
-      index = i;
-    }
-  }
-
-  // TODO(crbug.com/1134390): Convert back to DCHECK when the issue is fixed.
-  CHECK_GE(index, 0);
-  CHECK_LT(index, int{DesksController::Get()->desks().size()});
-  return index;
 }
 
 }  // namespace ash

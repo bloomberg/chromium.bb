@@ -24,7 +24,7 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/features/feature_session_type.h"
+#include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "extensions/common/mojom/renderer.mojom.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
@@ -43,7 +43,6 @@ struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_Loaded_Params;
 struct ExtensionMsg_TabConnectionInfo;
 struct ExtensionMsg_UpdatePermissions_Params;
-struct ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params;
 
 namespace blink {
 class WebLocalFrame;
@@ -216,6 +215,18 @@ class Dispatcher : public content::RenderThreadObserver,
   // mojom::Renderer implementation:
   void ActivateExtension(const std::string& extension_id) override;
   void SetActivityLoggingEnabled(bool enabled) override;
+  void UnloadExtension(const std::string& extension_id) override;
+  void SetSessionInfo(version_info::Channel channel,
+                      mojom::FeatureSessionType session_type,
+                      bool lock_screen_context) override;
+  void SetSystemFont(const std::string& font_family,
+                     const std::string& font_size) override;
+  void SetWebViewPartitionID(const std::string& partition_id) override;
+  void SetScriptingAllowlist(
+      const std::vector<std::string>& extension_ids) override;
+  void UpdateDefaultPolicyHostRestrictions(
+      const extensions::URLPatternSet& default_policy_blocked_hosts,
+      const extensions::URLPatternSet& default_policy_allowed_hosts) override;
 
   void OnRendererAssociatedRequest(
       mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
@@ -239,21 +250,10 @@ class Dispatcher : public content::RenderThreadObserver,
                        const base::ListValue& args);
   void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
                        const base::ListValue& event_args);
-  void OnSetSessionInfo(version_info::Channel channel,
-                        FeatureSessionType session_type,
-                        bool lock_screen_context);
-  void OnSetScriptingAllowlist(
-      const ExtensionsClient::ScriptingAllowlist& extension_ids);
-  void OnSetSystemFont(const std::string& font_family,
-                       const std::string& font_size);
-  void OnSetWebViewPartitionID(const std::string& partition_id);
   void OnShouldSuspend(const std::string& extension_id, uint64_t sequence_id);
   void OnSuspend(const std::string& extension_id);
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
-  void OnUnloaded(const std::string& id);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
-  void OnUpdateDefaultPolicyHostRestrictions(
-      const ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params& params);
   void OnUpdateTabSpecificPermissions(const GURL& visible_url,
                                       const std::string& extension_id,
                                       const URLPatternSet& new_hosts,

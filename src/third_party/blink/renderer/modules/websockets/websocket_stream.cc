@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -323,9 +322,8 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
       return;
     }
 
-    SendArrayBuffer(script_state, data.View()->buffer(),
-                    data.View()->byteOffset(), data.View()->byteLength(),
-                    resolver, std::move(callback));
+    SendArrayBuffer(script_state, data->buffer(), data->byteOffset(),
+                    data->byteLength(), resolver, std::move(callback));
     return;
   }
 
@@ -437,9 +435,9 @@ WebSocketStream::WebSocketStream(ExecutionContext* execution_context,
       closed_resolver_(
           MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       connection_(script_state->GetIsolate(),
-                  connection_resolver_->Promise().V8Value().As<v8::Promise>()),
+                  connection_resolver_->Promise().V8Promise()),
       closed_(script_state->GetIsolate(),
-              closed_resolver_->Promise().V8Value().As<v8::Promise>()) {}
+              closed_resolver_->Promise().V8Promise()) {}
 
 WebSocketStream::~WebSocketStream() = default;
 

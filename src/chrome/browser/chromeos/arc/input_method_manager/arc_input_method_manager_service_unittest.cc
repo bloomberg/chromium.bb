@@ -42,7 +42,8 @@
 namespace arc {
 namespace {
 
-namespace im = chromeos::input_method;
+namespace im = ::chromeos::input_method;
+using ::ash::AccessibilityNotificationType;
 
 mojom::ImeInfoPtr GenerateImeInfo(const std::string& id,
                                   const std::string& name,
@@ -137,9 +138,8 @@ class TestInputMethodManager : public im::MockInputMethodManager {
 
     im::InputMethodDescriptor GetCurrentInputMethod() const override {
       im::InputMethodDescriptor descriptor(
-          active_ime_id_, "", "", std::vector<std::string>(),
-          std::vector<std::string>(), false /* is_login_keyboard */, GURL(),
-          GURL());
+          active_ime_id_, "", "", "", std::vector<std::string>(),
+          false /* is_login_keyboard */, GURL(), GURL());
       return descriptor;
     }
 
@@ -767,7 +767,7 @@ TEST_F(ArcInputMethodManagerServiceTest,
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, true);
   // Notify ArcInputMethodManagerService.
   service()->OnAccessibilityStatusChanged(
-      {chromeos::ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD, true});
+      {AccessibilityNotificationType::kToggleVirtualKeyboard, true});
 
   // ARC IME is not allowed when a11y keyboard is enabled.
   EXPECT_EQ(1u, imm()->state()->removed_input_method_extensions_.size());
@@ -786,7 +786,7 @@ TEST_F(ArcInputMethodManagerServiceTest,
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false);
   // Notify ArcInputMethodManagerService.
   service()->OnAccessibilityStatusChanged(
-      {chromeos::ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD, false});
+      {AccessibilityNotificationType::kToggleVirtualKeyboard, false});
 
   // ARC IME can be enabled.
   EXPECT_EQ(1u, imm()->state()->added_input_method_extensions_.size());

@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/model/mutable_data_batch.h"
-#include "components/sync/model_impl/sync_metadata_store_change_list.h"
+#include "components/sync/model/sync_metadata_store_change_list.h"
 #include "net/base/url_util.h"
 
 using sync_pb::TypedUrlSpecifics;
@@ -644,7 +644,7 @@ TypedURLSyncBridge::MergeResult TypedURLSyncBridge::MergeUrls(
           VisitRow(url.id(), new_visit->first, /*referring_visit=*/0,
                    new_visit->second, /*segment_id=*/0,
                    HistoryBackend::IsTypedIncrement(new_visit->second),
-                   /*publicly_routable=*/false));
+                   /*floc_allowed=*/false));
       ++visit_ix;
     }
   }
@@ -1103,7 +1103,7 @@ bool TypedURLSyncBridge::FixupURLAndGetVisits(URLRow* url,
     VisitRow visit(url->id(), url->last_visit(), /*referring_visit=*/0,
                    ui::PAGE_TRANSITION_TYPED,
                    /*segment_id=*/0, /*incremented_omnibox_typed_score=*/true,
-                   /*publicly_routable=*/false);
+                   /*floc_allowed=*/false);
     visits->push_back(visit);
   }
 

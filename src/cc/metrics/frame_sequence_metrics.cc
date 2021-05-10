@@ -119,7 +119,7 @@ FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
 FrameSequenceMetrics::~FrameSequenceMetrics() = default;
 
 void FrameSequenceMetrics::ReportLeftoverData() {
-  if (HasDataLeftForReporting())
+  if (HasDataLeftForReporting() || type_ == FrameSequenceTrackerType::kCustom)
     ReportMetrics();
 }
 
@@ -228,6 +228,7 @@ void FrameSequenceMetrics::ReportMetrics() {
 
     main_throughput_ = {};
     impl_throughput_ = {};
+    jank_reporter_->Reset();
     frames_checkerboarded_ = 0;
     return;
   }

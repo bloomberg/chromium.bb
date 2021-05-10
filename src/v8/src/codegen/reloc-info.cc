@@ -330,7 +330,8 @@ bool RelocInfo::OffHeapTargetIsCodedSpecially() {
   return false;
 #elif defined(V8_TARGET_ARCH_IA32) || defined(V8_TARGET_ARCH_MIPS) || \
     defined(V8_TARGET_ARCH_MIPS64) || defined(V8_TARGET_ARCH_PPC) ||  \
-    defined(V8_TARGET_ARCH_PPC64) || defined(V8_TARGET_ARCH_S390)
+    defined(V8_TARGET_ARCH_PPC64) || defined(V8_TARGET_ARCH_S390) ||  \
+    defined(V8_TARGET_ARCH_RISCV64)
   return true;
 #endif
 }
@@ -410,6 +411,8 @@ const char* RelocInfo::RelocModeName(RelocInfo::Mode rmode) {
       return "compressed embedded object";
     case FULL_EMBEDDED_OBJECT:
       return "full embedded object";
+    case DATA_EMBEDDED_OBJECT:
+      return "data embedded object";
     case CODE_TARGET:
       return "code target";
     case RELATIVE_CODE_TARGET:
@@ -496,6 +499,7 @@ void RelocInfo::Verify(Isolate* isolate) {
   switch (rmode_) {
     case COMPRESSED_EMBEDDED_OBJECT:
     case FULL_EMBEDDED_OBJECT:
+    case DATA_EMBEDDED_OBJECT:
       Object::VerifyPointer(isolate, target_object());
       break;
     case CODE_TARGET:

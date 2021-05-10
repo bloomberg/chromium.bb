@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/dmserver_job_configurations.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +34,8 @@ class MockDeviceManagementServiceConfiguration
   std::string GetPlatformParameter() override;
   std::string GetRealtimeReportingServerUrl() override;
   std::string GetEncryptedReportingServerUrl() override;
-  std::string GetReportingConnectorServerUrl() override;
+  std::string GetReportingConnectorServerUrl(
+      content::BrowserContext* context) override;
 
  private:
   const std::string server_url_;
@@ -97,6 +99,11 @@ class MockDeviceManagementService : public DeviceManagementService {
   //  passed to StartJob.
   testing::Action<StartJobFunction> CaptureQueryParams(
       DeviceManagementService::JobConfiguration::ParameterMap* params);
+
+  // Can be used as an action when mocking the StartJob method.
+  // Makes a copy of the DMAuth from the JobConfiguration of the Job passed
+  // to StartJob.
+  testing::Action<StartJobFunction> CaptureAuthData(DMAuth* auth_data);
 
   // Can be used as an action when mocking the StartJob method.
   // Makes a copy of the device management request from the JobConfiguration
@@ -174,7 +181,7 @@ class FakeJobConfiguration : public DMServerJobConfiguration {
       JobType type,
       const std::string& client_id,
       bool critical,
-      std::unique_ptr<DMAuth> auth_data,
+      DMAuth auth_data,
       base::Optional<std::string> oauth_token,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FakeCallback callback,

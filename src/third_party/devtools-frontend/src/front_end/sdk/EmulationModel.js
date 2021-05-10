@@ -61,6 +61,8 @@ export class EmulationModel extends SDKModel {
         Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
     const mediaFeaturePrefersReducedDataSetting =
         Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedData');
+    const mediaFeatureColorGamutSetting =
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureColorGamut');
     // Note: this uses a different format than what the CDP API expects,
     // because we want to update these values per media type/feature
     // without having to search the `features` array (inefficient) or
@@ -70,6 +72,7 @@ export class EmulationModel extends SDKModel {
       ['prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get()],
       ['prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get()],
       ['prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get()],
+      ['color-gamut', mediaFeatureColorGamutSetting.get()],
     ]);
     mediaTypeSetting.addChangeListener(() => {
       this._mediaConfiguration.set('type', mediaTypeSetting.get());
@@ -85,6 +88,10 @@ export class EmulationModel extends SDKModel {
     });
     mediaFeaturePrefersReducedDataSetting.addChangeListener(() => {
       this._mediaConfiguration.set('prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get());
+      this._updateCssMedia();
+    });
+    mediaFeatureColorGamutSetting.addChangeListener(() => {
+      this._mediaConfiguration.set('color-gamut', mediaFeatureColorGamutSetting.get());
       this._updateCssMedia();
     });
     this._updateCssMedia();
@@ -360,6 +367,10 @@ export class EmulationModel extends SDKModel {
         name: 'prefers-reduced-data',
         value: this._mediaConfiguration.get('prefers-reduced-data'),
       },
+      {
+        name: 'color-gamut',
+        value: this._mediaConfiguration.get('color-gamut'),
+      },
     ];
     this._emulateCSSMedia(type, features);
   }
@@ -513,9 +524,9 @@ export class DeviceOrientation {
       return null;
     }
 
-    const {valid: isAlphaValid} = DeviceOrientation.validator(alphaString);
-    const {valid: isBetaValid} = DeviceOrientation.validator(betaString);
-    const {valid: isGammaValid} = DeviceOrientation.validator(gammaString);
+    const {valid: isAlphaValid} = DeviceOrientation.alphaAngleValidator(alphaString);
+    const {valid: isBetaValid} = DeviceOrientation.betaAngleValidator(betaString);
+    const {valid: isGammaValid} = DeviceOrientation.gammaAngleValidator(gammaString);
 
     if (!isAlphaValid && !isBetaValid && !isGammaValid) {
       return null;
@@ -529,12 +540,40 @@ export class DeviceOrientation {
   }
 
   /**
-   * @param {string} value
-   * @return {{valid: boolean, errorMessage: (string|undefined)}}
+   * @param {!string} value
+   * @param {Object} interval
+   * @param {number} interval.minimum Minimum interval range (inclusive)
+   * @param {number} interval.maximum Maximum interval range (exclusive)
    */
-  static validator(value) {
-    const valid = /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value);
+  static angleRangeValidator(value, interval) {
+    const numValue = parseFloat(value);
+    const valid =
+        /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= interval.minimum && numValue < interval.maximum;
     return {valid, errorMessage: undefined};
+  }
+
+  /**
+  * @param {string} value
+  * @return {{valid: boolean, errorMessage: (string|undefined)}}
+  */
+  static alphaAngleValidator(value) {
+    return DeviceOrientation.angleRangeValidator(value, {minimum: 0, maximum: 360});
+  }
+
+  /**
+  * @param {string} value
+  * @return {{valid: boolean, errorMessage: (string|undefined)}}
+  */
+  static betaAngleValidator(value) {
+    return DeviceOrientation.angleRangeValidator(value, {minimum: -180, maximum: 180});
+  }
+
+  /**
+  * @param {string} value
+  * @return {{valid: boolean, errorMessage: (string|undefined)}}
+  */
+  static gammaAngleValidator(value) {
+    return DeviceOrientation.angleRangeValidator(value, {minimum: -90, maximum: 90});
   }
 
   /**

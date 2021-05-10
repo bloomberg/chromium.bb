@@ -2,14 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "net/base/features.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -47,7 +56,7 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
   const struct {
     const char* str;
     const bool valid;
-    const time_t epoch;
+    const double epoch;
   } tests[] = {
       {"Sat, 15-Apr-17 21:01:22 GMT", true, 1492290082},
       {"Thu, 19-Apr-2007 16:00:00 GMT", true, 1176998400},
@@ -109,6 +118,11 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
       {"Apr 15 21:01:22 17", true, 1492290082},
       {"2017 April 15 21:01:22", true, 1492290082},
       {"15 April 2017 21:01:22", true, 1492290082},
+      // Test two-digit abbreviated year numbers.
+      {"1-Jan-71 00:00:00 GMT" /* 1971 */, true, 31536000},
+      {"1-Jan-70 00:00:00 GMT" /* 1970 */, true, 0},
+      {"1-Jan-69 00:00:00 GMT" /* 2069 */, true, 3124224000},
+      {"1-Jan-68 00:00:00 GMT" /* 2068 */, true, 3092601600},
       // Some invalid dates
       {"98 April 17 21:01:22", false, 0},
       {"Thu, 012-Aug-2008 20:49:07 GMT", false, 0},
@@ -129,7 +143,7 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
       continue;
     }
     EXPECT_TRUE(!parsed_time.is_null()) << test.str;
-    EXPECT_EQ(test.epoch, parsed_time.ToTimeT()) << test.str;
+    EXPECT_EQ(test.epoch, parsed_time.ToDoubleT()) << test.str;
   }
 }
 
@@ -141,7 +155,8 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
 TEST(CookieUtilTest, ParseCookieExpirationTimeBeyond2038) {
   const char* kTests[] = {
       "Thu, 12-Aug-31841 20:49:07 GMT", "2039 April 15 21:01:22",
-      "2039 April 15 21:01:22", "2038 April 15 21:01:22",
+      "2039 April 15 21:01:22",         "2038 April 15 21:01:22",
+      "15 April 69 21:01:22",           "15 April 68, 21:01:22",
   };
 
   for (auto* test : kTests) {
@@ -162,11 +177,17 @@ TEST(CookieUtilTest, ParseCookieExpirationTimeBeyond2038) {
 TEST(CookieUtilTest, ParseCookieExpirationTimeBefore1970) {
   const char* kTests[] = {
       // Times around the Unix epoch.
-      "1970 Jan 1 00:00:00", "1969 March 3 21:01:22",
+      "1970 Jan 1 00:00:00",
+      "1969 March 3 21:01:22",
+      // Two digit year abbreviations.
+      "1-Jan-70 00:00:00",
+      "Jan 1, 70 00:00:00",
       // Times around the Windows epoch.
-      "1601 Jan 1 00:00:00", "1600 April 15 21:01:22",
+      "1601 Jan 1 00:00:00",
+      "1600 April 15 21:01:22",
       // Times around kExplodedMinYear on Mac.
-      "1902 Jan 1 00:00:00", "1901 Jan 1 00:00:00",
+      "1902 Jan 1 00:00:00",
+      "1901 Jan 1 00:00:00",
   };
 
   for (auto* test : kTests) {
@@ -326,920 +347,798 @@ TEST(CookieUtilTest, TestIsDomainMatch) {
   EXPECT_FALSE(cookie_util::IsDomainMatch(".example.de", "example.de.vu"));
 }
 
-TEST(CookieUtilTest, TestComputeSameSiteContextForScriptGet) {
-  using SameSiteCookieContext = CookieOptions::SameSiteCookieContext;
-  // |site_for_cookies| not matching the URL -> it's cross-site.
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          base::nullopt /*initiator*/,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          base::nullopt /*initiator*/,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://notexample.com")),
-          base::nullopt /*initiator*/,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://notexample.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://a.com"), SiteForCookies::FromUrl(GURL("http://b.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  // |site_for_cookies| not being schemefully_same -> it's cross-site.
-  SiteForCookies insecure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("http://example.com"));
-  insecure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("http://example.com"), insecure_not_schemefully_same,
-                url::Origin::Create(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  SiteForCookies secure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("https://example.com"));
-  secure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("https://example.com"), secure_not_schemefully_same,
-                url::Origin::Create(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  // Same |site_for_cookies|, but not |initiator| -> it's same-site lax.
-  EXPECT_EQ(
-      CookieOptions::SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  // This isn't a full on origin check --- subdomains and different schema are
-  // accepted. For SameSiteCookieContext::schemeful_context the scheme is
-  // considered.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://sub.example.com"),
-          SiteForCookies::FromUrl(GURL("http://sub2.example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://sub.example.com"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com:8080")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  // wss/https and http/ws are considered the same for schemeful purposes.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("wss://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("ws://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  // nullopt |initiator| is trusted for purposes of strict, an opaque one isn't.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                base::nullopt /*initiator*/,
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                base::nullopt /*initiator*/,
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          base::nullopt /*initiator*/,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")), url::Origin(),
-          false /* force_ignore_site_for_cookies */));
-
-  // |force_ignore_site_for_cookies| causes SAME_SITE_STRICT to be
-  // returned.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          base::nullopt /*initiator*/,
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://a.com"), SiteForCookies::FromUrl(GURL("http://b.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://from-elsewhere.com")),
-                true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForScriptGet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://from-elsewhere.com")),
-                true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://sub.example.com"),
-          SiteForCookies::FromUrl(GURL("http://sub2.example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForScriptGet(
-          GURL("http://sub.example.com"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com:8080")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /* force_ignore_site_for_cookies */));
+MATCHER_P2(ContextTypeIsWithSchemefulMode, context_type, schemeful, "") {
+  return context_type == (schemeful ? arg.schemeful_context() : arg.context());
 }
 
-TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
+// Tests for the various ComputeSameSiteContextFor*() functions. The first
+// boolean test param is whether the results of the computations are evaluated
+// schemefully. The second boolean test param is whether the fix for
+// crbug.com/1166211 is enabled.
+class CookieUtilComputeSameSiteContextTest
+    : public ::testing::TestWithParam<std::tuple<bool, bool>> {
+ public:
+  CookieUtilComputeSameSiteContextTest() {
+    // No need to explicitly enable the feature because it is enabled by
+    // default.
+    if (!IsBugfix1166211Enabled()) {
+      feature_list_.InitAndDisableFeature(
+          features::kSameSiteCookiesBugfix1166211);
+    }
+  }
+  ~CookieUtilComputeSameSiteContextTest() override = default;
+
   using SameSiteCookieContext = CookieOptions::SameSiteCookieContext;
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
-                base::nullopt /*initiator*/,
-                false /*force_ignore_site_for_cookies*/));
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
-                base::nullopt /*initiator*/,
-                false /*force_ignore_site_for_cookies*/));
+  using ContextType = CookieOptions::SameSiteCookieContext::ContextType;
 
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://notexample.com")),
-                base::nullopt /*initiator*/,
-                false /*force_ignore_site_for_cookies*/));
+  bool IsSchemeful() const { return std::get<0>(GetParam()); }
 
-  // |site_for_cookies| not being schemefully_same -> it's cross-site.
-  SiteForCookies insecure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("http://example.com"));
-  insecure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-          SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"), insecure_not_schemefully_same,
-          url::Origin::Create(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
+  bool IsBugfix1166211Enabled() const { return std::get<1>(GetParam()); }
 
-  SiteForCookies secure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("https://example.com"));
-  secure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("https://example.com"), secure_not_schemefully_same,
-                url::Origin::Create(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
+  // Returns the proper gtest matcher to use for the schemeless/schemeful mode.
+  auto ContextTypeIs(ContextType context_type) const {
+    return ContextTypeIsWithSchemefulMode(context_type, IsSchemeful());
+  }
 
-  // |force_ignore_site_for_cookies| = true bypasses all checks.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /*force_ignore_site_for_cookies*/));
+  // The following methods return the sets of URLs/SiteForCookies/initiators
+  // that are same-site or cross-site with respect to kSiteUrl.
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "POST", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /*force_ignore_site_for_cookies*/));
+  std::vector<GURL> GetAllUrls() const {
+    return {kSiteUrl,
+            kSiteUrlWithPath,
+            kSecureSiteUrl,
+            kCrossSiteUrl,
+            kSecureCrossSiteUrl,
+            kSubdomainUrl,
+            kSecureSubdomainUrl,
+            kWsUrl,
+            kWssUrl};
+  }
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://question.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          true /*force_ignore_site_for_cookies*/));
+  std::vector<GURL> GetSameSiteUrls() const {
+    // Same-site-same-scheme URLs are always same-site. (ws counts as
+    // same-scheme with http.)
+    std::vector<GURL> same_site_urls{kSiteUrl, kSiteUrlWithPath, kSubdomainUrl,
+                                     kWsUrl};
+    // If schemeless, the cross-scheme URLs are also same-site.
+    if (!IsSchemeful()) {
+      same_site_urls.push_back(kSecureSiteUrl);
+      same_site_urls.push_back(kSecureSubdomainUrl);
+      same_site_urls.push_back(kWssUrl);
+    }
+    return same_site_urls;
+  }
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /*force_ignore_site_for_cookies*/));
+  std::vector<SiteForCookies> GetAllSitesForCookies() const {
+    return {kNullSiteForCookies, kSiteForCookies, kSecureSiteForCookies,
+            kCrossSiteForCookies, kSecureCrossSiteForCookies};
+  }
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "POST", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /*force_ignore_site_for_cookies*/));
+  std::vector<SiteForCookies> GetSameSiteSitesForCookies() const {
+    std::vector<SiteForCookies> same_site_sfc = {kSiteForCookies};
+    // If schemeless, the cross-scheme SFC is also same-site.
+    if (!IsSchemeful())
+      same_site_sfc.push_back(kSecureSiteForCookies);
+    return same_site_sfc;
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  std::vector<SiteForCookies> GetCrossSiteSitesForCookies() const {
+    std::vector<SiteForCookies> cross_site_sfc;
+    std::vector<SiteForCookies> same_site_sfc = GetSameSiteSitesForCookies();
+    for (const SiteForCookies& sfc : GetAllSitesForCookies()) {
+      if (std::none_of(same_site_sfc.begin(), same_site_sfc.end(),
+                       [&sfc](const SiteForCookies& s) {
+                         return sfc.RepresentativeUrl() ==
+                                s.RepresentativeUrl();
+                       })) {
+        cross_site_sfc.push_back(sfc);
+      }
+    }
+    return cross_site_sfc;
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "POST", GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  std::vector<base::Optional<url::Origin>> GetAllInitiators() const {
+    return {kBrowserInitiated,   kOpaqueInitiator,
+            kSiteInitiator,      kSecureSiteInitiator,
+            kCrossSiteInitiator, kSecureCrossSiteInitiator,
+            kSubdomainInitiator, kSecureSubdomainInitiator,
+            kUnrelatedInitiator};
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  std::vector<base::Optional<url::Origin>> GetSameSiteInitiators() const {
+    std::vector<base::Optional<url::Origin>> same_site_initiators{
+        kBrowserInitiated, kSiteInitiator, kSubdomainInitiator};
+    // If schemeless, the cross-scheme origins are also same-site.
+    if (!IsSchemeful()) {
+      same_site_initiators.push_back(kSecureSiteInitiator);
+      same_site_initiators.push_back(kSecureSubdomainInitiator);
+    }
+    return same_site_initiators;
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "POST", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  std::vector<base::Optional<url::Origin>> GetCrossSiteInitiators() const {
+    std::vector<base::Optional<url::Origin>> cross_site_initiators;
+    std::vector<base::Optional<url::Origin>> same_site_initiators =
+        GetSameSiteInitiators();
+    for (const base::Optional<url::Origin>& initiator : GetAllInitiators()) {
+      if (!base::Contains(same_site_initiators, initiator))
+        cross_site_initiators.push_back(initiator);
+    }
+    return cross_site_initiators;
+  }
 
-  // Normally, lax requests also require a safe method.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  // Computes possible values of is_main_frame_navigation that are consistent
+  // with the DCHECKs.
+  bool CanBeMainFrameNavigation(const GURL& url,
+                                const SiteForCookies& site_for_cookies) const {
+    return (site_for_cookies.IsNull() ||
+            site_for_cookies.IsFirstPartyWithSchemefulMode(url, true)) &&
+           !url.SchemeIsWSOrWSS();
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("https://example.com")),
-                false /*force_ignore_site_for_cookies*/));
+  std::vector<bool> IsMainFrameNavigationPossibleValues(
+      const GURL& url,
+      const SiteForCookies& site_for_cookies) const {
+    return CanBeMainFrameNavigation(url, site_for_cookies)
+               ? std::vector<bool>{false, true}
+               : std::vector<bool>{false};
+  }
 
-  // wss/https and http/ws are considered the same for schemeful purposes.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("wss://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
+  // Request URL.
+  const GURL kSiteUrl{"http://example.test/"};
+  const GURL kSiteUrlWithPath{"http://example.test/path"};
+  const GURL kSecureSiteUrl{"https://example.test/"};
+  const GURL kCrossSiteUrl{"http://notexample.test/"};
+  const GURL kSecureCrossSiteUrl{"https://notexample.test/"};
+  const GURL kSubdomainUrl{"http://subdomain.example.test/"};
+  const GURL kSecureSubdomainUrl{"https://subdomain.example.test/"};
+  const GURL kWsUrl{"ws://example.test/"};
+  const GURL kWssUrl{"wss://example.test/"};
+  // Site for cookies.
+  const SiteForCookies kNullSiteForCookies;
+  const SiteForCookies kSiteForCookies = SiteForCookies::FromUrl(kSiteUrl);
+  const SiteForCookies kSecureSiteForCookies =
+      SiteForCookies::FromUrl(kSecureSiteUrl);
+  const SiteForCookies kCrossSiteForCookies =
+      SiteForCookies::FromUrl(kCrossSiteUrl);
+  const SiteForCookies kSecureCrossSiteForCookies =
+      SiteForCookies::FromUrl(kSecureCrossSiteUrl);
+  // Initiator origin.
+  const base::Optional<url::Origin> kBrowserInitiated = base::nullopt;
+  const base::Optional<url::Origin> kOpaqueInitiator =
+      base::make_optional(url::Origin());
+  const base::Optional<url::Origin> kSiteInitiator =
+      base::make_optional(url::Origin::Create(kSiteUrl));
+  const base::Optional<url::Origin> kSecureSiteInitiator =
+      base::make_optional(url::Origin::Create(kSecureSiteUrl));
+  const base::Optional<url::Origin> kCrossSiteInitiator =
+      base::make_optional(url::Origin::Create(kCrossSiteUrl));
+  const base::Optional<url::Origin> kSecureCrossSiteInitiator =
+      base::make_optional(url::Origin::Create(kSecureCrossSiteUrl));
+  const base::Optional<url::Origin> kSubdomainInitiator =
+      base::make_optional(url::Origin::Create(kSubdomainUrl));
+  const base::Optional<url::Origin> kSecureSubdomainInitiator =
+      base::make_optional(url::Origin::Create(kSecureSubdomainUrl));
+  const base::Optional<url::Origin> kUnrelatedInitiator =
+      base::make_optional(url::Origin::Create(GURL("https://unrelated.test/")));
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "GET", GURL("ws://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "HEAD", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "GET", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          url::Origin::Create(GURL("http://from-elsewhere.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-          SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "POST", GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          url::Origin::Create(GURL("http://example.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-          SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
-      cookie_util::ComputeSameSiteContextForRequest(
-          "POST", GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          url::Origin::Create(GURL("https://example.com")),
-          false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(SameSiteCookieContext(CookieOptions::SameSiteCookieContext::
-                                      ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "POST", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://from-elsewhere.com")),
-                false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "POST", GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                url::Origin::Create(GURL("http://from-elsewhere.com")),
-                false /*force_ignore_site_for_cookies*/));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForRequest(
-                "POST", GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                url::Origin::Create(GURL("http://from-elsewhere.com")),
-                false /*force_ignore_site_for_cookies*/));
+TEST_P(CookieUtilComputeSameSiteContextTest, UrlAndSiteForCookiesCrossSite) {
+  // If the SiteForCookies and URL are cross-site, then the context is always
+  // cross-site.
+  for (const GURL& url : GetSameSiteUrls()) {
+    for (const SiteForCookies& site_for_cookies :
+         GetCrossSiteSitesForCookies()) {
+      for (const base::Optional<url::Origin>& initiator : GetAllInitiators()) {
+        for (const std::string& method : {"GET", "POST", "PUT", "HEAD"}) {
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                          url, site_for_cookies, initiator,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptSet(
+                          url, site_for_cookies,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+          for (bool is_main_frame_navigation :
+               IsMainFrameNavigationPossibleValues(url, site_for_cookies)) {
+            EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                            method, url, site_for_cookies, initiator,
+                            is_main_frame_navigation,
+                            false /* force_ignore_site_for_cookies */),
+                        ContextTypeIs(ContextType::CROSS_SITE));
+            EXPECT_THAT(
+                cookie_util::ComputeSameSiteContextForResponse(
+                    url, site_for_cookies, initiator, is_main_frame_navigation,
+                    false /* force_ignore_site_for_cookies */),
+                ContextTypeIs(ContextType::CROSS_SITE));
+          }
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForSubresource(
+                          url, site_for_cookies,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+        }
+      }
+    }
+  }
 }
 
-TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
-  using SameSiteCookieContext = CookieOptions::SameSiteCookieContext;
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForResponse(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
-                base::nullopt, false /* force_ignore_site_for_cookies */));
+TEST_P(CookieUtilComputeSameSiteContextTest, SiteForCookiesNotSchemefullySame) {
+  // If the SiteForCookies is not schemefully_same, even if its value is
+  // schemefully same-site, the schemeful context type will be cross-site.
+  if (!IsSchemeful())
+    return;
 
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForResponse(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
-                base::nullopt, false /* force_ignore_site_for_cookies */));
+  std::vector<SiteForCookies> sites_for_cookies = GetAllSitesForCookies();
+  for (SiteForCookies& sfc : sites_for_cookies) {
+    sfc.SetSchemefullySameForTesting(false);
+  }
 
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForResponse(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://notexample.com")),
-                base::nullopt, false /* force_ignore_site_for_cookies */));
+  for (const GURL& url : GetSameSiteUrls()) {
+    for (const SiteForCookies& site_for_cookies : sites_for_cookies) {
+      for (const base::Optional<url::Origin>& initiator : GetAllInitiators()) {
+        for (const std::string& method : {"GET", "POST", "PUT", "HEAD"}) {
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                          url, site_for_cookies, initiator,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptSet(
+                          url, site_for_cookies,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
 
+          // If the site-for-cookies isn't schemefully_same, this cannot be a
+          // main frame navigation.
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                          method, url, site_for_cookies, initiator,
+                          false /* is_main_frame_navigation */,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                          url, site_for_cookies, initiator,
+                          false /* is_main_frame_navigation */,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForSubresource(
+                          url, site_for_cookies,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::CROSS_SITE));
+        }
+      }
+    }
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptGet) {
+  for (const GURL& url : GetSameSiteUrls()) {
+    // Same-site site-for-cookies.
+    // (Cross-site cases covered above in UrlAndSiteForCookiesCrosSite test.)
+    for (const SiteForCookies& site_for_cookies :
+         GetSameSiteSitesForCookies()) {
+      // Cross-site initiator -> it's same-site lax.
+      for (const base::Optional<url::Origin>& initiator :
+           GetCrossSiteInitiators()) {
+        EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                        url, site_for_cookies, initiator,
+                        false /* force_ignore_site_for_cookies */),
+                    ContextTypeIs(ContextType::SAME_SITE_LAX));
+      }
+
+      // Same-site initiator -> it's same-site strict.
+      for (const base::Optional<url::Origin>& initiator :
+           GetSameSiteInitiators()) {
+        EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                        url, site_for_cookies, initiator,
+                        false /* force_ignore_site_for_cookies */),
+                    ContextTypeIs(ContextType::SAME_SITE_STRICT));
+      }
+    }
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptGet_SchemefulDowngrade) {
+  // Some test cases where the context is downgraded when computed schemefully.
+  // (Should already be covered above, but just to be explicit.)
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                  ContextType::SAME_SITE_LAX),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                kSiteUrl, kSiteForCookies, kSecureSiteInitiator,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                  ContextType::SAME_SITE_LAX),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                kSecureSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                kSecureSiteUrl, kSiteForCookies, kCrossSiteInitiator,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                kSiteUrl, kSecureSiteForCookies, kCrossSiteInitiator,
+                false /* force_ignore_site_for_cookies */));
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptGet_WebSocketSchemes) {
+  // wss/https and http/ws are considered the same for schemeful purposes.
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                  kWssUrl, kSecureSiteForCookies, kSecureSiteInitiator,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_STRICT));
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                  kWssUrl, kSecureSiteForCookies, kSecureCrossSiteInitiator,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_LAX));
+
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                  kWsUrl, kSiteForCookies, kSiteInitiator,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_STRICT));
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                  kWsUrl, kSiteForCookies, kCrossSiteInitiator,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_LAX));
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForRequest) {
+  for (const GURL& url : GetSameSiteUrls()) {
+    // Same-site site-for-cookies.
+    // (Cross-site cases covered above in UrlAndSiteForCookiesCrosSite test.)
+    for (const SiteForCookies& site_for_cookies :
+         GetSameSiteSitesForCookies()) {
+      // Same-Site initiator -> it's same-site strict.
+      for (const base::Optional<url::Origin>& initiator :
+           GetSameSiteInitiators()) {
+        for (const std::string& method : {"GET", "POST", "PUT", "HEAD"}) {
+          for (bool is_main_frame_navigation :
+               IsMainFrameNavigationPossibleValues(url, site_for_cookies)) {
+            EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                            method, url, site_for_cookies, initiator,
+                            is_main_frame_navigation,
+                            false /* force_ignore_site_for_cookies */),
+                        ContextTypeIs(ContextType::SAME_SITE_STRICT));
+          }
+        }
+      }
+
+      // Cross-Site initiator -> it's same-site lax iff the method is safe.
+      for (const base::Optional<url::Origin>& initiator :
+           GetCrossSiteInitiators()) {
+        // For main frame navigations, the context is Lax (or Lax-unsafe).
+        for (const std::string& method : {"GET", "HEAD"}) {
+          if (!CanBeMainFrameNavigation(url, site_for_cookies))
+            break;
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                          method, url, site_for_cookies, initiator,
+                          true /* is_main_frame_navigation */,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::SAME_SITE_LAX));
+        }
+        for (const std::string& method : {"POST", "PUT"}) {
+          if (!CanBeMainFrameNavigation(url, site_for_cookies))
+            break;
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                          method, url, site_for_cookies, initiator,
+                          true /* is_main_frame_navigation */,
+                          false /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::SAME_SITE_LAX_METHOD_UNSAFE));
+        }
+
+        // For non-main-frame-navigation requests, the context should be
+        // cross-site, or (if the old incorrect behavior is in effect) lax or
+        // lax-unsafe.
+        if (IsBugfix1166211Enabled()) {
+          for (const std::string& method : {"GET", "POST", "PUT", "HEAD"}) {
+            EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                            method, url, site_for_cookies, initiator,
+                            false /* is_main_frame_navigation */,
+                            false /* force_ignore_site_for_cookies */),
+                        ContextTypeIs(ContextType::CROSS_SITE));
+          }
+        } else {
+          for (const std::string& method : {"GET", "HEAD"}) {
+            EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                            method, url, site_for_cookies, initiator,
+                            false /* is_main_frame_navigation */,
+                            false /* force_ignore_site_for_cookies */),
+                        ContextTypeIs(ContextType::SAME_SITE_LAX));
+          }
+          for (const std::string& method : {"POST", "PUT"}) {
+            EXPECT_THAT(
+                cookie_util::ComputeSameSiteContextForRequest(
+                    method, url, site_for_cookies, initiator,
+                    false /* is_main_frame_navigation */,
+                    false /* force_ignore_site_for_cookies */),
+                ContextTypeIs(ContextType::SAME_SITE_LAX_METHOD_UNSAFE));
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForRequest_SchemefulDowngrade) {
+  // Some test cases where the context is downgraded when computed schemefully.
+  // (Should already be covered above, but just to be explicit.)
+
+  // Cross-scheme URL and site-for-cookies with (schemelessly) same-site
+  // initiator.
+  // (The request cannot be a main frame navigation if the site-for-cookies is
+  // not schemefully same-site).
+  for (const std::string& method : {"GET", "POST"}) {
+    EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                    ContextType::CROSS_SITE),
+              cookie_util::ComputeSameSiteContextForRequest(
+                  method, kSecureSiteUrl, kSiteForCookies, kSiteInitiator,
+                  false /* is_main_frame_navigation */,
+                  false /* force_ignore_site_for_cookies */));
+    EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                    ContextType::CROSS_SITE),
+              cookie_util::ComputeSameSiteContextForRequest(
+                  method, kSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+                  false /* is_main_frame_navigation */,
+                  false /* force_ignore_site_for_cookies */));
+  }
+
+  // Schemefully same-site URL and site-for-cookies with cross-scheme
+  // initiator.
+  for (bool is_main_frame_navigation : {false, true}) {
+    ContextType lax_if_main_frame =
+        is_main_frame_navigation || !IsBugfix1166211Enabled()
+            ? ContextType::SAME_SITE_LAX
+            : ContextType::CROSS_SITE;
+    ContextType lax_unsafe_if_main_frame =
+        is_main_frame_navigation || !IsBugfix1166211Enabled()
+            ? ContextType::SAME_SITE_LAX_METHOD_UNSAFE
+            : ContextType::CROSS_SITE;
+
+    EXPECT_EQ(
+        SameSiteCookieContext(ContextType::SAME_SITE_STRICT, lax_if_main_frame),
+        cookie_util::ComputeSameSiteContextForRequest(
+            "GET", kSecureSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+            is_main_frame_navigation,
+            false /* force_ignore_site_for_cookies */));
+    EXPECT_EQ(
+        SameSiteCookieContext(ContextType::SAME_SITE_STRICT, lax_if_main_frame),
+        cookie_util::ComputeSameSiteContextForRequest(
+            "GET", kSiteUrl, kSiteForCookies, kSecureSiteInitiator,
+            is_main_frame_navigation,
+            false /* force_ignore_site_for_cookies */));
+    EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                    lax_unsafe_if_main_frame),
+              cookie_util::ComputeSameSiteContextForRequest(
+                  "POST", kSecureSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+                  is_main_frame_navigation,
+                  false /* force_ignore_site_for_cookies */));
+    EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                    lax_unsafe_if_main_frame),
+              cookie_util::ComputeSameSiteContextForRequest(
+                  "POST", kSiteUrl, kSiteForCookies, kSecureSiteInitiator,
+                  is_main_frame_navigation,
+                  false /* force_ignore_site_for_cookies */));
+  }
+
+  // Cross-scheme URL and site-for-cookies with cross-site initiator.
+  // (The request cannot be a main frame navigation if the site-for-cookies is
+  // not schemefully same-site).
+  ContextType incorrectly_lax = IsBugfix1166211Enabled()
+                                    ? ContextType::CROSS_SITE
+                                    : ContextType::SAME_SITE_LAX;
+  ContextType incorrectly_lax_unsafe =
+      IsBugfix1166211Enabled() ? ContextType::CROSS_SITE
+                               : ContextType::SAME_SITE_LAX_METHOD_UNSAFE;
+  EXPECT_EQ(SameSiteCookieContext(incorrectly_lax, ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", kSiteUrl, kSecureSiteForCookies, kCrossSiteInitiator,
+                false /* is_main_frame_navigation */,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(incorrectly_lax, ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", kSecureSiteUrl, kSiteForCookies, kCrossSiteInitiator,
+                false /* is_main_frame_navigation */,
+                false /* force_ignore_site_for_cookies */));
   EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")), base::nullopt,
+      SameSiteCookieContext(incorrectly_lax_unsafe, ContextType::CROSS_SITE),
+      cookie_util::ComputeSameSiteContextForRequest(
+          "POST", kSiteUrl, kSecureSiteForCookies, kCrossSiteInitiator,
+          false /* is_main_frame_navigation */,
           false /* force_ignore_site_for_cookies */));
-
   EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")), base::nullopt,
+      SameSiteCookieContext(incorrectly_lax_unsafe, ContextType::CROSS_SITE),
+      cookie_util::ComputeSameSiteContextForRequest(
+          "POST", kSecureSiteUrl, kSiteForCookies, kCrossSiteInitiator,
+          false /* is_main_frame_navigation */,
           false /* force_ignore_site_for_cookies */));
+}
 
-  // Same as above except |force_ignore_site_for_cookies| makes it return LAX.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")), base::nullopt,
-          true /* force_ignore_site_for_cookies */));
+TEST_P(CookieUtilComputeSameSiteContextTest, ForRequest_WebSocketSchemes) {
+  // wss/https and http/ws are considered the same for schemeful purposes.
+  // (ws/wss requests cannot be main frame navigations.)
+  ContextType incorrectly_lax = IsBugfix1166211Enabled()
+                                    ? ContextType::CROSS_SITE
+                                    : ContextType::SAME_SITE_LAX;
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")), base::nullopt,
-          true /* force_ignore_site_for_cookies */));
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                  "GET", kWssUrl, kSecureSiteForCookies, kSecureSiteInitiator,
+                  false /* is_main_frame_navigation */,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_STRICT));
+  EXPECT_THAT(
+      cookie_util::ComputeSameSiteContextForRequest(
+          "GET", kWssUrl, kSecureSiteForCookies, kSecureCrossSiteInitiator,
+          false /* is_main_frame_navigation */,
+          false /* force_ignore_site_for_cookies */),
+      ContextTypeIs(incorrectly_lax));
 
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")), base::nullopt,
-          true /* force_ignore_site_for_cookies */));
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                  "GET", kWsUrl, kSiteForCookies, kSiteInitiator,
+                  false /* is_main_frame_navigation */,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_STRICT));
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                  "GET", kWsUrl, kSiteForCookies, kCrossSiteInitiator,
+                  false /* is_main_frame_navigation */,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(incorrectly_lax));
+}
 
-  // |site_for_cookies| not being schemefully_same -> it's cross-site.
-  SiteForCookies insecure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("http://example.com"));
-  insecure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com"), insecure_not_schemefully_same,
-          base::nullopt, false /* force_ignore_site_for_cookies */));
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptSet) {
+  for (const GURL& url : GetSameSiteUrls()) {
+    for (const SiteForCookies& site_for_cookies :
+         GetSameSiteSitesForCookies()) {
+      // Same-site site-for-cookies -> it's same-site lax.
+      // (Cross-site cases covered above in UrlAndSiteForCookiesCrosSite test.)
+      EXPECT_THAT(
+          cookie_util::ComputeSameSiteContextForScriptSet(
+              url, site_for_cookies, false /* force_ignore_site_for_cookies */),
+          ContextTypeIs(ContextType::SAME_SITE_LAX));
+    }
+  }
+}
 
-  SiteForCookies secure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("https://example.com"));
-  secure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("https://example.com"), secure_not_schemefully_same,
-          base::nullopt, false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptSet_SchemefulDowngrade) {
+  // Some test cases where the context is downgraded when computed schemefully.
+  // (Should already be covered above, but just to be explicit.)
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
             cookie_util::ComputeSameSiteContextForScriptSet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                kSiteUrl, kSecureSiteForCookies,
                 false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
             cookie_util::ComputeSameSiteContextForScriptSet(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
+                kSecureSiteUrl, kSiteForCookies,
                 false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForScriptSet(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://notexample.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  // Same as above except |force_ignore_site_for_cookies| makes it return LAX.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          true /* force_ignore_site_for_cookies */));
-
-  // |site_for_cookies| not being schemefully_same -> it's cross-site.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com"), insecure_not_schemefully_same,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("https://example.com"), secure_not_schemefully_same,
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-          base::nullopt, false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-          base::nullopt, true /* force_ignore_site_for_cookies */));
-
-  // wss/https and http/ws are considered the same for schemeful purposes.
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("ws://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")), base::nullopt,
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("wss://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")), base::nullopt,
-          true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForResponse(
-                GURL("http://example.com/dir"),
-                SiteForCookies::FromUrl(GURL("https://sub.example.com")),
-                base::nullopt, false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("http://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("https://sub.example.com")),
-          base::nullopt, true /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForResponse(
-                GURL("https://example.com/dir"),
-                SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-                base::nullopt, false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForResponse(
-          GURL("https://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-          base::nullopt, true /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-          false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("ws://example.com"),
-          SiteForCookies::FromUrl(GURL("http://example.com")),
-          false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("wss://example.com"),
-          SiteForCookies::FromUrl(GURL("https://example.com")),
-          false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("http://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("https://sub.example.com")),
-          false /* force_ignore_site_for_cookies */));
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-                            SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForScriptSet(
-          GURL("https://example.com/dir"),
-          SiteForCookies::FromUrl(GURL("http://sub.example.com")),
-          false /* force_ignore_site_for_cookies */));
 }
 
-TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
-  using SameSiteCookieContext = CookieOptions::SameSiteCookieContext;
-  // |site_for_cookies| not matching the URL -> it's cross-site.
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForSubresource(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForSubresource(
-          GURL("https://example.com"),
-          SiteForCookies::FromUrl(GURL("http://notexample.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(
-      SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForSubresource(
-          GURL("http://example.com"),
-          SiteForCookies::FromUrl(GURL("https://notexample.com")),
-          false /* force_ignore_site_for_cookies */));
-
-  // Same as above except |force_ignore_site_for_cookies| makes it return
-  // STRICT.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://notexample.com")),
-                true /* force_ignore_site_for_cookies */));
-
-  // |site_for_cookies| not being schemefully_same -> it's cross-site.
-  SiteForCookies insecure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("http://example.com"));
-  insecure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForSubresource(
-          GURL("http://example.com"), insecure_not_schemefully_same,
-          false /* force_ignore_site_for_cookies */));
-
-  SiteForCookies secure_not_schemefully_same =
-      SiteForCookies::FromUrl(GURL("https://example.com"));
-  secure_not_schemefully_same.SetSchemefullySameForTesting(false);
-  EXPECT_EQ(
-      SameSiteCookieContext(
-          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
-      cookie_util::ComputeSameSiteContextForSubresource(
-          GURL("https://example.com"), secure_not_schemefully_same,
-          false /* force_ignore_site_for_cookies */));
-
-  // This isn't a full on origin check --- subdomains and different schema are
-  // accepted. For SameSiteCookieContext::schemeful_context the scheme is
-  // considered.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("https://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
-                SameSiteCookieContext::ContextType::CROSS_SITE),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://sub.example.com"),
-                SiteForCookies::FromUrl(GURL("http://sub2.example.com")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://sub.example.com"),
-                SiteForCookies::FromUrl(GURL("http://sub.example.com:8080")),
-                false /* force_ignore_site_for_cookies */));
-
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("http://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
-                false /* force_ignore_site_for_cookies */));
-
+TEST_P(CookieUtilComputeSameSiteContextTest, ForScriptSet_WebSocketSchemes) {
   // wss/https and http/ws are considered the same for schemeful purposes.
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
-            cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("ws://example.com"),
-                SiteForCookies::FromUrl(GURL("http://example.com")),
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptSet(
+                  kWssUrl, kSecureSiteForCookies,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_LAX));
+  EXPECT_THAT(
+      cookie_util::ComputeSameSiteContextForScriptSet(
+          kWsUrl, kSiteForCookies, false /* force_ignore_site_for_cookies */),
+      ContextTypeIs(ContextType::SAME_SITE_LAX));
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForResponse) {
+  for (const GURL& url : GetSameSiteUrls()) {
+    // Same-site site-for-cookies.
+    // (Cross-site cases covered above in UrlAndSiteForCookiesCrosSite test.)
+    for (const SiteForCookies& site_for_cookies :
+         GetSameSiteSitesForCookies()) {
+      // For main frame navigations, setting all SameSite cookies is allowed
+      // regardless of initiator.
+      for (const base::Optional<url::Origin>& initiator : GetAllInitiators()) {
+        if (!CanBeMainFrameNavigation(url, site_for_cookies))
+          break;
+        EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                        url, site_for_cookies, initiator,
+                        true /* is_main_frame_navigation */,
+                        false /* force_ignore_site_for_cookies */),
+                    ContextTypeIs(ContextType::SAME_SITE_LAX));
+      }
+
+      // For non-main-frame-navigation requests, the context should be lax iff
+      // the initiator is same-site, and cross-site otherwise. If the old
+      // (incorrect) behavior is in effect, it is always lax.
+      for (const base::Optional<url::Origin>& initiator :
+           GetSameSiteInitiators()) {
+        EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                        url, site_for_cookies, initiator,
+                        false /* is_main_frame_navigation */,
+                        false /* force_ignore_site_for_cookies */),
+                    ContextTypeIs(ContextType::SAME_SITE_LAX));
+      }
+      for (const base::Optional<url::Origin>& initiator :
+           GetCrossSiteInitiators()) {
+        ContextType incorrectly_lax = IsBugfix1166211Enabled()
+                                          ? ContextType::CROSS_SITE
+                                          : ContextType::SAME_SITE_LAX;
+        EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                        url, site_for_cookies, initiator,
+                        false /* is_main_frame_navigation */,
+                        false /* force_ignore_site_for_cookies */),
+                    ContextTypeIs(incorrectly_lax));
+      }
+    }
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForResponse_SchemefulDowngrade) {
+  // Some test cases where the context is downgraded when computed schemefully.
+  // (Should already be covered above, but just to be explicit.)
+
+  // URL and site-for-cookies are cross-scheme.
+  // (If the URL and site-for-cookies are not schemefully same-site, this cannot
+  // be a main frame navigation.)
+  // With same-site initiator:
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                kSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+                false /* is_main_frame_navigation */,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_LAX,
+                                  ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                kSecureSiteUrl, kSiteForCookies, kSecureSiteInitiator,
+                false /* is_main_frame_navigation */,
+                false /* force_ignore_site_for_cookies */));
+  // With cross-site initiator:
+  ContextType incorrectly_lax = IsBugfix1166211Enabled()
+                                    ? ContextType::CROSS_SITE
+                                    : ContextType::SAME_SITE_LAX;
+  EXPECT_EQ(SameSiteCookieContext(incorrectly_lax, ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                kSiteUrl, kSecureSiteForCookies, kCrossSiteInitiator,
+                false /* is_main_frame_navigation */,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(incorrectly_lax, ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForResponse(
+                kSecureSiteUrl, kSiteForCookies, kCrossSiteInitiator,
+                false /* is_main_frame_navigation */,
                 false /* force_ignore_site_for_cookies */));
 
-  EXPECT_EQ(SameSiteCookieContext(
-                SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
+  // Schemefully same-site URL and site-for-cookies with cross-scheme
+  // initiator.
+  for (bool is_main_frame_navigation : {false, true}) {
+    ContextType lax_if_main_frame =
+        is_main_frame_navigation || !IsBugfix1166211Enabled()
+            ? ContextType::SAME_SITE_LAX
+            : ContextType::CROSS_SITE;
+    EXPECT_EQ(
+        SameSiteCookieContext(ContextType::SAME_SITE_LAX, lax_if_main_frame),
+        cookie_util::ComputeSameSiteContextForResponse(
+            kSiteUrl, kSiteForCookies, kSecureSiteInitiator,
+            is_main_frame_navigation,
+            false /* force_ignore_site_for_cookies */));
+    EXPECT_EQ(
+        SameSiteCookieContext(ContextType::SAME_SITE_LAX, lax_if_main_frame),
+        cookie_util::ComputeSameSiteContextForResponse(
+            kSecureSiteUrl, kSecureSiteForCookies, kSiteInitiator,
+            is_main_frame_navigation,
+            false /* force_ignore_site_for_cookies */));
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForResponse_WebSocketSchemes) {
+  // wss/https and http/ws are considered the same for schemeful purposes.
+  // (ws/wss requests cannot be main frame navigations.)
+
+  // Same-site initiators.
+  for (const base::Optional<url::Origin>& initiator : GetSameSiteInitiators()) {
+    EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                    kWsUrl, kSiteForCookies, initiator,
+                    false /* is_main_frame_navigation */,
+                    false /* force_ignore_site_for_cookies */),
+                ContextTypeIs(ContextType::SAME_SITE_LAX));
+  }
+  // Cross-site initiators.
+  for (const base::Optional<url::Origin>& initiator :
+       GetCrossSiteInitiators()) {
+    ContextType incorrectly_lax = IsBugfix1166211Enabled()
+                                      ? ContextType::CROSS_SITE
+                                      : ContextType::SAME_SITE_LAX;
+    EXPECT_THAT(cookie_util::ComputeSameSiteContextForResponse(
+                    kWsUrl, kSiteForCookies, initiator,
+                    false /* is_main_frame_navigation */,
+                    false /* force_ignore_site_for_cookies */),
+                ContextTypeIs(incorrectly_lax));
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForSubresource) {
+  for (const GURL& url : GetSameSiteUrls()) {
+    // Same-site site-for-cookies.
+    // (Cross-site cases covered above in UrlAndSiteForCookiesCrosSite test.)
+    for (const SiteForCookies& site_for_cookies :
+         GetSameSiteSitesForCookies()) {
+      EXPECT_THAT(
+          cookie_util::ComputeSameSiteContextForSubresource(
+              url, site_for_cookies, false /* force_ignore_site_for_cookies */),
+          ContextTypeIs(ContextType::SAME_SITE_STRICT));
+    }
+  }
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest,
+       ForSubresource_SchemefulDowngrade) {
+  // Some test cases where the context is downgraded when computed schemefully.
+  // (Should already be covered above, but just to be explicit.)
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                  ContextType::CROSS_SITE),
             cookie_util::ComputeSameSiteContextForSubresource(
-                GURL("wss://example.com"),
-                SiteForCookies::FromUrl(GURL("https://example.com")),
+                kSiteUrl, kSecureSiteForCookies,
+                false /* force_ignore_site_for_cookies */));
+  EXPECT_EQ(SameSiteCookieContext(ContextType::SAME_SITE_STRICT,
+                                  ContextType::CROSS_SITE),
+            cookie_util::ComputeSameSiteContextForSubresource(
+                kSecureSiteUrl, kSiteForCookies,
                 false /* force_ignore_site_for_cookies */));
 }
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForSubresource_WebSocketSchemes) {
+  // wss/https and http/ws are considered the same for schemeful purposes.
+  EXPECT_THAT(cookie_util::ComputeSameSiteContextForSubresource(
+                  kWssUrl, kSecureSiteForCookies,
+                  false /* force_ignore_site_for_cookies */),
+              ContextTypeIs(ContextType::SAME_SITE_STRICT));
+  EXPECT_THAT(
+      cookie_util::ComputeSameSiteContextForSubresource(
+          kWsUrl, kSiteForCookies, false /* force_ignore_site_for_cookies */),
+      ContextTypeIs(ContextType::SAME_SITE_STRICT));
+}
+
+TEST_P(CookieUtilComputeSameSiteContextTest, ForceIgnoreSiteForCookies) {
+  // force_ignore_site_for_cookies overrides all checks and returns same-site
+  // (STRICT for get or LAX for set).
+  for (const GURL& url : GetAllUrls()) {
+    for (const SiteForCookies& site_for_cookies : GetAllSitesForCookies()) {
+      for (const base::Optional<url::Origin>& initiator : GetAllInitiators()) {
+        for (const std::string& method : {"GET", "POST", "PUT", "HEAD"}) {
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptGet(
+                          url, site_for_cookies, initiator,
+                          true /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::SAME_SITE_STRICT));
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForScriptSet(
+                          url, site_for_cookies,
+                          true /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::SAME_SITE_LAX));
+          for (bool is_main_frame_navigation :
+               IsMainFrameNavigationPossibleValues(url, site_for_cookies)) {
+            EXPECT_THAT(cookie_util::ComputeSameSiteContextForRequest(
+                            method, url, site_for_cookies, initiator,
+                            is_main_frame_navigation,
+                            true /* force_ignore_site_for_cookies */),
+                        ContextTypeIs(ContextType::SAME_SITE_STRICT));
+            EXPECT_THAT(
+                cookie_util::ComputeSameSiteContextForResponse(
+                    url, site_for_cookies, initiator, is_main_frame_navigation,
+                    true /* force_ignore_site_for_cookies */),
+                ContextTypeIs(ContextType::SAME_SITE_LAX));
+          }
+          EXPECT_THAT(cookie_util::ComputeSameSiteContextForSubresource(
+                          url, site_for_cookies,
+                          true /* force_ignore_site_for_cookies */),
+                      ContextTypeIs(ContextType::SAME_SITE_STRICT));
+        }
+      }
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(/* no label */,
+                         CookieUtilComputeSameSiteContextTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST(CookieUtilTest, AdaptCookieAccessResultToBool) {
   bool result_out = true;
@@ -1267,137 +1166,173 @@ TEST(CookieUtilTest, AdaptCookieAccessResultToBool) {
   EXPECT_TRUE(result_out);
 }
 
-TEST(CookieUtilTest, IsSameSiteCompatPair) {
-  ASSERT_EQ(3, cookie_util::kMinCompatPairNameLength)
-      << "This test assumes that SameSite compatibility pairs have cookie name "
-         "length at least 3.";
-  GURL url("https://www.site.example/path");
+TEST(CookieUtilTest, GetSamePartyStatus_NotInSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kFirstPartySets);
+  CookieOptions options;
+  options.set_is_in_nontrivial_first_party_set(false);
 
-  struct {
-    const char* cookie_line_1;
-    const char* cookie_line_2;
-    bool expected_is_same_site_compat_pair;
-  } kTestCases[] = {
-      // Matching cases
-      {"name=value; SameSite=None; Secure", "name_legacy=value", true},
-      {"uid=value; SameSite=None; Secure", "uid_old=value", true},
-      {"name=value; SameSite=None; Secure", "name2=value; Secure", true},
-      {"name_samesite=value; SameSite=None; Secure", "name=value", true},
-      {"__Secure-name=value; SameSite=None; Secure", "name=value", true},
-      {"__Secure-3Pname=value; SameSite=None; Secure", "name=value", true},
-      {"name=value; SameSite=None; Secure; HttpOnly", "name_legacy=value",
-       true},
-      {"name=value; SameSite=None; Secure; Domain=site.example",
-       "name_legacy=value; Secure; Domain=site.example", true},
-      // Fails because cookies are equivalent
-      {"name=value; SameSite=None; Secure", "name=value", false},
-      // Fails SameSite criterion
-      {"name=value", "name_legacy=value", false},
-      {"name=value; SameSite=None", "name_legacy=value", false},
-      {"name=value; SameSite=None; Secure", "name_legacy=value; SameSite=None",
-       false},
-      {"name=value; SameSite=None; Secure",
-       "name_legacy=value; SameSite=None; Secure", false},
-      // Fails Domain criterion
-      {"name=value; SameSite=None; Secure; Domain=site.example",
-       "name_legacy=value", false},
-      {"name=value; SameSite=None; Secure; Domain=www.site.example",
-       "name_legacy=value", false},
-      {"name=value; SameSite=None; Secure",
-       "name_legacy=value; Domain=site.example", false},
-      {"name=value; SameSite=None; Secure",
-       "name_legacy=value; Domain=www.site.example", false},
-      // Fails Path criterion
-      {"name=value; SameSite=None; Secure; Path=/path", "name_legacy=value",
-       false},
-      {"name=value; SameSite=None; Secure; Path=/path",
-       "name_legacy=value; Path=/", false},
-      {"name=value; SameSite=None; Secure; Path=/",
-       "name_legacy=value; Path=/path", false},
-      {"name=value; SameSite=None; Secure", "name_legacy=value; Path=/path",
-       false},
-      // Fails value criterion
-      {"name=value; SameSite=None; Secure", "name_legacy=foobar", false},
-      {"name=value; SameSite=None; Secure", "name_legacy=value2", false},
-      // Fails name length criterion
-      {"id=value; SameSite=None; Secure", "id_legacy=value", false},
-      {"id_samesite=value; SameSite=None; Secure", "id=value", false},
-      {"value; SameSite=None; Secure", "legacy=value", false},
-      // Fails suffix/prefix criterion
-      {"name_samesite=value; SameSite=None; Secure", "name_legacy=value",
-       false},
-      {"name1=value; SameSite=None; Secure", "name2=value", false},
-  };
+  for (bool same_party : {false, true}) {
+    for (bool secure : {false, true}) {
+      for (bool httponly : {false, true}) {
+        for (CookieSameSite same_site : {
+                 CookieSameSite::NO_RESTRICTION,
+                 CookieSameSite::LAX_MODE,
+                 CookieSameSite::STRICT_MODE,
+                 CookieSameSite::UNSPECIFIED,
+             }) {
+          for (CookieOptions::SamePartyCookieContextType party_context_type : {
+                   CookieOptions::SamePartyCookieContextType::kCrossParty,
+                   CookieOptions::SamePartyCookieContextType::kSameParty,
+               }) {
+            base::Time now = base::Time::Now();
+            std::unique_ptr<CanonicalCookie> cookie =
+                CanonicalCookie::CreateUnsafeCookieForTesting(
+                    "cookie", "tasty", "example.test", "/", now, now, now,
+                    secure, httponly, same_site,
+                    CookiePriority::COOKIE_PRIORITY_DEFAULT, same_party);
 
-  for (const auto& test_case : kTestCases) {
-    auto cookie1 = CanonicalCookie::Create(url, test_case.cookie_line_1,
-                                           base::Time::Now(), base::nullopt);
-    auto cookie2 = CanonicalCookie::Create(url, test_case.cookie_line_2,
-                                           base::Time::Now(), base::nullopt);
-
-    ASSERT_TRUE(cookie1);
-    ASSERT_TRUE(cookie2);
-    EXPECT_EQ(test_case.expected_is_same_site_compat_pair,
-              cookie_util::IsSameSiteCompatPair(
-                  *cookie1, *cookie2, CookieOptions::MakeAllInclusive()));
-    EXPECT_EQ(test_case.expected_is_same_site_compat_pair,
-              cookie_util::IsSameSiteCompatPair(
-                  *cookie2, *cookie1, CookieOptions::MakeAllInclusive()));
+            options.set_same_party_cookie_context_type(party_context_type);
+            EXPECT_EQ(CookieSamePartyStatus::kNoSamePartyEnforcement,
+                      cookie_util::GetSamePartyStatus(*cookie, options));
+          }
+        }
+      }
+    }
   }
 }
 
-TEST(CookieUtilTest, IsSameSiteCompatPair_HttpOnly) {
-  GURL url("https://www.site.example/path");
-  auto new_cookie =
-      CanonicalCookie::Create(url, "name=value; SameSite=None; Secure",
-                              base::Time::Now(), base::nullopt);
-  auto legacy_cookie = CanonicalCookie::Create(
-      url, "name_legacy=value", base::Time::Now(), base::nullopt);
-  auto http_only_new_cookie = CanonicalCookie::Create(
-      url, "name=value; SameSite=None; Secure; HttpOnly", base::Time::Now(),
-      base::nullopt);
-  auto http_only_legacy_cookie = CanonicalCookie::Create(
-      url, "name_legacy=value; HttpOnly", base::Time::Now(), base::nullopt);
-  ASSERT_TRUE(new_cookie);
-  ASSERT_TRUE(legacy_cookie);
-  ASSERT_TRUE(http_only_new_cookie);
-  ASSERT_TRUE(http_only_legacy_cookie);
+TEST(CookieUtilTest, GetSamePartyStatus_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kFirstPartySets);
+  CookieOptions options;
+  options.set_is_in_nontrivial_first_party_set(true);
 
-  // Allows HttpOnly access.
-  CookieOptions inclusive_options = CookieOptions::MakeAllInclusive();
-  // Disallows HttpOnly access.
-  CookieOptions restrictive_options;
-  // Allows SameSite but not HttpOnly access. (SameSite shouldn't matter.)
-  CookieOptions same_site_options;
-  same_site_options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::MakeInclusive());
+  for (bool same_party : {false, true}) {
+    for (bool secure : {false, true}) {
+      for (bool httponly : {false, true}) {
+        for (CookieSameSite same_site : {
+                 CookieSameSite::NO_RESTRICTION,
+                 CookieSameSite::LAX_MODE,
+                 CookieSameSite::STRICT_MODE,
+                 CookieSameSite::UNSPECIFIED,
+             }) {
+          for (CookieOptions::SamePartyCookieContextType party_context_type : {
+                   CookieOptions::SamePartyCookieContextType::kCrossParty,
+                   CookieOptions::SamePartyCookieContextType::kSameParty,
+               }) {
+            base::Time now = base::Time::Now();
+            std::unique_ptr<CanonicalCookie> cookie =
+                CanonicalCookie::CreateUnsafeCookieForTesting(
+                    "cookie", "tasty", "example.test", "/", now, now, now,
+                    secure, httponly, same_site,
+                    CookiePriority::COOKIE_PRIORITY_DEFAULT, same_party);
 
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
-                                                inclusive_options));
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *legacy_cookie, inclusive_options));
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
-      *new_cookie, *http_only_legacy_cookie, inclusive_options));
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *http_only_legacy_cookie, inclusive_options));
+            options.set_same_party_cookie_context_type(party_context_type);
+            EXPECT_EQ(CookieSamePartyStatus::kNoSamePartyEnforcement,
+                      cookie_util::GetSamePartyStatus(*cookie, options));
+          }
+        }
+      }
+    }
+  }
+}
 
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
-                                                restrictive_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *legacy_cookie, restrictive_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *new_cookie, *http_only_legacy_cookie, restrictive_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *http_only_legacy_cookie, restrictive_options));
+TEST(CookieUtilTest, GetSamePartyStatus_NotSameParty) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kFirstPartySets);
+  CookieOptions options;
+  options.set_is_in_nontrivial_first_party_set(true);
 
-  EXPECT_TRUE(cookie_util::IsSameSiteCompatPair(*new_cookie, *legacy_cookie,
-                                                same_site_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *legacy_cookie, same_site_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *new_cookie, *http_only_legacy_cookie, same_site_options));
-  EXPECT_FALSE(cookie_util::IsSameSiteCompatPair(
-      *http_only_new_cookie, *http_only_legacy_cookie, same_site_options));
+  for (bool secure : {false, true}) {
+    for (bool httponly : {false, true}) {
+      for (CookieSameSite same_site : {
+               CookieSameSite::NO_RESTRICTION,
+               CookieSameSite::LAX_MODE,
+               CookieSameSite::STRICT_MODE,
+               CookieSameSite::UNSPECIFIED,
+           }) {
+        for (CookieOptions::SamePartyCookieContextType party_context_type : {
+                 CookieOptions::SamePartyCookieContextType::kCrossParty,
+                 CookieOptions::SamePartyCookieContextType::kSameParty,
+             }) {
+          base::Time now = base::Time::Now();
+          std::unique_ptr<CanonicalCookie> cookie =
+              CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "cookie", "tasty", "example.test", "/", now, now, now, secure,
+                  httponly, same_site, CookiePriority::COOKIE_PRIORITY_DEFAULT,
+                  false /* same_party */);
+
+          options.set_same_party_cookie_context_type(party_context_type);
+          EXPECT_EQ(CookieSamePartyStatus::kNoSamePartyEnforcement,
+                    cookie_util::GetSamePartyStatus(*cookie, options));
+        }
+      }
+    }
+  }
+}
+
+TEST(CookieUtilTest, GetSamePartyStatus_SamePartySemantics) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kFirstPartySets);
+  CookieOptions options;
+  options.set_is_in_nontrivial_first_party_set(true);
+
+  // Note: some SameParty cookie configurations (e.g. non-Secure cookies) are
+  // skipped, because they are invalid.
+  for (bool httponly : {false, true}) {
+    for (CookieSameSite same_site : {
+             CookieSameSite::NO_RESTRICTION,
+             CookieSameSite::LAX_MODE,
+             CookieSameSite::UNSPECIFIED,
+         }) {
+      for (CookieOptions::SameSiteCookieContext::ContextType same_site_context :
+           {
+               CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+               CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+               CookieOptions::SameSiteCookieContext::ContextType::
+                   SAME_SITE_LAX_METHOD_UNSAFE,
+               CookieOptions::SameSiteCookieContext::ContextType::
+                   SAME_SITE_STRICT,
+           }) {
+        for (CookieOptions::SameSiteCookieContext::ContextType
+                 schemeful_same_site_context :
+             {
+                 CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE,
+                 CookieOptions::SameSiteCookieContext::ContextType::
+                     SAME_SITE_LAX,
+                 CookieOptions::SameSiteCookieContext::ContextType::
+                     SAME_SITE_LAX_METHOD_UNSAFE,
+                 CookieOptions::SameSiteCookieContext::ContextType::
+                     SAME_SITE_STRICT,
+             }) {
+          if (same_site_context < schemeful_same_site_context)
+            continue;
+          options.set_same_site_cookie_context(
+              CookieOptions::SameSiteCookieContext(
+                  same_site_context, schemeful_same_site_context));
+
+          base::Time now = base::Time::Now();
+          std::unique_ptr<CanonicalCookie> cookie =
+              CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "cookie", "tasty", "example.test", "/", now, now, now,
+                  true /* secure */, httponly, same_site,
+                  CookiePriority::COOKIE_PRIORITY_DEFAULT,
+                  true /* same_party */);
+
+          options.set_same_party_cookie_context_type(
+              CookieOptions::SamePartyCookieContextType::kCrossParty);
+          EXPECT_EQ(CookieSamePartyStatus::kEnforceSamePartyExclude,
+                    cookie_util::GetSamePartyStatus(*cookie, options));
+
+          options.set_same_party_cookie_context_type(
+              CookieOptions::SamePartyCookieContextType::kSameParty);
+          EXPECT_EQ(CookieSamePartyStatus::kEnforceSamePartyInclude,
+                    cookie_util::GetSamePartyStatus(*cookie, options));
+        }
+      }
+    }
+  }
 }
 
 }  // namespace

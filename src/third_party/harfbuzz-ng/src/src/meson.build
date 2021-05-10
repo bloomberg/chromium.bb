@@ -126,10 +126,11 @@ hb_base_sources = files(
   'hb-ot-shape-complex-khmer.hh',
   'hb-ot-shape-complex-myanmar.cc',
   'hb-ot-shape-complex-myanmar.hh',
+  'hb-ot-shape-complex-syllabic.cc',
+  'hb-ot-shape-complex-syllabic.hh',
   'hb-ot-shape-complex-thai.cc',
-  'hb-ot-shape-complex-use-table.cc',
+  'hb-ot-shape-complex-use-table.hh',
   'hb-ot-shape-complex-use.cc',
-  'hb-ot-shape-complex-use.hh',
   'hb-ot-shape-complex-vowel-constraints.cc',
   'hb-ot-shape-complex-vowel-constraints.hh',
   'hb-ot-shape-complex.hh',
@@ -271,9 +272,7 @@ hb_subset_sources = files(
   'hb-subset-input.hh',
   'hb-subset-plan.cc',
   'hb-subset-plan.hh',
-  'hb-subset-plan.hh',
   'hb-subset.cc',
-  'hb-subset.hh',
   'hb-subset.hh',
 )
 
@@ -299,7 +298,7 @@ else
       build_by_default: true,
       input: rl,
       output: hh,
-      command: [ragel_helper, '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+      command: [ragel_helper, '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
     )
   endforeach
 endif
@@ -311,7 +310,7 @@ custom_target('harfbuzz.cc',
          hb_graphite2_sources + hb_uniscribe_sources + hb_gdi_sources +
          hb_directwrite_sources + hb_coretext_sources,
   command: [find_program('gen-harfbuzzcc.py'),
-            '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+            '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
 )
 
 incsrc = include_directories('.')
@@ -475,21 +474,6 @@ if get_option('tests').enabled()
     endforeach
   endif
 
-  check_programs = {
-    'dump-indic-data': ['dump-indic-data.cc', 'hb-ot-shape-complex-indic-table.cc'],
-    'dump-khmer-data': ['dump-khmer-data.cc', 'hb-ot-shape-complex-indic-table.cc'],
-    'dump-myanmar-data': ['dump-myanmar-data.cc', 'hb-ot-shape-complex-indic-table.cc'],
-    'dump-use-data': ['dump-use-data.cc', 'hb-ot-shape-complex-use-table.cc'],
-  }
-  foreach name, source : check_programs
-    executable(name, source,
-      include_directories: incconfig,
-      cpp_args: cpp_args,
-      dependencies: libharfbuzz_dep,
-      install: false,
-    )
-  endforeach
-
   compiled_tests = {
     'test-algs': ['test-algs.cc', 'hb-static.cc'],
     'test-array': ['test-array.cc'],
@@ -635,12 +619,7 @@ if have_gobject
   )
 
   gir = find_program('g-ir-scanner', required: get_option('introspection'))
-  build_gir = gir.found()
-
-  build_gir = build_gir and not meson.is_cross_build()
-  if not build_gir and get_option('introspection').enabled()
-    error('Introspection support is requested but it isn\'t available in cross builds')
-  endif
+  build_gir = gir.found() and (not meson.is_cross_build() or get_option('introspection').enabled())
 
   build_gir = build_gir and get_option('default_library') != 'static'
   if not build_gir and get_option('introspection').enabled()
@@ -661,14 +640,8 @@ if have_gobject
       header: 'hb-gobject.h',
       install: true,
       extra_args:  ['--cflags-begin',
-                    '-DHB_H',
-                    '-DHB_H_IN',
-                    '-DHB_OT_H',
-                    '-DHB_OT_H_IN',
-                    '-DHB_AAT_H',
-                    '-DHB_AAT_H_IN',
-                    '-DHB_GOBJECT_H',
-                    '-DHB_GOBJECT_H_IN',
+                    '-DHB_NO_SINGLE_HEADER_ERROR',
+                    '-DHAVE_GOBJECT',
                     '-DHB_EXTERN=',
                     '--cflags-end'])
   endif

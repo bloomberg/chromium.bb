@@ -19,6 +19,7 @@
 #include <ostream>
 #include <vector>
 
+#include "src/ast/node.h"
 #include "src/source.h"
 
 namespace tint {
@@ -30,57 +31,31 @@ enum class DecorationKind {
   kFunction,
   kStruct,
   kStructMember,
-  kVariable
+  kType,
+  kVariable,
 };
 
 std::ostream& operator<<(std::ostream& out, DecorationKind data);
 
 /// The base class for all decorations
-class Decoration {
+class Decoration : public Castable<Decoration, Node> {
  public:
-  virtual ~Decoration();
+  ~Decoration() override;
 
   /// @return the decoration kind
-  DecorationKind GetKind() const { return kind_; }
+  virtual DecorationKind GetKind() const = 0;
 
-  /// @return true if this decoration is of (or derives from) type |TO|
-  template <typename TO>
-  bool Is() const {
-    return GetKind() == TO::Kind;
-  }
-
-  /// @return the source of this decoration
-  const Source& GetSource() { return source_; }
+  /// @returns true if the node is valid
+  bool IsValid() const override;
 
  protected:
   /// Constructor
-  /// @param kind represents the derived type
   /// @param source the source of this decoration
-  Decoration(DecorationKind kind, const Source& source)
-      : kind_(kind), source_(source) {}
-
- private:
-  DecorationKind const kind_;
-  Source const source_;
+  explicit Decoration(const Source& source) : Base(source) {}
 };
 
-/// As dynamically casts |deco| to the target type |TO|.
-/// @return the dynamically cast decoration, or nullptr if |deco| is not of the
-/// type |TO|.
-template <typename TO>
-std::unique_ptr<TO> As(std::unique_ptr<Decoration>&& deco) {
-  if (deco == nullptr) {
-    return nullptr;
-  }
-  if (deco->Is<TO>()) {
-    auto ptr = static_cast<TO*>(deco.release());
-    return std::unique_ptr<TO>(ptr);
-  }
-  return nullptr;
-}
-
-/// A list of unique decorations
-using DecorationList = std::vector<std::unique_ptr<Decoration>>;
+/// A list of decorations
+using DecorationList = std::vector<Decoration*>;
 
 }  // namespace ast
 }  // namespace tint

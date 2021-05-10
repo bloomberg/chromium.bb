@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">अघिल्लो कुनै पनि नियन्त्रण छैन</translation>
 <translation id="2045606329038304310">फारमको क्षेत्र नियन्त्रण गर्ने क्षमता</translation>
 <translation id="2063539687800151747">शिलालेख</translation>
+<translation id="2074531330963286860">कारबाहीहरू उपलब्ध छन्। कारबाहीहरू हेर्न Search+Period थिच्नुहोस्</translation>
 <translation id="2086961585857038472">अर्को शब्द</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">ने</translation>
@@ -325,7 +326,7 @@
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">अघिल्लो उस्तै वस्तु</translation>
 <translation id="3270069636408109001">अर्को कुनै पनि तालिका छैन</translation>
-<translation id="3273791280096244679">लेबल सुरक्षित गर्नुहोस्</translation>
+<translation id="3273791280096244679">लेबल सेभ गर्नुहोस्</translation>
 <translation id="3283583562490372694">जाँच चिन्ह नलगाइएको</translation>
 <translation id="3286372614333682499">पोर्ट्रेट</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">अर्को समूह</translation>
 <translation id="7813616274030162878">स्विचमार्फत पहुँच राख्ने सुविधासम्बन्धी मेनु</translation>
 <translation id="7839679365527550018">पछिल्लो शब्द</translation>
+<translation id="7842115774595115751">नेभिगेसन कन्ट्रोल अन गरियोस्</translation>
 <translation id="7846634333498149051">किबोर्ड</translation>
 <translation id="7851816175263618915">केही चिन्ह</translation>
 <translation id="7871691770940645922">भर्चुअल ब्रेल प्रदर्शन</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">बिर्सनुहोस्</translation>
 <translation id="8989104346085848538">ChromeVox मा अन रहेको जुनसुकै वाक् सुविधा अफ गर्न Control की थिच्नुहोस्।</translation>
+<translation id="8993737615451556423">तपाईं यो सुविधा प्रयोग गरी वाचन गरिने आवाजको गति बढाउन, कम गर्न र पज गर्न सक्नुहुन्छ</translation>
 <translation id="9014206344398081366">ChromeVox को ट्युटोरियल</translation>
 <translation id="9040132695316389094">शीर्षक 1</translation>
 <translation id="9061884144798498064">८ डट भएको ब्रेल तालिका चयन गर्नुहोस्‌:</translation>

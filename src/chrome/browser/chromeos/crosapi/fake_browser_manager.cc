@@ -19,10 +19,14 @@ void FakeBrowserManager::SetGetFeedbackDataResponse(base::Value response) {
 }
 
 void FakeBrowserManager::SignalMojoDisconnected() {
-  NotifyMojoDisconnected();
+  SetState(State::TERMINATING);
 }
 
 bool FakeBrowserManager::IsRunning() const {
+  return is_running_;
+}
+
+bool FakeBrowserManager::IsRunningOrWillRun() const {
   return is_running_;
 }
 

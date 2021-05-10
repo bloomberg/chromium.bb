@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/borealis/borealis_context.h"
 #include "chrome/browser/chromeos/borealis/borealis_context_manager.h"
 #include "chrome/browser/chromeos/borealis/borealis_metrics.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
@@ -62,6 +62,7 @@ class BorealisTasksTest : public testing::Test {
 
   void TearDown() override {
     profile_.reset();
+    context_.reset();  // must destroy before DBus shutdown
 
     chromeos::DlcserviceClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -85,8 +86,6 @@ class BorealisTasksTest : public testing::Test {
 
 TEST_F(BorealisTasksTest, MountDlcSucceedsAndCallbackRanWithResults) {
   fake_dlcservice_client_->set_install_error(dlcservice::kErrorNone);
-  fake_dlcservice_client_->set_install_root_path("test/path");
-  EXPECT_EQ(context_->root_path(), "");
 
   testing::StrictMock<CallbackForTesting> callback;
   EXPECT_CALL(callback, Callback(BorealisStartupResult::kSuccess, _));
@@ -94,8 +93,6 @@ TEST_F(BorealisTasksTest, MountDlcSucceedsAndCallbackRanWithResults) {
   MountDlc task;
   task.Run(context_.get(), callback.GetCallback());
   task_environment_.RunUntilIdle();
-
-  EXPECT_EQ(context_->root_path(), "test/path");
 }
 
 TEST_F(BorealisTasksTest, CreateDiskSucceedsAndCallbackRanWithResults) {

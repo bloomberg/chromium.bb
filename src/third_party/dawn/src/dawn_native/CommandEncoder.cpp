@@ -25,7 +25,9 @@
 #include "dawn_native/ComputePassEncoder.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/ErrorData.h"
+#include "dawn_native/QueryHelper.h"
 #include "dawn_native/QuerySet.h"
+#include "dawn_native/Queue.h"
 #include "dawn_native/RenderPassEncoder.h"
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/ValidationUtils_autogen.h"
@@ -154,6 +156,8 @@ namespace dawn_native {
             const TextureViewBase* resolveTarget = colorAttachment.resolveTarget;
             const TextureViewBase* attachment = colorAttachment.attachment;
             DAWN_TRY(device->ValidateObject(colorAttachment.resolveTarget));
+            DAWN_TRY(ValidateCanUseAs(colorAttachment.resolveTarget->GetTexture(),
+                                      wgpu::TextureUsage::RenderAttachment));
 
             if (!attachment->GetTexture()->IsMultisampledTexture()) {
                 return DAWN_VALIDATION_ERROR(
@@ -204,6 +208,8 @@ namespace dawn_native {
             uint32_t* height,
             uint32_t* sampleCount) {
             DAWN_TRY(device->ValidateObject(colorAttachment.attachment));
+            DAWN_TRY(ValidateCanUseAs(colorAttachment.attachment->GetTexture(),
+                                      wgpu::TextureUsage::RenderAttachment));
 
             const TextureViewBase* attachment = colorAttachment.attachment;
             if (!(attachment->GetAspects() & Aspect::Color) ||
@@ -244,6 +250,8 @@ namespace dawn_native {
             DAWN_ASSERT(depthStencilAttachment != nullptr);
 
             DAWN_TRY(device->ValidateObject(depthStencilAttachment->attachment));
+            DAWN_TRY(ValidateCanUseAs(depthStencilAttachment->attachment->GetTexture(),
+                                      wgpu::TextureUsage::RenderAttachment));
 
             const TextureViewBase* attachment = depthStencilAttachment->attachment;
             if ((attachment->GetAspects() & (Aspect::Depth | Aspect::Stencil)) == Aspect::None ||
@@ -324,7 +332,19 @@ namespace dawn_native {
             }
 
             if (descriptor->occlusionQuerySet != nullptr) {
-                return DAWN_VALIDATION_ERROR("occlusionQuerySet not implemented");
+                DAWN_TRY(device->ValidateObject(descriptor->occlusionQuerySet));
+
+                // Occlusion query has not been implemented completely. Disallow it as unsafe until
+                // the implementaion is completed.
+                if (device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Occlusion query is disallowed because it has not been implemented "
+                        "completely.");
+                }
+
+                if (descriptor->occlusionQuerySet->GetQueryType() != wgpu::QueryType::Occlusion) {
+                    return DAWN_VALIDATION_ERROR("The type of query set must be Occlusion");
+                }
             }
 
             if (descriptor->colorAttachmentCount == 0 &&
@@ -378,6 +398,41 @@ namespace dawn_native {
             return {};
         }
 
+        void EncodeTimestampsToNanosecondsConversion(CommandEncoder* encoder,
+                                                     QuerySetBase* querySet,
+                                                     uint32_t queryCount,
+                                                     BufferBase* destination,
+                                                     uint64_t destinationOffset) {
+            DeviceBase* device = encoder->GetDevice();
+
+            // The availability got from query set is a reference to vector<bool>, need to covert
+            // bool to uint32_t due to a user input in pipeline must not contain a bool type in
+            // WGSL.
+            std::vector<uint32_t> availability{querySet->GetQueryAvailability().begin(),
+                                               querySet->GetQueryAvailability().end()};
+
+            // Timestamp availability storage buffer
+            BufferDescriptor availabilityDesc = {};
+            availabilityDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+            availabilityDesc.size = querySet->GetQueryCount() * sizeof(uint32_t);
+            Ref<BufferBase> availabilityBuffer =
+                AcquireRef(device->CreateBuffer(&availabilityDesc));
+            device->GetQueue()->WriteBuffer(availabilityBuffer.Get(), 0, availability.data(),
+                                            availability.size() * sizeof(uint32_t));
+
+            // Timestamp params uniform buffer
+            TimestampParams params = {queryCount, static_cast<uint32_t>(destinationOffset),
+                                      device->GetTimestampPeriodInNS()};
+            BufferDescriptor parmsDesc = {};
+            parmsDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+            parmsDesc.size = sizeof(params);
+            Ref<BufferBase> paramsBuffer = AcquireRef(device->CreateBuffer(&parmsDesc));
+            device->GetQueue()->WriteBuffer(paramsBuffer.Get(), 0, &params, sizeof(params));
+
+            EncodeConvertTimestampsToNanoseconds(encoder, destination, availabilityBuffer.Get(),
+                                                 paramsBuffer.Get());
+        }
+
     }  // namespace
 
     CommandEncoder::CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor*)
@@ -398,22 +453,24 @@ namespace dawn_native {
         mUsedQuerySets.insert(querySet);
     }
 
-    void CommandEncoder::TrackUsedQueryIndex(QuerySetBase* querySet, uint32_t queryIndex) {
-        UsedQueryMap::iterator it = mUsedQueryIndices.find(querySet);
-        if (it != mUsedQueryIndices.end()) {
-            // Record index on existing query set
-            std::vector<bool>& queryIndices = it->second;
-            queryIndices[queryIndex] = 1;
-        } else {
-            // Record index on new query set
-            std::vector<bool> queryIndices(querySet->GetQueryCount(), 0);
-            queryIndices[queryIndex] = 1;
-            mUsedQueryIndices.insert({querySet, std::move(queryIndices)});
+    void CommandEncoder::TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex) {
+        DAWN_ASSERT(querySet != nullptr);
+
+        if (GetDevice()->IsValidationEnabled()) {
+            TrackUsedQuerySet(querySet);
         }
+
+        // Set the query at queryIndex to available for resolving in query set.
+        querySet->SetQueryAvailability(queryIndex, 1);
+
+        // Gets the iterator for that querySet or create a new vector of bool set to false
+        // if the querySet wasn't registered.
+        auto it = mQueryAvailabilityMap.emplace(querySet, querySet->GetQueryCount()).first;
+        it->second[queryIndex] = 1;
     }
 
-    const UsedQueryMap& CommandEncoder::GetUsedQueryIndices() const {
-        return mUsedQueryIndices;
+    const QueryAvailabilityMap& CommandEncoder::GetQueryAvailabilityMap() const {
+        return mQueryAvailabilityMap;
     }
 
     // Implementation of the API's command recording methods
@@ -447,6 +504,7 @@ namespace dawn_native {
 
         uint32_t width = 0;
         uint32_t height = 0;
+        Ref<AttachmentState> attachmentState;
         bool success =
             mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
                 uint32_t sampleCount = 0;
@@ -460,6 +518,7 @@ namespace dawn_native {
                     allocator->Allocate<BeginRenderPassCmd>(Command::BeginRenderPass);
 
                 cmd->attachmentState = device->GetOrCreateAttachmentState(descriptor);
+                attachmentState = cmd->attachmentState;
 
                 for (ColorAttachmentIndex index :
                      IterateBitSet(cmd->attachmentState->GetColorAttachmentsMask())) {
@@ -505,12 +564,15 @@ namespace dawn_native {
                 cmd->width = width;
                 cmd->height = height;
 
+                cmd->occlusionQuerySet = descriptor->occlusionQuerySet;
+
                 return {};
             });
 
         if (success) {
             RenderPassEncoder* passEncoder = new RenderPassEncoder(
-                device, this, &mEncodingContext, std::move(usageTracker), width, height);
+                device, this, &mEncodingContext, std::move(usageTracker),
+                std::move(attachmentState), descriptor->occlusionQuerySet, width, height);
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
         }
@@ -712,6 +774,12 @@ namespace dawn_native {
         });
     }
 
+    void CommandEncoder::InjectValidationError(const char* message) {
+        if (mEncodingContext.CheckCurrentEncoder(this)) {
+            mEncodingContext.HandleError(InternalErrorType::Validation, message);
+        }
+    }
+
     void CommandEncoder::InsertDebugMarker(const char* groupLabel) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             InsertDebugMarkerCmd* cmd =
@@ -727,7 +795,13 @@ namespace dawn_native {
 
     void CommandEncoder::PopDebugGroup() {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            if (GetDevice()->IsValidationEnabled()) {
+                if (mDebugGroupStackSize == 0) {
+                    return DAWN_VALIDATION_ERROR("Pop must be balanced by a corresponding Push.");
+                }
+            }
             allocator->Allocate<PopDebugGroupCmd>(Command::PopDebugGroup);
+            mDebugGroupStackSize--;
 
             return {};
         });
@@ -741,6 +815,8 @@ namespace dawn_native {
 
             char* label = allocator->AllocateData<char>(cmd->length + 1);
             memcpy(label, groupLabel, cmd->length + 1);
+
+            mDebugGroupStackSize++;
 
             return {};
         });
@@ -773,6 +849,13 @@ namespace dawn_native {
             cmd->destination = destination;
             cmd->destinationOffset = destinationOffset;
 
+            // Encode internal compute pipeline for timestamp query
+            if (querySet->GetQueryType() == wgpu::QueryType::Timestamp &&
+                GetDevice()->IsToggleEnabled(Toggle::ConvertTimestampsToNanoseconds)) {
+                EncodeTimestampsToNanosecondsConversion(this, querySet, queryCount, destination,
+                                                        destinationOffset);
+            }
+
             return {};
         });
     }
@@ -781,11 +864,10 @@ namespace dawn_native {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(querySet));
-                DAWN_TRY(ValidateTimestampQuery(querySet, queryIndex, GetUsedQueryIndices()));
-                TrackUsedQuerySet(querySet);
+                DAWN_TRY(ValidateTimestampQuery(querySet, queryIndex));
             }
 
-            TrackUsedQueryIndex(querySet, queryIndex);
+            TrackQueryAvailability(querySet, queryIndex);
 
             WriteTimestampCmd* cmd =
                 allocator->Allocate<WriteTimestampCmd>(Command::WriteTimestamp);
@@ -822,79 +904,9 @@ namespace dawn_native {
             DAWN_TRY(ValidatePassResourceUsage(passUsage));
         }
 
-        uint64_t debugGroupStackSize = 0;
-
-        commands->Reset();
-        Command type;
-        while (commands->NextCommandId(&type)) {
-            switch (type) {
-                case Command::BeginComputePass: {
-                    commands->NextCommand<BeginComputePassCmd>();
-                    DAWN_TRY(ValidateComputePass(commands));
-                    break;
-                }
-
-                case Command::BeginRenderPass: {
-                    const BeginRenderPassCmd* cmd = commands->NextCommand<BeginRenderPassCmd>();
-                    DAWN_TRY(ValidateRenderPass(commands, cmd));
-                    break;
-                }
-
-                case Command::CopyBufferToBuffer: {
-                    commands->NextCommand<CopyBufferToBufferCmd>();
-                    break;
-                }
-
-                case Command::CopyBufferToTexture: {
-                    commands->NextCommand<CopyBufferToTextureCmd>();
-                    break;
-                }
-
-                case Command::CopyTextureToBuffer: {
-                    commands->NextCommand<CopyTextureToBufferCmd>();
-                    break;
-                }
-
-                case Command::CopyTextureToTexture: {
-                    commands->NextCommand<CopyTextureToTextureCmd>();
-                    break;
-                }
-
-                case Command::InsertDebugMarker: {
-                    const InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    break;
-                }
-
-                case Command::PopDebugGroup: {
-                    commands->NextCommand<PopDebugGroupCmd>();
-                    DAWN_TRY(ValidateCanPopDebugGroup(debugGroupStackSize));
-                    debugGroupStackSize--;
-                    break;
-                }
-
-                case Command::PushDebugGroup: {
-                    const PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    debugGroupStackSize++;
-                    break;
-                }
-
-                case Command::ResolveQuerySet: {
-                    commands->NextCommand<ResolveQuerySetCmd>();
-                    break;
-                }
-
-                case Command::WriteTimestamp: {
-                    commands->NextCommand<WriteTimestampCmd>();
-                    break;
-                }
-                default:
-                    return DAWN_VALIDATION_ERROR("Command disallowed outside of a pass");
-            }
+        if (mDebugGroupStackSize != 0) {
+            return DAWN_VALIDATION_ERROR("Each Push must be balanced by a corresponding Pop.");
         }
-
-        DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
 
         return {};
     }

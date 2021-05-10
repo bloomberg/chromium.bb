@@ -136,8 +136,9 @@ namespace dawn_native { namespace vulkan {
         return Sampler::Create(this, descriptor);
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
@@ -184,6 +185,10 @@ namespace dawn_native { namespace vulkan {
     }
     const VulkanDeviceInfo& Device::GetDeviceInfo() const {
         return mDeviceInfo;
+    }
+
+    const VulkanGlobalInfo& Device::GetGlobalInfo() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetGlobalInfo();
     }
 
     VkDevice Device::GetVkDevice() const {
@@ -274,8 +279,8 @@ namespace dawn_native { namespace vulkan {
 
         // However only request the extensions that haven't been promoted in the device's apiVersion
         std::vector<const char*> extensionNames;
-        for (uint32_t ext : IterateBitSet(usedKnobs.extensions.extensionBitSet)) {
-            const DeviceExtInfo& info = GetDeviceExtInfo(static_cast<DeviceExt>(ext));
+        for (DeviceExt ext : IterateBitSet(usedKnobs.extensions)) {
+            const DeviceExtInfo& info = GetDeviceExtInfo(ext);
 
             if (info.versionPromoted > mDeviceInfo.properties.apiVersion) {
                 extensionNames.push_back(info.name);
@@ -313,6 +318,10 @@ namespace dawn_native { namespace vulkan {
             featuresChain.Add(&usedKnobs.subgroupSizeControlFeatures);
 
             mComputeSubgroupSize = FindComputeSubgroupSize();
+        }
+
+        if (mDeviceInfo.features.samplerAnisotropy == VK_TRUE) {
+            usedKnobs.features.samplerAnisotropy = VK_TRUE;
         }
 
         if (IsExtensionEnabled(Extension::TextureCompressionBC)) {
@@ -938,6 +947,10 @@ namespace dawn_native { namespace vulkan {
 
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return mDeviceInfo.properties.limits.optimalBufferCopyOffsetAlignment;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return mDeviceInfo.properties.limits.timestampPeriod;
     }
 
 }}  // namespace dawn_native::vulkan

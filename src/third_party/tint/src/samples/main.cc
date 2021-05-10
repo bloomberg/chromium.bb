@@ -28,6 +28,13 @@
 
 namespace {
 
+[[noreturn]] void TintInternalCompilerErrorReporter(
+    const tint::diag::List& diagnostics) {
+  auto printer = tint::diag::Printer::create(stderr, true);
+  tint::diag::Formatter{}.format(diagnostics, printer.get());
+  exit(1);
+}
+
 enum class Format {
   kNone = -1,
   kSpirv,
@@ -46,6 +53,7 @@ struct Options {
   bool parse_only = false;
   bool dump_ast = false;
   bool dawn_validation = false;
+  bool demangle = false;
 
   Format format = Format::kNone;
 
@@ -71,19 +79,29 @@ const char kUsage[] = R"(Usage: tint [options] <input-file>
   -ep <compute|fragment|vertex> <name>  -- Output single entry point
   --output-file <name>      -- Output file name.  Use "-" for standard output
   -o <name>                 -- Output file name.  Use "-" for standard output
-  --transform <name list>   -- Runs transformers, name list is comma separated
+  --transform <name list>   -- Runs transforms, name list is comma separated
                                Available transforms:
                                 bound_array_accessors
+                                emit_vertex_point_size
+                                first_index_offset
   --parse-only              -- Stop after parsing the input
   --dump-ast                -- Dump the generated AST to stdout
   --dawn-validation         -- SPIRV outputs are validated with the same flags
                                as Dawn does. Has no effect on non-SPIRV outputs.
+  --demangle                -- Preserve original source names. Demangle them.
+                               Affects AST dumping, and text-based output languages.
   -h                        -- This help text)";
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4068; suppress : 4100)
+#endif
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 Format parse_format(const std::string& fmt) {
 #pragma clang diagnostic pop
+#ifdef _MSC_VER
+#pragma warning(default : 4068)
+#endif
 
 #if TINT_BUILD_SPV_WRITER
   if (fmt == "spirv")
@@ -123,10 +141,16 @@ bool ends_with(const std::string& input, const std::string& suffix) {
 
 /// @param filename the filename to inspect
 /// @returns the inferred format for the filename suffix
+#ifdef _MSC_VER
+#pragma warning(disable : 4068; suppress : 4100)
+#endif
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 Format infer_format(const std::string& filename) {
 #pragma clang diagnostic pop
+#ifdef _MSC_VER
+#pragma warning(default : 4068)
+#endif
 
 #if TINT_BUILD_SPV_WRITER
   if (ends_with(filename, ".spv")) {
@@ -147,7 +171,13 @@ Format infer_format(const std::string& filename) {
   if (ends_with(filename, ".metal")) {
     return Format::kMsl;
   }
-#endif  // TINT_BUILD_WGSL_WRITER
+#endif  // TINT_BUILD_MSL_WRITER
+
+#if TINT_BUILD_HLSL_WRITER
+  if (ends_with(filename, ".hlsl")) {
+    return Format::kHlsl;
+  }
+#endif  // TINT_BUILD_HLSL_WRITER
 
   return Format::kNone;
 }
@@ -231,6 +261,8 @@ bool ParseArgs(const std::vector<std::string>& args, Options* opts) {
       opts->dump_ast = true;
     } else if (arg == "--dawn-validation") {
       opts->dawn_validation = true;
+    } else if (arg == "--demangle") {
+      opts->demangle = true;
     } else if (!arg.empty()) {
       if (arg[0] == '-') {
         std::cerr << "Unrecognized option: " << arg << std::endl;
@@ -248,17 +280,13 @@ bool ParseArgs(const std::vector<std::string>& args, Options* opts) {
   return true;
 }
 
-/// Copies the content from the file named |filename| to |buffer|,
-/// assuming each element in the file is of type |T|.  If any error occurs,
+/// Copies the content from the file named `input_file` to `buffer`,
+/// assuming each element in the file is of type `T`.  If any error occurs,
 /// writes error messages to the standard error stream and returns false.
-/// Assumes the size of a |T| object is divisible by its required alignment.
+/// Assumes the size of a `T` object is divisible by its required alignment.
 /// @returns true if we successfully read the file.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-template"
 template <typename T>
 bool ReadFile(const std::string& input_file, std::vector<T>* buffer) {
-#pragma clang diagnostic pop
-
   if (!buffer) {
     std::cerr << "The buffer pointer was null" << std::endl;
     return false;
@@ -306,11 +334,11 @@ bool ReadFile(const std::string& input_file, std::vector<T>* buffer) {
   return true;
 }
 
-/// Writes the given |buffer| into the file named as |output_file| using the
-/// given |mode|.  If |filename| is empty or "-", writes to standard output. If
-/// any error occurs, returns false and outputs error message to standard error.
-/// The ContainerT type must have data() and size() methods, like std::string
-/// and std::vector do.
+/// Writes the given `buffer` into the file named as `output_file` using the
+/// given `mode`.  If `output_file` is empty or "-", writes to standard
+/// output. If any error occurs, returns false and outputs error message to
+/// standard error. The ContainerT type must have data() and size() methods,
+/// like `std::string` and `std::vector` do.
 /// @returns true on success
 template <typename ContainerT>
 bool WriteFile(const std::string& output_file,
@@ -398,6 +426,8 @@ int main(int argc, const char** argv) {
   std::vector<std::string> args(argv, argv + argc);
   Options options;
 
+  tint::SetInternalCompilerErrorReporter(&TintInternalCompilerErrorReporter);
+
   if (!ParseArgs(args, &options)) {
     std::cerr << "Failed to parse arguments." << std::endl;
     return 1;
@@ -418,9 +448,10 @@ int main(int argc, const char** argv) {
     options.format = Format::kSpvAsm;
   }
 
-  tint::Context ctx;
+  auto diag_printer = tint::diag::Printer::create(stderr, true);
+  tint::diag::Formatter diag_formatter;
 
-  std::unique_ptr<tint::reader::Reader> reader;
+  std::unique_ptr<tint::Program> program;
   std::unique_ptr<tint::Source::File> source_file;
 #if TINT_BUILD_WGSL_READER
   if (options.input_filename.size() > 5 &&
@@ -432,8 +463,8 @@ int main(int argc, const char** argv) {
     }
     source_file = std::make_unique<tint::Source::File>(
         options.input_filename, std::string(data.begin(), data.end()));
-    reader =
-        std::make_unique<tint::reader::wgsl::Parser>(&ctx, source_file.get());
+    program = std::make_unique<tint::Program>(
+        tint::reader::wgsl::Parse(source_file.get()));
   }
 #endif  // TINT_BUILD_WGSL_READER
 
@@ -446,7 +477,7 @@ int main(int argc, const char** argv) {
     if (!ReadFile<uint32_t>(options.input_filename, &data)) {
       return 1;
     }
-    reader = std::make_unique<tint::reader::spirv::Parser>(&ctx, data);
+    program = std::make_unique<tint::Program>(tint::reader::spirv::Parse(data));
   }
   // Handle SPIR-V assembly input, in files ending with .spvasm
   if (options.input_filename.size() > 7 &&
@@ -468,43 +499,30 @@ int main(int argc, const char** argv) {
                         SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS)) {
       return 1;
     }
-    reader = std::make_unique<tint::reader::spirv::Parser>(&ctx, data);
+    program = std::make_unique<tint::Program>(tint::reader::spirv::Parse(data));
   }
 #endif  // TINT_BUILD_SPV_READER
 
-  if (!reader) {
+  if (!program) {
     std::cerr << "Failed to create reader for input file: "
               << options.input_filename << std::endl;
     return 1;
   }
-  if (!reader->Parse()) {
-    auto printer = tint::diag::Printer::create(stderr, true);
-    tint::diag::Formatter().format(reader->diagnostics(), printer.get());
+  if (!program->IsValid()) {
+    diag_formatter.format(program->Diagnostics(), diag_printer.get());
     return 1;
   }
 
-  auto mod = reader->module();
   if (options.dump_ast) {
-    std::cout << std::endl << mod.to_str() << std::endl;
+    std::cout << std::endl << program->to_str(options.demangle) << std::endl;
   }
   if (options.parse_only) {
     return 1;
   }
 
-  if (!mod.IsValid()) {
-    std::cerr << "Invalid module generated..." << std::endl;
-    return 1;
-  }
-
-  tint::TypeDeterminer td(&ctx, &mod);
-  if (!td.Determine()) {
-    std::cerr << "Type Determination: " << td.error() << std::endl;
-    return 1;
-  }
-
   tint::Validator v;
-  if (!v.Validate(&mod)) {
-    std::cerr << "Validation: " << v.error() << std::endl;
+  if (!v.Validate(program.get())) {
+    diag_formatter.format(v.diagnostics(), diag_printer.get());
     return 1;
   }
 
@@ -516,41 +534,71 @@ int main(int argc, const char** argv) {
 
     if (name == "bound_array_accessors") {
       transform_manager.append(
-          std::make_unique<tint::transform::BoundArrayAccessorsTransform>(
-              &ctx, &mod));
+          std::make_unique<tint::transform::BoundArrayAccessors>());
+    } else if (name == "emit_vertex_point_size") {
+      transform_manager.append(
+          std::make_unique<tint::transform::EmitVertexPointSize>());
+    } else if (name == "first_index_offset") {
+      transform_manager.append(
+          std::make_unique<tint::transform::FirstIndexOffset>(0, 0));
     } else {
       std::cerr << "Unknown transform name: " << name << std::endl;
       return 1;
     }
   }
-  if (!transform_manager.Run()) {
-    std::cerr << "Transformer: " << transform_manager.error() << std::endl;
+
+  switch (options.format) {
+#if TINT_BUILD_SPV_WRITER
+    case Format::kSpirv:
+    case Format::kSpvAsm:
+      transform_manager.append(std::make_unique<tint::transform::Spirv>());
+      break;
+#endif  // TINT_BUILD_SPV_WRITER
+#if TINT_BUILD_MSL_WRITER
+    case Format::kMsl:
+      transform_manager.append(std::make_unique<tint::transform::Msl>());
+      break;
+#endif  // TINT_BUILD_MSL_WRITER
+#if TINT_BUILD_HLSL_WRITER
+    case Format::kHlsl:
+      transform_manager.append(std::make_unique<tint::transform::Hlsl>());
+      break;
+#endif  // TINT_BUILD_HLSL_WRITER
+    default:
+      break;
+  }
+
+  auto out = transform_manager.Run(program.get());
+  if (!out.program.IsValid()) {
+    diag_formatter.format(out.program.Diagnostics(), diag_printer.get());
     return 1;
   }
+
+  *program = std::move(out.program);
 
   std::unique_ptr<tint::writer::Writer> writer;
 
 #if TINT_BUILD_SPV_WRITER
   if (options.format == Format::kSpirv || options.format == Format::kSpvAsm) {
-    writer = std::make_unique<tint::writer::spirv::Generator>(std::move(mod));
+    writer = std::make_unique<tint::writer::spirv::Generator>(program.get());
   }
 #endif  // TINT_BUILD_SPV_WRITER
 
 #if TINT_BUILD_WGSL_WRITER
   if (options.format == Format::kWgsl) {
-    writer = std::make_unique<tint::writer::wgsl::Generator>(std::move(mod));
+    writer = std::make_unique<tint::writer::wgsl::Generator>(program.get());
   }
 #endif  // TINT_BUILD_WGSL_WRITER
 
 #if TINT_BUILD_MSL_WRITER
   if (options.format == Format::kMsl) {
-    writer = std::make_unique<tint::writer::msl::Generator>(std::move(mod));
+    writer = std::make_unique<tint::writer::msl::Generator>(program.get());
   }
 #endif  // TINT_BUILD_MSL_WRITER
 
 #if TINT_BUILD_HLSL_WRITER
   if (options.format == Format::kHlsl) {
-    writer = std::make_unique<tint::writer::hlsl::Generator>(std::move(mod));
+    writer = std::make_unique<tint::writer::hlsl::Generator>(program.get());
   }
 #endif  // TINT_BUILD_HLSL_WRITER
 
@@ -575,7 +623,8 @@ int main(int argc, const char** argv) {
   bool dawn_validation_failed = false;
   std::ostringstream stream;
 
-  if (options.dawn_validation) {
+  if (options.dawn_validation &&
+      (options.format == Format::kSpvAsm || options.format == Format::kSpirv)) {
     // Use Vulkan 1.1, since this is what Tint, internally, uses.
     spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_1);
     tools.SetMessageConsumer([&stream](spv_message_level_t, const char*,
@@ -613,7 +662,11 @@ int main(int argc, const char** argv) {
 
   if (options.format != Format::kSpvAsm && options.format != Format::kSpirv) {
     auto* w = static_cast<tint::writer::Text*>(writer.get());
-    if (!WriteFile(options.output_file, "w", w->result())) {
+    auto output = w->result();
+    if (options.demangle) {
+      output = tint::Demangler().Demangle(program->Symbols(), output);
+    }
+    if (!WriteFile(options.output_file, "w", output)) {
       return 1;
     }
   }

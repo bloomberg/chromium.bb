@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -16,7 +17,6 @@
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "build/buildflag.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/decoder/decoder_engine.h"
 #include "chromeos/services/ime/decoder/system_engine.h"
@@ -38,15 +38,11 @@ enum SimpleDownloadError {
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
     : receiver_(this, std::move(receiver)),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  if (chromeos::features::IsImeSandboxEnabled()) {
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kSystemLatinPhysicalTyping)) {
-      input_engine_ = std::make_unique<SystemEngine>(this);
-    } else {
-      input_engine_ = std::make_unique<DecoderEngine>(this);
-    }
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kSystemLatinPhysicalTyping)) {
+    input_engine_ = std::make_unique<SystemEngine>(this);
   } else {
-    input_engine_ = std::make_unique<InputEngine>();
+    input_engine_ = std::make_unique<DecoderEngine>(this);
   }
 }
 
@@ -109,6 +105,9 @@ void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
 }
 
 bool ImeService::IsFeatureEnabled(const char* feature_name) {
+  if (strcmp(feature_name, "AssistiveMultiWord") == 0) {
+    return base::FeatureList::IsEnabled(chromeos::features::kAssistMultiWord);
+  }
   if (strcmp(feature_name, "SystemLatinPhysicalTyping") == 0) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kSystemLatinPhysicalTyping);

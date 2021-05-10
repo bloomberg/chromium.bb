@@ -40,8 +40,11 @@ class WebAppRegistrar;
 
 namespace apps {
 
+struct AppLaunchParams;
+
 // An app publisher (in the App Service sense) of Web Apps.
 class WebAppsBase : public apps::PublisherBase,
+                    public base::SupportsWeakPtr<WebAppsBase>,
                     public web_app::AppRegistrarObserver,
                     public content_settings::Observer {
  public:
@@ -57,7 +60,7 @@ class WebAppsBase : public apps::PublisherBase,
   const web_app::WebApp* GetWebApp(const web_app::AppId& app_id) const;
 
   // web_app::AppRegistrarObserver:
-  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnWebAppLastLaunchTimeChanged(
       const std::string& app_id,
       const base::Time& last_launch_time) override;
@@ -74,6 +77,8 @@ class WebAppsBase : public apps::PublisherBase,
       apps::mojom::LaunchSource launch_source,
       int64_t display_id);
 
+  virtual content::WebContents* LaunchAppWithParams(AppLaunchParams params);
+
   const mojo::RemoteSet<apps::mojom::Subscriber>& subscribers() const {
     return subscribers_;
   }
@@ -81,19 +86,15 @@ class WebAppsBase : public apps::PublisherBase,
   Profile* profile() const { return profile_; }
   web_app::WebAppProvider* provider() const { return provider_; }
 
-  base::WeakPtr<WebAppsBase> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   apps_util::IncrementingIconKeyFactory& icon_key_factory() {
     return icon_key_factory_;
   }
 
- private:
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
-
   // Can return nullptr in tests.
   const web_app::WebAppRegistrar* GetRegistrar() const;
+
+ private:
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -107,7 +108,7 @@ class WebAppsBase : public apps::PublisherBase,
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
+              apps::mojom::WindowInfoPtr window_info) override;
   void LaunchAppWithFiles(const std::string& app_id,
                           apps::mojom::LaunchContainer container,
                           int32_t event_flags,
@@ -117,7 +118,7 @@ class WebAppsBase : public apps::PublisherBase,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
+                           apps::mojom::WindowInfoPtr window_info) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void OpenNativeSettings(const std::string& app_id) override;
@@ -166,8 +167,6 @@ class WebAppsBase : public apps::PublisherBase,
 
   // app_service_ is owned by the object that owns this object.
   apps::mojom::AppService* app_service_;
-
-  base::WeakPtrFactory<WebAppsBase> weak_ptr_factory_{this};
 };
 
 void PopulateIntentFilters(const web_app::WebApp& web_app,

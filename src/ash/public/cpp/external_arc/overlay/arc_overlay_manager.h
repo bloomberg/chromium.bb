@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
@@ -62,9 +63,7 @@ class ASH_PUBLIC_EXPORT ArcOverlayManager : public aura::EnvObserver,
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
  private:
   void DeregisterHostWindow(const std::string& overlay_token);
@@ -76,9 +75,10 @@ class ASH_PUBLIC_EXPORT ArcOverlayManager : public aura::EnvObserver,
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
 
-  aura::Window* observed_window_ = nullptr;
-  base::ScopedObservation<aura::Window, aura::WindowObserver>
-      observed_window_observer_{this};
+  // This tracks newly created arc windows until they're being shown, or
+  // destoryed.
+  base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
+      window_observations_{this};
 };
 
 }  // namespace ash

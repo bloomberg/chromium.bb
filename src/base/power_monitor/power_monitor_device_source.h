@@ -13,6 +13,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/power_monitor/power_observer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -39,7 +40,7 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   PowerMonitorDeviceSource();
   ~PowerMonitorDeviceSource() override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, Chrome receives power-related events from powerd, the system
   // power daemon, via D-Bus signals received on the UI thread. base can't
   // directly depend on that code, so this class instead exposes static methods
@@ -48,6 +49,11 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   static void HandleSystemSuspending();
   static void HandleSystemResumed();
   static void ThermalEventReceived(PowerObserver::DeviceThermalState state);
+
+  // These two methods is used for handling thermal state update requests, such
+  // as asking for initial state when starting lisitening to thermal change.
+  PowerObserver::DeviceThermalState GetCurrentThermalState() override;
+  void SetCurrentThermalState(PowerObserver::DeviceThermalState state) override;
 #endif
 
  private:
@@ -124,6 +130,10 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   PowerMessageWindow power_message_window_;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  PowerObserver::DeviceThermalState current_thermal_state_ =
+      PowerObserver::DeviceThermalState::kUnknown;
+#endif
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorDeviceSource);
 };
 

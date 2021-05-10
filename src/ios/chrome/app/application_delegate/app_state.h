@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include <memory>
+
 #import "ios/chrome/app/application_delegate/app_state_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_observer.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/ui_blocker_manager.h"
@@ -23,6 +25,10 @@ class ChromeBrowserState;
 @protocol StartupInformation;
 @protocol TabOpening;
 @protocol TabSwitching;
+
+namespace base {
+class TimeTicks;
+}
 
 @protocol AppStateObserver <NSObject>
 
@@ -77,6 +83,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // shown after the last cold start.
 @property(nonatomic) BOOL shouldShowDefaultBrowserPromo;
 
+// YES if the sign-out prompt should be shown to the user when the scene becomes
+// active and enters the foreground. This can happen if the policies have
+// changed since the last cold start, meaning the user was signed out during
+// startup.
+@property(nonatomic) BOOL shouldShowPolicySignoutPrompt;
+
 // When multiwindow is unavailable, this is the only scene state. It is created
 // by the app delegate.
 @property(nonatomic, strong) SceneState* mainSceneState;
@@ -93,6 +105,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // The SceneSession ID for the last session, where the Device doesn't support
 // multiple windows.
 @property(nonatomic, strong) NSString* previousSingleWindowSessionID;
+
+// Timestamp of when a scene was last becoming active. Can be null.
+@property(nonatomic, assign) base::TimeTicks lastTimeInForeground;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch

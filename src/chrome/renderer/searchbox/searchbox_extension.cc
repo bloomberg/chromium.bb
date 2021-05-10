@@ -941,9 +941,16 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::SetCustomBackgroundInfo)
       .SetMethod("selectLocalBackgroundImage",
                  &NewTabPageBindings::SelectLocalBackgroundImage)
+      // These methods have been renamed to match BlocklistSearchSuggestion*
+      // below, but are kept until JavaScript calls can be migrated.
+      // TODO: Remove the following two additions per guidance in b/179534247
       .SetMethod("blacklistSearchSuggestion",
                  &NewTabPageBindings::BlocklistSearchSuggestion)
       .SetMethod("blacklistSearchSuggestionWithHash",
+                 &NewTabPageBindings::BlocklistSearchSuggestionWithHash)
+      .SetMethod("blocklistSearchSuggestion",
+                 &NewTabPageBindings::BlocklistSearchSuggestion)
+      .SetMethod("blocklistSearchSuggestionWithHash",
                  &NewTabPageBindings::BlocklistSearchSuggestionWithHash)
       .SetMethod("searchSuggestionSelected",
                  &NewTabPageBindings::SearchSuggestionSelected)
@@ -989,7 +996,7 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
 
   // This corresponds to "window.devicePixelRatio" in JavaScript.
   float zoom_factor =
-      blink::PageZoomLevelToZoomFactor(render_view->GetZoomLevel());
+      blink::PageZoomLevelToZoomFactor(render_view->GetWebView()->ZoomLevel());
   float device_pixel_ratio = render_frame->GetDeviceScaleFactor() * zoom_factor;
 
   int render_view_id = render_view->GetRoutingID();

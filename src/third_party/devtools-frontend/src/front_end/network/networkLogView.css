@@ -38,7 +38,8 @@
 }
 
 #network-container {
-  border: 1px solid rgb(204 204 204);
+  border: 1px solid rgb(204 204 204); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   overflow: hidden;
 }
 
@@ -50,8 +51,10 @@
   flex: 0 0 27px;
   line-height: 27px;
   padding-left: 5px;
-  background-color: #eee;
-  border-top: 1px solid #ccc;
+  background-color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-top: 1px solid #ccc; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -76,7 +79,8 @@
 
 .network-log-grid.data-grid td {
   height: 41px;
-  border-left: 1px solid #e1e1e1;
+  border-left: 1px solid #e1e1e1; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   vertical-align: middle;
 }
 
@@ -90,8 +94,10 @@
 
 .network-waterfall-header,
 .network-log-grid.data-grid th {
-  border-bottom: 1px solid rgb(205 205 205);
-  border-left: 1px solid rgb(205 205 205);
+  border-bottom: 1px solid rgb(205 205 205); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-left: 1px solid rgb(205 205 205); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-log-grid.data-grid table.data th {
@@ -143,13 +149,13 @@
 
 .network-cell-subtitle {
   font-weight: normal;
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-badge {
   margin-right: 4px;
 }
-
 /* We are using a multitude of different selector specificity rules here, which
    is incompatible with what stylelint requires as ordering of the rules. */
 /* stylelint-disable no-descending-specificity */
@@ -162,7 +168,8 @@
 .network-log-grid.data-grid:focus tr.selected.network-error-row,
 .network-log-grid.data-grid:focus tr.selected.network-error-row .network-cell-subtitle,
 .network-log-grid.data-grid:focus tr.selected.network-error-row .network-dim-cell {
-  color: rgb(230 0 0) !important;
+  color: rgb(230 0 0) !important; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .initiator-column .devtools-link {
@@ -182,7 +189,8 @@
 }
 
 .network-header-subtitle {
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-log-grid.data-grid.small .network-cell-subtitle,
@@ -198,17 +206,19 @@
 .network-log-grid tr.highlighted-row {
   animation: network-row-highlight-fadeout 2s 0s;
 }
-
 /* See comment above why the rules were disabled */
 /* stylelint-enable no-descending-specificity */
 
 @keyframes network-row-highlight-fadeout {
-  from { background-color: rgb(255 255 120 / 100%); }
-  to { background-color: rgb(255 255 120 / 0%); }
+  from {
+    background-color: rgb(255 255 120 / 100%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
+
+  to {
+    background-color: rgb(255 255 120 / 0%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
 }
-
 /* Resource preview icons */
-
 /* These rules are grouped by type and therefore do not adhere to the ordering of stylelint */
 /* stylelint-disable no-descending-specificity, no-duplicate-selectors */
 
@@ -307,18 +317,22 @@
   max-height: 11px;
 }
 
+.network-log-grid.data-grid .trailing-link-icon {
+  padding-left: 0.5ex;
+}
 /* stylelint-enable no-descending-specificity, no-duplicate-selectors */
-
 /* This is part of the large color block declared above, but should not be
    extracted out. */
 /* stylelint-disable-next-line no-descending-specificity */
 .network-dim-cell {
-  color: grey;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-frame-divider {
   width: 2px;
-  background-color: #fccc49;
+  background-color: #fccc49; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   z-index: 10;
   visibility: hidden;
 }
@@ -345,8 +359,9 @@
 }
 
 .network-status-pane {
-  color: #777;
-  background-color: white;
+  color: #777; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   z-index: 500;
   display: flex;
   justify-content: center;
@@ -371,7 +386,8 @@
 }
 
 .network-waterfall-header:hover {
-  background-color: hsl(0deg 0% 10% / 10%);
+  background-color: hsl(0deg 0% 10% / 10%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-waterfall-header div {
@@ -383,7 +399,6 @@
   font-weight: normal;
   padding: 0 4px;
 }
-
 /* All network-waterfall-header rules are defined here instead of above */
 /* stylelint-disable-next-line no-descending-specificity */
 .network-waterfall-header .sort-order-icon-container {
@@ -414,7 +429,6 @@
   .network-status-pane > .recording-hint {
     color: canvastext;
   }
-
   /* This is part of the large color block declared above, but should not be
    extracted out. */
   /* stylelint-disable no-descending-specificity */

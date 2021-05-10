@@ -9,6 +9,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkData.h"
 #include "include/core/SkPaint.h"
+#include "include/core/SkShader.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
 #include "include/effects/SkRuntimeEffect.h"
@@ -39,7 +40,7 @@ class RuntimeFunctions : public skiagm::GM {
 
     void onDraw(SkCanvas* canvas) override {
         sk_sp<SkRuntimeEffect> gEffect =
-                std::get<0>(SkRuntimeEffect::Make(SkString(RUNTIME_FUNCTIONS_SRC)));
+                SkRuntimeEffect::Make(SkString(RUNTIME_FUNCTIONS_SRC)).effect;
         SkASSERT(gEffect);
 
         SkMatrix localM;

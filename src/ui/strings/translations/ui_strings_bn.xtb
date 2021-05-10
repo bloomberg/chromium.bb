@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">আগে থেকেই তৈরি করা আভ্যন্তরীণ ডিসপ্লে</translation>
 <translation id="335581015389089642">স্পিচ</translation>
 <translation id="3389286852084373014">টেক্সটটি অনেক বড়</translation>
+<translation id="3406306243914553062">HTML কন্টেন্ট</translation>
 <translation id="348799646910989694">শেল্ফ অটোমেটিক লুকানো হবে</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> পিন করা হয়েছে</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{১ দিন বাকি}one{# দিন বাকি}other{# দিন বাকি}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">নম্বর</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> জিবি/সেকেণ্ড</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> জিবি</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />। <ph name="TYPE_2" />।</translation>
 <translation id="3842239759367498783">আপনার মোবাইল ডিভাইস <ph name="TITLE" /> থেকে পড়ুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{১ মাস আগে}one{# মাস আগে}other{# মাস আগে}}</translation>
 <translation id="4289300219472526559">কথা বলা শুরু করুন</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> অ্যাপ <ph name="FOLDER_NAME" /> ফোল্ডারে সরানো হয়েছে।</translation>
+<translation id="4306392492252714209">ক্লিপবোর্ড থেকে সরান।</translation>
 <translation id="4316910396681052118">সব অ্যাপ</translation>
 <translation id="4491109536499578614">ছবি</translation>
 <translation id="4588090240171750605">ডান দিকে স্ক্রল করুন</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">এই সার্চ কি ইতিহাস থেকে মুছে দিতে চান?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ইমোজি</translation>
+<translation id="7620655452534002301">সরানো হয়েছে।</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7814458197256864873">&amp;কপি করুন</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="8134065097954893699">এই পৃষ্ঠা আবার লোড করা হচ্ছে</translation>
-<translation id="8144660977431427332">Google অ্যাসিস্ট্যান্ট আপনার সার্চ পরিচালনা করে। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, নিজে থেকে সম্পূর্ন করা</translation>
 <translation id="815598010540052116">নিচে স্ক্রল করুন</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">ট্যাব</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, অ্যাপ</translation>
 <translation id="8259556432390118667">হেক্স রঙের মান</translation>

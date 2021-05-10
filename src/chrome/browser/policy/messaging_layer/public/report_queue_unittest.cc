@@ -12,18 +12,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/proto/test.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
-#include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
-#include "chrome/browser/policy/messaging_layer/storage/test_storage_module.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/status_macros.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/dm_token.h"
-#include "components/policy/proto/record_constants.pb.h"
+#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/storage/storage_module_interface.h"
+#include "components/reporting/storage/test_storage_module.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/status_macros.h"
+#include "components/reporting/util/statusor.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +31,8 @@ using ::policy::DMToken;
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::MockFunction;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::WithArg;
 
@@ -86,11 +87,12 @@ class ReportQueueTest : public testing::Test {
         destination_(Destination::UPLOAD_EVENTS),
         storage_module_(base::MakeRefCounted<TestStorageModule>()),
         policy_check_callback_(
-            base::BindRepeating(&ReportQueueTest::MockedPolicyCheck,
-                                base::Unretained(this))) {}
+            base::BindRepeating(&MockFunction<Status()>::Call,
+                                base::Unretained(&mocked_policy_check_))) {}
 
   void SetUp() override {
-    ON_CALL(*this, MockedPolicyCheck).WillByDefault(Return(Status::StatusOK()));
+    ON_CALL(mocked_policy_check_, Call())
+        .WillByDefault(Return(Status::StatusOK()));
 
     StatusOr<std::unique_ptr<ReportQueueConfiguration>> config_result =
         ReportQueueConfiguration::Create(dm_token_, destination_,
@@ -114,7 +116,7 @@ class ReportQueueTest : public testing::Test {
     return test_storage_module;
   }
 
-  MOCK_METHOD(Status, MockedPolicyCheck, (), ());
+  NiceMock<MockFunction<Status()>> mocked_policy_check_;
 
   content::BrowserTaskEnvironment task_envrionment_;
 
@@ -126,12 +128,12 @@ class ReportQueueTest : public testing::Test {
  private:
   const DMToken dm_token_;
   const Destination destination_;
-  scoped_refptr<StorageModule> storage_module_;
+  scoped_refptr<StorageModuleInterface> storage_module_;
   ReportQueueConfiguration::PolicyCheckCallback policy_check_callback_;
 };
 
 // Enqueues a random string and ensures that the string arrives unaltered in the
-// |StorageModule|.
+// |StorageModuleInterface|.
 TEST_F(ReportQueueTest, SuccessfulStringRecord) {
   constexpr char kTestString[] = "El-Chupacabra";
   TestEvent<Status> a;
@@ -142,7 +144,7 @@ TEST_F(ReportQueueTest, SuccessfulStringRecord) {
 }
 
 // Enqueues a |base::Value| dictionary and ensures it arrives unaltered in the
-// |StorageModule|.
+// |StorageModuleInterface|.
 TEST_F(ReportQueueTest, SuccessfulBaseValueRecord) {
   constexpr char kTestKey[] = "TEST_KEY";
   constexpr char kTestValue[] = "TEST_VALUE";
@@ -161,7 +163,7 @@ TEST_F(ReportQueueTest, SuccessfulBaseValueRecord) {
 }
 
 // Enqueues a |TestMessage| and ensures that it arrives unaltered in the
-// |StorageModule|.
+// |StorageModuleInterface|.
 TEST_F(ReportQueueTest, SuccessfulProtoRecord) {
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
@@ -197,7 +199,7 @@ TEST_F(ReportQueueTest, CallSuccessCallbackFailure) {
 }
 
 TEST_F(ReportQueueTest, EnqueueStringFailsOnPolicy) {
-  EXPECT_CALL(*this, MockedPolicyCheck)
+  EXPECT_CALL(mocked_policy_check_, Call())
       .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   constexpr char kTestString[] = "El-Chupacabra";
   TestEvent<Status> a;
@@ -208,7 +210,7 @@ TEST_F(ReportQueueTest, EnqueueStringFailsOnPolicy) {
 }
 
 TEST_F(ReportQueueTest, EnqueueProtoFailsOnPolicy) {
-  EXPECT_CALL(*this, MockedPolicyCheck)
+  EXPECT_CALL(mocked_policy_check_, Call())
       .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
@@ -220,7 +222,7 @@ TEST_F(ReportQueueTest, EnqueueProtoFailsOnPolicy) {
 }
 
 TEST_F(ReportQueueTest, EnqueueValueFailsOnPolicy) {
-  EXPECT_CALL(*this, MockedPolicyCheck)
+  EXPECT_CALL(mocked_policy_check_, Call())
       .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   constexpr char kTestKey[] = "TEST_KEY";
   constexpr char kTestValue[] = "TEST_VALUE";

@@ -4,7 +4,8 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {RoutineName, RoutineResult, RoutineResultInfo, SystemRoutineControllerInterface} from './diagnostics_types.js';
+
+import {RoutineResult, RoutineResultInfo, RoutineRunner, RoutineType, SystemRoutineControllerInterface} from './diagnostics_types.js';
 
 /**
  * Represents the execution progress of a test routine.
@@ -22,12 +23,12 @@ export let ExecutionProgress = {
  * routine-result-list.
  */
 export class ResultStatusItem {
-  constructor(routine) {
-    /** @type {!RoutineName} */
+  constructor(routine, progress = ExecutionProgress.kNotStarted) {
+    /** @type {!RoutineType} */
     this.routine = routine;
 
     /** @type {!ExecutionProgress} */
-    this.progress = ExecutionProgress.kNotStarted;
+    this.progress = progress;
 
     /** @type {?RoutineResult} */
     this.result = null;
@@ -48,6 +49,10 @@ class ExecutionContext {
   constructor() {
     /** @private {!PromiseResolver} */
     this.resolver_ = new PromiseResolver();
+
+    this.routineRunner = new chromeos.diagnostics.mojom.RoutineRunnerReceiver(
+        /** @type {!chromeos.diagnostics.mojom.RoutineRunnerInterface} */ (
+            this));
   }
 
   /**
@@ -56,10 +61,19 @@ class ExecutionContext {
    **/
   onRoutineResult(result) {
     this.resolver_.resolve(result);
+    this.close();
   }
 
   whenComplete() {
     return this.resolver_.promise;
+  }
+
+  close() {
+    this.routineRunner.$.close();
+  }
+
+  cancel() {
+    this.resolver_.resolve(null);
   }
 }
 
@@ -75,15 +89,21 @@ export class RoutineListExecutor {
   constructor(routineController) {
     /** @private {!SystemRoutineControllerInterface} */
     this.routineController_ = routineController;
+
+    /** @private {?ExecutionContext} */
+    this.currentExecutionContext_ = null;
+
+    /** @private {boolean} */
+    this.routinesCancelled_ = false;
   }
 
-  /*
+  /**
    * Executes a list of routines providing a status callback as each test
    * starts and finishes. The return promise will resolve when all tests are
    * completed.
-   * @param {!Array<!RoutineName>} routines
-   * @type {!function(!ResultStatusItem)} statusCallback
-   * @param {!Promise}
+   * @param {!Array<!RoutineType>} routines
+   * @param {!function(!ResultStatusItem): void} statusCallback
+   * @return {!Promise<!ExecutionProgress>}
    */
   runRoutines(routines, statusCallback) {
     assert(routines.length > 0);
@@ -93,27 +113,56 @@ export class RoutineListExecutor {
     let promise = Promise.resolve();
     routines.forEach((name) => {
       promise = promise.then(() => {
-        // Notify the status callback that a test started running.
-        const status = new ResultStatusItem(name);
-        status.progress = ExecutionProgress.kRunning;
-        statusCallback(status);
+        // Notify the status callback of the test status.
+        if (this.routinesCancelled_) {
+          statusCallback(
+              new ResultStatusItem(name, ExecutionProgress.kCancelled));
+          return ExecutionProgress.kCancelled;
+        }
+        statusCallback(new ResultStatusItem(name, ExecutionProgress.kRunning));
 
+        this.currentExecutionContext_ = new ExecutionContext();
         // Create a new remote and execute the next test.
-        let test = new ExecutionContext();
-        return this.routineController_.runRoutine(name, test).then(() => {
-          // When the test completes, notify the status callback of the
-          // result.
-          return test.whenComplete().then((info) => {
-            assert(info.name === name);
-            const status = new ResultStatusItem(name);
-            status.progress = ExecutionProgress.kCompleted;
-            status.result = info.result;
-            statusCallback(status);
-          });
+        this.routineController_.runRoutine(
+            name,
+            this.currentExecutionContext_.routineRunner.$
+                .bindNewPipeAndPassRemote());
+
+        // When the test completes, notify the status callback of the
+        // result.
+        return this.currentExecutionContext_.whenComplete().then((info) => {
+          /** @type {!ExecutionProgress} */
+          let progress = ExecutionProgress.kCancelled;
+          /** @type {?RoutineResultInfo} */
+          let result = null;
+
+          if (info !== null) {
+            assert(info.type === name);
+            progress = ExecutionProgress.kCompleted;
+            result = info.result
+          }
+
+          const status = new ResultStatusItem(name, progress);
+          status.result = result;
+          statusCallback(status);
+          return progress;
         });
       });
     });
 
     return promise;
+  }
+
+  close() {
+    if (this.currentExecutionContext_) {
+      this.currentExecutionContext_.close();
+    }
+  }
+
+  cancel() {
+    if (this.currentExecutionContext_) {
+      this.routinesCancelled_ = true;
+      this.currentExecutionContext_.cancel();
+    }
   }
 }

@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/test_sync_user_settings.h"
 
+#include "build/chromeos_buildflags.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -28,21 +29,6 @@ void TestSyncUserSettings::SetSyncRequested(bool requested) {
     disable_reasons.Remove(SyncService::DISABLE_REASON_USER_CHOICE);
   } else {
     disable_reasons.Put(SyncService::DISABLE_REASON_USER_CHOICE);
-  }
-  service_->SetDisableReasons(disable_reasons);
-}
-
-bool TestSyncUserSettings::IsSyncAllowedByPlatform() const {
-  return !service_->HasDisableReason(
-      SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
-}
-
-void TestSyncUserSettings::SetSyncAllowedByPlatform(bool allowed) {
-  SyncService::DisableReasonSet disable_reasons = service_->GetDisableReasons();
-  if (allowed) {
-    disable_reasons.Remove(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
-  } else {
-    disable_reasons.Put(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE);
   }
   service_->SetDisableReasons(disable_reasons);
 }
@@ -92,7 +78,7 @@ UserSelectableTypeSet TestSyncUserSettings::GetRegisteredSelectableTypes()
   return UserSelectableTypeSet::All();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool TestSyncUserSettings::IsSyncAllOsTypesEnabled() const {
   return sync_all_os_types_enabled_;
 }
@@ -166,6 +152,14 @@ bool TestSyncUserSettings::IsPassphraseRequired() const {
 
 bool TestSyncUserSettings::IsPassphraseRequiredForPreferredDataTypes() const {
   return passphrase_required_for_preferred_data_types_;
+}
+
+bool TestSyncUserSettings::IsPassphrasePromptMutedForCurrentProductVersion()
+    const {
+  return false;
+}
+
+void TestSyncUserSettings::MarkPassphrasePromptMutedForCurrentProductVersion() {
 }
 
 bool TestSyncUserSettings::IsTrustedVaultKeyRequired() const {

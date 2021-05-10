@@ -34,6 +34,7 @@
 #include "rtc_base/ssl_adapter.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/unique_id_generator.h"
+#include "test/field_trial.h"
 #include "test/gmock.h"
 
 #define ASSERT_CRYPTO(cd, s, cs)      \
@@ -2346,64 +2347,112 @@ TEST_F(MediaSessionDescriptionFactoryTest,
 }
 
 TEST_F(MediaSessionDescriptionFactoryTest,
-       CreateAnswerSupportsMixedOneAndTwoByteHeaderExtensions) {
+       OfferAndAnswerDoesNotHaveMixedByteSessionAttribute) {
   MediaSessionOptions opts;
-  std::unique_ptr<SessionDescription> offer = f1_.CreateOffer(opts, NULL);
-  // Offer without request of mixed one- and two-byte header extensions.
+  std::unique_ptr<SessionDescription> offer =
+      f1_.CreateOffer(opts, /*current_description=*/nullptr);
   offer->set_extmap_allow_mixed(false);
-  ASSERT_TRUE(offer.get() != NULL);
-  std::unique_ptr<SessionDescription> answer_no_support(
-      f2_.CreateAnswer(offer.get(), opts, NULL));
-  EXPECT_FALSE(answer_no_support->extmap_allow_mixed());
 
-  // Offer with request of mixed one- and two-byte header extensions.
+  std::unique_ptr<SessionDescription> answer(
+      f2_.CreateAnswer(offer.get(), opts, /*current_description=*/nullptr));
+
+  EXPECT_FALSE(answer->extmap_allow_mixed());
+}
+
+TEST_F(MediaSessionDescriptionFactoryTest,
+       OfferAndAnswerHaveMixedByteSessionAttribute) {
+  MediaSessionOptions opts;
+  std::unique_ptr<SessionDescription> offer =
+      f1_.CreateOffer(opts, /*current_description=*/nullptr);
   offer->set_extmap_allow_mixed(true);
-  ASSERT_TRUE(offer.get() != NULL);
+
   std::unique_ptr<SessionDescription> answer_support(
-      f2_.CreateAnswer(offer.get(), opts, NULL));
+      f2_.CreateAnswer(offer.get(), opts, /*current_description=*/nullptr));
+
   EXPECT_TRUE(answer_support->extmap_allow_mixed());
 }
 
 TEST_F(MediaSessionDescriptionFactoryTest,
-       CreateAnswerSupportsMixedOneAndTwoByteHeaderExtensionsOnMediaLevel) {
+       OfferAndAnswerDoesNotHaveMixedByteMediaAttributes) {
   MediaSessionOptions opts;
   AddAudioVideoSections(RtpTransceiverDirection::kSendRecv, &opts);
-  std::unique_ptr<SessionDescription> offer = f1_.CreateOffer(opts, NULL);
-  MediaContentDescription* video_offer =
-      offer->GetContentDescriptionByName("video");
-  ASSERT_TRUE(video_offer);
+  std::unique_ptr<SessionDescription> offer =
+      f1_.CreateOffer(opts, /*current_description=*/nullptr);
+  offer->set_extmap_allow_mixed(false);
   MediaContentDescription* audio_offer =
       offer->GetContentDescriptionByName("audio");
-  ASSERT_TRUE(audio_offer);
+  MediaContentDescription* video_offer =
+      offer->GetContentDescriptionByName("video");
+  ASSERT_EQ(MediaContentDescription::kNo,
+            audio_offer->extmap_allow_mixed_enum());
+  ASSERT_EQ(MediaContentDescription::kNo,
+            video_offer->extmap_allow_mixed_enum());
 
-  // Explicit disable of mixed one-two byte header support in offer.
-  video_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kNo);
-  audio_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kNo);
+  std::unique_ptr<SessionDescription> answer(
+      f2_.CreateAnswer(offer.get(), opts, /*current_description=*/nullptr));
 
-  ASSERT_TRUE(offer.get() != NULL);
-  std::unique_ptr<SessionDescription> answer_no_support(
-      f2_.CreateAnswer(offer.get(), opts, NULL));
-  MediaContentDescription* video_answer =
-      answer_no_support->GetContentDescriptionByName("video");
   MediaContentDescription* audio_answer =
-      answer_no_support->GetContentDescriptionByName("audio");
-  EXPECT_EQ(MediaContentDescription::kNo,
-            video_answer->extmap_allow_mixed_enum());
+      answer->GetContentDescriptionByName("audio");
+  MediaContentDescription* video_answer =
+      answer->GetContentDescriptionByName("video");
   EXPECT_EQ(MediaContentDescription::kNo,
             audio_answer->extmap_allow_mixed_enum());
+  EXPECT_EQ(MediaContentDescription::kNo,
+            video_answer->extmap_allow_mixed_enum());
+}
 
-  // Enable mixed one-two byte header support in offer.
-  video_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kMedia);
+TEST_F(MediaSessionDescriptionFactoryTest,
+       OfferAndAnswerHaveSameMixedByteMediaAttributes) {
+  MediaSessionOptions opts;
+  AddAudioVideoSections(RtpTransceiverDirection::kSendRecv, &opts);
+  std::unique_ptr<SessionDescription> offer =
+      f1_.CreateOffer(opts, /*current_description=*/nullptr);
+  offer->set_extmap_allow_mixed(false);
+  MediaContentDescription* audio_offer =
+      offer->GetContentDescriptionByName("audio");
   audio_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kMedia);
-  ASSERT_TRUE(offer.get() != NULL);
-  std::unique_ptr<SessionDescription> answer_support(
-      f2_.CreateAnswer(offer.get(), opts, NULL));
-  video_answer = answer_support->GetContentDescriptionByName("video");
-  audio_answer = answer_support->GetContentDescriptionByName("audio");
-  EXPECT_EQ(MediaContentDescription::kMedia,
-            video_answer->extmap_allow_mixed_enum());
+  MediaContentDescription* video_offer =
+      offer->GetContentDescriptionByName("video");
+  video_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kMedia);
+
+  std::unique_ptr<SessionDescription> answer(
+      f2_.CreateAnswer(offer.get(), opts, /*current_description=*/nullptr));
+
+  MediaContentDescription* audio_answer =
+      answer->GetContentDescriptionByName("audio");
+  MediaContentDescription* video_answer =
+      answer->GetContentDescriptionByName("video");
   EXPECT_EQ(MediaContentDescription::kMedia,
             audio_answer->extmap_allow_mixed_enum());
+  EXPECT_EQ(MediaContentDescription::kMedia,
+            video_answer->extmap_allow_mixed_enum());
+}
+
+TEST_F(MediaSessionDescriptionFactoryTest,
+       OfferAndAnswerHaveDifferentMixedByteMediaAttributes) {
+  MediaSessionOptions opts;
+  AddAudioVideoSections(RtpTransceiverDirection::kSendRecv, &opts);
+  std::unique_ptr<SessionDescription> offer =
+      f1_.CreateOffer(opts, /*current_description=*/nullptr);
+  offer->set_extmap_allow_mixed(false);
+  MediaContentDescription* audio_offer =
+      offer->GetContentDescriptionByName("audio");
+  audio_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kNo);
+  MediaContentDescription* video_offer =
+      offer->GetContentDescriptionByName("video");
+  video_offer->set_extmap_allow_mixed_enum(MediaContentDescription::kMedia);
+
+  std::unique_ptr<SessionDescription> answer(
+      f2_.CreateAnswer(offer.get(), opts, /*current_description=*/nullptr));
+
+  MediaContentDescription* audio_answer =
+      answer->GetContentDescriptionByName("audio");
+  MediaContentDescription* video_answer =
+      answer->GetContentDescriptionByName("video");
+  EXPECT_EQ(MediaContentDescription::kNo,
+            audio_answer->extmap_allow_mixed_enum());
+  EXPECT_EQ(MediaContentDescription::kMedia,
+            video_answer->extmap_allow_mixed_enum());
 }
 
 // Create an audio and video offer with:
@@ -3456,8 +3505,10 @@ TEST_F(MediaSessionDescriptionFactoryTest, SimSsrcsGenerateMultipleRtxSsrcs) {
 }
 
 // Test that, when the FlexFEC codec is added, a FlexFEC ssrc is created
-// together with a FEC-FR grouping.
+// together with a FEC-FR grouping. Guarded by WebRTC-FlexFEC-03 trial.
 TEST_F(MediaSessionDescriptionFactoryTest, GenerateFlexfecSsrc) {
+  webrtc::test::ScopedFieldTrials override_field_trials(
+      "WebRTC-FlexFEC-03/Enabled/");
   MediaSessionOptions opts;
   AddMediaDescriptionOptions(MEDIA_TYPE_VIDEO, "video",
                              RtpTransceiverDirection::kSendRecv, kActive,
@@ -3499,6 +3550,8 @@ TEST_F(MediaSessionDescriptionFactoryTest, GenerateFlexfecSsrc) {
 // TODO(brandtr): Remove this test when we support simulcast, either through
 // multiple FlexfecSenders, or through multistream protection.
 TEST_F(MediaSessionDescriptionFactoryTest, SimSsrcsGenerateNoFlexfecSsrcs) {
+  webrtc::test::ScopedFieldTrials override_field_trials(
+      "WebRTC-FlexFEC-03/Enabled/");
   MediaSessionOptions opts;
   AddMediaDescriptionOptions(MEDIA_TYPE_VIDEO, "video",
                              RtpTransceiverDirection::kSendRecv, kActive,

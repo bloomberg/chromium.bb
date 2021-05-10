@@ -14,13 +14,13 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/containers/flat_set.h"
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_sniffer.h"
@@ -248,12 +248,14 @@ void BlockResponseHeaders(
 // disclosure of "application/zip" even though Chrome doesn't have built-in
 // support for this resource type.  And CORB also wants to protect
 // "application/pdf" even though Chrome happens to support this resource type.
-base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
-  static base::NoDestructor<base::flat_set<std::string>> s_types{{
+const auto& GetNeverSniffedMimeTypes() {
+  static constexpr auto kNeverSniffedMimeTypes = base::MakeFixedFlatSet<
+      base::StringPiece>({
+      // clang-format off
       // The types below (zip, protobuf, etc.) are based on most commonly used
       // content types according to HTTP Archive - see:
       // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
-            "application/gzip",
+      "application/gzip",
       "application/x-gzip",
       "application/x-protobuf",
       "application/zip",
@@ -308,18 +310,31 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "multipart/byteranges",
       // TODO(lukasza): https://crbug.com/802836#c11: Add
       // application/signed-exchange.
-  }};
+      // clang-format on
+  });
 
   // All items need to be lower-case, to support case-insensitive comparisons
   // later.
-  DCHECK(std::all_of(
-      s_types->begin(), s_types->end(),
-      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
+  DCHECK(std::all_of(kNeverSniffedMimeTypes.begin(),
+                     kNeverSniffedMimeTypes.end(),
+                     [](const auto& s) { return s == base::ToLowerASCII(s); }));
 
-  return *s_types;
+  return kNeverSniffedMimeTypes;
 }
 
 }  // namespace
+
+// static
+bool CrossOriginReadBlocking::IsJavascriptMimeType(
+    base::StringPiece mime_type) {
+  constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
+  for (const std::string& suffix : kJavaScriptSuffixes) {
+    if (base::EndsWith(mime_type, suffix, kCaseInsensitive))
+      return true;
+  }
+
+  return false;
+}
 
 // static
 MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
@@ -482,10 +497,6 @@ SniffingResult CrossOriginReadBlocking::SniffForJSON(base::StringPiece data) {
       // Whitespace is ignored (outside of string literals)
       if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
         continue;
-    } else {
-      // Inside string literals, control characters should result in rejection.
-      if ((c >= 0 && c < 32) || c == 127)
-        return kNo;
     }
 
     switch (state) {
@@ -789,9 +800,13 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // Requests from foo.example.com will consult foo.example.com's service worker
   // first (if one has been registered).  The service worker can handle requests
   // initiated by foo.example.com even if they are cross-origin (e.g. requests
-  // for bar.example.com).  This is okay and should not be blocked by CORB,
-  // unless the initiator opted out of CORS / opted into receiving an opaque
-  // response.  See also https://crbug.com/803672.
+  // for bar.example.com).  This is okay, because there is no security boundary
+  // between foo.example.com and the service worker of foo.example.com + because
+  // the response data is "conjured" within the service worker of
+  // foo.example.com (rather than being fetched from bar.example.com).
+  // Therefore such responses should not be blocked by CORB, unless the
+  // initiator opted out of CORS / opted into receiving an opaque response.  See
+  // also https://crbug.com/803672.
   if (response.was_fetched_via_service_worker) {
     switch (response.response_type) {
       case network::mojom::FetchResponseType::kBasic:
@@ -841,7 +856,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
           request_url, request_url, request_initiator, response,
           kOverreachingRequestMode, request_initiator_origin_lock,
           network::mojom::RequestDestination::kEmpty,
-          CrossOriginEmbedderPolicy())) {
+          CrossOriginEmbedderPolicy(),
+          /*reporter=*/nullptr)) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;
@@ -899,17 +915,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   }
   NOTREACHED();
   return kBlock;
-}
-
-// static
-bool CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
-    const network::mojom::URLResponseHead& response) {
-  if (!response.headers)
-    return false;
-  std::string nosniff_header;
-  response.headers->GetNormalizedHeader("x-content-type-options",
-                                        &nosniff_header);
-  return base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 }
 
 // static
@@ -984,15 +989,13 @@ CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
 
   // Javascript is assumed public. See also
   // https://mimesniff.spec.whatwg.org/#javascript-mime-type.
-  constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
-  for (const std::string& suffix : kJavaScriptSuffixes) {
-    if (base::EndsWith(mime_type, suffix, kCaseInsensitive)) {
-      return kPublic;
-    }
+  if (IsJavascriptMimeType(mime_type)) {
+    return kPublic;
   }
 
   // Images are assumed public. See also
   // https://mimesniff.spec.whatwg.org/#image-mime-type.
+  constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
   if (base::StartsWith(mime_type, "image", kCaseInsensitive)) {
     return kPublic;
   }
@@ -1184,6 +1187,17 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   UMA_HISTOGRAM_ENUMERATION(
       "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
       canonical_mime_type_);
+}
+
+// static
+bool CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
+    const network::mojom::URLResponseHead& response) {
+  if (!response.headers)
+    return false;
+  std::string nosniff_header;
+  response.headers->GetNormalizedHeader("x-content-type-options",
+                                        &nosniff_header);
+  return base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 }
 
 // static

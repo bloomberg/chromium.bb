@@ -6,14 +6,19 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
-// <if expr="chromeos">
-import './gaia_action_buttons.js';
-// </if>
-
+import {isChromeOS} from '//resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+// <if expr="chromeos">
+import './gaia_action_buttons.js';
+import './welcome_page_app.js';
+import './strings.m.js';
+// </if>
 
 import {AuthCompletedCredentials, Authenticator, AuthParams} from '../gaia_auth_host/authenticator.m.js';
 import {InlineLoginBrowserProxy, InlineLoginBrowserProxyImpl} from './inline_login_browser_proxy.js';
@@ -23,6 +28,12 @@ import {InlineLoginBrowserProxy, InlineLoginBrowserProxyImpl} from './inline_log
  * Chrome desktop (Windows only).
  */
 
+/** @enum {string} */
+const View = {
+  addAccount: 'addAccount',
+  welcome: 'welcome',
+};
+
 Polymer({
   is: 'inline-login-app',
 
@@ -31,6 +42,12 @@ Polymer({
   behaviors: [WebUIListenerBehavior],
 
   properties: {
+    /** Mirroring the enum so that it can be used from HTML bindings. */
+    View: {
+      type: Object,
+      value: View,
+    },
+
     /**
      * Indicates whether the page is loading.
      * @private {boolean}
@@ -48,6 +65,50 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    // <if expr="chromeos">
+    /**
+     * True if redesign of account management flows is enabled.
+     * @private
+     */
+    isAccountManagementFlowsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
+      },
+      readOnly: true,
+    },
+
+    /*
+     * True if welcome page should not be shown.
+     * @private
+     */
+    shouldSkipWelcomePage_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('shouldSkipWelcomePage');
+      },
+      readOnly: true,
+    },
+
+    /*
+     * True if the dialog is open for reauthentication.
+     * @private
+     */
+    isReauthentication_: {
+      type: Boolean,
+      value: false,
+    },
+    // </if>
+
+    /**
+     * Id of the screen that is currently displayed.
+     * @private {View}
+     */
+    currentView_: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @private {?InlineLoginBrowserProxy} */
@@ -59,7 +120,10 @@ Polymer({
    */
   isLoginPrimaryAccount_: false,
 
-  /** @private {boolean} */
+  /**
+   * TODO(crbug.com/1164862): cleanup this flag, since it's enabled by default.
+   * @private {boolean}
+   */
   enableGaiaActionButtons_: false,
 
   /** @override */
@@ -125,6 +189,13 @@ Polymer({
   onNewWindow_(e) {
     window.open(e.detail.targetUrl, '_blank');
     e.detail.window.discard();
+    // <if expr="chromeos">
+    if (this.isAccountManagementFlowsV2Enabled_) {
+      // On Chrome OS this dialog is always-on-top, so we have to close it if
+      // user opens a link in a new window.
+      this.closeDialog_();
+    }
+    // </if>
   },
 
   /** @private */
@@ -175,6 +246,11 @@ Polymer({
     this.loading_ = true;
     this.isLoginPrimaryAccount_ = data.isLoginPrimaryAccount;
     this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
+    // Skip welcome page for reauthentication.
+    if (data.email) {
+      this.isReauthentication_ = true;
+    }
+    this.switchView_(this.getDefaultView_());
   },
 
   /**
@@ -206,6 +282,9 @@ Polymer({
     if (this.$.signinFrame.canGoBack()) {
       this.$.signinFrame.back();
       this.$.signinFrame.focus();
+    } else if (this.isWelcomePageEnabled_()) {
+      // Allow user go back to the welcome page, if it's enabled.
+      this.switchView_(View.welcome);
     } else {
       this.closeDialog_();
     }
@@ -218,6 +297,71 @@ Polymer({
   getBackButtonIcon_() {
     return isRTL() ? 'cr:chevron-right' : 'cr:chevron-left';
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowBackButton_() {
+    return this.currentView_ === View.addAccount;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowOkButton_() {
+    return this.currentView_ === View.welcome;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowGaiaButtons_() {
+    return this.enableGaiaActionButtons_ &&
+        this.currentView_ === View.addAccount;
+  },
+
+  /**
+   * @return {View}
+   * @private
+   */
+  getDefaultView_() {
+    return this.isWelcomePageEnabled_() ? View.welcome : View.addAccount;
+  },
+
+  /**
+   * @param {View} id identifier of the view that should be shown.
+   * @private
+   */
+  switchView_(id) {
+    this.currentView_ = id;
+    /** @type {CrViewManagerElement} */ (this.$.viewManager).switchView(id);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isWelcomePageEnabled_() {
+    if (!isChromeOS) {
+      return false;
+    }
+    return this.isAccountManagementFlowsV2Enabled_ &&
+        !this.shouldSkipWelcomePage_ && !this.isReauthentication_;
+  },
+
+  // <if expr="chromeos">
+  /** @private */
+  onOkButtonClick_() {
+    this.switchView_(View.addAccount);
+    const skipChecked =
+        /** @type {WelcomePageAppElement} */ (this.$$('welcome-page-app'))
+            .isSkipCheckboxChecked();
+    this.browserProxy_.skipWelcomePage(skipChecked);
+  },
+  // </if>
 
   /** @param {Object} authExtHost */
   setAuthExtHostForTest(authExtHost) {

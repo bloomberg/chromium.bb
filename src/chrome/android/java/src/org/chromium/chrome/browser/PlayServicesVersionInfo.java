@@ -11,7 +11,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 
 import java.util.Locale;
 
@@ -33,7 +33,7 @@ public class PlayServicesVersionInfo {
         final long installedGmsVersion = getApkVersionNumber(context);
 
         final String accessType;
-        ExternalAuthUtils externalAuthUtils = AppHooks.get().getExternalAuthUtils();
+        ExternalAuthUtils externalAuthUtils = ExternalAuthUtils.getInstance();
         if (externalAuthUtils.canUseFirstPartyGooglePlayServices()) {
             accessType = "1p";
         } else if (externalAuthUtils.canUseGooglePlayServices()) {

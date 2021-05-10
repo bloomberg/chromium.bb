@@ -284,7 +284,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     // client.
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
-    MojoResult rv = mojo::CreateDataPipe(0, &producer_handle, &consumer_handle);
+    MojoResult rv = mojo::CreateDataPipe(0u, producer_handle, consumer_handle);
     if (rv != MOJO_RESULT_OK) {
       client_->OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
@@ -356,7 +356,8 @@ ContentDirectoryLoaderFactory::Create() {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
 
   // The ContentDirectoryLoaderFactory will delete itself when there are no more
-  // receivers - see the NonNetworkURLLoaderFactoryBase::OnDisconnect method.
+  // receivers - see the network::SelfDeletingURLLoaderFactory::OnDisconnect
+  // method.
   new ContentDirectoryLoaderFactory(
       pending_remote.InitWithNewPipeAndPassReceiver());
 
@@ -365,7 +366,7 @@ ContentDirectoryLoaderFactory::Create() {
 
 ContentDirectoryLoaderFactory::ContentDirectoryLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
-    : content::NonNetworkURLLoaderFactoryBase(std::move(factory_receiver)),
+    : network::SelfDeletingURLLoaderFactory(std::move(factory_receiver)),
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
@@ -443,7 +444,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
   fidl::InterfaceHandle<fuchsia::io::Node> metadata_handle;
   open_result = OpenFileFromDirectory(
       request.url.GetOrigin().host(),
-      base::FilePath(requested_path.as_string() + "._metadata"),
+      base::FilePath(base::StrCat({requested_path, "._metadata"})),
       metadata_handle.NewRequest());
   if (open_result != net::OK) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))

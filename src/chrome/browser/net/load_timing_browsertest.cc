@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -132,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, HTTP) {
   EXPECT_EQ(navigation_deltas.ssl_start, -1);
 }
 
-// TODO(crbug.com/1128033): Flaky on ChromeOS.
+// TODO(crbug.com/1128033): Flaky on all platforms
 IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, DISABLED_HTTPS) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers();

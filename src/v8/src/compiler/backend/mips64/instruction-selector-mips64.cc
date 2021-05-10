@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "src/base/bits.h"
+#include "src/base/platform/wrappers.h"
+#include "src/codegen/machine-type.h"
 #include "src/compiler/backend/instruction-selector-impl.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/node-properties.h"
@@ -373,12 +375,57 @@ void EmitLoad(InstructionSelector* selector, Node* node, InstructionCode opcode,
   } else {
     InstructionOperand addr_reg = g.TempRegister();
     selector->Emit(kMips64Dadd | AddressingModeField::encode(kMode_None),
-                   addr_reg, g.UseRegister(index), g.UseRegister(base));
+                   addr_reg, g.UseRegister(base), g.UseRegister(index));
     // Emit desired load opcode, using temp addr_reg.
     selector->Emit(opcode | AddressingModeField::encode(kMode_MRI),
                    g.DefineAsRegister(output == nullptr ? node : output),
                    addr_reg, g.TempImmediate(0));
   }
+}
+
+namespace {
+InstructionOperand EmitAddBeforeS128LoadStore(InstructionSelector* selector,
+                                              Node* node,
+                                              InstructionCode* opcode) {
+  Mips64OperandGenerator g(selector);
+  Node* base = node->InputAt(0);
+  Node* index = node->InputAt(1);
+  InstructionOperand addr_reg = g.TempRegister();
+  selector->Emit(kMips64Dadd | AddressingModeField::encode(kMode_None),
+                 addr_reg, g.UseRegister(base), g.UseRegister(index));
+  *opcode |= AddressingModeField::encode(kMode_MRI);
+  return addr_reg;
+}
+
+}  // namespace
+
+void InstructionSelector::VisitStoreLane(Node* node) {
+  StoreLaneParameters params = StoreLaneParametersOf(node->op());
+  LoadStoreLaneParams f(params.rep, params.laneidx);
+  InstructionCode opcode = kMips64S128StoreLane;
+  opcode |= MiscField::encode(f.sz);
+
+  Mips64OperandGenerator g(this);
+  InstructionOperand addr = EmitAddBeforeS128LoadStore(this, node, &opcode);
+  InstructionOperand inputs[4] = {
+      g.UseRegister(node->InputAt(2)),
+      g.UseImmediate(f.laneidx),
+      addr,
+      g.TempImmediate(0),
+  };
+  Emit(opcode, 0, nullptr, 4, inputs);
+}
+
+void InstructionSelector::VisitLoadLane(Node* node) {
+  LoadLaneParameters params = LoadLaneParametersOf(node->op());
+  LoadStoreLaneParams f(params.rep.representation(), params.laneidx);
+  InstructionCode opcode = kMips64S128LoadLane;
+  opcode |= MiscField::encode(f.sz);
+
+  Mips64OperandGenerator g(this);
+  InstructionOperand addr = EmitAddBeforeS128LoadStore(this, node, &opcode);
+  Emit(opcode, g.DefineSameAsFirst(node), g.UseRegister(node->InputAt(2)),
+       g.UseImmediate(f.laneidx), addr, g.TempImmediate(0));
 }
 
 void InstructionSelector::VisitLoadTransform(Node* node) {
@@ -387,16 +434,20 @@ void InstructionSelector::VisitLoadTransform(Node* node) {
   InstructionCode opcode = kArchNop;
   switch (params.transformation) {
     case LoadTransformation::kS128Load8Splat:
-      opcode = kMips64S128Load8Splat;
+      opcode = kMips64S128LoadSplat;
+      opcode |= MiscField::encode(MSASize::MSA_B);
       break;
     case LoadTransformation::kS128Load16Splat:
-      opcode = kMips64S128Load16Splat;
+      opcode = kMips64S128LoadSplat;
+      opcode |= MiscField::encode(MSASize::MSA_H);
       break;
     case LoadTransformation::kS128Load32Splat:
-      opcode = kMips64S128Load32Splat;
+      opcode = kMips64S128LoadSplat;
+      opcode |= MiscField::encode(MSASize::MSA_W);
       break;
     case LoadTransformation::kS128Load64Splat:
-      opcode = kMips64S128Load64Splat;
+      opcode = kMips64S128LoadSplat;
+      opcode |= MiscField::encode(MSASize::MSA_D);
       break;
     case LoadTransformation::kS128Load8x8S:
       opcode = kMips64S128Load8x8S;
@@ -466,7 +517,7 @@ void InstructionSelector::VisitLoad(Node* node) {
   }
   if (node->opcode() == IrOpcode::kPoisonedLoad) {
     CHECK_NE(poisoning_level_, PoisoningMitigationLevel::kDontPoison);
-    opcode |= MiscField::encode(kMemoryAccessPoisoned);
+    opcode |= AccessModeField::encode(kMemoryAccessPoisoned);
   }
 
   EmitLoad(this, node, opcode);
@@ -494,8 +545,7 @@ void InstructionSelector::VisitStore(Node* node) {
   }
 
   // TODO(mips): I guess this could be done in a better way.
-  if (write_barrier_kind != kNoWriteBarrier &&
-      V8_LIKELY(!FLAG_disable_write_barriers)) {
+  if (write_barrier_kind != kNoWriteBarrier && !FLAG_disable_write_barriers) {
     DCHECK(CanBeTaggedPointer(rep));
     InstructionOperand inputs[3];
     size_t input_count = 0;
@@ -1227,11 +1277,23 @@ void InstructionSelector::VisitChangeUint32ToFloat64(Node* node) {
 }
 
 void InstructionSelector::VisitTruncateFloat32ToInt32(Node* node) {
-  VisitRR(this, kMips64TruncWS, node);
+  Mips64OperandGenerator g(this);
+  InstructionCode opcode = kMips64TruncWS;
+  TruncateKind kind = OpParameter<TruncateKind>(node->op());
+  if (kind == TruncateKind::kSetOverflowToMin) {
+    opcode |= MiscField::encode(true);
+  }
+  Emit(opcode, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)));
 }
 
 void InstructionSelector::VisitTruncateFloat32ToUint32(Node* node) {
-  VisitRR(this, kMips64TruncUwS, node);
+  Mips64OperandGenerator g(this);
+  InstructionCode opcode = kMips64TruncUwS;
+  TruncateKind kind = OpParameter<TruncateKind>(node->op());
+  if (kind == TruncateKind::kSetOverflowToMin) {
+    opcode |= MiscField::encode(true);
+  }
+  Emit(opcode, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)));
 }
 
 void InstructionSelector::VisitChangeFloat64ToInt32(Node* node) {
@@ -1314,7 +1376,13 @@ void InstructionSelector::VisitTruncateFloat64ToUint32(Node* node) {
 }
 
 void InstructionSelector::VisitTruncateFloat64ToInt64(Node* node) {
-  VisitRR(this, kMips64TruncLD, node);
+  Mips64OperandGenerator g(this);
+  InstructionCode opcode = kMips64TruncLD;
+  TruncateKind kind = OpParameter<TruncateKind>(node->op());
+  if (kind == TruncateKind::kSetOverflowToMin) {
+    opcode |= MiscField::encode(true);
+  }
+  Emit(opcode, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)));
 }
 
 void InstructionSelector::VisitTryTruncateFloat32ToInt64(Node* node) {
@@ -1727,7 +1795,6 @@ void InstructionSelector::EmitPrepareResults(
     Node* node) {
   Mips64OperandGenerator g(this);
 
-  int reverse_slot = 1;
   for (PushParameter output : *results) {
     if (!output.location.IsCallerFrameSlot()) continue;
     // Skip any alignment holes in nodes.
@@ -1740,16 +1807,15 @@ void InstructionSelector::EmitPrepareResults(
       } else if (output.location.GetType() == MachineType::Simd128()) {
         MarkAsSimd128(output.node);
       }
+      int offset = call_descriptor->GetOffsetToReturns();
+      int reverse_slot = -output.location.GetLocation() - offset;
       Emit(kMips64Peek, g.DefineAsRegister(output.node),
            g.UseImmediate(reverse_slot));
     }
-    reverse_slot += output.location.GetSizeInPointers();
   }
 }
 
 bool InstructionSelector::IsTailCallAddressImmediate() { return false; }
-
-int InstructionSelector::GetTempsCountForTailCallFromJSFunction() { return 3; }
 
 void InstructionSelector::VisitUnalignedLoad(Node* node) {
   LoadRepresentation load_rep = LoadRepresentationOf(node->op());
@@ -2784,52 +2850,64 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I16x8)                \
   V(I8x16)
 
-#define SIMD_UNOP_LIST(V)                                  \
-  V(F64x2Abs, kMips64F64x2Abs)                             \
-  V(F64x2Neg, kMips64F64x2Neg)                             \
-  V(F64x2Sqrt, kMips64F64x2Sqrt)                           \
-  V(F64x2Ceil, kMips64F64x2Ceil)                           \
-  V(F64x2Floor, kMips64F64x2Floor)                         \
-  V(F64x2Trunc, kMips64F64x2Trunc)                         \
-  V(F64x2NearestInt, kMips64F64x2NearestInt)               \
-  V(I64x2Neg, kMips64I64x2Neg)                             \
-  V(F32x4SConvertI32x4, kMips64F32x4SConvertI32x4)         \
-  V(F32x4UConvertI32x4, kMips64F32x4UConvertI32x4)         \
-  V(F32x4Abs, kMips64F32x4Abs)                             \
-  V(F32x4Neg, kMips64F32x4Neg)                             \
-  V(F32x4Sqrt, kMips64F32x4Sqrt)                           \
-  V(F32x4RecipApprox, kMips64F32x4RecipApprox)             \
-  V(F32x4RecipSqrtApprox, kMips64F32x4RecipSqrtApprox)     \
-  V(F32x4Ceil, kMips64F32x4Ceil)                           \
-  V(F32x4Floor, kMips64F32x4Floor)                         \
-  V(F32x4Trunc, kMips64F32x4Trunc)                         \
-  V(F32x4NearestInt, kMips64F32x4NearestInt)               \
-  V(I32x4SConvertF32x4, kMips64I32x4SConvertF32x4)         \
-  V(I32x4UConvertF32x4, kMips64I32x4UConvertF32x4)         \
-  V(I32x4Neg, kMips64I32x4Neg)                             \
-  V(I32x4SConvertI16x8Low, kMips64I32x4SConvertI16x8Low)   \
-  V(I32x4SConvertI16x8High, kMips64I32x4SConvertI16x8High) \
-  V(I32x4UConvertI16x8Low, kMips64I32x4UConvertI16x8Low)   \
-  V(I32x4UConvertI16x8High, kMips64I32x4UConvertI16x8High) \
-  V(I32x4Abs, kMips64I32x4Abs)                             \
-  V(I32x4BitMask, kMips64I32x4BitMask)                     \
-  V(I16x8Neg, kMips64I16x8Neg)                             \
-  V(I16x8SConvertI8x16Low, kMips64I16x8SConvertI8x16Low)   \
-  V(I16x8SConvertI8x16High, kMips64I16x8SConvertI8x16High) \
-  V(I16x8UConvertI8x16Low, kMips64I16x8UConvertI8x16Low)   \
-  V(I16x8UConvertI8x16High, kMips64I16x8UConvertI8x16High) \
-  V(I16x8Abs, kMips64I16x8Abs)                             \
-  V(I16x8BitMask, kMips64I16x8BitMask)                     \
-  V(I8x16Neg, kMips64I8x16Neg)                             \
-  V(I8x16Abs, kMips64I8x16Abs)                             \
-  V(I8x16BitMask, kMips64I8x16BitMask)                     \
-  V(S128Not, kMips64S128Not)                               \
-  V(V32x4AnyTrue, kMips64V32x4AnyTrue)                     \
-  V(V32x4AllTrue, kMips64V32x4AllTrue)                     \
-  V(V16x8AnyTrue, kMips64V16x8AnyTrue)                     \
-  V(V16x8AllTrue, kMips64V16x8AllTrue)                     \
-  V(V8x16AnyTrue, kMips64V8x16AnyTrue)                     \
-  V(V8x16AllTrue, kMips64V8x16AllTrue)
+#define SIMD_UNOP_LIST(V)                                    \
+  V(F64x2Abs, kMips64F64x2Abs)                               \
+  V(F64x2Neg, kMips64F64x2Neg)                               \
+  V(F64x2Sqrt, kMips64F64x2Sqrt)                             \
+  V(F64x2Ceil, kMips64F64x2Ceil)                             \
+  V(F64x2Floor, kMips64F64x2Floor)                           \
+  V(F64x2Trunc, kMips64F64x2Trunc)                           \
+  V(F64x2NearestInt, kMips64F64x2NearestInt)                 \
+  V(I64x2Neg, kMips64I64x2Neg)                               \
+  V(I64x2BitMask, kMips64I64x2BitMask)                       \
+  V(F64x2ConvertLowI32x4S, kMips64F64x2ConvertLowI32x4S)     \
+  V(F64x2ConvertLowI32x4U, kMips64F64x2ConvertLowI32x4U)     \
+  V(F64x2PromoteLowF32x4, kMips64F64x2PromoteLowF32x4)       \
+  V(F32x4SConvertI32x4, kMips64F32x4SConvertI32x4)           \
+  V(F32x4UConvertI32x4, kMips64F32x4UConvertI32x4)           \
+  V(F32x4Abs, kMips64F32x4Abs)                               \
+  V(F32x4Neg, kMips64F32x4Neg)                               \
+  V(F32x4Sqrt, kMips64F32x4Sqrt)                             \
+  V(F32x4RecipApprox, kMips64F32x4RecipApprox)               \
+  V(F32x4RecipSqrtApprox, kMips64F32x4RecipSqrtApprox)       \
+  V(F32x4Ceil, kMips64F32x4Ceil)                             \
+  V(F32x4Floor, kMips64F32x4Floor)                           \
+  V(F32x4Trunc, kMips64F32x4Trunc)                           \
+  V(F32x4NearestInt, kMips64F32x4NearestInt)                 \
+  V(F32x4DemoteF64x2Zero, kMips64F32x4DemoteF64x2Zero)       \
+  V(I64x2Abs, kMips64I64x2Abs)                               \
+  V(I64x2SConvertI32x4Low, kMips64I64x2SConvertI32x4Low)     \
+  V(I64x2SConvertI32x4High, kMips64I64x2SConvertI32x4High)   \
+  V(I64x2UConvertI32x4Low, kMips64I64x2UConvertI32x4Low)     \
+  V(I64x2UConvertI32x4High, kMips64I64x2UConvertI32x4High)   \
+  V(I32x4SConvertF32x4, kMips64I32x4SConvertF32x4)           \
+  V(I32x4UConvertF32x4, kMips64I32x4UConvertF32x4)           \
+  V(I32x4Neg, kMips64I32x4Neg)                               \
+  V(I32x4SConvertI16x8Low, kMips64I32x4SConvertI16x8Low)     \
+  V(I32x4SConvertI16x8High, kMips64I32x4SConvertI16x8High)   \
+  V(I32x4UConvertI16x8Low, kMips64I32x4UConvertI16x8Low)     \
+  V(I32x4UConvertI16x8High, kMips64I32x4UConvertI16x8High)   \
+  V(I32x4Abs, kMips64I32x4Abs)                               \
+  V(I32x4BitMask, kMips64I32x4BitMask)                       \
+  V(I32x4TruncSatF64x2SZero, kMips64I32x4TruncSatF64x2SZero) \
+  V(I32x4TruncSatF64x2UZero, kMips64I32x4TruncSatF64x2UZero) \
+  V(I16x8Neg, kMips64I16x8Neg)                               \
+  V(I16x8SConvertI8x16Low, kMips64I16x8SConvertI8x16Low)     \
+  V(I16x8SConvertI8x16High, kMips64I16x8SConvertI8x16High)   \
+  V(I16x8UConvertI8x16Low, kMips64I16x8UConvertI8x16Low)     \
+  V(I16x8UConvertI8x16High, kMips64I16x8UConvertI8x16High)   \
+  V(I16x8Abs, kMips64I16x8Abs)                               \
+  V(I16x8BitMask, kMips64I16x8BitMask)                       \
+  V(I8x16Neg, kMips64I8x16Neg)                               \
+  V(I8x16Abs, kMips64I8x16Abs)                               \
+  V(I8x16Popcnt, kMips64I8x16Popcnt)                         \
+  V(I8x16BitMask, kMips64I8x16BitMask)                       \
+  V(S128Not, kMips64S128Not)                                 \
+  V(V64x2AllTrue, kMips64V64x2AllTrue)                       \
+  V(V32x4AllTrue, kMips64V32x4AllTrue)                       \
+  V(V16x8AllTrue, kMips64V16x8AllTrue)                       \
+  V(V8x16AllTrue, kMips64V8x16AllTrue)                       \
+  V(V128AnyTrue, kMips64V128AnyTrue)
 
 #define SIMD_SHIFT_OP_LIST(V) \
   V(I64x2Shl)                 \
@@ -2856,9 +2934,13 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(F64x2Ne, kMips64F64x2Ne)                             \
   V(F64x2Lt, kMips64F64x2Lt)                             \
   V(F64x2Le, kMips64F64x2Le)                             \
+  V(I64x2Eq, kMips64I64x2Eq)                             \
+  V(I64x2Ne, kMips64I64x2Ne)                             \
   V(I64x2Add, kMips64I64x2Add)                           \
   V(I64x2Sub, kMips64I64x2Sub)                           \
   V(I64x2Mul, kMips64I64x2Mul)                           \
+  V(I64x2GtS, kMips64I64x2GtS)                           \
+  V(I64x2GeS, kMips64I64x2GeS)                           \
   V(F32x4Add, kMips64F32x4Add)                           \
   V(F32x4AddHoriz, kMips64F32x4AddHoriz)                 \
   V(F32x4Sub, kMips64F32x4Sub)                           \
@@ -2906,6 +2988,7 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I16x8RoundingAverageU, kMips64I16x8RoundingAverageU) \
   V(I16x8SConvertI32x4, kMips64I16x8SConvertI32x4)       \
   V(I16x8UConvertI32x4, kMips64I16x8UConvertI32x4)       \
+  V(I16x8Q15MulRSatS, kMips64I16x8Q15MulRSatS)           \
   V(I8x16Add, kMips64I8x16Add)                           \
   V(I8x16AddSatS, kMips64I8x16AddSatS)                   \
   V(I8x16AddSatU, kMips64I8x16AddSatU)                   \
@@ -2935,7 +3018,7 @@ void InstructionSelector::VisitS128Const(Node* node) {
   Mips64OperandGenerator g(this);
   static const int kUint32Immediates = kSimd128Size / sizeof(uint32_t);
   uint32_t val[kUint32Immediates];
-  memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
+  base::Memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
   // If all bytes are zeros or ones, avoid emitting code for generic constants
   bool all_zeros = !(val[0] || val[1] || val[2] || val[3]);
   bool all_ones = val[0] == UINT32_MAX && val[1] == UINT32_MAX &&
@@ -3173,6 +3256,39 @@ void InstructionSelector::VisitF64x2Pmin(Node* node) {
 void InstructionSelector::VisitF64x2Pmax(Node* node) {
   VisitUniqueRRR(this, kMips64F64x2Pmax, node);
 }
+
+#define VISIT_EXT_MUL(OPCODE1, OPCODE2, TYPE)                                  \
+  void InstructionSelector::Visit##OPCODE1##ExtMulLow##OPCODE2(Node* node) {   \
+    Mips64OperandGenerator g(this);                                            \
+    Emit(kMips64ExtMulLow | MiscField::encode(TYPE), g.DefineAsRegister(node), \
+         g.UseRegister(node->InputAt(0)), g.UseRegister(node->InputAt(1)));    \
+  }                                                                            \
+  void InstructionSelector::Visit##OPCODE1##ExtMulHigh##OPCODE2(Node* node) {  \
+    Mips64OperandGenerator g(this);                                            \
+    Emit(kMips64ExtMulHigh | MiscField::encode(TYPE),                          \
+         g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)),            \
+         g.UseRegister(node->InputAt(1)));                                     \
+  }
+
+VISIT_EXT_MUL(I64x2, I32x4S, MSAS32)
+VISIT_EXT_MUL(I64x2, I32x4U, MSAU32)
+VISIT_EXT_MUL(I32x4, I16x8S, MSAS16)
+VISIT_EXT_MUL(I32x4, I16x8U, MSAU16)
+VISIT_EXT_MUL(I16x8, I8x16S, MSAS8)
+VISIT_EXT_MUL(I16x8, I8x16U, MSAU8)
+#undef VISIT_EXT_MUL
+
+#define VISIT_EXTADD_PAIRWISE(OPCODE, TYPE)                          \
+  void InstructionSelector::Visit##OPCODE(Node* node) {              \
+    Mips64OperandGenerator g(this);                                  \
+    Emit(kMips64ExtAddPairwise | MiscField::encode(TYPE),            \
+         g.DefineAsRegister(node), g.UseRegister(node->InputAt(0))); \
+  }
+VISIT_EXTADD_PAIRWISE(I16x8ExtAddPairwiseI8x16S, MSAS8)
+VISIT_EXTADD_PAIRWISE(I16x8ExtAddPairwiseI8x16U, MSAU8)
+VISIT_EXTADD_PAIRWISE(I32x4ExtAddPairwiseI16x8S, MSAS16)
+VISIT_EXTADD_PAIRWISE(I32x4ExtAddPairwiseI16x8U, MSAU16)
+#undef VISIT_EXTADD_PAIRWISE
 
 // static
 MachineOperatorBuilder::Flags

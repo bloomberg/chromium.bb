@@ -34,7 +34,10 @@ namespace chromeos {
 
 void CrostiniInstallerDialog::Show(Profile* profile,
                                    OnLoadedCallback on_loaded_callback) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
   if (instance) {
     instance->Focus();
@@ -109,8 +112,8 @@ void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
 
 void CrostiniInstallerDialog::OnWebContentsFinishedLoad() {
   DCHECK(dialog_window());
-  dialog_window()->SetTitle(l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_INSTALLER_TITLE, ui::GetChromeOSDeviceName()));
+  dialog_window()->SetTitle(
+      l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_TITLE));
   if (!on_loaded_callback_.is_null()) {
     DCHECK(installer_ui_);
     std::move(on_loaded_callback_).Run(installer_ui_);

@@ -21,6 +21,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace blink {
+class VideoFrame;
+}
+
 namespace cc {
 
 class PaintImageGenerator;
@@ -235,11 +239,11 @@ class CC_PAINT_EXPORT PaintImage {
                   int src_x,
                   int src_y) const;
 
-  SkImageInfo GetSkImageInfo() const;
+  // Returned mailbox must not outlive this PaintImage.
+  gpu::Mailbox GetMailbox() const;
 
   Id stable_id() const { return id_; }
-  const sk_sp<SkImage>& GetSkImage() const;
-  gpu::Mailbox GetMailbox() const;
+  SkImageInfo GetSkImageInfo() const;
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
@@ -262,7 +266,6 @@ class CC_PAINT_EXPORT PaintImage {
   // Skia internally buffers commands and flushes them as necessary but there
   // are some cases where we need to force a flush.
   void FlushPendingSkiaOps();
-  bool HasExclusiveTextureAccess() const;
   int width() const;
   int height() const;
   SkColorSpace* color_space() const {
@@ -324,6 +327,12 @@ class CC_PAINT_EXPORT PaintImage {
   friend class DrawImageRectOp;
   friend class DrawImageOp;
 
+  // TODO(crbug.com/1031051): Remove these once GetSkImage()
+  // is fully removed.
+  friend class ImagePaintFilter;
+  friend class PaintShader;
+  friend class blink::VideoFrame;
+
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
@@ -338,6 +347,10 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Only supported in non-OOPR contexts by friend callers.
   sk_sp<SkImage> GetAcceleratedSkImage() const;
+
+  // GetSkImage() is being deprecated, see crbug.com/1031051.
+  // Prefer using GetSwSkImage() or GetSkImageInfo().
+  const sk_sp<SkImage>& GetSkImage() const;
 
   sk_sp<SkImage> sk_image_;
   sk_sp<PaintRecord> paint_record_;

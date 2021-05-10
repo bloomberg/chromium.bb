@@ -155,7 +155,7 @@ static aom_codec_err_t parse_timing_info(struct aom_read_bit_buffer *rb) {
   if (equal_picture_interval) {
     const uint32_t num_ticks_per_picture_minus_1 = aom_rb_read_uvlc(rb);
     if (num_ticks_per_picture_minus_1 == UINT32_MAX) {
-      // num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.
+      // num_ticks_per_picture_minus_1 cannot be (1 << 32) - 1.
       return AOM_CODEC_UNSUP_BITSTREAM;
     }
   }
@@ -967,6 +967,7 @@ static aom_codec_err_t ctrl_get_last_quantizer(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
   *arg = ((FrameWorkerData *)ctx->frame_worker->data1)
              ->pbi->common.quant_params.base_qindex;
   return AOM_CODEC_OK;
@@ -976,6 +977,7 @@ static aom_codec_err_t ctrl_get_fwd_kf_value(aom_codec_alg_priv_t *ctx,
                                              va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
   *arg = ((FrameWorkerData *)ctx->frame_worker->data1)->pbi->is_fwd_kf_present;
   return AOM_CODEC_OK;
 }
@@ -984,6 +986,7 @@ static aom_codec_err_t ctrl_get_altref_present(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
   *arg =
       ((FrameWorkerData *)ctx->frame_worker->data1)->pbi->is_arf_frame_present;
   return AOM_CODEC_OK;
@@ -993,6 +996,7 @@ static aom_codec_err_t ctrl_get_frame_flags(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
   AV1Decoder *pbi = ((FrameWorkerData *)ctx->frame_worker->data1)->pbi;
   *arg = 0;
   switch (pbi->common.current_frame.frame_type) {
@@ -1096,7 +1100,7 @@ static aom_codec_err_t ctrl_get_still_picture(aom_codec_alg_priv_t *ctx,
       return AOM_CODEC_ERROR;
     }
   }
-  return AOM_CODEC_OK;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_sb_size(aom_codec_alg_priv_t *ctx,
@@ -1125,6 +1129,7 @@ static aom_codec_err_t ctrl_get_show_existing_frame_flag(
     aom_codec_alg_priv_t *ctx, va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
   *arg = ((FrameWorkerData *)ctx->frame_worker->data1)
              ->pbi->common.show_existing_frame;
   return AOM_CODEC_OK;
@@ -1147,7 +1152,7 @@ static aom_codec_err_t ctrl_get_s_frame_info(aom_codec_alg_priv_t *ctx,
       return AOM_CODEC_ERROR;
     }
   }
-  return AOM_CODEC_OK;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
@@ -1207,6 +1212,7 @@ static aom_codec_err_t ctrl_get_frame_header_info(aom_codec_alg_priv_t *ctx,
       frame_header_info->coded_tile_data_size = pbi->obu_size_hdr.size;
       frame_header_info->coded_tile_data = pbi->obu_size_hdr.data;
       frame_header_info->extra_size = pbi->frame_header_size;
+      return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
     }
@@ -1433,17 +1439,25 @@ static aom_codec_err_t ctrl_get_accounting(aom_codec_alg_priv_t *ctx,
   (void)args;
   return AOM_CODEC_INCAPABLE;
 #else
-  if (ctx->frame_worker) {
-    AVxWorker *const worker = ctx->frame_worker;
-    FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    AV1Decoder *pbi = frame_worker_data->pbi;
-    Accounting **acct = va_arg(args, Accounting **);
-    *acct = &pbi->accounting;
-    return AOM_CODEC_OK;
+  Accounting **acct = va_arg(args, Accounting **);
+
+  if (acct) {
+    if (ctx->frame_worker) {
+      AVxWorker *const worker = ctx->frame_worker;
+      FrameWorkerData *const frame_worker_data =
+          (FrameWorkerData *)worker->data1;
+      AV1Decoder *pbi = frame_worker_data->pbi;
+      *acct = &pbi->accounting;
+      return AOM_CODEC_OK;
+    } else {
+      return AOM_CODEC_ERROR;
+    }
   }
-  return AOM_CODEC_ERROR;
+
+  return AOM_CODEC_INVALID_PARAM;
 #endif
 }
+
 static aom_codec_err_t ctrl_set_decode_tile_row(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   ctx->decode_tile_row = va_arg(args, int);
@@ -1584,7 +1598,8 @@ aom_codec_iface_t aom_codec_av1_dx_algo = {
       NULL,  // aom_codec_enc_config_set_fn_t
       NULL,  // aom_codec_get_global_headers_fn_t
       NULL   // aom_codec_get_preview_frame_fn_t
-  }
+  },
+  NULL  // aom_codec_set_option_fn_t
 };
 
 aom_codec_iface_t *aom_codec_av1_dx(void) { return &aom_codec_av1_dx_algo; }

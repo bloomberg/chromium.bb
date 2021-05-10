@@ -16,8 +16,8 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/field_info_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -106,7 +106,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Removes the form with |primary_key| from the list of remembered password
   // forms. Returns true if the form was successfully removed from the database.
-  bool RemoveLoginByPrimaryKey(int primary_key,
+  bool RemoveLoginByPrimaryKey(FormPrimaryKey primary_key,
                                PasswordStoreChangeList* changes)
       WARN_UNUSED_RESULT;
 
@@ -124,7 +124,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // All Get* methods below overwrite |forms| with the returned credentials. On
   // success, those methods return true.
 
-  // Gets a list of credentials matching |form|, including blacklisted matches
+  // Gets a list of credentials matching |form|, including blocklisted matches
   // and federated credentials.
   bool GetLogins(const PasswordStore::FormDigest& form,
                  std::vector<std::unique_ptr<PasswordForm>>* forms)
@@ -148,12 +148,18 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   FormRetrievalResult GetAllLogins(PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
 
-  // Gets the complete list of not blacklisted credentials.
+  // Gets list of logins which match |signon_realm| and |username|.
+  FormRetrievalResult GetLoginsBySignonRealmAndUsername(
+      const std::string& signon_realm,
+      const base::string16& username,
+      PrimaryKeyToFormMap& key_to_form_map) WARN_UNUSED_RESULT;
+
+  // Gets the complete list of not blocklisted credentials.
   bool GetAutofillableLogins(std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
-  // Gets the complete list of blacklisted credentials.
-  bool GetBlacklistLogins(std::vector<std::unique_ptr<PasswordForm>>* forms)
+  // Gets the complete list of blocklisted credentials.
+  bool GetBlocklistLogins(std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
   // Gets the list of auto-sign-inable credentials.
@@ -203,8 +209,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   bool CommitTransaction();
 
   StatisticsTable& stats_table() { return stats_table_; }
-  CompromisedCredentialsTable& compromised_credentials_table() {
-    return compromised_credentials_table_;
+  InsecureCredentialsTable& insecure_credentials_table() {
+    return insecure_credentials_table_;
   }
 
   FieldInfoTable& field_info_table() { return field_info_table_; }
@@ -292,11 +298,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       int* primary_key,
       PasswordForm* form) const WARN_UNUSED_RESULT;
 
-  // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
+  // Gets all blocklisted or all non-blocklisted (depending on |blocklisted|)
   // credentials. On success returns true and overwrites |forms| with the
   // result.
-  bool GetAllLoginsWithBlacklistSetting(
-      bool blacklisted,
+  bool GetAllLoginsWithBlocklistSetting(
+      bool blocklisted,
       std::vector<std::unique_ptr<PasswordForm>>* forms);
 
   // Returns the DB primary key for the specified |form| and decrypted/encrypted
@@ -339,7 +345,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   sql::MetaTable meta_table_;
   StatisticsTable stats_table_;
   FieldInfoTable field_info_table_;
-  CompromisedCredentialsTable compromised_credentials_table_;
+  InsecureCredentialsTable insecure_credentials_table_;
 
   // These cached strings are used to build SQL statements.
   std::string add_statement_;
@@ -352,8 +358,9 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string get_statement_psl_;
   std::string get_statement_federated_;
   std::string get_statement_psl_federated_;
+  std::string get_statement_username_;
   std::string created_statement_;
-  std::string blacklisted_statement_;
+  std::string blocklisted_statement_;
   std::string encrypted_password_statement_by_id_;
   std::string id_and_password_statement_;
 

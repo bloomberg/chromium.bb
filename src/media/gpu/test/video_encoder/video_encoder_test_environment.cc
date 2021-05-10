@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/strings/pattern.h"
+#include "base/system/sys_info.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/buildflags.h"
@@ -45,6 +48,11 @@ const std::vector<base::Feature> kDisabledFeaturesForVideoEncoderTest = {
     // with this feature flag. We disable the feature to use VpxVideoDecoder to
     // decode any vp8 stream in BitstreamValidator.
     kFFmpegDecodeOpaqueVP8,
+#if BUILDFLAG(USE_VAAPI)
+    // Disable this feature so that the encoder test can test a resolution
+    // which is denied for the sake of performance. See crbug.com/1008491.
+    kVaapiEnforceVideoMinMaxResolution,
+#endif
 };
 
 uint32_t GetDefaultTargetBitrate(const gfx::Size& resolution,
@@ -169,6 +177,14 @@ media::test::Video* VideoEncoderTestEnvironment::Video() const {
   return video_.get();
 }
 
+media::test::Video* VideoEncoderTestEnvironment::GenerateNV12Video() {
+  if (!nv12_video_) {
+    nv12_video_ = video_->ConvertToNV12();
+    CHECK(nv12_video_);
+  }
+  return nv12_video_.get();
+}
+
 bool VideoEncoderTestEnvironment::IsBitstreamValidatorEnabled() const {
   return enable_bitstream_validator_;
 }
@@ -203,5 +219,23 @@ VideoEncoderTestEnvironment::GetGpuMemoryBufferFactory() const {
   return gpu_memory_buffer_factory_.get();
 }
 
+bool VideoEncoderTestEnvironment::IsKeplerUsed() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const VideoCodec codec = VideoCodecProfileToVideoCodec(Profile());
+  if (codec != VideoCodec::kCodecVP8)
+    return false;
+  const static std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (board == "unknown") {
+    LOG(WARNING) << "Failed to get chromeos board name";
+    return false;
+  }
+  const char* kKeplerBoards[] = {"buddy*", "guado*", "rikku*"};
+  for (const char* b : kKeplerBoards) {
+    if (base::MatchPattern(board, b))
+      return true;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
+}
 }  // namespace test
 }  // namespace media

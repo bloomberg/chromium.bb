@@ -16,9 +16,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
@@ -637,7 +639,7 @@ public class PasswordCheckViewTest {
         mModel.set(DELETION_ORIGIN, ANA.getDisplayOrigin());
         runOnUiThreadBlocking(() -> mModel.set(DELETION_CONFIRMATION_HANDLER, fakeHandler));
 
-        onView(withText(R.string.password_check_delete_credential_dialog_confirm))
+        onView(withText(R.string.password_entry_edit_delete_credential_dialog_confirm))
                 .inRoot(withDecorView(
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());
@@ -723,6 +725,14 @@ public class PasswordCheckViewTest {
         mTestRule.getFragment().onResume();
 
         CriteriaHelper.pollInstrumentationThread(() -> recordedDismiss.get() == 1);
+    }
+
+    @Test
+    @SmallTest
+    public void testHelpHandlerCalled() {
+        when(mComponentUi.handleHelp(any())).thenReturn(true);
+        onView(withId(R.id.menu_id_targeted_help)).perform(click());
+        verify(mComponentUi).handleHelp(any());
     }
 
     private MVCListAdapter.ListItem buildHeader(@PasswordCheckUIStatus int status,

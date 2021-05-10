@@ -8,26 +8,27 @@
 #ifndef GrSurfaceContext_DEFINED
 #define GrSurfaceContext_DEFINED
 
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkRefCnt.h"
+#include "include/core/SkSamplingOptions.h"
 #include "include/core/SkSurface.h"
 #include "src/gpu/GrClientMappedBufferManager.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrImageInfo.h"
+#include "src/gpu/GrPixmap.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 
 class GrAuditTrail;
 class GrDrawingManager;
 class GrRecordingContext;
-class GrRenderTargetContext;
 class GrRenderTargetProxy;
 class GrSingleOwner;
 class GrSurface;
-class GrSurfaceContextPriv;
+class GrSurfaceDrawContext;
+class GrSurfaceFillContext;
 class GrSurfaceProxy;
 class GrTextureProxy;
 struct SkIPoint;
@@ -38,25 +39,43 @@ struct SkIRect;
  */
 class GrSurfaceContext {
 public:
-    // If the passed in GrSurfaceProxy is renderable this will return a GrRenderTargetContext,
+    // If the passed in GrSurfaceProxy is renderable this will return a GrSurfaceDrawContext,
     // otherwise it will return a GrSurfaceContext.
     static std::unique_ptr<GrSurfaceContext> Make(GrRecordingContext*,
                                                   GrSurfaceProxyView readView,
-                                                  GrColorType, SkAlphaType, sk_sp<SkColorSpace>);
+                                                  const GrColorInfo&);
 
-    static std::unique_ptr<GrSurfaceContext> Make(GrRecordingContext*, SkISize dimensions,
-                                                  const GrBackendFormat&, GrRenderable,
-                                                  int renderTargetSampleCnt, GrMipmapped,
-                                                  GrProtected, GrSurfaceOrigin, GrColorType,
-                                                  SkAlphaType, sk_sp<SkColorSpace>, SkBackingFit,
-                                                  SkBudgeted);
+    // Makes either a GrSurfaceContext, GrFillDrawContext, or a GrSurfaceDrawContext, depending on
+    // GrRenderable and the GrImageInfo.
+    static std::unique_ptr<GrSurfaceContext> Make(GrRecordingContext*,
+                                                  const GrImageInfo&,
+                                                  const GrBackendFormat&,
+                                                  SkBackingFit = SkBackingFit::kExact,
+                                                  GrSurfaceOrigin = kTopLeft_GrSurfaceOrigin,
+                                                  GrRenderable = GrRenderable::kNo,
+                                                  int renderTargetSampleCnt = 1,
+                                                  GrMipmapped = GrMipmapped::kNo,
+                                                  GrProtected = GrProtected::kNo,
+                                                  SkBudgeted = SkBudgeted::kYes);
+
+    // Same as the above but chooses the texture format using the default format for the color type.
+    static std::unique_ptr<GrSurfaceContext> Make(GrRecordingContext*,
+                                                  const GrImageInfo&,
+                                                  SkBackingFit = SkBackingFit::kExact,
+                                                  GrSurfaceOrigin = kTopLeft_GrSurfaceOrigin,
+                                                  GrRenderable = GrRenderable::kNo,
+                                                  int renderTargetSampleCnt = 1,
+                                                  GrMipmapped = GrMipmapped::kNo,
+                                                  GrProtected = GrProtected::kNo,
+                                                  SkBudgeted = SkBudgeted::kYes);
 
     // If it is known that the GrSurfaceProxy is not renderable, you can directly call the the ctor
     // here to make a GrSurfaceContext on the stack.
-    GrSurfaceContext(GrRecordingContext*, GrSurfaceProxyView readView, GrColorType, SkAlphaType,
-                     sk_sp<SkColorSpace>);
+    GrSurfaceContext(GrRecordingContext*, GrSurfaceProxyView readView, const GrColorInfo&);
 
     virtual ~GrSurfaceContext() = default;
+
+    GrRecordingContext* recordingContext() { return fContext; }
 
     const GrColorInfo& colorInfo() const { return fColorInfo; }
     GrImageInfo imageInfo() const { return {fColorInfo, fReadView.proxy()->dimensions()}; }
@@ -74,30 +93,25 @@ public:
     const GrCaps* caps() const;
 
     /**
-     * Reads a rectangle of pixels from the render target context.
+     * Reads a rectangle of pixels from the surface context.
      * @param dContext      The direct context to use
-     * @param dstInfo       image info for the destination
      * @param dst           destination pixels for the read
-     * @param rowBytes      bytes in a row of 'dst'
      * @param srcPt         offset w/in the surface context from which to read
      *                      is a GrDirectContext and fail otherwise.
      */
-    bool readPixels(GrDirectContext* dContext,
-                    const GrImageInfo& dstInfo,
-                    void* dst,
-                    size_t rowBytes,
-                    SkIPoint srcPt);
+    bool readPixels(GrDirectContext* dContext, GrPixmap dst, SkIPoint srcPt);
 
     using ReadPixelsCallback = SkImage::ReadPixelsCallback;
     using ReadPixelsContext  = SkImage::ReadPixelsContext;
     using RescaleGamma       = SkImage::RescaleGamma;
+    using RescaleMode        = SkImage::RescaleMode;
 
     // GPU implementation for SkImage:: and SkSurface::asyncRescaleAndReadPixels.
     void asyncRescaleAndReadPixels(GrDirectContext*,
                                    const SkImageInfo& info,
                                    const SkIRect& srcRect,
                                    RescaleGamma rescaleGamma,
-                                   SkFilterQuality rescaleQuality,
+                                   RescaleMode,
                                    ReadPixelsCallback callback,
                                    ReadPixelsContext callbackContext);
 
@@ -108,24 +122,18 @@ public:
                                          const SkIRect& srcRect,
                                          SkISize dstSize,
                                          RescaleGamma rescaleGamma,
-                                         SkFilterQuality rescaleQuality,
+                                         RescaleMode,
                                          ReadPixelsCallback callback,
                                          ReadPixelsContext context);
 
     /**
      * Writes a rectangle of pixels [srcInfo, srcBuffer, srcRowbytes] into the
-     * renderTargetContext at the specified position.
+     * surfaceDrawContext at the specified position.
      * @param dContext      The direct context to use
-     * @param srcInfo       image info for the source pixels
      * @param src           source for the write
-     * @param rowBytes      bytes in a row of 'src'
      * @param dstPt         offset w/in the surface context at which to write
      */
-    bool writePixels(GrDirectContext* dContext,
-                     const GrImageInfo& srcInfo,
-                     const void* src,
-                     size_t rowBytes,
-                     SkIPoint dstPt);
+    bool writePixels(GrDirectContext* dContext, GrPixmap src, SkIPoint dstPt);
 
     GrSurfaceProxy* asSurfaceProxy() { return fReadView.proxy(); }
     const GrSurfaceProxy* asSurfaceProxy() const { return fReadView.proxy(); }
@@ -143,7 +151,8 @@ public:
         return fReadView.asRenderTargetProxyRef();
     }
 
-    virtual GrRenderTargetContext* asRenderTargetContext() { return nullptr; }
+    virtual GrSurfaceDrawContext* asRenderTargetContext() { return nullptr; }
+    virtual GrSurfaceFillContext* asFillContext() { return nullptr; }
 
     /**
      * Rescales the contents of srcRect. The gamma in which the rescaling occurs is controlled by
@@ -152,45 +161,42 @@ public:
      * different size than srcRect. Though, it could be relaxed to allow non-scaling color
      * conversions.
      */
-    std::unique_ptr<GrRenderTargetContext> rescale(const GrImageInfo& info,
-                                                   GrSurfaceOrigin,
-                                                   SkIRect srcRect,
-                                                   SkImage::RescaleGamma,
-                                                   SkFilterQuality);
+    std::unique_ptr<GrSurfaceFillContext> rescale(const GrImageInfo& info,
+                                                  GrSurfaceOrigin,
+                                                  SkIRect srcRect,
+                                                  SkImage::RescaleGamma,
+                                                  SkImage::RescaleMode);
 
     /**
-     * After this returns any pending surface IO will be issued to the backend 3D API and
-     * if the surface has MSAA it will be resolved.
+     * Like the above but allows the caller ot specify a destination fill context and
+     * rect within that context. The dst rect must be contained by the dst or this will fail.
      */
-    GrSemaphoresSubmitted flush(SkSurface::BackendSurfaceAccess access,
-                                const GrFlushInfo&,
-                                const GrBackendSurfaceMutableState*);
+    bool rescaleInto(GrSurfaceFillContext* dst,
+                     SkIRect dstRect,
+                     SkIRect srcRect,
+                     SkImage::RescaleGamma,
+                     SkImage::RescaleMode);
 
     GrAuditTrail* auditTrail();
 
-    // Provides access to functions that aren't part of the public API.
-    GrSurfaceContextPriv surfPriv();
-    const GrSurfaceContextPriv surfPriv() const;  // NOLINT(readability-const-return-type)
-
 #if GR_TEST_UTILS
-    bool testCopy(GrSurfaceProxy* src, const SkIRect& srcRect, const SkIPoint& dstPoint) {
-        return this->copy(src, srcRect, dstPoint);
+    bool testCopy(sk_sp<GrSurfaceProxy> src, const SkIRect& srcRect, const SkIPoint& dstPoint) {
+        return this->copy(std::move(src), srcRect, dstPoint);
     }
 
-    bool testCopy(GrSurfaceProxy* src) {
-        return this->copy(src, SkIRect::MakeSize(src->dimensions()), {0, 0});
+    bool testCopy(sk_sp<GrSurfaceProxy> src) {
+        auto rect = SkIRect::MakeSize(src->dimensions());
+        return this->copy(std::move(src), rect, {0, 0});
     }
 #endif
 
 protected:
-    friend class GrSurfaceContextPriv;
-
     GrDrawingManager* drawingManager();
     const GrDrawingManager* drawingManager() const;
 
     SkDEBUGCODE(void validate() const;)
 
-    SkDEBUGCODE(GrSingleOwner* singleOwner();)
+    SkDEBUGCODE(GrSingleOwner* singleOwner() const;)
 
     GrRecordingContext* fContext;
 
@@ -236,7 +242,7 @@ private:
      *       regions will not be shifted. The 'src' must have the same origin as the backing proxy
      *       of fSurfaceContext.
      */
-    bool copy(GrSurfaceProxy* src, const SkIRect& srcRect, const SkIPoint& dstPoint);
+    bool copy(sk_sp<GrSurfaceProxy> src, SkIRect srcRect, SkIPoint dstPoint);
 
     class AsyncReadResult;
 

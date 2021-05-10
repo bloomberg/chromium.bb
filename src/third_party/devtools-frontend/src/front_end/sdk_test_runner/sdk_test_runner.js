@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../sdk/sdk-legacy.js';
+import '../test_runner/test_runner.js';
+import * as Platform from '../platform/platform.js';
+
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.SDKTestRunner = self.SDKTestRunner || {};
 
@@ -108,7 +111,7 @@ SDKTestRunner.PageMock = class {
       endLine: text.lineCount(),
       endColumn: text.lineAt(text.lineCount()).length - 1,
       executionContextId: context.id,
-      hash: String.hashCode(content),
+      hash: Platform.StringUtilities.hashCode(content),
       executionContextAuxData: context.auxData,
       sourceMapURL: '',
       hasSourceURL: true,

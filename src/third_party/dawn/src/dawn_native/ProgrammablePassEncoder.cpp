@@ -32,49 +32,50 @@ namespace dawn_native {
                                          BindGroupBase* group) {
             for (BindingIndex bindingIndex{0}; bindingIndex < group->GetLayout()->GetBindingCount();
                  ++bindingIndex) {
-                wgpu::BindingType type = group->GetLayout()->GetBindingInfo(bindingIndex).type;
+                const BindingInfo& bindingInfo = group->GetLayout()->GetBindingInfo(bindingIndex);
 
-                switch (type) {
-                    case wgpu::BindingType::UniformBuffer: {
+                switch (bindingInfo.bindingType) {
+                    case BindingInfoType::Buffer: {
                         BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
-                        usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Uniform);
+                        switch (bindingInfo.buffer.type) {
+                            case wgpu::BufferBindingType::Uniform:
+                                usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Uniform);
+                                break;
+                            case wgpu::BufferBindingType::Storage:
+                                usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Storage);
+                                break;
+                            case wgpu::BufferBindingType::ReadOnlyStorage:
+                                usageTracker->BufferUsedAs(buffer, kReadOnlyStorageBuffer);
+                                break;
+                            case wgpu::BufferBindingType::Undefined:
+                                UNREACHABLE();
+                        }
                         break;
                     }
 
-                    case wgpu::BindingType::StorageBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
-                        usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Storage);
-                        break;
-                    }
-
-                    case wgpu::BindingType::SampledTexture:
-                    case wgpu::BindingType::MultisampledTexture: {
+                    case BindingInfoType::Texture: {
                         TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
                         usageTracker->TextureViewUsedAs(view, wgpu::TextureUsage::Sampled);
                         break;
                     }
 
-                    case wgpu::BindingType::ReadonlyStorageBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
-                        usageTracker->BufferUsedAs(buffer, kReadOnlyStorageBuffer);
-                        break;
-                    }
-
-                    case wgpu::BindingType::Sampler:
-                    case wgpu::BindingType::ComparisonSampler:
-                        break;
-
-                    case wgpu::BindingType::ReadonlyStorageTexture: {
+                    case BindingInfoType::StorageTexture: {
                         TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
-                        usageTracker->TextureViewUsedAs(view, kReadonlyStorageTexture);
+                        switch (bindingInfo.storageTexture.access) {
+                            case wgpu::StorageTextureAccess::ReadOnly:
+                                usageTracker->TextureViewUsedAs(view, kReadOnlyStorageTexture);
+                                break;
+                            case wgpu::StorageTextureAccess::WriteOnly:
+                                usageTracker->TextureViewUsedAs(view, wgpu::TextureUsage::Storage);
+                                break;
+                            case wgpu::StorageTextureAccess::Undefined:
+                                UNREACHABLE();
+                        }
                         break;
                     }
 
-                    case wgpu::BindingType::WriteonlyStorageTexture: {
-                        TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
-                        usageTracker->TextureViewUsedAs(view, wgpu::TextureUsage::Storage);
+                    case BindingInfoType::Sampler:
                         break;
-                    }
                 }
             }
         }
@@ -83,14 +84,31 @@ namespace dawn_native {
     ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
                                                      EncodingContext* encodingContext,
                                                      PassType passType)
-        : ObjectBase(device), mEncodingContext(encodingContext), mUsageTracker(passType) {
+        : ObjectBase(device),
+          mEncodingContext(encodingContext),
+          mUsageTracker(passType),
+          mValidationEnabled(device->IsValidationEnabled()) {
     }
 
     ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
                                                      EncodingContext* encodingContext,
                                                      ErrorTag errorTag,
                                                      PassType passType)
-        : ObjectBase(device, errorTag), mEncodingContext(encodingContext), mUsageTracker(passType) {
+        : ObjectBase(device, errorTag),
+          mEncodingContext(encodingContext),
+          mUsageTracker(passType),
+          mValidationEnabled(device->IsValidationEnabled()) {
+    }
+
+    bool ProgrammablePassEncoder::IsValidationEnabled() const {
+        return mValidationEnabled;
+    }
+
+    MaybeError ProgrammablePassEncoder::ValidateProgrammableEncoderEnd() const {
+        if (mDebugGroupStackSize != 0) {
+            return DAWN_VALIDATION_ERROR("Each Push must be balanced by a corresponding Pop.");
+        }
+        return {};
     }
 
     void ProgrammablePassEncoder::InsertDebugMarker(const char* groupLabel) {
@@ -108,7 +126,13 @@ namespace dawn_native {
 
     void ProgrammablePassEncoder::PopDebugGroup() {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            if (IsValidationEnabled()) {
+                if (mDebugGroupStackSize == 0) {
+                    return DAWN_VALIDATION_ERROR("Pop must be balanced by a corresponding Push.");
+                }
+            }
             allocator->Allocate<PopDebugGroupCmd>(Command::PopDebugGroup);
+            mDebugGroupStackSize--;
 
             return {};
         });
@@ -123,6 +147,8 @@ namespace dawn_native {
             char* label = allocator->AllocateData<char>(cmd->length + 1);
             memcpy(label, groupLabel, cmd->length + 1);
 
+            mDebugGroupStackSize++;
+
             return {};
         });
     }
@@ -134,7 +160,7 @@ namespace dawn_native {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             BindGroupIndex groupIndex(groupIndexIn);
 
-            if (GetDevice()->IsValidationEnabled()) {
+            if (IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(group));
 
                 if (groupIndex >= kMaxBindGroupsTyped) {
@@ -155,16 +181,8 @@ namespace dawn_native {
 
                     // BGL creation sorts bindings such that the dynamic buffer bindings are first.
                     // ASSERT that this true.
-                    ASSERT(bindingInfo.hasDynamicOffset);
-                    switch (bindingInfo.type) {
-                        case wgpu::BindingType::UniformBuffer:
-                        case wgpu::BindingType::StorageBuffer:
-                        case wgpu::BindingType::ReadonlyStorageBuffer:
-                            break;
-                        default:
-                            UNREACHABLE();
-                            break;
-                    }
+                    ASSERT(bindingInfo.bindingType == BindingInfoType::Buffer);
+                    ASSERT(bindingInfo.buffer.hasDynamicOffset);
 
                     if (dynamicOffsets[i] % kMinDynamicBufferOffsetAlignment != 0) {
                         return DAWN_VALIDATION_ERROR("Dynamic Buffer Offset need to be aligned");
@@ -180,10 +198,20 @@ namespace dawn_native {
 
                     if ((dynamicOffsets[i] > bufferBinding.buffer->GetSize() -
                                                  bufferBinding.offset - bufferBinding.size)) {
-                        return DAWN_VALIDATION_ERROR("dynamic offset out of bounds");
+                        if ((bufferBinding.buffer->GetSize() - bufferBinding.offset) ==
+                            bufferBinding.size) {
+                            return DAWN_VALIDATION_ERROR(
+                                "Dynamic offset out of bounds. The binding goes to the end of the "
+                                "buffer even with a dynamic offset of 0. Did you forget to specify "
+                                "the binding's size?");
+                        } else {
+                            return DAWN_VALIDATION_ERROR("Dynamic offset out of bounds");
+                        }
                     }
                 }
             }
+
+            mCommandBufferState.SetBindGroup(groupIndex, group);
 
             SetBindGroupCmd* cmd = allocator->Allocate<SetBindGroupCmd>(Command::SetBindGroup);
             cmd->index = groupIndex;

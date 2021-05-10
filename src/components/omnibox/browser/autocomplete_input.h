@@ -36,7 +36,9 @@ class AutocompleteInput {
   AutocompleteInput(const base::string16& text,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
-                    const AutocompleteSchemeClassifier& scheme_classifier);
+                    const AutocompleteSchemeClassifier& scheme_classifier,
+                    bool should_use_https_as_default_scheme = false,
+                    int https_port_for_testing = 0);
   // This constructor adds |cursor_position|, related to |text|.
   // |cursor_position| represents the location of the cursor within the
   // query |text|. It may be set to base::string16::npos if the input
@@ -45,7 +47,10 @@ class AutocompleteInput {
                     size_t cursor_position,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
-                    const AutocompleteSchemeClassifier& scheme_classifier);
+                    const AutocompleteSchemeClassifier& scheme_classifier,
+                    bool should_use_https_as_default_scheme = false,
+                    int https_port_for_testing = 0);
+
   // This constructor adds |desired_tld|, related to |text|. |desired_tld|
   // is the user's desired TLD, if one is not already present in the text to
   // autocomplete. When this is non-empty, it also implies that "www."
@@ -56,7 +61,10 @@ class AutocompleteInput {
                     const std::string& desired_tld,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
-                    const AutocompleteSchemeClassifier& scheme_classifier);
+                    const AutocompleteSchemeClassifier& scheme_classifier,
+                    bool should_use_https_as_default_scheme = false,
+                    int https_port_for_testing = 0);
+
   AutocompleteInput(const AutocompleteInput& other);
   ~AutocompleteInput();
 
@@ -106,8 +114,11 @@ class AutocompleteInput {
   // Returns the number of non-empty components in |parts| besides the host.
   static int NumNonHostComponents(const url::Parsed& parts);
 
-  // Returns whether |text| begins "http:" or "view-source:http:".
+  // Returns whether |text| begins with "http:" or "view-source:http:".
   static bool HasHTTPScheme(const base::string16& text);
+
+  // Returns whether |text| begins with "https:" or "view-source:https:".
+  static bool HasHTTPSScheme(const base::string16& text);
 
   // User-provided text to be completed.
   const base::string16& text() const { return text_; }
@@ -257,6 +268,10 @@ class AutocompleteInput {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  bool added_default_scheme_to_typed_url() const {
+    return added_default_scheme_to_typed_url_;
+  }
+
  private:
   friend class AutocompleteProviderTest;
 
@@ -286,6 +301,16 @@ class AutocompleteInput {
   OmniboxFocusType focus_type_ = OmniboxFocusType::DEFAULT;
   std::vector<base::string16> terms_prefixed_by_http_or_https_;
   base::Optional<std::string> query_tile_id_;
+
+  // Flags for OmniboxDefaultNavigationsToHttps feature.
+  bool should_use_https_as_default_scheme_;
+  bool added_default_scheme_to_typed_url_;
+  // Port used by the embedded https server in tests. This is used to determine
+  // the correct port while upgrading URLs to https if the original URL has a
+  // non-default port.
+  // TODO(crbug.com/1168371): Remove when URLLoaderInterceptor can simulate
+  // redirects.
+  int https_port_for_testing_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_INPUT_H_

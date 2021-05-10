@@ -34,11 +34,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "f7ae257a015d2bdf3e3f3afd167e80e633e687ba",
+          "hash": "6b4a380bbf9a714586feaf9b79b67c7b60bf023a",
           "log_url": null,
           "name": "toolchain.tar.bz2",
           "tar_src_dir": "toolchain/mac_x86",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r9ff1dc0c05b45941b86bed303a87a9eac17192ea/toolchain_mac_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain_manual/r1/toolchain_mac_x86.tar.bz2"
         }
       ],
       "version": 1
@@ -66,5 +66,5 @@
     }
   },
   "revision": "9ff1dc0c05b45941b86bed303a87a9eac17192ea",
-  "revision_hash": "5c8b7bd49bc30d9d42cace2d818eba1ba3ec4032"
+  "revision_hash": "9b0b06691d9e73883e6a4b92826d3a3bfb3eee10"
 }

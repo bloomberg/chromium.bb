@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/browser/ui/user_education/mock_feature_promo_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -249,9 +250,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
         break;
       }
       case TabStripModelChange::kRemoved: {
-        const bool will_be_deleted = change.GetRemove()->will_be_deleted;
         for (const auto& contents : change.GetRemove()->contents) {
-          if (will_be_deleted)
+          if (contents.will_be_deleted)
             PushCloseState(contents.contents, contents.index);
           PushDetachState(contents.contents, contents.index,
                           selection.old_contents == contents.contents);
@@ -380,8 +380,7 @@ class TabStripModelTest : public testing::Test {
   std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
       WebContents* web_contents) {
     WebContents::CreateParams create_params(
-        profile(),
-        web_contents->GetMainFrame()->GetRenderViewHost()->GetSiteInstance());
+        profile(), web_contents->GetMainFrame()->GetSiteInstance());
     std::unique_ptr<WebContents> retval = WebContents::Create(create_params);
     EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
               web_contents->GetMainFrame()->GetProcess());
@@ -448,7 +447,7 @@ class TabStripModelTest : public testing::Test {
       ASSERT_TRUE(base::StringToInt(sel, &value));
       selection_model.AddIndexToSelection(value);
     }
-    selection_model.set_active(selection_model.selected_indices()[0]);
+    selection_model.set_active(*selection_model.selected_indices().begin());
     model->SetSelectionFromModel(selection_model);
   }
 
@@ -4177,8 +4176,22 @@ class TabStripModelTestWithReadLaterEnabled : public BrowserWithTestWindowTest {
                                         base::ASCIIToUTF16(title));
   }
 
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    auto test_window = std::make_unique<TestBrowserWindow>();
+
+    // This test only supports one window.
+    DCHECK(!mock_promo_controller_);
+
+    mock_promo_controller_ = static_cast<MockFeaturePromoController*>(
+        test_window->SetFeaturePromoController(
+            std::make_unique<MockFeaturePromoController>()));
+    return test_window;
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+
+  MockFeaturePromoController* mock_promo_controller_ = nullptr;
 };
 
 TEST_F(TabStripModelTestWithReadLaterEnabled, AddToReadLater) {
@@ -4192,6 +4205,7 @@ TEST_F(TabStripModelTestWithReadLaterEnabled, AddToReadLater) {
   // Add first tab to Read Later and verify it has been added.
   GURL expected_url = tabstrip->GetWebContentsAt(0)->GetURL();
   tabstrip->AddToReadLater({0});
+
   EXPECT_EQ(reading_list_model->size(), 1u);
   EXPECT_NE(reading_list_model->GetEntryByURL(expected_url), nullptr);
   EXPECT_EQ(tabstrip->count(), 2);

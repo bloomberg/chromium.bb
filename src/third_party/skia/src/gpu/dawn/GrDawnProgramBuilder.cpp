@@ -7,6 +7,7 @@
 
 #include "src/gpu/dawn/GrDawnProgramBuilder.h"
 
+#include "src/gpu/GrAutoLocaleSetter.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/GrStencilSettings.h"
@@ -263,6 +264,8 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
                                                  bool hasDepthStencil,
                                                  wgpu::TextureFormat depthStencilFormat,
                                                  GrProgramDesc* desc) {
+    GrAutoLocaleSetter als("C");
+
     GrDawnProgramBuilder builder(gpu, renderTarget, programInfo, desc);
     if (!builder.emitAndInstallProcs()) {
         return nullptr;
@@ -277,21 +280,23 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
 
     SkSL::Program::Inputs vertInputs, fragInputs;
     bool flipY = programInfo.origin() != kTopLeft_GrSurfaceOrigin;
-    auto vsModule = builder.createShaderModule(builder.fVS, SkSL::Program::kVertex_Kind, flipY,
+    auto vsModule = builder.createShaderModule(builder.fVS, SkSL::ProgramKind::kVertex, flipY,
                                                &vertInputs);
-    auto fsModule = builder.createShaderModule(builder.fFS, SkSL::Program::kFragment_Kind, flipY,
+    auto fsModule = builder.createShaderModule(builder.fFS, SkSL::ProgramKind::kFragment, flipY,
                                                &fragInputs);
     GrSPIRVUniformHandler::UniformInfoArray& uniforms = builder.fUniformHandler.fUniforms;
     uint32_t uniformBufferSize = builder.fUniformHandler.fCurrentUBOOffset;
     sk_sp<GrDawnProgram> result(new GrDawnProgram(uniforms, uniformBufferSize));
     result->fGeometryProcessor = std::move(builder.fGeometryProcessor);
     result->fXferProcessor = std::move(builder.fXferProcessor);
-    result->fFragmentProcessors = std::move(builder.fFragmentProcessors);
+    result->fFPImpls = std::move(builder.fFPImpls);
     std::vector<wgpu::BindGroupLayoutEntry> uniformLayoutEntries;
     if (0 != uniformBufferSize) {
-        uniformLayoutEntries.push_back({ GrSPIRVUniformHandler::kUniformBinding,
-                                         wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
-                                         wgpu::BindingType::UniformBuffer });
+        wgpu::BindGroupLayoutEntry entry;
+        entry.binding = GrSPIRVUniformHandler::kUniformBinding;
+        entry.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+        entry.type = wgpu::BindingType::UniformBuffer;
+        uniformLayoutEntries.push_back(std::move(entry));
     }
     wgpu::BindGroupLayoutDescriptor uniformBindGroupLayoutDesc;
     uniformBindGroupLayoutDesc.entryCount = uniformLayoutEntries.size();
@@ -303,10 +308,20 @@ sk_sp<GrDawnProgram> GrDawnProgramBuilder::Build(GrDawnGpu* gpu,
     int textureCount = builder.fUniformHandler.fSamplers.count();
     if (textureCount > 0) {
         for (int i = 0; i < textureCount; ++i)  {
-            textureLayoutEntries.push_back({ binding++, wgpu::ShaderStage::Fragment,
-                                             wgpu::BindingType::Sampler });
-            textureLayoutEntries.push_back({ binding++, wgpu::ShaderStage::Fragment,
-                                             wgpu::BindingType::SampledTexture });
+            {
+                wgpu::BindGroupLayoutEntry entry;
+                entry.binding = binding++;
+                entry.visibility = wgpu::ShaderStage::Fragment;
+                entry.type = wgpu::BindingType::Sampler;
+                textureLayoutEntries.push_back(std::move(entry));
+            }
+            {
+                wgpu::BindGroupLayoutEntry entry;
+                entry.binding = binding++;
+                entry.visibility = wgpu::ShaderStage::Fragment;
+                entry.type = wgpu::BindingType::SampledTexture;
+                textureLayoutEntries.push_back(std::move(entry));
+            }
         }
         wgpu::BindGroupLayoutDescriptor textureBindGroupLayoutDesc;
         textureBindGroupLayoutDesc.entryCount = textureLayoutEntries.size();
@@ -414,7 +429,7 @@ GrDawnProgramBuilder::GrDawnProgramBuilder(GrDawnGpu* gpu,
 }
 
 wgpu::ShaderModule GrDawnProgramBuilder::createShaderModule(const GrGLSLShaderBuilder& builder,
-                                                            SkSL::Program::Kind kind,
+                                                            SkSL::ProgramKind kind,
                                                             bool flipY,
                                                             SkSL::Program::Inputs* inputs) {
     wgpu::Device device = fGpu->device();
@@ -436,6 +451,10 @@ wgpu::ShaderModule GrDawnProgramBuilder::createShaderModule(const GrGLSLShaderBu
 
 const GrCaps* GrDawnProgramBuilder::caps() const {
     return fGpu->caps();
+}
+
+SkSL::Compiler* GrDawnProgramBuilder::shaderCompiler() const {
+    return fGpu->shaderCompiler();
 }
 
 void GrDawnProgram::setRenderTargetState(const GrRenderTarget* rt, GrSurfaceOrigin origin) {
@@ -483,10 +502,9 @@ wgpu::BindGroup GrDawnProgram::setUniformData(GrDawnGpu* gpu, const GrRenderTarg
     fGeometryProcessor->setData(fDataManager, primProc);
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
-        auto& pipelineFP = programInfo.pipeline().getFragmentProcessor(i);
-        auto& baseGLSLFP = *fFragmentProcessors[i];
-        for (auto [fp, glslFP] : GrGLSLFragmentProcessor::ParallelRange(pipelineFP, baseGLSLFP)) {
-            glslFP.setData(fDataManager, fp);
+        auto& fp = programInfo.pipeline().getFragmentProcessor(i);
+        for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
+            impl.setData(fDataManager, fp);
         }
     }
 

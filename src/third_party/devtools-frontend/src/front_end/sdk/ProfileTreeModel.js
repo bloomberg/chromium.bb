@@ -4,9 +4,6 @@
 
 import {Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class ProfileNode {
   /**
    * @param {!Protocol.Runtime.CallFrame} callFrame
@@ -28,6 +25,8 @@ export class ProfileNode {
     this.children = [];
     /** @type {number} */
     this.depth;
+    /** @type {?string} */
+    this.deoptReason;
   }
 
   /**
@@ -66,9 +65,6 @@ export class ProfileNode {
   }
 }
 
-/**
- * @unrestricted
- */
 export class ProfileTreeModel {
   /**
    * @param {?Target=} target
@@ -79,6 +75,8 @@ export class ProfileTreeModel {
     this.root;
     /** @type {number} */
     this.total;
+    /** @type {number} */
+    this.maxDepth;
   }
 
   /**

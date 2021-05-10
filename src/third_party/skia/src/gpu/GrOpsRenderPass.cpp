@@ -10,6 +10,7 @@
 #include "include/core/SkRect.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrCpuBuffer.h"
+#include "src/gpu/GrDrawIndirectCommand.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrPrimitiveProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
@@ -35,7 +36,7 @@ void GrOpsRenderPass::end() {
     this->resetActiveBuffers();
 }
 
-void GrOpsRenderPass::clear(const GrScissorState& scissor, const SkPMColor4f& color) {
+void GrOpsRenderPass::clear(const GrScissorState& scissor, std::array<float, 4> color) {
     SkASSERT(fRenderTarget);
     // A clear at this level will always be a true clear, so make sure clears were not supposed to
     // be redirected to draws instead
@@ -68,10 +69,6 @@ void GrOpsRenderPass::bindPipeline(const GrProgramInfo& programInfo, const SkRec
     }
     if (programInfo.pipeline().usesConservativeRaster()) {
         SkASSERT(this->gpu()->caps()->conservativeRasterSupport());
-        // Conservative raster, by default, only supports triangles. Implementations can
-        // optionally indicate that they also support points and lines, but we don't currently
-        // query or track that info.
-        SkASSERT(GrIsPrimTypeTris(programInfo.primitiveType()));
     }
     if (programInfo.pipeline().isWireframe()) {
          SkASSERT(this->gpu()->caps()->wireframeSupport());
@@ -288,13 +285,12 @@ void GrOpsRenderPass::drawIndirect(const GrBuffer* drawIndirectBuffer, size_t bu
     if (!this->gpu()->caps()->nativeDrawIndirectSupport()) {
         // Polyfill indirect draws with looping instanced calls.
         SkASSERT(drawIndirectBuffer->isCpuBuffer());
-        auto cpuIndirectBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
-        auto cmd = reinterpret_cast<const GrDrawIndirectCommand*>(
+        auto* cpuIndirectBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
+        auto* cmds = reinterpret_cast<const GrDrawIndirectCommand*>(
                 cpuIndirectBuffer->data() + bufferOffset);
-        auto end = cmd + drawCount;
-        for (; cmd != end; ++cmd) {
-            this->onDrawInstanced(cmd->fInstanceCount, cmd->fBaseInstance, cmd->fVertexCount,
-                                  cmd->fBaseVertex);
+        for (int i = 0; i < drawCount; ++i) {
+            auto [vertexCount, instanceCount, baseVertex, baseInstance] = cmds[i];
+            this->onDrawInstanced(instanceCount, baseInstance, vertexCount, baseVertex);
         }
         return;
     }
@@ -316,13 +312,13 @@ void GrOpsRenderPass::drawIndexedIndirect(const GrBuffer* drawIndirectBuffer, si
         this->gpu()->caps()->nativeDrawIndexedIndirectIsBroken()) {
         // Polyfill indexedIndirect draws with looping indexedInstanced calls.
         SkASSERT(drawIndirectBuffer->isCpuBuffer());
-        auto cpuIndirectBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
-        auto cmd = reinterpret_cast<const GrDrawIndexedIndirectCommand*>(
+        auto* cpuIndirectBuffer = static_cast<const GrCpuBuffer*>(drawIndirectBuffer);
+        auto* cmds = reinterpret_cast<const GrDrawIndexedIndirectCommand*>(
                 cpuIndirectBuffer->data() + bufferOffset);
-        auto end = cmd + drawCount;
-        for (; cmd != end; ++cmd) {
-            this->onDrawIndexedInstanced(cmd->fIndexCount, cmd->fBaseIndex, cmd->fInstanceCount,
-                                         cmd->fBaseInstance, cmd->fBaseVertex);
+        for (int i = 0; i < drawCount; ++i) {
+            auto [indexCount, instanceCount, baseIndex, baseVertex, baseInstance] = cmds[i];
+            this->onDrawIndexedInstanced(indexCount, baseIndex, instanceCount, baseInstance,
+                                         baseVertex);
         }
         return;
     }

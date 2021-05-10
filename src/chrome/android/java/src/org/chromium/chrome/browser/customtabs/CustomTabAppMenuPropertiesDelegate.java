@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -74,9 +75,11 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier, Verifier verifier,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
             boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito,
-            ModalDialogManager modalDialogManager, boolean showOpenInChrome) {
+            ModalDialogManager modalDialogManager, WebFeedBridge webFeedBridge,
+            boolean showOpenInChrome) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
-                toolbarManager, decorView, null, bookmarkBridgeSupplier, modalDialogManager);
+                toolbarManager, decorView, null, bookmarkBridgeSupplier, modalDialogManager,
+                webFeedBridge);
         mVerifier = verifier;
         mUiType = uiType;
         mMenuEntries = menuEntries;
@@ -138,14 +141,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 openInChromeItemVisible = false;
                 requestDesktopSiteVisible = false;
                 addToHomeScreenVisible = false;
-            } else if (mUiType == CustomTabsUiType.PAYMENT_REQUEST) {
-                // Only the icon row and 'find in page' are shown for opening payment request UI
-                // from Chrome.
-                openInChromeItemVisible = false;
-                requestDesktopSiteVisible = false;
-                addToHomeScreenVisible = false;
-                downloadItemVisible = false;
-                bookmarkItemVisible = false;
             } else if (mUiType == CustomTabsUiType.READER_MODE) {
                 // Only 'find in page' and the reader mode preference are shown for Reader Mode UI.
                 menu.findItem(R.id.icon_row_menu_id).setVisible(false);

@@ -193,8 +193,7 @@ static union av_intfloat32 exr_half2float(uint16_t hf)
         // half-float NaNs will be converted to a single precision NaN
         // half-float Infs will be converted to a single precision Inf
         exp = FLOAT_MAX_BIASED_EXP;
-        if (mantissa)
-            mantissa = (1 << 23) - 1;    // set all bits to indicate a NaN
+        mantissa <<= 13; // preserve half-float NaN bits if set
     } else if (exp == 0x0) {
         // convert half-float zero/denorm to single precision value
         if (mantissa) {
@@ -1040,6 +1039,9 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
         td->ysize = FFMIN(s->tile_attr.ySize, s->ydelta - tile_y * s->tile_attr.ySize);
         td->xsize = FFMIN(s->tile_attr.xSize, s->xdelta - tile_x * s->tile_attr.xSize);
 
+        if (td->xsize * (uint64_t)s->current_channel_offset > INT_MAX)
+            return AVERROR_INVALIDDATA;
+
         td->channel_line_size = td->xsize * s->current_channel_offset;/* uncompress size of one line */
         uncompressed_size = td->channel_line_size * (uint64_t)td->ysize;/* uncompress size of the block */
     } else {
@@ -1058,6 +1060,9 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
 
         td->ysize          = FFMIN(s->scan_lines_per_block, s->ymax - line + 1); /* s->ydelta - line ?? */
         td->xsize          = s->xdelta;
+
+        if (td->xsize * (uint64_t)s->current_channel_offset > INT_MAX)
+            return AVERROR_INVALIDDATA;
 
         td->channel_line_size = td->xsize * s->current_channel_offset;/* uncompress size of one line */
         uncompressed_size = td->channel_line_size * (uint64_t)td->ysize;/* uncompress size of the block */
@@ -1197,7 +1202,7 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
                     }
                 } else if (s->pixel_type == EXR_HALF) {
                     // 16-bit
-                    if (c < 3) {
+                    if (c < 3 || !trc_func) {
                         for (x = 0; x < xsize; x++) {
                             *ptr_x++ = s->gamma_table[bytestream_get_le16(&src)];
                         }
@@ -1514,15 +1519,27 @@ static int decode_header(EXRContext *s, AVFrame *frame)
             continue;
         } else if ((var_size = check_header_variable(s, "dataWindow", "box2i",
                                                      31)) >= 0) {
+            int xmin, ymin, xmax, ymax;
             if (!var_size) {
                 ret = AVERROR_INVALIDDATA;
                 goto fail;
             }
 
-            s->xmin   = bytestream2_get_le32(&s->gb);
-            s->ymin   = bytestream2_get_le32(&s->gb);
-            s->xmax   = bytestream2_get_le32(&s->gb);
-            s->ymax   = bytestream2_get_le32(&s->gb);
+            xmin   = bytestream2_get_le32(&s->gb);
+            ymin   = bytestream2_get_le32(&s->gb);
+            xmax   = bytestream2_get_le32(&s->gb);
+            ymax   = bytestream2_get_le32(&s->gb);
+
+            if (xmin > xmax || ymin > ymax ||
+                (unsigned)xmax - xmin >= INT_MAX ||
+                (unsigned)ymax - ymin >= INT_MAX) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
+            s->xmin = xmin;
+            s->xmax = xmax;
+            s->ymin = ymin;
+            s->ymax = ymax;
             s->xdelta = (s->xmax - s->xmin) + 1;
             s->ydelta = (s->ymax - s->ymin) + 1;
 
@@ -1751,7 +1768,8 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 
     /* Verify the xmin, xmax, ymin and ymax before setting the actual image size.
      * It's possible for the data window can larger or outside the display window */
-    if (s->xmin > s->xmax  || s->ymin > s->ymax) {
+    if (s->xmin > s->xmax  || s->ymin > s->ymax ||
+        s->ydelta == 0xFFFFFFFF || s->xdelta == 0xFFFFFFFF) {
         av_log(avctx, AV_LOG_ERROR, "Wrong or missing size information.\n");
         return AVERROR_INVALIDDATA;
     }
@@ -1782,7 +1800,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
         return ret;
 
-    if (bytestream2_get_bytes_left(&s->gb) < nb_blocks * 8)
+    if (bytestream2_get_bytes_left(&s->gb)/8 < nb_blocks)
         return AVERROR_INVALIDDATA;
 
     // check offset table and recreate it if need
@@ -1811,7 +1829,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     // Zero out the start if ymin is not 0
     for (i = 0; i < planes; i++) {
         ptr = picture->data[i];
-        for (y = 0; y < s->ymin; y++) {
+        for (y = 0; y < FFMIN(s->ymin, s->h); y++) {
             memset(ptr, 0, out_line_size);
             ptr += picture->linesize[i];
         }
@@ -1823,13 +1841,14 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 
     ymax = FFMAX(0, s->ymax + 1);
     // Zero out the end if ymax+1 is not h
-    for (i = 0; i < planes; i++) {
-        ptr = picture->data[i] + (ymax * picture->linesize[i]);
-        for (y = ymax; y < avctx->height; y++) {
-            memset(ptr, 0, out_line_size);
-            ptr += picture->linesize[i];
+    if (ymax < avctx->height)
+        for (i = 0; i < planes; i++) {
+            ptr = picture->data[i] + (ymax * picture->linesize[i]);
+            for (y = ymax; y < avctx->height; y++) {
+                memset(ptr, 0, out_line_size);
+                ptr += picture->linesize[i];
+            }
         }
-    }
 
     picture->pict_type = AV_PICTURE_TYPE_I;
     *got_frame = 1;

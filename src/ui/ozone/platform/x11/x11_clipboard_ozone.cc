@@ -7,11 +7,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
@@ -78,12 +79,12 @@ struct X11ClipboardOzone::SelectionState {
 };
 
 X11ClipboardOzone::X11ClipboardOzone()
-    : atom_clipboard_(gfx::GetAtom(kClipboard)),
-      atom_targets_(gfx::GetAtom(kTargets)),
-      atom_timestamp_(gfx::GetAtom(kTimestamp)),
-      x_property_(gfx::GetAtom(kChromeSelection)),
+    : atom_clipboard_(x11::GetAtom(kClipboard)),
+      atom_targets_(x11::GetAtom(kTargets)),
+      atom_timestamp_(x11::GetAtom(kTimestamp)),
+      x_property_(x11::GetAtom(kChromeSelection)),
       connection_(x11::Connection::Get()),
-      x_window_(CreateDummyWindow("Chromium Clipboard Window")) {
+      x_window_(x11::CreateDummyWindow("Chromium Clipboard Window")) {
   connection_->xfixes().QueryVersion(
       {x11::XFixes::major_version, x11::XFixes::minor_version});
   if (!connection_->xfixes().present())
@@ -91,7 +92,7 @@ X11ClipboardOzone::X11ClipboardOzone()
   using_xfixes_ = true;
 
   // Register to receive standard X11 events.
-  X11EventSource::GetInstance()->AddXEventDispatcher(this);
+  connection_->AddEventObserver(this);
 
   for (auto atom : {atom_clipboard_, x11::Atom::PRIMARY}) {
     // Register the selection state.
@@ -105,29 +106,31 @@ X11ClipboardOzone::X11ClipboardOzone()
 }
 
 X11ClipboardOzone::~X11ClipboardOzone() {
-  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
+  connection_->RemoveEventObserver(this);
 }
 
-bool X11ClipboardOzone::DispatchXEvent(x11::Event* xev) {
-  if (auto* request = xev->As<x11::SelectionRequestEvent>())
-    return request->owner == x_window_ && OnSelectionRequest(*request);
-  if (auto* notify = xev->As<x11::SelectionNotifyEvent>())
-    return notify->requestor == x_window_ && OnSelectionNotify(*notify);
-  if (auto* notify = xev->As<x11::XFixes::SelectionNotifyEvent>())
-    return notify->window == x_window_ && OnSetSelectionOwnerNotify(*notify);
-
-  return false;
+void X11ClipboardOzone::OnEvent(const x11::Event& xev) {
+  if (auto* request = xev.As<x11::SelectionRequestEvent>()) {
+    if (request->owner == x_window_)
+      OnSelectionRequest(*request);
+  } else if (auto* notify = xev.As<x11::SelectionNotifyEvent>()) {
+    if (notify->requestor == x_window_)
+      OnSelectionNotify(*notify);
+  } else if (auto* notify = xev.As<x11::XFixes::SelectionNotifyEvent>()) {
+    if (notify->window == x_window_)
+      OnSetSelectionOwnerNotify(*notify);
+  }
 }
 
 // We are the clipboard owner, and a remote peer has requested either:
 // TARGETS: List of mime types that we support for the clipboard.
 // TIMESTAMP: Time when we took ownership of the clipboard.
 // <mime-type>: Mime type to receive clipboard as.
-bool X11ClipboardOzone::OnSelectionRequest(
+void X11ClipboardOzone::OnSelectionRequest(
     const x11::SelectionRequestEvent& event) {
   // The property must be set.
   if (event.property == x11::Atom::None)
-    return false;
+    return;
 
   // target=TARGETS.
   auto& selection_state =
@@ -145,14 +148,13 @@ bool X11ClipboardOzone::OnSelectionRequest(
     ExpandTypes(&targets);
     std::vector<x11::Atom> atoms;
     for (auto& entry : targets)
-      atoms.push_back(gfx::GetAtom(entry.c_str()));
-    ui::SetArrayProperty(event.requestor, event.property, x11::Atom::ATOM,
-                         atoms);
+      atoms.push_back(x11::GetAtom(entry.c_str()));
+    SetArrayProperty(event.requestor, event.property, x11::Atom::ATOM, atoms);
 
   } else if (target == atom_timestamp_) {
     // target=TIMESTAMP.
-    ui::SetProperty(event.requestor, event.property, x11::Atom::INTEGER,
-                    selection_state.acquired_selection_timestamp);
+    SetProperty(event.requestor, event.property, x11::Atom::INTEGER,
+                selection_state.acquired_selection_timestamp);
   } else {
     // Send clipboard data.
     std::string target_name;
@@ -170,8 +172,8 @@ bool X11ClipboardOzone::OnSelectionRequest(
     }
     auto it = offer_data_map.find(key);
     if (it != offer_data_map.end()) {
-      ui::SetArrayProperty(event.requestor, event.property, event.target,
-                           it->second->data());
+      SetArrayProperty(event.requestor, event.property, event.target,
+                       it->second->data());
     }
   }
 
@@ -185,20 +187,19 @@ bool X11ClipboardOzone::OnSelectionRequest(
   };
   x11::SendEvent(selection_event, selection_event.requestor,
                  x11::EventMask::NoEvent);
-  return true;
 }
 
 // A remote peer owns the clipboard.  This event is received in response to
 // our request for TARGETS (GetAvailableMimeTypes), or a specific mime type
 // (RequestClipboardData).
-bool X11ClipboardOzone::OnSelectionNotify(
+void X11ClipboardOzone::OnSelectionNotify(
     const x11::SelectionNotifyEvent& event) {
   // GetAvailableMimeTypes.
   auto selection = static_cast<x11::Atom>(event.selection);
   auto& selection_state = GetSelectionState(selection);
   if (static_cast<x11::Atom>(event.target) == atom_targets_) {
     std::vector<x11::Atom> targets;
-    ui::GetArrayProperty(x_window_, x_property_, &targets);
+    GetArrayProperty(x_window_, x_property_, &targets);
 
     selection_state.mime_types.clear();
     for (auto target : targets) {
@@ -217,16 +218,14 @@ bool X11ClipboardOzone::OnSelectionNotify(
       selection_state.data_mime_type = kMimeTypeText;
       ReadRemoteClipboard(selection);
     }
-
-    return true;
   }
 
   // RequestClipboardData.
   if (static_cast<x11::Atom>(event.property) == x_property_) {
     x11::Atom type;
     std::vector<uint8_t> data;
-    ui::GetArrayProperty(x_window_, x_property_, &data, &type);
-    ui::DeleteProperty(x_window_, x_property_);
+    GetArrayProperty(x_window_, x_property_, &data, &type);
+    x11::DeleteProperty(x_window_, x_property_);
     if (type != x11::Atom::None)
       selection_state.data = scoped_refptr<base::RefCountedBytes>(
           base::RefCountedBytes::TakeVector(&data));
@@ -240,20 +239,16 @@ bool X11ClipboardOzone::OnSelectionNotify(
       std::move(selection_state.request_clipboard_data_callback)
           .Run(selection_state.data);
     }
-    return true;
   } else if (static_cast<x11::Atom>(event.property) == x11::Atom::None &&
              selection_state.request_clipboard_data_callback) {
     // If the remote peer could not send data in the format we requested,
     // or failed for any reason, we will send empty data.
     std::move(selection_state.request_clipboard_data_callback)
         .Run(selection_state.data);
-    return true;
   }
-
-  return false;
 }
 
-bool X11ClipboardOzone::OnSetSelectionOwnerNotify(
+void X11ClipboardOzone::OnSetSelectionOwnerNotify(
     const x11::XFixes::SelectionNotifyEvent& event) {
   // Reset state and fetch remote clipboard if there is a new remote owner.
   x11::Atom selection = event.selection;
@@ -268,8 +263,6 @@ bool X11ClipboardOzone::OnSetSelectionOwnerNotify(
   // Increase the sequence number if the callback is set.
   if (update_sequence_cb_)
     update_sequence_cb_.Run(BufferForSelectionAtom(selection));
-
-  return true;
 }
 
 x11::Atom X11ClipboardOzone::SelectionAtomForBuffer(
@@ -320,7 +313,7 @@ void X11ClipboardOzone::ReadRemoteClipboard(x11::Atom selection) {
     }
   }
 
-  connection_->ConvertSelection({x_window_, selection, gfx::GetAtom(target),
+  connection_->ConvertSelection({x_window_, selection, x11::GetAtom(target),
                                  x_property_, x11::Time::CurrentTime});
 }
 
@@ -361,6 +354,14 @@ void X11ClipboardOzone::RequestClipboardData(
     std::move(callback).Run(selection_state.data);
     return;
   }
+
+  // If we know the available mime types, and it is not this, send empty now.
+  if (!selection_state.mime_types.empty() &&
+      !Contains(selection_state.mime_types, mime_type)) {
+    std::move(callback).Run(PlatformClipboard::Data());
+    return;
+  }
+
   selection_state.data_mime_type = mime_type;
   selection_state.request_data_map = data_map;
   DCHECK(selection_state.request_clipboard_data_callback.is_null());

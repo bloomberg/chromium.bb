@@ -20,7 +20,13 @@ set(LIBGAV1_CMAKE_LIBGAV1_HELPERS_CMAKE_ 1)
 # Kills build generation using message(FATAL_ERROR) and outputs all data passed
 # to the console via use of $ARGN.
 macro(libgav1_die)
-  message(FATAL_ERROR ${ARGN})
+  # macro parameters are not variables so a temporary is needed to work with
+  # list().
+  set(msg ${ARGN})
+  # message(${ARGN}) will merge all list elements with no separator while
+  # "${ARGN}" will output the list as a ';' delimited string.
+  list(JOIN msg " " msg)
+  message(FATAL_ERROR "${msg}")
 endmacro()
 
 # Converts semi-colon delimited list variable(s) to string. Output is written to
@@ -94,10 +100,10 @@ macro(libgav1_create_dummy_source_file)
       "${dummy_source_dir}/libgav1_${cdsf_TARGET}_${cdsf_BASENAME}.cc")
   set(dummy_source_code
       "// Generated file. DO NOT EDIT!\n"
-      "// C++ source file created for target ${cdsf_TARGET}. \n"
-      "void libgav1_${cdsf_TARGET}_${cdsf_BASENAME}_dummy_function(void);\n"
+      "// C++ source file created for target ${cdsf_TARGET}.\n"
+      "void libgav1_${cdsf_TARGET}_${cdsf_BASENAME}_dummy_function(void)\;\n"
       "void libgav1_${cdsf_TARGET}_${cdsf_BASENAME}_dummy_function(void) {}\n")
-  file(WRITE "${dummy_source_file}" "${dummy_source_code}")
+  file(WRITE "${dummy_source_file}" ${dummy_source_code})
 
   target_sources(${cdsf_TARGET} PRIVATE ${dummy_source_file})
 

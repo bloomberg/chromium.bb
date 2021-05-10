@@ -7,10 +7,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace gfx {
 class ImageSkia;
@@ -33,6 +34,8 @@ class PageInfoBubbleViewBrowserTest;
 // when hovered over.
 class HoverButton : public views::LabelButton {
  public:
+  METADATA_HEADER(HoverButton);
+
   enum Style { STYLE_PROMINENT, STYLE_ERROR };
 
   // Creates a single line hover button with no icon.
@@ -58,6 +61,8 @@ class HoverButton : public views::LabelButton {
               bool resize_row_for_secondary_view = true,
               bool secondary_view_can_process_events = false);
 
+  HoverButton(const HoverButton&) = delete;
+  HoverButton& operator=(const HoverButton&) = delete;
   ~HoverButton() override;
 
   static SkColor GetInkDropColor(const views::View* view);
@@ -107,9 +112,8 @@ class HoverButton : public views::LabelButton {
   views::View* icon_view_ = nullptr;
   views::View* secondary_view_ = nullptr;
 
-  ScopedObserver<views::View, views::ViewObserver> observed_label_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HoverButton);
+  base::ScopedObservation<views::View, views::ViewObserver> label_observation_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_HOVER_BUTTON_H_

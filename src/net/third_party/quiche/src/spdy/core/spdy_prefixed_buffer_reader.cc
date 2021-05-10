@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/spdy_prefixed_buffer_reader.h"
+#include "spdy/core/spdy_prefixed_buffer_reader.h"
 
 #include <new>
 
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -41,7 +41,7 @@ bool SpdyPrefixedBufferReader::ReadN(size_t count, char* out) {
     prefix_length_ = 0;
     // Fallthrough to suffix read.
   }
-  DCHECK(suffix_length_ >= count);
+  QUICHE_DCHECK(suffix_length_ >= count);
   // Read is satisfied by the suffix.
   std::copy(suffix_, suffix_ + count, out);
   suffix_ += count;
@@ -72,7 +72,7 @@ bool SpdyPrefixedBufferReader::ReadN(size_t count,
     ReadN(count, out->storage_.get());
     return true;
   } else {
-    DCHECK(suffix_length_ >= count);
+    QUICHE_DCHECK(suffix_length_ >= count);
     // Read is fully satisfied by the suffix.
     out->buffer_ = suffix_;
     suffix_ += count;

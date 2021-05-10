@@ -120,6 +120,7 @@ bool TracingObserverProto::AddOsDumpToTraceIfEnabled(
     smaps_packet->set_timestamp_clock_id(tracing::kTraceClockId);
     perfetto::protos::pbzero::SmapsPacket* smaps =
         smaps_packet->set_smaps_packet();
+    smaps->set_pid(static_cast<uint32_t>(pid));
 
     MemoryMapsAsProtoInto(memory_maps, smaps, false);
 
@@ -155,7 +156,11 @@ void TracingObserverProto::StopTracing(
 }
 
 void TracingObserverProto::Flush(
-    base::RepeatingClosure flush_complete_callback) {}
+    base::RepeatingClosure flush_complete_callback) {
+  base::AutoLock lock(producer_lock_);
+  if (trace_writer_)
+    trace_writer_->Flush();
+}
 
 void TracingObserverProto::MemoryMapsAsProtoInto(
     const std::vector<mojom::VmRegionPtr>& memory_maps,

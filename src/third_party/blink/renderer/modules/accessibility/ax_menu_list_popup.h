@@ -35,6 +35,7 @@ class AXObjectCacheImpl;
 class AXMenuListOption;
 class HTMLElement;
 
+// AXMenuListPopup is the only kind of AXMockObject used in Blink accessibility.
 class AXMenuListPopup final : public AXMockObject {
  public:
   explicit AXMenuListPopup(AXObjectCacheImpl&);
@@ -46,13 +47,12 @@ class AXMenuListPopup final : public AXMockObject {
   void DidShow();
   void DidHide();
   AXObject* ActiveDescendant() final;
-  void UpdateChildrenIfNecessary() override;
 
  private:
   bool IsMenuListPopup() const override { return true; }
 
-  ax::mojom::Role RoleValue() const override {
-    return ax::mojom::Role::kMenuListPopup;
+  ax::mojom::blink::Role DetermineAccessibilityRole() override {
+    return ax::mojom::blink::Role::kMenuListPopup;
   }
 
   bool IsVisible() const override;
@@ -60,7 +60,7 @@ class AXMenuListPopup final : public AXMockObject {
   void AddChildren() override;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-  AXMenuListOption* MenuListOptionAXObject(HTMLElement*) const;
+  AXMenuListOption* MenuListOptionAXObject(HTMLElement*);
   int GetSelectedIndex() const;
 
   // Note that this may be -1 if nothing is selected.

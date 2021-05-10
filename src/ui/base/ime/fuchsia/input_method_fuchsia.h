@@ -7,11 +7,12 @@
 
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <memory>
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/base/ime/fuchsia/input_method_keyboard_controller_fuchsia.h"
+#include "ui/base/ime/fuchsia/virtual_keyboard_controller_fuchsia.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/fuchsia/input_event_dispatcher.h"
@@ -27,7 +28,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
       public fuchsia::ui::input::InputMethodEditorClient {
  public:
   InputMethodFuchsia(internal::InputMethodDelegate* delegate,
-                     gfx::AcceleratedWidget widget);
+                     fuchsia::ui::views::ViewRef view_ref);
   ~InputMethodFuchsia() override;
 
   fuchsia::ui::input::ImeService* ime_service() const {
@@ -35,7 +36,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
   }
 
   // InputMethodBase interface implementation.
-  InputMethodKeyboardController* GetInputMethodKeyboardController() override;
+  VirtualKeyboardController* GetVirtualKeyboardController() override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -67,7 +68,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
   fuchsia::ui::input::ImeServicePtr ime_service_;
   fuchsia::ui::input::InputMethodEditorPtr ime_;
   fuchsia::ui::input::ImeVisibilityServicePtr ime_visibility_;
-  InputMethodKeyboardControllerFuchsia virtual_keyboard_controller_;
+  VirtualKeyboardControllerFuchsia virtual_keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodFuchsia);
 };

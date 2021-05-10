@@ -7,6 +7,7 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database.h"
@@ -18,8 +19,8 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
 #include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #endif
@@ -94,11 +95,14 @@ class CertificateManagerModelTest : public testing::Test {
   }
 
  protected:
-  // Invoke an explicit Refresh and wait until the observer has been notified.
-  void RefreshAndWait() {
+  // Invoke an explicit Refresh if the refresh is triggered and wait until the
+  // observer has been notified.
+  void WaitForRefresh(bool trigger_refresh) {
     base::RunLoop run_loop;
     fake_observer_->RunOnNextRefresh(run_loop.QuitClosure());
-    certificate_manager_model_->Refresh();
+    if (trigger_refresh) {
+      certificate_manager_model_->Refresh();
+    }
     run_loop.Run();
   }
 
@@ -131,7 +135,7 @@ TEST_F(CertificateManagerModelTest, ListsCertsFromPlatform) {
   ASSERT_EQ(SECSuccess,
             PK11_ImportCert(test_nssdb_.slot(), cert.get(), CK_INVALID_HANDLE,
                             "cert", PR_FALSE /* includeTrust (unused) */));
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   {
     CertificateManagerModel::OrgGroupingMap org_grouping_map;
@@ -155,7 +159,9 @@ TEST_F(CertificateManagerModelTest, ListsCertsFromPlatform) {
 
   certificate_manager_model_->SetCertTrust(cert.get(), net::CertType::CA_CERT,
                                            net::NSSCertDatabase::TRUSTED_SSL);
-  RefreshAndWait();
+  // Wait for refresh without triggering because observer should be notified by
+  // net::CertDatabase and refresh automatically.
+  WaitForRefresh(false /*tigger_for_refresh*/);
   {
     CertificateManagerModel::OrgGroupingMap org_grouping_map;
     certificate_manager_model_->FilterAndBuildOrgGroupingMap(
@@ -177,7 +183,7 @@ TEST_F(CertificateManagerModelTest, ListsClientCertsFromPlatform) {
       net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
       test_nssdb_.slot(), &platform_client_cert);
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   CertificateManagerModel::OrgGroupingMap org_grouping_map;
   certificate_manager_model_->FilterAndBuildOrgGroupingMap(
@@ -196,7 +202,7 @@ TEST_F(CertificateManagerModelTest, ListsClientCertsFromPlatform) {
   EXPECT_FALSE(platform_cert_info->hardware_backed());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 class FakePolicyCertificateProvider
@@ -417,7 +423,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
   ASSERT_TRUE(policy_cert.get());
   policy_certs_provider_.SetPolicyProvidedCertificates({policy_cert}, {});
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   {
     CertificateManagerModel::OrgGroupingMap org_grouping_map;
@@ -485,7 +491,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
   ASSERT_TRUE(policy_cert.get());
   policy_certs_provider_.SetPolicyProvidedCertificates({}, {policy_cert});
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   {
     CertificateManagerModel::OrgGroupingMap org_grouping_map;
@@ -556,7 +562,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
   ASSERT_TRUE(policy_cert.get());
   policy_certs_provider_.SetPolicyProvidedCertificates({policy_cert}, {});
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   CertificateManagerModel::OrgGroupingMap org_grouping_map;
   certificate_manager_model_->FilterAndBuildOrgGroupingMap(
@@ -578,7 +584,7 @@ TEST_F(CertificateManagerModelChromeOSTest, ListsExtensionCerts) {
   ASSERT_TRUE(extension_cert.get());
   extension_client_certs_.push_back(extension_cert);
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   CertificateManagerModel::OrgGroupingMap org_grouping_map;
   certificate_manager_model_->FilterAndBuildOrgGroupingMap(
@@ -609,7 +615,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
   ASSERT_TRUE(extension_cert.get());
   extension_client_certs_.push_back(extension_cert);
 
-  RefreshAndWait();
+  WaitForRefresh(true /*tigger_for_refresh*/);
 
   {
     CertificateManagerModel::OrgGroupingMap org_grouping_map;
@@ -660,4 +666,4 @@ TEST_F(CertificateManagerModelChromeOSTest,
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -92,6 +93,19 @@ void RecordActivationReason(Document* document,
   if (document && reason == DisplayLockActivationReason::kFindInPage)
     document->MarkHasFindInPageContentVisibilityActiveMatch();
 }
+
+ScrollableArea* GetScrollableArea(Node* node) {
+  if (!node)
+    return nullptr;
+
+  LayoutBoxModelObject* object =
+      DynamicTo<LayoutBoxModelObject>(node->GetLayoutObject());
+  if (!object)
+    return nullptr;
+
+  return object->GetScrollableArea();
+}
+
 }  // namespace
 
 DisplayLockContext::DisplayLockContext(Element* element)
@@ -105,6 +119,7 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
   if (state_ == state)
     return;
   state_ = state;
+  base::AutoReset<bool> scope(&set_requested_state_scope_, true);
   switch (state_) {
     case EContentVisibility::kVisible:
       RequestUnlock();
@@ -145,10 +160,6 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
 
   // Since our state changed, check if we need to create a scoped force update
   // object.
-  // Note that creating this forced object may cause us to dirty style, which is
-  // fine since we are in a style update for this subtree anyway.
-  StyleEngine::AllowMarkStyleDirtyFromRecalcScope scope(
-      element_->GetDocument().GetStyleEngine());
   element_->GetDocument().GetDisplayLockDocumentState().ForceLockIfNeeded(
       element_.Get());
 }
@@ -289,7 +300,7 @@ void DisplayLockContext::Lock() {
   // In the first case, we are already in style processing, so we don't need to
   // invalidate style. However, in the second case we invalidate style so that
   // `AdjustElementStyle()` can be called.
-  if (!document_->InStyleRecalc()) {
+  if (CanDirtyStyle()) {
     element_->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
@@ -320,6 +331,12 @@ void DisplayLockContext::Lock() {
 
   if (!element_->GetLayoutObject())
     return;
+
+  // If this element is a scroller, then stash its current scroll offset, so
+  // that we can restore it when needed.
+  // Note that this only applies if the element itself is a scroller. Any
+  // subtree scrollers' scroll offsets are not affected.
+  StashScrollOffsetIfAvailable();
 
   MarkNeedsRepaintAndPaintArtifactCompositorUpdate();
 }
@@ -366,6 +383,11 @@ void DisplayLockContext::DidLayoutChildren() {
   // Since we did layout on children already, we'll clear this.
   child_layout_was_blocked_ = false;
   had_lifecycle_update_since_last_unlock_ = true;
+
+  // If we're not locked and we laid out the children, then now is a good time
+  // to restore the scroll offset.
+  if (!is_locked_)
+    RestoreScrollOffsetIfStashed();
 }
 
 bool DisplayLockContext::ShouldPrePaintChildren() const {
@@ -491,8 +513,12 @@ void DisplayLockContext::NotifyForcedUpdateScopeStarted() {
     // Now that the update is forced, we should ensure that style layout, and
     // prepaint code can reach it via dirty bits. Note that paint isn't a part
     // of this, since |update_forced_| doesn't force paint to happen. See
-    // ShouldPaint().
-    MarkForStyleRecalcIfNeeded();
+    // ShouldPaint(). Also, we could have forced a lock from SetRequestedState
+    // during a style update. If that's the case, don't mark style as dirty
+    // from within style recalc. We rely on `AdjustStyleRecalcChangeForChildren`
+    // instead.
+    if (CanDirtyStyle())
+      MarkForStyleRecalcIfNeeded();
     MarkForLayoutIfNeeded();
     MarkAncestorsForPrePaintIfNeeded();
   }
@@ -524,7 +550,7 @@ void DisplayLockContext::Unlock() {
   // In the first case, we are already in style processing, so we don't need to
   // invalidate style. However, in the second case we invalidate style so that
   // `AdjustElementStyle()` can be called.
-  if (!document_->InStyleRecalc()) {
+  if (CanDirtyStyle()) {
     // Since size containment depends on the activatability state, we should
     // invalidate the style for this element, so that the style adjuster can
     // properly remove the containment.
@@ -553,6 +579,7 @@ void DisplayLockContext::Unlock() {
   MarkForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   MarkNeedsRepaintAndPaintArtifactCompositorUpdate();
+  MarkNeedsCullRectUpdate();
 }
 
 void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
@@ -577,7 +604,7 @@ StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
   // |change| and not on |element_|. This is only called during style recalc.
   // Note that since we're already in self style recalc, this code is shorter
   // since it doesn't have to deal with dirtying self-style.
-  DCHECK(document_->InStyleRecalc());
+  DCHECK(!CanDirtyStyle());
 
   if (reattach_layout_tree_was_blocked_) {
     change = change.ForceReattachLayoutTree();
@@ -590,6 +617,10 @@ StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
     change = change.EnsureAtLeast(StyleRecalcChange::kRecalcChildren);
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   return change;
+}
+
+bool DisplayLockContext::CanDirtyStyle() const {
+  return !set_requested_state_scope_ && !document_->InStyleRecalc();
 }
 
 bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
@@ -634,13 +665,23 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
     // Forces the marking of ancestors to happen, even if
     // |DisplayLockContext::ShouldLayout()| returns false.
     base::AutoReset<int> scoped_force(&update_forced_, update_forced_ + 1);
-    if (child_layout_was_blocked_) {
+    if (child_layout_was_blocked_ || HasStashedScrollOffset()) {
       // We've previously blocked a child traversal when doing self-layout for
       // the locked element, so we're marking it with child-needs-layout so that
       // it will traverse to the locked element and do the child traversal
       // again. We don't need to mark it for self-layout (by calling
       // |LayoutObject::SetNeedsLayout()|) because the locked element itself
       // doesn't need to relayout.
+      //
+      // Note that we also make sure to visit the children when we have a
+      // stashed scroll offset. This is so that we can restore the offset after
+      // laying out the children. If we try to restore it before the layout, it
+      // will be ignored since the scroll area may think that it doesn't have
+      // enough contents.
+      // TODO(vmpstr): In the scroll offset case, we're doing this just so we
+      // can reach DisplayLockContext::DidLayoutChildren where we restore the
+      // offset. If performance becomes an issue, then we should think of a
+      // different time / opportunity to restore the offset.
       element_->GetLayoutObject()->SetChildNeedsLayout();
       child_layout_was_blocked_ = false;
     } else {
@@ -693,6 +734,18 @@ bool DisplayLockContext::MarkNeedsRepaintAndPaintArtifactCompositorUpdate() {
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetNeedsRepaint();
     document_->View()->SetPaintArtifactCompositorNeedsUpdate();
+    return true;
+  }
+  return false;
+}
+
+bool DisplayLockContext::MarkNeedsCullRectUpdate() {
+  DCHECK(ConnectedToView());
+  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
+    return false;
+
+  if (auto* layout_object = element_->GetLayoutObject()) {
+    layout_object->PaintingLayer()->SetForcesChildrenCullRectUpdate();
     return true;
   }
   return false;
@@ -760,8 +813,10 @@ bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
 }
 
 bool DisplayLockContext::IsElementDirtyForLayout() const {
-  if (auto* layout_object = element_->GetLayoutObject())
-    return layout_object->NeedsLayout() || child_layout_was_blocked_;
+  if (auto* layout_object = element_->GetLayoutObject()) {
+    return layout_object->NeedsLayout() || child_layout_was_blocked_ ||
+           HasStashedScrollOffset();
+  }
   return false;
 }
 
@@ -1058,7 +1113,8 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
        (!state(RenderAffectingState::kIntersectsViewport) &&
         !state(RenderAffectingState::kSubtreeHasFocus) &&
         !state(RenderAffectingState::kSubtreeHasSelection) &&
-        !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle)));
+        !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle) &&
+        !state(RenderAffectingState::kAutoUnlockedForPrint)));
 
   if (should_be_locked && !IsLocked())
     Lock();
@@ -1070,6 +1126,10 @@ void DisplayLockContext::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);
+}
+
+void DisplayLockContext::SetShouldUnlockAutoForPrint(bool flag) {
+  SetRenderAffectingState(RenderAffectingState::kAutoUnlockedForPrint, flag);
 }
 
 const char* DisplayLockContext::RenderAffectingStateName(int state) const {
@@ -1084,6 +1144,8 @@ const char* DisplayLockContext::RenderAffectingStateName(int state) const {
       return "SubtreeHasSelection";
     case RenderAffectingState::kAutoStateUnlockedUntilLifecycle:
       return "AutoStateUnlockedUntilLifecycle";
+    case RenderAffectingState::kAutoUnlockedForPrint:
+      return "AutoUnlockedForPrint";
     case RenderAffectingState::kNumRenderAffectingStates:
       break;
   }
@@ -1101,6 +1163,33 @@ String DisplayLockContext::RenderAffectingStateToString() const {
     builder.Append("\n");
   }
   return builder.ToString();
+}
+
+void DisplayLockContext::StashScrollOffsetIfAvailable() {
+  if (auto* area = GetScrollableArea(element_)) {
+    const ScrollOffset& offset = area->GetScrollOffset();
+    // Only store the offset if it's non-zero. This is because scroll
+    // restoration has a small performance implication and restoring to a zero
+    // offset is the same as not restoring it.
+    if (!offset.IsZero())
+      stashed_scroll_offset_.emplace(offset);
+  }
+}
+
+void DisplayLockContext::RestoreScrollOffsetIfStashed() {
+  if (!stashed_scroll_offset_.has_value())
+    return;
+
+  // Restore the offset and reset the value.
+  if (auto* area = GetScrollableArea(element_)) {
+    area->SetScrollOffset(*stashed_scroll_offset_,
+                          mojom::blink::ScrollType::kAnchoring);
+    stashed_scroll_offset_.reset();
+  }
+}
+
+bool DisplayLockContext::HasStashedScrollOffset() const {
+  return stashed_scroll_offset_.has_value();
 }
 
 }  // namespace blink

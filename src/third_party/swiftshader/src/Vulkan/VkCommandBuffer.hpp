@@ -17,8 +17,8 @@
 
 #include "VkConfig.hpp"
 #include "VkDescriptorSet.hpp"
-#include "VkObject.hpp"
-#include "Device/Context.hpp"
+#include "VkPipeline.hpp"
+#include "System/Synchronization.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,7 +27,6 @@ namespace sw {
 
 class Context;
 class Renderer;
-class TaskEvents;
 
 }  // namespace sw
 
@@ -150,43 +149,22 @@ public:
 		};
 
 		sw::Renderer *renderer = nullptr;
-		sw::TaskEvents *events = nullptr;
+		sw::CountedEvent *events = nullptr;
 		RenderPass *renderPass = nullptr;
 		Framebuffer *renderPassFramebuffer = nullptr;
 		std::array<PipelineState, vk::VK_PIPELINE_BIND_POINT_RANGE_SIZE> pipelineState;
 
-		struct DynamicState
-		{
-			VkViewport viewport;
-			VkRect2D scissor;
-			sw::float4 blendConstants;
-			float depthBiasConstantFactor = 0.0f;
-			float depthBiasClamp = 0.0f;
-			float depthBiasSlopeFactor = 0.0f;
-			float minDepthBounds = 0.0f;
-			float maxDepthBounds = 0.0f;
+		vk::DynamicState dynamicState;
 
-			uint32_t compareMask[2] = { 0 };
-			uint32_t writeMask[2] = { 0 };
-			uint32_t reference[2] = { 0 };
-		};
-		DynamicState dynamicState;
+		vk::Pipeline::PushConstantStorage pushConstants;
 
-		sw::PushConstantStorage pushConstants;
-
-		struct VertexInputBinding
-		{
-			Buffer *buffer;
-			VkDeviceSize offset;
-		};
 		VertexInputBinding vertexInputBindings[MAX_VERTEX_INPUT_BINDINGS] = {};
 		VertexInputBinding indexBufferBinding;
 		VkIndexType indexType;
 
 		uint32_t subpassIndex = 0;
 
-		void bindAttachments(sw::Context &context);
-		void bindVertexInputs(sw::Context &context, int firstInstance);
+		void bindAttachments(Attachments *attachments);
 	};
 
 	void submit(CommandBuffer::ExecutionState &executionState);

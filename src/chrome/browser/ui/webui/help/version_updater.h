@@ -10,11 +10,12 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/update_engine_client.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
 class WebContents;
@@ -47,8 +48,8 @@ class VersionUpdater {
 
   // TODO(jhawkins): Use a delegate interface instead of multiple callback
   // types.
-#if defined(OS_CHROMEOS)
-  typedef base::Callback<void(const std::string&)> ChannelCallback;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  typedef base::OnceCallback<void(const std::string&)> ChannelCallback;
   using EolInfoCallback =
       base::OnceCallback<void(chromeos::UpdateEngineClient::EolInfo eol_info)>;
 #endif
@@ -64,17 +65,17 @@ class VersionUpdater {
   // |update_size| is the size of the available update in bytes and should be 0
   //     when update is not available.
   // |message| is a message explaining a failure.
-  typedef base::Callback<void(Status status,
-                              int progress,
-                              bool rollback,
-                              bool powerwash,
-                              const std::string& version,
-                              int64_t update_size,
-                              const base::string16& message)>
+  typedef base::RepeatingCallback<void(Status status,
+                                       int progress,
+                                       bool rollback,
+                                       bool powerwash,
+                                       const std::string& version,
+                                       int64_t update_size,
+                                       const base::string16& message)>
       StatusCallback;
 
   // Used to show or hide the promote UI elements. Mac-only.
-  typedef base::Callback<void(PromotionState)> PromoteCallback;
+  typedef base::RepeatingCallback<void(PromotionState)> PromoteCallback;
 
   virtual ~VersionUpdater() {}
 
@@ -88,19 +89,19 @@ class VersionUpdater {
   // |status_callback| is called for each status update. |promote_callback|
   // (which is only used on the Mac) can be used to show or hide the promote UI
   // elements.
-  virtual void CheckForUpdate(const StatusCallback& status_callback,
-                              const PromoteCallback& promote_callback) = 0;
+  virtual void CheckForUpdate(StatusCallback status_callback,
+                              PromoteCallback promote_callback) = 0;
 
 #if defined(OS_MAC)
   // Make updates available for all users.
   virtual void PromoteUpdater() const = 0;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   virtual void SetChannel(const std::string& channel,
                           bool is_powerwash_allowed) = 0;
   virtual void GetChannel(bool get_current_channel,
-                          const ChannelCallback& callback) = 0;
+                          ChannelCallback callback) = 0;
   // Get the End of Life (Auto Update Expiration) Date.
   virtual void GetEolInfo(EolInfoCallback callback) = 0;
 
@@ -114,7 +115,7 @@ class VersionUpdater {
   // there's a new update available or a delta update becomes a full update with
   // a larger size.
   virtual void SetUpdateOverCellularOneTimePermission(
-      const StatusCallback& callback,
+      StatusCallback callback,
       const std::string& update_version,
       int64_t update_size) = 0;
 #endif

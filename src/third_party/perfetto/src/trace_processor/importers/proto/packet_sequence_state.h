@@ -86,7 +86,7 @@ class InternedMessageView {
       PERFETTO_FATAL(
           "Interning entry accessed under different types! previous type: "
           "%s. new type: %s.",
-          decoder_type_, __PRETTY_FUNCTION__);
+          decoder_type_, PERFETTO_DEBUG_FUNCTION_IDENTIFIER());
     }
     return reinterpret_cast<typename MessageType::Decoder*>(decoder_.get());
   }
@@ -157,6 +157,8 @@ class PacketSequenceStateGeneration {
   template <uint32_t FieldId, typename MessageType>
   typename MessageType::Decoder* LookupInternedMessage(uint64_t iid);
 
+  template <uint32_t FieldId>
+  InternedMessageView* GetInternedMessageView(uint64_t iid);
   // Returns |nullptr| if no defaults were set.
   InternedMessageView* GetTracePacketDefaultsView() {
     if (!trace_packet_defaults_)
@@ -190,6 +192,7 @@ class PacketSequenceStateGeneration {
   }
 
   PacketSequenceState* state() const { return state_; }
+  size_t generation_index() const { return generation_index_; }
 
  private:
   friend class PacketSequenceState;
@@ -351,23 +354,30 @@ class PacketSequenceState {
   SequenceStackProfileTracker sequence_stack_profile_tracker_;
 };
 
-template <uint32_t FieldId, typename MessageType>
-typename MessageType::Decoder*
-PacketSequenceStateGeneration::LookupInternedMessage(uint64_t iid) {
+template <uint32_t FieldId>
+InternedMessageView* PacketSequenceStateGeneration::GetInternedMessageView(
+    uint64_t iid) {
   auto field_it = interned_data_.find(FieldId);
   if (field_it != interned_data_.end()) {
     auto* message_map = &field_it->second;
     auto it = message_map->find(iid);
     if (it != message_map->end()) {
-      return it->second.GetOrCreateDecoder<MessageType>();
+      return &it->second;
     }
   }
   state_->context()->storage->IncrementStats(
       stats::interned_data_tokenizer_errors);
-  PERFETTO_DLOG("Could not find interning entry for field ID %" PRIu32
-                ", generation %zu, and IID %" PRIu64,
-                FieldId, generation_index_, iid);
   return nullptr;
+}
+
+template <uint32_t FieldId, typename MessageType>
+typename MessageType::Decoder*
+PacketSequenceStateGeneration::LookupInternedMessage(uint64_t iid) {
+  auto* interned_message_view = GetInternedMessageView<FieldId>(iid);
+  if (!interned_message_view)
+    return nullptr;
+
+  return interned_message_view->template GetOrCreateDecoder<MessageType>();
 }
 
 }  // namespace trace_processor

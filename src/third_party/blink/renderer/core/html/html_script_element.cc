@@ -107,9 +107,10 @@ void HTMLScriptElement::ParseAttribute(
 Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
     ContainerNode& insertion_point) {
   if (insertion_point.isConnected() && HasSourceAttribute() &&
-      !ScriptLoader::IsValidScriptTypeAndLanguage(
+      ScriptLoader::GetScriptTypeAtPrepare(
           TypeAttributeValue(), LanguageAttributeValue(),
-          ScriptLoader::kDisallowLegacyTypeInTypeAttribute)) {
+          ScriptLoader::kDisallowLegacyTypeInTypeAttribute) ==
+          ScriptLoader::ScriptTypeAtPrepare::kInvalid) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kScriptElementWithInvalidTypeHasSrc);
   }
@@ -294,7 +295,7 @@ void HTMLScriptElement::DispatchErrorEvent() {
 
 void HTMLScriptElement::SetScriptElementForBinding(
     HTMLScriptElementOrSVGScriptElement& element) {
-  if (!IsInV1ShadowTree())
+  if (!IsInShadowTree())
     element.SetHTMLScriptElement(this);
 }
 

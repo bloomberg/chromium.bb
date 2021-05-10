@@ -35,33 +35,30 @@ using CookieAndLineAccessResultList =
     std::vector<CookieAndLineWithAccessResult>;
 using CookieAccessResultList = std::vector<CookieWithAccessResult>;
 
+struct NET_EXPORT CookieAccessParams {
+  CookieAccessParams() = delete;
+  CookieAccessParams(CookieAccessSemantics access_semantics,
+                     bool delegate_treats_url_as_trustworthy,
+                     CookieSamePartyStatus same_party_status);
+
+  // |access_semantics| is the access mode of the cookie access check.
+  CookieAccessSemantics access_semantics = CookieAccessSemantics::UNKNOWN;
+  // |delegate_treats_url_as_trustworthy| should be true iff the
+  // CookieAccessDelegate has authorized access to secure cookies from URLs
+  // which might not otherwise be able to do so.
+  bool delegate_treats_url_as_trustworthy = false;
+  // |same_party_status| indicates whether, and how, SameParty restrictions
+  // should be enforced.
+  CookieSamePartyStatus same_party_status =
+      CookieSamePartyStatus::kNoSamePartyEnforcement;
+};
+
 class NET_EXPORT CanonicalCookie {
  public:
   using UniqueCookieKey = std::tuple<std::string, std::string, std::string>;
 
   CanonicalCookie();
   CanonicalCookie(const CanonicalCookie& other);
-
-  // This constructor does not validate or canonicalize their inputs;
-  // the resulting CanonicalCookies should not be relied on to be canonical
-  // unless the caller has done appropriate validation and canonicalization
-  // themselves.
-  // NOTE: Prefer using CreateSanitizedCookie() over directly using this
-  // constructor.
-  CanonicalCookie(const std::string& name,
-                  const std::string& value,
-                  const std::string& domain,
-                  const std::string& path,
-                  const base::Time& creation,
-                  const base::Time& expiration,
-                  const base::Time& last_access,
-                  bool secure,
-                  bool httponly,
-                  CookieSameSite same_site,
-                  CookiePriority priority,
-                  bool same_party,
-                  CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset,
-                  int source_port = url::PORT_UNSPECIFIED);
 
   ~CanonicalCookie();
 
@@ -132,6 +129,24 @@ class NET_EXPORT CanonicalCookie {
       CookieSourceScheme source_scheme,
       int source_port);
 
+  // Create a CanonicalCookie that is not guaranteed to actually be Canonical
+  // for tests. This factory should NOT be used in production.
+  static std::unique_ptr<CanonicalCookie> CreateUnsafeCookieForTesting(
+      const std::string& name,
+      const std::string& value,
+      const std::string& domain,
+      const std::string& path,
+      const base::Time& creation,
+      const base::Time& expiration,
+      const base::Time& last_access,
+      bool secure,
+      bool httponly,
+      CookieSameSite same_site,
+      CookiePriority priority,
+      bool same_party,
+      CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset,
+      int source_port = url::PORT_UNSPECIFIED);
+
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
   // We represent the cookie's host-only-flag as the absence of a leading dot in
@@ -149,9 +164,11 @@ class NET_EXPORT CanonicalCookie {
   CookieSameSite SameSite() const { return same_site_; }
   CookiePriority Priority() const { return priority_; }
   bool IsSameParty() const { return same_party_; }
-  // Returns an enum indicating the source scheme that set this cookie. This is
-  // not part of the cookie spec but is being used to collect metrics for a
-  // potential change to the cookie spec.
+
+  // Returns an enum indicating the scheme of the origin that
+  // set this cookie. This is not part of the cookie spec but is being used to
+  // collect metrics for a potential change to the cookie spec
+  // (https://tools.ietf.org/html/draft-west-cookie-incrementalism-01#section-3.4)
   CookieSourceScheme SourceScheme() const { return source_scheme_; }
   // Returns the port of the origin that originally set this cookie (the
   // source port). This is not part of the cookie spec but is being used to
@@ -264,28 +281,22 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns if the cookie should be included (and if not, why) for the given
   // request |url| using the CookieInclusionStatus enum. HTTP only cookies can
-  // be filter by using appropriate cookie |options|. PLEASE NOTE that this
-  // method does not check whether a cookie is expired or not!
+  // be filter by using appropriate cookie |options|.
+  //
+  // PLEASE NOTE that this method does not check whether a cookie is expired or
+  // not!
   CookieAccessResult IncludeForRequestURL(
       const GURL& url,
       const CookieOptions& options,
-      CookieAccessSemantics access_semantics =
-          CookieAccessSemantics::UNKNOWN) const;
+      const CookieAccessParams& params) const;
 
   // Returns if the cookie with given attributes can be set in context described
-  // by |options|, and if no, describes why.
-  // WARNING: this does not cover checking whether secure cookies are set in
-  // a secure schema, since whether the schema is secure isn't part of
-  // |options|.
+  // by |options| and |params|, and if no, describes why.
   CookieAccessResult IsSetPermittedInContext(
+      const GURL& source_url,
       const CookieOptions& options,
-      CookieAccessSemantics access_semantics =
-          CookieAccessSemantics::UNKNOWN) const;
-
-  // Overload that updates an existing |status| rather than returning a new one.
-  void IsSetPermittedInContext(const CookieOptions& options,
-                               CookieAccessSemantics access_semantics,
-                               CookieAccessResult* access_result) const;
+      const CookieAccessParams& params,
+      const std::vector<std::string>& cookieable_schemes) const;
 
   std::string DebugString() const;
 
@@ -338,6 +349,27 @@ class NET_EXPORT CanonicalCookie {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
+
+  // This constructor does not validate or canonicalize their inputs;
+  // the resulting CanonicalCookies should not be relied on to be canonical
+  // unless the caller has done appropriate validation and canonicalization
+  // themselves.
+  // NOTE: Prefer using CreateSanitizedCookie() over directly using this
+  // constructor.
+  CanonicalCookie(const std::string& name,
+                  const std::string& value,
+                  const std::string& domain,
+                  const std::string& path,
+                  const base::Time& creation,
+                  const base::Time& expiration,
+                  const base::Time& last_access,
+                  bool secure,
+                  bool httponly,
+                  CookieSameSite same_site,
+                  CookiePriority priority,
+                  bool same_party,
+                  CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset,
+                  int source_port = url::PORT_UNSPECIFIED);
 
   // The special cookie prefixes as defined in
   // https://tools.ietf.org/html/draft-west-cookie-prefixes
@@ -440,6 +472,19 @@ struct CookieWithAccessResult {
   CanonicalCookie cookie;
   CookieAccessResult access_result;
 };
+
+// Provided to allow gtest to create more helpful error messages, instead of
+// printing hex.
+inline void PrintTo(const CanonicalCookie& cc, std::ostream* os) {
+  *os << "{ name=" << cc.Name() << ", value=" << cc.Value() << " }";
+}
+inline void PrintTo(const CookieWithAccessResult& cwar, std::ostream* os) {
+  *os << "{ ";
+  PrintTo(cwar.cookie, os);
+  *os << ", ";
+  PrintTo(cwar.access_result, os);
+  *os << " }";
+}
 
 }  // namespace net
 

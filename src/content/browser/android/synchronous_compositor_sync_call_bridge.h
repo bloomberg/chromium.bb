@@ -11,6 +11,7 @@
 #include "base/thread_annotations.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/input/synchronous_compositor.mojom.h"
 
 namespace content {
@@ -82,6 +83,7 @@ class SynchronousCompositorSyncCallBridge
   bool ReceiveFrameOnIOThread(
       int frame_sink_id,
       uint32_t metadata_version,
+      base::Optional<viz::LocalSurfaceId> local_surface_id,
       base::Optional<viz::CompositorFrame>,
       base::Optional<viz::HitTestRegionList> hit_test_region_list);
 
@@ -105,6 +107,12 @@ class SynchronousCompositorSyncCallBridge
   // Return whether the remote side is ready.
   bool IsRemoteReadyOnUIThread();
 
+  // Set a weak reference to host control receiver then we can close the host
+  // control when the host was destroyed.
+  void SetHostControlReceiverOnIOThread(
+      mojo::SelfOwnedReceiverRef<blink::mojom::SynchronousCompositorControlHost>
+          host_control_receiver);
+
  private:
   friend class base::RefCountedThreadSafe<SynchronousCompositorSyncCallBridge>;
   ~SynchronousCompositorSyncCallBridge();
@@ -121,6 +129,9 @@ class SynchronousCompositorSyncCallBridge
   void SignalRemoteClosedToAllWaitersOnIOThread()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  // Close the host control on io thread.
+  void CloseHostControlOnIOThread();
+
   using FrameFutureQueue =
       base::circular_deque<scoped_refptr<SynchronousCompositor::FrameFuture>>;
 
@@ -128,6 +139,9 @@ class SynchronousCompositorSyncCallBridge
 
   // UI thread only.
   SynchronousCompositorHost* host_;
+  // This handles the host control receiver in browser side.
+  mojo::SelfOwnedReceiverRef<blink::mojom::SynchronousCompositorControlHost>
+      host_control_receiver_;
 
   // Shared variables between the IO thread and UI thread.
   base::Lock lock_;

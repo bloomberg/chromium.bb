@@ -70,6 +70,7 @@ VideoEncoderClientConfig::VideoEncoderClientConfig(
     size_t num_temporal_layers,
     uint32_t bitrate)
     : output_profile(output_profile),
+      output_resolution(video->Resolution()),
       num_temporal_layers(num_temporal_layers),
       bitrate(bitrate),
       framerate(video->FrameRate()),
@@ -238,6 +239,14 @@ void VideoEncoderClient::UpdateBitrate(const VideoBitrateAllocation& bitrate,
                                 weak_this_, bitrate, framerate));
 }
 
+void VideoEncoderClient::ForceKeyFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(test_sequence_checker_);
+
+  encoder_client_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoEncoderClient::ForceKeyFrameTask, weak_this_));
+}
+
 bool VideoEncoderClient::WaitForBitstreamProcessors() {
   bool success = true;
   for (auto& bitstream_processor : bitstream_processors_)
@@ -267,13 +276,32 @@ void VideoEncoderClient::RequireBitstreamBuffers(
   ASSERT_GT(output_buffer_size, 0UL);
   DVLOGF(4);
 
-  // TODO(crbug.com/1045825): Add support for videos with a visible rectangle
-  // not starting at (0,0).
+  gfx::Size coded_size = input_coded_size;
+  if (video_->Resolution() != encoder_client_config_.output_resolution) {
+    // Scaling case. Scaling is currently only supported when using Dmabufs.
+    EXPECT_EQ(encoder_client_config_.input_storage_type,
+              VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer);
+    coded_size = video_->Resolution();
+  }
+
+  // Timestamps are applied to the frames before they are submitted to the
+  // encoder.  If encode is to run as fast as possible, then the
+  // timestamps need to be spaced according to the framerate.
+  // If the encoder is to encode real-time, then |encode_interval|
+  // will be used to only submit frames every |encode_interval|.
+  const uint32_t frame_rate =
+      encoder_client_config_.encode_interval ? 0 : video_->FrameRate();
+
+  // Follow the behavior of the chrome capture stack; |natural_size| is the
+  // dimension to be encoded.
   aligned_data_helper_ = std::make_unique<AlignedDataHelper>(
       video_->Data(), video_->NumFrames(), video_->PixelFormat(),
-      gfx::Rect(video_->Resolution()), input_coded_size,
+      /*src_coded_size=*/video_->Resolution(),
+      /*dst_coded_size=*/coded_size,
+      /*visible_rect=*/video_->VisibleRect(),
+      /*natural_size=*/encoder_client_config_.output_resolution, frame_rate,
       encoder_client_config_.input_storage_type ==
-              VideoEncodeAccelerator::Config::StorageType::kDmabuf
+              VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer
           ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
           : VideoFrame::STORAGE_MOJO_SHARED_BUFFER,
       gpu_memory_buffer_factory_);
@@ -345,6 +373,8 @@ void VideoEncoderClient::BitstreamBufferReady(
 
   auto it = bitstream_buffers_.find(bitstream_buffer_id);
   ASSERT_NE(it, bitstream_buffers_.end());
+  if (metadata.key_frame)
+    FireEvent(VideoEncoder::EncoderEvent::kKeyFrame);
 
   // Notify the test an encoded bitstream buffer is ready. We should only do
   // this after scheduling the bitstream to be processed, so calling
@@ -354,13 +384,12 @@ void VideoEncoderClient::BitstreamBufferReady(
 
   if (bitstream_processors_.empty()) {
     BitstreamBufferProcessed(bitstream_buffer_id);
-    return;
-  }
-
-  auto bitstream_ref = CreateBitstreamRef(bitstream_buffer_id, metadata);
-  ASSERT_TRUE(bitstream_ref);
-  for (auto& bitstream_processor_ : bitstream_processors_) {
-    bitstream_processor_->ProcessBitstream(bitstream_ref, frame_index_);
+  } else {
+    auto bitstream_ref = CreateBitstreamRef(bitstream_buffer_id, metadata);
+    ASSERT_TRUE(bitstream_ref);
+    for (auto& bitstream_processor_ : bitstream_processors_) {
+      bitstream_processor_->ProcessBitstream(bitstream_ref, frame_index_);
+    }
   }
   frame_index_++;
   FlushDoneTaskIfNeeded();
@@ -409,7 +438,7 @@ void VideoEncoderClient::CreateEncoderTask(const Video* video,
   video_ = video;
 
   const VideoEncodeAccelerator::Config config(
-      video_->PixelFormat(), video_->Resolution(),
+      video_->PixelFormat(), encoder_client_config_.output_resolution,
       encoder_client_config_.output_profile, encoder_client_config_.bitrate,
       encoder_client_config_.framerate, base::nullopt /* gop_length */,
       base::nullopt /* h264_output_level*/, false /* is_constrained_h264 */,
@@ -483,12 +512,20 @@ void VideoEncoderClient::EncodeNextFrameTask() {
       weak_this_, encoder_client_task_runner_,
       &VideoEncoderClient::EncodeDoneTask, video_frame->timestamp()));
 
-  // TODO(dstaessens): Add support for forcing key frames.
-  bool force_keyframe = false;
-  encoder_->Encode(video_frame, force_keyframe);
+  encoder_->Encode(video_frame, force_keyframe_);
 
+  force_keyframe_ = false;
   num_encodes_requested_++;
   num_outstanding_encode_requests_++;
+  if (encoder_client_config_.encode_interval) {
+    // Schedules the next encode here if we're encoding at a fixed ratio.
+    // Otherwise the next encode will be scheduled immediately when the previous
+    // operation is done in EncodeDoneTask().
+    encoder_client_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&VideoEncoderClient::EncodeNextFrameTask, weak_this_),
+        *encoder_client_config_.encode_interval);
+  }
 }
 
 void VideoEncoderClient::FlushTask() {
@@ -517,9 +554,17 @@ void VideoEncoderClient::UpdateBitrateTask(
     uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
   DVLOGF(4);
+  aligned_data_helper_->UpdateFrameRate(framerate);
   encoder_->RequestEncodingParametersChange(bitrate, framerate);
   base::AutoLock auto_lcok(stats_lock_);
   current_stats_.framerate = framerate;
+}
+
+void VideoEncoderClient::ForceKeyFrameTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  DVLOGF(4);
+
+  force_keyframe_ = true;
 }
 
 void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {
@@ -532,10 +577,12 @@ void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {
   num_outstanding_encode_requests_--;
   FlushDoneTaskIfNeeded();
 
-  // Queue the next frame to be encoded.
-  encoder_client_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoEncoderClient::EncodeNextFrameTask, weak_this_));
+  if (!encoder_client_config_.encode_interval) {
+    // Queue the next frame to be encoded.
+    encoder_client_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoEncoderClient::EncodeNextFrameTask, weak_this_));
+  }
 }
 
 void VideoEncoderClient::FlushDoneTask(bool success) {

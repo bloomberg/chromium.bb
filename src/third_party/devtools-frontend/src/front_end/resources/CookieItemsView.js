@@ -30,10 +30,128 @@
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
 import * as Common from '../common/common.js';
 import * as CookieTable from '../cookie_table/cookie_table.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {StorageItemsView} from './StorageItemsView.js';
+
+export const UIStrings = {
+  /**
+  *@description Label for checkbox to show url decoded cookie values
+  */
+  showUrlDecoded: 'Show URL decoded',
+  /**
+  *@description Text for web cookies
+  */
+  cookies: 'Cookies',
+  /**
+  *@description Text in Cookie Items View of the Application panel
+  */
+  selectACookieToPreviewItsValue: 'Select a cookie to preview its value',
+  /**
+  *@description Text for filter in Cookies View of the Application panel
+  */
+  onlyShowCookiesWithAnIssue: 'Only show cookies with an issue',
+  /**
+  *@description Title for filter in the Cookies View of the Application panel
+  */
+  onlyShowCookiesWhichHaveAn: 'Only show cookies which have an associated issue',
+  /**
+  *@description Label to only delete the cookies that are visible after filtering
+  */
+  clearFilteredCookies: 'Clear filtered cookies',
+  /**
+  *@description Label to delete all cookies
+  */
+  clearAllCookies: 'Clear all cookies',
+  /**
+  *@description Alert message for screen reader to announce # of cookies in the table
+  *@example {5} PH1
+  */
+  numberOfCookiesShownInTableS: 'Number of cookies shown in table: {PH1}',
+};
+const str_ = i18n.i18n.registerUIStrings('resources/CookieItemsView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+class CookiePreviewWidget extends UI.Widget.VBox {
+  constructor() {
+    super();
+    this.setMinimumSize(230, 45);
+    /** @type {?SDK.Cookie.Cookie} cookie */
+    this._cookie = null;
+    this._showDecodedSetting = Common.Settings.Settings.instance().createSetting('cookieViewShowDecoded', false);
+
+    const header = document.createElement('div');
+    header.classList.add('cookie-preview-widget-header');
+    const span = document.createElement('span');
+    span.classList.add('cookie-preview-widget-header-label');
+    span.textContent = 'Cookie Value';
+    header.appendChild(span);
+    this.contentElement.appendChild(header);
+
+    const toggle =
+        UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showUrlDecoded), this._showDecodedSetting.get());
+    toggle.classList.add('cookie-preview-widget-toggle');
+    toggle.checkboxElement.addEventListener('click', () => this.showDecoded(!this._showDecodedSetting.get()));
+    header.appendChild(toggle);
+    this._toggle = toggle;
+
+    const value = document.createElement('div');
+    value.classList.add('cookie-preview-widget-cookie-value');
+    value.textContent = '';
+    value.addEventListener('dblclick', this.handleDblClickOnCookieValue.bind(this));
+    this._value = value;
+
+    this.contentElement.classList.add('cookie-preview-widget');
+    this.contentElement.appendChild(value);
+  }
+
+  /**
+   *
+   * @param {boolean} decoded
+   */
+  showDecoded(decoded) {
+    if (!this._cookie) {
+      return;
+    }
+    this._showDecodedSetting.set(decoded);
+    this._toggle.checkboxElement.checked = decoded;
+    this._updatePreview();
+  }
+
+  _updatePreview() {
+    if (this._cookie) {
+      this._value.textContent =
+          this._showDecodedSetting.get() ? decodeURIComponent(this._cookie.value()) : this._cookie.value();
+    } else {
+      this._value.textContent = '';
+    }
+  }
+
+  /**
+   * @param {!SDK.Cookie.Cookie} cookie
+   */
+  setCookie(cookie) {
+    this._cookie = cookie;
+    this._updatePreview();
+  }
+
+  /**
+   * Select all text even if there a spaces in it
+   * @param {!Event} event
+   */
+  handleDblClickOnCookieValue(event) {
+    event.preventDefault();
+    const range = document.createRange();
+    range.selectNode(this._value);
+    const selection = window.getSelection();
+    if (!selection) {
+      return;
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
 
 export class CookieItemsView extends StorageItemsView {
   /**
@@ -41,9 +159,9 @@ export class CookieItemsView extends StorageItemsView {
    * @param {string} cookieDomain
    */
   constructor(model, cookieDomain) {
-    super(Common.UIString.UIString('Cookies'), 'cookiesPanel');
+    super(i18nString(UIStrings.cookies), 'cookiesPanel');
 
-    this.registerRequiredCSS('resources/cookieItemsView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('resources/cookieItemsView.css', {enableLegacyPatching: false});
     this.element.classList.add('storage-view');
 
     /** @type {!SDK.CookieModel.CookieModel} */
@@ -69,8 +187,12 @@ export class CookieItemsView extends StorageItemsView {
     this._splitWidget.setSidebarWidget(this._previewPanel);
     this._splitWidget.installResizer(resizer);
 
+    this._previewWidget = new CookiePreviewWidget();
+    this._emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.selectACookieToPreviewItsValue));
+    this._emptyWidget.show(this._previewPanel.contentElement);
+
     this._onlyIssuesFilterUI = new UI.Toolbar.ToolbarCheckbox(
-        ls`Only show cookies with an issue`, ls`Only show cookies which have an associated issue`, () => {
+        i18nString(UIStrings.onlyShowCookiesWithAnIssue), i18nString(UIStrings.onlyShowCookiesWhichHaveAn), () => {
           this._updateWithCookies(this._allCookies);
         });
     this.appendToolbarItem(this._onlyIssuesFilterUI);
@@ -79,14 +201,12 @@ export class CookieItemsView extends StorageItemsView {
     /** @type {!Array<!Common.EventTarget.EventDescriptor>} */
     this._eventDescriptors = [];
 
-
-    /** @type {?UI.Widget.Widget} */
-    this._preview = null;
-    /** @type {?SDK.Cookie.Cookie} */
-    this._previewValue = null;
-
     /** @type {!Array<!SDK.Cookie.Cookie>} */
     this._allCookies = [];
+    /** @type {!Array<!SDK.Cookie.Cookie>} */
+    this._shownCookies = [];
+    /** @type {?SDK.Cookie.Cookie} */
+    this._selectedCookie = null;
 
     this.setCookiesDomain(model, cookieDomain);
   }
@@ -107,66 +227,32 @@ export class CookieItemsView extends StorageItemsView {
         networkManager.addEventListener(SDK.NetworkManager.Events.LoadingFinished, this._onLoadingFinished, this),
       ];
     }
-
-    this._showPreview(null, null);
   }
 
   /**
-   * @param {?UI.Widget.Widget} preview
-   * @param {?SDK.Cookie.Cookie} value
+   * @param {?SDK.Cookie.Cookie} cookie
    */
-  _showPreview(preview, value) {
-    if (this._preview && this._previewValue === value) {
+  _showPreview(cookie) {
+    if (cookie === this._selectedCookie) {
       return;
     }
+    this._selectedCookie = cookie;
 
-    if (this._preview) {
-      this._preview.detach();
+    if (!cookie) {
+      this._previewWidget.detach();
+      this._emptyWidget.show(this._previewPanel.contentElement);
+    } else {
+      this._emptyWidget.detach();
+      this._previewWidget.setCookie(cookie);
+      this._previewWidget.show(this._previewPanel.contentElement);
     }
-
-    if (!preview) {
-      preview = new UI.EmptyWidget.EmptyWidget(ls`Select a cookie to preview its value`);
-      preview.element.classList.add('cookie-value');
-    }
-
-    this._previewValue = value;
-    this._preview = preview;
-
-    preview.show(this._previewPanel.contentElement);
   }
 
   _handleCookieSelected() {
     const cookie = this._cookiesTable.selectedCookie();
-    this.setCanDeleteSelected(!!cookie);
+    this.setCanDeleteSelected(Boolean(cookie));
 
-    if (!cookie) {
-      this._showPreview(null, null);
-      return;
-    }
-
-    const value = document.createElement('div');
-    value.classList.add('cookie-value');
-    value.textContent = cookie.value();
-    value.addEventListener('dblclick', handleDblClickOnCookieValue);
-
-    const preview = new UI.Widget.VBox();
-    preview.contentElement.appendChild(value);
-
-    this._showPreview(preview, cookie);
-
-    /**
-     * @suppressGlobalPropertiesCheck
-     */
-    function handleDblClickOnCookieValue() {
-      const range = document.createRange();
-      range.selectNode(value);
-      const selection = window.getSelection();
-      if (!selection) {
-        return;
-      }
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    this._showPreview(cookie);
   }
 
   /**
@@ -200,12 +286,24 @@ export class CookieItemsView extends StorageItemsView {
     const host = parsedURL ? parsedURL.host : '';
     this._cookiesTable.setCookieDomain(host);
 
-    const shownCookies = this.filter(allCookies, cookie => `${cookie.name()} ${cookie.value()} ${cookie.domain()}`);
-    this._cookiesTable.setCookies(shownCookies, this._model.getCookieToBlockedReasonsMap());
-    UI.ARIAUtils.alert(ls`Number of cookies shown in table: ${shownCookies.length}`, this.element);
+    this._shownCookies = this.filter(allCookies, cookie => `${cookie.name()} ${cookie.value()} ${cookie.domain()}`);
+    if (this.hasFilter()) {
+      this.setDeleteAllTitle(i18nString(UIStrings.clearFilteredCookies));
+      this.setDeleteAllGlyph('largeicon-delete-filter');
+    } else {
+      this.setDeleteAllTitle(i18nString(UIStrings.clearAllCookies));
+      this.setDeleteAllGlyph('largeicon-delete-list');
+    }
+    this._cookiesTable.setCookies(this._shownCookies, this._model.getCookieToBlockedReasonsMap());
+    UI.ARIAUtils.alert(
+        i18nString(UIStrings.numberOfCookiesShownInTableS, {PH1: this._shownCookies.length}), this.element);
     this.setCanFilter(true);
-    this.setCanDeleteAll(true);
-    this.setCanDeleteSelected(!!this._cookiesTable.selectedCookie());
+    this.setCanDeleteAll(this._shownCookies.length > 0);
+    this.setCanDeleteSelected(Boolean(this._cookiesTable.selectedCookie()));
+
+    if (!this._cookiesTable.selectedCookie()) {
+      this._showPreview(null);
+    }
   }
 
   /**
@@ -231,11 +329,13 @@ export class CookieItemsView extends StorageItemsView {
   }
 
   /**
+   * This will only delete the currently visible cookies.
+   *
    * @override
    */
   deleteAllItems() {
-    this._showPreview(null, null);
-    this._model.clear(this._cookieDomain).then(() => this.refreshItems());
+    this._showPreview(null);
+    this._model.deleteCookies(this._shownCookies).then(() => this.refreshItems());
   }
 
   /**
@@ -244,7 +344,7 @@ export class CookieItemsView extends StorageItemsView {
   deleteSelectedItem() {
     const selectedCookie = this._cookiesTable.selectedCookie();
     if (selectedCookie) {
-      this._showPreview(null, null);
+      this._showPreview(null);
       this._model.deleteCookie(selectedCookie).then(() => this.refreshItems());
     }
   }

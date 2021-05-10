@@ -7,6 +7,8 @@
 
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/vaapi/test/scoped_va_config.h"
+#include "media/gpu/vaapi/test/scoped_va_context.h"
 #include "media/gpu/vaapi/test/shared_va_surface.h"
 #include "media/gpu/vaapi/test/vaapi_device.h"
 #include "media/gpu/vaapi/test/video_decoder.h"
@@ -17,7 +19,8 @@ namespace vaapi_test {
 // A Vp9Decoder decodes VP9-encoded IVF streams using direct libva calls.
 class Vp9Decoder : public VideoDecoder {
  public:
-  Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser, const VaapiDevice& va);
+  Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
+             const VaapiDevice& va_device);
   Vp9Decoder(const Vp9Decoder&) = delete;
   Vp9Decoder& operator=(const Vp9Decoder&) = delete;
   ~Vp9Decoder() override;
@@ -25,6 +28,8 @@ class Vp9Decoder : public VideoDecoder {
   // VideoDecoder implementation.
   VideoDecoder::Result DecodeNextFrame() override;
   void LastDecodedFrameToPNG(const std::string& path) override;
+  std::string LastDecodedFrameMD5Sum() override;
+  bool LastDecodedFrameVisible() override;
 
  private:
   // Reads next frame from IVF stream and its size into |vp9_frame_header| and
@@ -41,13 +46,17 @@ class Vp9Decoder : public VideoDecoder {
   const std::unique_ptr<IvfParser> ivf_parser_;
 
   // VA handles.
-  const VaapiDevice& va_;
-  VAContextID context_id_;
+  const VaapiDevice& va_device_;
+  std::unique_ptr<ScopedVAConfig> va_config_;
+  std::unique_ptr<ScopedVAContext> va_context_;
   scoped_refptr<SharedVASurface> last_decoded_surface_;
 
   // VP9-specific data.
   const std::unique_ptr<Vp9Parser> vp9_parser_;
   std::vector<scoped_refptr<SharedVASurface>> ref_frames_;
+
+  // Whether the last decoded frame was visible.
+  bool last_decoded_frame_visible_ = false;
 };
 
 }  // namespace vaapi_test

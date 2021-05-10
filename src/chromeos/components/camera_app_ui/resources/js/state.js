@@ -16,16 +16,18 @@ import {
 export const State = {
   CAMERA_CONFIGURING: 'camera-configuring',
   CAMERA_SWITCHING: 'camera-switching',
+  CUSTOM_VIDEO_PARAMETERS: 'custom-video-parameters',
   EXPERT: 'expert',
-  FPS_30: '_30fps',
-  FPS_60: '_60fps',
-  GRID_3x3: '_3x3',
-  GRID_4x4: '_4x4',
-  GRID_GOLDEN: 'golden',
+  FPS_30: 'fps-30',
+  FPS_60: 'fps-60',
+  GRID_3x3: 'grid-3x3',
+  GRID_4x4: 'grid-4x4',
+  GRID_GOLDEN: 'grid-golden',
   GRID: 'grid',
   HAS_BACK_CAMERA: 'has-back-camera',
   HAS_EXTERNAL_SCREEN: 'has-external-screen',
   HAS_FRONT_CAMERA: 'has-front-camera',
+  INTENT: 'intent',
   MAX_WND: 'max-wnd',
   MIC: 'mic',
   MIRROR: 'mirror',
@@ -34,7 +36,6 @@ export const State = {
   MULTI_FPS: 'multi-fps',
   NO_RESOLUTION_SETTINGS: 'no-resolution-settings',
   PLAYING_RESULT_VIDEO: 'playing-result-video',
-  PREVIEW_VERTICAL_DOCK: 'preview-vertical-dock',
   PRINT_PERFORMANCE_LOGS: 'print-performance-logs',
   // Starts/Ends when start/stop event of MediaRecorder is triggered.
   RECORDING: 'recording',
@@ -46,9 +47,10 @@ export const State = {
   REVIEW_RESULT: 'review-result',
   REVIEW_VIDEO_RESULT: 'review-video-result',
   SAVE_METADATA: 'save-metadata',
+  SCAN_BARCODE: 'scan-barcode',
   SHOULD_HANDLE_INTENT_RESULT: 'should-handle-intent-result',
   SHOW_METADATA: 'show-metadata',
-  SQUARE_PREVIEW: 'square-preview',
+  SHOW_PTZ_OPTIONS: 'show-ptz-options',
   SCREEN_OFF_AUTO: 'screen-off-auto',
   STREAMING: 'streaming',
   SUSPEND: 'suspend',
@@ -57,14 +59,9 @@ export const State = {
   TAB_NAVIGATION: 'tab-navigation',
   TAKING: 'taking',
   TALL: 'tall',
-  TIMER_10SEC: '_10sec',
-  TIMER_3SEC: '_3sec',
+  TIMER_10SEC: 'timer-10s',
+  TIMER_3SEC: 'timer-3s',
   TIMER: 'timer',
-  W_LETTERBOX_L: 'w-letterbox-l',
-  W_LETTERBOX_M: 'w-letterbox-m',
-  W_LETTERBOX_S: 'w-letterbox-s',
-  W_LETTERBOX: 'w-letterbox',
-  W_LETTERBOX_XL: 'w-letterbox-xl',
 };
 
 /**
@@ -86,7 +83,7 @@ export function assertState(s) {
 }
 
 /**
- * @typedef {function(boolean, !PerfInformation=)}
+ * @typedef {function(boolean, !PerfInformation=): void}
  */
 let StateObserver;  // eslint-disable-line no-unused-vars
 

@@ -17,6 +17,7 @@ struct VectorIcon;
 }  // namespace gfx
 
 namespace views {
+class Label;
 class Separator;
 class View;
 }  // namespace views
@@ -45,6 +46,9 @@ class ASH_EXPORT DetailedViewDelegate {
 
   // Get the background color of the detailed view.
   virtual base::Optional<SkColor> GetBackgroundColor();
+
+  // Get the padding of the detailed view.
+  virtual gfx::Insets GetInsetsForDetailedView() const;
 
   // Return true if overflow indicator of ScrollView is enabled.
   virtual bool IsOverflowIndicatorEnabled() const;
@@ -95,8 +99,15 @@ class ASH_EXPORT DetailedViewDelegate {
   virtual views::Button* CreateHelpButton(
       views::Button::PressedCallback callback);
 
+  // Update the colors that need to be updated while switching between dark and
+  // light mode.
+  virtual void UpdateColors();
+
  private:
   UnifiedSystemTrayController* const tray_controller_;
+
+  views::Label* title_label_ = nullptr;
+  views::Separator* title_separator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DetailedViewDelegate);
 };

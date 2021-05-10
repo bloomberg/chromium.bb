@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage_blob_client_list.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -162,6 +163,12 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
+  void GetAllMatchedEntries(mojom::blink::FetchAPIRequestPtr request,
+                            mojom::blink::CacheQueryOptionsPtr query_options,
+                            int64_t trace_id,
+                            GetAllMatchedEntriesCallback callback) override {
+    NOTREACHED();
+  }
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
             int64_t trace_id,
@@ -182,6 +189,13 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     last_error_web_cache_method_called_ = "dispatchBatch";
     CheckBatchOperationsIfProvided(batch_operations);
     std::move(callback).Run(CacheStorageVerboseError::New(error_, String()));
+  }
+  void WriteSideData(const blink::KURL& url,
+                     base::Time expected_response_time,
+                     mojo_base::BigBuffer data,
+                     int64_t trace_id,
+                     WriteSideDataCallback callback) override {
+    NOTREACHED();
   }
 
  protected:
@@ -264,7 +278,10 @@ class TestCache : public Cache {
       GlobalFetch::ScopedFetcher* fetcher,
       mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache> remote,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : Cache(fetcher, std::move(remote), std::move(task_runner)) {}
+      : Cache(fetcher,
+              MakeGarbageCollected<CacheStorageBlobClientList>(),
+              std::move(remote),
+              std::move(task_runner)) {}
 
   bool IsAborted() const {
     return abort_controller_ && abort_controller_->signal()->aborted();
@@ -753,12 +770,13 @@ TEST_F(CacheStorageTest, Add) {
   fetcher->SetExpectedFetchUrl(&url);
 
   Request* request = NewRequestFromUrl(url);
-  Response* response = Response::Create(
-      GetScriptState(),
-      BodyStreamBuffer::Create(
-          GetScriptState(),
-          MakeGarbageCollected<FormDataBytesConsumer>(content), nullptr),
-      content_type, ResponseInit::Create(), exception_state);
+  Response* response =
+      Response::Create(GetScriptState(),
+                       BodyStreamBuffer::Create(
+                           GetScriptState(),
+                           MakeGarbageCollected<FormDataBytesConsumer>(content),
+                           nullptr, /*cached_metadata_handler=*/nullptr),
+                       content_type, ResponseInit::Create(), exception_state);
   fetcher->SetResponse(response);
 
   Vector<mojom::blink::BatchOperationPtr> expected_put_operations(size_t(1));

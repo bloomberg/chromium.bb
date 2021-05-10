@@ -4,9 +4,11 @@
 
 #include "content/browser/renderer_host/navigation_throttle_runner.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/portal/portal_navigation_throttle.h"
 #include "content/browser/renderer_host/ancestor_throttle.h"
+#include "content/browser/renderer_host/back_forward_cache_throttle.h"
 #include "content/browser/renderer_host/blocked_scheme_navigation_throttle.h"
 #include "content/browser/renderer_host/form_submission_throttle.h"
 #include "content/browser/renderer_host/http_error_navigation_throttle.h"
@@ -55,6 +57,41 @@ const char* GetEventName(NavigationThrottleRunner::Event event) {
   return "";
 }
 
+const char* GetEventNameForHistogram(NavigationThrottleRunner::Event event) {
+  switch (event) {
+    case NavigationThrottleRunner::Event::WillStartRequest:
+      return "WillStartRequest";
+    case NavigationThrottleRunner::Event::WillRedirectRequest:
+      return "WillRedirectRequest";
+    case NavigationThrottleRunner::Event::WillFailRequest:
+      return "WillFailRequest";
+    case NavigationThrottleRunner::Event::WillProcessResponse:
+      return "WillProcessResponse";
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
+void RecordHistogram(NavigationThrottleRunner::Event event,
+                     base::Time start,
+                     const std::string& metric_type) {
+  base::TimeDelta delta = base::Time::Now() - start;
+  base::UmaHistogramTimes(base::StrCat({"Navigation.Throttle", metric_type, ".",
+                                        GetEventNameForHistogram(event)}),
+                          delta);
+}
+
+void RecordDeferTimeHistogram(NavigationThrottleRunner::Event event,
+                              base::Time start) {
+  RecordHistogram(event, start, "DeferTime");
+}
+
+void RecordExecutionTimeHistogram(NavigationThrottleRunner::Event event,
+                                  base::Time start) {
+  RecordHistogram(event, start, "ExecutionTime");
+}
+
 }  // namespace
 
 NavigationThrottleRunner::NavigationThrottleRunner(Delegate* delegate,
@@ -73,6 +110,7 @@ void NavigationThrottleRunner::ProcessNavigationEvent(Event event) {
 void NavigationThrottleRunner::ResumeProcessingNavigationEvent(
     NavigationThrottle* deferring_throttle) {
   DCHECK_EQ(GetDeferringThrottle(), deferring_throttle);
+  RecordDeferTimeHistogram(current_event_, defer_start_time_);
   ProcessInternal();
 }
 
@@ -132,6 +170,8 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
   // throttles handling pages with 407 errors that require extra authentication.
   AddThrottle(HttpErrorNavigationThrottle::MaybeCreateThrottleFor(*request));
 
+  AddThrottle(BackForwardCacheThrottle::MaybeCreateThrottleFor(request));
+
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),
                     std::make_move_iterator(testing_throttles.begin()),
@@ -164,6 +204,7 @@ void NavigationThrottleRunner::ProcessInternal() {
         "navigation", GetEventName(current_event_), local_navigation_id,
         "throttle", throttles_[i]->GetNameForLogging());
 
+    base::Time start = base::Time::Now();
     NavigationThrottle::ThrottleCheckResult result =
         ExecuteNavigationEvent(throttles_[i].get(), current_event_);
     if (!weak_ref) {
@@ -173,6 +214,7 @@ void NavigationThrottleRunner::ProcessInternal() {
                                       "result", "deleted");
       return;
     }
+    RecordExecutionTimeHistogram(current_event_, start);
     TRACE_EVENT_NESTABLE_ASYNC_END1("navigation", GetEventName(current_event_),
                                     local_navigation_id, "result",
                                     result.action());
@@ -192,6 +234,7 @@ void NavigationThrottleRunner::ProcessInternal() {
 
       case NavigationThrottle::DEFER:
         next_index_ = i + 1;
+        defer_start_time_ = base::Time::Now();
         return;
     }
   }

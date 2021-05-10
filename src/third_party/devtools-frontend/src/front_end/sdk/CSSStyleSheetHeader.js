@@ -3,14 +3,27 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {CSSModel} from './CSSModel.js';  // eslint-disable-line no-unused-vars
 import {DeferredDOMNode} from './DOMModel.js';
-import {FrameAssociated} from './FrameAssociated.js';  // eslint-disable-line no-unused-vars
+import {FrameAssociated} from './FrameAssociated.js';               // eslint-disable-line no-unused-vars
 import {PageResourceLoadInitiator} from './PageResourceLoader.js';  // eslint-disable-line no-unused-vars
 import {ResourceTreeModel} from './ResourceTreeModel.js';
 
+export const UIStrings = {
+  /**
+  *@description Error message for when a CSS file can't be loaded
+  */
+  couldNotFindTheOriginalStyle: 'Could not find the original style sheet.',
+  /**
+  *@description Error message to display when a source CSS file could not be retrieved.
+  */
+  thereWasAnErrorRetrievingThe: 'There was an error retrieving the source styles.',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/CSSStyleSheetHeader.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
  * TODO(chromium:1011811): make `implements {FrameAssociated}` annotation work here.
@@ -25,7 +38,7 @@ export class CSSStyleSheetHeader {
     this.id = payload.styleSheetId;
     this.frameId = payload.frameId;
     this.sourceURL = payload.sourceURL;
-    this.hasSourceURL = !!payload.hasSourceURL;
+    this.hasSourceURL = Boolean(payload.hasSourceURL);
     this.origin = payload.origin;
     this.title = payload.title;
     this.disabled = payload.disabled;
@@ -54,7 +67,7 @@ export class CSSStyleSheetHeader {
         const originalText = await this._cssModel.originalStyleSheetText(this);
         // originalText might be an empty string which should not trigger the error
         if (originalText === null) {
-          return {content: null, error: ls`Could not find the original style sheet.`, isEncoded: false};
+          return {content: null, error: i18nString(UIStrings.couldNotFindTheOriginalStyle), isEncoded: false};
         }
         return {content: originalText, isEncoded: false};
       });
@@ -97,7 +110,7 @@ export class CSSStyleSheetHeader {
    */
   _viaInspectorResourceURL() {
     const model = this._cssModel.target().model(ResourceTreeModel);
-    console.assert(!!model);
+    console.assert(Boolean(model));
     if (!model) {
       return '';
     }
@@ -105,7 +118,7 @@ export class CSSStyleSheetHeader {
     if (!frame) {
       return '';
     }
-    console.assert(!!frame);
+    console.assert(Boolean(frame));
     const parsedURL = new Common.ParsedURL.ParsedURL(frame.url);
     let fakeURL = 'inspector://' + parsedURL.host + parsedURL.folderPathComponents;
     if (!fakeURL.endsWith('/')) {
@@ -181,7 +194,7 @@ export class CSSStyleSheetHeader {
     } catch (err) {
       return {
         content: null,
-        error: ls`There was an error retrieving the source styles.`,
+        error: i18nString(UIStrings.thereWasAnErrorRetrievingThe),
         isEncoded: false,
       };
     }

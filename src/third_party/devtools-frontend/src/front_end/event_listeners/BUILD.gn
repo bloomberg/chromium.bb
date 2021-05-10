@@ -7,13 +7,14 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("event_listeners") {
   sources = [
-    "EventListenersUtils.js",
-    "EventListenersView.js",
+    "EventListenersUtils.ts",
+    "EventListenersView.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../components:bundle",
+    "../i18n:bundle",
     "../object_ui:bundle",
     "../sdk:bundle",
     "../ui:bundle",
@@ -21,13 +22,13 @@ devtools_module("event_listeners") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "event_listeners.js"
+  entrypoint = "event_listeners.ts"
 
   deps = [ ":event_listeners" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "event_listeners-legacy.js"
+  entrypoint = "event_listeners-legacy.ts"
 
   deps = [ ":bundle" ]
 }

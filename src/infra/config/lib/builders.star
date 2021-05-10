@@ -138,10 +138,10 @@ xcode = struct(
     x11e146 = xcode_enum("11e146"),
     # in use by ios-webkit-tot
     x11e608cwk = xcode_enum("11e608cwk"),
-    # (current default) xc12 gm seed
+    # (current default for other projects) xc12.0 gm seed
     x12a7209 = xcode_enum("12a7209"),
-    # latest Xcode 12 beta version.
-    x12b5035g = xcode_enum("12b5035g"),
+    # (current default for iOS) xc12.4 gm seed
+    x12d4e = xcode_enum("12d4e"),
 )
 
 ################################################################################
@@ -246,6 +246,27 @@ def _isolated_property(*, isolated_server):
 
     return isolated or None
 
+def _reclient_property(*, instance, service, jobs, rewrapper_env):
+    reclient = {}
+    instance = defaults.get_value("reclient_instance", instance)
+    if instance:
+        reclient["instance"] = instance
+        reclient["metrics_project"] = "chromium-reclient-metrics"
+    service = defaults.get_value("reclient_service", service)
+    if service:
+        reclient["service"] = service
+    jobs = defaults.get_value("reclient_jobs", jobs)
+    if jobs:
+        reclient["jobs"] = jobs
+    rewrapper_env = defaults.get_value("reclient_rewrapper_env", rewrapper_env)
+    if rewrapper_env:
+        for k in rewrapper_env:
+            if not k.startswith("RBE_"):
+                fail("Environment variables in rewrapper_env must start with " +
+                     "'RBE_', got '%s'" % k)
+        reclient["rewrapper_env"] = rewrapper_env
+    return reclient or None
+
 ################################################################################
 # Builder defaults and function                                                #
 ################################################################################
@@ -259,6 +280,7 @@ defaults = args.defaults(
     builder_group = None,
     builderless = args.COMPUTE,
     configure_kitchen = False,
+    kitchen_emulate_gce = False,
     cores = None,
     cpu = None,
     fully_qualified_builder_dimension = False,
@@ -278,16 +300,18 @@ defaults = args.defaults(
     coverage_exclude_sources = None,
     coverage_test_types = None,
     resultdb_bigquery_exports = [],
+    resultdb_index_by_timestamp = False,
     isolated_server = "https://isolateserver.appspot.com",
+    reclient_instance = None,
+    reclient_service = None,
+    reclient_jobs = None,
+    reclient_rewrapper_env = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
     bucket = args.COMPUTE,
     executable = args.COMPUTE,
     triggered_by = args.COMPUTE,
-
-    # Forward on luci.builder.defaults so users have a consistent interface
-    **{a: getattr(luci.builder.defaults, a) for a in dir(luci.builder.defaults)}
 )
 
 def builder(
@@ -311,6 +335,7 @@ def builder(
         list_view = args.DEFAULT,
         project_trigger_overrides = args.DEFAULT,
         configure_kitchen = args.DEFAULT,
+        kitchen_emulate_gce = args.DEFAULT,
         goma_backend = args.DEFAULT,
         goma_debug = args.DEFAULT,
         goma_enable_ats = args.DEFAULT,
@@ -321,7 +346,12 @@ def builder(
         coverage_exclude_sources = args.DEFAULT,
         coverage_test_types = args.DEFAULT,
         resultdb_bigquery_exports = args.DEFAULT,
+        resultdb_index_by_timestamp = args.DEFAULT,
         isolated_server = args.DEFAULT,
+        reclient_instance = args.DEFAULT,
+        reclient_service = args.DEFAULT,
+        reclient_jobs = args.DEFAULT,
+        reclient_rewrapper_env = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -398,6 +428,9 @@ def builder(
       * configure_kitchen - a boolean indicating whether to configure kitchen. If
         True, emits a property to set the 'git_auth' and 'devshell' fields of the
         '$kitchen' property. By default, considered False.
+      * kitchen_emulate_gce - a boolean indicating whether to set 'emulate_gce'
+        of the '$kitchen' property. This is effective only when
+        configure_kitchen is True. By default, considered False.
       * goma_backend - a member of the `goma.backend` enum indicating the goma
         backend the builder should use. Will be incorporated into the
         '$build/goma' property. By default, considered None.
@@ -429,9 +462,22 @@ def builder(
       * resultdb_bigquery_exports - a list of resultdb.export_test_results(...)
         specifying parameters for exporting test results to BigQuery. By default,
         do not export.
+      * resultdb_index_by_timestamp - a boolean specifying whether ResultDB should
+        index the results of the tests run on this builder by timestamp, i.e.
+        for purposes of retrieving a test's history. If false, the results will not
+        be searchable by timestamp on ResultDB's test history api.
       * isolated_server - a string indicating the host of the isolated server.
         Will be incorporated into the '$recipe_engine/isolated' property. By
         default, this is "https://isolateserver.appspot.com".
+      * reclient_instance - a string indicating the GCP project hosting the RBE
+        instance for re-client to use.
+      * reclient_service - a string indicating the RBE service to dial via gRPC.
+        By default, this is "remotebuildexecution.googleapis.com:443" (set in
+        the reclient recipe module).
+      * reclient_jobs - an integer indicating the number of concurrent
+        compilations to run when using re-client as the compiler.
+      * reclient_rewrapper_env - a map that sets the rewrapper flags via the
+        environment variables. All such vars must start with the "RBE_" prefix.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -457,6 +503,9 @@ def builder(
     if "$recipe_engine/isolated" in properties:
         fail('Setting "$recipe_engine/isolated" property is not supported: ' +
              "use isolated_server instead")
+    if "$build/reclient" in properties:
+        fail('Setting "$build/reclient" property is not supported: ' +
+             "use reclient_instance and reclient_rewrapper_env instead")
     properties = dict(properties)
 
     os = defaults.get_value("os", os)
@@ -519,6 +568,8 @@ def builder(
             "devshell": True,
             "git_auth": True,
         }
+        if defaults.get_value("kitchen_emulate_gce", kitchen_emulate_gce):
+            properties["$kitchen"]["emulate_gce"] = True
 
     chromium_tests = _chromium_tests_property(
         project_trigger_overrides = project_trigger_overrides,
@@ -552,6 +603,15 @@ def builder(
     if isolated != None:
         properties["$recipe_engine/isolated"] = isolated
 
+    reclient = _reclient_property(
+        instance = reclient_instance,
+        service = reclient_service,
+        jobs = reclient_jobs,
+        rewrapper_env = reclient_rewrapper_env,
+    )
+    if reclient != None:
+        properties["$build/reclient"] = reclient
+
     kwargs = dict(kwargs)
     if bucket != args.COMPUTE:
         kwargs["bucket"] = bucket
@@ -569,6 +629,16 @@ def builder(
         )]
         properties.setdefault("xcode_build_version", xcode.version)
 
+    history_options = None
+    resultdb_index_by_timestamp = defaults.get_value(
+        "resultdb_index_by_timestamp",
+        resultdb_index_by_timestamp,
+    )
+    if resultdb_index_by_timestamp:
+        history_options = resultdb.history_options(
+            by_timestamp = resultdb_index_by_timestamp,
+        )
+
     builder = branches.builder(
         name = name,
         branch_selector = branch_selector,
@@ -580,6 +650,7 @@ def builder(
                 "resultdb_bigquery_exports",
                 resultdb_bigquery_exports,
             ),
+            history_options = history_options,
         ),
         **kwargs
     )
@@ -635,15 +706,8 @@ def builder(
 
     return builder
 
-def builder_name(builder, bucket = args.DEFAULT):
-    bucket = defaults.get_value("bucket", bucket)
-    if bucket == args.COMPUTE:
-        fail("Either a default for bucket must be set or bucket must be passed in")
-    return "{}/{}".format(bucket, builder)
-
 builders = struct(
     builder = builder,
-    builder_name = builder_name,
     cpu = cpu,
     defaults = defaults,
     goma = goma,

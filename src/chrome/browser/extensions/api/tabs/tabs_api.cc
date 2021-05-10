@@ -682,6 +682,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       // TODO(crbug.com/984350): Add tests for checking opener SiteInstance
       // behavior from a SW based extension's extension frame (e.g. from popup).
       // See ExtensionApiTest.WindowsCreate* tests for details.
+      navigate_params.initiator_origin = extension()->origin();
       navigate_params.opener = render_frame_host();
       navigate_params.source_site_instance =
           render_frame_host()->GetSiteInstance();
@@ -1458,8 +1459,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
   // since URLs can be opened on behalf of untrusted content.
   load_params.is_renderer_initiated = true;
   // All renderer-initiated navigations need to have an initiator origin.
-  load_params.initiator_origin = url::Origin::Create(
-      Extension::GetBaseURLFromExtensionId(extension()->id()));
+  load_params.initiator_origin = extension()->origin();
   // |source_site_instance| needs to be set so that a renderer process
   // compatible with |initiator_origin| is picked by Site Isolation.
   load_params.source_site_instance = content::SiteInstance::CreateForURL(
@@ -2069,7 +2069,8 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
   // Observe the WebContents' lifetime and navigations.
   Observe(contents);
   // Wait until the language is determined.
-  chrome_translate_client->translate_driver()->AddObserver(this);
+  chrome_translate_client->GetTranslateDriver()->AddLanguageDetectionObserver(
+      this);
   is_observing_ = true;
 
   return RespondLater();
@@ -2098,8 +2099,8 @@ void TabsDetectLanguageFunction::RespondWithLanguage(
   // Stop observing.
   if (is_observing_) {
     ChromeTranslateClient::FromWebContents(web_contents())
-        ->translate_driver()
-        ->RemoveObserver(this);
+        ->GetTranslateDriver()
+        ->RemoveLanguageDetectionObserver(this);
     Observe(nullptr);
   }
 

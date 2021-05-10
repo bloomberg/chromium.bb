@@ -29,9 +29,10 @@
 #include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/case_statement.h"
+#include "src/ast/constant_id_decoration.h"
 #include "src/ast/continue_statement.h"
-#include "src/ast/decorated_variable.h"
 #include "src/ast/else_statement.h"
+#include "src/ast/fallthrough_statement.h"
 #include "src/ast/float_literal.h"
 #include "src/ast/function.h"
 #include "src/ast/identifier_expression.h"
@@ -39,30 +40,40 @@
 #include "src/ast/location_decoration.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
+#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/struct_member_offset_decoration.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type/access_control_type.h"
-#include "src/ast/type/alias_type.h"
-#include "src/ast/type/array_type.h"
-#include "src/ast/type/bool_type.h"
-#include "src/ast/type/depth_texture_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/matrix_type.h"
-#include "src/ast/type/multisampled_texture_type.h"
-#include "src/ast/type/pointer_type.h"
-#include "src/ast/type/sampled_texture_type.h"
-#include "src/ast/type/sampler_type.h"
-#include "src/ast/type/storage_texture_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/u32_type.h"
-#include "src/ast/type/vector_type.h"
-#include "src/ast/type/void_type.h"
 #include "src/ast/uint_literal.h"
 #include "src/ast/unary_op_expression.h"
+#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
+#include "src/debug.h"
+#include "src/program.h"
+#include "src/semantic/call.h"
+#include "src/semantic/expression.h"
+#include "src/semantic/function.h"
+#include "src/semantic/member_accessor_expression.h"
+#include "src/semantic/variable.h"
+#include "src/type/access_control_type.h"
+#include "src/type/alias_type.h"
+#include "src/type/array_type.h"
+#include "src/type/bool_type.h"
+#include "src/type/depth_texture_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/matrix_type.h"
+#include "src/type/multisampled_texture_type.h"
+#include "src/type/pointer_type.h"
+#include "src/type/sampled_texture_type.h"
+#include "src/type/sampler_type.h"
+#include "src/type/storage_texture_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/u32_type.h"
+#include "src/type/vector_type.h"
+#include "src/type/void_type.h"
+#include "src/writer/float_to_string.h"
 
 namespace tint {
 namespace writer {
@@ -79,7 +90,8 @@ bool last_is_break_or_fallthrough(const ast::BlockStatement* stmts) {
     return false;
   }
 
-  return stmts->last()->IsBreak() || stmts->last()->IsFallthrough();
+  return stmts->last()->Is<ast::BreakStatement>() ||
+         stmts->last()->Is<ast::FallthroughStatement>();
 }
 
 uint32_t adjust_for_alignment(uint32_t count, uint32_t alignment) {
@@ -92,7 +104,8 @@ uint32_t adjust_for_alignment(uint32_t count, uint32_t alignment) {
 
 }  // namespace
 
-GeneratorImpl::GeneratorImpl(ast::Module* module) : module_(module) {}
+GeneratorImpl::GeneratorImpl(const Program* program)
+    : TextGenerator(), program_(program) {}
 
 GeneratorImpl::~GeneratorImpl() = default;
 
@@ -110,50 +123,51 @@ std::string GeneratorImpl::generate_name(const std::string& prefix) {
 bool GeneratorImpl::Generate() {
   out_ << "#include <metal_stdlib>" << std::endl << std::endl;
 
-  for (const auto& global : module_->global_variables()) {
-    global_variables_.set(global->name(), global.get());
+  for (auto* global : program_->AST().GlobalVariables()) {
+    auto* sem = program_->Sem().Get(global);
+    global_variables_.set(global->symbol(), sem);
   }
 
-  for (auto* const ty : module_->constructed_types()) {
+  for (auto* const ty : program_->AST().ConstructedTypes()) {
     if (!EmitConstructedType(ty)) {
       return false;
     }
   }
-  if (!module_->constructed_types().empty()) {
+  if (!program_->AST().ConstructedTypes().empty()) {
     out_ << std::endl;
   }
 
-  for (const auto& var : module_->global_variables()) {
+  for (auto* var : program_->AST().GlobalVariables()) {
     if (!var->is_const()) {
       continue;
     }
-    if (!EmitProgramConstVariable(var.get())) {
+    if (!EmitProgramConstVariable(var)) {
       return false;
     }
   }
 
   // Make sure all entry point data is emitted before the entry point functions
-  for (const auto& func : module_->functions()) {
+  for (auto* func : program_->AST().Functions()) {
     if (!func->IsEntryPoint()) {
       continue;
     }
 
-    if (!EmitEntryPointData(func.get())) {
+    if (!EmitEntryPointData(func)) {
       return false;
     }
   }
 
-  for (const auto& func : module_->functions()) {
-    if (!EmitFunction(func.get())) {
+  for (auto* func : program_->AST().Functions()) {
+    if (!EmitFunction(func)) {
       return false;
     }
   }
 
-  for (const auto& func : module_->functions()) {
+  for (auto* func : program_->AST().Functions()) {
     if (!func->IsEntryPoint()) {
       continue;
     }
-    if (!EmitEntryPointFunction(func.get())) {
+    if (!EmitEntryPointFunction(func)) {
       return false;
     }
     out_ << std::endl;
@@ -162,73 +176,69 @@ bool GeneratorImpl::Generate() {
   return true;
 }
 
-uint32_t GeneratorImpl::calculate_largest_alignment(
-    ast::type::StructType* type) {
-  auto* stct = type->AsStruct()->impl();
+uint32_t GeneratorImpl::calculate_largest_alignment(type::Struct* type) {
+  auto* stct = type->As<type::Struct>()->impl();
   uint32_t largest_alignment = 0;
-  for (const auto& mem : stct->members()) {
+  for (auto* mem : stct->members()) {
     auto align = calculate_alignment_size(mem->type());
     if (align == 0) {
       return 0;
     }
-    if (!mem->type()->IsStruct()) {
+    if (!mem->type()->Is<type::Struct>()) {
       largest_alignment = std::max(largest_alignment, align);
     } else {
-      largest_alignment =
-          std::max(largest_alignment,
-                   calculate_largest_alignment(mem->type()->AsStruct()));
+      largest_alignment = std::max(
+          largest_alignment,
+          calculate_largest_alignment(mem->type()->As<type::Struct>()));
     }
   }
   return largest_alignment;
 }
 
-uint32_t GeneratorImpl::calculate_alignment_size(ast::type::Type* type) {
-  if (type->IsAlias()) {
-    return calculate_alignment_size(type->AsAlias()->type());
+uint32_t GeneratorImpl::calculate_alignment_size(type::Type* type) {
+  if (auto* alias = type->As<type::Alias>()) {
+    return calculate_alignment_size(alias->type());
   }
-  if (type->IsArray()) {
-    auto* ary = type->AsArray();
+  if (auto* ary = type->As<type::Array>()) {
     // TODO(dsinclair): Handle array stride and adjust for alignment.
     uint32_t type_size = calculate_alignment_size(ary->type());
     return ary->size() * type_size;
   }
-  if (type->IsBool()) {
+  if (type->Is<type::Bool>()) {
     return 1;
   }
-  if (type->IsPointer()) {
+  if (type->Is<type::Pointer>()) {
     return 0;
   }
-  if (type->IsF32() || type->IsI32() || type->IsU32()) {
+  if (type->Is<type::F32>() || type->Is<type::I32>() || type->Is<type::U32>()) {
     return 4;
   }
-  if (type->IsMatrix()) {
-    auto* mat = type->AsMatrix();
+  if (auto* mat = type->As<type::Matrix>()) {
     // TODO(dsinclair): Handle MatrixStride
     // https://github.com/gpuweb/gpuweb/issues/773
     uint32_t type_size = calculate_alignment_size(mat->type());
     return mat->rows() * mat->columns() * type_size;
   }
-  if (type->IsStruct()) {
-    auto* stct = type->AsStruct()->impl();
+  if (auto* stct_ty = type->As<type::Struct>()) {
+    auto* stct = stct_ty->impl();
     uint32_t count = 0;
     uint32_t largest_alignment = 0;
     // Offset decorations in WGSL must be in increasing order.
-    for (const auto& mem : stct->members()) {
-      for (const auto& deco : mem->decorations()) {
-        if (deco->IsOffset()) {
-          count = deco->AsOffset()->offset();
+    for (auto* mem : stct->members()) {
+      for (auto* deco : mem->decorations()) {
+        if (auto* offset = deco->As<ast::StructMemberOffsetDecoration>()) {
+          count = offset->offset();
         }
       }
       auto align = calculate_alignment_size(mem->type());
       if (align == 0) {
         return 0;
       }
-      if (!mem->type()->IsStruct()) {
-        largest_alignment = std::max(largest_alignment, align);
-      } else {
+      if (auto* str = mem->type()->As<type::Struct>()) {
         largest_alignment =
-            std::max(largest_alignment,
-                     calculate_largest_alignment(mem->type()->AsStruct()));
+            std::max(largest_alignment, calculate_largest_alignment(str));
+      } else {
+        largest_alignment = std::max(largest_alignment, align);
       }
 
       // Round up to the alignment size
@@ -239,8 +249,7 @@ uint32_t GeneratorImpl::calculate_alignment_size(ast::type::Type* type) {
     count = adjust_for_alignment(count, largest_alignment);
     return count;
   }
-  if (type->IsVector()) {
-    auto* vec = type->AsVector();
+  if (auto* vec = type->As<type::Vector>()) {
     uint32_t type_size = calculate_alignment_size(vec->type());
     if (vec->size() == 2) {
       return 2 * type_size;
@@ -250,23 +259,22 @@ uint32_t GeneratorImpl::calculate_alignment_size(ast::type::Type* type) {
   return 0;
 }
 
-bool GeneratorImpl::EmitConstructedType(const ast::type::Type* ty) {
+bool GeneratorImpl::EmitConstructedType(const type::Type* ty) {
   make_indent();
 
-  if (ty->IsAlias()) {
-    auto* alias = ty->AsAlias();
-
+  if (auto* alias = ty->As<type::Alias>()) {
     out_ << "typedef ";
     if (!EmitType(alias->type(), "")) {
       return false;
     }
-    out_ << " " << namer_.NameFor(alias->name()) << ";" << std::endl;
-  } else if (ty->IsStruct()) {
-    if (!EmitStructType(ty->AsStruct())) {
+    out_ << " " << namer_.NameFor(program_->Symbols().NameFor(alias->symbol()))
+         << ";" << std::endl;
+  } else if (auto* str = ty->As<type::Struct>()) {
+    if (!EmitStructType(str)) {
       return false;
     }
   } else {
-    error_ = "unknown alias type: " + ty->type_name();
+    diagnostics_.add_error("unknown alias type: " + ty->type_name());
     return false;
   }
 
@@ -389,7 +397,7 @@ bool GeneratorImpl::EmitBinary(ast::BinaryExpression* expr) {
       out_ << "%";
       break;
     case ast::BinaryOp::kNone:
-      error_ = "missing binary operation type";
+      diagnostics_.add_error("missing binary operation type");
       return false;
   }
   out_ << " ";
@@ -412,15 +420,15 @@ std::string GeneratorImpl::current_ep_var_name(VarType type) {
   std::string name = "";
   switch (type) {
     case VarType::kIn: {
-      auto in_it = ep_name_to_in_data_.find(current_ep_name_);
-      if (in_it != ep_name_to_in_data_.end()) {
+      auto in_it = ep_sym_to_in_data_.find(current_ep_sym_);
+      if (in_it != ep_sym_to_in_data_.end()) {
         name = in_it->second.var_name;
       }
       break;
     }
     case VarType::kOut: {
-      auto out_it = ep_name_to_out_data_.find(current_ep_name_);
-      if (out_it != ep_name_to_out_data_.end()) {
+      auto out_it = ep_sym_to_out_data_.find(current_ep_sym_);
+      if (out_it != ep_sym_to_out_data_.end()) {
         name = out_it->second.var_name;
       }
       break;
@@ -429,158 +437,70 @@ std::string GeneratorImpl::current_ep_var_name(VarType type) {
   return name;
 }
 
-std::string GeneratorImpl::generate_intrinsic_name(ast::Intrinsic intrinsic) {
-  if (intrinsic == ast::Intrinsic::kAny) {
-    return "any";
-  }
-  if (intrinsic == ast::Intrinsic::kAll) {
-    return "all";
-  }
-  if (intrinsic == ast::Intrinsic::kCountOneBits) {
-    return "popcount";
-  }
-  if (intrinsic == ast::Intrinsic::kDot) {
-    return "dot";
-  }
-  if (intrinsic == ast::Intrinsic::kDpdy ||
-      intrinsic == ast::Intrinsic::kDpdyFine ||
-      intrinsic == ast::Intrinsic::kDpdyCoarse) {
-    return "dfdy";
-  }
-  if (intrinsic == ast::Intrinsic::kDpdx ||
-      intrinsic == ast::Intrinsic::kDpdxFine ||
-      intrinsic == ast::Intrinsic::kDpdxCoarse) {
-    return "dfdx";
-  }
-  if (intrinsic == ast::Intrinsic::kFwidth ||
-      intrinsic == ast::Intrinsic::kFwidthFine ||
-      intrinsic == ast::Intrinsic::kFwidthCoarse) {
-    return "fwidth";
-  }
-  if (intrinsic == ast::Intrinsic::kIsFinite) {
-    return "isfinite";
-  }
-  if (intrinsic == ast::Intrinsic::kIsInf) {
-    return "isinf";
-  }
-  if (intrinsic == ast::Intrinsic::kIsNan) {
-    return "isnan";
-  }
-  if (intrinsic == ast::Intrinsic::kIsNormal) {
-    return "isnormal";
-  }
-  if (intrinsic == ast::Intrinsic::kReverseBits) {
-    return "reverse_bits";
-  }
-  if (intrinsic == ast::Intrinsic::kSelect) {
-    return "select";
-  }
-  return "";
-}
-
 bool GeneratorImpl::EmitCall(ast::CallExpression* expr) {
-  if (!expr->func()->IsIdentifier()) {
-    error_ = "invalid function name";
+  auto* ident = expr->func()->As<ast::IdentifierExpression>();
+
+  if (ident == nullptr) {
+    diagnostics_.add_error("invalid function name");
     return 0;
   }
 
-  auto* ident = expr->func()->AsIdentifier();
-  if (ident->IsIntrinsic()) {
-    const auto& params = expr->params();
-    if (ident->intrinsic() == ast::Intrinsic::kOuterProduct) {
-      error_ = "outer_product not supported yet";
-      return false;
-      // TODO(dsinclair): This gets tricky. We need to generate two variables to
-      // hold the outer_product expressions, but we maybe inside an expression
-      // ourselves. So, this will need to, possibly, output the variables
-      // _before_ the expression which contains the outer product.
-      //
-      // This then has the follow on, what if we have `(false &&
-      // outer_product())` in that case, we shouldn't evaluate the expressions
-      // at all because of short circuting.
-      //
-      // So .... this turns out to be hard ...
-
-      // // We create variables to hold the two parameters in case they're
-      // // function calls with side effects.
-      // auto* param0 = param[0].get();
-      // auto* name0 = generate_name("outer_product_expr_0");
-
-      // auto* param1 = param[1].get();
-      // auto* name1 = generate_name("outer_product_expr_1");
-
-      // make_indent();
-      // if (!EmitType(expr->result_type(), "")) {
-      //   return false;
-      // }
-      // out_ << "(";
-
-      // auto param1_type = params[1]->result_type()->UnwrapPtrIfNeeded();
-      // if (!param1_type->IsVector()) {
-      //   error_ = "invalid param type in outer_product got: " +
-      //            param1_type->type_name();
-      //   return false;
-      // }
-
-      // for (uint32_t i = 0; i < param1_type->AsVector()->size(); ++i) {
-      //   if (i > 0) {
-      //     out_ << ", ";
-      //   }
-
-      //   if (!EmitExpression(params[0].get())) {
-      //     return false;
-      //   }
-      //   out_ << " * ";
-
-      //   if (!EmitExpression(params[1].get())) {
-      //     return false;
-      //   }
-      //   out_ << "[" << i << "]";
-      // }
-
-      // out_ << ")";
-    } else {
-      auto name = generate_intrinsic_name(ident->intrinsic());
-      if (name.empty()) {
-        if (ast::intrinsic::IsTextureIntrinsic(ident->intrinsic())) {
-          error_ = "Textures not implemented yet";
-          return false;
-        }
-        name = generate_builtin_name(ident);
-        if (name.empty()) {
-          return false;
-        }
-      }
-
-      make_indent();
-      out_ << name << "(";
-
-      bool first = true;
-      for (const auto& param : params) {
-        if (!first) {
-          out_ << ", ";
-        }
-        first = false;
-
-        if (!EmitExpression(param.get())) {
-          return false;
-        }
-      }
-
-      out_ << ")";
+  auto* call = program_->Sem().Get(expr);
+  if (auto* intrinsic = call->Target()->As<semantic::Intrinsic>()) {
+    if (intrinsic->IsTexture()) {
+      return EmitTextureCall(expr, intrinsic);
     }
+    if (intrinsic->Type() == semantic::IntrinsicType::kPack2x16Float ||
+        intrinsic->Type() == semantic::IntrinsicType::kUnpack2x16Float) {
+      make_indent();
+      if (intrinsic->Type() == semantic::IntrinsicType::kPack2x16Float) {
+        out_ << "as_type<uint>(half2(";
+      } else {
+        out_ << "float2(as_type<half2>(";
+      }
+      if (!EmitExpression(expr->params()[0])) {
+        return false;
+      }
+      out_ << "))";
+      return true;
+    }
+    auto name = generate_builtin_name(intrinsic);
+    if (name.empty()) {
+      return false;
+    }
+
+    make_indent();
+    out_ << name << "(";
+
+    bool first = true;
+    const auto& params = expr->params();
+    for (auto* param : params) {
+      if (!first) {
+        out_ << ", ";
+      }
+      first = false;
+
+      if (!EmitExpression(param)) {
+        return false;
+      }
+    }
+
+    out_ << ")";
     return true;
   }
 
-  auto name = ident->name();
-  auto it = ep_func_name_remapped_.find(current_ep_name_ + "_" + name);
+  auto name = program_->Symbols().NameFor(ident->symbol());
+  auto caller_sym = ident->symbol();
+  auto it = ep_func_name_remapped_.find(current_ep_sym_.to_str() + "_" +
+                                        caller_sym.to_str());
   if (it != ep_func_name_remapped_.end()) {
     name = it->second;
   }
 
-  auto* func = module_->FindFunctionByName(ident->name());
+  auto* func = program_->AST().Functions().Find(ident->symbol());
   if (func == nullptr) {
-    error_ = "Unable to find function: " + name;
+    diagnostics_.add_error("Unable to find function: " +
+                           program_->Symbols().NameFor(ident->symbol()));
     return false;
   }
 
@@ -605,44 +525,259 @@ bool GeneratorImpl::EmitCall(ast::CallExpression* expr) {
     }
   }
 
-  for (const auto& data : func->referenced_builtin_variables()) {
+  auto* func_sem = program_->Sem().Get(func);
+  for (const auto& data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
-    if (var->storage_class() != ast::StorageClass::kInput) {
+    if (var->StorageClass() != ast::StorageClass::kInput) {
       continue;
     }
     if (!first) {
       out_ << ", ";
     }
     first = false;
-    out_ << var->name();
+    out_ << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
-  for (const auto& data : func->referenced_uniform_variables()) {
+  for (const auto& data : func_sem->ReferencedUniformVariables()) {
     auto* var = data.first;
     if (!first) {
       out_ << ", ";
     }
     first = false;
-    out_ << var->name();
+    out_ << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
-  for (const auto& data : func->referenced_storagebuffer_variables()) {
+  for (const auto& data : func_sem->ReferencedStorageBufferVariables()) {
     auto* var = data.first;
     if (!first) {
       out_ << ", ";
     }
     first = false;
-    out_ << var->name();
+    out_ << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
   const auto& params = expr->params();
-  for (const auto& param : params) {
+  for (auto* param : params) {
     if (!first) {
       out_ << ", ";
     }
     first = false;
 
-    if (!EmitExpression(param.get())) {
+    if (!EmitExpression(param)) {
+      return false;
+    }
+  }
+
+  out_ << ")";
+
+  return true;
+}
+
+bool GeneratorImpl::EmitTextureCall(ast::CallExpression* expr,
+                                    const semantic::Intrinsic* intrinsic) {
+  using Usage = semantic::Parameter::Usage;
+
+  auto parameters = intrinsic->Parameters();
+  auto arguments = expr->params();
+
+  // Returns the argument with the given usage
+  auto arg = [&](Usage usage) {
+    int idx = semantic::IndexOf(parameters, usage);
+    return (idx >= 0) ? arguments[idx] : nullptr;
+  };
+
+  auto* texture = arg(Usage::kTexture);
+  assert(texture);
+
+  auto* texture_type = TypeOf(texture)->UnwrapAll()->As<type::Texture>();
+
+  switch (intrinsic->Type()) {
+    case semantic::IntrinsicType::kTextureDimensions: {
+      std::vector<const char*> dims;
+      switch (texture_type->dim()) {
+        case type::TextureDimension::kNone:
+          diagnostics_.add_error("texture dimension is kNone");
+          return false;
+        case type::TextureDimension::k1d:
+          dims = {"width"};
+          break;
+        case type::TextureDimension::k2d:
+        case type::TextureDimension::k2dArray:
+          dims = {"width", "height"};
+          break;
+        case type::TextureDimension::k3d:
+          dims = {"width", "height", "depth"};
+          break;
+        case type::TextureDimension::kCube:
+        case type::TextureDimension::kCubeArray:
+          // width == height == depth for cubes
+          // See https://github.com/gpuweb/gpuweb/issues/1345
+          dims = {"width", "height", "height"};
+          break;
+      }
+
+      auto get_dim = [&](const char* name) {
+        if (!EmitExpression(texture)) {
+          return false;
+        }
+        out_ << ".get_" << name << "(";
+        if (auto* level = arg(Usage::kLevel)) {
+          if (!EmitExpression(level)) {
+            return false;
+          }
+        }
+        out_ << ")";
+        return true;
+      };
+
+      if (dims.size() == 1) {
+        out_ << "int(";
+        get_dim(dims[0]);
+        out_ << ")";
+      } else {
+        EmitType(TypeOf(expr), "");
+        out_ << "(";
+        for (size_t i = 0; i < dims.size(); i++) {
+          if (i > 0) {
+            out_ << ", ";
+          }
+          get_dim(dims[i]);
+        }
+        out_ << ")";
+      }
+      return true;
+    }
+    case semantic::IntrinsicType::kTextureNumLayers: {
+      out_ << "int(";
+      if (!EmitExpression(texture)) {
+        return false;
+      }
+      out_ << ".get_array_size())";
+      return true;
+    }
+    case semantic::IntrinsicType::kTextureNumLevels: {
+      out_ << "int(";
+      if (!EmitExpression(texture)) {
+        return false;
+      }
+      out_ << ".get_num_mip_levels())";
+      return true;
+    }
+    case semantic::IntrinsicType::kTextureNumSamples: {
+      out_ << "int(";
+      if (!EmitExpression(texture)) {
+        return false;
+      }
+      out_ << ".get_num_samples())";
+      return true;
+    }
+    default:
+      break;
+  }
+
+  if (!EmitExpression(texture))
+    return false;
+
+  bool lod_param_is_named = true;
+
+  switch (intrinsic->Type()) {
+    case semantic::IntrinsicType::kTextureSample:
+    case semantic::IntrinsicType::kTextureSampleBias:
+    case semantic::IntrinsicType::kTextureSampleLevel:
+    case semantic::IntrinsicType::kTextureSampleGrad:
+      out_ << ".sample(";
+      break;
+    case semantic::IntrinsicType::kTextureSampleCompare:
+      out_ << ".sample_compare(";
+      break;
+    case semantic::IntrinsicType::kTextureLoad:
+      out_ << ".read(";
+      lod_param_is_named = false;
+      break;
+    case semantic::IntrinsicType::kTextureStore:
+      out_ << ".write(";
+      break;
+    default:
+      TINT_UNREACHABLE(diagnostics_)
+          << "Unhandled texture intrinsic '" << intrinsic->str() << "'";
+      return false;
+  }
+
+  bool first_arg = true;
+  auto maybe_write_comma = [&] {
+    if (!first_arg) {
+      out_ << ", ";
+    }
+    first_arg = false;
+  };
+
+  for (auto usage :
+       {Usage::kValue, Usage::kSampler, Usage::kCoords, Usage::kArrayIndex,
+        Usage::kDepthRef, Usage::kSampleIndex}) {
+    if (auto* e = arg(usage)) {
+      maybe_write_comma();
+      if (!EmitExpression(e))
+        return false;
+    }
+  }
+
+  if (auto* bias = arg(Usage::kBias)) {
+    maybe_write_comma();
+    out_ << "bias(";
+    if (!EmitExpression(bias)) {
+      return false;
+    }
+    out_ << ")";
+  }
+  if (auto* level = arg(Usage::kLevel)) {
+    maybe_write_comma();
+    if (lod_param_is_named) {
+      out_ << "level(";
+    }
+    if (!EmitExpression(level)) {
+      return false;
+    }
+    if (lod_param_is_named) {
+      out_ << ")";
+    }
+  }
+  if (auto* ddx = arg(Usage::kDdx)) {
+    auto dim = texture_type->dim();
+    switch (dim) {
+      case type::TextureDimension::k2d:
+      case type::TextureDimension::k2dArray:
+        maybe_write_comma();
+        out_ << "gradient2d(";
+        break;
+      case type::TextureDimension::k3d:
+        maybe_write_comma();
+        out_ << "gradient3d(";
+        break;
+      case type::TextureDimension::kCube:
+      case type::TextureDimension::kCubeArray:
+        maybe_write_comma();
+        out_ << "gradientcube(";
+        break;
+      default: {
+        std::stringstream err;
+        err << "MSL does not support gradients for " << dim << " textures";
+        diagnostics_.add_error(err.str());
+        return false;
+      }
+    }
+    if (!EmitExpression(ddx)) {
+      return false;
+    }
+    out_ << ", ";
+    if (!EmitExpression(arg(Usage::kDdy))) {
+      return false;
+    }
+    out_ << ")";
+  }
+
+  if (auto* offset = arg(Usage::kOffset)) {
+    maybe_write_comma();
+    if (!EmitExpression(offset)) {
       return false;
     }
   }
@@ -653,78 +788,140 @@ bool GeneratorImpl::EmitCall(ast::CallExpression* expr) {
 }
 
 std::string GeneratorImpl::generate_builtin_name(
-    ast::IdentifierExpression* ident) {
+    const semantic::Intrinsic* intrinsic) {
   std::string out = "metal::";
-  switch (ident->intrinsic()) {
-    case ast::Intrinsic::kAcos:
-    case ast::Intrinsic::kAsin:
-    case ast::Intrinsic::kAtan:
-    case ast::Intrinsic::kAtan2:
-    case ast::Intrinsic::kCeil:
-    case ast::Intrinsic::kCos:
-    case ast::Intrinsic::kCosh:
-    case ast::Intrinsic::kCross:
-    case ast::Intrinsic::kDeterminant:
-    case ast::Intrinsic::kDistance:
-    case ast::Intrinsic::kExp:
-    case ast::Intrinsic::kExp2:
-    case ast::Intrinsic::kFloor:
-    case ast::Intrinsic::kFma:
-    case ast::Intrinsic::kFract:
-    case ast::Intrinsic::kLength:
-    case ast::Intrinsic::kLog:
-    case ast::Intrinsic::kLog2:
-    case ast::Intrinsic::kMix:
-    case ast::Intrinsic::kNormalize:
-    case ast::Intrinsic::kPow:
-    case ast::Intrinsic::kReflect:
-    case ast::Intrinsic::kRound:
-    case ast::Intrinsic::kSin:
-    case ast::Intrinsic::kSinh:
-    case ast::Intrinsic::kSqrt:
-    case ast::Intrinsic::kStep:
-    case ast::Intrinsic::kTan:
-    case ast::Intrinsic::kTanh:
-    case ast::Intrinsic::kTrunc:
-    case ast::Intrinsic::kSign:
-    case ast::Intrinsic::kClamp:
-      out += ident->name();
+  switch (intrinsic->Type()) {
+    case semantic::IntrinsicType::kAcos:
+    case semantic::IntrinsicType::kAll:
+    case semantic::IntrinsicType::kAny:
+    case semantic::IntrinsicType::kAsin:
+    case semantic::IntrinsicType::kAtan:
+    case semantic::IntrinsicType::kAtan2:
+    case semantic::IntrinsicType::kCeil:
+    case semantic::IntrinsicType::kCos:
+    case semantic::IntrinsicType::kCosh:
+    case semantic::IntrinsicType::kCross:
+    case semantic::IntrinsicType::kDeterminant:
+    case semantic::IntrinsicType::kDistance:
+    case semantic::IntrinsicType::kDot:
+    case semantic::IntrinsicType::kExp:
+    case semantic::IntrinsicType::kExp2:
+    case semantic::IntrinsicType::kFloor:
+    case semantic::IntrinsicType::kFma:
+    case semantic::IntrinsicType::kFract:
+    case semantic::IntrinsicType::kLength:
+    case semantic::IntrinsicType::kLdexp:
+    case semantic::IntrinsicType::kLog:
+    case semantic::IntrinsicType::kLog2:
+    case semantic::IntrinsicType::kMix:
+    case semantic::IntrinsicType::kNormalize:
+    case semantic::IntrinsicType::kPow:
+    case semantic::IntrinsicType::kReflect:
+    case semantic::IntrinsicType::kSelect:
+    case semantic::IntrinsicType::kSin:
+    case semantic::IntrinsicType::kSinh:
+    case semantic::IntrinsicType::kSqrt:
+    case semantic::IntrinsicType::kStep:
+    case semantic::IntrinsicType::kTan:
+    case semantic::IntrinsicType::kTanh:
+    case semantic::IntrinsicType::kTrunc:
+    case semantic::IntrinsicType::kSign:
+    case semantic::IntrinsicType::kClamp:
+      out += intrinsic->str();
       break;
-    case ast::Intrinsic::kAbs:
-      if (ident->result_type()->IsF32()) {
+    case semantic::IntrinsicType::kAbs:
+      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
         out += "fabs";
-      } else if (ident->result_type()->IsU32() ||
-                 ident->result_type()->IsI32()) {
+      } else {
         out += "abs";
       }
       break;
-    case ast::Intrinsic::kMax:
-      if (ident->result_type()->IsF32()) {
+    case semantic::IntrinsicType::kCountOneBits:
+      out += "popcount";
+      break;
+    case semantic::IntrinsicType::kDpdx:
+    case semantic::IntrinsicType::kDpdxCoarse:
+    case semantic::IntrinsicType::kDpdxFine:
+      out += "dfdx";
+      break;
+    case semantic::IntrinsicType::kDpdy:
+    case semantic::IntrinsicType::kDpdyCoarse:
+    case semantic::IntrinsicType::kDpdyFine:
+      out += "dfdy";
+      break;
+    case semantic::IntrinsicType::kFwidth:
+    case semantic::IntrinsicType::kFwidthCoarse:
+    case semantic::IntrinsicType::kFwidthFine:
+      out += "fwidth";
+      break;
+    case semantic::IntrinsicType::kIsFinite:
+      out += "isfinite";
+      break;
+    case semantic::IntrinsicType::kIsInf:
+      out += "isinf";
+      break;
+    case semantic::IntrinsicType::kIsNan:
+      out += "isnan";
+      break;
+    case semantic::IntrinsicType::kIsNormal:
+      out += "isnormal";
+      break;
+    case semantic::IntrinsicType::kMax:
+      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
         out += "fmax";
-      } else if (ident->result_type()->IsU32() ||
-                 ident->result_type()->IsI32()) {
+      } else {
         out += "max";
       }
       break;
-    case ast::Intrinsic::kMin:
-      if (ident->result_type()->IsF32()) {
+    case semantic::IntrinsicType::kMin:
+      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
         out += "fmin";
-      } else if (ident->result_type()->IsU32() ||
-                 ident->result_type()->IsI32()) {
+      } else {
         out += "min";
       }
       break;
-    case ast::Intrinsic::kFaceForward:
+    case semantic::IntrinsicType::kFaceForward:
       out += "faceforward";
       break;
-    case ast::Intrinsic::kSmoothStep:
+    case semantic::IntrinsicType::kPack4x8Snorm:
+      out += "pack_float_to_snorm4x8";
+      break;
+    case semantic::IntrinsicType::kPack4x8Unorm:
+      out += "pack_float_to_unorm4x8";
+      break;
+    case semantic::IntrinsicType::kPack2x16Snorm:
+      out += "pack_float_to_snorm2x16";
+      break;
+    case semantic::IntrinsicType::kPack2x16Unorm:
+      out += "pack_float_to_unorm2x16";
+      break;
+    case semantic::IntrinsicType::kReverseBits:
+      out += "reverse_bits";
+      break;
+    case semantic::IntrinsicType::kRound:
+      out += "rint";
+      break;
+    case semantic::IntrinsicType::kSmoothStep:
       out += "smoothstep";
       break;
-    case ast::Intrinsic::kInverseSqrt:
+    case semantic::IntrinsicType::kInverseSqrt:
       out += "rsqrt";
       break;
+    case semantic::IntrinsicType::kUnpack4x8Snorm:
+      out += "unpack_snorm4x8_to_float";
+      break;
+    case semantic::IntrinsicType::kUnpack4x8Unorm:
+      out += "unpack_unorm4x8_to_float";
+      break;
+    case semantic::IntrinsicType::kUnpack2x16Snorm:
+      out += "unpack_snorm2x16_to_float";
+      break;
+    case semantic::IntrinsicType::kUnpack2x16Unorm:
+      out += "unpack_unorm2x16_to_float";
+      break;
     default:
-      error_ = "Unknown import method: " + ident->name();
+      diagnostics_.add_error("Unknown import method: " +
+                             std::string(intrinsic->str()));
       return "";
   }
   return out;
@@ -737,7 +934,7 @@ bool GeneratorImpl::EmitCase(ast::CaseStatement* stmt) {
     out_ << "default:";
   } else {
     bool first = true;
-    for (const auto& selector : stmt->selectors()) {
+    for (auto* selector : stmt->selectors()) {
       if (!first) {
         out_ << std::endl;
         make_indent();
@@ -745,7 +942,7 @@ bool GeneratorImpl::EmitCase(ast::CaseStatement* stmt) {
       first = false;
 
       out_ << "case ";
-      if (!EmitLiteral(selector.get())) {
+      if (!EmitLiteral(selector)) {
         return false;
       }
       out_ << ":";
@@ -756,8 +953,8 @@ bool GeneratorImpl::EmitCase(ast::CaseStatement* stmt) {
 
   increment_indent();
 
-  for (const auto& s : *(stmt->body())) {
-    if (!EmitStatement(s.get())) {
+  for (auto* s : *stmt->body()) {
+    if (!EmitStatement(s)) {
       return false;
     }
   }
@@ -775,10 +972,10 @@ bool GeneratorImpl::EmitCase(ast::CaseStatement* stmt) {
 }
 
 bool GeneratorImpl::EmitConstructor(ast::ConstructorExpression* expr) {
-  if (expr->IsScalarConstructor()) {
-    return EmitScalarConstructor(expr->AsScalarConstructor());
+  if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
+    return EmitScalarConstructor(scalar);
   }
-  return EmitTypeConstructor(expr->AsTypeConstructor());
+  return EmitTypeConstructor(expr->As<ast::TypeConstructorExpression>());
 }
 
 bool GeneratorImpl::EmitContinue(ast::ContinueStatement*) {
@@ -788,7 +985,7 @@ bool GeneratorImpl::EmitContinue(ast::ContinueStatement*) {
 }
 
 bool GeneratorImpl::EmitTypeConstructor(ast::TypeConstructorExpression* expr) {
-  if (expr->type()->IsArray()) {
+  if (expr->type()->Is<type::Array>()) {
     out_ << "{";
   } else {
     if (!EmitType(expr->type(), "")) {
@@ -805,19 +1002,19 @@ bool GeneratorImpl::EmitTypeConstructor(ast::TypeConstructorExpression* expr) {
     }
   } else {
     bool first = true;
-    for (const auto& e : expr->values()) {
+    for (auto* e : expr->values()) {
       if (!first) {
         out_ << ", ";
       }
       first = false;
 
-      if (!EmitExpression(e.get())) {
+      if (!EmitExpression(e)) {
         return false;
       }
     }
   }
 
-  if (expr->type()->IsArray()) {
+  if (expr->type()->Is<type::Array>()) {
     out_ << "}";
   } else {
     out_ << ")";
@@ -825,29 +1022,30 @@ bool GeneratorImpl::EmitTypeConstructor(ast::TypeConstructorExpression* expr) {
   return true;
 }
 
-bool GeneratorImpl::EmitZeroValue(ast::type::Type* type) {
-  if (type->IsBool()) {
+bool GeneratorImpl::EmitZeroValue(type::Type* type) {
+  if (type->Is<type::Bool>()) {
     out_ << "false";
-  } else if (type->IsF32()) {
+  } else if (type->Is<type::F32>()) {
     out_ << "0.0f";
-  } else if (type->IsI32()) {
+  } else if (type->Is<type::I32>()) {
     out_ << "0";
-  } else if (type->IsU32()) {
+  } else if (type->Is<type::U32>()) {
     out_ << "0u";
-  } else if (type->IsVector()) {
-    return EmitZeroValue(type->AsVector()->type());
-  } else if (type->IsMatrix()) {
-    return EmitZeroValue(type->AsMatrix()->type());
-  } else if (type->IsArray()) {
+  } else if (auto* vec = type->As<type::Vector>()) {
+    return EmitZeroValue(vec->type());
+  } else if (auto* mat = type->As<type::Matrix>()) {
+    return EmitZeroValue(mat->type());
+  } else if (auto* arr = type->As<type::Array>()) {
     out_ << "{";
-    if (!EmitZeroValue(type->AsArray()->type())) {
+    if (!EmitZeroValue(arr->type())) {
       return false;
     }
     out_ << "}";
-  } else if (type->IsStruct()) {
+  } else if (type->As<type::Struct>()) {
     out_ << "{}";
   } else {
-    error_ = "Invalid type for zero emission: " + type->type_name();
+    diagnostics_.add_error("Invalid type for zero emission: " +
+                           type->type_name());
     return false;
   }
   return true;
@@ -859,59 +1057,54 @@ bool GeneratorImpl::EmitScalarConstructor(
 }
 
 bool GeneratorImpl::EmitLiteral(ast::Literal* lit) {
-  if (lit->IsBool()) {
-    out_ << (lit->AsBool()->IsTrue() ? "true" : "false");
-  } else if (lit->IsFloat()) {
-    auto flags = out_.flags();
-    auto precision = out_.precision();
-
-    out_.flags(flags | std::ios_base::showpoint);
-    out_.precision(std::numeric_limits<float>::max_digits10);
-
-    out_ << lit->AsFloat()->value() << "f";
-
-    out_.precision(precision);
-    out_.flags(flags);
-  } else if (lit->IsSint()) {
-    out_ << lit->AsSint()->value();
-  } else if (lit->IsUint()) {
-    out_ << lit->AsUint()->value() << "u";
+  if (auto* l = lit->As<ast::BoolLiteral>()) {
+    out_ << (l->IsTrue() ? "true" : "false");
+  } else if (auto* fl = lit->As<ast::FloatLiteral>()) {
+    out_ << FloatToString(fl->value()) << "f";
+  } else if (auto* sl = lit->As<ast::SintLiteral>()) {
+    out_ << sl->value();
+  } else if (auto* ul = lit->As<ast::UintLiteral>()) {
+    out_ << ul->value() << "u";
   } else {
-    error_ = "unknown literal type";
+    diagnostics_.add_error("unknown literal type");
     return false;
   }
   return true;
 }
 
 bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
+  auto* func_sem = program_->Sem().Get(func);
+
   std::vector<std::pair<ast::Variable*, uint32_t>> in_locations;
   std::vector<std::pair<ast::Variable*, ast::VariableDecoration*>>
       out_variables;
-  for (auto data : func->referenced_location_variables()) {
+
+  for (auto data : func_sem->ReferencedLocationVariables()) {
     auto* var = data.first;
     auto* deco = data.second;
 
-    if (var->storage_class() == ast::StorageClass::kInput) {
-      in_locations.push_back({var, deco->value()});
-    } else if (var->storage_class() == ast::StorageClass::kOutput) {
-      out_variables.push_back({var, deco});
+    if (var->StorageClass() == ast::StorageClass::kInput) {
+      in_locations.push_back({var->Declaration(), deco->value()});
+    } else if (var->StorageClass() == ast::StorageClass::kOutput) {
+      out_variables.push_back({var->Declaration(), deco});
     }
   }
 
-  for (auto data : func->referenced_builtin_variables()) {
+  for (auto data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
     auto* deco = data.second;
 
-    if (var->storage_class() == ast::StorageClass::kOutput) {
-      out_variables.push_back({var, deco});
+    if (var->StorageClass() == ast::StorageClass::kOutput) {
+      out_variables.push_back({var->Declaration(), deco});
     }
   }
 
   if (!in_locations.empty()) {
     auto in_struct_name =
-        generate_name(func->name() + "_" + kInStructNameSuffix);
+        generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
+                      kInStructNameSuffix);
     auto in_var_name = generate_name(kTintStructInVarPrefix);
-    ep_name_to_in_data_[func->name()] = {in_struct_name, in_var_name};
+    ep_sym_to_in_data_[func->symbol()] = {in_struct_name, in_var_name};
 
     make_indent();
     out_ << "struct " << in_struct_name << " {" << std::endl;
@@ -923,17 +1116,17 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
       uint32_t loc = data.second;
 
       make_indent();
-      if (!EmitType(var->type(), var->name())) {
+      if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
-      out_ << " " << var->name() << " [[";
+      out_ << " " << program_->Symbols().NameFor(var->symbol()) << " [[";
       if (func->pipeline_stage() == ast::PipelineStage::kVertex) {
         out_ << "attribute(" << loc << ")";
       } else if (func->pipeline_stage() == ast::PipelineStage::kFragment) {
         out_ << "user(locn" << loc << ")";
       } else {
-        error_ = "invalid location variable for pipeline stage";
+        diagnostics_.add_error("invalid location variable for pipeline stage");
         return false;
       }
       out_ << "]];" << std::endl;
@@ -946,9 +1139,10 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
 
   if (!out_variables.empty()) {
     auto out_struct_name =
-        generate_name(func->name() + "_" + kOutStructNameSuffix);
+        generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
+                      kOutStructNameSuffix);
     auto out_var_name = generate_name(kTintStructOutVarPrefix);
-    ep_name_to_out_data_[func->name()] = {out_struct_name, out_var_name};
+    ep_sym_to_out_data_[func->symbol()] = {out_struct_name, out_var_name};
 
     make_indent();
     out_ << "struct " << out_struct_name << " {" << std::endl;
@@ -959,31 +1153,33 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
       auto* deco = data.second;
 
       make_indent();
-      if (!EmitType(var->type(), var->name())) {
+      if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
-      out_ << " " << var->name() << " [[";
+      out_ << " " << program_->Symbols().NameFor(var->symbol()) << " [[";
 
-      if (deco->IsLocation()) {
-        auto loc = deco->AsLocation()->value();
+      if (auto* location = deco->As<ast::LocationDecoration>()) {
+        auto loc = location->value();
         if (func->pipeline_stage() == ast::PipelineStage::kVertex) {
           out_ << "user(locn" << loc << ")";
         } else if (func->pipeline_stage() == ast::PipelineStage::kFragment) {
           out_ << "color(" << loc << ")";
         } else {
-          error_ = "invalid location variable for pipeline stage";
+          diagnostics_.add_error(
+              "invalid location variable for pipeline stage");
           return false;
         }
-      } else if (deco->IsBuiltin()) {
-        auto attr = builtin_to_attribute(deco->AsBuiltin()->value());
+      } else if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
+        auto attr = builtin_to_attribute(builtin->value());
         if (attr.empty()) {
-          error_ = "unsupported builtin";
+          diagnostics_.add_error("unsupported builtin");
           return false;
         }
         out_ << attr;
       } else {
-        error_ = "unsupported variable decoration for entry point output";
+        diagnostics_.add_error(
+            "unsupported variable decoration for entry point output");
         return false;
       }
       out_ << "]];" << std::endl;
@@ -997,32 +1193,32 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
 }
 
 bool GeneratorImpl::EmitExpression(ast::Expression* expr) {
-  if (expr->IsArrayAccessor()) {
-    return EmitArrayAccessor(expr->AsArrayAccessor());
+  if (auto* a = expr->As<ast::ArrayAccessorExpression>()) {
+    return EmitArrayAccessor(a);
   }
-  if (expr->IsBinary()) {
-    return EmitBinary(expr->AsBinary());
+  if (auto* b = expr->As<ast::BinaryExpression>()) {
+    return EmitBinary(b);
   }
-  if (expr->IsBitcast()) {
-    return EmitBitcast(expr->AsBitcast());
+  if (auto* b = expr->As<ast::BitcastExpression>()) {
+    return EmitBitcast(b);
   }
-  if (expr->IsCall()) {
-    return EmitCall(expr->AsCall());
+  if (auto* c = expr->As<ast::CallExpression>()) {
+    return EmitCall(c);
   }
-  if (expr->IsConstructor()) {
-    return EmitConstructor(expr->AsConstructor());
+  if (auto* c = expr->As<ast::ConstructorExpression>()) {
+    return EmitConstructor(c);
   }
-  if (expr->IsIdentifier()) {
-    return EmitIdentifier(expr->AsIdentifier());
+  if (auto* i = expr->As<ast::IdentifierExpression>()) {
+    return EmitIdentifier(i);
   }
-  if (expr->IsMemberAccessor()) {
-    return EmitMemberAccessor(expr->AsMemberAccessor());
+  if (auto* m = expr->As<ast::MemberAccessorExpression>()) {
+    return EmitMemberAccessor(m);
   }
-  if (expr->IsUnaryOp()) {
-    return EmitUnaryOp(expr->AsUnaryOp());
+  if (auto* u = expr->As<ast::UnaryOpExpression>()) {
+    return EmitUnaryOp(u);
   }
 
-  error_ = "unknown expression type: " + expr->str();
+  diagnostics_.add_error("unknown expression type: " + program_->str(expr));
   return false;
 }
 
@@ -1044,9 +1240,10 @@ void GeneratorImpl::EmitStage(ast::PipelineStage stage) {
 }
 
 bool GeneratorImpl::has_referenced_in_var_needing_struct(ast::Function* func) {
-  for (auto data : func->referenced_location_variables()) {
+  auto* func_sem = program_->Sem().Get(func);
+  for (auto data : func_sem->ReferencedLocationVariables()) {
     auto* var = data.first;
-    if (var->storage_class() == ast::StorageClass::kInput) {
+    if (var->StorageClass() == ast::StorageClass::kInput) {
       return true;
     }
   }
@@ -1054,16 +1251,18 @@ bool GeneratorImpl::has_referenced_in_var_needing_struct(ast::Function* func) {
 }
 
 bool GeneratorImpl::has_referenced_out_var_needing_struct(ast::Function* func) {
-  for (auto data : func->referenced_location_variables()) {
+  auto* func_sem = program_->Sem().Get(func);
+
+  for (auto data : func_sem->ReferencedLocationVariables()) {
     auto* var = data.first;
-    if (var->storage_class() == ast::StorageClass::kOutput) {
+    if (var->StorageClass() == ast::StorageClass::kOutput) {
       return true;
     }
   }
 
-  for (auto data : func->referenced_builtin_variables()) {
+  for (auto data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
-    if (var->storage_class() == ast::StorageClass::kOutput) {
+    if (var->StorageClass() == ast::StorageClass::kOutput) {
       return true;
     }
   }
@@ -1076,6 +1275,8 @@ bool GeneratorImpl::has_referenced_var_needing_struct(ast::Function* func) {
 }
 
 bool GeneratorImpl::EmitFunction(ast::Function* func) {
+  auto* func_sem = program_->Sem().Get(func);
+
   make_indent();
 
   // Entry points will be emitted later, skip for now.
@@ -1086,19 +1287,19 @@ bool GeneratorImpl::EmitFunction(ast::Function* func) {
   // TODO(dsinclair): This could be smarter. If the input/outputs for multiple
   // entry points are the same we could generate a single struct and then have
   // this determine it's the same struct and just emit once.
-  bool emit_duplicate_functions = func->ancestor_entry_points().size() > 0 &&
+  bool emit_duplicate_functions = func_sem->AncestorEntryPoints().size() > 0 &&
                                   has_referenced_var_needing_struct(func);
 
   if (emit_duplicate_functions) {
-    for (const auto& ep_name : func->ancestor_entry_points()) {
-      if (!EmitFunctionInternal(func, emit_duplicate_functions, ep_name)) {
+    for (const auto& ep_sym : func_sem->AncestorEntryPoints()) {
+      if (!EmitFunctionInternal(func, emit_duplicate_functions, ep_sym)) {
         return false;
       }
       out_ << std::endl;
     }
   } else {
     // Emit as non-duplicated
-    if (!EmitFunctionInternal(func, false, "")) {
+    if (!EmitFunctionInternal(func, false, Symbol())) {
       return false;
     }
     out_ << std::endl;
@@ -1109,19 +1310,26 @@ bool GeneratorImpl::EmitFunction(ast::Function* func) {
 
 bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
                                          bool emit_duplicate_functions,
-                                         const std::string& ep_name) {
-  auto name = func->name();
+                                         Symbol ep_sym) {
+  auto* func_sem = program_->Sem().Get(func);
 
+  auto name = func->symbol().to_str();
   if (!EmitType(func->return_type(), "")) {
     return false;
   }
 
   out_ << " ";
   if (emit_duplicate_functions) {
-    name = generate_name(name + "_" + ep_name);
-    ep_func_name_remapped_[ep_name + "_" + func->name()] = name;
+    auto func_name = name;
+    auto ep_name = ep_sym.to_str();
+    // TODO(dsinclair): The SymbolToName should go away and just use
+    // to_str() here when the conversion is complete.
+    name = generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
+                         program_->Symbols().NameFor(ep_sym));
+    ep_func_name_remapped_[ep_name + "_" + func_name] = name;
   } else {
-    name = namer_.NameFor(name);
+    // TODO(dsinclair): this should be updated to a remapped name
+    name = namer_.NameFor(program_->Symbols().NameFor(func->symbol()));
   }
   out_ << name << "(";
 
@@ -1132,15 +1340,15 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
   //
   // We emit both of them if they're there regardless of if they're both used.
   if (emit_duplicate_functions) {
-    auto in_it = ep_name_to_in_data_.find(ep_name);
-    if (in_it != ep_name_to_in_data_.end()) {
+    auto in_it = ep_sym_to_in_data_.find(ep_sym);
+    if (in_it != ep_sym_to_in_data_.end()) {
       out_ << "thread " << in_it->second.struct_name << "& "
            << in_it->second.var_name;
       first = false;
     }
 
-    auto out_it = ep_name_to_out_data_.find(ep_name);
-    if (out_it != ep_name_to_out_data_.end()) {
+    auto out_it = ep_sym_to_out_data_.find(ep_sym);
+    if (out_it != ep_sym_to_out_data_.end()) {
       if (!first) {
         out_ << ", ";
       }
@@ -1150,9 +1358,9 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     }
   }
 
-  for (const auto& data : func->referenced_builtin_variables()) {
+  for (const auto& data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
-    if (var->storage_class() != ast::StorageClass::kInput) {
+    if (var->StorageClass() != ast::StorageClass::kInput) {
       continue;
     }
     if (!first) {
@@ -1161,13 +1369,13 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     first = false;
 
     out_ << "thread ";
-    if (!EmitType(var->type(), "")) {
+    if (!EmitType(var->Declaration()->type(), "")) {
       return false;
     }
-    out_ << "& " << var->name();
+    out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
-  for (const auto& data : func->referenced_uniform_variables()) {
+  for (const auto& data : func_sem->ReferencedUniformVariables()) {
     auto* var = data.first;
     if (!first) {
       out_ << ", ";
@@ -1176,24 +1384,25 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
 
     out_ << "constant ";
     // TODO(dsinclair): Can arrays be uniform? If so, fix this ...
-    if (!EmitType(var->type(), "")) {
+    if (!EmitType(var->Declaration()->type(), "")) {
       return false;
     }
-    out_ << "& " << var->name();
+    out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
-  for (const auto& data : func->referenced_storagebuffer_variables()) {
+  for (const auto& data : func_sem->ReferencedStorageBufferVariables()) {
     auto* var = data.first;
     if (!first) {
       out_ << ", ";
     }
     first = false;
 
-    if (!var->type()->IsAccessControl()) {
-      error_ = "invalid type for storage buffer, expected access control";
+    auto* ac = var->Declaration()->type()->As<type::AccessControl>();
+    if (ac == nullptr) {
+      diagnostics_.add_error(
+          "invalid type for storage buffer, expected access control");
       return false;
     }
-    auto* ac = var->type()->AsAccessControl();
     if (ac->IsReadOnly()) {
       out_ << "const ";
     }
@@ -1202,33 +1411,33 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     if (!EmitType(ac->type(), "")) {
       return false;
     }
-    out_ << "& " << var->name();
+    out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol());
   }
 
-  for (const auto& v : func->params()) {
+  for (auto* v : func->params()) {
     if (!first) {
       out_ << ", ";
     }
     first = false;
 
-    if (!EmitType(v->type(), v->name())) {
+    if (!EmitType(v->type(), program_->Symbols().NameFor(v->symbol()))) {
       return false;
     }
     // Array name is output as part of the type
-    if (!v->type()->IsArray()) {
-      out_ << " " << v->name();
+    if (!v->type()->Is<type::Array>()) {
+      out_ << " " << program_->Symbols().NameFor(v->symbol());
     }
   }
 
   out_ << ") ";
 
-  current_ep_name_ = ep_name;
+  current_ep_sym_ = ep_sym;
 
   if (!EmitBlockAndNewline(func->body())) {
     return false;
   }
 
-  current_ep_name_ = "";
+  current_ep_sym_ = Symbol();
 
   return true;
 }
@@ -1237,9 +1446,9 @@ std::string GeneratorImpl::builtin_to_attribute(ast::Builtin builtin) const {
   switch (builtin) {
     case ast::Builtin::kPosition:
       return "position";
-    case ast::Builtin::kVertexIdx:
+    case ast::Builtin::kVertexIndex:
       return "vertex_id";
-    case ast::Builtin::kInstanceIdx:
+    case ast::Builtin::kInstanceIndex:
       return "instance_id";
     case ast::Builtin::kFrontFacing:
       return "front_facing";
@@ -1249,10 +1458,16 @@ std::string GeneratorImpl::builtin_to_attribute(ast::Builtin builtin) const {
       return "depth(any)";
     case ast::Builtin::kLocalInvocationId:
       return "thread_position_in_threadgroup";
-    case ast::Builtin::kLocalInvocationIdx:
+    case ast::Builtin::kLocalInvocationIndex:
       return "thread_index_in_threadgroup";
     case ast::Builtin::kGlobalInvocationId:
       return "thread_position_in_grid";
+    case ast::Builtin::kSampleIndex:
+      return "sample_id";
+    case ast::Builtin::kSampleMaskIn:
+      return "sample_mask";
+    case ast::Builtin::kSampleMaskOut:
+      return "sample_mask";
     default:
       break;
   }
@@ -1260,35 +1475,38 @@ std::string GeneratorImpl::builtin_to_attribute(ast::Builtin builtin) const {
 }
 
 bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
+  auto* func_sem = program_->Sem().Get(func);
+
   make_indent();
 
-  current_ep_name_ = func->name();
+  current_ep_sym_ = func->symbol();
 
   EmitStage(func->pipeline_stage());
   out_ << " ";
 
   // This is an entry point, the return type is the entry point output structure
   // if one exists, or void otherwise.
-  auto out_data = ep_name_to_out_data_.find(current_ep_name_);
-  bool has_out_data = out_data != ep_name_to_out_data_.end();
+  auto out_data = ep_sym_to_out_data_.find(current_ep_sym_);
+  bool has_out_data = out_data != ep_sym_to_out_data_.end();
   if (has_out_data) {
     out_ << out_data->second.struct_name;
   } else {
     out_ << "void";
   }
-  out_ << " " << namer_.NameFor(current_ep_name_) << "(";
+  out_ << " " << namer_.NameFor(program_->Symbols().NameFor(func->symbol()))
+       << "(";
 
   bool first = true;
-  auto in_data = ep_name_to_in_data_.find(current_ep_name_);
-  if (in_data != ep_name_to_in_data_.end()) {
+  auto in_data = ep_sym_to_in_data_.find(current_ep_sym_);
+  if (in_data != ep_sym_to_in_data_.end()) {
     out_ << in_data->second.struct_name << " " << in_data->second.var_name
          << " [[stage_in]]";
     first = false;
   }
 
-  for (auto data : func->referenced_builtin_variables()) {
+  for (auto data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
-    if (var->storage_class() != ast::StorageClass::kInput) {
+    if (var->StorageClass() != ast::StorageClass::kInput) {
       continue;
     }
 
@@ -1299,19 +1517,20 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
 
     auto* builtin = data.second;
 
-    if (!EmitType(var->type(), "")) {
+    if (!EmitType(var->Declaration()->type(), "")) {
       return false;
     }
 
     auto attr = builtin_to_attribute(builtin->value());
     if (attr.empty()) {
-      error_ = "unknown builtin";
+      diagnostics_.add_error("unknown builtin");
       return false;
     }
-    out_ << " " << var->name() << " [[" << attr << "]]";
+    out_ << " " << program_->Symbols().NameFor(var->Declaration()->symbol())
+         << " [[" << attr << "]]";
   }
 
-  for (auto data : func->referenced_uniform_variables()) {
+  for (auto data : func_sem->ReferencedUniformVariables()) {
     if (!first) {
       out_ << ", ";
     }
@@ -1323,7 +1542,9 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     // set. https://bugs.chromium.org/p/tint/issues/detail?id=104
     auto* binding = data.second.binding;
     if (binding == nullptr) {
-      error_ = "unable to find binding information for uniform: " + var->name();
+      diagnostics_.add_error(
+          "unable to find binding information for uniform: " +
+          program_->Symbols().NameFor(var->Declaration()->symbol()));
       return false;
     }
     // auto* set = data.second.set;
@@ -1331,13 +1552,14 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     out_ << "constant ";
     // TODO(dsinclair): Can you have a uniform array? If so, this needs to be
     // updated to handle arrays property.
-    if (!EmitType(var->type(), "")) {
+    if (!EmitType(var->Declaration()->type(), "")) {
       return false;
     }
-    out_ << "& " << var->name() << " [[buffer(" << binding->value() << ")]]";
+    out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol())
+         << " [[buffer(" << binding->value() << ")]]";
   }
 
-  for (auto data : func->referenced_storagebuffer_variables()) {
+  for (auto data : func_sem->ReferencedStorageBufferVariables()) {
     if (!first) {
       out_ << ", ";
     }
@@ -1350,11 +1572,12 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     auto* binding = data.second.binding;
     // auto* set = data.second.set;
 
-    if (!var->type()->IsAccessControl()) {
-      error_ = "invalid type for storage buffer, expected access control";
+    auto* ac = var->Declaration()->type()->As<type::AccessControl>();
+    if (ac == nullptr) {
+      diagnostics_.add_error(
+          "invalid type for storage buffer, expected access control");
       return false;
     }
-    auto* ac = var->type()->AsAccessControl();
     if (ac->IsReadOnly()) {
       out_ << "const ";
     }
@@ -1363,7 +1586,8 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     if (!EmitType(ac->type(), "")) {
       return false;
     }
-    out_ << "& " << var->name() << " [[buffer(" << binding->value() << ")]]";
+    out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol())
+         << " [[buffer(" << binding->value() << ")]]";
   }
 
   out_ << ") {" << std::endl;
@@ -1377,8 +1601,16 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
   }
 
   generating_entry_point_ = true;
-  for (const auto& s : *(func->body())) {
-    if (!EmitStatement(s.get())) {
+  for (auto* s : *func->body()) {
+    if (!EmitStatement(s)) {
+      return false;
+    }
+  }
+  auto* last_statement = func->get_last_statement();
+  if (last_statement == nullptr ||
+      !last_statement->Is<ast::ReturnStatement>()) {
+    ast::ReturnStatement ret(Source{});
+    if (!EmitStatement(&ret)) {
       return false;
     }
   }
@@ -1388,38 +1620,39 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
   make_indent();
   out_ << "}" << std::endl;
 
-  current_ep_name_ = "";
+  current_ep_sym_ = Symbol();
   return true;
 }
 
-bool GeneratorImpl::global_is_in_struct(ast::Variable* var) const {
+bool GeneratorImpl::global_is_in_struct(const semantic::Variable* var) const {
   bool in_or_out_struct_has_location =
-      var->IsDecorated() && var->AsDecorated()->HasLocationDecoration() &&
-      (var->storage_class() == ast::StorageClass::kInput ||
-       var->storage_class() == ast::StorageClass::kOutput);
+      var != nullptr && var->Declaration()->HasLocationDecoration() &&
+      (var->StorageClass() == ast::StorageClass::kInput ||
+       var->StorageClass() == ast::StorageClass::kOutput);
   bool in_struct_has_builtin =
-      var->IsDecorated() && var->AsDecorated()->HasBuiltinDecoration() &&
-      var->storage_class() == ast::StorageClass::kOutput;
+      var != nullptr && var->Declaration()->HasBuiltinDecoration() &&
+      var->StorageClass() == ast::StorageClass::kOutput;
   return in_or_out_struct_has_location || in_struct_has_builtin;
 }
 
 bool GeneratorImpl::EmitIdentifier(ast::IdentifierExpression* expr) {
-  auto* ident = expr->AsIdentifier();
-  ast::Variable* var = nullptr;
-  if (global_variables_.get(ident->name(), &var)) {
+  auto* ident = expr->As<ast::IdentifierExpression>();
+  const semantic::Variable* var = nullptr;
+  if (global_variables_.get(ident->symbol(), &var)) {
     if (global_is_in_struct(var)) {
-      auto var_type = var->storage_class() == ast::StorageClass::kInput
+      auto var_type = var->StorageClass() == ast::StorageClass::kInput
                           ? VarType::kIn
                           : VarType::kOut;
       auto name = current_ep_var_name(var_type);
       if (name.empty()) {
-        error_ = "unable to find entry point data for variable";
+        diagnostics_.add_error("unable to find entry point data for variable");
         return false;
       }
       out_ << name << ".";
     }
   }
-  out_ << namer_.NameFor(ident->name());
+
+  out_ << namer_.NameFor(program_->Symbols().NameFor(ident->symbol()));
 
   return true;
 }
@@ -1444,12 +1677,11 @@ bool GeneratorImpl::EmitLoop(ast::LoopStatement* stmt) {
     // first pass, if we have a continuing, we pull all declarations outside
     // the for loop into the continuing scope. Then, the variable declarations
     // will be turned into assignments.
-    for (const auto& s : *(stmt->body())) {
-      if (!s->IsVariableDecl()) {
-        continue;
-      }
-      if (!EmitVariable(s->AsVariableDecl()->variable(), true)) {
-        return false;
+    for (auto* s : *(stmt->body())) {
+      if (auto* decl = s->As<ast::VariableDeclStatement>()) {
+        if (!EmitVariable(program_->Sem().Get(decl->variable()), true)) {
+          return false;
+        }
       }
     }
   }
@@ -1471,14 +1703,15 @@ bool GeneratorImpl::EmitLoop(ast::LoopStatement* stmt) {
     out_ << std::endl;
   }
 
-  for (const auto& s : *(stmt->body())) {
+  for (auto* s : *(stmt->body())) {
     // If we have a continuing block we've already emitted the variable
     // declaration before the loop, so treat it as an assignment.
-    if (s->IsVariableDecl() && stmt->has_continuing()) {
+    auto* decl = s->As<ast::VariableDeclStatement>();
+    if (decl != nullptr && stmt->has_continuing()) {
       make_indent();
 
-      auto* var = s->AsVariableDecl()->variable();
-      out_ << var->name() << " = ";
+      auto* var = decl->variable();
+      out_ << program_->Symbols().NameFor(var->symbol()) << " = ";
       if (var->constructor() != nullptr) {
         if (!EmitExpression(var->constructor())) {
           return false;
@@ -1492,7 +1725,7 @@ bool GeneratorImpl::EmitLoop(ast::LoopStatement* stmt) {
       continue;
     }
 
-    if (!EmitStatement(s.get())) {
+    if (!EmitStatement(s)) {
       return false;
     }
   }
@@ -1546,8 +1779,8 @@ bool GeneratorImpl::EmitIf(ast::IfStatement* stmt) {
     return false;
   }
 
-  for (const auto& e : stmt->else_statements()) {
-    if (!EmitElse(e.get())) {
+  for (auto* e : stmt->else_statements()) {
+    if (!EmitElse(e)) {
       return false;
     }
   }
@@ -1563,7 +1796,14 @@ bool GeneratorImpl::EmitMemberAccessor(ast::MemberAccessorExpression* expr) {
 
   out_ << ".";
 
-  return EmitExpression(expr->member());
+  // Swizzles get written out directly
+  if (program_->Sem().Get(expr)->IsSwizzle()) {
+    out_ << program_->Symbols().NameFor(expr->member()->symbol());
+  } else if (!EmitExpression(expr->member())) {
+    return false;
+  }
+
+  return true;
 }
 
 bool GeneratorImpl::EmitReturn(ast::ReturnStatement* stmt) {
@@ -1572,8 +1812,8 @@ bool GeneratorImpl::EmitReturn(ast::ReturnStatement* stmt) {
   out_ << "return";
 
   if (generating_entry_point_) {
-    auto out_data = ep_name_to_out_data_.find(current_ep_name_);
-    if (out_data != ep_name_to_out_data_.end()) {
+    auto out_data = ep_sym_to_out_data_.find(current_ep_sym_);
+    if (out_data != ep_sym_to_out_data_.end()) {
       out_ << " " << out_data->second.var_name;
     }
   } else if (stmt->has_value()) {
@@ -1590,8 +1830,8 @@ bool GeneratorImpl::EmitBlock(const ast::BlockStatement* stmt) {
   out_ << "{" << std::endl;
   increment_indent();
 
-  for (const auto& s : *stmt) {
-    if (!EmitStatement(s.get())) {
+  for (auto* s : *stmt) {
+    if (!EmitStatement(s)) {
       return false;
     }
   }
@@ -1621,51 +1861,52 @@ bool GeneratorImpl::EmitIndentedBlockAndNewline(ast::BlockStatement* stmt) {
 }
 
 bool GeneratorImpl::EmitStatement(ast::Statement* stmt) {
-  if (stmt->IsAssign()) {
-    return EmitAssign(stmt->AsAssign());
+  if (auto* a = stmt->As<ast::AssignmentStatement>()) {
+    return EmitAssign(a);
   }
-  if (stmt->IsBlock()) {
-    return EmitIndentedBlockAndNewline(stmt->AsBlock());
+  if (auto* b = stmt->As<ast::BlockStatement>()) {
+    return EmitIndentedBlockAndNewline(b);
   }
-  if (stmt->IsBreak()) {
-    return EmitBreak(stmt->AsBreak());
+  if (auto* b = stmt->As<ast::BreakStatement>()) {
+    return EmitBreak(b);
   }
-  if (stmt->IsCall()) {
+  if (auto* c = stmt->As<ast::CallStatement>()) {
     make_indent();
-    if (!EmitCall(stmt->AsCall()->expr())) {
+    if (!EmitCall(c->expr())) {
       return false;
     }
     out_ << ";" << std::endl;
     return true;
   }
-  if (stmt->IsContinue()) {
-    return EmitContinue(stmt->AsContinue());
+  if (auto* c = stmt->As<ast::ContinueStatement>()) {
+    return EmitContinue(c);
   }
-  if (stmt->IsDiscard()) {
-    return EmitDiscard(stmt->AsDiscard());
+  if (auto* d = stmt->As<ast::DiscardStatement>()) {
+    return EmitDiscard(d);
   }
-  if (stmt->IsFallthrough()) {
+  if (stmt->As<ast::FallthroughStatement>()) {
     make_indent();
     out_ << "/* fallthrough */" << std::endl;
     return true;
   }
-  if (stmt->IsIf()) {
-    return EmitIf(stmt->AsIf());
+  if (auto* i = stmt->As<ast::IfStatement>()) {
+    return EmitIf(i);
   }
-  if (stmt->IsLoop()) {
-    return EmitLoop(stmt->AsLoop());
+  if (auto* l = stmt->As<ast::LoopStatement>()) {
+    return EmitLoop(l);
   }
-  if (stmt->IsReturn()) {
-    return EmitReturn(stmt->AsReturn());
+  if (auto* r = stmt->As<ast::ReturnStatement>()) {
+    return EmitReturn(r);
   }
-  if (stmt->IsSwitch()) {
-    return EmitSwitch(stmt->AsSwitch());
+  if (auto* s = stmt->As<ast::SwitchStatement>()) {
+    return EmitSwitch(s);
   }
-  if (stmt->IsVariableDecl()) {
-    return EmitVariable(stmt->AsVariableDecl()->variable(), false);
+  if (auto* v = stmt->As<ast::VariableDeclStatement>()) {
+    auto* var = program_->Sem().Get(v->variable());
+    return EmitVariable(var, false);
   }
 
-  error_ = "unknown statement type: " + stmt->str();
+  diagnostics_.add_error("unknown statement type: " + program_->str(stmt));
   return false;
 }
 
@@ -1680,8 +1921,8 @@ bool GeneratorImpl::EmitSwitch(ast::SwitchStatement* stmt) {
 
   increment_indent();
 
-  for (const auto& s : stmt->body()) {
-    if (!EmitCase(s.get())) {
+  for (auto* s : stmt->body()) {
+    if (!EmitCase(s)) {
       return false;
     }
   }
@@ -1693,22 +1934,33 @@ bool GeneratorImpl::EmitSwitch(ast::SwitchStatement* stmt) {
   return true;
 }
 
-bool GeneratorImpl::EmitType(ast::type::Type* type, const std::string& name) {
-  if (type->IsAlias()) {
-    auto* alias = type->AsAlias();
-    out_ << namer_.NameFor(alias->name());
-  } else if (type->IsArray()) {
-    auto* ary = type->AsArray();
+bool GeneratorImpl::EmitType(type::Type* type, const std::string& name) {
+  std::string access_str = "";
+  if (auto* ac = type->As<type::AccessControl>()) {
+    if (ac->access_control() == ast::AccessControl::kReadOnly) {
+      access_str = "read";
+    } else if (ac->access_control() == ast::AccessControl::kWriteOnly) {
+      access_str = "write";
+    } else {
+      diagnostics_.add_error("Invalid access control for storage texture");
+      return false;
+    }
 
-    ast::type::Type* base_type = ary;
+    type = ac->type();
+  }
+
+  if (auto* alias = type->As<type::Alias>()) {
+    out_ << namer_.NameFor(program_->Symbols().NameFor(alias->symbol()));
+  } else if (auto* ary = type->As<type::Array>()) {
+    type::Type* base_type = ary;
     std::vector<uint32_t> sizes;
-    while (base_type->IsArray()) {
-      if (base_type->AsArray()->IsRuntimeArray()) {
+    while (auto* arr = base_type->As<type::Array>()) {
+      if (arr->IsRuntimeArray()) {
         sizes.push_back(1);
       } else {
-        sizes.push_back(base_type->AsArray()->size());
+        sizes.push_back(arr->size());
       }
-      base_type = base_type->AsArray()->type();
+      base_type = arr->type();
     }
     if (!EmitType(base_type, "")) {
       return false;
@@ -1719,134 +1971,118 @@ bool GeneratorImpl::EmitType(ast::type::Type* type, const std::string& name) {
     for (uint32_t size : sizes) {
       out_ << "[" << size << "]";
     }
-  } else if (type->IsBool()) {
+  } else if (type->Is<type::Bool>()) {
     out_ << "bool";
-  } else if (type->IsF32()) {
+  } else if (type->Is<type::F32>()) {
     out_ << "float";
-  } else if (type->IsI32()) {
+  } else if (type->Is<type::I32>()) {
     out_ << "int";
-  } else if (type->IsMatrix()) {
-    auto* mat = type->AsMatrix();
+  } else if (auto* mat = type->As<type::Matrix>()) {
     if (!EmitType(mat->type(), "")) {
       return false;
     }
     out_ << mat->columns() << "x" << mat->rows();
-  } else if (type->IsPointer()) {
-    auto* ptr = type->AsPointer();
+  } else if (auto* ptr = type->As<type::Pointer>()) {
     // TODO(dsinclair): Storage class?
     if (!EmitType(ptr->type(), "")) {
       return false;
     }
     out_ << "*";
-  } else if (type->IsSampler()) {
+  } else if (type->Is<type::Sampler>()) {
     out_ << "sampler";
-  } else if (type->IsStruct()) {
+  } else if (auto* str = type->As<type::Struct>()) {
     // The struct type emits as just the name. The declaration would be emitted
     // as part of emitting the constructed types.
-    out_ << type->AsStruct()->name();
-  } else if (type->IsTexture()) {
-    auto* tex = type->AsTexture();
-
-    if (tex->IsDepth()) {
+    out_ << program_->Symbols().NameFor(str->symbol());
+  } else if (auto* tex = type->As<type::Texture>()) {
+    if (tex->Is<type::DepthTexture>()) {
       out_ << "depth";
     } else {
       out_ << "texture";
     }
 
     switch (tex->dim()) {
-      case ast::type::TextureDimension::k1d:
+      case type::TextureDimension::k1d:
         out_ << "1d";
         break;
-      case ast::type::TextureDimension::k1dArray:
-        out_ << "1d_array";
-        break;
-      case ast::type::TextureDimension::k2d:
+      case type::TextureDimension::k2d:
         out_ << "2d";
         break;
-      case ast::type::TextureDimension::k2dArray:
+      case type::TextureDimension::k2dArray:
         out_ << "2d_array";
         break;
-      case ast::type::TextureDimension::k3d:
+      case type::TextureDimension::k3d:
         out_ << "3d";
         break;
-      case ast::type::TextureDimension::kCube:
+      case type::TextureDimension::kCube:
         out_ << "cube";
         break;
-      case ast::type::TextureDimension::kCubeArray:
+      case type::TextureDimension::kCubeArray:
         out_ << "cube_array";
         break;
       default:
-        error_ = "Invalid texture dimensions";
+        diagnostics_.add_error("Invalid texture dimensions");
         return false;
     }
-    if (tex->IsMultisampled()) {
+    if (tex->Is<type::MultisampledTexture>()) {
       out_ << "_ms";
     }
     out_ << "<";
-    if (tex->IsDepth()) {
+    if (tex->Is<type::DepthTexture>()) {
       out_ << "float, access::sample";
-    } else if (tex->IsStorage()) {
-      auto* storage = tex->AsStorage();
+    } else if (auto* storage = tex->As<type::StorageTexture>()) {
       if (!EmitType(storage->type(), "")) {
         return false;
       }
-      out_ << ", access::";
-      if (storage->access() == ast::AccessControl::kReadOnly) {
-        out_ << "read";
-      } else if (storage->access() == ast::AccessControl::kWriteOnly) {
-        out_ << "write";
-      } else {
-        error_ = "Invalid access control for storage texture";
-        return false;
-      }
-    } else if (tex->IsMultisampled()) {
-      if (!EmitType(tex->AsMultisampled()->type(), "")) {
+      out_ << ", access::" << access_str;
+    } else if (auto* ms = tex->As<type::MultisampledTexture>()) {
+      if (!EmitType(ms->type(), "")) {
         return false;
       }
       out_ << ", access::sample";
-    } else if (tex->IsSampled()) {
-      if (!EmitType(tex->AsSampled()->type(), "")) {
+    } else if (auto* sampled = tex->As<type::SampledTexture>()) {
+      if (!EmitType(sampled->type(), "")) {
         return false;
       }
       out_ << ", access::sample";
     } else {
-      error_ = "invalid texture type";
+      diagnostics_.add_error("invalid texture type");
       return false;
     }
     out_ << ">";
 
-  } else if (type->IsU32()) {
+  } else if (type->Is<type::U32>()) {
     out_ << "uint";
-  } else if (type->IsVector()) {
-    auto* vec = type->AsVector();
+  } else if (auto* vec = type->As<type::Vector>()) {
     if (!EmitType(vec->type(), "")) {
       return false;
     }
     out_ << vec->size();
-  } else if (type->IsVoid()) {
+  } else if (type->Is<type::Void>()) {
     out_ << "void";
   } else {
-    error_ = "unknown type in EmitType: " + type->type_name();
+    diagnostics_.add_error("unknown type in EmitType: " + type->type_name());
     return false;
   }
 
   return true;
 }
 
-bool GeneratorImpl::EmitStructType(const ast::type::StructType* str) {
+bool GeneratorImpl::EmitStructType(const type::Struct* str) {
   // TODO(dsinclair): Block decoration?
   // if (str->impl()->decoration() != ast::StructDecoration::kNone) {
   // }
-  out_ << "struct " << str->name() << " {" << std::endl;
+  out_ << "struct " << program_->Symbols().NameFor(str->symbol()) << " {"
+       << std::endl;
 
   increment_indent();
   uint32_t current_offset = 0;
   uint32_t pad_count = 0;
-  for (const auto& mem : str->impl()->members()) {
+  for (auto* mem : str->impl()->members()) {
     make_indent();
-    for (const auto& deco : mem->decorations()) {
-      if (deco->IsOffset()) {
-        uint32_t offset = deco->AsOffset()->offset();
+    for (auto* deco : mem->decorations()) {
+      if (auto* o = deco->As<ast::StructMemberOffsetDecoration>()) {
+        uint32_t offset = o->offset();
         if (offset != current_offset) {
           out_ << "int8_t pad_" << pad_count << "[" << (offset - current_offset)
                << "];" << std::endl;
@@ -1855,24 +2091,26 @@ bool GeneratorImpl::EmitStructType(const ast::type::StructType* str) {
         }
         current_offset = offset;
       } else {
-        error_ = "unsupported member decoration: " + deco->to_str();
+        diagnostics_.add_error("unsupported member decoration: " +
+                               program_->str(deco));
         return false;
       }
     }
 
-    if (!EmitType(mem->type(), mem->name())) {
+    if (!EmitType(mem->type(), program_->Symbols().NameFor(mem->symbol()))) {
       return false;
     }
     auto size = calculate_alignment_size(mem->type());
     if (size == 0) {
-      error_ = "unable to calculate byte size for: " + mem->type()->type_name();
+      diagnostics_.add_error("unable to calculate byte size for: " +
+                             mem->type()->type_name());
       return false;
     }
     current_offset += size;
 
     // Array member name will be output with the type
-    if (!mem->type()->IsArray()) {
-      out_ << " " << namer_.NameFor(mem->name());
+    if (!mem->type()->Is<type::Array>()) {
+      out_ << " " << namer_.NameFor(program_->Symbols().NameFor(mem->symbol()));
     }
     out_ << ";" << std::endl;
   }
@@ -1903,36 +2141,38 @@ bool GeneratorImpl::EmitUnaryOp(ast::UnaryOpExpression* expr) {
   return true;
 }
 
-bool GeneratorImpl::EmitVariable(ast::Variable* var, bool skip_constructor) {
+bool GeneratorImpl::EmitVariable(const semantic::Variable* var,
+                                 bool skip_constructor) {
   make_indent();
 
+  auto* decl = var->Declaration();
+
   // TODO(dsinclair): Handle variable decorations
-  if (var->IsDecorated()) {
-    error_ = "Variable decorations are not handled yet";
+  if (!decl->decorations().empty()) {
+    diagnostics_.add_error("Variable decorations are not handled yet");
     return false;
   }
-
-  if (var->is_const()) {
+  if (decl->is_const()) {
     out_ << "const ";
   }
-  if (!EmitType(var->type(), var->name())) {
+  if (!EmitType(decl->type(), program_->Symbols().NameFor(decl->symbol()))) {
     return false;
   }
-  if (!var->type()->IsArray()) {
-    out_ << " " << var->name();
+  if (!decl->type()->Is<type::Array>()) {
+    out_ << " " << program_->Symbols().NameFor(decl->symbol());
   }
 
   if (!skip_constructor) {
     out_ << " = ";
-    if (var->constructor() != nullptr) {
-      if (!EmitExpression(var->constructor())) {
+    if (decl->constructor() != nullptr) {
+      if (!EmitExpression(decl->constructor())) {
         return false;
       }
-    } else if (var->storage_class() == ast::StorageClass::kPrivate ||
-               var->storage_class() == ast::StorageClass::kFunction ||
-               var->storage_class() == ast::StorageClass::kNone ||
-               var->storage_class() == ast::StorageClass::kOutput) {
-      if (!EmitZeroValue(var->type())) {
+    } else if (var->StorageClass() == ast::StorageClass::kPrivate ||
+               var->StorageClass() == ast::StorageClass::kFunction ||
+               var->StorageClass() == ast::StorageClass::kNone ||
+               var->StorageClass() == ast::StorageClass::kOutput) {
+      if (!EmitZeroValue(decl->type())) {
         return false;
       }
     }
@@ -1945,26 +2185,27 @@ bool GeneratorImpl::EmitVariable(ast::Variable* var, bool skip_constructor) {
 bool GeneratorImpl::EmitProgramConstVariable(const ast::Variable* var) {
   make_indent();
 
-  if (var->IsDecorated() && !var->AsDecorated()->HasConstantIdDecoration()) {
-    error_ = "Decorated const values not valid";
-    return false;
+  for (auto* d : var->decorations()) {
+    if (!d->Is<ast::ConstantIdDecoration>()) {
+      diagnostics_.add_error("Decorated const values not valid");
+      return false;
+    }
   }
   if (!var->is_const()) {
-    error_ = "Expected a const value";
+    diagnostics_.add_error("Expected a const value");
     return false;
   }
 
   out_ << "constant ";
-  if (!EmitType(var->type(), var->name())) {
+  if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
     return false;
   }
-  if (!var->type()->IsArray()) {
-    out_ << " " << var->name();
+  if (!var->type()->Is<type::Array>()) {
+    out_ << " " << program_->Symbols().NameFor(var->symbol());
   }
 
-  if (var->IsDecorated() && var->AsDecorated()->HasConstantIdDecoration()) {
-    out_ << " [[function_constant(" << var->AsDecorated()->constant_id()
-         << ")]]";
+  if (var->HasConstantIdDecoration()) {
+    out_ << " [[function_constant(" << var->constant_id() << ")]]";
   } else if (var->constructor() != nullptr) {
     out_ << " = ";
     if (!EmitExpression(var->constructor())) {

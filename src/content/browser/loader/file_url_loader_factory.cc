@@ -218,8 +218,10 @@ class FileURLDirectoryLoader
       return;
     }
 
-    mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
-    if (!pipe.consumer_handle.is_valid()) {
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    if (mojo::CreateDataPipe(kDefaultFileUrlPipeSize, producer_handle,
+                             consumer_handle) != MOJO_RESULT_OK) {
       client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
@@ -229,14 +231,14 @@ class FileURLDirectoryLoader
     head->charset = "utf-8";
     head->response_type = response_type;
     client->OnReceiveResponse(std::move(head));
-    client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+    client->OnStartLoadingResponseBody(std::move(consumer_handle));
     client_ = std::move(client);
 
     lister_ = std::make_unique<net::DirectoryLister>(path_, this);
     lister_->Start();
 
-    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
-        std::move(pipe.producer_handle));
+    data_producer_ =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
   }
 
   void OnMojoDisconnct() {
@@ -258,12 +260,7 @@ class FileURLDirectoryLoader
     if (!wrote_header_) {
       wrote_header_ = true;
 
-#if defined(OS_WIN)
-      const base::string16& title = path_.value();
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-      const base::string16& title =
-          base::WideToUTF16(base::SysNativeMBToWide(path_.value()));
-#endif
+      const base::string16& title = path_.AsUTF16Unsafe();
       pending_data_.append(net::GetDirectoryListingHeader(title));
 
       // If not a top-level directory, add a link to the parent directory. To
@@ -561,8 +558,10 @@ class FileURLLoader : public network::mojom::URLLoader {
     }
 #endif  // defined(OS_WIN)
 
-    mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
-    if (!pipe.consumer_handle.is_valid()) {
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    if (mojo::CreateDataPipe(kDefaultFileUrlPipeSize, producer_handle,
+                             consumer_handle) != MOJO_RESULT_OK) {
       OnClientComplete(net::ERR_FAILED, std::move(observer));
       return;
     }
@@ -646,9 +645,9 @@ class FileURLLoader : public network::mojom::URLLoader {
           static_cast<uint32_t>(initial_read_size - first_byte_to_send),
           static_cast<uint32_t>(total_bytes_to_send));
       const uint32_t expected_write_size = write_size;
-      MojoResult result = pipe.producer_handle->WriteData(
-          &initial_read_buffer[first_byte_to_send], &write_size,
-          MOJO_WRITE_DATA_FLAG_NONE);
+      MojoResult result =
+          producer_handle->WriteData(&initial_read_buffer[first_byte_to_send],
+                                     &write_size, MOJO_WRITE_DATA_FLAG_NONE);
       if (result != MOJO_RESULT_OK || write_size != expected_write_size) {
         OnFileWritten(std::move(observer), result);
         return;
@@ -680,7 +679,7 @@ class FileURLLoader : public network::mojom::URLLoader {
                                head->mime_type);
     }
     client_->OnReceiveResponse(std::move(head));
-    client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+    client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
     if (total_bytes_to_send == 0) {
       // There's definitely no more data, so we're already done.
@@ -696,8 +695,8 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnSeekComplete(first_byte_to_send);
 
-    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
-        std::move(pipe.producer_handle));
+    data_producer_ =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
     data_producer_->Write(std::make_unique<mojo::FilteredDataSource>(
                               std::move(file_data_source), std::move(observer)),
                           base::BindOnce(&FileURLLoader::OnFileWritten,
@@ -774,7 +773,7 @@ FileURLLoaderFactory::FileURLLoaderFactory(
     scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
     base::TaskPriority task_priority,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
-    : NonNetworkURLLoaderFactoryBase(std::move(factory_receiver)),
+    : network::SelfDeletingURLLoaderFactory(std::move(factory_receiver)),
       profile_path_(profile_path),
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
@@ -825,6 +824,9 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
                  .CheckAccessState(*request.request_initiator, request.url) ==
              network::cors::OriginAccessList::AccessState::kAllowed)));
 
+  // TODO(toyoshim, lukasza): https://crbug.com/1105256: Extract CORS checks
+  // into a separate base class (i.e. to reuse similar checks in
+  // FileURLLoaderFactory and ExtensionURLLoaderFactory.
   network::mojom::FetchResponseType response_type =
       network::cors::CalculateResponseType(request.mode,
                                            is_request_considered_same_origin);
@@ -887,7 +889,8 @@ FileURLLoaderFactory::Create(
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
 
   // The FileURLLoaderFactory will delete itself when there are no more
-  // receivers - see the NonNetworkURLLoaderFactoryBase::OnDisconnect method.
+  // receivers - see the network::SelfDeletingURLLoaderFactory::OnDisconnect
+  // method.
   new FileURLLoaderFactory(
       profile_path, std::move(shared_cors_origin_access_list), task_priority,
       pending_remote.InitWithNewPipeAndPassReceiver());

@@ -16,8 +16,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
@@ -200,7 +203,7 @@ void Event::SetNativeEvent(const PlatformEvent& event) {
 }
 
 const char* Event::GetName() const {
-  return EventTypeName(type_);
+  return EventTypeName(type_).data();
 }
 
 void Event::SetProperties(const Properties& properties) {
@@ -310,23 +313,16 @@ void Event::SetHandled() {
 }
 
 std::string Event::ToString() const {
-  std::string s = GetName();
-  s += " time_stamp ";
-  s += base::NumberToString(time_stamp_.since_origin().InSecondsF());
-  return s;
+  return base::StrCat(
+      {GetName(), " time_stamp ",
+       base::NumberToString(time_stamp_.since_origin().InSecondsF())});
 }
 
 Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp.is_null() ? EventTimeForNow() : time_stamp),
       flags_(flags),
-      native_event_(PlatformEvent()),
-      delete_native_event_(false),
-      cancelable_(true),
-      target_(nullptr),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED),
-      source_device_id_(ED_UNKNOWN_DEVICE) {
+      native_event_(PlatformEvent()) {
   if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
 }
@@ -335,13 +331,7 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
     : type_(type),
       time_stamp_(EventTimeFromNative(native_event)),
       flags_(flags),
-      native_event_(native_event),
-      delete_native_event_(false),
-      cancelable_(true),
-      target_(nullptr),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED),
-      source_device_id_(ED_UNKNOWN_DEVICE) {
+      native_event_(native_event) {
   if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
   ComputeEventLatencyOS(native_event);
@@ -362,10 +352,6 @@ Event::Event(const Event& copy)
       flags_(copy.flags_),
       native_event_(CopyNativeEvent(copy.native_event_)),
       delete_native_event_(true),
-      cancelable_(true),
-      target_(nullptr),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED),
       source_device_id_(copy.source_device_id_),
       properties_(copy.properties_
                       ? std::make_unique<Properties>(*copy.properties_)
@@ -455,12 +441,8 @@ void LocatedEvent::UpdateForRootTransform(
 }
 
 std::string LocatedEvent::ToString() const {
-  std::string s = Event::ToString();
-  s += " location ";
-  s += location_.ToString();
-  s += " root_location ";
-  s += root_location_.ToString();
-  return s;
+  return base::StrCat({Event::ToString(), " location ", location_.ToString(),
+                       " root_location ", root_location_.ToString()});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -634,6 +616,12 @@ void MouseEvent::SetClickCount(int click_count) {
   set_flags(f);
 }
 
+std::string MouseEvent::ToString() const {
+  return base::StrCat(
+      {LocatedEvent::ToString(), " flags ",
+       base::JoinString(make_span(MouseEventFlagsNames(flags())), " | ")});
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent
 
@@ -724,8 +712,6 @@ const int MouseWheelEvent::kWheelDelta = 53;
 TouchEvent::TouchEvent(const PlatformEvent& native_event)
     : LocatedEvent(native_event),
       unique_event_id_(ui::GetNextTouchEventId()),
-      may_cause_scrolling_(false),
-      hovering_(false),
       pointer_details_(GetTouchPointerDetailsFromNative(native_event)) {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
@@ -740,8 +726,6 @@ TouchEvent::TouchEvent(EventType type,
                        int flags)
     : LocatedEvent(type, location, root_location, time_stamp, flags),
       unique_event_id_(ui::GetNextTouchEventId()),
-      may_cause_scrolling_(false),
-      hovering_(false),
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
 }
@@ -1117,6 +1101,13 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() & ~mask);
 }
 
+std::string KeyEvent::ToString() const {
+  return base::StrCat(
+      {Event::ToString(), " key ", base::StringPrintf("(0x%.4x)", key_code_),
+       " flags ",
+       base::JoinString(make_span(KeyEventFlagsNames(flags())), " | ")});
+}
+
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
   return NonLocatedToLocatedKeyboardCode(key_code_, code_);
 }
@@ -1222,14 +1213,11 @@ void ScrollEvent::Scale(const float factor) {
 }
 
 std::string ScrollEvent::ToString() const {
-  std::string s = MouseEvent::ToString();
-  s += " offset " + base::NumberToString(x_offset_) + "," +
-       base::NumberToString(y_offset_);
-  s += " offset_ordinal " + base::NumberToString(x_offset_ordinal_) + "," +
-       base::NumberToString(y_offset_ordinal_);
-  s += " momentum_phase " + MomentumPhaseToString(momentum_phase_);
-  s += " event_phase " + ScrollEventPhaseToString(scroll_event_phase_);
-  return s;
+  return base::StringPrintf(
+      "%s offset %g,%g offset_ordinal %g,%g momentum_phase %s event_phase %s",
+      MouseEvent::ToString().c_str(), x_offset_, y_offset_, x_offset_ordinal_,
+      y_offset_ordinal_, MomentumPhaseToString(momentum_phase_).c_str(),
+      ScrollEventPhaseToString(scroll_event_phase_).c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1259,5 +1247,11 @@ GestureEvent::GestureEvent(float x,
 GestureEvent::GestureEvent(const GestureEvent& other) = default;
 
 GestureEvent::~GestureEvent() = default;
+
+std::string GestureEvent::ToString() const {
+  return base::StringPrintf("%s touch_event_id %d",
+                            LocatedEvent::ToString().c_str(),
+                            unique_touch_event_id_);
+}
 
 }  // namespace ui

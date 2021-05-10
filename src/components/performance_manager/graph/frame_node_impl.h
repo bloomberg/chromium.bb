@@ -10,8 +10,8 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
-#include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
@@ -61,8 +61,6 @@ class FrameNodeImpl
       public TypedNodeBase<FrameNodeImpl, FrameNode, FrameNodeObserver>,
       public mojom::DocumentCoordinationUnit {
  public:
-  using PassKey = util::PassKey<FrameNodeImpl>;
-
   static const char kDefaultPriorityReason[];
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
@@ -87,7 +85,6 @@ class FrameNodeImpl
   void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetViewportIntersection(const gfx::Rect& viewport_intersection) override;
-  void SetOriginTrialFreezePolicy(mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
   void SetHadFormInteraction() override;
   void OnNonPersistentNotificationCreated() override;
@@ -101,7 +98,7 @@ class FrameNodeImpl
   // Partial FrameNodbase::TimeDelta time_since_navigatione implementation:
   bool IsMainFrame() const override;
 
-  // Getters for const properties. These can be called from any thread.
+  // Getters for const properties.
   FrameNodeImpl* parent_frame_node() const;
   PageNodeImpl* page_node() const;
   ProcessNodeImpl* process_node() const;
@@ -116,7 +113,6 @@ class FrameNodeImpl
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
   const base::flat_set<PageNodeImpl*>& opened_page_nodes() const;
   LifecycleState lifecycle_state() const;
-  InterventionPolicy origin_trial_freeze_policy() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
   bool is_current() const;
@@ -148,9 +144,8 @@ class FrameNodeImpl
   // Invoked to set the frame priority, and the reason behind it.
   void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
-  base::WeakPtr<FrameNodeImpl> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+  base::WeakPtr<FrameNodeImpl> GetWeakPtrOnUIThread();
+  base::WeakPtr<FrameNodeImpl> GetWeakPtr();
 
   void SeverOpenedPagesAndMaybeReparentForTesting() {
     SeverOpenedPagesAndMaybeReparent();
@@ -160,17 +155,15 @@ class FrameNodeImpl
 
   // Invoked by opened pages when this frame is set/cleared as their opener.
   // See PageNodeImpl::(Set|Clear)OpenerFrameNodeAndOpenedType.
-  void AddOpenedPage(util::PassKey<PageNodeImpl> key, PageNodeImpl* page_node);
-  void RemoveOpenedPage(util::PassKey<PageNodeImpl> key,
+  void AddOpenedPage(base::PassKey<PageNodeImpl> key, PageNodeImpl* page_node);
+  void RemoveOpenedPage(base::PassKey<PageNodeImpl> key,
                         PageNodeImpl* page_node);
 
   // Used by the ExecutionContextRegistry mechanism.
   std::unique_ptr<NodeAttachedData>* GetExecutionContextStorage(
-      util::PassKey<execution_context::ExecutionContextAccess> key) {
+      base::PassKey<execution_context::ExecutionContextAccess> key) {
     return &execution_context_;
   }
-
-  static PassKey CreatePassKeyForTesting() { return PassKey(); }
 
  private:
   friend class ExecutionContextPriorityAccess;
@@ -191,7 +184,6 @@ class FrameNodeImpl
   bool VisitOpenedPageNodes(const PageNodeVisitor& visitor) const override;
   const base::flat_set<const PageNode*> GetOpenedPageNodes() const override;
   LifecycleState GetLifecycleState() const override;
-  InterventionPolicy GetOriginTrialFreezePolicy() const override;
   bool HasNonemptyBeforeUnload() const override;
   const GURL& GetURL() const override;
   bool IsCurrent() const override;
@@ -200,6 +192,8 @@ class FrameNodeImpl
   bool IsHoldingWebLock() const override;
   bool IsHoldingIndexedDBLock() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
+  bool VisitChildDedicatedWorkers(
+      const WorkerNodeVisitor& visitor) const override;
   const PriorityAndReason& GetPriorityAndReason() const override;
   bool HadFormInteraction() const override;
   bool IsAudible() const override;
@@ -227,13 +221,6 @@ class FrameNodeImpl
         bool,
         &FrameNodeObserver::OnNetworkAlmostIdleChanged>
         network_almost_idle{false};
-
-    // Opt-in or opt-out of freezing via origin trial.
-    ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
-        mojom::InterventionPolicy,
-        const mojom::InterventionPolicy&,
-        &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
-        origin_trial_freeze_policy{mojom::InterventionPolicy::kDefault};
 
     // Indicates if a form in the frame has been interacted with.
     ObservedProperty::NotifiesOnlyOnChanges<
@@ -369,7 +356,8 @@ class FrameNodeImpl
   // Indicates if the frame is visible. This is initialized in
   // FrameNodeImpl::OnJoiningGraph() and then maintained by
   // FrameVisibilityDecorator.
-  ObservedProperty::NotifiesOnlyOnChanges<
+  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+      Visibility,
       Visibility,
       &FrameNodeObserver::OnFrameVisibilityChanged>
       visibility_{Visibility::kUnknown};
@@ -377,10 +365,9 @@ class FrameNodeImpl
   // Inline storage for ExecutionContext.
   std::unique_ptr<NodeAttachedData> execution_context_;
 
-  // Inline storage for ExecutionContextPriorityDecorator data.
-  execution_context_priority::AcceptedVote accepted_vote_;
-
-  base::WeakPtrFactory<FrameNodeImpl> weak_factory_{this};
+  base::WeakPtr<FrameNodeImpl> weak_this_;
+  base::WeakPtrFactory<FrameNodeImpl> weak_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

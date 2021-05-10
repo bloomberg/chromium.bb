@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -31,14 +32,16 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/wm/test/wm_test_helper.h"
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif
@@ -57,7 +60,7 @@ struct ShellPlatformDelegate::ShellData {
 };
 
 struct ShellPlatformDelegate::PlatformData {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<wm::WMTestHelper> wm_test_helper;
 #else
   std::unique_ptr<wm::WMState> wm_state;
@@ -72,11 +75,14 @@ namespace {
 // Maintain the UI controls and web view for content shell
 class ShellView : public views::View, public views::TextfieldController {
  public:
+  METADATA_HEADER(ShellView);
+
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
   explicit ShellView(Shell* shell) : shell_(shell) { InitShellWindow(); }
-
-  ~ShellView() override {}
+  ShellView(const ShellView&) = delete;
+  ShellView& operator=(const ShellView&) = delete;
+  ~ShellView() override = default;
 
   // Update the state of UI controls
   void SetAddressBarURL(const GURL& url) {
@@ -106,7 +112,7 @@ class ShellView : public views::View, public views::TextfieldController {
 
     // Resizing a widget on chromeos doesn't automatically resize the root, need
     // to explicitly do that.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     GetWidget()->GetNativeWindow()->GetHost()->SetBoundsInPixels(bounds);
 #endif
   }
@@ -299,9 +305,10 @@ class ShellView : public views::View, public views::TextfieldController {
   // Contents view contains the web contents view
   View* contents_view_ = nullptr;
   views::WebView* web_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellView);
 };
+
+BEGIN_METADATA(ShellView, views::View)
+END_METADATA
 
 ShellView* ShellViewForWidget(views::Widget* widget) {
   return static_cast<ShellView*>(widget->widget_delegate()->GetContentsView());
@@ -319,7 +326,7 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
 
   platform_ = std::make_unique<PlatformData>();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   platform_->wm_test_helper =
       std::make_unique<wm::WMTestHelper>(default_window_size);
 #else
@@ -346,7 +353,7 @@ void ShellPlatformDelegate::CreatePlatformWindow(
   delegate->SetHasWindowSizeControls(true);
   delegate->SetOwnedByWidget(true);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   shell_data.window_widget = views::Widget::CreateWindowWithContext(
       std::move(delegate),
       platform_->wm_test_helper->GetDefaultParent(nullptr, gfx::Rect()),
@@ -431,7 +438,7 @@ void ShellPlatformDelegate::SetTitle(Shell* shell,
   shell_data.window_widget->widget_delegate()->SetTitle(title);
 }
 
-void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
+void ShellPlatformDelegate::MainFrameCreated(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   DCHECK(base::Contains(shell_data_map_, shell));

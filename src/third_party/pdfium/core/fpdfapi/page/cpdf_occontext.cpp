@@ -10,6 +10,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "third_party/base/check.h"
 
 namespace {
 
@@ -46,7 +47,7 @@ bool HasIntent(const CPDF_Dictionary* pDict,
 
 CPDF_Dictionary* GetConfig(CPDF_Document* pDoc,
                            const CPDF_Dictionary* pOCGDict) {
-  ASSERT(pOCGDict);
+  DCHECK(pOCGDict);
   CPDF_Dictionary* pOCProperties = pDoc->GetRoot()->GetDictFor("OCProperties");
   if (!pOCProperties)
     return nullptr;
@@ -94,7 +95,7 @@ ByteString GetUsageTypeString(CPDF_OCContext::UsageType eType) {
 
 CPDF_OCContext::CPDF_OCContext(CPDF_Document* pDoc, UsageType eUsageType)
     : m_pDocument(pDoc), m_eUsageType(eUsageType) {
-  ASSERT(pDoc);
+  DCHECK(pDoc);
 }
 
 CPDF_OCContext::~CPDF_OCContext() = default;
@@ -214,7 +215,7 @@ bool CPDF_OCContext::GetOCGVE(const CPDF_Array* pExpression, int nLevel) const {
 
   bool bValue = false;
   for (size_t i = 1; i < pExpression->size(); i++) {
-    const CPDF_Object* pOCGObj = pExpression->GetDirectObjectAt(1);
+    const CPDF_Object* pOCGObj = pExpression->GetDirectObjectAt(i);
     if (!pOCGObj)
       continue;
 

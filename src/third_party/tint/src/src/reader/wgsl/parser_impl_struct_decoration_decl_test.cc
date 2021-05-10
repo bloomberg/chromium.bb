@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -22,18 +23,18 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, StructDecorationDecl_Parses) {
-  auto* p = parser("[[block]]");
+  auto p = parser("[[block]]");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error());
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
   ASSERT_EQ(decos.value.size(), 1u);
-  auto struct_deco = ast::As<ast::StructDecoration>(std::move(decos.value[0]));
-  EXPECT_TRUE(struct_deco->IsBlock());
+  auto* struct_deco = decos.value[0]->As<ast::StructDecoration>();
+  EXPECT_TRUE(struct_deco->Is<ast::StructBlockDecoration>());
 }
 
 TEST_F(ParserImplTest, StructDecorationDecl_MissingAttrRight) {
-  auto* p = parser("[[block");
+  auto p = parser("[[block");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -43,7 +44,7 @@ TEST_F(ParserImplTest, StructDecorationDecl_MissingAttrRight) {
 }
 
 TEST_F(ParserImplTest, StructDecorationDecl_InvalidDecoration) {
-  auto* p = parser("[[invalid]]");
+  auto p = parser("[[invalid]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);

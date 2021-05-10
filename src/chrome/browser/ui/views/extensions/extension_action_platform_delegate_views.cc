@@ -36,7 +36,7 @@ ExtensionActionPlatformDelegate::Create(
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
     : controller_(controller) {
-  command_service_observer_.Add(
+  command_service_observation_.Observe(
       extensions::CommandService::Get(controller_->browser()->profile()));
 }
 
@@ -133,7 +133,8 @@ void ExtensionActionPlatformDelegateViews::OnExtensionCommandRemoved(
 }
 
 void ExtensionActionPlatformDelegateViews::OnCommandServiceDestroying() {
-  command_service_observer_.RemoveAll();
+  DCHECK(command_service_observation_.IsObserving());
+  command_service_observation_.Reset();
 }
 
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(

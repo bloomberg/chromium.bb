@@ -31,13 +31,14 @@
 
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
-#include "third_party/blink/public/common/css/screen_spanning.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query.h"
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
-#include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"
 #include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -60,9 +60,11 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "ui/base/pointer/pointer_device.h"
 
 namespace blink {
+
+using mojom::blink::HoverType;
+using mojom::blink::PointerType;
 
 namespace {
 
@@ -99,12 +101,6 @@ MediaQueryEvaluator::MediaQueryEvaluator(LocalFrame* frame)
 
 MediaQueryEvaluator::MediaQueryEvaluator(const MediaValues& media_values)
     : media_values_(media_values.Copy()) {}
-
-MediaQueryEvaluator::MediaQueryEvaluator(
-    MediaValuesInitialViewport* media_values)
-    : media_values_(media_values) {
-  DCHECK(media_values);
-}
 
 MediaQueryEvaluator::~MediaQueryEvaluator() = default;
 
@@ -696,16 +692,17 @@ static bool ImmersiveMediaFeatureEval(const MediaQueryExpValue& value,
 static bool HoverMediaFeatureEval(const MediaQueryExpValue& value,
                                   MediaFeaturePrefix,
                                   const MediaValues& media_values) {
-  ui::HoverType hover = media_values.PrimaryHoverType();
+  HoverType hover = media_values.PrimaryHoverType();
 
   if (!value.IsValid())
-    return hover != ui::HOVER_TYPE_NONE;
+    return hover != HoverType::kHoverNone;
 
   if (!value.is_id)
     return false;
 
-  return (hover == ui::HOVER_TYPE_NONE && value.id == CSSValueID::kNone) ||
-         (hover == ui::HOVER_TYPE_HOVER && value.id == CSSValueID::kHover);
+  return (hover == HoverType::kHoverNone && value.id == CSSValueID::kNone) ||
+         (hover == HoverType::kHoverHoverType &&
+          value.id == CSSValueID::kHover);
 }
 
 static bool AnyHoverMediaFeatureEval(const MediaQueryExpValue& value,
@@ -714,16 +711,17 @@ static bool AnyHoverMediaFeatureEval(const MediaQueryExpValue& value,
   int available_hover_types = media_values.AvailableHoverTypes();
 
   if (!value.IsValid())
-    return available_hover_types & ~ui::HOVER_TYPE_NONE;
+    return available_hover_types & ~static_cast<int>(HoverType::kHoverNone);
 
   if (!value.is_id)
     return false;
 
   switch (value.id) {
     case CSSValueID::kNone:
-      return available_hover_types & ui::HOVER_TYPE_NONE;
+      return available_hover_types & static_cast<int>(HoverType::kHoverNone);
     case CSSValueID::kHover:
-      return available_hover_types & ui::HOVER_TYPE_HOVER;
+      return available_hover_types &
+             static_cast<int>(HoverType::kHoverHoverType);
     default:
       NOTREACHED();
       return false;
@@ -742,18 +740,20 @@ static bool OriginTrialTestMediaFeatureEval(const MediaQueryExpValue& value,
 static bool PointerMediaFeatureEval(const MediaQueryExpValue& value,
                                     MediaFeaturePrefix,
                                     const MediaValues& media_values) {
-  ui::PointerType pointer = media_values.PrimaryPointerType();
+  PointerType pointer = media_values.PrimaryPointerType();
 
   if (!value.IsValid())
-    return pointer != ui::POINTER_TYPE_NONE;
+    return pointer != PointerType::kPointerNone;
 
   if (!value.is_id)
     return false;
 
-  return (pointer == ui::POINTER_TYPE_NONE && value.id == CSSValueID::kNone) ||
-         (pointer == ui::POINTER_TYPE_COARSE &&
+  return (pointer == PointerType::kPointerNone &&
+          value.id == CSSValueID::kNone) ||
+         (pointer == PointerType::kPointerCoarseType &&
           value.id == CSSValueID::kCoarse) ||
-         (pointer == ui::POINTER_TYPE_FINE && value.id == CSSValueID::kFine);
+         (pointer == PointerType::kPointerFineType &&
+          value.id == CSSValueID::kFine);
 }
 
 static bool PrefersReducedMotionMediaFeatureEval(
@@ -791,19 +791,22 @@ static bool AnyPointerMediaFeatureEval(const MediaQueryExpValue& value,
                                        const MediaValues& media_values) {
   int available_pointers = media_values.AvailablePointerTypes();
 
-  if (!value.IsValid())
-    return available_pointers & ~ui::POINTER_TYPE_NONE;
+  if (!value.IsValid()) {
+    return available_pointers & ~static_cast<int>(PointerType::kPointerNone);
+  }
 
   if (!value.is_id)
     return false;
 
   switch (value.id) {
     case CSSValueID::kCoarse:
-      return available_pointers & ui::POINTER_TYPE_COARSE;
+      return available_pointers &
+             static_cast<int>(PointerType::kPointerCoarseType);
     case CSSValueID::kFine:
-      return available_pointers & ui::POINTER_TYPE_FINE;
+      return available_pointers &
+             static_cast<int>(PointerType::kPointerFineType);
     case CSSValueID::kNone:
-      return available_pointers & ui::POINTER_TYPE_NONE;
+      return available_pointers & static_cast<int>(PointerType::kPointerNone);
     default:
       NOTREACHED();
       return false;
@@ -975,6 +978,37 @@ static bool ScreenSpanningMediaFeatureEval(const MediaQueryExpValue& value,
           value.id == CSSValueID::kSingleFoldVertical) ||
          (screen_spanning_mode == ScreenSpanning::kSingleFoldHorizontal &&
           value.id == CSSValueID::kSingleFoldHorizontal);
+}
+
+static bool ScreenFoldPostureMediaFeatureEval(const MediaQueryExpValue& value,
+                                              MediaFeaturePrefix,
+                                              const MediaValues& media_values) {
+  // isValid() is false if there is no parameter. Without parameter we should
+  // return true to indicate that screenFoldPosture is enabled in the
+  // browser.
+  if (!value.IsValid())
+    return true;
+
+  DCHECK(value.is_id);
+
+  ScreenFoldPosture screen_fold_posture = media_values.GetScreenFoldPosture();
+  switch (value.id) {
+    case CSSValueID::kNoFold:
+      return screen_fold_posture == ScreenFoldPosture::kNoFold;
+    case CSSValueID::kLaptop:
+      return screen_fold_posture == ScreenFoldPosture::kLaptop;
+    case CSSValueID::kFlat:
+      return screen_fold_posture == ScreenFoldPosture::kFlat;
+    case CSSValueID::kTent:
+      return screen_fold_posture == ScreenFoldPosture::kTent;
+    case CSSValueID::kTablet:
+      return screen_fold_posture == ScreenFoldPosture::kTablet;
+    case CSSValueID::kBook:
+      return screen_fold_posture == ScreenFoldPosture::kBook;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 void MediaQueryEvaluator::Init() {

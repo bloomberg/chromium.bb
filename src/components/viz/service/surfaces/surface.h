@@ -25,8 +25,10 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/surfaces/pending_copy_output_request.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_dependency_deadline.h"
+#include "components/viz/service/surfaces/surface_saved_frame_storage.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -126,12 +128,6 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   void SetPreviousFrameSurface(Surface* surface);
 
-  // Increments the reference count on resources specified by |resources|.
-  void RefResources(const std::vector<TransferableResource>& resources);
-
-  // Decrements the reference count on resources specified by |resources|.
-  void UnrefResources(const std::vector<ReturnedResource>& resources);
-
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
@@ -160,14 +156,16 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Surface.
   void TakeCopyOutputRequestsFromClient();
 
-  // Returns whether there is a CopyOutputRequest inside the active frame or at
-  // the client level.
-  bool HasCopyOutputRequests();
+  // Returns whether there is a CopyOutputRequest inside the active frame.
+  bool HasCopyOutputRequests() const;
 
-  // Returns the most recent frame that is eligible to be rendered.
-  // You must check whether HasActiveFrame() returns true before calling this
-  // method.
+  // Returns the most recent frame or frame metadata that is eligible to be
+  // rendered. You must check whether HasActiveFrame() returns true before
+  // calling these methods.
+  // Note that we prefer to call GetActiveFrameMetadata if the only thing that
+  // is required from the frame is the metadata.
   const CompositorFrame& GetActiveFrame() const;
+  const CompositorFrameMetadata& GetActiveFrameMetadata() const;
 
   // Returns the currently pending frame. You must check where HasPendingFrame()
   // returns true before calling this method.
@@ -247,7 +245,19 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   std::unique_ptr<DelegatedInkMetadata> TakeDelegatedInkMetadata();
 
+  SurfaceSavedFrameStorage* GetSurfaceSavedFrameStorage();
+
   base::WeakPtr<Surface> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
+  // Places the copy-of-output request on the render pass defined by
+  // |PendingCopyOutputRequest::subtree_capture_id| if such a render pass
+  // exists, otherwise the request will be ignored.
+  void RequestCopyOfOutput(
+      PendingCopyOutputRequest pending_copy_output_request);
+
+  // Always placed the given |copy_request| on the root render pass.
+  void RequestCopyOfOutputOnRootRenderPass(
+      std::unique_ptr<CopyOutputRequest> copy_request);
 
  private:
   struct FrameData {
@@ -311,8 +321,6 @@ class VIZ_SERVICE_EXPORT Surface final {
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
-  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
-
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
   SurfaceManager* const surface_manager_;
@@ -352,6 +360,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   bool is_latency_info_taken_ = false;
 
   SurfaceAllocationGroup* const allocation_group_;
+
+  SurfaceSavedFrameStorage surface_saved_frame_storage_{this};
 
   base::WeakPtrFactory<Surface> weak_factory_{this};
 

@@ -19,32 +19,17 @@
 #include "dawn_native/Error.h"
 #include "dawn_native/Texture.h"
 
-#include <map>
 #include <vector>
 
 namespace dawn_native {
 
-    class AttachmentState;
     class QuerySetBase;
-    struct BeginRenderPassCmd;
     struct PassResourceUsage;
     struct TexelBlockInfo;
 
-    using UsedQueryMap = std::map<QuerySetBase*, std::vector<bool>>;
-
-    MaybeError ValidateCanPopDebugGroup(uint64_t debugGroupStackSize);
-    MaybeError ValidateFinalDebugGroupStackSize(uint64_t debugGroupStackSize);
-
-    MaybeError ValidateRenderBundle(CommandIterator* commands,
-                                    const AttachmentState* attachmentState);
-    MaybeError ValidateRenderPass(CommandIterator* commands, const BeginRenderPassCmd* renderPass);
-    MaybeError ValidateComputePass(CommandIterator* commands);
-
     MaybeError ValidatePassResourceUsage(const PassResourceUsage& usage);
 
-    MaybeError ValidateTimestampQuery(QuerySetBase* querySet,
-                                      uint32_t queryIndex,
-                                      const UsedQueryMap& usedQueryIndices);
+    MaybeError ValidateTimestampQuery(QuerySetBase* querySet, uint32_t queryIndex);
 
     ResultOrError<uint64_t> ComputeRequiredBytesInCopy(const TexelBlockInfo& blockInfo,
                                                        const Extent3D& copySize,

@@ -17,6 +17,7 @@ DEPS = [
 
 from recipe_engine import types
 
+from RECIPE_MODULES.depot_tools import gclient
 from PB.go.chromium.org.luci.buildbucket.proto.build import Build
 
 def RunSteps(api):
@@ -27,7 +28,10 @@ def RunSteps(api):
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
-  soln.revision = commit.id or commit.ref or None
+  if api.properties.get('revision_fallback_chain'):
+    soln.revision = gclient.api.RevisionFallbackChain()
+  else:
+    soln.revision = commit.id or commit.ref or None
   api.gclient.c = src_cfg
   api.gclient.c.revisions.update(api.properties.get('revisions', {}))
   if api.properties.get('deprecated_got_revision_mapping'):
@@ -236,6 +240,20 @@ def GenTests(api):
   yield (
       api.test('origin_master') +
       ci_build(revision='origin/master')
+  )
+
+  yield (
+      api.test('revision_fallback_chain_set_output_commit') +
+      ci_build() +
+      api.properties(
+          set_output_commit=True,
+          revision_fallback_chain=True,
+      ) +
+      # Don't set commit position properties so that the set_output_commit code
+      # attempts to do comparisons on the revision value
+      api.step_data('bot_update (without patch)', api.bot_update.output_json(
+          root='src', first_sln='src', revision_mapping={'got_revision': 'src'},
+          commit_positions=False))
   )
 
   yield (

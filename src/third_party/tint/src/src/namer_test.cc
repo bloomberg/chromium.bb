@@ -15,29 +15,49 @@
 #include "src/namer.h"
 
 #include "gtest/gtest.h"
+#include "src/symbol_table.h"
 
 namespace tint {
 namespace {
 
 using NamerTest = testing::Test;
 
-TEST_F(NamerTest, ReturnsName) {
-  Namer n;
-  EXPECT_EQ("tint_6d795f6e616d65", n.NameFor("my_name"));
+TEST_F(NamerTest, GenerateName) {
+  SymbolTable t;
+  MangleNamer n(&t);
+  EXPECT_EQ("name", n.GenerateName("name"));
+  EXPECT_EQ("name_0", n.GenerateName("name"));
+  EXPECT_EQ("name_1", n.GenerateName("name"));
 }
 
-TEST_F(NamerTest, ReturnsSameValueForSameName) {
-  Namer n;
-  EXPECT_EQ("tint_6e616d6531", n.NameFor("name1"));
-  EXPECT_EQ("tint_6e616d6532", n.NameFor("name2"));
-  EXPECT_EQ("tint_6e616d6531", n.NameFor("name1"));
+using MangleNamerTest = testing::Test;
+
+TEST_F(MangleNamerTest, ReturnsName) {
+  SymbolTable t;
+  auto s = t.Register("my_sym");
+
+  MangleNamer n(&t);
+  EXPECT_EQ("tint_symbol_1", n.NameFor(s));
 }
 
-TEST_F(NamerTest, IsMapped) {
-  Namer n;
-  EXPECT_FALSE(n.IsMapped("my_name"));
-  EXPECT_EQ("tint_6d795f6e616d65", n.NameFor("my_name"));
-  EXPECT_TRUE(n.IsMapped("my_name"));
+TEST_F(MangleNamerTest, ReturnsSameValueForSameName) {
+  SymbolTable t;
+  auto s1 = t.Register("my_sym");
+  auto s2 = t.Register("my_sym2");
+
+  MangleNamer n(&t);
+  EXPECT_EQ("tint_symbol_1", n.NameFor(s1));
+  EXPECT_EQ("tint_symbol_2", n.NameFor(s2));
+  EXPECT_EQ("tint_symbol_1", n.NameFor(s1));
+}
+
+using UnsafeNamerTest = testing::Test;
+TEST_F(UnsafeNamerTest, ReturnsName) {
+  SymbolTable t;
+  auto s = t.Register("my_sym");
+
+  UnsafeNamer n(&t);
+  EXPECT_EQ("my_sym", n.NameFor(s));
 }
 
 }  // namespace

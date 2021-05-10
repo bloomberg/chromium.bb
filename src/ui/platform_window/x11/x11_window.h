@@ -10,7 +10,6 @@
 #include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/event.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
@@ -38,8 +37,9 @@ class X11_WINDOW_EXPORT XEventDelegate {
 
   // TODO(crbug.com/990756): We need to implement/reuse ozone interface for
   // these.
-  virtual void OnXWindowSelectionEvent(x11::Event* xev) = 0;
-  virtual void OnXWindowDragDropEvent(x11::Event* xev) = 0;
+  virtual void OnXWindowSelectionEvent(
+      const x11::SelectionNotifyEvent& xev) = 0;
+  virtual void OnXWindowDragDropEvent(const x11::ClientMessageEvent& xev) = 0;
 };
 
 // PlatformWindow implementation for X11.
@@ -47,7 +47,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
                                     public WmMoveResizeHandler,
                                     public XWindow,
                                     public PlatformEventDispatcher,
-                                    public XEventDispatcher,
+                                    public x11::EventObserver,
                                     public WorkspaceExtension,
                                     public X11Extension,
                                     public WmDragHandler,
@@ -128,11 +128,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void SetOverrideRedirect(bool override_redirect) override;
   void SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) override;
 
-  // Overridden from ui::XEventDispatcher:
-  void CheckCanDispatchNextPlatformEvent(x11::Event* xev) override;
-  void PlatformEventDispatchFinished() override;
-  PlatformEventDispatcher* GetPlatformEventDispatcher() override;
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
  protected:
   PlatformWindowDelegate* platform_window_delegate() const {
@@ -152,19 +149,18 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void OnXWindowIsActiveChanged(bool active) override;
   void OnXWindowWorkspaceChanged() override;
   void OnXWindowLostPointerGrab() override;
-  void OnXWindowSelectionEvent(x11::Event* xev) override;
-  void OnXWindowDragDropEvent(x11::Event* xev) override;
+  void OnXWindowSelectionEvent(const x11::SelectionNotifyEvent& xev) override;
+  void OnXWindowDragDropEvent(const x11::ClientMessageEvent& xev) override;
   base::Optional<gfx::Size> GetMinimumSizeForXWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForXWindow() override;
-  void GetWindowMaskForXWindow(const gfx::Size& size,
-                               SkPath* window_mask) override;
+  SkPath GetWindowMaskForXWindow() override;
 
  private:
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  void DispatchUiEvent(ui::Event* event, x11::Event* xev);
+  void DispatchUiEvent(ui::Event* event, const x11::Event& xev);
 
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
@@ -203,7 +199,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void QuitDragLoop();
 
   // Handles |xevent| as a Atk Key Event
-  bool HandleAsAtkEvent(x11::Event* xevent, bool transient);
+  bool HandleAsAtkEvent(const x11::Event& xevent, bool transient);
 
   // Adjusts |requested_size_in_pixels| to avoid the WM "feature" where setting
   // the window size to the monitor size causes the WM to set the EWMH for
@@ -238,15 +234,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // The bounds of our window before the window was maximized.
   gfx::Rect restored_bounds_in_pixels_;
 
-  // Tells if this dispatcher can process next translated event based on a
-  // previous check in ::CheckCanDispatchNextPlatformEvent based on a
-  // x11::Window target.
-  x11::Event* current_xevent_ = nullptr;
-
-  // True if the current_xevent_ target is not this window but a transient
-  // window that hangs from this one.
-  bool current_xevent_target_transient_ = false;
-
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   // Whether the drop handler has notified that the drag has entered.
@@ -262,7 +249,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   std::unique_ptr<X11MoveLoop> drag_loop_;
 
   // Events that we have selected on the source window of the incoming drag.
-  std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
+  std::unique_ptr<x11::XScopedEventSelector> source_window_events_;
 
   base::WeakPtrFactory<X11Window> weak_ptr_factory_{this};
 

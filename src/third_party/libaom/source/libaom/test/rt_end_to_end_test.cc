@@ -89,7 +89,6 @@ class RTEndToEndTest
     InitializeConfig();
     SetMode(::libaom_test::kRealTime);
 
-    cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_threads = threads_;
     cfg_.rc_buf_sz = 1000;
     cfg_.rc_buf_initial_sz = 500;
@@ -109,6 +108,8 @@ class RTEndToEndTest
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
+      encoder->Control(AV1E_SET_ENABLE_RESTORATION, 0);
+      encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
       encoder->Control(AV1E_SET_TILE_COLUMNS, tile_columns_);
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);

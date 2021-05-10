@@ -229,11 +229,10 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 }
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
-  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i slot='bar'>foo</i>");
   ShadowRoot& shadow_root =
-      GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.setInnerHTML(
-      "<content select=\"i\"></content><u>Foo</u><content></content>");
+      GetDocument().body()->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.setInnerHTML("<slot name='bar'></slot><u>Foo</u><slot></slot>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
@@ -391,11 +390,10 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
-  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i slot='bar'>foo</i>");
   ShadowRoot& shadow_root =
-      GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.setInnerHTML(
-      "<content select=\"i\"></content><u>Foo</u><content></content>");
+      GetDocument().body()->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.setInnerHTML("<slot name='bar'></slot><u>Foo</u><slot></slot>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
@@ -846,6 +844,75 @@ TEST_F(TextFinderSimTest, BeforeMatchExpandedHiddenMatchableUkmNoHandler) {
 
   auto entries = recorder->GetEntriesByName("Blink.FindInPage");
   EXPECT_EQ(entries.size(), 0u);
+}
+
+TEST_F(TextFinderSimTest, BeforeMatchExpandedHiddenMatchableUseCounter) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      .hidden {
+        content-visibility: hidden-matchable;
+      }
+    </style>
+
+    <div id=hiddenid class=hidden>hidden</div>
+
+    <script>
+      hiddenid.addEventListener('beforematch', () => {
+        requestAnimationFrame(() => {
+          hiddenid.classList.remove('hidden');
+        }, 0);
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto forced_activatable_locks = GetDocument()
+                                      .GetDisplayLockDocumentState()
+                                      .GetScopedForceActivatableLocks();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
+  GetTextFinder().Find(/*identifier=*/0, WebString(String("hidden")),
+                       *mojom::blink::FindOptions::New(),
+                       /*wrap_within_frame=*/false);
+
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kBeforematchRevealedHiddenMatchable));
+}
+
+TEST_F(TextFinderSimTest,
+       BeforeMatchExpandedHiddenMatchableUseCounterNoHandler) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      .hidden {
+        content-visibility: hidden-matchable;
+      }
+    </style>
+
+    <div id=hiddenid class=hidden>hidden</div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto forced_activatable_locks = GetDocument()
+                                      .GetDisplayLockDocumentState()
+                                      .GetScopedForceActivatableLocks();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
+  GetTextFinder().Find(/*identifier=*/0, WebString(String("hidden")),
+                       *mojom::blink::FindOptions::New(),
+                       /*wrap_within_frame=*/false);
+
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kBeforematchRevealedHiddenMatchable));
 }
 
 TEST_F(TextFinderTest, FindTextAcrossCommentNode) {

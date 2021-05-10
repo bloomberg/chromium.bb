@@ -24,12 +24,10 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -41,6 +39,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace em = enterprise_management;
 
@@ -226,22 +225,16 @@ IN_PROC_BROWSER_TEST_F(LoginScreenButtonsLocalePolicy, UnifiedTrayLabelsText) {
   EXPECT_TRUE(unified_tray_test_api->IsBubbleViewVisible(
       ash::VIEW_ID_TRAY_ENTERPRISE, true /* open_tray */));
 
-  base::string16 actual_text;
-  if (ash::features::IsManagedDeviceUIRedesignEnabled()) {
-    // Actual text on UnifiedManagedDeviceView text.
-    actual_text = unified_tray_test_api->GetBubbleViewText(
-        ash::VIEW_ID_TRAY_ENTERPRISE_LABEL);
-  } else {
-    // Actual text on EnterpriseManagedView tooltip.
-    actual_text = unified_tray_test_api->GetBubbleViewTooltip(
-        ash::VIEW_ID_TRAY_ENTERPRISE);
-  }
-
   // Text on EnterpriseManagedView tooltip in current locale.
-  base::string16 expected_text = l10n_util::GetStringFUTF16(
-      IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY, base::UTF8ToUTF16(kDomain));
-
-  EXPECT_EQ(expected_text, actual_text);
+  base::string16 expected_text =
+      ash::features::IsManagedDeviceUIRedesignEnabled()
+          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
+                                       base::UTF8ToUTF16(kDomain))
+          : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                       ui::GetChromeOSDeviceName(),
+                                       base::UTF8ToUTF16(kDomain));
+  EXPECT_EQ(expected_text, unified_tray_test_api->GetBubbleViewTooltip(
+                               ash::VIEW_ID_TRAY_ENTERPRISE));
 }
 
 }  // namespace chromeos

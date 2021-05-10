@@ -11,6 +11,7 @@
 #include "src/codegen/machine-type.h"
 #include "src/codegen/tnode.h"
 #include "src/common/globals.h"
+#include "src/compiler/common-operator.h"
 #include "src/compiler/feedback-source.h"
 #include "src/compiler/node-properties.h"
 #include "src/compiler/operator.h"
@@ -559,7 +560,6 @@ Type ValueTypeParameterOf(const Operator* op) V8_WARN_UNUSED_RESULT;
 enum class NumberOperationHint : uint8_t {
   kSignedSmall,        // Inputs were Smi, output was in Smi.
   kSignedSmallInputs,  // Inputs were Smi, output was Number.
-  kSigned32,           // Inputs were Signed32, output was Number.
   kNumber,             // Inputs were Number, output was Number.
   kNumberOrBoolean,    // Inputs were Number or Boolean, output was Number.
   kNumberOrOddball,    // Inputs were Number or Oddball, output was Number.
@@ -972,14 +972,13 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* NumberIsSafeInteger();
   const Operator* ObjectIsInteger();
 
-  const Operator* ArgumentsFrame();
-  const Operator* ArgumentsLength(int formal_parameter_count);
+  const Operator* ArgumentsLength();
   const Operator* RestLength(int formal_parameter_count);
 
   const Operator* NewDoubleElements(AllocationType);
   const Operator* NewSmiOrObjectElements(AllocationType);
 
-  // new-arguments-elements frame, arguments count
+  // new-arguments-elements arguments-length
   const Operator* NewArgumentsElements(CreateArgumentsType type,
                                        int formal_parameter_count);
 
@@ -1134,18 +1133,18 @@ class FastApiCallNode final : public SimplifiedNodeWrapperBase {
   static constexpr int kExtraInputCount =
       kFastTargetInputCount + kFastReceiverInputCount;
 
-  static constexpr int kHasErrorInputCount = 1;
   static constexpr int kArityInputCount = 1;
   static constexpr int kNewTargetInputCount = 1;
   static constexpr int kHolderInputCount = 1;
   static constexpr int kContextAndFrameStateInputCount = 2;
   static constexpr int kEffectAndControlInputCount = 2;
-  static constexpr int kFastCallExtraInputCount =
-      kFastTargetInputCount + kHasErrorInputCount + kEffectAndControlInputCount;
+  int FastCallExtraInputCount() const;
   static constexpr int kSlowCallExtraInputCount =
       kSlowTargetInputCount + kArityInputCount + kNewTargetInputCount +
       kSlowReceiverInputCount + kHolderInputCount +
       kContextAndFrameStateInputCount + kEffectAndControlInputCount;
+
+  static constexpr int kSlowCallDataArgumentIndex = 3;
 
   // This is the arity fed into FastApiCallArguments.
   static constexpr int ArityForArgc(int c_arg_count, int js_arg_count) {

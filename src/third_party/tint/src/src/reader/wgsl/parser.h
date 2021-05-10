@@ -15,37 +15,20 @@
 #ifndef SRC_READER_WGSL_PARSER_H_
 #define SRC_READER_WGSL_PARSER_H_
 
-#include <memory>
-#include <string>
-
-#include "src/reader/reader.h"
+#include "src/program.h"
 #include "src/source.h"
 
 namespace tint {
 namespace reader {
 namespace wgsl {
 
-class ParserImpl;
-
-/// Parser for WGSL source data
-class Parser : public Reader {
- public:
-  /// Creates a new parser from the given file.
-  /// @param ctx the non-null context object
-  /// @param file the input source file to parse
-  Parser(Context* ctx, Source::File const* file);
-  ~Parser() override;
-
-  /// Run the parser
-  /// @returns true if the parse was successful, false otherwise.
-  bool Parse() override;
-
-  /// @returns the module. The module in the parser will be reset after this.
-  ast::Module module() override;
-
- private:
-  std::unique_ptr<ParserImpl> impl_;
-};
+/// Parses the WGSL source, returning the parsed program.
+/// If the source fails to parse then the returned
+/// `program.Diagnostics.contains_errors()` will be true, and the
+/// `program.Diagnostics()` will describe the error.
+/// @param file the source file
+/// @returns the parsed program
+Program Parse(Source::File const* file);
 
 }  // namespace wgsl
 }  // namespace reader

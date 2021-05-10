@@ -4,13 +4,16 @@
 
 #include "ash/system/accessibility/select_to_speak_menu_view.h"
 
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/accessibility/floating_menu_button.h"
+#include "ash/system/accessibility/select_to_speak_constants.h"
+#include "ash/system/accessibility/select_to_speak_metrics_utils.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -30,9 +33,47 @@ constexpr int kButtonSize = 36;
 constexpr int kStopButtonPadding = 14;
 constexpr int kSeparatorHeight = 16;
 
+// Histograms in which user action statistics are recorded. These values
+// correspond to their respective entries in histograms.xml, so if they are
+// changed, please deprecate the corresponding histograms there.
+const char kParagraphNavigationMethodHistogramName[] =
+    "Accessibility.CrosSelectToSpeak.ParagraphNavigationMethod";
+const char kSentenceNavigationMethodHistogramName[] =
+    "Accessibility.CrosSelectToSpeak.SentenceNavigationMethod";
+const char kBubbleDismissMethodHistogramName[] =
+    "Accessibility.CrosSelectToSpeak.BubbleDismissMethod";
+
+SelectToSpeakPanelAction PanelActionForButtonID(int button_id, bool is_paused) {
+  auto button_enum = static_cast<SelectToSpeakMenuView::ButtonId>(button_id);
+  switch (button_enum) {
+    case SelectToSpeakMenuView::ButtonId::kPrevParagraph:
+      return SelectToSpeakPanelAction::kPreviousParagraph;
+    case SelectToSpeakMenuView::ButtonId::kPrevSentence:
+      return SelectToSpeakPanelAction::kPreviousSentence;
+    case SelectToSpeakMenuView::ButtonId::kPause:
+      // Pause button toggles pause/resume state.
+      if (is_paused)
+        return SelectToSpeakPanelAction::kResume;
+      else
+        return SelectToSpeakPanelAction::kPause;
+    case SelectToSpeakMenuView::ButtonId::kNextParagraph:
+      return SelectToSpeakPanelAction::kNextParagraph;
+    case SelectToSpeakMenuView::ButtonId::kNextSentence:
+      return SelectToSpeakPanelAction::kNextSentence;
+    case SelectToSpeakMenuView::ButtonId::kStop:
+      return SelectToSpeakPanelAction::kExit;
+    case SelectToSpeakMenuView::ButtonId::kSpeed:
+      return SelectToSpeakPanelAction::kChangeSpeed;
+  }
+
+  NOTREACHED();
+  return SelectToSpeakPanelAction::kNone;
+}
+
 }  // namespace
 
-SelectToSpeakMenuView::SelectToSpeakMenuView() {
+SelectToSpeakMenuView::SelectToSpeakMenuView(Delegate* delegate)
+    : delegate_(delegate) {
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;
   int separator_spacing = (total_height - kSeparatorHeight) / 2;
   views::Builder<SelectToSpeakMenuView>(this)
@@ -46,6 +87,7 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                         .CopyAddressTo(&prev_paragraph_button_)
                         .SetID(static_cast<int>(ButtonId::kPrevParagraph))
                         .SetVectorIcon(kSelectToSpeakPrevParagraphIcon)
+                        .SetFlipCanvasOnPaintForRTLUI(true)
                         .SetTooltipText(l10n_util::GetStringUTF16(
                             IDS_ASH_SELECT_TO_SPEAK_PREV_PARAGRAPH))
                         .SetCallback(base::BindRepeating(
@@ -56,6 +98,7 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                         .CopyAddressTo(&prev_sentence_button_)
                         .SetID(static_cast<int>(ButtonId::kPrevSentence))
                         .SetVectorIcon(kSelectToSpeakPrevSentenceIcon)
+                        .SetFlipCanvasOnPaintForRTLUI(true)
                         .SetTooltipText(l10n_util::GetStringUTF16(
                             IDS_ASH_SELECT_TO_SPEAK_PREV_SENTENCE))
                         .SetCallback(base::BindRepeating(
@@ -76,6 +119,7 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                         .CopyAddressTo(&next_sentence_button_)
                         .SetID(static_cast<int>(ButtonId::kNextSentence))
                         .SetVectorIcon(kSelectToSpeakNextSentenceIcon)
+                        .SetFlipCanvasOnPaintForRTLUI(true)
                         .SetTooltipText(l10n_util::GetStringUTF16(
                             IDS_ASH_SELECT_TO_SPEAK_NEXT_SENTENCE))
                         .SetCallback(base::BindRepeating(
@@ -86,12 +130,23 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                         .CopyAddressTo(&next_paragraph_button_)
                         .SetID(static_cast<int>(ButtonId::kNextParagraph))
                         .SetVectorIcon(kSelectToSpeakNextParagraphIcon)
+                        .SetFlipCanvasOnPaintForRTLUI(true)
                         .SetTooltipText(l10n_util::GetStringUTF16(
                             IDS_ASH_SELECT_TO_SPEAK_NEXT_PARAGRAPH))
                         .SetCallback(base::BindRepeating(
                             &SelectToSpeakMenuView::OnButtonPressed,
                             base::Unretained(this),
-                            base::Unretained(next_paragraph_button_)))}),
+                            base::Unretained(next_paragraph_button_))),
+                    views::Builder<FloatingMenuButton>()
+                        .CopyAddressTo(&speed_button_)
+                        .SetID(static_cast<int>(ButtonId::kSpeed))
+                        .SetVectorIcon(kSelectToSpeakReadingSpeedNormalIcon)
+                        .SetTooltipText(l10n_util::GetStringUTF16(
+                            IDS_ASH_SELECT_TO_SPEAK_READING_SPEED))
+                        .SetCallback(base::BindRepeating(
+                            &SelectToSpeakMenuView::OnButtonPressed,
+                            base::Unretained(this),
+                            base::Unretained(speed_button_)))}),
            views::Builder<views::Separator>()
                .SetColor(AshColorProvider::Get()->GetContentLayerColor(
                    AshColorProvider::ContentLayerType::kSeparatorColor))
@@ -109,6 +164,7 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                         .CopyAddressTo(&stop_button_)
                         .SetID(static_cast<int>(ButtonId::kStop))
                         .SetVectorIcon(kSelectToSpeakStopIcon)
+                        .SetDrawHighlight(false)
                         .SetPreferredSize(gfx::Size(kButtonSize, kButtonSize))
                         .SetTooltipText(l10n_util::GetStringUTF16(
                             IDS_ASH_SELECT_TO_SPEAK_EXIT))
@@ -117,8 +173,76 @@ SelectToSpeakMenuView::SelectToSpeakMenuView() {
                             base::Unretained(this),
                             base::Unretained(stop_button_)))})})
       .BuildChildren();
+}
 
-  pause_button_->SetToggled(true);
+void SelectToSpeakMenuView::SetInitialSpeechRate(double initial_speech_rate) {
+  const gfx::VectorIcon* speed_icon = &kSelectToSpeakReadingSpeedNormalIcon;
+  if (initial_speech_rate == kSelectToSpeakSpeechRateSlow) {
+    speed_icon = &kSelectToSpeakReadingSpeedSlowIcon;
+  } else if (initial_speech_rate == kSelectToSpeakSpeechRatePeppy) {
+    speed_icon = &kSelectToSpeakReadingSpeedPeppyIcon;
+  } else if (initial_speech_rate == kSelectToSpeakSpeechRateFast) {
+    speed_icon = &kSelectToSpeakReadingSpeedFastIcon;
+  } else if (initial_speech_rate == kSelectToSpeakSpeechRateFaster) {
+    speed_icon = &kSelectToSpeakReadingSpeedFasterIcon;
+  }
+  speed_button_->SetVectorIcon(*speed_icon);
+}
+
+void SelectToSpeakMenuView::OnKeyEvent(ui::KeyEvent* key_event) {
+  if (key_event->type() != ui::ET_KEY_PRESSED || key_event->is_repeat()) {
+    // Only process key when first pressed.
+    return;
+  }
+
+  auto action = SelectToSpeakPanelAction::kNone;
+  switch (key_event->key_code()) {
+    case ui::KeyboardCode::VKEY_LEFT:
+      if (base::i18n::IsRTL()) {
+        action = SelectToSpeakPanelAction::kNextSentence;
+      } else {
+        action = SelectToSpeakPanelAction::kPreviousSentence;
+      }
+      base::UmaHistogramEnumeration(
+          kSentenceNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kKeyboardShortcut);
+      break;
+    case ui::KeyboardCode::VKEY_RIGHT:
+      if (base::i18n::IsRTL()) {
+        action = SelectToSpeakPanelAction::kPreviousSentence;
+      } else {
+        action = SelectToSpeakPanelAction::kNextSentence;
+      }
+      base::UmaHistogramEnumeration(
+          kSentenceNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kKeyboardShortcut);
+      break;
+    case ui::KeyboardCode::VKEY_UP:
+      action = SelectToSpeakPanelAction::kPreviousParagraph;
+      base::UmaHistogramEnumeration(
+          kParagraphNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kKeyboardShortcut);
+      break;
+    case ui::KeyboardCode::VKEY_DOWN:
+      action = SelectToSpeakPanelAction::kNextParagraph;
+      base::UmaHistogramEnumeration(
+          kParagraphNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kKeyboardShortcut);
+      break;
+    case ui::KeyboardCode::VKEY_ESCAPE:
+      action = SelectToSpeakPanelAction::kExit;
+      base::UmaHistogramEnumeration(
+          kBubbleDismissMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kKeyboardShortcut);
+      break;
+    default:
+      // Unhandled key.
+      return;
+  }
+
+  delegate_->OnActionSelected(action);
+  key_event->SetHandled();
+  key_event->StopPropagation();
 }
 
 void SelectToSpeakMenuView::SetPaused(bool is_paused) {
@@ -127,10 +251,50 @@ void SelectToSpeakMenuView::SetPaused(bool is_paused) {
   pause_button_->SetTooltipText(
       l10n_util::GetStringUTF16(is_paused ? IDS_ASH_SELECT_TO_SPEAK_RESUME
                                           : IDS_ASH_SELECT_TO_SPEAK_PAUSE));
+  is_paused_ = is_paused;
+}
+
+void SelectToSpeakMenuView::SetInitialFocus() {
+  pause_button_->RequestFocus();
+}
+
+void SelectToSpeakMenuView::SetSpeedButtonFocused() {
+  speed_button_->RequestFocus();
+}
+
+void SelectToSpeakMenuView::SetSpeedButtonToggled(bool toggled) {
+  speed_button_->SetToggled(toggled);
 }
 
 void SelectToSpeakMenuView::OnButtonPressed(views::Button* sender) {
-  // TODO(crbug.com/1143814): Handle button clicks.
+  SelectToSpeakPanelAction action =
+      PanelActionForButtonID(sender->GetID(), is_paused_);
+
+  switch (action) {
+    case SelectToSpeakPanelAction::kPreviousParagraph:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SelectToSpeakPanelAction::kNextParagraph:
+      base::UmaHistogramEnumeration(
+          kParagraphNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kMenuButton);
+      break;
+    case SelectToSpeakPanelAction::kPreviousSentence:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SelectToSpeakPanelAction::kNextSentence:
+      base::UmaHistogramEnumeration(
+          kSentenceNavigationMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kMenuButton);
+      break;
+    case SelectToSpeakPanelAction::kExit:
+      base::UmaHistogramEnumeration(
+          kBubbleDismissMethodHistogramName,
+          CrosSelectToSpeakActivationMethod::kMenuButton);
+      break;
+    default:
+      break;  // Nothing to record
+  }
+
+  delegate_->OnActionSelected(action);
 }
 
 BEGIN_METADATA(SelectToSpeakMenuView, views::BoxLayoutView)

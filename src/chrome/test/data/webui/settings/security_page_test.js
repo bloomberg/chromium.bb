@@ -3,26 +3,22 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {isLacros, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {flushTasks, isChildVisible} from '../test_util.m.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
-import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
 suite('CrSettingsSecurityPageTest', function() {
   /** @type {!TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;
-
-  /** @type {!TestSyncBrowserProxy} */
-  let syncBrowserProxy;
 
   /** @type {!TestPrivacyPageBrowserProxy} */
   let testPrivacyBrowserProxy;
@@ -42,8 +38,6 @@ suite('CrSettingsSecurityPageTest', function() {
     MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     testPrivacyBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.instance_ = testPrivacyBrowserProxy;
-    syncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
     document.body.innerHTML = '';
     page = /** @type {!SettingsSecurityPageElement} */ (
         document.createElement('settings-security-page'));
@@ -57,12 +51,11 @@ suite('CrSettingsSecurityPageTest', function() {
           type: chrome.settingsPrivate.PrefType.NUMBER,
           value: SafeBrowsingSetting.STANDARD,
         },
-        password_leak_detection: {value: true, userControlDisabled: false},
+        password_leak_detection: {value: false},
       },
       dns_over_https:
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
-    page.set('syncStatus', {signedIn: false, hasError: false});
     document.body.appendChild(page);
     page.$$('#safeBrowsingEnhanced').updateCollapsed();
     page.$$('#safeBrowsingStandard').updateCollapsed();
@@ -87,12 +80,18 @@ suite('CrSettingsSecurityPageTest', function() {
     assertTrue(page.$$('#safeBrowsingStandard').expanded);
   });
 
-  test('LogManageCerfificatesClick', async function() {
-    page.$$('#manageCertificates').click();
-    const result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
-  });
+  // TODO(crbug.com/1148302): This class directly calls
+  // `GetNSSCertDatabaseForProfile()` that causes crash at the moment and is
+  // never called from Lacros-Chrome. This should be revisited when there is a
+  // solution for the client certificates settings page on Lacros-Chrome.
+  if (!isLacros) {
+    test('LogManageCerfificatesClick', async function() {
+      page.$$('#manageCertificates').click();
+      const result = await testMetricsBrowserProxy.whenCalled(
+          'recordSettingsPageHistogram');
+      assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+    });
+  }
 
   test('ManageSecurityKeysSubpageVisible', function() {
     assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
@@ -113,13 +112,13 @@ suite('CrSettingsSecurityPageTest', function() {
     flush();
     assertEquals(activeWhenSignedInSubLabel, toggle.subLabel);
 
-    page.set('syncStatus', {signedIn: true});
+    page.set('prefs.generated.password_leak_detection.value', true);
     flush();
     assertEquals(defaultSubLabel, toggle.subLabel);
 
-    page.set('syncStatus', {signedIn: true, hasError: true});
+    page.set('prefs.profile.password_manager_leak_detection.value', false);
     flush();
-    assertEquals(activeWhenSignedInSubLabel, toggle.subLabel);
+    assertEquals(defaultSubLabel, toggle.subLabel);
   });
 
   test('LogSafeBrowsingExtendedToggle', async function() {
@@ -595,7 +594,6 @@ suite('CrSettingsSecurityPageTest_FlagsDisabled', function() {
       dns_over_https:
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
-    page.set('syncStatus', {signedIn: true, hasError: false});
     document.body.appendChild(page);
     flush();
   });

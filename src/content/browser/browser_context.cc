@@ -32,6 +32,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
@@ -69,28 +70,17 @@ namespace content {
 
 namespace {
 
-class ContentServiceHolder : public base::SupportsUserData::Data {
- public:
-  explicit ContentServiceHolder(BrowserContext* browser_context) {}
-
-  ~ContentServiceHolder() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentServiceHolder);
-};
-
 // Key names on BrowserContext.
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
-const char kContentServiceKey[] = "content-service";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kPermissionControllerKey[] = "permission-controller";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 const char kLearningSession[] = "learning-session";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kMountPointsKey[] = "mount_points";
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 StoragePartitionImplMap* GetStoragePartitionMap(
     BrowserContext* browser_context) {
@@ -177,7 +167,7 @@ storage::ExternalMountPoints* BrowserContext::GetMountPoints(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!context->GetUserData(kMountPointsKey)) {
     scoped_refptr<storage::ExternalMountPoints> mount_points =
         storage::ExternalMountPoints::CreateRefCounted();
@@ -355,22 +345,16 @@ void BrowserContext::FirePushSubscriptionChangeEvent(
 // static
 void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   TRACE_EVENT1("shutdown", "BrowserContext::NotifyWillBeDestroyed",
-               "browser_context", browser_context);
+               "browser_context", static_cast<void*>(browser_context));
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "shutdown", "BrowserContext::NotifyWillBeDestroyed() called.",
-      browser_context, "browser_context", browser_context);
+      browser_context, "browser_context", static_cast<void*>(browser_context));
   // Make sure NotifyWillBeDestroyed is idempotent.  This helps facilitate the
   // pattern where NotifyWillBeDestroyed is called from *both*
   // ShellBrowserContext and its derived classes (e.g. WebTestBrowserContext).
   if (browser_context->was_notify_will_be_destroyed_called_)
     return;
   browser_context->was_notify_will_be_destroyed_called_ = true;
-
-  // Subclasses of BrowserContext may expect there to be no more
-  // RenderProcessHosts using them by the time this function returns. We
-  // therefore explicitly tear down embedded Content Service instances now to
-  // ensure that all their WebContents (and therefore RPHs) are torn down too.
-  browser_context->RemoveUserData(kContentServiceKey);
 
   // Shut down service worker and shared worker machinery because these can keep
   // RenderProcessHosts and SiteInstances alive, and the codebase assumes these
@@ -458,14 +442,15 @@ void BrowserContext::SetPermissionControllerForTesting(
 BrowserContext::BrowserContext()
     : unique_id_(base::UnguessableToken::Create().ToString()) {
   TRACE_EVENT1("shutdown", "BrowserContext::BrowserContext", "browser_context",
-               this);
+               static_cast<void*>(this));
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("shutdown", "Browser.BrowserContext", this,
-                                    "browser_context", this);
+                                    "browser_context",
+                                    static_cast<void*>(this));
 }
 
 BrowserContext::~BrowserContext() {
   TRACE_EVENT1("shutdown", "BrowserContext::~BrowserContext", "browser_context",
-               this);
+               static_cast<void*>(this));
   DCHECK(!GetUserData(kStoragePartitionMapKeyName))
       << "StoragePartitionMap is not shut down properly";
 
@@ -511,9 +496,9 @@ BrowserContext::~BrowserContext() {
 
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       "shutdown", "BrowserContext::NotifyWillBeDestroyed() called.", this,
-      "browser_context", this);
+      "browser_context", static_cast<void*>(this));
   TRACE_EVENT_NESTABLE_ASYNC_END1("shutdown", "Browser.BrowserContext", this,
-                                  "browser_context", this);
+                                  "browser_context", static_cast<void*>(this));
 }
 
 void BrowserContext::ShutdownStoragePartitions() {
@@ -609,6 +594,7 @@ BrowserContext::RetriveInProgressDownloadManager() {
 }
 
 void BrowserContext::SetCorsOriginAccessListForOrigin(
+    TargetBrowserContexts target_mode,
     const url::Origin& source_origin,
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
@@ -624,8 +610,8 @@ SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
   return empty_list->get();
 }
 
-NativeFileSystemPermissionContext*
-BrowserContext::GetNativeFileSystemPermissionContext() {
+FileSystemAccessPermissionContext*
+BrowserContext::GetFileSystemAccessPermissionContext() {
   return nullptr;
 }
 

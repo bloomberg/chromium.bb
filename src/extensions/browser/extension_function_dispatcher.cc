@@ -42,7 +42,6 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/extensions_client.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -131,9 +130,6 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
         observer_(this),
         render_process_host_(render_process_host) {
     observer_.Add(render_process_host_);
-
-    DCHECK(ExtensionsClient::Get()
-               ->ExtensionAPIEnabledInExtensionServiceWorkers());
   }
 
   ~WorkerResponseCallbackWrapper() override = default;
@@ -337,6 +333,10 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!extension) {
     if (function->source_context_type() == Feature::WEBUI_CONTEXT) {
       base::UmaHistogramSparse("Extensions.Functions.WebUICalls",
+                               function->histogram_value());
+    } else if (function->source_context_type() ==
+               Feature::WEBUI_UNTRUSTED_CONTEXT) {
+      base::UmaHistogramSparse("Extensions.Functions.WebUIUntrustedCalls",
                                function->histogram_value());
     }
 

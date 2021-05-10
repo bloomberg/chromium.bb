@@ -132,7 +132,7 @@ HTMLPlugInElement::HTMLPlugInElement(
   if (auto* context = doc.GetExecutionContext()) {
     context->GetScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kContainsPlugins,
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+        {SchedulingPolicy::DisableBackForwardCache()});
   }
 }
 
@@ -646,7 +646,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
     return false;
 
   LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame->Loader().AllowPlugins(kAboutToInstantiatePlugin))
+  if (!frame->Loader().AllowPlugins())
     return false;
 
   auto* layout_object = GetLayoutEmbeddedObject();
@@ -712,8 +712,7 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
 
   AtomicString declared_mime_type = FastGetAttribute(html_names::kTypeAttr);
   auto* csp = GetExecutionContext()->GetContentSecurityPolicy();
-  if (!csp->AllowObjectFromSource(url) ||
-      !csp->AllowPluginType(mime_type, declared_mime_type, url)) {
+  if (!csp->AllowObjectFromSource(url)) {
     if (auto* layout_object = GetLayoutEmbeddedObject()) {
       plugin_is_available_ = false;
       layout_object->SetPluginAvailability(
@@ -799,8 +798,10 @@ void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
   }
 }
 
-scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject() {
-  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject(
+    const StyleRecalcContext& style_recalc_context) {
+  scoped_refptr<ComputedStyle> style =
+      OriginalStyleForLayoutObject(style_recalc_context);
   if (IsImageType() && !GetLayoutObject() && style &&
       LayoutObjectIsNeeded(*style)) {
     if (!image_loader_)

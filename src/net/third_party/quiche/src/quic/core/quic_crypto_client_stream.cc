@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
+#include "quic/core/quic_crypto_client_stream.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/crypto_utils.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/quic_crypto_client_handshaker.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/tls_client_handshaker.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -35,7 +35,8 @@ QuicCryptoClientStream::QuicCryptoClientStream(
     ProofHandler* proof_handler,
     bool has_application_state)
     : QuicCryptoClientStreamBase(session) {
-  DCHECK_EQ(Perspective::IS_CLIENT, session->connection()->perspective());
+  QUICHE_DCHECK_EQ(Perspective::IS_CLIENT,
+                   session->connection()->perspective());
   switch (session->connection()->version().handshake_protocol) {
     case PROTOCOL_QUIC_CRYPTO:
       handshaker_ = std::make_unique<QuicCryptoClientHandshaker>(
@@ -142,6 +143,21 @@ void QuicCryptoClientStream::OnConnectionClosed(QuicErrorCode error,
 
 void QuicCryptoClientStream::OnHandshakeDoneReceived() {
   handshaker_->OnHandshakeDoneReceived();
+}
+
+void QuicCryptoClientStream::OnNewTokenReceived(absl::string_view token) {
+  handshaker_->OnNewTokenReceived(token);
+}
+
+std::string QuicCryptoClientStream::GetAddressToken() const {
+  QUICHE_DCHECK(false);
+  return "";
+}
+
+bool QuicCryptoClientStream::ValidateAddressToken(
+    absl::string_view /*token*/) const {
+  QUICHE_DCHECK(false);
+  return false;
 }
 
 void QuicCryptoClientStream::SetServerApplicationStateForResumption(

@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -31,8 +32,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #else
 #include "chrome/browser/signin/signin_util.h"
 #endif
@@ -80,7 +81,7 @@ ChildAccountService::~ChildAccountService() {}
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
 // Child account detection is always enabled on Android and ChromeOS, and
 // disabled in other platforms.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   return true;
 #else
   return false;
@@ -143,9 +144,8 @@ ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
                                      : AuthState::NOT_AUTHENTICATED;
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
-ChildAccountService::ObserveGoogleAuthState(
-    const base::Callback<void()>& callback) {
+base::CallbackListSubscription ChildAccountService::ObserveGoogleAuthState(
+    const base::RepeatingCallback<void()>& callback) {
   return google_auth_state_observers_.Add(callback);
 }
 
@@ -161,7 +161,7 @@ bool ChildAccountService::SetActive(bool active) {
         SupervisedUserSettingsServiceFactory::GetForKey(
             profile_->GetProfileKey());
 
-    // In contrast to legacy SUs, child account SUs must sign in.
+    // In contrast to deprecated legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
                                       std::make_unique<base::Value>(true));
 
@@ -179,7 +179,7 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       std::make_unique<base::Value>(false));
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any
     // problems.
@@ -205,7 +205,7 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       nullptr);
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     signin_util::SetUserSignoutAllowedForProfile(profile_, true);
 #endif
 
@@ -244,6 +244,21 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
   for (auto& callback : status_received_callback_list_)
     std::move(callback).Run();
   status_received_callback_list_.clear();
+}
+
+void ChildAccountService::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  if (event_details.GetEventTypeFor(signin::ConsentLevel::kNotRequired) ==
+      signin::PrimaryAccountChangeEvent::Type::kSet) {
+    auto account_info =
+        identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
+            event_details.GetCurrentState().primary_account);
+    if (account_info.has_value()) {
+      OnExtendedAccountInfoUpdated(account_info.value());
+    }
+    // Otherwise OnExtendedAccountInfoUpdated will be notified once
+    // the account info is available.
+  }
 }
 
 void ChildAccountService::OnExtendedAccountInfoUpdated(
@@ -337,19 +352,17 @@ void ChildAccountService::ScheduleNextFamilyInfoUpdate(base::TimeDelta delay) {
 }
 
 void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
-    // Note that supervised user is allowed to change type due to legacy
-    // initialization.
-    if (user->GetType() != user_manager::USER_TYPE_SUPERVISED) {
+    // Note that deprecated legacy supervised users are allowed to change type
+    // due to legacy initialization.
+    if (user->GetType() != user_manager::USER_TYPE_SUPERVISED_DEPRECATED) {
       if (is_child != (user->GetType() == user_manager::USER_TYPE_CHILD))
         LOG(FATAL) << "User child flag has changed: " << is_child;
     }
-  } else if (!chromeos::ProfileHelper::Get()->IsSigninProfile(profile_) &&
-             !chromeos::ProfileHelper::Get()->IsLockScreenAppProfile(
-                 profile_)) {
+  } else if (chromeos::ProfileHelper::IsRegularProfile(profile_)) {
     LOG(DFATAL) << "User instance not found while setting child account flag.";
   }
 #endif

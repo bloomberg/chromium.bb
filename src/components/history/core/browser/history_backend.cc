@@ -46,7 +46,7 @@
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/url_utils.h"
-#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -462,6 +462,24 @@ void HistoryBackend::UpdateWithPageEndTime(ContextID context_id,
   UpdateVisitDuration(visit_id, end_ts);
 }
 
+void HistoryBackend::SetFlocAllowed(ContextID context_id,
+                                    int nav_entry_id,
+                                    const GURL& url) {
+  TRACE_EVENT0("browser", "HistoryBackend::SetFlocAllowed");
+
+  if (!db_)
+    return;
+
+  VisitID visit_id = tracker_.GetLastVisit(context_id, nav_entry_id, url);
+
+  VisitRow visit_row;
+  if (db_->GetRowForVisit(visit_id, &visit_row)) {
+    visit_row.floc_allowed = true;
+    db_->UpdateVisitRow(visit_row);
+    ScheduleCommit();
+  }
+}
+
 void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
   if (!db_)
     return;
@@ -581,7 +599,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     last_ids =
         AddPageVisit(request.url, request.time, last_ids.second, t,
                      request.hidden, request.visit_source, IsTypedIncrement(t),
-                     request.publicly_routable, request.title);
+                     request.floc_allowed, request.title);
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
     // result in changing most visited, so we don't update segments (most
@@ -664,6 +682,14 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
           FormatUrlForRedirectComparison(redirects[0]) ==
               FormatUrlForRedirectComparison(redirects[1])) {
         transfer_typed_credit_from_first_to_second_url = true;
+      } else if (ui::PageTransitionCoreTypeIs(
+                     request_transition, ui::PAGE_TRANSITION_FORM_SUBMIT)) {
+        // If this is a form submission, the user was on the previous page and
+        // we should have saved the title and favicon already. Don't overwrite
+        // it with the redirected page. For example, a page titled "Create X"
+        // should not be updated to "Newly Created Item" on a successful POST
+        // when the new page is titled "Newly Created Item".
+        redirects.erase(redirects.begin());
       }
     }
 
@@ -672,7 +698,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       ui::PageTransition t = ui::PageTransitionFromInt(
           ui::PageTransitionStripQualifier(request_transition) | redirect_info);
 
-      bool publicly_routable = false;
+      bool floc_allowed = false;
 
       // If this is the last transition, add a CHAIN_END marker
       if (redirect_index == (redirects.size() - 1)) {
@@ -685,9 +711,9 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
           t = ui::PageTransitionFromInt(t | ui::PAGE_TRANSITION_FROM_API_3);
         }
 
-        // Since request.publicly_routable is a property of the visit to
-        // request.url, it only applies to the final redirect.
-        publicly_routable = request.publicly_routable;
+        // Since request.floc_allowed is a property of the visit to request.url,
+        // it only applies to the final redirect.
+        floc_allowed = request.floc_allowed;
       }
 
       bool should_increment_typed_count = IsTypedIncrement(t);
@@ -704,7 +730,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       last_ids = AddPageVisit(
           redirects[redirect_index], request.time, last_ids.second, t,
           request.hidden, request.visit_source, should_increment_typed_count,
-          publicly_routable, request.title);
+          floc_allowed, request.title);
 
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
         if (request.consider_for_ntp_most_visited) {
@@ -898,7 +924,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     bool hidden,
     VisitSource visit_source,
     bool should_increment_typed_count,
-    bool publicly_routable,
+    bool floc_allowed,
     base::Optional<base::string16> title) {
   // See if this URL is already in the DB.
   URLRow url_info(url);
@@ -938,7 +964,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Add the visit with the time to the database.
   VisitRow visit_info(url_id, time, referring_visit, transition, 0,
-                      should_increment_typed_count, publicly_routable);
+                      should_increment_typed_count, floc_allowed);
   VisitID visit_id = db_->AddVisit(&visit_info, visit_source);
 
   if (visit_info.visit_time < first_recorded_time_)
@@ -997,7 +1023,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                     ui::PAGE_TRANSITION_CHAIN_START |
                                     ui::PAGE_TRANSITION_CHAIN_END),
           /*segment_id=*/0, /*incremented_omnibox_typed_score=*/false,
-          /*publicly_routable=*/false);
+          /*floc_allowed=*/false);
       if (!db_->AddVisit(&visit_info, visit_source)) {
         NOTREACHED() << "Adding visit failed.";
         return;
@@ -1160,7 +1186,7 @@ bool HistoryBackend::AddVisits(const GURL& url,
       if (!AddPageVisit(url, visit->first, 0, visit->second,
                         !ui::PageTransitionIsMainFrame(visit->second),
                         visit_source, IsTypedIncrement(visit->second),
-                        /*publicly_routable=*/false)
+                        /*floc_allowed=*/false)
                .first) {
         return false;
       }
@@ -1475,7 +1501,7 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
     }
 
     url_result.set_visit_time(visit.visit_time);
-    url_result.set_publicly_routable(visit.publicly_routable);
+    url_result.set_floc_allowed(visit.floc_allowed);
 
     // Set whether the visit was blocked for a managed user by looking at the
     // transition type.
@@ -1509,7 +1535,7 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
     for (size_t j = 0; j < visits.size(); j++) {
       URLResult url_result(text_match);
       url_result.set_visit_time(visits[j].visit_time);
-      url_result.set_publicly_routable(visits[j].publicly_routable);
+      url_result.set_floc_allowed(visits[j].floc_allowed);
       matching_visits.push_back(url_result);
     }
   }

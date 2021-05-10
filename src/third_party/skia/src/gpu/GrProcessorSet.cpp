@@ -153,7 +153,8 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
     }
 
     GrXPFactory::AnalysisProperties props = GrXPFactory::GetAnalysisProperties(
-            this->xpFactory(), colorAnalysis.outputColor(), outputCoverage, caps, clampType);
+            this->xpFactory(), colorAnalysis.outputColor(), outputCoverage, hasMixedSampledCoverage,
+            caps, clampType);
     analysis.fRequiresDstTexture =
             SkToBool(props & GrXPFactory::AnalysisProperties::kRequiresDstTexture);
     analysis.fCompatibleWithCoverageAsAlpha &=
@@ -162,6 +163,8 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
             SkToBool(props & GrXPFactory::AnalysisProperties::kRequiresNonOverlappingDraws);
     analysis.fUsesNonCoherentHWBlending =
             SkToBool(props & GrXPFactory::AnalysisProperties::kUsesNonCoherentHWBlending);
+    analysis.fUnaffectedByDstValue =
+            SkToBool(props & GrXPFactory::AnalysisProperties::kUnaffectedByDstValue);
     if (props & GrXPFactory::AnalysisProperties::kIgnoresInputColor) {
         colorFPsToEliminate = this->hasColorFragmentProcessor() ? 1 : 0;
         analysis.fInputColorType =

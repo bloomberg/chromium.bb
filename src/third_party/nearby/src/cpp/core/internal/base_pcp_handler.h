@@ -54,42 +54,17 @@ namespace location {
 namespace nearby {
 namespace connections {
 
-// Define a class that supports move operation for pointers using std::swap.
-// It replicates std::unique_ptr<> behavior, but it does not own the pointer,
-// so it does not attempt destroy it.
-// This approach was recommended during code review, as a better alternative to
-// reuse of std::unique_ptr<> with custom no-op deleter, for the sake of
-// readability.
-template <typename T>
-class Swapper {
- public:
-  Swapper(T* pointer) : pointer_(pointer) {}  // NOLINT.
-  Swapper(Swapper&& other) { *this = std::move(other); }
-  Swapper& operator=(Swapper&& other) {
-    std::swap(pointer_, other.pointer_);
-    return *this;
-  }
-  T* operator->() const { return pointer_; }
-  T& operator*() { return *pointer_; }
-  operator T*() { return pointer_; }  // NOLINT.
-  T* get() const { return pointer_; }
-  void reset() { pointer_ = nullptr; }
-
- private:
-  T* pointer_ = nullptr;
-};
-
-template <typename T>
-Swapper<T> MakeSwapper(T* value) {
-  return Swapper<T>(value);
-}
-
 // Represents the WebRtc state that mediums are connectable or not.
 enum class WebRtcState {
   kUndefined = 0,
   kConnectable = 1,
   kUnconnectable = 2,
 };
+
+// Annotations for methods that need to run on PCP handler thread.
+// Use only in BasePcpHandler and derived classes.
+#define RUN_ON_PCP_HANDLER_THREAD() \
+  ABSL_EXCLUSIVE_LOCKS_REQUIRED(GetPcpHandlerThread())
 
 // A base implementation of the PcpHandler interface that takes care of all
 // bookkeeping and handshake protocols that are common across all PcpHandler
@@ -132,8 +107,7 @@ class BasePcpHandler : public PcpHandler,
   // otherwise does nothing.
   void StopDiscovery(ClientProxy* client) override;
 
-  void InjectEndpoint(ClientProxy* client,
-                      const std::string& service_id,
+  void InjectEndpoint(ClientProxy* client, const std::string& service_id,
                       const OutOfBandConnectionMetadata& metadata) override;
 
   // Requests a newly discovered remote endpoint it to form a connection.
@@ -167,7 +141,6 @@ class BasePcpHandler : public PcpHandler,
 
   Pcp GetPcp() const override { return pcp_; }
   Strategy GetStrategy() const override { return strategy_; }
-  Medium GetBwuMedium() const { return bwu_medium_.Get(); }
   void DisconnectFromEndpointManager();
 
  protected:
@@ -258,12 +231,12 @@ class BasePcpHandler : public PcpHandler,
   ConnectionOptions GetConnectionOptions() const;
   ConnectionOptions GetDiscoveryOptions() const;
 
-  // @PcpHandlerThread
   void OnEndpointFound(ClientProxy* client,
-                       std::shared_ptr<DiscoveredEndpoint> endpoint);
+                       std::shared_ptr<DiscoveredEndpoint> endpoint)
+      RUN_ON_PCP_HANDLER_THREAD();
 
-  // @PcpHandlerThread
-  void OnEndpointLost(ClientProxy* client, const DiscoveredEndpoint& endpoint);
+  void OnEndpointLost(ClientProxy* client, const DiscoveredEndpoint& endpoint)
+      RUN_ON_PCP_HANDLER_THREAD();
 
   Exception OnIncomingConnection(
       ClientProxy* client, const ByteArray& remote_endpoint_info,
@@ -276,31 +249,30 @@ class BasePcpHandler : public PcpHandler,
   virtual bool CanSendOutgoingConnection(ClientProxy* client) const;
   virtual bool CanReceiveIncomingConnection(ClientProxy* client) const;
 
-  // @PcpHandlerThread
   virtual StartOperationResult StartAdvertisingImpl(
       ClientProxy* client, const std::string& service_id,
       const std::string& local_endpoint_id,
-      const ByteArray& local_endpoint_info,
-      const ConnectionOptions& options) = 0;
-  // @PcpHandlerThread
-  virtual Status StopAdvertisingImpl(ClientProxy* client) = 0;
+      const ByteArray& local_endpoint_info, const ConnectionOptions& options)
+      RUN_ON_PCP_HANDLER_THREAD() = 0;
 
-  // @PcpHandlerThread
+  virtual Status StopAdvertisingImpl(ClientProxy* client)
+      RUN_ON_PCP_HANDLER_THREAD() = 0;
+
   virtual StartOperationResult StartDiscoveryImpl(
       ClientProxy* client, const std::string& service_id,
-      const ConnectionOptions& options) = 0;
-  // @PcpHandlerThread
-  virtual Status StopDiscoveryImpl(ClientProxy* client) = 0;
+      const ConnectionOptions& options) RUN_ON_PCP_HANDLER_THREAD() = 0;
 
-  // @PcpHandlerThread
-  virtual Status InjectEndpointImpl(
-      ClientProxy* client,
-      const std::string& service_id,
-      const OutOfBandConnectionMetadata& metadata) = 0;
+  virtual Status StopDiscoveryImpl(ClientProxy* client)
+      RUN_ON_PCP_HANDLER_THREAD() = 0;
 
-  // @PcpHandlerThread
+  virtual Status InjectEndpointImpl(ClientProxy* client,
+                                    const std::string& service_id,
+                                    const OutOfBandConnectionMetadata& metadata)
+      RUN_ON_PCP_HANDLER_THREAD() = 0;
+
   virtual ConnectImplResult ConnectImpl(ClientProxy* client,
-                                        DiscoveredEndpoint* endpoint) = 0;
+                                        DiscoveredEndpoint* endpoint)
+      RUN_ON_PCP_HANDLER_THREAD() = 0;
 
   virtual std::vector<proto::connections::Medium>
   GetConnectionMediumsByPriority() = 0;
@@ -314,9 +286,18 @@ class BasePcpHandler : public PcpHandler,
   std::vector<BasePcpHandler::DiscoveredEndpoint*> GetDiscoveredEndpoints(
       const std::string& endpoint_id);
 
+  // Returns a vector of discovered endpoints that share a given Medium.
+  std::vector<BasePcpHandler::DiscoveredEndpoint*> GetDiscoveredEndpoints(
+      const proto::connections::Medium medium);
+
   mediums::PeerId CreatePeerIdFromAdvertisement(const string& service_id,
                                                 const string& endpoint_id,
                                                 const ByteArray& endpoint_info);
+
+  SingleThreadExecutor* GetPcpHandlerThread()
+      ABSL_LOCK_RETURNED(serial_executor_) {
+    return &serial_executor_;
+  }
 
   Mediums* mediums_;
   EndpointManager* endpoint_manager_;
@@ -354,7 +335,7 @@ class BasePcpHandler : public PcpHandler,
 
     // Only set for outgoing connections. If set, we must call
     // result->Set() when connection is established, or rejected.
-    Swapper<Future<Status>> result = nullptr;
+    std::weak_ptr<Future<Status>> result;
 
     // Only (possibly) vector for incoming connections.
     std::vector<proto::connections::Medium> supported_mediums;
@@ -410,11 +391,13 @@ class BasePcpHandler : public PcpHandler,
                    const BasePcpHandler::DiscoveredEndpoint& old_endpoint);
 
   // Returns true, if connection party should respect the specified topology.
-  bool ShouldEnforceTopologyConstraints() const;
+  bool ShouldEnforceTopologyConstraints(
+      const ConnectionOptions& local_advertising_options) const;
 
   // Returns true, if connection party should attempt to upgrade itself to
   // use a higher bandwidth medium, if it is available.
-  bool AutoUpgradeBandwidth() const;
+  bool AutoUpgradeBandwidth(
+      const ConnectionOptions& local_advertising_options) const;
 
   // Returns true if the incoming connection should be killed. This only
   // happens when an incoming connection arrives while we have an outgoing
@@ -441,18 +424,21 @@ class BasePcpHandler : public PcpHandler,
 
   // Returns the optimal medium supported by both devices.
   proto::connections::Medium ChooseBestUpgradeMedium(
-      const std::vector<proto::connections::Medium>& supported_mediums);
+      const std::vector<proto::connections::Medium>& supported_mediums,
+      const ConnectionOptions& local_advertising_options);
 
   // Returns true if the bluetooth endpoint based on remote bluetooth mac
   // address is created and appended into discovered_endpoints_ with key
   // endpoint_id.
   bool AppendRemoteBluetoothMacAddressEndpoint(
       const std::string& endpoint_id,
-      const std::string& remote_bluetooth_mac_address);
+      const std::string& remote_bluetooth_mac_address,
+      const ConnectionOptions& local_discovery_options);
 
   // Returns true if the webrtc endpoint is created and appended into
   // discovered_endpoints_ with key endpoint_id.
-  bool AppendWebRTCEndpoint(const std::string& endpoint_id);
+  bool AppendWebRTCEndpoint(const std::string& endpoint_id,
+                            const ConnectionOptions& local_discovery_options);
 
   void ProcessPreConnectionInitiationFailure(const std::string& endpoint_id,
                                              EndpointChannel* channel,
@@ -480,8 +466,21 @@ class BasePcpHandler : public PcpHandler,
   void WaitForLatch(const std::string& method_name, CountDownLatch* latch);
   Status WaitForResult(const std::string& method_name, std::int64_t client_id,
                        Future<Status>* future);
+  bool MediumSupportedByClientOptions(
+      const proto::connections::Medium& medium,
+      const ConnectionOptions& client_options) const;
+  std::vector<proto::connections::Medium>
+  GetSupportedConnectionMediumsByPriority(
+      const ConnectionOptions& local_option);
+  std::string GetStringValueOfSupportedMediums(
+      const ConnectionOptions& options) const;
 
-  AtomicReference<Medium> bwu_medium_{Medium::UNKNOWN_MEDIUM};
+  // The endpoint id in high visibility mode is stable for 30 seconds, while in
+  // low visibility mode it always rotates. We assume a client is trying to
+  // rotate endpoint id when the options is "low power" (3P) or "disable
+  // Bluetooth classic" (1P).
+  bool ShouldEnterHighVisibilityMode(const ConnectionOptions& options);
+
   ScheduledExecutor alarm_executor_;
   SingleThreadExecutor serial_executor_;
 
@@ -502,21 +501,9 @@ class BasePcpHandler : public PcpHandler,
   // doesn't happen.
   absl::flat_hash_map<std::string, CancelableAlarm> pending_alarms_;
 
-  // The active ClientProxy's advertising constraints. Empty()
-  // returns true if the client hasn't started advertising false otherwise.
-  // Note: this is not cleared when the client stops advertising because it
-  // might still be useful downstream of advertising (eg: establishing
-  // connections, performing bandwidth upgrades, etc.)
-  ConnectionOptions advertising_options_;
   // The active ClientProxy's connection lifecycle listener. Non-null while
   // advertising.
   ConnectionListener advertising_listener_;
-
-  // The active ClientProxy's discovery constraints. Null if the client
-  // hasn't started discovering. Note: this is not cleared when the client
-  // stops discovering because it might still be useful downstream of
-  // discovery (eg: connection speed, etc.)
-  ConnectionOptions discovery_options_;
 
   AtomicBoolean stop_{false};
   Pcp pcp_;
@@ -524,7 +511,6 @@ class BasePcpHandler : public PcpHandler,
   Prng prng_;
   EncryptionRunner encryption_runner_;
   BwuManager* bwu_manager_;
-  EndpointManager::FrameProcessor::Handle handle_ = nullptr;
 };
 
 }  // namespace connections

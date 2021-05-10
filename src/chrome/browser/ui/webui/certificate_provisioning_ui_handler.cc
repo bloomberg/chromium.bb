@@ -11,13 +11,13 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_scheduler_user_service.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_worker.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/user_manager/user.h"
@@ -105,12 +105,14 @@ base::string16 GetTimeSinceLastUpdate(base::Time last_update_time) {
 
 base::Value CreateProvisioningProcessEntry(
     const std::string& cert_profile_id,
+    const std::string& cert_profile_name,
     bool is_device_wide,
     CertProvisioningWorkerState state,
     base::Time time_since_last_update,
     const std::string& public_key_spki_der) {
   base::Value entry(base::Value::Type::DICTIONARY);
   entry.SetStringKey("certProfileId", cert_profile_id);
+  entry.SetStringKey("certProfileName", cert_profile_name);
   entry.SetBoolKey("isDeviceWide", is_device_wide);
   entry.SetStringKey("status", GetProvisioningProcessStatus(state));
   entry.SetIntKey("stateId", static_cast<int>(state));
@@ -134,14 +136,15 @@ void CollectProvisioningProcesses(
   for (const auto& worker_entry : cert_provisioning_scheduler->GetWorkers()) {
     CertProvisioningWorker* worker = worker_entry.second.get();
     list_to_append_to->Append(CreateProvisioningProcessEntry(
-        worker_entry.first, is_device_wide, worker->GetState(),
-        worker->GetLastUpdateTime(), worker->GetPublicKey()));
+        worker_entry.first, worker->GetCertProfile().name, is_device_wide,
+        worker->GetState(), worker->GetLastUpdateTime(),
+        worker->GetPublicKey()));
   }
   for (const auto& failed_worker_entry :
        cert_provisioning_scheduler->GetFailedCertProfileIds()) {
     const FailedWorkerInfo& worker = failed_worker_entry.second;
     list_to_append_to->Append(CreateProvisioningProcessEntry(
-        failed_worker_entry.first, is_device_wide,
+        failed_worker_entry.first, worker.cert_profile_name, is_device_wide,
         CertProvisioningWorkerState::kFailed, worker.last_update_time,
         worker.public_key));
   }
@@ -166,9 +169,9 @@ CertificateProvisioningUiHandler::CertificateProvisioningUiHandler(
                                 ? scheduler_for_device
                                 : nullptr) {
   if (scheduler_for_user_)
-    observed_schedulers_.Add(scheduler_for_user_);
+    observed_schedulers_.AddObservation(scheduler_for_user_);
   if (scheduler_for_device_)
-    observed_schedulers_.Add(scheduler_for_device_);
+    observed_schedulers_.AddObservation(scheduler_for_device_);
 }
 
 CertificateProvisioningUiHandler::~CertificateProvisioningUiHandler() = default;

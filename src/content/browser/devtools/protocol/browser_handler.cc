@@ -199,6 +199,8 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::WINDOW_PLACEMENT;
   } else if (name == "font-access") {
     *permission_type = PermissionType::FONT_ACCESS;
+  } else if (name == "display-capture") {
+    *permission_type = PermissionType::DISPLAY_CAPTURE;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
@@ -232,8 +234,6 @@ Response FromProtocolPermissionType(
     *out_type = PermissionType::CAMERA_PAN_TILT_ZOOM;
   } else if (type == protocol::Browser::PermissionTypeEnum::BackgroundSync) {
     *out_type = PermissionType::BACKGROUND_SYNC;
-  } else if (type == protocol::Browser::PermissionTypeEnum::Flash) {
-    *out_type = PermissionType::FLASH;
   } else if (type == protocol::Browser::PermissionTypeEnum::Sensors) {
     *out_type = PermissionType::SENSORS;
   } else if (type ==
@@ -260,6 +260,8 @@ Response FromProtocolPermissionType(
     *out_type = PermissionType::WAKE_LOCK_SYSTEM;
   } else if (type == protocol::Browser::PermissionTypeEnum::Nfc) {
     *out_type = PermissionType::NFC;
+  } else if (type == protocol::Browser::PermissionTypeEnum::DisplayCapture) {
+    *out_type = PermissionType::DISPLAY_CAPTURE;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
@@ -509,7 +511,7 @@ Response BrowserHandler::GetBrowserCommandLine(
   if (command_line->HasSwitch(switches::kEnableAutomation)) {
     for (const auto& arg : command_line->argv()) {
 #if defined(OS_WIN)
-      (*arguments)->emplace_back(base::UTF16ToUTF8(arg));
+      (*arguments)->emplace_back(base::WideToUTF8(arg));
 #else
       (*arguments)->emplace_back(arg);
 #endif

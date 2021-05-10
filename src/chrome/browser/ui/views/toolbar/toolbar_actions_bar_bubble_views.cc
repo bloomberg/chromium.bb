@@ -20,6 +20,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 const int kBubbleExtraIconSize = 16;
@@ -66,7 +67,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
 
 ToolbarActionsBarBubbleViews::~ToolbarActionsBarBubbleViews() {}
 
-std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() {
+std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() const {
   return delegate_->GetAnchorActionId();
 }
 
@@ -209,6 +210,10 @@ void ToolbarActionsBarBubbleViews::OnWidgetVisibilityChanged(
   // ToolbarActionsBarBubbleDelegate. The ToolbarActionsBarBubbleDelegate is
   // an ExtensionMessageBubbleBridge, which owns the
   // ExtensionMessageBubbleController.
-  delegate_->OnBubbleShown(base::BindRepeating(&views::Widget::Close,
-                                               base::Unretained(GetWidget())));
+  delegate_->OnBubbleShown(
+      base::BindOnce(&views::Widget::Close, base::Unretained(GetWidget())));
 }
+
+BEGIN_METADATA(ToolbarActionsBarBubbleViews, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(std::string, AnchorActionId)
+END_METADATA

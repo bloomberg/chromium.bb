@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/dark_mode/dark_mode_detailed_view.h"
+#include <cstddef>
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,6 +16,7 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -47,12 +49,16 @@ class TrayRadioButton : public views::RadioButton {
   }
 };
 
+SkColor GetLabelColor() {
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorSecondary);
+}
+
 void SetupLabel(views::Label* label) {
   label->SetBorder(views::CreateEmptyBorder(kTraySubLabelPadding));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorSecondary));
+  label->SetEnabledColor(GetLabelColor());
 }
 
 }  // namespace
@@ -89,9 +95,10 @@ void DarkModeDetailedView::CreateItems() {
                               base::Unretained(AshColorProvider::Get()), true),
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_TITLE)));
-  SetupLabel(scroll_content()->AddChildView(
+  themed_label_ = scroll_content()->AddChildView(
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_DESCRIPTION))));
+          IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_DESCRIPTION)));
+  SetupLabel(themed_label_);
 
   neutral_mode_button_ =
       scroll_content()->AddChildView(std::make_unique<TrayRadioButton>(
@@ -99,17 +106,23 @@ void DarkModeDetailedView::CreateItems() {
                               base::Unretained(AshColorProvider::Get()), false),
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_TITLE)));
-  SetupLabel(scroll_content()->AddChildView(
+  neutral_label_ = scroll_content()->AddChildView(
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_DESCRIPTION))));
+          IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_DESCRIPTION)));
+  SetupLabel(neutral_label_);
 
   UpdateCheckedButton(ash_color_provider->IsThemed());
   scroll_content()->SizeToPreferredSize();
   Layout();
 }
 
-const char* DarkModeDetailedView::GetClassName() const {
-  return "DarkModeDetailedView";
+void DarkModeDetailedView::OnThemeChanged() {
+  TrayDetailedView::OnThemeChanged();
+  TrayPopupUtils::SetLabelFontList(themed_label_,
+                                   TrayPopupUtils::FontStyle::kSystemInfo);
+  TrayPopupUtils::SetLabelFontList(neutral_label_,
+                                   TrayPopupUtils::FontStyle::kSystemInfo);
+  TrayPopupUtils::UpdateToggleButtonColors(toggle_);
 }
 
 void DarkModeDetailedView::UpdateToggleButton(bool dark_mode_enabled) {
@@ -121,5 +134,8 @@ void DarkModeDetailedView::UpdateCheckedButton(bool is_themed) {
   is_themed ? themed_mode_button_->SetChecked(true)
             : neutral_mode_button_->SetChecked(true);
 }
+
+BEGIN_METADATA(DarkModeDetailedView, TrayDetailedView)
+END_METADATA
 
 }  // namespace ash

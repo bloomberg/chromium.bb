@@ -21,27 +21,31 @@ namespace tint {
 namespace ast {
 
 /// A discard statement
-class DiscardStatement : public Statement {
+class DiscardStatement : public Castable<DiscardStatement, Statement> {
  public:
-  /// Constructor
-  DiscardStatement();
   /// Constructor
   /// @param source the discard statement source
   explicit DiscardStatement(const Source& source);
   /// Move constructor
-  DiscardStatement(DiscardStatement&&) = default;
+  DiscardStatement(DiscardStatement&&);
   ~DiscardStatement() override;
 
-  /// @returns true if this is a discard statement
-  bool IsDiscard() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  DiscardStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   DiscardStatement(const DiscardStatement&) = delete;

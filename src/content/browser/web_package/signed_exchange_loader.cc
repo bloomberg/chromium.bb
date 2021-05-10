@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "components/web_package/web_bundle_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache_entry.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -28,11 +29,11 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/data_pipe_to_source_stream.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/source_stream_to_data_pipe.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
@@ -172,15 +173,14 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
   }
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
-      blink::network_utils::IsOriginSecure(outer_request_.url),
-      signed_exchange_utils::HasNoSniffHeader(*outer_response_head_),
-      content_type_,
+      network::IsUrlPotentiallyTrustworthy(outer_request_.url),
+      web_package::HasNoSniffHeader(*outer_response_head_), content_type_,
       std::make_unique<network::DataPipeToSourceStream>(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), network_isolation_key_,
-      outer_request_.load_flags,
+      outer_request_.load_flags, outer_response_head_->remote_endpoint,
       std::make_unique<blink::WebPackageRequestMatcher>(outer_request_.headers,
                                                         accept_langs_),
       std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_);
@@ -310,7 +310,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
-  if (mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle) !=
+  if (mojo::CreateDataPipe(&options, producer_handle, consumer_handle) !=
       MOJO_RESULT_OK) {
     forwarding_client_->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));

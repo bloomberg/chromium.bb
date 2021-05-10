@@ -6,14 +6,16 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/strings/string_util.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
-#include "chromeos/components/camera_app_ui/camera_app_window_manager_factory.h"
 #include "chromeos/components/camera_app_ui/resources.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
+#include "chromeos/grit/chromeos_camera_app_resources_map.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/video_capture_service.h"
@@ -24,6 +26,7 @@
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/webui/webui_allowlist.h"
@@ -40,14 +43,11 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
   source->DisableTrustedTypesCSP();
 
   // Add all settings resources.
-  for (size_t i = 0; i < kChromeosCameraAppResourcesSize; i++) {
-    source->AddResourcePath(kChromeosCameraAppResources[i].name,
-                            kChromeosCameraAppResources[i].value);
-  }
+  source->AddResourcePaths(base::make_span(kChromeosCameraAppResources,
+                                           kChromeosCameraAppResourcesSize));
 
-  for (const auto& res : kGritResourceMap) {
-    source->AddResourcePath(res.path, res.id);
-  }
+  source->AddResourcePath("js/mojo/mojo_bindings_lite.js",
+                          IDR_MOJO_MOJO_BINDINGS_LITE_JS);
 
   delegate->PopulateLoadTimeData(source);
 
@@ -61,8 +61,14 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource(
       network::mojom::CSPDirectiveName::WorkerSrc,
       std::string("worker-src 'self';"));
   source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameAncestors,
+      std::string("frame-ancestors 'self';"));
+  source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ChildSrc,
-      std::string("frame-src ") + kChromeUIUntrustedCameraAppURL + ";");
+      std::string("frame-src 'self' ") + kChromeUIUntrustedCameraAppURL + ";");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc,
+      std::string("object-src 'self';"));
 
   return source;
 }
@@ -71,8 +77,8 @@ content::WebUIDataSource* CreateUntrustedCameraAppUIHTMLSource() {
   content::WebUIDataSource* untrusted_source =
       content::WebUIDataSource::Create(kChromeUIUntrustedCameraAppURL);
   for (size_t i = 0; i < kChromeosCameraAppResourcesSize; i++) {
-    untrusted_source->AddResourcePath(kChromeosCameraAppResources[i].name,
-                                      kChromeosCameraAppResources[i].value);
+    untrusted_source->AddResourcePath(kChromeosCameraAppResources[i].path,
+                                      kChromeosCameraAppResources[i].id);
   }
   untrusted_source->AddFrameAncestor(GURL(kChromeUICameraAppURL));
 
@@ -122,6 +128,14 @@ void HandleCameraResult(
                                     std::move(callback));
 }
 
+void SendNewCaptureBroadcast(content::BrowserContext* context,
+                             bool is_video,
+                             std::string file_path) {
+  auto* intent_helper =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(context);
+  intent_helper->SendNewCaptureBroadcast(is_video, file_path);
+}
+
 std::unique_ptr<media::CameraAppDeviceProviderImpl>
 CreateCameraAppDeviceProvider(const url::Origin& security_origin,
                               content::BrowserContext* context) {
@@ -149,9 +163,12 @@ std::unique_ptr<chromeos_camera::CameraAppHelperImpl> CreateCameraAppHelper(
   DCHECK_NE(window, nullptr);
   auto handle_result_callback =
       base::BindRepeating(&HandleCameraResult, browser_context);
+  auto send_broadcast_callback =
+      base::BindRepeating(&SendNewCaptureBroadcast, browser_context);
 
   return std::make_unique<chromeos_camera::CameraAppHelperImpl>(
-      camera_app_ui, std::move(handle_result_callback), window);
+      camera_app_ui, std::move(handle_result_callback),
+      std::move(send_broadcast_callback), window);
 }
 
 }  // namespace
@@ -208,6 +225,8 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
 
   delegate_->SetLaunchDirectory();
 
+  window()->SetProperty(ash::kMinimizeOnBackKey, false);
+
   // Set up the data source.
   content::WebUIDataSource::Add(browser_context,
                                 CreateCameraAppUIHTMLSource(delegate_.get()));
@@ -216,9 +235,17 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui,
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  if (app_window_manager()->IsDevToolsEnabled()) {
+    delegate_->OpenDevToolsWindow(web_ui->GetWebContents());
+  }
+
+  content::DevToolsAgentHost::AddObserver(this);
 }
 
-CameraAppUI::~CameraAppUI() = default;
+CameraAppUI::~CameraAppUI() {
+  content::DevToolsAgentHost::RemoveObserver(this);
+}
 
 void CameraAppUI::BindInterface(
     mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver) {
@@ -240,8 +267,33 @@ aura::Window* CameraAppUI::window() {
 }
 
 CameraAppWindowManager* CameraAppUI::app_window_manager() {
-  return chromeos::CameraAppWindowManagerFactory::GetForBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
+  return chromeos::CameraAppWindowManager::GetInstance();
+}
+
+const GURL& CameraAppUI::url() {
+  return web_ui()->GetWebContents()->GetLastCommittedURL();
+}
+
+void CameraAppUI::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
+  if (agent_host->GetWebContents() == nullptr ||
+      !base::StartsWith(
+          agent_host->GetWebContents()->GetLastCommittedURL().spec(),
+          kChromeUICameraAppMainURL)) {
+    return;
+  }
+  app_window_manager()->SetDevToolsEnabled(true);
+}
+
+void CameraAppUI::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  if (agent_host->GetWebContents() == nullptr ||
+      !base::StartsWith(
+          agent_host->GetWebContents()->GetLastCommittedURL().spec(),
+          kChromeUICameraAppMainURL)) {
+    return;
+  }
+  app_window_manager()->SetDevToolsEnabled(false);
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(CameraAppUI)

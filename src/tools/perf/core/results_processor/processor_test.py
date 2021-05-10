@@ -778,3 +778,79 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(repeated_nested_annotated.unit, "ms_smallerIsBetter")
     self.assertEqual(repeated_nested_annotated.num_values, 2)
     self.assertEqual(repeated_nested_annotated.sample_values, [2, 4])
+
+  def testExtraMetrics(self):
+    self.SerializeIntermediateResults(
+        testing.TestResult(
+            'benchmark/story',
+            output_artifacts=[
+                self.CreateHtmlTraceArtifact(),
+                self.CreateProtoTraceArtifact(),
+            ],
+            tags=['tbmv2:sampleMetric'],
+            start_time='2009-02-13T23:31:30.987000Z',
+        ),
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
+        '--extra-metric', 'tbmv3:dummy_metric',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+
+    # Both sampleMetric and dummy_metric should have been computed.
+    hist1 = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(hist1.unit, SAMPLE_HISTOGRAM_UNIT)
+    hist2 = out_histograms.GetHistogramNamed('dummy::simple_field')
+    self.assertEqual(hist2.unit, 'count_smallerIsBetter')
+
+  def testMultipleTBMv3Metrics(self):
+    self.SerializeIntermediateResults(
+        testing.TestResult(
+            'benchmark/story',
+            output_artifacts=[
+                self.CreateProtoTraceArtifact(),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']])
+            ],
+            tags=['tbmv3:dummy_metric', 'tbmv3:test_chrome_metric'],
+            start_time='2009-02-13T23:31:30.987000Z',
+        ),
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+
+    # We use two metrics for testing here. The dummy_metric is defined in
+    # tools/perf/core/tbmv3/metrics/dummy_metric_*.
+    # The test_chrome_metric is built into trace_processor, see source in
+    # third_party/perfetto/src/trace_processor/metrics/chrome/test_chrome_metric.sql.
+    hist1 = out_histograms.GetHistogramNamed('dummy::simple_field')
+    self.assertEqual(hist1.sample_values, [42])
+
+    hist2 = out_histograms.GetHistogramNamed('test_chrome::test_value')
+    self.assertEqual(hist2.sample_values, [1])

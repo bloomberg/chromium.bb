@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder.h"
+#include "quic/core/qpack/qpack_instruction_encoder.h"
 
 #include <limits>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_encoder.h"
-#include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_encoder.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
+#include "http2/hpack/huffman/hpack_huffman_encoder.h"
+#include "http2/hpack/varint/hpack_varint_encoder.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -20,25 +20,19 @@ QpackInstructionEncoder::QpackInstructionEncoder()
       string_length_(0),
       byte_(0),
       state_(State::kOpcode),
-      instruction_(nullptr),
-      use_fast_huffman_encoder_(
-          GetQuicReloadableFlag(quic_use_fast_huffman_encoder)) {
-  if (use_fast_huffman_encoder_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_use_fast_huffman_encoder);
-  }
-}
+      instruction_(nullptr) {}
 
 void QpackInstructionEncoder::Encode(
     const QpackInstructionWithValues& instruction_with_values,
     std::string* output) {
-  DCHECK(instruction_with_values.instruction());
+  QUICHE_DCHECK(instruction_with_values.instruction());
 
   state_ = State::kOpcode;
   instruction_ = instruction_with_values.instruction();
   field_ = instruction_->fields.begin();
 
   // Field list must not be empty.
-  DCHECK(field_ != instruction_->fields.end());
+  QUICHE_DCHECK(field_ != instruction_->fields.end());
 
   do {
     switch (state_) {
@@ -66,11 +60,11 @@ void QpackInstructionEncoder::Encode(
     }
   } while (field_ != instruction_->fields.end());
 
-  DCHECK(state_ == State::kStartField);
+  QUICHE_DCHECK(state_ == State::kStartField);
 }
 
 void QpackInstructionEncoder::DoOpcode() {
-  DCHECK_EQ(0u, byte_);
+  QUICHE_DCHECK_EQ(0u, byte_);
 
   byte_ = instruction_->opcode.value;
 
@@ -94,10 +88,10 @@ void QpackInstructionEncoder::DoStartField() {
 }
 
 void QpackInstructionEncoder::DoSBit(bool s_bit) {
-  DCHECK(field_->type == QpackInstructionFieldType::kSbit);
+  QUICHE_DCHECK(field_->type == QpackInstructionFieldType::kSbit);
 
   if (s_bit) {
-    DCHECK_EQ(0, byte_ & field_->param);
+    QUICHE_DCHECK_EQ(0, byte_ & field_->param);
 
     byte_ |= field_->param;
   }
@@ -109,10 +103,10 @@ void QpackInstructionEncoder::DoSBit(bool s_bit) {
 void QpackInstructionEncoder::DoVarintEncode(uint64_t varint,
                                              uint64_t varint2,
                                              std::string* output) {
-  DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
-         field_->type == QpackInstructionFieldType::kVarint2 ||
-         field_->type == QpackInstructionFieldType::kName ||
-         field_->type == QpackInstructionFieldType::kValue);
+  QUICHE_DCHECK(field_->type == QpackInstructionFieldType::kVarint ||
+                field_->type == QpackInstructionFieldType::kVarint2 ||
+                field_->type == QpackInstructionFieldType::kName ||
+                field_->type == QpackInstructionFieldType::kValue);
   uint64_t integer_to_encode;
   switch (field_->type) {
     case QpackInstructionFieldType::kVarint:
@@ -142,8 +136,8 @@ void QpackInstructionEncoder::DoVarintEncode(uint64_t varint,
 
 void QpackInstructionEncoder::DoStartString(absl::string_view name,
                                             absl::string_view value) {
-  DCHECK(field_->type == QpackInstructionFieldType::kName ||
-         field_->type == QpackInstructionFieldType::kValue);
+  QUICHE_DCHECK(field_->type == QpackInstructionFieldType::kName ||
+                field_->type == QpackInstructionFieldType::kValue);
 
   absl::string_view string_to_write =
       (field_->type == QpackInstructionFieldType::kName) ? name : value;
@@ -153,7 +147,7 @@ void QpackInstructionEncoder::DoStartString(absl::string_view name,
   use_huffman_ = encoded_size < string_length_;
 
   if (use_huffman_) {
-    DCHECK_EQ(0, byte_ & (1 << field_->param));
+    QUICHE_DCHECK_EQ(0, byte_ & (1 << field_->param));
     byte_ |= (1 << field_->param);
 
     string_length_ = encoded_size;
@@ -165,19 +159,15 @@ void QpackInstructionEncoder::DoStartString(absl::string_view name,
 void QpackInstructionEncoder::DoWriteString(absl::string_view name,
                                             absl::string_view value,
                                             std::string* output) {
-  DCHECK(field_->type == QpackInstructionFieldType::kName ||
-         field_->type == QpackInstructionFieldType::kValue);
+  QUICHE_DCHECK(field_->type == QpackInstructionFieldType::kName ||
+                field_->type == QpackInstructionFieldType::kValue);
 
   absl::string_view string_to_write =
       (field_->type == QpackInstructionFieldType::kName) ? name : value;
   if (use_huffman_) {
-    if (use_fast_huffman_encoder_) {
-      http2::HuffmanEncodeFast(string_to_write, string_length_, output);
-    } else {
-      http2::HuffmanEncode(string_to_write, string_length_, output);
-    }
+    http2::HuffmanEncodeFast(string_to_write, string_length_, output);
   } else {
-    QuicStrAppend(output, string_to_write);
+    absl::StrAppend(output, string_to_write);
   }
 
   ++field_;

@@ -37,6 +37,8 @@ class UtilitySandboxedProcessLauncherDelegate
   bool DisableDefaultPolicy() override;
   bool ShouldLaunchElevated() override;
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
+  bool ShouldUnsandboxedRunInJob() override;
+  bool CetCompatible() override;
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)

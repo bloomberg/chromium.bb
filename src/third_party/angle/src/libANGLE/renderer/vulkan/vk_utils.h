@@ -156,10 +156,10 @@ void AddToPNextChain(VulkanStruct1 *chainStart, VulkanStruct2 *ptr)
 
 struct Error
 {
-    VkResult mErrorCode;
-    const char *mFile;
-    const char *mFunction;
-    unsigned int mLine;
+    VkResult errorCode;
+    const char *file;
+    const char *function;
+    uint32_t line;
 };
 
 // Abstracts error handling. Implemented by both ContextVk for GL and DisplayVk for EGL errors.
@@ -372,14 +372,14 @@ class StagingBuffer final : angle::NonCopyable
 };
 
 angle::Result InitMappableAllocation(Context *context,
-                                     const vk::Allocator &allocator,
+                                     const Allocator &allocator,
                                      Allocation *allocation,
                                      VkDeviceSize size,
                                      int value,
                                      VkMemoryPropertyFlags memoryPropertyFlags);
 
 angle::Result InitMappableDeviceMemory(Context *context,
-                                       vk::DeviceMemory *deviceMemory,
+                                       DeviceMemory *deviceMemory,
                                        VkDeviceSize size,
                                        int value,
                                        VkMemoryPropertyFlags memoryPropertyFlags);
@@ -406,6 +406,14 @@ angle::Result AllocateImageMemoryWithRequirements(Context *context,
                                                   const void *extraAllocationInfo,
                                                   Image *image,
                                                   DeviceMemory *deviceMemoryOut);
+
+angle::Result AllocateBufferMemoryWithRequirements(Context *context,
+                                                   VkMemoryPropertyFlags memoryPropertyFlags,
+                                                   const VkMemoryRequirements &memoryRequirements,
+                                                   const void *extraAllocationInfo,
+                                                   Buffer *buffer,
+                                                   VkMemoryPropertyFlags *memoryPropertyFlagsOut,
+                                                   DeviceMemory *deviceMemoryOut);
 
 using ShaderAndSerial = ObjectAndSerial<ShaderModule>;
 
@@ -599,12 +607,23 @@ class Shared final : angle::NonCopyable
         }
     }
 
+    void setUnreferenced(RefCounted<T> *refCounted)
+    {
+        ASSERT(!mRefCounted);
+        ASSERT(refCounted);
+
+        mRefCounted = refCounted;
+        mRefCounted->addRef();
+    }
+
     void assign(VkDevice device, T &&newObject)
     {
         set(device, new RefCounted<T>(std::move(newObject)));
     }
 
     void copy(VkDevice device, const Shared<T> &other) { set(device, other.mRefCounted); }
+
+    void copyUnreferenced(const Shared<T> &other) { setUnreferenced(other.mRefCounted); }
 
     void reset(VkDevice device) { set(device, nullptr); }
 
@@ -618,6 +637,23 @@ class Shared final : angle::NonCopyable
             {
                 ASSERT(mRefCounted->get().valid());
                 recycler->recycle(std::move(mRefCounted->get()));
+                SafeDelete(mRefCounted);
+            }
+
+            mRefCounted = nullptr;
+        }
+    }
+
+    template <typename OnRelease>
+    void resetAndRelease(OnRelease *onRelease)
+    {
+        if (mRefCounted)
+        {
+            mRefCounted->releaseRef();
+            if (!mRefCounted->isReferenced())
+            {
+                ASSERT(mRefCounted->get().valid());
+                (*onRelease)(std::move(mRefCounted->get()));
                 SafeDelete(mRefCounted);
             }
 
@@ -682,6 +718,8 @@ struct SpecializationConstants final
 {
     VkBool32 lineRasterEmulation;
     uint32_t surfaceRotation;
+    uint32_t drawableWidth;
+    uint32_t drawableHeight;
 };
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 
@@ -734,7 +772,7 @@ class ClearValuesArray final
 #define ANGLE_VK_SERIAL_OP(X) \
     X(Buffer)                 \
     X(Image)                  \
-    X(ImageView)              \
+    X(ImageOrBufferView)      \
     X(Sampler)
 
 #define ANGLE_DEFINE_VK_SERIAL_TYPE(Type)                                     \
@@ -872,6 +910,12 @@ void InitExternalMemoryHostFunctions(VkInstance instance);
 // VK_KHR_external_fence_capabilities
 void InitExternalFenceCapabilitiesFunctions(VkInstance instance);
 
+// VK_KHR_get_memory_requirements2
+void InitGetMemoryRequirements2KHRFunctions(VkDevice device);
+
+// VK_KHR_bind_memory2
+void InitBindMemory2KHRFunctions(VkDevice device);
+
 // VK_KHR_external_fence_fd
 void InitExternalFenceFdFunctions(VkInstance instance);
 
@@ -898,6 +942,8 @@ VkCompareOp GetCompareOp(const GLenum compareFunc);
 
 constexpr gl::ShaderMap<VkShaderStageFlagBits> kShaderStageMap = {
     {gl::ShaderType::Vertex, VK_SHADER_STAGE_VERTEX_BIT},
+    {gl::ShaderType::TessControl, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT},
+    {gl::ShaderType::TessEvaluation, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT},
     {gl::ShaderType::Fragment, VK_SHADER_STAGE_FRAGMENT_BIT},
     {gl::ShaderType::Geometry, VK_SHADER_STAGE_GEOMETRY_BIT},
     {gl::ShaderType::Compute, VK_SHADER_STAGE_COMPUTE_BIT},
@@ -914,6 +960,7 @@ void GetViewport(const gl::Rectangle &viewport,
                  float nearPlane,
                  float farPlane,
                  bool invertViewport,
+                 bool upperLeftOrigin,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut);
 
@@ -975,5 +1022,21 @@ gl::LevelIndex GetLevelIndex(vk::LevelIndex levelVk, gl::LevelIndex baseLevel);
 #define ANGLE_VK_UNREACHABLE(context) \
     UNREACHABLE();                    \
     ANGLE_VK_CHECK(context, false, VK_ERROR_FEATURE_NOT_PRESENT)
+
+// NVIDIA uses special formatting for the driver version:
+// Major: 10
+// Minor: 8
+// Sub-minor: 8
+// patch: 6
+#define ANGLE_VK_VERSION_MAJOR_NVIDIA(version) (((uint32_t)(version) >> 22) & 0x3ff)
+#define ANGLE_VK_VERSION_MINOR_NVIDIA(version) (((uint32_t)(version) >> 14) & 0xff)
+#define ANGLE_VK_VERSION_SUB_MINOR_NVIDIA(version) (((uint32_t)(version) >> 6) & 0xff)
+#define ANGLE_VK_VERSION_PATCH_NVIDIA(version) ((uint32_t)(version)&0x3f)
+
+// Similarly for Intel on Windows:
+// Major: 18
+// Minor: 14
+#define ANGLE_VK_VERSION_MAJOR_WIN_INTEL(version) (((uint32_t)(version) >> 14) & 0x3ffff)
+#define ANGLE_VK_VERSION_MINOR_WIN_INTEL(version) ((uint32_t)(version)&0x3fff)
 
 #endif  // LIBANGLE_RENDERER_VULKAN_VK_UTILS_H_

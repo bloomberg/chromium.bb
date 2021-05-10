@@ -146,7 +146,7 @@ class HoldingSpaceThumbnailLoader::ThumbnailDecoder
 
   // BitmapFetcherDelegate:
   void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override {
-    std::move(callback_).Run(bitmap);
+    std::move(callback_).Run(bitmap, base::File::FILE_OK);
   }
 
   void Start(const std::string& data,
@@ -158,7 +158,8 @@ class HoldingSpaceThumbnailLoader::ThumbnailDecoder
     // URL.
     GURL data_url(data);
     if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme)) {
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(/*bitmap=*/nullptr,
+                              base::File::FILE_ERROR_FAILED);
       return;
     }
 
@@ -219,12 +220,16 @@ void HoldingSpaceThumbnailLoader::LoadForFileWithMetadata(
     base::File::Error result,
     const base::File::Info& file_info) {
   if (result != base::File::FILE_OK) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(/*bitmap=*/nullptr, result);
     return;
   }
 
+  // Short-circuit icons for folders.
   if (file_info.is_directory) {
-    std::move(callback).Run(nullptr);
+    // `FILE_ERROR_NOT_A_FILE` is a special value used to signify that the
+    // file for which the thumbnail was requested is actually a folder.
+    std::move(callback).Run(/*bitmap=*/nullptr,
+                            base::File::FILE_ERROR_NOT_A_FILE);
     return;
   }
 
@@ -232,7 +237,14 @@ void HoldingSpaceThumbnailLoader::LoadForFileWithMetadata(
   if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
           profile_, request.item_path, file_manager::kImageLoaderExtensionId,
           &thumbnail_url)) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(/*bitmap=*/nullptr, base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  extensions::MessageService* const message_service =
+      extensions::MessageService::Get(profile_);
+  if (!message_service) {  // May be `nullptr` in tests.
+    std::move(callback).Run(/*bitmap=*/nullptr, base::File::FILE_ERROR_FAILED);
     return;
   }
 
@@ -268,8 +280,6 @@ void HoldingSpaceThumbnailLoader::LoadForFileWithMetadata(
                      weak_factory_.GetWeakPtr(), request_id, request.size));
   const extensions::PortId port_id(base::UnguessableToken::Create(),
                                    1 /* port_number */, true /* is_opener */);
-  extensions::MessageService* const message_service =
-      extensions::MessageService::Get(profile_);
   auto native_message_port = std::make_unique<extensions::NativeMessagePort>(
       message_service->GetChannelDelegate(), port_id,
       std::move(native_message_host));
@@ -288,7 +298,8 @@ void HoldingSpaceThumbnailLoader::OnThumbnailLoaded(
     return;
 
   if (data.empty()) {
-    RespondToRequest(request_id, requested_size, nullptr);
+    RespondToRequest(request_id, requested_size, /*bitmap=*/nullptr,
+                     base::File::FILE_ERROR_FAILED);
     return;
   }
 
@@ -304,7 +315,8 @@ void HoldingSpaceThumbnailLoader::OnThumbnailLoaded(
 void HoldingSpaceThumbnailLoader::RespondToRequest(
     const base::UnguessableToken& request_id,
     const gfx::Size& requested_size,
-    const SkBitmap* bitmap) {
+    const SkBitmap* bitmap,
+    base::File::Error error) {
   thumbnail_decoders_.erase(request_id);
   auto request_it = requests_.find(request_id);
   if (request_it == requests_.end())
@@ -325,7 +337,8 @@ void HoldingSpaceThumbnailLoader::RespondToRequest(
 
   ImageCallback callback = std::move(request_it->second);
   requests_.erase(request_it);
-  std::move(callback).Run(cropped_bitmap.isNull() ? bitmap : &cropped_bitmap);
+  std::move(callback).Run(cropped_bitmap.isNull() ? bitmap : &cropped_bitmap,
+                          error);
 }
 
 }  // namespace ash

@@ -48,7 +48,12 @@ class Isolate;
 
 class AstRawString final : public ZoneObject {
  public:
-  static bool Compare(const AstRawString* a, const AstRawString* b);
+  static bool Equal(const AstRawString* lhs, const AstRawString* rhs);
+
+  // Returns 0 if lhs is equal to rhs.
+  // Returns <0 if lhs is less than rhs in code point order.
+  // Returns >0 if lhs is greater than than rhs in code point order.
+  static int Compare(const AstRawString* lhs, const AstRawString* rhs);
 
   bool IsEmpty() const { return literal_bytes_.length() == 0; }
   int length() const {
@@ -71,8 +76,12 @@ class AstRawString final : public ZoneObject {
   bool IsPrivateName() const { return length() > 0 && FirstCharacter() == '#'; }
 
   // For storing AstRawStrings in a hash map.
-  uint32_t hash_field() const { return hash_field_; }
-  uint32_t Hash() const { return hash_field_ >> Name::kHashShift; }
+  uint32_t raw_hash_field() const { return raw_hash_field_; }
+  uint32_t Hash() const {
+    // Hash field must be computed.
+    DCHECK_EQ(raw_hash_field_ & Name::kHashNotComputedMask, 0);
+    return raw_hash_field_ >> Name::kHashShift;
+  }
 
   // This function can be called after internalizing.
   V8_INLINE Handle<String> string() const {
@@ -88,10 +97,10 @@ class AstRawString final : public ZoneObject {
 
   // Members accessed only by the AstValueFactory & related classes:
   AstRawString(bool is_one_byte, const Vector<const byte>& literal_bytes,
-               uint32_t hash_field)
+               uint32_t raw_hash_field)
       : next_(nullptr),
         literal_bytes_(literal_bytes),
-        hash_field_(hash_field),
+        raw_hash_field_(raw_hash_field),
         is_one_byte_(is_one_byte) {}
   AstRawString* next() {
     DCHECK(!has_string_);
@@ -117,7 +126,7 @@ class AstRawString final : public ZoneObject {
   };
 
   Vector<const byte> literal_bytes_;  // Memory owned by Zone.
-  uint32_t hash_field_;
+  uint32_t raw_hash_field_;
   bool is_one_byte_;
 #ifdef DEBUG
   // (Debug-only:) Verify the object life-cylce: Some functions may only be
@@ -191,8 +200,6 @@ class AstConsString final : public ZoneObject {
   Segment segment_;
 };
 
-enum class AstSymbol : uint8_t { kHomeObjectSymbol };
-
 class AstBigInt {
  public:
   // |bigint| must be a NUL-terminated string of ASCII characters
@@ -210,7 +217,7 @@ struct AstRawStringMapMatcher {
   bool operator()(uint32_t hash1, uint32_t hash2,
                   const AstRawString* lookup_key,
                   const AstRawString* entry_key) const {
-    return hash1 == hash2 && AstRawString::Compare(lookup_key, entry_key);
+    return hash1 == hash2 && AstRawString::Equal(lookup_key, entry_key);
   }
 };
 
@@ -220,63 +227,67 @@ using AstRawStringMap =
                               base::DefaultAllocationPolicy>;
 
 // For generating constants.
-#define AST_STRING_CONSTANTS(F)                 \
-  F(anonymous, "anonymous")                     \
-  F(anonymous_function, "(anonymous function)") \
-  F(arguments, "arguments")                     \
-  F(as, "as")                                   \
-  F(assert, "assert")                           \
-  F(async, "async")                             \
-  F(await, "await")                             \
-  F(bigint, "bigint")                           \
-  F(boolean, "boolean")                         \
-  F(computed, "<computed>")                     \
-  F(dot_brand, ".brand")                        \
-  F(constructor, "constructor")                 \
-  F(default, "default")                         \
-  F(done, "done")                               \
-  F(dot, ".")                                   \
-  F(dot_default, ".default")                    \
-  F(dot_for, ".for")                            \
-  F(dot_generator_object, ".generator_object")  \
-  F(dot_result, ".result")                      \
-  F(dot_repl_result, ".repl_result")            \
-  F(dot_switch_tag, ".switch_tag")              \
-  F(dot_catch, ".catch")                        \
-  F(empty, "")                                  \
-  F(eval, "eval")                               \
-  F(from, "from")                               \
-  F(function, "function")                       \
-  F(get, "get")                                 \
-  F(get_space, "get ")                          \
-  F(length, "length")                           \
-  F(let, "let")                                 \
-  F(meta, "meta")                               \
-  F(name, "name")                               \
-  F(native, "native")                           \
-  F(new_target, ".new.target")                  \
-  F(next, "next")                               \
-  F(number, "number")                           \
-  F(object, "object")                           \
-  F(of, "of")                                   \
-  F(private_constructor, "#constructor")        \
-  F(proto, "__proto__")                         \
-  F(prototype, "prototype")                     \
-  F(return, "return")                           \
-  F(set, "set")                                 \
-  F(set_space, "set ")                          \
-  F(string, "string")                           \
-  F(symbol, "symbol")                           \
-  F(target, "target")                           \
-  F(this, "this")                               \
-  F(this_function, ".this_function")            \
-  F(throw, "throw")                             \
-  F(undefined, "undefined")                     \
+#define AST_STRING_CONSTANTS(F)                    \
+  F(anonymous, "anonymous")                        \
+  F(anonymous_function, "(anonymous function)")    \
+  F(arguments, "arguments")                        \
+  F(as, "as")                                      \
+  F(assert, "assert")                              \
+  F(async, "async")                                \
+  F(await, "await")                                \
+  F(bigint, "bigint")                              \
+  F(boolean, "boolean")                            \
+  F(computed, "<computed>")                        \
+  F(dot_brand, ".brand")                           \
+  F(constructor, "constructor")                    \
+  F(default, "default")                            \
+  F(done, "done")                                  \
+  F(dot, ".")                                      \
+  F(dot_default, ".default")                       \
+  F(dot_for, ".for")                               \
+  F(dot_generator_object, ".generator_object")     \
+  F(dot_home_object, ".home_object")               \
+  F(dot_result, ".result")                         \
+  F(dot_repl_result, ".repl_result")               \
+  F(dot_static_home_object, ".static_home_object") \
+  F(dot_switch_tag, ".switch_tag")                 \
+  F(dot_catch, ".catch")                           \
+  F(empty, "")                                     \
+  F(eval, "eval")                                  \
+  F(from, "from")                                  \
+  F(function, "function")                          \
+  F(get, "get")                                    \
+  F(get_space, "get ")                             \
+  F(length, "length")                              \
+  F(let, "let")                                    \
+  F(meta, "meta")                                  \
+  F(name, "name")                                  \
+  F(native, "native")                              \
+  F(new_target, ".new.target")                     \
+  F(next, "next")                                  \
+  F(number, "number")                              \
+  F(object, "object")                              \
+  F(of, "of")                                      \
+  F(private_constructor, "#constructor")           \
+  F(proto, "__proto__")                            \
+  F(prototype, "prototype")                        \
+  F(return, "return")                              \
+  F(set, "set")                                    \
+  F(set_space, "set ")                             \
+  F(string, "string")                              \
+  F(symbol, "symbol")                              \
+  F(target, "target")                              \
+  F(this, "this")                                  \
+  F(this_function, ".this_function")               \
+  F(throw, "throw")                                \
+  F(undefined, "undefined")                        \
   F(value, "value")
 
 class AstStringConstants final {
  public:
   AstStringConstants(Isolate* isolate, uint64_t hash_seed);
+  AstStringConstants(const AstStringConstants&) = delete;
+  AstStringConstants& operator=(const AstStringConstants&) = delete;
 
 #define F(name, str) \
   const AstRawString* name##_string() const { return name##_string_; }
@@ -294,8 +305,6 @@ class AstStringConstants final {
 #define F(name, str) AstRawString* name##_string_;
   AST_STRING_CONSTANTS(F)
 #undef F
-
-  DISALLOW_COPY_AND_ASSIGN(AstStringConstants);
 };
 
 class AstValueFactory {
@@ -369,7 +378,7 @@ class AstValueFactory {
   V8_EXPORT_PRIVATE const AstRawString* GetOneByteStringInternal(
       Vector<const uint8_t> literal);
   const AstRawString* GetTwoByteStringInternal(Vector<const uint16_t> literal);
-  const AstRawString* GetString(uint32_t hash, bool is_one_byte,
+  const AstRawString* GetString(uint32_t raw_hash_field, bool is_one_byte,
                                 Vector<const byte> literal_bytes);
 
   // All strings are copied here.

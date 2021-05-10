@@ -70,7 +70,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.Dropped" enum="UkmDataDroppedReason"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -80,7 +80,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.Dropped.ByEntryHash" enum="UkmEventNameHash"
-    expires_after="2021-04-18">
+    expires_after="2021-07-04">
   <owner>jwd@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -92,7 +92,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.Recorded.ByEntryHash" enum="UkmEventNameHash"
-    expires_after="2021-05-02">
+    expires_after="2021-07-04">
   <owner>yrsun@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -104,7 +104,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.SerializedCount2" units="entries"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>Number of serialized UKM entries when storing a UKM log.</summary>
@@ -134,7 +134,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="UKM.LogSize.OnSuccess" units="KB" expires_after="2021-04-11">
+<histogram name="UKM.IOSLog.OnSuccess" units="records"
+    expires_after="2021-07-11">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    Number of times when UKM.LogSize.OnSuccess was recorded on iOS. Recorded
+    when the app transitions to the foreground. This histogram should help to
+    figure out the root cause of crbug.com/1154678 (Data loss on UMA in iOS). If
+    total count of UKM.IOSLog.OnSuccess is greater than number of
+    UKM.LogSize.OnSuccess records, then data loss is caused by failure to write
+    the histogram to the disk on background thread. Otherwise (if total sum of
+    UKM.IOSLog.OnSuccess is equal to total count of UKM.LogSize.OnSuccess
+    records) then there is actually no data loss and app simply gets terminated
+    in a short window between UKM reached the server and the API call which
+    records the data.
+  </summary>
+</histogram>
+
+<histogram name="UKM.LogSize.OnSuccess" units="KB" expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -157,7 +174,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.LogUpload.ResponseOrErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-04-18">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-22">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -186,7 +203,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.ProtoCompressionRatio" units="%"
-    expires_after="2021-02-07">
+    expires_after="2021-07-01">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -218,7 +235,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Sources.Dropped" enum="UkmDataDroppedReason"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -228,7 +245,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Sources.KeptSourcesCount" units="sources"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -238,7 +255,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Sources.SerializedCount2{UkmSourceIdTypes}"
-    units="sources" expires_after="2021-02-14">
+    units="sources" expires_after="2021-07-01">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -267,7 +284,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Sources.UnsentSourcesCount" units="sources"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -277,7 +294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.UnsentLogs.DroppedSize" units="bytes"
-    expires_after="2021-04-25">
+    expires_after="2021-06-27">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -287,7 +304,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.UnsentLogs.NumDropped" units="units"
-    expires_after="2021-04-11">
+    expires_after="2021-08-15">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>

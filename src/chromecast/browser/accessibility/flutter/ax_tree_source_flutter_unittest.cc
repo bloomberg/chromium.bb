@@ -11,6 +11,8 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,9 +60,7 @@ class MockTtsPlatformImpl : public TtsPlatform {
   void GetVoices(std::vector<VoiceData>* out_voices) override {
     *out_voices = voices_;
   }
-  bool LoadBuiltInTtsEngine(BrowserContext* browser_context) override {
-    return false;
-  }
+  void LoadBuiltInTtsEngine(BrowserContext* browser_context) override {}
   void WillSpeakUtteranceWithVoice(TtsUtterance* utterance,
                                    const VoiceData& voice_data) override {}
   void SetError(const std::string& error) override {}
@@ -121,19 +121,30 @@ class AXTreeSourceFlutterTest : public testing::Test,
                                 public AXTreeSourceFlutter::Delegate {
  public:
   AXTreeSourceFlutterTest()
-      : tree_(
-            std::make_unique<AXTreeSourceFlutter>(this,
-                                                  nullptr /* browser_context */,
-                                                  &router_)) {}
+      : tree_(std::make_unique<AXTreeSourceFlutter>(this,
+                                                    &browser_context_,
+                                                    &router_)) {
+    // Enable by default.
+    tree_->SetAccessibilityEnabled(true);
+    // Setup some mocks required for tts platform impl
+    content::SetContentClient(&client_);
+    content::SetBrowserClientForTesting(&mock_content_browser_client_);
+  }
   AXTreeSourceFlutterTest(const AXTreeSourceFlutterTest&) = delete;
   ~AXTreeSourceFlutterTest() override {
     EXPECT_CALL(router_, DispatchTreeDestroyedEvent).Times(1);
+    content::SetBrowserClientForTesting(nullptr);
+    content::SetContentClient(nullptr);
   }
   AXTreeSourceFlutterTest& operator=(const AXTreeSourceFlutterTest&) = delete;
 
  protected:
   void CallNotifyAccessibilityEvent(OnAccessibilityEventRequest* event_data) {
     tree_->NotifyAccessibilityEvent(event_data);
+  }
+
+  void SetAccessibilityEnabled(bool value) {
+    tree_->SetAccessibilityEnabled(value);
   }
 
   void CallGetChildren(SemanticsNode* node,
@@ -199,249 +210,14 @@ class AXTreeSourceFlutterTest : public testing::Test,
  private:
   void OnAction(const ui::AXActionData& data) override {}
 
+  // Required for the TestBrowserContext.
+  content::BrowserTaskEnvironment task_environment_;
+  content::TestBrowserContext browser_context_;
   MockAutomationEventRouter router_;
   std::unique_ptr<AXTreeSourceFlutter> tree_;
+  content::MockContentBrowserClient mock_content_browser_client_;
+  content::MockContentClient client_;
 };
-
-TEST_F(AXTreeSourceFlutterTest, ReorderChildrenByLayout) {
-  BooleanProperties* boolean_properties;
-  ActionProperties* action_properties;
-
-  OnAccessibilityEventRequest event;
-  event.set_source_id(0);
-  event.set_window_id(1);
-  event.set_event_type(OnAccessibilityEventRequest_EventType_FOCUSED);
-
-  //     0
-  //    / \
-  //   1   2
-  SemanticsNode* root = event.add_node_data();
-  root->set_node_id(0);
-  root->add_child_node_ids(1);
-  root->add_child_node_ids(2);
-
-  // Child button 1.
-  SemanticsNode* button1 = event.add_node_data();
-  button1->set_node_id(1);
-  button1->set_label("Button");
-  boolean_properties = button1->mutable_boolean_properties();
-  boolean_properties->set_is_button(true);
-  boolean_properties->set_is_hidden(false);
-  action_properties = button1->mutable_action_properties();
-  action_properties->set_tap(true);
-
-  // Another child button.
-  SemanticsNode* button2 = event.add_node_data();
-  button2->set_node_id(2);
-  button2->set_label("Button");
-  boolean_properties = button2->mutable_boolean_properties();
-  boolean_properties->set_is_button(true);
-  boolean_properties->set_is_hidden(false);
-  action_properties = button2->mutable_action_properties();
-  action_properties->set_tap(true);
-
-  // Non-overlapping: 2
-  //                   1
-  // Expect left(2) to right(1)
-  Rect* bounds1 = button1->mutable_bounds_in_screen();
-  Rect* bounds2 = button2->mutable_bounds_in_screen();
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 0, 0, 50, 50);
-
-  // Trigger an update which refreshes the computed bounds used for reordering.
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  std::vector<FlutterSemanticsNode*> order;
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Non-overlapping:  2
-  //                  1
-  // Expect left(1) to right(2)
-  SetRect(bounds1, 0, 50, 50, 50);
-  SetRect(bounds2, 100, 0, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(1, order[0]->GetId());
-  EXPECT_EQ(2, order[1]->GetId());
-
-  // Non-overlapping: 1
-  //                   2
-  // Expect left(1) to right(2)
-  SetRect(bounds1, 0, 0, 50, 50);
-  SetRect(bounds2, 100, 100, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(3, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(1, order[0]->GetId());
-  EXPECT_EQ(2, order[1]->GetId());
-
-  // Non-overlapping:  1
-  //                  2
-  // Expect left(2) to right(1)
-  SetRect(bounds1, 100, 0, 200, 50);
-  SetRect(bounds2, 0, 100, 50, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(4, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Overlapping: Same y, 2_x < 1_x
-  // Expect left(2) to right(1)
-  SetRect(bounds1, 101, 100, 200, 200);
-  SetRect(bounds2, 100, 100, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(5, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Overlapping: Same y, 1_x < 2_x
-  // Expect left(1) to right(2)
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 101, 100, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(6, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(1, order[0]->GetId());
-  EXPECT_EQ(2, order[1]->GetId());
-
-  // Overlapping, 1st_x == 2nd_x
-  // Expect top(2) to bottom(1)
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 100, 99, 200, 199);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(7, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Overlapping, 1st_x > 2nd_x
-  // Expect left(1) to right(2)
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 99, 100, 200, 199);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(8, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Same top,left,x
-  // Expect larger(2) to smaller(1)
-  SetRect(bounds1, 100, 100, 200, 110);
-  SetRect(bounds2, 100, 100, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(9, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Same top,left,y
-  // Expect larger(2) to smaller(1)
-  SetRect(bounds1, 100, 100, 110, 200);
-  SetRect(bounds2, 100, 100, 200, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(10, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(2, order[0]->GetId());
-  EXPECT_EQ(1, order[1]->GetId());
-
-  // Same top,left,x
-  // Expect larger(1) to smaller(2)
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 100, 100, 200, 110);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(11, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(1, order[0]->GetId());
-  EXPECT_EQ(2, order[1]->GetId());
-
-  // Same top,left,y
-  // Expect larger(1) to smaller(2)
-  SetRect(bounds1, 100, 100, 200, 200);
-  SetRect(bounds2, 100, 100, 110, 200);
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(12, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  order.clear();
-  CallGetChildren(root, &order);
-  ASSERT_EQ(2U, order.size());
-  EXPECT_EQ(1, order[0]->GetId());
-  EXPECT_EQ(2, order[1]->GetId());
-}
-
-// This tree was taken from real tree data. When the enclosing
-// bounds have been computed for children and they don't overlap,
-// we should prefer left to right ordering as it aligns
-// better with the way the UI is laid out. Preferring top
-// to bottom usually results in a strange ordering which
-// may make sense if you knew what the enclosing bounds were
-// but does not behave with what you would expect visually.
-TEST_F(AXTreeSourceFlutterTest, ReorderChildrenByLayoutPreferLeftToRight) {
-  OnAccessibilityEventRequest event;
-
-  event.set_source_id(0);
-  event.set_window_id(1);
-  event.set_event_type(OnAccessibilityEventRequest_EventType_FOCUSED);
-
-  SemanticsNode* root = event.add_node_data();
-  root->set_node_id(0);
-  Rect* bounds = root->mutable_bounds_in_screen();
-  SetRect(bounds, 0, 0, 1280, 800);
-
-  SemanticsNode* child;
-  AddChild(&event, root, 17, 0, 0, 422, 800, true);
-
-  child = AddChild(&event, root, 29, 1022, 0, 257, 800, false);
-  child = AddChild(&event, child, 30, 1022, 55, 257, 690, true);
-  AddChild(&event, child, 31, 1232, 165, 47, 150, false);
-  AddChild(&event, child, 32, 1232, 165, 47, 150, false);
-
-  child = AddChild(&event, root, 18, 422, 0, 600, 800, false);
-  child = AddChild(&event, child, 19, 422, 55, 570, 690, false);
-  AddChild(&event, child, 20, 507, 95, 445, 40, false);
-  AddChild(&event, child, 21, 463, 186, 488, 70, true);
-  AddChild(&event, child, 22, 463, 283, 488, 70, true);
-  AddChild(&event, child, 23, 463, 381, 488, 70, true);
-  AddChild(&event, child, 24, 463, 478, 488, 70, true);
-
-  // Enclosing bounds for 29 end up being smaller y
-  // than enclosing bounds for 18 but 18 is left of 29
-  // so order should be 17,18,29
-
-  CallNotifyAccessibilityEvent(&event);
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-  std::vector<FlutterSemanticsNode*> ordered;
-  CallGetChildren(root, &ordered);
-  ASSERT_EQ(3U, ordered.size());
-  EXPECT_EQ(17, ordered[0]->GetId());
-  EXPECT_EQ(18, ordered[1]->GetId());
-  EXPECT_EQ(29, ordered[2]->GetId());
-}
 
 TEST_F(AXTreeSourceFlutterTest, AccessibleNameComputation) {
   ActionProperties* action_properties;
@@ -879,11 +655,6 @@ TEST_F(AXTreeSourceFlutterTest, ScopesRouteNoNames) {
   content::MockTtsPlatformImpl mock_tts_platform;
   tts_controller->SetTtsPlatform(&mock_tts_platform);
 
-  // Setup some mocks required for tts platform impl
-  content::MockContentBrowserClient mock_content_browser_client;
-  content::MockContentClient client;
-  content::SetContentClient(&client);
-  content::SetBrowserClientForTesting(&mock_content_browser_client);
 
   // Add node with scopes route but no names route descendant.
   OnAccessibilityEventRequest event;
@@ -939,6 +710,47 @@ TEST_F(AXTreeSourceFlutterTest, ScopesRouteNoNames) {
   ASSERT_EQ(0, tree_data.focus_id);
   ASSERT_TRUE(mock_tts_platform.GetLastSpokenUtterance() == "");
   EXPECT_EQ(0, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+
+  // Cleanup since the mock will expire at the end of this test.
+  tts_controller->SetTtsPlatform(content::TtsPlatform::GetInstance());
+}
+
+TEST_F(AXTreeSourceFlutterTest, LeaveTheChildrenAlone) {
+  OnAccessibilityEventRequest event;
+
+  event.set_source_id(0);
+  event.set_window_id(1);
+  event.set_event_type(OnAccessibilityEventRequest_EventType_FOCUSED);
+
+  SemanticsNode* root = event.add_node_data();
+  root->set_node_id(0);
+  Rect* bounds = root->mutable_bounds_in_screen();
+  SetRect(bounds, 0, 0, 1280, 800);
+
+  SemanticsNode* child;
+  AddChild(&event, root, 17, 0, 0, 422, 800, true);
+
+  child = AddChild(&event, root, 29, 1022, 0, 257, 800, false);
+  child = AddChild(&event, child, 30, 1022, 55, 257, 690, true);
+  AddChild(&event, child, 31, 1232, 165, 47, 150, false);
+  AddChild(&event, child, 32, 1232, 165, 47, 150, false);
+
+  child = AddChild(&event, root, 18, 422, 0, 600, 800, false);
+  child = AddChild(&event, child, 19, 422, 55, 570, 690, false);
+  AddChild(&event, child, 20, 507, 95, 445, 40, false);
+  AddChild(&event, child, 21, 463, 186, 488, 70, true);
+  AddChild(&event, child, 22, 463, 283, 488, 70, true);
+  AddChild(&event, child, 23, 463, 381, 488, 70, true);
+  AddChild(&event, child, 24, 463, 478, 488, 70, true);
+
+  CallNotifyAccessibilityEvent(&event);
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+  std::vector<FlutterSemanticsNode*> ordered;
+  CallGetChildren(root, &ordered);
+  ASSERT_EQ(3U, ordered.size());
+  EXPECT_EQ(17, ordered[0]->GetId());
+  EXPECT_EQ(29, ordered[1]->GetId());
+  EXPECT_EQ(18, ordered[2]->GetId());
 }
 
 TEST_F(AXTreeSourceFlutterTest, Announce) {
@@ -947,20 +759,25 @@ TEST_F(AXTreeSourceFlutterTest, Announce) {
   content::MockTtsPlatformImpl mock_tts_platform;
   tts_controller->SetTtsPlatform(&mock_tts_platform);
 
-  // Setup some mocks required for tts platform impl
-  content::MockContentBrowserClient mock_content_browser_client;
-  content::MockContentClient client;
-  content::SetContentClient(&client);
-  content::SetBrowserClientForTesting(&mock_content_browser_client);
-
   // Setup an announcement event
   OnAccessibilityEventRequest event;
+  SetAccessibilityEnabled(false);
   event.set_event_type(OnAccessibilityEventRequest_EventType_ANNOUNCEMENT);
   event.set_text("Say this please");
   CallNotifyAccessibilityEvent(&event);
 
+  // Child 3 should NOT have been spoken
+  ASSERT_EQ(mock_tts_platform.GetLastSpokenUtterance(), "");
+
+  // This time with a11y enabled.
+  SetAccessibilityEnabled(true);
+  CallNotifyAccessibilityEvent(&event);
+
   // Child 3 should have been spoken
   ASSERT_EQ(mock_tts_platform.GetLastSpokenUtterance(), "Say this please");
+
+  // Cleanup since the mock will expire at the end of this test.
+  tts_controller->SetTtsPlatform(content::TtsPlatform::GetInstance());
 }
 
 }  // namespace accessibility

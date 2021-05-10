@@ -138,6 +138,9 @@ class VIEWS_EXPORT TableView : public views::View,
   // Selects the specified item, making sure it's visible.
   void Select(int model_row);
 
+  // Selects all items.
+  void SetSelectionAll(bool select);
+
   // Returns the first selected row in terms of the model.
   int GetFirstSelectedRow() const;
 
@@ -217,6 +220,11 @@ class VIEWS_EXPORT TableView : public views::View,
   // changed, because its accessibility information is also contained in the
   // table's virtual accessibility children.
   void UpdateVirtualAccessibilityChildrenBounds();
+
+  // Returns the virtual accessibility view corresponding to the specified cell.
+  // |row| should be a view index, not a model index.
+  // |visible_column_index| indexes into |visible_columns_|.
+  AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
   // View overrides:
   void Layout() override;
@@ -380,11 +388,6 @@ class VIEWS_EXPORT TableView : public views::View,
   // Returns the virtual accessibility view corresponding to the specified row.
   // |row| should be a view index, not a model index.
   AXVirtualView* GetVirtualAccessibilityRow(int row);
-
-  // Returns the virtual accessibility view corresponding to the specified cell.
-  // |row| should be a view index, not a model index.
-  // |visible_column_index| indexes into |visible_columns_|.
-  AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
   // Creates a virtual accessibility view that is used to expose information
   // about the row at |view_index| to assistive software.

@@ -1,32 +1,14 @@
 {
-  "extensions": [
-    {
-      "type": "setting",
-      "category": "Network",
-      "title": "Preserve log",
-      "settingName": "network_log.preserve-log",
-      "settingType": "boolean",
-      "defaultValue": false,
-      "tags": "preserve, clear, reset",
-      "options": [
-        {
-          "value": true,
-          "title": "Do not preserve log on page reload / navigation"
-        },
-        {
-          "value": false,
-          "title": "Preserve log on page reload / navigation"
-        }
-      ]
-    }
-  ],  "modules": [
+  "modules": [
     "browser_sdk.js",
     "LogManager.js",
     "IssuesManager.js",
-    "RelatedIssue.js"
+    "ContrastCheckTrigger.js",
+    "RelatedIssue.js",
+    "SourceFrameIssuesManager.js"
   ],
-  "dependencies": [
-    "common",
-    "sdk"
+  "resources": [
+    "../issues/descriptions/cspTrustedTypesSinkViolation.md",
+    "../issues/descriptions/cspTrustedTypesPolicyViolation.md"
   ]
 }

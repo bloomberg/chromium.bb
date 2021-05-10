@@ -355,7 +355,8 @@ GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
                             ? kAdreno430_GrGLRenderer : kAdreno4xx_other_GrGLRenderer;
                 }
                 if (adrenoNumber < 600) {
-                    return kAdreno5xx_GrGLRenderer;
+                    return adrenoNumber == 530 ? kAdreno530_GrGLRenderer
+                                               : kAdreno5xx_other_GrGLRenderer;
                 }
                 if (adrenoNumber == 615) {
                     return kAdreno615_GrGLRenderer;
@@ -629,6 +630,7 @@ bool GrGLFormatIsCompressed(GrGLFormat format) {
         case GrGLFormat::kR8:
         case GrGLFormat::kALPHA8:
         case GrGLFormat::kLUMINANCE8:
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
         case GrGLFormat::kBGRA8:
         case GrGLFormat::kRGB565:
         case GrGLFormat::kRGBA16F:

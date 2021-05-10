@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -12,8 +13,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "content/public/test/browser_test.h"

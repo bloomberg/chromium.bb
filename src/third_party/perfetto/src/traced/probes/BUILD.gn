@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../../../gn/perfetto.gni")
 import("../../../gn/test.gni")
+
+assert(enable_perfetto_traced_probes)
 
 # The unprivileged daemon that is allowed to access tracefs (for ftrace).
 # Registers as a Producer on the traced daemon.
@@ -35,14 +38,14 @@ source_set("probes") {
     "../../../gn:default_deps",
     "../../tracing/ipc/producer",
   ]
-  if (enable_perfetto_version_gen) {
-    deps += [ "//gn/standalone:gen_git_revision" ]
-  }
   sources = [ "probes.cc" ]
 }
 
 source_set("probes_src") {
-  public_deps = [ "ftrace" ]
+  public_deps = [
+    "ftrace",
+    "ftrace:ftrace_procfs",
+  ]
   deps = [
     ":data_source",
     "../../../gn:default_deps",
@@ -65,6 +68,8 @@ source_set("probes_src") {
     "system_info",
   ]
   sources = [
+    "kmem_activity_trigger.cc",
+    "kmem_activity_trigger.h",
     "probes_producer.cc",
     "probes_producer.h",
   ]

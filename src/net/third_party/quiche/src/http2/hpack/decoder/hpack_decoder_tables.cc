@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
+#include "http2/hpack/decoder/hpack_decoder_tables.h"
 
-#include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
+#include "http2/hpack/http2_hpack_constants.h"
+#include "http2/platform/api/http2_logging.h"
 
 namespace http2 {
 namespace {
@@ -15,11 +15,11 @@ std::vector<HpackStringPair>* MakeStaticTable() {
   ptr->reserve(kFirstDynamicTableIndex);
   ptr->emplace_back("", "");
 
-#define STATIC_TABLE_ENTRY(name, value, index)        \
-  DCHECK_EQ(ptr->size(), static_cast<size_t>(index)); \
+#define STATIC_TABLE_ENTRY(name, value, index)               \
+  QUICHE_DCHECK_EQ(ptr->size(), static_cast<size_t>(index)); \
   ptr->emplace_back(name, value)
 
-#include "net/third_party/quiche/src/http2/hpack/hpack_static_table_entries.inc"
+#include "http2/hpack/hpack_static_table_entries.inc"
 
 #undef STATIC_TABLE_ENTRY
 
@@ -63,7 +63,7 @@ void HpackDecoderDynamicTable::DynamicTableSizeUpdate(size_t size_limit) {
   HTTP2_DVLOG(3) << "HpackDecoderDynamicTable::DynamicTableSizeUpdate "
                  << size_limit;
   EnsureSizeNoMoreThan(size_limit);
-  DCHECK_LE(current_size_, size_limit);
+  QUICHE_DCHECK_LE(current_size_, size_limit);
   size_limit_ = size_limit;
 }
 
@@ -94,8 +94,8 @@ void HpackDecoderDynamicTable::Insert(const HpackString& name,
   table_.push_front(entry);
   current_size_ += entry_size;
   HTTP2_DVLOG(2) << "InsertEntry: current_size_=" << current_size_;
-  DCHECK_GE(current_size_, entry_size);
-  DCHECK_LE(current_size_, size_limit_);
+  QUICHE_DCHECK_GE(current_size_, entry_size);
+  QUICHE_DCHECK_LE(current_size_, size_limit_);
 }
 
 const HpackStringPair* HpackDecoderDynamicTable::Lookup(size_t index) const {
@@ -118,19 +118,19 @@ void HpackDecoderDynamicTable::EnsureSizeNoMoreThan(size_t limit) {
   while (current_size_ > limit) {
     RemoveLastEntry();
   }
-  DCHECK_LE(current_size_, limit);
+  QUICHE_DCHECK_LE(current_size_, limit);
 }
 
 void HpackDecoderDynamicTable::RemoveLastEntry() {
-  DCHECK(!table_.empty());
+  QUICHE_DCHECK(!table_.empty());
   if (!table_.empty()) {
     HTTP2_DVLOG(2) << "RemoveLastEntry current_size_=" << current_size_
                    << ", last entry size=" << table_.back().size();
-    DCHECK_GE(current_size_, table_.back().size());
+    QUICHE_DCHECK_GE(current_size_, table_.back().size());
     current_size_ -= table_.back().size();
     table_.pop_back();
     // Empty IFF current_size_ == 0.
-    DCHECK_EQ(table_.empty(), current_size_ == 0);
+    QUICHE_DCHECK_EQ(table_.empty(), current_size_ == 0);
   }
 }
 

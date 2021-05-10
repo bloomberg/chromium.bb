@@ -4,7 +4,7 @@
  *
  *   SFNT object management (base).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -820,7 +820,8 @@
     /* it doesn't contain outlines.                                */
     /*                                                             */
 
-    FT_TRACE2(( "sfnt_load_face: %p\n\n", (void *)face ));
+    FT_TRACE2(( "sfnt_load_face: %p\n", (void *)face ));
+    FT_TRACE2(( "\n" ));
 
     /* do we have outlines in there? */
 #ifdef FT_CONFIG_OPTION_INCREMENTAL

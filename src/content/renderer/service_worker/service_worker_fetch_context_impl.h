@@ -14,6 +14,8 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -21,7 +23,6 @@ class InternetDisconnectedWebURLLoaderFactory;
 }
 
 namespace content {
-class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
@@ -94,6 +95,8 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(const blink::RendererPreferences& new_prefs) override;
 
+  blink::WebVector<blink::WebString> cors_exempt_header_list();
+
   blink::RendererPreferences renderer_preferences_;
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |web_url_loader_factory_|.
@@ -107,9 +110,6 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   // being loaded in the browser process and went through throttles there. It's
   // valid only once and set to invalid GURL once the script is served.
   GURL script_url_to_skip_throttling_;
-
-  // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // Responsible for regular loads from the service worker (i.e., Fetch API).
   std::unique_ptr<blink::WebURLLoaderFactory> web_url_loader_factory_;

@@ -52,17 +52,21 @@ source_set("producer") {
     ":proc_descriptors",
     "../../../gn:default_deps",
     "../../../include/perfetto/profiling:normalize",
+    "../../../protos/perfetto/common:zero",
     "../../../protos/perfetto/config:cpp",
-    "../../../protos/perfetto/config/profiling:zero",
+    "../../../protos/perfetto/config/profiling:cpp",
     "../../../protos/perfetto/trace:zero",
     "../../../protos/perfetto/trace/profiling:zero",
     "../../../src/base",
     "../../../src/base:unix_socket",
+    "../../../src/traced/probes/ftrace:ftrace_procfs",
     "../../../src/tracing/ipc/producer",
     "../common:callstack_trie",
     "../common:interner",
     "../common:interning_output",
     "../common:proc_utils",
+    "../common:producer_support",
+    "../common:profiler_guardrails",
   ]
   sources = [
     "event_config.cc",
@@ -93,6 +97,7 @@ source_set("unwinding") {
     "../../../gn:default_deps",
     "../../../include/perfetto/ext/tracing/core",
     "../../../src/base",
+    "../../../src/kallsyms",
     "../common:unwind_support",
   ]
   sources = [

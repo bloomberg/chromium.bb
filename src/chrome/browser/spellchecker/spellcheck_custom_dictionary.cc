@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/md5.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -401,8 +401,6 @@ SpellcheckCustomDictionary::ProcessSyncChanges(
         dictionary_change->RemoveWord(word);
         break;
       case syncer::SyncChange::ACTION_UPDATE:
-        // Intentionally fall through.
-      case syncer::SyncChange::ACTION_INVALID:
         return syncer::ConvertToModelError(
             sync_error_handler_->CreateAndUploadError(
                 FROM_HERE, "Processing sync changes failed on change type " +

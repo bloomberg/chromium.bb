@@ -129,7 +129,9 @@ void IsolateData::RegisterModule(v8::Local<v8::Context> context,
 // static
 v8::MaybeLocal<v8::Module> IsolateData::ModuleResolveCallback(
     v8::Local<v8::Context> context, v8::Local<v8::String> specifier,
+    v8::Local<v8::FixedArray> import_assertions,
     v8::Local<v8::Module> referrer) {
+  // TODO(v8:11189) Consider JSON modules support in the InspectorClient
   IsolateData* data = IsolateData::FromContext(context);
   std::string str = *v8::String::Utf8Value(data->isolate(), specifier);
   return data->modules_[ToVector(data->isolate(), specifier)].Get(
@@ -256,8 +258,7 @@ int IsolateData::HandleMessage(v8::Local<v8::Message> message,
       IsolateData::FromContext(context)->inspector_.get();
 
   v8::Local<v8::StackTrace> stack = message->GetStackTrace();
-  int script_id =
-      static_cast<int>(message->GetScriptOrigin().ScriptID()->Value());
+  int script_id = message->GetScriptOrigin().ScriptId();
   if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {
     int top_script_id = stack->GetFrame(isolate, 0)->GetScriptId();
     if (top_script_id == script_id) script_id = 0;
@@ -428,8 +429,8 @@ void IsolateData::installAdditionalCommandLineAPI(
   CHECK(context->GetIsolate() == isolate());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(context);
-  v8::ScriptOrigin origin(
-      v8::String::NewFromUtf8Literal(isolate(), "internal-console-api"));
+  v8::ScriptOrigin origin(isolate(), v8::String::NewFromUtf8Literal(
+                                         isolate(), "internal-console-api"));
   v8::ScriptCompiler::Source scriptSource(
       additional_console_api_.Get(isolate()), origin);
   v8::MaybeLocal<v8::Script> script =
@@ -484,6 +485,12 @@ std::unique_ptr<v8_inspector::StringBuffer> IsolateData::resourceNameToUrl(
   v8::Local<v8::String> prefix = resource_name_prefix_.Get(isolate());
   v8::Local<v8::String> url = v8::String::Concat(isolate(), prefix, name);
   return std::make_unique<StringBufferImpl>(isolate(), url);
+}
+
+int64_t IsolateData::generateUniqueId() {
+  static int64_t last_unique_id = 0L;
+  // Keep it not too random for tests.
+  return ++last_unique_id;
 }
 
 }  // namespace internal

@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -150,6 +150,7 @@ TEST_F(DriveFsNativeMessageHostTest, Error) {
           extension_port_.BindNewPipeAndPassReceiver(),
           receiver_.BindNewPipeAndPassRemote());
   MockClient client;
+  EXPECT_CALL(*this, HandleMessageFromExtension).Times(0);
   EXPECT_CALL(client, PostMessageFromNativeHost).Times(0);
   EXPECT_CALL(client, CloseChannel("FILE_ERROR_FAILED: foo"));
   receiver_.set_disconnect_handler(run_loop.QuitClosure());
@@ -158,6 +159,9 @@ TEST_F(DriveFsNativeMessageHostTest, Error) {
   extension_port_.ResetWithReason(1u, "foo");
 
   run_loop.Run();
+
+  host->OnMessage("bar");
+  base::RunLoop().RunUntilIdle();
 }
 
 class DriveFsNativeMessageHostTestWithoutFlag

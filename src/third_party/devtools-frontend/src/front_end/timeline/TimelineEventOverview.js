@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as Common from '../common/common.js';
 import * as Coverage from '../coverage/coverage.js';
+import * as i18n from '../i18n/i18n.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
@@ -39,9 +39,36 @@ import * as UI from '../ui/ui.js';
 import {PerformanceModel} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
 import {EventDispatchTypeDescriptor, TimelineCategory, TimelineRecordStyle, TimelineUIUtils} from './TimelineUIUtils.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text in Timeline Event Overview of the Performance panel
+  */
+  net: 'NET',
+  /**
+  *@description Text in Timeline Event Overview of the Performance panel
+  */
+  cpu: 'CPU',
+  /**
+  *@description Text in Timeline Event Overview of the Performance panel
+  */
+  fps: 'FPS',
+  /**
+  *@description Text in Timeline Event Overview of the Performance panel
+  */
+  heap: 'HEAP',
+  /**
+  *@description Heap size label text content in Timeline Event Overview of the Performance panel
+  *@example {10 MB} PH1
+  *@example {30 MB} PH2
+  */
+  sSDash: '{PH1} – {PH2}',
+  /**
+  *@description Text in Timeline Event Overview of the Performance panel
+  */
+  coverage: 'COVERAGE',
+};
+const str_ = i18n.i18n.registerUIStrings('timeline/TimelineEventOverview.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineOverviewBase {
   /**
    * @param {string} id
@@ -81,9 +108,6 @@ export class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineO
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewInput extends TimelineEventOverview {
   constructor() {
     super('input', null);
@@ -140,12 +164,9 @@ export class TimelineEventOverviewInput extends TimelineEventOverview {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewNetwork extends TimelineEventOverview {
   constructor() {
-    super('network', Common.UIString.UIString('NET'));
+    super('network', i18nString(UIStrings.net));
   }
 
   /**
@@ -186,12 +207,9 @@ export class TimelineEventOverviewNetwork extends TimelineEventOverview {
 /** @type {!WeakMap<!TimelineCategory, number>} */
 const categoryToIndex = new WeakMap();
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
   constructor() {
-    super('cpu-activity', Common.UIString.UIString('CPU'));
+    super('cpu-activity', i18nString(UIStrings.cpu));
     /** @type {!HTMLCanvasElement} */
     this._backgroundCanvas = /** @type {!HTMLCanvasElement} */ (this.element.createChild('canvas', 'fill background'));
   }
@@ -281,7 +299,7 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
        * @param {!SDK.TracingModel.Event} e
        */
       function onEventStart(e) {
-        const index = categoryIndexStack.length ? categoryIndexStack.peekLast() : idleIndex;
+        const index = categoryIndexStack.length ? categoryIndexStack[categoryIndexStack.length - 1] : idleIndex;
         quantizer.appendInterval(e.startTime, /** @type {number} */ (index));
         categoryIndexStack.push(categoryToIndex.get(TimelineUIUtils.eventStyle(e).category) || otherIndex);
       }
@@ -323,9 +341,6 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
   constructor() {
     super('responsiveness', null);
@@ -389,9 +404,6 @@ export class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineFilmStripOverview extends TimelineEventOverview {
   constructor() {
     super('filmstrip', null);
@@ -538,12 +550,9 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
 
 TimelineFilmStripOverview.Padding = 2;
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewFrames extends TimelineEventOverview {
   constructor() {
-    super('framerate', Common.UIString.UIString('FPS'));
+    super('framerate', i18nString(UIStrings.fps));
   }
 
   /**
@@ -559,7 +568,7 @@ export class TimelineEventOverviewFrames extends TimelineEventOverview {
       return;
     }
     const height = this.height();
-    const /** @const */ padding = 1 * window.devicePixelRatio;
+    const /** @const */ padding = Number(window.devicePixelRatio);
     const /** @const */ baseFrameDurationMs = 1e3 / 60;
     const visualHeight = height - 2 * padding;
     const timeOffset = this._model.timelineModel().minimumRecordTime();
@@ -586,7 +595,7 @@ export class TimelineEventOverviewFrames extends TimelineEventOverview {
       ctx.lineTo(x, y + tickDepth);
       ctx.lineTo(x, y);
     }
-    const lastFrame = frames.peekLast();
+    const lastFrame = frames[frames.length - 1];
     if (lastFrame) {
       x = Math.round((lastFrame.startTime + lastFrame.duration - timeOffset) * scale) + offset;
     }
@@ -600,12 +609,9 @@ export class TimelineEventOverviewFrames extends TimelineEventOverview {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewMemory extends TimelineEventOverview {
   constructor() {
-    super('memory', Common.UIString.UIString('HEAP'));
+    super('memory', i18nString(UIStrings.heap));
     this._heapSizeLabel = this.element.createChild('div', 'memory-graph-label');
   }
 
@@ -723,15 +729,13 @@ export class TimelineEventOverviewMemory extends TimelineEventOverview {
     ctx.strokeStyle = 'hsl(220, 90%, 70%)';
     ctx.stroke();
 
-    this._heapSizeLabel.textContent = Common.UIString.UIString(
-        '%s \u2013 %s', Platform.NumberUtilities.bytesToString(minUsedHeapSize),
-        Platform.NumberUtilities.bytesToString(maxUsedHeapSize));
+    this._heapSizeLabel.textContent = i18nString(UIStrings.sSDash, {
+      PH1: Platform.NumberUtilities.bytesToString(minUsedHeapSize),
+      PH2: Platform.NumberUtilities.bytesToString(maxUsedHeapSize)
+    });
   }
 }
 
-/**
- * @unrestricted
- */
 export class Quantizer {
   /**
    * @param {number} startTime
@@ -775,12 +779,9 @@ export class Quantizer {
   }
 }
 
-/**
- * @unrestricted
- */
 export class TimelineEventOverviewCoverage extends TimelineEventOverview {
   constructor() {
-    super('coverage', Common.UIString.UIString('COVERAGE'));
+    super('coverage', i18nString(UIStrings.coverage));
     this._heapSizeLabel = this.element.createChild('div', 'timeline-overview-coverage-label');
   }
 

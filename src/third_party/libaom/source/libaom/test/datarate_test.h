@@ -47,6 +47,7 @@ class DatarateTest : public ::libaom_test::EncoderTest {
     bits_total_ = 0;
     denoiser_offon_test_ = 0;
     denoiser_offon_period_ = -1;
+    tile_column_ = 0;
   }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
@@ -54,8 +55,13 @@ class DatarateTest : public ::libaom_test::EncoderTest {
     if (video->frame() == 0) {
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_AQ_MODE, aq_mode_);
-      encoder->Control(AV1E_SET_TILE_COLUMNS, 0);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, tile_column_);
+      encoder->Control(AV1E_SET_ROW_MT, 1);
       if (cfg_.g_usage == AOM_USAGE_REALTIME) {
+        encoder->Control(AV1E_SET_ENABLE_GLOBAL_MOTION, 0);
+        encoder->Control(AV1E_SET_ENABLE_WARPED_MOTION, 0);
+        encoder->Control(AV1E_SET_ENABLE_RESTORATION, 0);
+        encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
         encoder->Control(AV1E_SET_DELTAQ_MODE, 0);
         encoder->Control(AV1E_SET_ENABLE_TPL_MODEL, 0);
         encoder->Control(AV1E_SET_ENABLE_CDEF, 1);
@@ -151,6 +157,7 @@ class DatarateTest : public ::libaom_test::EncoderTest {
   int denoiser_offon_period_;
   unsigned int aq_mode_;
   bool speed_change_test_;
+  int tile_column_;
 };
 
 }  // namespace

@@ -34,14 +34,17 @@ public:
     void onDrawRRect(const SkRRect&, const SkPaint&) override;
     void onDrawPoints(PointMode, size_t, const SkPoint[], const SkPaint&) override;
     void onDrawVerticesObject(const SkVertices*, SkBlendMode, const SkPaint&) override;
-    void onDrawAtlas(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[],
-                     int, SkBlendMode, const SkRect*, const SkPaint*) override;
     void onDrawPath(const SkPath&, const SkPaint&) override;
-    void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override;
-    void onDrawImageRect(const SkImage*, const SkRect*, const SkRect&, const SkPaint*,
-                         SrcRectConstraint) override;
-    void onDrawImageNine(const SkImage*, const SkIRect&, const SkRect&, const SkPaint*) override;
-    void onDrawImageLattice(const SkImage*, const Lattice&, const SkRect&, const SkPaint*) override;
+
+    void onDrawImage2(const SkImage*, SkScalar, SkScalar, const SkSamplingOptions&,
+                      const SkPaint*) override;
+    void onDrawImageRect2(const SkImage*, const SkRect&, const SkRect&, const SkSamplingOptions&,
+                          const SkPaint*, SrcRectConstraint) override;
+    void onDrawImageLattice2(const SkImage*, const Lattice&, const SkRect&, SkFilterMode,
+                             const SkPaint*) override;
+    void onDrawAtlas2(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[], int,
+                     SkBlendMode, const SkSamplingOptions&, const SkRect*, const SkPaint*) override;
+
     void onDrawDrawable(SkDrawable*, const SkMatrix*) override;
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
@@ -50,8 +53,8 @@ public:
 
     void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], SkCanvas::QuadAAFlags, const SkColor4f&,
                           SkBlendMode) override;
-    void onDrawEdgeAAImageSet(const ImageSetEntry[], int count, const SkPoint[], const SkMatrix[],
-                              const SkPaint*, SrcRectConstraint) override;
+    void onDrawEdgeAAImageSet2(const ImageSetEntry[], int count, const SkPoint[], const SkMatrix[],
+                               const SkSamplingOptions&,const SkPaint*, SrcRectConstraint) override;
 
 private:
     void drawPosTextCommon(const SkGlyphID[], int, const SkScalar[], int, const SkPoint&,

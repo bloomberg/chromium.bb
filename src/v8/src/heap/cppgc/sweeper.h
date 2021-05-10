@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "include/cppgc/heap.h"
 #include "src/base/macros.h"
 
 namespace cppgc {
@@ -18,11 +19,12 @@ namespace internal {
 class StatsCollector;
 class RawHeap;
 class ConcurrentSweeperTest;
+class NormalPageSpace;
 
 class V8_EXPORT_PRIVATE Sweeper final {
  public:
   struct SweepingConfig {
-    enum class SweepingType : uint8_t { kAtomic, kIncrementalAndConcurrent };
+    using SweepingType = cppgc::Heap::SweepingType;
     enum class CompactableSpaceHandling { kSweep, kIgnore };
 
     SweepingType sweeping_type = SweepingType::kIncrementalAndConcurrent;
@@ -39,6 +41,14 @@ class V8_EXPORT_PRIVATE Sweeper final {
   // Sweeper::Start assumes the heap holds no linear allocation buffers.
   void Start(SweepingConfig);
   void FinishIfRunning();
+  void NotifyDoneIfNeeded();
+  // SweepForAllocationIfRunning sweeps the given |space| until a slot that can
+  // fit an allocation of size |size| is found. Returns true if a slot was
+  // found.
+  bool SweepForAllocationIfRunning(NormalPageSpace* space, size_t size);
+
+  bool IsSweepingOnMutatorThread() const;
+  bool IsSweepingInProgress() const;
 
  private:
   void WaitForConcurrentSweepingForTesting();

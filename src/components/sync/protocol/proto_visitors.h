@@ -176,6 +176,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT_REP(name_last_second);
   VISIT_REP(name_last);
   VISIT_REP(name_full);
+  VISIT_REP(name_full_with_honorific);
 
   VISIT_REP(name_honorific_status);
   VISIT_REP(name_first_status);
@@ -185,6 +186,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT_REP(name_last_second_status);
   VISIT_REP(name_last_status);
   VISIT_REP(name_full_status);
+  VISIT_REP(name_full_with_honorific_status);
 
   VISIT_REP(email_address);
   VISIT(company_name);
@@ -347,7 +349,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DatatypeAssociationStats& proto) {
   VISIT(data_type_id);
   VISIT(download_wait_time_us);
   VISIT(download_time_us);
-  VISIT(association_wait_time_for_high_priority_us);
   VISIT_REP(high_priority_type_configured_before);
   VISIT_REP(same_priority_type_configured_before);
 }
@@ -425,7 +426,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(39 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -721,6 +722,21 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(display_name);
   VISIT(avatar_url);
   VISIT(federation_url);
+  VISIT(date_last_used);
+  VISIT(password_issues);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_PasswordIssues& proto) {
+  VISIT(leaked_password_issue);
+  VISIT(reused_password_issue);
+  VISIT(weak_password_issue);
+  VISIT(phished_password_issue);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::PasswordSpecificsData_PasswordIssues_PasswordIssue& proto) {
+  VISIT(date_first_detection_microseconds);
+  VISIT(is_muted);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
@@ -804,6 +820,8 @@ VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfSpecifics& proto) {
   VISIT(navigation_time_usec);
   VISIT(device_name);
   VISIT(target_device_sync_cache_guid);
+  VISIT(opened);
+  VISIT(notification_dismissed);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {
@@ -948,7 +966,6 @@ VISIT_PROTO_FIELDS(
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::FlocIdComputed& proto) {
-  VISIT_ENUM(event_trigger);
   VISIT(floc_id);
 }
 

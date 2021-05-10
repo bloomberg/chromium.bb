@@ -295,6 +295,7 @@ export interface State {
   currentSelection: Selection|null;
   currentHeapProfileFlamegraph: HeapProfileFlamegraph|null;
   logsPagination: LogsPagination;
+  traceConversionInProgress: boolean;
 
   /**
    * This state is updated on the frontend at 60Hz and eventually syncronised to
@@ -416,6 +417,8 @@ export interface RecordConfig {
   hpContinuousDumpsPhase: number;
   hpContinuousDumpsInterval: number;
   hpSharedMemoryBuffer: number;
+  hpBlockClient: boolean;
+  hpAllHeaps: boolean;
 
   javaHeapDump: boolean;
   jpProcesses: string;
@@ -479,6 +482,8 @@ export function createEmptyRecordConfig(): RecordConfig {
     hpContinuousDumpsPhase: 0,
     hpContinuousDumpsInterval: 0,
     hpSharedMemoryBuffer: 8 * 1048576,
+    hpBlockClient: true,
+    hpAllHeaps: false,
 
     javaHeapDump: false,
     jpProcesses: '',
@@ -539,7 +544,6 @@ export function getBuiltinChromeCategoryList(): string[] {
     'content_capture',
     'devtools',
     'devtools.timeline',
-    'devtools.timeline.async',
     'download',
     'download_service',
     'drm',
@@ -759,6 +763,7 @@ export function createEmptyState(): State {
     status: {msg: '', timestamp: 0},
     currentSelection: null,
     currentHeapProfileFlamegraph: null,
+    traceConversionInProgress: false,
 
     video: null,
     videoEnabled: false,

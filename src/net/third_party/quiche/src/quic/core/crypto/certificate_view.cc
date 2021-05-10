@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/certificate_view.h"
+#include "quic/core/crypto/certificate_view.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -11,6 +11,7 @@
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -23,16 +24,15 @@
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/boring_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_time_utils.h"
-#include "net/third_party/quiche/src/common/quiche_data_reader.h"
+#include "quic/core/crypto/boring_utils.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_logging.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "common/platform/api/quiche_time_utils.h"
+#include "common/quiche_data_reader.h"
 
 namespace quic {
 namespace {
@@ -123,7 +123,7 @@ std::string AttributeNameToString(const CBS& oid_cbs) {
 
   bssl::UniquePtr<char> oid_representation(CBS_asn1_oid_to_text(&oid_cbs));
   if (oid_representation == nullptr) {
-    return quiche::QuicheStrCat("(", absl::BytesToHexString(oid), ")");
+    return absl::StrCat("(", absl::BytesToHexString(oid), ")");
   }
   return std::string(oid_representation.get());
 }
@@ -139,8 +139,8 @@ absl::optional<std::string> X509NameAttributeToString(CBS input) {
   }
   // Note that this does not process encoding of |input| in any way.  This works
   // fine for the most cases.
-  return quiche::QuicheStrCat(AttributeNameToString(name), "=",
-                              absl::CHexEscape(CbsToStringPiece(value)));
+  return absl::StrCat(AttributeNameToString(name), "=",
+                      absl::CHexEscape(CbsToStringPiece(value)));
 }
 
 namespace {
@@ -196,7 +196,7 @@ absl::optional<quic::QuicWallTime> ParseDerTime(unsigned tag,
   }
 
   if (tag == CBS_ASN1_UTCTIME) {
-    DCHECK_LE(year, 100u);
+    QUICHE_DCHECK_LE(year, 100u);
     year += (year >= 50) ? 1900 : 2000;
   }
 
@@ -227,7 +227,7 @@ PemReadResult ReadNextPemMessage(std::istream* input) {
       result.type = std::string(
           line.substr(kPemBegin.size(),
                       line.size() - kPemDashes.size() - kPemBegin.size()));
-      expected_end = quiche::QuicheStrCat(kPemEnd, result.type, kPemDashes);
+      expected_end = absl::StrCat(kPemEnd, result.type, kPemDashes);
       pending_message = true;
       continue;
     }

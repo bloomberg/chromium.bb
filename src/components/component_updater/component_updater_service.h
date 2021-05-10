@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/update_client/update_client.h"
 #include "url/gurl.h"
 
@@ -27,7 +28,7 @@ class ComponentUpdaterPolicyTest;
 }
 
 namespace speech {
-class SODAInstallerImpl;
+class SodaInstallerImpl;
 }
 
 namespace update_client {
@@ -109,13 +110,6 @@ class ComponentUpdateService {
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
 
-  // Returns a ComponentInfo describing a registered component that implements a
-  // handler for the specified |mime_type|. If multiple such components exist,
-  // returns information for the one that was most recently registered. If no
-  // such components exist, returns nullptr.
-  virtual std::unique_ptr<ComponentInfo> GetComponentForMimeType(
-      const std::string& mime_type) const = 0;
-
   // Returns a list of ComponentInfo objects describing all registered
   // components.
   virtual std::vector<ComponentInfo> GetComponents() const = 0;
@@ -147,7 +141,7 @@ class ComponentUpdateService {
   virtual bool GetComponentDetails(const std::string& id,
                                    CrxUpdateItem* item) const = 0;
 
-  friend class speech::SODAInstallerImpl;
+  friend class speech::SodaInstallerImpl;
   friend class ::ComponentsHandler;
   FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };
@@ -170,12 +164,11 @@ class OnDemandUpdater {
   friend class ::ComponentsHandler;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
-  friend class SODAComponentInstallerPolicy;
-  friend class SodaEnUsComponentInstallerPolicy;
-  friend class SodaJaJpComponentInstallerPolicy;
-#if defined(OS_CHROMEOS)
+  friend class SodaComponentInstallerPolicy;
+  friend class SodaLanguagePackComponentInstallerPolicy;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class CrOSComponentInstaller;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   friend class VrAssetsComponentInstallerPolicy;
 
   // Triggers an update check for a component. |id| is a value

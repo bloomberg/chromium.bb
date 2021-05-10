@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_post_task.h"
 #include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -212,7 +213,6 @@ void CastAudioOutputStream::MixerServiceWrapper::Close(
 }
 
 int64_t CastAudioOutputStream::MixerServiceWrapper::GetMaxBufferedFrames() {
-  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   int fill_size_frames = audio_params_.frames_per_buffer();
   base::TimeDelta target_max_buffered_ms = kMediaMaxBufferedFrames;
   if (GetContentType(device_id_) == AudioContentType::kCommunication) {
@@ -384,8 +384,8 @@ void CastAudioOutputStream::Close() {
     mixer_service_wrapper_->SetRunning(false);
     POST_TO_MIXER_SERVICE_WRAPPER(
         Close,
-        BindToTaskRunner(audio_manager_->audio_manager()->GetTaskRunner(),
-                         std::move(finish_callback)));
+        base::BindPostTask(audio_manager_->audio_manager()->GetTaskRunner(),
+                           std::move(finish_callback)));
   } else if (cma_wrapper_) {
     // Synchronously set running to false to guarantee that
     // AudioSourceCallback::OnMoreData() will not be called anymore.

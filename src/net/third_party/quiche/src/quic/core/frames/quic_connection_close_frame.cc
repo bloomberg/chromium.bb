@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_connection_close_frame.h"
+#include "quic/core/frames/quic_connection_close_frame.h"
 
 #include <memory>
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_types.h"
 
 namespace quic {
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame(
     QuicTransportVersion transport_version,
     QuicErrorCode error_code,
+    QuicIetfTransportErrorCodes ietf_error,
     std::string error_phrase,
     uint64_t frame_type)
     : quic_error_code(error_code), error_details(error_phrase) {
@@ -25,7 +26,11 @@ QuicConnectionCloseFrame::QuicConnectionCloseFrame(
   }
   QuicErrorCodeToIetfMapping mapping =
       QuicErrorCodeToTransportErrorCode(error_code);
-  wire_error_code = mapping.error_code;
+  if (ietf_error != NO_IETF_QUIC_ERROR) {
+    wire_error_code = ietf_error;
+  } else {
+    wire_error_code = mapping.error_code;
+  }
   if (mapping.is_transport_close) {
     // Maps to a transport close
     close_type = IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;

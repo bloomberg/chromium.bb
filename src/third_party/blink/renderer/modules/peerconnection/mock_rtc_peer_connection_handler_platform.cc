@@ -236,6 +236,18 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
       const override {
     return base::nullopt;
   }
+  webrtc::RTCError SetOfferedRtpHeaderExtensions(
+      Vector<webrtc::RtpHeaderExtensionCapability> header_extensions) override {
+    return webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
+  }
+  Vector<webrtc::RtpHeaderExtensionCapability> HeaderExtensionsNegotiated()
+      const override {
+    return {};
+  }
+  Vector<webrtc::RtpHeaderExtensionCapability> HeaderExtensionsToOffer()
+      const override {
+    return {};
+  }
 
  private:
   scoped_refptr<DummyTransceiverInternal> internal_;
@@ -251,7 +263,8 @@ MockRTCPeerConnectionHandlerPlatform::~MockRTCPeerConnectionHandlerPlatform() =
 bool MockRTCPeerConnectionHandlerPlatform::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&,
     const MediaConstraints&,
-    WebLocalFrame*) {
+    WebLocalFrame*,
+    ExceptionState&) {
   return true;
 }
 
@@ -280,11 +293,11 @@ void MockRTCPeerConnectionHandlerPlatform::SetLocalDescription(
 
 void MockRTCPeerConnectionHandlerPlatform::SetLocalDescription(
     RTCVoidRequest*,
-    RTCSessionDescriptionPlatform*) {}
+    ParsedSessionDescription) {}
 
 void MockRTCPeerConnectionHandlerPlatform::SetRemoteDescription(
     RTCVoidRequest*,
-    RTCSessionDescriptionPlatform*) {}
+    ParsedSessionDescription) {}
 
 const webrtc::PeerConnectionInterface::RTCConfiguration&
 MockRTCPeerConnectionHandlerPlatform::GetConfiguration() const {

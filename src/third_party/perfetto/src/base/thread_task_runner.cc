@@ -15,7 +15,6 @@
  */
 
 #include "perfetto/base/build_config.h"
-#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
 
 #include "perfetto/ext/base/thread_task_runner.h"
 
@@ -115,7 +114,28 @@ uint64_t ThreadTaskRunner::GetThreadCPUTimeNsForTesting() {
   return thread_time_ns;
 }
 
+void ThreadTaskRunner::PostTask(std::function<void()> task) {
+  task_runner_->PostTask(std::move(task));
+}
+
+void ThreadTaskRunner::PostDelayedTask(std::function<void()> task,
+                                       uint32_t delay_ms) {
+  task_runner_->PostDelayedTask(std::move(task), delay_ms);
+}
+
+void ThreadTaskRunner::AddFileDescriptorWatch(
+    PlatformHandle handle,
+    std::function<void()> watch_task) {
+  task_runner_->AddFileDescriptorWatch(handle, std::move(watch_task));
+}
+
+void ThreadTaskRunner::RemoveFileDescriptorWatch(PlatformHandle handle) {
+  task_runner_->RemoveFileDescriptorWatch(handle);
+}
+
+bool ThreadTaskRunner::RunsTasksOnCurrentThread() const {
+  return task_runner_->RunsTasksOnCurrentThread();
+}
+
 }  // namespace base
 }  // namespace perfetto
-
-#endif  // !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)

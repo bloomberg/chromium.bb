@@ -117,6 +117,16 @@ void grpc_ssl_credentials::build_config(
   }
 }
 
+void grpc_ssl_credentials::set_min_tls_version(
+    grpc_tls_version min_tls_version) {
+  config_.min_tls_version = min_tls_version;
+}
+
+void grpc_ssl_credentials::set_max_tls_version(
+    grpc_tls_version max_tls_version) {
+  config_.max_tls_version = max_tls_version;
+}
+
 /* Deprecated in favor of grpc_ssl_credentials_create_ex. Will be removed
  * once all of its call sites are migrated to grpc_ssl_credentials_create_ex. */
 grpc_channel_credentials* grpc_ssl_credentials_create(
@@ -130,7 +140,7 @@ grpc_channel_credentials* grpc_ssl_credentials_create(
       4, (pem_root_certs, pem_key_cert_pair, verify_options, reserved));
   GPR_ASSERT(reserved == nullptr);
 
-  return grpc_core::New<grpc_ssl_credentials>(
+  return new grpc_ssl_credentials(
       pem_root_certs, pem_key_cert_pair,
       reinterpret_cast<const grpc_ssl_verify_peer_options*>(verify_options));
 }
@@ -146,8 +156,8 @@ grpc_channel_credentials* grpc_ssl_credentials_create_ex(
       4, (pem_root_certs, pem_key_cert_pair, verify_options, reserved));
   GPR_ASSERT(reserved == nullptr);
 
-  return grpc_core::New<grpc_ssl_credentials>(pem_root_certs, pem_key_cert_pair,
-                                              verify_options);
+  return new grpc_ssl_credentials(pem_root_certs, pem_key_cert_pair,
+                                  verify_options);
 }
 
 //
@@ -211,6 +221,16 @@ void grpc_ssl_server_credentials::build_config(
   config_.pem_key_cert_pairs = grpc_convert_grpc_to_tsi_cert_pairs(
       pem_key_cert_pairs, num_key_cert_pairs);
   config_.num_key_cert_pairs = num_key_cert_pairs;
+}
+
+void grpc_ssl_server_credentials::set_min_tls_version(
+    grpc_tls_version min_tls_version) {
+  config_.min_tls_version = min_tls_version;
+}
+
+void grpc_ssl_server_credentials::set_max_tls_version(
+    grpc_tls_version max_tls_version) {
+  config_.max_tls_version = max_tls_version;
 }
 
 grpc_ssl_server_certificate_config* grpc_ssl_server_certificate_config_create(
@@ -348,7 +368,7 @@ grpc_server_credentials* grpc_ssl_server_credentials_create_with_options(
     goto done;
   }
 
-  retval = grpc_core::New<grpc_ssl_server_credentials>(*options);
+  retval = new grpc_ssl_server_credentials(*options);
 
 done:
   grpc_ssl_server_credentials_options_destroy(options);

@@ -32,8 +32,7 @@
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "src/gpu/ops/GrDrawOp.h"
@@ -80,7 +79,7 @@ protected:
                                                SkTileMode::kClamp);
     }
 
-    void onDraw(GrRecordingContext* context, GrRenderTargetContext* renderTargetContext,
+    void onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
                 SkCanvas* canvas) override {
         constexpr GrColor kColors[] = {
             0xFFFFFFFF,
@@ -111,9 +110,9 @@ protected:
                 // Create a base-layer FP for the const color processor to draw on top of.
                 std::unique_ptr<GrFragmentProcessor> baseFP;
                 if (paintType >= SK_ARRAY_COUNT(kPaintColors)) {
+                    SkSamplingOptions high(SkCubicResampler::Mitchell());
                     GrColorInfo colorInfo;
-                    GrFPArgs args(context, SkSimpleMatrixProvider(SkMatrix::I()),
-                                  kHigh_SkFilterQuality, &colorInfo);
+                    GrFPArgs args(context, SkSimpleMatrixProvider(SkMatrix::I()), high, &colorInfo);
                     baseFP = as_SB(fShader)->asFragmentProcessor(args);
                 } else {
                     baseFP = GrConstColorProcessor::Make(
@@ -145,7 +144,7 @@ protected:
                                                               renderRect.makeOffset(x, y),
                                                               renderRect,
                                                               SkMatrix::I())) {
-                    renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+                    surfaceDrawContext->addDrawOp(std::move(op));
                 }
 
                 // Draw labels for the input to the processor and the processor to the right of

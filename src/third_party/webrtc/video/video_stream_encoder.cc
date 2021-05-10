@@ -19,6 +19,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/types/optional.h"
+#include "api/sequence_checker.h"
 #include "api/task_queue/queued_task.h"
 #include "api/task_queue/task_queue_base.h"
 #include "api/video/encoded_image.h"
@@ -41,7 +42,7 @@
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/strings/string_builder.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/field_trial.h"
@@ -149,6 +150,11 @@ bool RequiresEncoderReset(const VideoCodec& prev_send_codec,
       }
     }
   }
+
+  if (new_send_codec.ScalabilityMode() != prev_send_codec.ScalabilityMode()) {
+    return true;
+  }
+
   return false;
 }
 
@@ -212,12 +218,12 @@ VideoLayersAllocation CreateVideoLayersAllocation(
     return layers_allocation;
   }
 
-  if (encoder_config.numberOfSimulcastStreams > 0) {
+  if (encoder_config.numberOfSimulcastStreams > 1) {
     layers_allocation.resolution_and_frame_rate_is_valid = true;
     for (int si = 0; si < encoder_config.numberOfSimulcastStreams; ++si) {
       if (!target_bitrate.IsSpatialLayerUsed(si) ||
           target_bitrate.GetSpatialLayerSum(si) == 0) {
-        break;
+        continue;
       }
       layers_allocation.active_spatial_layers.emplace_back();
       VideoLayersAllocation::SpatialLayer& spatial_layer =
@@ -252,17 +258,192 @@ VideoLayersAllocation CreateVideoLayersAllocation(
         }
       }
       // Encoder may drop frames internally if `maxFramerate` is set.
-      spatial_layer.frame_rate_fps = std::min(
-          static_cast<uint8_t>(encoder_config.simulcastStream[si].maxFramerate),
-          static_cast<uint8_t>(
+      spatial_layer.frame_rate_fps = std::min<uint8_t>(
+          encoder_config.simulcastStream[si].maxFramerate,
+          rtc::saturated_cast<uint8_t>(
               (current_rate.framerate_fps * frame_rate_fraction) /
               VideoEncoder::EncoderInfo::kMaxFramerateFraction));
     }
-  } else {
-    // TODO(bugs.webrtc.org/12000): Implement support for kSVC and full SVC.
+  } else if (encoder_config.numberOfSimulcastStreams == 1) {
+    // TODO(bugs.webrtc.org/12000): Implement support for AV1 with
+    // scalability.
+    const bool higher_spatial_depend_on_lower =
+        encoder_config.codecType == kVideoCodecVP9 &&
+        encoder_config.VP9().interLayerPred == InterLayerPredMode::kOn;
+    layers_allocation.resolution_and_frame_rate_is_valid = true;
+
+    std::vector<DataRate> aggregated_spatial_bitrate(
+        webrtc::kMaxTemporalStreams, DataRate::Zero());
+    for (int si = 0; si < webrtc::kMaxSpatialLayers; ++si) {
+      layers_allocation.resolution_and_frame_rate_is_valid = true;
+      if (!target_bitrate.IsSpatialLayerUsed(si) ||
+          target_bitrate.GetSpatialLayerSum(si) == 0) {
+        break;
+      }
+      layers_allocation.active_spatial_layers.emplace_back();
+      VideoLayersAllocation::SpatialLayer& spatial_layer =
+          layers_allocation.active_spatial_layers.back();
+      spatial_layer.width = encoder_config.spatialLayers[si].width;
+      spatial_layer.height = encoder_config.spatialLayers[si].height;
+      spatial_layer.rtp_stream_index = 0;
+      spatial_layer.spatial_id = si;
+      auto frame_rate_fraction =
+          VideoEncoder::EncoderInfo::kMaxFramerateFraction;
+      if (encoder_info.fps_allocation[si].size() == 1) {
+        // One TL is signalled to be used by the encoder. Do not distribute
+        // bitrate allocation across TLs (use sum at tl:0).
+        DataRate aggregated_temporal_bitrate =
+            DataRate::BitsPerSec(target_bitrate.GetSpatialLayerSum(si));
+        aggregated_spatial_bitrate[0] += aggregated_temporal_bitrate;
+        if (higher_spatial_depend_on_lower) {
+          spatial_layer.target_bitrate_per_temporal_layer.push_back(
+              aggregated_spatial_bitrate[0]);
+        } else {
+          spatial_layer.target_bitrate_per_temporal_layer.push_back(
+              aggregated_temporal_bitrate);
+        }
+        frame_rate_fraction = encoder_info.fps_allocation[si][0];
+      } else {  // Temporal layers are supported.
+        DataRate aggregated_temporal_bitrate = DataRate::Zero();
+        for (size_t ti = 0;
+             ti < encoder_config.spatialLayers[si].numberOfTemporalLayers;
+             ++ti) {
+          if (!target_bitrate.HasBitrate(si, ti)) {
+            break;
+          }
+          if (ti < encoder_info.fps_allocation[si].size()) {
+            // Use frame rate of the top used temporal layer.
+            frame_rate_fraction = encoder_info.fps_allocation[si][ti];
+          }
+          aggregated_temporal_bitrate +=
+              DataRate::BitsPerSec(target_bitrate.GetBitrate(si, ti));
+          if (higher_spatial_depend_on_lower) {
+            spatial_layer.target_bitrate_per_temporal_layer.push_back(
+                aggregated_temporal_bitrate + aggregated_spatial_bitrate[ti]);
+            aggregated_spatial_bitrate[ti] += aggregated_temporal_bitrate;
+          } else {
+            spatial_layer.target_bitrate_per_temporal_layer.push_back(
+                aggregated_temporal_bitrate);
+          }
+        }
+      }
+      // Encoder may drop frames internally if `maxFramerate` is set.
+      spatial_layer.frame_rate_fps = std::min<uint8_t>(
+          encoder_config.spatialLayers[si].maxFramerate,
+          rtc::saturated_cast<uint8_t>(
+              (current_rate.framerate_fps * frame_rate_fraction) /
+              VideoEncoder::EncoderInfo::kMaxFramerateFraction));
+    }
   }
 
   return layers_allocation;
+}
+
+int NumActiveStreams(const std::vector<VideoStream>& streams) {
+  int num_active = 0;
+  for (const auto& stream : streams) {
+    if (stream.active)
+      ++num_active;
+  }
+  return num_active;
+}
+
+void ApplyVp9BitrateLimits(const VideoEncoder::EncoderInfo& encoder_info,
+                           const VideoEncoderConfig& encoder_config,
+                           VideoCodec* codec) {
+  if (codec->codecType != VideoCodecType::kVideoCodecVP9 ||
+      VideoStreamEncoderResourceManager::IsSimulcast(encoder_config)) {
+    // Resolution bitrate limits usage is restricted to singlecast.
+    return;
+  }
+
+  // Get bitrate limits for active stream.
+  absl::optional<uint32_t> pixels =
+      VideoStreamAdapter::GetSingleActiveLayerPixels(*codec);
+  if (!pixels.has_value()) {
+    return;
+  }
+  absl::optional<VideoEncoder::ResolutionBitrateLimits> bitrate_limits =
+      encoder_info.GetEncoderBitrateLimitsForResolution(*pixels);
+  if (!bitrate_limits.has_value()) {
+    return;
+  }
+
+  for (int i = 0; i < codec->VP9()->numberOfSpatialLayers; ++i) {
+    if (codec->spatialLayers[i].active) {
+      codec->spatialLayers[i].minBitrate =
+          bitrate_limits->min_bitrate_bps / 1000;
+      codec->spatialLayers[i].maxBitrate =
+          bitrate_limits->max_bitrate_bps / 1000;
+      codec->spatialLayers[i].targetBitrate =
+          std::min(codec->spatialLayers[i].targetBitrate,
+                   codec->spatialLayers[i].maxBitrate);
+      break;
+    }
+  }
+}
+
+void ApplyEncoderBitrateLimitsIfSingleActiveStream(
+    const VideoEncoder::EncoderInfo& encoder_info,
+    const std::vector<VideoStream>& encoder_config_layers,
+    std::vector<VideoStream>* streams) {
+  // Apply limits if simulcast with one active stream (expect lowest).
+  bool single_active_stream =
+      streams->size() > 1 && NumActiveStreams(*streams) == 1 &&
+      !streams->front().active && NumActiveStreams(encoder_config_layers) == 1;
+  if (!single_active_stream) {
+    return;
+  }
+
+  // Index for the active stream.
+  size_t index = 0;
+  for (size_t i = 0; i < encoder_config_layers.size(); ++i) {
+    if (encoder_config_layers[i].active)
+      index = i;
+  }
+  if (streams->size() < (index + 1) || !(*streams)[index].active) {
+    return;
+  }
+
+  // Get bitrate limits for active stream.
+  absl::optional<VideoEncoder::ResolutionBitrateLimits> encoder_bitrate_limits =
+      encoder_info.GetEncoderBitrateLimitsForResolution(
+          (*streams)[index].width * (*streams)[index].height);
+  if (!encoder_bitrate_limits) {
+    return;
+  }
+
+  // If bitrate limits are set by RtpEncodingParameters, use intersection.
+  int min_bitrate_bps;
+  if (encoder_config_layers[index].min_bitrate_bps <= 0) {
+    min_bitrate_bps = encoder_bitrate_limits->min_bitrate_bps;
+  } else {
+    min_bitrate_bps = std::max(encoder_bitrate_limits->min_bitrate_bps,
+                               (*streams)[index].min_bitrate_bps);
+  }
+  int max_bitrate_bps;
+  if (encoder_config_layers[index].max_bitrate_bps <= 0) {
+    max_bitrate_bps = encoder_bitrate_limits->max_bitrate_bps;
+  } else {
+    max_bitrate_bps = std::min(encoder_bitrate_limits->max_bitrate_bps,
+                               (*streams)[index].max_bitrate_bps);
+  }
+  if (min_bitrate_bps >= max_bitrate_bps) {
+    RTC_LOG(LS_WARNING) << "Encoder bitrate limits"
+                        << " (min=" << encoder_bitrate_limits->min_bitrate_bps
+                        << ", max=" << encoder_bitrate_limits->max_bitrate_bps
+                        << ") do not intersect with stream limits"
+                        << " (min=" << (*streams)[index].min_bitrate_bps
+                        << ", max=" << (*streams)[index].max_bitrate_bps
+                        << "). Encoder bitrate limits not used.";
+    return;
+  }
+
+  (*streams)[index].min_bitrate_bps = min_bitrate_bps;
+  (*streams)[index].max_bitrate_bps = max_bitrate_bps;
+  (*streams)[index].target_bitrate_bps =
+      std::min((*streams)[index].target_bitrate_bps,
+               encoder_bitrate_limits->max_bitrate_bps);
 }
 
 }  //  namespace
@@ -342,7 +523,7 @@ class VideoStreamEncoder::DegradationPreferenceManager
     }
   }
 
-  SequenceChecker sequence_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker sequence_checker_;
   DegradationPreference degradation_preference_
       RTC_GUARDED_BY(&sequence_checker_);
   bool is_screenshare_ RTC_GUARDED_BY(&sequence_checker_);
@@ -357,12 +538,14 @@ VideoStreamEncoder::VideoStreamEncoder(
     VideoStreamEncoderObserver* encoder_stats_observer,
     const VideoStreamEncoderSettings& settings,
     std::unique_ptr<OveruseFrameDetector> overuse_detector,
-    TaskQueueFactory* task_queue_factory)
+    TaskQueueFactory* task_queue_factory,
+    BitrateAllocationCallbackType allocation_cb_type)
     : main_queue_(TaskQueueBase::Current()),
       number_of_cores_(number_of_cores),
       quality_scaling_experiment_enabled_(QualityScalingExperiment::Enabled()),
       sink_(nullptr),
       settings_(settings),
+      allocation_cb_type_(allocation_cb_type),
       rate_control_settings_(RateControlSettings::ParseFromFieldTrials()),
       encoder_selector_(settings.encoder_factory->GetEncoderSelector()),
       encoder_stats_observer_(encoder_stats_observer),
@@ -442,6 +625,7 @@ VideoStreamEncoder::VideoStreamEncoder(
         &stream_resource_manager_);
     video_stream_adapter_->AddRestrictionsListener(&stream_resource_manager_);
     video_stream_adapter_->AddRestrictionsListener(this);
+    stream_resource_manager_.MaybeInitializePixelLimitResource();
 
     // Add the stream resource manager's resources to the processor.
     adaptation_constraints_ = stream_resource_manager_.AdaptationConstraints();
@@ -651,12 +835,16 @@ void VideoStreamEncoder::ReconfigureEncoder() {
 
   // Possibly adjusts scale_resolution_down_by in |encoder_config_| to limit the
   // alignment value.
-  int alignment = AlignmentAdjuster::GetAlignmentAndMaybeAdjustScaleFactors(
-      encoder_->GetEncoderInfo(), &encoder_config_);
+  AlignmentAdjuster::GetAlignmentAndMaybeAdjustScaleFactors(
+      encoder_->GetEncoderInfo(), &encoder_config_, absl::nullopt);
 
   std::vector<VideoStream> streams =
       encoder_config_.video_stream_factory->CreateEncoderStreams(
           last_frame_info_->width, last_frame_info_->height, encoder_config_);
+
+  // Get alignment when actual number of layers are known.
+  int alignment = AlignmentAdjuster::GetAlignmentAndMaybeAdjustScaleFactors(
+      encoder_->GetEncoderInfo(), &encoder_config_, streams.size());
 
   // Check that the higher layers do not try to set number of temporal layers
   // to less than 1.
@@ -690,46 +878,51 @@ void VideoStreamEncoder::ReconfigureEncoder() {
       encoder_->GetEncoderInfo().GetEncoderBitrateLimitsForResolution(
           last_frame_info_->width * last_frame_info_->height);
 
-  if (streams.size() == 1 && encoder_bitrate_limits_) {
-    // Bitrate limits can be set by app (in SDP or RtpEncodingParameters) or/and
-    // can be provided by encoder. In presence of both set of limits, the final
-    // set is derived as their intersection.
-    int min_bitrate_bps;
-    if (encoder_config_.simulcast_layers.empty() ||
-        encoder_config_.simulcast_layers[0].min_bitrate_bps <= 0) {
-      min_bitrate_bps = encoder_bitrate_limits_->min_bitrate_bps;
-    } else {
-      min_bitrate_bps = std::max(encoder_bitrate_limits_->min_bitrate_bps,
-                                 streams.back().min_bitrate_bps);
-    }
+  if (encoder_bitrate_limits_) {
+    if (streams.size() == 1 && encoder_config_.simulcast_layers.size() == 1) {
+      // Bitrate limits can be set by app (in SDP or RtpEncodingParameters)
+      // or/and can be provided by encoder. In presence of both set of limits,
+      // the final set is derived as their intersection.
+      int min_bitrate_bps;
+      if (encoder_config_.simulcast_layers.empty() ||
+          encoder_config_.simulcast_layers[0].min_bitrate_bps <= 0) {
+        min_bitrate_bps = encoder_bitrate_limits_->min_bitrate_bps;
+      } else {
+        min_bitrate_bps = std::max(encoder_bitrate_limits_->min_bitrate_bps,
+                                   streams.back().min_bitrate_bps);
+      }
 
-    int max_bitrate_bps;
-    // We don't check encoder_config_.simulcast_layers[0].max_bitrate_bps
-    // here since encoder_config_.max_bitrate_bps is derived from it (as
-    // well as from other inputs).
-    if (encoder_config_.max_bitrate_bps <= 0) {
-      max_bitrate_bps = encoder_bitrate_limits_->max_bitrate_bps;
-    } else {
-      max_bitrate_bps = std::min(encoder_bitrate_limits_->max_bitrate_bps,
-                                 streams.back().max_bitrate_bps);
-    }
+      int max_bitrate_bps;
+      // We don't check encoder_config_.simulcast_layers[0].max_bitrate_bps
+      // here since encoder_config_.max_bitrate_bps is derived from it (as
+      // well as from other inputs).
+      if (encoder_config_.max_bitrate_bps <= 0) {
+        max_bitrate_bps = encoder_bitrate_limits_->max_bitrate_bps;
+      } else {
+        max_bitrate_bps = std::min(encoder_bitrate_limits_->max_bitrate_bps,
+                                   streams.back().max_bitrate_bps);
+      }
 
-    if (min_bitrate_bps < max_bitrate_bps) {
-      streams.back().min_bitrate_bps = min_bitrate_bps;
-      streams.back().max_bitrate_bps = max_bitrate_bps;
-      streams.back().target_bitrate_bps =
-          std::min(streams.back().target_bitrate_bps,
-                   encoder_bitrate_limits_->max_bitrate_bps);
+      if (min_bitrate_bps < max_bitrate_bps) {
+        streams.back().min_bitrate_bps = min_bitrate_bps;
+        streams.back().max_bitrate_bps = max_bitrate_bps;
+        streams.back().target_bitrate_bps =
+            std::min(streams.back().target_bitrate_bps,
+                     encoder_bitrate_limits_->max_bitrate_bps);
+      } else {
+        RTC_LOG(LS_WARNING)
+            << "Bitrate limits provided by encoder"
+            << " (min=" << encoder_bitrate_limits_->min_bitrate_bps
+            << ", max=" << encoder_bitrate_limits_->min_bitrate_bps
+            << ") do not intersect with limits set by app"
+            << " (min=" << streams.back().min_bitrate_bps
+            << ", max=" << encoder_config_.max_bitrate_bps
+            << "). The app bitrate limits will be used.";
+      }
     } else {
-      RTC_LOG(LS_WARNING) << "Bitrate limits provided by encoder"
-                          << " (min="
-                          << encoder_bitrate_limits_->min_bitrate_bps
-                          << ", max="
-                          << encoder_bitrate_limits_->min_bitrate_bps
-                          << ") do not intersect with limits set by app"
-                          << " (min=" << streams.back().min_bitrate_bps
-                          << ", max=" << encoder_config_.max_bitrate_bps
-                          << "). The app bitrate limits will be used.";
+      ApplyEncoderBitrateLimitsIfSingleActiveStream(
+          encoder_->GetEncoderInfo(), encoder_config_.simulcast_layers,
+          &streams);
     }
   }
 
@@ -743,6 +936,10 @@ void VideoStreamEncoder::ReconfigureEncoder() {
     // thus some cropping might be needed.
     crop_width_ = last_frame_info_->width - codec.width;
     crop_height_ = last_frame_info_->height - codec.height;
+    if (encoder_bitrate_limits_) {
+      ApplyVp9BitrateLimits(encoder_->GetEncoderInfo(), encoder_config_,
+                            &codec);
+    }
   }
 
   char log_stream_buf[4 * 1024];
@@ -888,7 +1085,7 @@ void VideoStreamEncoder::ReconfigureEncoder() {
   }
 
   if (pending_encoder_creation_) {
-    stream_resource_manager_.EnsureEncodeUsageResourceStarted();
+    stream_resource_manager_.ConfigureEncodeUsageResource();
     pending_encoder_creation_ = false;
   }
 
@@ -1203,21 +1400,18 @@ void VideoStreamEncoder::SetEncoderRates(
         static_cast<uint32_t>(rate_settings.rate_control.framerate_fps + 0.5));
     stream_resource_manager_.SetEncoderRates(rate_settings.rate_control);
     if (layer_allocation_changed &&
-        settings_.allocation_cb_type ==
-            VideoStreamEncoderSettings::BitrateAllocationCallbackType::
-                kVideoLayersAllocation) {
+        allocation_cb_type_ ==
+            BitrateAllocationCallbackType::kVideoLayersAllocation) {
       sink_->OnVideoLayersAllocationUpdated(CreateVideoLayersAllocation(
           send_codec_, rate_settings.rate_control, encoder_->GetEncoderInfo()));
     }
   }
-  if ((settings_.allocation_cb_type ==
-       VideoStreamEncoderSettings::BitrateAllocationCallbackType::
-           kVideoBitrateAllocation) ||
+  if ((allocation_cb_type_ ==
+       BitrateAllocationCallbackType::kVideoBitrateAllocation) ||
       (encoder_config_.content_type ==
            VideoEncoderConfig::ContentType::kScreen &&
-       settings_.allocation_cb_type ==
-           VideoStreamEncoderSettings::BitrateAllocationCallbackType::
-               kVideoBitrateAllocationWhenScreenSharing)) {
+       allocation_cb_type_ == BitrateAllocationCallbackType::
+                                  kVideoBitrateAllocationWhenScreenSharing)) {
     sink_->OnBitrateAllocationUpdated(
         // Update allocation according to info from encoder. An encoder may
         // choose to not use all layers due to for example HW.
@@ -1377,6 +1571,7 @@ void VideoStreamEncoder::EncodeVideoFrame(const VideoFrame& video_frame,
 
   if (encoder_info_ != info) {
     OnEncoderSettingsChanged();
+    stream_resource_manager_.ConfigureEncodeUsageResource();
     RTC_LOG(LS_INFO) << "Encoder settings changed from "
                      << encoder_info_.ToString() << " to " << info.ToString();
   }
@@ -1860,19 +2055,23 @@ bool VideoStreamEncoder::DropDueToSize(uint32_t pixel_count) const {
     }
   }
 
+  uint32_t bitrate_bps =
+      stream_resource_manager_.UseBandwidthAllocationBps().value_or(
+          encoder_target_bitrate_bps_.value());
+
   absl::optional<VideoEncoder::ResolutionBitrateLimits> encoder_bitrate_limits =
       encoder_->GetEncoderInfo().GetEncoderBitrateLimitsForResolution(
           pixel_count);
 
   if (encoder_bitrate_limits.has_value()) {
     // Use bitrate limits provided by encoder.
-    return encoder_target_bitrate_bps_.value() <
+    return bitrate_bps <
            static_cast<uint32_t>(encoder_bitrate_limits->min_start_bitrate_bps);
   }
 
-  if (encoder_target_bitrate_bps_.value() < 300000 /* qvga */) {
+  if (bitrate_bps < 300000 /* qvga */) {
     return pixel_count > 320 * 240;
-  } else if (encoder_target_bitrate_bps_.value() < 500000 /* vga */) {
+  } else if (bitrate_bps < 500000 /* vga */) {
     return pixel_count > 640 * 480;
   }
   return false;

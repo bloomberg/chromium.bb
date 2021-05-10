@@ -231,8 +231,8 @@ void CanvasRenderingContext2DTest::SetUp() {
 
   canvas_element_ = To<HTMLCanvasElement>(GetDocument().getElementById("c"));
 
-  full_image_data_ = ImageData::Create(IntSize(10, 10));
-  partial_image_data_ = ImageData::Create(IntSize(2, 2));
+  full_image_data_ = ImageData::Create(10, 10, ASSERT_NO_EXCEPTION);
+  partial_image_data_ = ImageData::Create(2, 2, ASSERT_NO_EXCEPTION);
 
   NonThrowableExceptionState exception_state;
   auto* opaque_gradient =
@@ -310,12 +310,12 @@ class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 class FakeCanvasResourceProvider : public CanvasResourceProvider {
  public:
   FakeCanvasResourceProvider(const IntSize& size,
-                             CanvasColorParams color_params,
+                             CanvasResourceParams params,
                              RasterModeHint hint)
       : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
                                size,
                                kLow_SkFilterQuality,
-                               color_params,
+                               params,
                                /*is_origin_top_left=*/false,
                                nullptr,
                                nullptr),
@@ -608,7 +608,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
 
   IntSize size(10, 10);
   std::unique_ptr<FakeCanvasResourceProvider> fake_resource_provider =
-      std::make_unique<FakeCanvasResourceProvider>(size, CanvasColorParams(),
+      std::make_unique<FakeCanvasResourceProvider>(size, CanvasResourceParams(),
                                                    RasterModeHint::kPreferGPU);
   std::unique_ptr<FakeCanvas2DLayerBridge> fake_2d_layer_bridge =
       std::make_unique<FakeCanvas2DLayerBridge>(size, CanvasColorParams(),
@@ -639,8 +639,8 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
       std::make_unique<FakeCanvas2DLayerBridge>(size2, CanvasColorParams(),
                                                 RasterModeHint::kPreferGPU);
   std::unique_ptr<FakeCanvasResourceProvider> fake_resource_provider2 =
-      std::make_unique<FakeCanvasResourceProvider>(size2, CanvasColorParams(),
-                                                   RasterModeHint::kPreferGPU);
+      std::make_unique<FakeCanvasResourceProvider>(
+          size2, CanvasResourceParams(), RasterModeHint::kPreferGPU);
   anotherCanvas->SetResourceProviderForTesting(
       std::move(fake_resource_provider2), std::move(fake_2d_layer_bridge2),
       size2);
@@ -757,6 +757,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
     String filepath,
     CanvasRenderingContext2D* context,
     Document& document,
+    ImageDataSettings* color_setting,
     ScriptState* script_state) {
   scoped_refptr<SharedBuffer> pixel_buffer = test::ReadFromFile(filepath);
   ASSERT_EQ(false, pixel_buffer->IsEmpty());
@@ -782,10 +783,11 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
   image_union.SetHTMLImageElement(image_element);
   context->drawImage(script_state, image_union, 0, 0, exception_state);
 
-  ImageData* image_data = context->getImageData(0, 0, 2, 2, exception_state);
+  ImageData* image_data =
+      context->getImageData(0, 0, 2, 2, color_setting, exception_state);
   ImageDataArray data_array = image_data->data();
   ASSERT_TRUE(data_array.IsFloat32Array());
-  DOMArrayBufferView* buffer_view = data_array.GetAsFloat32Array().View();
+  DOMArrayBufferView* buffer_view = data_array.GetAsFloat32Array().Get();
   ASSERT_EQ(16u, buffer_view->byteLength() / buffer_view->TypeSize());
   float* actual_pixels = static_cast<float*>(buffer_view->BaseAddress());
 
@@ -826,6 +828,9 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
   StringBuilder path;
   path.Append(test::CoreTestDataPath());
   path.Append("/png-16bit/");
+  ImageDataSettings* color_setting = ImageDataSettings::Create();
+  color_setting->setStorageFormat(kFloat32ArrayStorageFormatName);
+  color_setting->setColorSpace(canvas_color_space);
   for (auto interlace : interlace_status) {
     for (auto color_profile : color_profiles) {
       for (auto alpha : alpha_status) {
@@ -837,7 +842,8 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
         full_path.Append(alpha);
         full_path.Append(".png");
         TestDrawSingleHighBitDepthPNGOnCanvas(full_path.ToString(), context,
-                                              document, script_state);
+                                              document, color_setting,
+                                              script_state);
       }
     }
   }
@@ -845,8 +851,8 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
 
 TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnP3Canvas) {
   TestDrawHighBitDepthPNGsOnWideGamutCanvas(
-      "p3", GetDocument(), Persistent<HTMLCanvasElement>(CanvasElement()),
-      GetScriptState());
+      "display-p3", GetDocument(),
+      Persistent<HTMLCanvasElement>(CanvasElement()), GetScriptState());
 }
 
 TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnRec2020Canvas) {
@@ -897,14 +903,14 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       kRec2020CanvasColorSpaceName, kP3CanvasColorSpaceName};
 
   CanvasPixelFormat canvas_pixel_formats[] = {
-      CanvasPixelFormat::kRGBA8,
+      CanvasPixelFormat::kUint8,
       CanvasPixelFormat::kF16,
       CanvasPixelFormat::kF16,
       CanvasPixelFormat::kF16,
   };
 
   String canvas_pixel_format_names[] = {
-      kRGBA8CanvasPixelFormatName, kF16CanvasPixelFormatName,
+      kUint8CanvasPixelFormatName, kF16CanvasPixelFormatName,
       kF16CanvasPixelFormatName, kF16CanvasPixelFormatName,
       kF16CanvasPixelFormatName};
 
@@ -937,7 +943,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
-  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
+  ImageDataSettings* image_data_settings = ImageDataSettings::Create();
   int num_pixels = data_length / 4;
 
   // At most four bytes are needed for Float32 output per color component.
@@ -947,7 +953,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   // Loop through different possible combinations of image data color space and
   // storage formats and create the respective test image data objects.
   for (unsigned i = 0; i < num_image_data_color_spaces; i++) {
-    color_settings->setColorSpace(
+    image_data_settings->setColorSpace(
         ImageData::CanvasColorSpaceName(image_data_color_spaces[i]));
 
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
@@ -955,24 +961,40 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       switch (image_data_storage_formats[j]) {
         case kUint8ClampedArrayStorageFormat:
           data_array = data_u8;
-          color_settings->setStorageFormat(kUint8ClampedArrayStorageFormatName);
+          image_data_settings->setStorageFormat(
+              kUint8ClampedArrayStorageFormatName);
           break;
         case kUint16ArrayStorageFormat:
           data_array = data_u16;
-          color_settings->setStorageFormat(kUint16ArrayStorageFormatName);
+          image_data_settings->setStorageFormat(kUint16ArrayStorageFormatName);
           break;
         case kFloat32ArrayStorageFormat:
           data_array = data_f32;
-          color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
+          image_data_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
           break;
         default:
           NOTREACHED();
       }
 
-      image_data =
-          ImageData::CreateForTest(IntSize(2, 2), data_array, color_settings);
+      image_data = ImageData::CreateForTest(IntSize(2, 2), data_array,
+                                            image_data_settings);
+      unsigned k = static_cast<unsigned>(canvas_colorspace_setting);
+      ImageDataSettings* canvas_color_setting = ImageDataSettings::Create();
+      canvas_color_setting->setColorSpace(
+          ImageData::CanvasColorSpaceName(canvas_color_spaces[k]));
+      switch (canvas_pixel_formats[k]) {
+        case CanvasPixelFormat::kUint8:
+          canvas_color_setting->setStorageFormat(
+              kUint8ClampedArrayStorageFormatName);
+          break;
+        case CanvasPixelFormat::kF16:
+          canvas_color_setting->setStorageFormat(
+              kFloat32ArrayStorageFormatName);
+          break;
+        default:
+          NOTREACHED();
+      }
 
-      unsigned k = (unsigned)(canvas_colorspace_setting);
       // Convert the original data used to create ImageData to the
       // canvas color space and canvas pixel format.
       EXPECT_TRUE(
@@ -995,14 +1017,15 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       NonThrowableExceptionState exception_state;
       context->putImageData(image_data, 0, 0, exception_state);
 
-      void* pixels_from_get_image_data =
-          context->getImageData(0, 0, 2, 2, exception_state)
-              ->BufferBase()
-              ->Data();
+      const void* pixels_from_get_image_data =
+          context
+              ->getImageData(0, 0, 2, 2, canvas_color_setting, exception_state)
+              ->GetSkPixmap()
+              .addr();
       ColorCorrectionTestUtils::CompareColorCorrectedPixels(
           pixels_from_get_image_data, pixels_converted_manually.get(),
           num_pixels,
-          (canvas_pixel_formats[k] == CanvasPixelFormat::kRGBA8)
+          (canvas_pixel_formats[k] == CanvasPixelFormat::kUint8)
               ? kPixelFormat_8888
               : kPixelFormat_ffff,
           kAlphaUnmultiplied, kUnpremulRoundTripTolerance);

@@ -99,7 +99,8 @@ class AudioWorkletThreadTestBase : public PageTestBase,
             window->Url(), mojom::blink::ScriptType::kModule, "AudioWorklet",
             window->UserAgent(),
             window->GetFrame()->Loader().UserAgentMetadata(),
-            nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+            nullptr /* web_worker_fetch_context */,
+            Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
             window->GetReferrerPolicy(), window->GetSecurityOrigin(),
             window->IsSecureContext(), window->GetHttpsState(),
             nullptr /* worker_clients */, nullptr /* content_settings_client */,
@@ -109,7 +110,8 @@ class AudioWorkletThreadTestBase : public PageTestBase,
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
             mojo::NullRemote() /* browser_interface_broker */,
             BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-            window->GetAgentClusterID(), window->GetExecutionContextToken()),
+            window->GetAgentClusterID(), ukm::kInvalidSourceId,
+            window->GetExecutionContextToken()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>());
   }
 
@@ -120,10 +122,8 @@ class AudioWorkletThreadTestBase : public PageTestBase,
     EXPECT_TRUE(script_state);
     ScriptState::Scope scope(script_state);
     KURL js_url("https://example.com/worklet.js");
-    v8::Local<v8::Module> module = ModuleRecord::Compile(
-        script_state->GetIsolate(), "var counter = 0; ++counter;", js_url,
-        js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
+    v8::Local<v8::Module> module = ModuleTestBase::CompileModule(
+        script_state->GetIsolate(), "var counter = 0; ++counter;", js_url);
     EXPECT_FALSE(module.IsEmpty());
     ScriptValue exception =
         ModuleRecord::Instantiate(script_state, module, js_url);

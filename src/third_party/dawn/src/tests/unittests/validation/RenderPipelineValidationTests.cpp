@@ -26,18 +26,17 @@ class RenderPipelineValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-                })");
+        vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[stage(vertex)]] fn main() -> void {
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            })");
 
-        fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
+        fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            })");
     }
 
     wgpu::ShaderModule vsModule;
@@ -165,7 +164,7 @@ TEST_F(RenderPipelineValidationTest, NonRenderableFormat) {
 // Tests that the format of the color state descriptor must match the output of the fragment shader.
 TEST_F(RenderPipelineValidationTest, FragmentOutputFormatCompatibility) {
     constexpr uint32_t kNumTextureFormatBaseType = 3u;
-    std::array<const char*, kNumTextureFormatBaseType> kVecPreFix = {{"", "i", "u"}};
+    std::array<const char*, kNumTextureFormatBaseType> kScalarTypes = {{"f32", "i32", "u32"}};
     std::array<wgpu::TextureFormat, kNumTextureFormatBaseType> kColorFormats = {
         {wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureFormat::RGBA8Sint,
          wgpu::TextureFormat::RGBA8Uint}};
@@ -178,13 +177,12 @@ TEST_F(RenderPipelineValidationTest, FragmentOutputFormatCompatibility) {
 
             std::ostringstream stream;
             stream << R"(
-                #version 450
-                layout(location = 0) out )"
-                   << kVecPreFix[i] << R"(vec4 fragColor;
-                void main() {
+                [[location(0)]] var<out> fragColor : vec4<)"
+                   << kScalarTypes[i] << R"(>;
+                [[stage(fragment)]] fn main() -> void {
                 })";
-            descriptor.cFragmentStage.module = utils::CreateShaderModule(
-                device, utils::SingleShaderStage::Fragment, stream.str().c_str());
+            descriptor.cFragmentStage.module =
+                utils::CreateShaderModuleFromWGSL(device, stream.str().c_str());
 
             if (i == j) {
                 device.CreateRenderPipeline(&descriptor);
@@ -259,111 +257,102 @@ TEST_F(RenderPipelineValidationTest, SampleCountCompatibilityWithRenderPass) {
 
     // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
     {
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.format = kColorFormat;
-            textureDescriptor.sampleCount = kMultisampledCount;
-            wgpu::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor renderPassDescriptor(
-                {multisampledColorTexture.CreateView()});
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.format = kColorFormat;
+        textureDescriptor.sampleCount = kMultisampledCount;
+        wgpu::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {multisampledColorTexture.CreateView()});
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
-            renderPass.SetPipeline(nonMultisampledPipeline);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+        renderPass.SetPipeline(nonMultisampledPipeline);
+        renderPass.EndPass();
 
-            ASSERT_DEVICE_ERROR(encoder.Finish());
-        }
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
 
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.sampleCount = kMultisampledCount;
-            textureDescriptor.format = kDepthStencilFormat;
-            wgpu::Texture multisampledDepthStencilTexture =
-                device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor renderPassDescriptor(
-                {}, multisampledDepthStencilTexture.CreateView());
+    {
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.sampleCount = kMultisampledCount;
+        textureDescriptor.format = kDepthStencilFormat;
+        wgpu::Texture multisampledDepthStencilTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {}, multisampledDepthStencilTexture.CreateView());
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
-            renderPass.SetPipeline(nonMultisampledPipelineWithDepthStencilOnly);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+        renderPass.SetPipeline(nonMultisampledPipelineWithDepthStencilOnly);
+        renderPass.EndPass();
 
-            ASSERT_DEVICE_ERROR(encoder.Finish());
-        }
+        ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 
     // It is allowed to use multisampled render pass and multisampled render pipeline.
     {
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.format = kColorFormat;
-            textureDescriptor.sampleCount = kMultisampledCount;
-            wgpu::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor renderPassDescriptor(
-                {multisampledColorTexture.CreateView()});
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.format = kColorFormat;
+        textureDescriptor.sampleCount = kMultisampledCount;
+        wgpu::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {multisampledColorTexture.CreateView()});
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
-            renderPass.SetPipeline(multisampledPipeline);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+        renderPass.SetPipeline(multisampledPipeline);
+        renderPass.EndPass();
 
-            encoder.Finish();
-        }
+        encoder.Finish();
+    }
 
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.sampleCount = kMultisampledCount;
-            textureDescriptor.format = kDepthStencilFormat;
-            wgpu::Texture multisampledDepthStencilTexture =
-                device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor renderPassDescriptor(
-                {}, multisampledDepthStencilTexture.CreateView());
+    {
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.sampleCount = kMultisampledCount;
+        textureDescriptor.format = kDepthStencilFormat;
+        wgpu::Texture multisampledDepthStencilTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {}, multisampledDepthStencilTexture.CreateView());
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
-            renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+        renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
+        renderPass.EndPass();
 
-            encoder.Finish();
-        }
+        encoder.Finish();
     }
 
     // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
     {
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.format = kColorFormat;
-            textureDescriptor.sampleCount = 1;
-            wgpu::Texture nonMultisampledColorTexture = device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor nonMultisampledRenderPassDescriptor(
-                {nonMultisampledColorTexture.CreateView()});
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.format = kColorFormat;
+        textureDescriptor.sampleCount = 1;
+        wgpu::Texture nonMultisampledColorTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor nonMultisampledRenderPassDescriptor(
+            {nonMultisampledColorTexture.CreateView()});
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass =
-                encoder.BeginRenderPass(&nonMultisampledRenderPassDescriptor);
-            renderPass.SetPipeline(multisampledPipeline);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass =
+            encoder.BeginRenderPass(&nonMultisampledRenderPassDescriptor);
+        renderPass.SetPipeline(multisampledPipeline);
+        renderPass.EndPass();
 
-            ASSERT_DEVICE_ERROR(encoder.Finish());
-        }
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
 
-        {
-            wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
-            textureDescriptor.sampleCount = 1;
-            textureDescriptor.format = kDepthStencilFormat;
-            wgpu::Texture multisampledDepthStencilTexture =
-                device.CreateTexture(&textureDescriptor);
-            utils::ComboRenderPassDescriptor renderPassDescriptor(
-                {}, multisampledDepthStencilTexture.CreateView());
+    {
+        wgpu::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+        textureDescriptor.sampleCount = 1;
+        textureDescriptor.format = kDepthStencilFormat;
+        wgpu::Texture multisampledDepthStencilTexture = device.CreateTexture(&textureDescriptor);
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {}, multisampledDepthStencilTexture.CreateView());
 
-            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-            wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
-            renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
-            renderPass.EndPass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+        renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
+        renderPass.EndPass();
 
-            ASSERT_DEVICE_ERROR(encoder.Finish());
-        }
+        ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }
 
@@ -394,11 +383,11 @@ TEST_F(RenderPipelineValidationTest, AlphaToCoverageAndSampleCount) {
 // Tests that the texture component type in shader must match the bind group layout.
 TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
     constexpr uint32_t kNumTextureComponentType = 3u;
-    std::array<const char*, kNumTextureComponentType> kTexturePrefix = {{"", "i", "u"}};
-    std::array<wgpu::TextureComponentType, kNumTextureComponentType> kTextureComponentTypes = {{
-        wgpu::TextureComponentType::Float,
-        wgpu::TextureComponentType::Sint,
-        wgpu::TextureComponentType::Uint,
+    std::array<const char*, kNumTextureComponentType> kScalarTypes = {{"f32", "i32", "u32"}};
+    std::array<wgpu::TextureSampleType, kNumTextureComponentType> kTextureComponentTypes = {{
+        wgpu::TextureSampleType::Float,
+        wgpu::TextureSampleType::Sint,
+        wgpu::TextureSampleType::Uint,
     }};
 
     for (size_t i = 0; i < kNumTextureComponentType; ++i) {
@@ -408,17 +397,16 @@ TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
 
             std::ostringstream stream;
             stream << R"(
-                #version 450
-                layout(set = 0, binding = 0) uniform )"
-                   << kTexturePrefix[i] << R"(texture2D tex;
-                void main() {
+                [[group(0), binding(0)]] var myTexture : texture_2d<)"
+                   << kScalarTypes[i] << R"(>;
+
+                [[stage(fragment)]] fn main() -> void {
                 })";
-            descriptor.cFragmentStage.module = utils::CreateShaderModule(
-                device, utils::SingleShaderStage::Fragment, stream.str().c_str());
+            descriptor.cFragmentStage.module =
+                utils::CreateShaderModuleFromWGSL(device, stream.str().c_str());
 
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
-                          0, false, wgpu::TextureViewDimension::e2D, kTextureComponentTypes[j]}});
+                device, {{0, wgpu::ShaderStage::Fragment, kTextureComponentTypes[j]}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -434,12 +422,12 @@ TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
 TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
     constexpr uint32_t kNumTextureViewDimensions = 6u;
     std::array<const char*, kNumTextureViewDimensions> kTextureKeywords = {{
-        "texture1D",
-        "texture2D",
-        "texture2DArray",
-        "textureCube",
-        "textureCubeArray",
-        "texture3D",
+        "texture_1d",
+        "texture_2d",
+        "texture_2d_array",
+        "texture_cube",
+        "texture_cube_array",
+        "texture_3d",
     }};
 
     std::array<wgpu::TextureViewDimension, kNumTextureViewDimensions> kTextureViewDimensions = {{
@@ -458,17 +446,16 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
 
             std::ostringstream stream;
             stream << R"(
-                #version 450
-                layout(set = 0, binding = 0) uniform )"
-                   << kTextureKeywords[i] << R"( tex;
-                void main() {
+                [[group(0), binding(0)]] var myTexture : )"
+                   << kTextureKeywords[i] << R"(<f32>;
+                [[stage(fragment)]] fn main() -> void {
                 })";
-            descriptor.cFragmentStage.module = utils::CreateShaderModule(
-                device, utils::SingleShaderStage::Fragment, stream.str().c_str());
+            descriptor.cFragmentStage.module =
+                utils::CreateShaderModuleFromWGSL(device, stream.str().c_str());
 
             wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
-                          0, false, kTextureViewDimensions[j], wgpu::TextureComponentType::Float}});
+                device, {{0, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float,
+                          kTextureViewDimensions[j]}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -483,15 +470,14 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
 // Test that declaring a storage buffer in the vertex shader without setting pipeline layout won't
 // cause crash.
 TEST_F(RenderPipelineValidationTest, StorageBufferInVertexShaderNoLayout) {
-    wgpu::ShaderModule vsModuleWithStorageBuffer =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        #define kNumValues 100
-        layout(std430, set = 0, binding = 0) buffer Dst { uint dst[kNumValues]; };
-        void main() {
-            uint index = gl_VertexIndex;
-            dst[index] = 0x1234;
-            gl_Position = vec4(1.f, 0.f, 0.f, 1.f);
+    wgpu::ShaderModule vsModuleWithStorageBuffer = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[block]] struct Dst {
+            [[offset(0)]] data : [[stride(4)]] array<u32, 100>;
+        };
+        [[group(0), binding(0)]] var<storage_buffer> dst : [[access(read_write)]] Dst;
+        [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+        [[stage(vertex)]] fn main() -> void {
+            dst.data[VertexIndex] = 0x1234u;
         })");
 
     utils::ComboRenderPipelineDescriptor descriptor(device);
@@ -503,6 +489,7 @@ TEST_F(RenderPipelineValidationTest, StorageBufferInVertexShaderNoLayout) {
 
 // Test that a pipeline with defaulted layout may not have multisampled array textures
 // TODO(enga): Also test multisampled cube, cube array, and 3D. These have no GLSL keywords.
+// TODO(cwallez@chromium.org): Convert them to SPIRV ASM to remove the dependency on glslang.
 TEST_F(RenderPipelineValidationTest, MultisampledTexture) {
     utils::ComboRenderPipelineDescriptor descriptor(device);
     descriptor.layout = nullptr;
@@ -533,22 +520,15 @@ TEST_F(RenderPipelineValidationTest, StripIndexFormatRequired) {
     constexpr uint32_t kNumListType = 3u;
     constexpr uint32_t kNumIndexFormat = 3u;
 
-    std::array<wgpu::PrimitiveTopology, kNumStripType> kStripTopologyTypes = {{
-        wgpu::PrimitiveTopology::LineStrip,
-        wgpu::PrimitiveTopology::TriangleStrip
-    }};
+    std::array<wgpu::PrimitiveTopology, kNumStripType> kStripTopologyTypes = {
+        {wgpu::PrimitiveTopology::LineStrip, wgpu::PrimitiveTopology::TriangleStrip}};
 
-    std::array<wgpu::PrimitiveTopology, kNumListType> kListTopologyTypes = {{
-        wgpu::PrimitiveTopology::PointList,
-        wgpu::PrimitiveTopology::LineList,
-        wgpu::PrimitiveTopology::TriangleList
-    }};
+    std::array<wgpu::PrimitiveTopology, kNumListType> kListTopologyTypes = {
+        {wgpu::PrimitiveTopology::PointList, wgpu::PrimitiveTopology::LineList,
+         wgpu::PrimitiveTopology::TriangleList}};
 
-    std::array<wgpu::IndexFormat, kNumIndexFormat> kIndexFormatTypes = {{
-        wgpu::IndexFormat::Undefined,
-        wgpu::IndexFormat::Uint16,
-        wgpu::IndexFormat::Uint32
-    }};
+    std::array<wgpu::IndexFormat, kNumIndexFormat> kIndexFormatTypes = {
+        {wgpu::IndexFormat::Undefined, wgpu::IndexFormat::Uint16, wgpu::IndexFormat::Uint32}};
 
     for (wgpu::PrimitiveTopology primitiveTopology : kStripTopologyTypes) {
         for (wgpu::IndexFormat indexFormat : kIndexFormatTypes) {
@@ -582,10 +562,7 @@ TEST_F(RenderPipelineValidationTest, StripIndexFormatRequired) {
                 // primitive topology isn't a strip type.
                 device.CreateRenderPipeline(&descriptor);
             } else {
-                // TODO(crbug.com/dawn/502): Once setIndexBuffer requires an
-                // indexFormat. this should fail. For now it succeeds to allow
-                // backwards compatibility during the deprecation period.
-                EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
+                ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
             }
         }
     }
@@ -597,15 +574,13 @@ TEST_F(RenderPipelineValidationTest, EntryPointNameValidation) {
 
     wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
         [[builtin(position)]] var<out> position : vec4<f32>;
-        [[stage(vertex)]]
-        fn vertex_main() -> void {
+        [[stage(vertex)]] fn vertex_main() -> void {
             position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             return;
         }
 
         [[location(0)]] var<out> color : vec4<f32>;
-        [[stage(fragment)]]
-        fn fragment_main() -> void {
+        [[stage(fragment)]] fn fragment_main() -> void {
             color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
             return;
         }
@@ -654,13 +629,11 @@ TEST_F(RenderPipelineValidationTest, VertexAttribCorrectEntryPoint) {
         [[location(0)]] var<in> attrib0 : vec4<f32>;
         [[location(1)]] var<in> attrib1 : vec4<f32>;
 
-        [[stage(vertex)]]
-        fn vertex0() -> void {
+        [[stage(vertex)]] fn vertex0() -> void {
             position = attrib0;
             return;
         }
-        [[stage(vertex)]]
-        fn vertex1() -> void {
+        [[stage(vertex)]] fn vertex1() -> void {
             position = attrib1;
             return;
         }
@@ -703,13 +676,11 @@ TEST_F(RenderPipelineValidationTest, FragmentOutputCorrectEntryPoint) {
         [[location(0)]] var<out> colorFloat : vec4<f32>;
         [[location(0)]] var<out> colorUint : vec4<u32>;
 
-        [[stage(fragment)]]
-        fn fragmentFloat() -> void {
+        [[stage(fragment)]] fn fragmentFloat() -> void {
             colorFloat = vec4<f32>(0.0, 0.0, 0.0, 0.0);
             return;
         }
-        [[stage(fragment)]]
-        fn fragmentUint() -> void {
+        [[stage(fragment)]] fn fragmentUint() -> void {
             colorUint = vec4<u32>(0, 0, 0, 0);
             return;
         }
@@ -765,11 +736,11 @@ TEST_F(RenderPipelineValidationTest, DISABLED_BindingsFromCorrectEntryPoint) {
     )");
 
     wgpu::BindGroupLayout bgl0 = utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+        device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform}});
     wgpu::PipelineLayout layout0 = utils::MakeBasicPipelineLayout(device, &bgl0);
 
     wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}});
+        device, {{1, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform}});
     wgpu::PipelineLayout layout1 = utils::MakeBasicPipelineLayout(device, &bgl1);
 
     utils::ComboRenderPipelineDescriptor descriptor(device);

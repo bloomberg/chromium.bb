@@ -18,6 +18,9 @@ const string kScale = "scale";
 const string kSamplingFrequencyAvailable = "sampling_frequency_available";
 const string kLocation = "location";
 
+// The attribute name to get the device name in SensorDevice::GetAttributes.
+const string kDeviceName = "name";
+
 const string kLocationBase = "base";
 const string kLocationLid = "lid";
 const string kLocationCamera = "camera";
@@ -36,6 +39,7 @@ const string kPressureChannel = "pressure";
 
 const string kTimestampChannel = "timestamp";
 
+[Stable, Extensible]
 enum DeviceType {
   NONE = 0,  // invalid device type
   ACCEL = 1,
@@ -44,10 +48,14 @@ enum DeviceType {
   COUNT = 4,
   MAGN = 5,
   ANGL = 6,
-  ACPI_ALS = 7,
-  BARO = 8,
+  BARO = 7,
+  ACCEL_UNCALIBRATED = 8,
+  ANGLVEL_UNCALIBRATED = 9,
+  MAGN_UNCALIBRATED = 10,
+  MAX = 11,
 };
 
+[Stable, Extensible]
 enum ObserverErrorType {
   ALREADY_STARTED = 0,
   SET_FREQUENCY_IO_FAILED = 1,
@@ -63,6 +71,7 @@ enum ObserverErrorType {
 // different frequencies of that device's samples.
 //
 // Next method ID: 4
+[Stable]
 interface SensorService {
   // Gets device ids as a vector of int given the device's type. Only devices
   // with id having "iio:device" as the prefix would be available.
@@ -92,6 +101,7 @@ interface SensorService {
 // (libiio:iio_device). It is an isolated client in iioservice's point of view.
 //
 // Next method ID: 9
+[Stable]
 interface SensorDevice {
   // Sets |timeout| in milliseconds for I/O operations, mainly for reading
   // samples. Sets |timeout| as 0 to specify that no timeout should occur.
@@ -101,6 +111,7 @@ interface SensorDevice {
   // Gets the |attr_names| attributes of this device into |values| as strings.
   // When an attribute cannot be read, its value in |values| is set to null.
   // |values| and |attr_names| always have the same size.
+  // Device name (|kDeviceName|) is also an attribute that can be requested.
   GetAttributes@1(array<string> attr_names) => (array<string?> values);
 
   // Sets the frequency in Hz of the device before starting to read samples.
@@ -146,6 +157,7 @@ interface SensorDevice {
 // SensorDevice::StartReadingSamples to register the observer.
 //
 // Next method ID: 2
+[Stable]
 interface SensorDeviceSamplesObserver {
   // |sample| arrives and is sent to the client as a map from iio_chn_indices to
   // data (64 bit integer).
@@ -159,6 +171,7 @@ interface SensorDeviceSamplesObserver {
 // SensorService::RegisterNewDevicesObserver to register the observer.
 //
 // Next method ID: 1
+[Stable]
 interface SensorServiceNewDevicesObserver {
   // A new IIO device with |iio_device_id| and |types| is added and visible to
   // iioservice. Sensor clients can get access to this device with the id.

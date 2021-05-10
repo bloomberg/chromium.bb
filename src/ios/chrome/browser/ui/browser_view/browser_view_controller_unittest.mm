@@ -32,8 +32,11 @@
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -65,6 +68,9 @@ namespace {
 class BrowserViewControllerTest : public BlockCleanupTest {
  public:
  protected:
+  BrowserViewControllerTest()
+      : scene_state_([[SceneState alloc] initWithAppState:nil]) {}
+
   void SetUp() override {
     BlockCleanupTest::SetUp();
     // Set up a TestChromeBrowserState instance.
@@ -108,11 +114,15 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
+    WebNavigationBrowserAgent::CreateForBrowser(browser_.get());
+
     WebUsageEnablerBrowserAgent::FromBrowser(browser_.get())
         ->SetWebUsageEnabled(true);
 
     SessionRestorationBrowserAgent::CreateForBrowser(
         browser_.get(), [[TestSessionService alloc] init]);
+
+    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
     id mockFindInPageCommandHandler =
         OCMProtocolMock(@protocol(FindInPageCommands));
@@ -205,28 +215,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   BrowserContainerViewController* container_;
   BrowserViewController* bvc_;
   UIWindow* window_;
+  SceneState* scene_state_;
 };
 
 TEST_F(BrowserViewControllerTest, TestWebStateSelected) {
   [bvc_ webStateSelected:ActiveWebState() notifyToolbar:YES];
   EXPECT_EQ(ActiveWebState()->GetView().superview, container_.view);
   EXPECT_TRUE(ActiveWebState()->IsVisible());
-}
-
-// Verifies that editing the omnimbox while the page is loading will stop the
-// load on a handset, but not stop the load on a tablet.
-TEST_F(BrowserViewControllerTest,
-       TestLocationBarBeganEdit_whenPageLoadIsInProgress) {
-  // Have the TestLocationBarModel indicate that a page load is in progress.
-  id partialMock = OCMPartialMock(bvcHelper_);
-  OCMExpect([partialMock isToolbarLoading:static_cast<web::WebState*>(
-                                              [OCMArg anyPointer])])
-      .andReturn(YES);
-
-  // The tab should stop loading on iPhones.
-  [bvc_ locationBarBeganEdit];
-  if (!IsIPadIdiom())
-    EXPECT_FALSE(ActiveWebState()->IsLoading());
 }
 
 TEST_F(BrowserViewControllerTest, TestClearPresentedState) {

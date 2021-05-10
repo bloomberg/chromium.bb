@@ -46,7 +46,10 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
   const cc::Layer* GetCcLayer() { return layer_.get(); }
 
   // WebMediaPlayer
-  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override {
+  LoadTiming Load(LoadType,
+                  const WebMediaPlayerSource&,
+                  CorsMode,
+                  bool is_cache_disabled) override {
     network_state_ = kNetworkStateLoaded;
     client_->NetworkStateChanged();
     ready_state_ = kReadyStateHaveEnoughData;
@@ -182,7 +185,7 @@ TEST_P(VideoPaintPreviewTest, URLIsRecordedWhenPaintingPreview) {
       recorder.beginRecording(bounds().width(), bounds().height());
   canvas->SetPaintPreviewTracker(&tracker);
 
-  GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas,
+  GetLocalMainFrame().CapturePaintPreview(bounds(), canvas,
                                           /*include_linked_destinations=*/true);
   auto record = recorder.finishRecordingAsPicture();
   std::vector<std::pair<GURL, SkRect>> links;

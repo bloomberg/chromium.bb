@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_decoder.h"
+#include "http2/hpack/varint/hpack_varint_decoder.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
 DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
                                        uint8_t prefix_length,
                                        DecodeBuffer* db) {
-  DCHECK_LE(3u, prefix_length);
-  DCHECK_LE(prefix_length, 8u);
+  QUICHE_DCHECK_LE(3u, prefix_length);
+  QUICHE_DCHECK_LE(prefix_length, 8u);
 
   // |prefix_mask| defines the sequence of low-order bits of the first byte
   // that encode the prefix of the value. It is also the marker in those bits
@@ -34,8 +34,8 @@ DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
 
 DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_length,
                                                DecodeBuffer* db) {
-  DCHECK_LE(3u, prefix_length);
-  DCHECK_LE(prefix_length, 8u);
+  QUICHE_DCHECK_LE(3u, prefix_length);
+  QUICHE_DCHECK_LE(prefix_length, 8u);
 
   value_ = (1 << prefix_length) - 1;
   offset_ = 0;
@@ -59,8 +59,8 @@ DecodeStatus HpackVarintDecoder::Resume(DecodeBuffer* db) {
 
     // Shifting a 7 bit value to the left by at most 56 places can never
     // overflow on uint64_t.
-    DCHECK_LE(offset_, 56);
-    DCHECK_LE(summand, std::numeric_limits<uint64_t>::max() >> offset_);
+    QUICHE_DCHECK_LE(offset_, 56);
+    QUICHE_DCHECK_LE(summand, std::numeric_limits<uint64_t>::max() >> offset_);
 
     summand <<= offset_;
 
@@ -68,7 +68,7 @@ DecodeStatus HpackVarintDecoder::Resume(DecodeBuffer* db) {
     // |value_| is at most (2^prefix_length - 1) + (2^49 - 1), and
     // |summand| is at most 255 << 56 (which is smaller than 2^63),
     // so adding them can never overflow on uint64_t.
-    DCHECK_LE(value_, std::numeric_limits<uint64_t>::max() - summand);
+    QUICHE_DCHECK_LE(value_, std::numeric_limits<uint64_t>::max() - summand);
 
     value_ += summand;
 
@@ -85,7 +85,7 @@ DecodeStatus HpackVarintDecoder::Resume(DecodeBuffer* db) {
     return DecodeStatus::kDecodeInProgress;
   }
 
-  DCHECK_EQ(kMaxOffset, offset_);
+  QUICHE_DCHECK_EQ(kMaxOffset, offset_);
 
   uint8_t byte = db->DecodeUInt8();
   // No more extension bytes are allowed after this.
@@ -122,8 +122,8 @@ void HpackVarintDecoder::set_value(uint64_t v) {
 }
 
 std::string HpackVarintDecoder::DebugString() const {
-  return quiche::QuicheStrCat("HpackVarintDecoder(value=", value_,
-                              ", offset=", offset_, ")");
+  return absl::StrCat("HpackVarintDecoder(value=", value_, ", offset=", offset_,
+                      ")");
 }
 
 DecodeStatus HpackVarintDecoder::StartForTest(uint8_t prefix_value,

@@ -27,6 +27,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kAppStoreBilling,
     &features::kAppStoreBillingDebug,
     &features::kEnforceFullDelegation,
+    &features::kGPayAppDynamicUpdate,
     &features::kPaymentRequestSkipToGPay,
     &features::kPaymentRequestSkipToGPayIfNoCard,
     &features::kReturnGooglePayInBasicCard,
@@ -37,7 +38,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebPaymentsRedactShippingAddress,
     &features::kWebPaymentsSingleAppUiSkip,
     &kAndroidAppPaymentUpdateEvents,
-    &kScrollToExpandPaymentHandler,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -55,9 +55,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 // Android only features.
 const base::Feature kAndroidAppPaymentUpdateEvents{
     "AndroidAppPaymentUpdateEvents", base::FEATURE_ENABLED_BY_DEFAULT};
-// TODO(crbug.com/1094549): clean up after being stable.
-const base::Feature kScrollToExpandPaymentHandler{
-    "ScrollToExpandPaymentHandler", base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean JNI_PaymentFeatureList_IsEnabled(
     JNIEnv* env,

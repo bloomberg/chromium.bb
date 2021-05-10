@@ -34,10 +34,11 @@ Polymer({
       },
     },
 
-    isPrintManagementEnabled_: {
+    /** @private */
+    isScanningAppEnabled_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('printManagementEnabled');
+        return loadTimeData.getBoolean('scanningAppEnabled');
       }
     },
 
@@ -47,7 +48,10 @@ Polymer({
      */
     supportedSettingIds: {
       type: Object,
-      value: () => new Set([chromeos.settings.mojom.Setting.kPrintJobs]),
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kPrintJobs,
+        chromeos.settings.mojom.Setting.kScanningApp
+      ]),
     },
   },
 
@@ -71,8 +75,14 @@ Polymer({
 
   /** @private */
   onOpenPrintManagement_() {
-    assert(this.isPrintManagementEnabled_);
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .openPrintManagementApp();
+  },
+
+  /** @private */
+  onOpenScanningApp_() {
+    assert(this.isScanningAppEnabled_);
+    settings.CupsPrintersBrowserProxyImpl.getInstance().openScanningApp();
+    settings.recordSettingChange(chromeos.settings.mojom.Setting.kScanningApp);
   }
 });

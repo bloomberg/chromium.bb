@@ -18,10 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/cert_store_service.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +30,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
@@ -47,6 +48,8 @@ constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
 constexpr char kArcRequiredKeyPairs[] = "requiredKeyPairs";
 constexpr char kPlayStorePackageName[] = "com.android.vending";
+constexpr char kPrivateKeySelectionEnabled[] = "privateKeySelectionEnabled";
+constexpr char kChoosePrivateKeyRules[] = "choosePrivateKeyRules";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -205,12 +208,12 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   filtered_policies->SetKey(kArcCaCerts, std::move(ca_certs));
 }
 
-void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
+void AddRequiredKeyPairs(const CertStoreService* cert_store_service,
                          base::Value* filtered_policies) {
-  if (!smart_card_manager)
+  if (!cert_store_service)
     return;
   base::Value cert_names(base::Value::Type::LIST);
-  for (const auto& name : smart_card_manager->get_required_cert_names()) {
+  for (const auto& name : cert_store_service->get_required_cert_names()) {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("alias", name);
     cert_names.Append(std::move(value));
@@ -218,12 +221,51 @@ void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
   filtered_policies->SetKey(kArcRequiredKeyPairs, std::move(cert_names));
 }
 
-std::string GetFilteredJSONPolicies(
-    const policy::PolicyMap& policy_map,
-    const std::string& guid,
-    bool is_affiliated,
-    const ArcSmartCardManagerBridge* smart_card_manager,
-    const Profile* profile) {
+bool LooksLikeAndroidPackageName(const std::string& name) {
+  return name.find(".") != std::string::npos;
+}
+
+void AddChoosePrivateKeyRuleToPolicy(
+    policy::PolicyService* const policy_service,
+    const CertStoreService* cert_store_service,
+    base::Value* filtered_policies) {
+  if (!cert_store_service)
+    return;
+
+  auto app_ids = chromeos::platform_keys::ExtensionKeyPermissionsService::
+      GetCorporateKeyUsageAllowedAppIds(policy_service);
+  base::Value arc_app_ids(base::Value::Type::LIST);
+  for (const auto& app_id : app_ids) {
+    if (LooksLikeAndroidPackageName(app_id))
+      arc_app_ids.Append(app_id);
+  }
+  if (arc_app_ids.GetList().empty() ||
+      cert_store_service->get_required_cert_names().empty()) {
+    return;
+  }
+
+  base::Value rules(base::Value::Type::LIST);
+  for (const auto& name : cert_store_service->get_required_cert_names()) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("privateKeyAlias", name);
+    value.SetKey("packageNames", arc_app_ids.Clone());
+    rules.Append(std::move(value));
+  }
+
+  filtered_policies->SetBoolKey(kPrivateKeySelectionEnabled, true);
+  filtered_policies->SetKey(kChoosePrivateKeyRules, std::move(rules));
+}
+
+std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
+                                    const std::string& guid,
+                                    bool is_affiliated,
+                                    const CertStoreService* cert_store_service,
+                                    const Profile* profile) {
+  const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
+                                                 std::string());
+  const policy::PolicyMap& policy_map =
+      policy_service->GetPolicies(policy_namespace);
+
   base::Value filtered_policies(base::Value::Type::DICTIONARY);
   // Parse ArcPolicy as JSON string before adding other policies to the
   // dictionary.
@@ -249,9 +291,29 @@ std::string GetFilteredJSONPolicies(
     }
   }
 
+  // Disable all required/force-installed apps when ARC data snapshot update is
+  // in progress.
+  if (arc::data_snapshotd::ArcDataSnapshotdManager::Get() &&
+      arc::data_snapshotd::ArcDataSnapshotdManager::Get()
+          ->IsSnapshotInProgress()) {
+    base::Value* applications_value =
+        filtered_policies.FindListKey("applications");
+    if (applications_value) {
+      base::Value::ListView list_view = applications_value->GetList();
+      for (base::Value& entry : list_view) {
+        auto* installType = entry.FindStringKey("installType");
+        if (installType &&
+            (*installType == "REQUIRED" || *installType == "FORCE_INSTALLED")) {
+          entry.SetBoolKey("disabled", true);
+        }
+      }
+    }
+    // Always reset android_id if ARC data snapshot update is in progress.
+    filtered_policies.SetBoolKey("resetAndroidIdEnabled", true);
+  }
+
   if (profile->IsSupervised() &&
-      chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile) &&
-      arc::IsSecondaryAccountForChildEnabled()) {
+      chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
     // Adds "playStoreMode" policy. The policy value is used to restrict the
     // user from being able to toggle between different accounts in ARC++.
     filtered_policies.SetStringKey("playStoreMode", "SUPERVISED");
@@ -306,12 +368,15 @@ std::string GetFilteredJSONPolicies(
   // Add CA certificates.
   AddOncCaCertsToPolicies(policy_map, &filtered_policies);
 
-  if (!is_affiliated)
-    filtered_policies.RemoveKey("apkCacheEnabled");
+  // Always enable APK Cache for affiliated users, and always disable it for not
+  // affiliated ones.
+  filtered_policies.SetBoolKey("apkCacheEnabled", is_affiliated);
 
   filtered_policies.SetStringKey("guid", guid);
 
-  AddRequiredKeyPairs(smart_card_manager, &filtered_policies);
+  AddRequiredKeyPairs(cert_store_service, &filtered_policies);
+  AddChoosePrivateKeyRuleToPolicy(policy_service, cert_store_service,
+                                  &filtered_policies);
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);
@@ -564,19 +629,14 @@ void ArcPolicyBridge::InitializePolicyService() {
 std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
   if (!is_managed_)
     return std::string();
-  const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
-                                                 std::string());
-  const policy::PolicyMap& policy_map =
-      policy_service_->GetPolicies(policy_namespace);
-
   const Profile* const profile = Profile::FromBrowserContext(context_);
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  const ArcSmartCardManagerBridge* smart_card_manager =
-      ArcSmartCardManagerBridge::GetForBrowserContext(context_);
+  const CertStoreService* cert_store_service =
+      CertStoreService::GetForBrowserContext(context_);
 
-  return GetFilteredJSONPolicies(policy_map, instance_guid_,
-                                 user->IsAffiliated(), smart_card_manager,
+  return GetFilteredJSONPolicies(policy_service_, instance_guid_,
+                                 user->IsAffiliated(), cert_store_service,
                                  profile);
 }
 
@@ -626,8 +686,8 @@ void ArcPolicyBridge::UpdateComplianceReportMetrics(
     if (!sign_in_start_time.is_null()) {
       UpdateFirstComplianceSinceSignInTiming(now - sign_in_start_time);
     } else {
-      UpdateFirstComplianceSinceStartupTiming(
-          now - session_manager->arc_start_time());
+      UpdateFirstComplianceSinceStartupTiming(now -
+                                              session_manager->start_time());
     }
     first_compliance_timing_reported_ = true;
   }

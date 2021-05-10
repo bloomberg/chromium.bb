@@ -19,20 +19,60 @@
 
 namespace blink {
 
+// Temporary workaround for crbug.com/1182497.
+// Doesn't perform any stream optimization, but instead
+// lets MediaStreamVideoTrackUnderlyingSource know that
+// its stream endpoint has been transferred, and that it should mark its video
+// frames for closure when they are cloned().
+class StreamTransferNotifier final
+    : public ReadableStreamTransferringOptimizer {
+  USING_FAST_MALLOC(StreamTransferNotifier);
+  using OptimizerCallback = CrossThreadOnceClosure;
+
+ public:
+  StreamTransferNotifier(
+      scoped_refptr<base::SingleThreadTaskRunner> original_runner,
+      OptimizerCallback callback)
+      : original_runner_(std::move(original_runner)),
+        callback_(std::move(callback)) {}
+
+  UnderlyingSourceBase* PerformInProcessOptimization(
+      ScriptState* script_state) override {
+    // Send a message back to MediaStreamVideoTrackUnderlyingSource.
+    PostCrossThreadTask(*original_runner_, FROM_HERE, std::move(callback_));
+
+    // Return nullptr will mean that no optimization was performed, and streams
+    // will post internally.
+    return nullptr;
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> original_runner_;
+  OptimizerCallback callback_;
+};
+
 MediaStreamVideoTrackUnderlyingSource::MediaStreamVideoTrackUnderlyingSource(
     ScriptState* script_state,
-    MediaStreamComponent* track)
+    MediaStreamComponent* track,
+    wtf_size_t max_queue_size)
     : UnderlyingSourceBase(script_state),
       main_task_runner_(ExecutionContext::From(script_state)
                             ->GetTaskRunner(TaskType::kInternalMediaRealTime)),
-      track_(track) {
+      track_(track),
+      max_queue_size_(std::max(1u, max_queue_size)) {
   DCHECK(track_);
 }
 
 ScriptPromise MediaStreamVideoTrackUnderlyingSource::pull(
     ScriptState* script_state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  // No backpressure support, so nothing to do here.
+  if (!queue_.empty()) {
+    ProcessPullRequest();
+  } else {
+    is_pending_pull_ = true;
+  }
+
+  DCHECK_LT(queue_.size(), max_queue_size_);
   return ScriptPromise::CastUndefined(script_state);
 }
 
@@ -68,17 +108,42 @@ void MediaStreamVideoTrackUnderlyingSource::Trace(Visitor* visitor) const {
   UnderlyingSourceBase::Trace(visitor);
 }
 
+double MediaStreamVideoTrackUnderlyingSource::DesiredSizeForTesting() const {
+  return Controller()->DesiredSize();
+}
+
+void MediaStreamVideoTrackUnderlyingSource::ContextDestroyed() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  UnderlyingSourceBase::ContextDestroyed();
+  queue_.clear();
+}
+
 void MediaStreamVideoTrackUnderlyingSource::Close() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DisconnectFromTrack();
-
   if (Controller())
     Controller()->Close();
+  queue_.clear();
+}
+
+std::unique_ptr<ReadableStreamTransferringOptimizer>
+MediaStreamVideoTrackUnderlyingSource::GetStreamTransferOptimizer() {
+  auto stream_transferred_cb = [](MediaStreamVideoTrackUnderlyingSource* self) {
+    if (self)
+      self->stream_was_transferred_ = true;
+  };
+
+  return std::make_unique<StreamTransferNotifier>(
+      main_task_runner_,
+      CrossThreadBindOnce(stream_transferred_cb,
+                          WrapCrossThreadWeakPersistent(this)));
 }
 
 void MediaStreamVideoTrackUnderlyingSource::OnFrameFromTrack(
     scoped_refptr<media::VideoFrame> media_frame,
+    std::vector<scoped_refptr<media::VideoFrame>> /*scaled_media_frames*/,
     base::TimeTicks estimated_capture_time) {
+  // The scaled video frames are currently ignored.
   PostCrossThreadTask(
       *main_task_runner_, FROM_HERE,
       CrossThreadBindOnce(
@@ -91,15 +156,44 @@ void MediaStreamVideoTrackUnderlyingSource::OnFrameFromTrackOnMainThread(
     scoped_refptr<media::VideoFrame> media_frame,
     base::TimeTicks /*estimated_capture_time*/) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  // Drop the frame if there is already a queued frame in the controller.
-  // Queueing even a small number of frames can result in significant
-  // performance issues, so do not allow queueing more than one frame.
-  if (!Controller() || Controller()->DesiredSize() < 0)
+  DCHECK_LE(queue_.size(), max_queue_size_);
+
+  // If the |queue_| is empty and the consumer has signaled a pull, bypass
+  // |queue_| and send the frame directly to the stream controller.
+  if (queue_.empty() && is_pending_pull_) {
+    SendFrameToStream(std::move(media_frame));
+    return;
+  }
+
+  if (queue_.size() == max_queue_size_)
+    queue_.pop_front();
+
+  queue_.push_back(std::move(media_frame));
+  if (is_pending_pull_) {
+    ProcessPullRequest();
+  }
+}
+
+void MediaStreamVideoTrackUnderlyingSource::ProcessPullRequest() {
+  DCHECK(!queue_.empty());
+  SendFrameToStream(std::move(queue_.front()));
+  queue_.pop_front();
+}
+
+void MediaStreamVideoTrackUnderlyingSource::SendFrameToStream(
+    scoped_refptr<media::VideoFrame> media_frame) {
+  DCHECK(media_frame);
+  if (!Controller())
     return;
 
-  VideoFrame* video_frame =
-      MakeGarbageCollected<VideoFrame>(std::move(media_frame));
+  VideoFrame* video_frame = MakeGarbageCollected<VideoFrame>(
+      std::move(media_frame), GetExecutionContext());
+
+  if (stream_was_transferred_)
+    video_frame->handle()->SetCloseOnClone();
+
   Controller()->Enqueue(video_frame);
+  is_pending_pull_ = false;
 }
 
 }  // namespace blink

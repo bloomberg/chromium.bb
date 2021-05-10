@@ -11,6 +11,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/chromeos/borealis/borealis_service.h"
+#include "chrome/browser/chromeos/borealis/borealis_shutdown_monitor.h"
+#include "chrome/browser/chromeos/borealis/borealis_util.h"
 #include "chrome/browser/chromeos/crosapi/browser_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -138,6 +141,10 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
       } else if (app_id() == plugin_vm::kPluginVmShelfAppId) {
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile())
             ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);
+      } else if (app_id() == borealis::kBorealisAppId) {
+        borealis::BorealisService::GetForProfile(profile())
+            ->ShutdownMonitor()
+            .ShutdownNow();
       } else {
         LOG(ERROR) << "App " << app_id()
                    << " should not have a shutdown guest OS command.";
@@ -284,7 +291,8 @@ void AppServiceContextMenu::OnGetMenuModel(
 void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(
     ui::SimpleMenuModel* menu_model) {
   extension_menu_items_ = std::make_unique<extensions::ContextMenuMatcher>(
-      profile(), this, menu_model, base::Bind(MenuItemHasLauncherContext));
+      profile(), this, menu_model,
+      base::BindRepeating(MenuItemHasLauncherContext));
 
   // Assign unique IDs to commands added by the app itself.
   int index = ash::USE_LAUNCH_TYPE_COMMAND_END;

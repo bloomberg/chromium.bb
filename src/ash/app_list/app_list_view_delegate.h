@@ -75,16 +75,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                                 int suggestion_index,
                                 bool launch_as_default) = 0;
 
-  // Called to log UMA metrics for the launch of an item either in the app tile
-  // list or the search result list. The |launch_location| argument determines
-  // which histogram to log to. |suggestion_index| represents the index of the
-  // launched item in its list view, not the overall position in the suggestion
-  // window. For instance, the first launcher result item is index 0, regardless
-  // of if there is an answer card above it.
-  virtual void LogResultLaunchHistogram(
-      SearchResultLaunchLocation launch_location,
-      int suggestion_index) = 0;
-
   // Logs the UMA histogram metrics for user's abandonment of launcher search.
   virtual void LogSearchAbandonHistogram() = 0;
 
@@ -174,21 +164,12 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       const SearchResultIdWithPositionIndices& results,
       int position_index) = 0;
 
-  // If the |prefs::kAssistantPrivacyInfoShownInLauncher| value is in the range
-  // of allowed values, we will increment it. Otherwise, if the
-  // |prefs::kSuggestedContentInfoShownInLauncher| value is in the range of
-  // allowed values, we will increment it.
-  virtual void MaybeIncreasePrivacyInfoShownCounts() = 0;
+  // If the |prefs::kSuggestedContentInfoShownInLauncher| value is in the range
+  // of allowed values, we will increment it.
+  virtual void MaybeIncreaseSuggestedContentInfoShownCount() = 0;
 
   // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
-
-  // Returns true if the Assistant privacy info view should be shown.
-  virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
-
-  // Called when close button in the Assistant privacy info view is pressed to
-  // indicate not to show the view any more.
-  virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 
   // Returns true if the Suggested Content privacy info view should be shown.
   virtual bool ShouldShowSuggestedContentInfo() const = 0;

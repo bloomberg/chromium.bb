@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
+
+#include "base/logging.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/value_store/settings_namespace.h"
 
 namespace extensions {
 

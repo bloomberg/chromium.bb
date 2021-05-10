@@ -163,7 +163,7 @@ TEST_F(SkiaOutputSurfaceImplTest, EndPaint) {
 
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
                               std::move(request));
-  output_surface_->SwapBuffersSkipped();
+  output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   BlockMainThread();
 
@@ -192,6 +192,7 @@ TEST_F(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
     OutputSurfaceFrame frame;
     frame.size = kSurfaceRect.size();
     output_surface_->SwapBuffers(std::move(frame));
+    output_surface_->Flush();
 
     run_loop.Run();
   }
@@ -229,7 +230,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapSupportedColorSpace) {
   PaintRootRenderPass(kSurfaceRect, base::DoNothing::Once());
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
                               std::move(request));
-  output_surface_->SwapBuffersSkipped();
+  output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   run_loop.Run();
 
@@ -268,7 +269,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapUnsupportedColorSpace) {
   PaintRootRenderPass(kSurfaceRect, base::DoNothing::Once());
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
                               std::move(request));
-  output_surface_->SwapBuffersSkipped();
+  output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   run_loop.Run();
 

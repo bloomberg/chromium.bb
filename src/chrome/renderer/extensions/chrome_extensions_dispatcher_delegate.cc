@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -42,10 +43,13 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/renderer/extensions/platform_keys_natives.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
-#include "chrome/renderer/extensions/platform_keys_natives.h"
 #if defined(USE_CUPS)
 #include "chrome/renderer/extensions/printing_hooks_delegate.h"
 #endif
@@ -66,7 +70,12 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "sync_file_system",
       std::unique_ptr<NativeHandler>(
           new extensions::SyncFileSystemCustomBindings(context)));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  module_system->RegisterNativeHandler(
+      "platform_keys_natives",
+      std::make_unique<extensions::PlatformKeysNatives>(context));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   module_system->RegisterNativeHandler(
       "file_browser_handler",
       std::unique_ptr<NativeHandler>(
@@ -75,11 +84,7 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "file_manager_private",
       std::unique_ptr<NativeHandler>(
           new extensions::FileManagerPrivateCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "platform_keys_natives",
-      std::unique_ptr<NativeHandler>(
-          new extensions::PlatformKeysNatives(context)));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   module_system->RegisterNativeHandler(
       "notifications_private",
       std::unique_ptr<NativeHandler>(
@@ -137,9 +142,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
 
-#if defined(OS_CHROMEOS)
-  source_map->RegisterSource("certificateProvider",
-                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   source_map->RegisterSource("enterprise.platformKeys",
                              IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("enterprise.platformKeys.internalAPI",
@@ -150,12 +153,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
   source_map->RegisterSource("enterprise.platformKeys.Token",
                              IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
-  source_map->RegisterSource("fileBrowserHandler",
-                             IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileManagerPrivate",
-                             IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileSystemProvider",
-                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys",
                              IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys.getPublicKeyUtil",
@@ -166,6 +163,17 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("platformKeys.SubtleCrypto",
                              IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
   source_map->RegisterSource("platformKeys.utils", IDR_PLATFORM_KEYS_UTILS_JS);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  source_map->RegisterSource("certificateProvider",
+                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileBrowserHandler",
+                             IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileManagerPrivate",
+                             IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileSystemProvider",
+                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("terminalPrivate",
                              IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
 
@@ -175,9 +183,10 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("chromeos.ime.service",
                              IDR_IME_SERVICE_BINDINGS_JS);
 
-  source_map->RegisterSource("chromeos.tts.mojom.tts_stream.mojom",
-                             IDR_TTS_STREAM_MOJOM_JS);
-  source_map->RegisterSource("chromeos.tts.stream", IDR_TTS_STREAM_BINDINGS_JS);
+  source_map->RegisterSource("chromeos.tts.mojom.tts_stream_factory.mojom",
+                             IDR_TTS_STREAM_FACTORY_MOJOM_JS);
+  source_map->RegisterSource("chromeos.tts.stream_factory",
+                             IDR_TTS_STREAM_FACTORY_BINDINGS_JS);
 
   // Imprivata API.
   source_map->RegisterSource("chromeos.remote_apps.mojom-lite",
@@ -186,7 +195,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_REMOTE_APPS_BINDINGS_JS);
   source_map->RegisterSource("url/mojom/url.mojom-lite",
                              IDR_MOJO_URL_MOJOM_LITE_JS);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   source_map->RegisterSource(
       "webrtcDesktopCapturePrivate",
@@ -271,7 +280,7 @@ void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
   bindings->GetHooksForAPI("accessibilityPrivate")
       ->SetDelegate(
           std::make_unique<extensions::AccessibilityPrivateHooksDelegate>());
-#if defined(OS_CHROMEOS) && defined(USE_CUPS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_CUPS)
   bindings->GetHooksForAPI("printing")
       ->SetDelegate(std::make_unique<extensions::PrintingHooksDelegate>());
 #endif

@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -20,7 +20,6 @@ class ListValue;
 
 namespace chromeos {
 
-class KioskAppManager;
 class OwnerSettingsServiceChromeOS;
 
 class KioskAppsHandler : public content::WebUIMessageHandler,
@@ -61,7 +60,7 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   // Callback for KioskAppManager::GetConsumerKioskModeStatus().
   void OnGetConsumerKioskAutoLaunchStatus(
       const std::string& callback_id,
-      chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status);
+      KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   KioskAppManager* kiosk_app_manager_;  // not owned.
   bool initialized_;

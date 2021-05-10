@@ -22,21 +22,14 @@ namespace tint {
 namespace reader {
 namespace wgsl {
 
-Parser::Parser(Context* ctx, Source::File const* file)
-    : Reader(ctx), impl_(std::make_unique<ParserImpl>(ctx, file)) {}
-
-Parser::~Parser() = default;
-
-bool Parser::Parse() {
-  bool ret = impl_->Parse();
-
-  set_diagnostics(std::move(impl_->diagnostics()));
-
-  return ret;
-}
-
-ast::Module Parser::module() {
-  return impl_->module();
+Program Parse(Source::File const* file) {
+  ParserImpl parser(file);
+  parser.Parse();
+  ProgramBuilder builder = std::move(parser.builder());
+  // TODO(bclayton): Remove ParserImpl::diagnostics() and put all diagnostic
+  // into the builder.
+  builder.Diagnostics().add(parser.diagnostics());
+  return Program(std::move(builder));
 }
 
 }  // namespace wgsl

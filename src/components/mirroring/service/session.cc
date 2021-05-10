@@ -19,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -401,10 +402,11 @@ Session::Session(
       state_(MIRRORING),
       observer_(std::move(observer)),
       resource_provider_(std::move(resource_provider)),
-      message_dispatcher_(std::move(outbound_channel),
-                          std::move(inbound_channel),
-                          base::BindRepeating(&Session::OnResponseParsingError,
-                                              base::Unretained(this))),
+      message_dispatcher_(std::make_unique<MessageDispatcher>(
+          std::move(outbound_channel),
+          std::move(inbound_channel),
+          base::BindRepeating(&Session::OnResponseParsingError,
+                              base::Unretained(this)))),
       gpu_channel_host_(nullptr) {
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionConstraints(max_resolution.width(),
@@ -468,6 +470,17 @@ void Session::ReportError(SessionError error) {
   StopSession();
 }
 
+void Session::LogInfoMessage(const std::string& message) {
+  if (observer_) {
+    observer_->LogInfoMessage(message);
+  }
+}
+
+void Session::LogErrorMessage(const std::string& message) {
+  if (observer_) {
+    observer_->LogErrorMessage(message);
+  }
+}
 void Session::StopStreaming() {
   DVLOG(2) << __func__ << " state=" << state_;
   if (!cast_environment_)
@@ -492,12 +505,16 @@ void Session::StopSession() {
   state_ = STOPPED;
   StopStreaming();
 
+  // Notes on order: the media remoter needs to deregister itself from the
+  // message dispatcher, which then needs to deregister from the resource
+  // provider.
+  media_remoter_.reset();
+  message_dispatcher_.reset();
   setup_querier_.reset();
   weak_factory_.InvalidateWeakPtrs();
   audio_encode_thread_ = nullptr;
   video_encode_thread_ = nullptr;
   video_capture_client_.reset();
-  media_remoter_.reset();
   resource_provider_.reset();
   gpu_channel_host_ = nullptr;
   gpu_.reset();
@@ -541,7 +558,7 @@ Session::GetSupportedVeaProfiles() {
 }
 
 void Session::CreateVideoEncodeAccelerator(
-    const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback) {
+    media::cast::ReceiveVideoEncodeAcceleratorCallback callback) {
   if (callback.is_null())
     return;
   std::unique_ptr<media::VideoEncodeAccelerator> mojo_vea;
@@ -557,12 +574,13 @@ void Session::CreateVideoEncodeAccelerator(
     mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
                                                          supported_profiles_));
   }
-  callback.Run(base::ThreadTaskRunnerHandle::Get(), std::move(mojo_vea));
+  std::move(callback).Run(base::ThreadTaskRunnerHandle::Get(),
+                          std::move(mojo_vea));
 }
 
 void Session::CreateVideoEncodeMemory(
     size_t size,
-    const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
+    media::cast::ReceiveVideoEncodeMemoryCallback callback) {
   DVLOG(1) << __func__;
 
   base::UnsafeSharedMemoryRegion buf =
@@ -571,7 +589,7 @@ void Session::CreateVideoEncodeMemory(
   if (!buf.IsValid())
     LOG(WARNING) << "Browser failed to allocate shared memory.";
 
-  callback.Run(std::move(buf));
+  std::move(callback).Run(std::move(buf));
 }
 
 void Session::OnTransportStatusChanged(CastTransportStatus status) {
@@ -811,7 +829,7 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   std::unique_ptr<WifiStatusMonitor> wifi_status_monitor;
   if (answer.supports_wifi_status_reporting) {
     wifi_status_monitor =
-        std::make_unique<WifiStatusMonitor>(&message_dispatcher_);
+        std::make_unique<WifiStatusMonitor>(message_dispatcher_.get());
     // Nest Hub devices do not support remoting despite having a relatively new
     // build version, so we cannot filter with
     // NeedsWorkaroundForOlder1DotXVersions() here.
@@ -822,6 +840,10 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
                           base::CompareCase::SENSITIVE))) {
       QueryCapabilitiesForRemoting();
     }
+  } else {
+    LogInfoMessage(
+        base::StrCat({"Remoting is not supported on this receiver model: ",
+                      session_params_.receiver_model_name}));
   }
 
   if (initially_starting_session && observer_)
@@ -829,8 +851,7 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
 }
 
 void Session::OnResponseParsingError(const std::string& error_message) {
-  // TODO(crbug.com/1117673): Add MR-internals logging:
-  //   VLOG(2) << "[REJECT] " << error_message;
+  LogErrorMessage(base::StrCat({"MessageDispatcher error: ", error_message}));
 }
 
 void Session::CreateAudioStream(
@@ -934,7 +955,7 @@ void Session::CreateAndSendOffer() {
   offer.SetKey("receiverGetStatus", base::Value(true));
   offer.SetKey("supportedStreams", base::Value(stream_list));
 
-  const int32_t sequence_number = message_dispatcher_.GetNextSeqNumber();
+  const int32_t sequence_number = message_dispatcher_->GetNextSeqNumber();
   base::Value offer_message(base::Value::Type::DICTIONARY);
   offer_message.SetKey("type", base::Value("OFFER"));
   offer_message.SetKey("seqNum", base::Value(sequence_number));
@@ -946,7 +967,7 @@ void Session::CreateAndSendOffer() {
       offer_message, &message_to_receiver->json_format_data);
   DCHECK(did_serialize_offer);
 
-  message_dispatcher_.RequestReply(
+  message_dispatcher_->RequestReply(
       std::move(message_to_receiver), ResponseType::ANSWER, sequence_number,
       kOfferAnswerExchangeTimeout,
       base::BindOnce(&Session::OnAnswer, base::Unretained(this), audio_configs,
@@ -980,7 +1001,7 @@ void Session::RestartMirroringStreaming() {
 
 void Session::QueryCapabilitiesForRemoting() {
   DCHECK(!media_remoter_);
-  const int32_t sequence_number = message_dispatcher_.GetNextSeqNumber();
+  const int32_t sequence_number = message_dispatcher_->GetNextSeqNumber();
   base::Value query(base::Value::Type::DICTIONARY);
   query.SetKey("type", base::Value("GET_CAPABILITIES"));
   query.SetKey("seqNum", base::Value(sequence_number));
@@ -990,19 +1011,25 @@ void Session::QueryCapabilitiesForRemoting() {
   const bool did_serialize_query =
       base::JSONWriter::Write(query, &query_message->json_format_data);
   DCHECK(did_serialize_query);
-  message_dispatcher_.RequestReply(
+  message_dispatcher_->RequestReply(
       std::move(query_message), ResponseType::CAPABILITIES_RESPONSE,
       sequence_number, kGetCapabilitiesTimeout,
       base::BindOnce(&Session::OnCapabilitiesResponse, base::Unretained(this)));
 }
 
 void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
+  if (state_ == STOPPED)
+    return;
+
   if (!response.valid()) {
-    VLOG(1) << "Bad CAPABILITIES_RESPONSE. Remoting disabled.";
     if (response.error()) {
-      VLOG(1) << " error code=" << response.error()->code
-              << " description=" << response.error()->description
-              << " details=" << response.error()->details;
+      LogErrorMessage(base::StringPrintf(
+          "Remoting is not supported. Error code: %d, description: %s, "
+          "details: %s",
+          response.error()->code, response.error()->description.c_str(),
+          response.error()->details.c_str()));
+    } else {
+      LogErrorMessage("Remoting is not supported. Bad CAPABILITIES_RESPONSE.");
     }
     return;
   }
@@ -1017,8 +1044,10 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
   }
 
   if (remoting_version > kSupportedRemotingVersion) {
-    VLOG(1) << "Unsupported remoting version (" << remoting_version << " > "
-            << kSupportedRemotingVersion << ')';
+    LogErrorMessage(
+        base::StringPrintf("Remoting is not supported. The receiver's remoting "
+                           "version (%d) is not supported by the sender (%d).",
+                           remoting_version, kSupportedRemotingVersion));
     return;
   }
 
@@ -1034,7 +1063,7 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
       this,
       ToRemotingSinkMetadata(caps, friendly_name, session_params_,
                              build_version),
-      &message_dispatcher_);
+      message_dispatcher_.get());
 }
 
 }  // namespace mirroring

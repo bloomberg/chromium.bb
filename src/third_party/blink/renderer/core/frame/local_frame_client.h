@@ -39,11 +39,13 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
-#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink-forward.h"
@@ -130,12 +132,17 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidHandleOnloadEvents() = 0;
   virtual void DidFinishSameDocumentNavigation(HistoryItem*,
                                                WebHistoryCommitType,
-                                               bool content_initiated) {}
+                                               bool content_initiated,
+                                               bool is_history_api_navigation) {
+  }
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidCommitLoad(
-      HistoryItem*,
-      WebHistoryCommitType,
-      bool should_reset_browser_interface_broker) = 0;
+      HistoryItem* item,
+      WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicyFeatureState& document_policy_header) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&,
                                    WebHistoryCommitType) = 0;
   virtual void DispatchDidFinishDocumentLoad() = 0;
@@ -150,7 +157,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       NavigationPolicy,
       WebFrameLoadType,
       bool is_client_redirect,
-      TriggeringEventInfo,
+      mojom::blink::TriggeringEventInfo,
       HTMLFormElement*,
       network::mojom::CSPDisposition
           should_check_main_world_content_security_policy,
@@ -160,9 +167,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const base::Optional<WebImpression>& impression,
       WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
           initiator_csp,
-      network::mojom::blink::CSPSourcePtr initiator_self_source,
       network::mojom::IPAddressSpace,
-      mojo::PendingRemote<mojom::blink::NavigationInitiator>) = 0;
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>,
+      const LocalFrameToken* initiator_frame_token,
+      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+          initiator_policy_container_handle) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 
@@ -198,6 +207,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
   }
+
+  // Reports input timestamps for segmenting layout shifts by users inputs to
+  // create Session window.
+  virtual void DidObserveInputForLayoutShiftTracking(
+      base::TimeTicks timestamp) {}
 
   // Reports the number of LayoutBlock creation, and LayoutObject::UpdateLayout
   // calls. All values are deltas since the last calls of this function.
@@ -276,7 +290,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 
-  virtual void DidCreateInitialEmptyDocument() = 0;
   virtual void DidCommitDocumentReplacementNavigation(DocumentLoader*) = 0;
   virtual void DispatchDidClearWindowObjectInMainWorld() = 0;
   virtual void DocumentElementAvailable() = 0;
@@ -300,11 +313,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   }
 
   virtual void DidChangeName(const String&) {}
-
-  virtual void DidSetFramePolicyHeaders(
-      network::mojom::blink::WebSandboxFlags,
-      const ParsedFeaturePolicy& feature_policy_header,
-      const DocumentPolicyFeatureState& document_policy_header) {}
 
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
@@ -353,7 +361,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual Frame* FindFrame(const AtomicString& name) const = 0;
 
-  virtual void FrameRectsChanged(const IntRect&) {}
+  virtual void OnOverlayPopupAdDetected() {}
+
+  virtual void OnLargeStickyAdDetected() {}
 
   virtual void FocusedElementChanged(Element* element) {}
 

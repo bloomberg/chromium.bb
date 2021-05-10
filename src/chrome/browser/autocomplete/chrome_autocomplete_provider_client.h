@@ -16,6 +16,7 @@
 
 #if defined(OS_ANDROID)
 class TabAndroid;
+class TabModel;
 #endif  // defined(OS_ANDROID)
 
 class Profile;
@@ -65,7 +66,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   query_tiles::TileService* GetQueryTileService() const override;
   OmniboxTriggeredFeatureService* GetOmniboxTriggeredFeatureService()
       const override;
-
+  signin::IdentityManager* GetIdentityManager() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;
@@ -109,6 +110,10 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   // Returns a TabAndroid has opened same URL as |url|.
   TabAndroid* GetTabOpenWithURL(const GURL& url,
                                 const AutocompleteInput* input);
+  // Make a JNI call to get all the hidden tabs and non Custom tabs in
+  // |tab_model|.
+  std::vector<TabAndroid*> GetAllHiddenAndNonCCTTabs(
+      const std::vector<TabModel*>& tab_models);
 #endif  // defined(OS_ANDROID)
 
  private:

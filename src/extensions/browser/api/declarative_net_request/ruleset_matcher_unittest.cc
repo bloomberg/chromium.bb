@@ -20,9 +20,9 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extensions_test.h"
@@ -155,7 +155,7 @@ TEST_F(RulesetMatcherTest, UpgradeRule) {
 
 // Tests that a modified ruleset file fails verification.
 TEST_F(RulesetMatcherTest, FailedVerification) {
-  RulesetSource source = CreateTemporarySource();
+  FileBackedRulesetSource source = CreateTemporarySource();
   std::unique_ptr<RulesetMatcher> matcher;
   int expected_checksum;
   ASSERT_TRUE(CreateVerifiedMatcher({}, source, &matcher, &expected_checksum));
@@ -166,8 +166,7 @@ TEST_F(RulesetMatcherTest, FailedVerification) {
   ASSERT_EQ(static_cast<int>(data.size()),
             base::WriteFile(source.indexed_path(), data.c_str(), data.size()));
   EXPECT_EQ(LoadRulesetResult::kErrorVersionMismatch,
-            RulesetMatcher::CreateVerifiedMatcher(source, expected_checksum,
-                                                  &matcher));
+            source.CreateVerifiedMatcher(expected_checksum, &matcher));
 
   // Now, persist invalid data to the ruleset file, while maintaining the
   // correct version header. Ensure that it fails verification due to checksum
@@ -176,8 +175,7 @@ TEST_F(RulesetMatcherTest, FailedVerification) {
   ASSERT_EQ(static_cast<int>(data.size()),
             base::WriteFile(source.indexed_path(), data.c_str(), data.size()));
   EXPECT_EQ(LoadRulesetResult::kErrorChecksumMismatch,
-            RulesetMatcher::CreateVerifiedMatcher(source, expected_checksum,
-                                                  &matcher));
+            source.CreateVerifiedMatcher(expected_checksum, &matcher));
 }
 
 TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {

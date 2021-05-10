@@ -7,7 +7,6 @@ import * as UI from '../ui/ui.js';
 
 /**
  * @implements {Common.App.App}
- * @unrestricted
  */
 export class SimpleApp {
   /**
@@ -22,11 +21,27 @@ export class SimpleApp {
   }
 }
 
+
+/** @type {!SimpleAppProvider} */
+let simpleAppProviderInstance;
+
+
 /**
  * @implements {Common.AppProvider.AppProvider}
- * @unrestricted
  */
 export class SimpleAppProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!simpleAppProviderInstance || forceNew) {
+      simpleAppProviderInstance = new SimpleAppProvider();
+    }
+
+    return simpleAppProviderInstance;
+  }
+
   /**
    * @override
    * @return {!Common.App.App}

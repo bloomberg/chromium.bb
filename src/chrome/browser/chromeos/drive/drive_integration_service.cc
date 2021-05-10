@@ -23,13 +23,14 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drivefs_native_message_host.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"
@@ -56,7 +56,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -389,7 +388,18 @@ class DriveIntegrationService::PreferenceWatcher
   }
 
   void AddNetworkPortalDetectorObserver() {
-    chromeos::network_portal_detector::GetInstance()->AddAndFireObserver(this);
+    if (chromeos::network_portal_detector::IsInitialized()) {
+      chromeos::network_portal_detector::GetInstance()->AddAndFireObserver(
+          this);
+    } else {
+      // The NetworkPortalDetector instance still not ready. Postpone even more.
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&DriveIntegrationService::PreferenceWatcher::
+                             AddNetworkPortalDetectorObserver,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(5));
+    }
   }
 
   // chromeos::NetworkPortalDetector::Observer
@@ -576,7 +586,7 @@ DriveIntegrationService::DriveIntegrationService(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
 
-  if (util::IsDriveEnabledForProfile(profile)) {
+  if (util::IsDriveAvailableForProfile(profile)) {
     preference_watcher_ =
         std::make_unique<PreferenceWatcher>(profile->GetPrefs());
     preference_watcher_->set_integration_service(this);
@@ -766,7 +776,7 @@ drivefs::mojom::DriveFs* DriveIntegrationService::GetDriveFsInterface() const {
 }
 
 void DriveIntegrationService::AddBackDriveMountPoint(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     FileError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback);
@@ -775,12 +785,12 @@ void DriveIntegrationService::AddBackDriveMountPoint(
 
   if (error != FILE_ERROR_OK || !enabled_) {
     // Failed to reset, or Drive was disabled during the reset.
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   AddDriveMountPoint();
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void DriveIntegrationService::AddDriveMountPoint() {
@@ -1036,8 +1046,7 @@ void DriveIntegrationService::SuspendImminent(
   RemoveDriveMountPoint();
 }
 
-void DriveIntegrationService::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
+void DriveIntegrationService::SuspendDone(base::TimeDelta sleep_duration) {
   if (is_enabled()) {
     AddDriveMountPoint();
   }
@@ -1084,6 +1093,52 @@ void DriveIntegrationService::OnGetQuickAccessItems(
   std::move(callback).Run(error, std::move(result));
 }
 
+void DriveIntegrationService::SearchDriveByFileName(
+    std::string query,
+    int max_results,
+    drivefs::mojom::QueryParameters::SortField sort_field,
+    drivefs::mojom::QueryParameters::SortDirection sort_direction,
+    SearchDriveByFileNameCallback callback) const {
+  if (!GetDriveFsHost()) {
+    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
+                            {});
+    return;
+  }
+
+  auto drive_query = drivefs::mojom::QueryParameters::New();
+  drive_query->title = query;
+  drive_query->page_size = max_results;
+  drive_query->sort_field = sort_field;
+  drive_query->sort_direction = sort_direction;
+
+  auto on_response =
+      base::BindOnce(&DriveIntegrationService::OnSearchDriveByFileName,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  GetDriveFsHost()->PerformSearch(
+      std::move(drive_query),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+}
+
+void DriveIntegrationService::OnSearchDriveByFileName(
+    SearchDriveByFileNameCallback callback,
+    drive::FileError error,
+    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+    std::move(callback).Run(error, {});
+    return;
+  }
+
+  std::vector<base::FilePath> result;
+  result.reserve(items->size());
+  for (const auto& item : *items) {
+    result.emplace_back(item->path);
+  }
+  std::move(callback).Run(error, std::move(result));
+}
+
 void DriveIntegrationService::GetMetadata(
     const base::FilePath& local_path,
     drivefs::mojom::DriveFs::GetMetadataCallback callback) {
@@ -1109,6 +1164,7 @@ void DriveIntegrationService::LocateFilesByItemIds(
     drivefs::mojom::DriveFs::LocateFilesByItemIdsCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
     std::move(callback).Run({});
+    return;
   }
   GetDriveFsInterface()->LocateFilesByItemIds(item_ids, std::move(callback));
 }

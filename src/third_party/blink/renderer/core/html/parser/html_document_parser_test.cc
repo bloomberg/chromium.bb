@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
-#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/core/loader/no_state_prefetch_client.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -18,10 +18,11 @@ namespace blink {
 
 namespace {
 
-class MockPrerendererClient : public PrerendererClient {
+class MockNoStatePrefetchClient : public NoStatePrefetchClient {
  public:
-  MockPrerendererClient(Page& page, bool is_prefetch_only)
-      : PrerendererClient(page, nullptr), is_prefetch_only_(is_prefetch_only) {}
+  MockNoStatePrefetchClient(Page& page, bool is_prefetch_only)
+      : NoStatePrefetchClient(page, nullptr),
+        is_prefetch_only_(is_prefetch_only) {}
 
  private:
   bool IsPrefetchOnly() override { return is_prefetch_only_; }
@@ -117,9 +118,9 @@ TEST_P(HTMLDocumentParserTest, HasNoPendingWorkAfterDetach) {
 
 TEST_P(HTMLDocumentParserTest, AppendPrefetch) {
   auto& document = To<HTMLDocument>(GetDocument());
-  ProvidePrerendererClientTo(
-      *document.GetPage(),
-      MakeGarbageCollected<MockPrerendererClient>(*document.GetPage(), true));
+  ProvideNoStatePrefetchClientTo(
+      *document.GetPage(), MakeGarbageCollected<MockNoStatePrefetchClient>(
+                               *document.GetPage(), true));
   EXPECT_TRUE(document.IsPrefetchOnly());
   HTMLDocumentParser* parser = CreateParser(document);
 
@@ -151,7 +152,8 @@ TEST_P(HTMLDocumentParserTest, AppendNoPrefetch) {
   // The bytes are forwarded to the tokenizer.
   HTMLParserScriptRunnerHost* script_runner_host =
       parser->AsHTMLParserScriptRunnerHostForTesting();
-  EXPECT_FALSE(script_runner_host->HasPreloadScanner());
+  EXPECT_EQ(script_runner_host->HasPreloadScanner(),
+            testing::get<0>(GetParam()) == kAllowDeferredParsing);
   EXPECT_EQ(HTMLTokenizer::kTagNameState, parser->Tokenizer()->GetState());
   // Cancel any pending work to make sure that RuntimeFeatures DCHECKs do not
   // fire.

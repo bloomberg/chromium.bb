@@ -7,18 +7,18 @@
 #include <string>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_system_event_loop.h"
 #include "net/quic/platform/impl/quic_epoll_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_client.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/simple_session_cache.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_client.h"
+#include "quic/tools/quic_url.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               host,
@@ -378,18 +378,19 @@ std::set<Feature> ServerSupport(std::string dns_host,
       break;
     }
   }
-  CHECK(version.IsKnown());
+  QUICHE_CHECK(version.IsKnown());
   QuicEnableVersion(version);
 
+  std::cout << "Attempting interop with version " << version << std::endl;
+
   // Build the client, and try to connect.
-  QuicSocketAddress addr =
-      tools::LookupAddress(dns_host, quiche::QuicheStrCat(port));
+  QuicSocketAddress addr = tools::LookupAddress(dns_host, absl::StrCat(port));
   if (!addr.IsInitialized()) {
     QUIC_LOG(ERROR) << "Failed to resolve " << dns_host;
     return std::set<Feature>();
   }
   QuicServerId server_id(url_host, port, false);
-  std::string authority = quiche::QuicheStrCat(url_host, ":", port);
+  std::string authority = absl::StrCat(url_host, ":", port);
 
   QuicClientInteropRunner runner;
 

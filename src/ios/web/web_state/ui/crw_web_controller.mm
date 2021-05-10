@@ -11,13 +11,16 @@
 #include "base/ios/ios_util.h"
 #include "base/json/string_escape.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/browsing_data/browsing_data_remover.h"
+#import "ios/web/common/crw_input_view_provider.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#import "ios/web/common/uikit_ui_util.h"
 #include "ios/web/common/url_util.h"
 #import "ios/web/favicon/favicon_manager.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
@@ -26,13 +29,14 @@
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
+#import "ios/web/js_messaging/web_view_web_state_map_impl.h"
+#import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/crw_js_navigation_handler.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_web_view_navigation_observer.h"
 #import "ios/web/navigation/crw_web_view_navigation_observer_delegate.h"
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
-#import "ios/web/navigation/error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_util.h"
@@ -45,14 +49,13 @@
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
-#import "ios/web/web_state/ui/crw_context_menu_delegate.h"
+#import "ios/web/web_state/ui/crw_legacy_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_request_controller.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler_delegate.h"
-#import "ios/web/web_state/ui/js_window_error_manager.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -93,7 +96,7 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 }  // namespace
 
 @interface CRWWebController () <CRWWKNavigationHandlerDelegate,
-                                CRWContextMenuDelegate,
+                                CRWInputViewProvider,
                                 CRWJSInjectorDelegate,
                                 CRWSSLStatusUpdaterDataSource,
                                 CRWSSLStatusUpdaterDelegate,
@@ -147,9 +150,6 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 
   // Manager for favicon JavaScript messages.
   std::unique_ptr<web::FaviconManager> _faviconManager;
-
-  // Manager for window.error message.
-  std::unique_ptr<web::JsWindowErrorManager> _jsWindowErrorManager;
 
   // Logger for cookie;.error message.
   std::unique_ptr<web::CookieBlockingErrorLogger> _cookieBlockingErrorLogger;
@@ -223,6 +223,10 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 // Returns the navigation item for the current page.
 @property(nonatomic, readonly) web::NavigationItemImpl* currentNavItem;
 
+// ContextMenu controller, handling the interactions with the context menu.
+@property(nonatomic, strong)
+    CRWContextMenuController* contextMenuController API_AVAILABLE(ios(13.0));
+
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
@@ -248,8 +252,6 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 // |completion| is called with nullptr.
 typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion;
-// Called by NSNotificationCenter upon orientation changes.
-- (void)orientationDidChange;
 // Queries the web view for the user-scalable meta tag and calls
 // |-applyPageDisplayState:userScalable:| with the result.
 - (void)applyPageDisplayState:(const web::PageDisplayState&)displayState;
@@ -307,15 +309,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         initWithBrowserState:browserState];
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
-    _jsWindowErrorManager =
-        std::make_unique<web::JsWindowErrorManager>(_webStateImpl);
     _cookieBlockingErrorLogger =
         std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(orientationDidChange)
-               name:UIApplicationDidChangeStatusBarOrientationNotification
-             object:nil];
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] initWithDelegate:self];
 
@@ -423,6 +418,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [self webViewConfigurationProvider].GetScriptMessageRouter();
   self.webStateImpl->GetWebFramesManagerImpl().OnWebViewUpdated(
       _webView, webView, messageRouter);
+  web::WebViewWebStateMapImpl::FromBrowserState(
+      self.webStateImpl->GetBrowserState())
+      ->SetAssociatedWebViewForWebState(webView, self.webStateImpl);
 
   if (_webView) {
     [_webView stopLoading];
@@ -693,12 +691,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!_containerView)
     return;
 
-  // WKBasedNavigationManagerImpl needs WKWebView to load native views, but
-  // WKWebView cannot be created while web usage is disabled to avoid breaking
-  // clearing browser data. Bail now and let the URL be loaded when web
-  // usage is enabled again. This can happen when purging web pages when an
-  // interstitial is presented over a native view. See https://crbug.com/865985
-  // for details.
+  // NavigationManagerImpl needs WKWebView to load native views, but WKWebView
+  // cannot be created while web usage is disabled to avoid breaking clearing
+  // browser data. Bail now and let the URL be loaded when web usage is enabled
+  // again. This can happen when purging web pages when an interstitial is
+  // presented over a native view. See https://crbug.com/865985 for details.
   if (!_webUsageEnabled)
     return;
 
@@ -827,7 +824,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
   }
 
-  if ([ErrorPageHelper isErrorPageFileURL:URL]) {
+  if ([CRWErrorPageHelper isErrorPageFileURL:URL]) {
     context->SetLoadingErrorPage(true);
   }
 
@@ -858,7 +855,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   WKSnapshotConfiguration* configuration =
       [[WKSnapshotConfiguration alloc] init];
-  configuration.rect = [self.webView convertRect:rect fromView:self.view];
+  CGRect convertedRect = [self.webView convertRect:rect fromView:self.view];
+  configuration.rect = convertedRect;
   __weak CRWWebController* weakSelf = self;
   [self.webView
       takeSnapshotWithConfiguration:configuration
@@ -877,6 +875,30 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                       }
                       completion(nil);
                     } else {
+                      if (@available(iOS 14, *)) {
+                        if (base::FeatureList::IsEnabled(
+                                web::features::kRecordSnapshotSize)) {
+                          size_t imageSize =
+                              CGImageGetBytesPerRow(snapshot.CGImage) *
+                              CGImageGetHeight(snapshot.CGImage);
+                          WKPDFConfiguration* config =
+                              [[WKPDFConfiguration alloc] init];
+                          config.rect = convertedRect;
+                          [self.webView
+                              createPDFWithConfiguration:config
+                                       completionHandler:^(NSData* PDF,
+                                                           NSError*) {
+                                         size_t PDFSize = PDF.length;
+                                         base::UmaHistogramMemoryKB(
+                                             "IOS.Snapshots.ImageSize",
+                                             imageSize / 1024);
+                                         base::UmaHistogramMemoryKB(
+                                             "IOS.Snapshots.PDFSize",
+                                             PDFSize / 1024);
+                                       }];
+                        }
+                      }
+
                       completion(snapshot);
                     }
                   }];
@@ -953,8 +975,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     GURL documentOrigin = newURL.GetOrigin();
     web::NavigationItem* committedItem =
         self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
-    GURL committedOrigin =
-        committedItem ? committedItem->GetURL().GetOrigin() : GURL::EmptyGURL();
+    GURL committedURL =
+        committedItem ? committedItem->GetURL() : GURL::EmptyGURL();
+    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+        IsPlaceholderUrl(committedURL)) {
+      committedURL = ExtractUrlFromPlaceholderUrl(committedURL);
+    }
+    GURL committedOrigin = committedURL.GetOrigin();
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
 
@@ -986,10 +1013,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Adds a custom drop interaction to the same subview of |self.webScrollView|
 // that already has a default drop interaction.
 - (void)addCustomURLDropInteractionIfNeeded {
-  if (!base::FeatureList::IsEnabled(
-          web::features::kAddWebContentDropInteraction))
-    return;
-
   BOOL subviewWithDefaultInteractionFound = NO;
   for (UIView* subview in self.webScrollView.subviews) {
     BOOL defaultInteractionFound = NO;
@@ -1288,7 +1311,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                }];
 }
 
-- (void)orientationDidChange {
+- (void)surfaceSizeChanged {
   // When rotating, the available zoom scale range may change, zoomScale's
   // percentage into this range should remain constant.  However, there are
   // two known bugs with respect to adjusting the zoomScale on rotation:
@@ -1485,10 +1508,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   } else {
     // Use the screen size because the application's key window and the
     // container may still be nil.
-    _containerView.frame =
-        UIApplication.sharedApplication.keyWindow
-            ? UIApplication.sharedApplication.keyWindow.bounds
-            : UIScreen.mainScreen.bounds;
+    _containerView.frame = GetAnyKeyWindow() ? GetAnyKeyWindow().bounds
+                                             : UIScreen.mainScreen.bounds;
   }
 
   DCHECK(!CGRectIsEmpty(_containerView.frame));
@@ -1532,12 +1553,22 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           requireGestureRecognizerToFail:swipeRecognizer];
     }
 
-    web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-    self.UIHandler.contextMenuController =
-        [[CRWContextMenuController alloc] initWithWebView:self.webView
-                                             browserState:browserState
-                                                 delegate:self];
-    self.UIHandler.contextMenuController.webState = self.webStateImpl;
+    BOOL usingNewContextMenu = NO;
+    if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
+      if (@available(iOS 13, *)) {
+        usingNewContextMenu = YES;
+        self.contextMenuController = [[CRWContextMenuController alloc]
+            initWithWebView:self.webView
+                   webState:self.webStateImpl];
+      }
+    }
+    if (!usingNewContextMenu) {
+      // Default to legacy implementation.
+      self.UIHandler.contextMenuController =
+          [[CRWLegacyContextMenuController alloc]
+              initWithWebView:self.webView
+                     webState:self.webStateImpl];
+    }
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.
@@ -1570,8 +1601,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         web::GetWebClient()->GetDefaultUserAgent(_containerView, GURL());
   }
 
-  return web::BuildWKWebView(
-      CGRectZero, config, self.webStateImpl->GetBrowserState(), userAgentType);
+  return web::BuildWKWebView(CGRectZero, config,
+                             self.webStateImpl->GetBrowserState(),
+                             userAgentType, self);
 }
 
 // Wraps the web view in a CRWWebViewContentView and adds it to the container
@@ -1663,24 +1695,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       self.webStateImpl->GetNavigationManager()->GetVisibleItem();
   if (navigationItem == visibleItem)
     self.webStateImpl->DidChangeVisibleSecurityState();
-}
-
-#pragma mark - CRWContextMenuDelegate methods
-
-- (void)webView:(WKWebView*)webView
-    handleContextMenu:(const web::ContextMenuParams&)params {
-  DCHECK(webView == self.webView);
-  if (_isBeingDestroyed) {
-    return;
-  }
-  self.webStateImpl->HandleContextMenu(params);
-}
-
-- (void)webView:(WKWebView*)webView
-    executeJavaScript:(NSString*)javaScript
-    completionHandler:(void (^)(id, NSError*))completionHandler {
-  [_jsInjector executeJavaScript:javaScript
-               completionHandler:completionHandler];
 }
 
 #pragma mark - CRWJSInjectorDelegate methods
@@ -2029,6 +2043,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (CRWWKNavigationHandler*)webRequestControllerNavigationHandler:
     (CRWWebRequestController*)requestController {
   return self.navigationHandler;
+}
+
+#pragma mark -  CRWInputViewProvider
+
+- (id<CRWResponderInputView>)responderInputView {
+  web::WebState* webState = self.webStateImpl;
+  if (webState && webState->GetDelegate()) {
+    return webState->GetDelegate()->GetResponderInputView(webState);
+  }
+  return nil;
 }
 
 #pragma mark - CRWJSNavigationHandlerDelegate

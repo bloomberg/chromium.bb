@@ -523,9 +523,64 @@ The filter accepts the following options:
 Set split frequencies. Those must be positive and increasing.
 
 @item order
-Set filter order, can be @var{2nd}, @var{4th} or @var{8th}.
-Default is @var{4th}.
+Set filter order for each band split. This controls filter roll-off or steepness
+of filter transfer function.
+Available values are:
+
+@table @samp
+@item 2nd
+12 dB per octave.
+@item 4th
+24 dB per octave.
+@item 6th
+36 dB per octave.
+@item 8th
+48 dB per octave.
+@item 10th
+60 dB per octave.
+@item 12th
+72 dB per octave.
+@item 14th
+84 dB per octave.
+@item 16th
+96 dB per octave.
+@item 18th
+108 dB per octave.
+@item 20th
+120 dB per octave.
 @end table
+
+Default is @var{4th}.
+
+@item level
+Set input gain level. Allowed range is from 0 to 1. Default value is 1.
+
+@item gains
+Set output gain for each band. Default value is 1 for all bands.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Split input audio stream into two bands (low and high) with split frequency of 1500 Hz,
+each band will be in separate stream:
+@example
+ffmpeg -i in.flac -filter_complex 'acrossover=split=1500[LOW][HIGH]' -map '[LOW]' low.wav -map '[HIGH]' high.wav
+@end example
+
+@item
+Same as above, but with higher filter order:
+@example
+ffmpeg -i in.flac -filter_complex 'acrossover=split=1500:order=8th[LOW][HIGH]' -map '[LOW]' low.wav -map '[HIGH]' high.wav
+@end example
+
+@item
+Same as above, but also with additional middle band (frequencies between 1500 and 8000):
+@example
+ffmpeg -i in.flac -filter_complex 'acrossover=split=1500 8000:order=8th[LOW][MID][HIGH]' -map '[LOW]' low.wav -map '[MID]' mid.wav -map '[HIGH]' high.wav
+@end example
+@end itemize
 
 @section acrusher
 
@@ -731,6 +786,39 @@ adelay=delays=64S:all=1
 @end example
 @end itemize
 
+@section adenorm
+Remedy denormals in audio by adding extremely low-level noise.
+
+This filter shall be placed before any filter that can produce denormals.
+
+A description of the accepted parameters follows.
+
+@table @option
+@item level
+Set level of added noise in dB. Default is @code{-351}.
+Allowed range is from -451 to -90.
+
+@item type
+Set type of added noise.
+
+@table @option
+@item dc
+Add DC signal.
+@item ac
+Add AC signal.
+@item square
+Add square signal.
+@item pulse
+Add pulse signal.
+@end table
+
+Default is @code{dc}.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section aderivative, aintegral
 
 Compute derivative/integral of audio stream.
@@ -842,6 +930,10 @@ select 50µs (FM-KF).
 select 75µs (FM-KF).
 @end table
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section aeval
 
@@ -985,10 +1077,18 @@ select double-exponential seat
 select double-exponential sigmoid
 @item losi
 select logistic sigmoid
+@item sinc
+select sine cardinal function
+@item isinc
+select inverted sine cardinal function
 @item nofade
 no fade applied
 @end table
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @subsection Examples
 
@@ -1314,6 +1414,25 @@ Force the output to either unsigned 8-bit or signed 16-bit stereo
 aformat=sample_fmts=u8|s16:channel_layouts=stereo
 @end example
 
+@section afreqshift
+Apply frequency shift to input audio samples.
+
+The filter accepts the following options:
+
+@table @option
+@item shift
+Specify frequency shift. Allowed range is -INT_MAX to INT_MAX.
+Default value is 0.0.
+
+@item level
+Set output gain applied to final output. Allowed range is from 0.0 to 1.0.
+Default value is 1.0.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section agate
 
 A gate is mainly used to reduce lower parts of a signal. This kind of signal
@@ -1382,6 +1501,10 @@ the reduction.
 Default is @code{average}. Can be @code{average} or @code{maximum}.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section aiir
 
 Apply an arbitrary Infinite Impulse Response filter.
@@ -1390,10 +1513,10 @@ It accepts the following parameters:
 
 @table @option
 @item zeros, z
-Set numerator/zeros coefficients.
+Set B/numerator/zeros/reflection coefficients.
 
 @item poles, p
-Set denominator/poles coefficients.
+Set A/denominator/poles/ladder coefficients.
 
 @item gains, k
 Set channels gains.
@@ -1408,6 +1531,10 @@ Set output gain.
 Set coefficients format.
 
 @table @samp
+@item ll
+lattice-ladder function
+@item sf
+analog transfer function
 @item tf
 digital transfer function
 @item zp
@@ -1421,8 +1548,16 @@ S-plane zeros/poles
 @end table
 
 @item process, r
-Set kind of processing.
-Can be @code{d} - direct or @code{s} - serial cascading. Default is @code{s}.
+Set type of processing.
+
+@table @samp
+@item d
+direct processing
+@item s
+serial processing
+@item p
+parallel processing
+@end table
 
 @item precision, e
 Set filtering precision.
@@ -1458,7 +1593,7 @@ displayed. This option is used only when @var{response} is enabled.
 Set video stream size. This option is used only when @var{response} is enabled.
 @end table
 
-Coefficients in @code{tf} format are separated by spaces and are in ascending
+Coefficients in @code{tf} and @code{sf} format are separated by spaces and are in ascending
 order.
 
 Coefficients in @code{zp} format are separated by spaces and order of coefficients
@@ -1482,6 +1617,12 @@ aiir=k=1:z=7.957584807809675810E-1 -2.575128568908332300 3.674839853930788710 -2
 Same as above but in @code{zp} format:
 @example
 aiir=k=0.79575848078096756:z=0.80918701+0.58773007i 0.80918701-0.58773007i 0.80884700+0.58784055i 0.80884700-0.58784055i:p=0.63892345+0.59951235i 0.63892345-0.59951235i 0.79582691+0.44198673i 0.79582691-0.44198673i:f=zp:r=s
+@end example
+
+@item
+Apply 3-rd order analog normalized Butterworth low-pass filter, using analog transfer function format:
+@example
+aiir=z=1.3057 0 0 0:p=1.3057 2.3892 2.1860 1:f=sf:r=d
 @end example
 @end itemize
 
@@ -1580,6 +1721,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -1759,7 +1916,7 @@ Set central frequency for band.
 If input doesn't have that frequency the entry is ignored.
 
 @item w
-Set band width in hertz.
+Set band width in Hertz.
 
 @item g
 Set band gain in dB.
@@ -1824,7 +1981,7 @@ Syntax for the commands is : "@var{fN}|f=@var{freq}|w=@var{width}|g=@var{gain}"
 @var{fN} is existing filter number, starting from 0, if no such filter is available
 error is returned.
 @var{freq} set new frequency parameter.
-@var{width} set new width parameter in herz.
+@var{width} set new width parameter in Hertz.
 @var{gain} set new gain parameter in dB.
 
 Full filter invocation with asendcmd may look like this:
@@ -1876,16 +2033,7 @@ Set smooth factor. Default value is @var{11}. Allowed range is from @var{1} to @
 
 @subsection Commands
 
-This filter supports the following commands:
-@table @option
-@item s
-Change denoise strength. Argument is single float number.
-Syntax for the command is : "@var{s}"
-
-@item o
-Change output mode.
-Syntax for the command is : "i", "o" or "n" string.
-@end table
+This filter supports the all above options as @ref{commands}.
 
 @section anlms
 Apply Normalized Least-Mean-Squares algorithm to the first audio stream using the second audio stream.
@@ -2048,6 +2196,25 @@ It accepts the following values:
 @end table
 @end table
 
+@section aphaseshift
+Apply phase shift to input audio samples.
+
+The filter accepts the following options:
+
+@table @option
+@item shift
+Specify phase shift. Allowed range is from -1.0 to 1.0.
+Default value is 0.0.
+
+@item level
+Set output gain applied to final output. Allowed range is from 0.0 to 1.0.
+Default value is 1.0.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section apulsator
 
 Audio pulsator is something between an autopanner and a tremolo.
@@ -2167,6 +2334,13 @@ This filter accepts the following options:
 @table @option
 @item model, m
 Set train model file to load. This option is always required.
+
+@item mix
+Set how much to mix filtered samples into final output.
+Allowed range is from -1 to 1. Default value is 1.
+Negative values are special, they set how much to keep filtered noise
+in the final filter output. Set this option to -1 to hear actual
+noise removed from input signal.
 @end table
 
 @section asetnsamples
@@ -2269,6 +2443,7 @@ Set type of soft-clipping.
 
 It accepts the following values:
 @table @option
+@item hard
 @item tanh
 @item atan
 @item cubic
@@ -2276,10 +2451,14 @@ It accepts the following values:
 @item alg
 @item quintic
 @item sin
+@item erf
 @end table
 
 @item param
 Set additional parameter which controls sigmoid function.
+
+@item oversample
+Set oversampling factor.
 @end table
 
 @subsection Commands
@@ -2479,11 +2658,11 @@ The filter accepts the following options:
 @table @option
 @item dry
 Set dry gain, how much of original signal is kept. Allowed range is from 0 to 1.
-Default value is 0.5.
+Default value is 0.7.
 
 @item wet
 Set wet gain, how much of filtered signal is kept. Allowed range is from 0 to 1.
-Default value is 0.8.
+Default value is 0.7.
 
 @item decay
 Set delay line decay gain value. Allowed range is from 0 to 1.
@@ -2491,10 +2670,10 @@ Default value is 0.7.
 
 @item feedback
 Set delay line feedback gain value. Allowed range is from 0 to 1.
-Default value is 0.5.
+Default value is 0.9.
 
 @item cutoff
-Set cutoff frequency in herz. Allowed range is 50 to 900.
+Set cutoff frequency in Hertz. Allowed range is 50 to 900.
 Default value is 100.
 
 @item slope
@@ -2504,6 +2683,104 @@ Default value is 0.5.
 @item delay
 Set delay. Allowed range is from 1 to 100.
 Default value is 20.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section asubcut
+Cut subwoofer frequencies.
+
+This filter allows to set custom, steeper
+roll off than highpass filter, and thus is able to more attenuate
+frequency content in stop-band.
+
+The filter accepts the following options:
+
+@table @option
+@item cutoff
+Set cutoff frequency in Hertz. Allowed range is 2 to 200.
+Default value is 20.
+
+@item order
+Set filter order. Available values are from 3 to 20.
+Default value is 10.
+
+@item level
+Set input gain level. Allowed range is from 0 to 1. Default value is 1.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section asupercut
+Cut super frequencies.
+
+The filter accepts the following options:
+
+@table @option
+@item cutoff
+Set cutoff frequency in Hertz. Allowed range is 20000 to 192000.
+Default value is 20000.
+
+@item order
+Set filter order. Available values are from 3 to 20.
+Default value is 10.
+
+@item level
+Set input gain level. Allowed range is from 0 to 1. Default value is 1.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section asuperpass
+Apply high order Butterworth band-pass filter.
+
+The filter accepts the following options:
+
+@table @option
+@item centerf
+Set center frequency in Hertz. Allowed range is 2 to 999999.
+Default value is 1000.
+
+@item order
+Set filter order. Available values are from 4 to 20.
+Default value is 4.
+
+@item qfactor
+Set Q-factor. Allowed range is from 0.01 to 100. Default value is 1.
+
+@item level
+Set input gain level. Allowed range is from 0 to 2. Default value is 1.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section asuperstop
+Apply high order Butterworth band-stop filter.
+
+The filter accepts the following options:
+
+@table @option
+@item centerf
+Set center frequency in Hertz. Allowed range is 2 to 999999.
+Default value is 1000.
+
+@item order
+Set filter order. Available values are from 4 to 20.
+Default value is 4.
+
+@item qfactor
+Set Q-factor. Allowed range is from 0.01 to 100. Default value is 1.
+
+@item level
+Set input gain level. Allowed range is from 0 to 2. Default value is 1.
 @end table
 
 @subsection Commands
@@ -2708,6 +2985,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -2779,6 +3072,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -2857,6 +3166,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -2923,6 +3248,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -3654,6 +3995,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -4139,6 +4496,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -4473,6 +4846,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -4929,6 +5318,10 @@ Default is average. Can be average or maximum.
 Set sidechain gain. Default is 1. Range is from 0.015625 to 64.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section silencedetect
 
 Detect silence in an audio stream.
@@ -5190,6 +5583,69 @@ and also with custom gain:
 @end example
 @end itemize
 
+@section speechnorm
+Speech Normalizer.
+
+This filter expands or compresses each half-cycle of audio samples
+(local set of samples all above or all below zero and between two nearest zero crossings) depending
+on threshold value, so audio reaches target peak value under conditions controlled by below options.
+
+The filter accepts the following options:
+
+@table @option
+@item peak, p
+Set the expansion target peak value. This specifies the highest allowed absolute amplitude
+level for the normalized audio input. Default value is 0.95. Allowed range is from 0.0 to 1.0.
+
+@item expansion, e
+Set the maximum expansion factor. Allowed range is from 1.0 to 50.0. Default value is 2.0.
+This option controls maximum local half-cycle of samples expansion. The maximum expansion
+would be such that local peak value reaches target peak value but never to surpass it and that
+ratio between new and previous peak value does not surpass this option value.
+
+@item compression, c
+Set the maximum compression factor. Allowed range is from 1.0 to 50.0. Default value is 2.0.
+This option controls maximum local half-cycle of samples compression. This option is used
+only if @option{threshold} option is set to value greater than 0.0, then in such cases
+when local peak is lower or same as value set by @option{threshold} all samples belonging to
+that peak's half-cycle will be compressed by current compression factor.
+
+@item threshold, t
+Set the threshold value. Default value is 0.0. Allowed range is from 0.0 to 1.0.
+This option specifies which half-cycles of samples will be compressed and which will be expanded.
+Any half-cycle samples with their local peak value below or same as this option value will be
+compressed by current compression factor, otherwise, if greater than threshold value they will be
+expanded with expansion factor so that it could reach peak target value but never surpass it.
+
+@item raise, r
+Set the expansion raising amount per each half-cycle of samples. Default value is 0.001.
+Allowed range is from 0.0 to 1.0. This controls how fast expansion factor is raised per
+each new half-cycle until it reaches @option{expansion} value.
+Setting this options too high may lead to distortions.
+
+@item fall, f
+Set the compression raising amount per each half-cycle of samples. Default value is 0.001.
+Allowed range is from 0.0 to 1.0. This controls how fast compression factor is raised per
+each new half-cycle until it reaches @option{compression} value.
+
+@item channels, h
+Specify which channels to filter, by default all available channels are filtered.
+
+@item invert, i
+Enable inverted filtering, by default is disabled. This inverts interpretation of @option{threshold}
+option. When enabled any half-cycle of samples with their local peak value below or same as
+@option{threshold} option will be expanded otherwise it will be compressed.
+
+@item link, l
+Link channels when calculating gain applied to each filtered channel sample, by default is disabled.
+When disabled each filtered channel gain calculation is independent, otherwise when this option
+is enabled the minimum of all possible gains for each filtered channel is used.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section stereotools
 
 This filter has some handy utilities to manage stereo signals, for converting
@@ -5261,6 +5717,12 @@ Mid/Side to Left/Left.
 
 @item ms>rr
 Mid/Side to Right/Right.
+
+@item ms>rl
+Mid/Side to Right/Left.
+
+@item lr>l-r
+Left/Right to Left - Right.
 @end table
 
 @item slev
@@ -5309,6 +5771,10 @@ Similar as classic mode above but gain is raised up to 2.
 Equal power distribution, from -6dB to +6dB range.
 @end table
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @subsection Examples
 
@@ -5601,6 +6067,22 @@ Set transform type of IIR filter.
 @item di
 @item dii
 @item tdii
+@item latt
+@end table
+
+@item precision, r
+Set precison of filtering.
+@table @option
+@item auto
+Pick automatic sample format depending on surround filters.
+@item s16
+Always use signed 16-bit.
+@item s32
+Always use signed 32-bit.
+@item f32
+Always use float 32-bit.
+@item f64
+Always use float 64-bit.
 @end table
 @end table
 
@@ -6598,7 +7080,7 @@ Alternatively can be set to @code{s} serial.
 
 Parallel can be faster then serial, while other way around is never true.
 Parallel will abort early on first change being greater then thresholds, while serial
-will continue processing other side of frames if they are equal or bellow thresholds.
+will continue processing other side of frames if they are equal or below thresholds.
 @end table
 
 @subsection Commands
@@ -7264,7 +7746,7 @@ The filter accepts the following options:
 @table @option
 @item thres
 Set threshold for averaging chrominance values.
-Sum of absolute difference of U and V pixel components or current
+Sum of absolute difference of Y, U and V pixel components of current
 pixel and neighbour pixels lower than this threshold will be used in
 averaging. Luma component is left unchanged and is copied to output.
 Default value is 30. Allowed range is from 1 to 200.
@@ -7286,6 +7768,24 @@ Mostly useful to speed-up filtering.
 Set vertical step when averaging. Default value is 1.
 Allowed range is from 1 to 50.
 Mostly useful to speed-up filtering.
+
+@item threy
+Set Y threshold for averaging chrominance values.
+Set finer control for max allowed difference between Y components
+of current pixel and neigbour pixels.
+Default value is 200. Allowed range is from 1 to 200.
+
+@item threu
+Set U threshold for averaging chrominance values.
+Set finer control for max allowed difference between U components
+of current pixel and neigbour pixels.
+Default value is 200. Allowed range is from 1 to 200.
+
+@item threv
+Set V threshold for averaging chrominance values.
+Set finer control for max allowed difference between V components
+of current pixel and neigbour pixels.
+Default value is 200. Allowed range is from 1 to 200.
 @end table
 
 @subsection Commands
@@ -8048,6 +8548,10 @@ Set matrix mode for each plane. Can be @var{square}, @var{row} or @var{column}.
 Default is @var{square}.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @subsection Examples
 
 @itemize
@@ -8470,6 +8974,10 @@ The value which the width/height should be divisible by. It defaults to
 16. The offset is automatically adjusted to center the video. Use 2 to
 get only even dimensions (needed for 4:2:2 video). 16 is best when
 encoding to most video codecs.
+
+@item skip
+Set the number of initial frames for which evaluation is skipped.
+Default is 2. Range is 0 to INT_MAX.
 
 @item reset_count, reset
 Set the counter that determines after how many frames cropdetect will
@@ -9264,6 +9772,10 @@ Controls brightness of spill area, preserving colors.
 @item alpha
 Modify alpha from generated spillmap.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section detelecine
 
@@ -11634,6 +12146,10 @@ frei0r=perspective:0.2/0.2|0.8/0.2
 
 For more information, see
 @url{http://frei0r.dyne.org}
+
+@subsection Commands
+
+This filter supports the @option{filter_params} option as @ref{commands}.
 
 @section fspp
 
@@ -14658,7 +15174,7 @@ testsrc=s=100x100, split=4 [in0][in1][in2][in3];
 
 Overlay one video on top of another.
 
-This is the CUDA cariant of the @ref{overlay} filter.
+This is the CUDA variant of the @ref{overlay} filter.
 It only accepts CUDA frames. The underlying input pixel formats have to match.
 
 It takes two inputs and has one output. The first input is the "main"
@@ -15439,6 +15955,10 @@ Set value which will be multiplied with filtered result.
 Set value which will be added to filtered result.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section pseudocolor
 
 Alter frame colors in video with pseudocolors.
@@ -15755,6 +16275,10 @@ Enable checking the parity bit. In the event of a parity error, the filter will 
 Lowpass lines prior to further processing. Default is enabled.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @subsection Examples
 
 @itemize
@@ -16026,6 +16550,10 @@ Set value which will be multiplied with filtered result.
 @item delta
 Set value which will be added to filtered result.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section rotate
 
@@ -17612,6 +18140,10 @@ Set value which will be multiplied with filtered result.
 @item delta
 Set value which will be added to filtered result.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @anchor{spp}
 @section spp
@@ -19543,6 +20075,8 @@ Spline16 interpolation.
 @item gauss
 @item gaussian
 Gaussian interpolation.
+@item mitchell
+Mitchell interpolation.
 @end table
 
 Default value is @b{@samp{line}}.
@@ -20561,6 +21095,8 @@ Set one of available transition effects:
 @item wipetr
 @item wipebl
 @item wipebr
+@item squeezeh
+@item squeezev
 @end table
 Default transition effect is fade.
 
@@ -23338,6 +23874,39 @@ Set color which will be used for drawing median phase. If color is
 Enable video output. Default is enabled.
 @end table
 
+@subsection phasing detection
+
+The filter also detects out of phase and mono sequences in stereo streams.
+It logs the sequence start, end and duration when it lasts longer or as long as the minimum set.
+
+The filter accepts the following options for this detection:
+
+@table @option
+@item phasing
+Enable mono and out of phase detection. Default is disabled.
+
+@item tolerance, t
+Set phase tolerance for mono detection, in amplitude ratio. Default is @code{0}.
+Allowed range is @code{[0, 1]}.
+
+@item angle, a
+Set angle threshold for out of phase detection, in degree. Default is @code{170}.
+Allowed range is @code{[90, 180]}.
+
+@item duration, d
+Set mono or out of phase duration until notification, expressed in seconds. Default is @code{2}.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Complete example with @command{ffmpeg} to detect 1 second of mono with 0.001 phase tolerance:
+@example
+ffmpeg -i stereo.wav -af aphasemeter=video=0:phasing=1:duration=1:tolerance=0.001 -f null -
+@end example
+@end itemize
+
 @section avectorscope
 
 Convert input audio to a video output, representing the audio vector
@@ -24962,6 +25531,16 @@ Default is @code{combined}.
 @item minamp
 Set minimum amplitude used in @code{log} amplitude scaler.
 
+@item data
+Set data display mode.
+
+It accepts the following values:
+@table @samp
+@item magnitude
+@item phase
+@item delay
+@end table
+Default is @code{magnitude}.
 @end table
 
 @section showspatial

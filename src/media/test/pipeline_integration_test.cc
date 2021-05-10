@@ -351,6 +351,9 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
 class FailingVideoDecoder : public VideoDecoder {
  public:
   std::string GetDisplayName() const override { return "FailingVideoDecoder"; }
+  VideoDecoderType GetDecoderType() const override {
+    return VideoDecoderType::kUnknown;
+  }
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -445,6 +448,25 @@ class BasicPlaybackTest : public PipelineIntegrationTest,
                           public testing::WithParamInterface<PlaybackTestData> {
 };
 
+TEST_P(BasicPlaybackTest, PlayToEnd) {
+  PlaybackTestData data = GetParam();
+
+  ASSERT_EQ(PIPELINE_OK, Start(data.filename, kUnreliableDuration));
+  EXPECT_EQ(data.start_time_ms, demuxer_->GetStartTime().InMilliseconds());
+  EXPECT_EQ(data.duration_ms, pipeline_->GetMediaDuration().InMilliseconds());
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+const PlaybackTestData kOpenCodecsTests[] = {{"bear-vp9-i422.webm", 0, 2736}};
+
+INSTANTIATE_TEST_SUITE_P(OpenCodecs,
+                         BasicPlaybackTest,
+                         testing::ValuesIn(kOpenCodecsTests));
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
 class BasicMSEPlaybackTest
     : public ::testing::WithParamInterface<MSEPlaybackTestData>,
       public PipelineIntegrationTest {
@@ -472,28 +494,9 @@ class BasicMSEPlaybackTest
   }
 };
 
-TEST_P(BasicPlaybackTest, PlayToEnd) {
-  PlaybackTestData data = GetParam();
-
-  ASSERT_EQ(PIPELINE_OK, Start(data.filename, kUnreliableDuration));
-  EXPECT_EQ(data.start_time_ms, demuxer_->GetStartTime().InMilliseconds());
-  EXPECT_EQ(data.duration_ms, pipeline_->GetMediaDuration().InMilliseconds());
-
-  Play();
-  ASSERT_TRUE(WaitUntilOnEnded());
-}
-
 TEST_P(BasicMSEPlaybackTest, PlayToEnd) {
   PlayToEnd();
 }
-
-const PlaybackTestData kOpenCodecsTests[] = {{"bear-vp9-i422.webm", 0, 2736}};
-
-INSTANTIATE_TEST_SUITE_P(OpenCodecs,
-                         BasicPlaybackTest,
-                         testing::ValuesIn(kOpenCodecsTests));
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 const PlaybackTestData kADTSTests[] = {
     {"bear-audio-main-aac.aac", 0, 2708},

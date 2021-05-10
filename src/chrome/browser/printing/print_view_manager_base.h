@@ -77,6 +77,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   // mojom::PrintManagerHost:
   void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;
+  void DidPrintDocument(mojom::DidPrintDocumentParamsPtr params,
+                        DidPrintDocumentCallback callback) override;
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
   void SetAccessibilityTree(
       int32_t cookie,
@@ -87,6 +89,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void UpdatePrintSettings(int32_t cookie,
                            base::Value job_settings,
                            UpdatePrintSettingsCallback callback) override;
+  void ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
+                     ScriptedPrintCallback callback) override;
   void ShowInvalidPrinterSettingsError() override;
   void PrintingFailed(int32_t cookie) override;
 
@@ -132,20 +136,11 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Cancels the print job.
   void NavigationStopped() override;
 
-  // printing::PrintManager:
-  void OnDidPrintDocument(
-      content::RenderFrameHost* render_frame_host,
-      const mojom::DidPrintDocumentParams& params,
-      std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
-  void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
-                       const mojom::ScriptedPrintParams& params,
-                       IPC::Message* reply_msg) override;
-
   // IPC message handlers for service.
   void OnComposePdfDone(const gfx::Size& page_size,
                         const gfx::Rect& content_area,
                         const gfx::Point& physical_offsets,
-                        std::unique_ptr<DelayedFrameDispatchHelper> helper,
+                        DidPrintDocumentCallback callback,
                         mojom::PrintCompositor::Status status,
                         base::ReadOnlySharedMemoryRegion region);
 

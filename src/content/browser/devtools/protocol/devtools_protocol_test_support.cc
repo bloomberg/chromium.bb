@@ -14,6 +14,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 
 namespace content {
 
@@ -125,6 +126,15 @@ void DevToolsProtocolTest::TearDownOnMainThread() {
   Detach();
 }
 
+bool DevToolsProtocolTest::HasExistingNotification(
+    const std::string& search) const {
+  for (const std::string& notification : notifications_) {
+    if (notification == search)
+      return true;
+  }
+  return false;
+}
+
 std::unique_ptr<base::DictionaryValue>
 DevToolsProtocolTest::WaitForNotification(const std::string& notification,
                                           bool allow_existing) {
@@ -152,7 +162,7 @@ blink::SecurityStyle DevToolsProtocolTest::GetSecurityStyle(
       SecurityStyleExplanation(
           "an explanation title", "an explanation summary",
           "an explanation description", cert_,
-          blink::WebMixedContentContextType::kNotMixedContent));
+          blink::mojom::MixedContentContextType::kNotMixedContent));
   return blink::SecurityStyle::kNeutral;
 }
 

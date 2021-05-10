@@ -39,9 +39,6 @@
 
 (function createTestSuite(window) {
 
-  /**
-   * @unrestricted
-   */
   const TestSuite = class {
     /**
      * Test suite for interactive UI tests.
@@ -96,7 +93,7 @@
    * @param {string} opt_message User message to print if the test fails.
    */
   TestSuite.prototype.assertTrue = function(value, opt_message) {
-    this.assertEquals(true, !!value, opt_message);
+    this.assertEquals(true, Boolean(value), opt_message);
   };
 
   /**
@@ -650,7 +647,8 @@
 
       function checkMetrics(consoleResult) {
         test.assertEquals(
-            '"' + JSON.stringify(metrics) + '"', consoleResult, 'Wrong metrics for params: ' + JSON.stringify(params));
+            JSON.stringify(JSON.stringify(metrics)), consoleResult,
+            'Wrong metrics for params: ' + JSON.stringify(params));
         callback();
       }
     }
@@ -987,7 +985,7 @@
 
       function onGotImageData(data) {
         const image = new Image();
-        test.assertTrue(!!data, 'No image data for frame');
+        test.assertTrue(Boolean(data), 'No image data for frame');
         image.addEventListener('load', onLoad);
         image.src = 'data:image/jpg;base64,' + data;
       }

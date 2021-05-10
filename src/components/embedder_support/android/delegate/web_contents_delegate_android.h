@@ -98,6 +98,9 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void EnterFullscreenModeForTab(
       content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
+  void FullscreenStateChangedForTab(
+      content::RenderFrameHost* requesting_frame,
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) override;
@@ -113,6 +116,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool DoBrowserControlsShrinkRendererSize(
       content::WebContents* contents) override;
+  blink::mojom::DisplayMode GetDisplayMode(
+      const content::WebContents* web_contents) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

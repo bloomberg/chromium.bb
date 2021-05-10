@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//tools/build_defs/cc:cc_fake_binary.bzl", "cc_fake_binary")
+
 cc_library(
     name = "types",
     srcs = [
@@ -22,11 +24,13 @@ cc_library(
         "atomic_reference.h",
         "cancelable.h",
         "cancelable_alarm.h",
+        "cancellable_task.h",
         "condition_variable.h",
         "count_down_latch.h",
         "crypto.h",
         "file.h",
         "future.h",
+        "lockable.h",
         "logging.h",
         "multi_thread_executor.h",
         "mutex.h",
@@ -37,6 +41,8 @@ cc_library(
         "single_thread_executor.h",
         "submittable_executor.h",
         "system_clock.h",
+        "thread_check_callable.h",
+        "thread_check_runnable.h",
     ],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
@@ -52,7 +58,6 @@ cc_library(
         "//platform/base:logging",
         "//platform/base:util",
         "//absl/base:core_headers",
-        "//absl/container:flat_hash_map",
         "//absl/time",
     ],
 )
@@ -83,6 +88,7 @@ cc_library(
         "//platform/api:comm",
         "//platform/api:platform",
         "//platform/base",
+        "//platform/base:cancellation_flag",
         "//absl/container:flat_hash_map",
         "//absl/strings",
         "//webrtc/api:libjingle_peerconnection_api",
@@ -95,7 +101,6 @@ cc_library(
         "logging.h",
     ],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//core:__subpackages__",
         "//platform:__subpackages__",
     ],
@@ -107,6 +112,7 @@ cc_library(
 cc_test(
     name = "public_test",
     size = "small",
+    timeout = "moderate",
     srcs = [
         "atomic_boolean_test.cc",
         "atomic_reference_test.cc",
@@ -138,5 +144,29 @@ cc_test(
         "//absl/strings",
         "//absl/synchronization",
         "//absl/time",
+    ],
+)
+
+cc_fake_binary(
+    name = "thread_check_nocompile",
+    srcs = ["thread_check_nocompile.cc"],
+    deps = [
+        ":types",
+        "//absl/time",
+    ],
+)
+
+py_test(
+    name = "thread_check_nocompile_test",
+    size = "large",
+    srcs = ["thread_check_nocompile_test.py"],
+    data = ["thread_check_nocompile"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    tags = ["non_compile_test"],
+    deps = [
+        "//pyglib/flags",
+        "//testing/pybase",
+        "//testing/pybase:fake_target_util",
     ],
 )

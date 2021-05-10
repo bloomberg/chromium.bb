@@ -18,7 +18,7 @@
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 
 #include "src/gpu/GrFragmentProcessor.h"
 
@@ -37,7 +37,6 @@ public:
     GrConfigConversionEffect(const GrConfigConversionEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "ConfigConversionEffect"; }
-    bool usesExplicitReturn() const override;
     PMConversion pmConversion;
 
 private:
@@ -45,10 +44,9 @@ private:
                              PMConversion pmConversion)
             : INHERITED(kGrConfigConversionEffect_ClassID, kNone_OptimizationFlags)
             , pmConversion(pmConversion) {
-        SkASSERT(inputFP);
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

@@ -37,9 +37,9 @@ class Extension;
 class DevicePermissionsPrompt {
  public:
   using UsbDevicesCallback =
-      base::Callback<void(std::vector<device::mojom::UsbDeviceInfoPtr>)>;
+      base::OnceCallback<void(std::vector<device::mojom::UsbDeviceInfoPtr>)>;
   using HidDevicesCallback =
-      base::Callback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
+      base::OnceCallback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
 
   // Context information available to the UI implementation.
   class Prompt : public base::RefCounted<Prompt> {
@@ -68,6 +68,9 @@ class DevicePermissionsPrompt {
     // implementation should register an observer.
     class Observer {
      public:
+      // Must be called after OnDeviceAdded() has been called for the final time
+      // to create the initial set of options.
+      virtual void OnDevicesInitialized() = 0;
       virtual void OnDeviceAdded(size_t index,
                                  const base::string16& device_name) = 0;
       virtual void OnDeviceRemoved(size_t index,
@@ -100,7 +103,7 @@ class DevicePermissionsPrompt {
    protected:
     virtual ~Prompt();
 
-    void AddCheckedDevice(std::unique_ptr<DeviceInfo> device, bool allowed);
+    void AddDevice(std::unique_ptr<DeviceInfo> device);
 
     const Extension* extension() const { return extension_; }
     Observer* observer() const { return observer_; }
@@ -130,13 +133,13 @@ class DevicePermissionsPrompt {
                         content::BrowserContext* context,
                         bool multiple,
                         std::vector<device::mojom::UsbDeviceFilterPtr> filters,
-                        const UsbDevicesCallback& callback);
+                        UsbDevicesCallback callback);
 
   void AskForHidDevices(const Extension* extension,
                         content::BrowserContext* context,
                         bool multiple,
                         const std::vector<device::HidDeviceFilter>& filters,
-                        const HidDevicesCallback& callback);
+                        HidDevicesCallback callback);
 
   static scoped_refptr<Prompt> CreateHidPromptForTest(
       const Extension* extension,

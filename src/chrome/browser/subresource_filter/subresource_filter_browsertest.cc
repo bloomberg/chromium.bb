@@ -28,7 +28,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -370,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   proto::UrlRule rule = testing::CreateSuffixRule("included_script.html");
   proto::UrlRule allowlist_rule = testing::CreateSuffixRule(kAllowlistedDomain);
   allowlist_rule.set_anchor_right(proto::ANCHOR_TYPE_NONE);
-  allowlist_rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+  allowlist_rule.set_semantics(proto::RULE_SEMANTICS_ALLOWLIST);
   ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules({rule, allowlist_rule}));
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -662,13 +661,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // component is faulty. The CHECK assumes that the crash URL and other
   // renderer debug URLs do not create a navigation throttle. See
   // crbug.com/736658.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher crash_observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   browser()->OpenURL(content::OpenURLParams(
       GURL(content::kChromeUICrashURL), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-  observer.Wait();
+  crash_observer.Wait();
 }
 
 // Test that resources in frames with an aborted initial load due to a doc.write

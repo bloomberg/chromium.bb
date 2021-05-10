@@ -20,19 +20,21 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/optimization_guide/bloom_filter.h"
-#include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/hints_fetcher.h"
-#include "components/optimization_guide/hints_fetcher_factory.h"
-#include "components/optimization_guide/optimization_guide_constants.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/optimization_guide_enums.h"
-#include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_prefs.h"
-#include "components/optimization_guide/optimization_guide_service.h"
-#include "components/optimization_guide/optimization_guide_switches.h"
-#include "components/optimization_guide/proto_database_provider_test_base.h"
-#include "components/optimization_guide/top_host_provider.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/bloom_filter.h"
+#include "components/optimization_guide/core/hints_component_util.h"
+#include "components/optimization_guide/core/hints_fetcher.h"
+#include "components/optimization_guide/core/hints_fetcher_factory.h"
+#include "components/optimization_guide/core/optimization_guide_constants.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
+#include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/core/proto_database_provider_test_base.h"
+#include "components/optimization_guide/core/top_host_provider.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
@@ -42,6 +44,7 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,33 +127,6 @@ void RunHintsFetchedCallbackWithResponse(
 
 }  // namespace
 
-class TestOptimizationGuideService
-    : public optimization_guide::OptimizationGuideService {
- public:
-  explicit TestOptimizationGuideService(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : OptimizationGuideService(ui_task_runner) {}
-
-  ~TestOptimizationGuideService() override = default;
-
-  void AddObserver(
-      optimization_guide::OptimizationGuideServiceObserver* observer) override {
-    add_observer_called_ = true;
-  }
-
-  void RemoveObserver(
-      optimization_guide::OptimizationGuideServiceObserver* observer) override {
-    remove_observer_called_ = true;
-  }
-
-  bool AddObserverCalled() const { return add_observer_called_; }
-  bool RemoveObserverCalled() const { return remove_observer_called_; }
-
- private:
-  bool add_observer_called_ = false;
-  bool remove_observer_called_ = false;
-};
-
 // A mock class implementation of TopHostProvider.
 class FakeTopHostProvider : public optimization_guide::TopHostProvider {
  public:
@@ -186,10 +162,12 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL optimization_guide_service_url,
       PrefService* pref_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
       const std::vector<HintsFetcherEndState>& fetch_states)
       : HintsFetcher(url_loader_factory,
                      optimization_guide_service_url,
-                     pref_service),
+                     pref_service,
+                     network_connection_tracker),
         fetch_states_(fetch_states) {
     DCHECK(!fetch_states_.empty());
   }
@@ -250,16 +228,18 @@ class TestHintsFetcherFactory : public optimization_guide::HintsFetcherFactory {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL optimization_guide_service_url,
       PrefService* pref_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
       std::vector<HintsFetcherEndState> fetch_states)
       : HintsFetcherFactory(url_loader_factory,
                             optimization_guide_service_url,
-                            pref_service),
+                            pref_service,
+                            network_connection_tracker),
         fetch_states_(fetch_states) {}
 
   std::unique_ptr<optimization_guide::HintsFetcher> BuildInstance() override {
-    return std::make_unique<TestHintsFetcher>(url_loader_factory_,
-                                              optimization_guide_service_url_,
-                                              pref_service_, fetch_states_);
+    return std::make_unique<TestHintsFetcher>(
+        url_loader_factory_, optimization_guide_service_url_, pref_service_,
+        network_connection_tracker_, fetch_states_);
   }
 
  private:
@@ -278,50 +258,48 @@ class OptimizationGuideHintsManagerTest
 
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
-    web_contents_factory_.reset(new content::TestWebContentsFactory);
-    CreateServiceAndHintsManager(
-        /*optimization_types_at_initialization=*/{},
-        /*top_host_provider=*/nullptr);
+    web_contents_factory_ = std::make_unique<content::TestWebContentsFactory>();
+    CreateHintsManager(/*top_host_provider=*/nullptr);
   }
 
   void TearDown() override {
-    optimization_guide::ProtoDatabaseProviderTestBase::TearDown();
     ResetHintsManager();
+    optimization_guide::ProtoDatabaseProviderTestBase::TearDown();
   }
 
-  void CreateServiceAndHintsManager(
-      const std::vector<optimization_guide::proto::OptimizationType>&
-          optimization_types_at_initialization,
+  void CreateHintsManager(
       optimization_guide::TopHostProvider* top_host_provider) {
-    if (hints_manager_) {
+    if (hints_manager_)
       ResetHintsManager();
-    }
-    optimization_guide_service_ =
-        std::make_unique<TestOptimizationGuideService>(
-            task_environment_.GetMainThreadTaskRunner());
+
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
+    pref_service_->registry()->RegisterBooleanPref(
+        data_reduction_proxy::prefs::kDataSaverEnabled, false);
 
     url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
 
+    hint_store_ = std::make_unique<optimization_guide::OptimizationGuideStore>(
+        db_provider_.get(), temp_dir(),
+        task_environment_.GetMainThreadTaskRunner());
+
     hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
-        optimization_types_at_initialization, optimization_guide_service_.get(),
-        &testing_profile_, temp_dir(), pref_service_.get(), db_provider_.get(),
+        &testing_profile_, pref_service_.get(), hint_store_.get(),
         top_host_provider, url_loader_factory_);
     hints_manager_->SetClockForTesting(task_environment_.GetMockClock());
 
-    // Add observer is called after the HintCache is fully initialized,
-    // indicating that the OptimizationGuideHintsManager is ready to process
-    // hints.
-    while (!optimization_guide_service_->AddObserverCalled()) {
-      RunUntilIdle();
-    }
+    // Run until hint cache is initialized and the OptimizationGuideHintsManager
+    // is ready to process hints.
+    RunUntilIdle();
   }
 
   void ResetHintsManager() {
+    hints_manager_->Shutdown();
     hints_manager_.reset();
+    hint_store_.reset();
+    pref_service_.reset();
     RunUntilIdle();
   }
 
@@ -334,6 +312,16 @@ class OptimizationGuideHintsManagerTest
     hints_manager_->ListenForNextUpdateForTesting(run_loop.QuitClosure());
     hints_manager_->OnHintsComponentAvailable(info);
     run_loop.Run();
+  }
+
+  void ProcessHintsComponentInfoWithBadConfig(const std::string& version) {
+    optimization_guide::HintsComponentInfo info(
+        base::Version(version),
+        temp_dir().Append(FILE_PATH_LITERAL("badconfig.pb")));
+    ASSERT_EQ(7, base::WriteFile(info.path, "garbage", 7));
+
+    hints_manager_->OnHintsComponentAvailable(info);
+    RunUntilIdle();
   }
 
   void ProcessHints(const optimization_guide::proto::Configuration& config,
@@ -360,9 +348,6 @@ class OptimizationGuideHintsManagerTest
     optimization_guide::proto::Optimization* default_opt =
         page_hint1->add_whitelisted_optimizations();
     default_opt->set_optimization_type(optimization_guide::proto::NOSCRIPT);
-    optimization_guide::proto::PreviewsMetadata* default_opt_metadata =
-        default_opt->mutable_previews_metadata();
-    default_opt_metadata->set_inflation_percent(1234);
     // Add another hint so somedomain.org hint is not in-memory initially.
     optimization_guide::proto::Hint* hint2 = config.add_hints();
     hint2->set_key("somedomain2.org");
@@ -380,7 +365,7 @@ class OptimizationGuideHintsManagerTest
       const std::vector<HintsFetcherEndState>& fetch_states) {
     return std::make_unique<TestHintsFetcherFactory>(
         url_loader_factory_, GURL("https://hintsserver.com"), pref_service(),
-        fetch_states);
+        network::TestNetworkConnectionTracker::GetInstance(), fetch_states);
   }
 
   void MoveClockForwardBy(base::TimeDelta time_delta) {
@@ -448,52 +433,14 @@ class OptimizationGuideHintsManagerTest
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile testing_profile_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
+  std::unique_ptr<optimization_guide::OptimizationGuideStore> hint_store_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
-  std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideHintsManagerTest);
 };
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       OptimizationTypesProvidedAtInitializationAreRegistered) {
-  std::vector<optimization_guide::proto::OptimizationType>
-      optimization_targets =
-          std::vector<optimization_guide::proto::OptimizationType>{
-              optimization_guide::proto::DEFER_ALL_SCRIPT};
-  CreateServiceAndHintsManager(optimization_targets,
-                               /*top_host_provider=*/nullptr);
-
-  EXPECT_FALSE(hints_manager()->registered_optimization_types().empty());
-  optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blocklist_bloom_filter(
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
-  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::DEFER_ALL_SCRIPT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::NOSCRIPT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-
-  base::HistogramTester histogram_tester;
-
-  ProcessHints(config, "1.0.0.0");
-
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
-      optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
-      1);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
-      optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
-}
 
 TEST_F(OptimizationGuideHintsManagerTest,
        ProcessHintsWithValidCommandLineOverride) {
@@ -526,12 +473,15 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, encoded_config);
-  CreateServiceAndHintsManager({optimization_guide::proto::LITE_PAGE_REDIRECT},
-                               /*top_host_provider=*/nullptr);
+  CreateHintsManager(/*top_host_provider=*/nullptr);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   // The below histogram should not be recorded since hints weren't coming
   // directly from the component.
-  histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   // However, we still expect the local histogram for the hints being updated to
   // be recorded.
   histogram_tester.ExpectUniqueSample(
@@ -562,8 +512,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, "this-is-not-a-proto");
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               /*top_host_provider=*/nullptr);
+  CreateHintsManager(/*top_host_provider=*/nullptr);
 
   // The below histogram should not be recorded since hints weren't coming
   // directly from the component.
@@ -593,15 +542,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
     base::HistogramTester histogram_tester;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         optimization_guide::switches::kHintsProtoOverride, encoded_config);
-    CreateServiceAndHintsManager(
-        /*optimization_types_at_initialization=*/{},
-        /*top_host_provider=*/nullptr);
-    // The below histogram should not be recorded since hints weren't coming
-    // directly from the component.
-    histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult",
-                                      0);
-    // However, we still expect the local histogram for the hints being updated
-    // to be recorded.
+    CreateHintsManager(/*top_host_provider=*/nullptr);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.UpdateComponentHints.Result", true, 1);
   }
@@ -631,11 +575,6 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseTwoConfigVersions) {
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(
       optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
-      optimization1->mutable_previews_metadata()->add_resource_loading_hints();
-  resource_loading_hint1->set_loading_optimization_type(
-      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_loading_hint1->set_resource_pattern("news_cruft.js");
 
   // Test the first time parsing the config.
   {
@@ -653,6 +592,29 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseTwoConfigVersions) {
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.ProcessHintsResult",
         optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
+  }
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, ParseInvalidConfigVersions) {
+  // Test the first time parsing the config.
+  {
+    base::HistogramTester histogram_tester;
+    InitializeWithDefaultConfig("1.0.0.0");
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    ProcessHintsComponentInfoWithBadConfig("2.0.0.0");
+    // If we have already parsed a version later than this version, we expect
+    // for the hints to not be updated.
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::
+            kFailedInvalidConfiguration,
+        1);
   }
 }
 
@@ -1240,10 +1202,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Optimization* opt1 =
       hint1->add_whitelisted_optimizations();
   opt1->set_optimization_type(optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::PreviewsMetadata* opt1_metadata =
-      opt1->mutable_previews_metadata();
-  opt1_metadata->add_resource_loading_hints()->set_resource_pattern(
-      "someresource");
   ProcessHints(config, "1.0.0.0");
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1262,10 +1220,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hints_manager()->CanApplyOptimization(
           navigation_handle->GetURL(), /*navigation_id=*/base::nullopt,
           optimization_guide::proto::RESOURCE_LOADING, &optimization_metadata);
-  // Make sure previews metadata is populated.
-  EXPECT_EQ("someresource", optimization_metadata.previews_metadata()
-                                ->resource_loading_hints(0)
-                                .resource_pattern());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
 }
@@ -1281,10 +1235,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hint1->add_whitelisted_optimizations();
   opt1->set_optimization_type(optimization_guide::proto::RESOURCE_LOADING);
   opt1->set_tuning_version(123456);
-  optimization_guide::proto::PreviewsMetadata* opt1_metadata =
-      opt1->mutable_previews_metadata();
-  opt1_metadata->add_resource_loading_hints()->set_resource_pattern(
-      "someresource");
   ProcessHints(config, "1.0.0.0");
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1305,10 +1255,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hints_manager()->CanApplyOptimization(
           navigation_handle->GetURL(), navigation_handle->GetNavigationId(),
           optimization_guide::proto::RESOURCE_LOADING, &optimization_metadata);
-  // Make sure previews metadata is populated.
-  EXPECT_EQ("someresource", optimization_metadata.previews_metadata()
-                                ->resource_loading_hints(0)
-                                .resource_pattern());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
 
@@ -1484,10 +1430,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hint1->add_whitelisted_optimizations();
   opt1->set_optimization_type(optimization_guide::proto::RESOURCE_LOADING);
   opt1->set_tuning_version(123456);
-  optimization_guide::proto::PreviewsMetadata* opt1_metadata =
-      opt1->mutable_previews_metadata();
-  opt1_metadata->add_resource_loading_hints()->set_resource_pattern(
-      "someresource");
   ProcessHints(config, "1.0.0.0");
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1508,10 +1450,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hints_manager()->CanApplyOptimization(
           navigation_handle->GetURL(), /*navigation_id=*/base::nullopt,
           optimization_guide::proto::RESOURCE_LOADING, &optimization_metadata);
-  // Make sure previews metadata is populated.
-  EXPECT_EQ("someresource", optimization_metadata.previews_metadata()
-                                ->resource_loading_hints(0)
-                                .resource_pattern());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
 
@@ -1531,10 +1469,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Optimization* opt1 =
       hint1->add_whitelisted_optimizations();
   opt1->set_optimization_type(optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::PreviewsMetadata* opt1_metadata =
-      opt1->mutable_previews_metadata();
-  opt1_metadata->add_resource_loading_hints()->set_resource_pattern(
-      "someresource");
   ProcessHints(config, "1.0.0.0");
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1555,10 +1489,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hints_manager()->CanApplyOptimization(
           navigation_handle->GetURL(), navigation_handle->GetNavigationId(),
           optimization_guide::proto::RESOURCE_LOADING, &optimization_metadata);
-  // Make sure previews metadata is populated.
-  EXPECT_EQ("someresource", optimization_metadata.previews_metadata()
-                                ->resource_loading_hints(0)
-                                .resource_pattern());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
 
@@ -1566,32 +1496,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuideAutotuning::kEntryName);
   EXPECT_EQ(0u, entries.size());
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
-  InitializeWithDefaultConfig("1.0.0.0");
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::NOSCRIPT});
-
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_with_hints());
-  base::RunLoop run_loop;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision =
-      hints_manager()->CanApplyOptimization(
-          navigation_handle->GetURL(), /*navigation_id=*/base::nullopt,
-          optimization_guide::proto::NOSCRIPT, &optimization_metadata);
-  EXPECT_EQ(
-      1234,
-      optimization_metadata.previews_metadata().value().inflation_percent());
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
-            optimization_type_decision);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1849,14 +1753,20 @@ TEST_F(OptimizationGuideHintsManagerTest,
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::NOSCRIPT});
   optimization_guide::OptimizationMetadata optimization_metadata;
-  optimization_metadata.set_previews_metadata(
-      optimization_guide::proto::PreviewsMetadata());
+
+  optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
+  auto* hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("test.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_SLOW);
+  optimization_guide::OptimizationMetadata metadata;
+  optimization_metadata.set_performance_hints_metadata(hints_metadata);
+
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
       hints_manager()->CanApplyOptimization(
           navigation_handle->GetURL(), /*navigation_id=*/base::nullopt,
           optimization_guide::proto::NOSCRIPT, &optimization_metadata);
 
-  EXPECT_FALSE(optimization_metadata.previews_metadata().has_value());
+  EXPECT_FALSE(optimization_metadata.performance_hints_metadata().has_value());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
             optimization_type_decision);
 }
@@ -1990,8 +1900,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingDisabledTest,
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
 
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
   InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch.
@@ -2080,8 +1989,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButUserNotAllowed) {
   base::CommandLine::ForCurrentProcess()->RemoveSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
-  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
-                               /*top_host_provider=*/nullptr);
+  CreateHintsManager(/*top_host_provider=*/nullptr);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
       BuildTestHintsFetcherFactory(
           {HintsFetcherEndState::kFetchSuccessWithHostHints}));
@@ -2097,8 +2007,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
-  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
-                               /*top_host_provider=*/nullptr);
+  CreateHintsManager(/*top_host_provider=*/nullptr);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
       BuildTestHintsFetcherFactory(
           {HintsFetcherEndState::kFetchSuccessWithHostHints}));
@@ -2118,8 +2029,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
 
   hints_manager()->SetHintsFetcherFactoryForTesting(
       BuildTestHintsFetcherFactory(
@@ -2134,13 +2044,45 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       OnlyFilterTypesRegisteredHintsFetchNotAttempted) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter allowlist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&allowlist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, allowlist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/true, &config);
+
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  CreateHintsManager(top_host_provider.get());
+  ProcessHints(config, "1.0.0.0");
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithHostHints}));
+
+  // Force timer to expire and schedule a hints fetch but the fetch is not made.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
+  // Hints fetcher should not be created.
+  EXPECT_FALSE(batch_update_hints_fetcher());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetcherEnabledNoHostsToFetch) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
 
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
@@ -2163,8 +2105,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
@@ -2193,8 +2134,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetcherTimerRetryDelay) {
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
 
-  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
       BuildTestHintsFetcherFactory({HintsFetcherEndState::kFetchFailed}));
   InitializeWithDefaultConfig("1.0.0");
@@ -2219,8 +2161,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
           std::vector<std::string>({"example1.com", "example2.com"}));
 
   // Force hints fetch scheduling.
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
@@ -3807,8 +3748,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingNoBatchUpdateTest,
           std::vector<std::string>({"example1.com", "example2.com"}));
 
   // Force hints fetch scheduling.
-  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
-                               top_host_provider.get());
+  CreateHintsManager(top_host_provider.get());
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherFactoryForTesting(
       BuildTestHintsFetcherFactory(
           {HintsFetcherEndState::kFetchSuccessWithHostHints}));

@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace ui {
 class ClipboardData;
@@ -44,17 +45,30 @@ enum class Action {
   kDelete,
 
   // Selects the activated item.
-  kSelect
+  kSelect,
+
+  // Selects the item hovered by mouse if any.
+  kSelectItemHoveredByMouse
+};
+
+// IDs for the views used by the clipboard history menu.
+enum ClipboardHistoryMenuViewID {
+  // We start at 1 because 0 is not a valid view ID.
+  kDeleteButtonViewID = 1,
+
+  kMainButtonViewID
 };
 
 // Used in histograms, each value corresponds with an underlying format
-// displayed by a ClipboardHistoryItemView. Do not reorder entries, if you must
-// add to it, add at the end.
+// displayed by a ClipboardHistoryItemView, shown as
+// ClipboardHistoryDisplayFormat in enums.xml. Do not reorder entries, if you
+// must add to it, add at the end.
 enum class ClipboardHistoryDisplayFormat {
   kText = 0,
   kBitmap = 1,
   kHtml = 2,
-  kMaxValue = 2,
+  kFile = 3,
+  kMaxValue = 3,
 };
 
 // Returns the main format of the specified clipboard `data`.
@@ -81,6 +95,18 @@ ASH_EXPORT void RecordClipboardHistoryItemPasted(
 
 // Returns true if `data` contains file system data.
 ASH_EXPORT bool ContainsFileSystemData(const ui::ClipboardData& data);
+
+// Updates `sources` with the file system sources contained in `data`; updates
+// `source_list` by splitting `sources` into pieces each of which corresponds to
+// a file. Note that multiple files can be copied simultaneously. `sources` is
+// referenced by `source_list` to reduce memory copies.
+ASH_EXPORT void GetSplitFileSystemData(
+    const ui::ClipboardData& data,
+    std::vector<base::StringPiece16>* source_list,
+    base::string16* sources);
+
+// Returns the count of copied files contained by the clipboard data.
+ASH_EXPORT size_t GetCountOfCopiedFiles(const ui::ClipboardData& data);
 
 // Returns file system sources contained in `data`. If `data` does not contain
 // file system sources, an empty string is returned.

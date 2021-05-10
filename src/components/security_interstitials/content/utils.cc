@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -24,7 +25,7 @@
 
 namespace security_interstitials {
 
-#if !defined(OS_CHROMEOS) && !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_FUCHSIA)
 void LaunchDateAndTimeSettings() {
 // The code for each OS is completely separate, in order to avoid bugs like
 // https://crbug.com/430877 .
@@ -82,8 +83,8 @@ void LaunchDateAndTimeSettings() {
 #elif defined(OS_WIN)
   base::FilePath path;
   base::PathService::Get(base::DIR_SYSTEM, &path);
-  static const base::char16 kControlPanelExe[] = L"control.exe";
-  path = path.Append(base::string16(kControlPanelExe));
+  static const wchar_t kControlPanelExe[] = L"control.exe";
+  path = path.Append(std::wstring(kControlPanelExe));
   base::CommandLine command(path);
   command.AppendArg(std::string("/name"));
   command.AppendArg(std::string("Microsoft.DateAndTime"));

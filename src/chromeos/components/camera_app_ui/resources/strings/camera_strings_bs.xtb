@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
+<translation id="1175958423215084756">Link je otkriven. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Slike iz Galerije</translation>
 <translation id="1430915738399379752">Štampaj</translation>
 <translation id="1473110567575736769">Tajmer za 3 sekunde</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">PAUZIRANO</translation>
 <translation id="1862930711583847113">Nije moguće izvesti fajl <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Rezolucija fotografije</translation>
+<translation id="2022953316617983419">QR kôd</translation>
 <translation id="2036868001356139588">Trajanje tajmera</translation>
 <translation id="2050339315714019657">Uspravno</translation>
 <translation id="2064538373111010176">Kamera <ph name="CAMERA" /> je aktivna</translation>
+<translation id="2144806332417375165">Prilagođeni parametri videozapisa</translation>
 <translation id="229579744168541441">Izvezi na disk</translation>
 <translation id="2501278716633472235">Nazad</translation>
 <translation id="2501853267655415902">Snimanje je zaustavljeno</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 fps</translation>
 <translation id="3183731565330012717">Mrežni prikaz</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3240426699337459095">Link je kopiran</translation>
 <translation id="3259149966178251584">Rezolucija kamere</translation>
 <translation id="3517926952904427380">Snimanje uspravne fotografije nije uspjelo</translation>
 <translation id="3569311554794739032">Želite li zaista ukloniti fajl <ph name="FILE" />?</translation>
-<translation id="3750315947605636967">Kameru koristi druga aplikacija</translation>
 <translation id="3810838688059735925">Videozapis</translation>
+<translation id="3838931309141338733">Skeniraj bar kôd</translation>
+<translation id="3892148308691398805">Kopiraj tekst</translation>
 <translation id="4000398125663085899">Nove fotografije i videozapisi sada će se pohranjivati u folder aplikacije Fajlovi: Moji fajlovi &gt; Kamera</translation>
 <translation id="4118525110028899586">Pauziraj snimanje</translation>
+<translation id="4269820728363426813">Kopiraj adresu linka</translation>
 <translation id="4279490309300973883">Preslikavanje</translation>
 <translation id="4329152592498422850">Pređi na snimanje kvadratne fotografije</translation>
 <translation id="4383571725254449280">Zapisnici o radu štampača</translation>
@@ -68,11 +74,15 @@ Ako se vaše povratne informacije odnose na kvalitet slike ili videozapisa, pril
 <translation id="7134221860976209830">Tajmer za 10 sekundi</translation>
 <translation id="7243947652761655814">Rezolucija videozapisa</translation>
 <translation id="7337660886763914220">Greške sistema fajlova.</translation>
+<translation id="7450541714075000668">Tekst je kopiran</translation>
 <translation id="7557677699350329807">Prebaci na sljedeću kameru</translation>
+<translation id="7607002721634913082">Pauzirano</translation>
 <translation id="7608223098072244877">4 sa 4</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7670511624014457267">60 fps</translation>
+<translation id="7974782136796202581">Prikaži opcije pomicanja/naginjanja/zumiranja</translation>
+<translation id="7983668134180549431">Tekst je otkriven.</translation>
 <translation id="8067883171444229417">Reproduciraj videozapis</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8145038249676204903">Prebaci na snimanje fotografija</translation>

@@ -8,39 +8,38 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied->
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
 #include "src/ast/builtin_decoration.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/constant_id_decoration.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using BuiltinDecorationTest = testing::Test;
+using BuiltinDecorationTest = TestHelper;
 
 TEST_F(BuiltinDecorationTest, Creation) {
-  BuiltinDecoration d{Builtin::kFragDepth, Source{}};
-  EXPECT_EQ(Builtin::kFragDepth, d.value());
+  auto* d = create<BuiltinDecoration>(Builtin::kFragDepth);
+  EXPECT_EQ(Builtin::kFragDepth, d->value());
 }
 
 TEST_F(BuiltinDecorationTest, Is) {
-  BuiltinDecoration d{Builtin::kFragDepth, Source{}};
-  EXPECT_FALSE(d.IsBinding());
-  EXPECT_TRUE(d.IsBuiltin());
-  EXPECT_FALSE(d.IsConstantId());
-  EXPECT_FALSE(d.IsLocation());
-  EXPECT_FALSE(d.IsSet());
+  Decoration* d = create<BuiltinDecoration>(Builtin::kFragDepth);
+  EXPECT_FALSE(d->Is<BindingDecoration>());
+  EXPECT_TRUE(d->Is<BuiltinDecoration>());
+  EXPECT_FALSE(d->Is<ConstantIdDecoration>());
+  EXPECT_FALSE(d->Is<LocationDecoration>());
+  EXPECT_FALSE(d->Is<GroupDecoration>());
 }
 
 TEST_F(BuiltinDecorationTest, ToStr) {
-  BuiltinDecoration d{Builtin::kFragDepth, Source{}};
-  std::ostringstream out;
-  d.to_str(out);
-  EXPECT_EQ(out.str(), R"(BuiltinDecoration{frag_depth}
+  auto* d = create<BuiltinDecoration>(Builtin::kFragDepth);
+  EXPECT_EQ(str(d), R"(BuiltinDecoration{frag_depth}
 )");
 }
 

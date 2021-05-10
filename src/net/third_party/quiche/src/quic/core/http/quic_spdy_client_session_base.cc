@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
+#include "quic/core/http/quic_spdy_client_session_base.h"
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/http/quic_client_promised_info.h"
+#include "quic/core/http/spdy_server_push_utils.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 using spdy::SpdyHeaderBlock;
 
@@ -155,7 +155,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
   promised_by_id_[promised_id] = std::move(promised_owner);
   bool result = promised->OnPromiseHeaders(headers);
   if (result) {
-    DCHECK(promised_by_id_.find(promised_id) != promised_by_id_.end());
+    QUICHE_DCHECK(promised_by_id_.find(promised_id) != promised_by_id_.end());
   }
   return result;
 }
@@ -206,7 +206,7 @@ void QuicSpdyClientSessionBase::OnPushStreamTimedOut(
 void QuicSpdyClientSessionBase::ResetPromised(
     QuicStreamId id,
     QuicRstStreamErrorCode error_code) {
-  DCHECK(QuicUtils::IsServerInitiatedStreamId(transport_version(), id));
+  QUICHE_DCHECK(QuicUtils::IsServerInitiatedStreamId(transport_version(), id));
   ResetStream(id, error_code);
   if (!IsOpenStream(id) && !IsClosedStream(id)) {
     MaybeIncreaseLargestPeerStreamId(id);

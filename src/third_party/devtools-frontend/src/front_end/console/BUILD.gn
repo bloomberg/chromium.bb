@@ -7,15 +7,15 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("console") {
   sources = [
-    "ConsoleContextSelector.js",
-    "ConsoleFilter.js",
-    "ConsolePanel.js",
-    "ConsolePinPane.js",
-    "ConsolePrompt.js",
-    "ConsoleSidebar.js",
-    "ConsoleView.js",
-    "ConsoleViewMessage.js",
-    "ConsoleViewport.js",
+    "ConsoleContextSelector.ts",
+    "ConsoleFilter.ts",
+    "ConsolePanel.ts",
+    "ConsolePinPane.ts",
+    "ConsolePrompt.ts",
+    "ConsoleSidebar.ts",
+    "ConsoleView.ts",
+    "ConsoleViewMessage.ts",
+    "ConsoleViewport.ts",
   ]
 
   deps = [
@@ -25,12 +25,15 @@ devtools_module("console") {
     "../components:bundle",
     "../data_grid:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../object_ui:bundle",
     "../platform:bundle",
     "../sdk:bundle",
+    "../text_editor:bundle",
     "../text_utils:bundle",
     "../theme_support:bundle",
     "../ui:bundle",
+    "../ui/components:bundle",
   ]
 }
 
@@ -45,13 +48,19 @@ copy_to_gen("legacy_css") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "console.js"
+  entrypoint = "console.ts"
 
   deps = [ ":console" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "console-legacy.js"
+  entrypoint = "console-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "console-meta.ts"
 
   deps = [ ":bundle" ]
 }

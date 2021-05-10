@@ -6,6 +6,8 @@
  * @fileoverview Polymer element for Enterprise Enrollment screen.
  */
 
+(function() {
+
 /* Code which is embedded inside of the webview. See below for details.
 /** @const */
 var INJECTED_WEBVIEW_SCRIPT = String.raw`
@@ -14,7 +16,14 @@ var INJECTED_WEBVIEW_SCRIPT = String.raw`
                        keyboard.initializeKeyboardFlow(true);
                      })();`;
 
-/** @const */ var ENROLLMENT_STEP = {
+/**
+ * @const
+ * When making changes to any of these parameters, make sure that their use in
+ * chrome/browser/resources/chromeos/login/cr_ui.js is updated as well.
+ * TODO(crbug.com/1111387) - Remove this dependency when fully migrated
+ * to JS modules.
+ * */
+var ENROLLMENT_STEP = {
   SIGNIN: 'signin',
   AD_JOIN: 'ad-join',
   WORKING: 'working',
@@ -28,12 +37,19 @@ var INJECTED_WEBVIEW_SCRIPT = String.raw`
   ACTIVE_DIRECTORY_JOIN_ERROR: 'active-directory-join-error',
 };
 
+/**
+ * The same steps as in offline-ad-login-element.
+ */
+const adLoginStep = {
+  UNLOCK: 'unlock',
+  CREDS: 'creds',
+};
+
 Polymer({
   is: 'enterprise-enrollment-element',
 
   behaviors: [
     OobeI18nBehavior,
-    OobeDialogHostBehavior,
     LoginScreenBehavior,
     MultiStepBehavior,
   ],
@@ -49,14 +65,6 @@ Polymer({
   ],
 
   properties: {
-
-    /**
-     * Indicates if authenticator have shown internal dialog.
-     */
-    authenticatorDialogDisplayed_: {
-      type: Boolean,
-      value: false,
-    },
 
     /**
      * Manager of the enrolled domain. Either a domain (foo.com) or an email
@@ -133,12 +141,11 @@ Polymer({
     },
 
     /**
-     * Whether the SAML SSO page is visible.
+     * Bound to gaia-dialog::authFlow.
      * @private
      */
-    isSamlSsoVisible_: {
-      type: Boolean,
-      value: false,
+    authFlow_: {
+      type: Number,
     },
   },
 
@@ -147,11 +154,6 @@ Polymer({
   },
 
   UI_STEPS: ENROLLMENT_STEP,
-
-  /**
-   * Authenticator object that wraps GAIA webview.
-   */
-  authenticator_: null,
 
   /**
    * We block esc, back button and cancel button until gaia is loaded to
@@ -168,26 +170,28 @@ Polymer({
 
   isManualEnrollment_: undefined,
 
-  /**
-   * Value contained in the last received 'backButton' event.
-   * @type {boolean}
-   * @private
-   */
-  lastBackMessageValue_: false,
+  get authenticator_() {
+    return this.$['step-signin'].getAuthenticator();
+  },
+
+  get authView_() {
+    return this.$['step-signin'].getFrame();
+  },
 
   ready() {
     this.initializeLoginScreen('OAuthEnrollmentScreen', {
       resetAllowed: true,
     });
 
-    let authView = this.$.authView;
-    this.authenticator_ = new cr.login.Authenticator(authView);
-
     // Establish an initial messaging between content script and
     // host script so that content script can message back.
-    authView.addEventListener('loadstop', function(e) {
-      e.target.contentWindow.postMessage('initialMessage', authView.src);
-    });
+    this.authView_.addEventListener('loadstop', function(e) {
+      // Could be null in tests.
+      if (e.target && e.target.contentWindow) {
+        e.target.contentWindow.postMessage(
+            'initialMessage', this.authView_.src);
+      }
+    }.bind(this));
 
     // When we get the advancing focus command message from injected content
     // script, we can execute it on host script context.
@@ -197,14 +201,6 @@ Polymer({
       else if (e.data == 'backwardFocus')
         keyboard.onAdvanceFocus(true);
     });
-
-    this.authenticator_.addEventListener(
-        'ready', (function() {
-                   if (this.uiStep != ENROLLMENT_STEP.SIGNIN)
-                     return;
-                   this.isCancelDisabled = false;
-                   chrome.send('frameLoadingCompleted');
-                 }).bind(this));
 
     this.authenticator_.addEventListener(
         'authCompleted',
@@ -218,51 +214,21 @@ Polymer({
           chrome.send('oauthEnrollCompleteLogin', [detail.email]);
         }).bind(this));
 
-    this.$.adJoinUI.addEventListener('authCompleted', function(e) {
-      this.$.adJoinUI.disabled = true;
-      this.$.adJoinUI.loading = true;
+    this.$["step-ad-join"].addEventListener('authCompleted', function(e) {
+      this.$["step-ad-join"].disabled = true;
+      this.$["step-ad-join"].loading = true;
       chrome.send('oauthEnrollAdCompleteLogin', [
         e.detail.machine_name, e.detail.distinguished_name,
         e.detail.encryption_types, e.detail.username, e.detail.password
       ]);
     }.bind(this));
-    this.$.adJoinUI.addEventListener('unlockPasswordEntered', function(e) {
-      this.$.adJoinUI.disabled = true;
+    this.$["step-ad-join"].addEventListener('unlockPasswordEntered', function(e) {
+      this.$["step-ad-join"].disabled = true;
       chrome.send(
           'oauthEnrollAdUnlockConfiguration', [e.detail.unlock_password]);
     }.bind(this));
 
-    this.authenticator_.addEventListener(
-        'authFlowChange', (function(e) {
-                            var isSAML = this.authenticator_.authFlow ==
-                                cr.login.Authenticator.AuthFlow.SAML;
-                            if (isSAML) {
-                              this.$.samlNoticeMessage.textContent =
-                                  loadTimeData.getStringF(
-                                      'samlNotice',
-                                      this.authenticator_.authDomain);
-                            }
-                            this.isSamlSsoVisible_ = isSAML;
-                            if (Oobe.getInstance().currentScreen == this)
-                              Oobe.getInstance().updateScreenSize(this);
-                            this.lastBackMessageValue_ = false;
-                          }).bind(this));
 
-    this.authenticator_.addEventListener(
-        'backButton', (function(e) {
-                        this.lastBackMessageValue_ = !!e.detail;
-                        this.$.authView.focus();
-                      }).bind(this));
-
-    this.authenticator_.addEventListener(
-        'dialogShown', (function(e) {
-                         this.authenticatorDialogDisplayed_ = true;
-                       }).bind(this));
-
-    this.authenticator_.addEventListener(
-        'dialogHidden', (function(e) {
-                          this.authenticatorDialogDisplayed_ = false;
-                        }).bind(this));
 
     this.authenticator_.insecureContentBlockedCallback =
         (function(url) {
@@ -289,7 +255,7 @@ Polymer({
       // simulated tab events will use the webview tab-stops. Simulated tab
       // events created from the webui treat the entire webview as one tab
       // stop. Real tab events do not do this. See crbug.com/543865.
-      this.$.authView.addContentScripts([{
+      this.authView_.addContentScripts([{
         name: 'injectedTabHandler',
         matches: ['http://*/*', 'https://*/*'],
         js: {code: INJECTED_WEBVIEW_SCRIPT},
@@ -298,8 +264,6 @@ Polymer({
     }
 
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
-
-    this.isSamlSsoVisible_ = false;
 
     var gaiaParams = {};
     gaiaParams.gaiaUrl = data.gaiaUrl;
@@ -311,6 +275,7 @@ Polymer({
       gaiaParams.emailDomain = data.management_domain;
     }
     gaiaParams.flow = data.flow;
+    gaiaParams.enableGaiaActionButtons = true;
     this.authenticator_.load(
         cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
 
@@ -318,8 +283,7 @@ Polymer({
     this.isForced_ = data.is_enrollment_enforced;
     this.isAutoEnroll_ = data.attestationBased;
 
-    this.authenticatorDialogDisplayed_ = false;
-    cr.ui.login.invokePolymerMethod(this.$.adJoinUI, 'onBeforeShow');
+    cr.ui.login.invokePolymerMethod(this.$["step-ad-join"], 'onBeforeShow');
     if (!this.uiStep) {
       this.showStep(data.attestationBased ?
           ENROLLMENT_STEP.WORKING : ENROLLMENT_STEP.SIGNIN);
@@ -333,14 +297,6 @@ Polymer({
     return OOBE_UI_STATE.ENROLLMENT;
   },
 
-
-  /*
-   * Executed on language change.
-   */
-  updateLocalizedContent: function() {
-    this.$.adJoinUI.i18nUpdateLocale();
-    this.i18nUpdateLocale();
-  },
 
   /**
    * Shows attribute-prompt step with pre-filled asset ID and
@@ -383,18 +339,16 @@ Polymer({
   showStep(step) {
     this.setUIStep(step);
     if (step === ENROLLMENT_STEP.AD_JOIN) {
-      this.$.adJoinUI.disabled = false;
-      this.$.adJoinUI.loading = false;
+      this.$["step-ad-join"].disabled = false;
+      this.$["step-ad-join"].loading = false;
+      this.$["step-ad-join"].focus();
     }
     this.isCancelDisabled =
         (step === ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
         step === ENROLLMENT_STEP.AD_JOIN || step === ENROLLMENT_STEP.WORKING;
-    this.lastBackMessageValue_ = false;
   },
 
   doReload() {
-    this.lastBackMessageValue_ = false;
-    this.authenticatorDialogDisplayed_ = false;
     this.authenticator_.reload();
   },
 
@@ -407,11 +361,15 @@ Polymer({
    * configuration (and not unlocked yet).
    */
   setAdJoinParams(machineName, userName, errorState, showUnlockConfig) {
-    this.$.adJoinUI.disabled = false;
-    this.$.adJoinUI.machineName = machineName;
-    this.$.adJoinUI.userName = userName;
-    this.$.adJoinUI.errorState = errorState;
-    this.$.adJoinUI.unlockPasswordStep = showUnlockConfig;
+    this.$["step-ad-join"].disabled = false;
+    this.$["step-ad-join"].machineName = machineName;
+    this.$["step-ad-join"].userName = userName;
+    this.$["step-ad-join"].errorState = errorState;
+    if (showUnlockConfig) {
+      this.$["step-ad-join"].setUIStep(adLoginStep.UNLOCK);
+    } else {
+      this.$["step-ad-join"].setUIStep(adLoginStep.CREDS);
+    }
   },
 
   /**
@@ -419,9 +377,10 @@ Polymer({
    * @param {Array<JoinConfigType>} options
    */
   setAdJoinConfiguration(options) {
-    this.$.adJoinUI.disabled = false;
-    this.$.adJoinUI.setJoinConfigurationOptions(options);
-    this.$.adJoinUI.unlockPasswordStep = false;
+    this.$["step-ad-join"].disabled = false;
+    this.$["step-ad-join"].setJoinConfigurationOptions(options);
+    this.$["step-ad-join"].setUIStep(adLoginStep.CREDS);
+    this.$["step-ad-join"].focus();
   },
 
   /**
@@ -438,21 +397,6 @@ Polymer({
    */
   submitAttributes_() {
     chrome.send('oauthEnrollAttributes', [this.assetId_, this.deviceLocation_]);
-  },
-
-  /**
-   * Skips the device attribute update,
-   * shows the successful enrollment step.
-   */
-  onBackButtonClicked_() {
-    if (this.uiStep === ENROLLMENT_STEP.SIGNIN) {
-      if (this.lastBackMessageValue_) {
-        this.lastBackMessageValue_ = false;
-        this.$.authView.back();
-      } else {
-        this.cancel();
-      }
-    }
   },
 
   /**
@@ -483,6 +427,13 @@ Polymer({
 
   isEmpty_(str) {
     return !str;
+  },
+
+  onReady() {
+    if (this.uiStep != ENROLLMENT_STEP.SIGNIN)
+      return;
+    this.isCancelDisabled = false;
+    chrome.send('frameLoadingCompleted');
   },
 
   /**
@@ -575,14 +526,11 @@ Polymer({
     this.showStep(ENROLLMENT_STEP.AD_JOIN);
   },
 
-  /**
-   * Whether to show popup overlay under the dialog
-   * @param {boolean} authenticatorDialogDisplayed
-   * @param {boolean} isSamlSsoVisible
-   * @return {boolean} True iff overlay popup should be displayed
-   * @private
+  /*
+   * Whether authFlow is the SAML.
    */
-  showPopupOverlay_(authenticatorDialogDisplayed, isSamlSsoVisible) {
-    return authenticatorDialogDisplayed || isSamlSsoVisible;
+  isSaml_(authFlow) {
+    return authFlow === cr.login.Authenticator.AuthFlow.SAML;
   },
 });
+})();

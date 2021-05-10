@@ -35,7 +35,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
     bool disable_vp_scaling = false;
     size_t max_pending_frames = 2;
     bool use_angle_texture_offset = false;
-    bool reset_vp_when_colorspace_changes = false;
     bool force_root_surface_full_damage = false;
   };
 
@@ -62,6 +61,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // After this is called, overlay support is disabled during the
   // current GPU process' lifetime.
   static void DisableOverlays();
+
+  // Similar to the above but disables software overlay support.
+  static void DisableSoftwareOverlays();
 
   // Indicate the overlay caps are invalid.
   static void InvalidateOverlayCaps();
@@ -149,6 +151,8 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   void OnDisplayAdded() override;
   void OnDisplayRemoved() override;
   void OnDisplayMetricsChanged() override;
+
+  bool SupportsDelegatedInk() override;
 
   HWND window() const { return window_; }
 

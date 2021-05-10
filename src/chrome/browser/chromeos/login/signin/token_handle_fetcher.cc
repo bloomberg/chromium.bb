@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -54,20 +54,21 @@ TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
 TokenHandleFetcher::~TokenHandleFetcher() {}
 
 void TokenHandleFetcher::BackfillToken(Profile* profile,
-                                       const TokenFetchingCallback& callback) {
+                                       TokenFetchingCallback callback) {
   profile_ = profile;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   // This class doesn't care about browser sync consent.
   if (!identity_manager_->HasAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountId(
               signin::ConsentLevel::kNotRequired))) {
-    profile_shutdown_notification_ =
+    profile_shutdown_subscription_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
             ->Get(profile)
-            ->Subscribe(base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
-                                   base::Unretained(this)));
+            ->Subscribe(
+                base::BindRepeating(&TokenHandleFetcher::OnProfileDestroyed,
+                                    base::Unretained(this)));
   }
 
   // Now we can request the token, knowing that it will be immediately requested
@@ -97,7 +98,7 @@ void TokenHandleFetcher::OnAccessTokenFetchComplete(
   if (error.state() != GoogleServiceAuthError::NONE) {
     LOG(ERROR) << "Could not get access token to backfill token handler"
                << error.ToString();
-    callback_.Run(account_id_, false);
+    std::move(callback_).Run(account_id_, false);
     return;
   }
 
@@ -105,9 +106,9 @@ void TokenHandleFetcher::OnAccessTokenFetchComplete(
 }
 
 void TokenHandleFetcher::FillForNewUser(const std::string& access_token,
-                                        const TokenFetchingCallback& callback) {
+                                        TokenFetchingCallback callback) {
   profile_ = chromeos::ProfileHelper::Get()->GetSigninProfile();
-  callback_ = callback;
+  callback_ = std::move(callback);
   FillForAccessToken(access_token);
 }
 
@@ -120,11 +121,11 @@ void TokenHandleFetcher::FillForAccessToken(const std::string& access_token) {
 }
 
 void TokenHandleFetcher::OnOAuthError() {
-  callback_.Run(account_id_, false);
+  std::move(callback_).Run(account_id_, false);
 }
 
 void TokenHandleFetcher::OnNetworkError(int response_code) {
-  callback_.Run(account_id_, false);
+  std::move(callback_).Run(account_id_, false);
 }
 
 void TokenHandleFetcher::OnGetTokenInfoResponse(
@@ -140,9 +141,9 @@ void TokenHandleFetcher::OnGetTokenInfoResponse(
   const base::TimeDelta duration =
       base::TimeTicks::Now() - tokeninfo_response_start_time_;
   UMA_HISTOGRAM_TIMES("Login.TokenObtainResponseTime", duration);
-  callback_.Run(account_id_, success);
+  std::move(callback_).Run(account_id_, success);
 }
 
 void TokenHandleFetcher::OnProfileDestroyed() {
-  callback_.Run(account_id_, false);
+  std::move(callback_).Run(account_id_, false);
 }

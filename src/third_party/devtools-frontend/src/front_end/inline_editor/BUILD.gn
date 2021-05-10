@@ -12,16 +12,15 @@ devtools_module("inline_editor") {
     "BezierUI.js",
     "CSSAngle.ts",
     "CSSAngleEditor.ts",
-    "CSSAngleRegex.js",
     "CSSAngleSwatch.ts",
     "CSSAngleUtils.ts",
-    "CSSAngle_bridge.js",
     "CSSShadowEditor.js",
     "CSSShadowModel.js",
     "CSSVarSwatch.ts",
-    "CSSVarSwatch_bridge.js",
     "ColorSwatch.ts",
-    "ColorSwatch_bridge.js",
+    "FontEditor.js",
+    "FontEditorUnitConverter.js",
+    "FontEditorUtils.js",
     "SwatchPopoverHelper.js",
     "Swatches.js",
   ]
@@ -31,10 +30,14 @@ devtools_module("inline_editor") {
     "../common:bundle",
     "../component_helpers:bundle",
     "../components:bundle",
+    "../css_overview:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
+    "../sdk:bundle",
     "../text_utils:bundle",
     "../third_party/lit-html:bundle",
     "../ui:bundle",
+    "../ui/components:bundle",
   ]
 
   visibility = [ "../component_docs/*" ]
@@ -45,9 +48,12 @@ copy_to_gen("legacy_css") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "inline_editor.js"
+  entrypoint = "inline_editor.ts"
 
-  deps = [ ":inline_editor" ]
+  deps = [
+    ":inline_editor",
+    "../sdk:bundle",
+  ]
 }
 
 devtools_entrypoint("legacy") {

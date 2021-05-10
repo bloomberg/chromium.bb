@@ -28,34 +28,42 @@
 }
 
 .data-grid .selected td .bar {
-  border-top: 1px white solid;
-  border-bottom: 1px white solid;
+  border-top: 1px #fff solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  border-bottom: 1px #fff solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid .selected td .bar:last-child {
-  border-right: 1px white solid;
+  border-right: 1px #fff solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid .selected td .bar:first-child {
-  border-left: 1px white solid;
+  border-left: 1px #fff solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid td .bar-unused-size {
-  background-color: #ee442f;
+  background-color: #ee442f; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid td .bar-used-size {
-  background-color: #63acbe;
+  background-color: #63acbe; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .data-grid td .percent-value {
-  color: #888;
+  color: #888; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   width: 45px;
   display: inline-block;
 }
 
 .data-grid:focus tr.selected span.percent-value {
-  color: #eee;
+  color: #eee; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 @media (forced-colors: active) {

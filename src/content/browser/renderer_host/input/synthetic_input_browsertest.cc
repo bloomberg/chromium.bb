@@ -38,8 +38,11 @@ class SyntheticInputTest : public ContentBrowserTest {
   }
 
   RenderWidgetHostImpl* GetRenderWidgetHost() const {
-    return RenderWidgetHostImpl::From(
-        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+    return RenderWidgetHostImpl::From(shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetRenderViewHost()
+                                          ->GetWidget());
   }
 
   void LoadURL(const char* url) {
@@ -126,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
   )HTML");
 
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kMouseInput;
   params.anchor = gfx::PointF(1, 1);
 
   // Note: 256 is precisely chosen since Android's minimum granularity is 64px.
@@ -180,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, DISABLED_SlowSmoothScrollWheel) {
   )HTML");
 
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kMouseInput;
   params.anchor = gfx::PointF(1, 1);
 
   // Note: 1024 is precisely chosen since Android's minimum granularity is 64px.

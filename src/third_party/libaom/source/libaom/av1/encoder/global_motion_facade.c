@@ -208,7 +208,6 @@ void av1_compute_gm_for_valid_ref_frames(
     MotionModel *params_by_motion, uint8_t *segment_map, int segment_map_w,
     int segment_map_h) {
   AV1_COMMON *const cm = &cpi->common;
-  GlobalMotionInfo *const gm_info = &cpi->gm_info;
   const WarpedMotionParams *ref_params =
       cm->prev_frame ? &cm->prev_frame->global_motion[frame]
                      : &default_warp_params;
@@ -216,12 +215,6 @@ void av1_compute_gm_for_valid_ref_frames(
   compute_global_motion_for_ref_frame(
       cpi, ref_buf, frame, num_src_corners, src_corners, src_buffer,
       params_by_motion, segment_map, segment_map_w, segment_map_h, ref_params);
-
-  gm_info->params_cost[frame] =
-      gm_get_params_cost(&cm->global_motion[frame], ref_params,
-                         cm->features.allow_high_precision_mv) +
-      gm_info->type_cost[cm->global_motion[frame].wmtype] -
-      gm_info->type_cost[IDENTITY];
 }
 
 // Loops over valid reference frames and computes global motion estimation.
@@ -265,19 +258,6 @@ static int compare_distance(const void *a, const void *b) {
   return 0;
 }
 
-// Function to decide if we can skip the global motion parameter computation
-// for a particular ref frame.
-static AOM_INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
-  if ((ref_frame == LAST3_FRAME || ref_frame == LAST2_FRAME) &&
-      cm->global_motion[GOLDEN_FRAME].wmtype != IDENTITY) {
-    return get_relative_dist(
-               &cm->seq_params.order_hint_info,
-               cm->cur_frame->ref_order_hints[ref_frame - LAST_FRAME],
-               cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0;
-  }
-  return 0;
-}
-
 // Prunes reference frames for global motion estimation based on the speed
 // feature 'gm_search_type'.
 static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {
@@ -318,7 +298,6 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
     // Skip global motion estimation for invalid ref frames
     if (buf == NULL ||
         (ref_disabled && cpi->sf.hl_sf.recode_loop != DISALLOW_RECODE)) {
-      cpi->gm_info.params_cost[frame] = 0;
       continue;
     } else {
       ref_buf[frame] = &buf->buf;
@@ -331,8 +310,7 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
 
     if (ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
         ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
-        do_gm_search_logic(&cpi->sf, frame) && !prune_ref_frames &&
-        !(cpi->sf.gm_sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+        do_gm_search_logic(&cpi->sf, frame) && !prune_ref_frames) {
       assert(ref_buf[frame] != NULL);
       const int relative_frame_dist = av1_encoder_get_relative_dist(
           buf->display_order_hint, cm->cur_frame->display_order_hint);
@@ -455,9 +433,6 @@ static AOM_INLINE void global_motion_estimation(AV1_COMP *cpi) {
 void av1_compute_global_motion_facade(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   GlobalMotionInfo *const gm_info = &cpi->gm_info;
-
-  av1_zero(cpi->td.rd_counts.global_motion_used);
-  av1_zero(gm_info->params_cost);
 
   if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
       cpi->oxcf.tool_cfg.enable_global_motion && !gm_info->search_done) {

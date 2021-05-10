@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -272,6 +272,10 @@ void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
 
   bool was_enabled = is_keyboard_enabled_;
   is_keyboard_enabled_ = enabled;
+
+  for (auto& observer : observers_)
+    observer.OnKeyboardEnabledChanged(is_keyboard_enabled_);
+
   if (enabled || !was_enabled)
     return;
 

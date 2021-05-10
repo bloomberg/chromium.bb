@@ -184,7 +184,7 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
     auto val = std::make_unique<base::DictionaryValue>();
     val->SetString("id", input_method.id());
     val->SetString("name", util->GetInputMethodLongName(input_method));
-    val->SetString("indicator", util->GetInputMethodShortName(input_method));
+    val->SetString("indicator", input_method.GetIndicator());
     output->Append(std::move(val));
   }
   return RespondNow(
@@ -449,13 +449,6 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
       }
       segments.push_back(segment_info);
     }
-  } else {
-    // Default to a single segment that spans the entire range.
-    InputMethodEngineBase::SegmentInfo segment_info;
-    segment_info.start = 0;
-    segment_info.end = params.selection_before + params.selection_after;
-    segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-    segments.push_back(segment_info);
   }
 
   if (!engine->SetCompositionRange(params.context_id, params.selection_before,
@@ -499,13 +492,6 @@ InputMethodPrivateSetComposingRangeFunction::Run() {
       }
       segments.push_back(segment_info);
     }
-  } else {
-    // Default to a single segment that spans the entire composing range.
-    InputMethodEngineBase::SegmentInfo segment_info;
-    segment_info.start = 0;
-    segment_info.end = params.end - params.start;
-    segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-    segments.push_back(segment_info);
   }
 
   if (!engine->SetComposingRange(params.context_id, params.start, params.end,
@@ -570,8 +556,8 @@ InputMethodPrivateSetAutocorrectRangeFunction::Run() {
   const auto parent_params = SetAutocorrectRange::Params::Create(*args_);
   const auto& params = parent_params->parameters;
   if (!engine->SetAutocorrectRange(
-          params.context_id, base::UTF8ToUTF16(params.autocorrect_string),
-          params.selection_start, params.selection_end, &error)) {
+          params.context_id,
+          gfx::Range(params.selection_start, params.selection_end), &error)) {
     auto results = std::make_unique<base::ListValue>();
     results->Append(std::make_unique<base::Value>(false));
     return RespondNow(Error(InformativeError(error, static_function_name())));

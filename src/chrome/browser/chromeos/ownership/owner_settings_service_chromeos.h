@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,6 +33,13 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
+enum class FeatureFlagsMigrationStatus {
+  kNoFeatureFlags,
+  kAlreadyMigrated,
+  kMigrationPerformed,
+  kMaxValue = kMigrationPerformed,
+};
+
 // The class is a profile-keyed service which holds public/private keypair
 // corresponds to a profile. The keypair is reloaded automatically when profile
 // is created and TPM token is ready. Note that the private part of a key can be
@@ -45,8 +52,6 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
                                      public SessionManagerClient::Observer,
                                      public DeviceSettingsService::Observer {
  public:
-  typedef base::Callback<void(bool success)> OnManagementSettingsSetCallback;
-
   struct ManagementSettings {
     ManagementSettings();
     ~ManagementSettings();
@@ -155,6 +160,11 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // device settings.
   void ReportStatusAndContinueStoring(bool success);
 
+  // Migrates feature flags from being stored as raw switches to being stored as
+  // feature flag names.
+  void MigrateFeatureFlags(
+      enterprise_management::ChromeDeviceSettingsProto* settings);
+
   DeviceSettingsService* device_settings_service_;
 
   // Profile this service instance belongs to.
@@ -189,5 +199,10 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to chrome/browser/ash/.
+namespace ash {
+using ::chromeos::OwnerSettingsServiceChromeOS;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_CHROMEOS_H_

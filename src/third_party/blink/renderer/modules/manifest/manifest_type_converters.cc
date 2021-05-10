@@ -79,6 +79,8 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
   if (!input->scope.IsEmpty())
     output.scope = input->scope;
 
+  output.capture_links = input->capture_links;
+
   return output;
 }
 
@@ -96,15 +98,8 @@ TypeConverter<blink::Manifest::ImageResource,
   for (auto& size : input->sizes)
     output.sizes.push_back(gfx::Size(size));
 
-  for (auto purpose : input->purpose) {
-    blink::mojom::ManifestImageResource_Purpose out_purpose;
-    if (!EnumTraits<blink::mojom::ManifestImageResource_Purpose,
-                    ::blink::mojom::ManifestImageResource_Purpose>::
-            FromMojom(purpose, &out_purpose)) {
-      NOTREACHED();
-    }
-    output.purpose.push_back(out_purpose);
-  }
+  for (auto purpose : input->purpose)
+    output.purpose.push_back(purpose);
 
   return output;
 }

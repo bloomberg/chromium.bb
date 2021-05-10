@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_H_
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 // Displays error information when the user fails to install a package.
 class CrostiniPackageInstallFailureView
     : public views::BubbleDialogDelegateView {
  public:
-  static void Show(const std::string& error_message);
+  METADATA_HEADER(CrostiniPackageInstallFailureView);
 
-  // BubbleDialogDelegateView overrides.
-  gfx::Size CalculatePreferredSize() const override;
+  static void Show(const std::string& error_message);
 
  private:
   explicit CrostiniPackageInstallFailureView(const std::string& error_message);

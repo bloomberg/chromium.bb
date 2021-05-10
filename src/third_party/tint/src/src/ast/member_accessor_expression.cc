@@ -14,31 +14,31 @@
 
 #include "src/ast/member_accessor_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::MemberAccessorExpression);
+
 namespace tint {
 namespace ast {
 
-MemberAccessorExpression::MemberAccessorExpression() = default;
-
-MemberAccessorExpression::MemberAccessorExpression(
-    std::unique_ptr<Expression> structure,
-    std::unique_ptr<IdentifierExpression> member)
-    : Expression(), struct_(std::move(structure)), member_(std::move(member)) {}
-
-MemberAccessorExpression::MemberAccessorExpression(
-    const Source& source,
-    std::unique_ptr<Expression> structure,
-    std::unique_ptr<IdentifierExpression> member)
-    : Expression(source),
-      struct_(std::move(structure)),
-      member_(std::move(member)) {}
+MemberAccessorExpression::MemberAccessorExpression(const Source& source,
+                                                   Expression* structure,
+                                                   IdentifierExpression* member)
+    : Base(source), struct_(structure), member_(member) {}
 
 MemberAccessorExpression::MemberAccessorExpression(MemberAccessorExpression&&) =
     default;
 
 MemberAccessorExpression::~MemberAccessorExpression() = default;
 
-bool MemberAccessorExpression::IsMemberAccessor() const {
-  return true;
+MemberAccessorExpression* MemberAccessorExpression::Clone(
+    CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* str = ctx->Clone(structure());
+  auto* mem = ctx->Clone(member());
+  return ctx->dst->create<MemberAccessorExpression>(src, str, mem);
 }
 
 bool MemberAccessorExpression::IsValid() const {
@@ -51,11 +51,13 @@ bool MemberAccessorExpression::IsValid() const {
   return true;
 }
 
-void MemberAccessorExpression::to_str(std::ostream& out, size_t indent) const {
+void MemberAccessorExpression::to_str(const semantic::Info& sem,
+                                      std::ostream& out,
+                                      size_t indent) const {
   make_indent(out, indent);
-  out << "MemberAccessor{" << std::endl;
-  struct_->to_str(out, indent + 2);
-  member_->to_str(out, indent + 2);
+  out << "MemberAccessor[" << result_type_str(sem) << "]{" << std::endl;
+  struct_->to_str(sem, out, indent + 2);
+  member_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

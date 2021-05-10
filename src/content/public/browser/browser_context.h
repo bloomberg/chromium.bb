@@ -77,7 +77,7 @@ class DownloadManager;
 class ClientHintsControllerDelegate;
 class ContentIndexProvider;
 class DownloadManagerDelegate;
-class NativeFileSystemPermissionContext;
+class FileSystemAccessPermissionContext;
 class PermissionController;
 class PermissionControllerDelegate;
 class PushMessagingService;
@@ -312,7 +312,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() = 0;
 
   // Sets CORS origin access lists.
+  enum class TargetBrowserContexts {
+    // Only modify |this| BrowserContext.
+    kSingleContext,
+
+    // Modify |this| BrowserContext and all related regular/OffTheRecord
+    // BrowserContexts.
+    kAllRelatedContexts,
+  };
   virtual void SetCorsOriginAccessListForOrigin(
+      TargetBrowserContexts target_mode,
       const url::Origin& source_origin,
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
@@ -352,10 +361,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual download::InProgressDownloadManager*
   RetriveInProgressDownloadManager();
 
-  // Returns the NativeFileSystemPermissionContext associated with this context
+  // Returns the FileSystemAccessPermissionContext associated with this context
   // if any, nullptr otherwise.
-  virtual NativeFileSystemPermissionContext*
-  GetNativeFileSystemPermissionContext();
+  virtual FileSystemAccessPermissionContext*
+  GetFileSystemAccessPermissionContext();
 
   // Returns the ContentIndexProvider associated with that context if any,
   // nullptr otherwise.

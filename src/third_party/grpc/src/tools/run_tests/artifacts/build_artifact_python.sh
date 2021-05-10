@@ -22,6 +22,9 @@ export PYTHON=${PYTHON:-python}
 export PIP=${PIP:-pip}
 export AUDITWHEEL=${AUDITWHEEL:-auditwheel}
 
+# Install Cython to avoid source wheel build failure.
+"${PIP}" install --upgrade cython
+
 # Allow build_ext to build C/C++ files in parallel
 # by enabling a monkeypatch. It speeds up the build a lot.
 # Use externally provided GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS value if set.
@@ -48,8 +51,9 @@ clean_non_source_files() {
 ( cd "$1"
   find . -type f \
     | grep -v '\.c$' | grep -v '\.cc$' | grep -v '\.cpp$' \
-    | grep -v '\.h$' | grep -v '\.hh$' \
-    | grep -v '\.s$' | grep -v '\.py$' \
+    | grep -v '\.h$' | grep -v '\.hh$' | grep -v '\.inc$' \
+    | grep -v '\.s$' | grep -v '\.py$' | grep -v '\.hpp$' \
+    | grep -v '\.S$' | grep -v '\.asm$'                   \
     | while read -r file; do
       rm -f "$file" || true
     done
@@ -79,10 +83,12 @@ ${SETARCH_CMD} "${PYTHON}" tools/distrib/python/grpcio_tools/setup.py bdist_whee
 if [ "$GRPC_BUILD_MANYLINUX_WHEEL" != "" ]
 then
   for wheel in dist/*.whl; do
+    "${AUDITWHEEL}" show "$wheel" | tee /dev/stderr |  grep -E -w "$AUDITWHEEL_PLAT"
     "${AUDITWHEEL}" repair "$wheel" -w "$ARTIFACT_DIR"
     rm "$wheel"
   done
   for wheel in tools/distrib/python/grpcio_tools/dist/*.whl; do
+    "${AUDITWHEEL}" show "$wheel" | tee /dev/stderr |  grep -E -w "$AUDITWHEEL_PLAT"
     "${AUDITWHEEL}" repair "$wheel" -w "$ARTIFACT_DIR"
     rm "$wheel"
   done
@@ -98,7 +104,7 @@ then
 
   if [ "$("$PYTHON" -c "import sys; print(sys.version_info[0])")" == "2" ]
   then
-    "${PIP}" install futures>=2.2.0
+    "${PIP}" install futures>=2.2.0 enum34>=1.0.4
   fi
 
   "${PIP}" install grpcio --no-index --find-links "file://$ARTIFACT_DIR/"
@@ -131,8 +137,9 @@ then
 fi
 
 # Ensure the generated artifacts are valid.
-"${PYTHON}" -m virtualenv venv || { "${PYTHON}" -m pip install virtualenv && "${PYTHON}" -m virtualenv venv; }
-venv/bin/python -m pip install twine
+"${PYTHON}" -m pip install virtualenv
+"${PYTHON}" -m virtualenv venv || { "${PYTHON}" -m pip install virtualenv==16.7.9 && "${PYTHON}" -m virtualenv venv; }
+venv/bin/python -m pip install "twine<=2.0"
 venv/bin/python -m twine check dist/* tools/distrib/python/grpcio_tools/dist/*
 rm -rf venv/
 

@@ -4,7 +4,7 @@
 
 import type * as IssuesModule from '../../../../front_end/issues/issues.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
-import {TemplateResult} from '../../../../front_end/third_party/lit-html/lit-html.js';
+import * as LitHtml from '../../../../front_end/third_party/lit-html/lit-html.js';
 import * as Marked from '../../../../front_end/third_party/marked/marked.js';
 import {assertShadowRoot, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
@@ -53,7 +53,7 @@ describeWithEnvironment('MarkdownView', async () => {
         ],
       });
 
-      const renderedParts = renderResult.values[0] as TemplateResult[];
+      const renderedParts = renderResult.values[0] as LitHtml.TemplateResult[];
       assert.strictEqual(renderedParts.length, 2);
       assert.deepStrictEqual(renderedParts[0].values, ['Nested raw text']);
       assert.deepStrictEqual(renderedParts[1].values, ['and a nested codespan to boot']);
@@ -61,6 +61,41 @@ describeWithEnvironment('MarkdownView', async () => {
 
     it('throws an error for invalid or unsupported token types', () => {
       assert.throws(() => Issues.MarkdownView.renderToken({type: 'no_way_this_is_a_valid_markdown_token'}));
+    });
+
+    it('renders link with valid key', () => {
+      Issues.MarkdownLinksMap.markdownLinks.set('exampleLink', 'https://web.dev/');
+      const renderResult = Issues.MarkdownView.renderToken({type: 'link', text: 'learn more', href: 'exampleLink'});
+      assert.deepStrictEqual(
+          renderResult.strings.raw, ['<devtools-markdown-link .data=', '></devtools-markdown-link>']);
+    });
+
+    it('throws an error if invalid link key is provided', () => {
+      assert.throws(() => Issues.MarkdownLinksMap.getMarkdownLink('testErrorLink'));
+    });
+
+    it('renders icon with valid key', () => {
+      Issues.MarkdownImagesMap.markdownImages.set('testExampleImage', {
+        src: 'largeicon-phone',
+        isIcon: true,
+      });
+      const renderResult = Issues.MarkdownView.renderToken({type: 'image', text: 'phone', href: 'testExampleImage'});
+      assert.deepStrictEqual(
+          renderResult.strings.raw, ['<devtools-markdown-image .data=', '></devtools-markdown-image>']);
+    });
+
+    it('renders image with valid key', () => {
+      Issues.MarkdownImagesMap.markdownImages.set('exampleImage', {
+        src: 'Images/phone-logo.png',
+        isIcon: false,
+      });
+      const renderResult = Issues.MarkdownView.renderToken({type: 'image', text: 'phone', href: 'exampleImage'});
+      assert.deepStrictEqual(
+          renderResult.strings.raw, ['<devtools-markdown-image .data=', '></devtools-markdown-image>']);
+    });
+
+    it('throws an error if invalid image key is provided', () => {
+      assert.throws(() => Issues.MarkdownImagesMap.getMarkdownImage('testErrorImageLink'));
     });
   });
 

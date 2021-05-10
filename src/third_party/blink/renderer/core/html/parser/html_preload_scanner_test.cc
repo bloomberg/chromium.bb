@@ -232,7 +232,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
     data.device_pixel_ratio = 2.0;
     data.color_bits_per_component = 24;
     data.monochrome_bits_per_component = 0;
-    data.primary_pointer_type = ui::POINTER_TYPE_FINE;
+    data.primary_pointer_type = mojom::blink::PointerType::kPointerFineType;
     data.default_font_size = 16;
     data.three_d_enabled = true;
     data.media_type = media_type_names::kScreen;
@@ -1484,6 +1484,34 @@ TEST_F(HTMLPreloadScannerTest, CSSImportWithSemicolonInUrl) {
        ResourceType::kCSSStyleSheet, 0},
   };
 
+  for (const auto& test : test_cases)
+    Test(test);
+}
+
+// https://crbug.com/1181291
+TEST_F(HTMLPreloadScannerTest, TemplateInteractions) {
+  PreloadScannerTestCase test_cases[] = {
+      {"http://example.test", "<template><img src='bla.gif'></template>",
+       nullptr, "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<template><template><img src='bla.gif'></template></template>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<template><template></template><img src='bla.gif'></template>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<template><template></template><script "
+       "src='test.js'></script></template>",
+       nullptr, "http://example.test/", ResourceType::kScript, 0},
+      {"http://example.test",
+       "<template><template></template><link rel=preload as=fetch "
+       "href=bla></template>",
+       nullptr, "http://example.test/", ResourceType::kRaw, 0},
+      {"http://example.test",
+       "<template><template></template><link rel='stylesheet' href='sheet.css' "
+       "type='text/css'></template>",
+       nullptr, "http://example.test/", ResourceType::kCSSStyleSheet, 0},
+  };
   for (const auto& test : test_cases)
     Test(test);
 }

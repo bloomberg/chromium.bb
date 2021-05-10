@@ -17,25 +17,26 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Break) {
-  ast::BreakStatement b;
+  auto* b = create<ast::BreakStatement>();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&b)) << g.error();
-  EXPECT_EQ(g.result(), "  break;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(b)) << gen.error();
+  EXPECT_EQ(gen.result(), "  break;\n");
 }
 
 }  // namespace

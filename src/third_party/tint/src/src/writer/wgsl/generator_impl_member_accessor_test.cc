@@ -18,23 +18,25 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/member_accessor_expression.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, EmitExpression_MemberAccessor) {
-  auto str = std::make_unique<ast::IdentifierExpression>("str");
-  auto mem = std::make_unique<ast::IdentifierExpression>("mem");
+  auto* str = Expr("str");
+  auto* mem = Expr("mem");
 
-  ast::MemberAccessorExpression expr(std::move(str), std::move(mem));
+  auto* expr = create<ast::MemberAccessorExpression>(str, mem);
 
-  GeneratorImpl g;
-  ASSERT_TRUE(g.EmitExpression(&expr)) << g.error();
-  EXPECT_EQ(g.result(), "str.mem");
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), "str.mem");
 }
 
 }  // namespace

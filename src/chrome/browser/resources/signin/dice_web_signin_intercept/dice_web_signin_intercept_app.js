@@ -4,10 +4,13 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import './signin_shared_css.js';
 import './signin_vars_css.js';
+import './strings.m.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -25,6 +28,20 @@ Polymer({
   properties: {
     /** @private {InterceptionParameters} */
     InterceptionParameters_: Object,
+
+    /** @private {boolean} */
+    acceptButtonClicked_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {string} */
+    guestLink_: {
+      type: String,
+      value() {
+        return loadTimeData.getString('guestLink');
+      },
+    },
   },
 
   /** @private {?DiceWebSigninInterceptBrowserProxy} */
@@ -43,12 +60,22 @@ Polymer({
 
   /** @private */
   onAccept_() {
+    this.acceptButtonClicked_ = true;
     this.diceWebSigninInterceptBrowserProxy_.accept();
   },
 
   /** @private */
   onCancel_() {
     this.diceWebSigninInterceptBrowserProxy_.cancel();
+  },
+
+  /** @private */
+  onGuest_() {
+    if (this.acceptButtonClicked_) {
+      return;
+    }
+    this.acceptButtonClicked_ = true;
+    this.diceWebSigninInterceptBrowserProxy_.guest();
   },
 
   /**

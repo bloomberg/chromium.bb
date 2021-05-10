@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
+#include "quic/core/congestion_control/bbr2_misc.h"
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
 RoundTripCounter::RoundTripCounter() : round_trip_count_(0) {}
 
 void RoundTripCounter::OnPacketSent(QuicPacketNumber packet_number) {
-  DCHECK(!last_sent_packet_.IsInitialized() ||
-         last_sent_packet_ < packet_number);
+  QUICHE_DCHECK(!last_sent_packet_.IsInitialized() ||
+                last_sent_packet_ < packet_number);
   last_sent_packet_ = packet_number;
 }
 
@@ -148,8 +149,7 @@ void Bbr2NetworkModel::OnCongestionEventStart(
     loss_events_in_round_++;
   }
 
-  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered) &&
-      congestion_event->bytes_acked > 0 &&
+  if (congestion_event->bytes_acked > 0 &&
       congestion_event->last_packet_send_state.is_valid &&
       total_bytes_acked() >
           congestion_event->last_packet_send_state.total_bytes_acked) {
@@ -169,12 +169,12 @@ void Bbr2NetworkModel::OnCongestionEventStart(
     inflight_latest_ = sample.sample_max_inflight;
   }
 
+  // Adapt lower bounds(bandwidth_lo and inflight_lo).
+  AdaptLowerBounds(*congestion_event);
+
   if (!congestion_event->end_of_round_trip) {
     return;
   }
-
-  // Per round-trip updates.
-  AdaptLowerBounds(*congestion_event);
 
   if (!sample.sample_max_bandwidth.IsZero()) {
     bandwidth_latest_ = sample.sample_max_bandwidth;
@@ -187,6 +187,63 @@ void Bbr2NetworkModel::OnCongestionEventStart(
 
 void Bbr2NetworkModel::AdaptLowerBounds(
     const Bbr2CongestionEvent& congestion_event) {
+  if (Params().bw_lo_mode_ != Bbr2Params::DEFAULT) {
+    QUICHE_DCHECK(Params().bw_startup);
+    if (congestion_event.bytes_lost == 0) {
+      return;
+    }
+    // Ignore losses from packets sent when probing for more bandwidth in
+    // STARTUP or PROBE_UP when they're lost in DRAIN or PROBE_DOWN.
+    if (pacing_gain_ < 1) {
+      return;
+    }
+    // Decrease bandwidth_lo whenever there is loss.
+    // Set bandwidth_lo_ if it is not yet set.
+    if (bandwidth_lo_.IsInfinite()) {
+      bandwidth_lo_ = MaxBandwidth();
+    }
+    switch (Params().bw_lo_mode_) {
+      case Bbr2Params::MIN_RTT_REDUCTION:
+        bandwidth_lo_ =
+            bandwidth_lo_ - QuicBandwidth::FromBytesAndTimeDelta(
+                                congestion_event.bytes_lost, MinRtt());
+        break;
+      case Bbr2Params::INFLIGHT_REDUCTION: {
+        // Use a max of BDP and inflight to avoid starving app-limited flows.
+        const QuicByteCount effective_inflight =
+            std::max(BDP(), congestion_event.prior_bytes_in_flight);
+        // This could use bytes_lost_in_round if the bandwidth_lo_ was saved
+        // when entering 'recovery', but this BBRv2 implementation doesn't have
+        // recovery defined.
+        bandwidth_lo_ = bandwidth_lo_ *
+                        ((effective_inflight - congestion_event.bytes_lost) /
+                         static_cast<double>(effective_inflight));
+        break;
+      }
+      case Bbr2Params::CWND_REDUCTION:
+        bandwidth_lo_ =
+            bandwidth_lo_ *
+            ((congestion_event.prior_cwnd - congestion_event.bytes_lost) /
+             static_cast<double>(congestion_event.prior_cwnd));
+        break;
+      case Bbr2Params::DEFAULT:
+        QUIC_BUG << "Unreachable case DEFAULT.";
+    }
+    if (pacing_gain_ > Params().startup_full_bw_threshold) {
+      // In STARTUP, pacing_gain_ is applied to bandwidth_lo_, so this backs
+      // that multiplication out to allow the pacing rate to decrease,
+      // but not below bandwidth_latest_ * startup_full_bw_threshold.
+      bandwidth_lo_ =
+          std::max(bandwidth_lo_,
+                   bandwidth_latest_ *
+                       (Params().startup_full_bw_threshold / pacing_gain_));
+    } else {
+      // Ensure bandwidth_lo isn't lower than bandwidth_latest_.
+      bandwidth_lo_ = std::max(bandwidth_lo_, bandwidth_latest_);
+    }
+    // This early return ignores inflight_lo as well.
+    return;
+  }
   if (!congestion_event.end_of_round_trip ||
       congestion_event.is_probing_for_bandwidth) {
     return;
@@ -216,8 +273,13 @@ void Bbr2NetworkModel::OnCongestionEventFinish(
     QuicPacketNumber least_unacked_packet,
     const Bbr2CongestionEvent& congestion_event) {
   if (congestion_event.end_of_round_trip) {
-    bytes_lost_in_round_ = 0;
-    loss_events_in_round_ = 0;
+    if (!reset_max_bytes_delivered_) {
+      bytes_lost_in_round_ = 0;
+      loss_events_in_round_ = 0;
+    } else {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_reset_max_bytes_delivered, 1, 2);
+      OnNewRound();
+    }
   }
 
   bandwidth_sampler_.RemoveObsoletePackets(least_unacked_packet);
@@ -291,13 +353,23 @@ bool Bbr2NetworkModel::IsInflightTooHigh(
   return false;
 }
 
-void Bbr2NetworkModel::RestartRound() {
-  bytes_lost_in_round_ = 0;
-  loss_events_in_round_ = 0;
-  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered)) {
+void Bbr2NetworkModel::RestartRoundEarly() {
+  if (!reset_max_bytes_delivered_) {
+    bytes_lost_in_round_ = 0;
+    loss_events_in_round_ = 0;
     max_bytes_delivered_in_round_ = 0;
+  } else {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_reset_max_bytes_delivered, 2, 2);
+    OnNewRound();
   }
   round_trip_counter_.RestartRound();
+}
+
+void Bbr2NetworkModel::OnNewRound() {
+  QUICHE_DCHECK(reset_max_bytes_delivered_);
+  bytes_lost_in_round_ = 0;
+  loss_events_in_round_ = 0;
+  max_bytes_delivered_in_round_ = 0;
 }
 
 void Bbr2NetworkModel::cap_inflight_lo(QuicByteCount cap) {
@@ -313,6 +385,41 @@ QuicByteCount Bbr2NetworkModel::inflight_hi_with_headroom() const {
   QuicByteCount headroom = inflight_hi_ * Params().inflight_hi_headroom;
 
   return inflight_hi_ > headroom ? inflight_hi_ - headroom : 0;
+}
+
+Bbr2NetworkModel::BandwidthGrowth Bbr2NetworkModel::CheckBandwidthGrowth(
+    const Bbr2CongestionEvent& congestion_event) {
+  QUICHE_DCHECK(!full_bandwidth_reached_);
+  QUICHE_DCHECK(congestion_event.end_of_round_trip);
+  if (congestion_event.last_sample_is_app_limited) {
+    return APP_LIMITED;
+  }
+
+  QuicBandwidth threshold =
+      full_bandwidth_baseline_ * Params().startup_full_bw_threshold;
+
+  if (MaxBandwidth() >= threshold) {
+    QUIC_DVLOG(3) << " CheckBandwidthGrowth at end of round. max_bandwidth:"
+                  << MaxBandwidth() << ", threshold:" << threshold
+                  << " (Still growing)  @ " << congestion_event.event_time;
+    full_bandwidth_baseline_ = MaxBandwidth();
+    rounds_without_bandwidth_growth_ = 0;
+    return GROWTH;
+  }
+
+  ++rounds_without_bandwidth_growth_;
+  BandwidthGrowth return_value = NO_GROWTH;
+  if (rounds_without_bandwidth_growth_ >= Params().startup_full_bw_rounds) {
+    full_bandwidth_reached_ = true;
+    return_value = EXIT;
+  }
+  QUIC_DVLOG(3) << " CheckBandwidthGrowth at end of round. max_bandwidth:"
+                << MaxBandwidth() << ", threshold:" << threshold
+                << " rounds_without_growth:" << rounds_without_bandwidth_growth_
+                << " full_bw_reached:" << full_bandwidth_reached_ << "  @ "
+                << congestion_event.event_time;
+
+  return return_value;
 }
 
 }  // namespace quic

@@ -20,6 +20,7 @@
   UIBarButtonItem* _spaceItem;
   NSArray<NSLayoutConstraint*>* _compactConstraints;
   NSArray<NSLayoutConstraint*>* _floatingConstraints;
+  NSLayoutConstraint* _largeNewTabButtonBottomAnchor;
   TabGridNewTabButton* _smallNewTabButton;
   TabGridNewTabButton* _largeNewTabButton;
 }
@@ -86,6 +87,11 @@
                forControlEvents:UIControlEventTouchUpInside];
 }
 
+- (void)setNewTabButtonEnabled:(BOOL)enabled {
+  _smallNewTabButton.enabled = enabled;
+  _largeNewTabButton.enabled = enabled;
+}
+
 - (void)hide {
   _smallNewTabButton.alpha = 0.0;
   _largeNewTabButton.alpha = 0.0;
@@ -150,14 +156,17 @@
   _largeNewTabButton.page = self.page;
 
   CGFloat floatingButtonVerticalInset = kTabGridFloatingButtonVerticalInset;
-  if (IsThumbStripEnabled())
+  if (ShowThumbStripInTraitCollection(self.traitCollection)) {
     floatingButtonVerticalInset += kBVCHeightTabGrid;
+  }
+
+  _largeNewTabButtonBottomAnchor = [_largeNewTabButton.bottomAnchor
+      constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor
+                     constant:-floatingButtonVerticalInset];
 
   _floatingConstraints = @[
     [_largeNewTabButton.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [_largeNewTabButton.bottomAnchor
-        constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor
-                       constant:-floatingButtonVerticalInset],
+    _largeNewTabButtonBottomAnchor,
     [_largeNewTabButton.trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor
                        constant:-kTabGridFloatingButtonHorizontalInset],
@@ -173,6 +182,9 @@
 }
 
 - (void)updateLayout {
+  _largeNewTabButtonBottomAnchor.constant =
+      -kTabGridFloatingButtonVerticalInset;
+
   if ([self shouldUseCompactLayout]) {
     // For incognito/regular pages, display all 3 buttons;
     // For remote tabs page, only display new tab button.
@@ -193,7 +205,10 @@
     [NSLayoutConstraint deactivateConstraints:_compactConstraints];
     [_toolbar removeFromSuperview];
 
-    if (self.page == TabGridPageRemoteTabs) {
+    // When the thumb strip is enabled, there should be no new tab button on the
+    // bottom ever.
+    if (ShowThumbStripInTraitCollection(self.traitCollection) ||
+        self.page == TabGridPageRemoteTabs) {
       [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
       [_largeNewTabButton removeFromSuperview];
     } else {

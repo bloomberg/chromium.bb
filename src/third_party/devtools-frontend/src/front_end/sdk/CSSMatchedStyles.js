@@ -77,7 +77,7 @@ export class CSSMatchedStyles {
       // Merge UA rules that are sequential and have similar selector/media.
       const cleanMatchedPayload = [];
       for (const ruleMatch of payload) {
-        const lastMatch = cleanMatchedPayload.peekLast();
+        const lastMatch = cleanMatchedPayload[cleanMatchedPayload.length - 1];
         if (!lastMatch || ruleMatch.rule.origin !== 'user-agent' || lastMatch.rule.origin !== 'user-agent' ||
             ruleMatch.rule.selectorList.text !== lastMatch.rule.selectorList.text ||
             mediaText(ruleMatch) !== mediaText(lastMatch)) {
@@ -514,7 +514,8 @@ export class CSSMatchedStyles {
    */
   computeSingleVariableValue(style, cssVariableValue) {
     const domCascade = this._styleToDOMCascade.get(style) || null;
-    return domCascade ? domCascade.computeSingleVariableValue(style, cssVariableValue) : null;
+    const cssVariableValueNoSpaces = cssVariableValue.replace(/\s/g, '');
+    return domCascade ? domCascade.computeSingleVariableValue(style, cssVariableValueNoSpaces) : null;
   }
 
   /**
@@ -697,7 +698,7 @@ class DOMInheritanceCascade {
     const computedValue = this._innerComputeValue(availableCSSVariables, computedCSSVariables, cssVariableValue);
     const {variableName} = this._getCSSVariableNameAndFallback(cssVariableValue);
 
-    return {computedValue, fromFallback: !!variableName && !availableCSSVariables.has(variableName)};
+    return {computedValue, fromFallback: variableName !== null && !availableCSSVariables.has(variableName)};
   }
 
   /**

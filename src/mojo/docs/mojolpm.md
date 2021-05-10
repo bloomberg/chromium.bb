@@ -307,6 +307,11 @@ careful of here is that everything happens on the correct thread/sequence. Many
 Browser-process objects have specific expectations, and will end up with very
 different behaviour if they are created or used from the wrong context.
 
+If your test case requires the existence of a `RenderFrameHost` and similar
+structures, see `content/test/fuzzer/presentation_service_mojolpm_fuzzer.cc`
+for a fuzzer which already sets them up (in particular, inheritance from
+`RenderViewHostTestHarness`).
+
 **The most important thing to be careful of here is that everything happens on
 the correct thread/sequence. Many Browser-process objects have specific
 expectations, and will end up with very different behaviour if they are created
@@ -376,6 +381,21 @@ There's just a little bit more boilerplate in the bottom of the file to tidy up
 concurrency loose ends, making sure that the fuzzer components are all running
 on the correct threads; those are more-or-less common to any fuzzer using
 MojoLPM.
+
+
+## Resulting structure
+
+Overall, the structure of your fuzzer is likely approximately to reflect that
+of the `content/test/fuzzer/presentation_service_mojolpm_fuzzer.cc`,
+shown here:
+
+![alt text](mojolpm-fuzzer-structure.png "Architecture diagram showing
+the rough structure of the presentation service fuzzer")
+
+(drawing source
+[here](https://goto.google.com/mojolpm-fuzzer-structure) )
+
+
 
 ## Test it!
 

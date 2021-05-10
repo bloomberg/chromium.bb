@@ -713,6 +713,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         process_id_(123) {
     appcache_require_origin_trial_feature_.InitAndDisableFeature(
         blink::features::kAppCacheRequireOriginTrial);
+    appcache_disable_corruption_feature_.InitAndDisableFeature(
+        kAppCacheCorruptionRecoveryFeature);
   }
 
   // TODO(ananta/michaeln): Remove dependencies on URLRequest based
@@ -767,7 +769,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
-    mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+    mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle);
 
     uint32_t bytes_written = body.size();
     producer_handle->WriteData(body.data(), &bytes_written,
@@ -5351,6 +5353,7 @@ class AppCacheUpdateJobTest : public testing::Test,
       http_headers_request_test_jobs_;
 
   base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
+  base::test::ScopedFeatureList appcache_disable_corruption_feature_;
 
   // Lazily create these to avoid data races in the FeatureList between
   // service workers (reading) and appcache tests (writing).

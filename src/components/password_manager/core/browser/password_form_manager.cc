@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -268,17 +269,17 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
   return base::make_span(form_fetcher_->GetInteractionsStats());
 }
 
-base::span<const CompromisedCredentials>
-PasswordFormManager::GetCompromisedCredentials() const {
-  return form_fetcher_->GetCompromisedCredentials();
+base::span<const InsecureCredential>
+PasswordFormManager::GetInsecureCredentials() const {
+  return form_fetcher_->GetInsecureCredentials();
 }
 
-bool PasswordFormManager::IsBlacklisted() const {
-  return form_fetcher_->IsBlacklisted() || newly_blacklisted_;
+bool PasswordFormManager::IsBlocklisted() const {
+  return form_fetcher_->IsBlocklisted() || newly_blocklisted_;
 }
 
-bool PasswordFormManager::WasUnblacklisted() const {
-  return was_unblacklisted_while_on_page_;
+bool PasswordFormManager::WasUnblocklisted() const {
+  return was_unblocklisted_while_on_page_;
 }
 
 bool PasswordFormManager::IsMovableToAccountStore() const {
@@ -309,9 +310,9 @@ bool PasswordFormManager::IsMovableToAccountStore() const {
 void PasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());
-  if (IsBlacklisted()) {
-    password_save_manager_->Unblacklist(ConstructObservedFormDigest());
-    newly_blacklisted_ = false;
+  if (IsBlocklisted()) {
+    password_save_manager_->Unblocklist(ConstructObservedFormDigest());
+    newly_blocklisted_ = false;
   }
 
   password_save_manager_->Save(observed_form(), *parsed_submitted_form_);
@@ -334,18 +335,23 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
 
   metrics_recorder_->set_username_updated_in_bubble(true);
 
-  // |has_username_edited_vote_| is true iff |new_username| was typed in another
-  // field. Otherwise, |has_username_edited_vote_| is false and no vote will be
-  // uploaded.
-  votes_uploader_.set_has_username_edited_vote(false);
   if (!new_username.empty()) {
-    for (const auto& possible_username :
-         parsed_submitted_form_->all_possible_usernames) {
-      if (possible_username.first == new_username) {
-        parsed_submitted_form_->username_element = possible_username.second;
-        votes_uploader_.set_has_username_edited_vote(true);
-        break;
-      }
+    // Try to find `new_username` in the usernames `parsed_submitted_form_`
+    // knows about. Set `votes_uploader_`'s UsernameChangeState depending on
+    // whether the username is present or not. Also set `username_element` if it
+    // is a known username.
+    const auto& possible_usernames =
+        parsed_submitted_form_->all_possible_usernames;
+    auto possible_username_it = base::ranges::find(
+        possible_usernames, new_username, &ValueElementPair::first);
+
+    if (possible_username_it != possible_usernames.end()) {
+      parsed_submitted_form_->username_element = possible_username_it->second;
+      votes_uploader_.set_username_change_state(
+          VotesUploader::UsernameChangeState::kChangedToKnownValue);
+    } else {
+      votes_uploader_.set_username_change_state(
+          VotesUploader::UsernameChangeState::kChangedToUnknownValue);
     }
   }
 
@@ -394,7 +400,7 @@ void PasswordFormManager::OnNeverClicked() {
                                      autofill::UNKNOWN_TYPE, std::string());
 
   votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
-  PermanentlyBlacklist();
+  Blocklist();
 }
 
 void PasswordFormManager::OnNoInteraction(bool is_update) {
@@ -408,10 +414,10 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
   votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
 }
 
-void PasswordFormManager::PermanentlyBlacklist() {
+void PasswordFormManager::Blocklist() {
   DCHECK(!client_->IsIncognito());
-  password_save_manager_->PermanentlyBlacklist(ConstructObservedFormDigest());
-  newly_blacklisted_ = true;
+  password_save_manager_->Blocklist(ConstructObservedFormDigest());
+  newly_blocklisted_ = true;
 }
 
 PasswordStore::FormDigest PasswordFormManager::ConstructObservedFormDigest()
@@ -579,11 +585,9 @@ void PasswordFormManager::UpdateObservedFormDataWithFieldDataManagerInfo(
     FieldRendererId field_id = field.unique_renderer_id;
     if (!field_data_manager->HasFieldData(field_id))
       continue;
-    field.typed_value = field_data_manager->GetUserTypedValue(field_id);
+    field.user_input = field_data_manager->GetUserInput(field_id);
     field.properties_mask =
         field_data_manager->GetFieldPropertiesMask(field_id);
-    field.value =
-        field_data_manager->GetAutofilledValue(field_id).value_or(field.value);
   }
 }
 #endif  // defined(OS_IOS)
@@ -646,7 +650,7 @@ PasswordFormManager::PasswordFormManager(
 void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
 
-  newly_blacklisted_ = false;
+  newly_blocklisted_ = false;
   autofills_left_ = kMaxTimesAutofill;
 
   if (IsCredentialAPISave()) {
@@ -657,7 +661,7 @@ void PasswordFormManager::OnFetchCompleted() {
 
   client_->UpdateCredentialCache(url::Origin::Create(GetURL()),
                                  form_fetcher_->GetBestMatches(),
-                                 form_fetcher_->IsBlacklisted());
+                                 form_fetcher_->IsBlocklisted());
 
   if (is_submitted_)
     CreatePendingCredentials();
@@ -798,7 +802,7 @@ void PasswordFormManager::Fill() {
   if (!observed_password_form)
     return;
 
-  if (observed_password_form->is_new_password_reliable && !IsBlacklisted()) {
+  if (observed_password_form->is_new_password_reliable && !IsBlocklisted()) {
     driver_->FormEligibleForGenerationFound({
 #if defined(OS_IOS)
       .form_renderer_id = observed_password_form->form_data.unique_renderer_id,
@@ -819,7 +823,7 @@ void PasswordFormManager::Fill() {
   SendFillInformationToRenderer(
       client_, driver_.get(), *observed_password_form.get(),
       form_fetcher_->GetBestMatches(), form_fetcher_->GetFederatedMatches(),
-      form_fetcher_->GetPreferredMatch(), form_fetcher_->IsBlacklisted(),
+      form_fetcher_->GetPreferredMatch(), form_fetcher_->IsBlocklisted(),
       metrics_recorder_.get());
 }
 
@@ -869,8 +873,8 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
   password_save_manager_->GeneratedPasswordAccepted(*parsed_form, driver_);
 }
 
-void PasswordFormManager::MarkWasUnblacklisted() {
-  was_unblacklisted_while_on_page_ = true;
+void PasswordFormManager::MarkWasUnblocklisted() {
+  was_unblocklisted_while_on_page_ = true;
 }
 
 PasswordFormManager::PasswordFormManager(
@@ -903,6 +907,9 @@ PasswordFormManager::PasswordFormManager(
   }
   password_save_manager_->Init(client_, form_fetcher_, metrics_recorder_,
                                &votes_uploader_);
+  // TODO(https://crbug.com/1167475): Add test for this metric.
+  base::UmaHistogramEnumeration("PasswordManager.FormVisited.PerProfileType",
+                                client_->GetProfileType());
 }
 
 void PasswordFormManager::RecordMetricOnReadonly(
@@ -986,7 +993,7 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
   }
 
   metrics_recorder_->CalculateFillingAssistanceMetric(
-      submitted_form, saved_usernames, saved_passwords, IsBlacklisted(),
+      submitted_form, saved_usernames, saved_passwords, IsBlocklisted(),
       form_fetcher_->GetInteractionsStats(),
       client_->GetPasswordFeatureManager()
           ->ComputePasswordAccountStorageUsageLevel());
@@ -1054,9 +1061,17 @@ bool PasswordFormManager::UsePossibleUsername(
     }
   }
 
+  // TODO(crbug.com/959776): This currently only considers a possible username
+  // valid if a credential with the same username already exists for the same
+  // site. This is too conservative, and we should allow any possible username
+  // that matches a credential on any site in the user's password store.
+  std::vector<base::string16> usernames;
+  usernames.reserve(GetBestMatches().size());
+  base::ranges::transform(GetBestMatches(), std::back_inserter(usernames),
+                          &PasswordForm::username_value);
+
   bool is_possible_username_valid = IsPossibleUsernameValid(
-      *possible_username, parsed_submitted_form_->signon_realm,
-      base::Time::Now());
+      *possible_username, parsed_submitted_form_->signon_realm, usernames);
   LogUsingPossibleUsername(client_, /*is_used*/ is_possible_username_valid,
                            "Local heuristics");
   return is_possible_username_valid;

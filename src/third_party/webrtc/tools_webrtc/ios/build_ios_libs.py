@@ -67,6 +67,7 @@ def _ParseArgs():
     parser.add_argument(
         '-o',
         '--output-dir',
+        type=os.path.abspath,
         default=SDK_OUTPUT_DIR,
         help='Specifies a directory to output the build artifacts to. '
         'If specified together with -c, deletes the dir.')
@@ -124,7 +125,8 @@ def BuildWebRTC(output_dir, target_arch, flavor, gn_target_name,
     output_dir = os.path.join(output_dir, target_arch + '_libs')
     gn_args = [
         'target_os="ios"', 'ios_enable_code_signing=false',
-        'use_xcode_clang=true', 'is_component_build=false'
+        'use_xcode_clang=true', 'is_component_build=false',
+        'rtc_include_tests=false',
     ]
 
     # Add flavor option.
@@ -145,6 +147,7 @@ def BuildWebRTC(output_dir, target_arch, flavor, gn_target_name,
     gn_args.append('enable_ios_bitcode=' +
                    ('true' if use_bitcode else 'false'))
     gn_args.append('use_goma=' + ('true' if use_goma else 'false'))
+    gn_args.append('rtc_enable_symbol_export=true')
 
     args_string = ' '.join(gn_args + extra_gn_args)
     logging.info('Building WebRTC with args: %s', args_string)

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -24,15 +24,21 @@ namespace {
 using HlslGeneratorImplTest_Identifier = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Identifier, EmitIdentifierExpression) {
-  ast::IdentifierExpression i("foo");
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &i)) << gen().error();
+  auto* i = Expr("foo");
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, i)) << gen.error();
   EXPECT_EQ(result(), "foo");
 }
 
 TEST_F(HlslGeneratorImplTest_Identifier,
        EmitIdentifierExpression_Single_WithCollision) {
-  ast::IdentifierExpression i("virtual");
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &i)) << gen().error();
+  auto* i = Expr("virtual");
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, i)) << gen.error();
   EXPECT_EQ(result(), "virtual_tint_0");
 }
 

@@ -34,8 +34,7 @@ namespace {
 std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
     PrefService* prefs) {
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
-      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
-                                    /*preferred_languages_pref=*/nullptr));
+      new translate::TranslatePrefs(prefs));
 
   // We need to obtain the country here, since it comes from VariationsService.
   // components/ does not have access to that.
@@ -54,13 +53,14 @@ std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
 TranslateClientImpl::TranslateClientImpl(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       translate_driver_(&web_contents->GetController(),
-                        /*url_language_histogram=*/nullptr),
+                        /*url_language_histogram=*/nullptr,
+                        /*translate_model_service=*/nullptr),
       translate_manager_(new translate::TranslateManager(
           this,
           TranslateRankerFactory::GetForBrowserContext(
               web_contents->GetBrowserContext()),
           /*language_model=*/nullptr)) {
-  observer_.Add(&translate_driver_);
+  observation_.Observe(&translate_driver_);
   translate_driver_.set_translate_manager(translate_manager_.get());
 }
 

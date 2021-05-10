@@ -675,7 +675,7 @@ class ProcessAlertsTest(testing_common.TestCase):
       find_anomalies.ProcessTests([test.key])
       self.assertEqual(m.call_args_list, [mock.call(test.test_path)])
     new_anomalies = anomaly.Anomaly.query().fetch()
-    self.assertEqual(2, len(new_anomalies))
+    self.assertEqual(1, len(new_anomalies))
     self.assertEqual(anomaly.DOWN, new_anomalies[0].direction)
     self.assertEqual(729731, new_anomalies[0].start_revision)
     self.assertEqual(729764, new_anomalies[0].end_revision)
@@ -813,6 +813,160 @@ class ProcessAlertsTest(testing_common.TestCase):
     ).get()
     test_container_key = utils.GetTestContainerKey(test.key)
     sample_data = [
+        (804863, 13830765),
+        (804867, 16667862),
+        (804879, 13929296),
+        (804891, 13823876),
+        (804896, 13908794),
+        (804900, 13899281),
+        (804907, 14901462),
+        (804921, 13890597),
+        (804935, 13969113),
+        (804946, 13996520),
+        (804957, 13913104),
+        (805143, 16770364),
+        (805175, 14858529),
+        (805179, 14013942),
+        (805185, 14857516),
+        (805195, 14895168),
+        (805196, 14944037),
+        (805205, 13919484),
+        (805211, 15736581),
+        (805231, 14730142),
+        (805236, 13892102),
+        (805247, 14808876),
+        (805253, 14903648),
+        (805262, 13896626),
+        (805276, 15797878),
+        (805281, 14542593),
+        (805285, 15733168),
+        (805290, 13882841),
+        (805302, 15727394),
+        (805314, 15758058),
+        (805333, 16074960),
+        (805345, 16142162),
+        (805359, 16138912),
+        (805384, 17914289),
+        (805412, 18368834),
+        (805428, 18055197),
+        (805457, 19673614),
+        (805482, 19705606),
+        (805502, 19609089),
+        (805509, 19576745),
+        (805531, 19600059),
+        (805550, 19702969),
+        (805564, 19660953),
+        (805584, 19830273),
+        (805600, 19800662),
+        (805606, 19493150),
+        (805620, 19700545),
+        (805624, 19623731),
+        (805628, 19683921),
+        (805634, 19660001),
+    ]
+    for row in sample_data:
+      graph_data.Row(id=row[0], value=row[1], parent=test_container_key).put()
+    test.UpdateSheriff()
+    test.put()
+    with mock.patch.object(SheriffConfigClient, 'Match',
+                           mock.MagicMock(return_value=([], None))) as m:
+      find_anomalies.ProcessTests([test.key])
+      self.assertEqual(m.call_args_list, [mock.call(test.test_path)])
+    new_anomalies = anomaly.Anomaly.query().fetch()
+    self.assertEqual(2, len(new_anomalies))
+    self.assertEqual(anomaly.UP, new_anomalies[0].direction)
+    self.assertEqual(805429, new_anomalies[0].start_revision)
+    self.assertEqual(805457, new_anomalies[0].end_revision)
+    self.assertEqual(805360, new_anomalies[1].start_revision)
+    self.assertEqual(805384, new_anomalies[1].end_revision)
+
+  def testProcessTest__RefineAnomalyPlacement_BalancedEstimator1(self):
+    testing_common.AddTests(
+        ['ChromiumPerf'], ['linux-perf'],
+        {'blink_perf.layout': {
+            'nested-percent-height-tables': {}
+        }})
+    test = utils.TestKey(
+        'ChromiumPerf/linux-perf/blink_perf.layout/nested-percent-height-tables'
+    ).get()
+    test_container_key = utils.GetTestContainerKey(test.key)
+    sample_data = [
+        (818289, 2009771),
+        (818290, 1966080),
+        (818291, 1966080),
+        (818293, 1966080),
+        (818294, 2053461),
+        (818296, 2009771),
+        (818298, 1966080),
+        (818301, 2009771),
+        (818303, 2009771),
+        (818305, 2009771),
+        (818306, 2009771),
+        (818307, 1966080),
+        (818308, 2009771),
+        (818309, 2009771),
+        (818310, 1966080),
+        (818311, 2009771),
+        (818312, 1966080),
+        (818317, 1966080),
+        (818318, 1966080),
+        (818320, 2053461),
+        (818322, 2009771),
+        (818326, 1966080),
+        (818331, 1966080),
+        (818335, 1966080),
+        (818340, 2009771),
+        (818347, 2009771),
+        (818350, 1966080),
+        (818353, 1966080),
+        (818354, 2009771),
+        (818361, 2009771),
+        (818362, 1966080),
+        (818374, 2009771),
+        (818379, 2009771),
+        (818382, 2053461),
+        (818389, 2009771),
+        (818402, 1966080),
+        (818409, 2009771),
+        (818416, 1966080),
+        (818420, 1966080),
+        (818430, 2009771),
+        (818440, 2228224),
+        (818450, 2228224),
+        (818461, 2228224),
+        (818469, 2228224),
+        (818481, 2228224),
+        (818498, 2271915),
+        (818514, 2228224),
+        (818531, 2271915),
+        (818571, 2271915),
+        (818583, 2271915),
+    ]
+    for row in sample_data:
+      graph_data.Row(id=row[0], value=row[1], parent=test_container_key).put()
+    test.UpdateSheriff()
+    test.put()
+    with mock.patch.object(SheriffConfigClient, 'Match',
+                           mock.MagicMock(return_value=([], None))) as m:
+      find_anomalies.ProcessTests([test.key])
+      self.assertEqual(m.call_args_list, [mock.call(test.test_path)])
+    new_anomalies = anomaly.Anomaly.query().fetch()
+    self.assertEqual(1, len(new_anomalies))
+    self.assertEqual(anomaly.UP, new_anomalies[0].direction)
+    self.assertEqual(818431, new_anomalies[0].start_revision)
+    self.assertEqual(818440, new_anomalies[0].end_revision)
+
+  def testProcessTest__RefineAnomalyPlacement_BalancedEstimator2(self):
+    testing_common.AddTests(
+        ['ChromiumPerf'], ['linux-perf'],
+        {'blink_perf.layout': {
+            'nested-percent-height-tables': {}
+        }})
+    test = utils.TestKey(
+        'ChromiumPerf/linux-perf/blink_perf.layout/nested-percent-height-tables'
+    ).get()
+    test_container_key = utils.GetTestContainerKey(test.key)
+    sample_data = [
         (793468, 136.5382),
         (793486, 137.7192),
         (793495, 137.4038),
@@ -873,12 +1027,80 @@ class ProcessAlertsTest(testing_common.TestCase):
       find_anomalies.ProcessTests([test.key])
       self.assertEqual(m.call_args_list, [mock.call(test.test_path)])
     new_anomalies = anomaly.Anomaly.query().fetch()
-    self.assertEqual(2, len(new_anomalies))
+    self.assertEqual(1, len(new_anomalies))
     self.assertEqual(anomaly.DOWN, new_anomalies[0].direction)
     self.assertEqual(794144, new_anomalies[0].start_revision)
     self.assertEqual(794154, new_anomalies[0].end_revision)
-    self.assertEqual(794108, new_anomalies[1].start_revision)
-    self.assertEqual(794132, new_anomalies[1].end_revision)
+
+  def testProcessTest__RefineAnomalyPlacement_OnePassEDivisive(self):
+    testing_common.AddTests(
+        ['ChromiumPerf'], ['linux-perf'],
+        {'blink_perf.layout': {
+            'nested-percent-height-tables': {}
+        }})
+    test = utils.TestKey(
+        'ChromiumPerf/linux-perf/blink_perf.layout/nested-percent-height-tables'
+    ).get()
+    test_container_key = utils.GetTestContainerKey(test.key)
+    # 1608562683 will be anomaly if we run E-Divisive from 1608525044.
+    sample_data = [
+        (1608404024, 246272),
+        (1608407660, 249344),
+        (1608417360, 246272),
+        (1608422547, 246784),
+        (1608434678, 248832),
+        (1608440108, 248320),
+        (1608442260, 250880),
+        (1608452306, 248832),
+        (1608457404, 247296),
+        (1608459374, 247296),
+        (1608463502, 249344),
+        (1608469894, 247296),
+        (1608471945, 247296),
+        (1608477313, 246272),
+        (1608481014, 248832),
+        (1608484511, 247296),
+        (1608486532, 246784),
+        (1608488082, 248832),
+        (1608491972, 246784),
+        (1608493895, 248832),
+        (1608495366, 248320),
+        (1608498927, 252416),
+        (1608501293, 246784),
+        (1608505924, 246272),
+        (1608507885, 246784),
+        (1608509593, 250368),
+        (1608512971, 246784),
+        (1608515075, 246272),
+        (1608519889, 247296),
+        (1608521956, 254464),
+        (1608525044, 247296),
+        (1608526992, 244736),
+        (1608528640, 245760),
+        (1608530391, 246784),
+        (1608531986, 245760),
+        (1608533763, 245760),
+        (1608538109, 246272),
+        (1608539988, 246784),
+        (1608545280, 251392),
+        (1608547200, 251026),
+        (1608550736, 248320),
+        (1608552820, 248832),
+        (1608554780, 251392),
+        (1608560589, 247296),
+        (1608562683, 251904),
+        (1608564319, 268800),
+        (1608566089, 263168),
+        (1608567823, 266240),
+        (1608569370, 266752),
+        (1608570921, 264192),
+    ]
+    for row in sample_data:
+      graph_data.Row(id=row[0], value=row[1], parent=test_container_key).put()
+    test.UpdateSheriff()
+    test.put()
+    new_anomalies = anomaly.Anomaly.query().fetch()
+    self.assertEqual(0, len(new_anomalies))
 
   def testMakeAnomalyEntity_NoRefBuild(self):
     testing_common.AddTests(['ChromiumPerf'], ['linux'], {
@@ -1020,6 +1242,38 @@ class ProcessAlertsTest(testing_common.TestCase):
                          ['alice@chromium.org', 'bob@chromium.org'])
     self.assertEqual(alert.ownership['info_blurb'], 'This is an info blurb.')
 
+  def testMakeAnomalyEntity_AlertGrouping(self):
+    data_sample = {
+        'type': 'GenericSet',
+        'guid': 'eb212e80-db58-4cbd-b331-c2245ecbb826',
+        'values': ['group123', 'group234']
+    }
+
+    testing_common.AddTests(['ChromiumPerf'], ['linux'], {
+        'page_cycler_v2': {
+            'cnn': {},
+            'cnn_ref': {},
+            'yahoo': {},
+            'nytimes': {},
+        },
+    })
+    test = utils.TestKey('ChromiumPerf/linux/page_cycler_v2/cnn').get()
+    testing_common.AddRows(test.test_path, [100, 200, 300, 400])
+
+    suite_key = utils.TestKey('ChromiumPerf/linux/page_cycler_v2')
+    entity = histogram.SparseDiagnostic(
+        data=data_sample,
+        test=suite_key,
+        start_revision=1,
+        end_revision=sys.maxsize,
+        id=data_sample['guid'],
+        name=reserved_infos.ALERT_GROUPING.name)
+    entity.put()
+    entity.put()
+    alert = find_anomalies._MakeAnomalyEntity(
+        _MakeSampleChangePoint(10011, 50, 100), test, 'avg',
+        self._DataSeries()).get_result()
+    self.assertEqual(alert.alert_grouping, ['group123', 'group234'])
 
 if __name__ == '__main__':
   unittest.main()

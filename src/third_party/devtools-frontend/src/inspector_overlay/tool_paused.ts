@@ -4,12 +4,6 @@
 
 import {Overlay} from './common.js';
 
-declare global {
-  interface Window {
-    InspectorOverlayHost: {send(data: string): void;}
-  }
-}
-
 export class PausedOverlay extends Overlay {
   private container!: HTMLElement;
 

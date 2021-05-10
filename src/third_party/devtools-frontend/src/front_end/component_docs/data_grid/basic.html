@@ -16,46 +16,15 @@
         padding: 20px;
         height: 300px;
       }
-
     </style>
   </head>
+
   <body>
 
     <div id="container">
     </div>
 
     <ul id="events"></ul>
-
-    <script type="module">
-      import * as ComponentHelpers from '../../component_helpers/component_helpers.js';
-      import * as UI from '../../ui/ui.js';
-      import * as Components from '../../ui/components/components.js'
-
-      ComponentHelpers.ComponentServerSetup.setup().then(() => renderComponent())
-
-      const renderComponent = () => {
-        const component = new Components.DataGrid.DataGrid();
-
-        component.data = {
-          columns: [
-            { id: 'key', title: 'Key', widthWeighting: 1 },
-            { id: 'value', title: 'Value', widthWeighting: 1 },
-          ],
-          rows: [
-            { cells: [{ columnId: 'key', value: 'Bravo'}, { columnId: 'value', value: 'foobar'}]},
-            { cells: [{ columnId: 'key', value: 'Alpha'}, { columnId: 'value', value: 'bazbar'}]},
-            { cells: [{ columnId: 'key', value: 'Charlie'}, { columnId: 'value', value: 'bazbar'}]},
-          ]
-        }
-
-        document.getElementById('container').appendChild(component)
-        component.addEventListener('cellFocus', event => {
-          const li = document.createElement('li');
-          li.innerHTML = `<pre><code>cellFocus: ${JSON.stringify(event.data)}</code></pre>`;
-          document.getElementById('events').appendChild(li)
-        })
-      }
-
-    </script>
+    <script type="module" src="./basic.js"></script>
   </body>
 </html>

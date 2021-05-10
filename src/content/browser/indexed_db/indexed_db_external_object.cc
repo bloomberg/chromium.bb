@@ -39,11 +39,11 @@ void IndexedDBExternalObject::ConvertToMojo(
             blink::mojom::IDBExternalObject::NewBlobOrFile(std::move(info)));
         break;
       }
-      case ObjectType::kNativeFileSystemHandle:
+      case ObjectType::kFileSystemAccessHandle:
         // Contents of token will be filled in later by
         // IndexedDBDispatcherHost::CreateAllExternalObjects.
         mojo_objects->push_back(
-            blink::mojom::IDBExternalObject::NewNativeFileSystemToken(
+            blink::mojom::IDBExternalObject::NewFileSystemAccessToken(
                 mojo::NullRemote()));
         break;
     }
@@ -101,15 +101,15 @@ IndexedDBExternalObject::IndexedDBExternalObject(
       blob_number_(blob_number) {}
 
 IndexedDBExternalObject::IndexedDBExternalObject(
-    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+    mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
         token_remote)
-    : object_type_(ObjectType::kNativeFileSystemHandle),
+    : object_type_(ObjectType::kFileSystemAccessHandle),
       token_remote_(std::move(token_remote)) {}
 
 IndexedDBExternalObject::IndexedDBExternalObject(
-    std::vector<uint8_t> native_file_system_token)
-    : object_type_(ObjectType::kNativeFileSystemHandle),
-      native_file_system_token_(std::move(native_file_system_token)) {}
+    std::vector<uint8_t> file_system_access_token)
+    : object_type_(ObjectType::kFileSystemAccessHandle),
+      file_system_access_token_(std::move(file_system_access_token)) {}
 
 IndexedDBExternalObject::IndexedDBExternalObject(
     const IndexedDBExternalObject& other) = default;
@@ -141,10 +141,10 @@ void IndexedDBExternalObject::set_last_modified(const base::Time& time) {
   last_modified_ = time;
 }
 
-void IndexedDBExternalObject::set_native_file_system_token(
+void IndexedDBExternalObject::set_file_system_access_token(
     std::vector<uint8_t> token) {
-  DCHECK_EQ(object_type_, ObjectType::kNativeFileSystemHandle);
-  native_file_system_token_ = std::move(token);
+  DCHECK_EQ(object_type_, ObjectType::kFileSystemAccessHandle);
+  file_system_access_token_ = std::move(token);
 }
 
 void IndexedDBExternalObject::set_blob_number(int64_t blob_number) {

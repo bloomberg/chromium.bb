@@ -8,6 +8,7 @@
 #include "base/check_op.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/device_id_helper.h"
@@ -22,6 +23,9 @@
 using signin_metrics::SourceForRefreshTokenOperation;
 
 namespace {
+
+using TokenResponseBuilder = OAuth2AccessTokenConsumer::TokenResponse::Builder;
+
 std::string SourceToString(SourceForRefreshTokenOperation source) {
   switch (source) {
     case SourceForRefreshTokenOperation::kUnknown:
@@ -131,11 +135,6 @@ bool ProfileOAuth2TokenService::HasRefreshToken(
 // static
 void ProfileOAuth2TokenService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-#if defined(OS_IOS)
-  registry->RegisterBooleanPref(prefs::kTokenServiceExcludeAllSecondaryAccounts,
-                                false);
-  registry->RegisterListPref(prefs::kTokenServiceExcludedSecondaryAccounts);
-#endif
   registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
                                std::string());
 }
@@ -194,9 +193,10 @@ ProfileOAuth2TokenService::StartRequestForMultilogin(
       new OAuth2AccessTokenManager::RequestImpl(account_id, consumer));
   // Create token response from token. Expiration time and id token do not
   // matter and should not be accessed.
-  OAuth2AccessTokenConsumer::TokenResponse token_response(
-      refresh_token, base::Time(), std::string());
-  // If we can get refresh token from the delegate, inform consumer right away.
+  // TODO(1151018): See bug description for why the refresh token is passed
+  // in the access token field.
+  OAuth2AccessTokenConsumer::TokenResponse token_response =
+      TokenResponseBuilder().WithAccessToken(refresh_token).build();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&OAuth2AccessTokenManager::RequestImpl::InformConsumer,
@@ -447,7 +447,7 @@ bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
 
 void ProfileOAuth2TokenService::RecreateDeviceIdIfNeeded() {
 // On ChromeOS the device ID is not managed by the token service.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (AreAllCredentialsLoaded() && HasLoadCredentialsFinishedWithNoErrors() &&
       GetAccounts().empty()) {
     signin::RecreateSigninScopedDeviceId(user_prefs_);

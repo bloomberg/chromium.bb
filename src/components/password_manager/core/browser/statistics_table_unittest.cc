@@ -47,8 +47,8 @@ class StatisticsTableTest : public testing::Test {
   void ReloadDatabase() {
     base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
     db_ = std::make_unique<StatisticsTable>();
-    connection_ = std::make_unique<sql::Database>();
-    connection_->set_exclusive_locking();
+    connection_ = std::make_unique<sql::Database>(sql::DatabaseOptions{
+        .exclusive_locking = true, .page_size = 4096, .cache_size = 500});
     ASSERT_TRUE(connection_->Open(file));
     db_->Init(connection_.get());
     ASSERT_TRUE(db_->CreateTableIfNecessary());
@@ -150,6 +150,9 @@ TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
   // Remove the entries with the timestamp 2 that are NOT matching
   // |kTestDomain3|.
   EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
+      // Can't use the generic `std::not_equal_to<>` here, because BindRepeating
+      // does not support functors with an overloaded call operator.
+      // NOLINTNEXTLINE(modernize-use-transparent-functors)
       base::BindRepeating(std::not_equal_to<GURL>(), stats3.origin_domain),
       base::Time::FromTimeT(2), base::Time()));
   EXPECT_THAT(db()->GetAllRows(), ElementsAre(stats3));

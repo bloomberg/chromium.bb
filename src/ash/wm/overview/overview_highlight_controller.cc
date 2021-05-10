@@ -6,12 +6,15 @@
 
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/expanded_state_new_desk_button.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_view.h"
@@ -93,7 +96,18 @@ void OverviewHighlightController::MoveHighlight(bool reverse) {
     index = (((reverse ? -1 : 1) + current_index) + count) % count;
   }
 
-  UpdateHighlight(traversable_views[index], reverse);
+  UpdateHighlight(traversable_views[index]);
+}
+
+void OverviewHighlightController::MoveHighlightToView(
+    OverviewHighlightableView* target_view) {
+  const std::vector<OverviewHighlightableView*> traversable_views =
+      GetTraversableViews();
+  auto it = std::find(traversable_views.begin(), traversable_views.end(),
+                      target_view);
+  DCHECK(it != traversable_views.end());
+
+  UpdateHighlight(target_view, /*suppress_accessibility_event=*/true);
 }
 
 void OverviewHighlightController::OnViewDestroyingOrDisabling(
@@ -153,6 +167,14 @@ bool OverviewHighlightController::MaybeCloseHighlightedView() {
   return true;
 }
 
+bool OverviewHighlightController::MaybeSwapHighlightedView(bool right) {
+  if (!features::IsBentoEnabled() || !highlighted_view_)
+    return false;
+
+  highlighted_view_->MaybeSwapHighlightedView(right);
+  return true;
+}
+
 OverviewItem* OverviewHighlightController::GetHighlightedItem() const {
   if (!highlighted_view_)
     return nullptr;
@@ -189,20 +211,32 @@ std::vector<OverviewHighlightController::OverviewHighlightableView*>
 OverviewHighlightController::GetTraversableViews() const {
   std::vector<OverviewHighlightableView*> traversable_views;
   traversable_views.reserve(overview_session_->num_items() +
-                            (desks_util::kMaxNumberOfDesks + 1) *
+                            (desks_util::GetMaxNumberOfDesks() + 1) *
                                 Shell::Get()->GetAllRootWindows().size());
   for (auto& grid : overview_session_->grid_list()) {
     auto* bar_view = grid->desks_bar_view();
     if (bar_view) {
+      const bool is_zero_state = bar_view->IsZeroState();
       // The desk items are always traversable from left to right, even in RTL
       // languages.
-      for (auto* mini_view : bar_view->mini_views()) {
-        traversable_views.push_back(mini_view);
-        traversable_views.push_back(mini_view->desk_name_view());
+      if (is_zero_state) {
+        traversable_views.push_back(bar_view->zero_state_default_desk_button());
+        traversable_views.push_back(bar_view->zero_state_new_desk_button());
+      } else {
+        for (auto* mini_view : bar_view->mini_views()) {
+          traversable_views.push_back(mini_view);
+          traversable_views.push_back(mini_view->desk_name_view());
+        }
       }
 
-      if (bar_view->new_desk_button()->GetEnabled())
+      if (features::IsBentoEnabled()) {
+        auto* new_desk_button =
+            bar_view->expanded_state_new_desk_button()->new_desk_button();
+        if (!is_zero_state && new_desk_button->GetEnabled())
+          traversable_views.push_back(new_desk_button);
+      } else if (bar_view->new_desk_button()->GetEnabled()) {
         traversable_views.push_back(bar_view->new_desk_button());
+      }
     }
 
     for (auto& item : grid->window_list())
@@ -213,7 +247,7 @@ OverviewHighlightController::GetTraversableViews() const {
 
 void OverviewHighlightController::UpdateHighlight(
     OverviewHighlightableView* view_to_be_highlighted,
-    bool reverse) {
+    bool suppress_accessibility_event) {
   if (highlighted_view_ == view_to_be_highlighted)
     return;
 
@@ -221,8 +255,12 @@ void OverviewHighlightController::UpdateHighlight(
   highlighted_view_ = view_to_be_highlighted;
 
   // Perform accessibility related tasks.
-  highlighted_view_->GetView()->NotifyAccessibilityEvent(
-      ax::mojom::Event::kSelection, true);
+  if (!suppress_accessibility_event) {
+    // Don't emit if focusing since focusing will emit an accessibility event as
+    // well.
+    highlighted_view_->GetView()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kSelection, true);
+  }
   // Note that both magnifiers are mutually exclusive. The overview "focus"
   // works differently from regular focusing so we need to update the magnifier
   // manually here.

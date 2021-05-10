@@ -8,14 +8,13 @@
 
 #include <vector>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
@@ -113,8 +112,8 @@ const char* AuthStateToString(CryptohomeAuthenticator::AuthState state) {
       return "GUEST_LOGIN";
     case CryptohomeAuthenticator::PUBLIC_ACCOUNT_LOGIN:
       return "PUBLIC_ACCOUNT_LOGIN";
-    case CryptohomeAuthenticator::SUPERVISED_USER_LOGIN:
-      return "SUPERVISED_USER_LOGIN";
+    case CryptohomeAuthenticator::SUPERVISED_USER_LOGIN_DEPRECATED:
+      return "SUPERVISED_USER_LOGIN_DEPRECATED";
     case CryptohomeAuthenticator::LOGIN_FAILED:
       return "LOGIN_FAILED";
     case CryptohomeAuthenticator::OWNER_REQUIRED:
@@ -133,6 +132,8 @@ const char* AuthStateToString(CryptohomeAuthenticator::AuthState state) {
       return "OFFLINE_NO_MOUNT";
     case CryptohomeAuthenticator::TPM_UPDATE_REQUIRED:
       return "TPM_UPDATE_REQUIRED";
+    case CryptohomeAuthenticator::OFFLINE_MOUNT_UNRECOVERABLE:
+      return "OFFLINE_MOUNT_UNRECOVERABLE";
   }
   return "UNKNOWN";
 }
@@ -556,28 +557,6 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
                                  "CryptohomeRemove-End"));
 }
 
-void OnKeyChecked(const base::WeakPtr<AuthAttemptState>& attempt,
-                  scoped_refptr<CryptohomeAuthenticator> resolver,
-                  base::Optional<cryptohome::BaseReply> reply) {
-  attempt->RecordCryptohomeStatus(BaseReplyToMountError(reply));
-  resolver->Resolve();
-}
-
-// Calls cryptohome's key check method.
-void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
-              scoped_refptr<CryptohomeAuthenticator> resolver,
-              const std::string& system_salt) {
-  std::unique_ptr<Key> key =
-      TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
-  cryptohome::AuthorizationRequest auth;
-  auth.mutable_key()->set_secret(key->GetSecret());
-  CryptohomeClient::Get()->CheckKeyEx(
-      cryptohome::CreateAccountIdentifierFromAccountId(
-          attempt->user_context.GetAccountId()),
-      auth, cryptohome::CheckKeyRequest(),
-      base::BindOnce(&OnKeyChecked, attempt, resolver));
-}
-
 }  // namespace
 
 CryptohomeAuthenticator::CryptohomeAuthenticator(
@@ -589,7 +568,6 @@ CryptohomeAuthenticator::CryptohomeAuthenticator(
       remove_attempted_(false),
       resync_attempted_(false),
       ephemeral_mount_attempted_(false),
-      check_key_attempted_(false),
       already_reported_success_(false),
       owner_is_verified_(false),
       user_can_login_(false),
@@ -647,36 +625,6 @@ void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
       FROM_HERE,
       base::BindOnce(&CryptohomeAuthenticator::ResolveLoginCompletionStatus,
                      this));
-}
-
-void CryptohomeAuthenticator::AuthenticateToUnlock(
-    const UserContext& user_context) {
-  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
-  current_state_.reset(new AuthAttemptState(user_context,
-                                            true,     // unlock
-                                            true,     // online_complete
-                                            false));  // user_is_new
-  remove_user_data_on_failure_ = false;
-  check_key_attempted_ = true;
-  SystemSaltGetter::Get()->GetSystemSalt(
-      base::BindOnce(&CheckKey, current_state_->AsWeakPtr(),
-                     scoped_refptr<CryptohomeAuthenticator>(this)));
-}
-
-void CryptohomeAuthenticator::LoginAsSupervisedUser(
-    const UserContext& user_context) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(user_manager::USER_TYPE_SUPERVISED, user_context.GetUserType());
-
-  // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
-  current_state_.reset(new AuthAttemptState(user_context,
-                                            false,    // unlock
-                                            false,    // online_complete
-                                            false));  // user_is_new
-  remove_user_data_on_failure_ = false;
-  StartMount(current_state_->AsWeakPtr(),
-             scoped_refptr<CryptohomeAuthenticator>(this),
-             false /* ephemeral */, false /* create_if_nonexistent */);
 }
 
 void CryptohomeAuthenticator::LoginOffTheRecord() {
@@ -971,13 +919,12 @@ void CryptohomeAuthenticator::Resolve() {
     case ONLINE_FAILED:
     case NEED_NEW_PW:
     case HAVE_NEW_PW:
+    case UNLOCK:
+    case LOGIN_FAILED:
       NOTREACHED() << "Using obsolete ClientLogin code path.";
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
-      FALLTHROUGH;
-    case UNLOCK:
-      VLOG(2) << "Unlock";
       FALLTHROUGH;
     case ONLINE_LOGIN:
       VLOG(2) << "Online login";
@@ -998,17 +945,11 @@ void CryptohomeAuthenticator::Resolve() {
           FROM_HERE,
           base::BindOnce(&CryptohomeAuthenticator::OnAuthSuccess, this));
       break;
-    case SUPERVISED_USER_LOGIN:
+    case SUPERVISED_USER_LOGIN_DEPRECATED:
       current_state_->user_context.SetIsUsingOAuth(false);
       task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&CryptohomeAuthenticator::OnAuthSuccess, this));
-      break;
-    case LOGIN_FAILED:
-      current_state_->ResetCryptohomeStatus();
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure,
-                                    this, current_state_->online_outcome()));
       break;
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
@@ -1039,6 +980,12 @@ void CryptohomeAuthenticator::Resolve() {
           FROM_HERE,
           base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
                          AuthFailure(AuthFailure::TPM_UPDATE_REQUIRED)));
+      break;
+    case OFFLINE_MOUNT_UNRECOVERABLE:
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::UNRECOVERABLE_CRYPTOHOME)));
       break;
     default:
       NOTREACHED();
@@ -1077,7 +1024,6 @@ CryptohomeAuthenticator::AuthState CryptohomeAuthenticator::ResolveState() {
   remove_attempted_ = false;
   resync_attempted_ = false;
   ephemeral_mount_attempted_ = false;
-  check_key_attempted_ = false;
 
   if (state != POSSIBLE_PW_CHANGE && state != NO_MOUNT &&
       state != OFFLINE_LOGIN)
@@ -1103,8 +1049,6 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
     return FAILED_TMPFS;
   if (migrate_attempted_)
     return NEED_OLD_PW;
-  if (check_key_attempted_)
-    return LOGIN_FAILED;
 
   if (current_state_->cryptohome_code() ==
       cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT) {
@@ -1123,6 +1067,13 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
   if (current_state_->cryptohome_code() ==
       cryptohome::MOUNT_ERROR_TPM_UPDATE_REQUIRED) {
     return TPM_UPDATE_REQUIRED;
+  }
+
+  if (current_state_->cryptohome_code() ==
+      cryptohome::MOUNT_ERROR_VAULT_UNRECOVERABLE) {
+    // Surface up if the mount attempt failed because the vault is
+    // unrecoverable.
+    return OFFLINE_MOUNT_UNRECOVERABLE;
   }
 
   // Return intermediate states in the following case:
@@ -1164,8 +1115,6 @@ CryptohomeAuthenticator::ResolveCryptohomeSuccessState() {
     return REMOVED_DATA_AFTER_FAILURE;
   if (migrate_attempted_)
     return RECOVER_MOUNT;
-  if (check_key_attempted_)
-    return UNLOCK;
 
   const user_manager::UserType user_type =
       current_state_->user_context.GetUserType();
@@ -1175,8 +1124,9 @@ CryptohomeAuthenticator::ResolveCryptohomeSuccessState() {
     return PUBLIC_ACCOUNT_LOGIN;
   if (user_type == user_manager::USER_TYPE_KIOSK_APP)
     return KIOSK_ACCOUNT_LOGIN;
-  if (user_type == user_manager::USER_TYPE_SUPERVISED)
-    return SUPERVISED_USER_LOGIN;
+  // TODO(crbug/1155729): If this check is never true, remove the enum field.
+  if (user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED)
+    return SUPERVISED_USER_LOGIN_DEPRECATED;
 
   if (!VerifyOwner())
     return CONTINUE;

@@ -575,7 +575,6 @@ DnsDataGraphImpl::DomainGroup DnsDataGraph::GetDomainGroup(DnsType type) {
       return DnsDataGraphImpl::DomainGroup::kPtr;
     default:
       OSP_NOTREACHED();
-      return DnsDataGraphImpl::DomainGroup::kNone;
   }
 }
 

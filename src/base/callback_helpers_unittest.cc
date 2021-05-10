@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -87,7 +88,15 @@ void Increment(int* value) {
   (*value)++;
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerExitScope) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerHasClosure) {
+  base::ScopedClosureRunner runner1;
+  EXPECT_FALSE(runner1);
+
+  base::ScopedClosureRunner runner2{base::DoNothing()};
+  EXPECT_TRUE(runner2);
+}
+
+TEST(CallbackHelpersTest, ScopedClosureRunnerExitScope) {
   int run_count = 0;
   {
     base::ScopedClosureRunner runner(base::BindOnce(&Increment, &run_count));
@@ -96,7 +105,7 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerExitScope) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerRelease) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerRelease) {
   int run_count = 0;
   base::OnceClosure c;
   {
@@ -109,7 +118,7 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerRelease) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerReplaceClosure) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerReplaceClosure) {
   int run_count_1 = 0;
   int run_count_2 = 0;
   {
@@ -123,7 +132,7 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerReplaceClosure) {
   EXPECT_EQ(1, run_count_2);
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerRunAndReset) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerRunAndResetNonNull) {
   int run_count_3 = 0;
   {
     base::ScopedClosureRunner runner(base::BindOnce(&Increment, &run_count_3));
@@ -134,7 +143,12 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerRunAndReset) {
   EXPECT_EQ(1, run_count_3);
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerMoveConstructor) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerRunAndResetNull) {
+  base::ScopedClosureRunner runner;
+  runner.RunAndReset();  // Should not crash.
+}
+
+TEST(CallbackHelpersTest, ScopedClosureRunnerMoveConstructor) {
   int run_count = 0;
   {
     std::unique_ptr<base::ScopedClosureRunner> runner(
@@ -146,7 +160,7 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerMoveConstructor) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(CallbackHelpersTest, TestScopedClosureRunnerMoveAssignment) {
+TEST(CallbackHelpersTest, ScopedClosureRunnerMoveAssignment) {
   int run_count_1 = 0;
   int run_count_2 = 0;
   {
@@ -155,17 +169,17 @@ TEST(CallbackHelpersTest, TestScopedClosureRunnerMoveAssignment) {
       base::ScopedClosureRunner runner2(
           base::BindOnce(&Increment, &run_count_2));
       runner = std::move(runner2);
-      EXPECT_EQ(0, run_count_1);
+      EXPECT_EQ(1, run_count_1);
       EXPECT_EQ(0, run_count_2);
     }
-    EXPECT_EQ(0, run_count_1);
+    EXPECT_EQ(1, run_count_1);
     EXPECT_EQ(0, run_count_2);
   }
-  EXPECT_EQ(0, run_count_1);
+  EXPECT_EQ(1, run_count_1);
   EXPECT_EQ(1, run_count_2);
 }
 
-TEST(CallbackHelpersTest, TestAdaptCallbackForRepeating) {
+TEST(CallbackHelpersTest, AdaptCallbackForRepeating) {
   int count = 0;
   base::OnceCallback<void(int*)> cb =
       base::BindOnce([](int* count) { ++*count; });
@@ -178,6 +192,48 @@ TEST(CallbackHelpersTest, TestAdaptCallbackForRepeating) {
   EXPECT_EQ(1, count);
   wrapped.Run(&count);
   EXPECT_EQ(1, count);
+}
+
+TEST(CallbackHelpersTest, SplitOnceCallback_FirstCallback) {
+  int count = 0;
+  base::OnceCallback<void(int*)> cb =
+      base::BindOnce([](int* count) { ++*count; });
+
+  auto split = base::SplitOnceCallback(std::move(cb));
+
+  static_assert(std::is_same<decltype(split),
+                             std::pair<base::OnceCallback<void(int*)>,
+                                       base::OnceCallback<void(int*)>>>::value,
+                "");
+
+  EXPECT_EQ(0, count);
+  std::move(split.first).Run(&count);
+  EXPECT_EQ(1, count);
+
+#if GTEST_HAS_DEATH_TEST
+  EXPECT_CHECK_DEATH(std::move(split.second).Run(&count));
+#endif  // GTEST_HAS_DEATH_TEST
+}
+
+TEST(CallbackHelpersTest, SplitOnceCallback_SecondCallback) {
+  int count = 0;
+  base::OnceCallback<void(int*)> cb =
+      base::BindOnce([](int* count) { ++*count; });
+
+  auto split = base::SplitOnceCallback(std::move(cb));
+
+  static_assert(std::is_same<decltype(split),
+                             std::pair<base::OnceCallback<void(int*)>,
+                                       base::OnceCallback<void(int*)>>>::value,
+                "");
+
+  EXPECT_EQ(0, count);
+  std::move(split.second).Run(&count);
+  EXPECT_EQ(1, count);
+
+#if GTEST_HAS_DEATH_TEST
+  EXPECT_CHECK_DEATH(std::move(split.first).Run(&count));
+#endif  // GTEST_HAS_DEATH_TEST
 }
 
 }  // namespace

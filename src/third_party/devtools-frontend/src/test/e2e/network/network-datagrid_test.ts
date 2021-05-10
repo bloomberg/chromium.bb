@@ -21,7 +21,8 @@ describe('The Network Tab', async () => {
     assert.strictEqual(checked, true, 'The disable cache checkbox should be checked');
   });
 
-  it('shows Last-Modified', async () => {
+  // Flaky test
+  it.skip('[crbug.com/1179656] shows Last-Modified', async () => {
     const {target, frontend} = getBrowserAndPages();
     await navigateToNetworkTab('last-modified.html');
 
@@ -58,79 +59,148 @@ describe('The Network Tab', async () => {
     });
   });
 
-  it('shows the HTML response including cyrillic characters with utf-8 encoding', async () => {
-    const {target} = getBrowserAndPages();
-    await navigateToNetworkTab('utf-8.rawresponse');
+  // Flaky test
+  it.skipOnPlatforms(
+      ['win32'], '[crbug.com/1179656] the HTML response including cyrillic characters with utf-8 encoding',
+      async () => {
+        const {target} = getBrowserAndPages();
+        await navigateToNetworkTab('utf-8.rawresponse');
+
+        // Reload to populate network request table
+        await target.reload({waitUntil: 'networkidle0'});
+
+        // Wait for the column to show up and populate its values
+        await waitForSomeRequestsToAppear(1);
+
+        // Open the HTML file that was loaded
+        await click('td.name-column');
+        // Wait for the detailed network information pane to show up
+        await waitFor('[aria-label="Response"]');
+        // Open the raw response HTML
+        await click('[aria-label="Response"]');
+        // Wait for the raw response editor to show up
+        await waitFor('.CodeMirror-code');
+
+        const codeMirrorEditor = await waitFor('.CodeMirror-code');
+        const htmlRawResponse = await codeMirrorEditor.evaluate(editor => editor.textContent);
+
+        assert.strictEqual(
+            htmlRawResponse,
+            '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
+      });
+
+  // Flaky test
+  it.skipOnPlatforms(
+      ['win32'], '[crbug.com/1179656] the correct MIME type when resources came from HTTP cache', async () => {
+        const {target, frontend} = getBrowserAndPages();
+
+        await navigateToNetworkTab('resources-from-cache.html');
+
+        // Reload the page without a cache, to force a fresh load of the network resources
+        await click('[aria-label="Disable cache"]');
+        await target.reload({waitUntil: 'networkidle0'});
+
+        // Wait for the column to show up and populate its values
+        await waitForSomeRequestsToAppear(2);
+
+        // Get the size of the first two network request responses (excluding header and favicon.ico).
+        const getNetworkRequestSize = () => frontend.evaluate(() => {
+          return Array.from(document.querySelectorAll('.size-column')).slice(1, 3).map(node => node.textContent);
+        });
+        const getNetworkRequestMimeTypes = () => frontend.evaluate(() => {
+          return Array.from(document.querySelectorAll('.type-column')).slice(1, 3).map(node => node.textContent);
+        });
+        const formatByteSize = (value: number) => {
+          return `${value}\xA0B`;
+        };
+
+        assert.deepEqual(await getNetworkRequestSize(), [
+          `${formatByteSize(361)}${formatByteSize(219)}`,
+          `${formatByteSize(362)}${formatByteSize(28)}`,
+        ]);
+        assert.deepEqual(await getNetworkRequestMimeTypes(), [
+          'document',
+          'script',
+        ]);
+
+        // Allow resources from the cache again and reload the page to load from cache
+        await click('[aria-label="Disable cache"]');
+        await target.reload({waitUntil: 'networkidle0'});
+        // Wait for the column to show up and populate its values
+        await waitForSomeRequestsToAppear(2);
+
+        assert.deepEqual(await getNetworkRequestSize(), [
+          `${formatByteSize(361)}${formatByteSize(219)}`,
+          `(memory cache)${formatByteSize(28)}`,
+        ]);
+
+        assert.deepEqual(await getNetworkRequestMimeTypes(), [
+          'document',
+          'script',
+        ]);
+      });
+
+  // Flaky test
+  it.skip('[crbug.com/1179656] shows the correct initiator address space', async () => {
+    const {target, frontend} = getBrowserAndPages();
+
+    await navigateToNetworkTab('fetch.html');
 
     // Reload to populate network request table
     await target.reload({waitUntil: 'networkidle0'});
 
-    // Wait for the column to show up and populate its values
-    await waitForSomeRequestsToAppear(1);
+    await waitForSomeRequestsToAppear(2);
 
-    // Open the HTML file that was loaded
-    await click('td.name-column');
-    // Wait for the detailed network information pane to show up
-    await waitFor('[aria-label="Response"]');
-    // Open the raw response HTML
-    await click('[aria-label="Response"]');
-    // Wait for the raw response editor to show up
-    await waitFor('.CodeMirror-code');
+    await step('Open the contextmenu for all network column', async () => {
+      await click('.name-column', {clickOptions: {button: 'right'}});
+    });
 
-    const codeMirrorEditor = await waitFor('.CodeMirror-code');
-    const htmlRawResponse = await codeMirrorEditor.evaluate(editor => editor.textContent);
+    await step('Enable the Initiator Address Space column in the network datagrid', async () => {
+      const initiatorAddressSpace = await waitForAria('Initiator Address Space, unchecked');
+      await click(initiatorAddressSpace);
+    });
 
-    assert.strictEqual(
-        htmlRawResponse,
-        '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
+    await step('Wait for the Initiator Address Space column to have the expected values', async () => {
+      const expectedValues = JSON.stringify(['Initiator Address Space', '', 'Local']);
+      await waitForFunction(async () => {
+        const initiatorAddressSpaceValues = await frontend.$$eval(
+            'pierce/.initiator-address-space-column',
+            cells => cells.map(element => element.textContent),
+        );
+        return JSON.stringify(initiatorAddressSpaceValues) === expectedValues;
+      });
+    });
   });
 
-  it('shows the correct MIME type when resources came from HTTP cache', async () => {
+  // Flaky test
+  it.skip('[crbug.com/1179656] shows the correct remote address space', async () => {
     const {target, frontend} = getBrowserAndPages();
 
-    await navigateToNetworkTab('resources-from-cache.html');
+    await navigateToNetworkTab('fetch.html');
 
-    // Reload the page without a cache, to force a fresh load of the network resources
-    await click('[aria-label="Disable cache"]');
+    // Reload to populate network request table
     await target.reload({waitUntil: 'networkidle0'});
 
-    // Wait for the column to show up and populate its values
     await waitForSomeRequestsToAppear(2);
 
-    // Get the size of the first two network request responses (excluding header and favicon.ico).
-    const getNetworkRequestSize = () => frontend.evaluate(() => {
-      return Array.from(document.querySelectorAll('.size-column')).slice(1, 3).map(node => node.textContent);
+    await step('Open the contextmenu for all network column', async () => {
+      await click('.name-column', {clickOptions: {button: 'right'}});
     });
-    const getNetworkRequestMimeTypes = () => frontend.evaluate(() => {
-      return Array.from(document.querySelectorAll('.type-column')).slice(1, 3).map(node => node.textContent);
+
+    await step('Enable the Remote Address Space column in the network datagrid', async () => {
+      const remoteAddressSpace = await waitForAria('Remote Address Space, unchecked');
+      await click(remoteAddressSpace);
     });
-    const formatByteSize = (value: number) => {
-      return `${value}\xA0B`;
-    };
 
-    assert.deepEqual(await getNetworkRequestSize(), [
-      `${formatByteSize(338)}${formatByteSize(219)}`,
-      `${formatByteSize(362)}${formatByteSize(28)}`,
-    ]);
-    assert.deepEqual(await getNetworkRequestMimeTypes(), [
-      'document',
-      'script',
-    ]);
-
-    // Allow resources from the cache again and reload the page to load from cache
-    await click('[aria-label="Disable cache"]');
-    await target.reload({waitUntil: 'networkidle0'});
-    // Wait for the column to show up and populate its values
-    await waitForSomeRequestsToAppear(2);
-
-    assert.deepEqual(await getNetworkRequestSize(), [
-      `${formatByteSize(338)}${formatByteSize(219)}`,
-      `(memory cache)${formatByteSize(28)}`,
-    ]);
-
-    assert.deepEqual(await getNetworkRequestMimeTypes(), [
-      'document',
-      'script',
-    ]);
+    await step('Wait for the Remote Address Space column to have the expected values', async () => {
+      const expectedValues = JSON.stringify(['Remote Address Space', 'Local', 'Local']);
+      await waitForFunction(async () => {
+        const remoteAddressSpaceValues = await frontend.$$eval(
+            'pierce/.remoteaddress-space-column',
+            cells => cells.map(element => element.textContent),
+        );
+        return JSON.stringify(remoteAddressSpaceValues) === expectedValues;
+      });
+    });
   });
 });

@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_uma_util.h"
@@ -78,7 +79,7 @@ class PermissionRequestManager
     virtual ~Observer() = default;
   };
 
-  enum AutoResponseType { NONE, ACCEPT_ALL, DENY_ALL, DISMISS };
+  enum AutoResponseType { NONE, ACCEPT_ONCE, ACCEPT_ALL, DENY_ALL, DISMISS };
 
   using UiDecision = NotificationPermissionUiSelector::Decision;
   using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
@@ -97,7 +98,7 @@ class PermissionRequestManager
                   PermissionRequest* request);
 
   // Will reposition the bubble (may change parent if necessary).
-  void UpdateAnchorPosition();
+  void UpdateAnchor();
 
   // For observing the status of the permission bubble manager.
   void AddObserver(Observer* observer);
@@ -110,8 +111,8 @@ class PermissionRequestManager
   bool ShouldCurrentRequestUseQuietUI() const;
 
   // If |ShouldCurrentRequestUseQuietUI| return true, this will provide a reason
-  // as to why the quiet UI needs to be used.
-  QuietUiReason ReasonForUsingQuietUi() const;
+  // as to why the quiet UI needs to be used. Returns `base::nullopt` otherwise.
+  base::Optional<QuietUiReason> ReasonForUsingQuietUi() const;
 
   bool IsRequestInProgress() const;
 
@@ -171,6 +172,13 @@ class PermissionRequestManager
 
   void set_view_factory_for_testing(PermissionPrompt::Factory view_factory) {
     view_factory_ = std::move(view_factory);
+  }
+
+  PermissionPrompt* view_for_testing() { return view_.get(); }
+
+  base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
+  prediction_grant_likelihood_for_testing() {
+    return prediction_grant_likelihood_;
   }
 
  private:
@@ -304,6 +312,10 @@ class PermissionRequestManager
   // least once.
   bool current_request_already_displayed_ = false;
 
+  // When the view for the current |requests_| has been first shown to the user,
+  // or zero if not at all.
+  base::Time current_request_first_display_time_;
+
   // Whether to use the normal or quiet UI to display the current permission
   // |requests_|, and whether to show warnings. This will be nullopt if we are
   // still waiting on the result from |notification_permission_ui_selectors_|.
@@ -314,10 +326,10 @@ class PermissionRequestManager
   base::Optional<PermissionUmaUtil::PredictionGrantLikelihood>
       prediction_grant_likelihood_;
 
-  // Whether the bubble is being destroyed by this class, rather than in
-  // response to a UI event. In this case, callbacks from the bubble itself
-  // should be ignored.
-  bool deleting_bubble_ = false;
+  // True when the prompt is being temporary destroyed to be recreated for the
+  // correct browser or when the tab is hidden. In those cases, callbacks from
+  // the bubble itself should be ignored.
+  bool ignore_callbacks_from_prompt_ = false;
 
   // Whether the web contents associated with this request manager supports
   // permission prompts.

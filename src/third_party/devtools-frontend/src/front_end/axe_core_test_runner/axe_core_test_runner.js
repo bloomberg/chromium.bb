@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../test_runner/test_runner.js';
 import '../third_party/axe-core/axe.js';
 
 self.AxeCoreTestRunner = self.AxeCoreTestRunner || {};
 
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 
 // These rules are disabled for one or more of the following reasons:

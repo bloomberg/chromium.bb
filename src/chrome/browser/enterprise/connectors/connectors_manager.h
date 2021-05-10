@@ -6,35 +6,21 @@
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_CONNECTORS_MANAGER_H_
 
 #include "base/callback_forward.h"
-#include "base/feature_list.h"
 #include "base/optional.h"
-#include "chrome/browser/enterprise/connectors/analysis_service_settings.h"
+#include "chrome/browser/enterprise/connectors/analysis/analysis_service_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/reporting_service_settings.h"
+#include "chrome/browser/enterprise/connectors/file_system/service_settings.h"
+#include "chrome/browser/enterprise/connectors/reporting/reporting_service_settings.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "url/gurl.h"
-
-namespace base {
-template <typename T>
-class NoDestructor;
-}
 
 namespace enterprise_connectors {
 
-// Controls whether the Enterprise Connectors policies should be read by
-// ConnectorsManager.
-extern const base::Feature kEnterpriseConnectorsEnabled;
-
-// For the moment, service provider configurations are static and only support
-// google endpoints.  Therefore the configurtion is placed here directly.
-// Once the configuation becomes more dynamic this static string will be
-// removed and replaced with a service to keep it up to date.
-extern const char kServiceProviderConfig[];
-
-// Manages access to Connector policies. This class is responsible for caching
-// the Connector policies, validate them against approved service providers and
-// provide a simple interface to them.
+// Manages access to Connector policies for a given profile. This class is
+// responsible for caching the Connector policies, validate them against
+// approved service providers and provide a simple interface to them.
 class ConnectorsManager {
  public:
   // Maps used to cache connectors settings.
@@ -42,8 +28,13 @@ class ConnectorsManager {
       std::map<AnalysisConnector, std::vector<AnalysisServiceSettings>>;
   using ReportingConnectorsSettings =
       std::map<ReportingConnector, std::vector<ReportingServiceSettings>>;
+  using FileSystemConnectorsSettings =
+      std::map<FileSystemConnector, std::vector<FileSystemServiceSettings>>;
 
-  static ConnectorsManager* GetInstance();
+  ConnectorsManager(PrefService* pref_service,
+                    ServiceProviderConfig* config,
+                    bool observe_prefs = true);
+  ~ConnectorsManager();
 
   // Validates which settings should be applied to a reporting event
   // against cached policies. Cache the policy value the first time this is
@@ -58,32 +49,34 @@ class ConnectorsManager {
       const GURL& url,
       AnalysisConnector connector);
 
+  // Validates which settings should be applied to a file system connector
+  // against cached policies. Cache the policy value the first time this is
+  // called for every different connector.
+  base::Optional<FileSystemSettings> GetFileSystemSettings(
+      const GURL& url,
+      FileSystemConnector connector);
+
   // Checks if the corresponding connector is enabled.
   bool IsConnectorEnabled(AnalysisConnector connector) const;
   bool IsConnectorEnabled(ReportingConnector connector) const;
+  bool IsConnectorEnabled(FileSystemConnector connector) const;
 
   bool DelayUntilVerdict(AnalysisConnector connector);
+
+  std::vector<std::string> GetAnalysisServiceProviderNames(
+      AnalysisConnector connector);
+  std::vector<std::string> GetReportingServiceProviderNames(
+      ReportingConnector connector);
 
   // Public testing functions.
   const AnalysisConnectorsSettings& GetAnalysisConnectorsSettingsForTesting()
       const;
   const ReportingConnectorsSettings& GetReportingConnectorsSettingsForTesting()
       const;
-
-  // Helpers to reset the ConnectorManager instance across test since it would
-  // otherwise persist its state.
-  void SetUpForTesting();
-  void TearDownForTesting();
-  void ClearCacheForTesting();
+  const FileSystemConnectorsSettings&
+  GetFileSystemConnectorsSettingsForTesting() const;
 
  private:
-  friend class base::NoDestructor<ConnectorsManager>;
-
-  // Constructor and destructor are declared as private so callers use
-  // GetInstance instead.
-  ConnectorsManager();
-  ~ConnectorsManager();
-
   // Validates which settings should be applied to an analysis connector event
   // against connector policies. Cache the policy value the first time this is
   // called for every different connector.
@@ -94,12 +87,14 @@ class ConnectorsManager {
   // Read and cache the policy corresponding to |connector|.
   void CacheAnalysisConnectorPolicy(AnalysisConnector connector);
   void CacheReportingConnectorPolicy(ReportingConnector connector);
+  void CacheFileSystemConnectorPolicy(FileSystemConnector connector);
 
-  // Sets up |pref_change_registrar_| if kEnterpriseConntorsEnabled is true.
-  // Used by the constructor and SetUpForTesting.
-  void StartObservingPrefs();
+  // Sets up |pref_change_registrar_|. Used by the constructor and
+  // SetUpForTesting.
+  void StartObservingPrefs(PrefService* pref_service);
   void StartObservingPref(AnalysisConnector connector);
   void StartObservingPref(ReportingConnector connector);
+  void StartObservingPref(FileSystemConnector connector);
 
   // Validates which settings should be applied to an analysis connector event
   // against connector policies. Cache the policy value the first time this is
@@ -109,13 +104,13 @@ class ConnectorsManager {
 
   // Cached values of available service providers. This information validates
   // the Connector policies have a valid provider.
-  ServiceProviderConfig service_provider_config_ =
-      ServiceProviderConfig(kServiceProviderConfig);
+  ServiceProviderConfig* service_provider_config_;
 
   // Cached values of the connector policies. Updated when a connector is first
   // used or when a policy is updated.
   AnalysisConnectorsSettings analysis_connector_settings_;
   ReportingConnectorsSettings reporting_connector_settings_;
+  FileSystemConnectorsSettings file_system_connector_settings_;
 
   // Used to track changes of connector policies and propagate them in
   // |connector_settings_|.

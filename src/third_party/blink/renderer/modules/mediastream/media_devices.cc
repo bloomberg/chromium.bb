@@ -39,6 +39,10 @@ namespace blink {
 
 namespace {
 
+const char kFeaturePolicyBlocked[] =
+    "Access to the feature \"display-capture\" is disallowed by permission "
+    "policy.";
+
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
   explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
@@ -185,6 +189,26 @@ ScriptPromise MediaDevices::getCurrentBrowsingContextMedia(
     ScriptState* script_state,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
+  const ExecutionContext* const context = GetExecutionContext();
+  if (!context) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "The implementation did not support the requested type of object or "
+        "operation.");
+    return ScriptPromise();
+  }
+
+  // This call should not be possible otherwise, as per the RuntimeEnabled
+  // in the IDL.
+  CHECK(RuntimeEnabledFeatures::GetCurrentBrowsingContextMediaEnabled(context));
+
+  if (!context->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kDisplayCapture,
+          ReportOptions::kReportOnFailure)) {
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
+  }
+
   return SendUserMediaRequest(
       script_state,
       UserMediaRequest::MediaType::kGetCurrentBrowsingContextMedia, options,
@@ -297,7 +321,7 @@ namespace {
 void RecordEnumeratedDevices(ScriptPromiseResolver* resolver,
                              const MediaDeviceInfoVector& media_devices) {
   if (!IdentifiabilityStudySettings::Get()->IsWebFeatureAllowed(
-          WebFeature::kMediaDevicesEnumerateDevices)) {
+          WebFeature::kIdentifiabilityMediaDevicesEnumerateDevices)) {
     return;
   }
   Document* document = LocalDOMWindow::From(resolver->GetScriptState())
@@ -305,13 +329,13 @@ void RecordEnumeratedDevices(ScriptPromiseResolver* resolver,
                            ->GetDocument();
   IdentifiableTokenBuilder builder;
   for (const auto& device_info : media_devices) {
-    builder.AddToken(IdentifiabilityBenignStringToken(device_info->deviceId()));
+    // Ignore device_id since that varies per-site.
     builder.AddToken(IdentifiabilityBenignStringToken(device_info->kind()));
     builder.AddToken(IdentifiabilityBenignStringToken(device_info->label()));
-    builder.AddToken(IdentifiabilityBenignStringToken(device_info->groupId()));
+    // Ignore group_id since that is varies per-site.
   }
   IdentifiabilityMetricBuilder(document->UkmSourceID())
-      .SetWebfeature(WebFeature::kMediaDevicesEnumerateDevices,
+      .SetWebfeature(WebFeature::kIdentifiabilityMediaDevicesEnumerateDevices,
                      builder.GetToken())
       .Record(document->UkmRecorder());
 }
@@ -361,12 +385,15 @@ void MediaDevices::DevicesEnumerated(
       mojom::blink::MediaDeviceType device_type =
           static_cast<mojom::blink::MediaDeviceType>(i);
       WebMediaDeviceInfo device_info = enumeration[i][j];
+      String device_label = String::FromUTF8(device_info.label);
+      if (device_label.Contains("AirPods")) {
+        device_label = "AirPods";
+      }
       if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
             MakeGarbageCollected<InputDeviceInfo>(
-                String::FromUTF8(device_info.device_id),
-                String::FromUTF8(device_info.label),
+                String::FromUTF8(device_info.device_id), device_label,
                 String::FromUTF8(device_info.group_id), device_type);
         if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
@@ -381,8 +408,7 @@ void MediaDevices::DevicesEnumerated(
         media_devices.push_back(input_device_info);
       } else {
         media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
-            String::FromUTF8(device_info.device_id),
-            String::FromUTF8(device_info.label),
+            String::FromUTF8(device_info.device_id), device_label,
             String::FromUTF8(device_info.group_id), device_type));
       }
     }

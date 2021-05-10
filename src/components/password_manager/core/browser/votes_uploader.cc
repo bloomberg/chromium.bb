@@ -330,7 +330,7 @@ bool VotesUploader::UploadPasswordVote(
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
       if (generation_popup_was_shown_)
         AddGeneratedVote(&form_structure);
-      if (has_username_edited_vote_) {
+      if (username_change_state_ == UsernameChangeState::kChangedToKnownValue) {
         field_types[form_to_upload.username_element] = autofill::USERNAME;
         username_vote_type = AutofillUploadContents::Field::USERNAME_EDITED;
       }
@@ -369,7 +369,7 @@ bool VotesUploader::UploadPasswordVote(
   }
 
   // Annotate the form with the source language of the page.
-  form_structure.set_page_language(client_->GetPageLanguage());
+  form_structure.set_current_page_language(client_->GetPageLanguage());
 
   // Attach the Randomized Encoder.
   form_structure.set_randomized_encoder(
@@ -423,7 +423,7 @@ void VotesUploader::UploadFirstLoginVotes(
   form_structure.set_upload_required(UPLOAD_REQUIRED);
 
   // Annotate the form with the source language of the page.
-  form_structure.set_page_language(client_->GetPageLanguage());
+  form_structure.set_current_page_language(client_->GetPageLanguage());
 
   // Attach the Randomized Encoder.
   form_structure.set_randomized_encoder(
@@ -497,10 +497,11 @@ void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
         // The vote for this field has been already sent. Don't send again.
         return;
       }
-      type = credentials_saved && !has_username_edited_vote_
+      type = credentials_saved &&
+                     username_change_state_ == UsernameChangeState::kUnchanged
                  ? autofill::SINGLE_USERNAME
                  : autofill::NOT_USERNAME;
-      if (has_username_edited_vote_)
+      if (username_change_state_ == UsernameChangeState::kChangedToKnownValue)
         field->set_vote_type(AutofillUploadContents::Field::USERNAME_EDITED);
       available_field_types.insert(type);
       SaveFieldVote(form_to_upload->form_signature(),
@@ -528,8 +529,6 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
   AutofillUploadContents::Field::PasswordGenerationType type =
       AutofillUploadContents::Field::NO_GENERATION;
   if (has_generated_password_) {
-    UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.IsTriggeredManually",
-                          is_manual_generation_);
     if (is_manual_generation_) {
       type = is_possible_change_password_form_
                  ? AutofillUploadContents::Field::

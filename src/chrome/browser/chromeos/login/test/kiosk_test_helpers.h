@@ -7,10 +7,10 @@
 
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/chromeos/login/app_mode/kiosk_launch_controller.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager_base.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 
 namespace chromeos {
 
@@ -72,5 +72,10 @@ class ScopedCanConfigureNetwork {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to chrome/browser/ash/.
+namespace ash {
+using chromeos::KioskSessionInitializedWaiter;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_TEST_KIOSK_TEST_HELPERS_H_

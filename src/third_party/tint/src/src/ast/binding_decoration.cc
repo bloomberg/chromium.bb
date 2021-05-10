@@ -14,20 +14,30 @@
 
 #include "src/ast/binding_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BindingDecoration);
+
 namespace tint {
 namespace ast {
 
-BindingDecoration::BindingDecoration(uint32_t val, const Source& source)
-    : VariableDecoration(source), value_(val) {}
+BindingDecoration::BindingDecoration(const Source& source, uint32_t val)
+    : Base(source), value_(val) {}
 
 BindingDecoration::~BindingDecoration() = default;
 
-bool BindingDecoration::IsBinding() const {
-  return true;
+void BindingDecoration::to_str(const semantic::Info&,
+                               std::ostream& out,
+                               size_t indent) const {
+  make_indent(out, indent);
+  out << "BindingDecoration{" << value_ << "}" << std::endl;
 }
 
-void BindingDecoration::to_str(std::ostream& out) const {
-  out << "BindingDecoration{" << value_ << "}" << std::endl;
+BindingDecoration* BindingDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<BindingDecoration>(src, value_);
 }
 
 }  // namespace ast

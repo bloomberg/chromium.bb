@@ -6,8 +6,11 @@
 
 #include <memory>
 
+#include "base/location.h"
+#include "base/time/time.h"
 #include "pdf/document_layout.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace chrome_pdf {
 
@@ -55,12 +58,8 @@ bool TestClient::IsPrintPreview() {
   return false;
 }
 
-uint32_t TestClient::GetBackgroundColor() {
-  return 0;
-}
-
-float TestClient::GetToolbarHeightInScreenCoords() {
-  return 0;
+SkColor TestClient::GetBackgroundColor() {
+  return SK_ColorTRANSPARENT;
 }
 
 void TestClient::SetSelectedText(const std::string& selected_text) {}
@@ -70,5 +69,10 @@ void TestClient::SetLinkUnderCursor(const std::string& link_under_cursor) {}
 bool TestClient::IsValidLink(const std::string& url) {
   return !url.empty();
 }
+
+void TestClient::ScheduleTaskOnMainThread(base::TimeDelta delay,
+                                          ResultCallback callback,
+                                          int32_t result,
+                                          const base::Location& from_here) {}
 
 }  // namespace chrome_pdf

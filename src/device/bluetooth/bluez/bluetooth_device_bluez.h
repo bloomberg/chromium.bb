@@ -105,7 +105,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
             base::OnceClosure callback,
             ConnectErrorCallback error_callback) override;
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void ExecuteWrite(base::OnceClosure callback,
                     ExecuteWriteErrorCallback error_callback) override;
   void AbortWrite(base::OnceClosure callback,
@@ -143,6 +143,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // advertising data flags property. Note that same BlueZ implementation detail
   // from UpdateServiceData() also applies here.
   void UpdateAdvertisingDataFlags();
+
+  // Called by BluetoothAdapterBlueZ to update device_uuids_ defined in
+  // BluetoothDevice when receiving DevicePropertyChanged event for the UUIDs
+  // property. Note that BlueZ's implementation returns service UUIDs (SDP or
+  // GATT) when they are available, otherwise it contains the EIR or
+  // advertisement UUIDs. However, currently there is no way of knowing which
+  // one we will get. Since the advertised UUIDs can be tracked while we receive
+  // advertisement packets, here we assume it contains the service UUIDs. Both
+  // are merged behind the scenes, so GetUUIDs() would return the expected
+  // result.
+  void UpdateServiceUUIDs();
+
+  // Called by BluetoothAdapterBlueZ to update device_uuids_ defined in
+  // BluetoothDevice when receiving advertisement data.
+  void SetAdvertisedUUIDs(const BluetoothDevice::UUIDList& uuids);
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
@@ -210,7 +225,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
                                 const std::string& error_name,
                                 const std::string& error_message);
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnExecuteWriteError(ExecuteWriteErrorCallback error_callback,
                            const std::string& error_name,
                            const std::string& error_message);
@@ -228,6 +243,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnConnectError(ConnectErrorCallback error_callback,
                       const std::string& error_name,
                       const std::string& error_message);
+
+// Once DisconnectLE is supported on Linux, this buildflag will not be necessary
+// (this bluez code is only run on Chrome OS and Linux).
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void OnDisconnectLEError(const std::string& error_name,
+                           const std::string& error_message);
+#endif
 
   // Called by dbus:: on completion of the D-Bus method call to pair the device,
   // made inside |Connect()|.

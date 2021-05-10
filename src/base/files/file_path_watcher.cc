@@ -28,8 +28,7 @@ bool FilePathWatcher::RecursiveWatchAvailable() {
 #endif
 }
 
-FilePathWatcher::PlatformDelegate::PlatformDelegate(): cancelled_(false) {
-}
+FilePathWatcher::PlatformDelegate::PlatformDelegate() = default;
 
 FilePathWatcher::PlatformDelegate::~PlatformDelegate() {
   DCHECK(is_cancelled());
@@ -41,13 +40,6 @@ bool FilePathWatcher::Watch(const FilePath& path,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(path.IsAbsolute());
   return impl_->Watch(path, type, callback);
-}
-
-bool FilePathWatcher::Watch(const FilePath& path,
-                            bool recursive,
-                            const Callback& callback) {
-  return Watch(path, recursive ? Type::kRecursive : Type::kNonRecursive,
-               callback);
 }
 
 }  // namespace base

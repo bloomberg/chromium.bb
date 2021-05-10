@@ -5,14 +5,13 @@
 import * as Common from '../common/common.js';
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+import {ColorSwatch} from './ColorSwatch.js';
+
 export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     this._popover = new UI.GlassPane.GlassPane();
-    this._popover.registerRequiredCSS('inline_editor/swatchPopover.css', {enableLegacyPatching: true});
+    this._popover.registerRequiredCSS('inline_editor/swatchPopover.css', {enableLegacyPatching: false});
     this._popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     this._popover.setMarginBehavior(UI.GlassPane.MarginBehavior.Arrow);
     this._popover.element.addEventListener('mousedown', e => e.consume(), false);
@@ -85,7 +84,16 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     this._view.contentElement.removeEventListener('focusout', this._boundFocusOut, false);
     this._view.show(this._popover.contentElement);
     if (this._anchorElement) {
-      this._popover.setContentAnchorBox(this._anchorElement.boxInWindow());
+      let anchorBox = this._anchorElement.boxInWindow();
+      if (ColorSwatch.isColorSwatch(this._anchorElement)) {
+        const swatch = /** @type {!ColorSwatch} */ (this._anchorElement);
+        if (!swatch.anchorBox) {
+          return;
+        }
+        anchorBox = swatch.anchorBox;
+      }
+
+      this._popover.setContentAnchorBox(anchorBox);
       this._popover.show(/** @type {!Document} */ (this._anchorElement.ownerDocument));
     }
     this._view.contentElement.addEventListener('focusout', this._boundFocusOut, false);
@@ -111,7 +119,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     if (this._hiddenCallback) {
-      this._hiddenCallback.call(null, !!commitEdit);
+      this._hiddenCallback.call(null, Boolean(commitEdit));
     }
 
     if (this._focusRestorer) {

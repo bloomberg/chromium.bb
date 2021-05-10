@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -35,8 +36,7 @@
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/first_run/help_app_first_run_field_trial.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 #include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
@@ -82,7 +82,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 
 void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     bool has_seed,
-    const base::FieldTrial::EntropyProvider& low_entropy_provider,
+    const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
   // Only create the fallback trials if there isn't already a variations seed
   // being applied. This should occur during first run when first-run variations
@@ -92,15 +92,14 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
   if (!has_seed) {
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
-#if defined(OS_CHROMEOS)
-  // These trials are fully client controlled and must be configured whether or
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This trial is fully client controlled and must be configured whether or
   // not a seed is available.
   split_settings_sync_field_trial::Create(feature_list, local_state_);
-  help_app_first_run_field_trial::Create(feature_list, local_state_);
 #endif
 }
 

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
-import {ls} from '../common/common.js';   // eslint-disable-line rulesdir/es_modules_import
 import * as Host from '../host/host.js';  // eslint-disable-line no-unused-vars
+import * as i18n from '../i18n/i18n.js';
 
 import {FrameManager} from './FrameManager.js';
 import {IOModel} from './IOModel.js';
@@ -13,6 +13,18 @@ import {NetworkManager} from './NetworkManager.js';
 import {Events as ResourceTreeModelEvents, ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
 import {Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Error message for canceled source map loads
+  */
+  loadCanceledDueToReloadOf: 'Load canceled due to reload of inspected page',
+  /**
+  *@description Error message for canceled source map loads
+  */
+  loadCanceledDueToLoadTimeout: 'Load canceled due to load timeout',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/PageResourceLoader.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /** @typedef {{target: null, frameId: Protocol.Page.FrameId, initiatorUrl: ?string}|{target: Target, frameId: ?Protocol.Page.FrameId, initiatorUrl: ?string}} */
 // @ts-ignore typedef
@@ -76,7 +88,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     for (const {reject} of this._queuedLoads) {
-      reject(new Error(ls`Load canceled due to reload of inspected page`));
+      reject(new Error(i18nString(UIStrings.loadCanceledDueToReloadOf)));
     }
     this._queuedLoads = [];
     this._pageResources.clear();
@@ -126,8 +138,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
    */
   static async _withTimeout(promise, timeout) {
     /** @type {!Promise<T>} */
-    const timeoutPromise =
-        new Promise((_, reject) => setTimeout(reject, timeout, new Error(ls`Load canceled due to load timeout`)));
+    const timeoutPromise = new Promise(
+        (_, reject) => setTimeout(reject, timeout, new Error(i18nString(UIStrings.loadCanceledDueToLoadTimeout))));
     return Promise.race([promise, timeoutPromise]);
   }
 
@@ -193,32 +205,73 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     if (this._loadOverride) {
       return this._loadOverride(url);
     }
-    const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
-    if (getLoadThroughTargetSetting().get() && parsedURL && parsedURL.isHttpOrHttps()) {
+    const parsedURL = new Common.ParsedURL.ParsedURL(url);
+    const eligibleForLoadFromTarget = getLoadThroughTargetSetting().get() && parsedURL && parsedURL.isHttpOrHttps();
+    Host.userMetrics.developerResourceScheme(this._getDeveloperResourceScheme(parsedURL));
+    if (eligibleForLoadFromTarget) {
       try {
         if (initiator.target) {
+          Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaTarget);
           const result = await this._loadFromTarget(initiator.target, initiator.frameId, url);
           return result;
         }
         const frame = FrameManager.instance().getFrame(initiator.frameId || '');
         if (frame) {
+          Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaFrame);
           const result = await this._loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
           return result;
         }
       } catch (e) {
         if (e instanceof Error) {
+          Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFailure);
           failureReason = e.message;
         }
       }
+      Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFallback);
       console.warn('Fallback triggered', url, initiator);
+    } else {
+      const code = getLoadThroughTargetSetting().get() ? Host.UserMetrics.DeveloperResourceLoaded.FallbackPerProtocol :
+                                                         Host.UserMetrics.DeveloperResourceLoaded.FallbackPerOverride;
+      Host.userMetrics.developerResourceLoaded(code);
     }
+
     const result = await MultitargetNetworkManager.instance().loadResource(url);
+    if (eligibleForLoadFromTarget && !result.success) {
+      Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.FallbackFailure);
+    }
     if (failureReason) {
       // In case we have a success, add a note about why the load through the target failed.
       result.errorDescription.message =
           `Fetch through target failed: ${failureReason}; Fallback: ${result.errorDescription.message}`;
     }
     return result;
+  }
+
+  /**
+   *
+   * @param {Common.ParsedURL.ParsedURL|null} parsedURL
+   * @returns {Host.UserMetrics.DeveloperResourceScheme}
+   */
+  _getDeveloperResourceScheme(parsedURL) {
+    if (!parsedURL || parsedURL.scheme === '') {
+      return Host.UserMetrics.DeveloperResourceScheme.SchemeUnknown;
+    }
+    const isLocalhost = parsedURL.host === 'localhost' || parsedURL.host.endsWith('.localhost');
+    switch (parsedURL.scheme) {
+      case 'file':
+        return Host.UserMetrics.DeveloperResourceScheme.SchemeFile;
+      case 'data':
+        return Host.UserMetrics.DeveloperResourceScheme.SchemeData;
+      case 'blob':
+        return Host.UserMetrics.DeveloperResourceScheme.SchemeBlob;
+      case 'http':
+        return isLocalhost ? Host.UserMetrics.DeveloperResourceScheme.SchemeHttpLocalhost :
+                             Host.UserMetrics.DeveloperResourceScheme.SchemeHttp;
+      case 'https':
+        return isLocalhost ? Host.UserMetrics.DeveloperResourceScheme.SchemeHttpsLocalhost :
+                             Host.UserMetrics.DeveloperResourceScheme.SchemeHttps;
+    }
+    return Host.UserMetrics.DeveloperResourceScheme.SchemeOther;
   }
 
   /**

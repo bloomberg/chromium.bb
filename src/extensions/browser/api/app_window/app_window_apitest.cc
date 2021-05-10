@@ -26,10 +26,6 @@
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(OS_MAC)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace extensions {
 
 using AppWindowApiTest = PlatformAppBrowserTest;
@@ -70,38 +66,26 @@ IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, SetIcon) {
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnMinimizedEvent) {
-#if defined(OS_MAC)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582,
-#endif
-  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
-                                      "minimized"))
+  EXPECT_TRUE(RunExtensionTest({.name = "platform_apps/windows_api_properties",
+                                .custom_arg = "minimized"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnMaximizedEvent) {
-#if defined(OS_MAC)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582,
-#endif
-  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
-                                      "maximized"))
+  EXPECT_TRUE(RunExtensionTest({.name = "platform_apps/windows_api_properties",
+                                .custom_arg = "maximized"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_OnRestoredEvent) {
-#if defined(OS_MAC)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582,
-#endif
-  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
-                                      "restored"))
+  EXPECT_TRUE(RunExtensionTest({.name = "platform_apps/windows_api_properties",
+                                .custom_arg = "restored"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowApiTest, OnBoundsChangedEvent) {
-  EXPECT_TRUE(RunExtensionTestWithArg("platform_apps/windows_api_properties",
-                                      "boundsChanged"))
+  EXPECT_TRUE(RunExtensionTest({.name = "platform_apps/windows_api_properties",
+                                .custom_arg = "boundsChanged"}))
       << message_;
 }
 
@@ -138,7 +122,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, SetShapeNoPerm) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlphaEnabledHasPermissions) {
+// Fails on Ozone/X11.  https://crbug.com/1109112
+#if defined(USE_OZONE)
+#define MAYBE_AlphaEnabledHasPermissions DISABLED_AlphaEnabledHasPermissions
+#else
+#define MAYBE_AlphaEnabledHasPermissions AlphaEnabledHasPermissions
+#endif
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_AlphaEnabledHasPermissions) {
   const char kNoAlphaDir[] =
       "platform_apps/windows_api_alpha_enabled/has_permissions_no_alpha";
   const char kHasAlphaDir[] =

@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "api/adaptation/resource.h"
+#include "api/sequence_checker.h"
 #include "api/units/data_rate.h"
 #include "api/video/video_bitrate_allocator.h"
 #include "api/video/video_rotation.h"
@@ -40,7 +41,6 @@
 #include "rtc_base/task_queue.h"
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/thread_annotations.h"
-#include "rtc_base/thread_checker.h"
 #include "system_wrappers/include/clock.h"
 #include "video/adaptation/video_stream_encoder_resource_manager.h"
 #include "video/encoder_bitrate_adjuster.h"
@@ -61,12 +61,20 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
                            private EncodedImageCallback,
                            public VideoSourceRestrictionsListener {
  public:
+  // TODO(bugs.webrtc.org/12000): Reporting of VideoBitrateAllocation is being
+  // deprecated. Instead VideoLayersAllocation should be reported.
+  enum class BitrateAllocationCallbackType {
+    kVideoBitrateAllocation,
+    kVideoBitrateAllocationWhenScreenSharing,
+    kVideoLayersAllocation
+  };
   VideoStreamEncoder(Clock* clock,
                      uint32_t number_of_cores,
                      VideoStreamEncoderObserver* encoder_stats_observer,
                      const VideoStreamEncoderSettings& settings,
                      std::unique_ptr<OveruseFrameDetector> overuse_detector,
-                     TaskQueueFactory* task_queue_factory);
+                     TaskQueueFactory* task_queue_factory,
+                     BitrateAllocationCallbackType allocation_cb_type);
   ~VideoStreamEncoder() override;
 
   void AddAdaptationResource(rtc::scoped_refptr<Resource> resource) override;
@@ -225,6 +233,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   EncoderSink* sink_;
   const VideoStreamEncoderSettings settings_;
+  const BitrateAllocationCallbackType allocation_cb_type_;
   const RateControlSettings rate_control_settings_;
 
   std::unique_ptr<VideoEncoderFactory::EncoderSelectorInterface> const

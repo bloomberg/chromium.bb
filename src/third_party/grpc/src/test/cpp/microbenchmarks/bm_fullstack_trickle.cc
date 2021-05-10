@@ -19,28 +19,29 @@
 /* Benchmark gRPC end2end in various configurations */
 
 #include <benchmark/benchmark.h>
-#include <gflags/gflags.h>
+
 #include <fstream>
 
+#include "absl/flags/flag.h"
+#include "absl/memory/memory.h"
 #include "src/core/ext/transport/chttp2/transport/chttp2_transport.h"
 #include "src/core/ext/transport/chttp2/transport/internal.h"
 #include "src/core/lib/iomgr/timer_manager.h"
 #include "src/core/lib/profiling/timers.h"
 #include "src/proto/grpc/testing/echo.grpc.pb.h"
+#include "test/core/util/test_config.h"
 #include "test/core/util/trickle_endpoint.h"
 #include "test/cpp/microbenchmarks/fullstack_context_mutators.h"
 #include "test/cpp/microbenchmarks/fullstack_fixtures.h"
 #include "test/cpp/util/test_config.h"
 
-DEFINE_bool(log, false, "Log state to CSV files");
-DEFINE_int32(
-    warmup_megabytes, 1,
-    "Number of megabytes to pump before collecting flow control stats");
-DEFINE_int32(
-    warmup_iterations, 100,
-    "Number of iterations to run before collecting flow control stats");
-DEFINE_int32(warmup_max_time_seconds, 10,
-             "Maximum number of seconds to run warmup loop");
+ABSL_FLAG(bool, log, false, "Log state to CSV files");
+ABSL_FLAG(int32_t, warmup_megabytes, 1,
+          "Number of megabytes to pump before collecting flow control stats");
+ABSL_FLAG(int32_t, warmup_iterations, 100,
+          "Number of iterations to run before collecting flow control stats");
+ABSL_FLAG(int32_t, warmup_max_time_seconds, 10,
+          "Maximum number of seconds to run warmup loop");
 
 namespace grpc {
 namespace testing {
@@ -84,11 +85,11 @@ class TrickledCHTTP2 : public EndpointPairFixture {
       : EndpointPairFixture(service, MakeEndpoints(kilobits_per_second, stats),
                             FixtureConfiguration()),
         stats_(stats) {
-    if (FLAGS_log) {
+    if (absl::GetFlag(FLAGS_log)) {
       std::ostringstream fn;
       fn << "trickle." << (streaming ? "streaming" : "unary") << "." << req_size
          << "." << resp_size << "." << kilobits_per_second << ".csv";
-      log_.reset(new std::ofstream(fn.str().c_str()));
+      log_ = absl::make_unique<std::ofstream>(fn.str().c_str());
       write_csv(log_.get(), "t", "iteration", "client_backlog",
                 "server_backlog", "client_t_stall", "client_s_stall",
                 "server_t_stall", "server_s_stall", "client_t_remote",
@@ -103,13 +104,13 @@ class TrickledCHTTP2 : public EndpointPairFixture {
     }
   }
 
-  virtual ~TrickledCHTTP2() {
+  ~TrickledCHTTP2() override {
     if (stats_ != nullptr) {
       grpc_passthru_endpoint_stats_destroy(stats_);
     }
   }
 
-  void AddToLabel(std::ostream& out, benchmark::State& state) {
+  void AddToLabel(std::ostream& out, benchmark::State& state) override {
     out << " writes/iter:"
         << ((double)stats_->num_writes / (double)state.iterations())
         << " cli_transport_stalls/iter:"
@@ -301,14 +302,15 @@ static void BM_PumpStreamServerToClient_Trickle(benchmark::State& state) {
       }
     };
     gpr_timespec warmup_start = gpr_now(GPR_CLOCK_MONOTONIC);
-    for (int i = 0;
-         i < GPR_MAX(FLAGS_warmup_iterations, FLAGS_warmup_megabytes * 1024 *
-                                                  1024 / (14 + state.range(0)));
+    for (int i = 0; i < GPR_MAX(absl::GetFlag(FLAGS_warmup_iterations),
+                                absl::GetFlag(FLAGS_warmup_megabytes) * 1024 *
+                                    1024 / (14 + state.range(0)));
          i++) {
       inner_loop(true);
       if (gpr_time_cmp(gpr_time_sub(gpr_now(GPR_CLOCK_MONOTONIC), warmup_start),
-                       gpr_time_from_seconds(FLAGS_warmup_max_time_seconds,
-                                             GPR_TIMESPAN)) > 0) {
+                       gpr_time_from_seconds(
+                           absl::GetFlag(FLAGS_warmup_max_time_seconds),
+                           GPR_TIMESPAN)) > 0) {
         break;
       }
     }
@@ -414,14 +416,15 @@ static void BM_PumpUnbalancedUnary_Trickle(benchmark::State& state) {
                         fixture->cq(), fixture->cq(), tag(slot));
   };
   gpr_timespec warmup_start = gpr_now(GPR_CLOCK_MONOTONIC);
-  for (int i = 0;
-       i < GPR_MAX(FLAGS_warmup_iterations, FLAGS_warmup_megabytes * 1024 *
-                                                1024 / (14 + state.range(0)));
+  for (int i = 0; i < GPR_MAX(absl::GetFlag(FLAGS_warmup_iterations),
+                              absl::GetFlag(FLAGS_warmup_megabytes) * 1024 *
+                                  1024 / (14 + state.range(0)));
        i++) {
     inner_loop(true);
-    if (gpr_time_cmp(gpr_time_sub(gpr_now(GPR_CLOCK_MONOTONIC), warmup_start),
-                     gpr_time_from_seconds(FLAGS_warmup_max_time_seconds,
-                                           GPR_TIMESPAN)) > 0) {
+    if (gpr_time_cmp(
+            gpr_time_sub(gpr_now(GPR_CLOCK_MONOTONIC), warmup_start),
+            gpr_time_from_seconds(absl::GetFlag(FLAGS_warmup_max_time_seconds),
+                                  GPR_TIMESPAN)) > 0) {
       break;
     }
   }
@@ -462,6 +465,7 @@ void RunTheBenchmarksNamespaced() { RunSpecifiedBenchmarks(); }
 }  // namespace benchmark
 
 int main(int argc, char** argv) {
+  grpc::testing::TestEnvironment env(argc, argv);
   LibraryInitializer libInit;
   ::benchmark::Initialize(&argc, argv);
   ::grpc::testing::InitTest(&argc, &argv, false);

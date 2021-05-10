@@ -138,7 +138,7 @@ AssistantPageView::AssistantPageView(
   InitLayout();
 
   if (AssistantController::Get())  // May be |nullptr| in tests.
-    assistant_controller_observer_.Add(AssistantController::Get());
+    assistant_controller_observation_.Observe(AssistantController::Get());
 
   if (AssistantUiController::Get())  // May be |nullptr| in tests.
     AssistantUiController::Get()->GetModel()->AddObserver(this);
@@ -179,9 +179,6 @@ void AssistantPageView::RequestFocus() {
     case AssistantUiMode::kLauncherEmbeddedUi:
       if (assistant_main_view_)
         assistant_main_view_->RequestFocus();
-      break;
-    case AssistantUiMode::kAmbientUi:
-      NOTREACHED();
       break;
   }
 }
@@ -392,8 +389,12 @@ void AssistantPageView::OnAssistantControllerDestroying() {
   if (AssistantUiController::Get())  // May be |nullptr| in tests.
     AssistantUiController::Get()->GetModel()->RemoveObserver(this);
 
-  if (AssistantController::Get())  // May be |nullptr| in tests.
-    assistant_controller_observer_.Remove(AssistantController::Get());
+  if (AssistantController::Get()) {
+    // May be |nullptr| in tests.
+    DCHECK(assistant_controller_observation_.IsObservingSource(
+        AssistantController::Get()));
+    assistant_controller_observation_.Reset();
+  }
 }
 
 void AssistantPageView::OnUiVisibilityChanged(

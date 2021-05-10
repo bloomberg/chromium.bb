@@ -11,6 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "src/sksl/SkSLMangler.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
@@ -36,12 +37,50 @@ class Variable;
  */
 class Inliner {
 public:
-    Inliner() {}
+    Inliner(const Context* context) : fContext(context) {}
 
-    void reset(const Context*,
-               ModifiersPool* modifiers,
-               const Program::Settings*,
-               const ShaderCapsClass* caps);
+    void reset(ModifiersPool* modifiers);
+
+    /** Inlines any eligible functions that are found. Returns true if any changes are made. */
+    bool analyze(const std::vector<std::unique_ptr<ProgramElement>>& elements,
+                 std::shared_ptr<SymbolTable> symbols,
+                 ProgramUsage* usage);
+
+private:
+    using VariableRewriteMap = std::unordered_map<const Variable*, std::unique_ptr<Expression>>;
+
+    enum class ReturnComplexity {
+        kSingleSafeReturn,
+        kScopedReturns,
+        kEarlyReturns,
+    };
+
+    const Program::Settings& settings() const { return fContext->fConfig->fSettings; }
+
+    void buildCandidateList(const std::vector<std::unique_ptr<ProgramElement>>& elements,
+                            std::shared_ptr<SymbolTable> symbols, ProgramUsage* usage,
+                            InlineCandidateList* candidateList);
+
+    std::unique_ptr<Expression> inlineExpression(int offset,
+                                                 VariableRewriteMap* varMap,
+                                                 SymbolTable* symbolTableForExpression,
+                                                 const Expression& expression);
+    std::unique_ptr<Statement> inlineStatement(int offset,
+                                               VariableRewriteMap* varMap,
+                                               SymbolTable* symbolTableForStatement,
+                                               std::unique_ptr<Expression>* resultExpr,
+                                               ReturnComplexity returnComplexity,
+                                               const Statement& statement,
+                                               bool isBuiltinCode);
+
+    /** Determines if a given function has multiple and/or early returns. */
+    static ReturnComplexity GetReturnComplexity(const FunctionDefinition& funcDef);
+
+    using InlinabilityCache = std::unordered_map<const FunctionDeclaration*, bool>;
+    bool candidateCanBeInlined(const InlineCandidate& candidate, InlinabilityCache* cache);
+
+    using FunctionSizeCache = std::unordered_map<const FunctionDeclaration*, int>;
+    int getFunctionSize(const FunctionDeclaration& fnDecl, FunctionSizeCache* cache);
 
     /**
      * Processes the passed-in FunctionCall expression. The FunctionCall expression should be
@@ -52,7 +91,21 @@ public:
         std::unique_ptr<Block> fInlinedBody;
         std::unique_ptr<Expression> fReplacementExpr;
     };
-    InlinedCall inlineCall(FunctionCall*, SymbolTable*, const FunctionDeclaration* caller);
+    InlinedCall inlineCall(FunctionCall*,
+                           std::shared_ptr<SymbolTable>,
+                           const FunctionDeclaration* caller);
+
+    /** Creates a scratch variable for the inliner to use. */
+    struct InlineVariable {
+        const Variable*             fVarSymbol;
+        std::unique_ptr<Statement>  fVarDecl;
+    };
+    InlineVariable makeInlineVariable(const String& baseName,
+                                      const Type* type,
+                                      SymbolTable* symbolTable,
+                                      Modifiers modifiers,
+                                      bool isBuiltinCode,
+                                      std::unique_ptr<Expression>* initialValue);
 
     /** Adds a scope to inlined bodies returned by `inlineCall`, if one is required. */
     void ensureScopedBlocks(Statement* inlinedBody, Statement* parentStmt);
@@ -60,41 +113,10 @@ public:
     /** Checks whether inlining is viable for a FunctionCall, modulo recursion and function size. */
     bool isSafeToInline(const FunctionDefinition* functionDef);
 
-    /** Checks whether a function's size exceeds the inline threshold from Settings. */
-    bool isLargeFunction(const FunctionDefinition* functionDef);
-
-    /** Inlines any eligible functions that are found. Returns true if any changes are made. */
-    bool analyze(Program& program);
-
-private:
-    using VariableRewriteMap = std::unordered_map<const Variable*, std::unique_ptr<Expression>>;
-
-    String uniqueNameForInlineVar(const String& baseName, SymbolTable* symbolTable);
-
-    void buildCandidateList(Program& program, InlineCandidateList* candidateList);
-
-    std::unique_ptr<Expression> inlineExpression(int offset,
-                                                 VariableRewriteMap* varMap,
-                                                 const Expression& expression);
-    std::unique_ptr<Statement> inlineStatement(int offset,
-                                               VariableRewriteMap* varMap,
-                                               SymbolTable* symbolTableForStatement,
-                                               const Expression* resultExpr,
-                                               bool haveEarlyReturns,
-                                               const Statement& statement,
-                                               bool isBuiltinCode);
-
-    using InlinabilityCache = std::unordered_map<const FunctionDeclaration*, bool>;
-    bool candidateCanBeInlined(const InlineCandidate& candidate, InlinabilityCache* cache);
-
-    using LargeFunctionCache = std::unordered_map<const FunctionDeclaration*, bool>;
-    bool isLargeFunction(const InlineCandidate& candidate, LargeFunctionCache* cache);
-
     const Context* fContext = nullptr;
     ModifiersPool* fModifiers = nullptr;
-    const Program::Settings* fSettings = nullptr;
-    const ShaderCapsClass* fCaps = nullptr;
-    int fInlineVarCounter = 0;
+    Mangler fMangler;
+    int fInlinedStatementCounter = 0;
 };
 
 }  // namespace SkSL

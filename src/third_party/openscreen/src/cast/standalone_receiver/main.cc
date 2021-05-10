@@ -219,11 +219,15 @@ int RunStandaloneReceiver(int argc, char* argv[]) {
 
   const InterfaceInfo interface = GetInterfaceInfoFromName(interface_name);
   OSP_CHECK(interface.GetIpAddressV4() || interface.GetIpAddressV6());
-  OSP_CHECK(std::any_of(interface.hardware_address.begin(),
-                        interface.hardware_address.end(),
-                        [](int e) { return e > 0; }))
-      << "Hardware address is empty. Either you are on a loopback device "
-         "or getting the network interface information failed somehow.";
+  if (std::all_of(interface.hardware_address.begin(),
+                  interface.hardware_address.end(),
+                  [](int e) { return e == 0; })) {
+    OSP_LOG_WARN
+        << "Hardware address is empty. Either you are on a loopback device "
+           "or getting the network interface information failed somehow. "
+           "Discovery publishing will be disabled.";
+    discovery_enabled = false;
+  }
 
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(milliseconds(50), milliseconds(50),

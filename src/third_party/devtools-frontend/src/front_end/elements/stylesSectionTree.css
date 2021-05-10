@@ -14,7 +14,8 @@
 }
 
 .tree-outline li.filter-match {
-  background-color: rgb(255 255 0 / 50%);
+  background-color: rgb(255 255 0 / 50%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 :host-context(.-theme-with-dark-background) .tree-outline li.filter-match {
@@ -22,7 +23,8 @@
 }
 
 .tree-outline li.overloaded.filter-match {
-  background-color: rgb(255 255 0 / 25%);
+  background-color: rgb(255 255 0 / 25%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 :host-context(.-theme-with-dark-background) .tree-outline li.overloaded.filter-match {
@@ -139,7 +141,8 @@ ol.expanded {
 }
 
 .has-ignorable-error {
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .tree-outline li.editing {
@@ -182,10 +185,25 @@ ol.expanded {
   white-space: pre;
 }
 
+.styles-pane-button {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: 0;
+  margin: 0 0 0 6px;
+  position: absolute;
+  top: -1px;
+  background-color: var(--color-background-elevation-2);
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .tree-outline li.child-editing .styles-clipboard-only {
   display: none;
 }
-
 /* Matched styles */
 
 :host-context(.matched-styles) .tree-outline li {
@@ -222,12 +240,6 @@ ol.expanded {
   text-overflow: ellipsis;
   max-width: 80%;
   vertical-align: bottom;
-}
-
-@media (forced-colors: active) {
-  .tree-outline > li .webkit-css-property {
-    color: HighlightText;
-  }
 }
 
 devtools-css-angle {

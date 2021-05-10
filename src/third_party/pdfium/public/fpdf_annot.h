@@ -412,6 +412,63 @@ FPDFAnnot_GetVertices(FPDF_ANNOTATION annot,
                       unsigned long length);
 
 // Experimental API.
+// Get the number of paths in the ink list of an ink annotation.
+//
+//   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()
+//
+// Returns the number of paths in the ink list if the annotation is of type ink,
+// 0 otherwise.
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetInkListCount(FPDF_ANNOTATION annot);
+
+// Experimental API.
+// Get a path in the ink list of an ink annotation. |buffer| is an array of
+// points of the path. If |length| is less than the returned length, or |annot|
+// or |buffer| is NULL, |buffer| will not be modified.
+//
+//   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()
+//   path_index - index of the path
+//   buffer - buffer for holding the points.
+//   length - length of the buffer in points.
+//
+// Returns the number of points of the path if the annotation is of type ink, 0
+// otherwise.
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetInkListPath(FPDF_ANNOTATION annot,
+                         unsigned long path_index,
+                         FS_POINTF* buffer,
+                         unsigned long length);
+
+// Experimental API.
+// Get the starting and ending coordinates of a line annotation.
+//
+//   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()
+//   start - starting point
+//   end - ending point
+//
+// Returns true if the annotation is of type line, |start| and |end| are not
+// NULL, false otherwise.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_GetLine(FPDF_ANNOTATION annot,
+                                                      FS_POINTF* start,
+                                                      FS_POINTF* end);
+
+// Experimental API.
+// Get the characteristics of the annotation's border (rounded rectangle).
+//
+//   annot  - handle to an annotation, as returned by e.g. FPDFPage_GetAnnot()
+//   horizontal_radius - horizontal corner radius, in default user space units
+//   vertical_radius - vertical corner radius, in default user space units
+//   border_width - border width, in default user space units
+//
+// Returns true if |horizontal_radius|, |vertical_radius| and |border_width| are
+// not NULL, false otherwise.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_GetBorder(FPDF_ANNOTATION annot,
+                    float* horizontal_radius,
+                    float* vertical_radius,
+                    float* border_width);
+
+// Experimental API.
 // Check if |annot|'s dictionary has |key| as a key.
 //
 //   annot  - handle to an annotation.

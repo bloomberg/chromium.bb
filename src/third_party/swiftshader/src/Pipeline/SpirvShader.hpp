@@ -553,6 +553,7 @@ public:
 		bool ContainsKill : 1;
 		bool ContainsControlBarriers : 1;
 		bool NeedsCentroid : 1;
+		bool ContainsSampleQualifier : 1;
 
 		// Compute workgroup dimensions
 		int WorkgroupSizeX = 1;
@@ -573,6 +574,7 @@ public:
 		bool ClipDistance : 1;
 		bool CullDistance : 1;
 		bool ImageCubeArray : 1;
+		bool SampleRateShading : 1;
 		bool InputAttachment : 1;
 		bool Sampled1D : 1;
 		bool Image1D : 1;
@@ -583,6 +585,7 @@ public:
 		bool StorageImageExtendedFormats : 1;
 		bool ImageQuery : 1;
 		bool DerivativeControl : 1;
+		bool InterpolationFunction : 1;
 		bool GroupNonUniform : 1;
 		bool GroupNonUniformVote : 1;
 		bool GroupNonUniformBallot : 1;
@@ -781,8 +784,9 @@ public:
 	std::vector<InterfaceComponent> outputs;
 
 	void emitProlog(SpirvRoutine *routine) const;
-	void emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, RValue<SIMD::Int> const &storesAndAtomicsMask, const vk::DescriptorSet::Bindings &descriptorSets) const;
+	void emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, RValue<SIMD::Int> const &storesAndAtomicsMask, const vk::DescriptorSet::Bindings &descriptorSets, unsigned int multiSampleCount = 0) const;
 	void emitEpilog(SpirvRoutine *routine) const;
+	void clearPhis(SpirvRoutine *routine) const;
 
 	bool containsImageWrite() const { return imageWriteEmitted; }
 
@@ -914,6 +918,7 @@ private:
 		          RValue<SIMD::Int> storesAndAtomicsMask,
 		          const vk::DescriptorSet::Bindings &descriptorSets,
 		          bool robustBufferAccess,
+		          unsigned int multiSampleCount,
 		          spv::ExecutionModel executionModel)
 		    : routine(routine)
 		    , function(function)
@@ -921,6 +926,7 @@ private:
 		    , storesAndAtomicsMaskValue(storesAndAtomicsMask.value())
 		    , descriptorSets(descriptorSets)
 		    , robustBufferAccess(robustBufferAccess)
+		    , multiSampleCount(multiSampleCount)
 		    , executionModel(executionModel)
 		{
 			ASSERT(executionModelToStage(executionModel) != VkShaderStageFlagBits(0));  // Must parse OpEntryPoint before emitting.
@@ -982,6 +988,8 @@ private:
 
 		OutOfBoundsBehavior getOutOfBoundsBehavior(spv::StorageClass storageClass) const;
 
+		unsigned int getMultiSampleCount() const { return multiSampleCount; }
+
 		Intermediate &createIntermediate(Object::ID id, uint32_t componentCount)
 		{
 			auto it = intermediates.emplace(std::piecewise_construct,
@@ -1016,6 +1024,7 @@ private:
 		std::unordered_map<Object::ID, SIMD::Pointer> pointers;
 
 		const bool robustBufferAccess = true;  // Emit robustBufferAccess safe code.
+		const unsigned int multiSampleCount = 0;
 		const spv::ExecutionModel executionModel = spv::ExecutionModelMax;
 	};
 
@@ -1226,6 +1235,17 @@ private:
 	void EvalSpecConstantUnaryOp(InsnIterator insn);
 	void EvalSpecConstantBinaryOp(InsnIterator insn);
 
+	// Fragment input interpolation functions
+	uint32_t GetNumInputComponents(int32_t location) const;
+	enum InterpolationType
+	{
+		Centroid,
+		AtSample,
+		AtOffset,
+	};
+	SIMD::Float Interpolate(SIMD::Pointer const &ptr, int32_t location, Object::ID paramId, uint32_t component,
+	                        uint32_t component_count, EmitState *state, InterpolationType type) const;
+
 	// Helper for implementing OpStore, which doesn't take an InsnIterator so it
 	// can also store independent operands.
 	void Store(Object::ID pointerId, const Operand &value, bool atomic, std::memory_order memoryOrder, EmitState *state) const;
@@ -1250,8 +1270,7 @@ private:
 	void WriteCFGGraphVizDotFile(const char *path) const;
 
 	// OpcodeName() returns the name of the opcode op.
-	// If NDEBUG is defined, then OpcodeName() will only return the numerical code.
-	static std::string OpcodeName(spv::Op op);
+	static const char *OpcodeName(spv::Op op);
 	static std::memory_order MemoryOrder(spv::MemorySemanticsMask memorySemantics);
 
 	// IsStatement() returns true if the given opcode actually performs
@@ -1351,12 +1370,24 @@ public:
 		Pointer<Byte> function;
 	};
 
+	struct InterpolationData
+	{
+		Pointer<Byte> primitive;
+		SIMD::Float x;
+		SIMD::Float y;
+		SIMD::Float rhw;
+		SIMD::Float xCentroid;
+		SIMD::Float yCentroid;
+		SIMD::Float rhwCentroid;
+	};
+
 	vk::PipelineLayout const *const pipelineLayout;
 
 	std::unordered_map<SpirvShader::Object::ID, Variable> variables;
 	std::unordered_map<SpirvShader::Object::ID, SamplerCache> samplerCache;
 	Variable inputs = Variable{ MAX_INTERFACE_COMPONENTS };
 	Variable outputs = Variable{ MAX_INTERFACE_COMPONENTS };
+	InterpolationData interpolationData;
 
 	Pointer<Byte> workgroupMemory;
 	Pointer<Pointer<Byte>> descriptorSets;
@@ -1405,6 +1436,8 @@ public:
 	// setImmutableInputBuiltins() sets all the immutable input builtins,
 	// common for all shader types.
 	void setImmutableInputBuiltins(SpirvShader const *shader);
+
+	static SIMD::Float interpolateAtXY(const SIMD::Float &x, const SIMD::Float &y, const SIMD::Float &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective);
 
 	// setInputBuiltin() calls f() with the builtin and value if the shader
 	// uses the input builtin, otherwise the call is a no-op.

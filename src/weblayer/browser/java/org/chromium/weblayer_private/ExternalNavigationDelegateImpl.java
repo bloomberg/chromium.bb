@@ -89,10 +89,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     // This method should never be invoked as WebLayer does not handle incoming intents.
     @Override
-    public @OverrideUrlLoadingResult int handleIncognitoIntentTargetingSelf(
+    public OverrideUrlLoadingResult handleIncognitoIntentTargetingSelf(
             final Intent intent, final String referrerUrl, final String fallbackUrl) {
         assert false;
-        return OverrideUrlLoadingResult.NO_OVERRIDE;
+        return OverrideUrlLoadingResult.forNoOverride();
     }
 
     @Override

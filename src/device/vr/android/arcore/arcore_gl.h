@@ -42,25 +42,45 @@ class GLContext;
 class GLSurface;
 }  // namespace gl
 
-namespace vr {
-class ArCoreSessionUtils;
-class WebXrPresentationState;
-}  // namespace vr
-
 namespace device {
 
 class ArCore;
+class ArCoreSessionUtils;
 class ArCoreFactory;
 class ArImageTransport;
+class WebXrPresentationState;
 
-using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
-    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
-    mojom::VRDisplayInfoPtr display_info,
-    mojo::PendingRemote<mojom::XRSessionController> session_controller,
-    mojom::XRPresentationConnectionPtr presentation_connection)>;
+struct ArCoreGlCreateSessionResult {
+  mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider;
+  mojom::VRDisplayInfoPtr display_info;
+  mojo::PendingRemote<mojom::XRSessionController> session_controller;
+  mojom::XRPresentationConnectionPtr presentation_connection;
 
-using ArCoreGlInitializeCallback = base::OnceCallback<void(
-    base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>)>;
+  ArCoreGlCreateSessionResult(
+      mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
+      mojom::VRDisplayInfoPtr display_info,
+      mojo::PendingRemote<mojom::XRSessionController> session_controller,
+      mojom::XRPresentationConnectionPtr presentation_connection);
+  ArCoreGlCreateSessionResult(ArCoreGlCreateSessionResult&& other);
+  ~ArCoreGlCreateSessionResult();
+};
+
+using ArCoreGlCreateSessionCallback =
+    base::OnceCallback<void(ArCoreGlCreateSessionResult)>;
+
+struct ArCoreGlInitializeResult {
+  std::unordered_set<device::mojom::XRSessionFeature> enabled_features;
+  base::Optional<device::mojom::XRDepthConfig> depth_configuration;
+
+  ArCoreGlInitializeResult(
+      std::unordered_set<device::mojom::XRSessionFeature> enabled_features,
+      base::Optional<device::mojom::XRDepthConfig> depth_configuration);
+  ArCoreGlInitializeResult(ArCoreGlInitializeResult&& other);
+  ~ArCoreGlInitializeResult();
+};
+
+using ArCoreGlInitializeCallback =
+    base::OnceCallback<void(base::Optional<ArCoreGlInitializeResult>)>;
 
 // All of this class's methods must be called on the same valid GL thread with
 // the exception of GetGlThreadTaskRunner() and GetWeakPtr().
@@ -73,7 +93,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   ~ArCoreGl() override;
 
   void Initialize(
-      vr::ArCoreSessionUtils* session_utils,
+      ArCoreSessionUtils* session_utils,
       ArCoreFactory* arcore_factory,
       gfx::AcceleratedWidget drawing_widget,
       const gfx::Size& frame_size,
@@ -83,6 +103,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           optional_features,
       const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images,
+      device::mojom::XRDepthOptionsPtr depth_options,
       ArCoreGlInitializeCallback callback);
 
   void CreateSession(mojom::VRDisplayInfoPtr display_info,
@@ -200,6 +221,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // the session and only send out necessary data related to reference spaces to
   // blink. Valid after the call to |Initialize()| method.
   std::unordered_set<device::mojom::XRSessionFeature> enabled_features_;
+  base::Optional<device::mojom::XRDepthConfig> depth_configuration_;
 
   base::OnceClosure session_shutdown_callback_;
 
@@ -229,7 +251,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // SubmitFrame N+1               N+1 animating->processing
   //   draw camera N+1
   //   waitForToken
-  std::unique_ptr<vr::WebXrPresentationState> webxr_;
+  std::unique_ptr<WebXrPresentationState> webxr_;
 
   // Default dummy values to ensure consistent behaviour.
 

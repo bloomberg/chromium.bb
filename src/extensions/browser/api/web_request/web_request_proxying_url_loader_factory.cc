@@ -241,10 +241,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
     if (should_collapse_initiator) {
       status.extended_error_code = static_cast<int>(
           blink::ResourceRequestBlockedReason::kCollapsedByClient);
-    } else {
-      status.extended_error_code =
-          static_cast<int>(blink::ResourceRequestBlockedReason::
-                               kBlockedByExtensionCrbug1128174Investigation);
     }
     OnRequestError(status, state_on_error);
     return;
@@ -592,11 +588,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     if (result == net::ERR_BLOCKED_BY_CLIENT) {
       // The request was cancelled synchronously. Dispatch an error notification
       // and terminate the request.
-      network::URLLoaderCompletionStatus completion_status(result);
-      completion_status.extended_error_code =
-          static_cast<int>(blink::ResourceRequestBlockedReason::
-                               kBlockedByExtensionCrbug1128174Investigation);
-      OnRequestError(completion_status, state_on_error);
+      OnRequestError(network::URLLoaderCompletionStatus(result),
+                     state_on_error);
       return;
     }
 
@@ -988,11 +981,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       } else {
         state = State::kRejectedByOnHeadersReceivedForFinalResponse;
       }
-      network::URLLoaderCompletionStatus completion_status(result);
-      completion_status.extended_error_code =
-          static_cast<int>(blink::ResourceRequestBlockedReason::
-                               kBlockedByExtensionCrbug1128174Investigation);
-      OnRequestError(completion_status, state);
+      OnRequestError(network::URLLoaderCompletionStatus(result), state);
       return;
     }
 
@@ -1084,8 +1073,8 @@ bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
             .GetByID(to_url.host());
     if (!extension)
       return false;
-    return WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
-                                                               to_url.path());
+    return WebAccessibleResourcesInfo::IsResourceWebAccessible(
+        extension, to_url.path(), original_initiator_);
   }
   return content::IsSafeRedirectTarget(from_url, to_url);
 }
@@ -1113,9 +1102,9 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       ukm_source_id_(ukm_source_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // base::Unretained is safe here because the callback will be
-  // canceled when |shutdown_notifier_| is destroyed, and |proxies_|
-  // owns this.
-  shutdown_notifier_ =
+  // canceled when |shutdown_notifier_subscription_| is destroyed, and
+  // |proxies_| owns this.
+  shutdown_notifier_subscription_ =
       ShutdownNotifierFactory::GetInstance()
           ->Get(browser_context)
           ->Subscribe(base::BindRepeating(&WebRequestAPI::ProxySet::RemoveProxy,

@@ -45,6 +45,7 @@ static constexpr uint32_t GrGLFormatChannels(GrGLFormat format) {
         case GrGLFormat::kR8:                    return kRed_SkColorChannelFlag;
         case GrGLFormat::kALPHA8:                return kAlpha_SkColorChannelFlag;
         case GrGLFormat::kLUMINANCE8:            return kGray_SkColorChannelFlag;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:     return kGrayAlpha_SkColorChannelFlags;
         case GrGLFormat::kBGRA8:                 return kRGBA_SkColorChannelFlags;
         case GrGLFormat::kRGB565:                return kRGB_SkColorChannelFlags;
         case GrGLFormat::kRGBA16F:               return kRGBA_SkColorChannelFlags;
@@ -93,7 +94,8 @@ enum GrGLRenderer {
     kAdreno3xx_GrGLRenderer,
     kAdreno430_GrGLRenderer,
     kAdreno4xx_other_GrGLRenderer,
-    kAdreno5xx_GrGLRenderer,
+    kAdreno530_GrGLRenderer,
+    kAdreno5xx_other_GrGLRenderer,
     kAdreno615_GrGLRenderer,  // Pixel3a
     kAdreno630_GrGLRenderer,  // Pixel3
     kAdreno640_GrGLRenderer,  // Pixel4
@@ -327,6 +329,7 @@ static constexpr GrGLFormat GrGLFormatFromGLEnum(GrGLenum glFormat) {
         case GR_GL_R8:                   return GrGLFormat::kR8;
         case GR_GL_ALPHA8:               return GrGLFormat::kALPHA8;
         case GR_GL_LUMINANCE8:           return GrGLFormat::kLUMINANCE8;
+        case GR_GL_LUMINANCE8_ALPHA8:    return GrGLFormat::kLUMINANCE8_ALPHA8;
         case GR_GL_BGRA8:                return GrGLFormat::kBGRA8;
         case GR_GL_RGB565:               return GrGLFormat::kRGB565;
         case GR_GL_RGBA16F:              return GrGLFormat::kRGBA16F;
@@ -361,6 +364,7 @@ static constexpr GrGLenum GrGLFormatToEnum(GrGLFormat format) {
         case GrGLFormat::kR8:                   return GR_GL_R8;
         case GrGLFormat::kALPHA8:               return GR_GL_ALPHA8;
         case GrGLFormat::kLUMINANCE8:           return GR_GL_LUMINANCE8;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:    return GR_GL_LUMINANCE8_ALPHA8;
         case GrGLFormat::kBGRA8:                return GR_GL_BGRA8;
         case GrGLFormat::kRGB565:               return GR_GL_RGB565;
         case GrGLFormat::kRGBA16F:              return GR_GL_RGBA16F;
@@ -393,6 +397,7 @@ static constexpr size_t GrGLFormatBytesPerBlock(GrGLFormat format) {
         case GrGLFormat::kR8:                   return 1;
         case GrGLFormat::kALPHA8:               return 1;
         case GrGLFormat::kLUMINANCE8:           return 1;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:    return 2;
         case GrGLFormat::kBGRA8:                return 4;
         case GrGLFormat::kRGB565:               return 2;
         case GrGLFormat::kRGBA16F:              return 8;
@@ -436,6 +441,7 @@ static constexpr int GrGLFormatStencilBits(GrGLFormat format) {
         case GrGLFormat::kR8:
         case GrGLFormat::kALPHA8:
         case GrGLFormat::kLUMINANCE8:
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
         case GrGLFormat::kBGRA8:
         case GrGLFormat::kRGB565:
         case GrGLFormat::kRGBA16F:
@@ -468,6 +474,7 @@ static constexpr bool GrGLFormatIsPackedDepthStencil(GrGLFormat format) {
         case GrGLFormat::kR8:
         case GrGLFormat::kALPHA8:
         case GrGLFormat::kLUMINANCE8:
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
         case GrGLFormat::kBGRA8:
         case GrGLFormat::kRGB565:
         case GrGLFormat::kRGBA16F:
@@ -502,6 +509,7 @@ static constexpr bool GrGLFormatIsSRGB(GrGLFormat format) {
     case GrGLFormat::kR8:
     case GrGLFormat::kALPHA8:
     case GrGLFormat::kLUMINANCE8:
+    case GrGLFormat::kLUMINANCE8_ALPHA8:
     case GrGLFormat::kBGRA8:
     case GrGLFormat::kRGB565:
     case GrGLFormat::kRGBA16F:
@@ -531,6 +539,7 @@ static constexpr const char* GrGLFormatToStr(GrGLenum glFormat) {
         case GR_GL_R8:                   return "R8";
         case GR_GL_ALPHA8:               return "ALPHA8";
         case GR_GL_LUMINANCE8:           return "LUMINANCE8";
+        case GR_GL_LUMINANCE8_ALPHA8:    return "LUMINANCE8_ALPHA8";
         case GR_GL_BGRA8:                return "BGRA8";
         case GR_GL_RGB565:               return "RGB565";
         case GR_GL_RGBA16F:              return "RGBA16F";

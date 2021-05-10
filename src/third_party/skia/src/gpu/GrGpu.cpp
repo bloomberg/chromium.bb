@@ -33,6 +33,7 @@
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/GrTracing.h"
+#include "src/sksl/SkSLCompiler.h"
 #include "src/utils/SkJSONWriter.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +42,11 @@ GrGpu::GrGpu(GrDirectContext* direct) : fResetBits(kAll_GrBackendState), fContex
 
 GrGpu::~GrGpu() {
     this->callSubmittedProcs(false);
+}
+
+void GrGpu::initCapsAndCompiler(sk_sp<const GrCaps> caps) {
+    fCaps = std::move(caps);
+    fCompiler = std::make_unique<SkSL::Compiler>(fCaps->shaderCaps());
 }
 
 void GrGpu::disconnect(DisconnectType type) {}
@@ -412,7 +418,8 @@ bool GrGpu::writePixels(GrSurface* surface, int left, int top, int width, int he
                         GrColorType surfaceColorType, GrColorType srcColorType,
                         const GrMipLevel texels[], int mipLevelCount, bool prepForTexSampling) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
-    ATRACE_ANDROID_FRAMEWORK_ALWAYS("Upload %ix%i Texture", width, height);
+    ATRACE_ANDROID_FRAMEWORK_ALWAYS("Texture upload(%u) %ix%i",
+                                    surface->uniqueID().asUInt(), width, height);
     SkASSERT(surface);
     SkASSERT(!surface->framebufferOnly());
 
@@ -452,7 +459,7 @@ bool GrGpu::writePixels(GrSurface* surface, int left, int top, int width, int he
 
 bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
                              GrColorType textureColorType, GrColorType bufferColorType,
-                             GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) {
+                             sk_sp<GrGpuBuffer> transferBuffer, size_t offset, size_t rowBytes) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(texture);
     SkASSERT(transferBuffer);
@@ -484,7 +491,7 @@ bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, i
 
     this->handleDirtyContext();
     if (this->onTransferPixelsTo(texture, left, top, width, height, textureColorType,
-                                 bufferColorType, transferBuffer, offset, rowBytes)) {
+                                 bufferColorType, std::move(transferBuffer), offset, rowBytes)) {
         SkIRect rect = SkIRect::MakeXYWH(left, top, width, height);
         this->didWriteToSurface(texture, kTopLeft_GrSurfaceOrigin, &rect);
         fStats.incTransfersToTexture();
@@ -496,7 +503,7 @@ bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, i
 
 bool GrGpu::transferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                                GrColorType surfaceColorType, GrColorType bufferColorType,
-                               GrGpuBuffer* transferBuffer, size_t offset) {
+                               sk_sp<GrGpuBuffer> transferBuffer, size_t offset) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(surface);
     SkASSERT(transferBuffer);
@@ -518,7 +525,7 @@ bool GrGpu::transferPixelsFrom(GrSurface* surface, int left, int top, int width,
 
     this->handleDirtyContext();
     if (this->onTransferPixelsFrom(surface, left, top, width, height, surfaceColorType,
-                                   bufferColorType, transferBuffer, offset)) {
+                                   bufferColorType, std::move(transferBuffer), offset)) {
         fStats.incTransfersFromSurface();
         return true;
     }
@@ -661,6 +668,12 @@ bool GrGpu::submitToGpu(bool syncCpu) {
 
     this->callSubmittedProcs(submitted);
 
+    this->reportSubmitHistograms();
+
+    return submitted;
+}
+
+void GrGpu::reportSubmitHistograms() {
 #if SK_HISTOGRAMS_ENABLED
     // The max allowed value for SK_HISTOGRAM_EXACT_LINEAR is 100. If we want to support higher
     // values we can add SK_HISTOGRAM_CUSTOM_COUNTS but this has a number of buckets that is less
@@ -672,7 +685,7 @@ bool GrGpu::submitToGpu(bool syncCpu) {
     fCurrentSubmitRenderPassCount = 0;
 #endif
 
-    return submitted;
+    this->onReportSubmitHistograms();
 }
 
 bool GrGpu::checkAndResetOOMed() {
@@ -779,10 +792,10 @@ void GrGpu::Stats::dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>*
 #endif // GR_TEST_UTILS
 
 bool GrGpu::MipMapsAreCorrect(SkISize dimensions,
-                              GrMipmapped mipMapped,
+                              GrMipmapped mipmapped,
                               const BackendTextureData* data) {
     int numMipLevels = 1;
-    if (mipMapped == GrMipmapped::kYes) {
+    if (mipmapped == GrMipmapped::kYes) {
         numMipLevels = SkMipmap::ComputeLevelCount(dimensions.width(), dimensions.height()) + 1;
     }
 
@@ -800,7 +813,7 @@ bool GrGpu::MipMapsAreCorrect(SkISize dimensions,
         return false;
     }
 
-    SkColorType colorType = data->pixmap(0).colorType();
+    GrColorType colorType = data->pixmap(0).colorType();
     for (int i = 1; i < numMipLevels; ++i) {
         dimensions = {std::max(1, dimensions.width()/2), std::max(1, dimensions.height()/2)};
         if (dimensions != data->pixmap(i).dimensions()) {
@@ -871,7 +884,7 @@ bool GrGpu::updateBackendTexture(const GrBackendTexture& backendTexture,
     }
 
     if (data->type() == BackendTextureData::Type::kPixmaps) {
-        auto ct = SkColorTypeToGrColorType(data->pixmap(0).colorType());
+        auto ct = data->pixmap(0).colorType();
         if (!caps->areColorTypeAndFormatCompatible(ct, backendTexture.getBackendFormat())) {
             return false;
         }
@@ -881,8 +894,8 @@ bool GrGpu::updateBackendTexture(const GrBackendTexture& backendTexture,
         return false;
     }
 
-    GrMipmapped mipMapped = backendTexture.hasMipmaps() ? GrMipmapped::kYes : GrMipmapped::kNo;
-    if (!MipMapsAreCorrect(backendTexture.dimensions(), mipMapped, data)) {
+    GrMipmapped mipmapped = backendTexture.hasMipmaps() ? GrMipmapped::kYes : GrMipmapped::kNo;
+    if (!MipMapsAreCorrect(backendTexture.dimensions(), mipmapped, data)) {
         return false;
     }
 

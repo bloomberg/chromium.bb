@@ -30,9 +30,14 @@ class FakeReceiveObserver : public nearby_share::mojom::ReceiveObserver {
     last_metadata_ = *metadata;
   }
 
+  void OnNearbyProcessStopped() override {
+    on_nearby_process_stopped_called_ = true;
+  }
+
   base::Optional<nearby_share::mojom::TransferMetadata> last_metadata_;
   base::Optional<bool> in_high_visibility_;
   ShareTarget last_share_target_;
+  bool on_nearby_process_stopped_called_ = false;
   mojo::Receiver<nearby_share::mojom::ReceiveObserver> receiver_{this};
 };
 
@@ -40,6 +45,8 @@ class NearbyReceiveManagerTest : public testing::Test {
  public:
   using ReceiveSurfaceState = NearbySharingService::ReceiveSurfaceState;
   using StatusCodes = NearbySharingService::StatusCodes;
+  using RegisterReceiveSurfaceResult =
+      nearby_share::mojom::RegisterReceiveSurfaceResult;
 
   NearbyReceiveManagerTest()
       : transfer_metadata_(TransferMetadata::Status::kAwaitingLocalConfirmation,
@@ -110,9 +117,9 @@ class NearbyReceiveManagerTest : public testing::Test {
 
 TEST_F(NearbyReceiveManagerTest, Enter_Exit_Success) {
   ExpectRegister();
-  bool success = false;
-  receive_manager_waiter_.RegisterForegroundReceiveSurface(&success);
-  EXPECT_TRUE(success);
+  RegisterReceiveSurfaceResult result = RegisterReceiveSurfaceResult::kFailure;
+  receive_manager_waiter_.RegisterForegroundReceiveSurface(&result);
+  EXPECT_EQ(RegisterReceiveSurfaceResult::kSuccess, result);
 
   ExpectUnregister();
   bool exited = false;
@@ -123,39 +130,39 @@ TEST_F(NearbyReceiveManagerTest, Enter_Exit_Success) {
 }
 
 TEST_F(NearbyReceiveManagerTest, Enter_Failed) {
-  bool success = true;
+  RegisterReceiveSurfaceResult result = RegisterReceiveSurfaceResult::kSuccess;
   ExpectRegister(StatusCodes::kError);
-  receive_manager_waiter_.RegisterForegroundReceiveSurface(&success);
-  EXPECT_FALSE(success);
+  receive_manager_waiter_.RegisterForegroundReceiveSurface(&result);
+  EXPECT_EQ(RegisterReceiveSurfaceResult::kFailure, result);
   ExpectUnregister();
 }
 
 TEST_F(NearbyReceiveManagerTest, Multiple_Enter_Successful) {
-  bool success = false;
+  RegisterReceiveSurfaceResult result = RegisterReceiveSurfaceResult::kFailure;
   ExpectRegister(StatusCodes::kOk);
-  receive_manager_waiter_.RegisterForegroundReceiveSurface(&success);
+  receive_manager_waiter_.RegisterForegroundReceiveSurface(&result);
   FlushMojoMessages();
-  EXPECT_TRUE(success);
+  EXPECT_EQ(RegisterReceiveSurfaceResult::kSuccess, result);
 
-  success = false;
+  result = RegisterReceiveSurfaceResult::kFailure;
   ExpectRegister(StatusCodes::kOk);
-  receive_manager_waiter_.RegisterForegroundReceiveSurface(&success);
+  receive_manager_waiter_.RegisterForegroundReceiveSurface(&result);
   FlushMojoMessages();
-  EXPECT_TRUE(success);
+  EXPECT_EQ(RegisterReceiveSurfaceResult::kSuccess, result);
 
   ExpectUnregister();
 }
 
 TEST_F(NearbyReceiveManagerTest, Exit_Failed) {
-  bool success = false;
+  RegisterReceiveSurfaceResult result = RegisterReceiveSurfaceResult::kFailure;
   ExpectRegister();
-  receive_manager_waiter_.RegisterForegroundReceiveSurface(&success);
-  EXPECT_TRUE(success);
+  receive_manager_waiter_.RegisterForegroundReceiveSurface(&result);
+  EXPECT_EQ(RegisterReceiveSurfaceResult::kSuccess, result);
 
   ExpectUnregister(StatusCodes::kError);
-  success = false;
-  receive_manager_waiter_.UnregisterForegroundReceiveSurface(&success);
-  EXPECT_FALSE(success);
+  bool exited = false;
+  receive_manager_waiter_.UnregisterForegroundReceiveSurface(&exited);
+  EXPECT_FALSE(exited);
 
   ExpectUnregister();
 }

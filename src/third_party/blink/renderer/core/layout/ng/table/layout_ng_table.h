@@ -66,6 +66,10 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
   // might have changed.
   void TableGridStructureChanged();
 
+  // Table paints column backgrounds.
+  // Returns true if table, or columns' style.HasBackground().
+  bool HasBackgroundForPaint() const;
+
   // LayoutBlock methods start.
 
   const char* GetName() const override {
@@ -96,7 +100,21 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
 
   LayoutUnit BorderRight() const override;
 
+  // The collapsing border model disallows paddings on table.
+  // See http://www.w3.org/TR/CSS2/tables.html#collapsing-borders.
+  LayoutUnit PaddingTop() const override;
+
+  LayoutUnit PaddingBottom() const override;
+
+  LayoutUnit PaddingLeft() const override;
+
+  LayoutUnit PaddingRight() const override;
+
   LayoutRectOutsets BorderBoxOutsets() const override;
+
+  // TODO(1151101)
+  // ClientLeft/Top are incorrect for tables, but cannot be fixed
+  // by subclassing ClientLeft/Top.
 
   PhysicalRect OverflowClipRect(const PhysicalOffset&,
                                 OverlayScrollbarClipBehavior) const override;
@@ -104,6 +122,17 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
   void AddVisualEffectOverflow() final;
 
   bool VisualRectRespectsVisibility() const override {
+    NOT_DESTROYED();
+    return false;
+  }
+
+  // Whether a table has opaque foreground depends on many factors, e.g. border
+  // spacing, missing cells, etc. For simplicity, just conservatively assume
+  // foreground of all tables are not opaque.
+  // Copied from LayoutTable.
+  bool ForegroundIsKnownToBeOpaqueInRect(
+      const PhysicalRect& local_rect,
+      unsigned max_depth_to_test) const override {
     NOT_DESTROYED();
     return false;
   }
@@ -133,11 +162,7 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
     return StyleRef().BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
-  // Used in table painting for invalidation. Should not be needed by NG.
-  bool HasCollapsedBorders() const final {
-    NOTREACHED();
-    return false;
-  }
+  bool HasCollapsedBorders() const final;
 
   bool HasColElements() const final {
     NOTREACHED();
@@ -158,20 +183,14 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGMixin<LayoutBlock>,
     return ShouldCollapseBorders() ? 0 : StyleRef().VerticalBorderSpacing();
   }
 
-  // Legacy had a concept of colspan column compression. This is a legacy
-  // method to map between absolute and compressed columns.
-  // Because NG does not compress columns, absolute and effective are the same.
   unsigned AbsoluteColumnToEffectiveColumn(
-      unsigned absolute_column_index) const final {
-    NOT_DESTROYED();
-    return absolute_column_index;
-  }
+      unsigned absolute_column_index) const final;
 
-  // Legacy caches sections. Might not be needed by NG.
-  void RecalcSectionsIfNeeded() const final { NOTIMPLEMENTED(); }
+  // NG does not need this method. Sections are not cached.
+  void RecalcSectionsIfNeeded() const final {}
 
-  // Legacy caches sections. Might not be needed by NG.
-  void ForceSectionsRecalc() final { NOTIMPLEMENTED(); }
+  // Not used by NG. Legacy caches sections.
+  void ForceSectionsRecalc() final { NOT_DESTROYED(); }
 
   // Used in paint for printing. Should not be needed by NG.
   LayoutUnit RowOffsetFromRepeatingFooter() const final {

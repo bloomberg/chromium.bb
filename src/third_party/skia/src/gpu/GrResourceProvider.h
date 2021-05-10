@@ -86,9 +86,9 @@ public:
                                    GrRenderable renderable,
                                    int renderTargetSampleCnt,
                                    SkBudgeted budgeted,
+                                   GrMipMapped mipMapped,
                                    GrProtected isProtected,
-                                   const GrMipLevel texels[],
-                                   int mipLevelCount);
+                                   const GrMipLevel texels[]);
 
     /**
      * Create a potentially loose fit texture with the provided data. The color type must be valid
@@ -255,7 +255,9 @@ public:
      *
      * @return the buffer if successful, otherwise nullptr.
      */
-    sk_sp<GrGpuBuffer> createBuffer(size_t size, GrGpuBufferType intendedType, GrAccessPattern,
+    sk_sp<GrGpuBuffer> createBuffer(size_t size,
+                                    GrGpuBufferType intendedType,
+                                    GrAccessPattern,
                                     const void* data = nullptr);
 
     /**

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -14,7 +15,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/crl_set_remover.h"
+#include "components/component_updater/installer_policies/autofill_states_component_installer.h"
 #include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
+#include "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -25,6 +28,7 @@
 #import "components/previous_session_info/previous_session_info.h"
 #include "components/ukm/ios/features.h"
 #include "components/web_resource/web_resource_pref_names.h"
+#include "ios/chrome/app/app_metrics_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/content_suggestions_scheduler_app_state_agent.h"
@@ -40,6 +44,7 @@
 #include "ios/chrome/app/startup/setup_debugging.h"
 #import "ios/chrome/app/startup_tasks.h"
 #include "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/browser/accessibility/window_accessibility_change_notifier_app_agent.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -52,7 +57,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
@@ -92,7 +97,7 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/multi_window_support.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -180,6 +185,9 @@ void RegisterComponentsForUpdate() {
 
   RegisterOnDeviceHeadSuggestComponent(
       cus, GetApplicationContext()->GetApplicationLocale());
+  RegisterSafetyTipsComponent(cus);
+  RegisterAutofillStatesComponent(cus,
+                                  GetApplicationContext()->GetLocalState());
 }
 
 // The delay, in seconds, for cleaning external files.
@@ -481,18 +489,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // browser state.
   BOOL needRestoration = NO;
   if (isPostCrashLaunch) {
-    if (IsMultiwindowSupported()) {
-      NSSet<NSString*>* sessions =
-          [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
-      needRestoration =
-          [CrashRestoreHelper moveAsideSessions:sessions
-                                forBrowserState:chromeBrowserState];
-    } else {
-      needRestoration = [CrashRestoreHelper
-          moveAsideSessionInformationForBrowserState:chromeBrowserState];
-    }
+    NSSet<NSString*>* sessions =
+        base::ios::IsMultiwindowSupported()
+            ? [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs]
+            : [NSSet setWithArray:@[ @"" ]];
+
+    needRestoration = [CrashRestoreHelper moveAsideSessions:sessions
+                                            forBrowserState:chromeBrowserState];
   }
-  if (!IsMultipleScenesSupported() && IsMultiwindowSupported()) {
+  if (!base::ios::IsMultipleScenesSupported() &&
+      base::ios::IsMultiwindowSupported()) {
     NSSet<NSString*>* previousSessions =
         [PreviousSessionInfo sharedInstance].connectedSceneSessionsIDs;
     DCHECK(previousSessions.count <= 1);
@@ -603,8 +609,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addObserver:self];
 
   // Create app state agents.
+  [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
   [appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
+
+  // Create the window accessibility agent only when multuple windows are
+  // possible.
+  if (base::ios::IsMultipleScenesSupported()) {
+    [appState addAgent:[[WindowAccessibityChangeNotifierAppAgent alloc] init]];
+  }
 }
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
@@ -709,23 +722,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)orientationDidChange:(NSNotification*)notification {
-  crash_keys::SetCurrentOrientation(
-      [[UIApplication sharedApplication] statusBarOrientation],
-      [[UIDevice currentDevice] orientation]);
+  crash_keys::SetCurrentOrientation(GetInterfaceOrientation(),
+                                    [[UIDevice currentDevice] orientation]);
 }
 
 - (void)registerForOrientationChangeNotifications {
-  // Register to both device orientation and UI orientation did change
-  // notification as these two events may be triggered independantely.
+  // Register device orientation. UI orientation will be registered by
+  // each window BVC. These two events may be triggered independantely.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(orientationDidChange:)
              name:UIDeviceOrientationDidChangeNotification
-           object:nil];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(orientationDidChange:)
-             name:UIApplicationDidChangeStatusBarOrientationNotification
            object:nil];
 }
 
@@ -799,7 +806,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kCleanupCrashReports
                   block:^{
-                    breakpad_helper::CleanupCrashReports();
+                    bool afterUpgrade = [self isFirstLaunchAfterUpgrade];
+                    crash_helper::CleanupCrashReports(afterUpgrade);
                   }];
 }
 
@@ -820,10 +828,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleStartupCleanupTasks {
-  // Cleanup crash reports if this is the first run after an update.
-  if ([self isFirstLaunchAfterUpgrade]) {
-    [self scheduleCrashReportCleanup];
-  }
+  [self scheduleCrashReportCleanup];
 
   // ClearSessionCookies() is not synchronous.
   if (cookie_util::ShouldClearSessionCookies()) {

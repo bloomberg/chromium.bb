@@ -8,9 +8,17 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_base_export.h"
 
 namespace features {
+
+AX_BASE_EXPORT extern const base::Feature
+    kEnableAccessibilityAriaVirtualContent;
+
+// Returns true if "aria-virtualcontent" should be recognized as a valid aria
+// property.
+AX_BASE_EXPORT bool IsAccessibilityAriaVirtualContentEnabled();
 
 AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityExposeDisplayNone;
 
@@ -62,20 +70,30 @@ AX_BASE_EXPORT bool IsIChromeAccessibleEnabled();
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-AX_BASE_EXPORT extern const base::Feature kAccessibilityCursorColor;
-
-// Returns true if the accessibility cursor color feature is enabled, letting
-// users pick a custom cursor color.
-AX_BASE_EXPORT bool IsAccessibilityCursorColorEnabled();
-
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables new magnifier focus following feature, which provides a richer
 // focus following experience.
 AX_BASE_EXPORT extern const base::Feature kMagnifierNewFocusFollowing;
 
 // Returns true if the new magnifier focus following feature is enabled.
 AX_BASE_EXPORT bool IsMagnifierNewFocusFollowingEnabled();
-#endif  // defined(OS_CHROMEOS)
+
+// Enables new magnifier panning improvements feature, which adds
+// additional keyboard and mouse panning functionality in Magnifier.
+AX_BASE_EXPORT extern const base::Feature kMagnifierPanningImprovements;
+
+// Returns true if the new magnifier panning improvements feature is enabled.
+AX_BASE_EXPORT bool IsMagnifierPanningImprovementsEnabled();
+
+// Enables ability to choose new continuous mouse following mode in Magnifier
+// settings.
+AX_BASE_EXPORT extern const base::Feature
+    kMagnifierContinuousMouseFollowingModeSetting;
+
+// Returns true if the feature to allow choosing the new continuous mouse
+// following mode in Magnifier settings is enabled.
+AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
 // rather than only provide descriptions for completely unlabeled images.
@@ -96,14 +114,21 @@ AX_BASE_EXPORT extern const base::Feature kUseAXPositionForDocumentMarkers;
 // nodes and which is different for each platform.
 AX_BASE_EXPORT bool IsUseAXPositionForDocumentMarkersEnabled();
 
-#if defined(OS_CHROMEOS)
+// Enable support for ARIA element reflection, for example
+// element.ariaActiveDescendantElement = child;
+AX_BASE_EXPORT extern const base::Feature kEnableAriaElementReflection;
+
+// Returns true if ARIA element reflection is enabled.
+AX_BASE_EXPORT bool IsAriaElementReflectionEnabled();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables enhanced Select-to-speak features that allow users broader control
 // of TTS (pause, resume, skip between sentences and paragraphs).
 AX_BASE_EXPORT extern const base::Feature kSelectToSpeakNavigationControl;
 
 // Returns true if enhanced Select-to-speak features are enabled.
 AX_BASE_EXPORT bool IsSelectToSpeakNavigationControlEnabled();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features
 

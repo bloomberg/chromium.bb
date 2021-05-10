@@ -4,10 +4,14 @@
 
 #include "weblayer/browser/autofill_client_impl.h"
 
+#include "base/stl_util.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "weblayer/browser/translate_client_impl.h"
 
 namespace weblayer {
 
@@ -25,6 +29,10 @@ AutofillClientImpl::GetAutocompleteHistoryManager() {
 }
 
 PrefService* AutofillClientImpl::GetPrefs() {
+  return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+}
+
+const PrefService* AutofillClientImpl::GetPrefs() const {
   NOTREACHED();
   return nullptr;
 }
@@ -55,12 +63,12 @@ autofill::StrikeDatabase* AutofillClientImpl::GetStrikeDatabase() {
 }
 
 ukm::UkmRecorder* AutofillClientImpl::GetUkmRecorder() {
-  NOTREACHED();
+  // TODO(crbug.com/1181141): Enable the autofill UKM.
   return nullptr;
 }
 
 ukm::SourceId AutofillClientImpl::GetUkmSourceId() {
-  NOTREACHED();
+  // TODO(crbug.com/1181141): Enable the autofill UKM.
   return ukm::kInvalidSourceId;
 }
 
@@ -69,7 +77,7 @@ autofill::AddressNormalizer* AutofillClientImpl::GetAddressNormalizer() {
   return nullptr;
 }
 
-const GURL& AutofillClientImpl::GetLastCommittedURL() {
+const GURL& AutofillClientImpl::GetLastCommittedURL() const {
   NOTREACHED();
   return GURL::EmptyGURL();
 }
@@ -81,6 +89,15 @@ AutofillClientImpl::GetSecurityLevelForUmaHistograms() {
 }
 
 const translate::LanguageState* AutofillClientImpl::GetLanguageState() {
+  return nullptr;
+}
+
+translate::TranslateDriver* AutofillClientImpl::GetTranslateDriver() {
+  // The TranslateDriver is used by AutofillHandler to observe the page language
+  // and run the type-prediction heuristics with language-dependent regexps.
+  auto* translate_client = TranslateClientImpl::FromWebContents(web_contents());
+  if (translate_client)
+    return translate_client->translate_driver();
   return nullptr;
 }
 
@@ -203,6 +220,12 @@ void AutofillClientImpl::ConfirmCreditCardFillAssist(
   NOTREACHED();
 }
 
+void AutofillClientImpl::ConfirmSaveAddressProfile(
+    const autofill::AutofillProfile& profile,
+    AddressProfileSavePromptCallback callback) {
+  NOTREACHED();
+}
+
 bool AutofillClientImpl::HasCreditCardScanFeature() {
   NOTREACHED();
   return false;
@@ -270,7 +293,7 @@ void AutofillClientImpl::DidFillOrPreviewField(
   NOTREACHED();
 }
 
-bool AutofillClientImpl::IsContextSecure() {
+bool AutofillClientImpl::IsContextSecure() const {
   NOTREACHED();
   return false;
 }
@@ -280,7 +303,7 @@ bool AutofillClientImpl::ShouldShowSigninPromo() {
   return false;
 }
 
-bool AutofillClientImpl::AreServerCardsSupported() {
+bool AutofillClientImpl::AreServerCardsSupported() const {
   NOTREACHED();
   return false;
 }
@@ -294,7 +317,8 @@ void AutofillClientImpl::LoadRiskData(
   NOTREACHED();
 }
 
-AutofillClientImpl::AutofillClientImpl(content::WebContents* web_contents) {}
+AutofillClientImpl::AutofillClientImpl(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {}
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillClientImpl)
 

@@ -125,8 +125,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
     @Override
     @DrawableRes
     public int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
-        return SecurityStatusIcon.getSecurityIconResource(securityLevel,
-                SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), mIsSmallDevice,
+        return SecurityStatusIcon.getSecurityIconResource(securityLevel, mIsSmallDevice,
                 /*skipIconForNeutralState=*/false);
     }
 
@@ -145,6 +144,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
                         mActivity::getModalDialogManager,
                         /*offlinePageLoadUrlDelegate=*/
                         new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContents)),
-                new ChromePermissionParamsListBuilderDelegate());
+                new ChromePermissionParamsListBuilderDelegate(),
+                PageInfoController.NO_HIGHLIGHTED_PERMISSION);
     }
 }

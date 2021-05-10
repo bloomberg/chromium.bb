@@ -39,6 +39,9 @@ import {
   CpuAggregationController
 } from './aggregation/cpu_aggregation_controller';
 import {
+  CpuByProcessAggregationController
+} from './aggregation/cpu_by_process_aggregation_controller';
+import {
   SliceAggregationController
 } from './aggregation/slice_aggregation_controller';
 import {
@@ -80,6 +83,8 @@ import {TrackControllerArgs, trackControllerRegistry} from './track_controller';
 import {decideTracks} from './track_decider';
 
 type States = 'init'|'loading_trace'|'ready';
+
+const TRACE_MARGIN_TIME_S = 1 / 1e7;
 
 // TraceController handles handshakes with the frontend for everything that
 // concerns a single trace. It owns the WASM trace processor engine, handles
@@ -172,6 +177,10 @@ export class TraceController extends Controller<States> {
             'thread_aggregation',
             ThreadAggregationController,
             {engine, kind: 'thread_state_aggregation'}));
+        childControllers.push(Child(
+            'cpu_process_aggregation',
+            CpuByProcessAggregationController,
+            {engine, kind: 'cpu_by_process_aggregation'}));
         childControllers.push(Child(
             'slice_aggregation',
             SliceAggregationController,
@@ -277,9 +286,13 @@ export class TraceController extends Controller<States> {
     }
 
     const traceTime = await this.engine.getTraceTimeBounds();
+    let startSec = traceTime.start;
+    let endSec = traceTime.end;
+    startSec -= TRACE_MARGIN_TIME_S;
+    endSec += TRACE_MARGIN_TIME_S;
     const traceTimeState = {
-      startSec: traceTime.start,
-      endSec: traceTime.end,
+      startSec,
+      endSec,
     };
     const actions: DeferredAction[] = [
       Actions.setTraceTime(traceTimeState),
@@ -485,7 +498,9 @@ export class TraceController extends Controller<States> {
                  'android_ion',
                  'android_thread_time_in_state',
                  'android_surfaceflinger',
-                 'android_batt']) {
+                 'android_batt',
+                 'android_sysui_cuj',
+                 'android_jank']) {
       this.updateStatus(`Computing ${metric} metric`);
       try {
         // We don't care about the actual result of metric here as we are just

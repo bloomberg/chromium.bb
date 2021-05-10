@@ -16,6 +16,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -54,7 +55,7 @@
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
@@ -286,7 +287,7 @@ void TestingOmniboxView::NavigateAndExpectElided(
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(is_same_document);
   navigation.set_url(url);
-  navigation.set_previous_url(previous_url);
+  navigation.set_previous_main_frame_url(previous_url);
   DidStartNavigation(&navigation);
   location_bar_model_->set_url(url);
   location_bar_model_->set_url_for_display(base::ASCIIToUTF16(url.spec()));
@@ -306,7 +307,7 @@ void TestingOmniboxView::NavigateAndExpectUnelided(
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(is_same_document);
   navigation.set_url(GURL(url));
-  navigation.set_previous_url(previous_url);
+  navigation.set_previous_main_frame_url(previous_url);
   DidStartNavigation(&navigation);
   location_bar_model_->set_url(GURL(url));
   location_bar_model_->set_url_for_display(url);
@@ -620,7 +621,7 @@ void OmniboxViewViewsTest::SetUp() {
   widget_ = CreateTestWidget();
   widget_->Show();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
@@ -646,7 +647,7 @@ void OmniboxViewViewsTest::TearDown() {
   util_.reset();
   profile_.reset();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::input_method::Shutdown();
 #endif
   ChromeViewsTestBase::TearDown();
@@ -799,13 +800,13 @@ TEST_F(OmniboxViewViewsTest,
   omnibox_view()->SetTextAndSelectedRanges(base::ASCIIToUTF16("user text"),
                                            {gfx::Range(9, 9)});
   ASSERT_FALSE(omnibox_view()->IsSelectAll());
-  ASSERT_TRUE(omnibox_view()->SelectionAtEnd());
+  ASSERT_TRUE(omnibox_view()->GetSelectionAtEnd());
 
   // Simulate a renderer-initated focus event. Expect the cursor position to be
   // preserved, and that the omnibox did not select-all the text.
   omnibox_view()->SetFocus(/*is_user_initiated=*/false);
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
-  EXPECT_TRUE(omnibox_view()->SelectionAtEnd());
+  EXPECT_TRUE(omnibox_view()->GetSelectionAtEnd());
 }
 
 TEST_F(OmniboxViewViewsTest, Emphasis) {
@@ -2841,6 +2842,9 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, UrlsNotEligibleForEliding) {
       base::ASCIIToUTF16("javascript:alert(1)"),
       base::ASCIIToUTF16("data:text/html,hello"),
       base::ASCIIToUTF16("http://localhost:4000/foo"),
+      base::ASCIIToUTF16("blob:https://example.test/"),
+      base::ASCIIToUTF16("view-source:https://example.test/"),
+      base::ASCIIToUTF16("filesystem:https://example.test/a"),
       // A smoke test to check that the test code results in
       // the URL being elided properly when eligible.
       kSimplifiedDomainDisplayUrl,

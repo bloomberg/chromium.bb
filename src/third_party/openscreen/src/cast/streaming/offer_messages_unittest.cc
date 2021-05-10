@@ -93,7 +93,7 @@ void ExpectFailureOnParse(absl::string_view body) {
 }
 
 void ExpectEqualsValidOffer(const Offer& offer) {
-  EXPECT_EQ(CastMode::Type::kMirroring, offer.cast_mode.type);
+  EXPECT_EQ(CastMode::kMirroring, offer.cast_mode);
   EXPECT_EQ(true, offer.supports_wifi_status_reporting);
 
   // Verify list of video streams.
@@ -107,7 +107,7 @@ void ExpectEqualsValidOffer(const Offer& offer) {
   EXPECT_EQ(0, vs_one.stream.index);
   EXPECT_EQ(1, vs_one.stream.channels);
   EXPECT_EQ(Stream::Type::kVideoSource, vs_one.stream.type);
-  EXPECT_EQ("h264", vs_one.stream.codec_name);
+  EXPECT_EQ(VideoCodec::kH264, vs_one.codec);
   EXPECT_EQ(RtpPayloadType::kVideoH264, vs_one.stream.rtp_payload_type);
   EXPECT_EQ(19088743u, vs_one.stream.ssrc);
   EXPECT_EQ((SimpleFraction{60000, 1000}), vs_one.max_frame_rate);
@@ -139,7 +139,7 @@ void ExpectEqualsValidOffer(const Offer& offer) {
   EXPECT_EQ(1, vs_two.stream.index);
   EXPECT_EQ(1, vs_two.stream.channels);
   EXPECT_EQ(Stream::Type::kVideoSource, vs_two.stream.type);
-  EXPECT_EQ("vp8", vs_two.stream.codec_name);
+  EXPECT_EQ(VideoCodec::kVp8, vs_two.codec);
   EXPECT_EQ(RtpPayloadType::kVideoVp8, vs_two.stream.rtp_payload_type);
   EXPECT_EQ(19088744u, vs_two.stream.ssrc);
   EXPECT_EQ((SimpleFraction{30000, 1001}), vs_two.max_frame_rate);
@@ -162,7 +162,7 @@ void ExpectEqualsValidOffer(const Offer& offer) {
   const AudioStream& as = offer.audio_streams[0];
   EXPECT_EQ(2, as.stream.index);
   EXPECT_EQ(Stream::Type::kAudioSource, as.stream.type);
-  EXPECT_EQ("opus", as.stream.codec_name);
+  EXPECT_EQ(AudioCodec::kOpus, as.codec);
   EXPECT_EQ(RtpPayloadType::kAudioOpus, as.stream.rtp_payload_type);
   EXPECT_EQ(std::numeric_limits<Ssrc>::max(), as.stream.ssrc);
   EXPECT_EQ(124000, as.bit_rate);
@@ -491,10 +491,6 @@ TEST(OfferTest, ToJsonFailsWithInvalidStreams) {
   Offer audio_stream_invalid = valid_offer;
   video_stream_invalid.audio_streams[0].bit_rate = 0;
   EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
-
-  Offer stream_invalid = valid_offer;
-  stream_invalid.video_streams[0].stream.codec_name = "";
-  EXPECT_TRUE(stream_invalid.ToJson().is_error());
 }
 
 }  // namespace cast

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -14,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
@@ -30,7 +32,10 @@
 #include "chrome/browser/metrics/authenticator_utility.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/metrics/power/battery_level_provider.h"
+#include "chrome/browser/metrics/power/power_metrics_reporter.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
+#include "chrome/browser/metrics/usage_scenario/usage_scenario_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -43,14 +48,16 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
-#include "chrome/browser/metrics/tab_stats_tracker.h"
+#include "chrome/browser/metrics/tab_stats/tab_stats_tracker.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && defined(__arm__)
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include <gnu/libc-version.h>
 
 #include "base/linux_util.h"
@@ -61,7 +68,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"
 #endif
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(USE_OZONE) || defined(USE_X11)
 #include "ui/events/devices/device_data_manager.h"
@@ -229,7 +236,9 @@ void RecordStartupMetrics() {
 #endif
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void RecordLinuxDistroSpecific(const std::string& version_string,
                                size_t parts,
                                const char* histogram_name) {
@@ -305,10 +314,12 @@ void RecordLinuxDistro() {
 
   base::UmaHistogramSparse("Linux.Distro2", distro_result);
 }
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void RecordLinuxGlibcVersion() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   base::Version version(gnu_get_libc_version());
 
   UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
@@ -543,12 +554,64 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   // Records whether or not PartitionAlloc is used as the default allocator.
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "PartitionAllocEverywhere",
-#if BUILDFLAG(USE_PARTITION_ALLOC_EVERYWHERE)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
       "Enabled"
 #else
       "Disabled"
 #endif
   );
+
+  // Records whether or not PartitionAlloc-Everywhere is enabled, and whether
+  // PCScan is enabled on top of it. This is meant for a 3-way experiment with 2
+  // binaries:
+  // - binary A: deployed to 33% users, with PA-E and PCScan off.
+  // - binary B: deployed to 66% users, with PA-E on, half of which having
+  //             PCScan on
+  //
+  // NOTE, deliberately don't use PA_ALLOW_PCSCAN which depends on bitness.
+  // In the 32-bit case, PCScan is always disabled, but we'll deliberately
+  // misrepresent it as enabled here (and later ignored when analyzing results),
+  // in order to keep each population at 33%.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "PartitionAllocEverywhereAndPCScan",
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+      base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocPCScanBrowserOnly)
+          ? "EnabledWithPCScan"
+          : "EnabledWithoutPCScan"
+#else
+      "Disabled"
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  );
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // Records whether or not BackupRefPtr and/or PCScan is enabled. This is meant
+  // for a 3-way experiment with 2 binaries:
+  // - binary A: deployed to 66% users, with half of them having PCScan on and
+  //             half off (BackupRefPtr fully off)
+  // - binary B: deployed to 33% users, with BackupRefPtr on (PCSCan fully off)
+  //
+  // NOTE, deliberately don't use PA_ALLOW_PCSCAN which depends on bitness.
+  // In the 32-bit case, PCScan is always disabled, but we'll deliberately
+  // misrepresent it as enabled here (and later ignored when analyzing results),
+  // in order to keep each population at 33%.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "BackupRefPtrAndPCScan",
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+      "BackupRefPtrEnabled"
+#else
+      base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocPCScanBrowserOnly)
+          ? "PCScanEnabled"
+          : "Disabled"
+#endif
+  );
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "PartitionAllocGigaCageSynthetic",
+      base::features::IsPartitionAllocGigaCageEnabled() ? "Enabled"
+                                                        : "Disabled");
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
@@ -565,7 +628,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   constexpr base::TaskTraits kBestEffortTaskTraits = {
       base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   base::ThreadPool::PostTask(FROM_HERE, kBestEffortTaskTraits,
                              base::BindOnce(&RecordLinuxDistro));
 #endif
@@ -605,9 +670,14 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   auto background_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(kBestEffortTaskTraits);
 
-  background_task_runner->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
-      base::TimeDelta::FromSeconds(45));
+  // The PinnedToTaskbar histogram is CPU intensive and can trigger a crashing
+  // bug in Windows or in shell extensions so just sample the data to reduce the
+  // cost.
+  if (base::RandGenerator(100) == 0) {
+    background_task_runner->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
+        base::TimeDelta::FromSeconds(45));
+  }
 #endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
@@ -627,6 +697,16 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
             g_browser_process->local_state()));
   }
 #endif  // !defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_WIN)
+  // BatteryLevelProvider is supported on mac and windows only, thus we report
+  // power metrics only on those platforms.
+  if (performance_monitor::ProcessMonitor::Get()) {
+    // PowerMetricsReporter needs ProcessMonitor to be created.
+    usage_scenario_tracker_ = std::make_unique<UsageScenarioTracker>();
+    power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
+        usage_scenario_tracker_->data_store(), BatteryLevelProvider::Create());
+  }
+#endif  // defined(OS_MAC) || defined (OS_WIN)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {

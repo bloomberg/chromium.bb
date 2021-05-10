@@ -24,7 +24,9 @@
 #include "core/status.h"
 #include "core/strategy.h"
 #include "platform/base/byte_array.h"
+#include "platform/base/cancellation_flag.h"
 #include "platform/base/prng.h"
+#include "platform/public/cancelable_alarm.h"
 #include "platform/public/mutex.h"
 #include "proto/connections_enums.pb.h"
 // Prefer using absl:: versions of a set and a map; they tend to be more
@@ -42,6 +44,8 @@ namespace connections {
 class ClientProxy final {
  public:
   static constexpr int kEndpointIdLength = 4;
+  static constexpr absl::Duration
+      kHighPowerAdvertisementEndpointIdCacheTimeout = absl::Seconds(30);
 
   ClientProxy();
   ~ClientProxy();
@@ -59,7 +63,8 @@ class ClientProxy final {
   void StartedAdvertising(
       const std::string& service_id, Strategy strategy,
       const ConnectionListener& connection_lifecycle_listener,
-      absl::Span<proto::connections::Medium> mediums);
+      absl::Span<proto::connections::Medium> mediums,
+      const ConnectionOptions& advertising_options = ConnectionOptions{});
   // Marks this client as not advertising.
   void StoppedAdvertising();
   bool IsAdvertising() const;
@@ -70,9 +75,11 @@ class ClientProxy final {
   std::string GetServiceId() const;
 
   // Marks this client as discovering with the given callback.
-  void StartedDiscovery(const std::string& service_id, Strategy strategy,
-                        const DiscoveryListener& discovery_listener,
-                        absl::Span<proto::connections::Medium> mediums);
+  void StartedDiscovery(
+      const std::string& service_id, Strategy strategy,
+      const DiscoveryListener& discovery_listener,
+      absl::Span<proto::connections::Medium> mediums,
+      const ConnectionOptions& discovery_options = ConnectionOptions{});
   // Marks this client as not discovering at all.
   void StoppedDiscovery();
   bool IsDiscoveringServiceId(const std::string& service_id) const;
@@ -153,6 +160,26 @@ class ClientProxy final {
   bool LocalConnectionIsAccepted(std::string endpoint_id) const;
   bool RemoteConnectionIsAccepted(std::string endpoint_id) const;
 
+  // Adds a CancellationFlag for endpoint id.
+  void AddCancellationFlag(const std::string& endpoint_id);
+  // Returns the CancellationFlag for endpoint id,
+  CancellationFlag* GetCancellationFlag(const std::string& endpoint_id);
+  // Sets the CancellationFlag to true for endpoint id.
+  void CancelEndpoint(const std::string& endpoint_id);
+  // Cancels all CancellationFlags.
+  void CancelAllEndpoints();
+  ConnectionOptions GetAdvertisingOptions() const;
+  ConnectionOptions GetDiscoveryOptions() const;
+
+  // The endpoint id will be stable for 30 seconds after high visibility mode
+  // (high power and Bluetooth Classic) advertisement stops.
+  // If client re-enters high visibility mode within 30 seconds, he is going to
+  // have the same endpoint id.
+  void EnterHighVisibilityMode();
+  // Cleans up any modifications in high visibility mode. The endpoint id always
+  // rotates.
+  void ExitHighVisibilityMode();
+
  private:
   struct Connection {
     // Status: may be either:
@@ -208,11 +235,31 @@ class ClientProxy final {
                                Connection::Status status) const;
   std::vector<std::string> GetMatchingEndpoints(
       std::function<bool(const Connection&)> pred) const;
+  std::string GenerateLocalEndpointId();
+
+  void ScheduleClearLocalHighVisModeCacheEndpointIdAlarm();
+  void CancelClearLocalHighVisModeCacheEndpointIdAlarm();
 
   mutable RecursiveMutex mutex_;
+  Prng prng_;
   std::int64_t client_id_;
   std::string local_endpoint_id_;
-  Prng prng_;
+  // If currently is advertising in high visibility mode is true: high power and
+  // Bluetooth Classic enabled. When high_visibility_mode_ is true, the endpoint
+  // id is stable for 30s. When high_visibility_mode_ is false, the endpoint id
+  // always rotates.
+  bool high_vis_mode_{false};
+  // Caches the endpoint id when it is in high visibility mode advertisement for
+  // 30s. Currently, Nearby Connections keeps rotating endpoint id. The client
+  // (Nearby Share) treats different endpoints as different receivers, duplicate
+  // share targets for same devices occur on share sheet in this case.
+  // Therefore, we remember the high visibility mode advertisement  endpoint id
+  // here. empty if 1) There is no high power advertisement before 2) The
+  // endpoint id cached here in previous high visibility mode advertisement
+  // expires.
+  std::string local_high_vis_mode_cache_endpoint_id_;
+  ScheduledExecutor single_thread_executor_;
+  CancelableAlarm clear_local_high_vis_mode_cache_endpoint_id_alarm_;
 
   // If not empty, we are currently advertising and accepting connection
   // requests for the given service_id.
@@ -220,6 +267,19 @@ class ClientProxy final {
 
   // If not empty, we are currently discovering for the given service_id.
   DiscoveryInfo discovery_info_;
+
+  // The active ClientProxy's advertising constraints. Empty()
+  // returns true if the client hasn't started advertising false otherwise.
+  // Note: this is not cleared when the client stops advertising because it
+  // might still be useful downstream of advertising (eg: establishing
+  // connections, performing bandwidth upgrades, etc.)
+  ConnectionOptions advertising_options_;
+
+  // The active ClientProxy's discovery constraints. Null if the client
+  // hasn't started discovering. Note: this is not cleared when the client
+  // stops discovering because it might still be useful downstream of
+  // discovery (eg: connection speed, etc.)
+  ConnectionOptions discovery_options_;
 
   // Maps endpoint_id to endpoint connection state.
   absl::flat_hash_map<std::string, Connection> connections_;
@@ -230,6 +290,13 @@ class ClientProxy final {
   // happen because some mediums (like Bluetooth) repeatedly give us the same
   // endpoints after each scan.
   absl::flat_hash_set<std::string> discovered_endpoint_ids_;
+
+  // Maps endpoint_id to CancellationFlag.
+  absl::flat_hash_map<std::string, std::unique_ptr<CancellationFlag>>
+      cancellation_flags_;
+  // A default cancellation flag with isCancelled set be true.
+  std::unique_ptr<CancellationFlag> default_cancellation_flag_ =
+      std::make_unique<CancellationFlag>(true);
 };
 
 // Operator overloads when comparing Ptr<ClientProxy>.

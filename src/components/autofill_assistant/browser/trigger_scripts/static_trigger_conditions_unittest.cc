@@ -35,7 +35,8 @@ class StaticTriggerConditionsTest : public testing::Test {
 };
 
 TEST_F(StaticTriggerConditionsTest, Init) {
-  TriggerContextImpl trigger_context(/* params = */ {}, /* exp = */ "1,2,4");
+  TriggerContext trigger_context = {std::make_unique<ScriptParameters>(),
+                                    {.experiment_ids = "1,2,4"}};
   EXPECT_CALL(mock_is_first_time_user_callback_, Run).WillOnce(Return(true));
   EXPECT_CALL(mock_website_login_manager_, OnGetLoginsForUrl(GURL(kFakeUrl), _))
       .WillOnce(RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{
@@ -62,7 +63,7 @@ TEST_F(StaticTriggerConditionsTest, SetIsFirstTimeUser) {
 TEST_F(StaticTriggerConditionsTest, HasResults) {
   EXPECT_FALSE(static_trigger_conditions_.has_results());
 
-  TriggerContextImpl trigger_context(/* params = */ {}, /* exp = */ "1,2,4");
+  TriggerContext trigger_context;
   EXPECT_CALL(mock_is_first_time_user_callback_, Run).WillOnce(Return(true));
   EXPECT_CALL(mock_website_login_manager_, OnGetLoginsForUrl(GURL(kFakeUrl), _))
       .WillOnce(RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{
@@ -72,6 +73,26 @@ TEST_F(StaticTriggerConditionsTest, HasResults) {
       &mock_website_login_manager_, mock_is_first_time_user_callback_.Get(),
       GURL(kFakeUrl), &trigger_context, mock_callback_.Get());
   EXPECT_TRUE(static_trigger_conditions_.has_results());
+}
+
+TEST_F(StaticTriggerConditionsTest, ScriptParameterMatches) {
+  TriggerContext trigger_context = {
+      std::make_unique<ScriptParameters>(
+          std::map<std::string, std::string>{{"must_match", "matching_value"}}),
+      {}};
+  static_trigger_conditions_.Init(
+      &mock_website_login_manager_, mock_is_first_time_user_callback_.Get(),
+      GURL(kFakeUrl), &trigger_context, mock_callback_.Get());
+
+  ScriptParameterMatchProto must_match;
+  must_match.set_name("must_match");
+  must_match.set_value_equals("matching_value");
+  EXPECT_TRUE(static_trigger_conditions_.script_parameter_matches(must_match));
+
+  must_match.set_value_equals("not_matching_value");
+  EXPECT_FALSE(static_trigger_conditions_.script_parameter_matches(must_match));
+
+  // More comprehensive test in |script_parameters_unittest|.
 }
 
 }  // namespace

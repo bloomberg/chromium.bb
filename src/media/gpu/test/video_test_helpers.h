@@ -9,11 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/bits.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
-#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
@@ -157,41 +155,6 @@ constexpr size_t kPlatformBufferAlignment = 128;
 constexpr size_t kPlatformBufferAlignment = 8;
 #endif
 
-inline static size_t AlignToPlatformRequirements(size_t value) {
-  return base::bits::Align(value, kPlatformBufferAlignment);
-}
-
-// An aligned STL allocator.
-template <typename T, size_t ByteAlignment = kPlatformBufferAlignment>
-class AlignedAllocator : public std::allocator<T> {
- public:
-  typedef size_t size_type;
-  typedef T* pointer;
-
-  template <class T1>
-  struct rebind {
-    typedef AlignedAllocator<T1, ByteAlignment> other;
-  };
-
-  AlignedAllocator() {}
-  explicit AlignedAllocator(const AlignedAllocator&) {}
-  template <class T1>
-  explicit AlignedAllocator(const AlignedAllocator<T1, ByteAlignment>&) {}
-  ~AlignedAllocator() {}
-
-  pointer allocate(size_type n, const void* = 0) {
-    return static_cast<pointer>(base::AlignedAlloc(n, ByteAlignment));
-  }
-
-  void deallocate(pointer p, size_type n) {
-    base::AlignedFree(static_cast<void*>(p));
-  }
-
-  size_type max_size() const {
-    return std::numeric_limits<size_t>::max() / sizeof(T);
-  }
-};
-
 // Helper to align data and extract frames from raw video streams.
 // GetNextFrame() returns VideoFrames with a specified |storage_type|. The
 // VideoFrames are aligned by the specified |alignment| in the case of
@@ -203,8 +166,11 @@ class AlignedDataHelper {
       const std::vector<uint8_t>& stream,
       uint32_t num_frames,
       VideoPixelFormat pixel_format,
-      const gfx::Rect& visible_area,
-      const gfx::Size& coded_size,
+      const gfx::Size& src_coded_size,
+      const gfx::Size& dst_coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint32_t frame_rate,
       VideoFrame::StorageType storage_type,
       gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory);
   ~AlignedDataHelper();
@@ -218,6 +184,8 @@ class AlignedDataHelper {
   bool AtHeadOfStream() const;
   // Check whether we are at the end of the video stream.
   bool AtEndOfStream() const;
+  // Change the timing between frames.
+  void UpdateFrameRate(uint32_t frame_rate);
 
  private:
   struct VideoFrameData;
@@ -233,12 +201,14 @@ class AlignedDataHelper {
   // kPlatformBufferAlignment.
   void InitializeAlignedMemoryFrames(const std::vector<uint8_t>& stream,
                                      const VideoPixelFormat pixel_format,
-                                     const gfx::Size& coded_size);
+                                     const gfx::Size& src_coded_size,
+                                     const gfx::Size& dst_coded_size);
   // Create GpuMemoryBuffer VideoFrame whose alignments is determined by
   // a GpuMemoryBuffer allocation backend (e.g. minigbm).
   void InitializeGpuMemoryBufferFrames(const std::vector<uint8_t>& stream,
                                        const VideoPixelFormat pixel_format,
-                                       const gfx::Size& coded_size);
+                                       const gfx::Size& src_coded_size,
+                                       const gfx::Size& dst_coded_size);
 
   // The index of VideoFrame to be read next.
   uint32_t frame_index_ = 0;
@@ -250,7 +220,11 @@ class AlignedDataHelper {
 
   // The layout of VideoFrames returned by GetNextFrame().
   base::Optional<VideoFrameLayout> layout_;
-  const gfx::Rect visible_area_;
+  const gfx::Rect visible_rect_;
+  const gfx::Size natural_size_;
+
+  base::TimeDelta time_stamp_interval_;
+  base::TimeDelta elapsed_frame_time_;
 
   // The frame data returned by GetNextFrame().
   std::vector<VideoFrameData> video_frame_data_;

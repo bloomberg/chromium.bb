@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <utility>
 
@@ -58,9 +59,16 @@ const size_t kMaxUnusedReadBufferCapacity = 4096;
 // Fuchsia: The zx_channel_write() API supports up to 64 handles.
 const size_t kMaxAttachedHandles = 64;
 
+static_assert(alignof(std::max_align_t) >= kChannelMessageAlignment, "");
 Channel::AlignedBuffer MakeAlignedBuffer(size_t size) {
-  return Channel::AlignedBuffer(
-      static_cast<char*>(base::AlignedAlloc(size, kChannelMessageAlignment)));
+  // No need to call base::AlignedAlloc() since malloc() already had the proper
+  // alignment.
+  void* ptr = malloc(size);
+  // Even though the allocator is configured in such a way that it crashes
+  // rather than return nullptr, ASAN and friends don't know about that. This
+  // CHECK() prevents Clusterfuzz from complaining. crbug.com/1180576.
+  CHECK(ptr);
+  return Channel::AlignedBuffer(static_cast<char*>(ptr));
 }
 
 }  // namespace
@@ -480,9 +488,7 @@ class Channel::ReadBuffer {
     data_ = MakeAlignedBuffer(size_);
   }
 
-  ~ReadBuffer() {
-    DCHECK(data_);
-  }
+  ~ReadBuffer() { DCHECK(data_); }
 
   const char* occupied_bytes() const {
     return data_.get() + num_discarded_bytes_;
@@ -728,6 +734,20 @@ bool Channel::OnControlMessage(Message::MessageType message_type,
                                std::vector<PlatformHandle> handles) {
   return false;
 }
+
+// Currently only Non-nacl CrOs, Linux, and Android support upgrades.
+#if defined(OS_NACL) || \
+    (!(defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_ANDROID)))
+// static
+MOJO_SYSTEM_IMPL_EXPORT bool Channel::SupportsChannelUpgrade() {
+  return false;
+}
+
+MOJO_SYSTEM_IMPL_EXPORT void Channel::OfferChannelUpgrade() {
+  NOTREACHED();
+  return;
+}
+#endif
 
 }  // namespace core
 }  // namespace mojo

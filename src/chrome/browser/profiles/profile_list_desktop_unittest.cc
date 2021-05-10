@@ -76,9 +76,15 @@ class ProfileListDesktopTest : public testing::Test {
 
   void AddOmittedProfile(const std::string& name) {
     ProfileAttributesStorage* storage = manager()->profile_attributes_storage();
-    storage->AddProfile(manager()->profiles_dir().AppendASCII(name),
-                        ASCIIToUTF16(name), std::string(), base::string16(),
-                        false, 0, "TEST_ID", EmptyAccountId());
+    base::FilePath profile_path = manager()->profiles_dir().AppendASCII(name);
+    storage->AddProfile(profile_path, ASCIIToUTF16(name), std::string(),
+                        base::string16(), false, 0, std::string(),
+                        EmptyAccountId());
+    ProfileAttributesEntry* entry =
+        storage->GetProfileAttributesWithPath(profile_path);
+    ASSERT_NE(entry, nullptr);
+    entry->SetIsEphemeral(true);
+    entry->SetIsOmitted(true);
   }
 
   int change_count() const { return mock_observer_->change_count(); }
@@ -214,10 +220,11 @@ TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
 
   // Change the name of the first profile, and this triggers the resorting of
   // the avatar menu.
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(manager()->profile_attributes_storage()->
-                  GetProfileAttributesWithPath(profile1->GetPath(), &entry));
-  entry->SetLocalProfileName(ASCIIToUTF16(newname1));
+  ProfileAttributesEntry* entry =
+      manager()->profile_attributes_storage()->GetProfileAttributesWithPath(
+          profile1->GetPath());
+  ASSERT_NE(entry, nullptr);
+  entry->SetLocalProfileName(ASCIIToUTF16(newname1), false);
   EXPECT_EQ(1, change_count());
 
   // Now the first menu item should be named "beta", and the second be "gamma".

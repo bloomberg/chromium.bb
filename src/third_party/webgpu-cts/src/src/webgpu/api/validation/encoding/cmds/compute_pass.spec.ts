@@ -1,11 +1,12 @@
 export const description = `
 API validation test for compute pass
+
+Does **not** test usage scopes (resource_usages/) or programmable pass stuff (programmable_pass).
 `;
 
 import { params, poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-
-import { ValidationTest } from './../../validation_test.js';
+import { ValidationTest } from '../../validation_test.js';
 
 class F extends ValidationTest {
   createComputePipeline(state: 'valid' | 'invalid'): GPUComputePipeline {
@@ -66,7 +67,7 @@ g.test('dispatch_sizes')
 Test 'direct' and 'indirect' dispatch with various sizes.
   - workgroup sizes:
     - valid, {[0, 0, 0], [1, 1, 1]}
-    - invalid,  <fill number here>
+    - invalid, TODO: workSizes {x,y,z} just under and above limit, once limit is established.
 `
   )
   .params(
@@ -76,8 +77,6 @@ Test 'direct' and 'indirect' dispatch with various sizes.
         poptions('workSizes', [
           [0, 0, 0],
           [1, 1, 1],
-          // TODO: Add tests for workSizes right under and above upper limit once the limit has
-          //  been decided.
         ] as const)
       )
   )
@@ -105,6 +104,9 @@ indirectBuffer with 6 elements.
   - valid, within the buffer: {beginning, middle, end} of the buffer
   - invalid, non-multiple of 4
   - invalid, the last element is outside the buffer
+
+TODO: test specifically which call the validation error occurs in.
+      (Should be finish() for invalid, but submit() for destroyed.)
 `
   )
   .params(
@@ -112,12 +114,14 @@ indirectBuffer with 6 elements.
       .combine(poptions('state', ['valid', 'invalid', 'destroyed'] as const))
       .combine(
         poptions('offset', [
-          0, // valid for 'valid' buffers
-          Uint32Array.BYTES_PER_ELEMENT, // valid for 'valid' buffers
-          kBufferData.byteLength - 3 * Uint32Array.BYTES_PER_ELEMENT, // valid for 'valid' buffers
-          1, // invalid, non-multiple of 4 offset
+          // valid (for 'valid' buffers)
+          0,
+          Uint32Array.BYTES_PER_ELEMENT,
+          kBufferData.byteLength - 3 * Uint32Array.BYTES_PER_ELEMENT,
+          // invalid, non-multiple of 4 offset
+          1,
           // invalid, last element outside buffer
-          kBufferData.byteLength - Uint32Array.BYTES_PER_ELEMENT,
+          kBufferData.byteLength - 2 * Uint32Array.BYTES_PER_ELEMENT,
         ])
       )
   )

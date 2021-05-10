@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -80,8 +80,8 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
 
   // IdentityManager::Observer:
   // Needed if the first sync promo account should be displayed.
-  void OnUnconsentedPrimaryAccountChanged(
-      const CoreAccountInfo& unconsented_primary_account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
   void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
@@ -100,10 +100,12 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   void MaybeHideIdentityAnimation();
   void HideHighlightAnimation();
 
-  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
-      profile_observer_{this};
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_{this};
+  base::ScopedObservation<ProfileAttributesStorage,
+                          ProfileAttributesStorage::Observer>
+      profile_observation_{this};
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
   AvatarToolbarButton* avatar_toolbar_button_ = nullptr;
   Profile* profile_ = nullptr;
   IdentityAnimationState identity_animation_state_ =

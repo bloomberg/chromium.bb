@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -17,8 +18,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/base_window.h"
@@ -28,7 +28,7 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/tablet_mode.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/window.h"
@@ -62,7 +62,7 @@ void ExtensionDialog::ObserverDestroyed() {
   observer_ = nullptr;
 }
 
-void ExtensionDialog::MaybeFocusRenderView() {
+void ExtensionDialog::MaybeFocusRenderer() {
   views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
   DCHECK(focus_manager);
 
@@ -70,8 +70,7 @@ void ExtensionDialog::MaybeFocusRenderView() {
   if (focus_manager->GetFocusedView())
     return;
 
-  content::RenderWidgetHostView* view =
-      host()->render_view_host()->GetWidget()->GetView();
+  content::RenderWidgetHostView* view = host()->main_frame_host()->GetView();
   if (!view)
     return;
 
@@ -80,10 +79,6 @@ void ExtensionDialog::MaybeFocusRenderView() {
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
   extension_view_->SetPreferredSize(gfx::Size(width, height));
-}
-
-ui::ModalType ExtensionDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
 }
 
 void ExtensionDialog::WindowClosing() {
@@ -130,7 +125,7 @@ void ExtensionDialog::Observe(int type,
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)
-        MaybeFocusRenderView();
+        MaybeFocusRenderer();
       break;
     case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
@@ -176,11 +171,12 @@ ExtensionDialog::ExtensionDialog(
                  source);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
 
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowTitle(!init_params.title.empty());
   SetTitle(init_params.title);
 
   bool can_resize = true;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     can_resize = false;
@@ -222,7 +218,7 @@ ExtensionDialog::ExtensionDialog(
   bounds.AdjustToFit(screen_rect);
   window->SetBounds(bounds);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* native_view = window->GetNativeWindow();
   if (init_params.title_color) {
     // Frame active color changes the title color when dialog is active.
@@ -244,7 +240,7 @@ ExtensionDialog::ExtensionDialog(
   // |extension_view_|.
   DCHECK(extension_view_);
   extension_view_->SetPreferredSize(init_params.size);
-  extension_view_->set_minimum_size(init_params.min_size);
+  extension_view_->SetMinimumSize(init_params.min_size);
   extension_view_->SetVisible(true);
 
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.

@@ -97,12 +97,16 @@ class FailOnConsoleMessage : public content::WebContentsObserver {
 
  private:
   // content::WebContentsObserver:
-  void OnDidAddMessageToConsole(content::RenderFrameHost* source_frame,
-                                blink::mojom::ConsoleMessageLevel log_level,
-                                const base::string16& message,
-                                int32_t line_no,
-                                const base::string16& source_id) override {
-    ADD_FAILURE() << "Unexpected console message: " << message;
+  void OnDidAddMessageToConsole(
+      content::RenderFrameHost* source_frame,
+      blink::mojom::ConsoleMessageLevel log_level,
+      const base::string16& message,
+      int32_t line_no,
+      const base::string16& source_id,
+      const base::Optional<base::string16>& untrusted_stack_trace) override {
+    if (log_level == blink::mojom::ConsoleMessageLevel::kError) {
+      ADD_FAILURE() << "Unexpected console error: " << message;
+    }
   }
 };
 
@@ -335,9 +339,7 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
         context, base::BindRepeating(&LocalNTPDoodleTest::CreateLogoService));
   }
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,

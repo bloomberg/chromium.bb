@@ -97,9 +97,6 @@ class RendererGL : angle::NonCopyable
     void pushDebugGroup(GLenum source, GLuint id, const std::string &message);
     void popDebugGroup();
 
-    std::string getVendorString() const;
-    std::string getRendererDescription() const;
-
     GLint getGPUDisjoint();
     GLint64 getTimestamp();
 
@@ -166,7 +163,7 @@ class RendererGL : angle::NonCopyable
     mutable MultiviewImplementationTypeGL mMultiviewImplementationType;
 
     // The thread-to-context mapping for the currently active worker threads.
-    std::unordered_map<std::thread::id, std::unique_ptr<WorkerContext>> mCurrentWorkerContexts;
+    angle::HashMap<std::thread::id, std::unique_ptr<WorkerContext>> mCurrentWorkerContexts;
     // The worker contexts available to use.
     std::list<std::unique_ptr<WorkerContext>> mWorkerContextPool;
     // Protect the concurrent accesses to worker contexts.

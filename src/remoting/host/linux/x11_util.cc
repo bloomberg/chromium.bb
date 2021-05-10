@@ -5,17 +5,18 @@
 #include "remoting/host/linux/x11_util.h"
 
 #include "base/bind.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xtest.h"
 
 namespace remoting {
 
 ScopedXGrabServer::ScopedXGrabServer(x11::Connection* connection)
     : connection_(connection) {
-  connection_->GrabServer({});
+  connection_->GrabServer();
 }
 
 ScopedXGrabServer::~ScopedXGrabServer() {
-  connection_->UngrabServer({});
+  connection_->UngrabServer();
   connection_->Flush();
 }
 

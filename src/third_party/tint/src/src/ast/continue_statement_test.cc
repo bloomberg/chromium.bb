@@ -14,36 +14,34 @@
 
 #include "src/ast/continue_statement.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ContinueStatementTest = testing::Test;
+using ContinueStatementTest = TestHelper;
 
 TEST_F(ContinueStatementTest, Creation_WithSource) {
-  ContinueStatement stmt(Source{Source::Location{20, 2}});
-  auto src = stmt.source();
+  auto* stmt = create<ContinueStatement>(Source{Source::Location{20, 2}});
+  auto src = stmt->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(ContinueStatementTest, IsContinue) {
-  ContinueStatement stmt;
-  EXPECT_TRUE(stmt.IsContinue());
+  auto* stmt = create<ContinueStatement>();
+  EXPECT_TRUE(stmt->Is<ContinueStatement>());
 }
 
 TEST_F(ContinueStatementTest, IsValid) {
-  ContinueStatement stmt;
-  EXPECT_TRUE(stmt.IsValid());
+  auto* stmt = create<ContinueStatement>();
+  EXPECT_TRUE(stmt->IsValid());
 }
 
 TEST_F(ContinueStatementTest, ToStr) {
-  ContinueStatement stmt;
-  std::ostringstream out;
-  stmt.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Continue{}
+  auto* stmt = create<ContinueStatement>();
+  EXPECT_EQ(str(stmt), R"(Continue{}
 )");
 }
 

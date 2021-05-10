@@ -18,6 +18,8 @@ devtools_module("emulation") {
     "LocationsSettingsTab.js",
     "MediaQueryInspector.js",
     "SensorsView.js",
+    "StructuredHeaders.ts",
+    "UserAgentMetadata.ts",
   ]
 
   deps = [
@@ -47,13 +49,19 @@ copy_to_gen("legacy_css") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "emulation.js"
+  entrypoint = "emulation.ts"
 
   deps = [ ":emulation" ]
 }
 
 devtools_entrypoint("legacy") {
   entrypoint = "emulation-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "emulation-meta.ts"
 
   deps = [ ":bundle" ]
 }

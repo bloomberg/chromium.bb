@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/common/previews_resource_loading_hints.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-forward.h"
 
 class Profile;
 
@@ -53,17 +53,6 @@ class ResourceLoadingHintsWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Sends resource loading hints to the renderer.
-  void SendResourceLoadingHints(content::NavigationHandle* navigation_handle);
-
-  // Returns the pattern of resources that should be blocked when loading
-  // |document_gurl|. The pattern may be a single substring to match against the
-  // URL or it may be an ordered set of substrings to match where the substrings
-  // are separated by the ‘*’ wildcard character (with an implicit ‘*’ at the
-  // beginning and end).
-  const std::vector<std::string> GetResourceLoadingHintsResourcePatternsToBlock(
-      const GURL& document_gurl) const;
-
   // Reports the start URL and the end URL in the current redirect chain to
   // previews service.
   void ReportRedirects(content::NavigationHandle* navigation_handle);
@@ -71,7 +60,7 @@ class ResourceLoadingHintsWebContentsObserver
   // Set in constructor.
   Profile* profile_ = nullptr;
 
-  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+  mojo::AssociatedRemote<previews::mojom::PreviewsResourceLoadingHintsReceiver>
   GetResourceLoadingHintsReceiver(content::NavigationHandle* navigation_handle);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

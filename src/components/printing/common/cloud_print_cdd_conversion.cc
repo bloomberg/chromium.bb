@@ -13,14 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
-#include "printing/printing_features.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace printer = cloud_devices::printer;
 
@@ -42,7 +38,7 @@ printer::DuplexType ToCloudDuplexType(printing::mojom::DuplexMode mode) {
   return printer::DuplexType::NO_DUPLEX;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 printer::TypedValueVendorCapability::ValueType ToCloudValueType(
     printing::AdvancedCapability::Type type) {
   switch (type) {
@@ -59,7 +55,7 @@ printer::TypedValueVendorCapability::ValueType ToCloudValueType(
   }
   return printer::TypedValueVendorCapability::ValueType::STRING;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 printer::Media ConvertPaperToMedia(
     const printing::PrinterSemanticCapsAndDefaults::Paper& paper) {
@@ -138,7 +134,7 @@ printer::DpiCapability GetDpiCapabilities(
   return dpi_capabilities;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 printer::VendorCapabilities GetVendorCapabilities(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   printer::VendorCapabilities vendor_capabilities;
@@ -168,7 +164,7 @@ printer::VendorCapabilities GetVendorCapabilities(
 
   return vendor_capabilities;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -235,19 +231,17 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   orientation.AddOption(printer::OrientationType::AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   printer::PinCapability pin;
   pin.set_value(semantic_info.pin_supported);
   pin.SaveTo(&description);
 
-  if (base::FeatureList::IsEnabled(
-          printing::features::kAdvancedPpdAttributes) &&
-      !semantic_info.advanced_capabilities.empty()) {
+  if (!semantic_info.advanced_capabilities.empty()) {
     printer::VendorCapabilities vendor_capabilities =
         GetVendorCapabilities(semantic_info);
     vendor_capabilities.SaveTo(&description);
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return std::move(description).ToValue();
 }

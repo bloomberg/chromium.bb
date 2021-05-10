@@ -7,9 +7,6 @@ import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
 import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';  // eslint-disable-line no-unused-vars
 import {StylesSidebarPane} from './StylesSidebarPane.js';                // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class StylePropertyHighlighter {
   /**
    * @param {!StylesSidebarPane} ssp
@@ -33,7 +30,7 @@ export class StylePropertyHighlighter {
 
     const treeElement = this._findTreeElement(treeElement => treeElement.property === cssProperty);
     if (treeElement) {
-      treeElement.parent.expand();
+      treeElement.parent && treeElement.parent.expand();
       this._scrollAndHighlightTreeElement(treeElement);
     }
   }

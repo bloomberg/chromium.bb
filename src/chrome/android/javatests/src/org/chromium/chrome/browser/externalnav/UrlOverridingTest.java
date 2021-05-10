@@ -11,8 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.lifecycle.Stage;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -28,20 +30,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResultType;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -49,7 +56,9 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -119,7 +128,7 @@ public class UrlOverridingTest {
         }
 
         @Override
-        public void onPageLoadFinished(Tab tab, String url) {
+        public void onPageLoadFinished(Tab tab, GURL url) {
             mFinishCallback.notifyCalled();
         }
 
@@ -178,7 +187,7 @@ public class UrlOverridingTest {
         tab.addObserver(new TestTabObserver(finishCallback, failCallback, destroyedCallback));
         if (createsNewTab) {
             mActivityTestRule.getActivity().getTabModelSelector().addObserver(
-                    new EmptyTabModelSelectorObserver() {
+                    new TabModelSelectorObserver() {
                         @Override
                         public void onNewTabCreated(
                                 Tab newTab, @TabCreationState int creationState) {
@@ -267,11 +276,11 @@ public class UrlOverridingTest {
             Tab latestTab = latestTabHolder[0];
             InterceptNavigationDelegateImpl delegate = latestDelegateHolder[0];
             if (shouldLaunchExternalIntent) {
-                Criteria.checkThat(delegate.getLastOverrideUrlLoadingResultForTests(),
-                        Matchers.is(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT));
+                Criteria.checkThat(delegate.getLastOverrideUrlLoadingResultTypeForTests(),
+                        Matchers.is(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT));
             } else {
-                Criteria.checkThat(delegate.getLastOverrideUrlLoadingResultForTests(),
-                        Matchers.not(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT));
+                Criteria.checkThat(delegate.getLastOverrideUrlLoadingResultTypeForTests(),
+                        Matchers.not(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT));
             }
             if (expectedFinalUrl == null) return;
             Criteria.checkThat(latestTab.getUrlString(), Matchers.is(expectedFinalUrl));
@@ -424,24 +433,43 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    public void testRedirectionFromIntent() {
-        // Test cold-start.
+    @DisabledTest(message = "https://crbug.com/1164414")
+    public void testRedirectionFromIntentCold() throws Exception {
+        Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
-        Context targetContext = InstrumentationRegistry.getTargetContext();
-        intent.setClassName(targetContext, ChromeLauncherActivity.class.getName());
+        intent.setClassName(context, ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+
+        ChromeTabbedActivity activity = ApplicationTestUtils.waitForActivityWithClass(
+                ChromeTabbedActivity.class, Stage.CREATED, () -> context.startActivity(intent));
+        mActivityTestRule.setActivity(activity);
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1));
+        }, ScalableTimeout.scaleTimeout(10000L), CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        ApplicationTestUtils.waitForActivityState(activity, Stage.STOPPED);
+    }
+
+    @Test
+    @SmallTest
+    @DisabledTest(message = "https://crbug.com/1159767")
+    public void testRedirectionFromIntentWarm() throws Exception {
+        Context context = ContextUtils.getApplicationContext();
+        // TODO(crbug.com/1153686): This test times out on M tablets.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
+            return;
+        }
+        mActivityTestRule.startMainActivityOnBlankPage();
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
+        intent.setClassName(context, ChromeLauncherActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
 
         CriteriaHelper.pollUiThread(
                 () -> Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1)));
-
-        // Test warm start.
-        mActivityTestRule.startMainActivityOnBlankPage();
-        targetContext.startActivity(intent);
-
-        CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(2)));
     }
 
     @Test
@@ -489,7 +517,6 @@ public class UrlOverridingTest {
         String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
         loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, null, false, "null_scheme");
     }
-
     @Test
     @LargeTest
     public void testIntentURIWithEmptySchemeDoesNothing() throws TimeoutException {

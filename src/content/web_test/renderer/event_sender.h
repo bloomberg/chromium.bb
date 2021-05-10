@@ -24,7 +24,7 @@
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/web/web_widget_client.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ class WebFrameWidget;
 class WebLocalFrame;
 class WebView;
 class WebWidget;
-struct WebContextMenuData;
+struct ContextMenuData;
 }  // namespace blink
 
 namespace gin {
@@ -41,8 +41,6 @@ class Arguments;
 
 namespace content {
 class TestRunner;
-class WebViewTestProxy;
-class WebWidgetTestProxy;
 
 // Key event location code introduced in DOM Level 3.
 // See also: http://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
@@ -55,13 +53,13 @@ enum KeyLocationCode {
 
 class EventSender {
  public:
-  explicit EventSender(WebWidgetTestProxy*);
+  EventSender(blink::WebFrameWidget*, content::TestRunner* test_runner);
   virtual ~EventSender();
 
   void Reset();
   void Install(blink::WebLocalFrame*);
 
-  void SetContextMenuData(const blink::WebContextMenuData&);
+  void SetContextMenuData(const blink::ContextMenuData&);
 
   void DoDragDrop(const blink::WebDragData&, blink::DragOperationsMask);
 
@@ -109,8 +107,6 @@ class EventSender {
 
   enum class MouseScrollType { PIXEL, TICK };
 
-  TestRunner* test_runner();
-  WebViewTestProxy* web_view_proxy();
   const blink::WebView* view() const;
   blink::WebView* view();
   blink::WebWidget* widget();
@@ -196,7 +192,7 @@ class EventSender {
                              float* radius_x,
                              float* radius_y);
 
-  void FinishDragAndDrop(const blink::WebMouseEvent&, blink::DragOperation);
+  void FinishDragAndDrop(const blink::WebMouseEvent&, ui::mojom::DragOperation);
 
   int ModifiersForPointer(int pointer_id);
   void DoDragAfterMouseUp(const blink::WebMouseEvent&);
@@ -209,6 +205,11 @@ class EventSender {
       const blink::WebMouseWheelEvent wheel_event);
 
   void UpdateLifecycleToPrePaint();
+
+  // Web tests are written to be dsf-independent. This scale should be applied
+  // to coordinates provided from js, to convert them to physical pixels when
+  // UseZoomForDSF is enabled.
+  float DeviceScaleFactorForEvents();
 
   base::TimeTicks last_event_timestamp() const { return last_event_timestamp_; }
 
@@ -257,7 +258,8 @@ class EventSender {
   int wm_sys_dead_char_;
 #endif
 
-  WebWidgetTestProxy* const web_widget_test_proxy_;
+  blink::WebFrameWidget* const web_frame_widget_;
+  TestRunner* const test_runner_;
 
   bool force_layout_on_events_;
 
@@ -269,7 +271,7 @@ class EventSender {
   bool touch_cancelable_;
   std::vector<blink::WebTouchPoint> touch_points_;
 
-  std::unique_ptr<blink::WebContextMenuData> last_context_menu_data_;
+  std::unique_ptr<blink::ContextMenuData> last_context_menu_data_;
 
   base::Optional<blink::WebDragData> current_drag_data_;
 
@@ -298,7 +300,7 @@ class EventSender {
   typedef std::unordered_map<int, PointerState> PointerStateMap;
   PointerStateMap current_pointer_state_;
 
-  bool replaying_saved_events_;
+  bool replaying_saved_events_ = false;
 
   base::circular_deque<SavedEvent> mouse_event_queue_;
 
@@ -312,7 +314,7 @@ class EventSender {
   // Used to determine whether the click count continues to increment or not.
   static blink::WebMouseEvent::Button last_button_type_;
 
-  blink::DragOperation current_drag_effect_;
+  ui::mojom::DragOperation current_drag_effect_;
 
   base::TimeDelta time_offset_;
   int click_count_;

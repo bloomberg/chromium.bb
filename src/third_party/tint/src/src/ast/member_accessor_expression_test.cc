@@ -16,94 +16,71 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using MemberAccessorExpressionTest = testing::Test;
+using MemberAccessorExpressionTest = TestHelper;
 
 TEST_F(MemberAccessorExpressionTest, Creation) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-  auto mem = std::make_unique<IdentifierExpression>("member");
+  auto* str = Expr("structure");
+  auto* mem = Expr("member");
 
-  auto* str_ptr = str.get();
-  auto* mem_ptr = mem.get();
-
-  MemberAccessorExpression stmt(std::move(str), std::move(mem));
-  EXPECT_EQ(stmt.structure(), str_ptr);
-  EXPECT_EQ(stmt.member(), mem_ptr);
+  auto* stmt = create<MemberAccessorExpression>(str, mem);
+  EXPECT_EQ(stmt->structure(), str);
+  EXPECT_EQ(stmt->member(), mem);
 }
 
 TEST_F(MemberAccessorExpressionTest, Creation_WithSource) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-  auto mem = std::make_unique<IdentifierExpression>("member");
-
-  MemberAccessorExpression stmt(Source{Source::Location{20, 2}}, std::move(str),
-                                std::move(mem));
-  auto src = stmt.source();
+  auto* stmt = create<MemberAccessorExpression>(
+      Source{Source::Location{20, 2}}, Expr("structure"), Expr("member"));
+  auto src = stmt->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(MemberAccessorExpressionTest, IsMemberAccessor) {
-  MemberAccessorExpression stmt;
-  EXPECT_TRUE(stmt.IsMemberAccessor());
+  auto* stmt =
+      create<MemberAccessorExpression>(Expr("structure"), Expr("member"));
+  EXPECT_TRUE(stmt->Is<MemberAccessorExpression>());
 }
 
 TEST_F(MemberAccessorExpressionTest, IsValid) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-  auto mem = std::make_unique<IdentifierExpression>("member");
-
-  MemberAccessorExpression stmt(std::move(str), std::move(mem));
-  EXPECT_TRUE(stmt.IsValid());
+  auto* stmt =
+      create<MemberAccessorExpression>(Expr("structure"), Expr("member"));
+  EXPECT_TRUE(stmt->IsValid());
 }
 
 TEST_F(MemberAccessorExpressionTest, IsValid_NullStruct) {
-  auto mem = std::make_unique<IdentifierExpression>("member");
-
-  MemberAccessorExpression stmt;
-  stmt.set_member(std::move(mem));
-  EXPECT_FALSE(stmt.IsValid());
+  auto* stmt = create<MemberAccessorExpression>(nullptr, Expr("member"));
+  EXPECT_FALSE(stmt->IsValid());
 }
 
 TEST_F(MemberAccessorExpressionTest, IsValid_InvalidStruct) {
-  auto str = std::make_unique<IdentifierExpression>("");
-  auto mem = std::make_unique<IdentifierExpression>("member");
-
-  MemberAccessorExpression stmt(std::move(str), std::move(mem));
-  EXPECT_FALSE(stmt.IsValid());
+  auto* stmt = create<MemberAccessorExpression>(Expr(""), Expr("member"));
+  EXPECT_FALSE(stmt->IsValid());
 }
 
 TEST_F(MemberAccessorExpressionTest, IsValid_NullMember) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-
-  MemberAccessorExpression stmt;
-  stmt.set_structure(std::move(str));
-  EXPECT_FALSE(stmt.IsValid());
+  auto* stmt = create<MemberAccessorExpression>(Expr("structure"), nullptr);
+  EXPECT_FALSE(stmt->IsValid());
 }
 
 TEST_F(MemberAccessorExpressionTest, IsValid_InvalidMember) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-  auto mem = std::make_unique<IdentifierExpression>("");
-
-  MemberAccessorExpression stmt(std::move(str), std::move(mem));
-  EXPECT_FALSE(stmt.IsValid());
+  auto* stmt = create<MemberAccessorExpression>(Expr("structure"), Expr(""));
+  EXPECT_FALSE(stmt->IsValid());
 }
 
 TEST_F(MemberAccessorExpressionTest, ToStr) {
-  auto str = std::make_unique<IdentifierExpression>("structure");
-  auto mem = std::make_unique<IdentifierExpression>("member");
-
-  MemberAccessorExpression stmt(std::move(str), std::move(mem));
-  std::ostringstream out;
-  stmt.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  MemberAccessor{
-    Identifier{structure}
-    Identifier{member}
-  }
+  auto* stmt =
+      create<MemberAccessorExpression>(Expr("structure"), Expr("member"));
+  EXPECT_EQ(str(stmt), R"(MemberAccessor[not set]{
+  Identifier[not set]{structure}
+  Identifier[not set]{member}
+}
 )");
 }
 

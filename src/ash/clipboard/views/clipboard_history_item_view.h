@@ -6,7 +6,7 @@
 #define ASH_CLIPBOARD_VIEWS_CLIPBOARD_HISTORY_ITEM_VIEW_H_
 
 #include "ash/clipboard/clipboard_history_util.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 
 namespace views {
@@ -14,7 +14,9 @@ class MenuItemView;
 }  // namespace views
 
 namespace ash {
+class ClipboardHistoryDeleteButton;
 class ClipboardHistoryItem;
+class ClipboardHistoryMainButton;
 class ClipboardHistoryResourceManager;
 
 // The base class for menu items of the clipboard history menu.
@@ -31,43 +33,33 @@ class ClipboardHistoryItemView : public views::View {
       delete;
   ~ClipboardHistoryItemView() override;
 
-  // Initializes the menu item.
-  void Init();
-
-  // Called when the selection state has changed.
-  void OnSelectionChanged();
-
   // Advances the pseudo focus (backward if reverse is true). Returns whether
   // the view still keeps the pseudo focus.
   bool AdvancePseudoFocus(bool reverse);
 
+  void HandleDeleteButtonPressEvent(const ui::Event& event);
+
+  void HandleMainButtonPressEvent(const ui::Event& event);
+
+  // Initializes the menu item.
+  void Init();
+
+  // Attempts to handle the gesture event redirected from `main_button_`.
+  void MaybeHandleGestureEventFromMainButton(ui::GestureEvent* event);
+
+  // Called when the selection state has changed.
+  void OnSelectionChanged();
+
+  // Returns whether the highlight background should show.
+  bool ShouldHighlight() const;
+
+  // Called when the mouse click on descendants (such as the main button or
+  // the delete button) gets canceled.
+  void OnMouseClickOnDescendantCanceled();
+
   ClipboardHistoryUtil::Action action() const { return action_; }
 
-  views::View* delete_button_for_test() {
-    return contents_view_->delete_button();
-  }
-
-  const views::View* delete_button_for_test() const {
-    return contents_view_->delete_button();
-  }
-
  protected:
-  class MainButton;
-
-  // The button to delete the menu item and its corresponding clipboard data.
-  class DeleteButton : public views::ImageButton {
-   public:
-    explicit DeleteButton(ClipboardHistoryItemView* listener);
-    DeleteButton(const DeleteButton& rhs) = delete;
-    DeleteButton& operator=(const DeleteButton& rhs) = delete;
-    ~DeleteButton() override;
-
-   private:
-    // views::ImageButton:
-    const char* GetClassName() const override;
-    void OnThemeChanged() override;
-  };
-
   // Used by subclasses to draw contents, such as text or bitmaps.
   class ContentsView : public views::View, public views::ViewTargeterDelegate {
    public:
@@ -79,11 +71,15 @@ class ClipboardHistoryItemView : public views::View {
     // Install DeleteButton on the contents view.
     void InstallDeleteButton();
 
-    views::View* delete_button() { return delete_button_; }
-    const views::View* delete_button() const { return delete_button_; }
+    void OnHostPseudoFocusUpdated();
+
+    ClipboardHistoryDeleteButton* delete_button() { return delete_button_; }
+    const ClipboardHistoryDeleteButton* delete_button() const {
+      return delete_button_;
+    }
 
    protected:
-    virtual DeleteButton* CreateDeleteButton() = 0;
+    virtual ClipboardHistoryDeleteButton* CreateDeleteButton() = 0;
 
     ClipboardHistoryItemView* container() { return container_; }
 
@@ -96,7 +92,7 @@ class ClipboardHistoryItemView : public views::View {
                            const gfx::Rect& rect) const override;
 
     // Owned by the view hierarchy.
-    DeleteButton* delete_button_ = nullptr;
+    ClipboardHistoryDeleteButton* delete_button_ = nullptr;
 
     // The parent of ContentsView.
     ClipboardHistoryItemView* const container_;
@@ -105,8 +101,8 @@ class ClipboardHistoryItemView : public views::View {
   ClipboardHistoryItemView(const ClipboardHistoryItem* clipboard_history_item,
                            views::MenuItemView* container);
 
-  // Records histograms after the button is pressed.
-  void RecordButtonPressedHistogram() const;
+  // Maybe record histograms after the button is pressed.
+  void MaybeRecordButtonPressedHistogram() const;
 
   // Creates the contents view.
   virtual std::unique_ptr<ContentsView> CreateContentsView() = 0;
@@ -114,11 +110,7 @@ class ClipboardHistoryItemView : public views::View {
   // Returns the name of the accessible node.
   virtual base::string16 GetAccessibleName() const = 0;
 
-  // Returns whether the item view is enabled. The item view is disabled when
-  // it is not allowed to read clipboard data.
-  bool IsItemEnabled() const;
-
-  const ClipboardHistoryItem* clipboard_history_item() {
+  const ClipboardHistoryItem* clipboard_history_item() const {
     return clipboard_history_item_;
   }
 
@@ -152,9 +144,6 @@ class ClipboardHistoryItemView : public views::View {
   // Calculates the action type when `main_button_` is clicked.
   ClipboardHistoryUtil::Action CalculateActionForMainButtonClick() const;
 
-  // Returns whether the highlight background should show.
-  bool ShouldHighlight() const;
-
   bool ShouldShowDeleteButton() const;
 
   // Called when receiving pseudo focus for the first time.
@@ -163,9 +152,6 @@ class ClipboardHistoryItemView : public views::View {
   // Updates `pseudo_focus_` and children visibility.
   void SetPseudoFocus(PseudoFocus new_pseudo_focus);
 
-  // Attempts to handle the gesture event redirected from `main_button_`.
-  void MaybeHandleGestureEventFromMainButton(ui::GestureEvent* event);
-
   // Owned by ClipboardHistoryMenuModelAdapter.
   const ClipboardHistoryItem* const clipboard_history_item_;
 
@@ -173,7 +159,7 @@ class ClipboardHistoryItemView : public views::View {
 
   ContentsView* contents_view_ = nullptr;
 
-  MainButton* main_button_ = nullptr;
+  ClipboardHistoryMainButton* main_button_ = nullptr;
 
   PseudoFocus pseudo_focus_ = PseudoFocus::kEmpty;
 
@@ -184,7 +170,7 @@ class ClipboardHistoryItemView : public views::View {
   // through `main_button_` or the delete button.
   ClipboardHistoryUtil::Action action_ = ClipboardHistoryUtil::Action::kEmpty;
 
-  views::PropertyChangedSubscription subscription_;
+  base::CallbackListSubscription subscription_;
 };
 
 }  // namespace ash

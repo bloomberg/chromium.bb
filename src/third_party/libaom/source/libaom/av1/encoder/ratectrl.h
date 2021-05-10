@@ -254,14 +254,10 @@ typedef struct {
   int rolling_target_bits;
   int rolling_actual_bits;
 
-  int long_rolling_target_bits;
-  int long_rolling_actual_bits;
-
   int rate_error_estimate;
 
   int64_t total_actual_bits;
   int64_t total_target_bits;
-  int64_t total_target_vs_actual;
 
   /*!\endcond */
   /*!
@@ -584,11 +580,6 @@ void av1_get_one_pass_rt_params(struct AV1_COMP *cpi,
  * \return q is returned, and updates are done to \c cpi->rc.
  */
 int av1_encodedframe_overshoot_cbr(struct AV1_COMP *cpi, int *q);
-/*!\cond */
-
-void av1_compute_frame_low_motion(struct AV1_COMP *const cpi);
-
-/*!\endcond */
 
 #ifdef __cplusplus
 }  // extern "C"

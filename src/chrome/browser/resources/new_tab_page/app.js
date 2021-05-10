@@ -4,8 +4,7 @@
 
 import './strings.m.js';
 import './iframe.js';
-import './fakebox.js';
-import './realbox.js';
+import './realbox/realbox.js';
 import './logo.js';
 import './modules/module_wrapper.js';
 import './modules/modules.js'; // Registers module descriptors.
@@ -18,11 +17,12 @@ import {hexColorToSkColor, skColorToRgba} from 'chrome://resources/js/color_util
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
-import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog_types.js';
+import {BackgroundSelection, BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
 import {ModuleDescriptor} from './modules/module_descriptor.js';
 import {ModuleRegistry} from './modules/module_registry.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
@@ -121,6 +121,9 @@ class AppElement extends PolymerElement {
       /** @private */
       showCustomizeDialog_: Boolean,
 
+      /** @private {?string} */
+      selectedCustomizeDialogPage_: String,
+
       /** @private */
       showVoiceSearchOverlay_: Boolean,
 
@@ -160,13 +163,7 @@ class AppElement extends PolymerElement {
             backgroundSelection_)`,
       },
 
-      /** @private */
-      doodleAllowed_: {
-        computed: 'computeDoodleAllowed_(showBackgroundImage_, theme_)',
-        type: Boolean,
-      },
-
-      /** @private {skia.mojom.SkColor} */
+      /** @private {SkColor} */
       backgroundColor_: {
         computed: 'computeBackgroundColor_(showBackgroundImage_, theme_)',
         type: Object,
@@ -185,29 +182,31 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
-      realboxEnabled_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('realboxEnabled'),
-      },
-
-      /** @private */
       realboxShown_: {
         type: Boolean,
         computed: 'computeRealboxShown_(theme_)',
       },
 
       /** @private */
-      modulesEnabled_: {
+      logoEnabled_: {
         type: Boolean,
-        value: () => loadTimeData.getBoolean('modulesEnabled'),
-        reflectToAttribute: true,
+        value: () => loadTimeData.getBoolean('logoEnabled'),
       },
 
       /** @private */
-      modulesVisible_: {
+      shortcutsEnabled_: {
         type: Boolean,
-        reflectToAttribute: true,
+        value: () => loadTimeData.getBoolean('shortcutsEnabled'),
       },
+
+      /** @private */
+      middleSlotPromoEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('middleSlotPromoEnabled'),
+      },
+
+      /** @private */
+      modulesVisibilityDetermined_: Boolean,
 
       /** @private */
       middleSlotPromoLoaded_: Boolean,
@@ -229,11 +228,12 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
-      modulesLoadedAndVisible_: {
+      modulesLoadedAndVisibilityDetermined_: {
         type: Boolean,
-        computed: `computeModulesLoadedAndVisible_(promoAndModulesLoaded_,
-            modulesVisible_)`,
-        observer: 'onModulesLoadedAndVisibleChange_',
+        computed: `computeModulesLoadedAndVisibilityDetermined_(
+          promoAndModulesLoaded_,
+          modulesVisibilityDetermined_)`,
+        observer: 'onModulesLoadedAndVisibilityDeterminedChange_',
       },
 
       /**
@@ -246,22 +246,27 @@ class AppElement extends PolymerElement {
       /** @private {!Array<!ModuleDescriptor>} */
       moduleDescriptors_: Object,
 
-      /**
-       * The <ntp-module-wrapper> element of the last dismissed module.
-       * @type {?Element}
-       * @private
-       */
-      dismissedModuleWrapper_: {
+      /** @private {!Array<string>} */
+      dismissedModules_: {
+        type: Array,
+        value: () => [],
+      },
+
+      /** @private {!{all: boolean, ids: !Array<string>}} */
+      disabledModules_: {
         type: Object,
-        value: null,
+        value: () => ({all: true, ids: []}),
       },
 
       /**
-       * The message shown in the toast when a module is dismissed.
-       * @type {string}
+       * Data about the most recently removed module.
+       * @type {?{message: string, undo: function()}}
        * @private
        */
-      dismissModuleToastMessage_: String,
+      removedModuleData_: {
+        type: Object,
+        value: null,
+      },
     };
   }
 
@@ -277,7 +282,7 @@ class AppElement extends PolymerElement {
     /** @private {?number} */
     this.setThemeListenerId_ = null;
     /** @private {?number} */
-    this.setModulesVisibleListenerId_ = null;
+    this.setDisabledModulesListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
     this.loadOneGoogleBar_();
@@ -302,11 +307,12 @@ class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
-    this.setModulesVisibleListenerId_ =
-        this.callbackRouter_.setModulesVisible.addListener(visible => {
-          this.modulesVisible_ = visible;
+    this.setDisabledModulesListenerId_ =
+        this.callbackRouter_.setDisabledModules.addListener((all, ids) => {
+          this.disabledModules_ = {all, ids};
+          this.modulesVisibilityDetermined_ = true;
         });
-    this.pageHandler_.updateModulesVisible();
+    this.pageHandler_.updateDisabledModules();
     this.eventTracker_.add(window, 'message', (event) => {
       /** @type {!Object} */
       const data = event.data;
@@ -345,6 +351,8 @@ class AppElement extends PolymerElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
+    this.callbackRouter_.removeListener(
+        assert(this.setDisabledModulesListenerId_));
     this.eventTracker_.removeAll();
   }
 
@@ -523,7 +531,8 @@ class AppElement extends PolymerElement {
    * @private
    */
   computePromoAndModulesLoaded_() {
-    return this.middleSlotPromoLoaded_ &&
+    return (!loadTimeData.getBoolean('middleSlotPromoEnabled') ||
+            this.middleSlotPromoLoaded_) &&
         (!loadTimeData.getBoolean('modulesEnabled') || this.modulesLoaded_);
   }
 
@@ -531,8 +540,8 @@ class AppElement extends PolymerElement {
    * @return {boolean}
    * @private
    */
-  computeModulesLoadedAndVisible_() {
-    return this.promoAndModulesLoaded_ && this.modulesVisible_;
+  computeModulesLoadedAndVisibilityDetermined_() {
+    return this.promoAndModulesLoaded_ && this.modulesVisibilityDetermined_;
   }
 
   /** @private */
@@ -541,7 +550,8 @@ class AppElement extends PolymerElement {
       return;
     }
     this.moduleDescriptors_ =
-        await ModuleRegistry.getInstance().initializeModules();
+        await ModuleRegistry.getInstance().initializeModules(
+            loadTimeData.getInteger('modulesLoadTimeout'));
   }
 
   /** @private */
@@ -559,6 +569,8 @@ class AppElement extends PolymerElement {
   /** @private */
   onCustomizeDialogClose_() {
     this.showCustomizeDialog_ = false;
+    // Let customize dialog decide what page to show on next open.
+    this.selectedCustomizeDialogPage_ = null;
   }
 
   /** @private */
@@ -583,12 +595,12 @@ class AppElement extends PolymerElement {
           newTabPage.mojom.VoiceSearchAction.kActivateKeyboard);
     }
     if (ctrlKeyPressed && e.key === 'z') {
-      this.onUndoDismissModuleButtonClick_();
+      this.onUndoRemoveModuleButtonClick_();
     }
   }
 
   /**
-   * @param {skia.mojom.SkColor} skColor
+   * @param {SkColor} skColor
    * @return {string}
    * @private
    */
@@ -627,9 +639,16 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
-  onModulesLoadedAndVisibleChange_() {
-    if (this.modulesLoadedAndVisible_) {
+  onModulesLoadedAndVisibilityDeterminedChange_() {
+    if (this.modulesLoadedAndVisibilityDetermined_ &&
+        loadTimeData.getBoolean('modulesEnabled')) {
       this.pageHandler_.onModulesRendered(BrowserProxy.getInstance().now());
+      this.moduleDescriptors_.forEach(({id}) => {
+        chrome.metricsPrivate.recordBoolean(
+            `NewTabPage.Modules.EnabledOnNTPLoad.${id}`,
+            !this.disabledModules_.all &&
+                !this.disabledModules_.ids.includes(id));
+      });
     }
   }
 
@@ -690,17 +709,7 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  computeDoodleAllowed_() {
-    return loadTimeData.getBoolean('themeModeDoodlesEnabled') ||
-        !this.showBackgroundImage_ && this.theme_ && this.theme_.isDefault &&
-        !this.theme_.isDark;
-  }
-
-  /**
-   * @return {skia.mojom.SkColor}
+   * @return {SkColor}
    * @private
    */
   computeBackgroundColor_() {
@@ -711,7 +720,7 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * @return {skia.mojom.SkColor}
+   * @return {SkColor}
    * @private
    */
   computeLogoColor_() {
@@ -863,19 +872,6 @@ class AppElement extends PolymerElement {
   /** @private */
   onMiddleSlotPromoLoaded_() {
     this.middleSlotPromoLoaded_ = true;
-    // The promo is always shown when modules are enabled since it will not
-    // overlap with other elements.
-    if (this.modulesEnabled_) {
-      return;
-    }
-    const onResize = () => {
-      const promoElement = $$(this, 'ntp-middle-slot-promo');
-      promoElement.hidden =
-          $$(this, '#mostVisited').getBoundingClientRect().bottom >=
-          promoElement.offsetTop;
-    };
-    this.eventTracker_.add(window, 'resize', onResize);
-    onResize();
   }
 
   /** @private */
@@ -884,34 +880,90 @@ class AppElement extends PolymerElement {
   }
 
   /**
-   * @param {!CustomEvent<string>} e Event notifying a module was dismissed.
-   *     Contains the message to show in the toast.
+   * @param {!CustomEvent<{message: string, restoreCallback: function()}>} e
+   *     Event notifying a module was dismissed. Contains the message to show in
+   *     the toast.
    * @private
    */
   onDismissModule_(e) {
-    this.dismissedModuleWrapper_ = /** @type {!Element} */ (e.target);
+    const id = $$(this, '#modules').itemForElement(e.target).id;
+    const restoreCallback = e.detail.restoreCallback;
+    this.removedModuleData_ = {
+      message: e.detail.message,
+      undo: () => {
+        this.splice('dismissedModules_', this.dismissedModules_.indexOf(id), 1);
+        restoreCallback();
+        this.pageHandler_.onRestoreModule(id);
+      },
+    };
+    if (!this.dismissedModules_.includes(id)) {
+      this.push('dismissedModules_', id);
+    }
 
     // Notify the user.
-    this.dismissModuleToastMessage_ = e.detail;
-    $$(this, '#dismissModuleToast').show();
+    $$(this, '#removeModuleToast').show();
     // Notify the backend.
-    this.pageHandler_.onDismissModule(
-        this.dismissedModuleWrapper_.descriptor.id);
+    this.pageHandler_.onDismissModule(id);
+  }
+
+  /**
+   * @param {!CustomEvent<{message: string, restoreCallback: ?function()}>} e
+   *     Event notifying a module was disabled. Contains the message to show in
+   *     the toast.
+   * @private
+   */
+  onDisableModule_(e) {
+    const id = $$(this, '#modules').itemForElement(e.target).id;
+    const restoreCallback = e.detail.restoreCallback;
+    this.removedModuleData_ = {
+      message: e.detail.message,
+      undo: () => {
+        if (restoreCallback) {
+          restoreCallback();
+        }
+        this.pageHandler_.setModuleDisabled(id, false);
+        chrome.metricsPrivate.recordSparseHashable(
+            'NewTabPage.Modules.Enabled', id);
+        chrome.metricsPrivate.recordSparseHashable(
+            'NewTabPage.Modules.Enabled.Toast', id);
+      },
+    };
+
+    this.pageHandler_.setModuleDisabled(id, true);
+    $$(this, '#removeModuleToast').show();
+    chrome.metricsPrivate.recordSparseHashable(
+        'NewTabPage.Modules.Disabled', id);
+    chrome.metricsPrivate.recordSparseHashable(
+        'NewTabPage.Modules.Disabled.ModuleRequest', id);
+  }
+
+  /** @private */
+  onCustomizeModule_() {
+    this.showCustomizeDialog_ = true;
+    this.selectedCustomizeDialogPage_ = CustomizeDialogPage.MODULES;
+  }
+
+  /**
+   * @param {string} id
+   * @return {boolean}
+   * @private
+   */
+  moduleDisabled_(id) {
+    return this.disabledModules_.all || this.dismissedModules_.includes(id) ||
+        this.disabledModules_.ids.includes(id);
   }
 
   /**
    * @private
    */
-  onUndoDismissModuleButtonClick_() {
+  onUndoRemoveModuleButtonClick_() {
     // Restore the module.
-    this.dismissedModuleWrapper_.restore();
-    // Notify the user.
-    $$(this, '#dismissModuleToast').hide();
-    // Notify the backend.
-    this.pageHandler_.onRestoreModule(
-        this.dismissedModuleWrapper_.descriptor.id);
+    this.removedModuleData_.undo();
 
-    this.dismissedModuleWrapper_ = null;
+    // Notify the user.
+    $$(this, '#removeModuleToast').hide();
+
+    this.removedModuleData_ = null;
   }
 
   /**

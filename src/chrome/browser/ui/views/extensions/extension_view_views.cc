@@ -12,13 +12,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/view_type.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -59,7 +59,7 @@ void ExtensionViewViews::VisibilityChanged(View* starting_from,
     // is not part of the View hierarchy and does not know about the change
     // unless we tell it.
     content::RenderWidgetHostView* host_view =
-        host_->render_view_host()->GetWidget()->GetView();
+        host_->main_frame_host()->GetView();
     if (host_view) {
       if (is_visible)
         host_view->Show();
@@ -67,6 +67,28 @@ void ExtensionViewViews::VisibilityChanged(View* starting_from,
         host_view->Hide();
     }
   }
+}
+
+gfx::Size ExtensionViewViews::GetMinimumSize() const {
+  return minimum_size_.value_or(GetPreferredSize());
+}
+
+void ExtensionViewViews::SetMinimumSize(const gfx::Size& minimum_size) {
+  if (minimum_size_ && minimum_size_.value() == minimum_size)
+    return;
+  minimum_size_ = minimum_size;
+  OnPropertyChanged(&minimum_size_,
+                    views::kPropertyEffectsPreferredSizeChanged);
+}
+
+void ExtensionViewViews::SetContainer(
+    ExtensionViewViews::Container* container) {
+  container_ = container;
+  OnPropertyChanged(&container_, views::kPropertyEffectsPreferredSizeChanged);
+}
+
+ExtensionViewViews::Container* ExtensionViewViews::GetContainer() const {
+  return container_;
 }
 
 gfx::NativeView ExtensionViewViews::GetNativeView() {
@@ -86,9 +108,9 @@ void ExtensionViewViews::ResizeDueToAutoResize(
   WebView::ResizeDueToAutoResize(web_contents, new_size);
 }
 
-void ExtensionViewViews::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  WebView::RenderViewCreated(render_view_host);
+void ExtensionViewViews::RenderFrameCreated(
+    content::RenderFrameHost* frame_host) {
+  WebView::RenderFrameCreated(frame_host);
 }
 
 bool ExtensionViewViews::HandleKeyboardEvent(
@@ -114,10 +136,6 @@ gfx::NativeCursor ExtensionViewViews::GetCursor(const ui::MouseEvent& event) {
   return gfx::kNullCursor;
 }
 
-gfx::Size ExtensionViewViews::GetMinimumSize() const {
-  return minimum_size_.value_or(GetPreferredSize());
-}
-
 void ExtensionViewViews::PreferredSizeChanged() {
   View::PreferredSizeChanged();
   if (container_)
@@ -125,6 +143,11 @@ void ExtensionViewViews::PreferredSizeChanged() {
 }
 
 void ExtensionViewViews::OnWebContentsAttached() {
-  host_->CreateRenderViewSoon();
+  host_->CreateRendererSoon();
   SetVisible(false);
 }
+
+BEGIN_METADATA(ExtensionViewViews, views::WebView)
+ADD_PROPERTY_METADATA(gfx::Size, MinimumSize)
+ADD_PROPERTY_METADATA(ExtensionViewViews::Container*, Container)
+END_METADATA

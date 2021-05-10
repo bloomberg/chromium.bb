@@ -158,8 +158,6 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
   const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
 
-  settings.force_preferred_interval_for_video =
-      ::features::IsForcePreferredIntervalForVideoEnabled();
   settings.enable_synchronized_scrolling =
       base::FeatureList::IsEnabled(::features::kSynchronizedScrolling);
   Platform* platform = Platform::Current();
@@ -236,7 +234,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     default_tile_size += 32;
   if (default_tile_size == 384 && std::abs(portrait_width - 1200) < tolerance)
     default_tile_size += 32;
-#elif BUILDFLAG(IS_ASH) || defined(OS_MAC)
+#elif BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
   // Use 512 for high DPI (dsf=2.0f) devices.
   if (initial_device_scale_factor >= 2.0f)
     default_tile_size = 512;
@@ -358,6 +356,14 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
       cmd.HasSwitch(cc::switches::kShowScreenSpaceRects);
   settings.initial_debug_state.highlight_non_lcd_text_layers =
       cmd.HasSwitch(cc::switches::kHighlightNonLCDTextLayers);
+  settings.initial_debug_state.show_web_vital_metrics =
+      base::FeatureList::IsEnabled(
+          ::features::kHudDisplayForPerformanceMetrics) &&
+      !for_child_local_root_frame;
+  settings.initial_debug_state.show_smoothness_metrics =
+      base::FeatureList::IsEnabled(
+          ::features::kHudDisplayForPerformanceMetrics) &&
+      !for_child_local_root_frame;
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
@@ -437,8 +443,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
-    settings.scrollbar_flash_after_any_scroll_update =
-        ui::OverlayScrollbarFlashAfterAnyScrollUpdate();
+    settings.scrollbar_flash_after_any_scroll_update = true;
   }
 
   // If there's over 4GB of RAM, increase the working set size to 256MB for both

@@ -318,7 +318,7 @@ These flags can be used, for example, to enable asserts in a release build:
 ### Build with VMAF support {#build-with-vmaf}
 
 After installing
-[libvmaf.a](https://github.com/Netflix/vmaf/blob/master/resource/doc/libvmaf.md),
+[libvmaf.a](https://github.com/Netflix/vmaf/tree/master/libvmaf),
 you can use it with the encoder:
 
 ~~~

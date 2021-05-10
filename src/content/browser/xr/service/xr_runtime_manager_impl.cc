@@ -211,12 +211,6 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveVrRuntime() {
     return openxr;
 #endif
 
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-  auto* wmr = GetRuntime(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID);
-  if (wmr)
-    return wmr;
-#endif
-
   return nullptr;
 }
 
@@ -229,9 +223,11 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveArRuntime() {
 #endif
 
 #if BUILDFLAG(ENABLE_OPENXR)
-  auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
-  if (openxr && openxr->SupportsArBlendMode())
-    return openxr;
+  if (base::FeatureList::IsEnabled(features::kOpenXrExtendedFeatureSupport)) {
+    auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
+    if (openxr && openxr->SupportsArBlendMode())
+      return openxr;
+  }
 #endif
 
   return nullptr;

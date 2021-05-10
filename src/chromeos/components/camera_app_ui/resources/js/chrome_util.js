@@ -54,7 +54,7 @@ export function assertNotReached(optMessage) {
 
 /**
  * @param {*} value The value to check.
- * @param {function(new: T, ...)} type A user-defined constructor.
+ * @param {function(new: T, ...?)} type A user-defined constructor.
  * @param {string=} optMessage A message to show when this is hit.
  * @return {T}
  * @template T
@@ -84,6 +84,20 @@ export function assertString(value, optMessage) {
     assertNotReached(optMessage || 'Value ' + value + ' is not a string');
   }
   return /** @type {string} */ (value);
+}
+
+/**
+ * @param {*} value The value to check.
+ * @param {string=} optMessage A message to show when this is hit.
+ * @return {number}
+ */
+export function assertNumber(value, optMessage) {
+  // We don't use assert immediately here so that we avoid constructing an error
+  // message if we don't have to.
+  if (typeof value !== 'number') {
+    assertNotReached(optMessage || 'Value ' + value + ' is not a number');
+  }
+  return /** @type {number} */ (value);
 }
 
 /**

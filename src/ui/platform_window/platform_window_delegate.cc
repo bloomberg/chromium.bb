@@ -4,6 +4,7 @@
 
 #include "ui/platform_window/platform_window_delegate.h"
 
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -18,6 +19,10 @@ base::Optional<gfx::Size> PlatformWindowDelegate::GetMinimumSizeForWindow() {
 
 base::Optional<gfx::Size> PlatformWindowDelegate::GetMaximumSizeForWindow() {
   return base::nullopt;
+}
+
+SkPath PlatformWindowDelegate::GetWindowMaskForWindowShapeInPixels() {
+  return SkPath();
 }
 
 }  // namespace ui

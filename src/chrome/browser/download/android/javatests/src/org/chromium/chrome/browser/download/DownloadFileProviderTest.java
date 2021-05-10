@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doReturn;
 
 import android.net.Uri;
 
-import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,10 +20,13 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.download.DownloadDirectoryProvider.SecondaryStorageInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test content URI can be generated correctly by {@link DownloadFileProvider}.
@@ -32,15 +35,18 @@ import java.io.File;
 public class DownloadFileProviderTest {
     private static final String PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH =
             "/storage/emulated/1234/Download";
-    private static final String EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH =
+
+    private static final String EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH_LEGACY =
             "/storage/724E-59EE/Android/data/com.android.chrome/files/Download";
 
-    private static final File[] EXTERNAL_DIRECTORY_PATHS =
-            new File[] {new File("/storage/emulated/0/chrome_package"),
-                    new File(EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH)};
+    private static final String EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH =
+            "/storage/1AEF-1A1E/Download";
 
     private static final String PRIMARY_STORAGE_DOWNLOAD_PATH =
             PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH + "/app-wise-release.apk";
+
+    private static final String EXTERNAL_SD_CARD_DOWNLOAD_PATH_LEGACY =
+            EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH_LEGACY + "/app-wise-release.apk";
 
     private static final String EXTERNAL_SD_CARD_DOWNLOAD_PATH =
             EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH + "/app-wise-release.apk";
@@ -51,13 +57,27 @@ public class DownloadFileProviderTest {
     @Mock
     private DownloadDirectoryProvider.Delegate mMockDirectoryDelegate;
 
+    private SecondaryStorageInfo mSecondaryStorageInfo;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(new File(PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH))
                 .when(mMockDirectoryDelegate)
                 .getPrimaryDownloadDirectory();
-        doReturn(EXTERNAL_DIRECTORY_PATHS).when(mMockDirectoryDelegate).getExternalFilesDirs();
+        setUpSecondaryStorageInfo(EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH,
+                EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH_LEGACY);
+    }
+
+    private void setUpSecondaryStorageInfo(String directory, String directoryPreR) {
+        List<File> directories = new ArrayList<>();
+        if (directory != null) directories.add(new File(directory));
+        List<File> directoriesPreR = new ArrayList<>();
+        if (directoryPreR != null) directoriesPreR.add(new File(directoryPreR));
+        mSecondaryStorageInfo = new SecondaryStorageInfo(directories, directoriesPreR);
+        doReturn(mSecondaryStorageInfo)
+                .when(mMockDirectoryDelegate)
+                .getSecondaryStorageDownloadDirectories();
     }
 
     /**
@@ -81,7 +101,7 @@ public class DownloadFileProviderTest {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @Feature({"Download"})
     public void testGenerateContentUri() {
         String packageName = ContextUtils.getApplicationContext().getPackageName();
@@ -90,13 +110,23 @@ public class DownloadFileProviderTest {
                         + ".DownloadFileProvider/download?file=app-wise-release.apk"));
         verifyContentUri("", Uri.EMPTY);
         verifyContentUri(PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH, Uri.EMPTY);
-        verifyContentUri(EXTERNAL_SD_CARD_DOWNLOAD_PATH,
+        verifyContentUri(EXTERNAL_SD_CARD_DOWNLOAD_PATH_LEGACY,
                 Uri.parse("content://" + packageName
                         + ".DownloadFileProvider/download_external?file=app-wise-release.apk"));
+        verifyContentUri(EXTERNAL_SD_CARD_DOWNLOAD_PATH,
+                Uri.parse("content://" + packageName
+                        + ".DownloadFileProvider/external_volume?file=app-wise-release.apk"));
+
+        // Simulate download directories pre R.
+        setUpSecondaryStorageInfo(null, EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH_LEGACY);
+        verifyContentUri(EXTERNAL_SD_CARD_DOWNLOAD_PATH_LEGACY,
+                Uri.parse("content://" + packageName
+                        + ".DownloadFileProvider/download_external?file=app-wise-release.apk"));
+        verifyContentUri(EXTERNAL_SD_CARD_DOWNLOAD_PATH, Uri.EMPTY);
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @Feature({"Download"})
     public void testParseContentUri() {
         String packageName = ContextUtils.getApplicationContext().getPackageName();
@@ -108,10 +138,24 @@ public class DownloadFileProviderTest {
                 Uri.parse("content://" + packageName
                         + ".DownloadFileProvider/download?file=../../../app-wise-release.apk"),
                 null);
-
         verifyParseContentUri(
                 Uri.parse("content://" + packageName
                         + ".DownloadFileProvider/download_external?file=app-wise-release.apk"),
+                EXTERNAL_SD_CARD_DOWNLOAD_PATH_LEGACY);
+        verifyParseContentUri(
+                Uri.parse("content://" + packageName
+                        + ".DownloadFileProvider/external_volume?file=app-wise-release.apk"),
                 EXTERNAL_SD_CARD_DOWNLOAD_PATH);
+
+        // Simulate download directories pre R.
+        setUpSecondaryStorageInfo(null, EXTERNAL_SD_CARD_DOWNLOAD_DIRECTORY_PATH_LEGACY);
+        verifyParseContentUri(
+                Uri.parse("content://" + packageName
+                        + ".DownloadFileProvider/download_external?file=app-wise-release.apk"),
+                EXTERNAL_SD_CARD_DOWNLOAD_PATH_LEGACY);
+        verifyParseContentUri(
+                Uri.parse("content://" + packageName
+                        + ".DownloadFileProvider/external_volume?file=app-wise-release.apk"),
+                null);
     }
 }

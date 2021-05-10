@@ -7,6 +7,7 @@
 
 #include <bitset>
 
+#include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -35,28 +36,35 @@ namespace internal {
 // IsManagedByPartitionAllocNormalBuckets use the bitmaps to judge whether a
 // given address is managed by the direct map or normal buckets.
 class BASE_EXPORT AddressPoolManager {
+  static constexpr uint64_t kGiB = 1024 * 1024 * 1024ull;
+
  public:
+  static constexpr uint64_t kNormalBucketMaxSize =
+#if defined(PA_HAS_64_BITS_POINTERS)
+      16 * kGiB;
+#else
+      4 * kGiB;
+#endif
+
   static AddressPoolManager* GetInstance();
 
 #if defined(PA_HAS_64_BITS_POINTERS)
   pool_handle Add(uintptr_t address, size_t length);
   void Remove(pool_handle handle);
 #endif
-  char* Alloc(pool_handle handle, void* requested_address, size_t length);
-  void Free(pool_handle handle, void* ptr, size_t length);
+  // Reserves address space from GigaCage.
+  char* Reserve(pool_handle handle, void* requested_address, size_t length);
+  // Frees address space back to GigaCage and decommits underlying system pages.
+  void UnreserveAndDecommit(pool_handle handle, void* ptr, size_t length);
   void ResetForTesting();
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
   static bool IsManagedByDirectMapPool(const void* address) {
-    uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
-    return TS_UNCHECKED_READ(directmap_bits_)
-        .test(address_as_uintptr / PageAllocationGranularity());
+    return AddressPoolManagerBitmap::IsManagedByDirectMapPool(address);
   }
 
   static bool IsManagedByNormalBucketPool(const void* address) {
-    uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
-    return TS_UNCHECKED_READ(normal_bucket_bits_)
-        .test(address_as_uintptr >> kSuperPageShift);
+    return AddressPoolManagerBitmap::IsManagedByNormalBucketPool(address);
   }
 #endif
 
@@ -77,12 +85,13 @@ class BASE_EXPORT AddressPoolManager {
     uintptr_t FindChunk(size_t size);
     void FreeChunk(uintptr_t address, size_t size);
 
+    bool TryReserveChunk(uintptr_t address, size_t size);
+
    private:
     // The bitset stores the allocation state of the address pool. 1 bit per
     // super-page: 1 = allocated, 0 = free.
-    static constexpr size_t kGiB = 1024 * 1024 * 1024;
-    static constexpr size_t kMaxSupportedSize = 16 * kGiB;
-    static constexpr size_t kMaxBits = kMaxSupportedSize / kSuperPageSize;
+    static constexpr size_t kMaxBits = kNormalBucketMaxSize / kSuperPageSize;
+
     base::Lock lock_;
     std::bitset<kMaxBits> alloc_bitset_ GUARDED_BY(lock_);
     // An index of a bit in the bitset before which we know for sure there all
@@ -98,28 +107,18 @@ class BASE_EXPORT AddressPoolManager {
 #endif
   };
 
-  ALWAYS_INLINE Pool* GetPool(pool_handle handle);
+  ALWAYS_INLINE Pool* GetPool(pool_handle handle) {
+    PA_DCHECK(0 < handle && handle <= kNumPools);
+    return &pools_[handle - 1];
+  }
 
   static constexpr size_t kNumPools = 2;
   Pool pools_[kNumPools];
 
 #else   // defined(PA_HAS_64_BITS_POINTERS)
 
-  static constexpr size_t kGiB = 1024 * 1024 * 1024;
-  static constexpr uint64_t kAddressSpaceSize = 4ULL * kGiB;
-  static constexpr size_t kNormalBucketBits =
-      kAddressSpaceSize / kSuperPageSize;
-  static constexpr size_t kDirectMapBits =
-      kAddressSpaceSize / PageAllocationGranularity();
-
   void MarkUsed(pool_handle handle, const char* address, size_t size);
   void MarkUnused(pool_handle handle, uintptr_t address, size_t size);
-
-  static Lock& GetLock();
-
-  static std::bitset<kDirectMapBits> directmap_bits_ GUARDED_BY(GetLock());
-  static std::bitset<kNormalBucketBits> normal_bucket_bits_
-      GUARDED_BY(GetLock());
 
   static constexpr pool_handle kDirectMapHandle = 1;
   static constexpr pool_handle kNormalBucketHandle = 2;
@@ -142,16 +141,6 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
 #endif
 
 }  // namespace internal
-
-#if !defined(PA_HAS_64_BITS_POINTERS)
-ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
-  return internal::AddressPoolManager::IsManagedByDirectMapPool(address);
-}
-
-ALWAYS_INLINE bool IsManagedByPartitionAllocNormalBuckets(const void* address) {
-  return internal::AddressPoolManager::IsManagedByNormalBucketPool(address);
-}
-#endif
 
 }  // namespace base
 

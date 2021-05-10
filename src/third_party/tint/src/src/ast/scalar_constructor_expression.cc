@@ -14,38 +14,41 @@
 
 #include "src/ast/scalar_constructor_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ScalarConstructorExpression);
+
 namespace tint {
 namespace ast {
 
-ScalarConstructorExpression::ScalarConstructorExpression()
-    : ConstructorExpression() {}
-
-ScalarConstructorExpression::ScalarConstructorExpression(
-    std::unique_ptr<Literal> literal)
-    : ConstructorExpression(), literal_(std::move(literal)) {}
-
-ScalarConstructorExpression::ScalarConstructorExpression(
-    const Source& source,
-    std::unique_ptr<Literal> litearl)
-    : ConstructorExpression(source), literal_(std::move(litearl)) {}
+ScalarConstructorExpression::ScalarConstructorExpression(const Source& source,
+                                                         Literal* litearl)
+    : Base(source), literal_(litearl) {}
 
 ScalarConstructorExpression::ScalarConstructorExpression(
     ScalarConstructorExpression&&) = default;
 
 ScalarConstructorExpression::~ScalarConstructorExpression() = default;
 
-bool ScalarConstructorExpression::IsScalarConstructor() const {
-  return true;
+ScalarConstructorExpression* ScalarConstructorExpression::Clone(
+    CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* lit = ctx->Clone(literal());
+  return ctx->dst->create<ScalarConstructorExpression>(src, lit);
 }
 
 bool ScalarConstructorExpression::IsValid() const {
   return literal_ != nullptr;
 }
 
-void ScalarConstructorExpression::to_str(std::ostream& out,
+void ScalarConstructorExpression::to_str(const semantic::Info& sem,
+                                         std::ostream& out,
                                          size_t indent) const {
   make_indent(out, indent);
-  out << "ScalarConstructor{" << literal_->to_str() << "}" << std::endl;
+  out << "ScalarConstructor[" << result_type_str(sem) << "]{"
+      << literal_->to_str(sem) << "}" << std::endl;
 }
 
 }  // namespace ast

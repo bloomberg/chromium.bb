@@ -1,3 +1,0 @@
-[submodule "sdk/devtools"]
-	path = sdk/devtools
-	url = https://github.com/KhronosGroup/WebGLDeveloperTools.git

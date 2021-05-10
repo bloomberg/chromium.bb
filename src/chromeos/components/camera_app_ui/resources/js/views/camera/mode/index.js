@@ -17,27 +17,29 @@ import * as dom from '../../../dom.js';
 import {DeviceOperator} from '../../../mojo/device_operator.js';
 import * as state from '../../../state.js';
 import {
-  Facing,
+  Facing,  // eslint-disable-line no-unused-vars
   Mode,
   Resolution,  // eslint-disable-line no-unused-vars
 } from '../../../type.js';
 import * as util from '../../../util.js';
 
-import {ModeBase} from './mode_base.js';  // eslint-disable-line no-unused-vars
 import {
-  Photo,
-  PhotoHandler,
-  PhotoResult,
+  ModeBase,     // eslint-disable-line no-unused-vars
+  ModeFactory,  // eslint-disable-line no-unused-vars
+} from './mode_base.js';
+import {
+  PhotoFactory,
+  PhotoHandler,  // eslint-disable-line no-unused-vars
 } from './photo.js';
-import {Portrait} from './portrait.js';
-import {Square} from './square.js';
+import {PortraitFactory} from './portrait.js';
+import {SquareFactory} from './square.js';
 import {
-  Video,
-  VideoHandler,
-  VideoResult,
+  VideoFactory,
+  VideoHandler,  // eslint-disable-line no-unused-vars
 } from './video.js';
 
-export {PhotoHandler, PhotoResult, Video, VideoHandler, VideoResult};
+export {PhotoHandler, PhotoResult} from './photo.js';
+export {setAvc1Parameters, Video, VideoHandler, VideoResult} from './video.js';
 
 /**
  * Callback to trigger mode switching.
@@ -53,13 +55,6 @@ export let DoSwitchMode;
  * @interface
  */
 class ModeConfig {
-  /**
-   * Factory function to create capture object for this mode.
-   * @return {!ModeBase}
-   * @abstract
-   */
-  captureFactory() {}
-
   /**
    * @param {?string} deviceId
    * @return {!Promise<boolean>} Resolves to boolean indicating whether the mode
@@ -79,6 +74,13 @@ class ModeConfig {
   /* eslint-disable getter-return */
 
   /**
+   * Gets factory to create capture object for this mode.
+   * @return {!ModeFactory}
+   * @abstract
+   */
+  get captureFactory() {}
+
+  /**
    * HALv3 constraints preferrer for this mode.
    * @return {!ConstraintsPreferrer}
    * @abstract
@@ -91,13 +93,6 @@ class ModeConfig {
    * @abstract
    */
   get nextMode() {}
-
-  /**
-   * Capture intent of this mode.
-   * @return {!cros.mojom.CaptureIntent}
-   * @abstract
-   */
-  get captureIntent() {}
 
   /* eslint-enable getter-return */
 }
@@ -132,30 +127,10 @@ export class Modes {
     this.current = null;
 
     /**
-     * Stream of current mode.
-     * @type {?MediaStream}
-     * @private
-     */
-    this.stream_ = null;
-
-    /**
-     * Camera facing of current mode.
-     * @type {!Facing}
-     * @private
-     */
-    this.facing_ = Facing.UNKNOWN;
-
-    /**
      * @type {!HTMLElement}
      * @private
      */
     this.modesGroup_ = dom.get('#modes-group', HTMLElement);
-
-    /**
-     * @type {?Resolution}
-     * @private
-     */
-    this.captureResolution_ = null;
 
     /**
      * Returns a set of available constraints for HALv1 device.
@@ -199,39 +174,28 @@ export class Modes {
      */
     this.allModes_ = {
       [Mode.VIDEO]: {
-        captureFactory: () => new Video(
-            assertInstanceof(this.stream_, MediaStream), this.facing_,
-            videoHandler),
+        captureFactory: new VideoFactory(videoHandler),
         isSupported: async () => true,
         constraintsPreferrer: videoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, true),
         nextMode: Mode.PHOTO,
-        captureIntent: cros.mojom.CaptureIntent.VIDEO_RECORD,
       },
       [Mode.PHOTO]: {
-        captureFactory: () => new Photo(
-            assertInstanceof(this.stream_, MediaStream), this.facing_,
-            this.captureResolution_, photoHandler),
+        captureFactory: new PhotoFactory(photoHandler),
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
         nextMode: Mode.SQUARE,
-        captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
       [Mode.SQUARE]: {
-        captureFactory: () => new Square(
-            assertInstanceof(this.stream_, MediaStream), this.facing_,
-            this.captureResolution_, photoHandler),
+        captureFactory: new SquareFactory(photoHandler),
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
         nextMode: Mode.PHOTO,
-        captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
       [Mode.PORTRAIT]: {
-        captureFactory: () => new Portrait(
-            assertInstanceof(this.stream_, MediaStream), this.facing_,
-            this.captureResolution_, photoHandler),
+        captureFactory: new PortraitFactory(photoHandler),
         isSupported: async (deviceId) => {
           if (deviceId === null) {
             return false;
@@ -245,7 +209,6 @@ export class Modes {
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
         nextMode: Mode.PHOTO,
-        captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
     };
 
@@ -269,7 +232,9 @@ export class Modes {
 
     [state.State.EXPERT, state.State.SAVE_METADATA].forEach(
         (/** !state.State */ s) => {
-          state.addObserver(s, this.updateSaveMetadata_.bind(this));
+          state.addObserver(s, () => {
+            this.updateSaveMetadata_();
+          });
         });
 
     // Set default mode when app started.
@@ -295,16 +260,11 @@ export class Modes {
         dom.get(`.mode-item>input[data-mode=${mode}]`, HTMLInputElement);
     element.checked = true;
     const wrapper = assertInstanceof(element.parentElement, HTMLDivElement);
-    let scrollTop = wrapper.offsetTop - this.modesGroup_.offsetHeight / 2 +
-        wrapper.offsetHeight / 2;
-    // Make photo mode scroll slightly upper so that the third mode item falls
-    // in blur area: crbug.com/988869
-    if (mode === Mode.PHOTO) {
-      scrollTop -= 16;
-    }
+    const scrollLeft = wrapper.offsetLeft -
+        (this.modesGroup_.offsetWidth - wrapper.offsetWidth) / 2;
     this.modesGroup_.scrollTo({
-      left: 0,
-      top: scrollTop,
+      left: scrollLeft,
+      top: 0,
       behavior: 'smooth',
     });
   }
@@ -352,12 +312,12 @@ export class Modes {
   }
 
   /**
-   * Gets capture intent for the given mode.
+   * Gets factory to create mode capture object.
    * @param {!Mode} mode
-   * @return {!cros.mojom.CaptureIntent} Capture intent for the given mode.
+   * @return {!ModeFactory}
    */
-  getCaptureIntent(mode) {
-    return this.allModes_[mode].captureIntent;
+  getModeFactory(mode) {
+    return this.allModes_[mode].captureFactory;
   }
 
   /**
@@ -384,20 +344,32 @@ export class Modes {
    */
   async updateModeSelectionUI(deviceId) {
     const supportedModes = await this.getSupportedModes(deviceId);
-    dom.getAll('div.mode-item', HTMLDivElement).forEach((element) => {
-      const radio = dom.getFrom(element, 'input[type=radio]', HTMLInputElement);
-      element.classList.toggle(
-          'hide',
-          !supportedModes.includes(
-              /** @type {!Mode} */ (radio.dataset['mode'])));
+    const items = dom.getAll('div.mode-item', HTMLDivElement);
+    let first = null;
+    let last = null;
+    items.forEach((el) => {
+      const radio = dom.getFrom(el, 'input[type=radio]', HTMLInputElement);
+      const supported =
+          supportedModes.includes(/** @type {!Mode} */ (radio.dataset['mode']));
+      el.classList.toggle('hide', !supported);
+      if (supported) {
+        if (first === null) {
+          first = el;
+        }
+        last = el;
+      }
     });
-    this.modesGroup_.classList.toggle('scrollable', supportedModes.length > 3);
-    this.modesGroup_.classList.remove('hide');
+    items.forEach((el) => {
+      el.classList.toggle('first', el === first);
+      el.classList.toggle('last', el === last);
+    });
   }
 
   /**
    * Creates and updates new current mode object.
    * @param {!Mode} mode Classname of mode to be updated.
+   * @param {!ModeFactory} factory The factory ready for producing mode capture
+   *     object.
    * @param {!MediaStream} stream Stream of the new switching mode.
    * @param {!Facing} facing Camera facing of the current mode.
    * @param {?string} deviceId Device id of currently working video device.
@@ -405,18 +377,16 @@ export class Modes {
    *     height.
    * @return {!Promise}
    */
-  async updateMode(mode, stream, facing, deviceId, captureResolution) {
+  async updateMode(mode, factory, stream, facing, deviceId, captureResolution) {
     if (this.current !== null) {
       await this.current.stopCapture();
+      await this.disableSaveMetadata_();
     }
     this.updateModeUI_(mode);
-    this.stream_ = stream;
-    this.facing_ = facing;
-    this.captureResolution_ = captureResolution;
-    this.current = this.allModes_[mode].captureFactory();
-    if (deviceId && this.captureResolution_) {
+    this.current = factory.produce();
+    if (deviceId && captureResolution) {
       this.allModes_[mode].constraintsPreferrer.updateValues(
-          deviceId, stream, facing, this.captureResolution_);
+          deviceId, stream, facing, captureResolution);
     }
     await this.updateSaveMetadata_();
   }

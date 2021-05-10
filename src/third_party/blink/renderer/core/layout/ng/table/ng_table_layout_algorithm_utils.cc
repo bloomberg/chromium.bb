@@ -24,6 +24,55 @@ namespace blink {
 
 namespace {
 
+// Mergeable columns cannot be distributed to.
+// Make at least one spanned column is distributable.
+void EnsureDistributableColumnExists(
+    wtf_size_t start_column_index,
+    wtf_size_t span,
+    NGTableTypes::Columns* column_constraints) {
+  if (span == 0)
+    return;
+  DCHECK_LT(start_column_index, column_constraints->data.size());
+  wtf_size_t effective_span =
+      std::min(span, column_constraints->data.size() - start_column_index);
+  if (effective_span == 0)
+    return;
+  NGTableTypes::Column* start_column =
+      &column_constraints->data[start_column_index];
+  NGTableTypes::Column* end_column = start_column + effective_span;
+
+  NGTableTypes::Column* first_mergeable_column = nullptr;
+  for (NGTableTypes::Column* column = start_column; column != end_column;
+       ++column) {
+    if (!column->is_collapsed) {
+      if (!column->is_mergeable) {
+        // Found non-collapsed, non mergeable column, nothing to do.
+        return;
+      } else if (!first_mergeable_column) {
+        // Found first non-collapsed, mergeable column.
+        first_mergeable_column = column;
+      }
+    }
+  }
+  // The interesting problem being solved here is interaction between
+  // collapsed and mergeable columns.
+  // All columns that are created by colspanned cell are mergeable by
+  // default. Without collapsing, the first column would always be
+  // marked as !mergeable.
+  // What to do if the first column collapses? If that was the only
+  // non-mergeable column, the entire cell would merge into first column,
+  // and collapse.
+  // To prevent "whole cell hidden if 1st cell is collapsed",
+  // we try to make first non-collapsed column mergeable.
+  // If all columns collapse, first cell is marked as meargable.
+  if (first_mergeable_column) {
+    // Some columns were not collapsed, mark first as mergeable.
+    first_mergeable_column->is_mergeable = false;
+  } else {
+    start_column->is_mergeable = false;
+  }
+}
+
 // Applies cell/wide cell constraints to columns.
 // Guarantees columns min/max widths have non-empty values.
 void ApplyCellConstraintsToColumnConstraints(
@@ -32,7 +81,37 @@ void ApplyCellConstraintsToColumnConstraints(
     bool is_fixed_layout,
     NGTableTypes::ColspanCells* colspan_cell_constraints,
     NGTableTypes::Columns* column_constraints) {
-  column_constraints->data.resize(cell_constraints.size());
+  // Satisfy prerequisites for cell merging:
+
+  if (column_constraints->data.size() < cell_constraints.size()) {
+    // Column constraint must exist for each cell.
+    NGTableTypes::Column default_column;
+    default_column.is_table_fixed = is_fixed_layout;
+    default_column.is_mergeable = !is_fixed_layout;
+    wtf_size_t column_count =
+        cell_constraints.size() - column_constraints->data.size();
+    // Must loop because WTF::Vector does not support resize with default value.
+    for (wtf_size_t i = 0; i < column_count; ++i)
+      column_constraints->data.push_back(default_column);
+    DCHECK_EQ(column_constraints->data.size(), cell_constraints.size());
+
+  } else if (column_constraints->data.size() > cell_constraints.size()) {
+    // Trim mergeable columns off the end.
+    wtf_size_t last_non_merged_column = column_constraints->data.size() - 1;
+    while (last_non_merged_column + 1 > cell_constraints.size() &&
+           column_constraints->data[last_non_merged_column].is_mergeable) {
+      --last_non_merged_column;
+    }
+    column_constraints->data.resize(last_non_merged_column + 1);
+    DCHECK_GE(column_constraints->data.size(), cell_constraints.size());
+  }
+  // Make sure there exists a non-mergeable column for each colspanned cell.
+  for (const NGTableTypes::ColspanCell& colspan_cell :
+       *colspan_cell_constraints) {
+    EnsureDistributableColumnExists(colspan_cell.start_column,
+                                    colspan_cell.span, column_constraints);
+  }
+
   // Distribute cell constraints to column constraints.
   for (wtf_size_t i = 0; i < cell_constraints.size(); ++i) {
     column_constraints->data[i].Encompass(cell_constraints[i]);
@@ -52,20 +131,29 @@ void ApplyCellConstraintsToColumnConstraints(
       *colspan_cell_constraints, inline_border_spacing, is_fixed_layout,
       column_constraints);
 
-  // Clamp column percentages. Standard: "100% minus the sum of the intrinsic
-  // percentage width of all prior columns in the table."
+  // Column total percentage inline-size is clamped to 100%.
+  // Auto tables: max(0, 100% minus the sum of percentages of all
+  //   prior columns in the table)
+  // Fixed tables: scale all percentage columns so that total percentage
+  //   is 100%.
   float total_percentage = 0;
   for (NGTableTypes::Column& column : column_constraints->data) {
     if (column.percent) {
-      if (*column.percent + total_percentage > 100.0) {
+      if (!is_fixed_layout && (*column.percent + total_percentage > 100.0))
         column.percent = 100 - total_percentage;
-      }
       total_percentage += *column.percent;
     }
     // A column may have no min/max inline-sizes if there are no cells in this
     // column. E.g. a cell has a large colspan which no other cell belongs to.
     column.min_inline_size = column.min_inline_size.value_or(LayoutUnit());
     column.max_inline_size = column.max_inline_size.value_or(LayoutUnit());
+  }
+
+  if (is_fixed_layout && total_percentage > 100.0) {
+    for (NGTableTypes::Column& column : column_constraints->data) {
+      if (column.percent)
+        column.percent = *column.percent * 100 / total_percentage;
+    }
   }
 }
 
@@ -93,6 +181,7 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
                                        wtf_size_t start_column_index,
                                        const NGBoxStrut& cell_borders) {
     const wtf_size_t start_column = start_column_index;
+    DCHECK_LT(start_column, column_locations.size());
     const wtf_size_t end_column =
         std::min(start_column + cell.TableCellColspan() - 1,
                  column_locations.size() - 1);
@@ -243,10 +332,12 @@ class ColumnConstraintsBuilder {
                 wtf_size_t span) {
     // COL creates SPAN constraints. Its width is col css width, or enclosing
     // colgroup css width.
-    NGTableTypes::Column col_constraint = NGTableTypes::CreateColumn(
-        column.Style(), !is_fixed_layout_ && colgroup_constraint_
-                            ? colgroup_constraint_->max_inline_size
-                            : base::nullopt);
+    NGTableTypes::Column col_constraint =
+        NGTableTypes::CreateColumn(column.Style(),
+                                   !is_fixed_layout_ && colgroup_constraint_
+                                       ? colgroup_constraint_->max_inline_size
+                                       : base::nullopt,
+                                   is_fixed_layout_);
     for (wtf_size_t i = 0; i < span; ++i)
       column_constraints_->data.push_back(col_constraint);
     column.GetLayoutBox()->ClearNeedsLayout();
@@ -254,8 +345,8 @@ class ColumnConstraintsBuilder {
 
   void EnterColgroup(const NGLayoutInputNode& colgroup,
                      wtf_size_t start_column_index) {
-    colgroup_constraint_ =
-        NGTableTypes::CreateColumn(colgroup.Style(), base::nullopt);
+    colgroup_constraint_ = NGTableTypes::CreateColumn(
+        colgroup.Style(), base::nullopt, is_fixed_layout_);
   }
 
   void LeaveColgroup(const NGLayoutInputNode& colgroup,
@@ -387,7 +478,6 @@ NGConstraintSpace NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
     builder.SetOrthogonalFallbackInlineSize(
         table_writing_direction.IsHorizontal() ? icb_size.height
                                                : icb_size.width);
-    builder.SetIsShrinkToFit(cell.Style().LogicalWidth().IsAuto());
   }
 
   builder.SetAvailableSize(cell_size);
@@ -411,7 +501,6 @@ NGConstraintSpace NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
   builder.SetIsTableCellWithCollapsedBorders(has_collapsed_borders);
   builder.SetHideTableCellIfEmpty(
       !has_collapsed_borders && cell_style.EmptyCells() == EEmptyCells::kHide);
-  builder.SetNeedsBaseline(true);
   builder.SetCacheSlot(cache_slot);
 
   return builder.ToConstraintSpace();
@@ -464,6 +553,7 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
     const NGTableBorders& table_borders,
     const LayoutUnit block_border_spacing,
     wtf_size_t section_index,
+    bool treat_section_as_tbody,
     NGTableTypes::Sections* sections,
     NGTableTypes::Rows* rows,
     NGTableTypes::CellBlockConstraints* cell_block_constraints) {
@@ -527,8 +617,9 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
       section_block_size = section_fixed_block_size;
     }
   }
-  sections->push_back(NGTableTypes::CreateSection(
-      section, start_row, current_row - start_row, section_block_size));
+  sections->push_back(
+      NGTableTypes::CreateSection(section, start_row, current_row - start_row,
+                                  section_block_size, treat_section_as_tbody));
 }
 
 void NGColspanCellTabulator::StartRow() {
@@ -544,6 +635,11 @@ void NGColspanCellTabulator::EndRow() {
     else
       ++i;
   }
+  std::sort(colspanned_cells_.begin(), colspanned_cells_.end(),
+            [](const NGColspanCellTabulator::Cell& a,
+               const NGColspanCellTabulator::Cell& b) {
+              return a.column_start < b.column_start;
+            });
 }
 
 // Advance current column to position not occupied by colspanned cells.
@@ -570,7 +666,8 @@ void NGRowBaselineTabulator::ProcessCell(
     const bool is_baseline_aligned,
     const bool is_parallel,
     const bool descendant_depends_on_percentage_block_size) {
-  if (is_parallel && is_baseline_aligned) {
+  if (is_parallel && is_baseline_aligned &&
+      fragment.HasDescendantsForTablePart()) {
     max_cell_baseline_depends_on_percentage_block_descendant_ |=
         descendant_depends_on_percentage_block_size;
     const LayoutUnit cell_baseline = fragment.FirstBaselineOrSynthesize();

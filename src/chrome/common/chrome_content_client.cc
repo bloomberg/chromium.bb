@@ -28,6 +28,7 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -79,7 +80,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
-#include "flapper_version.h"  // nogncheck  In SHARED_INTERMEDIATE_DIR.
 #include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
 
@@ -95,9 +95,9 @@
 // component updated CDM on all desktop platforms and remove this.
 // This file is In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // nogncheck
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/common/media/component_widevine_cdm_hint_file_linux.h"
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_WIDEVINE) && (defined(OS_LINUX) ||
         // defined(OS_CHROMEOS))
 
@@ -107,6 +107,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/common/media/chrome_media_drm_bridge_client.h"
+#include "components/embedder_support/android/common/url_constants.h"
 #endif
 
 namespace {
@@ -198,7 +199,7 @@ std::unique_ptr<content::CdmInfo> CreateWidevineCdmInfo(
       false);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // On desktop Linux, given |cdm_base_path| that points to a folder containing
 // the Widevine CDM and associated files, read the manifest included in that
 // directory and create a CdmInfo. If that is successful, return the CdmInfo. If
@@ -222,7 +223,7 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoFromWidevineDirectory(
   return CreateWidevineCdmInfo(version, cdm_library_path,
                                std::move(capability));
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // (BUILDFLAG(BUNDLE_WIDEVINE_CDM) ||
         // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)) && (defined(OS_LINUX) ||
         // defined(OS_CHROMEOS))
@@ -233,7 +234,7 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoFromWidevineDirectory(
 // sandbox. On Windows and Mac, the bundled CDM is handled by the component
 // updater.
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
     const base::FilePath& install_dir) {
   // On ChromeOS the Widevine CDM library is in the component directory and
@@ -269,7 +270,7 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
   return CreateWidevineCdmInfo(base::Version(WIDEVINE_CDM_VERSION_STRING),
                                cdm_library_path, std::move(capability));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // This code checks to see if the Widevine CDM was bundled with Chrome. If one
 // can be found and looks valid, it returns the CdmInfo for the CDM. Otherwise
@@ -283,7 +284,7 @@ content::CdmInfo* GetBundledWidevine() {
         CHECK(base::PathService::Get(chrome::DIR_BUNDLED_WIDEVINE_CDM,
                                      &install_dir));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
         // On ChromeOS the Widevine CDM library is in the component directory
         // (returned above) and does not have a manifest.
         // TODO(crbug.com/971433): Move Widevine CDM to a separate folder in
@@ -292,7 +293,7 @@ content::CdmInfo* GetBundledWidevine() {
 #else
         // On desktop Linux the MANIFEST is bundled with the CDM.
         return CreateCdmInfoFromWidevineDirectory(install_dir);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       }());
   return s_cdm_info->get();
 }
@@ -503,12 +504,14 @@ void ChromeContentClient::AddContentDecryptionModules(
 // Example standard schemes: https://, chrome-extension://, chrome://, file://
 // Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
-    extensions::kExtensionScheme, chrome::kChromeNativeScheme,
-    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
+    extensions::kExtensionScheme,
+    chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,
+    dom_distiller::kDomDistillerScheme,
 #if defined(OS_ANDROID)
-    chrome::kAndroidAppScheme,
+    embedder_support::kAndroidAppScheme,
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     chrome::kCrosScheme,
 #endif
 };
@@ -518,7 +521,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
     schemes->standard_schemes.push_back(standard_scheme);
 
 #if defined(OS_ANDROID)
-  schemes->referrer_schemes.push_back(chrome::kAndroidAppScheme);
+  schemes->referrer_schemes.push_back(embedder_support::kAndroidAppScheme);
 #endif
 
   schemes->savable_schemes.push_back(extensions::kExtensionScheme);
@@ -552,7 +555,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->csp_bypassing_schemes.push_back(extensions::kExtensionScheme);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   schemes->local_schemes.push_back(content::kExternalFileScheme);
 #endif
 
@@ -588,6 +591,15 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
+
+#if defined(OS_MAC)
+base::FilePath ChromeContentClient::GetChildProcessPath(
+    int child_flags,
+    const base::FilePath& helpers_path) {
+  NOTREACHED() << "Unsupported child process flags!";
+  return {};
+}
+#endif  // OS_MAC
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 #if BUILDFLAG(ENABLE_NACL)

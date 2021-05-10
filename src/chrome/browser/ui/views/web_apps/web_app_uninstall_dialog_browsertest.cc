@@ -10,8 +10,10 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -104,6 +106,34 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   EXPECT_FALSE(was_uninstalled);
 }
 
+// Uninstalling with no browser window open can cause the view to be destroyed
+// before the views object. Test that this does not cause a UAF.
+// See https://crbug.com/1150798.
+IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
+                       UninstallWithNoBrowserWindow) {
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
+  AppId app_id = InstallTestWebApp(browser()->profile());
+  Browser* app_browser =
+      web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
+  chrome::CloseWindow(browser());
+
+  std::unique_ptr<web_app::WebAppUninstallDialog> dialog(
+      web_app::WebAppUninstallDialog::Create(
+          browser()->profile(), app_browser->window()->GetNativeWindow()));
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  bool was_uninstalled = false;
+  dialog->ConfirmUninstall(app_id,
+                           base::BindLambdaForTesting([&](bool uninstalled) {
+                             was_uninstalled = uninstalled;
+                             run_loop.Quit();
+                           }));
+  run_loop.Run();
+  EXPECT_TRUE(was_uninstalled);
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
                        TestDialogUserFlow_Cancel) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
@@ -153,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
   EXPECT_TRUE(was_uninstalled);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Test that we don't crash when uninstalling a web app from a web app window in
 // Ash. Context: crbug.com/825554
 IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
@@ -176,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallDialogViewBrowserTest,
     run_loop.RunUntilIdle();
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class WebAppUninstallDialogViewInteractiveBrowserTest
     : public DialogBrowserTest {

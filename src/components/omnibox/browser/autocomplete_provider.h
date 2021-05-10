@@ -38,12 +38,26 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // below may have some utility, nothing compares with first-hand
 // investigation and experience.
 //
-// ZERO SUGGEST (empty) input type:
+// ZERO SUGGEST (empty input type) on NTP:
 // --------------------------------------------------------------------|-----
-// Clipboard URL                                                       |  800
-// Zero Suggest (most visited, Android only)                           |  600--
-// Zero Suggest (default, may be overridden by server)                 |  100
-// Local History Zero Suggest                                          |  500--
+// Query Tiles (Android only)                                          |  1599
+// Clipboard (Mobile only)                                             |  1501
+// Remote Zero Suggest (relevance expected to be overridden by server) |  100
+// Local History Zero Suggest (signed-out users)                       |  1450--
+// Local History Zero Suggest (signed-in users)                        |  500--
+//
+// ZERO SUGGEST (empty input type) on SERP:
+// --------------------------------------------------------------------|-----
+// Verbatim Match (Mobile only)                                        |  1600
+// Clipboard (Mobile only)                                             |  1501
+//
+// ZERO SUGGEST (empty input type) on OTHER (e.g., contextual web):
+// --------------------------------------------------------------------|-----
+// Verbatim Match (Mobile only)                                        |  1600
+// Clipboard (Mobile only)                                             |  1501
+// Most Visited Carousel (Android only)                                |  1500
+// Most Visited Sites (Mobile only)                                    |  600--
+// Remote Zero Suggest (relevance expected to be overridden by server) |  100
 //
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
@@ -153,6 +167,7 @@ class AutocompleteProvider
     TYPE_QUERY_TILE = 1 << 12,
     TYPE_MOST_VISITED_SITES = 1 << 13,
     TYPE_VERBATIM_MATCH = 1 << 14,
+    TYPE_VOICE_SUGGEST = 1 << 15,
   };
 
   explicit AutocompleteProvider(Type type);
@@ -326,11 +341,12 @@ class AutocompleteProvider
   // string unconditionally.
   static FixupReturn FixupUserInput(const AutocompleteInput& input);
 
-  // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
+  // Trims "http:" or "https:" and up to two subsequent slashes from |url|. If
+  // |trim_https| is true, trims "https:", otherwise trims "http:". Returns the
   // number of characters that were trimmed.
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
-  static size_t TrimHttpPrefix(base::string16* url);
+  static size_t TrimSchemePrefix(base::string16* url, bool trim_https);
 
   const size_t provider_max_matches_;
 

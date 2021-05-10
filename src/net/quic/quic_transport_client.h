@@ -81,6 +81,8 @@ class NET_EXPORT QuicTransportClient
     virtual void OnDatagramReceived(base::StringPiece datagram) = 0;
     virtual void OnCanCreateNewOutgoingBidirectionalStream() = 0;
     virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
+    virtual void OnDatagramProcessed(
+        base::Optional<quic::MessageStatus> status) = 0;
   };
 
   struct NET_EXPORT Parameters {
@@ -100,8 +102,7 @@ class NET_EXPORT QuicTransportClient
   static quic::ParsedQuicVersionVector
   QuicVersionsForWebTransportOriginTrial() {
     return quic::ParsedQuicVersionVector{
-        quic::ParsedQuicVersion::Draft29(),  // Enabled in M85.
-        quic::ParsedQuicVersion::Draft27()   // Enabled in M84.
+        quic::ParsedQuicVersion::Draft29(),  // Enabled in M85
     };
   }
 
@@ -132,7 +133,7 @@ class NET_EXPORT QuicTransportClient
   void OnCanCreateNewOutgoingUnidirectionalStream() override;
 
   // QuicChromiumPacketReader::Visitor methods.
-  void OnReadError(int result, const DatagramClientSocket* socket) override;
+  bool OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const quic::QuicReceivedPacket& packet,
                 const quic::QuicSocketAddress& local_address,
                 const quic::QuicSocketAddress& peer_address) override;
@@ -155,6 +156,11 @@ class NET_EXPORT QuicTransportClient
   }
   void OnStopSendingReceived(
       const quic::QuicStopSendingFrame& /*frame*/) override {}
+  void OnNewConnectionIdSent(
+      const quic::QuicConnectionId& /*server_connection_id*/,
+      const quic::QuicConnectionId& /*new_connecition_id*/) override {}
+  void OnConnectionIdRetired(
+      const quic::QuicConnectionId& /*server_connection_id*/) override {}
 
  private:
   // State of the connection establishment process.
@@ -174,6 +180,17 @@ class NET_EXPORT QuicTransportClient
     CONNECT_STATE_CONFIRM_CONNECTION,
 
     CONNECT_STATE_NUM_STATES,
+  };
+
+  class DatagramObserverProxy : public quic::QuicDatagramQueue::Observer {
+   public:
+    explicit DatagramObserverProxy(QuicTransportClient* client)
+        : client_(client) {}
+    void OnDatagramProcessed(
+        absl::optional<quic::MessageStatus> status) override;
+
+   private:
+    QuicTransportClient* client_;
   };
 
   // DoLoop processing the Connect() call.

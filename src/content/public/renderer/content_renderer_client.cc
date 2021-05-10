@@ -4,7 +4,9 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/demuxer.h"
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
@@ -121,12 +123,9 @@ void ContentRendererClient::WillSendRequest(
     const blink::WebURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
-    GURL* new_url,
-    bool* force_ignore_site_for_cookies) {}
+    GURL* new_url) {}
 
-bool ContentRendererClient::IsPrefetchOnly(
-    RenderFrame* render_frame,
-    const blink::WebURLRequest& request) {
+bool ContentRendererClient::IsPrefetchOnly(RenderFrame* render_frame) {
   return false;
 }
 
@@ -151,7 +150,13 @@ bool ContentRendererClient::IsExternalPepperPlugin(
 
 bool ContentRendererClient::IsOriginIsolatedPepperPlugin(
     const base::FilePath& plugin_path) {
-  return false;
+  // Hosting plugins in-process is inherently incompatible with attempting to
+  // process-isolate plugins from different origins.
+  auto* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kPpapiInProcess))
+    return false;
+
+  return true;
 }
 
 void ContentRendererClient::AddSupportedKeySystems(
@@ -254,11 +259,6 @@ base::Optional<::media::AudioRendererAlgorithmParameters>
 ContentRendererClient::GetAudioRendererAlgorithmParameters(
     media::AudioParameters audio_parameters) {
   return base::nullopt;
-}
-
-void ContentRendererClient::MaybeProxyURLLoaderFactory(
-    RenderFrame* render_frame,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
 }
 
 }  // namespace content

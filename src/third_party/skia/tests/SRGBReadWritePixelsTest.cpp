@@ -11,8 +11,8 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "tests/Test.h"
 
@@ -126,12 +126,11 @@ void read_and_check_pixels(skiatest::Reporter* reporter,
                            uint32_t* origData,
                            const SkImageInfo& dstInfo, CheckFn checker, float error,
                            const char* subtestName) {
-    int w = dstInfo.width();
-    int h = dstInfo.height();
-    SkAutoTMalloc<uint32_t> readData(w * h);
-    memset(readData.get(), 0, sizeof(uint32_t) * w * h);
+    auto [w, h] = dstInfo.dimensions();
+    GrPixmap readPM = GrPixmap::Allocate(dstInfo);
+    memset(readPM.addr(), 0, sizeof(uint32_t)*w*h);
 
-    if (!sContext->readPixels(dContext, dstInfo, readData.get(), 0, {0, 0})) {
+    if (!sContext->readPixels(dContext, readPM, {0, 0})) {
         ERRORF(reporter, "Could not read pixels for %s.", subtestName);
         return;
     }
@@ -139,7 +138,7 @@ void read_and_check_pixels(skiatest::Reporter* reporter,
     for (int j = 0; j < h; ++j) {
         for (int i = 0; i < w; ++i) {
             uint32_t orig = origData[j * w + i];
-            uint32_t read = readData[j * w + i];
+            uint32_t read = static_cast<uint32_t*>(readPM.addr())[j * w + i];
 
             if (!checker(orig, read, error)) {
                 ERRORF(reporter, "Original 0x%08x, read back as 0x%08x in %s at %d, %d).", orig,
@@ -192,7 +191,7 @@ static std::unique_ptr<uint32_t[]> make_data() {
 static std::unique_ptr<GrSurfaceContext> make_surface_context(Encoding contextEncoding,
                                                               GrRecordingContext* rContext,
                                                               skiatest::Reporter* reporter) {
-    auto surfaceContext = GrRenderTargetContext::Make(
+    auto surfaceContext = GrSurfaceDrawContext::Make(
             rContext, GrColorType::kRGBA_8888, encoding_as_color_space(contextEncoding),
             SkBackingFit::kExact, {kW, kH}, 1, GrMipmapped::kNo, GrProtected::kNo,
             kBottomLeft_GrSurfaceOrigin, SkBudgeted::kNo);
@@ -212,7 +211,8 @@ static void test_write_read(Encoding contextEncoding, Encoding writeEncoding, En
     auto writeII = SkImageInfo::Make(kW, kH, kRGBA_8888_SkColorType, kPremul_SkAlphaType,
                                      encoding_as_color_space(writeEncoding));
     auto data = make_data();
-    if (!surfaceContext->writePixels(dContext, writeII, data.get(), 0, {0, 0})) {
+    GrPixmap dataPM(writeII, data.get(), kW*sizeof(uint32_t));
+    if (!surfaceContext->writePixels(dContext, dataPM, {0, 0})) {
         ERRORF(reporter, "Could not write %s to %s surface context.",
                encoding_as_str(writeEncoding), encoding_as_str(contextEncoding));
         return;

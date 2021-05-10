@@ -38,48 +38,65 @@ class ModuleWrapperElement extends PolymerElement {
     assert(!oldValue);
     this.$.moduleElement.appendChild(this.descriptor.element);
     this.$.moduleElement.style.height = `${this.descriptor.heightPx}px`;
-    const observer = new IntersectionObserver(([{intersectionRatio}]) => {
-      if (intersectionRatio >= .5) {
-        observer.disconnect();
-        BrowserProxy.getInstance().handler.onModuleImpression(
-            this.descriptor.id, BrowserProxy.getInstance().now());
-      }
-    }, {threshold: .5});
-    // Calling observe will immediately invoke the callback. If the header is
-    // fully shown when the page loads, the first callback invocation will
-    // happen before the header has dimensions. For this reason, we start
-    // observing after the element has had a chance to be rendered.
-    microTask.run(() => {
-      observer.observe(this.$.header);
-    });
+
     // Log at most one usage per module per NTP page load. This is possible,
     // if a user opens a link in a new tab.
     this.descriptor.element.addEventListener('usage', () => {
       BrowserProxy.getInstance().handler.onModuleUsage(this.descriptor.id);
     }, {once: true});
-  }
 
-  /** @private */
-  onInfoButtonClick_() {
-    this.descriptor.actions.info();
-  }
+    // Install observer to log module header impression.
+    const headerObserver = new IntersectionObserver(([{intersectionRatio}]) => {
+      if (intersectionRatio >= 1.0) {
+        headerObserver.disconnect();
+        BrowserProxy.getInstance().handler.onModuleImpression(
+            this.descriptor.id, BrowserProxy.getInstance().now());
+      }
+    }, {threshold: 1.0});
 
-  /** @private */
-  onDismissButtonClick_() {
-    this.hidden = true;
-    const message = this.descriptor.actions.dismiss();
-    this.dispatchEvent(new CustomEvent('dismiss-module', {
-      bubbles: true,
-      composed: true,
-      detail: message,
-    }));
-  }
+    // Install observer to track max perdecage (x/10th) of the module visible on
+    // the page.
+    let intersectionPerdecage = 0;
+    const moduleObserver = new IntersectionObserver(([{intersectionRatio}]) => {
+      intersectionPerdecage =
+          Math.floor(Math.max(intersectionPerdecage, intersectionRatio * 10));
+    }, {threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]});
+    window.addEventListener('unload', () => {
+      const recordPerdecage = (metricName, value) => {
+        chrome.metricsPrivate.recordValue(
+            {
+              metricName,
+              type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
+              min: 1,       // Choose 1 if real min is 0.
+              max: 11,      // Exclusive.
+              buckets: 12,  // Numbers 0-10 and unused overflow bucket of 11.
+            },
+            value);
+      };
+      recordPerdecage(
+          'NewTabPage.Modules.ImpressionRatio', intersectionPerdecage);
+      recordPerdecage(
+          `NewTabPage.Modules.ImpressionRatio.${this.descriptor.id}`,
+          intersectionPerdecage);
+    });
 
-  restore() {
-    this.hidden = false;
-    if (this.descriptor.actions.restore) {
-      this.descriptor.actions.restore();
-    }
+    // Calling observe will immediately invoke the callback. If the module is
+    // fully shown when the page loads, the first callback invocation will
+    // happen before the elements have dimensions. For this reason, we start
+    // observing after the elements have had a chance to be rendered.
+    microTask.run(() => {
+      headerObserver.observe(this.$.impressionProbe);
+      moduleObserver.observe(this);
+    });
+
+    // Track whether the user hovered on the module.
+    this.addEventListener('mouseover', () => {
+      chrome.metricsPrivate.recordSparseHashable(
+          'NewTabPage.Modules.Hover', this.descriptor.id);
+    }, {
+      useCapture: true,  // So that modules cannot swallow event.
+      once: true,        // Only one log per NTP load.
+    });
   }
 }
 

@@ -23,15 +23,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
@@ -49,14 +52,21 @@ bool NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = node->frame_tree_node_id();
-  node->navigator().GetController()->LoadURLWithParams(params);
+  FrameTree* frame_tree = node->frame_tree();
+
+  node->navigator().controller().LoadURLWithParams(params);
   observer.Wait();
 
   if (!observer.last_navigation_succeeded()) {
     DLOG(WARNING) << "Navigation did not succeed: " << url;
     return false;
   }
-  if (url != node->current_url()) {
+
+  // It's possible for JS handlers triggered during the navigation to remove
+  // the node, so retrieve it by ID again to check if that occurred.
+  node = frame_tree->FindByID(params.frame_tree_node_id);
+
+  if (node && url != node->current_url()) {
     DLOG(WARNING) << "Expected URL " << url << " but observed "
                   << node->current_url();
     return false;
@@ -101,6 +111,21 @@ bool NavigateToURLInSameBrowsingInstance(Shell* window, const GURL& url) {
   }
 
   return true;
+}
+
+bool IsExpectedSubframeErrorTransition(SiteInstance* start_site_instance,
+                                       SiteInstance* end_site_instance) {
+  bool site_instances_are_equal = (start_site_instance == end_site_instance);
+  bool is_error_page_site_instance =
+      (static_cast<SiteInstanceImpl*>(end_site_instance)
+           ->GetSiteInfo()
+           .is_error_page());
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          /*in_main_frame=*/false)) {
+    return site_instances_are_equal && !is_error_page_site_instance;
+  } else {
+    return !site_instances_are_equal && is_error_page_site_instance;
+  }
 }
 
 FrameTreeVisualizer::FrameTreeVisualizer() {
@@ -290,6 +315,10 @@ std::string FrameTreeVisualizer::GetName(SiteInstance* site_instance) {
     return base::StringPrintf("%c", 'A' + static_cast<char>(index));
   else
     return base::StringPrintf("Z%d", static_cast<int>(index - 25));
+}
+
+std::string DepictFrameTree(FrameTreeNode& root) {
+  return FrameTreeVisualizer().DepictFrameTree(&root);
 }
 
 Shell* OpenPopup(const ToRenderFrameHost& opener,
@@ -640,6 +669,44 @@ void DevToolsInspectorLogWatcher::FlushAndStopWatching() {
       this, base::as_bytes(base::make_span(kDisableLogMessage,
                                            strlen(kDisableLogMessage))));
   run_loop_disable_log_.Run();
+}
+
+FrameNavigateParamsCapturer::FrameNavigateParamsCapturer(FrameTreeNode* node)
+    : WebContentsObserver(
+          node->current_frame_host()->delegate()->GetAsWebContents()),
+      frame_tree_node_id_(node->frame_tree_node_id()) {}
+
+FrameNavigateParamsCapturer::~FrameNavigateParamsCapturer() = default;
+
+void FrameNavigateParamsCapturer::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->GetFrameTreeNodeId() != frame_tree_node_id_ ||
+      navigations_remaining_ == 0) {
+    return;
+  }
+
+  --navigations_remaining_;
+  transitions_.push_back(navigation_handle->GetPageTransition());
+  urls_.push_back(navigation_handle->GetURL());
+  navigation_types_.push_back(
+      NavigationRequest::From(navigation_handle)->navigation_type());
+  is_same_documents_.push_back(navigation_handle->IsSameDocument());
+  did_replace_entries_.push_back(navigation_handle->DidReplaceEntry());
+  is_renderer_initiateds_.push_back(navigation_handle->IsRendererInitiated());
+  has_user_gestures_.push_back(navigation_handle->HasUserGesture());
+  if (!navigations_remaining_ &&
+      (!web_contents()->IsLoading() || !wait_for_load_))
+    loop_.Quit();
+}
+
+void FrameNavigateParamsCapturer::Wait() {
+  loop_.Run();
+}
+
+void FrameNavigateParamsCapturer::DidStopLoading() {
+  if (!navigations_remaining_)
+    loop_.Quit();
 }
 
 }  // namespace content

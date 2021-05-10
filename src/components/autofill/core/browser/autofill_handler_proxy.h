@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_handler.h"
+#include "components/autofill/core/common/dense_set.h"
 
 namespace autofill {
 
@@ -15,9 +16,11 @@ class AutofillProvider;
 // This class forwards AutofillHandler calls to AutofillProvider.
 class AutofillHandlerProxy : public AutofillHandler {
  public:
-  AutofillHandlerProxy(AutofillDriver* driver,
-                       LogManager* log_manager,
-                       AutofillProvider* provider);
+  AutofillHandlerProxy(
+      AutofillDriver* driver,
+      AutofillClient* client,
+      AutofillProvider* provider,
+      AutofillHandler::AutofillDownloadManagerState enable_download_manager);
   ~AutofillHandlerProxy() override;
 
   void OnFocusNoLongerOnForm(bool had_interacted_form) override;
@@ -25,8 +28,8 @@ class AutofillHandlerProxy : public AutofillHandler {
   void OnDidFillAutofillFormData(const FormData& form,
                                  const base::TimeTicks timestamp) override;
 
-  void OnDidPreviewAutofillFormData() override;
-  void OnDidEndTextFieldEditing() override;
+  void OnDidPreviewAutofillFormData() override {}
+  void OnDidEndTextFieldEditing() override {}
   void OnHidePopup() override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
 
@@ -35,6 +38,8 @@ class AutofillHandlerProxy : public AutofillHandler {
   base::WeakPtr<AutofillHandlerProxy> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+
+  bool has_server_prediction() const { return has_server_prediction_; }
 
  protected:
   void OnFormSubmittedImpl(const FormData& form,
@@ -64,13 +69,26 @@ class AutofillHandlerProxy : public AutofillHandler {
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
 
-  bool ShouldParseForms(const std::vector<FormData>& forms,
-                        const base::TimeTicks timestamp) override;
+  bool ShouldParseForms(const std::vector<FormData>& forms) override;
 
-  void OnFormsParsed(const std::vector<const FormData*>& form_structures,
-                     const base::TimeTicks timestamp) override;
+  void OnBeforeProcessParsedForms() override {}
+
+  void OnFormProcessed(const FormData& form,
+                       const FormStructure& form_structure) override {}
+
+  void OnAfterProcessParsedForms(
+      const DenseSet<FormType>& form_types) override {}
+
+  void PropagateAutofillPredictions(
+      content::RenderFrameHost* rfh,
+      const std::vector<FormStructure*>& forms) override;
+
+  void OnServerRequestError(FormSignature form_signature,
+                            AutofillDownloadManager::RequestType request_type,
+                            int http_error) override;
 
  private:
+  bool has_server_prediction_ = false;
   AutofillProvider* provider_;
   base::WeakPtrFactory<AutofillHandlerProxy> weak_ptr_factory_{this};
 

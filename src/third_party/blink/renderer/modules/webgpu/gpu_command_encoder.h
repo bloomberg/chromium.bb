@@ -12,7 +12,7 @@ namespace blink {
 
 class ExceptionState;
 class GPUBuffer;
-class GPUBufferCopyView;
+class GPUImageCopyBuffer;
 class GPUCommandBuffer;
 class GPUCommandBufferDescriptor;
 class GPUCommandEncoderDescriptor;
@@ -21,7 +21,7 @@ class GPUComputePassEncoder;
 class GPUQuerySet;
 class GPURenderPassDescriptor;
 class GPURenderPassEncoder;
-class GPUTextureCopyView;
+class GPUImageCopyTexture;
 class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 
 class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
@@ -33,7 +33,6 @@ class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
       const GPUCommandEncoderDescriptor* webgpu_desc);
   explicit GPUCommandEncoder(GPUDevice* device,
                              WGPUCommandEncoder command_encoder);
-  ~GPUCommandEncoder() override;
 
   // gpu_command_encoder.idl
   GPURenderPassEncoder* beginRenderPass(
@@ -47,20 +46,17 @@ class GPUCommandEncoder : public DawnObject<WGPUCommandEncoder> {
                           uint64_t dst_offset,
                           uint64_t size);
   void copyBufferToTexture(
-      GPUBufferCopyView* source,
-      GPUTextureCopyView* destination,
-      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-      ExceptionState& exception_state);
+      GPUImageCopyBuffer* source,
+      GPUImageCopyTexture* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size);
   void copyTextureToBuffer(
-      GPUTextureCopyView* source,
-      GPUBufferCopyView* destination,
-      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-      ExceptionState& exception_state);
+      GPUImageCopyTexture* source,
+      GPUImageCopyBuffer* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size);
   void copyTextureToTexture(
-      GPUTextureCopyView* source,
-      GPUTextureCopyView* destination,
-      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-      ExceptionState& exception_state);
+      GPUImageCopyTexture* source,
+      GPUImageCopyTexture* destination,
+      UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size);
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);

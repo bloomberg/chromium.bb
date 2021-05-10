@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "src/base/optional.h"
+#include "src/base/platform/wrappers.h"
 #include "src/common/globals.h"
 #include "src/handles/handles.h"
 #include "src/utils/vector.h"
@@ -186,30 +187,15 @@ class V8_EXPORT_PRIVATE LazilyGeneratedNames {
                                   uint32_t function_index,
                                   Vector<const WasmExport> export_table) const;
 
-  // For memory and global.
-  std::pair<WireBytesRef, WireBytesRef> LookupNameFromImportsAndExports(
-      ImportExportKindCode kind, uint32_t index,
-      const Vector<const WasmImport> import_table,
-      const Vector<const WasmExport> export_table) const;
-
   void AddForTesting(int function_index, WireBytesRef name);
 
  private:
-  // {function_names_}, {global_names_}, {memory_names_} and {table_names_} are
-  // populated lazily after decoding, and therefore need a mutex to protect
-  // concurrent modifications from multiple {WasmModuleObject}.
+  // {function_names_} are populated lazily after decoding, and
+  // therefore need a mutex to protect concurrent modifications
+  // from multiple {WasmModuleObject}.
   mutable base::Mutex mutex_;
   mutable std::unique_ptr<std::unordered_map<uint32_t, WireBytesRef>>
       function_names_;
-  mutable std::unique_ptr<
-      std::unordered_map<uint32_t, std::pair<WireBytesRef, WireBytesRef>>>
-      global_names_;
-  mutable std::unique_ptr<
-      std::unordered_map<uint32_t, std::pair<WireBytesRef, WireBytesRef>>>
-      memory_names_;
-  mutable std::unique_ptr<
-      std::unordered_map<uint32_t, std::pair<WireBytesRef, WireBytesRef>>>
-      table_names_;
 };
 
 class V8_EXPORT_PRIVATE AsmJsOffsetInformation {
@@ -282,6 +268,8 @@ struct V8_EXPORT_PRIVATE WasmModule {
   uint32_t num_declared_functions = 0;  // excluding imported
   uint32_t num_exported_functions = 0;
   uint32_t num_declared_data_segments = 0;  // From the DataCount section.
+  // Position and size of the code section (payload only, i.e. without section
+  // ID and length).
   WireBytesRef code = {0, 0};
   WireBytesRef name = {0, 0};
   std::vector<TypeDefinition> types;  // by type index
@@ -369,7 +357,6 @@ struct WasmTable {
     if (!type.is_nullable()) return false;
     HeapType heap_type = type.heap_type();
     return heap_type == HeapType::kFunc || heap_type == HeapType::kExtern ||
-           heap_type == HeapType::kExn ||
            (module != nullptr && heap_type.is_index() &&
             module->has_signature(heap_type.ref_index()));
   }
@@ -512,7 +499,7 @@ class TruncatedUserString {
   TruncatedUserString(const char* start, size_t len)
       : start_(start), length_(std::min(kMaxLen, static_cast<int>(len))) {
     if (len > static_cast<size_t>(kMaxLen)) {
-      memcpy(buffer_, start, kMaxLen - 3);
+      base::Memcpy(buffer_, start, kMaxLen - 3);
       memset(buffer_ + kMaxLen - 3, '.', 3);
       start_ = buffer_;
     }

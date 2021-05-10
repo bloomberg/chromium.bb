@@ -6,13 +6,13 @@
 
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_isolation/pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -69,12 +69,13 @@ HostContentSettingsMap::PatternSourcePredicate CreateWebsiteSettingsFilter(
                                    filter_builder->BuildUrlFilter());
 }
 
-void RemovePrerenderCacheData(prerender::PrerenderManager* prerender_manager) {
-  // The PrerenderManager may have a page actively being prerendered, which
-  // is essentially a preemptively cached page.
-  if (prerender_manager) {
-    prerender_manager->ClearData(
-        prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);
+void RemovePrerenderCacheData(
+    prerender::NoStatePrefetchManager* no_state_prefetch_manager) {
+  // The NoStatePrefetchManager may have a page actively being prerendered,
+  // which is essentially a preemptively cached page.
+  if (no_state_prefetch_manager) {
+    no_state_prefetch_manager->ClearData(
+        prerender::NoStatePrefetchManager::CLEAR_PRERENDER_CONTENTS);
   }
 }
 

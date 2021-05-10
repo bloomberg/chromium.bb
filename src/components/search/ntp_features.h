@@ -17,6 +17,7 @@ namespace ntp_features {
 // the .cc file.
 
 extern const base::Feature kConfirmSuggestionRemovals;
+extern const base::Feature kCacheOneGoogleBar;
 extern const base::Feature kDismissPromos;
 extern const base::Feature kIframeOneGoogleBar;
 extern const base::Feature kNtpRepeatableQueries;
@@ -24,11 +25,14 @@ extern const base::Feature kOneGoogleBarModalOverlays;
 extern const base::Feature kRealboxMatchOmniboxTheme;
 extern const base::Feature kRealboxUseGoogleGIcon;
 extern const base::Feature kWebUI;
-extern const base::Feature kWebUIThemeModeDoodles;
+extern const base::Feature kNtpLogo;
+extern const base::Feature kNtpShortcuts;
+extern const base::Feature kNtpMiddleSlotPromo;
 extern const base::Feature kModules;
 extern const base::Feature kNtpRecipeTasksModule;
 extern const base::Feature kNtpShoppingTasksModule;
-
+extern const base::Feature kNtpChromeCartModule;
+extern const base::Feature kNtpDriveModule;
 extern const base::Feature kSearchSuggestChips;
 extern const base::Feature kDisableSearchSuggestChips;
 
@@ -56,8 +60,12 @@ enum class RepeatableQueriesInsertPosition {
   kEnd,        // At the end of MV tiles.
 };
 
+// Parameter determining the module load timeout.
+extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
 // Parameter determining the type of stateful data to request.
 extern const char kNtpStatefulTasksModuleDataParam[];
+// Parameter determining the type of cart data used to render module.
+extern const char kNtpChromeCartModuleDataParam[];
 
 // Returns the age threshold for local history repeatable queries.
 base::Time GetLocalHistoryRepeatableQueriesAgeThreshold();
@@ -71,6 +79,8 @@ double GetLocalHistoryRepeatableQueriesFrequencyExponent();
 // queries should be inserted.
 RepeatableQueriesInsertPosition GetRepeatableQueriesInsertPosition();
 
+// Returns the timeout after which the load of a module should be aborted.
+base::TimeDelta GetModulesLoadTimeout();
 }  // namespace ntp_features
 
 #endif  // COMPONENTS_SEARCH_NTP_FEATURES_H_

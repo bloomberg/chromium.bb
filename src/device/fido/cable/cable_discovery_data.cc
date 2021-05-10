@@ -54,6 +54,9 @@ bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
              v1->authenticator_eid == other.v1->authenticator_eid &&
              v1->session_pre_key == other.v1->session_pre_key;
 
+    case CableDiscoveryData::Version::V2:
+      return v2.value() == other.v2.value();
+
     case CableDiscoveryData::Version::INVALID:
       CHECK(false);
       return false;
@@ -91,7 +94,7 @@ base::Optional<std::unique_ptr<Pairing>> Pairing::Parse(
       map.find(cbor::Value(5));
   if (name_it == map.end() || !name_it->second.is_string() ||
       std::any_of(
-          &its[0], &its[its.size()],
+          its.begin(), its.end(),
           [&map](const cbor::Value::MapValue::const_iterator& it) -> bool {
             return it == map.end() || !it->second.is_bytestring();
           }) ||

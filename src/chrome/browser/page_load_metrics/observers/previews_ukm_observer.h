@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_experiments.h"
@@ -39,7 +40,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnComplete(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnEventOccurred(const void* const event_key) override;
+  void OnEventOccurred(page_load_metrics::PageLoadMetricsEvent event) override;
 
  protected:
   // Returns true if data saver feature is enabled in Chrome. Virtualized for
@@ -53,17 +54,11 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;
 
-  bool noscript_seen_ = false;
-  bool resource_loading_hints_seen_ = false;
   bool defer_all_script_seen_ = false;
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
   bool previews_likely_ = false;
-  base::Optional<previews::PreviewsEligibilityReason>
-      noscript_eligibility_reason_;
-  base::Optional<previews::PreviewsEligibilityReason>
-      resource_loading_hints_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       defer_all_script_eligibility_reason_;
 

@@ -19,12 +19,9 @@
 #include "core/fpdftext/cpdf_textpage.h"
 #include "core/fpdftext/cpdf_textpagefind.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
+#include "third_party/base/check.h"
 #include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/stl_util.h"
-
-#if defined(OS_WIN)
-#include <tchar.h>
-#endif
 
 namespace {
 
@@ -315,7 +312,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetText(FPDF_TEXTPAGE page,
   size_t byte_str_len = byte_str.GetLength();
   int ret_count = byte_str_len / kBytesPerCharacter;
 
-  ASSERT(ret_count <= char_count + 1);  // +1 to account for the NUL terminator.
+  DCHECK(ret_count <= char_count + 1);  // +1 to account for the NUL terminator.
   memcpy(result, byte_str.c_str(), byte_str_len);
   return ret_count;
 }

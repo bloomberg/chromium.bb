@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -33,8 +34,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 namespace task_manager {
@@ -142,7 +143,7 @@ class WorkerTaskProviderBrowserTest : public InProcessBrowserTest,
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
@@ -329,7 +330,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest, CreateExistingTasks) {
 // Tests that destroying a profile while updating will correctly remove the
 // existing tasks. An incognito browser is used because a regular profile is
 // never truly destroyed until browser shutdown (See https://crbug.com/88586).
-IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest, DestroyedProfile) {
+// TODO(crbug.com/1168407): Fix the flakiness and re-enable this.
+IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest,
+                       DISABLED_DestroyedProfile) {
   StartUpdating();
 
   EXPECT_TRUE(tasks().empty());

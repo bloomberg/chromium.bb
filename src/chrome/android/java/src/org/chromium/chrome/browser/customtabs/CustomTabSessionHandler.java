@@ -19,9 +19,9 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
+import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
@@ -73,6 +73,11 @@ public class CustomTabSessionHandler implements SessionHandler, StartStopWithNat
         mActivity = activity;
         mSessionDataHolder = sessionDataHolder;
         lifecycleDispatcher.register(this);
+
+        // The active handler will also get set in onStartWithNative, but since native may take some
+        // time to initialize, we eagerly set it here to catch any messages the Custom Tabs Client
+        // sends our way before that triggers.
+        mSessionDataHolder.setActiveHandler(this);
     }
 
     @Override
@@ -127,7 +132,7 @@ public class CustomTabSessionHandler implements SessionHandler, StartStopWithNat
 
         NavigationEntry entry = tab.getWebContents().getNavigationController()
                 .getPendingEntry();
-        return entry != null ? entry.getUrl() : null;
+        return entry != null ? entry.getUrl().getSpec() : null;
     }
 
     @Override

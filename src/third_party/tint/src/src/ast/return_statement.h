@@ -25,49 +25,45 @@ namespace tint {
 namespace ast {
 
 /// A return statement
-class ReturnStatement : public Statement {
+class ReturnStatement : public Castable<ReturnStatement, Statement> {
  public:
-  /// Constructor
-  ReturnStatement();
   /// Constructor
   /// @param source the source information
   explicit ReturnStatement(const Source& source);
   /// Constructor
-  /// @param value the return value
-  explicit ReturnStatement(std::unique_ptr<Expression> value);
-  /// Constructor
   /// @param source the return statement source
   /// @param value the return value
-  ReturnStatement(const Source& source, std::unique_ptr<Expression> value);
+  ReturnStatement(const Source& source, Expression* value);
   /// Move constructor
   ReturnStatement(ReturnStatement&&);
   ~ReturnStatement() override;
 
-  /// Sets the value
-  /// @param value the value
-  void set_value(std::unique_ptr<Expression> value) {
-    value_ = std::move(value);
-  }
   /// @returns the value
-  Expression* value() const { return value_.get(); }
+  Expression* value() const { return value_; }
   /// @returns true if the return has a value
   bool has_value() const { return value_ != nullptr; }
 
-  /// @returns true if this is a return statement
-  bool IsReturn() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ReturnStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   ReturnStatement(const ReturnStatement&) = delete;
 
-  std::unique_ptr<Expression> value_;
+  Expression* const value_;
 };
 
 }  // namespace ast

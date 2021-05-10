@@ -5,13 +5,14 @@
 package org.chromium.chrome.browser.paint_preview;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.SystemClock;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
@@ -21,8 +22,8 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressCoordinator;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.content_public.browser.WebContents;
@@ -35,6 +36,9 @@ import java.util.Map;
  * Glue code for the Paint Preview show-on-startup feature.
  */
 public class StartupPaintPreviewHelper {
+    public static final BooleanCachedFieldTrialParameter ACCESSIBILITY_SUPPORT_PARAM =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
+                    "has_accessibility_support", false);
     /**
      * Tracks whether a paint preview should be shown on tab restore. We use this to only attempt
      * to display a paint preview on the first tab restoration that happens on Chrome startup when
@@ -62,28 +66,34 @@ public class StartupPaintPreviewHelper {
      * Initializes the logic required for the Paint Preview on startup feature. Mainly, observes a
      * {@link TabModelSelector} to monitor for initialization completion.
      *
-     * @param activity         The ChromeActivity that corresponds to the tabModelSelector.
+     * @param windowAndroid The WindowAndroid that corresponds to the tabModelSelector.
+     * @param activityCreationTime The time the ChromeActivity was created.
+     * @param browserControlsManager The BrowserControlsManager which is used to fetch the browser
+     *         visibility delegate
      * @param tabModelSelector The TabModelSelector to observe.
      * @param willShowStartSurface Whether the start surface will be shown.
      * @param progressBarCoordinatorSupplier Supplier for the progress bar.
      */
-    public static void initialize(ChromeActivity<?> activity, TabModelSelector tabModelSelector,
+    public static void initialize(WindowAndroid windowAndroid, long activityCreationTime,
+            BrowserControlsManager browserControlsManager, TabModelSelector tabModelSelector,
             boolean willShowStartSurface,
             Supplier<LoadProgressCoordinator> progressBarCoordinatorSupplier,
             Callback<Long> visibleContentCallback) {
         if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) return;
 
-        if (MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity)
+        if (MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
+                    windowAndroid.getContext().get())
                 || willShowStartSurface) {
             sShouldShowOnRestore = false;
         }
-        sWindowAndroidHelperMap.put(activity.getWindowAndroid(),
-                new PaintPreviewWindowAndroidHelper(
-                        activity, progressBarCoordinatorSupplier, visibleContentCallback));
+        sWindowAndroidHelperMap.put(windowAndroid,
+                new PaintPreviewWindowAndroidHelper(windowAndroid, activityCreationTime,
+                        browserControlsManager, progressBarCoordinatorSupplier,
+                        visibleContentCallback));
 
         // TODO(crbug/1074428): verify this doesn't cause a memory leak if the user exits Chrome
         // prior to onTabStateInitialized being called.
-        tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+        tabModelSelector.addObserver(new TabModelSelectorObserver() {
             @Override
             public void onTabStateInitialized() {
                 // If the first tab shown is not a normal tab, then prevent showing previews in the
@@ -92,12 +102,14 @@ public class StartupPaintPreviewHelper {
                     sShouldShowOnRestore = false;
                 }
 
+                Context context = windowAndroid.getContext().get();
+                boolean runAudit = context == null
+                        || !MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
+                                context);
                 // Avoid running the audit in multi-window mode as otherwise we will delete
                 // data that is possibly in use by the other Activity's TabModelSelector.
                 PaintPreviewTabServiceFactory.getServiceInstance().onRestoreCompleted(
-                        tabModelSelector, /*runAudit=*/
-                        !MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity),
-                        /*captureOnSwitch=*/false);
+                        tabModelSelector, runAudit);
                 tabModelSelector.removeObserver(this);
             }
 
@@ -118,8 +130,12 @@ public class StartupPaintPreviewHelper {
      */
     public static void showPaintPreviewOnRestore(Tab tab) {
         if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)
-                || !sShouldShowOnRestore
-                || ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
+                || !sShouldShowOnRestore) {
+            return;
+        }
+
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+                && !ACCESSIBILITY_SUPPORT_PARAM.getValue()) {
             return;
         }
 
@@ -171,15 +187,17 @@ public class StartupPaintPreviewHelper {
         private final Supplier<LoadProgressCoordinator> mProgressBarCoordinatorSupplier;
         private final Callback<Long> mVisibleContentCallback;
 
-        PaintPreviewWindowAndroidHelper(ChromeActivity<?> chromeActivity,
+        PaintPreviewWindowAndroidHelper(WindowAndroid windowAndroid, long activityCreationTime,
+                BrowserControlsManager browserControlsManager,
                 Supplier<LoadProgressCoordinator> progressBarCoordinatorSupplier,
                 Callback<Long> visibleContentCallback) {
-            mWindowAndroid = chromeActivity.getWindowAndroid();
-            mActivityCreationTime = chromeActivity.getOnCreateTimestampMs();
-            mBrowserControlsManager = chromeActivity.getBrowserControlsManager();
+            mWindowAndroid = windowAndroid;
+            mActivityCreationTime = activityCreationTime;
+            mBrowserControlsManager = browserControlsManager;
             mProgressBarCoordinatorSupplier = progressBarCoordinatorSupplier;
             mVisibleContentCallback = visibleContentCallback;
-            ApplicationStatus.registerStateListenerForActivity(this, chromeActivity);
+            ApplicationStatus.registerStateListenerForActivity(
+                    this, mWindowAndroid.getActivity().get());
         }
 
         long getActivityCreationTime() {

@@ -29,9 +29,9 @@
 .panel-section-separator {
   height: 1px;
   margin-bottom: 10px;
-  background: #f0f0f0;
+  background: #f0f0f0; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
-
 /* Disable cache */
 
 .network-config-disable-cache {
@@ -45,6 +45,9 @@
   margin: 5px 0;
 }
 
+.network-config-input-validation-error:empty {
+  display: none;
+}
 /* Network throttling */
 
 .network-config-throttling .chrome-select {
@@ -55,7 +58,6 @@
 .network-config-throttling > .network-config-title {
   line-height: 24px;
 }
-
 /* User agent */
 
 .network-config-ua > .network-config-title {
@@ -72,7 +74,8 @@
 }
 
 .network-config-ua input[readonly] {
-  background-color: rgb(235 235 228);
+  background-color: rgb(235 235 228); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .network-config-ua input[type=text],
@@ -91,6 +94,7 @@
 
 .network-config-ua-custom {
   opacity: 50%;
+  padding-bottom: 8px;
 }
 
 .network-config-ua-custom.checked {

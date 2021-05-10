@@ -25,6 +25,7 @@ ClientStatus ClientStatus::WithStatusOverride(
 
 void ClientStatus::FillProto(ProcessedActionProto* proto) const {
   proto->set_status(status_);
+  proto->set_slow_warning_status(slow_warning_status_);
   if (has_details_)
     proto->mutable_status_details()->MergeFrom(details_);
 }
@@ -137,6 +138,9 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ProcessedActionStatusProto::ELEMENT_NOT_ON_TOP:
       out << "ELEMENT_NOT_ON_TOP";
+      break;
+    case ProcessedActionStatusProto::CLIENT_ID_RESOLUTION_FAILED:
+      out << "CLIENT_ID_RESOLUTION_FAILED";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

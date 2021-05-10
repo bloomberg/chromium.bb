@@ -8,17 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
-#include "android_webview/browser/gfx/gpu_service_web_view.h"
-#include "android_webview/browser/gfx/output_surface_provider_webview.h"
-#include "android_webview/browser/gfx/parent_output_surface.h"
-#include "android_webview/browser/gfx/skia_output_surface_dependency_webview.h"
-#include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/android/build_info.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -29,7 +22,6 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/overlay_processor_stub.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/service/sequence_id.h"

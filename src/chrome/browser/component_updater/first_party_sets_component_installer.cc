@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -17,7 +18,7 @@
 #include "base/version.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/network_service_instance.h"
-#include "services/network/public/cpp/features.h"
+#include "net/base/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 using component_updater::ComponentUpdateService;
@@ -56,9 +57,37 @@ base::Optional<std::string> LoadSetsFromDisk(const base::FilePath& pb_path) {
   return result;
 }
 
+base::FilePath& GetConfigPathInstance() {
+  static base::NoDestructor<base::FilePath> instance;
+  return *instance;
+}
+
+void SetFirstPartySetsConfig(
+    const base::RepeatingCallback<void(const std::string&)>& on_sets_ready) {
+  if (GetConfigPathInstance().empty())
+    return;
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&LoadSetsFromDisk, GetConfigPathInstance()),
+      base::BindOnce(
+          [](base::RepeatingCallback<void(const std::string&)> on_sets_ready,
+             base::Optional<std::string> raw_sets) {
+            if (raw_sets.has_value())
+              on_sets_ready.Run(*raw_sets);
+          },
+          on_sets_ready));
+}
+
 }  // namespace
 
 namespace component_updater {
+
+// static
+void FirstPartySetsComponentInstallerPolicy::ReconfigureAfterNetworkRestart(
+    const base::RepeatingCallback<void(const std::string&)>& on_sets_ready) {
+  SetFirstPartySetsConfig(on_sets_ready);
+}
 
 FirstPartySetsComponentInstallerPolicy::FirstPartySetsComponentInstallerPolicy(
     base::RepeatingCallback<void(const std::string&)> on_sets_ready)
@@ -66,6 +95,10 @@ FirstPartySetsComponentInstallerPolicy::FirstPartySetsComponentInstallerPolicy(
 
 FirstPartySetsComponentInstallerPolicy::
     ~FirstPartySetsComponentInstallerPolicy() = default;
+
+const char
+    FirstPartySetsComponentInstallerPolicy::kDogfoodInstallerAttributeName[] =
+        "_internal_experimental_sets";
 
 bool FirstPartySetsComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -97,19 +130,15 @@ void FirstPartySetsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
+  if (install_dir.empty())
+    return;
+
   VLOG(1) << "First-Party Sets Component ready, version " << version.GetString()
           << " in " << install_dir.value();
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&LoadSetsFromDisk, GetInstalledPath(install_dir)),
-      base::BindOnce(
-          [](base::RepeatingCallback<void(const std::string&)> on_sets_ready,
-             base::Optional<std::string> raw_sets) {
-            if (raw_sets.has_value())
-              on_sets_ready.Run(*raw_sets);
-          },
-          on_sets_ready_));
+  GetConfigPathInstance() = GetInstalledPath(install_dir);
+
+  SetFirstPartySetsConfig(on_sets_ready_);
 }
 
 // Called during startup and installation before ComponentReady().
@@ -139,16 +168,16 @@ std::string FirstPartySetsComponentInstallerPolicy::GetName() const {
 
 update_client::InstallerAttributes
 FirstPartySetsComponentInstallerPolicy::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
-}
-
-std::vector<std::string> FirstPartySetsComponentInstallerPolicy::GetMimeTypes()
-    const {
-  return {};
+  return {
+      {
+          kDogfoodInstallerAttributeName,
+          net::features::kFirstPartySetsIsDogfooder.Get() ? "true" : "false",
+      },
+  };
 }
 
 void RegisterFirstPartySetsComponent(ComponentUpdateService* cus) {
-  if (!base::FeatureList::IsEnabled(network::features::kFirstPartySets))
+  if (!base::FeatureList::IsEnabled(net::features::kFirstPartySets))
     return;
   VLOG(1) << "Registering First-Party Sets component.";
   auto installer = base::MakeRefCounted<ComponentInstaller>(

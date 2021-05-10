@@ -436,7 +436,7 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
     AVFrame *avframe = NULL, *tmp = (AVFrame *)pkt->data;
     AVPacket *avpacket = NULL;
     decklink_frame *frame;
-    buffercount_type buffered;
+    uint32_t buffered;
     HRESULT hr;
 
     if (st->codecpar->codec_id == AV_CODEC_ID_WRAPPED_AVFRAME) {
@@ -525,7 +525,7 @@ static int decklink_write_audio_packet(AVFormatContext *avctx, AVPacket *pkt)
     struct decklink_cctx *cctx = (struct decklink_cctx *)avctx->priv_data;
     struct decklink_ctx *ctx = (struct decklink_ctx *)cctx->ctx;
     int sample_count = pkt->size / (ctx->channels << 1);
-    buffercount_type buffered;
+    uint32_t buffered;
 
     ctx->dlo->GetBufferedAudioSampleFrameCount(&buffered);
     if (pkt->pts > 1 && !buffered)
@@ -568,7 +568,6 @@ av_cold int ff_decklink_write_header(AVFormatContext *avctx)
 
     /* List available devices and exit. */
     if (ctx->list_devices) {
-        av_log(avctx, AV_LOG_WARNING, "The -list_devices option is deprecated and will be removed. Please use ffmpeg -sinks decklink instead.\n");
         ff_decklink_list_devices_legacy(avctx, 0, 1);
         return AVERROR_EXIT;
     }

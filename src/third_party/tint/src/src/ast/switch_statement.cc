@@ -15,36 +15,36 @@
 #include "src/ast/switch_statement.h"
 
 #include "src/ast/case_statement.h"
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::SwitchStatement);
 
 namespace tint {
 namespace ast {
 
-SwitchStatement::SwitchStatement() : Statement() {}
-
-SwitchStatement::SwitchStatement(std::unique_ptr<Expression> condition,
-                                 CaseStatementList body)
-    : Statement(), condition_(std::move(condition)), body_(std::move(body)) {}
-
 SwitchStatement::SwitchStatement(const Source& source,
-                                 std::unique_ptr<Expression> condition,
+                                 Expression* condition,
                                  CaseStatementList body)
-    : Statement(source),
-      condition_(std::move(condition)),
-      body_(std::move(body)) {}
-
-bool SwitchStatement::IsSwitch() const {
-  return true;
-}
+    : Base(source), condition_(condition), body_(body) {}
 
 SwitchStatement::SwitchStatement(SwitchStatement&&) = default;
 
 SwitchStatement::~SwitchStatement() = default;
 
+SwitchStatement* SwitchStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* cond = ctx->Clone(condition());
+  auto b = ctx->Clone(body());
+  return ctx->dst->create<SwitchStatement>(src, cond, b);
+}
+
 bool SwitchStatement::IsValid() const {
   if (condition_ == nullptr || !condition_->IsValid()) {
     return false;
   }
-  for (const auto& stmt : body_) {
+  for (auto* stmt : body_) {
     if (stmt == nullptr || !stmt->IsValid()) {
       return false;
     }
@@ -52,16 +52,18 @@ bool SwitchStatement::IsValid() const {
   return true;
 }
 
-void SwitchStatement::to_str(std::ostream& out, size_t indent) const {
+void SwitchStatement::to_str(const semantic::Info& sem,
+                             std::ostream& out,
+                             size_t indent) const {
   make_indent(out, indent);
   out << "Switch{" << std::endl;
-  condition_->to_str(out, indent + 2);
+  condition_->to_str(sem, out, indent + 2);
 
   make_indent(out, indent + 2);
   out << "{" << std::endl;
 
-  for (const auto& stmt : body_) {
-    stmt->to_str(out, indent + 4);
+  for (auto* stmt : body_) {
+    stmt->to_str(sem, out, indent + 4);
   }
 
   make_indent(out, indent + 2);

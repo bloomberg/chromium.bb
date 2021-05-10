@@ -14,36 +14,29 @@
 
 #include "src/ast/else_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ElseStatement);
+
 namespace tint {
 namespace ast {
 
-ElseStatement::ElseStatement()
-    : Statement(), body_(std::make_unique<ast::BlockStatement>()) {}
-
-ElseStatement::ElseStatement(std::unique_ptr<BlockStatement> body)
-    : Statement(), body_(std::move(body)) {}
-
-ElseStatement::ElseStatement(std::unique_ptr<Expression> condition,
-                             std::unique_ptr<BlockStatement> body)
-    : Statement(), condition_(std::move(condition)), body_(std::move(body)) {}
-
 ElseStatement::ElseStatement(const Source& source,
-                             std::unique_ptr<BlockStatement> body)
-    : Statement(source), body_(std::move(body)) {}
-
-ElseStatement::ElseStatement(const Source& source,
-                             std::unique_ptr<Expression> condition,
-                             std::unique_ptr<BlockStatement> body)
-    : Statement(source),
-      condition_(std::move(condition)),
-      body_(std::move(body)) {}
+                             Expression* condition,
+                             BlockStatement* body)
+    : Base(source), condition_(condition), body_(body) {}
 
 ElseStatement::ElseStatement(ElseStatement&&) = default;
 
 ElseStatement::~ElseStatement() = default;
 
-bool ElseStatement::IsElse() const {
-  return true;
+ElseStatement* ElseStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* cond = ctx->Clone(condition_);
+  auto* b = ctx->Clone(body_);
+  return ctx->dst->create<ElseStatement>(src, cond, b);
 }
 
 bool ElseStatement::IsValid() const {
@@ -53,14 +46,16 @@ bool ElseStatement::IsValid() const {
   return condition_ == nullptr || condition_->IsValid();
 }
 
-void ElseStatement::to_str(std::ostream& out, size_t indent) const {
+void ElseStatement::to_str(const semantic::Info& sem,
+                           std::ostream& out,
+                           size_t indent) const {
   make_indent(out, indent);
   out << "Else{" << std::endl;
   if (condition_ != nullptr) {
     make_indent(out, indent + 2);
     out << "(" << std::endl;
 
-    condition_->to_str(out, indent + 4);
+    condition_->to_str(sem, out, indent + 4);
 
     make_indent(out, indent + 2);
     out << ")" << std::endl;
@@ -70,8 +65,8 @@ void ElseStatement::to_str(std::ostream& out, size_t indent) const {
   out << "{" << std::endl;
 
   if (body_ != nullptr) {
-    for (const auto& stmt : *body_) {
-      stmt->to_str(out, indent + 4);
+    for (auto* stmt : *body_) {
+      stmt->to_str(sem, out, indent + 4);
     }
   }
 

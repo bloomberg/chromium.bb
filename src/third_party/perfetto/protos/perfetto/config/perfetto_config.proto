@@ -339,6 +339,11 @@ message ChromeConfig {
     USER_INITIATED = 2;
   }
   optional ClientPriority client_priority = 4;
+
+  // Applicable only when using legacy JSON format.
+  // If |json_agent_label_filter| is not empty, only data pertaining to
+  // the specified tracing agent label (e.g. "traceEvents") will be returned.
+  optional string json_agent_label_filter = 5;
 }
 
 // End of protos/perfetto/config/chrome/chrome_config.proto
@@ -368,6 +373,13 @@ message FtraceConfig {
   // kptr_restrict has been manually lowered.
   // It does not disclose KASLR, symbol addresses are mangled.
   optional bool symbolize_ksyms = 13;
+
+  // By default the kernel symbolizer is lazily initialized on a deferred task
+  // to reduce ftrace's time-to-start-recording. Unfortunately that makes
+  // ksyms integration tests hard. This flag forces the kernel symbolizer to be
+  // initialized synchronously on the data source start and hence avoiding
+  // timing races in tests.
+  optional bool initialize_ksyms_synchronously_for_testing = 14;
 }
 
 // End of protos/perfetto/config/ftrace/ftrace_config.proto
@@ -433,6 +445,34 @@ message InodeFileConfig {
 }
 
 // End of protos/perfetto/config/inode_file/inode_file_config.proto
+
+// Begin of protos/perfetto/config/interceptors/console_config.proto
+
+message ConsoleConfig {
+  enum Output {
+    OUTPUT_UNSPECIFIED = 0;
+    OUTPUT_STDOUT = 1;
+    OUTPUT_STDERR = 2;
+  }
+  optional Output output = 1;
+  optional bool enable_colors = 2;
+}
+
+// End of protos/perfetto/config/interceptors/console_config.proto
+
+// Begin of protos/perfetto/config/interceptor_config.proto
+
+// Configuration for trace packet interception. Used for diverting trace data to
+// non-Perfetto sources (e.g., logging to the console, ETW) when using the
+// Perfetto SDK.
+message InterceptorConfig {
+  // Matches the name given to RegisterInterceptor().
+  optional string name = 1;
+
+  optional ConsoleConfig console_config = 100 [lazy = true];
+}
+
+// End of protos/perfetto/config/interceptor_config.proto
 
 // Begin of protos/perfetto/config/power/android_power_config.proto
 
@@ -515,7 +555,7 @@ message ProcessStatsConfig {
 // Begin of protos/perfetto/config/profiling/heapprofd_config.proto
 
 // Configuration for go/heapprofd.
-// Next id: 24
+// Next id: 26
 message HeapprofdConfig {
   message ContinuousDumpConfig {
     // ms to wait before first dump.
@@ -542,6 +582,14 @@ message HeapprofdConfig {
   // BUGS
   // Before Android 12, setting this to 0 would crash the target process.
   optional uint64 sampling_interval_bytes = 1;
+
+  // If less than the given numbers of bytes are left free in the shared
+  // memory buffer, increase sampling interval by a factor of two.
+  // Adaptive sampling is disabled when set to 0.
+  optional uint64 adaptive_sampling_shmem_threshold = 24;
+  // Stop doubling the sampling_interval once the sampling interval has reached
+  // this value.
+  optional uint64 adaptive_sampling_max_sampling_interval_bytes = 25;
 
   // E.g. surfaceflinger, com.android.phone
   // This input is normalized in the following way: if it contains slashes,
@@ -720,16 +768,33 @@ message JavaHprofConfig {
 
 // Configuration for the traced_perf profiler.
 //
-// At the time of writing, the config options are restricted to the periodic
-// system-wide stack sampling use-case (|all_cpus| must be true).
+// Example config for basic cpu profiling:
+//   perf_event_config {
+//     timebase {
+//       frequency: 80
+//     }
+//     callstack_sampling {
+//       scope {
+//         target_cmdline: "surfaceflinger"
+//         target_cmdline: "system_server"
+//       }
+//       kernel_frames: true
+//     }
+//   }
+//
+// Next id: 17
 message PerfEventConfig {
-  // If true, sample events on all CPUs.
-  optional bool all_cpus = 1;
+  // What event to sample on, and how often.
+  optional Timebase timebase = 15;
 
-  // Per-cpu sampling frequency (requested from the kernel). Not guaranteed to
-  // be honored as the kernel can throttle the sampling rate if it's too high.
-  // If unset, an implementation-defined default is used.
-  optional uint32 sampling_frequency = 2;
+  // If set, the profiler will sample userspace processes' callstacks at the
+  // interval specified by the |timebase|.
+  // If unset, the profiler will record only the event counts.
+  optional CallstackSampling callstack_sampling = 16;
+
+  //
+  // Kernel <-> userspace ring buffer options:
+  //
 
   // How often the per-cpu ring buffers are read by the producer.
   // If unset, an implementation-defined default is used.
@@ -740,32 +805,17 @@ message PerfEventConfig {
   // If unset, an implementation-defined default is used.
   optional uint32 ring_buffer_pages = 3;
 
-  // Process ID (TGID) allowlist. If this list is not empty, only matching
-  // samples will be retained. If multiple allow/deny-lists are
-  // specified by the config, then all of them are evaluated for each sampled
-  // process.
-  repeated int32 target_pid = 4;
+  //
+  // Daemon's resource usage limits:
+  //
 
-  // Command line allowlist, matched against the
-  // /proc/<pid>/cmdline (not the comm string), with both sides being
-  // "normalized". Normalization is as follows: (1) trim everything beyond the
-  // first null or "@" byte; (2) if the string contains forward slashes, trim
-  // everything up to and including the last one.
-  repeated string target_cmdline = 5;
+  // Stop the data source if traced_perf's combined {RssAnon + Swap} memory
+  // footprint exceeds this value.
+  optional uint32 max_daemon_memory_kb = 13;
 
-  // List of excluded pids.
-  repeated int32 exclude_pid = 6;
-
-  // List of excluded cmdlines. Normalized in the same way as |target_cmdline|.
-  repeated string exclude_cmdline = 7;
-
-  // Number of additional command lines to sample. Only those which are neither
-  // explicitly included nor excluded will be considered. Processes are accepted
-  // on a first come, first served basis.
-  optional uint32 additional_cmdline_count = 11;
-
-  ////////////////////
+  //
   // Uncommon options:
+  //
 
   // Timeout for the remote /proc/<pid>/{maps,mem} file descriptors for a
   // sampled process. This is primarily for Android, where this lookup is
@@ -782,6 +832,123 @@ message PerfEventConfig {
   // processes, and require the memory footprint to be reset periodically.
   // If unset, the cached state will not be cleared.
   optional uint32 unwind_state_clear_period_ms = 10;
+
+  //
+  // Deprecated (superseded by options above):
+  //
+  // Do not set *any* of these fields in new configs.
+  //
+
+  // Note: legacy configs had to set |all_cpus| to true to pass parsing. We
+  // might start relying on this for compatibility detection in the future.
+  optional bool all_cpus = 1;
+  optional uint32 sampling_frequency = 2;
+  optional bool kernel_frames = 12;
+  repeated int32 target_pid = 4;
+  repeated string target_cmdline = 5;
+  repeated int32 exclude_pid = 6;
+  repeated string exclude_cmdline = 7;
+  optional uint32 additional_cmdline_count = 11;
+  optional Tracepoint tracepoint = 14;
+
+  //
+  // Sub-messages (nested for generated code namespacing).
+  //
+
+  message Timebase {
+    // How often the per-cpu sampling will occur. Not guaranteed to be honored
+    // as the kernel can throttle the sampling rate if it's too high.
+    // If unset, an implementation-defined default is used.
+    oneof interval {
+      // Per-cpu sampling frequency in Hz, as requested from the kernel. Not the
+      // same as 1/period.
+      // Details: the actual sampling will still be based on a period, but the
+      // kernel will dynamically adjust it based on the observed event rate, to
+      // approximate this frequency. Works best with steady-rate events like
+      // timers.
+      uint64 frequency = 2;
+
+      // Per-cpu sampling will occur every |period| counts of |event|.
+      // Prefer |frequency| by default, as it's easier to oversample with a
+      // fixed period.
+      uint64 period = 1;
+    }
+
+    // Counting event to use as a time base for the sampling.
+    // If unset, implies the CPU timer (SW_CPU_CLOCK) as the event,
+    // which is what you usually want.
+    oneof event {
+      Counter counter = 4;
+      Tracepoint tracepoint = 3;
+    }
+  }
+
+  message CallstackSampling {
+    // Defines a set of processes for which samples are retained/skipped. If
+    // unset, all userspace samples are kept, but beware that it will be very
+    // heavy on the stack unwinder, which might start dropping samples due to
+    // overload.
+    optional Scope scope = 1;
+
+    // If true, callstacks will include the kernel-space frames. Such frames can
+    // be identified by a magical "kernel" string as their mapping name.
+    // Requires traced_perf to be running as root, or kptr_restrict to have been
+    // manually unrestricted. On Android, the platform should do the right thing
+    // on debug builds.
+    // This does *not* disclose KASLR, as only the function names are emitted.
+    optional bool kernel_frames = 2;
+  }
+
+  message Scope {
+    // Process ID (TGID) allowlist. If this list is not empty, only matching
+    // samples will be retained. If multiple allow/deny-lists are
+    // specified by the config, then all of them are evaluated for each sampled
+    // process.
+    repeated int32 target_pid = 1;
+
+    // Command line allowlist, matched against the
+    // /proc/<pid>/cmdline (not the comm string), with both sides being
+    // "normalized". Normalization is as follows: (1) trim everything beyond the
+    // first null or "@" byte; (2) if the string contains forward slashes, trim
+    // everything up to and including the last one.
+    repeated string target_cmdline = 2;
+
+    // List of excluded pids.
+    repeated int32 exclude_pid = 3;
+
+    // List of excluded cmdlines. Normalized in the same way as
+    // |target_cmdline|.
+    repeated string exclude_cmdline = 4;
+
+    // Number of additional command lines to sample. Only those which are
+    // neither explicitly included nor excluded will be considered. Processes
+    // are accepted on a first come, first served basis.
+    optional uint32 additional_cmdline_count = 5;
+  }
+
+  enum Counter {
+    UNKNOWN_COUNTER = 0;
+    // software:
+    SW_CPU_CLOCK = 1;
+    SW_PAGE_FAULTS = 2;
+    // hardware:
+    HW_CPU_CYCLES = 10;
+    HW_INSTRUCTIONS = 11;
+  }
+
+  message Tracepoint {
+    // Group and name for the tracepoint, acceptable forms:
+    // * "sched/sched_switch"
+    // * "sched:sched_switch"
+    optional string name = 1;
+
+    // Optional field-level filter for the tracepoint. Only events matching this
+    // filter will be counted (and therefore contribute to the sampling period).
+    // Example: "prev_pid >= 42 && next_pid == 0".
+    // For full syntax, see kernel documentation on "Event filtering":
+    // https://www.kernel.org/doc/Documentation/trace/events.txt
+    optional string filter = 2;
+  }
 }
 
 // End of protos/perfetto/config/profiling/perf_event_config.proto
@@ -1109,6 +1276,7 @@ message TrackEventConfig {
 // Begin of protos/perfetto/config/data_source_config.proto
 
 // The configuration that is passed to each data source when starting tracing.
+// Next id: 116
 message DataSourceConfig {
   // Data source unique name, e.g., "linux.ftrace". This must match
   // the name passed by the data source when it registers (see
@@ -1141,6 +1309,7 @@ message DataSourceConfig {
   // one of which produces metadata for the other one, belong to the same trace
   // session and hence should be linked together.
   // This field was introduced in Aug 2018 after Android P.
+  // DO NOT SET in consumer as this will be overridden by the service.
   optional uint64 tracing_session_id = 4;
 
   // Keeep the lower IDs (up to 99) for fields that are *not* specific to
@@ -1189,6 +1358,16 @@ message DataSourceConfig {
   // C++ class for it so it can pass around plain C++ objets.
   optional ChromeConfig chrome_config = 101;
 
+  // If an interceptor is specified here, packets for this data source will be
+  // rerouted to the interceptor instead of the main trace buffer. This can be
+  // used, for example, to write trace data into ETW or for logging trace points
+  // to the console.
+  //
+  // Note that interceptors are only supported by data sources registered
+  // through the Perfetto SDK API. Data sources that don't use that API (e.g.,
+  // traced_probes) may not support interception.
+  optional InterceptorConfig interceptor_config = 115;
+
   // This is a fallback mechanism to send a free-form text config to the
   // producer. In theory this should never be needed. All the code that
   // is part of the platform (i.e. traced service) is supposed to *not* truncate
@@ -1214,7 +1393,7 @@ message DataSourceConfig {
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 30.
+// Next id: 31.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -1412,6 +1591,15 @@ message TraceConfig {
   // trace ends to notify it about the trace readiness.
   optional bool notify_traceur = 16;
 
+  // Android-only. If set to a value > 0, marks the trace session as a candidate
+  // for being attached to a bugreport. This field effectively acts as a z-index
+  // for bugreports. When Android's dumpstate runs perfetto
+  // --save-for-bugreport, traced will pick the tracing session with the highest
+  // score (score <= 0 is ignored), will steal its contents, save the trace into
+  // a known path and stop prematurely.
+  // This field was introduced in Android S.
+  optional int32 bugreport_score = 30;
+
   // Triggers allow producers to start or stop the tracing session when an event
   // occurs.
   //
@@ -1447,7 +1635,7 @@ message TraceConfig {
       // The producer must specify this name to activate the trigger.
       optional string name = 1;
 
-      // The a std::regex that will match the producer that can activate this
+      // An std::regex that will match the producer that can activate this
       // trigger. This is optional. If unset any producers can activate this
       // trigger.
       optional string producer_name_regex = 2;
@@ -1455,6 +1643,24 @@ message TraceConfig {
       // After a trigger is received either in START_TRACING or STOP_TRACING
       // mode then the trace will end |stop_delay_ms| after triggering.
       optional uint32 stop_delay_ms = 3;
+
+      // Limits the number of traces this trigger can start/stop in a rolling
+      // 24 hour window. If this field is unset or zero, no limit is applied and
+      // activiation of this trigger *always* starts/stops the trace.
+      optional uint32 max_per_24_h = 4;
+
+      // A value between 0 and 1 which encodes the probability of skipping a
+      // trigger with this name. This is useful for reducing the probability
+      // of high-frequency triggers from dominating trace finaization. If this
+      // field is unset or zero, the trigger will *never* be skipped. If this
+      // field is greater than or equal to 1, this trigger will *always* be
+      // skipped i.e. it will be as if this trigger was never included in the
+      // first place.
+      // This probability check is applied *before* any other limits. For
+      // example, if |max_per_24_h| is also set, first we will check if the
+      // probability bar is met and only then will we check the |max_per_24_h|
+      // limit.
+      optional double skip_probability = 5;
     }
     // A list of triggers which are related to this configuration. If ANY
     // trigger is seen then an action will be performed based on |trigger_mode|.
@@ -1513,9 +1719,9 @@ message TraceConfig {
   }
   optional CompressionType compression_type = 24;
 
-  // Android-only. Debug builds only. Not for general use. If set, saves a
-  // Dropbox trace into an incident. This field is read by perfetto_cmd, rather
-  // than the tracing service. All fields are mandatory.
+  // Android-only. Not for general use. If set, saves a Dropbox trace into an
+  // incident. This field is read by perfetto_cmd, rather than the tracing
+  // service. All fields are mandatory.
   message IncidentReportConfig {
     optional string destination_package = 1;
     optional string destination_class = 2;

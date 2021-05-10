@@ -91,7 +91,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
   size_t GetSize() const;
 
   // Returns bytes of memory currently in the free lists.
-  size_t GetSizeOfFreeLists() const;
+  size_t GetFreelistSize() const;
 
   // Dumps memory statistics for chrome://tracing.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -149,6 +149,8 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
   bool IsMemoryResident(const base::DiscardableSharedMemory* shared_memory);
   void ReleaseMemory(const base::DiscardableSharedMemory* shared_memory,
                      size_t size);
+
+  base::Optional<size_t> GetResidentSize() const;
 
   // Dumps memory statistics about a memory segment for chrome://tracing.
   void OnMemoryDump(const base::DiscardableSharedMemory* shared_memory,

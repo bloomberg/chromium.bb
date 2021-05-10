@@ -45,7 +45,6 @@ TEST(CSSSelector, Representations) {
       "#id.class { }"
       "[attr]#id { }"
       "div[attr]#id { }"
-      "div::content { }"
       "div::first-line { }"
       ".a.b.c { }"
       "div:not(.a) { }"        // without class a
@@ -67,7 +66,7 @@ TEST(CSSSelector, Representations) {
       ".a.b .c {}";
 
   sheet.AddCSSRules(css_rules);
-  EXPECT_EQ(30u,
+  EXPECT_EQ(29u,
             sheet.GetRuleSet().RuleCount());  // .a, .b counts as two rules.
 #ifndef NDEBUG
   sheet.GetRuleSet().Show();
@@ -164,6 +163,27 @@ TEST(CSSSelector, HasLinkOrVisited) {
   EXPECT_TRUE(HasLinkOrVisited("::cue(:link)"));
   EXPECT_TRUE(HasLinkOrVisited(":host(:link)"));
   EXPECT_TRUE(HasLinkOrVisited(":host-context(:link)"));
+}
+
+TEST(CSSSelector, CueDefaultNamespace) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(R"HTML(
+    @namespace "http://www.w3.org/1999/xhtml";
+    video::cue(b) {}
+  )HTML");
+
+  const CSSSelector& cue_selector =
+      (*sheet.GetRuleSet().CuePseudoRules())[0]->Selector();
+  EXPECT_EQ(cue_selector.GetPseudoType(), CSSSelector::kPseudoCue);
+
+  const CSSSelectorList* cue_arguments = cue_selector.SelectorList();
+  ASSERT_TRUE(cue_arguments);
+  const CSSSelector* vtt_type_selector = cue_arguments->First();
+  ASSERT_TRUE(vtt_type_selector);
+  EXPECT_EQ(vtt_type_selector->TagQName().LocalName(), "b");
+  // Default namespace should not affect VTT node type selector.
+  EXPECT_EQ(vtt_type_selector->TagQName().NamespaceURI(), g_star_atom);
 }
 
 }  // namespace blink

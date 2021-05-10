@@ -81,9 +81,11 @@ typedef struct MpegTSWrite {
     int64_t pat_period; /* PAT/PMT period in PCR time base */
     int nb_services;
     int64_t first_pcr;
+    int first_dts_checked;
     int64_t next_pcr;
     int mux_rate; ///< set to 1 when VBR
     int pes_payload_size;
+    int64_t total_size;
 
     int transport_stream_id;
     int original_network_id;
@@ -230,7 +232,7 @@ typedef struct MpegTSWriteStream {
     int cc;
     int discontinuity;
     int payload_size;
-    int first_pts_check; ///< first pts check needed
+    int first_timestamp_checked; ///< first pts/dts check needed
     int prev_payload_key;
     int64_t payload_pts;
     int64_t payload_dts;
@@ -275,7 +277,7 @@ static void putbuf(uint8_t **q_ptr, const uint8_t *buf, size_t len)
 static void put_registration_descriptor(uint8_t **q_ptr, uint32_t tag)
 {
     uint8_t *q = *q_ptr;
-    *q++ = 0x05; /* MPEG-2 registration descriptor*/
+    *q++ = REGISTRATION_DESCRIPTOR;
     *q++ = 4;
     *q++ = tag;
     *q++ = tag >> 8;
@@ -600,7 +602,7 @@ static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
                 char *next = lang->value;
                 uint8_t *len_ptr;
 
-                *q++     = 0x0a; /* ISO 639 language descriptor */
+                *q++     = ISO_639_LANGUAGE_DESCRIPTOR;
                 len_ptr  = q++;
                 *len_ptr = 0;
 
@@ -728,7 +730,7 @@ static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
                 put_registration_descriptor(&q, MKTAG('K', 'L', 'V', 'A'));
             } else if (codec_id == AV_CODEC_ID_TIMED_ID3) {
                 const char *tag = "ID3 ";
-                *q++ = 0x26; /* metadata descriptor */
+                *q++ = METADATA_DESCRIPTOR;
                 *q++ = 13;
                 put16(&q, 0xffff);    /* metadata application format */
                 putbuf(&q, tag, strlen(tag));
@@ -830,9 +832,9 @@ invalid:
     return 0;
 }
 
-static int64_t get_pcr(const MpegTSWrite *ts, AVIOContext *pb)
+static int64_t get_pcr(const MpegTSWrite *ts)
 {
-    return av_rescale(avio_tell(pb) + 11, 8 * PCR_TIME_BASE, ts->mux_rate) +
+    return av_rescale(ts->total_size + 11, 8 * PCR_TIME_BASE, ts->mux_rate) +
            ts->first_pcr;
 }
 
@@ -840,13 +842,14 @@ static void write_packet(AVFormatContext *s, const uint8_t *packet)
 {
     MpegTSWrite *ts = s->priv_data;
     if (ts->m2ts_mode) {
-        int64_t pcr = get_pcr(s->priv_data, s->pb);
+        int64_t pcr = get_pcr(s->priv_data);
         uint32_t tp_extra_header = pcr % 0x3fffffff;
         tp_extra_header = AV_RB32(&tp_extra_header);
         avio_write(s->pb, (unsigned char *) &tp_extra_header,
                    sizeof(tp_extra_header));
     }
     avio_write(s->pb, packet, TS_PACKET_SIZE);
+    ts->total_size += TS_PACKET_SIZE;
 }
 
 static void section_write_packet(MpegTSSection *s, const uint8_t *packet)
@@ -1098,7 +1101,6 @@ static int mpegts_init(AVFormatContext *s)
         }
         ts_st->payload_pts     = AV_NOPTS_VALUE;
         ts_st->payload_dts     = AV_NOPTS_VALUE;
-        ts_st->first_pts_check = 1;
         ts_st->cc              = 15;
         ts_st->discontinuity   = ts->flags & MPEGTS_FLAG_DISCONT;
         if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
@@ -1228,7 +1230,7 @@ static void mpegts_insert_pcr_only(AVFormatContext *s, AVStream *st)
     }
 
     /* PCR coded into 6 bytes */
-    q += write_pcr_bits(q, get_pcr(ts, s->pb));
+    q += write_pcr_bits(q, get_pcr(ts));
 
     /* stuffing bytes */
     memset(q, 0xFF, TS_PACKET_SIZE - (q - buf));
@@ -1315,7 +1317,7 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
     while (payload_size > 0) {
         int64_t pcr = AV_NOPTS_VALUE;
         if (ts->mux_rate > 1)
-            pcr = get_pcr(ts, s->pb);
+            pcr = get_pcr(ts);
         else if (dts != AV_NOPTS_VALUE)
             pcr = (dts - delay) * 300;
 
@@ -1326,7 +1328,7 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
         write_pcr = 0;
         if (ts->mux_rate > 1) {
             /* Send PCR packets for all PCR streams if needed */
-            pcr = get_pcr(ts, s->pb);
+            pcr = get_pcr(ts);
             if (pcr >= ts->next_pcr) {
                 int64_t next_pcr = INT64_MAX;
                 for (int i = 0; i < s->nb_streams; i++) {
@@ -1340,7 +1342,7 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
                             ts_st2->last_pcr = FFMAX(pcr - ts_st2->pcr_period, ts_st2->last_pcr + ts_st2->pcr_period);
                             if (st2 != st) {
                                 mpegts_insert_pcr_only(s, st2);
-                                pcr = get_pcr(ts, s->pb);
+                                pcr = get_pcr(ts);
                             } else {
                                 write_pcr = 1;
                             }
@@ -1686,17 +1688,22 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
         stream_id = side_data[0];
 
     if (ts->copyts < 1) {
+        if (!ts->first_dts_checked && dts != AV_NOPTS_VALUE) {
+            ts->first_pcr += dts * 300;
+            ts->first_dts_checked = 1;
+        }
+
         if (pts != AV_NOPTS_VALUE)
             pts += delay;
         if (dts != AV_NOPTS_VALUE)
             dts += delay;
     }
 
-    if (ts_st->first_pts_check && pts == AV_NOPTS_VALUE) {
-        av_log(s, AV_LOG_ERROR, "first pts value must be set\n");
+    if (!ts_st->first_timestamp_checked && (pts == AV_NOPTS_VALUE || dts == AV_NOPTS_VALUE)) {
+        av_log(s, AV_LOG_ERROR, "first pts and dts value must be set\n");
         return AVERROR_INVALIDDATA;
     }
-    ts_st->first_pts_check = 0;
+    ts_st->first_timestamp_checked = 1;
 
     if (st->codecpar->codec_id == AV_CODEC_ID_H264) {
         const uint8_t *p = buf, *buf_end = p + size;

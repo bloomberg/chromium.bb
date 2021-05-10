@@ -147,6 +147,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     personal_data_manager_.Init(/*profile_database=*/database_,
                                 /*account_database=*/nullptr,
                                 /*pref_service=*/autofill_client_.GetPrefs(),
+                                /*local_state=*/autofill_client_.GetPrefs(),
                                 /*identity_manager=*/nullptr,
                                 /*client_profile_validator=*/nullptr,
                                 /*history_service=*/nullptr,
@@ -1838,8 +1839,6 @@ TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {
 
 // Ensures that the use of |unmasked_card_cache_| is set and logged correctly.
 TEST_F(CreditCardAccessManagerTest, FetchCreditCardUsesUnmaskedCardCache) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillCacheServerCardInfo);
   base::HistogramTester histogram_tester;
   CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false);
   CreditCard* unmasked_card =

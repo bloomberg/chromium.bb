@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview using private properties isn't a Closure violation in tests.
- * @suppress {accessControls}
  */
 self.ElementsTestRunner = self.ElementsTestRunner || {};
 
@@ -105,6 +104,22 @@ ElementsTestRunner.findNodePromise = function(matchFunction) {
   return new Promise(resolve => ElementsTestRunner.findNode(matchFunction, resolve));
 };
 
+
+/**
+ * @param {!UI.TreeOutline.TreeElement} treeElement
+ */
+function dumpObjectPropertyTreeElement(treeElement) {
+  const expandedSubstring = treeElement.expanded ? '[expanded]' : '[collapsed]';
+  TestRunner.addResult(expandedSubstring + ' ' + treeElement.listItemElement.deepTextContent());
+
+  for (const child of treeElement.children()) {
+    const property = /** @type {!ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement} */ (child).property;
+    const key = property.name;
+    const value = /** @type {!SDK.RemoteObject.RemoteObjectImpl} */ (property.value)._description;
+    TestRunner.addResult('    ' + key + ': ' + value);
+  }
+}
+
 /**
  * @param {!EventListeners.EventListenersView} eventListenersView
  * @param {function():void} callback
@@ -135,7 +150,7 @@ ElementsTestRunner.expandAndDumpEventListeners = function(eventListenersView, ca
       const listenerItems = listenerTypes[i].children();
       for (let j = 0; j < listenerItems.length; ++j) {
         TestRunner.addResult('== ' + listenerItems[j].eventListener().origin());
-        TestRunner.dumpObjectPropertyTreeElement(listenerItems[j]);
+        dumpObjectPropertyTreeElement(listenerItems[j]);
       }
     }
     callback();
@@ -523,7 +538,7 @@ async function extractLinkText(element) {
   }
 
   const anchorText = anchor.textContent;
-  const info = Components.Linkifier._linkInfo(anchor);
+  const info = Components.Linkifier.linkInfo(anchor);
   const uiLocation = info && info.uiLocation;
   const anchorTarget =
       (uiLocation ?
@@ -1198,12 +1213,28 @@ function onBlankSection(selector, callback) {
   ElementsTestRunner.waitForSelectorCommitted(callback.bind(null, section));
 }
 
-ElementsTestRunner.dumpInspectorHighlightJSON = function(idValue, callback) {
+/**
+ * The function accepts 2 or 3 arguments. Callback is the last one and the second argument is optional.
+ *
+ * To dump all highlight properties: dumpInspectorHighlightJSON(idValue, callback).
+ * To pick which properties to dump: dumpInspectorHighlightJSON(idValue, ['prop'], callback).
+ *
+ * @param {string} idValue
+ * @param {?Array<string>} attributes List of top-level property names to include in the result
+ * @param {?Function=} maybeCallback
+ */
+ElementsTestRunner.dumpInspectorHighlightJSON = function(idValue, attributes, maybeCallback) {
+  const callback = arguments.length === 3 ? maybeCallback : attributes;
+  const attributeSet = arguments.length === 3 ? new Set(attributes) : new Set();
   ElementsTestRunner.nodeWithId(idValue, nodeResolved);
 
   async function nodeResolved(node) {
     const result = await TestRunner.OverlayAgent.getHighlightObjectForTest(node.id);
-    TestRunner.addResult(idValue + JSON.stringify(result, null, 2));
+    const view = attributeSet.size ? {} : result;
+    for (const key of Object.keys(result).filter(key => attributeSet.has(key))) {
+      view[key] = result[key];
+    }
+    TestRunner.addResult(idValue + JSON.stringify(view, null, 2));
     callback();
   }
 };

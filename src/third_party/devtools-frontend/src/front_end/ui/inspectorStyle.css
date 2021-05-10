@@ -30,7 +30,12 @@
 :root {
   height: 100%;
   overflow: hidden;
-
+  /**
+   * NOTE: please don't add to these colours!
+   * We are migrating to a new set of theme colors (see below for details) and over time these colors will be deprecated / removed.
+   * Chat to jacktfranklin@ or petermueller@ if you have questions.
+   * https://crbug.com/1122511
+   */
   --accent-color: #1a73e8;
   --accent-fg-color: #1a73e8;
   --accent-color-hover: #3b86e8;
@@ -41,16 +46,12 @@
   --input-validation-error: #db1600;
   --toolbar-bg-color: #f3f3f3;
   --toolbar-hover-bg-color: #eaeaea;
-  --selection-fg-color: white;
+  --selection-fg-color: #fff;
   --selection-bg-color: var(--accent-color);
   --selection-inactive-fg-color: #5a5a5a;
   --selection-inactive-bg-color: #dadada;
   --tab-selected-fg-color: #333;
   --tab-selected-bg-color: var(--toolbar-bg-color);
-  --drop-shadow:
-    0 0 0 1px rgb(0 0 0 / 5%),
-    0 2px 4px rgb(0 0 0 / 20%),
-    0 2px 6px rgb(0 0 0 / 10%);
   --divider-color: #d0d0d0;
   --divider-border: 1px solid var(--divider-color);
   --focus-ring-inactive-shadow: 0 0 0 1px var(--focus-ring-inactive-shadow-color);
@@ -74,6 +75,12 @@
 }
 
 .-theme-with-dark-background {
+  /**
+   * NOTE: please don't add to these colours!
+   * We are migrating to a new set of theme colors (see below for details) and over time these colors will be deprecated / removed.
+   * Chat to jacktfranklin@ or petermueller@ if you have questions.
+   * https://crbug.com/1122511
+   */
   --accent-color: #0e639c;
   --accent-fg-color: #ccc;
   --accent-fg-color-hover: #fff;
@@ -88,10 +95,6 @@
   --selection-inactive-bg-color: hsl(0deg 0% 28%);
   --tab-selected-fg-color: #eaeaea;
   --tab-selected-bg-color: #000;
-  --drop-shadow:
-    0 0 0 1px rgb(255 255 255 / 20%),
-    0 2px 4px 2px rgb(0 0 0 / 20%),
-    0 2px 6px 2px rgb(0 0 0 / 10%);
   --divider-color: #525252;
   --focus-ring-inactive-shadow: 0 0 0 1px var(--focus-ring-inactive-shadow-color);
   --item-selection-bg-color: hsl(207deg 88% 22%);
@@ -121,17 +124,20 @@ body {
   font-size: 12px;
   tab-size: 4;
   user-select: none;
-  color: #222;
-  background: white;
+  color: #222; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--color-background);
 }
 
 .platform-linux {
-  color: rgb(48 57 66);
+  color: rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   font-family: Roboto, Ubuntu, Arial, sans-serif;
 }
 
 .platform-mac {
-  color: rgb(48 57 66);
+  color: rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   font-family: '.SFNSDisplay-Regular', 'Helvetica Neue', 'Lucida Grande', sans-serif;
 }
 
@@ -148,7 +154,7 @@ body {
   right: 0;
   bottom: 0;
   z-index: 0;
-  background-color: white;
+  background-color: var(--color-background);
 }
 
 .panel-sidebar {

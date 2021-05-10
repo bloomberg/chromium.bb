@@ -8,6 +8,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
@@ -46,11 +48,15 @@ void SkipAdLabelButton::SetPosition(const gfx::Size& size) {
       size.height() - kSkipAdButtonHeight - kSkipAdButtonMarginBottom));
 }
 
-void SkipAdLabelButton::ToggleVisibility(bool is_visible) {
-  layer()->SetVisible(is_visible);
-  SetEnabled(is_visible);
-  SetSize(is_visible ? gfx::Size(kSkipAdButtonWidth, kSkipAdButtonHeight)
-                     : gfx::Size());
+void SkipAdLabelButton::SetVisible(bool visible) {
+  // We need to do more than the usual visibility change because otherwise the
+  // overlay window cannot be dragged when grabbing within the label area.
+  LabelButton::SetVisible(visible);
+  SetSize(visible ? gfx::Size(kSkipAdButtonWidth, kSkipAdButtonHeight)
+                  : gfx::Size());
 }
+
+BEGIN_METADATA(SkipAdLabelButton, views::LabelButton)
+END_METADATA
 
 }  // namespace views

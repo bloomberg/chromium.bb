@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
@@ -46,7 +47,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
-  void UninstallAndReplaceIfExists(const std::vector<AppId>& from_apps,
+  bool UninstallAndReplaceIfExists(const std::vector<AppId>& from_apps,
                                    const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
@@ -64,6 +65,12 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
+
+#if defined(OS_WIN)
+  // Attempts to uninstall the given web app id. Meant to be used with OS-level
+  // uninstallation support/hooks.
+  void UninstallWebAppFromStartupSwitch(const AppId& app_id);
+#endif
 
  private:
   // Returns true if Browser is for an installed App.

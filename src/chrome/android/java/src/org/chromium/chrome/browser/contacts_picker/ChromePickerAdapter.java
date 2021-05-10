@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.ProfileDataCache;
+import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.components.browser_ui.contacts_picker.ContactDetails;
 import org.chromium.components.browser_ui.contacts_picker.PickerAdapter;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -46,8 +46,8 @@ public class ChromePickerAdapter extends PickerAdapter implements ProfileDataCac
     private boolean mWaitingOnOwnerInfo;
 
     public ChromePickerAdapter(Context context) {
-        mProfileDataCache = new ProfileDataCache(context,
-                context.getResources().getDimensionPixelSize(R.dimen.contact_picker_icon_size));
+        mProfileDataCache =
+                ProfileDataCache.createWithoutBadge(context, R.dimen.contact_picker_icon_size);
     }
 
     // Adapter:
@@ -67,8 +67,8 @@ public class ChromePickerAdapter extends PickerAdapter implements ProfileDataCac
     // ProfileDataCache.Observer:
 
     @Override
-    public void onProfileDataUpdated(String accountId) {
-        if (!mWaitingOnOwnerInfo || !TextUtils.equals(accountId, getOwnerEmail())) {
+    public void onProfileDataUpdated(String accountEmail) {
+        if (!mWaitingOnOwnerInfo || !TextUtils.equals(accountEmail, getOwnerEmail())) {
             return;
         }
 

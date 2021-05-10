@@ -83,7 +83,6 @@ NavigationControllerImpl::GetVisibleNavigationState() const {
   } else {
     switch (entry->GetPageType()) {
       case content::PageType::PAGE_TYPE_NORMAL:
-      case content::PageType::PAGE_TYPE_INTERSTITIAL:
         state.set_page_type(fuchsia::web::PageType::NORMAL);
         break;
       case content::PageType::PAGE_TYPE_ERROR:
@@ -227,7 +226,13 @@ void NavigationControllerImpl::DocumentAvailableInMainFrame() {
 void NavigationControllerImpl::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  // The document and its statically-declared subresources are loaded.
+  // The current document and its statically-declared subresources are loaded.
+
+  // Don't process load completion on the current document if the WebContents
+  // is already in the process of navigating to a different page.
+  if (active_navigation_)
+    return;
+
   is_main_document_loaded_ = true;
   OnNavigationEntryChanged();
 }
@@ -242,18 +247,26 @@ void NavigationControllerImpl::RenderProcessGone(
 
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  uncommitted_load_error_ = false;
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
 
+  uncommitted_load_error_ = false;
+  active_navigation_ = navigation_handle;
   is_main_document_loaded_ = false;
   OnNavigationEntryChanged();
 }
 
 void NavigationControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() ||
+      navigation_handle != active_navigation_) {
+    return;
+  }
+
+  active_navigation_ = nullptr;
   uncommitted_load_error_ = !navigation_handle->HasCommitted() &&
                             navigation_handle->GetNetErrorCode() != net::OK;
   OnNavigationEntryChanged();

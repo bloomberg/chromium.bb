@@ -18,6 +18,8 @@
 #include "core/fxcrt/css/cfx_cssvaluelist.h"
 #include "core/fxcrt/css/cfx_cssvaluelistparser.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_system.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 
 namespace {
@@ -30,8 +32,8 @@ bool ParseCSSNumber(const wchar_t* pszValue,
                     int32_t iValueLen,
                     float* pValue,
                     CFX_CSSNumberType* pOutUnit) {
-  ASSERT(pszValue);
-  ASSERT(iValueLen > 0);
+  DCHECK(pszValue);
+  DCHECK(iValueLen > 0);
 
   int32_t iUsedLen = 0;
   *pValue = FXSYS_wcstof(pszValue, iValueLen, &iUsedLen);
@@ -59,8 +61,8 @@ bool CFX_CSSDeclaration::ParseCSSString(const wchar_t* pszValue,
                                         int32_t iValueLen,
                                         int32_t* iOffset,
                                         int32_t* iLength) {
-  ASSERT(pszValue);
-  ASSERT(iValueLen > 0);
+  DCHECK(pszValue);
+  DCHECK(iValueLen > 0);
 
   *iOffset = 0;
   *iLength = iValueLen;
@@ -78,9 +80,9 @@ bool CFX_CSSDeclaration::ParseCSSString(const wchar_t* pszValue,
 bool CFX_CSSDeclaration::ParseCSSColor(const wchar_t* pszValue,
                                        int32_t iValueLen,
                                        FX_ARGB* dwColor) {
-  ASSERT(pszValue);
-  ASSERT(iValueLen > 0);
-  ASSERT(dwColor);
+  DCHECK(pszValue);
+  DCHECK(iValueLen > 0);
+  DCHECK(dwColor);
 
   if (*pszValue == '#') {
     switch (iValueLen) {
@@ -165,7 +167,7 @@ void CFX_CSSDeclaration::AddPropertyHolder(CFX_CSSProperty eProperty,
 
 void CFX_CSSDeclaration::AddProperty(const CFX_CSSData::Property* property,
                                      WideStringView value) {
-  ASSERT(!value.IsEmpty());
+  DCHECK(!value.IsEmpty());
 
   const wchar_t* pszValue = value.unterminated_c_str();
   int32_t iValueLen = value.GetLength();
@@ -576,7 +578,7 @@ void CFX_CSSDeclaration::ParseFontProperty(const wchar_t* pszValue,
         if (!ParseCSSNumber(pszValue, iValueLen, &fValue, &eNumType))
           break;
         if (eType == CFX_CSSPrimitiveType::Number) {
-          switch ((int32_t)fValue) {
+          switch (static_cast<int32_t>(fValue)) {
             case 100:
             case 200:
             case 300:

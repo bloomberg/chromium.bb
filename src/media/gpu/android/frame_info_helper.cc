@@ -68,7 +68,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
       stub_ = nullptr;
     }
 
-    void GetFrameInfo(
+    void GetFrameInfoImpl(
         std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
         base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
                                 base::Optional<FrameInfo>)> cb) {
@@ -95,6 +95,21 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
       std::move(cb).Run(std::move(buffer_renderer), info);
     }
 
+    void GetFrameInfo(
+        std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
+        base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
+                                base::Optional<FrameInfo>)> cb) {
+      DCHECK(buffer_renderer);
+
+      auto texture_owner = buffer_renderer->texture_owner();
+      DCHECK(texture_owner);
+
+      auto buffer_available_cb =
+          base::BindOnce(&OnGpu::GetFrameInfoImpl, weak_factory_.GetWeakPtr(),
+                         std::move(buffer_renderer), std::move(cb));
+      texture_owner->RunWhenBufferIsAvailable(std::move(buffer_available_cb));
+    }
+
    private:
     // Gets YCbCrInfo from last rendered frame.
     base::Optional<gpu::VulkanYCbCrInfo> GetYCbCrInfo(
@@ -117,6 +132,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
     }
 
     gpu::CommandBufferStub* stub_ = nullptr;
+    base::WeakPtrFactory<OnGpu> weak_factory_{this};
   };
 
   FrameInfo GetFrameInfoWithVisibleSize(const gfx::Size& visible_size) {
@@ -180,8 +196,8 @@ class FrameInfoHelperImpl : public FrameInfoHelper {
             base::BindOnce(&FrameInfoHelperImpl::OnFrameInfoReady,
                            weak_factory_.GetWeakPtr()));
 
-        on_gpu_.Post(FROM_HERE, &OnGpu::GetFrameInfo,
-                     std::move(request.buffer_renderer), std::move(cb));
+        on_gpu_.AsyncCall(&OnGpu::GetFrameInfo)
+            .WithArgs(std::move(request.buffer_renderer), std::move(cb));
         // We didn't complete this request quite yet, so we can't process queue
         // any further.
         break;

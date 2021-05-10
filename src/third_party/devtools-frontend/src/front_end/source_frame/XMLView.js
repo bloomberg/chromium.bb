@@ -2,14 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as UI from '../ui/ui.js';
 
+export const UIStrings = {
+  /**
+  *@description Text to find an item
+  */
+  find: 'Find',
+};
+const str_ = i18n.i18n.registerUIStrings('source_frame/XMLView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {UI.SearchableView.Searchable}
- * @unrestricted
  */
 export class XMLView extends UI.Widget.Widget {
   /**
@@ -17,7 +24,7 @@ export class XMLView extends UI.Widget.Widget {
    */
   constructor(parsedXML) {
     super(true);
-    this.registerRequiredCSS('source_frame/xmlView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('source_frame/xmlView.css', {enableLegacyPatching: false});
     this.contentElement.classList.add('shadow-xml-view', 'source-code');
     this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.registerRequiredCSS('source_frame/xmlTree.css', {enableLegacyPatching: true});
@@ -45,8 +52,8 @@ export class XMLView extends UI.Widget.Widget {
    */
   static createSearchableView(parsedXML) {
     const xmlView = new XMLView(parsedXML);
-    const searchableView = new UI.SearchableView.SearchableView(xmlView);
-    searchableView.setPlaceholder(Common.UIString.UIString('Find'));
+    const searchableView = new UI.SearchableView.SearchableView(xmlView, null);
+    searchableView.setPlaceholder(i18nString(UIStrings.find));
     xmlView._searchableView = searchableView;
     xmlView.show(searchableView.element);
     return searchableView;
@@ -243,9 +250,6 @@ export class XMLView extends UI.Widget.Widget {
 }
 
 
-/**
- * @unrestricted
- */
 export class XMLViewNode extends UI.TreeOutline.TreeElement {
   /**
    * @param {!Node|!ParentNode} node
@@ -253,7 +257,7 @@ export class XMLViewNode extends UI.TreeOutline.TreeElement {
    * @param {!XMLView} xmlView
    */
   constructor(node, closeTag, xmlView) {
-    super('', !closeTag && 'childElementCount' in node && !!node.childElementCount);
+    super('', !closeTag && 'childElementCount' in node && Boolean(node.childElementCount));
     this._node = node;
     this._closeTag = closeTag;
     this.selectable = true;
@@ -320,7 +324,7 @@ export class XMLViewNode extends UI.TreeOutline.TreeElement {
     if (ranges.length) {
       UI.UIUtils.highlightRangesWithStyleClass(this.listItemElement, ranges, cssClasses, this._highlightChanges);
     }
-    return !!this._highlightChanges.length;
+    return Boolean(this._highlightChanges.length);
   }
 
   revertHighlightChanges() {

@@ -69,12 +69,12 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
     SupervisedUserSettingsService* supervised_user_settings_service) {
   user_settings_subscription_ =
       supervised_user_settings_service->SubscribeForSettingsChange(
-          base::Bind(&SupervisedUserPrefStore::OnNewSettingsAvailable,
-                     base::Unretained(this)));
+          base::BindRepeating(&SupervisedUserPrefStore::OnNewSettingsAvailable,
+                              base::Unretained(this)));
 
   // The SupervisedUserSettingsService must be created before the PrefStore, and
-  // it will notify the PrefStore to unsubscribe both subscriptions when it is
-  // shut down.
+  // it will notify the PrefStore to destroy both subscriptions when it is shut
+  // down.
   shutdown_subscription_ =
       supervised_user_settings_service->SubscribeForShutdown(
           base::BindRepeating(
@@ -101,7 +101,7 @@ void SupervisedUserPrefStore::RemoveObserver(PrefStore::Observer* observer) {
 }
 
 bool SupervisedUserPrefStore::HasObservers() const {
-  return observers_.might_have_observers();
+  return !observers_.empty();
 }
 
 bool SupervisedUserPrefStore::IsInitializationComplete() const {
@@ -191,6 +191,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
 }
 
 void SupervisedUserPrefStore::OnSettingsServiceShutdown() {
-  user_settings_subscription_.reset();
-  shutdown_subscription_.reset();
+  user_settings_subscription_ = {};
+  shutdown_subscription_ = {};
 }

@@ -329,7 +329,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
 
   // Configures the test fixture to use the list of expected writes.
   void Initialize() {
-    mock_writes_.reset(new MockWrite[writes_.size()]);
+    mock_writes_ = std::make_unique<MockWrite[]>(writes_.size());
     for (size_t i = 0; i < writes_.size(); i++) {
       if (writes_[i].packet == nullptr) {
         mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].rv, i);
@@ -339,9 +339,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
       }
     }
 
-    socket_data_.reset(new StaticSocketDataProvider(
+    socket_data_ = std::make_unique<StaticSocketDataProvider>(
         base::span<MockRead>(),
-        base::make_span(mock_writes_.get(), writes_.size())));
+        base::make_span(mock_writes_.get(), writes_.size()));
     socket_data_->set_printer(&printer_);
 
     std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
@@ -368,9 +368,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
     EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, GetCongestionControlType())
         .Times(AnyNumber());
-    helper_.reset(
-        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
-    alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
+    helper_ = std::make_unique<QuicChromiumConnectionHelper>(
+        &clock_, &random_generator_);
+    alarm_factory_ =
+        std::make_unique<QuicChromiumAlarmFactory>(runner_.get(), &clock_);
 
     connection_ = new TestQuicConnection(
         quic::test::SupportedVersions(version_), connection_id_, peer_addr_,
@@ -391,7 +392,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
 
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
-    session_.reset(new QuicChromiumClientSession(
+    session_ = std::make_unique<QuicChromiumClientSession>(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, /*ssl_config_service=*/nullptr,
@@ -421,7 +422,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
         std::make_unique<quic::QuicClientPushPromiseIndex>(), nullptr,
         base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
-        /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
+        /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log());
     session_->Initialize();
 
     // Blackhole QPACK decoder stream instead of constructing mock writes.
@@ -1745,10 +1746,8 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestAbortedByResetStream) {
         kIncludeVersion, !kFin, DEFAULT_PRIORITY, 0,
         &spdy_request_headers_frame_length, {header, kUploadData}));
     AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
-    AddWrite(client_maker_.MakeAckAndRstPacket(
-        packet_number++,
-        /* include_version = */ true, stream_id_, quic::QUIC_STREAM_NO_ERROR, 4,
-        1,
+    AddWrite(client_maker_.MakeRstPacket(
+        packet_number++, true, stream_id_, quic::QUIC_STREAM_NO_ERROR,
         /* include_stop_sending_if_v99 = */ false));
   } else {
     AddWrite(ConstructRequestHeadersAndDataFramesPacket(
@@ -1797,10 +1796,18 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestAbortedByResetStream) {
   ProcessPacket(
       ConstructServerDataPacket(3, false, kFin, header2 + kResponseBody));
 
-  // Server resets stream with H3_NO_ERROR before request body is complete.
-  ProcessPacket(server_maker_.MakeRstPacket(4, /* include_version = */ false,
-                                            stream_id_,
-                                            quic::QUIC_STREAM_NO_ERROR));
+  if (version_.HasIetfQuicFrames()) {
+    // In IETF QUIC, the server uses a STOP_SENDING frame to notify the client
+    // that it does not need any further data to fully process the request.
+    ProcessPacket(server_maker_.MakeStopSendingPacket(
+        4, /* include_version = */ false, stream_id_,
+        quic::QUIC_STREAM_NO_ERROR));
+  } else {
+    // Server resets stream with H3_NO_ERROR before request body is complete.
+    ProcessPacket(server_maker_.MakeRstPacket(4, /* include_version = */ false,
+                                              stream_id_,
+                                              quic::QUIC_STREAM_NO_ERROR));
+  }
 
   // Finish feeding request body to QuicHttpStream.  Data will be discarded.
   chunked_upload_stream->AppendData(kUploadData, chunk_size, true);

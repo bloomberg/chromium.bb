@@ -91,9 +91,27 @@ base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
 // that is incompatible with --site-per-process.
 bool AreAllSitesIsolatedForTesting();
 
+// Returns true if |origin| is currently isolated with respect to the
+// BrowsingInstance of |site_instance|. This is only relevant for
+// OriginAgentCluster isolation, and not other types of origin isolation.
+bool ShouldOriginGetOptInIsolation(SiteInstance* site_instance,
+                                   const url::Origin& origin);
+
 // Returns true if default SiteInstances are enabled. Typically used in a test
 // to mark expectations specific to default SiteInstances.
 bool AreDefaultSiteInstancesEnabled();
+
+// Returns true if the process model only allows a SiteInstance to contain
+// a single site.
+bool AreStrictSiteInstancesEnabled();
+
+// Returns true if a test needs to register an origin for isolation to ensure
+// that navigations, for that origin, are placed in a dedicated process. Some
+// process model modes allow sites to share a process if they are not isolated.
+// This helper indicates when such a mode is in use and indicates the test must
+// register an isolated origin to ensure the origin gets placed in its own
+// process.
+bool IsIsolatedOriginRequiredToGuaranteeDedicatedProcess();
 
 // Appends --site-per-process to the command line, enabling tests to exercise
 // site isolation and cross-process iframes. This must be called early in
@@ -134,6 +152,11 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
 
 // Spins a run loop until IsDocumentOnLoadCompletedInMainFrame() is true.
 void AwaitDocumentOnLoadCompleted(WebContents* web_contents);
+
+// Resets the font enumeration cache for use between tests. Tests that use
+// BrowserTaskEnvironment can leave the font enumeration cache in a bad state,
+// due to the task environment getting torn down by ~BrowserTaskEnvironment.
+void ResetFontEnumerationCache();
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run

@@ -14,10 +14,10 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -5385,6 +5385,18 @@ TEST_F(ViewTest, TestEnabledPropertyMetadata) {
   EXPECT_TRUE(enabled_changed);
   EXPECT_FALSE(test_view->GetEnabled());
   EXPECT_EQ(enabled_property->GetValueAsString(test_view.get()), false_value);
+}
+
+TEST_F(ViewTest, TestMarginsPropertyMetadata) {
+  auto test_view = std::make_unique<View>();
+  views::metadata::ClassMetaData* view_metadata = View::MetaData();
+  ASSERT_TRUE(view_metadata);
+  views::metadata::MemberMetaDataBase* insets_property =
+      view_metadata->FindMemberData("kMarginsKey");
+  ASSERT_TRUE(insets_property);
+  base::string16 insets_value = base::ASCIIToUTF16("8,8,8,8");
+  insets_property->SetValueAsString(test_view.get(), insets_value);
+  EXPECT_EQ(insets_property->GetValueAsString(test_view.get()), insets_value);
 }
 
 TEST_F(ViewTest, TestEnabledChangedCallback) {

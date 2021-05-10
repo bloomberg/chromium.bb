@@ -29,7 +29,6 @@ source_set("authentication") {
     "resources:signin_confirmation_more",
     "resources:signin_promo_close_gray",
     "unified_consent",
-    "//base",
     "//components/consent_auditor",
     "//components/infobars/core",
     "//components/prefs",
@@ -50,6 +49,7 @@ source_set("authentication") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication/cells",
+    "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
@@ -66,6 +66,7 @@ source_set("authentication") {
     "//ui/gfx",
   ]
   public_deps = [
+    "//base",
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/browser/ui/collection_view",
   ]
@@ -107,8 +108,10 @@ source_set("unit_tests") {
     "//components/consent_auditor",
     "//components/consent_auditor:test_support",
     "//components/pref_registry",
+    "//components/prefs",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
+    "//components/sync/driver:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/version_info",
@@ -121,6 +124,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/authentication/unified_consent:unified_consent_ui",

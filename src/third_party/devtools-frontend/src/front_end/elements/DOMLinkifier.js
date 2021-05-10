@@ -3,9 +3,20 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
+export const UIStrings = {
+  /**
+  * @description Text displayed when trying to create a link to a node in the UI, but the node
+  * location could not be found so we display this placeholder instead. Node refers to a DOM node.
+  * This should be translated if appropriate.
+  */
+  node: '<node>',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/DOMLinkifier.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @param {!SDK.DOMModel.DOMNode} node
  * @param {!HTMLElement} parentElement
@@ -58,7 +69,7 @@ export const decorateNodeLabel = function(node, parentElement, tooltipContent) {
     UI.UIUtils.createTextChild(pseudoElement, pseudoText);
     title += pseudoText;
   }
-  parentElement.title = tooltipContent || title;
+  UI.Tooltip.Tooltip.install(parentElement, tooltipContent || title);
 };
 
 /**
@@ -71,13 +82,13 @@ export const linkifyNodeReference = function(node, options = {
   preventKeyboardFocus: undefined,
 }) {
   if (!node) {
-    return document.createTextNode(Common.UIString.UIString('<node>'));
+    return document.createTextNode(i18nString(UIStrings.node));
   }
 
   const root = document.createElement('span');
   root.classList.add('monospace');
   const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-      root, {cssFile: 'elements/domLinkifier.css', enableLegacyPatching: true, delegatesFocus: undefined});
+      root, {cssFile: 'elements/domLinkifier.css', enableLegacyPatching: false, delegatesFocus: undefined});
   const link = /** @type {!HTMLDivElement} */ (shadowRoot.createChild('div', 'node-link'));
 
   decorateNodeLabel(node, link, options.tooltip);
@@ -87,7 +98,7 @@ export const linkifyNodeReference = function(node, options = {
   link.addEventListener('mouseleave', () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(), false);
 
   if (!options.preventKeyboardFocus) {
-    link.addEventListener('keydown', event => isEnterKey(event) && Common.Revealer.reveal(node, false) && false);
+    link.addEventListener('keydown', event => event.key === 'Enter' && Common.Revealer.reveal(node, false) && false);
     link.tabIndex = 0;
     UI.ARIAUtils.markAsLink(link);
   }
@@ -106,14 +117,14 @@ export const linkifyDeferredNodeReference = function(deferredNode, options = {
 }) {
   const root = document.createElement('div');
   const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-      root, {cssFile: 'elements/domLinkifier.css', enableLegacyPatching: true, delegatesFocus: undefined});
+      root, {cssFile: 'elements/domLinkifier.css', enableLegacyPatching: false, delegatesFocus: undefined});
   const link = /** @type {!HTMLDivElement} */ (shadowRoot.createChild('div', 'node-link'));
   link.createChild('slot');
   link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
   link.addEventListener('mousedown', e => e.consume(), false);
 
   if (!options.preventKeyboardFocus) {
-    link.addEventListener('keydown', event => isEnterKey(event) && deferredNode.resolve(onDeferredNodeResolved));
+    link.addEventListener('keydown', event => event.key === 'Enter' && deferredNode.resolve(onDeferredNodeResolved));
     link.tabIndex = 0;
     UI.ARIAUtils.markAsLink(link);
   }
@@ -129,9 +140,26 @@ export const linkifyDeferredNodeReference = function(deferredNode, options = {
 };
 
 /**
+ * @type {!Linkifier}
+ */
+
+let linkifierInstance;
+
+/**
  * @implements {Common.Linkifier.Linkifier}
  */
 export class Linkifier {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!linkifierInstance || forceNew) {
+      linkifierInstance = new Linkifier();
+    }
+
+    return linkifierInstance;
+  }
   /**
    * @override
    * @param {!Object} object

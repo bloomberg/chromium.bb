@@ -30,6 +30,16 @@ enable_uiaccess_require_admin_manifest =
     "//remoting/host/win/enable_uiaccess_require_admin.manifest"
 
 # Depending on this target gives a default executable manifest with the addition
+# of the requestedExecutionLevel of requireAdministrator.
+windows_manifest("elevated_exe_manifest") {
+  sources = [
+    common_controls_manifest,
+    default_compatibility_manifest,
+    require_administrator_manifest,
+  ]
+}
+
+# Depending on this target gives a default executable manifest with the addition
 # of the DPI aware tag.
 windows_manifest("dpi_aware_exe_manifest") {
   sources = [
@@ -104,6 +114,8 @@ source_set("win") {
     "session_input_injector.h",
     "window_station_and_desktop.cc",
     "window_station_and_desktop.h",
+    "windows_event_logger.cc",
+    "windows_event_logger.h",
     "worker_process_launcher.cc",
     "worker_process_launcher.h",
     "wts_terminal_monitor.cc",
@@ -375,6 +387,8 @@ shared_library("remoting_core") {
     "host_event_file_logger.cc",
     "host_event_file_logger.h",
     "host_event_logger.h",
+    "host_event_windows_event_logger.cc",
+    "host_event_windows_event_logger.h",
     "host_service.cc",
     "host_service.h",
     "launch_native_messaging_host_process.cc",

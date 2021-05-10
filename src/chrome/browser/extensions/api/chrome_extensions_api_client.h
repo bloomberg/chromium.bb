@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/browser/api/extensions_api_client.h"
 
 namespace extensions {
@@ -64,6 +65,9 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       RulesCacheDelegate* cache_delegate) const override;
   std::unique_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bool ShouldAllowDetachingUsb(int vid, int pid) const override;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
@@ -78,7 +82,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   MessagingDelegate* GetMessagingDelegate() override;
   FeedbackPrivateDelegate* GetFeedbackPrivateDelegate() override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   MediaPerceptionAPIDelegate* GetMediaPerceptionAPIDelegate() override;
   NonNativeFileSystemDelegate* GetNonNativeFileSystemDelegate() override;
 
@@ -101,7 +105,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<MessagingDelegate> messaging_delegate_;
   std::unique_ptr<FeedbackPrivateDelegate> feedback_private_delegate_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<MediaPerceptionAPIDelegate> media_perception_api_delegate_;
   std::unique_ptr<NonNativeFileSystemDelegate> non_native_file_system_delegate_;
   std::unique_ptr<ClipboardExtensionHelper> clipboard_extension_helper_;

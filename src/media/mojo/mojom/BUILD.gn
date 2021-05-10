@@ -29,6 +29,7 @@ mojom("mojom") {
     "key_system_support.mojom",
     "media_log.mojom",
     "media_metrics_provider.mojom",
+    "media_player.mojom",
     "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
@@ -63,6 +64,7 @@ mojom("mojom") {
     "//gpu/ipc/common:interfaces",
     "//media/learning/mojo/public/mojom",
     "//mojo/public/mojom/base",
+    "//services/media_session/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//ui/gfx/geometry/mojom",
@@ -99,6 +101,29 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "media.mojom.FullscreenVideoStatus"
+          cpp = "::blink::WebFullscreenVideoStatus"
+        },
+      ]
+      traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "media.mojom.MediaContentType"
+          cpp = "::media::MediaContentType"
+        },
+      ]
+      traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
+      traits_public_deps = [
+        "//base",
+        "//media",
+        "//media/base/ipc",
+      ]
+    },
+    {
+      types = [
+        {
           mojom = "media.mojom.VideoFrameMetadata"
           cpp = "::media::VideoFrameMetadata"
         },
@@ -114,6 +139,10 @@ mojom("mojom") {
         {
           mojom = "media.mojom.AudioDecoderConfig"
           cpp = "::media::AudioDecoderConfig"
+        },
+        {
+          mojom = "media.mojom.AudioDecoderType"
+          cpp = "::media::AudioDecoderType"
         },
       ]
       traits_headers = [ "audio_decoder_config_mojom_traits.h" ]
@@ -143,15 +172,25 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "media.mojom.VideoRotation"
-          cpp = "::media::VideoRotation"
-        },
-        {
           mojom = "media.mojom.CopyMode"
           cpp = "::media::VideoFrameMetadata::CopyMode"
         },
       ]
       traits_headers = [ "media_types_enum_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "media.mojom.VideoRotation"
+          cpp = "::media::VideoRotation"
+        },
+        {
+          mojom = "media.mojom.VideoTransformation"
+          cpp = "::media::VideoTransformation"
+        },
+      ]
+      traits_headers = [ "video_transformation_mojom_traits.h" ]
+      traits_sources = [ "video_transformation_mojom_traits.cc" ]
     },
     {
       types = [
@@ -220,7 +259,6 @@ mojom("mojom") {
         "//media/base/ipc",
       ]
     },
-
     {
       types = [
         {
@@ -228,8 +266,20 @@ mojom("mojom") {
           cpp = "::media::PipelineStatistics"
         },
         {
-          mojom = "media.mojom.PipelineDecoderInfo"
-          cpp = "::media::PipelineDecoderInfo"
+          mojom = "media.mojom.AudioDecoderInfo"
+          cpp = "::media::AudioDecoderInfo"
+        },
+        {
+          mojom = "media.mojom.VideoDecoderInfo"
+          cpp = "::media::VideoDecoderInfo"
+        },
+        {
+          mojom = "media.mojom.AudioDecoderType"
+          cpp = "::media::AudioDecoderType"
+        },
+        {
+          mojom = "media.mojom.VideoDecoderType"
+          cpp = "::media::VideoDecoderType"
         },
       ]
       traits_headers = [ "pipeline_status_mojom_traits.h" ]
@@ -282,6 +332,10 @@ mojom("mojom") {
         {
           mojom = "media.mojom.VideoDecoderImplementation"
           cpp = "::media::VideoDecoderImplementation"
+        },
+        {
+          mojom = "media.mojom.VideoDecoderType"
+          cpp = "::media::VideoDecoderType"
         },
       ]
       traits_headers = [
@@ -449,10 +503,6 @@ mojom("mojom") {
           cpp = "::media::VideoPixelFormat"
         },
         {
-          mojom = "media.mojom.VideoTransformation"
-          cpp = "::media::VideoTransformation"
-        },
-        {
           mojom = "media.mojom.WaitingReason"
           cpp = "::media::WaitingReason"
         },
@@ -469,11 +519,7 @@ mojom("mojom") {
           cpp = "::media::StatusCode"
         },
       ]
-      traits_headers = [
-        "video_transformation_mojom_traits.h",
-        "//media/base/ipc/media_param_traits_macros.h",
-      ]
-      traits_sources = [ "video_transformation_mojom_traits.cc" ]
+      traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
     },
     {
       types = [

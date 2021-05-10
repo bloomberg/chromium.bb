@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import {eventToPromise, flushTasks} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.m.js';
-import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
-import {ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-toolbar-new.js';
+import {FittingType, ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 
 /** @return {!ViewerPdfToolbarNewElement} */
 function createToolbar() {
@@ -298,21 +297,36 @@ const tests = [
     toggleButton.click();
   },
 
-  async function testEnterFullscreenButton() {
+  async function testPresentButton() {
     const toolbar = createToolbar();
-    let button = toolbar.shadowRoot.querySelector('#fullscreen-button');
+    let button = toolbar.shadowRoot.querySelector('#present-button');
     chrome.test.assertEq(null, button);
 
     toolbar.presentationModeEnabled = true;
     await flushTasks();
-    button = toolbar.shadowRoot.querySelector('#fullscreen-button');
+    button = toolbar.shadowRoot.querySelector('#present-button');
     chrome.test.assertTrue(button !== null);
 
-    const whenFired = eventToPromise('fullscreen-click', toolbar);
+    const whenFired = eventToPromise('present-click', toolbar);
     button.click();
     await whenFired;
     chrome.test.succeed();
   },
+  async function testPropertiesButton() {
+    const toolbar = createToolbar();
+    let button = toolbar.shadowRoot.querySelector('#properties-button');
+    chrome.test.assertFalse(!!button);
+
+    toolbar.documentPropertiesEnabled = true;
+    await flushTasks();
+    button = toolbar.shadowRoot.querySelector('#properties-button');
+    chrome.test.assertTrue(!!button);
+
+    const whenFired = eventToPromise('properties-click', toolbar);
+    button.click();
+    await whenFired;
+    chrome.test.succeed();
+  }
 ];
 
 chrome.test.runTests(tests);

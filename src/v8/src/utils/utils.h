@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <cmath>
 #include <string>
 #include <type_traits>
@@ -17,6 +18,7 @@
 #include "src/base/logging.h"
 #include "src/base/macros.h"
 #include "src/base/platform/platform.h"
+#include "src/base/safe_conversions.h"
 #include "src/base/v8-fallthrough.h"
 #include "src/common/globals.h"
 #include "src/utils/allocation.h"
@@ -64,18 +66,6 @@ static T ArithmeticShiftRight(T x, int shift) {
   } else {
     return x >> shift;
   }
-}
-
-// Returns the maximum of the two parameters.
-template <typename T>
-constexpr T Max(T a, T b) {
-  return std::max(a, b);
-}
-
-// Returns the minimum of the two parameters.
-template <typename T>
-constexpr T Min(T a, T b) {
-  return std::min(a, b);
 }
 
 // Returns the maximum of the two parameters according to JavaScript semantics.
@@ -135,15 +125,6 @@ inline double Modulo(double x, double y) {
 }
 
 template <typename T>
-T Saturate(int64_t value) {
-  static_assert(sizeof(int64_t) > sizeof(T), "T must be int32_t or smaller");
-  int64_t min = static_cast<int64_t>(std::numeric_limits<T>::min());
-  int64_t max = static_cast<int64_t>(std::numeric_limits<T>::max());
-  int64_t clamped = std::max(min, std::min(max, value));
-  return static_cast<T>(clamped);
-}
-
-template <typename T>
 T SaturateAdd(T a, T b) {
   if (std::is_signed<T>::value) {
     if (a > 0 && b > 0) {
@@ -199,7 +180,7 @@ T SaturateRoundingQMul(T a, T b) {
   int64_t product = a * b;
   product += round_const;
   product >>= (size_in_bits - 1);
-  return Saturate<T>(product);
+  return base::saturated_cast<T>(product);
 }
 
 // Multiply two numbers, returning a result that is twice as wide, no overflow.
@@ -349,46 +330,54 @@ class SetOncePointer {
 
 // Compare 8bit/16bit chars to 8bit/16bit chars.
 template <typename lchar, typename rchar>
+inline bool CompareCharsEqualUnsigned(const lchar* lhs, const rchar* rhs,
+                                      size_t chars) {
+  STATIC_ASSERT(std::is_unsigned<lchar>::value);
+  STATIC_ASSERT(std::is_unsigned<rchar>::value);
+  if (sizeof(*lhs) == sizeof(*rhs)) {
+    // memcmp compares byte-by-byte, but for equality it doesn't matter whether
+    // two-byte char comparison is little- or big-endian.
+    return memcmp(lhs, rhs, chars * sizeof(*lhs)) == 0;
+  }
+  for (const lchar* limit = lhs + chars; lhs < limit; ++lhs, ++rhs) {
+    if (*lhs != *rhs) return false;
+  }
+  return true;
+}
+
+template <typename lchar, typename rchar>
+inline bool CompareCharsEqual(const lchar* lhs, const rchar* rhs,
+                              size_t chars) {
+  using ulchar = typename std::make_unsigned<lchar>::type;
+  using urchar = typename std::make_unsigned<rchar>::type;
+  return CompareCharsEqualUnsigned(reinterpret_cast<const ulchar*>(lhs),
+                                   reinterpret_cast<const urchar*>(rhs), chars);
+}
+
+// Compare 8bit/16bit chars to 8bit/16bit chars.
+template <typename lchar, typename rchar>
 inline int CompareCharsUnsigned(const lchar* lhs, const rchar* rhs,
                                 size_t chars) {
-  const lchar* limit = lhs + chars;
+  STATIC_ASSERT(std::is_unsigned<lchar>::value);
+  STATIC_ASSERT(std::is_unsigned<rchar>::value);
   if (sizeof(*lhs) == sizeof(char) && sizeof(*rhs) == sizeof(char)) {
     // memcmp compares byte-by-byte, yielding wrong results for two-byte
     // strings on little-endian systems.
     return memcmp(lhs, rhs, chars);
   }
-  while (lhs < limit) {
+  for (const lchar* limit = lhs + chars; lhs < limit; ++lhs, ++rhs) {
     int r = static_cast<int>(*lhs) - static_cast<int>(*rhs);
     if (r != 0) return r;
-    ++lhs;
-    ++rhs;
   }
   return 0;
 }
 
 template <typename lchar, typename rchar>
 inline int CompareChars(const lchar* lhs, const rchar* rhs, size_t chars) {
-  DCHECK_LE(sizeof(lchar), 2);
-  DCHECK_LE(sizeof(rchar), 2);
-  if (sizeof(lchar) == 1) {
-    if (sizeof(rchar) == 1) {
-      return CompareCharsUnsigned(reinterpret_cast<const uint8_t*>(lhs),
-                                  reinterpret_cast<const uint8_t*>(rhs), chars);
-    } else {
-      return CompareCharsUnsigned(reinterpret_cast<const uint8_t*>(lhs),
-                                  reinterpret_cast<const uint16_t*>(rhs),
-                                  chars);
-    }
-  } else {
-    if (sizeof(rchar) == 1) {
-      return CompareCharsUnsigned(reinterpret_cast<const uint16_t*>(lhs),
-                                  reinterpret_cast<const uint8_t*>(rhs), chars);
-    } else {
-      return CompareCharsUnsigned(reinterpret_cast<const uint16_t*>(lhs),
-                                  reinterpret_cast<const uint16_t*>(rhs),
-                                  chars);
-    }
-  }
+  using ulchar = typename std::make_unsigned<lchar>::type;
+  using urchar = typename std::make_unsigned<rchar>::type;
+  return CompareCharsUnsigned(reinterpret_cast<const ulchar*>(lhs),
+                              reinterpret_cast<const urchar*>(rhs), chars);
 }
 
 // Calculate 10^exponent.
@@ -573,29 +562,34 @@ class FeedbackSlot {
 
 V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os, FeedbackSlot);
 
-class BailoutId {
+class BytecodeOffset {
  public:
-  explicit BailoutId(int id) : id_(id) {}
+  explicit BytecodeOffset(int id) : id_(id) {}
   int ToInt() const { return id_; }
 
-  static BailoutId None() { return BailoutId(kNoneId); }
+  static BytecodeOffset None() { return BytecodeOffset(kNoneId); }
 
   // Special bailout id support for deopting into the {JSConstructStub} stub.
   // The following hard-coded deoptimization points are supported by the stub:
   //  - {ConstructStubCreate} maps to {construct_stub_create_deopt_pc_offset}.
   //  - {ConstructStubInvoke} maps to {construct_stub_invoke_deopt_pc_offset}.
-  static BailoutId ConstructStubCreate() { return BailoutId(1); }
-  static BailoutId ConstructStubInvoke() { return BailoutId(2); }
+  static BytecodeOffset ConstructStubCreate() { return BytecodeOffset(1); }
+  static BytecodeOffset ConstructStubInvoke() { return BytecodeOffset(2); }
   bool IsValidForConstructStub() const {
     return id_ == ConstructStubCreate().ToInt() ||
            id_ == ConstructStubInvoke().ToInt();
   }
 
   bool IsNone() const { return id_ == kNoneId; }
-  bool operator==(const BailoutId& other) const { return id_ == other.id_; }
-  bool operator!=(const BailoutId& other) const { return id_ != other.id_; }
-  friend size_t hash_value(BailoutId);
-  V8_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream&, BailoutId);
+  bool operator==(const BytecodeOffset& other) const {
+    return id_ == other.id_;
+  }
+  bool operator!=(const BytecodeOffset& other) const {
+    return id_ != other.id_;
+  }
+  friend size_t hash_value(BytecodeOffset);
+  V8_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream&,
+                                                    BytecodeOffset);
 
  private:
   friend class Builtins;
@@ -604,7 +598,7 @@ class BailoutId {
 
   // Using 0 could disguise errors.
   // Builtin continuations bailout ids start here. If you need to add a
-  // non-builtin BailoutId, add it before this id so that this Id has the
+  // non-builtin BytecodeOffset, add it before this id so that this Id has the
   // highest number.
   static const int kFirstBuiltinContinuationId = 1;
 

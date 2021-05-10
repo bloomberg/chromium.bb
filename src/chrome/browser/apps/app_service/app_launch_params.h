@@ -25,6 +25,14 @@ struct AppLaunchParams {
                   apps::mojom::AppLaunchSource source,
                   int64_t display_id = display::kInvalidDisplayId);
 
+  AppLaunchParams(const std::string& app_id,
+                  apps::mojom::LaunchContainer container,
+                  WindowOpenDisposition disposition,
+                  apps::mojom::AppLaunchSource source,
+                  int64_t display_id,
+                  const std::vector<base::FilePath>& files,
+                  const apps::mojom::IntentPtr& intentPtr);
+
   AppLaunchParams(const AppLaunchParams&) = delete;
   AppLaunchParams& operator=(const AppLaunchParams&) = delete;
   AppLaunchParams(AppLaunchParams&&);
@@ -55,6 +63,9 @@ struct AppLaunchParams {
   // If non-empty, use override_app_name in place of generating one normally.
   std::string override_app_name;
 
+  // The id from the restore data to restore the browser window.
+  int32_t restore_id = 0;
+
   // If non-empty, information from the command line may be passed on to the
   // application.
   base::CommandLine command_line;
@@ -65,13 +76,9 @@ struct AppLaunchParams {
 
   // Record where the app is launched from for tracking purpose.
   // Different app may have their own enumeration of sources.
-  // TODO(crbug.com/1113502) Remove this in favor of the below field.
+  // TODO(crbug.com/1113502): Reconcile AppLaunchSource vs. LaunchSource vs.
+  // app_runtime::LaunchSource.
   apps::mojom::AppLaunchSource source;
-
-  // Used in the case of SWA installation. We record the launch metrics in a
-  // slightly different place in that case, because the special SWA launch is
-  // also called in code from other places.
-  apps::mojom::LaunchSource launch_source = apps::mojom::LaunchSource::kUnknown;
 
   // The id of the display from which the app is launched.
   // display::kInvalidDisplayId means that the display does not exist or is not

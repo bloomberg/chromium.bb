@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/path_service.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
@@ -31,8 +33,9 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_paths.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_paths.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -42,6 +45,8 @@
 #endif
 
 namespace {
+
+constexpr char kDefaultLocale[] = "en-US";
 
 class ChromeContentBrowserClientWithoutNetworkServiceInitialization
     : public ChromeContentBrowserClient {
@@ -73,6 +78,12 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetUtilityClientForTesting(utility_content_client_.get());
 
     TestingBrowserProcess::CreateInstance();
+    // Make sure the loaded locale is "en-US".
+    if (ui::ResourceBundle::GetSharedInstance().GetLoadedLocaleForTesting() !=
+        kDefaultLocale) {
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+          kDefaultLocale);
+    }
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
@@ -86,6 +97,8 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetContentClient(nullptr);
 
     TestingBrowserProcess::DeleteInstance();
+    // Some tests cause ChildThreadImpl to initialize a PowerMonitor.
+    base::PowerMonitor::ShutdownForTesting();
   }
 
  private:
@@ -141,15 +154,16 @@ void ChromeUnitTestSuite::InitializeProviders() {
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
   component_updater::RegisterPathProvider(chrome::DIR_COMPONENTS,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
                                           chromeos::DIR_PREINSTALLED_COMPONENTS,
 #else
                                           chrome::DIR_INTERNAL_PLUGINS,
 #endif
                                           chrome::DIR_USER_DATA);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::RegisterPathProvider();
+  chromeos::dbus_paths::RegisterPathProvider();
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -171,9 +185,15 @@ void ChromeUnitTestSuite::InitializeResourceBundle() {
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+      kDefaultLocale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   base::FilePath resources_pack_path;
   base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
+
+  base::FilePath unit_tests_pack_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &unit_tests_pack_path));
+  unit_tests_pack_path = unit_tests_pack_path.AppendASCII("unit_tests.pak");
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      unit_tests_pack_path, ui::SCALE_FACTOR_NONE);
 }

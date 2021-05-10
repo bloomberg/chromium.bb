@@ -205,19 +205,19 @@ struct TrustTokenKeyCommitmentResult {
   // one operating system, issuers could benefit from a couple different
   // fallback behaviors depending on their particular requirements.
   //
-  // |unavailable_local_issuance_fallback|'s value specifies what action to take
-  // when both of the following hold simultaneously:
+  // |unavailable_local_operation_fallback|'s value specifies what action to
+  // take when both of the following hold simultaneously:
   // (1) local issuance is specified on at least one OS (i.e.
   // |request_issuance_locally_on| is nonempty) and
   // (2) we're not on any of the specified OSes.
-  enum UnavailableLocalIssuanceFallback {
+  enum UnavailableLocalOperationFallback {
     // If we're not on a matching OS, instead attempt a standard web
     // issuance request against the issuance request's destination URL.
     kWebIssuance,
     // If we're not on a matching OS, just fail the issuance request.
     kReturnWithError,
   };
-  UnavailableLocalIssuanceFallback unavailable_local_issuance_fallback;
+  UnavailableLocalOperationFallback unavailable_local_operation_fallback;
 };
 
 // Struct FulfillTrustTokenIssuanceRequest represents a Trust Tokens issuance
@@ -247,6 +247,8 @@ struct FulfillTrustTokenIssuanceRequest {
 // because the Java bindings append the suffix "Response" when generating
 // callback names.
 struct FulfillTrustTokenIssuanceAnswer {
+  // WARNING: Since these values are committed to histograms, please do not
+  // remove or reorder entries.
   enum Status {
     kOk,
     // It wasn't possible to route the issuance operation to the specified
@@ -261,4 +263,26 @@ struct FulfillTrustTokenIssuanceAnswer {
   // interpreted identically to a Trust Tokens-over-HTTP Sec-Trust-Token
   // response header. Otherwise, its value is indeterminate.
   string response;
+};
+
+// TrustTokenOperationResult contains all the information required by
+// DevTools. Which fields are set depend on |type| and |status|.
+struct TrustTokenOperationResult {
+  // Required.
+  TrustTokenOperationType type;
+  TrustTokenOperationStatus status;
+
+  // Shared among the different operation types.
+  url.mojom.Origin? issuer;
+  url.mojom.Origin? top_level_origin;
+
+  // In case of TrustTokenOperationType::kIssuance.
+  int32 issued_token_count = 0;
+};
+
+// Struct StoredTrustTokensForIssuer is used by DevTools to inspect
+// the current state of the Trust Token store.
+struct StoredTrustTokensForIssuer {
+  url.mojom.Origin issuer;
+  int32 count;
 };

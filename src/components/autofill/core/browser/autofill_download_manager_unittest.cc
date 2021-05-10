@@ -14,6 +14,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -84,23 +85,15 @@ std::vector<FormStructure*> ToRawPointerVector(
 // the response body data is utilized.
 std::string GetStringFromDataElements(
     const std::vector<network::DataElement>* data_elements) {
-  network::DataElement unified_data_element;
-  auto data_elements_it = data_elements->begin();
-  if (data_elements_it != data_elements->end()) {
-    unified_data_element.SetToBytes(data_elements_it->bytes(),
-                                    data_elements_it->length());
+  std::string result;
+  for (const network::DataElement& e : *data_elements) {
+    DCHECK_EQ(e.type(), network::DataElement::Tag::kBytes);
+    // Provide the length of the bytes explicitly, not to rely on the null
+    // termination.
+    const auto piece = e.As<network::DataElementBytes>().AsStringPiece();
+    result.append(piece.data(), piece.size());
   }
-  ++data_elements_it;
-  while (data_elements_it != data_elements->end()) {
-    unified_data_element.AppendBytes(data_elements_it->bytes(),
-                                     data_elements_it->length());
-    ++data_elements_it;
-  }
-  // Using the std::string constructor with length ensures that we don't rely
-  // on having a termination character to delimit the string. This is the
-  // safest approach.
-  return std::string(unified_data_element.bytes(),
-                     unified_data_element.length());
+  return result;
 }
 
 // Gets the AutofillUploadRequest proto from the HTTP loader request payload.
@@ -165,10 +158,12 @@ class AutofillDownloadManagerWithCustomPayloadSize
                                                Observer* observer,
                                                const std::string& api_key,
                                                size_t length)
-      : AutofillDownloadManager(driver,
-                                observer,
-                                api_key,
-                                /*log_manager=*/nullptr),
+      : AutofillDownloadManager(
+            driver,
+            observer,
+            api_key,
+            AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
+            /*log_manager=*/nullptr),
         length_(length) {}
 
  protected:
@@ -350,8 +345,10 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Make download manager.
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
-                                           /*log_manager=*/nullptr);
+  AutofillDownloadManager download_manager(
+      &driver_, this, "dummykey",
+      AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
+      /*log_manager=*/nullptr);
 
   // Request with id 0.
   base::HistogramTester histogram;
@@ -540,8 +537,10 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
   std::vector<std::unique_ptr<FormStructure>> form_structures;
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
-                                           /*log_manager=*/nullptr);
+  AutofillDownloadManager download_manager(
+      &driver_, this, "dummykey",
+      AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
+      /*log_manager=*/nullptr);
 
   // Start the query request and look if it is successful. No response was
   // received yet.
@@ -729,7 +728,7 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
       // We don't want upload throttling for testing purpose.
       {features::kAutofillUploadThrottling});
 
-  // Build the form structures that we want to query.
+  // Build the form structures that we want to upload.
   FormData form;
   FormFieldData field;
 
@@ -746,8 +745,10 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
 
   std::unique_ptr<PrefService> pref_service = test::PrefServiceForTesting();
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
-                                           /*log_manager=*/nullptr);
+  AutofillDownloadManager download_manager(
+      &driver_, this, "dummykey",
+      AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
+      /*log_manager=*/nullptr);
   EXPECT_TRUE(download_manager.StartUploadRequest(form_structure, true,
                                                   ServerFieldTypeSet(), "",
                                                   true, pref_service.get()));
@@ -791,6 +792,80 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   // counted.
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_OK, 1);
+}
+
+TEST_F(AutofillDownloadManagerTest, UploadWithRawMetadata) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      {},
+      // Disabled
+      // We don't want upload throttling for testing purpose.
+      {features::kAutofillUploadThrottling});
+
+  for (bool is_raw_metadata_uploading_enabled : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "is_raw_metadata_uploading_enabled = "
+                                    << is_raw_metadata_uploading_enabled);
+    // Build the form structures that we want to upload.
+    FormData form;
+    form.name = UTF8ToUTF16("form1");
+    FormFieldData field;
+
+    field.name = UTF8ToUTF16("firstname");
+    field.form_control_type = "text";
+    form.fields.push_back(field);
+
+    field.name = UTF8ToUTF16("lastname");
+    field.form_control_type = "text";
+    form.fields.push_back(field);
+    FormStructure form_structure(form);
+    form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
+
+    std::unique_ptr<PrefService> pref_service = test::PrefServiceForTesting();
+    AutofillDownloadManager download_manager(
+        &driver_, this, "dummykey",
+        AutofillDownloadManager::IsRawMetadataUploadingEnabled(
+            is_raw_metadata_uploading_enabled),
+        /*log_manager=*/nullptr);
+    EXPECT_TRUE(download_manager.StartUploadRequest(form_structure, true,
+                                                    ServerFieldTypeSet(), "",
+                                                    true, pref_service.get()));
+
+    // Inspect the request that the test URL loader sent.
+    ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+    network::TestURLLoaderFactory::PendingRequest* request =
+        test_url_loader_factory_.GetPendingRequest(0);
+
+    // Assert some of the fields within the uploaded proto to make sure it was
+    // filled with something else than default data.
+    AutofillUploadRequest autofill_upload_request;
+    EXPECT_TRUE(
+        GetUploadRequestProtoFromRequest(request, &autofill_upload_request));
+    AutofillUploadContents upload = autofill_upload_request.upload();
+    EXPECT_GT(upload.client_version().size(), 0U);
+    EXPECT_EQ(FormSignature(upload.form_signature()),
+              form_structure.form_signature());
+    // Only a few strings are tested, full testing happens in FormStructure's
+    // tests.
+    ASSERT_EQ(is_raw_metadata_uploading_enabled, upload.has_form_name());
+    ASSERT_EQ(is_raw_metadata_uploading_enabled, upload.field()[0].has_name());
+    ASSERT_EQ(is_raw_metadata_uploading_enabled, upload.field()[1].has_type());
+    if (is_raw_metadata_uploading_enabled) {
+      EXPECT_EQ(form.name, UTF8ToUTF16(upload.form_name()));
+      EXPECT_EQ(form.fields[0].name, UTF8ToUTF16(upload.field()[0].name()));
+      EXPECT_EQ(form.fields[1].form_control_type, upload.field()[1].type());
+    }
+
+    test_url_loader_factory_.SimulateResponseForPendingRequest(
+        request->request.url.spec(), "");
+    EXPECT_EQ(1U, responses_.size());
+    EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
+              responses_.front().type_of_response);
+
+    ASSERT_EQ(0, test_url_loader_factory_.NumPending());
+    test_url_loader_factory_.ClearResponses();
+    responses_.clear();
+  }
 }
 
 TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
@@ -1946,7 +2021,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
 
   AutofillDownloadManager download_manager(driver_.get(), this);
   FormStructure form_structure(form);
-  form_structure.set_page_language("fr-ca");
+  form_structure.set_current_page_language(LanguageCode("fr"));
 
   pref_service_->SetBoolean(
       RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, true);
@@ -1983,7 +2058,8 @@ TEST_P(AutofillUploadTest, RichMetadata) {
     ASSERT_TRUE(request.ParseFromString(payloads_.front()));
     ASSERT_TRUE(request.has_upload());
     const AutofillUploadContents& upload = request.upload();
-    EXPECT_EQ(upload.language(), form_structure.page_language());
+    EXPECT_EQ(upload.language(),
+              form_structure.current_page_language().value());
     ASSERT_TRUE(upload.has_randomized_form_metadata());
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
     EXPECT_TRUE(upload.randomized_form_metadata().has_name());

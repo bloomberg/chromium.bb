@@ -7,25 +7,25 @@
 #include <utility>
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_session_cache.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 using testing::_;
 
@@ -280,7 +280,11 @@ TEST_P(TlsClientHandshakerTest, ConnectedAfterHandshake) {
 TEST_P(TlsClientHandshakerTest, ConnectionClosedOnTlsError) {
   // Have client send ClientHello.
   stream()->CryptoConnect();
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _));
+  if (GetQuicReloadableFlag(quic_send_tls_crypto_error_code)) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _, _));
+  } else {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _));
+  }
 
   // Send a zero-length ServerHello from server to client.
   char bogus_handshake_message[] = {
@@ -562,11 +566,23 @@ TEST_P(TlsClientHandshakerTest, ServerRequiresCustomALPN) {
       .WillOnce([kTestAlpn](const std::vector<absl::string_view>& alpns) {
         return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
       });
-  EXPECT_CALL(*server_connection_,
-              CloseConnection(QUIC_HANDSHAKE_FAILED,
-                              "TLS handshake failure (ENCRYPTION_INITIAL) 120: "
-                              "no application protocol",
-                              _));
+  if (GetQuicReloadableFlag(quic_send_tls_crypto_error_code)) {
+    EXPECT_CALL(
+        *server_connection_,
+        CloseConnection(
+            QUIC_HANDSHAKE_FAILED,
+            static_cast<QuicIetfTransportErrorCodes>(CRYPTO_ERROR_FIRST + 120),
+            "TLS handshake failure (ENCRYPTION_INITIAL) 120: "
+            "no application protocol",
+            _));
+  } else {
+    EXPECT_CALL(
+        *server_connection_,
+        CloseConnection(QUIC_HANDSHAKE_FAILED,
+                        "TLS handshake failure (ENCRYPTION_INITIAL) 120: "
+                        "no application protocol",
+                        _));
+  }
 
   stream()->CryptoConnect();
   crypto_test_utils::AdvanceHandshake(connection_, stream(), 0,

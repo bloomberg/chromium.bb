@@ -55,6 +55,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -88,7 +89,7 @@ RenderMessageFilter::RenderMessageFilter(
     MediaInternals* media_internals)
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
                            base::size(kRenderFilteredMessageClasses)),
-      BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
+      BrowserAssociatedInterface<mojom::RenderMessageFilter>(this),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       render_process_id_(render_process_id),
@@ -119,7 +120,7 @@ void RenderMessageFilter::GenerateRoutingID(
 void RenderMessageFilter::GenerateFrameRoutingID(
     GenerateFrameRoutingIDCallback callback) {
   int32_t routing_id = render_widget_helper_->GetNextRoutingID();
-  auto frame_token = base::UnguessableToken::Create();
+  auto frame_token = blink::LocalFrameToken();
   auto devtools_frame_token = base::UnguessableToken::Create();
   render_widget_helper_->StoreNextFrameRoutingID(routing_id, frame_token,
                                                  devtools_frame_token);

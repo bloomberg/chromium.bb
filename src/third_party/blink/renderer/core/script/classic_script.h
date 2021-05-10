@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_CLASSIC_SCRIPT_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -44,19 +44,31 @@ class CORE_EXPORT ClassicScript final : public Script {
   const ScriptSourceCode& GetScriptSourceCode() const {
     return script_source_code_;
   }
+  SanitizeScriptErrors GetSanitizeScriptErrors() const {
+    return sanitize_script_errors_;
+  }
 
-  // TODO(crbug/1111134): The RunScript() with ExecuteScriptPolicy is declared
-  // and overloaded here to avoid modifying Script::RunScript(), because this is
-  // a tentative interface. When crbug/1111134 is done, this should be gone.
+  // TODO(crbug.com/1111134): Methods with ExecuteScriptPolicy are declared and
+  // overloaded here to avoid modifying Script::RunScript*(), because this is a
+  // tentative interface. When crbug/1111134 is done, these should be gone.
+  // TODO(crbug.com/1111134): Refactor RunScript*() interfaces.
   void RunScript(LocalDOMWindow*) override;
-  void RunScript(LocalDOMWindow*, ScriptController::ExecuteScriptPolicy);
+  void RunScript(LocalDOMWindow*, ExecuteScriptPolicy);
   bool RunScriptOnWorkerOrWorklet(WorkerOrWorkletGlobalScope&) override;
 
   // Unlike RunScript() and RunScriptOnWorkerOrWorklet(), callers of the
   // following methods must enter a v8::HandleScope before calling.
+  // TODO(crbug.com/1129743): Use ScriptEvaluationResult instead of
+  // v8::Local<v8::Value> as the return type.
+  ScriptEvaluationResult RunScriptOnScriptStateAndReturnValue(
+      ScriptState*,
+      ExecuteScriptPolicy =
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+      V8ScriptRunner::RethrowErrorsOption =
+          V8ScriptRunner::RethrowErrorsOption::DoNotRethrow());
   v8::Local<v8::Value> RunScriptAndReturnValue(
       LocalDOMWindow*,
-      ScriptController::ExecuteScriptPolicy = ScriptController::
+      ExecuteScriptPolicy =
           ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
   v8::Local<v8::Value> RunScriptInIsolatedWorldAndReturnValue(LocalDOMWindow*,
                                                               int32_t world_id);

@@ -8,8 +8,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service_factory.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_service.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_service_factory.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/user_manager/user_manager.h"
@@ -34,7 +34,7 @@ class ArcKioskBridgeFactory
   friend base::DefaultSingletonTraits<ArcKioskBridgeFactory>;
 
   ArcKioskBridgeFactory() {
-    DependsOn(chromeos::ArcKioskAppServiceFactory::GetInstance());
+    DependsOn(ash::ArcKioskAppServiceFactory::GetInstance());
   }
   ~ArcKioskBridgeFactory() override = default;
 
@@ -67,8 +67,7 @@ std::unique_ptr<ArcKioskBridge> ArcKioskBridge::CreateForTesting(
 
 ArcKioskBridge::ArcKioskBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : ArcKioskBridge(bridge_service,
-                     chromeos::ArcKioskAppService::Get(context)) {}
+    : ArcKioskBridge(bridge_service, ash::ArcKioskAppService::Get(context)) {}
 
 ArcKioskBridge::ArcKioskBridge(ArcBridgeService* bridge_service,
                                Delegate* delegate)

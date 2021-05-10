@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
+#include "quic/core/http/quic_receive_control_stream.h"
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_encoder_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/qpack/qpack_header_table.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/test_tools/qpack/qpack_encoder_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -51,7 +51,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& tp) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       ParsedQuicVersionToString(tp.version), "_",
       (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
 }
@@ -206,10 +206,10 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsTwice) {
   EXPECT_CALL(
       *connection_,
       CloseConnection(QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_CONTROL_STREAM,
-                      "Settings frames are received twice.", _))
+                      "SETTINGS frame can only be received once.", _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   // Receive second SETTINGS frame.
@@ -258,13 +258,14 @@ TEST_P(QuicReceiveControlStreamTest,
   QuicStreamFrame data(receive_control_stream_->id(), /* fin = */ false,
                        /* offset = */ 1, serialized_frame);
 
-  EXPECT_CALL(
-      *connection_,
-      CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
-                      "PRIORITY_UPDATE frame received before SETTINGS.", _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                              "First frame received on control stream is type "
+                              "15, but it must be SETTINGS.",
+                              _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   receive_control_stream_->OnStreamFrame(data);
@@ -315,7 +316,7 @@ TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
       CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
   receive_control_stream_->OnStreamFrame(frame);
 }
@@ -385,15 +386,90 @@ TEST_P(QuicReceiveControlStreamTest, CancelPushFrameBeforeSettings) {
 
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
-                              "CANCEL_PUSH frame received before SETTINGS.", _))
+                              "First frame received on control stream is type "
+                              "3, but it must be SETTINGS.",
+                              _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   receive_control_stream_->OnStreamFrame(
       QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false,
                       /* offset = */ 1, cancel_push_frame));
+}
+
+TEST_P(QuicReceiveControlStreamTest, AcceptChFrameBeforeSettings) {
+  std::string accept_ch_frame = absl::HexStringToBytes(
+      "4089"  // type (ACCEPT_CH)
+      "00");  // length
+
+  if (GetQuicReloadableFlag(quic_parse_accept_ch_frame) &&
+      perspective() == Perspective::IS_SERVER) {
+    EXPECT_CALL(*connection_,
+                CloseConnection(
+                    QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
+                    "Invalid frame type 137 received on control stream.", _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  } else {
+    EXPECT_CALL(*connection_,
+                CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                                "First frame received on control stream is "
+                                "type 137, but it must be SETTINGS.",
+                                _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  }
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
+  EXPECT_CALL(session_, OnConnectionClosed(_, _));
+
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false,
+                      /* offset = */ 1, accept_ch_frame));
+}
+
+TEST_P(QuicReceiveControlStreamTest, ReceiveAcceptChFrame) {
+  StrictMock<MockHttp3DebugVisitor> debug_visitor;
+  session_.set_debug_visitor(&debug_visitor);
+
+  const QuicStreamId id = receive_control_stream_->id();
+  QuicStreamOffset offset = 1;
+
+  // Receive SETTINGS frame.
+  SettingsFrame settings;
+  std::string settings_frame = EncodeSettings(settings);
+  EXPECT_CALL(debug_visitor, OnSettingsFrameReceived(settings));
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(id, /* fin = */ false, offset, settings_frame));
+  offset += settings_frame.length();
+
+  // Receive ACCEPT_CH frame.
+  std::string accept_ch_frame = absl::HexStringToBytes(
+      "4089"  // type (ACCEPT_CH)
+      "00");  // length
+
+  if (GetQuicReloadableFlag(quic_parse_accept_ch_frame)) {
+    if (perspective() == Perspective::IS_CLIENT) {
+      EXPECT_CALL(debug_visitor, OnAcceptChFrameReceived(_));
+    } else {
+      EXPECT_CALL(*connection_,
+                  CloseConnection(
+                      QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
+                      "Invalid frame type 137 received on control stream.", _))
+          .WillOnce(
+              Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+      EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
+      EXPECT_CALL(session_, OnConnectionClosed(_, _));
+    }
+  } else {
+    EXPECT_CALL(debug_visitor,
+                OnUnknownFrameReceived(id, /* frame_type = */ 0x89,
+                                       /* payload_length = */ 0));
+  }
+
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(id, /* fin = */ false, offset, accept_ch_frame));
 }
 
 TEST_P(QuicReceiveControlStreamTest, UnknownFrameBeforeSettings) {
@@ -404,10 +480,12 @@ TEST_P(QuicReceiveControlStreamTest, UnknownFrameBeforeSettings) {
 
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
-                              "Unknown frame received before SETTINGS.", _))
+                              "First frame received on control stream is type "
+                              "33, but it must be SETTINGS.",
+                              _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   receive_control_stream_->OnStreamFrame(

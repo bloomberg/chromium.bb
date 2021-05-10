@@ -30,11 +30,11 @@ std::string CdmContext::CdmIdToString(const base::UnguessableToken* cdm_id) {
   return cdm_id ? cdm_id->ToString() : "null";
 }
 
+#if defined(OS_WIN)
 bool CdmContext::RequiresMediaFoundationRenderer() {
   return false;
 }
 
-#if defined(OS_WIN)
 bool CdmContext::GetMediaFoundationCdmProxy(
     GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb) {
   return false;
@@ -53,7 +53,7 @@ FuchsiaCdmContext* CdmContext::GetFuchsiaCdmContext() {
 }
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 chromeos::ChromeOsCdmContext* CdmContext::GetChromeOsCdmContext() {
   return nullptr;
 }

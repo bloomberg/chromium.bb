@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
+#include "quic/core/qpack/qpack_encoder.h"
 
 #include <algorithm>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
-#include "net/third_party/quiche/src/quic/core/qpack/value_splitting_header_list.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/qpack/qpack_index_conversions.h"
+#include "quic/core/qpack/qpack_instruction_encoder.h"
+#include "quic/core/qpack/qpack_required_insert_count.h"
+#include "quic/core/qpack/value_splitting_header_list.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -37,7 +38,7 @@ QpackEncoder::QpackEncoder(
       decoder_stream_receiver_(this),
       maximum_blocked_streams_(0),
       header_list_count_(0) {
-  DCHECK(decoder_stream_error_delegate_);
+  QUICHE_DCHECK(decoder_stream_error_delegate_);
 }
 
 QpackEncoder::~QpackEncoder() {}
@@ -274,8 +275,8 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
 
   const QuicByteCount encoder_stream_buffered_byte_count =
       encoder_stream_sender_.BufferedByteCount();
-  DCHECK_GE(encoder_stream_buffered_byte_count,
-            initial_encoder_stream_buffered_byte_count);
+  QUICHE_DCHECK_GE(encoder_stream_buffered_byte_count,
+                   initial_encoder_stream_buffered_byte_count);
   if (encoder_stream_sent_byte_count) {
     *encoder_stream_sent_byte_count =
         encoder_stream_buffered_byte_count -
@@ -391,7 +392,7 @@ void QpackEncoder::SetDynamicTableCapacity(uint64_t dynamic_table_capacity) {
   // instructions are written.
 
   bool success = header_table_.SetDynamicTableCapacity(dynamic_table_capacity);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
 }
 
 bool QpackEncoder::SetMaximumBlockedStreams(uint64_t maximum_blocked_streams) {
@@ -416,13 +417,12 @@ void QpackEncoder::OnInsertCountIncrement(uint64_t increment) {
 
   if (blocking_manager_.known_received_count() >
       header_table_.inserted_entry_count()) {
-    OnErrorDetected(
-        QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT,
-        quiche::QuicheStrCat("Increment value ", increment,
-                             " raises known received count to ",
-                             blocking_manager_.known_received_count(),
-                             " exceeding inserted entry count ",
-                             header_table_.inserted_entry_count()));
+    OnErrorDetected(QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT,
+                    absl::StrCat("Increment value ", increment,
+                                 " raises known received count to ",
+                                 blocking_manager_.known_received_count(),
+                                 " exceeding inserted entry count ",
+                                 header_table_.inserted_entry_count()));
   }
 }
 
@@ -430,8 +430,8 @@ void QpackEncoder::OnHeaderAcknowledgement(QuicStreamId stream_id) {
   if (!blocking_manager_.OnHeaderAcknowledgement(stream_id)) {
     OnErrorDetected(
         QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT,
-        quiche::QuicheStrCat("Header Acknowledgement received for stream ",
-                             stream_id, " with no outstanding header blocks."));
+        absl::StrCat("Header Acknowledgement received for stream ", stream_id,
+                     " with no outstanding header blocks."));
   }
 }
 
@@ -441,14 +441,8 @@ void QpackEncoder::OnStreamCancellation(QuicStreamId stream_id) {
 
 void QpackEncoder::OnErrorDetected(QuicErrorCode error_code,
                                    absl::string_view error_message) {
-  if (GetQuicReloadableFlag(quic_granular_qpack_error_codes)) {
-    QUIC_CODE_COUNT_N(quic_granular_qpack_error_codes, 1, 2);
-    decoder_stream_error_delegate_->OnDecoderStreamError(error_code,
-                                                         error_message);
-  } else {
-    decoder_stream_error_delegate_->OnDecoderStreamError(
-        QUIC_QPACK_DECODER_STREAM_ERROR, error_message);
-  }
+  decoder_stream_error_delegate_->OnDecoderStreamError(error_code,
+                                                       error_message);
 }
 
 }  // namespace quic

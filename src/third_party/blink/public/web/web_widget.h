@@ -47,9 +47,9 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
@@ -75,7 +75,6 @@ class WebCoalescedInputEvent;
 
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
-class WebThreadScheduler;
 }
 
 class WebWidget {
@@ -85,19 +84,12 @@ class WebWidget {
   // is called. |settings| is typically null. When |settings| is null
   // the default settings will be used, tests may provide a |settings| object to
   // override the defaults.
-  virtual cc::LayerTreeHost* InitializeCompositing(
-      scheduler::WebThreadScheduler* main_thread_scheduler,
+  virtual void InitializeCompositing(
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
-      bool for_child_local_root_frame,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings) = 0;
-
-  // This method closes and deletes the WebWidget. If a |cleanup_task| is
-  // provided it should run on the |cleanup_runner| after the WebWidget has
-  // added its own tasks to the |cleanup_runner|.
-  virtual void Close(
-      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner = nullptr) {}
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink and begin producing frames from the

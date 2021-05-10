@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/strings/string16.h"
+#include "services/media_session/public/cpp/media_position.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace system_media_controls {
@@ -26,8 +27,10 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControls {
     kStopped,
   };
 
-  // Returns the singleton instance, creating if necessary.
-  static SystemMediaControls* GetInstance();
+  static std::unique_ptr<SystemMediaControls> Create(
+      const std::string& product_name);
+
+  virtual ~SystemMediaControls() = default;
 
   virtual void AddObserver(SystemMediaControlsObserver* observer) = 0;
   virtual void RemoveObserver(SystemMediaControlsObserver* observer) = 0;
@@ -40,6 +43,7 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControls {
   virtual void SetIsPreviousEnabled(bool value) = 0;
   virtual void SetIsPlayPauseEnabled(bool value) = 0;
   virtual void SetIsStopEnabled(bool value) = 0;
+  virtual void SetIsSeekToEnabled(bool value) {}
 
   // Setters for metadata.
   virtual void SetPlaybackStatus(PlaybackStatus value) = 0;
@@ -47,14 +51,12 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControls {
   virtual void SetArtist(const base::string16& value) = 0;
   virtual void SetAlbum(const base::string16& value) = 0;
   virtual void SetThumbnail(const SkBitmap& bitmap) = 0;
+  virtual void SetPosition(const media_session::MediaPosition& position) {}
 
   // Helpers for metadata
   virtual void ClearThumbnail() = 0;
   virtual void ClearMetadata() = 0;
   virtual void UpdateDisplay() = 0;
-
- protected:
-  virtual ~SystemMediaControls() = default;
 };
 
 }  // namespace system_media_controls

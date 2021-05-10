@@ -1,13 +1,17 @@
 <link rel="import" href="../../../html/polymer.html">
 
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../../html/i18n_behavior.html">
 <link rel="import" href="../../../cr_elements/cr_input/cr_input.html">
 <link rel="import" href="base_page.html">
 <link rel="import" href="cellular_setup_delegate.html">
+<link rel="import" href="cellular_setup_icons.html">
 
 <dom-module id="activation-code-page">
   <template>
-    <style>
+    <style include="iron-positioning">
       [slot='page-body'] {
         height: 300px;
         margin-top: -20px;
@@ -35,13 +39,8 @@
         background-color: transparent;
       }
 
-      #scanSuccessMessage {
-        color: green;
-        font-size: medium;
-      }
-
-      #scanSuccessMessage:hover {
-        cursor: default;
+      cr-button[disabled] {
+        background-color: transparent;
       }
 
       .center {
@@ -51,32 +50,63 @@
         transform: translateY(-50%) translateX(-50%);
       }
 
+      .width-92 {
+        width: 92%;
+      }
+
       .label {
         font-weight: 500;
       }
 
       .button-image {
-        height: 20px;
         margin-inline-end: 8px;
-        width: 20px;
+      }
+
+      .scan-finish-image {
+        position: absolute;
+       }
+
+      .scan-finish-message {
+        padding-inline-end: 0;
+        padding-inline-start: 30px;
+      }
+
+      .scan-finish-message:hover {
+        cursor: default;
+      }
+
+      .blue-icon {
+        --iron-icon-fill-color: #1A73E8;
+      }
+
+      #scanSucessHeader {
+        --iron-icon-fill-color: #1E8E3E;
+        margin-bottom: 8px;
+      }
+
+      #scanSuccessMessage {
+        color: green;
+        font-size: medium;
+      }
+
+      #scanFailureHeader {
+        --iron-icon-fill-color: #D93025;
+        margin-bottom: 4px;
+      }
+
+      #scanFailureMessage {
+        color: var(--google-red-600);
       }
 
       #useCameraAgainButton {
+        display: block;
         font-weight: 500;
-        left: 50%;
-        margin-top: 16px;
-        transform: translateX(-50%);
+        text-align: center;
       }
 
-      #scanSuccessImage {
-        height: 20px;
-        position: absolute;
-        width: 20px;
-       }
-
-       #scanSuccessMessage {
-        padding-inline-end: 0;
-        padding-inline-start: 30px;
+      #tryAgainButton {
+        display: block;
+        text-align: center;
       }
 
       #switchCameraButton {
@@ -90,60 +120,107 @@
         z-index: 2;
       }
 
-      #switchCameraButton img {
+      #switchCameraButton iron-icon {
         filter: brightness(2.1);
+        --iron-icon-fill-color: #5F6368;
+      }
+
+      paper-spinner-lite {
+        height: 20px;
+        position: absolute;
+        right: 16px;
+        top: 24px;
+        width: 20px;
+      }
+
+      #loadingMessage {
+        bottom: 0;
+        color: var(--google-grey-refresh-500);
+        font-size: var(--cr-form-field-label-font-size);
+        letter-spacing: .4px;
+        line-height: var(--cr-form-field-label-line-height);
+        position: absolute;
       }
     </style>
     <base-page>
       <div slot="page-body">
         <span id="scanQrCodeDescription">
-          [[i18n('scanQRCode')]]
+          [[getDescription_(showNoProfilesMessage, cameraCount_ )]]
         </span>
-        <div id="esimQrCodeDetection">
-          <cr-button id="switchCameraButton"
-              on-click="onSwitchCameraButtonPressed_"
-              hidden$="[[isUiElementHidden_(UiElement.SWITCH_CAMERA, state_, hasMultipleCameras_)]]"
-              disabled="[[isUiElementDisabled_(UiElement.SWITCH_CAMERA, state_)]]">
-            <img class="button-image"
-                src="activation_code_page_switch_camera.svg"
-                aria-hidden="true">
-            [[i18n('switchCamera')]]
-          </cr-button>
-          <video id="video"
-              hidden$="[[isUiElementHidden_(UiElement.VIDEO, state_)]]">
-          </video>
-          <div class="center" id="startScanningContainer"
-              hidden$="[[isUiElementHidden_(UiElement.START_SCANNING, state_)]]">
-            <cr-button class="label"
-                id="startScanningButton"
-                on-click="startScanning_"
-                aria-describedby="scanQrCodeDescription">
-              <img class="button-image"
-                  src="activation_code_page_camera.svg"
-                  aria-hidden="true">
-              [[i18n('useCamera')]]
+        <template is="dom-if"
+            if="[[isScanningAvailable_(cameraCount_, qrCodeDetector_.*)]]" restamp>
+          <div id="esimQrCodeDetection">
+            <cr-button id="switchCameraButton"
+                on-click="onSwitchCameraButtonPressed_"
+                hidden$="[[isUiElementHidden_(UiElement.SWITCH_CAMERA, state_, cameraCount_)]]"
+                disabled="[[isUiElementDisabled_(UiElement.SWITCH_CAMERA, state_, showBusy)]]">
+              <iron-icon class="button-image" icon="cellular-setup:switch-camera"></iron-icon>
+              [[i18n('switchCamera')]]
             </cr-button>
-          </div>
-          <div class="center" id="scanSuccessContainer"
-              hidden$="[[isUiElementHidden_(UiElement.SCAN_SUCCESS, state_)]]">
-            <div>
-              <img id="scanSuccessImage"
-                  src="activation_code_page_checked.svg"
-                  aria-hidden="true">
-              <span class="label" id="scanSuccessMessage">
-                [[i18n('scanQRCodeSuccess')]]
-              </span>
+            <video id="video"
+                hidden$="[[isUiElementHidden_(UiElement.VIDEO, state_)]]">
+            </video>
+            <div class="center" id="startScanningContainer" class="blue-icon"
+                hidden$="[[isUiElementHidden_(UiElement.START_SCANNING, state_)]]">
+              <cr-button class="label"
+                  id="startScanningButton"
+                  on-click="startScanning_"
+                  aria-describedby="scanQrCodeDescription"
+                  disabled="[[isUiElementDisabled_(UiElement.START_SCANNING, state_, showBusy)]]">
+                <iron-icon class="button-image" icon="cellular-setup:camera"></iron-icon>
+                [[i18n('useCamera')]]
+              </cr-button>
             </div>
-            <cr-button id="useCameraAgainButton"
-                on-click="startScanning_">
-              [[i18n('qrCodeRetry')]]
-            </cr-button>
+            <div class="center" id="scanFinishContainer"
+                hidden$="[[isUiElementHidden_(UiElement.SCAN_FINISH, state_)]]">
+              <div>
+                <div id="scanSuccessContainer"
+                    hidden$="[[isUiElementHidden_(UiElement.SCAN_SUCCESS, state_)]]">
+                  <div id=scanSucessHeader>
+                    <iron-icon class="scan-finish-image" icon="cellular-setup:checked"></iron-icon>
+                    <span class="label scan-finish-message" id="scanSuccessMessage">
+                      [[i18n('scanQRCodeSuccess')]]
+                    </span>
+                  </div>
+                  <cr-button id="useCameraAgainButton" class="blue-icon"
+                      on-click="startScanning_"
+                      disabled="[[isUiElementDisabled_(UiElement.SCAN_SUCCESS, state_, showBusy)]]">
+                    <iron-icon class="button-image" icon="cellular-setup:camera"></iron-icon>
+                    [[i18n('qrCodeUseCameraAgain')]]
+                  </cr-button>
+                </div>
+                <div id="scanFailureContainer"
+                    hidden$="[[isUiElementHidden_(UiElement.SCAN_FAILURE, state_)]]">
+                  <div id="scanFailureHeader" class="blue-icon">
+                    <iron-icon class="scan-finish-image" icon="cellular-setup:error"></iron-icon>
+                    <span class="label scan-finish-message" id="scanFailureMessage">
+                      [[i18n('scanQrCodeError')]]
+                    </span>
+                  </div>
+                  <cr-button id="tryAgainButton" class="blue-icon"
+                      on-click="startScanning_"
+                      disabled="[[isUiElementDisabled_(UiElement.SCAN_FAILURE, state_, showBusy)]]">
+                    <iron-icon class="button-image" icon="cellular-setup:try-again"></iron-icon>
+                    [[i18n('qrCodeRetry')]]
+                  </cr-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <div id="activationCodeContainer" class$="[[computeActivationCodeClass_(cameraCount_)]]">
+          <cr-input id="activationCode"
+            label="[[i18n('activationCode')]]"
+            value="{{activationCode}}"
+            disabled="[[showBusy]]">
+          </cr-input>
+          <paper-spinner-lite active
+              hidden$="[[!showBusy]]">
+          </paper-spinner-lite>
+          <div id="loadingMessage" hidden$="[[!showBusy]]">
+              [[i18n('scanQrCodeLoading')]]
           </div>
         </div>
-        <cr-input id="activationCode"
-            label="[[i18n('activationCode')]]"
-            value="{{activationCode_}}">
-        </cr-input>
       </div>
     </base-page>
   </template>

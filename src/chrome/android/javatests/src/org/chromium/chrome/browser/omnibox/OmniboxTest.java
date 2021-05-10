@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import android.annotation.SuppressLint;
 import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.widget.ImageButton;
 
+import androidx.test.espresso.Espresso;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -24,6 +29,7 @@ import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.params.SkipCommandLineParameterization;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -31,21 +37,27 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+
+import java.util.List;
 
 /**
  * Tests of the Omnibox.
@@ -249,6 +261,101 @@ public class OmniboxTest {
     }
 
     /**
+     * Test to verify that the security icon is present after
+     * <ol>
+     *   <li>visiting a https:// URL
+     *   <li>focusing the url bar
+     *   <li>pressing back
+     * </ol>
+     * All while the search engine is not the default one. See https://crbug.com/1173447
+     */
+    @Test
+    @MediumTest
+    @SkipCommandLineParameterization
+    public void testSecurityIconOnHTTPSFocusAndBack() throws Exception {
+        setNonDefaultSearchEngine();
+
+        EmbeddedTestServer httpsTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
+        CallbackHelper onSSLStateUpdatedCallbackHelper = new CallbackHelper();
+        TabObserver observer = new EmptyTabObserver() {
+            @Override
+            public void onSSLStateUpdated(Tab tab) {
+                onSSLStateUpdatedCallbackHelper.notifyCalled();
+            }
+        };
+        mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+
+        try {
+            final String testHttpsUrl =
+                    httpsTestServer.getURL("/chrome/test/data/android/omnibox/one.html");
+
+            ImageButton securityButton = (ImageButton) mActivityTestRule.getActivity().findViewById(
+                    R.id.location_bar_status_icon);
+
+            mActivityTestRule.loadUrl(testHttpsUrl);
+            onSSLStateUpdatedCallbackHelper.waitForCallback(0);
+            final LocationBarLayout locationBar =
+                    (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
+                            R.id.location_bar);
+            final StatusCoordinator statusCoordinator =
+                    locationBar.getStatusCoordinatorForTesting();
+            final int firstIcon = statusCoordinator.getSecurityIconResourceIdForTesting();
+
+            onView(withId(R.id.url_bar)).perform(click());
+            CriteriaHelper.pollUiThread(
+                    () -> statusCoordinator.getSecurityIconResourceIdForTesting() != firstIcon);
+            final int secondIcon = statusCoordinator.getSecurityIconResourceIdForTesting();
+            Espresso.pressBack();
+            CriteriaHelper.pollUiThread(
+                    () -> statusCoordinator.getSecurityIconResourceIdForTesting() != secondIcon);
+
+            boolean securityIcon = statusCoordinator.isSecurityButtonShown();
+            Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
+            Assert.assertEquals("location_bar_status_icon with wrong resource-id",
+                    R.id.location_bar_status_icon, securityButton.getId());
+            Assert.assertTrue(securityButton.isShown());
+            Assert.assertEquals(R.drawable.omnibox_https_valid,
+                    statusCoordinator.getSecurityIconResourceIdForTesting());
+        } finally {
+            httpsTestServer.stopAndDestroyServer();
+            restoreDefaultSearchEngine();
+        }
+    }
+
+    private void setNonDefaultSearchEngine() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> TemplateUrlServiceFactory.get().load());
+        CriteriaHelper.pollUiThread(() -> TemplateUrlServiceFactory.get().isLoaded());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlService service = TemplateUrlServiceFactory.get();
+
+            List<TemplateUrl> searchEngines = service.getTemplateUrls();
+            TemplateUrl defaultEngine = service.getDefaultSearchEngineTemplateUrl();
+
+            TemplateUrl notDefault = null;
+            for (TemplateUrl searchEngine : searchEngines) {
+                if (!searchEngine.equals(defaultEngine)) {
+                    notDefault = searchEngine;
+                    break;
+                }
+            }
+
+            Assert.assertNotNull(notDefault);
+
+            service.setSearchEngine(notDefault.getKeyword());
+        });
+    }
+
+    private void restoreDefaultSearchEngine() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlService service = TemplateUrlServiceFactory.get();
+            TemplateUrl defaultEngine = service.getDefaultSearchEngineTemplateUrl();
+            service.setSearchEngine(defaultEngine.getKeyword());
+        });
+    }
+
+    /**
      * Test whether the color of the Location bar is correct for HTTPS scheme.
      */
     @Test
@@ -260,19 +367,24 @@ public class OmniboxTest {
                 ServerCertificate.CERT_OK);
         CallbackHelper didThemeColorChangedCallbackHelper = new CallbackHelper();
         CallbackHelper onSSLStateUpdatedCallbackHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> new TabModelSelectorTabObserver(
-                                mActivityTestRule.getActivity().getTabModelSelector()) {
-                    @Override
-                    public void onDidChangeThemeColor(Tab tab, int color) {
-                        didThemeColorChangedCallbackHelper.notifyCalled();
-                    }
-                    @Override
-                    public void onSSLStateUpdated(Tab tab) {
-                        onSSLStateUpdatedCallbackHelper.notifyCalled();
-                    }
-                });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            new TabModelSelectorTabObserver(mActivityTestRule.getActivity().getTabModelSelector()) {
+                @Override
+                public void onSSLStateUpdated(Tab tab) {
+                    onSSLStateUpdatedCallbackHelper.notifyCalled();
+                }
+            };
+
+            mActivityTestRule.getActivity()
+                    .getRootUiCoordinatorForTesting()
+                    .getTopUiThemeColorProvider()
+                    .addThemeColorObserver(new ThemeColorObserver() {
+                        @Override
+                        public void onThemeColorChanged(int color, boolean shouldAnimate) {
+                            didThemeColorChangedCallbackHelper.notifyCalled();
+                        }
+                    });
+        });
 
         try {
             final String testHttpsUrl =

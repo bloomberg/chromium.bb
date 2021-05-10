@@ -26,8 +26,9 @@ protected:
     }
 
     void onDraw(int loops, SkCanvas*) override {
+        GrShaderCaps caps(GrContextOptions{});
         for (int i = 0; i < loops; i++) {
-            SkSL::Compiler compiler(/*caps=*/nullptr);
+            SkSL::Compiler compiler(&caps);
         }
     }
 };
@@ -78,7 +79,7 @@ protected:
     void onDraw(int loops, SkCanvas* canvas) override {
         for (int i = 0; i < loops; i++) {
             std::unique_ptr<SkSL::Program> program = fCompiler.convertProgram(
-                                                                      SkSL::Program::kFragment_Kind,
+                                                                      SkSL::ProgramKind::kFragment,
                                                                       fSrc,
                                                                       fSettings);
             if (fCompiler.errorCount()) {
@@ -110,7 +111,8 @@ public:
     SkSLParseBench(SkSL::String name, const char* src)
         : fName("sksl_parse_" + name)
         , fSrc(src)
-        , fCompiler(/*caps=*/nullptr) {}
+        , fCaps(GrContextOptions())
+        , fCompiler(&fCaps) {}
 
 protected:
     const char* onGetName() override {
@@ -122,8 +124,7 @@ protected:
     }
 
     void onDelayedSetup() override {
-        SkSL::ParsedModule module = fCompiler.moduleForProgramKind(
-                                                               SkSL::Program::Kind::kFragment_Kind);
+        SkSL::ParsedModule module = fCompiler.moduleForProgramKind(SkSL::ProgramKind::kFragment);
         fCompiler.irGenerator().setSymbolTable(module.fSymbols);
     }
 
@@ -143,6 +144,7 @@ protected:
 private:
     SkSL::String fName;
     SkSL::String fSrc;
+    GrShaderCaps fCaps;
     SkSL::Compiler fCompiler;
     SkSL::Program::Settings fSettings;
 
@@ -567,11 +569,34 @@ void RunSkSLMemoryBenchmarks(NanoJSONResultsWriter* log) {
         log->endObject();                // test
     };
 
+    // Heap used by a default compiler (with no modules loaded)
     {
         int before = heap_bytes_used();
-        SkSL::Compiler compiler(/*caps=*/nullptr);
+        GrShaderCaps caps(GrContextOptions{});
+        SkSL::Compiler compiler(&caps);
         int after = heap_bytes_used();
         bench("sksl_compiler_baseline", after - before);
+    }
+
+    // Heap used by a compiler with the two main GPU modules (fragment + vertex) loaded
+    {
+        int before = heap_bytes_used();
+        GrShaderCaps caps(GrContextOptions{});
+        SkSL::Compiler compiler(&caps);
+        compiler.moduleForProgramKind(SkSL::ProgramKind::kVertex);
+        compiler.moduleForProgramKind(SkSL::ProgramKind::kFragment);
+        int after = heap_bytes_used();
+        bench("sksl_compiler_gpu", after - before);
+    }
+
+    // Heap used by a compiler with the runtime effect module loaded
+    {
+        int before = heap_bytes_used();
+        GrShaderCaps caps(GrContextOptions{});
+        SkSL::Compiler compiler(&caps);
+        compiler.moduleForProgramKind(SkSL::ProgramKind::kRuntimeEffect);
+        int after = heap_bytes_used();
+        bench("sksl_compiler_runtimeeffect", after - before);
     }
 }
 

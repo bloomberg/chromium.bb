@@ -42,6 +42,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -116,23 +117,16 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
   if ((event.key_code() == ui::VKEY_SPACE ||
        event.key_code() == ui::VKEY_RETURN) &&
       !editor_bubble_tracker_.is_open()) {
-    if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
-      // The collapse feature changes the behavior from showing the
-      // editor bubble to toggling the collapsed state of the group.
-      bool successful_toggle =
-          tab_strip_->controller()->ToggleTabGroupCollapsedState(
-              group().value(), ToggleTabGroupCollapsedStateOrigin::kKeyboard);
-      if (successful_toggle) {
+    bool successful_toggle =
+        tab_strip_->controller()->ToggleTabGroupCollapsedState(
+            group().value(), ToggleTabGroupCollapsedStateOrigin::kKeyboard);
+    if (successful_toggle) {
 #if defined(OS_WIN)
         NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 #else
         NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 #endif
         LogCollapseTime();
-      }
-    } else {
-      editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-          tab_strip_->controller()->GetBrowser(), group().value(), this));
     }
     return true;
   }
@@ -180,23 +174,18 @@ bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
-  if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
-    // The collapse feature changes the left click behavior from showing the
-    // editor bubble to toggling the collapsed state of the group.
-    if (event.IsLeftMouseButton() && !dragging()) {
+  if (!dragging()) {
+    if (event.IsLeftMouseButton()) {
       bool successful_toggle =
           tab_strip_->controller()->ToggleTabGroupCollapsedState(
               group().value(), ToggleTabGroupCollapsedStateOrigin::kMouse);
       if (successful_toggle)
         LogCollapseTime();
+    } else if (event.IsRightMouseButton() &&
+               !editor_bubble_tracker_.is_open()) {
+      editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
+          tab_strip_->controller()->GetBrowser(), group().value(), this));
     }
-
-  } else if (!dragging() && !editor_bubble_tracker_.is_open()) {
-    // (TODO): Delete this else statement once collapse launches since
-    // ShowContextMenuForViewImpl() will handle spawning the bubble on right
-    // clicks.
-    editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-        tab_strip_->controller()->GetBrowser(), group().value(), this));
   }
 
   tab_strip_->EndDrag(END_DRAG_COMPLETE);
@@ -217,18 +206,11 @@ void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   tab_strip_->UpdateHoverCard(nullptr);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP: {
-      if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
-        // The collapse feature changes the behavior from showing the
-        // editor bubble to toggling the collapsed state of the group.
-        bool successful_toggle =
-            tab_strip_->controller()->ToggleTabGroupCollapsedState(
-                group().value(), ToggleTabGroupCollapsedStateOrigin::kGesture);
-        if (successful_toggle)
-          LogCollapseTime();
-      } else {
-        editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-            tab_strip_->controller()->GetBrowser(), group().value(), this));
-      }
+      bool successful_toggle =
+          tab_strip_->controller()->ToggleTabGroupCollapsedState(
+              group().value(), ToggleTabGroupCollapsedStateOrigin::kGesture);
+      if (successful_toggle)
+        LogCollapseTime();
       break;
     }
 
@@ -299,7 +281,7 @@ TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {
 TabSizeInfo TabGroupHeader::GetTabSizeInfo() const {
   TabSizeInfo size_info;
   // Group headers have a fixed width based on |title_|'s width.
-  const int width = CalculateWidth();
+  const int width = GetDesiredWidth();
   size_info.pinned_tab_width = width;
   size_info.min_active_width = width;
   size_info.min_inactive_width = width;
@@ -357,7 +339,7 @@ bool TabGroupHeader::DoesIntersectRect(const views::View* target,
   return contents_rect.Intersects(rect);
 }
 
-int TabGroupHeader::CalculateWidth() const {
+int TabGroupHeader::GetDesiredWidth() const {
   // If the tab group is collapsed, we want the right margin of the title to
   // match the left margin. The left margin is always the group stroke inset.
   // Using these values also guarantees the chip aligns with the collapsed
@@ -453,6 +435,10 @@ void TabGroupHeader::VisualsChanged() {
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {
   widget->RemoveObserver(&editor_bubble_tracker_);
 }
+
+BEGIN_METADATA(TabGroupHeader, views::View)
+ADD_READONLY_PROPERTY_METADATA(int, DesiredWidth)
+END_METADATA
 
 TabGroupHeader::EditorBubbleTracker::~EditorBubbleTracker() {
   if (is_open_) {

@@ -30,9 +30,11 @@ input:focus {
 input.dt-checkbox-themed {
   appearance: none;
   margin: auto 5px auto 2px;
-  border: 1px solid rgb(45 45 45);
+  border: 1px solid rgb(45 45 45); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   border-radius: 3px;
-  background-color: rgb(102 102 102);
+  background-color: rgb(102 102 102); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 input.dt-checkbox-themed::after {
@@ -49,7 +51,8 @@ input.dt-checkbox-themed::after {
 }
 
 input.dt-checkbox-themed:checked::after {
-  background-color: #333;
+  background-color: #333; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 :host-context(.-theme-with-dark-background) input:not(.dt-checkbox-themed) {
@@ -63,7 +66,8 @@ input.dt-checkbox-themed:checked::after {
 }
 
 .dt-checkbox-subtitle {
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 @media (forced-colors: active) {

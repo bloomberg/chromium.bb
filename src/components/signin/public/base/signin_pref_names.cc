@@ -4,9 +4,11 @@
 
 #include "components/signin/public/base/signin_pref_names.h"
 
+#include "build/chromeos_buildflags.h"
+
 namespace prefs {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // A boolean pref - should unauthenticated user should be logged out
 // automatically. Default value is false.
 const char kForceLogoutUnauthenticatedUserEnabled[] =
@@ -47,10 +49,6 @@ const char kGoogleServicesAccountId[] = "google.services.account_id";
 const char kGoogleServicesConsentedToSync[] =
     "google.services.consented_to_sync";
 
-// The profile's hosted domain; empty if unset; kNoHostedDomainFound if there
-// is none.
-const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
-
 // Similar to kGoogleServicesLastUsername, this is the corresponding version of
 // kGoogleServicesAccountId that is not cleared on signout.
 const char kGoogleServicesLastAccountId[] = "google.services.last_account_id";
@@ -89,16 +87,6 @@ const char kSigninAllowed[] = "signin.allowed";
 
 // True if the token service has been prepared for Dice migration.
 const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
-
-// Boolean which stores if the ProfileOAuth2TokenService should ignore secondary
-// accounts.
-const char kTokenServiceExcludeAllSecondaryAccounts[] =
-    "token_service.exclude_all_secondary_accounts";
-
-// List that identifies the account id that should be ignored by the token
-// service.
-const char kTokenServiceExcludedSecondaryAccounts[] =
-    "token_service.excluded_secondary_accounts";
 
 // Contains last |ListAccounts| data which corresponds to Gaia cookies.
 const char kGaiaCookieLastListAccountsData[] =

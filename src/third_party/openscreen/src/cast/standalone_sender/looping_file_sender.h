@@ -22,9 +22,8 @@ namespace cast {
 class LoopingFileSender final : public SimulatedAudioCapturer::Client,
                                 public SimulatedVideoCapturer::Client {
  public:
-  LoopingFileSender(TaskRunner* task_runner,
+  LoopingFileSender(Environment* environment,
                     const char* path,
-                    const IPEndpoint& remote_endpoint,
                     SenderSession::ConfiguredSenders senders,
                     int max_bitrate);
 
@@ -55,7 +54,7 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
   // Holds the required injected dependencies (clock, task runner) used for Cast
   // Streaming, and owns the UDP socket over which all communications occur with
   // the remote's Receivers.
-  Environment env_;
+  Environment* const env_;
 
   // The path to the media file to stream over and over.
   const char* const path_;

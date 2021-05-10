@@ -19,7 +19,6 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader_factory.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -212,7 +212,7 @@ std::unique_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
 
   if (field_mask & ResettableSettingsSnapshot::SHORTCUTS) {
     for (const auto& shortcut_command : snapshot.shortcuts())
-      report->add_shortcuts(base::UTF16ToUTF8(shortcut_command.second));
+      report->add_shortcuts(base::WideToUTF8(shortcut_command.second));
   }
 
   report->set_guid(snapshot.guid());
@@ -237,9 +237,8 @@ std::unique_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
           g_browser_process->GetApplicationLocale());
-  AddPair(list.get(),
-          l10n_util::GetStringUTF16(IDS_VERSION_UI_USER_AGENT),
-          GetUserAgent());
+  AddPair(list.get(), l10n_util::GetStringUTF16(IDS_VERSION_UI_USER_AGENT),
+          embedder_support::GetUserAgent());
   std::string version = version_info::GetVersionNumber();
   version += chrome::GetChannelName();
   AddPair(list.get(),
@@ -319,7 +318,7 @@ std::unique_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
       if (!shortcut_targets.empty())
         shortcut_targets += base::ASCIIToUTF16("\n");
       shortcut_targets += base::ASCIIToUTF16("chrome.exe ");
-      shortcut_targets += i->second;
+      shortcut_targets += base::WideToUTF16(i->second);
     }
     if (!shortcut_targets.empty()) {
       AddPair(list.get(),

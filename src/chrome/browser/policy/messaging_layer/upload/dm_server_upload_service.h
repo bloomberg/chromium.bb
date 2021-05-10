@@ -11,24 +11,25 @@
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
-#include "chrome/browser/policy/messaging_layer/util/shared_vector.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/status_macros.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
-#include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/proto/record.pb.h"
-#include "components/policy/proto/record_constants.pb.h"
+#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/status_macros.h"
+#include "components/reporting/util/statusor.h"
+#include "components/reporting/util/task_runner_context.h"
 #include "net/base/backoff_entry.h"
 
-#ifdef OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/profiles/profile.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace reporting {
 
 // DmServerUploadService uploads events to the DMServer. It does not manage
-// sequence information, instead reporting the highest sequence number for each
+// sequencing information, instead reporting the highest sequencing id for each
 // generation id and priority.
 //
 // DmServerUploadService relies on DmServerUploader for uploading. A
@@ -39,24 +40,54 @@ namespace reporting {
 class DmServerUploadService {
  public:
   // ReportSuccessfulUploadCallback is used to pass server responses back to
-  // the owner of |this|.
+  // the owner of |this| (the respone consists of sequencing information and
+  // force_confirm flag).
   using ReportSuccessfulUploadCallback =
-      base::RepeatingCallback<void(SequencingInformation)>;
+      base::RepeatingCallback<void(SequencingInformation,
+                                   /*force_confirm*/ bool)>;
 
-  using CompletionResponse = StatusOr<SequencingInformation>;
+  // ReceivedEncryptionKeyCallback is called if server attached encryption key
+  // to the response.
+  using EncryptionKeyAttachedCallback =
+      base::RepeatingCallback<void(SignedEncryptionInfo)>;
+
+  // Successful response consists of Sequencing information that may be
+  // accompanied with force_confirm flag.
+  struct SuccessfulUploadResponse {
+    SequencingInformation sequencing_information;
+    bool force_confirm;
+  };
+  using CompletionResponse = StatusOr<SuccessfulUploadResponse>;
 
   using CompletionCallback = base::OnceCallback<void(CompletionResponse)>;
 
-  // Since DmServer records need to be sorted prior to sending, we need handlers
-  // for each type of record.
+  // Handles sending records to the server.
   class RecordHandler {
    public:
-    explicit RecordHandler(policy::CloudPolicyClient* client);
     virtual ~RecordHandler() = default;
 
-    virtual Status HandleRecord(Record record) = 0;
+    // Will iterate over |records| and ensure they are in ascending sequence
+    // order, and within the same generation. Any out of order records will be
+    // discarded.
+    // |need_encryption_key| is set to `true` if the client needs to request
+    // the encryption key from the server (either because it does not have it
+    // or because the one it has is old and may be outdated). In that case
+    // it is ok for |records| to be empty (otherwise at least one record must
+    // be present). If response has the key info attached, it is decoded and
+    // handed over to |encryption_key_attached_cb|.
+    // Once the server has responded |upload_complete| is called with either the
+    // highest accepted SequencingInformation, or an error detailing the failure
+    // cause.
+    // Any errors will result in |upload_complete| being called with a Status.
+    virtual void HandleRecords(
+        bool need_encryption_key,
+        std::unique_ptr<std::vector<EncryptedRecord>> records,
+        DmServerUploadService::CompletionCallback upload_complete,
+        DmServerUploadService::EncryptionKeyAttachedCallback
+            encryption_key_attached_cb) = 0;
 
    protected:
+    explicit RecordHandler(policy::CloudPolicyClient* client);
     policy::CloudPolicyClient* GetClient() const { return client_; }
 
    private:
@@ -69,26 +100,19 @@ class DmServerUploadService {
   class DmServerUploader : public TaskRunnerContext<CompletionResponse> {
    public:
     DmServerUploader(
+        bool need_encryption_key,
         std::unique_ptr<std::vector<EncryptedRecord>> records,
-        scoped_refptr<SharedVector<std::unique_ptr<RecordHandler>>> handlers,
+        RecordHandler* handler,
         CompletionCallback completion_cb,
+        EncryptionKeyAttachedCallback encryption_key_attached_cb,
         scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
    private:
-    struct RecordInfo {
-      Record record;
-      SequencingInformation sequencing_information;
-    };
-
     ~DmServerUploader() override;
 
     // OnStart checks to ensure that our record set isn't empty, and requests
     // handler size status from |handlers_|.
     void OnStart() override;
-
-    // The callback for handler size status. Will early exit if there are no
-    // available handlers. Otherwise schedules ProcessRecords.
-    void IsHandlerVectorEmptyCheck(bool handler_is_empty);
 
     // ProcessRecords verifies that the records provided are parseable and sets
     // the |Record|s up for handling by the |RecordHandlers|s. On
@@ -103,15 +127,13 @@ class DmServerUploadService {
     // processed and calls Complete.
     void OnRecordsHandled();
 
-    // Complete evaluates if any records were successfully uploaded.  If no
-    // records were successfully uploaded and |status| is not ok - it calls
-    // |Response| with the provided |status|. Otherwise it calls |Response| with
-    // the list of successful uploads (even if some were not successful).
-    void Complete(Status status);
+    // Complete schedules |Response| with the provided |completion_response|.
+    void Complete(CompletionResponse completion_response);
 
-    // Helper function for determining if a Record is valid and adding it to
-    // |record_infos_|.
-    Status IsRecordValid(const EncryptedRecord& encrypted_record);
+    // Helper function for determining if an EncryptedRecord is valid.
+    Status IsRecordValid(const EncryptedRecord& encrypted_record,
+                         const int64_t expected_generation_id,
+                         const int64_t expected_sequencing_id) const;
 
     // Helper function for tracking the highest sequencing information per
     // generation id. Schedules ProcessSuccessfulUploadAddition.
@@ -124,14 +146,11 @@ class DmServerUploadService {
         base::RepeatingClosure done_cb,
         SequencingInformation sequencing_information);
 
+    const bool need_encryption_key_;
     std::unique_ptr<std::vector<EncryptedRecord>> encrypted_records_;
-    scoped_refptr<SharedVector<std::unique_ptr<RecordHandler>>> handlers_;
+    EncryptionKeyAttachedCallback encryption_key_attached_cb_;
+    RecordHandler* handler_;
 
-    // generation_id_ will be set to the generation of the first record in
-    // encrypted_records_.
-    uint64_t generation_id_;
-
-    std::vector<RecordInfo> record_infos_;
     base::Optional<SequencingInformation> highest_successful_sequence_;
 
     SEQUENCE_CHECKER(sequence_checker_);
@@ -140,40 +159,43 @@ class DmServerUploadService {
   // Will asynchronously create a DMServerUploadService with handlers.
   // On successful completion will call |created_cb| with DMServerUploadService.
   // If |client| is null, will call |created_cb| with error::INVALID_ARGUMENT.
-  // If any handlers fail to create, or the policy::CloudPolicyClient is null,
-  // will call |created_cb| with error::UNAVAILABLE.
+  // If any handlers fail to create, will call |created_cb| with
+  // error::UNAVAILABLE.
   //
-  // |client| must not be null.
   // |report_upload_success_cb| should report back to the holder of the created
   // object whenever a record set is successfully uploaded.
+  // |encryption_key_attached_cb| if called would update the encryption key with
+  // the one received from the server.
   static void Create(
-      std::unique_ptr<policy::CloudPolicyClient> client,
+      policy::CloudPolicyClient* client,
       ReportSuccessfulUploadCallback report_upload_success_cb,
+      EncryptionKeyAttachedCallback encryption_key_attached_cb,
       base::OnceCallback<void(StatusOr<std::unique_ptr<DmServerUploadService>>)>
           created_cb);
   ~DmServerUploadService();
 
-  Status EnqueueUpload(std::unique_ptr<std::vector<EncryptedRecord>> record);
+  Status EnqueueUpload(bool need_encryption_key,
+                       std::unique_ptr<std::vector<EncryptedRecord>> record);
 
  private:
-  DmServerUploadService(std::unique_ptr<policy::CloudPolicyClient> client,
-                        ReportSuccessfulUploadCallback completion_cb);
+  DmServerUploadService(
+      policy::CloudPolicyClient* client,
+      ReportSuccessfulUploadCallback completion_cb,
+      EncryptionKeyAttachedCallback encryption_key_attached_cb);
 
-  static void InitRecordHandlers(
+  static void InitRecordHandler(
       std::unique_ptr<DmServerUploadService> uploader,
-#ifdef OS_CHROMEOS
-      Profile* primary_profile,
-#endif  // OS_CHROMEOS
       base::OnceCallback<void(StatusOr<std::unique_ptr<DmServerUploadService>>)>
           created_cb);
 
-  void UploadCompletion(StatusOr<SequencingInformation>) const;
+  void UploadCompletion(CompletionResponse upload_result) const;
 
   policy::CloudPolicyClient* GetClient();
 
-  std::unique_ptr<policy::CloudPolicyClient> client_;
+  policy::CloudPolicyClient* client_;
   ReportSuccessfulUploadCallback upload_cb_;
-  scoped_refptr<SharedVector<std::unique_ptr<RecordHandler>>> record_handlers_;
+  EncryptionKeyAttachedCallback encryption_key_attached_cb_;
+  std::unique_ptr<RecordHandler> handler_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 };

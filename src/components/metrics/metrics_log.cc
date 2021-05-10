@@ -216,6 +216,9 @@ void MetricsLog::RecordCoreSystemProfile(
   // crbug.com/370104 for details.
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
 #endif
+  auto app_os_arch = base::SysInfo::ProcessCPUArchitecture();
+  if (!app_os_arch.empty())
+    hardware->set_app_cpu_architecture(app_os_arch);
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
   hardware->set_hardware_class(base::SysInfo::HardwareModelName());
 #if defined(OS_WIN)
@@ -223,11 +226,11 @@ void MetricsLog::RecordCoreSystemProfile(
 #endif
 
   metrics::SystemProfileProto::OS* os = system_profile->mutable_os();
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // The Lacros browser runs on Chrome OS, but reports a special OS name to
   // differentiate itself from the built-in ash browser + window manager binary.
   os->set_name("Lacros");
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   os->set_name("CrOS");
 #else
   os->set_name(base::SysInfo::OperatingSystemName());
@@ -236,9 +239,9 @@ void MetricsLog::RecordCoreSystemProfile(
 
 // On ChromeOS, KernelVersion refers to the Linux kernel version and
 // OperatingSystemVersion refers to the ChromeOS release version.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   os->set_kernel_version(base::SysInfo::KernelVersion());
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Linux operating system version is copied over into kernel version to be
   // consistent.
   os->set_kernel_version(base::SysInfo::OperatingSystemVersion());

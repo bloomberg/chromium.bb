@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/ui/webauthn/transport_hover_list_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "device/fido/pin.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -37,6 +38,11 @@ class AuthenticatorSheetModelBase
     return dialog_model_;
   }
 
+  // Returns a string containing the RP ID, styled as an origin, truncated to a
+  // reasonable width.
+  static base::string16 GetRelyingPartyIdString(
+      const AuthenticatorRequestDialogModel* dialog_model);
+
  protected:
   // AuthenticatorRequestSheetModel:
   bool IsActivityIndicatorVisible() const override;
@@ -51,7 +57,7 @@ class AuthenticatorSheetModelBase
   void OnCancel() override;
 
   // AuthenticatorRequestDialogModel::Observer:
-  void OnModelDestroyed() override;
+  void OnModelDestroyed(AuthenticatorRequestDialogModel* model) override;
 
  private:
   AuthenticatorRequestDialogModel* dialog_model_;
@@ -225,12 +231,12 @@ class AuthenticatorBlePowerOnAutomaticSheetModel
   bool busy_powering_on_ble_ = false;
 };
 
-class AuthenticatorTouchIdIncognitoBumpSheetModel
+class AuthenticatorOffTheRecordInterstitialSheetModel
     : public AuthenticatorSheetModelBase {
  public:
-  explicit AuthenticatorTouchIdIncognitoBumpSheetModel(
+  explicit AuthenticatorOffTheRecordInterstitialSheetModel(
       AuthenticatorRequestDialogModel* dialog_model);
-  ~AuthenticatorTouchIdIncognitoBumpSheetModel() override;
+  ~AuthenticatorOffTheRecordInterstitialSheetModel() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -242,6 +248,7 @@ class AuthenticatorTouchIdIncognitoBumpSheetModel
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  base::string16 GetCancelButtonLabel() const override;
   void OnAccept() override;
 
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
@@ -262,6 +269,27 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
+};
+
+class AuthenticatorAndroidAccessorySheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorAndroidAccessorySheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorAndroidAccessorySheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  bool IsActivityIndicatorVisible() const override;
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+  void OnBack() override;
 
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
@@ -292,12 +320,13 @@ class AuthenticatorPaaskV2SheetModel : public AuthenticatorSheetModelBase {
 class AuthenticatorClientPinEntrySheetModel
     : public AuthenticatorSheetModelBase {
  public:
-  // Indicates whether the view should accommodate setting up a new PIN or
-  // entering an existing one.
-  enum class Mode { kPinEntry, kPinSetup };
+  // Indicates whether the view should accommodate changing an existing PIN,
+  // setting up a new PIN or entering an existing one.
+  enum class Mode { kPinChange, kPinEntry, kPinSetup };
   AuthenticatorClientPinEntrySheetModel(
       AuthenticatorRequestDialogModel* dialog_model,
-      Mode mode);
+      Mode mode,
+      device::pin::PINEntryError error);
   ~AuthenticatorClientPinEntrySheetModel() override;
 
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
@@ -388,8 +417,7 @@ class AuthenticatorRetryUvSheetModel : public AuthenticatorSheetModelBase {
   base::string16 GetError() const override;
 };
 
-// Generic error dialog that can only be dismissed. Backwards navigation is
-// not visible.
+// Generic error dialog that allows starting the request over.
 class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
  public:
   static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
@@ -411,12 +439,16 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
       base::string16 description);
 
   // AuthenticatorSheetModelBase:
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnAccept() override;
 
   base::string16 title_;
   base::string16 description_;
@@ -425,7 +457,7 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
 class AuthenticatorResidentCredentialConfirmationSheetView
     : public AuthenticatorSheetModelBase {
  public:
-  AuthenticatorResidentCredentialConfirmationSheetView(
+  explicit AuthenticatorResidentCredentialConfirmationSheetView(
       AuthenticatorRequestDialogModel* dialog_model);
   ~AuthenticatorResidentCredentialConfirmationSheetView() override;
 
@@ -492,6 +524,18 @@ class AttestationPermissionRequestSheetModel
   base::string16 GetAcceptButtonLabel() const override;
   bool IsCancelButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+};
+
+class EnterpriseAttestationPermissionRequestSheetModel
+    : public AttestationPermissionRequestSheetModel {
+ public:
+  explicit EnterpriseAttestationPermissionRequestSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+
+ private:
+  // AuthenticatorSheetModelBase:
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
 };
 
 class AuthenticatorQRSheetModel : public AuthenticatorSheetModelBase {

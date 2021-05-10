@@ -193,7 +193,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Octber 23, 2020, the latest version is 2020c and the above files
+  As of Janurary 27, 2021, the latest version is 2021a and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -262,3 +262,52 @@ D. Local Modifications
     https://github.com/unicode-org/icu/pull/1479
   - updtream bug:
     https://unicode-org.atlassian.net/browse/ICU-21410
+
+13. Patch locale canoncalization fixes
+    patches/loc.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1470
+    https://github.com/unicode-org/icu/pull/1475
+    https://github.com/unicode-org/icu/pull/1478
+    https://github.com/unicode-org/icu/pull/1491
+    https://github.com/unicode-org/icu/pull/1504
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21401
+    https://unicode-org.atlassian.net/browse/ICU-21402
+    https://unicode-org.atlassian.net/browse/ICU-21408
+    https://unicode-org.atlassian.net/browse/ICU-21406
+    https://unicode-org.atlassian.net/browse/ICU-21414
+    https://unicode-org.atlassian.net/browse/ICU-21433
+
+14. Patch locale canoncalization fixes which is part of 68.2
+    patches/loc2.patch
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1502
+  - updtream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21430
+
+15. Remove explicit std::atomic<NumberRangeFormatterImpl*> template
+    instantiation
+    patches/atomic_template_instantiation.patch
+  - The explicit instantiation was added to silence MSVC C4251 warnings:
+    https://unicode-org.atlassian.net/browse/ICU-20157
+    Small test cases show that it is generally an error to instantiate
+    std::atomic<T*> with an incomplete type T with MSVC, clang, and GCC, so this
+    instantiation never should have worked:
+    https://gcc.godbolt.org/z/34xx8h
+    At this time, it's not clear if this particular instantiation with
+    NumberRangeFormatterImpl* was ever necessary for MSVC. Further testing with
+    MSVC is required to upstream this patch.
+
+16. Patch data/unit/fa.txt back to pre68.1 version
+    patches/back_patch_fa_unit_to_67.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/CLDR-14476
+    https://unicode-org.atlassian.net/browse/ICU-21485
+
+17. Patch regexp to fix security bug
+    patches/regex_minMatchLength.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21492
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1577

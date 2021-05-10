@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_client_session.h"
+#include "quic/qbone/qbone_client_session.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "quic/core/quic_types.h"
+#include "quic/qbone/qbone_constants.h"
 
 namespace quic {
 
@@ -42,7 +42,8 @@ void QboneClientSession::Initialize() {
       ->CryptoConnect();
   // Register the reserved control stream.
   QuicStreamId next_id = GetNextOutgoingBidirectionalStreamId();
-  DCHECK_EQ(next_id, QboneConstants::GetControlStreamId(transport_version()));
+  QUICHE_DCHECK_EQ(next_id,
+                   QboneConstants::GetControlStreamId(transport_version()));
   auto control_stream =
       std::make_unique<QboneClientControlStream>(this, handler_);
   control_stream_ = control_stream.get();

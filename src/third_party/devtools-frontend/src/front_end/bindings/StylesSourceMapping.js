@@ -43,7 +43,6 @@ const uiSourceCodeToStyleMap = new WeakMap();
 
 /**
  * @implements {SourceMapping}
- * @unrestricted
  */
 export class StylesSourceMapping {
   /**
@@ -111,7 +110,8 @@ export class StylesSourceMapping {
       /** @type {number|undefined} */
       let columnNumber = uiLocation.columnNumber;
       if (header.isInline && header.hasSourceURL) {
-        columnNumber = header.columnNumberInSource(lineNumber, uiLocation.columnNumber);
+        // TODO(crbug.com/1153123): Revisit the `columnNumber || 0` and also preserve `undefined` for source maps?
+        columnNumber = header.columnNumberInSource(lineNumber, uiLocation.columnNumber || 0);
         lineNumber = header.lineNumberInSource(lineNumber);
       }
       rawLocations.push(new SDK.CSSModel.CSSLocation(header, lineNumber, columnNumber));
@@ -200,7 +200,6 @@ export class StylesSourceMapping {
 
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
- * @unrestricted
  */
 export class StyleFile {
   /**

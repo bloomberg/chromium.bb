@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -34,14 +35,14 @@ group("preprocess") {
   ]
 }
 
-preprocess_grit("preprocess_src") {
+preprocess_if_expr("preprocess_src") {
   in_folder = "./"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   in_files = [ "cr_splitter/cr_splitter.js" ]
 }
 
-preprocess_grit("preprocess_polymer2") {
+preprocess_if_expr("preprocess_polymer2") {
   in_folder = "./"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_polymer2_manifest"
@@ -106,12 +107,8 @@ preprocess_grit("preprocess_polymer2") {
     "cr_toast/cr_toast_manager.js",
     "cr_toggle/cr_toggle.html",
     "cr_toggle/cr_toggle.js",
-    "cr_toolbar/cr_toolbar.html",
-    "cr_toolbar/cr_toolbar.js",
     "cr_toolbar/cr_toolbar_search_field.html",
     "cr_toolbar/cr_toolbar_search_field.js",
-    "cr_toolbar/cr_toolbar_selection_overlay.html",
-    "cr_toolbar/cr_toolbar_selection_overlay.js",
     "cr_view_manager/cr_view_manager.html",
     "cr_view_manager/cr_view_manager.js",
     "find_shortcut_behavior.html",
@@ -134,7 +131,7 @@ preprocess_grit("preprocess_polymer2") {
     "shared_vars_css.html",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [
       "chromeos/cros_color_overrides.html",
       "chromeos/cr_picture/cr_camera.html",
@@ -154,7 +151,7 @@ preprocess_grit("preprocess_polymer2") {
   }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":polymer3_elements" ]
   in_folder = target_gen_dir
   out_folder = "$preprocess_folder"
@@ -195,9 +192,9 @@ preprocess_grit("preprocess_generated") {
     "cr_toast/cr_toast_manager.m.js",
     "cr_toast/cr_toast.m.js",
     "cr_toggle/cr_toggle.m.js",
-    "cr_toolbar/cr_toolbar.m.js",
+    "cr_toolbar/cr_toolbar.js",
     "cr_toolbar/cr_toolbar_search_field.m.js",
-    "cr_toolbar/cr_toolbar_selection_overlay.m.js",
+    "cr_toolbar/cr_toolbar_selection_overlay.js",
     "cr_view_manager/cr_view_manager.m.js",
     "find_shortcut_behavior.m.js",
     "hidden_style_css.m.js",
@@ -216,7 +213,7 @@ preprocess_grit("preprocess_generated") {
     "shared_vars_css.m.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [
       "chromeos/cros_color_overrides.m.js",
       "chromeos/cr_picture/cr_camera.m.js",
@@ -285,7 +282,7 @@ group("closure_compile") {
     "policy:closure_compile_module",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [
       "chromeos:closure_compile",
 
@@ -298,6 +295,7 @@ group("closure_compile") {
 }
 
 js_type_check("cr_elements_resources") {
+  uses_legacy_modules = true
   deps = [
     ":cr_container_shadow_behavior",
     ":cr_scrollable_behavior",
@@ -426,7 +424,7 @@ group("polymer3_elements") {
     "policy:polymer3_elements",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     public_deps += [
       "chromeos:polymer3_elements",
 

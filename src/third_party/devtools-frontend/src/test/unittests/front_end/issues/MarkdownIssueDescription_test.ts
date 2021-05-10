@@ -3,25 +3,27 @@
 // found in the LICENSE file.
 
 import type * as IssuesModule from '../../../../front_end/issues/issues.js';
+import type * as SDKModule from '../../../../front_end/sdk/sdk.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
-import {IssueKind} from '../../../../front_end/sdk/Issue.js';
 
 const {assert} = chai;
 
 describeWithEnvironment('createIssueDescriptionFromMarkdown', async () => {
   let Issues: typeof IssuesModule;
+  let SDK: typeof SDKModule;
   before(async () => {
     Issues = await import('../../../../front_end/issues/issues.js');
+    SDK = await import('../../../../front_end/sdk/sdk.js');
   });
 
-  const emptyMarkdownDescription = {
-    file: '<unused>',
-    substitutions: undefined,
-    issueKind: IssueKind.BreakingChange,
-    links: [],
-  };
-
   it('only accepts Markdown where the first AST element is a heading, describing the title', () => {
+    const emptyMarkdownDescription = {
+      file: '<unused>',
+      substitutions: undefined,
+      issueKind: SDK.Issue.IssueKind.BreakingChange,
+      links: [],
+    };
+
     const validIssueDescription = '# Title for the issue\n\n...and some text describing the issue.';
 
     const description = Issues.MarkdownIssueDescription.createIssueDescriptionFromRawMarkdown(
@@ -30,6 +32,13 @@ describeWithEnvironment('createIssueDescriptionFromMarkdown', async () => {
   });
 
   it('throws an error for issue description without a heading', () => {
+    const emptyMarkdownDescription = {
+      file: '<unused>',
+      substitutions: undefined,
+      issueKind: SDK.Issue.IssueKind.BreakingChange,
+      links: [],
+    };
+
     const invalidIssueDescription = 'Just some text, but the heading is missing!';
 
     assert.throws(
@@ -76,5 +85,25 @@ describeWithEnvironment('substitutePlaceholders', async () => {
     const str = 'Example string with a {placeholder} that must be ignored.';
 
     assert.strictEqual(Issues.MarkdownIssueDescription.substitutePlaceholders(str), str);
+  });
+
+  it('throws an error for unused replacements', () => {
+    const str = 'Example string with no placeholder';
+
+    assert.throws(
+        () => Issues.MarkdownIssueDescription.substitutePlaceholders(str, new Map([['PLACEHOLDER_FOO', 'bar']])));
+  });
+
+  it('allows the same placeholder to be used multiple times', () => {
+    const str = 'Example string with the same placeholder used twice: {PLACEHOLDER_PH1} {PLACEHOLDER_PH1}';
+
+    const actual = Issues.MarkdownIssueDescription.substitutePlaceholders(str, new Map([['PLACEHOLDER_PH1', 'foo']]));
+    assert.strictEqual(actual, 'Example string with the same placeholder used twice: foo foo');
+  });
+
+  it('throws an error for invalid placeholder syntax provided in the substitutions map', () => {
+    const str = 'Example string with no placeholder';
+
+    assert.throws(() => Issues.MarkdownIssueDescription.substitutePlaceholders(str, new Map([['invalid_ph', 'foo']])));
   });
 });

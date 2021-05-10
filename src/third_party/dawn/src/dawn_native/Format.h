@@ -23,6 +23,22 @@
 
 #include <array>
 
+// About multi-planar formats.
+//
+// Dawn supports additional multi-planar formats when the multiplanar_formats extension is enabled.
+// When enabled, Dawn treats planar data as sub-resources (ie. 1 sub-resource == 1 view == 1 plane).
+// A multi-planar format name encodes the channel mapping and order of planes. For example,
+// R8BG8Biplanar420Unorm is YUV 4:2:0 where Plane 0 = R8, and Plane 1 = BG8.
+//
+// Requirements:
+// * Plane aspects cannot be combined with color, depth, or stencil aspects.
+// * Only compatible multi-planar formats of planes can be used with multi-planar texture
+// formats.
+// * Can't access multiple planes without creating per plane views (no color conversion).
+// * Multi-planar format cannot be written or read without a per plane view.
+//
+// TODO(dawn:551): Consider moving this comment.
+
 namespace dawn_native {
 
     enum class Aspect : uint8_t;
@@ -39,6 +55,8 @@ namespace dawn_native {
 
     // Converts an wgpu::TextureComponentType to its bitmask representation.
     ComponentTypeBit ToComponentTypeBit(wgpu::TextureComponentType type);
+    // Converts an wgpu::TextureSampleType to its bitmask representation.
+    ComponentTypeBit SampleTypeToComponentTypeBit(wgpu::TextureSampleType sampleType);
 
     struct TexelBlockInfo {
         uint32_t byteSize;
@@ -50,11 +68,16 @@ namespace dawn_native {
         TexelBlockInfo block;
         wgpu::TextureComponentType baseType;
         ComponentTypeBit supportedComponentTypes;
+        wgpu::TextureFormat format;
     };
 
     // The number of formats Dawn knows about. Asserts in BuildFormatTable ensure that this is the
     // exact number of known format.
-    static constexpr size_t kKnownFormatCount = 53;
+    static constexpr size_t kKnownFormatCount = 55;
+
+    // The maximum number of planes per format Dawn knows about. Asserts in BuildFormatTable that
+    // the per plane index does not exceed the known maximum plane count
+    static constexpr uint32_t kMaxPlanesPerFormat = 2;
 
     struct Format;
     using FormatTable = std::array<Format, kKnownFormatCount>;
@@ -74,6 +97,10 @@ namespace dawn_native {
         bool HasStencil() const;
         bool HasDepthOrStencil() const;
 
+        // IsMultiPlanar() returns true if the format allows selecting a plane index. This is only
+        // allowed by multi-planar formats (ex. NV12).
+        bool IsMultiPlanar() const;
+
         const AspectInfo& GetAspectInfo(wgpu::TextureAspect aspect) const;
         const AspectInfo& GetAspectInfo(Aspect aspect) const;
 
@@ -82,9 +109,11 @@ namespace dawn_native {
         size_t GetIndex() const;
 
       private:
-        // The most common aspect: the color aspect for color texture, the depth aspect for
-        // depth[-stencil] textures.
-        AspectInfo firstAspect;
+        // Used to store the aspectInfo for one or more planes. For single plane "color" formats,
+        // only the first aspect info or aspectInfo[0] is valid. For depth-stencil, the first aspect
+        // info is depth and the second aspect info is stencil. For multi-planar formats,
+        // aspectInfo[i] is the ith plane.
+        std::array<AspectInfo, kMaxPlanesPerFormat> aspectInfo;
 
         friend FormatTable BuildFormatTable(const DeviceBase* device);
     };

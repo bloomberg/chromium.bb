@@ -29,14 +29,28 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
 
 import {Calculator, TimelineGrid} from './TimelineGrid.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Label for the window for Overview grids
+  */
+  overviewGridWindow: 'Overview grid window',
+  /**
+  *@description Label for left window resizer for Overview grids
+  */
+  leftResizer: 'Left Resizer',
+  /**
+  *@description Label for right window resizer for Overview grids
+  */
+  rightResizer: 'Right Resizer',
+};
+const str_ = i18n.i18n.registerUIStrings('perf_ui/OverviewGrid.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class OverviewGrid {
   /**
    * @param {string} prefix
@@ -144,9 +158,6 @@ export const WindowScrollSpeedFactor = .3;
 export const ResizerOffset = 3.5;  // half pixel because offset values are not rounded but ceiled
 export const OffsetFromWindowEnds = 10;
 
-/**
- * @unrestricted
- */
 export class Window extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Element} parentElement
@@ -159,7 +170,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     UI.ARIAUtils.markAsGroup(this._parentElement);
     this._calculator = calculator;
 
-    UI.ARIAUtils.setAccessibleName(this._parentElement, ls`Overview grid window`);
+    UI.ARIAUtils.setAccessibleName(this._parentElement, i18nString(UIStrings.overviewGridWindow));
 
     UI.UIUtils.installDragHandle(
         this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this),
@@ -170,7 +181,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
           '-webkit-grabbing', '-webkit-grab');
     }
 
-    this._parentElement.addEventListener('mousewheel', this._onMouseWheel.bind(this), true);
+    this._parentElement.addEventListener('wheel', this._onMouseWheel.bind(this), true);
     this._parentElement.addEventListener('dblclick', this._resizeWindowMaximum.bind(this), true);
     UI.Utils.appendStyle(this._parentElement, 'perf_ui/overviewGrid.css', {enableLegacyPatching: true});
 
@@ -188,7 +199,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this._rightResizeElement, this._resizerElementStartDragging.bind(this),
         this._rightResizeElementDragging.bind(this), null, 'ew-resize');
 
-    UI.ARIAUtils.setAccessibleName(this._leftResizeElement, ls`Left Resizer`);
+    UI.ARIAUtils.setAccessibleName(this._leftResizeElement, i18nString(UIStrings.leftResizer));
     UI.ARIAUtils.markAsSlider(this._leftResizeElement);
     /**
      * @param {!Event} event
@@ -196,7 +207,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     const leftKeyDown = event => this._handleKeyboardResizing(event, false);
     this._leftResizeElement.addEventListener('keydown', leftKeyDown);
 
-    UI.ARIAUtils.setAccessibleName(this._rightResizeElement, ls`Right Resizer`);
+    UI.ARIAUtils.setAccessibleName(this._rightResizeElement, i18nString(UIStrings.rightResizer));
     UI.ARIAUtils.markAsSlider(this._rightResizeElement);
 
     /**
@@ -584,20 +595,19 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
    * @param {!Event} event
    */
   _onMouseWheel(event) {
-    // TODO(crbug.com/1145518) Remove usage of MouseWheelEvent.
-    const mouseWheelEvent = /** @type {*} */ (event);
+    const wheelEvent = /** @type {!WheelEvent} */ (event);
     if (!this._enabled) {
       return;
     }
-    if (typeof mouseWheelEvent.wheelDeltaY === 'number' && mouseWheelEvent.wheelDeltaY) {
+    if (wheelEvent.deltaY) {
       const zoomFactor = 1.1;
-      const mouseWheelZoomSpeed = 1 / 120;
+      const wheelZoomSpeed = 1 / 53;
 
-      const reference = mouseWheelEvent.offsetX / mouseWheelEvent.target.clientWidth;
-      this._zoom(Math.pow(zoomFactor, -mouseWheelEvent.wheelDeltaY * mouseWheelZoomSpeed), reference);
+      const reference = wheelEvent.offsetX / this._parentElement.clientWidth;
+      this._zoom(Math.pow(zoomFactor, wheelEvent.deltaY * wheelZoomSpeed), reference);
     }
-    if (typeof mouseWheelEvent.wheelDeltaX === 'number' && mouseWheelEvent.wheelDeltaX) {
-      let offset = Math.round(mouseWheelEvent.wheelDeltaX * WindowScrollSpeedFactor);
+    if (wheelEvent.deltaX) {
+      let offset = Math.round(wheelEvent.deltaX * WindowScrollSpeedFactor);
       const windowLeft = this._leftResizeElement.offsetLeft + ResizerOffset;
       const windowRight = this._rightResizeElement.offsetLeft + ResizerOffset;
 
@@ -611,7 +621,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
 
       this._setWindowPosition(windowLeft - offset, windowRight - offset);
 
-      mouseWheelEvent.preventDefault();
+      wheelEvent.preventDefault();
     }
   }
 
@@ -642,9 +652,6 @@ export const Events = {
   WindowChanged: Symbol('WindowChanged')
 };
 
-/**
- * @unrestricted
- */
 export class WindowSelector {
   /**
    * @param {!Element} parent

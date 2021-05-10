@@ -103,6 +103,15 @@ AutocompleteClassifier* ChromeOmniboxClientIOS::GetAutocompleteClassifier() {
   return ios::AutocompleteClassifierFactory::GetForBrowserState(browser_state_);
 }
 
+bool ChromeOmniboxClientIOS::ShouldDefaultTypedNavigationsToHttps() const {
+  // Defaulting omnibox navigations to HTTPS not yet supported on iOS.
+  return false;
+}
+
+int ChromeOmniboxClientIOS::GetHttpsPortForTesting() const {
+  return 0;
+}
+
 gfx::Image ChromeOmniboxClientIOS::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   // Extensions are not supported on iOS.

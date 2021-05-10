@@ -1,6 +1,6 @@
 project('harfbuzz', 'c', 'cpp',
   meson_version: '>= 0.47.0',
-  version: '2.7.2',
+  version: '2.7.4',
   default_options: [
     'cpp_eh=none',          # Just to support msvc, we are passing -fno-rtti also anyway
     'cpp_rtti=false',       # Just to support msvc, we are passing -fno-exceptions also anyway
@@ -127,34 +127,31 @@ cairo_dep = null_dep
 cairo_ft_dep = null_dep
 if not get_option('cairo').disabled()
   cairo_dep = dependency('cairo', required: false)
+  cairo_ft_dep = dependency('cairo-ft', required: false)
 
   if (not cairo_dep.found() and
       cpp.get_id() == 'msvc' and
       cpp.has_header('cairo.h'))
     cairo_dep = cpp.find_library('cairo', required: false)
+    if cairo_dep.found() and cpp.has_function('cairo_ft_font_face_create_for_ft_face',
+                                              prefix: '#include <cairo-ft.h>',
+                                              dependencies: cairo_dep)
+      cairo_ft_dep = cairo_dep
+    endif
   endif
 
   if not cairo_dep.found()
-    # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
-    # dependency cycle here because we have configured freetype2 above with
-    # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
-    # it will be forced to use that one.
-    cairo_dep = dependency('cairo', fallback: ['cairo', 'libcairo_dep'],
-                           required: get_option('cairo'))
-  endif
-
-  # Ensure that cairo-ft is fetched from the same library as cairo itself
-  if cairo_dep.found()
-    if cairo_dep.type_name() == 'internal'
-      # It is true at least for the port we have
-      cairo_ft_dep = cairo_dep
-    elif (cairo_dep.type_name() == 'library' and
-          cpp.has_function('cairo_ft_font_face_create_for_ft_face',
-                           prefix: '#include <cairo-ft.h>',
-                           dependencies: cairo_dep))
-      cairo_ft_dep = cairo_dep
-    else # including the most important type for us, 'pkgconfig'
-      cairo_ft_dep = dependency('cairo-ft', required: get_option('cairo'))
+    # Requires Meson 0.54.0 to use cairo subproject
+    if meson.version().version_compare('>=0.54.0')
+      # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
+      # dependency cycle here because we have configured freetype2 above with
+      # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
+      # it will be forced to use that one.
+      cairo_dep = dependency('cairo', fallback: 'cairo', required: get_option('cairo'))
+      cairo_ft_dep = dependency('cairo-ft', fallback: 'cairo', required: get_option('cairo'))
+    elif get_option('cairo').enabled()
+      error('cairo feature is enabled but it cannot be found on the system and ' +
+            'meson>=0.54.0 is required to build it as subproject')
     endif
   endif
 endif
@@ -355,16 +352,8 @@ if not get_option('tests').disabled()
   subdir('test')
 endif
 
-# get_option('wrap_mode') isn't available in <0.49 and this
-# is just an internal tool
-if meson.version().version_compare('>=0.49')
-  if (not get_option('benchmark').disabled() and
-      get_option('wrap_mode') != 'nodownload' and
-      host_machine.system() != 'windows' and
-      not meson.is_subproject() and
-      not meson.is_cross_build())
-    subdir('perf')
-  endif
+if not get_option('benchmark').disabled()
+  subdir('perf')
 endif
 
 if not get_option('docs').disabled()
@@ -405,6 +394,11 @@ build_summary = {
     {'Documentation': conf.get('HAVE_GTK_DOC', 0) == 1,
      'GObject bindings': conf.get('HAVE_GOBJECT', 0) == 1,
      'Introspection': conf.get('HAVE_INTROSPECTION', 0) == 1,
+     'Experimental APIs': conf.get('HB_EXPERIMENTAL_API', 0) == 1,
+    },
+  'Testing':
+    {'Tests': get_option('tests').enabled(),
+     'Benchmark': get_option('benchmark').enabled(),
     },
 }
 if meson.version().version_compare('>=0.53')

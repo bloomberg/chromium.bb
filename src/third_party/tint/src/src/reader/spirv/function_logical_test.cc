@@ -71,122 +71,122 @@ std::string CommonTypes() {
 // Returns the AST dump for a given SPIR-V assembly constant.
 std::string AstFor(std::string assembly) {
   if (assembly == "v2bool_t_f") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__bool
-          ScalarConstructor{true}
-          ScalarConstructor{false}
+          ScalarConstructor[not set]{true}
+          ScalarConstructor[not set]{false}
         })";
   }
   if (assembly == "v2bool_f_t") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__bool
-          ScalarConstructor{false}
-          ScalarConstructor{true}
+          ScalarConstructor[not set]{false}
+          ScalarConstructor[not set]{true}
         })";
   }
   if (assembly == "v2uint_10_20") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__u32
-          ScalarConstructor{10}
-          ScalarConstructor{20}
+          ScalarConstructor[not set]{10}
+          ScalarConstructor[not set]{20}
         })";
   }
   if (assembly == "cast_uint_10") {
-    return R"(Bitcast<__i32>{
-          ScalarConstructor{10}
+    return R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         })";
   }
   if (assembly == "cast_uint_20") {
-    return R"(Bitcast<__i32>{
-          ScalarConstructor{20}
+    return R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{20}
         })";
   }
   if (assembly == "cast_v2uint_10_20") {
-    return R"(Bitcast<__vec_2__i32>{
-          TypeConstructor{
+    return R"(Bitcast[not set]<__vec_2__i32>{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{10}
-            ScalarConstructor{20}
+            ScalarConstructor[not set]{10}
+            ScalarConstructor[not set]{20}
           }
         })";
   }
   if (assembly == "v2uint_20_10") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__u32
-          ScalarConstructor{20}
-          ScalarConstructor{10}
+          ScalarConstructor[not set]{20}
+          ScalarConstructor[not set]{10}
         })";
   }
   if (assembly == "cast_v2uint_20_10") {
-    return R"(Bitcast<__vec_2__i32>{
-          TypeConstructor{
+    return R"(Bitcast[not set]<__vec_2__i32>{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{20}
-            ScalarConstructor{10}
+            ScalarConstructor[not set]{20}
+            ScalarConstructor[not set]{10}
           }
         })";
   }
   if (assembly == "cast_int_30") {
-    return R"(Bitcast<__u32>{
-          ScalarConstructor{30}
+    return R"(Bitcast[not set]<__u32>{
+          ScalarConstructor[not set]{30}
         })";
   }
   if (assembly == "cast_int_40") {
-    return R"(Bitcast<__u32>{
-          ScalarConstructor{40}
+    return R"(Bitcast[not set]<__u32>{
+          ScalarConstructor[not set]{40}
         })";
   }
   if (assembly == "v2int_30_40") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{30}
-          ScalarConstructor{40}
+          ScalarConstructor[not set]{30}
+          ScalarConstructor[not set]{40}
         })";
   }
   if (assembly == "cast_v2int_30_40") {
-    return R"(Bitcast<__vec_2__u32>{
-          TypeConstructor{
+    return R"(Bitcast[not set]<__vec_2__u32>{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{30}
-            ScalarConstructor{40}
+            ScalarConstructor[not set]{30}
+            ScalarConstructor[not set]{40}
           }
         })";
   }
   if (assembly == "v2int_40_30") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{40}
-          ScalarConstructor{30}
+          ScalarConstructor[not set]{40}
+          ScalarConstructor[not set]{30}
         })";
   }
   if (assembly == "cast_v2int_40_30") {
-    return R"(Bitcast<__vec_2__u32>{
-          TypeConstructor{
+    return R"(Bitcast[not set]<__vec_2__u32>{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{40}
-            ScalarConstructor{30}
+            ScalarConstructor[not set]{40}
+            ScalarConstructor[not set]{30}
           }
         })";
   }
   if (assembly == "v2int_40_30") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{40}
-          ScalarConstructor{30}
+          ScalarConstructor[not set]{40}
+          ScalarConstructor[not set]{30}
         })";
   }
   if (assembly == "v2float_50_60") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{50.000000}
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{50.000000}
+          ScalarConstructor[not set]{60.000000}
         })";
   }
   if (assembly == "v2float_60_50") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{60.000000}
-          ScalarConstructor{50.000000}
+          ScalarConstructor[not set]{60.000000}
+          ScalarConstructor[not set]{50.000000}
         })";
   }
   return "bad case";
@@ -202,23 +202,23 @@ TEST_F(SpvUnaryLogicalTest, LogicalNot_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        ScalarConstructor{true}
+        ScalarConstructor[not set]{true}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryLogicalTest, LogicalNot_Vector) {
@@ -229,27 +229,27 @@ TEST_F(SpvUnaryLogicalTest, LogicalNot_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__bool
-          ScalarConstructor{true}
-          ScalarConstructor{false}
+          ScalarConstructor[not set]{true}
+          ScalarConstructor[not set]{false}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 struct BinaryData {
@@ -282,21 +282,22 @@ TEST_P(SpvBinaryLogicalTest, EmitExpression) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
   std::ostringstream ss;
   ss << R"(VariableConst{
     x_1
     none
     )"
-     << GetParam().ast_type << "\n    {\n      Binary{"
+     << GetParam().ast_type << "\n    {\n      Binary[not set]{"
      << "\n        " << GetParam().ast_lhs << "\n        " << GetParam().ast_op
      << "\n        " << GetParam().ast_rhs;
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(ss.str())) << assembly;
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(ss.str()))
+      << assembly;
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -305,10 +306,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"bool", "uint_10", "OpIEqual", "uint_20", "__bool",
-                   "ScalarConstructor{10}", "equal", "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "equal",
+                   "ScalarConstructor[not set]{20}"},
         // Both int
         BinaryData{"bool", "int_30", "OpIEqual", "int_40", "__bool",
-                   "ScalarConstructor{30}", "equal", "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "equal",
+                   "ScalarConstructor[not set]{40}"},
         // Both v2uint
         BinaryData{"v2bool", "v2uint_10_20", "OpIEqual", "v2uint_20_10",
                    "__vec_2__bool", AstFor("v2uint_10_20"), "equal",
@@ -321,13 +324,13 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdEqual,
     SpvBinaryLogicalTest,
-    ::testing::Values(BinaryData{"bool", "float_50", "OpFOrdEqual", "float_60",
-                                 "__bool", "ScalarConstructor{50.000000}",
-                                 "equal", "ScalarConstructor{60.000000}"},
-                      BinaryData{"v2bool", "v2float_50_60", "OpFOrdEqual",
-                                 "v2float_60_50", "__vec_2__bool",
-                                 AstFor("v2float_50_60"), "equal",
-                                 AstFor("v2float_60_50")}));
+    ::testing::Values(
+        BinaryData{"bool", "float_50", "OpFOrdEqual", "float_60", "__bool",
+                   "ScalarConstructor[not set]{50.000000}", "equal",
+                   "ScalarConstructor[not set]{60.000000}"},
+        BinaryData{"v2bool", "v2float_50_60", "OpFOrdEqual", "v2float_60_50",
+                   "__vec_2__bool", AstFor("v2float_50_60"), "equal",
+                   AstFor("v2float_60_50")}));
 
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_INotEqual,
@@ -335,12 +338,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"bool", "uint_10", "OpINotEqual", "uint_20", "__bool",
-                   "ScalarConstructor{10}", "not_equal",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "not_equal",
+                   "ScalarConstructor[not set]{20}"},
         // Both int
         BinaryData{"bool", "int_30", "OpINotEqual", "int_40", "__bool",
-                   "ScalarConstructor{30}", "not_equal",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "not_equal",
+                   "ScalarConstructor[not set]{40}"},
         // Both v2uint
         BinaryData{"v2bool", "v2uint_10_20", "OpINotEqual", "v2uint_20_10",
                    "__vec_2__bool", AstFor("v2uint_10_20"), "not_equal",
@@ -353,34 +356,32 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdNotEqual,
     SpvBinaryLogicalTest,
-    ::testing::Values(BinaryData{"bool", "float_50", "OpFOrdNotEqual",
-                                 "float_60", "__bool",
-                                 "ScalarConstructor{50.000000}", "not_equal",
-                                 "ScalarConstructor{60.000000}"},
-                      BinaryData{"v2bool", "v2float_50_60", "OpFOrdNotEqual",
-                                 "v2float_60_50", "__vec_2__bool",
-                                 AstFor("v2float_50_60"), "not_equal",
-                                 AstFor("v2float_60_50")}));
+    ::testing::Values(
+        BinaryData{"bool", "float_50", "OpFOrdNotEqual", "float_60", "__bool",
+                   "ScalarConstructor[not set]{50.000000}", "not_equal",
+                   "ScalarConstructor[not set]{60.000000}"},
+        BinaryData{"v2bool", "v2float_50_60", "OpFOrdNotEqual", "v2float_60_50",
+                   "__vec_2__bool", AstFor("v2float_50_60"), "not_equal",
+                   AstFor("v2float_60_50")}));
 
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdLessThan,
     SpvBinaryLogicalTest,
-    ::testing::Values(BinaryData{"bool", "float_50", "OpFOrdLessThan",
-                                 "float_60", "__bool",
-                                 "ScalarConstructor{50.000000}", "less_than",
-                                 "ScalarConstructor{60.000000}"},
-                      BinaryData{"v2bool", "v2float_50_60", "OpFOrdLessThan",
-                                 "v2float_60_50", "__vec_2__bool",
-                                 AstFor("v2float_50_60"), "less_than",
-                                 AstFor("v2float_60_50")}));
+    ::testing::Values(
+        BinaryData{"bool", "float_50", "OpFOrdLessThan", "float_60", "__bool",
+                   "ScalarConstructor[not set]{50.000000}", "less_than",
+                   "ScalarConstructor[not set]{60.000000}"},
+        BinaryData{"v2bool", "v2float_50_60", "OpFOrdLessThan", "v2float_60_50",
+                   "__vec_2__bool", AstFor("v2float_50_60"), "less_than",
+                   AstFor("v2float_60_50")}));
 
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdLessThanEqual,
     SpvBinaryLogicalTest,
     ::testing::Values(
         BinaryData{"bool", "float_50", "OpFOrdLessThanEqual", "float_60",
-                   "__bool", "ScalarConstructor{50.000000}", "less_than_equal",
-                   "ScalarConstructor{60.000000}"},
+                   "__bool", "ScalarConstructor[not set]{50.000000}",
+                   "less_than_equal", "ScalarConstructor[not set]{60.000000}"},
         BinaryData{"v2bool", "v2float_50_60", "OpFOrdLessThanEqual",
                    "v2float_60_50", "__vec_2__bool", AstFor("v2float_50_60"),
                    "less_than_equal", AstFor("v2float_60_50")}));
@@ -388,22 +389,22 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdGreaterThan,
     SpvBinaryLogicalTest,
-    ::testing::Values(BinaryData{"bool", "float_50", "OpFOrdGreaterThan",
-                                 "float_60", "__bool",
-                                 "ScalarConstructor{50.000000}", "greater_than",
-                                 "ScalarConstructor{60.000000}"},
-                      BinaryData{"v2bool", "v2float_50_60", "OpFOrdGreaterThan",
-                                 "v2float_60_50", "__vec_2__bool",
-                                 AstFor("v2float_50_60"), "greater_than",
-                                 AstFor("v2float_60_50")}));
+    ::testing::Values(
+        BinaryData{"bool", "float_50", "OpFOrdGreaterThan", "float_60",
+                   "__bool", "ScalarConstructor[not set]{50.000000}",
+                   "greater_than", "ScalarConstructor[not set]{60.000000}"},
+        BinaryData{"v2bool", "v2float_50_60", "OpFOrdGreaterThan",
+                   "v2float_60_50", "__vec_2__bool", AstFor("v2float_50_60"),
+                   "greater_than", AstFor("v2float_60_50")}));
 
 INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_FOrdGreaterThanEqual,
     SpvBinaryLogicalTest,
     ::testing::Values(
         BinaryData{"bool", "float_50", "OpFOrdGreaterThanEqual", "float_60",
-                   "__bool", "ScalarConstructor{50.000000}",
-                   "greater_than_equal", "ScalarConstructor{60.000000}"},
+                   "__bool", "ScalarConstructor[not set]{50.000000}",
+                   "greater_than_equal",
+                   "ScalarConstructor[not set]{60.000000}"},
         BinaryData{"v2bool", "v2float_50_60", "OpFOrdGreaterThanEqual",
                    "v2float_60_50", "__vec_2__bool", AstFor("v2float_50_60"),
                    "greater_than_equal", AstFor("v2float_60_50")}));
@@ -412,8 +413,9 @@ INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_LogicalAnd,
     SpvBinaryLogicalTest,
     ::testing::Values(BinaryData{"bool", "true", "OpLogicalAnd", "false",
-                                 "__bool", "ScalarConstructor{true}",
-                                 "logical_and", "ScalarConstructor{false}"},
+                                 "__bool", "ScalarConstructor[not set]{true}",
+                                 "logical_and",
+                                 "ScalarConstructor[not set]{false}"},
                       BinaryData{"v2bool", "v2bool_t_f", "OpLogicalAnd",
                                  "v2bool_f_t", "__vec_2__bool",
                                  AstFor("v2bool_t_f"), "logical_and",
@@ -423,8 +425,9 @@ INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_LogicalOr,
     SpvBinaryLogicalTest,
     ::testing::Values(BinaryData{"bool", "true", "OpLogicalOr", "false",
-                                 "__bool", "ScalarConstructor{true}",
-                                 "logical_or", "ScalarConstructor{false}"},
+                                 "__bool", "ScalarConstructor[not set]{true}",
+                                 "logical_or",
+                                 "ScalarConstructor[not set]{false}"},
                       BinaryData{"v2bool", "v2bool_t_f", "OpLogicalOr",
                                  "v2bool_f_t", "__vec_2__bool",
                                  AstFor("v2bool_t_f"), "logical_or",
@@ -434,8 +437,8 @@ INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_LogicalEqual,
     SpvBinaryLogicalTest,
     ::testing::Values(BinaryData{"bool", "true", "OpLogicalEqual", "false",
-                                 "__bool", "ScalarConstructor{true}", "equal",
-                                 "ScalarConstructor{false}"},
+                                 "__bool", "ScalarConstructor[not set]{true}",
+                                 "equal", "ScalarConstructor[not set]{false}"},
                       BinaryData{"v2bool", "v2bool_t_f", "OpLogicalEqual",
                                  "v2bool_f_t", "__vec_2__bool",
                                  AstFor("v2bool_t_f"), "equal",
@@ -445,8 +448,9 @@ INSTANTIATE_TEST_SUITE_P(
     SpvParserTest_LogicalNotEqual,
     SpvBinaryLogicalTest,
     ::testing::Values(BinaryData{"bool", "true", "OpLogicalNotEqual", "false",
-                                 "__bool", "ScalarConstructor{true}",
-                                 "not_equal", "ScalarConstructor{false}"},
+                                 "__bool", "ScalarConstructor[not set]{true}",
+                                 "not_equal",
+                                 "ScalarConstructor[not set]{false}"},
                       BinaryData{"v2bool", "v2bool_t_f", "OpLogicalNotEqual",
                                  "v2bool_f_t", "__vec_2__bool",
                                  AstFor("v2bool_t_f"), "not_equal",
@@ -458,15 +462,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both unsigned
         BinaryData{"bool", "uint_10", "OpUGreaterThan", "uint_20", "__bool",
-                   "ScalarConstructor{10}", "greater_than",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "greater_than",
+                   "ScalarConstructor[not set]{20}"},
         // First arg signed
         BinaryData{"bool", "int_30", "OpUGreaterThan", "uint_20", "__bool",
                    AstFor("cast_int_30"), "greater_than",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{20}"},
         // Second arg signed
         BinaryData{"bool", "uint_10", "OpUGreaterThan", "int_40", "__bool",
-                   "ScalarConstructor{10}", "greater_than",
+                   "ScalarConstructor[not set]{10}", "greater_than",
                    AstFor("cast_int_40")},
         // Vector, both unsigned
         BinaryData{"v2bool", "v2uint_10_20", "OpUGreaterThan", "v2uint_20_10",
@@ -487,15 +491,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both unsigned
         BinaryData{"bool", "uint_10", "OpUGreaterThanEqual", "uint_20",
-                   "__bool", "ScalarConstructor{10}", "greater_than_equal",
-                   "ScalarConstructor{20}"},
+                   "__bool", "ScalarConstructor[not set]{10}",
+                   "greater_than_equal", "ScalarConstructor[not set]{20}"},
         // First arg signed
         BinaryData{"bool", "int_30", "OpUGreaterThanEqual", "uint_20", "__bool",
                    AstFor("cast_int_30"), "greater_than_equal",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{20}"},
         // Second arg signed
         BinaryData{"bool", "uint_10", "OpUGreaterThanEqual", "int_40", "__bool",
-                   "ScalarConstructor{10}", "greater_than_equal",
+                   "ScalarConstructor[not set]{10}", "greater_than_equal",
                    AstFor("cast_int_40")},
         // Vector, both unsigned
         BinaryData{"v2bool", "v2uint_10_20", "OpUGreaterThanEqual",
@@ -516,14 +520,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both unsigned
         BinaryData{"bool", "uint_10", "OpULessThan", "uint_20", "__bool",
-                   "ScalarConstructor{10}", "less_than",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "less_than",
+                   "ScalarConstructor[not set]{20}"},
         // First arg signed
         BinaryData{"bool", "int_30", "OpULessThan", "uint_20", "__bool",
-                   AstFor("cast_int_30"), "less_than", "ScalarConstructor{20}"},
+                   AstFor("cast_int_30"), "less_than",
+                   "ScalarConstructor[not set]{20}"},
         // Second arg signed
         BinaryData{"bool", "uint_10", "OpULessThan", "int_40", "__bool",
-                   "ScalarConstructor{10}", "less_than", AstFor("cast_int_40")},
+                   "ScalarConstructor[not set]{10}", "less_than",
+                   AstFor("cast_int_40")},
         // Vector, both unsigned
         BinaryData{"v2bool", "v2uint_10_20", "OpULessThan", "v2uint_20_10",
                    "__vec_2__bool", AstFor("v2uint_10_20"), "less_than",
@@ -543,15 +549,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both unsigned
         BinaryData{"bool", "uint_10", "OpULessThanEqual", "uint_20", "__bool",
-                   "ScalarConstructor{10}", "less_than_equal",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "less_than_equal",
+                   "ScalarConstructor[not set]{20}"},
         // First arg signed
         BinaryData{"bool", "int_30", "OpULessThanEqual", "uint_20", "__bool",
                    AstFor("cast_int_30"), "less_than_equal",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{20}"},
         // Second arg signed
         BinaryData{"bool", "uint_10", "OpULessThanEqual", "int_40", "__bool",
-                   "ScalarConstructor{10}", "less_than_equal",
+                   "ScalarConstructor[not set]{10}", "less_than_equal",
                    AstFor("cast_int_40")},
         // Vector, both unsigned
         BinaryData{"v2bool", "v2uint_10_20", "OpULessThanEqual", "v2uint_20_10",
@@ -572,15 +578,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both signed
         BinaryData{"bool", "int_30", "OpSGreaterThan", "int_40", "__bool",
-                   "ScalarConstructor{30}", "greater_than",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "greater_than",
+                   "ScalarConstructor[not set]{40}"},
         // First arg unsigned
         BinaryData{"bool", "uint_10", "OpSGreaterThan", "int_40", "__bool",
                    AstFor("cast_uint_10"), "greater_than",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{40}"},
         // Second arg unsigned
         BinaryData{"bool", "int_30", "OpSGreaterThan", "uint_20", "__bool",
-                   "ScalarConstructor{30}", "greater_than",
+                   "ScalarConstructor[not set]{30}", "greater_than",
                    AstFor("cast_uint_20")},
         // Vector, both signed
         BinaryData{"v2bool", "v2int_30_40", "OpSGreaterThan", "v2int_40_30",
@@ -601,15 +607,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both signed
         BinaryData{"bool", "int_30", "OpSGreaterThanEqual", "int_40", "__bool",
-                   "ScalarConstructor{30}", "greater_than_equal",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "greater_than_equal",
+                   "ScalarConstructor[not set]{40}"},
         // First arg unsigned
         BinaryData{"bool", "uint_10", "OpSGreaterThanEqual", "int_40", "__bool",
                    AstFor("cast_uint_10"), "greater_than_equal",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{40}"},
         // Second arg unsigned
         BinaryData{"bool", "int_30", "OpSGreaterThanEqual", "uint_20", "__bool",
-                   "ScalarConstructor{30}", "greater_than_equal",
+                   "ScalarConstructor[not set]{30}", "greater_than_equal",
                    AstFor("cast_uint_20")},
         // Vector, both signed
         BinaryData{"v2bool", "v2int_30_40", "OpSGreaterThanEqual",
@@ -630,15 +636,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both signed
         BinaryData{"bool", "int_30", "OpSLessThan", "int_40", "__bool",
-                   "ScalarConstructor{30}", "less_than",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "less_than",
+                   "ScalarConstructor[not set]{40}"},
         // First arg unsigned
         BinaryData{"bool", "uint_10", "OpSLessThan", "int_40", "__bool",
                    AstFor("cast_uint_10"), "less_than",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{40}"},
         // Second arg unsigned
         BinaryData{"bool", "int_30", "OpSLessThan", "uint_20", "__bool",
-                   "ScalarConstructor{30}", "less_than",
+                   "ScalarConstructor[not set]{30}", "less_than",
                    AstFor("cast_uint_20")},
         // Vector, both signed
         BinaryData{"v2bool", "v2int_30_40", "OpSLessThan", "v2int_40_30",
@@ -659,15 +665,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both signed
         BinaryData{"bool", "int_30", "OpSLessThanEqual", "int_40", "__bool",
-                   "ScalarConstructor{30}", "less_than_equal",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "less_than_equal",
+                   "ScalarConstructor[not set]{40}"},
         // First arg unsigned
         BinaryData{"bool", "uint_10", "OpSLessThanEqual", "int_40", "__bool",
                    AstFor("cast_uint_10"), "less_than_equal",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{40}"},
         // Second arg unsigned
         BinaryData{"bool", "int_30", "OpSLessThanEqual", "uint_20", "__bool",
-                   "ScalarConstructor{30}", "less_than_equal",
+                   "ScalarConstructor[not set]{30}", "less_than_equal",
                    AstFor("cast_uint_20")},
         // Vector, both signed
         BinaryData{"v2bool", "v2int_30_40", "OpSLessThanEqual", "v2int_40_30",
@@ -692,27 +698,27 @@ TEST_F(SpvFUnordTest, FUnordEqual_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           not_equal
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordEqual_Vector) {
@@ -723,35 +729,35 @@ TEST_F(SpvFUnordTest, FUnordEqual_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           not_equal
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordNotEqual_Scalar) {
@@ -762,27 +768,27 @@ TEST_F(SpvFUnordTest, FUnordNotEqual_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           equal
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordNotEqual_Vector) {
@@ -793,35 +799,35 @@ TEST_F(SpvFUnordTest, FUnordNotEqual_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           equal
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordLessThan_Scalar) {
@@ -832,27 +838,27 @@ TEST_F(SpvFUnordTest, FUnordLessThan_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           greater_than_equal
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordLessThan_Vector) {
@@ -863,35 +869,35 @@ TEST_F(SpvFUnordTest, FUnordLessThan_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           greater_than_equal
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordLessThanEqual_Scalar) {
@@ -902,27 +908,27 @@ TEST_F(SpvFUnordTest, FUnordLessThanEqual_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           greater_than
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordLessThanEqual_Vector) {
@@ -933,35 +939,35 @@ TEST_F(SpvFUnordTest, FUnordLessThanEqual_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           greater_than
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordGreaterThan_Scalar) {
@@ -972,27 +978,27 @@ TEST_F(SpvFUnordTest, FUnordGreaterThan_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           less_than_equal
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordGreaterThan_Vector) {
@@ -1003,35 +1009,35 @@ TEST_F(SpvFUnordTest, FUnordGreaterThan_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           less_than_equal
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordGreaterThanEqual_Scalar) {
@@ -1042,27 +1048,27 @@ TEST_F(SpvFUnordTest, FUnordGreaterThanEqual_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          ScalarConstructor{50.000000}
+        Binary[not set]{
+          ScalarConstructor[not set]{50.000000}
           less_than
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, FUnordGreaterThanEqual_Vector) {
@@ -1073,35 +1079,35 @@ TEST_F(SpvFUnordTest, FUnordGreaterThanEqual_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __bool
     {
-      UnaryOp{
+      UnaryOp[not set]{
         not
-        Binary{
-          TypeConstructor{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
           less_than
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{60.000000}
-            ScalarConstructor{50.000000}
+            ScalarConstructor[not set]{60.000000}
+            ScalarConstructor[not set]{50.000000}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, Select_BoolCond_BoolParams) {
@@ -1112,27 +1118,28 @@ TEST_F(SpvFUnordTest, Select_BoolCond_BoolParams) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __bool
     {
-      Call{
-        Identifier{select}
+      Call[not set]{
+        Identifier[not set]{select}
         (
-          ScalarConstructor{true}
-          ScalarConstructor{false}
-          ScalarConstructor{true}
+          ScalarConstructor[not set]{true}
+          ScalarConstructor[not set]{false}
+          ScalarConstructor[not set]{true}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, Select_BoolCond_IntScalarParams) {
@@ -1143,27 +1150,28 @@ TEST_F(SpvFUnordTest, Select_BoolCond_IntScalarParams) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __u32
     {
-      Call{
-        Identifier{select}
+      Call[not set]{
+        Identifier[not set]{select}
         (
-          ScalarConstructor{10}
-          ScalarConstructor{20}
-          ScalarConstructor{true}
+          ScalarConstructor[not set]{10}
+          ScalarConstructor[not set]{20}
+          ScalarConstructor[not set]{true}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, Select_BoolCond_FloatScalarParams) {
@@ -1174,27 +1182,28 @@ TEST_F(SpvFUnordTest, Select_BoolCond_FloatScalarParams) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __f32
     {
-      Call{
-        Identifier{select}
+      Call[not set]{
+        Identifier[not set]{select}
         (
-          ScalarConstructor{50.000000}
-          ScalarConstructor{60.000000}
-          ScalarConstructor{true}
+          ScalarConstructor[not set]{50.000000}
+          ScalarConstructor[not set]{60.000000}
+          ScalarConstructor[not set]{true}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, Select_BoolCond_VectorParams) {
@@ -1205,35 +1214,36 @@ TEST_F(SpvFUnordTest, Select_BoolCond_VectorParams) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Call{
-        Identifier{select}
+      Call[not set]{
+        Identifier[not set]{select}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{10}
-            ScalarConstructor{20}
+            ScalarConstructor[not set]{10}
+            ScalarConstructor[not set]{20}
           }
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{20}
-            ScalarConstructor{10}
+            ScalarConstructor[not set]{20}
+            ScalarConstructor[not set]{10}
           }
-          ScalarConstructor{true}
+          ScalarConstructor[not set]{true}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvFUnordTest, Select_VecBoolCond_VectorParams) {
@@ -1244,39 +1254,40 @@ TEST_F(SpvFUnordTest, Select_VecBoolCond_VectorParams) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Call{
-        Identifier{select}
+      Call[not set]{
+        Identifier[not set]{select}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{10}
-            ScalarConstructor{20}
+            ScalarConstructor[not set]{10}
+            ScalarConstructor[not set]{20}
           }
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{20}
-            ScalarConstructor{10}
+            ScalarConstructor[not set]{20}
+            ScalarConstructor[not set]{10}
           }
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__bool
-            ScalarConstructor{true}
-            ScalarConstructor{false}
+            ScalarConstructor[not set]{true}
+            ScalarConstructor[not set]{false}
           }
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 using SpvLogicalTest = SpvParserTestBase<::testing::Test>;
@@ -1289,29 +1300,30 @@ TEST_F(SpvLogicalTest, Any) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __bool
     {
-      Call{
-        Identifier{any}
+      Call[not set]{
+        Identifier[not set]{any}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__bool
-            ScalarConstructor{true}
-            ScalarConstructor{false}
+            ScalarConstructor[not set]{true}
+            ScalarConstructor[not set]{false}
           }
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvLogicalTest, All) {
@@ -1322,29 +1334,30 @@ TEST_F(SpvLogicalTest, All) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __bool
     {
-      Call{
-        Identifier{all}
+      Call[not set]{
+        Identifier[not set]{all}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__bool
-            ScalarConstructor{true}
-            ScalarConstructor{false}
+            ScalarConstructor[not set]{true}
+            ScalarConstructor[not set]{false}
           }
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvLogicalTest, IsNan_Scalar) {
@@ -1355,25 +1368,26 @@ TEST_F(SpvLogicalTest, IsNan_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __bool
     {
-      Call{
-        Identifier{is_nan}
+      Call[not set]{
+        Identifier[not set]{isNan}
         (
-          ScalarConstructor{50.000000}
+          ScalarConstructor[not set]{50.000000}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvLogicalTest, IsNan_Vector) {
@@ -1384,29 +1398,30 @@ TEST_F(SpvLogicalTest, IsNan_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __vec_2__bool
     {
-      Call{
-        Identifier{is_nan}
+      Call[not set]{
+        Identifier[not set]{isNan}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvLogicalTest, IsInf_Scalar) {
@@ -1417,25 +1432,26 @@ TEST_F(SpvLogicalTest, IsInf_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __bool
     {
-      Call{
-        Identifier{is_inf}
+      Call[not set]{
+        Identifier[not set]{isInf}
         (
-          ScalarConstructor{50.000000}
+          ScalarConstructor[not set]{50.000000}
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvLogicalTest, IsInf_Vector) {
@@ -1446,29 +1462,30 @@ TEST_F(SpvLogicalTest, IsInf_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableDeclStatement{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
+              HasSubstr(R"(VariableDeclStatement{
   VariableConst{
     x_1
     none
     __vec_2__bool
     {
-      Call{
-        Identifier{is_inf}
+      Call[not set]{
+        Identifier[not set]{isInf}
         (
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__f32
-            ScalarConstructor{50.000000}
-            ScalarConstructor{60.000000}
+            ScalarConstructor[not set]{50.000000}
+            ScalarConstructor[not set]{60.000000}
           }
         )
       }
     }
   }
-})")) << ToString(fe.ast_body());
+})")) << ToString(p->builder(), fe.ast_body());
 }
 
 // TODO(dneto): Kernel-guarded instructions.

@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "base/feature_list.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 
 namespace extensions {
@@ -21,7 +20,6 @@ enum class ParseResult {
   SUCCESS,
   ERROR_RESOURCE_TYPE_DUPLICATED,
   ERROR_INVALID_RULE_ID,
-  ERROR_EMPTY_RULE_PRIORITY,
   ERROR_INVALID_RULE_PRIORITY,
   ERROR_NO_APPLICABLE_RESOURCE_TYPES,
   ERROR_EMPTY_DOMAINS_LIST,
@@ -129,7 +127,6 @@ extern const char* const kAllowedTransformSchemes[4];
 // Rule parsing errors.
 extern const char kErrorResourceTypeDuplicated[];
 extern const char kErrorInvalidRuleKey[];
-extern const char kErrorEmptyRulePriority[];
 extern const char kErrorNoApplicableResourceTypes[];
 extern const char kErrorEmptyList[];
 extern const char kErrorEmptyKey[];
@@ -170,11 +167,19 @@ extern const char kInternalErrorGettingDynamicRules[];
 extern const char kDynamicRuleCountExceeded[];
 extern const char kDynamicRegexRuleCountExceeded[];
 
+// Session-scoped rules API errors.
+extern const char kSessionRuleCountExceeded[];
+extern const char kSessionRegexRuleCountExceeded[];
+
 // Static ruleset toggling API errors.
 extern const char kInvalidRulesetIDError[];
 extern const char kEnabledRulesetsRuleCountExceeded[];
 extern const char kEnabledRulesetsRegexRuleCountExceeded[];
 extern const char kInternalErrorUpdatingEnabledRulesets[];
+
+// setExtensionActionOptions API errors.
+extern const char kTabNotFoundError[];
+extern const char kIncrementActionCountWithoutUseAsBadgeTextError[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
@@ -196,10 +201,6 @@ extern const char kErrorGetMatchedRulesMissingPermissions[];
 // The maximum amount of static rules in the global rule pool for a single
 // profile.
 constexpr int kMaxStaticRulesPerProfile = 300000;
-
-// Enables extensions to enable more rules than the per-extension static rule
-// count, up to a global limit shared between all extensions.
-extern const base::Feature kDeclarativeNetRequestGlobalRules;
 
 }  // namespace declarative_net_request
 }  // namespace extensions

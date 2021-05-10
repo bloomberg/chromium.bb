@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "base/memory/scoped_refptr.h"
@@ -38,8 +39,8 @@ class NetworkConnectionTracker;
 class TokenWebData;
 #endif
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace ash {
 class AccountManager;
 }
 #endif
@@ -49,8 +50,8 @@ std::unique_ptr<ProfileOAuth2TokenService> BuildProfileOAuth2TokenService(
     AccountTrackerService* account_tracker_service,
     network::NetworkConnectionTracker* network_connection_tracker,
     signin::AccountConsistencyMethod account_consistency,
-#if defined(OS_CHROMEOS)
-    chromeos::AccountManager* account_manager,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ash::AccountManager* account_manager,
     bool is_regular_profile,
 #endif
 #if !defined(OS_ANDROID)

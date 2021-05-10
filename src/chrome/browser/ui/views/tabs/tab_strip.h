@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
@@ -34,6 +34,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
@@ -80,6 +81,7 @@ class TabStrip : public views::View,
                  public TabController,
                  public BrowserRootView::DropTarget {
  public:
+  METADATA_HEADER(TabStrip);
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   TabStrip(const TabStrip&) = delete;
   TabStrip& operator=(const TabStrip&) = delete;
@@ -157,6 +159,8 @@ class TabStrip : public views::View,
   void RemoveTabAt(content::WebContents* contents,
                    int model_index,
                    bool was_active);
+
+  void ScrollTabToVisible(int model_index);
 
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, TabRendererData data);
@@ -238,7 +242,7 @@ class TabStrip : public views::View,
   int GetModelIndexOf(const TabSlotView* view) const;
 
   // Gets the number of Tabs in the tab strip.
-  int tab_count() const { return tabs_.view_size(); }
+  int GetTabCount() const;
 
   // Cover method for TabStripController::GetCount.
   int GetModelCount() const;
@@ -337,7 +341,6 @@ class TabStrip : public views::View,
   // views::View:
   void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  const char* GetClassName() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
@@ -410,7 +413,8 @@ class TabStrip : public views::View,
 
     views::ImageView* arrow_view_ = nullptr;
 
-    ScopedObserver<views::Widget, views::WidgetObserver> scoped_observer_{this};
+    base::ScopedObservation<views::Widget, views::WidgetObserver>
+        scoped_observation_{this};
   };
 
   void Init();
@@ -469,14 +473,6 @@ class TabStrip : public views::View,
   // Returns the current width of inactive tabs. An individual inactive tab may
   // differ from this width slightly due to rounding.
   int GetInactiveTabWidth() const;
-
-  // Returns the width of the area that contains tabs not including the new tab
-  // button.
-  int GetTabAreaWidth() const;
-
-  // Returns the width of the area right of the tabs reserved for the new tab
-  // button and the frame grab area.
-  int GetRightSideReservedWidth() const;
 
   // Returns the last tab in the strip that's actually visible.  This will be
   // the actual last tab unless the strip is in the overflow node_data.
@@ -665,7 +661,8 @@ class TabStrip : public views::View,
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.
   TabHoverCardBubbleView* hover_card_ = nullptr;
-  ScopedObserver<views::View, views::ViewObserver> hover_card_observer_{this};
+  base::ScopedObservation<views::View, views::ViewObserver>
+      hover_card_observation_{this};
   std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
 
   std::unique_ptr<TabStripController> controller_;
@@ -677,10 +674,13 @@ class TabStrip : public views::View,
   // Responsible for animating tabs in response to model changes.
   views::BoundsAnimator bounds_animator_{this};
 
+  // Responsible for animating the scroll of the tab strip.
+  std::unique_ptr<gfx::LinearAnimation> tab_scrolling_animation_;
+
   // If this value is defined, it is used as the width to lay out tabs
-  // (instead of GetTabAreaWidth()). It is defined when closing tabs with the
-  // mouse, and is used to control which tab will end up under the cursor
-  // after the close animation completes.
+  // (instead of GetAvailableWidthForTabStrip()). It is defined when closing
+  // tabs with the mouse, and is used to control which tab will end up under the
+  // cursor after the close animation completes.
   base::Optional<int> override_available_width_for_tabs_;
 
   // The background offset used by inactive tabs to match the frame image.
@@ -756,7 +756,7 @@ class TabStrip : public views::View,
 
   SkColor separator_color_ = gfx::kPlaceholderColor;
 
-  const std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+  const base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&TabStrip::OnTouchUiChanged,
                               base::Unretained(this)));

@@ -55,18 +55,11 @@ action("gen_buildflags") {
   if (enable_perfetto_tools) {
     perfetto_local_symbolizer =
         "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_LINUX() || " +
-        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_MAC()"
+        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_MAC() ||" +
+        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_WIN()"
   } else {
     perfetto_local_symbolizer = "0"
   }
-  if (enable_perfetto_trace_processor_httpd) {
-    perfetto_tp_httpd = "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_ANDROID() || " +
-                        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_LINUX() || " +
-                        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_MAC()"
-  } else {
-    perfetto_tp_httpd = "0"
-  }
-
   response_file_contents = [
     "--flags",  # Keep this marker first.
     "PERFETTO_ANDROID_BUILD=$perfetto_build_with_android",
@@ -82,7 +75,7 @@ action("gen_buildflags") {
     "PERFETTO_VERSION_GEN=$enable_perfetto_version_gen",
     "PERFETTO_TP_PERCENTILE=$enable_perfetto_trace_processor_percentile",
     "PERFETTO_TP_LINENOISE=$enable_perfetto_trace_processor_linenoise",
-    "PERFETTO_TP_HTTPD=$perfetto_tp_httpd",
+    "PERFETTO_TP_HTTPD=$enable_perfetto_trace_processor_httpd",
     "PERFETTO_TP_JSON=$enable_perfetto_trace_processor_json",
     "PERFETTO_LOCAL_SYMBOLIZER=$perfetto_local_symbolizer",
     "PERFETTO_ZLIB=$enable_perfetto_zlib",
@@ -125,7 +118,10 @@ config("default_config") {
   visibility = [ "../*" ]  # Prevent chromium targets from depending on this (breaks component).
   configs = [ ":public_config" ]
   defines = [ "PERFETTO_IMPLEMENTATION" ]
-  include_dirs = [ ".." ]
+  include_dirs = [
+    "..",
+    "../src/profiling/memory/include",
+  ]
 
   if (build_with_chromium && is_android) {
     # Included for __android_log_print
@@ -261,19 +257,33 @@ config("protobuf_gen_config") {
     "GOOGLE_PROTOBUF_NO_RTTI",
     "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
   ]
-  cflags = [
-    "-Wno-unknown-warning-option",
-    "-Wno-deprecated",
-    "-Wno-undef",
-    "-Wno-zero-as-null-pointer-constant",
-  ]
+  cflags = []
+  if (is_clang || !is_win) {
+    cflags += [
+      "-Wno-unknown-warning-option",
+      "-Wno-deprecated",
+      "-Wno-undef",
+      "-Wno-zero-as-null-pointer-constant",
+    ]
+  }
+  if (is_clang && is_win) {
+    cflags += [
+      "-Wno-reserved-id-macro",
+      "-Wno-language-extension-token",
+      "-Wno-sign-conversion",
+      "-Wno-suggest-destructor-override",
+      "-Wno-undefined-reinterpret-cast",
+      "-Wno-inconsistent-missing-destructor-override",
+      "-Wno-unused-parameter",
+    ]
+  }
 
   if (!perfetto_use_system_protobuf) {
     cflags += [
       # Using -isystem instead of include_dirs (-I), so we don't need to
       # suppress warnings coming from libprotobuf headers. Doing so would mask
       # warnings in our own code.
-      "-isystem",
+      perfetto_isystem_cflag,
       rebase_path("../buildtools/protobuf/src", root_build_dir),
     ]
   }

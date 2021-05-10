@@ -33,10 +33,13 @@ class ImageSkia;
 class Transform;
 }  // namespace gfx
 
+namespace x11 {
+class XScopedEventSelector;
+}
+
 namespace ui {
 
 class Event;
-class XScopedEventSelector;
 class X11Cursor;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +121,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool IsTransientWindowTargetedBy(const x11::Event& x11_event) const;
   void SetTransientWindow(x11::Window window);
   void WmMoveResize(int hittest, const gfx::Point& location) const;
-  void ProcessEvent(x11::Event* xev);
+  void OnEvent(const x11::Event& xev);
 
   void SetSize(const gfx::Size& size_in_pixels);
   void SetBounds(const gfx::Rect& requested_bounds);
@@ -252,12 +255,12 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowWorkspaceChanged() = 0;
   virtual void OnXWindowLostPointerGrab() = 0;
   virtual void OnXWindowLostCapture() = 0;
-  virtual void OnXWindowSelectionEvent(x11::Event* xev) = 0;
-  virtual void OnXWindowDragDropEvent(x11::Event* xev) = 0;
+  virtual void OnXWindowSelectionEvent(
+      const x11::SelectionNotifyEvent& xev) = 0;
+  virtual void OnXWindowDragDropEvent(const x11::ClientMessageEvent& xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
   virtual base::Optional<gfx::Size> GetMaximumSizeForXWindow() = 0;
-  virtual void GetWindowMaskForXWindow(const gfx::Size& size,
-                                       SkPath* window_mask) = 0;
+  virtual SkPath GetWindowMaskForXWindow() = 0;
 
   // The display and the native X window hosting the root window.
   x11::Connection* const connection_;
@@ -268,7 +271,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   x11::Window transient_window_ = x11::Window::None;
 
   // Events selected on |xwindow_|.
-  std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
+  std::unique_ptr<x11::XScopedEventSelector> xwindow_events_;
 
   // The window manager state bits.
   base::flat_set<x11::Atom> window_properties_;

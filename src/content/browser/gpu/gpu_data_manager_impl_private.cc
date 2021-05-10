@@ -34,6 +34,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
@@ -97,6 +98,23 @@
 namespace content {
 
 namespace {
+
+// On X11 (Ozone and non-Ozone), we do not know GpuMemoryBuffer configuration
+// support until receiving the initial GPUInfo.
+bool CanUpdateGmbGpuPreferences() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return !ui::OzonePlatform::GetInstance()
+                ->GetPlatformProperties()
+                .fetch_buffer_formats_for_gmb_on_gpu;
+  }
+#endif
+#if defined(USE_X11)
+  DCHECK(!features::IsUsingOzonePlatform());
+  return false;
+#endif
+  return true;
+}
 
 #if defined(OS_ANDROID)
 // NOINLINE to ensure this function is used in crash reports.
@@ -224,7 +242,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   // was recorded in this histogram in order to have a convenient
   // denominator to compute blocklist percentages for the rest of the
   // entries.
-  UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry", 0,
+  UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlocklistTestResultsPerEntry", 0,
                              max_entry_id + 1);
   if (!gpu_feature_info.applied_gpu_blocklist_entries.empty()) {
     std::vector<uint32_t> entry_ids = blocklist->GetEntryIDsFromIndices(
@@ -233,7 +251,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
               entry_ids.size());
     for (auto id : entry_ids) {
       DCHECK_GE(max_entry_id, id);
-      UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry", id,
+      UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlocklistTestResultsPerEntry", id,
                                  max_entry_id + 1);
     }
   }
@@ -249,12 +267,12 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2};
   const std::string kGpuBlocklistFeatureHistogramNames[] = {
-      "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
-      "GPU.BlacklistFeatureTestResults.GpuCompositing",
-      "GPU.BlacklistFeatureTestResults.GpuRasterization",
-      "GPU.BlacklistFeatureTestResults.OopRasterization",
-      "GPU.BlacklistFeatureTestResults.Webgl",
-      "GPU.BlacklistFeatureTestResults.Webgl2"};
+      "GPU.BlocklistFeatureTestResults.Accelerated2dCanvas",
+      "GPU.BlocklistFeatureTestResults.GpuCompositing",
+      "GPU.BlocklistFeatureTestResults.GpuRasterization",
+      "GPU.BlocklistFeatureTestResults.OopRasterization",
+      "GPU.BlocklistFeatureTestResults.Webgl",
+      "GPU.BlocklistFeatureTestResults.Webgl2"};
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableGpu),
@@ -312,17 +330,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
       reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
   DCHECK(manager);
 
-  bool gpu_changed = false;
-  if (flags & kCGDisplayAddFlag) {
-    gpu::GPUInfo gpu_info;
-    if (gpu::CollectBasicGraphicsInfo(&gpu_info)) {
-      gpu_changed = manager->UpdateActiveGpu(gpu_info.active_gpu().vendor_id,
-                                             gpu_info.active_gpu().device_id);
-    }
-  }
-
-  if (gpu_changed)
-    manager->HandleGpuSwitch();
+  manager->HandleGpuSwitch();
 }
 #endif  // OS_MAC
 
@@ -486,13 +494,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
     domain_blocking_enabled_ = false;
-
-  // Do not change kTimerInterval without also changing the UMA histogram name,
-  // as histogram data from before/after the change will not be comparable.
-  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
-  compositing_mode_timer_.Start(
-      FROM_HERE, kTimerInterval, this,
-      &GpuDataManagerImplPrivate::RecordCompositingMode);
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
@@ -506,12 +507,21 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #endif
 }
 
+void GpuDataManagerImplPrivate::StartUmaTimer() {
+  // Do not change kTimerInterval without also changing the UMA histogram name,
+  // as histogram data from before/after the change will not be comparable.
+  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
+  compositing_mode_timer_.Start(
+      FROM_HERE, kTimerInterval, this,
+      &GpuDataManagerImplPrivate::RecordCompositingMode);
+}
+
 void GpuDataManagerImplPrivate::InitializeGpuModes() {
   DCHECK_EQ(gpu::GpuMode::UNKNOWN, gpu_mode_);
   // Android and Chrome OS can't switch to software compositing. If the GPU
   // process initialization fails or GPU process is too unstable then crash the
   // browser process to reset everything.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // On Windows, with GPU access disabled, the display compositor is run in the
   // browser process.
 #if defined(OS_WIN)
@@ -532,7 +542,7 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
     fallback_modes_.clear();
     fallback_modes_.push_back(gpu::GpuMode::DISABLED);
 #endif
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#elif defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
     CHECK(false) << "GPU acceleration is required on certain platforms!";
 #endif  // IS_CHROMECAST
   } else {
@@ -604,6 +614,13 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
       }
       return false;
   }
+}
+
+bool GpuDataManagerImplPrivate::GpuAccessAllowedForHardwareGpu(
+    std::string* reason) const {
+  if (reason)
+    *reason = gpu_access_blocked_reason_for_hardware_gpu_;
+  return gpu_access_allowed_for_hardware_gpu_;
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
@@ -867,10 +884,12 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   uint32_t vulkan_version = gpu_info_.vulkan_version;
 #endif
   gpu_info_ = gpu_info;
-  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUInitializationTime.V2",
-                             gpu_info_.initialization_time,
-                             base::TimeDelta::FromMilliseconds(200),
-                             base::TimeDelta::FromSeconds(5), 50);
+  base::UmaHistogramCustomMicrosecondsTimes(
+      "GPU.GPUInitializationTime.V3", gpu_info_.initialization_time,
+      base::TimeDelta::FromMilliseconds(5), base::TimeDelta::FromSeconds(5),
+      50);
+  UMA_HISTOGRAM_EXACT_LINEAR("GPU.GpuCount", gpu_info_.GpuCount(), 10);
+  RecordDiscreteGpuHistograms(gpu_info_);
 #if defined(OS_WIN)
   if (!dx_diagnostics.IsEmpty()) {
     gpu_info_.dx_diagnostics = dx_diagnostics;
@@ -883,12 +902,44 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   }
 #endif  // OS_WIN
 
-  if (!gpu_info_for_hardware_gpu_.IsInitialized()) {
-    if (gpu_info_for_hardware_gpu) {
+  bool needs_to_update_gpu_info_for_hardware_gpu =
+      !gpu_info_for_hardware_gpu_.IsInitialized();
+  if (!needs_to_update_gpu_info_for_hardware_gpu &&
+      !gpu_info_.UsesSwiftShader()) {
+    // On multi-GPU system, when switching to a different GPU, we want to reset
+    // GPUInfo for hardware GPU, because we want to know on which GPU Chrome
+    // crashes multiple times and falls back to SwiftShader.
+    const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info_.active_gpu();
+    const gpu::GPUInfo::GPUDevice& cached_active_gpu =
+        gpu_info_for_hardware_gpu_.active_gpu();
+#if defined(OS_WIN)
+    if (active_gpu.luid.HighPart != cached_active_gpu.luid.HighPart &&
+        active_gpu.luid.LowPart != cached_active_gpu.luid.LowPart) {
+      needs_to_update_gpu_info_for_hardware_gpu = true;
+    }
+#else
+    if (active_gpu.vendor_id != cached_active_gpu.vendor_id ||
+        active_gpu.device_id != cached_active_gpu.device_id) {
+      needs_to_update_gpu_info_for_hardware_gpu = true;
+    }
+#endif  // OS_WIN
+  }
+
+  if (needs_to_update_gpu_info_for_hardware_gpu) {
+    if (gpu_info_for_hardware_gpu.has_value()) {
       DCHECK(gpu_info_for_hardware_gpu->IsInitialized());
-      gpu_info_for_hardware_gpu_ = gpu_info_for_hardware_gpu.value();
+      bool valid_info = true;
+      if (gpu_info_for_hardware_gpu->UsesSwiftShader()) {
+        valid_info = false;
+      } else if (gpu_info_for_hardware_gpu->gl_renderer.empty() &&
+                 gpu_info_for_hardware_gpu->active_gpu().vendor_id == 0u) {
+        valid_info = false;
+      }
+      if (valid_info)
+        gpu_info_for_hardware_gpu_ = gpu_info_for_hardware_gpu.value();
     } else {
-      gpu_info_for_hardware_gpu_ = gpu_info_;
+      if (!gpu_info_.UsesSwiftShader())
+        gpu_info_for_hardware_gpu_ = gpu_info_;
     }
   }
 
@@ -1062,6 +1113,9 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     } else {
       gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
     }
+    is_gpu_compositing_disabled_for_hardware_gpu_ = IsGpuCompositingDisabled();
+    gpu_access_allowed_for_hardware_gpu_ =
+        GpuAccessAllowed(&gpu_access_blocked_reason_for_hardware_gpu_);
   }
   if (update_histograms_) {
     UpdateFeatureStats(gpu_feature_info_);
@@ -1091,6 +1145,10 @@ gfx::GpuExtraInfo GpuDataManagerImplPrivate::GetGpuExtraInfo() const {
 
 bool GpuDataManagerImplPrivate::IsGpuCompositingDisabled() const {
   return disable_gpu_compositing_ || !HardwareAccelerationEnabled();
+}
+
+bool GpuDataManagerImplPrivate::IsGpuCompositingDisabledForHardwareGpu() const {
+  return is_gpu_compositing_disabled_for_hardware_gpu_;
 }
 
 void GpuDataManagerImplPrivate::SetGpuCompositingDisabled() {
@@ -1152,20 +1210,13 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 
   // For performance reasons, discourage storing VideoFrames in a biplanar
   // GpuMemoryBuffer if this is not native, see https://crbug.com/791676.
-  if (auto* gpu_memory_buffer_manager =
-          GpuMemoryBufferManagerSingleton::GetInstance()) {
-    // On X11, we do not know GpuMemoryBuffer configuration support until
-    // receiving the initial GPUInfo.
-    bool should_update = true;
-#if defined(USE_X11)
-    should_update = features::IsUsingOzonePlatform();
-#endif
-    if (should_update) {
-      gpu_preferences->disable_biplanar_gpu_memory_buffers_for_video_frames =
-          !gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
-              gfx::BufferFormat::YUV_420_BIPLANAR,
-              gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
-    }
+  auto* gpu_memory_buffer_manager =
+      GpuMemoryBufferManagerSingleton::GetInstance();
+  if (gpu_memory_buffer_manager && CanUpdateGmbGpuPreferences()) {
+    gpu_preferences->disable_biplanar_gpu_memory_buffers_for_video_frames =
+        !gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
+            gfx::BufferFormat::YUV_420_BIPLANAR,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
   }
 
   gpu_preferences->gpu_program_cache_size =
@@ -1361,70 +1412,6 @@ void GpuDataManagerImplPrivate::OnDisplayMetricsChanged(
                              if (host)
                                host->gpu_service()->DisplayMetricsChanged();
                            }));
-}
-
-bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
-                                                uint32_t device_id) {
-  // Heuristics for dual-GPU detection.
-#if defined(OS_WIN)
-  // On Windows, "Microsoft Basic Render Driver" now shows up as a
-  // secondary GPU.
-  bool is_dual_gpu = gpu_info_.secondary_gpus.size() == 2;
-#else
-  bool is_dual_gpu = gpu_info_.secondary_gpus.size() == 1;
-#endif
-  // TODO(kbr/zmo): on Windows, at least, it's now possible to have a
-  // system with both low-power and high-performance GPUs from AMD.
-  const uint32_t kIntelID = 0x8086;
-  bool saw_intel_gpu = false;
-  bool saw_non_intel_gpu = false;
-
-  if (gpu_info_.gpu.vendor_id == vendor_id &&
-      gpu_info_.gpu.device_id == device_id) {
-    // The primary GPU is active.
-    if (gpu_info_.gpu.active)
-      return false;
-    gpu_info_.gpu.active = true;
-    for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii) {
-      gpu_info_.secondary_gpus[ii].active = false;
-    }
-  } else {
-    // A secondary GPU is active.
-    for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii) {
-      if (gpu_info_.secondary_gpus[ii].vendor_id == vendor_id &&
-          gpu_info_.secondary_gpus[ii].device_id == device_id) {
-        if (gpu_info_.secondary_gpus[ii].active)
-          return false;
-        gpu_info_.secondary_gpus[ii].active = true;
-      } else {
-        gpu_info_.secondary_gpus[ii].active = false;
-      }
-    }
-    gpu_info_.gpu.active = false;
-  }
-  active_gpu_heuristic_ = gl::GpuPreference::kDefault;
-  if (is_dual_gpu) {
-    if (gpu_info_.gpu.vendor_id == kIntelID) {
-      saw_intel_gpu = true;
-    } else {
-      saw_non_intel_gpu = true;
-    }
-    if (gpu_info_.secondary_gpus[0].vendor_id == kIntelID) {
-      saw_intel_gpu = true;
-    } else {
-      saw_non_intel_gpu = true;
-    }
-    if (saw_intel_gpu && saw_non_intel_gpu) {
-      if (vendor_id == kIntelID) {
-        active_gpu_heuristic_ = gl::GpuPreference::kLowPower;
-      } else {
-        active_gpu_heuristic_ = gl::GpuPreference::kHighPerformance;
-      }
-    }
-  }
-  GetContentClient()->SetGpuInfo(gpu_info_);
-  NotifyGpuInfoUpdate();
-  return true;
 }
 
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(const GURL& url,

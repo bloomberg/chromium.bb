@@ -39,6 +39,9 @@ message PublicMessage {
     SetCompositionRange set_composition_range = 11;
     FinishComposition finish_composition = 12;
     DeleteSurroundingText delete_surrounding_text = 13;
+    HandleAutocorrect handle_autocorrect = 14;
+    SuggestionsRequest suggestions_request = 15;
+    SuggestionsResponse suggestions_response = 16;
   }
 }
 
@@ -135,6 +138,20 @@ message SelectionRange {
   optional uint32 focus = 2;
 }
 
+// Protobuf version of gfx.mojom.Range in
+// ui/gfx/range/mojom/range.mojom
+message Range {
+  optional uint32 start = 1;
+  optional uint32 end = 2;
+}
+
+// Protobuf version of InputEngine::AutocorrectSpan in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message AutocorrectSpan {
+  optional Range autocorrect_range = 1;
+  optional string original_text = 2;
+};
+
 // Protobuf version of InputEngine::OnSurroundingTextChanged in
 // chromeos/services/ime/public/mojom/input_engine.mojom
 message OnSurroundingTextChanged {
@@ -147,10 +164,19 @@ message OnSurroundingTextChanged {
 // chromeos/services/ime/public/mojom/input_engine.mojom
 message OnCompositionCanceled {}
 
+// Protobuf version of InputEngine::CommitTextCursorBehavior in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+enum CommitTextCursorBehavior {
+  COMMIT_TEXT_CURSOR_BEHAVIOR_UNSPECIFIED = 0;  // Reserved
+  COMMIT_TEXT_CURSOR_BEHAVIOR_MOVE_CURSOR_AFTER_TEXT = 1;
+  COMMIT_TEXT_CURSOR_BEHAVIOR_MOVE_CURSOR_BEFORE_TEXT = 2;
+}
+
 // Protobuf version of InputEngine::CommitText in
 // chromeos/services/ime/public/mojom/input_engine.mojom
 message CommitText {
   optional string text = 1;
+  optional CommitTextCursorBehavior cursor_behavior = 2;
 }
 
 // Protobuf version of InputEngine::SetComposition in
@@ -175,4 +201,43 @@ message FinishComposition {}
 message DeleteSurroundingText {
   optional uint32 num_bytes_before_cursor = 1;
   optional uint32 num_bytes_after_cursor = 2;
+}
+
+// Protobuf version of InputEngine::HandleAutocorrect in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message HandleAutocorrect {
+  optional AutocorrectSpan autocorrect_span = 1;
+}
+
+// Protobuf version of CompletionCandidate in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message CompletionCandidate {
+  optional string text = 1;
+  optional float normalized_score = 2;
+}
+
+// Protobuf version of SuggestionsRequest in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message SuggestionsRequest {
+  optional string text = 1;
+  repeated CompletionCandidate completion_candidates = 2;
+}
+
+// Protobuf version of MultiWordSuggestionCandidate in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message MultiWordSuggestionCandidate {
+  optional string text = 1;
+  optional float normalized_score = 2;
+}
+
+// Protobuf version of SuggestionCandidate in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message SuggestionCandidate {
+  oneof candidate { MultiWordSuggestionCandidate multi_word = 1; }
+}
+
+// Protobuf version of SuggestionsResponse in
+// chromeos/services/ime/public/mojom/input_engine.mojom
+message SuggestionsResponse {
+  repeated SuggestionCandidate candidates = 1;
 }

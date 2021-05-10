@@ -47,13 +47,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -497,12 +496,16 @@ void ShelfView::AnnounceShelfItemNotificationBadge(views::View* button) {
                                                /*send_native_event=*/true);
 }
 
+bool ShelfView::LocationInsideVisibleShelfItemBounds(
+    const gfx::Point& location) const {
+  return visible_shelf_item_bounds_union_.Contains(location);
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
   // of the buttons area.
-
-  return !visible_shelf_item_bounds_union_.Contains(cursor_location);
+  return !LocationInsideVisibleShelfItemBounds(cursor_location);
 }
 
 const std::vector<aura::Window*> ShelfView::GetOpenWindowsForView(
@@ -637,6 +640,14 @@ views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
 
 const char* ShelfView::GetClassName() const {
   return "ShelfView";
+}
+
+void ShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
+  if (!separator_)
+    return;
+  separator_->SetColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kSeparatorColor));
 }
 
 void ShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1021,6 +1032,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
       ShelfAppButton* button = new ShelfAppButton(
           this, shelf_button_delegate_ ? shelf_button_delegate_ : this);
       button->SetImage(item.image);
+      button->SetNotificationBadgeColor(item.notification_badge_color);
       button->ReflectItemStatus(item);
       view = button;
       break;
@@ -2109,6 +2121,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
       ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
       button->ReflectItemStatus(item);
       button->SetImage(item.image);
+      button->SetNotificationBadgeColor(item.notification_badge_color);
       button->SchedulePaint();
       break;
     }

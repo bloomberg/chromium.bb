@@ -28,21 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Platform from '../platform/platform.js';  // eslint-disable-line no-unused-vars
 import * as Root from '../root/root.js';
 
 import {Color, Format} from './Color.js';  // eslint-disable-line no-unused-vars
 import {Console} from './Console.js';
 import {EventDescriptor, EventTargetEvent} from './EventTarget.js';  // eslint-disable-line no-unused-vars
 import {ObjectWrapper} from './Object.js';
+import {getLocalizedSettingsCategory, getRegisteredSettings, RegExpSettingItem, registerSettingExtengionsForTest, registerSettingExtension, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType} from './SettingRegistration.js';  // eslint-disable-line no-unused-vars
 
 /**
  * @type {!Settings|undefined}
  */
 let settingsInstance;
 
-/**
- * @unrestricted
- */
 export class Settings {
   /**
    * @private
@@ -54,12 +53,38 @@ export class Settings {
     this._localStorage = localStorage;
     this._sessionStorage = new SettingsStorage({});
 
+    /** @type {!Set<string>} */
+    this.settingNameSet = new Set();
+
+    /** @type {!Map<!SettingCategory,!Set<number>>} */
+    this.orderValuesBySettingCategory = new Map();
+
     this._eventSupport = new ObjectWrapper();
     /** @type {!Map<string, !Setting<*>>} */
     this._registry = new Map();
     /** @type {!Map<string, !Setting<*>>} */
     this._moduleSettings = new Map();
-    Root.Runtime.Runtime.instance().extensions('setting').forEach(this._registerModuleSetting.bind(this));
+
+    for (const registration of getRegisteredSettings()) {
+      const {settingName, defaultValue, storageType} = registration;
+      const isRegex = registration.settingType === SettingType.REGEX;
+
+      const setting = isRegex && typeof defaultValue === 'string' ?
+          this.createRegExpSetting(settingName, defaultValue, undefined, storageType) :
+          this.createSetting(settingName, defaultValue, storageType);
+
+      if (Root.Runtime.Runtime.platform() === 'mac' && registration.titleMac) {
+        setting.setTitleFunction(registration.titleMac);
+      } else {
+        setting.setTitleFunction(registration.title);
+      }
+      if (registration.userActionCondition) {
+        setting.setRequiresUserAction(Boolean(Root.Runtime.Runtime.queryParam(registration.userActionCondition)));
+      }
+      setting.setRegistration(registration);
+
+      this._registerModuleSetting(setting);
+    }
   }
 
   static hasInstance() {
@@ -87,37 +112,25 @@ export class Settings {
   }
 
   /**
-   * @param {!Root.Runtime.Extension} extension
+   * @param {!Setting<*>} setting
    */
-  _registerModuleSetting(extension) {
-    const descriptor = extension.descriptor();
-    const settingName = descriptor['settingName'];
-    const isRegex = descriptor['settingType'] === 'regex';
-    const defaultValue = descriptor['defaultValue'];
-    let storageType;
-    switch (descriptor['storageType']) {
-      case 'local':
-        storageType = SettingStorageType.Local;
-        break;
-      case 'session':
-        storageType = SettingStorageType.Session;
-        break;
-      case 'global':
-        storageType = SettingStorageType.Global;
-        break;
-      default:
-        storageType = SettingStorageType.Global;
+  _registerModuleSetting(setting) {
+    const settingName = setting.name;
+    const category = setting.category();
+    const order = setting.order();
+    if (this.settingNameSet.has(settingName)) {
+      throw new Error(`Duplicate Setting name '${settingName}'`);
     }
-    const setting = isRegex ? this.createRegExpSetting(settingName, defaultValue, undefined, storageType) :
-                              this.createSetting(settingName, defaultValue, storageType);
-    if (extension.title()) {
-      setting.setTitle(extension.title());
+    if (category && order) {
+      const orderValues = this.orderValuesBySettingCategory.get(category) || new Set();
+      if (orderValues.has(order)) {
+        throw new Error(`Duplicate order value '${order}' for settings category '${category}'`);
+      }
+      orderValues.add(order);
+      this.orderValuesBySettingCategory.set(category, orderValues);
     }
-    if (descriptor['userActionCondition']) {
-      setting.setRequiresUserAction(!!Root.Runtime.Runtime.queryParam(descriptor['userActionCondition']));
-    }
-    setting._extension = extension;
-    this._moduleSettings.set(settingName, setting);
+    this.settingNameSet.add(settingName);
+    this._moduleSettings.set(setting.name, setting);
   }
 
   /**
@@ -152,10 +165,12 @@ export class Settings {
    */
   createSetting(key, defaultValue, storageType) {
     const storage = this._storageFromType(storageType);
-    if (!this._registry.get(key)) {
-      this._registry.set(key, new Setting(this, key, defaultValue, this._eventSupport, storage));
+    let setting = /** @type {!Setting<*>} */ (this._registry.get(key));
+    if (!setting) {
+      setting = new Setting(this, key, defaultValue, this._eventSupport, storage);
+      this._registry.set(key, setting);
     }
-    return /** @type {!Setting<*>} */ (this._registry.get(key));
+    return setting;
   }
 
   /**
@@ -208,9 +223,6 @@ export class Settings {
   }
 }
 
-/**
- * @unrestricted
- */
 export class SettingsStorage {
   /**
    * @param {!Object<string,string>} object
@@ -296,9 +308,9 @@ export class SettingsStorage {
   }
 }
 
+
 /**
  * @template V
- * @unrestricted
  */
 export class Setting {
   /**
@@ -314,10 +326,12 @@ export class Setting {
     this._defaultValue = defaultValue;
     this._eventSupport = eventSupport;
     this._storage = storage;
+    /** @type {function():Platform.UIString.LocalizedString} */
+    this._titleFunction;
     /** @type {string} */
-    this._title = '';
-    /** @type {?Root.Runtime.Extension} */
-    this._extension = null;
+    this._title;
+    /** @type {?SettingRegistration} */
+    this._registration = null;
   }
 
   /**
@@ -345,12 +359,27 @@ export class Setting {
    * @return {string}
    */
   title() {
-    return this._title;
+    if (this._title) {
+      return this._title;
+    }
+    if (this._titleFunction) {
+      return this._titleFunction();
+    }
+    return '';
   }
 
   /**
-   * @param {string} title
+   * @param {undefined|function():Platform.UIString.LocalizedString} titleFunction
    */
+  setTitleFunction(titleFunction) {
+    if (titleFunction) {
+      this._titleFunction = titleFunction;
+    }
+  }
+
+  /**
+  * @param {string} title
+  */
   setTitle(title) {
     this._title = title;
   }
@@ -411,10 +440,79 @@ export class Setting {
   }
 
   /**
-   * @return {?Root.Runtime.Extension}
+   * @param {!SettingRegistration} registration
    */
-  extension() {
-    return this._extension;
+  setRegistration(registration) {
+    this._registration = registration;
+  }
+
+  /**
+   * @return {?SettingType}
+   */
+  type() {
+    if (this._registration) {
+      return this._registration.settingType;
+    }
+    return null;
+  }
+
+  /**
+   * @return {!Array<!SimpleSettingOption>}
+   */
+  options() {
+    if (this._registration && this._registration.options) {
+      return this._registration.options.map(opt => {
+        const {value, title, text, raw} = opt;
+        return {
+          value: value,
+          title: title(),
+          text: typeof text === 'function' ? text() : text,
+          raw: raw,
+        };
+      });
+    }
+    return [];
+  }
+
+  /**
+   * @return {?boolean}
+   */
+  reloadRequired() {
+    if (this._registration) {
+      return this._registration.reloadRequired || null;
+    }
+    return null;
+  }
+
+  /**
+   * @return {?SettingCategory}
+   */
+  category() {
+    if (this._registration) {
+      return this._registration.category || null;
+    }
+    return null;
+  }
+
+  /**
+   * @return {?string}
+   */
+  tags() {
+    if (this._registration && this._registration.tags) {
+      // Get localized keys and separate by null character to prevent fuzzy matching from matching across them.
+      return this._registration.tags.map(tag => tag()).join('\0');
+    }
+    return null;
+  }
+
+  /**
+   * @return {?number}
+   */
+  order() {
+    if (this._registration) {
+      return this._registration.order || null;
+    }
+    return null;
   }
 
   /**
@@ -429,10 +527,15 @@ export class Setting {
     Console.instance().error(errorMessage);
     this._storage._dumpSizes();
   }
+  /**
+   * @return {V}
+   */
+  defaultValue() {
+    return this._defaultValue;
+  }
 }
 
 /**
- * @unrestricted
  * @extends Setting<*>
  */
 export class RegExpSetting extends Setting {
@@ -474,7 +577,6 @@ export class RegExpSetting extends Setting {
 
   /**
    * @override
-   * @suppress {checkTypes}
    * @param {string} value
    */
   set(value) {
@@ -508,9 +610,6 @@ export class RegExpSetting extends Setting {
   }
 }
 
-/**
- * @unrestricted
- */
 export class VersionController {
   static get _currentVersionName() {
     return 'inspectorVersion';
@@ -1077,6 +1176,25 @@ export function detectColorFormat(color) {
   return format;
 }
 
-/** @typedef {{pattern: string, disabled: (boolean|undefined)}} */
+export {
+  getLocalizedSettingsCategory,
+  getRegisteredSettings,
+  registerSettingExtension,
+  RegExpSettingItem,
+  SettingCategory,
+  SettingExtensionOption,
+  SettingRegistration,
+  SettingType,
+  registerSettingExtengionsForTest,
+};
+
+/**
+ * @typedef {{
+  * value: (boolean|string),
+  * title: string,
+  * text: (string|undefined),
+  * raw: (boolean | undefined),
+  * }}
+  */
 // @ts-ignore typedef
-export let RegExpSettingItem;
+export let SimpleSettingOption;

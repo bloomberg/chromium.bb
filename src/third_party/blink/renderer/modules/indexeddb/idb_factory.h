@@ -29,6 +29,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_FACTORY_H_
 
+#include <memory>
+
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -70,12 +72,14 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
               ExceptionState&);
 
   // These are not exposed to the web applications and only used by DevTools.
-  IDBRequest* GetDatabaseNames(ScriptState*, ExceptionState&);
   IDBOpenDBRequest* CloseConnectionsAndDeleteDatabase(ScriptState*,
                                                       const String& name,
                                                       ExceptionState&);
 
   ScriptPromise GetDatabaseInfo(ScriptState*, ExceptionState&);
+  // This method is exposed specifically for DevTools.
+  void GetDatabaseInfo(ScriptState*,
+                       std::unique_ptr<mojom::blink::IDBCallbacks> callbacks);
 
   void SetFactoryForTesting(mojo::Remote<mojom::blink::IDBFactory> factory);
 

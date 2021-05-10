@@ -48,6 +48,10 @@ namespace component_updater {
 class ComponentUpdateService;
 }
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace query_tiles {
 class TileService;
 }
@@ -111,6 +115,9 @@ class AutocompleteProviderClient {
   virtual component_updater::ComponentUpdateService*
   GetComponentUpdateService() = 0;
 
+  // Returns the signin::IdentityManager associated with the current profile.
+  virtual signin::IdentityManager* GetIdentityManager() const = 0;
+
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;
 
@@ -169,7 +176,7 @@ class AutocompleteProviderClient {
   virtual bool IsTabOpenWithURL(const GURL& url,
                                 const AutocompleteInput* input) = 0;
 
-  // Returns whether any browser update is ready.
+  // Returns whether user is currently allowed to enter incognito mode.
   virtual bool IsIncognitoModeAvailable() const;
 };
 

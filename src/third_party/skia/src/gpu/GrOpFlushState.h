@@ -58,28 +58,27 @@ public:
     /** Additional data required on a per-op basis when executing GrOps. */
     struct OpArgs {
         // TODO: why does OpArgs have the op we're going to pass it to as a member? Remove it.
-        explicit OpArgs(GrOp* op, GrSurfaceProxyView* surfaceView, GrAppliedClip* appliedClip,
+        explicit OpArgs(GrOp* op, const GrSurfaceProxyView& surfaceView, GrAppliedClip* appliedClip,
                         const GrXferProcessor::DstProxyView& dstProxyView,
-                        GrXferBarrierFlags renderPassXferBarriers)
+                        GrXferBarrierFlags renderPassXferBarriers, GrLoadOp colorLoadOp)
                 : fOp(op)
                 , fSurfaceView(surfaceView)
-                , fRenderTargetProxy(surfaceView->asRenderTargetProxy())
+                , fRenderTargetProxy(surfaceView.asRenderTargetProxy())
                 , fAppliedClip(appliedClip)
                 , fDstProxyView(dstProxyView)
-                , fRenderPassXferBarriers(renderPassXferBarriers) {
-            SkASSERT(surfaceView->asRenderTargetProxy());
+                , fRenderPassXferBarriers(renderPassXferBarriers)
+                , fColorLoadOp(colorLoadOp) {
+            SkASSERT(surfaceView.asRenderTargetProxy());
         }
 
-        GrSurfaceOrigin origin() const { return fSurfaceView->origin(); }
-        GrSwizzle writeSwizzle() const { return fSurfaceView->swizzle(); }
-
         GrOp* op() { return fOp; }
-        const GrSurfaceProxyView* writeView() const { return fSurfaceView; }
-        GrRenderTargetProxy* proxy() const { return fRenderTargetProxy; }
+        const GrSurfaceProxyView& writeView() const { return fSurfaceView; }
+        GrRenderTargetProxy* rtProxy() const { return fRenderTargetProxy; }
         GrAppliedClip* appliedClip() { return fAppliedClip; }
         const GrAppliedClip* appliedClip() const { return fAppliedClip; }
         const GrXferProcessor::DstProxyView& dstProxyView() const { return fDstProxyView; }
         GrXferBarrierFlags renderPassBarriers() const { return fRenderPassXferBarriers; }
+        GrLoadOp colorLoadOp() const { return fColorLoadOp; }
 
 #ifdef SK_DEBUG
         void validate() const {
@@ -90,11 +89,12 @@ public:
 
     private:
         GrOp*                         fOp;
-        GrSurfaceProxyView*           fSurfaceView;
+        const GrSurfaceProxyView&     fSurfaceView;
         GrRenderTargetProxy*          fRenderTargetProxy;
         GrAppliedClip*                fAppliedClip;
         GrXferProcessor::DstProxyView fDstProxyView;   // TODO: do we still need the dst proxy here?
         GrXferBarrierFlags            fRenderPassXferBarriers;
+        GrLoadOp                      fColorLoadOp;
     };
 
     void setOpArgs(OpArgs* opArgs) { fOpArgs = opArgs; }
@@ -134,18 +134,23 @@ public:
     uint16_t* makeIndexSpaceAtLeast(int minIndexCount, int fallbackIndexCount,
                                     sk_sp<const GrBuffer>*, int* startIndex,
                                     int* actualIndexCount) final;
-    GrDrawIndirectCommand* makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
-                                                 size_t* offset) override {
+    GrDrawIndirectWriter makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
+                                               size_t* offset) override {
         return fDrawIndirectPool.makeSpace(drawCount, buffer, offset);
     }
-    GrDrawIndexedIndirectCommand* makeDrawIndexedIndirectSpace(
-            int drawCount, sk_sp<const GrBuffer>* buffer, size_t* offset) override {
+    GrDrawIndexedIndirectWriter makeDrawIndexedIndirectSpace(int drawCount,
+                                                             sk_sp<const GrBuffer>* buffer,
+                                                             size_t* offset) override {
         return fDrawIndirectPool.makeIndexedSpace(drawCount, buffer, offset);
     }
     void putBackIndices(int indexCount) final;
     void putBackVertices(int vertices, size_t vertexStride) final;
-    const GrSurfaceProxyView* writeView() const final { return this->drawOpArgs().writeView(); }
-    GrRenderTargetProxy* proxy() const final { return this->drawOpArgs().proxy(); }
+    void putBackIndirectDraws(int drawCount) final { fDrawIndirectPool.putBack(drawCount); }
+    void putBackIndexedIndirectDraws(int drawCount) final {
+        fDrawIndirectPool.putBackIndexed(drawCount);
+    }
+    const GrSurfaceProxyView& writeView() const final { return this->drawOpArgs().writeView(); }
+    GrRenderTargetProxy* rtProxy() const final { return this->drawOpArgs().rtProxy(); }
     const GrAppliedClip* appliedClip() const final { return this->drawOpArgs().appliedClip(); }
     const GrAppliedHardClip& appliedHardClip() const {
         return (fOpArgs->appliedClip()) ?
@@ -158,6 +163,10 @@ public:
 
     GrXferBarrierFlags renderPassBarriers() const final {
         return this->drawOpArgs().renderPassBarriers();
+    }
+
+    GrLoadOp colorLoadOp() const final {
+        return this->drawOpArgs().colorLoadOp();
     }
 
     GrDeferredUploadTarget* deferredUploadTarget() final { return this; }

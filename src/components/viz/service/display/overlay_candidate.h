@@ -35,11 +35,13 @@ class VideoHoleDrawQuad;
 class VIZ_SERVICE_EXPORT OverlayCandidate {
  public:
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
-  // type and contains an overlayable resource.
+  // type and contains an overlayable resource. |primary_rect| can be empty in
+  // the case of a null primary plane.
   static bool FromDrawQuad(DisplayResourceProvider* resource_provider,
                            SurfaceDamageRectList* surface_damage_rect_list,
                            const SkMatrix44& output_color_matrix,
                            const DrawQuad* quad,
+                           const gfx::RectF& primary_rect,
                            OverlayCandidate* candidate);
   // Returns true if |quad| will not block quads underneath from becoming
   // an overlay.
@@ -81,9 +83,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   ~OverlayCandidate();
 
   // Transformation to apply to layer during composition.
-  gfx::OverlayTransform transform;
+  gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
   // Format of the buffer to scanout.
-  gfx::BufferFormat format;
+  gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
   // ColorSpace of the buffer for scanout.
   gfx::ColorSpace color_space;
   // Size of the resource, in pixels.
@@ -92,17 +94,15 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // to integer coordinates if setting |overlay_handled| to true.
   gfx::RectF display_rect;
   // Crop within the buffer to be placed inside |display_rect|.
-  gfx::RectF uv_rect;
+  gfx::RectF uv_rect = gfx::RectF(0.f, 0.f, 1.f, 1.f);
   // Clip rect in the target content space after composition.
   gfx::Rect clip_rect;
   // If the quad is clipped after composition.
-  bool is_clipped;
+  bool is_clipped = false;
   // If the quad doesn't require blending.
-  bool is_opaque;
-  // The quad's occluding damage rect is empty.
-  bool no_occluding_damage;
+  bool is_opaque = false;
   // Texture resource to present in an overlay.
-  unsigned resource_id;
+  ResourceId resource_id = kInvalidResourceId;
   // Mailbox from resource_id. It is used by SkiaRenderer.
   gpu::Mailbox mailbox;
 
@@ -110,35 +110,39 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // For candidates from StreamVideoDrawQuads, this records whether the quad is
   // marked as being backed by a SurfaceTexture or not.  If so, it's not really
   // promotable to an overlay.
-  bool is_backed_by_surface_texture;
-
-  // Filled in by the OverlayCandidateValidator to indicate whether this is a
-  // promotable candidate or not.
-  bool is_promotable_hint;
+  bool is_backed_by_surface_texture = false;
 #endif
 
   // Stacking order of the overlay plane relative to the main surface,
   // which is 0. Signed to allow for "underlays".
   int plane_z_order = 0;
 
-  // True if the overlay does not have any visible quads on top of it. Set by
-  // the strategy so the OverlayProcessor can consider subtracting damage caused
-  // by underlay quads.
-  bool is_unoccluded;
-
   // To be modified by the implementer if this candidate can go into
   // an overlay.
-  bool overlay_handled;
+  bool overlay_handled = false;
 
   // Gpu fence to wait for before overlay is ready for display.
-  unsigned gpu_fence_id;
+  unsigned gpu_fence_id = 0;
 
   // The total area in square pixels of damage for this candidate's quad. This
   // is an estimate when 'EstimateOccludedDamage' function is used.
   int damage_area_estimate = 0;
 
-  // Cached result of call to 'RequiresOverlay' function.
+  static constexpr uint32_t kInvalidDamageIndex = UINT_MAX;
+  // Damage index for |SurfaceDamageRectList|.
+  uint32_t overlay_damage_index = kInvalidDamageIndex;
+
+  // Is true if an HW overlay is required for the quad content.
   bool requires_overlay = false;
+
+  // Is true when quad is part of a |shared_quad_state| that has damage.
+  // This is a fallback case for when |overlay_damage_index| is unavailable and
+  // will be absent from the |SurfaceDamageRectList|.
+  bool assume_damaged = false;
+
+  // Identifier passed through by the video decoder that allows us to validate
+  // if a protected surface can still be displayed. Non-zero when valid.
+  uint32_t hw_protected_validation_id = 0;
 
  private:
   static bool FromDrawQuadResource(
@@ -151,6 +155,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static bool FromTextureQuad(DisplayResourceProvider* resource_provider,
                               SurfaceDamageRectList* surface_damage_rect_list,
                               const TextureDrawQuad* quad,
+                              const gfx::RectF& primary_rect,
                               OverlayCandidate* candidate);
   static bool FromStreamVideoQuad(
       DisplayResourceProvider* resource_provider,
@@ -161,6 +166,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
                                 SurfaceDamageRectList* surface_damage_rect_list,
                                 const VideoHoleDrawQuad* quad,
                                 OverlayCandidate* candidate);
+  static void HandleClipAndSubsampling(OverlayCandidate* candidate,
+                                       const gfx::RectF& primary_rect);
 };
 
 using OverlayCandidateList = std::vector<OverlayCandidate>;

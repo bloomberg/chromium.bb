@@ -19,6 +19,7 @@ import "services/network/public/mojom/mutable_network_traffic_annotation_tag.moj
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
+import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
@@ -27,6 +28,7 @@ import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
+import "services/network/public/mojom/client_security_state.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -66,7 +68,8 @@ interface NetworkServiceClient {
     int32 routing_id,
     string devtool_request_id,
     array<CookieWithAccessResult> cookies_with_access_result,
-    array<HttpRawHeaderPair> headers);
+    array<HttpRawHeaderPair> headers,
+    ClientSecurityState? client_security_state);
 
   // Called to send information about the cookies blocked from storage from a
   // received response. Only called when |devtool_request_id| is available to
@@ -77,7 +80,23 @@ interface NetworkServiceClient {
     string devtool_request_id,
     array<CookieAndLineWithAccessResult> cookies_with_access_result,
     array<HttpRawHeaderPair> headers,
-    string? raw_response_headers);
+    string? raw_response_headers,
+    IPAddressSpace resource_address_space);
+
+  // Called to send information about a private network request that was blocked
+  // (then |is_warning| is false), or will be blocked in the future (then
+  // |is_warning| is true). It is possible to share sensitive information with
+  // DevTools as this is handled in the browser process. Called even when
+  // |devtool_request_id| is not available to the URLLoader to ensure the
+  // information can be recorded even when DevTools is closed.
+  OnPrivateNetworkRequest(
+    int32 process_id,
+    int32 routing_id,
+    string? devtool_request_id,
+    url.mojom.Url url,
+    bool is_warning,
+    IPAddressSpace resource_address_space,
+    ClientSecurityState client_security_state);
 
   // Called to send the CORS preflight request information. Only called when
   // |devtool_request_id| is available on the original request.
@@ -86,7 +105,8 @@ interface NetworkServiceClient {
     int32 render_frame_id,
     mojo_base.mojom.UnguessableToken devtool_request_id,
     URLRequest request,
-    url.mojom.Url initiator_url);
+    url.mojom.Url initiator_url,
+    string initiator_devtool_request_id);
 
   // Called to send the CORS preflight response information. Only called when
   // |devtool_request_id| is available on the original request.
@@ -104,6 +124,15 @@ interface NetworkServiceClient {
     int32 render_frame_id,
     mojo_base.mojom.UnguessableToken devtool_request_id,
     URLLoaderCompletionStatus status);
+
+  // Called to send the result of a successful or failed Trust Token
+  // operation. Only called when |devtools_request_id| is available on the
+  // original request.
+  OnTrustTokenOperationDone(
+    int32 process_id,
+    int32 routing_id,
+    string devtool_request_id,
+    TrustTokenOperationResult result);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -327,11 +356,6 @@ interface NetworkService {
   // this call, will use the same CRLSet.
   UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set) => ();
 
-  // Updates the configuration used for determining if a site should have legacy
-  // TLS warnings suppressed. Configs that cannot be parsed as a
-  // LegacyTLSExperimentConfig (protobuf) will be ignored.
-  UpdateLegacyTLSConfig(mojo_base.mojom.ReadOnlyBuffer config) => ();
-
   // Notification that the certificate database has been modified.
   OnCertDBChanged();
 
@@ -348,15 +372,6 @@ interface NetworkService {
   [EnableIf=is_win]
   SetEncryptionKey(string encryption_key);
 
-  // Notifies CORB (Cross-Origin Read Blocking) that |process_id| is proxying
-  // requests on behalf of a universal-access plugin and therefore CORB should
-  // stop blocking requests marked as ResourceType::kPluginResource.
-  //
-  // TODO(lukasza, laforge): https://crbug.com/702995: Remove the ...ForPlugin
-  // methods once Flash support is removed from Chromium (probably around 2020
-  // - see https://www.chromium.org/flash-roadmap).
-  AddCorbExceptionForPlugin(int32 process_id);
-
   // Notifies |request_initiator_origin_lock| enforcement code that |process_id|
   // is proxying requests on behalf of a plugin from
   // |allowed_request_initiator| origin.
@@ -367,7 +382,7 @@ interface NetworkService {
       int32 process_id,
       url.mojom.Origin allowed_request_initiator);
 
-  // Reverts AddCorbExceptionForPlugin and AddAllowedRequestInitiatorForPlugin.
+  // Reverts AddAllowedRequestInitiatorForPlugin.
   RemoveSecurityExceptionsForPlugin(int32 process_id);
 
   // Called when the system is low on memory.

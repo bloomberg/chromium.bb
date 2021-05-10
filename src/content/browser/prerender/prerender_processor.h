@@ -10,6 +10,7 @@
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -24,8 +25,8 @@ class RenderFrameHostImpl;
 // request (see comments on the mojom interface for details) and owned by the
 // initiator RenderFrameHostImpl's mojo::UniqueReceiverSet.
 //
-// When Start() is called from a renderer process, this instantiates a new
-// PrerenderHost, and forwards the request to the prerender host.
+// When Start() is called from a renderer process, this asks
+// PrerenderHostRegistry to create a PrerenderHost and start prerendering.
 class CONTENT_EXPORT PrerenderProcessor final
     : public blink::mojom::PrerenderProcessor {
  public:
@@ -38,9 +39,7 @@ class CONTENT_EXPORT PrerenderProcessor final
   PrerenderProcessor& operator=(PrerenderProcessor&&) = delete;
 
   // blink::mojom::PrerenderProcessor implementation:
-  void Start(blink::mojom::PrerenderAttributesPtr attributes,
-             mojo::PendingRemote<blink::mojom::PrerenderProcessorClient>
-                 pending_remote) override;
+  void Start(blink::mojom::PrerenderAttributesPtr attributes) override;
   void Cancel() override;
 
  private:
@@ -56,8 +55,8 @@ class CONTENT_EXPORT PrerenderProcessor final
   // may navigate away before Start() is called from a renderer process.
   const url::Origin initiator_origin_;
 
-  // URL to be prerendered.
-  GURL prerendering_url_;
+  // The root frame tree node id of the prerendered page.
+  int prerender_frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
   enum class State { kInitial, kStarted, kCancelled };
   State state_ = State::kInitial;

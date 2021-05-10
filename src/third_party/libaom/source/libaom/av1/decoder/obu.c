@@ -271,14 +271,20 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 }
 
 // On success, returns the frame header size. On failure, calls
-// aom_internal_error and does not return.
+// aom_internal_error and does not return. If show existing frame,
+// also marks the data processing to end after the frame header.
 static uint32_t read_frame_header_obu(AV1Decoder *pbi,
                                       struct aom_read_bit_buffer *rb,
                                       const uint8_t *data,
                                       const uint8_t **p_data_end,
                                       int trailing_bits_present) {
-  return av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end,
-                                            trailing_bits_present);
+  const uint32_t hdr_size =
+      av1_decode_frame_headers_and_setup(pbi, rb, trailing_bits_present);
+  const AV1_COMMON *cm = &pbi->common;
+  if (cm->show_existing_frame) {
+    *p_data_end = data + hdr_size;
+  }
+  return hdr_size;
 }
 
 // On success, returns the tile group header size. On failure, calls

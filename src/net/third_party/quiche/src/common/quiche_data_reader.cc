@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/common/quiche_data_reader.h"
+#include "common/quiche_data_reader.h"
 
 #include <cstring>
 
 #include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "common/platform/api/quiche_logging.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "common/quiche_endian.h"
 
 namespace quiche {
 
@@ -209,7 +209,7 @@ uint8_t QuicheDataReader::PeekByte() const {
 }
 
 std::string QuicheDataReader::DebugString() const {
-  return quiche::QuicheStrCat(" { length: ", len_, ", position: ", pos_, " }");
+  return absl::StrCat(" { length: ", len_, ", position: ", pos_, " }");
 }
 
 #undef ENDPOINT  // undef for jumbo builds

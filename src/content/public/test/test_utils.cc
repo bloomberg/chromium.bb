@@ -22,8 +22,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/font_access/font_enumeration_cache.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -199,10 +202,31 @@ bool AreAllSitesIsolatedForTesting() {
   return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
+bool ShouldOriginGetOptInIsolation(SiteInstance* site_instance,
+                                   const url::Origin& origin) {
+  return static_cast<ChildProcessSecurityPolicyImpl*>(
+             ChildProcessSecurityPolicy::GetInstance())
+      ->ShouldOriginGetOptInIsolation(
+          static_cast<SiteInstanceImpl*>(site_instance)->GetIsolationContext(),
+          origin, false /* origin_requests_isolation */);
+}
+
 bool AreDefaultSiteInstancesEnabled() {
   return !AreAllSitesIsolatedForTesting() &&
          base::FeatureList::IsEnabled(
              features::kProcessSharingWithDefaultSiteInstances);
+}
+
+bool AreStrictSiteInstancesEnabled() {
+  return AreAllSitesIsolatedForTesting() ||
+         base::FeatureList::IsEnabled(
+             features::kProcessSharingWithStrictSiteInstances);
+}
+
+bool IsIsolatedOriginRequiredToGuaranteeDedicatedProcess() {
+  return AreDefaultSiteInstancesEnabled() ||
+         base::FeatureList::IsEnabled(
+             features::kProcessSharingWithStrictSiteInstances);
 }
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
@@ -290,6 +314,10 @@ void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
   };
 
   Awaiter(web_contents).Await();
+}
+
+void ResetFontEnumerationCache() {
+  FontEnumerationCache::GetInstance()->ResetStateForTesting();
 }
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
@@ -531,8 +559,9 @@ bool EffectiveURLContentBrowserClient::DoesSiteRequireDedicatedProcess(
     return false;
 
   for (const auto& pair : urls_to_modify_) {
-    if (SiteInstance::GetSiteForURL(browser_context, pair.first) ==
-        effective_site_url)
+    auto site_info = SiteInfo::CreateForTesting(
+        IsolationContext(browser_context), pair.first);
+    if (site_info.site_url() == effective_site_url)
       return true;
   }
   return false;

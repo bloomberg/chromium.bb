@@ -20,59 +20,50 @@
 
 #include "src/ast/expression.h"
 #include "src/ast/literal.h"
-#include "src/ast/type/type.h"
+#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
 /// A bitcast expression
-class BitcastExpression : public Expression {
+class BitcastExpression : public Castable<BitcastExpression, Expression> {
  public:
-  /// Constructor
-  BitcastExpression();
-  /// Constructor
-  /// @param type the type
-  /// @param expr the expr
-  BitcastExpression(type::Type* type, std::unique_ptr<Expression> expr);
   /// Constructor
   /// @param source the bitcast expression source
   /// @param type the type
   /// @param expr the expr
-  BitcastExpression(const Source& source,
-                    type::Type* type,
-                    std::unique_ptr<Expression> expr);
+  BitcastExpression(const Source& source, type::Type* type, Expression* expr);
   /// Move constructor
   BitcastExpression(BitcastExpression&&);
   ~BitcastExpression() override;
 
-  /// Sets the type
-  /// @param type the type
-  void set_type(type::Type* type) { type_ = std::move(type); }
   /// @returns the left side expression
   type::Type* type() const { return type_; }
-
-  /// Sets the expr
-  /// @param expr the expression
-  void set_expr(std::unique_ptr<Expression> expr) { expr_ = std::move(expr); }
   /// @returns the expression
-  Expression* expr() const { return expr_.get(); }
+  Expression* expr() const { return expr_; }
 
-  /// @returns true if this is a bitcast expression
-  bool IsBitcast() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  BitcastExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   BitcastExpression(const BitcastExpression&) = delete;
 
-  type::Type* type_ = nullptr;
-  std::unique_ptr<Expression> expr_;
+  type::Type* const type_;
+  Expression* const expr_;
 };
 
 }  // namespace ast

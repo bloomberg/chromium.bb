@@ -168,7 +168,7 @@ void ContentsView::ResetForShow() {
   SetActiveState(AppListState::kStateApps, /*animate=*/false);
   // In side shelf, the opacity of the contents is not animated so set it to the
   // final state. In tablet mode, opacity of the elements is controlled by the
-  // HomeLauncherGestureHandler which expects these elements to be opaque.
+  // HomeScreenController which expects these elements to be opaque.
   // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
   if (app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()) {
     AnimateToViewState(AppListViewState::kFullscreenAllApps, base::TimeDelta());
@@ -330,7 +330,7 @@ bool ContentsView::IsShowingSearchResults() const {
 }
 
 void ContentsView::ShowEmbeddedAssistantUI(bool show) {
-  expand_arrow_view_->SetVisible(!show);
+  SetExpandArrowViewVisibility(!show);
 
   const int assistant_page =
       GetPageIndexForState(AppListState::kStateEmbeddedAssistant);
@@ -678,10 +678,10 @@ void ContentsView::UpdateYPositionAndOpacity() {
   } else {
     progress = AppListView::GetTransitionProgressForState(target_view_state());
   }
-
   const bool restore_opacity = !app_list_view_->is_in_drag() &&
                                target_view_state() != AppListViewState::kClosed;
-  if (current_state != AppListState::kStateApps ||
+  if (!(current_state == AppListState::kStateApps ||
+        current_state == AppListState::kStateEmbeddedAssistant) ||
       app_list_view_->is_side_shelf()) {
     expand_arrow_view_->layer()->SetOpacity(0.0f);
   } else if (restore_opacity) {
@@ -754,11 +754,13 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   const bool closing = target_view_state == AppListViewState::kClosed;
   animate_opacity(duration, GetSearchBoxView(), !closing /*target_visibility*/);
 
-  // Fade in or out the expand arrow.
-  const bool target_arrow_visibility =
-      target_page == AppListState::kStateApps && !closing &&
-      !app_list_view_->is_side_shelf();
-  animate_opacity(duration, expand_arrow_view_, target_arrow_visibility);
+  // Fade in or out the expand arrow. Embedded Assistant hides the expand arrow
+  // and should not set its opacity to 0.
+  const bool expand_arrow_target_opacity =
+      (target_page == AppListState::kStateEmbeddedAssistant ||
+       target_page == AppListState::kStateApps) &&
+      !closing && !app_list_view_->is_side_shelf();
+  animate_opacity(duration, expand_arrow_view_, expand_arrow_target_opacity);
 
   // Animates layer's vertical position (using transform animation).
   // |layer| - The layer to transform.

@@ -19,8 +19,14 @@
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/media_player_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/base/use_after_free_checker.h"
+#include "media/mojo/mojom/media_player.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
@@ -47,6 +53,7 @@ class Size;
 namespace content {
 
 class AudibleMetrics;
+class WebContentsImpl;
 
 // This class manages all RenderFrame based media related managers at the
 // browser side. It receives IPC messages from media RenderFrameObservers and
@@ -54,7 +61,7 @@ class AudibleMetrics;
 // for sending IPCs back to the RenderFrameObservers at the render side.
 class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
  public:
-  explicit MediaWebContentsObserver(WebContents* web_contents);
+  explicit MediaWebContentsObserver(WebContentsImpl* web_contents);
   ~MediaWebContentsObserver() override;
 
   // Called by WebContentsImpl when the audible state may have changed.
@@ -78,8 +85,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
   void DidUpdateAudioMutingState(bool muted) override;
 
@@ -100,9 +105,30 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     audible_metrics_ = audible_metrics;
   }
 
-  void OnReceivedTranslatedDeviceId(RenderFrameHost* render_frame_host,
-                                    int delegate_id,
+  void OnReceivedTranslatedDeviceId(const MediaPlayerId& player_id,
                                     const std::string& raw_device_id);
+
+  // Return an already bound mojo Remote for the MediaPlayer mojo interface.
+  // Return null if no player with |player_id| exists.
+  // TODO(https://crbug.com/1161551): Revert to returning a reference and make
+  // it an error to call this method if no MediaPlayer with |player_id| exists.
+  media::mojom::MediaPlayer* GetMediaPlayerRemote(
+      const MediaPlayerId& player_id);
+
+  // Creates a new MediaPlayerObserverHostImpl associated to |player_id| if
+  // needed, and then passes |player_receiver| to it to establish a
+  // communication channel.
+  void BindMediaPlayerHost(
+      RenderFrameHost* host,
+      mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost>
+          player_receiver);
+
+  // Communicates with the MediaSessionControllerManager to find or create (if
+  // needed) a MediaSessionController identified by |player_id|, in order to
+  // bind its mojo remote for media::mojom::MediaPlayer.
+  void OnMediaPlayerAdded(
+      mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
+      MediaPlayerId player_id);
 
 #if defined(OS_ANDROID)
   // Called by the WebContents when a tab has been closed but may still be
@@ -113,7 +139,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
 #endif  // defined(OS_ANDROID)
  protected:
   MediaSessionControllersManager* session_controllers_manager() {
-    return &session_controllers_manager_;
+    return session_controllers_manager_.get();
   }
 
  private:
@@ -123,44 +149,98 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   using PlayerInfoMap =
       base::flat_map<MediaPlayerId, std::unique_ptr<PlayerInfo>>;
 
+  // Helper class providing a per-RenderFrame object implementing the only
+  // method of the media::mojom::MediaPlayerHost mojo interface, to provide the
+  // renderer process with a way to notify the browser when a new MediaPlayer
+  // has been created, so that a communication channel can be established.
+  class MediaPlayerHostImpl : public media::mojom::MediaPlayerHost {
+   public:
+    MediaPlayerHostImpl(RenderFrameHost* render_frame_host,
+                        MediaWebContentsObserver* media_web_contents_observer);
+    ~MediaPlayerHostImpl() override;
+
+    // Used to bind receivers via the BrowserInterfaceBroker.
+    void BindMediaPlayerHostReceiver(
+        mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost>
+            receiver);
+
+    // media::mojom::MediaPlayerHost implementation.
+    void OnMediaPlayerAdded(
+        mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> media_player,
+        int32_t player_id) override;
+
+   private:
+    RenderFrameHost* render_frame_host_;
+    MediaWebContentsObserver* media_web_contents_observer_;
+    mojo::AssociatedReceiverSet<media::mojom::MediaPlayerHost> receivers_;
+  };
+
+  // Helper class providing a per-MediaPlayerId object implementing the
+  // media::mojom::MediaPlayerObserver mojo interface.
+  class MediaPlayerObserverHostImpl : public media::mojom::MediaPlayerObserver {
+   public:
+    MediaPlayerObserverHostImpl(
+        const MediaPlayerId& media_player_id,
+        MediaWebContentsObserver* media_web_contents_observer);
+    ~MediaPlayerObserverHostImpl() override;
+
+    // Used to bind the receiver via the BrowserInterfaceBroker.
+    mojo::PendingAssociatedRemote<media::mojom::MediaPlayerObserver>
+    BindMediaPlayerObserverReceiverAndPassRemote();
+
+    // media::mojom::MediaPlayerObserver implementation.
+    void OnMediaPlaying() override;
+    void OnMediaPaused(bool stream_ended) override;
+    void OnMutedStatusChanged(bool muted) override;
+    void OnMediaMetadataChanged(
+        bool has_audio,
+        bool has_video,
+        media::MediaContentType media_content_type) override;
+    void OnMediaPositionStateChanged(
+        const media_session::MediaPosition& media_position) override;
+    void OnMediaEffectivelyFullscreenChanged(
+        blink::WebFullscreenVideoStatus status) override;
+    void OnMediaSizeChanged(const ::gfx::Size& size) override;
+    void OnPictureInPictureAvailabilityChanged(bool available) override;
+    void OnAudioOutputSinkChanged(const std::string& hashed_device_id) override;
+    void OnAudioOutputSinkChangingDisabled() override;
+    void OnBufferUnderflow() override;
+    void OnSeek() override;
+
+   private:
+    MediaPlayerId media_player_id_;
+    MediaWebContentsObserver* media_web_contents_observer_;
+    mojo::AssociatedReceiver<media::mojom::MediaPlayerObserver>
+        media_player_observer_receiver_{this};
+  };
+
+  using MediaPlayerHostImplMap =
+      base::flat_map<RenderFrameHost*, std::unique_ptr<MediaPlayerHostImpl>>;
+  using MediaPlayerObserverHostImplMap =
+      base::flat_map<MediaPlayerId,
+                     std::unique_ptr<MediaPlayerObserverHostImpl>>;
+  using MediaPlayerRemotesMap =
+      base::flat_map<MediaPlayerId,
+                     mojo::AssociatedRemote<media::mojom::MediaPlayer>>;
+
   // Returns the PlayerInfo associated with |id|, or nullptr if no such
   // PlayerInfo exists.
   PlayerInfo* GetPlayerInfo(const MediaPlayerId& id) const;
 
-  void OnMediaDestroyed(RenderFrameHost* render_frame_host, int delegate_id);
-  void OnMediaPaused(RenderFrameHost* render_frame_host,
-                     int delegate_id,
-                     bool reached_end_of_stream);
-  void OnMediaMetadataChanged(RenderFrameHost* render_frame_host,
-                              int delegate_id,
+  void OnMediaMetadataChanged(const MediaPlayerId& player_id,
                               bool has_video,
                               bool has_audio,
                               media::MediaContentType media_content_type);
-  void OnMediaPlaying(RenderFrameHost* render_frame_host, int delegate_id);
+
   void OnMediaEffectivelyFullscreenChanged(
-      RenderFrameHost* render_frame_host,
-      int delegate_id,
+      const MediaPlayerId& player_id,
       blink::WebFullscreenVideoStatus fullscreen_status);
-  void OnMediaSizeChanged(RenderFrameHost* render_frame_host,
-                          int delegate_id,
-                          const gfx::Size& size);
-  void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
-                                 int delegate_id,
-                                 bool muted);
-  void OnMediaPositionStateChanged(
-      RenderFrameHost* render_frame_host,
-      int delegate_id,
-      const media_session::MediaPosition& position);
-  void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
-                                             int delegate_id,
-                                             bool available);
-  void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
-                                int delegate_id,
+  void OnAudioOutputSinkChanged(const MediaPlayerId& player_id,
                                 std::string hashed_device_id);
-  void OnAudioOutputSinkChangingDisabled(RenderFrameHost* render_frame_host,
-                                         int delegate_id);
-  void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
-  void OnSeek(RenderFrameHost* render_frame_host, int delegate_id);
+
+  // Used to notify when the renderer -> browser mojo connection via the
+  // interface media::mojom::MediaPlayerObserver gets disconnected.
+  void OnMediaPlayerObserverDisconnected(const MediaPlayerId& player_id);
 
   device::mojom::WakeLock* GetAudioWakeLock();
 
@@ -192,7 +272,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;
   bool has_audio_wake_lock_for_testing_ = false;
 
-  MediaSessionControllersManager session_controllers_manager_;
+  std::unique_ptr<MediaSessionControllersManager> session_controllers_manager_;
   MediaPowerExperimentManager* power_experiment_manager_ = nullptr;
 
   std::map<RenderFrameHost*,
@@ -200,6 +280,13 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       per_frame_factory_;
 
   media::UseAfterFreeChecker use_after_free_checker_;
+
+  MediaPlayerHostImplMap media_player_hosts_;
+  MediaPlayerObserverHostImplMap media_player_observer_hosts_;
+
+  // Map of remote endpoints for the media::mojom::MediaPlayer mojo interface,
+  // indexed by MediaPlayerId.
+  MediaPlayerRemotesMap media_player_remotes_;
 
   base::WeakPtrFactory<MediaWebContentsObserver> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);

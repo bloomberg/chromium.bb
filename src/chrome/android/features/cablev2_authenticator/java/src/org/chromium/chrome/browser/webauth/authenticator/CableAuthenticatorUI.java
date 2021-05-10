@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webauth.authenticator;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,11 +23,16 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.widget.Toast;
@@ -38,10 +44,31 @@ import java.lang.ref.WeakReference;
  */
 public class CableAuthenticatorUI
         extends Fragment implements OnClickListener, QRScanDialog.Callback {
+    private static final String TAG = "CableAuthenticatorUI";
+
+    // ENABLE_BLUETOOTH_REQUEST_CODE is a random int used to identify responses
+    // to a request to enable Bluetooth. (Request codes can only be 16-bit.)
+    private static final int ENABLE_BLUETOOTH_REQUEST_CODE = 64907;
+
+    // USB_PROMPT_TIMEOUT_SECS is the number of seconds the spinner will show
+    // for before being replaced with a prompt to connect via USB cable.
+    private static final int USB_PROMPT_TIMEOUT_SECS = 20;
+
+    private static final String ACTIVITY_CLASS_NAME_EXTRA =
+            "org.chromium.chrome.modules.cablev2_authenticator.ActivityClassName";
+    private static final String FCM_EXTRA = "org.chromium.chrome.modules.cablev2_authenticator.FCM";
+    private static final String NETWORK_CONTEXT_EXTRA =
+            "org.chromium.chrome.modules.cablev2_authenticator.NetworkContext";
+    private static final String REGISTRATION_EXTRA =
+            "org.chromium.chrome.modules.cablev2_authenticator.Registration";
+    private static final String SERVER_LINK_EXTRA =
+            "org.chromium.chrome.browser.webauth.authenticator.ServerLink";
+
     private enum Mode {
         QR, // Triggered from Settings; can scan QR code to start handshake.
         FCM, // Triggered by user selecting notification; handshake already running.
         USB, // Triggered by connecting via USB.
+        SERVER_LINK, // Triggered by GMSCore forwarding from GAIA.
     }
     private Mode mMode;
     private AndroidPermissionDelegate mPermissionDelegate;
@@ -49,6 +76,12 @@ public class CableAuthenticatorUI
     private LinearLayout mQRButton;
     private LinearLayout mUnlinkButton;
     private ImageView mHeader;
+    private TextView mStatusText;
+
+    // The following two members store a pending QR-scan result while Bluetooth
+    // is enabled.
+    private String mPendingQRCode;
+    private boolean mPendingShouldLink;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,39 +91,65 @@ public class CableAuthenticatorUI
         Bundle arguments = getArguments();
         final UsbAccessory accessory =
                 (UsbAccessory) arguments.getParcelable(UsbManager.EXTRA_ACCESSORY);
+        final byte[] serverLink = arguments.getByteArray(SERVER_LINK_EXTRA);
         if (accessory != null) {
             mMode = Mode.USB;
-        } else if (arguments.getBoolean("org.chromium.chrome.modules.cablev2_authenticator.FCM")) {
+        } else if (arguments.getBoolean(FCM_EXTRA)) {
             mMode = Mode.FCM;
+        } else if (serverLink != null) {
+            mMode = Mode.SERVER_LINK;
         } else {
             mMode = Mode.QR;
         }
 
-        final long networkContext = arguments.getLong(
-                "org.chromium.chrome.modules.cablev2_authenticator.NetworkContext");
-        final long registration =
-                arguments.getLong("org.chromium.chrome.modules.cablev2_authenticator.Registration");
-        final String activityClassName = arguments.getString(
-                "org.chromium.chrome.modules.cablev2_authenticator.ActivityClassName");
+        Log.i(TAG, "Starting in mode " + mMode.toString());
+
+        final long networkContext = arguments.getLong(NETWORK_CONTEXT_EXTRA);
+        final long registration = arguments.getLong(REGISTRATION_EXTRA);
+        final String activityClassName = arguments.getString(ACTIVITY_CLASS_NAME_EXTRA);
 
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
                 new WeakReference<Activity>((Activity) context));
         mAuthenticator = new CableAuthenticator(getContext(), this, networkContext, registration,
-                activityClassName, mMode == Mode.FCM, accessory);
+                activityClassName, mMode == Mode.FCM, accessory, serverLink);
     }
 
     @Override
-    @SuppressLint("SetTextI18n")
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Security Key");
+        getActivity().setTitle(R.string.cablev2_activity_title);
+        ViewGroup top = new LinearLayout(getContext());
+        View v = null;
 
         switch (mMode) {
             case USB:
-                return inflater.inflate(R.layout.cablev2_usb_attached, container, false);
+                v = inflater.inflate(R.layout.cablev2_usb_attached, container, false);
+                break;
 
             case FCM:
-                return inflater.inflate(R.layout.cablev2_fcm, container, false);
+                v = inflater.inflate(R.layout.cablev2_fcm, container, false);
+                break;
+
+            case SERVER_LINK:
+                v = inflater.inflate(R.layout.cablev2_serverlink, container, false);
+                mStatusText = v.findViewById(R.id.status_text);
+
+                ImageView spinner = (ImageView) v.findViewById(R.id.spinner);
+                final AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(
+                        getContext(), R.drawable.circle_loader_animation);
+                // There is no way to make an animation loop. Instead it must be
+                // manually started each time it completes.
+                anim.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
+                    @Override
+                    public void onAnimationEnd(Drawable drawable) {
+                        if (drawable != null && drawable.isVisible()) {
+                            anim.start();
+                        }
+                    }
+                });
+                spinner.setImageDrawable(anim);
+                anim.start();
+                break;
 
             case QR:
                 // TODO: should check FEATURE_BLUETOOTH with
@@ -98,7 +157,7 @@ public class CableAuthenticatorUI
                 // TODO: strings should be translated but this will be replaced during
                 // the UI process.
 
-                View v = inflater.inflate(R.layout.cablev2_qr_scan, container, false);
+                v = inflater.inflate(R.layout.cablev2_qr_scan, container, false);
                 mQRButton = v.findViewById(R.id.qr_scan);
                 mQRButton.setOnClickListener(this);
 
@@ -107,12 +166,14 @@ public class CableAuthenticatorUI
 
                 mUnlinkButton = v.findViewById(R.id.unlink);
                 mUnlinkButton.setOnClickListener(this);
+                break;
 
-                return v;
+            default:
+                assert false;
         }
 
-        assert false;
-        return null;
+        top.addView(v);
+        return top;
     }
 
     /**
@@ -183,25 +244,53 @@ public class CableAuthenticatorUI
      */
     @Override
     @SuppressLint("SetTextI18n")
-    public void onQRCode(String value) {
+    public void onQRCode(String value, boolean link) {
         setHeader(R.style.step1);
-        mAuthenticator.onQRCode(value);
+
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter.isEnabled()) {
+            mAuthenticator.onQRCode(value, link);
+        } else {
+            mPendingQRCode = value;
+            mPendingShouldLink = link;
+            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
+                    ENABLE_BLUETOOTH_REQUEST_CODE);
+        }
     }
 
     void onStatus(int code) {
-        if (mMode != Mode.QR) {
-            // In FCM mode, the handshake is done before the UI appears. For
-            // USB everything should happen immediately.
-            return;
-        }
+        switch (mMode) {
+            case QR:
+                // These values must match up with the Status enum in v2_authenticator.h
+                if (code == 1) {
+                    setHeader(R.style.step2);
+                } else if (code == 2) {
+                    setHeader(R.style.step3);
+                } else if (code == 3) {
+                    setHeader(R.style.step4);
+                }
+                break;
 
-        // These values must match up with the Status enum in v2_authenticator.h
-        if (code == 1) {
-            setHeader(R.style.step2);
-        } else if (code == 2) {
-            setHeader(R.style.step3);
-        } else if (code == 3) {
-            setHeader(R.style.step4);
+            case SERVER_LINK:
+                // These values must match up with the Status enum in v2_authenticator.h
+                int id = -1;
+                if (code == 1) {
+                    id = R.string.cablev2_serverlink_status_connecting;
+                } else if (code == 2) {
+                    id = R.string.cablev2_serverlink_status_connected;
+                } else if (code == 3) {
+                    id = R.string.cablev2_serverlink_status_processing;
+                } else {
+                    break;
+                }
+
+                mStatusText.setText(getResources().getString(id));
+                break;
+
+            case FCM:
+            case USB:
+                // In FCM mode, the handshake is done before the UI appears. For
+                // USB everything should happen immediately.
         }
     }
 
@@ -226,38 +315,53 @@ public class CableAuthenticatorUI
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ENABLE_BLUETOOTH_REQUEST_CODE) {
+            String qrCode = mPendingQRCode;
+            mPendingQRCode = null;
+            mAuthenticator.onQRCode(qrCode, mPendingShouldLink);
+            return;
+        }
+
         mAuthenticator.onActivityResult(requestCode, resultCode, data);
     }
 
-    @SuppressLint("SetTextI18n")
     void onAuthenticatorConnected() {}
 
     void onAuthenticatorResult(CableAuthenticator.Result result) {
         getActivity().runOnUiThread(() -> {
-            // TODO: Temporary UI, needs i18n.
-            String toast = "An error occured. Please try again.";
+            int id = -1;
             switch (result) {
                 case REGISTER_OK:
-                    toast = "Registration succeeded";
+                    id = R.string.cablev2_registration_succeeded;
                     break;
                 case REGISTER_ERROR:
-                    toast = "Registration failed";
+                    id = R.string.cablev2_registration_failed;
                     break;
                 case SIGN_OK:
-                    toast = "Sign-in succeeded";
+                    id = R.string.cablev2_sign_in_succeeded;
                     break;
                 case SIGN_ERROR:
-                    toast = "Sign-in failed";
-                    break;
                 case OTHER:
+                    id = R.string.cablev2_sign_in_failed;
                     break;
             }
-            Toast.makeText(getActivity(), toast, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), getResources().getString(id), Toast.LENGTH_SHORT).show();
         });
     }
 
-    void onComplete() {
-        getActivity().runOnUiThread(() -> { getActivity().finish(); });
+    /**
+     * Called when a transaction has completed.
+     *
+     * @param ok true if the transaction completed successfully. Otherwise it
+     *           indicates some form of error that could include tunnel server
+     *           errors, handshake failures, etc.
+     */
+    void onComplete(boolean ok) {
+        ThreadUtils.assertOnUiThread();
+
+        // TODO: if !ok then show an error screen rather than ending the
+        // activity.
+        getActivity().finish();
     }
 
     /**
@@ -266,7 +370,14 @@ public class CableAuthenticatorUI
      */
     public static void onCloudMessage(
             long event, long systemNetworkContext, long registration, String activityClassName) {
-        CableAuthenticator.onCloudMessage(
-                event, systemNetworkContext, registration, activityClassName);
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter.isEnabled()) {
+            CableAuthenticator.onCloudMessage(event, systemNetworkContext, registration,
+                    activityClassName, /*needToDisableBluetooth=*/false);
+            return;
+        }
+
+        new PendingCloudMessage(
+                adapter, event, systemNetworkContext, registration, activityClassName);
     }
 }

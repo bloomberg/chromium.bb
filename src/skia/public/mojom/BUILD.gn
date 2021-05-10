@@ -32,9 +32,9 @@ mojom("mojom") {
   generate_java = true
   sources = [
     "bitmap.mojom",
-    "blur_image_filter_tile_mode.mojom",
     "image_info.mojom",
     "skcolor.mojom",
+    "tile_mode.mojom",
   ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
@@ -43,22 +43,32 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "skia.mojom.BlurTileMode"
-          cpp = "::SkBlurImageFilter::TileMode"
+          mojom = "skia.mojom.TileMode"
+          cpp = "::SkTileMode"
         },
       ]
-      traits_headers = [ "blur_image_filter_tile_mode_mojom_traits.h" ]
+      traits_headers = [ "tile_mode_mojom_traits.h" ]
       traits_public_deps = [ "//skia" ]
     },
     {
       types = [
         {
-          mojom = "skia.mojom.Bitmap"
+          mojom = "skia.mojom.BitmapN32"
           cpp = "::SkBitmap"
           nullable_is_same_type = true
         },
         {
-          mojom = "skia.mojom.UnsafeBitmap"
+          mojom = "skia.mojom.BitmapWithArbitraryBpp"
+          cpp = "::SkBitmap"
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "skia.mojom.BitmapWithArbitraryBpp"
+          cpp = "::SkBitmap"
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "skia.mojom.BitmapMappedFromTrustedProcess"
           cpp = "::SkBitmap"
           nullable_is_same_type = true
         },
@@ -99,6 +109,10 @@ mojom("mojom") {
           mojom = "skia.mojom.ImageInfo"
           cpp = "::SkImageInfo"
         },
+        {
+          mojom = "skia.mojom.BitmapN32ImageInfo"
+          cpp = "::SkImageInfo"
+        },
       ]
       traits_headers = [ "image_info_mojom_traits.h" ]
       traits_public_deps = [
@@ -110,4 +124,5 @@ mojom("mojom") {
 
   cpp_typemaps = shared_skia_cpp_typemaps
   blink_cpp_typemaps = shared_skia_cpp_typemaps
+  webui_module_path = "chrome://resources/mojo/skia/public/mojom/"
 }

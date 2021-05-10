@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "ui/accessibility/platform/inspect/inspect.h"
+#include "ui/accessibility/platform/inspect/ax_inspect.h"
 
 using ui::AXTreeSelector;
 
@@ -31,6 +31,12 @@ CONTENT_EXPORT bool IsAXUIElement(const id node);
 // BrowserAccessibilityCocoa.
 //
 CONTENT_EXPORT NSArray* ChildrenOf(const id node);
+
+//
+// Returns AXSize and AXPosition attributes for an accessible object.
+//
+CONTENT_EXPORT NSSize SizeOf(const id node);
+CONTENT_EXPORT NSPoint PositionOf(const id node);
 
 //
 // Returns (parameterized) attributes of an accessible object, (either

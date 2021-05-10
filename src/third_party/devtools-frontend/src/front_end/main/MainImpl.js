@@ -36,19 +36,19 @@ import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Platform from '../platform/platform.js';
+import {ls} from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as Recorder from '../recorder/recorder.js';
 import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as Snippets from '../snippets/snippets.js';
 import * as ThemeSupport from '../theme_support/theme_support.js';
+import * as Timeline from '../timeline/timeline.js';
 import * as UI from '../ui/ui.js';
 import * as Workspace from '../workspace/workspace.js';
 
 import {ExecutionContextSelector} from './ExecutionContextSelector.js';
 
-/**
- * @unrestricted
- */
 export class MainImpl {
   constructor() {
     MainImpl._instanceForTest = this;
@@ -85,8 +85,14 @@ export class MainImpl {
     await Root.Runtime.appStarted;
     Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
     Root.Runtime.Runtime.setL10nCallback(ls);
+    const prefs = await new Promise(resolve => {
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve);
+    });
+
+    console.timeStamp('Main._gotPreferences');
+    this._createSettings(prefs);
     await this.requestAndRegisterLocaleData();
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(this._gotPreferences.bind(this));
+    this._createAppUI();
   }
 
   async requestAndRegisterLocaleData() {
@@ -94,21 +100,13 @@ export class MainImpl {
     i18n.i18n.registerLocale(hostLocale);
     const locale = i18n.i18n.registeredLocale;
     if (locale) {
-      const data = await Root.Runtime.loadResourcePromise(`i18n/locales/${locale}.json`);
+      const data =
+          await Root.Runtime.loadResourcePromise(new URL(`../i18n/locales/${locale}.json`, import.meta.url).toString());
       if (data) {
         const localizedStrings = JSON.parse(data);
         i18n.i18n.registerLocaleData(locale, localizedStrings);
       }
     }
-  }
-
-  /**
-   * @param {!Object<string, string>} prefs
-   */
-  _gotPreferences(prefs) {
-    console.timeStamp('Main._gotPreferences');
-    this._createSettings(prefs);
-    this._createAppUI();
   }
 
   /**
@@ -121,7 +119,7 @@ export class MainImpl {
     if (Host.Platform.isCustomDevtoolsFrontend()) {
       storagePrefix = '__custom__';
     } else if (
-        !Root.Runtime.Runtime.queryParam('can_dock') && !!Root.Runtime.Runtime.queryParam('debugFrontend') &&
+        !Root.Runtime.Runtime.queryParam('can_dock') && Boolean(Root.Runtime.Runtime.queryParam('debugFrontend')) &&
         !Host.InspectorFrontendHost.isUnderTest()) {
       storagePrefix = '__bundled__';
     }
@@ -158,13 +156,18 @@ export class MainImpl {
         'backgroundServicesPaymentHandler', 'Background services section for Payment Handler');
     Root.Runtime.experiments.register(
         'backgroundServicesPushMessaging', 'Background services section for Push Messaging');
-    Root.Runtime.experiments.register('blackboxJSFramesOnTimeline', 'Blackbox JavaScript frames on Timeline', true);
+    // TODO(crbug.com/1161439): remove 'blackboxJSFramesOnTimeline', keep 'ignoreListJSFramesOnTimeline'
+    Root.Runtime.experiments.register(
+        'blackboxJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
+    Root.Runtime.experiments.register(
+        'ignoreListJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
     Root.Runtime.experiments.register('cssOverview', 'CSS Overview');
     Root.Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Root.Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
     Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
     Root.Runtime.experiments.register('developerResourcesView', 'Show developer resources view');
+    Root.Runtime.experiments.register('cspViolationsView', 'Show CSP Violations view');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
@@ -176,10 +179,10 @@ export class MainImpl {
     Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
     Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
     Root.Runtime.experiments.register('keyboardShortcutEditor', 'Enable keyboard shortcut editor', true);
+    Root.Runtime.experiments.register('recorder', 'Recorder');
 
     // Timeline
     Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
-    Root.Runtime.experiments.register('timelineFlowEvents', 'Timeline: flow events', true);
     Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
     Root.Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
     Root.Runtime.experiments.register(
@@ -190,18 +193,33 @@ export class MainImpl {
 
     // Dual-screen
     Root.Runtime.experiments.register('dualScreenSupport', 'Emulation: Support dual screen mode');
-
-    // CSS Grid
-    Root.Runtime.experiments.register(
-        'cssGridFeatures',
-        'Enable new CSS Grid debugging features (configuration options available in Layout sidebar pane in Elements after restart)');
+    Root.Runtime.experiments.setEnabled('dualScreenSupport', true);
 
     // CSS Flexbox
     Root.Runtime.experiments.register('cssFlexboxFeatures', 'Enable new CSS Flexbox debugging features');
 
+    // Advanced Perceptual Contrast Algorithm.
+    Root.Runtime.experiments.register(
+        'APCA',
+        'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines');
+
+    // Full Accessibility Tree
+    Root.Runtime.experiments.register('fullAccessibilityTree', 'Enable full accessibility tree view in Elements pane');
+
+    // Font Editor
+    Root.Runtime.experiments.register('fontEditor', 'Enable new Font Editor tool within the Styles Pane.');
+
+    // Contrast issues reported via the Issues panel.
+    Root.Runtime.experiments.register(
+        'contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel');
+
+    // New cookie features.
+    Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
+
     Root.Runtime.experiments.enableExperimentsByDefault([
-      'cssGridFeatures',
+      'cssFlexboxFeatures',
     ]);
+
     Root.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
     if (enabledExperiments) {
@@ -213,6 +231,7 @@ export class MainImpl {
       'backgroundServicesPushMessaging',
       'backgroundServicesPaymentHandler',
       'webauthnPane',
+      'developerResourcesView',
     ]);
 
     if (Host.InspectorFrontendHost.isUnderTest()) {
@@ -222,14 +241,14 @@ export class MainImpl {
       }
     }
 
+    // TODO(crbug.com/1161439): remove experiment duplication
+    const isBlackboxJSFramesOnTimelineEnabled = Root.Runtime.experiments.isEnabled('blackboxJSFramesOnTimeline');
+    Root.Runtime.experiments.setEnabled('ignoreListJSFramesOnTimeline', isBlackboxJSFramesOnTimelineEnabled);
+
     for (const experiment of Root.Runtime.experiments.enabledExperiments()) {
       Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
     }
   }
-
-  /**
-   * @suppressGlobalPropertiesCheck
-   */
   async _createAppUI() {
     MainImpl.time('Main._createAppUI');
 
@@ -256,7 +275,7 @@ export class MainImpl {
 
     this._addMainEventListeners(document);
 
-    const canDock = !!Root.Runtime.Runtime.queryParam('can_dock');
+    const canDock = Boolean(Root.Runtime.Runtime.queryParam('can_dock'));
     // @ts-ignore layout test global
     self.UI.zoomManager = UI.ZoomManager.ZoomManager.instance(
         {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
@@ -265,6 +284,12 @@ export class MainImpl {
     UI.ContextMenu.ContextMenu.initialize();
     UI.ContextMenu.ContextMenu.installHandler(document);
     UI.Tooltip.Tooltip.installHandler(document);
+
+    // We need to force creation of the FrameManager early to make sure no issues are missed.
+    SDK.FrameManager.FrameManager.instance();
+    // We need to force creation of the NetworkLog early to make sure no requests are missed.
+    SDK.NetworkLog.NetworkLog.instance();
+
     // @ts-ignore layout test global
     self.SDK.consoleModel = SDK.ConsoleModel.ConsoleModel.instance();
     // @ts-ignore layout test global
@@ -318,6 +343,13 @@ export class MainImpl {
     Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
         // @ts-ignore https://github.com/microsoft/TypeScript/issues/41397
         'snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
+
+    if (Root.Runtime.experiments.isEnabled('recorder')) {
+      Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
+          // @ts-ignore https://github.com/microsoft/TypeScript/issues/41397
+          'recording://', new Recorder.RecordingFileSystem.RecordingFileSystem());
+    }
+
     // @ts-ignore layout test global
     self.Persistence.persistence = Persistence.Persistence.PersistenceImpl.instance({
       forceNew: true,
@@ -331,7 +363,7 @@ export class MainImpl {
 
     new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), UI.Context.Context.instance());
     // @ts-ignore layout test global
-    self.Bindings.blackboxManager = Bindings.BlackboxManager.BlackboxManager.instance({
+    self.Bindings.ignoreListManager = Bindings.IgnoreListManager.IgnoreListManager.instance({
       forceNew: true,
       debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
     });
@@ -348,16 +380,16 @@ export class MainImpl {
     this._registerMessageSinkListener();
 
     MainImpl.timeEnd('Main._createAppUI');
-    const appProvider = Root.Runtime.Runtime.instance().extension(Common.AppProvider.AppProvider);
+
+    const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
       throw new Error('Unable to boot DevTools, as the appprovider is missing');
     }
-    this._showAppUI(await appProvider.instance());
+    this._showAppUI(await appProvider.loadAppProvider());
   }
 
   /**
    * @param {!Object} appProvider
-   * @suppressGlobalPropertiesCheck
    */
   _showAppUI(appProvider) {
     MainImpl.time('Main._showAppUI');
@@ -370,8 +402,7 @@ export class MainImpl {
     // TODO: we should not access actions from other modules.
     if (toggleSearchNodeAction) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
-          Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode,
-          () => {
+          Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode, () => {
             toggleSearchNodeAction.execute();
           }, this);
     }
@@ -381,15 +412,9 @@ export class MainImpl {
     UI.InspectorView.InspectorView.instance().createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
 
-    const extensions = Root.Runtime.Runtime.instance().extensions(Common.QueryParamHandler.QueryParamHandler);
-    for (const extension of extensions) {
-      const value = Root.Runtime.Runtime.queryParam(/** @type {string} */ (extension.descriptor()['name']));
-      if (value !== null) {
-        extension.instance().then(handler => {
-          /** @type {!Common.QueryParamHandler.QueryParamHandler} */ (handler).handleQueryParam(
-              /** @type {string} */ (value));
-        });
-      }
+    const value = Root.Runtime.Runtime.queryParam('loadTimelineFromURL');
+    if (value !== null) {
+      Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
     }
 
     // Allow UI cycles to repaint prior to creating connection.
@@ -547,11 +572,25 @@ export class MainImpl {
 /** @type {?MainImpl} */
 MainImpl._instanceForTest = null;
 
+/** @type {!ZoomActionDelegate} */
+let zoomActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ZoomActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!zoomActionDelegateInstance || forceNew) {
+      zoomActionDelegateInstance = new ZoomActionDelegate();
+    }
+
+    return zoomActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context
@@ -578,17 +617,30 @@ export class ZoomActionDelegate {
   }
 }
 
+/** @type {!SearchActionDelegate} */
+let searchActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class SearchActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!searchActionDelegateInstance || forceNew) {
+      searchActionDelegateInstance = new SearchActionDelegate();
+    }
+
+    return searchActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
-   * @suppressGlobalPropertiesCheck
    */
   handleAction(context, actionId) {
     let searchableView = UI.SearchableView.SearchableView.fromElement(document.deepActiveElement());
@@ -614,6 +666,8 @@ export class SearchActionDelegate {
     return false;
   }
 }
+/** @type {!MainMenuItem} */
+let mainMenuItemInstance;
 
 /**
  * @implements {UI.Toolbar.Provider}
@@ -622,6 +676,18 @@ export class MainMenuItem {
   constructor() {
     this._item = new UI.Toolbar.ToolbarMenuButton(this._handleContextMenu.bind(this), true);
     this._item.setTitle(Common.UIString.UIString('Customize and control DevTools'));
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!mainMenuItemInstance || forceNew) {
+      mainMenuItemInstance = new MainMenuItem();
+    }
+
+    return mainMenuItemInstance;
   }
 
   /**
@@ -645,9 +711,11 @@ export class MainMenuItem {
       titleElement.textContent = Common.UIString.UIString('Dock side');
       const toggleDockSideShorcuts =
           UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('main.toggle-dock');
-      titleElement.title = Common.UIString.UIString(
-          'Placement of DevTools relative to the page. (%s to restore last position)',
-          toggleDockSideShorcuts[0].title());
+      UI.Tooltip.Tooltip.install(
+          titleElement,
+          Common.UIString.UIString(
+              'Placement of DevTools relative to the page. (%s to restore last position)',
+              toggleDockSideShorcuts[0].title()));
       dockItemElement.appendChild(titleElement);
       const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
       if (Host.Platform.isMac() && !ThemeSupport.ThemeSupport.instance().hasTheme()) {
@@ -729,27 +797,35 @@ export class MainMenuItem {
                                                                     Common.UIString.UIString('Show console drawer'));
     contextMenu.appendItemsAtLocation('mainMenu');
     const moreTools = contextMenu.defaultSection().appendSubMenuItem(Common.UIString.UIString('More tools'));
-    const extensions = Root.Runtime.Runtime.instance().extensions('view', undefined, true);
-    for (const extension of extensions) {
-      const descriptor = extension.descriptor();
+    const viewExtensions = UI.ViewManager.getRegisteredViewExtensions();
+    viewExtensions.sort((extension1, extension2) => {
+      const title1 = extension1.title();
+      const title2 = extension2.title();
+      return title1.localeCompare(title2);
+    });
 
-      if (descriptor['id'] === 'issues-pane') {
-        moreTools.defaultSection().appendItem(extension.title(), () => {
+    for (const viewExtension of viewExtensions) {
+      const location = viewExtension.location();
+      const persistence = viewExtension.persistence();
+      const title = viewExtension.title();
+      const id = viewExtension.viewId();
+
+      if (id === 'issues-pane') {
+        moreTools.defaultSection().appendItem(title, () => {
           Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
           UI.ViewManager.ViewManager.instance().showView('issues-pane', /* userGesture */ true);
         });
         continue;
       }
 
-      if (descriptor['persistence'] !== 'closeable') {
+      if (persistence !== 'closeable') {
         continue;
       }
-      if (descriptor['location'] !== 'drawer-view' && descriptor['location'] !== 'panel') {
+      if (location !== 'drawer-view' && location !== 'panel') {
         continue;
       }
-
-      moreTools.defaultSection().appendItem(extension.title(), omitFocus => {
-        UI.ViewManager.ViewManager.instance().showView(descriptor['id'], true, /** @type {boolean} */ (omitFocus));
+      moreTools.defaultSection().appendItem(title, () => {
+        UI.ViewManager.ViewManager.instance().showView(id, true, false);
       });
     }
 
@@ -758,14 +834,30 @@ export class MainMenuItem {
   }
 }
 
+/** @type {!SettingsButtonProvider} */
+let settingsButtonProviderInstance;
+
 /**
  * @implements {UI.Toolbar.Provider}
  */
 export class SettingsButtonProvider {
+  /** @private */
   constructor() {
     const settingsActionId = 'settings.show';
     this._settingsButton =
         UI.Toolbar.Toolbar.createActionButtonForId(settingsActionId, {showLabel: false, userActionCode: undefined});
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!settingsButtonProviderInstance || forceNew) {
+      settingsButtonProviderInstance = new SettingsButtonProvider();
+    }
+
+    return settingsButtonProviderInstance;
   }
 
   /**
@@ -777,9 +869,6 @@ export class SettingsButtonProvider {
   }
 }
 
-/**
- * @unrestricted
- */
 export class PauseListener {
   constructor() {
     SDK.SDKModel.TargetManager.instance().addModelListener(
@@ -819,11 +908,25 @@ export function sendOverProtocol(method, params) {
   });
 }
 
+/** @type {!ReloadActionDelegate} */
+let reloadActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ReloadActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!reloadActionDelegateInstance || forceNew) {
+      reloadActionDelegateInstance = new ReloadActionDelegate();
+    }
+
+    return reloadActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context

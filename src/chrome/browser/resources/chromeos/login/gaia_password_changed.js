@@ -22,7 +22,6 @@ Polymer({
 
   behaviors: [
     OobeI18nBehavior,
-    OobeDialogHostBehavior,
     LoginScreenBehavior,
     MultiStepBehavior,
   ],
@@ -57,6 +56,9 @@ Polymer({
     this.initializeLoginScreen('GaiaPasswordChangedScreen', {
       resetAllowed: false,
     });
+
+    cr.ui.LoginUITools.addSubmitListener(
+        this.$.oldPasswordInput, this.submit_.bind(this));
   },
 
   /** Initial UI State for screen */

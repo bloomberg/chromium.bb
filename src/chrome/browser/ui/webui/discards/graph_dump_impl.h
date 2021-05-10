@@ -73,10 +73,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnFrameLifecycleStateChanged(
       const performance_manager::FrameNode* frame_node) override {}
-  // Ignored.
-  void OnOriginTrialFreezePolicyChanged(
-      const performance_manager::FrameNode* frame_node,
-      const InterventionPolicy& previous_value) override {}
   void OnURLChanged(const performance_manager::FrameNode* frame_node,
                     const GURL& previous_value) override;
   // Ignored.
@@ -105,10 +101,13 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnFirstContentfulPaint(
       const performance_manager::FrameNode* frame_node,
       base::TimeDelta time_since_navigation_start) override {}
+  // Ignored.
   void OnViewportIntersectionChanged(
       const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
   void OnFrameVisibilityChanged(
-      const performance_manager::FrameNode* frame_node) override {}
+      const performance_manager::FrameNode* frame_node,
+      performance_manager::FrameNode::Visibility previous_value) override {}
 
   // PageNodeObserver implementation:
   void OnPageNodeAdded(const performance_manager::PageNode* page_node) override;
@@ -118,19 +117,20 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::PageNode* page_node,
       const performance_manager::FrameNode* previous_opener,
       OpenedType previous_opened_type) override;
-  void OnIsVisibleChanged(
-      const performance_manager::PageNode* page_node) override {}  // Ignored.
-  void OnIsAudibleChanged(
-      const performance_manager::PageNode* page_node) override {}  // Ignored.
-  void OnIsLoadingChanged(
-      const performance_manager::PageNode* page_node) override {}  // Ignored.
-  void OnUkmSourceIdChanged(
-      const performance_manager::PageNode* page_node) override {}  // Ignored.
   // Ignored.
-  void OnPageLifecycleStateChanged(
+  void OnIsVisibleChanged(
       const performance_manager::PageNode* page_node) override {}
   // Ignored.
-  void OnPageOriginTrialFreezePolicyChanged(
+  void OnIsAudibleChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnLoadingStateChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnUkmSourceIdChanged(
+      const performance_manager::PageNode* page_node) override {}
+  // Ignored.
+  void OnPageLifecycleStateChanged(
       const performance_manager::PageNode* page_node) override {}
   // Ignored.
   void OnPageIsHoldingWebLockChanged(
@@ -143,12 +143,18 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnMainFrameDocumentChanged(
       const performance_manager::PageNode* page_node) override {}
+  // Ignored.
   void OnHadFormInteractionChanged(
       const performance_manager::PageNode* page_node) override {}
+  // Ignored.
   void OnTitleUpdated(const performance_manager::PageNode* page_node) override {
-  }  // Ignored.
+  }
   void OnFaviconUpdated(
       const performance_manager::PageNode* page_node) override;
+  // Ignored.
+  void OnFreezingVoteChanged(
+      const performance_manager::PageNode* page_node,
+      base::Optional<performance_manager::freezing::FreezingVote>) override {}
 
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(

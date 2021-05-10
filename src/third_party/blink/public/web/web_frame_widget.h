@@ -34,6 +34,7 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "base/types/pass_key.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
@@ -42,51 +43,31 @@
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 
 namespace blink {
 
+class FrameWidgetTestHelper;
 class WebDragData;
-class WebLocalFrame;
 class WebInputMethodController;
-class WebWidgetClient;
+class WebLocalFrame;
+class WebNonCompositedWidgetClient;
 
 class WebFrameWidget : public WebWidget {
  public:
-  // Makes a WebFrameWidget that wraps a pre-existing WebWidget from the
-  // RenderView/WebView, for a new local main frame.
-  // Main frames can be nested in cases like Portals or GuestViews.
-  BLINK_EXPORT static WebFrameWidget* CreateForMainFrame(
-      WebWidgetClient*,
-      WebLocalFrame* main_frame,
-      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
-          frame_widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
-          frame_widget,
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
-          widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
-      const viz::FrameSinkId& frame_sink_id,
-      bool is_for_nested_main_frame = false,
-      bool hidden = false,
-      bool never_composited = false);
-  // Makes a WebFrameWidget that wraps a WebLocalFrame that is not a main frame,
-  // providing a WebWidget to interact with the child local root frame.
-  BLINK_EXPORT static WebFrameWidget* CreateForChildLocalRoot(
-      WebWidgetClient*,
-      WebLocalFrame* local_root,
-      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
-          frame_widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
-          frame_widget,
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
-          widget_host,
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
-      const viz::FrameSinkId& frame_sink_id,
-      bool hidden = false,
-      bool never_composited = false);
+  // Similiar to `InitializeCompositing()` but for non-compositing widgets.
+  // Exactly one of either `InitializeCompositing()` or this method must
+  // be called before using the widget.
+  virtual void InitializeNonCompositing(
+      WebNonCompositedWidgetClient* client) = 0;
 
   // Returns the local root of this WebFrameWidget.
   virtual WebLocalFrame* LocalRoot() const = 0;
+
+  // Converts from Blink coordinate (ie. Viewport/Physical pixels) space to
+  // DIPs.
+  virtual gfx::RectF BlinkSpaceToDIPs(const gfx::RectF& rect) = 0;
+  virtual gfx::Rect BlinkSpaceToEnclosedDIPs(const gfx::Rect& rect) = 0;
 
   // Current instance of the active WebInputMethodController, that is, the
   // WebInputMethodController corresponding to (and owned by) the focused
@@ -103,13 +84,13 @@ class WebFrameWidget : public WebWidget {
       const gfx::PointF& screen_point,
       DragOperationsMask operations_allowed,
       uint32_t key_modifiers,
-      base::OnceCallback<void(blink::DragOperation)> callback) = 0;
+      base::OnceCallback<void(ui::mojom::DragOperation)> callback) = 0;
   virtual void DragTargetDragOver(
       const gfx::PointF& point_in_viewport,
       const gfx::PointF& screen_point,
       DragOperationsMask operations_allowed,
       uint32_t key_modifiers,
-      base::OnceCallback<void(blink::DragOperation)> callback) = 0;
+      base::OnceCallback<void(ui::mojom::DragOperation)> callback) = 0;
   virtual void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                                    const gfx::PointF& screen_point) = 0;
   virtual void DragTargetDrop(const WebDragData&,
@@ -120,11 +101,15 @@ class WebFrameWidget : public WebWidget {
   // Notifies the WebFrameWidget that a drag has terminated.
   virtual void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                                  const gfx::PointF& screen_point,
-                                 DragOperation) = 0;
+                                 ui::mojom::DragOperation) = 0;
 
   // Notifies the WebFrameWidget that the system drag and drop operation has
   // ended.
   virtual void DragSourceSystemDragEnded() = 0;
+
+  // Disables Drag and drop on this widget. Any drag activity will be
+  // immediately canceled.
+  virtual void DisableDragAndDrop() = 0;
 
   // Sets the inherited effective touch action on an out-of-process iframe.
   virtual void SetInheritedEffectiveTouchAction(WebTouchAction) {}
@@ -138,10 +123,6 @@ class WebFrameWidget : public WebWidget {
   // inside) this widget into view. The scrolling might end with a final zooming
   // into the editable region which is performed in the main frame process.
   virtual bool ScrollFocusedEditableElementIntoView() = 0;
-
-  // This function provides zooming for find in page results when browsing with
-  // page autosize.
-  virtual void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) = 0;
 
   // Applies viewport related properties that are normally provided by the
   // compositor. Useful for tests that don't use a compositor.
@@ -210,13 +191,48 @@ class WebFrameWidget : public WebWidget {
   // frames submitted from the compositor.
   virtual const viz::FrameSinkId& GetFrameSinkId() = 0;
 
+  // Returns a FrameWidgetTestHelper if this widget was created using
+  // `FrameWidgetTestHelper::CreateTestWebFrameWidget()`.
+  virtual FrameWidgetTestHelper* GetFrameWidgetTestHelperForTesting() = 0;
+
  private:
+  // This is a private virtual method so we don't expose cc::LayerTreeHost
+  // outside of this class. Friend classes may be added in order to access it.
+  virtual cc::LayerTreeHost* LayerTreeHost() = 0;
+
+  // GPU benchmarking extension needs access to the LayerTreeHost
+  friend class GpuBenchmarkingContext;
+
   // This private constructor and the class/friend declaration ensures that
-  // WebFrameWidgetBase is the only concrete subclass that implements
-  // WebFrameWidget, so that it is safe to downcast to WebFrameWidgetBase.
-  friend class WebFrameWidgetBase;
+  // WebFrameWidgetImpl is the only concrete subclass that implements
+  // WebFrameWidget, so that it is safe to downcast to WebFrameWidgetImpl.
+  friend class WebFrameWidgetImpl;
   WebFrameWidget() = default;
 };
+
+// Convenience type for creation method taken by
+// InstallCreateWebFrameWidgetHook(). The method signature matches the
+// WebFrameWidgetImpl constructor and must return a subclass of
+// WebFrameWidgetImpl, though we do not expose that type here.
+using CreateWebFrameWidgetCallback = base::RepeatingCallback<WebFrameWidget*(
+    base::PassKey<WebLocalFrame>,
+    CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
+        frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
+        frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const viz::FrameSinkId& frame_sink_id,
+    bool hidden,
+    bool never_composited,
+    bool is_for_child_local_root,
+    bool is_for_nested_main_frame)>;
+// Allows tests to inject their own type of WebFrameWidget in order to
+// override methods of the WebFrameWidgetImpl.
+void BLINK_EXPORT
+InstallCreateWebFrameWidgetHook(CreateWebFrameWidgetCallback* create_widget);
 
 }  // namespace blink
 

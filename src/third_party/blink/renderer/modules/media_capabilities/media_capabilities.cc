@@ -16,6 +16,7 @@
 #include "media/base/media_util.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
+#include "media/base/supported_video_decoder_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/learning/common/media_learning_tasks.h"
@@ -24,7 +25,6 @@
 #include "media/mojo/mojom/media_metrics_provider.mojom-blink.h"
 #include "media/mojo/mojom/media_types.mojom-blink.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "media/video/supported_video_decoder_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_media_capability.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -614,10 +615,25 @@ const char MediaCapabilities::kLearningBadWindowThresholdParamName[] =
 const char MediaCapabilities::kLearningNnrThresholdParamName[] =
     "nnr_threshold";
 
-MediaCapabilities::MediaCapabilities(ExecutionContext* context)
-    : decode_history_service_(context),
-      bad_window_predictor_(context),
-      nnr_predictor_(context) {}
+// static
+const char MediaCapabilities::kSupplementName[] = "MediaCapabilities";
+
+MediaCapabilities* MediaCapabilities::mediaCapabilities(
+    NavigatorBase& navigator) {
+  MediaCapabilities* supplement =
+      Supplement<NavigatorBase>::From<MediaCapabilities>(navigator);
+  if (!supplement) {
+    supplement = MakeGarbageCollected<MediaCapabilities>(navigator);
+    ProvideTo(navigator, supplement);
+  }
+  return supplement;
+}
+
+MediaCapabilities::MediaCapabilities(NavigatorBase& navigator)
+    : Supplement<NavigatorBase>(navigator),
+      decode_history_service_(navigator.GetExecutionContext()),
+      bad_window_predictor_(navigator.GetExecutionContext()),
+      nnr_predictor_(navigator.GetExecutionContext()) {}
 
 void MediaCapabilities::Trace(blink::Visitor* visitor) const {
   visitor->Trace(decode_history_service_);
@@ -625,6 +641,7 @@ void MediaCapabilities::Trace(blink::Visitor* visitor) const {
   visitor->Trace(nnr_predictor_);
   visitor->Trace(pending_cb_map_);
   ScriptWrappable::Trace(visitor);
+  Supplement<NavigatorBase>::Trace(visitor);
 }
 
 MediaCapabilities::PendingCallbackState::PendingCallbackState(
@@ -1223,25 +1240,9 @@ void MediaCapabilities::GetGpuFactoriesSupport(
       gfx::Rect(natural_size) /* visible_rect */, natural_size,
       media::EmptyExtraData(), encryption_scheme);
 
-  static_assert(media::VideoDecoderImplementation::kAlternate ==
-                    media::VideoDecoderImplementation::kMaxValue,
-                "Keep the array below in sync.");
-  media::VideoDecoderImplementation decoder_impls[] = {
-      media::VideoDecoderImplementation::kDefault,
-      media::VideoDecoderImplementation::kAlternate};
-  media::GpuVideoAcceleratorFactories::Supported supported =
-      media::GpuVideoAcceleratorFactories::Supported::kUnknown;
-  for (const auto& impl : decoder_impls) {
-    supported = gpu_factories->IsDecoderConfigSupported(impl, config);
-    DCHECK_NE(supported,
-              media::GpuVideoAcceleratorFactories::Supported::kUnknown);
-    if (supported == media::GpuVideoAcceleratorFactories::Supported::kTrue)
-      break;
-  }
-
   OnGpuFactoriesSupport(
-      callback_id,
-      supported == media::GpuVideoAcceleratorFactories::Supported::kTrue);
+      callback_id, gpu_factories->IsDecoderConfigSupported(config) ==
+                       media::GpuVideoAcceleratorFactories::Supported::kTrue);
 }
 
 void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {

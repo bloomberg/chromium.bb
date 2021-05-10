@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/media_access_handler.h"
+#include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace user_prefs {
@@ -21,7 +23,7 @@ class PrefRegistrySyncable;
 // MediaAccessHandler for permission bubble requests.
 class PermissionBubbleMediaAccessHandler
     : public MediaAccessHandler,
-      public content::NotificationObserver {
+      public WebContentsCollection::Observer {
  public:
   PermissionBubbleMediaAccessHandler();
   ~PermissionBubbleMediaAccessHandler() override;
@@ -50,13 +52,13 @@ class PermissionBubbleMediaAccessHandler
 
  private:
   struct PendingAccessRequest;
-  using RequestsMap = std::map<int, PendingAccessRequest>;
+  using RequestsMap = std::map<int64_t, PendingAccessRequest>;
   using RequestsMaps = std::map<content::WebContents*, RequestsMap>;
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnMediaStreamRequestResponse(
       content::WebContents* web_contents,
-      int request_id,
+      int64_t request_id,
       content::MediaStreamRequest request,
       const blink::MediaStreamDevices& devices,
       blink::mojom::MediaStreamRequestResult result,
@@ -64,19 +66,18 @@ class PermissionBubbleMediaAccessHandler
       ContentSetting audio_setting,
       ContentSetting video_setting);
   void OnAccessRequestResponse(content::WebContents* web_contents,
-                               int request_id,
+                               int64_t request_id,
                                const blink::MediaStreamDevices& devices,
                                blink::mojom::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // WebContentsCollection::Observer:
+  void WebContentsDestroyed(content::WebContents* web_contents) override;
 
-  int next_request_id_ = 0;
+  int64_t next_request_id_ = 0;
   RequestsMaps pending_requests_;
-  content::NotificationRegistrar notifications_registrar_;
+
+  WebContentsCollection web_contents_collection_;
 
   base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_{this};
 };

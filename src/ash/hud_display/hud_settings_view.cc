@@ -4,8 +4,10 @@
 
 #include "ash/hud_display/hud_settings_view.h"
 
+#include "ash/hud_display/hud_display.h"
 #include "ash/hud_display/hud_properties.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
@@ -18,7 +20,9 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
@@ -117,8 +121,10 @@ class SettingsCheckbox : public views::Checkbox {
  public:
   METADATA_HEADER(SettingsCheckbox);
 
-  explicit SettingsCheckbox(const base::string16& label)
-      : views::Checkbox(label, views::Button::PressedCallback()) {}
+  SettingsCheckbox(const base::string16& label, const base::string16& tooltip)
+      : views::Checkbox(label, views::Button::PressedCallback()) {
+    SetTooltipText(tooltip);
+  }
   SettingsCheckbox(const SettingsCheckbox& other) = delete;
   SettingsCheckbox operator=(const SettingsCheckbox& other) = delete;
 
@@ -332,12 +338,26 @@ void AnimationSpeedControl::Layout() {
   views::View::Layout();
 }
 
+std::unique_ptr<views::LabelButton> CreateActionButton(
+    views::Button::PressedCallback::Callback callback,
+    const base::string16& text) {
+  auto button = std::make_unique<views::LabelButton>(callback, text);
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->SetEnabledTextColors(kHUDBackground);
+  button->SetProperty(kHUDClickHandler, HTCLIENT);
+  constexpr float kActionButtonCournerRadius = 2;
+  button->SetBackground(views::CreateRoundedRectBackground(
+      kHUDDefaultColor, kActionButtonCournerRadius));
+  button->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+  return button;
+}
+
 }  // anonymous namespace
 
 BEGIN_METADATA(HUDSettingsView, views::View)
 END_METADATA
 
-HUDSettingsView::HUDSettingsView() {
+HUDSettingsView::HUDSettingsView(HUDDisplayView* hud_display) {
   SetVisible(false);
 
   // We want AnimationSpeedControl to be stretched horizontally so we turn
@@ -362,10 +382,10 @@ HUDSettingsView::HUDSettingsView() {
 
   auto add_checkbox =
       [](HUDSettingsView* self, views::View* container,
-         const base::string16& text,
+         const base::string16& text, const base::string16& tooltip,
          base::RepeatingCallback<void(views::Checkbox*)> callback) {
-        views::Checkbox* checkbox =
-            container->AddChildView(std::make_unique<SettingsCheckbox>(text));
+        views::Checkbox* checkbox = container->AddChildView(
+            std::make_unique<SettingsCheckbox>(text, tooltip));
         checkbox->SetCallback(
             base::BindRepeating(std::move(callback), checkbox));
         checkbox->SetEnabledTextColors(kHUDDefaultColor);
@@ -374,34 +394,97 @@ HUDSettingsView::HUDSettingsView() {
       };
 
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Tint composited content"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::tint_composited_content)),
+      add_checkbox(
+          this, checkbox_container,
+          base::ASCIIToUTF16("Tint composited content"),
+          base::ASCIIToUTF16(
+              "Equivalent to --tint-composited-content command-line option."),
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::tint_composited_content)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::tint_composited_content)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show overdraw feedback"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::show_overdraw_feedback)),
+      add_checkbox(
+          this, checkbox_container,
+          base::ASCIIToUTF16("Show overdraw feedback"),
+          base::ASCIIToUTF16(
+              "Equivalent to --show-overdraw-feedback command-line option."),
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::show_overdraw_feedback)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::show_overdraw_feedback)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show aggregated damage"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::show_aggregated_damage)),
+      add_checkbox(
+          this, checkbox_container,
+          base::ASCIIToUTF16("Show aggregated damage"),
+          base::ASCIIToUTF16(
+              "Equivalent to --show-aggregated-damage command-line option."),
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::show_aggregated_damage)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::show_aggregated_damage)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show paint rect."),
-                   GetCCDebugHandleClickCallback(
-                       &cc::LayerTreeDebugState::show_paint_rects)),
+      add_checkbox(
+          this, checkbox_container, base::ASCIIToUTF16("Show paint rect."),
+          base::ASCIIToUTF16(
+              "Equivalent to --ui-show-paint-rects command-line option."),
+          GetCCDebugHandleClickCallback(
+              &cc::LayerTreeDebugState::show_paint_rects)),
       GetCCDebugUpdateStateCallback(
           &cc::LayerTreeDebugState::show_paint_rects)));
+  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
+      add_checkbox(this, checkbox_container,
+                   base::ASCIIToUTF16("HUD is overlay."),
+                   base::ASCIIToUTF16("Flips HUD overlay mode flag."),
+                   base::BindRepeating(
+                       [](HUDDisplayView* hud_display, views::Checkbox*) {
+                         hud_display->ToggleOverlay();
+                       },
+                       base::Unretained(hud_display))),
+      base::BindRepeating(
+          [](HUDDisplayView* hud_display, views::Checkbox* checkbox) {
+            checkbox->SetChecked(hud_display->IsOverlay());
+          },
+          base::Unretained(hud_display))));
   AddChildView(std::make_unique<AnimationSpeedControl>());
+
+  // Ui Dev Tools controls.
+  constexpr int kUiDevToolsControlButtonMargin = 6;
+  views::View* ui_devtools_controls =
+      AddChildView(std::make_unique<views::View>());
+  ui_devtools_controls
+      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical))
+      ->set_cross_axis_alignment(
+          views::BoxLayout::CrossAxisAlignment::kStretch);
+  ui_devtools_controls->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kUiDevToolsControlButtonMargin)));
+  ui_dev_tools_control_button_ =
+      ui_devtools_controls->AddChildView(CreateActionButton(
+          base::BindRepeating(&HUDSettingsView::OnEnableUiDevToolsButtonPressed,
+                              base::Unretained(this)),
+          base::string16()));
+  UpdateDevToolsControlButtonLabel();
+}
+
+void HUDSettingsView::OnEnableUiDevToolsButtonPressed(const ui::Event& event) {
+  if (Shell::Get()->shell_delegate()->IsUiDevToolsStarted()) {
+    Shell::Get()->shell_delegate()->StopUiDevTools();
+  } else {
+    Shell::Get()->shell_delegate()->StartUiDevTools();
+  }
+  UpdateDevToolsControlButtonLabel();
+}
+
+void HUDSettingsView::UpdateDevToolsControlButtonLabel() {
+  if (!Shell::Get()->shell_delegate()->IsUiDevToolsStarted()) {
+    ui_dev_tools_control_button_->SetText(
+        base::ASCIIToUTF16("Create Ui Dev Tools"));
+  } else {
+    const int port = Shell::Get()->shell_delegate()->GetUiDevToolsPort();
+    ui_dev_tools_control_button_->SetText(base::ASCIIToUTF16(
+        base::StringPrintf("Ui Dev Tools: ON, port %d", port).c_str()));
+  }
 }
 
 HUDSettingsView::~HUDSettingsView() = default;

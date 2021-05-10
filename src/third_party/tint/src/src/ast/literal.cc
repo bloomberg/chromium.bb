@@ -14,74 +14,25 @@
 
 #include "src/ast/literal.h"
 
-#include <assert.h>
-
-#include "src/ast/bool_literal.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/int_literal.h"
-#include "src/ast/null_literal.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/uint_literal.h"
+TINT_INSTANTIATE_CLASS_ID(tint::ast::Literal);
 
 namespace tint {
 namespace ast {
 
-Literal::Literal(ast::type::Type* type) : type_(type) {}
+Literal::Literal(const Source& source, type::Type* type)
+    : Base(source), type_(type) {}
 
 Literal::~Literal() = default;
 
-bool Literal::IsBool() const {
-  return false;
+bool Literal::IsValid() const {
+  return true;
 }
 
-bool Literal::IsFloat() const {
-  return false;
-}
-
-bool Literal::IsInt() const {
-  return false;
-}
-
-bool Literal::IsSint() const {
-  return false;
-}
-
-bool Literal::IsNull() const {
-  return false;
-}
-
-bool Literal::IsUint() const {
-  return false;
-}
-
-BoolLiteral* Literal::AsBool() {
-  assert(IsBool());
-  return static_cast<BoolLiteral*>(this);
-}
-
-FloatLiteral* Literal::AsFloat() {
-  assert(IsFloat());
-  return static_cast<FloatLiteral*>(this);
-}
-
-IntLiteral* Literal::AsInt() {
-  assert(IsInt());
-  return static_cast<IntLiteral*>(this);
-}
-
-SintLiteral* Literal::AsSint() {
-  assert(IsSint());
-  return static_cast<SintLiteral*>(this);
-}
-
-NullLiteral* Literal::AsNull() {
-  assert(IsNull());
-  return static_cast<NullLiteral*>(this);
-}
-
-UintLiteral* Literal::AsUint() {
-  assert(IsUint());
-  return static_cast<UintLiteral*>(this);
+void Literal::to_str(const semantic::Info& sem,
+                     std::ostream& out,
+                     size_t indent) const {
+  make_indent(out, indent);
+  out << to_str(sem);
 }
 
 }  // namespace ast

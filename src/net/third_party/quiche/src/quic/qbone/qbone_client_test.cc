@@ -4,29 +4,30 @@
 
 // Sets up a dispatcher and sends requests via the QboneClient.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_client.h"
+#include "quic/qbone/qbone_client.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_default_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_reader.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_port_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor_test_tools.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_server_session.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_server_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/server_thread.h"
-#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
-#include "net/third_party/quiche/src/quic/tools/quic_server.h"
+#include "quic/core/quic_alarm_factory.h"
+#include "quic/core/quic_default_packet_writer.h"
+#include "quic/core/quic_dispatcher.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/core/quic_packet_reader.h"
+#include "quic/platform/api/quic_mutex.h"
+#include "quic/platform/api/quic_port_utils.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test_loopback.h"
+#include "quic/qbone/qbone_constants.h"
+#include "quic/qbone/qbone_packet_processor_test_tools.h"
+#include "quic/qbone/qbone_server_session.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_dispatcher_peer.h"
+#include "quic/test_tools/quic_server_peer.h"
+#include "quic/test_tools/server_thread.h"
+#include "quic/tools/quic_memory_cache_backend.h"
+#include "quic/tools/quic_server.h"
 
 namespace quic {
 namespace test {
@@ -127,7 +128,7 @@ class QuicQboneDispatcher : public QuicDispatcher {
       const QuicSocketAddress& peer_address,
       absl::string_view alpn,
       const quic::ParsedQuicVersion& version) override {
-    CHECK_EQ(alpn, "qbone");
+    QUICHE_CHECK_EQ(alpn, "qbone");
     QuicConnection* connection = new QuicConnection(
         id, self_address, peer_address, helper(), alarm_factory(), writer(),
         /* owns_writer= */ false, Perspective::IS_SERVER,
@@ -261,11 +262,9 @@ TEST_P(QboneClientTest, SendDataFromClient) {
   server_thread.Schedule([&server, &long_data]() {
     EXPECT_THAT(server->data()[0], testing::Eq(TestPacketOut("hello")));
     EXPECT_THAT(server->data()[1], testing::Eq(TestPacketOut("world")));
-    auto server_session =
-        static_cast<QboneServerSession*>(QuicServerPeer::GetDispatcher(server)
-                                             ->session_map()
-                                             .begin()
-                                             ->second.get());
+    auto server_session = static_cast<QboneServerSession*>(
+        QuicDispatcherPeer::GetFirstSessionIfAny(
+            QuicServerPeer::GetDispatcher(server)));
     server_session->ProcessPacketFromNetwork(
         TestPacketIn("Somethingsomething"));
     server_session->ProcessPacketFromNetwork(TestPacketIn(long_data));

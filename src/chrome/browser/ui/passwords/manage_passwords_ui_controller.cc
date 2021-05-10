@@ -128,7 +128,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   if (bubble_status_ == BubbleStatus::SHOWN &&
       GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
     return;
-  bool show_bubble = !form_manager->IsBlacklisted();
+  bool show_bubble = !form_manager->IsBlocklisted();
   DestroyAccountChooser();
   save_fallback_timer_.Stop();
   passwords_data_.OnPendingPassword(std::move(form_manager));
@@ -499,8 +499,6 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   UpdatePasswordFormUsernameAndPassword(username, password,
                                         passwords_data_.form_manager());
 
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordSavedWithManualFallback",
-                        BubbleIsManualFallbackForSaving());
   if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
     GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
         password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
@@ -523,14 +521,13 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
 
   post_save_compromised_helper_ =
       std::make_unique<password_manager::PostSaveCompromisedHelper>(
-          passwords_data_.form_manager()->GetCompromisedCredentials(),
-          username);
+          passwords_data_.form_manager()->GetInsecureCredentials(), username);
   post_save_compromised_helper_->AnalyzeLeakedCredentials(
       passwords_data_.client()->GetProfilePasswordStore(),
       passwords_data_.client()->GetAccountPasswordStore(),
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())
           ->GetPrefs(),
-      base::Bind(
+      base::BindOnce(
           &ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble,
           weak_ptr_factory_.GetWeakPtr()));
 

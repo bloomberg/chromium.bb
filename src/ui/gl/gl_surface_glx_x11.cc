@@ -4,8 +4,7 @@
 
 #include "ui/gl/gl_surface_glx_x11.h"
 
-
-using ui::X11EventSource;
+#include "ui/gfx/x/future.h"
 
 namespace gl {
 
@@ -18,26 +17,22 @@ GLSurfaceGLXX11::~GLSurfaceGLXX11() {
 
 void GLSurfaceGLXX11::RegisterEvents() {
   // Can be null in tests, when we don't care about Exposes.
-  if (X11EventSource::HasInstance()) {
-    x11::Connection::Get()->ChangeWindowAttributes(
-        x11::ChangeWindowAttributesRequest{
-            .window = static_cast<x11::Window>(window()),
-            .event_mask = x11::EventMask::Exposure});
+  auto* connection = x11::Connection::Get();
 
-    X11EventSource::GetInstance()->AddXEventDispatcher(this);
-  }
+  connection->ChangeWindowAttributes(x11::ChangeWindowAttributesRequest{
+      .window = static_cast<x11::Window>(window()),
+      .event_mask = x11::EventMask::Exposure});
+
+  connection->AddEventObserver(this);
 }
 
 void GLSurfaceGLXX11::UnregisterEvents() {
-  if (X11EventSource::HasInstance())
-    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
+  x11::Connection::Get()->RemoveEventObserver(this);
 }
 
-bool GLSurfaceGLXX11::DispatchXEvent(x11::Event* event) {
-  if (!CanHandleEvent(event))
-    return false;
-  ForwardExposeEvent(event);
-  return true;
+void GLSurfaceGLXX11::OnEvent(const x11::Event& event) {
+  if (CanHandleEvent(event))
+    ForwardExposeEvent(event);
 }
 
 }  // namespace gl

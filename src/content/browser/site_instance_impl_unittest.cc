@@ -29,6 +29,8 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -54,7 +56,7 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
 
 bool DoesURLRequireDedicatedProcess(const IsolationContext& isolation_context,
                                     const GURL& url) {
-  return SiteInstanceImpl::ComputeSiteInfoForTesting(isolation_context, url)
+  return SiteInfo::CreateForTesting(isolation_context, url)
       .RequiresDedicatedProcess(isolation_context);
 }
 
@@ -132,8 +134,11 @@ class SiteInstanceTest : public testing::Test {
 
   GURL GetSiteForURL(const IsolationContext& isolation_context,
                      const GURL& url) {
-    return SiteInstanceImpl::GetSiteForURL(
-        isolation_context, UrlInfo(url, false /* origin_requests_isolation */));
+    return SiteInfo::Create(
+               isolation_context,
+               UrlInfo(url, false /* origin_requests_isolation */),
+               CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated())
+        .site_url();
   }
 
   void SetUp() override {
@@ -186,9 +191,16 @@ class SiteInstanceTest : public testing::Test {
 
   BrowserContext* context() { return &context_; }
 
+  GURL GetSiteForURL(const GURL& url) {
+    return GetSiteInfoForURL(url).site_url();
+  }
+
   SiteInfo GetSiteInfoForURL(const std::string& url) {
-    return SiteInstanceImpl::ComputeSiteInfoForTesting(
-        IsolationContext(&context_), GURL(url));
+    return SiteInfo::CreateForTesting(IsolationContext(&context_), GURL(url));
+  }
+
+  SiteInfo GetSiteInfoForURL(const GURL& url) {
+    return SiteInfo::CreateForTesting(IsolationContext(&context_), url);
   }
 
   static bool IsSameSite(BrowserContext* context,
@@ -424,6 +436,41 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // contents is now deleted, along with instance and browsing_instance
 }
 
+// Verifies some basic properties of default SiteInstances.
+TEST_F(SiteInstanceTest, DefaultSiteInstanceProperties) {
+  TestBrowserContext browser_context;
+
+  // Make sure feature list command-line options are set in a way that forces
+  // default SiteInstance creation on all platforms.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /* enable */ {features::kProcessSharingWithDefaultSiteInstances},
+      /* disable */ {features::kProcessSharingWithStrictSiteInstances});
+  EXPECT_TRUE(base::FeatureList::IsEnabled(
+      features::kProcessSharingWithDefaultSiteInstances));
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      features::kProcessSharingWithStrictSiteInstances));
+
+  base::test::ScopedCommandLine scoped_command_line;
+  // Disable site isolation so we can get default SiteInstances on all
+  // platforms.
+  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+      switches::kDisableSiteIsolation);
+
+  const auto cross_origin_isolation_info =
+      CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated();
+  auto site_instance = SiteInstanceImpl::CreateForUrlInfo(
+      &browser_context, UrlInfo::CreateForTesting(GURL("http://foo.com")),
+      cross_origin_isolation_info);
+
+  EXPECT_TRUE(site_instance->IsDefaultSiteInstance());
+  EXPECT_TRUE(site_instance->HasSite());
+  EXPECT_EQ(
+      site_instance->GetSiteInfo(),
+      SiteInfo::CreateForDefaultSiteInstance(cross_origin_isolation_info));
+  EXPECT_FALSE(site_instance->RequiresDedicatedProcess());
+}
+
 // Ensure that default SiteInstances are deleted when all references to them
 // are gone.
 TEST_F(SiteInstanceTest, DefaultSiteInstanceDestruction) {
@@ -492,51 +539,51 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
   // Pages are irrelevant.
   GURL test_url = GURL("http://www.google.com/index.html");
-  GURL site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  GURL site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://google.com"), site_url);
   EXPECT_EQ("http", site_url.scheme());
   EXPECT_EQ("google.com", site_url.host());
 
   // Ports are irrelevant.
   test_url = GURL("https://www.google.com:8080");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("https://google.com"), site_url);
 
   // Punycode is canonicalized.
   test_url = GURL("http://☃snowperson☃.net:333/");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://xn--snowperson-di0gka.net"), site_url);
 
   // Username and password are stripped out.
   test_url = GURL("ftp://username:password@ftp.chromium.org/files/README");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("ftp://chromium.org"), site_url);
 
   // Literal IP addresses of any flavor are okay.
   test_url = GURL("http://127.0.0.1/a.html");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
   EXPECT_EQ("127.0.0.1", site_url.host());
 
   test_url = GURL("http://2130706433/a.html");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
   EXPECT_EQ("127.0.0.1", site_url.host());
 
   test_url = GURL("http://[::1]:2/page.html");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://[::1]"), site_url);
   EXPECT_EQ("[::1]", site_url.host());
 
   // Hostnames without TLDs are okay.
   test_url = GURL("http://foo/a.html");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://foo"), site_url);
   EXPECT_EQ("foo", site_url.host());
 
   // File URLs should include the scheme.
   test_url = GURL("file:///C:/Downloads/");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -545,26 +592,26 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // maps *all* file://... URLs into "file://" origin) such file URLs still need
   // to map into "file:" site URL.  See also https://crbug.com/776160.
   test_url = GURL("file://server/path");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
 
   // Data URLs should include the whole URL, except for the hash.
   test_url = GURL("data:text/html,foo");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(test_url, site_url);
   EXPECT_EQ("data", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
   test_url = GURL("data:text/html,foo#bar");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_FALSE(site_url.has_ref());
   EXPECT_NE(test_url, site_url);
   EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
 
   // Javascript URLs should include the scheme.
   test_url = GURL("javascript:foo();");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("javascript:"), site_url);
   EXPECT_EQ("javascript", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -573,12 +620,12 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL(
       "blob:https://www.ftp.chromium.org/"
       "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("https://chromium.org"), site_url);
 
   // Blob URLs with file origin also extract the site from the origin.
   test_url = GURL("blob:file:///1029e5a4-2983-4b90-a585-ed217563acfeb");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -586,10 +633,10 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // Blob URLs created from a unique origin use the full URL as the site URL,
   // except for the hash.
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(test_url, site_url);
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb#foo");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_FALSE(site_url.has_ref());
   EXPECT_NE(test_url, site_url);
   EXPECT_TRUE(site_url.EqualsIgnoringRef(test_url));
@@ -598,13 +645,27 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL(
       "blob:http://www.example.appspot.com:44/"
       "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://example.appspot.com"), site_url);
 
   // The site of filesystem URLs is determined by the inner URL.
   test_url = GURL("filesystem:http://www.google.com/foo/bar.html?foo#bar");
-  site_url = SiteInstance::GetSiteForURL(&context, test_url);
+  site_url = GetSiteForURL(test_url);
   EXPECT_EQ(GURL("http://google.com"), site_url);
+
+  // Error page URLs.
+  auto error_site_info = SiteInfo::CreateForErrorPage(
+      CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+  test_url = GURL(kUnreachableWebDataURL);
+  site_url = GetSiteForURL(test_url);
+  EXPECT_EQ(error_site_info.site_url(), site_url);
+
+  // Verify that other URLs that use the chrome-error scheme also map
+  // to the error page SiteInfo. These type of URLs should not appear in the
+  // codebase, but the mapping is intended to cover the whole scheme.
+  test_url = GURL("chrome-error://someerror");
+  site_url = GetSiteForURL(test_url);
+  EXPECT_EQ(error_site_info.site_url(), site_url);
 
   DrainMessageLoop();
 }
@@ -621,20 +682,14 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   IsolationContext isolation_context(browser_context.get());
 
-  // Sanity check that GetSiteForURL's |use_effective_urls| option works
-  // properly.  When it's true, the site URL should correspond to the
-  // effective URL's site (app.com), rather than the original URL's site
+  // Sanity check that SiteInfo fields influenced by effective URLs are set
+  // properly.  The site URL should correspond to the effective URL's site
+  // (app.com), and the process lock URL should refer to the original URL's site
   // (foo.com).
   {
-    GURL site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, UrlInfo::CreateForTesting(test_url),
-        false /* use_effective_urls */);
-    EXPECT_EQ(nonapp_site_url, site_url);
-
-    site_url = SiteInstanceImpl::GetSiteForURLInternal(
-        isolation_context, UrlInfo::CreateForTesting(test_url),
-        true /* use_effective_urls */);
-    EXPECT_EQ(app_url, site_url);
+    auto site_info = SiteInfo::CreateForTesting(isolation_context, test_url);
+    EXPECT_EQ(nonapp_site_url, site_info.process_lock_url());
+    EXPECT_EQ(app_url, site_info.site_url());
   }
 
   SiteInfo expected_site_info(
@@ -1672,12 +1727,12 @@ TEST_F(SiteInstanceTest, CreateForGuest) {
       context(), UrlInfo::CreateForTesting(kGuestUrl),
       CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
   EXPECT_FALSE(instance1->IsGuest());
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
+  } else {
     EXPECT_NE(kGuestUrl, instance1->GetSiteURL());
     EXPECT_EQ(GURL(std::string(kGuestScheme) + "://abc123/"),
               instance1->GetSiteURL());
-  } else {
-    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
   }
 
   // Verify that a SiteInstance created with CreateForGuest() is considered
@@ -1760,6 +1815,124 @@ TEST_F(SiteInstanceTest, DoesSiteRequireDedicatedProcess) {
               DoesURLRequireDedicatedProcess(isolation_context, GURL(url)));
   }
   SetBrowserClientForTesting(regular_client);
+}
+
+TEST_F(SiteInstanceTest, DoWebUIURLsWithSubdomainsUseTLDForProcessLock) {
+  class CustomWebUIWebUIControllerFactory : public WebUIControllerFactory {
+   public:
+    std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+        WebUI* web_ui,
+        const GURL& url) override {
+      return nullptr;
+    }
+    WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+                               const GURL& url) override {
+      return WebUI::kNoWebUI;
+    }
+    bool UseWebUIForURL(BrowserContext* browser_context,
+                        const GURL& url) override {
+      return HasWebUIScheme(url);
+    }
+  };
+  CustomWebUIWebUIControllerFactory factory;
+  WebUIControllerFactory::RegisterFactory(&factory);
+
+  const GURL webui_tld_url = GetWebUIURL("foo");
+  const GURL webui_host_bar_url = GetWebUIURL("bar.foo");
+  const GURL webui_host_baz_url = GetWebUIURL("baz.foo");
+
+  const SiteInfo webui_tld_site_info = GetSiteInfoForURL(webui_tld_url);
+  const SiteInfo webui_host_bar_site_info =
+      GetSiteInfoForURL(webui_host_bar_url);
+  const SiteInfo webui_host_baz_site_info =
+      GetSiteInfoForURL(webui_host_baz_url);
+
+  // WebUI URLs should result in SiteURLs with the full scheme and hostname
+  // of the WebUI URL.
+  EXPECT_EQ(webui_tld_url, webui_tld_site_info.site_url());
+  EXPECT_EQ(webui_host_bar_url, webui_host_bar_site_info.site_url());
+  EXPECT_EQ(webui_host_baz_url, webui_host_baz_site_info.site_url());
+
+  // WebUI URLs should use their TLD for ProcessLockURLs.
+  EXPECT_EQ(webui_tld_url, webui_tld_site_info.process_lock_url());
+  EXPECT_EQ(webui_tld_url, webui_host_bar_site_info.process_lock_url());
+  EXPECT_EQ(webui_tld_url, webui_host_baz_site_info.process_lock_url());
+}
+
+TEST_F(SiteInstanceTest, ErrorPage) {
+  const GURL non_error_page_url("http://foo.com");
+  const GURL error_page_url(kUnreachableWebDataURL);
+
+  const auto non_isolated_coi =
+      CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated();
+  const auto isolated_coi = CoopCoepCrossOriginIsolatedInfo::CreateIsolated(
+      url::Origin::Create(non_error_page_url));
+
+  const auto non_isolated_error_site_info =
+      SiteInfo::CreateForErrorPage(non_isolated_coi);
+  const auto isolated_error_site_info =
+      SiteInfo::CreateForErrorPage(isolated_coi);
+
+  // Verify that non-isolated and isolated error page SiteInfos are not
+  // equal, but indicate they are both for error pages.
+  EXPECT_NE(non_isolated_error_site_info, isolated_error_site_info);
+  EXPECT_TRUE(non_isolated_error_site_info.is_error_page());
+  EXPECT_EQ(
+      non_isolated_coi,
+      non_isolated_error_site_info.coop_coep_cross_origin_isolated_info());
+  EXPECT_TRUE(isolated_error_site_info.is_error_page());
+  EXPECT_EQ(isolated_coi,
+            isolated_error_site_info.coop_coep_cross_origin_isolated_info());
+
+  // Verify that non-error URLs don't generate error page SiteInfos and
+  // non-isolated and isolated SiteInfos do not match even though the URL is
+  // the same.
+  const auto non_isolated_instance = SiteInstanceImpl::CreateForUrlInfo(
+      context(), UrlInfo::CreateForTesting(non_error_page_url),
+      non_isolated_coi);
+  const auto isolated_instance = SiteInstanceImpl::CreateForUrlInfo(
+      context(), UrlInfo::CreateForTesting(non_error_page_url), isolated_coi);
+  EXPECT_NE(non_isolated_error_site_info, non_isolated_instance->GetSiteInfo());
+  EXPECT_NE(isolated_error_site_info, isolated_instance->GetSiteInfo());
+  EXPECT_NE(non_isolated_instance->GetSiteInfo(),
+            isolated_instance->GetSiteInfo());
+
+  // Verify that an error page URL results in error page SiteInfos that match
+  // the corresponding isolation info.
+  const auto non_isolated_error_instance = SiteInstanceImpl::CreateForUrlInfo(
+      context(), UrlInfo::CreateForTesting(error_page_url), non_isolated_coi);
+  const auto isolated_error_instance = SiteInstanceImpl::CreateForUrlInfo(
+      context(), UrlInfo::CreateForTesting(error_page_url), isolated_coi);
+  EXPECT_EQ(non_isolated_error_site_info,
+            non_isolated_error_instance->GetSiteInfo());
+  EXPECT_EQ(non_isolated_coi,
+            non_isolated_error_instance->GetCoopCoepCrossOriginIsolatedInfo());
+
+  EXPECT_EQ(isolated_error_site_info, isolated_error_instance->GetSiteInfo());
+  EXPECT_EQ(isolated_coi,
+            isolated_error_instance->GetCoopCoepCrossOriginIsolatedInfo());
+
+  // Verify that deriving a SiteInfo for an error page URL always returns
+  // an error page SiteInfo with the correct isolation info.
+  EXPECT_EQ(non_isolated_error_site_info,
+            non_isolated_instance->DeriveSiteInfo(
+                UrlInfo::CreateForTesting(error_page_url)));
+  EXPECT_EQ(isolated_error_site_info,
+            isolated_instance->DeriveSiteInfo(
+                UrlInfo::CreateForTesting(error_page_url)));
+
+  // Verify GetRelatedSiteInstance() called with an error page URL always
+  // returns an error page SiteInfo with the correct isolation info.
+  const auto non_isolated_related_instance =
+      non_isolated_instance->GetRelatedSiteInstance(error_page_url);
+  const auto isolated_related_instance =
+      isolated_instance->GetRelatedSiteInstance(error_page_url);
+  EXPECT_EQ(non_isolated_error_site_info,
+            static_cast<SiteInstanceImpl*>(non_isolated_related_instance.get())
+                ->GetSiteInfo());
+  EXPECT_EQ(isolated_error_site_info,
+            static_cast<SiteInstanceImpl*>(isolated_related_instance.get())
+                ->GetSiteInfo());
 }
 
 }  // namespace content

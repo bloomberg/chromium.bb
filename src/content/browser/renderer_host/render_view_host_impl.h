@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -52,6 +53,7 @@ struct WebPreferences;
 namespace content {
 
 class AgentSchedulingGroupHost;
+class FrameTree;
 class RenderProcessHost;
 class TimeoutMonitor;
 
@@ -110,7 +112,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   static bool HasNonBackForwardCachedInstancesForProcess(
       RenderProcessHost* process);
 
-  RenderViewHostImpl(SiteInstance* instance,
+  RenderViewHostImpl(FrameTree* frame_tree,
+                     SiteInstance* instance,
                      std::unique_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
                      int32_t routing_id,
@@ -128,7 +131,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const gfx::Point& location,
       blink::mojom::PluginActionType action) override;
   RenderViewHostDelegate* GetDelegate() override;
-  SiteInstanceImpl* GetSiteInstance() override;
   bool IsRenderViewLive() override;
 
   void SendWebPreferencesToRenderer();
@@ -151,7 +153,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // |proxy_route_id| is only used when creating a RenderView in an inactive
   //   state.
   virtual bool CreateRenderView(
-      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      const base::Optional<blink::FrameToken>& opener_frame_token,
       int proxy_route_id,
       bool window_was_created_with_opener);
 
@@ -165,22 +167,10 @@ class CONTENT_EXPORT RenderViewHostImpl
     return is_waiting_for_page_close_completion_;
   }
 
-  // Generate RenderViewCreated events for observers through the delegate.
-  // These events are only generated for active RenderViewHosts (which have a
-  // RenderFrameHost for the main frame) as well as inactive RenderViewHosts
-  // that have a pending main frame navigation; i.e., this is done only when
-  // GetMainFrame() is non-null.
-  //
-  // This function also ensures that a particular RenderViewHost never
-  // dispatches these events more than once.  For example, if a RenderViewHost
-  // transitions from active to inactive after a cross-process navigation
-  // (where it no longer has a main frame RenderFrameHost), and then back to
-  // active after another cross-process navigation, this function will filter
-  // out the second notification.
-  //
-  // TODO(alexmos): Deprecate RenderViewCreated and remove this.  See
-  // https://crbug.com/763548.
-  void DispatchRenderViewCreated();
+  // Called when the RenderView in the renderer process has been created, at
+  // which point IsRenderViewLive() becomes true, and the mojo connections to
+  // the renderer process for this view now exist.
+  void RenderViewCreated(RenderFrameHostImpl* local_main_frame);
 
   // Returns the `AgentSchedulingGroupHost` this view is associated with (via
   // the widget).
@@ -229,6 +219,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderViewHost enter the BackForwardCache.
   void EnterBackForwardCache();
 
+  // Indicates whether or not |this| has received an acknowledgement from
+  // renderer that it has enered BackForwardCache.
+  bool DidReceiveBackForwardCacheAck();
+
   // Called when the RenderFrameHostImpls/RenderFrameProxyHosts that own this
   // RenderViewHost leave the BackForwardCache. This occurs immediately before a
   // restored document is committed.
@@ -246,6 +240,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   void SetIsFrozen(bool frozen);
   void OnBackForwardCacheTimeout();
+  void MaybeEvictFromBackForwardCache();
 
   PageLifecycleStateManager* GetPageLifecycleStateManager() {
     return page_lifecycle_state_manager_.get();
@@ -307,6 +302,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   const mojo::AssociatedRemote<blink::mojom::PageBroadcast>&
   GetAssociatedPageBroadcast();
 
+  // Prepares the renderer page to leave the back-forward cache by disabling
+  // Javascript eviction. |done_cb| is called upon receipt of the
+  // acknowledgement from the renderer that this has actually happened.
+  //
+  // After |done_cb| is called you can be certain that this renderer will not
+  // trigger an eviction of this page.
+  void PrepareToLeaveBackForwardCache(base::OnceClosure done_cb);
+
+  FrameTree* frame_tree() const { return frame_tree_; }
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -317,7 +322,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   ~RenderViewHostImpl() override;
 
   // RenderWidgetHostOwnerDelegate overrides.
-  void RenderWidgetDidInit() override;
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
   void RenderWidgetGotFocus() override;
   void RenderWidgetLostFocus() override;
@@ -384,6 +388,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Routing ID for this RenderViewHost.
   const int routing_id_;
 
+  // Whether the renderer-side RenderView is created. Becomes false when the
+  // renderer crashes.
+  bool renderer_view_created_ = false;
+
   // Routing ID for the main frame's RenderFrameHost.
   int main_frame_routing_id_;
 
@@ -410,13 +418,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   std::unique_ptr<PageLifecycleStateManager> page_lifecycle_state_manager_;
 
   bool updating_web_preferences_ = false;
-
-  // This tracks whether this RenderViewHost has notified observers about its
-  // creation with RenderViewCreated.  RenderViewHosts may transition from
-  // active (with a RenderFrameHost for the main frame) to inactive state and
-  // then back to active, and for the latter transition, this avoids firing
-  // duplicate RenderViewCreated events.
-  bool has_notified_about_creation_ = false;
 
   // ---------- Per page state START ------------------------------------------
   // The following members will get reset when this RVH commits a navigation to
@@ -451,6 +452,8 @@ class CONTENT_EXPORT RenderViewHostImpl
       will_send_renderer_preferences_callback_for_testing_;
 
   mojo::AssociatedRemote<blink::mojom::PageBroadcast> page_broadcast_;
+
+  FrameTree* frame_tree_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 

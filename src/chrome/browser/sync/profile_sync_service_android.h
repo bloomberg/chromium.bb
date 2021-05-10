@@ -39,17 +39,19 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   // Pure ProfileSyncService calls.
   jboolean IsSyncRequested(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
+  void SetSyncRequested(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jboolean requested);
   jboolean CanSyncFeatureStart(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
-  void RequestStart(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj);
-  void RequestStop(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsSyncAllowedByPlatform(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void SetSyncAllowedByPlatform(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 jboolean allowed);
-  jboolean IsSyncActive(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsSyncFeatureActive(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
   jboolean IsSyncDisabledByEnterprisePolicy(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -140,20 +142,13 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>& obj);
 
   // Pure SyncPrefs calls.
-  jboolean IsPassphrasePrompted(
+  jboolean IsPassphrasePromptMutedForCurrentProductVersion(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetPassphrasePrompted(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
-                             jboolean prompted);
-  void SetSyncSessionsId(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         const base::android::JavaParamRef<jstring>& tag);
+  void MarkPassphrasePromptMutedForCurrentProductVersion(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jboolean HasKeepEverythingSynced(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
-  jint GetNumberOfSyncedDevices(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

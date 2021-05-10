@@ -18,8 +18,9 @@
 #include "base/dcheck_is_on.h"
 #include "base/scoped_clear_last_error.h"
 #include "base/strings/string_piece_forward.h"
+#include "build/chromeos_buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <cstdio>
 #endif
 
@@ -143,8 +144,8 @@
 // Very important: logging a message at the FATAL severity level causes
 // the program to terminate (after the message is logged).
 //
-// There is the special severity of DFATAL, which logs FATAL in debug mode,
-// ERROR in normal mode.
+// There is the special severity of DFATAL, which logs FATAL in DCHECK-enabled
+// builds, ERROR in normal mode.
 //
 // Output is formatted as per the following example, except on Chrome OS.
 // [3816:3877:0812/234555.406952:VERBOSE1:drm_device_handle.cc(90)] Succeeded
@@ -216,7 +217,7 @@ enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 // Defaults to APPEND_TO_OLD_LOG_FILE.
 enum OldFileDeletionState { DELETE_OLD_LOG_FILE, APPEND_TO_OLD_LOG_FILE };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Defines the log message prefix format to use.
 // LOG_FORMAT_SYSLOG indicates syslog-like message prefixes.
 // LOG_FORMAT_CHROME indicates the normal Chrome format.
@@ -233,7 +234,7 @@ struct BASE_EXPORT LoggingSettings {
   const PathChar* log_file_path = nullptr;
   LogLockingState lock_log = LOCK_LOG_FILE;
   OldFileDeletionState delete_old = APPEND_TO_OLD_LOG_FILE;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Contains an optional file that logs should be written to. If present,
   // |log_file_path| will be ignored, and the logging system will take ownership
   // of the FILE. If there's an error writing to this file, no fallback paths
@@ -359,11 +360,12 @@ const LogSeverity LOGGING_ERROR = 2;
 const LogSeverity LOGGING_FATAL = 3;
 const LogSeverity LOGGING_NUM_SEVERITIES = 4;
 
-// LOGGING_DFATAL is LOGGING_FATAL in debug mode, ERROR in normal mode
-#if defined(NDEBUG)
-const LogSeverity LOGGING_DFATAL = LOGGING_ERROR;
-#else
+// LOGGING_DFATAL is LOGGING_FATAL in DCHECK-enabled builds, ERROR in normal
+// mode.
+#if DCHECK_IS_ON()
 const LogSeverity LOGGING_DFATAL = LOGGING_FATAL;
+#else
+const LogSeverity LOGGING_DFATAL = LOGGING_ERROR;
 #endif
 
 // This block duplicates the above entries to facilitate incremental conversion
@@ -453,7 +455,7 @@ const LogSeverity LOGGING_0 = LOGGING_ERROR;
 
 // The VLOG macros log with negative verbosities.
 #define VLOG_STREAM(verbose_level) \
-  ::logging::LogMessage(__FILE__, __LINE__, -verbose_level).stream()
+  ::logging::LogMessage(__FILE__, __LINE__, -(verbose_level)).stream()
 
 #define VLOG(verbose_level) \
   LAZY_STREAM(VLOG_STREAM(verbose_level), VLOG_IS_ON(verbose_level))
@@ -464,11 +466,11 @@ const LogSeverity LOGGING_0 = LOGGING_ERROR;
 
 #if defined (OS_WIN)
 #define VPLOG_STREAM(verbose_level) \
-  ::logging::Win32ErrorLogMessage(__FILE__, __LINE__, -verbose_level, \
+  ::logging::Win32ErrorLogMessage(__FILE__, __LINE__, -(verbose_level), \
     ::logging::GetLastSystemErrorCode()).stream()
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #define VPLOG_STREAM(verbose_level) \
-  ::logging::ErrnoLogMessage(__FILE__, __LINE__, -verbose_level, \
+  ::logging::ErrnoLogMessage(__FILE__, __LINE__, -(verbose_level), \
     ::logging::GetLastSystemErrorCode()).stream()
 #endif
 
@@ -618,7 +620,7 @@ class BASE_EXPORT LogMessage {
   // will have lost the thread error value when the log call returns.
   base::ScopedClearLastError last_error_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void InitWithSyslogPrefix(base::StringPiece filename,
                             int line,
                             uint64_t tick_count,
@@ -693,7 +695,7 @@ class BASE_EXPORT ErrnoLogMessage : public LogMessage {
 //       after this call.
 BASE_EXPORT void CloseLogFile();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Returns a new file handle that will write to the same destination as the
 // currently open log file. Returns nullptr if logging to a file is disabled,
 // or if opening the file failed. This is intended to be used to initialize
@@ -733,9 +735,12 @@ namespace std {
 // common cases. Non-ASCII characters will be converted to UTF-8 by these
 // operators.
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
-inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
-  return out << wstr.c_str();
-}
+BASE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                     const std::wstring& wstr);
+
+BASE_EXPORT std::ostream& operator<<(std::ostream& out, const char16_t* str16);
+BASE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                     const std::u16string& str16);
 }  // namespace std
 
 #endif  // BASE_LOGGING_H_

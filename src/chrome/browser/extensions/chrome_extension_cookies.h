@@ -28,6 +28,7 @@ struct CookieStoreConfig;
 
 namespace net {
 class CookieStore;
+class IsolationInfo;
 }
 
 namespace url {
@@ -52,8 +53,7 @@ class ChromeExtensionCookies
   // storage or not depends on the Profile |this| was created for.
   void CreateRestrictedCookieManager(
       const url::Origin& origin,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
+      const net::IsolationInfo& isolation_info,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
   // Deletes all cookies matching the host of |origin|.
@@ -76,8 +76,7 @@ class ChromeExtensionCookies
 
     void CreateRestrictedCookieManager(
         const url::Origin& origin,
-        const net::SiteForCookies& site_for_cookies,
-        const url::Origin& top_frame_origin,
+        const net::IsolationInfo& isolation_info,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver);
     void ClearCookies(const GURL& origin);

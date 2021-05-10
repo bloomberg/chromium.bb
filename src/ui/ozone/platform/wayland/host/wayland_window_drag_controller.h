@@ -46,10 +46,11 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
  public:
   // Constants used to keep track of the drag controller state.
   enum class State {
-    kIdle,      // No DnD session nor drag loop running.
-    kAttached,  // DnD session ongoing but no drag loop running.
-    kDetached,  // Drag loop running. ie: blocked in a Drag() call.
-    kDropped    // Drop event was just received.
+    kIdle,       // No DnD session nor drag loop running.
+    kAttached,   // DnD session ongoing but no drag loop running.
+    kDetached,   // Drag loop running. ie: blocked in a Drag() call.
+    kDropped,    // Drop event was just received.
+    kAttaching,  // About to transition back to |kAttached|.
   };
 
   WaylandWindowDragController(WaylandConnection* connection,
@@ -153,8 +154,10 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   std::unique_ptr<ScopedEventDispatcher> nested_dispatcher_;
   base::OnceClosure quit_loop_closure_;
 
-  // Tells if the current drag event should be processedc. E.g: received through
-  // wl_data_device::motion wayland event.
+  // Tells if the current drag event should be processed. Buggy compositors may
+  // send wl_pointer::motion events, for example, while a DND session is still
+  // in progress, which leads to issues in window dragging sessions, this flag
+  // is used to make window drag controller resistant to such scenarios.
   bool should_process_drag_event_ = false;
 
   base::WeakPtrFactory<WaylandWindowDragController> weak_factory_{this};

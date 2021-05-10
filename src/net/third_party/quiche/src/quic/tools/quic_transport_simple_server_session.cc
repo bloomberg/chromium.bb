@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_transport_simple_server_session.h"
+#include "quic/tools/quic_transport_simple_server_session.h"
 
 #include <memory>
 
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "quic/core/quic_buffer_allocator.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/quic_transport/quic_transport_protocol.h"
+#include "quic/quic_transport/quic_transport_stream.h"
 
 namespace quic {
 
@@ -51,7 +51,7 @@ class BidirectionalEchoVisitor : public QuicTransportStream::Visitor {
 
   void OnFinRead() override {
     bool success = stream_->SendFin();
-    DCHECK(success);
+    QUICHE_DCHECK(success);
   }
 
   void OnCanWrite() override {
@@ -79,7 +79,7 @@ class UnidirectionalEchoReadVisitor : public QuicTransportStream::Visitor {
 
   void OnCanRead() override {
     bool success = stream_->Read(&buffer_);
-    DCHECK(success);
+    QUICHE_DCHECK(success);
   }
 
   void OnFinRead() override {
@@ -114,7 +114,7 @@ class UnidirectionalEchoWriteVisitor : public QuicTransportStream::Visitor {
     }
     data_ = "";
     bool fin_sent = stream_->SendFin();
-    DCHECK(fin_sent);
+    QUICHE_DCHECK(fin_sent);
   }
 
  private:

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -9,10 +10,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -24,14 +27,10 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/login_screen_shown_observer.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -81,8 +80,6 @@ class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
         AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
     test_users_.push_back(
         AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kViewBasedMultiprofileLogin);
   }
   ~LoginUIKeyboardTest() override {}
 
@@ -301,10 +298,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
   StartupUtils::MarkOobeCompleted();
 }
 
-// TODO(crbug.com/1104861): Test has been flaky since
-// https://crrev.com/c/2215650 landed.
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
-                       DISABLED_CheckPODScreenKeyboard) {
+                       CheckPODScreenKeyboard) {
   EXPECT_EQ(3, ash::LoginScreenTestApi::GetUsersCount());
 
   std::vector<std::string> expected_input_methods;
@@ -321,13 +316,13 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
 
   // Switch to Gaia.
   ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+
   CheckGaiaKeyboard();
 
   // Switch back.
-  test::ExecuteOobeJS("$('gaia-signin').cancel()");
-  const auto update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
-  ash::LoginScreenTestApi::WaitForUiUpdate(update_count);
+  test::ExecuteOobeJS("$('user-creation').cancel()");
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
@@ -402,10 +397,8 @@ class LoginUIDevicePolicyUserAdding : public LoginUIKeyboardPolicy {
   LoginUIDevicePolicyUserAdding() {
     // Need at least two to run user adding screen.
     login_manager_.AppendRegularUsers(2);
-    scoped_feature_list_.InitAndEnableFeature(
-      features::kViewBasedMultiprofileLogin);
   }
-  
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 };

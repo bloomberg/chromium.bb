@@ -4,17 +4,20 @@
 
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 
+#include "ash/components/audio/sounds.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
-#include "chromeos/audio/chromeos_sounds.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace {
+
+using ::ash::Sound;
 
 constexpr base::TimeDelta kShutdownSoundDuration =
     base::TimeDelta::FromMilliseconds(1000);
@@ -28,7 +31,7 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
   void TriggerAccessibilityAlert(ash::AccessibilityAlert alert) override {
     last_a11y_alert_ = alert;
   }
-  void PlayEarcon(int32_t sound_key) override { last_sound_key_ = sound_key; }
+  void PlayEarcon(Sound sound_key) override { last_sound_key_ = sound_key; }
   base::TimeDelta PlayShutdownSound() override {
     return kShutdownSoundDuration;
   }
@@ -52,9 +55,14 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
   void RequestSelectToSpeakStateChange() override {
     ++select_to_speak_state_changes_;
   }
+  void OnSelectToSpeakPanelAction(ash::SelectToSpeakPanelAction action,
+                                  double value) override {
+    last_select_to_speak_panel_action_ = action;
+    last_select_to_speak_panel_value_ = value;
+  }
 
   ash::AccessibilityAlert last_a11y_alert_ = ash::AccessibilityAlert::NONE;
-  int32_t last_sound_key_ = -1;
+  base::Optional<Sound> last_sound_key_;
   ax::mojom::Gesture last_a11y_gesture_ = ax::mojom::Gesture::kNone;
   gfx::PointF last_a11y_gesture_point_;
   int toggle_dictation_count_ = 0;
@@ -63,6 +71,9 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
   int on_two_finger_touch_stop_count_ = 0;
   int spoken_feedback_toggle_count_down_ = -1;
   int select_to_speak_state_changes_ = 0;
+  ash::SelectToSpeakPanelAction last_select_to_speak_panel_action_ =
+      ash::SelectToSpeakPanelAction::kNone;
+  double last_select_to_speak_panel_value_ = 0.0;
 
  private:
   bool dictation_on_ = false;
@@ -95,7 +106,7 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
   EXPECT_EQ(alert, client.last_a11y_alert_);
 
   // Tests PlayEarcon method call.
-  const int32_t sound_key = chromeos::SOUND_SHUTDOWN;
+  const Sound sound_key = Sound::kShutdown;
   client.PlayEarcon(sound_key);
   EXPECT_EQ(sound_key, client.last_sound_key_);
 
@@ -139,4 +150,12 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
   // Tests RequestSelectToSpeakStateChange method call.
   client.RequestSelectToSpeakStateChange();
   EXPECT_EQ(1, client.select_to_speak_state_changes_);
+
+  // Tests OnSelectToSpeakPanelAction method call.
+  const ash::SelectToSpeakPanelAction action =
+      ash::SelectToSpeakPanelAction::kChangeSpeed;
+  double panel_value = 1.5;
+  client.OnSelectToSpeakPanelAction(action, panel_value);
+  EXPECT_EQ(action, client.last_select_to_speak_panel_action_);
+  EXPECT_EQ(panel_value, client.last_select_to_speak_panel_value_);
 }

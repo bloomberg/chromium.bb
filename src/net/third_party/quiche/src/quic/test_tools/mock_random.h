@@ -5,7 +5,7 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_MOCK_RANDOM_H_
 #define QUICHE_QUIC_TEST_TOOLS_MOCK_RANDOM_H_
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "quic/core/crypto/quic_random.h"
 
 namespace quic {
 namespace test {
@@ -23,6 +23,11 @@ class MockRandom : public QuicRandom {
   void RandBytes(void* data, size_t len) override;
   // Returns base + the current increment.
   uint64_t RandUint64() override;
+
+  // InsecureRandBytes behaves equivalently to RandBytes.
+  void InsecureRandBytes(void* data, size_t len) override;
+  // InsecureRandUint64 behaves equivalently to RandUint64.
+  uint64_t InsecureRandUint64() override;
 
   // ChangeValue increments |increment_|. This causes the value returned by
   // |RandUint64| and the byte that |RandBytes| fills with, to change.

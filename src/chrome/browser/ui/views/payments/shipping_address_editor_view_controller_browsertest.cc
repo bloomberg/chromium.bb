@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -49,10 +50,19 @@ const base::Time kJanuary2017 = base::Time::FromDoubleT(1484505871);
 
 }  // namespace
 
-class PaymentRequestShippingAddressEditorTest
+#if defined(OS_MAC)
+// Entire test suite is flaky on MacOS: https://crbug.com/1164438
+#define MAYBE_PaymentRequestShippingAddressEditorTest \
+  DISABLED_PaymentRequestShippingAddressEditorTest
+#else
+#define MAYBE_PaymentRequestShippingAddressEditorTest \
+  PaymentRequestShippingAddressEditorTest
+#endif
+
+class MAYBE_PaymentRequestShippingAddressEditorTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestShippingAddressEditorTest() {}
+  MAYBE_PaymentRequestShippingAddressEditorTest() {}
 
   void SetFieldTestValue(autofill::ServerFieldType type) {
     base::string16 textfield_text;
@@ -195,10 +205,11 @@ class PaymentRequestShippingAddressEditorTest
   autofill::TestRegionDataLoader test_region_data_loader_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingAddressEditorTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PaymentRequestShippingAddressEditorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
+                       SyncData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
@@ -232,6 +243,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -243,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
                                /*accept_empty_phone_number=*/false);
 }
 
-// Disabled for flakyness: crbug.com/799028
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+// Disabled for flakiness: crbug.com/799028
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        DISABLED_EnterAcceleratorSyncData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -282,6 +294,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -293,7 +306,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                                /*accept_empty_phone_number=*/false);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
+// TODO(crbug.com/1150496): flaky.
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
+                       DISABLED_AsyncData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
@@ -327,6 +342,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -344,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
             request->state()->selected_shipping_profile());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        SwitchingCountryUpdatesViewAndKeepsValues) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -455,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        FailToLoadRegionData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -485,6 +501,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -495,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                                /*accept_empty_phone_number=*/false);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        TimingOutRegionData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -528,6 +545,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -538,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                                /*accept_empty_phone_number=*/false);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        SelectingIncompleteAddress) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add incomplete address.
@@ -592,6 +610,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* saved_profile =
       personal_data_manager->GetProfiles()[0];
@@ -609,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
             request->state()->selected_shipping_option_error_profile());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        FocusFirstField_Name) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -632,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_TRUE(textfield->HasFocus());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        FocusFirstInvalidField_NotName) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with only the name set, so that another view takes focus.
@@ -663,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 // Tests that the editor accepts an international phone from another country.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        AddInternationalPhoneNumberFromOtherCountry) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -690,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that the editor accepts a phone number looks like a possible number
 // but is actually invalid.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        AddPossiblePhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -708,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 // Tests that the editor does not accept a impossible phone number.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        AddImpossiblePhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
@@ -724,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 // Tests that updating the country to one with no states clears the state value.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        UpdateToCountryWithoutState) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US.
@@ -774,6 +793,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
@@ -790,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that there is no error label for an international phone from another
 // country.
 IN_PROC_BROWSER_TEST_F(
-    PaymentRequestShippingAddressEditorTest,
+    MAYBE_PaymentRequestShippingAddressEditorTest,
     NoErrorLabelForInternationalPhoneNumberFromOtherCountry) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a valid AU phone number in international
@@ -813,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests that there is no error label for an phone number that can be
 // technically parsed as a US number even if it is actually invalid.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoErrorLabelForPossibleButInvalidPhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a valid AU phone number in local format.
@@ -835,7 +855,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 // Tests that there is error label for an impossible phone number.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        ErrorLabelForImpossiblePhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a impossible number.
@@ -860,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that if the a profile has a country and no state, the editor makes the
 // user pick a state. This should also disable the "Done" button.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        CountryButNoState) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with a country but no state.
@@ -908,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // TODO(crbug.com/730652): This address should be invalid.
 // Tests that if the a profile has a country and an invalid state for the
 // country, the address is considered valid.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        CountryAndInvalidState) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with a country but no state.
@@ -933,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that if the a profile has no country and no state, the editor sets the
 // country and lets the user pick a state. This should also disable the "Done"
 // button.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoCountryNoState) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country or no state.
@@ -983,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that if the a profile has no country and an invalid state for the
 // default country, the editor sets the country and lets the user pick a state.
 // This should also disable the "Done" button.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoCountryInvalidState) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country or no state.
@@ -1034,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that if the a profile has no country but has a valid state for the
 // default country, the editor sets the country and the state for the user.
 // This should also enable the "Done" button.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_SyncRegionLoad) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
@@ -1085,7 +1105,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that if the a profile has no country but has a valid state for the
 // default country, the editor sets the country and the state for the user.
 // This should also enable the "Done" button.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_AsyncRegionLoad) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
@@ -1136,7 +1156,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that the state dropdown is set to the right value if the value from the
 // profile is a region code.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionCode) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
@@ -1168,7 +1188,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that the state dropdown is set to the right value if the value from the
 // profile is a region name.
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionName) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
@@ -1198,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
             GetComboboxValue(autofill::ADDRESS_HOME_STATE));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        NoCountryProfileDoesntSetCountryToLocale) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
@@ -1222,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                 autofill::ADDRESS_HOME_COUNTRY, kLocale));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        SyncDataInIncognito) {
   SetIncognito();
   NavigateTo("/payment_request_dynamic_shipping_test.html");
@@ -1254,6 +1274,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
 
+  personal_data_manager->RemoveObserver(&personal_data_observer_);
   // In incognito, the profile should be available in shipping_profiles but it
   // shouldn't be saved to the PersonalDataManager.
   ASSERT_EQ(0UL, personal_data_manager->GetProfiles().size());
@@ -1271,7 +1292,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 // Tests that there is error label for an impossible
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        RetryWithShippingAddressErrors) {
   NavigateTo("/payment_request_retry_with_shipping_address_errors.html");
 
@@ -1301,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 // Tests that there is error label for an impossible
 IN_PROC_BROWSER_TEST_F(
-    PaymentRequestShippingAddressEditorTest,
+    MAYBE_PaymentRequestShippingAddressEditorTest,
     RetryWithShippingAddressErrors_HasSameValueButDifferentErrorsShown) {
   NavigateTo("/payment_request_retry_with_shipping_address_errors.html");
 
@@ -1335,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(
             GetErrorLabelForType(autofill::ADDRESS_HOME_CITY));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        RetryWithShippingAddressErrors_NoRequestShippingOption) {
   NavigateTo("/payment_request_retry_with_no_payment_options.html");
 
@@ -1366,7 +1387,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                                                 autofill::ADDRESS_HOME_CITY));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_PaymentRequestShippingAddressEditorTest,
                        UpdateWithShippingAddressErrors) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
 

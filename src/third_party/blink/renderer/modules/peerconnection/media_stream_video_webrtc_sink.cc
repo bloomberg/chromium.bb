@@ -77,8 +77,10 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   // destroyed.
   void ReleaseSourceOnMainThread();
 
-  void OnVideoFrameOnIO(scoped_refptr<media::VideoFrame> frame,
-                        base::TimeTicks estimated_capture_time);
+  void OnVideoFrameOnIO(
+      scoped_refptr<media::VideoFrame> frame,
+      std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
+      base::TimeTicks estimated_capture_time);
 
  private:
   friend class WTF::ThreadSafeRefCounted<WebRtcVideoSourceAdapter>;
@@ -141,8 +143,13 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     scoped_refptr<media::VideoFrame> frame,
+    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
     base::TimeTicks estimated_capture_time) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  // TODO(https://crbug.com/1157072): When WebRTC makes use of
+  // media::VideoFrameFeedback to tell the capturer to deliver |scaled_frames|
+  // in the encoder's desired resolution, pass along these frames and make use
+  // of them inside WebRTC.
   PostCrossThreadTask(
       *libjingle_worker_thread_.get(), FROM_HERE,
       CrossThreadBindOnce(&WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread,
@@ -176,7 +183,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   // by removing the need for and dependency on a cricket::VideoCapturer.
   video_source_ = scoped_refptr<WebRtcVideoTrackSource>(
       new rtc::RefCountedObject<WebRtcVideoTrackSource>(
-          is_screencast, needs_denoising, feedback_cb));
+          is_screencast, needs_denoising, feedback_cb,
+          factory->GetGpuFactories()));
 
   // TODO(pbos): Consolidate the local video track with the source proxy and
   // move into PeerConnectionDependencyFactory. This now separately holds on a

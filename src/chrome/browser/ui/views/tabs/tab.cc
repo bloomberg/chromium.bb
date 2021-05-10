@@ -17,7 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -146,13 +146,14 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
                                   TabController* controller)
       : tab_(tab), close_button_(close_button), controller_(controller) {
     DCHECK(close_button_);
-    tab_close_button_observer_.Add(close_button_);
+    tab_close_button_observation_.Observe(close_button_);
   }
   TabCloseButtonObserver(const TabCloseButtonObserver&) = delete;
   TabCloseButtonObserver& operator=(const TabCloseButtonObserver&) = delete;
 
   ~TabCloseButtonObserver() override {
-    tab_close_button_observer_.Remove(close_button_);
+    DCHECK(tab_close_button_observation_.IsObserving());
+    tab_close_button_observation_.Reset();
   }
 
  private:
@@ -166,8 +167,8 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
       controller_->UpdateHoverCard(nullptr);
   }
 
-  ScopedObserver<views::View, views::ViewObserver> tab_close_button_observer_{
-      this};
+  base::ScopedObservation<views::View, views::ViewObserver>
+      tab_close_button_observation_{this};
 
   Tab* tab_;
   views::View* close_button_;
@@ -742,19 +743,20 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   if (!theme_provider)
     return foreground_color_;
 
+  // TODO(tluk): These color computations should be moved into ThemeProvider
+  // when other tab colors are also computed there.
   switch (state) {
-    case TabAlertState::AUDIO_PLAYING:
-    case TabAlertState::AUDIO_MUTING:
-      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_ALERT_AUDIO);
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
-      return theme_provider->GetColor(
-          ThemeProperties::COLOR_TAB_ALERT_RECORDING);
+      return color_utils::IsDark(foreground_color_) ? gfx::kGoogleRed600
+                                                    : gfx::kGoogleRed300;
     case TabAlertState::TAB_CAPTURING:
-      return theme_provider->GetColor(
-          ThemeProperties::COLOR_TAB_ALERT_CAPTURING);
     case TabAlertState::PIP_PLAYING:
-      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
+      if (color_utils::IsDark(foreground_color_))
+        return gfx::kGoogleBlue600;
+      FALLTHROUGH;
+    case TabAlertState::AUDIO_PLAYING:
+    case TabAlertState::AUDIO_MUTING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
     case TabAlertState::USB_CONNECTED:
@@ -775,6 +777,7 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
+  alert_indicator_->OnParentTabButtonColorChanged();
   title_->SetFontList(tab_style_->GetFontList());
   Layout();
 }
@@ -812,7 +815,7 @@ void Tab::SetData(TabRendererData data) {
 
   base::string16 title = data_.title;
   if (title.empty() && !data_.should_render_empty_title) {
-    title = icon_->ShowingLoadingAnimation()
+    title = icon_->GetShowingLoadingAnimation()
                 ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
                 : CoreTabHelper::GetDefaultTitle();
   } else {
@@ -852,6 +855,15 @@ void Tab::SetTabNeedsAttention(bool attention) {
   icon_->SetAttention(TabIcon::AttentionType::kTabWantsAttentionStatus,
                       attention);
   SchedulePaint();
+}
+
+void Tab::SetFreezingVoteToken(
+    std::unique_ptr<performance_manager::freezing::FreezingVoteToken> token) {
+  freezing_token_ = std::move(token);
+}
+
+void Tab::ReleaseFreezingVoteToken() {
+  freezing_token_.reset();
 }
 
 // static
@@ -1020,8 +1032,7 @@ void Tab::UpdateForegroundColors() {
 
   title_->SetEnabledColor(colors.foreground_color);
 
-  close_button_->SetIconColors(colors.foreground_color,
-                               colors.background_color);
+  close_button_->SetColors(colors);
 
   if (foreground_color_ != colors.foreground_color) {
     foreground_color_ = colors.foreground_color;

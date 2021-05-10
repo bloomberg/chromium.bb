@@ -18,6 +18,7 @@
 #include "src/handles/handles.h"
 #include "src/handles/persistent-handles.h"
 #include "src/heap/local-heap.h"
+#include "src/heap/parked-scope.h"
 #include "src/interpreter/bytecode-array-accessor.h"
 #include "src/objects/code-kind.h"
 #include "src/objects/feedback-vector.h"
@@ -32,7 +33,6 @@ namespace v8 {
 namespace internal {
 namespace compiler {
 
-class BytecodeAnalysis;
 class ObjectRef;
 
 std::ostream& operator<<(std::ostream& os, const ObjectRef& ref);
@@ -104,6 +104,7 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   Zone* zone() const { return zone_; }
   bool tracing_enabled() const { return tracing_enabled_; }
   bool is_concurrent_inlining() const { return is_concurrent_inlining_; }
+  bool is_isolate_bootstrapping() const { return is_isolate_bootstrapping_; }
   bool is_native_context_independent() const {
     return code_kind_ == CodeKind::NATIVE_CONTEXT_INDEPENDENT;
   }
@@ -148,9 +149,21 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   Handle<Object> GetRootHandle(Object object);
 
   // Never returns nullptr.
-  ObjectData* GetOrCreateData(Handle<Object>);
+  ObjectData* GetOrCreateData(
+      Handle<Object>,
+      ObjectRef::BackgroundSerialization background_serialization =
+          ObjectRef::BackgroundSerialization::kDisallowed);
   // Like the previous but wraps argument in handle first (for convenience).
-  ObjectData* GetOrCreateData(Object);
+  ObjectData* GetOrCreateData(
+      Object, ObjectRef::BackgroundSerialization background_serialization =
+                  ObjectRef::BackgroundSerialization::kDisallowed);
+
+  // Gets data only if we have it. However, thin wrappers will be created for
+  // smis, read-only objects and never-serialized objects.
+  ObjectData* TryGetOrCreateData(
+      Handle<Object>, bool crash_on_error = false,
+      ObjectRef::BackgroundSerialization background_serialization =
+          ObjectRef::BackgroundSerialization::kDisallowed);
 
   // Check if {object} is any native context's %ArrayPrototype% or
   // %ObjectPrototype%.
@@ -166,10 +179,6 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   ElementAccessFeedback const& ProcessFeedbackMapsForElementAccess(
       MapHandles const& maps, KeyedAccessMode const& keyed_mode,
       FeedbackSlotKind slot_kind);
-  BytecodeAnalysis const& GetBytecodeAnalysis(
-      Handle<BytecodeArray> bytecode_array, BailoutId osr_offset,
-      bool analyze_liveness,
-      SerializationPolicy policy = SerializationPolicy::kAssumeSerialized);
 
   // Binary, comparison and for-in hints can be fully expressed via
   // an enum. Insufficient feedback is signaled by <Hint enum>::kNone.
@@ -304,6 +313,16 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   friend class HeapObjectRef;
   friend class ObjectRef;
   friend class ObjectData;
+  friend class PropertyCellData;
+
+  bool IsMainThread() const {
+    return local_isolate() == nullptr || local_isolate()->is_main_thread();
+  }
+
+  // If this returns false, the object is guaranteed to be fully initialized and
+  // thus safe to read from a memory safety perspective. The converse does not
+  // necessarily hold.
+  bool ObjectMayBeUninitialized(Handle<Object> object) const;
 
   bool CanUseFeedback(const FeedbackNexus& nexus) const;
   const ProcessedFeedback& NewInsufficientFeedback(FeedbackSlotKind kind) const;
@@ -373,6 +392,7 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   BrokerMode mode_ = kDisabled;
   bool const tracing_enabled_;
   bool const is_concurrent_inlining_;
+  bool const is_isolate_bootstrapping_;
   CodeKind const code_kind_;
   std::unique_ptr<PersistentHandles> ph_;
   LocalIsolate* local_isolate_ = nullptr;
@@ -382,7 +402,6 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   ZoneUnorderedMap<FeedbackSource, ProcessedFeedback const*,
                    FeedbackSource::Hash, FeedbackSource::Equal>
       feedback_;
-  ZoneUnorderedMap<ObjectData*, BytecodeAnalysis*> bytecode_analyses_;
   ZoneUnorderedMap<PropertyAccessTarget, PropertyAccessInfo,
                    PropertyAccessTarget::Hash, PropertyAccessTarget::Equal>
       property_access_infos_;
@@ -413,7 +432,7 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   static const uint32_t kInitialRefsBucketCount = 1024;  // must be power of 2
 };
 
-class TraceScope {
+class V8_NODISCARD TraceScope {
  public:
   TraceScope(JSHeapBroker* broker, const char* label)
       : TraceScope(broker, static_cast<void*>(broker), label) {}
@@ -448,23 +467,6 @@ Reduction NoChangeBecauseOfMissingData(JSHeapBroker* broker,
 // compilation is finished.
 bool CanInlineElementAccess(MapRef const& map);
 
-class OffHeapBytecodeArray final : public interpreter::AbstractBytecodeArray {
- public:
-  explicit OffHeapBytecodeArray(BytecodeArrayRef bytecode_array);
-
-  int length() const override;
-  int parameter_count() const override;
-  uint8_t get(int index) const override;
-  void set(int index, uint8_t value) override;
-  Address GetFirstBytecodeAddress() const override;
-  Handle<Object> GetConstantAtIndex(int index, Isolate* isolate) const override;
-  bool IsConstantAtIndexSmi(int index) const override;
-  Smi GetConstantAtIndexAsSmi(int index) const override;
-
- private:
-  BytecodeArrayRef array_;
-};
-
 // Scope that unparks the LocalHeap, if:
 //   a) We have a JSHeapBroker,
 //   b) Said JSHeapBroker has a LocalIsolate and thus a LocalHeap,
@@ -472,7 +474,7 @@ class OffHeapBytecodeArray final : public interpreter::AbstractBytecodeArray {
 //   d) The given condition evaluates to true.
 // Used, for example, when printing the graph with --trace-turbo with a
 // previously parked LocalHeap.
-class UnparkedScopeIfNeeded {
+class V8_NODISCARD UnparkedScopeIfNeeded {
  public:
   explicit UnparkedScopeIfNeeded(JSHeapBroker* broker,
                                  bool extra_condition = true) {

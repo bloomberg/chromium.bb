@@ -17,6 +17,7 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
@@ -24,14 +25,11 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/drive/service/dummy_drive_service.h"
@@ -108,12 +106,14 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
 
   void RunDownloadActionCallback(google_apis::DriveApiErrorCode error,
                                  const base::FilePath& temp_file) {
-    download_action_callback_.Run(error, temp_file);
+    std::move(download_action_callback_).Run(error, temp_file);
   }
 
   void RunGetContentCallback(google_apis::DriveApiErrorCode error,
                              std::unique_ptr<std::string> content) {
-    get_content_callback_.Run(error, std::move(content));
+    get_content_callback_.Run(error, std::move(content),
+                              !get_content_callback_called_);
+    get_content_callback_called_ = true;
   }
 
   void RunProgressCallback(int64_t progress, int64_t total) {
@@ -126,10 +126,10 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
   google_apis::CancelCallbackOnce DownloadFile(
       const base::FilePath& /*cache_path*/,
       const std::string& /*resource_id*/,
-      const DownloadActionCallback& download_action_callback,
+      DownloadActionCallback download_action_callback,
       const GetContentCallback& get_content_callback,
       ProgressCallback progress_callback) override {
-    download_action_callback_ = download_action_callback;
+    download_action_callback_ = std::move(download_action_callback);
     get_content_callback_ = get_content_callback;
     progress_callback_ = std::move(progress_callback);
 
@@ -147,6 +147,8 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
   DownloadActionCallback download_action_callback_;
   GetContentCallback get_content_callback_;
   ProgressCallback progress_callback_;
+
+  bool get_content_callback_called_{false};
 };
 
 class PluginVmInstallerTestBase : public testing::Test {
@@ -220,9 +222,10 @@ class PluginVmInstallerTestBase : public testing::Test {
   void ExpectObserverEventsUntil(InstallingState end_state) {
     InstallingState states[] = {
         InstallingState::kCheckingLicense,
+        InstallingState::kCheckingForExistingVm,
         InstallingState::kCheckingDiskSpace,
         InstallingState::kDownloadingDlc,
-        InstallingState::kCheckingForExistingVm,
+        InstallingState::kStartingDispatcher,
         InstallingState::kDownloadingImage,
         InstallingState::kImporting,
     };
@@ -431,12 +434,13 @@ TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDiskWhenSetInPolicy) {
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, VmExists) {
-  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
-  list_vms_response.add_vm_info()->set_state(
-      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
-  static_cast<chromeos::FakeVmPluginDispatcherClient*>(
-      chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient())
-      ->set_list_vms_response(list_vms_response);
+  // This flow works even if the image url is not set.
+  SetPluginVmImagePref("", kHash);
+
+  vm_tools::concierge::ListVmDisksResponse list_vm_disks_response;
+  list_vm_disks_response.set_success(true);
+  list_vm_disks_response.add_images();
+  fake_concierge_client_->set_list_vm_disks_response(list_vm_disks_response);
 
   ExpectObserverEventsUntil(InstallingState::kCheckingForExistingVm);
   EXPECT_CALL(*observer_, OnVmExists());
@@ -582,6 +586,19 @@ TEST_F(PluginVmInstallerDownloadServiceTest, ImportNonExistingImageTest) {
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
+}
+
+TEST_F(PluginVmInstallerDownloadServiceTest, ImportFailedOutOfSpaceTest) {
+  SetupConciergeForFailedDiskImageImport(
+      fake_concierge_client_,
+      vm_tools::concierge::DISK_STATUS_NOT_ENOUGH_SPACE);
+
+  ExpectObserverEventsUntil(InstallingState::kImporting);
+  EXPECT_CALL(*observer_, OnError(FailureReason::OUT_OF_DISK_SPACE));
+  StartAndRunToCompletion();
+
+  histogram_tester_->ExpectBucketCount(kPluginVmSetupResultHistogram,
+                                       PluginVmSetupResult::kError, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CancelledImportTest) {

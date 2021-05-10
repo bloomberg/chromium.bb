@@ -31,14 +31,12 @@ class CONTENT_EXPORT SmsProviderGms : public SmsProvider {
 
   void Retrieve(RenderFrameHost* rfh) override;
 
-  // Implements JNI method SmsProviderGms.Natives.onReceive().
-  void OnReceive(JNIEnv*, jstring message);
+  // Implementation of corresponding JNI methods in SmsProviderGms.Natives.*
 
-  // Implements JNI method SmsProviderGms.Natives.onTimeout().
+  void OnReceive(JNIEnv*, jstring message, jint backend);
   void OnTimeout(JNIEnv* env);
-
-  // Implements JNI method SmsProviderGms.Natives.onCancel().
   void OnCancel(JNIEnv* env);
+  void OnNotAvailable(JNIEnv* env);
 
   void SetClientAndWindowForTesting(
       const base::android::JavaRef<jobject>& j_fake_client,

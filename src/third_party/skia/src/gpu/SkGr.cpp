@@ -24,7 +24,6 @@
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkImagePriv.h"
 #include "src/core/SkMaskFilterBase.h"
-#include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMessageBus.h"
 #include "src/core/SkMipmap.h"
 #include "src/core/SkPaintPriv.h"
@@ -94,7 +93,7 @@ sk_sp<SkIDChangeListener> GrMakeUniqueKeyInvalidationListener(GrUniqueKey* key,
 }
 
 sk_sp<GrSurfaceProxy> GrCopyBaseMipMapToTextureProxy(GrRecordingContext* ctx,
-                                                     GrSurfaceProxy* baseProxy,
+                                                     sk_sp<GrSurfaceProxy> baseProxy,
                                                      GrSurfaceOrigin origin,
                                                      SkBudgeted budgeted) {
     SkASSERT(baseProxy);
@@ -102,7 +101,7 @@ sk_sp<GrSurfaceProxy> GrCopyBaseMipMapToTextureProxy(GrRecordingContext* ctx,
     if (!ctx->priv().caps()->isFormatCopyable(baseProxy->backendFormat())) {
         return {};
     }
-    auto copy = GrSurfaceProxy::Copy(ctx, baseProxy, origin, GrMipmapped::kYes,
+    auto copy = GrSurfaceProxy::Copy(ctx, std::move(baseProxy), origin, GrMipmapped::kYes,
                                      SkBackingFit::kExact, budgeted);
     if (!copy) {
         return {};
@@ -116,7 +115,7 @@ GrSurfaceProxyView GrCopyBaseMipMapToView(GrRecordingContext* context,
                                           SkBudgeted budgeted) {
     auto origin = src.origin();
     auto swizzle = src.swizzle();
-    auto* proxy = src.proxy();
+    auto proxy = src.refProxy();
     return {GrCopyBaseMipMapToTextureProxy(context, proxy, origin, budgeted), origin, swizzle};
 }
 
@@ -176,6 +175,7 @@ static inline float dither_range_for_config(GrColorType dstColorType) {
         case GrColorType::kAlpha_8:
         case GrColorType::kAlpha_8xxx:
         case GrColorType::kGray_8:
+        case GrColorType::kGrayAlpha_88:
         case GrColorType::kGray_8xxx:
         case GrColorType::kR_8:
         case GrColorType::kRG_88:
@@ -218,10 +218,14 @@ static inline bool skpaint_to_grpaint_impl(GrRecordingContext* context,
                                            std::unique_ptr<GrFragmentProcessor>* shaderProcessor,
                                            SkBlendMode* primColorMode,
                                            GrPaint* grPaint) {
+    // TODO: take sampling directly
+    SkSamplingOptions sampling(SkPaintPriv::GetFQ(skPaint),
+                               SkSamplingOptions::kMedium_asMipmapLinear);
+
     // Convert SkPaint color to 4f format in the destination color space
     SkColor4f origColor = SkColor4fPrepForDst(skPaint.getColor4f(), dstColorInfo);
 
-    GrFPArgs fpArgs(context, matrixProvider, skPaint.getFilterQuality(), &dstColorInfo);
+    GrFPArgs fpArgs(context, matrixProvider, sampling, &dstColorInfo);
 
     // Setup the initial color considering the shader, the SkPaint color, and the presence or not
     // of per-vertex colors.
@@ -422,11 +426,15 @@ bool SkPaintToGrPaintWithTexture(GrRecordingContext* context,
                                  std::unique_ptr<GrFragmentProcessor> fp,
                                  bool textureIsAlphaOnly,
                                  GrPaint* grPaint) {
+    // TODO: take sampling directly
+    SkSamplingOptions sampling(SkPaintPriv::GetFQ(paint),
+                               SkSamplingOptions::kMedium_asMipmapLinear);
+
     std::unique_ptr<GrFragmentProcessor> shaderFP;
     if (textureIsAlphaOnly) {
         if (const auto* shader = as_SB(paint.getShader())) {
             shaderFP = shader->asFragmentProcessor(
-                    GrFPArgs(context, matrixProvider, paint.getFilterQuality(), &dstColorInfo));
+                    GrFPArgs(context, matrixProvider, sampling, &dstColorInfo));
             if (!shaderFP) {
                 return false;
             }
@@ -450,54 +458,39 @@ bool SkPaintToGrPaintWithTexture(GrRecordingContext* context,
 
 std::tuple<GrSamplerState::Filter,
            GrSamplerState::MipmapMode,
-           bool /*bicubic*/>
-GrInterpretFilterQuality(SkISize imageDims,
-                         SkFilterQuality paintFilterQuality,
-                         const SkMatrix& viewM,
-                         const SkMatrix& localM,
-                         bool sharpenMipmappedTextures,
-                         bool allowFilterQualityReduction) {
+           SkCubicResampler>
+GrInterpretSamplingOptions(SkISize imageDims,
+                           const SkSamplingOptions& sampling,
+                           const SkMatrix& viewM,
+                           const SkMatrix& localM,
+                           bool sharpenMipmappedTextures,
+                           bool allowFilterQualityReduction) {
     using Filter = GrSamplerState::Filter;
     using MipmapMode = GrSamplerState::MipmapMode;
-    switch (paintFilterQuality) {
-        case kNone_SkFilterQuality:
-            return {Filter::kNearest, MipmapMode::kNone, false};
-        case kLow_SkFilterQuality:
-            return {Filter::kLinear, MipmapMode::kNone, false};
-        case kMedium_SkFilterQuality: {
-            if (allowFilterQualityReduction) {
-                SkMatrix matrix;
-                matrix.setConcat(viewM, localM);
-                // With sharp mips, we bias lookups by -0.5. That means our final LOD is >= 0 until
-                // the computed LOD is >= 0.5. At what scale factor does a texture get an LOD of
-                // 0.5?
-                //
-                // Want:  0       = log2(1/s) - 0.5
-                //        0.5     = log2(1/s)
-                //        2^0.5   = 1/s
-                //        1/2^0.5 = s
-                //        2^0.5/2 = s
-                SkScalar mipScale = sharpenMipmappedTextures ? SK_ScalarRoot2Over2 : SK_Scalar1;
-                if (matrix.getMinScale() >= mipScale) {
-                    return {Filter::kLinear, MipmapMode::kNone, false};
-                }
-            }
-            return {Filter::kLinear, MipmapMode::kLinear, false};
-        }
-        case kHigh_SkFilterQuality: {
-            if (allowFilterQualityReduction) {
-                SkMatrix matrix;
-                matrix.setConcat(viewM, localM);
-                paintFilterQuality = SkMatrixPriv::AdjustHighQualityFilterLevel(matrix);
-            }
-            switch (paintFilterQuality) {
-                case kNone_SkFilterQuality:   return {Filter::kNearest, MipmapMode::kNone  , false};
-                case kLow_SkFilterQuality:    return {Filter::kLinear , MipmapMode::kNone  , false};
-                case kMedium_SkFilterQuality: return {Filter::kLinear , MipmapMode::kLinear, false};
-                case kHigh_SkFilterQuality:   return {Filter::kNearest, MipmapMode::kNone  , true };
-            }
-            SkUNREACHABLE;
+
+    if (sampling.useCubic) {
+        SkASSERT(GrValidCubicResampler(sampling.cubic));
+        return {Filter::kNearest, MipmapMode::kNone, sampling.cubic};
+    }
+
+    Filter     f = sampling.filter;
+    MipmapMode m = sampling.mipmap;
+    if (allowFilterQualityReduction && (m != MipmapMode::kNone)) {
+        SkMatrix matrix;
+        matrix.setConcat(viewM, localM);
+        // With sharp mips, we bias lookups by -0.5. That means our final LOD is >= 0 until
+        // the computed LOD is >= 0.5. At what scale factor does a texture get an LOD of
+        // 0.5?
+        //
+        // Want:  0       = log2(1/s) - 0.5
+        //        0.5     = log2(1/s)
+        //        2^0.5   = 1/s
+        //        1/2^0.5 = s
+        //        2^0.5/2 = s
+        SkScalar mipScale = sharpenMipmappedTextures ? SK_ScalarRoot2Over2 : SK_Scalar1;
+        if (matrix.getMinScale() >= mipScale) {
+            m = MipmapMode::kNone;
         }
     }
-    SkUNREACHABLE;
+    return {f, m, kInvalidCubicResampler};
 }

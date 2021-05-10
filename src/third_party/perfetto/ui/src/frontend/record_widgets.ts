@@ -51,7 +51,7 @@ class DocsChip implements m.ClassComponent<DocsChipAttrs> {
 export interface ProbeAttrs {
   title: string;
   img: string|null;
-  descr: string;
+  descr: m.Children;
   isEnabled: Getter<boolean>;
   setEnabled: Setter<boolean>;
 }
@@ -70,7 +70,7 @@ export class Probe implements m.ClassComponent<ProbeAttrs> {
     return m(
         `.probe${enabled ? '.enabled' : ''}`,
         attrs.img && m('img', {
-          src: `assets/${attrs.img}`,
+          src: `${globals.root}assets/${attrs.img}`,
           onclick: () => onToggle(!enabled),
         }),
         m('label',
@@ -82,6 +82,43 @@ export class Probe implements m.ClassComponent<ProbeAttrs> {
           }),
           m('span', attrs.title)),
         m('div', m('div', attrs.descr), m('.probe-config', children)));
+  }
+}
+
+// +-------------------------------------------------------------+
+// | Toggle: an on/off switch.
+// +-------------------------------------------------------------+
+
+export interface ToggleAttrs {
+  title: string;
+  descr: string;
+  cssClass?: string;
+  isEnabled: Getter<boolean>;
+  setEnabled: Setter<boolean>;
+}
+
+export class Toggle implements m.ClassComponent<ToggleAttrs> {
+  view({attrs}: m.CVnode<ToggleAttrs>) {
+    const onToggle = (enabled: boolean) => {
+      const traceCfg = produce(globals.state.recordConfig, draft => {
+        attrs.setEnabled(draft, enabled);
+      });
+      globals.dispatch(Actions.setRecordConfig({config: traceCfg}));
+    };
+
+    const enabled = attrs.isEnabled(globals.state.recordConfig);
+
+    return m(
+        `.toggle${enabled ? '.enabled' : ''}${attrs.cssClass || ''}`,
+        m('label',
+          m(`input[type=checkbox]`, {
+            checked: enabled,
+            oninput: (e: InputEvent) => {
+              onToggle((e.target as HTMLInputElement).checked);
+            },
+          }),
+          m('span', attrs.title)),
+        m('.descr', attrs.descr));
   }
 }
 

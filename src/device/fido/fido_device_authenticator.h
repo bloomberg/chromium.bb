@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                     CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override;
-  void GetTouch(base::OnceCallback<void()> callback) override;
+  void GetTouch(base::OnceClosure callback) override;
   void GetPinRetries(GetRetriesCallback callback) override;
   void GetPINToken(std::string pin,
                    std::vector<pin::Permissions> permissions,
@@ -60,17 +60,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetUvToken(std::vector<pin::Permissions> permissions,
                   base::Optional<std::string> rp_id,
                   GetTokenCallback callback) override;
+  uint32_t CurrentMinPINLength() override;
+  uint32_t NewMinPINLength() override;
+  bool ForcePINChange() override;
   void SetPIN(const std::string& pin, SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
                  const std::string& new_pin,
                  SetPINCallback callback) override;
-  MakeCredentialPINUVDisposition PINUVDispositionForMakeCredential(
+  PINUVDisposition PINUVDispositionForMakeCredential(
       const CtapMakeCredentialRequest& request,
       const FidoRequestHandlerBase::Observer* observer) override;
 
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
-  GetAssertionPINDisposition WillNeedPINToGetAssertion(
+  PINUVDisposition PINUVDispositionForGetAssertion(
       const CtapGetAssertionRequest& request,
       const FidoRequestHandlerBase::Observer* observer) override;
 
@@ -112,7 +115,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
-  base::string16 GetDisplayName() const override;
+  std::string GetDisplayName() const override;
   ProtocolVersion SupportedProtocol() const override;
   bool SupportsHMACSecretExtension() const override;
   bool SupportsEnterpriseAttestation() const override;
@@ -127,9 +130,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 #if defined(OS_MAC)
   bool IsTouchIdAuthenticator() const override;
 #endif  // defined(OS_MAC)
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsChromeOSAuthenticator() const override;
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
   FidoDevice* device() { return device_.get(); }

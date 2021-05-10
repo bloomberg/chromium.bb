@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/binary_expression.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -22,16 +23,16 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, ParenRhsStmt) {
-  auto* p = parser("(a + b)");
+  auto p = parser("(a + b)");
   auto e = p->expect_paren_rhs_stmt();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
   ASSERT_NE(e.value, nullptr);
-  ASSERT_TRUE(e->IsBinary());
+  ASSERT_TRUE(e->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, ParenRhsStmt_MissingLeftParen) {
-  auto* p = parser("true)");
+  auto p = parser("true)");
   auto e = p->expect_paren_rhs_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -40,7 +41,7 @@ TEST_F(ParserImplTest, ParenRhsStmt_MissingLeftParen) {
 }
 
 TEST_F(ParserImplTest, ParenRhsStmt_MissingRightParen) {
-  auto* p = parser("(true");
+  auto p = parser("(true");
   auto e = p->expect_paren_rhs_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -49,7 +50,7 @@ TEST_F(ParserImplTest, ParenRhsStmt_MissingRightParen) {
 }
 
 TEST_F(ParserImplTest, ParenRhsStmt_InvalidExpression) {
-  auto* p = parser("(if (a() {})");
+  auto p = parser("(if (a() {})");
   auto e = p->expect_paren_rhs_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -58,7 +59,7 @@ TEST_F(ParserImplTest, ParenRhsStmt_InvalidExpression) {
 }
 
 TEST_F(ParserImplTest, ParenRhsStmt_MissingExpression) {
-  auto* p = parser("()");
+  auto p = parser("()");
   auto e = p->expect_paren_rhs_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);

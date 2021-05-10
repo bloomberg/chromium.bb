@@ -16,13 +16,10 @@
 
 #include <memory>
 
-#include "src/type_manager.h"
-
 namespace tint {
 
 ValidatorTestHelper::ValidatorTestHelper() {
-  td_ = std::make_unique<TypeDeterminer>(&ctx_, &mod_);
-  v_ = std::make_unique<ValidatorImpl>();
+  td_ = std::make_unique<TypeDeterminer>(this);
 }
 
 ValidatorTestHelper::~ValidatorTestHelper() = default;

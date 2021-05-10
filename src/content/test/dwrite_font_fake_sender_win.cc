@@ -10,15 +10,16 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/strings/string_util.h"
 
 namespace content {
 
 void AddFamily(const base::FilePath& font_path,
                const base::string16& family_name,
-               const base::string16& base_family_name,
+               const std::wstring& base_family_name,
                FakeFontCollection* collection) {
   collection->AddFont(family_name)
-      .AddFamilyName(L"en-us", family_name)
+      .AddFamilyName(STRING16_LITERAL("en-us"), family_name)
       .AddFilePath(font_path.Append(L"\\" + base_family_name + L".ttf"))
       .AddFilePath(font_path.Append(L"\\" + base_family_name + L"bd.ttf"))
       .AddFilePath(font_path.Append(L"\\" + base_family_name + L"bi.ttf"))
@@ -33,17 +34,20 @@ mojo::PendingRemote<blink::mojom::DWriteFontProxy> CreateFakeCollectionRemote(
 base::RepeatingCallback<
     mojo::PendingRemote<blink::mojom::DWriteFontProxy>(void)>
 CreateFakeCollectionSender() {
-  std::vector<base::char16> font_path_chars;
+  std::vector<wchar_t> font_path_chars;
   font_path_chars.resize(MAX_PATH);
   SHGetSpecialFolderPath(nullptr /*hwndOwner - reserved*/,
                          font_path_chars.data(), CSIDL_FONTS,
                          FALSE /*fCreate*/);
-  base::FilePath font_path(base::string16(font_path_chars.data()));
+  base::FilePath font_path(std::wstring(font_path_chars.data()));
   std::unique_ptr<FakeFontCollection> fake_collection =
       std::make_unique<FakeFontCollection>();
-  AddFamily(font_path, L"Arial", L"arial", fake_collection.get());
-  AddFamily(font_path, L"Courier New", L"cour", fake_collection.get());
-  AddFamily(font_path, L"Times New Roman", L"times", fake_collection.get());
+  AddFamily(font_path, STRING16_LITERAL("Arial"), L"arial",
+            fake_collection.get());
+  AddFamily(font_path, STRING16_LITERAL("Courier New"), L"cour",
+            fake_collection.get());
+  AddFamily(font_path, STRING16_LITERAL("Times New Roman"), L"times",
+            fake_collection.get());
   return base::BindRepeating(&CreateFakeCollectionRemote,
                              std::move(fake_collection));
 }
@@ -80,7 +84,8 @@ void FakeFontCollection::FindFamily(const base::string16& family_name,
                                     FindFamilyCallback callback) {
   message_types_.push_back(MessageType::kFindFamily);
   for (size_t n = 0; n < fonts_.size(); n++) {
-    if (_wcsicmp(family_name.data(), fonts_[n].font_name_.data()) == 0) {
+    if (base::EqualsCaseInsensitiveASCII(family_name.data(),
+                                         fonts_[n].font_name_.data())) {
       std::move(callback).Run(n);
       return;
     }

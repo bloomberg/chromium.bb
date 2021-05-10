@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util_win.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -55,6 +56,7 @@
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/resize_utils.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -210,11 +212,6 @@ bool GetMonitorAndRects(const RECT& rect,
   return true;
 }
 
-struct FindOwnedWindowsData {
-  HWND window;
-  std::vector<Widget*> owned_widgets;
-};
-
 // Enables or disables the menu item for the specified command and menu.
 void EnableMenuItemByCommand(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
@@ -255,28 +252,28 @@ bool IsHitTestOnResizeHandle(LRESULT hittest) {
          hittest == HTBOTTOMLEFT || hittest == HTBOTTOMRIGHT;
 }
 
-// Convert |param| to the HitTest used in WindowResizeUtils.
-HitTest GetWindowResizeHitTest(UINT param) {
+// Convert |param| to the gfx::ResizeEdge used in gfx::SizeRectToAspectRatio().
+gfx::ResizeEdge GetWindowResizeEdge(UINT param) {
   switch (param) {
     case WMSZ_BOTTOM:
-      return HitTest::kBottom;
+      return gfx::ResizeEdge::kBottom;
     case WMSZ_TOP:
-      return HitTest::kTop;
+      return gfx::ResizeEdge::kTop;
     case WMSZ_LEFT:
-      return HitTest::kLeft;
+      return gfx::ResizeEdge::kLeft;
     case WMSZ_RIGHT:
-      return HitTest::kRight;
+      return gfx::ResizeEdge::kRight;
     case WMSZ_TOPLEFT:
-      return HitTest::kTopLeft;
+      return gfx::ResizeEdge::kTopLeft;
     case WMSZ_TOPRIGHT:
-      return HitTest::kTopRight;
+      return gfx::ResizeEdge::kTopRight;
     case WMSZ_BOTTOMLEFT:
-      return HitTest::kBottomLeft;
+      return gfx::ResizeEdge::kBottomLeft;
     case WMSZ_BOTTOMRIGHT:
-      return HitTest::kBottomRight;
+      return gfx::ResizeEdge::kBottomRight;
     default:
       NOTREACHED();
-      return HitTest::kBottomRight;
+      return gfx::ResizeEdge::kBottomRight;
   }
 }
 
@@ -460,7 +457,7 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       hwnd(), ui::WindowEventTarget::kWin32InputEventTarget,
       static_cast<ui::WindowEventTarget*>(this));
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
-  observer_.Add(delegate_->GetHWNDMessageDelegateInputMethod());
+  observation_.Observe(delegate_->GetHWNDMessageDelegateInputMethod());
 
   // The usual way for UI Automation to obtain a fragment root is through
   // WM_GETOBJECT. However, if there's a relation such as "Controller For"
@@ -853,21 +850,22 @@ void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
 }
 
 bool HWNDMessageHandler::SetTitle(const base::string16& title) {
-  base::string16 current_title;
+  std::wstring current_title;
   size_t len_with_null = GetWindowTextLength(hwnd()) + 1;
   if (len_with_null == 1 && title.length() == 0)
     return false;
   if (len_with_null - 1 == title.length() &&
       GetWindowText(hwnd(), base::WriteInto(&current_title, len_with_null),
                     len_with_null) &&
-      current_title == title)
+      current_title == base::AsWStringPiece(title))
     return false;
-  SetWindowText(hwnd(), title.c_str());
+  SetWindowText(hwnd(), base::as_wcstr(title));
   return true;
 }
 
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
-  TRACE_EVENT1("ui,input", "HWNDMessageHandler::SetCursor", "cursor", cursor);
+  TRACE_EVENT1("ui,input", "HWNDMessageHandler::SetCursor", "cursor",
+               static_cast<const void*>(cursor));
   ::SetCursor(cursor);
   current_cursor_ = cursor;
 }
@@ -929,7 +927,7 @@ void HWNDMessageHandler::SetAspectRatio(float aspect_ratio) {
   if (GetWindowRect(hwnd(), &window_rect)) {
     gfx::Rect rect(window_rect);
 
-    SizeRectToAspectRatio(WMSZ_BOTTOMRIGHT, &rect);
+    SizeWindowToAspectRatio(WMSZ_BOTTOMRIGHT, &rect);
     SetBoundsInternal(rect, false);
   }
 }
@@ -1669,7 +1667,13 @@ void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
                                          const gfx::Size& screen_size) {
   TRACE_EVENT0("ui", "HWNDMessageHandler::OnDisplayChange");
 
+  base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleDisplayChange();
+
+  // HandleDisplayChange() may result in |this| being deleted.
+  if (!ref)
+    return;
+
   // Force a WM_NCCALCSIZE to occur to ensure that we handle auto hide
   // taskbars correctly.
   SendFrameChanged();
@@ -2587,7 +2591,7 @@ void HWNDMessageHandler::OnSizing(UINT param, RECT* rect) {
     return;
 
   gfx::Rect window_rect(*rect);
-  SizeRectToAspectRatio(param, &window_rect);
+  SizeWindowToAspectRatio(param, &window_rect);
 
   // TODO(apacible): Account for window borders as part of the aspect ratio.
   // https://crbug/869487.
@@ -3535,18 +3539,15 @@ void HWNDMessageHandler::DestroyAXSystemCaret() {
   ax_system_caret_ = nullptr;
 }
 
-void HWNDMessageHandler::SizeRectToAspectRatio(UINT param,
-                                               gfx::Rect* window_rect) {
+void HWNDMessageHandler::SizeWindowToAspectRatio(UINT param,
+                                                 gfx::Rect* window_rect) {
   gfx::Size min_window_size;
   gfx::Size max_window_size;
   delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
-  WindowResizeUtils::SizeMinMaxToAspectRatio(
-      aspect_ratio_.value(), &min_window_size, &max_window_size);
   min_window_size = delegate_->DIPToScreenSize(min_window_size);
   max_window_size = delegate_->DIPToScreenSize(max_window_size);
-  WindowResizeUtils::SizeRectToAspectRatio(
-      GetWindowResizeHitTest(param), aspect_ratio_.value(), min_window_size,
-      max_window_size, window_rect);
+  gfx::SizeRectToAspectRatio(GetWindowResizeEdge(param), aspect_ratio_.value(),
+                             min_window_size, max_window_size, window_rect);
 }
 
 POINT HWNDMessageHandler::GetCursorPos() const {

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/autofill_assistant/browser/script_parameters.h"
 
 namespace autofill_assistant {
 
@@ -46,12 +47,16 @@ bool StaticTriggerConditions::has_stored_login_credentials() const {
 }
 
 bool StaticTriggerConditions::is_in_experiment(int experiment_id) const {
-  DCHECK(trigger_context_);
   return trigger_context_->HasExperimentId(base::NumberToString(experiment_id));
 }
 
 bool StaticTriggerConditions::has_results() const {
   return has_results_;
+}
+
+bool StaticTriggerConditions::script_parameter_matches(
+    const ScriptParameterMatchProto& param) const {
+  return trigger_context_->GetScriptParameters().Matches(param);
 }
 
 void StaticTriggerConditions::OnGetLogins(

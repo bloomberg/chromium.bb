@@ -22,7 +22,7 @@
 
 #include "gtest/gtest.h"
 #include "source/opt/ir_context.h"
-#include "src/context.h"
+#include "src/demangler.h"
 #include "src/reader/spirv/parser_impl.h"
 
 namespace tint {
@@ -36,46 +36,55 @@ class SpvParserTestBase : public T {
   SpvParserTestBase() = default;
   ~SpvParserTestBase() override = default;
 
-  /// Sets up the test helper
-  void SetUp() override { ctx_.Reset(); }
-
-  /// Tears down the test helper
-  void TearDown() override { impl_ = nullptr; }
-
   /// Retrieves the parser from the helper
   /// @param input the SPIR-V binary to parse
   /// @returns a parser for the given binary
-  ParserImpl* parser(const std::vector<uint32_t>& input) {
-    impl_ = std::make_unique<ParserImpl>(&ctx_, input);
-    return impl_.get();
+  std::unique_ptr<ParserImpl> parser(const std::vector<uint32_t>& input) {
+    auto parser = std::make_unique<ParserImpl>(input);
+    // Don't run the TypeDeterminer when building the program.
+    // We're not interested in type information with these tests.
+    parser->builder().SetResolveOnBuild(false);
+    return parser;
   }
 
   /// Gets the internal representation of the function with the given ID.
   /// Assumes ParserImpl::BuildInternalRepresentation has been run and
   /// succeeded.
+  /// @param parser the parser
   /// @param id the SPIR-V ID of the function
   /// @returns the internal representation of the function
-  spvtools::opt::Function* spirv_function(uint32_t id) {
-    return impl_->ir_context()->GetFunction(id);
+  spvtools::opt::Function* spirv_function(ParserImpl* parser, uint32_t id) {
+    return parser->ir_context()->GetFunction(id);
   }
-
- private:
-  std::unique_ptr<ParserImpl> impl_;
-  Context ctx_;
 };
 
 // Use this form when you don't need to template any further.
 using SpvParserTest = SpvParserTestBase<::testing::Test>;
 
-/// Returns the string dump of a function body.
-/// @param body the statement in the body
-/// @returnss the string dump of a function body.
-inline std::string ToString(const ast::BlockStatement* body) {
+/// Returns the string dump of a statement list.
+/// @param program the Program
+/// @param stmts the statement list
+/// @returns the string dump of a statement list.
+inline std::string ToString(const Program& program,
+                            const ast::StatementList& stmts) {
   std::ostringstream outs;
-  for (const auto& stmt : *body) {
-    stmt->to_str(outs, 0);
+  for (const auto* stmt : stmts) {
+    program.to_str(stmt, outs, 0);
   }
-  return outs.str();
+  return Demangler().Demangle(program.Symbols(), outs.str());
+}
+
+/// Returns the string dump of a statement list.
+/// @param builder the ProgramBuilder
+/// @param stmts the statement list
+/// @returns the string dump of a statement list.
+inline std::string ToString(ProgramBuilder& builder,
+                            const ast::StatementList& stmts) {
+  std::ostringstream outs;
+  for (const auto* stmt : stmts) {
+    builder.to_str(stmt, outs, 0);
+  }
+  return Demangler().Demangle(builder.Symbols(), outs.str());
 }
 
 }  // namespace spirv

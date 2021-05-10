@@ -9,6 +9,7 @@
 #define SKSL_EXPRESSION
 
 #include "include/private/SkTHash.h"
+#include "src/sksl/SkSLDefinitionMap.h"
 #include "src/sksl/ir/SkSLStatement.h"
 #include "src/sksl/ir/SkSLType.h"
 
@@ -20,8 +21,6 @@ class Expression;
 class IRGenerator;
 class Variable;
 
-using DefinitionMap = SkTHashMap<const Variable*, std::unique_ptr<Expression>*>;
-
 /**
  * Abstract supertype of all expressions.
  */
@@ -30,17 +29,17 @@ public:
     enum class Kind {
         kBinary = (int) Statement::Kind::kLast + 1,
         kBoolLiteral,
+        kCodeString,
         kConstructor,
         kDefined,
         kExternalFunctionCall,
-        kExternalValue,
+        kExternalFunctionReference,
         kIntLiteral,
         kFieldAccess,
         kFloatLiteral,
         kFunctionReference,
         kFunctionCall,
         kIndex,
-        kNullLiteral,
         kPrefix,
         kPostfix,
         kSetting,
@@ -105,28 +104,41 @@ public:
     }
 
     /**
-     * Compares this constant expression against another constant expression of the same type. It is
-     * an error to call this on non-constant expressions, or if the types of the expressions do not
-     * match.
+     * Compares this constant expression against another constant expression. Returns kUnknown if
+     * we aren't able to deduce a result (an expression isn't actually constant, the types are
+     * mismatched, etc).
      */
-    virtual bool compareConstant(const Context& context, const Expression& other) const {
-        ABORT("cannot call compareConstant on this type");
+    enum class ComparisonResult {
+        kUnknown = -1,
+        kNotEqual,
+        kEqual
+    };
+    virtual ComparisonResult compareConstant(const Expression& other) const {
+        return ComparisonResult::kUnknown;
     }
 
     /**
      * For an expression which evaluates to a constant int, returns the value. Otherwise calls
-     * ABORT.
+     * SK_ABORT.
      */
-    virtual int64_t getConstantInt() const {
-        ABORT("not a constant int");
+    virtual SKSL_INT getConstantInt() const {
+        SK_ABORT("not a constant int");
     }
 
     /**
      * For an expression which evaluates to a constant float, returns the value. Otherwise calls
-     * ABORT.
+     * SK_ABORT.
      */
     virtual SKSL_FLOAT getConstantFloat() const {
-        ABORT("not a constant float");
+        SK_ABORT("not a constant float");
+    }
+
+    /**
+     * For an expression which evaluates to a constant Boolean, returns the value. Otherwise calls
+     * SK_ABORT.
+     */
+    virtual bool getConstantBool() const {
+        SK_ABORT("not a constant Boolean");
     }
 
     /**
@@ -166,20 +178,33 @@ public:
 
     /**
      * For a vector of floating point values, return the value of the n'th vector component. It is
-     * an error to call this method on an expression which is not a vector of FloatLiterals.
+     * an error to call this method on an expression which is not a vector of floating-point
+     * constant expressions.
      */
     virtual SKSL_FLOAT getFVecComponent(int n) const {
-        SkASSERT(false);
+        SkDEBUGFAILF("expression does not support getVecComponent: %s",
+                     this->description().c_str());
         return 0;
     }
 
     /**
      * For a vector of integer values, return the value of the n'th vector component. It is an error
-     * to call this method on an expression which is not a vector of IntLiterals.
+     * to call this method on an expression which is not a vector of integer constant expressions.
      */
     virtual SKSL_INT getIVecComponent(int n) const {
-        SkASSERT(false);
+        SkDEBUGFAILF("expression does not support getVecComponent: %s",
+                     this->description().c_str());
         return 0;
+    }
+
+    /**
+     * For a vector of Boolean values, return the value of the n'th vector component. It is an error
+     * to call this method on an expression which is not a vector of Boolean constant expressions.
+     */
+    virtual bool getBVecComponent(int n) const {
+        SkDEBUGFAILF("expression does not support getVecComponent: %s",
+                     this->description().c_str());
+        return false;
     }
 
     /**
@@ -212,6 +237,10 @@ template <> inline SKSL_FLOAT Expression::getVecComponent<SKSL_FLOAT>(int index)
 
 template <> inline SKSL_INT Expression::getVecComponent<SKSL_INT>(int index) const {
     return this->getIVecComponent(index);
+}
+
+template <> inline bool Expression::getVecComponent<bool>(int index) const {
+    return this->getBVecComponent(index);
 }
 
 }  // namespace SkSL

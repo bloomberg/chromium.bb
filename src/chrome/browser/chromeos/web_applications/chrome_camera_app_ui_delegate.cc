@@ -6,17 +6,22 @@
 
 #include <vector>
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+// TODO(b/174811949): Hide behind ChromeOS build flag.
+#include "chrome/browser/chromeos/web_applications/chrome_camera_app_ui_constants.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
@@ -27,13 +32,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
-
-namespace {
-
-constexpr int kDefaultWindowWidth = 864;
-constexpr int kDefaultWindowHeight = 486;
-
-}  // namespace
 
 // static
 void ChromeCameraAppUIDelegate::CameraAppDialog::ShowIntent(
@@ -57,12 +55,12 @@ ui::ModalType ChromeCameraAppUIDelegate::CameraAppDialog::GetDialogModalType()
 }
 
 bool ChromeCameraAppUIDelegate::CameraAppDialog::CanMaximizeDialog() const {
-  return true;
+  return !ash::TabletMode::Get()->InTabletMode();
 }
 
 void ChromeCameraAppUIDelegate::CameraAppDialog::GetDialogSize(
     gfx::Size* size) const {
-  size->SetSize(kDefaultWindowWidth, kDefaultWindowHeight);
+  size->SetSize(kChromeCameraAppDefaultWidth, kChromeCameraAppDefaultHeight);
 }
 
 void ChromeCameraAppUIDelegate::CameraAppDialog::RequestMediaAccessPermission(
@@ -115,24 +113,19 @@ bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {
 }
 
 void ChromeCameraAppUIDelegate::OpenFileInGallery(const std::string& name) {
-  // Check to avoid directory traversal attack.
-  base::FilePath name_component(name);
-  if (name_component.ReferencesParent())
+  base::FilePath path = GetFilePathByName(name);
+  if (path.empty()) {
     return;
+  }
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
-
-  base::FilePath path = file_manager::util::GetMyFilesFolderForProfile(profile)
-                            .Append("Camera")
-                            .Append(name_component);
   auto&& file_paths = std::vector<base::FilePath>({path});
   apps::mojom::FilePathsPtr launch_files =
       apps::mojom::FilePaths::New(file_paths);
 
   apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
+      apps::AppServiceProxyFactory::GetForProfile(Profile::FromWebUI(web_ui_));
   proxy->LaunchAppWithFiles(
-      chromeos::default_web_apps::kMediaAppId,
+      web_app::kMediaAppId,
       apps::mojom::LaunchContainer::kLaunchContainerWindow,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
                           WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -153,4 +146,46 @@ void ChromeCameraAppUIDelegate::OpenFeedbackDialog(
                            placeholder /* description_placeholder_text */,
                            "chromeos-camera-app" /* category_tag */,
                            std::string() /* extra_diagnostics */);
+}
+
+std::string ChromeCameraAppUIDelegate::GetFilePathInArcByName(
+    const std::string& name) {
+  base::FilePath path = GetFilePathByName(name);
+  if (path.empty()) {
+    return std::string();
+  }
+
+  GURL arc_url_out;
+  bool requires_sharing = false;
+  if (!file_manager::util::ConvertPathToArcUrl(path, &arc_url_out,
+                                               &requires_sharing) ||
+      !arc_url_out.is_valid()) {
+    return std::string();
+  }
+  if (requires_sharing) {
+    LOG(ERROR) << "File path should be in MyFiles and not require any sharing";
+    NOTREACHED();
+    return std::string();
+  }
+  return arc_url_out.spec();
+}
+
+base::FilePath ChromeCameraAppUIDelegate::GetFilePathByName(
+    const std::string& name) {
+  // Check to avoid directory traversal attack.
+  base::FilePath name_component(name);
+  if (name_component.ReferencesParent())
+    return base::FilePath();
+
+  Profile* profile = Profile::FromWebUI(web_ui_);
+
+  return file_manager::util::GetMyFilesFolderForProfile(profile)
+      .Append("Camera")
+      .Append(name_component);
+}
+
+void ChromeCameraAppUIDelegate::OpenDevToolsWindow(
+    content::WebContents* web_contents) {
+  DevToolsWindow::OpenDevToolsWindow(web_contents,
+                                     DevToolsToggleAction::NoOp());
 }

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -391,10 +392,10 @@ void HTMLSelectElement::OptionElementChildrenChanged(
   }
 }
 
-void HTMLSelectElement::AccessKeyAction(bool send_mouse_events) {
+void HTMLSelectElement::AccessKeyAction(
+    SimulatedClickCreationScope creation_scope) {
   focus();
-  DispatchSimulatedClick(
-      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
+  DispatchSimulatedClick(nullptr, creation_scope);
 }
 
 Element* HTMLSelectElement::namedItem(const AtomicString& name) {
@@ -436,6 +437,8 @@ void HTMLSelectElement::SetOption(unsigned index,
   // Finally add the new element.
   EventQueueScope scope;
   add(element, before, exception_state);
+  if (exception_state.HadException())
+    return;
   if (diff >= 0 && option->Selected())
     OptionSelectionStateChanged(option, true);
 }
@@ -709,8 +712,7 @@ void HTMLSelectElement::ChildrenChanged(const ChildrenChange& change) {
         OptionRemoved(child_option);
     }
   } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
-    DCHECK(change.removed_nodes);
-    for (Node* node : *change.removed_nodes) {
+    for (Node* node : change.removed_nodes) {
       if (auto* option = DynamicTo<HTMLOptionElement>(node)) {
         OptionRemoved(*option);
       } else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -1109,7 +1111,7 @@ void HTMLSelectElement::TypeAheadFind(const KeyboardEvent& event) {
 void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
   // First bring into focus the list box.
   if (!IsFocused())
-    AccessKeyAction(false);
+    AccessKeyAction(SimulatedClickCreationScope::kFromUserAgent);
 
   if (!option || option->OwnerSelectElement() != this)
     return;

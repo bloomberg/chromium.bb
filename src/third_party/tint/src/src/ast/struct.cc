@@ -14,53 +14,54 @@
 
 #include "src/ast/struct.h"
 
+#include "src/ast/struct_block_decoration.h"
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::Struct);
+
 namespace tint {
 namespace ast {
 
-Struct::Struct() : Node() {}
-
-Struct::Struct(StructMemberList members)
-    : Node(), members_(std::move(members)) {}
-
-Struct::Struct(StructDecorationList decorations, StructMemberList members)
-    : Node(),
-      decorations_(std::move(decorations)),
-      members_(std::move(members)) {}
-
-Struct::Struct(const Source& source, StructMemberList members)
-    : Node(source), members_(std::move(members)) {}
-
 Struct::Struct(const Source& source,
-               StructDecorationList decorations,
-               StructMemberList members)
-    : Node(source),
-      decorations_(std::move(decorations)),
-      members_(std::move(members)) {}
+               StructMemberList members,
+               StructDecorationList decorations)
+    : Base(source),
+      members_(std::move(members)),
+      decorations_(std::move(decorations)) {}
 
 Struct::Struct(Struct&&) = default;
 
 Struct::~Struct() = default;
 
-StructMember* Struct::get_member(const std::string& name) const {
-  for (auto& mem : members_) {
-    if (mem->name() == name) {
-      return mem.get();
+StructMember* Struct::get_member(const Symbol& symbol) const {
+  for (auto* mem : members_) {
+    if (mem->symbol() == symbol) {
+      return mem;
     }
   }
   return nullptr;
 }
 
 bool Struct::IsBlockDecorated() const {
-  for (auto& deco : decorations_) {
-    if (deco->IsBlock()) {
+  for (auto* deco : decorations_) {
+    if (deco->Is<StructBlockDecoration>()) {
       return true;
     }
   }
   return false;
 }
 
+Struct* Struct::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto mem = ctx->Clone(members());
+  auto decos = ctx->Clone(decorations());
+  return ctx->dst->create<Struct>(src, mem, decos);
+}
+
 bool Struct::IsValid() const {
-  for (const auto& mem : members_) {
+  for (auto* mem : members_) {
     if (mem == nullptr || !mem->IsValid()) {
       return false;
     }
@@ -68,16 +69,18 @@ bool Struct::IsValid() const {
   return true;
 }
 
-void Struct::to_str(std::ostream& out, size_t indent) const {
+void Struct::to_str(const semantic::Info& sem,
+                    std::ostream& out,
+                    size_t indent) const {
   out << "Struct{" << std::endl;
-  for (auto& deco : decorations_) {
+  for (auto* deco : decorations_) {
     make_indent(out, indent + 2);
     out << "[[";
-    deco->to_str(out);
+    deco->to_str(sem, out, 0);
     out << "]]" << std::endl;
   }
-  for (const auto& member : members_) {
-    member->to_str(out, indent + 2);
+  for (auto* member : members_) {
+    member->to_str(sem, out, indent + 2);
   }
   make_indent(out, indent);
   out << "}" << std::endl;

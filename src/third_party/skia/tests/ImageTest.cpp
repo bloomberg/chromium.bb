@@ -39,6 +39,7 @@
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 #include "tools/gpu/ManagedBackendTexture.h"
+#include "tools/gpu/ProxyUtils.h"
 
 using namespace sk_gpu_test;
 
@@ -230,7 +231,7 @@ DEF_TEST(Image_Serialize_Encoding_Failure, reporter) {
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(100, 100);
-    canvas->drawImage(image, 0, 0);
+    canvas->drawImage(image.get(), 0, 0, SkSamplingOptions());
     sk_sp<SkPicture> picture(recorder.finishRecordingAsPicture());
     REPORTER_ASSERT(reporter, picture);
     REPORTER_ASSERT(reporter, picture->approximateOpCount() > 0);
@@ -314,7 +315,7 @@ DEF_TEST(image_newfrombitmap, reporter) {
         SkBitmap bm;
         rec[i].fMakeProc(&bm);
 
-        sk_sp<SkImage> image(SkImage::MakeFromBitmap(bm));
+        sk_sp<SkImage> image(bm.asImage());
         SkPixmap pmap;
 
         const bool sharedID = (image->uniqueID() == bm.getGenerationID());
@@ -380,7 +381,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
     GrContextFactory otherFactory;
     ContextInfo otherContextInfo = otherFactory.getContextInfo(contextInfo.type());
     testContext->makeCurrent();
-
     std::function<sk_sp<SkImage>()> imageFactories[] = {
             create_image, create_codec_image, create_data_image,
             // Create an image from a picture.
@@ -395,7 +395,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
                 otherContextInfo.directContext()->flushAndSubmit();
                 return otherContextImage;
             }};
-    for (auto mipMapped : {GrMipmapped::kNo, GrMipmapped::kYes}) {
+    for (auto mipmapped : {GrMipmapped::kNo, GrMipmapped::kYes}) {
         for (const auto& factory : imageFactories) {
             sk_sp<SkImage> image(factory());
             if (!image) {
@@ -403,12 +403,15 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
                 continue;
             }
             GrTextureProxy* origProxy = nullptr;
-            if (auto sp = as_IB(image)->peekProxy()) {
-                origProxy = sp->asTextureProxy();
-                SkASSERT(origProxy);
+            bool origIsMippedTexture = false;
+
+            if ((origProxy = sk_gpu_test::GetTextureImageProxy(image.get(), dContext))) {
+                REPORTER_ASSERT(reporter, (origProxy->mipmapped() == GrMipmapped::kYes) ==
+                                          image->hasMipmaps());
+                origIsMippedTexture = image->hasMipmaps();
             }
             for (auto budgeted : {SkBudgeted::kNo, SkBudgeted::kYes}) {
-                auto texImage = image->makeTextureImage(dContext, mipMapped, budgeted);
+                auto texImage = image->makeTextureImage(dContext, mipmapped, budgeted);
                 if (!texImage) {
                     auto imageContext = as_IB(image)->context();
                     // We expect to fail if image comes from a different context
@@ -421,21 +424,28 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
                     ERRORF(reporter, "makeTextureImage returned non-texture image.");
                     continue;
                 }
-                GrTextureProxy* copyProxy = as_IB(texImage)->peekProxy()->asTextureProxy();
+
+                GrTextureProxy* copyProxy = sk_gpu_test::GetTextureImageProxy(texImage.get(),
+                                                                              dContext);
                 SkASSERT(copyProxy);
-                bool shouldBeMipped =
-                        mipMapped == GrMipmapped::kYes && dContext->priv().caps()->mipmapSupport();
-                if (shouldBeMipped && copyProxy->mipmapped() == GrMipmapped::kNo) {
-                    ERRORF(reporter, "makeTextureImage returned non-mipmapped texture.");
-                    continue;
-                }
-                bool origIsMipped = origProxy && origProxy->mipmapped() == GrMipmapped::kYes;
-                if (image->isTextureBacked() && (!shouldBeMipped || origIsMipped)) {
+                // Did we ask for MIPs on a context that supports them?
+                bool validRequestForMips = (mipmapped == GrMipmapped::kYes &&
+                                            dContext->priv().caps()->mipmapSupport());
+                // Do we expect the "copy" to have MIPs?
+                bool shouldBeMipped = origIsMippedTexture || validRequestForMips;
+                REPORTER_ASSERT(reporter, shouldBeMipped == texImage->hasMipmaps());
+                REPORTER_ASSERT(reporter,
+                                shouldBeMipped == (copyProxy->mipmapped() == GrMipmapped::kYes));
+
+                // We should only make a copy of an already texture-backed image if it didn't
+                // already have MIPs but we asked for MIPs and the context supports it.
+                if (image->isTextureBacked() && (!validRequestForMips || origIsMippedTexture)) {
                     if (origProxy->underlyingUniqueID() != copyProxy->underlyingUniqueID()) {
                         ERRORF(reporter, "makeTextureImage made unnecessary texture copy.");
                     }
                 } else {
-                    auto* texProxy = as_IB(texImage)->peekProxy()->asTextureProxy();
+                    GrTextureProxy* texProxy = sk_gpu_test::GetTextureImageProxy(texImage.get(),
+                                                                                 dContext);
                     REPORTER_ASSERT(reporter, !texProxy->getUniqueKey().isValid());
                     REPORTER_ASSERT(reporter, texProxy->isBudgeted() == budgeted);
                 }
@@ -511,7 +521,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(UnpremulTextureImage, reporter, ctxInfo) {
         }
     }
     auto dContext = ctxInfo.directContext();
-    auto texImage = SkImage::MakeFromBitmap(bmp)->makeTextureImage(dContext);
+    auto texImage = bmp.asImage()->makeTextureImage(dContext);
     if (!texImage || texImage->alphaType() != kUnpremul_SkAlphaType) {
         ERRORF(reporter, "Failed to make unpremul texture image.");
         return;
@@ -746,7 +756,7 @@ static void test_legacy_bitmap(skiatest::Reporter* reporter, GrDirectContext* dC
     SkBitmap tmp;
     REPORTER_ASSERT(reporter, bitmap.extractSubset(&tmp, SkIRect::MakeWH(image->width() / 2,
                                                                          image->height() / 2)));
-    sk_sp<SkImage> subsetImage(SkImage::MakeFromBitmap(tmp));
+    sk_sp<SkImage> subsetImage(tmp.asImage());
     REPORTER_ASSERT(reporter, subsetImage.get());
 
     SkBitmap subsetBitmap;
@@ -973,11 +983,9 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             refImg.reset(nullptr); // force a release of the image
 
             otherTestContext->makeCurrent();
-            surface->flushAndSubmit();
-
-            // This is specifically here for vulkan to guarantee the command buffer will finish
+            // Sync is specifically here for vulkan to guarantee the command buffer will finish
             // which is when we call the ReleaseProc.
-            otherCtx->priv().getGpu()->testingOnly_flushGpuAndSync();
+            surface->flushAndSubmit(true);
         }
 
         // Case #6: Verify that only one context can be using the image at a time
@@ -987,19 +995,21 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
 
             testContext->makeCurrent();
             sk_sp<SkImage> refImg(imageMaker(dContext));
+            GrSurfaceProxyView view, otherView, viewSecondRef;
 
             // Any context should be able to borrow the texture at this point
-            GrSurfaceProxyView view = as_IB(refImg)->refView(dContext, GrMipmapped::kNo);
+            std::tie(view, std::ignore) = as_IB(refImg)->asView(dContext, GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, view);
 
             // But once it's borrowed, no other context should be able to borrow
             otherTestContext->makeCurrent();
-            GrSurfaceProxyView otherView = as_IB(refImg)->refView(otherCtx, GrMipmapped::kNo);
+            std::tie(otherView, std::ignore) = as_IB(refImg)->asView(otherCtx, GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, !otherView);
 
             // Original context (that's already borrowing) should be okay
             testContext->makeCurrent();
-            GrSurfaceProxyView viewSecondRef = as_IB(refImg)->refView(dContext, GrMipmapped::kNo);
+            std::tie(viewSecondRef, std::ignore) = as_IB(refImg)->asView(dContext,
+                                                                         GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, viewSecondRef);
 
             // Release first ref from the original context
@@ -1008,7 +1018,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             // We released one proxy but not the other from the current borrowing context. Make sure
             // a new context is still not able to borrow the texture.
             otherTestContext->makeCurrent();
-            otherView = as_IB(refImg)->refView(otherCtx, GrMipmapped::kNo);
+            std::tie(otherView, std::ignore) = as_IB(refImg)->asView(otherCtx, GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, !otherView);
 
             // Release second ref from the original context
@@ -1017,7 +1027,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
 
             // Now we should be able to borrow the texture from the other context
             otherTestContext->makeCurrent();
-            otherView = as_IB(refImg)->refView(otherCtx, GrMipmapped::kNo);
+            std::tie(otherView, std::ignore) = as_IB(refImg)->asView(otherCtx, GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, otherView);
 
             // Release everything
@@ -1058,8 +1068,9 @@ DEF_GPUTEST(SkImage_CrossContextGrayAlphaConfigs, reporter, options) {
             sk_sp<SkImage> image = SkImage::MakeCrossContextFromPixmap(dContext, pixmap, false);
             REPORTER_ASSERT(reporter, image);
 
-            GrSurfaceProxyView view = as_IB(image)->refView(dContext, GrMipmapped::kNo);
+            auto [view, viewCT] = as_IB(image)->asView(dContext, GrMipmapped::kNo);
             REPORTER_ASSERT(reporter, view);
+            REPORTER_ASSERT(reporter, GrColorTypeToSkColorType(viewCT) == ct);
 
             bool expectAlpha = kAlpha_8_SkColorType == ct;
             GrColorType grCT = SkColorTypeToGrColorType(image->colorType());
@@ -1169,7 +1180,7 @@ DEF_TEST(Image_ColorSpace, r) {
     SkBitmap bitmap;
     SkImageInfo info = SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, rec2020);
     bitmap.allocPixels(info);
-    image = SkImage::MakeFromBitmap(bitmap);
+    image = bitmap.asImage();
     REPORTER_ASSERT(r, SkColorSpace::Equals(rec2020.get(), image->colorSpace()));
 
     sk_sp<SkSurface> surface = SkSurface::MakeRaster(
@@ -1192,7 +1203,7 @@ DEF_TEST(Image_makeColorSpace, r) {
     srgbBitmap.allocPixels(SkImageInfo::MakeS32(1, 1, kOpaque_SkAlphaType));
     *srgbBitmap.getAddr32(0, 0) = SkSwizzle_RGBA_to_PMColor(0xFF604020);
     srgbBitmap.setImmutable();
-    sk_sp<SkImage> srgbImage = SkImage::MakeFromBitmap(srgbBitmap);
+    sk_sp<SkImage> srgbImage = srgbBitmap.asImage();
     sk_sp<SkImage> p3Image = srgbImage->makeColorSpace(p3, nullptr);
     SkBitmap p3Bitmap;
     bool success = p3Image->asLegacyBitmap(&p3Bitmap);
@@ -1253,7 +1264,7 @@ DEF_TEST(image_roundtrip_encode, reporter) {
     SkBitmap bm0;
     make_all_premul(&bm0);
 
-    auto img0 = SkImage::MakeFromBitmap(bm0);
+    auto img0 = bm0.asImage();
     sk_sp<SkData> data = img0->encodeToData(SkEncodedImageFormat::kPNG, 100);
     auto img1 = SkImage::MakeFromEncoded(data);
 
@@ -1303,7 +1314,7 @@ static void test_scale_pixels(skiatest::Reporter* reporter, const SkImage* image
     for (auto chint : { SkImage::kDisallow_CachingHint, SkImage::kAllow_CachingHint }) {
         SkAutoPixmapStorage scaled;
         scaled.alloc(info);
-        if (!image->scalePixels(scaled, kLow_SkFilterQuality, chint)) {
+        if (!image->scalePixels(scaled, SkSamplingOptions(SkFilterMode::kLinear), chint)) {
             ERRORF(reporter, "Failed to scale image");
             continue;
         }
@@ -1348,7 +1359,6 @@ static sk_sp<SkImage> any_image_will_do() {
 DEF_TEST(Image_nonfinite_dst, reporter) {
     auto surf = SkSurface::MakeRasterN32Premul(10, 10);
     auto img = any_image_will_do();
-    SkPaint paint;
 
     for (SkScalar bad : { SK_ScalarInfinity, SK_ScalarNaN}) {
         for (int bits = 1; bits <= 15; ++bits) {
@@ -1358,7 +1368,7 @@ DEF_TEST(Image_nonfinite_dst, reporter) {
             if (bits & 4) dst.fRight = bad;
             if (bits & 8) dst.fBottom = bad;
 
-            surf->getCanvas()->drawImageRect(img, dst, &paint);
+            surf->getCanvas()->drawImageRect(img, dst, SkSamplingOptions());
 
             // we should draw nothing
             ToolUtils::PixelIter iter(surf.get());
@@ -1453,7 +1463,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(ImageFlush, reporter, ctxInfo) {
     REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());
 
     // Flatten it and repeat.
-    as_IB(i2.get())->view(dContext);
+    as_IB(i2.get())->asView(dContext, GrMipmapped::kNo);
     REPORTER_ASSERT(reporter,
                     static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->testingOnly_IsFlattened());
     REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());
@@ -1475,7 +1485,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(ImageFlush, reporter, ctxInfo) {
     // make the YUVA planes from backend textures rather than pixmaps that the context must upload.
     // Calling numSubmits rebases the flush count from here.
     numSubmits();
-    as_IB(i2.get())->view(dContext);
+    as_IB(i2.get())->asView(dContext, GrMipmapped::kNo);
     REPORTER_ASSERT(reporter,
                     static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->testingOnly_IsFlattened());
     REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());

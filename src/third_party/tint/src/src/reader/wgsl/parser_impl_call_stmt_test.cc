@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/binary_expression.h"
 #include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/identifier_expression.h"
@@ -25,46 +26,46 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, Statement_Call) {
-  auto* p = parser("a();");
+  auto p = parser("a();");
   auto e = p->statement();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
 
-  ASSERT_TRUE(e->IsCall());
-  auto* c = e->AsCall()->expr();
+  ASSERT_TRUE(e->Is<ast::CallStatement>());
+  auto* c = e->As<ast::CallStatement>()->expr();
 
-  ASSERT_TRUE(c->func()->IsIdentifier());
-  auto* func = c->func()->AsIdentifier();
-  EXPECT_EQ(func->name(), "a");
+  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
+  auto* ident = c->func()->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
 
   EXPECT_EQ(c->params().size(), 0u);
 }
 
 TEST_F(ParserImplTest, Statement_Call_WithParams) {
-  auto* p = parser("a(1, b, 2 + 3 / b);");
+  auto p = parser("a(1, b, 2 + 3 / b);");
   auto e = p->statement();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(e.value, nullptr);
   EXPECT_TRUE(e.matched);
   EXPECT_FALSE(e.errored);
 
-  ASSERT_TRUE(e->IsCall());
-  auto* c = e->AsCall()->expr();
+  ASSERT_TRUE(e->Is<ast::CallStatement>());
+  auto* c = e->As<ast::CallStatement>()->expr();
 
-  ASSERT_TRUE(c->func()->IsIdentifier());
-  auto* func = c->func()->AsIdentifier();
-  EXPECT_EQ(func->name(), "a");
+  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
+  auto* ident = c->func()->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Get("a"));
 
   EXPECT_EQ(c->params().size(), 3u);
-  EXPECT_TRUE(c->params()[0]->IsConstructor());
-  EXPECT_TRUE(c->params()[1]->IsIdentifier());
-  EXPECT_TRUE(c->params()[2]->IsBinary());
+  EXPECT_TRUE(c->params()[0]->Is<ast::ConstructorExpression>());
+  EXPECT_TRUE(c->params()[1]->Is<ast::IdentifierExpression>());
+  EXPECT_TRUE(c->params()[2]->Is<ast::BinaryExpression>());
 }
 
 TEST_F(ParserImplTest, Statement_Call_Missing_RightParen) {
-  auto* p = parser("a(");
+  auto p = parser("a(");
   auto e = p->statement();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(e.errored);
@@ -73,7 +74,7 @@ TEST_F(ParserImplTest, Statement_Call_Missing_RightParen) {
 }
 
 TEST_F(ParserImplTest, Statement_Call_Missing_Semi) {
-  auto* p = parser("a()");
+  auto p = parser("a()");
   auto e = p->statement();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(e.errored);
@@ -82,7 +83,7 @@ TEST_F(ParserImplTest, Statement_Call_Missing_Semi) {
 }
 
 TEST_F(ParserImplTest, Statement_Call_Bad_ArgList) {
-  auto* p = parser("a(b c);");
+  auto p = parser("a(b c);");
   auto e = p->statement();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(e.errored);

@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
@@ -45,6 +46,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/ssl/client_cert_identity.h"
+#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -60,12 +62,16 @@
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "content/public/browser/context_factory.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#endif
+
+#if defined(OS_MAC)
+#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -167,6 +173,12 @@ ShellContentBrowserClient* ShellContentBrowserClient::Get() {
 
 ShellContentBrowserClient::ShellContentBrowserClient() {
   DCHECK(!g_browser_client);
+#if defined(OS_MAC)
+  location_manager_ =
+      std::make_unique<FakeSystemGeolocationPermissionsManager>();
+  location_manager_->set_status(
+      device::LocationSystemPermissionStatus::kAllowed);
+#endif
   g_browser_client = this;
 }
 
@@ -197,13 +209,6 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
     if (url.scheme_piece() == supported_protocol)
       return true;
   }
-  return false;
-}
-
-bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
-    const service_manager::Identity& id) {
-  if (should_terminate_on_service_quit_callback_)
-    return std::move(should_terminate_on_service_quit_callback_).Run(id);
   return false;
 }
 
@@ -239,6 +244,15 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     }
   }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+}
+
+device::GeolocationSystemPermissionManager*
+ShellContentBrowserClient::GetLocationPermissionManager() {
+#if defined(OS_MAC)
+  return location_manager_.get();
+#else
+  return nullptr;
+#endif
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
@@ -286,7 +300,7 @@ SpeechRecognitionManagerDelegate*
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(
-    RenderViewHost* render_view_host,
+    WebContents* web_contents,
     blink::web_pref::WebPreferences* prefs) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceDarkMode)) {
@@ -382,9 +396,13 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
 base::DictionaryValue ShellContentBrowserClient::GetNetLogConstants() {
   base::DictionaryValue client_constants;
   client_constants.SetString("name", "content_shell");
-  client_constants.SetString(
-      "command_line",
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+  base::CommandLine::StringType command_line =
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+#if defined(OS_WIN)
+  client_constants.SetString("command_line", base::WideToUTF8(command_line));
+#else
+  client_constants.SetString("command_line", command_line);
+#endif
   base::DictionaryValue constants;
   constants.SetKey("clientInfo", std::move(client_constants));
   return constants;
@@ -437,7 +455,8 @@ void ShellContentBrowserClient::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   ConfigureNetworkContextParamsForShell(context, network_context_params,
                                         cert_verifier_creation_params);
 }
@@ -449,6 +468,8 @@ ShellContentBrowserClient::GetNetworkContextsParentDirectory() {
 
 void ShellContentBrowserClient::BindBrowserControlInterface(
     mojo::ScopedMessagePipeHandle pipe) {
+  if (!pipe.is_valid())
+    return;
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ShellControllerImpl>(),
       mojo::PendingReceiver<mojom::ShellController>(std::move(pipe)));
@@ -471,7 +492,8 @@ void ShellContentBrowserClient::set_enable_expect_ct_for_testing(
 void ShellContentBrowserClient::ConfigureNetworkContextParamsForShell(
     BrowserContext* context,
     network::mojom::NetworkContextParams* context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   context_params->allow_any_cors_exempt_header_for_browser =
       allow_any_cors_exempt_header_for_browser_;
   context_params->user_agent = GetUserAgent();

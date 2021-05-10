@@ -16,6 +16,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
@@ -26,6 +27,11 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
                  l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_TURN_OFF));
+
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   using ControllerCallbackFn = void (CredentialManagerDialogController::*)();
   auto call_controller = [](AutoSigninFirstRunDialogView* dialog,
@@ -59,23 +65,8 @@ void AutoSigninFirstRunDialogView::ControllerGone() {
   controller_ = nullptr;
 }
 
-ui::ModalType AutoSigninFirstRunDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 base::string16 AutoSigninFirstRunDialogView::GetWindowTitle() const {
   return controller_->GetAutoSigninPromoTitle();
-}
-
-bool AutoSigninFirstRunDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-gfx::Size AutoSigninFirstRunDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void AutoSigninFirstRunDialogView::WindowClosing() {
@@ -95,6 +86,9 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label.release());
 }
+
+BEGIN_METADATA(AutoSigninFirstRunDialogView, views::DialogDelegateView)
+END_METADATA
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
     CredentialManagerDialogController* controller,

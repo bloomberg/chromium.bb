@@ -71,6 +71,7 @@ class CORE_EXPORT WorkletGlobalScope
   void Dispose() override;
   WorkerThread* GetThread() const final;
   const base::UnguessableToken& GetDevToolsToken() const override;
+  bool IsInitialized() const final { return true; }
 
   virtual LocalFrame* GetFrame() const;
 
@@ -123,7 +124,7 @@ class CORE_EXPORT WorkletGlobalScope
                      WorkerReportingProxy&,
                      WorkerThread*);
 
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
+  const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const override;
 
   // Returns the WorkletToken that uniquely identifies this worklet.
   virtual WorkletToken GetWorkletToken() const = 0;
@@ -157,8 +158,6 @@ class CORE_EXPORT WorkletGlobalScope
                      bool create_microtask_queue);
 
   EventTarget* ErrorEventTarget() final { return nullptr; }
-
-  void BindContentSecurityPolicyToExecutionContext() override;
 
   // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;

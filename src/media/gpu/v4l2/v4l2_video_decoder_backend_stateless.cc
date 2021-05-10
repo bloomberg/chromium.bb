@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
@@ -21,7 +22,7 @@
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/gpu/v4l2/v4l2_h264_accelerator.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator_chromium.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
@@ -379,6 +380,12 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
   while (true) {
     switch (avd_->Decode()) {
       case AcceleratedVideoDecoder::kConfigChange:
+        if (avd_->GetBitDepth() != 8u) {
+          VLOGF(2) << "Unsupported bit depth: "
+                   << base::strict_cast<int>(avd_->GetBitDepth());
+          return false;
+        }
+
         if (profile_ != avd_->GetProfile()) {
           DVLOGF(3) << "Profile is changed: " << profile_ << " -> "
                     << avd_->GetProfile();
@@ -639,7 +646,7 @@ bool V4L2StatelessVideoDecoderBackend::CreateAvd() {
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     if (input_queue_->SupportsRequests()) {
       avd_ = std::make_unique<H264Decoder>(
-          std::make_unique<V4L2H264Accelerator>(this, device_.get()), profile_);
+          std::make_unique<V4L2ChromiumH264Accelerator>(this, device_.get()), profile_);
     } else {
       avd_ = std::make_unique<H264Decoder>(
           std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),

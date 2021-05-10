@@ -23,19 +23,16 @@ class DrawIndirectValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            void main() {
-                gl_Position = vec4(0.0);
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[stage(vertex)]] fn main() -> void {
+                Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-            #version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-                fragColor = vec4(0.0);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
         // Set up render pipeline
@@ -72,9 +69,10 @@ class DrawIndirectValidationTest : public ValidationTest {
     void TestIndirectOffset(utils::Expectation expectation,
                             std::initializer_list<uint32_t> bufferList,
                             uint64_t indirectOffset,
-                            bool indexed) {
+                            bool indexed,
+                            wgpu::BufferUsage usage = wgpu::BufferUsage::Indirect) {
         wgpu::Buffer indirectBuffer =
-            utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Indirect, bufferList);
+            utils::CreateBufferFromData<uint32_t>(device, usage, bufferList);
 
         DummyRenderPass renderPass(device);
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -84,7 +82,7 @@ class DrawIndirectValidationTest : public ValidationTest {
             uint32_t zeros[100] = {};
             wgpu::Buffer indexBuffer =
                 utils::CreateBufferFromData(device, zeros, sizeof(zeros), wgpu::BufferUsage::Index);
-            pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+            pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
             pass.DrawIndexedIndirect(indirectBuffer, indirectOffset);
         } else {
             pass.DrawIndirect(indirectBuffer, indirectOffset);
@@ -148,4 +146,19 @@ TEST_F(DrawIndirectValidationTest, DrawIndexedIndirectOffsetBounds) {
     uint64_t offset = std::numeric_limits<uint64_t>::max();
     TestIndirectOffsetDrawIndexed(utils::Expectation::Failure, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
                                   offset);
+}
+
+// Check that the buffer must have the indirect usage
+TEST_F(DrawIndirectValidationTest, IndirectUsage) {
+    // Control cases: using a buffer with the indirect usage is valid.
+    TestIndirectOffset(utils::Expectation::Success, {1, 2, 3, 4}, 0, false,
+                       wgpu::BufferUsage::Indirect);
+    TestIndirectOffset(utils::Expectation::Success, {1, 2, 3, 4, 5}, 0, true,
+                       wgpu::BufferUsage::Indirect);
+
+    // Error cases: using a buffer with the vertex usage is an error.
+    TestIndirectOffset(utils::Expectation::Failure, {1, 2, 3, 4}, 0, false,
+                       wgpu::BufferUsage::Vertex);
+    TestIndirectOffset(utils::Expectation::Failure, {1, 2, 3, 4, 5}, 0, true,
+                       wgpu::BufferUsage::Vertex);
 }

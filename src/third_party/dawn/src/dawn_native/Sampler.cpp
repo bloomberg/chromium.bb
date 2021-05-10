@@ -14,8 +14,8 @@
 
 #include "dawn_native/Sampler.h"
 
-#include "common/HashUtils.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
 #include <cmath>
@@ -40,6 +40,18 @@ namespace dawn_native {
                 "Min lod clamp value cannot greater than max lod clamp value");
         }
 
+        if (descriptor->maxAnisotropy > 1) {
+            if (descriptor->minFilter != wgpu::FilterMode::Linear ||
+                descriptor->magFilter != wgpu::FilterMode::Linear ||
+                descriptor->mipmapFilter != wgpu::FilterMode::Linear) {
+                return DAWN_VALIDATION_ERROR(
+                    "min, mag, and mipmap filter should be linear when using anisotropic "
+                    "filtering");
+            }
+        } else if (descriptor->maxAnisotropy == 0u) {
+            return DAWN_VALIDATION_ERROR("max anisotropy cannot be set to 0");
+        }
+
         DAWN_TRY(ValidateFilterMode(descriptor->minFilter));
         DAWN_TRY(ValidateFilterMode(descriptor->magFilter));
         DAWN_TRY(ValidateFilterMode(descriptor->mipmapFilter));
@@ -62,7 +74,8 @@ namespace dawn_native {
           mMipmapFilter(descriptor->mipmapFilter),
           mLodMinClamp(descriptor->lodMinClamp),
           mLodMaxClamp(descriptor->lodMaxClamp),
-          mCompareFunction(descriptor->compare) {
+          mCompareFunction(descriptor->compare),
+          mMaxAnisotropy(descriptor->maxAnisotropy) {
     }
 
     SamplerBase::SamplerBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -84,20 +97,12 @@ namespace dawn_native {
         return mCompareFunction != wgpu::CompareFunction::Undefined;
     }
 
-    size_t SamplerBase::HashFunc::operator()(const SamplerBase* module) const {
-        size_t hash = 0;
-
-        HashCombine(&hash, module->mAddressModeU);
-        HashCombine(&hash, module->mAddressModeV);
-        HashCombine(&hash, module->mAddressModeW);
-        HashCombine(&hash, module->mMagFilter);
-        HashCombine(&hash, module->mMinFilter);
-        HashCombine(&hash, module->mMipmapFilter);
-        HashCombine(&hash, module->mLodMinClamp);
-        HashCombine(&hash, module->mLodMaxClamp);
-        HashCombine(&hash, module->mCompareFunction);
-
-        return hash;
+    size_t SamplerBase::ComputeContentHash() {
+        ObjectContentHasher recorder;
+        recorder.Record(mAddressModeU, mAddressModeV, mAddressModeW, mMagFilter, mMinFilter,
+                        mMipmapFilter, mLodMinClamp, mLodMaxClamp, mCompareFunction,
+                        mMaxAnisotropy);
+        return recorder.GetContentHash();
     }
 
     bool SamplerBase::EqualityFunc::operator()(const SamplerBase* a, const SamplerBase* b) const {
@@ -114,7 +119,7 @@ namespace dawn_native {
                a->mAddressModeW == b->mAddressModeW && a->mMagFilter == b->mMagFilter &&
                a->mMinFilter == b->mMinFilter && a->mMipmapFilter == b->mMipmapFilter &&
                a->mLodMinClamp == b->mLodMinClamp && a->mLodMaxClamp == b->mLodMaxClamp &&
-               a->mCompareFunction == b->mCompareFunction;
+               a->mCompareFunction == b->mCompareFunction && a->mMaxAnisotropy == b->mMaxAnisotropy;
     }
 
 }  // namespace dawn_native

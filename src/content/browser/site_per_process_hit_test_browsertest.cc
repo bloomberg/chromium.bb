@@ -903,6 +903,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   rwhv_root->OnScrollEvent(&scroll_event);
   ack_observer.Wait();
 
+  // Wait until renderer's main thread is synced.
+  observer.Wait();
+
   // Verify the div scrolled.
   double div_scroll_top = div_scroll_top_start;
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(
@@ -1816,7 +1819,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   synchronize_threads.Wait();
 
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
   const gfx::PointF location_in_widget(25, 25);
   const gfx::PointF location_in_root =
       rwhv_nested->TransformPointToRootCoordSpaceF(location_in_widget);
@@ -1981,14 +1984,11 @@ class SitePerProcessEmulatedTouchBrowserTest
 
     // Create mouse events to emulate touch scroll. Since the page has no touch
     // handlers, these events will be converted into a gesture scroll sequence.
-    base::TimeTicks simulated_event_time = ui::EventTimeForNow();
-    base::TimeDelta simulated_event_time_delta =
-        base::TimeDelta::FromMilliseconds(100);
     blink::WebMouseEvent mouse_move_event =
         blink::SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::Type::kMouseMove, position_in_root.x(),
             position_in_root.y(), 0);
-    mouse_move_event.SetTimeStamp(simulated_event_time);
+    mouse_move_event.SetTimeStamp(ui::EventTimeForNow());
 
     int mouse_modifier = (test_type == PinchGoesToMainFrame)
                              ? blink::WebInputEvent::kShiftKey
@@ -1999,15 +1999,13 @@ class SitePerProcessEmulatedTouchBrowserTest
             blink::WebInputEvent::Type::kMouseDown, position_in_root.x(),
             position_in_root.y(), mouse_modifier);
     mouse_down_event.button = blink::WebMouseEvent::Button::kLeft;
-    simulated_event_time += simulated_event_time_delta;
-    mouse_down_event.SetTimeStamp(simulated_event_time);
+    mouse_down_event.SetTimeStamp(ui::EventTimeForNow());
 
     blink::WebMouseEvent mouse_drag_event =
         blink::SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::Type::kMouseMove, position_in_root.x(),
             position_in_root.y() + 20, mouse_modifier);
-    simulated_event_time += simulated_event_time_delta;
-    mouse_drag_event.SetTimeStamp(simulated_event_time);
+    mouse_drag_event.SetTimeStamp(ui::EventTimeForNow());
     mouse_drag_event.button = blink::WebMouseEvent::Button::kLeft;
 
     blink::WebMouseEvent mouse_up_event =
@@ -2015,8 +2013,7 @@ class SitePerProcessEmulatedTouchBrowserTest
             blink::WebInputEvent::Type::kMouseUp, position_in_root.x(),
             position_in_root.y() + 20, mouse_modifier);
     mouse_up_event.button = blink::WebMouseEvent::Button::kLeft;
-    simulated_event_time += simulated_event_time_delta;
-    mouse_up_event.SetTimeStamp(simulated_event_time);
+    mouse_up_event.SetTimeStamp(ui::EventTimeForNow());
 
     // Send mouse events and wait for GesturePinchBegin.
     router->RouteMouseEvent(root_rwhv, &mouse_move_event, ui::LatencyInfo());
@@ -2038,6 +2035,9 @@ class SitePerProcessEmulatedTouchBrowserTest
     // Verify the root receives the GesturePinchBegin or GestureScrollBegin,
     // depending on |test_type|.
     root_gesture_event_observer.Wait();
+
+    // Wait for all remaining input events to be processed by root_rwhv
+    RunUntilInputProcessed(root_rwhv->GetRenderWidgetHost());
 
     // Shut down.
     touch_emulator->Disable();
@@ -2100,7 +2100,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       (child_bounds.y() - root_bounds.y() + 25) * page_scale_factor);
 
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
   params.anchor = gfx::PointF(point_in_child.x(), point_in_child.y());
   params.distances.push_back(gfx::Vector2dF(0, -10));
   // The JS jank from the "page_with_touch_start_janking_main_thread.html"
@@ -2234,7 +2234,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   std::unique_ptr<MockOverscrollControllerDelegateAura>
       mock_overscroll_delegate =
           std::make_unique<MockOverscrollControllerDelegateAura>(rwhva);
-  rwhva->overscroll_controller()->set_delegate(mock_overscroll_delegate.get());
+  rwhva->overscroll_controller()->set_delegate(
+      mock_overscroll_delegate->GetWeakPtr());
   MockOverscrollObserver* mock_overscroll_observer =
       mock_overscroll_delegate.get();
 #elif defined(OS_ANDROID)
@@ -3576,9 +3577,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // Send MouseUp to location over parent frame, which should still go to
   // the child frame, but the parent frame should receive a MouseMove with
   // the kRelativeMotionEvent modifier set.
-  blink::WebMouseEvent mouse_event;
-  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  mouse_event.SetModifiers(blink::WebInputEvent::kNoModifiers);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::Type::kMouseUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   SetWebEventPositions(&mouse_event, gfx::Point(2, 2), root_view);
   RouteMouseEventAndWaitUntilDispatch(router, root_view, child_view,
                                       &mouse_event);
@@ -4967,7 +4968,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   // Simulate touch sequence to send GestureTap to sub-frame.
   SyntheticTapGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
   gfx::Point center(150, 150);
   params.position = gfx::PointF(center.x(), center.y());
   params.duration_ms = 100;
@@ -5553,7 +5554,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   const gfx::PointF point_in_root(1, 1);
   SyntheticPinchGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCHPAD_INPUT;
+  params.gesture_source_type =
+      content::mojom::GestureSourceType::kTouchpadInput;
   params.scale_factor = 1.2f;
   params.anchor = point_in_root;
 

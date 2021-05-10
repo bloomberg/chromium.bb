@@ -37,6 +37,7 @@ namespace web {
 
 class BrowserState;
 class BrowserURLRewriter;
+class JavaScriptFeature;
 class SerializableUserDataManager;
 class WebClient;
 class WebMainParts;
@@ -122,6 +123,10 @@ class WebClient {
   // singleton.
   virtual void PostBrowserURLRewriterCreation(BrowserURLRewriter* rewriter) {}
 
+  // Gives the embedder a chance to provide custom JavaScriptFeatures.
+  virtual std::vector<JavaScriptFeature*> GetJavaScriptFeatures(
+      BrowserState* browser_state) const;
+
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
   // The script returned will be injected in all frames (main and subframes).
@@ -189,9 +194,12 @@ class WebClient {
   virtual UIView* GetWindowedContainer();
 
   // Enables the logic to handle long press and force
-  // touch. Should return false to use the context menu API.
-  // Defaults to return true.
+  // touch through action sheet. Should return false to use the context menu
+  // API. Defaults to return true.
   virtual bool EnableLongPressAndForceTouchHandling() const;
+
+  // Enables the logic to handle long press context menu with UIContextMenu.
+  virtual bool EnableLongPressUIContextMenu() const;
 
   // This method is used when the user didn't express any preference for the
   // version of |url|. Returning true allows to make sure that for |url|, the

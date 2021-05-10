@@ -27,68 +27,56 @@ namespace tint {
 namespace ast {
 
 /// A struct statement.
-class Struct : public Node {
+class Struct : public Castable<Struct, Node> {
  public:
-  /// Create a new empty struct statement
-  Struct();
-  /// Create a new struct statement
-  /// @param members The struct members
-  explicit Struct(StructMemberList members);
-  /// Create a new struct statement
-  /// @param decorations The struct decorations
-  /// @param members The struct members
-  Struct(StructDecorationList decorations, StructMemberList members);
   /// Create a new struct statement
   /// @param source The input source for the import statement
   /// @param members The struct members
-  Struct(const Source& source, StructMemberList members);
-  /// Create a new struct statement
-  /// @param source The input source for the import statement
   /// @param decorations The struct decorations
-  /// @param members The struct members
   Struct(const Source& source,
-         StructDecorationList decorations,
-         StructMemberList members);
+         StructMemberList members,
+         StructDecorationList decorations);
   /// Move constructor
   Struct(Struct&&);
 
   ~Struct() override;
 
-  /// Sets the struct decoration
-  /// @param decos the list of decorations to set
-  void set_decorations(StructDecorationList decos) {
-    decorations_ = std::move(decos);
-  }
   /// @returns the struct decorations
   const StructDecorationList& decorations() const { return decorations_; }
 
-  /// Sets the struct members
-  /// @param members the members to set
-  void set_members(StructMemberList members) { members_ = std::move(members); }
   /// @returns the members
   const StructMemberList& members() const { return members_; }
 
-  /// Returns the struct member with the given name or nullptr if non exists.
-  /// @param name the name of the member
+  /// Returns the struct member with the given symbol or nullptr if non exists.
+  /// @param symbol the symbol of the member
   /// @returns the struct member or nullptr if not found
-  StructMember* get_member(const std::string& name) const;
+  StructMember* get_member(const Symbol& symbol) const;
 
   /// @returns true if the struct is block decorated
   bool IsBlockDecorated() const;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  Struct* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   Struct(const Struct&) = delete;
 
-  StructDecorationList decorations_;
-  StructMemberList members_;
+  StructMemberList const members_;
+  StructDecorationList const decorations_;
 };
 
 }  // namespace ast

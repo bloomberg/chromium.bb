@@ -173,6 +173,12 @@ class Receiver {
   // portion of the buffer that was populated.
   EncodedFrame ConsumeNextFrame(absl::Span<uint8_t> buffer);
 
+  // Allows setting picture loss indication for testing. In production, this
+  // should be done using the config.
+  void SetPliEnabledForTesting(bool is_pli_enabled) {
+    is_pli_enabled_ = is_pli_enabled;
+  }
+
   // The default "player processing time" amount. See SetPlayerProcessingTime().
   static constexpr std::chrono::milliseconds kDefaultPlayerProcessingTime{5};
 
@@ -266,6 +272,7 @@ class Receiver {
   RtpPacketParser rtp_parser_;
   const int rtp_timebase_;    // RTP timestamp ticks per second.
   const FrameCrypto crypto_;  // Decrypts assembled frames.
+  bool is_pli_enabled_;       // Whether picture loss indication is enabled.
 
   // Buffer for serializing/sending RTCP packets.
   const int rtcp_buffer_capacity_;

@@ -7,7 +7,8 @@ package org.chromium.content_public.browser.test.mock;
 import org.chromium.base.Callback;
 import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.mojo.bindings.Interface;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 /**
@@ -15,7 +16,7 @@ import org.chromium.url.Origin;
  */
 public class MockRenderFrameHost implements RenderFrameHost {
     @Override
-    public String getLastCommittedURL() {
+    public GURL getLastCommittedURL() {
         return null;
     }
 
@@ -25,7 +26,7 @@ public class MockRenderFrameHost implements RenderFrameHost {
     }
 
     @Override
-    public void getCanonicalUrlForSharing(Callback<String> callback) {}
+    public void getCanonicalUrlForSharing(Callback<GURL> callback) {}
 
     @Override
     public boolean isFeatureEnabled(@FeaturePolicyFeature int feature) {
@@ -33,15 +34,24 @@ public class MockRenderFrameHost implements RenderFrameHost {
     }
 
     @Override
-    public InterfaceProvider getRemoteInterfaces() {
+    public <I extends Interface, P extends Interface.Proxy> P getInterfaceToRendererFrame(
+            Interface.Manager<I, P> manager) {
         return null;
     }
+
+    @Override
+    public void terminateRendererDueToBadMessage(int reason) {}
 
     @Override
     public void notifyUserActivation() {}
 
     @Override
     public boolean isIncognito() {
+        return false;
+    }
+
+    @Override
+    public boolean signalModalCloseWatcherIfActive() {
         return false;
     }
 

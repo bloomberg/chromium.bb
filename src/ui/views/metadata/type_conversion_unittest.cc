@@ -4,6 +4,8 @@
 
 #include "ui/views/metadata/type_conversion.h"
 
+#include "base/ranges/ranges.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -95,7 +97,7 @@ TEST_F(TypeConversionTest, TestConversion_ShadowValuesToString) {
 TEST_F(TypeConversionTest, TestConversion_StringToShadowValues) {
   base::Optional<gfx::ShadowValues> opt_result =
       metadata::TypeConverter<gfx::ShadowValues>::FromString(base::ASCIIToUTF16(
-          "[ (6,4),0.53,rgba(23,44,0,255); (93,83),4.33,rgba(10,20,0,15) ]"));
+          "[ (6,4),0.53,rgba(23,44,0,1); (93,83),4.33,rgba(10,20,0,0.059) ]"));
 
   EXPECT_EQ(opt_result.has_value(), true);
   gfx::ShadowValues result = opt_result.value();
@@ -114,17 +116,122 @@ TEST_F(TypeConversionTest, TestConversion_StringToShadowValues) {
   EXPECT_EQ(result[1].blur(), 4.33);
 }
 
-TEST_F(TypeConversionTest, TestConversion_InsetsToString) {
-  base::string16 to_string =
-      metadata::TypeConverter<gfx::Insets>::ToString(gfx::Insets(3, 5, 7, 9));
+TEST_F(TypeConversionTest, TestConversion_SkColorConversions) {
+  // Check conversion from rgb hex string
+  base::Optional<SkColor> result =
+      metadata::SkColorConverter::FromString(base::ASCIIToUTF16("0x112233"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetRGB(0x11, 0x22, 0x33));
 
-  EXPECT_EQ(to_string, base::ASCIIToUTF16("{3, 5, 7, 9}"));
+  // Check conversion from argb hex string
+  result =
+      metadata::SkColorConverter::FromString(base::ASCIIToUTF16("0x7F112233"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetARGB(0x7F, 0x11, 0x22, 0x33));
+
+  // Check conversion from rgb(r,g,b) string
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("rgb(0, 128, 192)"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetRGB(0, 128, 192));
+
+  // Check conversion from rgba(r,g,b,a) string
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("rgba(0, 128, 192, 0.5)"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetARGB(128, 0, 128, 192));
+
+  // Check conversion from hsl(h,s,l) string
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("hsl(195, 100%, 50%)"));
+  EXPECT_TRUE(result);
+  const SkScalar hsv[3] = {195.0, 1.0, 0.5};
+  EXPECT_EQ(result.value(), SkHSVToColor(hsv));
+
+  // Check conversion from hsla(h,s,l,a) string
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("hsl(195, 100%, 50%, 0.5)"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkHSVToColor(128, hsv));
+
+  // Check conversion from a decimal integer value
+  result =
+      metadata::SkColorConverter::FromString(base::ASCIIToUTF16("4278239231"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetARGB(255, 0, 191, 255));
+
+  // Check without commas.
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("rgba(92 92 92 1)"));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), SkColorSetARGB(255, 92, 92, 92));
+
+  // Don't support the CSS hash color style
+  result = metadata::SkColorConverter::FromString(base::ASCIIToUTF16("#03254"));
+  EXPECT_FALSE(result);
+
+  // Don't support some common invalid values
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("rgba(1,2,3,4)"));
+  EXPECT_FALSE(result);
+
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("rgba(1,2,3,4"));
+  EXPECT_FALSE(result);
+
+  result = metadata::SkColorConverter::FromString(
+      base::ASCIIToUTF16("hsla(1,2,3,4)"));
+  EXPECT_FALSE(result);
+}
+
+TEST_F(TypeConversionTest, TestConversion_ColorParserTest) {
+  using converter = metadata::SkColorConverter;
+  base::string16 color;
+  const base::string16 source = base::ASCIIToUTF16(
+      "rgb(0, 128, 192), hsl(90, 100%, 30%), rgba(128, 128, 128, 0.5), "
+      "hsla(240, 100%, 50%, 0.5)");
+  auto start_pos = source.cbegin();
+  EXPECT_TRUE(
+      converter::GetNextColor(start_pos, source.cend(), color, start_pos));
+  EXPECT_EQ(color, base::ASCIIToUTF16("rgb(0, 128, 192)"));
+  EXPECT_TRUE(
+      converter::GetNextColor(start_pos, source.cend(), color, start_pos));
+  EXPECT_EQ(color, base::ASCIIToUTF16("hsl(90, 100%, 30%)"));
+  EXPECT_TRUE(
+      converter::GetNextColor(start_pos, source.cend(), color, start_pos));
+  EXPECT_EQ(color, base::ASCIIToUTF16("rgba(128, 128, 128, 0.5)"));
+  EXPECT_TRUE(converter::GetNextColor(start_pos, source.cend(), color));
+  EXPECT_EQ(color, base::ASCIIToUTF16("hsla(240, 100%, 50%, 0.5)"));
+}
+
+TEST_F(TypeConversionTest, TestConversion_InsetsToString) {
+  constexpr gfx::Insets kInsets(3, 5, 7, 9);
+
+  base::string16 to_string =
+      metadata::TypeConverter<gfx::Insets>::ToString(kInsets);
+
+  EXPECT_EQ(to_string, base::ASCIIToUTF16(kInsets.ToString()));
 }
 
 TEST_F(TypeConversionTest, TestConversion_StringToInsets) {
-  base::string16 from_string = base::ASCIIToUTF16("{2, 3, 4, 5}");
+  base::string16 from_string = base::ASCIIToUTF16("2,3,4,5");
   EXPECT_EQ(metadata::TypeConverter<gfx::Insets>::FromString(from_string),
             gfx::Insets(2, 3, 4, 5));
+}
+
+TEST_F(TypeConversionTest, TestConversion_VectorToString) {
+  const std::vector<int> kVector{3, 5, 7, 9};
+
+  base::string16 to_string =
+      metadata::TypeConverter<std::vector<int>>::ToString(kVector);
+
+  EXPECT_EQ(to_string, STRING16_LITERAL("{3,5,7,9}"));
+}
+
+TEST_F(TypeConversionTest, TestConversion_StringToVector) {
+  base::string16 from_string = base::ASCIIToUTF16("{2,3,4,5}");
+  EXPECT_EQ(metadata::TypeConverter<std::vector<int>>::FromString(from_string),
+            std::vector<int>({2, 3, 4, 5}));
 }
 
 TEST_F(TypeConversionTest, CheckIsSerializable) {

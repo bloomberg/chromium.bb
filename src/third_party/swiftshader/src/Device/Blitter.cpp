@@ -22,6 +22,7 @@
 #include "System/Memory.hpp"
 #include "Vulkan/VkBuffer.hpp"
 #include "Vulkan/VkImage.hpp"
+#include "Vulkan/VkImageView.hpp"
 
 #include <utility>
 
@@ -1880,6 +1881,88 @@ void Blitter::blit(const vk::Image *src, vk::Image *dst, VkImageBlit region, VkF
 	dst->contentsChanged(dstSubresRange);
 }
 
+static void resolveDepth(const vk::ImageView *src, vk::ImageView *dst, const VkSubpassDescriptionDepthStencilResolve &dsrDesc)
+{
+	if(dsrDesc.depthResolveMode == VK_RESOLVE_MODE_NONE)
+	{
+		return;
+	}
+
+	vk::Format format = src->getFormat(VK_IMAGE_ASPECT_DEPTH_BIT);
+	VkExtent2D extent = src->getMipLevelExtent(0, VK_IMAGE_ASPECT_DEPTH_BIT);
+	int width = extent.width;
+	int height = extent.height;
+	int pitch = src->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
+
+	// To support other resolve modes, get the slice bytes and get a pointer to each sample plane.
+	// Then modify the loop below to include logic for handling each new mode.
+	uint8_t *source = (uint8_t *)src->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0);
+	uint8_t *dest = (uint8_t *)dst->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0);
+
+	size_t formatSize = format.bytes();
+	// TODO(b/167558951) support other resolve modes.
+	ASSERT(dsrDesc.depthResolveMode == VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+	for(int y = 0; y < height; y++)
+	{
+		memcpy(dest, source, formatSize * width);
+
+		source += pitch;
+		dest += pitch;
+	}
+
+	dst->contentsChanged();
+}
+
+static void resolveStencil(const vk::ImageView *src, vk::ImageView *dst, const VkSubpassDescriptionDepthStencilResolve &dsrDesc)
+{
+	if(dsrDesc.stencilResolveMode == VK_RESOLVE_MODE_NONE)
+	{
+		return;
+	}
+
+	VkExtent2D extent = src->getMipLevelExtent(0, VK_IMAGE_ASPECT_STENCIL_BIT);
+	int width = extent.width;
+	int height = extent.height;
+	int pitch = src->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
+
+	// To support other resolve modes, use src->slicePitchBytes() and get a pointer to each sample's slice.
+	// Then modify the loop below to include logic for handling each new mode.
+	uint8_t *source = reinterpret_cast<uint8_t *>(src->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0));
+	uint8_t *dest = reinterpret_cast<uint8_t *>(dst->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_STENCIL_BIT, 0, 0));
+
+	// TODO(b/167558951) support other resolve modes.
+	ASSERT(dsrDesc.stencilResolveMode == VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+	for(int y = 0; y < height; y++)
+	{
+		// Stencil is always 8 bits, so the width of the resource we're resolving is
+		// the number of bytes in each row we need to copy during for SAMPLE_ZERO
+		memcpy(dest, source, width);
+
+		source += pitch;
+		dest += pitch;
+	}
+
+	dst->contentsChanged();
+}
+
+void Blitter::resolveDepthStencil(const vk::ImageView *src, vk::ImageView *dst, const VkSubpassDescriptionDepthStencilResolve &dsrDesc)
+{
+	VkImageSubresourceRange srcRange = src->getSubresourceRange();
+	VkImageSubresourceRange dstRange = src->getSubresourceRange();
+	ASSERT(src->getFormat() == dst->getFormat());
+	ASSERT(srcRange.layerCount == 1 && dstRange.layerCount == 1);
+	ASSERT(srcRange.aspectMask == dstRange.aspectMask);
+
+	if(srcRange.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT)
+	{
+		resolveDepth(src, dst, dsrDesc);
+	}
+	if(srcRange.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT)
+	{
+		resolveStencil(src, dst, dsrDesc);
+	}
+}
+
 void Blitter::resolve(const vk::Image *src, vk::Image *dst, VkImageResolve region)
 {
 	// "The aspectMask member of srcSubresource and dstSubresource must only contain VK_IMAGE_ASPECT_COLOR_BIT"
@@ -1983,7 +2066,7 @@ bool Blitter::fastResolve(const vk::Image *src, vk::Image *dst, VkImageResolve r
 	uint8_t *source2 = source1 + slice;
 	uint8_t *source3 = source2 + slice;
 
-	const bool SSE2 = CPUID::supportsSSE2();
+	[[maybe_unused]] const bool SSE2 = CPUID::supportsSSE2();
 
 	if(format == VK_FORMAT_R8G8B8A8_UNORM || format == VK_FORMAT_B8G8R8A8_UNORM || format == VK_FORMAT_A8B8G8R8_UNORM_PACK32)
 	{

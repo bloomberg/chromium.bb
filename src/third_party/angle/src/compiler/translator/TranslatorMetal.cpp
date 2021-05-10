@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019 The ANGLE Project Authors. All rights reserved.
+// Copyright 2019 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,6 +20,7 @@
 #include "compiler/translator/StaticType.h"
 #include "compiler/translator/tree_ops/InitializeVariables.h"
 #include "compiler/translator/tree_util/BuiltIn.h"
+#include "compiler/translator/tree_util/DriverUniform.h"
 #include "compiler/translator/tree_util/FindMain.h"
 #include "compiler/translator/tree_util/FindSymbolNode.h"
 #include "compiler/translator/tree_util/IntermNode_util.h"
@@ -40,22 +41,13 @@ const char kRasterizerDiscardEnabledConstName[] = "ANGLERasterizerDisabled";
 
 namespace
 {
+// Metal specific driver uniforms
+constexpr const char kHalfRenderArea[] = "halfRenderArea";
+constexpr const char kFlipXY[]         = "flipXY";
+constexpr const char kNegFlipXY[]      = "negFlipXY";
+constexpr const char kCoverageMask[]   = "coverageMask";
 
-constexpr ImmutableString kCoverageMaskField       = ImmutableString("coverageMask");
 constexpr ImmutableString kSampleMaskWriteFuncName = ImmutableString("ANGLEWriteSampleMask");
-
-TIntermBinary *CreateDriverUniformRef(const TVariable *driverUniforms, const char *fieldName)
-{
-    size_t fieldIndex =
-        FindFieldIndex(driverUniforms->getType().getInterfaceBlock()->fields(), fieldName);
-
-    TIntermSymbol *angleUniformsRef = new TIntermSymbol(driverUniforms);
-    TConstantUnion *uniformIndex    = new TConstantUnion;
-    uniformIndex->setIConst(static_cast<int>(fieldIndex));
-    TIntermConstantUnion *indexRef =
-        new TIntermConstantUnion(uniformIndex, *StaticType::GetBasic<EbtInt>());
-    return new TIntermBinary(EOpIndexDirectInterfaceBlock, angleUniformsRef, indexRef);
-}
 
 // Unlike Vulkan having auto viewport flipping extension, in Metal we have to flip gl_Position.y
 // manually.
@@ -64,7 +56,7 @@ TIntermBinary *CreateDriverUniformRef(const TVariable *driverUniforms, const cha
 ANGLE_NO_DISCARD bool AppendVertexShaderPositionYCorrectionToMain(TCompiler *compiler,
                                                                   TIntermBlock *root,
                                                                   TSymbolTable *symbolTable,
-                                                                  TIntermSwizzle *negFlipY)
+                                                                  TIntermTyped *negFlipY)
 {
     // Create a symbol reference to "gl_Position"
     const TVariable *position  = BuiltInVariable::gl_Position();
@@ -96,7 +88,7 @@ ANGLE_NO_DISCARD bool InitializeUnusedOutputs(TIntermBlock *root,
         return true;
     }
 
-    TIntermSequence *insertSequence = new TIntermSequence;
+    TIntermSequence insertSequence;
 
     for (const sh::ShaderVariable &var : unusedVars)
     {
@@ -104,24 +96,81 @@ ANGLE_NO_DISCARD bool InitializeUnusedOutputs(TIntermBlock *root,
         const TIntermSymbol *symbol = FindSymbolNode(root, var.name);
         ASSERT(symbol);
 
-        TIntermSequence *initCode = CreateInitCode(symbol, false, false, symbolTable);
+        TIntermSequence initCode;
+        CreateInitCode(symbol, false, false, &initCode, symbolTable);
 
-        insertSequence->insert(insertSequence->end(), initCode->begin(), initCode->end());
+        insertSequence.insert(insertSequence.end(), initCode.begin(), initCode.end());
     }
 
-    if (insertSequence)
+    if (!insertSequence.empty())
     {
         TIntermFunctionDefinition *main = FindMain(root);
         TIntermSequence *mainSequence   = main->getBody()->getSequence();
 
         // Insert init code at the start of main()
-        mainSequence->insert(mainSequence->begin(), insertSequence->begin(), insertSequence->end());
+        mainSequence->insert(mainSequence->begin(), insertSequence.begin(), insertSequence.end());
     }
 
     return true;
 }
-
 }  // anonymous namespace
+
+// class DriverUniformMetal
+TFieldList *DriverUniformMetal::createUniformFields(TSymbolTable *symbolTable) const
+{
+    TFieldList *driverFieldList = DriverUniform::createUniformFields(symbolTable);
+
+    constexpr size_t kNumGraphicsDriverUniformsMetal = 4;
+    constexpr std::array<const char *, kNumGraphicsDriverUniformsMetal>
+        kGraphicsDriverUniformNamesMetal = {{kHalfRenderArea, kFlipXY, kNegFlipXY, kCoverageMask}};
+
+    const std::array<TType *, kNumGraphicsDriverUniformsMetal> kDriverUniformTypesMetal = {{
+        new TType(EbtFloat, 2),  // halfRenderArea
+        new TType(EbtFloat, 2),  // flipXY
+        new TType(EbtFloat, 2),  // negFlipXY
+        new TType(EbtUInt),      // kCoverageMask
+    }};
+
+    for (size_t uniformIndex = 0; uniformIndex < kNumGraphicsDriverUniformsMetal; ++uniformIndex)
+    {
+        TField *driverUniformField =
+            new TField(kDriverUniformTypesMetal[uniformIndex],
+                       ImmutableString(kGraphicsDriverUniformNamesMetal[uniformIndex]),
+                       TSourceLoc(), SymbolType::AngleInternal);
+        driverFieldList->push_back(driverUniformField);
+    }
+
+    return driverFieldList;
+}
+
+TIntermBinary *DriverUniformMetal::getHalfRenderAreaRef() const
+{
+    return createDriverUniformRef(kHalfRenderArea);
+}
+
+TIntermBinary *DriverUniformMetal::getFlipXYRef() const
+{
+    return createDriverUniformRef(kFlipXY);
+}
+
+TIntermBinary *DriverUniformMetal::getNegFlipXYRef() const
+{
+    return createDriverUniformRef(kNegFlipXY);
+}
+
+TIntermSwizzle *DriverUniformMetal::getNegFlipYRef() const
+{
+    // Create a swizzle to "negFlipXY.y"
+    TIntermBinary *negFlipXY    = createDriverUniformRef(kNegFlipXY);
+    TVector<int> swizzleOffsetY = {1};
+    TIntermSwizzle *negFlipY    = new TIntermSwizzle(negFlipXY, swizzleOffsetY);
+    return negFlipY;
+}
+
+TIntermBinary *DriverUniformMetal::getCoverageMaskFieldRef() const
+{
+    return createDriverUniformRef(kCoverageMask);
+}
 
 TranslatorMetal::TranslatorMetal(sh::GLenum type, ShShaderSpec spec) : TranslatorVulkan(type, spec)
 {}
@@ -136,9 +185,10 @@ bool TranslatorMetal::translate(TIntermBlock *root,
                                  getNameMap(), &getSymbolTable(), getShaderType(),
                                  getShaderVersion(), getOutputType(), false, true, compileOptions);
 
-    const TVariable *driverUniforms = nullptr;
-    if (!TranslatorVulkan::translateImpl(root, compileOptions, perfDiagnostics, &driverUniforms,
-                                         &outputGLSL))
+    SpecConstMetal specConst(&getSymbolTable(), compileOptions, getShaderType());
+    DriverUniformMetal driverUniforms;
+    if (!TranslatorVulkan::translateImpl(root, compileOptions, perfDiagnostics, &specConst,
+                                         &driverUniforms, &outputGLSL))
     {
         return false;
     }
@@ -151,7 +201,7 @@ bool TranslatorMetal::translate(TIntermBlock *root,
 
     if (getShaderType() == GL_VERTEX_SHADER)
     {
-        auto negFlipY = getDriverUniformNegFlipYRef(driverUniforms);
+        TIntermTyped *negFlipY = driverUniforms.getNegFlipYRef();
 
         // Append gl_Position.y correction to main
         if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), negFlipY))
@@ -167,7 +217,7 @@ bool TranslatorMetal::translate(TIntermBlock *root,
     }
     else if (getShaderType() == GL_FRAGMENT_SHADER)
     {
-        if (!insertSampleMaskWritingLogic(root, driverUniforms))
+        if (!insertSampleMaskWritingLogic(root, &driverUniforms))
         {
             return false;
         }
@@ -176,7 +226,7 @@ bool TranslatorMetal::translate(TIntermBlock *root,
     // Initialize unused varying outputs to avoid spirv-cross dead-code removing them in later
     // stage. Only do this if SH_INIT_OUTPUT_VARIABLES is not specified.
     if ((getShaderType() == GL_VERTEX_SHADER || getShaderType() == GL_GEOMETRY_SHADER_EXT) &&
-        !(compileOptions & SH_INIT_OUTPUT_VARIABLES))
+        (compileOptions & SH_INIT_OUTPUT_VARIABLES) == 0)
     {
         InitVariableList list;
         for (const sh::ShaderVariable &var : mOutputVaryings)
@@ -203,7 +253,7 @@ bool TranslatorMetal::translate(TIntermBlock *root,
 // This is achieved by multiply the depth value with scale value stored in
 // driver uniform's depthRange.reserved
 bool TranslatorMetal::transformDepthBeforeCorrection(TIntermBlock *root,
-                                                     const TVariable *driverUniforms)
+                                                     const DriverUniform *driverUniforms)
 {
     // Create a symbol reference to "gl_Position"
     const TVariable *position  = BuiltInVariable::gl_Position();
@@ -214,7 +264,7 @@ bool TranslatorMetal::transformDepthBeforeCorrection(TIntermBlock *root,
     TIntermSwizzle *positionZ   = new TIntermSwizzle(positionRef, swizzleOffsetZ);
 
     // Create a ref to "depthRange.reserved"
-    TIntermBinary *viewportZScale = getDriverUniformDepthRangeReservedFieldRef(driverUniforms);
+    TIntermBinary *viewportZScale = driverUniforms->getDepthRangeReservedFieldRef();
 
     // Create the expression "gl_Position.z * depthRange.reserved".
     TIntermBinary *zScale = new TIntermBinary(EOpMul, positionZ->deepCopy(), viewportZScale);
@@ -227,20 +277,11 @@ bool TranslatorMetal::transformDepthBeforeCorrection(TIntermBlock *root,
     return RunAtTheEndOfShader(this, root, assignment, &getSymbolTable());
 }
 
-void TranslatorMetal::createAdditionalGraphicsDriverUniformFields(std::vector<TField *> *fieldsOut)
-{
-    // Add coverage mask to driver uniform. Metal doesn't have built-in GL_SAMPLE_COVERAGE_VALUE
-    // equivalent functionality, needs to emulate it using fragment shader's [[sample_mask]] output
-    // value.
-    TField *coverageMaskField =
-        new TField(new TType(EbtUInt), kCoverageMaskField, TSourceLoc(), SymbolType::AngleInternal);
-    fieldsOut->push_back(coverageMaskField);
-}
-
 // Add sample_mask writing to main, guarded by the specialization constant
 // kCoverageMaskEnabledConstName
-ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(TIntermBlock *root,
-                                                                    const TVariable *driverUniforms)
+ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(
+    TIntermBlock *root,
+    const DriverUniformMetal *driverUniforms)
 {
     TInfoSinkBase &sink       = getInfoSink().obj;
     TSymbolTable *symbolTable = &getSymbolTable();
@@ -273,17 +314,17 @@ ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(TIntermBlock
     sampleMaskWriteFunc->addParameter(maskArg);
 
     // coverageMask
-    TIntermBinary *coverageMask = CreateDriverUniformRef(driverUniforms, kCoverageMaskField.data());
+    TIntermBinary *coverageMask = driverUniforms->getCoverageMaskFieldRef();
 
     // Insert this code to the end of main()
     // if (ANGLECoverageMaskEnabled)
     // {
     //      ANGLEWriteSampleMask(ANGLEUniforms.coverageMask);
     // }
-    TIntermSequence *args = new TIntermSequence;
-    args->push_back(coverageMask);
+    TIntermSequence args;
+    args.push_back(coverageMask);
     TIntermAggregate *callSampleMaskWriteFunc =
-        TIntermAggregate::CreateFunctionCall(*sampleMaskWriteFunc, args);
+        TIntermAggregate::CreateFunctionCall(*sampleMaskWriteFunc, &args);
     TIntermBlock *callBlock = new TIntermBlock;
     callBlock->appendStatement(callSampleMaskWriteFunc);
 
@@ -319,14 +360,14 @@ ANGLE_NO_DISCARD bool TranslatorMetal::insertRasterizerDiscardLogic(TIntermBlock
     TIntermSymbol *positionRef = new TIntermSymbol(position);
 
     // Create vec4(-3, -3, -3, 1):
-    auto vec4Type             = new TType(EbtFloat, 4);
-    TIntermSequence *vec4Args = new TIntermSequence();
-    vec4Args->push_back(CreateFloatNode(-3.0f));
-    vec4Args->push_back(CreateFloatNode(-3.0f));
-    vec4Args->push_back(CreateFloatNode(-3.0f));
-    vec4Args->push_back(CreateFloatNode(1.0f));
+    auto vec4Type = new TType(EbtFloat, 4);
+    TIntermSequence vec4Args;
+    vec4Args.push_back(CreateFloatNode(-3.0f));
+    vec4Args.push_back(CreateFloatNode(-3.0f));
+    vec4Args.push_back(CreateFloatNode(-3.0f));
+    vec4Args.push_back(CreateFloatNode(1.0f));
     TIntermAggregate *constVarConstructor =
-        TIntermAggregate::CreateConstructor(*vec4Type, vec4Args);
+        TIntermAggregate::CreateConstructor(*vec4Type, &vec4Args);
 
     // Create the assignment "gl_Position = vec4(-3, -3, -3, 1)"
     TIntermBinary *assignment =

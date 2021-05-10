@@ -29,8 +29,10 @@ public:
     // rendering with DDLs.
     class TileData {
     public:
-        TileData() {}
+        TileData();
         ~TileData();
+
+        bool initialized() const { return fID != -1; }
 
         void init(int id,
                   GrDirectContext*,
@@ -85,7 +87,7 @@ public:
         int                       fID = -1;
         SkIRect                   fClip;             // in the device space of the final SkSurface
         SkIRect                   fPaddingOutsets;   // random padding for the output surface
-        SkSurfaceCharacterization fCharacterization; // characterization for the tile's surface
+        SkSurfaceCharacterization fPlaybackChar;     // characterization for the tile's dst surface
 
         // The callback context holds (via its SkPromiseImageTexture) the backend texture
         // that is both wrapped in 'fTileSurface' and backs this tile's promise image

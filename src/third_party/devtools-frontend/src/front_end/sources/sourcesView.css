@@ -47,7 +47,8 @@
 }
 
 .source-frame-debugger-script {
-  background-color: rgb(255 255 194 / 50%);
+  background-color: rgb(255 255 194 / 50%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .-theme-with-dark-background .source-frame-debugger-script {
@@ -61,8 +62,10 @@
   }
 
   10% {
-    background-color: rgb(158 54 153);
-    color: white;
+    background-color: rgb(158 54 153); /* stylelint-disable-line plugin/use_theme_colors */
+    /* See: crbug.com/1152736 for color variable migration. */
+    color: #fff; /* stylelint-disable-line plugin/use_theme_colors */
+    /* See: crbug.com/1152736 for color variable migration. */
   }
 
   to {
@@ -77,19 +80,23 @@
 }
 
 .diff-entry-insert .diff-marker {
-  border-left: 4px solid hsl(144deg 55% 37% / 100%);
+  border-left: 4px solid hsl(144deg 55% 37% / 100%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .diff-entry-insert .CodeMirror-gutter-background {
-  background-color: hsl(144deg 55% 49% / 20%);
+  background-color: hsl(144deg 55% 49% / 20%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .diff-entry-modify .diff-marker {
-  border-left: 4px solid #9c27b0;
+  border-left: 4px solid #9c27b0; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .diff-entry-modify .CodeMirror-gutter-background {
-  background-color: rgb(186 104 200 / 20%);
+  background-color: rgb(186 104 200 / 20%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .diff-entry-delete .diff-marker {
@@ -97,7 +104,8 @@
   height: 0;
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-left: 6px solid #d32f2f;
+  border-left: 6px solid #d32f2f; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   position: relative;
   top: 6px;
   cursor: pointer;
@@ -105,7 +113,8 @@
 }
 
 .diff-entry-delete .CodeMirror-gutter-background {
-  border-bottom: 2px solid #d32f2f;
+  border-bottom: 2px solid #d32f2f; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .CodeMirror-gutter-diff {
@@ -123,15 +132,28 @@
 }
 
 @keyframes source-line-modification-background-fadeout {
-  from { background-color: rgb(158 54 153 / 50%); }
-  50% { background-color: rgb(158 54 153 / 50%); }
-  90% { background-color: rgb(158 54 153 / 0%); }
+  from {
+    background-color: rgb(158 54 153 / 50%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
+
+  50% {
+    background-color: rgb(158 54 153 / 50%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
+
+  90% {
+    background-color: rgb(158 54 153 / 0%); /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
   to { background-color: transparent; }
 }
 
 @keyframes source-line-modification-foreground-fadeout {
-  from { color: white; }
-  50% { color: white; }
+  from {
+    color: #fff; /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
+
+  50% {
+    color: #fff; /* stylelint-disable-line plugin/use_theme_colors */ /* See: crbug.com/1152736 for color variable migration. */
+  }
   90% { color: initial; }
   to { color: initial; }
 }

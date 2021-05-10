@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -330,7 +331,8 @@ TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardMultipleURLs) {
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
-#if defined(OS_APPLE)
+// Test is flaky on LaCrOS: crbug.com/1010185
+#if defined(OS_APPLE) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_WriteToClipboardEmptyFolder DISABLED_WriteToClipboardEmptyFolder
 #else
 #define MAYBE_WriteToClipboardEmptyFolder WriteToClipboardEmptyFolder

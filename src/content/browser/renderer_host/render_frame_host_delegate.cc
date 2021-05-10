@@ -35,7 +35,8 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
     blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
-    const base::string16& source_id) {
+    const base::string16& source_id,
+    const base::Optional<base::string16>& untrusted_stack_trace) {
   return false;
 }
 
@@ -103,7 +104,7 @@ RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrame() {
 
 std::unique_ptr<WebUIImpl>
 RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
-    RenderFrameHost* frame_host,
+    RenderFrameHostImpl* frame_host,
     const GURL& url) {
   return nullptr;
 }
@@ -154,17 +155,12 @@ RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback() {
   return base::NullCallback();
 }
 
-bool RenderFrameHostDelegate::IsFrameLowPriority(
-    const RenderFrameHost* render_frame_host) {
-  return false;
-}
-
-void RenderFrameHostDelegate::IsClipboardPasteAllowed(
+void RenderFrameHostDelegate::IsClipboardPasteContentAllowed(
     const GURL& url,
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
-    IsClipboardPasteAllowedCallback callback) {
-  std::move(callback).Run(ClipboardPasteAllowed(true));
+    IsClipboardPasteContentAllowedCallback callback) {
+  std::move(callback).Run(ClipboardPasteContentAllowed(true));
 }
 
 bool RenderFrameHostDelegate::HasSeenRecentScreenOrientationChange() {
@@ -196,6 +192,16 @@ bool RenderFrameHostDelegate::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {
   return false;
+}
+
+std::vector<RenderFrameHostImpl*>
+RenderFrameHostDelegate::GetActiveTopLevelDocumentsInBrowsingContextGroup(
+    RenderFrameHostImpl* render_frame_host) {
+  return std::vector<RenderFrameHostImpl*>();
+}
+
+bool RenderFrameHostDelegate::IsAllowedToGoToEntryAtOffset(int32_t offset) {
+  return true;
 }
 
 }  // namespace content

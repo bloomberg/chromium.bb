@@ -197,6 +197,10 @@ bool GLSurface::SupportsProtectedVideo() const {
   return false;
 }
 
+bool GLSurface::SupportsOverridePlatformSize() const {
+  return false;
+}
+
 bool GLSurface::SetDrawRectangle(const gfx::Rect& rect) {
   return false;
 }
@@ -238,6 +242,10 @@ EGLTimestampClient* GLSurface::GetEGLTimestampClient() {
 }
 
 bool GLSurface::SupportsGpuVSync() const {
+  return false;
+}
+
+bool GLSurface::SupportsDelegatedInk() {
   return false;
 }
 
@@ -465,6 +473,10 @@ bool GLSurfaceAdapter::SupportsProtectedVideo() const {
   return surface_->SupportsProtectedVideo();
 }
 
+bool GLSurfaceAdapter::SupportsOverridePlatformSize() const {
+  return surface_->SupportsOverridePlatformSize();
+}
+
 bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {
   return surface_->SetDrawRectangle(rect);
 }
@@ -519,6 +531,10 @@ void GLSurfaceAdapter::SetCurrent() {
 
 bool GLSurfaceAdapter::IsCurrent() {
   return surface_->IsCurrent();
+}
+
+bool GLSurfaceAdapter::SupportsDelegatedInk() {
+  return surface_->SupportsDelegatedInk();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

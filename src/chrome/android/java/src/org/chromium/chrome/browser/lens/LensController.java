@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
@@ -28,6 +29,14 @@ public class LensController {
             sInstance = AppHooks.get().createLensController();
         }
         return sInstance;
+    }
+
+    /**
+     * Set the Lens Controller instance for testing.
+     * @param lensController the instance to be set.
+     */
+    public static void setInstanceForTesting(LensController lensController) {
+        sInstance = lensController;
     }
 
     /**
@@ -117,6 +126,7 @@ public class LensController {
     protected @StringRes int getShopWithGoogleLensTextResourceId() {
         return R.string.contextmenu_shop_image_with_google_lens;
     }
+
     /**
      * Retrieve the Lens icon resource id.
      * Need to put the resource id on the base class to suppress the UnusedResources warning.
@@ -126,9 +136,28 @@ public class LensController {
         return R.drawable.lens_icon;
     }
 
+    /**
+     * Retrieve the Text resource id for "Translate image with Google Lens".
+     * @return The resource id for "Translate image with Google Lens" string.
+     */
+    protected @StringRes int getTranslateWithGoogleLensTextResourceId() {
+        return R.string.contextmenu_translate_image_with_google_lens;
+    }
+
     /** Starts the Lens connection. */
     public void startLensConnection() {}
 
     /** Terminate any active Lens connections. */
     public void terminateLensConnections() {}
+
+    // TODO(b/180960783): Revisit the wrapper object for this enablement check. LensQueryParams
+    // was designed to be only used in the Prime classification query.
+    /**
+     * Whether the Lens is enabled based on user signals.
+     * @param lensQueryParams A wrapper object which contains params for the enablement check.
+     * @return True if Lens is enabled.
+     */
+    public boolean isLensEnabled(@NonNull LensQueryParams lensQueryParams) {
+        return false;
+    }
 }

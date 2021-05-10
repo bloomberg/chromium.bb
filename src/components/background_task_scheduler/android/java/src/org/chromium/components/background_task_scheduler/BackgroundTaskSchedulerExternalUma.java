@@ -38,40 +38,41 @@ public abstract class BackgroundTaskSchedulerExternalUma {
     public static final int BACKGROUND_TASK_QUERY_TILE = 23;
     public static final int BACKGROUND_TASK_FEEDV2_REFRESH = 24;
     public static final int BACKGROUND_TASK_DOWNLOAD_LATER = 25;
+    public static final int BACKGROUND_TASK_OFFLINE_MEASUREMENTS = 26;
     // Keep this one at the end and increment appropriately when adding new tasks.
-    public static final int BACKGROUND_TASK_COUNT = 26;
+    public static final int BACKGROUND_TASK_COUNT = 27;
 
     protected BackgroundTaskSchedulerExternalUma() {}
 
     /**
      * Reports metrics for when a NativeBackgroundTask loads the native library.
      * @param taskId An id from {@link TaskIds}.
-     * @param serviceManagerOnlyMode Whether the task will start native in Service Manager Only Mode
+     * @param minimalBrowserMode Whether the task will start native in Minimal Browser Mode
      *                              (Reduced Mode) instead of Full Browser Mode.
      */
-    public abstract void reportTaskStartedNative(int taskId, boolean serviceManagerOnlyMode);
+    public abstract void reportTaskStartedNative(int taskId, boolean minimalBrowserMode);
 
     /**
      * Report metrics for starting a NativeBackgroundTask. This does not consider tasks that are
      * short-circuited before any work is done.
      * @param taskId An id from {@link TaskIds}.
-     * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
+     * @param minimalBrowserMode Whether the task will run in Minimal Browser Mode (Reduced
      *                               Mode) instead of Full Browser Mode.
      */
-    public abstract void reportNativeTaskStarted(int taskId, boolean serviceManagerOnlyMode);
+    public abstract void reportNativeTaskStarted(int taskId, boolean minimalBrowserMode);
 
     /**
      * Reports metrics that a NativeBackgroundTask has been finished cleanly (i.e., no unexpected
      * exits because of chrome crash or OOM). This includes tasks that have been stopped due to
      * timeout.
      * @param taskId An id from {@link TaskIds}.
-     * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
+     * @param minimalBrowserMode Whether the task will run in Minimal Browser Mode (Reduced
      *                               Mode) instead of Full Browser Mode.
      */
-    public abstract void reportNativeTaskFinished(int taskId, boolean serviceManagerOnlyMode);
+    public abstract void reportNativeTaskFinished(int taskId, boolean minimalBrowserMode);
 
     /**
-     * Reports metrics of how Chrome is launched, either in ServiceManager only mode or as full
+     * Reports metrics of how Chrome is launched, either in minimal browser mode or as full
      * browser, as well as either cold start or warm start.
      * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
      * @param startupMode Chrome's startup mode.
@@ -150,6 +151,8 @@ public abstract class BackgroundTaskSchedulerExternalUma {
                 return BACKGROUND_TASK_QUERY_TILE;
             case TaskIds.FEEDV2_REFRESH_JOB_ID:
                 return BACKGROUND_TASK_FEEDV2_REFRESH;
+            case TaskIds.OFFLINE_MEASUREMENT_JOB_ID:
+                return BACKGROUND_TASK_OFFLINE_MEASUREMENTS;
             default:
                 assert false;
         }

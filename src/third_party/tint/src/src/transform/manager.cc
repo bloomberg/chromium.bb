@@ -14,21 +14,32 @@
 
 #include "src/transform/manager.h"
 
+#include "src/program_builder.h"
+#include "src/type_determiner.h"
+
 namespace tint {
 namespace transform {
 
 Manager::Manager() = default;
-
 Manager::~Manager() = default;
 
-bool Manager::Run() {
-  for (auto& transform : transforms_) {
-    if (!transform->Run()) {
-      error_ = transform->error();
-      return false;
+Transform::Output Manager::Run(const Program* program) {
+  Output out;
+  if (!transforms_.empty()) {
+    for (auto& transform : transforms_) {
+      auto res = transform->Run(program);
+      out.program = std::move(res.program);
+      out.data.Add(std::move(res.data));
+      if (!out.program.IsValid()) {
+        return out;
+      }
+      program = &out.program;
     }
+  } else {
+    out.program = program->Clone();
   }
-  return true;
+
+  return out;
 }
 
 }  // namespace transform

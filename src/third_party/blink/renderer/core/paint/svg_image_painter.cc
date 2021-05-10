@@ -42,9 +42,9 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
   ScopedSVGTransformState transform_state(paint_info, layout_svg_image_);
   {
     ScopedSVGPaintState paint_state(layout_svg_image_, paint_info);
+    SVGModelObjectPainter::RecordHitTestData(layout_svg_image_, paint_info);
     if (!DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, layout_svg_image_, paint_info.phase)) {
-      SVGModelObjectPainter::RecordHitTestData(layout_svg_image_, paint_info);
       SVGDrawingRecorder recorder(paint_info.context, layout_svg_image_,
                                   paint_info.phase);
       PaintForeground(paint_info);
@@ -55,18 +55,19 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
 }
 
 void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
-  const LayoutImageResource* image_resource = layout_svg_image_.ImageResource();
+  const LayoutImageResource& image_resource =
+      *layout_svg_image_.ImageResource();
   FloatSize image_viewport_size = ComputeImageViewportSize();
   image_viewport_size.Scale(layout_svg_image_.StyleRef().EffectiveZoom());
   if (image_viewport_size.IsEmpty())
     return;
 
-  scoped_refptr<Image> image = image_resource->GetImage(image_viewport_size);
+  scoped_refptr<Image> image = image_resource.GetImage(image_viewport_size);
   FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
-
   auto* image_element = To<SVGImageElement>(layout_svg_image_.GetElement());
   RespectImageOrientationEnum respect_orientation =
-      LayoutObject::ShouldRespectImageOrientation(&layout_svg_image_);
+      image_resource.ImageOrientation();
+
   FloatRect src_rect(FloatPoint(), image->SizeAsFloat(respect_orientation));
   if (respect_orientation && !image->HasDefaultOrientation()) {
     // We need the oriented source rect for adjusting the aspect ratio
@@ -91,19 +92,19 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       image.get(), decode_mode, dest_rect, &src_rect,
       layout_svg_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver, respect_orientation);
-  if (image_resource->CachedImage() &&
-      image_resource->CachedImage()->IsLoaded()) {
+
+  ImageResourceContent* image_content = image_resource.CachedImage();
+  if (image_content->IsLoaded()) {
     LocalDOMWindow* window = layout_svg_image_.GetDocument().domWindow();
     DCHECK(window);
     DCHECK(paint_info.PaintContainer());
     ImageElementTiming::From(*window).NotifyImagePainted(
-        &layout_svg_image_, image_resource->CachedImage(),
+        layout_svg_image_, *image_content,
         paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
         EnclosingIntRect(dest_rect));
   }
-
   PaintTimingDetector::NotifyImagePaint(
-      layout_svg_image_, image->Size(), image_resource->CachedImage(),
+      layout_svg_image_, image->Size(), *image_content,
       paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
       EnclosingIntRect(dest_rect));
   PaintTiming& timing = PaintTiming::From(

@@ -38,7 +38,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
         base::MakeRefCounted<scheduler::FakeTaskRunner>(),
         MakeGarbageCollected<TestLoaderFactory>(
             platform_->GetURLLoaderMockFactory()),
-        MakeGarbageCollected<MockContextLifecycleNotifier>()));
+        MakeGarbageCollected<MockContextLifecycleNotifier>(),
+        nullptr /* back_forward_cache_loader_helper */));
     map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }
 
@@ -47,22 +48,21 @@ class WorkletModuleResponsesMapTest : public testing::Test {
    public:
     enum class Result { kInitial, kOK, kFailed };
 
-    void NotifyFetchFinished(
-        const base::Optional<ModuleScriptCreationParams>& params,
+    void NotifyFetchFinishedError(
         const HeapVector<Member<ConsoleMessage>>&) override {
       ASSERT_EQ(Result::kInitial, result_);
-      if (params) {
-        result_ = Result::kOK;
-        params_.emplace(*params);
-      } else {
-        result_ = Result::kFailed;
-      }
+      result_ = Result::kFailed;
+    }
+
+    void NotifyFetchFinishedSuccess(
+        const ModuleScriptCreationParams& params) override {
+      ASSERT_EQ(Result::kInitial, result_);
+      result_ = Result::kOK;
+      params_.emplace(std::move(params));
     }
 
     Result GetResult() const { return result_; }
-    base::Optional<ModuleScriptCreationParams> GetParams() const {
-      return params_;
-    }
+    bool HasParams() const { return params_.has_value(); }
 
    private:
     Result result_ = Result::kInitial;
@@ -77,10 +77,11 @@ class WorkletModuleResponsesMapTest : public testing::Test {
         mojom::blink::RequestContextType::SCRIPT);
     FetchParameters fetch_params =
         FetchParameters::CreateForTest(std::move(resource_request));
+    fetch_params.SetModuleScript();
     WorkletModuleScriptFetcher* module_fetcher =
         MakeGarbageCollected<WorkletModuleScriptFetcher>(
             map_.Get(), ModuleScriptLoader::CreatePassKeyForTests());
-    module_fetcher->Fetch(fetch_params, fetcher_.Get(),
+    module_fetcher->Fetch(fetch_params, ModuleType::kJavaScript, fetcher_.Get(),
                           ModuleGraphLevel::kTopLevelModuleFetch, client);
   }
 
@@ -107,7 +108,7 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
-  EXPECT_FALSE(clients[0]->GetParams().has_value());
+  EXPECT_FALSE(clients[0]->HasParams());
 
   // The entry is now being fetched. Following read calls should wait for the
   // completion.
@@ -124,7 +125,7 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
   RunUntilIdle();
   for (auto client : clients) {
     EXPECT_EQ(ClientImpl::Result::kOK, client->GetResult());
-    EXPECT_TRUE(client->GetParams().has_value());
+    EXPECT_TRUE(client->HasParams());
   }
 }
 
@@ -138,7 +139,7 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
-  EXPECT_FALSE(clients[0]->GetParams().has_value());
+  EXPECT_FALSE(clients[0]->HasParams());
 
   // The entry is now being fetched. Following read calls should wait for the
   // completion.
@@ -155,7 +156,7 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
   RunUntilIdle();
   for (auto client : clients) {
     EXPECT_EQ(ClientImpl::Result::kFailed, client->GetResult());
-    EXPECT_FALSE(client->GetParams().has_value());
+    EXPECT_FALSE(client->HasParams());
   }
 }
 
@@ -173,7 +174,7 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
-  EXPECT_FALSE(clients[0]->GetParams().has_value());
+  EXPECT_FALSE(clients[0]->HasParams());
 
   // The entry is now being fetched. Following read calls for |kUrl1| should
   // wait for the completion.
@@ -185,7 +186,7 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
-  EXPECT_FALSE(clients[2]->GetParams().has_value());
+  EXPECT_FALSE(clients[2]->HasParams());
 
   // The entry is now being fetched. Following read calls for |kUrl2| should
   // wait for the completion.
@@ -200,13 +201,13 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, clients[0]->GetResult());
-  EXPECT_FALSE(clients[0]->GetParams().has_value());
+  EXPECT_FALSE(clients[0]->HasParams());
   EXPECT_EQ(ClientImpl::Result::kFailed, clients[1]->GetResult());
-  EXPECT_FALSE(clients[1]->GetParams().has_value());
+  EXPECT_FALSE(clients[1]->HasParams());
   EXPECT_EQ(ClientImpl::Result::kOK, clients[2]->GetResult());
-  EXPECT_TRUE(clients[2]->GetParams().has_value());
+  EXPECT_TRUE(clients[2]->HasParams());
   EXPECT_EQ(ClientImpl::Result::kOK, clients[3]->GetResult());
-  EXPECT_TRUE(clients[3]->GetParams().has_value());
+  EXPECT_TRUE(clients[3]->HasParams());
 }
 
 TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
@@ -216,7 +217,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
   Fetch(kEmptyURL, client1);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client1->GetResult());
-  EXPECT_FALSE(client1->GetParams().has_value());
+  EXPECT_FALSE(client1->HasParams());
 
   const KURL kNullURL = NullURL();
   ASSERT_TRUE(kNullURL.IsNull());
@@ -224,7 +225,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
   Fetch(kNullURL, client2);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client2->GetResult());
-  EXPECT_FALSE(client2->GetParams().has_value());
+  EXPECT_FALSE(client2->HasParams());
 
   const KURL kInvalidURL;
   ASSERT_FALSE(kInvalidURL.IsValid());
@@ -232,7 +233,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
   Fetch(kInvalidURL, client3);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client3->GetResult());
-  EXPECT_FALSE(client3->GetParams().has_value());
+  EXPECT_FALSE(client3->HasParams());
 }
 
 TEST_F(WorkletModuleResponsesMapTest, Dispose) {
@@ -251,7 +252,7 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
-  EXPECT_FALSE(clients[0]->GetParams().has_value());
+  EXPECT_FALSE(clients[0]->HasParams());
 
   // The entry is now being fetched. Following read calls for |kUrl1| should
   // wait for the completion.
@@ -264,7 +265,7 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
-  EXPECT_FALSE(clients[2]->GetParams().has_value());
+  EXPECT_FALSE(clients[2]->HasParams());
 
   // The entry is now being fetched. Following read calls for |kUrl2| should
   // wait for the completion.
@@ -277,7 +278,7 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   RunUntilIdle();
   for (auto client : clients) {
     EXPECT_EQ(ClientImpl::Result::kFailed, client->GetResult());
-    EXPECT_FALSE(client->GetParams().has_value());
+    EXPECT_FALSE(client->HasParams());
   }
 }
 

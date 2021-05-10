@@ -14,31 +14,31 @@
 
 #include "src/ast/array_accessor_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::ArrayAccessorExpression);
+
 namespace tint {
 namespace ast {
 
-ArrayAccessorExpression::ArrayAccessorExpression() : Expression() {}
-
-ArrayAccessorExpression::ArrayAccessorExpression(
-    std::unique_ptr<Expression> array,
-    std::unique_ptr<Expression> idx_expr)
-    : Expression(), array_(std::move(array)), idx_expr_(std::move(idx_expr)) {}
-
-ArrayAccessorExpression::ArrayAccessorExpression(
-    const Source& source,
-    std::unique_ptr<Expression> array,
-    std::unique_ptr<Expression> idx_expr)
-    : Expression(source),
-      array_(std::move(array)),
-      idx_expr_(std::move(idx_expr)) {}
+ArrayAccessorExpression::ArrayAccessorExpression(const Source& source,
+                                                 Expression* array,
+                                                 Expression* idx_expr)
+    : Base(source), array_(array), idx_expr_(idx_expr) {}
 
 ArrayAccessorExpression::ArrayAccessorExpression(ArrayAccessorExpression&&) =
     default;
 
 ArrayAccessorExpression::~ArrayAccessorExpression() = default;
 
-bool ArrayAccessorExpression::IsArrayAccessor() const {
-  return true;
+ArrayAccessorExpression* ArrayAccessorExpression::Clone(
+    CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* arr = ctx->Clone(array_);
+  auto* idx = ctx->Clone(idx_expr_);
+  return ctx->dst->create<ArrayAccessorExpression>(src, arr, idx);
 }
 
 bool ArrayAccessorExpression::IsValid() const {
@@ -50,11 +50,13 @@ bool ArrayAccessorExpression::IsValid() const {
   return true;
 }
 
-void ArrayAccessorExpression::to_str(std::ostream& out, size_t indent) const {
+void ArrayAccessorExpression::to_str(const semantic::Info& sem,
+                                     std::ostream& out,
+                                     size_t indent) const {
   make_indent(out, indent);
-  out << "ArrayAccessor{" << std::endl;
-  array_->to_str(out, indent + 2);
-  idx_expr_->to_str(out, indent + 2);
+  out << "ArrayAccessor[" << result_type_str(sem) << "]{" << std::endl;
+  array_->to_str(sem, out, indent + 2);
+  idx_expr_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

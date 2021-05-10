@@ -4,33 +4,27 @@
 
 #include "chrome/browser/usb/usb_chooser_context.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "content/public/browser/device_service.h"
 #include "services/device/public/cpp/usb/usb_ids.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -40,6 +34,7 @@ constexpr char kProductIdKey[] = "product-id";
 constexpr char kSerialNumberKey[] = "serial-number";
 constexpr char kVendorIdKey[] = "vendor-id";
 constexpr int kDeviceIdWildcard = -1;
+constexpr int kUsbClassMassStorage = 0x08;
 
 // Reasons a permission may be closed. These are used in histograms so do not
 // remove/reorder entries. Only add at the end just before
@@ -121,6 +116,28 @@ base::Value DeviceIdsToValue(int vendor_id, int product_id) {
   return device_value;
 }
 
+bool IsMassStorageInterface(const device::mojom::UsbInterfaceInfo& interface) {
+  for (auto& alternate : interface.alternates) {
+    if (alternate->class_code == kUsbClassMassStorage)
+      return true;
+  }
+  return false;
+}
+
+bool ShouldExposeDevice(const device::mojom::UsbDeviceInfo& device_info) {
+  // blink::USBDevice::claimInterface() disallows claiming mass storage
+  // interfaces, but explicitly prevent access in the browser process as
+  // ChromeOS would allow these interfaces to be claimed.
+
+  for (auto& configuration : device_info.configurations) {
+    for (auto& interface : configuration->interfaces) {
+      if (!IsMassStorageInterface(*interface))
+        return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 void UsbChooserContext::DeviceObserver::OnDeviceAdded(
@@ -136,21 +153,8 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
                          ContentSettingsType::USB_CHOOSER_DATA,
                          HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {
-#if defined(OS_CHROMEOS)
-  bool is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(profile);
-  PrefService* pref_service = is_signin_profile
-                                  ? g_browser_process->local_state()
-                                  : profile->GetPrefs();
-  const char* pref_name =
-      is_signin_profile ? prefs::kDeviceLoginScreenWebUsbAllowDevicesForUrls
-                        : prefs::kManagedWebUsbAllowDevicesForUrls;
-#else   // defined(OS_CHROMEOS)
-  PrefService* pref_service = profile->GetPrefs();
-  const char* pref_name = prefs::kManagedWebUsbAllowDevicesForUrls;
-#endif  // defined(OS_CHROMEOS)
-
-  usb_policy_allowed_devices_.reset(
-      new UsbPolicyAllowedDevices(pref_service, pref_name));
+  usb_policy_allowed_devices_ =
+      std::make_unique<UsbPolicyAllowedDevices>(profile->GetPrefs());
 }
 
 // static
@@ -177,7 +181,10 @@ void UsbChooserContext::InitDeviceList(
     std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
   for (auto& device_info : devices) {
     DCHECK(device_info);
-    devices_.insert(std::make_pair(device_info->guid, std::move(device_info)));
+    if (ShouldExposeDevice(*device_info)) {
+      devices_.insert(
+          std::make_pair(device_info->guid, std::move(device_info)));
+    }
   }
   is_initialized_ = true;
 
@@ -561,6 +568,8 @@ void UsbChooserContext::OnDeviceAdded(
   DCHECK(device_info);
   // Update the device list.
   DCHECK(!base::Contains(devices_, device_info->guid));
+  if (!ShouldExposeDevice(*device_info))
+    return;
   devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
@@ -571,6 +580,12 @@ void UsbChooserContext::OnDeviceAdded(
 void UsbChooserContext::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
+
+  if (!ShouldExposeDevice(*device_info)) {
+    DCHECK(!base::Contains(devices_, device_info->guid));
+    return;
+  }
+
   // Update the device list.
   DCHECK(base::Contains(devices_, device_info->guid));
   devices_.erase(device_info->guid);

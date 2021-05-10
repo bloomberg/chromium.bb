@@ -15,30 +15,34 @@
 #include "src/ast/if_statement.h"
 
 #include "src/ast/else_statement.h"
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::IfStatement);
 
 namespace tint {
 namespace ast {
 
-IfStatement::IfStatement()
-    : Statement(), body_(std::make_unique<BlockStatement>()) {}
-
-IfStatement::IfStatement(std::unique_ptr<Expression> condition,
-                         std::unique_ptr<BlockStatement> body)
-    : Statement(), condition_(std::move(condition)), body_(std::move(body)) {}
-
 IfStatement::IfStatement(const Source& source,
-                         std::unique_ptr<Expression> condition,
-                         std::unique_ptr<BlockStatement> body)
-    : Statement(source),
-      condition_(std::move(condition)),
-      body_(std::move(body)) {}
+                         Expression* condition,
+                         BlockStatement* body,
+                         ElseStatementList else_stmts)
+    : Base(source),
+      condition_(condition),
+      body_(body),
+      else_statements_(std::move(else_stmts)) {}
 
 IfStatement::IfStatement(IfStatement&&) = default;
 
 IfStatement::~IfStatement() = default;
 
-bool IfStatement::IsIf() const {
-  return true;
+IfStatement* IfStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* cond = ctx->Clone(condition_);
+  auto* b = ctx->Clone(body_);
+  auto el = ctx->Clone(else_statements_);
+  return ctx->dst->create<IfStatement>(src, cond, b, el);
 }
 
 bool IfStatement::IsValid() const {
@@ -50,7 +54,7 @@ bool IfStatement::IsValid() const {
   }
 
   bool found_else = false;
-  for (const auto& el : else_statements_) {
+  for (auto* el : else_statements_) {
     // Else statement must be last
     if (found_else)
       return false;
@@ -65,7 +69,9 @@ bool IfStatement::IsValid() const {
   return true;
 }
 
-void IfStatement::to_str(std::ostream& out, size_t indent) const {
+void IfStatement::to_str(const semantic::Info& sem,
+                         std::ostream& out,
+                         size_t indent) const {
   make_indent(out, indent);
   out << "If{" << std::endl;
 
@@ -73,7 +79,7 @@ void IfStatement::to_str(std::ostream& out, size_t indent) const {
   make_indent(out, indent + 2);
   out << "(" << std::endl;
 
-  condition_->to_str(out, indent + 4);
+  condition_->to_str(sem, out, indent + 4);
 
   // Close if conditional
   make_indent(out, indent + 2);
@@ -84,8 +90,8 @@ void IfStatement::to_str(std::ostream& out, size_t indent) const {
   out << "{" << std::endl;
 
   if (body_ != nullptr) {
-    for (const auto& stmt : *body_) {
-      stmt->to_str(out, indent + 4);
+    for (auto* stmt : *body_) {
+      stmt->to_str(sem, out, indent + 4);
     }
   }
 
@@ -97,8 +103,8 @@ void IfStatement::to_str(std::ostream& out, size_t indent) const {
   make_indent(out, indent);
   out << "}" << std::endl;
 
-  for (const auto& e : else_statements_) {
-    e->to_str(out, indent);
+  for (auto* e : else_statements_) {
+    e->to_str(sem, out, indent);
   }
 }
 

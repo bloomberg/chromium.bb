@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/task_runner.h"
 #include "build/build_config.h"
 #include "components/services/storage/filesystem_proxy_factory.h"
 #include "content/browser/indexed_db/cursor_impl.h"
@@ -195,8 +197,10 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
 };
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    IndexedDBContextImpl* indexed_db_context)
+    IndexedDBContextImpl* indexed_db_context,
+    scoped_refptr<base::TaskRunner> io_task_runner)
     : indexed_db_context_(indexed_db_context),
+      io_task_runner_(std::move(io_task_runner)),
       file_task_runner_(base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -258,10 +262,10 @@ IndexedDBDispatcherHost::mojo_blob_storage_context() {
   return indexed_db_context_->blob_storage_context();
 }
 
-storage::mojom::NativeFileSystemContext*
-IndexedDBDispatcherHost::native_file_system_context() {
+storage::mojom::FileSystemAccessContext*
+IndexedDBDispatcherHost::file_system_access_context() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return indexed_db_context_->native_file_system_context();
+  return indexed_db_context_->file_system_access_context();
 }
 
 void IndexedDBDispatcherHost::GetDatabaseInfo(
@@ -270,25 +274,10 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& origin = receivers_.current_context();
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
-                             std::move(pending_callbacks), IDBTaskRunner()));
+  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
+      this->AsWeakPtr(), origin, std::move(pending_callbacks), IDBTaskRunner());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(
-      std::move(callbacks), origin, indexed_db_path);
-}
-
-void IndexedDBDispatcherHost::GetDatabaseNames(
-    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-        pending_callbacks) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const auto& origin = receivers_.current_context();
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
-                             std::move(pending_callbacks), IDBTaskRunner()));
-  base::FilePath indexed_db_path = indexed_db_context_->data_path();
-  indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
       std::move(callbacks), origin, indexed_db_path);
 }
 
@@ -304,13 +293,11 @@ void IndexedDBDispatcherHost::Open(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& origin = receivers_.current_context();
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
-                             std::move(pending_callbacks), IDBTaskRunner()));
-  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
-      new IndexedDBDatabaseCallbacks(indexed_db_context_,
-                                     std::move(database_callbacks_remote),
-                                     IDBTaskRunner()));
+  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
+      this->AsWeakPtr(), origin, std::move(pending_callbacks), IDBTaskRunner());
+  auto database_callbacks = base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
+      indexed_db_context_, std::move(database_callbacks_remote),
+      IDBTaskRunner());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   auto create_transaction_callback =
@@ -333,9 +320,8 @@ void IndexedDBDispatcherHost::DeleteDatabase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& origin = receivers_.current_context();
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
-                             std::move(pending_callbacks), IDBTaskRunner()));
+  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
+      this->AsWeakPtr(), origin, std::move(pending_callbacks), IDBTaskRunner());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->DeleteDatabase(
       name, std::move(callbacks), origin, indexed_db_path, force_close);
@@ -392,8 +378,7 @@ void IndexedDBDispatcherHost::BindFileReader(
 
   auto reader = std::make_unique<IndexedDBDataItemReader>(
       this, path, expected_modification_time, std::move(release_callback),
-      file_task_runner_, indexed_db_context_->IOTaskRunner(),
-      std::move(receiver));
+      file_task_runner_, io_task_runner_, std::move(receiver));
   file_reader_map_.insert({path, std::move(reader)});
 }
 
@@ -455,22 +440,22 @@ void IndexedDBDispatcherHost::CreateAllExternalObjects(
             std::move(receiver), output_info->uuid, std::move(element));
         break;
       }
-      case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle: {
-        DCHECK(mojo_object->is_native_file_system_token());
+      case IndexedDBExternalObject::ObjectType::kFileSystemAccessHandle: {
+        DCHECK(mojo_object->is_file_system_access_token());
 
-        mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+        mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
             mojo_token;
 
-        if (blob_info.is_native_file_system_remote_valid()) {
-          blob_info.native_file_system_token_remote()->Clone(
+        if (blob_info.is_file_system_access_remote_valid()) {
+          blob_info.file_system_access_token_remote()->Clone(
               mojo_token.InitWithNewPipeAndPassReceiver());
         } else {
-          DCHECK(!blob_info.native_file_system_token().empty());
-          native_file_system_context()->DeserializeHandle(
-              origin, blob_info.native_file_system_token(),
+          DCHECK(!blob_info.file_system_access_token().empty());
+          file_system_access_context()->DeserializeHandle(
+              origin, blob_info.file_system_access_token(),
               mojo_token.InitWithNewPipeAndPassReceiver());
         }
-        mojo_object->get_native_file_system_token() = std::move(mojo_token);
+        mojo_object->get_file_system_access_token() = std::move(mojo_token);
         break;
       }
     }

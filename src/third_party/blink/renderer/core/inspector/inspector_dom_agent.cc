@@ -50,10 +50,8 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -116,7 +114,7 @@ class InspectorRevalidateDOMTask final
 
  private:
   Member<InspectorDOMAgent> dom_agent_;
-  TaskRunnerTimer<InspectorRevalidateDOMTask> timer_;
+  HeapTaskRunnerTimer<InspectorRevalidateDOMTask> timer_;
   HeapHashSet<Member<Element>> style_attr_invalidated_elements_;
 };
 
@@ -148,6 +146,7 @@ void InspectorRevalidateDOMTask::OnTimer(TimerBase*) {
 void InspectorRevalidateDOMTask::Trace(Visitor* visitor) const {
   visitor->Trace(dom_agent_);
   visitor->Trace(style_attr_invalidated_elements_);
+  visitor->Trace(timer_);
 }
 
 Response InspectorDOMAgent::ToResponse(ExceptionState& exception_state) {
@@ -182,6 +181,10 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Selection;
     case kPseudoIdTargetText:
       return protocol::DOM::PseudoTypeEnum::TargetText;
+    case kPseudoIdSpellingError:
+      return protocol::DOM::PseudoTypeEnum::SpellingError;
+    case kPseudoIdGrammarError:
+      return protocol::DOM::PseudoTypeEnum::GrammarError;
     case kPseudoIdFirstLineInherited:
       return protocol::DOM::PseudoTypeEnum::FirstLineInherited;
     case kPseudoIdScrollbar:
@@ -1540,7 +1543,6 @@ protocol::DOM::ShadowRootType InspectorDOMAgent::GetShadowRootType(
   switch (shadow_root->GetType()) {
     case ShadowRootType::kUserAgent:
       return protocol::DOM::ShadowRootTypeEnum::UserAgent;
-    case ShadowRootType::V0:
     case ShadowRootType::kOpen:
       return protocol::DOM::ShadowRootTypeEnum::Open;
     case ShadowRootType::kClosed:
@@ -1653,11 +1655,6 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* insertion_point = DynamicTo<V0InsertionPoint>(element)) {
-      value->setDistributedNodes(
-          BuildArrayForDistributedNodes(insertion_point));
-      force_push_children = true;
-    }
     if (auto* slot = DynamicTo<HTMLSlotElement>(*element)) {
       if (node->IsInShadowTree()) {
         value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
@@ -1776,28 +1773,6 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
     return nullptr;
   return std::make_unique<protocol::Array<protocol::DOM::Node>>(
       std::move(pseudo_elements));
-}
-
-std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
-InspectorDOMAgent::BuildArrayForDistributedNodes(
-    V0InsertionPoint* insertion_point) {
-  auto distributed_nodes =
-      std::make_unique<protocol::Array<protocol::DOM::BackendNode>>();
-  for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
-    Node* distributed_node = insertion_point->DistributedNodeAt(i);
-    if (IsWhitespace(distributed_node))
-      continue;
-
-    std::unique_ptr<protocol::DOM::BackendNode> backend_node =
-        protocol::DOM::BackendNode::create()
-            .setNodeType(distributed_node->getNodeType())
-            .setNodeName(distributed_node->nodeName())
-            .setBackendNodeId(
-                IdentifiersFactory::IntIdForNode(distributed_node))
-            .build();
-    distributed_nodes->emplace_back(std::move(backend_node));
-  }
-  return distributed_nodes;
 }
 
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
@@ -2121,25 +2096,6 @@ void InspectorDOMAgent::WillPopShadowRoot(Element* host, ShadowRoot* root) {
   int root_id = document_node_to_id_map_->at(root);
   if (host_id && root_id)
     GetFrontend()->shadowRootPopped(host_id, root_id);
-}
-
-void InspectorDOMAgent::DidPerformElementShadowDistribution(
-    Element* shadow_host) {
-  int shadow_host_id = document_node_to_id_map_->at(shadow_host);
-  if (!shadow_host_id)
-    return;
-
-  if (ShadowRoot* root = shadow_host->GetShadowRoot()) {
-    const HeapVector<Member<V0InsertionPoint>>& insertion_points =
-        root->V0().DescendantInsertionPoints();
-    for (const auto& it : insertion_points) {
-      V0InsertionPoint* insertion_point = it.Get();
-      int insertion_point_id = document_node_to_id_map_->at(insertion_point);
-      if (insertion_point_id)
-        GetFrontend()->distributedNodesUpdated(
-            insertion_point_id, BuildArrayForDistributedNodes(insertion_point));
-    }
-  }
 }
 
 void InspectorDOMAgent::DidPerformSlotDistribution(

@@ -86,9 +86,11 @@ struct RTC_EXPORT EchoCanceller3Config {
 
     size_t config_change_duration_blocks = 250;
     float initial_state_seconds = 2.5f;
+    int coarse_reset_hangover_blocks = 25;
     bool conservative_initial_phase = false;
     bool enable_coarse_filter_output_usage = true;
     bool use_linear_filter = true;
+    bool high_pass_filter_echo_reference = false;
     bool export_linear_aec_output = false;
   } filter;
 

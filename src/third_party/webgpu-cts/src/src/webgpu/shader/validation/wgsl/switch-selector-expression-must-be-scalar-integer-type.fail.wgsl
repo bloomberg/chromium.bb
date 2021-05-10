@@ -1,4 +1,4 @@
-# v-0025: line 6: switch statement selector expression must be of a scalar integer type
+// v-0025: line 6: switch statement selector expression must be of a scalar integer type
 
 [[stage(vertex)]]
 fn main() -> void {

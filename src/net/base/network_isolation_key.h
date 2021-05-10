@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "net/base/net_export.h"
-#include "url/origin.h"
+#include "net/base/schemeful_site.h"
 
 namespace network {
 namespace mojom {
@@ -25,6 +25,10 @@ template <typename DataViewType, typename T>
 struct StructTraits;
 }  // namespace mojo
 
+namespace url {
+class Origin;
+}
+
 namespace net {
 
 // Key used to isolate shared network stack resources used by requests based on
@@ -32,8 +36,17 @@ namespace net {
 class NET_EXPORT NetworkIsolationKey {
  public:
   // Full constructor.  When a request is initiated by the top frame, it must
-  // also populate the |frame_origin| parameter when calling this constructor.
-  // Arguments can be either origins or schemeful sites.
+  // also populate the |frame_site| parameter when calling this constructor.
+  NetworkIsolationKey(const SchemefulSite& top_frame_site,
+                      const SchemefulSite& frame_site);
+
+  // Alternative constructor that takes ownership of arguments, to save copies.
+  NetworkIsolationKey(SchemefulSite&& top_frame_site,
+                      SchemefulSite&& frame_site);
+
+  // Legacy constructor.
+  // TODO(https://crbug.com/1145294):  Remove this in favor of above
+  // constructor.
   NetworkIsolationKey(const url::Origin& top_frame_origin,
                       const url::Origin& frame_origin);
 
@@ -60,7 +73,12 @@ class NET_EXPORT NetworkIsolationKey {
   // with all other keys and associated data is able to be persisted to disk.
   static NetworkIsolationKey CreateOpaqueAndNonTransient();
 
-  // Creates a new key using |top_frame_origin_| and |new_frame_origin|.
+  // Creates a new key using |top_frame_site_| and |new_frame_site|.
+  NetworkIsolationKey CreateWithNewFrameSite(
+      const SchemefulSite& new_frame_site) const;
+
+  // Creates a new key using |top_frame_site_| and |new_frame_origin|.
+  // TODO(https://crbug.com/1145294):  Remove this in favor of above method.
   NetworkIsolationKey CreateWithNewFrameOrigin(
       const url::Origin& new_frame_origin) const;
 
@@ -70,6 +88,17 @@ class NET_EXPORT NetworkIsolationKey {
   // provides a reasonable way of locating callsites that need to have their
   // NetworkIsolationKey filled in.
   static NetworkIsolationKey Todo() { return NetworkIsolationKey(); }
+
+  // Intended for temporary use in locations that should be using main frame and
+  // frame origin, but are currently only using frame origin, because the
+  // creating object may be shared across main frame objects. Having a special
+  // constructor for these methods makes it easier to keep track of locating
+  // callsites that need to have their NetworkIsolationKey filled in.
+  static NetworkIsolationKey ToDoUseTopFrameOriginAsWell(
+      const url::Origin& incorrectly_used_frame_origin) {
+    return NetworkIsolationKey(incorrectly_used_frame_origin,
+                               incorrectly_used_frame_origin);
+  }
 
   // Compare keys for equality, true if all enabled fields are equal.
   bool operator==(const NetworkIsolationKey& other) const {
@@ -106,14 +135,13 @@ class NET_EXPORT NetworkIsolationKey {
   // disk related to it (e.g., disk cache).
   bool IsTransient() const;
 
-  // Getters for the top frame and frame sites. These are actually scheme + site
-  // for HTTP/HTTPS origins, or original origins for other schemes and opaque
-  // origins. These accessors are primarily intended for IPC calls, and to be
-  // able to create an IsolationInfo from a NetworkIsolationKey.
-  const base::Optional<url::Origin>& GetTopFrameSite() const {
+  // Getters for the top frame and frame sites. These accessors are primarily
+  // intended for IPC calls, and to be able to create an IsolationInfo from a
+  // NetworkIsolationKey.
+  const base::Optional<SchemefulSite>& GetTopFrameSite() const {
     return top_frame_site_;
   }
-  const base::Optional<url::Origin>& GetFrameSite() const {
+  const base::Optional<SchemefulSite>& GetFrameSite() const {
     return frame_site_;
   }
 
@@ -139,11 +167,16 @@ class NET_EXPORT NetworkIsolationKey {
   friend struct mojo::StructTraits<network::mojom::NetworkIsolationKeyDataView,
                                    net::NetworkIsolationKey>;
 
-  NetworkIsolationKey(const url::Origin& top_frame_site,
-                      const url::Origin& frame_site,
+  NetworkIsolationKey(SchemefulSite&& top_frame_site,
+                      SchemefulSite&& frame_site,
                       bool opaque_and_non_transient);
 
   bool IsOpaque() const;
+
+  // SchemefulSite::Serialize() is not const, as it may initialize the nonce.
+  // Need this to call it on a const |site|.
+  static base::Optional<std::string> SerializeSiteWithNonce(
+      const SchemefulSite& site);
 
   // Whether opaque origins cause the key to be transient. Always false, unless
   // created with |CreateOpaqueAndNonTransient|.
@@ -153,10 +186,10 @@ class NET_EXPORT NetworkIsolationKey {
   bool use_frame_site_;
 
   // The origin/etld+1 of the top frame of the page making the request.
-  base::Optional<url::Origin> top_frame_site_;
+  base::Optional<SchemefulSite> top_frame_site_;
 
   // The origin/etld+1 of the frame that initiates the request.
-  base::Optional<url::Origin> frame_site_;
+  base::Optional<SchemefulSite> frame_site_;
 };
 
 }  // namespace net

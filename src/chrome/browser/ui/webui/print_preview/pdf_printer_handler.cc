@@ -9,17 +9,19 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -46,10 +48,10 @@
 #include "url/gurl.h"
 
 #if defined(OS_MAC)
-#include "components/printing/browser/printer_capabilities_mac.h"
+#include "chrome/common/printing/printer_capabilities_mac.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #endif
 
@@ -254,7 +256,7 @@ void PdfPrinterHandler::StartPrint(
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   use_drive_mount_ =
       settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false);
 #endif
@@ -287,7 +289,7 @@ base::FilePath PdfPrinterHandler::GetFileNameForPrintJobTitle(
     const base::string16& job_title) {
   DCHECK(!job_title.empty());
 #if defined(OS_WIN)
-  base::FilePath::StringType print_job_title(job_title);
+  base::FilePath::StringType print_job_title(base::AsWString(job_title));
 #elif defined(OS_POSIX)
   base::FilePath::StringType print_job_title = base::UTF16ToUTF8(job_title);
 #endif
@@ -430,7 +432,7 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
 }
 
 base::FilePath PdfPrinterHandler::GetSaveLocation() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   drive::DriveIntegrationService* drive_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   if (use_drive_mount_ && drive_service && drive_service->IsMounted()) {

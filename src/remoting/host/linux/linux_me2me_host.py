@@ -24,11 +24,11 @@ import hashlib
 import json
 import logging
 import os
-import pipes
 import platform
 import psutil
 import pwd
 import re
+import shlex
 import signal
 import socket
 import subprocess
@@ -101,6 +101,7 @@ HOME_DIR = os.environ["HOME"]
 CONFIG_DIR = os.path.join(HOME_DIR, ".config/chrome-remote-desktop")
 SESSION_FILE_PATH = os.path.join(HOME_DIR, ".chrome-remote-desktop-session")
 SYSTEM_SESSION_FILE_PATH = "/etc/chrome-remote-desktop-session"
+SYSTEM_PRE_SESSION_FILE_PATH = "/etc/chrome-remote-desktop-pre-session"
 
 DEBIAN_XSESSION_PATH = "/etc/X11/Xsession"
 
@@ -140,7 +141,8 @@ USER_SESSION_MESSAGE_FD = 202
 
 # This is the exit code used to signal to wrapper that it should restart instead
 # of exiting. It must be kept in sync with kRelaunchExitCode in
-# remoting_user_session.cc.
+# remoting_user_session.cc and RestartForceExitStatus in
+# chrome-remote-desktop@.service.
 RELAUNCH_EXIT_CODE = 41
 
 # This exit code is returned when a needed binary such as user-session or sg
@@ -388,13 +390,16 @@ class Host:
 
 
 class SessionOutputFilterThread(threading.Thread):
-  """Reads session log from a pipe and logs the output for amount of time
-  defined by SESSION_OUTPUT_TIME_LIMIT_SECONDS."""
+  """Reads session log from a pipe and logs the output with the provided prefix
+  for amount of time defined by time_limit, or indefinitely if time_limit is
+  None."""
 
-  def __init__(self, stream):
+  def __init__(self, stream, prefix, time_limit):
     threading.Thread.__init__(self)
     self.stream = stream
     self.daemon = True
+    self.prefix = prefix
+    self.time_limit = time_limit
 
   def run(self):
     started_time = time.time()
@@ -413,13 +418,12 @@ class SessionOutputFilterThread(threading.Thread):
       if not is_logging:
         continue
 
-      if time.time() - started_time >= SESSION_OUTPUT_TIME_LIMIT_SECONDS:
+      if self.time_limit and time.time() - started_time >= self.time_limit:
         is_logging = False
         print("Suppressing rest of the session output.", flush=True)
       else:
         # Pass stream bytes through as is instead of decoding and encoding.
-        sys.stdout.buffer.write(
-            "Session output: ".encode(sys.stdout.encoding) + line);
+        sys.stdout.buffer.write(self.prefix.encode(sys.stdout.encoding) + line);
         sys.stdout.flush()
 
 
@@ -428,6 +432,7 @@ class Desktop:
 
   def __init__(self, sizes):
     self.x_proc = None
+    self.pre_session_proc = None
     self.session_proc = None
     self.host_proc = None
     self.child_env = None
@@ -542,9 +547,8 @@ class Desktop:
 
   def check_x_responding(self):
     """Checks if the X server is responding to connections."""
-    with open(os.devnull, "r+") as devnull:
-      exit_code = subprocess.call("xdpyinfo", env=self.child_env,
-                                  stdout=devnull)
+    exit_code = subprocess.call("xdpyinfo", env=self.child_env,
+                                stdout=subprocess.DEVNULL)
     return exit_code == 0
 
   def _wait_for_x(self):
@@ -575,9 +579,9 @@ class Desktop:
 
     self._wait_for_x()
 
-    with open(os.devnull, "r+") as devnull:
-      exit_code = subprocess.call("xrandr", env=self.child_env,
-                                  stdout=devnull, stderr=devnull)
+    exit_code = subprocess.call("xrandr", env=self.child_env,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
     if exit_code == 0:
       # RandR is supported
       self.server_supports_exact_resize = True
@@ -680,45 +684,72 @@ class Desktop:
     if not self.server_supports_randr:
       return
 
-    with open(os.devnull, "r+") as devnull:
-      # Register the screen sizes with RandR, if needed.  Errors here are
-      # non-fatal; the X server will continue to run with the dimensions from
-      # the "-screen" option.
-      if self.randr_add_sizes:
-        for width, height in self.sizes:
-          label = "%dx%d" % (width, height)
-          args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
-                  str(height), "0", "0", "0"]
-          subprocess.call(args, env=self.child_env, stdout=devnull,
-                          stderr=devnull)
-          args = ["xrandr", "--addmode", "screen", label]
-          subprocess.call(args, env=self.child_env, stdout=devnull,
-                          stderr=devnull)
+    # Register the screen sizes with RandR, if needed.  Errors here are
+    # non-fatal; the X server will continue to run with the dimensions from
+    # the "-screen" option.
+    if self.randr_add_sizes:
+      for width, height in self.sizes:
+        label = "%dx%d" % (width, height)
+        args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
+                str(height), "0", "0", "0"]
+        subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL)
+        args = ["xrandr", "--addmode", "screen", label]
+        subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL)
 
-      # Set the initial mode to the first size specified, otherwise the X server
-      # would default to (max_width, max_height), which might not even be in the
-      # list.
-      initial_size = self.sizes[0]
-      label = "%dx%d" % initial_size
-      args = ["xrandr", "-s", label]
-      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+    # Set the initial mode to the first size specified, otherwise the X server
+    # would default to (max_width, max_height), which might not even be in the
+    # list.
+    initial_size = self.sizes[0]
+    label = "%dx%d" % initial_size
+    args = ["xrandr", "-s", label]
+    subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
 
-      # Set the physical size of the display so that the initial mode is running
-      # at approximately 96 DPI, since some desktops require the DPI to be set
-      # to something realistic.
-      args = ["xrandr", "--dpi", "96"]
-      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+    # Set the physical size of the display so that the initial mode is running
+    # at approximately 96 DPI, since some desktops require the DPI to be set
+    # to something realistic.
+    args = ["xrandr", "--dpi", "96"]
+    subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
 
-      # Monitor for any automatic resolution changes from the desktop
-      # environment.
-      args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
-              str(initial_size[1])]
+    # Monitor for any automatic resolution changes from the desktop
+    # environment.
+    args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
+            str(initial_size[1])]
 
-      # It is not necessary to wait() on the process here, as this script's main
-      # loop will reap the exit-codes of all child processes.
-      subprocess.Popen(args, env=self.child_env, stdout=devnull, stderr=devnull)
+    # It is not necessary to wait() on the process here, as this script's main
+    # loop will reap the exit-codes of all child processes.
+    subprocess.Popen(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL)
 
-  def _launch_x_session(self):
+  def _launch_pre_session(self):
+    # Launch the pre-session script, if it exists. Returns true if the script
+    # was launched, false if it didn't exist.
+    if os.path.exists(SYSTEM_PRE_SESSION_FILE_PATH):
+      pre_session_command = bash_invocation_for_script(
+          SYSTEM_PRE_SESSION_FILE_PATH)
+
+      logging.info("Launching pre-session: %s" % pre_session_command)
+      self.pre_session_proc = subprocess.Popen(pre_session_command,
+                                               stdin=subprocess.DEVNULL,
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.STDOUT,
+                                               cwd=HOME_DIR,
+                                               env=self.child_env)
+
+      if not self.pre_session_proc.pid:
+        raise Exception("Could not start pre-session")
+
+      output_filter_thread = SessionOutputFilterThread(
+          self.pre_session_proc.stdout, "Pre-session output: ", None)
+      output_filter_thread.start()
+
+      return True
+    return False
+
+  def launch_x_session(self):
     # Start desktop session.
     # The /dev/null input redirection is necessary to prevent the X session
     # reading from stdin.  If this code runs as a shell background job in a
@@ -731,24 +762,27 @@ class Desktop:
 
     logging.info("Launching X session: %s" % xsession_command)
     self.session_proc = subprocess.Popen(xsession_command,
-                                         stdin=open(os.devnull, "r"),
+                                         stdin=subprocess.DEVNULL,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.STDOUT,
                                          cwd=HOME_DIR,
                                          env=self.child_env)
 
-    output_filter_thread = SessionOutputFilterThread(self.session_proc.stdout)
-    output_filter_thread.start()
-
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
+
+    output_filter_thread = SessionOutputFilterThread(self.session_proc.stdout,
+        "Session output: ", SESSION_OUTPUT_TIME_LIMIT_SECONDS)
+    output_filter_thread.start()
 
   def launch_session(self, x_args):
     self._init_child_env()
     self._setup_pulseaudio()
     self._setup_gnubby()
     self._launch_x_server(x_args)
-    self._launch_x_session()
+    if not self._launch_pre_session():
+      # If there was no pre-session script, launch the session immediately.
+      self.launch_x_session()
 
   def launch_host(self, host_config, extra_start_host_args):
     # Start remoting host
@@ -796,6 +830,7 @@ class Desktop:
     SIGKILL if a process doesn't exit within 10 seconds.
     """
     for proc, name in [(self.x_proc, "X server"),
+                       (self.pre_session_proc, "pre-session"),
                        (self.session_proc, "session"),
                        (self.host_proc, "host")]:
       if proc is not None:
@@ -813,6 +848,7 @@ class Desktop:
         except psutil.Error:
           logging.error("Error terminating process")
     self.x_proc = None
+    self.pre_session_proc = None
     self.session_proc = None
     self.host_proc = None
 
@@ -925,6 +961,20 @@ def get_daemon_proc(config_file, require_child_process=False):
   return non_child_process if not require_child_process else None
 
 
+def bash_invocation_for_script(script):
+  """Chooses the appropriate bash command to run the provided script."""
+  if os.path.exists(script):
+    if os.access(script, os.X_OK):
+      # "/bin/sh -c" is smart about how to execute the session script and
+      # works in cases where plain exec() fails (for example, if the file is
+      # marked executable, but is a plain script with no shebang line).
+      return ["/bin/sh", "-c", shlex.quote(script)]
+    else:
+      # If this is a system-wide session script, it should be run using the
+      # system shell, ignoring any login shell that might be set for the
+      # current user.
+      return ["/bin/sh", script]
+
 def choose_x_session():
   """Chooses the most appropriate X session command for this system.
 
@@ -940,16 +990,7 @@ def choose_x_session():
   for startup_file in XSESSION_FILES:
     startup_file = os.path.expanduser(startup_file)
     if os.path.exists(startup_file):
-      if os.access(startup_file, os.X_OK):
-        # "/bin/sh -c" is smart about how to execute the session script and
-        # works in cases where plain exec() fails (for example, if the file is
-        # marked executable, but is a plain script with no shebang line).
-        return ["/bin/sh", "-c", pipes.quote(startup_file)]
-      else:
-        # If this is a system-wide session script, it should be run using the
-        # system shell, ignoring any login shell that might be set for the
-        # current user.
-        return ["/bin/sh", startup_file]
+      return bash_invocation_for_script(startup_file)
 
   # If there's no configuration, show the user a session chooser.
   return [HOST_BINARY_PATH, "--type=xsession_chooser"]
@@ -1113,7 +1154,7 @@ def run_command_with_group(command, group):
            "0<&7 1>&8 2>&9 "
            # Close no-longer-needed file descriptors
            "6>&- 7<&- 8>&- 9>&-"
-           .format(command=" ".join(map(pipes.quote, command)))],
+           .format(command=" ".join(map(shlex.quote, command)))],
         # It'd be nice to use pass_fds instead close_fds=False. Unfortunately,
         # pass_fds doesn't seem usable with remapping. It runs after preexec_fn,
         # which does the remapping, but complains if the specified fds don't
@@ -1150,6 +1191,62 @@ def run_command_with_group(command, group):
     result = COMMAND_NOT_EXECUTABLE_EXIT_CODE
 
   return result
+
+
+def run_command_as_root(command):
+  if os.getenv("DISPLAY"):
+    # TODO(rickyz): Add a Polkit policy that includes a more friendly
+    # message about what this command does.
+    command = ["/usr/bin/pkexec"] + command
+  else:
+    command = ["/usr/bin/sudo", "-k", "--"] + command
+
+  return subprocess.call(command)
+
+
+def exec_self_via_login_shell():
+  """Attempt to run the user's login shell and run this script under it. This
+  will allow the user's ~/.profile or similar to be processed, which may set
+  environment variables to configure Chrome Remote Desktop."""
+  args = [sys.argv[0], "--child-process"] + [arg for arg in sys.argv[1:]
+                                             if arg != "--new-session"]
+  try:
+    shell = os.getenv("SHELL")
+
+    if shell is not None:
+      # Shells consider themselves a login shell if arg0 starts with a '-'.
+      shell_arg0 = "-" + os.path.basename(shell)
+
+      # First, ensure we can execute commands via the user's login shell. Some
+      # users have an incorrect .profile or similar that breaks this.
+      output = subprocess.check_output(
+          [shell_arg0], executable=shell,
+          input=b"exec echo CRD_SHELL_TEST_OUTPUT",
+          timeout=15)
+
+      if b"CRD_SHELL_TEST_OUTPUT" in output:
+        # subprocess doesn't support calling exec without fork, so we need to
+        # set up our pipe manually.
+        read_fd, write_fd = os.pipe()
+        # The command line should easily fit in the 16KiB pipe buffer.
+        os.write(
+            write_fd,
+            b"exec " + os.fsencode(" ".join(map(shlex.quote, args))))
+        os.close(write_fd)
+        os.dup2(read_fd, 0)
+        os.close(read_fd)
+        os.execv(shell, [shell_arg0])
+      else:
+        logging.warning("Login shell doesn't execute standard input.")
+    else:
+      logging.warning("SHELL envirionment variable not set.")
+  except Exception as e:
+    logging.warning(str(e))
+
+  logging.warning(
+      "Failed to run via login shell; continuing without. Environment "
+      "variables set via ~/.profile or similar won't be processed.")
+  os.execv(args[0], args)
 
 
 def start_via_user_session(foreground):
@@ -1417,10 +1514,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
                       action="store_true",
                       help="Signal currently running host to reload the "
                       "config.")
-  parser.add_argument("--add-user", dest="add_user", default=False,
-                      action="store_true",
-                      help="Add current user to the chrome-remote-desktop "
-                      "group.")
+  parser.add_argument("--enable-and-start", dest="enable_and_start",
+                      default=False, action="store_true",
+                      help="Enable and start chrome-remote-desktop for the "
+                      "current user.")
   parser.add_argument("--add-user-as-root", dest="add_user_as_root",
                       action="store", metavar="USER",
                       help="Adds the specified user to the "
@@ -1428,6 +1525,12 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # The script is being run as a child process under the user-session binary.
   # Don't daemonize and use the inherited environment.
   parser.add_argument("--child-process", dest="child_process", default=False,
+                      action="store_true",
+                      help=argparse.SUPPRESS)
+  # The script is being run in a new PAM session. Don't daemonize so the parent
+  # knows when to clean up the PAM session, and attempt to exec a login shell to
+  # allow the user's ~/.profile or similar to run.
+  parser.add_argument("--new-session", dest="new_session", default=False,
                       action="store_true",
                       help=argparse.SUPPRESS)
   parser.add_argument("--watch-resolution", dest="watch_resolution",
@@ -1481,30 +1584,36 @@ Web Store: https://chrome.google.com/remotedesktop"""
     proc.send_signal(signal.SIGHUP)
     return 0
 
-  if options.add_user:
+  if options.enable_and_start:
     user = getpass.getuser()
 
-    try:
-      if user in grp.getgrnam(CHROME_REMOTING_GROUP_NAME).gr_mem:
-        logging.info("User '%s' is already a member of '%s'." %
-                     (user, CHROME_REMOTING_GROUP_NAME))
-        return 0
-    except KeyError:
-      logging.info("Group '%s' not found." % CHROME_REMOTING_GROUP_NAME)
-
-    command = [SCRIPT_PATH, '--add-user-as-root', user]
-    if os.getenv("DISPLAY"):
-      # TODO(rickyz): Add a Polkit policy that includes a more friendly message
-      # about what this command does.
-      command = ["/usr/bin/pkexec"] + command
+    if os.path.isdir("/run/systemd/system"):
+      # While systemd will generally prompt for a password via polkit if run by
+      # a normal user, it won't properly fall back to prompting on the TTY if
+      # stdin is redirected, such as is done by the start-host binary.
+      # Additionally, some configurations can result in systemctl prompting the
+      # user for their password multiple times, which can be confusing and
+      # annoying. Running it as root avoids both issues.
+      return run_command_as_root(["systemctl", "enable", "--now",
+                                  "chrome-remote-desktop@" + user])
     else:
-      command = ["/usr/bin/sudo", "-k", "--"] + command
+      try:
+        if user in grp.getgrnam(CHROME_REMOTING_GROUP_NAME).gr_mem:
+          logging.info("User '%s' is already a member of '%s'." %
+                       (user, CHROME_REMOTING_GROUP_NAME))
+          return 0
+      except KeyError:
+        logging.info("Group '%s' not found." % CHROME_REMOTING_GROUP_NAME)
 
-    # Run with an empty environment out of paranoia, though if an attacker
-    # controls the environment this script is run under, we're already screwed
-    # anyway.
-    os.execve(command[0], command, {})
-    return 1
+      if run_command_as_root([SCRIPT_PATH, '--add-user-as-root', user]) != 0:
+        logging.error("Failed to add user to group")
+        return 1
+
+      # Replace --enable-and-start with --start in the command-line arguments,
+      # which are used later to reinvoke the script as a child of user-session.
+      sys.argv = [arg if arg != "--enable-and-start" else "--start"
+                  for arg in sys.argv]
+      options.start = True
 
   if options.add_user_as_root is not None:
     if os.getuid() != 0:
@@ -1558,8 +1667,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
     if options.child_process:
       os.execvp(sys.argv[0], sys.argv)
 
+  if options.new_session:
+    exec_self_via_login_shell()
+
   if not options.child_process:
-    return start_via_user_session(options.foreground)
+    if os.path.isdir("/run/systemd/system"):
+      return run_command_as_root(["systemctl", "start",
+                                  "chrome-remote-desktop@" + getpass.getuser()])
+    else:
+      return start_via_user_session(options.foreground)
 
   # Start logging to user-session messaging pipe if it exists.
   ParentProcessLogger.try_start_logging(USER_SESSION_MESSAGE_FD)
@@ -1707,7 +1823,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
       # launching things in the wrong order due to differing relaunch times.
       logging.info("Waiting before relaunching")
     else:
-      if desktop.x_proc is None and desktop.session_proc is None:
+      if (desktop.x_proc is None and desktop.pre_session_proc is None and
+          desktop.session_proc is None):
         logging.info("Launching X server and X session.")
         desktop.launch_session(options.args)
         x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
@@ -1740,6 +1857,25 @@ Web Store: https://chrome.google.com/remotedesktop"""
       desktop.x_proc = None
       x_server_inhibitor.record_stopped(False)
       tear_down = True
+
+    if (desktop.pre_session_proc is not None and
+        pid == desktop.pre_session_proc.pid):
+      desktop.pre_session_proc = None
+      if status == 0:
+        logging.info("Pre-session terminated successfully. Starting session.")
+        desktop.launch_x_session()
+      else:
+        logging.info("Pre-session failed. Tearing down.")
+        # The pre-session may have exited on its own or been brought down by the
+        # X server dying. Check if the X server is still running so we know whom
+        # to penalize.
+        if desktop.check_x_responding():
+          # Pre-session and session use the same inhibitor.
+          session_inhibitor.record_stopped(False)
+        else:
+          x_server_inhibitor.record_stopped(False)
+        # Either way, we want to tear down the session.
+        tear_down = True
 
     if desktop.session_proc is not None and pid == desktop.session_proc.pid:
       logging.info("Session process terminated")
@@ -1785,6 +1921,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
           return 0
         elif os.WEXITSTATUS(status) == 106:
           logging.info("Host has been deleted - exiting.")
+          return 0
+        elif os.WEXITSTATUS(status) == 107:
+          logging.info("Remote access is disallowed by policy - exiting.")
           return 0
         else:
           logging.info("Host exited with status %s." % os.WEXITSTATUS(status))

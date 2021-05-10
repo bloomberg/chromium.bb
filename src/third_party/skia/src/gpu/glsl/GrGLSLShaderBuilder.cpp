@@ -13,6 +13,8 @@
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
+#include "src/sksl/dsl/DSL.h"
+#include "src/sksl/dsl/priv/DSLWriter.h"
 
 GrGLSLShaderBuilder::GrGLSLShaderBuilder(GrGLSLProgramBuilder* program)
     : fProgramBuilder(program)
@@ -73,12 +75,24 @@ void GrGLSLShaderBuilder::emitFunction(GrSLType returnType,
                               "}\n\n", body);
 }
 
+void GrGLSLShaderBuilder::emitFunction(const char* declaration, const char* body) {
+    this->functions().appendf("%s {\n"
+                              "%s"
+                              "}\n\n", declaration, body);
+}
+
 void GrGLSLShaderBuilder::emitFunctionPrototype(GrSLType returnType,
                                                 const char* mangledName,
                                                 SkSpan<const GrShaderVar> args,
                                                 bool forceInline) {
     this->appendFunctionDecl(returnType, mangledName, args, forceInline);
     this->functions().append(";\n");
+}
+
+void GrGLSLShaderBuilder::codeAppend(std::unique_ptr<SkSL::Statement> stmt) {
+    SkASSERT(SkSL::dsl::DSLWriter::CurrentProcessor());
+    SkASSERT(stmt);
+    this->codeAppend(stmt->description().c_str());
 }
 
 static inline void append_texture_swizzle(SkString* out, GrSwizzle swizzle) {
@@ -175,10 +189,10 @@ void GrGLSLShaderBuilder::appendColorGamutXform(SkString* out,
                 body.append("x = pow(max(A + B * pow(x, C), 0) / (D + E * pow(x, C)), F);");
                 break;
             case TFKind::HLGish_TF:
-                body.append("x = (x*A <= 1) ? pow(x*A, B) : exp((x-E)*C) + D;");
+                body.append("x = (x*A <= 1) ? pow(x*A, B) : exp((x-E)*C) + D; x *= (F+1);");
                 break;
             case TFKind::HLGinvish_TF:
-                body.append("x = (x <= 1) ? A * pow(x, B) : C * log(x - D) + E;");
+                body.append("x /= (F+1); x = (x <= 1) ? A * pow(x, B) : C * log(x - D) + E;");
                 break;
             default:
                 SkASSERT(false);
@@ -227,7 +241,7 @@ void GrGLSLShaderBuilder::appendColorGamutXform(SkString* out,
                 GrShaderVar("color", useFloat ? kFloat4_GrSLType : kHalf4_GrSLType)};
         SkString body;
         if (colorXformHelper->applyUnpremul()) {
-            body.appendf("color = unpremul%s(color);", useFloat ? "_float" : "");
+            body.appendf("color = %s(color);", useFloat ? "unpremul_float" : "unpremul");
         }
         if (colorXformHelper->applySrcTF()) {
             body.appendf("color.r = %s(half(color.r));", srcTFFuncName.c_str());

@@ -5,12 +5,15 @@
 #include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
+#include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 
 namespace autofill_assistant {
 namespace action_delegate_util {
@@ -44,11 +47,12 @@ void PerformActionsSequentially(
     return;
   }
 
-  std::move((*perform_actions)[action_index])
-      .Run(element,
-           base::BindOnce(&PerformActionsSequentially,
-                          std::move(perform_actions), std::move(status_details),
-                          action_index + 1, element, std::move(done)));
+  ElementActionCallback action = std::move((*perform_actions)[action_index]);
+  std::move(action).Run(
+      element,
+      base::BindOnce(&PerformActionsSequentially, std::move(perform_actions),
+                     std::move(status_details), action_index + 1, element,
+                     std::move(done)));
 }
 
 void OnFindElement(ElementActionCallback perform,
@@ -61,8 +65,9 @@ void OnFindElement(ElementActionCallback perform,
     return;
   }
 
+  const ElementFinder::Result* element_result_ptr = element_result.get();
   std::move(perform).Run(
-      *element_result,
+      *element_result_ptr,
       base::BindOnce(&RetainElementAndExecuteCallback,
                      std::move(element_result), std::move(done)));
 }
@@ -77,6 +82,24 @@ void FindElementAndPerformImpl(
       base::BindOnce(&OnFindElement, std::move(perform), std::move(done)));
 }
 
+// Call |done| with the |status| while ignoring the |wait_time|.
+void IgnoreTimingResult(base::OnceCallback<void(const ClientStatus&)> done,
+                        const ClientStatus& status,
+                        base::TimeDelta wait_time) {
+  std::move(done).Run(status);
+}
+
+// Execute |action| and ignore the timing result.
+void RunAndIgnoreTiming(
+    base::OnceCallback<void(
+        const ElementFinder::Result&,
+        base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>)> action,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> done) {
+  std::move(action).Run(element,
+                        base::BindOnce(&IgnoreTimingResult, std::move(done)));
+}
+
 // Call |done| with a successful status, no matter what |status|.
 //
 // Note that the status details, if any, filled in |status| are conserved.
@@ -89,7 +112,7 @@ void IgnoreErrorStatus(base::OnceCallback<void(const ClientStatus&)> done,
   std::move(done).Run(status.WithStatusOverride(ACTION_APPLIED));
 }
 
-// Execute [action] but skip any failures by transforming failed ClientStatus
+// Execute |action| but skip any failures by transforming failed ClientStatus
 // into successes.
 //
 // Note that the status details filled by the failed action are conserved.
@@ -105,21 +128,26 @@ void AddClickOrTapSequence(const ActionDelegate* delegate,
                            ClickType click_type,
                            OptionalStep on_top,
                            ElementActionVector* actions) {
-  actions->emplace_back(base::BindOnce(
-      &ActionDelegate::WaitUntilDocumentIsInReadyState, delegate->GetWeakPtr(),
-      delegate->GetSettings().document_ready_check_timeout,
-      DOCUMENT_INTERACTIVE));
+  AddStepIgnoreTiming(
+      base::BindOnce(&ActionDelegate::WaitUntilDocumentIsInReadyState,
+                     delegate->GetWeakPtr(),
+                     delegate->GetSettings().document_ready_check_timeout,
+                     DOCUMENT_INTERACTIVE),
+      actions);
   actions->emplace_back(
-      base::BindOnce(&ActionDelegate::ScrollIntoView, delegate->GetWeakPtr()));
+      base::BindOnce(&WebController::ScrollIntoView,
+                     delegate->GetWebController()->GetWeakPtr()));
   if (click_type != ClickType::JAVASCRIPT) {
-    actions->emplace_back(base::BindOnce(
-        &ActionDelegate::WaitUntilElementIsStable, delegate->GetWeakPtr(),
-        delegate->GetSettings().box_model_check_count,
-        delegate->GetSettings().box_model_check_interval));
-    AddOptionalStep(
-        on_top,
-        base::BindOnce(&ActionDelegate::CheckOnTop, delegate->GetWeakPtr()),
+    AddStepIgnoreTiming(
+        base::BindOnce(&ActionDelegate::WaitUntilElementIsStable,
+                       delegate->GetWeakPtr(),
+                       delegate->GetSettings().box_model_check_count,
+                       delegate->GetSettings().box_model_check_interval),
         actions);
+    AddOptionalStep(on_top,
+                    base::BindOnce(&WebController::CheckOnTop,
+                                   delegate->GetWebController()->GetWeakPtr()),
+                    actions);
   }
   actions->emplace_back(base::BindOnce(&ActionDelegate::ClickOrTapElement,
                                        delegate->GetWeakPtr(), click_type));
@@ -134,6 +162,37 @@ void PerformAll(std::unique_ptr<ElementActionVector> perform_actions,
       std::move(perform_actions),
       std::make_unique<ProcessedActionStatusDetailsProto>(), 0, element,
       std::move(done), OkClientStatus());
+}
+
+void PerformWithTextValue(
+    const ActionDelegate* delegate,
+    const TextValue& text_value,
+    base::OnceCallback<void(const std::string&,
+                            const ElementFinder::Result&,
+                            base::OnceCallback<void(const ClientStatus&)>)>
+        perform,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> done) {
+  std::string value;
+  switch (text_value.value_case()) {
+    case TextValue::kText:
+      value = text_value.text();
+      break;
+    case TextValue::kAutofillValue: {
+      ClientStatus autofill_status = GetFormattedAutofillValue(
+          text_value.autofill_value(), delegate->GetUserData(), &value);
+      if (!autofill_status.ok()) {
+        std::move(done).Run(autofill_status);
+        return;
+      }
+      break;
+    }
+    case TextValue::VALUE_NOT_SET:
+      std::move(done).Run(ClientStatus(INVALID_ACTION));
+      return;
+  }
+
+  std::move(perform).Run(value, element, std::move(done));
 }
 
 void AddOptionalStep(OptionalStep optional_step,
@@ -155,6 +214,14 @@ void AddOptionalStep(OptionalStep optional_step,
       actions->emplace_back(std::move(step));
       break;
   }
+}
+
+void AddStepIgnoreTiming(
+    base::OnceCallback<void(
+        const ElementFinder::Result&,
+        base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>)> step,
+    ElementActionVector* actions) {
+  actions->emplace_back(base::BindOnce(&RunAndIgnoreTiming, std::move(step)));
 }
 
 void FindElementAndPerform(const ActionDelegate* delegate,
@@ -222,7 +289,8 @@ void PerformSendKeyboardInput(
   auto actions = std::make_unique<ElementActionVector>();
   if (use_focus) {
     actions->emplace_back(
-        base::BindOnce(&ActionDelegate::FocusField, delegate->GetWeakPtr()));
+        base::BindOnce(&WebController::FocusField,
+                       delegate->GetWebController()->GetWeakPtr()));
   } else {
     AddClickOrTapSequence(delegate, ClickType::CLICK, /* on_top=*/SKIP_STEP,
                           actions.get());
@@ -286,8 +354,9 @@ void PerformSetFieldValue(const ActionDelegate* delegate,
         // instead of falling back to SetValueAttribute(""). This currently
         // fails in WebControllerBrowserTest.GetAndSetFieldValue. Fixing this
         // might fix b/148001624 as well.
-        actions->emplace_back(base::BindOnce(&ActionDelegate::SelectFieldValue,
-                                             delegate->GetWeakPtr()));
+        actions->emplace_back(
+            base::BindOnce(&WebController::SelectFieldValue,
+                           delegate->GetWebController()->GetWeakPtr()));
         actions->emplace_back(base::BindOnce(
             &ActionDelegate::SendKeyboardInput, delegate->GetWeakPtr(),
             UTF8ToUnicode(value), key_press_delay_in_millisecond));
@@ -296,8 +365,9 @@ void PerformSetFieldValue(const ActionDelegate* delegate,
         actions->emplace_back(base::BindOnce(&ActionDelegate::SetValueAttribute,
                                              delegate->GetWeakPtr(),
                                              std::string()));
-        actions->emplace_back(base::BindOnce(&ActionDelegate::FocusField,
-                                             delegate->GetWeakPtr()));
+        actions->emplace_back(
+            base::BindOnce(&WebController::FocusField,
+                           delegate->GetWebController()->GetWeakPtr()));
         actions->emplace_back(base::BindOnce(
             &ActionDelegate::SendKeyboardInput, delegate->GetWeakPtr(),
             UTF8ToUnicode(value), key_press_delay_in_millisecond));

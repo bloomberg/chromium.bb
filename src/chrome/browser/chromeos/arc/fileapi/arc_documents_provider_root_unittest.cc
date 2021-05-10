@@ -22,12 +22,15 @@
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/browser_task_environment.h"
+#include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/watcher_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ChangeType = arc::ArcDocumentsProviderRoot::ChangeType;
-using Document = arc::FakeFileSystemInstance::Document;
+using FakeDocument = arc::FakeFileSystemInstance::Document;
+using FakeFile = arc::FakeFileSystemInstance::File;
+using FakeRoot = arc::FakeFileSystemInstance::Root;
 using EntryList = storage::AsyncFileUtil::EntryList;
 
 namespace arc {
@@ -49,6 +52,16 @@ struct DocumentSpec {
   bool supports_thumbnail;
 };
 
+// Similar as FakeFileSystemInstance::Root, but all fields are primitives
+// so that values can be constexpr.
+struct RootSpec {
+  const char* root_id;
+  const char* document_id;
+  const char* title;
+  int64_t available_bytes;
+  int64_t capacity_bytes;
+};
+
 // Fake file system hierarchy:
 //
 // <path>            <type>      <ID>
@@ -58,6 +71,8 @@ struct DocumentSpec {
 //     music.bin     audio/mp3   music-id
 //     no-delete.jpg image/jpeg  no-delete-id  // Non-deletable file
 //     no-rename.jpg image/jpeg  no-rename-id  // Non-renamable file
+//     size-file.jpg image/jpeg  size-file-id  // File with unknown size
+//     size-pipe.jpg image/jpeg  size-pipe-id  // Pipe with unknown size
 //   dups/           dir         dups-id
 //     dup.mp4       video/mp4   dup1-id
 //     dup.mp4       video/mp4   dup2-id
@@ -65,6 +80,8 @@ struct DocumentSpec {
 //     dup.mp4       video/mp4   dup4-id
 //   ro-dir/         dir         ro-dir-id     // Read-only directory
 constexpr char kAuthority[] = "org.chromium.test";
+
+// DocumentSpecs
 constexpr DocumentSpec kRootSpec{
     "root-id", "", "", kAndroidDirectoryMimeType, -1, 0, false, false, true};
 constexpr DocumentSpec kDirSpec{"dir-id", kRootSpec.document_id,
@@ -102,6 +119,26 @@ constexpr DocumentSpec kNoRenameSpec{"no-rename-id",
                                      false,
                                      true,
                                      true};
+constexpr DocumentSpec kUnknownSizeFileSpec{"size-file-id",
+                                            kDirSpec.document_id,
+                                            "size-file.jpg",
+                                            "image/jpeg",
+                                            -1,
+                                            46,
+                                            true,
+                                            true,
+                                            true,
+                                            true};
+constexpr DocumentSpec kUnknownSizePipeSpec{"size-pipe-id",
+                                            kDirSpec.document_id,
+                                            "size-pipe.jpg",
+                                            "image/jpeg",
+                                            -1,
+                                            46,
+                                            true,
+                                            true,
+                                            true,
+                                            true};
 constexpr DocumentSpec kDupsSpec{"dups-id", kRootSpec.document_id,
                                  "dups",    kAndroidDirectoryMimeType,
                                  -1,        55,
@@ -132,19 +169,61 @@ constexpr DocumentSpec kRoDirSpec{"ro-dir-id", kRootSpec.document_id,
                                   -1,          56,
                                   false,       false,
                                   false,       false};
+constexpr int kAllMetadataFields =
+    storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+    storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+    storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED;
+
+// RootSpecs
+constexpr RootSpec kRegularRootSpec{"root", kRootSpec.document_id, "root1", 100,
+                                    500};
+constexpr RootSpec kNoCapacityRootSpec{"no_capacity", kRootSpec.document_id,
+                                       "root2", 100, -1};
+constexpr RootSpec kNoAvailableRootSpec{"no_available", kRootSpec.document_id,
+                                        "root3", -1, 500};
+constexpr RootSpec kReadOnlyRootSpec{"read-only", kRootSpec.document_id,
+                                     "root4", -1, -1};
 
 // The order is intentionally shuffled here so that
 // FileSystemInstance::GetChildDocuments() returns documents in shuffled order.
 // See ResolveToContentUrlDups test below.
-constexpr DocumentSpec kAllSpecs[] = {
-    kRootSpec, kDirSpec,  kPhotoSpec, kMusicSpec, kNoDeleteSpec, kNoRenameSpec,
-    kDupsSpec, kDup2Spec, kDup1Spec,  kDup4Spec,  kDup3Spec,     kRoDirSpec};
+constexpr DocumentSpec kAllDocumentSpecs[] = {kRootSpec,
+                                              kDirSpec,
+                                              kPhotoSpec,
+                                              kMusicSpec,
+                                              kNoDeleteSpec,
+                                              kNoRenameSpec,
+                                              kUnknownSizeFileSpec,
+                                              kUnknownSizePipeSpec,
+                                              kDupsSpec,
+                                              kDup2Spec,
+                                              kDup1Spec,
+                                              kDup4Spec,
+                                              kDup3Spec,
+                                              kRoDirSpec};
 
-Document ToDocument(const DocumentSpec& spec) {
-  return Document(
+constexpr RootSpec kAllRootSpecs[] = {kRegularRootSpec, kNoCapacityRootSpec,
+                                      kNoAvailableRootSpec, kReadOnlyRootSpec};
+
+FakeDocument ToDocument(const DocumentSpec& spec) {
+  return FakeDocument(
       kAuthority, spec.document_id, spec.parent_document_id, spec.display_name,
       spec.mime_type, spec.size, spec.last_modified, spec.supports_delete,
       spec.supports_rename, spec.dir_supports_create, spec.supports_thumbnail);
+}
+
+FakeRoot ToRoot(const RootSpec& spec) {
+  return FakeRoot(kAuthority, spec.root_id, spec.document_id, spec.title,
+                  spec.available_bytes, spec.capacity_bytes);
+}
+
+std::vector<FakeFile> AllFiles() {
+  return {
+      FakeFile("content://org.chromium.test/document/size-file-id", "01234",
+               "image/jpeg", FakeFile::Seekable::YES, -1),
+      FakeFile("content://org.chromium.test/document/size-pipe-id", "01234",
+               "image/jpeg", FakeFile::Seekable::NO, -1),
+  };
 }
 
 void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
@@ -175,8 +254,14 @@ class ArcDocumentsProviderRootTest : public testing::Test {
   ~ArcDocumentsProviderRootTest() override = default;
 
   void SetUp() override {
-    for (auto spec : kAllSpecs) {
+    for (auto spec : kAllDocumentSpecs) {
       fake_file_system_.AddDocument(ToDocument(spec));
+    }
+    for (auto file : AllFiles()) {
+      fake_file_system_.AddFile(file);
+    }
+    for (auto spec : kAllRootSpecs) {
+      fake_file_system_.AddRoot(ToRoot(spec));
     }
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
@@ -195,16 +280,27 @@ class ArcDocumentsProviderRootTest : public testing::Test {
 
     root_ = std::make_unique<ArcDocumentsProviderRoot>(
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
-        kAuthority, kRootSpec.document_id, "", false,
+        kAuthority, kRootSpec.document_id, kRegularRootSpec.root_id, false,
+        std::vector<std::string>());
+    no_capacity_root_ = std::make_unique<ArcDocumentsProviderRoot>(
+        ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
+        kAuthority, kRootSpec.document_id, kNoCapacityRootSpec.root_id, false,
+        std::vector<std::string>());
+    no_available_root_ = std::make_unique<ArcDocumentsProviderRoot>(
+        ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
+        kAuthority, kRootSpec.document_id, kNoAvailableRootSpec.root_id, false,
         std::vector<std::string>());
     read_only_root_ = std::make_unique<ArcDocumentsProviderRoot>(
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
-        kAuthority, kRootSpec.document_id, "read-only", true,
+        kAuthority, kRootSpec.document_id, kReadOnlyRootSpec.root_id, true,
         std::vector<std::string>());
   }
 
   void TearDown() override {
     root_.reset();
+    no_capacity_root_.reset();
+    no_available_root_.reset();
+    read_only_root_.reset();
     arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
         &fake_file_system_);
 
@@ -221,6 +317,8 @@ class ArcDocumentsProviderRootTest : public testing::Test {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcDocumentsProviderRoot> root_;
+  std::unique_ptr<ArcDocumentsProviderRoot> no_capacity_root_;
+  std::unique_ptr<ArcDocumentsProviderRoot> no_available_root_;
   std::unique_ptr<ArcDocumentsProviderRoot> read_only_root_;
 
  private:
@@ -232,6 +330,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
 TEST_F(ArcDocumentsProviderRootTest, GetFileInfo) {
   base::RunLoop run_loop;
   root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+                     kAllMetadataFields,
                      base::BindOnce(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
@@ -246,6 +345,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfo) {
 TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDirectory) {
   base::RunLoop run_loop;
   root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dir")),
+                     kAllMetadataFields,
                      base::BindOnce(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
@@ -259,7 +359,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDirectory) {
 
 TEST_F(ArcDocumentsProviderRootTest, GetFileInfoRoot) {
   base::RunLoop run_loop;
-  root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("")),
+  root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("")), kAllMetadataFields,
                      base::BindOnce(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
@@ -274,6 +374,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoRoot) {
 TEST_F(ArcDocumentsProviderRootTest, GetFileInfoNoSuchFile) {
   base::RunLoop run_loop;
   root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dir/missing.jpg")),
+                     kAllMetadataFields,
                      base::BindOnce(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
@@ -289,6 +390,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDups) {
   // "dup (2).mp4" should map to the 3rd instance of "dup.mp4" regardless of the
   // order returned from FileSystemInstance.
   root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dups/dup (2).mp4")),
+                     kAllMetadataFields,
                      base::BindOnce(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
@@ -304,7 +406,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCache) {
   {
     base::RunLoop run_loop;
     root_->GetFileInfo(
-        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")), kAllMetadataFields,
         base::BindOnce([](base::RunLoop* run_loop, base::File::Error error,
                           const base::File::Info& info) { run_loop->Quit(); },
                        &run_loop));
@@ -316,7 +418,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCache) {
   {
     base::RunLoop run_loop;
     root_->GetFileInfo(
-        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")), kAllMetadataFields,
         base::BindOnce([](base::RunLoop* run_loop, base::File::Error error,
                           const base::File::Info& info) { run_loop->Quit(); },
                        &run_loop));
@@ -334,7 +436,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCacheExpired) {
   {
     base::RunLoop run_loop;
     root_->GetFileInfo(
-        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")), kAllMetadataFields,
         base::BindOnce([](base::RunLoop* run_loop, base::File::Error error,
                           const base::File::Info& info) { run_loop->Quit(); },
                        &run_loop));
@@ -349,7 +451,7 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCacheExpired) {
   {
     base::RunLoop run_loop;
     root_->GetFileInfo(
-        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")), kAllMetadataFields,
         base::BindOnce([](base::RunLoop* run_loop, base::File::Error error,
                           const base::File::Info& info) { run_loop->Quit(); },
                        &run_loop));
@@ -361,6 +463,38 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCacheExpired) {
   EXPECT_EQ(last_count + 2, fake_file_system_.get_child_documents_count());
 }
 
+TEST_F(ArcDocumentsProviderRootTest, GetFileInfoUnknownSizeFile) {
+  base::RunLoop run_loop;
+  root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dir/size-file.jpg")),
+                     kAllMetadataFields,
+                     base::BindOnce(
+                         [](base::RunLoop* run_loop, base::File::Error error,
+                            const base::File::Info& info) {
+                           run_loop->Quit();
+                           EXPECT_EQ(base::File::FILE_OK, error);
+                           auto expected_spec = kUnknownSizeFileSpec;
+                           // size of file content in AllFiles()
+                           expected_spec.size = 5;
+                           ExpectMatchesSpec(info, expected_spec);
+                         },
+                         &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetFileInfoUnknownSizePipe) {
+  base::RunLoop run_loop;
+  root_->GetFileInfo(base::FilePath(FILE_PATH_LITERAL("dir/size-pipe.jpg")),
+                     kAllMetadataFields,
+                     base::BindOnce(
+                         [](base::RunLoop* run_loop, base::File::Error error,
+                            const base::File::Info& info) {
+                           run_loop->Quit();
+                           EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
+                         },
+                         &run_loop));
+  run_loop.Run();
+}
+
 TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
   base::RunLoop run_loop;
   root_->ReadDirectory(
@@ -370,7 +504,7 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
              std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
             run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
-            ASSERT_EQ(4u, file_list.size());
+            ASSERT_EQ(6u, file_list.size());
             EXPECT_EQ(FILE_PATH_LITERAL("music.bin.mp3"), file_list[0].name);
             EXPECT_EQ("music-id", file_list[0].document_id);
             EXPECT_FALSE(file_list[0].is_directory);
@@ -387,6 +521,14 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
             EXPECT_EQ("photo-id", file_list[3].document_id);
             EXPECT_FALSE(file_list[3].is_directory);
             EXPECT_EQ(base::Time::FromJavaTime(33), file_list[3].last_modified);
+            EXPECT_EQ(FILE_PATH_LITERAL("size-file.jpg"), file_list[4].name);
+            EXPECT_EQ("size-file-id", file_list[4].document_id);
+            EXPECT_FALSE(file_list[4].is_directory);
+            EXPECT_EQ(base::Time::FromJavaTime(46), file_list[4].last_modified);
+            EXPECT_EQ(FILE_PATH_LITERAL("size-pipe.jpg"), file_list[5].name);
+            EXPECT_EQ("size-pipe-id", file_list[5].document_id);
+            EXPECT_FALSE(file_list[5].is_directory);
+            EXPECT_EQ(base::Time::FromJavaTime(46), file_list[5].last_modified);
           },
           &run_loop));
   run_loop.Run();
@@ -1412,6 +1554,78 @@ TEST_F(ArcDocumentsProviderRootTest, GetMetadataNonExist) {
             EXPECT_EQ(metadata.last_modified, base::Time{});
           },
           &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetRootSize) {
+  // Make sure that root1 exists.
+  ASSERT_TRUE(
+      fake_file_system_.RootExists(kAuthority, kRegularRootSpec.root_id));
+
+  base::RunLoop run_loop;
+  root_->GetRootSize(base::BindOnce(
+      [](base::RunLoop* run_loop, const bool error,
+         const uint64_t available_bytes, const uint64_t capacity_bytes) {
+        run_loop->Quit();
+        EXPECT_EQ(false, error);
+        EXPECT_EQ(100u, available_bytes);
+        EXPECT_EQ(500u, capacity_bytes);
+      },
+      &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetRootSizeNoCapacity) {
+  // Make sure that root2 exists.
+  ASSERT_TRUE(
+      fake_file_system_.RootExists(kAuthority, kNoCapacityRootSpec.root_id));
+
+  base::RunLoop run_loop;
+  no_capacity_root_->GetRootSize(base::BindOnce(
+      [](base::RunLoop* run_loop, const bool error,
+         const uint64_t available_bytes, const uint64_t capacity_bytes) {
+        run_loop->Quit();
+        EXPECT_EQ(false, error);
+        EXPECT_EQ(100u, available_bytes);
+        EXPECT_EQ(0u, capacity_bytes);
+      },
+      &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetRootSizeNoAvailable) {
+  // Make sure that root3 exists.
+  ASSERT_TRUE(
+      fake_file_system_.RootExists(kAuthority, kNoAvailableRootSpec.root_id));
+
+  base::RunLoop run_loop;
+  no_available_root_->GetRootSize(base::BindOnce(
+      [](base::RunLoop* run_loop, const bool error,
+         const uint64_t available_bytes, const uint64_t capacity_bytes) {
+        run_loop->Quit();
+        EXPECT_EQ(true, error);
+        EXPECT_EQ(0u, available_bytes);
+        EXPECT_EQ(0u, capacity_bytes);
+      },
+      &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetRootSizeReadOnly) {
+  // Make sure that root4 exists.
+  ASSERT_TRUE(
+      fake_file_system_.RootExists(kAuthority, kReadOnlyRootSpec.root_id));
+
+  base::RunLoop run_loop;
+  read_only_root_->GetRootSize(base::BindOnce(
+      [](base::RunLoop* run_loop, const bool error,
+         const uint64_t available_bytes, const uint64_t capacity_bytes) {
+        run_loop->Quit();
+        EXPECT_EQ(true, error);
+        EXPECT_EQ(0u, available_bytes);
+        EXPECT_EQ(0u, capacity_bytes);
+      },
+      &run_loop));
   run_loop.Run();
 }
 

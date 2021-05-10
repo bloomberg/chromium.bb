@@ -1421,6 +1421,9 @@ class ServiceWorkerUpdateJobTest : public ServiceWorkerJobTest {
   void SetUp() override {
     update_helper_ = new UpdateJobTestHelper();
     helper_.reset(update_helper_);
+    // Reset the mock loader because this test creates a storage partition and
+    // it makes GetLoaderFactoryForUpdateCheck() work correctly.
+    helper_->context_wrapper()->SetLoaderFactoryForUpdateCheckForTest(nullptr);
 
     // Create a StoragePartition with the testing browser context so that the
     // ServiceWorkerUpdateChecker can find the BrowserContext through it.
@@ -2011,21 +2014,8 @@ TEST_F(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
   runner->RunUntilIdle();
 }
 
-class ServiceWorkerUpdateJobTestWithCrossOriginIsolation
-    : public ServiceWorkerUpdateJobTest {
- public:
-  ServiceWorkerUpdateJobTestWithCrossOriginIsolation() {
-    feature_list_.InitAndEnableFeature(
-        ::network::features::kCrossOriginEmbedderPolicy);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Update job should handle the COEP header appropriately.
-TEST_F(ServiceWorkerUpdateJobTestWithCrossOriginIsolation,
-       Update_CrossOriginEmbedderPolicyValue) {
+TEST_F(ServiceWorkerUpdateJobTest, Update_CrossOriginEmbedderPolicyValue) {
   const GURL kNewVersionOrigin("https://newversion/");
   const char kHeadersWithRequireCorp[] = R"(HTTP/1.1 200 OK
 Content-Type: application/javascript

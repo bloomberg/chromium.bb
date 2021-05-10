@@ -15,6 +15,7 @@ devtools_module("search") {
   deps = [
     "../common:bundle",
     "../components:bundle",
+    "../i18n:bundle",
     "../text_utils:bundle",
     "../ui:bundle",
     "../workspace:bundle",
@@ -22,7 +23,7 @@ devtools_module("search") {
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "search.js"
+  entrypoint = "search.ts"
 
   deps = [ ":search" ]
 }

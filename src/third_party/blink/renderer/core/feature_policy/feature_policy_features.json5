@@ -29,7 +29,7 @@
     // public/common/feature_policy/feature_policy_features.h
     feature_default: {
       default: "EnableForSelf",
-      valid_values: ["DisableForAll", "EnableForAll", "EnableForSelf"]
+      valid_values: ["EnableForAll", "EnableForSelf"]
     }
   },
 
@@ -147,15 +147,14 @@
       depends_on: ["CrossOriginIsolation"],
     },
     {
+      name: "DisplayCapture",
+      feature_policy_name: "display-capture",
+      depends_on: ["GetCurrentBrowsingContextMedia"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
       feature_default: "EnableForAll",
-    },
-    {
-      name: "Downloads",
-      feature_policy_name: "downloads",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "EncryptedMedia",
@@ -178,12 +177,6 @@
       feature_policy_name: "focus-without-user-activation",
       feature_default: "EnableForAll",
       depends_on: ["BlockingFocusWithoutUserActivation"],
-    },
-    {
-      name: "FormSubmission",
-      feature_policy_name: "forms",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "Fullscreen",
@@ -218,6 +211,12 @@
       depends_on: ["IdleDetection"],
     },
     {
+      name: "InterestCohort",
+      feature_policy_name: "interest-cohort",
+      feature_default: "EnableForAll",
+      depends_on: ["InterestCohortFeaturePolicy"],
+    },
+    {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
     },
@@ -230,16 +229,9 @@
       feature_policy_name: "midi",
     },
     {
-      name: "Modals",
-      feature_policy_name: "modals",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
-      name: "OrientationLock",
-      feature_policy_name: "orientation-lock",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
+      name: "OTPCredentials",
+      feature_policy_name: "otp-credentials",
+      depends_on: ["WebOTPAssertionFeaturePolicy"],
     },
     {
       name: "Payment",
@@ -253,24 +245,6 @@
       depends_on: ["PictureInPictureAPI"],
     },
     {
-      name: "PointerLock",
-      feature_policy_name: "pointer-lock",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
-      name: "Popups",
-      feature_policy_name: "popups",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
-      name: "Presentation",
-      feature_policy_name: "presentation",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
       name: "PublicKeyCredentialsGet",
       feature_policy_name: "publickey-credentials-get",
       depends_on: ["WebAuthenticationGetAssertionFeaturePolicy"],
@@ -279,12 +253,6 @@
       name: "ScreenWakeLock",
       feature_policy_name: "screen-wake-lock",
       depends_on: ["WakeLock"],
-    },
-    {
-      name: "Script",
-      feature_policy_name: "scripts",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "Serial",
@@ -303,12 +271,6 @@
       feature_policy_name: "sync-xhr",
     },
     {
-      name: "TopNavigation",
-      feature_policy_name: "top-navigation",
-      feature_default: "EnableForAll",
-      depends_on: ["FeaturePolicyForSandbox"],
-    },
-    {
       name: "TrustTokenRedemption",
       feature_policy_name: "trust-token-redemption",
       depends_on: ["TrustTokens"],
@@ -322,7 +284,7 @@
       name: "VerticalScroll",
       feature_policy_name: "vertical-scroll",
       feature_default: "EnableForAll",
-      depends_on: ["ExperimentalProductivityFeatures"],
+      depends_on: ["ExperimentalPolicies"],
     },
     {
       name: "WebShare",

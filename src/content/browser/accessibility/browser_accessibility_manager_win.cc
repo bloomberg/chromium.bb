@@ -62,6 +62,13 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
   return new BrowserAccessibilityManagerWin(initial_tree, delegate);
 }
 
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerWin(
+      BrowserAccessibilityManagerWin::GetEmptyDocument(), delegate);
+}
+
 BrowserAccessibilityManagerWin*
 BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
   return static_cast<BrowserAccessibilityManagerWin*>(this);
@@ -126,7 +133,7 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
     case ax::mojom::Event::kEndOfTest:
       // Event tests use kEndOfTest as a sentinel to mark the end of the test.
       FireUiaAccessibilityEvent(
-          ui::UiaRegistrarWin::GetInstance().GetUiaTestCompleteEventId(), node);
+          ui::UiaRegistrarWin::GetInstance().GetTestCompleteEventId(), node);
       break;
     case ax::mojom::Event::kLocationChanged:
       FireWinAccessibilityEvent(IA2_EVENT_VISIBLE_DATA_CHANGED, node);
@@ -138,10 +145,7 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
       // TODO(crbug.com/1049261) Remove when Views are exposed in the AXTree
       // which will fire generated text-changed events.
       if (!node->IsWebContent())
-        HandleTextChangedEvent(*node);
-      break;
-    case ax::mojom::Event::kTextSelectionChanged:
-      HandleTextSelectionChangedEvent(*node);
+        EnqueueTextChangedEvent(*node);
       break;
     default:
       break;
@@ -228,15 +232,17 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_FullDescriptionPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
-      // Fire the event on the object where the focus of the selection is.
-      ui::AXNode::AXID focus_id =
+      // Fire the event on the object where the focus of the selection is. This
+      // is because the focus is the only endpoint that can move, and because
+      // the caret (if present) is at the focus.
+      ui::AXNodeID focus_id =
           ax_tree()->GetUnignoredSelection().focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
       if (focus_object) {
-        HandleTextSelectionChangedEvent(*focus_object);
+        EnqueueSelectionChangedEvent(*focus_object);
         if (BrowserAccessibility* text_field =
                 focus_object->GetTextFieldAncestor()) {
-          HandleTextSelectionChangedEvent(*text_field);
+          EnqueueSelectionChangedEvent(*text_field);
 
           // Plain text fields (including input and textarea elements) have
           // descendant objects that are part of their internal implementation
@@ -252,7 +258,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
           // Fire the event on the root object, which in the absence of a text
           // field ancestor is the closest UIA text provider (other than the
           // focused object) in which the selection has changed.
-          HandleTextSelectionChangedEvent(*node);
+          DCHECK(node->IsPlatformDocument());
+          EnqueueSelectionChangedEvent(*node);
 
           // "IA2_EVENT_TEXT_CARET_MOVED" should only be fired when a visible
           // caret or a selection is present. In the case of a text field above,
@@ -268,7 +275,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       HandleAriaPropertiesChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::EDITABLE_TEXT_CHANGED:
-      HandleTextChangedEvent(*node);
+      EnqueueTextChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
@@ -308,6 +315,11 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsDataValidForFormPropertyId, node);
       HandleAriaPropertiesChangedEvent(*node);
+      break;
+    case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
+      // TODO(accessibility) No UIA mapping yet exists for aria-current.
+      // Request a mapping from API owners and implement.
+      FireWinAccessibilityEvent(IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED, node);
       break;
     case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
       FireUiaPropertyChangedEvent(UIA_AcceleratorKeyPropertyId, node);
@@ -358,8 +370,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       HandleAriaPropertiesChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
-      if (ui::IsText(node->GetRole())) {
-        HandleTextChangedEvent(*node);
+      if (node->IsText()) {
+        EnqueueTextChangedEvent(*node);
       } else {
         FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
       }
@@ -441,7 +453,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
       // By changing the value of a combo box, the document's text contents will
       // also have changed.
-      HandleTextChangedEvent(*node);
+      EnqueueTextChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
@@ -461,13 +473,13 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
       FireWinAccessibilityEvent(IA2_EVENT_TEXT_ATTRIBUTE_CHANGED, node);
-      HandleTextChangedEvent(*node);
+      EnqueueTextChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
       DCHECK(node->IsTextField());
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
       FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
-      HandleTextChangedEvent(*node);
+      EnqueueTextChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_STATECHANGE, node);
@@ -502,7 +514,7 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
   // state may show / hide a popup by exposing it to the tree or not.
   // Also include focus events since a node may become visible at the same time
   // it receives focus It's never good to suppress a po
-  if (base::Contains(ignored_changed_nodes_, node)) {
+  if (IsIgnoredChangedNode(node)) {
     switch (win_event_type) {
       case EVENT_OBJECT_HIDE:
       case EVENT_OBJECT_SHOW:
@@ -529,6 +541,12 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
   ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
 }
 
+bool BrowserAccessibilityManagerWin::IsIgnoredChangedNode(
+    const BrowserAccessibility* node) const {
+  return base::Contains(ignored_changed_nodes_,
+                        const_cast<BrowserAccessibility*>(node));
+}
+
 void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
     LONG uia_event,
     BrowserAccessibility* node) {
@@ -539,7 +557,7 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
   // Suppress events when |IGNORED_CHANGED| except for MenuClosed / MenuOpen
   // since a change in the ignored state may show / hide a popup by exposing
   // it to the tree or not.
-  if (base::Contains(ignored_changed_nodes_, node)) {
+  if (IsIgnoredChangedNode(node)) {
     switch (uia_event) {
       case UIA_MenuClosedEventId:
       case UIA_MenuOpenedEventId:
@@ -565,7 +583,7 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
   // Suppress events when |IGNORED_CHANGED| with the exception for firing
   // UIA_AriaPropertiesPropertyId-hidden event on non-text node marked as
   // ignored.
-  if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node)) {
+  if (node->IsIgnored() || IsIgnoredChangedNode(node)) {
     if (uia_property != UIA_AriaPropertiesPropertyId || node->IsText())
       return;
   }
@@ -591,7 +609,7 @@ void BrowserAccessibilityManagerWin::FireUiaStructureChangedEvent(
   if (!ShouldFireEventForNode(node))
     return;
   // Suppress events when |IGNORED_CHANGED| except for related structure changes
-  if (base::Contains(ignored_changed_nodes_, node)) {
+  if (IsIgnoredChangedNode(node)) {
     switch (change_type) {
       case StructureChangeType_ChildRemoved:
       case StructureChangeType_ChildAdded:
@@ -865,26 +883,25 @@ void BrowserAccessibilityManagerWin::HandleAriaPropertiesChangedEvent(
   aria_properties_events_.insert(&node);
 }
 
-void BrowserAccessibilityManagerWin::HandleTextChangedEvent(
+void BrowserAccessibilityManagerWin::EnqueueTextChangedEvent(
     BrowserAccessibility& node) {
   DCHECK_IN_ON_ACCESSIBILITY_EVENTS();
   if (BrowserAccessibility* text_provider = GetUiaTextPatternProvider(node))
-    text_changed_events_.insert(text_provider);
+    text_changed_nodes_.insert(text_provider);
 }
 
-void BrowserAccessibilityManagerWin::HandleTextSelectionChangedEvent(
+void BrowserAccessibilityManagerWin::EnqueueSelectionChangedEvent(
     BrowserAccessibility& node) {
   DCHECK_IN_ON_ACCESSIBILITY_EVENTS();
-  if (BrowserAccessibility* text_provider = GetUiaTextPatternProvider(node))
-    text_selection_changed_events_.insert(text_provider);
+  selection_changed_nodes_.insert(&node);
 }
 
 void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
   BrowserAccessibilityManager::BeforeAccessibilityEvents();
 
   DCHECK(aria_properties_events_.empty());
-  DCHECK(text_changed_events_.empty());
-  DCHECK(text_selection_changed_events_.empty());
+  DCHECK(text_changed_nodes_.empty());
+  DCHECK(selection_changed_nodes_.empty());
   DCHECK(ignored_changed_nodes_.empty());
 
   for (const auto& targeted_event : event_generator()) {
@@ -912,7 +929,7 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
   aria_properties_events_.clear();
 
   // Finalize selection changed events.
-  for (BrowserAccessibility* event_node : text_selection_changed_events_) {
+  for (BrowserAccessibility* event_node : selection_changed_nodes_) {
     DCHECK(event_node);
     if (ToBrowserAccessibilityWin(event_node)
             ->GetCOM()
@@ -921,12 +938,12 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
                                 event_node);
     }
   }
-  text_selection_changed_events_.clear();
+  selection_changed_nodes_.clear();
 
   // Finalize text changed events.
-  for (BrowserAccessibility* event_node : text_changed_events_)
+  for (BrowserAccessibility* event_node : text_changed_nodes_)
     FireUiaAccessibilityEvent(UIA_Text_TextChangedEventId, event_node);
-  text_changed_events_.clear();
+  text_changed_nodes_.clear();
 
   // Finalize selection item events.
   FinalizeSelectionEvents(

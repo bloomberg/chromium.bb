@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
 
 source_set("text_input_types") {
@@ -38,7 +39,7 @@ component("ime_types") {
     "//skia",
   ]
 
-  if (is_chromeos || use_ozone) {
+  if (is_chromeos_ash || use_ozone) {
     sources += [
       "character_composer.cc",
       "character_composer.h",
@@ -60,10 +61,6 @@ component("ime") {
     "input_method_base.cc",
     "input_method_base.h",
     "input_method_delegate.h",
-    "input_method_keyboard_controller.h",
-    "input_method_keyboard_controller_observer.h",
-    "input_method_keyboard_controller_stub.cc",
-    "input_method_keyboard_controller_stub.h",
     "input_method_minimal.cc",
     "input_method_minimal.h",
     "input_method_observer.h",
@@ -72,6 +69,10 @@ component("ime") {
     "text_edit_commands.h",
     "text_input_client.cc",
     "text_input_client.h",
+    "virtual_keyboard_controller.h",
+    "virtual_keyboard_controller_observer.h",
+    "virtual_keyboard_controller_stub.cc",
+    "virtual_keyboard_controller_stub.h",
   ]
 
   defines = [ "IS_UI_BASE_IME_IMPL" ]
@@ -91,4 +92,6 @@ component("ime") {
     "//ui/gfx/geometry",
     "//ui/gfx/range",
   ]
+
+  deps = [ "//build:chromeos_buildflags" ]
 }

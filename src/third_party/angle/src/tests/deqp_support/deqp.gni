@@ -878,6 +878,8 @@ deqp_khr_common_sources = [
   "$deqp_path/external/openglcts/modules/common/glcExtTokens.hpp",
   "$deqp_path/external/openglcts/modules/common/glcFragDepthTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcFragDepthTests.hpp",
+  "$deqp_path/external/openglcts/modules/common/glcGLSLVectorConstructorTests.cpp",
+  "$deqp_path/external/openglcts/modules/common/glcGLSLVectorConstructorTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcInfoTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcInfoTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcInternalformatTests.cpp",
@@ -1132,6 +1134,8 @@ deqp_khr_gles2_sources = [
 deqp_khr_gles3_sources = [
   "$deqp_path/external/openglcts/modules/gles3/es3cCopyTexImageConversionsTests.cpp",
   "$deqp_path/external/openglcts/modules/gles3/es3cCopyTexImageConversionsTests.hpp",
+  "$deqp_path/external/openglcts/modules/gles3/es3cNumberParsingTests.cpp",
+  "$deqp_path/external/openglcts/modules/gles3/es3cNumberParsingTests.hpp",
   "$deqp_path/external/openglcts/modules/gles3/es3cTestPackage.cpp",
   "$deqp_path/external/openglcts/modules/gles3/es3cTestPackage.hpp",
   "$deqp_path/external/openglcts/modules/gles3/tes3TestCase.hpp",
@@ -1183,8 +1187,13 @@ deqp_khr_gles31_sources = [
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage2DMultisampleTests.hpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage3DMultisampleTests.cpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage3DMultisampleTests.hpp",
-  "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.cpp",
+
+  #  "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.cpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.hpp",
+
+  # Overrides
+  # 5500: Override to prevent right-shifts by too large a value
+  "deqp_support/es31cVertexAttribBindingTests_override.cpp",
 ]
 
 deqp_khr_gles32_sources = [

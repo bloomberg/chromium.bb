@@ -10,11 +10,11 @@
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -154,6 +154,12 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
 
+  base::android::ScopedJavaLocalRef<jobject> otr_profile_id;
+  if (browser_context && browser_context->IsOffTheRecord()) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    otr_profile_id = profile->GetOTRProfileID().ConvertToJavaOTRProfileID(env);
+  }
+
   base::Optional<OfflineItemSchedule> offline_item_schedule;
   auto download_schedule = item->GetDownloadSchedule();
   if (download_schedule.has_value()) {
@@ -170,9 +176,10 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
       item->GetReceivedBytes(), item->GetTotalBytes(),
       browser_context ? browser_context->IsOffTheRecord() : false,
-      item->GetState(), item->PercentComplete(), item->IsPaused(),
-      DownloadUtils::IsDownloadUserInitiated(item), item->CanResume(),
-      item->IsParallelDownload(), ConvertUTF8ToJavaString(env, original_url),
+      otr_profile_id, item->GetState(), item->PercentComplete(),
+      item->IsPaused(), DownloadUtils::IsDownloadUserInitiated(item),
+      item->CanResume(), item->IsParallelDownload(),
+      ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()
                            : kUnknownRemainingTime,
@@ -494,10 +501,15 @@ void DownloadManagerService::OnDownloadRemoved(
   if (java_ref_.is_null() || item->IsTransient())
     return;
 
+  const Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item));
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadManagerService_onDownloadItemRemoved(
       env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()),
-      content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord());
+      profile->IsOffTheRecord()
+          ? profile->GetOTRProfileID().ConvertToJavaOTRProfileID(env)
+          : nullptr);
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
@@ -515,8 +527,8 @@ void DownloadManagerService::ResumeDownloadInternal(
   }
   DownloadControllerBase::Get()->AboutToResumeDownload(item);
   item->Resume(has_user_gesture);
-  if (!resume_callback_for_testing_.is_null())
-    resume_callback_for_testing_.Run(true);
+  if (resume_callback_for_testing_)
+    std::move(resume_callback_for_testing_).Run(true);
 }
 
 void DownloadManagerService::RetryDownloadInternal(
@@ -658,8 +670,8 @@ void DownloadManagerService::OnResumptionFailedInternal(
     Java_DownloadManagerService_onResumptionFailed(
         env, java_ref_, ConvertUTF8ToJavaString(env, download_guid));
   }
-  if (!resume_callback_for_testing_.is_null())
-    resume_callback_for_testing_.Run(false);
+  if (resume_callback_for_testing_)
+    std::move(resume_callback_for_testing_).Run(false);
 }
 
 download::DownloadItem* DownloadManagerService::GetDownload(

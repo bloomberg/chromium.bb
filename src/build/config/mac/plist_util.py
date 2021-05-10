@@ -94,30 +94,39 @@ def Interpolate(value, substitutions):
 
 def LoadPList(path):
   """Loads Plist at |path| and returns it as a dictionary."""
-  fd, name = tempfile.mkstemp()
-  try:
-    subprocess.check_call(['plutil', '-convert', 'xml1', '-o', name, path])
-    with os.fdopen(fd, 'rb') as f:
-      return plistlib.readPlist(f)
-  finally:
-    os.unlink(name)
+  if sys.version_info.major == 2:
+    fd, name = tempfile.mkstemp()
+    try:
+      subprocess.check_call(['plutil', '-convert', 'xml1', '-o', name, path])
+      with os.fdopen(fd, 'rb') as f:
+        return plistlib.readPlist(f)
+    finally:
+      os.unlink(name)
+  else:
+    with open(path, 'rb') as f:
+      return plistlib.load(f)
 
 
 def SavePList(path, format, data):
   """Saves |data| as a Plist to |path| in the specified |format|."""
-  fd, name = tempfile.mkstemp()
-  try:
-    # "plutil" does not replace the destination file but update it in place,
-    # so if more than one hardlink points to destination all of them will be
-    # modified. This is not what is expected, so delete destination file if
-    # it does exist.
-    if os.path.exists(path):
-      os.unlink(path)
-    with os.fdopen(fd, 'wb') as f:
-      plistlib.writePlist(data, f)
-    subprocess.check_call(['plutil', '-convert', format, '-o', path, name])
-  finally:
-    os.unlink(name)
+  # The below does not replace the destination file but update it in place,
+  # so if more than one hardlink points to destination all of them will be
+  # modified. This is not what is expected, so delete destination file if
+  # it does exist.
+  if os.path.exists(path):
+    os.unlink(path)
+  if sys.version_info.major == 2:
+    fd, name = tempfile.mkstemp()
+    try:
+      with os.fdopen(fd, 'wb') as f:
+        plistlib.writePlist(data, f)
+      subprocess.check_call(['plutil', '-convert', format, '-o', path, name])
+    finally:
+      os.unlink(name)
+  else:
+    with open(path, 'wb') as f:
+      plist_format = {'binary1': plistlib.FMT_BINARY, 'xml1': plistlib.FMT_XML}
+      plistlib.dump(data, f, fmt=plist_format[format])
 
 
 def MergePList(plist1, plist2):
@@ -171,7 +180,7 @@ class MergeAction(Action):
         '-o', '--output', required=True,
         help='path to the output plist file')
     parser.add_argument(
-        '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
+        '-f', '--format', required=True, choices=('xml1', 'binary1'),
         help='format of the plist file to generate')
     parser.add_argument(
         '-x',
@@ -207,7 +216,7 @@ class SubstituteAction(Action):
         '-s', '--substitution', action='append', default=[],
         help='substitution rule in the format key=value')
     parser.add_argument(
-        '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
+        '-f', '--format', required=True, choices=('xml1', 'binary1'),
         help='format of the plist file to generate')
     parser.add_argument(
         '-x',

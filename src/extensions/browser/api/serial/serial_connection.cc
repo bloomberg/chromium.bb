@@ -261,7 +261,8 @@ void SerialConnection::CreatePipe(
   options.element_num_bytes = 1;
   options.capacity_num_bytes = buffer_size_;
 
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(&options, producer, consumer));
+  CHECK_EQ(MOJO_RESULT_OK,
+           mojo::CreateDataPipe(&options, *producer, *consumer));
 }
 
 void SerialConnection::SetUpReceiveDataPipe() {
@@ -416,8 +417,8 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
 
   send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
-    send_timeout_task_.Reset(base::Bind(&SerialConnection::OnSendTimeout,
-                                        weak_factory_.GetWeakPtr()));
+    send_timeout_task_.Reset(base::BindOnce(&SerialConnection::OnSendTimeout,
+                                            weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, send_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(send_timeout_));
@@ -527,8 +528,8 @@ void SerialConnection::InitSerialPortForTesting() {
 
 void SerialConnection::SetTimeoutCallback() {
   if (receive_timeout_ > 0) {
-    receive_timeout_task_.Reset(base::Bind(&SerialConnection::OnReceiveTimeout,
-                                           weak_factory_.GetWeakPtr()));
+    receive_timeout_task_.Reset(base::BindOnce(
+        &SerialConnection::OnReceiveTimeout, weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, receive_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(receive_timeout_));

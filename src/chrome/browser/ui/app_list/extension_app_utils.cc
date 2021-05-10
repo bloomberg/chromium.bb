@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
@@ -21,27 +21,10 @@
 
 namespace app_list {
 
-namespace {
-
-constexpr char const* kAppIdsHiddenInLauncher[] = {
-    chromeos::default_web_apps::kReleaseNotesAppId};
-
-}  // namespace
-
 bool ShouldShowInLauncher(const extensions::Extension* extension,
                           content::BrowserContext* context) {
-  return !HideInLauncherById(extension->id()) &&
-         chromeos::DemoSession::ShouldDisplayInAppLauncher(extension->id()) &&
+  return chromeos::DemoSession::ShouldDisplayInAppLauncher(extension->id()) &&
          extensions::ui_util::ShouldDisplayInAppLauncher(extension, context);
-}
-
-bool HideInLauncherById(std::string extension_id) {
-  for (auto* const id : kAppIdsHiddenInLauncher) {
-    if (id == extension_id) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void AddMenuItemIconsForSystemApps(const std::string& app_id,

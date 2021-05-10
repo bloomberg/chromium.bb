@@ -25,9 +25,8 @@ EMCC=`which emcc`
 EMCXX=`which em++`
 EMAR=`which emar`
 
-RELEASE_CONF="-Oz --closure 1 -DSK_RELEASE --pre-js $BASE_DIR/release.js \
-              -DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0"
-EXTRA_CFLAGS="\"-DSK_RELEASE\", \"-DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0\","
+RELEASE_CONF="-Oz --closure 1 -DSK_RELEASE --pre-js $BASE_DIR/release.js"
+EXTRA_CFLAGS="\"-DSK_RELEASE\","
 IS_OFFICIAL_BUILD="true"
 
 # Tracing will be disabled in release/profiling unless this flag is seen. Tracing will
@@ -40,7 +39,7 @@ fi
 if [[ $@ == *debug* ]]; then
   echo "Building a Debug build"
   EXTRA_CFLAGS="\"-DSK_DEBUG\","
-  RELEASE_CONF="-O0 --js-opts 0 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s GL_ASSERTIONS=1 -g4 \
+  RELEASE_CONF="-O0 --js-opts 0 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s GL_ASSERTIONS=1 -g3 \
                 --source-map-base /node_modules/canvaskit/bin/ -DSK_DEBUG --pre-js $BASE_DIR/debug.js"
   BUILD_DIR=${BUILD_DIR:="out/canvaskit_wasm_debug"}
 elif [[ $@ == *profiling* ]]; then
@@ -124,14 +123,12 @@ if [[ $@ == *no_managed_skottie* || $@ == *no_skottie* ]]; then
   MANAGED_SKOTTIE_BINDINGS="-DSK_INCLUDE_MANAGED_SKOTTIE=0"
 fi
 
-GN_PARTICLES="skia_enable_sksl_interpreter=true"
 PARTICLES_JS="--pre-js $BASE_DIR/particles.js"
 PARTICLES_BINDINGS="$BASE_DIR/particles_bindings.cpp"
 PARTICLES_LIB="$BUILD_DIR/libparticles.a"
 
 if [[ $@ == *no_particles* ]]; then
   echo "Omitting Particles"
-  GN_PARTICLES="skia_enable_sksl_interpreter=false"
   PARTICLES_JS=""
   PARTICLES_BINDINGS=""
   PARTICLES_LIB=""
@@ -156,6 +153,12 @@ if [[ $@ == *no_rt_shader* ]] ; then
   RT_SHADER_JS=""
 fi
 
+MATRIX_HELPER_JS="--pre-js $BASE_DIR/matrix.js"
+if [[ $@ == *no_matrix* ]]; then
+  echo "Omitting matrix helper code"
+  MATRIX_HELPER_JS=""
+fi
+
 HTML_CANVAS_API="--pre-js $BASE_DIR/htmlcanvas/preamble.js \
 --pre-js $BASE_DIR/htmlcanvas/util.js \
 --pre-js $BASE_DIR/htmlcanvas/color.js \
@@ -168,7 +171,8 @@ HTML_CANVAS_API="--pre-js $BASE_DIR/htmlcanvas/preamble.js \
 --pre-js $BASE_DIR/htmlcanvas/pattern.js \
 --pre-js $BASE_DIR/htmlcanvas/radialgradient.js \
 --pre-js $BASE_DIR/htmlcanvas/postamble.js "
-if [[ $@ == *no_canvas* ]]; then
+if [[ $@ == *no_canvas* || $@ == *no_matrix* ]]; then
+  # Note: HTML Canvas bindings depend on the matrix helpers.
   echo "Omitting bindings for HTML Canvas API"
   HTML_CANVAS_API=""
 fi
@@ -313,7 +317,6 @@ echo "Compiling bitcode"
   ${GN_GPU} \
   ${GN_FONT} \
   ${WOFF2_FONT} \
-  ${GN_PARTICLES} \
   ${GN_VIEWER} \
   \
   skia_enable_skshaper=true \
@@ -364,8 +367,12 @@ EMCC_DEBUG=1 ${EMCXX} \
     --bind \
     --no-entry \
     --pre-js $BASE_DIR/preamble.js \
+    --pre-js $BASE_DIR/color.js \
+    --pre-js $BASE_DIR/memory.js \
     --pre-js $BASE_DIR/helper.js \
+    --pre-js $BASE_DIR/util.js \
     --pre-js $BASE_DIR/interface.js \
+    $MATRIX_HELPER_JS \
     $PARAGRAPH_JS \
     $SKOTTIE_JS \
     $PARTICLES_JS \

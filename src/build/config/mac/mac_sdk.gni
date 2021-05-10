@@ -16,7 +16,7 @@ declare_args() {
   # additional code changes are required to be compliant with the availability
   # rules.
   # Must be of the form x.x.x for Info.plist files.
-  mac_deployment_target = "10.10.0"
+  mac_deployment_target = "10.11.0"
 
   # The value of the LSMinimmumSystemVersion in Info.plist files. This partially
   # controls the minimum supported version of macOS for Chromium by
@@ -24,12 +24,7 @@ declare_args() {
   # dropping support for older macOSes. This should be greater than or equal to
   # the mac_deployment_target version.
   # Must be of the form x.x.x for Info.plist files.
-  mac_min_system_version = "10.10.0"
-
-  # For M88 (branch 4324): This value is used to set the
-  # LSMinimmumSystemVersion in the Info.plist instead of the above
-  # mac_min_system_version. See https://crbug.com/1148931#c1 for details.
-  mac_min_system_version_for_m88 = "10.11.0"
+  mac_min_system_version = "10.11.0"
 
   # Path to a specific version of the Mac SDK, not including a slash at the end.
   # If empty, the path to the lowest version greater than or equal to
@@ -42,7 +37,7 @@ declare_args() {
   # The SDK version used when making official builds. This is a single exact
   # version, not a minimum. If this version isn't available official builds
   # will fail.
-  mac_sdk_official_version = "11.0"
+  mac_sdk_official_version = "11.1"
 
   # Production builds should use hermetic Xcode. If you want to do production
   # builds with system Xcode to test new SDKs, set this.
@@ -82,10 +77,8 @@ if (!use_system_xcode) {
 }
 
 # Goma RBE requires paths relative to source directory. When using system
-# Xcode, this is done by creating symbolic links in root_build_dir. It is
-# only supported when targetting iOS. The check uses `target_os` as this
-# file is parsed for the host toolchain and `is_ios` checks `current_os`.
-if (use_system_xcode && use_goma && target_os == "ios") {
+# Xcode, this is done by creating symbolic links in root_build_dir.
+if (use_system_xcode && use_goma) {
   sdk_info_args += [
     "--get_sdk_info",
     "--create_symlink_at",
@@ -97,9 +90,7 @@ sdk_info_args += [ mac_sdk_name ]
 _mac_sdk_result = exec_script(script_name, sdk_info_args, "scope")
 xcode_version = _mac_sdk_result.xcode_version
 xcode_build = _mac_sdk_result.xcode_build
-machine_os_build = _mac_sdk_result.machine_os_build
-machine_os_build_major = _mac_sdk_result.machine_os_build_major
-if (mac_sdk_path == "" && use_system_xcode && use_goma && target_os == "ios") {
+if (mac_sdk_path == "" && use_system_xcode && use_goma) {
   mac_sdk_path = _mac_sdk_result.sdk_path
 }
 

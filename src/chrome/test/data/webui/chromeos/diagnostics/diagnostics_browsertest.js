@@ -19,7 +19,7 @@
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
-GEN('#include "chromeos/constants/chromeos_features.h"');
+GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 const dxTestSuites = 'chromeos/diagnostics/diagnostics_app_unified_test.js';
@@ -28,14 +28,6 @@ this['DiagnosticsApp'] = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return `chrome://diagnostics/test_loader.html?module=${dxTestSuites}`;
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
   }
 
   /** @override */
@@ -52,11 +44,11 @@ this['DiagnosticsApp'] = class extends PolymerTest {
 // You must register all suites in unified test here as well for consistency,
 // although technically is not necessary.
 const debug_suites_list = [
-  'App', 'BatteryStatusCard', 'CpuCard', 'DataPoint', 'FakeMethodProvider',
-  'FakeMojoInterface', 'FakeObservables', 'FakeSystemDataProvider',
-  'FakeSystemRoutineContoller', 'MemoryCard', 'OverviewCard', 'PercentBarChart',
-  'RealtimeCpuChart', 'RoutineListExecutor', 'RoutineResultEntry',
-  'RoutineResultList', 'RoutineSection', 'TextBadge'
+  'App', 'BatteryStatusCard', 'CpuCard', 'DataPoint', 'DiagnosticsUtils',
+  'FakeMethodProvider', 'FakeMojoInterface', 'FakeObservables',
+  'FakeSystemDataProvider', 'FakeSystemRoutineContoller', 'MemoryCard',
+  'OverviewCard', 'PercentBarChart', 'RealtimeCpuChart', 'RoutineListExecutor',
+  'RoutineResultEntry', 'RoutineResultList', 'RoutineSection', 'TextBadge'
 ];
 
 TEST_F('DiagnosticsApp', 'BrowserTest', function() {

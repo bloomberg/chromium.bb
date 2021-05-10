@@ -21,7 +21,7 @@ TemplateURLServiceClientImpl::TemplateURLServiceClientImpl(
   // backend can handle automatically adding the search terms as the user
   // navigates.
   if (history_service_)
-    history_service_->AddObserver(this);
+    history_service_observation_.Observe(history_service_);
 }
 
 TemplateURLServiceClientImpl::~TemplateURLServiceClientImpl() {}
@@ -35,7 +35,7 @@ void TemplateURLServiceClientImpl::Shutdown() {
   // two-phases since KeyedService are not supposed to use a dependend service
   // after the Shutdown call.
   if (history_service_) {
-    history_service_->RemoveObserver(this);
+    history_service_observation_.Reset();
     history_service_ = nullptr;
   }
 }
@@ -66,7 +66,7 @@ void TemplateURLServiceClientImpl::AddKeywordGeneratedVisit(const GURL& url) {
         url, base::Time::Now(), /*context_id=*/nullptr, /*nav_entry_id=*/0,
         /*referrer=*/GURL(), history::RedirectList(),
         ui::PAGE_TRANSITION_KEYWORD_GENERATED, history::SOURCE_BROWSED,
-        /*did_replace_entry=*/false, /*publicly_routable=*/false);
+        /*did_replace_entry=*/false, /*floc_allowed=*/false);
   }
 }
 

@@ -18,6 +18,10 @@
         margin-inline-start: 24px;
         overflow: hidden;
       }
+
+      nearby-contact-visibility {
+        width: 100%;
+      }
     </style>
     <nearby-page-template title="$i18n{nearbyShareVisibilityPageTitle}"
         sub-title="$i18n{nearbyShareVisibilityPageSubtitle}"
@@ -27,6 +31,7 @@
         cancel-button-label="$i18n{nearbyShareActionsCancel}"
         cancel-button-event-name="close"
         utility-button-label="$i18n{nearbyShareVisibilityPageManageContacts}"
+        utility-button-open-in-new=true
         utility-button-event-name="manage-contacts">
       <div id=center-content slot="content">
         <nearby-contact-visibility id="contactVisibility"

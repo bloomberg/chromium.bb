@@ -22,6 +22,70 @@
   };
 
   /**
+   * Returns the $i18n{} label for the Quick View item |text| if devtools code
+   * coverage is enabled. Otherwise, returns |text|.
+   *
+   * @param {string} text Quick View item text.
+   * @return {!Promise<string>}
+   */
+  async function i18nQuickViewLabelText(text) {
+    const isDevtoolsCoverageActive =
+        await sendTestMessage({name: 'isDevtoolsCoverageActive'});
+
+    if (isDevtoolsCoverageActive !== 'true') {
+      return text;
+    }
+
+    /** @const {!Object<string, string>} */
+    const i18nQuickViewItemTextLabels = {
+      // Quick View toolbar button items.
+      'Back': 'QUICK_VIEW_CLOSE_BUTTON_LABEL',
+      'Delete': 'QUICK_VIEW_DELETE_BUTTON_LABEL',
+      'File info': 'QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL',
+      'Open': 'QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL',
+
+      // Quick View content panel items.
+      'No preview available': 'QUICK_VIEW_NO_PREVIEW_AVAILABLE',
+
+      // Quick View metadata box items.
+      'Album': 'METADATA_BOX_ALBUM_TITLE',
+      'Artist': 'METADATA_BOX_MEDIA_ARTIST',
+      'Audio info': 'METADATA_BOX_AUDIO_INFO',
+      'Codec': 'METADATA_BOX_CODEC',
+      'Created by': 'METADATA_BOX_CREATED_BY',
+      'Created time': 'METADATA_BOX_CREATION_TIME',
+      'Date modified': 'METADATA_BOX_MODIFICATION_TIME',
+      'Device model': 'METADATA_BOX_EXIF_DEVICE_MODEL',
+      'Device settings': 'METADATA_BOX_EXIF_DEVICE_SETTINGS',
+      'Dimensions': 'METADATA_BOX_DIMENSION',
+      'Duration': 'METADATA_BOX_DURATION',
+      'File location': 'METADATA_BOX_FILE_LOCATION',
+      'Frame rate': 'METADATA_BOX_FRAME_RATE',
+      'General info': 'METADATA_BOX_GENERAL_INFO',
+      'Genre': 'METADATA_BOX_GENRE',
+      'Geography': 'METADATA_BOX_EXIF_GEOGRAPHY',
+      'Image info': 'METADATA_BOX_IMAGE_INFO',
+      'Modified by': 'METADATA_BOX_MODIFIED_BY',
+      'Page count': 'METADATA_BOX_PAGE_COUNT',
+      'Path': 'METADATA_BOX_FILE_PATH',
+      'Size': 'METADATA_BOX_FILE_SIZE',
+      'Source': 'METADATA_BOX_SOURCE',
+      'Title': 'METADATA_BOX_MEDIA_TITLE',
+      'Track': 'METADATA_BOX_TRACK',
+      'Type': 'METADATA_BOX_MEDIA_MIME_TYPE',
+      'Video info': 'METADATA_BOX_VIDEO_INFO',
+      'Year recorded': 'METADATA_BOX_YEAR_RECORDED',
+    };
+
+    // Verify |text| has an $i18n{} label in |i18nQuickViewItemTextLabels|.
+    const label = i18nQuickViewItemTextLabels[text];
+    chrome.test.assertEq('string', typeof label, 'Missing: ' + text);
+
+    // Return the $i18n{} label of |text|.
+    return '$i18n{' + label + '}';
+  }
+
+  /**
    * Waits for Quick View dialog to be open.
    *
    * @param {string} appId Files app windowId.
@@ -164,14 +228,16 @@
 
   /**
    * Assuming that Quick View is currently open per openQuickView above, return
-   * the text shown in the QuickView Metadata Box field |name|.
+   * the text shown in the QuickView Metadata Box field |name|. If the optional
+   * |hidden| is 'hidden', the field |name| should not be visible.
    *
    * @param {string} appId Files app windowId.
    * @param {string} name QuickView Metadata Box field name.
+   * @param {string} hidden Whether the field name should be visible.
    *
    * @return {!Promise<string>} text Text value in the field name.
    */
-  async function getQuickViewMetadataBoxField(appId, name) {
+  async function getQuickViewMetadataBoxField(appId, name, hidden = '') {
     let filesMetadataBox = 'files-metadata-box';
 
     /**
@@ -204,12 +270,18 @@
      * The <files-metadata-entry key="name"> element resides in the shadow DOM
      * of the <files-metadata-box>.
      */
-    quickViewQuery.push(`files-metadata-entry[key="${name}"]`);
+    const nameText = await i18nQuickViewLabelText(name);
+    quickViewQuery.push('files-metadata-entry[key="' + nameText + '"]');
 
     /**
-     * It has a #value div child in its shadow DOM containing the field value.
+     * It has a #value div child in its shadow DOM containing the field value,
+     * but if |hidden| was given, the field should not be visible.
      */
-    quickViewQuery.push('#value > div:not([hidden])');
+    if (hidden !== 'hidden') {
+      quickViewQuery.push('#value > div:not([hidden])');
+    } else {
+      quickViewQuery.push('#box[hidden]');
+    }
 
     const element = await remoteCall.waitForElement(appId, quickViewQuery);
     return element.text;
@@ -558,12 +630,12 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of text file should be shown.
-      if (!text || !text[0].includes('I like chocolate and chips.')) {
+      if (!text || !text[0] || !text[0].includes('chocolate and chips')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
 
-    // Check metadata is loaded correctly.
+    // Check: the correct size and date modified values should be displayed.
     const sizeText = await getQuickViewMetadataBoxField(appId, 'Size');
     chrome.test.assertEq(ENTRIES.hello.sizeText, sizeText);
     const lastModifiedText =
@@ -648,13 +720,8 @@
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
 
-    // Check: no mimeType information is displayed. Note that there are multiple
-    // levels of shadow DOM present in this query.
-    const mimeTypeQuery = [
-      '#quick-view', '#dialog[open] files-metadata-box[metadata~="mime"]',
-      'files-metadata-entry[key="Type"]', '#box[hidden]'
-    ];
-    await remoteCall.waitForElement(appId, mimeTypeQuery);
+    // Check: the mimeType field should not be displayed.
+    await getQuickViewMetadataBoxField(appId, 'Type', 'hidden');
   };
 
   /**
@@ -699,12 +766,12 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of ENTRIES.utf8Text should be shown.
-      if (!text || !text[0].includes('їсти मुझे |∊☀✌✂♁ 🙂\n')) {
+      if (!text || !text[0] || !text[0].includes('їсти मुझे |∊☀✌✂♁ 🙂\n')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
 
-    // Check: the correct file size should be shown.
+    // Check: the correct file size should be displayed.
     const size = await getQuickViewMetadataBoxField(appId, 'Size');
     chrome.test.assertEq('191 bytes', size);
   };
@@ -833,6 +900,63 @@
   };
 
   /**
+   * Tests opening Quick View on a PDF document that opens a popup JS dialog.
+   */
+  testcase.openQuickViewPdfPopup = async () => {
+    const caller = getCaller();
+
+    /**
+     * The PDF <webview> resides in the #quick-view shadow DOM, as a child of
+     * the #dialog element.
+     */
+    const webView = ['#quick-view', '#dialog[open] webview.content'];
+
+    // Open Files app on Downloads containing ENTRIES.popupPdf.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.popupPdf], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.popupPdf.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewPdfLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || !elements[0].attributes.src) {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewPdfLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Get the <webview> embed type attribute.
+    function checkPdfEmbedType(type) {
+      const haveElements = Array.isArray(type) && type.length === 1;
+      if (!haveElements || !type[0].toString().includes('pdf')) {
+        return pending(caller, 'Waiting for plugin <embed> type.');
+      }
+      return type[0];
+    }
+    const type = await repeatUntil(async () => {
+      const getType = 'window.document.querySelector("embed").type';
+      return checkPdfEmbedType(await remoteCall.callRemoteTestUtil(
+          'deepExecuteScriptInWebView', appId, [webView, getType]));
+    });
+
+    // Check: the <webview> embed type should be PDF mime type.
+    chrome.test.assertEq('application/pdf', type);
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('application/pdf', mimeType);
+  };
+
+  /**
    * Tests that Quick View does not display a PDF file preview when that is
    * disabled by system settings (preferences).
    */
@@ -855,6 +979,10 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.tallPdf.nameText);
 
+    // Get the content panel 'No preview available' item text.
+    const noPreviewAvailableText =
+        await i18nQuickViewLabelText('No preview available');
+
     // Wait for the innerContentPanel to load and display its content.
     function checkInnerContentPanel(elements) {
       const haveElements = Array.isArray(elements) && elements.length === 1;
@@ -862,7 +990,7 @@
         return pending(caller, 'Waiting for inner content panel to load.');
       }
       // Check: the PDF preview should not be shown.
-      chrome.test.assertEq('No preview available', elements[0].text);
+      chrome.test.assertEq(noPreviewAvailableText, elements[0].text);
       return;
     }
     await repeatUntil(async () => {
@@ -914,7 +1042,7 @@
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
 
-    // Check: the correct file location should be displayed in Downloads.
+    // Check: the correct file location should be displayed.
     const location = await getQuickViewMetadataBoxField(appId, 'File location');
     chrome.test.assertEq('My files/Downloads/page.mhtml', location);
   };
@@ -984,13 +1112,8 @@
           'deepExecuteScriptInWebView', appId, [webView, getScrollY]));
     });
 
-    // Check: no mimeType information is displayed. Note that there are multiple
-    // levels of shadow DOM present in this query.
-    const mimeTypeQuery = [
-      '#quick-view', '#dialog[open] files-metadata-box[metadata~="mime"]',
-      'files-metadata-entry[key="Type"]', '#box[hidden]'
-    ];
-    await remoteCall.waitForElement(appId, mimeTypeQuery);
+    // Check: the mimeType field should not be displayed.
+    await getQuickViewMetadataBoxField(appId, 'Type', 'hidden');
   };
 
   /**
@@ -1293,9 +1416,8 @@
   };
 
   /**
-   * Tests opening Quick View on an JPEG image that has EXIF
-   * displays the EXIF information in the QuickView Metadata
-   * Box.
+   * Tests that opening Quick View on a JPEG image with EXIF displays the EXIF
+   * information in the QuickView Metadata Box.
    */
   testcase.openQuickViewImageExif = async () => {
     const caller = getCaller();
@@ -1405,11 +1527,10 @@
     const caller = getCaller();
 
     /**
-     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
-     * which is a child of the #quick-view shadow DOM.
+     * The <files-safe-media type="image"> element is a shadow DOM child of
+     * the #quick-view element, and has a shadow DOM child <webview>.
      */
-    const webView =
-        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+    const filesSafeMedia = ['#quick-view', 'files-safe-media[type="image"]'];
 
     // Open Files app on Downloads containing ENTRIES.rawNef.
     const appId = await setupAndWaitUntilReady(
@@ -1430,17 +1551,33 @@
       return;
     }
     await repeatUntil(async () => {
+      const webView = filesSafeMedia.concat(['webview']);
       return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
 
-    // Check: the Dimensions shown in the metadata box are correct.
+    // Check: the correct image dimensions should be displayed.
     const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
     chrome.test.assertEq('1324 x 4028', size);
 
     // Check: the correct mimeType should be displayed.
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/tiff', mimeType);
+
+    // Get the fileSafeMedia element preview thumbnail image size.
+    const element = await remoteCall.waitForElement(appId, filesSafeMedia);
+    const image = new Image();
+    image.src = element.attributes.src;
+    image.onload = () => {
+      image.imageSize = image.naturalWidth + ' x ' + image.naturalHeight;
+    };
+
+    // Check: the preview thumbnail should have an orientiated size.
+    await repeatUntil(async () => {
+      if (!image.complete || image.imageSize !== '120 x 160') {
+        return pending(caller, 'Waiting for preview thumbnail size.');
+      }
+    });
   };
 
   /**
@@ -1481,7 +1618,7 @@
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
 
-    // Check: the correct file mimeType should be displayed.
+    // Check: the correct mimeType should be displayed.
     let mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/png', mimeType);
 
@@ -1499,7 +1636,7 @@
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
 
-    // Check: the next should be displayed in the Quick View.
+    // Check: the correct mimeType should be displayed.
     mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/jpeg', mimeType);
 
@@ -1711,7 +1848,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
-      if (!text || !text[0].includes('This is a sample file')) {
+      if (!text || !text[0] || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -1726,7 +1863,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
-      if (!text || !text[0].includes('42 tall text')) {
+      if (!text || !text[0] || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -1778,7 +1915,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
-      if (!text || !text[0].includes('This is a sample file')) {
+      if (!text || !text[0] || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -1793,7 +1930,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
-      if (!text || !text[0].includes('42 tall text')) {
+      if (!text || !text[0] || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -2192,7 +2329,7 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of ENTRIES.hello should be shown.
-      if (!text || !text[0].includes('This is a sample file')) {
+      if (!text || !text[0] || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -2208,7 +2345,7 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of ENTRIES.tallText should be shown.
-      if (!text || !text[0].includes('42 tall text')) {
+      if (!text || !text[0] || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -2282,7 +2419,7 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of ENTRIES.hello should be shown.
-      if (!text || !text[0].includes('This is a sample file')) {
+      if (!text || !text[0] || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -2298,7 +2435,7 @@
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
       // Check: the content of ENTRIES.tallText should be shown.
-      if (!text || !text[0].includes('42 tall text')) {
+      if (!text || !text[0] || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
     });
@@ -2380,13 +2517,18 @@
    * shown in Quick View.
    */
   testcase.openQuickViewTabIndexImage = async () => {
+    // Get tab-index focus query item texts.
+    const backText = await i18nQuickViewLabelText('Back');
+    const openText = await i18nQuickViewLabelText('Open');
+    const deleteText = await i18nQuickViewLabelText('Delete');
+    const fileInfoText = await i18nQuickViewLabelText('File info');
+
     // Prepare a list of tab-index focus queries.
     const tabQueries = [
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Open"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
-      {'query': ['#quick-view', '[aria-label="File info"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + openText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + deleteText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + fileInfoText + '"]:focus']},
     ];
 
     // Open Files app on Downloads containing ENTRIES.smallJpeg.
@@ -2417,14 +2559,20 @@
    * shown in Quick View.
    */
   testcase.openQuickViewTabIndexText = async () => {
+    // Get tab-index focus query item texts.
+    const backText = await i18nQuickViewLabelText('Back');
+    const openText = await i18nQuickViewLabelText('Open');
+    const deleteText = await i18nQuickViewLabelText('Delete');
+    const fileInfoText = await i18nQuickViewLabelText('File info');
+
     // Prepare a list of tab-index focus queries.
     const tabQueries = [
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Open"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
-      {'query': ['#quick-view', '[aria-label="File info"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + openText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + deleteText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + fileInfoText + '"]:focus']},
       {'query': ['#quick-view']},  // Tab past the content panel.
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
     ];
 
     // Open Files app on Downloads containing ENTRIES.tallText.
@@ -2455,13 +2603,18 @@
    * shown in Quick View.
    */
   testcase.openQuickViewTabIndexHtml = async () => {
+    // Get tab-index focus query item texts.
+    const backText = await i18nQuickViewLabelText('Back');
+    const openText = await i18nQuickViewLabelText('Open');
+    const deleteText = await i18nQuickViewLabelText('Delete');
+    const fileInfoText = await i18nQuickViewLabelText('File info');
+
     // Prepare a list of tab-index focus queries.
     const tabQueries = [
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Open"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
-      {'query': ['#quick-view', '[aria-label="File info"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + openText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + deleteText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + fileInfoText + '"]:focus']},
     ];
 
     // Open Files app on Downloads containing ENTRIES.tallHtml.
@@ -2488,8 +2641,8 @@
   };
 
   /**
-   * Tests the tab-index focus order when sending tab keys when an audio file is
-   * shown in Quick View.
+   * Tests the tab-index focus order when sending tab keys when an audio file
+   * is shown in Quick View.
    */
   testcase.openQuickViewTabIndexAudio = async () => {
     // Open Files app on Downloads containing ENTRIES.beautiful song.
@@ -2499,12 +2652,18 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.beautiful.nameText);
 
+    // Get tab-index focus query item texts.
+    const backText = await i18nQuickViewLabelText('Back');
+    const openText = await i18nQuickViewLabelText('Open');
+    const deleteText = await i18nQuickViewLabelText('Delete');
+    const fileInfoText = await i18nQuickViewLabelText('File info');
+
     // Prepare a list of tab-index focus queries.
     const tabQueries = [
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Open"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
-      {'query': ['#quick-view', '[aria-label="File info"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + openText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + deleteText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + fileInfoText + '"]:focus']},
     ];
 
     for (const query of tabQueries) {
@@ -2537,7 +2696,7 @@
       // Check: back should eventually get the focus again.
       const activeElement = await remoteCall.callRemoteTestUtil(
           'deepGetActiveElement', appId, []);
-      if (activeElement.attributes['aria-label'] === 'Back') {
+      if (activeElement.attributes['aria-label'] === backText) {
         break;
       }
     }
@@ -2555,12 +2714,18 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.webm.nameText);
 
+    // Get tab-index focus query item texts.
+    const backText = await i18nQuickViewLabelText('Back');
+    const openText = await i18nQuickViewLabelText('Open');
+    const deleteText = await i18nQuickViewLabelText('Delete');
+    const fileInfoText = await i18nQuickViewLabelText('File info');
+
     // Prepare a list of tab-index focus queries.
     const tabQueries = [
-      {'query': ['#quick-view', '[aria-label="Back"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Open"]:focus']},
-      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
-      {'query': ['#quick-view', '[aria-label="File info"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + backText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + openText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + deleteText + '"]:focus']},
+      {'query': ['#quick-view', '[aria-label="' + fileInfoText + '"]:focus']},
     ];
 
     for (const query of tabQueries) {
@@ -2593,7 +2758,7 @@
       // Check: back should eventually get the focus again.
       const activeElement = await remoteCall.callRemoteTestUtil(
           'deepGetActiveElement', appId, []);
-      if (activeElement.attributes['aria-label'] === 'Back') {
+      if (activeElement.attributes['aria-label'] === backText) {
         break;
       }
     }
@@ -2603,9 +2768,9 @@
    * Tests that the tab-index focus stays within the delete confirm dialog.
    */
   testcase.openQuickViewTabIndexDeleteDialog = async () => {
-    // Open Files app on Downloads containing ENTRIES.hello.
+    // Open Files app.
     const appId =
-        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
 
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
@@ -2648,9 +2813,9 @@
    * that Quick View closes when there are no more items to view.
    */
   testcase.openQuickViewAndDeleteSingleSelection = async () => {
-    // Open Files app on Downloads containing ENTRIES.hello.
+    // Open Files app.
     const appId =
-        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
 
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
@@ -2680,9 +2845,9 @@
    * deletion.
    */
   testcase.openQuickViewAndDeleteCheckSelection = async () => {
-    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
-    const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+    // Open Files app.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_LOCAL_ENTRY_SET);
 
     const caller = getCaller();
 
@@ -2738,7 +2903,7 @@
           'deepQueryAllElements', appId, [videoWebView, ['display']]));
     });
 
-    // Check: The MIME type of |world.ogv| is video/ogg
+    // Check: the mimeType of |world.ogv| should be 'video/ogg'.
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('video/ogg', mimeType);
   };
@@ -2802,15 +2967,11 @@
           'deepQueryAllElements', appId, [audioWebView, ['display']]));
     });
 
-    // Open the Quick View delete confirm dialog.
+    // Press delete.
     const deleteKey = ['#quick-view', 'Delete', false, false, false];
     chrome.test.assertTrue(
         await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
         'Pressing Delete failed.');
-
-    // Click the delete confirm dialog OK button.
-    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
-    await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
     // Check: |Beautiful Song.ogg| should have been deleted.
     await remoteCall.waitForElementLost(
@@ -2839,13 +3000,10 @@
           'deepQueryAllElements', appId, [imageWebView, ['display']]));
     });
 
-    // Open the Quick View delete confirm dialog.
+    // Press delete.
     chrome.test.assertTrue(
         await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
         'Pressing Delete failed.');
-
-    // Click the delete confirm dialog OK button.
-    await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
     // Check: |My Desktop Background.png| should have been deleted.
     await remoteCall.waitForElementLost(
@@ -2871,10 +3029,6 @@
         ['#quick-view', '#delete-button:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, quickViewDeleteButton);
 
-    // Click the delete confirm dialog OK button.
-    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
-    await remoteCall.waitAndClickElement(appId, deleteConfirm);
-
     // Check: |hello.txt| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="hello.txt"]');
@@ -2899,6 +3053,7 @@
       ['Play files', '--', 'Folder'],
       ['Downloads', '--', 'Folder'],
       ['Linux files', '--', 'Folder'],
+      ['Trash', '--', 'Folder'],
     ];
     await remoteCall.waitForFiles(
         appId, expectedRows, {ignoreLastModifiedTime: true});

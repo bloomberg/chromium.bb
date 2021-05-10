@@ -66,8 +66,11 @@ blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
 }
 
 blink::CSPHashSourcePtr ConvertToBlink(CSPHashSourcePtr hash) {
-  return blink::CSPHashSource::New(hash->algorithm,
-                                   String::FromUTF8(hash->value));
+  WTF::Vector<uint8_t> hash_value;
+  for (uint8_t el : hash->value)
+    hash_value.push_back(el);
+
+  return blink::CSPHashSource::New(hash->algorithm, hash_value);
 }
 
 blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
@@ -114,6 +117,18 @@ WTF::HashMap<blink::CSPDirectiveName, blink::CSPSourceListPtr> ConvertToBlink(
   return out;
 }
 
+WTF::HashMap<blink::CSPDirectiveName, String> ConvertToBlink(
+    base::flat_map<CSPDirectiveName, std::string> directives) {
+  WTF::HashMap<blink::CSPDirectiveName, String> out;
+
+  for (auto& list : directives) {
+    out.insert(ConvertToBlink(list.first),
+               String::FromUTF8(std::move(list.second)));
+  }
+
+  return out;
+}
+
 WTF::Vector<WTF::String> ConvertToBlink(std::vector<std::string> in) {
   WTF::Vector<WTF::String> out;
   for (auto& el : in)
@@ -121,18 +136,27 @@ WTF::Vector<WTF::String> ConvertToBlink(std::vector<std::string> in) {
   return out;
 }
 
+blink::CSPTrustedTypesPtr ConvertToBlink(CSPTrustedTypesPtr trusted_types) {
+  if (!trusted_types)
+    return nullptr;
+  return blink::CSPTrustedTypes::New(ConvertToBlink(trusted_types->list),
+                                     trusted_types->allow_any,
+                                     trusted_types->allow_duplicates);
+}
+
 blink::ContentSecurityPolicyPtr ConvertToBlink(
     ContentSecurityPolicyPtr policy_in) {
   return blink::ContentSecurityPolicy::New(
+      ConvertToBlink(std::move(policy_in->self_origin)),
+      ConvertToBlink(std::move(policy_in->raw_directives)),
       ConvertToBlink(std::move(policy_in->directives)),
       policy_in->upgrade_insecure_requests, policy_in->treat_as_public_address,
-      policy_in->sandbox, ConvertToBlink(std::move(policy_in->header)),
+      policy_in->block_all_mixed_content, policy_in->sandbox,
+      ConvertToBlink(std::move(policy_in->header)),
       policy_in->use_reporting_api,
       ConvertToBlink(std::move(policy_in->report_endpoints)),
-      policy_in->plugin_types.has_value()
-          ? base::Optional<WTF::Vector<WTF::String>>(
-                ConvertToBlink(std::move(policy_in->plugin_types.value())))
-          : base::nullopt,
+      policy_in->require_trusted_types_for,
+      ConvertToBlink(std::move(policy_in->trusted_types)),
       ConvertToBlink(std::move(policy_in->parsing_errors)));
 }
 
@@ -176,7 +200,7 @@ blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
       ConvertToBlink(std::move(parsed_headers->allow_csp_from)),
       std::move(parsed_headers->cross_origin_embedder_policy),
       std::move(parsed_headers->cross_origin_opener_policy),
-      parsed_headers->origin_isolation,
+      parsed_headers->origin_agent_cluster,
       parsed_headers->accept_ch.has_value()
           ? base::make_optional(
                 ConvertToBlink(parsed_headers->accept_ch.value()))
@@ -185,7 +209,8 @@ blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
       parsed_headers->critical_ch.has_value()
           ? base::make_optional(
                 ConvertToBlink(parsed_headers->critical_ch.value()))
-          : base::nullopt);
+          : base::nullopt,
+      parsed_headers->xfo);
 }
 
 }  // namespace mojom

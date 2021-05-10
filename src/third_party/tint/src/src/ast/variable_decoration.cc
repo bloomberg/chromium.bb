@@ -16,63 +16,19 @@
 
 #include <assert.h>
 
-#include "src/ast/binding_decoration.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/constant_id_decoration.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/set_decoration.h"
+TINT_INSTANTIATE_CLASS_ID(tint::ast::VariableDecoration);
 
 namespace tint {
 namespace ast {
 
-VariableDecoration::VariableDecoration(const Source& source)
-    : Decoration(Kind, source) {}
+constexpr const DecorationKind VariableDecoration::Kind;
+
+VariableDecoration::VariableDecoration(const Source& source) : Base(source) {}
 
 VariableDecoration::~VariableDecoration() = default;
 
-bool VariableDecoration::IsBinding() const {
-  return false;
-}
-
-bool VariableDecoration::IsBuiltin() const {
-  return false;
-}
-
-bool VariableDecoration::IsLocation() const {
-  return false;
-}
-
-bool VariableDecoration::IsConstantId() const {
-  return false;
-}
-
-bool VariableDecoration::IsSet() const {
-  return false;
-}
-
-BindingDecoration* VariableDecoration::AsBinding() {
-  assert(IsBinding());
-  return static_cast<BindingDecoration*>(this);
-}
-
-BuiltinDecoration* VariableDecoration::AsBuiltin() {
-  assert(IsBuiltin());
-  return static_cast<BuiltinDecoration*>(this);
-}
-
-ConstantIdDecoration* VariableDecoration::AsConstantId() {
-  assert(IsConstantId());
-  return static_cast<ConstantIdDecoration*>(this);
-}
-
-LocationDecoration* VariableDecoration::AsLocation() {
-  assert(IsLocation());
-  return static_cast<LocationDecoration*>(this);
-}
-
-SetDecoration* VariableDecoration::AsSet() {
-  assert(IsSet());
-  return static_cast<SetDecoration*>(this);
+DecorationKind VariableDecoration::GetKind() const {
+  return Kind;
 }
 
 }  // namespace ast

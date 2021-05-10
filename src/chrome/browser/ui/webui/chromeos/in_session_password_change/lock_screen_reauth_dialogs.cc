@@ -8,6 +8,12 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
+#include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -67,14 +73,41 @@ void LockScreenStartReauthDialog::Show() {
     g_dialog->Focus();
     return;
   }
-  g_dialog = new LockScreenStartReauthDialog();
-  g_dialog->ShowSystemDialog();
+  g_dialog = this;
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      ProfileHelper::GetLockScreenProfileDir(),
+      base::BindRepeating(&LockScreenStartReauthDialog::OnProfileCreated,
+                          weak_factory_.GetWeakPtr()),
+      base::string16(), std::string());
+}
+
+void LockScreenStartReauthDialog::OnProfileCreated(
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    g_dialog->ShowSystemDialogForBrowserContext(
+        profile->GetPrimaryOTRProfile());
+  } else if (status != Profile::CREATE_STATUS_CREATED) {
+    // TODO(mohammedabdon): Create some generic way to show an error on the lock
+    // screen.
+    LOG(ERROR) << "Failed to load lockscreen profile";
+  }
 }
 
 void LockScreenStartReauthDialog::Dismiss() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (g_dialog)
     g_dialog->Close();
+}
+
+void LockScreenStartReauthDialog::OnDialogClosed(
+    const std::string& json_retval) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  InSessionPasswordSyncManager* password_sync_manager =
+      chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+  password_sync_manager->ResetDialog();
 }
 
 bool LockScreenStartReauthDialog::IsRunning() {

@@ -16,9 +16,11 @@ licenses(["notice"])  # 3-clause BSD
 
 package(default_visibility = ["//visibility:public"])
 
-load("//bazel:grpc_build_system.bzl", "grpc_proto_library")
+load("@grpc_python_dependencies//:requirements.bzl", "requirement")
+load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//bazel:cc_grpc_library.bzl", "cc_grpc_library")
-load("//bazel:python_rules.bzl", "py_proto_library")
+load("//bazel:grpc_build_system.bzl", "grpc_proto_library")
+load("//bazel:python_rules.bzl", "py_grpc_library", "py_proto_library")
 
 grpc_proto_library(
     name = "auth_sample",
@@ -54,19 +56,30 @@ grpc_proto_library(
     srcs = ["protos/route_guide.proto"],
 )
 
+proto_library(
+    name = "keyvaluestore_proto",
+    srcs = ["protos/keyvaluestore.proto"],
+)
+
 grpc_proto_library(
     name = "keyvaluestore",
     srcs = ["protos/keyvaluestore.proto"],
 )
 
 proto_library(
-    name = "helloworld_proto_descriptor",
+    name = "protos/helloworld_proto",
     srcs = ["protos/helloworld.proto"],
 )
 
 py_proto_library(
-    name = "py_helloworld",
-    deps = [":helloworld_proto_descriptor"],
+    name = "helloworld_py_pb2",
+    deps = [":protos/helloworld_proto"],
+)
+
+py_grpc_library(
+    name = "helloworld_py_pb2_grpc",
+    srcs = [":protos/helloworld_proto"],
+    deps = [":helloworld_py_pb2"],
 )
 
 cc_binary(
@@ -106,6 +119,7 @@ cc_binary(
     deps = [
         ":helloworld_cc_grpc",
         "//:grpc++",
+        "//:grpc++_reflection",
     ],
 )
 
@@ -230,4 +244,9 @@ cc_binary(
         ":route_guide",
         "//:grpc++",
     ],
+)
+
+proto_library(
+    name = "route_guide_proto",
+    srcs = ["protos/route_guide.proto"],
 )

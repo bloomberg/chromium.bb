@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
@@ -9,6 +10,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
 js_type_check("closure_compile") {
+  uses_legacy_modules = true
   deps = [
     ":profile_info_browser_proxy",
     ":signout_dialog",
@@ -19,7 +21,7 @@ js_type_check("closure_compile") {
     ":sync_page",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [ ":account_manager_browser_proxy" ]
   }
 }
@@ -99,7 +101,7 @@ js_library("sync_encryption_options") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  closure_flags = settings_closure_flags
+  closure_flags = settings_closure_flags + mojom_js_args
   deps = [
     ":account_manager_browser_proxy.m",
     ":people_page",
@@ -112,7 +114,7 @@ js_type_check("closure_compile_module") {
     ":sync_page.m",
   ]
 
-  if (!is_chromeos) {
+  if (!is_chromeos_ash) {
     deps += [
       ":import_data_browser_proxy",
       ":import_data_dialog",
@@ -128,7 +130,7 @@ js_library("account_manager_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-if (!is_chromeos) {
+if (!is_chromeos_ash) {
   js_library("import_data_browser_proxy") {
     deps = [ "//ui/webui/resources/js:cr.m" ]
     externs_list = [ "$externs_path/metrics_private.js" ]
@@ -279,7 +281,7 @@ group("polymer3_elements") {
 html_to_js("web_components") {
   js_files = [ "people_page.js" ]
 
-  if (!is_chromeos) {
+  if (!is_chromeos_ash) {
     js_files += [
       "import_data_dialog.js",
       "manage_profile.js",

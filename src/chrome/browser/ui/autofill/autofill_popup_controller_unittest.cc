@@ -9,8 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
@@ -37,7 +39,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "content/public/browser/browser_accessibility_state.h"
 #endif
 
@@ -61,7 +63,10 @@ class MockAutofillClient : public autofill::TestAutofillClient {
   MockAutofillClient() : prefs_(autofill::test::PrefServiceForTesting()) {}
   ~MockAutofillClient() override = default;
 
-  PrefService* GetPrefs() override { return prefs_.get(); }
+  PrefService* GetPrefs() override {
+    return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
+  }
+  const PrefService* GetPrefs() const override { return prefs_.get(); }
 
  private:
   std::unique_ptr<PrefService> prefs_;
@@ -281,7 +286,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 class AutofillPopupControllerAccessibilityUnitTest
     : public AutofillPopupControllerUnitTest {
  public:
@@ -700,7 +705,7 @@ TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
   Mock::VerifyAndClearExpectations(autofill_popup_view());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(AutofillPopupControllerAccessibilityUnitTest, FireControlsChangedEvent) {
   StrictMock<MockAxPlatformNodeDelegate> mock_ax_platform_node_delegate;
   StrictMock<MockAxPlatformNode> mock_ax_platform_node;

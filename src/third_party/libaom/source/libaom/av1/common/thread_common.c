@@ -444,7 +444,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                   plane_start, plane_end);
 
   // Set up loopfilter thread data.
-  for (i = 0; i < num_workers; ++i) {
+  for (i = num_workers - 1; i >= 0; --i) {
     AVxWorker *const worker = &workers[i];
     LFWorkerData *const lf_data = &lf_sync->lfdata[i];
 
@@ -464,7 +464,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     loop_filter_data_reset(lf_data, frame, cm, xd);
 
     // Start loopfiltering
-    if (i == num_workers - 1) {
+    if (i == 0) {
       winterface->execute(worker);
     } else {
       winterface->launch(worker);
@@ -894,15 +894,15 @@ static void foreach_rest_unit_in_planes_mt(AV1LrStruct *lr_ctxt,
   enqueue_lr_jobs(lr_sync, lr_ctxt, cm);
 
   // Set up looprestoration thread data.
-  for (i = 0; i < num_workers; ++i) {
+  for (i = num_workers - 1; i >= 0; --i) {
     AVxWorker *const worker = &workers[i];
     lr_sync->lrworkerdata[i].lr_ctxt = (void *)lr_ctxt;
     worker->hook = loop_restoration_row_worker;
     worker->data1 = lr_sync;
     worker->data2 = &lr_sync->lrworkerdata[i];
 
-    // Start loopfiltering
-    if (i == num_workers - 1) {
+    // Start loop restoration
+    if (i == 0) {
       winterface->execute(worker);
     } else {
       winterface->launch(worker);

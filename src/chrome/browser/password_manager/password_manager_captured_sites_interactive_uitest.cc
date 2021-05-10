@@ -223,19 +223,21 @@ class CapturedSitesPasswordManagerBrowserTest
   content::WebContents* web_contents_ = nullptr;
   std::unique_ptr<ServerUrlLoader> server_url_loader_;
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturedSitesPasswordManagerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
+  captured_sites_test_utils::PrintInstructions(
+      "password_manager_captured_sites_interactive_uitest");
+
   base::FilePath src_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
 
   bool test_completed = recipe_replayer()->ReplayTest(
-      GetParam().capture_file_path, GetParam().recipe_file_path);
+      GetParam().capture_file_path, GetParam().recipe_file_path,
+      captured_sites_test_utils::GetCommandFilePath());
   if (!test_completed)
     ADD_FAILURE() << "Full execution was unable to complete.";
 }

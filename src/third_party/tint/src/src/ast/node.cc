@@ -16,12 +16,14 @@
 
 #include <sstream>
 
+TINT_INSTANTIATE_CLASS_ID(tint::ast::Node);
+
 namespace tint {
 namespace ast {
 
-Node::Node() = default;
-
 Node::Node(const Source& source) : source_(source) {}
+
+Node::Node(Node&&) = default;
 
 Node::~Node() = default;
 
@@ -30,9 +32,9 @@ void Node::make_indent(std::ostream& out, size_t indent) const {
     out << " ";
 }
 
-std::string Node::str() const {
+std::string Node::str(const semantic::Info& sem) const {
   std::ostringstream out;
-  to_str(out, 0);
+  to_str(sem, out, 0);
   return out.str();
 }
 

@@ -7,6 +7,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -30,7 +31,6 @@
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -67,7 +67,7 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
     adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // In CHROMEOS build, even when |adapter_| object is released at TearDown()
     // it causes the test to fail on exit with an error indicating |adapter_| is
     // leaked.
@@ -114,6 +114,9 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
     EnableFeatureAndSetParams(features::kBackForwardCache, "enable_same_site",
                               "true");
+    // Allow BackForwardCache for all devices regardless of their memory.
+    DisableFeature(features::kBackForwardCacheMemoryControls);
+
     SetupFeaturesAndParameters();
 
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -135,13 +138,18 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
       enabled_features.emplace_back(feature_param.first, feature_param.second);
     }
 
-    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                       disabled_features_);
   }
 
   void EnableFeatureAndSetParams(base::Feature feature,
                                  std::string param_name,
                                  std::string param_value) {
     features_with_params_[feature][param_name] = param_value;
+  }
+
+  void DisableFeature(base::Feature feature) {
+    disabled_features_.push_back(feature);
   }
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
@@ -154,6 +162,7 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
                      FeatureHash,
                      FeatureEqualOperator>
       features_with_params_;
+  std::vector<base::Feature> disabled_features_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBackForwardCacheBrowserTest);
 };
@@ -390,10 +399,10 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // Use the WebNfc feature on the empty page.
   EXPECT_EQ("success", content::EvalJs(current_frame_host(), R"(
-    const writer = new NDEFWriter();
+    const ndef = new NDEFReader();
     new Promise(async resolve => {
       try {
-        await writer.write("Hello");
+        await ndef.write("Hello");
         resolve('success');
       } catch (error) {
         resolve(error.message);

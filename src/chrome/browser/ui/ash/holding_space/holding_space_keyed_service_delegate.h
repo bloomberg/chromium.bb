@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_KEYED_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_KEYED_SERVICE_DELEGATE_H_
 
+#include <vector>
+
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "base/scoped_observer.h"
@@ -19,15 +21,11 @@ class HoldingSpaceKeyedServiceDelegate : public HoldingSpaceModelObserver {
  public:
   ~HoldingSpaceKeyedServiceDelegate() override;
 
-  // Invoked by `HoldingSpaceKeyedService` to initialize the delegate
-  // immediately after its construction. Delegates accepting callbacks from
-  // the service should *not* invoke callbacks during construction but are free
-  // to do so during or anytime after initialization.
+  // Invoked by `HoldingSpaceKeyedService` to initialize the delegate.
+  // Called immediately after the delegate's construction. Delegates accepting
+  // callbacks from the service should *not* invoke callbacks during
+  // construction but are free to do so during or anytime after initialization.
   virtual void Init() = 0;
-
-  // Invoked by `HoldingSpaceKeyedService` when the service is shutting down.
-  // Delegates should perform any necessary clean up.
-  virtual void Shutdown();
 
   // Invoked by `HoldingSpaceKeyedService` to notify delegates when holding
   // space persistence has been restored.
@@ -47,8 +45,10 @@ class HoldingSpaceKeyedServiceDelegate : public HoldingSpaceModelObserver {
 
  private:
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemAdded(const HoldingSpaceItem* item) override;
-  void OnHoldingSpaceItemRemoved(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemsAdded(
+      const std::vector<const HoldingSpaceItem*>& items) override;
+  void OnHoldingSpaceItemsRemoved(
+      const std::vector<const HoldingSpaceItem*>& items) override;
   void OnHoldingSpaceItemFinalized(const HoldingSpaceItem* item) override;
 
   // Invoked when holding space persistence has been restored.

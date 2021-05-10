@@ -1,18 +1,12 @@
 // Reduced set of intrinsics that are available to public SkSL (RuntimeEffect and Interpreter)
 
 // See "The OpenGL ES Shading Language, Version 1.00, Section 8"
-// For all of the TODO comments, refer to skbug.com/10913
 
 // 8.1 : Angle and Trigonometry Functions
-float  radians(float  deg) { return deg * 0.0174532925; }
-float2 radians(float2 deg) { return deg * 0.0174532925; }
-float3 radians(float3 deg) { return deg * 0.0174532925; }
-float4 radians(float4 deg) { return deg * 0.0174532925; }
-
-float  degrees(float  rad) { return rad * 57.2957795; }
-float2 degrees(float2 rad) { return rad * 57.2957795; }
-float3 degrees(float3 rad) { return rad * 57.2957795; }
-float4 degrees(float4 rad) { return rad * 57.2957795; }
+$genType  radians($genType  degrees);
+$genHType radians($genHType degrees);
+$genType  degrees($genType  radians);
+$genHType degrees($genHType radians);
 
 $genType  sin($genType  angle);
 $genHType sin($genHType angle);
@@ -25,7 +19,8 @@ $genType  asin($genType  x);
 $genHType asin($genHType x);
 $genType  acos($genType  x);
 $genHType acos($genHType x);
-// TODO: atan(y, x)
+$genType  atan($genType  y, $genType  x);
+$genHType atan($genHType y, $genHType x);
 $genType  atan($genType  y_over_x);
 $genHType atan($genHType y_over_x);
 
@@ -57,7 +52,10 @@ $genType  ceil($genType  x);
 $genHType ceil($genHType x);
 $genType  fract($genType  x);
 $genHType fract($genHType x);
-// TODO: mod(x, y)
+$genType  mod($genType  x, float     y);
+$genType  mod($genType  x, $genType  y);
+$genHType mod($genHType x, half      y);
+$genHType mod($genHType x, $genHType y);
 
 $genType  min($genType  x, $genType  y);
 $genType  min($genType  x, float     y);
@@ -71,65 +69,67 @@ $genType  clamp($genType  x, $genType  minVal, $genType  maxVal);
 $genType  clamp($genType  x, float     minVal, float     maxVal);
 $genHType clamp($genHType x, $genHType minVal, $genHType maxVal);
 $genHType clamp($genHType x, half      minVal, half      maxVal);
+$genType  saturate($genType  x);  // SkSL extension
+$genHType saturate($genHType x);  // SkSL extension
 $genType  mix($genType  x, $genType  y, $genType a);
 $genType  mix($genType  x, $genType  y, float a);
 $genHType mix($genHType x, $genHType y, $genHType a);
 $genHType mix($genHType x, $genHType y, half a);
-// TODO: step(edge, x)
-// TODO: smoothstep(edge0, edge1, x)
-
-// SkSL Extension to GLSL:
-$genType  saturate($genType  x);
-$genHType saturate($genHType x);
+$genType  step($genType  edge, $genType x);
+$genType  step(float     edge, $genType x);
+$genHType step($genHType edge, $genHType x);
+$genHType step(half      edge, $genHType x);
+$genType  smoothstep($genType  edge0, $genType  edge1, $genType  x);
+$genType  smoothstep(float     edge0, float     edge1, $genType  x);
+$genHType smoothstep($genHType edge0, $genHType edge1, $genHType x);
+$genHType smoothstep(half      edge0, half      edge1, $genHType x);
 
 // 8.4 : Geometric Functions
 float length($genType  x);
 half  length($genHType x);
-
-float distance(float2 a, float2 b) { return length(a - b); }
-float distance(float3 a, float3 b) { return length(a - b); }
-float distance(float4 a, float4 b) { return length(a - b); }
-
+float distance($genType  p0, $genType  p1);
+half  distance($genHType p0, $genHType p1);
 float dot($genType  x, $genType  y);
 half  dot($genHType x, $genHType y);
-
-float3 cross(float3 a, float3 b) {
-    return float3(a.y * b.z - a.z * b.y,
-                  a.z * b.x - a.x * b.z,
-                  a.x * b.y - a.y * b.x);
-}
-
+float3 cross(float3 x, float3 y);
+half3  cross(half3  x, half3  y);
 $genType  normalize($genType  x);
 $genHType normalize($genHType x);
-// TODO: faceforward(N, I, Nref)
-// TODO: reflect(I, N)
-// TODO: refract(I, N, eta)
+$genType  faceforward($genType  N, $genType  I, $genType  Nref);
+$genHType faceforward($genHType N, $genHType I, $genHType Nref);
+$genType  reflect($genType  I, $genType  N);
+$genHType reflect($genHType I, $genHType N);
+$genType  refract($genType  I, $genType  N, float eta);
+$genHType refract($genHType I, $genHType N, float eta);
 
 // 8.5 : Matrix Functions
-// TODO: matrixCompMult(x, y)
+$squareMat  matrixCompMult($squareMat  x, $squareMat  y);
+$squareHMat matrixCompMult($squareHMat x, $squareHMat y);
 
 // Not supported until GLSL 1.40. Poly-filled by SkSL:
-float2x2 inverse(float2x2 m);
-float3x3 inverse(float3x3 m);
-float4x4 inverse(float4x4 m);
-half2x2  inverse(half2x2 m);
-half3x3  inverse(half3x3 m);
-half4x4  inverse(half4x4 m);
+$squareMat  inverse($squareMat  m);
+$squareHMat inverse($squareHMat m);
 
 // 8.6 : Vector Relational Functions
 $bvec lessThan($vec  x, $vec  y);
 $bvec lessThan($hvec x, $hvec y);
+$bvec lessThan($ivec x, $ivec y);
 $bvec lessThanEqual($vec  x, $vec  y);
 $bvec lessThanEqual($hvec x, $hvec y);
+$bvec lessThanEqual($ivec x, $ivec y);
 $bvec greaterThan($vec  x, $vec  y);
 $bvec greaterThan($hvec x, $hvec y);
+$bvec greaterThan($ivec x, $ivec y);
 $bvec greaterThanEqual($vec  x, $vec  y);
 $bvec greaterThanEqual($hvec x, $hvec y);
+$bvec greaterThanEqual($ivec x, $ivec y);
 $bvec equal($vec  x, $vec  y);
 $bvec equal($hvec x, $hvec y);
+$bvec equal($ivec x, $ivec y);
 $bvec equal($bvec x, $bvec y);
 $bvec notEqual($vec  x, $vec  y);
 $bvec notEqual($hvec x, $hvec y);
+$bvec notEqual($ivec x, $ivec y);
 $bvec notEqual($bvec x, $bvec y);
 
 bool  any($bvec x);

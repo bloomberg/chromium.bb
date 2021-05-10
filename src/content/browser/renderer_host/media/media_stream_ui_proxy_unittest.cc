@@ -17,9 +17,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/test/test_render_frame_host.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/test/test_render_view_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -79,7 +81,6 @@ class MockMediaStreamUI : public MediaStreamUI {
   MOCK_METHOD2(MockOnStarted,
                gfx::NativeViewId(base::RepeatingClosure stop,
                                  MediaStreamUI::SourceCallback source));
-  MOCK_METHOD1(SetStopCallback, void(base::OnceClosure));
 };
 
 class MockStopStreamHandler {
@@ -402,10 +403,10 @@ class MediaStreamUIProxyFeaturePolicyTest
   // page to simulate that.
   void RefreshPageAndSetHeaderPolicy(
       blink::mojom::FeaturePolicyFeature feature) {
-    NavigateAndCommit(main_rfh()->GetLastCommittedURL());
-    std::vector<url::Origin> empty_allowlist;
-    RenderFrameHostTester::For(main_rfh())
-        ->SimulateFeaturePolicyHeader(feature, empty_allowlist);
+    auto navigation = NavigationSimulator::CreateRendererInitiated(
+        main_rfh()->GetLastCommittedURL(), main_rfh());
+    navigation->SetFeaturePolicyHeader({{feature, {}, false, false}});
+    navigation->Commit();
   }
 
   void GetResultForRequest(std::unique_ptr<MediaStreamRequest> request,

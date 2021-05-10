@@ -1,0 +1,5 @@
+uniform half4 colorRed;
+
+half4 main() {
+    return colorRed.RBTL;
+}

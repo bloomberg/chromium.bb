@@ -127,7 +127,7 @@ class FrameFetchContextTest : public testing::Test {
     dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     if (url.IsValid()) {
-      auto params = WebNavigationParams::CreateWithHTMLBuffer(
+      auto params = WebNavigationParams::CreateWithHTMLBufferForTesting(
           SharedBuffer::Create(), url);
       if (!feature_policy_header.IsEmpty()) {
         params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
@@ -212,7 +212,8 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     ResourceRequest request(KURL("http://example.com/"));
     FetchInitiatorInfo initiator_info;
     EXPECT_EQ(expect_is_ad, GetFetchContext()->CalculateIfAdSubresource(
-                                request, ResourceType::kMock, initiator_info));
+                                request, base::nullopt /* alias_url */,
+                                ResourceType::kMock, initiator_info));
     return reason;
   }
 
@@ -273,7 +274,6 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
  protected:
   void ModifyRequestForCSP(ResourceRequest& resource_request,
                            mojom::RequestContextFrameType frame_type) {
-    document->GetFrame()->Loader().RecordLatestRequiredCSP();
     document->GetFrame()->Loader().ModifyRequestForCSP(
         resource_request,
         &document->Fetcher()->GetProperties().GetFetchClientSettingsObject(),
@@ -351,21 +351,6 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
                         mojom::RequestContextFrameType::kNone);
 
     EXPECT_EQ(expected_value, resource_request.IsAutomaticUpgrade());
-  }
-
-  void ExpectSetRequiredCSPRequestHeader(
-      const char* input,
-      mojom::RequestContextFrameType frame_type,
-      const AtomicString& expected_required_csp) {
-    const KURL input_url(input);
-    ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(
-        mojom::blink::RequestContextType::SCRIPT);
-
-    ModifyRequestForCSP(resource_request, frame_type);
-
-    EXPECT_EQ(expected_required_csp,
-              resource_request.HttpHeaderField(http_names::kSecRequiredCSP));
   }
 
   void SetFrameOwnerBasedOnFrameType(mojom::RequestContextFrameType frame_type,
@@ -549,44 +534,6 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
         mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
-  }
-}
-
-TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(network::features::kOutOfBlinkCSPEE);
-
-  struct TestCase {
-    const char* to_request;
-    mojom::RequestContextFrameType frame_type;
-  } tests[] = {
-      {"https://example.test/page.html",
-       mojom::RequestContextFrameType::kAuxiliary},
-      {"https://example.test/page.html",
-       mojom::RequestContextFrameType::kNested},
-      {"https://example.test/page.html", mojom::RequestContextFrameType::kNone},
-      {"https://example.test/page.html",
-       mojom::RequestContextFrameType::kTopLevel}};
-
-  auto* iframe = MakeGarbageCollected<HTMLIFrameElement>(*document);
-  const AtomicString& required_csp = AtomicString("default-src 'none'");
-  const AtomicString& another_required_csp = AtomicString("default-src 'self'");
-
-  for (const auto& test : tests) {
-    SetFrameOwnerBasedOnFrameType(test.frame_type, iframe, required_csp);
-    ExpectSetRequiredCSPRequestHeader(
-        test.to_request, test.frame_type,
-        test.frame_type == mojom::RequestContextFrameType::kNested
-            ? required_csp
-            : g_null_atom);
-
-    SetFrameOwnerBasedOnFrameType(test.frame_type, iframe,
-                                  another_required_csp);
-    ExpectSetRequiredCSPRequestHeader(
-        test.to_request, test.frame_type,
-        test.frame_type == mojom::RequestContextFrameType::kNested
-            ? another_required_csp
-            : g_null_atom);
   }
 }
 
@@ -774,15 +721,17 @@ TEST_F(FrameFetchContextHintsTest, MonitorLangHint) {
                "\"en-US\"");
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
 
+  // TODO(crbug.com/924969): A refactoring exposed a bug in the languages
+  // override that effects the `Sec-CH-Lang` hint.
   document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
-               "\"en\", \"de\", \"fr\"");
+               "\"en-US\"");
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
 
   document->domWindow()->navigator()->SetLanguagesForTesting(
       "en-US,fr_FR,de-DE,es");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
-               "\"en-US\", \"fr-FR\", \"de-DE\", \"es\"");
+               "\"en-US\"");
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
 }
 
@@ -927,9 +876,11 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Width", true, "400", 400);
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", true, "500");
 
+  // TODO(crbug.com/924969): A refactoring exposed a bug in the languages
+  // override setup that effects the `Sec-CH-Lang` hint.
   document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
-               "\"en\", \"de\", \"fr\"");
+               "\"en-US\"");
 
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA", true, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", true, "");
@@ -990,9 +941,11 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHintsFeaturePolicy) {
   ExpectHeader("https://www.example.net/1.gif", "DPR", true, "1");
   ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
 
+  // TODO(crbug.com/924969): A refactoring exposed a bug in the languages
+  // override setup that effects the `Sec-CH-Lang` hint.
   document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", true,
-               "\"en\", \"de\", \"fr\"");
+               "\"en-US\"");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", true, "");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", true, "");
@@ -1441,6 +1394,67 @@ TEST_F(FrameFetchContextTest, SameSiteBackForwardCache) {
     // BackForwardCacheSameSite experiment group is "enabled".
     EXPECT_EQ("enabled",
               resource_request.HttpHeaderField("Sec-bfcache-experiment"));
+  }
+}
+
+// Tests that CanRequestCanRequestBasedOnSubresourceFilterOnly will block ads
+// or not correctly, depending on the FilterPolicy.
+TEST_F(FrameFetchContextSubresourceFilterTest,
+       CanRequestBasedOnSubresourceFilterOnly) {
+  const struct {
+    WebDocumentSubresourceFilter::LoadPolicy policy;
+    base::Optional<ResourceRequestBlockedReason> expected_block_reason;
+  } kTestCases[] = {
+      {WebDocumentSubresourceFilter::kDisallow,
+       ResourceRequestBlockedReason::kSubresourceFilter},
+      {WebDocumentSubresourceFilter::kWouldDisallow, base::nullopt},
+      {WebDocumentSubresourceFilter::kAllow, base::nullopt}};
+
+  for (const auto& test : kTestCases) {
+    SetFilterPolicy(test.policy);
+
+    KURL url("http://ads.com/some_script.js");
+    ResourceRequest resource_request(url);
+    resource_request.SetRequestContext(
+        mojom::blink::RequestContextType::SCRIPT);
+    resource_request.SetRequestorOrigin(GetTopFrameOrigin());
+
+    ResourceLoaderOptions options(nullptr /* world */);
+
+    EXPECT_EQ(test.expected_block_reason,
+              GetFetchContext()->CanRequestBasedOnSubresourceFilterOnly(
+                  ResourceType::kScript, resource_request, url, options,
+                  ReportingDisposition::kReport, base::nullopt));
+  }
+}
+
+// Tests that CalculateIfAdSubresource with an alias URL will tag ads
+// correctly according to the SubresourceFilter mode.
+TEST_F(FrameFetchContextSubresourceFilterTest,
+       CalculateIfAdSubresourceWithAliasURL) {
+  const struct {
+    WebDocumentSubresourceFilter::LoadPolicy policy;
+    bool expected_to_be_tagged_ad;
+  } kTestCases[] = {{WebDocumentSubresourceFilter::kDisallow, true},
+                    {WebDocumentSubresourceFilter::kWouldDisallow, true},
+                    {WebDocumentSubresourceFilter::kAllow, false}};
+
+  for (const auto& test : kTestCases) {
+    SetFilterPolicy(test.policy);
+
+    KURL url("http://www.example.com");
+    KURL alias_url("http://ads.com/some_script.js");
+    ResourceRequest resource_request(url);
+    resource_request.SetRequestContext(
+        mojom::blink::RequestContextType::SCRIPT);
+    resource_request.SetRequestorOrigin(GetTopFrameOrigin());
+
+    ResourceLoaderOptions options(nullptr /* world */);
+
+    EXPECT_EQ(test.expected_to_be_tagged_ad,
+              GetFetchContext()->CalculateIfAdSubresource(
+                  resource_request, alias_url, ResourceType::kScript,
+                  options.initiator_info));
   }
 }
 

@@ -30,7 +30,7 @@ struct CopyConfig {
     uint32_t viewMipmapLevel = 0;
     uint32_t bufferOffset = 0;
     uint32_t bytesPerRowAlignment = kTextureBytesPerRowAlignment;
-    uint32_t rowsPerImage = wgpu::kStrideUndefined;
+    uint32_t rowsPerImage = wgpu::kCopyStrideUndefined;
 };
 
 class CompressedTextureBCFormatTest : public DawnTest {
@@ -60,7 +60,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
                               utils::GetTexelBlockSizeInBytes(copyConfig.textureDescriptor.format);
         }
         uint32_t copyRowsPerImage = copyConfig.rowsPerImage;
-        if (copyRowsPerImage == wgpu::kStrideUndefined) {
+        if (copyRowsPerImage == wgpu::kCopyStrideUndefined) {
             copyRowsPerImage = copyHeightInBlock;
         }
         uint32_t copyBytesPerImage = copyBytesPerRow * copyRowsPerImage;
@@ -117,7 +117,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
                                            uint32_t baseMipLevel = 0) {
         ASSERT(IsBCFormatSupported());
 
-        wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
+        wgpu::SamplerDescriptor samplerDesc;
         samplerDesc.minFilter = wgpu::FilterMode::Nearest;
         samplerDesc.magFilter = wgpu::FilterMode::Nearest;
         wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
@@ -139,29 +139,32 @@ class CompressedTextureBCFormatTest : public DawnTest {
         ASSERT(IsBCFormatSupported());
 
         utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            layout(location=0) out vec2 texCoord;
-            void main() {
-                const vec2 pos[3] = vec2[3](
-                    vec2(-3.0f,  1.0f),
-                    vec2( 3.0f,  1.0f),
-                    vec2( 0.0f, -2.0f)
-                );
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0f, 1.0f);
-                texCoord = vec2(gl_Position.x / 2.0f, -gl_Position.y / 2.0f) + vec2(0.5f);
-            })");
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform texture2D texture0;
-            layout(location = 0) in vec2 texCoord;
-            layout(location = 0) out vec4 fragColor;
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[location(0)]] var<out> texCoord : vec2 <f32>;
 
-            void main() {
-                fragColor = texture(sampler2D(texture0, sampler0), texCoord);
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-3.0,  1.0),
+                    vec2<f32>( 3.0,  1.0),
+                    vec2<f32>( 0.0, -2.0)
+                );
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+                texCoord = vec2<f32>(Position.x / 2.0, -Position.y / 2.0) + vec2<f32>(0.5, 0.5);
+                return;
+            })");
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
+
+            [[location(0)]] var<in> texCoord : vec2<f32>;
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = textureSample(texture0, sampler0, texCoord);
+                return;
             })");
         renderPipelineDescriptor.vertexStage.module = vsModule;
         renderPipelineDescriptor.cFragmentStage.module = fsModule;
@@ -402,9 +405,12 @@ class CompressedTextureBCFormatTest : public DawnTest {
         return expectedData;
     }
 
+    // Right now we only test 2D array textures with BC formats.
+    // TODO(jiawei.shao@intel.com): support 1D/3D textures
     static wgpu::Extent3D GetVirtualSizeAtLevel(const CopyConfig& config) {
         return {config.textureDescriptor.size.width >> config.viewMipmapLevel,
-                config.textureDescriptor.size.height >> config.viewMipmapLevel, 1};
+                config.textureDescriptor.size.height >> config.viewMipmapLevel,
+                config.textureDescriptor.size.depth};
     }
 
     static wgpu::Extent3D GetPhysicalSizeAtLevel(const CopyConfig& config) {
@@ -416,16 +422,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
         return sizeAtLevel;
     }
 
-    const std::array<wgpu::TextureFormat, 14> kBCFormats = {
-        wgpu::TextureFormat::BC1RGBAUnorm, wgpu::TextureFormat::BC1RGBAUnormSrgb,
-        wgpu::TextureFormat::BC2RGBAUnorm, wgpu::TextureFormat::BC2RGBAUnormSrgb,
-        wgpu::TextureFormat::BC3RGBAUnorm, wgpu::TextureFormat::BC3RGBAUnormSrgb,
-        wgpu::TextureFormat::BC4RSnorm,    wgpu::TextureFormat::BC4RUnorm,
-        wgpu::TextureFormat::BC5RGSnorm,   wgpu::TextureFormat::BC5RGUnorm,
-        wgpu::TextureFormat::BC6HRGBFloat, wgpu::TextureFormat::BC6HRGBUfloat,
-        wgpu::TextureFormat::BC7RGBAUnorm, wgpu::TextureFormat::BC7RGBAUnormSrgb};
-
-    // Tthe block width and height in texels are 4 for all BC formats.
+    // The block width and height in texels are 4 for all BC formats.
     static constexpr uint32_t kBCBlockWidthInTexels = 4;
     static constexpr uint32_t kBCBlockHeightInTexels = 4;
 
@@ -437,10 +434,6 @@ class CompressedTextureBCFormatTest : public DawnTest {
 
 // Test copying into the whole BC texture with 2x2 blocks and sampling from it.
 TEST_P(CompressedTextureBCFormatTest, Basic) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
@@ -451,7 +444,7 @@ TEST_P(CompressedTextureBCFormatTest, Basic) {
     config.textureDescriptor.size = {8, 8, 1};
     config.copyExtent3D = config.textureDescriptor.size;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -459,10 +452,6 @@ TEST_P(CompressedTextureBCFormatTest, Basic) {
 
 // Test copying into a sub-region of a texture with BC formats works correctly.
 TEST_P(CompressedTextureBCFormatTest, CopyIntoSubRegion) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
 
     CopyConfig config;
@@ -474,7 +463,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoSubRegion) {
     config.copyOrigin3D = kOrigin;
     config.copyExtent3D = kExtent3D;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -482,14 +471,13 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoSubRegion) {
 
 // Test copying into the non-zero layer of a 2D array texture with BC formats works correctly.
 TEST_P(CompressedTextureBCFormatTest, CopyIntoNonZeroArrayLayer) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     CopyConfig config;
     config.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
@@ -500,7 +488,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoNonZeroArrayLayer) {
     config.textureDescriptor.size.depth = kArrayLayerCount;
     config.copyOrigin3D.z = kArrayLayerCount - 1;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -508,14 +496,13 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoNonZeroArrayLayer) {
 
 // Test copying into a non-zero mipmap level of a texture with BC texture formats.
 TEST_P(CompressedTextureBCFormatTest, CopyBufferIntoNonZeroMipmapLevel) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     CopyConfig config;
     config.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
@@ -540,7 +527,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyBufferIntoNonZeroMipmapLevel) {
 
     config.copyExtent3D = {kCopyWidthAtLevel, kCopyHeightAtLevel, 1};
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -548,14 +535,13 @@ TEST_P(CompressedTextureBCFormatTest, CopyBufferIntoNonZeroMipmapLevel) {
 
 // Test texture-to-texture whole-size copies with BC formats.
 TEST_P(CompressedTextureBCFormatTest, CopyWholeTextureSubResourceIntoNonZeroMipmapLevel) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // TODO(cwallez@chromium.org): This consistently fails on with the 12th pixel being opaque black
     // instead of opaque red on Win10 FYI Release (NVIDIA GeForce GTX 1660). See
@@ -577,7 +563,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyWholeTextureSubResourceIntoNonZeroMipm
     ASSERT_NE(0u, kVirtualSize.height % kBCBlockHeightInTexels);
 
     config.copyExtent3D = kPhysicalSize;
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         // Create bcTextureSrc as the source texture and initialize it with pre-prepared BC
         // compressed data.
         config.textureDescriptor.format = format;
@@ -610,11 +596,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoSubresourceWithPhysicalSizeNotEqua
 
     // TODO(jiawei.shao@intel.com): add workaround on the T2T copies where Extent3D fits in one
     // subresource and does not fit in another one on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     CopyConfig srcConfig;
     srcConfig.textureDescriptor.size = {60, 60, 1};
@@ -640,7 +622,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoSubresourceWithPhysicalSizeNotEqua
     ASSERT_LT(srcConfig.copyOrigin3D.x + srcConfig.copyExtent3D.width, kSrcVirtualSize.width);
     ASSERT_LT(srcConfig.copyOrigin3D.y + srcConfig.copyExtent3D.height, kSrcVirtualSize.height);
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         // Create bcTextureSrc as the source texture and initialize it with pre-prepared BC
         // compressed data.
         srcConfig.textureDescriptor.format = format;
@@ -674,11 +656,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyFromSubresourceWithPhysicalSizeNotEqua
 
     // TODO(jiawei.shao@intel.com): add workaround on the T2T copies where Extent3D fits in one
     // subresource and does not fit in another one on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     CopyConfig srcConfig;
     srcConfig.textureDescriptor.size = {60, 60, 1};
@@ -702,7 +680,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyFromSubresourceWithPhysicalSizeNotEqua
     ASSERT_GT(srcConfig.copyOrigin3D.x + srcConfig.copyExtent3D.width, kSrcVirtualSize.width);
     ASSERT_GT(srcConfig.copyOrigin3D.y + srcConfig.copyExtent3D.height, kSrcVirtualSize.height);
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         srcConfig.textureDescriptor.format = dstConfig.textureDescriptor.format = format;
         srcConfig.textureDescriptor.usage =
             wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
@@ -734,11 +712,7 @@ TEST_P(CompressedTextureBCFormatTest, MultipleCopiesWithPhysicalSizeNotEqualToVi
 
     // TODO(jiawei.shao@intel.com): add workaround on the T2T copies where Extent3D fits in one
     // subresource and does not fit in another one on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     constexpr uint32_t kTotalCopyCount = 2;
     std::array<CopyConfig, kTotalCopyCount> srcConfigs;
@@ -770,7 +744,7 @@ TEST_P(CompressedTextureBCFormatTest, MultipleCopiesWithPhysicalSizeNotEqualToVi
     ASSERT_NE(0u, dstVirtualSizes[1].width % kBCBlockWidthInTexels);
     ASSERT_NE(0u, dstVirtualSizes[1].height % kBCBlockHeightInTexels);
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         std::array<wgpu::Texture, kTotalCopyCount> bcSrcTextures;
         std::array<wgpu::Texture, kTotalCopyCount> bcDstTextures;
 
@@ -810,13 +784,82 @@ TEST_P(CompressedTextureBCFormatTest, MultipleCopiesWithPhysicalSizeNotEqualToVi
     }
 }
 
+// A regression test for a bug for the toggle UseTemporaryBufferInCompressedTextureToTextureCopy on
+// Vulkan backend: test BC format texture-to-texture partial copies with multiple array layers
+// where the physical size of the source subresource is different from its virtual size.
+TEST_P(CompressedTextureBCFormatTest, CopyWithMultipleLayerAndPhysicalSizeNotEqualToVirtualSize) {
+    DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // TODO(jiawei.shao@intel.com): add workaround on the T2T copies where Extent3D fits in one
+    // subresource and does not fit in another one on OpenGL.
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+
+    constexpr uint32_t kArrayLayerCount = 5;
+
+    CopyConfig srcConfig;
+    srcConfig.textureDescriptor.size = {60, 60, kArrayLayerCount};
+    constexpr uint32_t kMipmapLevelCount = 3;
+    srcConfig.textureDescriptor.mipLevelCount = kMipmapLevelCount;
+    srcConfig.viewMipmapLevel = srcConfig.textureDescriptor.mipLevelCount - 1;
+    srcConfig.textureDescriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
+
+    // The actual size of the texture at mipmap level == 2 is not a multiple of 4, paddings are
+    // required in the copies.
+    const wgpu::Extent3D kSrcVirtualSize = GetVirtualSizeAtLevel(srcConfig);
+    ASSERT_NE(0u, kSrcVirtualSize.width % kBCBlockWidthInTexels);
+    ASSERT_NE(0u, kSrcVirtualSize.height % kBCBlockHeightInTexels);
+
+    CopyConfig dstConfig;
+    dstConfig.textureDescriptor.size = {16, 16, kArrayLayerCount};
+    dstConfig.viewMipmapLevel = dstConfig.textureDescriptor.mipLevelCount - 1;
+
+    const wgpu::Extent3D kDstVirtualSize = GetVirtualSizeAtLevel(dstConfig);
+    srcConfig.copyExtent3D = dstConfig.copyExtent3D = kDstVirtualSize;
+    srcConfig.rowsPerImage = srcConfig.copyExtent3D.height / kBCBlockHeightInTexels;
+
+    ASSERT_GT(srcConfig.copyOrigin3D.x + srcConfig.copyExtent3D.width, kSrcVirtualSize.width);
+    ASSERT_GT(srcConfig.copyOrigin3D.y + srcConfig.copyExtent3D.height, kSrcVirtualSize.height);
+
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
+        srcConfig.textureDescriptor.format = dstConfig.textureDescriptor.format = format;
+        srcConfig.bytesPerRowAlignment =
+            Align(srcConfig.copyExtent3D.width / kBCBlockWidthInTexels *
+                      utils::GetTexelBlockSizeInBytes(format),
+                  kTextureBytesPerRowAlignment);
+        dstConfig.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
+
+        // Create bcTextureSrc as the source texture and initialize it with pre-prepared BC
+        // compressed data.
+        wgpu::Texture bcTextureSrc = CreateTextureWithCompressedData(srcConfig);
+
+        // Create bcTexture and copy from the content in bcTextureSrc into it.
+        wgpu::Texture bcTextureDst = CreateTextureFromTexture(bcTextureSrc, srcConfig, dstConfig);
+
+        // We use the render pipeline to test if each layer can be correctly sampled with the
+        // expected data.
+        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest();
+
+        const wgpu::Extent3D kExpectedDataRegionPerLayer = {kDstVirtualSize.width,
+                                                            kDstVirtualSize.height, 1u};
+        std::vector<RGBA8> kExpectedDataPerLayer =
+            GetExpectedData(format, kExpectedDataRegionPerLayer);
+        const wgpu::Origin3D kCopyOriginPerLayer = {dstConfig.copyOrigin3D.x,
+                                                    dstConfig.copyOrigin3D.y, 0};
+        for (uint32_t copyLayer = 0; copyLayer < kArrayLayerCount; ++copyLayer) {
+            wgpu::BindGroup bindGroup = CreateBindGroupForTest(
+                renderPipeline.GetBindGroupLayout(0), bcTextureDst, format,
+                dstConfig.copyOrigin3D.z + copyLayer, dstConfig.viewMipmapLevel);
+
+            VerifyCompressedTexturePixelValues(renderPipeline, bindGroup,
+                                               kExpectedDataRegionPerLayer, kCopyOriginPerLayer,
+                                               kExpectedDataRegionPerLayer, kExpectedDataPerLayer);
+        }
+    }
+}
+
 // Test the special case of the B2T copies on the D3D12 backend that the buffer offset and texture
 // extent exactly fit the RowPitch.
 TEST_P(CompressedTextureBCFormatTest, BufferOffsetAndExtentFitRowPitch) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
@@ -829,7 +872,7 @@ TEST_P(CompressedTextureBCFormatTest, BufferOffsetAndExtentFitRowPitch) {
 
     const uint32_t blockCountPerRow = config.textureDescriptor.size.width / kBCBlockWidthInTexels;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
 
         const uint32_t blockSizeInBytes = utils::GetTexelBlockSizeInBytes(format);
@@ -846,10 +889,6 @@ TEST_P(CompressedTextureBCFormatTest, BufferOffsetAndExtentFitRowPitch) {
 // backend the texelOffset.y will be greater than 0 after calcuting the texelOffset in the function
 // ComputeTexelOffsets().
 TEST_P(CompressedTextureBCFormatTest, BufferOffsetExceedsSlicePitch) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
@@ -865,7 +904,7 @@ TEST_P(CompressedTextureBCFormatTest, BufferOffsetExceedsSlicePitch) {
     const uint32_t slicePitchInBytes =
         config.bytesPerRowAlignment * (textureSizeLevel0.height / kBCBlockHeightInTexels);
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
 
         const uint32_t blockSizeInBytes = utils::GetTexelBlockSizeInBytes(format);
@@ -881,10 +920,6 @@ TEST_P(CompressedTextureBCFormatTest, BufferOffsetExceedsSlicePitch) {
 // Test the special case of the B2T copies on the D3D12 backend that the buffer offset and texture
 // extent exceed the RowPitch. On D3D12 backend two copies are required for this case.
 TEST_P(CompressedTextureBCFormatTest, CopyWithBufferOffsetAndExtentExceedRowPitch) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
@@ -899,7 +934,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyWithBufferOffsetAndExtentExceedRowPitc
 
     constexpr uint32_t kExceedRowBlockCount = 1;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
 
         const uint32_t blockSizeInBytes = utils::GetTexelBlockSizeInBytes(format);
@@ -915,10 +950,6 @@ TEST_P(CompressedTextureBCFormatTest, CopyWithBufferOffsetAndExtentExceedRowPitc
 // bytesPerRow. On D3D12 backend the texelOffset.z will be greater than 0 after calcuting the
 // texelOffset in the function ComputeTexelOffsets().
 TEST_P(CompressedTextureBCFormatTest, RowPitchEqualToSlicePitch) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
 
     CopyConfig config;
@@ -929,7 +960,7 @@ TEST_P(CompressedTextureBCFormatTest, RowPitchEqualToSlicePitch) {
     const uint32_t blockCountPerRow = config.textureDescriptor.size.width / kBCBlockWidthInTexels;
     const uint32_t slicePitchInBytes = config.bytesPerRowAlignment;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
 
         const uint32_t blockSizeInBytes = utils::GetTexelBlockSizeInBytes(format);
@@ -946,10 +977,6 @@ TEST_P(CompressedTextureBCFormatTest, RowPitchEqualToSlicePitch) {
 // copyExtent.depth) on Metal backends. As copyExtent.depth can only be 1 for BC formats, on Metal
 // backend we will use two copies to implement such copy.
 TEST_P(CompressedTextureBCFormatTest, LargeImageHeight) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
@@ -962,7 +989,7 @@ TEST_P(CompressedTextureBCFormatTest, LargeImageHeight) {
 
     config.rowsPerImage = config.textureDescriptor.size.height * 2 / kBCBlockHeightInTexels;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -971,14 +998,13 @@ TEST_P(CompressedTextureBCFormatTest, LargeImageHeight) {
 // Test the workaround in the B2T copies when (bufferSize - bufferOffset < bytesPerImage *
 // copyExtent.depth) and copyExtent needs to be clamped.
 TEST_P(CompressedTextureBCFormatTest, LargeImageHeightAndClampedCopyExtent) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     CopyConfig config;
     config.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
@@ -1005,7 +1031,7 @@ TEST_P(CompressedTextureBCFormatTest, LargeImageHeightAndClampedCopyExtent) {
 
     config.rowsPerImage = kCopyHeightAtLevel * 2 / kBCBlockHeightInTexels;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -1014,14 +1040,13 @@ TEST_P(CompressedTextureBCFormatTest, LargeImageHeightAndClampedCopyExtent) {
 // Test copying a whole 2D array texture with array layer count > 1 in one copy command works with
 // BC formats.
 TEST_P(CompressedTextureBCFormatTest, CopyWhole2DArrayTexture) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     constexpr uint32_t kArrayLayerCount = 3;
 
@@ -1033,7 +1058,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyWhole2DArrayTexture) {
     config.copyExtent3D = config.textureDescriptor.size;
     config.copyExtent3D.depth = kArrayLayerCount;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -1041,14 +1066,13 @@ TEST_P(CompressedTextureBCFormatTest, CopyWhole2DArrayTexture) {
 
 // Test copying a multiple 2D texture array layers in one copy command works with BC formats.
 TEST_P(CompressedTextureBCFormatTest, CopyMultiple2DArrayLayers) {
-    // TODO(jiawei.shao@intel.com): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
 
     DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+
+    // This test uses glTextureView() which is not supported in OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     constexpr uint32_t kArrayLayerCount = 3;
 
@@ -1063,7 +1087,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyMultiple2DArrayLayers) {
     config.copyExtent3D = config.textureDescriptor.size;
     config.copyExtent3D.depth = kCopyLayerCount;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestCopyRegionIntoBCFormatTextures(config);
     }
@@ -1074,6 +1098,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyMultiple2DArrayLayers) {
 TEST_P(CompressedTextureBCFormatTest, UnalignedDynamicUploader) {
     // CopyT2B for compressed texture formats is unimplemented on OpenGL.
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     utils::UnalignDynamicUploader(device);
 
@@ -1103,6 +1128,7 @@ DAWN_INSTANTIATE_TEST(CompressedTextureBCFormatTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend(),
                       VulkanBackend({"use_temporary_buffer_in_texture_to_texture_copy"}));
 
@@ -1153,7 +1179,7 @@ TEST_P(CompressedTextureWriteTextureTest, Basic) {
     config.bytesPerRowAlignment = 511;
     config.rowsPerImage = 5;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestWriteRegionIntoBCFormatTextures(config);
     }
@@ -1161,9 +1187,8 @@ TEST_P(CompressedTextureWriteTextureTest, Basic) {
 
 // Test writing to multiple 2D texture array layers with BC formats.
 TEST_P(CompressedTextureWriteTextureTest, WriteMultiple2DArrayLayers) {
-    // TODO(dawn:483): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     CopyConfig config;
     config.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
@@ -1174,7 +1199,7 @@ TEST_P(CompressedTextureWriteTextureTest, WriteMultiple2DArrayLayers) {
     config.bytesPerRowAlignment = 511;
     config.rowsPerImage = 5;
 
-    for (wgpu::TextureFormat format : kBCFormats) {
+    for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
         TestWriteRegionIntoBCFormatTextures(config);
     }
@@ -1184,9 +1209,8 @@ TEST_P(CompressedTextureWriteTextureTest, WriteMultiple2DArrayLayers) {
 // subresource is different from its virtual size.
 TEST_P(CompressedTextureWriteTextureTest,
        WriteIntoSubresourceWithPhysicalSizeNotEqualToVirtualSize) {
-    // TODO(dawn:483): find out why this test is flaky on Windows Intel Vulkan
-    // bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Texture virtual size at mipLevel 2 will be {15, 15, 1} while the physical
     // size will be {16, 16, 1}.
@@ -1194,7 +1218,7 @@ TEST_P(CompressedTextureWriteTextureTest,
     // the texture physical size, but doesn't fit in the virtual size.
     for (unsigned int w : {12, 16}) {
         for (unsigned int h : {12, 16}) {
-            for (wgpu::TextureFormat format : kBCFormats) {
+            for (wgpu::TextureFormat format : utils::kBCFormats) {
                 CopyConfig config;
                 config.textureDescriptor.usage = kDefaultBCFormatTextureUsage;
                 config.textureDescriptor.size = {60, 60, 1};
@@ -1214,4 +1238,6 @@ TEST_P(CompressedTextureWriteTextureTest,
 DAWN_INSTANTIATE_TEST(CompressedTextureWriteTextureTest,
                       D3D12Backend(),
                       MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

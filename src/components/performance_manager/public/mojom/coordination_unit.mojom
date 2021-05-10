@@ -7,8 +7,8 @@ module performance_manager.mojom;
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "components/performance_manager/public/mojom/lifecycle.mojom";
-import "components/performance_manager/public/mojom/web_memory.mojom";
 import "components/performance_manager/public/mojom/v8_contexts.mojom";
+import "components/performance_manager/public/mojom/web_memory.mojom";
 import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -22,18 +22,6 @@ enum CoordinationUnitType {
   kSystem,
 };
 
-// Intervention policy status.
-enum InterventionPolicy {
-  // The frame/page has explicitly opted-in to an intervention.
-  kOptIn,
-  // The frame/page has explicitly opted-out from an intervention.
-  kOptOut,
-  // The frame/page has neither opted-in or opted-out. The intervention will be
-  // applied using its own heuristics. This is the default state for a
-  // frame/page.
-  kDefault,
-};
-
 // Interface used by a blink::Document to communicate state associated with
 // resource management to the embedder.
 interface DocumentCoordinationUnit {
@@ -44,12 +32,6 @@ interface DocumentCoordinationUnit {
 
   // Called the first time a form in this document is interacted with.
   SetHadFormInteraction();
-
-  // Sets the freeze policy set via origin trial for the document. Invoked once
-  // after finishing to parse the document. The freeze policies of all frames on
-  // a page are aggregated to determine whether the page as a whole can be
-  // frozen.
-  SetOriginTrialFreezePolicy(InterventionPolicy policy);
 
   SetIsAdFrame();
 
@@ -73,11 +55,13 @@ interface DocumentCoordinationUnit {
   OnFirstContentfulPaint(mojo_base.mojom.TimeDelta time_since_navigation_start);
 
   // Invoked when JS in the renderer requests a memory measurement via
-  // the performance.measureMemory API.
+  // the performance.measureUserAgentSpecificMemory API.
   OnWebMemoryMeasurementRequested(WebMemoryMeasurement.Mode mode) =>
       (WebMemoryMeasurement measurement);
 };
 
+// Interface used by the RendererResourceCoordinator singleton to send state
+// associated with resource management of a renderer process to the embedder.
 interface ProcessCoordinationUnit {
   // Property signals.
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
@@ -113,4 +97,19 @@ interface ProcessCoordinationUnit {
   // is never called for contexts in a renderer processes that crashes or is
   // otherwise terminated.
   OnV8ContextDestroyed(blink.mojom.V8ContextToken v8_context_token);
+
+  // Called when a RemoteFrame is attached as the content of a local iframe.
+  // The browser process will use this to maintain a map from the RemoteFrame's
+  // token to the iframe's attribution information as seen by the renderer
+  // process.
+  OnRemoteIframeAttached(blink.mojom.LocalFrameToken parent_frame_token,
+                        blink.mojom.RemoteFrameToken remote_frame_token,
+                        IframeAttributionData iframe_attribution_data);
+
+  // Called when a RemoteFrame that was the content of a local iframe is
+  // removed from the frame. Only the frame token is needed because the
+  // iframe's attribution information was previously associated with the token
+  // by OnRemoteIframeAttached.
+  OnRemoteIframeDetached(blink.mojom.LocalFrameToken parent_frame_token,
+                         blink.mojom.RemoteFrameToken remote_frame_token);
 };

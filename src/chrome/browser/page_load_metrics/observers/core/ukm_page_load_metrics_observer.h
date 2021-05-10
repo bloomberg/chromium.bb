@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/memories/core/visit_data.h"
+#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "content/public/browser/site_instance_process_assignment.h"
 #include "net/http/http_response_info.h"
@@ -106,7 +108,12 @@ class UkmPageLoadMetricsObserver
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flags) override;
 
+  void OnEventOccurred(page_load_metrics::PageLoadMetricsEvent event) override;
+
   void DidActivatePortal(base::TimeTicks activation_time) override;
+
+  void OnFirstContentfulPaintInPage(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   // Whether the current page load is an Offline Preview. Must be called from
   // OnCommit. Virtual for testing.
@@ -138,9 +145,7 @@ class UkmPageLoadMetricsObserver
   void RecordRendererUsageMetrics();
 
   // Adds main resource timing metrics to |builder|.
-  void ReportMainResourceTimingMetrics(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      ukm::builders::PageLoad* builder);
+  void ReportMainResourceTimingMetrics(ukm::builders::PageLoad& builder);
 
   void ReportLayoutStability();
 
@@ -150,6 +155,8 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       base::TimeTicks page_end_time,
       ukm::builders::PageLoad* builder);
+
+  void RecordMemoriesMetrics(ukm::builders::PageLoad& builder);
 
   void RecordInputTimingMetrics();
   void RecordSmoothnessMetrics();
@@ -180,7 +187,12 @@ class UkmPageLoadMetricsObserver
   // loads.
   void RecordPageEndMetrics(
       const page_load_metrics::mojom::PageLoadTiming* timing,
-      base::TimeTicks page_end_time);
+      base::TimeTicks page_end_time,
+      bool app_entered_background);
+
+  // Records a score from the SiteEngagementService. Called when the page
+  // becomes hidden, or at the end of the session if the page is never hidden.
+  void RecordSiteEngagement() const;
 
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
@@ -217,7 +229,8 @@ class UkmPageLoadMetricsObserver
   base::Optional<net::LoadTimingInfo> main_frame_timing_;
 
   // How the SiteInstance for the committed page was assigned a renderer.
-  content::SiteInstanceProcessAssignment render_process_assignment_;
+  base::Optional<content::SiteInstanceProcessAssignment>
+      render_process_assignment_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
@@ -276,6 +289,13 @@ class UkmPageLoadMetricsObserver
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 
   base::ReadOnlySharedMemoryMapping ukm_smoothness_data_;
+
+  // Collected by this observer during the page lifetime. Shipped to UKM and
+  // History. Also save the URL and commit timestamp to align with History.
+  GURL committed_url_;
+  // Meant to correspond with the timestamp recorded in HistoryService.
+  base::Time committed_history_timestamp_;
+  memories::VisitContextSignals memories_signals_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };

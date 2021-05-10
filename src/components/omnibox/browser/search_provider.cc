@@ -288,9 +288,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
     // User typed "?" alone.  Give them a placeholder result indicating what
     // this syntax does.
     if (default_provider) {
-      // TODO(etienneb): Remove this trace event when https://crbug/868419 is
-      // fixed.
-      TRACE_EVENT0("omnibox", "SearchProvider::question_mark");
       AutocompleteMatch match;
       match.provider = this;
       match.contents.assign(l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
@@ -1537,8 +1534,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.contents_class = navigation.match_contents_class();
   match.description = navigation.description();
   match.description_class = navigation.description_class();
-  if (OmniboxFieldTrial::RichAutocompletionShowTitles())
-    match.fill_into_edit_additional_text = match.description;
 
   match.RecordAdditionalInfo(
       kRelevanceFromServerKey,

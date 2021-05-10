@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -131,7 +132,11 @@ void MessageView::SetIsNested() {
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
   slide_out_controller_.set_update_opacity(false);
 
-  SetNestedBorderIfNecessary();
+  SkColor border_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_UnfocusedBorderColor);
+  SetBorder(views::CreateRoundedRectBorder(
+      kNotificationBorderThickness, kNotificationCornerRadius, border_color));
+
   if (GetControlButtonsView())
     GetControlButtonsView()->ShowCloseButton(GetMode() != Mode::PINNED);
 }
@@ -326,7 +331,6 @@ void MessageView::AddedToWidget() {
 void MessageView::OnThemeChanged() {
   InkDropHostView::OnThemeChanged();
   UpdateBackgroundPainter();
-  SetNestedBorderIfNecessary();
 }
 
 ui::Layer* MessageView::GetSlideOutLayer() {
@@ -454,7 +458,7 @@ void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
 }
 
 bool MessageView::ShouldShowControlButtons() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Users on ChromeOS are used to the Settings and Close buttons not being
   // visible at all times, but users on other platforms expect them to be
   // visible.
@@ -466,15 +470,6 @@ bool MessageView::ShouldShowControlButtons() const {
 #else
   return true;
 #endif
-}
-
-void MessageView::SetNestedBorderIfNecessary() {
-  if (is_nested_) {
-    SkColor border_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_UnfocusedBorderColor);
-    SetBorder(views::CreateRoundedRectBorder(
-        kNotificationBorderThickness, kNotificationCornerRadius, border_color));
-  }
 }
 
 void MessageView::UpdateBackgroundPainter() {

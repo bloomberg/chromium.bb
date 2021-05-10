@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {click, getBrowserAndPages, getHostedModeServerPort, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
-import {describe, it} from '../../shared/mocha-extensions.js';
-import {doubleClickSourceTreeItem, getDataGridData, navigateToApplicationTab} from '../helpers/application-helpers.js';
+import {assert} from 'chai';
+import {describe, it} from 'mocha';
+
+import {click, getBrowserAndPages, getTestServerPort, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {clearStorageItems, clearStorageItemsFilter, doubleClickSourceTreeItem, filterStorageItems, getStorageItemsData, navigateToApplicationTab, selectCookieByName} from '../helpers/application-helpers.js';
 
 const COOKIES_SELECTOR = '[aria-label="Cookies"]';
 let DOMAIN_SELECTOR: string;
 
 describe('The Application Tab', async () => {
   before(async () => {
-    DOMAIN_SELECTOR = `${COOKIES_SELECTOR} + ol > [aria-label="http://localhost:${getHostedModeServerPort()}"]`;
+    DOMAIN_SELECTOR = `${COOKIES_SELECTOR} + ol > [aria-label="https://localhost:${getTestServerPort()}"]`;
   });
 
   afterEach(async () => {
     const {target} = getBrowserAndPages();
-    await target.deleteCookie({name: 'foo'});
+    const cookies = await target.cookies();
+    await target.deleteCookie(...cookies);
   });
 
   it('[crbug.com/1047348] shows cookies even when navigating to an unreachable page', async () => {
@@ -29,11 +32,21 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(COOKIES_SELECTOR);
     await doubleClickSourceTreeItem(DOMAIN_SELECTOR);
 
-    await waitForFunction(async () => {
-      const dataGridRowValues = await getDataGridData('.storage-view table', ['name', 'value']);
-      const expected = [{name: 'foo', value: 'bar'}, {name: '', value: ''}];
-      return JSON.stringify(dataGridRowValues) === JSON.stringify(expected);
-    });
+    const dataGridRowValues = await getStorageItemsData(['name', 'value']);
+    assert.deepEqual(dataGridRowValues, [
+      {
+        name: 'urlencoded',
+        value: 'Hello%2BWorld!',
+      },
+      {
+        name: 'foo2',
+        value: 'bar',
+      },
+      {
+        name: 'foo',
+        value: 'bar',
+      },
+    ]);
   });
 
   it('[crbug.com/462370] shows a preview of the cookie value', async () => {
@@ -44,13 +57,40 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(COOKIES_SELECTOR);
     await doubleClickSourceTreeItem(DOMAIN_SELECTOR);
 
+    await selectCookieByName('foo');
+
+    await waitForFunction(async () => {
+      const previewValueNode = await waitFor('.cookie-preview-widget-cookie-value');
+      const previewValue = await previewValueNode.evaluate(e => e.textContent);
+      return previewValue === 'bar';
+    });
+  });
+
+  it('[crbug.com/997625] can als show the urldecoded value', async () => {
+    const {target} = getBrowserAndPages();
+    // This sets a new cookie foo=bar
+    await navigateToApplicationTab(target, 'cookies');
+
+    await doubleClickSourceTreeItem(COOKIES_SELECTOR);
+    await doubleClickSourceTreeItem(DOMAIN_SELECTOR);
+
     await waitFor('.cookies-table .data-grid-data-grid-node');
     await click('.cookies-table .data-grid-data-grid-node');
 
+    await selectCookieByName('urlencoded');
+
     await waitForFunction(async () => {
-      const previewValueNode = await waitFor('.cookie-value');
+      const previewValueNode = await waitFor('.cookie-preview-widget-cookie-value');
       const previewValue = await previewValueNode.evaluate(e => e.textContent);
-      return previewValue === 'bar';
+      return previewValue === 'Hello%2BWorld!';
+    });
+
+    await click('[aria-label="Show URL decoded"]');
+
+    await waitForFunction(async () => {
+      const previewValueNode = await waitFor('.cookie-preview-widget-cookie-value');
+      const previewValue = await previewValueNode.evaluate(e => e.textContent);
+      return previewValue === 'Hello+World!';
     });
   });
 
@@ -62,26 +102,60 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(COOKIES_SELECTOR);
     await doubleClickSourceTreeItem(DOMAIN_SELECTOR);
 
-    await waitFor('.cookies-table .data-grid-data-grid-node');
-    await click('.cookies-table .data-grid-data-grid-node');
+    await selectCookieByName('foo');
 
     // Select a cookie first
     await waitForFunction(async () => {
-      const previewValueNode1 = await waitFor('.cookie-value');
+      const previewValueNode1 = await waitFor('.cookie-preview-widget-cookie-value');
       const previewValue1 = await previewValueNode1.evaluate(e => e.textContent);
       return previewValue1 === 'bar';
     });
 
-    // Clear all cookies
-    await waitFor('button[aria-label="Clear All"]');
-    await click('button[aria-label="Clear All"]');
+    await clearStorageItems();
 
     // Make sure that the preview resets
     await waitForFunction(async () => {
-      const previewValueNode2 = await waitFor('.cookie-value');
+      const previewValueNode2 = await waitFor('.empty-view');
       const previewValue2 = await previewValueNode2.evaluate(e => e.textContent as string);
 
       return previewValue2.match(/Select a cookie to preview its value/);
     });
+  });
+
+  it('[crbug.com/978059] only clear currently visible cookies', async () => {
+    const {target} = getBrowserAndPages();
+    // This sets a new cookie foo=bar
+    await navigateToApplicationTab(target, 'cookies');
+
+    await doubleClickSourceTreeItem(COOKIES_SELECTOR);
+    await doubleClickSourceTreeItem(DOMAIN_SELECTOR);
+
+    const dataGridRowValues1 = await getStorageItemsData(['name']);
+    assert.deepEqual(dataGridRowValues1, [
+      {
+        name: 'urlencoded',
+      },
+      {
+        name: 'foo2',
+      },
+      {
+        name: 'foo',
+      },
+    ]);
+
+
+    await filterStorageItems('foo2');
+    await clearStorageItems();
+    await clearStorageItemsFilter();
+
+    const dataGridRowValues2 = await getStorageItemsData(['name']);
+    assert.deepEqual(dataGridRowValues2, [
+      {
+        name: 'urlencoded',
+      },
+      {
+        name: 'foo',
+      },
+    ]);
   });
 });

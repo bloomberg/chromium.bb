@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,12 +43,17 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
   std::string GetSigninScopedDeviceId() const override {
 // Since the local sync backend is currently only supported on Windows, Mac and
 // Linux don't even check the pref on other os-es.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Reassess whether the next block needs to be included
+// in lacros-chrome once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     syncer::SyncPrefs prefs(profile_->GetPrefs());
     if (prefs.IsLocalSyncEnabled()) {
       return "local_device";
     }
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS))
 
     return GetSigninScopedDeviceIdForProfile(profile_);
   }
@@ -66,22 +72,28 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
   }
 
   // syncer::DeviceInfoSyncClient:
-  std::string GetFCMRegistrationToken() const override {
+  base::Optional<std::string> GetFCMRegistrationToken() const override {
     syncer::SyncInvalidationsService* service =
         SyncInvalidationsServiceFactory::GetForProfile(profile_);
     if (service) {
       return service->GetFCMRegistrationToken();
     }
+    // If the service is not enabled, then the registration token must be empty,
+    // not unknown (base::nullopt). This is needed to reset previous token if
+    // the invalidations have been turned off.
     return std::string();
   }
 
   // syncer::DeviceInfoSyncClient:
-  syncer::ModelTypeSet GetInterestedDataTypes() const override {
+  base::Optional<syncer::ModelTypeSet> GetInterestedDataTypes() const override {
     syncer::SyncInvalidationsService* service =
         SyncInvalidationsServiceFactory::GetForProfile(profile_);
     if (service) {
       return service->GetInterestedDataTypes();
     }
+    // If the service is not enabled, then the list of types must be empty, not
+    // unknown (base::nullopt). This is needed to reset previous types if the
+    // invalidations have been turned off.
     return syncer::ModelTypeSet();
   }
 

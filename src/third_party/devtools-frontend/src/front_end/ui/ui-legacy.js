@@ -113,7 +113,6 @@ UI.InspectorView = UIModule.InspectorView.InspectorView;
 
 /**
  * @implements {UI.ActionDelegate}
- * @unrestricted
  */
 UI.InspectorView.ActionDelegate = UIModule.InspectorView.ActionDelegate;
 
@@ -164,9 +163,6 @@ UI.SplitWidget = UIModule.SplitWidget.SplitWidget;
 
 /** @constructor */
 UI.SuggestBox = UIModule.SuggestBox.SuggestBox;
-
-/** @constructor */
-UI.SyntaxHighlighter = UIModule.SyntaxHighlighter.SyntaxHighlighter;
 
 /** @constructor */
 UI.TabbedPane = UIModule.TabbedPane.TabbedPane;
@@ -221,9 +217,6 @@ UI.beautifyFunctionName = UIModule.UIUtils.beautifyFunctionName;
 
 /** @interface */
 UI.View = UIModule.View.View;
-
-/** @public */
-UI.View.widgetSymbol = UIModule.View.widgetSymbol;
 
 /** @constructor */
 UI.SimpleView = UIModule.View.SimpleView;

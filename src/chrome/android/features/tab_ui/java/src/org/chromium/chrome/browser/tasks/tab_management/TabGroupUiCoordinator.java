@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
+import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -102,7 +102,8 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         boolean actionOnAllRelatedTabs = TabUiFeatureUtilities.isConditionalTabStripEnabled();
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, null, null, actionOnAllRelatedTabs, null, null,
-                TabProperties.UiType.STRIP, null, mTabListContainerView, true, COMPONENT_NAME);
+                TabProperties.UiType.STRIP, null, null, mTabListContainerView, true,
+                COMPONENT_NAME);
         mTabStripCoordinator.initWithNative(
                 mActivity.getCompositorViewHolder().getDynamicResourceLoader());
 

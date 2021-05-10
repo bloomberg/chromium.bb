@@ -12,11 +12,11 @@
 #include "base/test/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
@@ -51,26 +51,6 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
-
-class InterstitialPageObserver : public content::WebContentsObserver {
- public:
-  InterstitialPageObserver(WebContents* web_contents,
-                           const base::Closure& callback)
-      : content::WebContentsObserver(web_contents), callback_(callback) {}
-  ~InterstitialPageObserver() override {}
-
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    // With committed interstitials, DidAttachInterstitialPage is not called, so
-    // call the callback from here if there was an error.
-    if (navigation_handle->IsErrorPage()) {
-      callback_.Run();
-    }
-  }
-
- private:
-  base::Closure callback_;
-};
 
 // Tests filtering for supervised users.
 class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
@@ -197,11 +177,8 @@ class TabClosingObserver : public TabStripModelObserver {
       return;
 
     auto* remove = change.GetRemove();
-    if (!remove->will_be_deleted)
-      return;
-
     for (const auto& contents : remove->contents) {
-      if (contents_ == contents.contents) {
+      if (contents_ == contents.contents && contents.will_be_deleted) {
         if (run_loop_.running())
           run_loop_.Quit();
         contents_ = nullptr;

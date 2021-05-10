@@ -41,7 +41,8 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
     allocator_ = std::make_unique<PartitionAllocator>();
     allocator_->init({PartitionOptions::Alignment::kRegular,
                       PartitionOptions::ThreadCache::kDisabled,
-                      PartitionOptions::PCScan::kAlwaysDisabled});
+                      PartitionOptions::Quarantine::kAllowed,
+                      PartitionOptions::RefCount::kDisabled});
   }
 
   void TearDown() override {
@@ -98,7 +99,7 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
 
     size_t committed_before = root->get_total_size_of_committed_pages();
     EXPECT_GT(committed_before, committed_initially);
-    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+    PartitionAllocMemoryReclaimer::Instance()->ReclaimAll();
     size_t committed_after = root->get_total_size_of_committed_pages();
 
     EXPECT_LT(committed_after, committed_before);

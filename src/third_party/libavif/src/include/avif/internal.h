@@ -11,8 +11,9 @@ extern "C" {
 #endif
 
 // Yes, clamp macros are nasty. Do not use them.
-#define AVIF_CLAMP(x, low, high) (((x) < (low))) ? (low) : (((high) < (x)) ? (high) : (x))
+#define AVIF_CLAMP(x, low, high) (((x) < (low)) ? (low) : (((high) < (x)) ? (high) : (x)))
 #define AVIF_MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define AVIF_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 // Used by stream related things.
 #define CHECK(A)               \
@@ -91,11 +92,60 @@ typedef struct avifAlphaParams
 avifBool avifFillAlpha(const avifAlphaParams * const params);
 avifBool avifReformatAlpha(const avifAlphaParams * const params);
 
+typedef enum avifReformatMode
+{
+    AVIF_REFORMAT_MODE_YUV_COEFFICIENTS = 0, // Normal YUV conversion using coefficients
+    AVIF_REFORMAT_MODE_IDENTITY,             // Pack GBR directly into YUV planes (AVIF_MATRIX_COEFFICIENTS_IDENTITY)
+    AVIF_REFORMAT_MODE_YCGCO                 // YUV conversion using AVIF_MATRIX_COEFFICIENTS_YCGCO
+} avifReformatMode;
+
+typedef struct avifReformatState
+{
+    // YUV coefficients
+    float kr;
+    float kg;
+    float kb;
+
+    uint32_t yuvChannelBytes;
+    uint32_t rgbChannelBytes;
+    uint32_t rgbChannelCount;
+    uint32_t rgbPixelBytes;
+    uint32_t rgbOffsetBytesR;
+    uint32_t rgbOffsetBytesG;
+    uint32_t rgbOffsetBytesB;
+    uint32_t rgbOffsetBytesA;
+
+    uint32_t yuvDepth;
+    avifRange yuvRange;
+    int yuvMaxChannel;
+    int rgbMaxChannel;
+    float rgbMaxChannelF;
+    float biasY;   // minimum Y value
+    float biasUV;  // the value of 0.5 for the appropriate bit depth [128, 512, 2048]
+    float rangeY;  // difference between max and min Y
+    float rangeUV; // difference between max and min UV
+
+    avifPixelFormatInfo formatInfo;
+
+    // LUTs for going from YUV limited/full unorm -> full range RGB FP32
+    float unormFloatTableY[1 << 12];
+    float unormFloatTableUV[1 << 12];
+
+    avifReformatMode mode;
+} avifReformatState;
+
 // Returns:
-// * AVIF_RESULT_OK         - Converted successfully with libyuv
-// * AVIF_RESULT_NO_CONTENT - Incapable of converting this combination with libyuv, use built-in YUV conversion
-// * [any other error]      - Return error to caller
+// * AVIF_RESULT_OK              - Converted successfully with libyuv
+// * AVIF_RESULT_NOT_IMPLEMENTED - The fast path for this combination is not implemented with libyuv, use built-in YUV conversion
+// * [any other error]           - Return error to caller
 avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb);
+
+// Returns:
+// * AVIF_RESULT_OK              - (Un)Premultiply successfully with libyuv
+// * AVIF_RESULT_NOT_IMPLEMENTED - The fast path for this combination is not implemented with libyuv, use built-in (Un)Premultiply
+// * [any other error]           - Return error to caller
+avifResult avifRGBImagePremultiplyAlphaLibYUV(avifRGBImage * rgb);
+avifResult avifRGBImageUnpremultiplyAlphaLibYUV(avifRGBImage * rgb);
 
 // ---------------------------------------------------------------------------
 // avifCodecDecodeInput
@@ -108,7 +158,7 @@ typedef struct avifDecodeSample
 
     uint32_t itemID; // if non-zero, data comes from a mergedExtents buffer in an avifDecoderItem, not a file offset
     uint64_t offset; // used only when itemID is zero, ignored and set to 0 when itemID is non-zero
-    uint32_t size;
+    size_t size;
     avifBool sync; // is sync sample (keyframe)
 } avifDecodeSample;
 AVIF_ARRAY_DECLARE(avifDecodeSampleArray, avifDecodeSample, sample);

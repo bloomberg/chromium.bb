@@ -20,19 +20,23 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
   }
 
   runOnLearnModePage(callback) {
+    callback = this.newCallback(callback);
     const mockFeedback = this.createMockFeedback();
     chrome.automation.getDesktop((desktop) => {
-      desktop.addEventListener(
-          chrome.automation.EventType.LOAD_COMPLETE, (evt) => {
-            if (evt.target.docUrl.indexOf('learn_mode/kbexplorer.html') ===
-                    -1 ||
-                !evt.target.docLoaded) {
-              return;
-            }
+      function listener(evt) {
+        if (evt.target.docUrl.indexOf('learn_mode/kbexplorer.html') === -1 ||
+            !evt.target.docLoaded) {
+          return;
+        }
+        desktop.removeEventListener(
+            chrome.automation.EventType.LOAD_COMPLETE, listener);
 
-            mockFeedback.expectSpeech(/Press a qwerty key/);
-            callback(mockFeedback, evt);
-          });
+        mockFeedback.expectSpeech(/Press a qwerty key/);
+        callback(mockFeedback, evt);
+      }
+
+      desktop.addEventListener(
+          chrome.automation.EventType.LOAD_COMPLETE, listener);
       CommandHandler.onCommand('showKbExplorerPage');
     });
   }
@@ -85,7 +89,9 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
   }
 };
 
-TEST_F('ChromeVoxLearnModeTest', 'KeyboardInput', function() {
+// TODO(crbug.com/1128926, crbug.com/1172387):
+// Test times out flakily.
+TEST_F('ChromeVoxLearnModeTest', 'DISABLED_KeyboardInput', function() {
   this.runOnLearnModePage((mockFeedback, evt) => {
     // Press Search+Right.
     mockFeedback.call(doKeyDown({keyCode: KeyCode.SEARCH, metaKey: true}))

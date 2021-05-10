@@ -86,6 +86,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                                           scoped_refptr<const ComputedStyle>,
                                           LegacyLayout);
 
+  static LayoutText* CreateAnonymous(Document&,
+                                     scoped_refptr<const ComputedStyle>,
+                                     scoped_refptr<StringImpl>,
+                                     LegacyLayout legacy);
+
   const char* GetName() const override {
     NOT_DESTROYED();
     return "LayoutText";
@@ -104,8 +109,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void RemoveTextBox(InlineTextBox*);
 
   bool HasInlineFragments() const final;
-  NGPaintFragment* FirstInlineFragment() const final;
-  void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
@@ -297,8 +300,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool IsBeforeNonCollapsedCharacter(unsigned) const;
   bool IsAfterNonCollapsedCharacter(unsigned) const;
 
-  int CaretMinOffset() const override;
-  int CaretMaxOffset() const override;
+  virtual int CaretMinOffset() const;
+  virtual int CaretMaxOffset() const;
   unsigned ResolvedTextLength() const;
 
   // True if any character remains after CSS white-space collapsing.
@@ -410,6 +413,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // of the LayoutText.
   void LogicalStartingPointAndHeight(LogicalOffset& logical_starting_point,
                                      LayoutUnit& logical_height) const;
+
+  // Returns the size of area occupied by this LayoutText.
+  LayoutUnit PhysicalAreaSize() const;
 
   // For LayoutShiftTracker. Saves the value of LogicalStartingPoint() value
   // during the previous paint invalidation.
@@ -582,9 +588,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     // Read the LINE BOXES OWNERSHIP section in the class header comment.
     // Valid only when !IsInLayoutNGInlineFormattingContext().
     InlineTextBoxList text_boxes_;
-    // The first fragment of text boxes associated with this object.
-    // Valid only when IsInLayoutNGInlineFormattingContext().
-    NGPaintFragment* first_paint_fragment_;
     // The index of the first fragment item associated with this object in
     // |NGFragmentItems::Items()|. Zero means there are no such item.
     // Valid only when IsInLayoutNGInlineFormattingContext().
@@ -597,19 +600,9 @@ inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
   return text_boxes_;
 }
 
-inline NGPaintFragment* LayoutText::FirstInlineFragment() const {
-  if (!IsInLayoutNGInlineFormattingContext())
-    return nullptr;
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return first_paint_fragment_;
-  NOTREACHED();
-  return nullptr;
-}
-
 inline wtf_size_t LayoutText::FirstInlineFragmentItemIndex() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return 0u;
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   return first_fragment_item_index_;
 }
 

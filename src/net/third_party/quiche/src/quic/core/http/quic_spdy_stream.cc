@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
+#include "quic/core/http/quic_spdy_stream.h"
 
 #include <limits>
 #include <string>
@@ -11,22 +11,22 @@
 #include "absl/base/macros.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/core/quic_write_blocked_list.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/http/http_decoder.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/qpack/qpack_decoder.h"
+#include "quic/core/qpack/qpack_encoder.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/core/quic_write_blocked_list.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_mem_slice_storage.h"
+#include "common/platform/api/quiche_text_utils.h"
+#include "spdy/core/spdy_protocol.h"
 
 using spdy::SpdyHeaderBlock;
 using spdy::SpdyPriority;
@@ -76,7 +76,7 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
   }
 
   bool OnDataFramePayload(absl::string_view payload) override {
-    DCHECK(!payload.empty());
+    QUICHE_DCHECK(!payload.empty());
     return stream_->OnDataFramePayload(payload);
   }
 
@@ -92,7 +92,7 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
   }
 
   bool OnHeadersFramePayload(absl::string_view payload) override {
-    DCHECK(!payload.empty());
+    QUICHE_DCHECK(!payload.empty());
     if (!VersionUsesHttp3(stream_->transport_version())) {
       CloseConnectionOnWrongFrame("Headers");
       return false;
@@ -128,7 +128,7 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
   }
 
   bool OnPushPromiseFramePayload(absl::string_view payload) override {
-    DCHECK(!payload.empty());
+    QUICHE_DCHECK(!payload.empty());
     if (!VersionUsesHttp3(stream_->transport_version())) {
       CloseConnectionOnWrongFrame("Push Promise");
       return false;
@@ -154,6 +154,16 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
     return false;
   }
 
+  bool OnAcceptChFrameStart(QuicByteCount /*header_length*/) override {
+    CloseConnectionOnWrongFrame("ACCEPT_CH");
+    return false;
+  }
+
+  bool OnAcceptChFrame(const AcceptChFrame& /*frame*/) override {
+    CloseConnectionOnWrongFrame("ACCEPT_CH");
+    return false;
+  }
+
   bool OnUnknownFrameStart(uint64_t frame_type,
                            QuicByteCount header_length,
                            QuicByteCount payload_length) override {
@@ -171,7 +181,7 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
   void CloseConnectionOnWrongFrame(absl::string_view frame_type) {
     stream_->OnUnrecoverableError(
         QUIC_HTTP_FRAME_UNEXPECTED_ON_SPDY_STREAM,
-        quiche::QuicheStrCat(frame_type, " frame received on data stream"));
+        absl::StrCat(frame_type, " frame received on data stream"));
   }
 
   QuicSpdyStream* stream_;
@@ -201,10 +211,10 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id,
       is_decoder_processing_input_(false),
       ack_listener_(nullptr),
       last_sent_urgency_(kDefaultUrgency) {
-  DCHECK_EQ(session()->connection(), spdy_session->connection());
-  DCHECK_EQ(transport_version(), spdy_session->transport_version());
-  DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id));
-  DCHECK_EQ(0u, sequencer()->NumBytesConsumed());
+  QUICHE_DCHECK_EQ(session()->connection(), spdy_session->connection());
+  QUICHE_DCHECK_EQ(transport_version(), spdy_session->transport_version());
+  QUICHE_DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id));
+  QUICHE_DCHECK_EQ(0u, sequencer()->NumBytesConsumed());
   // If headers are sent on the headers stream, then do not receive any
   // callbacks from the sequencer until headers are complete.
   if (!VersionUsesHttp3(transport_version())) {
@@ -237,9 +247,9 @@ QuicSpdyStream::QuicSpdyStream(PendingStream* pending,
       is_decoder_processing_input_(false),
       ack_listener_(nullptr),
       last_sent_urgency_(kDefaultUrgency) {
-  DCHECK_EQ(session()->connection(), spdy_session->connection());
-  DCHECK_EQ(transport_version(), spdy_session->transport_version());
-  DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id()));
+  QUICHE_DCHECK_EQ(session()->connection(), spdy_session->connection());
+  QUICHE_DCHECK_EQ(transport_version(), spdy_session->transport_version());
+  QUICHE_DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id()));
   // If headers are sent on the headers stream, then do not receive any
   // callbacks from the sequencer until headers are complete.
   if (!VersionUsesHttp3(transport_version())) {
@@ -363,7 +373,7 @@ size_t QuicSpdyStream::WriteTrailers(
 }
 
 void QuicSpdyStream::WritePushPromise(const PushPromiseFrame& frame) {
-  DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
   std::unique_ptr<char[]> push_promise_frame_with_id;
   const size_t push_promise_frame_length =
       HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
@@ -443,7 +453,7 @@ QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
 }
 
 size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
-  DCHECK(FinishedReadingHeaders());
+  QUICHE_DCHECK(FinishedReadingHeaders());
   if (!VersionUsesHttp3(transport_version())) {
     return sequencer()->Readv(iov, iov_len);
   }
@@ -454,7 +464,7 @@ size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
 }
 
 int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
-  DCHECK(FinishedReadingHeaders());
+  QUICHE_DCHECK(FinishedReadingHeaders());
   if (!VersionUsesHttp3(transport_version())) {
     return sequencer()->GetReadableRegions(iov, iov_len);
   }
@@ -462,7 +472,7 @@ int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
 }
 
 void QuicSpdyStream::MarkConsumed(size_t num_bytes) {
-  DCHECK(FinishedReadingHeaders());
+  QUICHE_DCHECK(FinishedReadingHeaders());
   if (!VersionUsesHttp3(transport_version())) {
     sequencer()->MarkConsumed(num_bytes);
     return;
@@ -522,7 +532,8 @@ void QuicSpdyStream::ConsumeHeaderList() {
 
 void QuicSpdyStream::OnStreamHeadersPriority(
     const spdy::SpdyStreamPrecedence& precedence) {
-  DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
+  QUICHE_DCHECK_EQ(Perspective::IS_SERVER,
+                   session()->connection()->perspective());
   SetPriority(precedence);
 }
 
@@ -597,7 +608,7 @@ void QuicSpdyStream::OnHeadersDecoded(QuicHeaderList headers,
 void QuicSpdyStream::OnHeaderDecodingError(absl::string_view error_message) {
   qpack_decoded_headers_accumulator_.reset();
 
-  std::string connection_close_error_message = quiche::QuicheStrCat(
+  std::string connection_close_error_message = absl::StrCat(
       "Error decoding ", headers_decompressed_ ? "trailers" : "headers",
       " on stream ", id(), ": ", error_message);
   OnUnrecoverableError(QUIC_QPACK_DECOMPRESSION_FAILED,
@@ -620,7 +631,7 @@ void QuicSpdyStream::MaybeSendPriorityUpdateFrame() {
   PriorityUpdateFrame priority_update;
   priority_update.prioritized_element_type = REQUEST_STREAM;
   priority_update.prioritized_element_id = id();
-  priority_update.priority_field_value = quiche::QuicheStrCat("u=", urgency);
+  priority_update.priority_field_value = absl::StrCat("u=", urgency);
   spdy_session_->WriteHttp3PriorityUpdate(priority_update);
 }
 
@@ -669,7 +680,7 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
     size_t /*frame_len*/,
     const QuicHeaderList& header_list) {
   // TODO(b/134706391): remove |fin| argument.
-  DCHECK(!trailers_decompressed_);
+  QUICHE_DCHECK(!trailers_decompressed_);
   if (!VersionUsesHttp3(transport_version()) && fin_received()) {
     QUIC_DLOG(INFO) << ENDPOINT
                     << "Received Trailers after FIN, on stream: " << id();
@@ -708,15 +719,36 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
 
 void QuicSpdyStream::OnPriorityFrame(
     const spdy::SpdyStreamPrecedence& precedence) {
-  DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
+  QUICHE_DCHECK_EQ(Perspective::IS_SERVER,
+                   session()->connection()->perspective());
   SetPriority(precedence);
 }
 
 void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+  // TODO(bnc): Merge the two blocks below when both
+  // quic_abort_qpack_on_stream_reset and quic_fix_on_stream_reset are
+  // deprecated.
   if (frame.error_code != QUIC_STREAM_NO_ERROR) {
     if (VersionUsesHttp3(transport_version()) && !fin_received() &&
         spdy_session_->qpack_decoder()) {
+      QUIC_CODE_COUNT_N(quic_abort_qpack_on_stream_reset, 1, 2);
       spdy_session_->qpack_decoder()->OnStreamReset(id());
+      if (GetQuicReloadableFlag(quic_abort_qpack_on_stream_reset)) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_abort_qpack_on_stream_reset, 1, 2);
+        qpack_decoded_headers_accumulator_.reset();
+      }
+    }
+
+    QuicStream::OnStreamReset(frame);
+    return;
+  }
+
+  if (GetQuicReloadableFlag(quic_fix_on_stream_reset) &&
+      VersionUsesHttp3(transport_version())) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_on_stream_reset);
+    if (!fin_received() && spdy_session_->qpack_decoder()) {
+      spdy_session_->qpack_decoder()->OnStreamReset(id());
+      qpack_decoded_headers_accumulator_.reset();
     }
 
     QuicStream::OnStreamReset(frame);
@@ -734,7 +766,12 @@ void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
 void QuicSpdyStream::Reset(QuicRstStreamErrorCode error) {
   if (VersionUsesHttp3(transport_version()) && !fin_received() &&
       spdy_session_->qpack_decoder()) {
+    QUIC_CODE_COUNT_N(quic_abort_qpack_on_stream_reset, 2, 2);
     spdy_session_->qpack_decoder()->OnStreamReset(id());
+    if (GetQuicReloadableFlag(quic_abort_qpack_on_stream_reset)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_abort_qpack_on_stream_reset, 2, 2);
+      qpack_decoded_headers_accumulator_.reset();
+    }
   }
 
   QuicStream::Reset(error);
@@ -743,7 +780,7 @@ void QuicSpdyStream::Reset(QuicRstStreamErrorCode error) {
 void QuicSpdyStream::OnDataAvailable() {
   if (!VersionUsesHttp3(transport_version())) {
     // Sequencer must be blocked until headers are consumed.
-    DCHECK(FinishedReadingHeaders());
+    QUICHE_DCHECK(FinishedReadingHeaders());
   }
 
   if (!VersionUsesHttp3(transport_version())) {
@@ -763,12 +800,12 @@ void QuicSpdyStream::OnDataAvailable() {
   iovec iov;
   while (session()->connection()->connected() && !reading_stopped() &&
          decoder_.error() == QUIC_NO_ERROR) {
-    DCHECK_GE(sequencer_offset_, sequencer()->NumBytesConsumed());
+    QUICHE_DCHECK_GE(sequencer_offset_, sequencer()->NumBytesConsumed());
     if (!sequencer()->PeekRegion(sequencer_offset_, &iov)) {
       break;
     }
 
-    DCHECK(!sequencer()->IsClosed());
+    QUICHE_DCHECK(!sequencer()->IsClosed());
     is_decoder_processing_input_ = true;
     QuicByteCount processed_bytes = decoder_.ProcessInput(
         reinterpret_cast<const char*>(iov.iov_base), iov.iov_len);
@@ -799,10 +836,7 @@ void QuicSpdyStream::OnDataAvailable() {
 void QuicSpdyStream::OnClose() {
   QuicStream::OnClose();
 
-  if (GetQuicReloadableFlag(quic_abort_qpack_on_stream_close)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_abort_qpack_on_stream_close);
-    qpack_decoded_headers_accumulator_.reset();
-  }
+  qpack_decoded_headers_accumulator_.reset();
 
   if (visitor_) {
     Visitor* visitor = visitor_;
@@ -860,13 +894,9 @@ bool QuicSpdyStream::FinishedReadingTrailers() const {
   }
 }
 
-void QuicSpdyStream::ClearSession() {
-  spdy_session_ = nullptr;
-}
-
 bool QuicSpdyStream::OnDataFrameStart(QuicByteCount header_length,
                                       QuicByteCount payload_length) {
-  DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
 
   if (spdy_session_->debug_visitor()) {
     spdy_session_->debug_visitor()->OnDataFrameReceived(id(), payload_length);
@@ -885,7 +915,7 @@ bool QuicSpdyStream::OnDataFrameStart(QuicByteCount header_length,
 }
 
 bool QuicSpdyStream::OnDataFramePayload(absl::string_view payload) {
-  DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
 
   body_manager_.OnBody(payload);
 
@@ -893,7 +923,7 @@ bool QuicSpdyStream::OnDataFramePayload(absl::string_view payload) {
 }
 
 bool QuicSpdyStream::OnDataFrameEnd() {
-  DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
 
   QUIC_DVLOG(1) << ENDPOINT
                 << "Reaches the end of a data frame. Total bytes received are "
@@ -913,7 +943,7 @@ bool QuicSpdyStream::OnStreamFrameAcked(QuicStreamOffset offset,
 
   const QuicByteCount newly_acked_header_length =
       GetNumFrameHeadersInInterval(offset, data_length);
-  DCHECK_LE(newly_acked_header_length, *newly_acked_length);
+  QUICHE_DCHECK_LE(newly_acked_header_length, *newly_acked_length);
   unacked_frame_headers_offsets_.Difference(offset, offset + data_length);
   if (ack_listener_ != nullptr && new_data_acked) {
     ack_listener_->OnPacketAcked(
@@ -930,7 +960,7 @@ void QuicSpdyStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
 
   const QuicByteCount retransmitted_header_length =
       GetNumFrameHeadersInInterval(offset, data_length);
-  DCHECK_LE(retransmitted_header_length, data_length);
+  QUICHE_DCHECK_LE(retransmitted_header_length, data_length);
 
   if (ack_listener_ != nullptr) {
     ack_listener_->OnPacketRetransmitted(data_length -
@@ -952,8 +982,8 @@ QuicByteCount QuicSpdyStream::GetNumFrameHeadersInInterval(
 
 bool QuicSpdyStream::OnHeadersFrameStart(QuicByteCount header_length,
                                          QuicByteCount payload_length) {
-  DCHECK(VersionUsesHttp3(transport_version()));
-  DCHECK(!qpack_decoded_headers_accumulator_);
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(!qpack_decoded_headers_accumulator_);
 
   if (spdy_session_->debug_visitor()) {
     spdy_session_->debug_visitor()->OnHeadersFrameReceived(id(),
@@ -980,8 +1010,8 @@ bool QuicSpdyStream::OnHeadersFrameStart(QuicByteCount header_length,
 }
 
 bool QuicSpdyStream::OnHeadersFramePayload(absl::string_view payload) {
-  DCHECK(VersionUsesHttp3(transport_version()));
-  DCHECK(qpack_decoded_headers_accumulator_);
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(qpack_decoded_headers_accumulator_);
 
   qpack_decoded_headers_accumulator_->Decode(payload);
 
@@ -995,8 +1025,8 @@ bool QuicSpdyStream::OnHeadersFramePayload(absl::string_view payload) {
 }
 
 bool QuicSpdyStream::OnHeadersFrameEnd() {
-  DCHECK(VersionUsesHttp3(transport_version()));
-  DCHECK(qpack_decoded_headers_accumulator_);
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(qpack_decoded_headers_accumulator_);
 
   qpack_decoded_headers_accumulator_->EndHeaderBlock();
 
@@ -1011,8 +1041,8 @@ bool QuicSpdyStream::OnHeadersFrameEnd() {
 }
 
 bool QuicSpdyStream::OnPushPromiseFrameStart(QuicByteCount header_length) {
-  DCHECK(VersionUsesHttp3(transport_version()));
-  DCHECK(!qpack_decoded_headers_accumulator_);
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(!qpack_decoded_headers_accumulator_);
 
   sequencer()->MarkConsumed(body_manager_.OnNonBody(header_length));
 
@@ -1023,8 +1053,8 @@ bool QuicSpdyStream::OnPushPromiseFramePushId(
     PushId push_id,
     QuicByteCount push_id_length,
     QuicByteCount header_block_length) {
-  DCHECK(VersionUsesHttp3(transport_version()));
-  DCHECK(!qpack_decoded_headers_accumulator_);
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(!qpack_decoded_headers_accumulator_);
 
   if (spdy_session_->debug_visitor()) {
     spdy_session_->debug_visitor()->OnPushPromiseFrameReceived(
@@ -1049,7 +1079,7 @@ bool QuicSpdyStream::OnPushPromiseFramePayload(absl::string_view payload) {
 }
 
 bool QuicSpdyStream::OnPushPromiseFrameEnd() {
-  DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
 
   return OnHeadersFrameEnd();
 }

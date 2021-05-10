@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -41,6 +42,7 @@ import org.chromium.content_public.browser.test.mock.MockNavigationController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.ExecutionException;
 
@@ -68,7 +70,7 @@ public class NavigationSheetTest {
     }
 
     private static class TestNavigationEntry extends NavigationEntry {
-        public TestNavigationEntry(int index, String url, String virtualUrl, String originalUrl,
+        public TestNavigationEntry(int index, GURL url, GURL virtualUrl, GURL originalUrl,
                 String title, Bitmap favicon, int transition, long timestamp) {
             super(index, url, virtualUrl, originalUrl, /*referrerUrl=*/null, title, favicon,
                     transition, timestamp);
@@ -81,10 +83,11 @@ public class NavigationSheetTest {
 
         public TestNavigationController() {
             mHistory = new NavigationHistory();
-            mHistory.addEntry(new TestNavigationEntry(
-                    NAVIGATION_INDEX_1, "about:blank", null, null, "About Blank", null, 0, 0));
+            mHistory.addEntry(new TestNavigationEntry(NAVIGATION_INDEX_1, new GURL("about:blank"),
+                    GURL.emptyGURL(), GURL.emptyGURL(), "About Blank", null, 0, 0));
             mHistory.addEntry(new TestNavigationEntry(NAVIGATION_INDEX_2,
-                    UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0, 0));
+                    new GURL(UrlUtils.encodeHtmlDataUri("<html>1</html>")), GURL.emptyGURL(),
+                    GURL.emptyGURL(), null, null, 0, 0));
         }
 
         @Override
@@ -162,10 +165,7 @@ public class NavigationSheetTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @CommandLineFlags.Add({"enable-features=OverscrollHistoryNavigation<GestureNavigation",
-            "force-fieldtrials=GestureNavigation/Enabled"})
-    public void
-    testLongPressBackTriggering() {
+    public void testLongPressBackTriggering() {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         TestThreadUtils.runOnUiThreadBlocking(
@@ -179,10 +179,7 @@ public class NavigationSheetTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @CommandLineFlags.Add({"enable-features=OverscrollHistoryNavigation<GestureNavigation",
-            "force-fieldtrials=GestureNavigation/Enabled"})
-    public void
-    testLongPressBackTriggering_Cancellation() throws ExecutionException {
+    public void testLongPressBackTriggering_Cancellation() throws ExecutionException {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
@@ -202,8 +199,9 @@ public class NavigationSheetTest {
     private NavigationSheet showPopup(NavigationController controller) throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTabProvider().get();
-            NavigationSheet navigationSheet = NavigationSheet.create(tab.getContentView(),
-                    mActivityTestRule.getActivity(), () -> mBottomSheetController);
+            NavigationSheet navigationSheet =
+                    NavigationSheet.create(tab.getContentView(), mActivityTestRule.getActivity(),
+                            () -> mBottomSheetController, Profile.getLastUsedRegularProfile());
             navigationSheet.setDelegate(new TestSheetDelegate(controller));
             navigationSheet.startAndExpand(false, false);
             return navigationSheet;

@@ -98,6 +98,14 @@ AutocompleteClassifier* TestOmniboxClient::GetAutocompleteClassifier() {
   return &autocomplete_classifier_;
 }
 
+bool TestOmniboxClient::ShouldDefaultTypedNavigationsToHttps() const {
+  return false;
+}
+
+int TestOmniboxClient::GetHttpsPortForTesting() const {
+  return 0;
+}
+
 gfx::Image TestOmniboxClient::GetSizedIcon(
     const gfx::VectorIcon& vector_icon_type,
     SkColor vector_icon_color) const {

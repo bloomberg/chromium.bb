@@ -31,8 +31,8 @@
 #include <string.h>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -113,14 +113,14 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src,
 
 // Do not rename entries nor reuse numeric values. See the following link for
 // descriptions: https://developers.google.com/speed/webp/docs/riff_container.
-enum WebPFileFormat {
-  kSimpleLossyFileFormat = 0,
-  kSimpleLosslessFileFormat = 1,
-  kExtendedAlphaFileFormat = 2,
-  kExtendedAnimationFileFormat = 3,
-  kExtendedAnimationWithAlphaFileFormat = 4,
-  kUnknownFileFormat = 5,
-  kCountWebPFileFormats
+enum class WebPFileFormat {
+  kSimpleLossy = 0,
+  kSimpleLossless = 1,
+  kExtendedAlpha = 2,
+  kExtendedAnimation = 3,
+  kExtendedAnimationWithAlpha = 4,
+  kUnknown = 5,
+  kMaxValue = kUnknown,
 };
 
 // Validates that |blob| is a simple lossy WebP image. Note that this explicitly
@@ -152,22 +152,19 @@ void UpdateWebPFileFormatUMA(const sk_sp<SkData>& blob) {
   constexpr int kLossyFormat = 1;
   constexpr int kLosslessFormat = 2;
 
-  WebPFileFormat file_format = kUnknownFileFormat;
+  WebPFileFormat file_format = WebPFileFormat::kUnknown;
   if (features.has_alpha && features.has_animation)
-    file_format = kExtendedAnimationWithAlphaFileFormat;
+    file_format = WebPFileFormat::kExtendedAnimationWithAlpha;
   else if (features.has_animation)
-    file_format = kExtendedAnimationFileFormat;
+    file_format = WebPFileFormat::kExtendedAnimation;
   else if (features.has_alpha)
-    file_format = kExtendedAlphaFileFormat;
+    file_format = WebPFileFormat::kExtendedAlpha;
   else if (features.format == kLossyFormat)
-    file_format = kSimpleLossyFileFormat;
+    file_format = WebPFileFormat::kSimpleLossy;
   else if (features.format == kLosslessFormat)
-    file_format = kSimpleLosslessFileFormat;
+    file_format = WebPFileFormat::kSimpleLossless;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      blink::EnumerationHistogram, file_format_histogram,
-      ("Blink.DecodedImage.WebPFileFormat", kCountWebPFileFormats));
-  file_format_histogram.Count(file_format);
+  UMA_HISTOGRAM_ENUMERATION("Blink.DecodedImage.WebPFileFormat", file_format);
 }
 
 }  // namespace
@@ -186,7 +183,7 @@ WEBPImageDecoder::WEBPImageDecoder(AlphaOption alpha_option,
       frame_background_has_alpha_(false),
       demux_(nullptr),
       demux_state_(WEBP_DEMUX_PARSING_HEADER),
-      have_already_parsed_this_data_(false),
+      have_parsed_current_data_(false),
       repetition_count_(kAnimationLoopOnce),
       decoded_height_(0) {
   blend_function_ = (alpha_option == kAlphaPremultiplied)
@@ -259,7 +256,7 @@ bool WEBPImageDecoder::CanAllowYUVDecodingForWebP() {
 }
 
 void WEBPImageDecoder::OnSetData(SegmentReader* data) {
-  have_already_parsed_this_data_ = false;
+  have_parsed_current_data_ = false;
   // TODO(crbug.com/943519): Modify this approach for incremental YUV (when
   // we don't require IsAllDataReceived() to be true before decoding).
   if (IsAllDataReceived()) {
@@ -302,10 +299,9 @@ bool WEBPImageDecoder::UpdateDemuxer() {
   if (data_->size() < kWebpHeaderSize)
     return IsAllDataReceived() ? SetFailed() : false;
 
-  if (have_already_parsed_this_data_)
+  if (have_parsed_current_data_)
     return true;
-
-  have_already_parsed_this_data_ = true;
+  have_parsed_current_data_ = true;
 
   if (consolidated_data_ && consolidated_data_->size() >= data_->size()) {
     // Less data provided than last time. |consolidated_data_| is guaranteed
@@ -723,6 +719,7 @@ bool WEBPImageDecoder::DecodeSingleFrameToYUV(const uint8_t* data_bytes,
   // TODO(crbug.com/911246): Do post-processing once skcms_Transform
   // supports multiplanar formats.
   ClearDecoder();
+  image_planes->SetHasCompleteScan();
   return true;
 }
 

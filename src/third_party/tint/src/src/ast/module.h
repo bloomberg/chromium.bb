@@ -1,4 +1,4 @@
-// Copyright 2020 The Tint Authors.
+// Copyright 2021 The Tint Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,79 +15,106 @@
 #ifndef SRC_AST_MODULE_H_
 #define SRC_AST_MODULE_H_
 
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "src/ast/function.h"
-#include "src/ast/type/alias_type.h"
+#include "src/ast/node.h"
 #include "src/ast/variable.h"
+#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
-/// Represents all the source in a given program.
-class Module {
+/// Module holds the top-level AST types, functions and global variables used by
+/// a Program.
+class Module : public Castable<Module, Node> {
  public:
-  Module();
-  /// Move constructor
-  Module(Module&&);
-  ~Module();
+  /// Constructor
+  /// @param source the source of the module
+  explicit Module(const Source& source);
 
-  /// Add a global variable to the module
-  /// @param var the variable to add
-  void AddGlobalVariable(std::unique_ptr<Variable> var) {
-    global_variables_.push_back(std::move(var));
+  /// Constructor
+  /// @param source the source of the module
+  /// @param global_decls the list of global types, functions, and variables, in
+  /// the order they were declared in the source program
+  Module(const Source& source, std::vector<CastableBase*> global_decls);
+
+  /// Destructor
+  ~Module() override;
+
+  /// @returns the ordered global declarations for the translation unit
+  const std::vector<CastableBase*>& GlobalDeclarations() const {
+    return global_declarations_;
   }
-  /// @returns the global variables for the module
-  const VariableList& global_variables() const { return global_variables_; }
 
-  /// @returns the global variables for the module
-  VariableList& global_variables() { return global_variables_; }
+  /// Add a global variable to the Builder
+  /// @param var the variable to add
+  void AddGlobalVariable(ast::Variable* var) {
+    global_variables_.push_back(var);
+    global_declarations_.push_back(var);
+  }
 
-  /// Adds a constructed type to the module.
+  /// @returns the global variables for the translation unit
+  const VariableList& GlobalVariables() const { return global_variables_; }
+
+  /// @returns the global variables for the translation unit
+  VariableList& GlobalVariables() { return global_variables_; }
+
+  /// Adds a constructed type to the Builder.
   /// The type must be an alias or a struct.
   /// @param type the constructed type to add
   void AddConstructedType(type::Type* type) {
     constructed_types_.push_back(type);
+    global_declarations_.push_back(type);
   }
-  /// @returns the constructed types in the module
-  const std::vector<type::Type*>& constructed_types() const {
+
+  /// @returns the constructed types in the translation unit
+  const std::vector<type::Type*>& ConstructedTypes() const {
     return constructed_types_;
   }
 
-  /// Adds a function to the module
-  /// @param func the function
-  void AddFunction(std::unique_ptr<Function> func) {
-    functions_.push_back(std::move(func));
+  /// Add a function to the Builder
+  /// @param func the function to add
+  void AddFunction(ast::Function* func) {
+    functions_.push_back(func);
+    global_declarations_.push_back(func);
   }
-  /// @returns the modules functions
-  const FunctionList& functions() const { return functions_; }
-  /// Returns the function with the given name
-  /// @param name the name to search for
-  /// @returns the associated function or nullptr if none exists
-  Function* FindFunctionByName(const std::string& name) const;
-  /// Returns the function with the given name
-  /// @param name the name to search for
-  /// @param stage the pipeline stage
-  /// @returns the associated function or nullptr if none exists
-  Function* FindFunctionByNameAndStage(const std::string& name,
-                                       ast::PipelineStage stage) const;
+
+  /// @returns the functions declared in the translation unit
+  const FunctionList& Functions() const { return functions_; }
 
   /// @returns true if all required fields in the AST are present.
-  bool IsValid() const;
+  bool IsValid() const override;
 
-  /// @returns a string representation of the module
-  std::string to_str() const;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  Module* Clone(CloneContext* ctx) const override;
+
+  /// Copy copies the content of the Module src into this module.
+  /// @param ctx the clone context
+  /// @param src the module to copy into this module
+  void Copy(CloneContext* ctx, const Module* src);
+
+  /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// @param sem the semantic info for the program
+  /// @returns a string representation of the Builder
+  std::string to_str(const semantic::Info& sem) const;
 
  private:
-  Module(const Module&) = delete;
-
-  VariableList global_variables_;
-  // The constructed types are owned by the type manager
+  std::vector<CastableBase*> global_declarations_;
   std::vector<type::Type*> constructed_types_;
   FunctionList functions_;
+  VariableList global_variables_;
 };
 
 }  // namespace ast

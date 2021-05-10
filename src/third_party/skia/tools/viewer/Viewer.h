@@ -90,7 +90,6 @@ public:
         bool fCapType = false;
         bool fJoinType = false;
         bool fStyle = false;
-        bool fFilterQuality = false;
     };
     struct SkSurfacePropsFields {
         bool fFlags = false;
@@ -169,6 +168,7 @@ private:
     skcms_TransferFunction fColorSpaceTransferFn;
 
     // transform data
+    bool                   fApplyBackingScale;
     SkScalar               fZoomLevel;
     SkScalar               fRotation;
     SkVector               fOffset;

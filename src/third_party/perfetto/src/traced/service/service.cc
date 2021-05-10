@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-#include <getopt.h>
 #include <stdio.h>
 #include <algorithm>
 
+#include "perfetto/ext/base/getopt.h"
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/unix_task_runner.h"
+#include "perfetto/ext/base/version.h"
 #include "perfetto/ext/base/watchdog.h"
 #include "perfetto/ext/traced/traced.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
@@ -34,12 +35,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif
-
-#if PERFETTO_BUILDFLAG(PERFETTO_VERSION_GEN)
-#include "perfetto_version.gen.h"
-#else
-#define PERFETTO_GET_GIT_REVISION() "unknown"
 #endif
 
 namespace perfetto {
@@ -99,13 +94,13 @@ Example: %s --set-socket-permissions traced-producer:0660:traced-consumer:0660
 }
 }  // namespace
 
-int __attribute__((visibility("default"))) ServiceMain(int argc, char** argv) {
+int PERFETTO_EXPORT_ENTRYPOINT ServiceMain(int argc, char** argv) {
   enum LongOption {
     OPT_VERSION = 1000,
     OPT_SET_SOCKET_PERMISSIONS = 1001,
   };
 
-  static const struct option long_options[] = {
+  static const option long_options[] = {
       {"version", no_argument, nullptr, OPT_VERSION},
       {"set-socket-permissions", required_argument, nullptr,
        OPT_SET_SOCKET_PERMISSIONS},
@@ -114,14 +109,13 @@ int __attribute__((visibility("default"))) ServiceMain(int argc, char** argv) {
   std::string producer_socket_group, consumer_socket_group,
       producer_socket_mode, consumer_socket_mode;
 
-  int option_index;
   for (;;) {
-    int option = getopt_long(argc, argv, "", long_options, &option_index);
+    int option = getopt_long(argc, argv, "", long_options, nullptr);
     if (option == -1)
       break;
     switch (option) {
       case OPT_VERSION:
-        printf("%s\n", PERFETTO_GET_GIT_REVISION());
+        printf("%s\n", base::GetVersionString());
         return 0;
       case OPT_SET_SOCKET_PERMISSIONS: {
         // Check that the socket permission argument is well formed.
@@ -154,12 +148,16 @@ int __attribute__((visibility("default"))) ServiceMain(int argc, char** argv) {
   PERFETTO_CHECK((!env_prod && !env_cons) || (env_prod && env_cons));
   bool started;
   if (env_prod) {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+    PERFETTO_CHECK(false);
+#else
     base::ScopedFile producer_fd(atoi(env_prod));
     base::ScopedFile consumer_fd(atoi(env_cons));
     started = svc->Start(std::move(producer_fd), std::move(consumer_fd));
+#endif
   } else {
-    unlink(GetProducerSocket());
-    unlink(GetConsumerSocket());
+    remove(GetProducerSocket());
+    remove(GetConsumerSocket());
     started = svc->Start(GetProducerSocket(), GetConsumerSocket());
 
     if (!producer_socket_group.empty()) {

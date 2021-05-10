@@ -2,6 +2,8 @@
 
 <!-- GOOGLETEST_CM0016 DO NOT DELETE -->
 
+<!-- GOOGLETEST_CM0035 DO NOT DELETE -->
+
 ## Introduction
 
 Now that you have read the [googletest Primer](primer.md) and learned how to
@@ -909,6 +911,12 @@ handlers registered with `pthread_atfork(3)`.
 
 ## Using Assertions in Sub-routines
 
+Note: If you want to put a series of test assertions in a subroutine to check
+for a complex condition, consider using
+[a custom GMock matcher](../../googlemock/docs/cook_book.md#NewMatchers)
+instead. This lets you provide a more readable error message in case of failure
+and avoid all of the issues described below.
+
 ### Adding Traces to Assertions
 
 If a test sub-routine is called from several places, when an assertion inside it
@@ -1375,15 +1383,11 @@ INSTANTIATE_TEST_SUITE_P(InstantiationName,
 NOTE: The code above must be placed at global or namespace scope, not at
 function scope.
 
-NOTE: Don't forget this step! If you do your test will silently pass, but none
-of its suites will ever run!
-
-There is work in progress to make omitting `INSTANTIATE_TEST_SUITE_P` show up
-under the `GoogleTestVerification` test suite and to then make that an error.
-If you have a test suite where that omission is not an error, for example it is
-in a library that may be linked in for other reason or where the list of test
-cases is dynamic and may be empty, then this check can be suppressed by tagging
-the test suite:
+Per default, every `TEST_P` without a corresponding `INSTANTIATE_TEST_SUITE_P`
+causes a failing test in test suite `GoogleTestVerification`. If you have a test
+suite where that omission is not an error, for example it is in a library that
+may be linked in for other reason or where the list of test cases is dynamic and
+may be empty, then this check can be suppressed by tagging the test suite:
 
 ```c++
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(FooTest);
@@ -1490,7 +1494,7 @@ for conciseness:
 ```c++
 enum class MyType { MY_FOO = 0, MY_BAR = 1 };
 
-class MyTestSuite : public testing::TestWithParam<std::tuple<MyType, string>> {
+class MyTestSuite : public testing::TestWithParam<std::tuple<MyType, std::string>> {
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1499,7 +1503,7 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(MyType::VALUE_0, MyType::VALUE_1),
         testing::ValuesIn("", "")),
     [](const testing::TestParamInfo<MyTestSuite::ParamType>& info) {
-      string name = absl::StrCat(
+      std::string name = absl::StrCat(
           std::get<0>(info.param) == MY_FOO ? "Foo" : "Bar", "_",
           std::get<1>(info.param));
       absl::c_replace_if(name, [](char c) { return !std::isalnum(c); }, '_');

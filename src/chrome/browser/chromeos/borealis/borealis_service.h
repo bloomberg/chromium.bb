@@ -11,9 +11,13 @@ class Profile;
 
 namespace borealis {
 
-class BorealisFeatures;
-
 class BorealisAppLauncher;
+class BorealisAppUninstaller;
+class BorealisContextManager;
+class BorealisFeatures;
+class BorealisInstaller;
+class BorealisShutdownMonitor;
+class BorealisWindowManager;
 
 // A common location for all the interdependant components of borealis.
 class BorealisService : public KeyedService {
@@ -23,9 +27,13 @@ class BorealisService : public KeyedService {
 
   ~BorealisService() override = default;
 
-  virtual BorealisFeatures& Features() = 0;
-
   virtual BorealisAppLauncher& AppLauncher() = 0;
+  virtual BorealisAppUninstaller& AppUninstaller() = 0;
+  virtual BorealisContextManager& ContextManager() = 0;
+  virtual BorealisFeatures& Features() = 0;
+  virtual BorealisInstaller& Installer() = 0;
+  virtual BorealisShutdownMonitor& ShutdownMonitor() = 0;
+  virtual BorealisWindowManager& WindowManager() = 0;
 };
 
 }  // namespace borealis

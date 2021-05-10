@@ -7,14 +7,13 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_running_on_chromeos.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,9 +31,6 @@ const char kDiskImageImportCommandUuid[] = "3922722bd7394acf85bf4d5a330d4a47";
 const char kPluginVmLicenseKey[] = "LICENSE_KEY";
 const char kDomain[] = "example.com";
 const char kDeviceId[] = "device_id";
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
 // For adding a fake shelf item without requiring opening an actual window.
 class FakeShelfItemDelegate : public ash::ShelfItemDelegate {
@@ -88,6 +84,40 @@ void SetupConciergeForSuccessfulDiskImageImport(
       disk_image_status_response);
 }
 
+void SetupConciergeForFailedDiskImageImport(
+    chromeos::FakeConciergeClient* fake_concierge_client_,
+    vm_tools::concierge::DiskImageStatus status) {
+  // Set immediate response for the ImportDiskImage call: will be that "image is
+  // in progress":
+  vm_tools::concierge::ImportDiskImageResponse import_disk_image_response;
+  import_disk_image_response.set_status(
+      vm_tools::concierge::DISK_STATUS_IN_PROGRESS);
+  import_disk_image_response.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_import_disk_image_response(
+      import_disk_image_response);
+
+  // Set a series of signals: one at 50% (in progress) and one at 75%
+  // (failed):
+  std::vector<vm_tools::concierge::DiskImageStatusResponse> signals;
+  vm_tools::concierge::DiskImageStatusResponse signal1;
+  signal1.set_status(vm_tools::concierge::DISK_STATUS_IN_PROGRESS);
+  signal1.set_progress(50);
+  signal1.set_command_uuid(kDiskImageImportCommandUuid);
+  vm_tools::concierge::DiskImageStatusResponse signal2;
+  signal2.set_status(status);
+  signal2.set_progress(75);
+  signal2.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_disk_image_status_signals({signal1, signal2});
+
+  // Finally, set a failure response for any eventual final call to
+  // DiskImageStatus:
+  vm_tools::concierge::DiskImageStatusResponse disk_image_status_response;
+  disk_image_status_response.set_status(status);
+  disk_image_status_response.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_disk_image_status_response(
+      disk_image_status_response);
+}
+
 void SetupConciergeForCancelDiskImageOperation(
     chromeos::FakeConciergeClient* fake_concierge_client_,
     bool success) {
@@ -124,9 +154,8 @@ void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
       account_id, true, user_manager::USER_TYPE_REGULAR);
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
       std::move(mock_user_manager));
-  fake_release_ =
-      std::make_unique<chromeos::ScopedSetRunningOnChromeOSForTesting>(
-          kLsbRelease, base::Time::Now());
+  running_on_chromeos_ =
+      std::make_unique<base::test::ScopedRunningOnChromeOS>();
 }
 
 void PluginVmTestHelper::EnablePluginVmFeature() {

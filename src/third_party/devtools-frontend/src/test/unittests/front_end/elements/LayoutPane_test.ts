@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../../../../front_end/common/common.js';
 import type * as ElementsModule from '../../../../front_end/elements/elements.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
-import {SettingType} from '../../../../front_end/elements/LayoutPaneUtils.js';
 import {assertElement, assertShadowRoot, getEventPromise, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
 const {assert} = chai;
@@ -18,9 +18,12 @@ describeWithEnvironment('LayoutPane', async () => {
   function queryLabels(component: HTMLElement, selector: string) {
     assertShadowRoot(component.shadowRoot);
     return Array.from(component.shadowRoot.querySelectorAll(selector)).map(label => {
+      const input = label.querySelector('[data-input]');
+      assertElement(input, HTMLElement);
+
       return {
         label: label.getAttribute('title'),
-        input: label.querySelector('[data-input]')!.tagName,
+        input: input.tagName,
       };
     });
   }
@@ -34,7 +37,7 @@ describeWithEnvironment('LayoutPane', async () => {
       settings: [
         {
           name: 'booleanSetting',
-          type: SettingType.BOOLEAN,
+          type: Common.Settings.SettingType.BOOLEAN,
           value: false,
           title: 'Boolean setting title',
           options: [
@@ -50,7 +53,7 @@ describeWithEnvironment('LayoutPane', async () => {
         },
         {
           name: 'enumSetting',
-          type: SettingType.ENUM,
+          type: Common.Settings.SettingType.ENUM,
           value: 'both',
           title: 'Enum setting title',
           options: [
@@ -82,7 +85,7 @@ describeWithEnvironment('LayoutPane', async () => {
       settings: [
         {
           name: 'booleanSetting',
-          type: SettingType.BOOLEAN,
+          type: Common.Settings.SettingType.BOOLEAN,
           value: false,
           title: 'Boolean setting title',
           options: [
@@ -118,6 +121,57 @@ describeWithEnvironment('LayoutPane', async () => {
 
     component.data = {
       gridElements: [
+        {
+          id: 1,
+          color: 'red',
+          name: 'div',
+          domId: 'elementId',
+          enabled: false,
+          reveal: () => {},
+          toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
+        },
+        {
+          id: 2,
+          color: 'blue',
+          name: 'span',
+          domClasses: ['class1', 'class2'],
+          enabled: false,
+          reveal: () => {},
+          toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
+        },
+        {
+          id: 3,
+          color: 'green',
+          name: 'div',
+          enabled: false,
+          reveal: () => {},
+          toggle: () => {},
+          setColor: () => {},
+          highlight: () => {},
+          hideHighlight: () => {},
+        },
+      ],
+      settings: [],
+    };
+
+    assertShadowRoot(component.shadowRoot);
+
+    assert.strictEqual(queryLabels(component, '[data-element]').length, 3);
+  });
+
+  it('renders flex elements', async () => {
+    const component = new Elements.LayoutPane.LayoutPane();
+    renderElementIntoDOM(component);
+
+    component.data = {
+      gridElements: [],
+      flexContainerElements: [
         {
           id: 1,
           color: 'red',
@@ -222,5 +276,24 @@ describeWithEnvironment('LayoutPane', async () => {
     assertElement(button, HTMLButtonElement);
     button.click();
     assert.strictEqual(called, 1);
+  });
+
+  it('expands/collapses <details> using ArrowLeft/ArrowRight keys', async () => {
+    const component = new Elements.LayoutPane.LayoutPane();
+    component.data = {
+      gridElements: [],
+      settings: [],
+    };
+    renderElementIntoDOM(component);
+    assertShadowRoot(component.shadowRoot);
+    const details = component.shadowRoot.querySelector('details');
+    assertElement(details, HTMLDetailsElement);
+    const summary = details.querySelector('summary');
+    assertElement(summary, HTMLElement);
+    assert(details.open, 'The first details were not expanded by default');
+    summary.dispatchEvent(new KeyboardEvent('keydown', {bubbles: true, cancelable: true, key: 'ArrowLeft'}));
+    assert(!details.open, 'The details were not collapsed after sending ArrowLeft');
+    summary.dispatchEvent(new KeyboardEvent('keydown', {bubbles: true, cancelable: true, key: 'ArrowRight'}));
+    assert(details.open, 'The details were not expanded after sending ArrowRight');
   });
 });

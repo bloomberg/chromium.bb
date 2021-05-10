@@ -51,7 +51,8 @@ class HoldingSpaceThumbnailLoader {
   // Returns a weak pointer to this instance.
   base::WeakPtr<HoldingSpaceThumbnailLoader> GetWeakPtr();
 
-  using ImageCallback = base::OnceCallback<void(const SkBitmap* bitmap)>;
+  using ImageCallback =
+      base::OnceCallback<void(const SkBitmap* bitmap, base::File::Error error)>;
   // Starts a request for a thumbnail. `callback` called with the generated
   // bitmap. On error, the bitmap will be null.
   void Load(const ThumbnailRequest& request, ImageCallback callback);
@@ -81,7 +82,8 @@ class HoldingSpaceThumbnailLoader {
   // originally `requested_size`, the bitmap will be cropped.
   void RespondToRequest(const base::UnguessableToken& request_id,
                         const gfx::Size& requested_size,
-                        const SkBitmap* bitmap);
+                        const SkBitmap* bitmap,
+                        base::File::Error error);
 
   Profile* const profile_;
 

@@ -6,7 +6,131 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Added
+### Added
+ - A full build of CanvasKit is now in /bin/full.
+ - `CanvasKit.rt_effect` to test if the RuntimeEffect code was compiled in.
+
+### Breaking
+ - The `ShapedText` type has been removed. Clients who want ShapedText should use the
+   Paragraph APIs.
+
+### Removed
+ - `Font.measureText`, which had been previously deprecated. Clients should use either
+   Paragraph APIs or `Font.getGlyphWidths` instead (the latter does no shaping).
+ - `Font.getWidths`, which had been previously deprecated. Clients should use `Font.getGlyphWidths`.
+
+### Type Changes (index.d.ts)
+ - Documentation added for `managed_skottie`, `particles`, and `skottie` feature constants.
+
+## [0.24.0] - 2021-02-18
+
+### Added
+ - The Skottie factory (MakeManagedAnimation) now accepts an optional logger object.
+
+### Breaking
+ - `CanvasKit.getDataBytes` has been removed, as has the Data type. The 2 APIS that returned
+   Data now return Uint8Array containing the bytes directly. These are `Image.encodeToData`
+   (now named `Image.encodeToBytes`) and `SkPicture.serialize`. These APIs return null if
+   the encoding or serialization failed.
+
+### Type Changes (index.d.ts)
+ - `Image.encodeToDataWithFormat` was incorrectly documented as its own thing.
+
+## [0.23.0] - 2021-02-04
+
+### Added
+ - Constants for the shadow flags. Of note, some of these values can be used on previous releases.
+ - `getShadowLocalBounds()` to estimate the bounds of the shadows drawn by `Canvas.drawShadow`.
+ - compile.sh now takes "no_matrix", which will omit the helper JS to deal with 3x3, 4x4 and
+   SkColorMatrix (in case clients have logic to deal with that themselves).
+ - `CanvasKit.RuntimeEffect.Make` now takes an optional callback function that will be called
+   with any compilation error.
+ - `CanvasKit.RuntimeEffect` now exposes uniforms. The number, dimensions, and name of each
+   uniform can be queried, using `RuntimeEffect.getUniformCount`, `RuntimeEffect.getUniform`, and
+   `RuntimeEffect.getUniformName`. The total number of floats across all uniforms (that must be
+   passed to `RuntimeEffect.makeShader`) can be queried with `RuntimeEffect.getUniformFloatCount`.
+
+### Breaking
+ - `MakeImprovedNoise` is removed.
+ - Particles now use a single code string containing both Effect and Particle code. Uniform APIs are
+   now shared between Effect and Particle programs, and are no longer prefixed with `Effect` or
+   `Particle`. For example, instead of `ParticleEffect.getEffectUniform` and
+   `ParticleEffect.getParticleUniform`, there is now just: `ParticleEffect.getUniform`.
+
+### Changed
+ - `Path.getPoint()` and `SkottieAnimation.size()` now return a TypedArray instead of a normal
+   array. Additionally, they take an optional parameter to allow the result to be copied into
+   that provided TypedArray instead of a new one being allocated.
+ - APIs that passed in points should have less overhead (and now can accept a TypedArray).
+ - `Canvas.drawShadow()` now accepts zPlaneParams and lightPos as Malloc'ed and regular
+   Float32Arrays. `getShadowLocalBounds()` does as well.
+ - `ContourMeasure.getPosTan` returns a Float32Array instead of a normal array. Additionally,
+   this method takes an optional parameter to allow the result to be copied into
+   that provided Float32Array instead of a new one being allocated.
+
+### Fixed
+ - Improper error returned when a WebGL context could not be used.
+ - 4x4 matrices are "downsampled" properly if necessary to 3x3 matrices by removing the third
+   column and the third row.
+ - `SkottieAnimation.size()` was incorrectly returning an object. It now returns a TypedArray of
+   length 2 (w, h).
+
+### Deprecated
+ - `Canvas.drawImageRect`, `Canvas.drawImage`, `Canvas.drawAtlas`,
+   These rely on the Paint's FilterQuality, which is going away. Pass sampling options explicitly.
+
+### Removed
+ - `PathMeasure`, which was deprecated and replaced with `ContourMeasure`.
+
+## [0.22.0] - 2020-12-17
+
+### Added
+ - `Canvas.drawImageCubic`, `Canvas.drawImageOptions`, `Canvas.drawImageRectCubic`,
+   `Canvas.drawImageRectOptions` to replace functionality that previously required FilterQuality.
+ - A copy of this changelog is published in NPM releases for easier discovery.
+
+### Breaking
+ - `Canvas.drawImageNine` now takes a required FilterMode (the Paint still is optional).
+
+## [0.21.0] - 2020-12-16
+
+### Added
+ - `getImageInfo()` and `getColorSpace()` to the `Image` type.
+ - `CanvasKit.deleteContext()` for deleting WebGL contexts when done with them, resizing, etc.
+ - `Image.makeCopyWithDefaultMipmaps()` for use with `Image.makeShaderOptions`; necessary if
+   choosing a `MipmapMode` that is not `None`.
+
+### Breaking
+ - `Path.addPoly()` no longer accepts a 2d array of points, but a flattened 1d array.
+ - `MakeVertices()` no longer accepts 2d arrays of points or texture coordinates, but
+   flattened 1d arrays in both places.
+ - `Paint.setFilterQuality`, `Paint.getFilterQuality`, `Image.makeShader` have been removed.
+   The new way to specify interpolation settings is with the newly added `Image.makeShader*`
+   methods. `Image.makeShaderCubic` is a replacement for high quality; `Image.makeShaderOptions`
+   is for medium/low.
+
+### Changed
+ - `MakeImage` is now documented in the Typescript types (index.d.ts). The parameters have been
+   streamlined to align with other, similar APIs.
+ - `MakeAnimatedImageFromEncoded` respects Exif metadata. `MakeImageFromEncoded` already did so
+   (and continues to do so).
+ - The Canvas2D emulation layer always uses high quality image smoothing (this drastically
+   simplifies the underlying code).
+ - We now compile CanvasKit with emsdk 2.0.10 when testing and deploying to npm.
+ - Instead of shipping a "core" build to npm, we ship a "profiling" build, which is the same as
+   the main build, just with unmangled function calls and other debugging info useful for
+   determining where runtime is spent.
+
+### Fixed
+ - `Canvas.drawPoints` correctly takes a flattened Array or TypedArray of points (as the
+   documentation says), not a 2D array.
+
+### Type Changes (index.d.ts)
+ - Documented additional type for InputFlexibleColorArray.
+
+## [0.20.0] - 2020-11-12
+
+### Added
  - `MakeFractalNoise`, `MakeImprovedNoise`, and `MakeTurbulence` have been added to
    `CanvasKit.Shader`.
  - `MakeRasterDirectSurface` for giving the user direct access to drawn pixels.
@@ -31,16 +155,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - `CanvasKit.Shader.Blend`, `...Color`, and `...Lerp` have been renamed to
    `CanvasKit.Shader.MakeBlend`, `...MakeColor` and `...MakeLerp` to align with naming conventions.
    The old names will be removed in an upcoming release.
- - `CanvasKit.MakeSurface` no longer uses a RasterDirect surface internally. This means
-   creating Images from this raster surface should be faster.
- - `CanvasKit.MakeSurface` is Premul instead of Unpremul, which should be more performant when
-    drawing.
 
 ### Removed
  - `CanvasKit.MakePathFromCmds`; Was deprecated in favor of `CanvasKit.Path.MakeFromCmds`.
  - `new CanvasKit.Path(path)` in favor of existing `path.copy()`.
  - Unused internal APIs (_getRasterN32PremulSurface, Drawable)
- - `measureText` from the CanvasContext2D emulation layer du to deprecation of measureText.
+ - `measureText` from the CanvasContext2D emulation layer due to deprecation of measureText.
 
 ### Deprecated
  - `Font.getWidths` in favor of `Font.getGlyphIDs` and `Font.getGlyphWidths`.

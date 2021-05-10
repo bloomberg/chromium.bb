@@ -7,12 +7,25 @@
 
 #include "src/sksl/SkSLPool.h"
 
+#include "src/sksl/SkSLDefines.h"
+
 #define VLOG(...) // printf(__VA_ARGS__)
 
 namespace SkSL {
 
-#if defined(SK_BUILD_FOR_IOS) && \
-        (!defined(__IPHONE_9_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0)
+#if SKSL_USE_THREAD_LOCAL
+
+static thread_local MemoryPool* sMemPool = nullptr;
+
+static MemoryPool* get_thread_local_memory_pool() {
+    return sMemPool;
+}
+
+static void set_thread_local_memory_pool(MemoryPool* memPool) {
+    sMemPool = memPool;
+}
+
+#else
 
 #include <pthread.h>
 
@@ -36,19 +49,7 @@ static void set_thread_local_memory_pool(MemoryPool* poolData) {
     pthread_setspecific(get_pthread_key(), poolData);
 }
 
-#else
-
-static thread_local MemoryPool* sMemPool = nullptr;
-
-static MemoryPool* get_thread_local_memory_pool() {
-    return sMemPool;
-}
-
-static void set_thread_local_memory_pool(MemoryPool* memPool) {
-    sMemPool = memPool;
-}
-
-#endif
+#endif // SKSL_USE_THREAD_LOCAL
 
 Pool::~Pool() {
     if (get_thread_local_memory_pool() == fMemPool.get()) {
@@ -83,33 +84,33 @@ void Pool::detachFromThread() {
     set_thread_local_memory_pool(nullptr);
 }
 
-void* Pool::AllocIRNode(size_t size) {
+void* Pool::AllocMemory(size_t size) {
     // Is a pool attached?
     MemoryPool* memPool = get_thread_local_memory_pool();
     if (memPool) {
-        void* node = memPool->allocate(size);
-        VLOG("ALLOC  Pool:0x%016llX  0x%016llX\n", (uint64_t)memPool, (uint64_t)node);
-        return node;
+        void* ptr = memPool->allocate(size);
+        VLOG("ALLOC  Pool:0x%016llX  0x%016llX\n", (uint64_t)memPool, (uint64_t)ptr);
+        return ptr;
     }
 
-    // There's no pool attached. Allocate nodes using the system allocator.
-    void* node = ::operator new(size);
-    VLOG("ALLOC  Pool:__________________  0x%016llX\n", (uint64_t)node);
-    return node;
+    // There's no pool attached. Allocate memory using the system allocator.
+    void* ptr = ::operator new(size);
+    VLOG("ALLOC  Pool:__________________  0x%016llX\n", (uint64_t)ptr);
+    return ptr;
 }
 
-void Pool::FreeIRNode(void* node) {
+void Pool::FreeMemory(void* ptr) {
     // Is a pool attached?
     MemoryPool* memPool = get_thread_local_memory_pool();
     if (memPool) {
-        VLOG("FREE   Pool:0x%016llX  0x%016llX\n", (uint64_t)memPool, (uint64_t)node);
-        memPool->release(node);
+        VLOG("FREE   Pool:0x%016llX  0x%016llX\n", (uint64_t)memPool, (uint64_t)ptr);
+        memPool->release(ptr);
         return;
     }
 
     // There's no pool attached. Free it using the system allocator.
-    VLOG("FREE   Pool:__________________  0x%016llX\n", (uint64_t)node);
-    ::operator delete(node);
+    VLOG("FREE   Pool:__________________  0x%016llX\n", (uint64_t)ptr);
+    ::operator delete(ptr);
 }
 
 }  // namespace SkSL

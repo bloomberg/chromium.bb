@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=EXTRA ITEM 2
-Exec=touch xdgtestdata-dummy.tmp
-StartupNotify=false

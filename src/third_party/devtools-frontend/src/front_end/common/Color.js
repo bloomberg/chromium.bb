@@ -29,14 +29,11 @@
 
 import * as Platform from '../platform/platform.js';
 
-import {blendColors, luminance, rgbaToHsla} from './ColorUtils.js';
+import {blendColors, contrastRatioAPCA, desiredLuminanceAPCA, luminance, luminanceAPCA, rgbaToHsla} from './ColorUtils.js';
 
 /** @type {?Map<string, string>} */
 let _rgbaToNickname;
 
-/**
- * @unrestricted
- */
 export class Color {
   /**
    * @param {!Array.<number>} rgba
@@ -47,7 +44,7 @@ export class Color {
     this._hsla = undefined;
     this._rgba = rgba;
     this._originalText = originalText || null;
-    this._originalTextIsValid = !!this._originalText;
+    this._originalTextIsValid = Boolean(this._originalText);
     this._format = format;
     if (typeof this._rgba[3] === 'undefined') {
       this._rgba[3] = 1;
@@ -393,19 +390,16 @@ export class Color {
    * @param {!Array<number>} bgRGBA
    * @param {number} index - the index of the color component
    * @param {number} desiredLuminance
+   * @param {function(!Array<number>):number} candidateLuminance
    * @return {?number} The new value for the modified component, or `null` if
    *     no suitable value exists.
    */
-  static approachColorValue(candidateHSVA, bgRGBA, index, desiredLuminance) {
-    const candidateLuminance = () => {
-      return luminance(blendColors(Color.fromHSVA(candidateHSVA).rgba(), bgRGBA));
-    };
-
+  static approachColorValue(candidateHSVA, bgRGBA, index, desiredLuminance, candidateLuminance) {
     const epsilon = 0.0002;
 
     let x = candidateHSVA[index];
     let multiplier = 1;
-    let dLuminance = candidateLuminance() - desiredLuminance;
+    let dLuminance = candidateLuminance(candidateHSVA) - desiredLuminance;
     let previousSign = Math.sign(dLuminance);
 
     for (let guard = 100; guard; guard--) {
@@ -431,11 +425,9 @@ export class Color {
 
       candidateHSVA[index] = x;
 
-      dLuminance = candidateLuminance() - desiredLuminance;
+      dLuminance = candidateLuminance(candidateHSVA) - desiredLuminance;
     }
 
-    // The loop should always converge or go out of bounds on its own.
-    console.error('Loop exited unexpectedly');
     return null;
   }
 
@@ -450,12 +442,15 @@ export class Color {
     const candidateHSVA = fgColor.hsva();
     const bgRGBA = bgColor.rgba();
 
-    const candidateLuminance = () => {
+    /**
+     * @param {!Array<number>} candidateHSVA
+     */
+    const candidateLuminance = candidateHSVA => {
       return luminance(blendColors(Color.fromHSVA(candidateHSVA).rgba(), bgRGBA));
     };
 
     const bgLuminance = luminance(bgColor.rgba());
-    const fgLuminance = candidateLuminance();
+    const fgLuminance = candidateLuminance(candidateHSVA);
     const fgIsLighter = fgLuminance > bgLuminance;
 
     const desiredLuminance = Color.desiredLuminance(bgLuminance, requiredContrast, fgIsLighter);
@@ -463,13 +458,59 @@ export class Color {
     const saturationComponentIndex = 1;
     const valueComponentIndex = 2;
 
-    if (Color.approachColorValue(candidateHSVA, bgRGBA, valueComponentIndex, desiredLuminance)) {
+    if (Color.approachColorValue(candidateHSVA, bgRGBA, valueComponentIndex, desiredLuminance, candidateLuminance)) {
       return Color.fromHSVA(candidateHSVA);
     }
 
     candidateHSVA[valueComponentIndex] = 1;
-    if (Color.approachColorValue(candidateHSVA, bgRGBA, saturationComponentIndex, desiredLuminance)) {
+    if (Color.approachColorValue(
+            candidateHSVA, bgRGBA, saturationComponentIndex, desiredLuminance, candidateLuminance)) {
       return Color.fromHSVA(candidateHSVA);
+    }
+
+    return null;
+  }
+
+  /**
+   *
+   * @param {!Color} fgColor
+   * @param {!Color} bgColor
+   * @param {number} requiredContrast
+   * @return {?Color}
+   */
+  static findFgColorForContrastAPCA(fgColor, bgColor, requiredContrast) {
+    const candidateHSVA = fgColor.hsva();
+    const bgRGBA = bgColor.rgba();
+
+    /**
+     * @param {!Array<number>} candidateHSVA
+     */
+    const candidateLuminance = candidateHSVA => {
+      return luminanceAPCA(Color.fromHSVA(candidateHSVA).rgba());
+    };
+
+    const bgLuminance = luminanceAPCA(bgColor.rgba());
+    const fgLuminance = candidateLuminance(candidateHSVA);
+    const fgIsLighter = fgLuminance >= bgLuminance;
+    const desiredLuminance = desiredLuminanceAPCA(bgLuminance, requiredContrast, fgIsLighter);
+
+    const saturationComponentIndex = 1;
+    const valueComponentIndex = 2;
+
+    if (Color.approachColorValue(candidateHSVA, bgRGBA, valueComponentIndex, desiredLuminance, candidateLuminance)) {
+      const candidate = Color.fromHSVA(candidateHSVA);
+      if (Math.abs(contrastRatioAPCA(bgColor.rgba(), candidate.rgba())) >= requiredContrast) {
+        return candidate;
+      }
+    }
+
+    candidateHSVA[valueComponentIndex] = 1;
+    if (Color.approachColorValue(
+            candidateHSVA, bgRGBA, saturationComponentIndex, desiredLuminance, candidateLuminance)) {
+      const candidate = Color.fromHSVA(candidateHSVA);
+      if (Math.abs(contrastRatioAPCA(bgColor.rgba(), candidate.rgba())) >= requiredContrast) {
+        return candidate;
+      }
     }
 
     return null;
@@ -928,15 +969,11 @@ export const PageHighlight = {
   Shape: Color.fromRGBA([96, 82, 177, 0.8]),
   ShapeMargin: Color.fromRGBA([96, 82, 127, .6]),
   CssGrid: Color.fromRGBA([0x4b, 0, 0x82, 1]),
-  GridRowLine: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, 1]),
-  GridColumnLine: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, 1]),
+  LayoutLine: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, 1]),
   GridBorder: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, 1]),
-  GridRowGapBackground: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .3]),
-  GridColumnGapBackground: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .3]),
-  GridRowGapHatch: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .8]),
-  GridColumnGapHatch: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .8]),
+  GapBackground: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .3]),
+  GapHatch: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, .8]),
   GridAreaBorder: Color.fromRGBA([26, 115, 232, 1]),
-  FlexContainerBorder: Color.fromRGBA([...LAYOUT_LINES_HIGHLIGHT_COLOR, 1]),
 };
 
 export const SourceOrderHighlight = {
@@ -986,7 +1023,7 @@ export class Generator {
    * @return {string}
    */
   _generateColorForID(id) {
-    const hash = String.hashCode(id);
+    const hash = Platform.StringUtilities.hashCode(id);
     const h = this._indexToValueInSpace(hash, this._hueSpace);
     const s = this._indexToValueInSpace(hash >> 8, this._satSpace);
     const l = this._indexToValueInSpace(hash >> 16, this._lightnessSpace);

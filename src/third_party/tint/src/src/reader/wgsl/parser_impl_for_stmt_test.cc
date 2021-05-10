@@ -15,6 +15,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
+#include "src/ast/block_statement.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -26,19 +27,19 @@ namespace {
 class ForStmtTest : public ParserImplTest {
  public:
   void TestForLoop(std::string loop_str, std::string for_str) {
-    auto* p_loop = parser(loop_str);
+    auto p_loop = parser(loop_str);
     auto e_loop = p_loop->expect_statements();
     EXPECT_FALSE(e_loop.errored);
     EXPECT_FALSE(p_loop->has_error()) << p_loop->error();
-    ASSERT_NE(e_loop.value, nullptr);
 
-    auto* p_for = parser(for_str);
+    auto p_for = parser(for_str);
     auto e_for = p_for->expect_statements();
     EXPECT_FALSE(e_for.errored);
     EXPECT_FALSE(p_for->has_error()) << p_for->error();
-    ASSERT_NE(e_for.value, nullptr);
 
-    EXPECT_EQ(e_loop->str(), e_for->str());
+    std::string loop = ast::BlockStatement({}, e_loop.value).str(Sem());
+    std::string for_ = ast::BlockStatement({}, e_for.value).str(Sem());
+    EXPECT_EQ(loop, for_);
   }
 };
 
@@ -134,7 +135,7 @@ TEST_F(ForStmtTest, All) {
      })";
 
   std::string loop_str =
-      R"({ # Introduce new scope for loop variable i
+      R"({ // Introduce new scope for loop variable i
       var i : i32 = 0;
       loop {
         if (!(i < 4)) {
@@ -158,7 +159,7 @@ TEST_F(ForStmtTest, All) {
 class ForStmtErrorTest : public ParserImplTest {
  public:
   void TestForWithError(std::string for_str, std::string error_str) {
-    auto* p_for = parser(for_str);
+    auto p_for = parser(for_str);
     auto e_for = p_for->for_stmt();
 
     EXPECT_FALSE(e_for.matched);

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 interface StringConstructor {
   sprintf(format: string, ...var_arg: any): string;
-  hashCode(id: string): number;
-  naturalOrderComparator(a: string, b: string): number;
 }
 
 interface Window {
@@ -15,59 +13,16 @@ declare class DOM {
   constructor(doc: Document);
 }
 
-interface Array<T> {
-  peekLast(): T | undefined;
-  intersectOrdered(array: T[], comparator: (a: T, b: T) => number): T[];
-  mergeOrdered(array: T[], comparator: (a: T, b: T) => number): T[];
-  lowerBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
-  upperBound<S>(object: S, comparator?: {(a: S, b: T): number}, left?: number, right?: number): number;
-  sortRange<T>(
-      comparator: (a: T, b: T) => number, leftBound: number, rightBound: number, sortWindowLeft: number,
-      sortWindowRight: number): T[];
-}
-
-interface Uint8Array {
-  upperBound(value: number, comparator?: {(a: number, b: number): number}, left?: number, right?: number): number;
-}
-
-interface Uint32Array {
-  upperBound(value: number, comparator?: {(a: number, b: number): number}, left?: number, right?: number): number;
-}
-
-// Type alias for the Closure-supported ITemplateArray which is equivalent
-// to TemplateStringsArray in TypeScript land
-type ITemplateArray = TemplateStringsArray
-
-// Type alias for the type that has been removed in Chrome 54.
-type FileError = DOMError;
-
-// Type alias for DOMMatrix, formerly known as WebKitCSSMatrix.
-type CSSMatrix = DOMMatrix;
-
-interface String {
-  compareTo(other: string): number;
-  trimEndWithMaxLength(maxLength: number): string;
-  escapeForRegExp(): string;
-  trimMiddle(maxLength: number): string;
-}
-
 interface RegExp {
   __fromRegExpQuery: boolean;
 }
 
 interface NumberConstructor {
   withThousandsSeparator(num: number): string;
-  toFixedIfFloating(value: string): string;
   secondsToString(seconds: number, higherResolution?: boolean): string;
   millisToString(ms: number, higherResolution?: boolean): string;
   preciseMillisToString(ms: number, precision?: number): string;
 }
-
-interface Int32Array {
-  lowerBound(object: number, comparator?: {(a: number, b: number): number}, left?: number, right?: number): number;
-}
-
-declare let ls: (template: ITemplateArray|string, ...args: any[]) => string;
 
 declare class AnchorBox {
   x: number;
@@ -134,6 +89,7 @@ interface Document {
 
 interface HTMLElement {
   createChild(tagName: string, className?: string, content?: string): HTMLElement;
+  totalOffset(): {left: number, top: number};
 }
 
 interface Element {
@@ -178,12 +134,10 @@ interface Node {
 }
 
 declare function base64ToSize(content: string|null): number;
-declare function isEnterKey(event: Event): boolean;
 declare function isEnterOrSpaceKey(event: Event): boolean;
 declare function isEscKey(event: Event): boolean;
 declare function createPlainTextSearchRegex(query: string, flags?: string): RegExp;
 declare function onInvokeElement(element: Element, callback: (event: Event) => void): void;
-declare function setImmediate(callback: (...args: any) => any): number;
 
 interface ServicePort {
   setHandlers(messageHandler: (arg: string) => void, closeHandler: () => void): void;

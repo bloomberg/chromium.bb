@@ -12,12 +12,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_permissions_util.h"
+#include "components/optimization_guide/core/url_pattern_with_wildcards.h"
 #include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
-#include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -25,6 +24,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
 #include "chrome/browser/performance_hints/android/jni_headers/PerformanceHintsObserver_jni.h"
+#include "url/android/gurl_android.h"
 #endif  // OS_ANDROID
 
 using optimization_guide::OptimizationGuideDecision;
@@ -87,11 +87,11 @@ const char* ToString(HintLookupSource source) {
 static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& java_web_contents,
-    const base::android::JavaParamRef<jstring>& url) {
+    const base::android::JavaParamRef<jobject>& url) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   return PerformanceHintsObserver::PerformanceClassForURL(
-      web_contents, GURL(base::android::ConvertJavaStringToUTF8(url)),
+      web_contents, *url::GURLAndroid::ToNativeGURL(env, url),
       /*record_metrics=*/false);
 }
 
@@ -104,9 +104,19 @@ JNI_PerformanceHintsObserver_IsContextMenuPerformanceInfoEnabled(JNIEnv* env) {
 PerformanceHintsObserver::PerformanceHintsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  // Given that we throw things away if the user is unable to fetch from
+  // the remote Optimization Guide, do not instantiate anything else since
+  // we will throw everything away anyway. Although FAST_HOST_HINTS and some
+  // hints that were fetched for the original profile are available in
+  // incognito, these do not provide sufficient coverage.
+  if (profile->IsOffTheRecord())
+    return;
+
   optimization_guide_decider_ =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
   std::vector<optimization_guide::proto::OptimizationType> opts;
   opts.push_back(optimization_guide::proto::PERFORMANCE_HINTS);
   if (features::AreFastHostHintsEnabled()) {
@@ -138,7 +148,9 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile || !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile)) {
+  if (!profile ||
+      !optimization_guide::IsUserPermittedToFetchFromRemoteOptimizationGuide(
+          profile->IsOffTheRecord(), profile->GetPrefs())) {
     // We can't get performance hints if OptimizationGuide can't fetch them.
     return PerformanceClass::PERFORMANCE_UNKNOWN;
   }

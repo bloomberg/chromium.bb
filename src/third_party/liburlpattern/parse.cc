@@ -19,17 +19,15 @@ namespace liburlpattern {
 
 namespace {
 
-// The "full wildcard" regex pattern.  This regex value is treated specially
-// resulting in a kFullWildcard Part instead of a kRegex Part.
-static const char* kWildcardRegex = ".*";
-
 // Helper class that tracks the parser state.
 class State {
  public:
-  State(std::vector<Token> token_list, absl::string_view delimiter_list)
+  State(std::vector<Token> token_list, Options options)
       : token_list_(std::move(token_list)),
+        options_(std::move(options)),
         segment_wildcard_regex_(
-            absl::StrFormat("[^%s]+?", EscapeString(delimiter_list))) {}
+            absl::StrFormat("[^%s]+?", EscapeString(options_.delimiter_list))) {
+  }
 
   // Return true if there are more tokens to process.
   bool HasMoreTokens() const { return index_ < token_list_.size(); }
@@ -59,6 +57,13 @@ class State {
         absl::StrFormat("Unexpected %s at %d, expected %s",
                         TokenTypeToString(token_list_[index_].type), index_,
                         TokenTypeToString(type)));
+  }
+
+  const Token* TryConsumeModifier() {
+    const Token* result = TryConsume(TokenType::kOtherModifier);
+    if (!result)
+      result = TryConsume(TokenType::kAsterisk);
+    return result;
   }
 
   // Consume as many sequential kChar and kEscapedChar Tokens as possible
@@ -99,10 +104,10 @@ class State {
   // Add a Part for the given set of tokens.
   void AddPart(std::string prefix,
                const Token* name_token,
-               const Token* regex_token,
+               const Token* regex_or_wildcard_token,
                std::string suffix,
                const Token* modifier_token) {
-    // Convert the kModifier Token into a Modifier enum value.
+    // Convert the modifier Token into a Modifier enum value.
     Modifier modifier = Modifier::kNone;
     if (modifier_token) {
       ABSL_ASSERT(!modifier_token->value.empty());
@@ -122,38 +127,41 @@ class State {
       }
     }
 
-    // If there is no name or regex tokens then this is just a fixed string
-    // grouping; e.g. "{foo}?".  The fixed string ends up in the prefix value
-    // since it consumed the entire text of the grouping.  If the prefix value
-    // is empty then its an empty "{}" group and we return without adding any
-    // Part.
-    if (!name_token && !regex_token) {
+    // If there is no name, regex, or wildcard tokens then this is just a fixed
+    // string grouping; e.g. "{foo}?".  The fixed string ends up in the prefix
+    // value since it consumed the entire text of the grouping.  If the prefix
+    // value is empty then its an empty "{}" group and we return without adding
+    // any Part.
+    if (!name_token && !regex_or_wildcard_token) {
       ABSL_ASSERT(suffix.empty());
       if (!prefix.empty())
         part_list_.emplace_back(PartType::kFixed, std::move(prefix), modifier);
       return;
     }
 
-    // Determine the regex value.  If there is a kRegex Token, then this is
-    // explicitly set by that Token.  Otherwise a kName Token by itself gets
-    // an implicit regex value that matches through to the end of the segment.
-    // This is represented by the |segment_wildcard_regex_| value.
+    // Determine the regex value.  If there is a |kRegex| Token, then this is
+    // explicitly set by that Token.  If there is a wildcard token, then this
+    // is set to the |kFullWildcardRegex| constant.  Otherwise a kName Token by
+    // itself gets an implicit regex value that matches through to the end of
+    // the segment. This is represented by the |segment_wildcard_regex_| value.
     std::string regex_value;
-    if (regex_token)
-      regex_value = std::string(regex_token->value);
-    else
+    if (!regex_or_wildcard_token)
       regex_value = segment_wildcard_regex_;
+    else if (regex_or_wildcard_token->type == TokenType::kAsterisk)
+      regex_value = kFullWildcardRegex;
+    else
+      regex_value = std::string(regex_or_wildcard_token->value);
 
     // Next determine the type of the Part.  This depends on the regex value
     // since we give certain values special treatment with their own type.
     // A |segment_wildcard_regex_| is mapped to the kSegmentWildcard type.  A
-    // |kWildcardRegex| is mapped to the kFullWildcard type.  Otherwise
+    // |kFullWildcardRegex| is mapped to the kFullWildcard type.  Otherwise
     // the Part gets the kRegex type.
     PartType type = PartType::kRegex;
     if (regex_value == segment_wildcard_regex_) {
       type = PartType::kSegmentWildcard;
       regex_value = "";
-    } else if (regex_value == kWildcardRegex) {
+    } else if (regex_value == kFullWildcardRegex) {
       type = PartType::kFullWildcard;
       regex_value = "";
     }
@@ -164,7 +172,7 @@ class State {
     std::string name;
     if (name_token)
       name = std::string(name_token->value);
-    else if (regex_token)
+    else if (regex_or_wildcard_token)
       name = GenerateKey();
 
     // Finally add the part to the list.
@@ -173,7 +181,10 @@ class State {
                             modifier);
   }
 
-  Pattern TakeAsPattern() { return Pattern(std::move(part_list_)); }
+  Pattern TakeAsPattern() {
+    return Pattern(std::move(part_list_), std::move(options_),
+                   std::move(segment_wildcard_regex_));
+  }
 
  private:
   // Generate a numeric key string to be used for groups that do not
@@ -182,6 +193,10 @@ class State {
 
   // The input list of Token objects to process.
   const std::vector<Token> token_list_;
+
+  // The set of options used to parse and construct this Pattern.  This
+  // controls the behavior of things like kSegmentWildcard parts, etc.
+  Options options_;
 
   // The special regex value corresponding to the default regex value
   // given to a lone kName Token.  This is a variable since its value
@@ -206,13 +221,12 @@ class State {
 }  // namespace
 
 absl::StatusOr<Pattern> Parse(absl::string_view pattern,
-                              absl::string_view delimiter_list,
-                              absl::string_view prefix_list) {
+                              const Options& options) {
   auto result = Tokenize(pattern);
   if (!result.ok())
     return result.status();
 
-  State state(std::move(result.value()), delimiter_list);
+  State state(std::move(result.value()), options);
 
   while (state.HasMoreTokens()) {
     // Look for the sequence: <prefix char><name><regex><modifier>
@@ -228,16 +242,25 @@ absl::StatusOr<Pattern> Parse(absl::string_view pattern,
     //  * "/(bar)?" - char, regex, and modifier tokens
     const Token* char_token = state.TryConsume(TokenType::kChar);
     const Token* name_token = state.TryConsume(TokenType::kName);
-    const Token* regex_token = state.TryConsume(TokenType::kRegex);
+    const Token* regex_or_wildcard_token = state.TryConsume(TokenType::kRegex);
 
-    // If there is a name or regex token then we need to add a Pattern Part
-    // immediately.
-    if (name_token || regex_token) {
+    // If there is no name or regex token, then we may have a wildcard `*`
+    // token in place of an unnamed regex token.  Each wildcard will be
+    // treated as being equivalent to a "(.*)" regex token.  For example:
+    //  * "/*" - equivalent to "/(.*)"
+    //  * "/*?" - equivalent to "/(.*)?"
+    if (!name_token && !regex_or_wildcard_token)
+      regex_or_wildcard_token = state.TryConsume(TokenType::kAsterisk);
+
+    // If there is a name, regex, or wildcard token then we need to add a
+    // Pattern Part immediately.
+    if (name_token || regex_or_wildcard_token) {
       // Determine if the char token is a valid prefix.  Only characters in the
       // configured prefix_list are automatically treated as prefixes.  A
       // kEscapedChar Token is never treated as a prefix.
       absl::string_view prefix = char_token ? char_token->value : "";
-      if (prefix_list.find(prefix) == std::string::npos) {
+      if (options.prefix_list.find(prefix.data(), /*pos=*/0, prefix.size()) ==
+          std::string::npos) {
         // This is not a prefix character.  Add it to the buffered characters
         // to be added as a kFixed Part later.
         state.AppendToPendingFixedValue(prefix);
@@ -249,11 +272,11 @@ absl::StatusOr<Pattern> Parse(absl::string_view pattern,
       state.MaybeAddPartFromPendingFixedValue();
 
       // kName and kRegex tokens can optionally be followed by a modifier.
-      const Token* modifier_token = state.TryConsume(TokenType::kModifier);
+      const Token* modifier_token = state.TryConsumeModifier();
 
-      // Add the Part for the name and regex tokens.
-      state.AddPart(std::string(prefix), name_token, regex_token, /*suffix=*/"",
-                    modifier_token);
+      // Add the Part for the name and regex/wildcard tokens.
+      state.AddPart(std::string(prefix), name_token, regex_or_wildcard_token,
+                    /*suffix=*/"", modifier_token);
       continue;
     }
 
@@ -288,16 +311,25 @@ absl::StatusOr<Pattern> Parse(absl::string_view pattern,
     if (open_token) {
       std::string prefix = state.ConsumeText();
       const Token* name_token = state.TryConsume(TokenType::kName);
-      const Token* regex_token = state.TryConsume(TokenType::kRegex);
+      const Token* regex_or_wildcard_token =
+          state.TryConsume(TokenType::kRegex);
+
+      // If there is no name or regex token, then we may have a wildcard `*`
+      // token in place of an unnamed regex token.  Each wildcard will be
+      // treated as being equivalent to a "(.*)" regex token.  For example,
+      // "{a*b}" is equivalent to "{a(.*)b}".
+      if (!name_token && !regex_or_wildcard_token)
+        regex_or_wildcard_token = state.TryConsume(TokenType::kAsterisk);
+
       std::string suffix = state.ConsumeText();
 
       auto result = state.MustConsume(TokenType::kClose);
       if (!result.ok())
         return result.status();
 
-      const Token* modifier_token = state.TryConsume(TokenType::kModifier);
+      const Token* modifier_token = state.TryConsumeModifier();
 
-      state.AddPart(std::move(prefix), name_token, regex_token,
+      state.AddPart(std::move(prefix), name_token, regex_or_wildcard_token,
                     std::move(suffix), modifier_token);
       continue;
     }

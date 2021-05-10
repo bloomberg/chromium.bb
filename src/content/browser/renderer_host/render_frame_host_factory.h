@@ -14,6 +14,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace content {
 
@@ -37,7 +38,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
-      const base::UnguessableToken& frame_token,
+      mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
+      const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleState lifecycle_state);
 
@@ -57,7 +59,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
-      const base::UnguessableToken& frame_token,
+      mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
+      const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleState lifecycle_state) = 0;
 

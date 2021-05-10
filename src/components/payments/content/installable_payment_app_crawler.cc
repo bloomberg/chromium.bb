@@ -4,6 +4,7 @@
 
 #include "components/payments/content/installable_payment_app_crawler.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -427,7 +428,10 @@ bool InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   // TODO(crbug.com/1058840): Move this sanity check to ManifestIconDownloader
   // after DownloadImage refactor is done.
   auto* rfh = content::RenderFrameHost::FromID(initiator_frame_routing_id_);
-  if (!rfh || !rfh->IsCurrent()) {
+  auto* web_contents = rfh && rfh->IsCurrent()
+                           ? content::WebContents::FromRenderFrameHost(rfh)
+                           : nullptr;
+  if (!web_contents) {
     log_.Warn(
         "Cannot download icons after the webpage has been closed (web app "
         "manifest \"" +
@@ -442,7 +446,6 @@ bool InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     return false;
   }
 
-  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
   gfx::NativeView native_view = web_contents->GetNativeView();
   GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       manifest_icons, IconSizeCalculator::IdealIconHeight(native_view),
@@ -463,6 +466,7 @@ bool InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       web_contents, downloader_->FindTestServerURL(best_icon_url),
       IconSizeCalculator::IdealIconHeight(native_view),
       IconSizeCalculator::MinimumIconHeight(),
+      /* maximum_icon_size_in_px= */ std::numeric_limits<int>::max(),
       base::BindOnce(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,

@@ -19,15 +19,31 @@
 #include <string>
 
 #include "src/ast/array_accessor_expression.h"
+#include "src/ast/assignment_statement.h"
+#include "src/ast/binary_expression.h"
+#include "src/ast/bitcast_expression.h"
+#include "src/ast/break_statement.h"
+#include "src/ast/call_expression.h"
+#include "src/ast/case_statement.h"
 #include "src/ast/constructor_expression.h"
+#include "src/ast/continue_statement.h"
+#include "src/ast/discard_statement.h"
+#include "src/ast/fallthrough_statement.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
+#include "src/ast/if_statement.h"
+#include "src/ast/loop_statement.h"
+#include "src/ast/member_accessor_expression.h"
+#include "src/ast/return_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/storage_texture_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/type.h"
+#include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
+#include "src/ast/unary_op_expression.h"
 #include "src/ast/variable.h"
+#include "src/diagnostic/diagnostic.h"
+#include "src/program.h"
+#include "src/type/storage_texture_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/type.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
@@ -38,27 +54,25 @@ namespace wgsl {
 class GeneratorImpl : public TextGenerator {
  public:
   /// Constructor
-  GeneratorImpl();
+  /// @param program the program
+  explicit GeneratorImpl(const Program* program);
   ~GeneratorImpl();
 
-  /// Generates the result data
-  /// @param module the module to generate
+  /// Generates the result data, optionally restricted to a single entry point
+  /// @param entry entry point to target, or nullptr
   /// @returns true on successful generation; false otherwise
-  bool Generate(const ast::Module& module);
+  bool Generate(const ast::Function* entry);
 
   /// Generates a single entry point
-  /// @param module the module to generate from
   /// @param stage the pipeline stage
   /// @param name the entry point name
   /// @returns true on successful generation; false otherwise
-  bool GenerateEntryPoint(const ast::Module& module,
-                          ast::PipelineStage stage,
-                          const std::string& name);
+  bool GenerateEntryPoint(ast::PipelineStage stage, const std::string& name);
 
   /// Handles generating a constructed type
   /// @param ty the constructed to generate
   /// @returns true if the constructed was emitted
-  bool EmitConstructedType(const ast::type::Type* ty);
+  bool EmitConstructedType(const type::Type* ty);
   /// Handles an array accessor expression
   /// @param expr the expression to emit
   /// @returns true if the array accessor was emitted
@@ -166,15 +180,15 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating type
   /// @param type the type to generate
   /// @returns true if the type is emitted
-  bool EmitType(ast::type::Type* type);
+  bool EmitType(type::Type* type);
   /// Handles generating a struct declaration
   /// @param str the struct
   /// @returns true if the struct is emitted
-  bool EmitStructType(const ast::type::StructType* str);
+  bool EmitStructType(const type::Struct* str);
   /// Handles emitting an image format
   /// @param fmt the format to generate
   /// @returns true if the format is emitted
-  bool EmitImageFormat(const ast::type::ImageFormat fmt);
+  bool EmitImageFormat(const type::ImageFormat fmt);
   /// Handles emitting a type constructor
   /// @param expr the type constructor expression
   /// @returns true if the constructor is emitted
@@ -190,7 +204,10 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating variable decorations
   /// @param var the decorated variable
   /// @returns true if the variable decoration was emitted
-  bool EmitVariableDecorations(ast::DecoratedVariable* var);
+  bool EmitVariableDecorations(const semantic::Variable* var);
+
+ private:
+  Program const* const program_;
 };
 
 }  // namespace wgsl

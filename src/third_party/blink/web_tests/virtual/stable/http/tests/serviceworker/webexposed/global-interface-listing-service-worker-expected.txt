@@ -531,7 +531,6 @@ interface FileSystemHandle
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
-    method close
     method constructor
     method seek
     method truncate
@@ -793,6 +792,12 @@ interface NavigationPreloadManager
     method enable
     method getState
     method setHeaderValue
+interface NavigatorUAData
+    attribute @@toStringTag
+    getter brands
+    getter mobile
+    method constructor
+    method getHighEntropyValues
 interface NetworkInformation : EventTarget
     attribute @@toStringTag
     getter downlink
@@ -1100,6 +1105,14 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
+interface ReadableByteStreamController
+    attribute @@toStringTag
+    getter byobRequest
+    getter desiredSize
+    method close
+    method constructor
+    method enqueue
+    method error
 interface ReadableStream
     attribute @@toStringTag
     getter locked
@@ -1109,6 +1122,26 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
+interface ReadableStreamBYOBReader
+    attribute @@toStringTag
+    getter closed
+    method cancel
+    method constructor
+    method read
+    method releaseLock
+interface ReadableStreamBYOBRequest
+    attribute @@toStringTag
+    getter view
+    method constructor
+    method respond
+    method respondWithNewView
+interface ReadableStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method close
+    method constructor
+    method enqueue
+    method error
 interface ReadableStreamDefaultReader
     attribute @@toStringTag
     getter closed
@@ -2722,8 +2755,8 @@ interface WorkerNavigator
     getter platform
     getter product
     getter storage
-    getter usb
     getter userAgent
+    getter userAgentData
     method clearAppBadge
     method constructor
     method setAppBadge

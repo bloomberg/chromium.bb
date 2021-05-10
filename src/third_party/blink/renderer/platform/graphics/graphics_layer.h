@@ -139,13 +139,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  void SetContentsLayerBackgroundColor(Color color);
-
-  // Opaque means that we know the layer contents have no alpha.
-  bool ContentsOpaque() const;
-  void SetContentsOpaque(bool);
-  void SetContentsOpaqueForText(bool);
-
   void SetHitTestable(bool);
   bool IsHitTestable() const { return hit_testable_; }
 
@@ -158,12 +151,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   // Set that the position/size of the contents (image or video).
   void SetContentsRect(const IntRect&);
 
-  // If |prevent_contents_opaque_changes| is set to true, then calls to
-  // SetContentsOpaque() will not be passed on to |contents_layer|. Use when
-  // the client wants to have control of the opaqueness of |contents_layer|
-  // independently of what outcome painting produces.
-  void SetContentsToCcLayer(scoped_refptr<cc::Layer> contents_layer,
-                            bool prevent_contents_opaque_changes);
+  void SetContentsToCcLayer(scoped_refptr<cc::Layer> contents_layer);
   bool HasContentsLayer() const { return ContentsLayer(); }
   cc::Layer* ContentsLayer() const { return contents_layer_.get(); }
 
@@ -179,8 +167,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void TrackRasterInvalidation(const DisplayItemClient&,
                                const IntRect&,
                                PaintInvalidationReason);
-
-  IntRect InterestRect();
 
   // Returns true if any layer is repainted.
   bool PaintRecursively(GraphicsContext&,
@@ -244,9 +230,9 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   friend class GraphicsLayerTest;
 
   // cc::ContentLayerClient implementation.
-  gfx::Rect PaintableRegion() final { return InterestRect(); }
+  gfx::Rect PaintableRegion() const final;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() final;
-  bool FillsBoundsCompletely() const override { return false; }
+  bool FillsBoundsCompletely() const final { return false; }
 
   void ClearPaintStateRecursively();
   void Paint(Vector<PreCompositedLayerInfo>&,
@@ -266,8 +252,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   void UpdateLayerIsDrawable();
   void UpdateContentsLayerBounds();
 
-  void SetContentsTo(scoped_refptr<cc::Layer>,
-                     bool prevent_contents_opaque_changes);
+  void SetContentsTo(scoped_refptr<cc::Layer>);
 
   RasterInvalidator& EnsureRasterInvalidator();
   void InvalidateRaster(const IntRect&);
@@ -279,7 +264,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   TransformationMatrix transform_;
 
-  bool prevent_contents_opaque_changes_ : 1;
   bool draws_content_ : 1;
   bool paints_hit_test_ : 1;
   bool contents_visible_ : 1;
@@ -308,6 +292,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   mutable std::unique_ptr<PaintController> paint_controller_;
 
+  // Used only when CullRectUpdate is not enabled.
   IntRect previous_interest_rect_;
 
   struct LayerState {

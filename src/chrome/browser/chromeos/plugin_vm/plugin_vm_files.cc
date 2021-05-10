@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
@@ -21,8 +22,8 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
@@ -30,7 +31,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/base_window.h"
 
 namespace plugin_vm {
 
@@ -73,7 +73,7 @@ void FocusAllPluginVmWindows() {
   if (!launcher_item_controller) {
     return;
   }
-  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
+  for (auto* app_window : launcher_item_controller->windows()) {
     app_window->Activate();
   }
 }
@@ -184,10 +184,7 @@ void LaunchPluginVmApp(Profile* profile,
         !file_manager::util::ConvertFileSystemURLToPathInsideVM(
             profile, url, vm_mount, /*map_crostini_home=*/false, &file_path)) {
       return std::move(callback).Run(
-          file_manager::util::GetMyFilesFolderForProfile(profile).IsParent(
-              url.path())
-              ? LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED
-              : LaunchPluginVmAppResult::FAILED_FILE_ON_EXTERNAL_DRIVE,
+          LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED,
           "Only files in shared dirs are supported. Got: " + url.DebugString());
     }
     // Convert slashes: '/' => '\'.

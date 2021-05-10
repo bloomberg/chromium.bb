@@ -44,7 +44,9 @@ class BitstreamValidator : public BitstreamProcessor {
       const VideoDecoderConfig& decoder_config,
       size_t last_frame_index,
       std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors =
-          {});
+          {},
+      base::Optional<size_t> num_vp9_temporal_layers_to_decode = base::nullopt);
+
   ~BitstreamValidator() override;
 
   // BitstreamProcessor implementation.
@@ -56,6 +58,7 @@ class BitstreamValidator : public BitstreamProcessor {
   BitstreamValidator(
       std::unique_ptr<VideoDecoder> decoder,
       size_t last_frame_index,
+      base::Optional<size_t> num_vp9_temporal_layers_to_decode,
       std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors);
   BitstreamValidator(const BitstreamValidator&) = delete;
   BitstreamValidator& operator=(const BitstreamValidator&) = delete;
@@ -65,6 +68,7 @@ class BitstreamValidator : public BitstreamProcessor {
                               VideoDecoder::InitCB init_cb);
   void ProcessBitstreamTask(scoped_refptr<BitstreamRef> decoder_buffer,
                             size_t frame_index);
+  void OutputFrameProcessed();
 
   // Functions for media::VideoDecoder.
   void DecodeDone(int64_t timestamp, Status status);
@@ -73,6 +77,7 @@ class BitstreamValidator : public BitstreamProcessor {
   // Validator components touched by validator_thread_ only.
   std::unique_ptr<VideoDecoder> decoder_;
   const size_t last_frame_index_;
+  const base::Optional<size_t> num_vp9_temporal_layers_to_decode_;
   const std::vector<std::unique_ptr<VideoFrameProcessor>>
       video_frame_processors_;
   // The key is timestamp, and the value is BitstreamRef that is being processed
@@ -89,6 +94,8 @@ class BitstreamValidator : public BitstreamProcessor {
   size_t num_buffers_validating_ GUARDED_BY(validator_lock_);
   // True if |decoder_| detects an error while decoding bitstreams.
   bool decode_error_ GUARDED_BY(validator_lock_);
+  // True if a flush is being processed.
+  bool waiting_flush_done_ GUARDED_BY(validator_lock_);
 
   SEQUENCE_CHECKER(validator_sequence_checker_);
   SEQUENCE_CHECKER(validator_thread_sequence_checker_);

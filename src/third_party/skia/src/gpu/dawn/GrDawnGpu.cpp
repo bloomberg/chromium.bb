@@ -130,17 +130,14 @@ GrDawnGpu::GrDawnGpu(GrDirectContext* direct, const GrContextOptions& options,
         , fStagingBufferManager(this)
         , fRenderPipelineCache(kMaxRenderPipelineEntries)
         , fFinishCallbacks(this) {
-    fCaps.reset(new GrDawnCaps(options));
-    fCompiler.reset(new SkSL::Compiler(fCaps->shaderCaps()));
+    this->initCapsAndCompiler(sk_make_sp<GrDawnCaps>(options));
 }
 
-GrDawnGpu::~GrDawnGpu() {
-    this->waitOnAllBusyStagingBuffers();
-}
+GrDawnGpu::~GrDawnGpu() { this->finishOutstandingGpuWork(); }
 
 void GrDawnGpu::disconnect(DisconnectType type) {
     if (DisconnectType::kCleanup == type) {
-        this->waitOnAllBusyStagingBuffers();
+        this->finishOutstandingGpuWork();
     }
     fStagingBufferManager.reset();
     fQueue = nullptr;
@@ -192,7 +189,7 @@ bool GrDawnGpu::onWritePixels(GrSurface* surface, int left, int top, int width, 
 
 bool GrDawnGpu::onTransferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
                                    GrColorType textureColorType, GrColorType bufferColorType,
-                                   GrGpuBuffer* transferBuffer, size_t bufferOffset,
+                                   sk_sp<GrGpuBuffer> transferBuffer, size_t bufferOffset,
                                    size_t rowBytes) {
     SkASSERT(!"unimplemented");
     return false;
@@ -200,7 +197,7 @@ bool GrDawnGpu::onTransferPixelsTo(GrTexture* texture, int left, int top, int wi
 
 bool GrDawnGpu::onTransferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                                      GrColorType surfaceColorType, GrColorType bufferColorType,
-                                     GrGpuBuffer* transferBuffer, size_t offset) {
+                                     sk_sp<GrGpuBuffer> transferBuffer, size_t offset) {
     SkASSERT(!"unimplemented");
     return false;
 }
@@ -387,7 +384,7 @@ bool GrDawnGpu::onUpdateBackendTexture(const GrBackendTexture& backendTexture,
     SkAutoMalloc defaultStorage(baseLayerSize);
     if (data && data->type() == BackendTextureData::Type::kPixmaps) {
         SkTDArray<GrMipLevel> texels;
-        GrColorType colorType = SkColorTypeToGrColorType(data->pixmap(0).colorType());
+        GrColorType colorType = data->pixmap(0).colorType();
         int numMipLevels = info.fLevelCount;
         texels.append(numMipLevels);
         for (int i = 0; i < numMipLevels; ++i) {
@@ -522,10 +519,6 @@ void GrDawnGpu::deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget
     if (rt.getDawnRenderTargetInfo(&info)) {
         info.fTextureView = nullptr;
     }
-}
-
-void GrDawnGpu::testingOnly_flushGpuAndSync() {
-    this->submitToGpu(true);
 }
 
 #endif
@@ -711,7 +704,7 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
         "    texCoord = texCoords[sk_VertexID];\n"
         "}\n";
     SkSL::String vsSPIRV =
-        this->SkSLToSPIRV(vs, SkSL::Program::kVertex_Kind, false, 0, nullptr);
+        this->SkSLToSPIRV(vs, SkSL::ProgramKind::kVertex, false, 0, nullptr);
 
     const char* fs =
         "layout(set = 0, binding = 0) uniform sampler samp;\n"
@@ -721,7 +714,7 @@ bool GrDawnGpu::onRegenerateMipMapLevels(GrTexture* tex) {
         "    sk_FragColor = sample(makeSampler2D(tex, samp), texCoord);\n"
         "}\n";
     SkSL::String fsSPIRV =
-        this->SkSLToSPIRV(fs, SkSL::Program::kFragment_Kind, false, 0, nullptr);
+        this->SkSLToSPIRV(fs, SkSL::ProgramKind::kFragment, false, 0, nullptr);
 
     wgpu::ProgrammableStageDescriptor vsDesc;
     vsDesc.module = this->createShaderModule(vsSPIRV);
@@ -849,6 +842,10 @@ void GrDawnGpu::checkFinishProcs() {
     fFinishCallbacks.check();
 }
 
+void GrDawnGpu::finishOutstandingGpuWork() {
+    this->waitOnAllBusyStagingBuffers();
+}
+
 std::unique_ptr<GrSemaphore> GrDawnGpu::prepareTextureForCrossContextUsage(GrTexture* texture) {
     SkASSERT(!"unimplemented");
     return nullptr;
@@ -928,8 +925,9 @@ void GrDawnGpu::moveStagingBuffersToBusyAndMapAsync() {
     fSubmittedStagingBuffers.clear();
 }
 
-SkSL::String GrDawnGpu::SkSLToSPIRV(const char* shaderString, SkSL::Program::Kind kind, bool flipY,
+SkSL::String GrDawnGpu::SkSLToSPIRV(const char* shaderString, SkSL::ProgramKind kind, bool flipY,
                                     uint32_t rtHeightOffset, SkSL::Program::Inputs* inputs) {
+    auto errorHandler = this->getContext()->priv().getShaderErrorHandler();
     SkSL::Program::Settings settings;
     settings.fFlipY = flipY;
     settings.fRTHeightOffset = rtHeightOffset;
@@ -940,8 +938,7 @@ SkSL::String GrDawnGpu::SkSLToSPIRV(const char* shaderString, SkSL::Program::Kin
         shaderString,
         settings);
     if (!program) {
-        SkDebugf("SkSL error:\n%s\n", this->shaderCompiler()->errorText().c_str());
-        SkASSERT(false);
+        errorHandler->compileError(shaderString, this->shaderCompiler()->errorText().c_str());
         return "";
     }
     if (inputs) {
@@ -949,6 +946,7 @@ SkSL::String GrDawnGpu::SkSLToSPIRV(const char* shaderString, SkSL::Program::Kin
     }
     SkSL::String code;
     if (!this->shaderCompiler()->toSPIRV(*program, &code)) {
+        errorHandler->compileError(shaderString, this->shaderCompiler()->errorText().c_str());
         return "";
     }
     return code;

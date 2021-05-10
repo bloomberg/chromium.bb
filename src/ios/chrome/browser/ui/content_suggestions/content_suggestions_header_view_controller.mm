@@ -47,11 +47,9 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 
 }  // namespace
 
-#if defined(__IPHONE_13_4)
 @interface ContentSuggestionsHeaderViewController (Pointer) <
     UIPointerInteractionDelegate>
 @end
-#endif  // defined(__IPHONE_13_4)
 
 #if defined(__IPHONE_14_0)
 @interface ContentSuggestionsHeaderViewController (Scribble) <
@@ -79,7 +77,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 @property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
-@property(nonatomic, strong) UIButton* identityDiscButton;
+@property(nonatomic, strong, readwrite) UIButton* identityDiscButton;
 @property(nonatomic, strong) UIButton* fakeTapButton;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
@@ -240,7 +238,8 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
 
 #pragma mark - ContentSuggestionsHeaderProvider
 
-- (UIView*)headerForWidth:(CGFloat)width {
+- (UIView*)headerForWidth:(CGFloat)width
+           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   if (!self.headerView) {
     self.headerView =
         base::mac::ObjCCastStrict<ContentSuggestionsHeaderView>(self.view);
@@ -265,12 +264,10 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
     // screen new tab animation, it's safe to check the rootViewController's
     // view instead.
     // TODO(crbug.com/791784) : Remove use of rootViewController.
-    UIView* insetsView = self.headerView;
-    if (!self.headerView.window) {
-      insetsView =
-          [[UIApplication sharedApplication] keyWindow].rootViewController.view;
+    if (self.headerView.window) {
+      safeAreaInsets =
+          self.headerView.window.rootViewController.view.safeAreaInsets;
     }
-    UIEdgeInsets safeAreaInsets = insetsView.safeAreaInsets;
     width = std::max<CGFloat>(
         0, width - safeAreaInsets.left - safeAreaInsets.right);
 
@@ -320,14 +317,10 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   self.accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.fakeOmnibox, self.accessibilityButton);
 
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       [self.fakeOmnibox
           addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
@@ -364,7 +357,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   [toolbar addSubview:self.fakeTapButton];
   [self.headerView addToolbarView:toolbar];
   [self.fakeTapButton addTarget:self
-                         action:@selector(fakeboxTapped)
+                         action:@selector(fakeTapViewTapped)
                forControlEvents:UIControlEventTouchUpInside];
   AddSameConstraints(self.fakeTapButton, toolbar);
 }
@@ -382,9 +375,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                               action:@selector(identityDiscTapped)
                     forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.identityDiscButton.pointerInteractionEnabled = YES;
       self.identityDiscButton.pointerStyleProvider =
           ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
@@ -400,9 +391,7 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                                     cornerRadius:rect.size.width / 2];
         return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
       };
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   // TODO(crbug.com/965958): Set action on button to launch into Settings.
   [self.headerView setIdentityDiscView:self.identityDiscButton];
@@ -430,6 +419,13 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                 action:@selector(preloadVoiceSearch:)
       forControlEvents:UIControlEventTouchDown];
   [self.dispatcher preloadVoiceSearch];
+}
+
+- (void)fakeTapViewTapped {
+  if ([self.delegate ignoreLoadRequests])
+    return;
+  base::RecordAction(base::UserMetricsAction("MobileFakeViewNTPTapped"));
+  [self focusFakebox];
 }
 
 - (void)fakeboxTapped {
@@ -731,7 +727,6 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
   self.identityDiscButton.imageView.layer.masksToBounds = YES;
 }
 
-#if defined(__IPHONE_13_4)
 #pragma mark UIPointerInteractionDelegate
 
 - (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
@@ -763,6 +758,5 @@ const NSString* kScribbleFakeboxElementId = @"fakebox";
                          axis:UIAxisVertical];
   return [UIPointerStyle styleWithEffect:effect shape:shape];
 }
-#endif  // defined(__IPHONE_13_4)
 
 @end

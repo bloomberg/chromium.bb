@@ -1,3 +1,1255 @@
+2021-02-25  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Fix memory leak.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=28148
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Reject fonts that have
+	multiple tables with the same tag.  While not explicitly forbidden
+	in the OpenType specification, it is implicitly forbidden by
+	describing a binary search algorithm for tables that only works
+	reliably if table tags are unique.
+
+2021-02-22  Werner Lemberg  <wl@gnu.org>
+
+	* CMakeLists.txt: Update location of `LICENSE.TXT`.
+
+	Fixes #1035.
+
+2021-02-19  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/ax_pthread.m4: Update from 'autoconf-archive'.
+
+	A bunch of fixes were added recently to its git repository.
+
+2021-02-17  Werner Lemberg  <wl@gnu.org>
+
+	[unix] Updates for autoconf 2.71.
+
+	This fixes warnings reported by autoupdate.
+
+	* builds/unix/ax_pthread.m4: Replace `as_echo` with `AS_ECHO`.
+
+	* builds/unix/configure.raw: Remove obsolete `AC_HEADER_STDC`.
+	Don't escape back quotes in messages for `AC_MSG_WARN`.
+
+2021-02-16  Werner Lemberg  <wl@gnu.org>
+
+	* builds/toplevel.mk: Fix previous commit.
+
+	<top_level>: Use `TOP_DIR` in `wildcard` function.
+	(check_out_submodule, copy_submodule): Move down to come after
+	definition of `all` rule.
+	Call `mkdir` conditionally.
+
+2021-02-16  Werner Lemberg  <wl@gnu.org>
+
+	* builds/toplevel.mk: Use rules for handling 'dlg'.
+
+	Suggested by Alexei.
+
+	(check_out_submodule, copy_submodule): New targets.
+	<top-level>: Replace calls to `shell` with rules.
+
+2021-02-16  Werner Lemberg  <wl@gnu.org>
+
+	* builds/toplevel.mk: Avoid side effects of `shell`.
+
+	We use a dummy variable to catch its output.  Otherwise the `make`
+	program is going to interpret the return value of `shell`; this can
+	cause obscure warning or error messages or even be harmful.
+
+2021-02-16  Werner Lemberg  <wl@gnu.org>
+
+	Move 'dlg' submodule to `subprojects` directory.
+
+	This is for future changes with Meson, which doesn't allow a
+	different name for its `subprojects` directory.  Having both a
+	`submodules` and a `subprojects` directory is confusing.
+
+	* .gitmodules, autogen.sh (copy_submodule_files, DLG_INC_DIR,
+	DLG_SRC_DIR): Updated.
+
+	* builds/toplevel.mk (<top-level>, do-dist),
+	builds/windows/vc2010/script.bat: Updated.
+
+	* src/tools/no-copyright: Updated.
+
+2021-02-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Update paint format values to support non-variable paints.
+
+	* freetype.h (FT_PaintFormat): Update paint format identifiers after
+	a specification change.  The specification was updated to have
+	sibling formats, variable and non-variable variants for each.
+	Reflect that here.
+
+	* sfnt/ttcolr.c (read_paint): Remove parsing of variable indices as
+	the non-variable formats no longer have them.
+
+2021-02-15  Daniel E  <daniel.engberg.lists@pyret.net>
+
+	* CMakeLists.txt: Improve 'bz2' support.
+
+	Not all distributions such as FreeBSD provide a `.pc` file for
+	'(lib)bz2' so follow autotools and add it to `Libs.private` instead.
+
+2021-02-13  Werner Lemberg  <wl@gnu.org>
+
+	* src/tools/update-copyright-year: Fix single-year entry handling.
+
+	The fix from 2021-01-17 didn't cover the case where the year to be
+	updated is identical to the current year.
+
+2021-02-13  Werner Lemberg  <wl@gnu.org>
+
+	Add new function `FT_Get_Transform`.
+
+	See
+
+	  https://github.com/harfbuzz/harfbuzz/issues/2428
+
+	for some reasons to introduce this function.
+
+	* include/freetype/freetype.h, src/base/ftobjs.c (FT_Get_Transform):
+	Implement it.
+
+2021-02-12  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	Decorate `qsort` callbacks with `cdecl`.
+
+	* include/freetype/internal/compiler-macros.h (FT_COMPARE_DEF):
+	Add new macro.
+
+	* src/base/ftrfork.c, src/bdf/bdflib.c, src/gxvalid/gxvcommn.c,
+	src/psaux/afmparse.c, src/psnames/psmodule.c, src/type1/t1afm.c,
+	src/sfnt/sfwoff.c, src/sfnt/sfwoff2.c: Update `qsort` callbacks.
+
+	Fixes #1026 when compiling FreeType with an unusual calling
+	convention while the C library function `qsort` still expects
+	`cdecl`.
+
+2021-02-10  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Implement 'COLR' v1 sweep gradients.
+
+	* freetype.h (FT_PaintSweepGradient): Add `FT_PaintSweepGradient` to
+	represent a 'COLR' v1 sweep gradient.
+	Update format.
+	(FT_PaintFormat): Update shifted paint formats.
+	Sync with spec.
+	* sfnt/ttcolr.c (read_paint): Logic to parse sweep gradients.
+	Fix struct access in radial gradient implementation.
+
+2021-02-09  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Provide optional root transform for 'COLR' v1 glyph graph.
+
+        * include/freetype/freetype.h (FT_Get_Color_Glyph_Paint):
+	Additional function argument `root_transform` to control whether
+	root transform should be returned.
+	(FT_OpaquePaint): Additional tracking field to denote whether
+	root transform is to be returned.
+	* include/freetype/internal/sfnt.h
+	(TT_Get_Color_Glyph_Paint_Func): Propagate additional argument.
+	* src/base/ftobjs.c (FT_Get_Color_Glyph_Paint): Ditto.
+	* src/sfnt/ttcolr.c (tt_face_get_colr_glyph_paint): Return root
+	transform reflecting the size and tranform configured on
+	`FT_Face`.
+	(read_paint): Initialize and track status of insert_root_transform
+	flag.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build: s/freetype2_dep/freetype_dep/.
+
+	Many projects (e.g., fontconfig, cairo) hardcode the `freetype_dep`
+	variable name to use FreeType as subproject because that was the
+	variable name in Centricular's Meson port of FreeType.  While they
+	should stop hardcoding that variable name, it does not cost us
+	anything to keep using that name to ease transition.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	[meson] Fix handling of HarfBuzz library.
+
+	* meson.build (harfbuzz_dep): Do not fall back to HarfBuzz by
+	default.
+
+	Otherwise it causes a dependency cycle:
+
+	  cairo => fontconfig => freetype2 => harfbuzz => cairo
+
+	Meson will still fall back to HarfBuzz subprojects if the `harfbuzz`
+	option is set to `enabled` instead of `auto` and a
+	`subprojects/harfbuzz.wrap` file is present.  In that case it is the
+	responsibility of the main project to set the proper options on each
+	subproject to break the dependency cycle.
+
+	Fixes: #1028.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	[meson] Fix dependency lookup and generate `ftconfig.h`.
+
+	- zlib: If not found on the system, meson can build it as a
+	  subproject.  We thus never use the (outdated) zlib support that
+	  comes with FreeType.  Doing so has the additional advantage that
+	  the zlib code can be shared with other projects like GLib if both
+	  are subprojects of an application.
+	- harfbuzz: Build as a subproject if not found on the system.
+	- 'QUESTION: What if the compiler doesn't support `-D` but uses `/D`
+	  instead as on Windows?'  Answer: Meson translate arguments for us.
+	- visibility: Replace self-made code with meson-specific solution.
+
+	* meson.build (ft2_defines): Rewrite logic to set and handle it.
+	(process_header_command): New variable, previously called
+	`ftoption_command`.
+	(ftoption_command, ftconfig_command): New variables.
+	(zlib_option): Removed.
+	(zlib_dep): New variable.
+	(ft2_deps): Updated.
+	(harfbuzz_dep): Updated.
+	(ftconfig_h_in, ftconfig_h): New variables.
+	(ft2_sources): Updated.
+	(ft2_lib): Updated, handle visibility.
+	(summary): Updted.
+
+	* meson_options.txt (zlib): Updated.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build: Fix resource compilation on Windows.
+
+	This is copied from GStreamer's meson port of FreeType.
+
+	(ft2_sources): Add both debug and resource file (the latter for
+	Windows only).
+	(ft2_debug_src): Removed.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build: s/ft2_libtool_version/ft2_pkgconfig_version/.
+
+	(freetype2_dep): Use it.
+
+	`ft2_libtool_version` would be the shared library version, not the
+	one we should use in file `freetype2.pc`.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build: Use `meson.override_dependency`.
+
+	This is a new meson mechanism to avoid other projects to hard-code
+	the `freetype2_dep` variable name in their build definition.  It
+	also ensures that meson does not mix system and subproject versions
+	of FreeType inside of the same project.
+
+	Also remove outdated TODO because `declare_dependency` was already
+	there.
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build (bzip2_dep): Simplify.
+
+	We remove `static:false` from `find_library('bz2')`.
+
+	I don't know whether the previous code was a workaround for an old
+	meson bug, but at least with version >=0.55.0 (which FreeType uses)
+	it picks the shared library when both are available.
+
+	File `freetype2.pc` still contains the full path to file `libbz2.so`
+	instead of `-lbz2` – that we need to do this is a meson bug even
+	present in the current version (0.57.0).
+
+2021-02-09  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	* meson.build: Set project version.
+
+2021-02-04  Werner Lemberg  <wl@gnu.org>
+
+	[base] Fix Netpbm tracing message.
+
+	* src/base/ftobjs.c (FT_Render_Glyph_Internal): Don't emit Netpbm
+	warning if there is nothing to output.
+
+2021-02-04  Werner Lemberg  <wl@gnu.org>
+
+	* src/*: Don't use more than one '\n' in `FT_TRACE` and `FT_ERROR`.
+
+	This ensures good logging output, with all lines having a proper
+	prefix (if requested).
+
+	This is a continuation of a similar patch from 2020-12-02, which
+	missed some locations.
+
+2021-02-03  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/unix/configure.raw [mmap]: Restore default path.
+
+	Fixes #1023.
+
+2021-02-03  Werner Lemberg  <wl@gnu.org>
+
+	[psaux] Fix integer overflow.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=30154
+
+	* src/psaux/psblues.c (cf2_blues_capture): Use `SUB_INT32`.
+
+2021-02-02  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/unix/configure.raw [mmap support]: Explicitly handle Windows.
+
+	Fixes #1024.
+
+2021-01-31  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/configure.raw [mmap support]: Correctly handle Windows.
+
+	Fixes #1024.
+
+2021-01-31  Werner Lemberg  <wl@gnu.org>
+
+	* builds/windows/ftdebug.c: Synchronize with `src/base/ftdebug.c`.
+
+2021-01-31  Werner Lemberg  <wl@gnu.org>
+
+	Always provide logging API.
+
+	It's easier to have stubs if FT_DEBUG_LOGGING is undefined than to
+	modify `ftexport.sym` conditionally.
+
+	Problem reported by Alexei.
+
+	* src/base/ftdebug.c: Include `ftlogging.h`.
+	(FT_Trace_Set_Level, FT_Trace_Set_Default_Level, FT_Set_Log_Handler,
+	FT_Set_Default_Log_Handler) [!FT_DEBUG_LOGGING]: Provide stubs.
+
+2021-01-31  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/configure.raw: Fix typo.
+
+	Bug introduced in Vincent's last commit bb33f03.
+
+	Fixes issue #1021.
+
+2021-01-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftstroke.c (FT_Stroker_EndSubPath): Ignore tiny gaps.
+
+	Fixes bug #1020.
+
+2021-01-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[stroker] Minor clean-up.
+
+	* src/base/ftstroke.c (FT_Stroker_{ConicTo,CubicTo}): Reset the last
+	line length.
+	(FT_Stroker_EndSubPath): Call `ft_stroker_process_corner'.
+
+2021-01-27  Vincent Torri  <vincent.torri@gmail.com>
+
+	* builds/windows/ftsystem.c: Add shared memory support on Windows.
+
+	* CMakeLists.txt (BASE_SRCS), builds/unix/configure.raw (FTSYS_SRC),
+	builds/windows/vc2010/freetype.vcxproj,
+	builds/windows/visualc/freetype.vcproj, meson.build (ft2_sources):
+	Add it (conditionally).
+
+2021-01-23  Werner Lemberg  <wl@gnu.org>
+
+	Require HarfBuzz 2.0.0.
+
+	This is needed to make commit f1f9705f9 work.
+
+	* CMakeLists.txt (HARFBUZZ_MIN_VERSION), builds/unix/configure.raw
+	(harfbuzz_pkg), meson.build (harfbuzz_dep): Updated.
+
+2021-01-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* autogen.sh: Absorb `version.sed'.
+	* version.sed: Removed.
+
+2021-01-19  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* srd/base/ftlcdfil.c (FT_Library_SetLcdGeometry): Fix return value.
+
+2021-01-15  Nikolaus Waxweiler  <madigens@gmail.com>
+
+	[afshaper] Fix hb_ot_tags_from_script deprecation warning.
+
+	* autofit/afshaper.c (af_shaper_get_coverage): Copy the source code
+	of the function as suggested in
+	https://github.com/harfbuzz/harfbuzz/issues/2737 and adjust to handle
+	at most three tags.
+
+2021-01-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/tools/update-copyright-year: Fix single-year entry handling.
+
+2021-01-16  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/unix/unixddef.mk: Remove the second DEVEL_DIR definition.
+
+2021-01-14  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Additional checks for 'colr' table presence.
+
+	* sfnt/ttcolr.c (tt_face_get_colr_glyph_paint,
+	tt_face_get_colorline_stops, tt_face_get_paint): Additional checks
+	for whether colr table is present.  Prevents crashes when these
+	methods are called on non-COLR fonts.
+
+2021-01-13  Dominik Röttsches  <drott@chromium.org>
+
+	Add config option to test for 'COLR' v1 support in headers.
+
+	* include/freetype/config/ftoption.h (TT_SUPPORT_COLRV1): New macro
+	so that clients can test whether the FreeType checkout that they are
+	building against supports the 'COLR' v1 API.  This is intended to be
+	a temporary solution until 'COLR' v1 support is released in a
+	FreeType version and such a check can be made by using the version
+	number instead.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[base] Fill 'COLR' v1 API templates to make them work (#59703).
+
+	* src/base/ftobjs.c (FT_Get_Color_Glyph_Paint, FT_Get_Paint_Layers,
+	FT_Get_Paint, FT_Get_Colorline_Stops): Add basic sanity checks,
+	check for existence of `FT_Face`, check arguments and delegate calls
+	for the respective 'COLR' v1 API to the SFNT driver.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Register 'COLR' v1 API in driver (#59703).
+
+	* include/freetype/internal/sfnt.h (TT_Get_Color_Glyph_Paint_Func,
+	TT_Get_Paint_Layers_Func, TT_Get_Colorline_Stops_Func,
+	TT_Get_Paint_Func): New function pointer types.
+	(SFNT_Interface): Add them.
+	(FT_DEFINE_SFNT_INTERFACE): Updated.
+
+	* src/sfnt/sfdriver.c (PUT_COLOR_LAYERS_V1): New macro.
+	(sfnt_interface): Add new function pointers.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Add 'COLR' v1 API to retrieve color layers (#59703).
+
+	* src/sfnt/ttcolr.c (tt_face_get_paint_layers): New function to get
+	the layers of a `PaintColrLayers` table in the font, using an
+	`FT_LayerIterator` from an `FT_PaintColrLayers` object retrieved via
+	`tt_face_get_paint`.
+
+	* src/sfnt/ttcolr.h: Updated.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Add 'COLR' v1 API to iterate color stops (#59703).
+
+	* src/sfnt/ttcolr.c (tt_face_get_colorline_stops): New function to
+	return the current `FT_ColorStop` object from `FT_ColorStopIterator`.
+	Also increment the iterator.
+
+	* src/sfnt/ttcolr.h: Updated.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Add API to get actual paint from `FT_OpaquePaint` (#59703).
+
+	* src/sfnt/ttcolr.c (tt_face_get_paint): New function to resolve an
+	`FT_OpaquePaint` paint reference into an `FT_COLR_Paint` object of a
+	certain format, which contains the detailed information stored in a
+	paint of the respective format.
+	(read_paint): New function to provide the format specific parsing
+	and to populate the data members of each specific `FT_COLR_Paint`
+	subtype.
+	(read_color_line): New function to parse retrieved color line
+	information into an `FT_ColorLine` object, which has information
+	about the color line extend mode as well as an
+	`FT_ColorStopIterator` object.
+
+	* src/sfnt/ttcolr.h: Updated.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Add API to retrieve 'COLR' v1 root paint (#59703).
+
+	* src/sfnt/ttcolr.c (BaseGlyphV1Record): New structure.
+	(tt_face_load_colr): Handle version 1 table header.
+	(find_base_glyph_v1_record): New auxiliary function.
+	(tt_face_get_colr_glyph_paint): New function to find the root
+	`FT_OpaquePaint` object for a given glyph ID.
+
+	* src/sfnt/ttcolr.h: Updated.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	Add new methods required for 'COLR' v1 to public API (#59703).
+
+	* include/freetype/freetype.h (FT_Get_Color_Glyph_Paint): New method
+	for retrieving the root paint object for a color glyph by specifying
+	a glyph ID.
+	(FT_Get_Paint_Layers): New method for retrieving the layers of a
+	`PaintColorGlyph`.
+	(FT_Get_ColorLine_Stops): New method for retrieving the stops of a
+	color.
+	(FT_Get_Paint): New method for resolving an `FT_OpaquePaint` into an
+	`FT_COLR_Paint` object.
+
+2020-12-16  Dominik Röttsches  <drott@chromium.org>
+
+	Add types required for 'COLR' v1 to public API (#59703).
+
+	* include/freetype/freetype.h (FT_PaintFormat, FT_ColorStopIterator,
+	FT_ColorIndex, FT_ColorStop, FT_PaintExtend, FT_ColorLine,
+	FT_Affine23, FT_CompositeMode, FT_OpaquePaint, FT_PaintColrLayers,
+	FT_PaintSolid, FT_PaintLinearGradient, FT_PaintRadialGradient,
+	FT_PaintGlyph, FT_PaintColrGlyph, FT_PaintTransformed,
+	FT_PaintTranslate, FT_PaintRotate, FT_PaintSkew, FT_PaintComposite,
+	FT_COLR_Paint): Adding structs and enum to represent paint format,
+	color stop information, gradient extend information, structs to
+	reference paint offsets, and to define transforms and compositions.
+	Adding a union type to represent the union of the structs,
+	distinguished by `FT_PaintFormat`.
+
+2021-01-10  Werner Lemberg  <wl@gnu.org>
+
+	* builds/*: s/BUILD_DIR/PLATFORM_DIR/.
+
+	The old variable name caused confusion.
+
+2021-01-08  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[builds] Revert `FTMODULE_H' changes.
+
+	* builds/toplevel.mk, builds/freetype.mk: Revert changes.
+
+2021-01-07  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[builds/windows] Fix up DLG build with VC++.
+
+	* builds/windows/vc2010/script.bat: Copy headers to include/.
+	* builds/windows/vc2010/freetype.vcxproj: Remove DLG paths.
+
+2021-01-07  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[builds] Relocate `FTMODULE_H'.
+
+	* builds/toplevel.mk: Place `FTMODULE_H' in include/.
+	* builds/freetype.mk: Simplify included path.
+
+2021-01-07  Werner Lemberg  <wl@gnu.org>
+
+	Fix ABI incompatibility.
+
+	* include/freetype/ftimage.h (FT_Pixel_Mode): Don't insert
+	`FT_PIXEL_MODE_GRAY16' but append it.
+
+	* src/base/ftobjs.c (pixel_modes): Updated.
+
+2021-01-07  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[dlg] Move the headers to include/dlg to simplify their use.
+
+	* autogen.sh, builds/toplevel.mk: Copy headers to include/dlg.
+	* builds/freetype.mk, builds/windows/vc2010/freetype.vcxproj:
+	Simplify included path.
+	* include/freetype/internal/ftdebug.h: Simplify #include.
+	* src/dlg/rules.mk, .gitignore: Updated.
+
+2021-01-06  Werner Lemberg  <wl@gnu.org>
+
+	* meson.build: Add summary.
+
+	Based on a patch from Vincent Torri <vincent.torri@gmail.com>.
+
+2021-01-06  Torsten Hilbrich  <emacs.nolkaf@hilbrich.tk>
+
+	* meson.build: Fix 'png' build option (#59458).
+
+	Without this patch, 'png' is always required.
+
+2021-01-04  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[builds/windows] Add SDF to VC2010 project.
+
+	* builds/windows/vc2010/freetype.vcxproj: Updated;
+	AfterBuild conveniences.
+
+2020-12-26  Werner Lemberg  <wl@gnu.org>
+
+	[sdf] Use 'counter-clockwise', not 'anti-clockwise'.
+
+	We prefer US nomenclature.
+
+	* src/sdf/ftsdf.c (SDF_Contour_Orientation):
+	s/SDF_ORIENTATION-ACW/SDF_ORIENTATION_CCW/.
+	Update all users.
+
+2020-12-26  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftobjs.c (pixel_modes): Updated.
+
+2020-12-26  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Remove custom memory tracker.
+
+	The internal FreeType memory tracker is sufficient.
+
+	* src/sdf/ftsdf.c (FT_DEBUG_INNER, FT_ASSIGNP_INNER, SDF_MemoryUser,
+	sdf_alloc, sdf_free, SDF_ALLOC, SDF_FREE,
+	SDF_MEMORY_TRACKER_DECLARE, SDF_MEMORY_TRACKER_SETUP,
+	SDF_MEMORY_TRACKER_DONE): Removed.
+
+	s/SDF_ALLOC/FT_ALLOC/.
+	s/SDF_FREE/FT_FREE/.
+
+	Other updates.
+
+2020-12-24  Werner Lemberg  <wl@gnu.org>
+
+	[sdf] Fix `make multi`.
+
+	* src/sdf/ftsdf.c: Include `ftoutln.h`.
+
+2020-12-24  Werner Lemberg  <wl@gnu.org>
+
+	[sdf] Fix tracing.
+
+	* include/freetype/internal.fttrace.h: Add 'bsdf' component.
+
+	* src/sdf/ftbsdf.c, src/sdf/ftsdf.c (FT_COMPONENT): Define.
+
+2020-08-21  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add debugging function.
+
+	* src/sdf/ftsdf.c (sdf_shape_dump): New function.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add 'bsdf' renderer to 'sdf' module.
+
+	* src/sdf/ftsdfrend.c (ft_bsdf_render): New function.
+
+	(ft_bitmap_sdf_renderer_class): New structure.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add interface functions for the 'bsdf' rasterizer.
+
+	* src/sdf/ftsdf.c (bsdf_raster_new, bsdf_raster_reset,
+	bsdf_raster_set_mode, bsdf_raster_render, bsdf_raster_done): New
+	functions.
+
+	(ft_bitmap_sdf_raster): New variable.
+
+	* src/sdf/ftsdf.h: Updated.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add function to copy SDF data into output bitmap.
+
+	* src/sdf/ftbsdf.c (finalize_sdf): New function.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add '8-point sequential Euclidean distance mapping' algorithm.
+
+	* src/sdf/ftbsdf.c (compare_neighbor, first_pass, second_pass,
+	edt8): New functions.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add function to copy source bitmap to distance map.
+
+	* src/sdf/ftbsdf.c (bsdf_init_distance_map): New function.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add functions to compute pixel edge distances.
+
+	* src/sdf/ftbsdf.c (compute_edge_distance, bsdf_approximate_edge):
+	New functions.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add function to find edge pixels in a grid of alpha values.
+
+	* src/sdf/ftbsdf.c (bsdf_is_edge): New function.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add essential structures for the 'bsdf' rasterizer.
+
+	* src/sdf/ftbsdf.c (ONE): New macro.
+	(BSDF_TRaster, ED, BSDF_Worker): New structures.
+	(zero_ed): New constant.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add 'sdf' module to non-gnumake build systems.
+
+	* include/freetype/config/ftmodule.h: Add both the 'sdf' and 'bsdf'
+	renderers to the list of modules.
+
+	* CMakeLists.txt (BASE_SRCS): Add 'sdf' single-object module.
+
+2020-08-20  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Added basic overlapping contour support.
+
+	* src/sdf/ftsdf.c (sdf_generate_with_overlaps): New function.
+	(sdf_raster_render): Enable it.
+
+2020-08-19  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add build infrastructure.
+
+	* src/sdf/module.mk, src/sdf/rules.mk: New files.
+
+	* src/sdf/ftsdf.h (ft_sdf_raster): New forward declaration.
+
+	* include/freetype/ftmoderr.h (FT_MODERRDEF): Add error definition
+	for the 'sdf' module.
+
+	* include/freetype/internal/fttrace.h (FT_TRACE_DEF): Add trace
+	definition for the `sdf' module.
+
+	* modules.cfg (RASTER_MODULES): Add the `sdf' module to the list of
+	rasterizers.
+
+2020-08-19  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add interface functions for the 'sdf' rasterizer.
+
+	* src/sdf/ftsdf.c (sdf_raster_new, sdf_raster_reset,
+	sdf_raster_set_mode, sdf_raster_render, sdf_raster_done): New
+	functions.
+	(ft_sdf_raster): New structure.
+
+2020-08-19  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add subdivision and bounding box optimization.
+
+	* src/sdf/ftsdf.c (sdf_generate_bounding_box): New function, which
+	is an optimized version of `sdf_generate`.
+	(sdf_generate_subdivision): New function.
+
+2020-08-19  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add function to generate SDF.
+
+	* src/sdf/ftsdf.c (sdf_generate): New function, currently disabled.
+	This is a proof-of-concept implementation: It doesn't use any
+	optimization, it simply checks all grid points against all contours.
+
+2020-08-19  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add functions to get shortest distance from any edge/contour.
+
+	* src/sdf/ftsdf.c (sdf_edge_get_min_distance): New function.
+	(sdf_contour_get_min_distance): New function, currently disabled.
+
+2020-08-18  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add shortest distance finding functions.
+
+	* src/sdf/ftsdf.c (get_min_distance_line, get_min_distance_conic,
+	get_min_distance_cubic): New functions.  Note that
+	`get_min_distance_conic` comes with two implementations (using an
+	analytical and an iterative method, to be controlled with the
+	`USE_NEWTON_FOR_CONIC` macro).
+
+2020-08-18  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add function to resolve corner distances.
+
+	* src/sdf/ftsdf.c (resolve_corner): New function.
+
+2020-08-18  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add essential math functions.
+
+	* src/sdf/ftsdf.c (cube_root, arc_cos) [!USE_NEWTON_FOR_CONIC]: New
+	auxiliary functions.
+
+	* src/sdf/ftsdf.c (solve_quadratic_equation, solve_cubic_equation)
+	[!USE_NEWTON_FOR_CONIC]: New functions.
+
+2020-08-18  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add utility functions for contours.
+
+	* src/sdf/ftsdf.c (get_control_box, get_contour_orientation): New
+	functions.
+	(split_conic, split_cubic, split_sdf_conic, split_sdf_cubic,
+	split_sdf_shape): New functions.
+
+2020-08-17  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add functions to decompose `FT_Outline`.
+
+	* src/sdf/ftsdf.c (sdf_move_to, sdf_line_to, sdf_conic_to,
+	sdf_cubic_to): New auxiliary decomposition functions.
+	(sdf_compose_funcs): New structure.
+	(sdf_outline_decompose): New function.
+
+2020-08-17  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Structs, enums, macros, and functions for 'sdf' rasterizer.
+
+	* src/sdf/ftsdf.c (FT_DEBUG_INNER, FT_ASSIGNP_INNER)
+	[FT_DEBUG_LEVEL_TRACE && FT_DEBUG_MEMORY]: New macros.
+	(SDF_MemoryUser) [FT_DEBUG_LEVEL_TRACE && FT_DEBUG_MEMORY]: New
+	struct for memory usage tracing.
+	(sdf_alloc, sdf_free) [FT_DEBUG_LEVEL_TRACE && FT_DEBUG_MEMORY]: New
+	functions for memory usage tracing.
+
+	(SDF_ALLOC, SDF_FREE): New macros for memory management.
+	(SDF_MEMORY_TRACKER_DECLARE, SDF_MEMORY_TRACKER_SETUP,
+	SDF_MEMORY_TRACKER_DONE): New macros to set up memory usage tracing.
+
+	(USE_NEWTON_FOR_CONIC, MAX_NEWTON_DIVISIONS, MAX_NEWTON_STEPS,
+	CORNER_CHECK_EPSILON, CG_DIMEN): New configuration macros for
+	controlling the process of finding the shortest distance.
+
+	(MUL_26D6, VEC_26D6_DOT): New auxiliary macros.
+
+	(SDF_TRaster, SDF_Edge, SDF_Contour, SDF_Shape, SDF_Signed_Distance,
+	SDF_Params): New structs for setting up SDF data.
+	(SDF_Edge_Type, SDF_Contour_Orientation): New enums for SDF data.
+
+	(zero_vector, null_edge, null_contour, null_shape, max_sdf): Useful
+	constants.
+
+	(sdf_edge_new, sdf_edge_done, sdf_contour_new, sdf_contour_done,
+	sdf_shape_new, sdf_shape_done): New constructors and destructors.
+
+2020-08-17  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add raster parameters structure.
+
+	* src/sdf/ftsdf.h (SDF_Raster_Params): New structure.
+
+	* src/sdf/sdf.c: Include source files in order to make a single
+	object of the module.
+
+2020-08-17  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add 'sdf' renderer.
+
+	* src/sdf/ftsdf.c: Add 'sdf' renderer along with its interface
+	functions.
+	Also add functions to set and get properties.
+
+2020-08-17  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add common elements for 'sdf' and 'bsdf' renderers.
+
+	* src/sdf/ftsdfrend.h (SDF_Rendere_Module, ft_sdf_renderer_class,
+	ft_bitmap_sdf_renderer_class): New structures.
+
+	* src/sdf/ftsdfcommon.h (DEFAULT_SPREAD, MIN_SPREAD_MAX_SPREAD,
+	USE_SQUARED_DISTANCES): New macros.
+	(FT_INT_26D6, FT_INT_16D16, FT_26D6_16D16): New macros.
+	(FT_CALL, VECTOR_LENGTH_16D16): New macros.
+	(FT_26D6_Vec, FT_16D16_Vec, FT_16D16, FT_26D6, FT_6D10, FT_CBox):
+	New typedefs.
+	(square_root): New macro.
+
+	* src/sdf/ftsdferrs.h: Add module error setup.
+
+2020-08-16  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[sdf] Add files for new 'sdf' module.
+
+	Here is a breakdown of what the files will contain.
+
+	* src/sdf/ftsdfrend.c, src/sdf/ftsdfrend.h: The 'sdf' and 'bsdf'
+	renderers.
+
+	* src/sdf/ftsdf.c, src/sdf/ftsdf.h: The rasterizer for the 'sdf'
+	renderer.
+	* src/sdf/ftbsdf.c, src/sdf/ftbsdf.h: The rasterizer for the 'bsdf'
+	renderer.
+
+	* src/sdf/ftsdfcommon.h: Commmon properties and functions for both
+	rasterizers.
+	* src/sdf/ftsdferrs.h: Common error defines.
+
+	* src/sdf/sdf.c: For building a single object of the entire module.
+
+2020-08-16  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[base] Allow renderers of different formats.
+
+	* src/base/ftobjs.c (FT_Render_Glyph_Internal): Do not return if the
+	glyph's slot format is `FT_GLYPH_FORMAT_BITMAP`.  The forthcoming
+	'bsdf' renderer will require bitmaps for processing.
+
+	* src/base/ftobjs.c (ft_add_renderer, ft_remove_renderer): Remove
+	renderer's glyph format check before adding and removing them.  The
+	'bsdf' renderer will have a format `FT_GLYPH_FORMAT_BITMAP`.
+
+2020-08-16  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	Add data types required for the forthcoming 'sdf' module.
+
+	* include/freetype/freetype.h (FT_Render_Mode): Add new render mode
+	`FT_RENDER_MODE_SDF`, which will be used to generate SDF.
+
+	* include/freetype/ftimage.h (FT_Pixel_Mode): Add new pixel mode
+	`FT_PIXEL_MODE_GRAY16`, which will be the output of the 'sdf'
+	module.
+	(FT_RASTER_FLAG_SDF): New raster flag to be used internally by the
+	'sdf' module.
+
+	* include/freetype/fttypes.h (FT_F6Dot10): New data type.
+
+2020-08-16  Anuj Verma  <anujv@iitbhilai.ac.in>
+
+	[base] Allow renderers of different formats.
+
+	* src/base/ftobjs.c (FT_Render_Glyph_Internal): Do not return if the
+	glyph's slot format is `FT_GLYPH_FORMAT_BITMAP`.  The forthcoming
+	'bsdf' renderer will require bitmaps for processing.
+
+	* src/base/ftobjs.c (ft_add_renderer, ft_remove_renderer): Remove
+	renderer's glyph format check before adding and removing them.  The
+	'bsdf' renderer will have a format `FT_GLYPH_FORMAT_BITMAP`.
+
+2020-12-23  Werner Lemberg  <wl@gnu.org>
+
+	* builds/windows/detect.mk (COPY): Make it work with `shell`.
+
+	Without this patch, we get the error
+
+	  builds/toplevel.mk:127: *** missing separator.  Stop.
+
+	Reported by Anuj, with a solution from Alexei.
+
+2020-12-23  Ignacio Casal Quinteiro  <qignacio@amazon.com>
+
+	* meson.build (ft2_defines): Fix builds on Windows.
+
+2020-12-18  Tatsuyuki Ishi  <ishitatsuyuki@gmail.com>
+
+	[autofit] Fix double division in stem darkening.
+
+	The old code used to divide the darkening amount by em_ratio twice,
+	leading to unnecessarily bold stems on certain fonts with higher
+	units per em (e.g. Inter). This patch fixes it.
+
+	The return value of af_loader_compute_darkening was also changed to
+	use 16.16 fixed point to get rid of a redundant truncation operation.
+	This should slightly improve the precision, although it's still
+	bottlenecked by the emboldening function, which uses 26.6 fixed point.
+
+	* src/autofit/afloader.[ch]
+	(af_loader_compute_darkening): Return FT_Fixed.
+	(af_loader_embolden_glyph_in_slot): Revise calculations.
+
+2020-12-17  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* include/freetype/ftmodapi.h (FT_FACE_DRIVER_NAME): New public macro.
+
+	The driver name is needed for `FT_Property_Set' and `FT_Property_Get'.
+
+2020-12-16  Chris Liddell  <chris.liddell@artifex.com>
+
+	[truetype] Fix incremental metrics (#59503).
+
+	* src/truetype/ttgload.c (tt_get_metrics, load_truetype_glyph):
+	Previously, the code would populate the phantom points before
+	calling the `get_glyph_metrics` callback.  For formats like PCL XL
+	format 1, class 2 downloaded fonts (where metrics are removed from
+	the TTF header), this causes problems when the hinting program uses
+	the phantom points (misplaced and distorted glyphs) due to the
+	metrics being unset (all zeros).
+	(tt_get_metrics_incr_overrides): Renamed to...
+	(tt_get_metrics_incremental): ... this.  Updated caller
+
+	* include/freetype/ftincrem.h: Update the documentation to make it
+	clearer that `get_glyph_metrics` is to retrieve metrics from a
+	non-standard source, but *not* for the purpose of imposing custom
+	metrics.
+
+2020-12-14  Werner Lemberg  <wl@gnu.org>
+
+	[type42] Pacify static analysis tools (#59682).
+
+	* src/type42/t42objs.c (T42_Size_Init, T42_GlyphSlot_Init): Avoid
+	warnings about uninitialized variables.
+
+2020-12-07  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/configure.raw: Don't set `FT_DEBUG_LOGGING`.
+
+	All debug options are handled exclusively in `ftoption.h`.
+
+2020-12-07  Werner Lemberg  <wl@gnu.org>
+
+	* src/*: More fixes for using a '\n' in `FT_TRACE` and `FT_ERROR`.
+
+2020-12-07  Werner Lemberg  <wl@gnu.org>
+
+	*/*: s/FT_LOGGING/FT_DEBUG_LOGGING/.
+
+2020-12-05  Werner Lemberg  <wl@gnu.org>
+
+	* builds/toplevel.mk (do-dist): Remove `submodules` directory.
+
+2020-12-02  Werner Lemberg  <wl@gnu.org>
+
+	* src/*: Don't use more than one '\n' in `FT_TRACE` and `FT_ERROR`.
+
+	This ensures good logging output, with all lines having a proper
+	prefix (if requested).
+
+2020-12-02  Werner Lemberg  <wl@gnu.org>
+
+	[base] Don't close 'stderr' after logging.
+
+	* src/base/ftdebug.c, builds/windows/ftdebug.c (ft_logging_deinit):
+	Fix it.
+
+2020-12-02  Werner Lemberg  <wl@gnu.org>
+
+	* submodules/dlg: Updated to commit 9f0c8b22.
+
+2020-12-02  Werner Lemberg  <wl@gnu.org>
+
+	* src/bdf/bdflib.c: Fix `-Wformat` warning.
+
+2020-12-02  Werner Lemberg  <wl@gnu.org>
+
+	Improve setup for 'dlg' library.
+
+	* autogen.sh (copy_submodule_file), builds/toplevel.mk: Redirect
+	stderr to `/dev/null`.
+
+	* builds/toplevel.mk: Move code block to handle 'dlg' stuff into
+	`check_platform` conditional.
+	Also fix wildcard expressions for guarding `git submodule` commands.
+	Also make file copying work with non-Unix platforms (untested).
+
+2020-12-01  Werner Lemberg  <wl@gnu.org>
+
+	[build] Use gcc (and clang) in C99 mode.
+
+	Other compilers are unchanged.
+
+	* builds/compiler/gcc-dev.mk, builds/compiler/gcc.mk (ANSIFLAGS):
+	s/-ansi/-std=c99/.
+
+	* builds/freetype.mk (FT_CFLAGS): Remove `-std=c99`.
+
+	* builds/unix/configure.raw: Handle C99.
+	Remove no longer needed test for gcc 4.6 and earlier.
+
+2020-12-01  Werner Lemberg  <wl@gnu.org>
+
+	[dlg] Fix compiler warnings.
+
+	* src/dlg/dlgwrap.c: Duplicate some feature test macros from
+	`dlg.c`, which must come first before loading standard headers.  For
+	example, `freetype.h` loads `stdio.h` if compiled in debug mode.
+
+2020-12-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/type42/t42parse.c: Fix `-Wformat` warnings.
+
+2020-12-01  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[builds/unix] Check for 'pthread' library.
+
+	* builds/unix/ax_pthread.m4: New file, taken from 'autoconf-archive'
+	git repository.
+
+	* builds/unix/configure.raw: Check for 'pthread'; also check whether
+	it works.
+
+2020-12-01  Werner Lemberg  <wl@gnu.org>
+
+	[base] Implement vertical alignment of log printing.
+
+	Based on a patch by Priyesh.
+
+	* include/freetype/internal/fttrace.h (FT_MAX_TRACE_LEVEL_LENGTH):
+	New macro.
+
+	* src/base/ftdebug.c, builds/windows/ftdebug.c (ft_log_handler):
+	Print logs after a fixed width to handle different lengths of
+	`FT_COMPONENT` entries.
+	Use `ft_strrchr` to check for final newline character.
+
+2020-11-30  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	Update logging related documentation.
+
+	* docs/DEBUG: Updates related to `FT_LOGGING`.
+
+	* README.git: Updates related to logging.
+
+2020-11-30  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	* src/*: Fix `-Wformat` warnings.
+
+2020-11-30  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[builds/windows] Changes to build 'dlg' with FreeType on Windows.
+
+	We only support Visual C++ 2010 and newer.
+
+	* builds/windows/vc2010/script.bat: New windows batch file to copy
+	necessary 'dlg' files from `submodules/dlg` to `src/dlg`.  This file
+	is used as a pre-built event in Visual C++.
+
+	* builds/windows/ftdebug.c: Synchronize with `src/base/ftdebug.c`.
+
+	* builds/windows/vc2010/freetype.vcxproj.filters: Add
+	`src/dlgwrap.c`.
+
+	* builds/windows/vc2010/freetype.vcxproj
+	(AdditionalIncludeDirectories): Add include files of dlg for 'Debug'
+	and 'Debug Static' configurations on both 'x64' and 'win32'
+	platforms.
+	(PreprocessorDefinitions): Add `FT_LOGGING` for 'Debug' and 'Debug
+	Static' configurations on both 'x64' and 'win32' platforms.
+	Add `DLG_STATIC' for 'Debug' configuration on 'x64' and 'win32'
+	platforms.
+	(DisableLanguageExtensions): We need to disable the `/Za` option
+	when building 'dlg' with FreeType as 'dlg' strictly follows the C99
+	standard.  Visual C++ produces behaves unexpectedly when
+	compiling a C99 file with `/Za` option enabled.
+
+2020-11-30  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[base] Add public API to change log handling function.
+
+	* include/freetype/ftlogging.h (FT_Custom_Log_Handler): New function
+	typedef to store the custom callback logging function.
+	(FT_Set_Log_Handler, FT_Set_Default_Log_Handler): New functions to
+	set and reset custom log handler.
+
+	* include/freetype/internal/ftdebug.h (custom_output_handler): New
+	variable to support a custom callback logging function.
+	(FT_Logging_Callback): A new function typedef to print log using
+	custom callback logging function, which is set using
+	`FT_Set_Log_Handler`.
+	(FT_Log): Use it.
+
+	* src/base/ftdebug.c (FT_Set_Log_Handler,
+	FT_Set_Default_Log_Handler, FT_Logging_Callback): Add function
+	definitions.
+
+2020-11-28  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[base] Add public API to change the levels of tracing components.
+
+	* include/freetype/ftlogging.h: New header file.
+
+	* include/freetype/internal/ftdebug.h [FT_LOGGING]: Include
+	`ftlogging.h`.
+
+	* src/base/ftdebug.c (ft_custom_trace_level): New variable.
+	(ft_debug_init): Update to support change of levels of tracing
+	components of FreeType at run-time.
+	(FT_Trace_Set_Level): New function to change the levels of tracing
+	components at run-time.
+	(FT_Trace_Set_Default_Level): New function to reset the levels of
+	tracing components back to default.
+
+2020-11-28  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[base] Updates to print timestamp and name of `FT_COMPONENT` in logs.
+
+	* include/freetype/internal/ftdebug.h (FT_LOGGING_TAG,
+	FT_LOGGING_TAG_): New macros to resolve the value of `FT_COMPONENT'
+	into a string.
+	(ft_add_tag, ft_remove_tag): New functions to add and remove dlg tags.
+
+	* src/base/ftdebug.c: Add new variables to control the logging of
+	timestamp and name of `FT_COMPONENT` along with actual logs.
+	(ft_add_tag, ft_remove_tag): Add function definitions.
+	(ft_log_handler): Updates to print timestamp and name of
+	`FT_COMPONENT`.
+	(ft_debug_init) [FT_LOGGING]: Users can now control the logging of
+	timestamp and name of `FT_COMPONENT` by adding tags in the
+	`FT2_DEBUG` environment variable.
+
+2020-11-27  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[base] Add functions and variables to print logs to a file.
+
+	* include/freetype/internal/ftdebug.h: Added dlg's header files.
+	(FT_LOG): New macro to redirect trace logs to dlg's API's whenever
+	`FT_LOGGING' is defined.
+	(ft_logging_init, ft_logging_deinit): New functions to handle
+	initialization and uninitialization of logging related variables.
+	(ft_log_handler): New function to handle logs of FreeType.
+
+	* src/base/ftdebug.c: Add necessary logging related variables.
+	(ft_logging_init, ft_logging_deinit, ft_log_handler): Add function
+	definitions.
+
+	* src/base/ftinit.c (FT_Init_FreeType) [FT_LOGGING]: Call
+	`ft_logging_init`.
+	(FT_Done_FreeType) [FT_LOGGING]: Call `ft_logging_deinit`.
+
+	* src/base/ftobjs.c (FT_New_Library): Call `ft_debug_init` only if
+	`FT_LOGGING` is not defined.
+
+2020-11-27  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	[builds] Necessary changes to make 'dlg' compile.
+
+	* autogen.sh (copy_submodule_files): New script to copy all the
+	necessary source and include files from `submodules/dlg` to
+	`src/dlg`.
+
+	* src/dlg/dlgwrap.c: New wrapper file for `src/dlg.c`.  It enables
+	the build of 'dlg' if the `FT_LOGGING` macro is defined.
+
+	* src/dlg/rules.mk: New sub-Makefile.
+
+	* builds/freetype.mk (DLG_DIR): New variable to include the
+	header files of the 'dlg' library.
+	(INCLUDES): Add `DLG_DIR`.
+	(FT_CFLAGS): Add `-std=c99' flag.
+	Include `src/dlg/rules.mk` file to build 'dlg' library.
+	(OBJ_S, OBJ_M): Add `DLG_OBJS_M` and `DLG_OBJS_S`.
+
+	* builds/toplevel.mk: For builds directly from the git repository
+	we need to copy files from `submodule/dlg` to `src/dlg`.
+
+	* include/freetype/config/ftoption.h, devel/ftoption.h (FT_LOGGING):
+	New macro to enable or disable the logging facility in FreeType.
+
+2020-11-27  Priyesh Kumar  <priyeshkkumar@gmail.com>
+
+	* .gitmodules: Add 'dlg' library's git repository as submodule.
+
+2020-12-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/tools/chktrcmp.py (trace_use_pat): Update to current use.
+
+2020-11-20  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[cff,cid,type1] Demote old engine for lack of CFF2.
+
+	* src/cff/cffobjs.c (cff_driver_init): Always default to Adobe engine.
+	* src/cid/cidobjs.c (cid_driver_init): Ditto.
+	* src/type1/t1objs.c (T1_Driver_Init): Ditto.
+
 2020-11-09  Werner Lemberg  <wl@gnu.org>
 
 	* src/type42/t42parse.c (t42_parse_sfnts): More tracing messages.
@@ -910,7 +2162,7 @@
 	security or bug fixes will be provided for those versions.  See
 
 	  https://devguide.python.org/#status-of-python-branches
-	
+
 	for more information.
 
 	* Jamfile (RefDoc): Add `site' parameter.
@@ -5085,7 +6337,7 @@
 
 ----------------------------------------------------------------------------
 
-Copyright (C) 2018-2020 by
+Copyright (C) 2018-2021 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This file is part of the FreeType project, and may only be used, modified,

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -29,7 +30,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -38,7 +38,6 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -103,8 +102,8 @@ void DeviceCloudPolicyInitializer::Init() {
   is_initialized_ = true;
   policy_store_->AddObserver(this);
   state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
-      base::Bind(&DeviceCloudPolicyInitializer::TryToCreateClient,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceCloudPolicyInitializer::TryToCreateClient,
+                          base::Unretained(this)));
 
   TryToCreateClient();
 }
@@ -114,7 +113,7 @@ void DeviceCloudPolicyInitializer::Shutdown() {
 
   policy_store_->RemoveObserver(this);
   enrollment_handler_.reset();
-  state_keys_update_subscription_.reset();
+  state_keys_update_subscription_ = {};
   is_initialized_ = false;
 }
 
@@ -122,8 +121,8 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
     DeviceManagementService* device_management_service,
     chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
-    std::unique_ptr<DMAuth> dm_auth,
-    const EnrollmentCallback& enrollment_callback) {
+    DMAuth dm_auth,
+    EnrollmentCallback enrollment_callback) {
   DCHECK(is_initialized_);
   DCHECK(!enrollment_handler_);
 
@@ -136,8 +135,8 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
       std::move(dm_auth), install_attributes_->GetDeviceId(),
       EnrollmentRequisitionManager::GetDeviceRequisition(),
       EnrollmentRequisitionManager::GetSubOrganization(),
-      base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
-                 base::Unretained(this), enrollment_callback)));
+      base::BindOnce(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
+                     base::Unretained(this), std::move(enrollment_callback))));
 }
 
 void DeviceCloudPolicyInitializer::StartEnrollment() {
@@ -177,7 +176,8 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
 
   // If OOBE is done and we are not enrolled, make sure we only try interactive
   // enrollment.
-  const bool oobe_complete = local_state_->GetBoolean(prefs::kOobeComplete);
+  const bool oobe_complete =
+      local_state_->GetBoolean(chromeos::prefs::kOobeComplete);
   if (oobe_complete &&
       config.auth_mechanism == EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE)
     config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
@@ -289,7 +289,7 @@ void DeviceCloudPolicyInitializer::OnStoreError(CloudPolicyStore* store) {
 }
 
 void DeviceCloudPolicyInitializer::EnrollmentCompleted(
-    const EnrollmentCallback& enrollment_callback,
+    EnrollmentCallback enrollment_callback,
     EnrollmentStatus status) {
   std::unique_ptr<CloudPolicyClient> client =
       enrollment_handler_->ReleaseClient();
@@ -305,7 +305,7 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
   }
 
   if (!enrollment_callback.is_null())
-    enrollment_callback.Run(status);
+    std::move(enrollment_callback).Run(status);
 }
 
 std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(

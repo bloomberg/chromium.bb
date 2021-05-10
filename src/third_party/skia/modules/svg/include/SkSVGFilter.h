@@ -13,8 +13,6 @@
 
 class SkSVGFilter final : public SkSVGHiddenContainer {
 public:
-    ~SkSVGFilter() override = default;
-
     static sk_sp<SkSVGFilter> Make() { return sk_sp<SkSVGFilter>(new SkSVGFilter()); }
 
     sk_sp<SkImageFilter> buildFilterDAG(const SkSVGRenderContext&) const;
@@ -26,13 +24,14 @@ public:
     SVG_ATTR(FilterUnits,
              SkSVGObjectBoundingBoxUnits,
              SkSVGObjectBoundingBoxUnits(SkSVGObjectBoundingBoxUnits::Type::kObjectBoundingBox))
+    SVG_ATTR(PrimitiveUnits,
+             SkSVGObjectBoundingBoxUnits,
+             SkSVGObjectBoundingBoxUnits(SkSVGObjectBoundingBoxUnits::Type::kUserSpaceOnUse))
 
 private:
     SkSVGFilter() : INHERITED(SkSVGTag::kFilter) {}
 
-    SkRect resolveFilterRegion(const SkSVGRenderContext&) const;
-
-    void onSetAttribute(SkSVGAttribute, const SkSVGValue&) override;
+    bool parseAndSetAttribute(const char*, const char*) override;
 
     using INHERITED = SkSVGHiddenContainer;
 };

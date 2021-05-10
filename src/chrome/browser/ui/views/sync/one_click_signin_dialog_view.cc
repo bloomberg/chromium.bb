@@ -26,6 +26,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 // static
@@ -55,10 +56,6 @@ bool OneClickSigninDialogView::IsShowing() {
 void OneClickSigninDialogView::Hide() {
   if (IsShowing())
     dialog_view_->GetWidget()->Close();
-}
-
-ui::ModalType OneClickSigninDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
 }
 
 void OneClickSigninDialogView::WindowClosing() {
@@ -128,6 +125,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetTitle(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW);
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -139,3 +137,6 @@ OneClickSigninDialogView::~OneClickSigninDialogView() {
   if (!confirmed_callback_.is_null())
     std::move(confirmed_callback_).Run(false);
 }
+
+BEGIN_METADATA(OneClickSigninDialogView, views::DialogDelegateView)
+END_METADATA

@@ -5,7 +5,7 @@ Examples of writing CTS tests with various features.
 
 Start here when looking for examples of basic framework usage.
 `;
-import { pbool } from '../common/framework/params_builder.js';
+import { params, pbool, poptions } from '../common/framework/params_builder.js';
 import { makeTestGroup } from '../common/framework/test_group.js';
 
 import { GPUTest } from './gpu_test.js';
@@ -92,6 +92,19 @@ g.test('basic,params')
   });
 // (note the blank comment above to enforce newlines on autoformat)
 
+// Runs the following cases:
+// { x: 2, y: 2 }
+// { x: 2, z: 3 }
+// { x: 3, y: 2 }
+// { x: 3, z: 3 }
+g.test('basic,params_builder')
+  .params(
+    params()
+      .combine(poptions('x', [2, 3]))
+      .combine([{ y: 2 }, { z: 3 }])
+  )
+  .fn(() => {});
+
 g.test('gpu,async').fn(async t => {
   const fence = t.queue.createFence();
   t.queue.signal(fence, 2);
@@ -118,6 +131,10 @@ g.test('gpu,buffers').fn(async t => {
 // One of the following two tests should be skipped on most platforms.
 
 g.test('gpu,with_texture_compression,bc')
+  .desc(
+    `Example of a test using a device descriptor.
+Tests that a BC format passes validation iff the feature is enabled.`
+  )
   .params(pbool('textureCompressionBC'))
   .fn(async t => {
     const { textureCompressionBC } = t.params;
@@ -141,6 +158,11 @@ g.test('gpu,with_texture_compression,bc')
   });
 
 g.test('gpu,with_texture_compression,etc')
+  .desc(
+    `Example of a test using a device descriptor.
+
+TODO: Test that an ETC format passes validation iff the feature is enabled.`
+  )
   .params(pbool('textureCompressionETC'))
   .fn(async t => {
     const { textureCompressionETC } = t.params;
@@ -151,6 +173,5 @@ g.test('gpu,with_texture_compression,etc')
       });
     }
 
-    t.device;
     // TODO: Should actually test createTexture with an ETC format here.
   });

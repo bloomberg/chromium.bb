@@ -9,9 +9,10 @@
 #include <memory>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -27,14 +28,14 @@ bool Clipboard::IsSupportedClipboardBuffer(ClipboardBuffer buffer) {
     case ClipboardBuffer::kCopyPaste:
       return true;
     case ClipboardBuffer::kSelection:
-#if defined(USE_OZONE) && !defined(OS_CHROMEOS)
+#if defined(USE_OZONE) && !BUILDFLAG(IS_CHROMEOS_ASH)
       if (features::IsUsingOzonePlatform()) {
         ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
         CHECK(clipboard);
         return clipboard->IsSelectionBufferAvailable();
       }
 #endif
-#if !defined(OS_WIN) && !defined(OS_APPLE) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_APPLE) && !BUILDFLAG(IS_CHROMEOS_ASH)
       return true;
 #else
       return false;
@@ -179,6 +180,12 @@ void Clipboard::DispatchPortableRepresentation(PortableFormat format,
       // pointer to the actual SkBitmap in the clipboard object param.
       const char* packed_pointer_buffer = &params[0].front();
       WriteBitmap(**reinterpret_cast<SkBitmap* const*>(packed_pointer_buffer));
+      break;
+    }
+
+    case PortableFormat::kFilenames: {
+      std::string uri_list(&(params[0].front()), params[0].size());
+      WriteFilenames(ui::URIListToFileInfos(uri_list));
       break;
     }
 

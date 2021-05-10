@@ -11,17 +11,18 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/install/crx_install_error.h"
-#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/install_stage.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_id.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/user_manager/user_manager.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class Profile;
 
@@ -225,9 +226,12 @@ class InstallStageTracker : public KeyedService {
     // force-installed to anything else.
     OVERRIDDEN_BY_SETTINGS = 27,
 
+    // The extension is marked as replaced by system app.
+    REPLACED_BY_SYSTEM_APP = 28,
+
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = OVERRIDDEN_BY_SETTINGS,
+    kMaxValue = REPLACED_BY_SYSTEM_APP,
   };
 
   // Status for the app returned by server while fetching manifest when status
@@ -273,7 +277,7 @@ class InstallStageTracker : public KeyedService {
     kMaxValue = kBandwidthLimit,
   };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Contains information about the current user.
   struct UserInfo {
     UserInfo(const UserInfo&);
@@ -282,13 +286,14 @@ class InstallStageTracker : public KeyedService {
     user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR;
     bool is_new_user = false;
   };
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Contains information about extension installation: failure reason, if any
   // reported, specific details in case of CRX install error, current
   // installation stage if known.
   struct InstallationData {
     InstallationData();
+    ~InstallationData();
     InstallationData(const InstallationData&);
 
     base::Optional<Stage> install_stage;
@@ -346,6 +351,9 @@ class InstallStageTracker : public KeyedService {
     base::Optional<base::TimeTicks> finalizing_started_time;
     // Time at which the installation process is complete.
     base::Optional<base::TimeTicks> installation_complete_time;
+    // Detailed error description when extension failed to install with
+    // SandboxedUnpackerFailureReason equal to UNPACKER_CLIENT FAILED.
+    base::Optional<base::string16> unpacker_client_failed_error;
   };
 
   class Observer : public base::CheckedObserver {
@@ -393,12 +401,12 @@ class InstallStageTracker : public KeyedService {
   // Convenience function to get the InstallStageTracker for a BrowserContext.
   static InstallStageTracker* Get(content::BrowserContext* context);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns user type of the user associated with the |profile| and whether the
   // user is new or not. This method should be used only if there is a user
   // associated with the profile.
   static UserInfo GetUserInfo(Profile* profile);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void ReportInfoOnNoUpdatesFailure(const ExtensionId& id,
                                     const std::string& info);
@@ -436,7 +444,7 @@ class InstallStageTracker : public KeyedService {
                              CrxInstallErrorDetail crx_install_error);
   void ReportSandboxedUnpackerFailureReason(
       const ExtensionId& id,
-      SandboxedUnpackerFailureReason unpacker_failure_reason);
+      const CrxInstallError& crx_install_error);
 
   // Retrieves known information for installation of extension |id|.
   // Returns empty data if not found.

@@ -17,38 +17,38 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
+#include "src/program.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Return) {
-  ast::ReturnStatement r;
+  auto* r = create<ast::ReturnStatement>();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&r)) << g.error();
-  EXPECT_EQ(g.result(), "  return;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+  EXPECT_EQ(gen.result(), "  return;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_ReturnWithValue) {
-  auto expr = std::make_unique<ast::IdentifierExpression>("expr");
-  ast::ReturnStatement r(std::move(expr));
+  auto* r = create<ast::ReturnStatement>(Expr("expr"));
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&r)) << g.error();
-  EXPECT_EQ(g.result(), "  return expr;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+  EXPECT_EQ(gen.result(), "  return expr;\n");
 }
 
 }  // namespace

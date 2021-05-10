@@ -31,6 +31,8 @@ source_set("feed_core_v2") {
     "notice_card_tracker.h",
     "offline_page_spy.cc",
     "offline_page_spy.h",
+    "persistent_key_value_store_impl.cc",
+    "persistent_key_value_store_impl.h",
     "prefs.cc",
     "prefs.h",
     "proto_util.cc",
@@ -41,6 +43,8 @@ source_set("feed_core_v2") {
     "public/feed_service.h",
     "public/feed_stream_api.cc",
     "public/feed_stream_api.h",
+    "public/persistent_key_value_store.cc",
+    "public/persistent_key_value_store.h",
     "public/types.h",
     "refresh_task_scheduler.h",
     "request_throttler.cc",
@@ -76,9 +80,10 @@ source_set("feed_core_v2") {
   ]
   deps = [
     ":common",
-    "//components/feed/core:feed_core",
-    "//components/feed/core/common:feed_core_common",
+    "//components/feed:feature_list",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/history/core/browser",
+    "//components/leveldb_proto:leveldb_proto",
     "//components/offline_pages/core:core",
     "//components/offline_pages/core/prefetch",
     "//components/offline_pages/task:task",
@@ -117,12 +122,14 @@ source_set("core_unit_tests") {
     "image_fetcher_unittest.cc",
     "metrics_reporter_unittest.cc",
     "notice_card_tracker_unittest.cc",
+    "persistent_key_value_store_impl_unittest.cc",
     "proto_util_unittest.cc",
     "protocol_translator_unittest.cc",
     "public/feed_service_unittest.cc",
     "request_throttler_unittest.cc",
     "scheduling_unittest.cc",
     "stream_model_unittest.cc",
+    "test/callback_receiver.cc",
     "test/callback_receiver.h",
     "test/callback_receiver_unittest.cc",
     "test/proto_printer.cc",
@@ -138,8 +145,10 @@ source_set("core_unit_tests") {
     ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
-    "//components/feed/core:feed_core",
+    "//build:chromeos_buildflags",
+    "//components/feed:feature_list",
     "//components/feed/core/common:feed_core_common",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/history/core/browser",
     "//components/leveldb_proto:test_support",
     "//components/offline_pages/core:core",
@@ -165,4 +174,13 @@ bundle_data("unit_tests_bundle_data") {
   sources = [ "//components/test/data/feed/response.binarypb" ]
   outputs = [ "{{bundle_resources_dir}}/" +
               "{{source_root_relative_dir}}/{{source_file_part}}" ]
+}
+
+if (is_android) {
+  java_cpp_enum("feedv2_enums_java") {
+    sources = [
+      "common_enums.h",
+      "enums.h",
+    ]
+  }
 }

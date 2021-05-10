@@ -318,6 +318,10 @@ bool SkXPSDevice::endSheet() {
 }
 
 static HRESULT subset_typeface(const SkXPSDevice::TypefaceUse& current) {
+    //The CreateFontPackage API is only supported on desktop, not in UWP
+    #if defined(SK_WINUWP)
+    return E_NOTIMPL;
+    #else
     //CreateFontPackage wants unsigned short.
     //Microsoft, Y U NO stdint.h?
     std::vector<unsigned short> keepList;
@@ -410,6 +414,7 @@ static HRESULT subset_typeface(const SkXPSDevice::TypefaceUse& current) {
         "Could not set new stream for subsetted font.");
 
     return S_OK;
+    #endif //SK_WINUWP
 }
 
 bool SkXPSDevice::endPortfolio() {
@@ -1954,7 +1959,7 @@ void SkXPSDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
     }
 }
 
-void SkXPSDevice::drawDevice(SkBaseDevice* dev,  const SkPaint&) {
+void SkXPSDevice::drawDevice(SkBaseDevice* dev, const SkSamplingOptions&, const SkPaint&) {
     SkXPSDevice* that = static_cast<SkXPSDevice*>(dev);
     SkASSERT(that->fTopTypefaces == this->fTopTypefaces);
 
@@ -2003,6 +2008,7 @@ void SkXPSDevice::drawOval( const SkRect& o, const SkPaint& p) {
 void SkXPSDevice::drawImageRect(const SkImage* image,
                                 const SkRect* src,
                                 const SkRect& dst,
+                                const SkSamplingOptions& sampling,
                                 const SkPaint& paint,
                                 SkCanvas::SrcRectConstraint constraint) {
     // TODO: support gpu images
@@ -2013,7 +2019,7 @@ void SkXPSDevice::drawImageRect(const SkImage* image,
 
     SkRect bitmapBounds = SkRect::Make(bitmap.bounds());
     SkRect srcBounds = src ? *src : bitmapBounds;
-    SkMatrix matrix = SkMatrix::MakeRectToRect(srcBounds, dst, SkMatrix::kFill_ScaleToFit);
+    SkMatrix matrix = SkMatrix::RectToRect(srcBounds, dst);
     SkRect actualDst;
     if (!src || bitmapBounds.contains(*src)) {
         actualDst = dst;
@@ -2024,9 +2030,9 @@ void SkXPSDevice::drawImageRect(const SkImage* image,
         matrix.mapRect(&actualDst, srcBounds);
     }
 
-    auto bitmapShader = SkMakeBitmapShaderForPaint(paint, bitmap, SkTileMode::kClamp,
-                                                   SkTileMode::kClamp, &matrix,
-                                                   kNever_SkCopyPixelsMode);
+    auto bitmapShader = SkMakeBitmapShaderForPaint(paint, bitmap,
+                                                   SkTileMode::kClamp, SkTileMode::kClamp,
+                                                   sampling, &matrix, kNever_SkCopyPixelsMode);
     SkASSERT(bitmapShader);
     if (!bitmapShader) { return; }
     SkPaint paintWithShader(paint);

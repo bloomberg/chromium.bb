@@ -29,7 +29,6 @@ namespace dawn_wire {
     }  // namespace server
 
     struct DAWN_WIRE_EXPORT WireServerDescriptor {
-        WGPUDevice device;
         const DawnProcTable* procs;
         CommandSerializer* serializer;
         server::MemoryTransferService* memoryTransferService = nullptr;
@@ -43,7 +42,23 @@ namespace dawn_wire {
         const volatile char* HandleCommands(const volatile char* commands,
                                             size_t size) override final;
 
-        bool InjectTexture(WGPUTexture texture, uint32_t id, uint32_t generation);
+        // TODO(enga): Remove defaults after updating Chrome.
+        bool InjectTexture(WGPUTexture texture,
+                           uint32_t id,
+                           uint32_t generation,
+                           uint32_t deviceId = 1,
+                           uint32_t deviceGeneration = 0);
+
+        bool InjectDevice(WGPUDevice device, uint32_t id, uint32_t generation);
+
+        // Look up a device by (id, generation) pair. Returns nullptr if the generation
+        // has expired or the id is not found.
+        // The Wire does not have destroy hooks to allow an embedder to observe when an object
+        // has been destroyed, but in Chrome, we need to know the list of live devices so we
+        // can call device.Tick() on all of them periodically to ensure progress on asynchronous
+        // work is made. Getting this list can be done by tracking the (id, generation) of
+        // previously injected devices, and observing if GetDevice(id, generation) returns non-null.
+        WGPUDevice GetDevice(uint32_t id, uint32_t generation);
 
       private:
         std::unique_ptr<server::Server> mImpl;

@@ -26,54 +26,44 @@ namespace tint {
 namespace ast {
 
 /// An assignment statement
-class AssignmentStatement : public Statement {
+class AssignmentStatement : public Castable<AssignmentStatement, Statement> {
  public:
-  /// Constructor
-  AssignmentStatement();
-  /// Constructor
-  /// @param lhs the left side of the expression
-  /// @param rhs the right side of the expression
-  AssignmentStatement(std::unique_ptr<Expression> lhs,
-                      std::unique_ptr<Expression> rhs);
   /// Constructor
   /// @param source the assignment statement source
   /// @param lhs the left side of the expression
   /// @param rhs the right side of the expression
-  AssignmentStatement(const Source& source,
-                      std::unique_ptr<Expression> lhs,
-                      std::unique_ptr<Expression> rhs);
+  AssignmentStatement(const Source& source, Expression* lhs, Expression* rhs);
   /// Move constructor
   AssignmentStatement(AssignmentStatement&&);
   ~AssignmentStatement() override;
 
-  /// Sets the left side of the statement
-  /// @param lhs the left side to set
-  void set_lhs(std::unique_ptr<Expression> lhs) { lhs_ = std::move(lhs); }
   /// @returns the left side expression
-  Expression* lhs() const { return lhs_.get(); }
-
-  /// Sets the right side of the statement
-  /// @param rhs the right side to set
-  void set_rhs(std::unique_ptr<Expression> rhs) { rhs_ = std::move(rhs); }
+  Expression* lhs() const { return lhs_; }
   /// @returns the right side expression
-  Expression* rhs() const { return rhs_.get(); }
+  Expression* rhs() const { return rhs_; }
 
-  /// @returns true if this is an assignment statement
-  bool IsAssign() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  AssignmentStatement* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   AssignmentStatement(const AssignmentStatement&) = delete;
 
-  std::unique_ptr<Expression> lhs_;
-  std::unique_ptr<Expression> rhs_;
+  Expression* const lhs_;
+  Expression* const rhs_;
 };
 
 }  // namespace ast

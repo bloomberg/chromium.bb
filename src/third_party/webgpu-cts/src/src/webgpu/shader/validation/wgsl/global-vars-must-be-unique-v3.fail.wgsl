@@ -1,4 +1,4 @@
-# v-0011 - This fails because of the duplicated `a` variable.
+// v-0011 - This fails because of the duplicated `a` variable.
 
 const a : vec2<f32> = vec2<f32>(0.1, 1.0);
 

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AssertionError} from 'chai';
+import {assert, AssertionError} from 'chai';
 import * as os from 'os';
 import * as puppeteer from 'puppeteer';
 
 import {reloadDevTools} from '../conductor/hooks.js';
-import {getBrowserAndPages, getHostedModeServerPort} from '../conductor/puppeteer-state.js';
+import {getBrowserAndPages, getTestServerPort} from '../conductor/puppeteer-state.js';
 import {AsyncScope} from './mocha-extensions.js';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     __pendingEvents: Map<string, Event[]>;
   }
 }
 
-export let platform: string;
+export type Platform = 'mac'|'win32'|'linux';
+export let platform: Platform;
 switch (os.platform()) {
   case 'darwin':
     platform = 'mac';
@@ -77,7 +80,7 @@ export const getElementPosition =
 
 export const click = async (
     selector: string|puppeteer.JSHandle,
-    options?: {root?: puppeteer.JSHandle; clickOptions?: puppeteer.ClickOptions; maxPixelsFromLeft?: number;}) => {
+    options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions, maxPixelsFromLeft?: number}) => {
   const {frontend} = getBrowserAndPages();
   const clickableElement =
       await getElementPosition(selector, options && options.root, options && options.maxPixelsFromLeft);
@@ -95,7 +98,7 @@ export const click = async (
 };
 
 export const doubleClick =
-    async (selector: string, options?: {root?: puppeteer.JSHandle; clickOptions?: puppeteer.ClickOptions}) => {
+    async (selector: string, options?: {root?: puppeteer.JSHandle, clickOptions?: puppeteer.ClickOptions}) => {
   const passedClickOptions = (options && options.clickOptions) || {};
   const clickOptionsWithDoubleClick: puppeteer.ClickOptions = {
     ...passedClickOptions,
@@ -130,7 +133,7 @@ export const pressKey = async (key: string, modifiers?: {control?: boolean, alt?
       await frontend.keyboard.down('Shift');
     }
   }
-  await frontend.keyboard.press(key);
+  await frontend.keyboard.press(key as puppeteer.KeyInput);
   if (modifiers) {
     if (modifiers.shift) {
       await frontend.keyboard.up('Shift');
@@ -197,6 +200,14 @@ export const waitFor =
   return await asyncScope.exec(() => waitForFunction(async () => {
                                  const element = await $(selector, root, handler);
                                  return (element || undefined);
+                               }, asyncScope));
+};
+
+export const waitForMany = async (
+    selector: string, count: number, root?: puppeteer.JSHandle, asyncScope = new AsyncScope(), handler?: string) => {
+  return await asyncScope.exec(() => waitForFunction(async () => {
+                                 const elements = await $$(selector, root, handler);
+                                 return elements.length >= count ? elements : undefined;
                                }, asyncScope));
 };
 
@@ -303,8 +314,7 @@ export const goTo = async (url: string) => {
 
 export const overridePermissions = async (permissions: puppeteer.Permission[]) => {
   const {browser} = getBrowserAndPages();
-  await browser.defaultBrowserContext().overridePermissions(
-      `http://localhost:${getHostedModeServerPort()}`, permissions);
+  await browser.defaultBrowserContext().overridePermissions(`https://localhost:${getTestServerPort()}`, permissions);
 };
 
 export const clearPermissionsOverride = async () => {
@@ -316,14 +326,17 @@ export const goToResource = async (path: string) => {
   await goTo(`${getResourcesPath()}/${path}`);
 };
 
-export const getResourcesPath = () => {
-  return `http://localhost:${getHostedModeServerPort()}/test/e2e/resources`;
+export const goToResourceWithCustomHost = async (host: string, path: string) => {
+  assert.isTrue(host.endsWith('.test'), 'Only custom hosts with a .test domain are allowed.');
+  await goTo(`${getResourcesPath(host)}/${path}`);
+};
+
+export const getResourcesPath = (host: string = 'localhost') => {
+  return `https://${host}:${getTestServerPort()}/test/e2e/resources`;
 };
 
 export const step = async (description: string, step: Function) => {
   try {
-    // eslint-disable-next-line no-console
-    console.log(`     Running step "${description}"`);
     return await step();
   } catch (error) {
     if (error instanceof AssertionError) {
@@ -444,8 +457,8 @@ export const enableCDPLogging = async () => {
   });
 };
 
-export const selectOption = async (select: puppeteer.JSHandle<HTMLSelectElement>, value: string) => {
-  await select.evaluate(async (node, _value) => {
+export const selectOption = async (select: puppeteer.ElementHandle<HTMLSelectElement>, value: string) => {
+  await select.evaluate(async (node: HTMLSelectElement, _value: string) => {
     node.value = _value;
     const event = document.createEvent('HTMLEvents');
     event.initEvent('change', false, true);
@@ -492,4 +505,14 @@ export const getPendingEvents = function(frontend: puppeteer.Page, eventType: st
   }, eventType);
 };
 
-export {getBrowserAndPages, getHostedModeServerPort, reloadDevTools};
+export const waitForClass = async (element: puppeteer.ElementHandle<Element>, classname: string): Promise<void> => {
+  await waitForFunction(async () => {
+    return await element.evaluate((el, classname) => el.classList.contains(classname), classname);
+  });
+};
+
+export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
+  assert.isNotNull(val);
+}
+
+export {getBrowserAndPages, getTestServerPort as getTestServerPort, reloadDevTools};

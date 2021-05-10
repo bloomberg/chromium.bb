@@ -10,11 +10,11 @@
 
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/user_manager/user.h"
@@ -102,8 +102,7 @@ bool FileSystemURLParser::Parse() {
     Profile* original_profile = profiles[i]->GetOriginalProfile();
 
     if (original_profile != profiles[i] ||
-        chromeos::ProfileHelper::IsSigninProfile(original_profile) ||
-        chromeos::ProfileHelper::IsLockScreenAppProfile(original_profile)) {
+        !chromeos::ProfileHelper::IsRegularProfile(original_profile)) {
       continue;
     }
 

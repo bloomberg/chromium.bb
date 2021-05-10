@@ -22,9 +22,11 @@ devtools_module("main") {
     "../persistence:bundle",
     "../platform:bundle",
     "../protocol_client:bundle",
+    "../recorder:bundle",
     "../sdk:bundle",
     "../snippets:bundle",
     "../theme_support:bundle",
+    "../timeline:bundle",
     "../ui:bundle",
     "../workspace:bundle",
   ]
@@ -40,4 +42,13 @@ devtools_entrypoint("legacy") {
   entrypoint = "main-legacy.js"
 
   deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "main-meta.ts"
+
+  deps = [
+    ":bundle",
+    "../inspector_main:bundle",
+  ]
 }

@@ -20,6 +20,10 @@ source_set("unittests") {
     "../receiver:test_helpers",
     "../sender:channel",
   ]
+
+  if (!build_with_chromium) {
+    deps += [ "../protocol:unittests" ]
+  }
 }
 
 if (is_posix && !build_with_chromium) {

@@ -5,11 +5,11 @@
 #ifndef QUICHE_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_
 #define QUICHE_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -152,8 +152,8 @@ bool PacketNumberIndexedQueue<T>::Emplace(QuicPacketNumber packet_number,
   }
 
   if (IsEmpty()) {
-    DCHECK(entries_.empty());
-    DCHECK(!first_packet_.IsInitialized());
+    QUICHE_DCHECK(entries_.empty());
+    QUICHE_DCHECK(!first_packet_.IsInitialized());
 
     entries_.emplace_back(std::forward<Args>(args)...);
     number_of_present_entries_ = 1;
@@ -174,7 +174,7 @@ bool PacketNumberIndexedQueue<T>::Emplace(QuicPacketNumber packet_number,
 
   number_of_present_entries_++;
   entries_.emplace_back(std::forward<Args>(args)...);
-  DCHECK_EQ(packet_number, last_packet());
+  QUICHE_DCHECK_EQ(packet_number, last_packet());
   return true;
 }
 

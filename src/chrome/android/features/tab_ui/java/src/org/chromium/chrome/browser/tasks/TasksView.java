@@ -42,6 +42,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 // The view of the tasks surface.
 class TasksView extends CoordinatorLayoutForPointer {
@@ -69,11 +70,12 @@ class TasksView extends CoordinatorLayoutForPointer {
         mContext = context;
     }
 
-    public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+    public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            boolean isIncognito, WindowAndroid windowAndroid) {
         assert mSearchBoxCoordinator
                 != null : "#onFinishInflate should be completed before the call to initialize.";
 
-        mSearchBoxCoordinator.initialize(activityLifecycleDispatcher);
+        mSearchBoxCoordinator.initialize(activityLifecycleDispatcher, isIncognito, windowAndroid);
     }
 
     @Override
@@ -132,18 +134,17 @@ class TasksView extends CoordinatorLayoutForPointer {
         TextView moreTabs = (TextView) findViewById(R.id.more_tabs);
         if (FeedFeatures.cachedIsReportingUserActions()) {
             ApiCompatibilityUtils.setTextAppearance(
-                    titleDescription, R.style.TextAppearance_TextSmall_Secondary);
+                    titleDescription, R.style.TextAppearance_TextAccentMediumThick_Secondary);
             ApiCompatibilityUtils.setTextAppearance(
-                    moreTabs, R.style.TextAppearance_TextSmall_Blue);
-            ViewCompat.setPaddingRelative(titleDescription,
-                    mContext.getResources().getDimensionPixelSize(R.dimen.card_padding),
+                    moreTabs, R.style.TextAppearance_Button_Text_Blue);
+            ViewCompat.setPaddingRelative(titleDescription, titleDescription.getPaddingStart(),
                     titleDescription.getPaddingTop(), titleDescription.getPaddingEnd(),
                     titleDescription.getPaddingBottom());
         } else {
             ApiCompatibilityUtils.setTextAppearance(
-                    titleDescription, R.style.TextAppearance_TextMediumThick_Primary);
+                    titleDescription, R.style.TextAppearance_TextAccentMediumThick_Secondary);
             ApiCompatibilityUtils.setTextAppearance(
-                    moreTabs, R.style.TextAppearance_TextMedium_Blue);
+                    moreTabs, R.style.TextAppearance_Button_Text_Blue);
         }
     }
 
@@ -203,6 +204,7 @@ class TasksView extends CoordinatorLayoutForPointer {
         setBackgroundColor(backgroundColor);
         mHeaderView.setBackgroundColor(backgroundColor);
 
+        mSearchBoxCoordinator.setIncognitoMode(isIncognito);
         mSearchBoxCoordinator.setBackground(AppCompatResources.getDrawable(mContext,
                 isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box));
         int hintTextColor = isIncognito

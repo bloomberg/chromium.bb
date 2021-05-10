@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <message name="IDS_DEVTOOLS_005e5f0c76f1286c8785a2b25694ad41" desc="Field in Devices pane letting customize which CPU architecture the edited device presents via User Agent Client Hints. Example should be kept exactly.">
+    Architecture (e.g. x86)
+  </message>
   <message name="IDS_DEVTOOLS_01afd961b3193f0c1e831ec100ea36dc" desc="Error message in the Devices settings pane that declares the minimum value for the device pixel ratio input">
     Device pixel ratio must be greater than or equal to <ph name="EMULATION_DEVICEMODEMODEL_MINDEVICESCALEFACTOR">$1s<ex>0</ex></ph>.
   </message>
@@ -8,6 +11,9 @@
   </message>
   <message name="IDS_DEVTOOLS_0c78cd3aa4c94a64675bc6aa77802843" desc="Text in Sensors View of the Device Toolbar">
     Device-based
+  </message>
+  <message name="IDS_DEVTOOLS_0ca08f8f4a8a19f7f1ae87c119494327" desc="Title as part of a tool to override existing configurations">
+    Overrides
   </message>
   <message name="IDS_DEVTOOLS_0e1275697d4c40b4b0640fbfa3907afa" desc="A tag of Sensors tool that can be searched in the command menu">
     accelerometer
@@ -24,20 +30,56 @@
   <message name="IDS_DEVTOOLS_146bdebb324a64d327b1dde22a07d0bd" desc="Text in Device Mode View of the Device Toolbar">
     Laptop
   </message>
+  <message name="IDS_DEVTOOLS_2310408a63388fe57e3a4177168a8798" desc="Text for the desktop platform, as opposed to mobile">
+    Desktop
+  </message>
+  <message name="IDS_DEVTOOLS_24b3f6c325e961ac4f102e9d5463fa2e" desc="Field in Devices pane letting customize which operating system the edited device presents via User Agent Client Hints. Example should be kept exactly.">
+    Platform (e.g. Android)
+  </message>
+  <message name="IDS_DEVTOOLS_29260f495ba8adcc62fd1307c758ff4e" desc="Text to show the measuring rulers on the target">
+    Show rulers
+  </message>
+  <message name="IDS_DEVTOOLS_29296fcb28eb4edf5d0049b6cac7bbd1" desc="Text for a percentage value">
+    <ph name="SCALE">$1.0f<ex>13.0</ex></ph>%%
+  </message>
   <message name="IDS_DEVTOOLS_33485fcae7737ceb110576dc3ef1a316" desc="Description of the Touch select in Sensors tab">
     Forces touch instead of click
   </message>
   <message name="IDS_DEVTOOLS_391e4e3cd855d914f85f3a4e1b9a00ea" desc="Title of the rotate/screen orientation button">
     Screen orientation options
   </message>
+  <message name="IDS_DEVTOOLS_4252b72e6ebcd4d4b4c2e46a786f03d2" desc="Text for zooming in">
+    Zoom
+  </message>
+  <message name="IDS_DEVTOOLS_445b8178609bbfdf97fe430bc7448fa7" desc="Title of foldable group of options in Devices pane letting customize what information is sent about the browser and device via user agent client hints functionality">
+    User agent client hints
+  </message>
+  <message name="IDS_DEVTOOLS_4c9b91fc2eab5f3085a58146a9befda9" desc="Tooltip text for the foldable 'User agent client hints' section's help button">
+    User agent client hints are an alternative to the user agent string that identify the browser and the device in a more structured way with better privacy accounting. Click the button to learn more.
+  </message>
+  <message name="IDS_DEVTOOLS_4dab36ac83853282fc0d7bae20c19e90" desc="Text to show more options">
+    More options
+  </message>
   <message name="IDS_DEVTOOLS_52089bab86bd75e95090797a7ff551e7" desc="Title of an option in Sensors tab idle emulation select">
     User active, screen unlocked
+  </message>
+  <message name="IDS_DEVTOOLS_5430ad6aadd919c4132ba2588b48e6bb" desc="Field in the Devices pane letting customize precise browser version the edited device presents via User Agent Client Hints.">
+    Full browser version (e.g. 87.0.4280.88)
   </message>
   <message name="IDS_DEVTOOLS_5531adbb03e9e9d529dee1cfe6ae9325" desc="Title of an option in Sensors tab idle emulation select">
     No idle emulation
   </message>
   <message name="IDS_DEVTOOLS_55c0b68e68ef5e4d687c6170f80b3d49" desc="Description of the Emulate Idle State select in Sensors tab">
     Forces selected idle state emulation
+  </message>
+  <message name="IDS_DEVTOOLS_55e3f80f9fc4a59234368dd9ec20415e" desc="Error message in the Device settings pane that shows that the entered brands list includes the wrong information">
+    Brands list must consist of strings, each with a v parameter with a string value.
+  </message>
+  <message name="IDS_DEVTOOLS_6adf97f83acf6453d4a6a4b1070f3754" desc="Text to show there is nothing">
+    None
+  </message>
+  <message name="IDS_DEVTOOLS_71b401e30652987d57dc21cc1a84875b" desc="Field in the Devices pane letting customize the name the edited device presents via User Agent Client Hints">
+    Device model
   </message>
   <message name="IDS_DEVTOOLS_769667ac82abe561c47b57d183f6aa57" desc="Title of a section option in Sensors tab for idle emulation">
     Emulate Idle Detector state
@@ -47,6 +89,12 @@
   </message>
   <message name="IDS_DEVTOOLS_7cc843457525ef424db9f857de4939a2" desc="Title of an option in Sensors tab idle emulation select">
     User active, screen locked
+  </message>
+  <message name="IDS_DEVTOOLS_7f43b617cd76ddbbe953426f4f9634db" desc="Command for showing the 'Locations' tool">
+    Show Locations
+  </message>
+  <message name="IDS_DEVTOOLS_87d17f4624a514e81dc7c8e016a7405c" desc="Text for the mobile platform, as opposed to desktop">
+    Mobile
   </message>
   <message name="IDS_DEVTOOLS_89999eac57e5838aa3adb04ad831f5d3" desc="Text in Sensors View of the Device Toolbar">
     Custom orientation
@@ -129,20 +177,11 @@
   <message name="IDS_DEVTOOLS_526d688f37a86d3c3f27d0c5016eb71d" desc="Text of orientation reset button in Sensors View of the Device Toolbar">
     Reset
   </message>
-  <message name="IDS_DEVTOOLS_5466ee572bcbc75830d044e66ab429bc" desc="City name in Locations Settings">
-    Shanghai
-  </message>
   <message name="IDS_DEVTOOLS_58cc7602635a11277aa7531e14b32c97" desc="Text in Sensors View of the Device Toolbar">
     Portrait upside down
   </message>
   <message name="IDS_DEVTOOLS_59c06928c1dcdb1a687bf21d73e53a09" desc="Text in Device Mode Toolbar of the Device Toolbar">
     Show device frame
-  </message>
-  <message name="IDS_DEVTOOLS_59ead8d1e124ccfb79f3ace06f43e703" desc="City name in Locations Settings">
-    London
-  </message>
-  <message name="IDS_DEVTOOLS_5b4f1c0e2bd8bc1ba726cd51dd70c1a6" desc="City name in Locations Settings">
-    Mountain View
   </message>
   <message name="IDS_DEVTOOLS_5cacd64cfc65b4f4ea83306b6cebf0be" desc="A tag of Sensors tool that can be searched in the command menu">
     timezones
@@ -155,9 +194,6 @@
   </message>
   <message name="IDS_DEVTOOLS_6149711fb8edc5e2adeea7aa63ee11ff" desc="Text in Device Mode Toolbar of the Device Toolbar">
     150%
-  </message>
-  <message name="IDS_DEVTOOLS_62413a57c5e3dc51177995fa175d3286" desc="City name in Locations Settings">
-    Tokyo
   </message>
   <message name="IDS_DEVTOOLS_62759e0d418d7391bf2d54e70cbcc05d" desc="Text in Device Mode Toolbar of the Device Toolbar">
     Remove device type
@@ -201,14 +237,8 @@
   <message name="IDS_DEVTOOLS_7b4b2de0aae3a60aa3cf502a19f9c748" desc="Error message in the Devices settings pane that declares that the device name input must not be empty">
     Device name cannot be empty.
   </message>
-  <message name="IDS_DEVTOOLS_7e35e74e610188414ad24235dd787c78" desc="City name in Locations Settings">
-    Moscow
-  </message>
   <message name="IDS_DEVTOOLS_7f163d0494446906a484df67e90c1d6b" desc="Text in Device Mode Toolbar of the Device Toolbar">
     Hide device frame
-  </message>
-  <message name="IDS_DEVTOOLS_7fc2515293d99e95b1745e81d6abbdf4" desc="City name in Locations Settings">
-    São Paulo
   </message>
   <message name="IDS_DEVTOOLS_815dff01257e5ef182b25d4c1ef0a7a0" desc="Text in Device Mode Toolbar of the Device Toolbar">
     Landscape
@@ -234,14 +264,17 @@
   <message name="IDS_DEVTOOLS_8d7b5211545faceef57a041ee56a2f5e" desc="Title of an action in the emulation tool to capture full height screenshot">
     Capture full size screenshot
   </message>
-  <message name="IDS_DEVTOOLS_8ebaad59980c95ade797c903761fa815" desc="City name in Locations Settings">
-    Mumbai
-  </message>
   <message name="IDS_DEVTOOLS_901bc0a4714ff81c24943a50e620de71" desc="Text in Devices Settings Tab of the Device Toolbar">
     User agent string
   </message>
+  <message name="IDS_DEVTOOLS_902b0d55fddef6f8d651fe1035b7d4bd" desc="Text for errors">
+    Error
+  </message>
   <message name="IDS_DEVTOOLS_911f0f24bdce6808f4614d6a263b143b" desc="Text in Sensors View of the Device Toolbar">
     Locale
+  </message>
+  <message name="IDS_DEVTOOLS_913f9c49dcb544e2087cee284f4a00b7" desc="A tag of Mobile related settings that can be searched in the command menu">
+    device
   </message>
   <message name="IDS_DEVTOOLS_92394ac4969be25aa83d1c928f6a7dbc" desc="Label in the Devices settings pane for the device name input of a custom device">
     Device Name
@@ -285,17 +318,47 @@
   <message name="IDS_DEVTOOLS_a7e2da1e5160847a88912b69027bca09" desc="Stage element title in Sensors View of the Device Toolbar">
     Enable orientation to rotate
   </message>
+  <message name="IDS_DEVTOOLS_abbd64f40c34c537d3a571af068fce29" desc="Text for the orientation of something">
+    Orientation
+  </message>
+  <message name="IDS_DEVTOOLS_af29aa178ae43211319e28f627e96590" desc="Title of an action in the emulation tool to show sensors">
+    Sensors
+  </message>
+  <message name="IDS_DEVTOOLS_ba4ff28193ef85288d9658df2a6f6138" desc="Error message in the Device settings pane that shows that the entered brands list has wrong syntax">
+    Brands list is not a valid structured fields list.
+  </message>
+  <message name="IDS_DEVTOOLS_bcdc793ba9db0fb4cb3e6f9a2b706a14" desc="Command for showing the 'Sensors' tool">
+    Show Sensors
+  </message>
   <message name="IDS_DEVTOOLS_c15b53cb50624f0e86e1a9ef5a9dd120" desc="Title of the span/un-span button">
     Toggle dual-screen mode
+  </message>
+  <message name="IDS_DEVTOOLS_ce5bf551379459c1c61d2a204061c455" desc="Title for a group of cities">
+    Location
+  </message>
+  <message name="IDS_DEVTOOLS_e0ac20adce6ffee48c7151b070aa5737" desc="Text that refers to device such as a phone">
+    Device
+  </message>
+  <message name="IDS_DEVTOOLS_e1566752956adc1106049319eae8a6f6" desc="Field in Devices pane letting customize which browser names and major versions edited device presents via User Agent Client Hints. Example should be kept exactly.">
+    UA brands list (e.g. &quot;Chromium&quot;;v=&quot;87&quot;)
+  </message>
+  <message name="IDS_DEVTOOLS_eb81441fe20963ff9e8e69c5b32fc625" desc="Title for a group of configuration options">
+    Presets
+  </message>
+  <message name="IDS_DEVTOOLS_e80db117a6c2bad899068992535b3436" desc="Field in Devices pane letting customize which operating system version the edited device presents via User Agent Client Hints">
+    Platform version
+  </message>
+  <message name="IDS_DEVTOOLS_eba743b98ec6a08b71ed80486f5cde13" desc="Command for showing the 'Devices' tool">
+    Show Devices
+  </message>
+  <message name="IDS_DEVTOOLS_ee1cab1975e28575b1631ee8fc4ea749" desc="Title of an action in the emulation tool to capture node screenshot">
+    Capture node screenshot
   </message>
   <message name="IDS_DEVTOOLS_eebd338ddbd547e41e4a1296de82963a" desc="Title of Locations settings">
     Locations
   </message>
   <message name="IDS_DEVTOOLS_a9c9b04b4bb57da48b29b4f40ffb2e89" desc="A tag of Sensors tool that can be searched in the command menu">
     device orientation
-  </message>
-  <message name="IDS_DEVTOOLS_af29aa178ae43211319e28f627e96590" desc="Title of an action in the emulation tool to show sensors">
-    Sensors
   </message>
   <message name="IDS_DEVTOOLS_b0ac9a67aaac87b4b70f5e1b7292b2cc" desc="A context menu item in the Device Mode Toolbar of the Device Toolbar">
     Fit to window (<ph name="THIS__MODEL_FITSCALE________">$1.0f<ex>30.0</ex></ph>%%)
@@ -378,20 +441,17 @@
   <message name="IDS_DEVTOOLS_eccbc87e4b5ce2fe28308fd9f2a7baf3" desc="Text in Device Mode Toolbar of the Device Toolbar">
     3
   </message>
-  <message name="IDS_DEVTOOLS_ee1611b61f5688e70c12b40684dbb395" desc="City name in Locations Settings">
-    Berlin
-  </message>
   <message name="IDS_DEVTOOLS_eec6c4bdbd339edf8cbea68becb85244" desc="Label in the Devices settings pane for the height input of a custom device">
     Height
   </message>
   <message name="IDS_DEVTOOLS_f01ee7fedba5e392f6f9adab7ec0c74a" desc="Error message in the Locations settings pane that declares the location name input must not be empty">
     Location name cannot be empty
   </message>
+  <message name="IDS_DEVTOOLS_f0f31c9700c6b10d8a20dc487b2ae6a8" desc="Text for the touch type to simulate on a device">
+    Touch
+  </message>
   <message name="IDS_DEVTOOLS_f2a72a44f7b7d30829c0405ed2385345" desc="Text in Device Mode View of the Device Toolbar">
     Mobile S
-  </message>
-  <message name="IDS_DEVTOOLS_f4334fdfa1c728eae375fe781e2e2d9d" desc="City name in Locations Settings">
-    San Francisco
   </message>
   <message name="IDS_DEVTOOLS_f819de81247be4a5428dc0e169de28b8" desc="Text in Device Mode Toolbar of the Device Toolbar">
     75%
@@ -407,5 +467,8 @@
   </message>
   <message name="IDS_DEVTOOLS_fd37e9411d9f8a6af8fb4d3b787ccfc6" desc="Error message in the Devices settings pane that declares the minimum value for the width input">
     Width must be greater than or equal to <ph name="EMULATION_DEVICEMODEMODEL_MINDEVICESIZE">$1s<ex>50</ex></ph>.
+  </message>
+  <message name="IDS_DEVTOOLS_fdc437433d058adbaf6f7020f1200f76" desc="Error message in the Device settings pane that shows that the entered value has characters that can't be represented in the corresponding User Agent Client Hints">
+    Not representable as structured headers string.
   </message>
 </grit-part>

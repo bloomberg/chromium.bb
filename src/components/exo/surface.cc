@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/exo/buffer.h"
 #include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/shell_surface_util.h"
@@ -27,6 +28,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -53,10 +55,10 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/display/output_protection_delegate.h"
 #include "ash/wm/desks/desks_util.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*)
 
@@ -117,11 +119,11 @@ gfx::Size ToTransformedSize(const gfx::Size& size, Transform transform) {
 }
 
 bool IsDeskContainer(aura::Window* container) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash::desks_util::IsDeskContainer(container);
 #else
   return container->id() == ash::kShellWindowId_DefaultContainerDeprecated;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 class CustomWindowDelegate : public aura::WindowDelegate {
@@ -288,9 +290,10 @@ void Surface::Attach(Buffer* buffer) {
 }
 
 void Surface::Attach(Buffer* buffer, gfx::Vector2d offset) {
-  TRACE_EVENT2("exo", "Surface::Attach", "buffer_id",
-               buffer ? buffer->gfx_buffer() : nullptr, "app_id",
-               GetApplicationId(window_.get()));
+  TRACE_EVENT2(
+      "exo", "Surface::Attach", "buffer_id",
+      buffer ? static_cast<const void*>(buffer->gfx_buffer()) : nullptr,
+      "app_id", GetApplicationId(window_.get()));
   has_pending_contents_ = true;
   pending_state_.buffer.Reset(buffer ? buffer->AsWeakPtr()
                                      : base::WeakPtr<Buffer>());
@@ -523,6 +526,12 @@ void Surface::SetFrame(SurfaceFrameType type) {
     delegate_->OnSetFrame(type);
 }
 
+void Surface::SetServerStartResize() {
+  if (delegate_)
+    delegate_->OnSetServerStartResize();
+  SetFrame(SurfaceFrameType::SHADOW);
+}
+
 void Surface::SetFrameColors(SkColor active_color, SkColor inactive_color) {
   TRACE_EVENT2("exo", "Surface::SetFrameColors", "active_color", active_color,
                "inactive_color", inactive_color);
@@ -551,6 +560,36 @@ void Surface::SetUseImmersiveForFullscreen(bool value) {
 
   if (delegate_)
     delegate_->SetUseImmersiveForFullscreen(value);
+}
+
+void Surface::ShowSnapPreviewToRight() {
+  if (delegate_)
+    delegate_->ShowSnapPreviewToRight();
+}
+
+void Surface::ShowSnapPreviewToLeft() {
+  if (delegate_)
+    delegate_->ShowSnapPreviewToLeft();
+}
+
+void Surface::HideSnapPreview() {
+  if (delegate_)
+    delegate_->HideSnapPreview();
+}
+
+void Surface::SetSnappedToRight() {
+  if (delegate_)
+    delegate_->SetSnappedToRight();
+}
+
+void Surface::SetSnappedToLeft() {
+  if (delegate_)
+    delegate_->SetSnappedToLeft();
+}
+
+void Surface::UnsetSnap() {
+  if (delegate_)
+    delegate_->UnsetSnap();
 }
 
 void Surface::SetColorSpace(gfx::ColorSpace color_space) {
@@ -613,9 +652,10 @@ bool Surface::HasPendingAcquireFence() const {
 
 void Surface::Commit() {
   TRACE_EVENT1("exo", "Surface::Commit", "buffer_id",
-               pending_state_.buffer.buffer()
-                   ? pending_state_.buffer.buffer()->gfx_buffer()
-                   : nullptr);
+               static_cast<const void*>(
+                   pending_state_.buffer.buffer()
+                       ? pending_state_.buffer.buffer()->gfx_buffer()
+                       : nullptr));
 
   for (auto& observer : observers_)
     observer.OnCommit(this);
@@ -691,11 +731,11 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         cached_state_.basic_state.buffer_transform !=
             state_.basic_state.buffer_transform;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     bool needs_output_protection =
         cached_state_.basic_state.only_visible_on_secure_output !=
         state_.basic_state.only_visible_on_secure_output;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     bool cached_invert_y = false;
 
@@ -721,7 +761,7 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
       window_->TrackOcclusionState();
     }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (needs_output_protection) {
       if (!output_protection_) {
         output_protection_ =
@@ -735,7 +775,7 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
 
       output_protection_->SetProtection(protection_mask, base::DoNothing());
     }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // We update contents if Attach() has been called since last commit.
     if (has_cached_contents_) {
@@ -1041,14 +1081,14 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
         current_resource_.color_space = state_.basic_state.color_space;
       }
     } else {
-      current_resource_.id = 0;
+      current_resource_.id = viz::kInvalidResourceId;
       // Use the buffer's size, so the AppendContentsToFrame() will append
       // a SolidColorDrawQuad with the buffer's size.
       current_resource_.size = state_.buffer.size();
       current_resource_has_alpha_ = false;
     }
   } else {
-    current_resource_.id = 0;
+    current_resource_.id = viz::kInvalidResourceId;
     current_resource_.size = gfx::Size();
     current_resource_has_alpha_ = false;
   }

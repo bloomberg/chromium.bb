@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.h"
+#include "spdy/core/hpack/hpack_decoder_adapter.h"
 
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_flags.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "http2/decoder/decode_buffer.h"
+#include "http2/decoder/decode_status.h"
+#include "spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "spdy/platform/api/spdy_flags.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 using ::http2::DecodeBuffer;
 using ::http2::HpackString;
@@ -35,7 +35,7 @@ void HpackDecoderAdapter::ApplyHeaderTableSizeSetting(size_t size_setting) {
 void HpackDecoderAdapter::HandleControlFrameHeadersStart(
     SpdyHeadersHandlerInterface* handler) {
   SPDY_DVLOG(2) << "HpackDecoderAdapter::HandleControlFrameHeadersStart";
-  DCHECK(!header_block_started_);
+  QUICHE_DCHECK(!header_block_started_);
   listener_adapter_.set_handler(handler);
 }
 
@@ -60,7 +60,7 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
   // headers_data_length==0, in which case we need to avoid creating
   // a DecodeBuffer, which would otherwise complain.
   if (headers_data_length > 0) {
-    DCHECK_NE(headers_data, nullptr);
+    QUICHE_DCHECK_NE(headers_data, nullptr);
     if (headers_data_length > max_decode_buffer_size_bytes_) {
       SPDY_DVLOG(1) << "max_decode_buffer_size_bytes_ < headers_data_length: "
                     << max_decode_buffer_size_bytes_ << " < "
@@ -78,7 +78,7 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
     }
     http2::DecodeBuffer db(headers_data, headers_data_length);
     bool ok = hpack_decoder_.DecodeFragment(&db);
-    DCHECK(!ok || db.Empty()) << "Remaining=" << db.Remaining();
+    QUICHE_DCHECK(!ok || db.Empty()) << "Remaining=" << db.Remaining();
     if (!ok) {
       error_ = hpack_decoder_.error();
       detailed_error_ = hpack_decoder_.detailed_error();

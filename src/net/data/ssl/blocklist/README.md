@@ -98,6 +98,13 @@ ccTLD namespace.
   * [a8e1dfd9cd8e470aa2f443914f931cfd61c323e94d75827affee985241c35ce5.pem](a8e1dfd9cd8e470aa2f443914f931cfd61c323e94d75827affee985241c35ce5.pem)
   * [e4f9a3235df7330255f36412bc849fb630f8519961ec3538301deb896c953da5.pem](e4f9a3235df7330255f36412bc849fb630f8519961ec3538301deb896c953da5.pem)
 
+### Sri Lanka
+
+google.lk certificate from Sectigo. https://crt.sh/?id=4037732415
+
+  * [91018fcd3e0dc73f48d011a123f604d846d66821c58304474f949d7449dd600a.pem]
+  (91018fcd3e0dc73f48d011a123f604d846d66821c58304474f949d7449dd600a.pem)
+
 ### Thawte
 
 A precert that appeared in the CT logs for (www.)google.com, issued by
@@ -282,6 +289,8 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1423400
 For details, see <https://security.googleblog.com/2019/08/protecting-chrome-users-in-kazakhstan.html>
 
   * [00309c736dd661da6f1eb24173aa849944c168a43a15bffd192eecfdb6f8dbd2.pem](00309c736dd661da6f1eb24173aa849944c168a43a15bffd192eecfdb6f8dbd2.pem)
+  * [61c0fc2e38b5b6f9071b42cee54a9013d858b6697c68b460948551b3249576a1.pem](61c0fc2e38b5b6f9071b42cee54a9013d858b6697c68b460948551b3249576a1.pem)
+  * [1df696f021ab1c3ace9a376b07ed7256a40214cd3396d7934087614924e2d7ef.pem](1df696f021ab1c3ace9a376b07ed7256a40214cd3396d7934087614924e2d7ef.pem)
 
 ### revoked.badssl.com
 

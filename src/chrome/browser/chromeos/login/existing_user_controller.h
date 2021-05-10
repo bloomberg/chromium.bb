@@ -21,18 +21,19 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
-#include "chrome/browser/chromeos/login/saml/password_sync_token_checkers_collection.h"
-#include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+// TODO(https://crbug.com/1164001): move KioskAppId to forward declaration
+// when moved to chrome/browser/ash/.
+#include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/login/saml/password_sync_token_checkers_collection.h"
+#include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -52,7 +53,6 @@ namespace chromeos {
 class CrosSettings;
 class LoginDisplay;
 class OAuth2TokenInitializer;
-class KioskAppId;
 
 namespace login {
 class NetworkStateHelper;
@@ -70,10 +70,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Returns the current existing user controller fetched from the current
   // LoginDisplayHost instance.
   static ExistingUserController* current_controller();
-
-  // Registers the pref for ManagedGuestSessionAutoLaunchNotificationReduced
-  // policy.
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // All UI initialization is deferred till Init() call.
   ExistingUserController();
@@ -143,6 +139,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   bool IsAutoLoginTimerRunningForTesting() const {
     return auto_login_timer_ && auto_login_timer_->IsRunning();
   }
+
+  // Extracts out users allowed on login screen.
+  static user_manager::UserList ExtractLoginUsers(
+      const user_manager::UserList& users);
 
  private:
   friend class ExistingUserControllerTest;
@@ -282,7 +282,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
                                             bool service_is_available);
 
   // Invokes `continuation` after verifying that the device is not disabled.
-  void ContinueLoginIfDeviceNotDisabled(const base::Closure& continuation);
+  void ContinueLoginIfDeviceNotDisabled(base::OnceClosure continuation);
 
   // Signs in as a new user. This is a continuation of CompleteLogin() that gets
   // invoked after it has been verified that the device is not disabled.
@@ -385,18 +385,13 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      show_user_names_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      allow_new_user_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription> users_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      local_account_auto_login_id_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      local_account_auto_login_delay_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      family_link_allowed_subscription_;
+  base::CallbackListSubscription show_user_names_subscription_;
+  base::CallbackListSubscription allow_new_user_subscription_;
+  base::CallbackListSubscription allow_guest_subscription_;
+  base::CallbackListSubscription users_subscription_;
+  base::CallbackListSubscription local_account_auto_login_id_subscription_;
+  base::CallbackListSubscription local_account_auto_login_delay_subscription_;
+  base::CallbackListSubscription family_link_allowed_subscription_;
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
@@ -414,5 +409,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::ExistingUserController;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EXISTING_USER_CONTROLLER_H_

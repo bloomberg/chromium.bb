@@ -43,8 +43,6 @@ class DualMediaSinkService {
   using OnSinksDiscoveredProviderCallbackList =
       base::CallbackList<void(const std::string&,
                               const std::vector<MediaSinkInternal>&)>;
-  using Subscription =
-      std::unique_ptr<OnSinksDiscoveredProviderCallbackList::Subscription>;
 
   // Returns the lazily-created leaky singleton instance.
   static DualMediaSinkService* GetInstance();
@@ -67,9 +65,9 @@ class DualMediaSinkService {
   }
 
   // Adds |callback| to be notified when the list of discovered sinks changes.
-  // The caller is responsible for destroying the returned Subscription when it
+  // The caller is responsible for destroying the returned subscription when it
   // no longer wishes to receive updates.
-  Subscription AddSinksDiscoveredCallback(
+  base::CallbackListSubscription AddSinksDiscoveredCallback(
       const OnSinksDiscoveredProviderCallback& callback);
 
   // Instantiate two PendingRemote objects. The objects will be bound with
@@ -86,6 +84,8 @@ class DualMediaSinkService {
   // started.
   virtual void StartMdnsDiscovery();
 
+  bool MdnsDiscoveryStarted();
+
  protected:
   // Used by tests.
   DualMediaSinkService(
@@ -99,7 +99,6 @@ class DualMediaSinkService {
   FRIEND_TEST_ALL_PREFIXES(DualMediaSinkServiceTest,
                            AddSinksDiscoveredCallback);
   friend class MediaRouterDesktopTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, ProvideSinks);
 
   static DualMediaSinkService* instance_for_test_;
 

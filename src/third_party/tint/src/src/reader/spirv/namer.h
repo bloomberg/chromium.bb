@@ -78,7 +78,7 @@ class Namer {
   /// Gets the registered name for a struct member. If no name has
   /// been registered for this member, then returns the empty string.
   /// member index is in bounds.
-  /// @param id the SPIR-V ID of the struct
+  /// @param id the SPIR-V ID of the struct type
   /// @param member_index the index of the member, counting from 0
   /// @returns the registered name for the ID, or an empty string if
   /// nothing has been registered.
@@ -90,8 +90,8 @@ class Namer {
   std::string FindUnusedDerivedName(const std::string& base_name) const;
 
   /// Returns a newly registered name based on a given base name.
-  /// In the internal table |name_to_id_|, it is mapped to the invalid
-  /// SPIR-V ID 0.  It does not have an entry in |id_to_name_|.
+  /// In the internal table `name_to_id_`, it is mapped to the invalid
+  /// SPIR-V ID 0.  It does not have an entry in `id_to_name_`.
   /// @param base_name the base name
   /// @returns a new name
   std::string MakeDerivedName(const std::string& base_name);

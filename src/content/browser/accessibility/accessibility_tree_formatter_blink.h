@@ -5,36 +5,40 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_BLINK_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_BLINK_H_
 
-#include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
+#include "content/common/content_export.h"
+#include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
 
 namespace content {
 
+class BrowserAccessibility;
+
 class CONTENT_EXPORT AccessibilityTreeFormatterBlink
-    : public AccessibilityTreeFormatterBase {
+    : public ui::AXTreeFormatterBase {
  public:
   explicit AccessibilityTreeFormatterBlink();
   ~AccessibilityTreeFormatterBlink() override;
 
-  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      BrowserAccessibility* root) override;
-
+  base::Value BuildTree(ui::AXPlatformNodeDelegate* root) const override;
   base::Value BuildTreeForWindow(gfx::AcceleratedWidget widget) const override;
-
   base::Value BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
+  base::Value BuildTreeForNode(ui::AXNode* node) const override;
+  std::string DumpInternalAccessibilityTree(
+      ui::AXTreeID tree_id,
+      const std::vector<AXPropertyFilter>& property_filters) override;
 
+ protected:
   void AddDefaultFilters(
       std::vector<AXPropertyFilter>* property_filters) override;
 
-  static std::unique_ptr<ui::AXTreeFormatter> CreateBlink();
-
  private:
-  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
-                                       base::DictionaryValue* dict) const;
+  void RecursiveBuildTree(const BrowserAccessibility& node,
+                          base::Value* dict) const;
+
+  void RecursiveBuildTree(const ui::AXNode& node, base::Value* dict) const;
 
   uint32_t ChildCount(const BrowserAccessibility& node) const;
   BrowserAccessibility* GetChild(const BrowserAccessibility& node,
@@ -43,9 +47,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) const;
 
+  void AddProperties(const ui::AXNode& node, base::DictionaryValue* dict) const;
+
   std::string ProcessTreeForOutput(
-      const base::DictionaryValue& node,
-      base::DictionaryValue* filtered_dict_result = nullptr) override;
+      const base::DictionaryValue& node) const override;
 };
 
 }  // namespace content

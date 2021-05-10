@@ -215,7 +215,7 @@ class P2PTransportChannelTestBase : public ::testing::Test,
         nss_(new rtc::NATSocketServer(vss_.get())),
         ss_(new rtc::FirewallSocketServer(nss_.get())),
         main_(ss_.get()),
-        stun_server_(TestStunServer::Create(&main_, kStunAddr)),
+        stun_server_(TestStunServer::Create(ss_.get(), kStunAddr)),
         turn_server_(&main_, kTurnUdpIntAddr, kTurnUdpExtAddr),
         socks_server1_(ss_.get(),
                        kSocksProxyAddrs[0],
@@ -5974,6 +5974,168 @@ TEST_F(P2PTransportChannelTest, EnableDnsLookupsWithTransportPolicyNoHost) {
       CreateUdpCandidate(LOCAL_PORT_TYPE, "hostname.test", 1, 100));
 
   EXPECT_TRUE(lookup_started);
+
+  DestroyChannels();
+}
+
+class GatherAfterConnectedTest : public P2PTransportChannelTest,
+                                 public ::testing::WithParamInterface<bool> {};
+
+TEST_P(GatherAfterConnectedTest, GatherAfterConnected) {
+  const bool stop_gather_on_strongly_connected = GetParam();
+  const std::string field_trial =
+      std::string("WebRTC-IceFieldTrials/stop_gather_on_strongly_connected:") +
+      (stop_gather_on_strongly_connected ? "true/" : "false/");
+  webrtc::test::ScopedFieldTrials field_trials(field_trial);
+
+  rtc::ScopedFakeClock clock;
+  // Use local + relay
+  constexpr uint32_t flags =
+      kDefaultPortAllocatorFlags | PORTALLOCATOR_ENABLE_SHARED_SOCKET |
+      PORTALLOCATOR_DISABLE_STUN | PORTALLOCATOR_DISABLE_TCP;
+  ConfigureEndpoints(OPEN, OPEN, flags, flags);
+  auto* ep1 = GetEndpoint(0);
+  auto* ep2 = GetEndpoint(1);
+  ep1->allocator_->SetCandidateFilter(CF_ALL);
+  ep2->allocator_->SetCandidateFilter(CF_ALL);
+
+  // Use step delay 3s which is long enough for
+  // connection to be established before managing to gather relay candidates.
+  int delay = 3000;
+  SetAllocationStepDelay(0, delay);
+  SetAllocationStepDelay(1, delay);
+  IceConfig ice_config = CreateIceConfig(1000, GATHER_CONTINUALLY);
+  CreateChannels(ice_config, ice_config);
+
+  PauseCandidates(0);
+  PauseCandidates(1);
+
+  // We have gathered host candidates but not relay.
+  ASSERT_TRUE_SIMULATED_WAIT(ep1->saved_candidates_.size() == 1u &&
+                                 ep2->saved_candidates_.size() == 1u,
+                             kDefaultTimeout, clock);
+
+  ResumeCandidates(0);
+  ResumeCandidates(1);
+
+  PauseCandidates(0);
+  PauseCandidates(1);
+
+  ASSERT_TRUE_SIMULATED_WAIT(ep1_ch1()->remote_candidates().size() == 1 &&
+                                 ep2_ch1()->remote_candidates().size() == 1,
+                             kDefaultTimeout, clock);
+
+  ASSERT_TRUE_SIMULATED_WAIT(
+      ep1_ch1()->selected_connection() && ep2_ch1()->selected_connection(),
+      kDefaultTimeout, clock);
+
+  clock.AdvanceTime(webrtc::TimeDelta::Millis(10 * delay));
+
+  if (stop_gather_on_strongly_connected) {
+    // The relay candiates gathered has not been propagated to channel.
+    EXPECT_EQ(ep1->saved_candidates_.size(), 0u);
+    EXPECT_EQ(ep2->saved_candidates_.size(), 0u);
+  } else {
+    // The relay candiates gathered has been propagated to channel.
+    EXPECT_EQ(ep1->saved_candidates_.size(), 1u);
+    EXPECT_EQ(ep2->saved_candidates_.size(), 1u);
+  }
+}
+
+TEST_P(GatherAfterConnectedTest, GatherAfterConnectedMultiHomed) {
+  const bool stop_gather_on_strongly_connected = GetParam();
+  const std::string field_trial =
+      std::string("WebRTC-IceFieldTrials/stop_gather_on_strongly_connected:") +
+      (stop_gather_on_strongly_connected ? "true/" : "false/");
+  webrtc::test::ScopedFieldTrials field_trials(field_trial);
+
+  rtc::ScopedFakeClock clock;
+  // Use local + relay
+  constexpr uint32_t flags =
+      kDefaultPortAllocatorFlags | PORTALLOCATOR_ENABLE_SHARED_SOCKET |
+      PORTALLOCATOR_DISABLE_STUN | PORTALLOCATOR_DISABLE_TCP;
+  AddAddress(0, kAlternateAddrs[0]);
+  ConfigureEndpoints(OPEN, OPEN, flags, flags);
+  auto* ep1 = GetEndpoint(0);
+  auto* ep2 = GetEndpoint(1);
+  ep1->allocator_->SetCandidateFilter(CF_ALL);
+  ep2->allocator_->SetCandidateFilter(CF_ALL);
+
+  // Use step delay 3s which is long enough for
+  // connection to be established before managing to gather relay candidates.
+  int delay = 3000;
+  SetAllocationStepDelay(0, delay);
+  SetAllocationStepDelay(1, delay);
+  IceConfig ice_config = CreateIceConfig(1000, GATHER_CONTINUALLY);
+  CreateChannels(ice_config, ice_config);
+
+  PauseCandidates(0);
+  PauseCandidates(1);
+
+  // We have gathered host candidates but not relay.
+  ASSERT_TRUE_SIMULATED_WAIT(ep1->saved_candidates_.size() == 2u &&
+                                 ep2->saved_candidates_.size() == 1u,
+                             kDefaultTimeout, clock);
+
+  ResumeCandidates(0);
+  ResumeCandidates(1);
+
+  PauseCandidates(0);
+  PauseCandidates(1);
+
+  ASSERT_TRUE_SIMULATED_WAIT(ep1_ch1()->remote_candidates().size() == 1 &&
+                                 ep2_ch1()->remote_candidates().size() == 2,
+                             kDefaultTimeout, clock);
+
+  ASSERT_TRUE_SIMULATED_WAIT(
+      ep1_ch1()->selected_connection() && ep2_ch1()->selected_connection(),
+      kDefaultTimeout, clock);
+
+  clock.AdvanceTime(webrtc::TimeDelta::Millis(10 * delay));
+
+  if (stop_gather_on_strongly_connected) {
+    // The relay candiates gathered has not been propagated to channel.
+    EXPECT_EQ(ep1->saved_candidates_.size(), 0u);
+    EXPECT_EQ(ep2->saved_candidates_.size(), 0u);
+  } else {
+    // The relay candiates gathered has been propagated.
+    EXPECT_EQ(ep1->saved_candidates_.size(), 2u);
+    EXPECT_EQ(ep2->saved_candidates_.size(), 1u);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(GatherAfterConnectedTest,
+                         GatherAfterConnectedTest,
+                         ::testing::Values(true, false));
+
+// Tests no candidates are generated with old ice ufrag/passwd after an ice
+// restart even if continual gathering is enabled.
+TEST_F(P2PTransportChannelTest, TestIceNoOldCandidatesAfterIceRestart) {
+  rtc::ScopedFakeClock clock;
+  AddAddress(0, kAlternateAddrs[0]);
+  ConfigureEndpoints(OPEN, OPEN, kDefaultPortAllocatorFlags,
+                     kDefaultPortAllocatorFlags);
+
+  // gathers continually.
+  IceConfig config = CreateIceConfig(1000, GATHER_CONTINUALLY);
+  CreateChannels(config, config);
+
+  EXPECT_TRUE_SIMULATED_WAIT(CheckConnected(ep1_ch1(), ep2_ch1()),
+                             kDefaultTimeout, clock);
+
+  PauseCandidates(0);
+
+  ep1_ch1()->SetIceParameters(kIceParams[3]);
+  ep1_ch1()->MaybeStartGathering();
+
+  EXPECT_TRUE_SIMULATED_WAIT(GetEndpoint(0)->saved_candidates_.size() > 0,
+                             kDefaultTimeout, clock);
+
+  for (const auto& cd : GetEndpoint(0)->saved_candidates_) {
+    for (const auto& c : cd->candidates) {
+      EXPECT_EQ(c.username(), kIceUfrag[3]);
+    }
+  }
 
   DestroyChannels();
 }

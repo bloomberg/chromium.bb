@@ -22,6 +22,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -39,6 +40,13 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
     private final SmsProviderGms mProvider;
     private boolean mDestroyed;
     private Wrappers.WebOTPServiceContext mContext;
+    private enum BackendAvailability {
+        AVAILABLE,
+        API_NOT_CONNECTED,
+        PLATFORM_NOT_SUPPORTED,
+        API_NOT_AVAILABLE,
+        NUM_ENTRIES
+    }
 
     public SmsVerificationReceiver(SmsProviderGms provider, Wrappers.WebOTPServiceContext context) {
         if (DEBUG) Log.d(TAG, "Creating SmsVerificationReceiver.");
@@ -65,6 +73,7 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
     }
 
     public void destroy() {
+        if (mDestroyed) return;
         if (DEBUG) Log.d(TAG, "Destroying SmsVerificationReceiver.");
         mDestroyed = true;
         mContext.unregisterReceiver(this);
@@ -99,7 +108,7 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
             case CommonStatusCodes.SUCCESS:
                 String message = intent.getExtras().getString(SmsCodeRetriever.EXTRA_SMS_CODE_LINE);
                 if (DEBUG) Log.d(TAG, "Got message: %s!", message);
-                mProvider.onReceive(message);
+                mProvider.onReceive(message, GmsBackend.VERIFICATION);
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
@@ -126,14 +135,18 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
      */
     public void onRetrieverTaskFailure(WindowAndroid window, Exception e) {
         if (DEBUG) Log.d(TAG, "Task failed. Attempting recovery.", e);
+        BackendAvailability availability = BackendAvailability.AVAILABLE;
         ApiException exception = (ApiException) e;
         if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_CONNECTED) {
+            availability = BackendAvailability.API_NOT_CONNECTED;
             mProvider.onMethodNotAvailable();
             Log.d(TAG, "update GMS services.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.PLATFORM_NOT_SUPPORTED) {
+            availability = BackendAvailability.PLATFORM_NOT_SUPPORTED;
             mProvider.onMethodNotAvailable();
             Log.d(TAG, "old android platform.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_AVAILABLE) {
+            availability = BackendAvailability.API_NOT_AVAILABLE;
             mProvider.onMethodNotAvailable();
             Log.d(TAG, "not the default browser.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.USER_PERMISSION_REQUIRED) {
@@ -163,14 +176,28 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
         } else {
             Log.w(TAG, "Unexpected exception", e);
         }
+        reportBackendAvailability(availability);
     }
 
     public void listen(WindowAndroid window) {
         Wrappers.SmsRetrieverClientWrapper client = mProvider.getClient();
         Task<Void> task = client.startSmsCodeBrowserRetriever();
 
-        task.addOnFailureListener((Exception e) -> { this.onRetrieverTaskFailure(window, e); });
+        task.addOnSuccessListener(unused -> {
+            this.reportBackendAvailability(BackendAvailability.AVAILABLE);
+            mProvider.destoryUserConsentReceiver();
+        });
+        task.addOnFailureListener((Exception e) -> {
+            this.onRetrieverTaskFailure(window, e);
+            mProvider.destoryVerificationReceiver();
+        });
 
         if (DEBUG) Log.d(TAG, "Installed task");
+    }
+
+    public void reportBackendAvailability(BackendAvailability availability) {
+        if (DEBUG) Log.d(TAG, "Backend availability: %d", availability.ordinal());
+        RecordHistogram.recordEnumeratedHistogram("Blink.Sms.BackendAvailability",
+                availability.ordinal(), BackendAvailability.NUM_ENTRIES.ordinal());
     }
 }

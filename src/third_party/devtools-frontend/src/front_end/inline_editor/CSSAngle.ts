@@ -83,7 +83,7 @@ export class CSSAngle extends HTMLElement {
     this.render();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this.unbindMinifyingAction();
   }
 
@@ -168,7 +168,7 @@ export class CSSAngle extends HTMLElement {
 
   private onMiniIconClick(event: MouseEvent): void {
     event.stopPropagation();
-    if (event.shiftKey) {
+    if (event.shiftKey && !this.popoverOpen) {
       this.displayNextUnit();
       return;
     }
@@ -176,10 +176,8 @@ export class CSSAngle extends HTMLElement {
   }
 
   // Fix that the previous text will be selected when double-clicking the angle icon
-  // TODO: When the angle selector(picker) is opened, hold down Shift and click the angle icon to close it.
   private consume(event: MouseEvent): void {
     event.stopPropagation();
-    event.preventDefault();
   }
 
   private onKeydown(event: KeyboardEvent): void {
@@ -205,7 +203,7 @@ export class CSSAngle extends HTMLElement {
     }
   }
 
-  private render() {
+  private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -219,11 +217,13 @@ export class CSSAngle extends HTMLElement {
         devtools-css-angle-swatch {
           display: inline-block;
           margin-right: 2px;
+          user-select: none;
         }
 
         devtools-css-angle-editor {
           --dial-color: #a3a3a3;
           --border-color: var(--toolbar-bg-color);
+
           position: fixed;
           z-index: 2;
         }
@@ -248,7 +248,7 @@ export class CSSAngle extends HTMLElement {
     // clang-format on
   }
 
-  private renderPopover() {
+  private renderPopover(): LitHtml.TemplateResult {
     let contextualBackground = '';
     // TODO(crbug.com/1143010): for now we ignore values with "url"; when we refactor
     // CSS value parsing we should properly apply atomic contextual background.
@@ -278,6 +278,7 @@ if (!customElements.get('devtools-css-angle')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-css-angle': CSSAngle;
   }

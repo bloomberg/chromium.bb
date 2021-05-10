@@ -2,38 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_features.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
+#include "chrome/browser/web_applications/test/system_web_app_browsertest_base.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 
-class CameraAppIntegrationTest : public SystemWebAppIntegrationTest {
- public:
-  CameraAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kCameraSystemWebApp}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// TODO(crbug.com/1129340): Remove this test after CCA supports responsive UI.
-// Test that the window of Camera App is not resizeable.
-IN_PROC_BROWSER_TEST_P(CameraAppIntegrationTest, WindowNotResizeable) {
-  WaitForTestSystemAppInstall();
-  Browser* browser;
-  LaunchApp(web_app::SystemAppType::CAMERA, &browser);
-  BrowserView* const browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser);
-  EXPECT_FALSE(browser_view->CanResize());
-}
+using CameraAppIntegrationTest = SystemWebAppIntegrationTest;
 
 IN_PROC_BROWSER_TEST_P(CameraAppIntegrationTest, MainUrlNavigation) {
   WaitForTestSystemAppInstall();
@@ -72,5 +52,5 @@ IN_PROC_BROWSER_TEST_P(CameraAppIntegrationTest, OtherPageUrlNavigation) {
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 
-INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_MANIFEST_INSTALL_P(
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     CameraAppIntegrationTest);

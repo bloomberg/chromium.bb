@@ -11,14 +11,12 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
-#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -93,7 +91,8 @@ void BuiltInChromeOsApps::Connect(
   }
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kBuiltIn,
+                     true /* should_notify_initialized */);
 
   // Unlike other apps::mojom::Publisher implementations, we don't need to
   // retain the subscriber (e.g. add it to a
@@ -123,13 +122,9 @@ void BuiltInChromeOsApps::LoadIcon(const std::string& app_id,
 void BuiltInChromeOsApps::Launch(const std::string& app_id,
                                  int32_t event_flags,
                                  apps::mojom::LaunchSource launch_source,
-                                 int64_t display_id) {
+                                 apps::mojom::WindowInfoPtr window_info) {
   if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
     ash::ToggleKeyboardShortcutViewer();
-  } else if (app_id == ash::kReleaseNotesAppId) {
-    base::RecordAction(
-        base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
-    chrome::LaunchReleaseNotes(profile_, launch_source);
   }
 }
 

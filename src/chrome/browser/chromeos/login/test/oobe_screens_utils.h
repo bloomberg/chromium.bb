@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREENS_UTILS_H_
 
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
+#include "chrome/browser/ash/login/screens/welcome_screen.h"
 
 namespace chromeos {
 namespace test {
@@ -21,7 +21,7 @@ void ExitUpdateScreenNoUpdate();
 void WaitForFingerprintScreen();
 void ExitFingerprintPinSetupScreen();
 void WaitForPinSetupScreen();
-void ExitDiscoverPinSetupScreen();
+void ExitPinSetupScreen();
 void SkipToEnrollmentOnRecovery();
 void WaitForEnrollmentScreen();
 void WaitForUserCreationScreen();
@@ -31,6 +31,9 @@ void WaitForEulaScreen();
 void TapEulaAccept();
 void WaitForSyncConsentScreen();
 void ExitScreenSyncConsent();
+
+bool IsScanningRequestedOnNetworkScreen();
+bool IsScanningRequestedOnErrorScreen();
 
 class LanguageReloadObserver : public WelcomeScreen::Observer {
  public:

@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "extensions/common/extension_id.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -25,7 +27,11 @@ namespace extensions {
 class Extension;
 }  // namespace extensions
 
-#if defined(OS_CHROMEOS)
+namespace policy {
+class MockConfigurationPolicyProvider;
+}  // namespace policy
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace chromeos {
 class DeviceStateMixin;
@@ -35,7 +41,7 @@ namespace policy {
 class DevicePolicyCrosTestHelper;
 }  // namespace policy
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // A mixin that allows to force-install an extension/app via the device policy.
 //
@@ -92,13 +98,17 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // Use one of the Init*() methods to initialize the object before calling any
   // other method:
 
-#if defined(OS_CHROMEOS)
+  void InitWithMockPolicyProvider(
+      Profile* profile,
+      policy::MockConfigurationPolicyProvider* mock_policy_provider);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void InitWithDeviceStateMixin(Profile* profile,
                                 chromeos::DeviceStateMixin* device_state_mixin);
   void InitWithDevicePolicyCrosTestHelper(
       Profile* profile,
       policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Force-installs the CRX file |crx_path|; under the hood, generates an update
   // manifest and serves it and the CRX file by the embedded test server.
@@ -108,7 +118,8 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   bool ForceInstallFromCrx(const base::FilePath& crx_path,
                            WaitMode wait_mode,
                            extensions::ExtensionId* extension_id = nullptr,
-                           base::Version* extension_version = nullptr);
+                           base::Version* extension_version = nullptr)
+      WARN_UNUSED_RESULT;
   // Force-installs the extension from the given source directory (which should
   // contain the manifest.json file and all other files of the extension).
   // Under the hood, packs the directory into a CRX file and serves it like
@@ -123,7 +134,7 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
       const base::Optional<base::FilePath>& pem_path,
       WaitMode wait_mode,
       extensions::ExtensionId* extension_id = nullptr,
-      base::Version* extension_version = nullptr);
+      base::Version* extension_version = nullptr) WARN_UNUSED_RESULT;
 
   // Returns the extension, or null if it's not installed yet.
   const extensions::Extension* GetInstalledExtension(
@@ -177,7 +188,8 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   base::ScopedTempDir temp_dir_;
   net::EmbeddedTestServer embedded_test_server_;
   Profile* profile_ = nullptr;
-#if defined(OS_CHROMEOS)
+  policy::MockConfigurationPolicyProvider* mock_policy_provider_ = nullptr;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::DeviceStateMixin* device_state_mixin_ = nullptr;
   policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper_ = nullptr;
 #endif

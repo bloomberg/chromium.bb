@@ -363,10 +363,9 @@ void FrameSelection::SetSelectionForAccessibility(
 void FrameSelection::NodeChildrenWillBeRemoved(ContainerNode& container) {
   if (!container.InActiveDocument())
     return;
-  // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
-  // |Editor| class.
-  if (!GetDocument().IsRunningExecCommand())
-    TypingCommand::CloseTyping(frame_);
+  // TODO(yosin): We should move to call |TypingCommand::CloseTypingIfNeeded()|
+  // to |Editor| class.
+  TypingCommand::CloseTypingIfNeeded(frame_);
 }
 
 void FrameSelection::NodeWillBeRemoved(Node& node) {
@@ -375,10 +374,9 @@ void FrameSelection::NodeWillBeRemoved(Node& node) {
   // needs no adjustment.
   if (!node.InActiveDocument())
     return;
-  // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
-  // |Editor| class.
-  if (!GetDocument().IsRunningExecCommand())
-    TypingCommand::CloseTyping(frame_);
+  // TODO(yosin): We should move to call |TypingCommand::CloseTypingIfNeeded()|
+  // to |Editor| class.
+  TypingCommand::CloseTypingIfNeeded(frame_);
 }
 
 void FrameSelection::DidChangeFocus() {
@@ -628,13 +626,8 @@ bool FrameSelection::Contains(const PhysicalOffset& point) {
   HitTestLocation location(point);
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
-  Node* inner_node = result.InnerNode();
-  if (!inner_node || !inner_node->GetLayoutObject())
-    return false;
-
   const PositionInFlatTreeWithAffinity pos_with_affinity =
-      FromPositionInDOMTree<EditingInFlatTreeStrategy>(
-          inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
+      FromPositionInDOMTree<EditingInFlatTreeStrategy>(result.GetPosition());
   if (pos_with_affinity.IsNull())
     return false;
 
@@ -667,9 +660,8 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
 
   // Check if the selection contains the entire frame contents; if not, then
   // there is nothing to do.
-  if (GetSelectionInDOMTree().Type() != kRangeSelection) {
+  if (!GetSelectionInDOMTree().IsRange())
     return;
-  }
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -1243,20 +1235,20 @@ void FrameSelection::MoveRangeSelectionInternal(
   if (new_selection.IsNone())
     return;
 
-  const VisibleSelection& visible_selection =
-      CreateVisibleSelectionWithGranularity(new_selection, granularity);
-  if (visible_selection.IsNone())
+  const SelectionInDOMTree& selection =
+      ExpandWithGranularity(new_selection, granularity);
+  if (selection.IsNone())
     return;
 
   SelectionInDOMTree::Builder builder;
-  if (visible_selection.IsBaseFirst()) {
-    builder.SetBaseAndExtent(visible_selection.Start(),
-                             visible_selection.End());
+  if (selection.IsBaseFirst()) {
+    builder.SetBaseAndExtent(selection.ComputeStartPosition(),
+                             selection.ComputeEndPosition());
   } else {
-    builder.SetBaseAndExtent(visible_selection.End(),
-                             visible_selection.Start());
+    builder.SetBaseAndExtent(selection.ComputeEndPosition(),
+                             selection.ComputeStartPosition());
   }
-  builder.SetAffinity(visible_selection.Affinity());
+  builder.SetAffinity(selection.Affinity());
   SetSelection(builder.Build(), SetSelectionOptions::Builder()
                                     .SetShouldCloseTyping(true)
                                     .SetShouldClearTypingStyle(true)
@@ -1292,6 +1284,16 @@ void FrameSelection::ClearDocumentCachedRange() {
 LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
     const NGInlineCursor& cursor) const {
   return layout_selection_->ComputeSelectionStatus(cursor);
+}
+
+SelectionState FrameSelection::ComputeLayoutSelectionStateForCursor(
+    const NGInlineCursorPosition& position) const {
+  return layout_selection_->ComputeSelectionStateForCursor(position);
+}
+
+SelectionState FrameSelection::ComputeLayoutSelectionStateForInlineTextBox(
+    const InlineTextBox& text_box) const {
+  return layout_selection_->ComputeSelectionStateForInlineTextBox(text_box);
 }
 
 bool FrameSelection::IsDirectional() const {

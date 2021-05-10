@@ -207,6 +207,24 @@ static void update_motion_vector_info(
   }
 }
 
+static void update_tpl_stats_info(const TplDepStats *input_tpl_stats_info,
+                                  const int show_frame_count,
+                                  TplStatsInfo *output_tpl_stats_info) {
+  int frame_idx;
+  for (frame_idx = 0; frame_idx < show_frame_count; ++frame_idx) {
+    output_tpl_stats_info[frame_idx].intra_cost =
+        input_tpl_stats_info[frame_idx].intra_cost;
+    output_tpl_stats_info[frame_idx].inter_cost =
+        input_tpl_stats_info[frame_idx].inter_cost;
+    output_tpl_stats_info[frame_idx].mc_flow =
+        input_tpl_stats_info[frame_idx].mc_flow;
+    output_tpl_stats_info[frame_idx].mc_dep_cost =
+        input_tpl_stats_info[frame_idx].mc_dep_cost;
+    output_tpl_stats_info[frame_idx].mc_ref_cost =
+        input_tpl_stats_info[frame_idx].mc_ref_cost;
+  }
+}
+
 static void update_frame_counts(const FRAME_COUNTS *input_counts,
                                 FrameCounts *output_counts) {
   // Init array sizes.
@@ -486,6 +504,7 @@ static bool init_encode_frame_result(EncodeFrameResult *encode_frame_result,
                                              encode_frame_result->num_cols_4x4);
   encode_frame_result->motion_vector_info.resize(
       encode_frame_result->num_rows_4x4 * encode_frame_result->num_cols_4x4);
+  encode_frame_result->tpl_stats_info.resize(MAX_LAG_BUFFERS);
 
   if (encode_frame_result->coding_data.get() == nullptr) {
     return false;
@@ -507,7 +526,7 @@ static void encode_frame_result_update_rq_history(
 }
 
 static void update_encode_frame_result(
-    EncodeFrameResult *encode_frame_result,
+    EncodeFrameResult *encode_frame_result, const int show_frame_count,
     const ENCODE_FRAME_RESULT *encode_frame_info) {
   encode_frame_result->coding_data_bit_size =
       encode_frame_result->coding_data_byte_size * 8;
@@ -536,6 +555,10 @@ static void update_encode_frame_result(
                             kMotionVectorSubPixelPrecision);
   update_frame_counts(&encode_frame_info->frame_counts,
                       &encode_frame_result->frame_counts);
+  if (encode_frame_result->frame_type == kFrameTypeAltRef) {
+    update_tpl_stats_info(encode_frame_info->tpl_stats_info, show_frame_count,
+                          &encode_frame_result->tpl_stats_info[0]);
+  }
   encode_frame_result_update_rq_history(&encode_frame_info->rq_history,
                                         encode_frame_result);
 }
@@ -742,6 +765,16 @@ static void UpdateEncodeConfig(const EncodeConfig &config,
   SET_STRUCT_VALUE(config, oxcf, ret, encode_breakout);
   SET_STRUCT_VALUE(config, oxcf, ret, enable_tpl_model);
   SET_STRUCT_VALUE(config, oxcf, ret, enable_auto_arf);
+  if (strcmp(config.name, "rc_mode") == 0) {
+    int rc_mode = atoi(config.value);
+    if (rc_mode >= VPX_VBR && rc_mode <= VPX_Q) {
+      oxcf->rc_mode = (enum vpx_rc_mode)rc_mode;
+      ret = 1;
+    } else {
+      fprintf(stderr, "Invalid rc_mode value: %d\n", rc_mode);
+    }
+  }
+  SET_STRUCT_VALUE(config, oxcf, ret, cq_level);
   if (ret == 0) {
     fprintf(stderr, "Ignored unsupported encode_config %s\n", config.name);
   }
@@ -1169,7 +1202,10 @@ void SimpleEncode::EncodeFrame(EncodeFrameResult *encode_frame_result) {
       abort();
     }
 
-    update_encode_frame_result(encode_frame_result, &encode_frame_info);
+    const GroupOfPicture group_of_picture = this->ObserveGroupOfPicture();
+    const int show_frame_count = group_of_picture.show_frame_count;
+    update_encode_frame_result(encode_frame_result, show_frame_count,
+                               &encode_frame_info);
     PostUpdateState(*encode_frame_result);
   } else {
     // TODO(angiebird): Clean up encode_frame_result.

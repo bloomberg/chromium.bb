@@ -6,13 +6,14 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/language_prefs.h"
@@ -118,7 +119,7 @@ struct ProfilePrefRegistration {
   ProfilePrefRegistration(sync_preferences::TestingPrefServiceSyncable* prefs) {
     language::LanguagePrefs::RegisterProfilePrefs(prefs->registry());
     prefs->SetString(accept_languages_prefs, std::string());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     prefs->SetString(preferred_languages_prefs, std::string());
 #endif
     TranslatePrefs::RegisterProfilePrefs(prefs->registry());
@@ -133,9 +134,7 @@ class TranslateManagerTest : public ::testing::Test {
  protected:
   TranslateManagerTest()
       : registration_(&prefs_),
-        translate_prefs_(&prefs_,
-                         accept_languages_prefs,
-                         preferred_languages_prefs),
+        translate_prefs_(&prefs_),
         manager_(TranslateDownloadManager::GetInstance()),
         mock_translate_client_(&driver_, &prefs_),
         mock_language_model_({MockLanguageModel::LanguageDetails("en", 1.0)}) {}
@@ -1007,7 +1006,7 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_PageNeedsTranslation) {
   base::HistogramTester histogram_tester;
   translate_manager_->GetLanguageState()->LanguageDetermined("de", false);
   // Users should be able to manually translate the page, even when
-  // |page_needs_translation| is false.
+  // |page_level_translation_critiera_met| is false.
   EXPECT_TRUE(translate_manager_->CanManuallyTranslate());
   histogram_tester.ExpectTotalCount(kMenuTranslationIsAvailableName, 0);
   EXPECT_TRUE(translate_manager_->CanManuallyTranslate(true));
@@ -1090,13 +1089,17 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_UndefinedSourceLanguage) {
   translate_manager_->GetLanguageState()->LanguageDetermined(
       translate::kUnknownLanguageCode, true);
 
-  // Translation of unknown source language pages is supported on desktop
-  // platforms, but not mobile.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  EXPECT_FALSE(translate_manager_->CanManuallyTranslate());
-#else
-  EXPECT_TRUE(translate_manager_->CanManuallyTranslate());
+  // Translation of unknown source language pages is not supported on iOS.
+  // Experiment in place for supporting it on Android.
+  bool unknown_source_supported = true;
+#if defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(language::kDetectedSourceLanguageOption))
+    unknown_source_supported = false;
+#elif defined(OS_IOS)
+  unknown_source_supported = false;
 #endif
+  EXPECT_EQ(translate_manager_->CanManuallyTranslate(),
+            unknown_source_supported);
 }
 
 TEST_F(TranslateManagerTest, PredefinedTargetLanguage) {
@@ -1151,7 +1154,7 @@ TEST_F(TranslateManagerTest, PredefinedTargetLanguage_HonourUserSettings) {
       .WillByDefault(Return(true));
 
   translate_prefs_.BlockLanguage("de");
-  translate_prefs_.WhitelistLanguagePair("fr", "de");
+  translate_prefs_.AddLanguagePairToAlwaysTranslateList("fr", "de");
 
   ASSERT_TRUE(translate_prefs_.IsBlockedLanguage("de"));
   ASSERT_FALSE(translate_prefs_.CanTranslateLanguage(&accept_languages, "de"));
@@ -1196,9 +1199,7 @@ TEST_F(TranslateManagerTest, InitiateManualTranslation) {
   TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
       .WillByDefault(Return(&accept_langugages));
-  EXPECT_CALL(mock_translate_client_,
-              ShowTranslateUI(_, _, _, _, true /* triggered_from_menu */))
-      .WillOnce(Return(true));
+  EXPECT_CALL(mock_translate_client_, ShowTranslateUI).WillOnce(Return(true));
 
   translate_manager_ = std::make_unique<translate::TranslateManager>(
       &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);

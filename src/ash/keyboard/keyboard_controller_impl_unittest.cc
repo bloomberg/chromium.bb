@@ -21,9 +21,9 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -695,7 +695,7 @@ TEST_F(KeyboardControllerImplTest, SwipeUpToShowHotSeat) {
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
-      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+      CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
 
   keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
@@ -721,7 +721,7 @@ TEST_F(KeyboardControllerImplTest, FlingUpToShowOverviewMode) {
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
-      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+      CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
 
   keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);

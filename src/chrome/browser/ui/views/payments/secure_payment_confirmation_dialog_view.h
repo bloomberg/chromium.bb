@@ -8,11 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/secure_payment_confirmation_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace gfx {
-struct VectorIcon;
-}
 
 namespace views {
 class ProgressBar;
@@ -20,12 +17,16 @@ class ProgressBar;
 
 namespace payments {
 
+class PaymentUIObserver;
+
 // Draws the user interface in the secure payment confirmation flow. Owned by
 // the SecurePaymentConfirmationController.
 class SecurePaymentConfirmationDialogView
     : public SecurePaymentConfirmationView,
       public views::DialogDelegateView {
  public:
+  METADATA_HEADER(SecurePaymentConfirmationDialogView);
+
   class ObserverForTest {
    public:
     virtual void OnDialogOpened() = 0;
@@ -51,7 +52,8 @@ class SecurePaymentConfirmationDialogView
   };
 
   explicit SecurePaymentConfirmationDialogView(
-      ObserverForTest* observer_for_test);
+      ObserverForTest* observer_for_test,
+      const PaymentUIObserver* ui_observer_for_test);
   ~SecurePaymentConfirmationDialogView() override;
 
   // SecurePaymentConfirmationView:
@@ -61,9 +63,6 @@ class SecurePaymentConfirmationDialogView
                   CancelCallback cancel_callback) override;
   void OnModelUpdated() override;
   void HideDialog() override;
-
-  // views::WidgetDelegate:
-  ui::ModalType GetModalType() const override;
 
   // views::DialogDelegate:
   bool ShouldShowCloseButton() const override;
@@ -75,8 +74,6 @@ class SecurePaymentConfirmationDialogView
   void OnDialogAccepted();
   void OnDialogCancelled();
   void OnDialogClosed();
-
-  const gfx::VectorIcon& GetFingerprintIcon();
 
   void InitChildViews();
 
@@ -95,6 +92,7 @@ class SecurePaymentConfirmationDialogView
 
   // May be null.
   ObserverForTest* observer_for_test_ = nullptr;
+  const PaymentUIObserver* ui_observer_for_test_ = nullptr;
 
   VerifyCallback verify_callback_;
   CancelCallback cancel_callback_;

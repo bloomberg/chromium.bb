@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -83,7 +84,6 @@ void ManifestParser::Parse() {
   manifest_->name = ParseName(root_object.get());
   manifest_->short_name = ParseShortName(root_object.get());
   manifest_->description = ParseDescription(root_object.get());
-  manifest_->categories = ParseCategories(root_object.get());
   manifest_->start_url = ParseStartURL(root_object.get());
   manifest_->scope = ParseScope(root_object.get(), manifest_->start_url);
   manifest_->display = ParseDisplay(root_object.get());
@@ -116,6 +116,7 @@ void ManifestParser::Parse() {
 
   manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
   manifest_->shortcuts = ParseShortcuts(root_object.get());
+  manifest_->capture_links = ParseCaptureLinks(root_object.get());
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
@@ -273,28 +274,6 @@ String ManifestParser::ParseShortName(const JSONObject* object) {
 String ManifestParser::ParseDescription(const JSONObject* object) {
   base::Optional<String> description = ParseString(object, "description", Trim);
   return description.has_value() ? *description : String();
-}
-
-Vector<String> ManifestParser::ParseCategories(const JSONObject* object) {
-  Vector<String> categories;
-
-  JSONValue* json_value = object->Get("categories");
-  if (!json_value)
-    return categories;
-
-  JSONArray* categories_list = object->GetArray("categories");
-  if (!categories_list) {
-    AddErrorInfo("property 'categories' ignored, type array expected.");
-    return categories;
-  }
-
-  for (wtf_size_t i = 0; i < categories_list->size(); ++i) {
-    String category_string;
-    categories_list->at(i)->AsString(&category_string);
-    categories.push_back(category_string.StripWhiteSpace().LowerASCII());
-  }
-
-  return categories;
 }
 
 KURL ManifestParser::ParseStartURL(const JSONObject* object) {
@@ -455,12 +434,12 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
     if (keyword.IsEmpty())
       continue;
 
-    if (!CodeUnitCompareIgnoringASCIICase(keyword, "any")) {
+    if (EqualIgnoringASCIICase(keyword, "any")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
-    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "monochrome")) {
+    } else if (EqualIgnoringASCIICase(keyword, "monochrome")) {
       purposes.push_back(
           mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
-    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "maskable")) {
+    } else if (EqualIgnoringASCIICase(keyword, "maskable")) {
       purposes.push_back(
           mojom::blink::ManifestImageResource::Purpose::MASKABLE);
     } else {
@@ -1006,7 +985,8 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
   bool is_valid_protocol = protocol.has_value();
 
   if (is_valid_protocol &&
-      !VerifyCustomHandlerScheme(protocol.value(), error_message)) {
+      !VerifyCustomHandlerScheme(protocol.value(), error_message,
+                                 ProtocolHandlerSecurityLevel::kStrict)) {
     AddErrorInfo(error_message);
     is_valid_protocol = false;
   }
@@ -1210,6 +1190,52 @@ String ManifestParser::ParseGCMSenderID(const JSONObject* object) {
   base::Optional<String> gcm_sender_id =
       ParseString(object, "gcm_sender_id", Trim);
   return gcm_sender_id.has_value() ? *gcm_sender_id : String();
+}
+
+mojom::blink::CaptureLinks ManifestParser::ParseCaptureLinks(
+    const JSONObject* object) {
+  // Parse if either the command line flag is passed (for about:flags) or the
+  // runtime enabled feature is turned on (for origin trial).
+  if (!base::FeatureList::IsEnabled(features::kWebAppEnableLinkCapturing) &&
+      !RuntimeEnabledFeatures::WebAppLinkCapturingEnabled()) {
+    return mojom::blink::CaptureLinks::kUndefined;
+  }
+
+  String capture_links_string;
+  if (object->GetString("capture_links", &capture_links_string)) {
+    mojom::blink::CaptureLinks capture_links =
+        CaptureLinksFromString(capture_links_string.Utf8());
+    if (capture_links == mojom::blink::CaptureLinks::kUndefined) {
+      AddErrorInfo("capture_links value '" + capture_links_string +
+                   "' ignored, unknown value.");
+    }
+    return capture_links;
+  }
+
+  if (JSONArray* list = object->GetArray("capture_links")) {
+    for (wtf_size_t i = 0; i < list->size(); ++i) {
+      const JSONValue* item = list->at(i);
+      if (!item->AsString(&capture_links_string)) {
+        AddErrorInfo("capture_links value '" + item->ToJSONString() +
+                     "' ignored, string expected.");
+        continue;
+      }
+
+      mojom::blink::CaptureLinks capture_links =
+          CaptureLinksFromString(capture_links_string.Utf8());
+      if (capture_links != mojom::blink::CaptureLinks::kUndefined)
+        return capture_links;
+
+      AddErrorInfo("capture_links value '" + capture_links_string +
+                   "' ignored, unknown value.");
+    }
+    return mojom::blink::CaptureLinks::kUndefined;
+  }
+
+  AddErrorInfo(
+      "property 'capture_links' ignored, type string or array of strings "
+      "expected.");
+  return mojom::blink::CaptureLinks::kUndefined;
 }
 
 void ManifestParser::AddErrorInfo(const String& error_msg,

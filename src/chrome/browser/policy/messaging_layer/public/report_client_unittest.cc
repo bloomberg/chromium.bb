@@ -5,27 +5,29 @@
 #include "chrome/browser/policy/messaging_layer/public/report_client.h"
 
 #include "base/memory/singleton.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/status_macros.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "components/policy/proto/record_constants.pb.h"
+#include "components/reporting/proto/record_constants.pb.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/status_macros.h"
+#include "components/reporting/util/statusor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#ifdef OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_manager/scoped_user_manager.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace reporting {
 namespace {
@@ -72,7 +74,7 @@ class TestEvent {
 class ReportClientTest : public testing::Test {
  public:
   void SetUp() override {
-#ifdef OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Set up fake primary profile.
     auto mock_user_manager =
         std::make_unique<testing::NiceMock<chromeos::FakeChromeUserManager>>();
@@ -87,29 +89,37 @@ class ReportClientTest : public testing::Test {
                                     /*is_child=*/false);
     user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(mock_user_manager));
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     // Provide a mock cloud policy client.
-    auto client = std::make_unique<policy::MockCloudPolicyClient>();
-    client->SetDMToken(
+    client_ = std::make_unique<policy::MockCloudPolicyClient>();
+    client_->SetDMToken(
         policy::DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN").value());
     test_reporting_ =
-        std::make_unique<ReportingClient::TestEnvironment>(std::move(client));
+        std::make_unique<ReportingClient::TestEnvironment>(client_.get());
+
+    scoped_feature_list_.InitAndEnableFeature(
+        ReportingClient::kEncryptedReportingPipeline);
   }
 
   void TearDown() override {
-#ifdef OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_.reset();
     profile_.reset();
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
  protected:
-  content::BrowserTaskEnvironment task_envrionment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<ReportingClient::TestEnvironment> test_reporting_;
-#ifdef OS_CHROMEOS
+  // BrowserTaskEnvironment needs to be destroyed before TestEnvironment
+  // and ScopedFeatureList, so that tasks on other threads don't run after
+  // they are destroyed.
+  content::BrowserTaskEnvironment task_environment_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<policy::MockCloudPolicyClient> client_;
   const DMToken dm_token_ = DMToken::CreateValidTokenForTesting("TOKEN");
   const Destination destination_ = Destination::UPLOAD_EVENTS;
   ReportQueueConfiguration::PolicyCheckCallback policy_checker_callback_ =

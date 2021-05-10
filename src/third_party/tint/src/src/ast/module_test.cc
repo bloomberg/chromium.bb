@@ -19,129 +19,115 @@
 
 #include "gmock/gmock.h"
 #include "src/ast/function.h"
-#include "src/ast/type/alias_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/struct_type.h"
+#include "src/ast/test_helper.h"
 #include "src/ast/variable.h"
+#include "src/type/alias_type.h"
+#include "src/type/f32_type.h"
+#include "src/type/struct_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ModuleTest = testing::Test;
+using ModuleTest = TestHelper;
 
 TEST_F(ModuleTest, Creation) {
-  Module m;
-
-  EXPECT_EQ(m.functions().size(), 0u);
+  EXPECT_EQ(Program(std::move(*this)).AST().Functions().size(), 0u);
 }
 
 TEST_F(ModuleTest, ToStrEmitsPreambleAndPostamble) {
-  Module m;
-  const auto str = m.to_str();
+  const auto str = Program(std::move(*this)).to_str();
   auto* const expected = "Module{\n}\n";
   EXPECT_EQ(str, expected);
 }
 
 TEST_F(ModuleTest, LookupFunction) {
-  type::F32Type f32;
-  Module m;
+  auto* func = Func("main", VariableList{}, ty.f32(), StatementList{},
+                    ast::FunctionDecorationList{});
 
-  auto func = std::make_unique<Function>("main", VariableList{}, &f32);
-  auto* func_ptr = func.get();
-  m.AddFunction(std::move(func));
-  EXPECT_EQ(func_ptr, m.FindFunctionByName("main"));
+  Program program(std::move(*this));
+  EXPECT_EQ(func,
+            program.AST().Functions().Find(program.Symbols().Get("main")));
 }
 
 TEST_F(ModuleTest, LookupFunctionMissing) {
-  Module m;
-  EXPECT_EQ(nullptr, m.FindFunctionByName("Missing"));
+  Program program(std::move(*this));
+  EXPECT_EQ(nullptr,
+            program.AST().Functions().Find(program.Symbols().Get("Missing")));
 }
 
 TEST_F(ModuleTest, IsValid_Empty) {
-  Module m;
-  EXPECT_TRUE(m.IsValid());
+  Program program(std::move(*this));
+  EXPECT_TRUE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_GlobalVariable) {
-  type::F32Type f32;
-  auto var = std::make_unique<Variable>("var", StorageClass::kInput, &f32);
-
-  Module m;
-  m.AddGlobalVariable(std::move(var));
-  EXPECT_TRUE(m.IsValid());
+  Global("var", ty.f32(), StorageClass::kInput);
+  Program program(std::move(*this));
+  EXPECT_TRUE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Null_GlobalVariable) {
-  Module m;
-  m.AddGlobalVariable(nullptr);
-  EXPECT_FALSE(m.IsValid());
+  AST().AddGlobalVariable(nullptr);
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Invalid_GlobalVariable) {
-  auto var = std::make_unique<Variable>("var", StorageClass::kInput, nullptr);
-
-  Module m;
-  m.AddGlobalVariable(std::move(var));
-  EXPECT_FALSE(m.IsValid());
+  Global("var", nullptr, StorageClass::kInput);
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Alias) {
-  type::F32Type f32;
-  type::AliasType alias("alias", &f32);
-
-  Module m;
-  m.AddConstructedType(&alias);
-  EXPECT_TRUE(m.IsValid());
+  auto* alias = ty.alias("alias", ty.f32());
+  AST().AddConstructedType(alias);
+  Program program(std::move(*this));
+  EXPECT_TRUE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Null_Alias) {
-  Module m;
-  m.AddConstructedType(nullptr);
-  EXPECT_FALSE(m.IsValid());
+  AST().AddConstructedType(nullptr);
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Struct) {
-  type::F32Type f32;
-  type::StructType st("name", {});
-  type::AliasType alias("name", &st);
-
-  Module m;
-  m.AddConstructedType(&alias);
-  EXPECT_TRUE(m.IsValid());
+  auto* st = ty.struct_("name", {});
+  auto* alias = ty.alias("name", st);
+  AST().AddConstructedType(alias);
+  Program program(std::move(*this));
+  EXPECT_TRUE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Struct_EmptyName) {
-  type::F32Type f32;
-  type::StructType st("", {});
-  type::AliasType alias("name", &st);
-
-  Module m;
-  m.AddConstructedType(&alias);
-  EXPECT_FALSE(m.IsValid());
+  auto* st = ty.struct_("", {});
+  auto* alias = ty.alias("name", st);
+  AST().AddConstructedType(alias);
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Function) {
-  type::F32Type f32;
-  auto func = std::make_unique<Function>("main", VariableList(), &f32);
+  Func("main", VariableList(), ty.f32(), StatementList{},
+       ast::FunctionDecorationList{});
 
-  Module m;
-  m.AddFunction(std::move(func));
-  EXPECT_TRUE(m.IsValid());
+  Program program(std::move(*this));
+  EXPECT_TRUE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Null_Function) {
-  Module m;
-  m.AddFunction(nullptr);
-  EXPECT_FALSE(m.IsValid());
+  AST().AddFunction(nullptr);
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 TEST_F(ModuleTest, IsValid_Invalid_Function) {
-  auto func = std::make_unique<Function>();
+  Func("main", VariableList{}, nullptr, StatementList{},
+       ast::FunctionDecorationList{});
 
-  Module m;
-  m.AddFunction(std::move(func));
-  EXPECT_FALSE(m.IsValid());
+  Program program(std::move(*this));
+  EXPECT_FALSE(program.AST().IsValid());
 }
 
 }  // namespace

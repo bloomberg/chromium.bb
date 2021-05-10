@@ -196,8 +196,21 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursiveInternal(
   if (target_state == DocumentLifecycle::kCompositingInputsClean)
     return;
 
-  if (layout_view_->GetFrameView()->ShouldThrottleRendering())
+  if (layout_view_->GetFrameView()->ShouldThrottleRendering()) {
+    if (auto* owner = layout_view_->GetFrame()->OwnerLayoutObject()) {
+      auto* parent_compositor = owner->View()->Compositor();
+      DCHECK(parent_compositor);
+      DisableCompositingQueryAsserts query_assert_disabler;
+      // TODO(szager): It's not clear how this can happen. Even if the child
+      // frame is throttled, if the child compositor has a root graphics layer,
+      // then the parent compositor should be in compositing mode.
+      DCHECK(parent_compositor->StaleInCompositingMode() ||
+             !RootGraphicsLayer());
+      if (!parent_compositor->StaleInCompositingMode() && RootGraphicsLayer())
+        root_layer_attachment_dirty_ = true;
+    }
     return;
+  }
 
   if (DisplayLockUtilities::PrePaintBlockedInParentFrame(layout_view_))
     return;
@@ -221,6 +234,12 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeededRecursiveInternal(
           target_state, compositing_reasons_stats);
       if (child_compositor->root_layer_attachment_dirty_)
         SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+#if DCHECK_IS_ON()
+      // Even if the child frame is throttled, this should be consistent.
+      DisableCompositingQueryAsserts query_assert_disabler;
+      DCHECK_EQ(child_compositor->InCompositingMode(),
+                (bool)child_compositor->RootGraphicsLayer());
+#endif
     }
   }
 
@@ -308,17 +327,11 @@ void PaintLayerCompositor::UpdateAssignmentsIfNeeded(
 
     CompositingLayerAssigner layer_assigner(this);
     layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
+    // TODO(szager): Remove this after diagnosing crash.
+    CHECK_EQ(compositing_, (bool)RootGraphicsLayer());
 
     if (layer_assigner.LayersChanged())
       update_type = std::max(update_type, kCompositingUpdateRebuildTree);
-  }
-
-  GraphicsLayer* current_parent = nullptr;
-  // Save off our current parent. We need this in subframes, because our
-  // parent attached us to itself via AttachFrameContentLayersToIframeLayer().
-  if (!IsMainFrame() && update_root->GetCompositedLayerMapping()) {
-    current_parent =
-        update_root->GetCompositedLayerMapping()->MainGraphicsLayer()->Parent();
   }
 
 #if DCHECK_IS_ON()

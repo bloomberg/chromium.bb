@@ -95,12 +95,18 @@ export function defineCommonExtensionSymbols(apiPrivate) {
     RawLocationToSourceLocation: 'rawLocationToSourceLocation',
     GetScopeInfo: 'getScopeInfo',
     ListVariablesInScope: 'listVariablesInScope',
-    EvaluateVariable: 'evaluateVariable',
     GetTypeInfo: 'getTypeInfo',
     GetFormatter: 'getFormatter',
+    GetInspectableAddress: 'getInspectableAddress',
     GetFunctionInfo: 'getFunctionInfo',
     GetInlinedFunctionRanges: 'getInlinedFunctionRanges',
-    GetInlinedCalleesRanges: 'getInlinedCalleesRanges'
+    GetInlinedCalleesRanges: 'getInlinedCalleesRanges',
+    GetMappedLines: 'getMappedLines',
+  };
+
+  /** @enum {string} */
+  apiPrivate.LanguageExtensionPluginEvents = {
+    UnregisteredLanguageExtensionPlugin: 'unregisteredLanguageExtensionPlugin'
   };
 }
 
@@ -111,7 +117,6 @@ export function defineCommonExtensionSymbols(apiPrivate) {
  * @param {!Array<number>} keysToForward
  * @param {number} injectedScriptId
  * @param {function(!Object, !Object)} testHook
- * @suppressGlobalPropertiesCheck
  */
 self.injectedExtensionAPI = function(
     extensionInfo, inspectedTabId, themeName, keysToForward, testHook, injectedScriptId) {
@@ -128,6 +133,7 @@ self.injectedExtensionAPI = function(
 
   const commands = apiPrivate.Commands;
   const languageExtensionPluginCommands = apiPrivate.LanguageExtensionPluginCommands;
+  const languageExtensionPluginEvents = apiPrivate.LanguageExtensionPluginEvents;
   const events = apiPrivate.Events;
   let userAction = false;
 
@@ -303,7 +309,7 @@ self.injectedExtensionAPI = function(
 
       // Only send command if we either removed an existing handler or added handler and had none before.
       if (hadHandler === !callback) {
-        extensionServer.sendRequest({command: commands.SetOpenResourceHandler, 'handlerPresent': !!callback});
+        extensionServer.sendRequest({command: commands.SetOpenResourceHandler, 'handlerPresent': Boolean(callback)});
       }
     },
 
@@ -368,6 +374,7 @@ self.injectedExtensionAPI = function(
    * @constructor
    */
   function LanguageServicesAPIImpl() {
+    /** @type {!Map<*, !MessagePort>} */
     this._plugins = new Map();
   }
 
@@ -376,18 +383,21 @@ self.injectedExtensionAPI = function(
      * @param {*} plugin The language plugin instance to register.
      * @param {string} pluginName The plugin name
      * @param {{language: string, symbol_types: !Array<string>}} supportedScriptTypes Script language and debug symbol types supported by this extension.
+     * @return {!Promise<void>}
      */
-    registerLanguageExtensionPlugin: function(plugin, pluginName, supportedScriptTypes) {
+    registerLanguageExtensionPlugin: async function(plugin, pluginName, supportedScriptTypes) {
       if (this._plugins.has(plugin)) {
-        throw new Error('Tried to register a plugin twice');
+        throw new Error(`Tried to register plugin '${pluginName}' twice`);
       }
       const channel = new MessageChannel();
       const port = channel.port1;
       this._plugins.set(plugin, port);
       port.onmessage = ({data: {requestId, method, parameters}}) => {
+        console.time(`${requestId}: ${method}`);
         dispatchMethodCall(method, parameters)
             .then(result => port.postMessage({requestId, result}))
-            .catch(error => port.postMessage({requestId, error: {message: error.message}}));
+            .catch(error => port.postMessage({requestId, error: {message: error.message}}))
+            .finally(() => console.timeEnd(`${requestId}: ${method}`));
       };
 
       /**
@@ -409,25 +419,49 @@ self.injectedExtensionAPI = function(
             return plugin.getScopeInfo(parameters.type);
           case languageExtensionPluginCommands.ListVariablesInScope:
             return plugin.listVariablesInScope(parameters.rawLocation);
-          case languageExtensionPluginCommands.EvaluateVariable:
-            return plugin.evaluateVariable(parameters.name, parameters.location);
           case languageExtensionPluginCommands.GetTypeInfo:
             return plugin.getTypeInfo(parameters.expression, parameters.context);
           case languageExtensionPluginCommands.GetFormatter:
             return plugin.getFormatter(parameters.expressionOrField, parameters.context);
+          case languageExtensionPluginCommands.GetInspectableAddress:
+            if ('getInspectableAddress' in plugin) {
+              return plugin.getInspectableAddress(parameters.field);
+            }
+            return Promise.resolve({js: ''});
           case languageExtensionPluginCommands.GetFunctionInfo:
             return plugin.getFunctionInfo(parameters.rawLocation);
           case languageExtensionPluginCommands.GetInlinedFunctionRanges:
             return plugin.getInlinedFunctionRanges(parameters.rawLocation);
           case languageExtensionPluginCommands.GetInlinedCalleesRanges:
             return plugin.getInlinedCalleesRanges(parameters.rawLocation);
+          case languageExtensionPluginCommands.GetMappedLines:
+            if ('getMappedLines' in plugin) {
+              return plugin.getMappedLines(parameters.rawModuleId, parameters.sourceFileURL);
+            }
+            return Promise.resolve(undefined);
         }
         throw new Error(`Unknown language plugin method ${method}`);
       }
 
-      extensionServer.sendRequest(
-          {command: commands.RegisterLanguageExtensionPlugin, pluginName, port: channel.port2, supportedScriptTypes},
-          undefined, [channel.port2]);
+      await new Promise(resolve => {
+        extensionServer.sendRequest(
+            {command: commands.RegisterLanguageExtensionPlugin, pluginName, port: channel.port2, supportedScriptTypes},
+            () => resolve(), [channel.port2]);
+      });
+    },
+
+    /**
+     * @param {*} plugin The language plugin instance to unregister.
+     * @return {!Promise<void>}
+     */
+    unregisterLanguageExtensionPlugin: async function(plugin) {
+      const port = this._plugins.get(plugin);
+      if (!port) {
+        throw new Error('Tried to unregister a plugin that was not previously registered');
+      }
+      this._plugins.delete(plugin);
+      port.postMessage({event: languageExtensionPluginEvents.UnregisteredLanguageExtensionPlugin});
+      port.close();
     }
   };
 
@@ -503,7 +537,7 @@ self.injectedExtensionAPI = function(
         id: id,
         icon: iconPath,
         tooltip: tooltipText,
-        disabled: !!disabled
+        disabled: Boolean(disabled)
       };
       extensionServer.sendRequest(request);
       return new Button(id);
@@ -570,8 +604,13 @@ self.injectedExtensionAPI = function(
 
   ButtonImpl.prototype = {
     update: function(iconPath, tooltipText, disabled) {
-      const request =
-          {command: commands.UpdateButton, id: this._id, icon: iconPath, tooltip: tooltipText, disabled: !!disabled};
+      const request = {
+        command: commands.UpdateButton,
+        id: this._id,
+        icon: iconPath,
+        tooltip: tooltipText,
+        disabled: Boolean(disabled)
+      };
       extensionServer.sendRequest(request);
     }
   };
@@ -737,10 +776,6 @@ self.injectedExtensionAPI = function(
 
   let keyboardEventRequestQueue = [];
   let forwardTimer = null;
-
-  /**
-   * @suppressGlobalPropertiesCheck
-   */
   function forwardKeyboardEvent(event) {
     // Check if the event should be forwarded.
     // This is a workaround for crbug.com/923338.
@@ -834,7 +869,7 @@ self.injectedExtensionAPI = function(
      * @return {boolean}
      */
     hasHandler: function(command) {
-      return !!this._handlers[command];
+      return Boolean(this._handlers[command]);
     },
 
     registerHandler: function(command, handler) {

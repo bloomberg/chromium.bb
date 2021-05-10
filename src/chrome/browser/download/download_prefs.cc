@@ -23,6 +23,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
@@ -46,12 +47,12 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
@@ -133,7 +134,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, the default download directory is different for each profile.
   // If the profile-unaware default path (from GetDefaultDownloadDirectory())
   // is set (this happens during the initial preference registration in static
@@ -170,7 +171,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   content::DownloadManager::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(base::IgnoreResult(&base::CreateDirectory),
                                 GetDefaultDownloadDirectoryForProfile()));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_MAC)
@@ -328,7 +329,7 @@ void DownloadPrefs::RegisterProfilePrefs(
 }
 
 base::FilePath DownloadPrefs::GetDefaultDownloadDirectoryForProfile() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return file_manager::util::GetDownloadsFolderForProfile(profile_);
 #else
   return GetDefaultDownloadDirectory();
@@ -549,10 +550,33 @@ void DownloadPrefs::SaveAutoOpenState() {
 
 base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     const base::FilePath& path) const {
-#if defined(OS_CHROMEOS)
   if (skip_sanitize_download_target_path_for_testing_)
     return path;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(https://crbug.com/1148848): Sort out path sanitization for Lacros.
+  // This will require refactoring the ash-only code below so it can be shared.
+  const base::FilePath default_downloads_path =
+      GetDefaultDownloadDirectoryForProfile();
+  // Relative paths might be unsafe, so use the default path.
+  if (!path.IsAbsolute() || path.ReferencesParent())
+    return default_downloads_path;
+
+  // Allow downloads directory and subdirectories. Subdirectories may not seem
+  // useful, but many tests assume they can download files into a subdirectory,
+  // and allowing subdirectories doesn't hurt.
+  if (default_downloads_path == path || default_downloads_path.IsParent(path))
+    return path;
+
+  // Allow documents directory ("MyFiles") and subdirectories.
+  base::FilePath documents_path =
+      base::PathService::CheckedGet(chrome::DIR_USER_DOCUMENTS);
+  if (documents_path == path || documents_path.IsParent(path))
+    return path;
+
+  // Otherwise, return the safe default.
+  return default_downloads_path;
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   base::FilePath migrated_drive_path;
   // Managed prefs may force a legacy Drive path as the download path. Ensure
   // the path is valid when DriveFS is enabled.

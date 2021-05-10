@@ -7,7 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_dialog_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -56,7 +56,7 @@ IdleActionWarningObserver::~IdleActionWarningObserver() {
 }
 
 void IdleActionWarningObserver::IdleActionImminent(
-    const base::TimeDelta& time_until_idle_action) {
+    base::TimeDelta time_until_idle_action) {
   // Only display warning if idle action is to shut down or logout.
   PowerPolicyController::Action idle_action = GetIdleAction(on_battery_power_);
   if (idle_action != PowerPolicyController::ACTION_STOP_SESSION &&

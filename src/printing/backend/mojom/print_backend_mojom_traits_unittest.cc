@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <string>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "printing/backend/mojom/print_backend.mojom.h"
 #include "printing/backend/print_backend.h"
@@ -27,7 +30,7 @@ const printing::PrinterSemanticCapsAndDefaults::Paper kPaperLedger{
     /*display_name=*/"Ledger", /*vendor_id=*/"89",
     /*size_um=*/gfx::Size(6600, 10200)};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const printing::AdvancedCapability kAdvancedCapability1(
     /*name=*/"advanced_cap_bool",
     /*display_name=*/"Advanced Capability #1 (bool)",
@@ -53,7 +56,7 @@ const printing::AdvancedCapability kAdvancedCapability2(
     });
 const printing::AdvancedCapabilities kAdvancedCapabilities{
     kAdvancedCapability1, kAdvancedCapability2};
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 static constexpr bool kCollateCapable = true;
 static constexpr bool kCollateDefault = true;
@@ -81,7 +84,7 @@ static constexpr gfx::Size kDpi1200(1200, 1200);
 static constexpr gfx::Size kDpi1200x600(1200, 600);
 const std::vector<gfx::Size> kDpis{kDpi600, kDpi1200, kDpi1200x600};
 static constexpr gfx::Size kDefaultDpi = kDpi600;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 static constexpr bool kPinSupported = true;
 #endif
 
@@ -103,38 +106,102 @@ GenerateSamplePrinterSemanticCapsAndDefaults() {
   caps.default_paper = kPaperLetter;
   caps.dpis = kDpis;
   caps.default_dpi = kDefaultDpi;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   caps.pin_supported = kPinSupported;
   caps.advanced_capabilities = kAdvancedCapabilities;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return caps;
 }
 
 }  // namespace
 
+TEST(PrintBackendMojomTraitsTest, TestSerializeAndDeserializePrinterBasicInfo) {
+  static const printing::PrinterBasicInfo kPrinterBasicInfo1(
+      /*printer_name=*/"test printer name 1",
+      /*display_name=*/"test display name 1",
+      /*printer_description=*/"This is printer #1 for unit testing.",
+      /*printer_status=*/0,
+      /*is_default=*/true,
+      /*options=*/
+      std::map<std::string, std::string>{{"opt1", "123"}, {"opt2", "456"}});
+  static const printing::PrinterBasicInfo kPrinterBasicInfo2(
+      /*printer_name=*/"test printer name 2",
+      /*display_name=*/"test display name 2",
+      /*printer_description=*/"This is printer #2 for unit testing.",
+      /*printer_status=*/1,
+      /*is_default=*/false,
+      /*options=*/std::map<std::string, std::string>{});
+  static const printing::PrinterBasicInfo kPrinterBasicInfo3(
+      /*printer_name=*/"test printer name 2",
+      /*display_name=*/"test display name 2",
+      /*printer_description=*/"",
+      /*printer_status=*/9,
+      /*is_default=*/false,
+      /*options=*/std::map<std::string, std::string>{});
+  static const PrinterList kPrinterList{kPrinterBasicInfo1, kPrinterBasicInfo2,
+                                        kPrinterBasicInfo3};
+
+  for (auto info : kPrinterList) {
+    printing::PrinterBasicInfo input = info;
+    printing::PrinterBasicInfo output;
+    EXPECT_TRUE(
+        mojo::test::SerializeAndDeserialize<printing::mojom::PrinterBasicInfo>(
+            input, output));
+    EXPECT_EQ(info, output);
+  }
+}
+
+TEST(PrintBackendMojomTraitsTest,
+     TestSerializeAndDeserializePrinterBasicInfoEmptyNames) {
+  static const printing::PrinterBasicInfo kPrinterBasicInfoEmptyPrinterName(
+      /*printer_name=*/"",
+      /*display_name=*/"test display name",
+      /*printer_description=*/"",
+      /*printer_status=*/0,
+      /*is_default=*/true,
+      /*options=*/std::map<std::string, std::string>{});
+  static const printing::PrinterBasicInfo kPrinterBasicInfoEmptyDisplayName(
+      /*printer_name=*/"test printer name",
+      /*display_name=*/"",
+      /*printer_description=*/"",
+      /*printer_status=*/0,
+      /*is_default=*/true,
+      /*options=*/std::map<std::string, std::string>{});
+  static const PrinterList kPrinterList{kPrinterBasicInfoEmptyPrinterName,
+                                        kPrinterBasicInfoEmptyDisplayName};
+
+  for (auto info : kPrinterList) {
+    printing::PrinterBasicInfo input = info;
+    printing::PrinterBasicInfo output;
+    EXPECT_FALSE(
+        mojo::test::SerializeAndDeserialize<printing::mojom::PrinterBasicInfo>(
+            input, output));
+  }
+}
+
 TEST(PrintBackendMojomTraitsTest, TestSerializeAndDeserializePaper) {
   for (const auto& paper : kPapers) {
     printing::PrinterSemanticCapsAndDefaults::Paper input = paper;
     printing::PrinterSemanticCapsAndDefaults::Paper output;
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<printing::mojom::Paper>(
-        &input, &output));
+        input, output));
     EXPECT_EQ(paper, output);
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST(PrintBackendMojomTraitsTest,
      TestSerializeAndDeserializeAdvancedCapability) {
   for (const auto& advanced_capability : kAdvancedCapabilities) {
     printing::AdvancedCapability input = advanced_capability;
     printing::AdvancedCapability output;
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-                printing::mojom::AdvancedCapability>(&input, &output));
+                printing::mojom::AdvancedCapability>(input, output));
     EXPECT_EQ(advanced_capability, output);
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST(PrintBackendMojomTraitsTest,
      TestSerializeAndDeserializePrinterSemanticCapsAndDefaults) {
@@ -142,9 +209,8 @@ TEST(PrintBackendMojomTraitsTest,
       GenerateSamplePrinterSemanticCapsAndDefaults();
   printing::PrinterSemanticCapsAndDefaults output;
 
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   EXPECT_EQ(kCollateCapable, output.collate_capable);
   EXPECT_EQ(kCollateDefault, output.collate_default);
@@ -160,10 +226,10 @@ TEST(PrintBackendMojomTraitsTest,
   EXPECT_TRUE(kDefaultPaper == output.default_paper);
   EXPECT_EQ(kDpis, output.dpis);
   EXPECT_EQ(kDefaultDpi, output.default_dpi);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(kPinSupported, output.pin_supported);
   EXPECT_EQ(kAdvancedCapabilities, output.advanced_capabilities);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 TEST(PrintBackendMojomTraitsTest,
@@ -175,9 +241,8 @@ TEST(PrintBackendMojomTraitsTest,
   // Override sample with no copies.
   input.copies_max = 0;
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 }
 
 TEST(
@@ -193,25 +258,24 @@ TEST(
   const printing::PrinterSemanticCapsAndDefaults::Papers
       kEmptyUserDefinedPapers{};
   const std::vector<gfx::Size> kEmptyDpis{};
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const printing::AdvancedCapabilities kEmptyAdvancedCapabilities{};
 #endif
 
   input.duplex_modes = kEmptyDuplexModes;
   input.user_defined_papers = kEmptyUserDefinedPapers;
   input.dpis = kEmptyDpis;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   input.advanced_capabilities = kEmptyAdvancedCapabilities;
 #endif
 
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   EXPECT_EQ(kEmptyDuplexModes, output.duplex_modes);
   EXPECT_EQ(kEmptyUserDefinedPapers, output.user_defined_papers);
   EXPECT_EQ(kEmptyDpis, output.dpis);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(kEmptyAdvancedCapabilities, output.advanced_capabilities);
 #endif
 }
@@ -225,9 +289,8 @@ TEST(PrintBackendMojomTraitsTest,
   // Override sample with empty `papers`, which is not allowed.
   input.papers = printing::PrinterSemanticCapsAndDefaults::Papers{};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 }
 
 TEST(
@@ -243,9 +306,8 @@ TEST(
       printing::mojom::DuplexMode::kSimplex,
       printing::mojom::DuplexMode::kSimplex};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   // Use a paper with same name but different size.
   printing::PrinterSemanticCapsAndDefaults::Paper paperA4Prime = kPaperA4;
@@ -254,26 +316,23 @@ TEST(
   input.papers = printing::PrinterSemanticCapsAndDefaults::Papers{
       kPaperA4, kPaperLetter, kPaperLedger, paperA4Prime};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   input = GenerateSamplePrinterSemanticCapsAndDefaults();
   input.user_defined_papers = printing::PrinterSemanticCapsAndDefaults::Papers{
       kPaperLetter, kPaperLetter};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   input = GenerateSamplePrinterSemanticCapsAndDefaults();
   input.dpis = std::vector<gfx::Size>{kDpi600, kDpi600, kDpi1200};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Use an advanced capability with same name but different other fields.
   printing::AdvancedCapability advancedCapability1Prime = kAdvancedCapability1;
   advancedCapability1Prime.type = printing::AdvancedCapability::Type::kInteger;
@@ -282,9 +341,8 @@ TEST(
   input.advanced_capabilities = printing::AdvancedCapabilities{
       kAdvancedCapability1, advancedCapability1Prime};
 
-  EXPECT_FALSE(
-      mojo::test::SerializeAndDeserialize<
-          printing::mojom::PrinterSemanticCapsAndDefaults>(&input, &output));
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<
+               printing::mojom::PrinterSemanticCapsAndDefaults>(input, output));
 #endif
 }
 

@@ -590,6 +590,21 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterSwitchingToTablet) {
             first_tappable_view->GetBoundsInScreen().x());
 }
 
+// Verifies that activating a shelf icon's ripple ring does not bring crash
+// on an extremely small display. It is an edge case detected by fuzz tests.
+TEST_F(ScrollableShelfViewTest, VerifyActivateIconRippleOnVerySmallDisplay) {
+  AddAppShortcut();
+
+  // Resize the display to ensure that no shelf icon is visible.
+  UpdateDisplay("60x601");
+
+  // Activate a shelf icon's ink drop. Verify that no crash happens.
+  views::InkDropHostView* icon = test_api_->GetButton(0);
+  auto* ink_drop = icon->GetInkDrop();
+  ink_drop->SnapToActivated();
+  EXPECT_EQ(views::InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
+}
+
 // Verifies that the scrollable shelf without overflow has the correct layout in
 // tablet mode.
 TEST_F(ScrollableShelfViewTest, CorrectUIInTabletWithoutOverflow) {
@@ -871,6 +886,55 @@ TEST_F(ScrollableShelfViewTest, RipOffShelfItem) {
 }
 
 // Verifies that the scrollable shelf handles the mouse wheel event as expected.
+TEST_F(ScrollableShelfViewTest, MouseWheelOnEmptyShelfShouldExpandAppList) {
+  // First mouse wheel over apps and then over empty shelf. When apps are not
+  // overflowing, and we mouse wheel over the app icons, the launcher should
+  // stay hidden. When we mouse wheel over the empty area of the shelf, the
+  // launcher should expand. https://crbug.com/1071218
+
+  // Add a couple of apps to start, so we have some to put the cursor over for
+  // testing.
+  AddAppShortcut();
+  AddAppShortcut();
+
+  int shelf_scroll_threshold =
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold();
+  GetEventGenerator()->MoveMouseTo(
+      scrollable_shelf_view_->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
+
+  // The app list's view is lazily loaded. Since this is the first time, and we
+  // didn't scroll in the right spot, it shouldn't have been created yet.
+  EXPECT_EQ(nullptr,
+            Shell::Get()->app_list_controller()->presenter()->GetView());
+
+  auto empty_shelf_point = scrollable_shelf_view_->GetBoundsInScreen().origin();
+  empty_shelf_point.Offset(10, 10);
+  GetEventGenerator()->MoveMouseTo(empty_shelf_point);
+  GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
+  EXPECT_EQ(AppListViewState::kPeeking, Shell::Get()
+                                            ->app_list_controller()
+                                            ->presenter()
+                                            ->GetView()
+                                            ->app_list_state());
+
+  // Scrolling again should expand to all apps.
+  GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps, Shell::Get()
+                                                      ->app_list_controller()
+                                                      ->presenter()
+                                                      ->GetView()
+                                                      ->app_list_state());
+
+  // Scrolling again will close the app list.
+  GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
+  EXPECT_EQ(AppListViewState::kClosed, Shell::Get()
+                                           ->app_list_controller()
+                                           ->presenter()
+                                           ->GetView()
+                                           ->app_list_state());
+}
+
 TEST_F(ScrollableShelfViewTest, ScrollsByMouseWheelEvent) {
   AddAppShortcutsUntilOverflow();
   ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,

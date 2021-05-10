@@ -29,7 +29,7 @@
 
 using instance_id::InstanceID;
 
-namespace syncer {
+namespace invalidation {
 
 namespace {
 
@@ -50,25 +50,23 @@ base::TimeDelta GetTimeToLive(const std::string& sender_id) {
   // This magic value is identical to kInvalidationGCMSenderId, i.e. the value
   // that Sync uses for its invalidations.
   if (sender_id == "8181035976") {
-    if (!base::FeatureList::IsEnabled(
-            invalidation::switches::kSyncInstanceIDTokenTTL)) {
+    if (!base::FeatureList::IsEnabled(switches::kSyncInstanceIDTokenTTL)) {
       return base::TimeDelta();
     }
 
     return base::TimeDelta::FromSeconds(
-        invalidation::switches::kSyncInstanceIDTokenTTLSeconds.Get());
+        switches::kSyncInstanceIDTokenTTLSeconds.Get());
   }
 
   // This magic value is identical to kPolicyFCMInvalidationSenderID, i.e. the
   // value that ChromeOS policy uses for its invalidations.
   if (sender_id == "1013309121859") {
-    if (!base::FeatureList::IsEnabled(
-            invalidation::switches::kPolicyInstanceIDTokenTTL)) {
+    if (!base::FeatureList::IsEnabled(switches::kPolicyInstanceIDTokenTTL)) {
       return base::TimeDelta();
     }
 
     return base::TimeDelta::FromSeconds(
-        invalidation::switches::kPolicyInstanceIDTokenTTLSeconds.Get());
+        switches::kPolicyInstanceIDTokenTTLSeconds.Get());
   }
 
   // The default for all other FCM clients is no TTL.
@@ -172,13 +170,13 @@ FCMNetworkHandler::~FCMNetworkHandler() {
 }
 
 // static
-std::unique_ptr<syncer::FCMNetworkHandler> FCMNetworkHandler::Create(
+std::unique_ptr<FCMNetworkHandler> FCMNetworkHandler::Create(
     gcm::GCMDriver* gcm_driver,
     instance_id::InstanceIDDriver* instance_id_driver,
     const std::string& sender_id,
     const std::string& app_id) {
-  return std::make_unique<syncer::FCMNetworkHandler>(
-      gcm_driver, instance_id_driver, sender_id, app_id);
+  return std::make_unique<FCMNetworkHandler>(gcm_driver, instance_id_driver,
+                                             sender_id, app_id);
 }
 
 void FCMNetworkHandler::StartListening() {
@@ -192,7 +190,6 @@ void FCMNetworkHandler::StartListening() {
   diagnostic_info_.instance_id_token_requested = base::Time::Now();
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope, GetTimeToLive(sender_id_),
-      /*options=*/std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -253,7 +250,6 @@ void FCMNetworkHandler::StartTokenValidation() {
   diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope, GetTimeToLive(sender_id_),
-      std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindOnce(&FCMNetworkHandler::DidReceiveTokenForValidation,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -341,7 +337,8 @@ void FCMNetworkHandler::RequestDetailedStatus(
   callback.Run(diagnostic_info_.CollectDebugData());
 }
 
-FCMNetworkHandler::FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() =
+    default;
 
 base::DictionaryValue
 FCMNetworkHandler::FCMNetworkHandlerDiagnostic::CollectDebugData() const {
@@ -391,4 +388,4 @@ FCMNetworkHandler::FCMNetworkHandlerDiagnostic::RegistrationResultToString(
   }
 }
 
-}  // namespace syncer
+}  // namespace invalidation

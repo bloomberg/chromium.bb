@@ -63,6 +63,7 @@ class CastWebContentsImpl : public CastWebContents,
       const InterfaceSet& interface_set,
       service_manager::InterfaceProvider* interface_provider) override;
   service_manager::BinderRegistry* binder_registry() override;
+  bool TryBindReceiver(mojo::GenericPendingReceiver& receiver) override;
   void BlockMediaLoading(bool blocked) override;
   void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
@@ -92,13 +93,10 @@ class CastWebContentsImpl : public CastWebContents,
 
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* /* render_frame_host */,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;

@@ -263,7 +263,7 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
     public void onAnimationRepeat(Animation animation) {}
 
     private RecyclerView getRecyclerView() {
-        return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
+        return (RecyclerView) mDialog.findViewById(R.id.selectable_list_recycler_view);
     }
 
     private PhotoPickerDialog createDialogWithContentResolver(final ContentResolver contentResolver,
@@ -272,9 +272,9 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<PhotoPickerDialog>() {
                     @Override
                     public PhotoPickerDialog call() {
-                        final PhotoPickerDialog dialog =
-                                new PhotoPickerDialog(mWindowAndroid, contentResolver,
-                                        PhotoPickerDialogTest.this, multiselect, mimeTypes);
+                        final PhotoPickerDialog dialog = new PhotoPickerDialog(mWindowAndroid,
+                                contentResolver, PhotoPickerDialogTest.this, multiselect,
+                                /* animatedThumbnailsSupported = */ true, mimeTypes);
                         dialog.show();
                         return dialog;
                     }

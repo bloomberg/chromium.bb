@@ -154,6 +154,58 @@ bool CreateDiaDataSourceInstance(CComPtr<IDiaDataSource>& data_source) {
   return false;
 }
 
+const DWORD kUndecorateOptions = UNDNAME_NO_MS_KEYWORDS |
+                                 UNDNAME_NO_FUNCTION_RETURNS |
+                                 UNDNAME_NO_ALLOCATION_MODEL |
+                                 UNDNAME_NO_ALLOCATION_LANGUAGE |
+                                 UNDNAME_NO_THISTYPE |
+                                 UNDNAME_NO_ACCESS_SPECIFIERS |
+                                 UNDNAME_NO_THROW_SIGNATURES |
+                                 UNDNAME_NO_MEMBER_TYPE |
+                                 UNDNAME_NO_RETURN_UDT_MODEL |
+                                 UNDNAME_NO_ECSU;
+
+#define arraysize(f) (sizeof(f) / sizeof(*f))
+
+void StripLlvmSuffixAndUndecorate(BSTR* name) {
+  // LLVM sometimes puts a suffix on symbols to give them a globally unique
+  // name. The suffix is either some string preceded by a period (like in the
+  // Itanium ABI; also on Windows this is safe since periods are otherwise
+  // never part of mangled names), or a dollar sign followed by a 32-char hex
+  // string (this should go away in future LLVM versions). Strip such suffixes
+  // and try demangling again.
+  //
+  //
+  // Example symbol names with such suffixes:
+  //
+  //   ?foo@@YAXXZ$5520c83448162c04f2b239db4b5a2c61
+  //   ?foo@@YAXXZ.llvm.13040715209719948753
+
+  if (**name != L'?')
+    return;  // The name is already demangled.
+
+  for (size_t i = 0, len = wcslen(*name); i < len; i++) {
+    wchar_t c = (*name)[i];
+
+    if (c == L'.' || (c == L'$' && len - i == 32 + 1)) {
+      (*name)[i] = L'\0';
+      wchar_t undecorated[1024];
+      DWORD res = UnDecorateSymbolNameW(*name, undecorated,
+                                        arraysize(undecorated),
+                                        kUndecorateOptions);
+      if (res == 0 || undecorated[0] == L'?') {
+        // Demangling failed; restore the symbol name and return.
+        (*name)[i] = c;
+        return;
+      }
+
+      SysFreeString(*name);
+      *name = SysAllocString(undecorated);
+      return;
+    }
+  }
+}
+
 }  // namespace
 
 PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
@@ -843,19 +895,9 @@ bool PDBSourceLineWriter::GetSymbolFunctionName(IDiaSymbol* function,
                                                 BSTR* name,
                                                 int* stack_param_size) {
   *stack_param_size = -1;
-  const DWORD undecorate_options = UNDNAME_NO_MS_KEYWORDS |
-                                   UNDNAME_NO_FUNCTION_RETURNS |
-                                   UNDNAME_NO_ALLOCATION_MODEL |
-                                   UNDNAME_NO_ALLOCATION_LANGUAGE |
-                                   UNDNAME_NO_THISTYPE |
-                                   UNDNAME_NO_ACCESS_SPECIFIERS |
-                                   UNDNAME_NO_THROW_SIGNATURES |
-                                   UNDNAME_NO_MEMBER_TYPE |
-                                   UNDNAME_NO_RETURN_UDT_MODEL |
-                                   UNDNAME_NO_ECSU;
 
   // Use get_undecoratedNameEx to get readable C++ names with arguments.
-  if (function->get_undecoratedNameEx(undecorate_options, name) != S_OK) {
+  if (function->get_undecoratedNameEx(kUndecorateOptions, name) != S_OK) {
     if (function->get_name(name) != S_OK) {
       fprintf(stderr, "failed to get function name\n");
       return false;
@@ -879,6 +921,8 @@ bool PDBSourceLineWriter::GetSymbolFunctionName(IDiaSymbol* function,
     // all of the parameter and return type information may not be included in
     // the name string.
   } else {
+    StripLlvmSuffixAndUndecorate(name);
+
     // C++ uses a bogus "void" argument for functions and methods that don't
     // take any parameters.  Take it out of the undecorated name because it's
     // ugly and unnecessary.

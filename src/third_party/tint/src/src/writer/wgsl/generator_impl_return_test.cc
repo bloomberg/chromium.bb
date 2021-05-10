@@ -19,33 +19,36 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/return_statement.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Return) {
-  ast::ReturnStatement r;
+  auto* r = create<ast::ReturnStatement>();
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&r)) << g.error();
-  EXPECT_EQ(g.result(), "  return;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+  EXPECT_EQ(gen.result(), "  return;\n");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_ReturnWithValue) {
-  auto expr = std::make_unique<ast::IdentifierExpression>("expr");
-  ast::ReturnStatement r(std::move(expr));
+  auto* expr = Expr("expr");
+  auto* r = create<ast::ReturnStatement>(expr);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&r)) << g.error();
-  EXPECT_EQ(g.result(), "  return expr;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+  EXPECT_EQ(gen.result(), "  return expr;\n");
 }
 
 }  // namespace

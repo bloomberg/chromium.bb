@@ -59,7 +59,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
 // may be 'in-waiting' or running in one of the child processes added by
 // AddProcessReference().
 //
-// Owned by ServiceWorkerVersion. Lives on the core thread.
+// Owned by ServiceWorkerVersion.
 class CONTENT_EXPORT EmbeddedWorkerInstance
     : public blink::mojom::EmbeddedWorkerInstanceHost {
  public:
@@ -232,7 +232,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // The below can only be called on the UI thread. The returned factory may be
   // later supplied to UpdateLoaderFactories().
   static std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-  CreateFactoryBundleOnUI(
+  CreateFactoryBundle(
       RenderProcessHost* rph,
       int routing_id,
       const url::Origin& origin,
@@ -244,10 +244,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Creates a set of factory bundles for scripts and subresources. This must be
   // called after the COEP value for the worker script is known.
-  using CreateFactoryBundlesCallback = base::OnceCallback<void(
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle)>;
-  void CreateFactoryBundles(CreateFactoryBundlesCallback callback);
+  struct CreateFactoryBundlesResult {
+    CreateFactoryBundlesResult();
+    ~CreateFactoryBundlesResult();
+    CreateFactoryBundlesResult(CreateFactoryBundlesResult&& other);
+
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle;
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle;
+  };
+  CreateFactoryBundlesResult CreateFactoryBundles();
 
   // Returns the unique token that has been generated to identify this worker
   // instance, and its corresponding GlobalScope in the renderer process. If the
@@ -259,7 +264,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
   class ScopedLifetimeTracker;
-  class StartTask;
+  struct StartInfo;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerInstanceTest;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
@@ -269,21 +274,14 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                ServiceWorkerNewScriptLoaderTest,
                            AccessedNetwork);
 
-  // Called back from StartTask after a process is allocated on the UI thread.
   void OnProcessAllocated(std::unique_ptr<WorkerProcessHandle> handle,
                           ServiceWorkerMetrics::StartSituation start_situation);
-
-  // Called back from StartTask after the worker is registered to
-  // WorkerDevToolsManager.
   void OnRegisteredToDevToolsManager(
-      std::unique_ptr<DevToolsProxy> devtools_proxy,
-      bool wait_for_debugger);
-
+      std::unique_ptr<DevToolsProxy> devtools_proxy);
   // Sends the StartWorker message to the renderer.
   void SendStartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params);
 
   // Implements blink::mojom::EmbeddedWorkerInstanceHost.
-  // These functions all run on the core thread.
   void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
   void OnReadyForInspection(
@@ -320,7 +318,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                      blink::ServiceWorkerStatusCode status);
 
   // Called when a foreground service worker is added/removed in a process.
-  // Called on the core thread and dispatches task to the UI thread.
   void NotifyForegroundServiceWorkerAdded();
   void NotifyForegroundServiceWorkerRemoved();
 
@@ -329,15 +326,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle);
 
   void BindCacheStorageInternal();
-
-  void OnCreatedFactoryBundles(
-      CreateFactoryBundlesCallback callback,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresouce_bundle,
-      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter,
-      mojo::PendingReceiver<blink::mojom::ReportingObserver>
-          reporting_observer_receiver);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerVersion* owner_version_;
@@ -358,7 +346,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // using it. The renderer process will disconnect the pipe when appropriate.
   mojo::Remote<blink::mojom::EmbeddedWorkerInstanceClient> client_;
 
-  // Receiver for EmbeddedWorkerInstanceHost, runs on core thread.
   mojo::AssociatedReceiver<EmbeddedWorkerInstanceHost> instance_host_receiver_{
       this};
 
@@ -376,7 +363,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ListenerList listener_list_;
   std::unique_ptr<DevToolsProxy> devtools_proxy_;
 
-  std::unique_ptr<StartTask> inflight_start_task_;
+  // Contains info to be recorded on completing StartWorker sequence.
+  // Set on Start() and cleared on OnStarted().
+  std::unique_ptr<StartInfo> inflight_start_info_;
   std::unique_ptr<ScopedLifetimeTracker> lifetime_tracker_;
 
   // This is valid only after a process is allocated for the worker.
@@ -389,8 +378,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   mojo::SelfOwnedReceiverRef<network::mojom::URLLoaderFactory>
       script_loader_factory_;
-
-  const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // Remote interface to talk to a running service worker. Used to update
   // subresource loader factories in the service worker.

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
@@ -39,9 +40,9 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {}
@@ -53,7 +54,7 @@ void ChromeRLZTrackerDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(ENABLE_RLZ)
   int rlz_ping_delay_seconds = 90;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kRlzPingDelay)) {
     // Use a switch for overwriting the default delay because it doesn't seem
@@ -177,8 +178,8 @@ void ChromeRLZTrackerDelegate::SetOmniboxSearchCallback(
   DCHECK(!callback.is_null());
   omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
-          base::Bind(&ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox,
-                     base::Unretained(this)));
+          base::BindRepeating(&ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox,
+                              base::Unretained(this)));
   on_omnibox_search_callback_ = std::move(callback);
 }
 
@@ -259,6 +260,6 @@ void ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   if (!log->is_popup_open)
     return;
 
-  omnibox_url_opened_subscription_.reset();
+  omnibox_url_opened_subscription_ = {};
   std::move(on_omnibox_search_callback_).Run();
 }

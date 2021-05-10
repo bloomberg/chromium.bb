@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -114,10 +115,6 @@ void WindowTreeHost::RemoveObserver(WindowTreeHostObserver* observer) {
 
 bool WindowTreeHost::HasObserver(const WindowTreeHostObserver* observer) const {
   return observers_.HasObserver(observer);
-}
-
-ui::EventSink* WindowTreeHost::event_sink() {
-  return dispatcher_.get();
 }
 
 base::WeakPtr<WindowTreeHost> WindowTreeHost::GetWeakPtr() {
@@ -282,7 +279,7 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
 
   // We should bypass event rewriters here as they've been tried before.
   ui::EventDispatchDetails dispatch_details =
-      event_sink()->OnEventFromSource(event);
+      GetEventSink()->OnEventFromSource(event);
   if (!dispatch_details.dispatcher_destroyed)
     dispatcher_->set_skip_ime(false);
   return dispatch_details;
@@ -382,6 +379,7 @@ void WindowTreeHost::DestroyCompositor() {
 }
 
 void WindowTreeHost::DestroyDispatcher() {
+  Env::GetInstance()->NotifyHostDestroyed(this);
   delete window_;
   window_ = nullptr;
   dispatcher_.reset();
@@ -396,9 +394,11 @@ void WindowTreeHost::DestroyDispatcher() {
   //window()->RemoveOrDestroyChildren();
 }
 
-void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
-                                      bool force_software_compositor,
-                                      bool use_external_begin_frame_control) {
+void WindowTreeHost::CreateCompositor(
+    const viz::FrameSinkId& frame_sink_id,
+    bool force_software_compositor,
+    bool use_external_begin_frame_control,
+    bool enable_compositing_based_throttling) {
   Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
@@ -407,8 +407,8 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
                                  : context_factory->AllocateFrameSinkId(),
       context_factory, base::ThreadTaskRunnerHandle::Get(),
       ui::IsPixelCanvasRecordingEnabled(), use_external_begin_frame_control,
-      force_software_compositor);
-#if defined(OS_CHROMEOS)
+      force_software_compositor, enable_compositing_based_throttling);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   compositor_->AddObserver(this);
 #endif
   if (!dispatcher()) {
@@ -507,7 +507,7 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
 // Chrome OS is handled in WindowTreeHostManager::OnDisplayMetricsChanged.
 // Chrome OS requires additional handling for the bounds that we do not need to
 // do for other OSes.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR &&
       display.id() == GetDisplayId())
     OnHostResizedInPixels(GetBoundsInPixels().size());
@@ -559,8 +559,10 @@ void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
   holding_pointer_moves_ = true;
 }
 
-void WindowTreeHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
-  compositor->RemoveObserver(this);
+void WindowTreeHost::OnFrameSinksToThrottleUpdated(
+    const base::flat_set<viz::FrameSinkId>& ids) {
+  for (auto& observer : observers_)
+    observer.OnCompositingFrameSinksToThrottleUpdated(this, ids);
 }
 
 }  // namespace aura

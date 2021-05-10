@@ -16,10 +16,10 @@
 #include "src/ast/bool_literal.h"
 #include "src/ast/float_literal.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/vector_type.h"
 
 namespace tint {
 namespace reader {
@@ -27,35 +27,35 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, ConstExpr_TypeDecl) {
-  auto* p = parser("vec2<f32>(1., 2.)");
+  auto p = parser("vec2<f32>(1., 2.)");
   auto e = p->expect_const_expr();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
-  ASSERT_TRUE(e->IsConstructor());
-  ASSERT_TRUE(e->AsConstructor()->IsTypeConstructor());
+  ASSERT_TRUE(e->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(e->Is<ast::TypeConstructorExpression>());
 
-  auto* t = e->AsConstructor()->AsTypeConstructor();
-  ASSERT_TRUE(t->type()->IsVector());
-  EXPECT_EQ(t->type()->AsVector()->size(), 2u);
+  auto* t = e->As<ast::TypeConstructorExpression>();
+  ASSERT_TRUE(t->type()->Is<type::Vector>());
+  EXPECT_EQ(t->type()->As<type::Vector>()->size(), 2u);
 
   ASSERT_EQ(t->values().size(), 2u);
   auto& v = t->values();
 
-  ASSERT_TRUE(v[0]->IsConstructor());
-  ASSERT_TRUE(v[0]->AsConstructor()->IsScalarConstructor());
-  auto* c = v[0]->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(c->literal()->IsFloat());
-  EXPECT_FLOAT_EQ(c->literal()->AsFloat()->value(), 1.);
+  ASSERT_TRUE(v[0]->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(v[0]->Is<ast::ScalarConstructorExpression>());
+  auto* c = v[0]->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(c->literal()->Is<ast::FloatLiteral>());
+  EXPECT_FLOAT_EQ(c->literal()->As<ast::FloatLiteral>()->value(), 1.);
 
-  ASSERT_TRUE(v[1]->IsConstructor());
-  ASSERT_TRUE(v[1]->AsConstructor()->IsScalarConstructor());
-  c = v[1]->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(c->literal()->IsFloat());
-  EXPECT_FLOAT_EQ(c->literal()->AsFloat()->value(), 2.);
+  ASSERT_TRUE(v[1]->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(v[1]->Is<ast::ScalarConstructorExpression>());
+  c = v[1]->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(c->literal()->Is<ast::FloatLiteral>());
+  EXPECT_FLOAT_EQ(c->literal()->As<ast::FloatLiteral>()->value(), 2.);
 }
 
 TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingRightParen) {
-  auto* p = parser("vec2<f32>(1., 2.");
+  auto p = parser("vec2<f32>(1., 2.");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -64,7 +64,7 @@ TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingRightParen) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingLeftParen) {
-  auto* p = parser("vec2<f32> 1., 2.)");
+  auto p = parser("vec2<f32> 1., 2.)");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -73,7 +73,7 @@ TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingLeftParen) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_TypeDecl_HangingComma) {
-  auto* p = parser("vec2<f32>(1.,)");
+  auto p = parser("vec2<f32>(1.,)");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -82,7 +82,7 @@ TEST_F(ParserImplTest, ConstExpr_TypeDecl_HangingComma) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingComma) {
-  auto* p = parser("vec2<f32>(1. 2.");
+  auto p = parser("vec2<f32>(1. 2.");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -91,7 +91,7 @@ TEST_F(ParserImplTest, ConstExpr_TypeDecl_MissingComma) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_MissingExpr) {
-  auto* p = parser("vec2<f32>()");
+  auto p = parser("vec2<f32>()");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -100,7 +100,7 @@ TEST_F(ParserImplTest, ConstExpr_MissingExpr) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_InvalidExpr) {
-  auto* p = parser("vec2<f32>(1., if(a) {})");
+  auto p = parser("vec2<f32>(1., if(a) {})");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -109,20 +109,20 @@ TEST_F(ParserImplTest, ConstExpr_InvalidExpr) {
 }
 
 TEST_F(ParserImplTest, ConstExpr_ConstLiteral) {
-  auto* p = parser("true");
+  auto p = parser("true");
   auto e = p->expect_const_expr();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
   ASSERT_NE(e.value, nullptr);
-  ASSERT_TRUE(e->IsConstructor());
-  ASSERT_TRUE(e->AsConstructor()->IsScalarConstructor());
-  auto* c = e->AsConstructor()->AsScalarConstructor();
-  ASSERT_TRUE(c->literal()->IsBool());
-  EXPECT_TRUE(c->literal()->AsBool()->IsTrue());
+  ASSERT_TRUE(e->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(e->Is<ast::ScalarConstructorExpression>());
+  auto* c = e->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(c->literal()->Is<ast::BoolLiteral>());
+  EXPECT_TRUE(c->literal()->As<ast::BoolLiteral>()->IsTrue());
 }
 
 TEST_F(ParserImplTest, ConstExpr_ConstLiteral_Invalid) {
-  auto* p = parser("invalid");
+  auto p = parser("invalid");
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -139,12 +139,12 @@ TEST_F(ParserImplTest, ConstExpr_Recursion) {
   for (size_t i = 0; i < 200; i++) {
     out << ")";
   }
-  auto* p = parser(out.str());
+  auto p = parser(out.str());
   auto e = p->expect_const_expr();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
   ASSERT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:517: max const_expr depth reached");
+  EXPECT_EQ(p->error(), "1:517: maximum parser recursive depth reached");
 }
 
 }  // namespace

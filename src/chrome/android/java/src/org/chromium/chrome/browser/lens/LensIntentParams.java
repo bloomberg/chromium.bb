@@ -18,6 +18,7 @@ public class LensIntentParams {
     private boolean mIsIncognito;
     private boolean mRequiresConfirmation;
     private int mIntentType;
+    private @LensEntryPoint int mLensEntryPoint;
 
     /**
      * Builder class for LensIntentParams.
@@ -30,8 +31,29 @@ public class LensIntentParams {
         private boolean mIsIncognito;
         private boolean mRequiresConfirmation;
         private int mIntentType;
+        private @LensEntryPoint int mLensEntryPoint;
 
         public Builder() {}
+
+        // TODO(b/180967190): remove the with* methods for the required params once
+        // downstream references are updated.
+        // lensEntryPoint and isIncognito are required params when creating the
+        // LensIntentParams.
+        public Builder(@LensEntryPoint int lensEntryPoint, boolean isIncognito) {
+            this();
+            this.mLensEntryPoint = lensEntryPoint;
+            this.mIsIncognito = isIncognito;
+        }
+
+        /**
+         * Sets the Lens entry point.
+         *
+         * @param lensEntryPoint The entry point to set as a parameter
+         */
+        public Builder withLensEntryPoint(@LensEntryPoint int lensEntryPoint) {
+            this.mLensEntryPoint = lensEntryPoint;
+            return this;
+        }
 
         /**
          * Sets the image URI.
@@ -109,9 +131,10 @@ public class LensIntentParams {
          */
         public LensIntentParams build() {
             LensIntentParams lensIntentParams = new LensIntentParams();
+            lensIntentParams.mIsIncognito = mIsIncognito;
+            lensIntentParams.mLensEntryPoint = mLensEntryPoint;
             if (!Uri.EMPTY.equals(mImageUri)) {
                 lensIntentParams.mImageUri = mImageUri;
-                lensIntentParams.mIsIncognito = mIsIncognito;
                 lensIntentParams.mIntentType = mIntentType;
                 lensIntentParams.mRequiresConfirmation = mRequiresConfirmation;
                 if (mSrcUrl != null) {
@@ -128,38 +151,43 @@ public class LensIntentParams {
         }
     }
 
-    /** Retrieve the image URI for the intent. */
+    /** Returns the imageUri for this set of params. */
     public Uri getImageUri() {
         return mImageUri;
     }
 
-    /** Retrieve the page URL for the intent. */
+    /** Returns the pageUrl for this set of params. */
     public String getPageUrl() {
         return mPageUrl;
     }
 
-    /** Retrieve the image source URL for the intent. */
+    /** Returns the srcUrl for this set of params. */
     public String getSrcUrl() {
         return mSrcUrl;
     }
 
-    /** Retrieve the image title or alt text for the intent. */
+    /** Returns the imageTitleOrAltText for this set of params. */
     public String getImageTitleOrAltText() {
         return mImageTitleOrAltText;
     }
 
-    /** Retrieve whether the client is incognito for the intent. */
+    /** Returns the isIncognito for this set of params. */
     public boolean getIsIncognito() {
         return mIsIncognito;
     }
 
-    /** Retrieve whether the client requires account for the intent. */
+    /** Returns the requiresConfirmation for this set of params. */
     public boolean getRequiresConfirmation() {
         return mRequiresConfirmation;
     }
 
-    /** Retrieve the intent type. */
+    /** Returns the intentType for this set of params. */
     public int getIntentType() {
         return mIntentType;
+    }
+
+    /** Returns the {@link LensEntryPoint} for this set of params. */
+    public @LensEntryPoint int getLensEntryPoint() {
+        return mLensEntryPoint;
     }
 }

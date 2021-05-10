@@ -7,17 +7,24 @@
 
 #define SK_OPTS_NS skslc_standalone
 #include "src/opts/SkChecksum_opts.h"
+#include "src/opts/SkVM_opts.h"
 
+#include "src/gpu/GrShaderUtils.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLDehydrator.h"
 #include "src/sksl/SkSLFileOutputStream.h"
 #include "src/sksl/SkSLIRGenerator.h"
+#include "src/sksl/SkSLPipelineStageCodeGenerator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/SkSLUtil.h"
+#include "src/sksl/SkSLVMGenerator.h"
 #include "src/sksl/ir/SkSLEnum.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 
+#include "spirv-tools/libspirv.hpp"
+
 #include <fstream>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -30,14 +37,44 @@ void SkDebugf(const char format[], ...) {
 
 namespace SkOpts {
     decltype(hash_fn) hash_fn = skslc_standalone::hash_fn;
+    decltype(interpret_skvm) interpret_skvm = skslc_standalone::interpret_skvm;
+}
+
+enum class ResultCode {
+    kSuccess = 0,
+    kCompileError = 1,
+    kInputError = 2,
+    kOutputError = 3,
+    kConfigurationError = 4,
+};
+
+static std::unique_ptr<SkWStream> as_SkWStream(SkSL::OutputStream& s) {
+    struct Adapter : public SkWStream {
+    public:
+        Adapter(SkSL::OutputStream& out) : fOut(out), fBytesWritten(0) {}
+
+        bool write(const void* buffer, size_t size) override {
+            fOut.write(buffer, size);
+            fBytesWritten += size;
+            return true;
+        }
+        void flush() override {}
+        size_t bytesWritten() const override { return fBytesWritten; }
+
+    private:
+        SkSL::OutputStream& fOut;
+        size_t fBytesWritten;
+    };
+
+    return std::make_unique<Adapter>(s);
 }
 
 // Given the path to a file (e.g. src/gpu/effects/GrFooFragmentProcessor.fp) and the expected
 // filename prefix and suffix (e.g. "Gr" and ".fp"), returns the "base name" of the
 // file (in this case, 'FooFragmentProcessor'). If no match, returns the empty string.
-static SkSL::String base_name(const char* fpPath, const char* prefix, const char* suffix) {
+static SkSL::String base_name(const SkSL::String& fpPath, const char* prefix, const char* suffix) {
     SkSL::String result;
-    const char* end = fpPath + strlen(fpPath);
+    const char* end = &*fpPath.end();
     const char* fileName = end;
     // back up until we find a slash
     while (fileName != fpPath && '/' != *(fileName - 1) && '\\' != *(fileName - 1)) {
@@ -53,7 +90,7 @@ static SkSL::String base_name(const char* fpPath, const char* prefix, const char
 // Given a string containing an SkSL program, searches for a #pragma settings comment, like so:
 //    /*#pragma settings Default Sharpen*/
 // The passed-in Settings object will be updated accordingly. Any number of options can be provided.
-static void detect_shader_settings(const SkSL::String& text,
+static bool detect_shader_settings(const SkSL::String& text,
                                    SkSL::Program::Settings* settings,
                                    const SkSL::ShaderCapsClass** caps) {
     using Factory = SkSL::ShaderCapsFactory;
@@ -167,6 +204,9 @@ static void detect_shader_settings(const SkSL::String& text,
                     static auto s_version450CoreCaps = Factory::Version450Core();
                     *caps = s_version450CoreCaps.get();
                 }
+                if (settingsText.consumeSuffix(" NoDeadCodeElimination")) {
+                    settings->fDeadCodeElimination = false;
+                }
                 if (settingsText.consumeSuffix(" FlipY")) {
                     settings->fFlipY = true;
                 }
@@ -175,6 +215,9 @@ static void detect_shader_settings(const SkSL::String& text,
                 }
                 if (settingsText.consumeSuffix(" NoInline")) {
                     settings->fInlineThreshold = 0;
+                }
+                if (settingsText.consumeSuffix(" InlineThresholdMax")) {
+                    settings->fInlineThreshold = INT_MAX;
                 }
                 if (settingsText.consumeSuffix(" Sharpen")) {
                     settings->fSharpenTextures = true;
@@ -185,163 +228,238 @@ static void detect_shader_settings(const SkSL::String& text,
                 }
                 if (settingsText.length() == startingLength) {
                     printf("Unrecognized #pragma settings: %s\n", settingsText.c_str());
-                    exit(3);
+                    return false;
                 }
             }
         }
     }
+
+    return true;
 }
 
 /**
- * Very simple standalone executable to facilitate testing.
+ * Displays a usage banner; used when the command line arguments don't make sense.
  */
-int main(int argc, const char** argv) {
+static void show_usage() {
+    printf("usage: skslc <input> <output> <flags>\n"
+           "       skslc <worklist>\n"
+           "\n"
+           "Allowed flags:\n"
+           "--settings:   honor embedded /*#pragma settings*/ comments.\n"
+           "--nosettings: ignore /*#pragma settings*/ comments\n");
+}
+
+/**
+ * Handle a single input.
+ */
+ResultCode processCommand(std::vector<SkSL::String>& args) {
     bool honorSettings = true;
-    if (argc == 4) {
-        if (0 == strcmp(argv[3], "--settings")) {
+    if (args.size() == 4) {
+        // Handle four-argument case: `skslc in.sksl out.glsl --settings`
+        const SkSL::String& settingsArg = args[3];
+        if (settingsArg == "--settings") {
             honorSettings = true;
-        } else if (0 == strcmp(argv[3], "--nosettings")) {
+        } else if (settingsArg == "--nosettings") {
             honorSettings = false;
         } else {
-            printf("unrecognized flag: %s\n", argv[3]);
-            exit(1);
+            printf("unrecognized flag: %s\n\n", settingsArg.c_str());
+            show_usage();
+            return ResultCode::kInputError;
         }
-    } else if (argc != 3) {
-        printf("usage: skslc <input> <output> <flags>\n"
-               "\n"
-               "Allowed flags:\n"
-               "--settings:   honor embedded /*#pragma settings*/ comments.\n"
-               "--nosettings: ignore /*#pragma settings*/ comments\n");
-        exit(1);
+    } else if (args.size() != 3) {
+        show_usage();
+        return ResultCode::kInputError;
     }
 
-    SkSL::Program::Kind kind;
-    SkSL::String input(argv[1]);
-    if (input.endsWith(".vert")) {
-        kind = SkSL::Program::kVertex_Kind;
-    } else if (input.endsWith(".frag") || input.endsWith(".sksl")) {
-        kind = SkSL::Program::kFragment_Kind;
-    } else if (input.endsWith(".geom")) {
-        kind = SkSL::Program::kGeometry_Kind;
-    } else if (input.endsWith(".fp")) {
-        kind = SkSL::Program::kFragmentProcessor_Kind;
-    } else if (input.endsWith(".stage")) {
-        kind = SkSL::Program::kPipelineStage_Kind;
+    SkSL::ProgramKind kind;
+    const SkSL::String& inputPath = args[1];
+    if (inputPath.endsWith(".vert")) {
+        kind = SkSL::ProgramKind::kVertex;
+    } else if (inputPath.endsWith(".frag") || inputPath.endsWith(".sksl")) {
+        kind = SkSL::ProgramKind::kFragment;
+    } else if (inputPath.endsWith(".geom")) {
+        kind = SkSL::ProgramKind::kGeometry;
+    } else if (inputPath.endsWith(".fp")) {
+        kind = SkSL::ProgramKind::kFragmentProcessor;
+    } else if (inputPath.endsWith(".rte")) {
+        kind = SkSL::ProgramKind::kRuntimeEffect;
     } else {
-        printf("input filename must end in '.vert', '.frag', '.geom', '.fp', '.stage', or "
-               "'.sksl'\n");
-        exit(1);
+        printf("input filename must end in '.vert', '.frag', '.geom', '.fp', '.rte', or '.sksl'\n");
+        return ResultCode::kInputError;
     }
 
-    std::ifstream in(argv[1]);
+    std::ifstream in(inputPath);
     SkSL::String text((std::istreambuf_iterator<char>(in)),
                        std::istreambuf_iterator<char>());
     if (in.rdstate()) {
-        printf("error reading '%s'\n", argv[1]);
-        exit(2);
+        printf("error reading '%s'\n", inputPath.c_str());
+        return ResultCode::kInputError;
     }
 
     SkSL::Program::Settings settings;
     const SkSL::ShaderCapsClass* caps = &SkSL::standaloneCaps;
     if (honorSettings) {
-        detect_shader_settings(text, &settings, &caps);
+        if (!detect_shader_settings(text, &settings, &caps)) {
+            return ResultCode::kInputError;
+        }
     }
-    SkSL::String name(argv[2]);
-    if (name.endsWith(".spirv")) {
-        SkSL::FileOutputStream out(argv[2]);
+
+    const SkSL::String& outputPath = args[2];
+    auto emitCompileError = [&](SkSL::FileOutputStream& out, const char* errorText) {
+        // Overwrite the compiler output, if any, with an error message.
+        out.close();
+        SkSL::FileOutputStream errorStream(outputPath);
+        errorStream.writeText("### Compilation failed:\n\n");
+        errorStream.writeText(errorText);
+        errorStream.close();
+        // Also emit the error directly to stdout.
+        puts(errorText);
+    };
+
+    auto compileProgram = [&](const auto& writeFn) -> ResultCode {
+        SkSL::FileOutputStream out(outputPath);
         SkSL::Compiler compiler(caps);
         if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
+            printf("error writing '%s'\n", outputPath.c_str());
+            return ResultCode::kOutputError;
         }
         std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, text, settings);
-        if (!program || !compiler.toSPIRV(*program, out)) {
-            printf("%s", compiler.errorText().c_str());
-            exit(3);
+        if (!program || !writeFn(compiler, *program, out)) {
+            emitCompileError(out, compiler.errorText().c_str());
+            return ResultCode::kCompileError;
         }
         if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
+            printf("error writing '%s'\n", outputPath.c_str());
+            return ResultCode::kOutputError;
         }
-    } else if (name.endsWith(".glsl")) {
-        SkSL::FileOutputStream out(argv[2]);
-        SkSL::Compiler compiler(caps);
-        if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-        std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, text, settings);
-        if (!program || !compiler.toGLSL(*program, out)) {
-            printf("%s", compiler.errorText().c_str());
-            exit(3);
-        }
-        if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-    } else if (name.endsWith(".metal")) {
-        SkSL::FileOutputStream out(argv[2]);
-        SkSL::Compiler compiler(caps);
-        if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-        std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, text, settings);
-        if (!program || !compiler.toMetal(*program, out)) {
-            printf("%s", compiler.errorText().c_str());
-            exit(3);
-        }
-        if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-    } else if (name.endsWith(".h")) {
-        SkSL::FileOutputStream out(argv[2]);
-        SkSL::Compiler compiler(caps, SkSL::Compiler::kPermitInvalidStaticTests_Flag);
-        if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
+        return ResultCode::kSuccess;
+    };
+
+    if (outputPath.endsWith(".spirv")) {
+        return compileProgram(
+                [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toSPIRV(program, out);
+                });
+    } else if (outputPath.endsWith(".asm.frag") || outputPath.endsWith(".asm.vert") ||
+               outputPath.endsWith(".asm.geom")) {
+        return compileProgram(
+                [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    // Compile program to SPIR-V assembly in a string-stream.
+                    SkSL::StringStream assembly;
+                    if (!compiler.toSPIRV(program, assembly)) {
+                        return false;
+                    }
+                    // Convert the string-stream to a SPIR-V disassembly.
+                    spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_0);
+                    const SkSL::String& spirv(assembly.str());
+                    std::string disassembly;
+                    if (!tools.Disassemble((const uint32_t*)spirv.data(),
+                                           spirv.size() / 4, &disassembly)) {
+                        return false;
+                    }
+                    // Finally, write the disassembly to our output stream.
+                    out.write(disassembly.data(), disassembly.size());
+                    return true;
+                });
+    } else if (outputPath.endsWith(".glsl")) {
+        return compileProgram(
+                [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toGLSL(program, out);
+                });
+    } else if (outputPath.endsWith(".metal")) {
+        return compileProgram(
+                [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toMetal(program, out);
+                });
+    } else if (outputPath.endsWith(".h")) {
         settings.fReplaceSettings = false;
-        std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, text, settings);
-        if (!program || !compiler.toH(*program, base_name(argv[1], "Gr", ".fp"), out)) {
-            printf("%s", compiler.errorText().c_str());
-            exit(3);
-        }
-        if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-    } else if (name.endsWith(".cpp")) {
-        SkSL::FileOutputStream out(argv[2]);
-        SkSL::Compiler compiler(caps, SkSL::Compiler::kPermitInvalidStaticTests_Flag);
-        if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
+        settings.fPermitInvalidStaticTests = true;
+        return compileProgram(
+                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toH(program, base_name(inputPath.c_str(), "Gr", ".fp"), out);
+                });
+    } else if (outputPath.endsWith(".cpp")) {
         settings.fReplaceSettings = false;
-        std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, text, settings);
-        if (!program || !compiler.toCPP(*program, base_name(argv[1], "Gr", ".fp"), out)) {
-            printf("%s", compiler.errorText().c_str());
-            exit(3);
-        }
-        if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
-        }
-    } else if (name.endsWith(".dehydrated.sksl")) {
-        SkSL::FileOutputStream out(argv[2]);
+        settings.fPermitInvalidStaticTests = true;
+        return compileProgram(
+                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toCPP(program, base_name(inputPath.c_str(), "Gr", ".fp"), out);
+                });
+    } else if (outputPath.endsWith(".skvm")) {
+        return compileProgram(
+                [](SkSL::Compiler&, SkSL::Program& program, SkSL::OutputStream& out) {
+                    skvm::Builder builder{skvm::Features{}};
+                    if (!SkSL::testingOnly_ProgramToSkVMShader(program, &builder)) {
+                        return false;
+                    }
+
+                    std::unique_ptr<SkWStream> redirect = as_SkWStream(out);
+                    builder.done().dump(redirect.get());
+                    return true;
+                });
+    } else if (outputPath.endsWith(".stage")) {
+        return compileProgram(
+                [](SkSL::Compiler&, SkSL::Program& program, SkSL::OutputStream& out) {
+                    class Callbacks : public SkSL::PipelineStage::Callbacks {
+                    public:
+                        using String = SkSL::String;
+
+                        String getMangledName(const char* name) override {
+                            return String(name) + "_0";
+                        }
+
+                        String declareUniform(const SkSL::VarDeclaration* decl) override {
+                            fOutput += decl->description();
+                            if (decl->var().type().name() == "fragmentProcessor") {
+                                fChildNames.push_back(decl->var().name());
+                            }
+                            return decl->var().name();
+                        }
+
+                        void defineFunction(const char* decl,
+                                            const char* body,
+                                            bool /*isMain*/) override {
+                            fOutput += String(decl) + "{" + body + "}";
+                        }
+
+                        void defineStruct(const char* definition) override {
+                            fOutput += definition;
+                        }
+
+                        void declareGlobal(const char* declaration) override {
+                            fOutput += declaration;
+                        }
+
+                        String sampleChild(int index, String coords) override {
+                            return String::printf("sample(%s%s%s)", fChildNames[index].c_str(),
+                                                  coords.empty() ? "" : ", ", coords.c_str());
+                        }
+                        String sampleChildWithMatrix(int index, String matrix) override {
+                            return String::printf("sample(%s%s%s)", fChildNames[index].c_str(),
+                                                  matrix.empty() ? "" : ", ", matrix.c_str());
+                        }
+
+                        String              fOutput;
+                        std::vector<String> fChildNames;
+                    };
+                    Callbacks callbacks;
+                    SkSL::PipelineStage::ConvertProgram(program, "_coords", &callbacks);
+                    out.writeString(GrShaderUtils::PrettyPrint(callbacks.fOutput));
+                    return true;
+                });
+    } else if (outputPath.endsWith(".dehydrated.sksl")) {
+        SkSL::FileOutputStream out(outputPath);
         SkSL::Compiler compiler(caps);
         if (!out.isValid()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
+            printf("error writing '%s'\n", outputPath.c_str());
+            return ResultCode::kOutputError;
         }
-        auto [symbols, elements] =
-                compiler.loadModule(kind, SkSL::Compiler::MakeModulePath(argv[1]), nullptr);
+        SkSL::LoadedModule module = compiler.loadModule(
+                kind, SkSL::Compiler::MakeModulePath(inputPath.c_str()), nullptr);
         SkSL::Dehydrator dehydrator;
-        dehydrator.write(*symbols);
-        dehydrator.write(elements);
-        SkSL::String baseName = base_name(argv[1], "", ".sksl");
+        dehydrator.write(*module.fSymbols);
+        dehydrator.write(module.fElements);
+        SkSL::String baseName = base_name(inputPath, "", ".sksl");
         SkSL::StringStream buffer;
         dehydrator.finish(buffer);
         const SkSL::String& data = buffer.str();
@@ -353,11 +471,78 @@ int main(int argc, const char** argv) {
         out.printf("static constexpr size_t SKSL_INCLUDE_%s_LENGTH = sizeof(SKSL_INCLUDE_%s);\n",
                    baseName.c_str(), baseName.c_str());
         if (!out.close()) {
-            printf("error writing '%s'\n", argv[2]);
-            exit(4);
+            printf("error writing '%s'\n", outputPath.c_str());
+            return ResultCode::kOutputError;
         }
     } else {
-        printf("expected output filename to end with '.spirv', '.glsl', '.cpp', '.h', or '.metal'");
-        exit(1);
+        printf("expected output path to end with one of: .glsl, .metal, .spirv, .asm.frag, "
+               ".asm.vert, .asm.geom, .cpp, .h (got '%s')\n", outputPath.c_str());
+        return ResultCode::kConfigurationError;
+    }
+    return ResultCode::kSuccess;
+}
+
+/**
+ * Processes multiple inputs in a single invocation of skslc.
+ */
+ResultCode processWorklist(const char* worklistPath) {
+    SkSL::String inputPath(worklistPath);
+    if (!inputPath.endsWith(".worklist")) {
+        printf("expected .worklist file, found: %s\n\n", worklistPath);
+        show_usage();
+        return ResultCode::kConfigurationError;
+    }
+
+    // The worklist contains one line per argument to pass to skslc. When a blank line is reached,
+    // those arguments will be passed to `processCommand`.
+    auto resultCode = ResultCode::kSuccess;
+    std::vector<SkSL::String> args = {"skslc"};
+    std::ifstream in(worklistPath);
+    for (SkSL::String line; std::getline(in, line); ) {
+        if (in.rdstate()) {
+            printf("error reading '%s'\n", worklistPath);
+            return ResultCode::kInputError;
+        }
+
+        if (!line.empty()) {
+            // We found an argument. Remember it.
+            args.push_back(std::move(line));
+        } else {
+            // We found a blank line. If we have any arguments stored up, process them as a command.
+            if (!args.empty()) {
+                ResultCode outcome = processCommand(args);
+                resultCode = std::max(resultCode, outcome);
+
+                // Clear every argument except the first ("skslc").
+                args.resize(1);
+            }
+        }
+    }
+
+    // If the worklist ended with a list of arguments but no blank line, process those now.
+    if (args.size() > 1) {
+        ResultCode outcome = processCommand(args);
+        resultCode = std::max(resultCode, outcome);
+    }
+
+    // Return the "worst" status we encountered. For our purposes, compilation errors are the least
+    // serious, because they are expected to occur in unit tests. Other types of errors are not
+    // expected at all during a build.
+    return resultCode;
+}
+
+int main(int argc, const char** argv) {
+    if (argc == 2) {
+        // Worklists are the only two-argument case for skslc, and we don't intend to support
+        // nested worklists, so we can process them here.
+        return (int)processWorklist(argv[1]);
+    } else {
+        // Process non-worklist inputs.
+        std::vector<SkSL::String> args;
+        for (int index=0; index<argc; ++index) {
+            args.push_back(argv[index]);
+        }
+
+        return (int)processCommand(args);
     }
 }

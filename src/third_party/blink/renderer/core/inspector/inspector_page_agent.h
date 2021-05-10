@@ -84,6 +84,7 @@ class CORE_EXPORT InspectorPageAgent final
     kWebSocketResource,
     kManifestResource,
     kSignedExchangeResource,
+    kPingResource,
     kOtherResource
   };
 
@@ -141,6 +142,12 @@ class CORE_EXPORT InspectorPageAgent final
                                         const String& html) override;
   protocol::Response setBypassCSP(bool enabled) override;
 
+  protocol::Response getPermissionsPolicyState(
+      const String& frame_id,
+      std::unique_ptr<
+          protocol::Array<protocol::Page::PermissionsPolicyFeatureState>>*)
+      override;
+
   protocol::Response startScreencast(Maybe<String> format,
                                      Maybe<int> quality,
                                      Maybe<int> max_width,
@@ -175,6 +182,7 @@ class CORE_EXPORT InspectorPageAgent final
   void DomContentLoadedEventFired(LocalFrame*);
   void LoadEventFired(LocalFrame*);
   void WillCommitLoad(LocalFrame*, DocumentLoader*);
+  void DidOpenDocument(LocalFrame*, DocumentLoader*);
   void FrameAttachedToParent(LocalFrame*);
   void FrameDetachedFromParent(LocalFrame*, FrameDetachType);
   void FrameStartedLoading(LocalFrame*);

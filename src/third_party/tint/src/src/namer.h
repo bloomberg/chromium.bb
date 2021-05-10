@@ -19,29 +19,73 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "src/symbol_table.h"
+
 namespace tint {
 
-/// Remaps maps names to a hashed version. This keeps the provided user input
-/// from traveling through to the backend compiler.
+/// Base class for the namers.
 class Namer {
  public:
   /// Constructor
-  Namer();
-  ~Namer();
+  /// @param symbols the symbol table this namer works with
+  explicit Namer(SymbolTable* symbols);
+  /// Destructor
+  virtual ~Namer();
 
-  /// Returns a sanitized version of |name|
-  /// @param name the name to sanitize
-  /// @returns the sanitized version of |name|
-  std::string NameFor(const std::string& name);
+  /// Returns the name for `sym`
+  /// @param sym the symbol to retrieve the name for
+  /// @returns the sanitized version of `name` or "" if not found
+  virtual std::string NameFor(const Symbol& sym) = 0;
 
-  /// Returns if the given name has been mapped already
+  /// Generates a unique name for `prefix`
+  /// @param prefix the prefix name
+  /// @returns the unique name string
+  std::string GenerateName(const std::string& prefix);
+
+ protected:
+  /// Checks if `name` has been used
   /// @param name the name to check
-  /// @returns true if the name has been mapped
-  bool IsMapped(const std::string& name);
+  /// @returns true if `name` has already been used
+  bool IsUsed(const std::string& name);
+
+  /// The symbol table
+  SymbolTable* symbols_ = nullptr;
 
  private:
-  /// Map of original name to new name.
-  std::unordered_map<std::string, std::string> name_map_;
+  // The list of names taken by the remapper
+  std::unordered_set<std::string> used_;
+};
+
+/// A namer class which mangles the name
+class MangleNamer : public Namer {
+ public:
+  /// Constructor
+  /// @param symbols the symbol table this namer works with
+  explicit MangleNamer(SymbolTable* symbols);
+  /// Destructor
+  ~MangleNamer() override;
+
+  /// Returns a mangled name for `sym`
+  /// @param sym the symbol to name
+  /// @returns the name for `sym` or "" if not found
+  std::string NameFor(const Symbol& sym) override;
+};
+
+/// A namer which returns the user provided name. This is unsafe in general as
+/// it passes user provided data through to the backend compiler. It is useful
+/// for development and debugging.
+class UnsafeNamer : public Namer {
+ public:
+  /// Constructor
+  /// @param symbols the symbol table this namer works with
+  explicit UnsafeNamer(SymbolTable* symbols);
+  /// Destructor
+  ~UnsafeNamer() override;
+
+  /// Returns `name`
+  /// @param sym the symbol
+  /// @returns `name` or "" if not found
+  std::string NameFor(const Symbol& sym) override;
 };
 
 }  // namespace tint

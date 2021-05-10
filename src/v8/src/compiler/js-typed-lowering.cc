@@ -109,11 +109,14 @@ class JSBinopReduction final {
       JSHeapBroker* broker = lowering_->broker();
       if (m.right().HasResolvedValue() && m.right().Ref(broker).IsString()) {
         StringRef right_string = m.right().Ref(broker).AsString();
-        if (right_string.length() >= ConsString::kMinLength) return true;
+        if (right_string.length().has_value() &&
+            right_string.length().value() >= ConsString::kMinLength)
+          return true;
       }
       if (m.left().HasResolvedValue() && m.left().Ref(broker).IsString()) {
         StringRef left_string = m.left().Ref(broker).AsString();
-        if (left_string.length() >= ConsString::kMinLength) {
+        if (left_string.length().has_value() &&
+            left_string.length().value() >= ConsString::kMinLength) {
           // The invariant for ConsString requires the left hand side to be
           // a sequential or external string if the right hand side is the
           // empty string. Since we don't know anything about the right hand
@@ -591,6 +594,8 @@ Reduction JSTypedLowering::ReduceJSAdd(Node* node) {
 
     PropertyCellRef string_length_protector(
         broker(), factory()->string_length_protector());
+    string_length_protector.SerializeAsProtector();
+
     if (string_length_protector.value().AsSmi() ==
         Protectors::kProtectorValid) {
       // We can just deoptimize if the {length} is out-of-bounds. Besides
@@ -1046,6 +1051,9 @@ Reduction JSTypedLowering::ReduceJSToNumeric(Node* node) {
   if (input_type.Is(Type::NonBigIntPrimitive())) {
     // ToNumeric(x:primitive\bigint) => ToNumber(x)
     NodeProperties::ChangeOp(node, javascript()->ToNumber());
+    Type node_type = NodeProperties::GetType(node);
+    NodeProperties::SetType(
+        node, Type::Intersect(node_type, Type::Number(), graph()->zone()));
     return Changed(node).FollowedBy(ReduceJSToNumber(node));
   }
   return NoChange();
@@ -1563,15 +1571,6 @@ void ReduceBuiltin(JSGraph* jsgraph, Node* node, int builtin_index, int arity,
 
   NodeProperties::ChangeOp(node, jsgraph->common()->Call(call_descriptor));
 }
-
-#ifndef V8_NO_ARGUMENTS_ADAPTOR
-bool NeedsArgumentAdaptorFrame(SharedFunctionInfoRef shared, int arity) {
-  static const int sentinel = kDontAdaptArgumentsSentinel;
-  const int num_decl_parms = shared.internal_formal_parameter_count();
-  return (num_decl_parms != arity && num_decl_parms != sentinel);
-}
-#endif
-
 }  // namespace
 
 Reduction JSTypedLowering::ReduceJSConstructForwardVarargs(Node* node) {
@@ -1716,7 +1715,10 @@ Reduction JSTypedLowering::ReduceJSCall(Node* node) {
     shared = SharedFunctionInfoRef(broker(), ccp.shared_info());
   } else if (target->opcode() == IrOpcode::kCheckClosure) {
     FeedbackCellRef cell(broker(), FeedbackCellOf(target->op()));
-    shared = cell.value().AsFeedbackVector().shared_function_info();
+    base::Optional<FeedbackVectorRef> feedback_vector = cell.value();
+    if (feedback_vector.has_value()) {
+      shared = feedback_vector->shared_function_info();
+    }
   }
 
   if (shared.has_value()) {
@@ -1756,7 +1758,6 @@ Reduction JSTypedLowering::ReduceJSCall(Node* node) {
     CallDescriptor::Flags flags = CallDescriptor::kNeedsFrameState;
     Node* new_target = jsgraph()->UndefinedConstant();
 
-#ifdef V8_NO_ARGUMENTS_ADAPTOR
     int formal_count = shared->internal_formal_parameter_count();
     if (formal_count != kDontAdaptArgumentsSentinel && formal_count > arity) {
       node->RemoveInput(n.FeedbackVectorIndex());
@@ -1775,22 +1776,6 @@ Reduction JSTypedLowering::ReduceJSCall(Node* node) {
                                common()->Call(Linkage::GetJSCallDescriptor(
                                    graph()->zone(), false, 1 + formal_count,
                                    flags | CallDescriptor::kCanUseRoots)));
-#else
-    if (NeedsArgumentAdaptorFrame(*shared, arity)) {
-      node->RemoveInput(n.FeedbackVectorIndex());
-      // Patch {node} to an indirect call via the ArgumentsAdaptorTrampoline.
-      Callable callable = CodeFactory::ArgumentAdaptor(isolate());
-      node->InsertInput(graph()->zone(), 0,
-                        jsgraph()->HeapConstant(callable.code()));
-      node->InsertInput(graph()->zone(), 2, new_target);
-      node->InsertInput(graph()->zone(), 3, jsgraph()->Constant(arity));
-      node->InsertInput(
-          graph()->zone(), 4,
-          jsgraph()->Constant(shared->internal_formal_parameter_count()));
-      NodeProperties::ChangeOp(
-          node, common()->Call(Linkage::GetStubCallDescriptor(
-                    graph()->zone(), callable.descriptor(), 1 + arity, flags)));
-#endif
     } else if (shared->HasBuiltinId() &&
                Builtins::IsCpp(shared->builtin_id())) {
       // Patch {node} to a direct CEntry call.
@@ -2367,8 +2352,6 @@ Reduction JSTypedLowering::ReduceJSResolvePromise(Node* node) {
 }
 
 Reduction JSTypedLowering::Reduce(Node* node) {
-  DisallowHeapAccess no_heap_access;
-
   const IrOpcode::Value opcode = node->opcode();
   if (broker()->generate_full_feedback_collection() &&
       IrOpcode::IsFeedbackCollectingOpcode(opcode)) {
@@ -2479,7 +2462,6 @@ Reduction JSTypedLowering::Reduce(Node* node) {
   }
   return NoChange();
 }
-
 
 Factory* JSTypedLowering::factory() const { return jsgraph()->factory(); }
 

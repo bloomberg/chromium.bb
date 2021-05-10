@@ -30,6 +30,7 @@
 #include "content/test/test_web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
@@ -155,10 +156,11 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
-      TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
+      TestRenderFrameHost::CreateStubFrameRemote(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubPolicyContainerBindParams(),
       blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
-      base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+      blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
@@ -514,14 +516,14 @@ TEST_F(RenderProcessHostUnitTest, DISABLED_ReuseNavigationProcess) {
   navigation->Start();
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
       browser_context(), kUrl2);
-  EXPECT_EQ(contents()->GetPendingMainFrame()->GetProcess(),
+  EXPECT_EQ(contents()->GetSpeculativePrimaryMainFrame()->GetProcess(),
             site_instance->GetProcess());
 
   // Remember the process id and cancel the navigation. Getting
   // RenderProcessHost with the REUSE_PENDING_OR_COMMITTED_SITE policy should
   // no longer return the process of the speculative RenderFrameHost.
   int speculative_process_host_id =
-      contents()->GetPendingMainFrame()->GetProcess()->GetID();
+      contents()->GetSpeculativePrimaryMainFrame()->GetProcess()->GetID();
   navigation->Fail(net::ERR_ABORTED);
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
       browser_context(), kUrl2);
@@ -630,11 +632,12 @@ TEST_F(RenderProcessHostUnitTest,
                                       ui::PAGE_TRANSITION_TYPED, std::string());
   main_test_rfh()->SimulateBeforeUnloadCompleted(true);
   int speculative_process_host_id =
-      contents()->GetPendingMainFrame()->GetProcess()->GetID();
-  bool speculative_is_default_site_instance = contents()
-                                                  ->GetPendingMainFrame()
-                                                  ->GetSiteInstance()
-                                                  ->IsDefaultSiteInstance();
+      contents()->GetSpeculativePrimaryMainFrame()->GetProcess()->GetID();
+  bool speculative_is_default_site_instance =
+      contents()
+          ->GetSpeculativePrimaryMainFrame()
+          ->GetSiteInstance()
+          ->IsDefaultSiteInstance();
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
       browser_context(), kUrl);
   EXPECT_EQ(speculative_process_host_id, site_instance->GetProcess()->GetID());
@@ -676,7 +679,7 @@ TEST_F(RenderProcessHostUnitTest,
   // shouldn't be returned either.
   main_test_rfh()->PrepareForCommit();
   speculative_process_host_id =
-      contents()->GetPendingMainFrame()->GetProcess()->GetID();
+      contents()->GetSpeculativePrimaryMainFrame()->GetProcess()->GetID();
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
       browser_context(), kUrl);
   EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
@@ -727,8 +730,8 @@ TEST_F(RenderProcessHostUnitTest, ReuseSiteURLChanges) {
   TestRenderFrameHost* rfh = main_test_rfh();
   // In --site-per-process, the reload will use the pending/speculative RFH
   // instead of the current one.
-  if (contents()->GetPendingMainFrame())
-    rfh = contents()->GetPendingMainFrame();
+  if (contents()->GetSpeculativePrimaryMainFrame())
+    rfh = contents()->GetSpeculativePrimaryMainFrame();
   rfh->PrepareForCommit();
   rfh->SendNavigate(0, true, kUrl);
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
@@ -748,8 +751,9 @@ TEST_F(RenderProcessHostUnitTest, ReuseSiteURLChanges) {
   // REUSE_PENDING_OR_COMMITTED_SITE policy should now return the process of the
   // main RFH, as it is now registered with the regular site URL.
   contents()->GetController().Reload(ReloadType::NORMAL, false);
-  rfh = contents()->GetPendingMainFrame() ? contents()->GetPendingMainFrame()
-                                          : main_test_rfh();
+  rfh = contents()->GetSpeculativePrimaryMainFrame()
+            ? contents()->GetSpeculativePrimaryMainFrame()
+            : main_test_rfh();
   rfh->PrepareForCommit();
   rfh->SendNavigate(0, true, kUrl);
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(

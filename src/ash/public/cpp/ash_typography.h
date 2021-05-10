@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_ASH_TYPOGRAPHY_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/views/style/typography.h"
 
@@ -26,6 +27,16 @@ enum AshTextContext {
   // A headline label that appears in a larger window.
   CONTEXT_HEADLINE_OVERSIZED,
 
+  // Title label in the Sharesheet bubble. Medium weight. Usually 16pt.
+  CONTEXT_SHARESHEET_BUBBLE_TITLE,
+
+  // Body text label in the Sharesheet bubble. Meidum weight. Usually 14pt.
+  CONTEXT_SHARESHEET_BUBBLE_BODY,
+
+  // Body text label in the Sharesheet bubble. Generally appears under body
+  // text. Usually 13pt.
+  CONTEXT_SHARESHEET_BUBBLE_BODY_SECONDARY,
+
   ASH_TEXT_CONTEXT_END
 };
 
@@ -36,15 +47,18 @@ enum AshTextStyle {
   // string.
   STYLE_EMPHASIZED = ASH_TEXT_STYLE_START,
 
+  // Text styling specifically for the Chrome OS sharesheet.
+  STYLE_SHARESHEET,
+
   ASH_TEXT_STYLE_END
 };
 
-// Sets the |size_delta| and |font_weight| for ash-specific text contexts.
-// Values are only set for contexts specific to ash.
-void ASH_PUBLIC_EXPORT ApplyAshFontStyles(int context,
-                                          int style,
-                                          int* size_delta,
-                                          gfx::Font::Weight* font_weight);
+// Sets the |details| for ash-specific text contexts. Values are only set for
+// contexts specific to ash.
+void ASH_PUBLIC_EXPORT
+ApplyAshFontStyles(int context,
+                   int style,
+                   ui::ResourceBundle::FontDetails& details);
 
 }  // namespace ash
 

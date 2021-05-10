@@ -158,14 +158,14 @@ if sys.platform == 'win32':
     not enforced.
     """
     assert os.path.isabs(path), path
-    assert isinstance(path, six.text_type), path
+    assert isinstance(path, six.text_type), "%s, type: %s" % (path, type(path))
     prefix = u'\\\\?\\'
     return path if path.startswith(prefix) else prefix + path
 
 
   def trim(path):
     """Removes '\\\\?\\' when receiving a path."""
-    assert isinstance(path, six.text_type), path
+    assert isinstance(path, six.text_type), "%s, type: %s" % (path, type(path))
     prefix = u'\\\\?\\'
     if path.startswith(prefix):
       path = path[len(prefix):]
@@ -356,7 +356,7 @@ else:
   def extend(path):
     """Path extending is not needed on POSIX."""
     assert os.path.isabs(path), path
-    assert isinstance(path, six.text_type), path
+    assert isinstance(path, six.text_type), "%s, type: %s" % (path, type(path))
     if six.PY2:
       # In python2, default filesystem encoding may be 'ascii'.
       # So does encode here to avoid UnicodeEncodeError.
@@ -368,9 +368,9 @@ else:
     """Path mangling is not needed on POSIX."""
     assert os.path.isabs(path), path
     if six.PY2:
-      assert isinstance(path, str), path
+      assert isinstance(path, str), "%s, type: %s" % (path, type(path))
       return path.decode('utf-8')
-    assert isinstance(path, six.text_type), path
+    assert isinstance(path, six.text_type), "%s, type: %s" % (path, type(path))
     return path
 
 

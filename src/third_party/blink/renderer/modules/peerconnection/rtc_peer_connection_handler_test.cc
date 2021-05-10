@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/testing/fake_resource_listener.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
@@ -295,9 +296,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     webrtc::PeerConnectionInterface::RTCConfiguration config;
     config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
     MediaConstraints constraints;
-    EXPECT_TRUE(pc_handler_->InitializeForTest(
-        config, constraints, mock_tracker_.get()->AsWeakPtr()));
-
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints,
+                                               mock_tracker_.get()->AsWeakPtr(),
+                                               exception_state));
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);
     EXPECT_CALL(*mock_peer_connection_, Close());
@@ -661,8 +663,6 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
-  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
-      kDummySdpType, kDummySdp);
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
@@ -672,7 +672,9 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
                                          PeerConnectionTracker::SOURCE_LOCAL));
   EXPECT_CALL(*mock_peer_connection_, SetLocalDescriptionForMock(_, _));
 
-  pc_handler_->SetLocalDescription(nullptr /*RTCVoidRequest*/, description);
+  pc_handler_->SetLocalDescription(
+      nullptr /*RTCVoidRequest*/,
+      MockParsedSessionDescription(kDummySdpType, kDummySdp));
   RunMessageLoopsUntilIdle();
 
   std::string sdp_string;
@@ -705,14 +707,12 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);
-  pc_handler_->SetLocalDescription(nullptr /*RTCVoidRequest*/, description);
+  pc_handler_->SetLocalDescription(
+      nullptr /*RTCVoidRequest*/, ParsedSessionDescription::Parse(description));
   RunMessageLoopsUntilIdle();
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
-  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
-      kDummySdpType, kDummySdp);
-
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
@@ -722,7 +722,9 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
                                          PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_peer_connection_, SetRemoteDescriptionForMock(_, _));
 
-  pc_handler_->SetRemoteDescription(nullptr /*RTCVoidRequest*/, description);
+  pc_handler_->SetRemoteDescription(
+      nullptr /*RTCVoidRequest*/,
+      MockParsedSessionDescription(kDummySdpType, kDummySdp));
   RunMessageLoopsUntilIdle();
 
   std::string sdp_string;
@@ -755,7 +757,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);
-  pc_handler_->SetRemoteDescription(nullptr /*RTCVoidRequest*/, description);
+  pc_handler_->SetRemoteDescription(
+      nullptr /*RTCVoidRequest*/, ParsedSessionDescription::Parse(description));
   RunMessageLoopsUntilIdle();
 }
 
@@ -1289,7 +1292,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CheckInsertableStreamsConfig) {
 TEST_F(RTCPeerConnectionHandlerTest, ThermalResourceDefaultValue) {
   EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
   pc_handler_->OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState::kCritical);
+      mojom::blink::DeviceThermalState::kCritical);
 #if defined(OS_MAC)
   bool expect_disabled = false;
 #else
@@ -1308,7 +1311,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
 
   EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
   pc_handler_->OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState::kCritical);
+      mojom::blink::DeviceThermalState::kCritical);
   // A ThermalResource is created in response to the thermal signal.
   EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
 }
@@ -1322,7 +1325,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
   EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
   // ThermalResource is created and injected on the fly.
   pc_handler_->OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState::kCritical);
+      mojom::blink::DeviceThermalState::kCritical);
   auto resources = mock_peer_connection_->adaptation_resources();
   ASSERT_EQ(1u, resources.size());
   auto thermal_resource = resources[0];
@@ -1334,8 +1337,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
   EXPECT_EQ(webrtc::ResourceUsageState::kOveruse,
             resource_listener.latest_measurement());
   // ThermalResource responds to new measurements.
-  pc_handler_->OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState::kNominal);
+  pc_handler_->OnThermalStateChange(mojom::blink::DeviceThermalState::kNominal);
   EXPECT_EQ(2u, resource_listener.measurement_count());
   EXPECT_EQ(webrtc::ResourceUsageState::kUnderuse,
             resource_listener.latest_measurement());

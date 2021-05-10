@@ -160,6 +160,7 @@ class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
     config.rtcp_report_interval_ms = rtcp_report_interval_ms_;
     config.local_media_ssrc = is_sender_ ? kSenderSsrc : kReceiverSsrc;
     config.need_rtp_packet_infos = true;
+    config.non_sender_rtt_measurement = true;
 
     impl_.reset(new ModuleRtpRtcpImpl2(config));
     impl_->SetRemoteSSRC(is_sender_ ? kReceiverSsrc : kSenderSsrc);
@@ -320,15 +321,7 @@ TEST_F(RtpRtcpImpl2Test, Rtt) {
   EXPECT_NEAR(2 * kOneWayNetworkDelayMs, sender_.impl_->rtt_ms(), 1);
 }
 
-TEST_F(RtpRtcpImpl2Test, SetRtcpXrRrtrStatus) {
-  EXPECT_FALSE(receiver_.impl_->RtcpXrRrtrStatus());
-  receiver_.impl_->SetRtcpXrRrtrStatus(true);
-  EXPECT_TRUE(receiver_.impl_->RtcpXrRrtrStatus());
-}
-
 TEST_F(RtpRtcpImpl2Test, RttForReceiverOnly) {
-  receiver_.impl_->SetRtcpXrRrtrStatus(true);
-
   // Receiver module should send a Receiver time reference report (RTRR).
   EXPECT_EQ(0, receiver_.impl_->SendRTCP(kRtcpReport));
 

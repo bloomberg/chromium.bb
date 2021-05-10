@@ -16,12 +16,13 @@ import zipfile
 
 import dex
 import dex_jdk_libs
+from pylib.dex import dex_parser
 from util import build_utils
 from util import diff_utils
 
 _API_LEVEL_VERSION_CODE = [
     (21, 'L'),
-    (22, 'LolliopoMR1'),
+    (22, 'LollipopMR1'),
     (23, 'M'),
     (24, 'N'),
     (25, 'NMR1'),
@@ -69,13 +70,14 @@ def _ParseOptions():
       '--classpath',
       action='append',
       help='GN-list of .jar files to include as libraries.')
-  parser.add_argument(
-      '--main-dex-rules-path',
-      action='append',
-      help='Path to main dex rules for multidex'
-      '- only works with R8.')
+  parser.add_argument('--main-dex-rules-path',
+                      action='append',
+                      help='Path to main dex rules for multidex.')
   parser.add_argument(
       '--min-api', help='Minimum Android API level compatibility.')
+  parser.add_argument('--enable-obfuscation',
+                      action='store_true',
+                      help='Minify symbol names')
   parser.add_argument(
       '--verbose', '-v', action='store_true', help='Print all ProGuard output')
   parser.add_argument(
@@ -112,12 +114,25 @@ def _ParseOptions():
       action='append',
       help='List of name pairs separated by : mapping a feature module to a '
       'dependent feature module.')
+  parser.add_argument(
+      '--keep-rules-targets-regex',
+      metavar='KEEP_RULES_REGEX',
+      help='If passed outputs keep rules for references from all other inputs '
+      'to the subset of inputs that satisfy the KEEP_RULES_REGEX.')
+  parser.add_argument(
+      '--keep-rules-output-path',
+      help='Output path to the keep rules for references to the '
+      '--keep-rules-targets-regex inputs from the rest of the inputs.')
   parser.add_argument('--warnings-as-errors',
                       action='store_true',
                       help='Treat all warnings as errors.')
   parser.add_argument('--show-desugar-default-interface-warnings',
                       action='store_true',
                       help='Enable desugaring warnings.')
+  parser.add_argument('--dump-inputs',
+                      action='store_true',
+                      help='Use when filing R8 bugs to capture inputs.'
+                      ' Stores inputs to r8inputs.zip')
   parser.add_argument(
       '--stamp',
       help='File to touch upon success. Mutually exclusive with --output-path')
@@ -134,6 +149,11 @@ def _ParseOptions():
       parser.error('Feature splits require a stamp file as output.')
   elif not options.output_path:
     parser.error('Output path required when feature splits aren\'t used')
+
+  if bool(options.keep_rules_targets_regex) != bool(
+      options.keep_rules_output_path):
+    raise Exception('You must path both --keep-rules-targets-regex and '
+                    '--keep-rules-output-path')
 
   options.classpath = build_utils.ParseGnList(options.classpath)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
@@ -165,11 +185,12 @@ def _ParseOptions():
   return options
 
 
-class _DexPathContext(object):
-  def __init__(self, name, output_path, input_jars, work_dir):
+class _SplitContext(object):
+  def __init__(self, name, output_path, input_jars, work_dir, parent_name=None):
     self.name = name
-    self.input_paths = input_jars
-    self._final_output_path = output_path
+    self.parent_name = parent_name
+    self.input_jars = set(input_jars)
+    self.final_output_path = output_path
     self.staging_dir = os.path.join(work_dir, name)
     os.mkdir(self.staging_dir)
 
@@ -178,7 +199,7 @@ class _DexPathContext(object):
     if not found_files:
       raise Exception('Missing dex outputs in {}'.format(self.staging_dir))
 
-    if self._final_output_path.endswith('.dex'):
+    if self.final_output_path.endswith('.dex'):
       if has_imported_lib:
         raise Exception(
             'Trying to create a single .dex file, but a dependency requires '
@@ -188,14 +209,56 @@ class _DexPathContext(object):
       if len(found_files) != 1:
         raise Exception('Expected exactly 1 dex file output, found: {}'.format(
             '\t'.join(found_files)))
-      shutil.move(found_files[0], self._final_output_path)
+      shutil.move(found_files[0], self.final_output_path)
       return
 
     # Add to .jar using Python rather than having R8 output to a .zip directly
     # in order to disable compression of the .jar, saving ~500ms.
     tmp_jar_output = self.staging_dir + '.jar'
     build_utils.DoZip(found_files, tmp_jar_output, base_dir=self.staging_dir)
-    shutil.move(tmp_jar_output, self._final_output_path)
+    shutil.move(tmp_jar_output, self.final_output_path)
+
+
+def _DeDupeInputJars(split_contexts_by_name):
+  """Moves jars used by multiple splits into common ancestors.
+
+  Updates |input_jars| for each _SplitContext.
+  """
+
+  def count_ancestors(split_context):
+    ret = 0
+    if split_context.parent_name:
+      ret += 1
+      ret += count_ancestors(split_contexts_by_name[split_context.parent_name])
+    return ret
+
+  base_context = split_contexts_by_name['base']
+  # Sort by tree depth so that ensure children are visited before their parents.
+  sorted_contexts = list(split_contexts_by_name.values())
+  sorted_contexts.remove(base_context)
+  sorted_contexts.sort(key=count_ancestors, reverse=True)
+
+  # If a jar is present in multiple siblings, promote it to their parent.
+  seen_jars_by_parent = defaultdict(set)
+  for split_context in sorted_contexts:
+    seen_jars = seen_jars_by_parent[split_context.parent_name]
+    new_dupes = seen_jars.intersection(split_context.input_jars)
+    parent_context = split_contexts_by_name[split_context.parent_name]
+    parent_context.input_jars.update(new_dupes)
+    seen_jars.update(split_context.input_jars)
+
+  def ancestor_jars(parent_name, dest=None):
+    dest = dest or set()
+    if not parent_name:
+      return dest
+    parent_context = split_contexts_by_name[parent_name]
+    dest.update(parent_context.input_jars)
+    return ancestor_jars(parent_context.parent_name, dest)
+
+  # Now that jars have been moved up the tree, remove those that appear in
+  # ancestors.
+  for split_context in sorted_contexts:
+    split_context.input_jars -= ancestor_jars(split_context.parent_name)
 
 
 def _OptimizeWithR8(options,
@@ -205,10 +268,10 @@ def _OptimizeWithR8(options,
                     print_stdout=False):
   with build_utils.TempDir() as tmp_dir:
     if dynamic_config_data:
-      tmp_config_path = os.path.join(tmp_dir, 'proguard_config.txt')
-      with open(tmp_config_path, 'w') as f:
+      dynamic_config_path = os.path.join(tmp_dir, 'dynamic_config.flags')
+      with open(dynamic_config_path, 'w') as f:
         f.write(dynamic_config_data)
-      config_paths = config_paths + [tmp_config_path]
+      config_paths = config_paths + [dynamic_config_path]
 
     tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
     # If there is no output (no classes are kept), this prevents this script
@@ -218,19 +281,26 @@ def _OptimizeWithR8(options,
     tmp_output = os.path.join(tmp_dir, 'r8out')
     os.mkdir(tmp_output)
 
-    feature_contexts = []
+    split_contexts_by_name = {}
     if options.feature_names:
-      for name, dest_dex, input_paths in zip(
-          options.feature_names, options.dex_dests, options.feature_jars):
-        feature_context = _DexPathContext(name, dest_dex, input_paths,
-                                          tmp_output)
-        if name == 'base':
-          base_dex_context = feature_context
-        else:
-          feature_contexts.append(feature_context)
+      for name, dest_dex, input_jars in zip(options.feature_names,
+                                            options.dex_dests,
+                                            options.feature_jars):
+        parent_name = options.uses_split.get(name)
+        if parent_name is None and name != 'base':
+          parent_name = 'base'
+        split_context = _SplitContext(name,
+                                      dest_dex,
+                                      input_jars,
+                                      tmp_output,
+                                      parent_name=parent_name)
+        split_contexts_by_name[name] = split_context
     else:
-      base_dex_context = _DexPathContext('base', options.output_path,
-                                         options.input_paths, tmp_output)
+      # Base context will get populated via "extra_jars" below.
+      split_contexts_by_name['base'] = _SplitContext('base',
+                                                     options.output_path, [],
+                                                     tmp_output)
+    base_context = split_contexts_by_name['base']
 
     cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
         '-Dcom.android.tools.r8.allowTestProguardOptions=1',
@@ -238,13 +308,15 @@ def _OptimizeWithR8(options,
     ]
     if options.disable_outlining:
       cmd += ['-Dcom.android.tools.r8.disableOutlining=1']
+    if options.dump_inputs:
+      cmd += ['-Dcom.android.tools.r8.dumpinputtofile=r8inputs.zip']
     cmd += [
         '-cp',
         options.r8_path,
         'com.android.tools.r8.R8',
         '--no-data-resources',
         '--output',
-        base_dex_context.staging_dir,
+        base_context.staging_dir,
         '--pg-map-output',
         tmp_mapping_path,
     ]
@@ -277,38 +349,21 @@ def _OptimizeWithR8(options,
       for main_dex_rule in options.main_dex_rules_path:
         cmd += ['--main-dex-rules', main_dex_rule]
 
-    base_jars = set(base_dex_context.input_paths)
-    input_path_map = defaultdict(set)
-    for feature in feature_contexts:
-      parent = options.uses_split.get(feature.name, feature.name)
-      input_path_map[parent].update(feature.input_paths)
+    _DeDupeInputJars(split_contexts_by_name)
 
-    # If a jar is present in multiple features, it should be moved to the base
-    # module.
-    all_feature_jars = set()
-    for input_paths in input_path_map.values():
-      base_jars.update(all_feature_jars.intersection(input_paths))
-      all_feature_jars.update(input_paths)
+    # Add any extra inputs to the base context (e.g. desugar runtime).
+    extra_jars = set(options.input_paths)
+    for split_context in split_contexts_by_name.values():
+      extra_jars -= split_context.input_jars
+    base_context.input_jars.update(extra_jars)
 
-    module_input_jars = base_jars.copy()
-    for feature in feature_contexts:
-      input_paths = input_path_map.get(feature.name)
-      # Input paths can be missing for a child feature present in the uses_split
-      # map. These features get their input paths added to the parent, and are
-      # split out later with DexSplitter.
-      if input_paths is None:
+    for split_context in split_contexts_by_name.values():
+      if split_context is base_context:
         continue
-      feature_input_jars = [
-          p for p in input_paths if p not in module_input_jars
-      ]
-      module_input_jars.update(feature_input_jars)
-      for in_jar in feature_input_jars:
-        cmd += ['--feature', in_jar, feature.staging_dir]
+      for in_jar in sorted(split_context.input_jars):
+        cmd += ['--feature', in_jar, split_context.staging_dir]
 
-    cmd += sorted(base_jars)
-    # Add any extra input jars to the base module (e.g. desugar runtime).
-    extra_jars = set(options.input_paths) - module_input_jars
-    cmd += sorted(extra_jars)
+    cmd += sorted(base_context.input_jars)
 
     try:
       stderr_filter = dex.CreateStderrFilter(
@@ -325,34 +380,68 @@ def _OptimizeWithR8(options,
       raise build_utils.CalledProcessError(err.cwd, err.args,
                                            err.output + debugging_link)
 
-    if options.uses_split:
-      _SplitChildFeatures(options, feature_contexts, tmp_dir, tmp_mapping_path,
-                          print_stdout)
-
     base_has_imported_lib = False
     if options.desugar_jdk_libs_json:
       logging.debug('Running L8')
-      existing_files = build_utils.FindInDirectory(base_dex_context.staging_dir)
-      jdk_dex_output = os.path.join(base_dex_context.staging_dir,
+      existing_files = build_utils.FindInDirectory(base_context.staging_dir)
+      jdk_dex_output = os.path.join(base_context.staging_dir,
                                     'classes%d.dex' % (len(existing_files) + 1))
+      # Use -applymapping to avoid name collisions.
+      l8_dynamic_config_path = os.path.join(tmp_dir, 'l8_dynamic_config.flags')
+      with open(l8_dynamic_config_path, 'w') as f:
+        f.write("-applymapping '{}'\n".format(tmp_mapping_path))
+      # Pass the dynamic config so that obfuscation options are picked up.
+      l8_config_paths = [dynamic_config_path, l8_dynamic_config_path]
+      if os.path.exists(options.desugared_library_keep_rule_output):
+        l8_config_paths.append(options.desugared_library_keep_rule_output)
+
       base_has_imported_lib = dex_jdk_libs.DexJdkLibJar(
           options.r8_path, options.min_api, options.desugar_jdk_libs_json,
           options.desugar_jdk_libs_jar,
-          options.desugar_jdk_libs_configuration_jar,
-          options.desugared_library_keep_rule_output, jdk_dex_output,
-          options.warnings_as_errors)
+          options.desugar_jdk_libs_configuration_jar, jdk_dex_output,
+          options.warnings_as_errors, l8_config_paths)
+      if int(options.min_api) >= 24 and base_has_imported_lib:
+        with open(jdk_dex_output, 'rb') as f:
+          dexfile = dex_parser.DexFile(bytearray(f.read()))
+          for m in dexfile.IterMethodSignatureParts():
+            print('{}#{}'.format(m[0], m[2]))
+        assert False, (
+            'Desugared JDK libs are disabled on Monochrome and newer - see '
+            'crbug.com/1159984 for details, and see above list for desugared '
+            'classes and methods.')
 
     logging.debug('Collecting ouputs')
-    base_dex_context.CreateOutput(base_has_imported_lib,
-                                  options.desugared_library_keep_rule_output)
-    for feature in feature_contexts:
-      feature.CreateOutput()
+    base_context.CreateOutput(base_has_imported_lib,
+                              options.desugared_library_keep_rule_output)
+    for split_context in split_contexts_by_name.values():
+      if split_context is not base_context:
+        split_context.CreateOutput()
 
     with open(options.mapping_output, 'w') as out_file, \
         open(tmp_mapping_path) as in_file:
       # Mapping files generated by R8 include comments that may break
       # some of our tooling so remove those (specifically: apkanalyzer).
       out_file.writelines(l for l in in_file if not l.startswith('#'))
+  return base_context
+
+
+def _OutputKeepRules(r8_path, input_paths, classpath, targets_re_string,
+                     keep_rules_output):
+  cmd = build_utils.JavaCmd(False) + [
+      '-cp', r8_path, 'com.android.tools.r8.tracereferences.TraceReferences',
+      '--map-diagnostics:MissingDefinitionsDiagnostic', 'error', 'warning',
+      '--keep-rules', '--output', keep_rules_output
+  ]
+  targets_re = re.compile(targets_re_string)
+  for path in input_paths:
+    if targets_re.search(path):
+      cmd += ['--target', path]
+    else:
+      cmd += ['--source', path]
+  for path in classpath:
+    cmd += ['--lib', path]
+
+  build_utils.CheckOutput(cmd, print_stderr=False, fail_on_output=False)
 
 
 def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
@@ -401,22 +490,6 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
         # TODO(crbug.com/1142530): Fix this missing reference properly.
         'org/chromium/base/library_loader/NativeLibraries',
 
-        # Currently required when enable_chrome_android_internal=true.
-        'com/google/protos/research/ink/InkEventProto',
-        'ink_sdk/com/google/protobuf/Internal$EnumVerifier',
-        'ink_sdk/com/google/protobuf/MessageLite',
-        'com/google/protobuf/GeneratedMessageLite$GeneratedExtension',
-
-        # Definition and usage in currently unused lens sdk in doubledown.
-        ('com/google/android/apps/gsa/search/shared/service/proto/'
-         'PublicStopClientEvent'),
-
-        # Referenced from GeneratedExtensionRegistryLite.
-        # Exists only for Chrome Modern (not Monochrome nor Trichrome).
-        # TODO(agrieve): Figure out why. Perhaps related to Feed V2.
-        ('com/google/wireless/android/play/playlog/proto/ClientAnalytics$'
-         'ClientInfo'),
-
         # TODO(agrieve): Exclude these only when use_jacoco_coverage=true.
         'Ljava/lang/instrument/ClassFileTransformer',
         'Ljava/lang/instrument/IllegalClassFormatException',
@@ -426,6 +499,10 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
         'Ljavax/management/ObjectInstance',
         'Ljavax/management/ObjectName',
         'Ljavax/management/StandardMBean',
+
+        # Explicitly guarded by try (NoClassDefFoundError) in Firebase's
+        # KotlinDetector: com.google.firebase.platforminfo.KotlinDetector.
+        'Lkotlin/KotlinVersion',
     ]
 
     had_unfiltered_items = '  ' in stderr
@@ -445,6 +522,13 @@ Tip: Build with:
        third_party/android_sdk/public/build-tools/*/dexdump -d \
 out/Release/apks/YourApk.apk > dex.txt
 """ + stderr
+
+        if 'FragmentActivity' in stderr:
+          stderr += """
+You may need to update build configs to run FragmentActivityReplacer for
+additional targets. See
+https://chromium.googlesource.com/chromium/src.git/+/master/docs/ui/android/bytecode_rewriting.md.
+"""
       elif had_unfiltered_items:
         # Left only with empty headings. All indented items filtered out.
         stderr = ''
@@ -455,65 +539,6 @@ out/Release/apks/YourApk.apk > dex.txt
                           print_stdout=True,
                           stderr_filter=stderr_filter,
                           fail_on_output=warnings_as_errors)
-
-
-def _SplitChildFeatures(options, feature_contexts, tmp_dir, mapping_path,
-                        print_stdout):
-  feature_map = {f.name: f for f in feature_contexts}
-  parent_to_child = defaultdict(list)
-  for child, parent in options.uses_split.items():
-    parent_to_child[parent].append(child)
-  for parent, children in parent_to_child.items():
-    split_output = os.path.join(tmp_dir, 'split_%s' % parent)
-    os.mkdir(split_output)
-    # DexSplitter is not perfect and can cause issues related to inlining and
-    # class merging (see crbug.com/1032609). If strange class loading errors
-    # happen in DFMs specifying uses_split, this may be the cause.
-    split_cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
-        '-cp',
-        options.r8_path,
-        'com.android.tools.r8.dexsplitter.DexSplitter',
-        '--output',
-        split_output,
-        '--proguard-map',
-        mapping_path,
-    ]
-
-    parent_jars = set(feature_map[parent].input_paths)
-    for base_jar in sorted(parent_jars):
-      split_cmd += ['--base-jar', base_jar]
-
-    for child in children:
-      for feature_jar in feature_map[child].input_paths:
-        if feature_jar not in parent_jars:
-          split_cmd += ['--feature-jar', '%s:%s' % (feature_jar, child)]
-
-    # The inputs are the outputs for the parent from the original R8 call.
-    parent_dir = feature_map[parent].staging_dir
-    for file_name in os.listdir(parent_dir):
-      split_cmd += ['--input', os.path.join(parent_dir, file_name)]
-    logging.debug('Running R8 DexSplitter')
-    build_utils.CheckOutput(split_cmd,
-                            print_stdout=print_stdout,
-                            fail_on_output=options.warnings_as_errors)
-
-    # Copy the parent dex back into the parent's staging dir.
-    base_split_output = os.path.join(split_output, 'base')
-    shutil.rmtree(parent_dir)
-    os.mkdir(parent_dir)
-    for dex_file in os.listdir(base_split_output):
-      shutil.move(os.path.join(base_split_output, dex_file),
-                  os.path.join(parent_dir, dex_file))
-
-    # Copy each child dex back into the child's staging dir.
-    for child in children:
-      child_split_output = os.path.join(split_output, child)
-      child_staging_dir = feature_map[child].staging_dir
-      shutil.rmtree(child_staging_dir)
-      os.mkdir(child_staging_dir)
-      for dex_file in os.listdir(child_split_output):
-        shutil.move(os.path.join(child_split_output, dex_file),
-                    os.path.join(child_staging_dir, dex_file))
 
 
 def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
@@ -553,10 +578,13 @@ def _CreateDynamicConfig(options):
     ret.append("-renamesourcefileattribute '%s' # OMIT FROM EXPECTATIONS" %
                options.sourcefile)
 
+  if options.enable_obfuscation:
+    ret.append("-repackageclasses ''")
+  else:
+    ret.append("-keepnames,allowoptimization class *** { *; }")
+
   if options.apply_mapping:
-    ret.append("-applymapping '%s'" % os.path.abspath(options.apply_mapping))
-  if options.repackage_classes:
-    ret.append("-repackageclasses '%s'" % options.repackage_classes)
+    ret.append("-applymapping '%s'" % options.apply_mapping)
 
   _min_api = int(options.min_api) if options.min_api else 0
   for api_level, version_code in _API_LEVEL_VERSION_CODE:
@@ -641,9 +669,14 @@ def main():
     if p not in libraries and p not in options.input_paths:
       libraries.append(p)
   _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
+  if options.keep_rules_output_path:
+    _OutputKeepRules(options.r8_path, options.input_paths, options.classpath,
+                     options.keep_rules_targets_regex,
+                     options.keep_rules_output_path)
+    return
 
-  _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
-                  print_stdout)
+  base_context = _OptimizeWithR8(options, proguard_configs, libraries,
+                                 dynamic_config_data, print_stdout)
 
   if not options.disable_checks:
     logging.debug('Running tracereferences')
@@ -654,6 +687,12 @@ def main():
       all_dex_files.extend(options.dex_dests)
     _CheckForMissingSymbols(options.r8_path, all_dex_files, options.classpath,
                             options.warnings_as_errors)
+    # Also ensure that base module doesn't have any references to child dex
+    # symbols.
+    # TODO(agrieve): Remove this check once r8 desugaring is fixed to not put
+    #     synthesized classes in the base module.
+    _CheckForMissingSymbols(options.r8_path, [base_context.final_output_path],
+                            options.classpath, options.warnings_as_errors)
 
   for output in options.extra_mapping_output_paths:
     shutil.copy(options.mapping_output, output)

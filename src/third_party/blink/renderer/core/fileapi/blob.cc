@@ -159,8 +159,7 @@ void Blob::PopulateBlobData(
       DOMArrayBuffer* array_buffer = item.GetAsArrayBuffer();
       blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
     } else if (item.IsArrayBufferView()) {
-      DOMArrayBufferView* array_buffer_view =
-          item.GetAsArrayBufferView().View();
+      auto&& array_buffer_view = item.GetAsArrayBufferView();
       blob_data->AppendBytes(array_buffer_view->BaseAddress(),
                              array_buffer_view->byteLength());
     } else if (item.IsBlob()) {
@@ -219,7 +218,7 @@ ReadableStream* Blob::stream(ScriptState* script_state) const {
       script_state,
       MakeGarbageCollected<BlobBytesConsumer>(
           ExecutionContext::From(script_state), blob_data_handle_),
-      nullptr);
+      /*signal=*/nullptr, /*cached_metadata_handler=*/nullptr);
 
   return body_buffer->Stream();
 }

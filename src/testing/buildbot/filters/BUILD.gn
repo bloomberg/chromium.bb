@@ -80,6 +80,12 @@ source_set("chromeos_filters") {
   ]
 }
 
+source_set("components_unittests_filters") {
+  testonly = true
+
+  data = [ "//testing/buildbot/filters/lacros.components_unittests.filter" ]
+}
+
 source_set("content_browsertests_filters") {
   testonly = true
 
@@ -184,6 +190,15 @@ source_set("sandbox_linux_unittests_filters") {
   data = [ "//testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter" ]
 }
 
+source_set("ui_base_unittests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/ozone-linux.x11_ui_base_unittests.filter",
+    "//testing/buildbot/filters/ozone-linux.ui_base_unittests_wayland.filter",
+  ]
+}
+
 source_set("unit_tests_filters") {
   testonly = true
 
@@ -213,8 +228,5 @@ source_set("webview_cts_tests_filters") {
 source_set("webview_instrumentation_test_apk_filters") {
   testonly = true
 
-  data = [
-    "//testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter",
-    "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
-  ]
+  data = [ "//testing/buildbot/filters/android.emulator.webview_instrumentation_test_apk.filter" ]
 }

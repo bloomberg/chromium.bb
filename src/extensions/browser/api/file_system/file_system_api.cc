@@ -247,7 +247,7 @@ ExtensionFunction::ResponseAction FileSystemGetDisplayPathFunction::Run() {
   }
 
   file_path = path_util::PrettifyPath(file_path);
-  return RespondNow(OneArgument(base::Value(file_path.value())));
+  return RespondNow(OneArgument(base::Value(file_path.AsUTF8Unsafe())));
 }
 
 FileSystemEntryFunction::FileSystemEntryFunction()
@@ -484,8 +484,8 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
   // smoothly, all accessed paths need to be registered in the list of
   // external mount points.
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      name, storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), path);
+      name, storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
+      path);
 }
 
 void FileSystemChooseEntryFunction::FilesSelected(

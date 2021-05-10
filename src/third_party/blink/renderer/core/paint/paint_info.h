@@ -53,11 +53,11 @@ namespace blink {
 class LayoutBoxModelObject;
 
 struct CORE_EXPORT PaintInfo {
-  USING_FAST_MALLOC(PaintInfo);
+  STACK_ALLOCATED();
 
  public:
   PaintInfo(GraphicsContext& context,
-            const IntRect& cull_rect,
+            const CullRect& cull_rect,
             PaintPhase phase,
             GlobalPaintFlags global_paint_flags,
             PaintLayerFlags paint_flags,
@@ -70,9 +70,7 @@ struct CORE_EXPORT PaintInfo {
         fragment_logical_top_in_flow_thread_(
             fragment_logical_top_in_flow_thread),
         paint_flags_(paint_flags),
-        global_paint_flags_(global_paint_flags),
-        is_painting_scrolling_background_(false),
-        descendant_painting_blocked_(false) {}
+        global_paint_flags_(global_paint_flags) {}
 
   PaintInfo(GraphicsContext& new_context,
             const PaintInfo& copy_other_fields_from)
@@ -83,9 +81,7 @@ struct CORE_EXPORT PaintInfo {
         fragment_logical_top_in_flow_thread_(
             copy_other_fields_from.fragment_logical_top_in_flow_thread_),
         paint_flags_(copy_other_fields_from.paint_flags_),
-        global_paint_flags_(copy_other_fields_from.global_paint_flags_),
-        is_painting_scrolling_background_(false),
-        descendant_painting_blocked_(false) {
+        global_paint_flags_(copy_other_fields_from.global_paint_flags_) {
     // We should never pass is_painting_scrolling_background_ other PaintInfo.
     DCHECK(!copy_other_fields_from.is_painting_scrolling_background_);
   }
@@ -124,7 +120,6 @@ struct CORE_EXPORT PaintInfo {
       paint_flags_ &= ~kPaintLayerPaintingSkipRootBackground;
   }
 
-  bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
   bool ShouldAddUrlMetadata() const {
     return global_paint_flags_ & kGlobalPaintAddUrlMetadata;
   }
@@ -142,6 +137,7 @@ struct CORE_EXPORT PaintInfo {
   PaintLayerFlags PaintFlags() const { return paint_flags_; }
 
   const CullRect& GetCullRect() const { return cull_rect_; }
+  void SetCullRect(const CullRect& cull_rect) { cull_rect_ = cull_rect; }
 
   bool IntersectsCullRect(
       const PhysicalRect& rect,
@@ -220,10 +216,10 @@ struct CORE_EXPORT PaintInfo {
   const GlobalPaintFlags global_paint_flags_;
 
   // For CAP only.
-  bool is_painting_scrolling_background_ : 1;
+  bool is_painting_scrolling_background_ = false;
 
   // Used by display-locking.
-  bool descendant_painting_blocked_ : 1;
+  bool descendant_painting_blocked_ = false;
 };
 
 Image::ImageDecodingMode GetImageDecodingMode(Node*);

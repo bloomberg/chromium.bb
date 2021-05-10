@@ -60,24 +60,23 @@ IncognitoConnectability* IncognitoConnectability::Get(
   return BrowserContextKeyedAPIFactory<IncognitoConnectability>::Get(context);
 }
 
-void IncognitoConnectability::Query(
-    const Extension* extension,
-    content::WebContents* web_contents,
-    const GURL& url,
-    const base::Callback<void(bool)>& callback) {
+void IncognitoConnectability::Query(const Extension* extension,
+                                    content::WebContents* web_contents,
+                                    const GURL& url,
+                                    base::OnceCallback<void(bool)> callback) {
   GURL origin = url.GetOrigin();
   if (origin.is_empty()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   if (IsInMap(extension, origin, allowed_origins_)) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
   if (IsInMap(extension, origin, disallowed_origins_)) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -86,7 +85,7 @@ void IncognitoConnectability::Query(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   TabContext& tab_context = pending_origin[infobar_service];
-  tab_context.callbacks.push_back(callback);
+  tab_context.callbacks.push_back(std::move(callback));
   if (tab_context.infobar) {
     // This tab is already displaying an infobar for this extension and origin.
     return;
@@ -107,9 +106,9 @@ void IncognitoConnectability::Query(
           l10n_util::GetStringFUTF16(template_id,
                                      base::UTF8ToUTF16(origin.spec()),
                                      base::UTF8ToUTF16(extension->name())),
-          base::Bind(&IncognitoConnectability::OnInteractiveResponse,
-                     weak_factory_.GetWeakPtr(), extension->id(), origin,
-                     infobar_service));
+          base::BindOnce(&IncognitoConnectability::OnInteractiveResponse,
+                         weak_factory_.GetWeakPtr(), extension->id(), origin,
+                         infobar_service));
       break;
     }
 
@@ -125,11 +124,7 @@ void IncognitoConnectability::Query(
 IncognitoConnectability::TabContext::TabContext() : infobar(nullptr) {
 }
 
-IncognitoConnectability::TabContext::TabContext(const TabContext& other) =
-    default;
-
-IncognitoConnectability::TabContext::~TabContext() {
-}
+IncognitoConnectability::TabContext::~TabContext() = default;
 
 void IncognitoConnectability::OnInteractiveResponse(
     const std::string& extension_id,
@@ -149,12 +144,13 @@ void IncognitoConnectability::OnInteractiveResponse(
       break;
   }
 
-  DCHECK(base::Contains(pending_origins_, make_pair(extension_id, origin)));
-  PendingOrigin& pending_origin =
-      pending_origins_[make_pair(extension_id, origin)];
+  PendingOriginMap::iterator origin_it =
+      pending_origins_.find(make_pair(extension_id, origin));
+  DCHECK(origin_it != pending_origins_.end());
+  PendingOrigin& pending_origin = origin_it->second;
   DCHECK(base::Contains(pending_origin, infobar_service));
 
-  std::vector<base::Callback<void(bool)>> callbacks;
+  std::vector<base::OnceCallback<void(bool)>> callbacks;
   if (response == ScopedAlertTracker::INTERACTIVE) {
     // No definitive answer for this extension and origin. Execute only the
     // callbacks associated with this tab.
@@ -164,9 +160,9 @@ void IncognitoConnectability::OnInteractiveResponse(
   } else {
     // We have a definitive answer for this extension and origin. Close all
     // other infobars and answer all the callbacks.
-    for (const auto& map_entry : pending_origin) {
+    for (auto& map_entry : pending_origin) {
       InfoBarService* other_infobar_service = map_entry.first;
-      const TabContext& other_tab_context = map_entry.second;
+      TabContext& other_tab_context = map_entry.second;
       if (other_infobar_service != infobar_service) {
         // Disarm the delegate so that it doesn't think the infobar has been
         // dismissed.
@@ -176,15 +172,17 @@ void IncognitoConnectability::OnInteractiveResponse(
         delegate->set_answered();
         other_infobar_service->RemoveInfoBar(other_tab_context.infobar);
       }
-      callbacks.insert(callbacks.end(), other_tab_context.callbacks.begin(),
-                       other_tab_context.callbacks.end());
+      callbacks.insert(
+          callbacks.end(),
+          std::make_move_iterator(other_tab_context.callbacks.begin()),
+          std::make_move_iterator(other_tab_context.callbacks.end()));
     }
-    pending_origins_.erase(make_pair(extension_id, origin));
+    pending_origins_.erase(origin_it);
   }
 
   DCHECK(!callbacks.empty());
-  for (const auto& callback : callbacks) {
-    callback.Run(response == ScopedAlertTracker::ALWAYS_ALLOW);
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(response == ScopedAlertTracker::ALWAYS_ALLOW);
   }
 }
 

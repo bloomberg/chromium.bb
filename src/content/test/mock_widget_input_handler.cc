@@ -81,7 +81,7 @@ void MockWidgetInputHandler::ImeCommitText(
 
 void MockWidgetInputHandler::ImeFinishComposingText(bool keep_selection) {
   dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedMessage>("FinishComposingText"));
+      std::make_unique<DispatchedFinishComposingMessage>(keep_selection));
 }
 
 void MockWidgetInputHandler::RequestTextInputStateUpdate() {
@@ -121,12 +121,14 @@ MockWidgetInputHandler::GetAndResetDispatchedMessages() {
   return dispatched_events;
 }
 
+#if defined(OS_ANDROID)
 void MockWidgetInputHandler::AttachSynchronousCompositor(
     mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
         control_host,
     mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
         compositor_request) {}
+#endif
 
 void MockWidgetInputHandler::GetFrameWidgetInputHandler(
     mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
@@ -157,6 +159,11 @@ MockWidgetInputHandler::DispatchedMessage::ToIME() {
 
 MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage*
 MockWidgetInputHandler::DispatchedMessage::ToRequestCompositionUpdates() {
+  return nullptr;
+}
+
+MockWidgetInputHandler::DispatchedFinishComposingMessage*
+MockWidgetInputHandler::DispatchedMessage::ToFinishComposing() {
   return nullptr;
 }
 
@@ -285,6 +292,19 @@ MockWidgetInputHandler::DispatchedFocusMessage::~DispatchedFocusMessage() {}
 
 MockWidgetInputHandler::DispatchedFocusMessage*
 MockWidgetInputHandler::DispatchedFocusMessage::ToFocus() {
+  return this;
+}
+
+MockWidgetInputHandler::DispatchedFinishComposingMessage::
+    DispatchedFinishComposingMessage(bool keep_selection)
+    : DispatchedMessage("FinishComposingText"),
+      keep_selection_(keep_selection) {}
+
+MockWidgetInputHandler::DispatchedFinishComposingMessage::
+    ~DispatchedFinishComposingMessage() = default;
+
+MockWidgetInputHandler::DispatchedFinishComposingMessage*
+MockWidgetInputHandler::DispatchedFinishComposingMessage::ToFinishComposing() {
   return this;
 }
 

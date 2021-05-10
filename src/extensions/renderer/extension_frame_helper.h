@@ -13,7 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "extensions/common/mojom/frame.mojom.h"
 #include "extensions/common/view_type.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "v8/include/v8.h"
 
@@ -34,7 +37,8 @@ class ScriptContext;
 // RenderFrame-level plumbing for extension features.
 class ExtensionFrameHelper
     : public content::RenderFrameObserver,
-      public content::RenderFrameObserverTracker<ExtensionFrameHelper> {
+      public content::RenderFrameObserverTracker<ExtensionFrameHelper>,
+      public mojom::LocalFrame {
  public:
   ExtensionFrameHelper(content::RenderFrame* render_frame,
                        Dispatcher* extension_dispatcher);
@@ -95,6 +99,12 @@ class ExtensionFrameHelper
     return did_create_current_document_element_;
   }
 
+  // mojom::LocalFrame:
+  void SetFrameName(const std::string& name) override;
+  void SetSpatialNavigationEnabled(bool enabled) override;
+  void SetTabId(int32_t id) override;
+  void AppWindowClosed(bool send_onclosed) override;
+
   // Called when the document element has been inserted in this frame. This
   // method may invoke untrusted JavaScript code that invalidate the frame and
   // this ExtensionFrameHelper.
@@ -111,15 +121,18 @@ class ExtensionFrameHelper
   // notification, e.g. from RenderFrameObserver::DidCreateDocumentElement.
   // Otherwise the callback is never invoked, or invoked for a document that you
   // were not expecting.
-  void ScheduleAtDocumentStart(const base::Closure& callback);
+  void ScheduleAtDocumentStart(base::OnceClosure callback);
 
   // Schedule a callback, to be run at the next RunScriptsAtDocumentEnd call.
-  void ScheduleAtDocumentEnd(const base::Closure& callback);
+  void ScheduleAtDocumentEnd(base::OnceClosure callback);
 
   // Schedule a callback, to be run at the next RunScriptsAtDocumentIdle call.
-  void ScheduleAtDocumentIdle(const base::Closure& callback);
+  void ScheduleAtDocumentIdle(base::OnceClosure callback);
 
  private:
+  void BindLocalFrame(
+      mojo::PendingAssociatedReceiver<mojom::LocalFrame> receiver);
+
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
   void DidCreateNewDocument() override;
@@ -148,7 +161,6 @@ class ExtensionFrameHelper
   void OnExtensionDispatchOnDisconnect(int worker_thread_id,
                                        const PortId& id,
                                        const std::string& error_message);
-  void OnExtensionSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int browser_window_id);
   void OnNotifyRendererViewType(ViewType view_type);
   void OnExtensionResponse(int request_id,
@@ -159,32 +171,33 @@ class ExtensionFrameHelper
                                 const std::string& module_name,
                                 const std::string& function_name,
                                 const base::ListValue& args);
-  void OnSetFrameName(const std::string& name);
-  void OnAppWindowClosed(bool send_onclosed);
-  void OnSetSpatialNavigationEnabled(bool enabled);
 
   // Type of view associated with the RenderFrame.
-  ViewType view_type_;
+  ViewType view_type_ = VIEW_TYPE_INVALID;
 
   // The id of the tab the render frame is attached to.
-  int tab_id_;
+  int tab_id_ = -1;
 
   // The id of the browser window the render frame is attached to.
-  int browser_window_id_;
+  int browser_window_id_ = -1;
 
   Dispatcher* extension_dispatcher_;
 
-  // Whether or not the current document element has been created.
-  bool did_create_current_document_element_;
+  // Whether or not the current document element has been created. This starts
+  // true as the initial empty document is already created when this class is
+  // instantiated.
+  // TODO(danakj): Does this still need to be tracked? We now have consisitent
+  // notifications for initial empty documents on all frames.
+  bool did_create_current_document_element_ = true;
 
   // Callbacks to be run at the next RunScriptsAtDocumentStart notification.
-  std::vector<base::Closure> document_element_created_callbacks_;
+  std::vector<base::OnceClosure> document_element_created_callbacks_;
 
   // Callbacks to be run at the next RunScriptsAtDocumentEnd notification.
-  std::vector<base::Closure> document_load_finished_callbacks_;
+  std::vector<base::OnceClosure> document_load_finished_callbacks_;
 
   // Callbacks to be run at the next RunScriptsAtDocumentIdle notification.
-  std::vector<base::Closure> document_idle_callbacks_;
+  std::vector<base::OnceClosure> document_idle_callbacks_;
 
   bool delayed_main_world_script_initialization_ = false;
 
@@ -193,6 +206,8 @@ class ExtensionFrameHelper
   // Note: Chrome Apps intentionally do not support new navigations. When a
   // navigation happens, it is either the initial one or a reload.
   bool has_started_first_navigation_ = false;
+
+  mojo::AssociatedReceiverSet<mojom::LocalFrame> local_frame_receivers_;
 
   base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_{this};
 

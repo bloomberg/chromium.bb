@@ -39,9 +39,10 @@ namespace dawn_native { namespace opengl {
                             return GL_TEXTURE_2D;
                         }
                     }
+                case wgpu::TextureDimension::e3D:
+                    return GL_TEXTURE_3D;
 
                 case wgpu::TextureDimension::e1D:
-                case wgpu::TextureDimension::e3D:
                     UNREACHABLE();
             }
         }
@@ -62,9 +63,10 @@ namespace dawn_native { namespace opengl {
                     return GL_TEXTURE_CUBE_MAP;
                 case wgpu::TextureViewDimension::CubeArray:
                     return GL_TEXTURE_CUBE_MAP_ARRAY;
+                case wgpu::TextureViewDimension::e3D:
+                    return GL_TEXTURE_3D;
 
                 case wgpu::TextureViewDimension::e1D:
-                case wgpu::TextureViewDimension::e3D:
                 case wgpu::TextureViewDimension::Undefined:
                     UNREACHABLE();
             }
@@ -153,9 +155,14 @@ namespace dawn_native { namespace opengl {
                     }
                 }
                 break;
+            case wgpu::TextureDimension::e3D:
+                ASSERT(!IsMultisampledTexture());
+                ASSERT(arrayLayers == 1);
+                gl.TexStorage3D(mTarget, levels, glFormat.internalFormat, width, height,
+                                GetDepth());
+                break;
 
             case wgpu::TextureDimension::e1D:
-            case wgpu::TextureDimension::e3D:
                 UNREACHABLE();
         }
 
@@ -323,10 +330,29 @@ namespace dawn_native { namespace opengl {
                             // Skip lazy clears if already initialized.
                             continue;
                         }
-                        gl.ClearTexSubImage(mHandle, static_cast<GLint>(level), 0, 0,
-                                            static_cast<GLint>(layer), mipSize.width,
-                                            mipSize.height, 1, glFormat.format, glFormat.type,
-                                            clearColorData.data());
+                        if (gl.IsAtLeastGL(4, 4)) {
+                            gl.ClearTexSubImage(mHandle, static_cast<GLint>(level), 0, 0,
+                                                static_cast<GLint>(layer), mipSize.width,
+                                                mipSize.height, 1, glFormat.format, glFormat.type,
+                                                clearColorData.data());
+                        } else {
+                            GLuint framebuffer = 0;
+                            gl.GenFramebuffers(1, &framebuffer);
+                            gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+                            if (GetArrayLayers() == 1) {
+                                gl.FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                                        GetGLTarget(), GetHandle(), level);
+                            } else {
+                                gl.FramebufferTextureLayer(GL_DRAW_FRAMEBUFFER,
+                                                           GL_COLOR_ATTACHMENT0, GetHandle(), level,
+                                                           layer);
+                            }
+                            gl.Disable(GL_SCISSOR_TEST);
+                            gl.ClearBufferiv(GL_COLOR, 0,
+                                             reinterpret_cast<const GLint*>(clearColorData.data()));
+                            gl.Enable(GL_SCISSOR_TEST);
+                            gl.DeleteFramebuffers(1, &framebuffer);
+                        }
                     }
                 }
             }

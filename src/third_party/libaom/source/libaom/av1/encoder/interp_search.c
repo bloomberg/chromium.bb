@@ -116,12 +116,14 @@ static INLINE void swap_dst_buf(MACROBLOCKD *xd, const BUFFER_SET *dst_bufs[2],
 
 static INLINE int get_switchable_rate(MACROBLOCK *const x,
                                       const int_interpfilters filters,
-                                      const int ctx[2]) {
-  int inter_filter_cost;
+                                      const int ctx[2], int dual_filter) {
   const InterpFilter filter0 = filters.as_filters.y_filter;
-  const InterpFilter filter1 = filters.as_filters.x_filter;
-  inter_filter_cost = x->mode_costs.switchable_interp_costs[ctx[0]][filter0];
-  inter_filter_cost += x->mode_costs.switchable_interp_costs[ctx[1]][filter1];
+  int inter_filter_cost =
+      x->mode_costs.switchable_interp_costs[ctx[0]][filter0];
+  if (dual_filter) {
+    const InterpFilter filter1 = filters.as_filters.x_filter;
+    inter_filter_cost += x->mode_costs.switchable_interp_costs[ctx[1]][filter1];
+  }
   return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
 }
 
@@ -175,7 +177,8 @@ static INLINE int64_t interpolation_filter_rd(
   const int_interpfilters last_best = mbmi->interp_filters;
   mbmi->interp_filters = filter_sets[filter_idx];
   const int tmp_rs =
-      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
+      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx,
+                          cm->seq_params.enable_dual_filter);
 
   int64_t min_rd = RDCOST(x->rdmult, tmp_rs, 0);
   if (min_rd > *rd) {
@@ -679,7 +682,8 @@ int64_t av1_interpolation_filter_search(
   switchable_ctx[0] = av1_get_pred_context_switchable_interp(xd, 0);
   switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
   *switchable_rate =
-      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
+      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx,
+                          cm->seq_params.enable_dual_filter);
 
   // Do MC evaluation for default filter_type.
   // Luma MC

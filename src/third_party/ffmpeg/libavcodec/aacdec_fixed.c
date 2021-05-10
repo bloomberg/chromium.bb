@@ -86,6 +86,9 @@
 #include <math.h>
 #include <string.h>
 
+DECLARE_ALIGNED(32, static int, AAC_KBD_RENAME(kbd_long_1024))[1024];
+DECLARE_ALIGNED(32, static int, AAC_KBD_RENAME(kbd_short_128))[128];
+
 static av_always_inline void reset_predict_state(PredictorState *ps)
 {
     ps->r0.mant   = 0;
@@ -155,9 +158,9 @@ static void vector_pow43(int *coefs, int len)
     for (i=0; i<len; i++) {
         coef = coefs[i];
         if (coef < 0)
-            coef = -(int)ff_cbrt_tab_fixed[-coef];
+            coef = -(int)ff_cbrt_tab_fixed[(-coef) & 8191];
         else
-            coef = (int)ff_cbrt_tab_fixed[coef];
+            coef =  (int)ff_cbrt_tab_fixed[  coef  & 8191];
         coefs[i] = coef;
     }
 }

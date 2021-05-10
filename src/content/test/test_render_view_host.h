@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
@@ -36,25 +37,16 @@
 //
 // To use, derive your test base class from RenderViewHostImplTestHarness.
 
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-
 namespace gfx {
 class Rect;
 }
 
 namespace content {
 
+class FrameTree;
 class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
-
-// Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
-// with given parameters.
-void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-                        int nav_entry_id,
-                        bool did_create_new_entry,
-                        const GURL& url,
-                        ui::PageTransition transition_type);
 
 // TestRenderWidgetHostView ----------------------------------------------------
 
@@ -99,7 +91,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   uint32_t GetCaptureSequenceNumber() const override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& bounds) override {}
-  void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override {}
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override;
@@ -121,7 +112,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
-  void OnFrameTokenChanged(uint32_t frame_token) override;
+  void OnFrameTokenChanged(uint32_t frame_token,
+                           base::TimeTicks activation_time) override;
 
   const WebCursor& last_cursor() const { return last_cursor_; }
 
@@ -191,18 +183,26 @@ class TestRenderViewHost
     : public RenderViewHostImpl,
       public RenderViewHostTester {
  public:
-  TestRenderViewHost(SiteInstance* instance,
+  TestRenderViewHost(FrameTree* frame_tree,
+                     SiteInstance* instance,
                      std::unique_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
                      int32_t routing_id,
                      int32_t main_frame_routing_id,
                      bool swapped_out);
-  // RenderViewHostTester implementation.  Note that CreateRenderView
-  // is not specified since it is synonymous with the one from
-  // RenderViewHostImpl, see below.
+  // RenderViewHostImpl overrides.
+  MockRenderProcessHost* GetProcess() override;
+  bool CreateRenderView(
+      const base::Optional<blink::FrameToken>& opener_frame_token,
+      int proxy_route_id,
+      bool window_was_created_with_opener) override;
+  bool IsTestRenderViewHost() const override;
+
+  // RenderViewHostTester implementation.
   void SimulateWasHidden() override;
   void SimulateWasShown() override;
   blink::web_pref::WebPreferences TestComputeWebPreferences() override;
+  bool CreateTestRenderView() override;
 
   void TestOnUpdateStateWithFile(const base::FilePath& file_path);
 
@@ -214,26 +214,9 @@ class TestRenderViewHost
   }
 
   // The opener frame route id passed to CreateRenderView().
-  const base::Optional<base::UnguessableToken>& opener_frame_token() const {
+  const base::Optional<blink::FrameToken>& opener_frame_token() const {
     return opener_frame_token_;
   }
-
-  // RenderWidgetHost overrides (same value, but in the Mock* type)
-  MockRenderProcessHost* GetProcess() override;
-
-  bool CreateTestRenderView(
-      const base::Optional<base::UnguessableToken>& opener_frame_token,
-      int proxy_route_id,
-      bool window_was_created_with_opener) override;
-
-  // RenderViewHost:
-  bool CreateRenderView(
-      const base::Optional<base::UnguessableToken>& opener_frame_token,
-      int proxy_route_id,
-      bool window_was_created_with_opener) override;
-
-  // RenderViewHostImpl:
-  bool IsTestRenderViewHost() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
@@ -257,8 +240,8 @@ class TestRenderViewHost
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
 
-  // See opener_frame_route_id() above.
-  base::Optional<base::UnguessableToken> opener_frame_token_;
+  // See opener_frame_token() above.
+  base::Optional<blink::FrameToken> opener_frame_token_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

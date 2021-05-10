@@ -24,17 +24,17 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/quic_flow_controller.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_send_buffer.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/session_notifier_interface.h"
-#include "net/third_party/quiche/src/quic/core/stream_delegate_interface.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/quic_flow_controller.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream_send_buffer.h"
+#include "quic/core/quic_stream_sequencer.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/session_notifier_interface.h"
+#include "quic/core/stream_delegate_interface.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_mem_slice_span.h"
+#include "quic/platform/api/quic_reference_counted.h"
+#include "spdy/core/spdy_protocol.h"
 
 namespace quic {
 
@@ -61,7 +61,11 @@ class QUIC_EXPORT_PRIVATE PendingStream
   void Reset(QuicRstStreamErrorCode error) override;
   void OnUnrecoverableError(QuicErrorCode error,
                             const std::string& details) override;
+  void OnUnrecoverableError(QuicErrorCode error,
+                            QuicIetfTransportErrorCodes ietf_error,
+                            const std::string& details) override;
   QuicStreamId id() const override;
+  ParsedQuicVersion version() const override;
 
   // Buffers the contents of |frame|. Frame must have a non-zero offset.
   // If the data violates flow control, the connection will be closed.
@@ -89,6 +93,9 @@ class QUIC_EXPORT_PRIVATE PendingStream
 
   // ID of this stream.
   QuicStreamId id_;
+
+  // QUIC version being used by this stream.
+  ParsedQuicVersion version_;
 
   // |stream_delegate_| must outlive this stream.
   StreamDelegateInterface* stream_delegate_;
@@ -146,6 +153,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   // QuicStreamSequencer::StreamInterface implementation.
   QuicStreamId id() const override { return id_; }
+  ParsedQuicVersion version() const override;
   // Called by the stream subclass after it has consumed the final incoming
   // data.
   void OnFinRead() override;
@@ -157,6 +165,9 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Called by the subclass or the sequencer to close the entire connection from
   // this end.
   void OnUnrecoverableError(QuicErrorCode error,
+                            const std::string& details) override;
+  void OnUnrecoverableError(QuicErrorCode error,
+                            QuicIetfTransportErrorCodes ietf_error,
                             const std::string& details) override;
 
   // Called by the session when a (potentially duplicate) stream frame has been
@@ -440,6 +451,10 @@ class QUIC_EXPORT_PRIVATE QuicStream
   const QuicStreamSendBuffer& send_buffer() const { return send_buffer_; }
 
   QuicStreamSendBuffer& send_buffer() { return send_buffer_; }
+
+  // Return the current flow control send window in bytes.
+  absl::optional<QuicByteCount> GetSendWindow() const;
+  absl::optional<QuicByteCount> GetReceiveWindow() const;
 
  private:
   friend class test::QuicStreamPeer;

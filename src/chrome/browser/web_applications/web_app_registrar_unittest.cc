@@ -10,11 +10,11 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -917,7 +917,7 @@ TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
   const AppId app_id = web_app->app_id();
   RegisterApp(std::move(web_app));
 
-  EXPECT_EQ(RunOnOsLoginMode::kUndefined,
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
             registrar().GetAppRunOnOsLoginMode(app_id));
 
   sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);

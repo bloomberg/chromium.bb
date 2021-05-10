@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -40,7 +41,9 @@
 #include "ui/base/ime/text_input_type.h"
 #include "url/gurl.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
@@ -64,7 +67,7 @@ class TextInputManagerChangeObserver
  public:
   explicit TextInputManagerChangeObserver(content::WebContents* web_contents)
       : TextInputManagerObserverBase(web_contents) {
-    tester()->SetUpdateTextInputStateCalledCallback(base::Bind(
+    tester()->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
         &TextInputManagerChangeObserver::VerifyChange, base::Unretained(this)));
   }
 
@@ -87,7 +90,7 @@ class ViewTextInputTypeObserver : public content::TextInputManagerObserverBase {
         web_contents_(web_contents),
         view_(rwhv),
         expected_type_(expected_type) {
-    tester()->SetUpdateTextInputStateCalledCallback(base::Bind(
+    tester()->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
         &ViewTextInputTypeObserver::VerifyType, base::Unretained(this)));
   }
 
@@ -118,8 +121,8 @@ class ViewSelectionBoundsChangedObserver
       : TextInputManagerObserverBase(web_contents),
         expected_view_(expected_view) {
     tester()->SetOnSelectionBoundsChangedCallback(
-        base::Bind(&ViewSelectionBoundsChangedObserver::VerifyChange,
-                   base::Unretained(this)));
+        base::BindRepeating(&ViewSelectionBoundsChangedObserver::VerifyChange,
+                            base::Unretained(this)));
   }
 
  private:
@@ -144,8 +147,8 @@ class ViewCompositionRangeChangedObserver
       : TextInputManagerObserverBase(web_contents),
         expected_view_(expected_view) {
     tester()->SetOnImeCompositionRangeChangedCallback(
-        base::Bind(&ViewCompositionRangeChangedObserver::VerifyChange,
-                   base::Unretained(this)));
+        base::BindRepeating(&ViewCompositionRangeChangedObserver::VerifyChange,
+                            base::Unretained(this)));
   }
 
  private:
@@ -168,7 +171,7 @@ class ViewTextSelectionObserver : public content::TextInputManagerObserverBase {
       : TextInputManagerObserverBase(web_contents),
         expected_view_(expected_view),
         expected_length_(expected_length) {
-    tester()->SetOnTextSelectionChangedCallback(base::Bind(
+    tester()->SetOnTextSelectionChangedCallback(base::BindRepeating(
         &ViewTextSelectionObserver::VerifyChange, base::Unretained(this)));
   }
 
@@ -193,7 +196,7 @@ class TextSelectionObserver : public content::TextInputManagerObserverBase {
  public:
   explicit TextSelectionObserver(content::WebContents* web_contents)
       : TextInputManagerObserverBase(web_contents) {
-    tester()->SetOnTextSelectionChangedCallback(base::Bind(
+    tester()->SetOnTextSelectionChangedCallback(base::BindRepeating(
         &TextSelectionObserver::VerifyChange, base::Unretained(this)));
   }
 
@@ -222,7 +225,7 @@ class RecordActiveViewsObserver {
  public:
   explicit RecordActiveViewsObserver(content::WebContents* web_contents)
       : tester_(new content::TextInputManagerTester(web_contents)) {
-    tester_->SetUpdateTextInputStateCalledCallback(base::Bind(
+    tester_->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
         &RecordActiveViewsObserver::RecordActiveView, base::Unretained(this)));
   }
 
@@ -851,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // This test makes sure browser correctly tracks focused editable element inside
 // each RenderFrameHost.
 // Test is flaky on chromeOS; https://crbug.com/705203.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_TrackingFocusedElementForAllFrames \
   DISABLED_TrackingFocusedElementForAllFrames
 #else
@@ -900,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // in both cases the test verifies that WebContents is aware whether or not a
 // focused editable element exists on the page.
 // Test is flaky on ChromeOS. crbug.com/705289
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_TrackPageFocusEditableElement \
   DISABLED_TrackPageFocusEditableElement
 #else
@@ -942,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // WebContents to clear focused element and verifies that there is no longer
 // a focused editable element on the page.
 // Test is flaky on ChromeOS; https://crbug.com/705203.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_ClearFocusedElementOnPage DISABLED_ClearFocusedElementOnPage
 #else
 #define MAYBE_ClearFocusedElementOnPage ClearFocusedElementOnPage
@@ -1007,9 +1010,9 @@ class InputMethodObserverBase {
     return test_observer_.get();
   }
 
-  const base::Closure success_closure() {
-    return base::Bind(&InputMethodObserverBase::OnSuccess,
-                      base::Unretained(this));
+  const base::RepeatingClosure success_closure() {
+    return base::BindRepeating(&InputMethodObserverBase::OnSuccess,
+                               base::Unretained(this));
   }
 
  private:
@@ -1106,7 +1109,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // Ensure that a cross-process subframe can utilize keyboard edit commands.
 // See https://crbug.com/640706.  This test is Linux-specific, as it relies on
 // overriding TextEditKeyBindingsDelegateAuraLinux, which only exists on Linux.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        SubframeKeyboardEditCommands) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -1303,9 +1308,9 @@ IN_PROC_BROWSER_TEST_F(
   int32_t child_process_id = child_frame->GetProcess()->GetID();
   int32_t child_frame_routing_id = child_frame->GetRoutingID();
 
-  text_input_local_frame.SetStringForRangeCallback(base::Bind(
+  text_input_local_frame.SetStringForRangeCallback(base::BindRepeating(
       [](int32_t process_id, int32_t routing_id,
-         const base::Closure& callback_on_io) {
+         const base::RepeatingClosure& callback_on_io) {
         // This runs before TextInputClientMac gets to handle the mojo message.
         // Then, by the time TextInputClientMac calls back into UI to show the
         // dictionary, the target RWH is already destroyed which will be a
@@ -1371,9 +1376,9 @@ IN_PROC_BROWSER_TEST_F(
   // thread.
   int32_t main_frame_process_id = main_frame->GetProcess()->GetID();
   int32_t main_frame_routing_id = main_frame->GetRoutingID();
-  text_input_local_frame.SetStringForRangeCallback(base::Bind(
+  text_input_local_frame.SetStringForRangeCallback(base::BindRepeating(
       [](int32_t process_id, int32_t routing_id,
-         const base::Closure& callback_on_io) {
+         const base::RepeatingClosure& callback_on_io) {
         // This runs before TextInputClientMac gets to handle the mojo message.
         // Then, by the time TextInputClientMac calls back into UI to show the
         // dictionary, the target RWH is already destroyed which will be a

@@ -33,11 +33,8 @@ NGConstraintSpace CreateConstraintSpaceForMathChild(
   space_builder.SetPercentageResolutionSize(child_available_size);
   space_builder.SetReplacedPercentageResolutionSize(child_available_size);
 
-  space_builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
-
   // TODO(crbug.com/1124301): add target stretch sizes.
   // TODO(crbug.com/1125137): add ink metrics.
-  space_builder.SetNeedsBaseline(true);
   return space_builder.ToConstraintSpace();
 }
 
@@ -82,13 +79,15 @@ inline bool IsValidMultiscript(const NGBlockNode& node) {
   if (!child || IsPrescriptDelimiter(child))
     return false;
   bool number_of_scripts_is_even = true;
+  bool prescript_delimiter_found = false;
   while (child) {
     child = To<NGBlockNode>(NextSiblingInFlow(child));
     if (!child)
       continue;
     if (IsPrescriptDelimiter(child)) {
-      if (!number_of_scripts_is_even)
+      if (!number_of_scripts_is_even || prescript_delimiter_found)
         return false;
+      prescript_delimiter_found = true;
       continue;
     }
     number_of_scripts_is_even = !number_of_scripts_is_even;

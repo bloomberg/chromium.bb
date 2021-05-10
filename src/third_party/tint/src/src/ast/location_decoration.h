@@ -23,26 +23,34 @@ namespace tint {
 namespace ast {
 
 /// A location decoration
-class LocationDecoration : public VariableDecoration {
+class LocationDecoration
+    : public Castable<LocationDecoration, VariableDecoration> {
  public:
   /// constructor
-  /// @param value the location value
   /// @param source the source of this decoration
-  explicit LocationDecoration(uint32_t value, const Source& source);
+  /// @param value the location value
+  LocationDecoration(const Source& source, uint32_t value);
   ~LocationDecoration() override;
-
-  /// @returns true if this is a location decoration
-  bool IsLocation() const override;
 
   /// @returns the location value
   uint32_t value() const { return value_; }
 
   /// Outputs the decoration to the given stream
-  /// @param out the stream to output too
-  void to_str(std::ostream& out) const override;
+  /// @param sem the semantic info for the program
+  /// @param out the stream to write to
+  /// @param indent number of spaces to indent the node when writing
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  LocationDecoration* Clone(CloneContext* ctx) const override;
 
  private:
-  uint32_t value_;
+  uint32_t const value_;
 };
 
 }  // namespace ast

@@ -32,9 +32,9 @@ using testing::Eq;
 
 namespace {
 
-void PluginsLoaded(const base::Closure& callback,
+void PluginsLoaded(base::OnceClosure callback,
                    const std::vector<content::WebPluginInfo>& plugins) {
-  callback.Run();
+  std::move(callback).Run();
 }
 
 class FakePluginServiceFilter : public content::PluginServiceFilter {
@@ -100,6 +100,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
     foo_plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
     PluginService::GetInstance()->Init();
     PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
+    PluginService::GetInstance()->RefreshPlugins();
 
     content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plugin"),
                                       bar_plugin_path_, base::ASCIIToUTF16("1"),
@@ -140,30 +141,6 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
   HostContentSettingsMap* host_content_settings_map() {
     return host_content_settings_map_;
-  }
-
-  void VerifyPluginContentSetting(const GURL& url,
-                                  const std::string& plugin,
-                                  ContentSetting expected_setting,
-                                  bool expected_is_default,
-                                  bool expected_is_managed) {
-    ContentSetting setting = expected_setting == CONTENT_SETTING_DEFAULT
-                                 ? CONTENT_SETTING_BLOCK
-                                 : CONTENT_SETTING_DEFAULT;
-    bool is_default = !expected_is_default;
-    bool is_managed = !expected_is_managed;
-
-    // Pass in a fake Flash plugin info.
-    content::WebPluginInfo plugin_info(
-        base::ASCIIToUTF16("Shockwave Flash"), base::FilePath(),
-        base::ASCIIToUTF16("1"), base::ASCIIToUTF16("Fake Flash"));
-
-    PluginUtils::GetPluginContentSetting(
-        host_content_settings_map_, plugin_info, url::Origin::Create(url), url,
-        plugin, &setting, &is_default, &is_managed);
-    EXPECT_EQ(expected_setting, setting);
-    EXPECT_EQ(expected_is_default, is_default);
-    EXPECT_EQ(expected_is_managed, is_managed);
   }
 
   base::FilePath foo_plugin_path_;

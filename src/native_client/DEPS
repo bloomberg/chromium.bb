@@ -9,7 +9,7 @@ vars = {
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
   # chrome_rev: 814460
-  "build_rev": "d4bf20279ce4b3234f5c39efb587bbb3615e56d5", # from cr commit position 814429
+  "build_rev": "d2be8d77672bfc63466d8927fbc380c07204b73b", # from cr commit position 826252
   "buildtools_revision": "4be464e050b3d05060471788f926b34c641db9fd", # from cr commit position 811878
   "clang_rev": "7e5979b1dd98e27570e58908e70a6e0c5978aa0e", # from cr commit position 814250
 
@@ -44,7 +44,6 @@ vars = {
   "build_with_chromium": False,
   "cros_boards": Str(""),
   "cros_boards_with_qemu_images": Str(""),
-  "mac_xcode_version": "default",
 
   "chromium_git": "https://chromium.googlesource.com",
 }
@@ -55,7 +54,6 @@ gclient_gn_args = [
   'checkout_android',  # this is provided by gclient
   'cros_boards',
   'cros_boards_with_qemu_images',
-  'mac_xcode_version',
 ]
 
 

@@ -17,8 +17,8 @@ void FakeRemoteFrameHost::SetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {}
 
 void FakeRemoteFrameHost::UpdateRenderThrottlingStatus(bool is_throttled,
-                                                       bool subtree_throttled) {
-}
+                                                       bool subtree_throttled,
+                                                       bool display_locked) {}
 
 void FakeRemoteFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
@@ -34,14 +34,14 @@ void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
 void FakeRemoteFrameHost::SetIsInert(bool inert) {}
 
 void FakeRemoteFrameHost::DidChangeOpener(
-    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+    const base::Optional<LocalFrameToken>& opener_frame_token) {}
 
 void FakeRemoteFrameHost::AdvanceFocus(
     blink::mojom::FocusType focus_type,
-    const base::UnguessableToken& source_frame_token) {}
+    const LocalFrameToken& source_frame_token) {}
 
 void FakeRemoteFrameHost::RouteMessageEvent(
-    const base::Optional<base::UnguessableToken>& source_frame_token,
+    const base::Optional<LocalFrameToken>& source_frame_token,
     const String& source_origin,
     const String& target_origin,
     BlinkTransferableMessage message) {}
@@ -52,7 +52,11 @@ void FakeRemoteFrameHost::PrintCrossProcessSubframe(const gfx::Rect& rect,
 void FakeRemoteFrameHost::Detach() {}
 
 void FakeRemoteFrameHost::UpdateViewportIntersection(
-    blink::mojom::blink::ViewportIntersectionStatePtr intersection_state) {}
+    blink::mojom::blink::ViewportIntersectionStatePtr intersection_state,
+    const base::Optional<FrameVisualProperties>& visual_properties) {}
+
+void FakeRemoteFrameHost::SynchronizeVisualProperties(
+    const blink::FrameVisualProperties& properties) {}
 
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

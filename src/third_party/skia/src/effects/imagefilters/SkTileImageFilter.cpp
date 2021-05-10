@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "include/effects/SkTileImageFilter.h"
+#include "src/effects/imagefilters/SkTileImageFilter.h"
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkImage.h"
@@ -13,7 +13,7 @@
 #include "include/core/SkPaint.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkSurface.h"
-#include "include/effects/SkOffsetImageFilter.h"
+#include "include/effects/SkImageFilters.h"
 #include "src/core/SkImageFilter_Base.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSpecialImage.h"
@@ -63,11 +63,8 @@ sk_sp<SkImageFilter> SkTileImageFilter::Make(const SkRect& srcRect, const SkRect
         if (!ir.intersect(srcRect)) {
             return input;
         }
-        SkImageFilter::CropRect cropRect(ir);
-        return SkOffsetImageFilter::Make(dstRect.x() - srcRect.x(),
-                                         dstRect.y() - srcRect.y(),
-                                         std::move(input),
-                                         &cropRect);
+        return SkImageFilters::Offset(dstRect.x() - srcRect.x(),  dstRect.y() - srcRect.y(),
+                                      std::move(input), &ir);
     }
     return sk_sp<SkImageFilter>(new SkTileImageFilterImpl(srcRect, dstRect, std::move(input)));
 }
@@ -143,7 +140,7 @@ sk_sp<SkSpecialImage> SkTileImageFilterImpl::onFilterImage(const Context& ctx,
 
         input->draw(canvas,
                     SkIntToScalar(inputOffset.x()), SkIntToScalar(inputOffset.y()),
-                    &paint);
+                    SkSamplingOptions(), &paint);
 
         subset = surf->makeImageSnapshot();
     }
@@ -163,7 +160,8 @@ sk_sp<SkSpecialImage> SkTileImageFilterImpl::onFilterImage(const Context& ctx,
 
     SkPaint paint;
     paint.setBlendMode(SkBlendMode::kSrc);
-    paint.setShader(subset->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat));
+    paint.setShader(subset->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat,
+                                       SkSamplingOptions()));
     canvas->translate(-dstRect.fLeft, -dstRect.fTop);
     canvas->drawRect(dstRect, paint);
     offset->fX = dstIRect.fLeft;
@@ -187,4 +185,3 @@ SkIRect SkTileImageFilterImpl::onFilterBounds(const SkIRect& src, const SkMatrix
 SkRect SkTileImageFilterImpl::computeFastBounds(const SkRect& src) const {
     return fDstRect;
 }
-

@@ -8,14 +8,18 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/messages/MessageDispatcherImpl.java",
     "java/src/org/chromium/components/messages/MessageQueueManager.java",
+    "java/src/org/chromium/components/messages/MessageScopeChange.java",
     "java/src/org/chromium/components/messages/MessagesFactory.java",
+    "java/src/org/chromium/components/messages/ScopeChangeController.java",
+    "java/src/org/chromium/components/messages/ScopeKey.java",
   ]
 
   deps = [
     "..:java",
     "..:manager_java",
     "//base:base_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//content/public/android:content_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//ui/android:ui_full_java",
   ]
 }
@@ -26,14 +30,19 @@ java_library("junit") {
   testonly = true
   sources = [
     "java/src/org/chromium/components/messages/MessageQueueManagerTest.java",
+    "java/src/org/chromium/components/messages/ScopeChangeControllerTest.java",
   ]
   deps = [
     ":java",
     "..:java",
     "..:manager_java",
     "//base:base_junit_test_support",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//content/public/android:content_java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:robolectric_all_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
+    "//ui/android:ui_java",
   ]
 }

@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
+#include "quic/core/tls_client_handshaker.h"
 
 #include <cstring>
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_hostname_utils.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -39,7 +40,16 @@ TlsClientHandshaker::TlsClientHandshaker(
       pre_shared_key_(crypto_config->pre_shared_key()),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters),
       has_application_state_(has_application_state),
-      tls_connection_(crypto_config->ssl_ctx(), this) {}
+      crypto_config_(crypto_config),
+      tls_connection_(crypto_config->ssl_ctx(), this) {
+  if (GetQuicReloadableFlag(quic_enable_token_based_address_validation)) {
+    std::string token =
+        crypto_config->LookupOrCreate(server_id)->source_address_token();
+    if (!token.empty()) {
+      session->SetSourceAddressTokenToSend(token);
+    }
+  }
+}
 
 TlsClientHandshaker::~TlsClientHandshaker() {}
 
@@ -52,6 +62,13 @@ bool TlsClientHandshaker::CryptoConnect() {
     CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
     return false;
   }
+
+  // Make sure we use the right TLS extension codepoint.
+  int use_legacy_extension = 0;
+  if (session()->version().UsesLegacyTlsExtension()) {
+    use_legacy_extension = 1;
+  }
+  SSL_set_quic_use_legacy_codepoint(ssl(), use_legacy_extension);
 
   // Set the SNI to send, if any.
   SSL_set_connect_state(ssl());
@@ -158,6 +175,19 @@ bool TlsClientHandshaker::SetAlpn() {
                     alpn_writer.data(), alpn_writer.length()));
     return false;
   }
+
+  // Enable ALPS.
+  if (enable_alps_) {
+    for (const std::string& alpn_string : alpns) {
+      if (SSL_add_application_settings(
+              ssl(), reinterpret_cast<const uint8_t*>(alpn_string.data()),
+              alpn_string.size(), nullptr, /* settings_len = */ 0) != 1) {
+        QUIC_BUG << "Failed to enable ALPS.";
+        return false;
+      }
+    }
+  }
+
   QUIC_DLOG(INFO) << "Client using ALPN: '" << alpns[0] << "'";
   return true;
 }
@@ -200,7 +230,7 @@ bool TlsClientHandshaker::ProcessTransportParameters(
           session()->connection()->version(), Perspective::IS_SERVER,
           param_bytes, param_bytes_len, received_transport_params_.get(),
           &parse_error_details)) {
-    DCHECK(!parse_error_details.empty());
+    QUICHE_DCHECK(!parse_error_details.empty());
     *error_details =
         "Unable to parse server's transport parameters: " + parse_error_details;
     return false;
@@ -233,7 +263,7 @@ bool TlsClientHandshaker::ProcessTransportParameters(
       handshaker_delegate()->ProcessTransportParameters(
           *received_transport_params_, /* is_resumption = */ false,
           error_details) != QUIC_NO_ERROR) {
-    DCHECK(!error_details->empty());
+    QUICHE_DCHECK(!error_details->empty());
     return false;
   }
 
@@ -346,6 +376,15 @@ void TlsClientHandshaker::OnHandshakeDoneReceived() {
   OnHandshakeConfirmed();
 }
 
+void TlsClientHandshaker::OnNewTokenReceived(absl::string_view token) {
+  if (token.empty()) {
+    return;
+  }
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config_->LookupOrCreate(server_id_);
+  cached->set_source_address_token(token);
+}
+
 void TlsClientHandshaker::SetWriteSecret(
     EncryptionLevel level,
     const SSL_CIPHER* cipher,
@@ -363,7 +402,7 @@ void TlsClientHandshaker::SetWriteSecret(
 }
 
 void TlsClientHandshaker::OnHandshakeConfirmed() {
-  DCHECK(one_rtt_keys_available());
+  QUICHE_DCHECK(one_rtt_keys_available());
   if (state_ >= HANDSHAKE_CONFIRMED) {
     return;
   }
@@ -425,7 +464,7 @@ void TlsClientHandshaker::FinishHandshake() {
 
   std::string error_details;
   if (!ProcessTransportParameters(&error_details)) {
-    DCHECK(!error_details.empty());
+    QUICHE_DCHECK(!error_details.empty());
     CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
     return;
   }
@@ -457,6 +496,23 @@ void TlsClientHandshaker::FinishHandshake() {
   session()->OnAlpnSelected(received_alpn_string);
   QUIC_DLOG(INFO) << "Client: server selected ALPN: '" << received_alpn_string
                   << "'";
+
+  // Parse ALPS extension.
+  if (enable_alps_) {
+    const uint8_t* alps_data;
+    size_t alps_length;
+    SSL_get0_peer_application_settings(ssl(), &alps_data, &alps_length);
+    if (alps_length > 0) {
+      auto error = session()->OnAlpsData(alps_data, alps_length);
+      if (error) {
+        CloseConnection(
+            QUIC_HANDSHAKE_FAILED,
+            absl::StrCat("Error processing ALPS data: ", error.value()));
+        return;
+      }
+    }
+  }
+
   state_ = HANDSHAKE_COMPLETE;
   handshaker_delegate()->OnTlsHandshakeComplete();
 }
@@ -479,7 +535,7 @@ bool TlsClientHandshaker::ShouldCloseConnectionOnUnexpectedError(
 
 void TlsClientHandshaker::HandleZeroRttReject() {
   QUIC_LOG(INFO) << "0-RTT handshake attempted but was rejected by the server";
-  DCHECK(session_cache_);
+  QUICHE_DCHECK(session_cache_);
   // Disable encrytion to block outgoing data until 1-RTT keys are available.
   encryption_established_ = false;
   handshaker_delegate()->OnZeroRttRejected(EarlyDataReason());
@@ -520,7 +576,7 @@ void TlsClientHandshaker::WriteMessage(EncryptionLevel level,
 
 void TlsClientHandshaker::SetServerApplicationStateForResumption(
     std::unique_ptr<ApplicationState> application_state) {
-  DCHECK(one_rtt_keys_available());
+  QUICHE_DCHECK(one_rtt_keys_available());
   received_application_state_ = std::move(application_state);
   // At least one tls session is cached before application state is received. So
   // insert now.

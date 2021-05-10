@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
     LoadedIncognitoObserver loaded(browser()->profile());
     base::FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
         AppendASCII("incognito_split");
-    ASSERT_TRUE(LoadExtensionIncognito(extdir));
+    ASSERT_TRUE(LoadExtension(extdir, {.allow_in_incognito = true}));
     loaded.Wait();
   }
 
@@ -565,7 +565,13 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
 
 // Tests that messages from the content script activate the lazy background
 // page, and keep it alive until all channels are closed.
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
+// http://crbug.com/1179524; test fails occasionally on OS X 10.15
+#if defined(OS_MAC)
+#define MAYBE_Messaging DISABLED_Messaging
+#else
+#define MAYBE_Messaging Messaging
+#endif
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_Messaging) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtensionAndWait("messaging"));
 

@@ -19,6 +19,8 @@
 
 namespace content {
 
+class BrowserAccessibilityCocoaBrowserTest;
+
 class CONTENT_EXPORT BrowserAccessibilityManagerMac
     : public BrowserAccessibilityManager {
  public:
@@ -78,6 +80,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.
   friend class BrowserAccessibilityManager;
+
+  friend class BrowserAccessibilityCocoaBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };

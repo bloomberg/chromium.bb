@@ -61,7 +61,7 @@ class ScanningPathsProviderImplTest : public testing::Test {
     web_ui_ = std::make_unique<content::TestWebUI>();
     web_ui_->set_web_contents(web_contents_.get());
 
-    create_drive_integration_service_ = base::Bind(
+    create_drive_integration_service_ = base::BindRepeating(
         &ScanningPathsProviderImplTest::CreateDriveIntegrationService,
         base::Unretained(this));
     service_factory_for_test_ = std::make_unique<
@@ -128,6 +128,15 @@ TEST_F(ScanningPathsProviderImplTest, MyFilesPath) {
                 web_ui_.get(), my_files_path.Append("Sub Folder")));
   EXPECT_EQ("My files", scanning_paths_provider_.GetBaseNameFromPath(
                             web_ui_.get(), my_files_path));
+}
+
+// Validates that the correct MyFiles path is returned.
+TEST_F(ScanningPathsProviderImplTest, GetMyFilesPath) {
+  const base::FilePath my_files_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+
+  EXPECT_EQ(my_files_path,
+            scanning_paths_provider_.GetMyFilesPath(web_ui_.get()));
 }
 
 }  // namespace chromeos.

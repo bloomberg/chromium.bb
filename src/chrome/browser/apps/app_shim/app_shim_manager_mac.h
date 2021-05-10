@@ -111,6 +111,8 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   static AppShimManager* Get();
 
   explicit AppShimManager(std::unique_ptr<Delegate> delegate);
+  AppShimManager(const AppShimManager&) = delete;
+  AppShimManager& operator=(const AppShimManager&) = delete;
   ~AppShimManager() override;
 
   // Called at the beginning of browser shut down. Is used to remove |this| as
@@ -210,7 +212,7 @@ class AppShimManager : public AppShimHostBootstrap::Client,
 
   // Launch the user manager (in response to attempting to access a locked
   // profile).
-  virtual void LaunchUserManager();
+  virtual void LaunchProfilePicker();
 
   // Terminate Chrome if Chrome attempted to quit, but was prevented from
   // quitting due to apps being open.
@@ -321,8 +323,6 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   std::unique_ptr<AvatarMenu> avatar_menu_;
 
   base::WeakPtrFactory<AppShimManager> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppShimManager);
 };
 
 }  // namespace apps

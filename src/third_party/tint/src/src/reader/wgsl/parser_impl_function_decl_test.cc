@@ -14,10 +14,11 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/function.h"
-#include "src/ast/type/type.h"
 #include "src/ast/workgroup_decoration.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
+#include "src/type/type.h"
+#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -25,7 +26,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, FunctionDecl) {
-  auto* p = parser("fn main(a : i32, b : f32) -> void { return; }");
+  auto p = parser("fn main(a : i32, b : f32) -> void { return; }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);
@@ -36,24 +37,24 @@ TEST_F(ParserImplTest, FunctionDecl) {
   EXPECT_TRUE(f.matched);
   ASSERT_NE(f.value, nullptr);
 
-  EXPECT_EQ(f->name(), "main");
+  EXPECT_EQ(f->symbol(), p->builder().Symbols().Get("main"));
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
 
   ASSERT_EQ(f->params().size(), 2u);
-  EXPECT_EQ(f->params()[0]->name(), "a");
-  EXPECT_EQ(f->params()[1]->name(), "b");
+  EXPECT_EQ(f->params()[0]->symbol(), p->builder().Symbols().Get("a"));
+  EXPECT_EQ(f->params()[1]->symbol(), p->builder().Symbols().Get("b"));
 
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
 
   auto* body = f->body();
   ASSERT_EQ(body->size(), 1u);
-  EXPECT_TRUE(body->get(0)->IsReturn());
+  EXPECT_TRUE(body->get(0)->Is<ast::ReturnStatement>());
 }
 
 TEST_F(ParserImplTest, FunctionDecl_DecorationList) {
-  auto* p = parser("[[workgroup_size(2, 3, 4)]] fn main() -> void { return; }");
+  auto p = parser("[[workgroup_size(2, 3, 4)]] fn main() -> void { return; }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);
@@ -64,32 +65,32 @@ TEST_F(ParserImplTest, FunctionDecl_DecorationList) {
   EXPECT_TRUE(f.matched);
   ASSERT_NE(f.value, nullptr);
 
-  EXPECT_EQ(f->name(), "main");
+  EXPECT_EQ(f->symbol(), p->builder().Symbols().Get("main"));
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
   ASSERT_EQ(f->params().size(), 0u);
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
 
   auto& decorations = f->decorations();
   ASSERT_EQ(decorations.size(), 1u);
-  ASSERT_TRUE(decorations[0]->IsWorkgroup());
+  ASSERT_TRUE(decorations[0]->Is<ast::WorkgroupDecoration>());
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = decorations[0]->AsWorkgroup()->values();
+  std::tie(x, y, z) = decorations[0]->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 3u);
   EXPECT_EQ(z, 4u);
 
   auto* body = f->body();
   ASSERT_EQ(body->size(), 1u);
-  EXPECT_TRUE(body->get(0)->IsReturn());
+  EXPECT_TRUE(body->get(0)->Is<ast::ReturnStatement>());
 }
 
 TEST_F(ParserImplTest, FunctionDecl_DecorationList_MultipleEntries) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 [[workgroup_size(2, 3, 4), workgroup_size(5, 6, 7)]]
 fn main() -> void { return; })");
   auto decos = p->decoration_list();
@@ -102,12 +103,12 @@ fn main() -> void { return; })");
   EXPECT_TRUE(f.matched);
   ASSERT_NE(f.value, nullptr);
 
-  EXPECT_EQ(f->name(), "main");
+  EXPECT_EQ(f->symbol(), p->builder().Symbols().Get("main"));
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
   ASSERT_EQ(f->params().size(), 0u);
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
 
   auto& decorations = f->decorations();
   ASSERT_EQ(decorations.size(), 2u);
@@ -115,25 +116,25 @@ fn main() -> void { return; })");
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  ASSERT_TRUE(decorations[0]->IsWorkgroup());
-  std::tie(x, y, z) = decorations[0]->AsWorkgroup()->values();
+  ASSERT_TRUE(decorations[0]->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = decorations[0]->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 3u);
   EXPECT_EQ(z, 4u);
 
-  ASSERT_TRUE(decorations[1]->IsWorkgroup());
-  std::tie(x, y, z) = decorations[1]->AsWorkgroup()->values();
+  ASSERT_TRUE(decorations[1]->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = decorations[1]->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 5u);
   EXPECT_EQ(y, 6u);
   EXPECT_EQ(z, 7u);
 
   auto* body = f->body();
   ASSERT_EQ(body->size(), 1u);
-  EXPECT_TRUE(body->get(0)->IsReturn());
+  EXPECT_TRUE(body->get(0)->Is<ast::ReturnStatement>());
 }
 
 TEST_F(ParserImplTest, FunctionDecl_DecorationList_MultipleLists) {
-  auto* p = parser(R"(
+  auto p = parser(R"(
 [[workgroup_size(2, 3, 4)]]
 [[workgroup_size(5, 6, 7)]]
 fn main() -> void { return; })");
@@ -147,12 +148,12 @@ fn main() -> void { return; })");
   EXPECT_TRUE(f.matched);
   ASSERT_NE(f.value, nullptr);
 
-  EXPECT_EQ(f->name(), "main");
+  EXPECT_EQ(f->symbol(), p->builder().Symbols().Get("main"));
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
   ASSERT_EQ(f->params().size(), 0u);
   ASSERT_NE(f->return_type(), nullptr);
-  EXPECT_TRUE(f->return_type()->IsVoid());
+  EXPECT_TRUE(f->return_type()->Is<type::Void>());
 
   auto& decos = f->decorations();
   ASSERT_EQ(decos.size(), 2u);
@@ -160,25 +161,25 @@ fn main() -> void { return; })");
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  ASSERT_TRUE(decos[0]->IsWorkgroup());
-  std::tie(x, y, z) = decos[0]->AsWorkgroup()->values();
+  ASSERT_TRUE(decos[0]->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = decos[0]->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 3u);
   EXPECT_EQ(z, 4u);
 
-  ASSERT_TRUE(decos[1]->IsWorkgroup());
-  std::tie(x, y, z) = decos[1]->AsWorkgroup()->values();
+  ASSERT_TRUE(decos[1]->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = decos[1]->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 5u);
   EXPECT_EQ(y, 6u);
   EXPECT_EQ(z, 7u);
 
   auto* body = f->body();
   ASSERT_EQ(body->size(), 1u);
-  EXPECT_TRUE(body->get(0)->IsReturn());
+  EXPECT_TRUE(body->get(0)->Is<ast::ReturnStatement>());
 }
 
 TEST_F(ParserImplTest, FunctionDecl_InvalidHeader) {
-  auto* p = parser("fn main() -> { }");
+  auto p = parser("fn main() -> { }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);
@@ -192,7 +193,7 @@ TEST_F(ParserImplTest, FunctionDecl_InvalidHeader) {
 }
 
 TEST_F(ParserImplTest, FunctionDecl_InvalidBody) {
-  auto* p = parser("fn main() -> void { return }");
+  auto p = parser("fn main() -> void { return }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);
@@ -206,7 +207,7 @@ TEST_F(ParserImplTest, FunctionDecl_InvalidBody) {
 }
 
 TEST_F(ParserImplTest, FunctionDecl_MissingLeftBrace) {
-  auto* p = parser("fn main() -> void return; }");
+  auto p = parser("fn main() -> void return; }");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(decos.errored);

@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//pdf/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
 import("//v8/gni/v8.gni")
@@ -103,6 +104,8 @@ if (enable_pdf) {
       "pdf_init.h",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "pdf_utils/dates.cc",
+      "pdf_utils/dates.h",
       "pdf_view_plugin_base.cc",
       "pdf_view_plugin_base.h",
       "pdfium/pdfium_api_string_buffer_adapter.cc",
@@ -135,6 +138,8 @@ if (enable_pdf) {
       "range_set.h",
       "thumbnail.cc",
       "thumbnail.h",
+      "ui/format_page_size.cc",
+      "ui/format_page_size.h",
       "url_loader_wrapper.h",
       "url_loader_wrapper_impl.cc",
       "url_loader_wrapper_impl.h",
@@ -142,19 +147,23 @@ if (enable_pdf) {
 
     configs += [ ":pdf_common_config" ]
 
+    public_deps = [ "//skia" ]
+
     deps = [
+      ":accessibility_structs",
       ":features",
       ":ppapi_migration",
       "//base",
       "//base:i18n",
       "//build:chromeos_buildflags",
+      "//components/strings",
       "//gin",
       "//net",
       "//pdf/pdfium/fuzzers",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//printing",
-      "//skia",
+      "//third_party/icu",
       "//third_party/pdfium",
       "//ui/base",
       "//ui/gfx/range",
@@ -176,12 +185,31 @@ if (enable_pdf) {
     configs += [ ":pdf_common_config" ]
 
     deps = [
+      ":accessibility_structs",
       ":internal",
       ":pdf",
       ":ppapi_migration",
       "//ppapi/c",
       "//third_party/pdfium",
       "//ui/base",
+    ]
+  }
+
+  source_set("accessibility_structs") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "accessibility_helper.cc",
+      "accessibility_helper.h",
+      "accessibility_structs.cc",
+      "accessibility_structs.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      "//base",
+      "//ui/gfx/geometry",
     ]
   }
 
@@ -233,14 +261,16 @@ if (enable_pdf) {
     public_deps = [ "//third_party/abseil-cpp:absl" ]
 
     deps = [
-      ":features",
+      ":accessibility_structs",
       ":internal",
       ":ppapi_migration",
       "//base",
+      "//base:i18n",
       "//build:chromeos_buildflags",
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
+      "//skia",
       "//ui/base",
     ]
   }
@@ -252,18 +282,27 @@ if (enable_pdf) {
     sources = [
       "pdf_view_web_plugin.cc",
       "pdf_view_web_plugin.h",
+      "post_message_receiver.cc",
+      "post_message_receiver.h",
+      "post_message_sender.cc",
+      "post_message_sender.h",
     ]
 
     configs += [ ":pdf_common_config" ]
 
     deps = [
+      ":accessibility_structs",
       ":internal",
       ":ppapi_migration",
       "//base",
       "//cc/paint",
+      "//content/public/renderer",
+      "//gin",
       "//ppapi/cpp:objects",  # TODO(crbug.com/1114263): PDFEngine::Client only.
+      "//skia",
       "//third_party/blink/public:blink_headers",
       "//ui/base/cursor:cursor_base",
+      "//v8",
     ]
   }
 
@@ -302,6 +341,7 @@ if (enable_pdf) {
       "out_of_process_instance_unittest.cc",
       "page_orientation_unittest.cc",
       "pdf_transform_unittest.cc",
+      "pdf_utils/dates_unittest.cc",
       "pdfium/accessibility_unittest.cc",
       "pdfium/findtext_unittest.cc",
       "pdfium/pdfium_engine_exports_unittest.cc",
@@ -313,10 +353,12 @@ if (enable_pdf) {
       "pdfium/pdfium_test_base.cc",
       "pdfium/pdfium_test_base.h",
       "ppapi_migration/geometry_conversions_unittest.cc",
+      "ppapi_migration/graphics_unittest.cc",
       "ppapi_migration/url_loader_unittest.cc",
       "range_set_unittest.cc",
       "test/run_all_unittests.cc",
       "thumbnail_unittest.cc",
+      "ui/format_page_size_unittest.cc",
     ]
 
     configs += [
@@ -327,6 +369,7 @@ if (enable_pdf) {
     data = [ "test/data/" ]
 
     deps = [
+      ":accessibility_structs",
       ":assert_enums",
       ":features",
       ":internal",
@@ -335,8 +378,10 @@ if (enable_pdf) {
       ":pdf_test_utils",
       ":ppapi_migration",
       "//base",
+      "//base:i18n",
       "//base/test:test_support",
       "//cc:test_support",
+      "//components/strings",
       "//gin",
       "//ppapi/c",
       "//ppapi/cpp:objects",
@@ -346,6 +391,7 @@ if (enable_pdf) {
       "//testing/gtest",
       "//third_party/blink/public:blink",
       "//third_party/pdfium",
+      "//ui/base:test_support",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
       "//ui/gfx/range",
@@ -354,6 +400,15 @@ if (enable_pdf) {
     if (v8_use_external_startup_data) {
       data += [ "$root_out_dir/snapshot_blob.bin" ]
     }
+  }
+
+  fuzzer_test("pdf_dates_fuzzer") {
+    sources = [ "pdf_utils/dates_fuzzer.cc" ]
+
+    deps = [
+      ":internal",
+      "//base",
+    ]
   }
 } else {
   # Dummy groups when PDF support is disabled so targets can unconditionally

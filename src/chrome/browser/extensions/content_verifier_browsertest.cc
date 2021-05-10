@@ -188,7 +188,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::AutoReset<bool> scoped_use_update_service_ =
       ExtensionUpdater::GetScopedUseUpdateServiceForTesting();
-  MockUpdateService update_service_;
+  testing::NiceMock<MockUpdateService> update_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
@@ -554,8 +554,10 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
   void SetUpInProcessBrowserTestFixture() override {
     ContentVerifierTest::SetUpInProcessBrowserTestFixture();
 
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
 
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -577,7 +579,7 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
   std::string id_ = "dkjgfphccejbobpbljnpjcmhmagkdoia";
 
  private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
 // We want to test what happens at startup with a corroption-disabled policy

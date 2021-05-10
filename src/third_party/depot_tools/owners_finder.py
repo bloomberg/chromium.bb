@@ -8,10 +8,9 @@ from __future__ import print_function
 
 import os
 import copy
-import owners as owners_module
-import random
 
 
+import git_common
 import gclient_utils
 
 
@@ -28,11 +27,9 @@ class OwnersFinder(object):
 
   indentation = 0
 
-  def __init__(self, files, local_root, author, reviewers,
-               fopen, os_path,
+  def __init__(self, files, author, reviewers, owners_client,
                email_postfix='@chromium.org',
                disable_color=False,
-               override_files=None,
                ignore_author=False):
     self.email_postfix = email_postfix
 
@@ -41,12 +38,6 @@ class OwnersFinder(object):
       self.COLOR_BOLD = ''
       self.COLOR_GREY = ''
       self.COLOR_RESET = ''
-
-    self.db = owners_module.Database(local_root, fopen, os_path)
-    self.db.override_files = override_files or {}
-    self.db.load_data_needed_for(files)
-
-    self.os_path = os_path
 
     self.author = author
 
@@ -57,32 +48,23 @@ class OwnersFinder(object):
       reviewers.append(author)
 
     # Eliminate files that existing reviewers can review.
-    filtered_files = list(self.db.files_not_covered_by(
-        filtered_files, reviewers))
+    self.owners_client = owners_client
+    approval_status = self.owners_client.GetFilesApprovalStatus(
+      filtered_files, reviewers, [])
+    filtered_files = [
+      f for f in filtered_files
+      if approval_status[f] != self.owners_client.APPROVED]
 
     # If some files are eliminated.
     if len(filtered_files) != len(files):
       files = filtered_files
-      # Reload the database.
-      self.db = owners_module.Database(local_root, fopen, os_path)
-      self.db.override_files = override_files or {}
-      self.db.load_data_needed_for(files)
 
-    self.all_possible_owners = self.db.all_possible_owners(files, None)
-    if author and author in self.all_possible_owners:
-      del self.all_possible_owners[author]
+    self.files_to_owners = self.owners_client.BatchListOwners(files)
 
     self.owners_to_files = {}
-    self._map_owners_to_files(files)
-
-    self.files_to_owners = {}
-    self._map_files_to_owners()
-
-    self.owners_score = self.db.total_costs_by_owner(
-        self.all_possible_owners, files)
+    self._map_owners_to_files()
 
     self.original_files_to_owners = copy.deepcopy(self.files_to_owners)
-    self.comments = self.db.comments
 
     # This is the queue that will be shown in the interactive questions.
     # It is initially sorted by the score in descending order. In the
@@ -144,19 +126,11 @@ class OwnersFinder(object):
     self.print_result()
     return 0
 
-  def _map_owners_to_files(self, files):
-    for owner in self.all_possible_owners:
-      for dir_name, _ in self.all_possible_owners[owner]:
-        for file_name in files:
-          if file_name.startswith(dir_name):
-            self.owners_to_files.setdefault(owner, set())
-            self.owners_to_files[owner].add(file_name)
-
-  def _map_files_to_owners(self):
-    for owner in self.owners_to_files:
-      for file_name in self.owners_to_files[owner]:
-        self.files_to_owners.setdefault(file_name, set())
-        self.files_to_owners[file_name].add(owner)
+  def _map_owners_to_files(self):
+    for file_name in self.files_to_owners:
+      for owner in self.files_to_owners[file_name]:
+        self.owners_to_files.setdefault(owner, set())
+        self.owners_to_files[owner].add(file_name)
 
   def reset(self):
     self.files_to_owners = copy.deepcopy(self.original_files_to_owners)
@@ -167,10 +141,10 @@ class OwnersFinder(object):
 
     # Randomize owners' names so that if many reviewers have identical scores
     # they will be randomly ordered to avoid bias.
-    owners = list(self.owners_to_files.keys())
-    random.shuffle(owners)
-    self.owners_queue = sorted(owners,
-                               key=lambda owner: self.owners_score[owner])
+    owners = list(self.owners_client.ScoreOwners(self.files_to_owners.keys()))
+    if self.author and self.author in owners:
+      owners.remove(self.author)
+    self.owners_queue = owners
     self.find_mandatory_owners()
 
   def select_owner(self, owner, findMandatoryOwners=True):
@@ -220,30 +194,6 @@ class OwnersFinder(object):
         continues = True
         break
 
-  def print_comments(self, owner):
-    if owner not in self.comments:
-      self.writeln(self.bold_name(owner))
-    else:
-      self.writeln(self.bold_name(owner) + ' is commented as:')
-      self.indent()
-      if owners_module.GLOBAL_STATUS in self.comments[owner]:
-        self.writeln(
-            self.greyed(self.comments[owner][owners_module.GLOBAL_STATUS]) +
-            ' (global status)')
-        if len(self.comments[owner]) == 1:
-          self.unindent()
-          return
-      for path in self.comments[owner]:
-        if path == owners_module.GLOBAL_STATUS:
-          continue
-        elif len(self.comments[owner][path]) > 0:
-          self.writeln(self.greyed(self.comments[owner][path]) +
-                       ' (at ' + self.bold(path or '<root>') + ')')
-        else:
-          self.writeln(self.greyed('[No comment] ') + ' (at ' +
-                       self.bold(path or '<root>') + ')')
-      self.unindent()
-
   def print_file_info(self, file_name, except_owner=''):
     if file_name not in self.unreviewed_files:
       self.writeln(self.greyed(file_name +
@@ -277,7 +227,7 @@ class OwnersFinder(object):
 
   def print_owned_files_for(self, owner):
     # Print owned files
-    self.print_comments(owner)
+    self.writeln(self.bold_name(owner))
     self.writeln(self.bold_name(owner) + ' owns ' +
                  str(len(self.owners_to_files[owner])) + ' file(s):')
     self.indent()
@@ -291,7 +241,7 @@ class OwnersFinder(object):
             len(self.selected_owners)) > 3:
       for ow in owners_queue:
         if ow not in self.deselected_owners and ow not in self.selected_owners:
-          self.print_comments(ow)
+          self.writeln(self.bold_name(ow))
     else:
       for ow in owners_queue:
         if ow not in self.deselected_owners and ow not in self.selected_owners:

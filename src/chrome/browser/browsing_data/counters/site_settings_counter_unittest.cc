@@ -252,17 +252,20 @@ TEST_F(SiteSettingsCounterTest, AllSiteSettingsMixed) {
 
   base::Time now = base::Time::Now();
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("news", GURL("http://www.google.com"), now));
+      ProtocolHandler("news", GURL("http://www.google.com"), now,
+                      blink::ProtocolHandlerSecurityLevel::kStrict));
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("news", GURL("http://docs.google.com"), now));
+      ProtocolHandler("news", GURL("http://docs.google.com"), now,
+                      blink::ProtocolHandlerSecurityLevel::kStrict));
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("news", GURL("http://slides.google.com"), now));
+      ProtocolHandler("news", GURL("http://slides.google.com"), now,
+                      blink::ProtocolHandlerSecurityLevel::kStrict));
 
   auto translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
-  translate_prefs->BlacklistSite("www.google.com");
-  translate_prefs->BlacklistSite("docs.google.com");
-  translate_prefs->BlacklistSite("photos.google.com");
+  translate_prefs->AddSiteToNeverPromptList("www.google.com");
+  translate_prefs->AddSiteToNeverPromptList("docs.google.com");
+  translate_prefs->AddSiteToNeverPromptList("photos.google.com");
   counter()->Restart();
   EXPECT_EQ(6, GetResult());
 }
@@ -272,10 +275,12 @@ TEST_F(SiteSettingsCounterTest, ProtocolHandlerCounting) {
   base::Time now = base::Time::Now();
 
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("news", GURL("http://www.google.com"), now));
+      ProtocolHandler("news", GURL("http://www.google.com"), now,
+                      blink::ProtocolHandlerSecurityLevel::kStrict));
   handler_registry()->OnAcceptRegisterProtocolHandler(
       ProtocolHandler("mailto", GURL("http://maps.google.com"),
-                      now - base::TimeDelta::FromMinutes(90)));
+                      now - base::TimeDelta::FromMinutes(90),
+                      blink::ProtocolHandlerSecurityLevel::kStrict));
   EXPECT_TRUE(handler_registry()->IsHandledProtocol("news"));
   EXPECT_TRUE(handler_registry()->IsHandledProtocol("mailto"));
 
@@ -288,8 +293,8 @@ TEST_F(SiteSettingsCounterTest, ProtocolHandlerCounting) {
 TEST_F(SiteSettingsCounterTest, TranslatedSitesCounting) {
   auto translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
-  translate_prefs->BlacklistSite("www.google.com");
-  translate_prefs->BlacklistSite("maps.google.com");
+  translate_prefs->AddSiteToNeverPromptList("www.google.com");
+  translate_prefs->AddSiteToNeverPromptList("maps.google.com");
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   EXPECT_EQ(2, GetResult());

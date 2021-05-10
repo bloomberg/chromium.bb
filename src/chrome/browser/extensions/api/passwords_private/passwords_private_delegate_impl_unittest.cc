@@ -29,7 +29,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
@@ -613,7 +613,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnGetPlaintextCompPassword) {
   compromised_credentials.signon_realm = form.signon_realm;
   compromised_credentials.username = form.username_value;
   store_->AddLogin(form);
-  store_->AddCompromisedCredentials(compromised_credentials);
+  store_->AddInsecureCredential(compromised_credentials);
   base::RunLoop().RunUntilIdle();
 
   api::passwords_private::InsecureCredential credential =

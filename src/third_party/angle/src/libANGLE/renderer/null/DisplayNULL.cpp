@@ -107,9 +107,19 @@ bool DisplayNULL::isValidNativeWindow(EGLNativeWindowType window) const
     return true;
 }
 
-std::string DisplayNULL::getVendorString() const
+std::string DisplayNULL::getRendererDescription()
 {
     return "NULL";
+}
+
+std::string DisplayNULL::getVendorString()
+{
+    return "NULL";
+}
+
+std::string DisplayNULL::getVersionString()
+{
+    return std::string();
 }
 
 DeviceImpl *DisplayNULL::createDevice()
@@ -200,7 +210,6 @@ void DisplayNULL::generateExtensions(egl::DisplayExtensions *outExtensions) cons
     outExtensions->createContextRobustness            = true;
     outExtensions->postSubBuffer                      = true;
     outExtensions->createContext                      = true;
-    outExtensions->deviceQuery                        = true;
     outExtensions->image                              = true;
     outExtensions->imageBase                          = true;
     outExtensions->glTexture2DImage                   = true;

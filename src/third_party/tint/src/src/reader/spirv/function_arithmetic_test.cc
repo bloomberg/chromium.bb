@@ -43,6 +43,7 @@ std::string CommonTypes() {
   %int_40 = OpConstant %int 40
   %float_50 = OpConstant %float 50
   %float_60 = OpConstant %float 60
+  %float_70 = OpConstant %float 70
 
   %ptr_uint = OpTypePointer Function %uint
   %ptr_int = OpTypePointer Function %int
@@ -51,6 +52,7 @@ std::string CommonTypes() {
   %v2uint = OpTypeVector %uint 2
   %v2int = OpTypeVector %int 2
   %v2float = OpTypeVector %float 2
+  %v3float = OpTypeVector %float 3
 
   %v2uint_10_20 = OpConstantComposite %v2uint %uint_10 %uint_20
   %v2uint_20_10 = OpConstantComposite %v2uint %uint_20 %uint_10
@@ -58,64 +60,66 @@ std::string CommonTypes() {
   %v2int_40_30 = OpConstantComposite %v2int %int_40 %int_30
   %v2float_50_60 = OpConstantComposite %v2float %float_50 %float_60
   %v2float_60_50 = OpConstantComposite %v2float %float_60 %float_50
+  %v3float_50_60_70 = OpConstantComposite %v2float %float_50 %float_60 %float_70
 
   %m2v2float = OpTypeMatrix %v2float 2
   %m2v2float_a = OpConstantComposite %m2v2float %v2float_50_60 %v2float_60_50
   %m2v2float_b = OpConstantComposite %m2v2float %v2float_60_50 %v2float_50_60
+  %m2v3float = OpTypeMatrix %v3float 2
 )";
 }
 
 // Returns the AST dump for a given SPIR-V assembly constant.
 std::string AstFor(std::string assembly) {
   if (assembly == "v2uint_10_20") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__u32
-          ScalarConstructor{10}
-          ScalarConstructor{20}
+          ScalarConstructor[not set]{10}
+          ScalarConstructor[not set]{20}
         })";
   }
   if (assembly == "v2uint_20_10") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__u32
-          ScalarConstructor{20}
-          ScalarConstructor{10}
+          ScalarConstructor[not set]{20}
+          ScalarConstructor[not set]{10}
         })";
   }
   if (assembly == "v2int_30_40") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{30}
-          ScalarConstructor{40}
+          ScalarConstructor[not set]{30}
+          ScalarConstructor[not set]{40}
         })";
   }
   if (assembly == "v2int_40_30") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{40}
-          ScalarConstructor{30}
+          ScalarConstructor[not set]{40}
+          ScalarConstructor[not set]{30}
         })";
   }
   if (assembly == "cast_int_v2uint_10_20") {
-    return R"(Bitcast<__vec_2__i32>{
-          TypeConstructor{
+    return R"(Bitcast[not set]<__vec_2__i32>{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{10}
-            ScalarConstructor{20}
+            ScalarConstructor[not set]{10}
+            ScalarConstructor[not set]{20}
           }
         })";
   }
   if (assembly == "v2float_50_60") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{50.000000}
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{50.000000}
+          ScalarConstructor[not set]{60.000000}
         })";
   }
   if (assembly == "v2float_60_50") {
-    return R"(TypeConstructor{
+    return R"(TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{60.000000}
-          ScalarConstructor{50.000000}
+          ScalarConstructor[not set]{60.000000}
+          ScalarConstructor[not set]{50.000000}
         })";
   }
   return "bad case";
@@ -131,23 +135,23 @@ TEST_F(SpvUnaryArithTest, SNegate_Int_Int) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __i32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        ScalarConstructor{30}
+        ScalarConstructor[not set]{30}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_Int_Uint) {
@@ -158,25 +162,25 @@ TEST_F(SpvUnaryArithTest, SNegate_Int_Uint) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __i32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        Bitcast<__i32>{
-          ScalarConstructor{10}
+        Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_Uint_Int) {
@@ -187,25 +191,25 @@ TEST_F(SpvUnaryArithTest, SNegate_Uint_Int) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __u32
     {
-      Bitcast<__u32>{
-        UnaryOp{
+      Bitcast[not set]<__u32>{
+        UnaryOp[not set]{
           negation
-          ScalarConstructor{30}
+          ScalarConstructor[not set]{30}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_Uint_Uint) {
@@ -216,27 +220,27 @@ TEST_F(SpvUnaryArithTest, SNegate_Uint_Uint) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __u32
     {
-      Bitcast<__u32>{
-        UnaryOp{
+      Bitcast[not set]<__u32>{
+        UnaryOp[not set]{
           negation
-          Bitcast<__i32>{
-            ScalarConstructor{10}
+          Bitcast[not set]<__i32>{
+            ScalarConstructor[not set]{10}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_SignedVec_SignedVec) {
@@ -247,27 +251,27 @@ TEST_F(SpvUnaryArithTest, SNegate_SignedVec_SignedVec) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__i32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__i32
-          ScalarConstructor{30}
-          ScalarConstructor{40}
+          ScalarConstructor[not set]{30}
+          ScalarConstructor[not set]{40}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_SignedVec_UnsignedVec) {
@@ -278,29 +282,29 @@ TEST_F(SpvUnaryArithTest, SNegate_SignedVec_UnsignedVec) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__i32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        Bitcast<__vec_2__i32>{
-          TypeConstructor{
+        Bitcast[not set]<__vec_2__i32>{
+          TypeConstructor[not set]{
             __vec_2__u32
-            ScalarConstructor{10}
-            ScalarConstructor{20}
+            ScalarConstructor[not set]{10}
+            ScalarConstructor[not set]{20}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_UnsignedVec_SignedVec) {
@@ -311,29 +315,29 @@ TEST_F(SpvUnaryArithTest, SNegate_UnsignedVec_SignedVec) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Bitcast<__vec_2__u32>{
-        UnaryOp{
+      Bitcast[not set]<__vec_2__u32>{
+        UnaryOp[not set]{
           negation
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{30}
-            ScalarConstructor{40}
+            ScalarConstructor[not set]{30}
+            ScalarConstructor[not set]{40}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, SNegate_UnsignedVec_UnsignedVec) {
@@ -344,31 +348,31 @@ TEST_F(SpvUnaryArithTest, SNegate_UnsignedVec_UnsignedVec) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Bitcast<__vec_2__u32>{
-        UnaryOp{
+      Bitcast[not set]<__vec_2__u32>{
+        UnaryOp[not set]{
           negation
-          Bitcast<__vec_2__i32>{
-            TypeConstructor{
+          Bitcast[not set]<__vec_2__i32>{
+            TypeConstructor[not set]{
               __vec_2__u32
-              ScalarConstructor{10}
-              ScalarConstructor{20}
+              ScalarConstructor[not set]{10}
+              ScalarConstructor[not set]{20}
             }
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, FNegate_Scalar) {
@@ -379,23 +383,23 @@ TEST_F(SpvUnaryArithTest, FNegate_Scalar) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __f32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        ScalarConstructor{50.000000}
+        ScalarConstructor[not set]{50.000000}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvUnaryArithTest, FNegate_Vector) {
@@ -406,27 +410,27 @@ TEST_F(SpvUnaryArithTest, FNegate_Vector) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__f32
     {
-      UnaryOp{
+      UnaryOp[not set]{
         negation
-        TypeConstructor{
+        TypeConstructor[not set]{
           __vec_2__f32
-          ScalarConstructor{50.000000}
-          ScalarConstructor{60.000000}
+          ScalarConstructor[not set]{50.000000}
+          ScalarConstructor[not set]{60.000000}
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 struct BinaryData {
@@ -460,21 +464,22 @@ TEST_P(SpvBinaryArithTest, EmitExpression) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
   std::ostringstream ss;
   ss << R"(VariableConst{
     x_1
     none
     )"
-     << GetParam().ast_type << "\n    {\n      Binary{"
+     << GetParam().ast_type << "\n    {\n      Binary[not set]{"
      << "\n        " << GetParam().ast_lhs << "\n        " << GetParam().ast_op
      << "\n        " << GetParam().ast_rhs;
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(ss.str())) << assembly;
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(ss.str()))
+      << assembly;
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -483,16 +488,20 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"uint", "uint_10", "OpIAdd", "uint_20", "__u32",
-                   "ScalarConstructor{10}", "add", "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "add",
+                   "ScalarConstructor[not set]{20}"},
         // Both int
         BinaryData{"int", "int_30", "OpIAdd", "int_40", "__i32",
-                   "ScalarConstructor{30}", "add", "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "add",
+                   "ScalarConstructor[not set]{40}"},
         // Mixed, returning uint
         BinaryData{"uint", "int_30", "OpIAdd", "uint_10", "__u32",
-                   "ScalarConstructor{30}", "add", "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "add",
+                   "ScalarConstructor[not set]{10}"},
         // Mixed, returning int
         BinaryData{"int", "int_30", "OpIAdd", "uint_10", "__i32",
-                   "ScalarConstructor{30}", "add", "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "add",
+                   "ScalarConstructor[not set]{10}"},
         // Both v2uint
         BinaryData{"v2uint", "v2uint_10_20", "OpIAdd", "v2uint_20_10",
                    "__vec_2__u32", AstFor("v2uint_10_20"), "add",
@@ -516,8 +525,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Scalar float
         BinaryData{"float", "float_50", "OpFAdd", "float_60", "__f32",
-                   "ScalarConstructor{50.000000}", "add",
-                   "ScalarConstructor{60.000000}"},
+                   "ScalarConstructor[not set]{50.000000}", "add",
+                   "ScalarConstructor[not set]{60.000000}"},
         // Vector float
         BinaryData{"v2float", "v2float_50_60", "OpFAdd", "v2float_60_50",
                    "__vec_2__f32", AstFor("v2float_50_60"), "add",
@@ -529,20 +538,20 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"uint", "uint_10", "OpISub", "uint_20", "__u32",
-                   "ScalarConstructor{10}", "subtract",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "subtract",
+                   "ScalarConstructor[not set]{20}"},
         // Both int
         BinaryData{"int", "int_30", "OpISub", "int_40", "__i32",
-                   "ScalarConstructor{30}", "subtract",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "subtract",
+                   "ScalarConstructor[not set]{40}"},
         // Mixed, returning uint
         BinaryData{"uint", "int_30", "OpISub", "uint_10", "__u32",
-                   "ScalarConstructor{30}", "subtract",
-                   "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "subtract",
+                   "ScalarConstructor[not set]{10}"},
         // Mixed, returning int
         BinaryData{"int", "int_30", "OpISub", "uint_10", "__i32",
-                   "ScalarConstructor{30}", "subtract",
-                   "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "subtract",
+                   "ScalarConstructor[not set]{10}"},
         // Both v2uint
         BinaryData{"v2uint", "v2uint_10_20", "OpISub", "v2uint_20_10",
                    "__vec_2__u32", AstFor("v2uint_10_20"), "subtract",
@@ -566,8 +575,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Scalar float
         BinaryData{"float", "float_50", "OpFSub", "float_60", "__f32",
-                   "ScalarConstructor{50.000000}", "subtract",
-                   "ScalarConstructor{60.000000}"},
+                   "ScalarConstructor[not set]{50.000000}", "subtract",
+                   "ScalarConstructor[not set]{60.000000}"},
         // Vector float
         BinaryData{"v2float", "v2float_50_60", "OpFSub", "v2float_60_50",
                    "__vec_2__f32", AstFor("v2float_50_60"), "subtract",
@@ -579,20 +588,20 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"uint", "uint_10", "OpIMul", "uint_20", "__u32",
-                   "ScalarConstructor{10}", "multiply",
-                   "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "multiply",
+                   "ScalarConstructor[not set]{20}"},
         // Both int
         BinaryData{"int", "int_30", "OpIMul", "int_40", "__i32",
-                   "ScalarConstructor{30}", "multiply",
-                   "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "multiply",
+                   "ScalarConstructor[not set]{40}"},
         // Mixed, returning uint
         BinaryData{"uint", "int_30", "OpIMul", "uint_10", "__u32",
-                   "ScalarConstructor{30}", "multiply",
-                   "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "multiply",
+                   "ScalarConstructor[not set]{10}"},
         // Mixed, returning int
         BinaryData{"int", "int_30", "OpIMul", "uint_10", "__i32",
-                   "ScalarConstructor{30}", "multiply",
-                   "ScalarConstructor{10}"},
+                   "ScalarConstructor[not set]{30}", "multiply",
+                   "ScalarConstructor[not set]{10}"},
         // Both v2uint
         BinaryData{"v2uint", "v2uint_10_20", "OpIMul", "v2uint_20_10",
                    "__vec_2__u32", AstFor("v2uint_10_20"), "multiply",
@@ -616,8 +625,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Scalar float
         BinaryData{"float", "float_50", "OpFMul", "float_60", "__f32",
-                   "ScalarConstructor{50.000000}", "multiply",
-                   "ScalarConstructor{60.000000}"},
+                   "ScalarConstructor[not set]{50.000000}", "multiply",
+                   "ScalarConstructor[not set]{60.000000}"},
         // Vector float
         BinaryData{"v2float", "v2float_50_60", "OpFMul", "v2float_60_50",
                    "__vec_2__f32", AstFor("v2float_50_60"), "multiply",
@@ -629,7 +638,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"uint", "uint_10", "OpUDiv", "uint_20", "__u32",
-                   "ScalarConstructor{10}", "divide", "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "divide",
+                   "ScalarConstructor[not set]{20}"},
         // Both v2uint
         BinaryData{"v2uint", "v2uint_10_20", "OpUDiv", "v2uint_20_10",
                    "__vec_2__u32", AstFor("v2uint_10_20"), "divide",
@@ -641,7 +651,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both int
         BinaryData{"int", "int_30", "OpSDiv", "int_40", "__i32",
-                   "ScalarConstructor{30}", "divide", "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "divide",
+                   "ScalarConstructor[not set]{40}"},
         // Both v2int
         BinaryData{"v2int", "v2int_30_40", "OpSDiv", "v2int_40_30",
                    "__vec_2__i32", AstFor("v2int_30_40"), "divide",
@@ -653,16 +664,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Mixed, returning int, second arg uint
         BinaryData{"int", "int_30", "OpSDiv", "uint_10", "__i32",
-                   "ScalarConstructor{30}", "divide",
-                   R"(Bitcast<__i32>{
-          ScalarConstructor{10}
+                   "ScalarConstructor[not set]{30}", "divide",
+                   R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         })"},
         // Mixed, returning int, first arg uint
         BinaryData{"int", "uint_10", "OpSDiv", "int_30", "__i32",
-                   R"(Bitcast<__i32>{
-          ScalarConstructor{10}
+                   R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         })",
-                   "divide", "ScalarConstructor{30}"},
+                   "divide", "ScalarConstructor[not set]{30}"},
         // Mixed, returning v2int, first arg v2uint
         BinaryData{"v2int", "v2uint_10_20", "OpSDiv", "v2int_30_40",
                    "__vec_2__i32", AstFor("cast_int_v2uint_10_20"), "divide",
@@ -684,23 +695,23 @@ TEST_F(SpvBinaryArithTestBasic, SDiv_Scalar_UnsignedResult) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __u32
     {
-      Bitcast<__u32>{
-        Binary{
-          ScalarConstructor{30}
+      Bitcast[not set]<__u32>{
+        Binary[not set]{
+          ScalarConstructor[not set]{30}
           divide
-          ScalarConstructor{40}
+          ScalarConstructor[not set]{40}
         }
       }
     }
@@ -719,36 +730,36 @@ TEST_F(SpvBinaryArithTestBasic, SDiv_Vector_UnsignedResult) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Bitcast<__vec_2__u32>{
-        Binary{
-          TypeConstructor{
+      Bitcast[not set]<__vec_2__u32>{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{30}
-            ScalarConstructor{40}
+            ScalarConstructor[not set]{30}
+            ScalarConstructor[not set]{40}
           }
           divide
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{40}
-            ScalarConstructor{30}
+            ScalarConstructor[not set]{40}
+            ScalarConstructor[not set]{30}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -757,8 +768,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Scalar float
         BinaryData{"float", "float_50", "OpFDiv", "float_60", "__f32",
-                   "ScalarConstructor{50.000000}", "divide",
-                   "ScalarConstructor{60.000000}"},
+                   "ScalarConstructor[not set]{50.000000}", "divide",
+                   "ScalarConstructor[not set]{60.000000}"},
         // Vector float
         BinaryData{"v2float", "v2float_50_60", "OpFDiv", "v2float_60_50",
                    "__vec_2__f32", AstFor("v2float_50_60"), "divide",
@@ -770,7 +781,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both uint
         BinaryData{"uint", "uint_10", "OpUMod", "uint_20", "__u32",
-                   "ScalarConstructor{10}", "modulo", "ScalarConstructor{20}"},
+                   "ScalarConstructor[not set]{10}", "modulo",
+                   "ScalarConstructor[not set]{20}"},
         // Both v2uint
         BinaryData{"v2uint", "v2uint_10_20", "OpUMod", "v2uint_20_10",
                    "__vec_2__u32", AstFor("v2uint_10_20"), "modulo",
@@ -785,7 +797,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Both int
         BinaryData{"int", "int_30", "OpSMod", "int_40", "__i32",
-                   "ScalarConstructor{30}", "modulo", "ScalarConstructor{40}"},
+                   "ScalarConstructor[not set]{30}", "modulo",
+                   "ScalarConstructor[not set]{40}"},
         // Both v2int
         BinaryData{"v2int", "v2int_30_40", "OpSMod", "v2int_40_30",
                    "__vec_2__i32", AstFor("v2int_30_40"), "modulo",
@@ -797,16 +810,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Mixed, returning int, second arg uint
         BinaryData{"int", "int_30", "OpSMod", "uint_10", "__i32",
-                   "ScalarConstructor{30}", "modulo",
-                   R"(Bitcast<__i32>{
-          ScalarConstructor{10}
+                   "ScalarConstructor[not set]{30}", "modulo",
+                   R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         })"},
         // Mixed, returning int, first arg uint
         BinaryData{"int", "uint_10", "OpSMod", "int_30", "__i32",
-                   R"(Bitcast<__i32>{
-          ScalarConstructor{10}
+                   R"(Bitcast[not set]<__i32>{
+          ScalarConstructor[not set]{10}
         })",
-                   "modulo", "ScalarConstructor{30}"},
+                   "modulo", "ScalarConstructor[not set]{30}"},
         // Mixed, returning v2int, first arg v2uint
         BinaryData{"v2int", "v2uint_10_20", "OpSMod", "v2int_30_40",
                    "__vec_2__i32", AstFor("cast_int_v2uint_10_20"), "modulo",
@@ -828,23 +841,23 @@ TEST_F(SpvBinaryArithTestBasic, SMod_Scalar_UnsignedResult) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __u32
     {
-      Bitcast<__u32>{
-        Binary{
-          ScalarConstructor{30}
+      Bitcast[not set]<__u32>{
+        Binary[not set]{
+          ScalarConstructor[not set]{30}
           modulo
-          ScalarConstructor{40}
+          ScalarConstructor[not set]{40}
         }
       }
     }
@@ -863,36 +876,36 @@ TEST_F(SpvBinaryArithTestBasic, SMod_Vector_UnsignedResult) {
      OpReturn
      OpFunctionEnd
   )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
       << p->error() << "\n"
       << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
   VariableConst{
     x_1
     none
     __vec_2__u32
     {
-      Bitcast<__vec_2__u32>{
-        Binary{
-          TypeConstructor{
+      Bitcast[not set]<__vec_2__u32>{
+        Binary[not set]{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{30}
-            ScalarConstructor{40}
+            ScalarConstructor[not set]{30}
+            ScalarConstructor[not set]{40}
           }
           modulo
-          TypeConstructor{
+          TypeConstructor[not set]{
             __vec_2__i32
-            ScalarConstructor{40}
-            ScalarConstructor{30}
+            ScalarConstructor[not set]{40}
+            ScalarConstructor[not set]{30}
           }
         }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -901,8 +914,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         // Scalar float
         BinaryData{"float", "float_50", "OpFMod", "float_60", "__f32",
-                   "ScalarConstructor{50.000000}", "modulo",
-                   "ScalarConstructor{60.000000}"},
+                   "ScalarConstructor[not set]{50.000000}", "modulo",
+                   "ScalarConstructor[not set]{60.000000}"},
         // Vector float
         BinaryData{"v2float", "v2float_50_60", "OpFMod", "v2float_60_50",
                    "__vec_2__f32", AstFor("v2float_50_60"), "modulo",
@@ -918,23 +931,23 @@ TEST_F(SpvBinaryArithTestBasic, VectorTimesScalar) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_10
     none
     __vec_2__f32
     {
-      Binary{
-        Identifier{x_1}
+      Binary[not set]{
+        Identifier[not set]{x_1}
         multiply
-        Identifier{x_2}
+        Identifier[not set]{x_2}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, MatrixTimesScalar) {
@@ -947,23 +960,23 @@ TEST_F(SpvBinaryArithTestBasic, MatrixTimesScalar) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_10
     none
     __mat_2_2__f32
     {
-      Binary{
-        Identifier{x_1}
+      Binary[not set]{
+        Identifier[not set]{x_1}
         multiply
-        Identifier{x_2}
+        Identifier[not set]{x_2}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, VectorTimesMatrix) {
@@ -976,23 +989,23 @@ TEST_F(SpvBinaryArithTestBasic, VectorTimesMatrix) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_10
     none
     __mat_2_2__f32
     {
-      Binary{
-        Identifier{x_1}
+      Binary[not set]{
+        Identifier[not set]{x_1}
         multiply
-        Identifier{x_2}
+        Identifier[not set]{x_2}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, MatrixTimesVector) {
@@ -1005,23 +1018,23 @@ TEST_F(SpvBinaryArithTestBasic, MatrixTimesVector) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_10
     none
     __mat_2_2__f32
     {
-      Binary{
-        Identifier{x_1}
+      Binary[not set]{
+        Identifier[not set]{x_1}
         multiply
-        Identifier{x_2}
+        Identifier[not set]{x_2}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, MatrixTimesMatrix) {
@@ -1034,23 +1047,23 @@ TEST_F(SpvBinaryArithTestBasic, MatrixTimesMatrix) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_10
     none
     __mat_2_2__f32
     {
-      Binary{
-        Identifier{x_1}
+      Binary[not set]{
+        Identifier[not set]{x_1}
         multiply
-        Identifier{x_2}
+        Identifier[not set]{x_2}
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, Dot) {
@@ -1063,56 +1076,127 @@ TEST_F(SpvBinaryArithTestBasic, Dot) {
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
     x_3
     none
     __f32
     {
-      Call{
-        Identifier{dot}
+      Call[not set]{
+        Identifier[not set]{dot}
         (
-          Identifier{x_1}
-          Identifier{x_2}
+          Identifier[not set]{x_1}
+          Identifier[not set]{x_2}
         )
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << ToString(p->builder(), fe.ast_body());
 }
 
 TEST_F(SpvBinaryArithTestBasic, OuterProduct) {
+  // OpOuterProduct is expanded to basic operations.
+  // The operands, even if used once, are given their own const definitions.
   const auto assembly = CommonTypes() + R"(
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
-     %1 = OpCopyObject %v2float %v2float_50_60
-     %2 = OpCopyObject %v2float %v2float_60_50
-     %3 = OpOuterProduct %m2v2float %1 %2
+     %1 = OpFAdd %v3float %v3float_50_60_70 %v3float_50_60_70 ; column vector
+     %2 = OpFAdd %v2float %v2float_60_50 %v2float_50_60 ; row vector
+     %3 = OpOuterProduct %m2v3float %1 %2
      OpReturn
      OpFunctionEnd
 )";
-  auto* p = parser(test::Assemble(assembly));
+  auto p = parser(test::Assemble(assembly));
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << assembly;
-  FunctionEmitter fe(p, *spirv_function(100));
+  FunctionEmitter fe(p.get(), *spirv_function(p.get(), 100));
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(fe.ast_body()), HasSubstr(R"(VariableConst{
+  auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(got, HasSubstr(R"(VariableConst{
     x_3
     none
-    __mat_2_2__f32
+    __mat_3_2__f32
     {
-      Call{
-        Identifier{outerProduct}
-        (
-          Identifier{x_1}
-          Identifier{x_2}
-        )
+      TypeConstructor[not set]{
+        __mat_3_2__f32
+        TypeConstructor[not set]{
+          __vec_3__f32
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{x}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{x}
+            }
+          }
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{x}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{y}
+            }
+          }
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{x}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{z}
+            }
+          }
+        }
+        TypeConstructor[not set]{
+          __vec_3__f32
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{y}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{x}
+            }
+          }
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{y}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{y}
+            }
+          }
+          Binary[not set]{
+            MemberAccessor[not set]{
+              Identifier[not set]{x_2}
+              Identifier[not set]{y}
+            }
+            multiply
+            MemberAccessor[not set]{
+              Identifier[not set]{x_1}
+              Identifier[not set]{z}
+            }
+          }
+        }
       }
     }
   })"))
-      << ToString(fe.ast_body());
+      << got;
 }
 
 // TODO(dneto): OpSRem. Missing from WGSL

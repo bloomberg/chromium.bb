@@ -14,13 +14,12 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_containers.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/core/write_scheduler.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_macros.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_containers.h"
+#include "spdy/core/spdy_protocol.h"
+#include "spdy/core/write_scheduler.h"
+#include "spdy/platform/api/spdy_bug_tracker.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 
@@ -81,7 +80,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     if (stream_info.ready) {
       bool erased =
           Erase(&priority_infos_[stream_info.priority].ready_list, stream_info);
-      DCHECK(erased);
+      QUICHE_DCHECK(erased);
     }
     stream_infos_.erase(it);
   }
@@ -126,7 +125,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     if (stream_info.ready) {
       bool erased =
           Erase(&priority_infos_[stream_info.priority].ready_list, stream_info);
-      DCHECK(erased);
+      QUICHE_DCHECK(erased);
       priority_infos_[new_priority].ready_list.push_back(&stream_info);
       ++num_ready_streams_;
     }
@@ -179,7 +178,8 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
         ready_list.pop_front();
         --num_ready_streams_;
 
-        DCHECK(stream_infos_.find(info->stream_id) != stream_infos_.end());
+        QUICHE_DCHECK(stream_infos_.find(info->stream_id) !=
+                      stream_infos_.end());
         info->ready = false;
         return std::make_tuple(info->stream_id,
                                StreamPrecedenceType(info->priority));
@@ -248,7 +248,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     }
     bool erased =
         Erase(&priority_infos_[stream_info.priority].ready_list, stream_info);
-    DCHECK(erased);
+    QUICHE_DCHECK(erased);
     stream_info.ready = false;
   }
 
@@ -261,7 +261,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   size_t NumRegisteredStreams() const override { return stream_infos_.size(); }
 
   std::string DebugString() const override {
-    return quiche::QuicheStrCat(
+    return absl::StrCat(
         "PriorityWriteScheduler {num_streams=", stream_infos_.size(),
         " num_ready_streams=", NumReadyStreams(), "}");
   }

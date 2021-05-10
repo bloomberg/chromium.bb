@@ -432,11 +432,11 @@ static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   return AOMMAX((int)(pow(q, RD_THRESH_POW) * 5.12), 8);
 }
 
-void av1_set_sad_per_bit(const AV1_COMP *cpi, MvCosts *mv_costs, int qindex) {
+void av1_set_sad_per_bit(const AV1_COMP *cpi, int *sadperbit, int qindex) {
   switch (cpi->common.seq_params.bit_depth) {
-    case AOM_BITS_8: mv_costs->sadperbit = sad_per_bit_lut_8[qindex]; break;
-    case AOM_BITS_10: mv_costs->sadperbit = sad_per_bit_lut_10[qindex]; break;
-    case AOM_BITS_12: mv_costs->sadperbit = sad_per_bit_lut_12[qindex]; break;
+    case AOM_BITS_8: *sadperbit = sad_per_bit_lut_8[qindex]; break;
+    case AOM_BITS_10: *sadperbit = sad_per_bit_lut_10[qindex]; break;
+    case AOM_BITS_12: *sadperbit = sad_per_bit_lut_12[qindex]; break;
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
   }
@@ -581,24 +581,36 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   RD_OPT *const rd = &cpi->rd;
-  MvCosts *mv_costs = &x->mv_costs;
+  MvCosts *mv_costs = x->mv_costs;
+  int use_nonrd_pick_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
+  CostUpdateFreq cost_upd_freq = cpi->oxcf.cost_upd_freq;
+  int fill_costs =
+      frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1;
+  int num_planes = av1_num_planes(cm);
 
   aom_clear_system_state();
 
   rd->RDMULT = av1_compute_rd_mult(
       cpi, cm->quant_params.base_qindex + cm->quant_params.y_dc_delta_q);
 
-  av1_set_error_per_bit(mv_costs, rd->RDMULT);
+  av1_set_error_per_bit(&x->errorperbit, rd->RDMULT);
 
   set_block_thresholds(cm, rd);
 
-  if ((!cpi->sf.rt_sf.use_nonrd_pick_mode &&
-       cpi->oxcf.cost_upd_freq.mv != COST_UPD_OFF) ||
-      frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1)
+  if ((!use_nonrd_pick_mode && cost_upd_freq.mv != COST_UPD_OFF) ||
+      cost_upd_freq.mv == COST_UPD_TILE || fill_costs)
     av1_fill_mv_costs(cm->fc, cm->features.cur_frame_force_integer_mv,
                       cm->features.allow_high_precision_mv, mv_costs);
 
-  if (!cpi->sf.rt_sf.use_nonrd_pick_mode && frame_is_intra_only(cm) &&
+  if ((!use_nonrd_pick_mode && cost_upd_freq.coeff != COST_UPD_OFF) ||
+      cost_upd_freq.coeff == COST_UPD_TILE || fill_costs)
+    av1_fill_coeff_costs(&x->coeff_costs, cm->fc, num_planes);
+
+  if ((!use_nonrd_pick_mode && cost_upd_freq.mode != COST_UPD_OFF) ||
+      cost_upd_freq.mode == COST_UPD_TILE || fill_costs)
+    av1_fill_mode_rates(cm, &x->mode_costs, cm->fc);
+
+  if (!use_nonrd_pick_mode && frame_is_intra_only(cm) &&
       cm->features.allow_screen_content_tools &&
       !is_stat_generation_stage(cpi)) {
     IntraBCMVCosts *const dv_costs = &cpi->dv_costs;
@@ -606,16 +618,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
                        &dv_costs->mv_component[1][MV_MAX] };
     av1_build_nmv_cost_table(dv_costs->joint_mv, dvcost, &cm->fc->ndvc,
                              MV_SUBPEL_NONE);
-  }
-
-  if (!is_stat_generation_stage(cpi)) {
-    for (int i = 0; i < TRANS_TYPES; ++i)
-      // IDENTITY: 1 bit
-      // TRANSLATION: 3 bits
-      // ROTZOOM: 2 bits
-      // AFFINE: 3 bits
-      cpi->gm_info.type_cost[i] = (1 + (i > 0 ? (i == ROTZOOM ? 1 : 2) : 0))
-                                  << AV1_PROB_COST_SHIFT;
   }
 }
 
@@ -1061,13 +1063,12 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
 }
 
 int av1_get_switchable_rate(const MACROBLOCK *x, const MACROBLOCKD *xd,
-                            InterpFilter interp_filter) {
+                            InterpFilter interp_filter, int dual_filter) {
   if (interp_filter == SWITCHABLE) {
     const MB_MODE_INFO *const mbmi = xd->mi[0];
     int inter_filter_cost = 0;
-    int dir;
-
-    for (dir = 0; dir < 2; ++dir) {
+    for (int dir = 0; dir < 2; ++dir) {
+      if (dir && !dual_filter) break;
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
       const InterpFilter filter =
           av1_extract_interp_filter(mbmi->interp_filters, dir);

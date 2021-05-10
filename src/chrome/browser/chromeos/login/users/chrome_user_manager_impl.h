@@ -17,6 +17,8 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
@@ -25,8 +27,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -104,7 +104,8 @@ class ChromeUserManagerImpl
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
   bool IsGuestAccountId(const AccountId& account_id) const override;
   bool IsStubAccountId(const AccountId& account_id) const override;
-  bool IsSupervisedAccountId(const AccountId& account_id) const override;
+  bool IsDeprecatedSupervisedAccountId(
+      const AccountId& account_id) const override;
   bool HasBrowserRestarted() const override;
   const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;
   base::string16 GetResourceStringUTF16(int string_id) const override;
@@ -264,11 +265,10 @@ class ChromeUserManagerImpl
   FlowMap specific_flows_;
 
   // Cros settings change subscriptions.
-  std::unique_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
-  std::unique_ptr<CrosSettings::ObserverSubscription> users_subscription_;
+  base::CallbackListSubscription allow_guest_subscription_;
+  base::CallbackListSubscription users_subscription_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      local_accounts_subscription_;
+  base::CallbackListSubscription local_accounts_subscription_;
 
   std::unique_ptr<MultiProfileUserController> multi_profile_user_controller_;
 

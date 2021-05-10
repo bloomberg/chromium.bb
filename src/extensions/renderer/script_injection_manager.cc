@@ -70,6 +70,8 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
             ScriptInjectionManager* manager);
   ~RFOHelper() override;
 
+  void Initialize();
+
  private:
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -84,7 +86,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   virtual void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   virtual void OnExecuteDeclarativeScript(int tab_id,
                                           const ExtensionId& extension_id,
-                                          int script_id,
+                                          const std::string& script_id,
                                           const GURL& url);
   virtual void OnPermitScriptInjection(int64_t request_id);
 
@@ -101,18 +103,35 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   // The owning ScriptInjectionManager.
   ScriptInjectionManager* manager_;
 
-  bool should_run_idle_;
+  bool should_run_idle_ = true;
 
   base::WeakPtrFactory<RFOHelper> weak_factory_{this};
 };
 
 ScriptInjectionManager::RFOHelper::RFOHelper(content::RenderFrame* render_frame,
                                              ScriptInjectionManager* manager)
-    : content::RenderFrameObserver(render_frame),
-      manager_(manager),
-      should_run_idle_(true) {}
+    : content::RenderFrameObserver(render_frame), manager_(manager) {}
 
 ScriptInjectionManager::RFOHelper::~RFOHelper() {
+}
+
+void ScriptInjectionManager::RFOHelper::Initialize() {
+  // Set up for the initial empty document, for which the Document created
+  // events do not happen as it's already present.
+  DidCreateNewDocument();
+  // The initial empty document for a main frame may have scripts attached to it
+  // but we do not want to invalidate the frame and lose them when the next
+  // document loads. For example the IncognitoApiTest.IncognitoSplitMode test
+  // does `chrome.tabs.create()` with a script to be run, which is added to the
+  // frame before it navigates, so it needs to be preserved. However scripts in
+  // child frames are expected to be run inside the initial empty document. For
+  // example the ExecuteScriptApiTest.FrameWithHttp204 test creates a child
+  // frame at about:blank and expects to run injected scripts inside it.
+  // This is all quite inconsistent however tests both depend on us queuing and
+  // not queueing the DOCUMENT_START events in the initial empty document.
+  if (!render_frame()->IsMainFrame()) {
+    DidCreateDocumentElement();
+  }
 }
 
 bool ScriptInjectionManager::RFOHelper::OnMessageReceived(
@@ -140,9 +159,9 @@ void ScriptInjectionManager::RFOHelper::DidCreateNewDocument() {
 
 void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
   ExtensionFrameHelper::Get(render_frame())
-      ->ScheduleAtDocumentStart(
-          base::Bind(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
-                     weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_START));
+      ->ScheduleAtDocumentStart(base::BindOnce(
+          &ScriptInjectionManager::RFOHelper::StartInjectScripts,
+          weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_START));
 }
 
 void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad() {
@@ -170,8 +189,8 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   DCHECK(content::RenderThread::Get());
   ExtensionFrameHelper::Get(render_frame())
       ->ScheduleAtDocumentEnd(
-          base::Bind(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
-                     weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_END));
+          base::BindOnce(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
+                         weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_END));
 
   // We try to run idle in two places: a delayed task here and in response to
   // ContentRendererClient::RunScriptsAtDocumentIdle(). DidFinishDocumentLoad()
@@ -192,8 +211,8 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
 
   ExtensionFrameHelper::Get(render_frame())
       ->ScheduleAtDocumentIdle(
-          base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&ScriptInjectionManager::RFOHelper::RunIdle,
+                         weak_factory_.GetWeakPtr()));
 }
 
 void ScriptInjectionManager::RFOHelper::WillDetach() {
@@ -221,7 +240,7 @@ void ScriptInjectionManager::RFOHelper::OnExecuteCode(
 void ScriptInjectionManager::RFOHelper::OnExecuteDeclarativeScript(
     int tab_id,
     const ExtensionId& extension_id,
-    int script_id,
+    const std::string& script_id,
     const GURL& url) {
   // TODO(markdittmer): URL-checking isn't the best security measure.
   // Begin script injection workflow only if the current URL is identical to
@@ -286,6 +305,7 @@ ScriptInjectionManager::~ScriptInjectionManager() {
 void ScriptInjectionManager::OnRenderFrameCreated(
     content::RenderFrame* render_frame) {
   rfo_helpers_.push_back(std::make_unique<RFOHelper>(render_frame, this));
+  rfo_helpers_.back()->Initialize();
 }
 
 void ScriptInjectionManager::OnExtensionUnloaded(
@@ -435,8 +455,8 @@ void ScriptInjectionManager::TryToInject(
   // ScriptInjections, so is guaranteed to outlive them.
   switch (injection->TryToInject(
       run_location, scripts_run_info,
-      base::Bind(&ScriptInjectionManager::OnInjectionFinished,
-                 base::Unretained(this)))) {
+      base::BindOnce(&ScriptInjectionManager::OnInjectionFinished,
+                     base::Unretained(this)))) {
     case ScriptInjection::INJECTION_WAITING:
       pending_injections_.push_back(std::move(injection));
       break;
@@ -478,7 +498,7 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     content::RenderFrame* render_frame,
     int tab_id,
     const ExtensionId& extension_id,
-    int script_id,
+    const std::string& script_id,
     const GURL& url) {
   std::unique_ptr<ScriptInjection> injection =
       user_script_set_manager_->GetInjectionForDeclarativeScript(

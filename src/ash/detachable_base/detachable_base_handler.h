@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -93,7 +93,7 @@ class ASH_EXPORT DetachableBaseHandler
 
   // chromeos::PowerManagerClient::Observer:
   void TabletModeEventReceived(chromeos::PowerManagerClient::TabletMode mode,
-                               const base::TimeTicks& timestamp) override;
+                               base::TimeTicks timestamp) override;
 
  private:
   // Identifier for a detachable base device - HEX encoded string created from
@@ -135,11 +135,12 @@ class ASH_EXPORT DetachableBaseHandler
   DetachableBasePairingStatus pairing_status_ =
       DetachableBasePairingStatus::kNone;
 
-  ScopedObserver<chromeos::HammerdClient, chromeos::HammerdClient::Observer>
-      hammerd_observer_;
-  ScopedObserver<chromeos::PowerManagerClient,
-                 chromeos::PowerManagerClient::Observer>
-      power_manager_observer_;
+  base::ScopedObservation<chromeos::HammerdClient,
+                          chromeos::HammerdClient::Observer>
+      hammerd_observation_;
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_observation_;
 
   // In-memory map from a user account ID to last used device set for user using
   // SetPairedBaseAsLastUsedByUser().

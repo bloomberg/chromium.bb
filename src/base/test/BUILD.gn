@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/compiled_action.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/build.gni")
@@ -22,6 +23,7 @@ static_library("test_config") {
   deps = [
     "//base",
     "//base:clang_profiling_buildflags",
+    "//build:chromeos_buildflags",
   ]
 }
 
@@ -161,6 +163,7 @@ static_library("test_support") {
 
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
@@ -177,6 +180,15 @@ static_library("test_support") {
       "test_reg_util_win.h",
       "test_shortcut_win.cc",
       "test_shortcut_win.h",
+    ]
+  }
+
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    sources += [
+      "scoped_chromeos_version_info.cc",
+      "scoped_chromeos_version_info.h",
+      "scoped_running_on_chromeos.cc",
+      "scoped_running_on_chromeos.h",
     ]
   }
 
@@ -249,6 +261,8 @@ static_library("test_support") {
     sources += [
       "../fuchsia/test_component_context_for_process.cc",
       "../fuchsia/test_component_context_for_process.h",
+      "../fuchsia/test_component_controller.cc",
+      "../fuchsia/test_component_controller.h",
     ]
   }
 
@@ -392,15 +406,6 @@ shared_library("test_shared_library") {
   deps = [ ":native_library_test_utils" ]
 }
 
-static_library("run_all_base_unittests") {
-  # Only targets in base should depend on this, targets outside base
-  # should depend on run_all_unittests above.
-  visibility = [ "//base/*" ]
-  testonly = true
-  sources = [ "run_all_base_unittests.cc" ]
-  deps = [ ":test_support" ]
-}
-
 if (is_linux || is_chromeos) {
   source_set("fontconfig_util_linux") {
     sources = [
@@ -476,8 +481,8 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
     srcjar_deps = [ ":test_support_java_aidl" ]
     sources = [

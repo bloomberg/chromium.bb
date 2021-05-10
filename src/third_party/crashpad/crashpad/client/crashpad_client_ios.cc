@@ -53,6 +53,9 @@ class CrashHandler : public Thread, public UniversalMachExcServer::Interface {
     INITIALIZATION_STATE_SET_VALID(initialized_);
   }
 
+  void ProcessIntermediateDumps(
+      const std::map<std::string, std::string>& annotations = {}) {}
+
   void DumpWithoutCrash(NativeCPUContext* context) {
     INITIALIZATION_STATE_DCHECK_VALID(initialized_);
     mach_exception_data_type_t code[2] = {};
@@ -210,7 +213,11 @@ CrashpadClient::CrashpadClient() {}
 
 CrashpadClient::~CrashpadClient() {}
 
-void CrashpadClient::StartCrashpadInProcessHandler() {
+// static
+void CrashpadClient::StartCrashpadInProcessHandler(
+    const base::FilePath& database,
+    const std::string& url,
+    const std::map<std::string, std::string>& annotations) {
   InstallObjcExceptionPreprocessor();
 
   CrashHandler* crash_handler = CrashHandler::Get();
@@ -219,10 +226,19 @@ void CrashpadClient::StartCrashpadInProcessHandler() {
 }
 
 // static
+void CrashpadClient::ProcessIntermediateDumps(
+    const std::map<std::string, std::string>& annotations) {
+  CrashHandler* crash_handler = CrashHandler::Get();
+  DCHECK(crash_handler);
+  crash_handler->ProcessIntermediateDumps(annotations);
+}
+
+// static
 void CrashpadClient::DumpWithoutCrash(NativeCPUContext* context) {
   CrashHandler* crash_handler = CrashHandler::Get();
   DCHECK(crash_handler);
   crash_handler->DumpWithoutCrash(context);
+  crash_handler->ProcessIntermediateDumps();
 }
 
 }  // namespace crashpad

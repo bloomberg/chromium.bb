@@ -68,6 +68,10 @@ base::string16 ChooserController::GetTitle() const {
   return title_;
 }
 
+void ChooserController::View::OnAdapterAuthorizationChanged(bool authorized) {
+  NOTREACHED();
+}
+
 bool ChooserController::ShouldShowIconBeforeText() const {
   return false;
 }
@@ -84,8 +88,16 @@ bool ChooserController::AllowMultipleSelection() const {
   return false;
 }
 
+bool ChooserController::ShouldShowSelectAllCheckbox() const {
+  return false;
+}
+
 base::string16 ChooserController::GetCancelButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
+}
+
+base::string16 ChooserController::GetSelectAllCheckboxLabel() const {
+  return base::string16();
 }
 
 bool ChooserController::BothButtonsAlwaysEnabled() const {
@@ -112,10 +124,10 @@ void ChooserController::RefreshOptions() {
   NOTREACHED();
 }
 
-base::string16 ChooserController::GetStatus() const {
-  return base::string16();
+void ChooserController::OpenAdapterOffHelpUrl() const {
+  NOTREACHED();
 }
 
-void ChooserController::OpenAdapterOffHelpUrl() const {
+void ChooserController::OpenPermissionPreferences() const {
   NOTREACHED();
 }

@@ -150,6 +150,33 @@ export class PluginController {
   constructor() {
     /** @private {!EventTarget} */
     this.eventTarget_ = new EventTarget();
+
+    /** @private {boolean} */
+    this.isActive_ = false;
+
+    /** @private {!HTMLEmbedElement} */
+    this.plugin_;
+
+    /** @private {!Viewport} */
+    this.viewport_;
+
+    /** @private {!function():boolean} */
+    this.getIsUserInitiatedCallback_;
+
+    /** @private {!function():?Promise} */
+    this.getLoadedCallback_;
+
+    /** @private {!Map<string, PromiseResolver>} */
+    this.pendingTokens_;
+
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.requestResolverMap_;
+
+    /**
+     * Counter for use with createUid
+     * @private {number}
+     */
+    this.uidCounter_ = 1;
   }
 
   /**
@@ -159,34 +186,15 @@ export class PluginController {
    * @param {function():?Promise} getLoadedCallback
    */
   init(plugin, viewport, getIsUserInitiatedCallback, getLoadedCallback) {
-    /** @private {boolean} */
-    this.isActive_ = false;
-
-    /** @private {!HTMLEmbedElement} */
     this.plugin_ = plugin;
-
-    /** @private {!Viewport} */
     this.viewport_ = viewport;
-
-    /** @private {!function():boolean} */
     this.getIsUserInitiatedCallback_ = getIsUserInitiatedCallback;
-
-    /** @private {!function():?Promise} */
     this.getLoadedCallback_ = getLoadedCallback;
-
-    /** @private {!Map<string, PromiseResolver>} */
     this.pendingTokens_ = new Map();
+    this.requestResolverMap_ = new Map();
+
     this.plugin_.addEventListener(
         'message', e => this.handlePluginMessage_(e), false);
-
-    /**
-     * Counter for use with createUid
-     * @private {number}
-     */
-    this.uidCounter_ = 1;
-
-    /** @private {!Map<string, !PromiseResolver>} */
-    this.requestResolverMap_ = new Map();
   }
 
   /**
@@ -251,7 +259,7 @@ export class PluginController {
   beforeZoom() {
     this.postMessage_({type: 'stopScrolling'});
 
-    if (this.viewport_.pinchPhase === PinchPhase.PINCH_START) {
+    if (this.viewport_.pinchPhase === PinchPhase.START) {
       const position = this.viewport_.position;
       const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
@@ -390,11 +398,14 @@ export class PluginController {
     });
   }
 
-  /** @param {string} newColor New color, in hex, for the PDF plugin. */
-  backgroundColorChanged(newColor) {
+  /**
+   * @param {number} color New color, as a 32-bit integer, of the PDF plugin
+   *     background.
+   */
+  setBackgroundColor(color) {
     this.postMessage_({
-      type: 'backgroundColorChanged',
-      backgroundColor: newColor,
+      type: 'setBackgroundColor',
+      color: color,
     });
   }
 
@@ -420,6 +431,14 @@ export class PluginController {
     return this.postMessageWithReply_({
       type: 'getNamedDestination',
       namedDestination: destination,
+    });
+  }
+
+  /** @param {boolean} enableReadOnly */
+  setReadOnly(enableReadOnly) {
+    this.postMessage_({
+      type: 'setReadOnly',
+      enableReadOnly: enableReadOnly,
     });
   }
 
@@ -517,10 +536,6 @@ export class PluginController {
    * @private
    */
   saveData_(messageData) {
-    assert(
-        loadTimeData.getBoolean('pdfFormSaveEnabled') ||
-        loadTimeData.getBoolean('pdfAnnotationsEnabled'));
-
     // Verify a token that was created by this instance is included to avoid
     // being spammed.
     const resolver = this.pendingTokens_.get(messageData.token);

@@ -1,0 +1,21 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module extensions.mojom;
+
+// Implemented in the renderer, this interface defines the local frame specific
+// methods.
+interface LocalFrame {
+  // Sets the top-level frame to the provided name.
+  SetFrameName(string frame_name);
+
+  // Enables or disables spatial navigation.
+  SetSpatialNavigationEnabled(bool spatial_nav_enabled);
+
+  // Tells the render view what its tab ID is.
+  SetTabId(int32 tab_id);
+
+  // Notifies the renderer that its window has closed.
+  AppWindowClosed(bool send_onclosed);
+};

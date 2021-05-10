@@ -92,12 +92,15 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
 namespace blink {
+
+using ui::mojom::blink::DragOperation;
 
 static const int kMaxOriginalImageArea = 1500 * 1500;
 static const int kLinkDragBorderInset = 2;
@@ -284,7 +287,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     return;
   }
 
-  if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
+  if (OperationForLoad(drag_data, local_root) != DragOperation::kNone) {
     if (page_->GetSettings().GetNavigateOnDragDrop()) {
       ResourceRequest resource_request(drag_data->AsURL());
       resource_request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(
@@ -346,7 +349,7 @@ DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
           : static_cast<DragDestinationAction>(kDragDestinationActionDHTML |
                                                kDragDestinationActionEdit);
 
-  DragOperation drag_operation = kDragOperationNone;
+  DragOperation drag_operation = DragOperation::kNone;
   document_is_handling_drag_ = TryDocumentDrag(
       drag_data, drag_destination_action_, drag_operation, local_root);
   if (!document_is_handling_drag_ &&
@@ -445,8 +448,8 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 
     LocalFrame* inner_frame = element->GetDocument().GetFrame();
     drag_operation = DragIsMove(inner_frame->Selection(), drag_data)
-                         ? kDragOperationMove
-                         : kDragOperationCopy;
+                         ? DragOperation::kMove
+                         : DragOperation::kCopy;
     if (file_input_element_under_mouse_) {
       bool can_receive_dropped_files = false;
       if (!file_input_element_under_mouse_->IsDisabledFormControl()) {
@@ -455,7 +458,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
                                         : drag_data->NumberOfFiles() == 1;
       }
       if (!can_receive_dropped_files)
-        drag_operation = kDragOperationNone;
+        drag_operation = DragOperation::kNone;
       file_input_element_under_mouse_->SetCanReceiveDroppedFiles(
           can_receive_dropped_files);
     }
@@ -480,7 +483,7 @@ DragOperation DragController::OperationForLoad(DragData* drag_data,
 
   if (doc && (did_initiate_drag_ || IsA<PluginDocument>(doc) ||
               HasEditableStyle(*doc)))
-    return kDragOperationNone;
+    return DragOperation::kNone;
   return GetDragOperation(drag_data);
 }
 
@@ -754,21 +757,21 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   return true;
 }
 
-static DragOperation DefaultOperationForDrag(DragOperation src_op_mask) {
+static DragOperation DefaultOperationForDrag(DragOperationsMask src_op_mask) {
   // This is designed to match IE's operation fallback for the case where
   // the page calls preventDefault() in a drag event but doesn't set dropEffect.
   if (src_op_mask == kDragOperationEvery)
-    return kDragOperationCopy;
+    return DragOperation::kCopy;
   if (src_op_mask == kDragOperationNone)
-    return kDragOperationNone;
+    return DragOperation::kNone;
   if (src_op_mask & kDragOperationMove)
-    return kDragOperationMove;
+    return DragOperation::kMove;
   if (src_op_mask & kDragOperationCopy)
-    return kDragOperationCopy;
+    return DragOperation::kCopy;
   if (src_op_mask & kDragOperationLink)
-    return kDragOperationLink;
+    return DragOperation::kLink;
 
-  return kDragOperationNone;
+  return DragOperation::kNone;
 }
 
 bool DragController::TryDHTMLDrag(DragData* drag_data,
@@ -781,7 +784,7 @@ bool DragController::TryDHTMLDrag(DragData* drag_data,
 
   DataTransferAccessPolicy policy = DataTransferAccessPolicy::kTypesReadable;
   DataTransfer* data_transfer = CreateDraggingDataTransfer(policy, drag_data);
-  DragOperation src_op_mask = drag_data->DraggingSourceOperationMask();
+  DragOperationsMask src_op_mask = drag_data->DraggingSourceOperationMask();
   data_transfer->SetSourceOperation(src_op_mask);
 
   WebMouseEvent event = CreateMouseEvent(drag_data);
@@ -793,12 +796,14 @@ bool DragController::TryDHTMLDrag(DragData* drag_data,
     return false;
   }
 
-  operation = data_transfer->DestinationOperation();
-  if (data_transfer->DropEffectIsUninitialized()) {
+  if (!data_transfer->DropEffectIsInitialized()) {
     operation = DefaultOperationForDrag(src_op_mask);
-  } else if (!(src_op_mask & operation)) {
-    // The element picked an operation which is not supported by the source
-    operation = kDragOperationNone;
+  } else {
+    operation = data_transfer->DestinationOperation();
+    if (!(src_op_mask & static_cast<int>(operation))) {
+      // The element picked an operation which is not supported by the source.
+      operation = DragOperation::kNone;
+    }
   }
 
   data_transfer->SetAccessPolicy(
@@ -904,21 +909,6 @@ Node* DragController::DraggableNode(const LocalFrame* src,
     drag_type = candidate_drag_type;
   }
   return node;
-}
-
-static ImageResourceContent* GetImageResource(Element* element) {
-  DCHECK(element);
-  if (auto* layout_image = DynamicTo<LayoutImage>(element->GetLayoutObject()))
-    return layout_image->CachedImage();
-  return nullptr;
-}
-
-static Image* GetImage(Element* element) {
-  DCHECK(element);
-  ImageResourceContent* cached_image = GetImageResource(element);
-  return (cached_image && !cached_image->ErrorOccurred())
-             ? cached_image->GetImage()
-             : nullptr;
 }
 
 static void PrepareDataTransferForImageDrag(LocalFrame* source,
@@ -1063,63 +1053,68 @@ static const IntSize MaxDragImageSize(float device_scale_factor) {
   return max_size_in_pixels;
 }
 
-static std::unique_ptr<DragImage> DragImageForImage(
-    Element* element,
-    Image* image,
-    float device_scale_factor,
-    const IntPoint& drag_origin,
-    const IntPoint& image_element_location,
-    const IntSize& image_element_size_in_pixels,
-    IntPoint& drag_location) {
-  std::unique_ptr<DragImage> drag_image;
-  IntPoint origin;
+static bool CanDragImage(const Element& element) {
+  auto* layout_image = DynamicTo<LayoutImage>(element.GetLayoutObject());
+  if (!layout_image)
+    return false;
+  const ImageResourceContent* image_content = layout_image->CachedImage();
+  if (!image_content || image_content->ErrorOccurred() ||
+      image_content->GetImage()->IsNull())
+    return false;
+  scoped_refptr<const SharedBuffer> buffer = image_content->ResourceBuffer();
+  if (!buffer || !buffer->size())
+    return false;
+  // We shouldn't be starting a drag for an image that can't provide an
+  // extension.
+  // This is an early detection for problems encountered later upon drop.
+  DCHECK(!image_content->GetImage()->FilenameExtension().IsEmpty());
+  return true;
+}
 
-  // Substitute an appropriately-sized SVGImageForContainer, to ensure dragged
-  // SVG images scale seamlessly.
-  scoped_refptr<SVGImageForContainer> svg_image;
-  if (auto* svg_img = DynamicTo<SVGImage>(image)) {
-    KURL url = element->GetDocument().CompleteURL(element->ImageSourceURL());
-    svg_image = SVGImageForContainer::Create(
-        svg_img, FloatSize(image_element_size_in_pixels), 1, url);
-    image = svg_image.get();
-  }
+static std::unique_ptr<DragImage> DragImageForImage(
+    const Element& element,
+    float device_scale_factor,
+    const IntSize& image_element_size_in_pixels) {
+  auto* layout_image = To<LayoutImage>(element.GetLayoutObject());
+  const LayoutImageResource& image_resource = *layout_image->ImageResource();
+  scoped_refptr<Image> image =
+      image_resource.GetImage(image_element_size_in_pixels);
+  RespectImageOrientationEnum respect_orientation =
+      image_resource.ImageOrientation();
+
+  IntSize image_size = image->Size(respect_orientation);
+  if (image_size.Area() > kMaxOriginalImageArea)
+    return nullptr;
 
   InterpolationQuality interpolation_quality = kInterpolationDefault;
-  if (const ComputedStyle* style = element->GetComputedStyle()) {
-    if (style->ImageRendering() == EImageRendering::kPixelated)
-      interpolation_quality = kInterpolationNone;
-  }
+  if (layout_image->StyleRef().ImageRendering() == EImageRendering::kPixelated)
+    interpolation_quality = kInterpolationNone;
 
-  RespectImageOrientationEnum respect_image_orientation =
-      LayoutObject::ShouldRespectImageOrientation(element->GetLayoutObject());
-
-  IntSize image_size = image->Size(respect_image_orientation);
   FloatSize image_scale =
       DragImage::ClampedImageScale(image_size, image_element_size_in_pixels,
                                    MaxDragImageSize(device_scale_factor));
 
-  if (image_size.Area() <= kMaxOriginalImageArea &&
-      (drag_image = DragImage::Create(
-           image, respect_image_orientation, device_scale_factor,
-           interpolation_quality, kDragImageAlpha, image_scale))) {
-    IntSize original_size = image_element_size_in_pixels;
-    origin = image_element_location;
+  return DragImage::Create(image.get(), respect_orientation,
+                           device_scale_factor, interpolation_quality,
+                           kDragImageAlpha, image_scale);
+}
 
-    IntSize new_size = drag_image->Size();
+static IntPoint DragLocationForImage(
+    const DragImage* drag_image,
+    const IntPoint& drag_origin,
+    const IntPoint& image_element_location,
+    const IntSize& image_element_size_in_pixels) {
+  if (!drag_image)
+    return drag_origin;
 
-    // Properly orient the drag image and orient it differently if it's smaller
-    // than the original
-    float scale = new_size.Width() / (float)original_size.Width();
-    float dx = origin.X() - drag_origin.X();
-    dx *= scale;
-    origin.SetX((int)(dx + 0.5));
-    float dy = origin.Y() - drag_origin.Y();
-    dy *= scale;
-    origin.SetY((int)(dy + 0.5));
-  }
+  IntSize original_size = image_element_size_in_pixels;
+  IntSize new_size = drag_image->Size();
 
-  drag_location = drag_origin + origin;
-  return drag_image;
+  // Properly orient the drag image and orient it differently if it's smaller
+  // than the original
+  float scale = new_size.Width() / static_cast<float>(original_size.Width());
+  FloatPoint offset(image_element_location - drag_origin);
+  return drag_origin + RoundedIntPoint(offset.ScaledBy(scale));
 }
 
 static std::unique_ptr<DragImage> DragImageForLink(const KURL& link_url,
@@ -1178,8 +1173,8 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
                                  .LocalBorderBoxProperties()
                                  .Unalias();
   return DataTransfer::CreateDragImageForFrame(
-      frame, opacity, kRespectImageOrientation, painting_rect.Size(),
-      painting_rect.Location(), builder, property_tree_state);
+      frame, opacity, painting_rect.Size(), painting_rect.Location(), builder,
+      property_tree_state);
 }
 
 bool DragController::StartDrag(LocalFrame* src,
@@ -1237,15 +1232,8 @@ bool DragController::StartDrag(LocalFrame* src,
                  src, false);
   } else if (state.drag_type_ == kDragSourceActionImage) {
     auto* element = DynamicTo<Element>(node);
-    if (image_url.IsEmpty() || !element)
+    if (image_url.IsEmpty() || !element || !CanDragImage(*element))
       return false;
-    Image* image = GetImage(element);
-    if (!image || image->IsNull() || !image->Data() || !image->Data()->size())
-      return false;
-    // We shouldn't be starting a drag for an image that can't provide an
-    // extension.
-    // This is an early detection for problems encountered later upon drop.
-    DCHECK(!image->FilenameExtension().IsEmpty());
     if (!drag_image) {
       const IntRect& image_rect = hit_test_result.ImageRect();
       IntSize image_size_in_pixels = image_rect.Size();
@@ -1262,9 +1250,11 @@ bool DragController::StartDrag(LocalFrame* src,
       // TODO(oshima): Currently, the dragged image on high DPI is scaled and
       // can be blurry because of this.  Consider to clip in the screen
       // coordinates to use high resolution image on high DPI screens.
-      drag_image = DragImageForImage(element, image, screen_device_scale_factor,
-                                     drag_origin, image_rect.Location(),
-                                     image_size_in_pixels, drag_location);
+      drag_image = DragImageForImage(*element, screen_device_scale_factor,
+                                     image_size_in_pixels);
+      drag_location =
+          DragLocationForImage(drag_image.get(), drag_origin,
+                               image_rect.Location(), image_size_in_pixels);
     }
     DoSystemDrag(drag_image.get(), drag_location, drag_origin, data_transfer,
                  src, false);
@@ -1353,13 +1343,13 @@ void DragController::DoSystemDrag(DragImage* image,
 }
 
 DragOperation DragController::GetDragOperation(DragData* drag_data) {
-  // FIXME: To match the MacOS behaviour we should return DragOperationNone
+  // FIXME: To match the MacOS behaviour we should return DragOperation::kNone
   // if we are a modal window, we are the drag source, or the window is an
   // attached sheet If this can be determined from within WebCore
   // operationForDrag can be pulled into WebCore itself
   DCHECK(drag_data);
-  return drag_data->ContainsURL() && !did_initiate_drag_ ? kDragOperationCopy
-                                                         : kDragOperationNone;
+  return drag_data->ContainsURL() && !did_initiate_drag_ ? DragOperation::kCopy
+                                                         : DragOperation::kNone;
 }
 
 bool DragController::IsCopyKeyDown(DragData* drag_data) {

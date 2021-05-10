@@ -35,20 +35,45 @@ class MockWebController : public WebController {
                void(const Selector& selector,
                     ElementFinder::Callback& callback));
 
-  void ScrollIntoView(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnScrollIntoView(element, callback);
-  }
-  MOCK_METHOD2(OnScrollIntoView,
+  MOCK_METHOD2(ScrollIntoView,
                void(const ElementFinder::Result&,
-                    base::OnceCallback<void(const ClientStatus&)>&));
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD2(CheckOnTop,
+               void(const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD2(HighlightElement,
+               void(const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD2(SelectFieldValue,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD2(FocusField,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD2(GetOuterHtml,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)> callback));
+  MOCK_METHOD2(GetElementTag,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)> callback));
+  MOCK_METHOD2(
+      GetDocumentReadyState,
+      void(const ElementFinder::Result&,
+           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>));
+  MOCK_METHOD2(
+      GetOuterHtmls,
+      void(const ElementFinder::Result& elements,
+           base::OnceCallback<void(const ClientStatus&,
+                                   const std::vector<std::string>&)> callback));
 
   MOCK_METHOD4(WaitUntilElementIsStable,
                void(const ElementFinder::Result& element,
                     int,
                     base::TimeDelta,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
+                    base::OnceCallback<void(const ClientStatus&,
+                                            base::TimeDelta)> callback));
 
   void ClickOrTapElement(
       const ElementFinder::Result& element,
@@ -63,13 +88,16 @@ class MockWebController : public WebController {
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void ScrollToElementPosition(
+      std::unique_ptr<ElementFinder::Result> scrollable_element,
       const ElementFinder::Result& element,
       const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnScrollToElementPosition(element, top_padding, callback);
+    OnScrollToElementPosition(std::move(scrollable_element), element,
+                              top_padding, callback);
   }
-  MOCK_METHOD3(OnScrollToElementPosition,
-               void(const ElementFinder::Result& element,
+  MOCK_METHOD4(OnScrollToElementPosition,
+               void(std::unique_ptr<ElementFinder::Result> scrollable_element,
+                    const ElementFinder::Result& element,
                     const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
@@ -122,18 +150,6 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(OnWaitForWindowHeightChange,
                void(base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  MOCK_METHOD2(
-      OnGetDocumentReadyState,
-      void(const ElementFinder::Result&,
-           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
-
-  void GetDocumentReadyState(
-      const ElementFinder::Result& optional_frame_element,
-      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
-          callback) override {
-    OnGetDocumentReadyState(optional_frame_element, callback);
-  }
 
   MOCK_METHOD3(OnWaitForDocumentReadyState,
                void(const ElementFinder::Result&,

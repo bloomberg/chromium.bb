@@ -95,8 +95,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;
 
   // FIXME: Why does this check settings?
-  if (!frame->GetSettings() ||
-      !frame->Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
+  if (!frame->GetSettings() || !frame->Loader().AllowPlugins())
     return;
 
   auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*GetDocument());
@@ -190,7 +189,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
   LockCompatibilityMode();
   GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
       SchedulingPolicy::Feature::kContainsPlugins,
-      {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+      {SchedulingPolicy::DisableBackForwardCache()});
 }
 
 DocumentParser* PluginDocument::CreateParser() {

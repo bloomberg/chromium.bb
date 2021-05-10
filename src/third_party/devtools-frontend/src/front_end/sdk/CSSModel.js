@@ -31,7 +31,6 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {CSSFontFace} from './CSSFontFace.js';
@@ -45,9 +44,6 @@ import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTr
 import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {SourceMapManager} from './SourceMapManager.js';
 
-/**
- * @unrestricted
- */
 export class CSSModel extends SDKModel {
   /**
    * @param {!Target} target
@@ -119,14 +115,14 @@ export class CSSModel extends SDKModel {
   /**
    * @param {string} sourceURL
    * @param {number} lineNumber
-   * @param {number} columnNumber
+   * @param {number=} columnNumber
    * @return {!Array<!CSSLocation>}
    */
-  createRawLocationsByURL(sourceURL, lineNumber, columnNumber) {
+  createRawLocationsByURL(sourceURL, lineNumber, columnNumber = 0) {
     const headers = this.headersForSourceURL(sourceURL);
     headers.sort(stylesheetComparator);
-    const endIndex = headers.upperBound(
-        undefined, (_, header) => lineNumber - header.startLine || columnNumber - header.startColumn);
+    const endIndex = Platform.ArrayUtilities.upperBound(
+        headers, undefined, (_, header) => lineNumber - header.startLine || columnNumber - header.startColumn);
     if (!endIndex) {
       return [];
     }
@@ -439,14 +435,15 @@ export class CSSModel extends SDKModel {
    */
   forcePseudoState(node, pseudoClass, enable) {
     const forcedPseudoClasses = node.marker(PseudoStateMarker) || [];
+    const hasPseudoClass = forcedPseudoClasses.includes(pseudoClass);
     if (enable) {
-      if (forcedPseudoClasses.indexOf(pseudoClass) >= 0) {
+      if (hasPseudoClass) {
         return false;
       }
       forcedPseudoClasses.push(pseudoClass);
       node.setMarker(PseudoStateMarker, forcedPseudoClasses);
     } else {
-      if (forcedPseudoClasses.indexOf(pseudoClass) < 0) {
+      if (!hasPseudoClass) {
         return false;
       }
       Platform.ArrayUtilities.removeElement(forcedPseudoClasses, pseudoClass);
@@ -659,14 +656,15 @@ export class CSSModel extends SDKModel {
    */
   _styleSheetRemoved(id) {
     const header = this._styleSheetIdToHeader.get(id);
-    console.assert(!!header);
+    console.assert(Boolean(header));
     if (!header) {
       return;
     }
     this._styleSheetIdToHeader.delete(id);
     const url = header.resourceURL();
     const frameIdToStyleSheetIds = this._styleSheetIdsForURL.get(url);
-    console.assert(!!frameIdToStyleSheetIds, 'No frameId to styleSheetId map is available for given style sheet URL.');
+    console.assert(
+        Boolean(frameIdToStyleSheetIds), 'No frameId to styleSheetId map is available for given style sheet URL.');
     if (frameIdToStyleSheetIds) {
       const stylesheetIds = frameIdToStyleSheetIds.get(header.frameId);
       if (stylesheetIds) {
@@ -709,7 +707,7 @@ export class CSSModel extends SDKModel {
    */
   async setStyleSheetText(styleSheetId, newText, majorChange) {
     const header = /** @type {!CSSStyleSheetHeader} */ (this._styleSheetIdToHeader.get(styleSheetId));
-    console.assert(!!header);
+    console.assert(Boolean(header));
     newText = CSSModel.trimSourceURL(newText);
     if (header.hasSourceURL) {
       newText += '\n/*# sourceURL=' + header.sourceURL + ' */';
@@ -870,9 +868,7 @@ export class CSSModel extends SDKModel {
    * @override
    */
   dispose() {
-    if (Root.Runtime.experiments.isEnabled('cssGridFeatures')) {
-      this.disableCSSPropertyTracker();
-    }
+    this.disableCSSPropertyTracker();
     super.dispose();
     this._sourceMapManager.dispose();
   }

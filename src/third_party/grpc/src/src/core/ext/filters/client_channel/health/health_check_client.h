@@ -47,15 +47,10 @@ class HealthCheckClient : public InternallyRefCounted<HealthCheckClient> {
   HealthCheckClient(const char* service_name,
                     RefCountedPtr<ConnectedSubchannel> connected_subchannel,
                     grpc_pollset_set* interested_parties,
-                    RefCountedPtr<channelz::SubchannelNode> channelz_node);
+                    RefCountedPtr<channelz::SubchannelNode> channelz_node,
+                    RefCountedPtr<ConnectivityStateWatcherInterface> watcher);
 
-  ~HealthCheckClient();
-
-  // When the health state changes from *state, sets *state to the new
-  // value and schedules closure.
-  // Only one closure can be outstanding at a time.
-  void NotifyOnHealthChange(grpc_connectivity_state* state,
-                            grpc_closure* closure);
+  ~HealthCheckClient() override;
 
   void Orphan() override;
 
@@ -65,7 +60,7 @@ class HealthCheckClient : public InternallyRefCounted<HealthCheckClient> {
    public:
     CallState(RefCountedPtr<HealthCheckClient> health_check_client,
               grpc_pollset_set* interested_parties_);
-    ~CallState();
+    ~CallState() override;
 
     void Orphan() override;
 
@@ -77,8 +72,8 @@ class HealthCheckClient : public InternallyRefCounted<HealthCheckClient> {
     void StartBatch(grpc_transport_stream_op_batch* batch);
     static void StartBatchInCallCombiner(void* arg, grpc_error* error);
 
-    static void CallEndedRetry(void* arg, grpc_error* error);
-    void CallEnded(bool retry);
+    // Requires holding health_check_client_->mu_.
+    void CallEndedLocked(bool retry);
 
     static void OnComplete(void* arg, grpc_error* error);
     static void RecvInitialMetadataReady(void* arg, grpc_error* error);
@@ -148,12 +143,12 @@ class HealthCheckClient : public InternallyRefCounted<HealthCheckClient> {
   void StartCall();
   void StartCallLocked();  // Requires holding mu_.
 
-  void StartRetryTimer();
+  void StartRetryTimerLocked();  // Requires holding mu_.
   static void OnRetryTimer(void* arg, grpc_error* error);
 
-  void SetHealthStatus(grpc_connectivity_state state, grpc_error* error);
+  void SetHealthStatus(grpc_connectivity_state state, const char* reason);
   void SetHealthStatusLocked(grpc_connectivity_state state,
-                             grpc_error* error);  // Requires holding mu_.
+                             const char* reason);  // Requires holding mu_.
 
   const char* service_name_;  // Do not own.
   RefCountedPtr<ConnectedSubchannel> connected_subchannel_;
@@ -161,10 +156,7 @@ class HealthCheckClient : public InternallyRefCounted<HealthCheckClient> {
   RefCountedPtr<channelz::SubchannelNode> channelz_node_;
 
   Mutex mu_;
-  grpc_connectivity_state state_ = GRPC_CHANNEL_CONNECTING;
-  grpc_error* error_ = GRPC_ERROR_NONE;
-  grpc_connectivity_state* notify_state_ = nullptr;
-  grpc_closure* on_health_changed_ = nullptr;
+  RefCountedPtr<ConnectivityStateWatcherInterface> watcher_;
   bool shutting_down_ = false;
 
   // The data associated with the current health check call.  It holds a ref

@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {AllowedPaths} from '../../../base/js/volume_manager_types.m.js';
+// #import {DialogType} from './dialog_type.m.js';
+
 /**
  * @typedef {{
  *   overrideCwsContainerUrlForTest: (string|undefined),
  *   overrideCwsContainerOriginForTest: (string|undefined)
  * }}
  */
-let SuggestAppDialogState;
+/* #export */ let SuggestAppDialogState;
 
-class LaunchParam {
+/* #export */ class LaunchParam {
   /**
    * @param {!Object} unformatted Unformatted option.
    */
@@ -68,17 +71,6 @@ class LaunchParam {
     this.allowedPaths = unformatted['allowedPaths'] ?
         unformatted['allowedPaths'] :
         AllowedPaths.ANY_PATH_OR_URL;
-
-    /**
-     * @type {!SuggestAppDialogState}
-     * @const
-     */
-    this.suggestAppsDialogState = unformatted['suggestAppsDialogState'] ?
-        unformatted['suggestAppsDialogState'] :
-        {
-          overrideCwsContainerUrlForTest: '',
-          overrideCwsContainerOriginForTest: ''
-        };
 
     /**
      * @type {string}

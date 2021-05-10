@@ -43,6 +43,8 @@
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -628,8 +630,15 @@ PhysicalRect LayoutView::ViewRect() const {
   NOT_DESTROYED();
   if (ShouldUsePrintingLayout())
     return PhysicalRect(PhysicalOffset(), Size());
-  if (frame_view_)
-    return PhysicalRect(PhysicalOffset(), PhysicalSize(frame_view_->Size()));
+  if (frame_view_) {
+    IntRect view_rect(IntPoint(), frame_view_->Size());
+    auto& frame = frame_view_->GetFrame();
+    if (frame.IsMainFrame()) {
+      frame.GetChromeClient().OverrideVisibleRectForMainFrame(frame,
+                                                              &view_rect);
+    }
+    return PhysicalRect(view_rect);
+  }
   return PhysicalRect();
 }
 
@@ -643,7 +652,7 @@ PhysicalRect LayoutView::OverflowClipRect(
                                        overlay_scrollbar_clip_behavior);
   }
 
-  rect.offset = location;
+  rect.offset += location;
   if (IsScrollContainer())
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
 
@@ -695,8 +704,8 @@ void LayoutView::CalculateScrollbarModes(
       RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
-  if (document.IsCapturingLayout()) {
-    // When capturing layout (e.g. printing), frame-level scrollbars are never
+  if (document.IsPrintingOrPaintingPreview()) {
+    // When printing or painting preview, frame-level scrollbars are never
     // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
@@ -944,28 +953,30 @@ CompositingReasons LayoutView::AdditionalCompositingReasons() const {
   NOT_DESTROYED();
   // TODO(lfg): Audit for portals
   const LocalFrame& frame = frame_view_->GetFrame();
-  if (frame.OwnerLayoutObject() &&
-      base::FeatureList::IsEnabled(
-          blink::features::kCompositeCrossOriginIframes) &&
-      frame.IsCrossOriginToParentFrame()) {
+  if (frame.OwnerLayoutObject() && frame.IsCrossOriginToParentFrame())
     return CompositingReason::kIFrame;
-  }
   return CompositingReason::kNone;
 }
 
-void LayoutView::UpdateCounters() {
+void LayoutView::UpdateMarkersAndCountersAfterStyleChange() {
   NOT_DESTROYED();
-  if (!needs_counter_update_)
+  if (!needs_marker_counter_update_)
     return;
 
-  needs_counter_update_ = false;
-  if (!HasLayoutCounters())
+  needs_marker_counter_update_ = false;
+  if (!HasLayoutCounters() && !HasLayoutListItems())
     return;
 
   for (LayoutObject* layout_object = this; layout_object;
        layout_object = layout_object->NextInPreOrder()) {
-    if (auto* counter = DynamicTo<LayoutCounter>(layout_object))
+    if (auto* list_item = DynamicTo<LayoutListItem>(layout_object)) {
+      list_item->UpdateCounterStyle();
+    } else if (auto* ng_list_item =
+                   DynamicTo<LayoutNGListItem>(layout_object)) {
+      ng_list_item->UpdateCounterStyle();
+    } else if (auto* counter = DynamicTo<LayoutCounter>(layout_object)) {
       counter->UpdateCounter();
+    }
   }
 }
 

@@ -32,6 +32,7 @@
 #include "src/gav1/decoder_settings.h"
 #include "src/gav1/status_code.h"
 #include "src/obu_parser.h"
+#include "src/quantizer.h"
 #include "src/residual_buffer_pool.h"
 #include "src/symbol_decoder_context.h"
 #include "src/tile.h"
@@ -210,6 +211,10 @@ class DecoderImpl : public Allocable {
     return failure_status_ != kStatusOk;
   }
 
+  // Initializes the |quantizer_matrix_| if necessary and sets
+  // |quantizer_matrix_initialized_| to true.
+  bool MaybeInitializeQuantizerMatrix(const ObuFrameHeader& frame_header);
+
   // Elements in this queue cannot be moved with std::move since the
   // |EncodedFrame.temporal_unit| stores a pointer to elements in this queue.
   Queue<TemporalUnit> temporal_units_;
@@ -228,6 +233,8 @@ class DecoderImpl : public Allocable {
 
   BufferPool buffer_pool_;
   WedgeMaskArray wedge_masks_;
+  QuantizerMatrix quantizer_matrix_;
+  bool quantizer_matrix_initialized_ = false;
   FrameScratchBufferPool frame_scratch_buffer_pool_;
 
   // Used to synchronize the accesses into |temporal_units_| in order to update

@@ -12,14 +12,11 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
@@ -45,7 +42,6 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
 
     arc::SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
-    chromeos::LoginState::Initialize();
     chromeos::CryptohomeClient::InitializeFake();
     lock_to_single_user_manager_ = std::make_unique<LockToSingleUserManager>();
 
@@ -76,7 +72,6 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     arc_service_manager_.reset();
     BrowserWithTestWindowTest::TearDown();
     chromeos::CryptohomeClient::Shutdown();
-    chromeos::LoginState::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

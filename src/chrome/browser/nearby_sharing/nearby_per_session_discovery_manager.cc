@@ -7,8 +7,9 @@
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/nearby_sharing/attachment.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_confirmation_manager.h"
@@ -25,6 +26,7 @@ base::Optional<nearby_share::mojom::TransferStatus> GetTransferStatus(
     case TransferMetadata::Status::kAwaitingRemoteAcceptance:
       return nearby_share::mojom::TransferStatus::kAwaitingRemoteAcceptance;
     case TransferMetadata::Status::kComplete:
+      return nearby_share::mojom::TransferStatus::kComplete;
     case TransferMetadata::Status::kInProgress:
       return nearby_share::mojom::TransferStatus::kInProgress;
     case TransferMetadata::Status::kRejected:
@@ -38,11 +40,16 @@ base::Optional<nearby_share::mojom::TransferStatus> GetTransferStatus(
     case TransferMetadata::Status::kNotEnoughSpace:
       return nearby_share::mojom::TransferStatus::kNotEnoughSpace;
     case TransferMetadata::Status::kFailed:
-    case TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed:
       return nearby_share::mojom::TransferStatus::kFailed;
+    case TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed:
+      return nearby_share::mojom::TransferStatus::
+          kAwaitingRemoteAcceptanceFailed;
     case TransferMetadata::Status::kUnknown:
+      return nearby_share::mojom::TransferStatus::kUnknown;
     case TransferMetadata::Status::kConnecting:
+      return nearby_share::mojom::TransferStatus::kConnecting;
     case TransferMetadata::Status::kCancelled:
+      return nearby_share::mojom::TransferStatus::kCancelled;
     case TransferMetadata::Status::kMediaDownloading:
     case TransferMetadata::Status::kExternalProviderLaunched:
       // Ignore all other transfer status updates.
@@ -50,48 +57,11 @@ base::Optional<nearby_share::mojom::TransferStatus> GetTransferStatus(
   }
 }
 
-nearby_share::mojom::ShareType GetTextShareType(
-    const TextAttachment* attachment) {
-  switch (attachment->type()) {
-    case TextAttachment::Type::kUrl:
-      return nearby_share::mojom::ShareType::kUrl;
-    case TextAttachment::Type::kAddress:
-      return nearby_share::mojom::ShareType::kAddress;
-    case TextAttachment::Type::kPhoneNumber:
-      return nearby_share::mojom::ShareType::kPhone;
-    default:
-      return nearby_share::mojom::ShareType::kText;
-  }
-}
-
-nearby_share::mojom::ShareType GetFileShareType(
-    const FileAttachment* attachment) {
-  switch (attachment->type()) {
-    case FileAttachment::Type::kImage:
-      return nearby_share::mojom::ShareType::kImageFile;
-    case FileAttachment::Type::kVideo:
-      return nearby_share::mojom::ShareType::kVideoFile;
-    case FileAttachment::Type::kAudio:
-      return nearby_share::mojom::ShareType::kAudioFile;
-    default:
-      break;
-  }
-
-  // Try matching on mime type if the attachment type is unrecognized.
-  if (attachment->mime_type() == "application/pdf") {
-    return nearby_share::mojom::ShareType::kPdfFile;
-  } else if (attachment->mime_type() ==
-             "application/vnd.google-apps.document") {
-    return nearby_share::mojom::ShareType::kGoogleDocsFile;
-  } else if (attachment->mime_type() ==
-             "application/vnd.google-apps.spreadsheet") {
-    return nearby_share::mojom::ShareType::kGoogleSheetsFile;
-  } else if (attachment->mime_type() ==
-             "application/vnd.google-apps.presentation") {
-    return nearby_share::mojom::ShareType::kGoogleSlidesFile;
-  } else {
-    return nearby_share::mojom::ShareType::kUnknownFile;
-  }
+std::string GetDeviceIdForLogs(const ShareTarget& share_target) {
+  return (share_target.device_id
+              ? base::HexEncode(share_target.device_id.value().data(),
+                                share_target.device_id.value().size())
+              : "[null]");
 }
 
 }  // namespace
@@ -100,10 +70,14 @@ NearbyPerSessionDiscoveryManager::NearbyPerSessionDiscoveryManager(
     NearbySharingService* nearby_sharing_service,
     std::vector<std::unique_ptr<Attachment>> attachments)
     : nearby_sharing_service_(nearby_sharing_service),
-      attachments_(std::move(attachments)) {}
+      attachments_(std::move(attachments)) {
+  nearby_sharing_service_->AddObserver(this);
+}
 
 NearbyPerSessionDiscoveryManager::~NearbyPerSessionDiscoveryManager() {
   UnregisterSendSurface();
+  observers_set_.Clear();
+  nearby_sharing_service_->RemoveObserver(this);
   base::UmaHistogramEnumeration(
       "Nearby.Share.Discovery.FurthestDiscoveryProgress", furthest_progress_);
   base::UmaHistogramCounts100(
@@ -145,6 +119,9 @@ void NearbyPerSessionDiscoveryManager::OnTransferUpdate(
 
 void NearbyPerSessionDiscoveryManager::OnShareTargetDiscovered(
     ShareTarget share_target) {
+  NS_LOG(VERBOSE) << "NearbyPerSessionDiscoveryManager::" << __func__
+                  << ": id=" << share_target.id
+                  << ", device_id=" << GetDeviceIdForLogs(share_target);
   // Update metrics.
   UpdateFurthestDiscoveryProgressIfNecessary(
       DiscoveryProgress::kDiscoveredShareTargetNothingSent);
@@ -160,16 +137,49 @@ void NearbyPerSessionDiscoveryManager::OnShareTargetDiscovered(
         base::TimeTicks::Now() - *discovery_start_time_);
   }
 
-  base::InsertOrAssign(discovered_share_targets_, share_target.id,
-                       share_target);
+  // Dedup by the more stable device ID if possible.
+  if (share_target.device_id) {
+    auto it = std::find_if(discovered_share_targets_.begin(),
+                           discovered_share_targets_.end(),
+                           [&share_target](const auto& id_share_target_pair) {
+                             return share_target.device_id ==
+                                    id_share_target_pair.second.device_id;
+                           });
+
+    if (it != discovered_share_targets_.end()) {
+      NS_LOG(VERBOSE) << "NearbyPerSessionDiscoveryManager::" << __func__
+                      << ": Removing previously discovered share target with "
+                      << "identical device_id="
+                      << GetDeviceIdForLogs(share_target);
+      OnShareTargetLost(it->second);
+    }
+  }
+
+  discovered_share_targets_.insert_or_assign(share_target.id, share_target);
   share_target_listener_->OnShareTargetDiscovered(share_target);
+}
+
+void NearbyPerSessionDiscoveryManager::AddDiscoveryObserver(
+    ::mojo::PendingRemote<nearby_share::mojom::DiscoveryObserver> observer) {
+  observers_set_.Add(std::move(observer));
 }
 
 void NearbyPerSessionDiscoveryManager::OnShareTargetLost(
     ShareTarget share_target) {
-  if (base::Contains(discovered_share_targets_, share_target.id)) {
-    ++num_lost_;
+  NS_LOG(VERBOSE) << "NearbyPerSessionDiscoveryManager::" << __func__
+                  << ": id=" << share_target.id
+                  << ", device_id=" << GetDeviceIdForLogs(share_target);
+
+  // It is possible that we already removed a ShareTarget from the map when
+  // deduping by ShareTarget device_id.
+  if (!base::Contains(discovered_share_targets_, share_target.id)) {
+    NS_LOG(VERBOSE) << "NearbyPerSessionDiscoveryManager::" << __func__
+                    << ": Share target id=" << share_target.id
+                    << " already removed. Taking no action.";
+    return;
   }
+
+  ++num_lost_;
   discovered_share_targets_.erase(share_target.id);
   share_target_listener_->OnShareTargetLost(share_target);
 }
@@ -177,6 +187,14 @@ void NearbyPerSessionDiscoveryManager::OnShareTargetLost(
 void NearbyPerSessionDiscoveryManager::StartDiscovery(
     mojo::PendingRemote<nearby_share::mojom::ShareTargetListener> listener,
     StartDiscoveryCallback callback) {
+  if (nearby_sharing_service_->IsTransferring()) {
+    // Is there is currently a file transfer ongoing, return early with the
+    // corresponding error code.
+    std::move(callback).Run(nearby_share::mojom::StartDiscoveryResult::
+                                kErrorInProgressTransferring);
+    return;
+  }
+
   discovery_start_time_ = base::TimeTicks::Now();
 
   // Starting discovery again closes any previous discovery session.
@@ -197,7 +215,8 @@ void NearbyPerSessionDiscoveryManager::StartDiscovery(
     UpdateFurthestDiscoveryProgressIfNecessary(
         DiscoveryProgress::kFailedToStartDiscovery);
     share_target_listener_.reset();
-    std::move(callback).Run(/*success=*/false);
+    std::move(callback).Run(
+        nearby_share::mojom::StartDiscoveryResult::kErrorGeneric);
     return;
   }
 
@@ -208,7 +227,7 @@ void NearbyPerSessionDiscoveryManager::StartDiscovery(
   // UnregisterSendSurface is called so that the transfer update listeners can
   // get updates even if Discovery is stopped.
   registered_as_send_surface_ = true;
-  std::move(callback).Run(/*success=*/true);
+  std::move(callback).Run(nearby_share::mojom::StartDiscoveryResult::kSuccess);
 }
 
 void NearbyPerSessionDiscoveryManager::SelectShareTarget(
@@ -269,41 +288,35 @@ void NearbyPerSessionDiscoveryManager::SelectShareTarget(
                           mojo::NullReceiver(), mojo::NullRemote());
 }
 
-void NearbyPerSessionDiscoveryManager::GetSendPreview(
-    GetSendPreviewCallback callback) {
-  nearby_share::mojom::SendPreviewPtr send_preview =
-      nearby_share::mojom::SendPreview::New();
-  send_preview->file_count = 0;
-  send_preview->share_type = nearby_share::mojom::ShareType::kText;
+void NearbyPerSessionDiscoveryManager::GetPayloadPreview(
+    GetPayloadPreviewCallback callback) {
+  // TODO(crbug.com/1158627): Extract this which is very similar to logic in
+  // nearby share mojo traits.
+  nearby_share::mojom::PayloadPreviewPtr payload_preview =
+      nearby_share::mojom::PayloadPreview::New();
+  payload_preview->file_count = 0;
+  payload_preview->share_type = nearby_share::mojom::ShareType::kText;
   if (attachments_.empty()) {
     // Return with an empty text attachment.
-    std::move(callback).Run(std::move(send_preview));
+    std::move(callback).Run(std::move(payload_preview));
     return;
   }
 
   // We have at least 1 attachment, use that one for the default description.
   auto& attachment = attachments_[0];
-  send_preview->description = attachment->GetDescription();
+  payload_preview->description = attachment->GetDescription();
 
-  // TODO(crbug.com/1144942) Add virtual GetShareType to Attachment to eliminate
-  // these casts.
-  switch (attachment->family()) {
-    case Attachment::Family::kText:
-      send_preview->share_type =
-          GetTextShareType(static_cast<TextAttachment*>(attachment.get()));
-      break;
-    case Attachment::Family::kFile:
-      send_preview->file_count = attachments_.size();
-      // For multiple files we don't capture the types.
-      send_preview->share_type =
-          attachments_.size() > 1
-              ? nearby_share::mojom::ShareType::kMultipleFiles
-              : GetFileShareType(
-                    static_cast<FileAttachment*>(attachment.get()));
-      break;
+  if (attachment->family() == Attachment::Family::kFile)
+    payload_preview->file_count = attachments_.size();
+
+  if (payload_preview->file_count > 1) {
+    payload_preview->share_type =
+        nearby_share::mojom::ShareType::kMultipleFiles;
+  } else {
+    payload_preview->share_type = attachment->GetShareType();
   }
 
-  std::move(callback).Run(std::move(send_preview));
+  std::move(callback).Run(std::move(payload_preview));
 }
 
 void NearbyPerSessionDiscoveryManager::UnregisterSendSurface() {
@@ -319,6 +332,18 @@ void NearbyPerSessionDiscoveryManager::UnregisterSendSurface() {
   }
 
   share_target_listener_.reset();
+}
+
+void NearbyPerSessionDiscoveryManager::OnNearbyProcessStopped() {
+  for (auto& remote : observers_set_) {
+    remote->OnNearbyProcessStopped();
+  }
+}
+
+void NearbyPerSessionDiscoveryManager::OnStartDiscoveryResult(bool success) {
+  for (auto& remote : observers_set_) {
+    remote->OnStartDiscoveryResult(success);
+  }
 }
 
 void NearbyPerSessionDiscoveryManager::

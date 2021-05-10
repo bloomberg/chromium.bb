@@ -86,7 +86,7 @@ void CrostiniApps::ReInitializeForTesting(
 void CrostiniApps::Initialize(
     const mojo::Remote<apps::mojom::AppService>& app_service) {
   DCHECK(profile_);
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
+  if (!crostini::CrostiniFeatures::Get()->CouldBeAllowed(profile_)) {
     return;
   }
   registry_ = guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
@@ -122,7 +122,8 @@ void CrostiniApps::Connect(
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps));
+  subscriber->OnApps(std::move(apps), apps::mojom::AppType::kCrostini,
+                     true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
 }
 
@@ -133,15 +134,17 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
                             bool allow_placeholder_icon,
                             LoadIconCallback callback) {
   registry_->LoadIcon(app_id, std::move(icon_key), icon_type, size_hint_in_dip,
-                      allow_placeholder_icon, IDR_LOGO_CROSTINI_DEFAULT_192,
+                      allow_placeholder_icon, IDR_LOGO_CROSTINI_DEFAULT,
                       std::move(callback));
 }
 
 void CrostiniApps::Launch(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
-                          int64_t display_id) {
-  crostini::LaunchCrostiniApp(profile_, app_id, display_id);
+                          apps::mojom::WindowInfoPtr window_info) {
+  crostini::LaunchCrostiniApp(
+      profile_, app_id,
+      window_info ? window_info->display_id : display::kInvalidDisplayId);
 }
 
 void CrostiniApps::Uninstall(const std::string& app_id,
@@ -241,13 +244,13 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
                                 : apps::mojom::OptionalBool::kFalse;
 
   // The Crostini Terminal app is a hard-coded special case. It is the entry
-  // point to installing other Crostini apps.
+  // point to installing other Crostini apps, and is always in search.
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kCrostini;
   app->app_id = crostini::kCrostiniTerminalSystemAppId;
   app->show_in_launcher = show;
   app->show_in_shelf = show;
-  app->show_in_search = show;
+  app->show_in_search = apps::mojom::OptionalBool::kTrue;
   Publish(std::move(app), subscribers_);
 }
 

@@ -586,6 +586,7 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
                << line << ", " << ppdErrorString(ppd_status);
     return false;
   }
+
   ppdMarkDefaults(ppd);
   if (dest)
     cupsMarkOptions(ppd, dest->num_options, dest->options);

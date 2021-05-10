@@ -7,27 +7,34 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("screencast") {
   sources = [
-    "InputModel.js",
-    "ScreencastApp.js",
-    "ScreencastView.js",
+    "InputModel.ts",
+    "ScreencastApp.ts",
+    "ScreencastView.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../ui:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "screencast.js"
+  entrypoint = "screencast.ts"
 
   deps = [ ":screencast" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "screencast-legacy.js"
+  entrypoint = "screencast-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "screencast-meta.ts"
 
   deps = [ ":bundle" ]
 }

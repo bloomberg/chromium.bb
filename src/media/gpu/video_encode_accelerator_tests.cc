@@ -122,11 +122,57 @@ class VideoEncoderTest : public ::testing::Test {
   }
 
  private:
+  std::unique_ptr<BitstreamProcessor> CreateBitstreamValidator(
+      const Video* video,
+      const VideoDecoderConfig& decoder_config,
+      const size_t last_frame_index,
+      VideoFrameValidator::GetModelFrameCB get_model_frame_cb,
+      base::Optional<size_t> num_vp9_temporal_layers_to_decode) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
+
+    // Attach a video frame writer to store individual frames to disk if
+    // requested.
+    std::unique_ptr<VideoFrameProcessor> image_writer;
+    auto frame_output_config = g_env->ImageOutputConfig();
+    base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
+                                       .Append(g_env->GetTestOutputFilePath());
+    if (frame_output_config.output_mode != FrameOutputMode::kNone) {
+      image_writer = VideoFrameFileWriter::Create(
+          output_folder, frame_output_config.output_format,
+          frame_output_config.output_limit,
+          num_vp9_temporal_layers_to_decode
+              ? base::NumberToString(*num_vp9_temporal_layers_to_decode)
+              : "");
+      LOG_ASSERT(image_writer);
+      if (frame_output_config.output_mode == FrameOutputMode::kAll)
+        video_frame_processors.push_back(std::move(image_writer));
+    }
+
+    // For a resolution less than 360p, we lower the tolerance. Some platforms
+    // couldn't compress a low resolution video efficiently with a low bitrate.
+    constexpr gfx::Size k360p(640, 360);
+    constexpr double kSSIMToleranceForLowerResolution = 0.65;
+    const gfx::Size encode_resolution = video->VisibleRect().size();
+    const double ssim_tolerance =
+        encode_resolution.GetArea() < k360p.GetArea()
+            ? kSSIMToleranceForLowerResolution
+            : SSIMVideoFrameValidator::kDefaultTolerance;
+
+    auto ssim_validator = SSIMVideoFrameValidator::Create(
+        get_model_frame_cb, std::move(image_writer),
+        VideoFrameValidator::ValidationMode::kAverage, ssim_tolerance);
+    LOG_ASSERT(ssim_validator);
+    video_frame_processors.push_back(std::move(ssim_validator));
+    return BitstreamValidator::Create(decoder_config, last_frame_index,
+                                      std::move(video_frame_processors),
+                                      num_vp9_temporal_layers_to_decode);
+  }
+
   std::vector<std::unique_ptr<BitstreamProcessor>> CreateBitstreamProcessors(
       Video* video,
       const VideoEncoderClientConfig& config) {
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
-    const gfx::Rect visible_rect(video->Resolution());
+    const gfx::Rect visible_rect(config.output_resolution);
     const VideoCodec codec =
         VideoCodecProfileToVideoCodec(config.output_profile);
     if (g_env->SaveOutputBitstream()) {
@@ -137,11 +183,24 @@ class VideoEncoderTest : public ::testing::Test {
           g_env->OutputFolder()
               .Append(g_env->GetTestOutputFilePath())
               .Append(video->FilePath().BaseName().ReplaceExtension(extension));
-      auto bitstream_writer = BitstreamFileWriter::Create(
-          output_bitstream_filepath, codec, visible_rect.size(),
-          config.framerate, config.num_frames_to_encode);
-      LOG_ASSERT(bitstream_writer);
-      bitstream_processors.emplace_back(std::move(bitstream_writer));
+      if (config.num_temporal_layers > 1) {
+        for (size_t num_vp9_temporal_layers_to_write = 1;
+             num_vp9_temporal_layers_to_write <= config.num_temporal_layers;
+             ++num_vp9_temporal_layers_to_write) {
+          bitstream_processors.emplace_back(BitstreamFileWriter::Create(
+              output_bitstream_filepath.InsertBeforeExtensionASCII(
+                  FILE_PATH_LITERAL(".TL") +
+                  base::NumberToString(num_vp9_temporal_layers_to_write)),
+              codec, visible_rect.size(), config.framerate,
+              config.num_frames_to_encode, num_vp9_temporal_layers_to_write));
+          LOG_ASSERT(bitstream_processors.back());
+        }
+      } else {
+        bitstream_processors.emplace_back(BitstreamFileWriter::Create(
+            output_bitstream_filepath, codec, visible_rect.size(),
+            config.framerate, config.num_frames_to_encode));
+        LOG_ASSERT(bitstream_processors.back());
+      }
     }
 
     if (!g_env->IsBitstreamValidatorEnabled()) {
@@ -174,7 +233,6 @@ class VideoEncoderTest : public ::testing::Test {
         codec, config.output_profile, VideoDecoderConfig::AlphaMode::kIsOpaque,
         VideoColorSpace(), kNoTransformation, visible_rect.size(), visible_rect,
         visible_rect.size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
-    std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
     raw_data_helper_ = RawDataHelper::Create(video);
     if (!raw_data_helper_) {
       LOG(ERROR) << "Failed to create raw data helper";
@@ -183,48 +241,55 @@ class VideoEncoderTest : public ::testing::Test {
 
     VideoFrameValidator::GetModelFrameCB get_model_frame_cb =
         base::BindRepeating(&VideoEncoderTest::GetModelFrame,
-                            base::Unretained(this));
-
-    // Attach a video frame writer to store individual frames to disk if
-    // requested.
-    std::unique_ptr<VideoFrameProcessor> image_writer;
-    auto frame_output_config = g_env->ImageOutputConfig();
-    base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
-                                       .Append(g_env->GetTestOutputFilePath());
-    if (frame_output_config.output_mode != FrameOutputMode::kNone) {
-      image_writer = VideoFrameFileWriter::Create(
-          output_folder, frame_output_config.output_format,
-          frame_output_config.output_limit);
-      LOG_ASSERT(image_writer);
-      if (frame_output_config.output_mode == FrameOutputMode::kAll)
-        video_frame_processors.push_back(std::move(image_writer));
+                            base::Unretained(this), visible_rect);
+    if (config.num_temporal_layers > 1) {
+      for (size_t num_temporal_layers_to_decode = 1;
+           num_temporal_layers_to_decode <= config.num_temporal_layers;
+           ++num_temporal_layers_to_decode) {
+        bitstream_processors.emplace_back(CreateBitstreamValidator(
+            video, decoder_config, config.num_frames_to_encode - 1,
+            get_model_frame_cb, num_temporal_layers_to_decode));
+        LOG_ASSERT(bitstream_processors.back());
+      }
+    } else {
+      bitstream_processors.emplace_back(CreateBitstreamValidator(
+          video, decoder_config, config.num_frames_to_encode - 1,
+          get_model_frame_cb, base::nullopt));
+      LOG_ASSERT(bitstream_processors.back());
     }
-    auto ssim_validator = SSIMVideoFrameValidator::Create(
-        get_model_frame_cb, std::move(image_writer),
-        VideoFrameValidator::ValidationMode::kAverage);
-    LOG_ASSERT(ssim_validator);
-    video_frame_processors.push_back(std::move(ssim_validator));
-    auto bitstream_validator = BitstreamValidator::Create(
-        decoder_config, config.num_frames_to_encode - 1,
-        std::move(video_frame_processors));
-    LOG_ASSERT(bitstream_validator);
-    bitstream_processors.emplace_back(std::move(bitstream_validator));
     return bitstream_processors;
   }
 
-  scoped_refptr<const VideoFrame> GetModelFrame(size_t frame_index) {
+  scoped_refptr<const VideoFrame> GetModelFrame(const gfx::Rect& visible_rect,
+                                                size_t frame_index) {
     LOG_ASSERT(raw_data_helper_);
-    return raw_data_helper_->GetFrame(frame_index %
-                                      g_env->Video()->NumFrames());
+    auto frame =
+        raw_data_helper_->GetFrame(frame_index % g_env->Video()->NumFrames());
+    if (!frame)
+      return nullptr;
+    if (visible_rect.size() == frame->visible_rect().size())
+      return frame;
+    return ScaleVideoFrame(frame.get(), visible_rect.size());
   }
 
   std::unique_ptr<RawDataHelper> raw_data_helper_;
 };
 
-}  // namespace
+base::Optional<std::string> SupportsDynamicFramerate() {
+  return g_env->IsKeplerUsed()
+             ? base::make_optional<std::string>(
+                   "The rate controller in the kepler firmware doesn't handle "
+                   "frame rate changes correctly.")
+             : base::nullopt;
+}
 
-// TODO(dstaessens): Add more test scenarios:
-// - Forcing key frames
+base::Optional<std::string> SupportsNV12DmaBufInput() {
+  return g_env->IsKeplerUsed() ? base::make_optional<std::string>(
+                                     "Encoding with dmabuf input frames is not "
+                                     "supported in kepler.")
+                               : base::nullopt;
+}
+}  // namespace
 
 // Encode video from start to end. Wait for the kFlushDone event at the end of
 // the stream, that notifies us all frames have been encoded.
@@ -260,6 +325,46 @@ TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
   EXPECT_NE(video_encoder, nullptr);
 }
 
+// Test forcing key frames while encoding a video.
+TEST_F(VideoEncoderTest, ForceKeyFrame) {
+  auto config = GetDefaultConfig();
+  const size_t middle_frame = config.num_frames_to_encode;
+  config.num_frames_to_encode *= 2;
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  // It is expected that our hw encoders don't produce key frames in a short
+  // time span like a few hundred frames.
+  // TODO(hiroh): This might be wrong on some platforms. Needs to update.
+  // Encode the first frame, this should always be a keyframe.
+  encoder->EncodeUntil(VideoEncoder::kBitstreamReady, 1u);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 1u);
+  // Encode until the middle of stream and request force_keyframe.
+  encoder->EncodeUntil(VideoEncoder::kFrameReleased, middle_frame);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
+  // Check if there is no keyframe except the first frame.
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 1u);
+  encoder->ForceKeyFrame();
+  // Since kFrameReleased and kBitstreamReady events are asynchronous, the
+  // number of bitstreams being processed is unknown. We check keyframe request
+  // is applied by seeing if there is a keyframe in a few frames after
+  // requested. 10 is arbitrarily chosen.
+  constexpr size_t kKeyFrameRequestWindow = 10u;
+  encoder->EncodeUntil(VideoEncoder::kBitstreamReady,
+                       std::min(middle_frame + kKeyFrameRequestWindow,
+                                config.num_frames_to_encode));
+  EXPECT_TRUE(encoder->WaitUntilIdle());
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
+
+  // Encode until the end of stream.
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
 // Encode video from start to end. Multiple buffer encodes will be queued in the
 // encoder, without waiting for the result of the previous encode requests.
 TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleOutstandingEncodes) {
@@ -277,8 +382,11 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleOutstandingEncodes) {
 
 // Encode multiple videos simultaneously from start to finish.
 TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
-  // The minimal number of concurrent encoders we expect to be supported.
-  constexpr size_t kMinSupportedConcurrentEncoders = 3;
+  // Run two encoders for larger resolutions to avoid creating shared memory
+  // buffers during the test on lower end devices.
+  constexpr gfx::Size k1080p(1920, 1080);
+  const size_t kMinSupportedConcurrentEncoders =
+      g_env->Video()->Resolution().GetArea() >= k1080p.GetArea() ? 2 : 3;
 
   auto config = GetDefaultConfig();
   std::vector<std::unique_ptr<VideoEncoder>> encoders(
@@ -328,8 +436,7 @@ TEST_F(VideoEncoderTest, BitrateCheck_DynamicBitrate) {
   const uint32_t first_bitrate = config.bitrate;
   encoder->EncodeUntil(VideoEncoder::kFrameReleased,
                        kNumFramesToEncodeForBitrateCheck);
-  encoder->WaitForEvent(VideoEncoder::kFrameReleased,
-                        kNumFramesToEncodeForBitrateCheck);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
   EXPECT_NEAR(encoder->GetStats().Bitrate(), first_bitrate,
               kBitrateTolerance * first_bitrate);
 
@@ -348,6 +455,8 @@ TEST_F(VideoEncoderTest, BitrateCheck_DynamicBitrate) {
 }
 
 TEST_F(VideoEncoderTest, BitrateCheck_DynamicFramerate) {
+  if (auto skip_reason = SupportsDynamicFramerate())
+    GTEST_SKIP() << *skip_reason;
   auto config = GetDefaultConfig();
   config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 2;
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
@@ -360,8 +469,7 @@ TEST_F(VideoEncoderTest, BitrateCheck_DynamicFramerate) {
 
   encoder->EncodeUntil(VideoEncoder::kFrameReleased,
                        kNumFramesToEncodeForBitrateCheck);
-  encoder->WaitForEvent(VideoEncoder::kFrameReleased,
-                        kNumFramesToEncodeForBitrateCheck);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
   EXPECT_NEAR(encoder->GetStats().Bitrate(), config.bitrate,
               kBitrateTolerance * config.bitrate);
 
@@ -380,20 +488,139 @@ TEST_F(VideoEncoderTest, BitrateCheck_DynamicFramerate) {
 }
 
 TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12Dmabuf) {
-  auto nv12_video = g_env->Video()->ConvertToNV12();
-  ASSERT_TRUE(nv12_video);
+  if (auto skip_reason = SupportsNV12DmaBufInput())
+    GTEST_SKIP() << *skip_reason;
 
-  VideoEncoderClientConfig config(nv12_video.get(), g_env->Profile(),
+  Video* nv12_video = g_env->GenerateNV12Video();
+  VideoEncoderClientConfig config(nv12_video, g_env->Profile(),
                                   g_env->NumTemporalLayers(), g_env->Bitrate());
   config.input_storage_type =
-      VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+      VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
 
-  auto encoder = CreateVideoEncoder(nv12_video.get(), config);
+  auto encoder = CreateVideoEncoder(nv12_video, config);
 
   encoder->Encode();
   EXPECT_TRUE(encoder->WaitForFlushDone());
   EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
   EXPECT_EQ(encoder->GetFrameReleasedCount(), nv12_video->NumFrames());
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+// Downscaling is required in VideoEncodeAccelerator when zero-copy video
+// capture is enabled. One example is simulcast, camera produces 360p VideoFrame
+// and there are two VideoEncodeAccelerator for 360p and 180p. VideoEncoder for
+// 180p is fed 360p and thus has to perform the scaling from 360p to 180p.
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12DmabufScaling) {
+  if (auto skip_reason = SupportsNV12DmaBufInput())
+    GTEST_SKIP() << *skip_reason;
+  constexpr gfx::Size kMinOutputResolution(240, 180);
+  const gfx::Size output_resolution =
+      gfx::Size(g_env->Video()->Resolution().width() / 2,
+                g_env->Video()->Resolution().height() / 2);
+  if (!gfx::Rect(output_resolution).Contains(gfx::Rect(kMinOutputResolution))) {
+    GTEST_SKIP() << "Skip test if video resolution is too small, "
+                 << "output_resolution=" << output_resolution.ToString()
+                 << ", minimum output resolution="
+                 << kMinOutputResolution.ToString();
+  }
+
+  auto* nv12_video = g_env->GenerateNV12Video();
+  // Set 1/4 of the original bitrate because the area of |output_resolution| is
+  // 1/4 of the original resolution.
+  VideoEncoderClientConfig config(nv12_video, g_env->Profile(),
+                                  g_env->NumTemporalLayers(),
+                                  g_env->Bitrate() / 4);
+  config.output_resolution = output_resolution;
+  config.input_storage_type =
+      VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
+
+  auto encoder = CreateVideoEncoder(nv12_video, config);
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), nv12_video->NumFrames());
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+// Encode VideoFrames with cropping the rectangle (0, 60, size).
+// Cropping is required in VideoEncodeAccelerator when zero-copy video
+// capture is enabled. One example is when 640x360 capture recording is
+// requested, a camera cannot produce the resolution and instead produces
+// 640x480 frames with visible_rect=0, 60, 640x360.
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12DmabufCroppingTopAndBottom) {
+  if (auto skip_reason = SupportsNV12DmaBufInput())
+    GTEST_SKIP() << *skip_reason;
+  constexpr int kGrowHeight = 120;
+  const gfx::Size original_resolution = g_env->Video()->Resolution();
+  const gfx::Rect expanded_visible_rect(0, kGrowHeight / 2,
+                                        original_resolution.width(),
+                                        original_resolution.height());
+  const gfx::Size expanded_resolution(
+      original_resolution.width(), original_resolution.height() + kGrowHeight);
+  constexpr gfx::Size kMaxExpandedResolution(1920, 1080);
+  if (!gfx::Rect(kMaxExpandedResolution)
+           .Contains(gfx::Rect(expanded_resolution))) {
+    GTEST_SKIP() << "Expanded video resolution is too large, "
+                 << "expanded_resolution=" << expanded_resolution.ToString()
+                 << ", maximum expanded resolution="
+                 << kMaxExpandedResolution.ToString();
+  }
+
+  auto nv12_expanded_video = g_env->GenerateNV12Video()->Expand(
+      expanded_resolution, expanded_visible_rect);
+  ASSERT_TRUE(nv12_expanded_video);
+  VideoEncoderClientConfig config(nv12_expanded_video.get(), g_env->Profile(),
+                                  g_env->NumTemporalLayers(), g_env->Bitrate());
+  config.output_resolution = original_resolution;
+  config.input_storage_type =
+      VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
+
+  auto encoder = CreateVideoEncoder(nv12_expanded_video.get(), config);
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), nv12_expanded_video->NumFrames());
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+// Encode VideoFrames with cropping the rectangle (60, 0, size).
+// Cropping is required in VideoEncodeAccelerator when zero-copy video
+// capture is enabled. One example is when 640x360 capture recording is
+// requested, a camera cannot produce the resolution and instead produces
+// 760x360 frames with visible_rect=60, 0, 640x360.
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12DmabufCroppingRightAndLeft) {
+  if (auto skip_reason = SupportsNV12DmaBufInput())
+    GTEST_SKIP() << *skip_reason;
+  constexpr int kGrowWidth = 120;
+  const gfx::Size original_resolution = g_env->Video()->Resolution();
+  const gfx::Rect expanded_visible_rect(kGrowWidth / 2, 0,
+                                        original_resolution.width(),
+                                        original_resolution.height());
+  const gfx::Size expanded_resolution(original_resolution.width() + kGrowWidth,
+                                      original_resolution.height());
+  constexpr gfx::Size kMaxExpandedResolution(1920, 1080);
+  if (!gfx::Rect(kMaxExpandedResolution)
+           .Contains(gfx::Rect(expanded_resolution))) {
+    GTEST_SKIP() << "Expanded video resolution is too large, "
+                 << "expanded_resolution=" << expanded_resolution.ToString()
+                 << ", maximum expanded resolution="
+                 << kMaxExpandedResolution.ToString();
+  }
+
+  auto nv12_expanded_video = g_env->GenerateNV12Video()->Expand(
+      expanded_resolution, expanded_visible_rect);
+  ASSERT_TRUE(nv12_expanded_video);
+  VideoEncoderClientConfig config(nv12_expanded_video.get(), g_env->Profile(),
+                                  g_env->NumTemporalLayers(), g_env->Bitrate());
+  config.output_resolution = original_resolution;
+  config.input_storage_type =
+      VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
+
+  auto encoder = CreateVideoEncoder(nv12_expanded_video.get(), config);
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), nv12_expanded_video->NumFrames());
   EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
 }
 }  // namespace test

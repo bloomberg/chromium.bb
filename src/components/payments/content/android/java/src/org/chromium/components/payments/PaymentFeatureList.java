@@ -18,10 +18,10 @@ public class PaymentFeatureList {
     /** Alphabetical: */
     public static final String ANDROID_APP_PAYMENT_UPDATE_EVENTS = "AndroidAppPaymentUpdateEvents";
     public static final String ENFORCE_FULL_DELEGATION = "EnforceFullDelegation";
+    public static final String GPAY_APP_DYNAMIC_UPDATE = "GPayAppDynamicUpdate";
     public static final String PAYMENT_REQUEST_SKIP_TO_GPAY = "PaymentRequestSkipToGPay";
     public static final String PAYMENT_REQUEST_SKIP_TO_GPAY_IF_NO_CARD =
             "PaymentRequestSkipToGPayIfNoCard";
-    public static final String SCROLL_TO_EXPAND_PAYMENT_HANDLER = "ScrollToExpandPaymentHandler";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT =
             "StrictHasEnrolledAutofillInstrument";

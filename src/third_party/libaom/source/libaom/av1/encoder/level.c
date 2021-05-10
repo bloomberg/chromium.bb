@@ -1129,7 +1129,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec,
                        level_stats);
       level_stats->total_time_encoded +=
-          (cpi->time_stamps.prev_end_seen - cpi->time_stamps.prev_start_seen) /
+          (cpi->time_stamps.prev_ts_end - cpi->time_stamps.prev_ts_start) /
           (double)TICKS_PER_SEC;
     }
 

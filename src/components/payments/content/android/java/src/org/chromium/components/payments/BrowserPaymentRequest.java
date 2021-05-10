@@ -7,7 +7,9 @@ package org.chromium.components.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
@@ -23,18 +25,6 @@ import java.util.Map;
  * Android Chrome browser or the WebLayer "browser".
  */
 public interface BrowserPaymentRequest {
-    /** The factory that creates an instance of {@link BrowserPaymentRequest}. */
-    interface Factory {
-        /**
-         * Create an instance of {@link BrowserPaymentRequest}.
-         * @param paymentRequestService The PaymentRequestService to work together with
-         *         the BrowserPaymentRequest instance, cannot be null.
-         * @return An instance of BrowserPaymentRequest, cannot be null.
-         */
-        BrowserPaymentRequest createBrowserPaymentRequest(
-                PaymentRequestService paymentRequestService);
-    }
-
     /**
      * The client of the interface calls this when it has received the payment details update
      * from the merchant and has updated the PaymentRequestSpec.
@@ -50,15 +40,19 @@ public interface BrowserPaymentRequest {
      */
     void onPaymentDetailsNotUpdated(@Nullable String selectedShippingOptionError);
 
-    /** The browser part of the {@link PaymentRequest#complete} implementation. */
-    void complete(int result);
+    /**
+     * Handles the payment request completion.
+     * @param result The status of the transaction, defined in {@link PaymentComplete}.
+     * @param onCompleteHandled Called when the complete has been handled.
+     */
+    void complete(int result, Runnable onCompleteHandled);
 
     /**
-     * The browser part of the {@link PaymentRequest#retry} implementation.
+     * Called when {@link PaymentRequest#retry} is invoked.
      * @param errors The merchant-defined error message strings, which are used to indicate to the
      *         end-user that something is wrong with the data of the payment response.
      */
-    void retry(PaymentValidationErrors errors);
+    void onRetry(PaymentValidationErrors errors);
 
     /**
      * Close this instance. The callers of this method should stop referencing this instance upon
@@ -67,17 +61,19 @@ public interface BrowserPaymentRequest {
     void close();
 
     /**
-     * Modifies the given method data.
+     * Modifies the given method data if needed, called when methodData is created.
      * @param methodData A map of method names to PaymentMethodData, could be null. This parameter
      * could be modified in place.
      */
-    default void modifyMethodData(@Nullable Map<String, PaymentMethodData> methodData) {}
+    default void modifyMethodDataIfNeeded(@Nullable Map<String, PaymentMethodData> methodData) {}
 
     /**
-     * Called when queryForQuota is created.
+     * Modifies queryForQuota if needed, called when queryForQuota is created.
      * @param queryForQuota The created queryForQuota, which could be modified in place.
+     * @param paymentOptions The payment options specified by the merchant.
      */
-    default void onQueryForQuotaCreated(Map<String, PaymentMethodData> queryForQuota) {}
+    default void modifyQueryForQuotaCreatedIfNeeded(
+            Map<String, PaymentMethodData> queryForQuota, PaymentOptions paymentOptions) {}
 
     /**
      * Performs extra validation for the given input and disconnects the mojo pipe if failed.
@@ -97,13 +93,14 @@ public interface BrowserPaymentRequest {
      * Called when the PaymentRequestSpec is validated.
      * @param spec The validated PaymentRequestSpec.
      */
-    default void onSpecValidated(PaymentRequestSpec spec) {}
+    void onSpecValidated(PaymentRequestSpec spec);
 
     /**
      * Adds the PaymentAppFactory(s) specified by the implementers to the given PaymentAppService.
      * @param service The PaymentAppService to be added with the factories.
+     * @param delegate The delegate of payment app factory.
      */
-    void addPaymentAppFactories(PaymentAppService service);
+    void addPaymentAppFactories(PaymentAppService service, PaymentAppFactoryDelegate delegate);
 
     default void onWhetherGooglePayBridgeEligible(boolean googlePayBridgeEligible,
             WebContents webContents, PaymentMethodData[] rawMethodData) {}
@@ -112,31 +109,37 @@ public interface BrowserPaymentRequest {
      * @return Whether at least one payment app (including basic-card payment app) is available
      *         (excluding the pending apps).
      */
-    default boolean hasAvailableApps() {
-        return false;
-    }
+    boolean hasAvailableApps();
 
     /**
-     * Shows the payment apps selector.
-     * @return Whether the showing is successful.
+     * Shows the payment apps selector or skip it to invoke the payment app directly.
      * @param isShowWaitingForUpdatedDetails Whether {@link PaymentRequest#show} is waiting for the
-     *         updated details.
+     *        updated details.
+     * @param total The total amount specified in the payment request.
+     * @param shouldSkipAppSelector True if the app selector should be skipped. Note that the
+     *        implementer may consider other factors before deciding whether to show or skip.
+     * @return The error of the showing if any; null if success.
      */
-    default boolean showAppSelector(boolean isShowWaitingForUpdatedDetails) {
-        return false;
-    }
+    @Nullable
+    String showOrSkipAppSelector(boolean isShowWaitingForUpdatedDetails, PaymentItem total,
+            boolean shouldSkipAppSelector);
 
     /**
      * Notifies the payment UI service of the payment apps pending to be handled
      * @param pendingApps The payment apps that are pending to be handled.
      */
-    default void notifyPaymentUiOfPendingApps(List<PaymentApp> pendingApps) {}
+    void notifyPaymentUiOfPendingApps(List<PaymentApp> pendingApps);
 
     /**
-     * Skips the app selector UI whether it is currently opened or not, and if applicable, invokes a
-     * payment app.
+     * Called when these conditions are satisfied: (1) show() has been called, (2) payment apps
+     * are all queried, and (3) PaymentDetails is finalized.
+     * @return The error if it fails; null otherwise.
+     * @param isUserGestureShow Whether PaymentRequest.show() was invoked with a user gesture.
      */
-    default void triggerPaymentAppUiSkipIfApplicable() {}
+    @Nullable
+    default String onShowCalledAndAppsQueriedAndDetailsFinalized(boolean isUserGestureShow) {
+        return null;
+    }
 
     /**
      * Called when a new payment app is created.
@@ -183,22 +186,28 @@ public interface BrowserPaymentRequest {
     /**
      * Opens a payment handler window and creates a WebContents with the given url to display in it.
      * @param url The url of the page to be opened in the window.
+     * @param isOffTheRecord Whether the profile is off the record.
+     * @param ukmSourceId The ukm source id assigned to the payment app.
      * @return The created WebContents.
      */
-    default WebContents openPaymentHandlerWindow(GURL url) {
+    default WebContents openPaymentHandlerWindow(
+            GURL url, boolean isOffTheRecord, long ukmSourceId) {
         return null;
-    }
-
-    /** @return Whether any payment UI is being shown. */
-    default boolean isShowingUi() {
-        return false;
     }
 
     /**
      * Continues the unfinished part of show() that was blocked for the payment details that was
      * pending to be updated.
+     * @param details The updated payment details.
+     * @param isFinishedQueryingPaymentApps Whether all payment app factories have been queried for
+     *         their payment apps.
+     * @return The error if it fails; null otherwise.
      */
-    default void continueShow() {}
+    @Nullable
+    default String continueShowWithUpdatedDetails(
+            PaymentDetails details, boolean isFinishedQueryingPaymentApps) {
+        return null;
+    }
 
     /**
      * If needed, do extra parsing and validation for details.
@@ -208,4 +217,16 @@ public interface BrowserPaymentRequest {
     default boolean parseAndValidateDetailsFurtherIfNeeded(PaymentDetails details) {
         return true;
     }
+
+    /** @return The selected payment app. */
+    PaymentApp getSelectedPaymentApp();
+
+    /** @return All of the available payment apps. */
+    List<PaymentApp> getPaymentApps();
+
+    /**
+     * @return Whether the payment apps includes at least one that is "complete" which is defined
+     *         by {@link PaymentApp#isComplete()}.
+     */
+    boolean hasAnyCompleteApp();
 }

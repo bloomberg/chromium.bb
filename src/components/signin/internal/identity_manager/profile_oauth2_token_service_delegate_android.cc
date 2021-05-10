@@ -8,12 +8,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "components/signin/public/android/jni_headers/ProfileOAuth2TokenServiceDelegate_jni.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -28,6 +28,8 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+using TokenResponseBuilder = OAuth2AccessTokenConsumer::TokenResponse::Builder;
 
 // Callback from FetchOAuth2TokenWithUsername().
 // Arguments:
@@ -86,7 +88,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
                                       const std::vector<std::string>& scopes) {
   JNIEnv* env = AttachCurrentThread();
   std::string scope = CombineScopes(scopes);
-  ScopedJavaLocalRef<jstring> j_username =
+  ScopedJavaLocalRef<jstring> j_email =
       ConvertUTF8ToJavaString(env, account_id_);
   ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
   std::unique_ptr<FetchOAuth2TokenCallback> heap_callback(
@@ -96,7 +98,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
 
   // Call into Java to get a new token.
   signin::Java_ProfileOAuth2TokenServiceDelegate_getAccessTokenFromNative(
-      env, oauth2_token_service_delegate_->GetJavaObject(), j_username, j_scope,
+      env, oauth2_token_service_delegate_->GetJavaObject(), j_email, j_scope,
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
 
@@ -113,8 +115,10 @@ void AndroidAccessTokenFetcher::OnAccessTokenResponse(
     return;
   }
   if (error.state() == GoogleServiceAuthError::NONE) {
-    FireOnGetTokenSuccess(OAuth2AccessTokenConsumer::TokenResponse(
-        access_token, expiration_time, std::string()));
+    FireOnGetTokenSuccess(TokenResponseBuilder()
+                              .WithAccessToken(access_token)
+                              .WithExpirationTime(expiration_time)
+                              .build());
   } else {
     FireOnGetTokenFailure(error);
   }
@@ -200,11 +204,11 @@ bool ProfileOAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
     return false;
   }
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_account_id =
+  ScopedJavaLocalRef<jstring> j_account_name =
       ConvertUTF8ToJavaString(env, account_name);
   jboolean refresh_token_is_available =
       signin::Java_ProfileOAuth2TokenServiceDelegate_hasOAuth2RefreshToken(
-          env, java_ref_, j_account_id);
+          env, java_ref_, j_account_name);
   return refresh_token_is_available == JNI_TRUE;
 }
 

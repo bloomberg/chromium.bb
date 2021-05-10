@@ -32,12 +32,22 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
  public:
   using DataCallback =
       base::OnceCallback<void(bool success, const std::string& data)>;
+  using ProxyPresenceCallback =
+      base::OnceCallback<void(bool is_any_proxy_present)>;
   virtual ~ServerProxy();
   virtual void SendEnrollRequest(const std::string& request,
                                  DataCallback on_response) = 0;
   virtual void SendCertificateRequest(const std::string& request,
                                       DataCallback on_response) = 0;
   virtual PrivacyCAType GetType();
+
+  // Looks ahead and checks if `SendEnrollRequest()` or
+  // `SendCertificateRequest()` uses any server proxy for real. Note that the
+  // callback only returns a boolean value; in case of any error, it is assumed
+  // to have proxies. This decision is motivated by the only caller,
+  // `AttestationFlowAdaptive`, has to assume the presence of the proxy if the
+  // information is not available.
+  virtual void CheckIfAnyProxyPresent(ProxyPresenceCallback callback) = 0;
 };
 
 // Implements the message flow for Chrome OS attestation tasks.  Generally this
@@ -45,7 +55,8 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
 // and the Chrome OS Privacy CA server.  Sample usage:
 //
 //    AttestationFlow flow(std::move(my_server_proxy));
-//    AttestationFlow::CertificateCallback callback = base::Bind(&MyCallback);
+//    AttestationFlow::CertificateCallback callback =
+//        base::BindOnce(&MyCallback);
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);
 //
 // This class is not thread safe.

@@ -10,7 +10,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
 
 namespace ash {
@@ -273,6 +272,8 @@ AppListConfig::AppListConfig(AppListConfigType type)
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
       search_list_icon_dimension_(20),
+      search_list_answer_icon_dimension_(24),
+      search_list_image_icon_dimension_(32),
       search_list_icon_vertical_bar_dimension_(48),
       search_list_badge_icon_dimension_(14),
       suggestion_chip_icon_dimension_(20),
@@ -305,7 +306,6 @@ AppListConfig::AppListConfig(AppListConfigType type)
           FolderUnclippedIconDimensionForType(type)),
       folder_icon_radius_(FolderClippedIconDimensionForType(type) / 2),
       folder_background_radius_(12),
-      folder_bubble_color_(SkColorSetA(gfx::kGoogleGrey100, 0x7A)),
       item_icon_in_folder_icon_dimension_(
           ItemIconInFolderIconDimensionForType(type)),
       item_icon_in_folder_icon_margin_(ItemIconInFolderIconMarginForType(type)),
@@ -315,7 +315,6 @@ AppListConfig::AppListConfig(AppListConfigType type)
       page_flip_zone_size_(20),
       grid_tile_spacing_in_folder_(8),
       blur_radius_(30),
-      grid_selected_color_(gfx::kGoogleBlue300),
       page_transition_duration_(base::TimeDelta::FromMilliseconds(250)),
       overscroll_page_transition_duration_(
           base::TimeDelta::FromMilliseconds(50)),
@@ -392,6 +391,10 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       search_tile_badge_icon_offset_(
           base_config.search_tile_badge_icon_offset_),
       search_list_icon_dimension_(base_config.search_list_icon_dimension_),
+      search_list_answer_icon_dimension_(
+          base_config.search_list_answer_icon_dimension_),
+      search_list_image_icon_dimension_(
+          base_config.search_list_image_icon_dimension_),
       search_list_icon_vertical_bar_dimension_(
           base_config.search_list_icon_vertical_bar_dimension_),
       search_list_badge_icon_dimension_(
@@ -442,7 +445,6 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
                                    inner_tile_scale_y)),
       folder_background_radius_(
           MinScale(base_config.folder_background_radius_, scale_x, scale_y)),
-      folder_bubble_color_(base_config.folder_bubble_color_),
       item_icon_in_folder_icon_dimension_(
           MinScale(base_config.item_icon_in_folder_icon_dimension_,
                    scale_x,
@@ -463,7 +465,6 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
                    scale_x,
                    inner_tile_scale_y)),
       blur_radius_(base_config.blur_radius_),
-      grid_selected_color_(base_config.grid_selected_color_),
       page_transition_duration_(base_config.page_transition_duration_),
       overscroll_page_transition_duration_(
           base_config.overscroll_page_transition_duration_),

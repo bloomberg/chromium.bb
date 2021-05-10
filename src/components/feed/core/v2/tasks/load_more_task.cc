@@ -9,8 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/time/clock.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
@@ -24,20 +22,24 @@
 
 namespace feed {
 
-LoadMoreTask::LoadMoreTask(FeedStream* stream,
+LoadMoreTask::LoadMoreTask(const StreamType& stream_type,
+                           FeedStream* stream,
                            base::OnceCallback<void(Result)> done_callback)
-    : stream_(stream), done_callback_(std::move(done_callback)) {}
+    : stream_type_(stream_type),
+      stream_(stream),
+      done_callback_(std::move(done_callback)) {}
 
 LoadMoreTask::~LoadMoreTask() = default;
 
 void LoadMoreTask::Run() {
   // Check prerequisites.
-  StreamModel* model = stream_->GetModel();
+  // TODO(crbug/1152592): Parameterize stream loading by stream type.
+  StreamModel* model = stream_->GetModel(stream_type_);
   if (!model)
     return Done(LoadStreamStatus::kLoadMoreModelIsNotLoaded);
 
   LoadStreamStatus final_status =
-      stream_->ShouldMakeFeedQueryRequest(/*is_load_more=*/true);
+      stream_->ShouldMakeFeedQueryRequest(stream_type_, /*is_load_more=*/true);
   if (final_status != LoadStreamStatus::kNoStatus)
     return Done(final_status);
 
@@ -48,7 +50,8 @@ void LoadMoreTask::Run() {
 }
 
 void LoadMoreTask::UploadActionsComplete(UploadActionsTask::Result result) {
-  StreamModel* model = stream_->GetModel();
+  // TODO(crbug/1152592): Parameterize stream loading by stream type.
+  StreamModel* model = stream_->GetModel(stream_type_);
   DCHECK(model) << "Model was unloaded outside of a Task";
 
   // Determine whether the load more request should be forced signed-out
@@ -65,19 +68,21 @@ void LoadMoreTask::UploadActionsComplete(UploadActionsTask::Result result) {
   // and signed-out content, which we don't want.
   bool force_signed_out_request = !model->signed_in();
   // Send network request.
-  fetch_start_time_ = stream_->GetTickClock()->NowTicks();
+  fetch_start_time_ = base::TimeTicks::Now();
+  // TODO(crbug/1152592): Send a different network request type for WebFeeds.
   stream_->GetNetwork()->SendQueryRequest(
+      NetworkRequestType::kNextPage,
       CreateFeedQueryLoadMoreRequest(
-          stream_->GetRequestMetadata(/*is_for_next_page=*/true),
+          stream_->GetRequestMetadata(stream_type_, /*is_for_next_page=*/true),
           stream_->GetMetadata()->GetConsistencyToken(),
-          stream_->GetModel()->GetNextPageToken()),
+          stream_->GetModel(stream_type_)->GetNextPageToken()),
       force_signed_out_request,
       base::BindOnce(&LoadMoreTask::QueryRequestComplete, GetWeakPtr()));
 }
 
 void LoadMoreTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
-  StreamModel* model = stream_->GetModel();
+  StreamModel* model = stream_->GetModel(stream_type_);
   DCHECK(model) << "Model was unloaded outside of a Task";
 
   if (!result.response_body)
@@ -87,7 +92,7 @@ void LoadMoreTask::QueryRequestComplete(
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkLoadMore,
-          result.response_info.was_signed_in, stream_->GetClock()->Now());
+          result.response_info.was_signed_in, base::Time::Now());
 
   if (!translated_response.model_update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);
@@ -95,8 +100,7 @@ void LoadMoreTask::QueryRequestComplete(
   loaded_new_content_from_network_ =
       !translated_response.model_update_request->stream_structures.empty();
 
-  stream_->GetMetadata()->MaybeUpdateSessionId(translated_response.session_id,
-                                               stream_->GetClock());
+  stream_->GetMetadata()->MaybeUpdateSessionId(translated_response.session_id);
 
   model->Update(std::move(translated_response.model_update_request));
 
@@ -108,6 +112,7 @@ void LoadMoreTask::QueryRequestComplete(
 
 void LoadMoreTask::Done(LoadStreamStatus status) {
   Result result;
+  result.stream_type = stream_type_;
   result.final_status = status;
   result.loaded_new_content_from_network = loaded_new_content_from_network_;
   std::move(done_callback_).Run(result);

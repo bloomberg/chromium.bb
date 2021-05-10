@@ -14,28 +14,30 @@
 
 #include "src/ast/binary_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BinaryExpression);
+
 namespace tint {
 namespace ast {
 
-BinaryExpression::BinaryExpression() : Expression() {}
-
-BinaryExpression::BinaryExpression(BinaryOp op,
-                                   std::unique_ptr<Expression> lhs,
-                                   std::unique_ptr<Expression> rhs)
-    : Expression(), op_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
-
 BinaryExpression::BinaryExpression(const Source& source,
                                    BinaryOp op,
-                                   std::unique_ptr<Expression> lhs,
-                                   std::unique_ptr<Expression> rhs)
-    : Expression(source), op_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+                                   Expression* lhs,
+                                   Expression* rhs)
+    : Base(source), op_(op), lhs_(lhs), rhs_(rhs) {}
 
 BinaryExpression::BinaryExpression(BinaryExpression&&) = default;
 
 BinaryExpression::~BinaryExpression() = default;
 
-bool BinaryExpression::IsBinary() const {
-  return true;
+BinaryExpression* BinaryExpression::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* l = ctx->Clone(lhs_);
+  auto* r = ctx->Clone(rhs_);
+  return ctx->dst->create<BinaryExpression>(src, op_, l, r);
 }
 
 bool BinaryExpression::IsValid() const {
@@ -48,15 +50,17 @@ bool BinaryExpression::IsValid() const {
   return op_ != BinaryOp::kNone;
 }
 
-void BinaryExpression::to_str(std::ostream& out, size_t indent) const {
+void BinaryExpression::to_str(const semantic::Info& sem,
+                              std::ostream& out,
+                              size_t indent) const {
   make_indent(out, indent);
-  out << "Binary{" << std::endl;
-  lhs_->to_str(out, indent + 2);
+  out << "Binary[" << result_type_str(sem) << "]{" << std::endl;
+  lhs_->to_str(sem, out, indent + 2);
 
   make_indent(out, indent + 2);
   out << op_ << std::endl;
 
-  rhs_->to_str(out, indent + 2);
+  rhs_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

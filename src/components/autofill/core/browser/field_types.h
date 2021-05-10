@@ -10,6 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+#include "components/autofill/core/common/dense_set.h"
 
 namespace autofill {
 
@@ -233,9 +234,12 @@ enum ServerFieldType {
   // The floor number within a building.
   ADDRESS_HOME_FLOOR = 116,
 
+  // The full name including the honorific prefix.
+  NAME_FULL_WITH_HONORIFIC_PREFIX = 117,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 117,
+  MAX_VALID_FIELD_TYPE = 118,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
@@ -323,24 +327,25 @@ enum HtmlFieldMode {
   HTML_MODE_SHIPPING,
 };
 
-enum FieldTypeGroup {
-  NO_GROUP,
-  NAME,
-  NAME_BILLING,
-  EMAIL,
-  COMPANY,
-  ADDRESS_HOME,
-  ADDRESS_BILLING,
-  PHONE_HOME,
-  PHONE_BILLING,
-  CREDIT_CARD,
-  PASSWORD_FIELD,
-  TRANSACTION,
-  USERNAME_FIELD,
-  UNFILLABLE,
+enum class FieldTypeGroup {
+  kNoGroup,
+  kName,
+  kNameBilling,
+  kEmail,
+  kCompany,
+  kAddressHome,
+  kAddressBilling,
+  kPhoneHome,
+  kPhoneBilling,
+  kCreditCard,
+  kPasswordField,
+  kTransaction,
+  kUsernameField,
+  kUnfillable,
+  kMaxValue = kUnfillable,
 };
 
-typedef std::set<ServerFieldType> ServerFieldTypeSet;
+using ServerFieldTypeSet = DenseSet<ServerFieldType, MAX_VALID_FIELD_TYPE>;
 
 // Returns whether the field can be filled with data.
 bool IsFillableFieldType(ServerFieldType field_type);

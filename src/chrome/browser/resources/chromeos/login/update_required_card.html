@@ -6,7 +6,9 @@
 
 <link rel="import" href="/components/common_styles.html">
 <link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="/components/oobe_dialog.html">
 <link rel="import" href="/components/oobe_i18n_behavior.html">
+<link rel="import" href="/components/oobe_dialog_host_behavior.html">
 
 <!--
   Update required card that informs user that current chromeos version does not
@@ -152,7 +154,7 @@
     </oobe-dialog>
 
     <!-- Delete users data confirmation dialog (shown when EOL reached) -->
-    <oobe-help-dialog id="confirmationDialog"
+    <oobe-modal-dialog id="confirmationDialog"
         title-key="eolDeleteUsersDataPopupTitle">
       <div slot="content">
         [[i18nDynamic(locale, 'eolDeleteUsersDataPopupMessage', deviceName)]]
@@ -165,7 +167,7 @@
             id="confirmDelete" text-key="eolDeleteUsersDataConfirm">
         </oobe-text-button>
       </div>
-    </oobe-help-dialog>
+    </oobe-modal-dialog>
 
   </template>
 </dom-module>

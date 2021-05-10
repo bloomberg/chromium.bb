@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "url/gurl.h"
 
 namespace extension_urls {
@@ -77,12 +78,6 @@ extern const char kGoogleSheetsAppId[];
 
 // The extension id of the Google Slides application.
 extern const char kGoogleSlidesAppId[];
-
-// The extension id of the HTerm app for ChromeOS.
-extern const char kHTermAppId[];
-
-// The extension id of the HTerm dev app for ChromeOS.
-extern const char kHTermDevAppId[];
 
 // The extension id of the Identity API UI application.
 extern const char kIdentityApiUiAppId[];
@@ -182,7 +177,7 @@ enum AppLaunchBucket {
   APP_LAUNCH_BUCKET_INVALID
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the Assessment Assistant extension.
 extern const char kAssessmentAssistantExtensionId[];
 // The extension id of the Accessibility Common extension.

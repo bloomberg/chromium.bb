@@ -16,7 +16,7 @@ class MultiDeviceSetupScreen;
 // WebUI representation.
 class MultiDeviceSetupScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"multidevice-setup"};
+  constexpr static StaticOobeScreenId kScreenId{"multidevice-setup-screen"};
 
   virtual ~MultiDeviceSetupScreenView() = default;
 
@@ -37,6 +37,7 @@ class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
 
   // MultiDeviceSetupScreenView:
   void Bind(MultiDeviceSetupScreen* screen) override;

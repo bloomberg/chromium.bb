@@ -15,7 +15,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#import "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/first_run/first_run_metrics.h"
@@ -51,25 +51,32 @@ void CreateSentinel() {
 }
 
 // Helper function for recording first run metrics.
-void RecordFirstRunMetricsInternal(ChromeBrowserState* browserState,
-                                   bool sign_in_attempted,
-                                   bool has_sso_accounts) {
+void RecordFirstRunMetricsInternal(
+    ChromeBrowserState* browserState,
+    first_run::SignInAttemptStatus sign_in_attempt_status,
+    bool has_sso_accounts) {
   first_run::SignInStatus sign_in_status;
   bool user_signed_in = IdentityManagerFactory::GetForBrowserState(browserState)
-                            ->HasPrimaryAccount();
+                            ->HasPrimaryAccount(signin::ConsentLevel::kSync);
   if (user_signed_in) {
     sign_in_status = has_sso_accounts
                          ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
                          : first_run::SIGNIN_SUCCESSFUL;
   } else {
-    if (sign_in_attempted) {
-      sign_in_status = has_sso_accounts
-                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
-                           : first_run::SIGNIN_SKIPPED_GIVEUP;
-    } else {
-      sign_in_status = has_sso_accounts
-                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
-                           : first_run::SIGNIN_SKIPPED_QUICK;
+    switch (sign_in_attempt_status) {
+      case first_run::SignInAttemptStatus::NOT_ATTEMPTED:
+        sign_in_status = has_sso_accounts
+                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
+                             : first_run::SIGNIN_SKIPPED_QUICK;
+        break;
+      case first_run::SignInAttemptStatus::ATTEMPTED:
+        sign_in_status = has_sso_accounts
+                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
+                             : first_run::SIGNIN_SKIPPED_GIVEUP;
+        break;
+      case first_run::SignInAttemptStatus::SKIPPED_BY_POLICY:
+        sign_in_status = first_run::SIGNIN_SKIPPED_POLICY;
+        break;
     }
   }
   UMA_HISTOGRAM_ENUMERATION("FirstRun.SignIn", sign_in_status,
@@ -80,14 +87,15 @@ bool kFirstRunSentinelCreated = false;
 
 }  // namespace
 
-void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
-                                           BOOL sign_in_attempted,
-                                           BOOL has_sso_account) {
+void WriteFirstRunSentinelAndRecordMetrics(
+    ChromeBrowserState* browserState,
+    first_run::SignInAttemptStatus sign_in_attempt_status,
+    BOOL has_sso_account) {
   kFirstRunSentinelCreated = true;
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CreateSentinel));
-  RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
+  RecordFirstRunMetricsInternal(browserState, sign_in_attempt_status,
                                 has_sso_account);
 }
 
@@ -98,8 +106,8 @@ void FinishFirstRun(ChromeBrowserState* browserState,
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kChromeFirstRunUIWillFinishNotification
                     object:nil];
-  WriteFirstRunSentinelAndRecordMetrics(browserState, config.signInAttempted,
-                                        config.hasSSOAccount);
+  WriteFirstRunSentinelAndRecordMetrics(
+      browserState, config.signInAttemptStatus, config.hasSSOAccount);
 
   // Display the sync errors infobar.
   DisplaySyncErrors(browserState, web_state, presenter);

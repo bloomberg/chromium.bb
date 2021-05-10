@@ -140,6 +140,13 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   EnsureStableParentValue(new_host);
   if (new_host->GetParent()) {
     AssertRenderFrameExists(new_host->GetParent());
+    // RenderFrameCreated should be called before RenderFrameHostChanged for all
+    // the subframes except for Portals which do not have a live RenderFrame in
+    // the renderer process.
+    if (new_host->GetFrameOwnerElementType() !=
+        blink::mojom::FrameOwnerElementType::kPortal) {
+      AssertRenderFrameExists(new_host);
+    }
     CHECK(current_hosts_.count(GetRoutingPair(new_host->GetParent())))
         << "Parent of frame being committed must be current.";
   }
@@ -206,9 +213,9 @@ void WebContentsObserverConsistencyChecker::ReadyToCommitNavigation(
   CHECK(NavigationIsOngoing(navigation_handle));
 
   CHECK(!navigation_handle->HasCommitted());
-  CHECK(navigation_handle->GetRenderFrameHost());
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
-  CHECK(navigation_handle->GetRenderFrameHost() != nullptr);
+  CHECK(navigation_handle->GetRenderFrameHost());
+  CHECK(navigation_handle->GetRenderFrameHost()->IsRenderFrameLive());
 
   ready_to_commit_hosts_.insert(
       std::make_pair(navigation_handle->GetNavigationId(),
@@ -225,10 +232,11 @@ void WebContentsObserverConsistencyChecker::DidFinishNavigation(
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   CHECK(!navigation_handle->HasCommitted() ||
-        navigation_handle->GetRenderFrameHost() != nullptr);
-
+        navigation_handle->GetRenderFrameHost());
   CHECK(!navigation_handle->HasCommitted() ||
         navigation_handle->GetRenderFrameHost()->IsCurrent());
+  CHECK(!navigation_handle->HasCommitted() ||
+        navigation_handle->GetRenderFrameHost()->IsRenderFrameLive());
 
   // If ReadyToCommitNavigation was dispatched, verify that the
   // |navigation_handle| has the same RenderFrameHost at this time as the one

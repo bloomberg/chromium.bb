@@ -6,6 +6,9 @@
  * @fileoverview Polymer element for displaying AD domain joining and AD
  * Authenticate user screens.
  */
+
+(function() {
+
 // Possible error states of the screen. Must be in the same order as
 // ActiveDirectoryErrorState enum values.
 /** @enum {number} */ var ACTIVE_DIRECTORY_ERROR_STATE = {
@@ -15,6 +18,11 @@
   BAD_USERNAME: 3,
   BAD_AUTH_PASSWORD: 4,
   BAD_UNLOCK_PASSWORD: 5,
+};
+
+const adLoginStep = {
+  UNLOCK: 'unlock',
+  CREDS: 'creds',
 };
 
 var DEFAULT_ENCRYPTION_TYPES = 'strong';
@@ -32,7 +40,7 @@ var JoinConfigType;
 Polymer({
   is: 'offline-ad-login-element',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior],
 
   EXTERNAL_API: [
     'reset',
@@ -52,10 +60,6 @@ Polymer({
      * Whether the screen is for domain join.
      */
     isDomainJoin: {type: Boolean, value: false},
-    /**
-     * Whether the unlock option should be shown.
-     */
-    unlockPasswordStep: {type: Boolean, value: false, observer: 'focus'},
     /**
      * The kerberos realm (AD Domain), the machine is part of.
      */
@@ -138,6 +142,12 @@ Polymer({
     'calculateUserInputValue_(selectedConfigOption_)',
   ],
 
+  UI_STEPS: adLoginStep,
+
+  defaultUIStep() {
+    return adLoginStep.CREDS;
+  },
+
   /** @private Used for 'More options' dialog. */
   storedOrgUnit_: String,
 
@@ -175,6 +185,18 @@ Polymer({
    * @private {boolean}
    */
   errorStateLocked_: false,
+
+  /**
+   * True when we skip unlock step and show back button option.
+   * @private {boolean}
+   */
+  backToUnlockButtonVisible_: false,
+
+  /**
+   * True when join configurations are visible.
+   * @private {boolean}
+   */
+  joinConfigVisible_: false,
 
   /** @override */
   ready() {
@@ -231,7 +253,7 @@ Polymer({
   },
 
   focus() {
-    if (this.unlockPasswordStep) {
+    if (this.uiStep === adLoginStep.UNLOCK) {
       this.$.unlockPasswordInput.focus();
     } else if (this.isDomainJoin && !this.$.machineNameInput.value) {
       this.$.machineNameInput.focus();
@@ -276,9 +298,9 @@ Polymer({
    * @param {Array<JoinConfigType>} options
    */
   setJoinConfigurationOptions(options) {
-    this.$.backToUnlockButton.hidden = true;
+    this.backToUnlockButtonVisible_ = false;
     if (!options || options.length < 1) {
-      this.$.joinConfig.hidden = true;
+      this.joinConfigVisible_ = false;
       return;
     }
     this.joinConfigOptions_ = options;
@@ -290,7 +312,7 @@ Polymer({
         this.$.joinConfigSelect, selectList,
         this.onJoinConfigSelected_.bind(this));
     this.onJoinConfigSelected_(this.$.joinConfigSelect.value);
-    this.$.joinConfig.hidden = false;
+    this.joinConfigVisible_ = true;
   },
 
   /** @private */
@@ -369,7 +391,7 @@ Polymer({
     }
     this.fire('dialogHidden');
     this.disabled = false;
-    this.focus();
+    this.$.moreOptionsBtn.focus();
   },
 
   /** @private */
@@ -382,15 +404,17 @@ Polymer({
 
   /** @private */
   onSkipClicked_() {
-    this.$.backToUnlockButton.hidden = false;
-    this.unlockPasswordStep = false;
+    this.backToUnlockButtonVisible_ = true;
+    this.setUIStep(adLoginStep.CREDS);
+    this.focus();
   },
 
   /** @private */
   onBackToUnlock_() {
     if (this.disabled)
       return;
-    this.unlockPasswordStep = true;
+    this.setUIStep(adLoginStep.UNLOCK);
+    this.focus();
   },
 
   /**
@@ -581,3 +605,4 @@ Polymer({
       this.$.credsStep.classList.remove('full-disabled');
   },
 });
+})();

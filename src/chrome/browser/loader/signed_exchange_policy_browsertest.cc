@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -29,13 +30,15 @@ class SignedExchangePolicyBrowserTest : public CertVerifierBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture();
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
   }
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
  private:
   void SetUp() override {
@@ -74,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyBrowserTest, BlackList) {
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                blacklist.Clone(), nullptr);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::SetEnterpriseUsersDefaults(&policies);
 #endif
   policy_provider_.UpdateChromePolicy(policies);

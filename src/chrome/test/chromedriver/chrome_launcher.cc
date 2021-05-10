@@ -864,9 +864,9 @@ namespace internal {
 void ConvertHexadecimalToIDAlphabet(std::string* id) {
   for (size_t i = 0; i < id->size(); ++i) {
     int val;
-    if (base::HexStringToInt(base::StringPiece(id->begin() + i,
-                                               id->begin() + i + 1),
-                             &val)) {
+    if (base::HexStringToInt(
+            base::MakeStringPiece(id->begin() + i, id->begin() + i + 1),
+            &val)) {
       (*id)[i] = val + 'a';
     } else {
       (*id)[i] = 'a';
@@ -933,10 +933,10 @@ Status ProcessExtension(const std::string& extension,
   std::string id;
 
   if (is_crx_file) {
-    crx_file::VerifierResult result =
-        crx_file::Verify(extension_crx, crx_file::VerifierFormat::CRX3,
-                         {} /** required_key_hashes */,
-                         {} /** required_file_hash */, &public_key_base64, &id);
+    crx_file::VerifierResult result = crx_file::Verify(
+        extension_crx, crx_file::VerifierFormat::CRX3,
+        {} /** required_key_hashes */, {} /** required_file_hash */,
+        &public_key_base64, &id, /*compressed_verified_contents=*/nullptr);
     if (result == crx_file::VerifierResult::ERROR_HEADER_INVALID) {
       return Status(kUnknownError,
                     "CRX verification failed to parse extension header. Chrome "
@@ -1189,7 +1189,7 @@ std::string GetTerminationReason(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
       return "exited abnormally";
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
     case base::TERMINATION_STATUS_OOM:

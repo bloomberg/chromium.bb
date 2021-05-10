@@ -464,6 +464,17 @@ static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES_ALL];
 static void init_intra_predictors_internal(void) {
   assert(NELEMENTS(mode_to_angle_map) == INTRA_MODES);
 
+#if CONFIG_REALTIME_ONLY
+#define INIT_RECTANGULAR(p, type)             \
+  p[TX_4X8] = aom_##type##_predictor_4x8;     \
+  p[TX_8X4] = aom_##type##_predictor_8x4;     \
+  p[TX_8X16] = aom_##type##_predictor_8x16;   \
+  p[TX_16X8] = aom_##type##_predictor_16x8;   \
+  p[TX_16X32] = aom_##type##_predictor_16x32; \
+  p[TX_32X16] = aom_##type##_predictor_32x16; \
+  p[TX_32X64] = aom_##type##_predictor_32x64; \
+  p[TX_64X32] = aom_##type##_predictor_64x32;
+#else
 #define INIT_RECTANGULAR(p, type)             \
   p[TX_4X8] = aom_##type##_predictor_4x8;     \
   p[TX_8X4] = aom_##type##_predictor_8x4;     \
@@ -479,6 +490,7 @@ static void init_intra_predictors_internal(void) {
   p[TX_32X8] = aom_##type##_predictor_32x8;   \
   p[TX_16X64] = aom_##type##_predictor_16x64; \
   p[TX_64X16] = aom_##type##_predictor_64x16;
+#endif
 
 #define INIT_NO_4X4(p, type)                  \
   p[TX_8X8] = aom_##type##_predictor_8x8;     \
@@ -855,10 +867,6 @@ void av1_filter_intra_predictor_c(uint8_t *dst, ptrdiff_t stride,
 
   assert(bw <= 32 && bh <= 32);
 
-  // The initialization is just for silencing Jenkins static analysis warnings
-  for (r = 0; r < bh + 1; ++r)
-    memset(buffer[r], 0, (bw + 1) * sizeof(buffer[0][0]));
-
   for (r = 0; r < bh; ++r) buffer[r + 1][0] = left[r];
   memcpy(buffer[0], &above[-1], (bw + 1) * sizeof(uint8_t));
 
@@ -874,16 +882,19 @@ void av1_filter_intra_predictor_c(uint8_t *dst, ptrdiff_t stride,
       for (int k = 0; k < 8; ++k) {
         int r_offset = k >> 2;
         int c_offset = k & 0x03;
+        int pr = av1_filter_intra_taps[mode][k][0] * p0 +
+                 av1_filter_intra_taps[mode][k][1] * p1 +
+                 av1_filter_intra_taps[mode][k][2] * p2 +
+                 av1_filter_intra_taps[mode][k][3] * p3 +
+                 av1_filter_intra_taps[mode][k][4] * p4 +
+                 av1_filter_intra_taps[mode][k][5] * p5 +
+                 av1_filter_intra_taps[mode][k][6] * p6;
+        // Section 7.11.2.3 specifies the right-hand side of the assignment as
+        //   Clip1( Round2Signed( pr, INTRA_FILTER_SCALE_BITS ) ).
+        // Since Clip1() clips a negative value to 0, it is safe to replace
+        // Round2Signed() with Round2().
         buffer[r + r_offset][c + c_offset] =
-            clip_pixel(ROUND_POWER_OF_TWO_SIGNED(
-                av1_filter_intra_taps[mode][k][0] * p0 +
-                    av1_filter_intra_taps[mode][k][1] * p1 +
-                    av1_filter_intra_taps[mode][k][2] * p2 +
-                    av1_filter_intra_taps[mode][k][3] * p3 +
-                    av1_filter_intra_taps[mode][k][4] * p4 +
-                    av1_filter_intra_taps[mode][k][5] * p5 +
-                    av1_filter_intra_taps[mode][k][6] * p6,
-                FILTER_INTRA_SCALE_BITS));
+            clip_pixel(ROUND_POWER_OF_TWO(pr, FILTER_INTRA_SCALE_BITS));
       }
     }
 
@@ -906,10 +917,6 @@ static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
 
   assert(bw <= 32 && bh <= 32);
 
-  // The initialization is just for silencing Jenkins static analysis warnings
-  for (r = 0; r < bh + 1; ++r)
-    memset(buffer[r], 0, (bw + 1) * sizeof(buffer[0][0]));
-
   for (r = 0; r < bh; ++r) buffer[r + 1][0] = left[r];
   memcpy(buffer[0], &above[-1], (bw + 1) * sizeof(buffer[0][0]));
 
@@ -925,17 +932,19 @@ static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
       for (int k = 0; k < 8; ++k) {
         int r_offset = k >> 2;
         int c_offset = k & 0x03;
-        buffer[r + r_offset][c + c_offset] =
-            clip_pixel_highbd(ROUND_POWER_OF_TWO_SIGNED(
-                                  av1_filter_intra_taps[mode][k][0] * p0 +
-                                      av1_filter_intra_taps[mode][k][1] * p1 +
-                                      av1_filter_intra_taps[mode][k][2] * p2 +
-                                      av1_filter_intra_taps[mode][k][3] * p3 +
-                                      av1_filter_intra_taps[mode][k][4] * p4 +
-                                      av1_filter_intra_taps[mode][k][5] * p5 +
-                                      av1_filter_intra_taps[mode][k][6] * p6,
-                                  FILTER_INTRA_SCALE_BITS),
-                              bd);
+        int pr = av1_filter_intra_taps[mode][k][0] * p0 +
+                 av1_filter_intra_taps[mode][k][1] * p1 +
+                 av1_filter_intra_taps[mode][k][2] * p2 +
+                 av1_filter_intra_taps[mode][k][3] * p3 +
+                 av1_filter_intra_taps[mode][k][4] * p4 +
+                 av1_filter_intra_taps[mode][k][5] * p5 +
+                 av1_filter_intra_taps[mode][k][6] * p6;
+        // Section 7.11.2.3 specifies the right-hand side of the assignment as
+        //   Clip1( Round2Signed( pr, INTRA_FILTER_SCALE_BITS ) ).
+        // Since Clip1() clips a negative value to 0, it is safe to replace
+        // Round2Signed() with Round2().
+        buffer[r + r_offset][c + c_offset] = clip_pixel_highbd(
+            ROUND_POWER_OF_TWO(pr, FILTER_INTRA_SCALE_BITS), bd);
       }
     }
 

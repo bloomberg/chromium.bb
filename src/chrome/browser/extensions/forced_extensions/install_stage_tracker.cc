@@ -5,13 +5,15 @@
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 
 #include "base/check_op.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "net/base/net_errors.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
 
@@ -33,16 +35,17 @@ bool ShouldOverrideCurrentStage(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 InstallStageTracker::UserInfo::UserInfo(const UserInfo&) = default;
 InstallStageTracker::UserInfo::UserInfo(user_manager::UserType user_type,
                                         bool is_new_user)
     : user_type(user_type), is_new_user(is_new_user) {}
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // InstallStageTracker::InstallationData implementation.
 
 InstallStageTracker::InstallationData::InstallationData() = default;
+InstallStageTracker::InstallationData::~InstallationData() = default;
 
 InstallStageTracker::InstallationData::InstallationData(
     const InstallationData&) = default;
@@ -123,7 +126,7 @@ InstallStageTracker* InstallStageTracker::Get(
   return InstallStageTrackerFactory::GetForBrowserContext(context);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 InstallStageTracker::UserInfo InstallStageTracker::GetUserInfo(
     Profile* profile) {
   const user_manager::User* user =
@@ -134,7 +137,7 @@ InstallStageTracker::UserInfo InstallStageTracker::GetUserInfo(
   UserInfo current_user(user->GetType(), is_new_user);
   return current_user;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void InstallStageTracker::ReportInfoOnNoUpdatesFailure(
     const ExtensionId& id,
@@ -303,11 +306,18 @@ void InstallStageTracker::ReportCrxInstallError(
 
 void InstallStageTracker::ReportSandboxedUnpackerFailureReason(
     const ExtensionId& id,
-    SandboxedUnpackerFailureReason unpacker_failure_reason) {
+    const CrxInstallError& crx_install_error) {
+  base::Optional<SandboxedUnpackerFailureReason> unpacker_failure_reason =
+      crx_install_error.sandbox_failure_detail();
+  DCHECK(unpacker_failure_reason);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason =
       FailureReason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE;
   data.unpacker_failure_reason = unpacker_failure_reason;
+  if (data.unpacker_failure_reason ==
+      SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED) {
+    data.unpacker_client_failed_error = crx_install_error.message();
+  }
   NotifyObserversOfFailure(
       id, FailureReason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE, data);
 }

@@ -31,6 +31,7 @@ enum VendorID : uint32_t
     VENDOR_ID_QUALCOMM = 0x5143,
     VENDOR_ID_SAMSUNG  = 0x144D,
     VENDOR_ID_VMWARE   = 0x15AD,
+    VENDOR_ID_VIVANTE  = 0x9999,
 };
 
 enum AndroidDeviceID : uint32_t
@@ -92,6 +93,11 @@ inline bool IsSamsung(uint32_t vendorId)
     return vendorId == VENDOR_ID_SAMSUNG;
 }
 
+inline bool IsVivante(uint32_t vendorId)
+{
+    return vendorId == VENDOR_ID_VIVANTE;
+}
+
 inline bool IsNexus5X(uint32_t vendorId, uint32_t deviceId)
 {
     return IsQualcomm(vendorId) && deviceId == ANDROID_DEVICE_ID_NEXUS5X;
@@ -131,6 +137,7 @@ class IntelDriverVersion
     uint16_t mVersionPart;
 };
 
+bool IsSandyBridge(uint32_t DeviceId);
 bool IsIvyBridge(uint32_t DeviceId);
 bool IsHaswell(uint32_t DeviceId);
 bool IsBroadwell(uint32_t DeviceId);

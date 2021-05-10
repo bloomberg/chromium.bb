@@ -21,6 +21,7 @@
 #include "api/call/transport.h"
 #include "api/crypto/frame_encryptor_interface.h"
 #include "api/rtc_event_log/rtc_event_log.h"
+#include "api/sequence_checker.h"
 #include "audio/channel_send_frame_transformer_delegate.h"
 #include "audio/utility/audio_frame_operations.h"
 #include "call/rtp_transport_controller_send_interface.h"
@@ -41,7 +42,6 @@
 #include "rtc_base/rate_limiter.h"
 #include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/task_queue.h"
-#include "rtc_base/thread_checker.h"
 #include "rtc_base/time_utils.h"
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/field_trial.h"
@@ -179,8 +179,8 @@ class ChannelSend : public ChannelSendInterface,
   // specific threads we know about. The goal is to eventually split up
   // voe::Channel into parts with single-threaded semantics, and thereby reduce
   // the need for locks.
-  rtc::ThreadChecker worker_thread_checker_;
-  rtc::ThreadChecker module_process_thread_checker_;
+  SequenceChecker worker_thread_checker_;
+  SequenceChecker module_process_thread_checker_;
   // Methods accessed from audio and video threads are checked for sequential-
   // only access. We don't necessarily own and control these threads, so thread
   // checkers cannot be used. E.g. Chromium may transfer "ownership" from one
@@ -218,8 +218,7 @@ class ChannelSend : public ChannelSendInterface,
   const std::unique_ptr<RtpPacketSenderProxy> rtp_packet_pacer_proxy_;
   const std::unique_ptr<RateLimiter> retransmission_rate_limiter_;
 
-  rtc::ThreadChecker construction_thread_;
-
+  SequenceChecker construction_thread_;
 
   bool encoder_queue_is_active_ RTC_GUARDED_BY(encoder_queue_) = false;
 
@@ -241,6 +240,8 @@ class ChannelSend : public ChannelSendInterface,
   // Defined last to ensure that there are no running tasks when the other
   // members are destroyed.
   rtc::TaskQueue encoder_queue_;
+
+  const bool fixing_timestamp_stall_;
 };
 
 const int kTelephoneEventAttenuationdB = 10;
@@ -262,7 +263,7 @@ class RtpPacketSenderProxy : public RtpPacketSender {
   }
 
  private:
-  rtc::ThreadChecker thread_checker_;
+  SequenceChecker thread_checker_;
   Mutex mutex_;
   RtpPacketSender* rtp_packet_pacer_ RTC_GUARDED_BY(&mutex_);
 };
@@ -471,7 +472,9 @@ ChannelSend::ChannelSend(
       crypto_options_(crypto_options),
       encoder_queue_(task_queue_factory->CreateTaskQueue(
           "AudioEncoder",
-          TaskQueueFactory::Priority::NORMAL)) {
+          TaskQueueFactory::Priority::NORMAL)),
+      fixing_timestamp_stall_(
+          !field_trial::IsDisabled("WebRTC-Audio-FixTimestampStall")) {
   RTC_DCHECK(module_process_thread);
   module_process_thread_checker_.Detach();
 
@@ -808,6 +811,10 @@ void ChannelSend::ProcessAndEncodeAudio(
       [this, audio_frame = std::move(audio_frame)]() mutable {
         RTC_DCHECK_RUN_ON(&encoder_queue_);
         if (!encoder_queue_is_active_) {
+          if (fixing_timestamp_stall_) {
+            _timeStamp +=
+                static_cast<uint32_t>(audio_frame->samples_per_channel_);
+          }
           return;
         }
         // Measure time between when the audio frame is added to the task queue

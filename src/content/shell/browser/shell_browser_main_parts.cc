@@ -12,10 +12,12 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,15 +56,15 @@
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
-#endif  // #elif defined(OS_LINUX)
+#endif  // #elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 
 #if BUILDFLAG(USE_GTK)
 #include "ui/gtk/gtk_ui.h"
@@ -89,7 +91,11 @@ GURL GetStartupURL() {
   if (args.empty())
     return GURL("https://www.google.com/");
 
+#if defined(OS_WIN)
+  GURL url(base::WideToUTF16(args[0]));
+#else
   GURL url(args[0]);
+#endif
   if (url.is_valid() && url.has_scheme())
     return url;
 
@@ -127,16 +133,16 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #endif
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::DBusThreadManager::Initialize();
   bluez::BluezDBusManager::InitializeFake();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
 #endif
 }
 
 int ShellBrowserMainParts::PreEarlyInitialization() {
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   ui::InitializeInputMethodForTesting();
 #endif
 #if defined(OS_ANDROID)
@@ -163,16 +169,20 @@ void ShellBrowserMainParts::ToolkitInitialized() {
   if (switches::IsRunWebTestsSwitchPresent())
     return;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform())
-    return;
+  if (!features::IsUsingOzonePlatform()) {
+    // Ozone platform initialises the instance of GtkUiDelegate in its
+    // InitializeUI() method and owns it.
+    gtk_ui_delegate_ =
+        std::make_unique<ui::GtkUiDelegateX11>(x11::Connection::Get());
+    ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+  }
 #endif
-  gtk_ui_delegate_ =
-      std::make_unique<ui::GtkUiDelegateX11>(x11::Connection::Get());
-  ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
-  views::LinuxUI* linux_ui = BuildGtkUi(gtk_ui_delegate_.get());
-  linux_ui->UpdateDeviceScaleFactor();
-  views::LinuxUI::SetInstance(linux_ui);
-  linux_ui->Initialize();
+  if (ui::GtkUiDelegate::instance()) {
+    views::LinuxUI* linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+    linux_ui->UpdateDeviceScaleFactor();
+    views::LinuxUI::SetInstance(linux_ui);
+    linux_ui->Initialize();
+  }
 #endif
 }
 
@@ -192,7 +202,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PostCreateThreads() {
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
-          performance_manager::Decorators::kNone, base::DoNothing());
+          performance_manager::Decorators::kMinimal, base::DoNothing());
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
@@ -229,11 +239,11 @@ void ShellBrowserMainParts::PreDefaultMainMessageLoopRun(
 }
 
 void ShellBrowserMainParts::PostDestroyThreads() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();
 #endif

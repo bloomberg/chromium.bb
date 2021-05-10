@@ -7,19 +7,51 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
 
 <link rel="import" href="/components/common_styles.html">
+<link rel="import" href="/components/oobe_adaptive_dialog.html">
 <link rel="import" href="/components/oobe_i18n_behavior.html">
 
 <dom-module id="gesture-navigation-element">
   <template>
-    <style include="oobe-common"></style>
-    <link rel="stylesheet" href="gesture_navigation.css">
+    <style include="oobe-dialog-host">
+      .gesture-animation {
+        height: 300px;
+        width: 300px;
+      }
 
-    <oobe-dialog id="gestureIntro" has-buttons class="step hidden"
-        hidden="[[!isEqual_(currentPage_, 'gestureIntro')]]"
-        title-key="gestureNavigationIntroTitle"
+      .gesture-animation-container {
+        height: 300px;
+        margin-top: -22px;
+        overflow: hidden;
+        width: 300px;
+      }
+
+      .gesture-list-item {
+        display: flex;
+        height: 46px;
+        padding-bottom: 4px;
+      }
+
+      .gesture-list-item-icon {
+        align-self: flex-start;
+        height: 24px;
+        margin: auto;
+        width: 24px;
+      }
+
+      .gesture-list-item-text {
+        flex: 1 1 auto;
+        margin: auto;
+        padding-inline-start: 16px;
+      }
+    </style>
+    <oobe-adaptive-dialog id="gestureIntro" for-step="gestureIntro"
+        role="dialog"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationIntroTitle')]]">
-      <img slot="oobe-icon" src="images/gestures.svg" width="32" height="32">
-      <div slot="footer" class="flex layout vertical">
+      <img slot="icon" src="images/gestures.svg" width="32" height="32">
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'gestureNavigationIntroTitle')]]
+      </h1>
+      <div slot="content" class="flex layout vertical">
         <div class="gesture-list-item">
           <img class="gesture-list-item-icon" src="images/home.svg">
           <div class="gesture-list-item-text">
@@ -39,21 +71,24 @@
           </div>
         </div>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+      <div slot="bottom-buttons">
         <oobe-text-button inverse on-click="onNext_"
             id="gesture-intro-next-button" class="focus-on-show"
             text-key="gestureNavigationIntroNextButton">
         </oobe-text-button>
       </div>
-    </oobe-dialog>
+    </oobe-adaptive-dialog>
 
-    <oobe-dialog id="gestureHome" has-buttons  class="step hidden"
-        hidden="[[!isEqual_(currentPage_, 'gestureHome')]]"
-        title-key="gestureNavigationHomeTitle"
-        subtitle-key="gestureNavigationHomeDescription"
+    <oobe-adaptive-dialog id="gestureHome" for-step="gestureHome" role="dialog"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationHomeTitle')]]">
-      <img slot="oobe-icon" src="images/home.svg" width="32" height="32">
-      <div slot="footer" class="flex layout vertical center">
+      <img slot="icon" src="images/home.svg" width="32" height="32">
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'gestureNavigationHomeTitle')]]
+      </h1>
+      <p slot="subtitle">
+        [[i18nDynamic(locale, 'gestureNavigationHomeDescription')]]
+      </p>
+      <div slot="content" class="flex layout vertical center">
         <div class="gesture-animation-container">
           <cr-lottie animation-url="gesture_go_home.json"
                      class="gesture-animation">
@@ -68,15 +103,19 @@
         <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-home-next-button"></oobe-next-button>
       </div>
-    </oobe-dialog>
+    </oobe-adaptive-dialog>
 
-    <oobe-dialog id="gestureOverview" has-buttons class="step hidden"
-        hidden="[[!isEqual_(currentPage_, 'gestureOverview')]]"
-        title-key="gestureNavigationOverviewTitle"
-        subtitle-key="gestureNavigationOverviewDescription"
+    <oobe-adaptive-dialog id="gestureOverview" for-step="gestureOverview"
+        role="dialog"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationOverviewTitle')]]">
-      <img slot="oobe-icon" src="images/overview.svg" width="32" height="32">
-      <div slot="footer" class="flex layout vertical center">
+      <img slot="icon" src="images/overview.svg" width="32" height="32">
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'gestureNavigationOverviewTitle')]]
+      </h1>
+      <p slot="subtitle">
+        [[i18nDynamic(locale, 'gestureNavigationOverviewDescription')]]
+      </p>
+      <div slot="content" class="flex layout vertical center">
         <div class="gesture-animation-container">
           <cr-lottie animation-url="gesture_hotseat_overview.json"
                      class="gesture-animation">
@@ -91,15 +130,18 @@
         <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-overview-next-button"></oobe-next-button>
       </div>
-    </oobe-dialog>
+    </oobe-adaptive-dialog>
 
-    <oobe-dialog id="gestureBack" has-buttons class="step hidden"
-        hidden="[[!isEqual_(currentPage_, 'gestureBack')]]"
-        title-key="gestureNavigationBackTitle"
-        subtitle-key="gestureNavigationBackDescription"
+    <oobe-adaptive-dialog id="gestureBack" for-step="gestureBack" role="dialog"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
-      <img slot="oobe-icon" src="images/back.svg" width="32" height="32">
-      <div slot="footer" class="flex layout vertical center">
+      <img slot="icon" src="images/back.svg" width="32" height="32">
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'gestureNavigationBackTitle')]]
+      </h1>
+      <p slot="subtitle">
+        [[i18nDynamic(locale, 'gestureNavigationBackDescription')]]
+      </p>
+      <div slot="content" class="flex layout vertical center">
         <div class="gesture-animation-container">
           <cr-lottie animation-url="gesture_go_back.json"
                       class="gesture-animation">
@@ -114,6 +156,6 @@
         <oobe-next-button on-click="onNext_" class="focus-on-show"
             id="gesture-back-next-button"></oobe-next-button>
       </div>
-    </oobe-dialog>
+    </oobe-adaptive-dialog>
   </template>
 </dom-module>

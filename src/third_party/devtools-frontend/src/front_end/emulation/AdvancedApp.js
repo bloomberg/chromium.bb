@@ -14,7 +14,6 @@ let _appInstance;
 
 /**
  * @implements {Common.App.App}
- * @unrestricted
  */
 export class AdvancedApp {
   constructor() {
@@ -40,6 +39,7 @@ export class AdvancedApp {
   }
 
   /**
+   * Note: it's used by toolbox.ts without real type checks.
    * @return {!AdvancedApp}
    */
   static _instance() {
@@ -219,12 +219,25 @@ export class AdvancedApp {
   }
 }
 
+/** @type {!AdvancedAppProvider} */
+let advancedAppProviderInstance;
 
 /**
  * @implements {Common.AppProvider.AppProvider}
- * @unrestricted
  */
 export class AdvancedAppProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!advancedAppProviderInstance || forceNew) {
+      advancedAppProviderInstance = new AdvancedAppProvider();
+    }
+
+    return advancedAppProviderInstance;
+  }
+
   /**
    * @override
    * @return {!Common.App.App}

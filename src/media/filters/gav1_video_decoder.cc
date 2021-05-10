@@ -224,12 +224,22 @@ scoped_refptr<VideoFrame> FormatVideoFrame(
     color_space = container_color_space;
 
   frame->set_color_space(color_space.ToGfxColorSpace());
-  frame->metadata()->power_efficient = false;
+  frame->metadata().power_efficient = false;
 
   return frame;
 }
 
 }  // namespace
+
+// static
+SupportedVideoDecoderConfigs Gav1VideoDecoder::SupportedConfigs() {
+  return {{/*profile_min=*/AV1PROFILE_PROFILE_MAIN,
+           /*profile_max=*/AV1PROFILE_PROFILE_HIGH,
+           /*coded_size_min=*/kDefaultSwDecodeSizeMin,
+           /*coded_size_max=*/kDefaultSwDecodeSizeMax,
+           /*allow_encrypted=*/false,
+           /*require_encrypted=*/false}};
+}
 
 Gav1VideoDecoder::Gav1VideoDecoder(MediaLog* media_log,
                                    OffloadState offload_state)
@@ -245,6 +255,10 @@ Gav1VideoDecoder::~Gav1VideoDecoder() {
 
 std::string Gav1VideoDecoder::GetDisplayName() const {
   return "Gav1VideoDecoder";
+}
+
+VideoDecoderType Gav1VideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kGav1;
 }
 
 void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,

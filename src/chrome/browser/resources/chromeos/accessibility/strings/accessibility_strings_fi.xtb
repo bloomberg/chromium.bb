@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Ei edellisiä säätimiä</translation>
 <translation id="2045606329038304310">Lomakekentän säädin</translation>
 <translation id="2063539687800151747">Epigrafi</translation>
+<translation id="2074531330963286860">Toimintoja on saatavilla. Katso painamalla haku + piste.</translation>
 <translation id="2086961585857038472">Seuraava sana</translation>
 <translation id="2087981446621639008">kuvluett tied</translation>
 <translation id="2089387485033699258">fi</translation>
@@ -187,7 +188,7 @@
 <translation id="2365384324219615024">Voit myös aktivoida kohteita painamalla Enter-näppäintä. Enter-näppäimellä voi esimerkiksi lähettää lomakkeessa olevan tekstin. Jatka painamalla Enter.</translation>
 <translation id="2381733276052567791">Vaihtaa puheen päälle tai pois päältä.</translation>
 <translation id="2390264819538553347">Siirry eteenpäin painamalla Enter ja taaksepäin painamalla askelpalautinta.</translation>
-<translation id="2398579267367951220">Hae sivulta kirjoittamalla. Siirry tulokseen painamalla Enter, selaa tuloksia ylä- ja alanuolella, muuta hakua jatkamalla kirjoittamista tai peruuta painamalla Esc.</translation>
+<translation id="2398579267367951220">Hae sivulta kirjoittamalla. Siirry tulokseen painamalla Enter, selaa tuloksia ylä- ja alanuolella, muuta hakua jatkamalla kirjoittamista tai peru painamalla Esc.</translation>
 <translation id="240709722712693803">Sinivioletti</translation>
 <translation id="2416512023405990736">Valitsematon valintaruutu</translation>
 <translation id="2417569100218200841">Sisällön tiedot</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Seuraava ryhmä</translation>
 <translation id="7813616274030162878">Kytkimen käytön valikko</translation>
 <translation id="7839679365527550018">Edellinen sana</translation>
+<translation id="7842115774595115751">Ota siirtymispainikkeet käyttöön</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>
 <translation id="7851816175263618915">Osa välimerkeistä</translation>
 <translation id="7871691770940645922">Virtuaalinen pistekirjoitusnäyttö</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Unohda</translation>
 <translation id="8989104346085848538">Pysäytä käynnissä oleva ChromeVox-puhe Control-näppäimellä.</translation>
+<translation id="8993737615451556423">Voit nopeuttaa ja hidastaa lukuääntä sekä keskeyttää sen</translation>
 <translation id="9014206344398081366">ChromeVox-ohje</translation>
 <translation id="9040132695316389094">Otsikko 1</translation>
 <translation id="9061884144798498064">Valitse 8 pisteen pistekirjoitustaulukko:</translation>

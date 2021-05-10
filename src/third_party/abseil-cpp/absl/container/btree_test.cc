@@ -2038,6 +2038,30 @@ TEST(Btree, ExtractAndInsertNodeHandleMultiMap) {
   EXPECT_EQ(res, ++other.begin());
 }
 
+TEST(Btree, ExtractMultiMapEquivalentKeys) {
+  // Note: using string keys means a three-way comparator.
+  absl::btree_multimap<std::string, int> map;
+  for (int i = 0; i < 100; ++i) {
+    for (int j = 0; j < 100; ++j) {
+      map.insert({absl::StrCat(i), j});
+    }
+  }
+
+  for (int i = 0; i < 100; ++i) {
+    const std::string key = absl::StrCat(i);
+    auto node_handle = map.extract(key);
+    EXPECT_EQ(node_handle.key(), key);
+    EXPECT_EQ(node_handle.mapped(), 0) << i;
+  }
+
+  for (int i = 0; i < 100; ++i) {
+    const std::string key = absl::StrCat(i);
+    auto node_handle = map.extract(key);
+    EXPECT_EQ(node_handle.key(), key);
+    EXPECT_EQ(node_handle.mapped(), 1) << i;
+  }
+}
+
 // For multisets, insert with hint also affects correctness because we need to
 // insert immediately before the hint if possible.
 struct InsertMultiHintData {
@@ -2696,9 +2720,36 @@ struct MultiKeyComp {
   bool operator()(const MultiKey a, const int b) const { return a.i1 < b; }
 };
 
-TEST(Btree, MultiKeyEqualRange) {
-  absl::btree_set<MultiKey, MultiKeyComp> set;
+// A heterogeneous, three-way comparator that has different equivalence classes
+// for different lookup types.
+struct MultiKeyThreeWayComp {
+  using is_transparent = void;
+  absl::weak_ordering operator()(const MultiKey a, const MultiKey b) const {
+    if (a.i1 < b.i1) return absl::weak_ordering::less;
+    if (a.i1 > b.i1) return absl::weak_ordering::greater;
+    if (a.i2 < b.i2) return absl::weak_ordering::less;
+    if (a.i2 > b.i2) return absl::weak_ordering::greater;
+    return absl::weak_ordering::equivalent;
+  }
+  absl::weak_ordering operator()(const int a, const MultiKey b) const {
+    if (a < b.i1) return absl::weak_ordering::less;
+    if (a > b.i1) return absl::weak_ordering::greater;
+    return absl::weak_ordering::equivalent;
+  }
+  absl::weak_ordering operator()(const MultiKey a, const int b) const {
+    if (a.i1 < b) return absl::weak_ordering::less;
+    if (a.i1 > b) return absl::weak_ordering::greater;
+    return absl::weak_ordering::equivalent;
+  }
+};
 
+template <typename Compare>
+class BtreeMultiKeyTest : public ::testing::Test {};
+using MultiKeyComps = ::testing::Types<MultiKeyComp, MultiKeyThreeWayComp>;
+TYPED_TEST_SUITE(BtreeMultiKeyTest, MultiKeyComps);
+
+TYPED_TEST(BtreeMultiKeyTest, EqualRange) {
+  absl::btree_set<MultiKey, TypeParam> set;
   for (int i = 0; i < 100; ++i) {
     for (int j = 0; j < 100; ++j) {
       set.insert({i, j});
@@ -2708,20 +2759,41 @@ TEST(Btree, MultiKeyEqualRange) {
   for (int i = 0; i < 100; ++i) {
     auto equal_range = set.equal_range(i);
     EXPECT_EQ(equal_range.first->i1, i);
-    EXPECT_EQ(equal_range.first->i2, 0);
+    EXPECT_EQ(equal_range.first->i2, 0) << i;
     EXPECT_EQ(std::distance(equal_range.first, equal_range.second), 100) << i;
   }
 }
 
-TEST(Btree, MultiKeyErase) {
-  absl::btree_set<MultiKey, MultiKeyComp> set = {
+TYPED_TEST(BtreeMultiKeyTest, Extract) {
+  absl::btree_set<MultiKey, TypeParam> set;
+  for (int i = 0; i < 100; ++i) {
+    for (int j = 0; j < 100; ++j) {
+      set.insert({i, j});
+    }
+  }
+
+  for (int i = 0; i < 100; ++i) {
+    auto node_handle = set.extract(i);
+    EXPECT_EQ(node_handle.value().i1, i);
+    EXPECT_EQ(node_handle.value().i2, 0) << i;
+  }
+
+  for (int i = 0; i < 100; ++i) {
+    auto node_handle = set.extract(i);
+    EXPECT_EQ(node_handle.value().i1, i);
+    EXPECT_EQ(node_handle.value().i2, 1) << i;
+  }
+}
+
+TYPED_TEST(BtreeMultiKeyTest, Erase) {
+  absl::btree_set<MultiKey, TypeParam> set = {
       {1, 1}, {2, 1}, {2, 2}, {3, 1}};
   EXPECT_EQ(set.erase(2), 2);
   EXPECT_THAT(set, ElementsAre(MultiKey{1, 1}, MultiKey{3, 1}));
 }
 
-TEST(Btree, MultiKeyCount) {
-  const absl::btree_set<MultiKey, MultiKeyComp> set = {
+TYPED_TEST(BtreeMultiKeyTest, Count) {
+  const absl::btree_set<MultiKey, TypeParam> set = {
       {1, 1}, {2, 1}, {2, 2}, {3, 1}};
   EXPECT_EQ(set.count(2), 2);
 }

@@ -125,6 +125,8 @@ TEST_P(ReadPixelsPBONVTest, Basic)
 
     // http://anglebug.com/5022
     ANGLE_SKIP_TEST_IF(IsWindows() && IsDesktopOpenGL());
+    // http://anglebug.com/5386
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
 
     glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -424,7 +426,7 @@ TEST_P(ReadPixelsPBOTest, SubDataPreservesContents)
 TEST_P(ReadPixelsPBOTest, SubDataOffsetPreservesContents)
 {
     // anglebug.com/1415
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsAdreno() && IsOpenGLES());
     // anglebug.com/2185
     ANGLE_SKIP_TEST_IF(IsOSX() && IsNVIDIA() && IsDesktopOpenGL());
 

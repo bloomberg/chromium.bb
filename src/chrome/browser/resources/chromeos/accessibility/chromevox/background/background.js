@@ -2,49 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {FindHandler} from './find_handler.js';
+import {MediaAutomationHandler} from './media_automation_handler.js';
+import {NextEarcons} from './next_earcons.js';
+import {RangeAutomationHandler} from './range_automation_handler.js';
+
 /**
  * @fileoverview The entry point for all ChromeVox2 related code for the
  * background page.
  */
 
-goog.provide('Background');
-
-goog.require('AutomationPredicate');
-goog.require('AutomationUtil');
-goog.require('BackgroundKeyboardHandler');
-goog.require('BrailleCommandData');
-goog.require('BrailleCommandHandler');
-goog.require('BrailleKeyCommand');
-goog.require('ChromeVoxBackground');
-goog.require('ChromeVoxEditableTextBase');
-goog.require('ChromeVoxState');
-goog.require('CommandHandler');
-goog.require('DesktopAutomationHandler');
-goog.require('DownloadHandler');
-goog.require('ExtensionBridge');
-goog.require('FindHandler');
-goog.require('FocusAutomationHandler');
-goog.require('GestureCommandHandler');
-goog.require('InstanceChecker');
-goog.require('LiveRegions');
-goog.require('LocaleOutputHelper');
-goog.require('MathHandler');
-goog.require('MediaAutomationHandler');
-goog.require('NavBraille');
-goog.require('NextEarcons');
-goog.require('NodeIdentifier');
-goog.require('Notifications');
-goog.require('Output');
-goog.require('Output.EventType');
-goog.require('PanelCommand');
-goog.require('PhoneticData');
-goog.require('RangeAutomationHandler');
-goog.require('UserAnnotationHandler');
-goog.require('constants');
-goog.require('cursors.Cursor');
-
-
-goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
@@ -54,7 +21,7 @@ const StateType = chrome.automation.StateType;
 /**
  * ChromeVox2 background page.
  */
-Background = class extends ChromeVoxState {
+export class Background extends ChromeVoxState {
   constructor() {
     super();
 
@@ -76,12 +43,6 @@ Background = class extends ChromeVoxState {
       get: (function() {
              return this.nextEarcons_;
            }).bind(this)
-    });
-
-    Object.defineProperty(ChromeVox, 'modKeyStr', {
-      get() {
-        return 'Search';
-      }
     });
 
     Object.defineProperty(ChromeVox, 'typingEcho', {
@@ -111,12 +72,12 @@ Background = class extends ChromeVoxState {
     /** @type {!LiveRegions} @private */
     this.liveRegions_ = new LiveRegions(this);
 
-    document.addEventListener('copy', this.onClipboardEvent_);
-    document.addEventListener('cut', this.onClipboardEvent_);
-    document.addEventListener('paste', this.onClipboardEvent_);
+    /** @private {string|undefined} */
+    this.lastClipboardEvent_;
 
-    /** @private {boolean} */
-    this.preventPasteOutput_ = false;
+    chrome.clipboard.onClipboardDataChanged.addListener(
+        this.onClipboardDataChanged_.bind(this));
+    document.addEventListener('copy', this.onClipboardCopyEvent_.bind(this));
 
     /**
      * Maps a non-desktop root automation node to a range position suitable for
@@ -145,9 +106,6 @@ Background = class extends ChromeVoxState {
     FindHandler.init();
     DownloadHandler.init();
     PhoneticData.init();
-    UserAnnotationHandler.init();
-
-    Notifications.onStartup();
 
     chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
         (announceText) => {
@@ -162,38 +120,21 @@ Background = class extends ChromeVoxState {
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
 
-    // A self-contained class to start and stop progress sounds before any
-    // speech has been generated on startup. This is important in cases where
-    // speech is severely delayed.
-    /** @implements {TtsCapturingEventListener} */
-    const ProgressPlayer = class {
-      constructor() {
-        ChromeVox.tts.addCapturingEventListener(this);
-        ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADING);
-      }
-
-      /** @override */
-      onTtsStart() {
-        ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADED);
-        ChromeVox.tts.removeCapturingEventListener(this);
-      }
-
-      /** @override */
-      onTtsEnd() {}
-      /** @override */
-      onTtsInterrupted() {}
-    };
-    new ProgressPlayer();
-
     chrome.loginState.getSessionState((sessionState) => {
-      // If starting ChromeVox from OOBE, start the tutorial.
       if (sessionState === chrome.loginState.SessionState.IN_OOBE_SCREEN) {
-        chrome.chromeosInfoPrivate.isTabletModeEnabled((enabled) => {
-          // Only start the tutorial if we are not in tablet mode. This
-          // is a temporary workaround until we implement a touch-specific
-          // tutorial.
-          if (!enabled) {
-            (new PanelCommand(PanelCommandType.TUTORIAL)).send();
+        chrome.chromeosInfoPrivate.get(['deviceType'], (result) => {
+          if (result['deviceType'] ===
+              chrome.chromeosInfoPrivate.DeviceType.CHROMEBOOK) {
+            chrome.chromeosInfoPrivate.isTabletModeEnabled((enabled) => {
+              // Start the tutorial if all of the following are true:
+              // 1. We are in the OOBE.
+              // 2. The device is a Chromebook.
+              // 3. The device is not in tablet mode, since a tutorial for
+              // ChromeVox touch is still under development.
+              if (!enabled) {
+                (new PanelCommand(PanelCommandType.TUTORIAL)).send();
+              }
+            });
           }
         });
       }
@@ -267,6 +208,12 @@ Background = class extends ChromeVoxState {
   }
 
   /**
+   * Navigate to the given range - it both sets the range and outputs it.
+   * @param {!cursors.Range} range The new range.
+   * @param {boolean=} opt_focus Focus the range; defaults to true.
+   * @param {Object=} opt_speechProps Speech properties.
+   * @param {boolean=} opt_shouldSetSelection If true, does set
+   *     the selection.
    * @override
    */
   navigateToRange(range, opt_focus, opt_speechProps, opt_shouldSetSelection) {
@@ -414,37 +361,42 @@ Background = class extends ChromeVoxState {
     }
   }
 
+  /** @override */
+  readNextClipboardDataChange() {
+    this.lastClipboardEvent_ = 'copy';
+  }
+
   /**
-   * Detects various clipboard events and provides spoken output.
-   *
-   * Note that paste is explicitly skipped sometimes because during a copy or
-   * cut, the copied or cut text is retrieved by pasting into a fake text
-   * area. To prevent this from triggering paste output, this staste is
-   * tracked via a field.
+   * Processes the copy clipboard event.
    * @param {!Event} evt
    * @private
    */
-  onClipboardEvent_(evt) {
-    let text = '';
-    if (evt.type === 'paste') {
-      if (this.preventPasteOutput_) {
-        this.preventPasteOutput_ = false;
-        return;
-      }
-      text = evt.clipboardData.getData('text');
-      ChromeVox.tts.speak(Msgs.getMsg(evt.type, [text]), QueueMode.QUEUE);
-    } else if (evt.type === 'copy' || evt.type === 'cut') {
-      this.preventPasteOutput_ = true;
-      const textarea = document.createElement('textarea');
-      document.body.appendChild(textarea);
-      textarea.focus();
-      document.execCommand('paste');
-      const clipboardContent = textarea.value;
-      textarea.remove();
-      ChromeVox.tts.speak(
-          Msgs.getMsg(evt.type, [clipboardContent]), QueueMode.FLUSH);
-      ChromeVoxState.instance.pageSel_ = null;
+  onClipboardCopyEvent_(evt) {
+    // This should always be 'copy', but is still important to set for the below
+    // extension event.
+    this.lastClipboardEvent_ = evt.type;
+  }
+
+  /** @private */
+  onClipboardDataChanged_() {
+    // A DOM-based clipboard event always comes before this Chrome extension
+    // clipboard event. We only care about 'copy' events, which gets set above.
+    if (!this.lastClipboardEvent_) {
+      return;
     }
+
+    const eventType = this.lastClipboardEvent_;
+    this.lastClipboardEvent_ = undefined;
+
+    const textarea = document.createElement('textarea');
+    document.body.appendChild(textarea);
+    textarea.focus();
+    document.execCommand('paste');
+    const clipboardContent = textarea.value;
+    textarea.remove();
+    ChromeVox.tts.speak(
+        Msgs.getMsg(eventType, [clipboardContent]), QueueMode.FLUSH);
+    ChromeVoxState.instance.pageSel_ = null;
   }
 
   /** @private */
@@ -550,9 +502,7 @@ Background = class extends ChromeVoxState {
             .join('|') +
         ')$');
   }
-};
+}
 
 InstanceChecker.closeExtraInstances();
 new Background();
-
-});  // goog.scope

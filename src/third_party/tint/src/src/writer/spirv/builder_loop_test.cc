@@ -22,34 +22,33 @@
 #include "src/ast/loop_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
-#include "src/context.h"
+#include "src/type/i32_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Loop_Empty) {
   // loop {
   // }
 
-  ast::LoopStatement expr;
+  auto* loop = create<ast::LoopStatement>(
+      create<ast::BlockStatement>(ast::StatementList{}),
+      create<ast::BlockStatement>(ast::StatementList{}));
+  WrapInFunction(loop);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   b.push_function(Function{});
 
-  EXPECT_TRUE(b.GenerateLoopStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(OpBranch %1
 %1 = OpLabel
@@ -64,34 +63,24 @@ OpBranch %1
 }
 
 TEST_F(BuilderTest, Loop_WithoutContinuing) {
-  ast::type::I32Type i32;
-
   // loop {
   //   v = 2;
   // }
-  auto var =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2))));
+  auto* var = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(2))});
 
-  ast::LoopStatement expr(std::move(body),
-                          std::make_unique<ast::BlockStatement>());
+  auto* loop = create<ast::LoopStatement>(
+      body, create<ast::BlockStatement>(ast::StatementList{}));
+  WrapInFunction(loop);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(var.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   b.push_function(Function{});
-  ASSERT_TRUE(b.GenerateGlobalVariable(var.get())) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(var)) << b.error();
 
-  EXPECT_TRUE(b.GenerateLoopStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -113,7 +102,6 @@ OpBranch %5
 }
 
 TEST_F(BuilderTest, Loop_WithContinuing) {
-  ast::type::I32Type i32;
   // loop {
   //   a = 2;
   //   continuing {
@@ -121,33 +109,21 @@ TEST_F(BuilderTest, Loop_WithContinuing) {
   //   }
   // }
 
-  auto var =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
+  auto* var = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(2))});
+  auto* continuing = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(3))});
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2))));
+  auto* loop = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(loop);
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 3))));
-  ast::LoopStatement expr(std::move(body), std::move(continuing));
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(var.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  ASSERT_TRUE(b.GenerateGlobalVariable(var.get())) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(var)) << b.error();
 
-  EXPECT_TRUE(b.GenerateLoopStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -174,21 +150,18 @@ TEST_F(BuilderTest, Loop_WithContinue) {
   // loop {
   //   continue;
   // }
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::ContinueStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ContinueStatement>(),
+  });
+  auto* loop = create<ast::LoopStatement>(
+      body, create<ast::BlockStatement>(ast::StatementList{}));
+  WrapInFunction(loop);
 
-  ast::LoopStatement expr(std::move(body),
-                          std::make_unique<ast::BlockStatement>());
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
 
-  EXPECT_TRUE(b.GenerateLoopStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(OpBranch %1
 %1 = OpLabel
@@ -206,21 +179,18 @@ TEST_F(BuilderTest, Loop_WithBreak) {
   // loop {
   //   break;
   // }
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
+  auto* loop = create<ast::LoopStatement>(
+      body, create<ast::BlockStatement>(ast::StatementList{}));
+  WrapInFunction(loop);
 
-  ast::LoopStatement expr(std::move(body),
-                          std::make_unique<ast::BlockStatement>());
+  spirv::Builder& b = Build();
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
 
-  EXPECT_TRUE(b.GenerateLoopStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(OpBranch %1
 %1 = OpLabel

@@ -5,10 +5,11 @@
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/request_type.h"
 #include "components/permissions/test/mock_permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 
@@ -20,13 +21,13 @@ MockPermissionPromptFactory::MockPermissionPromptFactory(
       requests_count_(0),
       response_type_(PermissionRequestManager::NONE),
       manager_(manager) {
-  manager->set_view_factory_for_testing(
-      base::Bind(&MockPermissionPromptFactory::Create, base::Unretained(this)));
+  manager->set_view_factory_for_testing(base::BindRepeating(
+      &MockPermissionPromptFactory::Create, base::Unretained(this)));
 }
 
 MockPermissionPromptFactory::~MockPermissionPromptFactory() {
   manager_->set_view_factory_for_testing(
-      base::Bind(&MockPermissionPromptFactory::DoNotCreate));
+      base::BindRepeating(&MockPermissionPromptFactory::DoNotCreate));
   for (auto* prompt : prompts_)
     prompt->factory_ = nullptr;
   prompts_.clear();
@@ -41,7 +42,7 @@ std::unique_ptr<PermissionPrompt> MockPermissionPromptFactory::Create(
   show_count_++;
   requests_count_ = delegate->Requests().size();
   for (const PermissionRequest* request : delegate->Requests()) {
-    request_types_seen_.push_back(request->GetPermissionRequestType());
+    request_types_seen_.push_back(request->GetRequestType());
     request_origins_seen_.push_back(request->GetOrigin());
   }
 
@@ -71,7 +72,7 @@ int MockPermissionPromptFactory::TotalRequestCount() {
   return request_types_seen_.size();
 }
 
-bool MockPermissionPromptFactory::RequestTypeSeen(PermissionRequestType type) {
+bool MockPermissionPromptFactory::RequestTypeSeen(RequestType type) {
   return base::Contains(request_types_seen_, type);
 }
 
@@ -86,7 +87,7 @@ void MockPermissionPromptFactory::WaitForPermissionBubble() {
   base::RunLoop loop;
   show_bubble_quit_closure_ = loop.QuitClosure();
   loop.Run();
-  show_bubble_quit_closure_ = base::Closure();
+  show_bubble_quit_closure_ = base::RepeatingClosure();
 }
 
 // static

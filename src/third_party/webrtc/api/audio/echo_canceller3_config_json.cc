@@ -223,11 +223,15 @@ void Aec3ConfigFromJsonString(absl::string_view json_string,
               &cfg.filter.config_change_duration_blocks);
     ReadParam(section, "initial_state_seconds",
               &cfg.filter.initial_state_seconds);
+    ReadParam(section, "coarse_reset_hangover_blocks",
+              &cfg.filter.coarse_reset_hangover_blocks);
     ReadParam(section, "conservative_initial_phase",
               &cfg.filter.conservative_initial_phase);
     ReadParam(section, "enable_coarse_filter_output_usage",
               &cfg.filter.enable_coarse_filter_output_usage);
     ReadParam(section, "use_linear_filter", &cfg.filter.use_linear_filter);
+    ReadParam(section, "high_pass_filter_echo_reference",
+              &cfg.filter.high_pass_filter_echo_reference);
     ReadParam(section, "export_linear_aec_output",
               &cfg.filter.export_linear_aec_output);
   }
@@ -502,6 +506,8 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
       << config.filter.config_change_duration_blocks << ",";
   ost << "\"initial_state_seconds\": " << config.filter.initial_state_seconds
       << ",";
+  ost << "\"coarse_reset_hangover_blocks\": "
+      << config.filter.coarse_reset_hangover_blocks << ",";
   ost << "\"conservative_initial_phase\": "
       << (config.filter.conservative_initial_phase ? "true" : "false") << ",";
   ost << "\"enable_coarse_filter_output_usage\": "
@@ -509,6 +515,9 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
       << ",";
   ost << "\"use_linear_filter\": "
       << (config.filter.use_linear_filter ? "true" : "false") << ",";
+  ost << "\"high_pass_filter_echo_reference\": "
+      << (config.filter.high_pass_filter_echo_reference ? "true" : "false")
+      << ",";
   ost << "\"export_linear_aec_output\": "
       << (config.filter.export_linear_aec_output ? "true" : "false");
 

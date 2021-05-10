@@ -109,8 +109,47 @@ void ArcDataSnapshotdBridge::ClearSnapshot(
     return;
   }
   VLOG(1) << "ClearSnapshot via D-Bus";
-  // TODO(pbond): implement
-  std::move(callback).Run(true /* success */);
+  chromeos::DBusThreadManager::Get()
+      ->GetArcDataSnapshotdClient()
+      ->ClearSnapshot(last, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::TakeSnapshot(
+    const std::string& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "TakeSnapshot call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  VLOG(1) << "TakeSnapshot via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->TakeSnapshot(
+      account_id, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::LoadSnapshot(
+    const std::string& account_id,
+    base::OnceCallback<void(bool, bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "LoadSnapshot call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */, false /* last */);
+    return;
+  }
+  VLOG(1) << "LoadSnapshot via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->LoadSnapshot(
+      account_id, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::Update(int percent,
+                                    base::OnceCallback<void(bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "Update call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  VLOG(1) << "Update via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->Update(
+      percent, std::move(callback));
 }
 
 }  // namespace data_snapshotd

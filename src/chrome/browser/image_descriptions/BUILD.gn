@@ -15,6 +15,9 @@ android_library("java") {
 
   deps = [
     ":java_resources",
+    "//base:base_java",
+    "//base:jni_java",
+    "//chrome/browser/device:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/util:java",
@@ -23,13 +26,19 @@ android_library("java") {
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_fragment_fragment_java",
-    "//third_party/android_deps:androidx_preference_preference_java",
+    "//net/android:net_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_preference_preference_java",
     "//ui/android:ui_full_java",
   ]
 
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+
   resources_package = "org.chromium.chrome.browser.image_descriptions"
+}
+
+generate_jni("jni_headers") {
+  sources = [ "android/java/src/org/chromium/chrome/browser/image_descriptions/ImageDescriptionsController.java" ]
 }
 
 android_resources("java_resources") {
@@ -59,6 +68,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//chrome/browser/device:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
@@ -69,10 +79,13 @@ android_library("javatests") {
     "//components/browser_ui/widget/android:java",
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",
+    "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_preference_preference_java",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//net/android:net_java",
     "//third_party/android_deps:espresso_java",
+    "//third_party/androidx:androidx_preference_preference_java",
+    "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_full_java",

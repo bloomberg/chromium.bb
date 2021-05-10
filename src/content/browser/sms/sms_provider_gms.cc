@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
 #include "content/public/android/content_jni_headers/SmsProviderGms_jni.h"
@@ -21,11 +22,15 @@ using base::android::ConvertJavaStringToUTF8;
 namespace content {
 
 SmsProviderGms::SmsProviderGms() {
-  // For backward compat if there is no value provided for switch assume we use
-  // user consent backend.
-  // TODO(majidvp): Change this to be the auto backend once that is fully
-  // launched http://crbug.com/1101050
-  GmsBackend backend = GmsBackend::kUserConsent;
+  // The backend depends on |features::kWebOtpBackendAuto| which is controlled
+  // by both a Finch experiment and chrome://flags. If the feature is enabled,
+  // the "Auto" backend will be used. If not, for backward compatibility we use
+  // the "UserConsent" backend. Note: in case of any conflict between finch and
+  // chrome flags, the latter takes precedence.
+  GmsBackend backend =
+      base::FeatureList::IsEnabled(features::kWebOtpBackendAuto)
+          ? GmsBackend::kAuto
+          : GmsBackend::kUserConsent;
 
   auto switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -63,9 +68,14 @@ void SmsProviderGms::Retrieve(RenderFrameHost* render_frame_host) {
   Java_SmsProviderGms_listen(env, j_sms_provider_, j_window);
 }
 
-void SmsProviderGms::OnReceive(JNIEnv* env, jstring message) {
+void SmsProviderGms::OnReceive(JNIEnv* env, jstring message, jint backend) {
+  GmsBackend b = static_cast<GmsBackend>(backend);
+  auto consent_requirement = UserConsent::kNotObtained;
+  if (b == GmsBackend::kUserConsent)
+    consent_requirement = UserConsent::kObtained;
+
   std::string sms = ConvertJavaStringToUTF8(env, message);
-  NotifyReceive(sms);
+  NotifyReceive(sms, consent_requirement);
 }
 
 void SmsProviderGms::OnTimeout(JNIEnv* env) {
@@ -74,6 +84,10 @@ void SmsProviderGms::OnTimeout(JNIEnv* env) {
 
 void SmsProviderGms::OnCancel(JNIEnv* env) {
   NotifyFailure(SmsFetcher::FailureType::kPromptCancelled);
+}
+
+void SmsProviderGms::OnNotAvailable(JNIEnv* env) {
+  NotifyFailure(SmsFetcher::FailureType::kBackendNotAvailable);
 }
 
 void SmsProviderGms::SetClientAndWindowForTesting(

@@ -37,7 +37,7 @@ interface AppService {
       string app_id,
       int32 event_flags,
       LaunchSource launch_source,
-      int64 display_id);
+      WindowInfo? window_info);
 
   // Launches an app with |app_id| and |file_path|
   LaunchAppWithFiles(
@@ -56,7 +56,7 @@ interface AppService {
       int32 event_flags,
       Intent intent,
       LaunchSource launch_source,
-      int64 display_id);
+      WindowInfo? window_info);
 
   SetPermission(
       AppType app_type,
@@ -148,7 +148,7 @@ interface Publisher {
       string app_id,
       int32 event_flags,
       LaunchSource launch_source,
-      int64 display_id);
+      WindowInfo? window_info);
 
   // Launches an app with |app_id| and |file_path|
   LaunchAppWithFiles(
@@ -165,7 +165,7 @@ interface Publisher {
     int32 event_flags,
     Intent intent,
     LaunchSource launch_source,
-    int64 display_id);
+    WindowInfo? window_info);
 
   SetPermission(
       string app_id,
@@ -223,8 +223,17 @@ interface Publisher {
       ReplacedAppPreferences replaced_app_preferences);
 };
 
+// Subscriber works as a proxy, to receive a stream of apps from publishers,
+// and save to AppRegistryCache.
 interface Subscriber {
-  OnApps(array<App> deltas);
+  // Receives a stream of apps from publishers, and save to AppRegistryCache.
+  // If |should_notify_initialized| is true, notifies observers that |app_type|
+  // has finished initiating apps.
+  OnApps(array<App> deltas, AppType app_type, bool should_notify_initialized);
+
+  // Receives a stream of accesses from publishers, and save to
+  // AppCapabilityAccess.
+  OnCapabilityAccesses(array<CapabilityAccess> deltas);
 
   // Binds this to the given receiver (message pipe endpoint), being to Mojo
   // interfaces what POSIX's dup is to file descriptors.

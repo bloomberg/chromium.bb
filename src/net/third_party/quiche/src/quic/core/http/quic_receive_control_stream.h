@@ -5,10 +5,10 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_QUIC_RECEIVE_CONTROL_STREAM_H_
 #define QUICHE_QUIC_CORE_HTTP_QUIC_RECEIVE_CONTROL_STREAM_H_
 
-#include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/http/http_decoder.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -56,6 +56,8 @@ class QUIC_EXPORT_PRIVATE QuicReceiveControlStream
   bool OnPushPromiseFrameEnd() override;
   bool OnPriorityUpdateFrameStart(QuicByteCount header_length) override;
   bool OnPriorityUpdateFrame(const PriorityUpdateFrame& frame) override;
+  bool OnAcceptChFrameStart(QuicByteCount header_length) override;
+  bool OnAcceptChFrame(const AcceptChFrame& frame) override;
   bool OnUnknownFrameStart(uint64_t frame_type,
                            QuicByteCount header_length,
                            QuicByteCount payload_length) override;
@@ -67,7 +69,10 @@ class QUIC_EXPORT_PRIVATE QuicReceiveControlStream
   QuicSpdySession* spdy_session() { return spdy_session_; }
 
  private:
-  void OnWrongFrame(absl::string_view frame_type);
+  // Called when a frame of allowed type is received.  Returns true if the frame
+  // is allowed in this position.  Returns false and resets the stream
+  // otherwise.
+  bool ValidateFrameType(HttpFrameType frame_type);
 
   // False until a SETTINGS frame is received.
   bool settings_frame_received_;

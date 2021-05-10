@@ -1,5 +1,18 @@
 export const description = `
 vertexState validation tests.
+
+TODO: review existing tests, write descriptions, and make sure tests are complete.
+      Make sure the following is covered.
+> - In createRenderPipeline():
+> - An attribute is unused by the shader
+> - If invalid, test these (if valid, they should be operation tests instead):
+>     - Vertex buffer with zero attributes
+>     - Overlapping attributes
+>         - Verify correct sizing of every vertex format
+>     - Overlapping vertex buffer elements (an attribute offset + its size > arrayStride)
+>     - Shader tries to use an attribute location that's not bound
+>     - Alignment constraints on attributes, if any
+>     - Alignment constraints on arrayStride, if any
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
@@ -14,17 +27,10 @@ const MAX_VERTEX_BUFFERS: number = 16;
 const SIZEOF_FLOAT = Float32Array.BYTES_PER_ELEMENT;
 
 const VERTEX_SHADER_CODE_WITH_NO_INPUT = `
-  #version 450
-  void main() {
-    gl_Position = vec4(0.0);
-  }
-`;
-
-const FRAGMENT_SHADER_CODE = `
-  #version 450
-  layout(location = 0) out vec4 fragColor;
-  void main() {
-    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+  [[builtin(position)]] var<out> Position : vec4<f32>;
+  [[stage(vertex)]] fn main() -> void {
+    Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+    return;
   }
 `;
 
@@ -39,14 +45,20 @@ class F extends ValidationTest {
   ): GPURenderPipelineDescriptor {
     const descriptor: GPURenderPipelineDescriptor = {
       vertexStage: {
-        module: this.makeShaderModule('vertex', { glsl: vertexShaderCode }),
+        module: this.device.createShaderModule({ code: vertexShaderCode }),
         entryPoint: 'main',
       },
       fragmentStage: {
-        module: this.makeShaderModule('fragment', { glsl: FRAGMENT_SHADER_CODE }),
+        module: this.device.createShaderModule({
+          code: `
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+              fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+              return;
+            }`,
+        }),
         entryPoint: 'main',
       },
-      layout: this.device.createPipelineLayout({ bindGroupLayouts: [] }),
       primitiveTopology: 'triangle-list',
       colorStates: [{ format: 'rgba8unorm' }],
       vertexState,
@@ -158,23 +170,27 @@ g.test('pipeline_vertex_buffers_are_backed_by_attributes_in_vertex_input').fn(as
   {
     // Control case: pipeline with one input per attribute
     const code = `
-      #version 450
-      layout(location = 0) in vec4 a;
-      layout(location = 1) in vec4 b;
-      void main() {
-          gl_Position = vec4(0.0);
+      [[location(0)]] var<in> a : vec4<f32>;
+      [[location(1)]] var<in> b : vec4<f32>;
+
+      [[builtin(position)]] var<out> Position : vec4<f32>;
+      [[stage(vertex)]] fn main() -> void {
+        Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+        return;
       }
-    `;
+  `;
     const descriptor = t.getDescriptor(vertexState, code);
     t.device.createRenderPipeline(descriptor);
   }
   {
     // Check it is valid for the pipeline to use a subset of the VertexState
     const code = `
-      #version 450
-      layout(location = 0) in vec4 a;
-      void main() {
-          gl_Position = vec4(0.0);
+      [[location(0)]] var<in> a : vec4<f32>;
+
+      [[builtin(position)]] var<out> Position : vec4<f32>;
+      [[stage(vertex)]] fn main() -> void {
+        Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+        return;
       }
     `;
     const descriptor = t.getDescriptor(vertexState, code);
@@ -183,10 +199,12 @@ g.test('pipeline_vertex_buffers_are_backed_by_attributes_in_vertex_input').fn(as
   {
     // Check for an error when the pipeline uses an attribute not in the vertex input
     const code = `
-      #version 450
-      layout(location = 2) in vec4 a;
-      void main() {
-          gl_Position = vec4(0.0);
+      [[location(2)]] var<in> a : vec4<f32>;
+
+      [[builtin(position)]] var<out> Position : vec4<f32>;
+      [[stage(vertex)]] fn main() -> void {
+        Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+        return;
       }
     `;
     const descriptor = t.getDescriptor(vertexState, code);

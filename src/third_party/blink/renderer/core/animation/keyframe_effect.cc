@@ -432,7 +432,7 @@ void KeyframeEffect::AttachCompositedLayers() {
   // very special element id for this animation so that the compositor animation
   // system recognize it. We do not use 0 as the element id because 0 is
   // kInvalidElementId.
-  if (compositor_animation && !Model()->HasNonVariableProperty()) {
+  if (compositor_animation && !Model()->RequiresPropertyNode()) {
     compositor_animation->AttachNoElement();
     return;
   }
@@ -503,18 +503,50 @@ bool KeyframeEffect::UpdateBoxSizeAndCheckTransformAxisAlignment(
     if (effect_target_size_) {
       if ((size_dependencies & TransformOperation::kDependsWidth) &&
           (effect_target_size_->Width() != box_size.Width()))
-        GetAnimation()->RestartAnimationOnCompositor();
+        RestartRunningAnimationOnCompositor();
       else if ((size_dependencies & TransformOperation::kDependsHeight) &&
-               (effect_target_size_->Width() != box_size.Height()))
-        GetAnimation()->RestartAnimationOnCompositor();
-    } else if (size_dependencies) {
-      GetAnimation()->RestartAnimationOnCompositor();
+               (effect_target_size_->Height() != box_size.Height()))
+        RestartRunningAnimationOnCompositor();
     }
   }
 
   effect_target_size_ = box_size;
 
   return preserves_axis_alignment;
+}
+
+void KeyframeEffect::RestartRunningAnimationOnCompositor() {
+  Animation* animation = GetAnimation();
+  if (!animation)
+    return;
+
+  // No need to to restart an animation that is in the process of starting up,
+  // paused or idle.
+  if (!animation->StartTimeInternal())
+    return;
+
+  animation->RestartAnimationOnCompositor();
+}
+
+bool KeyframeEffect::IsIdentityOrTranslation() const {
+  static const auto** properties = TransformProperties();
+  for (size_t i = 0; i < num_transform_properties; i++) {
+    const auto* keyframes =
+        Model()->GetPropertySpecificKeyframes(PropertyHandle(*properties[i]));
+    if (!keyframes)
+      continue;
+
+    for (const auto& keyframe : *keyframes) {
+      if (const auto* value = keyframe->GetCompositorKeyframeValue()) {
+        if (!To<CompositorKeyframeTransform>(value)
+                 ->GetTransformOperations()
+                 .IsIdentityOrTranslation()) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
@@ -744,7 +776,7 @@ void KeyframeEffect::CountAnimatedProperties() const {
     Document& document = target_element_->GetDocument();
     for (const auto& property : model_->Properties()) {
       if (property.IsCSSProperty()) {
-        DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
+        DCHECK(IsValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
         document.CountAnimatedProperty(property.GetCSSProperty().PropertyID());
       }
     }

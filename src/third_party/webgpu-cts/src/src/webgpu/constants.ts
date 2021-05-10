@@ -1,4 +1,4 @@
-import { ResolveType } from '../common/framework/params_builder.js';
+import { ResolveType } from '../common/framework/util/types.js';
 
 export const GPUConst = {
   BufferUsage: {

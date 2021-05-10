@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "base/bind.h"
@@ -14,7 +15,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/account_manager_facade_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
@@ -22,7 +24,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -174,10 +176,7 @@ class AccountBuilder {
 AccountManagerUIHandler::AccountManagerUIHandler(
     AccountManager* account_manager,
     signin::IdentityManager* identity_manager)
-    : account_manager_(account_manager),
-      identity_manager_(identity_manager),
-      account_manager_observer_(this),
-      identity_manager_observer_(this) {
+    : account_manager_(account_manager), identity_manager_(identity_manager) {
   DCHECK(account_manager_);
   DCHECK(identity_manager_);
 }
@@ -343,8 +342,10 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
 
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
   AllowJavascript();
-  InlineLoginDialogChromeOS::Show(
-      InlineLoginDialogChromeOS::Source::kSettingsAddAccountButton);
+  ::GetAccountManagerFacade(profile_->GetPath().value())
+      ->ShowAddAccountDialog(
+          account_manager::AccountManagerFacade::AccountAdditionSource::
+              kSettingsAddAccountButton);
 }
 
 void AccountManagerUIHandler::HandleReauthenticateAccount(
@@ -354,9 +355,11 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
   CHECK(!args->GetList().empty());
   const std::string& account_email = args->GetList()[0].GetString();
 
-  InlineLoginDialogChromeOS::Show(
-      account_email,
-      InlineLoginDialogChromeOS::Source::kSettingsReauthAccountButton);
+  ::GetAccountManagerFacade(profile_->GetPath().value())
+      ->ShowReauthAccountDialog(
+          account_manager::AccountManagerFacade::AccountAdditionSource::
+              kSettingsReauthAccountButton,
+          account_email);
 }
 
 void AccountManagerUIHandler::HandleMigrateAccount(
@@ -405,13 +408,13 @@ void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
 }
 
 void AccountManagerUIHandler::OnJavascriptAllowed() {
-  account_manager_observer_.Add(account_manager_);
-  identity_manager_observer_.Add(identity_manager_);
+  account_manager_observation_.Observe(account_manager_);
+  identity_manager_observation_.Observe(identity_manager_);
 }
 
 void AccountManagerUIHandler::OnJavascriptDisallowed() {
-  account_manager_observer_.RemoveAll();
-  identity_manager_observer_.RemoveAll();
+  account_manager_observation_.Reset();
+  identity_manager_observation_.Reset();
 }
 
 // |AccountManager::Observer| overrides. Note: We need to listen on

@@ -325,8 +325,6 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
 }
 
 TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPasswordCheck);
   LeakDetectionDelegateInterface* delegate_interface = &delegate();
   const PasswordForm form = CreateTestForm();
 
@@ -347,10 +345,10 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
-  const CompromisedCredentials compromised_credentials = {
+  const CompromisedCredentials compromised_credentials(
       GetSignonRealm(form.url), form.username_value, base::Time::Now(),
-      CompromiseType::kLeaked};
-  EXPECT_CALL(*store(), AddCompromisedCredentialsImpl(compromised_credentials));
+      InsecureType::kLeaked, IsMuted(false));
+  EXPECT_CALL(*store(), AddInsecureCredentialImpl(compromised_credentials));
   WaitForPasswordStore();
 }
 

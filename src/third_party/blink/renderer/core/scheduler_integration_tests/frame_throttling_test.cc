@@ -4,20 +4,25 @@
 
 #include "base/callback.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
+#include "cc/base/features.h"
 #include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/web/web_frame_content_dumper.h"
+#include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -25,7 +30,11 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/intersection_observer_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -72,6 +81,11 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
   void UpdateAllLifecyclePhases() {
     GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   }
+
+  class EmptyEventListener final : public NativeEventListener {
+   public:
+    void Invoke(ExecutionContext* execution_context, Event*) override {}
+  };
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(FrameThrottlingTest);
@@ -189,10 +203,14 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   inner_frame_document->View()->SetIntersectionObservationState(
       LocalFrameView::kRequired);
   {
-    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(true);
+    GetDocument().GetFrame()->View()->SetTargetStateForTest(
+        DocumentLifecycle::kPaintClean);
+    inner_frame_document->Lifecycle().EnsureStateAtMost(
+        DocumentLifecycle::kVisualUpdatePending);
     EXPECT_FALSE(
         inner_frame_document->View()->ShouldThrottleRenderingForTest());
-    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(false);
+    GetDocument().GetFrame()->View()->SetTargetStateForTest(
+        DocumentLifecycle::kUninitialized);
   }
 
   inner_frame_document->View()->ScheduleAnimation();
@@ -223,10 +241,11 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRenderingForTest());
 
   EXPECT_FALSE(inner_view->NeedsLayout());
-  EXPECT_TRUE(inner_frame_document->View()
-                  ->GetLayoutView()
-                  ->ShouldDoFullPaintInvalidation());
+  EXPECT_LT(inner_frame_document->Lifecycle().GetState(),
+            DocumentLifecycle::kPaintClean);
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // If IntersectionObserver is required to run, lifecycle will be updated
+    // through pre-paint, but not compositing assignment.
     EXPECT_EQ(kCompositingUpdateRebuildTree,
               inner_view->Compositor()->pending_update_type_);
   }
@@ -345,9 +364,13 @@ TEST_P(FrameThrottlingTest,
       LocalFrameView::kRequired);
   EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
   {
-    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(true);
+    GetDocument().GetFrame()->View()->SetTargetStateForTest(
+        DocumentLifecycle::kPaintClean);
+    frame_document->Lifecycle().EnsureStateAtMost(
+        DocumentLifecycle::kVisualUpdatePending);
     EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
-    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(false);
+    GetDocument().GetFrame()->View()->SetTargetStateForTest(
+        DocumentLifecycle::kUninitialized);
   }
 
   // A lifecycle update can update the throttled frame to just LayoutClean but
@@ -357,7 +380,7 @@ TEST_P(FrameThrottlingTest,
   frame_document->View()->ScheduleAnimation();
   frame_document->View()->GetLayoutView()->Layer()->SetNeedsRepaint();
   CompositeFrame();
-  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
             frame_document->Lifecycle().GetState());
   EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
 }
@@ -1026,109 +1049,6 @@ TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
       frame_element->contentDocument()->View()->CanThrottleRendering());
 }
 
-TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
-  WebView().GetSettings()->SetJavaScriptEnabled(true);
-  EXPECT_EQ(0u, TouchHandlerRegionSize());
-
-  // This test covers the case where a non-composited iframe is throttled. With
-  // this flag enabled, that is impossible, because only cross-origin iframes
-  // can be throttled.
-  if (base::FeatureList::IsEnabled(features::kCompositeCrossOriginIframes))
-    return;
-
-  // Create a frame which is throttled and has two different types of
-  // top-level touchstart handlers.
-  SimRequest main_resource("https://example.com/", "text/html");
-  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
-
-  LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
-  frame_resource.Complete(R"HTML(
-    <script>
-    window.addEventListener('touchstart', function(){}, {passive: false});
-    document.addEventListener('touchstart', function(){}, {passive: false});
-    </script>
-  )HTML");
-  auto* frame_element =
-      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
-  frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
-  CompositeFrame();  // Throttle the frame.
-
-  // In here, throttle iframe doesn't throttle the main frame.
-  EXPECT_TRUE(frame_element->contentDocument()
-                  ->View()
-                  ->ShouldThrottleRenderingForTest());
-  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
-
-  // In this test, the iframe has the same origin as the main frame, so we have
-  // two documents but one graphics layer tree. The test throttles the iframe
-  // document only. In ScrollingCoordinator::UpdateLayerTouchActionRects, we
-  // check whether the document associated with a certain grahpics layer is
-  // throttled or not. Since the layers are associated with the main document
-  // which is not throttled, we expect the main document to have one touch
-  // handler region.
-  EXPECT_EQ(1u, TouchHandlerRegionSize());
-
-  // Unthrottling the frame makes the touch handlers active again. Note that
-  // both handlers get combined into the same rectangle in the region, so
-  // there is only one rectangle in total.
-  frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
-  CompositeFrame();  // Unthrottle the frame.
-  EXPECT_EQ(1u, TouchHandlerRegionSize());
-}
-
-TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
-  WebView().GetSettings()->SetJavaScriptEnabled(true);
-  EXPECT_EQ(0u, TouchHandlerRegionSize());
-
-  // This test covers the case where a non-composited iframe is throttled. With
-  // this flag enabled, that is impossible, because only cross-origin iframes
-  // can be throttled.
-  if (base::FeatureList::IsEnabled(features::kCompositeCrossOriginIframes))
-    return;
-
-  // Create a frame which is throttled and has a non-top-level touchstart
-  // handler.
-  SimRequest main_resource("https://example.com/", "text/html");
-  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
-
-  LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
-  frame_resource.Complete(R"HTML(
-    <div id=d>touch handler</div>
-    <script>
-    document.querySelector('#d').addEventListener('touchstart',
-    function(){});
-    </script>
-  )HTML");
-  auto* frame_element =
-      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
-  frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
-  CompositeFrame();  // Throttle the frame.
-
-  // In here, throttle iframe doesn't throttle the main frame.
-  EXPECT_TRUE(frame_element->contentDocument()
-                  ->View()
-                  ->ShouldThrottleRenderingForTest());
-  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRenderingForTest());
-
-  // In this test, the iframe has the same origin as the main frame, so we have
-  // two documents but one graphics layer tree. The test throttles the iframe
-  // document only. In ScrollingCoordinator::UpdateLayerTouchActionRects, we
-  // check whether the document associated with a certain grahpics layer is
-  // throttled or not. Since the layers are associated with the main document
-  // which is not throttled, we expect the main document to have one touch
-  // handler region.
-  EXPECT_EQ(1u, TouchHandlerRegionSize());
-
-  // Unthrottling the frame makes the touch handler active again.
-  frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
-  CompositeFrame();  // Unthrottle the frame.
-  EXPECT_EQ(1u, TouchHandlerRegionSize());
-}
-
 TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
 
@@ -1152,7 +1072,8 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
 
   // The dumped contents should not include the throttled frame.
-  WebString result = WebFrameContentDumper::DumpWebViewAsText(&WebView(), 1024);
+  WebString result =
+      TestWebFrameContentDumper::DumpWebViewAsText(&WebView(), 1024);
   EXPECT_NE(std::string::npos, result.Utf8().find("main"));
   EXPECT_EQ(std::string::npos, result.Utf8().find("throttled"));
 }
@@ -1160,6 +1081,10 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
 TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
   // GraphicsLayers are not created with CompositeAfterPaint.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  // TODO(wangxianzhu): See the TODO in CullRectUpdater::SetFragmentCullRects().
+  if (RuntimeEnabledFeatures::CullRectUpdateEnabled())
     return;
 
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
@@ -1459,6 +1384,7 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
   // The first update unthrottles the frame, the second actually update layout
   // and paint properties etc.
   CompositeFrame();
+  EXPECT_TRUE(frame_document->GetLayoutView()->Layer()->SelfNeedsRepaint());
   CompositeFrame();
   EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
   EXPECT_EQ(FloatSize(0, 20), inner_div->GetLayoutObject()
@@ -1701,8 +1627,8 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   intersection.main_frame_viewport_size = gfx::Size(100, 100);
   intersection.viewport_intersection = gfx::Rect(0, 0, 100, 100);
   LocalFrameRoot().FrameWidget()->Resize(gfx::Size(300, 200));
-  static_cast<WebFrameWidgetBase*>(LocalFrameRoot().FrameWidget())
-      ->SetRemoteViewportIntersection(intersection);
+  static_cast<WebFrameWidgetImpl*>(LocalFrameRoot().FrameWidget())
+      ->ApplyViewportIntersectionForTesting(intersection.Clone());
 
   auto* root_frame = LocalFrameRoot().GetFrame();
   auto* frame_document =
@@ -1742,8 +1668,8 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
 
   // Show the frame without any other change.
   LocalFrameRoot().WasShown();
-  static_cast<WebFrameWidgetBase*>(LocalFrameRoot().FrameWidget())
-      ->SetRemoteViewportIntersection(intersection);
+  static_cast<WebFrameWidgetImpl*>(LocalFrameRoot().FrameWidget())
+      ->ApplyViewportIntersectionForTesting(intersection.Clone());
   CompositeFrame();
   EXPECT_EQ(root_frame->RemoteViewportIntersection(), IntRect(0, 0, 100, 100));
   EXPECT_FALSE(root_frame->View()->CanThrottleRenderingForPropagation());
@@ -1808,6 +1734,368 @@ TEST_P(FrameThrottlingTest, LifecycleThrottledFrameNeedsRepaint) {
       frame_document->GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint());
   EXPECT_FALSE(
       GetDocument().GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint());
+}
+
+TEST_P(FrameThrottlingTest, AncestorTouchActionAndWheelEventHandlers) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(::features::kWheelEventRegions);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(R"HTML(
+    <div id="parent">
+      <iframe id="frame" sandbox src="iframe.html"></iframe>
+    </div>
+  )HTML");
+  frame_resource.Complete("<div id='child'></div>");
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  auto* parent = GetDocument().getElementById("parent");
+  auto* parent_object = parent->GetLayoutObject();
+  auto* child_layout_view = frame_document->GetLayoutView();
+  auto* child = frame_document->getElementById("child");
+  auto* child_object = child->GetLayoutObject();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(parent_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(parent_object->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingWheelEventHandler());
+
+  // Moving the child fully outside the parent makes it invisible.
+  frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
+  CompositeFrame();
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
+
+  auto* handler = MakeGarbageCollected<EmptyEventListener>();
+  parent->addEventListener(event_type_names::kTouchstart, handler);
+  parent->addEventListener(event_type_names::kWheel, handler);
+  EXPECT_TRUE(parent_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(parent_object->BlockingWheelEventHandlerChanged());
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(parent_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(parent_object->InsideBlockingWheelEventHandler());
+  // Event handler status update is pending in the throttled frame.
+  EXPECT_TRUE(child_layout_view->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(child_layout_view->BlockingWheelEventHandlerChanged());
+  EXPECT_FALSE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingWheelEventHandler());
+
+  // Move the child back to the visible viewport.
+  frame_element->setAttribute(kStyleAttr,
+                              "transform: translate(-50px, 0px, 0px)");
+  // Update throttling, which will schedule visual update on unthrottling of the
+  // frame.
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(parent_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(parent_object->InsideBlockingWheelEventHandler());
+  // Event handler status is updated in the unthrottled frame.
+  EXPECT_FALSE(child_layout_view->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(child_layout_view->BlockingWheelEventHandlerChanged());
+  EXPECT_TRUE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_TRUE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(child_object->InsideBlockingWheelEventHandler());
+}
+
+TEST_P(FrameThrottlingTest, DescendantTouchActionAndWheelEventHandlers) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(::features::kWheelEventRegions);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(R"HTML(
+    <div id="parent">
+      <iframe id="frame" sandbox src="iframe.html"></iframe>
+    </div>
+  )HTML");
+  frame_resource.Complete("<div id='child'></div>");
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  auto* parent = GetDocument().getElementById("parent");
+  auto* parent_object = parent->GetLayoutObject();
+  auto* child_layout_view = frame_document->GetLayoutView();
+  auto* child = frame_document->getElementById("child");
+  auto* child_object = child->GetLayoutObject();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(parent_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(parent_object->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingWheelEventHandler());
+
+  // Moving the child fully outside the parent makes it invisible.
+  frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
+  CompositeFrame();
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
+
+  auto* handler = MakeGarbageCollected<EmptyEventListener>();
+  child->addEventListener(event_type_names::kTouchstart, handler);
+  child->addEventListener(event_type_names::kWheel, handler);
+  EXPECT_TRUE(child_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(child_object->BlockingWheelEventHandlerChanged());
+  EXPECT_TRUE(
+      child_layout_view->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(child_layout_view->DescendantBlockingWheelEventHandlerChanged());
+  EXPECT_FALSE(parent_object->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(parent_object->DescendantBlockingWheelEventHandlerChanged());
+  UpdateAllLifecyclePhases();
+  // Event handler status update is pending in the throttled frame.
+  EXPECT_TRUE(child_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(child_object->BlockingWheelEventHandlerChanged());
+  EXPECT_TRUE(
+      child_layout_view->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_TRUE(child_layout_view->DescendantBlockingWheelEventHandlerChanged());
+  EXPECT_FALSE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_object->InsideBlockingWheelEventHandler());
+
+  // Move the child back to the visible viewport.
+  frame_element->setAttribute(kStyleAttr,
+                              "transform: translate(-50px, 0px, 0px)");
+  // Update throttling, which will schedule visual update on unthrottling of the
+  // frame.
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  // Event handler status is updated in the unthrottled frame.
+  EXPECT_FALSE(child_object->EffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(child_object->BlockingWheelEventHandlerChanged());
+  EXPECT_FALSE(
+      child_layout_view->DescendantEffectiveAllowedTouchActionChanged());
+  EXPECT_FALSE(child_layout_view->DescendantBlockingWheelEventHandlerChanged());
+  EXPECT_FALSE(child_layout_view->InsideBlockingTouchEventHandler());
+  EXPECT_FALSE(child_layout_view->InsideBlockingWheelEventHandler());
+  EXPECT_TRUE(child_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(child_object->InsideBlockingWheelEventHandler());
+}
+
+namespace {
+
+class TestResizeObserverDelegate : public ResizeObserver::Delegate {
+ public:
+  explicit TestResizeObserverDelegate() {}
+  void OnResize(
+      const HeapVector<Member<ResizeObserverEntry>>& entries) override {
+    entries[0]->target()->SetInlineStyleProperty(CSSPropertyID::kWidth,
+                                                 "100px");
+  }
+};
+
+}  // namespace
+
+TEST_P(FrameThrottlingTest, ForceUnthrottled) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <iframe id="frame" sandbox src="iframe.html"
+        style="border:0;transform:translateY(480px)">
+  )HTML");
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div style="width:120px">Hello, world!</div>
+  )HTML");
+  CompositeFrame();
+  HTMLIFrameElement* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  LocalFrameView* inner_frame_view =
+      To<LocalFrameView>(frame_element->OwnedEmbeddedContentView());
+  EXPECT_TRUE(inner_frame_view->ShouldThrottleRenderingForTest());
+
+  IntersectionObserverInit* intersection_init =
+      IntersectionObserverInit::Create();
+  TestIntersectionObserverDelegate* intersection_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(
+          *frame_element->contentDocument());
+  IntersectionObserver* intersection_observer =
+      IntersectionObserver::Create(intersection_init, *intersection_delegate);
+  intersection_observer->observe(frame_element->contentDocument()->body());
+
+  ResizeObserver::Delegate* resize_delegate =
+      MakeGarbageCollected<TestResizeObserverDelegate>();
+  ResizeObserver* resize_observer =
+      ResizeObserver::Create(&Window(), resize_delegate);
+  resize_observer->observe(frame_element);
+
+  // Apply style change here to ensure ResizeObserver will force a second pass
+  // through the lifecycle loop on the next update.
+  frame_element->SetInlineStyleProperty(CSSPropertyID::kWidth, "200px");
+
+  // Because there is a new IntersectionObserver target, the iframe will be
+  // force-unthrottled going into the lifecycle update. During the first pass
+  // through the lifecycle loop, the style change will cause the ResizeObserver
+  // callback to run. The ResizeObserver will dirty the iframe element by
+  // setting its width to 100px. At this point, the lifecycle state of the
+  // iframe will be kCompositingAssignmentsClean, which will cause
+  // ShouldThrottleRendering() to return true.
+  //
+  // Because ResizeObserver dirtied layout, there will be a second pass through
+  // the main lifecycle loop. When the iframe element runs layout again, setting
+  // its width to 100px, it will cause the iframe's contents to overflow, so the
+  // iframe will add a horizontal scrollbar and mark its LayoutView as needing
+  // paint property update. If the iframe's lifecycle state is still
+  // kCompositingAssignmentsClean, then it will skip pre-paint on the second
+  // pass through the lifecycle loop, leaving its paint properties in a dirty
+  // state (bad). If, however, the iframe's lifecycle state is reset to
+  // kVisualUpdatePending prior to the second pass through the loop, then it
+  // will be once again force-unthrottled, and will run lifecycle steps up
+  // through pre-paint (good).
+  CompositeFrame();
+
+  EXPECT_TRUE(inner_frame_view->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(inner_frame_view->GetLayoutView()->NeedsPaintPropertyUpdate());
+}
+
+TEST_P(FrameThrottlingTest, CullRectUpdate) {
+  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
+    return;
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(R"HTML(
+    <style>#clip { width: 100px; height: 100px; overflow: hidden }</style>
+    <div id="container" style="transform: translateY(480px)">
+      <div id="clip">
+        <iframe id="frame" sandbox src="iframe.html"
+                style="width: 400px; height: 400px; border: none"></iframe>
+      </div>
+    </div>
+  )HTML");
+  frame_resource.Complete("");
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_object = frame_element->GetLayoutBox();
+  auto* frame_document = frame_element->contentDocument();
+  auto* child_layout_view = frame_document->GetLayoutView();
+
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
+            frame_object->FirstFragment().GetCullRect().Rect());
+  EXPECT_FALSE(child_layout_view->Layer()->NeedsCullRectUpdate());
+
+  // Change clip. |frame_element| should update its cull rect.
+  // |child_layout_view|'s cull rect update is pending.
+  GetDocument().getElementById("clip")->setAttribute(kStyleAttr,
+                                                     "width: 630px");
+  CompositeFrame();
+  EXPECT_EQ(IntRect(0, 0, 630, 100),
+            frame_object->FirstFragment().GetCullRect().Rect());
+  EXPECT_TRUE(child_layout_view->Layer()->NeedsCullRectUpdate());
+
+  // Move the frame into the visible viewport.
+  GetDocument()
+      .getElementById("container")
+      ->setAttribute(kStyleAttr, "transform: translate(0)");
+  // Update throttling, which will schedule visual update on unthrottling of the
+  // frame.
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_EQ(IntRect(0, 0, 630, 100),
+            frame_object->FirstFragment().GetCullRect().Rect());
+  EXPECT_TRUE(child_layout_view->Layer()->NeedsCullRectUpdate());
+
+  // The frame is unthrottled.
+  CompositeFrame();
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRenderingForTest());
+  EXPECT_EQ(IntRect(0, 0, 630, 100),
+            frame_object->FirstFragment().GetCullRect().Rect());
+  EXPECT_EQ(IntRect(-4000, -4000, 8630, 8100),
+            child_layout_view->FirstFragment().GetCullRect().Rect());
+  EXPECT_FALSE(child_layout_view->Layer()->NeedsCullRectUpdate());
+}
+
+TEST_P(FrameThrottlingTest, ForceCompositingUpdateOnVisibilityChange) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_resource("https://example.com/child.html", "text/html");
+  SimRequest grandchild_resource("https://example.com/grandchild.html",
+                                 "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <iframe src="child.html"></iframe>
+  )HTML");
+  child_resource.Complete(R"HTML(
+    <iframe sandbox src="grandchild.html" style="margin-top: 1000px"></iframe>
+  )HTML");
+  grandchild_resource.Complete(R"HTML(
+    <div style="width:100px;height:100px;will-change:transform"></div>
+  )HTML");
+  CompositeFrame();
+
+  LocalFrame* child_frame =
+      To<LocalFrame>(MainFrame().GetFrame()->FirstChild());
+  LocalFrame* grandchild_frame = To<LocalFrame>(child_frame->FirstChild());
+  Element* composited_div =
+      grandchild_frame->GetDocument()->QuerySelector("div");
+
+  EXPECT_TRUE(grandchild_frame->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(
+      child_frame->ContentLayoutObject()->Compositor()->InCompositingMode());
+  EXPECT_TRUE(grandchild_frame->ContentLayoutObject()
+                  ->Compositor()
+                  ->InCompositingMode());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(composited_div->GetLayoutObject())
+                  ->Layer()
+                  ->HasCompositedLayerMapping());
+
+  // Remove the compositing trigger. Because the grandchild is throttled, it
+  // will not update its compositing state.
+  composited_div->RemoveInlineStyleProperty(CSSPropertyID::kWillChange);
+  MainFrame().GetFrame()->View()->ScheduleAnimation();
+  CompositeFrame();
+  EXPECT_TRUE(grandchild_frame->View()->ShouldThrottleRenderingForTest());
+  EXPECT_TRUE(
+      child_frame->ContentLayoutObject()->Compositor()->InCompositingMode());
+  EXPECT_TRUE(grandchild_frame->ContentLayoutObject()
+                  ->Compositor()
+                  ->InCompositingMode());
+  EXPECT_TRUE(To<LayoutBoxModelObject>(composited_div->GetLayoutObject())
+                  ->Layer()
+                  ->HasCompositedLayerMapping());
+
+  // Hide the child frame. This will force a compositing update of the throttled
+  // grandchild on the next lifecycle update, which should decomposite the div.
+  child_frame->DeprecatedLocalOwner()->SetInlineStyleProperty(
+      CSSPropertyID::kVisibility, CSSValueID::kHidden);
+  CompositeFrame();
+  EXPECT_TRUE(grandchild_frame->View()->ShouldThrottleRenderingForTest());
+  EXPECT_FALSE(
+      child_frame->ContentLayoutObject()->Compositor()->InCompositingMode());
+  EXPECT_FALSE(grandchild_frame->ContentLayoutObject()
+                   ->Compositor()
+                   ->InCompositingMode());
+  EXPECT_FALSE(composited_div->GetLayoutObject()->HasLayer());
 }
 
 }  // namespace blink

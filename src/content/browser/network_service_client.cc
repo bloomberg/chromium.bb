@@ -212,10 +212,11 @@ void NetworkServiceClient::OnRawRequest(
     int32_t routing_id,
     const std::string& devtools_request_id,
     const net::CookieAccessResultList& cookies_with_access_result,
-    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    network::mojom::ClientSecurityStatePtr security_state) {
   devtools_instrumentation::OnRequestWillBeSentExtraInfo(
       process_id, routing_id, devtools_request_id, cookies_with_access_result,
-      headers);
+      headers, std::move(security_state));
 }
 
 void NetworkServiceClient::OnRawResponse(
@@ -224,10 +225,24 @@ void NetworkServiceClient::OnRawResponse(
     const std::string& devtools_request_id,
     const net::CookieAndLineAccessResultList& cookies_with_access_result,
     std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
-    const base::Optional<std::string>& raw_response_headers) {
+    const base::Optional<std::string>& raw_response_headers,
+    network::mojom::IPAddressSpace resource_address_space) {
   devtools_instrumentation::OnResponseReceivedExtraInfo(
       process_id, routing_id, devtools_request_id, cookies_with_access_result,
-      headers, raw_response_headers);
+      headers, raw_response_headers, resource_address_space);
+}
+
+void NetworkServiceClient::OnPrivateNetworkRequest(
+    int32_t process_id,
+    int32_t routing_id,
+    const base::Optional<std::string>& devtools_request_id,
+    const GURL& url,
+    bool is_warning,
+    network::mojom::IPAddressSpace resource_address_space,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
+  devtools_instrumentation::OnPrivateNetworkRequest(
+      process_id, routing_id, devtools_request_id, url, is_warning,
+      resource_address_space, std::move(client_security_state));
 }
 
 void NetworkServiceClient::OnCorsPreflightRequest(
@@ -235,9 +250,11 @@ void NetworkServiceClient::OnCorsPreflightRequest(
     int32_t render_frame_id,
     const base::UnguessableToken& devtools_request_id,
     const network::ResourceRequest& request,
-    const GURL& initiator_url) {
+    const GURL& initiator_url,
+    const std::string& initiator_devtools_request_id) {
   devtools_instrumentation::OnCorsPreflightRequest(
-      process_id, render_frame_id, devtools_request_id, request, initiator_url);
+      process_id, render_frame_id, devtools_request_id, request, initiator_url,
+      initiator_devtools_request_id);
 }
 
 void NetworkServiceClient::OnCorsPreflightResponse(
@@ -257,6 +274,15 @@ void NetworkServiceClient::OnCorsPreflightRequestCompleted(
     const network::URLLoaderCompletionStatus& status) {
   devtools_instrumentation::OnCorsPreflightRequestCompleted(
       process_id, render_frame_id, devtools_request_id, status);
+}
+
+void NetworkServiceClient::OnTrustTokenOperationDone(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtools_request_id,
+    network::mojom::TrustTokenOperationResultPtr result) {
+  devtools_instrumentation::OnTrustTokenOperationDone(
+      process_id, routing_id, devtools_request_id, std::move(result));
 }
 
 }  // namespace content

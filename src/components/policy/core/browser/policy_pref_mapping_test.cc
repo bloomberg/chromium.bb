@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
@@ -34,6 +35,24 @@ namespace {
 // The name of the template example in policy_test_cases.json that does not need
 // to be parsed.
 const char kTemplateSampleTest[] = "-- Template --";
+
+enum class PrefLocation {
+  kUserProfile,
+  kSigninProfile,
+  kLocalState,
+};
+
+PrefLocation GetPrefLocation(const base::Value& settings) {
+  const std::string* location = settings.FindStringKey("location");
+  if (!location || *location == "user_profile")
+    return PrefLocation::kUserProfile;
+  if (*location == "local_state")
+    return PrefLocation::kLocalState;
+  if (*location == "signin_profile")
+    return PrefLocation::kSigninProfile;
+  NOTREACHED() << "Unknown pref location: " << *location;
+  return PrefLocation::kUserProfile;
+}
 
 std::string GetPolicyName(const std::string& policy_name_decorated) {
   const size_t offset = policy_name_decorated.find('.');
@@ -93,7 +112,7 @@ class PrefTestCase {
   explicit PrefTestCase(const std::string& name, const base::Value& settings) {
     const base::Value* value = settings.FindKey("value");
     const base::Value* indicator_test = settings.FindDictKey("indicator_test");
-    is_local_state_ = settings.FindBoolKey("local_state").value_or(false);
+    location_ = GetPrefLocation(settings);
     check_for_mandatory_ =
         settings.FindBoolKey("check_for_mandatory").value_or(true);
     check_for_recommended_ =
@@ -116,7 +135,7 @@ class PrefTestCase {
   const std::string& pref() const { return pref_; }
   const base::Value* value() const { return value_.get(); }
 
-  bool is_local_state() const { return is_local_state_; }
+  PrefLocation location() const { return location_; }
 
   bool check_for_mandatory() const { return check_for_mandatory_; }
 
@@ -131,7 +150,7 @@ class PrefTestCase {
  private:
   std::string pref_;
   std::unique_ptr<base::Value> value_;
-  bool is_local_state_;
+  PrefLocation location_;
   bool check_for_mandatory_;
   bool check_for_recommended_;
   bool expect_default_;
@@ -233,12 +252,8 @@ class PolicyTestCase {
       }
     }
 
-    const base::Value* test_policy = test_case.FindDictKey("test_policy");
-    if (test_policy)
-      test_policy_ = test_policy->CreateDeepCopy();
-
     const base::Value* policy_pref_mapping_tests =
-        test_case.FindListKey("policy_pref_mapping_test");
+        test_case.FindListKey("policy_pref_mapping_tests");
     if (policy_pref_mapping_tests) {
       for (const auto& mapping : policy_pref_mapping_tests->GetList()) {
         if (mapping.is_dict()) {
@@ -266,9 +281,9 @@ class PolicyTestCase {
     const std::string os("ios");
 #elif defined(OS_APPLE)
     const std::string os("mac");
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
     const std::string os("chromeos");
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     const std::string os("linux");
 #else
 #error "Unknown platform"
@@ -285,8 +300,6 @@ class PolicyTestCase {
     return IsOsSupported();
   }
 
-  const base::Value* test_policy() const { return test_policy_.get(); }
-
   const std::vector<std::unique_ptr<PolicyPrefMappingTest>>&
   policy_pref_mapping_test() const {
     return policy_pref_mapping_test_;
@@ -297,7 +310,6 @@ class PolicyTestCase {
   bool is_official_only_;
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
-  std::unique_ptr<base::Value> test_policy_;
   std::vector<std::unique_ptr<PolicyPrefMappingTest>> policy_pref_mapping_test_;
 };
 
@@ -354,9 +366,9 @@ void SetProviderPolicy(MockConfigurationPolicyProvider* provider,
                        const base::Value& policies,
                        PolicyLevel level) {
   PolicyMap policy_map;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SetEnterpriseUsersDefaults(&policy_map);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   for (const auto& it : policies.DictItems()) {
     const PolicyDetails* policy_details = GetChromePolicyDetails(it.first);
     ASSERT_TRUE(policy_details);
@@ -398,7 +410,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 
     // This can only be a warning as many policies are not really testable
     // this way and only present as a single line in the file.
-    // Although they could at least contain the "os" and "test_policy" fields.
+    // Although they could at least contain the "os" fields.
     // See http://crbug.com/791125.
     LOG_IF(WARNING, !has_test_case_for_this_os)
         << "Policy " << policy->first
@@ -412,6 +424,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
                                 PrefService* local_state,
                                 PrefService* user_prefs,
+                                PrefService* signin_profile_prefs,
                                 MockConfigurationPolicyProvider* provider,
                                 const std::string& skipped_pref_prefix) {
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
@@ -465,8 +478,26 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
           if (!pref_case->check_for_mandatory())
             continue;
 
-          PrefService* prefs =
-              pref_case->is_local_state() ? local_state : user_prefs;
+          PrefService* prefs = nullptr;
+          switch (pref_case->location()) {
+            case PrefLocation::kUserProfile:
+              prefs = user_prefs;
+              break;
+            case PrefLocation::kSigninProfile:
+              prefs = signin_profile_prefs;
+              break;
+            case PrefLocation::kLocalState:
+              prefs = local_state;
+              break;
+            default:
+              NOTREACHED() << "Unhandled pref location: "
+                           << static_cast<int>(pref_case->location());
+          }
+
+          // Skip preference mapping if required PrefService was not provided.
+          if (!prefs)
+            continue;
+
           // The preference must have been registered.
           const PrefService::Preference* pref =
               prefs->FindPreference(pref_case->pref().c_str());

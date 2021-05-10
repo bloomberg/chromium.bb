@@ -237,7 +237,8 @@ angle::Result ContextMtl::ensureIncompleteTexturesCreated(const gl::Context *con
     for (gl::TextureType texType : supportedTextureTypes)
     {
         gl::Texture *texture;
-        ANGLE_TRY(mIncompleteTextures.getIncompleteTexture(context, texType, nullptr, &texture));
+        ANGLE_TRY(mIncompleteTextures.getIncompleteTexture(
+            context, texType, gl::SamplerFormat::Float, nullptr, &texture));
 
         TextureMtl *textureMtl                      = mtl::GetImpl(texture);
         textureMtl->getNativeTexture()->get().label = @"IncompleteTexture";
@@ -789,16 +790,6 @@ gl::GraphicsResetStatus ContextMtl::getResetStatus()
     return gl::GraphicsResetStatus::NoError;
 }
 
-// Vendor and description strings.
-std::string ContextMtl::getVendorString() const
-{
-    return getDisplay()->getVendorString();
-}
-std::string ContextMtl::getRendererDescription() const
-{
-    return getDisplay()->getRendererDescription();
-}
-
 // EXT_debug_marker
 angle::Result ContextMtl::insertEventMarker(GLsizei length, const char *marker)
 {
@@ -1044,9 +1035,13 @@ angle::Result ContextMtl::syncState(const gl::Context *context,
                 break;
             case gl::State::DIRTY_BIT_EXTENDED:
                 updateExtendedState(glState);
+                // Nothing to do until EXT_clip_control is implemented.
                 break;
             case gl::State::DIRTY_BIT_SAMPLE_SHADING:
                 // Nothing to do until OES_sample_shading is implemented.
+                break;
+            case gl::State::DIRTY_BIT_PATCH_VERTICES:
+                // Nothing to do until EXT_tessellation_shader is implemented.
                 break;
             default:
                 UNREACHABLE();
@@ -1347,7 +1342,8 @@ angle::Result ContextMtl::getIncompleteTexture(const gl::Context *context,
                                                gl::TextureType type,
                                                gl::Texture **textureOut)
 {
-    return mIncompleteTextures.getIncompleteTexture(context, type, nullptr, textureOut);
+    return mIncompleteTextures.getIncompleteTexture(context, type, gl::SamplerFormat::Float,
+                                                    nullptr, textureOut);
 }
 
 void ContextMtl::endRenderEncoding(mtl::RenderCommandEncoder *encoder)
@@ -1581,7 +1577,10 @@ void ContextMtl::updateScissor(const gl::State &glState)
 
     // Clip the render area to the viewport.
     gl::Rectangle viewportClippedRenderArea;
-    gl::ClipRectangle(renderArea, glState.getViewport(), &viewportClippedRenderArea);
+    if (!gl::ClipRectangle(renderArea, glState.getViewport(), &viewportClippedRenderArea))
+    {
+        viewportClippedRenderArea = gl::Rectangle();
+    }
 
     gl::Rectangle scissoredArea = ClipRectToScissor(getState(), viewportClippedRenderArea, false);
     if (framebufferMtl->flipY())
@@ -2142,7 +2141,7 @@ angle::Result ContextMtl::fillDriverXFBUniforms(GLint drawCallFirstVertex,
         return angle::Result::Continue;
     }
 
-    mDriverUniforms.xfbVerticesPerDraw = verticesPerInstance;
+    mDriverUniforms.xfbVerticesPerInstance = verticesPerInstance;
 
     TransformFeedbackMtl *transformFeedbackMtl = mtl::GetImpl(transformFeedback);
 

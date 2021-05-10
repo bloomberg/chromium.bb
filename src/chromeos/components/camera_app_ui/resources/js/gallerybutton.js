@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert} from './chrome_util.js';
 import * as dom from './dom.js';
 import * as filesystem from './models/file_system.js';
@@ -13,7 +12,8 @@ import {
 // eslint-disable-next-line no-unused-vars
 import {ResultSaver} from './models/result_saver.js';
 import {VideoSaver} from './models/video_saver.js';
-import * as util from './util.js';
+import {ChromeHelper} from './mojo/chrome_helper.js';
+import {scaleImage, scaleVideo} from './thumbnailer.js';
 
 /**
  * Width of thumbnail used by cover photo of gallery button.
@@ -64,9 +64,10 @@ class CoverPhoto {
    * @return {!Promise<!CoverPhoto>}
    */
   static async create(file) {
-    const isVideo = filesystem.hasVideoPrefix(file);
-    const thumbnail =
-        await util.scalePicture(await file.file(), isVideo, THUMBNAIL_WIDTH);
+    const blob = await file.file();
+    const thumbnail = filesystem.hasVideoPrefix(file) ?
+        await scaleVideo(blob, THUMBNAIL_WIDTH) :
+        await scaleImage(blob, THUMBNAIL_WIDTH);
     return new CoverPhoto(file, URL.createObjectURL(thumbnail));
   }
 }
@@ -106,7 +107,8 @@ export class GalleryButton {
       // TODO(yuli): Remove this workaround for unable watching changed-files.
       await this.checkCover_();
       if (this.cover_ !== null) {
-        await browserProxy.openGallery(this.cover_.file);
+        await ChromeHelper.getInstance().openFileInGallery(
+            this.cover_.file.name);
       }
     });
   }
@@ -181,6 +183,9 @@ export class GalleryButton {
    */
   async savePhoto(blob, name) {
     const file = await filesystem.saveBlob(blob, name);
+
+    ChromeHelper.getInstance().sendNewCaptureBroadcast(
+        {isVideo: false, name: file.name});
     await this.updateCover_(file);
   }
 
@@ -198,6 +203,9 @@ export class GalleryButton {
   async finishSaveVideo(video) {
     const file = await video.endWrite();
     assert(file !== null);
+
+    ChromeHelper.getInstance().sendNewCaptureBroadcast(
+        {isVideo: true, name: file.name});
     await this.updateCover_(file);
   }
 }

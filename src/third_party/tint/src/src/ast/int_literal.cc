@@ -14,16 +14,15 @@
 
 #include "src/ast/int_literal.h"
 
+TINT_INSTANTIATE_CLASS_ID(tint::ast::IntLiteral);
+
 namespace tint {
 namespace ast {
 
-IntLiteral::IntLiteral(ast::type::Type* type) : Literal(type) {}
+IntLiteral::IntLiteral(const Source& source, type::Type* type)
+    : Base(source, type) {}
 
 IntLiteral::~IntLiteral() = default;
-
-bool IntLiteral::IsInt() const {
-  return true;
-}
 
 }  // namespace ast
 }  // namespace tint

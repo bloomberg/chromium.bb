@@ -13,6 +13,7 @@
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -22,12 +23,14 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sessions/content/content_live_tab.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/range/range.h"
 
 namespace chrome {
 
@@ -37,7 +40,7 @@ namespace chrome {
 BrowserTabStripModelDelegate::BrowserTabStripModelDelegate(Browser* browser)
     : browser_(browser) {}
 
-BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
+BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
@@ -111,12 +114,37 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
 void BrowserTabStripModelDelegate::MoveToExistingWindow(
     const std::vector<int>& indices,
     int browser_index) {
-  browser_->MoveTabsToExistingWindow(indices, browser_index);
+  size_t existing_browser_count = existing_browsers_for_menu_list_.size();
+  if (static_cast<size_t>(browser_index) < existing_browser_count &&
+      existing_browsers_for_menu_list_[browser_index]) {
+    chrome::MoveTabsToExistingWindow(
+        browser_, existing_browsers_for_menu_list_[browser_index].get(),
+        indices);
+  }
 }
 
 std::vector<base::string16>
-BrowserTabStripModelDelegate::GetExistingWindowsForMoveMenu() const {
-  return browser_->GetExistingWindowsForMoveMenu();
+BrowserTabStripModelDelegate::GetExistingWindowsForMoveMenu() {
+  static constexpr int kWindowTitleForMenuMaxWidth = 400;
+  std::vector<base::string16> window_titles;
+  existing_browsers_for_menu_list_.clear();
+
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_reverse_iterator it =
+           browser_list->begin_last_active();
+       it != browser_list->end_last_active(); ++it) {
+    Browser* browser = *it;
+
+    // We can only move into a tabbed view of the same profile, and not the same
+    // window we're currently in.
+    if (browser != browser_ && browser->is_type_normal() &&
+        browser->profile() == browser_->profile()) {
+      existing_browsers_for_menu_list_.push_back(browser->AsWeakPtr());
+      window_titles.push_back(
+          browser->GetWindowTitleForMaxWidth(kWindowTitleForMenuMaxWidth));
+    }
+  }
+  return window_titles;
 }
 
 bool BrowserTabStripModelDelegate::CanMoveTabsToWindow(
@@ -132,31 +160,38 @@ void BrowserTabStripModelDelegate::MoveTabsToNewWindow(
 
 void BrowserTabStripModelDelegate::MoveGroupToNewWindow(
     const tab_groups::TabGroupId& group) {
-  std::vector<int> indices = browser_->tab_strip_model()
-                                 ->group_model()
-                                 ->GetTabGroup(group)
-                                 ->ListTabs();
+  gfx::Range range = browser_->tab_strip_model()
+                         ->group_model()
+                         ->GetTabGroup(group)
+                         ->ListTabs();
+
+  std::vector<int> indices;
+  indices.reserve(range.length());
+  for (auto i = range.start(); i < range.end(); ++i)
+    indices.push_back(i);
+
   // chrome:: to disambiguate the free function from
   // BrowserTabStripModelDelegate::MoveTabsToNewWindow().
   chrome::MoveTabsToNewWindow(browser_, indices, group);
 }
 
-void BrowserTabStripModelDelegate::CreateHistoricalTab(
+base::Optional<SessionID> BrowserTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
   // We don't create historical tabs for incognito windows or windows without
   // profiles.
   if (!browser_->profile() || browser_->profile()->IsOffTheRecord())
-    return;
+    return base::nullopt;
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
 
   // We only create historical tab entries for tabbed browser windows.
   if (service && browser_->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(
+    return service->CreateHistoricalTab(
         sessions::ContentLiveTab::GetForWebContents(contents),
         browser_->tab_strip_model()->GetIndexOfWebContents(contents));
   }
+  return base::nullopt;
 }
 
 bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(

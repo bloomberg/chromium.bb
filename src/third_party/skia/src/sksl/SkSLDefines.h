@@ -12,23 +12,37 @@
 
 #include "include/core/SkTypes.h"
 
-#if defined(__clang__) || defined(__GNUC__)
-#define SKSL_PRINTF_LIKE(A, B) __attribute__((format(printf, (A), (B))))
-#define SKSL_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+#if defined(SK_BUILD_FOR_IOS) && \
+        (!defined(__IPHONE_9_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0)
+#define SKSL_USE_THREAD_LOCAL 0
 #else
-#define SKSL_PRINTF_LIKE(A, B)
-#define SKSL_WARN_UNUSED_RESULT
+#define SKSL_USE_THREAD_LOCAL 1
 #endif
 
-#define ABORT(...) (printf(__VA_ARGS__), sksl_abort())
-
-#if _MSC_VER
-#define NORETURN __declspec(noreturn)
-#else
-#define NORETURN __attribute__((__noreturn__))
-#endif
-
-using SKSL_INT = int32_t;
+using SKSL_INT = int64_t;
 using SKSL_FLOAT = float;
+
+namespace SkSL {
+
+// Functions larger than this (measured in IR nodes) will not be inlined. This growth factor
+// accounts for the number of calls being inlined--i.e., a function called five times (that is, with
+// five inlining opportunities) would be considered 5x larger than if it were called once. This
+// default threshold value is arbitrary, but tends to work well in practice.
+static constexpr int kDefaultInlineThreshold = 50;
+
+// The SwizzleComponent namespace is used both by the SkSL::Swizzle expression, and the DSL swizzle.
+// This namespace is injected into SkSL::dsl so that `using namespace SkSL::dsl` enables DSL code
+// like `Swizzle(var, X, Y, ONE)` to compile without any extra qualifications.
+namespace SwizzleComponent {
+
+enum Type : int8_t {
+    X = 0, Y = 1, Z = 2, W = 3,
+    R = 0, G = 1, B = 2, A = 3,
+    ZERO,
+    ONE
+};
+
+}  // namespace SwizzleComponent
+}  // namespace SkSL
 
 #endif

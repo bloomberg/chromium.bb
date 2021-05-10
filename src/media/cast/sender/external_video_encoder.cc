@@ -182,7 +182,7 @@ class ExternalVideoEncoder::VEAClientImpl final
         create_video_encode_memory_cb_.Run(
             media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
                                               frame_coded_size_),
-            base::Bind(&VEAClientImpl::OnCreateInputSharedMemory, this));
+            base::BindOnce(&VEAClientImpl::OnCreateInputSharedMemory, this));
       }
       AbortLatestEncodeAttemptDueToErrors();
       return;
@@ -258,7 +258,7 @@ class ExternalVideoEncoder::VEAClientImpl final
     for (size_t j = 0; j < kOutputBufferCount; ++j) {
       create_video_encode_memory_cb_.Run(
           output_buffer_size,
-          base::Bind(&VEAClientImpl::OnCreateSharedMemory, this));
+          base::BindOnce(&VEAClientImpl::OnCreateSharedMemory, this));
     }
   }
 
@@ -326,7 +326,7 @@ class ExternalVideoEncoder::VEAClientImpl final
       // If FRAME_DURATION metadata was provided in the source VideoFrame,
       // compute the utilization metrics.
       base::TimeDelta frame_duration =
-          request.video_frame->metadata()->frame_duration.value_or(
+          request.video_frame->metadata().frame_duration.value_or(
               base::TimeDelta());
       if (frame_duration > base::TimeDelta()) {
         // Compute encoder utilization in terms of the number of frames in
@@ -657,9 +657,9 @@ ExternalVideoEncoder::ExternalVideoEncoder(
   DCHECK_GT(bit_rate_, 0);
 
   create_vea_cb.Run(
-      base::Bind(&ExternalVideoEncoder::OnCreateVideoEncodeAccelerator,
-                 weak_factory_.GetWeakPtr(), video_config, first_frame_id,
-                 std::move(status_change_cb)));
+      base::BindOnce(&ExternalVideoEncoder::OnCreateVideoEncodeAccelerator,
+                     weak_factory_.GetWeakPtr(), video_config, first_frame_id,
+                     std::move(status_change_cb)));
 }
 
 ExternalVideoEncoder::~ExternalVideoEncoder() {

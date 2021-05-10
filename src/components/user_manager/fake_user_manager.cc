@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
@@ -380,7 +380,8 @@ bool FakeUserManager::IsStubAccountId(const AccountId& account_id) const {
   return account_id == StubAccountId();
 }
 
-bool FakeUserManager::IsSupervisedAccountId(const AccountId& account_id) const {
+bool FakeUserManager::IsDeprecatedSupervisedAccountId(
+    const AccountId& account_id) const {
   return false;
 }
 

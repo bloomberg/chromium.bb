@@ -4,9 +4,6 @@
 
 import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
 
-/**
- * @unrestricted
- */
 export class DropTarget {
   /**
    * @param {!Element} element
@@ -53,7 +50,7 @@ export class DropTarget {
     }
     for (const transferType of this._transferTypes) {
       const found = Array.from(event.dataTransfer.items).find(item => {
-        return transferType.kind === item.kind && !!transferType.type.exec(item.type);
+        return transferType.kind === item.kind && Boolean(transferType.type.exec(item.type));
       });
       if (found) {
         return true;

@@ -15,18 +15,25 @@
 #ifndef SRC_TYPE_DETERMINER_H_
 #define SRC_TYPE_DETERMINER_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "src/ast/module.h"
-#include "src/ast/type/storage_texture_type.h"
-#include "src/context.h"
+#include "src/diagnostic/diagnostic.h"
+#include "src/intrinsic_table.h"
+#include "src/program_builder.h"
 #include "src/scope_stack.h"
+#include "src/semantic/intrinsic.h"
+#include "src/type/storage_texture_type.h"
+#include "src/utils/unique_vector.h"
 
 namespace tint {
-namespace ast {
 
+// Forward declarations
+namespace ast {
 class ArrayAccessorExpression;
 class BinaryExpression;
 class BitcastExpression;
@@ -37,23 +44,76 @@ class IdentifierExpression;
 class MemberAccessorExpression;
 class UnaryOpExpression;
 class Variable;
-
 }  // namespace ast
+namespace semantic {
+class Statement;
+}  // namespace semantic
 
-/// Determines types for all items in the given tint module
+/// Determines types for all items in the given tint program
 class TypeDeterminer {
  public:
   /// Constructor
-  /// @param ctx the tint context
-  /// @param mod the module to update with typing information
-  TypeDeterminer(Context* ctx, ast::Module* mod);
+  /// @param builder the program builder
+  explicit TypeDeterminer(ProgramBuilder* builder);
+
+  /// Destructor
   ~TypeDeterminer();
 
   /// @returns error messages from the type determiner
-  const std::string& error() { return error_; }
+  std::string error() const { return diagnostics_.str(); }
 
   /// @returns true if the type determiner was successful
   bool Determine();
+
+  /// @param name the function name to try and match as an intrinsic type.
+  /// @return the semantic::IntrinsicType for the given name. If `name` does not
+  /// match an intrinsic, returns semantic::Intrinsic::kNone
+  static semantic::IntrinsicType MatchIntrinsicType(const std::string& name);
+
+ private:
+  /// Structure holding semantic information about a variable.
+  /// Used to build the semantic::Variable nodes at the end of resolving.
+  struct VariableInfo {
+    explicit VariableInfo(ast::Variable* decl);
+    ~VariableInfo();
+
+    ast::Variable* const declaration;
+    ast::StorageClass storage_class;
+    std::vector<ast::IdentifierExpression*> users;
+  };
+
+  /// Structure holding semantic information about a function.
+  /// Used to build the semantic::Function nodes at the end of resolving.
+  struct FunctionInfo {
+    explicit FunctionInfo(ast::Function* decl);
+    ~FunctionInfo();
+
+    ast::Function* const declaration;
+    UniqueVector<VariableInfo*> referenced_module_vars;
+    UniqueVector<VariableInfo*> local_referenced_module_vars;
+    UniqueVector<Symbol> ancestor_entry_points;
+  };
+
+  /// Structure holding semantic information about an expression.
+  /// Used to build the semantic::Expression nodes at the end of resolving.
+  struct ExpressionInfo {
+    type::Type* type;
+    semantic::Statement* statement;
+  };
+
+  /// Structure holding semantic information about a call expression to an
+  /// ast::Function.
+  /// Used to build the semantic::Call nodes at the end of resolving.
+  struct FunctionCallInfo {
+    FunctionInfo* function;
+    semantic::Statement* statement;
+  };
+
+  /// Determines type information for the program, without creating final the
+  /// semantic nodes.
+  /// @returns true if the determination was successful
+  bool DetermineInternal();
+
   /// Determines type information for functions
   /// @param funcs the functions to check
   /// @returns true if the determination was successful
@@ -83,16 +143,10 @@ class TypeDeterminer {
   /// @param stmt the statement to check
   /// @returns false on error
   bool DetermineVariableStorageClass(ast::Statement* stmt);
-  /// Determines the result type based off a storage texture format
-  /// @param tex the storage texture
-  /// @returns false on error
-  bool DetermineStorageTextureSubtype(ast::type::StorageTextureType* tex);
 
-  /// Testing method to set a given variable into the type stack
-  /// @param var the variable to set
-  void RegisterVariableForTesting(ast::Variable* var) {
-    variable_stack_.set(var->name(), var);
-  }
+  /// Creates the nodes and adds them to the semantic::Info mappings of the
+  /// ProgramBuilder.
+  void CreateSemanticNodes() const;
 
   /// Retrieves information for the requested import.
   /// @param src the source of the import
@@ -100,22 +154,15 @@ class TypeDeterminer {
   /// @param name the method name to get information on
   /// @param params the parameters to the method call
   /// @param id out parameter for the external call ID. Must not be a nullptr.
-  /// @returns the return type of |name| in |path| or nullptr on error.
-  ast::type::Type* GetImportData(const Source& src,
-                                 const std::string& path,
-                                 const std::string& name,
-                                 const ast::ExpressionList& params,
-                                 uint32_t* id);
+  /// @returns the return type of `name` in `path` or nullptr on error.
+  type::Type* GetImportData(const Source& src,
+                            const std::string& path,
+                            const std::string& name,
+                            const ast::ExpressionList& params,
+                            uint32_t* id);
 
-  /// Sets the intrinsic data information for the identifier if needed
-  /// @param ident the identifier expression
-  /// @returns true if an intrinsic was set
-  bool SetIntrinsicIfNeeded(ast::IdentifierExpression* ident);
-
- private:
-  void set_error(const Source& src, const std::string& msg);
-  void set_referenced_from_function_if_needed(ast::Variable* var);
-  void set_entry_points(const std::string& fn_name, const std::string& ep_name);
+  void set_referenced_from_function_if_needed(VariableInfo* var, bool local);
+  void set_entry_points(const Symbol& fn_sym, Symbol ep_sym);
 
   bool DetermineArrayAccessor(ast::ArrayAccessorExpression* expr);
   bool DetermineBinary(ast::BinaryExpression* expr);
@@ -123,20 +170,39 @@ class TypeDeterminer {
   bool DetermineCall(ast::CallExpression* expr);
   bool DetermineConstructor(ast::ConstructorExpression* expr);
   bool DetermineIdentifier(ast::IdentifierExpression* expr);
-  bool DetermineIntrinsic(ast::IdentifierExpression* name,
-                          ast::CallExpression* expr);
+  bool DetermineIntrinsicCall(ast::CallExpression* call,
+                              semantic::IntrinsicType intrinsic_type);
   bool DetermineMemberAccessor(ast::MemberAccessorExpression* expr);
   bool DetermineUnaryOp(ast::UnaryOpExpression* expr);
 
-  Context& ctx_;
-  ast::Module* mod_;
-  std::string error_;
-  ScopeStack<ast::Variable*> variable_stack_;
-  std::unordered_map<std::string, ast::Function*> name_to_function_;
-  ast::Function* current_function_ = nullptr;
+  VariableInfo* CreateVariableInfo(ast::Variable*);
+
+  /// @returns the resolved type of the ast::Expression `expr`
+  /// @param expr the expression
+  type::Type* TypeOf(ast::Expression* expr);
+
+  /// Creates a semantic::Expression node with the resolved type `type`, and
+  /// assigns this semantic node to the expression `expr`.
+  /// @param expr the expression
+  /// @param type the resolved type
+  void SetType(ast::Expression* expr, type::Type* type);
+
+  ProgramBuilder* const builder_;
+  std::unique_ptr<IntrinsicTable> const intrinsic_table_;
+  diag::List diagnostics_;
+  ScopeStack<VariableInfo*> variable_stack_;
+  std::unordered_map<Symbol, FunctionInfo*> symbol_to_function_;
+  std::unordered_map<ast::Function*, FunctionInfo*> function_to_info_;
+  std::unordered_map<ast::Variable*, VariableInfo*> variable_to_info_;
+  std::unordered_map<ast::CallExpression*, FunctionCallInfo> function_calls_;
+  std::unordered_map<ast::Expression*, ExpressionInfo> expr_info_;
+  FunctionInfo* current_function_ = nullptr;
+  semantic::Statement* current_statement_ = nullptr;
+  BlockAllocator<VariableInfo> variable_infos_;
+  BlockAllocator<FunctionInfo> function_infos_;
 
   // Map from caller functions to callee functions.
-  std::unordered_map<std::string, std::vector<std::string>> caller_to_callee_;
+  std::unordered_map<Symbol, std::vector<Symbol>> caller_to_callee_;
 };
 
 }  // namespace tint

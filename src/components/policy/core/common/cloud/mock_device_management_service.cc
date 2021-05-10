@@ -65,6 +65,10 @@ ACTION_P(CreateCaptureQuertyParamsAction, params) {
   *params = arg0->GetConfiguration()->GetQueryParams();
 }
 
+ACTION_P(CreateCaptureAuthDataAction, auth_data) {
+  *auth_data = arg0->GetConfiguration()->GetAuth().Clone();
+}
+
 ACTION_P(CreateCaptureRequestAction, request) {
   std::string payload = arg0->GetConfiguration()->GetPayload();
   CHECK(request->ParseFromString(payload));
@@ -108,7 +112,8 @@ MockDeviceManagementServiceConfiguration::GetEncryptedReportingServerUrl() {
 }
 
 std::string
-MockDeviceManagementServiceConfiguration::GetReportingConnectorServerUrl() {
+MockDeviceManagementServiceConfiguration::GetReportingConnectorServerUrl(
+    content::BrowserContext* context) {
   return server_url_;
 }
 
@@ -167,6 +172,11 @@ testing::Action<MockDeviceManagementService::StartJobFunction>
 MockDeviceManagementService::CaptureQueryParams(
     DeviceManagementService::JobConfiguration::ParameterMap* params) {
   return CreateCaptureQuertyParamsAction(params);
+}
+
+testing::Action<MockDeviceManagementService::StartJobFunction>
+MockDeviceManagementService::CaptureAuthData(DMAuth* auth_data) {
+  return CreateCaptureAuthDataAction(auth_data);
 }
 
 testing::Action<MockDeviceManagementService::StartJobFunction>
@@ -241,7 +251,7 @@ FakeJobConfiguration::FakeJobConfiguration(
     JobType type,
     const std::string& client_id,
     bool critical,
-    std::unique_ptr<DMAuth> auth_data,
+    DMAuth auth_data,
     base::Optional<std::string> oauth_token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FakeCallback callback,

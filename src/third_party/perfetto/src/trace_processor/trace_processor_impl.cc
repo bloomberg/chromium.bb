@@ -23,7 +23,7 @@
 #include "perfetto/base/time.h"
 #include "perfetto/ext/base/string_splitter.h"
 #include "perfetto/ext/base/string_utils.h"
-#include "src/trace_processor/dynamic/ancestor_slice_generator.h"
+#include "src/trace_processor/dynamic/ancestor_generator.h"
 #include "src/trace_processor/dynamic/connected_flow_generator.h"
 #include "src/trace_processor/dynamic/descendant_slice_generator.h"
 #include "src/trace_processor/dynamic/describe_slice_generator.h"
@@ -740,19 +740,21 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
       new ExperimentalSliceLayoutGenerator(
           context_.storage.get()->mutable_string_pool(),
           &storage->slice_table())));
-  RegisterDynamicTable(std::unique_ptr<AncestorSliceGenerator>(
-      new AncestorSliceGenerator(&context_)));
+  RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(
+      new AncestorGenerator(AncestorGenerator::Ancestor::kSlice, &context_)));
+  RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(new AncestorGenerator(
+      AncestorGenerator::Ancestor::kStackProfileCallsite, &context_)));
   RegisterDynamicTable(std::unique_ptr<DescendantSliceGenerator>(
       new DescendantSliceGenerator(&context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::BOTH, &context_)));
+          ConnectedFlowGenerator::Mode::kDirectlyConnectedFlow, &context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::FOLLOWING, &context_)));
+          ConnectedFlowGenerator::Mode::kPrecedingFlow, &context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::PRECEDING, &context_)));
+          ConnectedFlowGenerator::Mode::kFollowingFlow, &context_)));
   RegisterDynamicTable(std::unique_ptr<ExperimentalSchedUpidGenerator>(
       new ExperimentalSchedUpidGenerator(storage->sched_slice_table(),
                                          storage->thread_table())));
@@ -805,6 +807,9 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
   RegisterDbTable(storage->vulkan_memory_allocations_table());
 
   RegisterDbTable(storage->graphics_frame_slice_table());
+
+  RegisterDbTable(storage->expected_frame_timeline_slice_table());
+  RegisterDbTable(storage->actual_frame_timeline_slice_table());
 
   RegisterDbTable(storage->metadata_table());
   RegisterDbTable(storage->cpu_table());
@@ -928,9 +933,8 @@ bool TraceProcessorImpl::IsRootMetricField(const std::string& metric_name) {
       pool_.FindDescriptorIdx(".perfetto.protos.TraceMetrics");
   if (!desc_idx.has_value())
     return false;
-  base::Optional<uint32_t> field_idx =
-      pool_.descriptors()[*desc_idx].FindFieldIdxByName(metric_name);
-  return field_idx.has_value();
+  auto field_idx = pool_.descriptors()[*desc_idx].FindFieldByName(metric_name);
+  return field_idx != nullptr;
 }
 
 util::Status TraceProcessorImpl::RegisterMetric(const std::string& path,
@@ -953,7 +957,7 @@ util::Status TraceProcessorImpl::RegisterMetric(const std::string& path,
     return util::OkStatus();
   }
 
-  auto sep_idx = path.rfind("/");
+  auto sep_idx = path.rfind('/');
   std::string basename =
       sep_idx == std::string::npos ? path : path.substr(sep_idx + 1);
 

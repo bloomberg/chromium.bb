@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
-#include "chrome/browser/chromeos/extensions/input_method_api.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -15,18 +14,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
-#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace chromeos {
 
@@ -94,40 +93,11 @@ void RecordTimeToDismiss(base::TimeDelta delta) {
                           delta);
 }
 
+void RecordAssistiveInsufficientData(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.InsufficientData", type);
+}
+
 }  // namespace
-
-TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
-TtsHandler::~TtsHandler() = default;
-
-void TtsHandler::Announce(const std::string& text,
-                          const base::TimeDelta delay) {
-  const bool chrome_vox_enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
-  if (!chrome_vox_enabled)
-    return;
-
-  delay_timer_ = std::make_unique<base::OneShotTimer>();
-  delay_timer_->Start(
-      FROM_HERE, delay,
-      base::BindOnce(&TtsHandler::Speak, base::Unretained(this), text));
-}
-
-void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
-                            content::TtsEventType event_type,
-                            int char_index,
-                            int length,
-                            const std::string& error_message) {}
-
-void TtsHandler::Speak(const std::string& text) {
-  std::unique_ptr<content::TtsUtterance> utterance =
-      content::TtsUtterance::Create(profile_);
-  utterance->SetText(text);
-  utterance->SetEventDelegate(this);
-
-  auto* tts_controller = content::TtsController::GetInstance();
-  tts_controller->Stop();
-  tts_controller->SpeakOrEnqueue(std::move(utterance));
-}
 
 AssistiveType ProposePersonalInfoAssistiveAction(const base::string16& text) {
   std::string lower_case_utf8_text =
@@ -210,7 +180,7 @@ PersonalInfoSuggester::PersonalInfoSuggester(
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
 }
 
-PersonalInfoSuggester::~PersonalInfoSuggester() {}
+PersonalInfoSuggester::~PersonalInfoSuggester() = default;
 
 void PersonalInfoSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
@@ -221,22 +191,24 @@ void PersonalInfoSuggester::OnBlur() {
 }
 
 SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
-    const InputMethodEngineBase::KeyboardEvent& event) {
+    const ui::KeyEvent& event) {
   if (!suggestion_shown_)
     return SuggestionStatus::kNotHandled;
 
-  if (event.key == "Esc") {
+  if (event.code() == ui::DomCode::ESCAPE) {
     DismissSuggestion();
     return SuggestionStatus::kDismiss;
   }
   if (highlighted_index_ == kNoneHighlighted && buttons_.size() > 0) {
-    if (event.key == "Down" || event.key == "Up") {
-      highlighted_index_ = event.key == "Down" ? 0 : buttons_.size() - 1;
+    if (event.code() == ui::DomCode::ARROW_DOWN ||
+        event.code() == ui::DomCode::ARROW_UP) {
+      highlighted_index_ =
+          event.code() == ui::DomCode::ARROW_DOWN ? 0 : buttons_.size() - 1;
       SetButtonHighlighted(buttons_[highlighted_index_], true);
       return SuggestionStatus::kBrowsing;
     }
   } else {
-    if (event.key == "Enter") {
+    if (event.code() == ui::DomCode::ENTER) {
       switch (buttons_[highlighted_index_].id) {
         case ui::ime::ButtonId::kSuggestion:
           AcceptSuggestion();
@@ -247,9 +219,10 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
         default:
           break;
       }
-    } else if (event.key == "Up" || event.key == "Down") {
+    } else if (event.code() == ui::DomCode::ARROW_UP ||
+               event.code() == ui::DomCode::ARROW_DOWN) {
       SetButtonHighlighted(buttons_[highlighted_index_], false);
-      if (event.key == "Up") {
+      if (event.code() == ui::DomCode::ARROW_UP) {
         highlighted_index_ =
             (highlighted_index_ + buttons_.size() - 1) % buttons_.size();
       } else {
@@ -284,8 +257,12 @@ bool PersonalInfoSuggester::Suggest(const base::string16& text) {
     return matched;
   } else {
     suggestion_ = GetSuggestion(text);
-    if (!suggestion_.empty())
+    if (suggestion_.empty()) {
+      if (proposed_action_type_ != AssistiveType::kGenericAction)
+        RecordAssistiveInsufficientData(proposed_action_type_);
+    } else {
       ShowSuggestion(suggestion_, 0);
+    }
     return suggestion_shown_;
   }
 }

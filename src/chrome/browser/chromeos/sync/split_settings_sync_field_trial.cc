@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/channel_info.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -68,7 +68,9 @@ std::string CreateFirstRunTrial(base::FeatureList* feature_list) {
       default_percent = 0;
       break;
     case version_info::Channel::STABLE:
-      // Disabled on stable pending approval. https://crbug.com/1020731
+      // Disabled on Stable pending approval (see https://crbug.com/1020731).
+      // Note that this code is not currently accessed on Stable channel due to
+      // the early return in Create() below.
       enabled_percent = 0;
       disabled_percent = 0;
       default_percent = 100;
@@ -105,6 +107,14 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void Create(base::FeatureList* feature_list, PrefService* local_state) {
+  // This field trial is only intended to be run on Canary/Dev/Beta channels.
+  // If the user is on Stable channel, return early so that they are not opted
+  // into this experiment. Without this return, users who were opted into the
+  // experiment on Canary/Dev/Beta, then changed to Stable, could still be in
+  // the experiment. See https://crbug.com/1147325.
+  if (chrome::GetChannel() == version_info::Channel::STABLE)
+    return;
+
   std::string trial_group = local_state->GetString(kTrialGroupPrefName);
   if (trial_group.empty()) {
     // No group assigned, this is the first run.

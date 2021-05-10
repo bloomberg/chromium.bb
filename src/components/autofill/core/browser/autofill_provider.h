@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/signatures.h"
 
 namespace gfx {
 class RectF;
@@ -23,6 +24,9 @@ class AutofillProvider {
  public:
   AutofillProvider();
   virtual ~AutofillProvider();
+
+  static bool is_download_manager_disabled_for_testing();
+  static void set_is_download_manager_disabled_for_testing();
 
   virtual void OnQueryFormFieldAutofill(AutofillHandlerProxy* handler,
                                         int32_t id,
@@ -65,10 +69,14 @@ class AutofillProvider {
                                          base::TimeTicks timestamp) = 0;
 
   virtual void OnFormsSeen(AutofillHandlerProxy* handler,
-                           const std::vector<FormData>& forms,
-                           const base::TimeTicks timestamp) = 0;
+                           const std::vector<FormData>& forms) = 0;
 
   virtual void OnHidePopup(AutofillHandlerProxy* handler) = 0;
+
+  virtual void OnServerPredictionsAvailable(AutofillHandlerProxy* handler) = 0;
+
+  virtual void OnServerQueryRequestError(AutofillHandlerProxy* handler,
+                                         FormSignature form_signature) = 0;
 
   virtual void Reset(AutofillHandlerProxy* handler) = 0;
 

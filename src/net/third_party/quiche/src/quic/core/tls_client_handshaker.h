@@ -11,13 +11,13 @@
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/tls_client_connection.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/tls_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/crypto/tls_client_connection.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_crypto_client_stream.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/tls_handshaker.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -28,6 +28,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
       public QuicCryptoClientStream::HandshakerInterface,
       public TlsClientConnection::Delegate {
  public:
+  // |crypto_config| must outlive TlsClientHandshaker.
   TlsClientHandshaker(const QuicServerId& server_id,
                       QuicCryptoStream* stream,
                       QuicSession* session,
@@ -67,6 +68,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   void OnConnectionClosed(QuicErrorCode error,
                           ConnectionCloseSource source) override;
   void OnHandshakeDoneReceived() override;
+  void OnNewTokenReceived(absl::string_view token) override;
   void SetWriteSecret(EncryptionLevel level,
                       const SSL_CIPHER* cipher,
                       const std::vector<uint8_t>& write_secret) override;
@@ -79,6 +81,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
 
   void AllowEmptyAlpnForTests() { allow_empty_alpn_for_tests_ = true; }
   void AllowInvalidSNIForTests() { allow_invalid_sni_for_tests_ = true; }
+  SSL* GetSslForTests() { return tls_connection_.ssl(); }
+  const SSL* GetSslForTests() const { return tls_connection_.ssl(); }
 
  protected:
   const TlsConnection* tls_connection() const override {
@@ -152,6 +156,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   // will always be non-null if a 0-RTT resumption is attempted.
   std::unique_ptr<QuicResumptionState> cached_state_;
 
+  QuicCryptoClientConfig* crypto_config_;  // Not owned.
+
   TlsClientConnection tls_connection_;
 
   // If |has_application_state_|, stores the tls session tickets before
@@ -160,6 +166,9 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
 
   std::unique_ptr<TransportParameters> received_transport_params_ = nullptr;
   std::unique_ptr<ApplicationState> received_application_state_ = nullptr;
+
+  // Latched value of reloadable flag quic_enable_alps_client.
+  const bool enable_alps_ = GetQuicReloadableFlag(quic_enable_alps_client);
 };
 
 }  // namespace quic

@@ -45,6 +45,20 @@ namespace {
         return device.CreateTexture(&descriptor);
     }
 
+    wgpu::Texture Create3DTexture(wgpu::Device device,
+                                  wgpu::Extent3D size,
+                                  uint32_t mipLevelCount,
+                                  wgpu::TextureUsage usage) {
+        wgpu::TextureDescriptor descriptor;
+        descriptor.dimension = wgpu::TextureDimension::e3D;
+        descriptor.size = size;
+        descriptor.sampleCount = 1;
+        descriptor.format = kDefaultFormat;
+        descriptor.mipLevelCount = mipLevelCount;
+        descriptor.usage = usage;
+        return device.CreateTexture(&descriptor);
+    }
+
     wgpu::ShaderModule CreateDefaultVertexShaderModule(wgpu::Device device) {
         return utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
@@ -182,6 +196,8 @@ class TextureViewSamplingTest : public DawnTest {
                            uint32_t textureMipLevels,
                            uint32_t textureViewBaseLayer,
                            uint32_t textureViewBaseMipLevel) {
+        // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -216,6 +232,8 @@ class TextureViewSamplingTest : public DawnTest {
                                 uint32_t textureMipLevels,
                                 uint32_t textureViewBaseLayer,
                                 uint32_t textureViewBaseMipLevel) {
+        // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -302,6 +320,9 @@ class TextureViewSamplingTest : public DawnTest {
                             uint32_t textureViewBaseLayer,
                             uint32_t textureViewLayerCount,
                             bool isCubeMapArray) {
+        // TODO(crbug.com/dawn/600): In OpenGL ES, cube map textures cannot be treated as arrays
+        // of 2D textures. Find a workaround.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         constexpr uint32_t kMipLevels = 1u;
         initTexture(textureArrayLayers, kMipLevels);
 
@@ -641,12 +662,14 @@ DAWN_INSTANTIATE_TEST(TextureViewSamplingTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 DAWN_INSTANTIATE_TEST(TextureViewRenderingTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class TextureViewTest : public DawnTest {};
@@ -667,4 +690,20 @@ DAWN_INSTANTIATE_TEST(TextureViewTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());
+
+class TextureView3DTest : public DawnTest {};
+
+// Test that 3D textures and 3D texture views can be created successfully
+TEST_P(TextureView3DTest, BasicTest) {
+    wgpu::Texture texture = Create3DTexture(device, {4, 4, 4}, 3, wgpu::TextureUsage::Sampled);
+    wgpu::TextureView view = texture.CreateView();
+}
+
+DAWN_INSTANTIATE_TEST(TextureView3DTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

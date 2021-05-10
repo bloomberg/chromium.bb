@@ -25,7 +25,6 @@ action("create_test_main") {
     "crostini_tasks.js",
     "js/strings.js",
     "menu.js",
-    "progress_center.js",
   ]
   deps = [ "//ui/resources:webui_resources_grd" ]
   args = [ "--output=" + rebase_path(output, root_build_dir) ]
@@ -33,6 +32,7 @@ action("create_test_main") {
 }
 
 js_type_check("closure_compile") {
+  uses_legacy_modules = true
   deps = [
     ":check_select",
     ":closure_compile_externs",
@@ -41,7 +41,6 @@ js_type_check("closure_compile") {
     ":crostini_tasks",
     ":menu",
     ":plugin_vm",
-    ":progress_center",
   ]
 }
 
@@ -54,9 +53,8 @@ js_library("closure_compile_externs") {
     "js/externs.js",
     "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
-    "//ui/file_manager/externs/background/file_browser_background.js",
+    "//ui/file_manager/externs/background/background_base.js",
     "//ui/file_manager/externs/background/progress_center.js",
-    "//ui/file_manager/externs/progress_center_panel.js",
     "//ui/file_manager/externs/background/crostini.js",
     "//ui/file_manager/externs/entry_location.js",
     "//ui/file_manager/externs/volume_info.js",
@@ -103,14 +101,6 @@ js_library("menu") {
 js_library("plugin_vm") {
   deps = [
     "js:test_util",
-    "//ui/webui/resources/js:webui_resource_test",
-  ]
-}
-
-js_library("progress_center") {
-  deps = [
-    "js:test_util",
-    "//ui/file_manager/file_manager/common/js:progress_center_common",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }

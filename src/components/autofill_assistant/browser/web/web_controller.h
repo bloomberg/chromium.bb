@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_position_getter.h"
 #include "components/autofill_assistant/browser/web/element_rect_getter.h"
+#include "components/autofill_assistant/browser/web/send_keyboard_input_worker.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
@@ -103,7 +104,7 @@ class WebController {
       const ElementFinder::Result& element,
       int max_rounds,
       base::TimeDelta check_interval,
-      base::OnceCallback<void(const ClientStatus&)> callback);
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback);
 
   // Check whether the center given element is on top. Fail with
   // ELEMENT_NOT_ON_TOP if the center of the element is covered.
@@ -135,11 +136,12 @@ class WebController {
                               const autofill::FormFieldData& field_data)>
           callback);
 
-  // Select the option to be picked given by the |value| in the |element|.
+  // Select the option to be picked given by the |re2| in the |element|.
   virtual void SelectOption(
       const ElementFinder::Result& element,
-      const std::string& value,
-      DropdownSelectStrategy select_strategy,
+      const std::string& re2,
+      bool case_sensitive,
+      SelectOptionProto::OptionComparisonAttribute option_comparison_attribute,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Highlight an |element|.
@@ -147,9 +149,12 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Scroll to an |element|'s position. |top_padding| specifies the padding
-  // between the focused element and the top.
+  // Scrolls |container| to an |element|'s position. |top_padding|
+  // specifies the padding between the focused element and the top of the
+  // container. If |scrollable_element| is not specified, the window will be
+  // scrolled instead.
   virtual void ScrollToElementPosition(
+      std::unique_ptr<ElementFinder::Result> container,
       const ElementFinder::Result& element,
       const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback);
@@ -197,14 +202,24 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Sets the keyboard focus to |element| and inputs |codepoints|, one
-  // character at a time. Key presses will have a delay of |delay_in_milli|
-  // between them.
-  // Returns the result through |callback|.
+  // Inputs the specified codepoints into |element|. Expects the |element| to
+  // have focus. Key presses will have a delay of
+  // |key_press_delay_in_millisecond| between them. Returns the result through
+  // |callback|.
   virtual void SendKeyboardInput(
       const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
-      int delay_in_milli,
+      int key_press_delay_in_millisecond,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Inputs the specified |value| into |element| with keystrokes per character.
+  // Expects the |element| to have focus. Key presses will have a delay of
+  // |key_press_delay_in_millisecond| between them. Returns the result through
+  // |callback|.
+  virtual void SendTextInput(
+      int key_press_delay_in_millisecond,
+      const std::string& value,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Return the outerHTML of |element|.
@@ -262,6 +277,15 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
                               base::TimeDelta)> callback);
+
+  // Trigger a "change" event on the |element|.
+  virtual void SendChangeEvent(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Dispatch a custom JS event 'duplexweb' with an optional payload.
+  virtual void DispatchJsEvent(
+      base::OnceCallback<void(const ClientStatus&)> callback) const;
 
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
@@ -324,7 +348,8 @@ class WebController {
                     const ClientStatus& status);
   void OnWaitUntilElementIsStable(
       ElementPositionGetter* getter_to_release,
-      base::OnceCallback<void(const ClientStatus&)> callback,
+      base::TimeTicks wait_time_start,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback,
       const ClientStatus& status);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
@@ -393,19 +418,12 @@ class WebController {
   void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void DispatchKeyboardTextDownEvent(
-      const std::string& node_frame_id,
-      const std::vector<UChar32>& codepoints,
-      size_t index,
-      bool delay,
-      int delay_in_milli,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-  void DispatchKeyboardTextUpEvent(
-      const std::string& node_frame_id,
-      const std::vector<UChar32>& codepoints,
-      size_t index,
-      int delay_in_milli,
-      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  void OnSendKeyboardInputDone(
+      SendKeyboardInputWorker* worker_to_release,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status);
+
   void OnGetElementRect(ElementRectGetter* getter_to_release,
                         ElementRectGetter::ElementRectCallback callback,
                         const ClientStatus& rect_status,
@@ -415,14 +433,6 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
 
-  // Creates a new instance of DispatchKeyEventParams for the specified type and
-  // unicode codepoint.
-  using DispatchKeyEventParamsPtr =
-      std::unique_ptr<autofill_assistant::input::DispatchKeyEventParams>;
-  static DispatchKeyEventParamsPtr CreateKeyEventParamsForCharacter(
-      autofill_assistant::input::DispatchKeyEventType type,
-      const UChar32 codepoint);
-
   void OnWaitForDocumentReadyState(
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
@@ -430,6 +440,10 @@ class WebController {
       base::TimeTicks wait_start_time,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
+
+  void OnDispatchJsEvent(base::OnceCallback<void(const ClientStatus&)> callback,
+                         const DevtoolsClient::ReplyStatus& reply_status,
+                         std::unique_ptr<runtime::EvaluateResult> result) const;
 
   // Wrapper for calling the |callback| after re-enabling the keyboard by
   // setting the assistant action state to "not running".

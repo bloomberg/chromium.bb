@@ -31,7 +31,18 @@
    chains are linear, then channel stacks provide a mechanism to minimize
    allocations for that chain.
    Call stacks are created by channel stacks and represent the per-call data
-   for that stack. */
+   for that stack.
+
+   Implementations should take care of the following details for a batch -
+   1. Synchronization is achieved with a CallCombiner. View
+   src/core/lib/iomgr/call_combiner.h for more details.
+   2. If the filter wants to inject an error on the way down, it needs to call
+   grpc_transport_stream_op_batch_finish_with_failure from within the call
+   combiner. This will cause any batch callbacks to be called with that error.
+   3. If the filter wants to inject an error on the way up (from a callback), it
+   should also inject that error in the recv_trailing_metadata callback so that
+   it can have an effect on the call status.
+*/
 
 #include <grpc/support/port_platform.h>
 
@@ -42,6 +53,7 @@
 #include <grpc/support/time.h>
 
 #include "src/core/lib/debug/trace.h"
+#include "src/core/lib/gpr/time_precise.h"
 #include "src/core/lib/gprpp/arena.h"
 #include "src/core/lib/iomgr/call_combiner.h"
 #include "src/core/lib/iomgr/polling_entity.h"
@@ -53,31 +65,28 @@ typedef struct grpc_call_element grpc_call_element;
 typedef struct grpc_channel_stack grpc_channel_stack;
 typedef struct grpc_call_stack grpc_call_stack;
 
-typedef struct {
+struct grpc_channel_element_args {
   grpc_channel_stack* channel_stack;
   const grpc_channel_args* channel_args;
   /** Transport, iff it is known */
   grpc_transport* optional_transport;
   int is_first;
   int is_last;
-} grpc_channel_element_args;
-
-typedef struct {
+};
+struct grpc_call_element_args {
   grpc_call_stack* call_stack;
   const void* server_transport_data;
   grpc_call_context_element* context;
   const grpc_slice& path;
-  gpr_timespec start_time;
+  gpr_cycle_counter start_time;
   grpc_millis deadline;
   grpc_core::Arena* arena;
   grpc_core::CallCombiner* call_combiner;
-} grpc_call_element_args;
-
-typedef struct {
+};
+struct grpc_call_stats {
   grpc_transport_stream_stats transport_stream_stats;
   gpr_timespec latency; /* From call creating to enqueing of received status */
-} grpc_call_stats;
-
+};
 /** Information about the call upon completion. */
 struct grpc_call_final_info {
   grpc_call_stats stats;
@@ -95,7 +104,7 @@ struct grpc_call_final_info {
    4. a name, which is useful when debugging
 
    Members are laid out in approximate frequency of use order. */
-typedef struct {
+struct grpc_channel_filter {
   /* Called to eg. send/receive data on a call.
      See grpc_call_next_op on how to call the next element in the stack */
   void (*start_transport_stream_op_batch)(grpc_call_element* elem,
@@ -151,8 +160,7 @@ typedef struct {
 
   /* The name of this filter */
   const char* name;
-} grpc_channel_filter;
-
+};
 /* A channel_element tracks its filter and the filter requested memory within
    a channel allocation */
 struct grpc_channel_element {
@@ -234,13 +242,25 @@ void grpc_call_stack_set_pollset_or_pollset_set(grpc_call_stack* call_stack,
   grpc_stream_unref(&(channel_stack)->refcount, reason)
 #else
 #define GRPC_CALL_STACK_REF(call_stack, reason) \
-  grpc_stream_ref(&(call_stack)->refcount)
+  do {                                          \
+    grpc_stream_ref(&(call_stack)->refcount);   \
+    (void)(reason);                             \
+  } while (0);
 #define GRPC_CALL_STACK_UNREF(call_stack, reason) \
-  grpc_stream_unref(&(call_stack)->refcount)
+  do {                                            \
+    grpc_stream_unref(&(call_stack)->refcount);   \
+    (void)(reason);                               \
+  } while (0);
 #define GRPC_CHANNEL_STACK_REF(channel_stack, reason) \
-  grpc_stream_ref(&(channel_stack)->refcount)
+  do {                                                \
+    grpc_stream_ref(&(channel_stack)->refcount);      \
+    (void)(reason);                                   \
+  } while (0);
 #define GRPC_CHANNEL_STACK_UNREF(channel_stack, reason) \
-  grpc_stream_unref(&(channel_stack)->refcount)
+  do {                                                  \
+    grpc_stream_unref(&(channel_stack)->refcount);      \
+    (void)(reason);                                     \
+  } while (0);
 #endif
 
 /* Destroy a call stack */

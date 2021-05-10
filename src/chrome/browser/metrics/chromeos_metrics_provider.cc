@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -22,9 +24,9 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -34,8 +36,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features_parser.h"
@@ -128,7 +128,7 @@ EnrollmentStatus ChromeOSMetricsProvider::GetEnrollmentStatus() {
 }
 
 void ChromeOSMetricsProvider::Init() {
-  if (profile_provider_ != nullptr)
+  if (profile_provider_)
     profile_provider_->Init();
 }
 
@@ -146,6 +146,16 @@ void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
     user_count_at_log_initialization_ =
         user_manager::UserManager::Get()->GetLoggedInUsers().size();
   }
+}
+
+void ChromeOSMetricsProvider::OnRecordingEnabled() {
+  if (profile_provider_)
+    profile_provider_->OnRecordingEnabled();
+}
+
+void ChromeOSMetricsProvider::OnRecordingDisabled() {
+  if (profile_provider_)
+    profile_provider_->OnRecordingDisabled();
 }
 
 void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
@@ -193,19 +203,16 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
 
 void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
   bool is_spoken_feedback_enabled =
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
+      ash::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback.EveryReport",
                         is_spoken_feedback_enabled);
 }
 
 void ChromeOSMetricsProvider::ProvideSuggestedContentMetrics() {
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kSuggestedContentToggle)) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Apps.AppList.SuggestedContent.Enabled",
-        ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSuggestedContentEnabled));
-  }
+  UMA_HISTOGRAM_BOOLEAN(
+      "Apps.AppList.SuggestedContent.Enabled",
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          chromeos::prefs::kSuggestedContentEnabled));
 }
 
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(

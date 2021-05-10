@@ -19,6 +19,7 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/common/url_constants.h"
@@ -50,6 +51,12 @@ extern const char kCastNoDestinationFoundURL[];
 // Chooser.
 extern const char kChooserBluetoothOverviewURL[];
 
+// The URL for the WebHID API help center article.
+extern const char kChooserHidOverviewUrl[];
+
+// The URL for the Web Serial API help center article.
+extern const char kChooserSerialOverviewUrl[];
+
 // The URL for the WebUsb help center article.
 extern const char kChooserUsbOverviewURL[];
 
@@ -59,14 +66,11 @@ extern const char kChromeBetaForumURL[];
 // The URL for the help center article to fix Chrome update problems.
 extern const char kChromeFixUpdateProblems[];
 
-// Link to the release notes page managed by marketing.
-extern const char kChromeReleaseNotesURL[];
-
 // General help links for Chrome, opened using various actions.
 extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];
 extern const char kChromeHelpViaWebUIURL[];
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kChromeOsHelpViaWebUIURL[];
 #endif
 
@@ -174,10 +178,6 @@ extern const char kGooglePhotosURL[];
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
 
-// Management URL for Chrome Supervised Users - version without scheme, used
-// for display.
-extern const char kLegacySupervisedUserManagementDisplayURL[];
-
 // The URL for the Learn More page about policies and enterprise enrollment.
 extern const char kManagedUiLearnMoreUrl[];
 
@@ -244,22 +244,18 @@ extern const char kSyncLearnMoreURL[];
 
 extern const char kUpgradeHelpCenterBaseURL[];
 
+// The URL for the "Learn more" link for nearby share.
+extern const char kNearbyShareLearnMoreURL[];
+
 // Help center URL for who the account administrator is.
 extern const char kWhoIsMyAdministratorHelpURL[];
 
-// Link to the flash roadmap
-extern const char kChromeFlashRoadmapURL[];
-
-#if defined(OS_ANDROID)
-extern const char kAndroidAppScheme[];
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 // "Learn more" URL for the enhanced playback notification dialog.
 extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Help center URL for Chrome OS Account Manager.
 extern const char kAccountManagerLearnMoreURL[];
 
@@ -355,6 +351,10 @@ extern const char kOemEulaURLPath[];
 // Help URL for the OS settings page's search feature.
 extern const char kOsSettingsSearchHelpURL[];
 
+// The URL for the "Learn more" link in the peripheral data access protection
+// settings.
+extern const char kPeripheralDataAccessHelpURL[];
+
 // The URL path to offline ARC++ Terms of Service.
 extern const char kArcTermsURLPath[];
 
@@ -386,7 +386,10 @@ extern const char kTabletModeGesturesLearnMoreURL[];
 
 // The URL for the help center article about Wi-Fi sync.
 extern const char kWifiSyncLearnMoreURL[];
-#endif  // defined(OS_CHROMEOS)
+
+// The URL for contacts management in Nearby Share feature.
+extern const char kNearbyShareManageContactsURL[];
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_MAC)
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
@@ -410,8 +413,6 @@ extern const char kChromeSyncLearnMoreURL[];
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-// The URL for the "Learn more" page for the blocked plugin infobar.
-extern const char kBlockedPluginLearnMoreURL[];
 
 // The URL for the "Learn more" page for the outdated plugin infobar.
 extern const char kOutdatedPluginLearnMoreURL[];

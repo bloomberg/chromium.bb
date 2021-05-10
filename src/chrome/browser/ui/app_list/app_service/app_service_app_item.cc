@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
@@ -12,7 +13,10 @@
 #include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/remote_apps/remote_apps_manager.h"
+#include "chrome/browser/chromeos/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -32,6 +36,15 @@ AppServiceAppItem::AppServiceAppItem(
   OnAppUpdate(app_update, true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
+  } else if (app_type_ == apps::mojom::AppType::kRemote) {
+    chromeos::RemoteAppsManager* remote_apps_manager =
+        chromeos::RemoteAppsManagerFactory::GetForProfile(profile);
+
+    if (remote_apps_manager->ShouldAddToFront(app_update.AppId())) {
+      SetPosition(model_updater->GetPositionBeforeFirstItem());
+    } else {
+      SetDefaultPositionIfApplicable(model_updater);
+    }
   } else {
     SetDefaultPositionIfApplicable(model_updater);
 
@@ -67,6 +80,17 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
   if (in_constructor || app_update.IsPlatformAppChanged()) {
     is_platform_app_ =
         app_update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+  }
+
+  if (in_constructor || app_update.ReadinessChanged() ||
+      app_update.PausedChanged()) {
+    if (app_update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
+      SetAppStatus(ash::AppStatus::kBlocked);
+    } else if (app_update.Paused() == apps::mojom::OptionalBool::kTrue) {
+      SetAppStatus(ash::AppStatus::kPaused);
+    } else {
+      SetAppStatus(ash::AppStatus::kReady);
+    }
   }
 }
 
@@ -132,7 +156,7 @@ void AppServiceAppItem::Launch(int event_flags,
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   proxy->Launch(id(), event_flags, launch_source,
-                GetController()->GetAppListDisplayId());
+                apps::MakeWindowInfo(GetController()->GetAppListDisplayId()));
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {

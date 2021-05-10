@@ -17,9 +17,13 @@ import {Draft} from 'immer';
 import {assertExists} from '../base/logging';
 import {randomColor} from '../common/colorizer';
 import {ConvertTrace, ConvertTraceToPprof} from '../controller/trace_converter';
+import {ACTUAL_FRAMES_SLICE_TRACK_KIND} from '../tracks/actual_frames/common';
 import {ASYNC_SLICE_TRACK_KIND} from '../tracks/async_slices/common';
 import {COUNTER_TRACK_KIND} from '../tracks/counter/common';
 import {DEBUG_SLICE_TRACK_KIND} from '../tracks/debug_slices/common';
+import {
+  EXPECTED_FRAMES_SLICE_TRACK_KIND
+} from '../tracks/expected_frames/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
   PROCESS_SCHEDULING_TRACK_KIND
@@ -146,7 +150,8 @@ export const StateActions = {
 
   // TODO(b/141359485): Actions should only modify state.
   convertTraceToJson(
-      _: StateDraft, args: {file: Blob, truncate?: 'start'|'end'}): void {
+      state: StateDraft, args: {file: Blob, truncate?: 'start'|'end'}): void {
+    state.traceConversionInProgress = true;
     ConvertTrace(args.file, args.truncate);
   },
 
@@ -154,6 +159,10 @@ export const StateActions = {
       _: StateDraft,
       args: {pid: number, src: TraceSource, ts1: number, ts2?: number}): void {
     ConvertTraceToPprof(args.pid, args.src, args.ts1, args.ts2);
+  },
+
+  clearConversionInProgress(state: StateDraft, _args: {}): void {
+    state.traceConversionInProgress = false;
   },
 
   addTracks(state: StateDraft, args: {tracks: AddTrackArgs[]}) {
@@ -240,10 +249,15 @@ export const StateActions = {
     const threadTrackOrder = [
       PROCESS_SCHEDULING_TRACK_KIND,
       PROCESS_SUMMARY_TRACK,
+      EXPECTED_FRAMES_SLICE_TRACK_KIND,
+      ACTUAL_FRAMES_SLICE_TRACK_KIND,
       HEAP_PROFILE_TRACK_KIND,
       COUNTER_TRACK_KIND,
       ASYNC_SLICE_TRACK_KIND
     ];
+    // Use a numeric collator so threads are sorted as T1, T2, ..., T10, T11,
+    // rather than T1, T10, T11, ..., T2, T20, T21 .
+    const coll = new Intl.Collator([], {sensitivity: 'base', numeric: true});
     for (const group of Object.values(state.trackGroups)) {
       group.tracks.sort((a: string, b: string) => {
         const aKind = threadTrackOrder.indexOf(state.tracks[a].kind);
@@ -258,13 +272,7 @@ export const StateActions = {
           } else if (state.tracks[b].isMainThread) {
             return 1;
           }
-          if (aName > bName) {
-            return 1;
-          } else if (aName === bName) {
-            return 0;
-          } else {
-            return -1;
-          }
+          return coll.compare(aName, bName);
         } else {
           if (aKind === -1) return 1;
           if (bKind === -1) return -1;
@@ -273,6 +281,7 @@ export const StateActions = {
       });
     }
   },
+
 
   updateAggregateSorting(
       state: StateDraft, args: {id: string, column: string}) {

@@ -41,10 +41,11 @@ class ArcAndroidManagementChecker;
 class ArcDataRemover;
 class ArcFastAppReinstallStarter;
 class ArcPaiStarter;
+class ArcProvisioningResult;
 class ArcTermsOfServiceNegotiator;
 class ArcUiAvailabilityReporter;
 
-enum class ProvisioningResult : int;
+enum class ProvisioningStatus;
 enum class ArcStopReason;
 
 // This class is responsible for handing stages of ARC life-cycle.
@@ -210,25 +211,28 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   ArcSupportHost* support_host() { return support_host_.get(); }
 
   // On provisioning completion (regardless of whether successfully done or
-  // not), this is called with its status. On success, called with
-  // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
-  // |error| either contains the sign-in error that came from ARC or it may
-  // indicate that ARC stopped prematurely and provisioning could not finish
-  // successfully.
-  void OnProvisioningFinished(
-      ProvisioningResult result,
-      absl::variant<mojom::ArcSignInErrorPtr, ArcStopReason> error);
+  // not), this is called with its status. On success, is_success() of
+  // |result| returns true, otherwise ArcSignInResult can be retrieved from
+  // get() if sign-in result came from ARC or stop_reason()
+  // will indicate that ARC stopped prematurely and provisioning could
+  // not finish successfully. is_timedout() indicates that operation timed
+  // out.
+  void OnProvisioningFinished(const ArcProvisioningResult& result);
 
   // A helper function that calls ArcSessionRunner's SetUserInfo.
   void SetUserInfo();
 
+  // Returns the time when ARC was pre-started (mini-ARC start), or a null time
+  // if ARC has not been pre-started yet.
+  base::TimeTicks pre_start_time() const { return pre_start_time_; }
+
+  // Returns the time when ARC was about to start, or a null time if ARC has
+  // not been started yet.
+  base::TimeTicks start_time() const { return start_time_; }
+
   // Returns the time when the sign in process started, or a null time if
   // signing in didn't happen during this session.
   base::TimeTicks sign_in_start_time() const { return sign_in_start_time_; }
-
-  // Returns the time when ARC was about to start, or a null time if ARC has not
-  // been started yet.
-  base::TimeTicks arc_start_time() const { return arc_start_time_; }
 
   // Returns true if ARC requested to start.
   bool enable_requested() const { return enable_requested_; }
@@ -281,16 +285,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     property_files_expansion_result_.reset();
   }
 
-  void set_property_files_source_dir_for_testing(
-      const base::FilePath& property_files_source_dir) {
-    property_files_source_dir_ = property_files_source_dir;
-  }
-
-  void set_property_files_dest_dir_for_testing(
-      const base::FilePath& property_files_dest_dir) {
-    property_files_dest_dir_ = property_files_dest_dir;
-  }
-
   // chromeos::ConciergeClient::VmObserver overrides.
   void OnVmStarted(
       const vm_tools::concierge::VmStartedSignal& vm_signal) override;
@@ -300,6 +294,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Getter for |vm_info_|.
   // If ARCVM is not running, return base::nullopt.
   const base::Optional<vm_tools::concierge::VmInfo>& GetVmInfo() const;
+
+  // Getter for |serialno|.
+  std::string GetSerialNumber() const;
+
+  // Stops mini-ARC instance. This should only be called before login.
+  void StopMiniArcIfNecessary();
 
  private:
   // Reports statuses of OptIn flow to UMA.
@@ -376,14 +376,19 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // successfully.
   void MaybeStartTimer();
 
+  // Starts mini-ARC and updates related information.
+  void StartMiniArc();
+
   // Requests the support host (if it exists) to show the error, and notifies
   // the observers.
-  void ShowArcSupportHostError(ArcSupportHost::Error error,
-                               int error_code,
+  void ShowArcSupportHostError(ArcSupportHost::ErrorInfo error_info,
                                bool should_show_send_feedback);
 
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
+
+  // Called when the first part of ExpandPropertyFilesAndReadSalt is done.
+  void OnExpandPropertyFiles(bool result);
 
   // Called when ExpandPropertyFilesAndReadSalt is done.
   void OnExpandPropertyFilesAndReadSalt(ExpansionResult result);
@@ -423,8 +428,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // The time when the sign in process started.
   base::TimeTicks sign_in_start_time_;
+  // The time when ARC was pre-started (mini-ARC start).
+  base::TimeTicks pre_start_time_;
   // The time when ARC was about to start.
-  base::TimeTicks arc_start_time_;
+  base::TimeTicks start_time_;
+
   base::RepeatingClosure attempt_user_exit_callback_;
 
   ArcAppIdProviderImpl app_id_provider_;
@@ -433,8 +441,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::Optional<std::string> arc_salt_on_disk_;
 
   base::Optional<bool> property_files_expansion_result_;
-  base::FilePath property_files_source_dir_;
-  base::FilePath property_files_dest_dir_;
 
   base::Optional<vm_tools::concierge::VmInfo> vm_info_;
 

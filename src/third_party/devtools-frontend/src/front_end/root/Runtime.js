@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Platform from '../platform/platform.js';  // eslint-disable-line no-unused-vars
+
 const originalConsole = console;
 const originalAssert = console.assert;
 
@@ -15,7 +17,7 @@ let importScriptPathPrefix;
 
 let runtimePlatform = '';
 
-/** @type {function(string):string} */
+/** @type {function(string):!Platform.UIString.LocalizedString} */
 let l10nCallback;
 
 /** @type {!Runtime|undefined} */
@@ -39,9 +41,6 @@ export function getRemoteBase(location = self.location.toString()) {
 /** @type {!WeakMap<function(new:?), ?>} */
 const constructedInstances = new WeakMap();
 
-/**
- * @unrestricted
- */
 export class Runtime {
   /**
    * @private
@@ -72,8 +71,7 @@ export class Runtime {
     const {forceNew, moduleDescriptors} = opts;
     if (!runtimeInstance || forceNew) {
       if (!moduleDescriptors) {
-        throw new Error(
-            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+        throw new Error(`Unable to create runtime: moduleDescriptors must be provided: ${new Error().stack}`);
       }
 
       runtimeInstance = new Runtime(moduleDescriptors);
@@ -84,22 +82,6 @@ export class Runtime {
 
   static removeInstance() {
     runtimeInstance = undefined;
-  }
-
-  /**
-   * @param {string} url
-   * @return {!Promise.<!ArrayBuffer>}
-   */
-  loadBinaryResourcePromise(url) {
-    return internalLoadResourcePromise(url, true);
-  }
-
-  /**
-   * @param {string} url
-   * @return {!Promise.<string>}
-   */
-  loadTextResourcePromise(url) {
-    return internalLoadResourcePromise(url, false);
   }
 
   /**
@@ -177,11 +159,15 @@ export class Runtime {
     runtimePlatform = platform;
   }
 
+  static platform() {
+    return runtimePlatform;
+  }
+
   /**
-   * @param {!ModuleDescriptor|!RuntimeExtensionDescriptor} descriptor
+   * @param {!{experiment: (?string|undefined), condition: (?string|undefined)}} descriptor
    * @return {boolean}
    */
-  static _isDescriptorEnabled(descriptor) {
+  static isDescriptorEnabled(descriptor) {
     const activatorExperiment = descriptor['experiment'];
     if (activatorExperiment === '*') {
       return true;
@@ -217,7 +203,7 @@ export class Runtime {
   }
 
   /**
-   * @param {function(string):string} localizationFunction
+   * @param {function(string):!Platform.UIString.LocalizedString} localizationFunction
    */
   static setL10nCallback(localizationFunction) {
     l10nCallback = localizationFunction;
@@ -275,7 +261,7 @@ export class Runtime {
     }
     for (let i = 0; i < contextTypes.length; ++i) {
       const contextType = this._resolve(contextTypes[i]);
-      const isMatching = !!contextType && predicate(contextType);
+      const isMatching = contextType && predicate(contextType);
       if (isMatching) {
         return true;
       }
@@ -434,9 +420,6 @@ export class Runtime {
   }
 }
 
-/**
- * @unrestricted
- */
 export class ModuleDescriptor {
   constructor() {
     /**
@@ -481,14 +464,9 @@ export class ModuleDescriptor {
 
 // This class is named like this, because we already have an "ExtensionDescriptor" in the externs
 // These two do not share the same structure
-/**
- * @unrestricted
- */
 export class RuntimeExtensionDescriptor {
   constructor() {
-    /**
-     * @type {string}
-     */
+    /** @type {string} */
     this.type;
 
     /**
@@ -506,21 +484,8 @@ export class RuntimeExtensionDescriptor {
      */
     this.contextTypes;
 
-    /**
-     * @type {!Array.<!{
-     *   shortcut: string,
-     *   platform: (string|undefined),
-     *   keybindSets: (!Array.<string>|undefined)
-     * }>|
-     * undefined}
-     */
-    this.bindings;
-
     /** @type {number} */
     this.order;
-
-    /** @type {string|null} */
-    this.extension;
 
     /** @type {string|null} */
     this.actionId;
@@ -530,21 +495,6 @@ export class RuntimeExtensionDescriptor {
 
     /** @type {string|null} */
     this.condition;
-
-    /** @type {string} */
-    this.settingName;
-
-    /** @type {string|null} */
-    this.settingType;
-
-    /** @type {*} */
-    this.defaultValue;
-
-    /** @type {string|null} */
-    this.storageType;
-
-    /** @type {string|null} */
-    this.userActionCondition;
 
     /** @type {string|null} */
     this.startPage;
@@ -567,23 +517,11 @@ export class RuntimeExtensionDescriptor {
     /** @type {string|null} */
     this.category;
 
-    /** @type {string|null} */
-    this.tags;
-
     /** @type {boolean|null|undefined} */
     this.reloadRequired;
 
-    /** @type {string} */
-    this.id;
-
     /** @type {string|null} */
     this.location;
-
-    /** @type {?string} */
-    this.title;
-
-    /** @type {!Array<!Option>|undefined} */
-    this.options;
 
     /** @type {!Array<string>|undefined} */
     this.settings;
@@ -600,8 +538,6 @@ export class RuntimeExtensionDescriptor {
     this.persistence;
     /** @type {?string} */
     this.setting;
-    /** @type {?string} */
-    this.name;
   }
 }
 
@@ -610,14 +546,12 @@ export class RuntimeExtensionDescriptor {
  *  title: string,
  *  value: (string|boolean),
  *  raw: (boolean|undefined),
+ *  text: (string|undefined),
  * }}
  */
 // @ts-ignore typedef
 export let Option;
 
-/**
- * @unrestricted
- */
 export class Module {
   /**
    * @param {!Runtime} manager
@@ -652,7 +586,7 @@ export class Module {
    * @return {boolean}
    */
   enabled() {
-    return Runtime._isDescriptorEnabled(this._descriptor);
+    return Runtime.isDescriptorEnabled(this._descriptor);
   }
 
   /**
@@ -705,14 +639,12 @@ export class Module {
     // by `build_release_applications`. These need to be loaded before any other code is
     // loaded, to make sure that the resource content is properly cached in `cachedResources`.
     if (this._descriptor.modules.includes(moduleFileName)) {
-      // TODO(crbug.com/1011811): Remove eval when we use TypeScript which does support dynamic imports
-      await eval(`import('../${this._name}/${moduleFileName}')`);
+      await import(`../${this._name}/${moduleFileName}`);
     }
 
     const fileName = this._descriptor.modules.includes(legacyFileName) ? legacyFileName : entrypointFileName;
 
-    // TODO(crbug.com/1011811): Remove eval when we use TypeScript which does support dynamic imports
-    await eval(`import('../${this._name}/${fileName}')`);
+    await import(`../${this._name}/${fileName}`);
   }
 
   /**
@@ -749,9 +681,6 @@ export class Module {
   }
 }
 
-/**
- * @unrestricted
- */
 export class Extension {
   /**
   * @param {!Module} moduleParam
@@ -789,7 +718,7 @@ export class Extension {
   * @return {boolean}
   */
   enabled() {
-    return this._module.enabled() && Runtime._isDescriptorEnabled(this.descriptor());
+    return this._module.enabled() && Runtime.isDescriptorEnabled(this.descriptor());
   }
 
   /**
@@ -821,7 +750,7 @@ export class Extension {
   * @return {boolean}
   */
   canInstantiate() {
-    return !!(this._className || this._factoryName);
+    return Boolean(this._className || this._factoryName);
   }
 
   /**
@@ -843,7 +772,7 @@ export class Extension {
   }
 
   /**
-  * @return {string}
+  * @return {!Platform.UIString.LocalizedString}
   */
   title() {
     // @ts-ignore Magic lookup for objects
@@ -872,9 +801,6 @@ export class Extension {
   }
 }
 
-/**
-* @unrestricted
-*/
 export class ExperimentsSupport {
   constructor() {
     /** @type {!Array<!Experiment>} */
@@ -928,7 +854,7 @@ export class ExperimentsSupport {
     Runtime._assert(
         !this._experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
     this._experimentNames.add(experimentName);
-    this._experiments.push(new Experiment(this, experimentName, experimentTitle, !!unstable));
+    this._experiments.push(new Experiment(this, experimentName, experimentTitle, Boolean(unstable)));
   }
 
   /**
@@ -949,7 +875,7 @@ export class ExperimentsSupport {
       return true;
     }
 
-    return !!Runtime._experimentsSetting()[experimentName];
+    return Boolean(Runtime._experimentsSetting()[experimentName]);
   }
 
   /**
@@ -1032,10 +958,7 @@ export class ExperimentsSupport {
   }
 }
 
-/**
-* @unrestricted
-*/
-class Experiment {
+export class Experiment {
   /**
   * @param {!ExperimentsSupport} experiments
   * @param {string} name
@@ -1065,13 +988,10 @@ class Experiment {
 }
 
 /**
- * @private
  * @param {string} url
- * @param {boolean} asBinary
- * @template T
- * @return {!Promise.<T>}
+ * @return {!Promise.<string>}
  */
-function internalLoadResourcePromise(url, asBinary) {
+export function loadResourcePromise(url) {
   return new Promise(load);
 
   /**
@@ -1081,9 +1001,6 @@ function internalLoadResourcePromise(url, asBinary) {
   function load(fulfill, reject) {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
-    if (asBinary) {
-      xhr.responseType = 'arraybuffer';
-    }
     xhr.onreadystatechange = onreadystatechange;
 
     /**
@@ -1096,10 +1013,8 @@ function internalLoadResourcePromise(url, asBinary) {
 
       const {response} = /** @type {*} */ (e.target);
 
-      const text = asBinary ? new TextDecoder().decode(response) : response;
-
       // DevTools Proxy server can mask 404s as 200s, check the body to be sure
-      const status = /^HTTP\/1.1 404/.test(text) ? 404 : xhr.status;
+      const status = /^HTTP\/1.1 404/.test(response) ? 404 : xhr.status;
 
       if ([0, 200, 304].indexOf(status) === -1)  // Testing harness file:/// results in 0.
       {
@@ -1110,14 +1025,6 @@ function internalLoadResourcePromise(url, asBinary) {
     }
     xhr.send(null);
   }
-}
-
-/**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-export function loadResourcePromise(url) {
-  return internalLoadResourcePromise(url, false);
 }
 
 /**
@@ -1159,3 +1066,25 @@ export let appStartedPromiseCallback;
 export const appStarted = new Promise(fulfill => {
   appStartedPromiseCallback = fulfill;
 });
+
+
+/** @enum {string} */
+export const ExperimentName = {
+  CAPTURE_NODE_CREATION_STACKS: 'captureNodeCreationStacks',
+  CSS_OVERVIEW: 'cssOverview',
+  LIVE_HEAP_PROFILE: 'liveHeapProfile',
+  DEVELOPER_RESOURCES_VIEW: 'developerResourcesView',
+  TIMELINE_REPLAY_EVENT: 'timelineReplayEvent',
+  CSP_VIOLATIONS_VIEW: 'cspViolationsView',
+  WASM_DWARF_DEBUGGING: 'wasmDWARFDebugging',
+  ALL: '*',
+  PROTOCOL_MONITOR: 'protocolMonitor',
+  WEBAUTHN_PANE: 'webauthnPane',
+  RECORDER: 'recorder',
+};
+
+/** @enum {string} */
+export const ConditionName = {
+  CAN_DOCK: 'can_dock',
+  NOT_SOURCES_HIDE_ADD_FOLDER: '!sources.hide_add_folder',
+};

@@ -30,7 +30,6 @@
 .webauthn-pane.enabled .authenticators-view {
   display: block;
 }
-
 /* New Authenticator Section */
 .new-authenticator-title {
   line-height: 24px;
@@ -57,12 +56,12 @@
 .webauthn-pane .chrome-select {
   width: 120px;
 }
-
 /* Active Authenticator Section */
 .authenticator-section {
   display: block;
   padding: 16px 0;
-  border-bottom: 1px solid rgb(230 230 230);
+  border-bottom: 1px solid rgb(230 230 230); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .authenticator-fields {
@@ -93,7 +92,8 @@
 }
 
 .authenticator-section-title.editing-name .authenticator-name-field {
-  border-bottom: 2px solid grey;
+  border-bottom: 2px solid #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   font-weight: normal;
   animation: none;
 }
@@ -116,7 +116,8 @@
 }
 
 .authenticator-option-label {
-  color: var(--main-fg-color);
+  color: var(--main-fg-color); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   text-align: right;
   width: 200px;
   display: inline-block;
@@ -130,7 +131,7 @@
   min-width: 28px;
   background: transparent;
   border: none;
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -154,7 +155,6 @@ td .text-button {
   from { opacity: 0%; }
   to { opacity: 100%; }
 }
-
 /* Credentials Table */
 
 .data-grid-data-grid-node.centered {

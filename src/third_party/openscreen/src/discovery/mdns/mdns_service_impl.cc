@@ -5,6 +5,8 @@
 #include "discovery/mdns/mdns_service_impl.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "discovery/common/reporting_client.h"
 #include "discovery/mdns/mdns_records.h"
@@ -18,34 +20,34 @@ std::unique_ptr<MdnsService> MdnsService::Create(
     TaskRunner* task_runner,
     ReportingClient* reporting_client,
     const Config& config,
-    NetworkInterfaceIndex network_interface,
-    Config::NetworkInfo::AddressFamilies supported_address_types) {
+    const Config::NetworkInfo& network_info) {
   return std::make_unique<MdnsServiceImpl>(
-      task_runner, Clock::now, reporting_client, config, network_interface,
-      supported_address_types);
+      task_runner, Clock::now, reporting_client, config, network_info);
 }
 
-MdnsServiceImpl::MdnsServiceImpl(
-    TaskRunner* task_runner,
-    ClockNowFunctionPtr now_function,
-    ReportingClient* reporting_client,
-    const Config& config,
-    NetworkInterfaceIndex network_interface,
-    Config::NetworkInfo::AddressFamilies supported_address_types)
+MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
+                                 ClockNowFunctionPtr now_function,
+                                 ReportingClient* reporting_client,
+                                 const Config& config,
+                                 const Config::NetworkInfo& network_info)
     : task_runner_(task_runner),
       now_function_(now_function),
       reporting_client_(reporting_client),
-      receiver_(config) {
+      receiver_(config),
+      interface_(network_info.interface.index) {
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(reporting_client_);
-  OSP_DCHECK(supported_address_types);
+  OSP_DCHECK(network_info.supported_address_families);
 
   // Create all UDP sockets needed for this object. They should not yet be bound
   // so that they do not send or receive data until the objects on which their
   // callback depends is initialized.
-  if (supported_address_types & Config::NetworkInfo::kUseIpV4) {
+  // NOTE: we bind to the Any addresses here because traffic is filtered by
+  // the multicast join calls.
+  if (network_info.supported_address_families & Config::NetworkInfo::kUseIpV4) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
-        task_runner, this, kDefaultMulticastGroupIPv4Endpoint);
+        task_runner, this,
+        IPEndpoint{IPAddress::kAnyV4(), kDefaultMulticastPort});
     OSP_DCHECK(!socket.is_error());
     OSP_DCHECK(socket.value().get());
     OSP_DCHECK(socket.value()->IsIPv4());
@@ -53,9 +55,10 @@ MdnsServiceImpl::MdnsServiceImpl(
     socket_v4_ = std::move(socket.value());
   }
 
-  if (supported_address_types & Config::NetworkInfo::kUseIpV6) {
+  if (network_info.supported_address_families & Config::NetworkInfo::kUseIpV6) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
-        task_runner, this, kDefaultMulticastGroupIPv6Endpoint);
+        task_runner, this,
+        IPEndpoint{IPAddress::kAnyV6(), kDefaultMulticastPort});
     OSP_DCHECK(!socket.is_error());
     OSP_DCHECK(socket.value().get());
     OSP_DCHECK(socket.value()->IsIPv6());
@@ -90,27 +93,11 @@ MdnsServiceImpl::MdnsServiceImpl(
   // objects have all been created, it they should be able to safely do so.
   // NOTE: Although only one of these sockets is used for sending, both will be
   // used for reading on the mDNS v4 and v6 addresses and ports.
-  if (socket_v4_.get()) {
+  if (socket_v4_) {
     socket_v4_->Bind();
-
-    // This configuration must happen after the socket is bound for
-    // compatibility with chromium.
-    socket_v4_->SetMulticastOutboundInterface(network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
-                                   network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4,
-                                   network_interface);
   }
-  if (socket_v6_.get()) {
+  if (socket_v6_) {
     socket_v6_->Bind();
-
-    // This configuration must happen after the socket is bound for
-    // compatibility with chromium.
-    socket_v6_->SetMulticastOutboundInterface(network_interface);
-    socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6,
-                                   network_interface);
-    socket_v6_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv6,
-                                   network_interface);
   }
 }
 
@@ -164,6 +151,24 @@ void MdnsServiceImpl::OnSendError(UdpSocket* socket, Error error) {
 
 void MdnsServiceImpl::OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) {
   receiver_.OnRead(socket, std::move(packet));
+}
+
+void MdnsServiceImpl::OnBound(UdpSocket* socket) {
+  // Socket configuration must occur after the socket has been bound
+  // successfully.
+  if (socket == socket_v4_.get()) {
+    socket_v4_->SetMulticastOutboundInterface(interface_);
+    socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4, interface_);
+    socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4, interface_);
+  } else if (socket == socket_v6_.get()) {
+    socket_v6_->SetMulticastOutboundInterface(interface_);
+    socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6, interface_);
+    socket_v6_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv6, interface_);
+  } else {
+    // Sanity check: we shouldn't be called for sockets we haven't subscribed
+    // to.
+    OSP_NOTREACHED();
+  }
 }
 
 }  // namespace discovery

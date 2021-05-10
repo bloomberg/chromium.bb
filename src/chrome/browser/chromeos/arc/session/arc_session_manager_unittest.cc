@@ -7,6 +7,7 @@
 #include <tuple>
 #include <vector>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -22,10 +23,12 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/session/arc_play_store_enabled_preference_handler.h"
+#include "chrome/browser/chromeos/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
@@ -33,8 +36,6 @@
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -135,18 +135,16 @@ class ShowErrorObserver : public ArcSessionManagerObserver {
 
   ~ShowErrorObserver() override { session_manager_->RemoveObserver(this); }
 
-  const base::Optional<ArcSupportHost::Error> error() const { return error_; }
-  const base::Optional<int> error_code() const { return error_code_; }
+  const base::Optional<ArcSupportHost::ErrorInfo> error_info() const {
+    return error_info_;
+  }
 
-  void OnArcErrorShowRequested(ArcSupportHost::Error error,
-                               int error_code) override {
-    error_ = error;
-    error_code_ = error_code;
+  void OnArcErrorShowRequested(ArcSupportHost::ErrorInfo error_info) override {
+    error_info_ = error_info;
   }
 
  private:
-  base::Optional<ArcSupportHost::Error> error_;
-  base::Optional<int> error_code_;
+  base::Optional<ArcSupportHost::ErrorInfo> error_info_;
   ArcSessionManager* const session_manager_;
 };
 
@@ -220,6 +218,19 @@ TEST_F(ArcSessionManagerInLoginScreenTest, EmitLoginPromptVisible_NoOp) {
   EXPECT_FALSE(arc_session());
   EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
             arc_session_manager()->state());
+}
+
+// We expect that StopMiniArcIfNecessary stops mini-ARC when it is running.
+TEST_F(ArcSessionManagerInLoginScreenTest, StopMiniArcIfNecessary) {
+  EXPECT_FALSE(arc_session());
+
+  SetArcAvailableCommandLineForTesting(base::CommandLine::ForCurrentProcess());
+
+  chromeos::SessionManagerClient::Get()->EmitLoginPromptVisible();
+  EXPECT_TRUE(arc_session());
+
+  arc_session_manager()->StopMiniArcIfNecessary();
+  EXPECT_FALSE(arc_session());
 }
 
 class ArcSessionManagerTestBase : public testing::Test {
@@ -368,19 +379,32 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
 
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
-  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
 
   // By default ARC is not enabled.
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
+
+  const base::TimeTicks enabled_time = base::TimeTicks::Now();
 
   // Enables ARC. First time, ToS negotiation should start.
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+  const base::TimeTicks after_enabled_time = base::TimeTicks::Now();
+
+  const base::TimeTicks pre_start_time =
+      arc_session_manager()->pre_start_time();
+  EXPECT_FALSE(pre_start_time.is_null());
+  EXPECT_GE(pre_start_time, enabled_time);
+  EXPECT_GE(after_enabled_time, pre_start_time);
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
 
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
@@ -388,12 +412,17 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   arc_session_manager()->StartArcForTesting();
 
+  const base::TimeTicks start_time = arc_session_manager()->start_time();
   EXPECT_FALSE(arc_session_manager()->sign_in_start_time().is_null());
-  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
-
+  EXPECT_EQ(pre_start_time, arc_session_manager()->pre_start_time());
+  EXPECT_FALSE(start_time.is_null());
+  EXPECT_GE(start_time, after_enabled_time);
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
+
+  EXPECT_TRUE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
 }
 
 // Tests that tying to enable ARC++ with an incompatible file system fails and
@@ -436,8 +465,12 @@ TEST_F(ArcSessionManagerTest, ArcInitialStartFirstProvisioning) {
 
   EXPECT_FALSE(start_handler.was_called());
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   EXPECT_TRUE(start_handler.was_called());
 
   arc_session_manager()->Shutdown();
@@ -458,8 +491,12 @@ TEST_F(ArcSessionManagerTest, ArcInitialStartNextProvisioning) {
   ArcInitialStartHandler start_handler(arc_session_manager());
 
   arc_session_manager()->RequestEnable();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   EXPECT_FALSE(start_handler.was_called());
 
   arc_session_manager()->Shutdown();
@@ -557,7 +594,8 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   PrefService* const prefs = profile()->GetPrefs();
 
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
-  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   ASSERT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
@@ -579,12 +617,17 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
 
   // Here, provisining is not yet completed, so kArcSignedIn should be false.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
-  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   // Emulate successful provisioning.
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
@@ -607,8 +650,12 @@ TEST_F(ArcSessionManagerTest, PlayStoreSuppressed) {
   // Second start, no fetching code is expected.
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   // Completing the provisioning resets this flag.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
@@ -655,8 +702,12 @@ TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Report failure.
+  arc::mojom::ArcSignInResultPtr result = arc::mojom::ArcSignInResult::NewError(
+      arc::mojom::ArcSignInError::NewSignInError(
+          arc::mojom::GMSSignInError::GMS_SIGN_IN_NETWORK_ERROR));
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::GMS_NETWORK_ERROR, {});
+      ArcProvisioningResult(std::move(result)));
+
   // On error, UI to send feedback is showing. In that case,
   // the ARC is still necessary to run on background for gathering the logs.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
@@ -788,8 +839,11 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
 
   EXPECT_EQ(
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
@@ -824,8 +878,11 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
 
   EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
             arc::GetSupervisionTransition(profile()));
@@ -851,14 +908,20 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Report some failure that does not stop the bridge.
+  arc::mojom::ArcSignInResultPtr result = arc::mojom::ArcSignInResult::NewError(
+      arc::mojom::ArcSignInError::NewSignInError(
+          arc::mojom::GMSSignInError::GMS_SIGN_IN_FAILED));
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::GMS_SIGN_IN_FAILED, {});
+      ArcProvisioningResult(std::move(result)));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Try to send another error that stops the bridge if sent first. It should
   // be ignored.
+  result = arc::mojom::ArcSignInResult::NewError(
+      arc::mojom::ArcSignInError::NewGeneralError(
+          arc::mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR));
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, {});
+      ArcProvisioningResult(std::move(result)));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
@@ -878,8 +941,12 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedFalse) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
   arc_session_manager()->Shutdown();
@@ -918,8 +985,12 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
+
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
@@ -1082,25 +1153,78 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerArcAlwaysStartTest);
 };
 
+ArcProvisioningResult CreateProvisioningResult(
+    const absl::variant<arc::mojom::GeneralSignInError,
+                        arc::mojom::GMSSignInError,
+                        arc::mojom::GMSCheckInError,
+                        arc::mojom::CloudProvisionFlowError,
+                        ArcStopReason,
+                        ChromeProvisioningTimeout>& error) {
+  if (absl::holds_alternative<arc::mojom::GeneralSignInError>(error)) {
+    return ArcProvisioningResult(arc::mojom::ArcSignInResult::NewError(
+        arc::mojom::ArcSignInError::NewGeneralError(
+            absl::get<arc::mojom::GeneralSignInError>(error))));
+  }
+
+  if (absl::holds_alternative<arc::mojom::GMSSignInError>(error)) {
+    return ArcProvisioningResult(arc::mojom::ArcSignInResult::NewError(
+        arc::mojom::ArcSignInError::NewSignInError(
+            absl::get<arc::mojom::GMSSignInError>(error))));
+  }
+
+  if (absl::holds_alternative<arc::mojom::GMSCheckInError>(error)) {
+    return ArcProvisioningResult(arc::mojom::ArcSignInResult::NewError(
+        arc::mojom::ArcSignInError::NewCheckInError(
+            absl::get<arc::mojom::GMSCheckInError>(error))));
+  }
+
+  if (absl::holds_alternative<arc::mojom::CloudProvisionFlowError>(error)) {
+    return ArcProvisioningResult(arc::mojom::ArcSignInResult::NewError(
+        arc::mojom::ArcSignInError::NewCloudProvisionFlowError(
+            absl::get<arc::mojom::CloudProvisionFlowError>(error))));
+  }
+
+  if (absl::holds_alternative<ArcStopReason>(error))
+    return ArcProvisioningResult(absl::get<ArcStopReason>(error));
+
+  return ArcProvisioningResult(ChromeProvisioningTimeout{});
+}
+
 struct ProvisioningErrorDisplayTestParam {
   // the reason for arc instance stopping
-  ArcStopReason stop_reason;
+  absl::variant<arc::mojom::GeneralSignInError,
+                arc::mojom::GMSSignInError,
+                arc::mojom::GMSCheckInError,
+                arc::mojom::CloudProvisionFlowError,
+                ArcStopReason,
+                ChromeProvisioningTimeout>
+      error;
 
   // the error sent to arc support host
-  ArcSupportHost::Error host_error;
+  ArcSupportHost::Error message;
 
   // the error code sent to arc support host
-  int host_error_code;
+  base::Optional<int> arg;
 };
 
 constexpr ProvisioningErrorDisplayTestParam
     kProvisioningErrorDisplayTestCases[] = {
         {ArcStopReason::GENERIC_BOOT_FAILURE,
-         ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR, 16 /*ARC_STOPPED*/},
+         ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR, 8 /*ARC_STOPPED*/},
         {ArcStopReason::LOW_DISK_SPACE,
-         ArcSupportHost::Error::LOW_DISK_SPACE_ERROR, 0},
+         ArcSupportHost::Error::LOW_DISK_SPACE_ERROR,
+         {}},
         {ArcStopReason::CRASH, ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR,
-         16 /*ARC_STOPPED*/}};
+         8 /*ARC_STOPPED*/},
+        {arc::mojom::GMSSignInError::GMS_SIGN_IN_NETWORK_ERROR,
+         ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR,
+         1 /*GMS_SIGN_IN_NETWORK_ERROR*/},
+        {arc::mojom::GMSSignInError::GMS_SIGN_IN_TIMEOUT,
+         ArcSupportHost::Error::SIGN_IN_GMS_SIGNIN_ERROR,
+         5 /*GMS_SIGN_IN_TIMEOUT*/},
+        {arc::mojom::GMSCheckInError::GMS_CHECK_IN_TIMEOUT,
+         ArcSupportHost::Error::SIGN_IN_GMS_CHECKIN_ERROR,
+         2 /*GMS_CHECK_IN_TIMEOUT*/}};
 
 class ProvisioningErrorDisplayTest
     : public ArcSessionManagerTest,
@@ -1127,18 +1251,19 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(ProvisioningErrorDisplayTest, ArcStopped) {
   ShowErrorObserver observer(arc_session_manager());
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::ARC_STOPPED,
-                                                GetParam().stop_reason);
+  ArcProvisioningResult result = CreateProvisioningResult(GetParam().error);
+  arc_session_manager()->OnProvisioningFinished(result);
 
-  ASSERT_TRUE(observer.error());
-  EXPECT_EQ(GetParam().host_error, observer.error().value());
-  EXPECT_EQ(GetParam().host_error_code, observer.error_code().value());
+  ASSERT_TRUE(observer.error_info());
+  EXPECT_EQ(GetParam().message, observer.error_info().value().error);
+  EXPECT_EQ(GetParam().arg, observer.error_info().value().arg);
 }
 
 TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
   // TODO(victorhsieh): Consider also tracking sign-in activity, which is
   // initiated from the Android side.
-  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->start_time().is_null());
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
@@ -1151,7 +1276,8 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->pre_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->start_time().is_null());
 
   arc_session_manager()->Shutdown();
 }
@@ -1286,8 +1412,11 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
 
   // Play Store app is launched unless the Terms screen was suppressed or Tos is
   // accepted during OOBE.
@@ -1365,8 +1494,11 @@ TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
       base::BindRepeating([](bool* terminated) { *terminated = true; },
                           &terminated));
 
+  arc::mojom::ArcSignInResultPtr result = arc::mojom::ArcSignInResult::NewError(
+      arc::mojom::ArcSignInError::NewGeneralError(
+          arc::mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR));
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, {});
+      ArcProvisioningResult(std::move(result)));
   EXPECT_TRUE(terminated);
 }
 
@@ -1401,8 +1533,11 @@ TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
       base::BindRepeating([](bool* terminated) { *terminated = true; },
                           &terminated));
 
+  arc::mojom::ArcSignInResultPtr result = arc::mojom::ArcSignInResult::NewError(
+      arc::mojom::ArcSignInError::NewGeneralError(
+          arc::mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR));
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, {});
+      ArcProvisioningResult(std::move(result)));
   EXPECT_FALSE(terminated);
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 }
@@ -1558,108 +1693,60 @@ struct ArcSessionRetryTestParam {
 
   Negotiation negotiation;
 
-  // Provisioning error to test.
-  ProvisioningResult result;
-
   // Whether ARC++ container is alive on error.
   bool container_alive;
 
   // Whether data is removed on error.
   bool data_removed;
 
-  absl::variant<absl::monostate,
+  absl::variant<arc::mojom::GeneralSignInError,
+                arc::mojom::GMSSignInError,
+                arc::mojom::GMSCheckInError,
                 arc::mojom::CloudProvisionFlowError,
-                ArcStopReason>
+                ArcStopReason,
+                ChromeProvisioningTimeout>
       error;
 };
 
-constexpr ArcSessionRetryTestParam kRetryTestCases[] = {
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::UNKNOWN_ERROR,
-     true,
-     true,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_NETWORK_ERROR,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SERVICE_UNAVAILABLE,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_BAD_AUTHENTICATION,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_FAILED,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+ArcSessionRetryTestParam kRetryTestCases[] = {
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, true,
+     arc::mojom::GeneralSignInError::UNKNOWN_ERROR},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_NETWORK_ERROR},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_SERVICE_UNAVAILABLE},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_BAD_AUTHENTICATION},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSCheckInError::GMS_CHECK_IN_FAILED},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED, true, true,
      arc::mojom::CloudProvisionFlowError::ERROR_OTHER},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::MOJO_VERSION_MISMATCH,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::PROVISIONING_TIMEOUT,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_FAILED,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_TIMEOUT,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR,
-     true,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GeneralSignInError::MOJO_VERSION_MISMATCH},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GeneralSignInError::GENERIC_PROVISIONING_TIMEOUT},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSCheckInError::GMS_CHECK_IN_TIMEOUT},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSCheckInError::GMS_CHECK_IN_INTERNAL_ERROR},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_FAILED},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_TIMEOUT},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GMSSignInError::GMS_SIGN_IN_INTERNAL_ERROR},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED, true, true,
      arc::mojom::CloudProvisionFlowError::ERROR_TIMEOUT},
-    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
-     ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR, true, true,
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED, true, true,
      arc::mojom::CloudProvisionFlowError::ERROR_JSON},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::ARC_STOPPED, false, false, ArcStopReason::CRASH},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT,
-     true,
-     true,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR,
-     false,
-     false,
-     {}},
-    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::NO_NETWORK_CONNECTION,
-     true,
-     false,
-     {}},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, false, false,
+     ArcStopReason::CRASH},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, true,
+     ChromeProvisioningTimeout{}},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, false, false,
+     arc::mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED, true, false,
+     arc::mojom::GeneralSignInError::NO_NETWORK_CONNECTION},
 };
 
 class ArcSessionRetryTest
@@ -1729,21 +1816,8 @@ TEST_P(ArcSessionRetryTest, ContainerRestarted) {
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  absl::variant<absl::monostate, arc::mojom::CloudProvisionFlowError,
-                ArcStopReason>
-      error = std::move(GetParam().error);
-  absl::variant<mojom::ArcSignInErrorPtr, ArcStopReason> param;
-  if (absl::holds_alternative<arc::mojom::CloudProvisionFlowError>(error)) {
-    param = arc::mojom::ArcSignInError::NewCloudProvisionFlowError(
-        absl::get<arc::mojom::CloudProvisionFlowError>(error));
-  } else if (absl::holds_alternative<ArcStopReason>(error)) {
-    param = absl::get<ArcStopReason>(error);
-  } else if (!absl::holds_alternative<absl::monostate>(error)) {
-    FAIL() << "Unexpected value";
-  }
-
-  arc_session_manager()->OnProvisioningFinished(GetParam().result,
-                                                std::move(param));
+  ArcProvisioningResult result1 = CreateProvisioningResult(GetParam().error);
+  arc_session_manager()->OnProvisioningFinished(result1);
 
   // In case of permanent error data removal request is scheduled.
   EXPECT_EQ(GetParam().data_removed,
@@ -1771,8 +1845,11 @@ TEST_P(ArcSessionRetryTest, ContainerRestarted) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Successful retry keeps ARC++ container running.
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
-                                                {});
+  arc::mojom::ArcSignInResultPtr result =
+      arc::mojom::ArcSignInResult::NewSuccess(
+          arc::mojom::ArcSignInSuccess::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(
+      ArcProvisioningResult(std::move(result)));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();

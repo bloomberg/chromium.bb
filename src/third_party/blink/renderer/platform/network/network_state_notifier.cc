@@ -30,6 +30,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -40,6 +41,8 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
+
+using mojom::blink::EffectiveConnectionType;
 
 namespace {
 
@@ -224,14 +227,19 @@ void NetworkStateNotifier::SetNetworkConnectionInfoOverride(
           base::TimeDelta::FromMilliseconds(http_rtt_msec));
       // Threshold values taken from
       // net/nqe/network_quality_estimator_params.cc.
-      if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
-                          [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G]) {
+      if (http_rtt >=
+          net::kHttpRttEffectiveConnectionTypeThresholds[static_cast<int>(
+              EffectiveConnectionType::kEffectiveConnectionSlow2GType)]) {
         effective_type = WebEffectiveConnectionType::kTypeSlow2G;
-      } else if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
-                                 [net::EFFECTIVE_CONNECTION_TYPE_2G]) {
+      } else if (http_rtt >=
+                 net::kHttpRttEffectiveConnectionTypeThresholds[static_cast<
+                     int>(
+                     EffectiveConnectionType::kEffectiveConnection2GType)]) {
         effective_type = WebEffectiveConnectionType::kType2G;
-      } else if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
-                                 [net::EFFECTIVE_CONNECTION_TYPE_3G]) {
+      } else if (http_rtt >=
+                 net::kHttpRttEffectiveConnectionTypeThresholds[static_cast<
+                     int>(
+                     EffectiveConnectionType::kEffectiveConnection3GType)]) {
         effective_type = WebEffectiveConnectionType::kType3G;
       } else {
         effective_type = WebEffectiveConnectionType::kType4G;
@@ -395,8 +403,14 @@ void NetworkStateNotifier::CollectZeroedObservers(
 
   // If any observers were removed during the iteration they will have
   // 0 values, clean them up.
-  for (wtf_size_t i = 0; i < list->zeroed_observers.size(); ++i)
-    list->observers.EraseAt(list->zeroed_observers[i]);
+  std::sort(list->zeroed_observers.begin(), list->zeroed_observers.end());
+  int removed = 0;
+  for (wtf_size_t i = 0; i < list->zeroed_observers.size(); ++i) {
+    int index_to_remove = list->zeroed_observers[i] - removed;
+    DCHECK_EQ(nullptr, list->observers[index_to_remove]);
+    list->observers.EraseAt(index_to_remove);
+    removed += 1;
+  }
 
   list->zeroed_observers.clear();
 

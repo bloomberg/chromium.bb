@@ -7,6 +7,7 @@
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
+#include "base/unguessable_token.h"
 #include "base/util/values/values_util.h"
 
 namespace ash {
@@ -27,24 +28,11 @@ constexpr char kIdPath[] = "id";
 constexpr char kTypePath[] = "type";
 constexpr char kVersionPath[] = "version";
 
-std::string TypeToString(HoldingSpaceItem::Type type) {
-  switch (type) {
-    case HoldingSpaceItem::Type::kPinnedFile:
-      return "pinned_file";
-    case HoldingSpaceItem::Type::kDownload:
-      return "download";
-    case HoldingSpaceItem::Type::kScreenshot:
-      return "screenshot";
-    case HoldingSpaceItem::Type::kNearbyShare:
-      return "nearby_share";
-    case HoldingSpaceItem::Type::kScreenRecording:
-      return "screen_recording";
-  }
-}
-
 }  // namespace
 
-HoldingSpaceItem::~HoldingSpaceItem() = default;
+HoldingSpaceItem::~HoldingSpaceItem() {
+  deletion_callback_list_.Notify();
+}
 
 bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
   return type_ == rhs.type_ && id_ == rhs.id_ && file_path_ == rhs.file_path_ &&
@@ -53,24 +41,18 @@ bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
 }
 
 // static
-std::string HoldingSpaceItem::GetFileBackedItemId(
-    Type type,
-    const base::FilePath& file_path) {
-  return base::StrCat({TypeToString(type), ":", file_path.value()});
-}
-
-// static
 std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
     Type type,
     const base::FilePath& file_path,
     const GURL& file_system_url,
-    std::unique_ptr<HoldingSpaceImage> image) {
+    ImageResolver image_resolver) {
   DCHECK(!file_system_url.is_empty());
 
   // Note: std::make_unique does not work with private constructors.
   return base::WrapUnique(new HoldingSpaceItem(
-      type, GetFileBackedItemId(type, file_path), file_path, file_system_url,
-      file_path.BaseName().LossyDisplayName(), std::move(image)));
+      type, /*id=*/base::UnguessableToken::Create().ToString(), file_path,
+      file_system_url, file_path.BaseName().LossyDisplayName(),
+      std::move(image_resolver).Run(type, file_path)));
 }
 
 // static
@@ -133,6 +115,46 @@ base::DictionaryValue HoldingSpaceItem::Serialize() const {
   return dict;
 }
 
+base::CallbackListSubscription HoldingSpaceItem::AddDeletionCallback(
+    base::RepeatingClosureList::CallbackType callback) const {
+  return deletion_callback_list_.Add(std::move(callback));
+}
+
+bool HoldingSpaceItem::IsFinalized() const {
+  return !file_system_url_.is_empty();
+}
+
+void HoldingSpaceItem::Finalize(const GURL& file_system_url) {
+  DCHECK(!IsFinalized());
+  DCHECK(!file_system_url.is_empty());
+  file_system_url_ = file_system_url;
+}
+
+void HoldingSpaceItem::UpdateBackingFile(const base::FilePath& file_path,
+                                         const GURL& file_system_url) {
+  file_path_ = file_path;
+  file_system_url_ = file_system_url;
+  text_ = file_path.BaseName().LossyDisplayName();
+  image_->UpdateBackingFilePath(file_path);
+}
+
+void HoldingSpaceItem::InvalidateImage() {
+  if (image_)
+    image_->Invalidate();
+}
+
+bool HoldingSpaceItem::IsScreenCapture() const {
+  switch (type_) {
+    case HoldingSpaceItem::Type::kScreenshot:
+    case HoldingSpaceItem::Type::kScreenRecording:
+      return true;
+    case HoldingSpaceItem::Type::kDownload:
+    case HoldingSpaceItem::Type::kNearbyShare:
+    case HoldingSpaceItem::Type::kPinnedFile:
+      return false;
+  }
+}
+
 HoldingSpaceItem::HoldingSpaceItem(Type type,
                                    const std::string& id,
                                    const base::FilePath& file_path,
@@ -145,15 +167,5 @@ HoldingSpaceItem::HoldingSpaceItem(Type type,
       file_system_url_(file_system_url),
       text_(text),
       image_(std::move(image)) {}
-
-bool HoldingSpaceItem::IsFinalized() const {
-  return !file_system_url_.is_empty();
-}
-
-void HoldingSpaceItem::Finalize(const GURL& file_system_url) {
-  DCHECK(!IsFinalized());
-  DCHECK(!file_system_url.is_empty());
-  file_system_url_ = file_system_url;
-}
 
 }  // namespace ash

@@ -14,6 +14,8 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -22,6 +24,7 @@ namespace exo {
 
 class FullscreenShellSurface::FullscreenShellView : public views::View {
  public:
+  METADATA_HEADER(FullscreenShellView);
   FullscreenShellView() = default;
   FullscreenShellView(const FullscreenShellView&) = delete;
   FullscreenShellView& operator=(const FullscreenShellView&) = delete;
@@ -45,6 +48,9 @@ class FullscreenShellSurface::FullscreenShellView : public views::View {
  private:
   ui::AXTreeID child_ax_tree_id_ = ui::AXTreeIDUnknown();
 };
+
+BEGIN_METADATA(FullscreenShellSurface, FullscreenShellView, views::View)
+END_METADATA
 
 FullscreenShellSurface::FullscreenShellSurface()
     : SurfaceTreeHost("FullscreenShellSurfaceHost") {
@@ -94,7 +100,7 @@ void FullscreenShellSurface::SetSurface(Surface* surface) {
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
   SetRootSurface(surface);
-  SetShellMainSurface(widget_->GetNativeWindow(), root_surface());
+  SetShellRootSurface(widget_->GetNativeWindow(), root_surface());
   if (surface) {
     surface->AddSurfaceObserver(this);
     host_window()->Show();
@@ -156,7 +162,7 @@ void FullscreenShellSurface::OnSurfaceDestroying(Surface* surface) {
   SetRootSurface(nullptr);
 
   if (widget_)
-    SetShellMainSurface(widget_->GetNativeWindow(), nullptr);
+    SetShellRootSurface(widget_->GetNativeWindow(), nullptr);
 
   // Hide widget before surface is destroyed. This allows hide animations to
   // run using the current surface contents.
@@ -287,8 +293,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
 
   SetShellApplicationId(window, application_id_);
   SetShellStartupId(window, startup_id_);
-  SetShellMainSurface(window, root_surface());
-  SetArcAppType(window);
+  SetShellRootSurface(window, root_surface());
 
   window->AddObserver(this);
 }

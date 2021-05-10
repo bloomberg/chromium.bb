@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/ui/payments/local_card_migration_dialog_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -24,19 +25,21 @@ class LocalCardMigrationErrorDialogView
     : public LocalCardMigrationDialog,
       public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(LocalCardMigrationErrorDialogView);
   LocalCardMigrationErrorDialogView(
       LocalCardMigrationDialogController* controller,
       content::WebContents* web_contents);
+  LocalCardMigrationErrorDialogView(const LocalCardMigrationErrorDialogView&) =
+      delete;
+  LocalCardMigrationErrorDialogView& operator=(
+      const LocalCardMigrationErrorDialogView&) = delete;
   ~LocalCardMigrationErrorDialogView() override;
 
-  // LocalCardMigrationDialog
+  // LocalCardMigrationDialog:
   void ShowDialog() override;
   void CloseDialog() override;
 
-  // views::BubbleDialogDelegateView
-  gfx::Size CalculatePreferredSize() const override;
-  ui::ModalType GetModalType() const override;
-  bool ShouldShowCloseButton() const override;
+  // views::BubbleDialogDelegateView:
   void Init() override;
   void WindowClosing() override;
 
@@ -44,8 +47,6 @@ class LocalCardMigrationErrorDialogView
   LocalCardMigrationDialogController* controller_;
 
   content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationErrorDialogView);
 };
 
 }  // namespace autofill

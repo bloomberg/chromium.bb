@@ -11,7 +11,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -31,12 +30,18 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
   ImageRecord(DOMNodeId new_node_id,
               const ImageResourceContent* new_cached_image,
-              uint64_t new_first_size)
+              uint64_t new_first_size,
+              const IntRect& frame_visual_rect,
+              const FloatRect& root_visual_rect)
       : node_id(new_node_id),
         cached_image(new_cached_image),
         first_size(new_first_size) {
     static unsigned next_insertion_index_ = 1;
     insertion_index = next_insertion_index_++;
+    if (PaintTimingVisualizer::IsTracingEnabled()) {
+      lcp_rect_info_ = std::make_unique<LCPRectInfo>(
+          frame_visual_rect, RoundedIntRect(root_visual_rect));
+    }
   }
 
   ImageRecord() {}
@@ -52,6 +57,8 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   base::TimeTicks paint_time = base::TimeTicks();
   base::TimeTicks load_time = base::TimeTicks();
   bool loaded = false;
+  // LCP rect information, only populated when tracing is enabled.
+  std::unique_ptr<LCPRectInfo> lcp_rect_info_;
 };
 
 typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
@@ -109,7 +116,10 @@ class CORE_EXPORT ImageRecordsManager {
   inline void RecordInvisible(const RecordId& record_id) {
     invisible_images_.insert(record_id);
   }
-  void RecordVisible(const RecordId& record_id, const uint64_t& visual_size);
+  void RecordVisible(const RecordId& record_id,
+                     const uint64_t& visual_size,
+                     const IntRect& frame_visual_rect,
+                     const FloatRect& root_visual_rect);
   bool IsRecordedVisibleImage(const RecordId& record_id) const {
     return visible_images_.Contains(record_id);
   }
@@ -141,7 +151,9 @@ class CORE_EXPORT ImageRecordsManager {
   // opacity. May update |largest_ignored_image_| if the new candidate has a
   // larger size.
   void MaybeUpdateLargestIgnoredImage(const RecordId&,
-                                      const uint64_t& visual_size);
+                                      const uint64_t& visual_size,
+                                      const IntRect& frame_visual_rect,
+                                      const FloatRect& root_visual_rect);
   void ReportLargestIgnoredImage(unsigned current_frame_index);
 
   // Compare the last frame index in queue with the last frame index that has
@@ -183,7 +195,9 @@ class CORE_EXPORT ImageRecordsManager {
   std::unique_ptr<ImageRecord> CreateImageRecord(
       const LayoutObject& object,
       const ImageResourceContent* cached_image,
-      const uint64_t& visual_size);
+      const uint64_t& visual_size,
+      const IntRect& frame_visual_rect,
+      const FloatRect& root_visual_rect);
   inline void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>& record,
                                       unsigned current_frame_index) {
     images_queued_for_paint_time_.push_back(record);
@@ -199,7 +213,7 @@ class CORE_EXPORT ImageRecordsManager {
   // This stores the image records, which are ordered by size.
   ImageRecordSet size_ordered_set_;
   // |ImageRecord|s waiting for paint time are stored in this queue
-  // until they get a swap time.
+  // until they get a presentation time.
   Deque<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
   // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
   // first called.
@@ -268,12 +282,13 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void StopRecordEntries();
   inline bool IsRecording() const { return is_recording_; }
   inline bool FinishedReportingImages() const {
-    return !is_recording_ && num_pending_swap_callbacks_ == 0;
+    return !is_recording_ && num_pending_presentation_callbacks_ == 0;
   }
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
   }
-  void ReportSwapTime(unsigned last_queued_frame_index, base::TimeTicks);
+  void ReportPresentationTime(unsigned last_queued_frame_index,
+                              base::TimeTicks);
 
   // Return the candidate.
   ImageRecord* UpdateCandidate();
@@ -289,14 +304,15 @@ class CORE_EXPORT ImagePaintTimingDetector final
   friend class LargestContentfulPaintCalculatorTest;
 
   void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);
-  void RegisterNotifySwapTime();
+  void RegisterNotifyPresentationTime();
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
   // Computes the size of an image for the purpose of LargestContentfulPaint,
   // downsizing the size of images with low intrinsic size. Images that occupy
   // the full viewport are special-cased and this method returns 0 for them so
   // that they are not considered valid candidates.
-  uint64_t ComputeImageRectSize(const IntRect&,
+  uint64_t ComputeImageRectSize(const IntRect& image_border,
+                                const FloatRect& mapped_visual_rect,
                                 const IntSize&,
                                 const PropertyTreeStateOrAlias&,
                                 const LayoutObject&,
@@ -313,9 +329,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // no effect on recording the loading status.
   bool is_recording_ = true;
 
-  // Used to determine how many swap callbacks are pending. In combination with
-  // |is_recording|, helps determine whether this detector can be destroyed.
-  int num_pending_swap_callbacks_ = 0;
+  // Used to determine how many presentation callbacks are pending. In
+  // combination with |is_recording|, helps determine whether this detector can
+  // be destroyed.
+  int num_pending_presentation_callbacks_ = 0;
 
   // This need to be set whenever changes that can affect the output of
   // |FindLargestPaintCandidate| occur during the paint tree walk.

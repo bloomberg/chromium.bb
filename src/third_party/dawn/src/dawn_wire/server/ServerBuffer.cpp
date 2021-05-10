@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "common/Assert.h"
+#include "dawn_wire/WireCmd_autogen.h"
 #include "dawn_wire/server/Server.h"
 
 #include <memory>
@@ -47,8 +48,8 @@ namespace dawn_wire { namespace server {
     bool Server::DoBufferMapAsync(ObjectId bufferId,
                                   uint32_t requestSerial,
                                   WGPUMapModeFlags mode,
-                                  size_t offset,
-                                  size_t size,
+                                  uint64_t offset64,
+                                  uint64_t size64,
                                   uint64_t handleCreateInfoLength,
                                   const uint8_t* handleCreateInfo) {
         // These requests are just forwarded to the buffer, with userdata containing what the
@@ -71,20 +72,24 @@ namespace dawn_wire { namespace server {
             return false;
         }
 
-        if (handleCreateInfoLength > std::numeric_limits<size_t>::max()) {
-            // This is the size of data deserialized from the command stream, which must be
-            // CPU-addressable.
-            return false;
-        }
-
-        std::unique_ptr<MapUserdata> userdata = std::make_unique<MapUserdata>();
-        userdata->server = this;
+        std::unique_ptr<MapUserdata> userdata = MakeUserdata<MapUserdata>();
         userdata->buffer = ObjectHandle{bufferId, buffer->generation};
         userdata->bufferObj = buffer->handle;
         userdata->requestSerial = requestSerial;
+        userdata->mode = mode;
+
+        if (offset64 > std::numeric_limits<size_t>::max() ||
+            size64 > std::numeric_limits<size_t>::max() ||
+            handleCreateInfoLength > std::numeric_limits<size_t>::max()) {
+            OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus_Error, userdata.get());
+            return true;
+        }
+
+        size_t offset = static_cast<size_t>(offset64);
+        size_t size = static_cast<size_t>(size64);
+
         userdata->offset = offset;
         userdata->size = size;
-        userdata->mode = mode;
 
         // The handle will point to the mapped memory or staging memory for the mapping.
         // Store it on the map request.
@@ -112,24 +117,36 @@ namespace dawn_wire { namespace server {
             userdata->readHandle = std::unique_ptr<MemoryTransferService::ReadHandle>(readHandle);
         }
 
-        mProcs.bufferMapAsync(buffer->handle, mode, offset, size, ForwardBufferMapAsync,
-                              userdata.release());
+        mProcs.bufferMapAsync(
+            buffer->handle, mode, offset, size,
+            ForwardToServer<decltype(
+                &Server::OnBufferMapAsyncCallback)>::Func<&Server::OnBufferMapAsyncCallback>(),
+            userdata.release());
 
         return true;
     }
 
-    bool Server::DoDeviceCreateBuffer(WGPUDevice device,
+    bool Server::DoDeviceCreateBuffer(ObjectId deviceId,
                                       const WGPUBufferDescriptor* descriptor,
                                       ObjectHandle bufferResult,
                                       uint64_t handleCreateInfoLength,
                                       const uint8_t* handleCreateInfo) {
+        auto* device = DeviceObjects().Get(deviceId);
+        if (device == nullptr) {
+            return false;
+        }
+
         // Create and register the buffer object.
         auto* resultData = BufferObjects().Allocate(bufferResult.id);
         if (resultData == nullptr) {
             return false;
         }
         resultData->generation = bufferResult.generation;
-        resultData->handle = mProcs.deviceCreateBuffer(device, descriptor);
+        resultData->handle = mProcs.deviceCreateBuffer(device->handle, descriptor);
+        resultData->deviceInfo = device->info.get();
+        if (!TrackDeviceChild(resultData->deviceInfo, ObjectType::Buffer, bufferResult.id)) {
+            return false;
+        }
 
         // If the buffer isn't mapped at creation, we are done.
         if (!descriptor->mappedAtCreation) {
@@ -206,14 +223,7 @@ namespace dawn_wire { namespace server {
                                                      static_cast<size_t>(writeFlushInfoLength));
     }
 
-    void Server::ForwardBufferMapAsync(WGPUBufferMapAsyncStatus status, void* userdata) {
-        auto data = static_cast<MapUserdata*>(userdata);
-        data->server->OnBufferMapAsyncCallback(status, data);
-    }
-
-    void Server::OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus status, MapUserdata* userdata) {
-        std::unique_ptr<MapUserdata> data(userdata);
-
+    void Server::OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus status, MapUserdata* data) {
         // Skip sending the callback if the buffer has already been destroyed.
         auto* bufferData = BufferObjects().Get(data->buffer.id);
         if (bufferData == nullptr || bufferData->generation != data->buffer.generation) {
@@ -238,11 +248,15 @@ namespace dawn_wire { namespace server {
                 data->readHandle->SerializeInitialDataSize(readData, data->size);
         }
 
-        SerializeCommand(cmd, cmd.readInitialDataInfoLength, [&](char* cmdSpace) {
+        SerializeCommand(cmd, cmd.readInitialDataInfoLength, [&](SerializeBuffer* serializeBuffer) {
             if (isSuccess) {
                 if (isRead) {
+                    if (serializeBuffer->AvailableSize() != cmd.readInitialDataInfoLength) {
+                        return false;
+                    }
                     // Serialize the initialization message into the space after the command.
-                    data->readHandle->SerializeInitialData(readData, data->size, cmdSpace);
+                    data->readHandle->SerializeInitialData(readData, data->size,
+                                                           serializeBuffer->Buffer());
                     // The in-flight map request returned successfully.
                     // Move the ReadHandle so it is owned by the buffer.
                     bufferData->readHandle = std::move(data->readHandle);
@@ -257,6 +271,7 @@ namespace dawn_wire { namespace server {
                         data->size);
                 }
             }
+            return true;
         });
     }
 

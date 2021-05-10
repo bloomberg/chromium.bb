@@ -10,10 +10,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -117,7 +116,7 @@ class SettingsBinder : public CalculatorsPoliciesBinder {
 
  private:
   CrosSettings* settings_;
-  std::list<std::unique_ptr<CrosSettings::ObserverSubscription>> subscriptions_;
+  std::list<base::CallbackListSubscription> subscriptions_;
 };
 
 }  // namespace

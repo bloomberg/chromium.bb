@@ -14,6 +14,7 @@
 
 #include "absl/container/internal/raw_hash_set.h"
 
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <deque>
@@ -22,6 +23,8 @@
 #include <numeric>
 #include <random>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -48,11 +51,10 @@ struct RawHashSetTestOnlyAccess {
 
 namespace {
 
-using ::testing::DoubleNear;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Lt;
-using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::UnorderedElementsAre;
 
@@ -75,8 +77,14 @@ TEST(Util, GrowthAndCapacity) {
   for (size_t growth = 0; growth < 10000; ++growth) {
     SCOPED_TRACE(growth);
     size_t capacity = NormalizeCapacity(GrowthToLowerboundCapacity(growth));
-    // The capacity is large enough for `growth`
+    // The capacity is large enough for `growth`.
     EXPECT_THAT(CapacityToGrowth(capacity), Ge(growth));
+    // For (capacity+1) < kWidth, growth should equal capacity.
+    if (capacity + 1 < Group::kWidth) {
+      EXPECT_THAT(CapacityToGrowth(capacity), Eq(capacity));
+    } else {
+      EXPECT_THAT(CapacityToGrowth(capacity), Lt(capacity));
+    }
     if (growth != 0 && capacity > 1) {
       // There is no smaller capacity that works.
       EXPECT_THAT(CapacityToGrowth(capacity / 2), Lt(growth));
@@ -250,24 +258,42 @@ TEST(Group, CountLeadingEmptyOrDeleted) {
   }
 }
 
-struct IntPolicy {
-  using slot_type = int64_t;
-  using key_type = int64_t;
-  using init_type = int64_t;
+template <class T>
+struct ValuePolicy {
+  using slot_type = T;
+  using key_type = T;
+  using init_type = T;
 
-  static void construct(void*, int64_t* slot, int64_t v) { *slot = v; }
-  static void destroy(void*, int64_t*) {}
-  static void transfer(void*, int64_t* new_slot, int64_t* old_slot) {
-    *new_slot = *old_slot;
+  template <class Allocator, class... Args>
+  static void construct(Allocator* alloc, slot_type* slot, Args&&... args) {
+    absl::allocator_traits<Allocator>::construct(*alloc, slot,
+                                                 std::forward<Args>(args)...);
   }
 
-  static int64_t& element(slot_type* slot) { return *slot; }
+  template <class Allocator>
+  static void destroy(Allocator* alloc, slot_type* slot) {
+    absl::allocator_traits<Allocator>::destroy(*alloc, slot);
+  }
 
-  template <class F>
-  static auto apply(F&& f, int64_t x) -> decltype(std::forward<F>(f)(x, x)) {
-    return std::forward<F>(f)(x, x);
+  template <class Allocator>
+  static void transfer(Allocator* alloc, slot_type* new_slot,
+                       slot_type* old_slot) {
+    construct(alloc, new_slot, std::move(*old_slot));
+    destroy(alloc, old_slot);
+  }
+
+  static T& element(slot_type* slot) { return *slot; }
+
+  template <class F, class... Args>
+  static decltype(absl::container_internal::DecomposeValue(
+      std::declval<F>(), std::declval<Args>()...))
+  apply(F&& f, Args&&... args) {
+    return absl::container_internal::DecomposeValue(
+        std::forward<F>(f), std::forward<Args>(args)...);
   }
 };
+
+using IntPolicy = ValuePolicy<int64_t>;
 
 class StringPolicy {
   template <class F, class K, class V,
@@ -1657,6 +1683,38 @@ TEST(Table, Merge) {
   EXPECT_THAT(t2, UnorderedElementsAre(Pair("0", "~0")));
 }
 
+TEST(Table, IteratorEmplaceConstructibleRequirement) {
+  struct Value {
+    explicit Value(absl::string_view view) : value(view) {}
+    std::string value;
+
+    bool operator==(const Value& other) const { return value == other.value; }
+  };
+  struct H {
+    size_t operator()(const Value& v) const {
+      return absl::Hash<std::string>{}(v.value);
+    }
+  };
+
+  struct Table : raw_hash_set<ValuePolicy<Value>, H, std::equal_to<Value>,
+                              std::allocator<Value>> {
+    using Base = typename Table::raw_hash_set;
+    using Base::Base;
+  };
+
+  std::string input[3]{"A", "B", "C"};
+
+  Table t(std::begin(input), std::end(input));
+  EXPECT_THAT(t, UnorderedElementsAre(Value{"A"}, Value{"B"}, Value{"C"}));
+
+  input[0] = "D";
+  input[1] = "E";
+  input[2] = "F";
+  t.insert(std::begin(input), std::end(input));
+  EXPECT_THAT(t, UnorderedElementsAre(Value{"A"}, Value{"B"}, Value{"C"},
+                                      Value{"D"}, Value{"E"}, Value{"F"}));
+}
+
 TEST(Nodes, EmptyNodeType) {
   using node_type = StringTable::node_type;
   node_type n;
@@ -1825,18 +1883,34 @@ TEST(RawHashSamplerTest, Sample) {
 
   auto& sampler = HashtablezSampler::Global();
   size_t start_size = 0;
-  start_size += sampler.Iterate([&](const HashtablezInfo&) { ++start_size; });
+  std::unordered_set<const HashtablezInfo*> preexisting_info;
+  start_size += sampler.Iterate([&](const HashtablezInfo& info) {
+    preexisting_info.insert(&info);
+    ++start_size;
+  });
 
   std::vector<IntTable> tables;
   for (int i = 0; i < 1000000; ++i) {
     tables.emplace_back();
     tables.back().insert(1);
+    tables.back().insert(i % 5);
   }
   size_t end_size = 0;
-  end_size += sampler.Iterate([&](const HashtablezInfo&) { ++end_size; });
+  std::unordered_map<size_t, int> observed_checksums;
+  end_size += sampler.Iterate([&](const HashtablezInfo& info) {
+    if (preexisting_info.count(&info) == 0) {
+      observed_checksums[info.hashes_bitwise_xor.load(
+          std::memory_order_relaxed)]++;
+    }
+    ++end_size;
+  });
 
   EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
               0.01, 0.005);
+  EXPECT_EQ(observed_checksums.size(), 5);
+  for (const auto& [_, count] : observed_checksums) {
+    EXPECT_NEAR((100 * count) / static_cast<double>(tables.size()), 0.2, 0.05);
+  }
 }
 #endif  // ABSL_INTERNAL_HASHTABLEZ_SAMPLE
 

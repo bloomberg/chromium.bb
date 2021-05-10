@@ -17,6 +17,8 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -24,9 +26,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -150,7 +149,7 @@ class CloudExternalDataPolicyObserverTest
       device_local_account_policy_provider_;
 
   MockCloudExternalDataManager external_data_manager_;
-  MockConfigurationPolicyProvider user_policy_provider_;
+  testing::NiceMock<MockConfigurationPolicyProvider> user_policy_provider_;
 
   std::unique_ptr<TestingProfile> profile_;
 
@@ -195,8 +194,10 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(), shared_url_loader_factory_));
 
-  EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))
-      .WillRepeatedly(Return(true));
+  ON_CALL(user_policy_provider_, IsInitializationComplete(_))
+      .WillByDefault(Return(true));
+  ON_CALL(user_policy_provider_, IsFirstPolicyLoadComplete(_))
+      .WillByDefault(Return(true));
   user_policy_provider_.Init();
 
   ConstructAvatarPolicy("avatar1.jpg",

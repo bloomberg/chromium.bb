@@ -15,11 +15,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_codec_state.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_logger.h"
+#include "third_party/blink/renderer/modules/webcodecs/hardware_preference.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -72,6 +74,18 @@ class MODULES_EXPORT DecoderTemplate
                                           MediaConfigType* out_media_config,
                                           String* out_console_message) = 0;
 
+  // Gets the AccelerationPreference from a config.
+  // If derived classes do not override this, this will default to kAllow.
+  virtual HardwarePreference GetHardwarePreference(const ConfigType& config);
+
+  // Sets the HardwarePreference on the |decoder_|.
+  // The default implementation does nothing and must be overridden by derived
+  // classes if needed.
+  // Decoder
+  virtual void SetHardwarePreference(HardwarePreference preference);
+
+  MediaDecoderType* decoder() { return decoder_.get(); }
+
   // Convert a chunk to a DecoderBuffer. You can assume that the last
   // configuration sent to MakeMediaConfig() is the active configuration for
   // |chunk|. If there is an error in the conversion process, the resulting
@@ -95,6 +109,7 @@ class MODULES_EXPORT DecoderTemplate
 
     // For kConfigure Requests.
     std::unique_ptr<MediaConfigType> media_config;
+    HardwarePreference hw_pref = HardwarePreference::kAllow;
 
     // For kDecode Requests.
     scoped_refptr<media::DecoderBuffer> decoder_buffer;
@@ -115,7 +130,6 @@ class MODULES_EXPORT DecoderTemplate
   bool ProcessDecodeRequest(Request* request);
   bool ProcessFlushRequest(Request* request);
   bool ProcessResetRequest(Request* request);
-  void HandleError(std::string context, media::Status);
   void ResetAlgorithm();
   void Shutdown(DOMException* ex = nullptr);
 
@@ -147,15 +161,7 @@ class MODULES_EXPORT DecoderTemplate
   // Could be a configure, flush, or reset. Decodes go in |pending_decodes_|.
   Member<Request> pending_request_;
 
-  // |parent_media_log_| must be destroyed if ever the ExecutionContext is
-  // destroyed, since the blink::MediaInspectorContext* pointer given to
-  // InspectorMediaEventHandler might no longer be valid.
-  // |parent_media_log_| should not be used directly. Use |media_log_| instead.
-  std::unique_ptr<media::MediaLog> parent_media_log_;
-
-  // We might destroy |parent_media_log_| at any point, so keep a clone which
-  // can be safely accessed, and whose raw pointer can be given to |decoder_|.
-  std::unique_ptr<media::MediaLog> media_log_;
+  std::unique_ptr<CodecLogger> logger_;
 
   media::GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
 

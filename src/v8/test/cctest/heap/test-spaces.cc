@@ -50,7 +50,7 @@ namespace internal {
 namespace heap {
 
 // Temporarily sets a given allocator in an isolate.
-class TestMemoryAllocatorScope {
+class V8_NODISCARD TestMemoryAllocatorScope {
  public:
   TestMemoryAllocatorScope(Isolate* isolate, size_t max_capacity,
                            size_t code_range_size,
@@ -85,7 +85,7 @@ class TestMemoryAllocatorScope {
 };
 
 // Temporarily sets a given code page allocator in an isolate.
-class TestCodePageAllocatorScope {
+class V8_NODISCARD TestCodePageAllocatorScope {
  public:
   TestCodePageAllocatorScope(Isolate* isolate,
                              v8::PageAllocator* code_page_allocator)
@@ -327,6 +327,16 @@ TEST(OldLargeObjectSpace) {
   CHECK(lo->Contains(HeapObject::cast(obj)));
 
   CHECK(lo->Contains(ho));
+
+  CHECK_EQ(0, Heap::GetFillToAlign(ho.address(), kWordAligned));
+  // All large objects have the same alignment because they start at the
+  // same offset within a page. Fixed double arrays have the most strict
+  // alignment requirements.
+  CHECK_EQ(
+      0, Heap::GetFillToAlign(
+             ho.address(),
+             HeapObject::RequiredAlignment(
+                 ReadOnlyRoots(CcTest::i_isolate()).fixed_double_array_map())));
 
   while (true) {
     {
@@ -799,7 +809,7 @@ namespace {
 // cannot take an argument. Since these tests create ReadOnlySpaces not attached
 // to the Heap directly, they need to be destroyed to ensure the
 // MemoryAllocator's stats are all 0 at exit.
-class ReadOnlySpaceScope {
+class V8_NODISCARD ReadOnlySpaceScope {
  public:
   explicit ReadOnlySpaceScope(Heap* heap) : ro_space_(heap) {}
   ~ReadOnlySpaceScope() {

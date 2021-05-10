@@ -89,6 +89,12 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
       load_timing_info->receive_headers_start < block_on_connect) {
     load_timing_info->receive_headers_start = block_on_connect;
   }
+  if (!load_timing_info->receive_non_informational_headers_start.is_null() &&
+      load_timing_info->receive_non_informational_headers_start <
+          block_on_connect) {
+    load_timing_info->receive_non_informational_headers_start =
+        block_on_connect;
+  }
 
   // Make sure connection times are after start and proxy times.
 
@@ -493,6 +499,9 @@ void URLRequest::Start() {
   if (status_ != OK)
     return;
 
+  if (context_->require_network_isolation_key())
+    DCHECK(!isolation_info_.IsEmpty());
+
   // Some values can be NULL, but the job factory must not be.
   DCHECK(context_->job_factory());
 
@@ -607,8 +616,8 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
     return NetLogURLRequestStartParams(
-        url(), method_, load_flags_, privacy_mode_,
-        isolation_info_.network_isolation_key(), site_for_cookies_, initiator_,
+        url(), method_, load_flags_, privacy_mode_, isolation_info_,
+        site_for_cookies_, initiator_,
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 
@@ -864,6 +873,14 @@ void URLRequest::ContinueDespiteLastError() {
 
   status_ = ERR_IO_PENDING;
   job_->ContinueDespiteLastError();
+}
+
+void URLRequest::AbortAndCloseConnection() {
+  DCHECK_EQ(OK, status_);
+  DCHECK(!has_notified_completion_);
+  DCHECK(job_);
+  job_->CloseConnectionOnDestruction();
+  job_.reset();
 }
 
 void URLRequest::PrepareToRestart() {

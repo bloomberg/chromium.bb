@@ -136,9 +136,10 @@ void SkOverdrawCanvas::onDrawVerticesObject(const SkVertices* vertices,
     fList[0]->onDrawVerticesObject(vertices, blendMode, this->overdrawPaint(paint));
 }
 
-void SkOverdrawCanvas::onDrawAtlas(const SkImage* image, const SkRSXform xform[],
-                                   const SkRect texs[], const SkColor colors[], int count,
-                                   SkBlendMode mode, const SkRect* cull, const SkPaint* paint) {
+void SkOverdrawCanvas::onDrawAtlas2(const SkImage* image, const SkRSXform xform[],
+                                    const SkRect texs[], const SkColor colors[], int count,
+                                    SkBlendMode mode, const SkSamplingOptions& sampling,
+                                    const SkRect* cull, const SkPaint* paint) {
     SkPaint* paintPtr = &fPaint;
     SkPaint storage;
     if (paint) {
@@ -146,29 +147,25 @@ void SkOverdrawCanvas::onDrawAtlas(const SkImage* image, const SkRSXform xform[]
         paintPtr = &storage;
     }
 
-    fList[0]->onDrawAtlas(image, xform, texs, colors, count, mode, cull, paintPtr);
+    fList[0]->onDrawAtlas2(image, xform, texs, colors, count, mode, sampling, cull, paintPtr);
 }
 
 void SkOverdrawCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
     fList[0]->onDrawPath(path, fPaint);
 }
 
-void SkOverdrawCanvas::onDrawImage(const SkImage* image, SkScalar x, SkScalar y, const SkPaint*) {
+void SkOverdrawCanvas::onDrawImage2(const SkImage* image, SkScalar x, SkScalar y,
+                                    const SkSamplingOptions&, const SkPaint*) {
     fList[0]->onDrawRect(SkRect::MakeXYWH(x, y, image->width(), image->height()), fPaint);
 }
 
-void SkOverdrawCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst,
-                                       const SkPaint*, SrcRectConstraint) {
+void SkOverdrawCanvas::onDrawImageRect2(const SkImage* image, const SkRect& src, const SkRect& dst,
+                                        const SkSamplingOptions&, const SkPaint*, SrcRectConstraint) {
     fList[0]->onDrawRect(dst, fPaint);
 }
 
-void SkOverdrawCanvas::onDrawImageNine(const SkImage*, const SkIRect&, const SkRect& dst,
-                                       const SkPaint*) {
-    fList[0]->onDrawRect(dst, fPaint);
-}
-
-void SkOverdrawCanvas::onDrawImageLattice(const SkImage* image, const Lattice& lattice,
-                                          const SkRect& dst, const SkPaint*) {
+void SkOverdrawCanvas::onDrawImageLattice2(const SkImage* image, const Lattice& lattice,
+                                           const SkRect& dst, SkFilterMode, const SkPaint*) {
     SkIRect bounds;
     Lattice latticePlusBounds = lattice;
     if (!latticePlusBounds.fBounds) {
@@ -214,10 +211,12 @@ void SkOverdrawCanvas::onDrawEdgeAAQuad(const SkRect& rect, const SkPoint clip[4
     }
 }
 
-void SkOverdrawCanvas::onDrawEdgeAAImageSet(const ImageSetEntry set[], int count,
-                                            const SkPoint dstClips[],
-                                            const SkMatrix preViewMatrices[], const SkPaint* paint,
-                                            SrcRectConstraint constraint) {
+void SkOverdrawCanvas::onDrawEdgeAAImageSet2(const ImageSetEntry set[], int count,
+                                             const SkPoint dstClips[],
+                                             const SkMatrix preViewMatrices[],
+                                             const SkSamplingOptions& sampling,
+                                             const SkPaint* paint,
+                                             SrcRectConstraint constraint) {
     int clipIndex = 0;
     for (int i = 0; i < count; ++i) {
         if (set[i].fMatrixIndex >= 0) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/test/bind.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -10,21 +11,20 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/profile_test_helper.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/features.h"
 
-using chromeos::default_web_apps::kMediaAppId;
+using web_app::kMediaAppId;
 
 namespace file_manager {
 namespace file_tasks {
@@ -87,10 +87,10 @@ void VerifyTasks(int* remaining,
 // Helper to quit a run loop after invoking VerifyTasks().
 void VerifyAsyncTask(int* remaining,
                      Expectation expectation,
-                     const base::Closure& quit_closure,
+                     base::OnceClosure quit_closure,
                      std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
   VerifyTasks(remaining, expectation, std::move(result));
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 // Installs a chrome app that handles .tiff.

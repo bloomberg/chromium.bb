@@ -23,6 +23,10 @@ namespace gfx {
 class Size;
 }
 
+namespace optimization_guide {
+class PageTextAgent;
+}
+
 namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
@@ -58,8 +62,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
  private:
   friend class ChromeRenderFrameObserverTest;
 
-  enum TextCaptureType { PRELIMINARY_CAPTURE, FINAL_CAPTURE };
-
   // RenderFrameObserver implementation.
   void OnInterfaceRequestForFrame(
       const std::string& interface_name,
@@ -86,7 +88,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
       chrome::mojom::ImageFormat image_format,
       RequestImageForContextNodeCallback callback) override;
   void RequestReloadImageForContextNode() override;
-  void GetWebPageMetadata(GetWebPageMetadataCallback callback) override;
 #if defined(OS_ANDROID)
   void SetCCTClientHeader(const std::string& header) override;
 #endif
@@ -101,11 +102,14 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
           receiver);
 
   // Captures page information using the top (main) frame of a frame tree.
-  // Currently, this page information is just the text content of the all
+  // Currently, this page information is just the text content of the local
   // frames, collected and concatenated until a certain limit (kMaxIndexChars)
   // is reached.
-  // TODO(dglazkov): This is incompatible with OOPIF and needs to be updated.
-  void CapturePageText(TextCaptureType capture_type);
+  void CapturePageText(blink::WebMeaningfulLayout layout_type);
+
+  // Returns true if |CapturePageText| should be run for Translate or Phishing.
+  bool ShouldCapturePageTextForTranslateOrPhishing(
+      blink::WebMeaningfulLayout layout_type) const;
 
   // Check if the image need to downscale.
   static bool NeedsDownscale(const gfx::Size& original_image_size,
@@ -126,6 +130,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
 
   // Have the same lifetime as us.
   translate::TranslateAgent* translate_agent_;
+  optimization_guide::PageTextAgent* page_text_agent_;
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_ = nullptr;
 #endif

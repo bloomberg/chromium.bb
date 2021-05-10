@@ -5,8 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "include/core/SkTypes.h"
-
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
@@ -60,7 +59,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceCacheCache, reporter, ctxInfo) {
     readback.allocN32Pixels(size.width(), size.height());
 
     for (int i = 0; i < 100; ++i) {
-        canvas->drawBitmap(src, 0, 0);
+        canvas->drawImage(src.asImage(), 0, 0);
         surface->readPixels(readback, 0, 0);
 
         // "modify" the src texture
@@ -818,7 +817,8 @@ static void test_duplicate_scratch_key(skiatest::Reporter* reporter) {
 
     // Scratch resources are registered with GrResourceCache just by existing. There are 2.
     REPORTER_ASSERT(reporter, 2 == TestResource::NumAlive());
-    SkDEBUGCODE(REPORTER_ASSERT(reporter, 2 == cache->countScratchEntriesForKey(scratchKey));)
+    // As long as there are outstanding refs on the resources they will not be in the scratch map
+    SkDEBUGCODE(REPORTER_ASSERT(reporter, 0 == cache->countScratchEntriesForKey(scratchKey));)
     REPORTER_ASSERT(reporter, 2 == cache->getResourceCount());
     REPORTER_ASSERT(reporter, a->gpuMemorySize() + b->gpuMemorySize() ==
                               cache->getResourceBytes());
@@ -832,6 +832,7 @@ static void test_duplicate_scratch_key(skiatest::Reporter* reporter) {
     a->unref();
     b->unref();
     REPORTER_ASSERT(reporter, 2 == TestResource::NumAlive());
+    // Since we removed the refs to the resources they will now be in the scratch map
     SkDEBUGCODE(REPORTER_ASSERT(reporter, 2 == cache->countScratchEntriesForKey(scratchKey));)
 
     // Purge again. This time resources should be purgeable.

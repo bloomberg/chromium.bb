@@ -11,11 +11,11 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
+#include "chrome/browser/ui/user_education/feature_promo_text_replacements.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
@@ -26,12 +26,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/site_engagement/content/site_engagement_service.h"
+#include "components/webapps/browser/banners/app_banner_manager.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace {
 
 const base::Feature kInstallIconExperiment{"InstallIconExperiment",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 enum class ExperimentIcon { kDownloadToDevice, kDownload };
 
@@ -47,7 +51,8 @@ constexpr base::FeatureParam<ExperimentIcon> kInstallIconParam{
 // Add x_ prefix so the IPH feature engagement tracker can ignore this.
 constexpr base::FeatureParam<int> kIphSiteEngagementThresholdParam{
     &feature_engagement::kIPHDesktopPwaInstallFeature,
-    "x_site_engagement_threshold", 10};
+    "x_site_engagement_threshold",
+    web_app::kIphFieldTrialParamDefaultSiteEngagementThreshold};
 
 }  // namespace
 
@@ -76,7 +81,7 @@ void PwaInstallView::UpdateImpl() {
     return;
   }
 
-  auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
+  auto* manager = webapps::AppBannerManager::FromWebContents(web_contents);
   // May not be present e.g. in incognito mode.
   if (!manager)
     return;
@@ -87,38 +92,42 @@ void PwaInstallView::UpdateImpl() {
   else
     ResetSlideAnimation(false);
 
-  if (is_probably_promotable && ShouldShowIph(web_contents, manager)) {
+  SetVisible(is_probably_promotable || PWAConfirmationBubbleView::IsShowing());
+
+  // Only try to show IPH when |PwaInstallView.IsDrawn|. This catches the case
+  // that view is set to visible but not drawn in fullscreen mode.
+  if (is_probably_promotable && ShouldShowIph(web_contents, manager) &&
+      IsDrawn()) {
     FeaturePromoControllerViews* controller =
         FeaturePromoControllerViews::GetForView(this);
     if (controller) {
-      FeaturePromoBubbleParams params;
-      params.body_string_specifier = IDS_DESKTOP_PWA_INSTALL_PROMO;
-      params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
-      params.feature_command_id = IDC_INSTALL_PWA;
-      params.anchor_view = this;
-
       // Reset the iph flag when it's shown again.
       install_icon_clicked_after_iph_shown_ = false;
-      controller->MaybeShowPromoWithParams(
-          feature_engagement::kIPHDesktopPwaInstallFeature, params,
-          base::Bind(&PwaInstallView::OnIphClosed,
-                     weak_ptr_factory_.GetWeakPtr()));
+      bool iph_shown = controller->MaybeShowPromoWithTextReplacements(
+          feature_engagement::kIPHDesktopPwaInstallFeature,
+          FeaturePromoTextReplacements::WithString(
+              webapps::AppBannerManager::GetInstallableWebAppName(
+                  web_contents)),
+          base::BindOnce(&PwaInstallView::OnIphClosed,
+                         weak_ptr_factory_.GetWeakPtr()));
+      if (iph_shown)
+        SetHighlighted(true);
     }
   }
-  SetVisible(is_probably_promotable || PWAConfirmationBubbleView::IsShowing());
 }
 
 void PwaInstallView::OnIphClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   // IPH is also closed when the install button is clicked. This does not
-  // count as an 'ignore'.
+  // count as an 'ignore'. The button should remain highlighted and will
+  // eventually be un-highlighted when PWAConfirmationBubbleView is closed.
   if (install_icon_clicked_after_iph_shown_)
     return;
+  SetHighlighted(false);
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;
-  auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
+  auto* manager = webapps::AppBannerManager::FromWebContents(web_contents);
   if (!manager)
     return;
   auto start_url = manager->GetManifestStartUrl();
@@ -129,8 +138,8 @@ void PwaInstallView::OnIphClosed() {
           ->GetPrefs();
   base::UmaHistogramEnumeration("WebApp.InstallIphPromo.Result",
                                 web_app::InstallIphResult::kIgnored);
-  web_app::RecordInstallIphIgnored(prefs,
-                                   web_app::GenerateAppIdFromURL(start_url));
+  web_app::RecordInstallIphIgnored(
+      prefs, web_app::GenerateAppIdFromURL(start_url), base::Time::Now());
 }
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
@@ -150,10 +159,11 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
     controller->CloseBubble(feature_engagement::kIPHDesktopPwaInstallFeature);
   }
 
-  web_app::CreateWebAppFromManifest(GetWebContents(),
-                                    /*bypass_service_worker_check=*/false,
-                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
-                                    base::DoNothing(), iph_state);
+  web_app::CreateWebAppFromManifest(
+      GetWebContents(),
+      /*bypass_service_worker_check=*/false,
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON, base::DoNothing(),
+      iph_state);
 }
 
 views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {
@@ -180,15 +190,11 @@ base::string16 PwaInstallView::GetTextForTooltipAndAccessibleName() const {
     return base::string16();
   return l10n_util::GetStringFUTF16(
       IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
-      banners::AppBannerManager::GetInstallableWebAppName(web_contents));
-}
-
-const char* PwaInstallView::GetClassName() const {
-  return "PwaInstallView";
+      webapps::AppBannerManager::GetInstallableWebAppName(web_contents));
 }
 
 bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,
-                                   banners::AppBannerManager* manager) {
+                                   webapps::AppBannerManager* manager) {
   auto start_url = manager->GetManifestStartUrl();
   if (start_url.is_empty())
     return false;
@@ -197,8 +203,11 @@ bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  auto score =
-      SiteEngagementService::Get(profile)->GetScore(web_contents->GetURL());
+  auto score = site_engagement::SiteEngagementService::Get(profile)->GetScore(
+      web_contents->GetURL());
   return score > kIphSiteEngagementThresholdParam.Get() &&
          web_app::ShouldShowIph(profile->GetPrefs(), app_id);
 }
+
+BEGIN_METADATA(PwaInstallView, PageActionIconView)
+END_METADATA

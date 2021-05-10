@@ -155,12 +155,12 @@ TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
 }
 
 TEST(ComputedStyleTest, LastPublicPseudoElementStyle) {
-  static_assert(kFirstInternalPseudoId - 1 == kPseudoIdTargetText,
+  static_assert(kFirstInternalPseudoId - 1 == kPseudoIdGrammarError,
                 "Make sure we are testing the last public pseudo id");
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoElementStyle(kPseudoIdTargetText);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdTargetText));
+  style->SetHasPseudoElementStyle(kPseudoIdGrammarError);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdGrammarError));
   EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
@@ -805,11 +805,10 @@ TEST(ComputedStyleTest, StrokeWidthZoomAndCalc) {
           true));
 
   To<Longhand>(GetCSSPropertyStrokeWidth()).ApplyValue(state, *calc_value);
-  auto* computed_value =
-      To<Longhand>(GetCSSPropertyStrokeWidth())
-          .CSSValueFromComputedStyleInternal(*style, style->SvgStyle(),
-                                             nullptr /* layout_object */,
-                                             false /* allow_visited_style */);
+  auto* computed_value = To<Longhand>(GetCSSPropertyStrokeWidth())
+                             .CSSValueFromComputedStyleInternal(
+                                 *style, nullptr /* layout_object */,
+                                 false /* allow_visited_style */);
   ASSERT_TRUE(computed_value);
   auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
   ASSERT_TRUE(numeric_value);
@@ -942,8 +941,7 @@ TEST(ComputedStyleTest, BorderWidthZoom) {
       const Longhand& longhand = To<Longhand>(*property);
       longhand.ApplyValue(state, *test.css_value);
       auto* computed_value = longhand.CSSValueFromComputedStyleInternal(
-          *style, style->SvgStyle(), nullptr /* layout_object */,
-          false /* allow_visited_style */);
+          *style, nullptr /* layout_object */, false /* allow_visited_style */);
       AtomicString prop_name = longhand.GetCSSPropertyName().ToAtomicString();
       ASSERT_TRUE(computed_value) << prop_name;
       auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
@@ -1120,6 +1118,51 @@ TEST(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
   To<Longhand>(GetCSSPropertyTransitionProperty()).ApplyInitial(state);
   EXPECT_FALSE(style->Animations());
   EXPECT_FALSE(style->Transitions());
+}
+
+#define TEST_STYLE_VALUE_NO_DIFF(field_name)                        \
+  {                                                                 \
+    scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();  \
+    scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();  \
+    style1->Set##field_name(                                        \
+        ComputedStyleInitialValues::Initial##field_name());         \
+    style2->Set##field_name(                                        \
+        ComputedStyleInitialValues::Initial##field_name());         \
+    auto diff = style1->VisualInvalidationDiff(*document, *style2); \
+    EXPECT_FALSE(diff.HasDifference());                             \
+  }
+
+// Ensures ref-counted values are compared by their values, not by pointers.
+#define TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(type, field_name)              \
+  {                                                                        \
+    scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();         \
+    scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();         \
+    scoped_refptr<type> value1 = base::MakeRefCounted<type>();             \
+    scoped_refptr<type> value2 = base::MakeRefCounted<type>(value1->data); \
+    style1->Set##field_name(value1);                                       \
+    style2->Set##field_name(value2);                                       \
+    auto diff = style1->VisualInvalidationDiff(*document, *style2);        \
+    EXPECT_FALSE(diff.HasDifference());                                    \
+  }
+
+TEST(ComputedStyleTest, SvgStrokeStyleShouldCompareValue) {
+  Persistent<Document> document = Document::CreateForTest();
+  TEST_STYLE_VALUE_NO_DIFF(StrokeOpacity);
+  TEST_STYLE_VALUE_NO_DIFF(StrokeMiterLimit);
+  TEST_STYLE_VALUE_NO_DIFF(StrokeWidth);
+  TEST_STYLE_VALUE_NO_DIFF(StrokeDashOffset);
+  TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
+
+  TEST_STYLE_VALUE_NO_DIFF(StrokePaint);
+  TEST_STYLE_VALUE_NO_DIFF(InternalVisitedStrokePaint);
+}
+
+TEST(ComputedStyleTest, SvgMiscStyleShouldCompareValue) {
+  Persistent<Document> document = Document::CreateForTest();
+  TEST_STYLE_VALUE_NO_DIFF(FloodColor);
+  TEST_STYLE_VALUE_NO_DIFF(FloodOpacity);
+  TEST_STYLE_VALUE_NO_DIFF(LightingColor);
+  TEST_STYLE_VALUE_NO_DIFF(BaselineShift);
 }
 
 }  // namespace blink

@@ -9,9 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 
 struct WebApplicationInfo;
 class GURL;
@@ -43,10 +44,12 @@ class InstallFinalizer {
     ~FinalizeOptions();
     FinalizeOptions(const FinalizeOptions&);
 
-    WebappInstallSource install_source = WebappInstallSource::COUNT;
+    webapps::WebappInstallSource install_source =
+        webapps::WebappInstallSource::COUNT;
     bool locally_installed = true;
 
     base::Optional<WebAppChromeOsData> chromeos_data;
+    base::Optional<WebAppSystemWebAppData> system_web_app_data;
   };
 
   // Write the WebApp data to disk and register the app.
@@ -76,10 +79,6 @@ class InstallFinalizer {
       ExternalInstallSource external_install_source,
       UninstallWebAppCallback callback);
 
-  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
-  virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
-                                             UninstallWebAppCallback) = 0;
-
   virtual bool CanUserUninstallExternalApp(const AppId& app_id) const = 0;
   // If external app is synced, uninstalls it from sync and from all devices.
   virtual void UninstallExternalAppByUser(const AppId& app_id,
@@ -96,7 +95,6 @@ class InstallFinalizer {
                            content::WebContents* web_contents);
 
   virtual void RemoveLegacyInstallFinalizerForTesting() {}
-  virtual InstallFinalizer* legacy_finalizer_for_testing();
 
   virtual void Start() {}
   virtual void Shutdown() {}

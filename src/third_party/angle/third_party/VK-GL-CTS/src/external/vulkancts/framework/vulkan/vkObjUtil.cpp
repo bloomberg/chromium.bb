@@ -552,6 +552,19 @@ Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
 	return makePipelineLayout(vk, device, (descriptorSetLayout == DE_NULL) ? 0u : 1u, &descriptorSetLayout);
 }
 
+Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&								vk,
+										   const VkDevice										device,
+										   const std::vector<vk::Move<VkDescriptorSetLayout>>	&descriptorSetLayouts)
+{
+	// Create a list of descriptor sets without move pointers.
+	std::vector<vk::VkDescriptorSetLayout> descriptorSetLayoutsUnWrapped;
+	for (const auto& descriptorSetLayout : descriptorSetLayouts)
+	{
+		descriptorSetLayoutsUnWrapped.push_back(descriptorSetLayout.get());
+	}
+	return vk::makePipelineLayout(vk, device, static_cast<deUint32>(descriptorSetLayoutsUnWrapped.size()), descriptorSetLayoutsUnWrapped.data());
+}
+
 Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
 										   const VkDevice				device,
 										   const deUint32				setLayoutCount,
@@ -566,6 +579,27 @@ Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
 		descriptorSetLayout,								// const VkDescriptorSetLayout*		pSetLayouts;
 		0u,													// deUint32							pushConstantRangeCount;
 		DE_NULL,											// const VkPushConstantRange*		pPushConstantRanges;
+	};
+
+	return createPipelineLayout(vk, device, &pipelineLayoutParams);
+}
+
+Move<VkPipelineLayout> makePipelineLayout (const DeviceInterface&		vk,
+										   const VkDevice				device,
+										   const deUint32				setLayoutCount,
+										   const VkDescriptorSetLayout*	descriptorSetLayout,
+										   const deUint32               pushConstantRangeCount,
+										   const VkPushConstantRange*   pPushConstantRanges)
+{
+	const VkPipelineLayoutCreateInfo pipelineLayoutParams =
+	{
+		VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,		// VkStructureType					sType;
+		DE_NULL,											// const void*						pNext;
+		0u,													// VkPipelineLayoutCreateFlags		flags;
+		setLayoutCount,										// deUint32							setLayoutCount;
+		descriptorSetLayout,								// const VkDescriptorSetLayout*		pSetLayouts;
+		pushConstantRangeCount,								// deUint32							pushConstantRangeCount;
+		pPushConstantRanges,								// const VkPushConstantRange*		pPushConstantRanges;
 	};
 
 	return createPipelineLayout(vk, device, &pipelineLayoutParams);

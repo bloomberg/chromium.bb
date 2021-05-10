@@ -5,12 +5,14 @@
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/common/render_view_messages.h"
+#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -20,18 +22,48 @@
 
 namespace android_webview {
 
+namespace {
+
+void ShouldOverrideUrlLoadingOnUI(
+    content::WebContents* web_contents,
+    const base::string16& url,
+    bool has_user_gesture,
+    bool is_redirect,
+    bool is_main_frame,
+    mojom::FrameHost::ShouldOverrideUrlLoadingCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bool ignore_navigation = false;
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContents(web_contents);
+  if (client) {
+    if (!client->ShouldOverrideUrlLoading(url, has_user_gesture, is_redirect,
+                                          is_main_frame, &ignore_navigation)) {
+      // If the shouldOverrideUrlLoading call caused a java exception we should
+      // always return immediately here!
+      return;
+    }
+  } else {
+    LOG(WARNING) << "Failed to find the associated render view host for url: "
+                 << url;
+  }
+
+  std::move(callback).Run(ignore_navigation);
+}
+
+}  // namespace
+
 AwRenderViewHostExt::AwRenderViewHostExt(AwRenderViewHostExtClient* client,
                                          content::WebContents* contents)
     : content::WebContentsObserver(contents),
       client_(client),
       background_color_(SK_ColorWHITE),
-      has_new_hit_test_data_(false) {
+      has_new_hit_test_data_(false),
+      frame_host_receivers_(contents, this) {
   DCHECK(client_);
 }
 
 AwRenderViewHostExt::~AwRenderViewHostExt() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClearImageRequests();
 }
 
 void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
@@ -40,13 +72,9 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
     std::move(result).Run(false);
     return;
   }
-  static uint32_t next_id = 1;
-  uint32_t this_id = next_id++;
-  // Send the message to the main frame, instead of the whole frame tree,
-  // because it only makes sense on the main frame.
-  if (web_contents()->GetMainFrame()->Send(new AwViewMsg_DocumentHasImages(
-          web_contents()->GetMainFrame()->GetRoutingID(), this_id))) {
-    image_requests_callback_map_[this_id] = std::move(result);
+
+  if (local_main_frame_remote_) {
+    local_main_frame_remote_->DocumentHasImage(std::move(result));
   } else {
     // Still have to respond to the API call WebView#docuemntHasImages.
     // Otherwise the listener of the response may be starved.
@@ -67,33 +95,33 @@ void AwRenderViewHostExt::RequestNewHitTestDataAt(
     const gfx::SizeF& touch_area) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We only need to get blink::WebView on the renderer side to invoke the
-  // blink hit test API, so sending this IPC to main frame is enough.
-  web_contents()->GetMainFrame()->Send(
-      new AwViewMsg_DoHitTest(web_contents()->GetMainFrame()->GetRoutingID(),
-                              touch_center, touch_area));
+  // blink hit test Mojo method, so sending this message via LocalMainFrame
+  // interface is enough.
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->HitTest(touch_center, touch_area);
 }
 
-const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
+const mojom::HitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return last_hit_test_data_;
+  return *last_hit_test_data_;
 }
 
 void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SetTextZoomFactor(
-      web_contents()->GetMainFrame()->GetRoutingID(), factor));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SetTextZoomFactor(factor);
 }
 
 void AwRenderViewHostExt::ResetScrollAndScaleState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_ResetScrollAndScaleState(
-      web_contents()->GetMainFrame()->GetRoutingID()));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->ResetScrollAndScaleState();
 }
 
 void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SetInitialPageScale(
-      web_contents()->GetMainFrame()->GetRoutingID(), page_scale_factor));
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SetInitialPageScale(page_scale_factor);
 }
 
 void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
@@ -112,23 +140,8 @@ void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
                                        base::TimeDelta duration) {
-  web_contents()->GetMainFrame()->Send(
-      new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
-                                 target_x, target_y, duration));
-}
-
-void AwRenderViewHostExt::RenderViewHostChanged(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  ClearImageRequests();
-}
-
-void AwRenderViewHostExt::ClearImageRequests() {
-  for (auto& pair : image_requests_callback_map_) {
-    std::move(pair.second).Run(false);
-  }
-
-  image_requests_callback_map_.clear();
+  if (local_main_frame_remote_)
+    local_main_frame_remote_->SmoothScroll(target_x, target_y, duration);
 }
 
 void AwRenderViewHostExt::RenderFrameCreated(
@@ -164,50 +177,10 @@ void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
   client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
 }
 
-bool AwRenderViewHostExt::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwRenderViewHostExt, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_DocumentHasImagesResponse,
-                        OnDocumentHasImagesResponse)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
-                        OnUpdateHitTestData)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_OnContentsSizeChanged,
-                        OnContentsSizeChanged)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void AwRenderViewHostExt::OnDocumentHasImagesResponse(
-    content::RenderFrameHost* render_frame_host,
-    int msg_id,
-    bool has_images) {
-  // Only makes sense coming from the main frame of the current frame tree.
-  // This matches the current implementation that only cares about if there is
-  // an img child node in the main document, and essentially invokes JS:
-  // node.getElementsByTagName("img").
-  if (render_frame_host != web_contents()->GetMainFrame())
-    return;
-
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::map<int, DocumentHasImagesResult>::iterator pending_req =
-      image_requests_callback_map_.find(msg_id);
-  if (pending_req == image_requests_callback_map_.end()) {
-    DLOG(WARNING) << "unexpected DocumentHasImages Response: " << msg_id;
-  } else {
-    std::move(pending_req->second).Run(has_images);
-    image_requests_callback_map_.erase(pending_req);
-  }
-}
-
-void AwRenderViewHostExt::OnUpdateHitTestData(
-    content::RenderFrameHost* render_frame_host,
-    const AwHitTestData& hit_test_data) {
-  content::RenderFrameHost* main_frame_host = render_frame_host;
+void AwRenderViewHostExt::UpdateHitTestData(
+    mojom::HitTestDataPtr hit_test_data) {
+  content::RenderFrameHost* main_frame_host =
+      frame_host_receivers_.GetCurrentTargetFrame();
   while (main_frame_host->GetParent())
     main_frame_host = main_frame_host->GetParent();
 
@@ -217,18 +190,32 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
     return;
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  last_hit_test_data_ = hit_test_data;
+  last_hit_test_data_ = std::move(hit_test_data);
   has_new_hit_test_data_ = true;
 }
 
-void AwRenderViewHostExt::OnContentsSizeChanged(
-    content::RenderFrameHost* render_frame_host,
-    const gfx::Size& contents_size) {
+void AwRenderViewHostExt::ContentsSizeChanged(const gfx::Size& contents_size) {
+  content::RenderFrameHost* render_frame_host =
+      frame_host_receivers_.GetCurrentTargetFrame();
+
   // Only makes sense coming from the main frame of the current frame tree.
   if (render_frame_host != web_contents()->GetMainFrame())
     return;
 
   client_->OnWebLayoutContentsSizeChanged(contents_size);
+}
+
+void AwRenderViewHostExt::ShouldOverrideUrlLoading(
+    const base::string16& url,
+    bool has_user_gesture,
+    bool is_redirect,
+    bool is_main_frame,
+    ShouldOverrideUrlLoadingCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ShouldOverrideUrlLoadingOnUI, web_contents(),
+                                url, has_user_gesture, is_redirect,
+                                is_main_frame, std::move(callback)));
 }
 
 }  // namespace android_webview

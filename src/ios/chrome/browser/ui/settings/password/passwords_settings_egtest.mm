@@ -49,6 +49,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PasswordSettingsAppInterface);
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::NavigationBarCancelButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
@@ -624,7 +625,7 @@ void CopyPasswordDetailWithID(int detail_id) {
 // Checks that deleting a blocked form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
 - (void)testBlockedFormDeletionInDetailView {
-  // Save blacklisted form to be deleted later.
+  // Save blocked form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
                  saveExampleBlockedOrigin:@"https://blocked.com"],
              @"Stored form was not found in the PasswordStore results.");
@@ -691,20 +692,10 @@ void CopyPasswordDetailWithID(int detail_id) {
 
   [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
 
-  // Tap the alert's Cancel button to cancel.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kPasswordDetailsTableViewId)]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     ButtonWithAccessibilityLabel(
-                                         l10n_util::GetNSString(
-                                             IDS_IOS_CANCEL_PASSWORD_DELETION)),
-                                     grey_interactable(), nullptr)]
-        performAction:grey_tap()];
-  }
+  // Close the dialog by taping on Password Details screen.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kPasswordDetailsTableViewId)]
+      performAction:grey_tap()];
 
   // Check that the current view is still the detail view.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -717,6 +708,8 @@ void CopyPasswordDetailWithID(int detail_id) {
 
   // Go back to the list view and verify that the password is still in the
   // list.
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -836,6 +829,8 @@ void CopyPasswordDetailWithID(int detail_id) {
   [[EarlGrey selectElementWithMatcher:DeleteButton()]
       assertWithMatcher:grey_notNil()];
 
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -1455,6 +1450,8 @@ void CopyPasswordDetailWithID(int detail_id) {
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
       assertWithMatcher:grey_textFieldValue(@"new password")];
 
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -1524,12 +1521,10 @@ void CopyPasswordDetailWithID(int detail_id) {
 // Checks that attempts to edit a username to a value which is already used for
 // the same domain fails.
 - (void)testEditUsernameFails {
-#if !TARGET_OS_SIMULATOR
-  // TODO(crbug.com/1140400): These seem to fail on device only downstream,
-  // iOS 12.4 only.
-  if (@available(iOS 13, *)) {
-  } else {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS12 device.");
+#if !TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/1140400): Fix test for iPad devices.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad devices.");
   }
 #endif
 
@@ -1570,9 +1565,49 @@ void CopyPasswordDetailWithID(int detail_id) {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
+      performAction:grey_tap()];
+
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks that attempts to edit a username provide appropriate feedback.
+- (void)testCancelDuringEditing {
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  // Check the snackbar in case of successful reauthentication.
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  TapEdit();
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"new password")];
+
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
+      performAction:grey_tap()];
+
+  // Test that password value is unchanged.
+  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      assertWithMatcher:grey_textFieldValue(@"concrete password")];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]

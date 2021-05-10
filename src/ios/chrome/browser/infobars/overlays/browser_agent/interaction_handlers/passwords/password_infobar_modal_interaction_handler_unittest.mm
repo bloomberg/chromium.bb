@@ -4,19 +4,15 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_modal_interaction_handler.h"
 
-#include "base/test/scoped_feature_list.h"
-#include "components/infobars/core/infobar_feature.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -36,8 +32,6 @@ class PasswordInfobarModalInteractionHandlerTest : public PlatformTest {
             [[FakeInfobarUIDelegate alloc] init],
             MockIOSChromeSavePasswordInfoBarDelegate::Create(@"username",
                                                              @"password")) {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                          {kInfobarUIRebootOnlyiOS13});
     [browser_.GetCommandDispatcher()
         startDispatchingToTarget:mock_command_receiver_
                      forProtocol:@protocol(ApplicationSettingsCommands)];
@@ -56,7 +50,6 @@ class PasswordInfobarModalInteractionHandlerTest : public PlatformTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   web::WebTaskEnvironment task_environment_;
   TestBrowser browser_;
   id mock_command_receiver_ = nil;

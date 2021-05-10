@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -38,7 +40,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_dialog_model_host.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
@@ -62,7 +63,9 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
   }
 
   void ShowUi(const std::string& name) override {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // The extensions menu can appear offscreen on Linux, so verifying bounds
     // makes the tests flaky.
     set_should_verify_dialog_bounds(false);
@@ -293,6 +296,10 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
 
     // Removing the last extension. All actions now have the same state.
     RemoveExtension(method, extensions()[1]->id());
+
+    // Container should remain visible during the removal animation.
+    EXPECT_TRUE(GetExtensionsToolbarContainer()->IsDrawn());
+    views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
     EXPECT_EQ(expected_visibility, GetExtensionsToolbarContainer()->IsDrawn());
   }
 
@@ -549,8 +556,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   DismissUi();
 }
 
+// Failing on Mac. https://crbug.com/1176703
+#if defined(OS_MAC)
+#define MAYBE_PinningDisabledInIncognito DISABLED_PinningDisabledInIncognito
+#else
+#define MAYBE_PinningDisabledInIncognito PinningDisabledInIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       PinningDisabledInIncognito) {
+                       MAYBE_PinningDisabledInIncognito) {
   LoadTestExtension("extensions/uitest/window_open", true);
   SetUpIncognitoBrowser();
 
@@ -699,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ExtensionsMenuItemView* item_view = menu_items[0];
   EXPECT_FALSE(item_view->IsContextMenuRunning());
 
-  views::ImageButton* context_menu_button =
+  HoverButton* context_menu_button =
       menu_items[0]->context_menu_button_for_testing();
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);

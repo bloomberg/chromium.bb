@@ -254,15 +254,6 @@
   "lighthouse-core/audits/accessibility/label.js | title": {
     "message": "表单元素具有关联的标签"
   },
-  "lighthouse-core/audits/accessibility/layout-table.js | description": {
-    "message": "用于实现布局用途的表格不应包含数据元素（例如 th 或 caption 元素或 summary 属性），因为这会令屏幕阅读器用户感到困惑。[了解详情](https://web.dev/layout-table/)。"
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | failureTitle": {
-    "message": "展示性 `<table>` 元素未避免使用 `<th>`、`<caption>` 或 `[summary]` 属性。"
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | title": {
-    "message": "展示性 `<table>` 元素未使用 `<th>`、`<caption>` 或 `[summary]` 属性。"
-  },
   "lighthouse-core/audits/accessibility/link-name.js | description": {
     "message": "请确保链接文字（以及用作链接的图片替代文字）可识别、独一无二且可成为焦点，这样做会提升屏幕阅读器用户的导航体验。[了解详情](https://web.dev/link-name/)。"
   },
@@ -362,15 +353,6 @@
   "lighthouse-core/audits/accessibility/video-caption.js | title": {
     "message": "`<video>` 元素包含带 `[kind=\"captions\"]` 的 `<track>` 元素"
   },
-  "lighthouse-core/audits/accessibility/video-description.js | description": {
-    "message": "音频说明可提供对话框无法提供的视频相关信息（例如面部表情和场景）。[了解详情](https://web.dev/video-description/)。"
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | failureTitle": {
-    "message": "`<video>` 元素缺少含 `[kind=\"description\"]` 的 `<track>` 元素。"
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | title": {
-    "message": "`<video>` 元素包含带 `[kind=\"description\"]` 的 `<track>` 元素"
-  },
   "lighthouse-core/audits/apple-touch-icon.js | description": {
     "message": "请定义一个 `apple-touch-icon`，以在 iOS 用户向主屏幕添加渐进式 Web 应用时获得理想的外观。它必须指向一张不透明的 192px（或 180px）方形 PNG 图片。[了解详情](https://web.dev/apple-touch-icon/)。"
   },
@@ -384,16 +366,16 @@
     "message": "提供了有效的 `apple-touch-icon`"
   },
   "lighthouse-core/audits/autocomplete.js | columnCurrent": {
-    "message": "Current Value"
+    "message": "当前值"
   },
   "lighthouse-core/audits/autocomplete.js | columnSuggestions": {
-    "message": "Suggested Token"
+    "message": "建议的令牌"
   },
   "lighthouse-core/audits/autocomplete.js | description": {
-    "message": "`autocomplete` helps users submit forms quicker. To reduce user effort, consider enabling by setting the `autocomplete` attribute to a valid value. [Learn more](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
+    "message": "`autocomplete`可帮助用户更快地提交表单。如果想减少用户操作，请考虑启用自动补全功能，只需将 `autocomplete` 属性设为一个有效值即可。[了解详情](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
   },
   "lighthouse-core/audits/autocomplete.js | failureTitle": {
-    "message": "`<input>` elements do not have correct `autocomplete` attributes"
+    "message": "`<input>` 元素没有正确的 `autocomplete` 属性"
   },
   "lighthouse-core/audits/autocomplete.js | manualReview": {
     "message": "需要人工审核"
@@ -402,10 +384,10 @@
     "message": "请检查令牌的顺序"
   },
   "lighthouse-core/audits/autocomplete.js | title": {
-    "message": "`<input>` elements correctly use `autocomplete`"
+    "message": "`<input>` 元素正确地使用了 `autocomplete`"
   },
   "lighthouse-core/audits/autocomplete.js | warningInvalid": {
-    "message": "`autocomplete` token(s): \"{token}\" is invalid in {snippet}"
+    "message": "`autocomplete` 令牌：{snippet} 中的“{token}”无效"
   },
   "lighthouse-core/audits/autocomplete.js | warningOrder": {
     "message": "检查令牌的顺序：{snippet} 中的“{tokens}”"
@@ -585,7 +567,7 @@
     "message": "请勿使用应用缓存"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
-    "message": "A character encoding declaration is required. It can be done with a `<meta>` tag in the first 1024 bytes of the HTML or in the Content-Type HTTP response header. [Learn more](https://web.dev/charset/)."
+    "message": "必须声明字符编码。您可以在 HTML 的前 1024 个字节中使用 `<meta>` 标记来声明，也可以在 HTTP 响应标头 Content-Type 中进行声明。[了解详情](https://web.dev/charset/)。"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | failureTitle": {
     "message": "字符集声明缺失，或者在 HTML 中出现得太晚"
@@ -665,6 +647,24 @@
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | title": {
     "message": "避免在网页加载时请求地理定位权限"
   },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | columnIssueType": {
+    "message": "问题类型"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | description": {
+    "message": "Chrome Devtools 的“`Issues`”面板中记录的问题表明有未解决的问题。这些问题的起因可能是网络请求失败、安全控件不足和其他浏览器问题。如需详细了解每个问题，请打开 Chrome Devtools 的“Issues”面板。"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | failureTitle": {
+    "message": "问题记录在 Chrome Devtools 的“`Issues`”面板中"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeBlockedByResponse": {
+    "message": "已被跨源政策屏蔽"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeHeavyAds": {
+    "message": "广告占用了大量资源"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | title": {
+    "message": "Chrome Devtools 的“`Issues`”面板中无任何问题"
+  },
   "lighthouse-core/audits/dobetterweb/js-libraries.js | columnVersion": {
     "message": "版本"
   },
@@ -735,7 +735,7 @@
     "message": "协议"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | description": {
-    "message": "HTTP/2 提供了许多优于 HTTP/1.1的优点，包括二进制标头、多路复用和服务器推送等。[了解详情](https://web.dev/uses-http2/)。"
+    "message": "HTTP/2 提供了许多优于 HTTP/1.1 的益处，包括二进制标头和多路复用。[了解详情](https://web.dev/uses-http2/)。"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | displayValue": {
     "message": "{itemCount,plural, =1{1 条请求未通过 HTTP/2 传送}other{# 条请求未通过 HTTP/2 传送}}"
@@ -751,9 +751,6 @@
   },
   "lighthouse-core/audits/dobetterweb/uses-passive-event-listeners.js | title": {
     "message": "使用被动式监听器来提高滚动性能"
-  },
-  "lighthouse-core/audits/errors-in-console.js | columnDesc": {
-    "message": "说明"
   },
   "lighthouse-core/audits/errors-in-console.js | description": {
     "message": "控制台中记录的错误表明有未解决的问题。导致这些错误的可能原因是网络请求失败和其他浏览器问题。[了解详情](https://web.dev/errors-in-console/)"
@@ -791,9 +788,6 @@
   "lighthouse-core/audits/image-aspect-ratio.js | title": {
     "message": "显示的图像宽高比正确"
   },
-  "lighthouse-core/audits/image-aspect-ratio.js | warningCompute": {
-    "message": "无效的图片大小信息 {url}"
-  },
   "lighthouse-core/audits/image-size-responsive.js | columnActual": {
     "message": "实际大小"
   },
@@ -812,14 +806,98 @@
   "lighthouse-core/audits/image-size-responsive.js | title": {
     "message": "所提供的图片都采用了合适的分辨率"
   },
+  "lighthouse-core/audits/installable-manifest.js | already-installed": {
+    "message": "该应用已安装"
+  },
+  "lighthouse-core/audits/installable-manifest.js | cannot-download-icon": {
+    "message": "下载的图标为空或已损坏"
+  },
+  "lighthouse-core/audits/installable-manifest.js | columnValue": {
+    "message": "失败原因"
+  },
   "lighthouse-core/audits/installable-manifest.js | description": {
-    "message": "浏览器可主动提示用户向其主屏幕中添加您的应用，这有助于提高互动度。[了解详情](https://web.dev/installable-manifest/)。"
+    "message": "Service Worker 是一项技术，可让您的应用使用很多渐进式 Web 应用功能，例如离线、添加到主屏幕和推送通知。如果 Service Worker 和清单的实现均正确无误，浏览器可主动提示用户向其主屏幕中添加您的应用，这有助于提高互动度。[了解详情](https://web.dev/installable-manifest/)。"
+  },
+  "lighthouse-core/audits/installable-manifest.js | displayValue": {
+    "message": "{itemCount,plural, =1{1 个原因}other{# 个原因}}"
   },
   "lighthouse-core/audits/installable-manifest.js | failureTitle": {
-    "message": "Web 应用清单不符合可安装性要求"
+    "message": "Web 应用清单或 Service Worker 不符合可安装性要求"
+  },
+  "lighthouse-core/audits/installable-manifest.js | ids-do-not-match": {
+    "message": "Play 商店应用网址和 Play 商店 ID 不相符"
+  },
+  "lighthouse-core/audits/installable-manifest.js | in-incognito": {
+    "message": "该网页是在无痕式窗口中加载的"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-not-supported": {
+    "message": "清单“display”属性必须是“standalone”、“fullscreen”或“minimal-ui”之一"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-override-not-supported": {
+    "message": "清单包含“display_override”字段，因此第一个受支持的显示模式必须是“standalone”、“fullscreen”或“minimal-ui”之一"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-empty": {
+    "message": "清单无法提取、为空或无法解析"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-location-changed": {
+    "message": "在提取清单期间，清单网址发生了更改。"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-name-or-short-name": {
+    "message": "清单未包含“name”或“short_name”字段"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
+    "message": "清单未包含合适的图标 - 必须提供不小于 {value0} 像素的 PNG、SVG 或 WebP 格式图标，必须设置 sizes 属性，并且 purpose 属性（若已设置）必须包含“any”或“maskable”。"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
+    "message": "清单未提供不小于 {value0} 正方形像素的 PNG、SVG 或 WebP 格式图标"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
+    "message": "下载的图标为空或已损坏"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-id-specified": {
+    "message": "未提供 Play 商店 ID"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-manifest": {
+    "message": "该网页没有清单 <link> 网址"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-matching-service-worker": {
+    "message": "未检测到任何相符的 Service Worker。您可能需要重新加载网页，或检查当前网页的 Service Worker 范围是否包含清单中的范围和起始网址。"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-url-for-service-worker": {
+    "message": "如果清单不含“start_url”字段，则无法检查 Service Worker"
+  },
+  "lighthouse-core/audits/installable-manifest.js | noErrorId": {
+    "message": "系统无法识别可安装性错误 ID“{errorId}”"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-from-secure-origin": {
+    "message": "该网页不是从安全来源提供的"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-in-main-frame": {
+    "message": "该网页不是在主框架中加载的"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-offline-capable": {
+    "message": "该网页无法离线使用"
+  },
+  "lighthouse-core/audits/installable-manifest.js | platform-not-supported-on-android": {
+    "message": "指定的应用平台在 Android 设备上不受支持"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications": {
+    "message": "清单指定了 prefer_related_applications: true"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications-only-beta-stable": {
+    "message": "prefer_related_applications 仅适用于 Android 设备上的 Chrome Beta 版和稳定版。"
+  },
+  "lighthouse-core/audits/installable-manifest.js | start-url-not-valid": {
+    "message": "清单起始网址无效"
   },
   "lighthouse-core/audits/installable-manifest.js | title": {
-    "message": "Web 应用清单符合可安装性要求"
+    "message": "Web 应用清单和 Service Worker 符合可安装性要求"
+  },
+  "lighthouse-core/audits/installable-manifest.js | url-not-supported-for-webapk": {
+    "message": "清单中的某个网址包含用户名、密码或端口"
+  },
+  "lighthouse-core/audits/installable-manifest.js | warn-not-offline-capable": {
+    "message": "该网页无法离线使用。Chrome 于 2021 年 8 月推出 93 稳定版之后，不会将该网页视为可安装。"
   },
   "lighthouse-core/audits/is-on-https.js | allowed": {
     "message": "允许"
@@ -834,7 +912,7 @@
     "message": "对请求的处理方式"
   },
   "lighthouse-core/audits/is-on-https.js | description": {
-    "message": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more](https://web.dev/is-on-https/)."
+    "message": "所有网站都应该通过 HTTPS 来保护，即使网站不处理敏感数据也应如此。这包括要避免使用[混合内容](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content)（即：通过 HTTPS 实现初始请求，但却通过 HTTP 加载某些资源）。HTTPS 可防止入侵程序篡改或被动地监听您的应用与用户之间的通信，它是 HTTP/2 和许多新的网络平台 API 的先决条件。[了解详情](https://web.dev/is-on-https/)。"
   },
   "lighthouse-core/audits/is-on-https.js | displayValue": {
     "message": "{itemCount,plural, =1{发现 1 条不安全的请求}other{发现 # 条不安全的请求}}"
@@ -880,24 +958,6 @@
   },
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "请避免出现大幅度的布局偏移"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | description": {
-    "message": "如果网页在移动网络中的加载速度较快，则可确保良好的移动用户体验。[了解详情](https://web.dev/load-fast-enough-for-pwa/)。"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueText": {
-    "message": "页面交互需要 {timeInMs, number, seconds} 秒"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueTextWithOverride": {
-    "message": "在模拟移动网络上需要 {timeInMs, number, seconds} 秒才能支持交互"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | explanationLoadSlow": {
-    "message": "您的网页加载速度过慢，在 10 秒钟内一直未进行互动。要了解如何改进，请查看“性能”部分中的优化建议和诊断结果。"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | failureTitle": {
-    "message": "页面在移动网络上的加载速度不够快"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | title": {
-    "message": "页面在移动网络上的加载速度足够快"
   },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "列出了主线程中运行时间最长的任务，有助于识别出导致输入延迟的最主要原因。[了解详情](https://web.dev/long-tasks-devtools/)"
@@ -1025,21 +1085,6 @@
   "lighthouse-core/audits/non-composited-animations.js | unsupportedTimingParameters": {
     "message": "效果含有不受支持的时间参数"
   },
-  "lighthouse-core/audits/offline-start-url.js | description": {
-    "message": "Service Worker 可让您的 Web 应用在无法预测的网络状况下正常运行。[了解详情](https://web.dev/offline-start-url/)。"
-  },
-  "lighthouse-core/audits/offline-start-url.js | errorLoading": {
-    "message": "在 Service Worker 中加载 {url} 时出错，状态代码为 {statusCode}"
-  },
-  "lighthouse-core/audits/offline-start-url.js | failureTitle": {
-    "message": "`start_url` 在离线时没有响应，并返回 200"
-  },
-  "lighthouse-core/audits/offline-start-url.js | title": {
-    "message": "`start_url` 在离线时也能成功做出响应，并返回 200"
-  },
-  "lighthouse-core/audits/offline-start-url.js | warningCantStart": {
-    "message": "Lighthouse 无法从清单读取 `start_url`。因此，系统已将 `start_url` 视为该文档的网址。错误消息：“{manifestWarning}”。"
-  },
   "lighthouse-core/audits/performance-budget.js | description": {
     "message": "请将网络请求的数量和数据大小保持在提供的性能预算所设定的目标之内。[了解详情](https://developers.google.com/web/tools/lighthouse/audits/budgets)。"
   },
@@ -1057,6 +1102,12 @@
   },
   "lighthouse-core/audits/preload-fonts.js | title": {
     "message": "已预加载使用 `font-display: optional` 的字体"
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | description": {
+    "message": "请预加载 Largest Contentful Paint (LCP) 元素所用的图片，以缩短您的 LCP 用时。[了解详情](https://web.dev/optimize-lcp/#preload-important-resources)。"
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | title": {
+    "message": "预加载 LCP 元素所用图片"
   },
   "lighthouse-core/audits/redirects-http.js | description": {
     "message": "如果您已设置 HTTPS，请确保将所有 HTTP 流量重定向到 HTTPS，以便让所有用户都能使用安全的网络功能。[了解详情](https://web.dev/redirects-http/)。"
@@ -1313,8 +1364,32 @@
   "lighthouse-core/audits/themed-omnibox.js | title": {
     "message": "为地址栏设置主题背景颜色。"
   },
-  "lighthouse-core/audits/third-party-summary.js | columnBlockingTime": {
-    "message": "主线程拦截时间"
+  "lighthouse-core/audits/third-party-facades.js | categoryCustomerSuccess": {
+    "message": "{productName}（客户成功案例）"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryMarketing": {
+    "message": "{productName}（营销）"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categorySocial": {
+    "message": "{productName}（社交）"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryVideo": {
+    "message": "{productName}（视频）"
+  },
+  "lighthouse-core/audits/third-party-facades.js | columnProduct": {
+    "message": "产品"
+  },
+  "lighthouse-core/audits/third-party-facades.js | description": {
+    "message": "您可以延迟加载某些第三方嵌入代码。不妨考虑使用 Facade 替换这些代码，直到您需要使用它们为止。[了解详情](https://web.dev/third-party-facades/)。"
+  },
+  "lighthouse-core/audits/third-party-facades.js | displayValue": {
+    "message": "{itemCount,plural, =1{有 # 个备用 Facade}other{有 # 个备用 Facade}}"
+  },
+  "lighthouse-core/audits/third-party-facades.js | failureTitle": {
+    "message": "可以使用 Facade 延迟加载某些第三方资源"
+  },
+  "lighthouse-core/audits/third-party-facades.js | title": {
+    "message": "使用 Facade 延迟加载第三方资源"
   },
   "lighthouse-core/audits/third-party-summary.js | columnThirdParty": {
     "message": "第三方"
@@ -1327,9 +1402,6 @@
   },
   "lighthouse-core/audits/third-party-summary.js | failureTitle": {
     "message": "降低第三方代码的影响"
-  },
-  "lighthouse-core/audits/third-party-summary.js | otherValue": {
-    "message": "其他资源"
   },
   "lighthouse-core/audits/third-party-summary.js | title": {
     "message": "尽量减少第三方使用"
@@ -1368,7 +1440,7 @@
     "message": "User Timing 标记和测量结果"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | crossoriginWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "“{securityOrigin}”已有 `<link rel=preconnect>`，但浏览器未使用该链接。请检查并确保您正确地使用了 `crossorigin` 属性。"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | description": {
     "message": "建议添加 `preconnect` 或 `dns-prefetch` 资源提示，以尽早与重要的第三方来源建立连接。[了解详情](https://web.dev/uses-rel-preconnect/)。"
@@ -1377,13 +1449,13 @@
     "message": "预先连接到必要的来源"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | tooManyPreconnectLinksWarning": {
-    "message": "More than 2 `<link rel=preconnect>` connections were found. These should be used sparingly and only to the most important origins."
+    "message": "发现了不止 2 个 `<link rel=preconnect>` 连接。此类连接应尽量少用，且应仅用于指向最重要的来源。"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | unusedWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Only use `preconnect` for important origins that the page will certainly request."
+    "message": "“{securityOrigin}”已有 `<link rel=preconnect>`，但浏览器未使用该链接。请仅针对网页肯定会请求的重要来源使用 `preconnect`。"
   },
   "lighthouse-core/audits/uses-rel-preload.js | crossoriginWarning": {
-    "message": "A preload `<link>` was found for \"{preloadURL}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "“{preloadURL}”已有 preload `<link>`，但浏览器未使用该链接。请检查并确保您正确地使用了 `crossorigin` 属性。"
   },
   "lighthouse-core/audits/uses-rel-preload.js | description": {
     "message": "建议使用 `<link rel=preload>` 来优先提取当前在网页加载后期请求的资源。[了解详情](https://web.dev/uses-rel-preload/)。"
@@ -1420,30 +1492,6 @@
   },
   "lighthouse-core/audits/viewport.js | title": {
     "message": "具有包含 `width` 或 `initial-scale` 的 `<meta name=\"viewport\">` 标记"
-  },
-  "lighthouse-core/audits/without-javascript.js | description": {
-    "message": "您的应用应该在 JavaScript 被禁用时显示一些内容，哪怕只是向用户显示一则警告（告知其必须启用 JavaScript 才能使用该应用）。[了解详情](https://web.dev/without-javascript/)。"
-  },
-  "lighthouse-core/audits/without-javascript.js | explanation": {
-    "message": "网页正文应该能在其脚本不可用时呈现一些内容。"
-  },
-  "lighthouse-core/audits/without-javascript.js | failureTitle": {
-    "message": "不提供在 JavaScript 未启用时显示的后备内容"
-  },
-  "lighthouse-core/audits/without-javascript.js | title": {
-    "message": "包含一些 JavaScript 未启用时显示的内容"
-  },
-  "lighthouse-core/audits/works-offline.js | description": {
-    "message": "如果您想构建渐进式 Web 应用，不妨考虑使用 Service Worker，以确保您的应用可离线工作。[了解详情](https://web.dev/works-offline/)。"
-  },
-  "lighthouse-core/audits/works-offline.js | failureTitle": {
-    "message": "当前网页在离线时没有响应，并返回 200"
-  },
-  "lighthouse-core/audits/works-offline.js | title": {
-    "message": "当前网页即使在离线时也能成功做出响应，并返回 200"
-  },
-  "lighthouse-core/audits/works-offline.js | warningNoLoad": {
-    "message": "由于您的测试网址 ({requested}) 已重定向到“{final}”，因此该网页可能无法离线加载。请尝试直接测试另一个网址。"
   },
   "lighthouse-core/config/default-config.js | a11yAriaGroupDescription": {
     "message": "这些提示旨在帮助改进 ARIA 在您的应用内的使用情况，从而改善辅助技术（例如屏幕阅读器）用户的体验。"
@@ -1562,9 +1610,6 @@
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
     "message": "渐进式 Web 应用"
   },
-  "lighthouse-core/config/default-config.js | pwaFastReliableGroupTitle": {
-    "message": "快速且可靠"
-  },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "可安装"
   },
@@ -1598,14 +1643,26 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "适合移动设备"
   },
+  "lighthouse-core/gather/driver.js | warningData": {
+    "message": "{locationCount,plural, =1{下列位置可能存储了会影响加载性能的数据：{locations}。请在无痕式窗口中审核此页面，以防止这些资源影响您的得分。}other{下列位置可能存储了会影响加载性能的数据：{locations}。请在无痕式窗口中审核此页面，以防止这些资源影响您的得分。}}"
+  },
   "lighthouse-core/gather/gather-runner.js | warningRedirected": {
     "message": "相应网页可能无法按预期加载，因为您所测试的网址 ({requested}) 重定向到了 {final}。请尝试直接测试第二个网址。"
+  },
+  "lighthouse-core/gather/gather-runner.js | warningSlowHostCpu": {
+    "message": "所测试设备的 CPU 速度似乎未达到 Lighthouse 的预期。这可能会对您的性能得分产生负面影响。详细了解如何[校准相应的 CPU 速度减慢倍数](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)。"
   },
   "lighthouse-core/gather/gather-runner.js | warningTimeout": {
     "message": "此页面的加载速度太慢，无法在时限内完成。结果可能会不完整。"
   },
+  "lighthouse-core/lib/i18n/i18n.js | columnBlockingTime": {
+    "message": "主线程拦截时间"
+  },
   "lighthouse-core/lib/i18n/i18n.js | columnCacheTTL": {
     "message": "缓存 TTL"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | columnDescription": {
+    "message": "说明"
   },
   "lighthouse-core/lib/i18n/i18n.js | columnDuration": {
     "message": "时长"
@@ -1709,6 +1766,9 @@
   "lighthouse-core/lib/i18n/i18n.js | otherResourceType": {
     "message": "其他"
   },
+  "lighthouse-core/lib/i18n/i18n.js | otherResourcesLabel": {
+    "message": "其他资源"
+  },
   "lighthouse-core/lib/i18n/i18n.js | scriptResourceType": {
     "message": "脚本"
   },
@@ -1751,6 +1811,9 @@
   "lighthouse-core/lib/lh-error.js | missingRequiredArtifact": {
     "message": "必需的 {artifactName} 收集器未运行。"
   },
+  "lighthouse-core/lib/lh-error.js | noFcp": {
+    "message": "该网页未渲染任何内容。请确保在网页加载过程中让浏览器窗口始终位于前台，然后重试。({errorCode})"
+  },
   "lighthouse-core/lib/lh-error.js | notHtml": {
     "message": "所提供的网页不是 HTML（以 MIME 类型 {mimeType} 提供）。"
   },
@@ -1786,9 +1849,6 @@
   },
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "您提供的网址似乎无效。"
-  },
-  "lighthouse-core/report/html/renderer/util.js | auditGroupExpandTooltip": {
-    "message": "显示审核结果"
   },
   "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
     "message": "查看计算器。"
@@ -1923,34 +1983,34 @@
     "message": "警告： "
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
-    "message": "For animated content, use [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) to minimize CPU usage when the content is offscreen."
+    "message": "对于动画内容，请使用 [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) 尽量减少当内容在屏幕外时的 CPU 使用量。"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
-    "message": "Ensure that you are using [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) for images to automatically lazy-load. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)."
+    "message": "确保您对图片使用了 [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) 以便自动延迟加载。[了解详情](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)。"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | render-blocking-resources": {
     "message": "使用 [AMP Optimizer](https://github.com/ampproject/amp-toolbox/tree/master/packages/optimizer) 之类的工具[在服务器端呈现 AMP 布局](https://amp.dev/documentation/guides-and-tutorials/optimize-and-measure/server-side-rendering/)。"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | unminified-css": {
-    "message": "Refer to the [AMP documentation](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/) to ensure all styles are supported."
+    "message": "请参阅 [AMP 文档](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/)以确保所有样式均受支持。"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
-    "message": "The [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) component supports the [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) attribute to specify which image assets to use based on the screen size. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)."
+    "message": "[`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) 组件支持 [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) 属性，以便系统根据屏幕尺寸指定要使用的图片素材资源。[了解详情](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)。"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Consider displaying all [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) components in WebP formats while specifying an appropriate fallback for other browsers. [Learn more](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
+    "message": "您不妨既以 WebP 格式显示所有 [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) 组件，也为其他浏览器指定适当的后备图片。[了解详情](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)。"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "如果要呈现的列表非常大，您不妨使用 Component Dev Kit (CDK) 进行虚拟滚动。[了解详情](https://web.dev/virtualize-lists-with-angular-cdk/)。"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | total-byte-weight": {
-    "message": "Apply [route-level code splitting](https://web.dev/route-level-code-splitting-in-angular/) to minimize the size of your JavaScript bundles. Also, consider precaching assets with the [Angular service worker](https://web.dev/precaching-with-the-angular-service-worker/)."
+    "message": "采用[路径级代码拆分](https://web.dev/route-level-code-splitting-in-angular/)尽量压缩 JavaScript 软件包的大小。您也可考虑使用 [Angular Service Worker](https://web.dev/precaching-with-the-angular-service-worker/) 预缓存资源。"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unminified-warning": {
     "message": "如果您使用的是 Angular CLI，请确保在正式版模式下生成版本。[了解详情](https://angular.io/guide/deployment#enable-runtime-production-mode)。"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unused-javascript": {
-    "message": "If you are using Angular CLI, include source maps in your production build to inspect your bundles. [Learn more](https://angular.io/guide/deployment#inspect-the-bundles)."
+    "message": "如果您使用了 Angular CLI，请在正式版中添加源代码映射以检查您的软件包。[了解详情](https://angular.io/guide/deployment#inspect-the-bundles)。"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | uses-rel-preload": {
     "message": "提前预加载路径以加快导航速度。[了解详情](https://web.dev/route-preloading-in-angular/)。"
@@ -1965,10 +2025,10 @@
     "message": "在主题背景中定义自定义字体时，您可以指定 `@font-display`。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
-    "message": "Install [a Drupal module](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) that can lazy load images. Such modules provide the ability to defer any offscreen images to improve performance."
+    "message": "安装可延迟加载图片的 [Drupal 模块](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search)。此类模块能够推迟加载所有的屏幕外图片，进而提高性能。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
-    "message": "Consider using a module to inline critical CSS and JavaScript, or potentially load assets asynchronously via JavaScript such as the [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg) module. Beware that optimizations provided by this module may break your site, so you will likely need to make code changes."
+    "message": "建议您使用模块来内嵌重要的 CSS 和 JavaScipt，或通过 JavaScript（例如[高级 CSS/JS 聚合](https://www.drupal.org/project/advagg)模块）异步加载资源。请注意，此模块执行的优化可能会导致您的网站无法正常运行，因此您可能需要更改代码。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
     "message": "主题背景、模块和服务器规格都会影响服务器响应用时。建议您查找更优化的主题背景、仔细选择优化模块并/或升级您的服务器。您的托管服务器应该使用 PHP 运算码缓存、内存缓存（例如 Redis 或 Memcached）来缩短数据库查询时间，并优化应用逻辑以加快网页准备速度。"
@@ -1986,7 +2046,7 @@
     "message": "建议您移除未使用的 CSS 规则，仅将所需的 Drupal 库附加到相关网页或网页中的组件。如需了解详情，请访问 [Drupal 文档链接](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library)。若想找出会添加无关 CSS 的附加库，请尝试在 Chrome 开发者工具中运行[代码覆盖率](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage)测试。在 Drupal 网站中停用 CSS 聚合后，您可根据样式表网址找出导致问题的主题背景/模块。请留意列表中哪些主题背景/模块有大量样式表的代码覆盖率偏红。主题背景/模块应该只将网页中确实用到的样式表加入队列。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | unused-javascript": {
-    "message": "Consider removing unused JavaScript assets and only attach the needed Drupal libraries to the relevant page or component in a page. See the [Drupal documentation link](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library) for details. To identify attached libraries that are adding extraneous JavaScript, try running [code coverage](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) in Chrome DevTools. You can identify the theme/module responsible from the URL of the script when JavaScript aggregation is disabled in your Drupal site. Look out for themes/modules that have many scripts in the list which have a lot of red in code coverage. A theme/module should only enqueue a script if it is actually used on the page."
+    "message": "建议您移除未使用的 JavaScipt 资源，仅将所需的 Drupal 库附加到相关网页或网页中的组件。如需了解详情，请访问 [Drupal 文档链接](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library)。若要找出会添加无关 JavaScript 的附加库，请尝试在 Chrome 开发者工具中运行[代码覆盖率](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage)测试。在 Drupal 网站中停用 JavaScript 聚合后，您可根据脚本网址找出导致问题的主题背景/模块。请留意列表中哪些主题背景/模块有大量脚本的代码覆盖率偏红。主题背景/模块应该只将网页中确实用到的脚本加入队列。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-long-cache-ttl": {
     "message": "在“管理 » 配置 » 开发”页面中设置“浏览器和代理缓存最长时限”。了解 [Drupal 缓存和性能优化](https://www.drupal.org/docs/7/managing-site-performance-and-scalability/caching-to-improve-performance/caching-overview#s-drupal-performance-resources)。"
@@ -2001,13 +2061,13 @@
     "message": "确保您使用的是 Drupal 提供的原生[自适应图片样式](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8)（在 Drupal 8 及更高版本中提供）。通过视图模式、视图或借助 WYSIWYG 编辑器上传的图片呈现图片字段时，请使用自适应图片样式。"
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Consider installing and configuring [a module to leverage WebP image formats](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) in your site. Such modules automatically generate a WebP version of your uploaded images to optimize loading times."
+    "message": "建议您安装并配置[一个模块，以便在您的网站中利用 WebP 图片格式](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search)。此类模块会自动为您上传的图片生成 WebP 版本，以缩短加载用时。"
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "建议您将 GIF 上传到可让其作为 HTML5 视频嵌入的服务。"
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
-    "message": "Install a [lazy-load Joomla plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) that provides the ability to defer any offscreen images, or switch to a template that provides that functionality. Starting with Joomla 4.0, a dedicated lazy-loading plugin can be enabled by using the \"Content - Lazy Loading Images\" plugin. Also consider using [an AMP plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=amp)."
+    "message": "安装能够延迟加载所有屏幕外图片的[延迟加载 Joomla 插件](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading)，或者改用可提供该功能的模板。从 Joomla 4.0 开始，所有新图片都会[自动](https://github.com/joomla/joomla-cms/pull/30748)从核心获取 `loading` 属性。"
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | render-blocking-resources": {
     "message": "有很多 Joomla 插件可帮助您[内嵌重要资源](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance)或[推迟加载不太重要的资源](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance)。请注意，这些插件执行的优化可能会导致您的模板或插件功能无法正常运行，因此您需要全面测试这些插件。"
@@ -2081,8 +2141,50 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
     "message": "您不妨在 [Magento Marketplace](https://marketplace.magento.com/catalogsearch/result/?q=webp) 中搜索各种第三方扩展程序，以利用更新的图片格式。"
   },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
+    "message": "[将 GIF 动画替换为视频](https://web.dev/replace-gifs-with-videos/)以提高网页加载速度，并考虑使用现代文件格式（例如 [WebM](https://web.dev/replace-gifs-with-videos/#create-webm-videos) 或 [AV1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder)），通过目前最先进的 VP9 视频编解码器将压缩效率提高 30% 以上。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
+    "message": "建议您安装能延迟加载所有屏幕外图片的[图片延迟加载插件](https://octobercms.com/plugins?search=lazy)，或者改用可提供该功能的主题。另外，建议您使用 [AMP 插件](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages)。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
+    "message": "有很多插件可帮助您[内嵌重要资源](https://octobercms.com/plugins?search=css)。这些插件可能会导致其他插件无法正常运行，因此您需要全面测试。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+    "message": "主题、插件和服务器规范都会影响服务器响应用时。建议您查找更优化的主题、仔细选择优化插件并/或升级服务器。借助 October CMS，开发者还可以使用[`Queues`](https://octobercms.com/docs/services/queues)推迟耗时任务（例如发送电子邮件）的处理时间。这可以大大加快 Web 请求的处理速度。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
+    "message": "建议您在博文列表中显示摘录（例如，使用“`show more`”按钮）、减少给定网页上显示的博文的数量、将长博文拆分成多个网页，或者使用插件延迟加载评论。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-css": {
+    "message": "有很多[插件](https://octobercms.com/plugins?search=css)可通过串联、缩减和压缩样式来加快网站的加载速度。使用构建流程预先执行此缩减操作可加快开发速度。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-javascript": {
+    "message": "有很多[插件](https://octobercms.com/plugins?search=javascript)可通过串联、缩减和压缩脚本来加快网站的加载速度。使用构建流程预先执行此缩减操作可加快开发速度。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-css-rules": {
+    "message": "建议您检查会在网站上加载未使用的 CSS 的[插件](https://octobercms.com/plugins)。若想找出会添加不必要 CSS 的插件，请在 Chrome Devtools 中运行[代码覆盖率](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage)测试。根据样式表网址找出引发问题的主题/插件。检查哪些插件有大量样式表的代码覆盖率偏红。插件应该只添加网页中确实用到的样式表。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-javascript": {
+    "message": "建议您检查会在网页中加载未使用的 JavaScript 的[插件](https://octobercms.com/plugins?search=javascript)。若想找出会添加不必要 JavaScript 的插件，请在 Chrome DevTools 中运行[代码覆盖率](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage)测试。根据脚本网址找出引发问题的主题/插件。检查哪些插件有大量脚本的代码覆盖率偏红。插件应该只添加网页中确实用到的脚本。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-long-cache-ttl": {
+    "message": "了解如何[使用 HTTP 缓存避免不必要的网络请求](https://web.dev/http-cache/#caching-checklist)。有很多[插件](https://octobercms.com/plugins?search=Caching)可用于加快缓存速度。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-optimized-images": {
+    "message": "建议您使用[图片优化插件](https://octobercms.com/plugins?search=image)，以在不影响图片质量的前提下压缩图片。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-responsive-images": {
+    "message": "直接在媒体管理器中上传图片，以确保能按照所要求的尺寸提供图片。建议您使用[大小调整过滤器](https://octobercms.com/docs/markup/filter-resize)或[图片大小调整插件](https://octobercms.com/plugins?search=image)来确保采用最佳的图片大小。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
+    "message": "在网络服务器配置中启用文本压缩。"
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
+    "message": "建议您使用可自动将所上传的图片转换为最佳格式的[插件](https://octobercms.com/plugins?search=image)或服务。[WebP 无损图片](https://developers.google.com/speed/webp)比 PNG 图片小 26%，比采用等效 SSIM 质量指标的同等 JPEG 图片小 25-34%。还可以考虑使用 [AVIF](https://jakearchibald.com/2020/avif-has-landed/) 这种新一代图片格式。"
+  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
-    "message": "Consider using a “windowing” library like `react-window` to minimize the number of DOM nodes created if you are rendering many repeated elements on the page. [Learn more](https://web.dev/virtualize-long-lists-react-window/). Also, minimize unnecessary re-renders using [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent), or [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) and [skip effects](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) only until certain dependencies have changed if you are using the `Effect` hook to improve runtime performance."
+    "message": "如果您要在页面上呈现很多重复元素，不妨使用“窗口类”库（如 `react-window`）尽量减少所创建的 DOM 节点的数量。[了解详情](https://web.dev/virtualize-long-lists-react-window/)。此外，如果您使用 `Effect` 钩子提高运行时性能，则应该仅在某些依赖项发生更改之前使用 [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action)、[`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) 或 [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) 及[跳过效果](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects)，以尽量减少不必要的重复呈现。"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "如果您使用了 React Router，请尽量避免使用 `<Redirect>` 组件进行[路径导航](https://reacttraining.com/react-router/web/api/Redirect)。"
@@ -2091,10 +2193,10 @@
     "message": "如果您在服务器端呈现任何 React 组件，不妨使用 `renderToNodeStream()` 或 `renderToStaticNodeStream()` 来允许客户端接收并合成标记的各个不同部分，而不是一次性接收整个标记。[了解详情](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)。"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
-    "message": "If your build system minifies CSS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "如果您的构建系统可自动压缩 CSS 文件大小，请确保您部署的是正式版应用。您可以通过 React Developer Tools 扩展程序执行此项检查。[了解详情](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)。"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-javascript": {
-    "message": "If your build system minifies JS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "如果您的构建系统可自动压缩 JS 文件大小，请确保您部署的是正式版应用。您可以通过 React Developer Tools 扩展程序执行此项检查。[了解详情](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)。"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unused-javascript": {
     "message": "如果您不使用服务器端呈现，请使用 `React.lazy()` [拆分 JavaScript 软件包](https://web.dev/code-splitting-suspense/)。否则，请使用第三方库（如 [loadable-components](https://www.smooth-code.com/open-source/loadable-components/docs/getting-started/)）拆分代码。"

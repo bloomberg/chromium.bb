@@ -210,7 +210,7 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   WriteSimple(flags.color_);
   Write(flags.width_);
   Write(flags.miter_limit_);
-  WriteSimple(flags.blend_mode_);
+  Write(flags.blend_mode_);
   WriteSimple(flags.bitfields_uint_);
 
   WriteFlattenable(flags.path_effect_.get());
@@ -352,6 +352,17 @@ void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   }
 }
 
+void PaintOpWriter::Write(const SkSamplingOptions& sampling) {
+  Write(sampling.useCubic);
+  if (sampling.useCubic) {
+    Write(sampling.cubic.B);
+    Write(sampling.cubic.C);
+  } else {
+    Write(sampling.filter);
+    Write(sampling.mipmap);
+  }
+}
+
 void PaintOpWriter::Write(const SkColorSpace* color_space) {
   if (!color_space) {
     WriteSize(static_cast<size_t>(0));
@@ -449,6 +460,10 @@ void PaintOpWriter::Write(SkMatrix matrix) {
   WriteSimple(matrix);
 }
 
+void PaintOpWriter::Write(const SkM44& matrix) {
+  WriteSimple(matrix);
+}
+
 void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   sk_sp<PaintShader> transformed_shader;
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
@@ -476,10 +491,8 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->flags_);
   WriteSimple(shader->end_radius_);
   WriteSimple(shader->start_radius_);
-  // SkTileMode does not have an explicitly defined backing type, so
-  // write a consistently sized value.
-  Write(static_cast<int32_t>(shader->tx_));
-  Write(static_cast<int32_t>(shader->ty_));
+  Write(shader->tx_);
+  Write(shader->ty_);
   WriteSimple(shader->fallback_color_);
   WriteSimple(shader->scaling_behavior_);
   if (shader->local_matrix_) {
@@ -534,12 +547,16 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   // using other fields.
 }
 
-void PaintOpWriter::Write(SkColorType color_type) {
-  WriteSimple(static_cast<uint32_t>(color_type));
-}
-
 void PaintOpWriter::Write(SkYUVColorSpace yuv_color_space) {
   WriteSimple(static_cast<uint32_t>(yuv_color_space));
+}
+
+void PaintOpWriter::Write(SkYUVAInfo::PlaneConfig plane_config) {
+  WriteSimple(static_cast<uint32_t>(plane_config));
+}
+
+void PaintOpWriter::Write(SkYUVAInfo::Subsampling subsampling) {
+  WriteSimple(static_cast<uint32_t>(subsampling));
 }
 
 void PaintOpWriter::WriteData(size_t bytes, const void* input) {
@@ -575,15 +592,14 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
 
 void PaintOpWriter::Write(const PaintFilter* filter) {
   if (!filter) {
-    WriteSimple(static_cast<uint32_t>(PaintFilter::Type::kNullFilter));
+    WriteEnum(PaintFilter::Type::kNullFilter);
     return;
   }
-  WriteSimple(static_cast<uint32_t>(filter->type()));
+  WriteEnum(filter->type());
   auto* crop_rect = filter->crop_rect();
   WriteSimple(static_cast<uint32_t>(!!crop_rect));
   if (crop_rect) {
-    WriteSimple(crop_rect->flags());
-    WriteSimple(crop_rect->rect());
+    WriteSimple(*crop_rect);
   }
 
   if (!valid_)
@@ -671,7 +687,7 @@ void PaintOpWriter::Write(const ColorFilterPaintFilter& filter) {
 void PaintOpWriter::Write(const BlurPaintFilter& filter) {
   WriteSimple(filter.sigma_x());
   WriteSimple(filter.sigma_y());
-  WriteSimple(filter.tile_mode());
+  Write(filter.tile_mode());
   Write(filter.input().get());
 }
 
@@ -681,7 +697,7 @@ void PaintOpWriter::Write(const DropShadowPaintFilter& filter) {
   WriteSimple(filter.sigma_x());
   WriteSimple(filter.sigma_y());
   WriteSimple(filter.color());
-  WriteSimple(filter.shadow_mode());
+  WriteEnum(filter.shadow_mode());
   Write(filter.input().get());
 }
 
@@ -704,7 +720,7 @@ void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const XfermodePaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.blend_mode()));
+  Write(filter.blend_mode());
   Write(filter.background().get());
   Write(filter.foreground().get());
 }
@@ -728,14 +744,14 @@ void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
   WriteSimple(filter.gain());
   WriteSimple(filter.bias());
   WriteSimple(filter.kernel_offset());
-  WriteSimple(static_cast<uint32_t>(filter.tile_mode()));
+  Write(filter.tile_mode());
   WriteSimple(filter.convolve_alpha());
   Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.channel_x()));
-  WriteSimple(static_cast<uint32_t>(filter.channel_y()));
+  WriteEnum(filter.channel_x());
+  WriteEnum(filter.channel_y());
   WriteSimple(filter.scale());
   Write(filter.displacement().get());
   Write(filter.color().get());
@@ -783,7 +799,7 @@ void PaintOpWriter::Write(const MergePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const MorphologyPaintFilter& filter) {
-  WriteSimple(filter.morph_type());
+  WriteEnum(filter.morph_type());
   WriteSimple(filter.radius_x());
   WriteSimple(filter.radius_y());
   Write(filter.input().get());
@@ -802,7 +818,7 @@ void PaintOpWriter::Write(const TilePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
-  WriteSimple(filter.turbulence_type());
+  WriteEnum(filter.turbulence_type());
   WriteSimple(filter.base_frequency_x());
   WriteSimple(filter.base_frequency_y());
   WriteSimple(filter.num_octaves());
@@ -816,12 +832,12 @@ void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
 
 void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
   Write(filter.matrix());
-  WriteSimple(filter.filter_quality());
+  Write(filter.filter_quality());
   Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.direction());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
@@ -831,7 +847,7 @@ void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
@@ -841,7 +857,7 @@ void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.target());
   WriteSimple(filter.specular_exponent());

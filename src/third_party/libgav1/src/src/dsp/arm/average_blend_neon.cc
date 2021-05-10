@@ -46,19 +46,24 @@ inline uint8x8_t AverageBlend8Row(const int16_t* prediction_0,
 inline void AverageBlendLargeRow(const int16_t* prediction_0,
                                  const int16_t* prediction_1, const int width,
                                  uint8_t* dest) {
-  int x = 0;
+  int x = width;
   do {
-    const int16x8_t pred_00 = vld1q_s16(&prediction_0[x]);
-    const int16x8_t pred_01 = vld1q_s16(&prediction_1[x]);
+    const int16x8_t pred_00 = vld1q_s16(prediction_0);
+    const int16x8_t pred_01 = vld1q_s16(prediction_1);
+    prediction_0 += 8;
+    prediction_1 += 8;
     const int16x8_t res0 = vaddq_s16(pred_00, pred_01);
     const uint8x8_t res_out0 = vqrshrun_n_s16(res0, kInterPostRoundBit + 1);
-    const int16x8_t pred_10 = vld1q_s16(&prediction_0[x + 8]);
-    const int16x8_t pred_11 = vld1q_s16(&prediction_1[x + 8]);
+    const int16x8_t pred_10 = vld1q_s16(prediction_0);
+    const int16x8_t pred_11 = vld1q_s16(prediction_1);
+    prediction_0 += 8;
+    prediction_1 += 8;
     const int16x8_t res1 = vaddq_s16(pred_10, pred_11);
     const uint8x8_t res_out1 = vqrshrun_n_s16(res1, kInterPostRoundBit + 1);
-    vst1q_u8(dest + x, vcombine_u8(res_out0, res_out1));
-    x += 16;
-  } while (x < width);
+    vst1q_u8(dest, vcombine_u8(res_out0, res_out1));
+    dest += 16;
+    x -= 16;
+  } while (x != 0);
 }
 
 void AverageBlend_NEON(const void* prediction_0, const void* prediction_1,
@@ -129,7 +134,7 @@ void AverageBlendInit_NEON() { Init8bpp(); }
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 
 namespace libgav1 {
 namespace dsp {

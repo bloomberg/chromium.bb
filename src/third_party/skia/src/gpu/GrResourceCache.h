@@ -58,7 +58,7 @@ static inline bool SkShouldPostMessageToBus(
  */
 class GrResourceCache {
 public:
-    GrResourceCache(const GrCaps*, GrSingleOwner* owner, uint32_t contextUniqueID);
+    GrResourceCache(GrSingleOwner* owner, uint32_t contextUniqueID);
     ~GrResourceCache();
 
     // Default maximum number of bytes of gpu memory of budgeted resources in the cache.
@@ -249,7 +249,7 @@ private:
     ////
     void insertResource(GrGpuResource*);
     void removeResource(GrGpuResource*);
-    void notifyRefCntReachedZero(GrGpuResource*);
+    void notifyARefCntReachedZero(GrGpuResource*, GrGpuResource::LastRemovedRef);
     void changeUniqueKey(GrGpuResource*, const GrUniqueKey&);
     void removeUniqueKey(GrGpuResource*);
     void willRemoveScratchKey(const GrGpuResource*);
@@ -371,8 +371,6 @@ private:
     // This resource is allowed to be in the nonpurgeable array for the sake of validate() because
     // we're in the midst of converting it to purgeable status.
     SkDEBUGCODE(GrGpuResource*          fNewlyPurgeableResourceForValidation = nullptr;)
-
-    bool                                fPreferVRAMUseOverFlushes = false;
 };
 
 class GrResourceCache::ResourceAccess {
@@ -408,10 +406,12 @@ private:
         kRefCntReachedZero_RefNotificationFlag  = 0x2,
     };
     /**
-     * Called by GrGpuResources when they detect that their ref cnt has reached zero.
+     * Called by GrGpuResources when they detect one of their ref cnts have reached zero. This may
+     * either be the main ref or the command buffer usage ref.
      */
-    void notifyRefCntReachedZero(GrGpuResource* resource) {
-        fCache->notifyRefCntReachedZero(resource);
+    void notifyARefCntReachedZero(GrGpuResource* resource,
+                                  GrGpuResource::LastRemovedRef removedRef) {
+        fCache->notifyARefCntReachedZero(resource, removedRef);
     }
 
     /**

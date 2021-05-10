@@ -1,6 +1,6 @@
 Name: libjpeg-turbo
 URL: https://github.com/libjpeg-turbo/libjpeg-turbo/
-Version: 2.0.5
+Version: 2.0.90 (2.1 Beta 1)
 License: Custom license
 License File: LICENSE.md
 Security Critical: yes
@@ -8,19 +8,26 @@ License Android Compatible: yes
 
 Description:
 This consists of the components:
-* libjpeg-turbo 2.0.5
+* libjpeg-turbo 2.0.90 (2.1 Beta 1)
 * This file (README.chromium)
 * A build file (BUILD.gn)
 * An OWNERS file
 * A codereview.settings file
 * Patched header files used by Chromium
-* Cherry picked a fix from upstream master to enable AArch64 Windows builds:
-  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/6ee5d5f568fda1a7c6a49dd8995f2d89866ee42d
+* Additional patches cherry-picked from upstream master to fix various bugs:
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/ccaba5d7894ecfb5a8f11e48d3f86e1f14d5a469
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/c7ca521bc85b57d41d3ad4963c13fc0100481084
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/110d8d6dcafaed517e8f77a6253169535ee3a20e
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/d2c407995992be1f128704ae2479adfd7906c158
+  https://github.com/libjpeg-turbo/libjpeg-turbo/commit/74e6ea45e3547ae85cd43efcdfc24a6907a2154e
 * Deleted unused directories: ci, cmakescripts, doc, java, release, sharedlib,
   simd/loongson, simd/mips, simd/powerpc, and win
 * Deleted unused files: appveyor.yml, CMakeLists.txt, doxygen.config,
-  doxygen-extra.css, .gitattributes, tjexample.c, tjexampletest.java.in,
-  .travis.yml
+  doxygen-extra.css, .gitattributes, tjexample.c, tjexampletest.in,
+  tjexampletest.java.in, .travis.yml
+* Deleted legacy Arm Neon assembly files (supporting old compiler versions that
+  do not generate performant code from intrinsics):
+  simd/arm/aarch32/jsimd_neon.S, simd/arm/aarch64/jsimd_neon.S.
 
 This libjpeg-turbo can replace our libjpeg-6b without any modifications in the
 Chromium code.
@@ -35,10 +42,11 @@ following changes which are not merged to upstream:
   decoder fallback to slow decoding if the Huffman decoding bit sentinel > 16,
   this to match the exact behavior of jpeg_huff_decode().
   http://crbug.com/398235
-  The patch in the above bug removed "& 0xFF". It has been restored from upstream
+  The patch in the above bug removed "& 0xFF". It has been restored from
+  upstream:
   https://github.com/libjpeg-turbo/libjpeg-turbo/commit/fa1d18385d904d530b4aec83ab7757a33397de6e
-* Configuration files jconfig.h and jconfigint.h were generated and then altered
-  manually to be compatible on all of Chromium's platforms.
+* Configuration files jconfig.h, jconfigint.h and neon-compat.h were generated
+  and then altered manually to be compatible on all of Chromium's platforms.
   http://crbug.com/608347
 * Fix static const data duplication of jpeg_nbits_table. A unique copy
   was in the jchuff.obj and jcphuff.obj resulting in an added 65k in
@@ -51,53 +59,21 @@ following changes which are not merged to upstream:
   lld) arising from attempts to reference the table from assembler on
   32-bit x86. This only affects shared libraries, but that's important
   for downstream Android builds.
-* Arm NEON patches to improve performance and maintainability. These changes
-  are tracked by the following Chromium issue: https://crbug.com/922430
-  - Add memory alignment size check in jmemmgr.c
-  - Add 32-byte memory alignment check for Arm NEON
-  - Add Arm NEON implementation of h2v2_fancy_upsample
-  - Add SIMD function stubs for h1v2_fancy_upsample
-  - Add Arm NEON implementation of h1v2_fancy_upsample
-  - Add Arm NEON implementation of h2v1_fancy_upsample
-  - Add extra guard for loop unroll pragma on AArch64
-  - Add Arm NEON implementation of h2v1_upsample
-  - Add Arm NEON implementation of h2v2_upsample
-  - Implement YCbCr->RGB using Arm NEON intrinsics
-  - Implement YCbCr->RGB565 using Arm NEON intrinsics
-  - Add Arm NEON implementation of h2v1_merged_upsample
-  - Add Arm NEON implementation of h2v2_merged_upsample
-  - Implement 2x2 IDCT using Arm NEON intrinsics
-  - Implement 4x4 IDCT using Arm NEON intrinsics
-  - Implement slow IDCT using Arm NEON intrinsics
-  - Precompute DCT block output pointers in IDCT functions
-  - Implement fast IDCT using Arm NEON intrinsics
-  - Add Arm NEON implementation of h2v1_downsample
-  - Add Arm NEON implementation of h2v2_downsample
-  - Implement RGB->YCbCr using Arm NEON intrinsics
-  - Add Arm NEON implementation of RGB->Grayscale
-  - Add compiler-independent alignment macro
-  - Implement sample conversion using Arm NEON intrinsics
-  - Implement quantization using Arm NEON intrinsics
-  - Implement fast DCT using Arm NEON intrinsics
-  - Implement accurate DCT using Arm NEON intrinsics
-* Patches to enable running the upstream unit tests through gtest.
+* Patches to enable running the upstream unit tests through GTest.
   The upstream unit tests are defined here under the section 'TESTS':
   https://github.com/libjpeg-turbo/libjpeg-turbo/blob/master/CMakeLists.txt
   These changes are tracked by Chromium issue: https://crbug.com/993876
   - Refactor tjunittest.c to provide test interface
-  - Add gtest wrapper for tjunittests
   - Move tjunittest logs from stdout to stderr
   - Refactor tjbench.c to provide test interface
-  - Add gtest wrapper for tjbench tests
   - Move tbench logs from stdout to stderr
   - Write tjunittest output files to sdcard on Android
   - Refactor cjpeg.c to provide test interface
-  - Add gtest wrapper for cjpeg tests
   - Refactor jpegtran.c to provide test interface
   - Add input JPEG images for djpeg and jpegtran tests
-  - Add gtest wrapper for jpegtran tests
   - Refactor djpeg.c to provide test interface
-  - Add gtest wrapper for djpeg tests
+  A new gtest directory contains GTest wrappers (and associated utilities) for
+  each of tjunittest, tjbench, cjpeg, djpeg and jpegtran.
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from

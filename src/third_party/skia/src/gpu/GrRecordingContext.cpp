@@ -17,8 +17,8 @@
 #include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/text/GrTextBlobCache.h"
@@ -39,6 +39,7 @@ GrRecordingContext::ProgramData::~ProgramData() = default;
 GrRecordingContext::GrRecordingContext(sk_sp<GrContextThreadSafeProxy> proxy)
         : INHERITED(std::move(proxy))
         , fAuditTrail(new GrAuditTrail()) {
+    fProxyProvider = std::make_unique<GrProxyProvider>(this);
 }
 
 GrRecordingContext::~GrRecordingContext() = default;

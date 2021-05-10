@@ -18,6 +18,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -37,7 +38,7 @@
 #include "extensions/common/manifest.h"
 #include "net/base/backoff_entry.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
@@ -229,9 +230,8 @@ void ChromeRuntimeAPIDelegate::ReloadExtension(
   }
 }
 
-bool ChromeRuntimeAPIDelegate::CheckForUpdates(
-    const std::string& extension_id,
-    const UpdateCheckCallback& callback) {
+bool ChromeRuntimeAPIDelegate::CheckForUpdates(const std::string& extension_id,
+                                               UpdateCheckCallback callback) {
   ExtensionSystem* system = ExtensionSystem::Get(browser_context_);
   extensions::ExtensionService* service = system->extension_service();
   ExtensionUpdater* updater = service->updater();
@@ -245,15 +245,17 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
   // return a status of throttled.
   if (info.backoff->ShouldRejectRequest() || info.callbacks.size() >= 10) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, UpdateCheckResult(
-                                                true, kUpdateThrottled, "")));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       UpdateCheckResult(true, kUpdateThrottled, "")));
   } else {
-    info.callbacks.push_back(callback);
+    info.callbacks.push_back(std::move(callback));
 
     extensions::ExtensionUpdater::CheckParams params;
     params.ids = {extension_id};
-    params.callback = base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
-                                 base::Unretained(this), extension_id);
+    params.callback =
+        base::BindOnce(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
+                       base::Unretained(this), extension_id);
     updater->CheckNow(std::move(params));
   }
   return true;
@@ -332,7 +334,7 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 }
 
 bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
     chromeos::PowerManagerClient::Get()->RequestRestart(
         power_manager::REQUEST_RESTART_OTHER, "chrome.runtime API");
@@ -408,7 +410,7 @@ void ChromeRuntimeAPIDelegate::CallUpdateCallbacks(
     return;
   std::vector<UpdateCheckCallback> callbacks;
   it->second.callbacks.swap(callbacks);
-  for (const auto& callback : callbacks) {
-    callback.Run(result);
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(result);
   }
 }

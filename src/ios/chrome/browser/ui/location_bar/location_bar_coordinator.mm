@@ -7,16 +7,18 @@
 #import <CoreLocation/CoreLocation.h>
 
 #include "base/memory/ptr_util.h"
+#import "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
@@ -37,7 +39,10 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_steady_view_consumer.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_steady_view_mediator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -69,6 +74,7 @@
                                       LocationBarDelegate,
                                       LocationBarViewControllerDelegate,
                                       LocationBarConsumer,
+                                      LocationBarSteadyViewConsumer,
                                       URLDragDataSource> {
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
@@ -88,6 +94,7 @@
 // Coordinator for the omnibox.
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
+@property(nonatomic, strong) LocationBarSteadyViewMediator* steadyViewMediator;
 @property(nonatomic, strong) LocationBarViewController* viewController;
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
 @property(nonatomic, readonly) WebStateList* webStateList;
@@ -188,38 +195,36 @@
       static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
           self.browser->GetCommandDispatcher());
   buttonFactory.delegate = self.badgeMediator;
-  FullscreenController* fullscreenController;
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
-    fullscreenController = FullscreenController::FromBrowser(self.browser);
-  } else {
-    fullscreenController =
-        FullscreenController::FromBrowserState(self.browserState);
-  }
+  FullscreenController* fullscreenController =
+      FullscreenController::FromBrowser(self.browser);
   _badgeFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
       fullscreenController, self.badgeViewController);
 
-  self.mediator = [[LocationBarMediator alloc]
-      initWithLocationBarModel:[self locationBarModel]];
-  self.mediator.webStateList = self.webStateList;
-  self.mediator.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
-      self.browser, OverlayModality::kWebContentArea);
+  self.mediator = [[LocationBarMediator alloc] init];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self;
+  self.mediator.webStateList = self.webStateList;
+
+  self.steadyViewMediator = [[LocationBarSteadyViewMediator alloc]
+      initWithLocationBarModel:[self locationBarModel]];
+  self.steadyViewMediator.webStateList = self.browser->GetWebStateList();
+  self.steadyViewMediator.webContentAreaOverlayPresenter =
+      OverlayPresenter::FromBrowser(self.browser,
+                                    OverlayModality::kWebContentArea);
+  self.steadyViewMediator.consumer = self;
 
   _omniboxFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
       fullscreenController, self.viewController);
 
   self.started = YES;
 
-  if (DragAndDropIsEnabled()) {
     self.dragDropHandler = [[URLDragDropHandler alloc] init];
     self.dragDropHandler.origin = WindowActivityLocationBarSteadyViewOrigin;
     self.dragDropHandler.dragDataSource = self;
     [self.viewController.view
         addInteraction:[[UIDragInteraction alloc]
                            initWithDelegate:self.dragDropHandler]];
-  }
 }
 
 - (void)stop {
@@ -236,6 +241,8 @@
   self.viewController = nil;
   [self.mediator disconnect];
   self.mediator = nil;
+  [self.steadyViewMediator disconnect];
+  self.steadyViewMediator = nil;
 
   _badgeFullscreenUIUpdater = nullptr;
   _omniboxFullscreenUIUpdater = nullptr;
@@ -292,10 +299,6 @@
     LoadJavaScriptURL(url, self.browserState,
                       self.webStateList->GetActiveWebState());
   } else {
-    // When opening a URL, warn the omnibox geolocation in case it needs to stop
-    // the service.
-    [[OmniboxGeolocationController sharedInstance] locationBarDidSubmitURL];
-
     // TODO(crbug.com/785244): Is it ok to call |cancelOmniboxEdit| after
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call
     // cancel before load, then any prerendered pages get destroyed before the
@@ -330,11 +333,11 @@
     }
   }
   // Dismiss the edit menu.
-  if (@available(iOS 13, *)) {
-    [[UIMenuController sharedMenuController] hideMenu];
-  } else {
-    [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
-  }
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+  [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
+#else
+  [[UIMenuController sharedMenuController] hideMenu];
+#endif
 
   // When the NTP and fakebox are visible, make the fakebox animates into place
   // before focusing the omnibox.
@@ -365,10 +368,6 @@
   [self.delegate locationBarDidResignFirstResponder];
 }
 
-- (void)locationBarBeganEdit {
-  [self.delegate locationBarBeganEdit];
-}
-
 - (web::WebState*)webState {
   return self.webStateList->GetActiveWebState();
 }
@@ -391,16 +390,31 @@
   StoreURLInPasteboard(self.webState->GetVisibleURL());
 }
 
+- (void)recordShareButtonPressed {
+  if (!self.browserState) {
+    return;
+  }
+
+  base::UmaHistogramEnumeration("iOS.LocationBar.ShareButton.PerProfileType",
+                                GetBrowserStateType(self.browserState));
+}
+
 #pragma mark - LocationBarConsumer
+
+- (void)defocusOmnibox {
+  [self cancelOmniboxEdit];
+}
+
+- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
+  self.viewController.searchByImageEnabled = searchByImageSupported;
+}
+
+#pragma mark - LocationBarSteadyViewConsumer
 
 - (void)updateLocationText:(NSString*)text clipTail:(BOOL)clipTail {
   [self.omniboxCoordinator updateOmniboxState];
   [self.viewController updateLocationText:text clipTail:clipTail];
   [self.viewController updateForNTP:NO];
-}
-
-- (void)defocusOmnibox {
-  [self cancelOmniboxEdit];
 }
 
 - (void)updateLocationIcon:(UIImage*)icon
@@ -414,10 +428,6 @@
 
 - (void)updateLocationShareable:(BOOL)shareable {
   [self.viewController setShareButtonEnabled:shareable];
-}
-
-- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
-  self.viewController.searchByImageEnabled = searchByImageSupported;
 }
 
 #pragma mark - URLDragDataSource

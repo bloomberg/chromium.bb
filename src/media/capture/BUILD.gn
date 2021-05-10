@@ -124,9 +124,12 @@ component("capture_lib") {
     "video/video_capture_buffer_tracker_factory_impl.h",
     "video/video_capture_device_client.cc",
     "video/video_capture_device_client.h",
+    "video/video_capture_metrics.cc",
+    "video/video_capture_metrics.h",
     "video/video_capture_system.h",
     "video/video_capture_system_impl.cc",
     "video/video_capture_system_impl.h",
+    "video/video_frame_receiver.cc",
     "video/video_frame_receiver.h",
     "video/video_frame_receiver_on_task_runner.cc",
     "video/video_frame_receiver_on_task_runner.h",
@@ -188,8 +191,11 @@ component("capture_lib") {
       "video/mac/video_capture_device_factory_mac.mm",
       "video/mac/video_capture_device_mac.h",
       "video/mac/video_capture_device_mac.mm",
+      "video/mac/video_capture_metrics_mac.h",
+      "video/mac/video_capture_metrics_mac.mm",
     ]
     deps += [
+      "//components/crash/core/common:crash_key",
       "//services/video_capture/public/uma",
       "//third_party/decklink",
     ]
@@ -211,6 +217,8 @@ component("capture_lib") {
       "video/win/capability_list_win.h",
       "video/win/filter_base_win.cc",
       "video/win/filter_base_win.h",
+      "video/win/gpu_memory_buffer_tracker.cc",
+      "video/win/gpu_memory_buffer_tracker.h",
       "video/win/metrics.cc",
       "video/win/metrics.h",
       "video/win/pin_base_win.cc",
@@ -220,6 +228,8 @@ component("capture_lib") {
       "video/win/sink_filter_win.h",
       "video/win/sink_input_pin_win.cc",
       "video/win/sink_input_pin_win.h",
+      "video/win/video_capture_buffer_tracker_factory_win.cc",
+      "video/win/video_capture_buffer_tracker_factory_win.h",
       "video/win/video_capture_device_factory_win.cc",
       "video/win/video_capture_device_factory_win.h",
       "video/win/video_capture_device_mf_win.cc",
@@ -228,19 +238,15 @@ component("capture_lib") {
       "video/win/video_capture_device_utils_win.h",
       "video/win/video_capture_device_win.cc",
       "video/win/video_capture_device_win.h",
-      "video/win/video_capture_dxgi_device_manager.cc",
-      "video/win/video_capture_dxgi_device_manager.h",
     ]
     deps += [ "//media/base/win:media_foundation_util" ]
     libs = [
-      "d3d11.lib",
       "mf.lib",
       "mfplat.lib",
       "mfreadwrite.lib",
       "mfuuid.lib",
     ]
     ldflags = [
-      "/DELAYLOAD:d3d11.dll",
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
       "/DELAYLOAD:mfreadwrite.dll",
@@ -269,7 +275,7 @@ component("capture_lib") {
     ]
   }
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [
       "video/chromeos/camera_3a_controller.cc",
       "video/chromeos/camera_3a_controller.h",
@@ -287,8 +293,6 @@ component("capture_lib") {
       "video/chromeos/camera_device_delegate.h",
       "video/chromeos/camera_hal_delegate.cc",
       "video/chromeos/camera_hal_delegate.h",
-      "video/chromeos/camera_hal_dispatcher_impl.cc",
-      "video/chromeos/camera_hal_dispatcher_impl.h",
       "video/chromeos/camera_metadata_utils.cc",
       "video/chromeos/camera_metadata_utils.h",
       "video/chromeos/capture_metadata_dispatcher.h",
@@ -306,8 +310,12 @@ component("capture_lib") {
       "video/chromeos/scoped_video_capture_jpeg_decoder.h",
       "video/chromeos/stream_buffer_manager.cc",
       "video/chromeos/stream_buffer_manager.h",
+      "video/chromeos/token_manager.cc",
+      "video/chromeos/token_manager.h",
       "video/chromeos/vendor_tag_ops_delegate.cc",
       "video/chromeos/vendor_tag_ops_delegate.h",
+      "video/chromeos/video_capture_device_chromeos_delegate.cc",
+      "video/chromeos/video_capture_device_chromeos_delegate.h",
       "video/chromeos/video_capture_device_chromeos_halv3.cc",
       "video/chromeos/video_capture_device_chromeos_halv3.h",
       "video/chromeos/video_capture_device_factory_chromeos.cc",
@@ -324,14 +332,26 @@ component("capture_lib") {
     ]
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
+      "//ash/constants",
       "//build/config/linux/libdrm",
-      "//chromeos/dbus/power",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//components/chromeos_camera/common",
+      "//components/device_event_log",
       "//gpu/ipc/common:common",
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//third_party/libsync",
     ]
+  }
+
+  if (is_chromeos_ash) {
+    sources += [
+      "video/chromeos/ash/camera_hal_dispatcher_impl.cc",
+      "video/chromeos/ash/camera_hal_dispatcher_impl.h",
+      "video/chromeos/ash/power_manager_client_proxy.cc",
+      "video/chromeos/ash/power_manager_client_proxy.h",
+    ]
+
+    deps += [ "//chromeos/dbus/power" ]
   }
 
   if (is_fuchsia) {
@@ -388,7 +408,7 @@ source_set("test_support") {
     ]
   }
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [
       "video/chromeos/mock_camera_module.cc",
       "video/chromeos/mock_camera_module.h",
@@ -419,6 +439,7 @@ test("capture_unittests") {
     "video/file_video_capture_device_unittest.cc",
     "video/video_capture_device_client_unittest.cc",
     "video/video_capture_device_unittest.cc",
+    "video/video_capture_metrics_unittest.cc",
     "video_capture_types_unittest.cc",
   ]
 
@@ -447,7 +468,7 @@ test("capture_unittests") {
     ]
   }
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [ "video/linux/camera_config_chromeos_unittest.cc" ]
   }
 
@@ -485,6 +506,7 @@ test("capture_unittests") {
       "video/mac/video_capture_device_avfoundation_mac_unittest.mm",
       "video/mac/video_capture_device_factory_mac_unittest.mm",
       "video/mac/video_capture_device_mac_unittest.mm",
+      "video/mac/video_capture_metrics_mac_unittest.mm",
     ]
     frameworks = [
       "AVFoundation.framework",
@@ -492,10 +514,14 @@ test("capture_unittests") {
       "CoreVideo.framework",
       "IOSurface.framework",
     ]
+    deps += [ "//third_party/ocmock" ]
   }
 
   if (is_win) {
     sources += [
+      "video/win/d3d_capture_test_utils.cc",
+      "video/win/d3d_capture_test_utils.h",
+      "video/win/gpu_memory_buffer_tracker_unittest.cc",
       "video/win/video_capture_device_factory_win_unittest.cc",
       "video/win/video_capture_device_mf_win_unittest.cc",
     ]
@@ -518,17 +544,18 @@ test("capture_unittests") {
   }
 
   # TODO(https://crbug.com/1043007): use is_linux.
-  if (is_ash) {
+  if (is_chromeos_ash) {
     deps += [ "//media/gpu/test:local_gpu_memory_buffer_manager" ]
   }
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [
+      "video/chromeos/ash/camera_hal_dispatcher_impl_unittest.cc",
       "video/chromeos/camera_3a_controller_unittest.cc",
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
-      "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",
       "video/chromeos/request_manager_unittest.cc",
+      "video/chromeos/token_manager_unittest.cc",
     ]
     deps += [
       "//build/config/linux/libdrm",

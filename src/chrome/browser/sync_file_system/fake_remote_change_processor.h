@@ -42,19 +42,18 @@ class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
   ~FakeRemoteChangeProcessor() override;
 
   // RemoteChangeProcessor overrides.
-  void PrepareForProcessRemoteChange(
-      const storage::FileSystemURL& url,
-      const PrepareChangeCallback& callback) override;
+  void PrepareForProcessRemoteChange(const storage::FileSystemURL& url,
+                                     PrepareChangeCallback callback) override;
   void ApplyRemoteChange(const FileChange& change,
                          const base::FilePath& local_path,
                          const storage::FileSystemURL& url,
-                         const SyncStatusCallback& callback) override;
+                         SyncStatusCallback callback) override;
   void FinalizeRemoteSync(const storage::FileSystemURL& url,
                           bool clear_local_changes,
                           const base::Closure& completion_callback) override;
   void RecordFakeLocalChange(const storage::FileSystemURL& url,
                              const FileChange& change,
-                             const SyncStatusCallback& callback) override;
+                             SyncStatusCallback callback) override;
 
   void UpdateLocalFileMetadata(const storage::FileSystemURL& url,
                                const FileChange& change);

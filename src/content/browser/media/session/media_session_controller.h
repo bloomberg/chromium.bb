@@ -20,15 +20,20 @@
 namespace content {
 
 class MediaSessionImpl;
-class WebContents;
+class WebContentsImpl;
 
 // Helper class for controlling a single player's MediaSession instance.  Sends
 // browser side MediaSession commands back to a player hosted in the renderer
 // process.
+// MediaSessionController registers itself with MediaSessionImpl as the
+// MediaSessionPlayerObserver for the associated player, and for that player
+// only.  Consequently, it expects all MediaSessionPlayerObserver calls to
+// occur for that player only.
 class CONTENT_EXPORT MediaSessionController
     : public MediaSessionPlayerObserver {
  public:
-  MediaSessionController(const MediaPlayerId& id, WebContents* web_contents);
+  MediaSessionController(const MediaPlayerId& id,
+                         WebContentsImpl* web_contents);
   ~MediaSessionController() override;
 
   // Must be called when media player metadata changes.
@@ -44,7 +49,7 @@ class CONTENT_EXPORT MediaSessionController
   // the MediaSession instance in sync with renderer side behavior.
   void OnPlaybackPaused(bool reached_end_of_stream);
 
-  // MediaSessionObserver implementation.
+  // MediaSessionPlayerObserver implementation.
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnSeekForward(int player_id, base::TimeDelta seek_time) override;
@@ -58,10 +63,10 @@ class CONTENT_EXPORT MediaSessionController
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;
   bool IsPictureInPictureAvailable(int player_id) const override;
+  bool HasAudio(int player_id) const override;
   bool HasVideo(int player_id) const override;
   std::string GetAudioOutputSinkId(int player_id) const override;
   bool SupportsAudioOutputDeviceSwitching(int player_id) const override;
-
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
 
@@ -95,7 +100,7 @@ class CONTENT_EXPORT MediaSessionController
   const MediaPlayerId id_;
 
   // Outlives |this|.
-  WebContents* const web_contents_;
+  WebContentsImpl* const web_contents_;
 
   // Outlives |this|.
   MediaSessionImpl* const media_session_;

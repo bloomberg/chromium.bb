@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/cookie_helper.h"
@@ -107,22 +108,6 @@ PageSpecificContentSettings::SiteDataObserver::~SiteDataObserver() {
 
 void PageSpecificContentSettings::SiteDataObserver::WebContentsDestroyed() {
   web_contents_ = nullptr;
-}
-
-// static
-void PageSpecificContentSettings::WebContentsHandler::CreateForWebContents(
-    content::WebContents* web_contents,
-    std::unique_ptr<Delegate> delegate) {
-  DCHECK(web_contents);
-  if (PageSpecificContentSettings::WebContentsHandler::FromWebContents(
-          web_contents)) {
-    return;
-  }
-
-  web_contents->SetUserData(
-      PageSpecificContentSettings::WebContentsHandler::UserDataKey(),
-      base::WrapUnique(new PageSpecificContentSettings::WebContentsHandler(
-          web_contents, std::move(delegate))));
 }
 
 PageSpecificContentSettings::WebContentsHandler::WebContentsHandler(
@@ -333,7 +318,6 @@ PageSpecificContentSettings::PageSpecificContentSettings(
           handler_.web_contents()->GetBrowserContext(),
           delegate_->GetAdditionalFileSystemTypes(),
           delegate_->GetIsDeletionDisabledCallback()),
-      load_plugins_link_enabled_(true),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   observation_.Observe(map_);
 }
@@ -470,7 +454,6 @@ bool PageSpecificContentSettings::IsContentBlocked(
 
   if (content_type == ContentSettingsType::IMAGES ||
       content_type == ContentSettingsType::JAVASCRIPT ||
-      content_type == ContentSettingsType::PLUGINS ||
       content_type == ContentSettingsType::COOKIES ||
       content_type == ContentSettingsType::POPUPS ||
       content_type == ContentSettingsType::MIXEDSCRIPT ||
@@ -713,7 +696,7 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
   handler_.NotifySiteDataObservers();
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 void PageSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
@@ -787,10 +770,6 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
   }
 }
 
-void PageSpecificContentSettings::FlashDownloadBlocked() {
-  OnContentBlocked(ContentSettingsType::PLUGINS);
-}
-
 void PageSpecificContentSettings::ClearPopupsBlocked() {
   ContentSettingsStatus& status =
       content_settings_status_[ContentSettingsType::POPUPS];
@@ -854,7 +833,6 @@ void PageSpecificContentSettings::OnContentSettingChanged(
     }
     case ContentSettingsType::IMAGES:
     case ContentSettingsType::JAVASCRIPT:
-    case ContentSettingsType::PLUGINS:
     case ContentSettingsType::COOKIES:
     case ContentSettingsType::POPUPS:
     case ContentSettingsType::MIXEDSCRIPT:

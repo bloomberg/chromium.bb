@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/render_view_messages.h"
+#include "android_webview/common/mojom/frame.mojom.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_content_settings_client.h"
 #include "android_webview/renderer/aw_key_systems.h"
@@ -34,7 +34,9 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -137,10 +139,12 @@ bool AwContentRendererClient::HandleNavigation(
   base::string16 url = request.Url().GetString().Utf16();
   bool has_user_gesture = request.HasUserGesture();
 
-  int render_frame_id = render_frame->GetRoutingID();
-  RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
-      render_frame_id, url, has_user_gesture, is_redirect, is_main_frame,
-      &ignore_navigation));
+  mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote;
+  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+      &frame_host_remote);
+  frame_host_remote->ShouldOverrideUrlLoading(
+      url, has_user_gesture, is_redirect, is_main_frame, &ignore_navigation);
+
   return ignore_navigation;
 }
 
@@ -160,8 +164,8 @@ void AwContentRendererClient::RenderFrameCreated(
   if (parent_frame && parent_frame != render_frame) {
     // Avoid any race conditions from having the browser's UI thread tell the IO
     // thread that a subframe was created.
-    RenderThread::Get()->Send(new AwViewHostMsg_SubFrameCreated(
-        parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
+    GetRenderMessageFilter()->SubFrameCreated(parent_frame->GetRoutingID(),
+                                              render_frame->GetRoutingID());
   }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -174,7 +178,7 @@ void AwContentRendererClient::RenderFrameCreated(
 
 void AwContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-  AwRenderViewExt::RenderViewCreated(render_view);
+  AwRenderViewExt::WebViewCreated(render_view->GetWebView());
 }
 
 void AwContentRendererClient::PrepareErrorPage(
@@ -201,15 +205,7 @@ void AwContentRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
   js_injection::JsCommunication* communication =
       js_injection::JsCommunication::Get(render_frame);
-  // We will get RunScriptsAtDocumentStart() event even before we received
-  // RenderFrameCreated() for that |render_frame|. This is because Blink code
-  // does initialization work on the main frame, which is not related to any
-  // real navigation. If the communication is nullptr, it means we haven't
-  // received RenderFrameCreated() yet, we simply ignore this event for
-  // JsCommunication since that is not the right time to run the script and
-  // the script may not reach renderer from browser yet.
-  if (communication)
-    communication->RunScriptsAtDocumentStart();
+  communication->RunScriptsAtDocumentStart();
 }
 
 void AwContentRendererClient::AddSupportedKeySystems(
@@ -238,6 +234,14 @@ void AwContentRendererClient::GetInterface(
   // and SafeBrowsing, instead of |content_browser|.
   RenderThread::Get()->BindHostReceiver(
       mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
+}
+
+mojom::RenderMessageFilter* AwContentRendererClient::GetRenderMessageFilter() {
+  if (!render_message_filter_) {
+    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &render_message_filter_);
+  }
+  return render_message_filter_.get();
 }
 
 }  // namespace android_webview

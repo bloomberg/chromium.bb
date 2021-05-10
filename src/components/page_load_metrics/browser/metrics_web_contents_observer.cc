@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
+#include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -135,6 +136,9 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
 }
 
 void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
+  if (auto* memory_tracker = GetMemoryTracker())
+    memory_tracker->OnFrameDeleted(rfh, this);
+
   if (committed_load_)
     committed_load_->FrameDeleted(rfh);
 }
@@ -187,7 +191,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
   if (embedder_interface_->IsPrerender(web_contents))
     in_foreground_ = false;
 
-  RegisterInputEventObserver(web_contents->GetRenderViewHost());
+  RegisterInputEventObserver(web_contents->GetMainFrame()->GetRenderViewHost());
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
@@ -559,6 +563,13 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
           ->SetUpSharedMemoryForSmoothness(render_frame_host,
                                            std::move(ukm_smoothness_data_));
     }
+  }
+
+  // Clear memory update queue, sending each queued update now that we have
+  // a `committed_load_`.
+  while (!queued_memory_updates_.empty()) {
+    committed_load_->OnV8MemoryChanged(queued_memory_updates_.front());
+    queued_memory_updates_.pop();
   }
 }
 
@@ -976,9 +987,30 @@ MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
 }
 
 void MetricsWebContentsObserver::BroadcastEventToObservers(
-    const void* const event_key) {
+    PageLoadMetricsEvent event) {
   if (committed_load_)
-    committed_load_->BroadcastEventToObservers(event_key);
+    committed_load_->BroadcastEventToObservers(event);
+}
+
+void MetricsWebContentsObserver::OnV8MemoryChanged(
+    const std::vector<MemoryUpdate>& memory_updates) {
+  if (committed_load_) {
+    committed_load_->OnV8MemoryChanged(memory_updates);
+  } else {
+    // If the load hasn't committed yet, then memory updates can't be sent
+    // at this time, but will still need to be sent later. Queue the updates
+    // in case `committed_load_` is null due to the navigation having not yet
+    // completed, in which case the queued updates will be sent when
+    // HandleCommittedNavigationForTrackedLoad is called.  Otherwise, they will
+    // be ignored and destructed when the MWCO is destructed.
+    queued_memory_updates_.push(memory_updates);
+  }
+}
+
+PageLoadMetricsMemoryTracker* MetricsWebContentsObserver::GetMemoryTracker()
+    const {
+  return embedder_interface_->GetMemoryTrackerForBrowserContext(
+      web_contents()->GetBrowserContext());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MetricsWebContentsObserver)

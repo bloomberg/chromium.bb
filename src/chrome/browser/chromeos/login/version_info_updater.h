@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
@@ -91,8 +91,7 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // Text obtained from OnVersion.
   std::string version_text_;
 
-  std::vector<std::unique_ptr<CrosSettings::ObserverSubscription>>
-      subscriptions_;
+  std::vector<base::CallbackListSubscription> subscriptions_;
 
   chromeos::CrosSettings* cros_settings_;
 

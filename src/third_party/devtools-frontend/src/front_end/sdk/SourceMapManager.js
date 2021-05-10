@@ -3,14 +3,22 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 
 import {FrameAssociated} from './FrameAssociated.js';  // eslint-disable-line no-unused-vars
-import {Script} from './Script.js';
 import {Events as TargetManagerEvents, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
-import {SourceMap, TextSourceMap, WasmSourceMap} from './SourceMap.js';  // eslint-disable-line no-unused-vars
+import {SourceMap, TextSourceMap} from './SourceMap.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Error message when failing to load a source map text
+  *@example {An error occurred} PH1
+  */
+  devtoolsFailedToLoadSourcemapS: 'DevTools failed to load SourceMap: {PH1}',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/SourceMapManager.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /**
  * @template {!FrameAssociated} T
@@ -35,10 +43,10 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
 
     /** @type {!Map<string, !SourceMap>} */
     this._sourceMapById = new Map();
-    /** @type {!Platform.Multimap<string, !T>} */
-    this._sourceMapIdToLoadingClients = new Platform.Multimap();
-    /** @type {!Platform.Multimap<string, !T>} */
-    this._sourceMapIdToClients = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<string, !T>} */
+    this._sourceMapIdToLoadingClients = new Platform.MapUtilities.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<string, !T>} */
+    this._sourceMapIdToClients = new Platform.MapUtilities.Multimap();
 
     TargetManager.instance().addEventListener(TargetManagerEvents.InspectedURLChanged, this._inspectedURLChanged, this);
   }
@@ -176,20 +184,10 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
       return;
     }
     if (!this._sourceMapIdToLoadingClients.has(sourceMapId)) {
-      /** @type {!Promise<?SourceMap>} */
-      let sourceMapPromise;
-      if (sourceMapURL === WasmSourceMap.FAKE_URL && client instanceof Script) {
-        if (Root.Runtime.experiments.isEnabled('wasmDWARFDebugging')) {
-          sourceMapPromise = Promise.resolve(null);
-        } else {
-          sourceMapPromise = WasmSourceMap.load(client, sourceURL);
-        }
-      } else {
-        sourceMapPromise = TextSourceMap.load(sourceMapURL, sourceURL, client.createPageResourceLoadInitiator());
-      }
-      sourceMapPromise
+      TextSourceMap.load(sourceMapURL, sourceURL, client.createPageResourceLoadInitiator())
           .catch(error => {
-            Common.Console.Console.instance().warn(ls`DevTools failed to load SourceMap: ${error.message}`);
+            Common.Console.Console.instance().warn(
+                i18nString(UIStrings.devtoolsFailedToLoadSourcemapS, {PH1: error.message}));
             return null;
           })
           .then(onSourceMap.bind(this, sourceMapId));
@@ -255,20 +253,16 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     if (!sourceMap) {
       return;
     }
-    this.dispatchEventToListeners(Events.SourceMapDetached, {client: client, sourceMap: sourceMap});
     if (!this._sourceMapIdToClients.has(sourceMapId)) {
-      sourceMap.dispose();
       this._sourceMapById.delete(sourceMapId);
     }
+    this.dispatchEventToListeners(Events.SourceMapDetached, {client: client, sourceMap: sourceMap});
   }
 
   _sourceMapLoadedForTest() {
   }
 
   dispose() {
-    for (const sourceMap of this._sourceMapById.values()) {
-      sourceMap.dispose();
-    }
     TargetManager.instance().removeEventListener(
         TargetManagerEvents.InspectedURLChanged, this._inspectedURLChanged, this);
   }

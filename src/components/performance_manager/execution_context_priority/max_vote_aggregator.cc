@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/performance_manager/public/execution_context_priority/max_vote_aggregator.h"
+#include "components/performance_manager/execution_context_priority/max_vote_aggregator.h"
 
 #include <algorithm>
 #include <tuple>
@@ -10,99 +10,104 @@
 namespace performance_manager {
 namespace execution_context_priority {
 
-// static
-MaxVoteAggregator::StampedVote*
-MaxVoteAggregator::StampedVote::FromAcceptedVote(AcceptedVote* accepted_vote) {
-  static_assert(offsetof(StampedVote, vote) == 0,
-                "AcceptedVote is expected to be at offset 0 of StampedVote");
-  return reinterpret_cast<StampedVote*>(accepted_vote);
-}
-
-MaxVoteAggregator::MaxVoteAggregator() : factory_(this) {}
+MaxVoteAggregator::MaxVoteAggregator() = default;
 
 MaxVoteAggregator::~MaxVoteAggregator() = default;
 
 VotingChannel MaxVoteAggregator::GetVotingChannel() {
-  return factory_.BuildVotingChannel();
+  return voting_channel_factory_.BuildVotingChannel();
 }
 
-void MaxVoteAggregator::SetUpstreamVotingChannel(VotingChannel&& channel) {
-  DCHECK(channel.IsValid());
-  DCHECK(vote_data_map_.empty());
-  DCHECK(!channel_.IsValid());
+void MaxVoteAggregator::SetUpstreamVotingChannel(VotingChannel channel) {
   channel_ = std::move(channel);
 }
 
-VoteReceipt MaxVoteAggregator::SubmitVote(
-    util::PassKey<VotingChannel>,
-    voting::VoterId<Vote> voter_id,
+void MaxVoteAggregator::OnVoteSubmitted(
+    VoterId voter_id,
     const ExecutionContext* execution_context,
     const Vote& vote) {
-  DCHECK(vote.IsValid());
   DCHECK(channel_.IsValid());
 
-  // NOTE: We don't currently explicitly worry about having multiple votes for
-  // the same execution context from a single voter, although such logic could
-  // be added.
-
-  // Add the new vote.
+  // Create the VoteData for this execution context, if necessary.
   VoteData& vote_data = vote_data_map_[execution_context];
-  auto accepted_vote = AcceptedVote(this, voter_id, execution_context, vote);
-  auto receipt = accepted_vote.IssueReceipt();
-  if (vote_data.AddVote(std::move(accepted_vote), next_vote_id_++))
-    vote_data.UpstreamVote(&channel_);
 
-  // Finally, return a vote receipt to our voter for the received vote.
-  return receipt;
+  // Remember the previous top vote before adding the new vote. There could be
+  // none if this is the first vote submitted for |execution_context|.
+  base::Optional<Vote> old_top_vote;
+  if (!vote_data.IsEmpty())
+    old_top_vote = vote_data.GetTopVote();
+
+  vote_data.AddVote(voter_id, vote, next_vote_id_++);
+
+  // If there was no previous top vote, the vote must be submitted.
+  if (!old_top_vote) {
+    channel_.SubmitVote(execution_context, vote);
+    return;
+  }
+
+  // Since there is a previous top vote, it must be modified if the top vote
+  // changed.
+  const Vote new_top_vote = vote_data.GetTopVote();
+  if (old_top_vote.value() != new_top_vote)
+    channel_.ChangeVote(execution_context, new_top_vote);
 }
 
-void MaxVoteAggregator::ChangeVote(util::PassKey<AcceptedVote>,
-                                   AcceptedVote* old_vote,
-                                   const Vote& new_vote) {
-  DCHECK(old_vote->IsValid());
-  VoteData& vote_data = GetVoteData(old_vote)->second;
-  size_t index = vote_data.GetVoteIndex(old_vote);
+void MaxVoteAggregator::OnVoteChanged(VoterId voter_id,
+                                      const ExecutionContext* execution_context,
+                                      const Vote& new_vote) {
+  // The VoteData for this execution context is guaranteed to exist.
+  VoteData& vote_data = GetVoteData(execution_context)->second;
 
-  // Update the vote directly, then repair the heap.
-  old_vote->UpdateVote(new_vote);
-  if (vote_data.UpdateVote(index, next_vote_id_++))
-    vote_data.UpstreamVote(&channel_);
+  // Remember the previous top vote before updating the vote for this
+  // |voter_id|.
+  const Vote old_top_vote = vote_data.GetTopVote();
+
+  vote_data.UpdateVote(voter_id, new_vote);
+
+  // If the top vote changed, the upstream vote must also be changed.
+  const Vote new_top_vote = vote_data.GetTopVote();
+  if (old_top_vote != new_top_vote)
+    channel_.ChangeVote(execution_context, new_top_vote);
 }
 
-void MaxVoteAggregator::VoteInvalidated(util::PassKey<AcceptedVote>,
-                                        AcceptedVote* vote) {
-  DCHECK(!vote->IsValid());
-  auto it = GetVoteData(vote);
+void MaxVoteAggregator::OnVoteInvalidated(
+    VoterId voter_id,
+    const ExecutionContext* execution_context) {
+  // The VoteData for this execution context is guaranteed to exist.
+  auto it = GetVoteData(execution_context);
   VoteData& vote_data = it->second;
-  size_t index = vote_data.GetVoteIndex(vote);
 
-  // Remove the vote, and upstream if necessary.
-  if (vote_data.RemoveVote(index))
-    vote_data.UpstreamVote(&channel_);
+  // Remember the previous top vote before removing the vote for this
+  // |voter_id|.
+  const Vote old_top_vote = vote_data.GetTopVote();
 
-  // If all the votes for this execution context have disappeared then remove
-  // the entry entirely. This will automatically cancel our upstream vote.
-  if (vote_data.IsEmpty())
+  vote_data.RemoveVote(voter_id);
+
+  // In case the last vote for |execution_context| was invalidated, the upstream
+  // vote must also be invalidated.
+  if (vote_data.IsEmpty()) {
+    channel_.InvalidateVote(execution_context);
+
+    // Clean up the VoteData for |execution_context| since it is empty.
     vote_data_map_.erase(it);
+    return;
+  }
+
+  // If the top vote changed, the upstream vote must also be changed.
+  const Vote new_top_vote = vote_data.GetTopVote();
+  if (old_top_vote != new_top_vote)
+    channel_.ChangeVote(execution_context, new_top_vote);
 }
 
 MaxVoteAggregator::StampedVote::StampedVote() = default;
-MaxVoteAggregator::StampedVote::StampedVote(AcceptedVote&& vote,
-                                            uint32_t vote_id)
-    : vote(std::move(vote)), vote_id(vote_id) {}
+MaxVoteAggregator::StampedVote::StampedVote(const Vote& vote, uint32_t vote_id)
+    : vote_(vote), vote_id_(vote_id) {}
 MaxVoteAggregator::StampedVote::StampedVote(StampedVote&&) = default;
 MaxVoteAggregator::StampedVote::~StampedVote() = default;
 
 MaxVoteAggregator::VoteDataMap::iterator MaxVoteAggregator::GetVoteData(
-    AcceptedVote* vote) {
-  // The vote being retrieved should have us as its consumer, and we should
-  // already have been setup to receive votes before this is called.
-  DCHECK(vote);
-  DCHECK_EQ(this, vote->consumer());
-  DCHECK(channel_.IsValid());
-
-  // Find the votes associated with this execution context.
-  auto it = vote_data_map_.find(vote->context());
+    const ExecutionContext* execution_context) {
+  auto it = vote_data_map_.find(execution_context);
   DCHECK(it != vote_data_map_.end());
   return it;
 }
@@ -116,63 +121,37 @@ MaxVoteAggregator::VoteData& MaxVoteAggregator::VoteData::operator=(
 
 MaxVoteAggregator::VoteData::~VoteData() = default;
 
-bool MaxVoteAggregator::VoteData::AddVote(AcceptedVote&& vote,
+void MaxVoteAggregator::VoteData::AddVote(VoterId voter_id,
+                                          const Vote& vote,
                                           uint32_t vote_id) {
-  DCHECK(vote.IsValid());
-  votes_.emplace(std::move(vote), vote_id);
-  return true;
+  auto it = votes_.emplace(vote, vote_id);
+
+  bool inserted = heap_handles_.emplace(voter_id, it->handle()).second;
+  DCHECK(inserted);
 }
 
-bool MaxVoteAggregator::VoteData::UpdateVote(size_t index, uint32_t vote_id) {
-  DCHECK_LE(0u, index);
-  DCHECK_LT(index, votes_.size());
-  DCHECK(votes_[index].vote.IsValid());
+void MaxVoteAggregator::VoteData::UpdateVote(VoterId voter_id,
+                                             const Vote& new_vote) {
+  auto it = heap_handles_.find(voter_id);
+  DCHECK(it != heap_handles_.end());
+  base::HeapHandle* heap_handle = it->second;
 
-  // Remember the upstream vote as it may change.
-  const Vote old_root = votes_.top().vote.vote();
-
-  // The AcceptedVote has actually already been changed in place. Remove the
-  // vote, finish the update, and reinsert it into the heap.
-  votes_.Update(index);
-
-  // The vote always needs to be upstreamed if the changed vote was at the root.
-  // Otherwise, we only need to upstream if the root vote was observed to change
-  // as part of the heap repair.
-  const Vote& new_root = votes_.top().vote.vote();
-  return index == 0 || old_root != new_root;
+  votes_.Modify(*heap_handle, [&new_vote](StampedVote& element) {
+    element.SetVote(new_vote);
+  });
 }
 
-bool MaxVoteAggregator::VoteData::RemoveVote(size_t index) {
-  DCHECK_LE(0u, index);
-  DCHECK_LT(index, votes_.size());
-  DCHECK(!votes_[index].vote.IsValid());
+void MaxVoteAggregator::VoteData::RemoveVote(VoterId voter_id) {
+  auto it = heap_handles_.find(voter_id);
+  DCHECK(it != heap_handles_.end());
+  base::HeapHandle* heap_handle = it->second;
+  heap_handles_.erase(it);
 
-  votes_.erase(index);
-
-  // A new upstream vote needs to be made if the root was disturbed.
-  return votes_.size() && index == 0;
+  votes_.erase(*heap_handle);
 }
 
-size_t MaxVoteAggregator::VoteData::GetVoteIndex(AcceptedVote* vote) {
-  StampedVote* stamped_vote = StampedVote::FromAcceptedVote(vote);
-  DCHECK_NE(0u, votes_.size());
-  DCHECK_LE(votes_.data(), stamped_vote);
-  DCHECK_LT(stamped_vote, votes_.data() + votes_.size());
-  return stamped_vote - votes_.data();
-}
-
-void MaxVoteAggregator::VoteData::UpstreamVote(VotingChannel* channel) {
-  DCHECK_NE(0u, votes_.size());
-  DCHECK(votes_.top().vote.IsValid());
-  const ExecutionContext* execution_context = votes_.top().vote.context();
-  const Vote& vote = votes_.top().vote.vote();
-
-  // Change our existing vote, or create a new one as necessary.
-  if (receipt_.HasVote()) {
-    receipt_.ChangeVote(vote.value(), vote.reason());
-  } else {
-    receipt_ = channel->SubmitVote(execution_context, vote);
-  }
+const Vote& MaxVoteAggregator::VoteData::GetTopVote() const {
+  return votes_.top().vote();
 }
 
 }  // namespace execution_context_priority

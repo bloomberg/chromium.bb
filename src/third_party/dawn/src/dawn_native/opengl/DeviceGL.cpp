@@ -65,6 +65,18 @@ namespace dawn_native { namespace opengl {
 
         bool supportsBaseInstance = gl.IsAtLeastGLES(3, 2) || gl.IsAtLeastGL(4, 2);
 
+        // TODO(crbug.com/dawn/582): Use OES_draw_buffers_indexed where available.
+        bool supportsIndexedDrawBuffers = gl.IsAtLeastGLES(3, 2) || gl.IsAtLeastGL(3, 0);
+
+        bool supportsSnormRead =
+            gl.IsAtLeastGL(4, 4) || gl.IsGLExtensionSupported("GL_EXT_render_snorm");
+
+        bool supportsDepthStencilRead =
+            gl.IsAtLeastGL(3, 0) || gl.IsGLExtensionSupported("GL_NV_read_depth_stencil");
+
+        bool supportsSampleVariables = gl.IsAtLeastGL(4, 0) || gl.IsAtLeastGLES(3, 2) ||
+                                       gl.IsGLExtensionSupported("GL_OES_sample_variables");
+
         // TODO(crbug.com/dawn/343): We can support the extension variants, but need to load the EXT
         // procs without the extension suffix.
         // We'll also need emulation of shader builtins gl_BaseVertex and gl_BaseInstance.
@@ -82,6 +94,11 @@ namespace dawn_native { namespace opengl {
         // TODO(crbug.com/dawn/343): Investigate emulation.
         SetToggle(Toggle::DisableBaseVertex, !supportsBaseVertex);
         SetToggle(Toggle::DisableBaseInstance, !supportsBaseInstance);
+        SetToggle(Toggle::DisableIndexedDrawBuffers, !supportsIndexedDrawBuffers);
+        SetToggle(Toggle::DisableSnormRead, !supportsSnormRead);
+        SetToggle(Toggle::DisableDepthStencilRead, !supportsDepthStencilRead);
+        SetToggle(Toggle::DisableSampleVariables, !supportsSampleVariables);
+        SetToggle(Toggle::FlushBeforeClientWaitSync, gl.GetVersion().IsES());
     }
 
     const GLFormat& Device::GetGLFormat(const Format& format) {
@@ -128,8 +145,9 @@ namespace dawn_native { namespace opengl {
         return new Sampler(this, descriptor);
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
@@ -168,6 +186,11 @@ namespace dawn_native { namespace opengl {
 
             // Fence are added in order, so we can stop searching as soon
             // as we see one that's not ready.
+
+            // TODO(crbug.com/dawn/633): Remove this workaround after the deadlock issue is fixed.
+            if (IsToggleEnabled(Toggle::FlushBeforeClientWaitSync)) {
+                gl.Flush();
+            }
             GLenum result = gl.ClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
             if (result == GL_TIMEOUT_EXPIRED) {
                 return fenceSerial;
@@ -221,6 +244,10 @@ namespace dawn_native { namespace opengl {
 
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return 1.0f;
     }
 
 }}  // namespace dawn_native::opengl

@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
 #include <memory>
 #include <string>
 
@@ -25,10 +26,12 @@
 #include "api/neteq/neteq_factory.h"
 #include "api/network_state_predictor.h"
 #include "api/peer_connection_interface.h"
+#include "api/rtc_error.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "api/rtp_parameters.h"
 #include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/transport/network_control.h"
 #include "api/transport/sctp_transport_factory_interface.h"
@@ -38,8 +41,10 @@
 #include "p2p/base/port_allocator.h"
 #include "pc/channel_manager.h"
 #include "pc/connection_context.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/thread.h"
+#include "rtc_base/thread_annotations.h"
 
 namespace rtc {
 class BasicNetworkManager;
@@ -69,6 +74,11 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
       PeerConnectionObserver* observer) override;
 
   rtc::scoped_refptr<PeerConnectionInterface> CreatePeerConnection(
+      const PeerConnectionInterface::RTCConfiguration& configuration,
+      PeerConnectionDependencies dependencies) override;
+
+  RTCErrorOr<rtc::scoped_refptr<PeerConnectionInterface>>
+  CreatePeerConnectionOrError(
       const PeerConnectionInterface::RTCConfiguration& configuration,
       PeerConnectionDependencies dependencies) override;
 

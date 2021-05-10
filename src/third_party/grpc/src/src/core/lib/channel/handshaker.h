@@ -21,12 +21,13 @@
 
 #include <grpc/support/port_platform.h>
 
+#include "absl/container/inlined_vector.h"
+
 #include <grpc/support/string_util.h>
 
 #include <grpc/impl/codegen/grpc_types.h>
 
 #include "src/core/lib/channel/channel_args.h"
-#include "src/core/lib/gprpp/inlined_vector.h"
 #include "src/core/lib/gprpp/ref_counted.h"
 #include "src/core/lib/gprpp/sync.h"
 #include "src/core/lib/iomgr/closure.h"
@@ -76,13 +77,12 @@ struct HandshakerArgs {
 
 class Handshaker : public RefCounted<Handshaker> {
  public:
-  virtual ~Handshaker() = default;
-  virtual void Shutdown(grpc_error* why) GRPC_ABSTRACT;
+  ~Handshaker() override = default;
+  virtual void Shutdown(grpc_error* why) = 0;
   virtual void DoHandshake(grpc_tcp_server_acceptor* acceptor,
                            grpc_closure* on_handshake_done,
-                           HandshakerArgs* args) GRPC_ABSTRACT;
-  virtual const char* name() const GRPC_ABSTRACT;
-  GRPC_ABSTRACT_BASE_CLASS
+                           HandshakerArgs* args) = 0;
+  virtual const char* name() const = 0;
 };
 
 //
@@ -92,7 +92,7 @@ class Handshaker : public RefCounted<Handshaker> {
 class HandshakeManager : public RefCounted<HandshakeManager> {
  public:
   HandshakeManager();
-  ~HandshakeManager();
+  ~HandshakeManager() override;
 
   /// Add \a mgr to the server side list of all pending handshake managers, the
   /// list starts with \a *head.
@@ -147,7 +147,8 @@ class HandshakeManager : public RefCounted<HandshakeManager> {
   gpr_mu mu_;
   bool is_shutdown_ = false;
   // An array of handshakers added via grpc_handshake_manager_add().
-  InlinedVector<RefCountedPtr<Handshaker>, HANDSHAKERS_INIT_SIZE> handshakers_;
+  absl::InlinedVector<RefCountedPtr<Handshaker>, HANDSHAKERS_INIT_SIZE>
+      handshakers_;
   // The index of the handshaker to invoke next and closure to invoke it.
   size_t index_ = 0;
   grpc_closure call_next_handshaker_;

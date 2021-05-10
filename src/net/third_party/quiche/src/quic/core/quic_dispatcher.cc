@@ -2,28 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
+#include "quic/core/quic_dispatcher.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/chlo_extractor.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_time_wait_list_manager.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/core/tls_chlo_extractor.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_stack_trace.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/chlo_extractor.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_time_wait_list_manager.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/core/tls_chlo_extractor.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/platform/api/quic_stack_trace.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -78,12 +82,12 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
 
   bool ShouldGeneratePacket(HasRetransmittableData /*retransmittable*/,
                             IsHandshake /*handshake*/) override {
-    DCHECK(false);
+    QUICHE_DCHECK(false);
     return true;
   }
 
   const QuicFrames MaybeBundleAckOpportunistically() override {
-    DCHECK(false);
+    QUICHE_DCHECK(false);
     return {};
   }
 
@@ -151,21 +155,25 @@ class StatelessConnectionTerminator {
   // |error_code| and |error_details| and add the connection to time wait.
   void CloseConnection(QuicErrorCode error_code,
                        const std::string& error_details,
-                       bool ietf_quic) {
+                       bool ietf_quic,
+                       std::vector<QuicConnectionId> active_connection_ids) {
     SerializeConnectionClosePacket(error_code, error_details);
 
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         server_connection_id_,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-        TimeWaitConnectionInfo(ietf_quic, collector_.packets()));
+        TimeWaitConnectionInfo(ietf_quic, collector_.packets(),
+                               std::move(active_connection_ids),
+                               /*srtt=*/QuicTime::Delta::Zero()));
   }
 
  private:
   void SerializeConnectionClosePacket(QuicErrorCode error_code,
                                       const std::string& error_details) {
-    QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame(
-        framer_.transport_version(), error_code, error_details,
-        /*transport_close_frame_type=*/0);
+    QuicConnectionCloseFrame* frame =
+        new QuicConnectionCloseFrame(framer_.transport_version(), error_code,
+                                     NO_IETF_QUIC_ERROR, error_details,
+                                     /*transport_close_frame_type=*/0);
 
     if (!creator_.AddFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
       QUIC_BUG << "Unable to add frame to an empty packet";
@@ -173,7 +181,7 @@ class StatelessConnectionTerminator {
       return;
     }
     creator_.FlushCurrentPacket();
-    DCHECK_EQ(1u, collector_.packets()->size());
+    QUICHE_DCHECK_EQ(1u, collector_.packets()->size());
   }
 
   QuicConnectionId server_connection_id_;
@@ -316,6 +324,9 @@ QuicDispatcher::QuicDispatcher(
       expected_server_connection_id_length_(
           expected_server_connection_id_length),
       should_update_expected_server_connection_id_length_(false) {
+  if (use_reference_counted_session_map_) {
+    QUIC_RESTART_FLAG_COUNT(quic_use_reference_counted_sesssion_map);
+  }
   QUIC_BUG_IF(GetSupportedVersions().empty())
       << "Trying to create dispatcher without any supported versions";
   QUIC_DLOG(INFO) << "Created QuicDispatcher with versions: "
@@ -323,12 +334,20 @@ QuicDispatcher::QuicDispatcher(
 }
 
 QuicDispatcher::~QuicDispatcher() {
-  session_map_.clear();
-  closed_session_list_.clear();
+  if (use_reference_counted_session_map_) {
+    reference_counted_session_map_.clear();
+    closed_ref_counted_session_list_.clear();
+    if (support_multiple_cid_per_connection_) {
+      num_sessions_in_session_map_ = 0;
+    }
+  } else {
+    session_map_.clear();
+    closed_session_list_.clear();
+  }
 }
 
 void QuicDispatcher::InitializeWithWriter(QuicPacketWriter* writer) {
-  DCHECK(writer_ == nullptr);
+  QUICHE_DCHECK(writer_ == nullptr);
   writer_.reset(writer);
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 }
@@ -405,24 +424,27 @@ QuicConnectionId QuicDispatcher::MaybeReplaceServerConnectionId(
   if (server_connection_id_length == expected_server_connection_id_length_) {
     return server_connection_id;
   }
-  DCHECK(version.AllowsVariableLengthConnectionIds());
+  QUICHE_DCHECK(version.AllowsVariableLengthConnectionIds());
   QuicConnectionId new_connection_id;
   if (server_connection_id_length < expected_server_connection_id_length_) {
     new_connection_id = ReplaceShortServerConnectionId(
         version, server_connection_id, expected_server_connection_id_length_);
     // Verify that ReplaceShortServerConnectionId is deterministic.
-    DCHECK_EQ(new_connection_id, ReplaceShortServerConnectionId(
-                                     version, server_connection_id,
-                                     expected_server_connection_id_length_));
+    QUICHE_DCHECK_EQ(
+        new_connection_id,
+        ReplaceShortServerConnectionId(version, server_connection_id,
+                                       expected_server_connection_id_length_));
   } else {
     new_connection_id = ReplaceLongServerConnectionId(
         version, server_connection_id, expected_server_connection_id_length_);
     // Verify that ReplaceLongServerConnectionId is deterministic.
-    DCHECK_EQ(new_connection_id, ReplaceLongServerConnectionId(
-                                     version, server_connection_id,
-                                     expected_server_connection_id_length_));
+    QUICHE_DCHECK_EQ(
+        new_connection_id,
+        ReplaceLongServerConnectionId(version, server_connection_id,
+                                      expected_server_connection_id_length_));
   }
-  DCHECK_EQ(expected_server_connection_id_length_, new_connection_id.length());
+  QUICHE_DCHECK_EQ(expected_server_connection_id_length_,
+                   new_connection_id.length());
 
   QUIC_DLOG(INFO) << "Replacing incoming connection ID " << server_connection_id
                   << " with " << new_connection_id;
@@ -433,8 +455,8 @@ QuicConnectionId QuicDispatcher::ReplaceShortServerConnectionId(
     const ParsedQuicVersion& /*version*/,
     const QuicConnectionId& server_connection_id,
     uint8_t expected_server_connection_id_length) const {
-  DCHECK_LT(server_connection_id.length(),
-            expected_server_connection_id_length);
+  QUICHE_DCHECK_LT(server_connection_id.length(),
+                   expected_server_connection_id_length);
   return QuicUtils::CreateReplacementConnectionId(
       server_connection_id, expected_server_connection_id_length);
 }
@@ -443,8 +465,8 @@ QuicConnectionId QuicDispatcher::ReplaceLongServerConnectionId(
     const ParsedQuicVersion& /*version*/,
     const QuicConnectionId& server_connection_id,
     uint8_t expected_server_connection_id_length) const {
-  DCHECK_GT(server_connection_id.length(),
-            expected_server_connection_id_length);
+  QUICHE_DCHECK_GT(server_connection_id.length(),
+                   expected_server_connection_id_length);
   return QuicUtils::CreateReplacementConnectionId(
       server_connection_id, expected_server_connection_id_length);
 }
@@ -464,21 +486,15 @@ bool QuicDispatcher::MaybeDispatchPacket(
   // connection ID that is at least 64 bits long. After that initial
   // connection ID, the dispatcher picks a new one of its expected length.
   // Therefore we should never receive a connection ID that is smaller
-  // than 64 bits and smaller than what we expect.
-  bool should_check_short_connection_ids = true;
-  if (GetQuicReloadableFlag(
-          quic_send_version_negotiation_for_short_connection_ids)) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_send_version_negotiation_for_short_connection_ids);
-    should_check_short_connection_ids =
-        packet_info.version_flag && packet_info.version.IsKnown();
-  }
-  if (should_check_short_connection_ids &&
+  // than 64 bits and smaller than what we expect. Unless the version is
+  // unknown, in which case we allow short connection IDs for version
+  // negotiation because that version could allow those.
+  if (packet_info.version_flag && packet_info.version.IsKnown() &&
       server_connection_id.length() < kQuicMinimumInitialConnectionIdLength &&
       server_connection_id.length() < expected_server_connection_id_length_ &&
       !allow_short_initial_server_connection_ids_) {
-    DCHECK(packet_info.version_flag);
-    DCHECK(packet_info.version.AllowsVariableLengthConnectionIds());
+    QUICHE_DCHECK(packet_info.version_flag);
+    QUICHE_DCHECK(packet_info.version.AllowsVariableLengthConnectionIds());
     QUIC_DLOG(INFO) << "Packet with short destination connection ID "
                     << server_connection_id << " expected "
                     << static_cast<int>(expected_server_connection_id_length_);
@@ -489,29 +505,60 @@ bool QuicDispatcher::MaybeDispatchPacket(
 
   // Packets with connection IDs for active connections are processed
   // immediately.
-  auto it = session_map_.find(server_connection_id);
-  if (it != session_map_.end()) {
-    DCHECK(!buffered_packets_.HasBufferedPackets(server_connection_id));
-    if (packet_info.version_flag &&
-        packet_info.version != it->second->version() &&
-        packet_info.version == LegacyVersionForEncapsulation()) {
-      // This packet is using the Legacy Version Encapsulation version but the
-      // corresponding session isn't, attempt extraction of inner packet.
-      ChloAlpnExtractor alpn_extractor;
-      if (ChloExtractor::Extract(packet_info.packet, packet_info.version,
-                                 config_->create_session_tag_indicators(),
-                                 &alpn_extractor,
-                                 server_connection_id.length())) {
-        if (MaybeHandleLegacyVersionEncapsulation(this, &alpn_extractor,
-                                                  packet_info)) {
-          return true;
+  if (use_reference_counted_session_map_) {
+    auto it = reference_counted_session_map_.find(server_connection_id);
+    if (it != reference_counted_session_map_.end()) {
+      QUICHE_DCHECK(
+          !buffered_packets_.HasBufferedPackets(server_connection_id));
+      if (packet_info.version_flag &&
+          packet_info.version != it->second->version() &&
+          packet_info.version == LegacyVersionForEncapsulation()) {
+        // This packet is using the Legacy Version Encapsulation version but the
+        // corresponding session isn't, attempt extraction of inner packet.
+        ChloAlpnExtractor alpn_extractor;
+        if (ChloExtractor::Extract(packet_info.packet, packet_info.version,
+                                   config_->create_session_tag_indicators(),
+                                   &alpn_extractor,
+                                   server_connection_id.length())) {
+          if (MaybeHandleLegacyVersionEncapsulation(this, &alpn_extractor,
+                                                    packet_info)) {
+            return true;
+          }
         }
       }
+      it->second->ProcessUdpPacket(packet_info.self_address,
+                                   packet_info.peer_address,
+                                   packet_info.packet);
+      return true;
     }
-    it->second->ProcessUdpPacket(packet_info.self_address,
-                                 packet_info.peer_address, packet_info.packet);
-    return true;
-  } else if (packet_info.version.IsKnown()) {
+  } else {
+    auto it = session_map_.find(server_connection_id);
+    if (it != session_map_.end()) {
+      QUICHE_DCHECK(
+          !buffered_packets_.HasBufferedPackets(server_connection_id));
+      if (packet_info.version_flag &&
+          packet_info.version != it->second->version() &&
+          packet_info.version == LegacyVersionForEncapsulation()) {
+        // This packet is using the Legacy Version Encapsulation version but the
+        // corresponding session isn't, attempt extraction of inner packet.
+        ChloAlpnExtractor alpn_extractor;
+        if (ChloExtractor::Extract(packet_info.packet, packet_info.version,
+                                   config_->create_session_tag_indicators(),
+                                   &alpn_extractor,
+                                   server_connection_id.length())) {
+          if (MaybeHandleLegacyVersionEncapsulation(this, &alpn_extractor,
+                                                    packet_info)) {
+            return true;
+          }
+        }
+      }
+      it->second->ProcessUdpPacket(packet_info.self_address,
+                                   packet_info.peer_address,
+                                   packet_info.packet);
+      return true;
+    }
+  }
+  if (packet_info.version.IsKnown()) {
     // We did not find the connection ID, check if we've replaced it.
     // This is only performed for supported versions because packets with
     // unsupported versions can flow through this function in order to send
@@ -521,14 +568,28 @@ bool QuicDispatcher::MaybeDispatchPacket(
     QuicConnectionId replaced_connection_id = MaybeReplaceServerConnectionId(
         server_connection_id, packet_info.version);
     if (replaced_connection_id != server_connection_id) {
-      // Search for the replacement.
-      auto it2 = session_map_.find(replaced_connection_id);
-      if (it2 != session_map_.end()) {
-        DCHECK(!buffered_packets_.HasBufferedPackets(replaced_connection_id));
-        it2->second->ProcessUdpPacket(packet_info.self_address,
-                                      packet_info.peer_address,
-                                      packet_info.packet);
-        return true;
+      if (use_reference_counted_session_map_) {
+        // Search for the replacement.
+        auto it2 = reference_counted_session_map_.find(replaced_connection_id);
+        if (it2 != reference_counted_session_map_.end()) {
+          QUICHE_DCHECK(
+              !buffered_packets_.HasBufferedPackets(replaced_connection_id));
+          it2->second->ProcessUdpPacket(packet_info.self_address,
+                                        packet_info.peer_address,
+                                        packet_info.packet);
+          return true;
+        }
+      } else {
+        // Search for the replacement.
+        auto it2 = session_map_.find(replaced_connection_id);
+        if (it2 != session_map_.end()) {
+          QUICHE_DCHECK(
+              !buffered_packets_.HasBufferedPackets(replaced_connection_id));
+          it2->second->ProcessUdpPacket(packet_info.self_address,
+                                        packet_info.peer_address,
+                                        packet_info.packet);
+          return true;
+        }
       }
     }
   }
@@ -694,7 +755,7 @@ void QuicDispatcher::ProcessHeader(ReceivedPacketInfo* packet_info) {
           QUIC_HANDSHAKE_FAILED, "Reject connection",
           quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
 
-      DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
+      QUICHE_DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
           server_connection_id));
       time_wait_list_manager_->ProcessPacket(
           packet_info->self_address, packet_info->peer_address,
@@ -738,7 +799,7 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
   return kFateProcess;
 }
 
-void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
+void QuicDispatcher::CleanUpSession(QuicConnectionId server_connection_id,
                                     QuicConnection* connection,
                                     ConnectionCloseSource /*source*/) {
   write_blocked_list_.erase(connection);
@@ -749,39 +810,53 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
     action = QuicTimeWaitListManager::SEND_CONNECTION_CLOSE_PACKETS;
   } else {
     if (!connection->IsHandshakeComplete()) {
-      if (!VersionHasIetfInvariantHeader(connection->transport_version())) {
+      if (!connection->version().HasIetfInvariantHeader()) {
         QUIC_CODE_COUNT(gquic_add_to_time_wait_list_with_handshake_failed);
       } else {
         QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_handshake_failed);
       }
-      action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
-      // This serializes a connection close termination packet with error code
-      // QUIC_HANDSHAKE_FAILED and adds the connection to the time wait list.
-      StatelesslyTerminateConnection(
-          connection->connection_id(),
-          VersionHasIetfInvariantHeader(connection->transport_version())
-              ? IETF_QUIC_LONG_HEADER_PACKET
-              : GOOGLE_QUIC_PACKET,
-          /*version_flag=*/true,
-          connection->version().HasLengthPrefixedConnectionIds(),
-          connection->version(), QUIC_HANDSHAKE_FAILED,
-          "Connection is closed by server before handshake confirmed",
-          // Although it is our intention to send termination packets, the
-          // |action| argument is not used by this call to
-          // StatelesslyTerminateConnection().
-          action);
-      session_map_.erase(it);
+      if (support_multiple_cid_per_connection_) {
+        QUIC_RESTART_FLAG_COUNT_N(
+            quic_dispatcher_support_multiple_cid_per_connection_v2, 1, 2);
+        // This serializes a connection close termination packet with error code
+        // QUIC_HANDSHAKE_FAILED and adds the connection to the time wait list.
+        StatelessConnectionTerminator terminator(
+            server_connection_id, connection->version(), helper_.get(),
+            time_wait_list_manager_.get());
+        terminator.CloseConnection(
+            QUIC_HANDSHAKE_FAILED,
+            "Connection is closed by server before handshake confirmed",
+            connection->version().HasIetfInvariantHeader(),
+            connection->GetActiveServerConnectionIds());
+      } else {
+        action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
+        // This serializes a connection close termination packet with error code
+        // QUIC_HANDSHAKE_FAILED and adds the connection to the time wait list.
+        StatelesslyTerminateConnection(
+            connection->connection_id(),
+            connection->version().HasIetfInvariantHeader()
+                ? IETF_QUIC_LONG_HEADER_PACKET
+                : GOOGLE_QUIC_PACKET,
+            /*version_flag=*/true,
+            connection->version().HasLengthPrefixedConnectionIds(),
+            connection->version(), QUIC_HANDSHAKE_FAILED,
+            "Connection is closed by server before handshake confirmed",
+            // Although it is our intention to send termination packets, the
+            // |action| argument is not used by this call to
+            // StatelesslyTerminateConnection().
+            action);
+      }
       return;
     }
     QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_stateless_reset);
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      it->first, action,
+      server_connection_id, action,
       TimeWaitConnectionInfo(
-          VersionHasIetfInvariantHeader(connection->transport_version()),
+          connection->version().HasIetfInvariantHeader(),
           connection->termination_packets(),
+          connection->GetActiveServerConnectionIds(),
           connection->sent_packet_manager().GetRttStats()->smoothed_rtt()));
-  session_map_.erase(it);
 }
 
 void QuicDispatcher::StartAcceptingNewConnections() {
@@ -795,21 +870,70 @@ void QuicDispatcher::StopAcceptingNewConnections() {
   buffered_packets_.DiscardAllPackets();
 }
 
+void QuicDispatcher::PerformActionOnActiveSessions(
+    std::function<void(QuicSession*)> operation) const {
+  if (use_reference_counted_session_map_) {
+    absl::flat_hash_set<QuicSession*> visited_session;
+    visited_session.reserve(reference_counted_session_map_.size());
+    for (auto const& kv : reference_counted_session_map_) {
+      QuicSession* session = kv.second.get();
+      if (visited_session.insert(session).second) {
+        operation(session);
+      }
+    }
+  } else {
+    for (auto const& kv : session_map_) {
+      operation(kv.second.get());
+    }
+  }
+}
+
+// Get a snapshot of all sessions.
+std::vector<std::shared_ptr<QuicSession>> QuicDispatcher::GetSessionsSnapshot()
+    const {
+  QUICHE_DCHECK(use_reference_counted_session_map_);
+  std::vector<std::shared_ptr<QuicSession>> snapshot;
+  snapshot.reserve(reference_counted_session_map_.size());
+  absl::flat_hash_set<QuicSession*> visited_session;
+  visited_session.reserve(reference_counted_session_map_.size());
+  for (auto const& kv : reference_counted_session_map_) {
+    QuicSession* session = kv.second.get();
+    if (visited_session.insert(session).second) {
+      snapshot.push_back(kv.second);
+    }
+  }
+  return snapshot;
+}
+
 std::unique_ptr<QuicPerPacketContext> QuicDispatcher::GetPerPacketContext()
     const {
   return nullptr;
 }
 
 void QuicDispatcher::DeleteSessions() {
-  if (!write_blocked_list_.empty()) {
-    for (const std::unique_ptr<QuicSession>& session : closed_session_list_) {
-      if (write_blocked_list_.erase(session->connection()) != 0) {
-        QUIC_BUG << "QuicConnection was in WriteBlockedList before destruction "
-                 << session->connection()->connection_id();
+  if (use_reference_counted_session_map_) {
+    if (!write_blocked_list_.empty()) {
+      for (const auto& session : closed_ref_counted_session_list_) {
+        if (write_blocked_list_.erase(session->connection()) != 0) {
+          QUIC_BUG
+              << "QuicConnection was in WriteBlockedList before destruction "
+              << session->connection()->connection_id();
+        }
       }
     }
+    closed_ref_counted_session_list_.clear();
+  } else {
+    if (!write_blocked_list_.empty()) {
+      for (const std::unique_ptr<QuicSession>& session : closed_session_list_) {
+        if (write_blocked_list_.erase(session->connection()) != 0) {
+          QUIC_BUG
+              << "QuicConnection was in WriteBlockedList before destruction "
+              << session->connection()->connection_id();
+        }
+      }
+    }
+    closed_session_list_.clear();
   }
-  closed_session_list_.clear();
 }
 
 void QuicDispatcher::OnCanWrite() {
@@ -820,7 +944,7 @@ void QuicDispatcher::OnCanWrite() {
   const size_t num_blocked_writers_before = write_blocked_list_.size();
   WriteBlockedList temp_list;
   temp_list.swap(write_blocked_list_);
-  DCHECK(write_blocked_list_.empty());
+  QUICHE_DCHECK(write_blocked_list_.empty());
 
   // Give each blocked writer a chance to write what they indended to write.
   // If they are blocked again, they will call |OnWriteBlocked| to add
@@ -845,14 +969,28 @@ bool QuicDispatcher::HasPendingWrites() const {
 }
 
 void QuicDispatcher::Shutdown() {
-  while (!session_map_.empty()) {
-    QuicSession* session = session_map_.begin()->second.get();
-    session->connection()->CloseConnection(
-        QUIC_PEER_GOING_AWAY, "Server shutdown imminent",
-        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    // Validate that the session removes itself from the session map on close.
-    DCHECK(session_map_.empty() ||
-           session_map_.begin()->second.get() != session);
+  if (use_reference_counted_session_map_) {
+    while (!reference_counted_session_map_.empty()) {
+      QuicSession* session =
+          reference_counted_session_map_.begin()->second.get();
+      session->connection()->CloseConnection(
+          QUIC_PEER_GOING_AWAY, "Server shutdown imminent",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      // Validate that the session removes itself from the session map on close.
+      QUICHE_DCHECK(reference_counted_session_map_.empty() ||
+                    reference_counted_session_map_.begin()->second.get() !=
+                        session);
+    }
+  } else {
+    while (!session_map_.empty()) {
+      QuicSession* session = session_map_.begin()->second.get();
+      session->connection()->CloseConnection(
+          QUIC_PEER_GOING_AWAY, "Server shutdown imminent",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      // Validate that the session removes itself from the session map on close.
+      QUICHE_DCHECK(session_map_.empty() ||
+                    session_map_.begin()->second.get() != session);
+    }
   }
   DeleteSessions();
 }
@@ -861,38 +999,78 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId server_connection_id,
                                         QuicErrorCode error,
                                         const std::string& error_details,
                                         ConnectionCloseSource source) {
-  auto it = session_map_.find(server_connection_id);
-  if (it == session_map_.end()) {
-    QUIC_BUG << "ConnectionId " << server_connection_id
-             << " does not exist in the session map.  Error: "
-             << QuicErrorCodeToString(error);
-    QUIC_BUG << QuicStackTrace();
-    return;
-  }
-
-  QUIC_DLOG_IF(INFO, error != QUIC_NO_ERROR)
-      << "Closing connection (" << server_connection_id
-      << ") due to error: " << QuicErrorCodeToString(error)
-      << ", with details: " << error_details;
-
-  QuicConnection* connection = it->second->connection();
-  if (ShouldDestroySessionAsynchronously()) {
-    // Set up alarm to fire immediately to bring destruction of this session
-    // out of current call stack.
-    if (closed_session_list_.empty()) {
-      delete_sessions_alarm_->Update(helper()->GetClock()->ApproximateNow(),
-                                     QuicTime::Delta::Zero());
+  if (use_reference_counted_session_map_) {
+    auto it = reference_counted_session_map_.find(server_connection_id);
+    if (it == reference_counted_session_map_.end()) {
+      QUIC_BUG << "ConnectionId " << server_connection_id
+               << " does not exist in the session map.  Error: "
+               << QuicErrorCodeToString(error);
+      QUIC_BUG << QuicStackTrace();
+      return;
     }
-    closed_session_list_.push_back(std::move(it->second));
+
+    QUIC_DLOG_IF(INFO, error != QUIC_NO_ERROR)
+        << "Closing connection (" << server_connection_id
+        << ") due to error: " << QuicErrorCodeToString(error)
+        << ", with details: " << error_details;
+
+    QuicConnection* connection = it->second->connection();
+    if (ShouldDestroySessionAsynchronously()) {
+      // Set up alarm to fire immediately to bring destruction of this session
+      // out of current call stack.
+      if (closed_ref_counted_session_list_.empty()) {
+        delete_sessions_alarm_->Update(helper()->GetClock()->ApproximateNow(),
+                                       QuicTime::Delta::Zero());
+      }
+      closed_ref_counted_session_list_.push_back(std::move(it->second));
+    }
+    CleanUpSession(it->first, connection, source);
+    if (support_multiple_cid_per_connection_) {
+      QUIC_RESTART_FLAG_COUNT_N(
+          quic_dispatcher_support_multiple_cid_per_connection_v2, 1, 2);
+      for (const QuicConnectionId& cid :
+           connection->GetActiveServerConnectionIds()) {
+        reference_counted_session_map_.erase(cid);
+      }
+      --num_sessions_in_session_map_;
+    } else {
+      reference_counted_session_map_.erase(it);
+    }
+  } else {
+    auto it = session_map_.find(server_connection_id);
+    if (it == session_map_.end()) {
+      QUIC_BUG << "ConnectionId " << server_connection_id
+               << " does not exist in the session map.  Error: "
+               << QuicErrorCodeToString(error);
+      QUIC_BUG << QuicStackTrace();
+      return;
+    }
+
+    QUIC_DLOG_IF(INFO, error != QUIC_NO_ERROR)
+        << "Closing connection (" << server_connection_id
+        << ") due to error: " << QuicErrorCodeToString(error)
+        << ", with details: " << error_details;
+
+    QuicConnection* connection = it->second->connection();
+    if (ShouldDestroySessionAsynchronously()) {
+      // Set up alarm to fire immediately to bring destruction of this session
+      // out of current call stack.
+      if (closed_session_list_.empty()) {
+        delete_sessions_alarm_->Update(helper()->GetClock()->ApproximateNow(),
+                                       QuicTime::Delta::Zero());
+      }
+      closed_session_list_.push_back(std::move(it->second));
+    }
+    CleanUpSession(it->first, connection, source);
+    session_map_.erase(it);
   }
-  CleanUpSession(it, connection, source);
 }
 
 void QuicDispatcher::OnWriteBlocked(
     QuicBlockedWriterInterface* blocked_writer) {
   if (!blocked_writer->IsWriterBlocked()) {
     // It is a programming error if this ever happens. When we are sure it is
-    // not happening, replace it with a DCHECK.
+    // not happening, replace it with a QUICHE_DCHECK.
     QUIC_BUG
         << "Tried to add writer into blocked list when it shouldn't be added";
     // Return without adding the connection to the blocked list, to avoid
@@ -907,6 +1085,29 @@ void QuicDispatcher::OnRstStreamReceived(const QuicRstStreamFrame& /*frame*/) {}
 
 void QuicDispatcher::OnStopSendingReceived(
     const QuicStopSendingFrame& /*frame*/) {}
+
+void QuicDispatcher::OnNewConnectionIdSent(
+    const QuicConnectionId& server_connection_id,
+    const QuicConnectionId& new_connection_id) {
+  QUICHE_DCHECK(support_multiple_cid_per_connection_);
+  auto it = reference_counted_session_map_.find(server_connection_id);
+  if (it == reference_counted_session_map_.end()) {
+    QUIC_BUG << "Couldn't locate the session that issues the connection ID in "
+                "reference_counted_session_map_.  server_connection_id:"
+             << server_connection_id
+             << " new_connection_id: " << new_connection_id;
+    return;
+  }
+  auto insertion_result = reference_counted_session_map_.insert(
+      std::make_pair(new_connection_id, it->second));
+  QUICHE_DCHECK(insertion_result.second);
+}
+
+void QuicDispatcher::OnConnectionIdRetired(
+    const QuicConnectionId& server_connection_id) {
+  QUICHE_DCHECK(support_multiple_cid_per_connection_);
+  reference_counted_session_map_.erase(server_connection_id);
+}
 
 void QuicDispatcher::OnConnectionAddedToTimeWaitList(
     QuicConnectionId server_connection_id) {
@@ -930,7 +1131,8 @@ void QuicDispatcher::StatelesslyTerminateConnection(
                   << ", error_details:" << error_details;
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         server_connection_id, action,
-        TimeWaitConnectionInfo(format != GOOGLE_QUIC_PACKET, nullptr));
+        TimeWaitConnectionInfo(format != GOOGLE_QUIC_PACKET, nullptr,
+                               {server_connection_id}));
     return;
   }
 
@@ -946,8 +1148,9 @@ void QuicDispatcher::StatelesslyTerminateConnection(
                                              helper_.get(),
                                              time_wait_list_manager_.get());
     // This also adds the connection to time wait list.
-    terminator.CloseConnection(error_code, error_details,
-                               format != GOOGLE_QUIC_PACKET);
+    terminator.CloseConnection(
+        error_code, error_details, format != GOOGLE_QUIC_PACKET,
+        /*active_connection_ids=*/{server_connection_id});
     return;
   }
 
@@ -966,7 +1169,7 @@ void QuicDispatcher::StatelesslyTerminateConnection(
   time_wait_list_manager()->AddConnectionIdToTimeWait(
       server_connection_id, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
       TimeWaitConnectionInfo(/*ietf_quic=*/format != GOOGLE_QUIC_PACKET,
-                             &termination_packets));
+                             &termination_packets, {server_connection_id}));
 }
 
 bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(
@@ -1015,12 +1218,28 @@ void QuicDispatcher::ProcessBufferedChlos(size_t max_connections_to_create) {
     }
     QUIC_DLOG(INFO) << "Created new session for " << server_connection_id;
 
-    auto insertion_result = session_map_.insert(
-        std::make_pair(server_connection_id, std::move(session)));
-    QUIC_BUG_IF(!insertion_result.second)
-        << "Tried to add a session to session_map with existing connection id: "
-        << server_connection_id;
-    DeliverPacketsToSession(packets, insertion_result.first->second.get());
+    if (use_reference_counted_session_map_) {
+      auto insertion_result = reference_counted_session_map_.insert(
+          std::make_pair(server_connection_id,
+                         std::shared_ptr<QuicSession>(std::move(session))));
+      if (!insertion_result.second) {
+        QUIC_BUG
+            << "Tried to add a session to session_map with existing connection "
+               "id: "
+            << server_connection_id;
+      } else if (support_multiple_cid_per_connection_) {
+        ++num_sessions_in_session_map_;
+      }
+      DeliverPacketsToSession(packets, insertion_result.first->second.get());
+    } else {
+      auto insertion_result = session_map_.insert(
+          std::make_pair(server_connection_id, std::move(session)));
+      QUIC_BUG_IF(!insertion_result.second)
+          << "Tried to add a session to session_map with existing connection "
+             "id: "
+          << server_connection_id;
+      DeliverPacketsToSession(packets, insertion_result.first->second.get());
+    }
   }
 }
 
@@ -1116,12 +1335,28 @@ void QuicDispatcher::ProcessChlo(const std::vector<std::string>& alpns,
   QUIC_DLOG(INFO) << "Created new session for "
                   << packet_info->destination_connection_id;
 
-  auto insertion_result = session_map_.insert(std::make_pair(
-      packet_info->destination_connection_id, std::move(session)));
-  QUIC_BUG_IF(!insertion_result.second)
-      << "Tried to add a session to session_map with existing connection id: "
-      << packet_info->destination_connection_id;
-  QuicSession* session_ptr = insertion_result.first->second.get();
+  QuicSession* session_ptr;
+  if (use_reference_counted_session_map_) {
+    auto insertion_result =
+        reference_counted_session_map_.insert(std::make_pair(
+            packet_info->destination_connection_id,
+            std::shared_ptr<QuicSession>(std::move(session.release()))));
+    if (!insertion_result.second) {
+      QUIC_BUG << "Tried to add a session to session_map with existing "
+                  "connection id: "
+               << packet_info->destination_connection_id;
+    } else if (support_multiple_cid_per_connection_) {
+      ++num_sessions_in_session_map_;
+    }
+    session_ptr = insertion_result.first->second.get();
+  } else {
+    auto insertion_result = session_map_.insert(std::make_pair(
+        packet_info->destination_connection_id, std::move(session)));
+    QUIC_BUG_IF(!insertion_result.second)
+        << "Tried to add a session to session_map with existing connection id: "
+        << packet_info->destination_connection_id;
+    session_ptr = insertion_result.first->second.get();
+  }
   std::list<BufferedPacket> packets =
       buffered_packets_.DeliverPackets(packet_info->destination_connection_id)
           .buffered_packets;
@@ -1146,11 +1381,6 @@ void QuicDispatcher::SetLastError(QuicErrorCode error) {
 bool QuicDispatcher::OnFailedToDispatchPacket(
     const ReceivedPacketInfo& /*packet_info*/) {
   return false;
-}
-
-const QuicTransportVersionVector&
-QuicDispatcher::GetSupportedTransportVersions() {
-  return version_manager_->GetSupportedTransportVersions();
 }
 
 const ParsedQuicVersionVector& QuicDispatcher::GetSupportedVersions() {
@@ -1183,7 +1413,7 @@ bool QuicDispatcher::IsSupportedVersion(const ParsedQuicVersion version) {
 
 void QuicDispatcher::MaybeResetPacketsWithNoVersion(
     const ReceivedPacketInfo& packet_info) {
-  DCHECK(!packet_info.version_flag);
+  QUICHE_DCHECK(!packet_info.version_flag);
   const size_t MinValidPacketLength =
       kPacketHeaderTypeSize + expected_server_connection_id_length_ +
       PACKET_1BYTE_PACKET_NUMBER + /*payload size=*/1 + /*tag size=*/12;
@@ -1199,6 +1429,15 @@ void QuicDispatcher::MaybeResetPacketsWithNoVersion(
       packet_info.self_address, packet_info.peer_address,
       packet_info.destination_connection_id,
       packet_info.form != GOOGLE_QUIC_PACKET, GetPerPacketContext());
+}
+
+size_t QuicDispatcher::NumSessions() const {
+  if (support_multiple_cid_per_connection_) {
+    return num_sessions_in_session_map_;
+  }
+  return use_reference_counted_session_map_
+             ? reference_counted_session_map_.size()
+             : session_map_.size();
 }
 
 }  // namespace quic

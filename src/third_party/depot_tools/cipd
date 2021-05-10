@@ -79,6 +79,12 @@ CLIENT="${MYPATH}/.cipd_client"
 VERSION=`cat "${VERSION_FILE}"`
 PLATFORM="${OS}-${ARCH}"
 
+# A value in .cipd_client_platform overrides the "guessed" platform.
+PLATFORM_OVERRIDE_FILE="${MYPATH}/.cipd_client_platform"
+if [ -f "${PLATFORM_OVERRIDE_FILE}" ]; then
+  PLATFORM=`cat ${PLATFORM_OVERRIDE_FILE}`
+fi
+
 URL="${CIPD_BACKEND}/client?platform=${PLATFORM}&version=${VERSION}"
 USER_AGENT="depot_tools/$(git -C ${MYPATH} rev-parse HEAD 2>/dev/null || echo "???")"
 
@@ -206,10 +212,26 @@ function self_update() {
 }
 
 
+# Nuke the existing client if its platform doesn't match what we want now. We
+# crudely search for a CIPD client package name in the .cipd_version JSON file.
+# It has only "instance_id" as the other field (looking like a base64 string),
+# so mismatches are very unlikely.
+INSTALLED_VERSION_FILE="${MYPATH}/.versions/.cipd_client.cipd_version"
+if [ -f "${INSTALLED_VERSION_FILE}" ]; then
+  JSON_BODY=`cat "${INSTALLED_VERSION_FILE}"`
+  if [[ "$JSON_BODY" != *"infra/tools/cipd/${PLATFORM}"* ]]; then
+    >&2 echo "Detected CIPD client platform change to ${PLATFORM}."
+    >&2 echo "Deleting the existing client to trigger the bootstrap..."
+    rm -f "${CLIENT}" "${INSTALLED_VERSION_FILE}"
+  fi
+fi
+
+# If the client binary doesn't exist, do the bootstrap from scratch.
 if [ ! -x "${CLIENT}" ]; then
   clean_bootstrap
 fi
 
+# If the client binary exists, ask it to self-update.
 export CIPD_HTTP_USER_AGENT_PREFIX="${USER_AGENT}"
 if ! self_update 2> /dev/null ; then
   >&2 echo -n "[31;1m"
@@ -219,7 +241,7 @@ if ! self_update 2> /dev/null ; then
   clean_bootstrap
   if ! self_update ; then  # need to run it again to setup .cipd_version file
     >&2 echo -n "[31;1m"
-    >&2 echo -n "Bootstrap from scratch failed, something is seriously broken. "
+    >&2 echo -n "Bootstrap from scratch for ${PLATFORM} failed! "
     >&2 echo "Run the following commands to diagnose if this is repeating:"
     >&2 echo "  export CIPD_HTTP_USER_AGENT_PREFIX=${USER_AGENT}/manual"
     >&2 echo -n "  ${CLIENT} selfupdate -version-file ${VERSION_FILE}"

@@ -127,7 +127,10 @@ def test_steps(api):
             api.flavor.device_dirs.images_dir, 'colorspace'),
     ])
   if svgs:
-    args.extend(['--svgs', api.flavor.device_dirs.svg_dir])
+    # svg_dir is the root of the SVG corpus. Within that directory,
+    # the *.svg inputs are in the 'svg' subdirectory. See skbug.com/11229
+    args.extend(['--svgs', api.flavor.device_path_join(
+      api.flavor.device_dirs.svg_dir, "svg")])
   if lotties:
     args.extend([
       '--lotties',
@@ -175,7 +178,7 @@ def GenTests(api):
     props = dict(
       buildername=builder,
       buildbucket_build_id='123454321',
-      dm_flags='["dm","--dummy","--flags"]',
+      dm_flags='["dm","--example","--flags"]',
       dm_properties=('{"key1":"value1","key2":"",'
                      '"bot":"${SWARMING_BOT_ID}",'
                      '"task":"${SWARMING_TASK_ID}"}'),

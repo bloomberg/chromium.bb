@@ -15,17 +15,15 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_output_stream.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "common/platform/api/quiche_export.h"
+#include "spdy/core/hpack/hpack_header_table.h"
+#include "spdy/core/hpack/hpack_output_stream.h"
+#include "spdy/core/spdy_protocol.h"
 
 // An HpackEncoder encodes header sets as outlined in
 // http://tools.ietf.org/html/rfc7541.
 
 namespace spdy {
-
-class HpackHuffmanTable;
 
 namespace test {
 class HpackEncoderPeer;
@@ -141,14 +139,11 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   HpackHeaderTable header_table_;
   HpackOutputStream output_stream_;
 
-  const HpackHuffmanTable& huffman_table_;
   size_t min_table_size_setting_received_;
   HeaderListener listener_;
   IndexingPolicy should_index_;
   bool enable_compression_;
   bool should_emit_table_size_;
-  // Latched value of gfe2_reloadable_flag_http2_use_fast_huffman_encoder.
-  const bool use_fast_huffman_encoder_;
 };
 
 }  // namespace spdy

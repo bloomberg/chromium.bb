@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
+#include "quic/core/quic_session.h"
 
 #include <cstdint>
 #include <set>
@@ -10,37 +10,36 @@
 #include <utility>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_max_streams_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_mem_slice_vector.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_quic_session_visitor.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_flow_controller_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_id_manager_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_send_buffer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/frames/quic_max_streams_frame.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "quic/platform/api/quic_mem_slice_storage.h"
+#include "quic/platform/api/quic_ptr_util.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test_mem_slice_vector.h"
+#include "quic/test_tools/mock_quic_session_visitor.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_flow_controller_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_stream_id_manager_peer.h"
+#include "quic/test_tools/quic_stream_peer.h"
+#include "quic/test_tools/quic_stream_send_buffer_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 using spdy::kV3HighestPriority;
 using spdy::SpdyPriority;
@@ -86,7 +85,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
         kInitialStreamFlowControlWindowForTest);
     session()->config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    if (session()->version().AuthenticatesHandshakeConnectionIds()) {
+    if (session()->version().UsesTls()) {
       if (session()->perspective() == Perspective::IS_CLIENT) {
         session()->config()->SetOriginalConnectionIdToSend(
             session()->connection()->connection_id());
@@ -96,9 +95,6 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
         session()->config()->SetInitialSourceConnectionIdToSend(
             session()->connection()->client_connection_id());
       }
-    }
-    if (session()->connection()->version().handshake_protocol ==
-        PROTOCOL_TLS1_3) {
       TransportParameters transport_parameters;
       EXPECT_TRUE(
           session()->config()->FillTransportParameters(&transport_parameters));
@@ -145,6 +141,11 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   void OnOneRttPacketAcknowledged() override {}
   void OnHandshakePacketSent() override {}
   void OnHandshakeDoneReceived() override {}
+  void OnNewTokenReceived(absl::string_view /*token*/) override {}
+  std::string GetAddressToken() const override { return ""; }
+  bool ValidateAddressToken(absl::string_view /*token*/) const override {
+    return true;
+  }
   HandshakeState GetHandshakeState() const override {
     return one_rtt_keys_available() ? HANDSHAKE_COMPLETE : HANDSHAKE_START;
   }
@@ -366,7 +367,7 @@ class TestSession : public QuicSession {
   }
 
   QuicConsumedData SendLargeFakeData(QuicStream* stream, int bytes) {
-    DCHECK(writev_consumes_all_data_);
+    QUICHE_DCHECK(writev_consumes_all_data_);
     return WritevData(stream->id(), bytes, 0, FIN, NOT_RETRANSMISSION,
                       GetEncryptionLevelToSendApplicationData());
   }
@@ -387,7 +388,6 @@ class TestSession : public QuicSession {
   using QuicSession::closed_streams;
   using QuicSession::GetNextOutgoingBidirectionalStreamId;
   using QuicSession::GetNextOutgoingUnidirectionalStreamId;
-  using QuicSession::stream_map;
 
  private:
   StrictMock<TestCryptoStream> crypto_stream_;
@@ -500,8 +500,9 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
 
   void CompleteHandshake() {
     CryptoHandshakeMessage msg;
-    if (connection_->version().HasHandshakeDone() &&
+    if (connection_->version().UsesTls() &&
         connection_->perspective() == Perspective::IS_SERVER) {
+      // HANDSHAKE_DONE frame.
       EXPECT_CALL(*connection_, SendControlFrame(_))
           .WillOnce(Invoke(&ClearControlFrame));
     }
@@ -578,7 +579,7 @@ class QuicSessionTestServer : public QuicSessionTestBase {
       EXPECT_CALL(framer_visitor_, OnPacket());
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_, _));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
       EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_))
           .WillOnce(
@@ -942,8 +943,8 @@ TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   EXPECT_CALL(*connection_, SendControlFrame(_));
   EXPECT_CALL(*connection_, OnStreamReset(closed_stream_id, _));
   stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  std::string msg = quiche::QuicheStrCat("Marking unknown stream ",
-                                         closed_stream_id, " blocked.");
+  std::string msg =
+      absl::StrCat("Marking unknown stream ", closed_stream_id, " blocked.");
   EXPECT_QUIC_BUG(session_.MarkConnectionLevelWriteBlocked(closed_stream_id),
                   msg);
 }
@@ -1041,134 +1042,6 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
     session_.SendLargeFakeData(stream2, 6000);
     session_.MarkConnectionLevelWriteBlocked(stream2->id());
   }));
-  session_.OnCanWrite();
-}
-
-TEST_P(QuicSessionTestServer, Http2Priority) {
-  if (VersionHasIetfQuicFrames(GetParam().transport_version)) {
-    // The test is using HTTP/2 priority which is not supported in IETF QUIC.
-    return;
-  }
-  QuicTagVector copt;
-  copt.push_back(kH2PR);
-  QuicConfigPeer::SetReceivedConnectionOptions(session_.config(), copt);
-  connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  session_.OnConfigNegotiated();
-  ASSERT_TRUE(session_.use_http2_priority_write_scheduler());
-
-  session_.set_writev_consumes_all_data(true);
-  TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
-  TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
-  TestStream* stream6 = session_.CreateOutgoingBidirectionalStream();
-
-  session_.set_writev_consumes_all_data(true);
-  /*
-           0
-          /|\
-         2 4 6
-  */
-  session_.MarkConnectionLevelWriteBlocked(stream2->id());
-  session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  session_.MarkConnectionLevelWriteBlocked(stream6->id());
-
-  // Verify streams are scheduled round robin.
-  InSequence s;
-  EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_CALL(*stream6, OnCanWrite());
-  session_.OnCanWrite();
-
-  /*
-           0
-           |
-           4
-          / \
-         2   6
-  */
-  // Update stream 4's priority.
-  stream4->SetPriority(
-      spdy::SpdyStreamPrecedence(0, spdy::kHttp2DefaultStreamWeight, true));
-  session_.MarkConnectionLevelWriteBlocked(stream2->id());
-  session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  session_.MarkConnectionLevelWriteBlocked(stream6->id());
-
-  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
-    session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  }));
-  EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_CALL(*stream2, OnCanWrite());
-  session_.OnCanWrite();
-  EXPECT_CALL(*stream6, OnCanWrite());
-  session_.OnCanWrite();
-
-  /*
-         0
-         |
-         6
-         |
-         4
-         |
-         2
-  */
-  // Update stream 6's priority.
-  stream6->SetPriority(
-      spdy::SpdyStreamPrecedence(0, spdy::kHttp2DefaultStreamWeight, true));
-  session_.MarkConnectionLevelWriteBlocked(stream2->id());
-  session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  session_.MarkConnectionLevelWriteBlocked(stream6->id());
-
-  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(Invoke([this, stream6]() {
-    session_.MarkConnectionLevelWriteBlocked(stream6->id());
-  }));
-  EXPECT_CALL(*stream6, OnCanWrite());
-  EXPECT_CALL(*stream4, OnCanWrite());
-  session_.OnCanWrite();
-  EXPECT_CALL(*stream2, OnCanWrite());
-  session_.OnCanWrite();
-}
-
-TEST_P(QuicSessionTestServer, RoundRobinScheduling) {
-  if (VersionHasIetfQuicFrames(GetParam().transport_version)) {
-    // IETF QUIC currently doesn't support PRIORITY.
-    return;
-  }
-  QuicTagVector copt;
-  copt.push_back(kRRWS);
-  QuicConfigPeer::SetReceivedConnectionOptions(session_.config(), copt);
-  connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  session_.OnConfigNegotiated();
-
-  session_.set_writev_consumes_all_data(true);
-  TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
-  TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
-  TestStream* stream6 = session_.CreateOutgoingBidirectionalStream();
-
-  session_.set_writev_consumes_all_data(true);
-  session_.MarkConnectionLevelWriteBlocked(stream2->id());
-  session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  session_.MarkConnectionLevelWriteBlocked(stream6->id());
-
-  // Verify streams are scheduled round robin.
-  InSequence s;
-  EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_CALL(*stream6, OnCanWrite());
-  session_.OnCanWrite();
-
-  /* 2, 4, 6, 8 */
-  TestStream* stream8 = session_.CreateOutgoingBidirectionalStream();
-
-  // Verify updated priority is ignored.
-  stream4->SetPriority(spdy::SpdyStreamPrecedence(spdy::kV3HighestPriority));
-  session_.MarkConnectionLevelWriteBlocked(stream8->id());
-  session_.MarkConnectionLevelWriteBlocked(stream4->id());
-  session_.MarkConnectionLevelWriteBlocked(stream2->id());
-  session_.MarkConnectionLevelWriteBlocked(stream6->id());
-
-  EXPECT_CALL(*stream8, OnCanWrite());
-  EXPECT_CALL(*stream4, OnCanWrite());
-  EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*stream6, OnCanWrite());
   session_.OnCanWrite();
 }
 
@@ -2165,7 +2038,7 @@ TEST_P(QuicSessionTestClient, InvalidStreamFlowControlWindowInHandshake) {
   EXPECT_CALL(*connection_, CloseConnection(_, _, _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
 
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   session_.OnConfigNegotiated();
@@ -2265,24 +2138,14 @@ TEST_P(QuicSessionTestClient, MinAckDelaySetOnTheClientQuicConfig) {
   ASSERT_TRUE(session_.connection()->can_receive_ack_frequency_frame());
 }
 
-TEST_P(QuicSessionTestClient, KeyUpdateFlagNotSet) {
-  SetQuicReloadableFlag(quic_key_update_supported, false);
-  EXPECT_CALL(*session_.GetMutableCryptoStream(), KeyUpdateSupportedLocally())
-      .Times(0);
-  session_.Initialize();
-  EXPECT_FALSE(session_.config()->KeyUpdateSupportedLocally());
-}
-
-TEST_P(QuicSessionTestClient, KeyUpdateNotSupportedLocallyAndFlagSet) {
-  SetQuicReloadableFlag(quic_key_update_supported, true);
+TEST_P(QuicSessionTestClient, KeyUpdateNotSupportedLocally) {
   EXPECT_CALL(*session_.GetMutableCryptoStream(), KeyUpdateSupportedLocally())
       .WillOnce(Return(false));
   session_.Initialize();
   EXPECT_FALSE(session_.config()->KeyUpdateSupportedLocally());
 }
 
-TEST_P(QuicSessionTestClient, KeyUpdateSupportedLocallyAndFlagSet) {
-  SetQuicReloadableFlag(quic_key_update_supported, true);
+TEST_P(QuicSessionTestClient, KeyUpdateSupportedLocally) {
   EXPECT_CALL(*session_.GetMutableCryptoStream(), KeyUpdateSupportedLocally())
       .WillOnce(Return(true));
   session_.Initialize();
@@ -2644,8 +2507,9 @@ TEST_P(QuicSessionTestServer, LocallyResetZombieStreams) {
   stream2->WriteOrBufferData(body, true, nullptr);
   EXPECT_TRUE(stream2->IsWaitingForAcks());
   // Verify stream2 is a zombie streams.
-  ASSERT_TRUE(QuicContainsKey(session_.stream_map(), stream2->id()));
-  auto* stream = session_.stream_map().find(stream2->id())->second.get();
+  auto& stream_map = QuicSessionPeer::stream_map(&session_);
+  ASSERT_TRUE(QuicContainsKey(stream_map, stream2->id()));
+  auto* stream = stream_map.find(stream2->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 
   QuicStreamFrame frame(stream2->id(), true, 0, 100);
@@ -2692,8 +2556,9 @@ TEST_P(QuicSessionTestServer, WriteUnidirectionalStream) {
   std::string body(100, '.');
   stream4->WriteOrBufferData(body, false, nullptr);
   stream4->WriteOrBufferData(body, true, nullptr);
-  ASSERT_TRUE(QuicContainsKey(session_.stream_map(), stream4->id()));
-  auto* stream = session_.stream_map().find(stream4->id())->second.get();
+  auto& stream_map = QuicSessionPeer::stream_map(&session_);
+  ASSERT_TRUE(QuicContainsKey(stream_map, stream4->id()));
+  auto* stream = stream_map.find(stream4->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 }
 

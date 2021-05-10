@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Aucune commande précédente</translation>
 <translation id="2045606329038304310">Contrôle des champs de formulaire</translation>
 <translation id="2063539687800151747">Épigraphe</translation>
+<translation id="2074531330963286860">Actions disponibles. Appuyez sur la touche de recherche + le point pour les afficher</translation>
 <translation id="2086961585857038472">Mot suivant</translation>
 <translation id="2087981446621639008">dtl lstdscrp</translation>
 <translation id="2089387485033699258">fr</translation>
@@ -912,8 +913,9 @@
 <translation id="7800558923657349506">Épilogue</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7810781339813764006">Groupe suivant</translation>
-<translation id="7813616274030162878">Menu de Switch Access</translation>
+<translation id="7813616274030162878">Menu Switch Access</translation>
 <translation id="7839679365527550018">Mot précédent</translation>
+<translation id="7842115774595115751">Activer les commandes de navigation</translation>
 <translation id="7846634333498149051">Clavier</translation>
 <translation id="7851816175263618915">Certains signes de ponctuation</translation>
 <translation id="7871691770940645922">Affichage braille virtuel</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Retirer</translation>
 <translation id="8989104346085848538">Pour arrêter la diffusion vocale ChromeVox, appuyez sur la touche Ctrl.</translation>
+<translation id="8993737615451556423">Elles permettent d'accélérer, de ralentir et de suspendre la lecture à voix haute</translation>
 <translation id="9014206344398081366">Tutoriel ChromeVox</translation>
 <translation id="9040132695316389094">Titre 1</translation>
 <translation id="9061884144798498064">Sélectionner un tableau braille à huit points :</translation>

@@ -18,7 +18,7 @@ InkDropEventHandler::InkDropEventHandler(View* host_view, Delegate* delegate)
           std::make_unique<ui::ScopedTargetHandler>(host_view, this)),
       host_view_(host_view),
       delegate_(delegate) {
-  observer_.Add(host_view_);
+  observation_.Observe(host_view_);
 }
 
 InkDropEventHandler::~InkDropEventHandler() = default;
@@ -111,6 +111,10 @@ void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+}
+
+base::StringPiece InkDropEventHandler::GetLogContext() const {
+  return "InkDropEventHandler";
 }
 
 void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view,

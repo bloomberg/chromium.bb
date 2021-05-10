@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/chromeos_buildflags.h"
 #include "components/exo/data_source_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -19,7 +20,7 @@
 #include "ui/events/keycodes/dom/dom_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/ime/ime_controller_impl.h"
 #include "components/exo/ui_lock_controller.h"
 #endif
@@ -31,7 +32,7 @@ class KeyEvent;
 
 namespace exo {
 class DragDropOperation;
-class FileHelper;
+class DataExchangeDelegate;
 class ScopedDataSource;
 class SeatObserver;
 class Surface;
@@ -47,12 +48,15 @@ class Seat : public aura::client::FocusChangeObserver,
              public ui::PlatformEventObserver,
              public ui::EventHandler,
              public ui::ClipboardObserver,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
              public ash::ImeControllerImpl::Observer,
 #endif
              public DataSourceObserver {
  public:
+  explicit Seat(std::unique_ptr<DataExchangeDelegate> delegate);
   Seat();
+  Seat(const Seat&) = delete;
+  Seat& operator=(const Seat&) = delete;
   ~Seat() override;
 
   void Shutdown();
@@ -69,9 +73,13 @@ class Seat : public aura::client::FocusChangeObserver,
     return pressed_keys_;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const XkbTracker* xkb_tracker() const { return xkb_tracker_.get(); }
 #endif
+
+  DataExchangeDelegate* data_exchange_delegate() {
+    return data_exchange_delegate_.get();
+  }
 
   // Returns physical code for the currently processing event.
   ui::DomCode physical_code_for_currently_processing_event() const {
@@ -81,8 +89,7 @@ class Seat : public aura::client::FocusChangeObserver,
   // Sets clipboard data from |source|.
   void SetSelection(DataSource* source);
 
-  void StartDrag(FileHelper* file_helper,
-                 DataSource* source,
+  void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
                  ui::mojom::DragEventSource event_source);
@@ -111,10 +118,12 @@ class Seat : public aura::client::FocusChangeObserver,
   // Overridden from DataSourceObserver:
   void OnDataSourceDestroying(DataSource* source) override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Overridden from ash::ImeControllerImpl::Observer:
   void OnCapsLockChanged(bool enabled) override;
   void OnKeyboardLayoutNameChanged(const std::string& layout_name) override;
+
+  UILockController* GetUILockControllerForTesting();
 #endif
 
   void set_physical_code_for_currently_processing_event_for_testing(
@@ -149,12 +158,13 @@ class Seat : public aura::client::FocusChangeObserver,
                    base::OnceClosure callback,
                    const std::string& mime_type,
                    const std::vector<uint8_t>& data);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnImageDecoded(base::OnceClosure callback,
                       scoped_refptr<RefCountedScopedClipboardWriter> writer,
                       const SkBitmap& bitmap);
-#endif  // defined(OS_CHROMEOS)
-  void OnFilenamesRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  void OnFilenamesRead(ui::EndpointType source,
+                       scoped_refptr<RefCountedScopedClipboardWriter> writer,
                        base::OnceClosure callback,
                        const std::string& mime_type,
                        const std::vector<uint8_t>& data);
@@ -181,14 +191,13 @@ class Seat : public aura::client::FocusChangeObserver,
 
   bool shutdown_ = false;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<UILockController> ui_lock_controller_;
   std::unique_ptr<XkbTracker> xkb_tracker_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+  std::unique_ptr<DataExchangeDelegate> data_exchange_delegate_;
   base::WeakPtrFactory<Seat> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Seat);
 };
 
 }  // namespace exo

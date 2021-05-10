@@ -9,10 +9,14 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/privacy_screen_dlp_helper.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
+#include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_notification_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
@@ -60,12 +64,22 @@ DlpContentRestrictionSet DlpContentManager::GetOnScreenPresentRestrictions()
 
 bool DlpContentManager::IsScreenshotRestricted(
     const ScreenshotArea& area) const {
-  return IsAreaRestricted(area, DlpContentRestriction::kScreenshot);
+  const bool restricted =
+      IsAreaRestricted(area, DlpContentRestriction::kScreenshot);
+  if (restricted)
+    SYSLOG(INFO) << "DLP blocked taking a screenshot";
+  DlpBooleanHistogram(dlp::kScreenshotBlockedUMA, restricted);
+  return restricted;
 }
 
 bool DlpContentManager::IsVideoCaptureRestricted(
     const ScreenshotArea& area) const {
-  return IsAreaRestricted(area, DlpContentRestriction::kVideoCapture);
+  const bool restricted =
+      IsAreaRestricted(area, DlpContentRestriction::kVideoCapture);
+  if (restricted)
+    SYSLOG(INFO) << "DLP blocked taking a video capture";
+  DlpBooleanHistogram(dlp::kVideoCaptureBlockedUMA, restricted);
+  return restricted;
 }
 
 bool DlpContentManager::IsPrintingRestricted(
@@ -77,15 +91,23 @@ bool DlpContentManager::IsPrintingRestricted(
   web_contents =
       guest_view ? guest_view->embedder_web_contents() : web_contents;
 
-  return GetConfidentialRestrictions(web_contents)
-      .HasRestriction(DlpContentRestriction::kPrint);
+  const bool restricted = GetConfidentialRestrictions(web_contents)
+                              .HasRestriction(DlpContentRestriction::kPrint);
+  if (restricted)
+    SYSLOG(INFO) << "DLP blocked printing";
+  DlpBooleanHistogram(dlp::kPrintingBlockedUMA, restricted);
+  return restricted;
 }
 
 bool DlpContentManager::IsScreenCaptureRestricted(
     const content::DesktopMediaID& media_id) const {
   if (media_id.type == content::DesktopMediaID::Type::TYPE_SCREEN) {
-    return GetOnScreenPresentRestrictions().HasRestriction(
+    const bool restricted = GetOnScreenPresentRestrictions().HasRestriction(
         DlpContentRestriction::kScreenShare);
+    if (restricted)
+      SYSLOG(INFO) << "DLP blocked screen sharing";
+    DlpBooleanHistogram(dlp::kScreenShareBlockedUMA, restricted);
+    return restricted;
   }
 
   content::WebContents* web_contents =
@@ -95,23 +117,32 @@ bool DlpContentManager::IsScreenCaptureRestricted(
               media_id.web_contents_id.main_render_frame_id));
 
   if (media_id.type == content::DesktopMediaID::Type::TYPE_WEB_CONTENTS) {
-    return GetConfidentialRestrictions(web_contents)
-        .HasRestriction(DlpContentRestriction::kScreenShare);
+    const bool restricted =
+        GetConfidentialRestrictions(web_contents)
+            .HasRestriction(DlpContentRestriction::kScreenShare);
+    if (restricted)
+      SYSLOG(INFO) << "DLP blocked screen sharing";
+    DlpBooleanHistogram(dlp::kScreenShareBlockedUMA, restricted);
+    return restricted;
   }
 
   DCHECK_EQ(media_id.type, content::DesktopMediaID::Type::TYPE_WINDOW);
   aura::Window* window = content::DesktopMediaID::GetNativeWindowById(media_id);
   if (!window) {
+    DlpBooleanHistogram(dlp::kScreenShareBlockedUMA, false);
     return false;
   }
   for (auto& entry : confidential_web_contents_) {
     aura::Window* web_contents_window = entry.first->GetNativeView();
     if (entry.second.HasRestriction(DlpContentRestriction::kScreenShare) &&
         window->Contains(web_contents_window)) {
+      SYSLOG(INFO) << "DLP blocked screen sharing";
+      DlpBooleanHistogram(dlp::kScreenShareBlockedUMA, true);
       return true;
     }
   }
 
+  DlpBooleanHistogram(dlp::kScreenShareBlockedUMA, false);
   return false;
 }
 
@@ -130,18 +161,24 @@ void DlpContentManager::OnVideoCaptureStopped() {
 }
 
 bool DlpContentManager::IsCaptureModeInitRestricted() const {
-  return GetOnScreenPresentRestrictions().HasRestriction(
-             DlpContentRestriction::kScreenshot) ||
-         GetOnScreenPresentRestrictions().HasRestriction(
-             DlpContentRestriction::kVideoCapture);
+  const bool restricted = GetOnScreenPresentRestrictions().HasRestriction(
+                              DlpContentRestriction::kScreenshot) ||
+                          GetOnScreenPresentRestrictions().HasRestriction(
+                              DlpContentRestriction::kVideoCapture);
+  if (restricted)
+    SYSLOG(INFO) << "DLP blocked taking a screen capture";
+  DlpBooleanHistogram(dlp::kCaptureModeInitBlockedUMA, restricted);
+  return restricted;
 }
 
 void DlpContentManager::OnScreenCaptureStarted(
     const std::string& label,
     std::vector<content::DesktopMediaID> screen_capture_ids,
+    const base::string16& application_title,
     content::MediaStreamUI::StateChangeCallback state_change_callback) {
   for (const content::DesktopMediaID& id : screen_capture_ids) {
-    ScreenCaptureInfo capture_info(label, id, state_change_callback);
+    ScreenCaptureInfo capture_info(label, id, application_title,
+                                   state_change_callback);
     DCHECK(!base::Contains(running_screen_captures_, capture_info));
     running_screen_captures_.push_back(capture_info);
   }
@@ -153,7 +190,13 @@ void DlpContentManager::OnScreenCaptureStopped(
     const content::DesktopMediaID& media_id) {
   base::EraseIf(running_screen_captures_,
                 [=](const ScreenCaptureInfo& capture) -> bool {
-                  return capture.label == label && capture.media_id == media_id;
+                  const bool erased =
+                      capture.label == label && capture.media_id == media_id;
+                  if (erased && capture.showing_paused_notification)
+                    HideDlpScreenCapturePausedNotification(capture.label);
+                  if (erased && capture.showing_resumed_notification)
+                    HideDlpScreenCaptureResumedNotification(capture.label);
+                  return erased;
                 });
   MaybeUpdateScreenCaptureNotification();
 }
@@ -175,9 +218,11 @@ DlpContentManager::ScreenCaptureInfo::ScreenCaptureInfo() = default;
 DlpContentManager::ScreenCaptureInfo::ScreenCaptureInfo(
     const std::string& label,
     const content::DesktopMediaID& media_id,
+    const base::string16& application_title,
     content::MediaStreamUI::StateChangeCallback state_change_callback)
     : label(label),
       media_id(media_id),
+      application_title(application_title),
       state_change_callback(state_change_callback) {}
 DlpContentManager::ScreenCaptureInfo::ScreenCaptureInfo(
     const DlpContentManager::ScreenCaptureInfo& other) = default;
@@ -224,24 +269,27 @@ void DlpContentManager::OnWebContentsDestroyed(
 DlpContentRestrictionSet DlpContentManager::GetRestrictionSetForURL(
     const GURL& url) const {
   DlpContentRestrictionSet set;
-  if (!DlpRulesManager::IsInitialized())
+  DlpRulesManager* dlp_rules_manager =
+      DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!dlp_rules_manager)
     return set;
-  DlpRulesManager* dlp_rules_manager = DlpRulesManager::Get();
 
-  static const base::NoDestructor<std::vector<
-      std::pair<DlpRulesManager::Restriction, DlpContentRestriction>>>
-      kRestrictionsList({{DlpRulesManager::Restriction::kScreenshot,
-                          DlpContentRestriction::kScreenshot},
-                         {DlpRulesManager::Restriction::kScreenshot,
-                          DlpContentRestriction::kVideoCapture},
-                         {DlpRulesManager::Restriction::kPrivacyScreen,
-                          DlpContentRestriction::kPrivacyScreen},
-                         {DlpRulesManager::Restriction::kPrinting,
-                          DlpContentRestriction::kPrint},
-                         {DlpRulesManager::Restriction::kScreenShare,
-                          DlpContentRestriction::kScreenShare}});
+  const size_t kRestrictionsCount = 5;
+  static constexpr std::array<
+      std::pair<DlpRulesManager::Restriction, DlpContentRestriction>,
+      kRestrictionsCount>
+      kRestrictionsArray = {{{DlpRulesManager::Restriction::kScreenshot,
+                              DlpContentRestriction::kScreenshot},
+                             {DlpRulesManager::Restriction::kScreenshot,
+                              DlpContentRestriction::kVideoCapture},
+                             {DlpRulesManager::Restriction::kPrivacyScreen,
+                              DlpContentRestriction::kPrivacyScreen},
+                             {DlpRulesManager::Restriction::kPrinting,
+                              DlpContentRestriction::kPrint},
+                             {DlpRulesManager::Restriction::kScreenShare,
+                              DlpContentRestriction::kScreenShare}}};
 
-  for (const auto& restriction : *kRestrictionsList) {
+  for (const auto& restriction : kRestrictionsArray) {
     if (dlp_rules_manager->IsRestricted(url, restriction.first) ==
         DlpRulesManager::Level::kBlock) {
       set.SetRestriction(restriction.second);
@@ -292,6 +340,8 @@ void DlpContentManager::OnScreenRestrictionsChanged(
                DlpContentRestriction::kPrivacyScreen)));
   if (added_restrictions.HasRestriction(
           DlpContentRestriction::kPrivacyScreen)) {
+    SYSLOG(INFO) << "DLP enforced privacy screen";
+    DlpBooleanHistogram(dlp::kPrivacyScreenEnforcedUMA, true);
     ash::PrivacyScreenDlpHelper::Get()->SetEnforced(true);
   }
 
@@ -308,6 +358,8 @@ void DlpContentManager::OnScreenRestrictionsChanged(
 void DlpContentManager::MaybeRemovePrivacyScreenEnforcement() const {
   if (!GetOnScreenPresentRestrictions().HasRestriction(
           DlpContentRestriction::kPrivacyScreen)) {
+    SYSLOG(INFO) << "DLP removed enforcement of privacy screen";
+    DlpBooleanHistogram(dlp::kPrivacyScreenEnforcedUMA, false);
     ash::PrivacyScreenDlpHelper::Get()->SetEnforced(false);
   }
 }
@@ -372,42 +424,43 @@ void DlpContentManager::CheckRunningVideoCapture() {
     return;
   if (IsAreaRestricted(*running_video_capture_area_,
                        DlpContentRestriction::kVideoCapture)) {
-    if (ash::features::IsCaptureModeEnabled())
+    if (ash::features::IsCaptureModeEnabled()) {
+      SYSLOG(INFO) << "DLP interrupted screen recording";
+      DlpBooleanHistogram(dlp::kVideoCaptureInterruptedUMA, true);
       ChromeCaptureModeDelegate::Get()->InterruptVideoRecordingIfAny();
+    }
     running_video_capture_area_.reset();
   }
 }
 
 void DlpContentManager::MaybeUpdateScreenCaptureNotification() {
-  bool is_running = false;
-  bool is_paused = false;
   for (auto& capture : running_screen_captures_) {
-    is_running |= capture.is_running;
-    is_paused |= !capture.is_running;
-  }
-  // If a capture was paused and a "paused" notification was shown, but the
-  // capture is resumed/stopped - hide the "paused" notification.
-  if (showing_paused_notification_ && !is_paused) {
-    HideDlpScreenCapturePausedNotification();
-    showing_paused_notification_ = false;
-    // If a capture was paused and later resumed - show a "resumed" notification
-    // if not yet shown.
-    if (!showing_resumed_notification_ && is_running) {
-      ShowDlpScreenCaptureResumedNotification();
-      showing_resumed_notification_ = true;
+    // If the capture was paused and a "paused" notification was shown, but the
+    // capture is resumed - hide the "paused" notification.
+    if (capture.showing_paused_notification && capture.is_running) {
+      HideDlpScreenCapturePausedNotification(capture.label);
+      capture.showing_paused_notification = false;
+      // If the capture was paused and later resumed - show a "resumed"
+      // notification if not yet shown.
+      if (!capture.showing_resumed_notification) {
+        ShowDlpScreenCaptureResumedNotification(capture.label,
+                                                capture.application_title);
+        capture.showing_resumed_notification = true;
+      }
     }
-  }
-  // If a capture was resumed and "resumed" notification was shown, but the
-  // capture is not running anymore - hide the "resumed" notification.
-  if (showing_resumed_notification_ && !is_running) {
-    HideDlpScreenCaptureResumedNotification();
-    showing_resumed_notification_ = false;
-  }
-  // If a capture was paused, but no notification is yet shown - show "paused"
-  // notification.
-  if (!showing_paused_notification_ && is_paused) {
-    ShowDlpScreenCapturePausedNotification();
-    showing_paused_notification_ = true;
+    // If the capture was resumed and "resumed" notification was shown, but the
+    // capture is not running anymore - hide the "resumed" notification.
+    if (capture.showing_resumed_notification && !capture.is_running) {
+      HideDlpScreenCaptureResumedNotification(capture.label);
+      capture.showing_resumed_notification = false;
+    }
+    // If the capture was paused, but no notification is yet shown - show a
+    // "paused" notification.
+    if (!capture.showing_paused_notification && !capture.is_running) {
+      ShowDlpScreenCapturePausedNotification(capture.label,
+                                             capture.application_title);
+      capture.showing_paused_notification = true;
+    }
   }
 }
 
@@ -415,6 +468,9 @@ void DlpContentManager::CheckRunningScreenCaptures() {
   for (auto& capture : running_screen_captures_) {
     bool is_allowed = !IsScreenCaptureRestricted(capture.media_id);
     if (is_allowed != capture.is_running) {
+      SYSLOG(INFO) << "DLP " << (is_allowed ? "resumed" : "paused")
+                   << " running screen share";
+      DlpBooleanHistogram(dlp::kScreenSharePausedOrResumedUMA, !is_allowed);
       capture.state_change_callback.Run(
           capture.media_id, capture.is_running
                                 ? blink::mojom::MediaStreamStateChange::PAUSE
@@ -428,6 +484,16 @@ void DlpContentManager::CheckRunningScreenCaptures() {
 // static
 base::TimeDelta DlpContentManager::GetPrivacyScreenOffDelayForTesting() {
   return kPrivacyScreenOffDelay;
+}
+
+// ScopedDlpContentManagerForTesting
+ScopedDlpContentManagerForTesting::ScopedDlpContentManagerForTesting(
+    DlpContentManager* test_dlp_content_manager) {
+  DlpContentManager::SetDlpContentManagerForTesting(test_dlp_content_manager);
+}
+
+ScopedDlpContentManagerForTesting::~ScopedDlpContentManagerForTesting() {
+  DlpContentManager::ResetDlpContentManagerForTesting();
 }
 
 }  // namespace policy

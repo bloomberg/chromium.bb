@@ -319,8 +319,6 @@ bool QueryNodePhrase::HasMatchIn(const QueryWordVector& words) const {
   return MatchesAll(words, &first_word, &last_word);
 }
 
-QueryParser::QueryParser() {}
-
 // static
 bool QueryParser::IsWordLongEnoughForPrefixSearch(
     const base::string16& word, MatchingAlgorithm matching_algorithm) {
@@ -337,6 +335,7 @@ bool QueryParser::IsWordLongEnoughForPrefixSearch(
   return word.size() >= minimum_length;
 }
 
+// static
 int QueryParser::ParseQuery(const base::string16& query,
                             MatchingAlgorithm matching_algorithm,
                             base::string16* sqlite_query) {
@@ -346,6 +345,7 @@ int QueryParser::ParseQuery(const base::string16& query,
   return root.AppendToSQLiteQuery(sqlite_query);
 }
 
+// static
 void QueryParser::ParseQueryWords(const base::string16& query,
                                   MatchingAlgorithm matching_algorithm,
                                   std::vector<base::string16>* words) {
@@ -355,6 +355,7 @@ void QueryParser::ParseQueryWords(const base::string16& query,
   root.AppendWords(words);
 }
 
+// static
 void QueryParser::ParseQueryNodes(const base::string16& query,
                                   MatchingAlgorithm matching_algorithm,
                                   QueryNodeVector* nodes) {
@@ -363,25 +364,26 @@ void QueryParser::ParseQueryNodes(const base::string16& query,
     nodes->swap(*root.children());
 }
 
-bool QueryParser::DoesQueryMatch(const base::string16& text,
-                                 const QueryNodeVector& query_nodes,
+// static
+bool QueryParser::DoesQueryMatch(const base::string16& find_in_text,
+                                 const QueryNodeVector& find_nodes,
                                  Snippet::MatchPositions* match_positions) {
-  if (query_nodes.empty())
+  if (find_nodes.empty())
     return false;
 
   QueryWordVector query_words;
-  base::string16 lower_text = base::i18n::ToLower(text);
-  ExtractQueryWords(lower_text, &query_words);
+  base::string16 lower_find_in_text = base::i18n::ToLower(find_in_text);
+  ExtractQueryWords(lower_find_in_text, &query_words);
 
   if (query_words.empty())
     return false;
 
   Snippet::MatchPositions matches;
-  for (size_t i = 0; i < query_nodes.size(); ++i) {
-    if (!query_nodes[i]->HasMatchIn(query_words, &matches))
+  for (auto& find_node : find_nodes) {
+    if (!find_node->HasMatchIn(query_words, &matches))
       return false;
   }
-  if (lower_text.length() != text.length()) {
+  if (lower_find_in_text.length() != find_in_text.length()) {
     // The lower case string differs from the original string. The matches are
     // meaningless.
     // TODO(sky): we need a better way to align the positions so that we don't
@@ -394,18 +396,20 @@ bool QueryParser::DoesQueryMatch(const base::string16& text,
   return true;
 }
 
-bool QueryParser::DoesQueryMatch(const QueryWordVector& query_words,
-                                 const QueryNodeVector& query_nodes) {
-  if (query_nodes.empty() || query_words.empty())
+// static
+bool QueryParser::DoesQueryMatch(const QueryWordVector& find_in_words,
+                                 const QueryNodeVector& find_nodes) {
+  if (find_nodes.empty() || find_in_words.empty())
     return false;
 
-  for (size_t i = 0; i < query_nodes.size(); ++i) {
-    if (!query_nodes[i]->HasMatchIn(query_words))
+  for (auto& find_node : find_nodes) {
+    if (!find_node->HasMatchIn(find_in_words))
       return false;
   }
   return true;
 }
 
+// static
 bool QueryParser::ParseQueryImpl(const base::string16& query,
                                  MatchingAlgorithm matching_algorithm,
                                  QueryNodeList* root) {
@@ -451,6 +455,7 @@ bool QueryParser::ParseQueryImpl(const base::string16& query,
   return true;
 }
 
+// static
 void QueryParser::ExtractQueryWords(const base::string16& text,
                                     QueryWordVector* words) {
   base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);

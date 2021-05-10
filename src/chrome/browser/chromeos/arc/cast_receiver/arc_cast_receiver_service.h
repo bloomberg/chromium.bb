@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/arc/mojom/cast_receiver.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -51,8 +51,7 @@ class ArcCastReceiverService
 
   // Observers for preferences and settings changes.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      receiver_name_subscription_;
+  base::CallbackListSubscription receiver_name_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCastReceiverService);
 };

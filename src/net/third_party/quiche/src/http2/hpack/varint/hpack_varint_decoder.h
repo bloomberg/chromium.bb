@@ -31,10 +31,10 @@
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "http2/decoder/decode_buffer.h"
+#include "http2/decoder/decode_status.h"
+#include "http2/platform/api/http2_logging.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 
@@ -102,12 +102,12 @@ class QUICHE_EXPORT_PRIVATE HpackVarintDecoder {
   }
   void CheckNotDone() const {
 #ifndef NDEBUG
-    DCHECK_NE(kHpackVarintDecoderOffsetDone, offset_);
+    QUICHE_DCHECK_NE(kHpackVarintDecoderOffsetDone, offset_);
 #endif
   }
   void CheckDone() const {
 #ifndef NDEBUG
-    DCHECK_EQ(kHpackVarintDecoderOffsetDone, offset_);
+    QUICHE_DCHECK_EQ(kHpackVarintDecoderOffsetDone, offset_);
 #endif
   }
 

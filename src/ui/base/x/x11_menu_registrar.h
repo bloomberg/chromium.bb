@@ -11,24 +11,26 @@
 #include <string>
 #include <vector>
 
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 
-namespace ui {
-
+namespace x11 {
 class XScopedEventSelector;
+}
+
+namespace ui {
 
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when the browser
 // shuts down.
-class X11MenuRegistrar : public ui::XEventDispatcher {
+class X11MenuRegistrar : public x11::EventObserver {
  public:
   // Returns the singleton handler.  Creates one if one has not
   // already been created.
   static X11MenuRegistrar* Get();
 
-  // ui::XEventDispatcher
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver
+  void OnEvent(const x11::Event& event) override;
 
  private:
   X11MenuRegistrar();
@@ -39,7 +41,7 @@ class X11MenuRegistrar : public ui::XEventDispatcher {
   void OnWindowCreatedOrDestroyed(bool created, x11::Window window);
 
   // Events selected on |x_root_window_|.
-  std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
+  std::unique_ptr<x11::XScopedEventSelector> x_root_window_events_;
 };
 
 }  // namespace ui

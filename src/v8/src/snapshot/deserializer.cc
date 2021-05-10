@@ -5,6 +5,7 @@
 #include "src/snapshot/deserializer.h"
 
 #include "src/base/logging.h"
+#include "src/base/platform/wrappers.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/common/assert-scope.h"
 #include "src/common/external-pointer.h"
@@ -191,7 +192,7 @@ class SlotAccessorForHandle {
 template <typename TSlot>
 int Deserializer::WriteAddress(TSlot dest, Address value) {
   DCHECK(!next_reference_is_weak_);
-  memcpy(dest.ToVoidPtr(), &value, kSystemPointerSize);
+  base::Memcpy(dest.ToVoidPtr(), &value, kSystemPointerSize);
   STATIC_ASSERT(IsAligned(kSystemPointerSize, TSlot::kSlotDataSize));
   return (kSystemPointerSize / TSlot::kSlotDataSize);
 }
@@ -281,14 +282,14 @@ void Deserializer::DeserializeDeferredObjects() {
 void Deserializer::LogNewMapEvents() {
   DisallowGarbageCollection no_gc;
   for (Handle<Map> map : new_maps_) {
-    DCHECK(FLAG_trace_maps);
+    DCHECK(FLAG_log_maps);
     LOG(isolate(), MapCreate(*map));
     LOG(isolate(), MapDetails(*map));
   }
 }
 
 void Deserializer::WeakenDescriptorArrays() {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   for (Handle<DescriptorArray> descriptor_array : new_descriptor_arrays_) {
     DCHECK(descriptor_array->IsStrongDescriptorArray());
     descriptor_array->set_map(ReadOnlyRoots(isolate()).descriptor_array_map());
@@ -305,12 +306,12 @@ void Deserializer::LogScriptEvents(Script script) {
 }
 
 StringTableInsertionKey::StringTableInsertionKey(Handle<String> string)
-    : StringTableKey(ComputeHashField(*string), string->length()),
+    : StringTableKey(ComputeRawHashField(*string), string->length()),
       string_(string) {
   DCHECK(string->IsInternalizedString());
 }
 
-bool StringTableInsertionKey::IsMatch(String string) {
+bool StringTableInsertionKey::IsMatch(Isolate* isolate, String string) {
   // We want to compare the content of two strings here.
   return string_->SlowEquals(string);
 }
@@ -319,10 +320,10 @@ Handle<String> StringTableInsertionKey::AsHandle(Isolate* isolate) {
   return string_;
 }
 
-uint32_t StringTableInsertionKey::ComputeHashField(String string) {
-  // Make sure hash_field() is computed.
-  string.Hash();
-  return string.hash_field();
+uint32_t StringTableInsertionKey::ComputeRawHashField(String string) {
+  // Make sure raw_hash_field() is computed.
+  string.EnsureHash();
+  return string.raw_hash_field();
 }
 
 void Deserializer::PostProcessNewObject(Handle<Map> map, Handle<HeapObject> obj,
@@ -335,7 +336,7 @@ void Deserializer::PostProcessNewObject(Handle<Map> map, Handle<HeapObject> obj,
     if (InstanceTypeChecker::IsString(instance_type)) {
       // Uninitialize hash field as we need to recompute the hash.
       Handle<String> string = Handle<String>::cast(obj);
-      string->set_hash_field(String::kEmptyHashField);
+      string->set_raw_hash_field(String::kEmptyHashField);
       // Rehash strings before read-only space is sealed. Strings outside
       // read-only space are rehashed lazily. (e.g. when rehashing dictionaries)
       if (space == SnapshotSpace::kReadOnlyHeap) {
@@ -386,7 +387,7 @@ void Deserializer::PostProcessNewObject(Handle<Map> map, Handle<HeapObject> obj,
       new_code_objects_.push_back(Handle<Code>::cast(obj));
     }
   } else if (InstanceTypeChecker::IsMap(instance_type)) {
-    if (FLAG_trace_maps) {
+    if (FLAG_log_maps) {
       // Keep track of all seen Maps to log them later since they might be only
       // partially initialized at this point.
       new_maps_.push_back(Handle<Map>::cast(obj));

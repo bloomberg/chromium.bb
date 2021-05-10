@@ -10,7 +10,17 @@ avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb)
 {
     (void)image;
     (void)rgb;
-    return AVIF_RESULT_NO_CONTENT;
+    return AVIF_RESULT_NOT_IMPLEMENTED;
+}
+avifResult avifRGBImagePremultiplyAlphaLibYUV(avifRGBImage * rgb)
+{
+    (void)rgb;
+    return AVIF_RESULT_NOT_IMPLEMENTED;
+}
+avifResult avifRGBImageUnpremultiplyAlphaLibYUV(avifRGBImage * rgb)
+{
+    (void)rgb;
+    return AVIF_RESULT_NOT_IMPLEMENTED;
 }
 unsigned int avifLibYUVVersion(void)
 {
@@ -33,12 +43,12 @@ avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb)
     // See if the current settings can be accomplished with libyuv, and use it (if possible).
 
     if ((image->depth != 8) || (rgb->depth != 8)) {
-        return AVIF_RESULT_NO_CONTENT;
+        return AVIF_RESULT_NOT_IMPLEMENTED;
     }
 
     if ((rgb->chromaUpsampling != AVIF_CHROMA_UPSAMPLING_AUTOMATIC) && (rgb->chromaUpsampling != AVIF_CHROMA_UPSAMPLING_FASTEST)) {
         // libyuv uses its own upsampling filter. If the enduser chose a specific one, avoid using libyuv.
-        return AVIF_RESULT_NO_CONTENT;
+        return AVIF_RESULT_NOT_IMPLEMENTED;
     }
 
     // Find the correct libyuv YuvConstants, based on range and CP/MC
@@ -145,7 +155,7 @@ avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb)
 
     if (!matrixYVU) {
         // No YuvConstants exist for the current image; use the built-in YUV conversion
-        return AVIF_RESULT_NO_CONTENT;
+        return AVIF_RESULT_NOT_IMPLEMENTED;
     }
 
     // This following section might be a bit complicated to audit without a bit of explanation:
@@ -419,7 +429,50 @@ avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb)
     }
 
     // This function didn't do anything; use the built-in YUV conversion
-    return AVIF_RESULT_NO_CONTENT;
+    return AVIF_RESULT_NOT_IMPLEMENTED;
+}
+
+avifResult avifRGBImagePremultiplyAlphaLibYUV(avifRGBImage * rgb)
+{
+    // See if the current settings can be accomplished with libyuv, and use it (if possible).
+
+    if (rgb->depth != 8) {
+        return AVIF_RESULT_NOT_IMPLEMENTED;
+    }
+
+    // libavif uses byte-order when describing pixel formats, such that the R in RGBA is the lowest address,
+    // similar to PNG. libyuv orders in word-order, so libavif's RGBA would be referred to in libyuv as ABGR.
+
+    // Order of RGB doesn't matter here.
+    if (rgb->format == AVIF_RGB_FORMAT_RGBA || rgb->format == AVIF_RGB_FORMAT_BGRA) {
+        if (ARGBAttenuate(rgb->pixels, rgb->rowBytes, rgb->pixels, rgb->rowBytes, rgb->width, rgb->height) != 0) {
+            return AVIF_RESULT_REFORMAT_FAILED;
+        }
+        return AVIF_RESULT_OK;
+    }
+
+    return AVIF_RESULT_NOT_IMPLEMENTED;
+}
+
+avifResult avifRGBImageUnpremultiplyAlphaLibYUV(avifRGBImage * rgb)
+{
+    // See if the current settings can be accomplished with libyuv, and use it (if possible).
+
+    if (rgb->depth != 8) {
+        return AVIF_RESULT_NOT_IMPLEMENTED;
+    }
+
+    // libavif uses byte-order when describing pixel formats, such that the R in RGBA is the lowest address,
+    // similar to PNG. libyuv orders in word-order, so libavif's RGBA would be referred to in libyuv as ABGR.
+
+    if (rgb->format == AVIF_RGB_FORMAT_RGBA || rgb->format == AVIF_RGB_FORMAT_BGRA) {
+        if (ARGBUnattenuate(rgb->pixels, rgb->rowBytes, rgb->pixels, rgb->rowBytes, rgb->width, rgb->height) != 0) {
+            return AVIF_RESULT_REFORMAT_FAILED;
+        }
+        return AVIF_RESULT_OK;
+    }
+
+    return AVIF_RESULT_NOT_IMPLEMENTED;
 }
 
 unsigned int avifLibYUVVersion(void)

@@ -41,6 +41,7 @@
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -49,6 +50,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 // static
@@ -60,16 +62,16 @@ views::Widget* TabGroupEditorBubbleView::Show(
     views::View* anchor_view,
     bool stop_context_menu_propagation) {
   // If |header_view| is not null, use |header_view| as the |anchor_view|.
-  views::Widget* const widget =
-      BubbleDialogDelegateView::CreateBubble(new TabGroupEditorBubbleView(
+  TabGroupEditorBubbleView* tab_group_editor_bubble_view =
+      new TabGroupEditorBubbleView(
           browser, group, header_view ? header_view : anchor_view, anchor_rect,
-          header_view, stop_context_menu_propagation));
+          header_view, stop_context_menu_propagation);
+  views::Widget* const widget =
+      BubbleDialogDelegateView::CreateBubble(tab_group_editor_bubble_view);
+  tab_group_editor_bubble_view->set_adjust_if_offscreen(true);
+  tab_group_editor_bubble_view->SizeToContents();
   widget->Show();
   return widget;
-}
-
-ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
 }
 
 views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
@@ -108,6 +110,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   set_margins(gfx::Insets());
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetModalType(ui::MODAL_TYPE_NONE);
 
   const base::string16 title = browser_->tab_strip_model()
                                    ->group_model()
@@ -172,8 +175,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
           this, colors_, initial_color_id,
-          base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
-                     base::Unretained(this))));
+          base::BindRepeating(&TabGroupEditorBubbleView::UpdateGroup,
+                              base::Unretained(this))));
   color_selector_->SetProperty(
       views::kMarginsKey,
       gfx::Insets(0, control_insets.left(), 0, control_insets.right()));
@@ -285,7 +288,7 @@ void TabGroupEditorBubbleView::NewTabInGroupPressed() {
       base::UserMetricsAction("TabGroups_TabGroupBubble_NewTabInGroup"));
   TabStripModel* const model = browser_->tab_strip_model();
   const auto tabs = model->group_model()->GetTabGroup(group_)->ListTabs();
-  model->delegate()->AddTabAt(GURL(), tabs.back() + 1, true, group_);
+  model->delegate()->AddTabAt(GURL(), tabs.end(), true, group_);
   // Close the widget to allow users to continue their work in their newly
   // created tab.
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
@@ -297,7 +300,16 @@ void TabGroupEditorBubbleView::UngroupPressed(TabGroupHeader* header_view) {
   if (header_view)
     header_view->RemoveObserverFromWidget(GetWidget());
   TabStripModel* const model = browser_->tab_strip_model();
-  model->RemoveFromGroup(model->group_model()->GetTabGroup(group_)->ListTabs());
+
+  const gfx::Range tab_range =
+      model->group_model()->GetTabGroup(group_)->ListTabs();
+
+  std::vector<int> tabs;
+  tabs.reserve(tab_range.length());
+  for (auto i = tab_range.start(); i < tab_range.end(); ++i)
+    tabs.push_back(i);
+
+  model->RemoveFromGroup(tabs);
   // Close the widget because it is no longer applicable.
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
@@ -306,9 +318,9 @@ void TabGroupEditorBubbleView::CloseGroupPressed() {
   base::RecordAction(
       base::UserMetricsAction("TabGroups_TabGroupBubble_CloseGroup"));
   TabStripModel* const model = browser_->tab_strip_model();
-  const auto tabs = model->group_model()->GetTabGroup(group_)->ListTabs();
-  for (const auto& tab : base::Reversed(tabs)) {
-    model->CloseWebContentsAt(tab,
+  const gfx::Range tabs = model->group_model()->GetTabGroup(group_)->ListTabs();
+  for (auto i = tabs.end(); i != tabs.start(); --i) {
+    model->CloseWebContentsAt(i - 1,
                               TabStripModel::CLOSE_USER_GESTURE |
                                   TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
   }
@@ -339,6 +351,9 @@ void TabGroupEditorBubbleView::OnBubbleClose() {
         base::UserMetricsAction("TabGroups_TabGroupBubble_NameChanged"));
   }
 }
+
+BEGIN_METADATA(TabGroupEditorBubbleView, views::BubbleDialogDelegateView)
+END_METADATA
 
 void TabGroupEditorBubbleView::TitleFieldController::ContentsChanged(
     views::Textfield* sender,
@@ -385,3 +400,6 @@ void TabGroupEditorBubbleView::TitleField::ShowContextMenu(
   }
   views::Textfield::ShowContextMenu(p, source_type);
 }
+
+BEGIN_METADATA(TabGroupEditorBubbleView, TitleField, views::Textfield)
+END_METADATA

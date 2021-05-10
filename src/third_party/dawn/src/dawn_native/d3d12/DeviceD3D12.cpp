@@ -14,16 +14,11 @@
 
 #include "dawn_native/d3d12/DeviceD3D12.h"
 
-#include "common/Assert.h"
-#include "dawn_native/BackendConnection.h"
-#include "dawn_native/ErrorData.h"
-#include "dawn_native/Format.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/d3d12/AdapterD3D12.h"
 #include "dawn_native/d3d12/BackendD3D12.h"
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
-#include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/CommandAllocatorManager.h"
 #include "dawn_native/d3d12/CommandBufferD3D12.h"
 #include "dawn_native/d3d12/ComputePipelineD3D12.h"
@@ -42,7 +37,6 @@
 #include "dawn_native/d3d12/StagingBufferD3D12.h"
 #include "dawn_native/d3d12/StagingDescriptorAllocatorD3D12.h"
 #include "dawn_native/d3d12/SwapChainD3D12.h"
-#include "dawn_native/d3d12/TextureD3D12.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
 
 #include <sstream>
@@ -76,6 +70,15 @@ namespace dawn_native { namespace d3d12 {
         DAWN_TRY(
             CheckHRESULT(mD3d12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)),
                          "D3D12 create command queue"));
+
+        // Get GPU timestamp counter frequency (in ticks/second). This fails if the specified
+        // command queue doesn't support timestamps, D3D12_COMMAND_LIST_TYPE_DIRECT always support
+        // timestamps.
+        uint64_t frequency;
+        DAWN_TRY(CheckHRESULT(mCommandQueue->GetTimestampFrequency(&frequency),
+                              "D3D12 get timestamp frequency"));
+        // Calculate the period in nanoseconds by the frequency.
+        mTimestampPeriod = static_cast<float>(1e9) / frequency;
 
         // If PIX is not attached, the QueryInterface fails. Hence, no need to check the return
         // value.
@@ -153,6 +156,10 @@ namespace dawn_native { namespace d3d12 {
         // Device shouldn't be used until after DeviceBase::Initialize so we must wait until after
         // device initialization to call NextSerial
         DAWN_TRY(NextSerial());
+
+        // The environment can only use DXC when it's available. Override the decision if it is not
+        // applicable.
+        ApplyUseDxcToggle();
         return {};
     }
 
@@ -188,12 +195,25 @@ namespace dawn_native { namespace d3d12 {
         return ToBackend(GetAdapter())->GetBackend()->GetFactory();
     }
 
+    void Device::ApplyUseDxcToggle() {
+        if (!ToBackend(GetAdapter())->GetBackend()->GetFunctions()->IsDXCAvailable()) {
+            ForceSetToggle(Toggle::UseDXC, false);
+        } else if (IsExtensionEnabled(Extension::ShaderFloat16)) {
+            // Currently we can only use DXC to compile HLSL shaders using float16.
+            ForceSetToggle(Toggle::UseDXC, true);
+        }
+    }
+
     ResultOrError<IDxcLibrary*> Device::GetOrCreateDxcLibrary() const {
         return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcLibrary();
     }
 
     ResultOrError<IDxcCompiler*> Device::GetOrCreateDxcCompiler() const {
         return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcCompiler();
+    }
+
+    ResultOrError<IDxcValidator*> Device::GetOrCreateDxcValidator() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcValidator();
     }
 
     const PlatformFunctions* Device::GetFunctions() const {
@@ -228,8 +248,11 @@ namespace dawn_native { namespace d3d12 {
         mRenderTargetViewAllocator->Tick(completedSerial);
         mDepthStencilViewAllocator->Tick(completedSerial);
         mUsedComObjectRefs.ClearUpTo(completedSerial);
-        DAWN_TRY(ExecutePendingCommandContext());
-        DAWN_TRY(NextSerial());
+
+        if (mPendingCommands.IsOpen()) {
+            DAWN_TRY(ExecutePendingCommandContext());
+            DAWN_TRY(NextSerial());
+        }
 
         DAWN_TRY(CheckDebugLayerAndGenerateErrors());
 
@@ -256,7 +279,13 @@ namespace dawn_native { namespace d3d12 {
     }
 
     ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
-        return ExecutionSerial(mFence->GetCompletedValue());
+        ExecutionSerial completeSerial = ExecutionSerial(mFence->GetCompletedValue());
+
+        if (completeSerial <= GetCompletedCommandSerial()) {
+            return ExecutionSerial(0);
+        }
+
+        return completeSerial;
     }
 
     void Device::ReferenceUntilUnused(ComPtr<IUnknown> object) {
@@ -303,8 +332,9 @@ namespace dawn_native { namespace d3d12 {
         return new Sampler(this, descriptor);
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
@@ -410,13 +440,13 @@ namespace dawn_native { namespace d3d12 {
                                               HANDLE sharedHandle,
                                               ExternalMutexSerial acquireMutexKey,
                                               bool isSwapChainTexture) {
-        Ref<TextureBase> dawnTexture;
+        Ref<Texture> dawnTexture;
         if (ConsumedError(Texture::Create(this, descriptor, sharedHandle, acquireMutexKey,
                                           isSwapChainTexture),
-                          &dawnTexture))
+                          &dawnTexture)) {
             return nullptr;
-
-        return dawnTexture;
+        }
+        return {dawnTexture};
     }
 
     // We use IDXGIKeyedMutexes to synchronize access between D3D11 and D3D12. D3D11/12 fences
@@ -522,7 +552,8 @@ namespace dawn_native { namespace d3d12 {
         }
 
         ComPtr<ID3D12InfoQueue> infoQueue;
-        ASSERT_SUCCESS(mD3d12Device.As(&infoQueue));
+        DAWN_TRY(CheckHRESULT(mD3d12Device.As(&infoQueue),
+                              "D3D12 QueryInterface ID3D12Device to ID3D12InfoQueue"));
         uint64_t totalErrors = infoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
 
         // Check if any errors have occurred otherwise we would be creating an empty error. Note
@@ -630,6 +661,10 @@ namespace dawn_native { namespace d3d12 {
     // so we return 1 and let ComputeTextureCopySplits take care of the alignment.
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return mTimestampPeriod;
     }
 
 }}  // namespace dawn_native::d3d12

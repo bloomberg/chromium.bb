@@ -29,6 +29,17 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   return it == registry_.end() ? nullptr : it->second.get();
 }
 
+std::vector<AppId> WebAppRegistrar::GetAppsInSyncInstall() {
+  AppSet apps_in_sync_install = AppSet(
+      this, [](const WebApp& web_app) { return web_app.is_in_sync_install(); });
+
+  std::vector<AppId> app_ids;
+  for (const WebApp& app : apps_in_sync_install)
+    app_ids.push_back(app.app_id());
+
+  return app_ids;
+}
+
 void WebAppRegistrar::Start() {
   // Profile manager can be null in unit tests.
   if (g_browser_process->profile_manager())
@@ -105,6 +116,13 @@ const apps::ShareTarget* WebAppRegistrar::GetAppShareTarget(
              : nullptr;
 }
 
+blink::mojom::CaptureLinks WebAppRegistrar::GetAppCaptureLinks(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->capture_links()
+                 : blink::mojom::CaptureLinks::kUndefined;
+}
+
 base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
@@ -136,6 +154,18 @@ std::vector<DisplayMode> WebAppRegistrar::GetAppDisplayModeOverride(
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->display_mode_override()
                  : std::vector<DisplayMode>();
+}
+
+apps::UrlHandlers WebAppRegistrar::GetAppUrlHandlers(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->url_handlers()
+                 : std::vector<apps::UrlHandlerInfo>();
+}
+
+GURL WebAppRegistrar::GetAppManifestUrl(const web_app::AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->manifest_url() : GURL::EmptyGURL();
 }
 
 base::Time WebAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
@@ -189,8 +219,7 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
 RunOnOsLoginMode WebAppRegistrar::GetAppRunOnOsLoginMode(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->run_on_os_login_mode()
-                 : RunOnOsLoginMode::kUndefined;
+  return web_app ? web_app->run_on_os_login_mode() : RunOnOsLoginMode::kNotRun;
 }
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {

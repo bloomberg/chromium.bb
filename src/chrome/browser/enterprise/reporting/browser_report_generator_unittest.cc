@@ -12,6 +12,7 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler_test.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
@@ -27,9 +28,9 @@
 #include "device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/common/chrome_constants.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace em = enterprise_management;
 
@@ -47,11 +48,15 @@ const char kPluginFileName[] = "plugin_file_name";
 
 }  // namespace
 
-class BrowserReportGeneratorTest : public ::testing::Test {
+class BrowserReportGeneratorTest : public ::testing::Test,
+                                   public ::testing::WithParamInterface<bool> {
  public:
   BrowserReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        generator_(&delegate_factory_) {}
+        generator_(&delegate_factory_) {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
   ~BrowserReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -76,10 +81,10 @@ class BrowserReportGeneratorTest : public ::testing::Test {
     profile_manager_.CreateGuestProfile();
     profile_manager_.CreateSystemProfile();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
     profile_manager_.CreateTestingProfile(chrome::kLockScreenAppProfile);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   void InitializePlugin() {
@@ -112,7 +117,7 @@ class BrowserReportGeneratorTest : public ::testing::Test {
             [&run_loop](std::unique_ptr<em::BrowserReport> report) {
               EXPECT_TRUE(report.get());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
               EXPECT_FALSE(report->has_browser_version());
               EXPECT_FALSE(report->has_channel());
               EXPECT_FALSE(report->has_installed_browser_version());
@@ -136,9 +141,9 @@ class BrowserReportGeneratorTest : public ::testing::Test {
                   report->chrome_user_profile_infos(0);
               EXPECT_NE(std::string(), profile.id());
               EXPECT_EQ(kProfileName, profile.name());
-              EXPECT_FALSE(profile.is_full_report());
+              EXPECT_FALSE(profile.is_detail_available());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
               EXPECT_EQ(0, report->plugins_size());
 #else
               EXPECT_LE(1, report->plugins_size());
@@ -191,19 +196,20 @@ class BrowserReportGeneratorTest : public ::testing::Test {
   TestingProfileManager profile_manager_;
   BrowserReportGenerator generator_;
   ScopedExtensionRequestReportThrottler throttler_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserReportGeneratorTest);
 };
 
-TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
+TEST_P(BrowserReportGeneratorTest, GenerateBasicReport) {
   InitializeProfile();
   InitializeIrregularProfiles();
   InitializePlugin();
   GenerateAndVerify();
 }
 
-#if !defined(OS_CHROMEOS)
-TEST_F(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_P(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -212,7 +218,7 @@ TEST_F(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
 }
 #endif
 
-TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnly) {
+TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnly) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -226,7 +232,7 @@ TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnly) {
 
 // It's possible that the extension request report is delayed and by the time
 // report is generated, the extension request report throttler is disabled.
-TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
+TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -235,5 +241,9 @@ TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
   throttler()->Disable();
   GenerateExtensinRequestReportAndVerify({});
 }
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         BrowserReportGeneratorTest,
+                         /*is_ephemeral=*/testing::Bool());
 
 }  // namespace enterprise_reporting

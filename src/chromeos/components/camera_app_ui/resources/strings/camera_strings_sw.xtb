@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1175958423215084756">Kiungo kimetambuliwa. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Picha za matunzio</translation>
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1473110567575736769">Kipima muda wa sekunde tatu</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">IMESITISHWA</translation>
 <translation id="1862930711583847113">Imeshindwa kutuma <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Ubora wa picha</translation>
+<translation id="2022953316617983419">Msimbo wa QR</translation>
 <translation id="2036868001356139588">Urefu wa kipima muda</translation>
 <translation id="2050339315714019657">Wima</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> inatumika</translation>
+<translation id="2144806332417375165">Vigezo maalum vya video</translation>
 <translation id="229579744168541441">Tuma kwenye diski</translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2501853267655415902">Imeacha kurekodi</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">FPS 30</translation>
 <translation id="3183731565330012717">Aina ya gridi</translation>
 <translation id="3227137524299004712">Maikrofoni</translation>
+<translation id="3240426699337459095">Kiungo kimenakiliwa</translation>
 <translation id="3259149966178251584">Ubora wa kamera</translation>
 <translation id="3517926952904427380">Imeshindwa kupiga picha ya wima</translation>
 <translation id="3569311554794739032">Una uhakika ungependa kuondoa <ph name="FILE" />?</translation>
-<translation id="3750315947605636967">Kamera yako inatumiwa na programu nyingine</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3838931309141338733">Changanua msimbo wa mistari</translation>
+<translation id="3892148308691398805">Nakili maandishi</translation>
 <translation id="4000398125663085899">Picha na video mpya sasa zitahifadhiwa kwenye folda katika programu ya Faili: Faili zangu &gt; Kamera</translation>
 <translation id="4118525110028899586">Sitisha kurekodi</translation>
+<translation id="4269820728363426813">Nakili anwani ya kiungo</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
 <translation id="4329152592498422850">Badili ili upige picha ya mraba</translation>
 <translation id="4383571725254449280">Chapisha kumbukumbu za utendaji</translation>
@@ -68,11 +74,15 @@ Iwapo maoni yako yanahusu ubora wa picha au video, tafadhali ambatisha mfano wa 
 <translation id="7134221860976209830">Kipima muda wa sekunde 10</translation>
 <translation id="7243947652761655814">Ubora wa video</translation>
 <translation id="7337660886763914220">Hitilafu za mfumo wa faili.</translation>
+<translation id="7450541714075000668">Maandishi yamenakiliwa</translation>
 <translation id="7557677699350329807">Tumia kamera inayofuata</translation>
+<translation id="7607002721634913082">Imepumzishwa</translation>
 <translation id="7608223098072244877">4 kwa 4</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">Onyesha chaguo za kugeuza upande, kuinamisha na kukuza</translation>
+<translation id="7983668134180549431">Maandishi yametambuliwa.</translation>
 <translation id="8067883171444229417">Cheza video</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8145038249676204903">Piga picha</translation>

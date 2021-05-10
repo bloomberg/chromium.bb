@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/masque/masque_epoll_server.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/masque/masque_dispatcher.h"
-#include "net/third_party/quiche/src/quic/masque/masque_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
+#include "quic/masque/masque_epoll_server.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
+#include "quic/masque/masque_dispatcher.h"
+#include "quic/masque/masque_utils.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/tools/quic_simple_crypto_server_stream_helper.h"
 
 namespace quic {
 
@@ -18,7 +18,6 @@ MasqueEpollServer::MasqueEpollServer(MasqueServerBackend* masque_server_backend)
       masque_server_backend_(masque_server_backend) {}
 
 QuicDispatcher* MasqueEpollServer::CreateQuicDispatcher() {
-  QuicEpollAlarmFactory alarm_factory(epoll_server());
   return new MasqueDispatcher(
       &config(), &crypto_config(), version_manager(),
       std::make_unique<QuicEpollConnectionHelper>(epoll_server(),

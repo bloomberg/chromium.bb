@@ -9,6 +9,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -84,7 +85,7 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   for (auto& observer : observers_)
     observer.OnRenderWidgetHostViewBaseDestroyed(this);
   // All observers are required to disconnect after they are notified.
-  DCHECK(!observers_.might_have_observers());
+  DCHECK(observers_.empty());
 }
 
 MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
@@ -244,7 +245,7 @@ void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
                const SkBitmap& popup_image) {
               // Draw popup_image into main_image.
               SkCanvas canvas(main_image, SkSurfaceProps{});
-              canvas.drawBitmap(popup_image, offset.x(), offset.y());
+              canvas.drawImage(popup_image.asImage(), offset.x(), offset.y());
               std::move(final_callback).Run(main_image);
             },
             std::move(final_callback), offset, std::move(main_image));
@@ -275,7 +276,7 @@ std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
 RenderWidgetHostViewBase::CreateVideoCapturer() {
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer =
       GetHostFrameSinkManager()->CreateVideoCapturer();
-  video_capturer->ChangeTarget(GetFrameSinkId());
+  video_capturer->ChangeTarget(GetFrameSinkId(), viz::SubtreeCaptureId());
   return video_capturer;
 }
 
@@ -427,14 +428,6 @@ WidgetType RenderWidgetHostViewBase::GetWidgetType() {
   return widget_type_;
 }
 
-BrowserAccessibilityManager*
-RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate,
-    bool for_root_frame) {
-  NOTREACHED();
-  return nullptr;
-}
-
 gfx::AcceleratedWidget
     RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;
@@ -464,26 +457,28 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (host() && host()->delegate())
     host()->delegate()->SendScreenRects();
 
+  // TODO(crbug.com/1169312): Unify display info caching and change detection.
+  display::Display::Rotation old_display_rotation = current_display_.rotation();
   if (HasDisplayPropertyChanged(view) && host()) {
-    OnSynchronizedDisplayPropertiesChanged();
+    OnSynchronizedDisplayPropertiesChanged(old_display_rotation !=
+                                           current_display_.rotation());
     host()->NotifyScreenInfoChanged();
   }
 }
 
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
-  if (current_display_area_ == display.work_area() &&
-      current_device_scale_factor_ == display.device_scale_factor() &&
-      current_display_rotation_ == display.rotation() &&
-      current_display_color_spaces_ == display.color_spaces()) {
+  auto* screen = display::Screen::GetScreen();
+  auto display = screen->GetDisplayNearestView(view);
+  if (current_display_.work_area() == display.work_area() &&
+      current_display_.device_scale_factor() == display.device_scale_factor() &&
+      current_display_.rotation() == display.rotation() &&
+      current_display_.color_spaces() == display.color_spaces() &&
+      current_display_is_extended_ == screen->GetNumDisplays() > 1) {
     return false;
   }
 
-  current_display_area_ = display.work_area();
-  current_device_scale_factor_ = display.device_scale_factor();
-  current_display_rotation_ = display.rotation();
-  current_display_color_spaces_ = display.color_spaces();
+  current_display_ = display;
+  current_display_is_extended_ = screen->GetNumDisplays() > 1;
   return true;
 }
 
@@ -564,9 +559,10 @@ void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
 void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
-    uint32_t frame_token) {
+    uint32_t frame_token,
+    base::TimeTicks activation_time) {
   if (host())
-    host()->DidProcessFrame(frame_token);
+    host()->DidProcessFrame(frame_token, activation_time);
 }
 
 bool RenderWidgetHostViewBase::ScreenRectIsUnstableFor(
@@ -636,6 +632,12 @@ bool RenderWidgetHostViewBase::IsRenderWidgetHostViewChildFrame() {
 
 bool RenderWidgetHostViewBase::HasSize() const {
   return true;
+}
+
+// RenderWidgetHostViewAura overrides this.
+void RenderWidgetHostViewBase::ShowWithVisibility(
+    content::Visibility web_contents_visibility) {
+  Show();
 }
 
 void RenderWidgetHostViewBase::Destroy() {
@@ -748,6 +750,11 @@ void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
     host()->SynchronizeVisualProperties();
+}
+
+WebContentsAccessibility*
+RenderWidgetHostViewBase::GetWebContentsAccessibility() {
+  return nullptr;
 }
 
 // TODO(wjmaclean): Would it simplify this function if we re-implemented it

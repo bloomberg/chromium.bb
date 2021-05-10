@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -80,7 +80,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::COOKIES, "cookies"},
     {ContentSettingsType::IMAGES, "images"},
     {ContentSettingsType::JAVASCRIPT, "javascript"},
-    {ContentSettingsType::PLUGINS, "plugins"},
     {ContentSettingsType::POPUPS, "popups"},
     {ContentSettingsType::GEOLOCATION, "location"},
     {ContentSettingsType::NOTIFICATIONS, "notifications"},
@@ -149,8 +148,12 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::INSECURE_PRIVATE_NETWORK, nullptr},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, nullptr},
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, nullptr},
+    {ContentSettingsType::DISPLAY_CAPTURE, nullptr},
 };
-static_assert(base::size(kContentSettingsTypeGroupNames) ==
+
+// TODO(crbug.com/1149878): After removing
+// ContentSettingsType::DEPRECATED_PLUGINS, remove +1.
+static_assert(base::size(kContentSettingsTypeGroupNames) + 1 ==
                   // ContentSettingsType starts at -1, so add 1 here.
                   static_cast<int32_t>(ContentSettingsType::NUM_TYPES) + 1,
               "kContentSettingsTypeGroupNames should have "
@@ -374,7 +377,7 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
   return false;
 }
 
-ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
+ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (name == kContentSettingsTypeGroupNames[i].name)
       return kContentSettingsTypeGroupNames[i].type;
@@ -384,7 +387,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   return ContentSettingsType::DEFAULT;
 }
 
-std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
+base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type) {
       const char* name = kContentSettingsTypeGroupNames[i].name;
@@ -396,7 +399,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
 
   NOTREACHED() << static_cast<int32_t>(type)
                << " is not a recognized content settings type.";
-  return std::string();
+  return base::StringPiece();
 }
 
 std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
@@ -455,8 +458,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito,
-    bool is_embargoed,
-    bool is_discarded) {
+    bool is_embargoed) {
   auto exception = std::make_unique<base::DictionaryValue>();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
@@ -473,7 +475,6 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
   exception->SetBoolean(kIsEmbargoed, is_embargoed);
-  exception->SetBoolean(kIsDiscarded, is_discarded);
   return exception;
 }
 
@@ -541,11 +542,6 @@ void GetExceptionsForContentType(
       HostContentSettingsMapFactory::GetForProfile(profile);
 
   map->GetSettingsForOneType(type, &all_settings);
-
-  // Will return only regular settings for a regular profile and only incognito
-  // settings for an incognito Profile.
-  ContentSettingsForOneType discarded_settings;
-  map->GetDiscardedSettingsForOneType(type, &discarded_settings);
 
   // Group settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
@@ -669,15 +665,6 @@ void GetExceptionsForContentType(
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
       exceptions->Append(std::move(exception));
-  }
-
-  for (auto& discarded_rule : discarded_settings) {
-    exceptions->Append(GetExceptionForPage(
-        discarded_rule.primary_pattern, discarded_rule.secondary_pattern,
-        GetDisplayNameForPattern(discarded_rule.primary_pattern,
-                                 extension_registry),
-        discarded_rule.GetContentSetting(), discarded_rule.source, incognito,
-        false /*is_embargoed*/, true /*is_discarded*/));
   }
 }
 

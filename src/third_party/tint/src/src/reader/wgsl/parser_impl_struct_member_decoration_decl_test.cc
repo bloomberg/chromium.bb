@@ -23,7 +23,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, StructMemberDecorationDecl_EmptyStr) {
-  auto* p = parser("");
+  auto p = parser("");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error());
   EXPECT_FALSE(decos.errored);
@@ -32,7 +32,7 @@ TEST_F(ParserImplTest, StructMemberDecorationDecl_EmptyStr) {
 }
 
 TEST_F(ParserImplTest, StructMemberDecorationDecl_EmptyBlock) {
-  auto* p = parser("[[]]");
+  auto p = parser("[[]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -42,19 +42,19 @@ TEST_F(ParserImplTest, StructMemberDecorationDecl_EmptyBlock) {
 }
 
 TEST_F(ParserImplTest, StructMemberDecorationDecl_Single) {
-  auto* p = parser("[[offset(4)]]");
+  auto p = parser("[[offset(4)]]");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error());
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
   ASSERT_EQ(decos.value.size(), 1u);
-  auto deco = ast::As<ast::StructMemberDecoration>(std::move(decos.value[0]));
+  auto* deco = decos.value[0]->As<ast::StructMemberDecoration>();
   ASSERT_NE(deco, nullptr);
-  EXPECT_TRUE(deco->IsOffset());
+  EXPECT_TRUE(deco->Is<ast::StructMemberOffsetDecoration>());
 }
 
 TEST_F(ParserImplTest, StructMemberDecorationDecl_InvalidDecoration) {
-  auto* p = parser("[[offset(nan)]]");
+  auto p = parser("[[offset(nan)]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error()) << p->error();
   EXPECT_TRUE(decos.errored);
@@ -64,7 +64,7 @@ TEST_F(ParserImplTest, StructMemberDecorationDecl_InvalidDecoration) {
 }
 
 TEST_F(ParserImplTest, StructMemberDecorationDecl_MissingClose) {
-  auto* p = parser("[[offset(4)");
+  auto p = parser("[[offset(4)");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error()) << p->error();
   EXPECT_TRUE(decos.errored);

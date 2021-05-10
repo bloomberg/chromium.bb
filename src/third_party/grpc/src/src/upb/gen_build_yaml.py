@@ -21,46 +21,69 @@ import os
 import sys
 import yaml
 
-srcs = [
-  "third_party/upb/google/protobuf/descriptor.upb.c",
-  "third_party/upb/upb/decode.c",
-  "third_party/upb/upb/def.c",
-  "third_party/upb/upb/encode.c",
-  "third_party/upb/upb/handlers.c",
-  "third_party/upb/upb/msg.c",
-  "third_party/upb/upb/msgfactory.c",
-  "third_party/upb/upb/sink.c",
-  "third_party/upb/upb/table.c",
-  "third_party/upb/upb/upb.c",
-]
-
-hdrs = [
-  "third_party/upb/google/protobuf/descriptor.upb.h",
-  "third_party/upb/upb/decode.h",
-  "third_party/upb/upb/def.h",
-  "third_party/upb/upb/encode.h",
-  "third_party/upb/upb/handlers.h",
-  "third_party/upb/upb/msg.h",
-  "third_party/upb/upb/msgfactory.h",
-  "third_party/upb/upb/sink.h",
-  "third_party/upb/upb/upb.h",
-]
-
-os.chdir(os.path.dirname(sys.argv[0])+'/../..')
-
 out = {}
 
 try:
-  out['libs'] = [{
-      'name': 'upb',
-      'defaults': 'upb',
-      'build': 'private',
-      'language': 'c',
-      'secure': 'no',
-      'src': srcs,
-      'headers': hdrs,
-  }]
+    out['libs'] = [{
+        'name': 'upb',
+        'build': 'all',
+        'language': 'c',
+        'src': [
+            "third_party/upb/upb/decode.c",
+            "third_party/upb/upb/encode.c",
+            "third_party/upb/upb/msg.c",
+            "third_party/upb/upb/port.c",
+            "third_party/upb/upb/table.c",
+            "third_party/upb/upb/upb.c",
+            "third_party/upb/upb/def.c",
+            "third_party/upb/upb/reflection.c",
+            "third_party/upb/upb/text_encode.c",
+            "src/core/ext/upb-generated/google/protobuf/any.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/descriptor.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/duration.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/empty.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/struct.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/timestamp.upb.c",
+            "src/core/ext/upb-generated/google/protobuf/wrappers.upb.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/any.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/descriptor.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/duration.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/empty.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/struct.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/timestamp.upbdefs.c",
+            "src/core/ext/upbdefs-generated/google/protobuf/wrappers.upbdefs.c",
+        ],
+        'headers': [
+            "third_party/upb/upb/decode.h",
+            "third_party/upb/upb/encode.h",
+            "third_party/upb/upb/msg.h",
+            "third_party/upb/upb/port_def.inc",
+            "third_party/upb/upb/port_undef.inc",
+            "third_party/upb/upb/table.int.h",
+            "third_party/upb/upb/upb.h",
+            "third_party/upb/upb/upb.hpp",
+            "third_party/upb/upb/def.h",
+            "third_party/upb/upb/def.hpp",
+            "third_party/upb/upb/reflection.h",
+            "third_party/upb/upb/text_encode.h",
+            "src/core/ext/upb-generated/google/protobuf/any.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/descriptor.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/duration.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/empty.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/struct.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/timestamp.upb.h",
+            "src/core/ext/upb-generated/google/protobuf/wrappers.upb.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/any.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/descriptor.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/duration.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/empty.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/struct.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/timestamp.upbdefs.h",
+            "src/core/ext/upbdefs-generated/google/protobuf/wrappers.upbdefs.h",
+        ],
+        'secure': False,
+    }]
 except:
-  pass
+    pass
 
-print yaml.dump(out)
+print(yaml.dump(out))

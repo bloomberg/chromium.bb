@@ -12,6 +12,8 @@ var test = test || {};
 constants.FILES_QUICK_VIEW_HTML =
     'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
+constants.HOLDING_SPACE_WELCOME_CSS =
+    FILE_MANAGER_ROOT + constants.HOLDING_SPACE_WELCOME_CSS;
 
 test.FILE_MANAGER_EXTENSION_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 
@@ -257,6 +259,10 @@ test.ENTRIES = {
   tiniFile: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', 'test.tini', '', test.SharedOption.NONE,
       'Jan 1, 1980, 11:59 PM', 'test.tini', '51 bytes', 'Crostini image file'),
+
+  trash: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'Trash', '', test.SharedOption.NONE, '...',
+      'Trash', '--', 'Folder'),
 };
 
 /**
@@ -274,12 +280,12 @@ test.BASIC_MY_FILES_ENTRY_SET = [
 ];
 
 /**
- * MyFiles plus the fake item 'Linux files'.
+ * MyFiles plus the fake items 'Linux files' and 'Trash'.
  * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
-test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES =
-    test.BASIC_MY_FILES_ENTRY_SET.concat([test.ENTRIES.linuxFiles]);
+test.BASIC_MY_FILES_ENTRY_SET_WITH_FAKES = test.BASIC_MY_FILES_ENTRY_SET.concat(
+    [test.ENTRIES.linuxFiles, test.ENTRIES.trash]);
 
 /**
  * Basic entry set for the drive volume.
@@ -604,7 +610,8 @@ test.setupAndWaitUntilReady =
     assertTrue(test.fakeMouseClick(myFilesElement), 'click MyFiles');
   }
   test.refreshFileList();
-  const filesShown = entriesMyFiles.concat([test.ENTRIES.linuxFiles]);
+  const filesShown =
+      entriesMyFiles.concat([test.ENTRIES.linuxFiles, test.ENTRIES.trash]);
   return test.waitForFiles(test.TestEntryInfo.getExpectedRows(filesShown));
 };
 

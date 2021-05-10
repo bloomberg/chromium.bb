@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/content_settings/browser",
   "+components/content_settings/core/browser",
   "+components/content_settings/core/common",
   "+components/keyed_service/core",
@@ -10,5 +11,6 @@ include_rules = [
   "+mojo/public",
   "+net/base",
   "+services/metrics/public/cpp",
+  "+services/network/public/mojom",
   "+ui/base",
 ]

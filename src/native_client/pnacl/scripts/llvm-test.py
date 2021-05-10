@@ -71,6 +71,9 @@ The default set is {O3f,O2b}, other options are {O0f,O0b,O2b_sz,O0b_sz}.
   parser.add_option('--llvm-regression', dest='run_llvm_regression',
                     action='store_true', default=False,
                     help='Run the LLVM regression tests')
+  parser.add_option('--llvm-saigo-regression', dest='run_llvm_saigo_regression',
+                    action='store_true', default=False,
+                    help='Run the LLVM saigo regression tests')
   parser.add_option('--libcxx-tests', dest='run_libcxx_tests',
                     action='store_true', default=False,
                     help='Run the libc++ tests')
@@ -238,6 +241,9 @@ def SetupEnvironment(options):
     '{NACL_ROOT}/toolchain_build/src/llvm'.format(**env))
   env['TC_BUILD_LLVM'] = options.llvm_buildpath or (
     '{NACL_ROOT}/toolchain_build/out/llvm_{HOST_TRIPLE}_work'.format(**env))
+  env['TC_BUILD_LLVM_SAIGO'] = options.llvm_buildpath or (
+    '{NACL_ROOT}/toolchain_build/out/llvm_saigo_{HOST_TRIPLE}_work'
+    .format(**env))
   env['TC_BUILD_LIBCXX'] = (
     ('{NACL_ROOT}/toolchain_build/out/' +
      'libcxx_le32_work/').format(**env))
@@ -258,6 +264,9 @@ def SetupEnvironment(options):
   env['PNACL_SCRIPTS'] = '{NACL_ROOT}/pnacl/scripts'.format(**env)
   env['LLVM_REGRESSION_KNOWN_FAILURES'] = (
       '{pwd}/pnacl/scripts/llvm_regression_known_failures.txt'.format(pwd=pwd))
+  env['LLVM_SAIGO_REGRESSION_KNOWN_FAILURES'] = (
+      '{pwd}/pnacl/scripts/llvm_saigo_regression_known_failures.txt'
+      .format(pwd=pwd))
   env['LIBCXX_KNOWN_FAILURES'] = (
       '{pwd}/pnacl/scripts/libcxx_known_failures.txt'.format(pwd=pwd))
   return env
@@ -517,20 +526,24 @@ def main(argv):
     Fatal("Unknown arguments: " + ', '.join(args))
   config = ParseConfig(options)
   env = SetupEnvironment(options)
-  result = 0
-  # Run each specified test in sequence, and return on the first failure.
+
   if options.run_llvm_regression:
-    result = result or RunLitTest(env['TC_BUILD_LLVM'], 'check-all',
-                                  'LLVM_REGRESSION_KNOWN_FAILURES',
-                                  env, options)
+    return RunLitTest(env['TC_BUILD_LLVM'], 'check-all',
+                      'LLVM_REGRESSION_KNOWN_FAILURES',
+                      env, options)
+
   if options.run_libcxx_tests:
     EnsureSdkExists(env)
-    result = result or RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
-                                  'LIBCXX_KNOWN_FAILURES',
-                                  env, options)
+    return RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
+                      'LIBCXX_KNOWN_FAILURES',
+                      env, options)
 
-  result = result or RunTestsuiteSteps(env, config, options)
-  return result
+  if options.run_llvm_saigo_regression:
+    return RunLitTest(env['TC_BUILD_LLVM_SAIGO'], 'check-all',
+                      'LLVM_SAIGO_REGRESSION_KNOWN_FAILURES',
+                      env, options)
+
+  return RunTestsuiteSteps(env, config, options)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

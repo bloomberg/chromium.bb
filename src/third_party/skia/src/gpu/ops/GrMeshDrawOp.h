@@ -10,6 +10,7 @@
 
 #include "src/core/SkArenaAlloc.h"
 #include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrDrawIndirectCommand.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrSimpleMesh.h"
 #include "src/gpu/ops/GrDrawOp.h"
@@ -39,12 +40,13 @@ protected:
 
     void createProgramInfo(const GrCaps* caps,
                            SkArenaAlloc* arena,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip&& appliedClip,
                            const GrXferProcessor::DstProxyView& dstProxyView,
-                           GrXferBarrierFlags renderPassXferBarriers) {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) {
         this->onCreateProgramInfo(caps, arena, writeView, std::move(appliedClip), dstProxyView,
-                                  renderPassXferBarriers);
+                                  renderPassXferBarriers, colorLoadOp);
     }
 
     void createProgramInfo(Target* target);
@@ -103,10 +105,11 @@ protected:
     }
 
     virtual void onPrePrepareDraws(GrRecordingContext*,
-                                   const GrSurfaceProxyView* writeView,
+                                   const GrSurfaceProxyView& writeView,
                                    GrAppliedClip*,
                                    const GrXferProcessor::DstProxyView&,
-                                   GrXferBarrierFlags renderPassXferBarriers);
+                                   GrXferBarrierFlags renderPassXferBarriers,
+                                   GrLoadOp colorLoadOp);
 
 private:
     virtual GrProgramInfo* programInfo() = 0;
@@ -114,17 +117,20 @@ private:
     // by this op.
     virtual void onCreateProgramInfo(const GrCaps*,
                                      SkArenaAlloc*,
-                                     const GrSurfaceProxyView* writeView,
+                                     const GrSurfaceProxyView& writeView,
                                      GrAppliedClip&&,
                                      const GrXferProcessor::DstProxyView&,
-                                     GrXferBarrierFlags renderPassXferBarriers) = 0;
+                                     GrXferBarrierFlags renderPassXferBarriers,
+                                     GrLoadOp colorLoadOp) = 0;
 
     void onPrePrepare(GrRecordingContext* context,
-                      const GrSurfaceProxyView* writeView,
+                      const GrSurfaceProxyView& writeView,
                       GrAppliedClip* clip,
                       const GrXferProcessor::DstProxyView& dstProxyView,
-                      GrXferBarrierFlags renderPassXferBarriers) final {
-        this->onPrePrepareDraws(context, writeView, clip, dstProxyView, renderPassXferBarriers);
+                      GrXferBarrierFlags renderPassXferBarriers,
+                      GrLoadOp colorLoadOp) final {
+        this->onPrePrepareDraws(context, writeView, clip, dstProxyView, renderPassXferBarriers,
+                                colorLoadOp);
     }
     void onPrepare(GrOpFlushState* state) final;
 
@@ -194,20 +200,22 @@ public:
      * Makes space for elements in a draw-indirect buffer. Upon success, the returned pointer is a
      * CPU mapping where the data should be written.
      */
-    virtual GrDrawIndirectCommand* makeDrawIndirectSpace(int drawCount,
-                                                         sk_sp<const GrBuffer>* buffer,
-                                                         size_t* offsetInBytes) = 0;
+    virtual GrDrawIndirectWriter makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
+                                                       size_t* offsetInBytes) = 0;
 
     /**
      * Makes space for elements in a draw-indexed-indirect buffer. Upon success, the returned
      * pointer is a CPU mapping where the data should be written.
      */
-    virtual GrDrawIndexedIndirectCommand* makeDrawIndexedIndirectSpace(
-            int drawCount, sk_sp<const GrBuffer>* buffer, size_t* offsetInBytes) = 0;
+    virtual GrDrawIndexedIndirectWriter makeDrawIndexedIndirectSpace(int drawCount,
+                                                                     sk_sp<const GrBuffer>*,
+                                                                     size_t* offsetInBytes) = 0;
 
     /** Helpers for ops which over-allocate and then return excess data to the pool. */
     virtual void putBackIndices(int indices) = 0;
     virtual void putBackVertices(int vertices, size_t vertexStride) = 0;
+    virtual void putBackIndirectDraws(int count) = 0;
+    virtual void putBackIndexedIndirectDraws(int count) = 0;
 
     GrSimpleMesh* allocMesh() { return this->allocator()->make<GrSimpleMesh>(); }
     GrSimpleMesh* allocMeshes(int n) { return this->allocator()->makeArray<GrSimpleMesh>(n); }
@@ -215,8 +223,8 @@ public:
         return this->allocator()->makeArray<const GrSurfaceProxy*>(n);
     }
 
-    virtual GrRenderTargetProxy* proxy() const = 0;
-    virtual const GrSurfaceProxyView* writeView() const = 0;
+    virtual GrRenderTargetProxy* rtProxy() const = 0;
+    virtual const GrSurfaceProxyView& writeView() const = 0;
 
     virtual const GrAppliedClip* appliedClip() const = 0;
     virtual GrAppliedClip detachAppliedClip() = 0;
@@ -224,6 +232,8 @@ public:
     virtual const GrXferProcessor::DstProxyView& dstProxyView() const = 0;
 
     virtual GrXferBarrierFlags renderPassBarriers() const = 0;
+
+    virtual GrLoadOp colorLoadOp() const = 0;
 
     virtual GrThreadSafeCache* threadSafeCache() const = 0;
     virtual GrResourceProvider* resourceProvider() const = 0;

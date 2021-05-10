@@ -6,8 +6,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/infobar_modal_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/translate_infobar_modal_overlay_request_config.h"
@@ -18,7 +16,6 @@
 #include "ios/chrome/browser/overlays/test/fake_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/translate/fake_translate_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_modal_consumer.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/modals/test/fake_infobar_translate_modal_consumer.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +32,7 @@ using translate_infobar_overlays::TranslateModalRequestConfig;
 using translate_infobar_modal_responses::RevertTranslation;
 using translate_infobar_modal_responses::ToggleAlwaysTranslate;
 using translate_infobar_modal_responses::ToggleNeverTranslateSourceLanguage;
-using translate_infobar_modal_responses::ToggleBlacklistSite;
+using translate_infobar_modal_responses::ToggleNeverPromptSite;
 using translate_infobar_modal_responses::UpdateLanguageInfo;
 using translate_infobar_modal_responses::UpdateLanguageInfo;
 
@@ -51,12 +48,10 @@ class TranslateInfobarModalOverlayMediatorTest : public PlatformTest {
             {InfobarModalMainActionResponse::ResponseSupport(),
              RevertTranslation::ResponseSupport(),
              ToggleNeverTranslateSourceLanguage::ResponseSupport(),
-             ToggleBlacklistSite::ResponseSupport(),
+             ToggleNeverPromptSite::ResponseSupport(),
              ToggleAlwaysTranslate::ResponseSupport()}),
         delegate_(
             OCMStrictProtocolMock(@protocol(OverlayRequestMediatorDelegate))) {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                          {kInfobarUIRebootOnlyiOS13});
     request_ = OverlayRequest::CreateWithConfig<TranslateModalRequestConfig>(
         &infobar_);
     callback_installer_.InstallCallbacks(request_.get());
@@ -75,7 +70,6 @@ class TranslateInfobarModalOverlayMediatorTest : public PlatformTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   FakeTranslateInfoBarDelegateFactory delegate_factory_;
   InfoBarIOS infobar_;
   MockOverlayRequestCallbackReceiver callback_receiver_;
@@ -99,11 +93,11 @@ TEST_F(TranslateInfobarModalOverlayMediatorTest, SetUpConsumer) {
   EXPECT_TRUE(consumer.enableTranslateActionButton);
   EXPECT_FALSE(consumer.updateLanguageBeforeTranslate);
   EXPECT_FALSE(consumer.displayShowOriginalButton);
-  EXPECT_TRUE(consumer.shouldAlwaysTranslate);
+  EXPECT_FALSE(consumer.shouldAlwaysTranslate);
   EXPECT_TRUE(consumer.shouldDisplayNeverTranslateLanguageButton);
   EXPECT_TRUE(consumer.isTranslatableLanguage);
   EXPECT_TRUE(consumer.shouldDisplayNeverTranslateSiteButton);
-  EXPECT_FALSE(consumer.isSiteBlacklisted);
+  EXPECT_FALSE(consumer.isSiteOnNeverPromptList);
 }
 
 // Tests that TranslateInfobarModalOverlayMediator calls RevertTranslation when
@@ -181,12 +175,12 @@ TEST_F(TranslateInfobarModalOverlayMediatorTest, NeverTranslateSourceLanguage) {
   [mediator_ neverTranslateSourceLanguage];
 }
 
-// Tests that TranslateInfobarModalOverlayMediator calls ToggleBlacklistSite
+// Tests that TranslateInfobarModalOverlayMediator calls ToggleNeverPromptSite
 // when its neverTranslateSite API is called.
 TEST_F(TranslateInfobarModalOverlayMediatorTest, NeverTranslateSite) {
-  EXPECT_CALL(
-      callback_receiver_,
-      DispatchCallback(request_.get(), ToggleBlacklistSite::ResponseSupport()));
+  EXPECT_CALL(callback_receiver_,
+              DispatchCallback(request_.get(),
+                               ToggleNeverPromptSite::ResponseSupport()));
   OCMExpect([delegate_ stopOverlayForMediator:mediator_]);
   [mediator_ neverTranslateSite];
 }

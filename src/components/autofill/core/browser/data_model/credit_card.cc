@@ -356,7 +356,7 @@ bool CreditCard::IsDeletable() const {
 }
 
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
-  DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
+  DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
       return name_on_card_;
@@ -411,7 +411,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
 void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
                                                   const base::string16& value,
                                                   VerificationStatus status) {
-  DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
+  DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
       name_on_card_ = value;
@@ -799,11 +799,9 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
   if (number().empty()) {
     // No CC number, if valid nickname is present, return nickname only.
     // Otherwise, return cardholder name only.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableCardNicknameManagement) &&
-        HasNonEmptyValidNickname()) {
+    if (HasNonEmptyValidNickname())
       return std::make_pair(nickname_, base::string16());
-    }
+
     return std::make_pair(name_on_card_, base::string16());
   }
 
@@ -865,12 +863,15 @@ base::string16 CreditCard::CardIdentifierStringForAutofillDisplay(
   if (HasNonEmptyValidNickname() || !customized_nickname.empty()) {
     return NicknameAndLastFourDigits(customized_nickname);
   }
-  // Return a Google-specific string for Google-issued cards.
+  base::string16 networkAndLastFourDigits = NetworkAndLastFourDigits();
+  // Add Plex before the network and last four digits to identify it as a Google
+  // Plex card.
   if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
       IsGoogleIssuedCard()) {
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GOOGLE_ISSUED);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GOOGLE_ISSUED) +
+           ASCIIToUTF16(" ") + networkAndLastFourDigits;
   }
-  return NetworkAndLastFourDigits();
+  return networkAndLastFourDigits;
 }
 
 base::string16 CreditCard::CardIdentifierStringAndDescriptiveExpiration(

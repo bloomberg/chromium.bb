@@ -69,16 +69,9 @@ config("skia_public") {
 
 # Skia internal APIs, used by Skia itself and a few test tools.
 config("skia_private") {
-  visibility = [
-    ":*",
-    "//modules/*",
-    "//experimental/*",
-  ]
+  visibility = [ "./*" ]
 
   defines = [ "SK_GAMMA_APPLY_TO_A8" ]
-  if (skia_enable_gpu) {
-    defines += [ "GR_OP_ALLOCATE_USE_NEW" ]
-  }
   if (skia_use_fixed_gamma_text) {
     defines += [
       "SK_GAMMA_EXPONENT=1.4",
@@ -99,11 +92,14 @@ config("skia_private") {
   if (skia_use_vma) {
     defines += [ "SK_USE_VMA" ]
   }
+  if (skia_enable_winuwp) {
+    defines += [ "SK_WINUWP" ]
+  }
 }
 
 # Any code that's linked into Skia-the-library should use this config via += skia_library_configs.
 config("skia_library") {
-  visibility = [ ":*" ]
+  visibility = [ "./*" ]
   defines = [ "SKIA_IMPLEMENTATION=1" ]
 }
 
@@ -262,6 +258,7 @@ template("optional") {
                              "*",
                              [
                                "public_defines",
+                               "sources_for_tests",
                                "sources_when_disabled",
                                "configs_to_remove",
                              ])
@@ -269,6 +266,31 @@ template("optional") {
       configs += skia_library_configs
       if (defined(invoker.configs_to_remove)) {
         configs -= invoker.configs_to_remove
+      }
+    }
+    if (defined(invoker.sources_for_tests) && skia_enable_tools) {
+      source_set(target_name + "_tests") {
+        check_includes = false
+        forward_variables_from(invoker,
+                               "*",
+                               [
+                                 "public_defines",
+                                 "sources",
+                                 "sources_for_tests",
+                                 "sources_when_disabled",
+                                 "configs_to_remove",
+                               ])
+        testonly = true
+        sources = invoker.sources_for_tests
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [ ":test" ]
+        all_dependent_configs = [ ":" + target_name + "_public" ]
+        configs += skia_library_configs
+        if (defined(invoker.configs_to_remove)) {
+          configs -= invoker.configs_to_remove
+        }
       }
     }
   } else {
@@ -283,6 +305,7 @@ template("optional") {
                                "libs",
                                "frameworks",
                                "sources",
+                               "sources_for_tests",
                                "sources_when_disabled",
                                "configs_to_remove",
                              ])
@@ -290,6 +313,10 @@ template("optional") {
         sources = invoker.sources_when_disabled
       }
       configs += skia_library_configs
+    }
+    if (defined(invoker.sources_for_tests)) {
+      source_set(target_name + "_tests") {
+      }
     }
   }
 }
@@ -331,6 +358,7 @@ optional("fontmgr_android") {
     "src/ports/SkFontMgr_android_parser.cpp",
     "src/ports/SkFontMgr_android_parser.h",
   ]
+  sources_for_tests = [ "tests/FontMgrAndroidParserTest.cpp" ]
 }
 optional("fontmgr_android_factory") {
   enabled = skia_enable_fontmgr_android
@@ -403,6 +431,7 @@ optional("fontmgr_fontconfig") {
   public = [ "include/ports/SkFontMgr_fontconfig.h" ]
   deps = [ ":typeface_freetype" ]
   sources = [ "src/ports/SkFontMgr_fontconfig.cpp" ]
+  sources_for_tests = [ "tests/FontMgrFontConfigTest.cpp" ]
 }
 optional("fontmgr_fontconfig_factory") {
   enabled = skia_enable_fontmgr_fontconfig
@@ -463,6 +492,7 @@ optional("fontmgr_mac_ct") {
     "src/ports/SkTypeface_mac_ct.cpp",
     "src/ports/SkTypeface_mac_ct.h",
   ]
+  sources_for_tests = [ "tests/TypefaceMacTest.cpp" ]
 
   if (is_mac) {
     frameworks = [
@@ -533,8 +563,7 @@ if (skia_lex) {
     # GN insists its outputs should go somewhere underneath target_out_dir, so we trick it with a
     # path that starts with target_out_dir and then uses ".." to back up into the src dir.
     outputs = [
-      "$target_out_dir/" +
-          rebase_path("src/sksl/lex/SkSLLexer.h", target_out_dir),
+      "$target_out_dir/" + rebase_path("src/sksl/SkSLLexer.h", target_out_dir),
       # the script also modifies the corresponding .cpp file, but if we tell GN that it gets
       # confused due to the same file being named by two different paths
     ]
@@ -558,23 +587,44 @@ if (skia_lex) {
 # `Compile Processors` and `Compile SkSL Tests` both rely on skslc.
 if (skia_compile_processors || skia_compile_sksl_tests) {
   executable("skslc") {
-    defines = [ "SKSL_STANDALONE" ]
+    defines = [
+      "SKSL_STANDALONE",
+      "SK_DISABLE_TRACING",
+      "SK_ENABLE_SPIRV_VALIDATION",
+    ]
     sources = [
+      "src/core/SkCpu.cpp",
+      "src/core/SkData.cpp",
+      "src/core/SkHalf.cpp",
       "src/core/SkMalloc.cpp",
       "src/core/SkMath.cpp",
       "src/core/SkSemaphore.cpp",
+      "src/core/SkStream.cpp",
+      "src/core/SkString.cpp",
+      "src/core/SkStringUtils.cpp",
       "src/core/SkThreadID.cpp",
+      "src/core/SkUtils.cpp",
+      "src/core/SkVM.cpp",
       "src/gpu/GrBlockAllocator.cpp",
       "src/gpu/GrMemoryPool.cpp",
+      "src/gpu/GrShaderUtils.cpp",
       "src/ports/SkMemory_malloc.cpp",
+      "src/ports/SkOSFile_stdio.cpp",
       "src/sksl/SkSLMain.cpp",
+      "src/utils/SkUTF.cpp",
     ]
+    if (is_win) {
+      sources += [ "src/ports/SkOSFile_win.cpp" ]
+    } else {
+      sources += [ "src/ports/SkOSFile_posix.cpp" ]
+    }
     sources += skia_sksl_sources
     sources += skia_sksl_gpu_sources
     include_dirs = [ "." ]
     deps = [
       ":run_sksllex",
       "//third_party/spirv-tools:spvtools",
+      "//third_party/spirv-tools:spvtools_val",
     ]
   }
 
@@ -606,9 +656,8 @@ if (skia_compile_processors || skia_compile_sksl_tests) {
       "src/sksl/sksl_frag.sksl",
       "src/sksl/sksl_geom.sksl",
       "src/sksl/sksl_gpu.sksl",
-      "src/sksl/sksl_interp.sksl",
-      "src/sksl/sksl_pipeline.sksl",
       "src/sksl/sksl_public.sksl",
+      "src/sksl/sksl_runtime.sksl",
       "src/sksl/sksl_vert.sksl",
     ]
     outputs = [ "$root_out_dir/{{source_file_part}}" ]
@@ -697,65 +746,89 @@ if (skia_compile_sksl_tests) {
         ":sksl_pre_includes",
         ":skslc(//gn/toolchain:$host_toolchain)",
       ]
-      sources = invoker.sources
+      sources = []
       outputs = []
-      foreach(src, sources) {
-        dir = get_path_info(src, "dir")
-        name = get_path_info(src, "name")
-        foreach(outputPattern, invoker.outputPatterns) {
-          outputs += [ target_out_dir + "/" + rebase_path(
-                           dir + outputPattern[0] + name + outputPattern[1],
-                           target_out_dir) ]
-        }
-      }
+      response_file_contents = []
       args = [
         rebase_path(skslc_path),
         invoker.lang,
         invoker.settings,
+        "{{response_file_name}}",
       ]
-      args += rebase_path(sources)
+
+      testsDir = get_path_info("tests", "abspath")
+      resourcesDir = get_path_info("resources", "abspath")
+
+      foreach(partialPath, invoker.sources) {
+        dst = testsDir + partialPath
+        src = resourcesDir + partialPath
+
+        dir = get_path_info(dst, "dir")
+        name = get_path_info(dst, "name")
+        ext = get_path_info(dst, "extension")
+        response_file_contents += rebase_path([
+                                                src,
+                                                dir,
+                                              ])
+        sources += [ src ]
+
+        foreach(outExtension, invoker.outExtensions) {
+          # SPIR-V uses separate extensions for .vert and .geom shaders.
+          if (outExtension == ".asm.frag" && ext == "vert") {
+            outExtension = ".asm.vert"
+          } else if (outExtension == ".asm.frag" && ext == "geom") {
+            outExtension = ".asm.geom"
+          }
+          outputs +=
+              [ target_out_dir + "/" +
+                rebase_path(dir + "/" + name + outExtension, target_out_dir) ]
+        }
+      }
     }
   }
   compile_sksl("fp_tests") {
     sources = sksl_fp_tests_sources
-    outputPatterns = [
-      [
-        "/golden/",
-        ".cpp",
-      ],
-      [
-        "/golden/",
-        ".h",
-      ],
+    outExtensions = [
+      ".cpp",
+      ".h",
     ]
     lang = "--fp"
     settings = "--settings"
   }
   compile_sksl("glsl_tests") {
     sources = sksl_glsl_tests_sources + sksl_glsl_settings_tests_sources
-    outputPatterns = [ [
-          "/golden/",
-          ".glsl",
-        ] ]
+    outExtensions = [ ".glsl" ]
     lang = "--glsl"
     settings = "--settings"
   }
   compile_sksl("glsl_nosettings_tests") {
     sources = sksl_glsl_settings_tests_sources
-    outputPatterns = [ [
-          "/golden/",
-          "StandaloneSettings.glsl",
-        ] ]
+    outExtensions = [ "StandaloneSettings.glsl" ]
     lang = "--glsl"
     settings = "--nosettings"
   }
   compile_sksl("metal_tests") {
     sources = sksl_metal_tests_sources
-    outputPatterns = [ [
-          "/golden/",
-          ".metal",
-        ] ]
+    outExtensions = [ ".metal" ]
     lang = "--metal"
+    settings = "--settings"
+  }
+  compile_sksl("skvm_tests") {
+    sources = sksl_skvm_tests_sources
+    outExtensions = [ ".skvm" ]
+    lang = "--skvm"
+    settings = "--settings"
+  }
+  compile_sksl("stage_tests") {
+    sources = sksl_stage_tests_sources
+    outExtensions = [ ".stage" ]
+    lang = "--stage"
+    settings = "--settings"
+  }
+  compile_sksl("spirv_tests") {
+    sources = sksl_spirv_tests_sources
+    outExtensions = [ ".asm.frag" ]
+    lang = "--spirv"
     settings = "--settings"
   }
 } else {
@@ -767,6 +840,10 @@ if (skia_compile_sksl_tests) {
   }
   group("compile_sksl_metal_tests") {
   }
+  group("compile_sksl_skvm_tests") {
+  }
+  group("compile_sksl_spirv_tests") {
+  }
 }
 
 optional("gpu") {
@@ -777,6 +854,8 @@ optional("gpu") {
     ":compile_sksl_glsl_nosettings_tests",
     ":compile_sksl_glsl_tests",
     ":compile_sksl_metal_tests",
+    ":compile_sksl_skvm_tests",
+    ":compile_sksl_spirv_tests",
     ":dehydrate_sksl",
     ":run_sksllex",
   ]
@@ -804,25 +883,34 @@ optional("gpu") {
   if (skia_use_gl) {
     public_defines += [ "SK_GL" ]
     if (is_android) {
-      sources += [ "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp" ]
+      sources += [
+        "src/gpu/gl/egl/GrGLMakeEGLInterface.cpp",
+        "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp",
+      ]
 
       # this lib is required to link against AHardwareBuffer
       if (defined(ndk_api) && ndk_api >= 26) {
         libs += [ "android" ]
       }
     } else if (skia_use_egl) {
-      sources += [ "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp" ]
+      sources += [
+        "src/gpu/gl/egl/GrGLMakeEGLInterface.cpp",
+        "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp",
+      ]
       libs += [ "EGL" ]
     } else if (skia_use_webgl) {
       sources += [ "src/gpu/gl/webgl/GrGLMakeNativeInterface_webgl.cpp" ]
     } else if (is_linux && skia_use_x11) {
-      sources += [ "src/gpu/gl/glx/GrGLMakeNativeInterface_glx.cpp" ]
+      sources += [
+        "src/gpu/gl/glx/GrGLMakeGLXInterface.cpp",
+        "src/gpu/gl/glx/GrGLMakeNativeInterface_glx.cpp",
+      ]
       libs += [ "GL" ]
     } else if (is_mac) {
       sources += [ "src/gpu/gl/mac/GrGLMakeNativeInterface_mac.cpp" ]
     } else if (is_ios) {
       sources += [ "src/gpu/gl/iOS/GrGLMakeNativeInterface_iOS.cpp" ]
-    } else if (is_win) {
+    } else if (is_win && !skia_enable_winuwp) {
       sources += [ "src/gpu/gl/win/GrGLMakeNativeInterface_win.cpp" ]
       if (target_cpu != "arm64") {
         libs += [ "OpenGL32.lib" ]
@@ -1103,11 +1191,6 @@ optional("xml") {
   ]
 }
 
-optional("sksl_interpreter") {
-  enabled = skia_enable_sksl_interpreter
-  public_defines = [ "SK_ENABLE_SKSL_INTERPRETER" ]
-}
-
 optional("skvm_jit") {
   enabled = skia_enable_skvm_jit_when_possible
   public_defines = [ "SKVM_JIT_WHEN_POSSIBLE" ]
@@ -1180,7 +1263,6 @@ component("skia") {
     ":png_decode",
     ":png_encode",
     ":raw",
-    ":sksl_interpreter",
     ":skvm_jit",
     ":skx",
     ":sse2",
@@ -1236,7 +1318,7 @@ component("skia") {
     "src/sfnt/SkOTUtils.cpp",
   ]
 
-  defines = []
+  defines = [ "SK_HAS_ANDROID_CODEC" ]
   libs = []
 
   if (is_win) {
@@ -1248,12 +1330,17 @@ component("skia") {
       "src/ports/SkOSLibrary_win.cpp",
     ]
     libs += [
-      "FontSub.lib",
       "Ole32.lib",
       "OleAut32.lib",
-      "User32.lib",
-      "Usp10.lib",
     ]
+
+    if (!skia_enable_winuwp) {
+      libs += [
+        "FontSub.lib",
+        "User32.lib",
+        "Usp10.lib",
+      ]
+    }
   } else {
     sources += [
       "src/ports/SkOSFile_posix.cpp",
@@ -1435,9 +1522,11 @@ if (skia_enable_tools) {
     "include/svg",
     "include/utils",
     "include/utils/mac",
+    "modules/particles/include",
+    "modules/skottie/include",
     "modules/skparagraph/include",
     "modules/skshaper/include",
-    "modules/skottie/include",
+    "modules/svg/include",
   ]
 
   # Used by gn_to_bp.py to list our public include dirs.
@@ -1481,8 +1570,11 @@ if (skia_enable_tools) {
         ":gpu_tool_utils",
         ":skia",
         ":skia.h",
+        "modules/particles",
         "modules/skottie",
+        "modules/skparagraph",
         "modules/skshaper",
+        "modules/svg",
       ]
     }
   }
@@ -1699,8 +1791,6 @@ if (skia_enable_tools) {
       libs +=
           [ "${fuchsia_sdk_path}/arch/${target_cpu}/sysroot/lib/libzircon.so" ]
     }
-
-    cflags_objcc = [ "-fobjc-arc" ]
   }  # test_lib("gpu_tool_utils")
 
   test_lib("flags") {
@@ -1801,7 +1891,7 @@ if (skia_enable_tools) {
         sources += [ "tools/AutoreleasePool.mm" ]
         frameworks += [ "Foundation.framework" ]
       }
-    } else if (is_win) {
+    } else if (is_win && !skia_enable_winuwp) {
       libs += [ "DbgHelp.lib" ]
     }
 
@@ -1831,6 +1921,7 @@ if (skia_enable_tools) {
       ":flags",
       ":skia",
       ":tool_utils",
+      "modules/particles",
       "modules/skottie",
       "modules/skottie:gm",
       "modules/skparagraph",
@@ -1849,10 +1940,20 @@ if (skia_enable_tools) {
     }
   }
 
-  test_lib("skvm_builders") {
+  test_lib("test") {
     sources = [
-      "tools/SkVMBuilders.cpp",
-      "tools/SkVMBuilders.h",
+      "tests/Test.cpp",
+      "tests/Test.h",
+      "tests/TestUtils.cpp",
+      "tests/TestUtils.h",
+    ]
+    deps = [
+      ":flags",
+      ":skia",
+      ":tool_utils",
+    ]
+    public_deps = [
+      ":gpu_tool_utils",  # Test.h #includes headers from this target.
     ]
   }
 
@@ -1868,29 +1969,23 @@ if (skia_enable_tools) {
     if (skia_use_gl) {
       sources += gl_tests_sources
     }
-    if (!skia_enable_fontmgr_android) {
-      sources -= [ "//tests/FontMgrAndroidParserTest.cpp" ]
-    }
-    if (!skia_enable_fontmgr_fontconfig) {
-      sources -= [ "//tests/FontMgrFontConfigTest.cpp" ]
-    }
     deps = [
       ":flags",
+      ":fontmgr_android_tests",
+      ":fontmgr_fontconfig_tests",
+      ":fontmgr_mac_ct_tests",
       ":skia",
-      ":skvm_builders",
+      ":test",
       ":tool_utils",
       "experimental/skrive:tests",
       "modules/skottie:tests",
       "modules/skparagraph:tests",
       "modules/sksg:tests",
       "modules/skshaper",
-      "modules/svg",
+      "modules/svg:tests",
       "//third_party/libpng",
       "//third_party/libwebp",
       "//third_party/zlib",
-    ]
-    public_deps = [
-      ":gpu_tool_utils",  # Test.h #includes headers from this target.
     ]
   }
 
@@ -1902,7 +1997,6 @@ if (skia_enable_tools) {
       ":gm",
       ":gpu_tool_utils",
       ":skia",
-      ":skvm_builders",
       ":tool_utils",
       "modules/skparagraph:bench",
       "modules/skshaper",
@@ -2019,6 +2113,23 @@ if (skia_enable_tools) {
         "modules/skottie:utils",
         "modules/svg",
       ]
+    }
+    test_app("ddlbench") {
+      sources = [ "experimental/ddlbench/ddlbench.cpp" ]
+      deps = [
+        ":flags",
+        ":skia",
+        ":tool_utils",
+      ]
+    }
+
+    # optional separate library to dlopen when running CanvasStateTests.
+    shared_library("canvas_state_lib") {
+      sources = [
+        "tests/CanvasStateHelpers.cpp",
+        "tests/CanvasStateHelpers.h",
+      ]
+      deps = [ ":skia" ]
     }
   }
 
@@ -2166,6 +2277,7 @@ if (skia_enable_tools) {
       "fuzz/FuzzCommon.cpp",
       "fuzz/FuzzCommon.h",
       "fuzz/FuzzCreateDDL.cpp",
+      "fuzz/FuzzDDLThreading.cpp",
       "fuzz/FuzzDrawFunctions.cpp",
       "fuzz/FuzzEncoders.cpp",
       "fuzz/FuzzGradients.cpp",
@@ -2175,6 +2287,7 @@ if (skia_enable_tools) {
       "fuzz/FuzzPathop.cpp",
       "fuzz/FuzzPolyUtils.cpp",
       "fuzz/FuzzRegionOp.cpp",
+      "fuzz/FuzzSkParagraph.cpp",
       "fuzz/oss_fuzz/FuzzAndroidCodec.cpp",
       "fuzz/oss_fuzz/FuzzAnimatedImage.cpp",
       "fuzz/oss_fuzz/FuzzImage.cpp",
@@ -2191,6 +2304,7 @@ if (skia_enable_tools) {
       "fuzz/oss_fuzz/FuzzSKSL2SPIRV.cpp",
       "fuzz/oss_fuzz/FuzzSVG.cpp",
       "fuzz/oss_fuzz/FuzzSkDescriptorDeserialize.cpp",
+      "fuzz/oss_fuzz/FuzzSkParagraph.cpp",
       "fuzz/oss_fuzz/FuzzSkRuntimeEffect.cpp",
       "fuzz/oss_fuzz/FuzzTextBlobDeserialize.cpp",
       "tools/UrlDataManager.cpp",
@@ -2204,6 +2318,7 @@ if (skia_enable_tools) {
       ":gpu_tool_utils",
       ":skia",
       "modules/skottie:fuzz",
+      "modules/skparagraph",
     ]
   }
 
@@ -2320,7 +2435,6 @@ if (skia_enable_tools) {
         ":skia",
         "modules/skottie",
         "modules/sksg:samples",
-        "//third_party/oboe",
       ]
     }
   }
@@ -2510,8 +2624,11 @@ if (skia_enable_tools) {
       deps = [
         ":skia",
         ":skia.h",
+        "modules/particles",
         "modules/skottie",
+        "modules/skparagraph",
         "modules/skshaper",
+        "modules/svg",
       ]
     }
   }
@@ -2523,18 +2640,32 @@ if (skia_enable_tools) {
       sources = [
         "tools/viewer/AnimTimer.h",
         "tools/viewer/BisectSlide.cpp",
+        "tools/viewer/BisectSlide.h",
         "tools/viewer/GMSlide.cpp",
+        "tools/viewer/GMSlide.h",
         "tools/viewer/ImGuiLayer.cpp",
+        "tools/viewer/ImGuiLayer.h",
         "tools/viewer/ImageSlide.cpp",
+        "tools/viewer/ImageSlide.h",
         "tools/viewer/ParticlesSlide.cpp",
+        "tools/viewer/ParticlesSlide.h",
         "tools/viewer/SKPSlide.cpp",
+        "tools/viewer/SKPSlide.h",
         "tools/viewer/SampleSlide.cpp",
+        "tools/viewer/SampleSlide.h",
         "tools/viewer/SkRiveSlide.cpp",
+        "tools/viewer/SkRiveSlide.h",
         "tools/viewer/SkSLSlide.cpp",
+        "tools/viewer/SkSLSlide.h",
         "tools/viewer/SkottieSlide.cpp",
+        "tools/viewer/SkottieSlide.h",
+        "tools/viewer/Slide.h",
         "tools/viewer/SlideDir.cpp",
+        "tools/viewer/SlideDir.h",
         "tools/viewer/StatsLayer.cpp",
+        "tools/viewer/StatsLayer.h",
         "tools/viewer/SvgSlide.cpp",
+        "tools/viewer/SvgSlide.h",
         "tools/viewer/TouchGesture.cpp",
         "tools/viewer/TouchGesture.h",
         "tools/viewer/Viewer.cpp",
@@ -2938,6 +3069,15 @@ if (skia_enable_tools) {
       ]
     }
 
+    libfuzzer_app("api_skparagraph") {
+      sources = [
+        "fuzz/FuzzSkParagraph.cpp",
+        "fuzz/oss_fuzz/FuzzSkParagraph.cpp",
+        "tools/Resources.cpp",
+      ]
+      deps = [ "modules/skparagraph" ]
+    }
+
     libfuzzer_app("api_svg_canvas") {
       include_dirs = [
         "include",
@@ -3075,4 +3215,10 @@ if (is_ios && skia_enable_skottie && !skia_enable_flutter_defines) {
   group("skottie_ios") {
     deps = [ "tools/skottie_ios_app" ]
   }
+}
+
+executable("skia_c_api_example") {
+  sources = [ "experimental/c-api-example/skia-c-example.c" ]
+  include_dirs = [ "." ]
+  deps = [ ":skia" ]
 }

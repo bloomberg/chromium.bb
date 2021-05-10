@@ -24,8 +24,15 @@
 
 #include "third_party/blink/renderer/core/html/html_view_source_document.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_base_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -41,8 +48,31 @@
 #include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
+
+class ViewSourceEventListener : public NativeEventListener {
+ public:
+  ViewSourceEventListener(HTMLTableElement* table, HTMLInputElement* checkbox)
+      : table_(table), checkbox_(checkbox) {}
+
+  void Invoke(ExecutionContext*, Event* event) override {
+    DCHECK_EQ(event->type(), event_type_names::kChange);
+    table_->setAttribute(html_names::kClassAttr,
+                         checkbox_->checked() ? "line-wrap" : "");
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(table_);
+    visitor->Trace(checkbox_);
+    NativeEventListener::Trace(visitor);
+  }
+
+ private:
+  Member<HTMLTableElement> table_;
+  Member<HTMLInputElement> checkbox_;
+};
 
 HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer), type_(initializer.GetMimeType()) {
@@ -76,6 +106,34 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   table->ParserAppendChild(tbody_);
   current_ = tbody_;
   line_number_ = 0;
+
+  // Create a checkbox to control line wrapping.
+  auto* checkbox =
+      MakeGarbageCollected<HTMLInputElement>(*this, CreateElementFlags());
+  checkbox->setAttribute(html_names::kTypeAttr, "checkbox");
+  checkbox->addEventListener(
+      event_type_names::kChange,
+      MakeGarbageCollected<ViewSourceEventListener>(table, checkbox),
+      /*use_capture=*/false);
+  auto* label = MakeGarbageCollected<HTMLLabelElement>(*this);
+  label->ParserAppendChild(
+      Text::Create(*this, WTF::AtomicString(Locale::DefaultLocale().QueryString(
+                              IDS_VIEW_SOURCE_LINE_WRAP))));
+  label->setAttribute(html_names::kClassAttr, "line-wrap-control");
+  label->ParserAppendChild(checkbox);
+  // Add the checkbox to a form with autocomplete=off, to avoid form
+  // restoration from changing the value of the checkbox.
+  auto* form = MakeGarbageCollected<HTMLFormElement>(*this);
+  form->setAttribute(html_names::kAutocompleteAttr, "off");
+  form->ParserAppendChild(label);
+  auto* tr = MakeGarbageCollected<HTMLTableRowElement>(*this);
+  auto* td =
+      MakeGarbageCollected<HTMLTableCellElement>(html_names::kTdTag, *this);
+  td->setAttribute(html_names::kColspanAttr, "2");
+  td->setAttribute(html_names::kClassAttr, "line-wrap-cell");
+  td->ParserAppendChild(form);
+  tr->ParserAppendChild(td);
+  tbody_->ParserAppendChild(tr);
 }
 
 void HTMLViewSourceDocument::AddSource(const String& source, HTMLToken& token) {

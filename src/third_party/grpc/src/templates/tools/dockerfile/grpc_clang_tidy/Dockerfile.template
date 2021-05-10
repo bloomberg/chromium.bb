@@ -14,10 +14,15 @@
   # See the License for the specific language governing permissions and
   # limitations under the License.
   
-  <%include file="../debian_jessie_header.include"/>
+  <%include file="../python_debian10.include"/>
   
-  <%include file="../clang5.include"/>
-  <%include file="../python_deps.include"/>
+  # Add buster-backports for more recent clang packages
+  RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/buster-backports.list
+
+  # Install clang-tidy 7
+  RUN apt-get update && apt-get install -y clang-tidy-8 jq
+  ENV CLANG_TIDY=clang-tidy-8
+
   ADD clang_tidy_all_the_things.sh /
   
   # When running locally, we'll be impersonating the current user, so we need

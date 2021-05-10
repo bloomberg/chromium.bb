@@ -98,6 +98,17 @@ class NET_EXPORT HostResolver {
     virtual const base::Optional<std::vector<HostPortPair>>&
     GetHostnameResults() const = 0;
 
+    // Any DNS record aliases, such as CNAME aliases, found as a result of an
+    // address query. The alias chain order is preserved in reverse, from
+    // canonical name (i.e. address record name) through to query name. Should
+    // only be called after Start() signals completion, either by invoking the
+    // callback or by returning a result other than `ERR_IO_PENDING`. Returns a
+    // list of aliases that has been sanitized and canonicalized (as URL
+    // hostnames), and thus may differ from the results stored directly in the
+    // AddressList.
+    virtual const base::Optional<std::vector<std::string>>& GetDnsAliasResults()
+        const = 0;
+
     // Result of an experimental query. Meaning depends on the specific query
     // type, but each boolean value generally refers to a valid or invalid
     // record of the experimental type.
@@ -244,6 +255,12 @@ class NET_EXPORT HostResolver {
     // will receive special logging/observer treatment, and the result addresses
     // will always be |base::nullopt|.
     bool is_speculative = false;
+
+    // If `true`, resolver may (but is not guaranteed to) take steps to avoid
+    // the name being resolved via LLMNR or mDNS. Useful for requests where it
+    // is not desired to wait for longer timeouts on potential negative results,
+    // as is typically the case for LLMNR or mDNS queries without any results.
+    bool avoid_multicast_resolution = false;
 
     // Set to override the resolver's default secure dns mode for this request.
     base::Optional<SecureDnsMode> secure_dns_mode_override = base::nullopt;

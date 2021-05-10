@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
@@ -31,6 +30,8 @@ std::string ItemActionToString(ItemAction action) {
       return "Launch";
     case ItemAction::kPin:
       return "Pin";
+    case ItemAction::kRemove:
+      return "Remove";
     case ItemAction::kShowInFolder:
       return "ShowInFolder";
     case ItemAction::kUnpin:
@@ -71,6 +72,10 @@ void RecordDownloadsAction(DownloadsAction action) {
   base::UmaHistogramEnumeration("HoldingSpace.Downloads.Action.All", action);
 }
 
+void RecordFilesAppChipAction(FilesAppChipAction action) {
+  base::UmaHistogramEnumeration("HoldingSpace.FilesAppChip.Action.All", action);
+}
+
 void RecordItemAction(const std::vector<const HoldingSpaceItem*>& items,
                       ItemAction action) {
   for (const HoldingSpaceItem* item : items) {
@@ -94,6 +99,10 @@ void RecordItemCounts(const std::vector<const HoldingSpaceItem*>& items) {
         "HoldingSpace.Item.Count." + ItemTypeToString(type),
         counts_by_type[type]);
   }
+}
+
+void RecordItemFailureToLaunch(HoldingSpaceItem::Type type) {
+  base::UmaHistogramEnumeration("HoldingSpace.Item.FailureToLaunch", type);
 }
 
 void RecordTimeFromFirstAvailabilityToFirstAdd(base::TimeDelta time_delta) {
@@ -120,6 +129,20 @@ void RecordTimeFromFirstEntryToFirstPin(base::TimeDelta time_delta) {
                                 /*min=*/base::TimeDelta(),
                                 /*max=*/base::TimeDelta::FromDays(24),
                                 /*buckets=*/50);
+}
+
+void RecordBubbleResizeAnimationSmoothness(int smoothness) {
+  DCHECK_GE(smoothness, 0);
+  DCHECK_LE(smoothness, 100);
+  base::UmaHistogramPercentage("HoldingSpace.Animation.BubbleResize.Smoothness",
+                               smoothness);
+}
+
+void RecordPodResizeAnimationSmoothness(int smoothness) {
+  DCHECK_GE(smoothness, 0);
+  DCHECK_LE(smoothness, 100);
+  base::UmaHistogramPercentage("HoldingSpace.Animation.PodResize.Smoothness",
+                               smoothness);
 }
 
 }  // namespace holding_space_metrics

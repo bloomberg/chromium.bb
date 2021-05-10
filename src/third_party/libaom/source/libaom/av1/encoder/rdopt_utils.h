@@ -86,132 +86,132 @@ static const MODE_DEFINITION av1_mode_defs[MAX_MODES] = {
   { NEAREST_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAREST_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
 
-  { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-
   { NEAR_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, BWDREF_FRAME } },
 
+  { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+
   { NEAR_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST2_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST3_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { GOLDEN_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST2_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, LAST2_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, LAST3_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST3_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, LAST3_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, GOLDEN_FRAME } },
 
   { NEAR_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { GLOBAL_GLOBALMV, { BWDREF_FRAME, ALTREF_FRAME } },
 
   // intra modes
@@ -485,10 +485,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       set_tx_domain_dist_params(winner_mode_params, txfm_params, 0, 0);
 
       // Get default threshold for R-D optimization of coefficients
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold, 0, 0);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold, 0, 0);
+      get_rd_opt_coeff_thresh(winner_mode_params->coeff_opt_thresholds,
+                              txfm_params, 0, 0);
 
       // Set default transform size search method
       set_tx_size_search_method(cm, winner_mode_params, txfm_params, 0, 0);
@@ -512,11 +510,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Get threshold for R-D optimization of coefficients during mode
       // evaluation
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold,
-          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 0);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold,
+      get_rd_opt_coeff_thresh(
+          winner_mode_params->coeff_opt_thresholds, txfm_params,
           sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 0);
 
       // Set the transform size search method for mode evaluation
@@ -543,11 +538,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Get threshold for R-D optimization of coefficients for winner mode
       // evaluation
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold,
-          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 1);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold,
+      get_rd_opt_coeff_thresh(
+          winner_mode_params->coeff_opt_thresholds, txfm_params,
           sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 1);
 
       // Set the transform size search method for winner mode evaluation

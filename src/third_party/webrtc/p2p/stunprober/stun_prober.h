@@ -15,16 +15,15 @@
 #include <string>
 #include <vector>
 
+#include "api/sequence_checker.h"
 #include "rtc_base/async_invoker.h"
 #include "rtc_base/byte_buffer.h"
-#include "rtc_base/callback.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/ip_address.h"
 #include "rtc_base/network.h"
 #include "rtc_base/socket_address.h"
 #include "rtc_base/system/rtc_export.h"
 #include "rtc_base/thread.h"
-#include "rtc_base/thread_checker.h"
 
 namespace rtc {
 class AsyncPacketSocket;
@@ -40,7 +39,7 @@ class StunProber;
 
 static const int kMaxUdpBufferSize = 1200;
 
-typedef rtc::Callback2<void, StunProber*, int> AsyncCallback;
+typedef std::function<void(StunProber*, int)> AsyncCallback;
 
 enum NatType {
   NATTYPE_INVALID,
@@ -227,7 +226,7 @@ class RTC_EXPORT StunProber : public sigslot::has_slots<> {
   // The set of STUN probe sockets and their state.
   std::vector<Requester*> requesters_;
 
-  rtc::ThreadChecker thread_checker_;
+  webrtc::SequenceChecker thread_checker_;
 
   // Temporary storage for created sockets.
   std::vector<rtc::AsyncPacketSocket*> sockets_;

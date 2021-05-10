@@ -102,20 +102,9 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   ~MockWebContentsDelegate() override {}
 };
 
-// Post a task on the current thread and forward all 3 parameters.
-// Example:
-//    class FooClass {
-//     public:
-//      virtual void Foo(base::Callback<void(bool, std::string)> callback);
-//    };
-//    ...
-//    EXPECT_CALL(mock_fooclass_instance, Foo(callback))
-//      .WillOnce(ScheduleCallback3(false, "hello", base::nullopt));
-//
-
 ACTION_P3(ScheduleCallback3, result0, result1, result2) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(arg0, result0, result1, result2));
+      FROM_HERE, base::BindOnce(std::move(arg0), result0, result1, result2));
 }
 
 // Struct for holding the result of calling DetermineDownloadTarget.
@@ -161,9 +150,9 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   // out for unit tests.
   void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
-                        const NotifyExtensionsCallback& callback) override {
-    callback.Run(base::FilePath(),
-                 DownloadPathReservationTracker::UNIQUIFY);
+                        NotifyExtensionsCallback callback) override {
+    std::move(callback).Run(base::FilePath(),
+                            DownloadPathReservationTracker::UNIQUIFY);
   }
 
   // DownloadPathReservationTracker talks to the underlying file system. For
@@ -201,8 +190,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   // should migrate to using TestSafeBrowsingService instead.
   void CheckDownloadUrl(DownloadItem* download,
                         const base::FilePath& virtual_path,
-                        const CheckDownloadUrlCallback& callback) override {
-    callback.Run(MockCheckDownloadUrl(download, virtual_path));
+                        CheckDownloadUrlCallback callback) override {
+    std::move(callback).Run(MockCheckDownloadUrl(download, virtual_path));
   }
 
   MOCK_METHOD2(MockCheckDownloadUrl,
@@ -212,30 +201,37 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   MOCK_METHOD0(GetDownloadProtectionService,
                safe_browsing::DownloadProtectionService*());
 
+  void RequestConfirmation(
+      DownloadItem* item,
+      const base::FilePath& path,
+      DownloadConfirmationReason reason,
+      DownloadTargetDeterminerDelegate::ConfirmationCallback cb) override {
+    RequestConfirmation_(item, path, reason, cb);
+  }
+
   // The concrete implementation on desktop just invokes a file picker. Android
   // has a non-trivial implementation. The former is tested via browser tests,
   // and the latter is exercised in this unit test.
-  MOCK_METHOD4(
-      RequestConfirmation,
-      void(DownloadItem*,
-           const base::FilePath&,
-           DownloadConfirmationReason,
-           const DownloadTargetDeterminerDelegate::ConfirmationCallback&));
+  MOCK_METHOD4(RequestConfirmation_,
+               void(DownloadItem*,
+                    const base::FilePath&,
+                    DownloadConfirmationReason,
+                    DownloadTargetDeterminerDelegate::ConfirmationCallback&));
 
   // For testing the concrete implementation.
   void RequestConfirmationConcrete(
       DownloadItem* download_item,
       const base::FilePath& path,
       DownloadConfirmationReason reason,
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
-    ChromeDownloadManagerDelegate::RequestConfirmation(download_item, path,
-                                                       reason, callback);
+      DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
+    ChromeDownloadManagerDelegate::RequestConfirmation(
+        download_item, path, reason, std::move(callback));
   }
 
   void ShowFilePickerForDownload(
       DownloadItem* download,
       const base::FilePath& path,
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback&) override {}
+      DownloadTargetDeterminerDelegate::ConfirmationCallback) override {}
 
  private:
   friend class ChromeDownloadManagerDelegateTest;
@@ -267,7 +263,7 @@ class ChromeDownloadManagerDelegateTest
                                DetermineDownloadTargetResult* result);
 
   void OnConfirmationCallbackComplete(
-      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      DownloadTargetDeterminerDelegate::ConfirmationCallback callback,
       DownloadConfirmationResult result,
       const base::FilePath& virtual_path);
 
@@ -400,7 +396,7 @@ base::FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
 }
 
 void StoreDownloadTargetInfo(
-    const base::Closure& closure,
+    const base::RepeatingClosure& quit_runloop,
     DetermineDownloadTargetResult* result,
     const base::FilePath& target_path,
     DownloadItem::TargetDisposition target_disposition,
@@ -416,7 +412,7 @@ void StoreDownloadTargetInfo(
   result->intermediate_path = intermediate_path;
   result->interrupt_reason = interrupt_reason;
   result->download_schedule = std::move(download_schedule);
-  closure.Run();
+  quit_runloop.Run();
 }
 
 void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
@@ -431,10 +427,11 @@ void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
 }
 
 void ChromeDownloadManagerDelegateTest::OnConfirmationCallbackComplete(
-    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+    DownloadTargetDeterminerDelegate::ConfirmationCallback callback,
     DownloadConfirmationResult result,
     const base::FilePath& virtual_path) {
-  delegate_->OnConfirmationCallbackComplete(callback, result, virtual_path);
+  delegate_->OnConfirmationCallbackComplete(std::move(callback), result,
+                                            virtual_path);
 }
 
 TestChromeDownloadManagerDelegate*
@@ -463,6 +460,8 @@ ChromeDownloadManagerDelegateTest::PrepareDownloadItemForMixedContent(
   std::vector<GURL> url_chain;
   if (redirect_url.has_value())
     url_chain.push_back(redirect_url.value());
+  // The redirect chain always contains the final destination at the end.
+  url_chain.push_back(download_url);
   std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   ON_CALL(*download_item, GetURL())
@@ -509,7 +508,7 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
 }
 
 // Determine download target for |download_item| after enabling active content
-// download blocking with the |parameers| enabled. Verify |extension|,
+// download blocking with the |parameters| enabled. Verify |extension|,
 // |interrupt_reason| and |mixed_content_status|. Used by
 // BlockedAsActiveContent_ tests.
 void ChromeDownloadManagerDelegateTest::VerifyMixedContentExtensionOverride(
@@ -573,8 +572,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, LastSavePath) {
     DetermineDownloadTargetResult result;
     base::FilePath expected_prompt_path(GetPathInDownloadDir("foo.txt"));
     base::FilePath user_selected_path(GetPathInDownloadDir("bar/baz.txt"));
-    EXPECT_CALL(*delegate(), RequestConfirmation(save_as_download.get(),
-                                                 expected_prompt_path, _, _))
+    EXPECT_CALL(*delegate(), RequestConfirmation_(save_as_download.get(),
+                                                  expected_prompt_path, _, _))
         .WillOnce(
             WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CONFIRMED,
                                          user_selected_path, base::nullopt)));
@@ -588,8 +587,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, LastSavePath) {
     // from the previous download.
     DetermineDownloadTargetResult result;
     base::FilePath expected_prompt_path(GetPathInDownloadDir("bar/foo.txt"));
-    EXPECT_CALL(*delegate(), RequestConfirmation(save_as_download.get(),
-                                                 expected_prompt_path, _, _))
+    EXPECT_CALL(*delegate(), RequestConfirmation_(save_as_download.get(),
+                                                  expected_prompt_path, _, _))
         .WillOnce(
             WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CANCELED,
                                          base::FilePath(), base::nullopt)));
@@ -612,8 +611,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, LastSavePath) {
     download_prefs()->SetSaveFilePath(download_prefs()->DownloadPath());
     DetermineDownloadTargetResult result;
     base::FilePath expected_prompt_path(GetPathInDownloadDir("foo.txt"));
-    EXPECT_CALL(*delegate(), RequestConfirmation(save_as_download.get(),
-                                                 expected_prompt_path, _, _))
+    EXPECT_CALL(*delegate(), RequestConfirmation_(save_as_download.get(),
+                                                  expected_prompt_path, _, _))
         .WillOnce(
             WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CANCELED,
                                          base::FilePath(), base::nullopt)));
@@ -639,9 +638,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, ConflictAction) {
   EXPECT_CALL(*delegate(), MockReserveVirtualPath(_, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<4>(PathValidationResult::CONFLICT),
                       ReturnArg<1>()));
-  EXPECT_CALL(
-      *delegate(),
-      RequestConfirmation(_, _, DownloadConfirmationReason::TARGET_CONFLICT, _))
+  EXPECT_CALL(*delegate(),
+              RequestConfirmation_(
+                  _, _, DownloadConfirmationReason::TARGET_CONFLICT, _))
       .WillOnce(
           WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CONFIRMED,
                                        kExpectedPath, base::nullopt)));
@@ -727,9 +726,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
   EXPECT_CALL(*delegate(), MockReserveVirtualPath(_, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<4>(PathValidationResult::CONFLICT),
                       ReturnArg<1>()));
-  EXPECT_CALL(
-      *delegate(),
-      RequestConfirmation(_, _, DownloadConfirmationReason::TARGET_CONFLICT, _))
+  EXPECT_CALL(*delegate(),
+              RequestConfirmation_(
+                  _, _, DownloadConfirmationReason::TARGET_CONFLICT, _))
       .WillOnce(
           WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CONFIRMED,
                                        kExpectedPath, base::nullopt)));
@@ -931,6 +930,42 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       InsecureDownloadExtensions::kUnknown,
       download::DOWNLOAD_INTERRUPT_REASON_NONE,
       download::DownloadItem::MixedContentStatus::SAFE);
+}
+
+// Verify that downloads ending in a blob URL are considered secure.
+TEST_F(ChromeDownloadManagerDelegateTest,
+       BlockedAsActiveContent_BlobConsideredSecure) {
+  // Verifies blob URLs are not blocked for active content blocking.
+  const GURL kRedirectUrl("https://example.org/");
+  const GURL kFinalUrl("blob:null/xyz.foo");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+
+  DetermineDownloadTargetResult result;
+  base::test::ScopedFeatureList feature_list;
+  base::HistogramTester histograms;
+
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      PrepareDownloadItemForMixedContent(kFinalUrl, kSecureOrigin,
+                                         kRedirectUrl);
+
+  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  DetermineDownloadTarget(download_item.get(), &result);
+  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, result.interrupt_reason);
+  EXPECT_EQ(download::DownloadItem::MixedContentStatus::SAFE,
+            result.mixed_content_status);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorSecureFileSecure, 1);
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kUnknown,
+                        kInsecureDownloadExtensionInitiatorSecure,
+                        kInsecureDownloadHistogramTargetSecure, histograms);
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_SilentBlock) {
@@ -1286,7 +1321,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       .Times(AnyNumber())
       .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
 
-  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _))
+  EXPECT_CALL(*delegate(), RequestConfirmation_(_, _, _, _))
       .WillRepeatedly(Invoke(
           delegate(),
           &TestChromeDownloadManagerDelegate::RequestConfirmationConcrete));
@@ -1661,8 +1696,8 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
   EXPECT_CALL(*delegate(), GetDownloadProtectionService()).Times(0);
-  EXPECT_TRUE(
-      delegate()->ShouldCompleteDownload(download_item.get(), base::Closure()));
+  EXPECT_TRUE(delegate()->ShouldCompleteDownload(download_item.get(),
+                                                 base::OnceClosure()));
 }
 #endif  // OS_WIN
 #endif  // FULL_SAFE_BROWSING
@@ -1820,7 +1855,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
        DownloadLocationDialogType::NAME_TOO_LONG, ExpectPath::EMPTY},
   };
 
-  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _))
+  EXPECT_CALL(*delegate(), RequestConfirmation_(_, _, _, _))
       .WillRepeatedly(Invoke(
           delegate(),
           &TestChromeDownloadManagerDelegate::RequestConfirmationConcrete));

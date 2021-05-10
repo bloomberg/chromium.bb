@@ -75,9 +75,11 @@ std::unique_ptr<base::Value> SerializePasswordFormFillData(
 }
 
 std::unique_ptr<base::Value> SerializeFillData(
-    const password_manager::FillData& fillData) {
+    const password_manager::FillData& fillData,
+    BOOL fillUsername) {
   return SerializeFillData(
-      fillData.origin, fillData.form_id, fillData.username_element_id,
+      fillData.origin, fillData.form_id,
+      fillUsername ? fillData.username_element_id : FieldRendererId(),
       fillData.username_value, fillData.password_element_id,
       fillData.password_value);
 }
@@ -100,7 +102,7 @@ std::unique_ptr<base::Value> SerializeFillData(
     completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
-  parameters.emplace_back(static_cast<int>(formIdentifier.value()));
+  parameters.emplace_back(FormRendererIdToJsParameter(formIdentifier));
   autofill::ExecuteJavaScriptFunction("passwords.getPasswordFormDataAsString",
                                       parameters, frame,
                                       CreateStringCallback(completionHandler));

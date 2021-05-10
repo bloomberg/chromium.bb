@@ -55,8 +55,10 @@ void GpuMemoryBufferVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
   if (!video_frame_handler_.is_bound())
     return;
   video_frame_handler_->OnFrameReadyInBuffer(
-      buffer_id, 0 /* frame_feedback_id */, std::move(access_permission),
-      std::move(frame_info));
+      mojom::ReadyFrameInBuffer::New(buffer_id, 0 /* frame_feedback_id */,
+                                     std::move(access_permission),
+                                     std::move(frame_info)),
+      {});
 }
 
 void GpuMemoryBufferVirtualDeviceMojoAdapter::OnBufferRetired(int buffer_id) {
@@ -109,6 +111,11 @@ void GpuMemoryBufferVirtualDeviceMojoAdapter::SetPhotoOptions(
 
 void GpuMemoryBufferVirtualDeviceMojoAdapter::TakePhoto(
     TakePhotoCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void GpuMemoryBufferVirtualDeviceMojoAdapter::ProcessFeedback(
+    const media::VideoFrameFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 

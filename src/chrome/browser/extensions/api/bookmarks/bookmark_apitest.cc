@@ -19,7 +19,6 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 
 using bookmarks::BookmarkModel;
 
@@ -29,27 +28,15 @@ using ContextType = ExtensionApiTest::ContextType;
 
 class BookmarksApiTest : public ExtensionApiTest,
                          public testing::WithParamInterface<ContextType> {
- public:
-  BookmarksApiTest() {
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker)
-      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
-  }
-
- private:
-  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
 };
 
 INSTANTIATE_TEST_SUITE_P(EventPage,
                          BookmarksApiTest,
                          ::testing::Values(ContextType::kEventPage));
-// Flaky on all platforms but Mac.  https://crbug.com/1112903
-#if defined(OS_MAC)
+
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          BookmarksApiTest,
                          ::testing::Values(ContextType::kServiceWorker));
-#endif
 
 IN_PROC_BROWSER_TEST_P(BookmarksApiTest, Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
@@ -72,13 +59,10 @@ IN_PROC_BROWSER_TEST_P(BookmarksApiTest, Bookmarks) {
   profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   ASSERT_EQ(2u, managed->managed_node()->children().size());
 
-  if (GetParam() == ContextType::kEventPage) {
-    ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
-  } else {
-    ASSERT_TRUE(RunExtensionTestWithFlags(
-        "bookmarks", kFlagRunAsServiceWorkerBasedExtension, kFlagNone))
-        << message_;
-  }
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "bookmarks"},
+      {.load_as_service_worker = GetParam() == ContextType::kServiceWorker}))
+      << message_;
 }
 
 }  // namespace extensions

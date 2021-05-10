@@ -16,33 +16,32 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include "src/ast/constant_id_decoration.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using LocationDecorationTest = testing::Test;
+using LocationDecorationTest = TestHelper;
 
 TEST_F(LocationDecorationTest, Creation) {
-  LocationDecoration d{2, Source{}};
-  EXPECT_EQ(2u, d.value());
+  auto* d = create<LocationDecoration>(2);
+  EXPECT_EQ(2u, d->value());
 }
 
 TEST_F(LocationDecorationTest, Is) {
-  LocationDecoration d{2, Source{}};
-  EXPECT_FALSE(d.IsBinding());
-  EXPECT_FALSE(d.IsBuiltin());
-  EXPECT_FALSE(d.IsConstantId());
-  EXPECT_TRUE(d.IsLocation());
-  EXPECT_FALSE(d.IsSet());
+  Decoration* d = create<LocationDecoration>(2);
+  EXPECT_FALSE(d->Is<BindingDecoration>());
+  EXPECT_FALSE(d->Is<BuiltinDecoration>());
+  EXPECT_FALSE(d->Is<ConstantIdDecoration>());
+  EXPECT_TRUE(d->Is<LocationDecoration>());
+  EXPECT_FALSE(d->Is<GroupDecoration>());
 }
 
 TEST_F(LocationDecorationTest, ToStr) {
-  LocationDecoration d{2, Source{}};
-  std::ostringstream out;
-  d.to_str(out);
-  EXPECT_EQ(out.str(), R"(LocationDecoration{2}
+  auto* d = create<LocationDecoration>(2);
+  EXPECT_EQ(str(d), R"(LocationDecoration{2}
 )");
 }
 

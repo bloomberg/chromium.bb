@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -80,6 +80,11 @@ void PlatformSensorChromeOS::OnSampleUpdated(
       OnErrorOccurred(chromeos::sensors::mojom::ObserverErrorType::READ_FAILED);
       return;
     }
+  }
+
+  if (num_failed_reads_ > 0 && ++num_recovery_reads_ == kNumRecoveryReads) {
+    num_recovery_reads_ = 0;
+    --num_failed_reads_;
   }
 
   SensorReading reading;
@@ -162,6 +167,7 @@ void PlatformSensorChromeOS::OnErrorOccurred(
 
     case chromeos::sensors::mojom::ObserverErrorType::READ_FAILED:
       LOG(ERROR) << "Sensor " << iio_device_id_ << ": Failed to read a sample";
+      OnReadFailure();
       break;
 
     case chromeos::sensors::mojom::ObserverErrorType::READ_TIMEOUT:
@@ -203,7 +209,6 @@ bool PlatformSensorChromeOS::StartSensor(
 void PlatformSensorChromeOS::StopSensor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  sensor_device_remote_.reset();
   receiver_.reset();
 }
 
@@ -260,12 +265,10 @@ void PlatformSensorChromeOS::OnObserverDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(receiver_.is_bound());
 
-  LOG(ERROR) << "On Observer Disconnect";
-  receiver_.reset();
+  LOG(ERROR) << "OnObserverDisconnect";
 
-  // Try to restart reading.
-  if (sensor_device_remote_.is_bound())
-    StartReadingIfReady();
+  // Assumes IIO Service has crashed and waits for its relaunch.
+  ResetOnError();
 }
 
 void PlatformSensorChromeOS::SetRequiredChannels() {
@@ -382,6 +385,20 @@ void PlatformSensorChromeOS::SetChannelsEnabledCallback(
 
 double PlatformSensorChromeOS::GetScaledValue(int64_t value) const {
   return value * scale_;
+}
+
+void PlatformSensorChromeOS::OnReadFailure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (++num_failed_reads_ < kNumFailedReadsBeforeGivingUp) {
+    LOG(ERROR) << "ReadSamples error #" << num_failed_reads_ << " occurred";
+    return;
+  }
+
+  num_failed_reads_ = num_recovery_reads_ = 0;
+
+  LOG(ERROR) << "Too many failed reads";
+  ResetOnError();
 }
 
 }  // namespace device

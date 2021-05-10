@@ -10,10 +10,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
-#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
@@ -29,7 +27,7 @@ static_assert(sizeof(CheckedPtr<int>) == sizeof(int*),
 static_assert(sizeof(CheckedPtr<std::string>) == sizeof(std::string*),
               "CheckedPtr shouldn't add memory overhead");
 
-#if !ENABLE_BACKUP_REF_PTR_IMPL
+#if !BUILDFLAG(USE_BACKUP_REF_PTR)
 // |is_trivially_copyable| assertion means that arrays/vectors of CheckedPtr can
 // be copied by memcpy.
 static_assert(std::is_trivially_copyable<CheckedPtr<void>>::value,
@@ -58,7 +56,7 @@ static_assert(std::is_trivially_default_constructible<CheckedPtr<int>>::value,
 static_assert(
     std::is_trivially_default_constructible<CheckedPtr<std::string>>::value,
     "CheckedPtr should be trivially default constructible");
-#endif  // !ENABLE_BACKUP_REF_PTR_IMPL
+#endif  // !BUILDFLAG(USE_BACKUP_REF_PTR)
 
 // Don't use base::internal for testing CheckedPtr API, to test if code outside
 // this namespace calls the correct functions from this namespace.
@@ -706,175 +704,21 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
 
 }  // namespace
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-
 namespace base {
 namespace internal {
 
-static constexpr size_t kTagOffsetForTest = 2;
-
-struct CheckedPtr2OrMTEImplPartitionAllocSupportForTest {
-  static bool EnabledForPtr(void* ptr) { return !!ptr; }
-
-  static ALWAYS_INLINE void* TagPointer(void* ptr) {
-    return static_cast<char*>(ptr) - kTagOffsetForTest;
-  }
-};
-
-using CheckedPtr2OrMTEImplForTest =
-    CheckedPtr2OrMTEImpl<CheckedPtr2OrMTEImplPartitionAllocSupportForTest>;
-
-TEST(CheckedPtr2OrMTEImpl, WrapNull) {
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::GetWrappedNullPtr(), 0u);
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::WrapRawPtr(nullptr), 0u);
-}
-
-TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapNull) {
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForExtraction(0),
-            nullptr);
-}
-
-TEST(CheckedPtr2OrMTEImpl, WrapAndSafelyUnwrap) {
-  // Create a fake allocation, with first 2B for generation.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  void* ptr = bytes + kTagOffsetForTest;
-  ASSERT_EQ(0x78, *static_cast<char*>(ptr));
-  uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-
-  uintptr_t mask = 0xFFFFFFFFFFFFFFFF;
-  if (sizeof(PartitionTag) < 2)
-    mask = 0x00FFFFFFFFFFFFFF;
-
-  uintptr_t wrapped = CheckedPtr2OrMTEImplForTest::WrapRawPtr(ptr);
-  // The bytes before the allocation will be used as generation (in reverse
-  // order due to little-endianness).
-#if CHECKED_PTR2_USE_NO_OP_WRAPPER
-  ASSERT_EQ(wrapped, addr);
-  std::ignore = mask;
-#else
-  ASSERT_EQ(wrapped, (addr | 0x42BA000000000000) & mask);
-#endif
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped),
-            ptr);
-
-  // Modify the generation in the fake allocation.
-  bytes[0] |= 0x40;
-  wrapped = CheckedPtr2OrMTEImplForTest::WrapRawPtr(ptr);
-#if CHECKED_PTR2_USE_NO_OP_WRAPPER
-  ASSERT_EQ(wrapped, addr);
-#else
-  ASSERT_EQ(wrapped, (addr | 0x42FA000000000000) & mask);
-#endif
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped),
-            ptr);
-
-#if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
-  // Clear the generation associated with the fake allocation.
-  bytes[0] = 0;
-  bytes[1] = 0;
-
-  // Mask out the top bit, because in some cases (not all), it may differ.
-  ASSERT_EQ(
-      reinterpret_cast<uintptr_t>(
-          CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped)),
-      wrapped);
-#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
-}
-
-TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapDisabled) {
-  // Create a fake allocation, with first 2B for generation.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  void* ptr = bytes + kTagOffsetForTest;
-  ASSERT_EQ(0x78, *static_cast<char*>(ptr));
-  uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(addr),
-            ptr);
-}
-
-TEST(CheckedPtr2OrMTEImpl, CrashOnGenerationMismatch) {
-  // Create a fake allocation, with first 2B for generation.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  CheckedPtr<char, CheckedPtr2OrMTEImplForTest> ptr = bytes + kTagOffsetForTest;
-  EXPECT_EQ(*ptr, 0x78);
-  // Clobber the generation associated with the fake allocation.
-  bytes[0] = 0;
-  EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 0x78) return, "");
-}
+#if BUILDFLAG(USE_BACKUP_REF_PTR) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
 }
 
-// This test works only when PartitionAlloc is used, when tags are enabled.
-// Don't enable it when MEMORY_TOOL_REPLACES_ALLOCATOR is defined, because it
-// makes PartitionAlloc take a different path that doesn't provide tags, thus no
-// crash on UaF, thus missing the EXPECT_DEATH_IF_SUPPORTED expectation.
-#if BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL && \
-    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+static constexpr PartitionOptions kOpts = {
+    PartitionOptions::Alignment::kRegular,
+    PartitionOptions::ThreadCache::kDisabled,
+    base::PartitionOptions::Quarantine::kDisallowed,
+    PartitionOptions::RefCount::kEnabled};
 
-TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree) {
-  // This test works only if GigaCage is enabled. Bail out otherwise.
-  if (!IsPartitionAllocGigaCageEnabled())
-    return;
-
-  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
-  // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator<ThreadSafe> allocator;
-  allocator.init({});
-  void* raw_ptr = allocator.root()->Alloc(sizeof(int), "int");
-  // Use the actual CheckedPtr implementation, not a test substitute, to
-  // exercise real PartitionAlloc paths.
-  CheckedPtr<int> ptr = static_cast<int*>(raw_ptr);
-  *ptr = 42;
-  EXPECT_EQ(*ptr, 42);
-  allocator.root()->Free(raw_ptr);
-  EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 42) return, "");
-}
-
-#ifdef ENABLE_TAG_FOR_MTE_CHECKED_PTR
-TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree_WithOffset) {
-  // This test works only if GigaCage is enabled. Bail out otherwise.
-  if (!IsPartitionAllocGigaCageEnabled())
-    return;
-
-  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
-  // new/delete once PartitionAlloc Everywhere is fully enabled.
-  PartitionAllocGlobalInit(HandleOOM);
-  PartitionAllocator<ThreadSafe> allocator;
-  allocator.init({});
-  const uint8_t kSize = 100;
-  void* raw_ptr = allocator.root()->Alloc(kSize * sizeof(uint8_t), "uint8_t");
-  // Use the actual CheckedPtr implementation, not a test substitute, to
-  // exercise real PartitionAlloc paths.
-  CheckedPtr<uint8_t> ptrs[kSize];
-  for (uint8_t i = 0; i < kSize; ++i) {
-    ptrs[i] = static_cast<uint8_t*>(raw_ptr) + i;
-  }
-  for (uint8_t i = 0; i < kSize; ++i) {
-    *ptrs[i] = 42 + i;
-    EXPECT_TRUE(*ptrs[i] == 42 + i);
-  }
-  allocator.root()->Free(raw_ptr);
-  for (uint8_t i = 0; i < kSize; i += 15) {
-    EXPECT_DEATH_IF_SUPPORTED(if (*ptrs[i] == 42 + i) return, "");
-  }
-}
-#endif  // ENABLE_TAG_FOR_MTE_CHECKED_PTR
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL &&
-        // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-
-#if BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_BACKUP_REF_PTR_IMPL && \
-    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST(BackupRefPtrImpl, Basic) {
   // This test works only if GigaCage is enabled. Bail out otherwise.
   if (!features::IsPartitionAllocGigaCageEnabled())
@@ -884,7 +728,7 @@ TEST(BackupRefPtrImpl, Basic) {
   // new/delete once PartitionAlloc Everywhere is fully enabled.
   PartitionAllocGlobalInit(HandleOOM);
   PartitionAllocator<ThreadSafe> allocator;
-  allocator.init({});
+  allocator.init(kOpts);
   uint64_t* raw_ptr1 = reinterpret_cast<uint64_t*>(
       allocator.root()->Alloc(sizeof(uint64_t), ""));
   // Use the actual CheckedPtr implementation, not a test substitute, to
@@ -894,8 +738,12 @@ TEST(BackupRefPtrImpl, Basic) {
   *raw_ptr1 = 42;
   EXPECT_EQ(*raw_ptr1, *checked_ptr1);
 
-  // The allocation should be poisoned since there's a CheckedPtr alive.
   allocator.root()->Free(raw_ptr1);
+#if DCHECK_IS_ON()
+  // In debug builds, the use-after-free should be caught immediately.
+  EXPECT_DEATH_IF_SUPPORTED(if (*checked_ptr1 == 42) return, "");
+#else   // DCHECK_IS_ON()
+  // The allocation should be poisoned since there's a CheckedPtr alive.
   EXPECT_NE(*checked_ptr1, 42ul);
 
   // The allocator should not be able to reuse the slot at this point.
@@ -908,11 +756,92 @@ TEST(BackupRefPtrImpl, Basic) {
   void* raw_ptr3 = allocator.root()->Alloc(sizeof(uint64_t), "");
   EXPECT_EQ(raw_ptr1, raw_ptr3);
   allocator.root()->Free(raw_ptr3);
+#endif  // DCHECK_IS_ON()
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_BACKUP_REF_PTR_IMPL &&
+TEST(BackupRefPtrImpl, ZeroSized) {
+  // This test works only if GigaCage is enabled. Bail out otherwise.
+  if (!features::IsPartitionAllocGigaCageEnabled())
+    return;
+
+  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
+  // new/delete once PartitionAlloc Everywhere is fully enabled.
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init(kOpts);
+
+  std::vector<CheckedPtr<void>> ptrs;
+  // Use a reasonable number of elements to fill up the slot span.
+  for (int i = 0; i < 128 * 1024; ++i) {
+    // Constructing a CheckedPtr instance from a zero-sized allocation should
+    // not result in a crash.
+    ptrs.emplace_back(allocator.root()->Alloc(0, ""));
+  }
+}
+
+TEST(BackupRefPtrImpl, EndPointer) {
+  // This test works only if GigaCage is enabled. Bail out otherwise.
+  if (!features::IsPartitionAllocGigaCageEnabled())
+    return;
+
+  // This test requires a fresh partition with an empty free list.
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init(kOpts);
+
+  // Check multiple size buckets and levels of slot filling.
+  for (int size = 0; size < 1024; size += sizeof(void*)) {
+    // Creating a CheckedPtr from an address right past the end of an allocation
+    // should not result in a crash or corrupt the free list.
+    char* raw_ptr1 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+    CheckedPtr<char> checked_ptr = raw_ptr1 + size;
+    checked_ptr = nullptr;
+    // We need to make two more allocations to turn the possible free list
+    // corruption into an observable crash.
+    char* raw_ptr2 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+    char* raw_ptr3 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+
+    // Similarly for operator+=.
+    char* raw_ptr4 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+    checked_ptr = raw_ptr4;
+    checked_ptr += size;
+    checked_ptr = nullptr;
+    char* raw_ptr5 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+    char* raw_ptr6 = reinterpret_cast<char*>(allocator.root()->Alloc(size, ""));
+
+    allocator.root()->Free(raw_ptr1);
+    allocator.root()->Free(raw_ptr2);
+    allocator.root()->Free(raw_ptr3);
+    allocator.root()->Free(raw_ptr4);
+    allocator.root()->Free(raw_ptr5);
+    allocator.root()->Free(raw_ptr6);
+  }
+}
+
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+TEST(BackupRefPtrImpl, ReinterpretCast) {
+  // This test works only if GigaCage is enabled. Bail out otherwise.
+  if (!features::IsPartitionAllocGigaCageEnabled())
+    return;
+
+  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
+  // new/delete once PartitionAlloc Everywhere is fully enabled.
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init(kOpts);
+
+  void* raw_ptr = allocator.root()->Alloc(16, "");
+  allocator.root()->Free(raw_ptr);
+
+  CheckedPtr<void>* checked_ptr = reinterpret_cast<CheckedPtr<void>*>(&raw_ptr);
+  // The reference count cookie check should detect that the allocation has
+  // been already freed.
+  EXPECT_DEATH_IF_SUPPORTED(*checked_ptr = nullptr, "");
+}
+#endif
+
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+
 }  // namespace internal
 }  // namespace base
-
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)

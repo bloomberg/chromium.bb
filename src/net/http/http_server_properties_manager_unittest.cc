@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "net/base/features.h"
 #include "net/base/ip_address.h"
+#include "net/base/schemeful_site.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/test/test_with_task_environment.h"
@@ -1215,14 +1216,14 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[],"
+      "{\"alternative_service\":[{\"advertised_alpns\":[],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"h2\"},"
-      "{\"advertised_versions\":[],\"expiration\":\"13758804000000000\","
+      "{\"advertised_alpns\":[],\"expiration\":\"13758804000000000\","
       "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"}],"
       "\"isolation\":[],"
       "\"server\":\"https://www.google.com:80\"},"
-      "{\"alternative_service\":[{\"advertised_versions\":[],"
+      "{\"alternative_service\":[{\"advertised_alpns\":[],"
       "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"h2\"}],"
       "\"isolation\":[],"
@@ -1519,14 +1520,16 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{"
-      "\"advertised_versions\":[46,43],\"expiration\":\"13756212000000000\","
-      "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
+      "\"advertised_alpns\":[\"h3-Q046\",\"h3-Q043\"],\"expiration\":"
+      "\"13756212000000000\","
+      "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_alpns\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}],"
       "\"isolation\":[],"
       "\"server\":\"https://www.google.com:80\"},"
       "{\"alternative_service\":[{"
-      "\"advertised_versions\":[50],\"expiration\":\"9223372036854775807\","
+      "\"advertised_alpns\":[\"h3-Q050\",\"h3-29\"],\"expiration\":"
+      "\"9223372036854775807\","
       "\"host\":\"foo.google.com\",\"port\":444,\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
       "\"network_stats\":{\"srtt\":42},"
@@ -1552,7 +1555,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       "\"expiration\":\"9223372036854775807\","
       // Add 33 which we know is not supported, as regression test for
       // https://crbug.com/1061509
-      "\"advertised_versions\":[33,46,43]}]}");
+      "\"advertised_alpns\":[\"h3-Q033\",\"h3-Q046\",\"h3-Q043\"]}]}");
   ASSERT_TRUE(server_dict);
   ASSERT_TRUE(server_dict->is_dict());
 
@@ -1587,7 +1590,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   // Verify advertised versions.
   const quic::ParsedQuicVersionVector loaded_advertised_versions =
       alternative_service_info_vector[1].advertised_versions();
-  EXPECT_EQ(2u, loaded_advertised_versions.size());
+  ASSERT_EQ(2u, loaded_advertised_versions.size());
   EXPECT_EQ(quic::ParsedQuicVersion::Q043(), loaded_advertised_versions[0]);
   EXPECT_EQ(quic::ParsedQuicVersion::Q046(), loaded_advertised_versions[1]);
 
@@ -1637,7 +1640,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[50],"
+      "{\"alternative_service\":[{\"advertised_alpns\":[\"h3-Q050\",\"h3-29\"],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1677,7 +1680,8 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[46,43],"
+      "{\"alternative_service\":"
+      "[{\"advertised_alpns\":[\"h3-Q046\",\"h3-Q043\"],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1712,7 +1716,8 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[43,46],"
+      "{\"alternative_service\":"
+      "[{\"advertised_alpns\":[\"h3-Q043\",\"h3-Q046\"],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -2080,10 +2085,9 @@ TEST_F(HttpServerPropertiesManagerTest, ForceHTTP11) {
 }
 
 TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const url::Origin kOpaqueOrigin =
-      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const SchemefulSite kOpaqueSite(GURL("data:text/plain,Hello World"));
   const url::SchemeHostPort kServer("https", "baz.test", 443);
   const url::SchemeHostPort kServer2("https", "zab.test", 443);
 
@@ -2114,7 +2118,7 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
       // to make sure to call the constructor after setting up the feature
       // above.
       HttpServerProperties::ServerInfoMapKey server_info_key(
-          kServer, NetworkIsolationKey(kOrigin1, kOrigin2),
+          kServer, NetworkIsolationKey(kSite1, kSite2),
           use_network_isolation_key);
       server_info_map.Put(server_info_key, server_info);
 
@@ -2123,7 +2127,7 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
       // are only meaningful within a browsing session.
       if (use_network_isolation_key) {
         HttpServerProperties::ServerInfoMapKey server_info_key2(
-            kServer2, NetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin),
+            kServer2, NetworkIsolationKey(kOpaqueSite, kOpaqueSite),
             use_network_isolation_key);
         server_info_map.Put(server_info_key2, server_info);
       }
@@ -2164,7 +2168,7 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
         const HttpServerProperties::ServerInfo& server_info2 =
             server_info_map2->begin()->second;
         EXPECT_EQ(kServer, server_info_key2.server);
-        EXPECT_EQ(NetworkIsolationKey(kOrigin1, kOrigin2),
+        EXPECT_EQ(NetworkIsolationKey(kSite1, kSite2),
                   server_info_key2.network_isolation_key);
         EXPECT_EQ(server_info, server_info2);
       } else {
@@ -2179,14 +2183,13 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
 // Tests a full round trip with a NetworkIsolationKey, using the
 // HttpServerProperties interface.
 TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const SchemefulSite kSite(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kSite, kSite);
   const url::SchemeHostPort kServer("https", "baz.test", 443);
 
-  const url::Origin kOpaqueOrigin =
-      url::Origin::Create(GURL("data:text/plain,Hello World"));
-  const NetworkIsolationKey kOpaqueOriginNetworkIsolationKey(kOpaqueOrigin,
-                                                             kOpaqueOrigin);
+  const SchemefulSite kOpaqueSite(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kOpaqueSiteNetworkIsolationKey(kOpaqueSite,
+                                                           kOpaqueSite);
   const url::SchemeHostPort kServer2("https", "zab.test", 443);
 
   base::test::ScopedFeatureList feature_list;
@@ -2208,15 +2211,15 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
   properties->SetSupportsSpdy(kServer, kNetworkIsolationKey, true);
   EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
   EXPECT_FALSE(
-      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+      properties->GetSupportsSpdy(kServer, kOpaqueSiteNetworkIsolationKey));
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
 
   // Opaque origins should works with HttpServerProperties, but not be persisted
   // to disk.
-  properties->SetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey, true);
+  properties->SetSupportsSpdy(kServer2, kOpaqueSiteNetworkIsolationKey, true);
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
   EXPECT_TRUE(
-      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+      properties->GetSupportsSpdy(kServer2, kOpaqueSiteNetworkIsolationKey));
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
 
   // Wait until the data's been written to prefs, and then tear down the
@@ -2238,14 +2241,14 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
   // HttpServerProperties.
   EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
   EXPECT_FALSE(
-      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+      properties->GetSupportsSpdy(kServer, kOpaqueSiteNetworkIsolationKey));
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
 
-  // The information set using kOpaqueOriginNetworkIsolationKey should not have
+  // The information set using kOpaqueSiteNetworkIsolationKey should not have
   // been restored.
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
   EXPECT_FALSE(
-      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+      properties->GetSupportsSpdy(kServer2, kOpaqueSiteNetworkIsolationKey));
   EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
 }
 
@@ -2254,10 +2257,10 @@ TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
 // canonical suffix logic.
 TEST_F(HttpServerPropertiesManagerTest,
        CanonicalSuffixRoundTripWithNetworkIsolationKey) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   // Three servers with the same canonical suffix (".c.youtube.com").
   const url::SchemeHostPort kServer1("https", "foo.c.youtube.com", 443);
   const url::SchemeHostPort kServer2("https", "bar.c.youtube.com", 443);
@@ -2421,8 +2424,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 // HttpServerProperties interface and setting alternative services as broken.
 TEST_F(HttpServerPropertiesManagerTest,
        NetworkIsolationKeyBrokenAltServiceRoundTrip) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+  const SchemefulSite kSite1(GURL("https://foo1.test/"));
+  const SchemefulSite kSite2(GURL("https://foo2.test/"));
 
   const AlternativeService kAlternativeService1(kProtoHTTP2,
                                                 "alt.service1.test", 443);
@@ -2441,8 +2444,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 
       // The NetworkIsolationKey constructor checks the field trial state, so
       // need to create the keys only after setting up the field trials.
-      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+      const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
       // Create and initialize an HttpServerProperties, must be done after
       // setting the feature.
@@ -2520,8 +2523,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 
       // The NetworkIsolationKey constructor checks the field trial state, so
       // need to create the keys only after setting up the field trials.
-      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+      const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
       // Create a new HttpServerProperties, loading the data from before.
       std::unique_ptr<MockPrefDelegate> pref_delegate =
@@ -2631,9 +2634,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 // Make sure broken alt services with opaque origins aren't saved.
 TEST_F(HttpServerPropertiesManagerTest,
        NetworkIsolationKeyBrokenAltServiceOpaqueOrigin) {
-  const url::Origin kOpaqueOrigin =
-      url::Origin::Create(GURL("data:text/plain,Hello World"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const SchemefulSite kOpaqueSite(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueSite, kOpaqueSite);
   const AlternativeService kAlternativeService(kProtoHTTP2, "alt.service1.test",
                                                443);
 
@@ -2677,8 +2679,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 // HttpServerProperties interface and setting QuicServerInfo.
 TEST_F(HttpServerPropertiesManagerTest,
        NetworkIsolationKeyQuicServerInfoRoundTrip) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+  const SchemefulSite kSite1(GURL("https://foo1.test/"));
+  const SchemefulSite kSite2(GURL("https://foo2.test/"));
 
   const quic::QuicServerId kServer1("foo", 443,
                                     false /* privacy_mode_enabled */);
@@ -2701,8 +2703,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 
       // The NetworkIsolationKey constructor checks the field trial state, so
       // need to create the keys only after setting up the field trials.
-      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+      const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
       // Create and initialize an HttpServerProperties, must be done after
       // setting the feature.
@@ -2766,8 +2768,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 
       // The NetworkIsolationKey constructor checks the field trial state, so
       // need to create the keys only after setting up the field trials.
-      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+      const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
       // Create a new HttpServerProperties, loading the data from before.
       std::unique_ptr<MockPrefDelegate> pref_delegate =
@@ -2850,10 +2852,10 @@ TEST_F(HttpServerPropertiesManagerTest,
 // interactions with the canonical suffix logic.
 TEST_F(HttpServerPropertiesManagerTest,
        NetworkIsolationKeyQuicServerInfoCanonicalSuffixRoundTrip) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   // Three servers with the same canonical suffix (".c.youtube.com").
   const quic::QuicServerId kServer1("foo.c.youtube.com", 443,
@@ -2963,9 +2965,8 @@ TEST_F(HttpServerPropertiesManagerTest,
 // origins aren't saved.
 TEST_F(HttpServerPropertiesManagerTest,
        NetworkIsolationKeyQuicServerInfoOpaqueOrigin) {
-  const url::Origin kOpaqueOrigin =
-      url::Origin::Create(GURL("data:text/plain,Hello World"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const SchemefulSite kOpaqueSite(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueSite, kOpaqueSite);
   const quic::QuicServerId kServer("foo", 443,
                                    false /* privacy_mode_enabled */);
 
@@ -2999,6 +3000,64 @@ TEST_F(HttpServerPropertiesManagerTest,
                           &preferences_json);
   EXPECT_EQ("{\"quic_servers\":[],\"servers\":[],\"version\":5}",
             preferences_json);
+}
+
+TEST_F(HttpServerPropertiesManagerTest, AdvertisedVersionsRoundTrip) {
+  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
+    // Reset test infrastructure.
+    TearDown();
+    SetUp();
+    InitializePrefs();
+    // Create alternate version information.
+    const url::SchemeHostPort server("https", "quic.example.org", 443);
+    AlternativeServiceInfoVector alternative_service_info_vector_in;
+    AlternativeService quic_alternative_service(kProtoQUIC, "", 443);
+    base::Time expiration;
+    ASSERT_TRUE(base::Time::FromUTCString("2036-12-01 10:00:00", &expiration));
+    quic::ParsedQuicVersionVector advertised_versions = {version};
+    alternative_service_info_vector_in.push_back(
+        AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+            quic_alternative_service, expiration, advertised_versions));
+    http_server_props_->SetAlternativeServices(
+        server, NetworkIsolationKey(), alternative_service_info_vector_in);
+    // Save to JSON.
+    EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
+    EXPECT_NE(0u, GetPendingMainThreadTaskCount());
+    FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+    const base::Value* http_server_properties =
+        pref_delegate_->GetServerProperties();
+    std::string preferences_json;
+    EXPECT_TRUE(
+        base::JSONWriter::Write(*http_server_properties, &preferences_json));
+    // Reset test infrastructure.
+    TearDown();
+    SetUp();
+    InitializePrefs();
+    // Read from JSON.
+    std::unique_ptr<base::Value> preferences_dict =
+        base::JSONReader::ReadDeprecated(preferences_json);
+    ASSERT_TRUE(preferences_dict);
+    ASSERT_TRUE(preferences_dict->is_dict());
+    const base::Value* servers_list = preferences_dict->FindListKey("servers");
+    ASSERT_TRUE(servers_list);
+    ASSERT_TRUE(servers_list->is_list());
+    ASSERT_EQ(servers_list->GetList().size(), 1u);
+    const base::Value& server_dict = servers_list->GetList()[0];
+    HttpServerProperties::ServerInfo server_info;
+    EXPECT_TRUE(HttpServerPropertiesManager::ParseAlternativeServiceInfo(
+        server, server_dict, &server_info));
+    ASSERT_TRUE(server_info.alternative_services.has_value());
+    AlternativeServiceInfoVector alternative_service_info_vector_out =
+        server_info.alternative_services.value();
+    ASSERT_EQ(1u, alternative_service_info_vector_out.size());
+    EXPECT_EQ(
+        kProtoQUIC,
+        alternative_service_info_vector_out[0].alternative_service().protocol);
+    // Ensure we correctly parsed the version.
+    EXPECT_EQ(advertised_versions,
+              alternative_service_info_vector_out[0].advertised_versions());
+  }
 }
 
 }  // namespace net

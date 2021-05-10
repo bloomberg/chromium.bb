@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 #
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -37,6 +37,22 @@ def parse_options(cli_args):
         '--chrome-features',
         dest='chrome_features',
         help='comma separated list of strings passed to --enable-features on the chromium commandline')
+    parser.add_argument(
+        '--jobs',
+        default='1',
+        dest='jobs',
+        help=
+        'The number of parallel runners to use (if supported). Defaults to 1')
+    parser.add_argument('--cwd',
+                        dest='cwd',
+                        help='Path to the directory containing the out dir',
+                        default=devtools_paths.devtools_root_path())
+    parser.add_argument(
+        '--node_modules-path',
+        dest='node_modules_path',
+        help=
+        'Path to the node_modules directory for Node to use. Will use Node defaults if not set.',
+        default=None)
     return parser.parse_args(cli_args)
 
 
@@ -44,10 +60,10 @@ def run_tests(chrome_binary,
               chrome_features,
               test_suite_path,
               test_suite,
+              jobs,
+              cwd=None,
+              node_modules_path=None,
               test_file=None):
-    # Silence CI step in old branch
-    if test_suite == "interactions":
-        return False
     env = os.environ.copy()
     env['CHROME_BIN'] = chrome_binary
     if chrome_features:
@@ -56,7 +72,16 @@ def run_tests(chrome_binary,
     if test_file is not None:
         env['TEST_FILE'] = test_file
 
-    cwd = devtools_paths.devtools_root_path()
+    if jobs:
+        env['JOBS'] = jobs
+
+    if node_modules_path is not None:
+        # Node requires the path to be absolute
+        env['NODE_PATH'] = os.path.abspath(node_modules_path)
+
+    if not cwd:
+        cwd = devtools_paths.devtools_root_path()
+
     exec_command = [
         devtools_paths.node_path(),
         devtools_paths.mocha_path(),
@@ -101,6 +126,9 @@ def run_test():
         print('Unable to run, no test suite provided')
         sys.exit(1)
 
+    if OPTIONS.jobs:
+        jobs = OPTIONS.jobs
+
     test_suite = OPTIONS.test_suite
     test_file = OPTIONS.test_file
 
@@ -111,9 +139,12 @@ def run_test():
     if test_file is not None:
         print('Testing file (%s)' % test_file)
 
-    cwd = devtools_paths.devtools_root_path()
-    test_suite_path = os.path.join(cwd, 'out', OPTIONS.target, 'gen', 'test',
-                                   test_suite)
+    cwd = OPTIONS.cwd
+    node_modules_path = OPTIONS.node_modules_path
+
+    print('Running tests from %s\n' % cwd)
+    test_suite_path = os.path.join(os.path.abspath(cwd), 'out', OPTIONS.target,
+                                   'gen', 'test', test_suite)
 
     errors_found = False
     try:
@@ -121,6 +152,9 @@ def run_test():
                                  chrome_features,
                                  test_suite_path,
                                  test_suite,
+                                 jobs,
+                                 cwd,
+                                 node_modules_path,
                                  test_file=test_file)
     except Exception as err:
         print(err)

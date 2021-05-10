@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -98,7 +98,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest
 
   CoreAccountId GetAuthenticatedAccountId() {
     return IdentityManagerFactory::GetForProfile(profile())
-        ->GetPrimaryAccountInfo()
+        ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
         .account_id;
   }
 
@@ -455,9 +455,9 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
   EXPECT_EQ(fake_arc_support()->ui_page(), ArcSupportHost::UIPage::TERMS);
 
   // Switch to error page.
-  support_host()->ShowError(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR,
-                            0 /* error_code */,
-                            false /* should_show_send_feedback */);
+  support_host()->ShowError(
+      ArcSupportHost::ErrorInfo(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR),
+      false /* should_show_send_feedback */);
 
   // The callback should not be called yet.
   EXPECT_EQ(status, Status::PENDING);

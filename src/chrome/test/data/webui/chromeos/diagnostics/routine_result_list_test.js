@@ -4,7 +4,7 @@
 
 import 'chrome://diagnostics/routine_result_list.js';
 
-import {RoutineName, StandardRoutineResult} from 'chrome://diagnostics/diagnostics_types.js';
+import {RoutineResult, RoutineType, StandardRoutineResult} from 'chrome://diagnostics/diagnostics_types.js';
 import {ExecutionProgress, ResultStatusItem} from 'chrome://diagnostics/routine_list_executor.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
@@ -29,7 +29,7 @@ export function routineResultListTestSuite() {
 
   /**
    * Initializes the routine-result-list and sets the list of routines.
-   * @param {!Array<!RoutineName>} routines
+   * @param {!Array<!RoutineType>} routines
    * @return {!Promise}
    */
   function initializeRoutineResultList(routines) {
@@ -95,10 +95,10 @@ export function routineResultListTestSuite() {
   });
 
   test('InitializedRoutines', () => {
-    /** @type {!Array<!RoutineName>} */
+    /** @type {!Array<!RoutineType>} */
     const routines = [
-      RoutineName.kCpuCache,
-      RoutineName.kFloatingPoint,
+      chromeos.diagnostics.mojom.RoutineType.kCpuCache,
+      chromeos.diagnostics.mojom.RoutineType.kCpuFloatingPoint,
     ];
 
     return initializeRoutineResultList(routines).then(() => {
@@ -106,17 +106,16 @@ export function routineResultListTestSuite() {
       getEntries().forEach((entry, index) => {
         // Routines are initialized in the unstarted state.
         let status = new ResultStatusItem(routines[index]);
-        status.progress = ExecutionProgress.kNotStarted;
         assertDeepEquals(status, entry.item);
       });
     });
   });
 
   test('InitializeThenClearRoutines', () => {
-    /** @type {!Array<!RoutineName>} */
+    /** @type {!Array<!RoutineType>} */
     const routines = [
-      RoutineName.kCpuCache,
-      RoutineName.kFloatingPoint,
+      chromeos.diagnostics.mojom.RoutineType.kCpuCache,
+      chromeos.diagnostics.mojom.RoutineType.kCpuFloatingPoint,
     ];
 
     return initializeRoutineResultList(routines)
@@ -131,10 +130,10 @@ export function routineResultListTestSuite() {
   });
 
   test('VerifyStatusUpdates', () => {
-    /** @type {!Array<!RoutineName>} */
+    /** @type {!Array<!RoutineType>} */
     const routines = [
-      RoutineName.kCpuCache,
-      RoutineName.kFloatingPoint,
+      chromeos.diagnostics.mojom.RoutineType.kCpuCache,
+      chromeos.diagnostics.mojom.RoutineType.kCpuFloatingPoint,
     ];
 
     return initializeRoutineResultList(routines).then(() => {
@@ -143,12 +142,11 @@ export function routineResultListTestSuite() {
       getEntries().forEach((entry, index) => {
         // Routines are initialized in the unstarted state.
         let status = new ResultStatusItem(routines[index]);
-        status.progress = ExecutionProgress.kNotStarted;
         assertDeepEquals(status, entry.item);
       });
 
-      let status = new ResultStatusItem(routines[0]);
-      status.progress = ExecutionProgress.kRunning;
+      let status =
+          new ResultStatusItem(routines[0], ExecutionProgress.kRunning);
       routineResultListElement.onStatusUpdate(status);
       return flushTasks()
           .then(() => {
@@ -158,9 +156,12 @@ export function routineResultListTestSuite() {
             assertEquals(null, getEntries()[0].item.result);
 
             // Move the first routine to completed state.
-            status = new ResultStatusItem(routines[0]);
-            status.progress = ExecutionProgress.kCompleted;
-            status.result = {simpleResult: StandardRoutineResult.kTestPassed};
+            status =
+                new ResultStatusItem(routines[0], ExecutionProgress.kCompleted);
+            status.result = /** @type {!RoutineResult} */ ({
+              simpleResult:
+                  chromeos.diagnostics.mojom.StandardRoutineResult.kTestPassed
+            });
             routineResultListElement.onStatusUpdate(status);
 
             return flushTasks();
@@ -171,11 +172,11 @@ export function routineResultListTestSuite() {
                 ExecutionProgress.kCompleted, getEntries()[0].item.progress);
             assertNotEquals(null, getEntries()[0].item.result);
             assertEquals(
-                StandardRoutineResult.kTestPassed,
+                chromeos.diagnostics.mojom.StandardRoutineResult.kTestPassed,
                 getEntries()[0].item.result.simpleResult);
 
-            status = new ResultStatusItem(routines[1]);
-            status.progress = ExecutionProgress.kRunning;
+            status =
+                new ResultStatusItem(routines[1], ExecutionProgress.kRunning);
             routineResultListElement.onStatusUpdate(status);
 
             return flushTasks();
@@ -187,9 +188,12 @@ export function routineResultListTestSuite() {
             assertEquals(null, getEntries()[1].item.result);
 
             // Move the second routine to completed state.
-            status = new ResultStatusItem(routines[1]);
-            status.progress = ExecutionProgress.kCompleted;
-            status.result = {simpleResult: StandardRoutineResult.kTestPassed};
+            status =
+                new ResultStatusItem(routines[1], ExecutionProgress.kCompleted);
+            status.result = /** @type {!RoutineResult} */ ({
+              simpleResult:
+                  chromeos.diagnostics.mojom.StandardRoutineResult.kTestPassed
+            });
             routineResultListElement.onStatusUpdate(status);
 
             return flushTasks();
@@ -200,7 +204,7 @@ export function routineResultListTestSuite() {
                 ExecutionProgress.kCompleted, getEntries()[1].item.progress);
             assertNotEquals(null, getEntries()[1].item.result);
             assertEquals(
-                StandardRoutineResult.kTestPassed,
+                chromeos.diagnostics.mojom.StandardRoutineResult.kTestPassed,
                 getEntries()[0].item.result.simpleResult);
 
             return flushTasks();

@@ -6,10 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_REQUEST_TRIGGER_SCRIPT;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_STARTED_WITH_TRIGGER_SCRIPT;
-import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_FIRST_TIME_USER;
-import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_RETURNING_TIME_USER;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_SCRIPTS_BASE64;
-import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_SCRIPT_USED;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -17,19 +14,20 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptFinishedState;
-import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptOnboarding;
 import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptStarted;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.AssistantOnboardingResult;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.BaseOnboardingCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.OnboardingCoordinatorFactory;
 import org.chromium.chrome.browser.autofill_assistant.trigger_scripts.AssistantTriggerScriptBridge;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
@@ -64,8 +62,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                 Log.v(TAG, "TriggerScript stopping: proactive help setting is turned off");
                 return;
             }
-            if ((!TextUtils.isEmpty(parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER))
-                        || !TextUtils.isEmpty(parameters.get(PARAMETER_REQUEST_TRIGGER_SCRIPT)))
+            if (!TextUtils.isEmpty(parameters.get(PARAMETER_REQUEST_TRIGGER_SCRIPT))
                     && !UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(
                             AutofillAssistantUiController.getProfile())) {
                 // Proactive help that requires communicating with a remote endpoint is tied to the
@@ -75,8 +72,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                         webContents, LiteScriptStarted.LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED);
                 Log.v(TAG,
                         "TriggerScript stopping: MSBB is turned off, but required by at least one"
-                                + " script parameter (REQUEST_TRIGGER_SCRIPT, "
-                                + "TRIGGER_FIRST_TIME_USER, TRIGGER_RETURNING_USER)");
+                                + " REQUEST_TRIGGER_SCRIPT");
                 return;
             }
 
@@ -111,22 +107,6 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                         });
                 return;
             }
-
-            // Legacy lite scripts, remove as soon as possible.
-            String firstTimeUserScriptPath = parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER);
-            String returningUserScriptPath = parameters.get(PARAMETER_TRIGGER_RETURNING_TIME_USER);
-            startAutofillAssistantLite(bottomSheetController, browserControls, compositorViewHolder,
-                    webContents, firstTimeUserScriptPath, returningUserScriptPath, result -> {
-                        if (result) {
-                            parameters.put(PARAMETER_TRIGGER_SCRIPT_USED,
-                                    isFirstTimeUser ? firstTimeUserScriptPath
-                                                    : returningUserScriptPath);
-                            startAutofillAssistantRegular(bottomSheetController, browserControls,
-                                    compositorViewHolder, context, webContents, isChromeCustomTab,
-                                    initialUrl, parameters, experimentIds, callerAccount, userName);
-                        }
-                    });
-            return;
         }
 
         // Regular flow for starting without dedicated trigger script.
@@ -137,24 +117,8 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
     /** Whether {@code parameters} indicate that a trigger script should be started. */
     private boolean shouldStartTriggerScript(Map<String, String> parameters) {
-        return !TextUtils.isEmpty(parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER))
-                || TextUtils.equals(parameters.get(PARAMETER_REQUEST_TRIGGER_SCRIPT), "true")
+        return TextUtils.equals(parameters.get(PARAMETER_REQUEST_TRIGGER_SCRIPT), "true")
                 || !TextUtils.isEmpty(parameters.get(PARAMETER_TRIGGER_SCRIPTS_BASE64));
-    }
-    /**
-     * Starts a 'lite' autofill assistant script in the background. Does not show the onboarding.
-     * Does not have access to any information aside from the trigger script paths. Calls {@code
-     * onFinishedCallback} when the lite script finishes.
-     */
-    private void startAutofillAssistantLite(BottomSheetController bottomSheetController,
-            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            @NonNull WebContents webContents, String firstTimeUserScriptPath,
-            String returningUserScriptPath, Callback<Boolean> onFinishedCallback) {
-        AutofillAssistantLiteScriptCoordinator liteScriptCoordinator =
-                new AutofillAssistantLiteScriptCoordinator(
-                        bottomSheetController, browserControls, compositorViewHolder, webContents);
-        liteScriptCoordinator.startLiteScript(
-                firstTimeUserScriptPath, returningUserScriptPath, onFinishedCallback);
     }
 
     /**
@@ -165,43 +129,43 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             Context context, @NonNull WebContents webContents, boolean isChromeCustomTab,
             @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
             @Nullable String callerAccount, @Nullable String userName) {
+        String intent = parameters.get(BaseOnboardingCoordinator.INTENT_IDENTFIER);
         if (!AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-            if (parameters.containsKey(PARAMETER_TRIGGER_SCRIPT_USED)
-                    || parameters.containsKey(PARAMETER_STARTED_WITH_TRIGGER_SCRIPT)) {
-                AutofillAssistantMetrics.recordLiteScriptOnboarding(
-                        webContents, LiteScriptOnboarding.LITE_SCRIPT_ONBOARDING_ALREADY_ACCEPTED);
-            }
-            AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
+            AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN, intent);
             AutofillAssistantClient.fromWebContents(webContents)
                     .start(initialUrl, parameters, experimentIds, callerAccount, userName,
                             isChromeCustomTab, /* onboardingCoordinator= */ null);
             return;
         }
 
-        BottomSheetOnboardingCoordinator onboardingCoordinator =
-                new BottomSheetOnboardingCoordinator(experimentIds, parameters, context,
-                        bottomSheetController, browserControls, compositorViewHolder,
-                        bottomSheetController.getScrimCoordinator());
+        BaseOnboardingCoordinator onboardingCoordinator =
+                OnboardingCoordinatorFactory.createBottomSheetOnboardingCoordinator(experimentIds,
+                        parameters, context, bottomSheetController, browserControls,
+                        compositorViewHolder);
 
+        // TODO(b/179648654): Consider to implement |onOnboardingUiChange| inside the coordinator.
+        AutofillAssistantClient.onOnboardingUiChange(webContents, /* shown= */ true);
         onboardingCoordinator.show(result -> {
             switch (result) {
                 case AssistantOnboardingResult.DISMISSED:
-                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NO_ANSWER);
+                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NO_ANSWER, intent);
                     AutofillAssistantMetrics.recordDropOut(
-                            DropOutReason.ONBOARDING_BACK_BUTTON_CLICKED);
+                            DropOutReason.ONBOARDING_BACK_BUTTON_CLICKED, intent);
                     break;
                 case AssistantOnboardingResult.REJECTED:
-                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_CANCELLED);
-                    AutofillAssistantMetrics.recordDropOut(DropOutReason.DECLINED);
+                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_CANCELLED, intent);
+                    AutofillAssistantMetrics.recordDropOut(DropOutReason.DECLINED, intent);
                     break;
                 case AssistantOnboardingResult.NAVIGATION:
-                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NO_ANSWER);
-                    AutofillAssistantMetrics.recordDropOut(DropOutReason.ONBOARDING_NAVIGATION);
+                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NO_ANSWER, intent);
+                    AutofillAssistantMetrics.recordDropOut(
+                            DropOutReason.ONBOARDING_NAVIGATION, intent);
                     break;
                 case AssistantOnboardingResult.ACCEPTED:
-                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_ACCEPTED);
+                    AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_ACCEPTED, intent);
                     break;
             }
+            AutofillAssistantClient.onOnboardingUiChange(webContents, /* shown= */ false);
             if (result != AssistantOnboardingResult.ACCEPTED) {
                 return;
             }

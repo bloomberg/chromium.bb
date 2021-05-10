@@ -6,29 +6,29 @@
 #include <sstream>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr_sender.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/send_algorithm_test_result.pb.h"
-#include "net/third_party/quiche/src/quic/test_tools/send_algorithm_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/switch.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/traffic_policer.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/congestion_control/bbr2_misc.h"
+#include "quic/core/congestion_control/bbr2_sender.h"
+#include "quic/core/congestion_control/bbr_sender.h"
+#include "quic/core/congestion_control/tcp_cubic_sender_bytes.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/send_algorithm_test_result.pb.h"
+#include "quic/test_tools/send_algorithm_test_utils.h"
+#include "quic/test_tools/simulator/link.h"
+#include "quic/test_tools/simulator/quic_endpoint.h"
+#include "quic/test_tools/simulator/simulator.h"
+#include "quic/test_tools/simulator/switch.h"
+#include "quic/test_tools/simulator/traffic_policer.h"
 
 using testing::AllOf;
 using testing::Ge;
@@ -121,7 +121,14 @@ class DefaultTopologyParams {
 
 class Bbr2SimulatorTest : public QuicTest {
  protected:
-  Bbr2SimulatorTest() : simulator_(&random_) {}
+  Bbr2SimulatorTest() : simulator_(&random_) {
+    // Enable this for all tests because it moves where cwnd and pacing gain
+    // are initialized.
+    SetQuicReloadableFlag(quic_bbr2_bw_startup, true);
+    // Prevent the server(receiver), which only sends acks, from closing
+    // connection due to too many outstanding packets.
+    SetQuicFlag(FLAGS_quic_max_tracked_packet_count, 1000000);
+  }
 
   void SetUp() override {
     if (GetQuicFlag(FLAGS_quic_bbr2_test_regression_mode) == "regress") {
@@ -432,6 +439,25 @@ TEST_F(Bbr2DefaultTopologyTest, SimpleTransferB2NE) {
   EXPECT_APPROX_EQ(params.RTT(), rtt_stats()->min_rtt(), 0.2f);
 }
 
+TEST_F(Bbr2DefaultTopologyTest, SimpleTransferB2RC) {
+  SetConnectionOption(kB2RC);
+  DefaultTopologyParams params;
+  CreateNetwork(params);
+
+  // Transfer 12MB.
+  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
+  EXPECT_TRUE(Bbr2ModeIsOneOf({Bbr2Mode::PROBE_BW, Bbr2Mode::PROBE_RTT}));
+
+  EXPECT_APPROX_EQ(params.BottleneckBandwidth(),
+                   sender_->ExportDebugState().bandwidth_hi, 0.01f);
+
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.05);
+  // The margin here is high, because the aggregation greatly increases
+  // smoothed rtt.
+  EXPECT_GE(params.RTT() * 4, rtt_stats()->smoothed_rtt());
+  EXPECT_APPROX_EQ(params.RTT(), rtt_stats()->min_rtt(), 0.2f);
+}
+
 TEST_F(Bbr2DefaultTopologyTest, SimpleTransferSmallBuffer) {
   DefaultTopologyParams params;
   params.switch_queue_capacity_in_bdp = 0.5;
@@ -564,7 +590,72 @@ TEST_F(Bbr2DefaultTopologyTest, PacketLossOnSmallBufferStartup) {
   CreateNetwork(params);
 
   DriveOutOfStartup(params);
-  EXPECT_LE(sender_loss_rate_in_packets(), 0.20);
+  // Packet loss is smaller with a CWND gain of 2 than 2.889.
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.05);
+}
+
+// Test the number of losses decreases with packet-conservation pacing.
+TEST_F(Bbr2DefaultTopologyTest, PacketLossBBQ6SmallBufferStartup) {
+  SetQuicReloadableFlag(quic_bbr2_bw_startup, true);
+  SetConnectionOption(kBBQ2);  // Increase CWND gain.
+  SetConnectionOption(kBBQ6);
+  DefaultTopologyParams params;
+  params.switch_queue_capacity_in_bdp = 0.5;
+  CreateNetwork(params);
+
+  DriveOutOfStartup(params);
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.0575);
+  // bandwidth_lo is cleared exiting STARTUP.
+  EXPECT_EQ(sender_->ExportDebugState().bandwidth_lo,
+            QuicBandwidth::Infinite());
+}
+
+// Test the number of losses decreases with min_rtt packet-conservation pacing.
+TEST_F(Bbr2DefaultTopologyTest, PacketLossBBQ7SmallBufferStartup) {
+  SetQuicReloadableFlag(quic_bbr2_bw_startup, true);
+  SetConnectionOption(kBBQ2);  // Increase CWND gain.
+  SetConnectionOption(kBBQ7);
+  DefaultTopologyParams params;
+  params.switch_queue_capacity_in_bdp = 0.5;
+  CreateNetwork(params);
+
+  DriveOutOfStartup(params);
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.06);
+  // bandwidth_lo is cleared exiting STARTUP.
+  EXPECT_EQ(sender_->ExportDebugState().bandwidth_lo,
+            QuicBandwidth::Infinite());
+}
+
+// Test the number of losses decreases with Inflight packet-conservation pacing.
+TEST_F(Bbr2DefaultTopologyTest, PacketLossBBQ8SmallBufferStartup) {
+  SetQuicReloadableFlag(quic_bbr2_bw_startup, true);
+  SetConnectionOption(kBBQ2);  // Increase CWND gain.
+  SetConnectionOption(kBBQ8);
+  DefaultTopologyParams params;
+  params.switch_queue_capacity_in_bdp = 0.5;
+  CreateNetwork(params);
+
+  DriveOutOfStartup(params);
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.065);
+  // bandwidth_lo is cleared exiting STARTUP.
+  EXPECT_EQ(sender_->ExportDebugState().bandwidth_lo,
+            QuicBandwidth::Infinite());
+}
+
+// Test the number of losses decreases with CWND packet-conservation pacing.
+TEST_F(Bbr2DefaultTopologyTest, PacketLossBBQ9SmallBufferStartup) {
+  SetQuicReloadableFlag(quic_bbr2_bw_startup, true);
+  SetConnectionOption(kBBQ2);  // Increase CWND gain.
+  SetConnectionOption(kBBQ9);
+  DefaultTopologyParams params;
+  params.switch_queue_capacity_in_bdp = 0.5;
+  CreateNetwork(params);
+
+  DriveOutOfStartup(params);
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.065);
+  // bandwidth_lo is cleared exiting STARTUP.
+  EXPECT_EQ(sender_->ExportDebugState().bandwidth_lo,
+            QuicBandwidth::Infinite());
 }
 
 // Verify the behavior of the algorithm in the case when the connection sends
@@ -738,6 +829,8 @@ TEST_F(Bbr2DefaultTopologyTest, ExitStartupDueToLoss) {
       sender_->ExportDebugState().startup.round_trips_without_bandwidth_growth);
   EXPECT_NE(0u, sender_connection_stats().packets_lost);
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
+
+  EXPECT_GT(sender_->ExportDebugState().inflight_hi, 1.2f * params.BDP());
 }
 
 // Test exiting STARTUP earlier upon loss due to loss when connection option
@@ -770,12 +863,7 @@ TEST_F(Bbr2DefaultTopologyTest, ExitStartupDueToLossB2SL) {
   EXPECT_NE(0u, sender_connection_stats().packets_lost);
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
 
-  if (GetQuicReloadableFlag(quic_bbr2_startup_loss_exit_use_max_delivered)) {
-    EXPECT_GT(sender_->ExportDebugState().inflight_hi, 1.2f * params.BDP());
-  } else {
-    EXPECT_APPROX_EQ(sender_->ExportDebugState().inflight_hi, params.BDP(),
-                     0.1f);
-  }
+  EXPECT_APPROX_EQ(sender_->ExportDebugState().inflight_hi, params.BDP(), 0.1f);
 }
 
 TEST_F(Bbr2DefaultTopologyTest, SenderPoliced) {
@@ -1000,9 +1088,7 @@ TEST_F(Bbr2DefaultTopologyTest, SwitchToBbr2MidConnection) {
   // Switch from |old_sender| to |sender_|.
   const QuicByteCount old_sender_cwnd = old_sender.GetCongestionWindow();
   sender_ = SetupBbr2Sender(&sender_endpoint_, &old_sender);
-  if (GetQuicReloadableFlag(quic_copy_bbr_cwnd_to_bbr2)) {
-    EXPECT_EQ(old_sender_cwnd, sender_->GetCongestionWindow());
-  }
+  EXPECT_EQ(old_sender_cwnd, sender_->GetCongestionWindow());
 
   // Send packets 5-7.
   now = now + QuicTime::Delta::FromMilliseconds(10);
@@ -1107,12 +1193,10 @@ TEST_F(Bbr2DefaultTopologyTest,
       SendAlgorithmInterface::NetworkParams(1024 * params.BottleneckBandwidth(),
                                             QuicTime::Delta::Zero(), false));
 
-  if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd)) {
-    // Verify cwnd is capped at 200.
-    EXPECT_EQ(200 * kDefaultTCPMSS,
-              sender_->ExportDebugState().congestion_window);
-    EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
-  }
+  // Verify cwnd is capped at 200.
+  EXPECT_EQ(200 * kDefaultTCPMSS,
+            sender_->ExportDebugState().congestion_window);
+  EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
 }
 
 TEST_F(Bbr2DefaultTopologyTest,
@@ -1134,12 +1218,10 @@ TEST_F(Bbr2DefaultTopologyTest,
   network_params.max_initial_congestion_window = 100;
   sender_connection()->AdjustNetworkParameters(network_params);
 
-  if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd)) {
-    // Verify cwnd is capped at 100.
-    EXPECT_EQ(100 * kDefaultTCPMSS,
-              sender_->ExportDebugState().congestion_window);
-    EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
-  }
+  // Verify cwnd is capped at 100.
+  EXPECT_EQ(100 * kDefaultTCPMSS,
+            sender_->ExportDebugState().congestion_window);
+  EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
 }
 
 TEST_F(Bbr2DefaultTopologyTest,
@@ -1161,12 +1243,10 @@ TEST_F(Bbr2DefaultTopologyTest,
       SendAlgorithmInterface::NetworkParams(1024 * params.BottleneckBandwidth(),
                                             QuicTime::Delta::Zero(), false));
 
-  if (GetQuicReloadableFlag(quic_bbr2_support_max_bootstrap_cwnd)) {
-    // Verify cwnd is capped at 100.
-    EXPECT_EQ(100 * kDefaultTCPMSS,
-              sender_->ExportDebugState().congestion_window);
-    EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
-  }
+  // Verify cwnd is capped at 100.
+  EXPECT_EQ(100 * kDefaultTCPMSS,
+            sender_->ExportDebugState().congestion_window);
+  EXPECT_GT(1024 * params.BottleneckBandwidth(), sender_->PacingRate(0));
 }
 
 // All Bbr2MultiSenderTests uses the following network topology:
@@ -1206,7 +1286,7 @@ class MultiSenderTopologyParams {
   QuicBandwidth BottleneckBandwidth() const {
     // Make sure all local links have a higher bandwidth than the test link.
     for (size_t i = 0; i < local_links.size(); ++i) {
-      CHECK_GT(local_links[i].bandwidth, test_link.bandwidth);
+      QUICHE_CHECK_GT(local_links[i].bandwidth, test_link.bandwidth);
     }
     return test_link.bandwidth;
   }
@@ -1241,8 +1321,8 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
     uint64_t first_connection_id = 42;
     std::vector<simulator::QuicEndpointBase*> receiver_endpoint_pointers;
     for (size_t i = 0; i < MultiSenderTopologyParams::kNumLocalLinks; ++i) {
-      std::string sender_name = quiche::QuicheStrCat("Sender", i + 1);
-      std::string receiver_name = quiche::QuicheStrCat("Receiver", i + 1);
+      std::string sender_name = absl::StrCat("Sender", i + 1);
+      std::string receiver_name = absl::StrCat("Receiver", i + 1);
       sender_endpoints_.push_back(std::make_unique<simulator::QuicEndpoint>(
           &simulator_, sender_name, receiver_name, Perspective::IS_CLIENT,
           TestConnectionId(first_connection_id + i)));
@@ -1254,7 +1334,7 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
     receiver_multiplexer_ =
         std::make_unique<simulator::QuicEndpointMultiplexer>(
             "Receiver multiplexer", receiver_endpoint_pointers);
-    sender_1_ = SetupBbr2Sender(sender_endpoints_[0].get());
+    sender_0_ = SetupBbr2Sender(sender_endpoints_[0].get());
   }
 
   ~Bbr2MultiSenderTest() {
@@ -1320,6 +1400,14 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
     return sender;
   }
 
+  void SetConnectionOption(SendAlgorithmInterface* sender, QuicTag option) {
+    QuicConfig config;
+    QuicTagVector options;
+    options.push_back(option);
+    QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+    sender->SetFromConfig(config, Perspective::IS_SERVER);
+  }
+
   void CreateNetwork(const MultiSenderTopologyParams& params) {
     QUIC_LOG(INFO) << "CreateNetwork with parameters: " << params.ToString();
     switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch",
@@ -1353,7 +1441,7 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
   std::vector<std::unique_ptr<simulator::QuicEndpoint>> sender_endpoints_;
   std::vector<std::unique_ptr<simulator::QuicEndpoint>> receiver_endpoints_;
   std::unique_ptr<simulator::QuicEndpointMultiplexer> receiver_multiplexer_;
-  Bbr2Sender* sender_1_;
+  Bbr2Sender* sender_0_;
 
   std::unique_ptr<simulator::Switch> switch_;
   std::vector<std::unique_ptr<simulator::SymmetricLink>> network_links_;
@@ -1512,7 +1600,39 @@ TEST_F(Bbr2MultiSenderTest, QUIC_SLOW_TEST(Bbr2VsReno)) {
   MultiSenderTopologyParams params;
   CreateNetwork(params);
 
-  const QuicByteCount transfer_size = 50 * 1024 * 1024;
+  const QuicByteCount transfer_size = 10 * 1024 * 1024;
+  const QuicTime::Delta transfer_time =
+      params.BottleneckBandwidth().TransferTime(transfer_size);
+  QUIC_LOG(INFO) << "Single flow transfer time: " << transfer_time;
+
+  // Transfer 10% of data in first transfer.
+  sender_endpoints_[0]->AddBytesToTransfer(transfer_size);
+  bool simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return receiver_endpoints_[0]->bytes_received() >= 0.1 * transfer_size;
+      },
+      transfer_time);
+  ASSERT_TRUE(simulator_result);
+
+  // Start the second transfer and wait until both finish.
+  sender_endpoints_[1]->AddBytesToTransfer(transfer_size);
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return receiver_endpoints_[0]->bytes_received() == transfer_size &&
+               receiver_endpoints_[1]->bytes_received() == transfer_size;
+      },
+      3 * transfer_time);
+  ASSERT_TRUE(simulator_result);
+}
+
+TEST_F(Bbr2MultiSenderTest, QUIC_SLOW_TEST(Bbr2VsRenoB2RC)) {
+  SetConnectionOption(sender_0_, kB2RC);
+  SetupTcpSender(sender_endpoints_[1].get(), /*reno=*/true);
+
+  MultiSenderTopologyParams params;
+  CreateNetwork(params);
+
+  const QuicByteCount transfer_size = 10 * 1024 * 1024;
   const QuicTime::Delta transfer_time =
       params.BottleneckBandwidth().TransferTime(transfer_size);
   QUIC_LOG(INFO) << "Single flow transfer time: " << transfer_time;

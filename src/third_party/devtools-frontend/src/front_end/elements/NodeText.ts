@@ -7,7 +7,9 @@ import * as LitHtml from '../third_party/lit-html/lit-html.js';
 const {render, html} = LitHtml;
 
 export interface NodeTextData {
-  nodeTitle: string, nodeId?: string, nodeClasses?: string[]
+  nodeTitle: string;
+  nodeId?: string;
+  nodeClasses?: string[];
 }
 
 export class NodeText extends HTMLElement {
@@ -23,18 +25,29 @@ export class NodeText extends HTMLElement {
     this.render();
   }
 
-  private render() {
+  private render(): void {
+    const hasId = Boolean(this.nodeId);
+    const hasNodeClasses = Boolean(this.nodeClasses && this.nodeClasses.length > 0);
+
     const parts = [
       html`<span class="node-label-name">${this.nodeTitle}</span>`,
     ];
 
     if (this.nodeId) {
-      parts.push(html`<span class="node-label-id">#${CSS.escape(this.nodeId)}</span>`);
+      const classes = LitHtml.Directives.classMap({
+        'node-label-id': true,
+        'node-multiple-descriptors': hasNodeClasses,
+      });
+      parts.push(html`<span class=${classes}>#${CSS.escape(this.nodeId)}</span>`);
     }
 
     if (this.nodeClasses && this.nodeClasses.length > 0) {
       const text = this.nodeClasses.map(c => `.${CSS.escape(c)}`).join('');
-      parts.push(html`<span class="node-label-class">${text}</span>`);
+      const classes = LitHtml.Directives.classMap({
+        'node-label-class': true,
+        'node-multiple-descriptors': hasId,
+      });
+      parts.push(html`<span class=${classes}>${text}</span>`);
     }
 
     // Disabled until https://crbug.com/1079231 is fixed.
@@ -42,11 +55,28 @@ export class NodeText extends HTMLElement {
     render(html`
       <style>
         .node-label-name {
-          color: var(--dom-tag-name-color);
+          color: var(--node-text-label-color, --dom-tag-name-color); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
 
         .node-label-class {
-          color: var(--dom-attribute-name-color);
+          color: var(--node-text-class-color, --dom-attribute-name-color); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
+        }
+
+        .node-label-id {
+          color: var(--node-text-id-color); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
+        }
+
+        .node-label-class.node-multiple-descriptors {
+          color: var(--node-text-multiple-descriptors-class, var(--node-text-class-color, --dom-attribute-name-color)); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
+        }
+
+        .node-label-id.node-multiple-descriptors {
+          color: var(--node-text-multiple-descriptors-id, var(--node-text-id-color, --dom-attribute-name-color)); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
       </style>
       ${parts}
@@ -62,6 +92,7 @@ if (!customElements.get('devtools-node-text')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-node-text': NodeText;
   }

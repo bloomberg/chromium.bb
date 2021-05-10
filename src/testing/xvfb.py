@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,8 +6,11 @@
 """Runs tests with Xvfb and Openbox or Weston on Linux and normally on other
    platforms."""
 
+from __future__ import print_function
+
 import os
 import os.path
+import psutil
 import random
 import re
 import signal
@@ -16,12 +19,6 @@ import sys
 import threading
 import time
 import test_env
-
-try:
-  import psutil
-except ImportError:
-  raise Exception(
-        'Failed to import psutil. Run under vpython or install psutil.')
 
 class _XvfbProcessError(Exception):
   """Exception raised when Xvfb cannot start."""
@@ -44,13 +41,13 @@ def kill(proc, name, timeout_in_seconds=10):
 
   thread.join(timeout_in_seconds)
   if thread.is_alive():
-    print >> sys.stderr, '%s running after SIGTERM, trying SIGKILL.' % name
+    print('%s running after SIGTERM, trying SIGKILL.\n' % name, file=sys.stderr)
     proc.kill()
 
   thread.join(timeout_in_seconds)
   if thread.is_alive():
-    print >> sys.stderr, \
-      '%s running after SIGTERM and SIGKILL; good luck!' % name
+    print('%s running after SIGTERM and SIGKILL; good luck!\n' % name,
+          file=sys.stderr)
 
 
 def launch_dbus(env):
@@ -83,7 +80,7 @@ def launch_dbus(env):
         env[m.group(1)] = m.group(2)
     return int(env['DBUS_SESSION_BUS_PID'])
   except (subprocess.CalledProcessError, OSError, KeyError, ValueError) as e:
-    print 'Exception while running dbus_launch: %s' % e
+    print('Exception while running dbus_launch: %s' % e)
 
 
 # TODO(crbug.com/949194): Encourage setting flags to False.
@@ -128,7 +125,7 @@ def run_executable(
   use_weston = False
   if '--use-weston' in cmd:
     if use_xvfb:
-      print >> sys.stderr, 'Unable to use Weston with xvfb.'
+      print('Unable to use Weston with xvfb.\n', file=sys.stderr)
       return 1
     use_weston = True
     cmd.remove('--use-weston')
@@ -221,10 +218,10 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
 
     return test_env.run_executable(cmd, env, stdoutfile)
   except OSError as e:
-    print >> sys.stderr, 'Failed to start Xvfb or Openbox: %s' % str(e)
+    print('Failed to start Xvfb or Openbox: %s\n' % str(e), file=sys.stderr)
     return 1
   except _XvfbProcessError as e:
-    print >> sys.stderr, 'Xvfb fail: %s' % str(e)
+    print('Xvfb fail: %s\n' % str(e), file=sys.stderr)
     return 1
   finally:
     kill(openbox_proc, 'openbox')
@@ -246,6 +243,21 @@ def _run_with_weston(cmd, env, stdoutfile):
     signal.signal(signal.SIGTERM, raise_weston_error)
     signal.signal(signal.SIGINT, raise_weston_error)
 
+    # The bundled weston (//third_party/weston) is used by Linux Ozone Wayland
+    # CI and CQ testers and compiled by //ui/ozone/platform/wayland whenever
+    # there is a dependency on the Ozone/Wayland and use_bundled_weston is set
+    # in gn args. However, some tests do not require Wayland or do not use
+    # //ui/ozone at all, but still have --use-weston flag set by the
+    # OZONE_WAYLAND variant (see //testing/buildbot/variants.pyl). This results
+    # in failures and those tests cannot be run because of the exception that
+    # informs about missing weston binary. Thus, to overcome the issue before
+    # a better solution is found, add a check for the "weston" binary here and
+    # run tests without Wayland compositor if the weston binary is not found.
+    # TODO(https://1178788): find a better solution.
+    if not os.path.isfile("./weston"):
+      print('Weston is not available. Starting without Wayland compositor')
+      return test_env.run_executable(cmd, env, stdoutfile)
+
     # Set $XDG_RUNTIME_DIR if it is not set.
     _set_xdg_runtime_dir(env)
 
@@ -266,7 +278,7 @@ def _run_with_weston(cmd, env, stdoutfile):
       # of windows.
       weston_proc = subprocess.Popen(
          ('./weston', '--backend=headless-backend.so', '--idle-time=0',
-          '--width=1024', '--height=768'),
+          '--width=1024', '--height=768', '--modules=test-plugin.so'),
          stderr=subprocess.STDOUT, env=env)
 
       # Get the $WAYLAND_DISPLAY set by Weston and pass it to the test launcher.
@@ -282,10 +294,10 @@ def _run_with_weston(cmd, env, stdoutfile):
     env['WAYLAND_DISPLAY'] = weston_proc_display
     return test_env.run_executable(cmd, env, stdoutfile)
   except OSError as e:
-    print >> sys.stderr, 'Failed to start Weston: %s' % str(e)
+    print('Failed to start Weston: %s\n' % str(e), file=sys.stderr)
     return 1
   except _WestonProcessError as e:
-    print >> sys.stderr, 'Weston fail: %s' % str(e)
+    print('Weston fail: %s\n' % str(e), file=sys.stderr)
     return 1
   finally:
     kill(weston_proc, 'weston')
@@ -383,22 +395,22 @@ def _set_xdg_runtime_dir(env):
   if not runtime_dir:
     runtime_dir = '/tmp/xdg-tmp-dir/'
     if not os.path.exists(runtime_dir):
-      os.makedirs(runtime_dir, 0700)
+      os.makedirs(runtime_dir, 0o700)
     env['XDG_RUNTIME_DIR'] = runtime_dir
 
 
 def main():
   usage = 'Usage: xvfb.py [command [--no-xvfb or --use-weston] args...]'
   if len(sys.argv) < 2:
-    print >> sys.stderr, usage
+    print(usage + '\n', file=sys.stderr)
     return 2
 
   # If the user still thinks the first argument is the execution directory then
   # print a friendly error message and quit.
   if os.path.isdir(sys.argv[1]):
-    print >> sys.stderr, (
-        'Invalid command: \"%s\" is a directory' % sys.argv[1])
-    print >> sys.stderr, usage
+    print('Invalid command: \"%s\" is a directory\n' % sys.argv[1],
+          file=sys.stderr)
+    print(usage + '\n', file=sys.stderr)
     return 3
 
   return run_executable(sys.argv[1:], os.environ.copy())

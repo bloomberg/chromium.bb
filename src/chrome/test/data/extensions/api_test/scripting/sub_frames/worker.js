@@ -9,9 +9,9 @@ function injectedFunction() {
 // Returns the error message used when the extension cannot access the contents
 // of a frame.
 function getAccessError(url) {
-    return `Cannot access contents of url "${url}". ` +
-           'Extension manifest must request permission ' +
-           'to access this host.';
+  return `Error: Cannot access contents of url "${url}". ` +
+      'Extension manifest must request permission ' +
+      'to access this host.';
 }
 
 // Returns the single tab matching the given `query`.
@@ -44,46 +44,46 @@ chrome.test.runTests([
   async function allowedTopFrameAccess() {
     const query = {url: 'http://a.com/*'};
     let tab = await getSingleTab(query);
-    const results = await new Promise(resolve => {
-      chrome.scripting.executeScript(
-          {
-            target: {
-              tabId: tab.id,
-              allFrames: true,
-            },
-            function: injectedFunction,
-          },
-          resolve);
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+        allFrames: true,
+      },
+      function: injectedFunction,
     });
-    chrome.test.assertNoLastError();
     chrome.test.assertEq(2, results.length);
 
     // Note: The 'a.com' result is guaranteed to be first, since it's the root
     // frame.
     const url1 = new URL(results[0].result);
     chrome.test.assertEq('a.com', url1.hostname);
+    chrome.test.assertEq(0, results[0].frameId);
 
     const url2 = new URL(results[1].result);
     chrome.test.assertEq('b.com', url2.hostname);
+    // Verify the subframe has any non-main-frame ID. Note: specific frame IDs
+    // are exercised more heavily below.
+    chrome.test.assertFalse(results[1].frameId == 0);
     chrome.test.succeed();
   },
 
   async function disallowedTopFrameAccess() {
     const query = {url: 'http://d.com/*'};
     let tab = await getSingleTab(query);
-    chrome.scripting.executeScript(
-        {
-          target: {
-            tabId: tab.id,
-            allFrames: true,
-          },
-          function: injectedFunction,
+    try {
+      await chrome.scripting.executeScript({
+        target: {
+          tabId: tab.id,
+          allFrames: true,
         },
-        results => {
-          chrome.test.assertLastError(getAccessError(tab.url));
-          chrome.test.assertEq(undefined, results);
-          chrome.test.succeed();
-        });
+        function: injectedFunction,
+      });
+      chrome.test.fail('Invocation should have thrown');
+    } catch (e) {
+      chrome.test.assertTrue(e instanceof Error);
+      chrome.test.assertEq(getAccessError(tab.url), e.toString());
+      chrome.test.succeed();
+    }
   },
 
   // Tests injecting into a single specified frame.
@@ -93,22 +93,18 @@ chrome.test.runTests([
     const frames = await getFramesInTab(tab.id);
     const frameId = findFrameIdWithHostname(frames, 'b.com');
 
-    const results = await new Promise(resolve => {
-      chrome.scripting.executeScript(
-          {
-            target: {
-              tabId: tab.id,
-              frameIds: [frameId],
-            },
-            function: injectedFunction,
-          },
-          resolve);
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+        frameIds: [frameId],
+      },
+      function: injectedFunction,
     });
-    chrome.test.assertNoLastError();
     chrome.test.assertEq(1, results.length);
 
     const resultUrl = new URL(results[0].result);
     chrome.test.assertEq('b.com', resultUrl.hostname);
+    chrome.test.assertEq(frameId, results[0].frameId);
     chrome.test.succeed();
   },
 
@@ -122,18 +118,13 @@ chrome.test.runTests([
         findFrameIdWithHostname(frames, 'b.com'),
     ];
 
-    const results = await new Promise(resolve => {
-      chrome.scripting.executeScript(
-          {
-            target: {
-              tabId: tab.id,
-              frameIds: frameIds,
-            },
-            function: injectedFunction,
-          },
-          resolve);
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+        frameIds: frameIds,
+      },
+      function: injectedFunction,
     });
-    chrome.test.assertNoLastError();
     chrome.test.assertEq(2, results.length);
 
     // Since we specified frame IDs, there's no guarantee as to the order
@@ -142,6 +133,31 @@ chrome.test.runTests([
       return (new URL(result.result)).hostname;
     });
     chrome.test.assertEq(['a.com', 'b.com'], resultUrls.sort());
+    chrome.test.assertEq(
+        frameIds,
+        results.map(result => result.frameId).sort());
+    chrome.test.succeed();
+  },
+
+  // Tests injecting with duplicate frame IDs specified.
+  async function duplicateSpecificFrames() {
+    const query = {url: 'http://a.com/*'};
+    const tab = await getSingleTab(query);
+    const frames = await getFramesInTab(tab.id);
+    const frameId = findFrameIdWithHostname(frames, 'b.com');
+
+    const results = await chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+        frameIds: [frameId, frameId],
+      },
+      function: injectedFunction,
+    });
+    chrome.test.assertEq(1, results.length);
+
+    const resultUrl = new URL(results[0].result);
+    chrome.test.assertEq('b.com', resultUrl.hostname);
+    chrome.test.assertEq(frameId, results[0].frameId);
     chrome.test.succeed();
   },
 
@@ -159,19 +175,20 @@ chrome.test.runTests([
         findFrameIdWithHostname(frames, 'c.com'),
     ];
 
-    chrome.scripting.executeScript(
-        {
-          target: {
-            tabId: tab.id,
-            frameIds: frameIds,
-          },
-          function: injectedFunction,
+    try {
+      await chrome.scripting.executeScript({
+        target: {
+          tabId: tab.id,
+          frameIds: frameIds,
         },
-        async results => {
-          chrome.test.assertLastError(getAccessError(deniedFrame.url));
-          chrome.test.assertEq(undefined, results);
-          chrome.test.succeed();
-        });
+        function: injectedFunction,
+      });
+      chrome.test.fail('Invocation should have thrown');
+    } catch (e) {
+      chrome.test.assertTrue(e instanceof Error);
+      chrome.test.assertEq(getAccessError(deniedFrame.url), e.toString());
+      chrome.test.succeed();
+    }
   },
 
   // Tests that an error is thrown when specifying a non-existent frame ID.
@@ -185,21 +202,23 @@ chrome.test.runTests([
         nonExistentFrameId,
     ];
 
-    chrome.scripting.executeScript(
-        {
-          target: {
-            tabId: tab.id,
-            frameIds: frameIds,
-          },
-          function: injectedFunction,
+    try {
+      await chrome.scripting.executeScript({
+        target: {
+          tabId: tab.id,
+          frameIds: frameIds,
         },
-        async results => {
-          chrome.test.assertLastError(
-              `No frame with id ${nonExistentFrameId} in ` +
-              `tab with id ${tab.id}`);
-          chrome.test.assertEq(undefined, results);
-          chrome.test.succeed();
-        });
+        function: injectedFunction,
+      });
+      chrome.test.fail('Invocation should have thrown');
+    } catch (e) {
+      chrome.test.assertTrue(e instanceof Error);
+      chrome.test.assertEq(
+          `Error: No frame with id ${nonExistentFrameId} in ` +
+              `tab with id ${tab.id}`,
+          e.toString());
+      chrome.test.succeed();
+    }
   },
 
   // Test that an extension cannot specify both allFrames and frameIds.
@@ -211,20 +230,22 @@ chrome.test.runTests([
         findFrameIdWithHostname(frames, 'b.com'),
     ];
 
-    chrome.scripting.executeScript(
-        {
-          target: {
-            tabId: tab.id,
-            frameIds: frameIds,
-            allFrames: true,
-          },
-          function: injectedFunction,
+    try {
+      await chrome.scripting.executeScript({
+        target: {
+          tabId: tab.id,
+          frameIds: frameIds,
+          allFrames: true,
         },
-        async results => {
-          chrome.test.assertLastError(
-              `Cannot specify both 'allFrames' and 'frameIds'.`);
-          chrome.test.assertEq(undefined, results);
-          chrome.test.succeed();
-        });
+        function: injectedFunction,
+      });
+      chrome.test.fail('Invocation should have thrown');
+    } catch (e) {
+      chrome.test.assertTrue(e instanceof Error);
+      chrome.test.assertEq(
+          `Error: Cannot specify both 'allFrames' and 'frameIds'.`,
+          e.toString());
+      chrome.test.succeed();
+    }
   },
 ]);

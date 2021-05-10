@@ -6,8 +6,10 @@
 #define ASH_SYSTEM_DARK_MODE_DARK_MODE_DETAILED_VIEW_H_
 
 #include "ash/system/tray/tray_detailed_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
+class Label;
 class RadioButton;
 class ToggleButton;
 }  // namespace views
@@ -19,13 +21,14 @@ namespace ash {
 // feature pod label button.
 class DarkModeDetailedView : public TrayDetailedView {
  public:
+  METADATA_HEADER(DarkModeDetailedView);
+
   explicit DarkModeDetailedView(DetailedViewDelegate* delegate);
   DarkModeDetailedView(const DarkModeDetailedView& other) = delete;
   DarkModeDetailedView& operator=(const DarkModeDetailedView& other) = delete;
   ~DarkModeDetailedView() override;
 
-  // views::View:
-  const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
   // Updates the status of |toggle_| on |dark_mode_enabled|.
   void UpdateToggleButton(bool dark_mode_enabled);
@@ -39,6 +42,8 @@ class DarkModeDetailedView : public TrayDetailedView {
   views::ToggleButton* toggle_ = nullptr;
   views::RadioButton* themed_mode_button_ = nullptr;
   views::RadioButton* neutral_mode_button_ = nullptr;
+  views::Label* themed_label_ = nullptr;
+  views::Label* neutral_label_ = nullptr;
 };
 
 }  // namespace ash

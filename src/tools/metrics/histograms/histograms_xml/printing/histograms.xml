@@ -92,8 +92,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.AddressResolutionResult" enum="BooleanSuccess"
-    expires_after="M85">
+    expires_after="M93">
   <owner>skau@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     Records whether resolution of a .local address via mDNS was successful. The
     metric is recorded during attempted setup of a printer discovered via mDNS.
@@ -101,7 +102,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.HighestIppVersion" enum="IppVersion"
-    expires_after="2021-03-28">
+    expires_after="2021-08-01">
   <owner>skau@chromium.org</owner>
   <owner>pawliczek@chromium.org</owner>
   <summary>
@@ -113,7 +114,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributes" enum="IppAttribute"
-    expires_after="M82">
+    expires_after="M93">
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -133,17 +134,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="M85">
+    expires_after="M93">
   <owner>skau@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     Record if the request for IPP attributes was successful during printer
     setup. This only occurs for setup attempts of IPP and IPPS printers.
     Starting with M79, this is only recorded if the printer was reachable.
+
+    Recorded when printers are queried for attributes in ChromeOS settings.
   </summary>
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesUsed" units="count"
-    expires_after="M82">
+    expires_after="M93">
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -153,8 +157,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.IppDeviceReachable" enum="BooleanSuccess"
-    expires_after="M85">
+    expires_after="M93">
   <owner>skau@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     Record if the request for IPP attributes was successful in reaching the
     printer. Recorded during the attempt to setup IPP/IPPS printers.
@@ -172,7 +177,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2021-06-01">
+    expires_after="2021-08-01">
   <owner>jschettler@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -182,16 +187,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.JobResult" enum="PrintJobResult"
-    expires_after="M85">
+    expires_after="2021-12-01">
   <owner>skau@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     The final status of every print job that was succesfully queued. Only used
     on Chrome OS.
+
+    Recorded upon the completion of each print job by the CupsPrintJobManager.
   </summary>
 </histogram>
 
 <histogram name="Printing.CUPS.MigratedMakeAndModel" enum="BooleanMigrated"
-    expires_after="2021-01-24">
+    expires_after="2021-08-09">
   <owner>luum@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -202,7 +210,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.NearbyNetworkPrintersCount" units="printers"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
   <owner>skau@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -213,7 +221,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrintDocumentSize" units="KB"
-    expires_after="2021-06-01">
+    expires_after="2021-08-01">
   <owner>jschettler@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -296,7 +304,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrintManagementAppEntryPoint"
-    enum="PrintManagementAppEntryPoint" expires_after="2021-06-22">
+    enum="PrintManagementAppEntryPoint" expires_after="2021-08-22">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -306,8 +314,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.ProtocolUsed" enum="PrinterProtocol"
-    expires_after="M85">
+    expires_after="2021-12-01">
   <owner>skau@chromium.org</owner>
+  <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     Records the protocol for a selected printer in Chrome OS. Used to track
     usage of the various printer protocols. Since a selection occurs when print
@@ -317,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.TotalNetworkPrintersCount" units="printers"
-    expires_after="2021-03-15">
+    expires_after="2021-08-01">
   <owner>skau@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -350,6 +359,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Printing.CUPS.ValidPpdReference" enum="BooleanSuccess"
     expires_after="2020-08-01">
+  <obsolete>
+    Data no longer needed. Bug is resolved. 2020-12.
+  </obsolete>
   <owner>skau@chromium.org</owner>
   <owner>luum@chromium.org</owner>
   <summary>
@@ -373,6 +385,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.PrinterCapabilities" units="ms" expires_after="M80">
+  <obsolete>
+    New data no longer needed 2020-12
+  </obsolete>
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -382,7 +397,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.PrintServers.ServersToQuery" units="servers"
-    expires_after="M90">
+    expires_after="2021-08-22">
   <owner>pawliczek@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>

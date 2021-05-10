@@ -35,6 +35,8 @@
 
 namespace {
 
+using TokenResponseBuilder = OAuth2AccessTokenConsumer::TokenResponse::Builder;
+
 const char kAccountId1[] = "account_id1";
 const char kAccountId2[] = "account_id2";
 const char kAccountId3[] = "account_id3";
@@ -154,10 +156,10 @@ class GaiaCookieManagerServiceTest : public testing::Test {
 
   void SimulateAccessTokenSuccess(OAuth2AccessTokenManager::Consumer* consumer,
                                   OAuth2AccessTokenManager::Request* request) {
-    OAuth2AccessTokenConsumer::TokenResponse token_response =
-        OAuth2AccessTokenConsumer::TokenResponse("AccessToken", base::Time(),
-                                                 "Idtoken");
-    consumer->OnGetTokenSuccess(request, token_response);
+    consumer->OnGetTokenSuccess(request, TokenResponseBuilder()
+                                             .WithAccessToken("AccessToken")
+                                             .WithIdToken("Idtoken")
+                                             .build());
   }
 
   void SimulateMergeSessionSuccess(GaiaAuthConsumer* consumer,
@@ -297,8 +299,8 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   MockObserver observer(&helper);
 
   auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::ScopedClosureRunner task_runner_ =
-      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+  base::ThreadTaskRunnerHandleOverrideForTesting ttrh_override(
+      test_task_runner);
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession());
@@ -321,8 +323,8 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   base::HistogramTester histograms;
 
   auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::ScopedClosureRunner task_runner_ =
-      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+  base::ThreadTaskRunnerHandleOverrideForTesting ttrh_override(
+      test_task_runner);
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
@@ -828,7 +830,7 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
       "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]";
   SimulateListAccountsSuccess(&helper, data);
 
-  // Sanity-check that ListAccounts returns the cached data.
+  // Confidence check that ListAccounts returns the cached data.
   ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(AreAccountListsEqual(nonempty_list_accounts, list_accounts));
   ASSERT_TRUE(signed_out_accounts.empty());
@@ -915,8 +917,8 @@ TEST_F(GaiaCookieManagerServiceTest, GaiaCookieLastListAccountsDataSaved) {
     MockObserver observer(&helper);
     auto test_task_runner =
         base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-    base::ScopedClosureRunner task_runner_ =
-        base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+    base::ThreadTaskRunnerHandleOverrideForTesting ttrh_override(
+        test_task_runner);
 
     EXPECT_CALL(helper, StartFetchingListAccounts()).Times(3);
 

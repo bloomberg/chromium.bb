@@ -50,8 +50,7 @@ ApplicationAgent::ApplicationAgent(
     DeviceAuthNamespaceHandler::CredentialsProvider* credentials_provider)
     : task_runner_(task_runner),
       auth_handler_(credentials_provider),
-      connection_handler_(&connection_manager_, this),
-      router_(&connection_manager_),
+      connection_handler_(&router_, this),
       message_port_(&router_) {
   router_.AddHandlerForLocalId(kPlatformReceiverId, this);
 }
@@ -127,6 +126,7 @@ void ApplicationAgent::OnMessage(VirtualConnectionRouter* router,
   if (message_port_.GetSocketId() == ToCastSocketId(socket) &&
       !message_port_.client_sender_id().empty() &&
       message_port_.client_sender_id() == message.destination_id()) {
+    OSP_DCHECK(message_port_.client_sender_id() != kPlatformReceiverId);
     message_port_.OnMessage(router, socket, std::move(message));
     return;
   }
@@ -137,10 +137,6 @@ void ApplicationAgent::OnMessage(VirtualConnectionRouter* router,
   }
 
   const std::string& ns = message.namespace_();
-  if (ns == kConnectionNamespace) {
-    connection_handler_.OnMessage(router, socket, std::move(message));
-    return;
-  }
   if (ns == kAuthNamespace) {
     auth_handler_.OnMessage(router, socket, std::move(message));
     return;
@@ -179,7 +175,15 @@ void ApplicationAgent::OnMessage(VirtualConnectionRouter* router,
 
 bool ApplicationAgent::IsConnectionAllowed(
     const VirtualConnection& virtual_conn) const {
-  return true;
+  if (virtual_conn.local_id == kPlatformReceiverId) {
+    return true;
+  }
+  if (!launched_app_ || message_port_.client_sender_id().empty()) {
+    // No app currently launched. Or, there is a launched app, but it did not
+    // call MessagePort::SetClient() to indicate it wants messages routed to it.
+    return false;
+  }
+  return virtual_conn.local_id == message_port_.client_sender_id();
 }
 
 void ApplicationAgent::OnClose(CastSocket* socket) {

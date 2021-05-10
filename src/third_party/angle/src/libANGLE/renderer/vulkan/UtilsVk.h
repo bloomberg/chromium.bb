@@ -14,6 +14,8 @@
 //        unsupported formats to their fallbacks.
 //    - Image clear: Used by FramebufferVk::clearWithDraw().
 //    - Image copy: Used by TextureVk::copySubImageImplWithDraw().
+//    - Image copy bits: Used by ImageHelper::CopyImageSubData() to perform bitwise copies between
+//      RGB formats where at least one of src and dest use RGBA as fallback.
 //    - Color blit/resolve: Used by FramebufferVk::blit() to implement blit or multisample resolve
 //      on color images.
 //    - Depth/Stencil blit/resolve: Used by FramebufferVk::blit() to implement blit or multisample
@@ -141,6 +143,15 @@ class UtilsVk : angle::NonCopyable
         SurfaceRotation srcRotation;
     };
 
+    struct CopyImageBitsParameters
+    {
+        int srcOffset[3];
+        gl::LevelIndex srcLevel;
+        int dstOffset[3];
+        gl::LevelIndex dstLevel;
+        uint32_t copyExtents[3];
+    };
+
     struct OverlayCullParameters
     {
         uint32_t subgroupSize[2];
@@ -236,6 +247,11 @@ class UtilsVk : angle::NonCopyable
                             const vk::ImageView *srcView,
                             const CopyImageParameters &params);
 
+    angle::Result copyImageBits(ContextVk *contextVk,
+                                vk::ImageHelper *dest,
+                                vk::ImageHelper *src,
+                                const CopyImageBitsParameters &params);
+
     using GenerateMipmapDestLevelViews =
         std::array<const vk::ImageView *, kGenerateMipmapMaxLevels>;
     angle::Result generateMipmap(ContextVk *contextVk,
@@ -309,21 +325,22 @@ class UtilsVk : angle::NonCopyable
         ConvertVertexShaderParams();
 
         // Structure matching PushConstants in ConvertVertex.comp
-        uint32_t outputCount    = 0;
-        uint32_t componentCount = 0;
-        uint32_t srcOffset      = 0;
-        uint32_t destOffset     = 0;
-        uint32_t Ns             = 0;
-        uint32_t Bs             = 0;
-        uint32_t Ss             = 0;
-        uint32_t Es             = 0;
-        uint32_t Nd             = 0;
-        uint32_t Bd             = 0;
-        uint32_t Sd             = 0;
-        uint32_t Ed             = 0;
-        uint32_t isSrcHDR       = 0;
-        uint32_t isSrcA2BGR10   = 0;
-        uint32_t _padding[2]    = {};
+        uint32_t outputCount      = 0;
+        uint32_t componentCount   = 0;
+        uint32_t srcOffset        = 0;
+        uint32_t destOffset       = 0;
+        uint32_t Ns               = 0;
+        uint32_t Bs               = 0;
+        uint32_t Ss               = 0;
+        uint32_t Es               = 0;
+        uint32_t Nd               = 0;
+        uint32_t Bd               = 0;
+        uint32_t Sd               = 0;
+        uint32_t Ed               = 0;
+        uint32_t srcEmulatedAlpha = 0;
+        uint32_t isSrcHDR         = 0;
+        uint32_t isSrcA2BGR10     = 0;
+        uint32_t _padding         = 0;
     };
 
     struct ImageClearShaderParams
@@ -494,6 +511,14 @@ class UtilsVk : angle::NonCopyable
                                   const vk::RenderPassDesc &renderPassDesc,
                                   const gl::Rectangle &renderArea,
                                   vk::CommandBuffer **commandBufferOut);
+
+    // Set up descriptor set and call dispatch.
+    angle::Result convertVertexBufferImpl(ContextVk *contextVk,
+                                          vk::BufferHelper *dest,
+                                          vk::BufferHelper *src,
+                                          uint32_t flags,
+                                          vk::CommandBuffer *commandBuffer,
+                                          const ConvertVertexShaderParams &shaderParams);
 
     // Blits or resolves either color or depth/stencil, based on which view is given.
     angle::Result blitResolveImpl(ContextVk *contextVk,

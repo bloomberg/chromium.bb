@@ -5,94 +5,124 @@
 #include "chromecast/media/cma/backend/proxy/multizone_audio_decoder_proxy_impl.h"
 
 #include "base/notreached.h"
+#include "chromecast/media/api/monotonic_clock.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace chromecast {
 namespace media {
 
-MultizoneAudioDecoderProxyImpl::MultizoneAudioDecoderProxyImpl() = default;
+MultizoneAudioDecoderProxyImpl::MultizoneAudioDecoderProxyImpl(
+    const MediaPipelineDeviceParams& params,
+    CmaBackend::AudioDecoder* downstream_decoder)
+    : MultizoneAudioDecoderProxy(downstream_decoder),
+      cast_session_id_(params.session_id),
+      decoder_mode_(CmaProxyHandler::AudioDecoderOperationMode::kMultiroomOnly),
+      proxy_handler_(CmaProxyHandler::Create(params.task_runner, this)),
+      clock_(MonotonicClock::Create()),
+      buffer_id_manager_(this) {
+  DCHECK(proxy_handler_);
+  DCHECK(clock_);
+}
+
+MultizoneAudioDecoderProxyImpl::MultizoneAudioDecoderProxyImpl(
+    const MediaPipelineDeviceParams& params,
+    std::unique_ptr<AudioDecoderPipelineNode> downstream_decoder)
+    : MultizoneAudioDecoderProxyImpl(params, downstream_decoder.get()) {
+  SetOwnedDecoder(std::move(downstream_decoder));
+}
 
 MultizoneAudioDecoderProxyImpl::~MultizoneAudioDecoderProxyImpl() = default;
 
-bool MultizoneAudioDecoderProxyImpl::Initialize() {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::Initialize() {
+  CheckCalledOnCorrectThread();
+  proxy_handler_->Initialize(cast_session_id_, decoder_mode_);
 }
 
-bool MultizoneAudioDecoderProxyImpl::Start(int64_t start_pts) {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::Start(int64_t start_pts) {
+  CheckCalledOnCorrectThread();
+  proxy_handler_->Start(start_pts, CreateTargetBufferInfo());
 }
 
 void MultizoneAudioDecoderProxyImpl::Stop() {
-  NOTIMPLEMENTED();
+  CheckCalledOnCorrectThread();
+  proxy_handler_->Stop();
 }
 
-bool MultizoneAudioDecoderProxyImpl::Pause() {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::Pause() {
+  CheckCalledOnCorrectThread();
+  proxy_handler_->Pause();
 }
 
-bool MultizoneAudioDecoderProxyImpl::Resume() {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::Resume() {
+  CheckCalledOnCorrectThread();
+  proxy_handler_->Resume(CreateTargetBufferInfo());
 }
 
-bool MultizoneAudioDecoderProxyImpl::SetPlaybackRate(float rate) {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::SetPlaybackRate(float rate) {
+  CheckCalledOnCorrectThread();
+  proxy_handler_->SetPlaybackRate(rate);
 }
 
 void MultizoneAudioDecoderProxyImpl::LogicalPause() {
-  NOTIMPLEMENTED();
+  CheckCalledOnCorrectThread();
+  // There is intentionally no proxy implementation of this method.
 }
 
 void MultizoneAudioDecoderProxyImpl::LogicalResume() {
-  NOTIMPLEMENTED();
+  CheckCalledOnCorrectThread();
+  // There is intentionally no proxy implementation of this method.
 }
 
 int64_t MultizoneAudioDecoderProxyImpl::GetCurrentPts() const {
+  CheckCalledOnCorrectThread();
+
+  // This will be implemented as part of audio-audio sync.
+  NOTIMPLEMENTED();
   return pts_offset_;
 }
 
-void MultizoneAudioDecoderProxyImpl::SetDelegate(Delegate* delegate) {
-  NOTIMPLEMENTED();
+CmaProxyHandler::TargetBufferInfo
+MultizoneAudioDecoderProxyImpl::CreateTargetBufferInfo() {
+  return {buffer_id_manager_.GetCurrentlyProcessingBuffer(), clock_->Now()};
 }
 
 MultizoneAudioDecoderProxy::BufferStatus
 MultizoneAudioDecoderProxyImpl::PushBuffer(
     scoped_refptr<DecoderBufferBase> buffer) {
-  NOTIMPLEMENTED();
-  return BufferStatus::kBufferSuccess;
+  if (!proxy_handler_->PushBuffer(
+          buffer, buffer_id_manager_.AssignBufferId(buffer->data_size()))) {
+    return BufferStatus::kBufferFailed;
+  }
+
+  return MultizoneAudioDecoderProxy::PushBuffer(std::move(buffer));
 }
 
 bool MultizoneAudioDecoderProxyImpl::SetConfig(const AudioConfig& config) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
-bool MultizoneAudioDecoderProxyImpl::SetVolume(float multiplier) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
-MultizoneAudioDecoderProxyImpl::RenderingDelay
-MultizoneAudioDecoderProxyImpl::GetRenderingDelay() {
-  NOTIMPLEMENTED();
-  return RenderingDelay{};
+  return proxy_handler_->SetConfig(config) &&
+         MultizoneAudioDecoderProxy::SetConfig(config);
 }
 
 void MultizoneAudioDecoderProxyImpl::GetStatistics(Statistics* statistics) {
-  NOTIMPLEMENTED();
+  DCHECK(statistics);
+  CheckCalledOnCorrectThread();
+  statistics->decoded_bytes = bytes_decoded_;
 }
 
-bool MultizoneAudioDecoderProxyImpl::RequiresDecryption() {
-  NOTIMPLEMENTED();
-  return true;
+void MultizoneAudioDecoderProxyImpl::OnError() {
+  CheckCalledOnCorrectThread();
+  NOTREACHED();
 }
 
-void MultizoneAudioDecoderProxyImpl::SetObserver(Observer* observer) {
-  NOTIMPLEMENTED();
+void MultizoneAudioDecoderProxyImpl::OnPipelineStateChange(
+    CmaProxyHandler::PipelineState state) {
+  CheckCalledOnCorrectThread();
+}
+
+void MultizoneAudioDecoderProxyImpl::OnBytesDecoded(
+    int64_t decoded_byte_count) {
+  CheckCalledOnCorrectThread();
+  bytes_decoded_ = decoded_byte_count;
 }
 
 }  // namespace media

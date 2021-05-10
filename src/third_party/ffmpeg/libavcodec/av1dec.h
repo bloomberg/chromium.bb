@@ -36,11 +36,20 @@ typedef struct AV1Frame {
     AVBufferRef *hwaccel_priv_buf;
     void *hwaccel_picture_private;
 
-    uint8_t loop_filter_delta_enabled;
-    int8_t  loop_filter_ref_deltas[AV1_NUM_REF_FRAMES];
-    int8_t  loop_filter_mode_deltas[2];
+    AVBufferRef *header_ref;
+    AV1RawFrameHeader *raw_frame_header;
+
+    int temporal_id;
+    int spatial_id;
+
     uint8_t gm_type[AV1_NUM_REF_FRAMES];
     int32_t gm_params[AV1_NUM_REF_FRAMES][6];
+
+    uint8_t skip_mode_frame_idx[2];
+
+    AV1RawFilmGrainParams film_grain;
+
+    uint8_t coded_lossless;
 } AV1Frame;
 
 typedef struct TileGroupInfo {

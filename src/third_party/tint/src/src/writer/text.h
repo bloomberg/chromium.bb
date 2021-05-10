@@ -25,9 +25,6 @@ namespace writer {
 /// Class to generate text source
 class Text : public Writer {
  public:
-  /// Constructor
-  /// @param module the module to convert
-  explicit Text(ast::Module module);
   ~Text() override;
 
   /// @returns the result data

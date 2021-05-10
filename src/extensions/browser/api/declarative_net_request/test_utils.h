@@ -31,8 +31,9 @@ class Extension;
 
 namespace declarative_net_request {
 
-class RulesetSource;
+class FileBackedRulesetSource;
 class RulesetMatcher;
+struct RulesCountPair;
 struct TestRule;
 
 // Enum specifying the extension load type. Used for parameterized tests.
@@ -58,6 +59,7 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result);
 std::ostream& operator<<(std::ostream& output,
                          const base::Optional<RequestAction>& action);
 std::ostream& operator<<(std::ostream& output, LoadRulesetResult result);
+std::ostream& operator<<(std::ostream& output, const RulesCountPair& count);
 
 // Returns true if the given extension's indexed static rulesets are all valid.
 // Should be called on a sequence where file IO is allowed.
@@ -67,14 +69,15 @@ bool AreAllIndexedStaticRulesetsValid(const Extension& extension,
 // Helper to create a verified ruleset matcher. Populates |matcher| and
 // |expected_checksum|. Returns true on success.
 bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
-                           const RulesetSource& source,
+                           const FileBackedRulesetSource& source,
                            std::unique_ptr<RulesetMatcher>* matcher,
                            int* expected_checksum = nullptr);
 
-// Helper to return a RulesetSource bound to temporary files.
-RulesetSource CreateTemporarySource(RulesetID id = kMinValidStaticRulesetID,
-                                    size_t rule_count_limit = 100,
-                                    ExtensionId extension_id = "extensionid");
+// Helper to return a FileBackedRulesetSource bound to temporary files.
+FileBackedRulesetSource CreateTemporarySource(
+    RulesetID id = kMinValidStaticRulesetID,
+    size_t rule_count_limit = 100,
+    ExtensionId extension_id = "extensionid");
 
 api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
     api::declarative_net_request::HeaderOperation operation,

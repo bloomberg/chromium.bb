@@ -16,118 +16,82 @@
 namespace chromeos {
 namespace tts {
 
-// Simple helper to bridge logging in the shared library to Chrome's logging.
-void HandleLibraryLogging(int severity, const char* message) {
-  switch (severity) {
-    case logging::LOG_INFO:
-      // Suppressed.
-      break;
-    case logging::LOG_WARNING:
-      LOG(WARNING) << message;
-      break;
-    case logging::LOG_ERROR:
-      LOG(ERROR) << message;
-      break;
-    default:
-      break;
-  }
-}
-
-// TtsService is mostly glue code that adapts the TtsStream interface into a
-// form needed by libchrometts.so. As is convention with shared objects, the
-// lifetime of all arguments passed to the library is scoped to the function.
-//
-// To keep the library interface stable and prevent name mangling, all library
-// methods utilize C features only.
+namespace {
+constexpr int kDefaultSampleRate = 24000;
+constexpr int kDefaultBufferSize = 512;
+}  // namespace
 
 TtsService::TtsService(mojo::PendingReceiver<mojom::TtsService> receiver)
-    : service_receiver_(this, std::move(receiver)), stream_receiver_(this) {
+    : service_receiver_(this, std::move(receiver)),
+      tts_stream_factory_(this),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   if (setpriority(PRIO_PROCESS, 0, -10 /* real time audio */) != 0) {
     PLOG(ERROR) << "Unable to request real time priority; performance will be "
                    "impacted.";
-  }
-  bool loaded = libchrometts_.Load(kLibchromettsPath);
-  if (!loaded) {
-    LOG(ERROR) << "Unable to load libchrometts.so.";
-    exit(0);
-  } else {
-    libchrometts_.GoogleTtsSetLogger(HandleLibraryLogging);
   }
 }
 
 TtsService::~TtsService() = default;
 
-void TtsService::BindTtsStream(
-    mojo::PendingReceiver<mojom::TtsStream> receiver,
+void TtsService::BindTtsStreamFactory(
+    mojo::PendingReceiver<mojom::TtsStreamFactory> receiver,
     mojo::PendingRemote<audio::mojom::StreamFactory> factory) {
-  stream_receiver_.Bind(std::move(receiver));
-  stream_receiver_.set_disconnect_handler(base::BindOnce([] {
-    // The remote which lives in component extension js has been disconnected
-    // due to destruction or error.
-    exit(0);
-  }));
+  pending_tts_stream_factory_receivers_.push(std::move(receiver));
+  ProcessPendingTtsStreamFactories();
 
-  // TODO(accessibility): The sample rate below can change based on the audio
-  // data retrieved. Plumb this data through and re-create the output device if
-  // it changes.
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-      22050 /* sample rate */, libchrometts_.GoogleTtsGetFramesInAudioBuffer());
+  // TODO(accessibility): make it possible to change this dynamically. Also,
+  // decouple TtsStreamFactory from AudioStreamFactory above into different
+  // calls.
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_MONO, kDefaultSampleRate,
+                                kDefaultBufferSize);
 
   output_device_ = std::make_unique<audio::OutputDevice>(
       std::move(factory), params, this, std::string());
 }
 
-void TtsService::InstallVoice(const std::string& voice_name,
-                              const std::vector<uint8_t>& voice_bytes,
-                              InstallVoiceCallback callback) {
-  // Create a directory to place extracted voice data.
-  base::FilePath voice_data_path(kTempDataDirectory);
-  voice_data_path = voice_data_path.Append(voice_name);
-  if (base::DirectoryExists(voice_data_path)) {
-    std::move(callback).Run(true);
-    return;
-  }
+void TtsService::CreateGoogleTtsStream(CreateGoogleTtsStreamCallback callback) {
+  mojo::PendingRemote<mojom::GoogleTtsStream> remote;
+  auto receiver = remote.InitWithNewPipeAndPassReceiver();
+  google_tts_stream_ =
+      std::make_unique<GoogleTtsStream>(this, std::move(receiver));
+  std::move(callback).Run(std::move(remote));
 
-  if (!base::CreateDirectoryAndGetError(voice_data_path, nullptr)) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  std::move(callback).Run(libchrometts_.GoogleTtsInstallVoice(
-      voice_data_path.value().c_str(), (char*)&voice_bytes[0],
-      voice_bytes.size()));
+  tts_stream_factory_.reset();
+  ProcessPendingTtsStreamFactories();
 }
 
-void TtsService::SelectVoice(const std::string& voice_name,
-                             SelectVoiceCallback callback) {
-  base::FilePath path_prefix =
-      base::FilePath(kTempDataDirectory).Append(voice_name);
-  base::FilePath pipeline_path = path_prefix.Append("pipeline");
-  std::move(callback).Run(libchrometts_.GoogleTtsInit(
-      pipeline_path.value().c_str(), path_prefix.value().c_str()));
+void TtsService::CreatePlaybackTtsStream(
+    CreatePlaybackTtsStreamCallback callback) {
+  mojo::PendingRemote<mojom::PlaybackTtsStream> remote;
+  auto receiver = remote.InitWithNewPipeAndPassReceiver();
+  playback_tts_stream_ =
+      std::make_unique<PlaybackTtsStream>(this, std::move(receiver));
+  std::move(callback).Run(std::move(remote), kDefaultSampleRate,
+                          kDefaultBufferSize);
+
+  tts_stream_factory_.reset();
+  ProcessPendingTtsStreamFactories();
 }
 
-void TtsService::Speak(const std::vector<uint8_t>& text_jspb,
-                       SpeakCallback callback) {
+void TtsService::Play(
+    base::OnceCallback<void(::mojo::PendingReceiver<mojom::TtsEventObserver>)>
+        callback) {
   tts_event_observer_.reset();
   auto pending_receiver = tts_event_observer_.BindNewPipeAndPassReceiver();
   std::move(callback).Run(std::move(pending_receiver));
 
-  bool status = libchrometts_.GoogleTtsInitBuffered((char*)&text_jspb[0],
-                                                    text_jspb.size());
-  if (!status) {
-    tts_event_observer_->OnError();
-    return;
-  }
-
   output_device_->Play();
+}
 
-  is_playing_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TtsService::ReadMoreFrames, base::Unretained(this),
-                     true /* is_first_buffer */));
+void TtsService::AddAudioBuffer(AudioBuffer buf) {
+  base::AutoLock al(state_lock_);
+  buffers_.emplace(std::move(buf));
+}
+
+void TtsService::AddExplicitTimepoint(int char_index, base::TimeDelta delay) {
+  base::AutoLock al(state_lock_);
+  timepoints_.push({char_index, delay});
 }
 
 void TtsService::Stop() {
@@ -148,14 +112,18 @@ void TtsService::Resume() {
   output_device_->Play();
 }
 
+void TtsService::MaybeExit() {
+  if (google_tts_stream_ && !google_tts_stream_->IsBound() &&
+      playback_tts_stream_ && !playback_tts_stream_->IsBound()) {
+    exit(0);
+  }
+}
+
 int TtsService::Render(base::TimeDelta delay,
                        base::TimeTicks delay_timestamp,
                        int prior_frames_skipped,
                        media::AudioBus* dest) {
   size_t frames_in_buf = 0;
-  int32_t status = -1;
-  int char_index = -1;
-  bool is_first_buffer = false;
   {
     base::AutoLock al(state_lock_);
     if (buffers_.empty())
@@ -163,8 +131,55 @@ int TtsService::Render(base::TimeDelta delay,
 
     const AudioBuffer& buf = buffers_.front();
 
-    status = buf.status;
+    frames_in_buf = buf.frames.size();
+    const float* frames = nullptr;
+    if (!buf.frames.empty())
+      frames = &buf.frames[0];
+    float* channel = dest->channel(0);
+    for (size_t i = 0; i < frames_in_buf; i++)
+      channel[i] = frames[i];
 
+    rendered_buffers_.push(std::move(buffers_.front()));
+    buffers_.pop();
+
+    if (!process_rendered_buffers_posted_) {
+      process_rendered_buffers_posted_ = true;
+      task_runner_->PostTask(FROM_HERE,
+                             base::BindOnce(&TtsService::ProcessRenderedBuffers,
+                                            weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  return frames_in_buf;
+}
+
+void TtsService::OnRenderError() {}
+
+void TtsService::StopLocked(bool clear_buffers) {
+  output_device_->Pause();
+  rendered_buffers_ = std::queue<AudioBuffer>();
+  if (clear_buffers) {
+    buffers_ = std::queue<AudioBuffer>();
+    timepoints_ = std::queue<Timepoint>();
+  }
+}
+
+void TtsService::ProcessPendingTtsStreamFactories() {
+  if (tts_stream_factory_.is_bound() ||
+      pending_tts_stream_factory_receivers_.empty())
+    return;
+
+  auto factory = std::move(pending_tts_stream_factory_receivers_.front());
+  pending_tts_stream_factory_receivers_.pop();
+  tts_stream_factory_.Bind(std::move(factory));
+}
+
+void TtsService::ProcessRenderedBuffers() {
+  base::AutoLock al(state_lock_);
+  process_rendered_buffers_posted_ = false;
+  for (; !rendered_buffers_.empty(); rendered_buffers_.pop()) {
+    const auto& buf = rendered_buffers_.front();
+    int status = buf.status;
     // Done, 0, or error, -1.
     if (status <= 0) {
       if (status == -1)
@@ -173,76 +188,25 @@ int TtsService::Render(base::TimeDelta delay,
         tts_event_observer_->OnEnd();
 
       StopLocked();
-      return 0;
+      return;
     }
 
-    char_index = buf.char_index;
-    is_first_buffer = buf.is_first_buffer;
-    const float* frames = &buf.frames[0];
-    frames_in_buf = buf.frames.size();
-    float* channel = dest->channel(0);
-    for (size_t i = 0; i < frames_in_buf; i++)
-      channel[i] = frames[i];
-    buffers_.pop_front();
+    if (buf.is_first_buffer) {
+      start_playback_time_ = base::Time::Now();
+      tts_event_observer_->OnStart();
+    }
+
+    // Implicit timepoint.
+    if (buf.char_index != -1)
+      tts_event_observer_->OnTimepoint(buf.char_index);
   }
 
-  if (is_first_buffer)
-    tts_event_observer_->OnStart();
-
-  if (frames_in_buf == 0)
-    return 0;
-
-  if (char_index != -1)
-    tts_event_observer_->OnTimepoint(char_index);
-
-  return frames_in_buf;
-}
-
-void TtsService::OnRenderError() {}
-
-void TtsService::StopLocked(bool clear_buffers) {
-  if (!is_playing_)
-    return;
-
-  output_device_->Pause();
-  if (clear_buffers) {
-    buffers_.clear();
-    libchrometts_.GoogleTtsFinalizeBuffered();
+  // Explicit timepoint(s).
+  base::TimeDelta start_to_now = base::Time::Now() - start_playback_time_;
+  while (!timepoints_.empty() && timepoints_.front().second <= start_to_now) {
+    tts_event_observer_->OnTimepoint(timepoints_.front().first);
+    timepoints_.pop();
   }
-
-  is_playing_ = false;
-}
-
-void TtsService::ReadMoreFrames(bool is_first_buffer) {
-  if (!is_playing_)
-    return;
-
-  AudioBuffer buf;
-  buf.frames.resize(libchrometts_.GoogleTtsGetFramesInAudioBuffer());
-  size_t frames_in_buf = 0;
-  buf.status =
-      libchrometts_.GoogleTtsReadBuffered(&buf.frames[0], &frames_in_buf);
-
-  buf.frames.resize(frames_in_buf);
-
-  buf.char_index = -1;
-  if (libchrometts_.GoogleTtsGetTimepointsCount() > 0)
-    buf.char_index = libchrometts_.GoogleTtsGetTimepointsCharIndexAtIndex(0);
-
-  buf.is_first_buffer = is_first_buffer;
-
-  {
-    base::AutoLock al(state_lock_);
-    buffers_.emplace_back(std::move(buf));
-  }
-
-  if (buf.status <= 0)
-    return;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TtsService::ReadMoreFrames, base::Unretained(this),
-                     false /* is_first_buffer */));
 }
 
 TtsService::AudioBuffer::AudioBuffer() = default;

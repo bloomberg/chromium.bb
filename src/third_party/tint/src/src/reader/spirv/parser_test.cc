@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "src/context.h"
 
 namespace tint {
 namespace reader {
@@ -27,12 +26,12 @@ namespace {
 
 using ParserTest = testing::Test;
 
-TEST_F(ParserTest, Uint32VecEmpty) {
+TEST_F(ParserTest, DataEmpty) {
   std::vector<uint32_t> data;
-  Context ctx;
-  Parser p(&ctx, data);
-  EXPECT_FALSE(p.Parse());
-  // TODO(dneto): What message?
+  auto program = Parse(data);
+  auto errs = diag::Formatter().format(program.Diagnostics());
+  ASSERT_FALSE(program.IsValid()) << errs;
+  EXPECT_EQ(errs, "error: line:0: Invalid SPIR-V magic number.\n");
 }
 
 // TODO(dneto): uint32 vec, valid SPIR-V

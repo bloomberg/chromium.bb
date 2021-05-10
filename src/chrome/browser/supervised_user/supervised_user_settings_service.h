@@ -58,11 +58,11 @@ class SupervisedUserSettingsService : public KeyedService,
   // user settings. If the dictionary is NULL, it means that the service is
   // inactive, i.e. the user is not supervised.
   using SettingsCallbackType = void(const base::DictionaryValue*);
-  using SettingsCallback = base::Callback<SettingsCallbackType>;
+  using SettingsCallback = base::RepeatingCallback<SettingsCallbackType>;
   using SettingsCallbackList = base::CallbackList<SettingsCallbackType>;
 
   using ShutdownCallbackType = void();
-  using ShutdownCallback = base::Callback<ShutdownCallbackType>;
+  using ShutdownCallback = base::RepeatingCallback<ShutdownCallbackType>;
   using ShutdownCallbackList = base::CallbackList<ShutdownCallbackType>;
 
   SupervisedUserSettingsService();
@@ -83,13 +83,12 @@ class SupervisedUserSettingsService : public KeyedService,
 
   // Adds a callback to be called when supervised user settings are initially
   // available, or when they change.
-  std::unique_ptr<SettingsCallbackList::Subscription>
-  SubscribeForSettingsChange(const SettingsCallback& callback)
-      WARN_UNUSED_RESULT;
+  base::CallbackListSubscription SubscribeForSettingsChange(
+      const SettingsCallback& callback) WARN_UNUSED_RESULT;
 
   // Subscribe for a notification when the keyed service is shut down. The
-  // subscription object can be destroyed to unsubscribe.
-  std::unique_ptr<ShutdownCallbackList::Subscription> SubscribeForShutdown(
+  // subscription can be destroyed to unsubscribe.
+  base::CallbackListSubscription SubscribeForShutdown(
       const ShutdownCallback& callback);
 
   // Activates/deactivates the service. This is called by the

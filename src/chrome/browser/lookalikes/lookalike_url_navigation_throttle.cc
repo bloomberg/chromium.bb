@@ -13,23 +13,25 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
-#include "chrome/browser/prefetch/no_state_prefetch/chrome_prerender_contents_delegate.h"
+#include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/reputation_service.h"
+#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
-#include "components/no_state_prefetch/browser/prerender_contents.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/reputation/core/safety_tips_config.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
@@ -39,6 +41,11 @@
 namespace {
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
+
+const base::FeatureParam<base::TimeDelta> kManifestFetchDelay{
+    &lookalikes::features::kLookalikeDigitalAssetLinks,
+    lookalikes::features::kLookalikeDigitalAssetLinksTimeoutParameter,
+    base::TimeDelta::FromSeconds(5)};
 
 // Returns true if |current_url| is at the end of the redirect chain
 // stored in |stored_redirect_chain|.
@@ -123,7 +130,6 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::WillProcessResponse() {
                        weak_factory_.GetWeakPtr()));
     return content::NavigationThrottle::DEFER;
   }
-
   return PerformChecks(service->GetLatestEngagedSites());
 }
 
@@ -132,19 +138,19 @@ const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
-    const GURL& safe_url,
-    const GURL& url,
+    const GURL& safe_domain,
+    const GURL& lookalike_domain,
     ukm::SourceId source_id,
     LookalikeUrlMatchType match_type) {
   content::NavigationHandle* handle = navigation_handle();
   content::WebContents* web_contents = handle->GetWebContents();
 
   auto controller = std::make_unique<LookalikeUrlControllerClient>(
-      web_contents, url, safe_url);
+      web_contents, lookalike_domain, safe_domain);
 
   std::unique_ptr<LookalikeUrlBlockingPage> blocking_page(
       new LookalikeUrlBlockingPage(
-          web_contents, safe_url, url, source_id, match_type,
+          web_contents, safe_domain, lookalike_domain, source_id, match_type,
           handle->IsSignedExchangeInnerResponse(), std::move(controller)));
 
   base::Optional<std::string> error_page_contents =
@@ -161,8 +167,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
   content::Referrer referrer(handle->GetReferrer().url,
                              handle->GetReferrer().policy);
   LookalikeUrlTabStorage::GetOrCreate(handle->GetWebContents())
-      ->OnLookalikeInterstitialShown(url, referrer, handle->GetRedirectChain());
-
+      ->OnLookalikeInterstitialShown(lookalike_domain, referrer,
+                                     handle->GetRedirectChain());
   return ThrottleCheckResult(content::NavigationThrottle::CANCEL,
                              net::ERR_BLOCKED_BY_CLIENT, error_page_contents);
 }
@@ -170,9 +176,10 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
 std::unique_ptr<LookalikeUrlNavigationThrottle>
 LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle) {
-  // If the tab is being prerendered, stop here before it breaks metrics
+  // If the tab is being no-state prefetched, stop here before it breaks
+  // metrics.
   content::WebContents* web_contents = navigation_handle->GetWebContents();
-  if (prerender::ChromePrerenderContentsDelegate::FromWebContents(
+  if (prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
           web_contents)) {
     return nullptr;
   }
@@ -181,15 +188,69 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
   return std::make_unique<LookalikeUrlNavigationThrottle>(navigation_handle);
 }
 
-void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
-    const std::vector<DomainInfo>& engaged_sites) {
-  ThrottleCheckResult result = PerformChecks(engaged_sites);
+ThrottleCheckResult
+LookalikeUrlNavigationThrottle::CheckManifestsAndMaybeShowInterstitial(
+    const GURL& safe_domain,
+    const GURL& lookalike_domain,
+    ukm::SourceId source_id,
+    LookalikeUrlMatchType match_type) {
+  RecordUMAFromMatchType(match_type);
 
-  if (result.action() == content::NavigationThrottle::PROCEED) {
+  // Punycode interstitial doesn't have a target site, so safe_domain isn't
+  // valid.
+  if (!base::FeatureList::IsEnabled(
+          lookalikes::features::kLookalikeDigitalAssetLinks) ||
+      !safe_domain.is_valid()) {
+    return ShowInterstitial(safe_domain, lookalike_domain, source_id,
+                            match_type);
+  }
+
+  const url::Origin lookalike_origin =
+      url::Origin::Create(navigation_handle()->GetURL());
+  const url::Origin target_origin = url::Origin::Create(safe_domain);
+  DigitalAssetLinkCrossValidator::ResultCallback callback = base::BindOnce(
+      &LookalikeUrlNavigationThrottle::OnManifestValidationResult,
+      weak_factory_.GetWeakPtr(), safe_domain, lookalike_domain, source_id,
+      match_type);
+  DCHECK(!digital_asset_link_validator_);
+  // This assumes each navigation has its own throttle.
+  // TODO(crbug.com/1175385): Consider moving this to LookalikeURLService.
+  digital_asset_link_validator_ =
+      std::make_unique<DigitalAssetLinkCrossValidator>(
+          profile_, lookalike_origin, target_origin, kManifestFetchDelay.Get(),
+          LookalikeUrlService::Get(profile_)->clock(), std::move(callback));
+  digital_asset_link_validator_->Start();
+  return NavigationThrottle::DEFER;
+}
+
+void LookalikeUrlNavigationThrottle::OnManifestValidationResult(
+    const GURL& safe_domain,
+    const GURL& lookalike_domain,
+    ukm::SourceId source_id,
+    LookalikeUrlMatchType match_type,
+    bool validation_succeeded) {
+  if (validation_succeeded) {
     Resume();
     return;
   }
+  ThrottleCheckResult result =
+      ShowInterstitial(safe_domain, lookalike_domain, source_id, match_type);
+  CancelDeferredNavigation(result);
+}
 
+void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
+    const std::vector<DomainInfo>& engaged_sites) {
+  ThrottleCheckResult result = PerformChecks(engaged_sites);
+  if (result.action() == NavigationThrottle::DEFER) {
+    // Already deferred by PerformChecks(), don't defer again. PerformChecks()
+    // is responsible for scheduling the cancellation/resumption of the
+    // navigation.
+    return;
+  }
+  if (result.action() == NavigationThrottle::PROCEED) {
+    Resume();
+    return;
+  }
   CancelDeferredNavigation(result);
 }
 
@@ -248,7 +309,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   }
 
   if (!first_is_lookalike && !last_is_lookalike) {
-    return content::NavigationThrottle::PROCEED;
+    return NavigationThrottle::PROCEED;
   }
   // IMPORTANT: Do not modify first_is_lookalike or last_is_lookalike beyond
   // this line. See crbug.com/1138138 for an example bug.
@@ -260,15 +321,13 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
   if (first_is_lookalike &&
       ShouldBlockLookalikeUrlNavigation(first_match_type)) {
-    RecordUMAFromMatchType(first_match_type);
-    return ShowInterstitial(first_suggested_url, first_url, source_id,
-                            first_match_type);
+    return CheckManifestsAndMaybeShowInterstitial(
+        first_suggested_url, first_url, source_id, first_match_type);
   }
 
   if (last_is_lookalike && ShouldBlockLookalikeUrlNavigation(last_match_type)) {
-    RecordUMAFromMatchType(last_match_type);
-    return ShowInterstitial(last_suggested_url, last_url, source_id,
-                            last_match_type);
+    return CheckManifestsAndMaybeShowInterstitial(last_suggested_url, last_url,
+                                                  source_id, last_match_type);
   }
 
   RecordUMAFromMatchType(first_is_lookalike ? first_match_type
@@ -277,7 +336,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   RecordUkmForLookalikeUrlBlockingPage(
       source_id, first_is_lookalike ? first_match_type : last_match_type,
       LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
-  return content::NavigationThrottle::PROCEED;
+  return NavigationThrottle::PROCEED;
 }
 
 bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
@@ -328,9 +387,9 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
 
   // Ensure that this URL is not already engaged. We can't use the synchronous
   // SiteEngagementService::IsEngagementAtLeast as it has side effects. We check
-  // in PerformChecks to ensure we have up-to-date engaged_sites.
-  // This check ignores the scheme which is okay since it's more conservative:
-  // If the user is engaged with http://domain.test, not showing the warning on
+  // in PerformChecks to ensure we have up-to-date engaged_sites. This check
+  // ignores the scheme which is okay since it's more conservative: If the user
+  // is engaged with http://domain.test, not showing the warning on
   // https://domain.test is acceptable.
   const auto already_engaged =
       std::find_if(engaged_sites.begin(), engaged_sites.end(),

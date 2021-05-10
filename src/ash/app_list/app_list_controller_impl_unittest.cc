@@ -18,7 +18,6 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
@@ -38,6 +37,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_widget_builder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -78,10 +78,6 @@ ContentsView* GetContentsView() {
   return GetAppListView()->app_list_main_view()->contents_view();
 }
 
-views::View* GetExpandArrowView() {
-  return GetContentsView()->expand_arrow_view();
-}
-
 SearchBoxView* GetSearchBoxView() {
   return GetContentsView()->GetSearchBoxView();
 }
@@ -97,9 +93,9 @@ AppsGridView* GetAppsGridView() {
   return GetContentsView()->apps_container_view()->apps_grid_view();
 }
 
-void ShowAppListNow() {
+void ShowAppListNow(AppListViewState state) {
   Shell::Get()->app_list_controller()->presenter()->Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      state, display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       base::TimeTicks::Now());
 }
 
@@ -112,21 +108,12 @@ aura::Window* GetAppListViewNativeWindow() {
   return GetAppListView()->GetWidget()->GetNativeView();
 }
 
-void SetSearchText(AppListControllerImpl* controller, const std::string& text) {
-  controller->GetSearchModel()->search_box()->Update(base::ASCIIToUTF16(text),
-                                                     false);
-}
-
 }  // namespace
 
 class AppListControllerImplTest : public AshTestBase {
  public:
   AppListControllerImplTest() = default;
   ~AppListControllerImplTest() override = default;
-
-  std::unique_ptr<aura::Window> CreateTestWindow() {
-    return AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
-  }
 
   void PopulateItem(int num) {
     for (int i = 0; i < num; i++) {
@@ -157,7 +144,7 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
   const std::vector<ShelfAlignment> alignments(
       {ShelfAlignment::kLeft, ShelfAlignment::kRight, ShelfAlignment::kBottom});
   for (ShelfAlignment alignment : alignments) {
-    ShowAppListNow();
+    ShowAppListNow(AppListViewState::kPeeking);
     EXPECT_TRUE(Shell::Get()
                     ->app_list_controller()
                     ->presenter()
@@ -176,7 +163,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
 
   // Show the app list view and click on the search box with mouse. So the
   // VirtualKeyboard is shown.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
 
   // Wait until the virtual keyboard shows on the screen.
@@ -219,7 +206,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
 
   // Show the app list view and right-click on the search box with mouse. So the
   // text field's context menu shows.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   SearchBoxView* search_box_view =
       GetAppListView()->app_list_main_view()->search_box_view();
   gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
@@ -255,10 +242,7 @@ TEST_F(AppListControllerImplTest, CheckTabOrderAfterDragIconToShelf) {
   PopulateItem(3);
 
   // Shows the app list in fullscreen.
-  ShowAppListNow();
-  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
-  GetEventGenerator()->GestureTapAt(
-      GetExpandArrowView()->GetBoundsInScreen().CenterPoint());
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
   ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
@@ -297,7 +281,7 @@ TEST_F(AppListControllerImplTest, PageResetByTimerInTabletMode) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   PopulateItem(30);
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
 
   AppsGridView* apps_grid_view = GetAppsGridView();
   apps_grid_view->pagination_model()->SelectPage(1, false /* animate */);
@@ -311,7 +295,7 @@ TEST_F(AppListControllerImplTest, PageResetByTimerInTabletMode) {
   // Skip the page reset timer to simulate timer exipration.
   GetAppListView()->SetSkipPageResetTimerForTesting(true);
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
   EXPECT_EQ(1, apps_grid_view->pagination_model()->selected_page());
   DismissAppListNow();
 
@@ -329,7 +313,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
 
   // Show the AppListView and click on the search box with mouse. So the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
@@ -344,7 +328,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // (2) AppListView is in PEEKING state.
   // (3) AppListView's bounds are the same as the preferred bounds for
   // the PEEKING state.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
@@ -361,7 +345,7 @@ TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
 
   // Show the AppListView, then simulate a key press - verify that the virtual
   // keyboard is not shown.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
@@ -392,7 +376,7 @@ TEST_F(AppListControllerImplTest,
   // Show the AppListView in fullscreen state and click on the search box with
   // the mouse. So the VirtualKeyboard is shown. Wait until the virtual keyboard
   // shows.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
@@ -429,7 +413,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
 
   // Show the AppListView and click on the search box with mouse so the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
@@ -467,7 +451,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
 // (see https://crbug.com/948344)
 // TODO(crbug.com/1120501): Test is flaky on ASAN builds.
 TEST_F(AppListControllerImplTest, MAYBE_CloseNotificationWithAppListShown) {
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   // Add one notification.
   ASSERT_EQ(
@@ -576,7 +560,7 @@ TEST_F(AppListControllerImplTest,
   constexpr int tapping_width = 156;
   constexpr int tapping_height = 72;
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   // Get in screen bounds of arrow
@@ -602,7 +586,7 @@ TEST_F(AppListControllerImplTest,
   // Re-enter peeking mode and test that tapping on one of the bounds of the
   // tap target for the expand arrow icon still brings up full app list
   // view.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
   ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   event_generator->GestureTapAt(gfx::Point(expand_arrow.top_right().x() - 1,
@@ -705,7 +689,7 @@ class AppListControllerImplTestWithNotificationBadging
 TEST_F(AppListControllerImplTestWithNotificationBadging,
        NotificationBadgeUpdateTest) {
   PopulateItem(1);
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
 
   test::AppsGridViewTestApi apps_grid_view_test_api(GetAppsGridView());
   const AppListItemView* item_view =
@@ -815,7 +799,9 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
                     {"fake_id_22", base::nullopt}};
 
   // Tests the case app ID property is not set on the window.
-  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
+  gfx::Rect init_bounds(0, 0, 400, 400);
+  std::unique_ptr<views::Widget> widget_without_app_id =
+      TestWidgetBuilder().SetBounds(init_bounds).BuildOwnsNativeWidget();
 
   HomeScreenDelegate* const home_screen_delegate =
       Shell::Get()->home_screen_controller()->delegate();
@@ -828,7 +814,7 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
 
   EXPECT_EQ(apps_grid_center,
             home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
-                window_without_app_id.get()));
+                widget_without_app_id->GetNativeWindow()));
 
   // Run tests cases, both for when the first and the second apps grid page is
   // selected - the returned bounds should be the same in both cases, as
@@ -845,12 +831,16 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
                            : "null")
                    << "} with selected page " << selected_page);
 
-      std::unique_ptr<aura::Window> window(CreateTestWindow());
-      window->SetProperty(kAppIDKey, new std::string(test_case.window_app_id));
+      std::unique_ptr<views::Widget> widget =
+          TestWidgetBuilder()
+              .SetWindowProperty(kAppIDKey,
+                                 new std::string(test_case.window_app_id))
+              .SetBounds(init_bounds)
+              .BuildOwnsNativeWidget();
 
       const gfx::Rect item_bounds =
           home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
-              window.get());
+              widget->GetNativeWindow());
       if (!test_case.grid_position.has_value()) {
         EXPECT_EQ(apps_grid_center, item_bounds);
       } else {
@@ -872,7 +862,7 @@ TEST_F(AppListControllerImplTest, NoOverlapWithHotseatOnSwitchFromSideShelf) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   Shelf* const shelf = GetPrimaryShelf();
   shelf->SetAlignment(ShelfAlignment::kRight);
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kFullscreenAllApps);
   ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
@@ -969,7 +959,7 @@ TEST_P(AppListAnimationTest, AppListShowPeekingAnimation) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   // Verify that the app list view's top matches the shown shelf top as the show
   // animation starts.
@@ -979,7 +969,7 @@ TEST_P(AppListAnimationTest, AppListShowPeekingAnimation) {
 
 // Tests app list animation from peeking to closed state.
 TEST_P(AppListAnimationTest, AppListCloseFromPeekingAnimation) {
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   // Set the normal transition duration so tests can easily determine intended
   // animation length, and calculate expected app list position at different
@@ -1005,7 +995,7 @@ TEST_P(AppListAnimationTest, AppListDismissWhileShowingPeeking) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   // Verify that the app list view's top matches the shown shelf top as the show
   // animation starts.
@@ -1023,7 +1013,7 @@ TEST_P(AppListAnimationTest, AppListDismissWhileShowingPeeking) {
 // animation is in progress.
 TEST_P(AppListAnimationTest, AppListShowPeekingWhileClosing) {
   // Show app list while animations are still instantanious.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   // Set the normal transition duration so tests can easily determine intended
   // animation length, and calculate expected app list position at different
@@ -1041,7 +1031,7 @@ TEST_P(AppListAnimationTest, AppListShowPeekingWhileClosing) {
 
   // Start showing the app list. Verify the new animation starts at the same
   // point the show animation ended.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
 }
@@ -1054,7 +1044,7 @@ TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   SearchBoxView* const search_box = GetSearchBoxView();
 
@@ -1072,7 +1062,7 @@ TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
   search_box->layer()->GetAnimator()->StopAnimating();
 
   // When show again, verify the app list animates from 0 opacity again.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   EXPECT_EQ(0.0f, search_box->layer()->opacity());
   EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
@@ -1089,7 +1079,7 @@ TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
 
   // If the app list is show again during close animation, the search box
   // opacity should animate from the current value.
-  ShowAppListNow();
+  ShowAppListNow(AppListViewState::kPeeking);
 
   EXPECT_EQ(1.0f, search_box->layer()->opacity());
   EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
@@ -1118,39 +1108,6 @@ class AppListControllerImplMetricsTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplMetricsTest);
 };
-
-TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
-  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
-                                     0);
-  SetSearchText(controller_, "");
-  controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kResultList,
-                                        4);
-  histogram_tester_.ExpectUniqueSample(kAppListResultLaunchIndexAndQueryLength,
-                                       4, 1);
-}
-
-TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
-  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
-                                     0);
-  for (int query_length = 0; query_length < 11; ++query_length) {
-    const std::string query(query_length, 'a');
-    for (int click_index = 0; click_index < 7; ++click_index) {
-      SetSearchText(controller_, query);
-      controller_->LogResultLaunchHistogram(
-          SearchResultLaunchLocation::kResultList, click_index);
-    }
-  }
-
-  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
-                                     77);
-  for (int query_length = 0; query_length < 11; ++query_length) {
-    for (int click_index = 0; click_index < 7; ++click_index) {
-      histogram_tester_.ExpectBucketCount(
-          kAppListResultLaunchIndexAndQueryLength,
-          7 * query_length + click_index, 1);
-    }
-  }
-}
 
 // One edge case may do harm to the presentation metrics reporter for tablet
 // mode: the user may keep pressing on launcher while exiting the tablet mode by

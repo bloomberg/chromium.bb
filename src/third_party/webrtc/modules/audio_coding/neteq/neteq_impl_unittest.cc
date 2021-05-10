@@ -328,8 +328,8 @@ TEST_F(NetEqImplTest, InsertPacket) {
   // Expectations for packet buffer.
   EXPECT_CALL(*mock_packet_buffer_, Empty())
       .WillOnce(Return(false));  // Called once after first packet is inserted.
-  EXPECT_CALL(*mock_packet_buffer_, Flush()).Times(1);
-  EXPECT_CALL(*mock_packet_buffer_, InsertPacketList(_, _, _, _, _))
+  EXPECT_CALL(*mock_packet_buffer_, Flush(_)).Times(1);
+  EXPECT_CALL(*mock_packet_buffer_, InsertPacketList(_, _, _, _, _, _, _, _))
       .Times(2)
       .WillRepeatedly(DoAll(SetArgPointee<2>(kPayloadType),
                             WithArg<0>(Invoke(DeletePacketsAndReturnOk))));
@@ -987,15 +987,6 @@ TEST_F(NetEqImplTest, CodecInternalCng) {
   EXPECT_TRUE(neteq_->RegisterPayloadType(kPayloadType,
                                           SdpAudioFormat("opus", 48000, 2)));
 
-  // Insert one packet (decoder will return speech).
-  EXPECT_EQ(NetEq::kOK, neteq_->InsertPacket(rtp_header, payload));
-
-  // Insert second packet (decoder will return CNG).
-  payload[0] = 1;
-  rtp_header.sequenceNumber++;
-  rtp_header.timestamp += kPayloadLengthSamples;
-  EXPECT_EQ(NetEq::kOK, neteq_->InsertPacket(rtp_header, payload));
-
   const size_t kMaxOutputSize = static_cast<size_t>(10 * kSampleRateKhz);
   AudioFrame output;
   AudioFrame::SpeechType expected_type[8] = {
@@ -1012,10 +1003,19 @@ TEST_F(NetEqImplTest, CodecInternalCng) {
       50 * kSampleRateKhz,
       10 * kSampleRateKhz};
 
+  // Insert one packet (decoder will return speech).
+  EXPECT_EQ(NetEq::kOK, neteq_->InsertPacket(rtp_header, payload));
+
   bool muted;
   EXPECT_EQ(NetEq::kOK, neteq_->GetAudio(&output, &muted));
   absl::optional<uint32_t> last_timestamp = neteq_->GetPlayoutTimestamp();
   ASSERT_TRUE(last_timestamp);
+
+  // Insert second packet (decoder will return CNG).
+  payload[0] = 1;
+  rtp_header.sequenceNumber++;
+  rtp_header.timestamp += kPayloadLengthSamples;
+  EXPECT_EQ(NetEq::kOK, neteq_->InsertPacket(rtp_header, payload));
 
   // Lambda for verifying the timestamps.
   auto verify_timestamp = [&last_timestamp, &expected_timestamp_increment](

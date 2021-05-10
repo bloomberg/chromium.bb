@@ -458,7 +458,9 @@ public:
 
     uint64_t computeFormatKey(const GrBackendFormat&) const override;
 
-    GrProgramDesc makeDesc(GrRenderTarget*, const GrProgramInfo&) const override;
+    GrProgramDesc makeDesc(GrRenderTarget*,
+                           const GrProgramInfo&,
+                           ProgramDescOverrideFlags) const override;
 
 #if GR_TEST_UTILS
     GrGLStandard standard() const { return fStandard; }
@@ -571,6 +573,7 @@ private:
     bool fDontSetBaseOrMaxLevelForExternalTextures : 1;
     bool fNeverDisableColorWrites : 1;
     bool fMustSetAnyTexParameterToEnableMipmapping : 1;
+    bool fAllowBGRA8CopyTexSubImage : 1;
     int fMaxInstancesPerDrawWithoutCrashing = 0;
 
     uint32_t fBlitFramebufferFlags = kNoSupport_BlitFramebufferFlag;

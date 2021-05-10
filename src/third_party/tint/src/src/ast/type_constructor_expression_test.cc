@@ -17,109 +17,101 @@
 #include <memory>
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/constructor_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/vector_type.h"
+#include "src/ast/test_helper.h"
+#include "src/type/f32_type.h"
+#include "src/type/vector_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using TypeConstructorExpressionTest = testing::Test;
+using TypeConstructorExpressionTest = TestHelper;
 
 TEST_F(TypeConstructorExpressionTest, Creation) {
-  type::F32Type f32;
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr"));
-  auto* expr_ptr = expr[0].get();
+  expr.push_back(Expr("expr"));
 
-  TypeConstructorExpression t(&f32, std::move(expr));
-  EXPECT_EQ(t.type(), &f32);
-  ASSERT_EQ(t.values().size(), 1u);
-  EXPECT_EQ(t.values()[0].get(), expr_ptr);
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_EQ(t->type(), ty.f32());
+  ASSERT_EQ(t->values().size(), 1u);
+  EXPECT_EQ(t->values()[0], expr[0]);
 }
 
 TEST_F(TypeConstructorExpressionTest, Creation_WithSource) {
-  type::F32Type f32;
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr"));
+  expr.push_back(Expr("expr"));
 
-  TypeConstructorExpression t(Source{Source::Location{20, 2}}, &f32,
-                              std::move(expr));
-  auto src = t.source();
+  auto* t = create<TypeConstructorExpression>(Source{Source::Location{20, 2}},
+                                              ty.f32(), expr);
+  auto src = t->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(TypeConstructorExpressionTest, IsTypeConstructor) {
-  TypeConstructorExpression t;
-  EXPECT_TRUE(t.IsTypeConstructor());
+  ExpressionList expr;
+  expr.push_back(Expr("expr"));
+
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_TRUE(t->Is<TypeConstructorExpression>());
 }
 
 TEST_F(TypeConstructorExpressionTest, IsValid) {
-  type::F32Type f32;
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr"));
+  expr.push_back(Expr("expr"));
 
-  TypeConstructorExpression t(&f32, std::move(expr));
-  EXPECT_TRUE(t.IsValid());
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_TRUE(t->IsValid());
 }
 
 TEST_F(TypeConstructorExpressionTest, IsValid_EmptyValue) {
-  type::F32Type f32;
   ExpressionList expr;
 
-  TypeConstructorExpression t(&f32, std::move(expr));
-  EXPECT_TRUE(t.IsValid());
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_TRUE(t->IsValid());
 }
 
 TEST_F(TypeConstructorExpressionTest, IsValid_NullType) {
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr"));
+  expr.push_back(Expr("expr"));
 
-  TypeConstructorExpression t;
-  t.set_values(std::move(expr));
-  EXPECT_FALSE(t.IsValid());
+  auto* t = create<TypeConstructorExpression>(nullptr, expr);
+  EXPECT_FALSE(t->IsValid());
 }
 
 TEST_F(TypeConstructorExpressionTest, IsValid_NullValue) {
-  type::F32Type f32;
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr"));
+  expr.push_back(Expr("expr"));
   expr.push_back(nullptr);
 
-  TypeConstructorExpression t(&f32, std::move(expr));
-  EXPECT_FALSE(t.IsValid());
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_FALSE(t->IsValid());
 }
 
 TEST_F(TypeConstructorExpressionTest, IsValid_InvalidValue) {
-  type::F32Type f32;
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>(""));
+  expr.push_back(Expr(""));
 
-  TypeConstructorExpression t(&f32, std::move(expr));
-  EXPECT_FALSE(t.IsValid());
+  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
+  EXPECT_FALSE(t->IsValid());
 }
 
 TEST_F(TypeConstructorExpressionTest, ToStr) {
-  type::F32Type f32;
-  type::VectorType vec(&f32, 3);
+  type::Vector vec(ty.f32(), 3);
   ExpressionList expr;
-  expr.push_back(std::make_unique<IdentifierExpression>("expr_1"));
-  expr.push_back(std::make_unique<IdentifierExpression>("expr_2"));
-  expr.push_back(std::make_unique<IdentifierExpression>("expr_3"));
+  expr.push_back(Expr("expr_1"));
+  expr.push_back(Expr("expr_2"));
+  expr.push_back(Expr("expr_3"));
 
-  TypeConstructorExpression t(&vec, std::move(expr));
-  std::ostringstream out;
-  t.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  TypeConstructor{
-    __vec_3__f32
-    Identifier{expr_1}
-    Identifier{expr_2}
-    Identifier{expr_3}
-  }
+  auto* t = create<TypeConstructorExpression>(&vec, expr);
+  EXPECT_EQ(str(t), R"(TypeConstructor[not set]{
+  __vec_3__f32
+  Identifier[not set]{expr_1}
+  Identifier[not set]{expr_2}
+  Identifier[not set]{expr_3}
+}
 )");
 }
 

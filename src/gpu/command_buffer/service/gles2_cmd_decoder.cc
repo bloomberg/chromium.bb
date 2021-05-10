@@ -2739,6 +2739,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool multi_draw_explicitly_enabled_;
   bool draw_instanced_base_vertex_base_instance_explicitly_enabled_;
   bool multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_;
+  bool arb_texture_rectangle_enabled_;
+  bool oes_egl_image_external_enabled_;
+  bool nv_egl_stream_consumer_external_enabled_;
 
   bool compile_shader_always_succeeds_;
 
@@ -3513,6 +3516,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       multi_draw_explicitly_enabled_(false),
       draw_instanced_base_vertex_base_instance_explicitly_enabled_(false),
       multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_(false),
+      arb_texture_rectangle_enabled_(false),
+      oes_egl_image_external_enabled_(false),
+      nv_egl_stream_consumer_external_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
       should_use_native_gmb_for_backbuffer_(false),
@@ -3606,13 +3612,12 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     return gpu::ContextResult::kFatalFailure;
   }
 
-  // Only create webgl2-compute for passthrough cmd decoder.
-  if (attrib_helper.context_type == CONTEXT_TYPE_WEBGL2_COMPUTE) {
+  // Only create ES 3.1 contexts with the passthrough cmd decoder.
+  if (attrib_helper.context_type == CONTEXT_TYPE_OPENGLES31_FOR_TESTING) {
     // Must not destroy ContextGroup if it is not initialized.
     group_ = nullptr;
-    LOG(ERROR)
-        << "ContextResult::kFatalFailure: "
-           "webgl2-compute is not supported on validating command decoder.";
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "ES 3.1 is not supported on validating command decoder.";
     return gpu::ContextResult::kFatalFailure;
   }
 
@@ -4444,6 +4449,19 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
       resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
+      resources.ARB_texture_rectangle =
+          (features().arb_texture_rectangle && arb_texture_rectangle_enabled_)
+              ? 1
+              : 0;
+      resources.OES_EGL_image_external =
+          (features().oes_egl_image_external && oes_egl_image_external_enabled_)
+              ? 1
+              : 0;
+      resources.NV_EGL_stream_consumer_external =
+          (features().nv_egl_stream_consumer_external &&
+           nv_egl_stream_consumer_external_enabled_)
+              ? 1
+              : 0;
       resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
       resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
       if (!draw_buffers_explicitly_enabled_)
@@ -4454,6 +4472,19 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       break;
     case CONTEXT_TYPE_WEBGL2:
       shader_spec = SH_WEBGL2_SPEC;
+      resources.ARB_texture_rectangle =
+          (features().arb_texture_rectangle && arb_texture_rectangle_enabled_)
+              ? 1
+              : 0;
+      resources.OES_EGL_image_external =
+          (features().oes_egl_image_external && oes_egl_image_external_enabled_)
+              ? 1
+              : 0;
+      resources.NV_EGL_stream_consumer_external =
+          (features().nv_egl_stream_consumer_external &&
+           nv_egl_stream_consumer_external_enabled_)
+              ? 1
+              : 0;
       break;
     case CONTEXT_TYPE_OPENGLES2:
       shader_spec = SH_GLES2_SPEC;
@@ -12154,137 +12185,6 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
   return max_vertex_accessed;
 }
 
-namespace {
-// Copied from angle/src/libANGLE/validationES2.cpp
-// As we removed shader source string validation in blink level.
-// Addressing http://crbug.com/1108588
-
-// Return true if a character belongs to the ASCII subset as defined in GLSL
-// ES 1.0 spec section 3.1.
-bool IsValidESSLCharacter(unsigned char c) {
-  // Printing characters are valid except " $ ` @ \ ' DEL.
-  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
-      c != '\\' && c != '\'') {
-    return true;
-  }
-
-  // Horizontal tab, line feed, vertical tab, form feed, carriage return are
-  // also valid.
-  if (c >= 9 && c <= 13) {
-    return true;
-  }
-
-  return false;
-}
-
-bool IsValidESSLShaderSourceString(const char* str,
-                                   size_t len,
-                                   bool lineContinuationAllowed) {
-  enum class ParseState {
-    // Have not seen an ASCII non-whitespace character yet on
-    // this line. Possible that we might see a preprocessor
-    // directive.
-    BEGINING_OF_LINE,
-
-    // Have seen at least one ASCII non-whitespace character
-    // on this line.
-    MIDDLE_OF_LINE,
-
-    // Handling a preprocessor directive. Passes through all
-    // characters up to the end of the line. Disables comment
-    // processing.
-    IN_PREPROCESSOR_DIRECTIVE,
-
-    // Handling a single-line comment. The comment text is
-    // replaced with a single space.
-    IN_SINGLE_LINE_COMMENT,
-
-    // Handling a multi-line comment. Newlines are passed
-    // through to preserve line numbers.
-    IN_MULTI_LINE_COMMENT
-  };
-
-  ParseState state = ParseState::BEGINING_OF_LINE;
-  size_t pos = 0;
-
-  while (pos < len) {
-    char c = str[pos];
-    char next = pos + 1 < len ? str[pos + 1] : 0;
-
-    // Check for newlines
-    if (c == '\n' || c == '\r') {
-      if (state != ParseState::IN_MULTI_LINE_COMMENT) {
-        state = ParseState::BEGINING_OF_LINE;
-      }
-
-      pos++;
-      continue;
-    }
-
-    switch (state) {
-      case ParseState::BEGINING_OF_LINE:
-        if (c == ' ') {
-          // Maintain the BEGINING_OF_LINE state until a non-space is seen
-          pos++;
-        } else if (c == '#') {
-          state = ParseState::IN_PREPROCESSOR_DIRECTIVE;
-          pos++;
-        } else {
-          // Don't advance, re-process this character with the MIDDLE_OF_LINE
-          // state
-          state = ParseState::MIDDLE_OF_LINE;
-        }
-        break;
-
-      case ParseState::MIDDLE_OF_LINE:
-        if (c == '/' && next == '/') {
-          state = ParseState::IN_SINGLE_LINE_COMMENT;
-          pos++;
-        } else if (c == '/' && next == '*') {
-          state = ParseState::IN_MULTI_LINE_COMMENT;
-          pos++;
-        } else if (lineContinuationAllowed && c == '\\' &&
-                   (next == '\n' || next == '\r')) {
-          // Skip line continuation characters
-        } else if (!IsValidESSLCharacter(c)) {
-          return false;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_PREPROCESSOR_DIRECTIVE:
-        // Line-continuation characters may not be permitted.
-        // Otherwise, just pass it through. Do not parse comments in this state.
-        if (!lineContinuationAllowed && c == '\\') {
-          return false;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_SINGLE_LINE_COMMENT:
-        // Line-continuation characters are processed before comment processing.
-        // Advance string if a new line character is immediately behind
-        // line-continuation character.
-        if (c == '\\' && (next == '\n' || next == '\r')) {
-          pos++;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_MULTI_LINE_COMMENT:
-        if (c == '*' && next == '/') {
-          state = ParseState::MIDDLE_OF_LINE;
-          pos++;
-        }
-        pos++;
-        break;
-    }
-  }
-
-  return true;
-}
-}  // namespace
-
 void GLES2DecoderImpl::DoShaderSource(
     GLuint client_id, GLsizei count, const char** data, const GLint* length) {
   std::string str;
@@ -12300,13 +12200,8 @@ void GLES2DecoderImpl::DoShaderSource(
   while (len > 0 && str[len - 1] == '\0') {
     len -= 1;
   }
-  if (!IsValidESSLShaderSourceString(
-          str.data(), len, feature_info_->IsWebGL2OrES3OrHigherContext())) {
-    const char* func_name = "glShaderSource";
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
-                       "Shader source contains invalid characters.");
-    return;
-  }
+  // Delegate validation of the incoming shader source to ANGLE's
+  // shader translator.
   Shader* shader = GetShaderInfoNotProgram(client_id, "glShaderSource");
   if (!shader) {
     return;
@@ -17258,6 +17153,9 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_multi_draw = false;
   bool desire_draw_instanced_base_vertex_base_instance = false;
   bool desire_multi_draw_instanced_base_vertex_base_instance = false;
+  bool desire_arb_texture_rectangle = false;
+  bool desire_oes_egl_image_external = false;
+  bool desire_nv_egl_stream_consumer_external = false;
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
@@ -17284,6 +17182,13 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (feature_info_->IsWebGLContext()) {
     desire_multi_draw =
         feature_str.find("GL_WEBGL_multi_draw ") != std::string::npos;
+    desire_arb_texture_rectangle =
+        feature_str.find("GL_ANGLE_texture_rectangle ") != std::string::npos;
+    desire_oes_egl_image_external =
+        feature_str.find("GL_OES_EGL_image_external ") != std::string::npos;
+    desire_nv_egl_stream_consumer_external =
+        feature_str.find("GL_NV_EGL_stream_consumer_external ") !=
+        std::string::npos;
   }
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_fbo_render_mipmap != fbo_render_mipmap_explicitly_enabled_ ||
@@ -17294,7 +17199,11 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
       desire_draw_instanced_base_vertex_base_instance !=
           draw_instanced_base_vertex_base_instance_explicitly_enabled_ ||
       desire_multi_draw_instanced_base_vertex_base_instance !=
-          multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_) {
+          multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_ ||
+      desire_arb_texture_rectangle != arb_texture_rectangle_enabled_ ||
+      desire_oes_egl_image_external != oes_egl_image_external_enabled_ ||
+      desire_nv_egl_stream_consumer_external !=
+          nv_egl_stream_consumer_external_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
     fbo_render_mipmap_explicitly_enabled_ |= desire_fbo_render_mipmap;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
@@ -17305,6 +17214,10 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
         desire_draw_instanced_base_vertex_base_instance;
     multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_ |=
         desire_multi_draw_instanced_base_vertex_base_instance;
+    arb_texture_rectangle_enabled_ |= desire_arb_texture_rectangle;
+    oes_egl_image_external_enabled_ |= desire_oes_egl_image_external;
+    nv_egl_stream_consumer_external_enabled_ |=
+        desire_nv_egl_stream_consumer_external;
     DestroyShaderTranslator();
   }
 
@@ -18540,7 +18453,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       source_type, dest_binding_target, dest_level, dest_internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE);
-#if BUILDFLAG(IS_ASH) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_X86_FAMILY)
   // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
   // although opposite in Android.
   // TODO(dshwang): After Mesa fixes this issue, remove this hack.

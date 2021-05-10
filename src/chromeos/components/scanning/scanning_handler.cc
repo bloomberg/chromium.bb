@@ -24,9 +24,11 @@ namespace chromeos {
 
 ScanningHandler::ScanningHandler(
     const SelectFilePolicyCreator& select_file_policy_creator,
-    std::unique_ptr<ScanningPathsProvider> scanning_paths_provider)
+    std::unique_ptr<ScanningPathsProvider> scanning_paths_provider,
+    OpenFilesAppFunction open_files_app_fn)
     : select_file_policy_creator_(select_file_policy_creator),
-      scanning_paths_provider_(std::move(scanning_paths_provider)) {}
+      scanning_paths_provider_(std::move(scanning_paths_provider)),
+      open_files_app_fn_(std::move(open_files_app_fn)) {}
 
 ScanningHandler::~ScanningHandler() = default;
 
@@ -38,6 +40,21 @@ void ScanningHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestScanToLocation",
       base::BindRepeating(&ScanningHandler::HandleRequestScanToLocation,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "showFileInLocation",
+      base::BindRepeating(&ScanningHandler::HandleShowFileInLocation,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getPluralString",
+      base::BindRepeating(&ScanningHandler::HandleGetPluralString,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getMyFilesPath",
+      base::BindRepeating(&ScanningHandler::HandleGetMyFilesPath,
                           base::Unretained(this)));
 }
 
@@ -65,20 +82,66 @@ void ScanningHandler::HandleRequestScanToLocation(const base::ListValue* args) {
       nullptr /* params */);
 }
 
+void ScanningHandler::HandleShowFileInLocation(const base::ListValue* args) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(2U, args->GetSize());
+  const std::string callback = args->GetList()[0].GetString();
+  const base::FilePath file_location(args->GetList()[1].GetString());
+  const bool file_opened = open_files_app_fn_.Run(web_ui(), file_location);
+  ResolveJavascriptCallback(base::Value(callback), base::Value(file_opened));
+}
+
 void ScanningHandler::FileSelected(const base::FilePath& path,
                                    int index,
                                    void* params) {
-  if (IsJavascriptAllowed()) {
-    ResolveJavascriptCallback(base::Value(scan_location_callback_id_),
-                              CreateSelectedPathValue(path));
-  }
+  if (!IsJavascriptAllowed())
+    return;
+
+  ResolveJavascriptCallback(base::Value(scan_location_callback_id_),
+                            CreateSelectedPathValue(path));
 }
 
 void ScanningHandler::FileSelectionCanceled(void* params) {
-  if (IsJavascriptAllowed()) {
-    ResolveJavascriptCallback(base::Value(scan_location_callback_id_),
-                              CreateSelectedPathValue(base::FilePath()));
-  }
+  if (!IsJavascriptAllowed())
+    return;
+
+  ResolveJavascriptCallback(base::Value(scan_location_callback_id_),
+                            CreateSelectedPathValue(base::FilePath()));
+}
+
+void ScanningHandler::AddStringToPluralMap(const std::string& name,
+                                           int string_id) {
+  string_id_map_[name] = string_id;
+}
+
+void ScanningHandler::HandleGetPluralString(const base::ListValue* args) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(3U, args->GetSize());
+  const std::string callback = args->GetList()[0].GetString();
+  const std::string name = args->GetList()[1].GetString();
+  const int count = args->GetList()[2].GetInt();
+
+  const base::string16 localized_string = l10n_util::GetPluralStringFUTF16(
+      string_id_map_.find(name)->second, count);
+  ResolveJavascriptCallback(base::Value(callback),
+                            base::Value(localized_string));
+}
+
+void ScanningHandler::HandleGetMyFilesPath(const base::ListValue* args) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  CHECK_EQ(1U, args->GetSize());
+  const std::string& callback = args->GetList()[0].GetString();
+
+  const base::FilePath my_files_path =
+      scanning_paths_provider_->GetMyFilesPath(web_ui());
+  ResolveJavascriptCallback(base::Value(callback),
+                            base::Value(my_files_path.value()));
 }
 
 // Uses the full filepath and the base directory (lowest level directory in the

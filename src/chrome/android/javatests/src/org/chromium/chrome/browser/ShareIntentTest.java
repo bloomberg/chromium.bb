@@ -6,8 +6,10 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.view.Window;
@@ -155,7 +157,22 @@ public class ShareIntentTest {
         public Object getSystemService(String name) {
             // Prevents a scenario where InputMethodManager#hideSoftInput()
             // gets called before Activity#onCreate() gets called in this test.
-            return null;
+            return name.equals(Context.INPUT_SERVICE) ? null : mActivity.getSystemService(name);
+        }
+
+        @Override
+        public String getSystemServiceName(Class<?> serviceClass) {
+            return mActivity.getSystemServiceName(serviceClass);
+        }
+
+        @Override
+        public Resources getResources() {
+            return mActivity.getResources();
+        }
+
+        @Override
+        public Resources.Theme getTheme() {
+            return mActivity.getTheme();
         }
     }
 

@@ -12,12 +12,12 @@
 # easy to try different configurations of GN args in tryjob patches.
 
 {
-  # This is a map of buildbot master names -> buildbot builder names ->
+  # This is a map of buildbot builder group names -> buildbot builder names ->
   # config names (where each config name is a key in the 'configs' dict,
   # above). mb uses this dict to look up which config to use for a given bot.
   # The builders should be sorted by the order they appear in the /builders
   # page on the buildbots, *not* alphabetically.
-  'masters': {
+  'builder_groups': {
     'client.webrtc': {
       # iOS
       'iOS32 Debug': 'ios_debug_bot_arm',
@@ -392,31 +392,35 @@
 
     # iOS
     'ios_debug_bot_arm': [
-      'ios', 'debug_bot', 'arm', 'no_ios_code_signing', 'ios_use_goma_rbe'
+      'ios', 'debug_bot', 'arm', 'no_ios_code_signing', 'ios_use_goma_rbe',
+      'xctest',
     ],
     'ios_release_bot_arm': [
-      'ios', 'release_bot', 'arm', 'no_ios_code_signing', 'ios_use_goma_rbe'
+      'ios', 'release_bot', 'arm', 'no_ios_code_signing', 'ios_use_goma_rbe',
+      'xctest',
     ],
     'ios_debug_bot_arm64': [
-      'ios', 'debug_bot', 'arm64', 'no_ios_code_signing', 'ios_use_goma_rbe'
+      'ios', 'debug_bot', 'arm64', 'no_ios_code_signing', 'ios_use_goma_rbe',
+      'xctest',
     ],
     'ios_release_bot_arm64': [
-      'ios', 'release_bot', 'arm64', 'no_ios_code_signing', 'ios_use_goma_rbe'
+      'ios', 'release_bot', 'arm64', 'no_ios_code_signing', 'ios_use_goma_rbe',
+      'xctest',
     ],
     'ios_internal_debug_bot_arm64': [
       'ios', 'debug_bot', 'arm64', 'ios_use_goma_rbe',
-      'ios_code_signing_identity_description',
+      'ios_code_signing_identity_description', 'xctest',
     ],
     'ios_internal_release_bot_arm64': [
       'ios', 'release_bot', 'arm64', 'ios_use_goma_rbe',
-      'ios_code_signing_identity_description',
+      'ios_code_signing_identity_description', 'xctest',
     ],
     'ios_internal_pure_release_bot_arm64': [
       'ios', 'pure_release_bot', 'arm64', 'ios_use_goma_rbe',
-      'ios_code_signing_identity_description',
+      'ios_code_signing_identity_description', 'xctest',
     ],
     'ios_debug_bot_x64': [
-      'ios', 'debug_bot', 'x64', 'ios_use_goma_rbe'
+      'ios', 'debug_bot', 'x64', 'ios_use_goma_rbe', 'xctest',
     ],
 
     # More configs
@@ -631,6 +635,9 @@
 
     'win_undef_unicode': {
       'gn_args': 'rtc_win_undef_unicode=true',
+    },
+    'xctest': {
+      'gn_args': 'enable_run_ios_unittests_with_xctest=true',
     },
   },
 }

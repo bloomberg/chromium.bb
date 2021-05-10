@@ -46,11 +46,10 @@ public:
     void submit(GrOpsRenderPass* renderPass) override;
 
     void checkFinishProcs() override {}
+    void finishOutstandingGpuWork() override {}
 
 private:
     GrMockGpu(GrDirectContext*, const GrMockOptions&, const GrContextOptions&);
-
-    void onResetContext(uint32_t resetBits) override {}
 
     void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>* sampleLocations) override;
 
@@ -105,12 +104,13 @@ private:
 
     bool onTransferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
                             GrColorType surfaceColorType, GrColorType bufferColorType,
-                            GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) override {
+                            sk_sp<GrGpuBuffer> transferBuffer, size_t offset,
+                            size_t rowBytes) override {
         return true;
     }
     bool onTransferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                               GrColorType surfaceColorType, GrColorType bufferColorType,
-                              GrGpuBuffer* transferBuffer, size_t offset) override {
+                              sk_sp<GrGpuBuffer> transferBuffer, size_t offset) override {
         return true;
     }
     bool onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
@@ -192,8 +192,6 @@ private:
                                                                int sampleCnt,
                                                                GrProtected) override;
     void deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&) override;
-
-    void testingOnly_flushGpuAndSync() override {}
 #endif
 
     const GrMockOptions fMockOptions;

@@ -1,19 +1,6 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "panel",
-      "id": "media",
-      "title": "Media",
-      "persistence": "closeable",
-      "order": 100,
-      "className": "Media.MainView",
-      "tags": "media, video"
-    }
-  ],
   "dependencies": [
     "components",
-    "sdk",
     "ui",
     "data_grid",
     "source_frame",
@@ -22,12 +9,8 @@
   "modules": [
     "media-legacy.js"
   ],
-  "skip_compilation": [
-    "media-legacy.js"
-  ],
   "resources": [
     "eventDisplayTable.css",
-    "mediaView.css",
     "playerListView.css",
     "playerPropertiesView.css",
     "playerMessagesView.css"

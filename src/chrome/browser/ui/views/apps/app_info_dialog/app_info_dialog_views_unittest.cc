@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -28,15 +29,16 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 std::vector<arc::mojom::AppInfoPtr> GetArcSettingsAppInfo() {
@@ -88,10 +90,15 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   // Overridden from testing::Test:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     shelf_model_ = std::make_unique<ash::ShelfModel>();
     chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
         extension_environment_.profile(), shelf_model_.get());
+    chrome_launcher_controller_->SetProfileForTest(
+        extension_environment_.profile());
+    chrome_launcher_controller_->SetLauncherControllerHelperForTest(
+        std::make_unique<LauncherControllerHelper>(
+            extension_environment_.profile()));
     chrome_launcher_controller_->Init();
     arc_test_.SetUp(extension_environment_.profile());
 #endif
@@ -104,7 +111,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     CloseAppInfo();
     extension_ = nullptr;
     chrome_app_ = nullptr;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     arc_test_.TearDown();
     chrome_launcher_controller_.reset();
     shelf_model_.reset();
@@ -177,7 +184,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   extensions::TestExtensionEnvironment extension_environment_{
       extensions::TestExtensionEnvironment::Type::
           kInheritExistingTaskEnvironment};
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ash::ShelfModel> shelf_model_;
   std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
   ArcAppTest arc_test_;
@@ -221,7 +228,7 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
   browser_window->Close();
   browser_window.reset();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chrome_launcher_controller_.reset();
   shelf_model_.reset();
   arc_test_.TearDown();
@@ -286,7 +293,7 @@ TEST_F(AppInfoDialogViewsTest, ViewInStore) {
   EXPECT_FALSE(widget_);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(AppInfoDialogViewsTest, ArcAppInfoLinks) {
   ShowAppInfo(extension_misc::kChromeAppId);
   EXPECT_FALSE(widget_->IsClosed());

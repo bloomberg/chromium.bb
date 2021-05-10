@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as PerfUI from '../perf_ui/perf_ui.js';
 import * as Platform from '../platform/platform.js';
 import * as ThemeSupport from '../theme_support/theme_support.js';
@@ -15,9 +16,16 @@ import {FlameChartStyle, Selection} from './TimelineFlameChartView.js';
 import {TimelineSelection} from './TimelinePanel.js';
 import {TimelineUIUtils} from './TimelineUIUtils.js';
 
+export const UIStrings = {
+  /**
+  *@description Title of the Network tool
+  */
+  network: 'Network',
+};
+const str_ = i18n.i18n.registerUIStrings('timeline/TimelineFlameChartNetworkDataProvider.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {PerfUI.FlameChart.FlameChartDataProvider}
- * @unrestricted
  */
 export class TimelineFlameChartNetworkDataProvider {
   constructor() {
@@ -38,7 +46,7 @@ export class TimelineFlameChartNetworkDataProvider {
       shareHeaderLine: false
     };
     /** @type {!PerfUI.FlameChart.Group} */
-    this._group = ({startLevel: 0, name: Common.UIString.UIString('Network'), expanded: false, style: this._style});
+    this._group = ({startLevel: 0, name: i18nString(UIStrings.network), expanded: false, style: this._style});
     this._minimumBoundary = 0;
     this._maximumBoundary = 0;
     this._timeSpan = 0;
@@ -354,7 +362,7 @@ export class TimelineFlameChartNetworkDataProvider {
           /** @type {!Protocol.Network.ResourcePriority} */ (request.priority));
       div.style.color = this._colorForPriority(request.priority) || 'black';
     }
-    contents.createChild('span').textContent = request.url.trimMiddle(maxURLChars);
+    contents.createChild('span').textContent = Platform.StringUtilities.trimMiddle(request.url, maxURLChars);
     return element;
   }
 
@@ -441,7 +449,7 @@ export class TimelineFlameChartNetworkDataProvider {
    * @return {boolean}
    */
   isExpanded() {
-    return this._group && !!this._group.expanded;
+    return this._group && Boolean(this._group.expanded);
   }
 
   /**

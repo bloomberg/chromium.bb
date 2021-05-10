@@ -14,8 +14,6 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/events/base_event_utils.h"
 
-using blink::WebInputEvent;
-
 namespace {
 
 const std::string kAutoscrollDataURL = R"HTML(
@@ -100,8 +98,11 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
 
  protected:
   RenderWidgetHostImpl* GetWidgetHost() {
-    return RenderWidgetHostImpl::From(
-        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+    return RenderWidgetHostImpl::From(shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetRenderViewHost()
+                                          ->GetWidget());
   }
 
   void LoadURL(const std::string& page_data) {

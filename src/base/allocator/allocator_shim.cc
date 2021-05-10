@@ -133,7 +133,7 @@ extern "C" {
 //   - If the std::new_handler is NOT set just return nullptr.
 //   - If the std::new_handler is set:
 //     - Assume it will abort() if it fails (very likely the new_handler will
-//       just suicide priting a message).
+//       just suicide printing a message).
 //     - Assume it did succeed if it returns, in which case reattempt the alloc.
 
 ALWAYS_INLINE void* ShimCppNew(size_t size) {
@@ -147,6 +147,15 @@ ALWAYS_INLINE void* ShimCppNew(size_t size) {
     ptr = chain_head->alloc_function(chain_head, size, context);
   } while (!ptr && CallNewHandler(size));
   return ptr;
+}
+
+ALWAYS_INLINE void* ShimCppNewNoThrow(size_t size) {
+  void* context = nullptr;
+#if defined(OS_APPLE)
+  context = malloc_default_zone();
+#endif
+  const base::allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  return chain_head->alloc_unchecked_function(chain_head, size, context);
 }
 
 ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {

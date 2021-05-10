@@ -31,7 +31,7 @@ function formatNumber(value) {
   return numberFormat.format(value);
 }
 
-function BYTES(bytes, total) {
+export function BYTES(bytes, total) {
   let units = ['B ', 'kB', 'mB', 'gB'];
   let unitIndex = 0;
   let value = bytes;
@@ -40,13 +40,13 @@ function BYTES(bytes, total) {
     unitIndex++;
   }
   let result = formatNumber(value).padStart(10) + ' ' + units[unitIndex];
-  if (total !== void 0 && total != 0) {
+  if (total !== undefined && total != 0) {
     result += PERCENT(bytes, total).padStart(5);
   }
   return result;
 }
 
-function PERCENT(value, total) {
+export function PERCENT(value, total) {
   return Math.round(value / total * 100) + "%";
 }
 
@@ -63,6 +63,7 @@ const kNoTimeMetrics = {
 class CompilationUnit {
   constructor() {
     this.isEval = false;
+    this.isDeserialized = false;
 
     // Lazily computed properties.
     this.firstEventTimestamp = -1;
@@ -79,7 +80,8 @@ class CompilationUnit {
     this.compileTimestamp = -1;
     this.lazyCompileTimestamp = -1;
     this.executionTimestamp = -1;
-    this.optimizationTimestamp = -1;
+    this.baselineTimestamp = -1;
+    this.optimizeTimestamp = -1;
 
     this.deserializationDuration = -0.0;
     this.preparseDuration = -0.0;
@@ -89,6 +91,7 @@ class CompilationUnit {
     this.scopeResolutionDuration = -0.0;
     this.lazyCompileDuration = -0.0;
     this.compileDuration = -0.0;
+    this.baselineDuration = -0.0;
     this.optimizeDuration = -0.0;
 
     this.ownBytes = -1;
@@ -107,7 +110,7 @@ class CompilationUnit {
 
     this.firstCompileEventTimestamp = this.rawTimestampMin(
         this.deserializationTimestamp, this.compileTimestamp,
-        this.lazyCompileTimestamp);
+        this.baselineTimestamp, this.lazyCompileTimestamp);
     // Any excuted script needs to be compiled.
     if (this.hasBeenExecuted() &&
         (this.firstCompileEventTimestamp <= 0 ||
@@ -161,7 +164,7 @@ class CompilationUnit {
 class Script extends CompilationUnit {
   constructor(id) {
     super();
-    if (id === void 0 || id <= 0) {
+    if (id === undefined || id <= 0) {
       throw new Error(`Invalid id=${id} for script`);
     }
     this.file = '';
@@ -214,7 +217,7 @@ class Script extends CompilationUnit {
   addMissingFunktions(list) {
     if (this.finalized) throw 'script is finalized!';
     list.forEach(fn => {
-      if (this.funktions[fn.start] === void 0) {
+      if (this.funktions[fn.start] === undefined) {
         this.addFunktion(fn);
       }
     });
@@ -222,8 +225,8 @@ class Script extends CompilationUnit {
 
   addFunktion(fn) {
     if (this.finalized) throw 'script is finalized!';
-    if (fn.start === void 0) throw "Funktion has no start position";
-    if (this.funktions[fn.start] !== void 0) {
+    if (fn.start === undefined) throw "Funktion has no start position";
+    if (this.funktions[fn.start] !== undefined) {
       fn.print();
       throw "adding same function twice to script";
     }
@@ -377,20 +380,23 @@ class Script extends CompilationUnit {
     info("lazy compiled", all.filter(each => each.lazyCompileTimestamp > 0));
     info("eager compiled", all.filter(each => each.compileTimestamp > 0));
 
-    let parsingCost =
-        new ExecutionCost('parse', all, each => each.parseDuration);
-    parsingCost.setMetrics(this.metrics);
-    log(parsingCost.toString());
+    info("baseline", all.filter(each => each.baselineTimestamp > 0));
+    info("optimized", all.filter(each => each.optimizeTimestamp > 0));
 
-    let preParsingCost =
-        new ExecutionCost('preparse', all, each => each.preparseDuration);
-    preParsingCost.setMetrics(this.metrics);
-    log(preParsingCost.toString());
-
-    let resolutionCost =
-        new ExecutionCost('resolution', all, each => each.resolutionDuration);
-    resolutionCost.setMetrics(this.metrics);
-    log(resolutionCost.toString());
+    const costs = [
+      ['parse', each => each.parseDuration],
+      ['preparse', each => each.preparseDuration],
+      ['resolution', each => each.resolutionDuration],
+      ['compile-eager',  each => each.compileDuration],
+      ['compile-lazy',  each => each.lazyCompileDuration],
+      ['baseline',  each => each.baselineDuration],
+      ['optimize', each => each.optimizeDuration],
+    ];
+    for (let [name, fn] of costs) {
+      const executionCost = new ExecutionCost(name, all, fn);
+      executionCost.setMetrics(this.metrics);
+      log(executionCost.toString());
+    }
 
     let nesting = new NestingDistribution(all);
     nesting.setMetrics(this.metrics);
@@ -441,7 +447,7 @@ class Script extends CompilationUnit {
       for (let i = 1; i < metricProperties.length; i += kMetricIncrement) {
         let timestampPropertyName = metricProperties[i];
         let timestamp = funktionOrScript[timestampPropertyName];
-        if (timestamp === void 0) continue;
+        if (timestamp === undefined) continue;
         if (timestamp < start || end < timestamp) continue;
         timestamp -= start;
         let index = Math.floor(timestamp / delta);
@@ -590,14 +596,18 @@ class ExecutionCost {
     this.executedCost = 0
     // Time spent on not executed functions.
     this.nonExecutedCost = 0;
+    this.maxDuration = 0;
 
-    this.executedCost = funktions.reduce((sum, each) => {
-      return sum + (each.hasBeenExecuted() ? time_fn(each) : 0)
-    }, 0);
-    this.nonExecutedCost = funktions.reduce((sum, each) => {
-      return sum + (each.hasBeenExecuted() ? 0 : time_fn(each))
-    }, 0);
-
+    for (let i = 0; i < funktions.length; i++) {
+      const funktion = funktions[i];
+      const value = time_fn(funktion);
+      if (funktion.hasBeenExecuted()) {
+        this.executedCost +=  value;
+      } else {
+        this.nonExecutedCost += value;
+      }
+      this.maxDuration = Math.max(this.maxDuration, value);
+    }
   }
 
   print() {
@@ -605,9 +615,10 @@ class ExecutionCost {
   }
 
   toString() {
-    return (`  - ${this.prefix}-time:`).padEnd(24) +
-      (` executed=${formatNumber(this.executedCost)}ms`).padEnd(20) +
-      " non-executed=" + formatNumber(this.nonExecutedCost) + 'ms';
+    return `  - ${this.prefix}-time:`.padEnd(24) +
+      ` executed=${formatNumber(this.executedCost)}ms`.padEnd(20) +
+      ` non-executed=${formatNumber(this.nonExecutedCost)}ms`.padEnd(24) +
+      ` max=${formatNumber(this.maxDuration)}ms`;
   }
 
   setMetrics(dict) {
@@ -799,6 +810,8 @@ export class ParseProcessor extends LogReader {
       'compile-lazy': this.processCompileLazy.bind(this),
       'compile': this.processCompile.bind(this),
       'compile-eval': this.processCompileEval.bind(this),
+      'baseline': this.processBaselineLazy.bind(this),
+      'baseline-lazy': this.processBaselineLazy.bind(this),
       'optimize-lazy': this.processOptimizeLazy.bind(this),
       'deserialize': this.processDeserialize.bind(this),
     };
@@ -906,7 +919,7 @@ export class ParseProcessor extends LogReader {
     }
     let script = this.lookupScript(scriptId);
     let funktion = script.getFunktionAtStartPosition(startPosition);
-    if (funktion === void 0) {
+    if (funktion === undefined) {
       funktion = new Funktion(functionName, startPosition, endPosition, script);
     }
     return funktion;
@@ -1088,6 +1101,22 @@ export class ParseProcessor extends LogReader {
     compilationUnit.isEval = true;
   }
 
+  processBaselineLazy(
+      scriptId, startPosition, endPosition, duration, timestamp, functionName) {
+    let compilationUnit = this.lookupScript(scriptId);
+    if (startPosition > 0) {
+      compilationUnit =
+          compilationUnit.getFunktionAtStartPosition(startPosition);
+      if (compilationUnit === undefined) {
+        // This should not happen since any funktion has to be parsed first.
+        console.error('processBaselineLazy funktion not found', ...arguments);
+        return;
+      }
+    }
+    compilationUnit.baselineTimestamp = startOf(timestamp, duration);
+    compilationUnit.baselineDuration = duration;
+  }
+
   processOptimizeLazy(
       scriptId, startPosition, endPosition, duration, timestamp, functionName) {
     let compilationUnit = this.lookupScript(scriptId);
@@ -1100,8 +1129,8 @@ export class ParseProcessor extends LogReader {
         return;
       }
     }
-    compilationUnit.optimizationTimestamp = startOf(timestamp, duration);
-    compilationUnit.optimizationDuration = duration;
+    compilationUnit.optimizeTimestamp = startOf(timestamp, duration);
+    compilationUnit.optimizeDuration = duration;
   }
 
   processDeserialize(
@@ -1114,6 +1143,7 @@ export class ParseProcessor extends LogReader {
     }
     compilationUnit.deserializationTimestamp = startOf(timestamp, duration);
     compilationUnit.deserializationDuration = duration;
+    compilationUnit.isDeserialized = true;
   }
 
   processCompilationCacheEvent(

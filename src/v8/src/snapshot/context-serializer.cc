@@ -20,7 +20,7 @@ namespace {
 // During serialization, puts the native context into a state understood by the
 // serializer (e.g. by clearing lists of Code objects).  After serialization,
 // the original state is restored.
-class SanitizeNativeContextScope final {
+class V8_NODISCARD SanitizeNativeContextScope final {
  public:
   SanitizeNativeContextScope(Isolate* isolate, NativeContext native_context,
                              bool allow_active_isolate_for_testing,
@@ -176,7 +176,9 @@ void ContextSerializer::SerializeObjectImpl(Handle<HeapObject> obj) {
     // serialize optimized code anyway.
     Handle<JSFunction> closure = Handle<JSFunction>::cast(obj);
     closure->ResetIfBytecodeFlushed();
-    if (closure->is_compiled()) closure->set_code(closure->shared().GetCode());
+    if (closure->is_compiled()) {
+      closure->set_code(closure->shared().GetCode(), kReleaseStore);
+    }
   }
 
   CheckRehashability(*obj);

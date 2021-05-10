@@ -6,9 +6,9 @@
 #define QUICHE_QUIC_CORE_HTTP_HTTP_ENCODER_H_
 
 #include <memory>
-#include "net/third_party/quiche/src/quic/core/http/http_frames.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/http/http_frames.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -66,6 +66,11 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
   static QuicByteCount SerializePriorityUpdateFrame(
       const PriorityUpdateFrame& priority_update,
       std::unique_ptr<char[]>* output);
+
+  // Serializes an ACCEPT_CH frame into a new buffer stored in |output|.
+  // Returns the length of the buffer on success, or 0 otherwise.
+  static QuicByteCount SerializeAcceptChFrame(const AcceptChFrame& accept_ch,
+                                              std::unique_ptr<char[]>* output);
 
   // Serializes a frame with reserved frame type specified in
   // https://tools.ietf.org/html/draft-ietf-quic-http-25#section-7.2.9.

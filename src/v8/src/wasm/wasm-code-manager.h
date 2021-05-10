@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -19,6 +18,7 @@
 #include "src/base/optional.h"
 #include "src/builtins/builtins-definitions.h"
 #include "src/handles/handles.h"
+#include "src/tasks/operations-barrier.h"
 #include "src/trap-handler/trap-handler.h"
 #include "src/utils/vector.h"
 #include "src/wasm/compilation-environment.h"
@@ -71,19 +71,23 @@ struct WasmModule;
   V(WasmTableSet)                        \
   V(WasmStackGuard)                      \
   V(WasmStackOverflow)                   \
+  V(WasmAllocateFixedArray)              \
   V(WasmThrow)                           \
   V(WasmRethrow)                         \
   V(WasmTraceEnter)                      \
   V(WasmTraceExit)                       \
   V(WasmTraceMemory)                     \
-  V(ArgumentsAdaptorTrampoline)          \
   V(BigIntToI32Pair)                     \
   V(BigIntToI64)                         \
   V(DoubleToI)                           \
   V(I32PairToBigInt)                     \
   V(I64ToBigInt)                         \
   V(RecordWrite)                         \
-  V(ToNumber)
+  V(ToNumber)                            \
+  V(WasmAllocateArrayWithRtt)            \
+  V(WasmAllocateRtt)                     \
+  V(WasmAllocateStructWithRtt)           \
+  V(WasmSubtypeCheck)
 
 // Sorted, disjoint and non-overlapping memory regions. A region is of the
 // form [start, end). So there's no [start, end), [end, other_end),
@@ -199,7 +203,7 @@ class V8_EXPORT_PRIVATE WasmCode final {
                    Address current_pc = kNullAddress) const;
 
   static bool ShouldBeLogged(Isolate* isolate);
-  void LogCode(Isolate* isolate) const;
+  void LogCode(Isolate* isolate, const char* source_url, int script_id) const;
 
   WasmCode(const WasmCode&) = delete;
   WasmCode& operator=(const WasmCode&) = delete;
@@ -224,6 +228,14 @@ class V8_EXPORT_PRIVATE WasmCode final {
         return false;
       }
     }
+  }
+
+  // Decrement the ref count on code that is known to be in use (i.e. the ref
+  // count cannot drop to zero here).
+  void DecRefOnLiveCode() {
+    int old_count = ref_count_.fetch_sub(1, std::memory_order_acq_rel);
+    DCHECK_LE(2, old_count);
+    USE(old_count);
   }
 
   // Decrement the ref count on code that is known to be dead, even though there
@@ -497,8 +509,10 @@ class V8_EXPORT_PRIVATE NativeModule final {
   WasmCode* PublishCode(std::unique_ptr<WasmCode>);
   std::vector<WasmCode*> PublishCode(Vector<std::unique_ptr<WasmCode>>);
 
-  WasmCode* AddDeserializedCode(
-      int index, Vector<const byte> instructions, int stack_slots,
+  Vector<uint8_t> AllocateForDeserializedCode(size_t total_code_size);
+
+  std::unique_ptr<WasmCode> AddDeserializedCode(
+      int index, Vector<byte> instructions, int stack_slots,
       int tagged_parameter_slots, int safepoint_table_offset,
       int handler_table_offset, int constant_pool_offset,
       int code_comments_offset, int unpadded_binary_size,
@@ -537,8 +551,8 @@ class V8_EXPORT_PRIVATE NativeModule final {
   Address GetCallTargetForFunction(uint32_t func_index) const;
 
   struct JumpTablesRef {
-    const Address jump_table_start = kNullAddress;
-    const Address far_jump_table_start = kNullAddress;
+    Address jump_table_start = kNullAddress;
+    Address far_jump_table_start = kNullAddress;
 
     bool is_valid() const { return far_jump_table_start != kNullAddress; }
   };
@@ -571,7 +585,7 @@ class V8_EXPORT_PRIVATE NativeModule final {
   // on the fly, and bypass the instance builder pipeline.
   void ReserveCodeTableForTesting(uint32_t max_functions);
 
-  void LogWasmCodes(Isolate* isolate);
+  void LogWasmCodes(Isolate*, Script);
 
   CompilationState* compilation_state() { return compilation_state_.get(); }
 
@@ -718,6 +732,19 @@ class V8_EXPORT_PRIVATE NativeModule final {
   // Hold the {allocation_mutex_} when calling {PublishCodeLocked}.
   WasmCode* PublishCodeLocked(std::unique_ptr<WasmCode>);
 
+  // Transfer owned code from {new_owned_code_} to {owned_code_}.
+  void TransferNewOwnedCodeLocked() const;
+
+  // -- Fields of {NativeModule} start here.
+
+  WasmEngine* const engine_;
+  // Keep the engine alive as long as this NativeModule is alive. In its
+  // destructor, the NativeModule still communicates with the WasmCodeManager,
+  // owned by the engine. This fields comes before other fields which also still
+  // access the engine (like the code allocator), so that it's destructor runs
+  // last.
+  OperationsBarrier::Token engine_scope_;
+
   // {WasmCodeAllocator} manages all code reservations and allocations for this
   // {NativeModule}.
   WasmCodeAllocator code_allocator_;
@@ -766,9 +793,15 @@ class V8_EXPORT_PRIVATE NativeModule final {
   //////////////////////////////////////////////////////////////////////////////
   // Protected by {allocation_mutex_}:
 
-  // Holds all allocated code objects. For lookup based on pc, the key is the
-  // instruction start address of the value.
-  std::map<Address, std::unique_ptr<WasmCode>> owned_code_;
+  // Holds allocated code objects for fast lookup and deletion. For lookup based
+  // on pc, the key is the instruction start address of the value. Filled lazily
+  // from {new_owned_code_} (below).
+  mutable std::map<Address, std::unique_ptr<WasmCode>> owned_code_;
+
+  // Holds owned code which is not inserted into {owned_code_} yet. It will be
+  // inserted on demand. This has much better performance than inserting
+  // individual code objects.
+  mutable std::vector<std::unique_ptr<WasmCode>> new_owned_code_;
 
   // Table of the latest code object per function, updated on initial
   // compilation and tier up. The number of entries is
@@ -790,7 +823,6 @@ class V8_EXPORT_PRIVATE NativeModule final {
   // End of fields protected by {allocation_mutex_}.
   //////////////////////////////////////////////////////////////////////////////
 
-  WasmEngine* const engine_;
   int modification_scope_depth_ = 0;
   UseTrapHandler use_trap_handler_ = kNoTrapHandler;
   bool lazy_compile_frozen_ = false;
@@ -887,7 +919,7 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
 //    and even if we did, the resulting set of pages may be fragmented.
 //    Currently, we try and keep the number of syscalls low.
 // -  similar argument for debug time.
-class NativeModuleModificationScope final {
+class V8_NODISCARD NativeModuleModificationScope final {
  public:
   explicit NativeModuleModificationScope(NativeModule* native_module);
   ~NativeModuleModificationScope();
@@ -899,7 +931,7 @@ class NativeModuleModificationScope final {
 // {WasmCodeRefScope}s form a perfect stack. New {WasmCode} pointers generated
 // by e.g. creating new code or looking up code by its address are added to the
 // top-most {WasmCodeRefScope}.
-class V8_EXPORT_PRIVATE WasmCodeRefScope {
+class V8_EXPORT_PRIVATE V8_NODISCARD WasmCodeRefScope {
  public:
   WasmCodeRefScope();
   WasmCodeRefScope(const WasmCodeRefScope&) = delete;
@@ -912,7 +944,7 @@ class V8_EXPORT_PRIVATE WasmCodeRefScope {
 
  private:
   WasmCodeRefScope* const previous_scope_;
-  std::unordered_set<WasmCode*> code_ptrs_;
+  std::vector<WasmCode*> code_ptrs_;
 };
 
 // Similarly to a global handle, a {GlobalWasmCodeRef} stores a single

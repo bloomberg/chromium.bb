@@ -202,6 +202,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   // accessibility focus.
   void GetAccessibilityFocus(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Args: string ax_tree_id.
+  void SetDesktopID(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Args: string ax_tree_id, int node_id
   // Returns: JS object with a map from html attribute key to value.
   void GetHtmlAttributes(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -235,6 +238,11 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   std::string GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const;
 
+  std::vector<int> CalculateSentenceBoundary(
+      AutomationAXTreeWrapper* tree_wrapper,
+      ui::AXNode* node,
+      bool start_boundary);
+
   std::map<ui::AXTreeID, std::unique_ptr<AutomationAXTreeWrapper>>
       tree_id_to_tree_wrapper_map_;
   std::map<ui::AXTree*, AutomationAXTreeWrapper*> axtree_to_tree_wrapper_map_;
@@ -255,6 +263,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   // The global accessibility focused id set by a js client. Differs from focus
   // as used in ui::AXTree.
   ui::AXTreeID accessibility_focused_tree_id_ = ui::AXTreeIDUnknown();
+
+  // Keeps track  of the single desktop tree, if it exists.
+  ui::AXTreeID desktop_tree_id_ = ui::AXTreeIDUnknown();
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

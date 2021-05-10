@@ -2,14 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../ui/ui.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Element title in Film Strip View of the Performance panel
+  */
+  doubleclickToZoomImageClickTo: 'Doubleclick to zoom image. Click to view preceding requests.',
+  /**
+  *@description Aria label for captured screenshots in network panel.
+  *@example {3ms} PH1
+  */
+  screenshotForSSelectToView: 'Screenshot for {PH1} - select to view preceding requests.',
+  /**
+  *@description Text for one or a group of screenshots
+  */
+  screenshot: 'Screenshot',
+  /**
+  *@description Prev button title in Film Strip View of the Performance panel
+  */
+  previousFrame: 'Previous frame',
+  /**
+  *@description Next button title in Film Strip View of the Performance panel
+  */
+  nextFrame: 'Next frame',
+};
+const str_ = i18n.i18n.registerUIStrings('perf_ui/FilmStripView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class FilmStripView extends UI.Widget.HBox {
   constructor() {
     super(true);
@@ -74,13 +97,13 @@ export class FilmStripView extends UI.Widget.HBox {
     const frameTime = Number.millisToString(time - this._zeroTime);
     const element = document.createElement('div');
     element.classList.add('frame');
-    element.title = Common.UIString.UIString('Doubleclick to zoom image. Click to view preceding requests.');
+    UI.Tooltip.Tooltip.install(element, i18nString(UIStrings.doubleclickToZoomImageClickTo));
     element.createChild('div', 'time').textContent = frameTime;
     element.tabIndex = 0;
-    element.setAttribute('aria-label', ls`Screenshot for ${frameTime} - select to view preceding requests.`);
+    element.setAttribute('aria-label', i18nString(UIStrings.screenshotForSSelectToView, {PH1: frameTime}));
     UI.ARIAUtils.markAsButton(element);
     const imageElement = /** @type {!HTMLImageElement} */ (element.createChild('div', 'thumbnail').createChild('img'));
-    imageElement.alt = ls`Screenshot`;
+    imageElement.alt = i18nString(UIStrings.screenshot);
     element.addEventListener('mousedown', this._onMouseEvent.bind(this, Events.FrameSelected, time), false);
     element.addEventListener('mouseenter', this._onMouseEvent.bind(this, Events.FrameEnter, time), false);
     element.addEventListener('mouseout', this._onMouseEvent.bind(this, Events.FrameExit, time), false);
@@ -118,7 +141,7 @@ export class FilmStripView extends UI.Widget.HBox {
     // Using the first frame to fill the interval between recording start
     // and a moment the frame is taken.
     const frames = this._model.frames();
-    const index = Math.max(frames.upperBound(time, comparator) - 1, 0);
+    const index = Math.max(Platform.ArrayUtilities.upperBound(frames, time, comparator) - 1, 0);
     return frames[index];
   }
 
@@ -237,18 +260,18 @@ export class Dialog {
    */
   constructor(filmStripFrame, zeroTime) {
     const prevButton = UI.UIUtils.createTextButton('\u25C0', this._onPrevFrame.bind(this));
-    prevButton.title = Common.UIString.UIString('Previous frame');
+    UI.Tooltip.Tooltip.install(prevButton, i18nString(UIStrings.previousFrame));
     const nextButton = UI.UIUtils.createTextButton('\u25B6', this._onNextFrame.bind(this));
-    nextButton.title = Common.UIString.UIString('Next frame');
+    UI.Tooltip.Tooltip.install(nextButton, i18nString(UIStrings.nextFrame));
 
     this._fragment = UI.Fragment.Fragment.build`
       <x-widget flex=none margin=12px>
         <x-hbox overflow=auto border='1px solid #ddd'>
-          <img $=image style="max-height: 80vh; max-width: 80vw"></img>
+          <img $='image' style="max-height: 80vh; max-width: 80vw"></img>
         </x-hbox>
         <x-hbox x-center justify-content=center margin-top=10px>
           ${prevButton}
-          <x-hbox $=time margin=8px></x-hbox>
+          <x-hbox $='time' margin=8px></x-hbox>
           ${nextButton}
         </x-hbox>
       </x-widget>
@@ -343,9 +366,9 @@ export class Dialog {
     const frame = this._frames[this._index];
     this._fragment.$('time').textContent = Number.millisToString(frame.timestamp - this._zeroTime);
     return frame.imageDataPromise()
-        .then(() => {
+        .then(imageData => {
           const image = /** @type {!HTMLImageElement} */ (this._fragment.$('image'));
-          return FilmStripView._setImageData(image, null);
+          return FilmStripView._setImageData(image, imageData);
         })
         .then(this._resize.bind(this));
   }

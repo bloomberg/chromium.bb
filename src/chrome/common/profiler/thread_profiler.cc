@@ -27,7 +27,6 @@
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "sandbox/policy/sandbox.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
@@ -56,7 +55,7 @@ namespace {
 ThreadProfiler* g_main_thread_instance = nullptr;
 
 // Run continuous profiling 2% of the time.
-constexpr const double kFractionOfExecutionTimeToSample = 0.02;
+constexpr double kFractionOfExecutionTimeToSample = 0.02;
 
 bool IsCurrentProcessBackgrounded() {
 #if defined(OS_MAC)

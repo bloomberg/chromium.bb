@@ -13,13 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "content/browser/media/keyboard_mic_registration.h"
 #endif
 
@@ -27,6 +28,13 @@
 namespace aura {
 class Env;
 }
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/buildflags.h"  // nogncheck
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+#define USE_OZONE_PLATFORM_X11
+#endif
 #endif
 
 namespace base {
@@ -101,10 +109,8 @@ class Watcher;
 class ScreenOrientationDelegate;
 #endif
 
-#if defined(USE_X11)
-namespace internal {
-class GpuDataManagerVisualProxy;
-}
+#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+class GpuDataManagerVisualProxyOzoneLinux;
 #endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
@@ -167,7 +173,7 @@ class CONTENT_EXPORT BrowserMainLoop {
     return media_keys_listener_manager_.get();
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Only expose this on ChromeOS since it's only needed there. On Android this
   // be null if this process started in reduced mode.
   net::NetworkChangeNotifier* network_change_notifier() const {
@@ -330,17 +336,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
-#if defined(USE_X11)
-  std::unique_ptr<internal::GpuDataManagerVisualProxy>
+#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+  std::unique_ptr<GpuDataManagerVisualProxyOzoneLinux>
       gpu_data_manager_visual_proxy_;
 #endif
-
-  // If provided to the BrowserMainLoop (see StartupDataImpl), this closure
-  // is run during shutdown, prior to IO thread destruction, and should do
-  // whatever work is necessary to tear down the ServiceManager if one is
-  // running. Must be provided if a ServiceManager is initialized and running on
-  // the IO thread.
-  base::OnceClosure service_manager_shutdown_closure_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
@@ -364,7 +363,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   std::unique_ptr<media::AudioSystem> audio_system_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   KeyboardMicRegistration keyboard_mic_registration_;
 #endif
 

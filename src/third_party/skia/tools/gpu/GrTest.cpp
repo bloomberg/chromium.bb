@@ -19,12 +19,10 @@
 #include "src/gpu/GrGpuResourceCacheAccess.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrSemaphore.h"
-#include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
@@ -51,34 +49,6 @@ int GrResourceCache::countUniqueKeysWithTag(const char* tag) const {
     return count;
 }
 #endif
-
-///////////////////////////////////////////////////////////////////////////////
-
-#define ASSERT_SINGLE_OWNER GR_ASSERT_SINGLE_OWNER(fRenderTargetContext->singleOwner())
-
-uint32_t GrRenderTargetContextPriv::testingOnly_getOpsTaskID() {
-    return fRenderTargetContext->getOpsTask()->uniqueID();
-}
-
-void GrRenderTargetContextPriv::testingOnly_addDrawOp(GrOp::Owner op) {
-    this->testingOnly_addDrawOp(nullptr, std::move(op), {});
-}
-
-void GrRenderTargetContextPriv::testingOnly_addDrawOp(
-        const GrClip* clip,
-        GrOp::Owner op,
-        const std::function<GrRenderTargetContext::WillAddOpFn>& willAddFn) {
-    ASSERT_SINGLE_OWNER
-    if (fRenderTargetContext->fContext->abandoned()) {
-        return;
-    }
-    SkDEBUGCODE(fRenderTargetContext->validate());
-    GR_AUDIT_TRAIL_AUTO_FRAME(fRenderTargetContext->auditTrail(),
-                              "GrRenderTargetContext::testingOnly_addDrawOp");
-    fRenderTargetContext->addDrawOp(clip, std::move(op), willAddFn);
-}
-
-#undef ASSERT_SINGLE_OWNER
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -167,8 +137,8 @@ DRAW_OP_TEST_EXTERN(RRectOp);
 DRAW_OP_TEST_EXTERN(TriangulatingPathOp);
 DRAW_OP_TEST_EXTERN(TextureOp);
 
-void GrDrawRandomOp(SkRandom* random, GrRenderTargetContext* renderTargetContext, GrPaint&& paint) {
-    auto context = renderTargetContext->surfPriv().getContext();
+void GrDrawRandomOp(SkRandom* random, GrSurfaceDrawContext* surfaceDrawContext, GrPaint&& paint) {
+    auto context = surfaceDrawContext->recordingContext();
     using MakeDrawOpFn = GrOp::Owner (GrPaint&&, SkRandom*,
                                       GrRecordingContext*, int numSamples);
     static constexpr MakeDrawOpFn* gFactories[] = {
@@ -198,11 +168,11 @@ void GrDrawRandomOp(SkRandom* random, GrRenderTargetContext* renderTargetContext
     static constexpr size_t kTotal = SK_ARRAY_COUNT(gFactories);
     uint32_t index = random->nextULessThan(static_cast<uint32_t>(kTotal));
     auto op = gFactories[index](
-            std::move(paint), random, context, renderTargetContext->numSamples());
+            std::move(paint), random, context, surfaceDrawContext->numSamples());
 
     // Creating a GrAtlasTextOp my not produce an op if for example, it is totally outside the
     // render target context.
     if (op) {
-        renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+        surfaceDrawContext->addDrawOp(std::move(op));
     }
 }

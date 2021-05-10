@@ -19,6 +19,7 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 
 namespace chromeos {
 
@@ -30,8 +31,8 @@ void VerifyOnlyUILanguages(const base::ListValue& list) {
     ASSERT_TRUE(list.GetDictionary(i, &dict));
     std::string code;
     ASSERT_TRUE(dict->GetString("code", &code));
-    EXPECT_NE("is", code)
-        << "Icelandic is an example language which has input method "
+    EXPECT_NE("ga", code)
+        << "Irish is an example language which has input method "
         << "but can't use it as UI language.";
   }
 }
@@ -68,8 +69,11 @@ class L10nUtilTest : public testing::Test {
 L10nUtilTest::L10nUtilTest()
     : input_manager_(new MockInputMethodManagerWithInputMethods) {
   chromeos::input_method::InitializeForTesting(input_manager_);
+  auto mock_component_extension_ime_manager_delegate = std::make_unique<
+      input_method::MockComponentExtensionIMEManagerDelegate>();
   input_manager_->SetComponentExtensionIMEManager(
-      std::make_unique<ComponentExtensionIMEManager>());
+      std::make_unique<ComponentExtensionIMEManager>(
+          std::move(mock_component_extension_ime_manager_delegate)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -82,7 +86,7 @@ void L10nUtilTest::SetInputMethods1() {
   input_manager_->AddInputMethod("xkb:us::eng", "us", "en-US");
   input_manager_->AddInputMethod("xkb:fr::fra", "fr", "fr");
   input_manager_->AddInputMethod("xkb:be::fra", "be", "fr");
-  input_manager_->AddInputMethod("xkb:is::ice", "is", "is");
+  input_manager_->AddInputMethod("xkb:ie::ga", "ga", "ga");
 }
 
 void L10nUtilTest::SetInputMethods2() {
@@ -90,7 +94,7 @@ void L10nUtilTest::SetInputMethods2() {
   input_manager_->AddInputMethod("xkb:ch:fr:fra", "ch(fr)", "fr");
   input_manager_->AddInputMethod("xkb:ch::ger", "ch", "de");
   input_manager_->AddInputMethod("xkb:it::ita", "it", "it");
-  input_manager_->AddInputMethod("xkb:is::ice", "is", "is");
+  input_manager_->AddInputMethod("xkb:ie::ga", "ga", "ga");
 }
 
 TEST_F(L10nUtilTest, GetUILanguageList) {
@@ -144,7 +148,7 @@ void InitStartupCustomizationDocumentForTesting(const std::string& manifest) {
 const char kStartupManifest[] =
     "{\n"
     "  \"version\": \"1.0\",\n"
-    "  \"initial_locale\" : \"fr,en-US,de,is,it\",\n"
+    "  \"initial_locale\" : \"fr,en-US,de,ga,it\",\n"
     "  \"initial_timezone\" : \"Europe/Zurich\",\n"
     "  \"keyboard_layout\" : \"xkb:ch:fr:fra\",\n"
     "  \"registration_url\" : \"http://www.google.com\",\n"
@@ -165,7 +169,7 @@ TEST_F(L10nUtilTest, GetUILanguageListMulti) {
 
   VerifyOnlyUILanguages(*list);
 
-  // (4 languages (except Icelandic) + divider) = 5 + all other languages
+  // (4 languages (except Irish) + divider) = 5 + all other languages
   ASSERT_LE(5u, list->GetSize());
 
   VerifyLanguageCode(*list, 0, "fr");

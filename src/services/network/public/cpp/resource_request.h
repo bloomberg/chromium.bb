@@ -20,12 +20,14 @@
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/auth_and_certificate_observer.mojom.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/public/mojom/web_bundle_handle.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -54,7 +56,41 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
     bool disable_secure_dns = false;
     bool has_user_activation = false;
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
+    mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
+        auth_cert_observer;
     mojom::ClientSecurityStatePtr client_security_state;
+  };
+
+  // Typemapped to network.mojom.WebBundleTokenParams, see comments there
+  // for details of each field.
+  struct COMPONENT_EXPORT(NETWORK_CPP_BASE) WebBundleTokenParams {
+    WebBundleTokenParams();
+    ~WebBundleTokenParams();
+    // Define a non-default copy-constructor because:
+    // 1. network::ResourceRequest has a requirement that all of
+    //    the members be trivially copyable.
+    // 2. mojo::PendingRemote is non-copyable.
+    WebBundleTokenParams(const WebBundleTokenParams& params);
+    WebBundleTokenParams& operator=(const WebBundleTokenParams& other);
+
+    WebBundleTokenParams(const GURL& bundle_url,
+                         const base::UnguessableToken& token,
+                         mojo::PendingRemote<mojom::WebBundleHandle> handle);
+    WebBundleTokenParams(const GURL& bundle_url,
+                         const base::UnguessableToken& token,
+                         int32_t render_process_id);
+
+    // For testing. Regarding the equality of |handle|, |this| equals |other| if
+    // both |handle| exists, or neither exists, because we cannot test the
+    // equality of two mojo handles.
+    bool EqualsForTesting(const WebBundleTokenParams& other) const;
+
+    mojo::PendingRemote<mojom::WebBundleHandle> CloneHandle() const;
+
+    GURL bundle_url;
+    base::UnguessableToken token;
+    mojo::PendingRemote<mojom::WebBundleHandle> handle;
+    int32_t render_process_id = -1;
   };
 
   ResourceRequest();
@@ -70,7 +106,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   std::string method = net::HttpRequestHeaders::kGetMethod;
   GURL url;
   net::SiteForCookies site_for_cookies;
-  bool force_ignore_site_for_cookies = false;
   bool update_first_party_url_on_redirect = false;
 
   // SECURITY NOTE: |request_initiator| is a security-sensitive field.  Please
@@ -92,7 +127,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool originated_from_service_worker = false;
   bool skip_service_worker = false;
   bool corb_detachable = false;
-  bool corb_excluded = false;
   mojom::RequestMode mode = mojom::RequestMode::kNoCors;
   mojom::CredentialsMode credentials_mode = mojom::CredentialsMode::kInclude;
   mojom::RedirectMode redirect_mode = mojom::RedirectMode::kFollow;
@@ -119,6 +153,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<std::string> devtools_stack_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
   bool is_fetch_like_api = false;
+  bool is_favicon = false;
   bool obey_origin_policy = false;
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
   base::Optional<TrustedParams> trusted_params;
@@ -126,6 +161,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // field trivially copyable; see OptionalTrustTokenParams's definition for
   // more context.
   OptionalTrustTokenParams trust_token_params;
+  base::Optional<WebBundleTokenParams> web_bundle_token_params;
 };
 
 // This does not accept |kDefault| referrer policy.

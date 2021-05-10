@@ -89,9 +89,9 @@ message ReleaseChannelProto {
   // One of "stable-channel", "beta-channel", or "dev-channel"
   optional string release_channel = 1;
 
-  // If |release_channel_delegated| is set to true and the |release_channel|
-  // field is not set or left empty, the user can select the channel. If the
-  // |release_channel| is specified it will always override users choice!
+  // The user can select the channel if |release_channel_delegated| is true.
+  // The value of |release_channel| is only taken into account if
+  // |release_channel_delegated| is set to false.
   optional bool release_channel_delegated = 2;
 
   // |release_lts_tag| is forwarded as the "ltshint" attribute to Omaha.
@@ -112,34 +112,40 @@ message NetworkHostnameProto {
 }
 
 // Policies to turn on portions of the device status reports.
+// If changed, the default values have to be updated in
+// chrome/browser/chromeos/policy/status_collector/device_status_collector.cc
+// and
+// chrome/browser/chromeos/policy/status_collector/child_status_collector.cc.
 message DeviceReportingProto {
-  optional bool report_version_info = 1;
-  optional bool report_activity_times = 2;
-  optional bool report_boot_mode = 3;
-  optional bool report_location = 4;
-  optional bool report_network_interfaces = 5;
-  optional bool report_users = 6;
-  optional bool report_hardware_status = 7;
-  optional bool report_session_status = 8;
-  optional bool report_os_update_status = 10;
-  optional bool report_running_kiosk_app = 11;
-  optional bool report_power_status = 12;
-  optional bool report_storage_status = 13;
-  optional bool report_board_status = 14;
-  optional bool report_cpu_info = 15;
-  optional bool report_graphics_status = 16;
-  optional bool report_crash_report_info = 17;
-  optional bool report_timezone_info = 18;
-  optional bool report_memory_info = 19;
-  optional bool report_backlight_info = 20;
-  optional bool report_app_info = 21;
-  optional bool report_bluetooth_info = 22;
-  optional bool report_fan_info = 23;
-  optional bool report_vpd_info = 24;
-  optional bool report_system_info = 25;
+  optional bool report_version_info = 1 [default = true];
+  optional bool report_activity_times = 2 [default = true];
+  optional bool report_boot_mode = 3 [default = true];
+  optional bool report_location = 4 [default = false];
+  optional bool report_network_interfaces = 5 [default = true];
+  optional bool report_users = 6 [default = true];
+  optional bool report_hardware_status = 7 [default = true];
+  optional bool report_session_status = 8 [default = true];
+  optional bool report_os_update_status = 10 [default = false];
+  optional bool report_running_kiosk_app = 11 [default = false];
+  optional bool report_power_status = 12 [default = false];
+  optional bool report_storage_status = 13 [default = false];
+  optional bool report_board_status = 14 [default = false];
+  optional bool report_cpu_info = 15 [default = false];
+  optional bool report_graphics_status = 16 [default = false];
+  optional bool report_crash_report_info = 17 [default = false];
+  optional bool report_timezone_info = 18 [default = false];
+  optional bool report_memory_info = 19 [default = false];
+  optional bool report_backlight_info = 20 [default = false];
+  optional bool report_app_info = 21 [default = false];
+  optional bool report_bluetooth_info = 22 [default = false];
+  optional bool report_fan_info = 23 [default = false];
+  optional bool report_vpd_info = 24 [default = false];
+  optional bool report_system_info = 25 [default = false];
 
-  // Frequency to report device status.
-  optional int64 device_status_frequency = 9;
+  // Frequency to report device status, default to 3 hours.
+  // If changed, the default value has to be updated in
+  // chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.cc.
+  optional int64 device_status_frequency = 9 [default = 10800000];
 }
 
 message EphemeralUsersEnabledProto {
@@ -546,11 +552,25 @@ message AllowRedeemChromeOsRegistrationOffersProto {
   optional bool allow_redeem_offers = 1 [default = true];
 }
 
-message StartUpFlagsProto {
-  // Specifies the flags that should be applied to Google Chrome when it starts.
-  // The specified flags are applied on the login screen only. Flags set via
-  // this policy do not propagate into user sessions.
-  repeated string flags = 1;
+message FeatureFlagsProto {
+  // Specifies switches that should be passed to Google Chrome when it starts.
+  // The specified switches are applied on the login screen only. Switches set
+  // via this policy do not propagate into user sessions.
+  // This is deprecated because it turned out that storing raw switches is
+  // problematic since Chrome can't easily tie switches back to feature flags to
+  // validate them. The |feature_flags| field below works in terms of feature
+  // flag names (i.e. chrome://flags items) instead and supersedes |switches|.
+  repeated string switches = 1 [deprecated = true];
+
+  // Specifies feature flags (i.e. chrome://flags items) that should be enabled
+  // when Chrome starts. The format of the individual entries matches the format
+  // chrome://flags uses for internal bookkeeping, i.e. either the flag name as
+  // listed on chrome://flags (for flags that only have a single choice besides
+  // the default) or the flag name followed by the index of the chosen option,
+  // separated by an '@' character (for flags with multiple choices). The
+  // specified feature flags are applied on the login screen only and don't
+  // propagate into the user session.
+  repeated string feature_flags = 2;
 }
 
 message UptimeLimitProto {
@@ -1292,7 +1312,6 @@ message DeviceOffHoursProto {
   // are in the timezone specified by the timezone string.
   repeated WeeklyTimeIntervalProto intervals = 1;
   // Timezone in the same format as SystemTimezoneProto.timezone.
-  // If timezone isn't set then "GMT" will be used
   optional string timezone = 2;
   // List of policy proto tags which settings are ignored during OffHours
   // mode. List contains policy proto tags from ChromeDeviceSettingsProto
@@ -1731,6 +1750,18 @@ message DeviceArcDataSnapshotHoursProto {
   optional string arc_data_snapshot_hours = 1;
 }
 
+// Setting that controls whether system-wide trace collection using the Perfetto
+// system tracing service is allowed.
+message DeviceSystemWideTracingEnabledProto {
+  optional bool enabled = 1 [default = true];
+}
+
+// Setting that controls whether data access is enabled for Thunderbolt/USB4
+// peripherals.
+message DevicePciPeripheralDataAccessEnabledProto {
+  optional bool enabled = 1 [default = false];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1758,7 +1789,7 @@ message ChromeDeviceSettingsProto {
   optional SystemTimezoneProto system_timezone = 20;
   optional DeviceLocalAccountsProto device_local_accounts = 21;
   optional AllowRedeemChromeOsRegistrationOffersProto allow_redeem_offers = 22;
-  optional StartUpFlagsProto start_up_flags = 23;
+  optional FeatureFlagsProto feature_flags = 23;
   optional UptimeLimitProto uptime_limit = 24;
   optional VariationsParameterProto variations_parameter = 25;
   optional AttestationSettingsProto attestation_settings = 26;
@@ -1877,4 +1908,10 @@ message ChromeDeviceSettingsProto {
   optional DeviceFamilyLinkAccountsAllowedProto family_link_accounts_allowed =
       114;
   optional DeviceArcDataSnapshotHoursProto arc_data_snapshot_hours = 115;
+  optional BooleanPolicyProto device_allow_mgs_to_store_display_properties =
+      116;
+  optional DeviceSystemWideTracingEnabledProto
+      device_system_wide_tracing_enabled = 117;
+  optional DevicePciPeripheralDataAccessEnabledProto
+      device_pci_peripheral_data_access_enabled = 118;
 }

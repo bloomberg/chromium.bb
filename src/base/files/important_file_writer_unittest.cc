@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -63,6 +62,8 @@ enum WriteCallbackObservationState {
 class WriteCallbacksObserver {
  public:
   WriteCallbacksObserver() = default;
+  WriteCallbacksObserver(const WriteCallbacksObserver&) = delete;
+  WriteCallbacksObserver& operator=(const WriteCallbacksObserver&) = delete;
 
   // Register OnBeforeWrite() and OnAfterWrite() to be called on the next write
   // of |writer|.
@@ -86,8 +87,6 @@ class WriteCallbacksObserver {
 
   bool before_write_called_ = false;
   WriteCallbackObservationState after_write_observation_state_ = NOT_CALLED;
-
-  DISALLOW_COPY_AND_ASSIGN(WriteCallbacksObserver);
 };
 
 void WriteCallbacksObserver::ObserveNextWriteCallbacks(
@@ -234,6 +233,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   MockOneShotTimer timer;
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get(),
                              kCommitInterval);
+  EXPECT_EQ(0u, writer.previous_data_size());
   writer.SetTimerForTesting(&timer);
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
@@ -247,6 +247,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   RunLoop().RunUntilIdle();
   ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
+  EXPECT_EQ(3u, writer.previous_data_size());
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
@@ -312,6 +313,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite_WriteNow) {
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite_FailToSerialize) {
+  base::HistogramTester histogram_tester;
   MockOneShotTimer timer;
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
   writer.SetTimerForTesting(&timer);
@@ -325,6 +327,8 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite_FailToSerialize) {
   EXPECT_FALSE(writer.HasPendingWrite());
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(PathExists(writer.path()));
+  // We don't record metrics in case the serialization fails.
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 0);
 }
 
 TEST_F(ImportantFileWriterTest, WriteFileAtomicallyHistogramSuffixTest) {
@@ -356,6 +360,30 @@ TEST_F(ImportantFileWriterTest, WriteLargeFile) {
   std::string actual;
   EXPECT_TRUE(ReadFileToString(file_, &actual));
   EXPECT_EQ(large_data, actual);
+}
+
+// Verify that a UMA metric for the serialization duration is recorded.
+TEST_F(ImportantFileWriterTest, SerializationDuration) {
+  base::HistogramTester histogram_tester;
+  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  DataSerializer serializer("foo");
+  writer.ScheduleWrite(&serializer);
+  writer.DoScheduledWrite();
+  RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 1);
+}
+
+// Verify that a UMA metric for the serialization duration is recorded if the
+// ImportantFileWriter has a custom histogram suffix.
+TEST_F(ImportantFileWriterTest, SerializationDurationWithCustomSuffix) {
+  base::HistogramTester histogram_tester;
+  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get(), "Foo");
+  DataSerializer serializer("foo");
+  writer.ScheduleWrite(&serializer);
+  writer.DoScheduledWrite();
+  RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration.Foo",
+                                    1);
 }
 
 }  // namespace base

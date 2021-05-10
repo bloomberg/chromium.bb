@@ -15,8 +15,6 @@
 #ifndef SRC_AST_STRUCT_MEMBER_DECORATION_H_
 #define SRC_AST_STRUCT_MEMBER_DECORATION_H_
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include "src/ast/decoration.h"
@@ -24,24 +22,17 @@
 namespace tint {
 namespace ast {
 
-class StructMemberOffsetDecoration;
-
 /// A decoration attached to a struct member
-class StructMemberDecoration : public Decoration {
+class StructMemberDecoration
+    : public Castable<StructMemberDecoration, Decoration> {
  public:
   /// The kind of decoration that this type represents
-  static constexpr DecorationKind Kind = DecorationKind::kStructMember;
+  static constexpr const DecorationKind Kind = DecorationKind::kStructMember;
 
   ~StructMemberDecoration() override;
 
-  /// @returns true if this is an offset decoration
-  virtual bool IsOffset() const;
-
-  /// @returns the decoration as an offset decoration
-  StructMemberOffsetDecoration* AsOffset();
-
-  /// @returns the decoration as a string
-  virtual std::string to_str() const = 0;
+  /// @return the decoration kind
+  DecorationKind GetKind() const override;
 
  protected:
   /// Constructor
@@ -49,9 +40,8 @@ class StructMemberDecoration : public Decoration {
   explicit StructMemberDecoration(const Source& source);
 };
 
-/// A list of unique struct member decorations
-using StructMemberDecorationList =
-    std::vector<std::unique_ptr<StructMemberDecoration>>;
+/// A list of struct member decorations
+using StructMemberDecorationList = std::vector<StructMemberDecoration*>;
 
 }  // namespace ast
 }  // namespace tint

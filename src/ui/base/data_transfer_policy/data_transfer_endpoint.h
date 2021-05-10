@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "build/chromeos_buildflags.h"
 #include "url/origin.h"
 
 namespace ui {
@@ -17,16 +18,16 @@ namespace ui {
 enum class EndpointType {
   kDefault = 0,  // This type shouldn't be used if any of the following types is
                  // a better match.
-#if defined(OS_CHROMEOS) || (OS_LINUX) || (OS_FUCHSIA)
-  kGuestOs = 1,  // Guest OS: PluginVM, Crostini.
-#endif           // defined(OS_CHROMEOS) || (OS_LINUX) || (OS_FUCHSIA)
-#if defined(OS_CHROMEOS)
-  kArc = 2,               // ARC.
-#endif                    // defined(OS_CHROMEOS)
-  kUrl = 3,               // Website URL e.g. www.example.com.
-  kClipboardHistory = 4,  // Clipboard History UI has privileged access to any
+  kUrl = 1,      // Website URL e.g. www.example.com.
+  kClipboardHistory = 2,  // Clipboard History UI has privileged access to any
                           // clipboard data.
-  kMaxValue = kClipboardHistory
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  kUnknownVm = 3,  // The VM type is not identified.
+  kArc = 4,        // ARC.
+  kBorealis = 5,   // Borealis OS.
+  kCrostini = 6,   // Crostini.
+  kPluginVm = 7    // Plugin VM App.
+#endif             // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 // DataTransferEndpoint represents:
@@ -49,10 +50,13 @@ class COMPONENT_EXPORT(UI_BASE_DATA_TRANSFER_POLICY) DataTransferEndpoint {
   DataTransferEndpoint(const DataTransferEndpoint& other);
   DataTransferEndpoint(DataTransferEndpoint&& other);
 
-  DataTransferEndpoint& operator=(const DataTransferEndpoint& other) = delete;
-  DataTransferEndpoint& operator=(DataTransferEndpoint&& other) = delete;
+  DataTransferEndpoint& operator=(const DataTransferEndpoint& other);
+  DataTransferEndpoint& operator=(DataTransferEndpoint&& other);
 
   bool operator==(const DataTransferEndpoint& other) const;
+  bool operator!=(const DataTransferEndpoint& other) const {
+    return !(*this == other);
+  }
 
   ~DataTransferEndpoint();
 
@@ -64,12 +68,16 @@ class COMPONENT_EXPORT(UI_BASE_DATA_TRANSFER_POLICY) DataTransferEndpoint {
 
   bool notify_if_restricted() const { return notify_if_restricted_; }
 
+  // Returns true if both of the endpoints have the same origin_ and type_ ==
+  // kUrl.
+  bool IsSameOriginWith(const DataTransferEndpoint& other) const;
+
  private:
   // This variable should always have a value representing the object type.
-  const EndpointType type_;
+  EndpointType type_;
   // The url::Origin of the data endpoint. It always has a value if `type_` ==
   // EndpointType::kUrl, otherwise it's empty.
-  const base::Optional<url::Origin> origin_;
+  base::Optional<url::Origin> origin_;
   // This variable should be set to true, if paste is initiated by the user.
   // Otherwise it should be set to false, so the user won't see a notification
   // when the data is restricted by the rules of data leak prevention policy

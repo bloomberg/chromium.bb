@@ -8,10 +8,10 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_util.h"
@@ -74,11 +74,11 @@ void UpdateOptInFlowResultUMA(OptInFlowResult result) {
   base::UmaHistogramEnumeration("Arc.OptInResult", result);
 }
 
-void UpdateProvisioningResultUMA(ProvisioningResult result,
+void UpdateProvisioningStatusUMA(ProvisioningStatus status,
                                  const Profile* profile) {
-  DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+  DCHECK_NE(status, ProvisioningStatus::CHROME_SERVER_COMMUNICATION_ERROR);
   base::UmaHistogramEnumeration(
-      GetHistogramNameByUserType("Arc.Provisioning.Result", profile), result);
+      GetHistogramNameByUserType("Arc.Provisioning.Status", profile), status);
 }
 
 void UpdateCloudProvisionFlowErrorUMA(mojom::CloudProvisionFlowError error,
@@ -88,8 +88,22 @@ void UpdateCloudProvisionFlowErrorUMA(mojom::CloudProvisionFlowError error,
       error);
 }
 
-void UpdateSecondarySigninResultUMA(ProvisioningResult result) {
-  base::UmaHistogramEnumeration("Arc.Secondary.Signin.Result", result);
+void UpdateGMSSignInErrorUMA(mojom::GMSSignInError error,
+                             const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType("Arc.Provisioning.SignInError", profile),
+      error);
+}
+
+void UpdateGMSCheckInErrorUMA(mojom::GMSCheckInError error,
+                              const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType("Arc.Provisioning.CheckInError", profile),
+      error);
+}
+
+void UpdateSecondarySigninResultUMA(ProvisioningStatus status) {
+  base::UmaHistogramEnumeration("Arc.Secondary.Signin.Result", status);
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
@@ -105,11 +119,11 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(6), 50);
 }
 
-void UpdateReauthorizationResultUMA(ProvisioningResult result,
+void UpdateReauthorizationResultUMA(ProvisioningStatus status,
                                     const Profile* profile) {
   base::UmaHistogramEnumeration(
       GetHistogramNameByUserType("Arc.Reauthorization.Result", profile),
-      result);
+      status);
 }
 
 void UpdatePlayAutoInstallRequestState(mojom::PaiFlowState state,
@@ -205,41 +219,75 @@ void UpdateSecondaryAccountSilentAuthCodeUMA(OptInSilentAuthCode state) {
                            static_cast<int>(state));
 }
 
-std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {
+ProvisioningStatus GetProvisioningStatus(
+    const ArcProvisioningResult& provisioning_result) {
+  if (provisioning_result.stop_reason())
+    return ProvisioningStatus::ARC_STOPPED;
+
+  if (provisioning_result.is_timedout())
+    return ProvisioningStatus::CHROME_PROVISIONING_TIMEOUT;
+
+  if (provisioning_result.is_success())
+    return ProvisioningStatus::SUCCESS;
+
+  if (provisioning_result.cloud_provision_flow_error())
+    return ProvisioningStatus::CLOUD_PROVISION_FLOW_ERROR;
+
+  if (provisioning_result.gms_check_in_error())
+    return ProvisioningStatus::GMS_CHECK_IN_ERROR;
+
+  if (provisioning_result.gms_sign_in_error())
+    return ProvisioningStatus::GMS_SIGN_IN_ERROR;
+
+  if (provisioning_result.general_error()) {
+#define MAP_GENERAL_ERROR(name)         \
+  case mojom::GeneralSignInError::name: \
+    return ProvisioningStatus::name
+
+    switch (provisioning_result.general_error().value()) {
+      MAP_GENERAL_ERROR(UNKNOWN_ERROR);
+      MAP_GENERAL_ERROR(MOJO_VERSION_MISMATCH);
+      MAP_GENERAL_ERROR(GENERIC_PROVISIONING_TIMEOUT);
+      MAP_GENERAL_ERROR(NO_NETWORK_CONNECTION);
+      MAP_GENERAL_ERROR(CHROME_SERVER_COMMUNICATION_ERROR);
+      MAP_GENERAL_ERROR(ARC_DISABLED);
+      MAP_GENERAL_ERROR(UNSUPPORTED_ACCOUNT_TYPE);
+      MAP_GENERAL_ERROR(CHROME_ACCOUNT_NOT_FOUND);
+    }
+#undef MAP_GENERAL_ERROR
+  }
+
+  NOTREACHED() << "unexpected provisioning result";
+  return ProvisioningStatus::UNKNOWN_ERROR;
+}
+
+std::ostream& operator<<(std::ostream& os, const ProvisioningStatus& status) {
 #define MAP_PROVISIONING_RESULT(name) \
-  case ProvisioningResult::name:      \
+  case ProvisioningStatus::name:      \
     return os << #name
 
-  switch (result) {
+  switch (status) {
     MAP_PROVISIONING_RESULT(SUCCESS);
     MAP_PROVISIONING_RESULT(UNKNOWN_ERROR);
-    MAP_PROVISIONING_RESULT(GMS_NETWORK_ERROR);
-    MAP_PROVISIONING_RESULT(GMS_SERVICE_UNAVAILABLE);
-    MAP_PROVISIONING_RESULT(GMS_BAD_AUTHENTICATION);
-    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_FAILED);
+    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_ERROR);
+    MAP_PROVISIONING_RESULT(GMS_CHECK_IN_ERROR);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_ERROR);
     MAP_PROVISIONING_RESULT(MOJO_VERSION_MISMATCH);
-    MAP_PROVISIONING_RESULT(PROVISIONING_TIMEOUT);
-    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_TIMEOUT);
-    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_INTERNAL_ERROR);
-    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_FAILED);
-    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_TIMEOUT);
-    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_INTERNAL_ERROR);
+    MAP_PROVISIONING_RESULT(GENERIC_PROVISIONING_TIMEOUT);
+    MAP_PROVISIONING_RESULT(CHROME_PROVISIONING_TIMEOUT);
     MAP_PROVISIONING_RESULT(ARC_STOPPED);
-    MAP_PROVISIONING_RESULT(OVERALL_SIGN_IN_TIMEOUT);
+    MAP_PROVISIONING_RESULT(ARC_DISABLED);
     MAP_PROVISIONING_RESULT(CHROME_SERVER_COMMUNICATION_ERROR);
     MAP_PROVISIONING_RESULT(NO_NETWORK_CONNECTION);
-    MAP_PROVISIONING_RESULT(ARC_DISABLED);
-    MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
     MAP_PROVISIONING_RESULT(UNSUPPORTED_ACCOUNT_TYPE);
     MAP_PROVISIONING_RESULT(CHROME_ACCOUNT_NOT_FOUND);
-    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_ERROR);
   }
 
 #undef MAP_PROVISIONING_RESULT
 
   // Some compilers report an error even if all values of an enum-class are
   // covered exhaustively in a switch statement.
-  NOTREACHED() << "Invalid value " << static_cast<int>(result);
+  NOTREACHED() << "Invalid value " << static_cast<int>(status);
   return os;
 }
 

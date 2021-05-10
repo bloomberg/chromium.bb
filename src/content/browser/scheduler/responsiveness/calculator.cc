@@ -31,6 +31,21 @@ constexpr auto kJankThreshold = base::TimeDelta::FromMilliseconds(100);
 // This value is copied from queueing_time_estimator.cc:kInvalidPeriodThreshold.
 constexpr auto kSuspendInterval = base::TimeDelta::FromSeconds(30);
 
+constexpr char kLatencyEventCategory[] = "latency";
+
+// The name emitted for a large UI jank event. Also reused as the scope string
+// for these events, to ensure their ID's don't collide with any other event.
+constexpr char kLargeUIJankEvent[] = "Large UI Jank";
+
+// The name emitted for a large IO jank event. Also reused as the scope string
+// for these events, to ensure their ID's don't collide with any other event.
+constexpr char kLargeIOJankEvent[] = "Large IO Jank";
+
+// The names emitted for JankyInterval measurement events.
+constexpr char kJankyIntervalEvent[] = "JankyInterval";
+constexpr char kJankyIntervalsPerThirtySeconds2Event[] =
+    "JankyIntervalsPerThirtySeconds2";
+
 // Given a |jank|, finds each janky slice between |start_time| and |end_time|,
 // and adds it to |janky_slices|.
 void AddJankySlices(std::set<int>* janky_slices,
@@ -94,12 +109,13 @@ void Calculator::TaskOrEventFinishedOnUIThread(
     GetQueueAndExecutionJanksOnUIThread().emplace_back(queue_time,
                                                        execution_finish_time);
     // Emit a trace event to highlight large janky slices.
+    const auto trace_id = TRACE_ID_WITH_SCOPE(
+        kLargeUIJankEvent, TRACE_ID_LOCAL(g_num_large_ui_janks_));
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-        "latency", "Large UI Jank", TRACE_ID_LOCAL(g_num_large_ui_janks_),
-        queue_time);
-    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-        "latency", "Large UI Jank", TRACE_ID_LOCAL(g_num_large_ui_janks_),
-        execution_finish_time);
+        kLatencyEventCategory, kLargeUIJankEvent, trace_id, queue_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(kLatencyEventCategory,
+                                                   kLargeUIJankEvent, trace_id,
+                                                   execution_finish_time);
     g_num_large_ui_janks_++;
 
     if (execution_finish_time - execution_start_time >= kJankThreshold) {
@@ -124,12 +140,13 @@ void Calculator::TaskOrEventFinishedOnIOThread(
     queue_and_execution_janks_on_io_thread_.emplace_back(queue_time,
                                                          execution_finish_time);
     // Emit a trace event to highlight large janky slices.
+    const auto trace_id = TRACE_ID_WITH_SCOPE(
+        kLargeIOJankEvent, TRACE_ID_LOCAL(g_num_large_io_janks_));
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-        "latency", "Large IO Jank", TRACE_ID_LOCAL(g_num_large_io_janks_),
-        queue_time);
-    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-        "latency", "Large IO Jank", TRACE_ID_LOCAL(g_num_large_io_janks_),
-        execution_finish_time);
+        kLatencyEventCategory, kLargeIOJankEvent, trace_id, queue_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(kLatencyEventCategory,
+                                                   kLargeIOJankEvent, trace_id,
+                                                   execution_finish_time);
     g_num_large_io_janks_++;
 
     if (execution_finish_time - execution_start_time >= kJankThreshold) {
@@ -171,6 +188,68 @@ void Calculator::EmitResponsiveness(JankType jank_type,
       break;
     }
   }
+}
+
+void Calculator::EmitResponsivenessTraceEvents(
+    JankType jank_type,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    const std::set<int>& janky_slices) {
+  // Only output JankyIntervalsPerThirtySeconds2 event and only when there are
+  // janky slices during the measurement.
+  if (janky_slices.empty() || jank_type != JankType::kQueueAndExecution)
+    return;
+
+  // Emit a trace event to highlight the duration of janky intervals
+  // measurement.
+  EmitJankyIntervalsMeasurementTraceEvent(start_time, end_time,
+                                          janky_slices.size());
+
+  // |janky_slices| contains the id of janky slices, e.g. {3,6,7,8,41,42}.
+  // As such if the slice following slice x is x+1, we coalesce it.
+  std::set<int>::const_iterator jank_slice_it = janky_slices.begin();
+  while (jank_slice_it != janky_slices.end()) {
+    const int start_slice = *jank_slice_it;
+
+    // Find the first slice that is not in the current sequence. After the loop,
+    // |jank_slice| will point to the first janky slice in the next sequence
+    // (or end() if at the end of the slices) while |current_slice| will
+    // point to the first non-janky slice number which correspond to the end of
+    // the current sequence.
+    int current_slice = start_slice;
+    do {
+      ++jank_slice_it;
+      ++current_slice;
+    } while (jank_slice_it != janky_slices.end() &&
+             *jank_slice_it == current_slice);
+
+    // Output a trace event for the range [start_slice, current_slice[.
+    EmitJankyIntervalsJankTraceEvent(
+        start_time + start_slice * kJankThreshold,
+        start_time + current_slice * kJankThreshold);
+  }
+}
+
+void Calculator::EmitJankyIntervalsMeasurementTraceEvent(
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
+    size_t amount_of_slices) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      kLatencyEventCategory, kJankyIntervalsPerThirtySeconds2Event,
+      TRACE_ID_LOCAL(this), start_time, "amount_of_slices", amount_of_slices);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      kLatencyEventCategory, kJankyIntervalsPerThirtySeconds2Event,
+      TRACE_ID_LOCAL(this), end_time);
+}
+
+void Calculator::EmitJankyIntervalsJankTraceEvent(base::TimeTicks start_time,
+                                                  base::TimeTicks end_time) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      kLatencyEventCategory, kJankyIntervalEvent, TRACE_ID_LOCAL(this),
+      start_time);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      kLatencyEventCategory, kJankyIntervalEvent, TRACE_ID_LOCAL(this),
+      end_time);
 }
 
 base::TimeTicks Calculator::GetLastCalculationTime() {
@@ -272,6 +351,15 @@ void Calculator::CalculateResponsiveness(
 
     EmitResponsiveness(jank_type, janky_slices.size(), was_process_suspended_);
 
+    // If the 'latency' tracing category is enabled, emit trace events for the
+    // measurement duration and the janky slices.
+    bool tracing_enabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(kLatencyEventCategory, &tracing_enabled);
+    if (tracing_enabled) {
+      EmitResponsivenessTraceEvents(jank_type, start_time,
+                                    current_interval_end_time, janky_slices);
+    }
+
     start_time = current_interval_end_time;
   }
 }
@@ -285,6 +373,26 @@ Calculator::JankList& Calculator::GetQueueAndExecutionJanksOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return queue_and_execution_janks_on_ui_thread_;
 }
+
+#if defined(OS_ANDROID)
+void Calculator::OnApplicationStateChanged(
+    base::android::ApplicationState state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  switch (state) {
+    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+      // The application is still visible and partially hidden in paused state.
+      is_application_visible_ = true;
+      break;
+    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+      is_application_visible_ = false;
+      break;
+    case base::android::APPLICATION_STATE_UNKNOWN:
+      break;  // Keep in previous state.
+  }
+}
+#endif
 
 Calculator::JankList Calculator::TakeJanksOlderThanTime(
     JankList* janks,
@@ -308,26 +416,6 @@ Calculator::JankList Calculator::TakeJanksOlderThanTime(
   janks->erase(janks->begin(), first_jank_to_keep);
   return janks_to_return;
 }
-
-#if defined(OS_ANDROID)
-void Calculator::OnApplicationStateChanged(
-    base::android::ApplicationState state) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  switch (state) {
-    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
-    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
-      // The application is still visible and partially hidden in paused state.
-      is_application_visible_ = true;
-      break;
-    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
-    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
-      is_application_visible_ = false;
-      break;
-    case base::android::APPLICATION_STATE_UNKNOWN:
-      break;  // Keep in previous state.
-  }
-}
-#endif
 
 }  // namespace responsiveness
 }  // namespace content

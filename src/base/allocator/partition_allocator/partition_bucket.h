@@ -64,6 +64,21 @@ struct PartitionBucket {
                                            bool* is_already_zeroed)
       EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 
+  ALWAYS_INLINE bool CanStoreRawSize() const {
+    // For direct-map as well as single-slot slot spans (recognized by checking
+    // against |MaxSystemPagesPerSlotSpan()|), we have some spare metadata
+    // space in subsequent PartitionPage to store the raw size. It isn't only
+    // metadata space though, slot spans that have more than one slot can't have
+    // raw size stored, because we wouldn't know which slot it applies to.
+    if (LIKELY(slot_size <= MaxSystemPagesPerSlotSpan() * SystemPageSize()))
+      return false;
+
+    PA_DCHECK((slot_size % SystemPageSize()) == 0);
+    PA_DCHECK(is_direct_mapped() || get_slots_per_span() == 1);
+
+    return true;
+  }
+
   ALWAYS_INLINE bool is_direct_mapped() const {
     return !num_system_pages_per_slot_span;
   }
@@ -87,14 +102,6 @@ struct PartitionBucket {
            NumSystemPagesPerPartitionPage();
   }
 
-  static ALWAYS_INLINE size_t get_direct_map_size(size_t size) {
-    // Caller must check that the size is not above the MaxDirectMapped()
-    // limit before calling. This also guards against integer overflow in the
-    // calculation here.
-    PA_DCHECK(size <= MaxDirectMapped());
-    return (size + SystemPageOffsetMask()) & SystemPageBaseMask();
-  }
-
   // This helper function scans a bucket's active slot span list for a suitable
   // new active slot span.  When it finds a suitable new active slot span (one
   // that has free slots and is not empty), it is set as the new active slot
@@ -106,27 +113,6 @@ struct PartitionBucket {
   //
   // This is where the guts of the bucket maintenance is done!
   bool SetNewActiveSlotSpan();
-
-  // Returns an offset within an allocation slot.
-  ALWAYS_INLINE size_t GetSlotOffset(size_t offset_in_slot_span) {
-    // Knowing that slots are tightly packed in a slot span, calculate an offset
-    // using an equivalent of a modulo operation.
-
-    // See the static assertion for `kReciprocalShift` above.
-    PA_DCHECK(offset_in_slot_span <= kMaxBucketed);
-    PA_DCHECK(slot_size <= kMaxBucketed);
-
-    // Calculate `decimal_part{offset_in_slot / size} * (2 ** M)` first.
-    uint64_t offset_in_slot =
-        (offset_in_slot_span * slot_size_reciprocal) & kReciprocalMask;
-
-    // (decimal_part * size) * (2 ** M) == offset_in_slot_span % size * (2 ** M)
-    // Divide by `2 ** M` using a bit shift.
-    offset_in_slot = (offset_in_slot * slot_size) >> kReciprocalShift;
-    PA_DCHECK(offset_in_slot_span % slot_size == offset_in_slot);
-
-    return static_cast<size_t>(offset_in_slot);
-  }
 
   // Returns a slot number starting from the beginning of the slot span.
   ALWAYS_INLINE size_t GetSlotNumber(size_t offset_in_slot_span) {
@@ -161,6 +147,11 @@ struct PartitionBucket {
                                        size_t committed_size)
       EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 
+  // Allocates a new super page from the current extent. All slot-spans will be
+  // in the decommitted state. Returns nullptr on error.
+  ALWAYS_INLINE void* AllocNewSuperPage(PartitionRoot<thread_safe>* root)
+      EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
+
   // Each bucket allocates a slot span when it runs out of slots.
   // A slot span's size is equal to get_pages_per_slot_span() number of
   // partition pages. This function initializes all PartitionPage within the
@@ -171,11 +162,18 @@ struct PartitionBucket {
   ALWAYS_INLINE void InitializeSlotSpan(
       SlotSpanMetadata<thread_safe>* slot_span);
 
-  // Allocates one slot from the given |slot_span| and then adds the remainder
-  // to the current bucket. If the |slot_span| was freshly allocated, it must
-  // have been passed through InitializeSlotSpan() first.
-  ALWAYS_INLINE char* AllocAndFillFreelist(
-      SlotSpanMetadata<thread_safe>* slot_span);
+  // Commit 1 or more pages in |slot_span|, enough to get the next slot, which
+  // is returned by this function. If more slots fit into the committed pages,
+  // they'll be added to the free list of the slot span (note that next pointers
+  // are stored inside the slots).
+  // The free list must be empty when calling this function.
+  //
+  // If |slot_span| was freshly allocated, it must have been passed through
+  // InitializeSlotSpan() first.
+  ALWAYS_INLINE char* ProvisionMoreSlotsAndAllocOne(
+      PartitionRoot<thread_safe>* root,
+      SlotSpanMetadata<thread_safe>* slot_span)
+      EXCLUSIVE_LOCKS_REQUIRED(root->lock_);
 };
 
 }  // namespace internal

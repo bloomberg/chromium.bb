@@ -4,10 +4,10 @@
 #define JPEG_LIB_VERSION 62
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION 2.0.1
+#define LIBJPEG_TURBO_VERSION 2.0.90
 
 /* libjpeg-turbo version in integer form */
-#define LIBJPEG_TURBO_VERSION_NUMBER  2000001
+#define LIBJPEG_TURBO_VERSION_NUMBER 2000090
 
 /* Support arithmetic encoding */
 /* #define C_ARITH_CODING_SUPPORTED 1 */
@@ -30,7 +30,7 @@
  * We do not support run-time selection of data precision, sorry.
  */
 
-#define BITS_IN_JSAMPLE  8      /* use 8 or 12 */
+#define BITS_IN_JSAMPLE 8      /* use 8 or 12 */
 
 /* Define to 1 if you have the <locale.h> header file. */
 #define HAVE_LOCALE_H 1
@@ -60,11 +60,6 @@
 /* Define if your (broken) compiler shifts signed values as if they were
    unsigned. */
 /* #undef RIGHT_SHIFT_IS_UNSIGNED */
-
-/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
-#ifndef __CHAR_UNSIGNED__
-/* # undef __CHAR_UNSIGNED__ */
-#endif
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

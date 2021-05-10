@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/wasm/wasm-module.h"
+
 #include <functional>
 #include <memory>
 
 #include "src/api/api-inl.h"
+#include "src/base/platform/wrappers.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/compiler/wasm-compiler.h"
 #include "src/debug/interface-types.h"
@@ -19,7 +22,6 @@
 #include "src/wasm/module-decoder.h"
 #include "src/wasm/wasm-code-manager.h"
 #include "src/wasm/wasm-js.h"
-#include "src/wasm/wasm-module.h"
 #include "src/wasm/wasm-objects-inl.h"
 #include "src/wasm/wasm-result.h"
 
@@ -41,29 +43,6 @@ WireBytesRef LazilyGeneratedNames::LookupFunctionName(
   }
   auto it = function_names_->find(function_index);
   if (it == function_names_->end()) return WireBytesRef();
-  return it->second;
-}
-
-std::pair<WireBytesRef, WireBytesRef>
-LazilyGeneratedNames::LookupNameFromImportsAndExports(
-    ImportExportKindCode kind, uint32_t index,
-    Vector<const WasmImport> import_table,
-    Vector<const WasmExport> export_table) const {
-  base::MutexGuard lock(&mutex_);
-  DCHECK(kind == kExternalGlobal || kind == kExternalMemory ||
-         kind == kExternalTable);
-  auto& names = kind == kExternalGlobal
-                    ? global_names_
-                    : kind == kExternalMemory ? memory_names_ : table_names_;
-  if (!names) {
-    names.reset(
-        new std::unordered_map<uint32_t,
-                               std::pair<WireBytesRef, WireBytesRef>>());
-    GenerateNamesFromImportsAndExports(kind, import_table, export_table,
-                                       names.get());
-  }
-  auto it = names->find(index);
-  if (it == names->end()) return {};
   return it->second;
 }
 
@@ -568,9 +547,9 @@ Handle<JSArray> GetCustomSections(Isolate* isolate,
       thrower->RangeError("out of memory allocating custom section data");
       return Handle<JSArray>();
     }
-    memcpy(array_buffer->backing_store(),
-           wire_bytes.begin() + section.payload.offset(),
-           section.payload.length());
+    base::Memcpy(array_buffer->backing_store(),
+                 wire_bytes.begin() + section.payload.offset(),
+                 section.payload.length());
 
     matching_sections.push_back(array_buffer);
   }

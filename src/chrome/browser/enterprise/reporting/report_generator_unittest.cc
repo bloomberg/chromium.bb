@@ -13,6 +13,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,7 +29,7 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/arc_prefs.h"
@@ -47,7 +48,7 @@ const char kPluginVersion[] = "1.0";
 const char kPluginDescription[] = "This is a plugin.";
 const char kPluginFileName[] = "file_name";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kArcAppName1[] = "app_name1";
 const char kArcPackageName1[] = "package_name1";
 const char kArcActivityName1[] = "activity_name1";
@@ -56,7 +57,7 @@ const char kArcPackageName2[] = "package_name2";
 const char kArcActivityName2[] = "activity_name2";
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // We only upload serial number on Windows.
 void VerifySerialNumber(const std::string& serial_number) {
 #if defined(OS_WIN)
@@ -97,7 +98,7 @@ void AddExtensionToProfile(TestingProfile* profile) {
                                      .Build());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 arc::mojom::AppInfo CreateArcApp(const std::string& app_name,
                                  const std::string& package_name,
@@ -134,13 +135,17 @@ void AddArcPackageAndApp(ArcAppTest* arc_app_test,
 
 }  // namespace
 
-class ReportGeneratorTest : public ::testing::Test {
+class ReportGeneratorTest : public ::testing::Test,
+                            public ::testing::WithParamInterface<bool> {
  public:
   using ReportRequest = definition::ReportRequest;
 
   ReportGeneratorTest()
       : generator_(&delegate_factory_),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
   ~ReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -238,10 +243,10 @@ class ReportGeneratorTest : public ::testing::Test {
       // Verify that the profile id is set as profile path.
       EXPECT_EQ(GetProfilePath(actual_profile_name), actual_profile_info.id());
 
-      EXPECT_TRUE(actual_profile_info.has_is_full_report());
+      EXPECT_TRUE(actual_profile_info.has_is_detail_available());
 
       // Activate profiles have full report while the inactive ones don't.
-      if (actual_profile_info.is_full_report())
+      if (actual_profile_info.is_detail_available())
         FindAndRemoveProfileName(&mutable_active_profiles_names,
                                  actual_profile_name);
       else
@@ -286,11 +291,12 @@ class ReportGeneratorTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGeneratorTest);
 };
 
-TEST_F(ReportGeneratorTest, GenerateBasicReport) {
+TEST_P(ReportGeneratorTest, GenerateBasicReport) {
   auto profile_names = CreateProfiles(/*number*/ 2, kIdle);
   CreatePlugin();
 
@@ -301,7 +307,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
 
   // In the ChromeOsUserReportRequest for Chrome OS, these fields are not
   // existing. Therefore, they are skipped according to current environment.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
@@ -320,7 +326,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_FALSE(browser_report.has_browser_version());
   EXPECT_FALSE(browser_report.has_channel());
 #else
@@ -329,7 +335,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
 #endif
   EXPECT_NE(std::string(), browser_report.executable_path());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(0, browser_report.plugins_size());
 #else
   // There might be other plugins like PDF plugin, however, our fake plugin
@@ -345,7 +351,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
                       profile_names, browser_report);
 }
 
-TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
+TEST_P(ReportGeneratorTest, GenerateWithoutProfiles) {
   auto profile_names = CreateProfiles(/*number*/ 2, kActive);
   CreatePlugin();
 
@@ -356,7 +362,7 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
 
   // In the ChromeOsUserReportRequest for Chrome OS, these fields are not
   // existing. Therefore, they are skipped according to current environment.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
@@ -370,7 +376,7 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_FALSE(browser_report.has_browser_version());
   EXPECT_FALSE(browser_report.has_channel());
 #else
@@ -379,7 +385,7 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
 #endif
   EXPECT_NE(std::string(), browser_report.executable_path());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(0, browser_report.plugins_size());
 #else
   // There might be other plugins like PDF plugin, however, our fake plugin
@@ -395,7 +401,7 @@ TEST_F(ReportGeneratorTest, GenerateWithoutProfiles) {
                       profile_names, browser_report);
 }
 
-TEST_F(ReportGeneratorTest, ExtensionRequestOnly) {
+TEST_P(ReportGeneratorTest, ExtensionRequestOnly) {
   auto profile_names = CreateProfiles(/*number*/ 2, kActive);
   CreatePlugin();
 
@@ -404,7 +410,7 @@ TEST_F(ReportGeneratorTest, ExtensionRequestOnly) {
 
   auto* basic_request = requests[0].get();
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_FALSE(basic_request->has_computer_name());
   EXPECT_FALSE(basic_request->has_os_user_name());
   EXPECT_FALSE(basic_request->has_os_report());
@@ -419,9 +425,9 @@ TEST_F(ReportGeneratorTest, ExtensionRequestOnly) {
             basic_request->partial_report_types(0));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
-TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
+TEST_P(ReportGeneratorTest, ReportArcAppInChromeOS) {
   ArcAppTest arc_app_test;
   TestingProfile primary_profile;
   arc_app_test.SetUp(&primary_profile);
@@ -461,7 +467,7 @@ TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
   arc_app_test.TearDown();
 }
 
-TEST_F(ReportGeneratorTest, ArcPlayStoreDisabled) {
+TEST_P(ReportGeneratorTest, ArcPlayStoreDisabled) {
   ArcAppTest arc_app_test;
   TestingProfile primary_profile;
   arc_app_test.SetUp(&primary_profile);
@@ -487,5 +493,9 @@ TEST_F(ReportGeneratorTest, ArcPlayStoreDisabled) {
 }
 
 #endif
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         ReportGeneratorTest,
+                         /*is_ephemeral=*/testing::Bool());
 
 }  // namespace enterprise_reporting

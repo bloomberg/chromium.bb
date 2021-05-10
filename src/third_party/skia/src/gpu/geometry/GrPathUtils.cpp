@@ -585,13 +585,23 @@ void GrPathUtils::convertCubicToQuadsConstrainToTangents(const SkPoint p[4],
     }
 }
 
-static inline bool is_ieee_float_inside_0_1_exclusive(float x) {
-    constexpr static uint32_t kIEEE_one = 127 << 23;
-    return sk_bit_cast<uint32_t>(x) - 1 < kIEEE_one - 1;
-}
-
-int GrPathUtils::findCubicConvex180Chops(const SkPoint pts[], float T[2]) {
+int GrPathUtils::findCubicConvex180Chops(const SkPoint pts[], float T[2], bool* areCusps) {
     using grvx::float2;
+    SkASSERT(pts);
+    SkASSERT(T);
+    SkASSERT(areCusps);
+
+    // If a chop falls within a distance of "kEpsilon" from 0 or 1, throw it out. Tangents become
+    // unstable when we chop too close to the boundary. This works out because the tessellation
+    // shaders don't allow more than 2^10 parametric segments, and they snap the beginning and
+    // ending edges at 0 and 1. So if we overstep an inflection or point of 180-degree rotation by a
+    // fraction of a tessellation segment, it just gets snapped.
+    constexpr static float kEpsilon = 1.f / (1 << 11);
+    // Floating-point representation of "1 - 2*kEpsilon".
+    constexpr static uint32_t kIEEE_one_minus_2_epsilon = (127 << 23) - 2 * (1 << (24 - 11));
+    // Unfortunately we don't have a way to static_assert this, but we can runtime assert that the
+    // kIEEE_one_minus_2_epsilon bits are correct.
+    SkASSERT(sk_bit_cast<float>(kIEEE_one_minus_2_epsilon) == 1 - 2*kEpsilon);
 
     float2 p0 = skvx::bit_pun<float2>(pts[0]);
     float2 p1 = skvx::bit_pun<float2>(pts[1]);
@@ -626,23 +636,43 @@ int GrPathUtils::findCubicConvex180Chops(const SkPoint pts[], float T[2]) {
     float b_over_minus_2 = -.5f * b;
     float discr_over_4 = b_over_minus_2*b_over_minus_2 - a*c;
 
-    if (discr_over_4 <= 0) {
+    // If -cuspThreshold <= discr_over_4 <= cuspThreshold, it means the two roots are within
+    // kEpsilon of one another (in parametric space). This is close enough for our purposes to
+    // consider them a single cusp.
+    float cuspThreshold = a * (kEpsilon/2);
+    cuspThreshold *= cuspThreshold;
+
+    if (discr_over_4 < -cuspThreshold) {
+        // The curve does not inflect or cusp. This means it might rotate more than 180 degrees
+        // instead. Chop were rotation == 180 deg. (This is the 2nd root where the tangent is
+        // parallel to tan0.)
+        //
+        //      Tangent_Direction(T) x tan0 == 0
+        //      (AT^2 x tan0) + (2BT x tan0) + (C x tan0) == 0
+        //      (A x C)T^2 + (2B x C)T + (C x C) == 0  [[because tan0 == P1 - P0 == C]]
+        //      bT^2 + 2cT + 0 == 0  [[because A x C == b, B x C == c]]
+        //      T = [0, -2c/b]
+        //
+        // NOTE: if C == 0, then C != tan0. But this is fine because the curve is definitely
+        // convex-180 if any points are colocated, and T[0] will equal NaN which returns 0 chops.
+        *areCusps = false;
+        float root = sk_ieee_float_divide(c, b_over_minus_2);
+        // Is "root" inside the range [kEpsilon, 1 - kEpsilon)?
+        if (sk_bit_cast<uint32_t>(root - kEpsilon) < kIEEE_one_minus_2_epsilon) {
+            T[0] = root;
+            return 1;
+        }
+        return 0;
+    }
+
+    *areCusps = (discr_over_4 <= cuspThreshold);
+    if (*areCusps) {
+        // The two roots are close enough that we can consider them a single cusp.
         if (a != 0 || b_over_minus_2 != 0 || c != 0) {
-            // The curve does not inflect or cusp. This means it might rotate more than 180 degrees
-            // instead. Chop were rotation == 180 deg. (This is the 2nd root where the tangent is
-            // parallel to tan0.)
-            //
-            //      Tangent_Direction(T) x tan0 == 0
-            //      (AT^2 x tan0) + (2BT x tan0) + (C x tan0) == 0
-            //      (A x C)T^2 + (2B x C)T + (C x C) == 0  [[because tan0 == P1 - P0 == C]]
-            //      bT^2 + 2c + 0 == 0  [[because A x C == b, B x C == c]]
-            //      T = [0, -2c/b]
-            //
-            // NOTE: if C == 0, then C != tan0. But this is fine because the curve is definitely
-            // convex-180 if any points are colocated, and T[0] will equal NaN which returns 0
-            // chops.
-            float root = sk_ieee_float_divide(c, b_over_minus_2);
-            if (is_ieee_float_inside_0_1_exclusive(root)) {
+            // Pick the average of both roots.
+            float root = sk_ieee_float_divide(b_over_minus_2, a);
+            // Is "root" inside the range [kEpsilon, 1 - kEpsilon)?
+            if (sk_bit_cast<uint32_t>(root - kEpsilon) < kIEEE_one_minus_2_epsilon) {
                 T[0] = root;
                 return 1;
             }
@@ -673,7 +703,7 @@ int GrPathUtils::findCubicConvex180Chops(const SkPoint pts[], float T[2]) {
     q = q + b_over_minus_2;
     float2 roots = float2{q,c} / float2{a,q};
 
-    auto inside = (roots > 0) & (roots < 1);
+    auto inside = (roots > kEpsilon) & (roots < (1 - kEpsilon));
     if (inside[0]) {
         if (inside[1] && roots[0] != roots[1]) {
             if (roots[0] > roots[1]) {

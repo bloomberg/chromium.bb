@@ -121,7 +121,12 @@ PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 const int kResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
-    : layer_(&layer),
+    : ScrollableArea(layer.GetLayoutBox()
+                         ->GetDocument()
+                         .GetPage()
+                         ->GetAgentGroupScheduler()
+                         .CompositorTaskRunner()),
+      layer_(&layer),
       in_resize_mode_(false),
       scrolls_overflow_(false),
       in_overflow_relayout_(false),
@@ -961,8 +966,11 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
                                            GetLayoutBox()->BorderTop()));
   IntPoint new_origin(FlooredIntPoint(-scrollable_overflow.offset) +
                       GetLayoutBox()->OriginAdjustmentForScrollbars());
-  if (new_origin != scroll_origin_)
+  if (new_origin != scroll_origin_) {
     scroll_origin_changed_ = true;
+    // ScrollOrigin affects paint offsets of the scrolling contents.
+    GetLayoutBox()->SetSubtreeShouldCheckForPaintInvalidation();
+  }
   scroll_origin_ = new_origin;
 }
 
@@ -1122,7 +1130,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
         }
         LayoutObject* parent = GetLayoutBox()->Parent();
         if (parent && parent->IsFlexibleBox()) {
-          ToLayoutFlexibleBox(parent)->ClearCachedMainSizeForChild(
+          To<LayoutFlexibleBox>(parent)->ClearCachedMainSizeForChild(
               *GetLayoutBox());
         }
       }
@@ -1163,7 +1171,7 @@ void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
   }
 
   const Document& document = GetLayoutBox()->GetDocument();
-  if (document.IsCapturingLayout()) {
+  if (document.IsPrintingOrPaintingPreview()) {
     // Scrollable elements may change size when generating layout for printing,
     // which may require them to change the scroll position in order to keep the
     // same content within view. In vertical-rl writing-mode, even the root
@@ -1356,6 +1364,9 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
       previous_vertical_scrollbar_on_left_ = vertical_scrollbar_on_left;
     }
   }
+
+  if (!old_style || old_style->UsedColorScheme() != UsedColorScheme())
+    SetScrollControlsNeedFullPaintInvalidation();
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
@@ -2142,16 +2153,6 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   }
 }
 
-bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
-  if (const PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (const PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
-      if (sticky_layer->GetLayoutObject().IsSlowRepaintConstrainedObject())
-        return true;
-    }
-  }
-  return false;
-}
-
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
@@ -2492,12 +2493,11 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
     if (frame->View()->GetMainThreadScrollingReasons())
       return true;
   }
-  if (HasNonCompositedStickyDescendants())
-    return true;
 
   // Property tree state is not available until the PrePaint lifecycle stage.
+  // PaintPropertyTreeBuilder needs to get the old status during PrePaint.
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-            DocumentLifecycle::kPrePaintClean);
+            DocumentLifecycle::kInPrePaint);
   const auto* properties = GetLayoutBox()->FirstFragment().PaintProperties();
   if (!properties || !properties->Scroll() ||
       properties->Scroll()->GetMainThreadScrollingReasons())

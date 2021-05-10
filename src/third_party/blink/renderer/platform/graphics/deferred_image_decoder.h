@@ -31,13 +31,14 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
+#include "third_party/blink/renderer/platform/graphics/rw_buffer.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
+#include "third_party/blink/renderer/platform/graphics/parkable_image.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/skia/include/core/SkRWBuffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -104,7 +105,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   // Copy of the data that is passed in, used by deferred decoding.
   // Allows creating readonly snapshots that may be read in another thread.
-  std::unique_ptr<SkRWBuffer> rw_buffer_;
+  scoped_refptr<ParkableImage> parkable_image_;
   std::unique_ptr<ImageDecoder> metadata_decoder_;
 
   String filename_extension_;
@@ -131,6 +132,9 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   // Caches frame state information.
   Vector<DeferredFrameData> frame_data_;
+  // The number of received/complete frames in |frame_data_|. Note: This is also
+  // the index of the first unreceived/incomplete frame in |frame_data_|.
+  size_t received_frame_count_ = 0;
   scoped_refptr<ImageFrameGenerator> frame_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferredImageDecoder);
@@ -138,4 +142,4 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DEFERRED_IMAGE_DECODER_H_

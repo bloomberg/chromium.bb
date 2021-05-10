@@ -34,8 +34,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "media/base/stream_parser.h"
 #include "third_party/blink/public/platform/web_source_buffer_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -50,11 +52,16 @@ namespace blink {
 class AudioTrackList;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
+class
+    EncodedAudioChunkOrEncodedVideoChunkSequenceOrEncodedAudioChunkOrEncodedVideoChunk;
 class EventQueue;
 class ExceptionState;
 class MediaSource;
 class MediaSourceTracer;
 class MediaSourceAttachmentSupplement;
+class ScriptPromiseResolver;
+class ScriptState;
+class SourceBufferConfig;
 class TimeRanges;
 class VideoTrackList;
 class WebSourceBuffer;
@@ -70,6 +77,10 @@ class SourceBuffer final : public EventTargetWithInlineData,
   static AtomicString SegmentsKeyword();
   static AtomicString SequenceKeyword();
 
+  // Mirror the IDL's typedef for EncodedChunks.
+  using EncodedChunks =
+      EncodedAudioChunkOrEncodedVideoChunkSequenceOrEncodedAudioChunkOrEncodedVideoChunk;
+
   SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, EventQueue*);
   ~SourceBuffer() override;
 
@@ -82,9 +93,13 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void setTimestampOffset(double, ExceptionState&);
   void appendBuffer(DOMArrayBuffer* data, ExceptionState&);
   void appendBuffer(NotShared<DOMArrayBufferView> data, ExceptionState&);
+  ScriptPromise appendEncodedChunks(ScriptState*,
+                                    const EncodedChunks&,
+                                    ExceptionState&);
   void abort(ExceptionState&);
   void remove(double start, double end, ExceptionState&);
   void changeType(const String& type, ExceptionState&);
+  void ChangeTypeUsingConfig(const SourceBufferConfig*, ExceptionState&);
   double appendWindowStart() const;
   void setAppendWindowStart(double, ExceptionState&);
   double appendWindowEnd() const;
@@ -140,6 +155,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool PrepareAppend(double media_time, size_t new_data_size, ExceptionState&);
   bool EvictCodedFrames(double media_time, size_t new_data_size);
   void AppendBufferInternal(const unsigned char*, size_t, ExceptionState&);
+  void AppendEncodedChunksAsyncPart();
   void AppendBufferAsyncPart();
   void AppendError(MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
 
@@ -175,10 +191,17 @@ class SourceBuffer final : public EventTargetWithInlineData,
       const String& type,
       ExceptionState*,
       MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
+  void AppendEncodedChunks_Locked(
+      std::unique_ptr<media::StreamParser::BufferQueue> buffer_queue,
+      size_t size,
+      ExceptionState* exception_state,
+      MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
   void AppendBufferInternal_Locked(
       const unsigned char*,
       size_t,
       ExceptionState*,
+      MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
+  void AppendEncodedChunksAsyncPart_Locked(
       MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
   void AppendBufferAsyncPart_Locked(
       MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */);
@@ -225,6 +248,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
 
   AtomicString mode_;
   bool updating_;
+
   double timestamp_offset_;
   Member<AudioTrackList> audio_tracks_;
   Member<VideoTrackList> video_tracks_;
@@ -232,10 +256,25 @@ class SourceBuffer final : public EventTargetWithInlineData,
   double append_window_end_;
   bool first_initialization_segment_received_;
 
+  // |updating_| logic, per spec, allows at most one of the following async
+  // operations to be exclusively pending for this SourceBuffer: appendBuffer(),
+  // appendEncodedChunks(), or remove(). The following three sections
+  // respectively track the async state for these pending operations:
+
+  // These are valid only during the scope of synchronous and asynchronous
+  // follow-up of appendBuffer().
   Vector<unsigned char> pending_append_data_;
   wtf_size_t pending_append_data_offset_;
   TaskHandle append_buffer_async_task_handle_;
 
+  // This resolver is set and valid only during the scope of synchronous and
+  // asynchronous follow-up of appendEncodedChunks().
+  std::unique_ptr<media::StreamParser::BufferQueue> pending_chunks_to_buffer_;
+  Member<ScriptPromiseResolver> append_encoded_chunks_resolver_;
+  TaskHandle append_encoded_chunks_async_task_handle_;
+
+  // These are valid only during the scope of synchronous and asynchronous
+  // follow-up of remove().
   double pending_remove_start_;
   double pending_remove_end_;
   TaskHandle remove_async_task_handle_;

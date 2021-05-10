@@ -14,6 +14,7 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/user_education/feature_promo_snooze_service.h"
+#include "chrome/browser/ui/user_education/feature_promo_text_replacements.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/views/user_education/feature_promo_registry.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/view.h"
 
 FeaturePromoControllerViews::FeaturePromoControllerViews(
@@ -63,42 +65,7 @@ bool FeaturePromoControllerViews::MaybeShowPromoWithParams(
     const base::Feature& iph_feature,
     const FeaturePromoBubbleParams& params,
     BubbleCloseCallback close_callback) {
-  if (promos_blocked_for_testing_)
-    return false;
-
-  // A normal promo cannot show if a critical promo is displayed. These
-  // are not registered with |tracker_| so check here.
-  if (current_critical_promo_)
-    return false;
-
-  // Temporarily turn off IPH in incognito as a concern was raised that
-  // the IPH backend ignores incognito and writes to the parent profile.
-  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1128728#c30
-  if (browser_view_->GetProfile()->IsIncognitoProfile())
-    return false;
-
-  if (snooze_service_->IsBlocked(iph_feature))
-    return false;
-
-  if (!tracker_->ShouldTriggerHelpUI(iph_feature))
-    return false;
-
-  // If the tracker says we should trigger, but we have a promo
-  // currently showing, there is a bug somewhere in here.
-  DCHECK(!current_iph_feature_);
-  current_iph_feature_ = &iph_feature;
-
-  // Record count of previous snoozes when an IPH triggers.
-  int snooze_count = snooze_service_->GetSnoozeCount(iph_feature);
-  base::UmaHistogramExactLinear("InProductHelp.Promos.SnoozeCountAtTrigger." +
-                                    std::string(iph_feature.name),
-                                snooze_count,
-                                snooze_service_->kUmaMaxSnoozeCount);
-
-  ShowPromoBubbleImpl(params);
-  close_callback_ = std::move(close_callback);
-
-  return true;
+  return MaybeShowPromoImpl(iph_feature, params, std::move(close_callback));
 }
 
 base::Optional<base::Token> FeaturePromoControllerViews::ShowCriticalPromo(
@@ -139,13 +106,26 @@ void FeaturePromoControllerViews::CloseBubbleForCriticalPromo(
 bool FeaturePromoControllerViews::MaybeShowPromo(
     const base::Feature& iph_feature,
     BubbleCloseCallback close_callback) {
+  return MaybeShowPromoWithTextReplacements(
+      iph_feature, FeaturePromoTextReplacements(), std::move(close_callback));
+}
+
+bool FeaturePromoControllerViews::MaybeShowPromoWithTextReplacements(
+    const base::Feature& iph_feature,
+    FeaturePromoTextReplacements text_replacements,
+    BubbleCloseCallback close_callback) {
   base::Optional<FeaturePromoBubbleParams> params =
       FeaturePromoRegistry::GetInstance()->GetParamsForFeature(iph_feature,
                                                                browser_view_);
   if (!params)
     return false;
-  return MaybeShowPromoWithParams(iph_feature, *params,
-                                  std::move(close_callback));
+
+  DCHECK_GT(params->body_string_specifier, -1);
+  params->body_text_raw =
+      text_replacements.ApplyTo(params->body_string_specifier);
+  params->body_string_specifier = -1;
+
+  return MaybeShowPromoImpl(iph_feature, *params, std::move(close_callback));
 }
 
 void FeaturePromoControllerViews::OnUserSnooze(
@@ -224,6 +204,48 @@ void FeaturePromoControllerViews::OnWidgetDestroying(views::Widget* widget) {
   HandleBubbleClosed();
 }
 
+bool FeaturePromoControllerViews::MaybeShowPromoImpl(
+    const base::Feature& iph_feature,
+    const FeaturePromoBubbleParams& params,
+    BubbleCloseCallback close_callback) {
+  if (promos_blocked_for_testing_)
+    return false;
+
+  // A normal promo cannot show if a critical promo is displayed. These
+  // are not registered with |tracker_| so check here.
+  if (current_critical_promo_)
+    return false;
+
+  // Temporarily turn off IPH in incognito as a concern was raised that
+  // the IPH backend ignores incognito and writes to the parent profile.
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1128728#c30
+  if (browser_view_->GetProfile()->IsIncognitoProfile())
+    return false;
+
+  if (snooze_service_->IsBlocked(iph_feature))
+    return false;
+
+  if (!tracker_->ShouldTriggerHelpUI(iph_feature))
+    return false;
+
+  // If the tracker says we should trigger, but we have a promo
+  // currently showing, there is a bug somewhere in here.
+  DCHECK(!current_iph_feature_);
+  current_iph_feature_ = &iph_feature;
+
+  // Record count of previous snoozes when an IPH triggers.
+  int snooze_count = snooze_service_->GetSnoozeCount(iph_feature);
+  base::UmaHistogramExactLinear("InProductHelp.Promos.SnoozeCountAtTrigger." +
+                                    std::string(iph_feature.name),
+                                snooze_count,
+                                snooze_service_->kUmaMaxSnoozeCount);
+
+  ShowPromoBubbleImpl(params);
+  close_callback_ = std::move(close_callback);
+
+  return true;
+}
+
 void FeaturePromoControllerViews::FinishContinuedPromo() {
   DCHECK(current_iph_feature_);
   DCHECK(!promo_bubble_);
@@ -236,17 +258,47 @@ void FeaturePromoControllerViews::ShowPromoBubbleImpl(
   params.anchor_view->SetProperty(kHasInProductHelpPromoKey, true);
   anchor_view_tracker_.SetView(params.anchor_view);
 
+  // Map |params| to the bubble's create params, fetching needed strings.
+  FeaturePromoBubbleView::CreateParams create_params;
+  create_params.anchor_view = params.anchor_view;
+  create_params.body_text =
+      params.body_string_specifier != -1
+          ? l10n_util::GetStringUTF16(params.body_string_specifier)
+          : params.body_text_raw;
+  if (params.title_string_specifier)
+    create_params.title_text =
+        l10n_util::GetStringUTF16(*params.title_string_specifier);
+
+  if (params.screenreader_string_specifier && params.feature_accelerator) {
+    create_params.screenreader_text = l10n_util::GetStringFUTF16(
+        *params.screenreader_string_specifier,
+        params.feature_accelerator->GetShortcutText());
+  } else if (params.screenreader_string_specifier) {
+    create_params.screenreader_text =
+        l10n_util::GetStringUTF16(*params.screenreader_string_specifier);
+  }
+
+  create_params.snoozable = params.allow_snooze;
+  create_params.focusable = params.allow_focus;
+  create_params.persist_on_blur = params.persist_on_blur;
+
+  create_params.arrow = params.arrow;
+  create_params.preferred_width = params.preferred_width;
+
+  create_params.timeout_default = params.timeout_default;
+  create_params.timeout_short = params.timeout_short;
+
   if (current_iph_feature_) {
     // For normal promos:
     promo_bubble_ = FeaturePromoBubbleView::Create(
-        params,
+        std::move(create_params),
         base::BindRepeating(&FeaturePromoControllerViews::OnUserSnooze,
                             base::Unretained(this), *current_iph_feature_),
         base::BindRepeating(&FeaturePromoControllerViews::OnUserDismiss,
                             base::Unretained(this), *current_iph_feature_));
   } else {
     // For critical promos, since they aren't snoozable:
-    promo_bubble_ = FeaturePromoBubbleView::Create(params);
+    promo_bubble_ = FeaturePromoBubbleView::Create(std::move(create_params));
   }
 
   widget_observer_.Add(promo_bubble_->GetWidget());

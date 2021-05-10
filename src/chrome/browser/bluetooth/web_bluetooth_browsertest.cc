@@ -8,7 +8,11 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,6 +47,7 @@
 namespace {
 
 constexpr char kDeviceAddress[] = "00:00:00:00:00:00";
+constexpr char kDeviceAddress2[] = "00:00:00:00:00:01";
 constexpr char kHeartRateUUIDString[] = "0000180d-0000-1000-8000-00805f9b34fb";
 const device::BluetoothUUID kHeartRateUUID(kHeartRateUUIDString);
 
@@ -58,11 +63,12 @@ class FakeBluetoothAdapter
   void SetIsPresent(bool is_present) { is_present_ = is_present; }
 
   void SimulateDeviceAdvertisementReceived(
-      const std::string& device_address) const {
+      const std::string& device_address,
+      const base::Optional<std::string>& advertisement_name =
+          base::nullopt) const {
     for (auto& observer : observers_) {
       observer.DeviceAdvertisementReceived(
-          device_address, /*device_name=*/base::nullopt,
-          /*advertisement_name=*/base::nullopt,
+          device_address, /*device_name=*/base::nullopt, advertisement_name,
           /*rssi=*/base::nullopt, /*tx_power=*/base::nullopt,
           /*appearance=*/base::nullopt,
           /*advertised_uuids=*/{}, /*service_data_map=*/{},
@@ -220,30 +226,6 @@ class FakeBluetoothChooser : public content::BluetoothChooser {
   base::Optional<std::string> device_to_select_;
 };
 
-class FakeBluetoothScanningPrompt : public content::BluetoothScanningPrompt {
- public:
-  explicit FakeBluetoothScanningPrompt(
-      const content::BluetoothScanningPrompt::EventHandler& event_handler)
-      : event_handler_(event_handler) {}
-  ~FakeBluetoothScanningPrompt() override = default;
-
-  // Move-only class
-  FakeBluetoothScanningPrompt(const FakeBluetoothScanningPrompt&) = delete;
-  FakeBluetoothScanningPrompt& operator=(const FakeBluetoothScanningPrompt&) =
-      delete;
-
-  void RunPromptEventHandler(content::BluetoothScanningPrompt::Event event) {
-    if (event_handler_.is_null()) {
-      FAIL() << "event_handler_ is not set";
-      return;
-    }
-    event_handler_.Run(event);
-  }
-
- protected:
-  content::BluetoothScanningPrompt::EventHandler event_handler_;
-};
-
 class TestBluetoothDelegate : public ChromeBluetoothDelegate {
  public:
   TestBluetoothDelegate() = default;
@@ -253,18 +235,6 @@ class TestBluetoothDelegate : public ChromeBluetoothDelegate {
 
   void SetDeviceToSelect(const std::string& device_address) {
     device_to_select_ = device_address;
-  }
-
-  // This method waits until ShowBluetoothScanningPrompt() has been called and
-  // |scanning_prompt_| contains a pointer to the created prompt, so the test
-  // will timeout if |navigator.bluetooth.requestLEScan()| has not been called
-  // in JavaScript.
-  void RunPromptEventHandler(content::BluetoothScanningPrompt::Event event) {
-    if (!scanning_prompt_) {
-      scanning_prompt_creation_loop_.emplace();
-      scanning_prompt_creation_loop_->Run();
-    }
-    scanning_prompt_->RunPromptEventHandler(event);
   }
 
  protected:
@@ -280,20 +250,12 @@ class TestBluetoothDelegate : public ChromeBluetoothDelegate {
       content::RenderFrameHost* frame,
       const content::BluetoothScanningPrompt::EventHandler& event_handler)
       override {
-    auto scanning_prompt =
-        std::make_unique<FakeBluetoothScanningPrompt>(event_handler);
-    scanning_prompt_ = scanning_prompt.get();
-    if (scanning_prompt_creation_loop_)
-      scanning_prompt_creation_loop_->Quit();
-    return scanning_prompt;
+    // Simulate that a prompt was accepted; no actual prompt is needed here.
+    event_handler.Run(content::BluetoothScanningPrompt::Event::kAllow);
+    return nullptr;
   }
 
   base::Optional<std::string> device_to_select_;
-  FakeBluetoothScanningPrompt* scanning_prompt_;
-
-  // This RunLoop is used to ensure that |scanning_prompt_| is not nullptr when
-  // RunPromptEventHandler() is called.
-  base::Optional<base::RunLoop> scanning_prompt_creation_loop_;
 };
 
 class TestContentBrowserClient : public ChromeContentBrowserClient {
@@ -391,10 +353,6 @@ class WebBluetoothTest : public InProcessBrowserTest {
 
   void SetDeviceToSelect(const std::string& device_address) {
     browser_client_.bluetooth_delegate()->SetDeviceToSelect(device_address);
-  }
-
-  void RunPromptEventHandler(content::BluetoothScanningPrompt::Event event) {
-    browser_client_.bluetooth_delegate()->RunPromptEventHandler(event);
   }
 
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
@@ -596,14 +554,13 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
                        PRE_WebBluetoothScanningIdsNotPersistent) {
-  // Grant permission to scan for Bluetooth devices and store the detected
+  // The request to scan should be automatically accepted. Store the detected
   // device's WebBluetoothDeviceId in localStorage to retrieve it after the
   // browser restarts.
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
       var requestLEScanPromise = navigator.bluetooth.requestLEScan({
         acceptAllAdvertisements: true});
   )"));
-  RunPromptEventHandler(content::BluetoothScanningPrompt::Event::kAllow);
   ASSERT_TRUE(content::ExecJs(web_contents_, "requestLEScanPromise"));
 
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
@@ -625,16 +582,14 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   EXPECT_TRUE(blink::WebBluetoothDeviceId::IsValid(scan_id));
 }
 
-// TODO(crbug.com/1147575) Test failure on Mac10.15
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
-                       DISABLED_WebBluetoothScanningIdsNotPersistent) {
-  // Grant permission to scan for Bluetooth devices again, and compare the ID
+                       WebBluetoothScanningIdsNotPersistent) {
+  // The request to scan should be automatically accepted. Store the detected
   // assigned to the scanned device against the one that was stored previously.
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
       var requestLEScanPromise = navigator.bluetooth.requestLEScan({
         acceptAllAdvertisements: true});
   )"));
-  RunPromptEventHandler(content::BluetoothScanningPrompt::Event::kAllow);
   ASSERT_TRUE(content::ExecJs(web_contents_, "requestLEScanPromise"));
 
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
@@ -683,16 +638,14 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   EXPECT_TRUE(blink::WebBluetoothDeviceId::IsValid(granted_id));
 }
 
-// TODO(crbug.com/1147582): Flaky
 IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
-                       DISABLED_WebBluetoothIdsUsedInWebBluetoothScanning) {
-  // Grant permission to scan for Bluetooth devices again, and compare the ID
+                       WebBluetoothIdsUsedInWebBluetoothScanning) {
+  // The request to scan should be automatically accepted. Store the detected
   // assigned to the scanned device against the one that was stored previously.
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
       var requestLEScanPromise = navigator.bluetooth.requestLEScan({
         acceptAllAdvertisements: true});
   )"));
-  RunPromptEventHandler(content::BluetoothScanningPrompt::Event::kAllow);
   ASSERT_TRUE(content::ExecJs(web_contents_, "requestLEScanPromise"));
 
   ASSERT_TRUE(content::ExecJs(web_contents_, R"(
@@ -763,6 +716,148 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
             return `${e.name}: ${e.message}`;
           }
         })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
+                       RevokingPermissionDisconnectsTheDevice) {
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  // Connect to heart rate device and ensure the GATT service is connected.
+  EXPECT_EQ(kHeartRateUUIDString, content::EvalJs(web_contents_, R"(
+    var gatt;
+    var gattserverdisconnectedPromise;
+
+    (async() => {
+      try {
+        let device = await navigator.bluetooth.requestDevice({
+          filters: [{name: 'Test Device', services: ['heart_rate']}]});
+        gatt = await device.gatt.connect();
+        gattserverdisconnectedPromise = new Promise(resolve => {
+          device.addEventListener('gattserverdisconnected', _ => {
+            resolve("event fired");
+          });
+        });
+        let service = await gatt.getPrimaryService('heart_rate');
+        return service.uuid;
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })()
+  )"));
+
+  BluetoothChooserContext* context =
+      BluetoothChooserContextFactory::GetForProfile(browser()->profile());
+  url::Origin origin =
+      url::Origin::Create(web_contents_->GetLastCommittedURL());
+
+  // Revoke the permission.
+  const auto objects = context->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(1ul, objects.size());
+  context->RevokeObjectPermission(origin, origin, objects.at(0)->value);
+
+  // Wait for gattserverdisconnect event.
+  EXPECT_EQ("event fired",
+            content::EvalJs(web_contents_, "gattserverdisconnectedPromise "));
+
+  // Ensure the service is disconnected.
+  EXPECT_THAT(content::EvalJs(web_contents_, R"((async() => {
+      try {
+        let service = await gatt.getPrimaryService('heart_rate');
+        return service.uuid;
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })())")
+                  .ExtractString(),
+              ::testing::HasSubstr("GATT Server is disconnected."));
+}
+
+IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
+                       RevokingPermissionStopsAdvertisements) {
+  // Setup the fake device.
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  // Request device and watch for advertisements. Record the last seen
+  // advertisement's name.
+  EXPECT_EQ("", content::EvalJs(web_contents_, R"(
+    var events_seen = "";
+    var first_device_promise;
+    (async() => {
+      try {
+        let device = await navigator.bluetooth.requestDevice({
+          filters: [{name: 'Test Device', services: ['heart_rate']}]});
+        device.watchAdvertisements();
+        first_device_promise = new Promise(resolve => {
+          device.addEventListener('advertisementreceived', event => {
+            events_seen += event.name + "|";
+            resolve(events_seen);
+          });
+        });
+        return "";
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })()
+  )"));
+
+  // Add a second listener on a different device which is used purely as an
+  // indicator of how much to wait until we can be reasonably sure that the
+  // second advertisement will not arrive.
+  AddFakeDevice(kDeviceAddress2);
+  SetDeviceToSelect(kDeviceAddress2);
+
+  EXPECT_EQ("", content::EvalJs(web_contents_, R"(
+    var second_device_promise;
+    (async() => {
+      try {
+        let device = await navigator.bluetooth.requestDevice({
+          filters: [{name: 'Test Device', services: ['heart_rate']}]});
+        device.watchAdvertisements();
+        second_device_promise = new Promise(resolve => {
+          device.addEventListener('advertisementreceived', event => {
+            events_seen += 'second_device_' + event.name;
+            resolve(events_seen);
+          });
+        });
+        return "";
+      } catch(e) {
+        return `${e.name}: ${e.message}`;
+      }
+    })()
+  )"));
+
+  // Number of granted objects should be 2.
+  url::Origin origin =
+      url::Origin::Create(web_contents_->GetLastCommittedURL());
+  BluetoothChooserContext* context =
+      BluetoothChooserContextFactory::GetForProfile(browser()->profile());
+  const auto objects = context->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(2u, objects.size());
+
+  // Send first advertisement and wait for the event to be resolved.
+  adapter_->SimulateDeviceAdvertisementReceived(kDeviceAddress,
+                                                "advertisement_name1");
+  EXPECT_EQ("advertisement_name1|",
+            content::EvalJs(web_contents_, "first_device_promise"));
+
+  // Revoke the permission.
+  context->RevokeObjectPermission(origin, origin, objects.at(0)->value);
+  EXPECT_EQ(1ul, context->GetGrantedObjects(origin, origin).size());
+
+  // Send another advertisement after the permission was revoked, this
+  // advertisement event should not be received. Also send an advertisement
+  // to the second device which, when received, will indicate that we have
+  // waited enough.
+
+  adapter_->SimulateDeviceAdvertisementReceived(kDeviceAddress,
+                                                "advertisement_name2");
+  adapter_->SimulateDeviceAdvertisementReceived(kDeviceAddress2,
+                                                "advertisement_name2");
+
+  EXPECT_EQ("advertisement_name1|second_device_advertisement_name2",
+            content::EvalJs(web_contents_, "second_device_promise"));
 }
 
 }  // namespace

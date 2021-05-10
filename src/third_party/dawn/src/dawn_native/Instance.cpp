@@ -19,6 +19,10 @@
 #include "dawn_native/ErrorData.h"
 #include "dawn_native/Surface.h"
 
+#if defined(DAWN_USE_X11)
+#    include "dawn_native/XlibXcbFunctions.h"
+#endif  // defined(DAWN_USE_X11)
+
 namespace dawn_native {
 
     // Forward definitions of each backend's "Connect" function that creates new BackendConnection.
@@ -40,7 +44,7 @@ namespace dawn_native {
 #endif  // defined(DAWN_ENABLE_BACKEND_NULL)
 #if defined(DAWN_ENABLE_BACKEND_OPENGL)
     namespace opengl {
-        BackendConnection* Connect(InstanceBase* instance);
+        BackendConnection* Connect(InstanceBase* instance, wgpu::BackendType backendType);
     }
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
 #if defined(DAWN_ENABLE_BACKEND_VULKAN)
@@ -147,7 +151,8 @@ namespace dawn_native {
 #    endif  // defined(DAWN_ENABLE_SWIFTSHADER)
 #endif      // defined(DAWN_ENABLE_BACKEND_VULKAN)
 #if defined(DAWN_ENABLE_BACKEND_OPENGL)
-        Register(opengl::Connect(this), wgpu::BackendType::OpenGL);
+        Register(opengl::Connect(this, wgpu::BackendType::OpenGL), wgpu::BackendType::OpenGL);
+        Register(opengl::Connect(this, wgpu::BackendType::OpenGLES), wgpu::BackendType::OpenGLES);
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
 #if defined(DAWN_ENABLE_BACKEND_NULL)
         Register(null::Connect(this), wgpu::BackendType::Null);
@@ -194,20 +199,16 @@ namespace dawn_native {
         return false;
     }
 
-    void InstanceBase::EnableBackendValidation(bool enableBackendValidation) {
-        mEnableBackendValidation = enableBackendValidation;
-    }
-
     bool InstanceBase::IsBackendValidationEnabled() const {
-        return mEnableBackendValidation;
+        return mBackendValidationLevel != BackendValidationLevel::Disabled;
     }
 
-    void InstanceBase::EnableGPUBasedBackendValidation(bool enableGPUBasedBackendValidation) {
-        mEnableGPUValidation = enableGPUBasedBackendValidation;
+    void InstanceBase::SetBackendValidationLevel(BackendValidationLevel level) {
+        mBackendValidationLevel = level;
     }
 
-    bool InstanceBase::IsGPUBasedBackendValidationEnabled() const {
-        return mEnableGPUValidation;
+    BackendValidationLevel InstanceBase::GetBackendValidationLevel() const {
+        return mBackendValidationLevel;
     }
 
     void InstanceBase::EnableBeginCaptureOnStartup(bool beginCaptureOnStartup) {
@@ -224,6 +225,17 @@ namespace dawn_native {
 
     dawn_platform::Platform* InstanceBase::GetPlatform() const {
         return mPlatform;
+    }
+
+    const XlibXcbFunctions* InstanceBase::GetOrCreateXlibXcbFunctions() {
+#if defined(DAWN_USE_X11)
+        if (mXlibXcbFunctions == nullptr) {
+            mXlibXcbFunctions = std::make_unique<XlibXcbFunctions>();
+        }
+        return mXlibXcbFunctions.get();
+#else
+        UNREACHABLE();
+#endif  // defined(DAWN_USE_X11)
     }
 
     Surface* InstanceBase::CreateSurface(const SurfaceDescriptor* descriptor) {

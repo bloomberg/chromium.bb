@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -85,6 +86,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool WasEverUsed() const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
+  base::Optional<base::StringPiece> GetPeerApplicationSettings() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void ClearConnectionAttempts() override {}
@@ -148,7 +150,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   static ssl_verify_result_t VerifyCertCallback(SSL* ssl, uint8_t* out_alert);
   ssl_verify_result_t VerifyCert();
   ssl_verify_result_t HandleVerifyResult();
-  int VerifyCT();
+  int CheckCTCompliance();
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.

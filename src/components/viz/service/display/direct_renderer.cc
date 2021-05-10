@@ -26,6 +26,7 @@
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
@@ -209,7 +210,7 @@ void DirectRenderer::DrawFrame(
     float device_scale_factor,
     const gfx::Size& device_viewport_size,
     const gfx::DisplayColorSpaces& display_color_spaces,
-    SurfaceDamageRectList* surface_damage_rect_list) {
+    SurfaceDamageRectList surface_damage_rect_list) {
   DCHECK(visible_);
   TRACE_EVENT0("viz,benchmark", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS_1M(
@@ -326,8 +327,9 @@ void DirectRenderer::DrawFrame(
     overlay_processor_->ProcessForOverlays(
         resource_provider_, render_passes_in_draw_order,
         output_surface_->color_matrix(), render_pass_filters_,
-        render_pass_backdrop_filters_, surface_damage_rect_list, primary_plane,
-        &current_frame()->overlay_list, &current_frame()->root_damage_rect,
+        render_pass_backdrop_filters_, std::move(surface_damage_rect_list),
+        primary_plane, &current_frame()->overlay_list,
+        &current_frame()->root_damage_rect,
         &current_frame()->root_content_bounds);
 
     // If we promote any quad to an underlay then the main plane must support
@@ -695,6 +697,16 @@ void DirectRenderer::DrawRenderPass(const AggregatedRenderPass* render_pass) {
     // We are not in a 3d sorting context, so we should draw the quad normally.
     SetScissorStateForQuad(quad, render_pass_scissor_in_draw_space,
                            render_pass_requires_scissor);
+
+    if (OverlayCandidate::RequiresOverlay(&quad)) {
+      // We cannot composite this quad properly, replace it with solid black.
+      SolidColorDrawQuad solid_black;
+      solid_black.SetAll(quad.shared_quad_state, quad.rect, quad.rect,
+                         /*needs_blending=*/false, SK_ColorBLACK,
+                         /*force_anti_aliasing_off=*/true);
+      DoDrawQuad(&solid_black, nullptr);
+      continue;
+    }
 
     DoDrawQuad(&quad, nullptr);
   }

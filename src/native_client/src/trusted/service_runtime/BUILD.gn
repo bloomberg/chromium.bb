@@ -328,6 +328,8 @@ if (current_os == "mac") {
         "--migcom-path",
         migcom_path,
       ]
+    } else {
+      deps = [ "//build/config/mac:sdk_inputs" ]
     }
     args += [
       "--sdk",

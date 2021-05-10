@@ -34,7 +34,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -48,7 +47,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -80,7 +78,7 @@ namespace blink {
 class ScrollingTest : public testing::Test, public PaintTestConfigurations {
  public:
   ScrollingTest() : base_url_("http://www.test.com/") {
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameViewWidget()->Resize(gfx::Size(320, 240));
     GetWebView()->MainFrameViewWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
@@ -114,8 +112,9 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
-  frame_test_helpers::TestWebWidgetClient* GetWidgetClient() const {
-    return helper_.GetWebWidgetClient();
+
+  frame_test_helpers::TestWebFrameWidget* GetMainFrameWidget() const {
+    return helper_.GetMainFrameWidget();
   }
 
   PaintLayerScrollableArea* ScrollableAreaByDOMElementId(
@@ -479,7 +478,7 @@ TEST_P(ScrollingTest, scrollEventHandler) {
   NavigateTo(base_url_ + "scroll-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_TRUE(GetWidgetClient()->HaveScrollEventHandlers());
+  ASSERT_TRUE(GetMainFrameWidget()->HaveScrollEventHandlers());
 }
 
 TEST_P(ScrollingTest, updateEventHandlersDuringTeardown) {

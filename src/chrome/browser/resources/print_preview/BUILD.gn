@@ -2,12 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("../optimize_webui.gni")
+import("../tools/optimize_webui.gni")
+
+assert(enable_print_preview, "enable_print_preview check failed")
 
 preprocess_folder = "preprocessed"
 preprocess_manifest = "preprocessed_manifest.json"
@@ -50,7 +54,10 @@ generate_grd("build_grd") {
   ]
   resource_path_rewrites = [
     "pdf/index_pp.html|pdf/index.html",
-    "pdf/pdf_viewer_pp.js|pdf/pdf_viewer.js",
+
+    # Expose pdf_viewer_pp.js as pdf_viewer_wrapper.js so that the PDF viewer
+    # and Print Preview viewer can use the same main.js source.
+    "pdf/pdf_viewer_pp.js|pdf/pdf_viewer_wrapper.js",
   ]
   if (optimize_webui) {
     deps += [ ":build" ]
@@ -70,7 +77,7 @@ generate_grd("build_grd") {
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -82,6 +89,7 @@ preprocess_grit("preprocess") {
     "native_layer.js",
     "print_preview.js",
     "print_preview_utils.js",
+    "data/cdd.js",
     "data/cloud_parsers.js",
     "data/coordinate2d.js",
     "data/destination.js",
@@ -107,12 +115,16 @@ preprocess_grit("preprocess") {
     "ui/settings_behavior.js",
   ]
 
-  if (is_chromeos) {
-    in_files += [ "data/printer_status_cros.js" ]
+  if (is_chromeos_ash) {
+    in_files += [
+      "data/print_server_store.js",
+      "data/printer_status_cros.js",
+      "native_layer_cros.js",
+    ]
   }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ "ui:web_components" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -125,7 +137,7 @@ preprocess_grit("preprocess_generated") {
     "ui/button_strip.js",
     "ui/color_settings.js",
     "ui/copies_settings.js",
-    "ui/destination_dialog.js",
+    "ui/destination_dialog_css.js",
     "ui/destination_list.js",
     "ui/destination_list_item.js",
     "ui/destination_select_css.js",
@@ -134,6 +146,7 @@ preprocess_grit("preprocess_generated") {
     "ui/duplex_settings.js",
     "ui/header.js",
     "ui/icons.js",
+    "ui/invitation_promo.js",
     "ui/layout_settings.js",
     "ui/margin_control.js",
     "ui/margin_control_container.js",
@@ -148,7 +161,6 @@ preprocess_grit("preprocess_generated") {
     "ui/print_preview_search_box.js",
     "ui/print_preview_shared_css.js",
     "ui/print_preview_vars_css.js",
-    "ui/provisional_destination_resolver.js",
     "ui/scaling_settings.js",
     "ui/settings_section.js",
     "ui/settings_select.js",
@@ -156,39 +168,65 @@ preprocess_grit("preprocess_generated") {
     "ui/throbber_css.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [
       "ui/destination_dropdown_cros.js",
       "ui/destination_select_cros.js",
       "ui/pin_settings.js",
+      "ui/provisional_destination_resolver.js",
+      "ui/destination_dialog_cros.js",
     ]
   } else {
     in_files += [
       "ui/destination_select.js",
       "ui/link_container.js",
+      "ui/destination_dialog.js",
     ]
   }
 }
 
-preprocess_grit("preprocess_pdf") {
+preprocess_if_expr("preprocess_pdf") {
   in_folder = "../"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_pdf_manifest"
-  in_files = [ "pdf/index_pp.html" ]
+  in_files = [
+    "pdf/browser_api.js",
+    "pdf/constants.js",
+    "pdf/controller.js",
+    "pdf/gesture_detector.js",
+    "pdf/index.css",
+    "pdf/index_pp.html",
+    "pdf/main.js",
+    "pdf/metrics.js",
+    "pdf/open_pdf_params_parser.js",
+    "pdf/pdf_scripting_api.js",
+    "pdf/pdf_viewer_utils.js",
+    "pdf/pdf_viewer_base.js",
+    "pdf/toolbar_manager.js",
+    "pdf/viewport.js",
+    "pdf/viewport_scroller.js",
+    "pdf/zoom_manager.js",
+  ]
 }
 
-preprocess_grit("preprocess_pdf_generated") {
+preprocess_if_expr("preprocess_pdf_generated") {
   deps = [ "../pdf:web_components" ]
   in_folder = get_path_info("..", "gen_dir")
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_pdf_gen_manifest"
   in_files = [
-    "pdf/pdf_viewer_pp.js",
+    "pdf/elements/icons.js",
+    "pdf/elements/shared-vars.js",
+    "pdf/elements/viewer-error-screen.js",
     "pdf/elements/viewer-page-indicator.js",
+    "pdf/elements/viewer-zoom-button.js",
+    "pdf/elements/viewer-zoom-toolbar.js",
+    "pdf/pdf_viewer_pp.js",
+    "pdf/pdf_viewer_shared_style.js",
   ]
 }
 
-grit("print_preview_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -221,6 +259,7 @@ js_type_check("print_preview_module_resources") {
     ":dark_mode_behavior",
     ":metrics",
     ":native_layer",
+    ":native_layer_cros",
     ":print_preview",
     ":print_preview_utils",
   ]
@@ -230,12 +269,18 @@ js_library("print_preview") {
   deps = [
     ":cloud_print_interface",
     ":native_layer",
+    ":native_layer_cros",
     "data:destination",
     "data:destination_store",
+    "data:local_parsers",
     "data:measurement_system",
     "ui:app",
     "ui:settings_select",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [ "data:print_server_store" ]
+  }
 }
 
 js_library("print_preview_utils") {
@@ -262,7 +307,7 @@ js_library("cloud_print_interface") {
 js_library("cloud_print_interface_impl") {
   deps = [
     ":cloud_print_interface",
-    ":native_layer",
+    ":native_layer_cros",
     "data:cloud_parsers",
     "data:destination",
     "data:invitation",
@@ -274,10 +319,18 @@ js_library("cloud_print_interface_impl") {
 
 js_library("native_layer") {
   deps = [
+    "data:cdd",
     "data:destination",
     "data:destination_match",
-    "data:destination_policies",
     "data:measurement_system",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("native_layer_cros") {
+  deps = [
+    "data:destination_policies",
     "data:printer_status_cros",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",

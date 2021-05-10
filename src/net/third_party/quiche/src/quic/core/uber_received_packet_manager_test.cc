@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/uber_received_packet_manager.h"
+#include "quic/core/uber_received_packet_manager.h"
 
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "quic/core/congestion_control/rtt_stats.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_stats.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/mock_clock.h"
 
 namespace quic {
 namespace test {
@@ -89,17 +89,17 @@ class UberReceivedPacketManagerTest : public QuicTest {
   }
 
   void CheckAckTimeout(QuicTime time) {
-    DCHECK(HasPendingAck());
+    QUICHE_DCHECK(HasPendingAck());
     if (!manager_->supports_multiple_packet_number_spaces()) {
-      DCHECK(manager_->GetAckTimeout(APPLICATION_DATA) == time);
+      QUICHE_DCHECK(manager_->GetAckTimeout(APPLICATION_DATA) == time);
       if (time <= clock_.ApproximateNow()) {
         // ACK timeout expires, send an ACK.
         manager_->ResetAckStates(ENCRYPTION_FORWARD_SECURE);
-        DCHECK(!HasPendingAck());
+        QUICHE_DCHECK(!HasPendingAck());
       }
       return;
     }
-    DCHECK(manager_->GetEarliestAckTimeout() == time);
+    QUICHE_DCHECK(manager_->GetEarliestAckTimeout() == time);
     // Send all expired ACKs.
     for (int8_t i = INITIAL_DATA; i < NUM_PACKET_NUMBER_SPACES; ++i) {
       const QuicTime ack_timeout =

@@ -71,6 +71,9 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -82,7 +85,6 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
@@ -94,6 +96,7 @@ using content_settings::SETTING_SOURCE_NONE;
 using content_settings::SETTING_SOURCE_USER;
 using content_settings::SettingInfo;
 using content_settings::SettingSource;
+using device::LocationSystemPermissionStatus;
 
 namespace {
 
@@ -225,10 +228,8 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_TITLE},
       {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_TITLE},
       {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
-      {ContentSettingsType::PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
       {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE},
-      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_BLOCKED_CLIPBOARD_TITLE},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_TITLE},
@@ -238,7 +239,6 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_TITLE},
-      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_TITLE},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_TITLE},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_TITLE},
@@ -269,7 +269,6 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       // {ContentSettingsType::POPUPS, No message. intentionally left out},
       {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
-      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_MESSAGE},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
@@ -282,7 +281,6 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   // Fields as for kBlockedMessageIDs, above.
   const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
-      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_MESSAGE},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
@@ -312,11 +310,6 @@ void ContentSettingSimpleBubbleModel::SetManageText() {
 void ContentSettingSimpleBubbleModel::OnManageButtonClicked() {
   if (delegate())
     delegate()->ShowContentSettingsPage(content_type());
-
-  if (content_type() == ContentSettingsType::PLUGINS) {
-    content_settings::RecordPluginsAction(
-        content_settings::PLUGINS_ACTION_CLICKED_MANAGE_PLUGIN_BLOCKING);
-  }
 
   if (content_type() == ContentSettingsType::POPUPS) {
     content_settings::RecordPopupsAction(
@@ -375,7 +368,6 @@ void ContentSettingMixedScriptBubbleModel::OnLearnMoreClicked() {
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
-  DCHECK(rappor_service());
   MixedContentSettingsTabHelper* mixed_content_settings =
       MixedContentSettingsTabHelper::FromWebContents(web_contents());
   if (mixed_content_settings) {
@@ -517,81 +509,6 @@ void ContentSettingRPHBubbleModel::PerformActionForSelectedItem() {
     NOTREACHED();
 }
 
-class ContentSettingPluginBubbleModel : public ContentSettingSimpleBubbleModel {
- public:
-  ContentSettingPluginBubbleModel(Delegate* delegate,
-                                  WebContents* web_contents);
-
- private:
-  void OnLearnMoreClicked() override;
-  void OnCustomLinkClicked() override;
-
-  void RunPluginsOnPage();
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingPluginBubbleModel);
-};
-
-ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
-    Delegate* delegate,
-    WebContents* web_contents)
-    : ContentSettingSimpleBubbleModel(delegate,
-                                      web_contents,
-                                      ContentSettingsType::PLUGINS) {
-  const GURL& url = web_contents->GetURL();
-  bool managed_by_user =
-      GetSettingManagedByUser(url, content_type(), GetProfile(), nullptr);
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  ContentSetting setting = PluginUtils::GetFlashPluginContentSetting(
-      map, url::Origin::Create(url), url, nullptr);
-
-  // If the setting is not managed by the user, hide the "Manage" button.
-  if (!managed_by_user)
-    set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
-
-  // The user can only load Flash dynamically if not on the BLOCK setting.
-  if (setting != CONTENT_SETTING_BLOCK) {
-    set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
-    // Disable the "Run all plugins this time" link if the user already clicked
-    // on the link and ran all plugins.
-    set_custom_link_enabled(
-        PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
-            ->load_plugins_link_enabled());
-  }
-
-  set_show_learn_more(true);
-
-  content_settings::RecordPluginsAction(
-      content_settings::PLUGINS_ACTION_DISPLAYED_BUBBLE);
-}
-
-void ContentSettingPluginBubbleModel::OnLearnMoreClicked() {
-  if (delegate())
-    delegate()->ShowLearnMorePage(ContentSettingsType::PLUGINS);
-
-  content_settings::RecordPluginsAction(
-      content_settings::PLUGINS_ACTION_CLICKED_LEARN_MORE);
-}
-
-void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
-  base::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
-  content_settings::RecordPluginsAction(
-      content_settings::PLUGINS_ACTION_CLICKED_RUN_ALL_PLUGINS_THIS_TIME);
-
-  RunPluginsOnPage();
-}
-
-void ContentSettingPluginBubbleModel::RunPluginsOnPage() {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // TODO(bauerb): We should send the identifiers of blocked plugins here.
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      web_contents(), true, std::string());
-#endif
-  set_custom_link_enabled(false);
-  PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
-      ->set_load_plugins_link_enabled(false);
-}
-
 // ContentSettingSingleRadioGroup ----------------------------------------------
 
 ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
@@ -612,6 +529,10 @@ void ContentSettingSingleRadioGroup::CommitChanges() {
     ContentSetting setting = selected_item() == kAllowButtonIndex
                                  ? CONTENT_SETTING_ALLOW
                                  : block_setting_;
+    permissions::PermissionUmaUtil::ScopedRevocationReporter
+        scoped_revocation_reporter(
+            GetProfile(), bubble_content().radio_group.url, GURL(),
+            content_type(), permissions::PermissionSourceUI::PAGE_ACTION);
     SetNarrowestContentSetting(setting);
   }
 }
@@ -647,7 +568,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_UNBLOCK},
       {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_UNBLOCK},
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
-      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_UNBLOCK},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_UNBLOCK},
@@ -658,7 +578,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   // Fields as for kBlockedAllowIDs, above.
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
-      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_NO_ACTION},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_NO_ACTION},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
@@ -683,7 +602,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_NO_ACTION},
       {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_NO_ACTION},
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
-      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
       {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_NO_ACTION},
       {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_NO_ACTION},
@@ -693,7 +611,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   };
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
-      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
       {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_BLOCK},
       {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_BLOCK},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_BLOCK},
@@ -1041,7 +958,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   int radio_block_label_id = 0;
   if (state_ & (PageSpecificContentSettings::MICROPHONE_BLOCKED |
                 PageSpecificContentSettings::CAMERA_BLOCKED)) {
-    if (blink::network_utils::IsOriginSecure(url)) {
+    if (network::IsUrlPotentiallyTrustworthy(url)) {
       radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
       radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_ALLOW;
       if (MicrophoneAccessed())
@@ -1188,9 +1105,7 @@ bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
                 system_media_permissions::SystemPermission::kDenied &&
             MicrophoneAccessed() && !MicrophoneBlocked())) &&
           !(CameraAccessed() && CameraBlocked()) &&
-          !(MicrophoneAccessed() && MicrophoneBlocked()) &&
-          base::FeatureList::IsEnabled(
-              ::features::kMacSystemMediaPermissionsInfoUi));
+          !(MicrophoneAccessed() && MicrophoneBlocked()));
 #else
   return false;
 #endif  // defined(OS_MAC)
@@ -1322,11 +1237,11 @@ ContentSettingGeolocationBubbleModel::ContentSettingGeolocationBubbleModel(
     bool is_allowed =
         content_settings->IsContentAllowed(ContentSettingsType::GEOLOCATION);
 
-    GeolocationSystemPermissionManager* permission_delegate =
+    device::GeolocationSystemPermissionManager* permission_delegate =
         g_browser_process->platform_part()->location_permission_manager();
-    SystemPermissionStatus permission =
+    LocationSystemPermissionStatus permission =
         permission_delegate->GetSystemPermission();
-    if (permission != SystemPermissionStatus::kAllowed && is_allowed) {
+    if (permission != LocationSystemPermissionStatus::kAllowed && is_allowed) {
       // If the permission is turned off in MacOS system preferences, overwrite
       // the bubble to enable the user to trigger the system dialog.
       InitializeSystemGeolocationPermissionBubble();
@@ -1459,6 +1374,11 @@ ContentSettingDownloadsBubbleModel::~ContentSettingDownloadsBubbleModel() {}
 
 void ContentSettingDownloadsBubbleModel::CommitChanges() {
   if (selected_item() != bubble_content().radio_group.default_item) {
+    permissions::PermissionUmaUtil::ScopedRevocationReporter
+        scoped_revocation_reporter(
+            GetProfile(), bubble_content().radio_group.url, GURL(),
+            ContentSettingsType::AUTOMATIC_DOWNLOADS,
+            permissions::PermissionSourceUI::PAGE_ACTION);
     ContentSetting setting = selected_item() == kAllowButtonIndex
                                  ? CONTENT_SETTING_ALLOW
                                  : CONTENT_SETTING_BLOCK;
@@ -1591,11 +1511,11 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
   // the correct PermissionRequestManager state. Fix that.
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
-  if (!manager->ShouldCurrentRequestUseQuietUI())
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
     return;
-  switch (manager->ReasonForUsingQuietUi()) {
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
-    case QuietUiReason::kPredictedVeryUnlikelyGrant:
       set_message(l10n_util::GetStringUTF16(
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION));
       set_done_button_text(l10n_util::GetStringUTF16(
@@ -1628,6 +1548,15 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
       base::RecordAction(
           base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
       break;
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
+      set_message(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_PREDICTION_SERVICE_DESCRIPTION));
+      set_done_button_text(l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
+      set_show_learn_more(false);
+      base::RecordAction(
+          base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
+      break;
   }
 }
 
@@ -1656,8 +1585,9 @@ void ContentSettingNotificationsBubbleModel::OnDoneButtonClicked() {
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents());
 
-  DCHECK(manager->ShouldCurrentRequestUseQuietUI());
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  DCHECK(quiet_ui_reason);
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kTriggeredByCrowdDeny:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
@@ -1678,7 +1608,10 @@ void ContentSettingNotificationsBubbleModel::OnCancelButtonClicked() {
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents());
 
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return;
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kTriggeredByCrowdDeny:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
@@ -1716,10 +1649,6 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
                                                             web_contents);
   }
 
-  if (content_type == ContentSettingsType::PLUGINS) {
-    return std::make_unique<ContentSettingPluginBubbleModel>(delegate,
-                                                             web_contents);
-  }
   if (content_type == ContentSettingsType::MIXEDSCRIPT) {
     return std::make_unique<ContentSettingMixedScriptBubbleModel>(delegate,
                                                                   web_contents);
@@ -1741,7 +1670,6 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
   }
   if (content_type == ContentSettingsType::IMAGES ||
       content_type == ContentSettingsType::JAVASCRIPT ||
-      content_type == ContentSettingsType::PPAPI_BROKER ||
       content_type == ContentSettingsType::SOUND ||
       content_type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
       content_type == ContentSettingsType::MIDI_SYSEX ||
@@ -1756,10 +1684,7 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
 
 ContentSettingBubbleModel::ContentSettingBubbleModel(Delegate* delegate,
                                                      WebContents* web_contents)
-    : web_contents_(web_contents),
-      owner_(nullptr),
-      delegate_(delegate),
-      rappor_service_(g_browser_process->rappor_service()) {
+    : web_contents_(web_contents), owner_(nullptr), delegate_(delegate) {
   DCHECK(web_contents_);
 }
 

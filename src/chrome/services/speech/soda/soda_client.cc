@@ -4,32 +4,44 @@
 
 #include "chrome/services/speech/soda/soda_client.h"
 
+#include "base/logging.h"
+
 namespace soda {
 
 SodaClient::SodaClient(base::FilePath library_path)
     : lib_(library_path),
       create_soda_func_(reinterpret_cast<CreateSodaFunction>(
-          lib_.GetFunctionPointer("CreateSodaAsync"))),
+          lib_.GetFunctionPointer("CreateExtendedSodaAsync"))),
       delete_soda_func_(reinterpret_cast<DeleteSodaFunction>(
-          lib_.GetFunctionPointer("DeleteSodaAsync"))),
+          lib_.GetFunctionPointer("DeleteExtendedSodaAsync"))),
       add_audio_func_(reinterpret_cast<AddAudioFunction>(
-          lib_.GetFunctionPointer("AddAudio"))),
+          lib_.GetFunctionPointer("ExtendedAddAudio"))),
+      soda_start_func_(reinterpret_cast<SodaStartFunction>(
+          lib_.GetFunctionPointer("ExtendedSodaStart"))),
       is_initialized_(false),
       sample_rate_(0),
-      channel_count_(0) {}
+      channel_count_(0) {
+  if (!lib_.is_valid()) {
+    LOG(ERROR) << "SODA binary at " << library_path.value()
+               << " could not be loaded.";
+    LOG(ERROR) << "Error: " << lib_.GetError()->ToString();
+    DCHECK(false);
+  }
+
+  DCHECK(create_soda_func_);
+  DCHECK(delete_soda_func_);
+  DCHECK(add_audio_func_);
+  DCHECK(soda_start_func_);
+}
 
 NO_SANITIZE("cfi-icall")
 SodaClient::~SodaClient() {
-  DCHECK(soda_async_handle_);
-  DCHECK(delete_soda_func_);
   if (IsInitialized())
     delete_soda_func_(soda_async_handle_);
 }
 
 NO_SANITIZE("cfi-icall")
 void SodaClient::AddAudio(const char* audio_buffer, int audio_buffer_size) {
-  DCHECK(soda_async_handle_);
-  DCHECK(add_audio_func_);
   add_audio_func_(soda_async_handle_, audio_buffer, audio_buffer_size);
 }
 
@@ -38,19 +50,18 @@ bool SodaClient::DidAudioPropertyChange(int sample_rate, int channel_count) {
 }
 
 NO_SANITIZE("cfi-icall")
-void SodaClient::Reset(const SodaConfig config) {
-  DCHECK(soda_async_handle_);
-  DCHECK(create_soda_func_);
-  DCHECK(delete_soda_func_);
-
+void SodaClient::Reset(const SerializedSodaConfig config,
+                       int sample_rate,
+                       int channel_count) {
   if (IsInitialized()) {
     delete_soda_func_(soda_async_handle_);
   }
 
   soda_async_handle_ = create_soda_func_(config);
-  sample_rate_ = config.sample_rate;
-  channel_count_ = config.channel_count;
+  sample_rate_ = sample_rate;
+  channel_count_ = channel_count;
   is_initialized_ = true;
+  soda_start_func_(soda_async_handle_);
 }
 
 }  // namespace soda

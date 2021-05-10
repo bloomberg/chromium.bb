@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/platform/netlink.h"
+#include "quic/qbone/platform/netlink.h"
 
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/mock_kernel.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "absl/container/node_hash_set.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/qbone/platform/mock_kernel.h"
+#include "quic/qbone/qbone_constants.h"
 
 namespace quic {
 namespace {
@@ -74,7 +75,7 @@ class NetlinkTest : public QuicTest {
             send_callback(buf.c_str(), buf.size());
           }
 
-          CHECK_EQ(seq, -1);
+          QUICHE_CHECK_EQ(seq, -1);
           seq = netlink_message->nlmsg_seq;
           return buf.size();
         }));
@@ -90,7 +91,7 @@ class NetlinkTest : public QuicTest {
           nl_addr->nl_groups = 0;  // no multicast
 
           int ret = recv_callback(reply_packet_, sizeof(reply_packet_), seq);
-          CHECK_LE(ret, sizeof(reply_packet_));
+          QUICHE_CHECK_LE(ret, sizeof(reply_packet_));
           return ret;
         }));
 
@@ -185,7 +186,7 @@ void CreateIfaddrmsg(struct nlmsghdr* nlm,
                      unsigned char flags,
                      unsigned char scope,
                      QuicIpAddress ip) {
-  CHECK(ip.IsInitialized());
+  QUICHE_CHECK(ip.IsInitialized());
   unsigned char family;
   switch (ip.address_family()) {
     case IpAddressFamily::IP_V4:
@@ -195,8 +196,8 @@ void CreateIfaddrmsg(struct nlmsghdr* nlm,
       family = AF_INET6;
       break;
     default:
-      QUIC_BUG << quiche::QuicheStrCat("unexpected address family: ",
-                                       ip.address_family());
+      QUIC_BUG << absl::StrCat("unexpected address family: ",
+                               ip.address_family());
       family = AF_UNSPEC;
   }
   auto* msg = reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(nlm));
@@ -287,8 +288,8 @@ TEST_F(NetlinkTest, GetLinkInfoWorks) {
 TEST_F(NetlinkTest, GetAddressesWorks) {
   auto netlink = std::make_unique<Netlink>(&mock_kernel_);
 
-  QuicUnorderedSet<std::string> addresses = {QuicIpAddress::Any4().ToString(),
-                                             QuicIpAddress::Any6().ToString()};
+  absl::node_hash_set<std::string> addresses = {
+      QuicIpAddress::Any4().ToString(), QuicIpAddress::Any6().ToString()};
 
   ExpectNetlinkPacket(
       RTM_GETADDR, NLM_F_ROOT | NLM_F_MATCH | NLM_F_REQUEST,

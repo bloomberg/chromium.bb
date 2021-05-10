@@ -70,7 +70,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
                                     bool granted);
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void CheckAccess(const std::string& guid,
                    CheckAccessCallback callback) override;
 
@@ -85,7 +85,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   void OnOpenFileDescriptorError(OpenFileDescriptorCallback callback,
                                  const std::string& error_name,
                                  const std::string& message);
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void SetClient(mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient>
                      client) override;

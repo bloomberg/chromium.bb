@@ -11,6 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
@@ -84,7 +85,9 @@ using pASurfaceTransaction_setFrameRate =
              ASurfaceControl* surface_control,
              float frameRate,
              int8_t compatibility);
-
+using pASurfaceTransaction_reparent = void (*)(ASurfaceTransaction*,
+                                               ASurfaceControl* surface_control,
+                                               ASurfaceControl* new_parent);
 // ASurfaceTransactionStats
 using pASurfaceTransactionStats_getPresentFenceFd =
     int (*)(ASurfaceTransactionStats* stats);
@@ -144,6 +147,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_delete);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_apply);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setOnComplete);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_reparent);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setVisibility);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setZOrder);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBuffer);
@@ -175,6 +179,7 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_delete ASurfaceTransaction_deleteFn;
   pASurfaceTransaction_apply ASurfaceTransaction_applyFn;
   pASurfaceTransaction_setOnComplete ASurfaceTransaction_setOnCompleteFn;
+  pASurfaceTransaction_reparent ASurfaceTransaction_reparentFn;
   pASurfaceTransaction_setVisibility ASurfaceTransaction_setVisibilityFn;
   pASurfaceTransaction_setZOrder ASurfaceTransaction_setZOrderFn;
   pASurfaceTransaction_setBuffer ASurfaceTransaction_setBufferFn;
@@ -282,6 +287,12 @@ struct TransactionAckCtx {
   SurfaceControl::Transaction::OnCompleteCb callback;
 };
 
+uint64_t GetTraceIdForTransaction(int transaction_id) {
+  constexpr uint64_t kMask =
+      base::MD5Hash64Constexpr("SurfaceControl::Transaction");
+  return kMask ^ transaction_id;
+}
+
 // Note that the framework API states that this callback can be dispatched on
 // any thread (in practice it should be the binder thread).
 void OnTransactionCompletedOnAnyThread(void* context,
@@ -290,6 +301,9 @@ void OnTransactionCompletedOnAnyThread(void* context,
   auto transaction_stats = ToTransactionStats(stats);
   TRACE_EVENT_NESTABLE_ASYNC_END0("gpu,benchmark", "SurfaceControlTransaction",
                                   ack_ctx->id);
+  TRACE_EVENT_WITH_FLOW0(
+      "toplevel.flow", "gfx::SurfaceControlTransaction completed",
+      GetTraceIdForTransaction(ack_ctx->id), TRACE_EVENT_FLAG_FLOW_IN);
 
   if (ack_ctx->task_runner) {
     ack_ctx->task_runner->PostTask(
@@ -301,11 +315,19 @@ void OnTransactionCompletedOnAnyThread(void* context,
 
   delete ack_ctx;
 }
+
 }  // namespace
 
 // static
 bool SurfaceControl::IsSupported() {
-  if (!base::android::BuildInfo::GetInstance()->is_at_least_q())
+  const auto* build_info = base::android::BuildInfo::GetInstance();
+
+  // Disabled on Samsung devices due to a platform bug fixed in R.
+  int min_sdk_version = base::android::SDK_VERSION_Q;
+  if (base::EqualsCaseInsensitiveASCII(build_info->manufacturer(), "samsung"))
+    min_sdk_version = base::android::SDK_VERSION_R;
+
+  if (build_info->sdk_int() < min_sdk_version)
     return false;
 
   CHECK(SurfaceControlMethods::Get().supported);
@@ -331,6 +353,10 @@ bool SurfaceControl::SupportsSetFrameRate() {
   return IsSupported() &&
          SurfaceControlMethods::Get().ASurfaceTransaction_setFrameRateFn !=
              nullptr;
+}
+
+void SurfaceControl::ApplyTransaction(ASurfaceTransaction* transaction) {
+  SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction);
 }
 
 SurfaceControl::Surface::Surface() = default;
@@ -469,9 +495,19 @@ void SurfaceControl::Transaction::SetFrameRate(const Surface& surface,
       ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
 }
 
+void SurfaceControl::Transaction::SetParent(const Surface& surface,
+                                            Surface* new_parent) {
+  SurfaceControlMethods::Get().ASurfaceTransaction_reparentFn(
+      transaction_, surface.surface(),
+      new_parent ? new_parent->surface() : nullptr);
+}
+
 void SurfaceControl::Transaction::SetOnCompleteCb(
     OnCompleteCb cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  TRACE_EVENT_WITH_FLOW0(
+      "toplevel.flow", "gfx::SurfaceControl::Transaction::SetOnCompleteCb",
+      GetTraceIdForTransaction(id_), TRACE_EVENT_FLAG_FLOW_OUT);
   TransactionAckCtx* ack_ctx = new TransactionAckCtx;
   ack_ctx->callback = std::move(cb);
   ack_ctx->task_runner = std::move(task_runner);

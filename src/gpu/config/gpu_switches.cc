@@ -32,10 +32,6 @@ const char kGpuPreferences[] = "gpu-preferences";
 // Ignores GPU blocklist.
 const char kIgnoreGpuBlocklist[] = "ignore-gpu-blocklist";
 
-// Ignores GPU blocklist.
-// TODO(crbug.com/1101491): remove in 2020Q4 in favor of --ignore-gpu-blocklist.
-const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
-
 // Allows explicitly specifying the shader disk cache size for embedded devices.
 // Default value is 6MB. On Android, 2MB is default and 128KB for low-end
 // devices.
@@ -50,8 +46,11 @@ const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 // Enable validation layers in Dawn backends.
 const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
 
-// Enable the toggle Toggle::DisableRobustness when creating Dawn device.
-const char kDisableDawnRobustness[] = "disable-dawn-robustness";
+// Set the Dawn features(toggles) enabled on the creation of Dawn devices.
+const char kEnableDawnFeatures[] = "enable-dawn-features";
+
+// Set the Dawn features(toggles) disabled on the creation of Dawn devices.
+const char kDisableDawnFeatures[] = "disable-dawn-features";
 
 // Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
 // thread.
@@ -110,5 +109,9 @@ const char kVulkanHeapMemoryLimitMb[] = "vulkan-heap-memory-limit-mb";
 // Specifies the sync CPU limit for total Vulkan memory.
 // TODO(crbug/1158000): Remove this switch.
 const char kVulkanSyncCpuMemoryLimitMb[] = "vulkan-sync-cpu-memory-limit-mb";
+
+// Crash Chrome if GPU process crashes. This is to force a test to fail when
+// GPU process crashes unexpectedly.
+const char kForceBrowserCrashOnGpuCrash[] = "force-browser-crash-on-gpu-crash";
 
 }  // namespace switches

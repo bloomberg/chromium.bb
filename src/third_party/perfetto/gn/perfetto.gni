@@ -131,7 +131,12 @@ if (build_with_chromium) {
 }
 
 declare_args() {
-  # Platform-wide tracing executables (traced, traced_probes, perfetto_cmd).
+  # Enables build of platform-wide tracing services (traced, traced_probes)
+  # and executables (perfetto_cmd, trigger_perfetto).
+  # When disabled, only the client library and other auxiliary tools can be
+  # built (for Chromium and other GN embedders).
+  # Note that traced_probes is further conditioned by the GN variable
+  # enable_perfetto_traced_probes, in the declare_args() section below.
   enable_perfetto_platform_services =
       perfetto_build_standalone || perfetto_build_with_android
 
@@ -181,23 +186,28 @@ declare_args() {
                               build_with_chromium || perfetto_build_with_android
 
   enable_perfetto_integration_tests =
-      perfetto_build_standalone || perfetto_build_with_android
+      (perfetto_build_standalone && !is_win) || perfetto_build_with_android
 
-  enable_perfetto_benchmarks = perfetto_build_standalone
+  enable_perfetto_benchmarks = perfetto_build_standalone && !is_win
 
   enable_perfetto_fuzzers =
       perfetto_build_standalone && defined(is_fuzzer) && is_fuzzer
 
-  # Enables the gen_git_revision tool that generates a .h that contains a macro
-  # with the current git revision. Works only in standalone GN checkouts.
-  # If disabled, the version string will be "unknown".
+  # Enables the write_version_header.py tool that generates a .h that contains a
+  # macro with the current git revision and latest release version from
+  # CHANGELOG. If false base/version.h will return "unknown".
   enable_perfetto_version_gen =
-      perfetto_build_standalone && !is_perfetto_build_generator
+      perfetto_build_standalone || is_perfetto_build_generator ||
+      perfetto_build_with_android
 
   # Only for local development. When true the binaries (perfetto, traced, ...)
   # are monolithic and don't use a common shared library. This is mainly to
   # avoid LD_LIBRARY_PATH dances when testing locally.
-  monolithic_binaries = false
+  # On Windows we default to monolithic executables, because pairing
+  # dllexport/import adds extra complexity for little benefit. Te only reason
+  # for monolithic_binaries=false is saving binary size, which matters mainly on
+  # Android. See also comments on PERFETTO_EXPORTED_ENTRYPOINT in compiler.h.
+  monolithic_binaries = is_win
 
   # Whether DLOG should be enabled on debug builds (""), all builds ("on"), or
   # none ("off"). We disable it by default for embedders to avoid spamming their
@@ -208,10 +218,19 @@ declare_args() {
   # the stack and prints the stack trace on stderr. Requires a dependency on
   # libbacktrace when enabled.
   enable_perfetto_stderr_crash_dump =
-      is_debug && perfetto_build_standalone && !is_wasm
+      is_debug && perfetto_build_standalone && !is_wasm && !is_win
 }
 
 declare_args() {
+  # The traced_probes daemon is very Linux-specific, as it depends on ftrace and
+  # various /proc interfaces. There is no point making its code platform-neutral
+  # as it won't do anything useful on Windows.
+  # The only reason why we still build it on Mac OS is to be able to run the
+  # unittests there and making dev on mac less cumbersome. The traced_probes
+  # code happens to build cleanly and for now the mainteinance cost on Mac is
+  # extremely low.
+  enable_perfetto_traced_probes = enable_perfetto_platform_services && !is_win
+
   # Whether info-level logging is enabled.
   perfetto_verbose_logs_enabled =
       !build_with_chromium || perfetto_force_dlog == "on"
@@ -253,7 +272,8 @@ declare_args() {
 
   # Allows to build the UI (TypeScript/ HTML / WASM)
   enable_perfetto_ui =
-      perfetto_build_standalone && enable_perfetto_trace_processor_sqlite
+      perfetto_build_standalone && enable_perfetto_trace_processor_sqlite &&
+      host_os != "win"
 
   # Skip buildtools dependency checks (needed for ChromeOS).
   skip_buildtools_check = false
@@ -261,6 +281,13 @@ declare_args() {
   # Used by CrOS system builds. Uses the system version of protobuf
   # from /usr/include instead of the hermetic one.
   perfetto_use_system_protobuf = false
+}
+
+if (is_win) {
+  # clang-cl
+  perfetto_isystem_cflag = "/I"
+} else {
+  perfetto_isystem_cflag = "-isystem"
 }
 
 # +---------------------------------------------------------------------------+
@@ -298,3 +325,8 @@ assert(enable_perfetto_watchdog || !perfetto_build_with_android)
 
 assert(perfetto_force_dlog == "" || perfetto_force_dlog == "on" ||
        perfetto_force_dlog == "off")
+
+# If enable_perfetto_traced_probes is set, enable_perfetto_platform_services
+# must be set as well. Doesn't make sense to build traced_probes without the
+# rest. traced_probes integration tests depend on traced.
+assert(!enable_perfetto_traced_probes || enable_perfetto_platform_services)

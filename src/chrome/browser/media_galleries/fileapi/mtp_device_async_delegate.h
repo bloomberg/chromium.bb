@@ -34,7 +34,7 @@ class MTPDeviceAsyncDelegate {
       void(const base::File::Info& file_info)> GetFileInfoSuccessCallback;
 
   // A callback to be called when CreateDirectory method call succeeds.
-  typedef base::Closure CreateDirectorySuccessCallback;
+  typedef base::RepeatingClosure CreateDirectorySuccessCallback;
 
   // A callback to be called when ReadDirectory method call succeeds.
   typedef base::RepeatingCallback<
@@ -43,7 +43,7 @@ class MTPDeviceAsyncDelegate {
 
   // A callback to be called when GetFileInfo/ReadDirectory/CreateSnapshot
   // method call fails.
-  typedef base::Callback<void(base::File::Error error)> ErrorCallback;
+  typedef base::RepeatingCallback<void(base::File::Error error)> ErrorCallback;
 
   // A callback to be called when CreateSnapshotFile method call succeeds.
   typedef base::Callback<
@@ -213,12 +213,12 @@ class MTPDeviceAsyncDelegate {
   virtual ~MTPDeviceAsyncDelegate() {}
 };
 
-typedef base::Callback<void(MTPDeviceAsyncDelegate*)>
+typedef base::OnceCallback<void(MTPDeviceAsyncDelegate*)>
     CreateMTPDeviceAsyncDelegateCallback;
 
 void CreateMTPDeviceAsyncDelegate(
     const base::FilePath::StringType& device_location,
     const bool read_only,
-    const CreateMTPDeviceAsyncDelegateCallback& callback);
+    CreateMTPDeviceAsyncDelegateCallback callback);
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_

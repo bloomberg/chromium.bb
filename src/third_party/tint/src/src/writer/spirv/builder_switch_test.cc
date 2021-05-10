@@ -25,39 +25,33 @@
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type/bool_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/context.h"
+#include "src/type/bool_type.h"
+#include "src/type/i32_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Switch_Empty) {
-  ast::type::I32Type i32;
-
   // switch (1) {
   // }
-  auto cond = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 1));
 
-  ast::SwitchStatement expr(std::move(cond), ast::CaseStatementList{});
+  auto* expr = create<ast::SwitchStatement>(Expr(1), ast::CaseStatementList{});
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  Builder b(&mod);
+  spirv::Builder& b = Build();
+
   b.push_function(Function{});
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 1
 %3 = OpConstant %2 1
 )");
@@ -71,8 +65,6 @@ OpBranch %1
 }
 
 TEST_F(BuilderTest, Switch_WithCase) {
-  ast::type::I32Type i32;
-
   // switch(a) {
   //   case 1:
   //     v = 1;
@@ -80,57 +72,43 @@ TEST_F(BuilderTest, Switch_WithCase) {
   //     v = 2;
   // }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto case_1_body = std::make_unique<ast::BlockStatement>();
-  case_1_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
+  auto* case_1_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(1))});
 
-  auto case_2_body = std::make_unique<ast::BlockStatement>();
-  case_2_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2))));
+  auto* case_2_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(2))});
 
   ast::CaseSelectorList selector_1;
-  selector_1.push_back(std::make_unique<ast::SintLiteral>(&i32, 1));
+  selector_1.push_back(Literal(1));
 
   ast::CaseSelectorList selector_2;
-  selector_2.push_back(std::make_unique<ast::SintLiteral>(&i32, 2));
+  selector_2.push_back(Literal(2));
 
   ast::CaseStatementList cases;
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_1),
-                                                       std::move(case_1_body)));
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_2),
-                                                       std::move(case_2_body)));
+  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
+  cases.push_back(create<ast::CaseStatement>(selector_2, case_2_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
 
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "tint_76"
-OpName %5 "tint_61"
-OpName %7 "tint_615f66756e63"
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
+
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
+OpName %5 "a"
+OpName %7 "a_func"
 %3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -153,55 +131,45 @@ OpBranch %9
 %11 = OpLabel
 OpBranch %9
 %9 = OpLabel
+OpReturn
 OpFunctionEnd
 )");
 }
 
 TEST_F(BuilderTest, Switch_WithDefault) {
-  ast::type::I32Type i32;
-
   // switch(true) {
   //   default:
   //     v = 1;
   //  }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto default_body = std::make_unique<ast::BlockStatement>();
-  default_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
+  auto* default_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(1))});
 
   ast::CaseStatementList cases;
   cases.push_back(
-      std::make_unique<ast::CaseStatement>(std::move(default_body)));
+      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
 
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "tint_76"
-OpName %5 "tint_61"
-OpName %7 "tint_615f66756e63"
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
+
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
+OpName %5 "a"
+OpName %7 "a_func"
 %3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -218,13 +186,12 @@ OpSwitch %10 %11
 OpStore %1 %12
 OpBranch %9
 %9 = OpLabel
+OpReturn
 OpFunctionEnd
 )");
 }
 
 TEST_F(BuilderTest, Switch_WithCaseAndDefault) {
-  ast::type::I32Type i32;
-
   // switch(a) {
   //   case 1:
   //      v = 1;
@@ -234,66 +201,49 @@ TEST_F(BuilderTest, Switch_WithCaseAndDefault) {
   //      v = 3;
   //  }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto case_1_body = std::make_unique<ast::BlockStatement>();
-  case_1_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
+  auto* case_1_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(1))});
 
-  auto case_2_body = std::make_unique<ast::BlockStatement>();
-  case_2_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2))));
+  auto* case_2_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(2))});
 
-  auto default_body = std::make_unique<ast::BlockStatement>();
-  default_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 3))));
+  auto* default_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(3))});
 
   ast::CaseSelectorList selector_1;
-  selector_1.push_back(std::make_unique<ast::SintLiteral>(&i32, 1));
+  selector_1.push_back(Literal(1));
 
   ast::CaseSelectorList selector_2;
-  selector_2.push_back(std::make_unique<ast::SintLiteral>(&i32, 2));
-  selector_2.push_back(std::make_unique<ast::SintLiteral>(&i32, 3));
+  selector_2.push_back(Literal(2));
+  selector_2.push_back(Literal(3));
 
   ast::CaseStatementList cases;
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_1),
-                                                       std::move(case_1_body)));
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_2),
-                                                       std::move(case_2_body)));
+  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
+  cases.push_back(create<ast::CaseStatement>(selector_2, case_2_body));
   cases.push_back(
-      std::make_unique<ast::CaseStatement>(std::move(default_body)));
+      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
 
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "tint_76"
-OpName %5 "tint_61"
-OpName %7 "tint_615f66756e63"
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
+
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
+OpName %5 "a"
+OpName %7 "a_func"
 %3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -318,13 +268,12 @@ OpBranch %9
 OpStore %1 %16
 OpBranch %9
 %9 = OpLabel
+OpReturn
 OpFunctionEnd
 )");
 }
 
 TEST_F(BuilderTest, Switch_CaseWithFallthrough) {
-  ast::type::I32Type i32;
-
   // switch(a) {
   //   case 1:
   //      v = 1;
@@ -335,66 +284,49 @@ TEST_F(BuilderTest, Switch_CaseWithFallthrough) {
   //      v = 3;
   //  }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto case_1_body = std::make_unique<ast::BlockStatement>();
-  case_1_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
-  case_1_body->append(std::make_unique<ast::FallthroughStatement>());
+  auto* case_1_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(1)),
+                         create<ast::FallthroughStatement>()});
 
-  auto case_2_body = std::make_unique<ast::BlockStatement>();
-  case_2_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2))));
+  auto* case_2_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(2))});
 
-  auto default_body = std::make_unique<ast::BlockStatement>();
-  default_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 3))));
+  auto* default_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(3))});
 
   ast::CaseSelectorList selector_1;
-  selector_1.push_back(std::make_unique<ast::SintLiteral>(&i32, 1));
+  selector_1.push_back(Literal(1));
 
   ast::CaseSelectorList selector_2;
-  selector_2.push_back(std::make_unique<ast::SintLiteral>(&i32, 2));
+  selector_2.push_back(Literal(2));
 
   ast::CaseStatementList cases;
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_1),
-                                                       std::move(case_1_body)));
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_2),
-                                                       std::move(case_2_body)));
+  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
+  cases.push_back(create<ast::CaseStatement>(selector_2, case_2_body));
   cases.push_back(
-      std::make_unique<ast::CaseStatement>(std::move(default_body)));
+      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
 
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "tint_76"
-OpName %5 "tint_61"
-OpName %7 "tint_615f66756e63"
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
+
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
+OpName %5 "a"
+OpName %7 "a_func"
 %3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -419,63 +351,49 @@ OpBranch %9
 OpStore %1 %16
 OpBranch %9
 %9 = OpLabel
+OpReturn
 OpFunctionEnd
 )");
 }
 
 TEST_F(BuilderTest, Switch_CaseFallthroughLastStatement) {
-  ast::type::I32Type i32;
-
   // switch(a) {
   //   case 1:
   //      v = 1;
   //      fallthrough;
   //  }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto case_1_body = std::make_unique<ast::BlockStatement>();
-  case_1_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
-  case_1_body->append(std::make_unique<ast::FallthroughStatement>());
+  auto* case_1_body = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("v"), Expr(1)),
+                         create<ast::FallthroughStatement>()});
 
   ast::CaseSelectorList selector_1;
-  selector_1.push_back(std::make_unique<ast::SintLiteral>(&i32, 1));
+  selector_1.push_back(Literal(1));
 
   ast::CaseStatementList cases;
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_1),
-                                                       std::move(case_1_body)));
+  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_FALSE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
+
+  EXPECT_FALSE(b.GenerateSwitchStatement(expr)) << b.error();
   EXPECT_EQ(b.error(), "fallthrough of last case statement is disallowed");
 }
 
 TEST_F(BuilderTest, Switch_WithNestedBreak) {
-  ast::type::I32Type i32;
-  ast::type::BoolType bool_type;
-
   // switch (a) {
   //   case 1:
   //     if (true) {
@@ -484,54 +402,41 @@ TEST_F(BuilderTest, Switch_WithNestedBreak) {
   //     v = 1;
   //  }
 
-  auto v =
-      std::make_unique<ast::Variable>("v", ast::StorageClass::kPrivate, &i32);
-  auto a =
-      std::make_unique<ast::Variable>("a", ast::StorageClass::kPrivate, &i32);
+  auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto if_body = std::make_unique<ast::BlockStatement>();
-  if_body->append(std::make_unique<ast::BreakStatement>());
+  auto* if_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
 
-  auto case_1_body = std::make_unique<ast::BlockStatement>();
-  case_1_body->append(std::make_unique<ast::IfStatement>(
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::BoolLiteral>(&bool_type, true)),
-      std::move(if_body)));
-
-  case_1_body->append(std::make_unique<ast::AssignmentStatement>(
-      std::make_unique<ast::IdentifierExpression>("v"),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1))));
+  auto* case_1_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::IfStatement>(Expr(true), if_body, ast::ElseStatementList{}),
+      create<ast::AssignmentStatement>(Expr("v"), Expr(1))});
 
   ast::CaseSelectorList selector_1;
-  selector_1.push_back(std::make_unique<ast::SintLiteral>(&i32, 1));
+  selector_1.push_back(Literal(1));
 
   ast::CaseStatementList cases;
-  cases.push_back(std::make_unique<ast::CaseStatement>(std::move(selector_1),
-                                                       std::move(case_1_body)));
+  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
 
-  ast::SwitchStatement expr(std::make_unique<ast::IdentifierExpression>("a"),
-                            std::move(cases));
+  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(v.get());
-  td.RegisterVariableForTesting(a.get());
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
+  WrapInFunction(expr);
 
-  ast::Function func("a_func", {}, &i32);
+  auto* func = Func("a_func", {}, ty.i32(), ast::StatementList{},
+                    ast::FunctionDecorationList{});
 
-  Builder b(&mod);
-  ASSERT_TRUE(b.GenerateGlobalVariable(v.get())) << b.error();
-  ASSERT_TRUE(b.GenerateGlobalVariable(a.get())) << b.error();
-  ASSERT_TRUE(b.GenerateFunction(&func)) << b.error();
+  spirv::Builder& b = Build();
 
-  EXPECT_TRUE(b.GenerateSwitchStatement(&expr)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
+  ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
 
-  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "tint_76"
-OpName %5 "tint_61"
-OpName %7 "tint_615f66756e63"
+  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
+
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
+OpName %5 "a"
+OpName %7 "a_func"
 %3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -557,6 +462,7 @@ OpBranch %9
 %11 = OpLabel
 OpBranch %9
 %9 = OpLabel
+OpReturn
 OpFunctionEnd
 )");
 }

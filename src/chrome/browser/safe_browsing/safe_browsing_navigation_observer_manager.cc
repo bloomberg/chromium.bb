@@ -36,10 +36,6 @@ namespace {
 
 constexpr size_t kMaxNumberOfNavigationsToAppend = 5;
 
-// Logging the number of events cleaned up every 2 minutes is excessive, so we
-// sample by this rate.
-const double kNavigationCleanUpSamplingRate = 0.01;
-
 // Given when an event happened and its TTL, determine if it is already expired.
 // Note, if for some reason this event's timestamp is in the future, this
 // event's timestamp is invalid, hence we treat it as expired.
@@ -380,6 +376,8 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
     SessionID event_tab_id,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "SafeBrowsing.NavigationObserver.IdentifyReferrerChainByEventURLTime");
   if (!event_url.is_valid())
     return INVALID_URL;
 
@@ -404,6 +402,8 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
     content::WebContents* web_contents,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "SafeBrowsing.NavigationObserver.IdentifyReferrerChainByWebContentsTime");
   if (!web_contents)
     return INVALID_URL;
   GURL last_committed_url = web_contents->GetLastCommittedURL();
@@ -525,6 +525,8 @@ size_t SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
 void SafeBrowsingNavigationObserverManager::AppendRecentNavigations(
     size_t recent_navigation_count,
     ReferrerChain* out_referrer_chain) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "SafeBrowsing.NavigationObserver.AppendRecentNavigationsTime");
   if (recent_navigation_count <= 0u)
     return;
   int current_referrer_chain_size = out_referrer_chain->size();
@@ -547,13 +549,7 @@ void SafeBrowsingNavigationObserverManager::AppendRecentNavigations(
 }
 
 void SafeBrowsingNavigationObserverManager::CleanUpNavigationEvents() {
-  std::size_t removal_count = navigation_event_list_.CleanUpNavigationEvents();
-
-  if (base::RandDouble() < kNavigationCleanUpSamplingRate) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "SafeBrowsing.NavigationObserver.NavigationEventCleanUpCount",
-        removal_count);
-  }
+  navigation_event_list_.CleanUpNavigationEvents();
 }
 
 void SafeBrowsingNavigationObserverManager::CleanUpUserGestures() {

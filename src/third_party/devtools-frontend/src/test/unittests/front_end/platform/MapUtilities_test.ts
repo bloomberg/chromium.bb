@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MapUtilities} from '../../../../front_end/platform/platform.js';
+import * as Platform from '../../../../front_end/platform/platform.js';
 
 const {assert} = chai;
 
@@ -17,9 +17,8 @@ describe('MapUtilities', () => {
       ];
       const map = new Map(pairs);
 
-      const inverse = MapUtilities.inverse(map);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for (const [_key, value] of pairs) {
+      const inverse = Platform.MapUtilities.inverse(map);
+      for (const [, value] of pairs) {
         assert.sameMembers([...inverse.get(value)], [...getKeys(value)]);
       }
 

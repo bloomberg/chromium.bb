@@ -13,6 +13,8 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 
@@ -68,7 +70,9 @@ class DedicatedWorkerHostFactoryClient final
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-          browser_interface_broker) override;
+          browser_interface_broker,
+      mojo::PendingRemote<blink::mojom::DedicatedWorkerHost>
+          dedicated_worker_host) override;
   void OnScriptLoadStarted(
       blink::mojom::ServiceWorkerContainerInfoForClientPtr
           service_worker_container_info,

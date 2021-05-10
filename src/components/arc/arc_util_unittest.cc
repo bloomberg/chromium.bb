@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_types.h"
 #include "base/base_switches.h"
@@ -14,8 +16,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
+#include "base/task/post_task.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_features.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
@@ -47,6 +54,32 @@ class ScopedArcFeature {
   DISALLOW_COPY_AND_ASSIGN(ScopedArcFeature);
 };
 
+class ScopedRtVcpuFeature {
+ public:
+  ScopedRtVcpuFeature(bool dual_core_enabled, bool quad_core_enabled) {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    if (dual_core_enabled)
+      enabled_features.push_back(kRtVcpuDualCore);
+    else
+      disabled_features.push_back(kRtVcpuDualCore);
+
+    if (quad_core_enabled)
+      enabled_features.push_back(kRtVcpuQuadCore);
+    else
+      disabled_features.push_back(kRtVcpuQuadCore);
+
+    feature_list.InitWithFeatures(enabled_features, disabled_features);
+  }
+  ~ScopedRtVcpuFeature() = default;
+  ScopedRtVcpuFeature(const ScopedRtVcpuFeature&) = delete;
+  ScopedRtVcpuFeature& operator=(const ScopedRtVcpuFeature&) = delete;
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Fake user that can be created with a specified type.
 class FakeUser : public user_manager::User {
  public:
@@ -64,7 +97,81 @@ class FakeUser : public user_manager::User {
   DISALLOW_COPY_AND_ASSIGN(FakeUser);
 };
 
-using ArcUtilTest = testing::Test;
+class ArcUtilTest : public testing::Test {
+ public:
+  ArcUtilTest() { chromeos::UpstartClient::InitializeFake(); }
+  ArcUtilTest(const ArcUtilTest&) = delete;
+  ArcUtilTest& operator=(const ArcUtilTest&) = delete;
+  ~ArcUtilTest() override = default;
+
+  void SetUp() override {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    RemoveUpstartStartStopJobFailures();
+  }
+
+  void TearDown() override { run_loop_.reset(); }
+
+ protected:
+  void InjectUpstartStartJobFailure(const std::string& job_name_to_fail) {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(base::BindLambdaForTesting(
+        [job_name_to_fail](const std::string& job_name,
+                           const std::vector<std::string>& env) {
+          // Return success unless |job_name| is |job_name_to_fail|.
+          return job_name != job_name_to_fail;
+        }));
+  }
+
+  void InjectUpstartStopJobFailure(const std::string& job_name_to_fail) {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_stop_job_cb(base::BindLambdaForTesting(
+        [job_name_to_fail](const std::string& job_name,
+                           const std::vector<std::string>& env) {
+          // Return success unless |job_name| is |job_name_to_fail|.
+          return job_name != job_name_to_fail;
+        }));
+  }
+
+  void StartRecordingUpstartOperations() {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(
+        base::BindLambdaForTesting([this](const std::string& job_name,
+                                          const std::vector<std::string>& env) {
+          upstart_operations_.emplace_back(job_name, true);
+          return true;
+        }));
+    upstart_client->set_stop_job_cb(
+        base::BindLambdaForTesting([this](const std::string& job_name,
+                                          const std::vector<std::string>& env) {
+          upstart_operations_.emplace_back(job_name, false);
+          return true;
+        }));
+  }
+
+  void RecreateRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
+
+  base::RunLoop* run_loop() { return run_loop_.get(); }
+
+  const std::vector<std::pair<std::string, bool>>& upstart_operations() const {
+    return upstart_operations_;
+  }
+
+ private:
+  void RemoveUpstartStartStopJobFailures() {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(
+        chromeos::FakeUpstartClient::StartStopJobCallback());
+    upstart_client->set_stop_job_cb(
+        chromeos::FakeUpstartClient::StartStopJobCallback());
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::test::TaskEnvironment task_environment_;
+
+  // List of upstart operations recorded. When it's "start" the boolean is set
+  // to true.
+  std::vector<std::pair<std::string, bool>> upstart_operations_;
+};
 
 TEST_F(ArcUtilTest, IsArcAvailable_None) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -166,6 +273,33 @@ TEST_F(ArcUtilTest, IsArcVmEnabled) {
   EXPECT_TRUE(IsArcVmEnabled());
 }
 
+TEST_F(ArcUtilTest, IsArcVmRtVcpuEnabled) {
+  {
+    ScopedRtVcpuFeature feature(false, false);
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(2));
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(4));
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(8));
+  }
+  {
+    ScopedRtVcpuFeature feature(true, false);
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(2));
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(4));
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(8));
+  }
+  {
+    ScopedRtVcpuFeature feature(false, true);
+    EXPECT_FALSE(IsArcVmRtVcpuEnabled(2));
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(4));
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(8));
+  }
+  {
+    ScopedRtVcpuFeature feature(true, true);
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(2));
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(4));
+    EXPECT_TRUE(IsArcVmRtVcpuEnabled(8));
+  }
+}
+
 TEST_F(ArcUtilTest, IsArcVmDevConfIgnored) {
   EXPECT_FALSE(IsArcVmDevConfIgnored());
 
@@ -187,21 +321,6 @@ TEST_F(ArcUtilTest, IsArcOptInVerificationDisabled) {
   EXPECT_TRUE(IsArcOptInVerificationDisabled());
 }
 
-TEST_F(ArcUtilTest, IsArcAppWindow) {
-  std::unique_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, nullptr));
-  EXPECT_FALSE(IsArcAppWindow(window.get()));
-
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::CHROME_APP));
-  EXPECT_FALSE(IsArcAppWindow(window.get()));
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::ARC_APP));
-  EXPECT_TRUE(IsArcAppWindow(window.get()));
-
-  EXPECT_FALSE(IsArcAppWindow(nullptr));
-}
-
 TEST_F(ArcUtilTest, IsArcAllowedForUser) {
   user_manager::FakeUserManager* fake_user_manager =
       new user_manager::FakeUserManager();
@@ -215,7 +334,7 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
       {user_manager::USER_TYPE_REGULAR, true},
       {user_manager::USER_TYPE_GUEST, false},
       {user_manager::USER_TYPE_PUBLIC_ACCOUNT, true},
-      {user_manager::USER_TYPE_SUPERVISED, false},
+      {user_manager::USER_TYPE_SUPERVISED_DEPRECATED, false},
       {user_manager::USER_TYPE_KIOSK_APP, false},
       {user_manager::USER_TYPE_CHILD, true},
       {user_manager::USER_TYPE_ARC_KIOSK_APP, true},
@@ -286,31 +405,92 @@ TEST_F(ArcUtilTest, ScaleFactorToDensity) {
   EXPECT_EQ(240, GetLcdDensityForDeviceScaleFactor(2.0));
 }
 
-TEST_F(ArcUtilTest, GenerateFirstStageFstab) {
-  constexpr const char kFakeCombinedBuildPropPath[] = "/path/to/build.prop";
-  constexpr const char kAnotherFakeCombinedBuildPropPath[] =
-      "/foo/bar/baz.prop";
+TEST_F(ArcUtilTest, ConfigureUpstartJobs_Success) {
+  std::deque<JobDesc> jobs{
+      JobDesc{"Job_2dA", UpstartOperation::JOB_STOP, {}},
+      JobDesc{"Job_2dB", UpstartOperation::JOB_STOP_AND_START, {}},
+      JobDesc{"Job_2dC", UpstartOperation::JOB_START, {}},
+  };
+  bool result = false;
+  StartRecordingUpstartOperations();
+  ConfigureUpstartJobs(jobs,
+                       base::BindLambdaForTesting([&result, this](bool r) {
+                         result = r;
+                         run_loop()->Quit();
+                       }));
+  run_loop()->Run();
+  EXPECT_TRUE(result);
 
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv({"", "--enable-arcvm"});
+  auto ops = upstart_operations();
+  ASSERT_EQ(4u, ops.size());
+  EXPECT_EQ(ops[0].first, "Job_2dA");
+  EXPECT_FALSE(ops[0].second);
+  EXPECT_EQ(ops[1].first, "Job_2dB");
+  EXPECT_FALSE(ops[1].second);
+  EXPECT_EQ(ops[2].first, "Job_2dB");
+  EXPECT_TRUE(ops[2].second);
+  EXPECT_EQ(ops[3].first, "Job_2dC");
+  EXPECT_TRUE(ops[3].second);
+}
 
-  std::string content;
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  const base::FilePath fstab(dir.GetPath().Append("fstab"));
+TEST_F(ArcUtilTest, ConfigureUpstartJobs_StopFail) {
+  std::deque<JobDesc> jobs{
+      JobDesc{"Job_2dA", UpstartOperation::JOB_STOP, {}},
+      JobDesc{"Job_2dB", UpstartOperation::JOB_STOP_AND_START, {}},
+      JobDesc{"Job_2dC", UpstartOperation::JOB_START, {}},
+  };
+  // Confirm that failing to stop a job is ignored.
+  bool result = false;
+  InjectUpstartStopJobFailure("Job_2dA");
+  ConfigureUpstartJobs(jobs,
+                       base::BindLambdaForTesting([&result, this](bool r) {
+                         result = r;
+                         run_loop()->Quit();
+                       }));
+  run_loop()->Run();
+  EXPECT_TRUE(result);
 
-  // Generate the fstab and verify the content.
-  EXPECT_TRUE(GenerateFirstStageFstab(
-      base::FilePath(kFakeCombinedBuildPropPath), fstab));
-  EXPECT_TRUE(base::ReadFileToString(fstab, &content));
-  EXPECT_NE(std::string::npos, content.find(kFakeCombinedBuildPropPath));
+  // Do the same for the second task.
+  RecreateRunLoop();
+  result = false;
+  InjectUpstartStopJobFailure("Job_2dB");
+  ConfigureUpstartJobs(jobs,
+                       base::BindLambdaForTesting([&result, this](bool r) {
+                         result = r;
+                         run_loop()->Quit();
+                       }));
+  run_loop()->Run();
+  EXPECT_TRUE(result);
+}
 
-  // Generate the fstab again with the other prop file and verify the content.
-  EXPECT_TRUE(GenerateFirstStageFstab(
-      base::FilePath(kAnotherFakeCombinedBuildPropPath), fstab));
-  EXPECT_TRUE(base::ReadFileToString(fstab, &content));
-  EXPECT_EQ(std::string::npos, content.find(kFakeCombinedBuildPropPath));
-  EXPECT_NE(std::string::npos, content.find(kAnotherFakeCombinedBuildPropPath));
+TEST_F(ArcUtilTest, ConfigureUpstartJobs_StartFail) {
+  std::deque<JobDesc> jobs{
+      JobDesc{"Job_2dA", UpstartOperation::JOB_STOP, {}},
+      JobDesc{"Job_2dB", UpstartOperation::JOB_STOP_AND_START, {}},
+      JobDesc{"Job_2dC", UpstartOperation::JOB_START, {}},
+  };
+  // Confirm that failing to start a job is not ignored.
+  bool result = true;
+  InjectUpstartStartJobFailure("Job_2dB");
+  ConfigureUpstartJobs(jobs,
+                       base::BindLambdaForTesting([&result, this](bool r) {
+                         result = r;
+                         run_loop()->Quit();
+                       }));
+  run_loop()->Run();
+  EXPECT_FALSE(result);
+
+  // Do the same for the third task.
+  RecreateRunLoop();
+  result = true;
+  InjectUpstartStartJobFailure("Job_2dC");
+  ConfigureUpstartJobs(std::move(jobs),
+                       base::BindLambdaForTesting([&result, this](bool r) {
+                         result = r;
+                         run_loop()->Quit();
+                       }));
+  run_loop()->Run();
+  EXPECT_FALSE(result);
 }
 
 }  // namespace

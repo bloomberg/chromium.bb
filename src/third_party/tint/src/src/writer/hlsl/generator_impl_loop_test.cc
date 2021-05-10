@@ -19,11 +19,11 @@
 #include "src/ast/float_literal.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/type/f32_type.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
+#include "src/program.h"
+#include "src/type/f32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -34,13 +34,19 @@ namespace {
 using HlslGeneratorImplTest_Loop = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_Loop) {
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{});
+  auto* l = create<ast::LoopStatement>(body, continuing);
 
-  ast::LoopStatement l(std::move(body), {});
-  gen().increment_indent();
+  WrapInFunction(l);
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &l)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, l)) << gen.error();
   EXPECT_EQ(result(), R"(  for(;;) {
     discard;
   }
@@ -48,16 +54,21 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_Loop) {
 }
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithContinuing) {
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* l = create<ast::LoopStatement>(body, continuing);
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::ReturnStatement>());
+  WrapInFunction(l);
 
-  ast::LoopStatement l(std::move(body), std::move(continuing));
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &l)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, l)) << gen.error();
   EXPECT_EQ(result(), R"(  {
     bool tint_hlsl_is_first_1 = true;
     for(;;) {
@@ -73,31 +84,36 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithContinuing) {
 }
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopNestedWithContinuing) {
-  ast::type::F32Type f32;
+  Global("lhs", ty.f32(), ast::StorageClass::kNone);
+  Global("rhs", ty.f32(), ast::StorageClass::kNone);
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* inner = create<ast::LoopStatement>(body, continuing);
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::ReturnStatement>());
+  body = create<ast::BlockStatement>(ast::StatementList{
+      inner,
+  });
 
-  auto inner = std::make_unique<ast::LoopStatement>(std::move(body),
-                                                    std::move(continuing));
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  body = std::make_unique<ast::BlockStatement>();
-  body->append(std::move(inner));
+  continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::AssignmentStatement>(lhs, rhs),
+  });
 
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
+  auto* outer = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(outer);
 
-  continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::AssignmentStatement>(
-      std::move(lhs), std::move(rhs)));
+  GeneratorImpl& gen = Build();
 
-  ast::LoopStatement outer(std::move(body), std::move(continuing));
-  gen().increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &outer)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, outer)) << gen.error();
   EXPECT_EQ(result(), R"(  {
     bool tint_hlsl_is_first_1 = true;
     for(;;) {
@@ -144,30 +160,30 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithVarUsedInContinuing) {
   //   }
   // }
 
-  ast::type::F32Type f32;
+  Global("rhs", ty.f32(), ast::StorageClass::kNone);
 
-  auto var = std::make_unique<ast::Variable>(
-      "lhs", ast::StorageClass::kFunction, &f32);
-  var->set_constructor(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.4)));
+  auto* var = Var("lhs", ty.f32(), ast::StorageClass::kFunction, Expr(2.4f));
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::VariableDeclStatement>(std::move(var)));
-  body->append(std::make_unique<ast::VariableDeclStatement>(
-      std::make_unique<ast::Variable>("other", ast::StorageClass::kFunction,
-                                      &f32)));
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::VariableDeclStatement>(var),
+      create<ast::VariableDeclStatement>(
+          Var("other", ty.f32(), ast::StorageClass::kFunction)),
+  });
 
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::AssignmentStatement>(
-      std::move(lhs), std::move(rhs)));
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::AssignmentStatement>(lhs, rhs),
+  });
+  auto* outer = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(outer);
 
-  ast::LoopStatement outer(std::move(body), std::move(continuing));
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &outer)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, outer)) << gen.error();
   EXPECT_EQ(result(), R"(  {
     bool tint_hlsl_is_first_1 = true;
     float lhs;
@@ -178,7 +194,7 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithVarUsedInContinuing) {
       }
       tint_hlsl_is_first_1 = false;
 
-      lhs = 2.40000010f;
+      lhs = 2.400000095f;
       other = 0.0f;
     }
   }

@@ -27,33 +27,38 @@ namespace {
         void SetUp() override {
             ValidationTest::SetUp();
 
-            vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-              #version 450
-              layout(location = 0) in vec2 pos;
-              layout (set = 0, binding = 0) uniform vertexUniformBuffer {
-                  mat2 transform;
-              };
-              void main() {
-              })");
+            vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[location(0)]] var<in> pos : vec2<f32>;
 
-            fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-              #version 450
-              layout (set = 1, binding = 0) uniform fragmentUniformBuffer {
-                  vec4 color;
-              };
-              layout (set = 1, binding = 1) buffer storageBuffer {
-                  float dummy[];
-              };
-              void main() {
-              })");
+                [[block]] struct S {
+                    [[offset(0)]] transform : mat2x2<f32>;
+                };
+                [[group(0), binding(0)]] var<uniform> uniforms : S;
+
+                [[stage(vertex)]] fn main() -> void {
+                })");
+
+            fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+                [[block]] struct Uniforms {
+                    [[offset(0)]] color : vec4<f32>;
+                };
+                [[group(1), binding(0)]] var<uniform> uniforms : Uniforms;
+
+                [[block]] struct Storage {
+                    [[offset(0)]] dummy : [[stride(4)]] array<f32>;
+                };
+                [[group(1), binding(1)]] var<storage_buffer> ssbo : [[access(read_write)]] Storage;
+
+                [[stage(fragment)]] fn main() -> void {
+                })");
 
             wgpu::BindGroupLayout bgls[] = {
                 utils::MakeBindGroupLayout(
-                    device, {{0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer}}),
+                    device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform}}),
                 utils::MakeBindGroupLayout(
                     device, {
-                                {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer},
-                                {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer},
+                                {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform},
+                                {1, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage},
                             })};
 
             wgpu::PipelineLayoutDescriptor pipelineLayoutDesc = {};
@@ -134,6 +139,28 @@ TEST_F(RenderBundleValidationTest, Empty) {
     pass.ExecuteBundles(1, &renderBundle);
     pass.EndPass();
     commandEncoder.Finish();
+}
+
+// Test that an empty error bundle encoder produces an error bundle.
+// This is a regression test for error render bundle encoders containing no commands would
+// produce non-error render bundles.
+TEST_F(RenderBundleValidationTest, EmptyErrorEncoderProducesErrorBundle) {
+    DummyRenderPass renderPass(device);
+
+    utils::ComboRenderBundleEncoderDescriptor desc = {};
+    // Having 0 attachments is invalid!
+    desc.colorFormatsCount = 0;
+
+    wgpu::RenderBundleEncoder renderBundleEncoder;
+    ASSERT_DEVICE_ERROR(renderBundleEncoder = device.CreateRenderBundleEncoder(&desc));
+    wgpu::RenderBundle renderBundle;
+    ASSERT_DEVICE_ERROR(renderBundle = renderBundleEncoder.Finish());
+
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&renderPass);
+    pass.ExecuteBundles(1, &renderBundle);
+    pass.EndPass();
+    ASSERT_DEVICE_ERROR(commandEncoder.Finish());
 }
 
 // Test executing zero render bundles.
@@ -474,7 +501,7 @@ TEST_F(RenderBundleValidationTest, ClearsState) {
         ASSERT_DEVICE_ERROR(commandEncoder.Finish());
     }
 
-    // Test executing 0 bundles does not clear command buffer state.
+    // Test executing 0 bundles still clears command buffer state.
     {
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&renderPass);
@@ -487,7 +514,7 @@ TEST_F(RenderBundleValidationTest, ClearsState) {
         pass.Draw(3);
 
         pass.EndPass();
-        commandEncoder.Finish();
+        ASSERT_DEVICE_ERROR(commandEncoder.Finish());
     }
 }
 

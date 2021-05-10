@@ -18,7 +18,6 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
-#include "extensions/common/api/declarative_net_request/utils.h"
 #include "net/http/http_util.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
@@ -143,7 +142,7 @@ uint8_t GetOptionsMask(const dnr_api::Rule& parsed_rule) {
   uint8_t mask = flat_rule::OptionFlag_NONE;
 
   if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW)
-    mask |= flat_rule::OptionFlag_IS_WHITELIST;
+    mask |= flat_rule::OptionFlag_IS_ALLOWLIST;
 
   if (!IsCaseSensitive(parsed_rule))
     mask |= flat_rule::OptionFlag_IS_CASE_INSENSITIVE;
@@ -384,22 +383,6 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
   return ParseResult::ERROR_INVALID_REDIRECT;
 }
 
-bool DoesActionSupportPriority(dnr_api::RuleActionType type) {
-  switch (type) {
-    case dnr_api::RULE_ACTION_TYPE_BLOCK:
-    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-    case dnr_api::RULE_ACTION_TYPE_ALLOW:
-    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
-    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
-    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
-      return true;
-    case dnr_api::RULE_ACTION_TYPE_NONE:
-      break;
-  }
-  NOTREACHED();
-  return false;
-}
-
 uint8_t GetActionTypePriority(dnr_api::RuleActionType action_type) {
   switch (action_type) {
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
@@ -476,14 +459,10 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.id < kMinValidID)
     return ParseResult::ERROR_INVALID_RULE_ID;
 
-  const bool is_priority_supported =
-      DoesActionSupportPriority(parsed_rule.action.type);
-  if (is_priority_supported) {
-    if (!parsed_rule.priority)
-      return ParseResult::ERROR_EMPTY_RULE_PRIORITY;
-    if (*parsed_rule.priority < kMinValidPriority)
-      return ParseResult::ERROR_INVALID_RULE_PRIORITY;
-  }
+  int priority =
+      parsed_rule.priority ? *parsed_rule.priority : kDefaultPriority;
+  if (priority < kMinValidPriority)
+    return ParseResult::ERROR_INVALID_RULE_PRIORITY;
 
   const bool is_redirect_rule =
       parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REDIRECT;
@@ -557,10 +536,8 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
 
   indexed_rule->action_type = parsed_rule.action.type;
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule.id);
-  indexed_rule->priority = parsed_rule.priority ? ComputeIndexedRulePriority(
-                                                      *parsed_rule.priority,
-                                                      indexed_rule->action_type)
-                                                : kDefaultPriority;
+  indexed_rule->priority =
+      ComputeIndexedRulePriority(priority, indexed_rule->action_type);
   indexed_rule->options = GetOptionsMask(parsed_rule);
   indexed_rule->activation_types = GetActivationTypes(parsed_rule);
 
@@ -632,7 +609,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
 
   // Some sanity checks to ensure we return a valid IndexedRule.
   DCHECK_GE(indexed_rule->id, static_cast<uint32_t>(kMinValidID));
-  DCHECK_GE(indexed_rule->priority, static_cast<uint32_t>(kMinValidPriority));
   DCHECK(IsSubset(indexed_rule->options, flat_rule::OptionFlag_ANY));
   DCHECK(IsSubset(indexed_rule->element_types, flat_rule::ElementType_ANY));
   DCHECK_EQ(flat_rule::ActivationType_NONE, indexed_rule->activation_types);
@@ -643,8 +619,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
 
 uint64_t ComputeIndexedRulePriority(int parsed_rule_priority,
                                     dnr_api::RuleActionType action_type) {
-  if (!DoesActionSupportPriority(action_type))
-    return kDefaultPriority;
   // Incorporate the action's priority into the rule priority, so e.g. allow
   // rules will be given a higher priority than block rules with the same
   // priority specified in the rule JSON.

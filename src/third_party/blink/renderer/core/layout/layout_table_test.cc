@@ -13,9 +13,11 @@ namespace {
 
 class LayoutTableTest : public RenderingTest {
  protected:
-  // TODO(958381) Make these tests TableNG compatible.
-  LayoutTable* GetTableByElementId(const char* id) {
-    return To<LayoutTable>(GetLayoutObjectByElementId(id));
+  LayoutBlock* GetTableByElementId(const char* id) {
+    return To<LayoutBlock>(GetLayoutObjectByElementId(id));
+  }
+  LayoutNGTableInterface* GetTableInterfaceByElementId(const char* id) {
+    return ToInterface<LayoutNGTableInterface>(GetLayoutObjectByElementId(id));
   }
 };
 
@@ -78,9 +80,16 @@ TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
                                             LayoutUnit(0), LayoutUnit(10));
   EXPECT_EQ(expected_self_visual_overflow,
             table->PhysicalSelfVisualOverflowRect());
-  // For this table, its layout overflow equals self visual overflow.
-  EXPECT_EQ(expected_self_visual_overflow, table->PhysicalLayoutOverflowRect());
-
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
+    EXPECT_EQ(table->PhysicalContentBoxRect(),
+              table->PhysicalLayoutOverflowRect());
+  } else {
+    // In Legacy, visual overflow incorrectly does not include borders
+    // that extend beyond table boundaries.
+    // For this table, its layout overflow equals self visual overflow.
+    EXPECT_EQ(expected_self_visual_overflow,
+              table->PhysicalLayoutOverflowRect());
+  }
   // The table's visual overflow covers self visual overflow and content visual
   // overflows.
   auto expected_visual_overflow = table->PhysicalContentBoxRect();
@@ -131,14 +140,25 @@ TEST_F(LayoutTableTest, CollapsedBorders) {
 
   // Cells have wider borders.
   auto* table3 = GetTableByElementId("table3");
-  // Cell E's border-top won.
-  EXPECT_EQ(7, table3->BorderBefore());
-  // Cell H's border-bottom won.
-  EXPECT_EQ(20, table3->BorderAfter());
-  // Cell E's border-left won.
-  EXPECT_EQ(10, table3->BorderStart());
-  // Cell F's border-bottom won.
-  EXPECT_EQ(13, table3->BorderEnd());
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
+    // Cell E's border-top won.
+    EXPECT_EQ(LayoutUnit(7.5), table3->BorderBefore());
+    // Cell H's border-bottom won.
+    EXPECT_EQ(20, table3->BorderAfter());
+    // Cell E's border-left won.
+    EXPECT_EQ(LayoutUnit(10.5), table3->BorderStart());
+    // Cell F's border-bottom won.
+    EXPECT_EQ(LayoutUnit(12.5), table3->BorderEnd());
+  } else {
+    // Cell E's border-top won.
+    EXPECT_EQ(7, table3->BorderBefore());
+    // Cell H's border-bottom won.
+    EXPECT_EQ(20, table3->BorderAfter());
+    // Cell E's border-left won.
+    EXPECT_EQ(10, table3->BorderStart());
+    // Cell F's border-bottom won.
+    EXPECT_EQ(13, table3->BorderEnd());
+  }
 }
 
 TEST_F(LayoutTableTest, CollapsedBordersWithCol) {
@@ -222,7 +242,11 @@ TEST_F(LayoutTableTest, WidthPercentagesExceedHundred) {
 
   // Table width should be TableLayoutAlgorithm::kMaxTableWidth
   auto* table = GetTableByElementId("onlyTable");
-  EXPECT_EQ(1000000, table->OffsetWidth());
+  // TablesNG will grow up to LayoutUnit::Max()
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(2000000, table->OffsetWidth());
+  else
+    EXPECT_EQ(1000000, table->OffsetWidth());
 }
 
 TEST_F(LayoutTableTest, CloseToMaxWidth) {
@@ -272,23 +296,22 @@ TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
       <thead id='head'></thead>
     <table>
   )HTML");
-  auto* table = GetTableByElementId("table");
+  auto* table = GetTableInterfaceByElementId("table");
   EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("head"))
-                ->ToLayoutObject(),
-            table->TopSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->TopNonEmptySection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->BottomSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->BottomNonEmptySection());
+                GetLayoutObjectByElementId("head")),
+            table->TopSectionInterface());
+  // TablesNG does not implement these APIs. They are only used by Legacy.
+  if (!RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("body")),
+              table->TopNonEmptySectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("body")),
+              table->BottomSectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("body")),
+              table->BottomNonEmptySectionInterface());
+  }
 }
 
 TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
@@ -298,23 +321,22 @@ TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
       <tbody id='body'><tr><td>Body</td></tr></tbody>
     <table>
   )HTML");
-  auto* table = GetTableByElementId("table");
+  auto* table = GetTableInterfaceByElementId("table");
   EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->TopSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->TopNonEmptySection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("foot"))
-                ->ToLayoutObject(),
-            table->BottomSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("body"))
-                ->ToLayoutObject(),
-            table->BottomNonEmptySection());
+                GetLayoutObjectByElementId("body")),
+            table->TopSectionInterface());
+  // TablesNG does not implement these APIs. They are only used by Legacy.
+  if (!RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("body")),
+              table->TopNonEmptySectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("foot")),
+              table->BottomSectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("body")),
+              table->BottomNonEmptySectionInterface());
+  }
 }
 
 TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
@@ -325,23 +347,22 @@ TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
       <tbody id='body'><tr><td>Body</td></tr></tbody>
     <table>
   )HTML");
-  auto* table = GetTableByElementId("table");
+  auto* table = GetTableInterfaceByElementId("table");
   EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("head"))
-                ->ToLayoutObject(),
-            table->TopSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("head"))
-                ->ToLayoutObject(),
-            table->TopNonEmptySection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("foot"))
-                ->ToLayoutObject(),
-            table->BottomSection());
-  EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
-                GetLayoutObjectByElementId("foot"))
-                ->ToLayoutObject(),
-            table->BottomNonEmptySection());
+                GetLayoutObjectByElementId("head")),
+            table->TopSectionInterface());
+  // TablesNG does not implement these APIs. They are only used by Legacy.
+  if (!RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("head")),
+              table->TopNonEmptySectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("foot")),
+              table->BottomSectionInterface());
+    EXPECT_EQ(ToInterface<LayoutNGTableSectionInterface>(
+                  GetLayoutObjectByElementId("foot")),
+              table->BottomNonEmptySectionInterface());
+  }
 }
 
 TEST_F(LayoutTableTest, VisualOverflowCleared) {
@@ -362,6 +383,10 @@ TEST_F(LayoutTableTest, VisualOverflowCleared) {
 }
 
 TEST_F(LayoutTableTest, HasNonCollapsedBorderDecoration) {
+  // TablesNG does not support DirtiedRowsAndEffectiveColumns.
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    return;
+
   SetBodyInnerHTML("<table id='table'></table>");
   auto* table = GetTableByElementId("table");
   EXPECT_FALSE(table->HasNonCollapsedBorderDecoration());

@@ -27,6 +27,7 @@ list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
             "${AOM_ROOT}/test/acm_random.h"
             "${AOM_ROOT}/test/aom_integer_test.cc"
             "${AOM_ROOT}/test/av1_config_test.cc"
+            "${AOM_ROOT}/test/av1_key_value_api_test.cc"
             "${AOM_ROOT}/test/block_test.cc"
             "${AOM_ROOT}/test/clear_system_state.h"
             "${AOM_ROOT}/test/codec_factory.h"
@@ -84,6 +85,11 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/y4m_video_source.h"
             "${AOM_ROOT}/test/yuv_video_source.h"
             "${AOM_ROOT}/test/time_stamp_test.cc")
+
+if(CONFIG_AV1_TEMPORAL_DENOISING AND (HAVE_SSE2 OR HAVE_NEON))
+  list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
+              "${AOM_ROOT}/test/av1_temporal_denoiser_test.cc")
+endif()
 
 list(APPEND AOM_DECODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/decode_perf_test.cc")
 list(APPEND AOM_ENCODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/encode_perf_test.cc")
@@ -235,7 +241,8 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/warp_filter_test.cc"
               "${AOM_ROOT}/test/warp_filter_test_util.cc"
               "${AOM_ROOT}/test/warp_filter_test_util.h"
-              "${AOM_ROOT}/test/webmenc_test.cc")
+              "${AOM_ROOT}/test/webmenc_test.cc"
+              "${AOM_ROOT}/test/av1_k_means_test.cc")
 
   if(CONFIG_REALTIME_ONLY)
     list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES

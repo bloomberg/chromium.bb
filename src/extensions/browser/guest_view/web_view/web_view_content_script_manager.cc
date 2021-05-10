@@ -13,11 +13,11 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/declarative_user_script_manager.h"
-#include "extensions/browser/declarative_user_script_set.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/user_script_loader.h"
+#include "extensions/browser/user_script_manager.h"
 
 using content::BrowserThread;
 
@@ -53,13 +53,13 @@ void WebViewContentScriptManager::AddContentScripts(
     std::unique_ptr<UserScriptList> scripts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DeclarativeUserScriptSet* script_set =
-      DeclarativeUserScriptManager::Get(browser_context_)
-          ->GetDeclarativeUserScriptSetByID(host_id);
-  DCHECK(script_set);
+  UserScriptLoader* loader = ExtensionSystem::Get(browser_context_)
+                                 ->user_script_manager()
+                                 ->GetUserScriptLoaderByID(host_id);
+  DCHECK(loader);
 
   // We need to update WebViewRenderState.
-  std::set<int> ids_to_add;
+  std::set<std::string> ids_to_add;
 
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
   auto iter = guest_content_script_map_.find(key);
@@ -90,18 +90,16 @@ void WebViewContentScriptManager::AddContentScripts(
   }
 
   if (!to_delete.empty())
-    script_set->RemoveScripts(to_delete);
+    loader->RemoveScripts(to_delete);
 
   // Step 3: makes WebViewContentScriptManager become an observer of the
   // |loader| for scripts loaded event.
-  UserScriptLoader* loader = script_set->loader();
-  DCHECK(loader);
   if (!user_script_loader_observer_.IsObserving(loader))
     user_script_loader_observer_.Add(loader);
 
   // Step 4: adds new scripts to the set.
-  script_set->AddScripts(std::move(scripts), embedder_process_id,
-                         render_frame_host->GetRoutingID());
+  loader->AddScripts(std::move(scripts), embedder_process_id,
+                     render_frame_host->GetRoutingID());
 
   // Step 5: creates an entry in |webview_host_id_map_| for the given
   // |embedder_process_id| and |view_instance_id| if it doesn't exist.
@@ -146,13 +144,13 @@ void WebViewContentScriptManager::RemoveContentScripts(
   if (script_map_iter == guest_content_script_map_.end())
     return;
 
-  DeclarativeUserScriptSet* script_set =
-      DeclarativeUserScriptManager::Get(browser_context_)
-          ->GetDeclarativeUserScriptSetByID(host_id);
-  CHECK(script_set);
+  UserScriptLoader* loader = ExtensionSystem::Get(browser_context_)
+                                 ->user_script_manager()
+                                 ->GetUserScriptLoaderByID(host_id);
+  CHECK(loader);
 
   // We need to update WebViewRenderState.
-  std::set<int> ids_to_delete;
+  std::set<std::string> ids_to_delete;
   std::set<UserScriptIDPair> scripts_to_delete;
 
   // Step 1: removes content scripts from |set| and updates
@@ -182,13 +180,11 @@ void WebViewContentScriptManager::RemoveContentScripts(
 
   // Step 2: makes WebViewContentScriptManager become an observer of the
   // |loader| for scripts loaded event.
-  UserScriptLoader* loader = script_set->loader();
-  DCHECK(loader);
   if (!user_script_loader_observer_.IsObserving(loader))
     user_script_loader_observer_.Add(loader);
 
   // Step 3: removes content scripts from set.
-  script_set->RemoveScripts(scripts_to_delete);
+  loader->RemoveScripts(scripts_to_delete);
 
   // Step 4: updates WebViewRenderState.
   if (!ids_to_delete.empty()) {
@@ -197,10 +193,10 @@ void WebViewContentScriptManager::RemoveContentScripts(
   }
 }
 
-std::set<int> WebViewContentScriptManager::GetContentScriptIDSet(
+std::set<std::string> WebViewContentScriptManager::GetContentScriptIDSet(
     int embedder_process_id,
     int view_instance_id) {
-  std::set<int> ids;
+  std::set<std::string> ids;
 
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
   GuestContentScriptMap::const_iterator iter =

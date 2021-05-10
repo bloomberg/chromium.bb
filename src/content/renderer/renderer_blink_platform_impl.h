@@ -95,11 +95,13 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       size_t,
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const blink::WebString& cacheStorageCacheName) override;
-  void PopulateURLResponse(const blink::WebURL& url,
-                           const network::mojom::URLResponseHead& head,
-                           blink::WebURLResponse* response,
-                           bool report_security_info,
-                           int request_id) override;
+  bool IsRedirectSafe(const GURL& from_url, const GURL& to_url) override;
+  blink::WebResourceRequestSenderDelegate* GetResourceRequestSenderDelegate()
+      override;
+  void AppendVariationsThrottles(
+      int routing_id,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles)
+      override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
   blink::WebString DatabaseCreateOriginIdentifier(
@@ -182,7 +184,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebURL& top_document_web_url) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void SetDisplayThreadPriority(base::PlatformThreadId thread_id) override;
+#endif
   blink::BlameContext* GetTopLevelBlameContext() override;
   std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
   CreateDedicatedWorkerHostFactoryClient(
@@ -209,6 +213,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::MediaInspectorContext* inspector_context,
       scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner) override;
   media::GpuVideoAcceleratorFactories* GetGpuFactories() override;
+  scoped_refptr<base::SingleThreadTaskRunner> MediaThreadTaskRunner() override;
+  media::DecoderFactory* GetMediaDecoderFactory() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
   void SetActiveURL(const blink::WebURL& url,
                     const blink::WebString& top_url) override;

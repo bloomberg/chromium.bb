@@ -6,12 +6,13 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/event.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -22,7 +23,7 @@ class DesktopScreenX11Test;
 
 // Screen implementation that talks to XRandR
 class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
-                                      public ui::XEventDispatcher,
+                                      public x11::EventObserver,
                                       public ui::XDisplayManager::Delegate,
                                       public DeviceScaleFactorObserver {
  public:
@@ -53,8 +54,8 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   void RemoveObserver(display::DisplayObserver* observer) override;
   std::string GetCurrentWorkspace() override;
 
-  // ui::XEventDispatcher:
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
   // DeviceScaleFactorObserver:
   void OnDeviceScaleFactorChanged() override;
@@ -71,16 +72,16 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   display::Screen* const old_screen_ = display::Screen::SetScreenInstance(this);
   std::unique_ptr<ui::XDisplayManager> x11_display_manager_ =
       std::make_unique<ui::XDisplayManager>(this);
-  ScopedObserver<LinuxUI,
-                 DeviceScaleFactorObserver,
-                 &LinuxUI::AddDeviceScaleFactorObserver,
-                 &LinuxUI::RemoveDeviceScaleFactorObserver>
+  base::ScopedObservation<LinuxUI,
+                          DeviceScaleFactorObserver,
+                          &LinuxUI::AddDeviceScaleFactorObserver,
+                          &LinuxUI::RemoveDeviceScaleFactorObserver>
       display_scale_factor_observer_{this};
-  ScopedObserver<ui::X11EventSource,
-                 XEventDispatcher,
-                 &ui::X11EventSource::AddXEventDispatcher,
-                 &ui::X11EventSource::RemoveXEventDispatcher>
-      event_source_observer_{this};
+  base::ScopedObservation<x11::Connection,
+                          x11::EventObserver,
+                          &x11::Connection::AddEventObserver,
+                          &x11::Connection::RemoveEventObserver>
+      event_observer_{this};
 };
 
 }  // namespace views

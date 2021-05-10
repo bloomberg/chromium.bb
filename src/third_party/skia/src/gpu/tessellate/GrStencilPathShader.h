@@ -8,6 +8,7 @@
 #ifndef GrStencilPathShader_DEFINED
 #define GrStencilPathShader_DEFINED
 
+#include "src/gpu/GrDrawIndirectCommand.h"
 #include "src/gpu/tessellate/GrPathShader.h"
 #include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 
@@ -18,6 +19,67 @@ public:
     GrStencilPathShader(ClassID classID, const SkMatrix& viewMatrix, GrPrimitiveType primitiveType,
                         int tessellationPatchVertexCount = 0)
             : GrPathShader(classID, viewMatrix, primitiveType, tessellationPatchVertexCount) {
+    }
+
+    // Creates a pipeline that can be used for normal Redbook stencil draws.
+    static const GrPipeline* MakeStencilPassPipeline(const GrPathShader::ProgramArgs& args,
+                                                     GrAAType aaType,
+                                                     GrTessellationPathRenderer::OpFlags opFlags,
+                                                     const GrAppliedHardClip& hardClip) {
+        using OpFlags = GrTessellationPathRenderer::OpFlags;
+        GrPipeline::InitArgs pipelineArgs;
+        if (aaType != GrAAType::kNone) {
+            pipelineArgs.fInputFlags |= GrPipeline::InputFlags::kHWAntialias;
+        }
+        if (args.fCaps->wireframeSupport() && (opFlags & OpFlags::kWireframe)) {
+            pipelineArgs.fInputFlags |= GrPipeline::InputFlags::kWireframe;
+        }
+        pipelineArgs.fCaps = args.fCaps;
+        return args.fArena->make<GrPipeline>(pipelineArgs,
+                                             GrDisableColorXPFactory::MakeXferProcessor(),
+                                             hardClip);
+    }
+
+    // Returns the stencil settings to use for a standard Redbook stencil draw.
+    static const GrUserStencilSettings* StencilPassSettings(SkPathFillType fillType) {
+        // Increments clockwise triangles and decrements counterclockwise. Used for "winding" fill.
+        constexpr static GrUserStencilSettings kIncrDecrStencil(
+            GrUserStencilSettings::StaticInitSeparate<
+                0x0000,                                0x0000,
+                GrUserStencilTest::kAlwaysIfInClip,    GrUserStencilTest::kAlwaysIfInClip,
+                0xffff,                                0xffff,
+                GrUserStencilOp::kIncWrap,             GrUserStencilOp::kDecWrap,
+                GrUserStencilOp::kKeep,                GrUserStencilOp::kKeep,
+                0xffff,                                0xffff>());
+
+        // Inverts the bottom stencil bit. Used for "even/odd" fill.
+        constexpr static GrUserStencilSettings kInvertStencil(
+            GrUserStencilSettings::StaticInit<
+                0x0000,
+                GrUserStencilTest::kAlwaysIfInClip,
+                0xffff,
+                GrUserStencilOp::kInvert,
+                GrUserStencilOp::kKeep,
+                0x0001>());
+
+        SkASSERT(fillType == SkPathFillType::kWinding || fillType == SkPathFillType::kEvenOdd);
+        return (fillType == SkPathFillType::kWinding) ? &kIncrDecrStencil : &kInvertStencil;
+    }
+
+    template<typename ShaderType>
+    static GrProgramInfo* MakeStencilProgram(const ProgramArgs& args, const SkMatrix& viewMatrix,
+                                             const GrPipeline* pipeline,
+                                             const GrUserStencilSettings* stencil) {
+        const auto* shader = args.fArena->make<ShaderType>(viewMatrix);
+        return GrPathShader::MakeProgram(args, shader, pipeline, stencil);
+    }
+
+    template<typename ShaderType>
+    static GrProgramInfo* MakeStencilProgram(const ProgramArgs& args, const SkMatrix& viewMatrix,
+                                             const GrPipeline* pipeline,
+                                             const SkPathFillType fillType) {
+        return MakeStencilProgram<ShaderType>(args, viewMatrix, pipeline,
+                                              StencilPassSettings(fillType));
     }
 
 protected:
@@ -104,25 +166,25 @@ public:
 
     // Configures an indirect draw to render cubic instances with 2^resolveLevel evenly-spaced (in
     // the parametric sense) line segments.
-    static GrDrawIndexedIndirectCommand MakeDrawCubicsIndirectCmd(int resolveLevel,
-                                                                  uint32_t instanceCount,
-                                                                  uint32_t baseInstance) {
+    static void WriteDrawCubicsIndirectCmd(GrDrawIndexedIndirectWriter* indirectWriter,
+                                           int resolveLevel, uint32_t instanceCount,
+                                           uint32_t baseInstance) {
         SkASSERT(resolveLevel > 0 && resolveLevel <= GrTessellationPathRenderer::kMaxResolveLevel);
         // Starting at baseIndex=3, the index buffer triangulates a cubic with 2^kMaxResolveLevel
         // line segments. Each index value corresponds to a parametric T value on the curve. Since
         // the triangles are arranged in "middle-out" order, we can conveniently control the
         // resolveLevel by changing only the indexCount.
         uint32_t indexCount = NumVerticesAtResolveLevel(resolveLevel);
-        return {indexCount, instanceCount, 3, 0, baseInstance};
+        indirectWriter->writeIndexed(indexCount, 3, instanceCount, baseInstance, 0);
     }
 
     // For performance reasons we can often express triangles as an indirect cubic draw and sneak
     // them in alongside the other indirect draws. This method configures an indirect draw to emit
     // the triangle [P0, P1, P2] from a 4-point instance.
-    static GrDrawIndexedIndirectCommand MakeDrawTrianglesIndirectCmd(uint32_t instanceCount,
-                                                                     uint32_t baseInstance) {
+    static void WriteDrawTrianglesIndirectCmd(GrDrawIndexedIndirectWriter* indirectWriter,
+                                              uint32_t instanceCount, uint32_t baseInstance) {
         // Indices 0,1,2 have special index values that emit points P0, P1, and P2 respectively.
-        return {3, instanceCount, 0, 0, baseInstance};
+        indirectWriter->writeIndexed(3, 0, instanceCount, baseInstance, 0);
     }
 
     // Returns the index buffer that should be bound when drawing with this shader.

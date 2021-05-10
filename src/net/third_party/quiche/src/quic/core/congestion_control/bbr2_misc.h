@@ -8,15 +8,14 @@
 #include <algorithm>
 #include <limits>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/windowed_filter.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/quic/platform/impl/quic_export_impl.h"
+#include "quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/congestion_control/windowed_filter.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -187,8 +186,31 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   // Can be enabled by connection option 'B2H2'.
   bool limit_inflight_hi_by_max_delivered = false;
 
-  // Can be enabled by connection option 'B2SL'.
-  bool startup_loss_exit_use_max_delivered_for_inflight_hi = false;
+  // Can be disabled by connection option 'B2SL'.
+  bool startup_loss_exit_use_max_delivered_for_inflight_hi = true;
+
+  // Can be enabled by connection option 'B2DL'.
+  bool use_bytes_delivered_for_inflight_hi = false;
+
+  // Can be disabled by connection option 'B2RC'.
+  bool enable_reno_coexistence = true;
+
+  // For experimentation to improve fast convergence upon loss.
+  enum QuicBandwidthLoMode : uint8_t {
+    DEFAULT = 0,
+    MIN_RTT_REDUCTION = 1,   // 'BBQ7'
+    INFLIGHT_REDUCTION = 2,  // 'BBQ8'
+    CWND_REDUCTION = 3,      // 'BBQ9'
+  };
+
+  // Different modes change bandwidth_lo_ differently upon loss.
+  QuicBandwidthLoMode bw_lo_mode_ = QuicBandwidthLoMode::DEFAULT;
+
+  // Set the pacing gain to 25% larger than the recent BW increase in STARTUP.
+  bool decrease_startup_pacing_at_end_of_round = false;
+
+  // Latch the flag for quic_bbr2_bw_startup.
+  const bool bw_startup = GetQuicReloadableFlag(quic_bbr2_bw_startup);
 };
 
 class QUIC_EXPORT_PRIVATE RoundTripCounter {
@@ -336,11 +358,14 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   void AdaptLowerBounds(const Bbr2CongestionEvent& congestion_event);
 
   // Restart the current round trip as if it is starting now.
-  void RestartRound();
+  void RestartRoundEarly();
 
   void AdvanceMaxBandwidthFilter() { max_bandwidth_filter_.Advance(); }
 
   void OnApplicationLimited() { bandwidth_sampler_.OnAppLimited(); }
+
+  // Calculates BDP using the current MaxBandwidth.
+  QuicByteCount BDP() const { return BDP(MaxBandwidth()); }
 
   QuicByteCount BDP(QuicBandwidth bandwidth) const {
     return bandwidth * MinRtt();
@@ -400,6 +425,23 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   bool IsInflightTooHigh(const Bbr2CongestionEvent& congestion_event,
                          int64_t max_loss_events) const;
 
+  enum BandwidthGrowth {
+    APP_LIMITED = 0,
+    NO_GROWTH = 1,
+    GROWTH = 2,
+    EXIT = 3,  // Too many rounds without bandwidth growth.
+  };
+
+  // Check bandwidth growth in the past round. Must be called at the end of a
+  // round.
+  // Return APP_LIMITED if the bandwidth sample was app-limited.
+  // Return GROWTH if the bandwidth grew as expected.
+  // Return NO_GROWTH if the bandwidth didn't increase enough.
+  // Return TOO_MANY_ROUNDS_WITH_NO_GROWTH if enough rounds have elapsed without
+  // growth, also sets |full_bandwidth_reached_| to true.
+  BandwidthGrowth CheckBandwidthGrowth(
+      const Bbr2CongestionEvent& congestion_event);
+
   QuicPacketNumber last_sent_packet() const {
     return round_trip_counter_.last_sent_packet();
   }
@@ -456,7 +498,19 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   float pacing_gain() const { return pacing_gain_; }
   void set_pacing_gain(float pacing_gain) { pacing_gain_ = pacing_gain; }
 
+  bool full_bandwidth_reached() const { return full_bandwidth_reached_; }
+  void set_full_bandwidth_reached() { full_bandwidth_reached_ = true; }
+  QuicBandwidth full_bandwidth_baseline() const {
+    return full_bandwidth_baseline_;
+  }
+  QuicRoundTripCount rounds_without_bandwidth_growth() const {
+    return rounds_without_bandwidth_growth_;
+  }
+
  private:
+  // Called when a new round trip starts.
+  void OnNewRound();
+
   const Bbr2Params& Params() const { return *params_; }
   const Bbr2Params* const params_;
   RoundTripCounter round_trip_counter_;
@@ -493,6 +547,13 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
 
   float cwnd_gain_;
   float pacing_gain_;
+
+  // STARTUP-centric fields which experimentally used by PROBE_UP.
+  bool full_bandwidth_reached_ = false;
+  QuicBandwidth full_bandwidth_baseline_ = QuicBandwidth::Zero();
+  QuicRoundTripCount rounds_without_bandwidth_growth_ = 0;
+  const bool reset_max_bytes_delivered_ =
+      GetQuicReloadableFlag(quic_bbr2_reset_max_bytes_delivered);
 };
 
 enum class Bbr2Mode : uint8_t {
@@ -562,7 +623,7 @@ class QUIC_EXPORT_PRIVATE Bbr2ModeBase {
 
 QUIC_EXPORT_PRIVATE inline QuicByteCount BytesInFlight(
     const SendTimeState& send_state) {
-  DCHECK(send_state.is_valid);
+  QUICHE_DCHECK(send_state.is_valid);
   if (send_state.bytes_in_flight != 0) {
     return send_state.bytes_in_flight;
   }

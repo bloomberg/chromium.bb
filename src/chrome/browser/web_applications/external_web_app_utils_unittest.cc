@@ -8,14 +8,15 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_util.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
 
@@ -44,9 +45,14 @@ class ExternalWebAppUtilsTest : public testing::Test {
         base::JSONReader::Read(app_config_string);
     DCHECK(app_config);
     FileUtilsWrapper file_utils;
-    return ::web_app::ParseConfig(file_utils, /*dir=*/base::FilePath(),
-                                  /*file=*/base::FilePath(),
-                                  app_config.value());
+    OptionsOrError result =
+        ::web_app::ParseConfig(file_utils, /*dir=*/base::FilePath(),
+                               /*file=*/base::FilePath(), app_config.value());
+    if (ExternalInstallOptions* options =
+            absl::get_if<ExternalInstallOptions>(&result)) {
+      return std::move(*options);
+    }
+    return base::nullopt;
   }
 
   base::Optional<WebApplicationInfoFactory> ParseOfflineManifest(
@@ -54,10 +60,15 @@ class ExternalWebAppUtilsTest : public testing::Test {
     base::Optional<base::Value> offline_manifest =
         base::JSONReader::Read(offline_manifest_string);
     DCHECK(offline_manifest);
-    return ::web_app::ParseOfflineManifest(
+    WebApplicationInfoFactoryOrError result = ::web_app::ParseOfflineManifest(
         *file_utils_, base::FilePath(FILE_PATH_LITERAL("test_dir")),
         base::FilePath(FILE_PATH_LITERAL("test_dir/test.json")),
         *offline_manifest);
+    if (WebApplicationInfoFactory* factory =
+            absl::get_if<WebApplicationInfoFactory>(&result)) {
+      return std::move(*factory);
+    }
+    return base::nullopt;
   }
 
  protected:
@@ -66,7 +77,7 @@ class ExternalWebAppUtilsTest : public testing::Test {
 
 // ParseConfig() is also tested by ExternalWebAppManagerTest.
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -164,7 +175,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(true, false),
                          BoolParamToString);
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1119710): Loading icon.png is flaky on Windows.
 #if defined(OS_WIN)
@@ -430,6 +441,53 @@ TEST_F(ExternalWebAppUtilsTest, OfflineManifestThemeColorArgbHex) {
       "theme_color_argb_hex": "#ff0000"
     }
   )")) << "theme_color_argb_hex is valid";
+}
+
+TEST_F(ExternalWebAppUtilsTest, ForceReinstallForMilestone) {
+  base::Optional<ExternalInstallOptions> non_number = ParseConfig(R"(
+    {
+      "app_url": "https://test.org",
+      "launch_container": "window",
+      "force_reinstall_for_milestone": "error",
+      "user_type": ["test"]
+    }
+  )");
+  EXPECT_FALSE(non_number.has_value());
+
+  base::Optional<ExternalInstallOptions> number = ParseConfig(R"(
+    {
+      "app_url": "https://test.org",
+      "launch_container": "window",
+      "force_reinstall_for_milestone": 89,
+      "user_type": ["test"]
+    }
+  )");
+  EXPECT_TRUE(number.has_value());
+  EXPECT_EQ(89, number->force_reinstall_for_milestone);
+}
+
+TEST_F(ExternalWebAppUtilsTest, IsReinstallPastMilestoneNeeded) {
+  // Arguments: last_preinstall_synchronize_milestone, current_milestone,
+  // force_reinstall_for_milestone.
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("87", "87", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("87", "88", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("88", "88", 89));
+  EXPECT_TRUE(IsReinstallPastMilestoneNeeded("88", "89", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("89", "89", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("89", "90", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("90", "90", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("90", "91", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("91", "91", 89));
+
+  // Long jumps:
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("80", "85", 89));
+  EXPECT_TRUE(IsReinstallPastMilestoneNeeded("80", "100", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("90", "95", 89));
+
+  // Wrong input:
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("error", "90", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("88", "error", 89));
+  EXPECT_FALSE(IsReinstallPastMilestoneNeeded("error", "error", 0));
 }
 
 }  // namespace web_app

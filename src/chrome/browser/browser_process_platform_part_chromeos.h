@@ -18,22 +18,25 @@
 class BrowserProcessPlatformPartTestApi;
 class Profile;
 
-namespace chromeos {
+namespace ash {
 class AccountManagerFactory;
-class ChromeSessionManager;
-class ChromeUserManager;
-class InSessionPasswordChangeManager;
 class ProfileHelper;
-class SchedulerConfigurationManager;
-class TimeZoneResolver;
 
 namespace system {
 class AutomaticRebootManager;
 class DeviceDisablingManager;
 class DeviceDisablingManagerDefaultDelegate;
-class SystemClock;
 class TimeZoneResolverManager;
+class SystemClock;
 }  // namespace system
+}  // namespace ash
+
+namespace chromeos {
+class ChromeSessionManager;
+class ChromeUserManager;
+class InSessionPasswordChangeManager;
+class SchedulerConfigurationManager;
+class TimeZoneResolver;
 }  // namespace chromeos
 
 namespace policy {
@@ -82,9 +85,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   // Returns the ProfileHelper instance that is used to identify
   // users and their profiles in Chrome OS multi user session.
-  chromeos::ProfileHelper* profile_helper();
+  ash::ProfileHelper* profile_helper();
 
-  chromeos::system::AutomaticRebootManager* automatic_reboot_manager() {
+  ash::system::AutomaticRebootManager* automatic_reboot_manager() {
     return automatic_reboot_manager_.get();
   }
 
@@ -102,7 +105,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return scheduler_configuration_manager_.get();
   }
 
-  chromeos::system::DeviceDisablingManager* device_disabling_manager() {
+  ash::system::DeviceDisablingManager* device_disabling_manager() {
     return device_disabling_manager_.get();
   }
 
@@ -111,17 +114,17 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return cros_component_manager_;
   }
 
-  chromeos::system::TimeZoneResolverManager* GetTimezoneResolverManager();
+  ash::system::TimeZoneResolverManager* GetTimezoneResolverManager();
 
   chromeos::TimeZoneResolver* GetTimezoneResolver();
 
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
 
-  chromeos::system::SystemClock* GetSystemClock();
+  ash::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
-  chromeos::AccountManagerFactory* GetAccountManagerFactory();
+  ash::AccountManagerFactory* GetAccountManagerFactory();
 
   chromeos::InSessionPasswordChangeManager*
   in_session_password_change_manager() {
@@ -138,23 +141,23 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<chromeos::ChromeSessionManager> session_manager_;
 
   bool created_profile_helper_;
-  std::unique_ptr<chromeos::ProfileHelper> profile_helper_;
+  std::unique_ptr<ash::ProfileHelper> profile_helper_;
 
-  std::unique_ptr<chromeos::system::AutomaticRebootManager>
+  std::unique_ptr<ash::system::AutomaticRebootManager>
       automatic_reboot_manager_;
 
   std::unique_ptr<chromeos::ChromeUserManager> chrome_user_manager_;
 
-  std::unique_ptr<chromeos::system::DeviceDisablingManagerDefaultDelegate>
+  std::unique_ptr<ash::system::DeviceDisablingManagerDefaultDelegate>
       device_disabling_manager_delegate_;
-  std::unique_ptr<chromeos::system::DeviceDisablingManager>
+  std::unique_ptr<ash::system::DeviceDisablingManager>
       device_disabling_manager_;
 
-  std::unique_ptr<chromeos::system::TimeZoneResolverManager>
+  std::unique_ptr<ash::system::TimeZoneResolverManager>
       timezone_resolver_manager_;
   std::unique_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
 
-  std::unique_ptr<chromeos::system::SystemClock> system_clock_;
+  std::unique_ptr<ash::system::SystemClock> system_clock_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
@@ -164,13 +167,12 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 
-  std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;
+  std::unique_ptr<ash::AccountManagerFactory> account_manager_factory_;
 
   std::unique_ptr<chromeos::InSessionPasswordChangeManager>
       in_session_password_change_manager_;
 
-  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
-      primary_profile_shutdown_subscription_;
+  base::CallbackListSubscription primary_profile_shutdown_subscription_;
 
   std::unique_ptr<chromeos::SchedulerConfigurationManager>
       scheduler_configuration_manager_;

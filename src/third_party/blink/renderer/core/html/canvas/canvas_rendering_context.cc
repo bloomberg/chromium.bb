@@ -40,52 +40,8 @@ CanvasRenderingContext::CanvasRenderingContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
     : host_(host),
-      color_params_(CanvasColorSpace::kSRGB,
-                    CanvasColorParams::GetNativeCanvasPixelFormat(),
-                    kNonOpaque),
-      creation_attributes_(attrs) {
-  if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName)
-    color_params_.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
-
-  if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
-    color_params_.SetCanvasColorSpace(CanvasColorSpace::kRec2020);
-  else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
-    color_params_.SetCanvasColorSpace(CanvasColorSpace::kP3);
-
-  if (!creation_attributes_.alpha)
-    color_params_.SetOpacityMode(kOpaque);
-
-  // Make creation_attributes_ reflect the effective color_space and
-  // pixel_format rather than the requested one.
-  creation_attributes_.color_space = ColorSpaceAsString();
-  creation_attributes_.pixel_format = PixelFormatAsString();
-}
-
-WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
-  switch (color_params_.ColorSpace()) {
-    case CanvasColorSpace::kSRGB:
-      return kSRGBCanvasColorSpaceName;
-    case CanvasColorSpace::kRec2020:
-      return kRec2020CanvasColorSpaceName;
-    case CanvasColorSpace::kP3:
-      return kP3CanvasColorSpaceName;
-  };
-  CHECK(false);
-  return "";
-}
-
-WTF::String CanvasRenderingContext::PixelFormatAsString() const {
-  switch (color_params_.PixelFormat()) {
-    case CanvasPixelFormat::kRGBA8:
-      return kRGBA8CanvasPixelFormatName;
-    case CanvasPixelFormat::kF16:
-      return kF16CanvasPixelFormatName;
-    case CanvasPixelFormat::kBGRA8:
-      return kBGRA8CanvasPixelFormatName;
-  };
-  CHECK(false);
-  return "";
-}
+      color_params_(attrs.color_space, attrs.pixel_format, attrs.alpha),
+      creation_attributes_(attrs) {}
 
 void CanvasRenderingContext::Dispose() {
   StopListeningForDidProcessTask();
@@ -137,6 +93,22 @@ void CanvasRenderingContext::RecordUKMCanvasRenderingAPI(
   } else {
     ukm::builders::ClientRenderingAPI(ukm_params.source_id)
         .SetCanvas_RenderingContext(static_cast<int>(canvasRenderingAPI))
+        .Record(ukm_params.ukm_recorder);
+  }
+}
+
+void CanvasRenderingContext::RecordUKMCanvasDrawnToRenderingAPI(
+    CanvasRenderingAPI canvasRenderingAPI) {
+  DCHECK(Host());
+  const auto& ukm_params = Host()->GetUkmParameters();
+  if (Host()->IsOffscreenCanvas()) {
+    ukm::builders::ClientRenderingAPI(ukm_params.source_id)
+        .SetOffscreenCanvas_RenderingContextDrawnTo(
+            static_cast<int>(canvasRenderingAPI))
+        .Record(ukm_params.ukm_recorder);
+  } else {
+    ukm::builders::ClientRenderingAPI(ukm_params.source_id)
+        .SetCanvas_RenderingContextDrawnTo(static_cast<int>(canvasRenderingAPI))
         .Record(ukm_params.ukm_recorder);
   }
 }

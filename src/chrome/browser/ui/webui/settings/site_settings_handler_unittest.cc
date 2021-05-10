@@ -19,6 +19,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -67,7 +68,7 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/webui/webui_allowlist.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
@@ -154,7 +155,7 @@ class SiteSettingsHandlerTest : public testing::Test {
             ContentSettingsType::NOTIFICATIONS)),
         kCookies(site_settings::ContentSettingsTypeToGroupName(
             ContentSettingsType::COOKIES)) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::MockUserManager>());
 #endif
@@ -494,7 +495,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   web_app::TestAppRegistrar app_registrar_;
   content::TestWebUI web_ui_;
   std::unique_ptr<SiteSettingsHandler> handler_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
 };
@@ -767,7 +768,7 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
         url1, ContentSettingsType::NOTIFICATIONS, false);
 
   clock.Advance(base::TimeDelta::FromHours(2));
-  map->SetContentSettingDefaultScope(url2, url2, ContentSettingsType::PLUGINS,
+  map->SetContentSettingDefaultScope(url2, url2, ContentSettingsType::IMAGES,
                                      CONTENT_SETTING_ALLOW);
   clock.Advance(base::TimeDelta::FromHours(1));
   CreateIncognitoProfile();
@@ -775,7 +776,7 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
       HostContentSettingsMapFactory::GetForProfile(incognito_profile());
   incognito_map->SetClockForTesting(&clock);
   incognito_map->SetContentSettingDefaultScope(
-      url1, url1, ContentSettingsType::PLUGINS, CONTENT_SETTING_ALLOW);
+      url1, url1, ContentSettingsType::IMAGES, CONTENT_SETTING_ALLOW);
 
   clock.Advance(base::TimeDelta::FromHours(1));
   permissions::PermissionDecisionAutoBlocker* incognito_auto_blocker =
@@ -2147,7 +2148,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          ContentSettingsType::USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA)
+          .as_string();
 
   const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
       kUsbChooserGroupName, /*expected_total_calls=*/1u);
@@ -2163,7 +2165,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsbOffTheRecord) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          ContentSettingsType::USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA)
+          .as_string();
   SetUpOffTheRecordUsbChooserContext();
   web_ui()->ClearTrackedCalls();
 
@@ -2199,7 +2202,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleResetChooserExceptionForSiteForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          ContentSettingsType::USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA)
+          .as_string();
   const auto kAndroidOrigin = url::Origin::Create(AndroidUrl());
   const auto kChromiumOrigin = url::Origin::Create(ChromiumUrl());
   const std::string kAndroidOriginStr = AndroidUrl().GetOrigin().spec();

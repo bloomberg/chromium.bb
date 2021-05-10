@@ -16,6 +16,7 @@
 #include "util/egl_loader_autogen.h"
 #include "util/frame_capture_test_utils.h"
 #include "util/png_utils.h"
+#include "util/test_utils.h"
 
 #include "restricted_traces/restricted_traces_autogen.h"
 
@@ -89,6 +90,13 @@ class TracePerfTest : public ANGLERenderTest, public ::testing::WithParamInterfa
 
     double getHostTimeFromGLTime(GLint64 glTime);
 
+    int getStepAlignment() const override
+    {
+        // Align step counts to the number of frames in a trace.
+        const TraceInfo &traceInfo = GetTraceInfo(GetParam().testID);
+        return static_cast<int>(traceInfo.endFrame - traceInfo.startFrame + 1);
+    }
+
   private:
     struct QueryInfo
     {
@@ -105,6 +113,7 @@ class TracePerfTest : public ANGLERenderTest, public ::testing::WithParamInterfa
 
     void sampleTime();
     void saveScreenshot(const std::string &screenshotName) override;
+    void swap();
 
     // For tracking RenderPass/FBO change timing.
     QueryInfo mCurrentQuery = {};
@@ -120,6 +129,9 @@ class TracePerfTest : public ANGLERenderTest, public ::testing::WithParamInterfa
     int mWindowHeight              = 0;
     GLuint mDrawFramebufferBinding = 0;
     GLuint mReadFramebufferBinding = 0;
+    uint32_t mCurrentFrame         = 0;
+    uint32_t mOffscreenFrameCount  = 0;
+    bool mScreenshotSaved          = false;
 };
 
 class TracePerfTest;
@@ -267,6 +279,110 @@ TracePerfTest::TracePerfTest()
         addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
     }
 
+    if (param.testID == RestrictedTraceID::lego_legacy)
+    {
+        addExtensionPrerequisite("GL_EXT_shadow_samplers");
+    }
+
+    if (param.testID == RestrictedTraceID::world_war_doh)
+    {
+        // Linux+Nvidia doesn't support GL_KHR_texture_compression_astc_ldr (possibly others also)
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::saint_seiya_awakening)
+    {
+        addExtensionPrerequisite("GL_EXT_shadow_samplers");
+
+        // TODO(https://anglebug.com/5517) Linux+Intel generates "Framebuffer is incomplete" errors.
+        if (IsLinux() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::magic_tiles_3)
+    {
+        // Linux+Nvidia doesn't support GL_KHR_texture_compression_astc_ldr (possibly others also)
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::real_gangster_crime)
+    {
+        // Linux+Nvidia doesn't support GL_KHR_texture_compression_astc_ldr (possibly others also)
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::asphalt_8)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::hearthstone)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::efootball_pes_2021)
+    {
+        // TODO(https://anglebug.com/5517) Linux+Intel and Pixel 2 generate "Framebuffer is
+        // incomplete" errors with the Vulkan backend.
+        if (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
+            ((IsLinux() && IsIntel()) || IsPixel2()))
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::manhattan_31)
+    {
+        // TODO: http://anglebug.com/5591 Trace crashes on Pixel 2 in vulkan driver
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::shadow_fight_2)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::rise_of_kingdoms)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+    }
+
+    if (param.testID == RestrictedTraceID::happy_color)
+    {
+        if (IsWindows() && IsAMD() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::bus_simulator_indonesia)
+    {
+        // TODO(https://anglebug.com/5629) Linux+(Intel|AMD) native GLES generates
+        // GL_INVALID_OPERATION
+        if (IsLinux() && (IsIntel() || IsAMD()) &&
+            param.getRenderer() != EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::messenger_lite)
+    {
+        // TODO: https://anglebug.com/5663 Incorrect pixels on Nvidia Windows for first frame
+        if (IsWindows() && IsNVIDIA() &&
+            param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
     // We already swap in TracePerfTest::drawBenchmark, no need to swap again in the harness.
     disableTestHarnessSwap();
 
@@ -293,15 +409,21 @@ void TracePerfTest::initializeBenchmark()
     mEndFrame                  = traceInfo.endFrame;
     SetBinaryDataDecompressCallback(params.testID, DecompressBinaryData);
 
-    setStepsPerRunLoopStep(mEndFrame - mStartFrame + 1);
+    std::string relativeTestDataDir = std::string("src/tests/restricted_traces/") + traceInfo.name;
 
-    std::stringstream testDataDirStr;
-    testDataDirStr << ANGLE_TRACE_DATA_DIR << "/" << traceInfo.name;
-    std::string testDataDir = testDataDirStr.str();
-    SetBinaryDataDir(params.testID, testDataDir.c_str());
+    constexpr size_t kMaxDataDirLen = 1000;
+    char testDataDir[kMaxDataDirLen];
+    if (!angle::FindTestDataPath(relativeTestDataDir.c_str(), testDataDir, kMaxDataDirLen))
+    {
+        ERR() << "Could not find test data folder.";
+        mSkipTest = true;
+    }
+
+    SetBinaryDataDir(params.testID, testDataDir);
 
     mWindowWidth  = mTestParams.windowWidth;
     mWindowHeight = mTestParams.windowHeight;
+    mCurrentFrame = mStartFrame;
 
     if (IsAndroid())
     {
@@ -426,88 +548,86 @@ void TracePerfTest::drawBenchmark()
     const TracePerfParams &params = GetParam();
 
     // Add a time sample from GL and the host.
-    sampleTime();
-
-    uint32_t endFrame = mEndFrame;
-    if (gMaxStepsPerformed > 0)
+    if (mCurrentFrame == mStartFrame)
     {
-        endFrame =
-            std::min(endFrame, gMaxStepsPerformed - mTotalNumStepsPerformed - 1 + mStartFrame);
-        mStepsPerRunLoopStep = endFrame - mStartFrame + 1;
+        sampleTime();
     }
 
-    for (uint32_t frame = mStartFrame; frame <= mEndFrame; ++frame)
+    char frameName[32];
+    sprintf(frameName, "Frame %u", mCurrentFrame);
+    beginInternalTraceEvent(frameName);
+
+    startGpuTimer();
+    ReplayFrame(params.testID, mCurrentFrame);
+    stopGpuTimer();
+
+    if (params.surfaceType == SurfaceType::Offscreen)
     {
-        char frameName[32];
-        sprintf(frameName, "Frame %u", frame);
-        beginInternalTraceEvent(frameName);
+        GLint currentDrawFBO, currentReadFBO;
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawFBO);
+        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadFBO);
 
-        startGpuTimer();
-        ReplayFrame(params.testID, frame);
-        stopGpuTimer();
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, mOffscreenFramebuffer);
 
-        if (params.surfaceType != SurfaceType::Offscreen)
+        uint32_t frameX  = (mOffscreenFrameCount % kFramesPerXY) % kFramesPerX;
+        uint32_t frameY  = (mOffscreenFrameCount % kFramesPerXY) / kFramesPerX;
+        uint32_t windowX = kOffscreenOffsetX + frameX * kOffscreenFrameWidth;
+        uint32_t windowY = kOffscreenOffsetY + frameY * kOffscreenFrameHeight;
+
+        if (gVerboseLogging)
         {
-            getGLWindow()->swap();
+            printf("Frame %d: x %d y %d (screen x %d, screen y %d)\n", mOffscreenFrameCount, frameX,
+                   frameY, windowX, windowY);
+        }
+
+        GLboolean scissorTest = GL_FALSE;
+        glGetBooleanv(GL_SCISSOR_TEST, &scissorTest);
+
+        if (scissorTest)
+        {
+            glDisable(GL_SCISSOR_TEST);
+        }
+
+        glBlitFramebuffer(0, 0, mWindowWidth, mWindowHeight, windowX, windowY,
+                          windowX + kOffscreenFrameWidth, windowY + kOffscreenFrameHeight,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        if (frameX == kFramesPerX - 1 && frameY == kFramesPerY - 1)
+        {
+            swap();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+            mOffscreenFrameCount = 0;
         }
         else
         {
-            GLint currentDrawFBO, currentReadFBO;
-            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawFBO);
-            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadFBO);
-
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, mOffscreenFramebuffer);
-
-            uint32_t frames  = getNumStepsPerformed() + (frame - mStartFrame);
-            uint32_t frameX  = (frames % kFramesPerXY) % kFramesPerX;
-            uint32_t frameY  = (frames % kFramesPerXY) / kFramesPerX;
-            uint32_t windowX = kOffscreenOffsetX + frameX * kOffscreenFrameWidth;
-            uint32_t windowY = kOffscreenOffsetY + frameY * kOffscreenFrameHeight;
-
-            if (angle::gVerboseLogging)
-            {
-                printf("Frame %d: x %d y %d (screen x %d, screen y %d)\n", frames, frameX, frameY,
-                       windowX, windowY);
-            }
-
-            GLboolean scissorTest = GL_FALSE;
-            glGetBooleanv(GL_SCISSOR_TEST, &scissorTest);
-
-            if (scissorTest)
-            {
-                glDisable(GL_SCISSOR_TEST);
-            }
-
-            glBlitFramebuffer(0, 0, mWindowWidth, mWindowHeight, windowX, windowY,
-                              windowX + kOffscreenFrameWidth, windowY + kOffscreenFrameHeight,
-                              GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-            if (frameX == kFramesPerX - 1 && frameY == kFramesPerY - 1)
-            {
-                getGLWindow()->swap();
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glClear(GL_COLOR_BUFFER_BIT);
-            }
-
-            if (scissorTest)
-            {
-                glEnable(GL_SCISSOR_TEST);
-            }
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, currentDrawFBO);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, currentReadFBO);
+            mOffscreenFrameCount++;
         }
 
-        endInternalTraceEvent(frameName);
-
-        // Check for abnormal exit.
-        if (!mRunning)
+        if (scissorTest)
         {
-            return;
+            glEnable(GL_SCISSOR_TEST);
         }
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, currentDrawFBO);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, currentReadFBO);
+    }
+    else
+    {
+        swap();
     }
 
-    ResetReplay(params.testID);
+    endInternalTraceEvent(frameName);
+
+    if (mCurrentFrame == mEndFrame)
+    {
+        ResetReplay(params.testID);
+        mCurrentFrame = mStartFrame;
+    }
+    else
+    {
+        mCurrentFrame++;
+    }
 
     // Process any running queries once per iteration.
     for (size_t queryIndex = 0; queryIndex < mRunningQueries.size();)
@@ -767,12 +887,25 @@ void TracePerfTest::onReplayDiscardFramebufferEXT(GLenum target,
     }
 }
 
+void TracePerfTest::swap()
+{
+    // Capture a screenshot if enabled.
+    if (gScreenShotDir != nullptr && !mScreenshotSaved)
+    {
+        std::stringstream screenshotNameStr;
+        screenshotNameStr << gScreenShotDir << GetPathSeparator() << "angle" << mBackend << "_"
+                          << mStory << ".png";
+        std::string screenshotName = screenshotNameStr.str();
+        saveScreenshot(screenshotName);
+        mScreenshotSaved = true;
+    }
+
+    getGLWindow()->swap();
+}
+
 void TracePerfTest::saveScreenshot(const std::string &screenshotName)
 {
-    // Render a single frame.
-    RestrictedTraceID testID   = GetParam().testID;
-    const TraceInfo &traceInfo = GetTraceInfo(testID);
-    ReplayFrame(testID, traceInfo.startFrame);
+    // The frame is already rendered and is waiting in the default framebuffer.
 
     // RGBA 4-byte data.
     uint32_t pixelCount = mTestParams.windowWidth * mTestParams.windowHeight;
@@ -803,16 +936,6 @@ void TracePerfTest::saveScreenshot(const std::string &screenshotName)
     {
         printf("Saved screenshot: '%s'\n", screenshotName.c_str());
     }
-
-    // Finish the frame loop.
-    for (uint32_t nextFrame = traceInfo.startFrame + 1; nextFrame <= traceInfo.endFrame;
-         ++nextFrame)
-    {
-        ReplayFrame(testID, nextFrame);
-    }
-    ResetReplay(testID);
-    getGLWindow()->swap();
-    glFinish();
 }
 
 TEST_P(TracePerfTest, Run)

@@ -22,6 +22,7 @@
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mcomp.h"
@@ -39,93 +40,6 @@
 /*!\cond */
 
 // NOTE: All `tf` in this file means `temporal filtering`.
-
-// Allocates memory for members of TemporalFilterData.
-// Inputs:
-//   tf_data: Pointer to the structure containing temporal filter related data.
-//   num_pels: Number of pixels in the block across all planes.
-//   is_high_bitdepth: Whether the frame is high-bitdepth or not.
-// Returns:
-//   Nothing will be returned. But the contents of tf_data will be modified.
-static AOM_INLINE void tf_alloc_and_reset_data(TemporalFilterData *tf_data,
-                                               int num_pels,
-                                               int is_high_bitdepth) {
-  tf_data->tmp_mbmi = (MB_MODE_INFO *)malloc(sizeof(MB_MODE_INFO));
-  memset(tf_data->tmp_mbmi, 0, sizeof(*tf_data->tmp_mbmi));
-  tf_data->accum = aom_memalign(16, num_pels * sizeof(uint32_t));
-  tf_data->count = aom_memalign(16, num_pels * sizeof(uint16_t));
-  memset(&tf_data->diff, 0, sizeof(tf_data->diff));
-  if (is_high_bitdepth)
-    tf_data->pred =
-        CONVERT_TO_BYTEPTR(aom_memalign(32, num_pels * sizeof(uint16_t)));
-  else
-    tf_data->pred = aom_memalign(32, num_pels * sizeof(uint8_t));
-}
-
-// Setup macroblockd params for temporal filtering process.
-// Inputs:
-//   mbd: Pointer to the block for filtering.
-//   tf_data: Pointer to the structure containing temporal filter related data.
-//   scale: Scaling factor.
-// Returns:
-//   Nothing will be returned. Contents of mbd will be modified.
-static AOM_INLINE void tf_setup_macroblockd(MACROBLOCKD *mbd,
-                                            TemporalFilterData *tf_data,
-                                            const struct scale_factors *scale) {
-  mbd->block_ref_scale_factors[0] = scale;
-  mbd->block_ref_scale_factors[1] = scale;
-  mbd->mi = &tf_data->tmp_mbmi;
-  mbd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
-}
-
-// Saves the state prior to temporal filter process.
-// Inputs:
-//   mbd: Pointer to the block for filtering.
-//   input_mbmi: Backup block info to save input state.
-//   input_buffer: Backup buffer pointer to save input state.
-//   num_planes: Number of planes.
-// Returns:
-//   Nothing will be returned. Contents of input_mbmi and input_buffer will be
-//   modified.
-static void tf_save_state(MACROBLOCKD *mbd, MB_MODE_INFO ***input_mbmi,
-                          uint8_t **input_buffer, int num_planes) {
-  for (int i = 0; i < num_planes; i++) {
-    input_buffer[i] = mbd->plane[i].pre[0].buf;
-  }
-  *input_mbmi = mbd->mi;
-}
-
-// Restores the initial state after temporal filter process.
-// Inputs:
-//   mbd: Pointer to the block for filtering.
-//   input_mbmi: Backup block info from where input state is restored.
-//   input_buffer: Backup buffer pointer from where input state is restored.
-//   num_planes: Number of planes.
-// Returns:
-//   Nothing will be returned. Contents of mbd will be modified.
-static void tf_restore_state(MACROBLOCKD *mbd, MB_MODE_INFO **input_mbmi,
-                             uint8_t **input_buffer, int num_planes) {
-  for (int i = 0; i < num_planes; i++) {
-    mbd->plane[i].pre[0].buf = input_buffer[i];
-  }
-  mbd->mi = input_mbmi;
-}
-
-// Deallocates the memory allocated for members of TemporalFilterData.
-// Inputs:
-//   tf_data: Pointer to the structure containing temporal filter related data.
-//   is_high_bitdepth: Whether the frame is high-bitdepth or not.
-// Returns:
-//   Nothing will be returned.
-static AOM_INLINE void tf_dealloc_data(TemporalFilterData *tf_data,
-                                       int is_high_bitdepth) {
-  if (is_high_bitdepth)
-    tf_data->pred = (uint8_t *)CONVERT_TO_SHORTPTR(tf_data->pred);
-  free(tf_data->tmp_mbmi);
-  aom_free(tf_data->accum);
-  aom_free(tf_data->count);
-  aom_free(tf_data->pred);
-}
 
 // Forward Declaration.
 static void tf_determine_block_partition(const MV block_mv, const int block_mse,
@@ -341,7 +255,7 @@ static void tf_determine_block_partition(const MV block_mv, const int block_mse,
                                          MV *subblock_mvs, int *subblock_mses) {
   int min_subblock_mse = INT_MAX;
   int max_subblock_mse = INT_MIN;
-  int sum_subblock_mse = 0;
+  int64_t sum_subblock_mse = 0;
   for (int i = 0; i < 4; ++i) {
     sum_subblock_mse += subblock_mses[i];
     min_subblock_mse = AOMMIN(min_subblock_mse, subblock_mses[i]);
@@ -829,15 +743,8 @@ static void tf_normalize_filtered_frame(
     plane_offset += plane_h * plane_w;
   }
 }
-/*!\cond */
 
-// Helper function to compute number of blocks on either side of the frame.
-static INLINE int get_num_blocks(const int frame_length, const int mb_length) {
-  return (frame_length + mb_length - 1) / mb_length;
-}
-
-// Helper function to get `q` used for encoding.
-static INLINE int get_q(const AV1_COMP *cpi) {
+int av1_get_q(const AV1_COMP *cpi) {
   const GF_GROUP *gf_group = &cpi->gf_group;
   const FRAME_TYPE frame_type = gf_group->frame_type[gf_group->index];
   const int q = (int)av1_convert_qindex_to_q(
@@ -845,39 +752,16 @@ static INLINE int get_q(const AV1_COMP *cpi) {
   return q;
 }
 
-/*!\endcond */
-
-/*!\brief Does temporal filter for a given macroblock row.
-*
-* \ingroup src_frame_proc
-* \param[in]   cpi                   Top level encoder instance structure
-* \param[in]   td                    Pointer to thread data
-* \param[in]   frames                Frame buffers used for temporal filtering
-* \param[in]   num_frames            Number of frames in the frame buffer
-* \param[in]   filter_frame_idx      Index of the frame to be filtered
-* \param[in]   check_show_existing   whether to accumulate diff for show
-existing condition check
-* \param[in]   scale                 Frame scaling factor
-* \param[in]   noise_levels          Estimated noise levels for each plane
-*                                    in the frame (Y,U,V)
-* \param[in]   num_pels              Number of pixels in the filtering block
-across all planes
-* \param[in]   mb_cols               Number of macroblock columns to be filtered
-* \param[in]   mb_row                Macroblock row to be filtered
-* \param[in]   q_factor              Quantization factor used in temporal
-filtering
-*
-* \return Nothing will be returned, but the contents of td->diff will be
-modified.
-*/
-static void tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td,
-                                YV12_BUFFER_CONFIG **frames,
-                                const int num_frames,
-                                const int filter_frame_idx,
-                                const int check_show_existing,
-                                const struct scale_factors *scale,
-                                const double *noise_levels, int num_pels,
-                                int mb_cols, int mb_row, int q_factor) {
+void av1_tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td, int mb_row) {
+  TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
+  YV12_BUFFER_CONFIG **frames = tf_ctx->frames;
+  const int num_frames = tf_ctx->num_frames;
+  const int filter_frame_idx = tf_ctx->filter_frame_idx;
+  const int check_show_existing = tf_ctx->check_show_existing;
+  const struct scale_factors *scale = &tf_ctx->sf;
+  const double *noise_levels = tf_ctx->noise_levels;
+  const int num_pels = tf_ctx->num_pels;
+  const int q_factor = tf_ctx->q_factor;
   const BLOCK_SIZE block_size = TF_BLOCK_SIZE;
   const YV12_BUFFER_CONFIG *const frame_to_filter = frames[filter_frame_idx];
   MACROBLOCK *const mb = &td->mb;
@@ -900,7 +784,7 @@ static void tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td,
   av1_set_mv_row_limits(&cpi->common.mi_params, &mb->mv_limits,
                         (mb_row << mi_h), (mb_height >> MI_SIZE_LOG2),
                         cpi->oxcf.border_in_pixels);
-  for (int mb_col = 0; mb_col < mb_cols; mb_col++) {
+  for (int mb_col = 0; mb_col < tf_ctx->mb_cols; mb_col++) {
     av1_set_mv_col_limits(&cpi->common.mi_params, &mb->mv_limits,
                           (mb_col << mi_w), (mb_width >> MI_SIZE_LOG2),
                           cpi->oxcf.border_in_pixels);
@@ -931,6 +815,10 @@ static void tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td,
       } else {  // Other reference frames.
         tf_build_predictor(frames[frame], mbd, block_size, mb_row, mb_col,
                            num_planes, scale, subblock_mvs, pred);
+
+        // All variants of av1_apply_temporal_filter() contain floating point
+        // operations. Hence, clear the system state.
+        aom_clear_system_state();
 
         // TODO(any): avx2/sse2 version should be changed to align with C
         // function before using. In particular, current avx2/sse2 function
@@ -992,40 +880,17 @@ static void tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td,
  *
  * \ingroup src_frame_proc
  * \param[in]   cpi                   Top level encoder instance structure
- * \param[in]   frames                Frame buffers used for temporal filtering
- * \param[in]   num_frames            Number of frames in the frame buffer
- * \param[in]   filter_frame_idx      Index of the frame to be filtered
- * \param[in]   check_show_existing   whether to accumulate diff for show
-                                      existing condition check
- * \param[in]   scale                 Frame scaling factor
- * \param[in]   noise_levels          Estimated noise levels for each plane
- *                                    in the frame (Y,U,V)
- * \param[in]   num_pels              Number of pixels in the filtering block
- across all planes
  *
  * \return Nothing will be returned, but the contents of td->diff will be
  modified.
  */
-static void tf_do_filtering(AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames,
-                            const int num_frames, const int filter_frame_idx,
-                            const int check_show_existing,
-                            const struct scale_factors *scale,
-                            const double *noise_levels, int num_pels) {
+static void tf_do_filtering(AV1_COMP *cpi) {
   // Basic information.
   ThreadData *td = &cpi->td;
-  const YV12_BUFFER_CONFIG *const frame_to_filter = frames[filter_frame_idx];
-  const BLOCK_SIZE block_size = TF_BLOCK_SIZE;
-  const int frame_height = frame_to_filter->y_crop_height;
-  const int frame_width = frame_to_filter->y_crop_width;
-  const int mb_height = block_size_high[block_size];
-  const int mb_width = block_size_wide[block_size];
-  const int mb_rows = get_num_blocks(frame_height, mb_height);
-  const int mb_cols = get_num_blocks(frame_width, mb_width);
+  TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
+  const struct scale_factors *scale = &tf_ctx->sf;
   const int num_planes = av1_num_planes(&cpi->common);
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
-
-  // Quantization factor used in temporal filtering.
-  const int q_factor = get_q(cpi);
 
   MACROBLOCKD *mbd = &td->mb.e_mbd;
   uint8_t *input_buffer[MAX_MB_PLANE];
@@ -1034,11 +899,8 @@ static void tf_do_filtering(AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames,
   tf_setup_macroblockd(mbd, &td->tf_data, scale);
 
   // Perform temporal filtering for each row.
-  for (int mb_row = 0; mb_row < mb_rows; mb_row++) {
-    tf_do_filtering_row(cpi, td, frames, num_frames, filter_frame_idx,
-                        check_show_existing, scale, noise_levels, num_pels,
-                        mb_cols, mb_row, q_factor);
-  }
+  for (int mb_row = 0; mb_row < tf_ctx->mb_rows; mb_row++)
+    av1_tf_do_filtering_row(cpi, td, mb_row);
 
   tf_restore_state(mbd, input_mb_mode_info, input_buffer, num_planes);
 }
@@ -1055,27 +917,20 @@ static void tf_do_filtering(AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames,
  * \param[in]   is_second_arf   Whether the to-filter frame is the second ARF.
  *                              This field will affect the number of frames
  *                              used for filtering.
- * \param[in,out] frames        Pointer to the frame buffer to setup
- * \param[in,out] num_frames_for_filtering  Number of frames used for filtering
- * \param[in,out] filter_frame_idx Index of the to-filter frame in the setup
- *                              frame buffer.
- * \param[out]    noise_levels  Pointer to the noise levels of the to-filter
- *                              frame, estimated with each plane (in Y, U, V
- *                              order).
+ * \param[in]   update_type     This frame's update type.
  *
- * \return Nothing will be returned. But the frame buffer `frames`, number of
- *         frames in the buffer `num_frames_for_filtering`, and the index of
- *         the to-filter frame in the buffer `filter_frame_idx` will be updated
- *         in this function. Estimated noise levels for YUV planes will be
- *         saved in `noise_levels`.
+ * \param[in]   is_forward_keyframe Indicate whether this is a forward keyframe.
+ *
+ * \return Nothing will be returned. But the fields `frames`, `num_frames`,
+ *         `filter_frame_idx` and `noise_levels` will be updated in cpi->tf_ctx.
  */
 static void tf_setup_filtering_buffer(AV1_COMP *cpi,
                                       const int filter_frame_lookahead_idx,
                                       const int is_second_arf,
-                                      YV12_BUFFER_CONFIG **frames,
-                                      int *num_frames_for_filtering,
-                                      int *filter_frame_idx,
-                                      double *noise_levels) {
+                                      FRAME_UPDATE_TYPE update_type,
+                                      int is_forward_keyframe) {
+  TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
+  YV12_BUFFER_CONFIG **frames = tf_ctx->frames;
   // Number of frames used for filtering. Set `arnr_max_frames` as 1 to disable
   // temporal filtering.
   int num_frames = AOMMAX(cpi->oxcf.algo_cfg.arnr_max_frames, 1);
@@ -1084,66 +939,72 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
   const int lookahead_depth =
       av1_lookahead_depth(cpi->lookahead, cpi->compressor_stage);
 
+  int arf_src_offset = cpi->gf_group.arf_src_offset[cpi->gf_group.index];
+  const FRAME_TYPE frame_type = cpi->gf_group.frame_type[cpi->gf_group.index];
+
   // Temporal filtering should not go beyond key frames
   const int key_to_curframe =
-      AOMMAX(cpi->rc.frames_since_key +
-                 cpi->gf_group.arf_src_offset[cpi->gf_group.index],
-             0);
+      AOMMAX(cpi->rc.frames_since_key + arf_src_offset, 0);
   const int curframe_to_key =
-      AOMMAX(cpi->rc.frames_to_key -
-                 cpi->gf_group.arf_src_offset[cpi->gf_group.index] - 1,
-             0);
+      AOMMAX(cpi->rc.frames_to_key - arf_src_offset - 1, 0);
 
   // Number of buffered frames before the to-filter frame.
-  const int max_before =
-      AOMMIN(filter_frame_lookahead_idx < -1 ? -filter_frame_lookahead_idx + 1
-                                             : filter_frame_lookahead_idx + 1,
-             key_to_curframe);
-  // Number of buffered frames after the to-filter frame.
-  const int max_after = AOMMIN(lookahead_depth - max_before, curframe_to_key);
+  const int max_before = AOMMIN(filter_frame_lookahead_idx, key_to_curframe);
 
-  const int filter_frame_offset = filter_frame_lookahead_idx < -1
-                                      ? -filter_frame_lookahead_idx
-                                      : filter_frame_lookahead_idx;
+  // Number of buffered frames after the to-filter frame.
+  const int max_after =
+      AOMMIN(lookahead_depth - filter_frame_lookahead_idx - 1, curframe_to_key);
 
   // Estimate noises for each plane.
   const struct lookahead_entry *to_filter_buf = av1_lookahead_peek(
-      cpi->lookahead, filter_frame_offset, cpi->compressor_stage);
+      cpi->lookahead, filter_frame_lookahead_idx, cpi->compressor_stage);
   assert(to_filter_buf != NULL);
   const YV12_BUFFER_CONFIG *to_filter_frame = &to_filter_buf->img;
   const int num_planes = av1_num_planes(&cpi->common);
+  double *noise_levels = tf_ctx->noise_levels;
   for (int plane = 0; plane < num_planes; ++plane) {
     noise_levels[plane] = av1_estimate_noise_from_single_plane(
         to_filter_frame, plane, cpi->common.seq_params.bit_depth);
   }
   // Get quantization factor.
-  const int q = get_q(cpi);
+  const int q = av1_get_q(cpi);
+  // Get correlation estimates from first-pass
+  RATE_CONTROL *rc = &cpi->rc;
+  const double *coeff = rc->cor_coeff;
+  const int offset = rc->regions_offset;
+  int cur_frame_idx =
+      filter_frame_lookahead_idx + rc->frames_since_key - offset;
 
-  // Adjust number of filtering frames based on noise and quantization factor.
-  // Basically, we would like to use more frames to filter low-noise frame such
-  // that the filtered frame can provide better predictions for more frames.
-  // Also, when the quantization factor is small enough (lossless compression),
-  // we will not change the number of frames for key frame filtering, which is
-  // to avoid visual quality drop.
-  int adjust_num = 0;
+  double accu_coeff0 = 1.0, accu_coeff1 = 1.0;
+  for (int i = 1; i <= max_after; i++) {
+    accu_coeff1 *= coeff[cur_frame_idx + i];
+  }
+  if (max_after >= 1) {
+    accu_coeff1 = pow(accu_coeff1, 1.0 / (double)max_after);
+  }
+  for (int i = 1; i <= max_before; i++) {
+    accu_coeff0 *= coeff[cur_frame_idx - i + 1];
+  }
+  if (max_before >= 1) {
+    accu_coeff0 = pow(accu_coeff0, 1.0 / (double)max_before);
+  }
+
+  // Adjust number of filtering frames based on quantization factor. When the
+  // quantization factor is small enough (lossless compression), we will not
+  // change the number of frames for key frame filtering, which is to avoid
+  // visual quality drop.
+  int adjust_num = 6;
   if (num_frames == 1) {  // `arnr_max_frames = 1` is used to disable filtering.
     adjust_num = 0;
-  } else if (filter_frame_lookahead_idx < 0 && q <= 10) {
+  } else if ((update_type == KF_UPDATE || is_forward_keyframe) && q <= 10) {
     adjust_num = 0;
-  } else if (noise_levels[0] < 0.5) {
-    adjust_num = 6;
-  } else if (noise_levels[0] < 1.0) {
-    adjust_num = 4;
-  } else if (noise_levels[0] < 2.0) {
-    adjust_num = 2;
   }
-  num_frames = AOMMIN(num_frames + adjust_num, lookahead_depth + 1);
+  num_frames = AOMMIN(num_frames + adjust_num, lookahead_depth);
 
-  if (filter_frame_lookahead_idx == -1 ||
-      filter_frame_lookahead_idx == 0) {  // Key frame.
+  if (frame_type == KEY_FRAME && !is_forward_keyframe) {
     num_before = 0;
     num_after = AOMMIN(num_frames - 1, max_after);
-  } else if (filter_frame_lookahead_idx < -1) {  // Key frame in one-pass mode.
+  } else if (is_forward_keyframe) {  // Key frame in one-pass mode.
     num_before = AOMMIN(num_frames - 1, max_before);
     num_after = 0;
   } else {
@@ -1151,22 +1012,43 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
     num_frames += !(num_frames & 1);  // Make the number odd.
     // Only use 2 neighbours for the second ARF.
     if (is_second_arf) num_frames = AOMMIN(num_frames, 3);
-    num_before = AOMMIN(num_frames >> 1, max_before);
-    num_after = AOMMIN(num_frames >> 1, max_after);
+    if (AOMMIN(max_after, max_before) >= num_frames / 2) {
+      // just use half half
+      num_before = num_frames / 2;
+      num_after = num_frames / 2;
+    } else {
+      if (max_after < num_frames / 2) {
+        num_after = max_after;
+        num_before = AOMMIN(num_frames - 1 - num_after, max_before);
+      } else {
+        num_before = max_before;
+        num_after = AOMMIN(num_frames - 1 - num_before, max_after);
+      }
+      // Adjust insymmetry based on frame-level correlation
+      if (max_after > 0 && max_before > 0) {
+        if (num_after < num_before) {
+          const int insym = (int)(0.4 / AOMMAX(1 - accu_coeff1, 0.01));
+          num_before = AOMMIN(num_before, num_after + insym);
+        } else {
+          const int insym = (int)(0.4 / AOMMAX(1 - accu_coeff0, 0.01));
+          num_after = AOMMIN(num_after, num_before + insym);
+        }
+      }
+    }
   }
   num_frames = num_before + 1 + num_after;
 
   // Setup the frame buffer.
   for (int frame = 0; frame < num_frames; ++frame) {
-    const int lookahead_idx = frame - num_before + filter_frame_offset;
+    const int lookahead_idx = frame - num_before + filter_frame_lookahead_idx;
     struct lookahead_entry *buf = av1_lookahead_peek(
         cpi->lookahead, lookahead_idx, cpi->compressor_stage);
     assert(buf != NULL);
     frames[frame] = &buf->img;
   }
-  *num_frames_for_filtering = num_frames;
-  *filter_frame_idx = num_before;
-  assert(frames[*filter_frame_idx] == to_filter_frame);
+  tf_ctx->num_frames = num_frames;
+  tf_ctx->filter_frame_idx = num_before;
+  assert(frames[tf_ctx->filter_frame_idx] == to_filter_frame);
 
   av1_setup_src_planes(&cpi->td.mb, &to_filter_buf->img, 0, 0, num_planes,
                        cpi->common.seq_params.sb_size);
@@ -1225,74 +1107,54 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
   return (count < 16) ? -1.0 : (double)accum / (6 * count) * SQRT_PI_BY_2;
 }
 
-int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
-                        int *show_existing_arf) {
-  // Basic informaton of the current frame.
-  const GF_GROUP *const gf_group = &cpi->gf_group;
-  const uint8_t group_idx = gf_group->index;
-  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[group_idx];
-  // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
-  // This frame is ALWAYS a show existing frame.
-  const int is_second_arf =
-      (update_type == INTNL_ARF_UPDATE) && (filter_frame_lookahead_idx >= 7);
-  // TODO(anyone): Currently, we enforce the filtering strength on internal
-  // ARFs except the second ARF to be zero. We should investigate in which case
-  // it is more beneficial to use non-zero strength filtering.
-  if (update_type == INTNL_ARF_UPDATE && !is_second_arf) {
-    return 0;
-  }
-
-  // TODO(yunqing): For INTNL_ARF_UPDATE type, the following me initialization
-  // is used somewhere unexpectedly. Should be resolved later.
-  // Initialize errorperbit and sadperbit
-  const int rdmult = av1_compute_rd_mult_based_on_qindex(cpi, TF_QINDEX);
-  MvCosts *mv_costs = &cpi->td.mb.mv_costs;
-  av1_set_error_per_bit(mv_costs, rdmult);
-  av1_set_sad_per_bit(cpi, mv_costs, TF_QINDEX);
-  av1_fill_mv_costs(cpi->common.fc,
-                    cpi->common.features.cur_frame_force_integer_mv,
-                    cpi->common.features.allow_high_precision_mv, mv_costs);
-
+// Initializes the members of TemporalFilterCtx
+// Inputs:
+//   cpi: Top level encoder instance structure
+//   filter_frame_lookahead_idx: The index of the frame to be filtered in the
+//                               lookahead buffer cpi->lookahead.
+//   is_second_arf: Flag indiacting whether second ARF filtering is required.
+// Returns:
+//   Nothing will be returned. But the contents of cpi->tf_ctx will be modified.
+static void init_tf_ctx(AV1_COMP *cpi, int filter_frame_lookahead_idx,
+                        int is_second_arf, FRAME_UPDATE_TYPE update_type,
+                        int is_forward_keyframe) {
+  TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
   // Setup frame buffer for filtering.
-  YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
-  int num_frames_for_filtering = 0;
-  int filter_frame_idx = -1;
-  double noise_levels[MAX_MB_PLANE] = { 0 };
+  YV12_BUFFER_CONFIG **frames = tf_ctx->frames;
+  tf_ctx->num_frames = 0;
+  tf_ctx->filter_frame_idx = -1;
   tf_setup_filtering_buffer(cpi, filter_frame_lookahead_idx, is_second_arf,
-                            frames, &num_frames_for_filtering,
-                            &filter_frame_idx, noise_levels);
-  assert(num_frames_for_filtering > 0);
-  assert(filter_frame_idx < num_frames_for_filtering);
+                            update_type, is_forward_keyframe);
+  assert(tf_ctx->num_frames > 0);
+  assert(tf_ctx->filter_frame_idx < tf_ctx->num_frames);
 
-  // Set showable frame.
-  if (filter_frame_lookahead_idx >= 0) {
-    cpi->common.showable_frame = num_frames_for_filtering == 1 ||
-                                 is_second_arf ||
-                                 (cpi->oxcf.algo_cfg.enable_overlay == 0);
-  }
-
-  // Do filtering.
   // Check show existing condition for non-keyframes. For KFs, only check when
   // KF overlay is enabled.
-  const int check_show_existing =
-      !(filter_frame_lookahead_idx <= 0) ||
+  tf_ctx->check_show_existing =
+      !(is_forward_keyframe && update_type == KF_UPDATE) ||
       cpi->oxcf.kf_cfg.enable_keyframe_filtering > 1;
+
   // Setup scaling factors. Scaling on each of the arnr frames is not
   // supported.
   // ARF is produced at the native frame size and resized when coded.
-  struct scale_factors sf;
+  struct scale_factors *sf = &tf_ctx->sf;
   av1_setup_scale_factors_for_frame(
-      &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
+      sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
       frames[0]->y_crop_width, frames[0]->y_crop_height);
 
-  // Allocate temporal filter buffers.
-  TemporalFilterData *tf_data = &cpi->td.tf_data;
+  // Initialize temporal filter parameters.
   MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
+  const int filter_frame_idx = tf_ctx->filter_frame_idx;
+  const YV12_BUFFER_CONFIG *const frame_to_filter = frames[filter_frame_idx];
   const BLOCK_SIZE block_size = TF_BLOCK_SIZE;
+  const int frame_height = frame_to_filter->y_crop_height;
+  const int frame_width = frame_to_filter->y_crop_width;
   const int mb_width = block_size_wide[block_size];
   const int mb_height = block_size_high[block_size];
+  const int mb_rows = get_num_blocks(frame_height, mb_height);
+  const int mb_cols = get_num_blocks(frame_width, mb_width);
   const int mb_pels = mb_width * mb_height;
-  const int is_highbitdepth = is_frame_high_bitdepth(frames[filter_frame_idx]);
+  const int is_highbitdepth = is_frame_high_bitdepth(frame_to_filter);
   const int num_planes = av1_num_planes(&cpi->common);
   int num_pels = 0;
   for (int i = 0; i < num_planes; i++) {
@@ -1300,20 +1162,63 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
     const int subsampling_y = mbd->plane[i].subsampling_y;
     num_pels += mb_pels >> (subsampling_x + subsampling_y);
   }
-  tf_alloc_and_reset_data(tf_data, num_pels, is_highbitdepth);
+  tf_ctx->num_pels = num_pels;
+  tf_ctx->mb_rows = mb_rows;
+  tf_ctx->mb_cols = mb_cols;
+  tf_ctx->is_highbitdepth = is_highbitdepth;
+  tf_ctx->q_factor = av1_get_q(cpi);
+}
+
+int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
+                        FRAME_UPDATE_TYPE update_type, int is_forward_keyframe,
+                        int *show_existing_arf) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  // Basic informaton of the current frame.
+  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const uint8_t group_idx = gf_group->index;
+  TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
+  TemporalFilterData *tf_data = &cpi->td.tf_data;
+  // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
+  // This frame is ALWAYS a show existing frame.
+  const int is_second_arf =
+      (update_type == INTNL_ARF_UPDATE) && (filter_frame_lookahead_idx >= 7) &&
+      (is_forward_keyframe == 0) && cpi->sf.hl_sf.second_alt_ref_filtering;
+  // TODO(anyone): Currently, we enforce the filtering strength on internal
+  // ARFs except the second ARF to be zero. We should investigate in which case
+  // it is more beneficial to use non-zero strength filtering.
+  if (update_type == INTNL_ARF_UPDATE && !is_second_arf) {
+    return 0;
+  }
+
+  // Initialize temporal filter context structure.
+  init_tf_ctx(cpi, filter_frame_lookahead_idx, is_second_arf, update_type,
+              is_forward_keyframe);
+
+  // Set showable frame.
+  if (is_forward_keyframe == 0 && update_type != KF_UPDATE) {
+    cpi->common.showable_frame = tf_ctx->num_frames == 1 || is_second_arf ||
+                                 (cpi->oxcf.algo_cfg.enable_overlay == 0);
+  }
+
+  // Allocate and reset temporal filter buffers.
+  const int is_highbitdepth = tf_ctx->is_highbitdepth;
+  tf_alloc_and_reset_data(tf_data, tf_ctx->num_pels, is_highbitdepth);
 
   // Perform temporal filtering process.
-  tf_do_filtering(cpi, frames, num_frames_for_filtering, filter_frame_idx,
-                  check_show_existing, &sf, noise_levels, num_pels);
+  if (mt_info->num_workers > 1)
+    av1_tf_do_filtering_mt(cpi);
+  else
+    tf_do_filtering(cpi);
 
   // Deallocate temporal filter buffers.
   tf_dealloc_data(tf_data, is_highbitdepth);
 
-  const FRAME_DIFF *diff = &tf_data->diff;
-
-  if (!check_show_existing) return 1;
+  if (!tf_ctx->check_show_existing) return 1;
 
   if (show_existing_arf != NULL || is_second_arf) {
+    YV12_BUFFER_CONFIG **frames = tf_ctx->frames;
+    const FRAME_DIFF *diff = &tf_data->diff;
+    const int filter_frame_idx = tf_ctx->filter_frame_idx;
     const int frame_height = frames[filter_frame_idx]->y_crop_height;
     const int frame_width = frames[filter_frame_idx]->y_crop_width;
     const int block_height = block_size_high[TF_BLOCK_SIZE];

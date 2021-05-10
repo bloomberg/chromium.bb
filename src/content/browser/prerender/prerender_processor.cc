@@ -8,6 +8,7 @@
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/blink/public/common/features.h"
@@ -18,7 +19,7 @@ PrerenderProcessor::PrerenderProcessor(
     RenderFrameHostImpl& initiator_render_frame_host)
     : initiator_render_frame_host_(initiator_render_frame_host),
       initiator_origin_(initiator_render_frame_host.GetLastCommittedOrigin()) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2));
+  DCHECK(blink::features::IsPrerender2Enabled());
 }
 
 PrerenderProcessor::~PrerenderProcessor() {
@@ -30,9 +31,7 @@ PrerenderProcessor::~PrerenderProcessor() {
 // no-state-prefetch implementation. See PrerenderContents::StartPrerendering()
 // for example.
 void PrerenderProcessor::Start(
-    blink::mojom::PrerenderAttributesPtr attributes,
-    mojo::PendingRemote<blink::mojom::PrerenderProcessorClient>
-        pending_remote) {
+    blink::mojom::PrerenderAttributesPtr attributes) {
   // Start() must be called only one time.
   if (state_ != State::kInitial) {
     mojo::ReportBadMessage("PP_START_TWICE");
@@ -40,26 +39,40 @@ void PrerenderProcessor::Start(
   }
   state_ = State::kStarted;
 
+  // Abort cross-origin prerendering.
+  // TODO(https://crbug.com/1176054): This is a tentative behavior. We plan to
+  // support cross-origin prerendering later.
+  if (!initiator_origin_.IsSameOriginWith(
+          url::Origin::Create(attributes->url))) {
+    mojo::ReportBadMessage("PP_CROSS_ORIGIN");
+    return;
+  }
+
+  // Prerendering is only supported for <link rel=prerender>.
+  // We may want to support it for <link rel=next> if NoStatePrefetch re-enables
+  // it again. See https://crbug.com/1161545.
+  switch (attributes->rel_type) {
+    case blink::mojom::PrerenderRelType::kPrerender:
+      break;
+    case blink::mojom::PrerenderRelType::kNext:
+      return;
+  }
+
   // TODO(https://crbug.com/1132746): Validate the origin, etc and send
-  // mojo::ReportBadMessage() if necessary like the legacy prerender
-  // `prerender::PrerenderProcessorImpl::Start()`.
+  // mojo::ReportBadMessage() if necessary like
+  // `NoStatePrefetchProcessorImpl::Start()`.
 
   // TODO(https://crbug.com/1138711, https://crbug.com/1138723): Abort if the
   // initiator frame is not the main frame (i.e., iframe or pop-up window).
 
-  prerendering_url_ = attributes->url;
+  auto* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(&initiator_render_frame_host_));
 
-  // Start prerendering.
-  auto prerender_host = std::make_unique<PrerenderHost>(
-      std::move(attributes),
-      initiator_render_frame_host_.GetGlobalFrameRoutingId(),
-      initiator_origin_);
-  prerender_host->StartPrerendering();
+  if (!web_contents)
+    return;
 
-  // Register the prerender host to PrerenderHostRegistry so that navigation can
-  // find this prerendered contents.
-  GetPrerenderHostRegistry().RegisterHost(prerendering_url_,
-                                          std::move(prerender_host));
+  prerender_frame_tree_node_id_ = GetPrerenderHostRegistry().CreateAndStartHost(
+      std::move(attributes), *web_contents, initiator_origin_);
 }
 
 void PrerenderProcessor::Cancel() {
@@ -72,9 +85,10 @@ void PrerenderProcessor::Cancel() {
 }
 
 void PrerenderProcessor::CancelPrerendering() {
+  TRACE_EVENT0("navigation", "PrerenderProcessor::CancelPrerendering");
   DCHECK_EQ(state_, State::kStarted);
   state_ = State::kCancelled;
-  GetPrerenderHostRegistry().AbandonHost(prerendering_url_);
+  GetPrerenderHostRegistry().AbandonHost(prerender_frame_tree_node_id_);
 }
 
 PrerenderHostRegistry& PrerenderProcessor::GetPrerenderHostRegistry() {

@@ -49,7 +49,6 @@
         "codecName",
         "rtpPayloadType",
         "ssrc",
-        "targetDelay",
         "aesKey",
         "aesIvMask",
         "timeBase"
@@ -148,8 +147,7 @@
     "error": {
       "properties": {
         "code": {"type": "integer"},
-        "description": {"type": "string"},
-        "details": {"type": "string"}
+        "description": {"type": "string"}
       },
       "required": ["code", "description"]
     },
@@ -175,7 +173,7 @@
         "receiverGetStatus": {"type": "boolean"},
         "rtpExtensions": {"$ref": "#/definitions/rtp_extensions"}
       },
-      "required": ["udpPort", "constraints", "sendIndexes", "ssrcs"]
+      "required": ["udpPort", "sendIndexes", "ssrcs"]
     },
     "status_response": {
       "properties": {
@@ -246,11 +244,11 @@
       ]
     }
   },
-  "required": ["type"],
+  "required": ["type", "seqNum"],
   "allOf": [
     {
       "if": {
-        "properties": {"type": {"enum": ["ANSWER", "CAPABILITIES_RESPONSE"]}}
+        "properties": {"type": {"enum": ["ANSWER", "CAPABILITIES_RESPONSE", "STATUS_RESPONSE"]}}
       },
       "then": {"required": ["result"]}
     },

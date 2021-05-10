@@ -16,26 +16,19 @@
 
 #include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/decorated_variable.h"
-#include "src/ast/float_literal.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/member_accessor_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/stride_decoration.h"
 #include "src/ast/struct.h"
 #include "src/ast/struct_member.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/array_type.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/matrix_type.h"
-#include "src/ast/type/struct_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
-#include "src/context.h"
+#include "src/ast/variable.h"
+#include "src/program.h"
+#include "src/type/struct_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/hlsl/test_helper.h"
 
@@ -47,34 +40,21 @@ namespace {
 using HlslGeneratorImplTest_MemberAccessor = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_MemberAccessor, EmitExpression_MemberAccessor) {
-  ast::type::F32Type f32;
+  auto* strct = create<ast::Struct>(
+      ast::StructMemberList{Member("mem", ty.f32(), {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("mem", &f32, std::move(deco)));
+  auto* s = ty.struct_("Str", strct);
+  auto* str_var = Global("str", s, ast::StorageClass::kPrivate);
 
-  auto strct = std::make_unique<ast::Struct>();
-  strct->set_members(std::move(members));
+  auto* expr = MemberAccessor("str", "mem");
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Str", std::move(strct));
+  GeneratorImpl& gen = Build();
 
-  auto str_var = std::make_unique<ast::DecoratedVariable>(
-      std::make_unique<ast::Variable>("str", ast::StorageClass::kPrivate, &s));
+  gen.register_global(str_var);
 
-  auto str = std::make_unique<ast::IdentifierExpression>("str");
-  auto mem = std::make_unique<ast::IdentifierExpression>("mem");
-
-  ast::MemberAccessorExpression expr(std::move(str), std::move(mem));
-
-  td().RegisterVariableForTesting(str_var.get());
-  gen().register_global(str_var.get());
-  mod()->AddGlobalVariable(std::move(str_var));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "str.mem");
 }
 
@@ -84,47 +64,27 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : i32;
   //   [[offset(4)]] b : f32;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.b;
   //
   // -> asfloat(data.Load(4));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
+                            Member("b", ty.f32(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = MemberAccessor("data", "b");
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("b"));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load(4))");
 }
 
@@ -134,109 +94,65 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : i32;
   //   [[offset(4)]] b : f32;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a;
   //
   // -> asint(data.Load(0));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
+                            Member("b", ty.f32(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(b_deco)));
+  auto* expr = MemberAccessor("data", "a");
+  WrapInFunction(expr);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType s("Data", std::move(str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
-
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asint(data.Load(0))");
 }
+
 TEST_F(HlslGeneratorImplTest_MemberAccessor,
        EmitExpression_MemberAccessor_StorageBuffer_Store_Matrix) {
   // struct Data {
   //   [[offset(0)]] z : f32;
   //   [[offset(4)]] a : mat2x3<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // mat2x3<f32> b;
   // data.a = b;
   //
-  // -> matrix<float, 3, 2> _tint_tmp = b;
+  // -> float3x2 _tint_tmp = b;
   //    data.Store3(4 + 0, asuint(_tint_tmp[0]));
   //    data.Store3(4 + 16, asuint(_tint_tmp[1]));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 3, 2);
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("z", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("z", ty.i32(), {MemberOffset(0)}),
+                            Member("a", ty.mat2x3<f32>(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* b_var = Global("b", ty.mat2x3<f32>(), ast::StorageClass::kPrivate);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* lhs = MemberAccessor("data", "a");
+  auto* rhs = Expr("b");
 
-  ast::type::StructType s("Data", std::move(str));
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
+  WrapInFunction(assign);
 
-  auto b_var =
-      std::make_unique<ast::Variable>("b", ast::StorageClass::kPrivate, &mat);
+  GeneratorImpl& gen = Build();
 
-  auto coord_var = std::make_unique<ast::Variable>(
-      "data", ast::StorageClass::kStorageBuffer, &s);
+  gen.register_global(coord_var);
+  gen.register_global(b_var);
 
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-  auto rhs = std::make_unique<ast::IdentifierExpression>("b");
-
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  td().RegisterVariableForTesting(b_var.get());
-  gen().register_global(coord_var.get());
-  gen().register_global(b_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-  mod()->AddGlobalVariable(std::move(b_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
-  EXPECT_EQ(result(), R"(matrix<float, 3, 2> _tint_tmp = b;
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
+  EXPECT_EQ(result(), R"(float3x2 _tint_tmp = b;
 data.Store3(4 + 0, asuint(_tint_tmp[0]));
 data.Store3(4 + 16, asuint(_tint_tmp[1]));
 )");
@@ -248,58 +164,36 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] z : f32;
   //   [[offset(4)]] a : mat2x3<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a = mat2x3<f32>();
   //
-  // -> matrix<float, 3, 2> _tint_tmp = matrix<float, 3, 2>(0.0f, 0.0f, 0.0f,
+  // -> float3x2 _tint_tmp = float3x2(0.0f, 0.0f, 0.0f,
   // 0.0f, 0.0f, 0.0f);
   //    data.Store3(4 + 0, asuint(_tint_tmp[0]);
   //    data.Store3(4 + 16, asuint(_tint_tmp[1]));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 3, 2);
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("z", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("z", ty.i32(), {MemberOffset(0)}),
+                            Member("a", ty.mat2x3<f32>(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* lhs = MemberAccessor("data", "a");
+  auto* rhs = Construct(ty.mat2x3<f32>(), ast::ExpressionList{});
 
-  ast::type::StructType s("Data", std::move(str));
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
+  WrapInFunction(assign);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  GeneratorImpl& gen = Build();
 
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-  auto rhs = std::make_unique<ast::TypeConstructorExpression>(
-      &mat, ast::ExpressionList{});
+  gen.register_global(coord_var);
 
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
   EXPECT_EQ(
       result(),
-      R"(matrix<float, 3, 2> _tint_tmp = matrix<float, 3, 2>(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+      R"(float3x2 _tint_tmp = float3x2(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 data.Store3(4 + 0, asuint(_tint_tmp[0]));
 data.Store3(4 + 16, asuint(_tint_tmp[1]));
 )");
@@ -311,51 +205,30 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] z : f32;
   //   [[offset(4)]] a : mat3x2<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a;
   //
-  // -> asfloat(matrix<uint, 2, 3>(data.Load2(4 + 0), data.Load2(4 + 8),
+  // -> asfloat(uint2x3(data.Load2(4 + 0), data.Load2(4 + 8),
   // data.Load2(4 + 16)));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 2, 3);
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("z", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("z", ty.i32(), {MemberOffset(0)}),
+                            Member("a", ty.mat3x2<f32>(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = MemberAccessor("data", "a");
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(),
-            "asfloat(matrix<uint, 2, 3>(data.Load2(4 + 0), data.Load2(4 + 8), "
+            "asfloat(uint2x3(data.Load2(4 + 0), data.Load2(4 + 8), "
             "data.Load2(4 + 16)))");
 }
 
@@ -369,51 +242,31 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] c : f32;
   //   [[offset(4)]] b : Data;
   // };
-  // var<storage_buffer> data : Outer;
+  // var<storage> data : Outer;
   // data.b.a;
   //
-  // -> asfloat(matrix<uint, 3, 2>(data.Load3(4 + 0), data.Load3(4 + 16)));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 3, 2);
+  // -> asfloat(uint3x2(data.Load3(4 + 0), data.Load3(4 + 16)));
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("z", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("z", ty.i32(), {MemberOffset(0)}),
+          Member("a", ty.mat2x3<f32>(), {MemberOffset(4)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = MemberAccessor("data", "a");
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
-  EXPECT_EQ(
-      result(),
-      "asfloat(matrix<uint, 3, 2>(data.Load3(4 + 0), data.Load3(4 + 16)))");
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(),
+            "asfloat(uint3x2(data.Load3(4 + 0), data.Load3(4 + 16)))");
 }
 
 TEST_F(
@@ -422,45 +275,29 @@ TEST_F(
   // struct Data {
   //   [[offset(4)]] a : mat3x3<f32;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a;
   //
-  // -> asfloat(matrix<uint, 3, 3>(data.Load3(0), data.Load3(16),
+  // -> asfloat(uint3x3(data.Load3(0), data.Load3(16),
   // data.Load3(32)));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 3, 3);
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.mat3x3<f32>(), {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::type::StructType s("Data", std::move(str));
+  auto* expr = MemberAccessor("data", "a");
+  WrapInFunction(expr);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  GeneratorImpl& gen = Build();
 
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
+  gen.register_global(coord_var);
 
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(),
-            "asfloat(matrix<uint, 3, 3>(data.Load3(0 + 0), data.Load3(0 + 16), "
+            "asfloat(uint3x3(data.Load3(0 + 0), data.Load3(0 + 16), "
             "data.Load3(0 + 32)))");
 }
 
@@ -470,54 +307,28 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] z : f32;
   //   [[offset(16)]] a : mat4x3<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a[2][1];
   //
   // -> asfloat(data.Load((2 * 16) + (1 * 4) + 16)))
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::MatrixType mat(&f32, 3, 4);
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("z", &i32, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("z", ty.i32(), {MemberOffset(0)}),
+                            Member("a", ty.mat4x3<f32>(), {MemberOffset(16)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &mat, std::move(b_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = IndexAccessor(
+      IndexAccessor(MemberAccessor("data", "a"), Expr(2)), Expr(1));
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::ArrayAccessorExpression expr(
-      std::make_unique<ast::ArrayAccessorExpression>(
-          std::make_unique<ast::MemberAccessorExpression>(
-              std::make_unique<ast::IdentifierExpression>("data"),
-              std::make_unique<ast::IdentifierExpression>("a")),
-          std::make_unique<ast::ScalarConstructorExpression>(
-              std::make_unique<ast::SintLiteral>(&i32, 2))),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1)));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load((4 * 1) + (16 * 2) + 16))");
 }
 
@@ -526,48 +337,29 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   // struct Data {
   //   [[offset(0)]] a : [[stride(4)]] array<i32, 5>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a[2];
   //
   // -> asint(data.Load((2 * 4));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::ArrayType ary(&i32, 5);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(4, Source{}));
-  ary.set_decorations(std::move(decos));
+  type::Array ary(ty.i32(), 5,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(4),
+                  });
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ary, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = IndexAccessor(MemberAccessor("data", "a"), Expr(2));
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::ArrayAccessorExpression expr(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::IdentifierExpression>("data"),
-          std::make_unique<ast::IdentifierExpression>("a")),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2)));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asint(data.Load((4 * 2) + 0))");
 }
 
@@ -576,56 +368,30 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   // struct Data {
   //   [[offset(0)]] a : [[stride(4)]] array<i32, 5>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a[(2 + 4) - 3];
   //
   // -> asint(data.Load((4 * ((2 + 4) - 3)));
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::ArrayType ary(&i32, 5);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(4, Source{}));
-  ary.set_decorations(std::move(decos));
+  type::Array ary(ty.i32(), 5,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(4),
+                  });
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ary, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* expr = IndexAccessor(MemberAccessor("data", "a"),
+                             Sub(Add(Expr(2), Expr(4)), Expr(3)));
+  WrapInFunction(expr);
 
-  ast::type::StructType s("Data", std::move(str));
+  GeneratorImpl& gen = Build();
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  gen.register_global(coord_var);
 
-  ast::ArrayAccessorExpression expr(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::IdentifierExpression>("data"),
-          std::make_unique<ast::IdentifierExpression>("a")),
-      std::make_unique<ast::BinaryExpression>(
-          ast::BinaryOp::kSubtract,
-          std::make_unique<ast::BinaryExpression>(
-              ast::BinaryOp::kAdd,
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 2)),
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 4))),
-          std::make_unique<ast::ScalarConstructorExpression>(
-              std::make_unique<ast::SintLiteral>(&i32, 3))));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-  ASSERT_TRUE(td().DetermineResultType(&expr)) << td().error();
-
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asint(data.Load((4 * ((2 + 4) - 3)) + 0))");
 }
 
@@ -635,52 +401,30 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : i32;
   //   [[offset(4)]] b : f32;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.b = 2.3f;
   //
   // -> data.Store(0, asuint(2.0f));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
+                            Member("b", ty.f32(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(a_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(b_deco)));
+  auto* lhs = MemberAccessor("data", "b");
+  auto* rhs = Expr(2.0f);
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
+  WrapInFunction(assign);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType s("Data", std::move(str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("b"));
-  auto rhs = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.0f));
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
-  EXPECT_EQ(result(), R"(data.Store(4, asuint(2.00000000f));
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
+  EXPECT_EQ(result(), R"(data.Store(4, asuint(2.0f));
 )");
 }
 
@@ -689,52 +433,33 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   // struct Data {
   //   [[offset(0)]] a : [[stride(4)]] array<i32, 5>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a[2] = 2;
   //
   // -> data.Store((2 * 4), asuint(2.3f));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::ArrayType ary(&i32, 5);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(4, Source{}));
-  ary.set_decorations(std::move(decos));
+  type::Array ary(ty.i32(), 5,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(4),
+                  });
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ary, std::move(a_deco)));
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::type::StructType s("Data", std::move(str));
+  auto* lhs = IndexAccessor(MemberAccessor("data", "a"), Expr(2));
+  auto* rhs = Expr(2);
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
+  WrapInFunction(assign);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  GeneratorImpl& gen = Build();
 
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
+  gen.register_global(coord_var);
 
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lhs = std::make_unique<ast::ArrayAccessorExpression>(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::IdentifierExpression>("data"),
-          std::make_unique<ast::IdentifierExpression>("a")),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 2)));
-  auto rhs = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 2));
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign)) << td().error();
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
   EXPECT_EQ(result(), R"(data.Store((4 * 2) + 0, asuint(2));
 )");
 }
@@ -745,51 +470,29 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : i32;
   //   [[offset(4)]] b : f32;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.a = 2;
   //
   // -> data.Store(0, asuint(2));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
+                            Member("b", ty.f32(), {MemberOffset(4)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &i32, std::move(a_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(4, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &f32, std::move(b_deco)));
+  auto* lhs = MemberAccessor("data", "a");
+  auto* rhs = Expr(2);
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
+  WrapInFunction(assign);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType s("Data", std::move(str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("a"));
-  auto rhs = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 2));
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
   EXPECT_EQ(result(), R"(data.Store(0, asuint(2));
 )");
 }
@@ -800,50 +503,27 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : vec3<i32>;
   //   [[offset(16)]] b : vec3<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.b;
   //
   // -> asfloat(data.Load(16));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+                            Member("b", ty.vec3<f32>(), {MemberOffset(16)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(a_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(b_deco)));
+  auto* expr = MemberAccessor("data", "b");
+  WrapInFunction(expr);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType s("Data", std::move(str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("b"));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load3(16))");
 }
 
@@ -853,68 +533,33 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   [[offset(0)]] a : vec3<i32>;
   //   [[offset(16)]] b : vec3<f32>;
   // };
-  // var<storage_buffer> data : Data;
+  // var<storage> data : Data;
   // data.b = vec3<f32>(2.3f, 1.2f, 0.2f);
   //
-  // -> data.Store(16, asuint(vector<float, 3>(2.3f, 1.2f, 0.2f)));
+  // -> data.Store(16, asuint(float3(2.3f, 1.2f, 0.2f)));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* str = create<ast::Struct>(
+      ast::StructMemberList{Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+                            Member("b", ty.vec3<f32>(), {MemberOffset(16)})},
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList a_deco;
-  a_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(a_deco)));
+  auto* s = ty.struct_("Data", str);
+  auto* coord_var = Global("data", s, ast::StorageClass::kStorage);
 
-  ast::StructMemberDecorationList b_deco;
-  b_deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(b_deco)));
+  auto* lhs = MemberAccessor("data", "b");
+  auto* rhs = vec3<f32>(1.f, 2.f, 3.f);
 
-  auto str = std::make_unique<ast::Struct>();
-  str->set_members(std::move(members));
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
 
-  ast::type::StructType s("Data", std::move(str));
+  WrapInFunction(assign);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &s));
+  GeneratorImpl& gen = Build();
 
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
+  gen.register_global(coord_var);
 
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lit1 = std::make_unique<ast::FloatLiteral>(&f32, 1.f);
-  auto lit2 = std::make_unique<ast::FloatLiteral>(&f32, 2.f);
-  auto lit3 = std::make_unique<ast::FloatLiteral>(&f32, 3.f);
-  ast::ExpressionList values;
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit1)));
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit2)));
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit3)));
-
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::IdentifierExpression>("data"),
-      std::make_unique<ast::IdentifierExpression>("b"));
-  auto rhs = std::make_unique<ast::TypeConstructorExpression>(
-      &fvec3, std::move(values));
-
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
-  EXPECT_EQ(
-      result(),
-      R"(data.Store3(16, asuint(vector<float, 3>(1.00000000f, 2.00000000f, 3.00000000f)));
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
+  EXPECT_EQ(result(),
+            R"(data.Store3(16, asuint(float3(1.0f, 2.0f, 3.0f)));
 )");
 }
 
@@ -928,69 +573,40 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b
   //
   // -> asfloat(data.Load3(16 + (2 * 32)))
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(32),
+                  });
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* expr =
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b");
+  WrapInFunction(expr);
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  GeneratorImpl& gen = Build();
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  gen.register_global(coord_var);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
-
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
-
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::ArrayAccessorExpression>(
-          std::make_unique<ast::MemberAccessorExpression>(
-              std::make_unique<ast::IdentifierExpression>("data"),
-              std::make_unique<ast::IdentifierExpression>("c")),
-          std::make_unique<ast::ScalarConstructorExpression>(
-              std::make_unique<ast::SintLiteral>(&i32, 2))),
-      std::make_unique<ast::IdentifierExpression>("b"));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load3(16 + (32 * 2) + 0))");
 }
 
@@ -1004,71 +620,39 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b.xy
   //
   // -> asfloat(data.Load3(16 + (2 * 32))).xy
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{create<ast::StrideDecoration>(32)});
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* expr = MemberAccessor(
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b"),
+      "xy");
+  WrapInFunction(expr);
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  GeneratorImpl& gen = Build();
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  gen.register_global(coord_var);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
-
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
-
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::ArrayAccessorExpression>(
-              std::make_unique<ast::MemberAccessorExpression>(
-                  std::make_unique<ast::IdentifierExpression>("data"),
-                  std::make_unique<ast::IdentifierExpression>("c")),
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 2))),
-          std::make_unique<ast::IdentifierExpression>("b")),
-      std::make_unique<ast::IdentifierExpression>("xy"));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load3(16 + (32 * 2) + 0)).xy");
 }
 
@@ -1083,71 +667,41 @@ TEST_F(
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b.g
   //
   // -> asfloat(data.Load((4 * 1) + 16 + (2 * 32) + 0))
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(32),
+                  });
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* expr = MemberAccessor(
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b"),
+      "g");
+  WrapInFunction(expr);
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  GeneratorImpl& gen = Build();
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  gen.register_global(coord_var);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
-
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
-
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  ast::MemberAccessorExpression expr(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::ArrayAccessorExpression>(
-              std::make_unique<ast::MemberAccessorExpression>(
-                  std::make_unique<ast::IdentifierExpression>("data"),
-                  std::make_unique<ast::IdentifierExpression>("c")),
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 2))),
-          std::make_unique<ast::IdentifierExpression>("b")),
-      std::make_unique<ast::IdentifierExpression>("g"));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load((4 * 1) + 16 + (32 * 2) + 0))");
 }
 
@@ -1161,72 +715,41 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b[1]
   //
   // -> asfloat(data.Load(4 + 16 + (2 * 32)))
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(32),
+                  });
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* expr = IndexAccessor(
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b"),
+      Expr(1));
+  WrapInFunction(expr);
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  GeneratorImpl& gen = Build();
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  gen.register_global(coord_var);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
-
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
-
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  ast::ArrayAccessorExpression expr(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::ArrayAccessorExpression>(
-              std::make_unique<ast::MemberAccessorExpression>(
-                  std::make_unique<ast::IdentifierExpression>("data"),
-                  std::make_unique<ast::IdentifierExpression>("c")),
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 2))),
-          std::make_unique<ast::IdentifierExpression>("b")),
-      std::make_unique<ast::ScalarConstructorExpression>(
-          std::make_unique<ast::SintLiteral>(&i32, 1)));
-
-  ASSERT_TRUE(td().DetermineResultType(&expr));
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &expr)) << gen().error();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
   EXPECT_EQ(result(), "asfloat(data.Load((4 * 1) + 16 + (32 * 2) + 0))");
 }
 
@@ -1240,88 +763,46 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b = vec3<f32>(1.f, 2.f, 3.f);
   //
-  // -> data.Store3(16 + (2 * 32), asuint(vector<float, 3>(1.0f, 2.0f, 3.0f)));
+  // -> data.Store3(16 + (2 * 32), asuint(float3(1.0f, 2.0f, 3.0f)));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(32),
+                  });
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* lhs =
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b");
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  auto* assign =
+      create<ast::AssignmentStatement>(lhs, vec3<f32>(1.f, 2.f, 3.f));
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  WrapInFunction(assign);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::ArrayAccessorExpression>(
-          std::make_unique<ast::MemberAccessorExpression>(
-              std::make_unique<ast::IdentifierExpression>("data"),
-              std::make_unique<ast::IdentifierExpression>("c")),
-          std::make_unique<ast::ScalarConstructorExpression>(
-              std::make_unique<ast::SintLiteral>(&i32, 2))),
-      std::make_unique<ast::IdentifierExpression>("b"));
-
-  auto lit1 = std::make_unique<ast::FloatLiteral>(&f32, 1.f);
-  auto lit2 = std::make_unique<ast::FloatLiteral>(&f32, 2.f);
-  auto lit3 = std::make_unique<ast::FloatLiteral>(&f32, 3.f);
-  ast::ExpressionList values;
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit1)));
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit2)));
-  values.push_back(
-      std::make_unique<ast::ScalarConstructorExpression>(std::move(lit3)));
-
-  auto rhs = std::make_unique<ast::TypeConstructorExpression>(
-      &fvec3, std::move(values));
-
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
-  EXPECT_EQ(
-      result(),
-      R"(data.Store3(16 + (32 * 2) + 0, asuint(vector<float, 3>(1.00000000f, 2.00000000f, 3.00000000f)));
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
+  EXPECT_EQ(result(),
+            R"(data.Store3(16 + (32 * 2) + 0, asuint(float3(1.0f, 2.0f, 3.0f)));
 )");
 }
 
@@ -1335,79 +816,72 @@ TEST_F(HlslGeneratorImplTest_MemberAccessor,
   //   var c : [[stride(32)]] array<Data, 4>;
   // };
   //
-  // var<storage_buffer> data : Pre;
+  // var<storage> data : Pre;
   // data.c[2].b.y = 1.f;
   //
   // -> data.Store((4 * 1) + 16 + (2 * 32) + 0, asuint(1.0f));
 
-  ast::type::F32Type f32;
-  ast::type::I32Type i32;
-  ast::type::VectorType ivec3(&i32, 3);
-  ast::type::VectorType fvec3(&f32, 3);
+  auto* data_str = create<ast::Struct>(
+      ast::StructMemberList{
+          Member("a", ty.vec3<i32>(), {MemberOffset(0)}),
+          Member("b", ty.vec3<f32>(), {MemberOffset(16)}),
+      },
+      ast::StructDecorationList{});
 
-  ast::StructMemberList members;
-  ast::StructMemberDecorationList deco;
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("a", &ivec3, std::move(deco)));
+  auto* data = ty.struct_("Data", data_str);
+  type::Array ary(data, 4,
+                  ast::ArrayDecorationList{
+                      create<ast::StrideDecoration>(32),
+                  });
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(16, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("b", &fvec3, std::move(deco)));
+  auto* pre_str = create<ast::Struct>(
+      ast::StructMemberList{Member("c", &ary, {MemberOffset(0)})},
+      ast::StructDecorationList{});
 
-  auto data_str = std::make_unique<ast::Struct>();
-  data_str->set_members(std::move(members));
+  auto* pre_struct = ty.struct_("Pre", pre_str);
+  auto* coord_var = Global("data", pre_struct, ast::StorageClass::kStorage);
 
-  ast::type::StructType data("Data", std::move(data_str));
+  auto* lhs = MemberAccessor(
+      MemberAccessor(IndexAccessor(MemberAccessor("data", "c"), Expr(2)), "b"),
+      "y");
+  auto* rhs = Expr(1.f);
 
-  ast::type::ArrayType ary(&data, 4);
-  ast::ArrayDecorationList decos;
-  decos.push_back(std::make_unique<ast::StrideDecoration>(32, Source{}));
-  ary.set_decorations(std::move(decos));
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
 
-  deco.push_back(
-      std::make_unique<ast::StructMemberOffsetDecoration>(0, Source{}));
-  members.push_back(
-      std::make_unique<ast::StructMember>("c", &ary, std::move(deco)));
+  WrapInFunction(assign);
 
-  auto pre_str = std::make_unique<ast::Struct>();
-  pre_str->set_members(std::move(members));
+  GeneratorImpl& gen = Build();
 
-  ast::type::StructType pre_struct("Pre", std::move(pre_str));
+  gen.register_global(coord_var);
 
-  auto coord_var =
-      std::make_unique<ast::DecoratedVariable>(std::make_unique<ast::Variable>(
-          "data", ast::StorageClass::kStorageBuffer, &pre_struct));
-
-  td().RegisterVariableForTesting(coord_var.get());
-  gen().register_global(coord_var.get());
-  mod()->AddGlobalVariable(std::move(coord_var));
-
-  ASSERT_TRUE(td().Determine()) << td().error();
-
-  auto lhs = std::make_unique<ast::MemberAccessorExpression>(
-      std::make_unique<ast::MemberAccessorExpression>(
-          std::make_unique<ast::ArrayAccessorExpression>(
-              std::make_unique<ast::MemberAccessorExpression>(
-                  std::make_unique<ast::IdentifierExpression>("data"),
-                  std::make_unique<ast::IdentifierExpression>("c")),
-              std::make_unique<ast::ScalarConstructorExpression>(
-                  std::make_unique<ast::SintLiteral>(&i32, 2))),
-          std::make_unique<ast::IdentifierExpression>("b")),
-      std::make_unique<ast::IdentifierExpression>("y"));
-
-  auto rhs = std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&i32, 1.f));
-
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
-
-  ASSERT_TRUE(td().DetermineResultType(&assign));
-  ASSERT_TRUE(gen().EmitStatement(out(), &assign)) << gen().error();
+  ASSERT_TRUE(gen.EmitStatement(out, assign)) << gen.error();
   EXPECT_EQ(result(),
-            R"(data.Store((4 * 1) + 16 + (32 * 2) + 0, asuint(1.00000000f));
+            R"(data.Store((4 * 1) + 16 + (32 * 2) + 0, asuint(1.0f));
 )");
+}
+
+TEST_F(HlslGeneratorImplTest_MemberAccessor,
+       EmitExpression_MemberAccessor_Swizzle_xyz) {
+  Global("my_vec", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+
+  auto* expr = MemberAccessor("my_vec", "xyz");
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), "my_vec.xyz");
+}
+
+TEST_F(HlslGeneratorImplTest_MemberAccessor,
+       EmitExpression_MemberAccessor_Swizzle_gbr) {
+  Global("my_vec", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+
+  auto* expr = MemberAccessor("my_vec", "gbr");
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+  ASSERT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
+  EXPECT_EQ(result(), "my_vec.gbr");
 }
 
 }  // namespace

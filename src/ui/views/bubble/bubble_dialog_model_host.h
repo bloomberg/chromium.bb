@@ -51,7 +51,6 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
 
   // ui::DialogModelHost:
   void Close() override;
-  void SelectAllText(int unique_id) override;
   void OnFieldAdded(ui::DialogModelField* field) override;
 
  private:
@@ -132,7 +131,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
 
   std::unique_ptr<ui::DialogModel> model_;
   std::vector<DialogModelHostField> fields_;
-  std::vector<PropertyChangedSubscription> property_changed_subscriptions_;
+  std::vector<base::CallbackListSubscription> property_changed_subscriptions_;
 
   LayoutConsensusGroup textfield_first_column_group_;
   LayoutConsensusGroup textfield_second_column_group_;

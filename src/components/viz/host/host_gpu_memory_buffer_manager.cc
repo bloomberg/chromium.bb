@@ -19,6 +19,10 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_usage_util.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -29,6 +33,27 @@ void OnGpuMemoryBufferDestroyed(
     const gpu::SyncToken& sync_token) {
   task_runner->PostTask(FROM_HERE,
                         base::BindOnce(std::move(callback), sync_token));
+}
+
+bool WillGetGmbConfigFromGpu() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    // Ozone/X11 (same as non-Ozone/X11) cannot get buffer formats in the
+    // browser process and requires gpu initialization to be done before it can
+    // determine what formats gmb can use. This limitation comes from the
+    // requirement to have GLX bindings initialized. The buffer formats will be
+    // passed through gpu extra info.
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .fetch_buffer_formats_for_gmb_on_gpu;
+  }
+#endif
+#if defined(USE_X11)
+  // non-Ozone/X11 must always get native configs on gpu.
+  DCHECK(!features::IsUsingOzonePlatform());
+  return true;
+#endif
+  return false;
 }
 
 }  // namespace
@@ -47,11 +72,7 @@ HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
       client_id_(client_id),
       gpu_memory_buffer_support_(std::move(gpu_memory_buffer_support)),
       task_runner_(std::move(task_runner)) {
-  bool should_get_native_configs = true;
-#if defined(USE_X11)
-  should_get_native_configs = features::IsUsingOzonePlatform();
-#endif
-  if (should_get_native_configs) {
+  if (!WillGetGmbConfigFromGpu()) {
     native_configurations_ = gpu::GetNativeGpuMemoryBufferConfigurations(
         gpu_memory_buffer_support_.get());
     native_configurations_initialized_.Signal();
@@ -225,6 +246,27 @@ void HostGpuMemoryBufferManager::SetDestructionSyncToken(
     const gpu::SyncToken& sync_token) {
   static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(
       sync_token);
+}
+
+void HostGpuMemoryBufferManager::CopyGpuMemoryBufferAsync(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion memory_region,
+    base::OnceCallback<void(bool)> callback) {
+  if (auto* gpu_service = GetGpuService()) {
+    gpu_service->CopyGpuMemoryBuffer(std::move(buffer_handle),
+                                     std::move(memory_region),
+                                     std::move(callback));
+  } else {
+    // GPU service failed to start. Run the callback with a null handle.
+    std::move(callback).Run(false);
+  }
+}
+
+bool HostGpuMemoryBufferManager::CopyGpuMemoryBufferSync(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion memory_region) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool HostGpuMemoryBufferManager::OnMemoryDump(

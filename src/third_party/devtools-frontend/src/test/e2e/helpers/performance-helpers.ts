@@ -4,7 +4,7 @@
 
 import * as puppeteer from 'puppeteer';
 
-import {$$, click, goToResource, waitFor} from '../../shared/helper.js';
+import {click, goToResource, waitFor} from '../../shared/helper.js';
 
 export const RECORD_BUTTON_SELECTOR = '[aria-label="Record"]';
 export const STOP_BUTTON_SELECTOR = '[aria-label="Stop"]';
@@ -70,9 +70,9 @@ export async function getTotalTimeFromSummary(): Promise<number> {
 }
 
 export async function retrieveSelectedAndExpandedActivityItems(frontend: puppeteer.Page) {
-  const tree_items = await frontend.$$('.expanded > td.activity-column,.selected > td.activity-column');
+  const treeItems = await frontend.$$('.expanded > td.activity-column,.selected > td.activity-column');
   const tree = [];
-  for (const item of tree_items) {
+  for (const item of treeItems) {
     tree.push(await frontend.evaluate(el => el.innerText.split('\n')[0], item));
   }
 
@@ -92,20 +92,4 @@ export async function waitForSourceLinkAndFollowIt() {
 export async function clickOnFunctionLink() {
   const link = await waitFor('.timeline-details.devtools-link');
   await click(link);
-}
-
-export async function retrieveActivity(frontend: puppeteer.Page, activity_name: string) {
-  const acts = await $$(ACTIVITY_COLUMN_SELECTOR);
-  let act_idx;
-  for (let idx = 0; idx < acts.length; idx++) {
-    const result = await frontend.evaluate(act => act.innerText, acts[idx]);
-    if (result.includes(activity_name)) {
-      act_idx = idx;
-      break;
-    }
-  }
-  if (act_idx) {
-    return acts[act_idx];
-  }
-  return;
 }

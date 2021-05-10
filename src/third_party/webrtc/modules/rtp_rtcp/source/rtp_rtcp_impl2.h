@@ -21,6 +21,7 @@
 
 #include "absl/types/optional.h"
 #include "api/rtp_headers.h"
+#include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_base.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "modules/include/module_fec_types.h"
@@ -36,7 +37,7 @@
 #include "modules/rtp_rtcp/source/rtp_sender_egress.h"
 #include "rtc_base/gtest_prod_util.h"
 #include "rtc_base/synchronization/mutex.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/task_utils/repeating_task.h"
 
@@ -230,15 +231,8 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   // requests.
   void SetStorePacketsStatus(bool enable, uint16_t number_to_store) override;
 
-  bool StorePackets() const override;
-
   void SendCombinedRtcpPacket(
       std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets) override;
-
-  // (XR) Receiver reference time report.
-  void SetRtcpXrRrtrStatus(bool enable) override;
-
-  bool RtcpXrRrtrStatus() const override;
 
   // Video part.
   int32_t SendLossNotification(uint16_t last_decoded_seq_num,
@@ -291,8 +285,11 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
   // check if we need to send RTCP report, send TMMBR updates and fire events.
   void PeriodicUpdate();
 
+  // Returns true if the module is configured to store packets.
+  bool StorePackets() const;
+
   TaskQueueBase* const worker_queue_;
-  SequenceChecker process_thread_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker process_thread_checker_;
 
   std::unique_ptr<RtpSenderContext> rtp_sender_;
 
@@ -316,7 +313,7 @@ class ModuleRtpRtcpImpl2 final : public RtpRtcpInterface,
 
   // The processed RTT from RtcpRttStats.
   mutable Mutex mutex_rtt_;
-  int64_t rtt_ms_;
+  int64_t rtt_ms_ RTC_GUARDED_BY(mutex_rtt_);
 };
 
 }  // namespace webrtc

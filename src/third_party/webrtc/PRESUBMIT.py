@@ -157,7 +157,7 @@ API_CHANGE_MSG = """
 You seem to be changing native API header files. Please make sure that you:
   1. Make compatible changes that don't break existing clients. Usually
      this is done by keeping the existing method signatures unchanged.
-  2. Mark the old stuff as deprecated (see RTC_DEPRECATED macro).
+  2. Mark the old stuff as deprecated (use the ABSL_DEPRECATED macro).
   3. Create a timeline and plan for when the deprecated stuff will be
      removed. (The amount of time we give users to change their code
      should be informed by how much work it is for them. If they just
@@ -975,7 +975,8 @@ def CommonChecks(input_api, output_api):
             input_api,
             output_api,
             bot_allowlist=[
-                'chromium-webrtc-autoroll@webrtc-ci.iam.gserviceaccount.com'
+                'chromium-webrtc-autoroll@webrtc-ci.iam.gserviceaccount.com',
+                'webrtc-version-updater@webrtc-ci.iam.gserviceaccount.com',
             ]))
     results.extend(
         input_api.canned_checks.CheckChangeTodoHasOwner(
@@ -1121,6 +1122,8 @@ def CheckObjcApiSymbols(input_api, output_api, source_file_filter):
                              source_file_filter(x))
     for f in input_api.AffectedSourceFiles(file_filter):
         if not f.LocalPath().endswith('.h') or not 'sdk/objc' in f.LocalPath():
+            continue
+        if f.LocalPath().endswith('sdk/objc/base/RTCMacros.h'):
             continue
         contents = input_api.ReadFile(f)
         for match in rtc_objc_export.finditer(contents):
@@ -1316,10 +1319,10 @@ def _CalculateAddedDeps(os_path, old_contents, new_contents):
 
 def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     """When a dependency prefixed with + is added to a DEPS file, we
-  want to make sure that the change is reviewed by an OWNER of the
-  target file or directory, to avoid layering violations from being
-  introduced. This check verifies that this happens.
-  """
+    want to make sure that the change is reviewed by an OWNER of the
+    target file or directory, to avoid layering violations from being
+    introduced. This check verifies that this happens.
+    """
     virtual_depended_on_files = set()
 
     file_filter = lambda f: not input_api.re.match(
@@ -1359,20 +1362,19 @@ def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     else:
         output = output_api.PresubmitNotifyResult
 
-    owners_db = input_api.owners_db
     owner_email, reviewers = (
         input_api.canned_checks.GetCodereviewOwnerAndReviewers(
             input_api,
-            owners_db.email_regexp,
+            None,
             approval_needed=input_api.is_committing))
 
     owner_email = owner_email or input_api.change.author_email
 
-    reviewers_plus_owner = set(reviewers)
-    if owner_email:
-        reviewers_plus_owner.add(owner_email)
-    missing_files = owners_db.files_not_covered_by(virtual_depended_on_files,
-                                                   reviewers_plus_owner)
+    approval_status = input_api.owners_client.GetFilesApprovalStatus(
+        virtual_depended_on_files, reviewers.union([owner_email]), [])
+    missing_files = [
+        f for f in virtual_depended_on_files
+        if approval_status[f] != input_api.owners_client.APPROVED]
 
     # We strip the /DEPS part that was added by
     # _FilesToCheckForIncomingDeps to fake a path to a file in a
@@ -1395,7 +1397,8 @@ def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
                 'modified in this CL:\n    %s' %
                 '\n    '.join(sorted(unapproved_dependencies)))
         ]
-        suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
+        suggested_owners = input_api.owners_client.SuggestOwners(
+            missing_files, exclude=[owner_email])
         output_list.append(
             output('Suggested missing target path OWNERS:\n    %s' %
                    '\n    '.join(suggested_owners or [])))

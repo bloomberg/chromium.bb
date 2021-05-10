@@ -83,6 +83,9 @@
   <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
   </message>
+  <message name="IDS_FILE_BROWSER_TRASH_ROOT_LABEL" desc="A label for the 'Trash' root which shows files in the trash / recycle bin.">
+    Trash
+  </message>
   <message name="IDS_FILE_BROWSER_DOCPROVIDER_ROOT_LABEL_WITH_SUMMARY" desc="A label for a documents provider root, which has both title and summary.">
     <ph name="ROOT_TITLE">$1<ex>MyCloudProvider</ex></ph> (<ph name="ROOT_SUMMARY">$2<ex>me@example.com</ex></ph>)
   </message>
@@ -303,11 +306,8 @@
   <message name="IDS_FILE_BROWSER_SEND_FEEDBACK_BUTTON_LABEL" desc="Title for the action of sending user feedback.">
     Send feedback
   </message>
-  <message name="IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL" desc="Title of the button in the left nav to add new services (file systems) to the Files app.">
-    Add new service
-  </message>
-  <message name="IDS_FILE_BROWSER_INSTALL_NEW_EXTENSION_LABEL" desc="Title of the menu item for installing new extensions from the web store.">
-    Install new service
+  <message name="IDS_FILE_BROWSER_SHOW_PROVIDERS_BUTTON_LABEL" desc="Title of the button in the left nav to display services (file systems) of the Files app.">
+    Services
   </message>
   <message name="IDS_FILE_BROWSER_TASK_VIEW" desc="Title of the action to view (no edit) a file.">
     View
@@ -328,11 +328,11 @@
     Listen
   </message>
   <message name="IDS_FILE_BROWSER_TASK_INSTALL_LINUX_PACKAGE" desc="Title of the action to install a Linux package.">
-    Install with Linux (Beta)
+    Install with Linux
   </message>
 
   <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_TITLE" desc="In the File Manager, the title shown in the dialog for installing a Linux application.">
-    Install app with Linux (Beta)
+    Install app with Linux
   </message>
   <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_LABEL" desc="In the File Manager, the label shown above the app information (name, version, etc.) in the dialog for installing a Linux application.">
     Details
@@ -541,6 +541,9 @@
   <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Context menu item that deletes the currently-selected file(s).">
     Delete
   </message>
+  <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_BUTTON_LABEL" desc="Context menu item that restores the currently-selected file(s) from the trash / recycle bin.">
+    Restore from trash
+  </message>
   <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Context menu item that pastes the file(s) in the clipboard.">
     Paste
   </message>
@@ -730,20 +733,12 @@
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
     Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
   </message>
-  <message name="IDS_FILE_BROWSER_COPIED" desc="File Manager status message.">
-    Copied.
-  </message>
-  <message name="IDS_FILE_BROWSER_COPIED_TO" desc="File Manager status message.">
-    Copied to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
-  </message>
-  <!-- TODO (crbug/1093603): Clean up after FilesTransferDetails launch. -->
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
   </message>
-  <!-- TODO: End. -->
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME_LONG" desc="File Manager status message including destination folder when copying one file.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
@@ -785,14 +780,12 @@
   <message name="IDS_FILE_BROWSER_FILE_MOVED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> moved.
   </message>
-   <!-- TODO (crbug/1093603): Clean up after FilesTransferDetails launch. -->
   <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME" desc="File Manager status message.">
     Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     Moving <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
   </message>
-  <!-- TODO: End. -->
   <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME_LONG" desc="File Manager status message including destination folder when moving one file.">
     Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
@@ -810,15 +803,6 @@
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
     Move failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not move</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_MOVED" desc="File Manager status message.">
-    Moved.
-  </message>
-  <message name="IDS_FILE_BROWSER_MOVED_TO" desc="File Manager status message.">
-    Moved to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
-  </message>
-  <message name="IDS_FILE_BROWSER_TO_FOLDER_NAME" desc="File Manager status message.">
-    To <ph name="FOLDER_NAME">$1<ex>images</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
     Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
@@ -865,27 +849,14 @@
   <message name="IDS_FILE_BROWSER_DELETE_ERROR" desc="Message informing about error while deleting an item or items.">
     An error occurred. Some items may not have been deleted.
   </message>
-
-  <message name="IDS_FILE_BROWSER_COPY_PROGRESS_SUMMARY" desc="Summary message for multiple copying tasks above the progress bar.">
-    Copying...
+  <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_FILE_NAME" desc="File Manager status message shown when restoring items from trash / recycle bin.">
+    Restoring "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"...
   </message>
-  <message name="IDS_FILE_BROWSER_MOVE_PROGRESS_SUMMARY" desc="Summary message for multiple moving tasks above the progress bar.">
-    Moving...
+  <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_ITEMS_REMAINING" desc="File Manager status message shown when restoring items from trash / recycle bin. 'Item' is used here as a generic term for file or directory.">
+    Restoring <ph name="COUNT">$1<ex>10</ex></ph> items...
   </message>
-  <message name="IDS_FILE_BROWSER_ZIP_PROGRESS_SUMMARY" desc="Summary message for multiple zipping tasks above the progress bar.">
-    Zipping...
-  </message>
-  <message name="IDS_FILE_BROWSER_DELETE_PROGRESS_SUMMARY" desc="Summary message for multiple deleting tasks above the progress bar.">
-    Deleting...
-  </message>
-  <message name="IDS_FILE_BROWSER_TRANSFER_PROGRESS_SUMMARY" desc="Summary message for mixed operation tasks above the progress bar. 'Transferring' is used here as a generic term for copying, moving, zipping, or deleting.">
-    Transferring...
-  </message>
-  <message name="IDS_FILE_BROWSER_SYNC_PROGRESS_SUMMARY" desc="Summary message for drive sync operation. This message can be shown without a progress bar.">
-    Syncing...
-  </message>
-  <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY" desc="Summary message for an error above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
-    1 error.
+  <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_ERROR" desc="Message informing about error while restoring an item or items from the trash / recycle bin.">
+    An error occurred. Some items may not have been restored.
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY_PLURAL" desc="Summary message for multiple errors above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
     <ph name="COUNT">$1<ex>10</ex></ph> errors.
@@ -893,7 +864,6 @@
   <message name="IDS_FILE_BROWSER_PERCENT_COMPLETE" desc="Percentage of file operation that is complete in a progress message.">
     <ph name="PERCENT">$1<ex>10</ex></ph>% complete.
   </message>
-
   <message name="IDS_FILE_BROWSER_CANCEL_ACTIVITY_LABEL" desc="Text spoken by ChromeVox/screen reader describing what will be cancelled.">
     Cancel <ph name="ACTIVITY_DESCRIPTION">$1<ex>Copying file.txt</ex></ph>.
   </message>
@@ -1186,13 +1156,25 @@
     To save these files for offline use, get back online, right-click the files, and select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> option.
   </message>
   <message name="IDS_FILE_BROWSER_OFFLINE_BANNER_MESSAGE" desc="Message informing the user that they can make files available offline.">
-    You can make files available offline for access when you don't have internet connection.
+    You can make files available offline for access when you don't have an internet connection.
   </message>
   <message name="IDS_FILE_BROWSER_OFFLINE_PROGRESS_MESSAGE" desc="Message informing the user a Google Drive file is being downloaded for offline use.">
     Making <ph name="FILE_NAME">$1<ex>document.pdf</ex></ph> available offline
   </message>
   <message name="IDS_FILE_BROWSER_OFFLINE_PROGRESS_MESSAGE_PLURAL" desc="Message informing the user multiple Google Drive files are being downloaded for offline use.">
     Making <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> files available offline
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_FAILURE_MESSAGE" desc="Message informing the user a Google Drive file failed to be downloaded for offline use.">
+    Could not make <ph name="FILE_NAME">$1<ex>document.pdf</ex></ph> available offline
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_ENABLE_MESSAGE" desc="Message informing the user that in order to make Docs, Sheets and Slides files available offline, they must enable Google Docs Offline.">
+    Enable Google Docs Offline to make Docs, Sheets and Slides available offline.
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_ENABLE_ACCEPT" desc="Button label to enable Google Docs Offline">
+    Enable Offline
+  </message>
+  <message name="IDS_FILE_BROWSER_OFFLINE_ENABLE_REJECT" desc="Button label to not enable Google Docs Offline">
+    Not now
   </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_NO_PLAYBACK_AVAILABLE" desc="Massage for user to notify no playback is available.">
     No playback available
@@ -1277,15 +1259,26 @@
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_DISMISS" desc="In the Welcome to Google Drive banner, a text on the button to dismiss the banner.">
     Dismiss
   </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TITLE" desc="In the Holding Space welcome banner, title of banner.">
+    Create a shortcut for your files
+  </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT" desc="In the Holding Space welcome banner, text of the welcome message.">
+    Right-click a file, and select "Pin to shelf" for quick access to your files in shelf.
+  </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE" desc="In the Holding Space welcome banner, text of the welcome message in tablet mode.">
+    Touch &amp; hold a file and tap <ph name="ICON">$1</ph>, and select "Pin to shelf" for quick access to your files in shelf.
+  </message>
+  <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_DISMISS" desc="In the Holding Space welcome banner, text on the button to dismiss the banner.">
+    Got it
+  </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
-    This file type is not supported. Please visit the <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;<ex>&lt;a target='_blank' href='$1'&gt;</ex></ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> to find an app that can open this type of file.
-    <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$2'&gt;<ex>&lt;a target='_blank' href='$2'&gt;</ex></ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    This file type is not supported. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_EXECUTABLE" desc="Message shown when user tries to open a windows executable file, which we can't handle.">
-    This file is designed for a PC using Windows software. This is not compatible with your device which runs Chrome OS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$2'&gt;<ex>&lt;a target='_blank' href='$2'&gt;</ex></ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    This file is designed for a PC using Windows software. This is not compatible with your device which runs Chrome OS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_DMG" desc="Message shown when user tries to open a windows executable file, which we can't handle.">
-    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. Please search the <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;<ex>&lt;a target='_blank' href='$1'&gt;</ex></ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> for a suitable replacement app.<ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$2'&gt;<ex>&lt;a target='_blank' href='$2'&gt;</ex></ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK_HELP">&lt;/a&gt;</ph> about opening files on Chrome OS.
   </message>
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX_TITLE" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     Wait just a sec

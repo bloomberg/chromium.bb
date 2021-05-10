@@ -91,7 +91,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   // dirty.  e.g. To detect a slotchange event in DOM mutations.
   bool HasAssignedNodesSlow() const;
 
-  bool SupportsAssignment() const { return IsInV1ShadowTree(); }
+  bool SupportsAssignment() const { return IsInShadowTree(); }
 
   void CheckFallbackAfterInsertedIntoShadowTree();
   void CheckFallbackAfterRemovedFromShadowTree();
@@ -104,7 +104,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   static AtomicString NormalizeSlotName(const AtomicString&);
 
-  void RecalcStyleForSlotChildren(const StyleRecalcChange);
+  void RecalcStyleForSlotChildren(const StyleRecalcChange,
+                                  const StyleRecalcContext&);
 
   // For User-Agent Shadow DOM
   static const AtomicString& UserAgentCustomAssignSlotName();
@@ -124,6 +125,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
 
+  void ChildrenChanged(const ChildrenChange&) override;
+
   void EnqueueSlotChangeEvent();
 
   bool HasSlotableChild() const;
@@ -138,7 +141,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
       const HeapVector<Member<Node>>& old_slotted,
       const HeapVector<Member<Node>>& new_slotted);
 
-  void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
+  void SetShadowRootNeedsAssignmentRecalc();
   bool CheckNodesValidity(HeapVector<Member<Node>> nodes, ExceptionState&);
 
   // SlotAssignnment:recalc runs in tree order. Update to assigned order.

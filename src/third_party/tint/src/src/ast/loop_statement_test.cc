@@ -17,172 +17,179 @@
 #include <memory>
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using LoopStatementTest = testing::Test;
+using LoopStatementTest = TestHelper;
 
 TEST_F(LoopStatementTest, Creation) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  auto* b_ptr = body->last();
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
+  auto* b = body->last();
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
-  auto* c_ptr = continuing->last();
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  ASSERT_EQ(l.body()->size(), 1u);
-  EXPECT_EQ(l.body()->get(0), b_ptr);
-  ASSERT_EQ(l.continuing()->size(), 1u);
-  EXPECT_EQ(l.continuing()->get(0), c_ptr);
+  auto* l = create<LoopStatement>(body, continuing);
+  ASSERT_EQ(l->body()->size(), 1u);
+  EXPECT_EQ(l->body()->get(0), b);
+  ASSERT_EQ(l->continuing()->size(), 1u);
+  EXPECT_EQ(l->continuing()->get(0), continuing->last());
 }
 
 TEST_F(LoopStatementTest, Creation_WithSource) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(Source{Source::Location{20, 2}}, std::move(body),
-                  std::move(continuing));
-  auto src = l.source();
+  auto* l =
+      create<LoopStatement>(Source{Source::Location{20, 2}}, body, continuing);
+  auto src = l->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(LoopStatementTest, IsLoop) {
-  LoopStatement l;
-  EXPECT_TRUE(l.IsLoop());
+  auto* l = create<LoopStatement>(create<BlockStatement>(StatementList{}),
+                                  create<BlockStatement>(StatementList{}));
+  EXPECT_TRUE(l->Is<LoopStatement>());
 }
 
 TEST_F(LoopStatementTest, HasContinuing_WithoutContinuing) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), {});
-  EXPECT_FALSE(l.has_continuing());
+  auto* l = create<LoopStatement>(body, nullptr);
+  EXPECT_FALSE(l->has_continuing());
 }
 
 TEST_F(LoopStatementTest, HasContinuing_WithContinuing) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_TRUE(l.has_continuing());
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_TRUE(l->has_continuing());
 }
 
 TEST_F(LoopStatementTest, IsValid) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_TRUE(l.IsValid());
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_TRUE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_WithoutContinuing) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::make_unique<BlockStatement>());
-  EXPECT_TRUE(l.IsValid());
+  auto* l =
+      create<LoopStatement>(body, create<BlockStatement>(StatementList{}));
+  EXPECT_TRUE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_WithoutBody) {
-  LoopStatement l(std::make_unique<BlockStatement>(),
-                  std::make_unique<BlockStatement>());
-  EXPECT_TRUE(l.IsValid());
+  auto* l = create<LoopStatement>(create<BlockStatement>(StatementList{}),
+                                  create<BlockStatement>(StatementList{}));
+  EXPECT_TRUE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_NullBodyStatement) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  body->append(nullptr);
+  auto* body = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+      nullptr,
+  });
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_FALSE(l.IsValid());
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_FALSE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_InvalidBodyStatement) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
-  body->append(std::make_unique<IfStatement>());
+  auto* body = create<BlockStatement>(
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+      StatementList{
+          create<DiscardStatement>(),
+          create<IfStatement>(nullptr, create<BlockStatement>(StatementList{}),
+                              ElseStatementList{}),
+      });
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_FALSE(l.IsValid());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
+
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_FALSE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_NullContinuingStatement) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
-  continuing->append(nullptr);
+  auto* continuing = create<BlockStatement>(StatementList{
+      create<DiscardStatement>(),
+      nullptr,
+  });
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_FALSE(l.IsValid());
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_FALSE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, IsValid_InvalidContinuingStatement) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
-  continuing->append(std::make_unique<IfStatement>());
+  auto* continuing = create<BlockStatement>(
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  EXPECT_FALSE(l.IsValid());
+      StatementList{
+          create<DiscardStatement>(),
+          create<IfStatement>(nullptr, create<BlockStatement>(StatementList{}),
+                              ElseStatementList{}),
+      });
+
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_FALSE(l->IsValid());
 }
 
 TEST_F(LoopStatementTest, ToStr) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), {});
-  std::ostringstream out;
-  l.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Loop{
-    Discard{}
-  }
+  auto* l = create<LoopStatement>(body, nullptr);
+  EXPECT_EQ(str(l), R"(Loop{
+  Discard{}
+}
 )");
 }
 
 TEST_F(LoopStatementTest, ToStr_WithContinuing) {
-  auto body = std::make_unique<BlockStatement>();
-  body->append(std::make_unique<DiscardStatement>());
+  auto* body =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  auto continuing = std::make_unique<BlockStatement>();
-  continuing->append(std::make_unique<DiscardStatement>());
+  auto* continuing =
+      create<BlockStatement>(StatementList{create<DiscardStatement>()});
 
-  LoopStatement l(std::move(body), std::move(continuing));
-  std::ostringstream out;
-  l.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Loop{
+  auto* l = create<LoopStatement>(body, continuing);
+  EXPECT_EQ(str(l), R"(Loop{
+  Discard{}
+  continuing {
     Discard{}
-    continuing {
-      Discard{}
-    }
   }
+}
 )");
 }
 

@@ -641,10 +641,11 @@ struct mpeg4_bit_rate_values {
 
 static struct mpeg4_bit_rate_values calculate_mpeg4_bit_rates(MOVTrack *track)
 {
-    AVCPBProperties *props =
+    AVCPBProperties *props = track->st ?
         (AVCPBProperties*)av_stream_get_side_data(track->st,
                                                   AV_PKT_DATA_CPB_PROPERTIES,
-                                                  NULL);
+                                                  NULL) :
+        NULL;
     struct mpeg4_bit_rate_values bit_rates = { 0 };
 
     bit_rates.avg_bit_rate = compute_avg_bitrate(track);
@@ -1652,6 +1653,10 @@ static unsigned int mov_get_codec_tag(AVFormatContext *s, MOVTrack *track)
 {
     unsigned int tag = track->par->codec_tag;
 
+    // "rtp " is used to distinguish internally created RTP-hint tracks
+    // (with rtp_ctx) from other tracks.
+    if (tag == MKTAG('r','t','p',' '))
+        tag = 0;
     if (!tag || (s->strict_std_compliance >= FF_COMPLIANCE_NORMAL &&
                  (track->par->codec_id == AV_CODEC_ID_DVVIDEO ||
                   track->par->codec_id == AV_CODEC_ID_RAWVIDEO ||
@@ -6160,11 +6165,12 @@ static int mov_check_timecode_track(AVFormatContext *s, AVTimecode *tc, int src_
 
 static int mov_create_timecode_track(AVFormatContext *s, int index, int src_index, AVTimecode tc)
 {
-    int ret;
     MOVMuxContext *mov  = s->priv_data;
     MOVTrack *track     = &mov->tracks[index];
     AVStream *src_st    = s->streams[src_index];
-    AVPacket pkt    = {.stream_index = index, .flags = AV_PKT_FLAG_KEY, .size = 4};
+    uint8_t data[4];
+    AVPacket pkt    = { .data = data, .stream_index = index,
+                        .flags = AV_PKT_FLAG_KEY, .size = 4 };
     AVRational rate = find_fps(s, src_st);
 
     /* tmcd track based on video stream */
@@ -6187,13 +6193,8 @@ static int mov_create_timecode_track(AVFormatContext *s, int index, int src_inde
     track->st->avg_frame_rate = av_inv_q(rate);
 
     /* the tmcd track just contains one packet with the frame number */
-    pkt.data = av_malloc(pkt.size);
-    if (!pkt.data)
-        return AVERROR(ENOMEM);
     AV_WB32(pkt.data, tc.start);
-    ret = ff_mov_write_packet(s, &pkt);
-    av_free(pkt.data);
-    return ret;
+    return ff_mov_write_packet(s, &pkt);
 }
 
 /*
@@ -6258,9 +6259,7 @@ static void mov_free(AVFormatContext *s)
         return;
 
     if (mov->chapter_track) {
-        if (mov->tracks[mov->chapter_track].par)
-            av_freep(&mov->tracks[mov->chapter_track].par->extradata);
-        av_freep(&mov->tracks[mov->chapter_track].par);
+        avcodec_parameters_free(&mov->tracks[mov->chapter_track].par);
     }
 
     for (i = 0; i < mov->nb_streams; i++) {
@@ -6281,9 +6280,11 @@ static void mov_free(AVFormatContext *s)
             av_freep(&mov->tracks[i].vos_data);
 
         ff_mov_cenc_free(&mov->tracks[i].cenc);
+        ffio_free_dyn_buf(&mov->tracks[i].mdat_buf);
     }
 
     av_freep(&mov->tracks);
+    ffio_free_dyn_buf(&mov->mdat_buf);
 }
 
 static uint32_t rgb_to_yuv(uint32_t rgb)
@@ -6980,6 +6981,7 @@ static int mov_write_trailer(AVFormatContext *s)
             AVCodecParameters *par = track->par;
 
             track->vos_len  = par->extradata_size;
+            av_freep(&track->vos_data);
             track->vos_data = av_malloc(track->vos_len + AV_INPUT_BUFFER_PADDING_SIZE);
             if (!track->vos_data)
                 return AVERROR(ENOMEM);
@@ -7109,7 +7111,7 @@ static const AVCodecTag codec_3gp_tags[] = {
     { AV_CODEC_ID_NONE, 0 },
 };
 
-const AVCodecTag codec_mp4_tags[] = {
+static const AVCodecTag codec_mp4_tags[] = {
     { AV_CODEC_ID_MPEG4,           MKTAG('m', 'p', '4', 'v') },
     { AV_CODEC_ID_H264,            MKTAG('a', 'v', 'c', '1') },
     { AV_CODEC_ID_H264,            MKTAG('a', 'v', 'c', '3') },
@@ -7126,6 +7128,7 @@ const AVCodecTag codec_mp4_tags[] = {
     { AV_CODEC_ID_VP9,             MKTAG('v', 'p', '0', '9') },
     { AV_CODEC_ID_AV1,             MKTAG('a', 'v', '0', '1') },
     { AV_CODEC_ID_AAC,             MKTAG('m', 'p', '4', 'a') },
+    { AV_CODEC_ID_ALAC,            MKTAG('a', 'l', 'a', 'c') },
     { AV_CODEC_ID_MP4ALS,          MKTAG('m', 'p', '4', 'a') },
     { AV_CODEC_ID_MP3,             MKTAG('m', 'p', '4', 'a') },
     { AV_CODEC_ID_MP2,             MKTAG('m', 'p', '4', 'a') },
@@ -7145,7 +7148,7 @@ const AVCodecTag codec_mp4_tags[] = {
     { AV_CODEC_ID_NONE,               0 },
 };
 
-const AVCodecTag codec_ism_tags[] = {
+static const AVCodecTag codec_ism_tags[] = {
     { AV_CODEC_ID_WMAPRO      , MKTAG('w', 'm', 'a', ' ') },
     { AV_CODEC_ID_NONE        ,    0 },
 };

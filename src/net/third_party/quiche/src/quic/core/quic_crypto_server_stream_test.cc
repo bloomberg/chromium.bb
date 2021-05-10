@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
+#include "quic/core/quic_crypto_server_stream_base.h"
 
 #include <map>
 #include <memory>
@@ -10,29 +10,29 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/failing_proof_source.h"
-#include "net/third_party/quiche/src/quic/test_tools/fake_proof_source.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_crypto_server_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/aes_128_gcm_12_encrypter.h"
+#include "quic/core/crypto/crypto_framer.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/crypto_utils.h"
+#include "quic/core/crypto/quic_crypto_server_config.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_crypto_client_stream.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/failing_proof_source.h"
+#include "quic/test_tools/fake_proof_source.h"
+#include "quic/test_tools/quic_crypto_server_config_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 class QuicConnection;
@@ -90,7 +90,7 @@ class QuicCryptoServerStreamTest : public QuicTest {
         helpers_.back().get(), alarm_factories_.back().get(),
         &server_crypto_config_, &server_compressed_certs_cache_,
         &server_connection_, &server_session);
-    CHECK(server_session);
+    QUICHE_CHECK(server_session);
     server_session_.reset(server_session);
     EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
@@ -124,13 +124,13 @@ class QuicCryptoServerStreamTest : public QuicTest {
         server_id_, QuicTime::Delta::FromSeconds(100000), supported_versions_,
         helpers_.back().get(), alarm_factories_.back().get(),
         &client_crypto_config_, &client_connection_, &client_session);
-    CHECK(client_session);
+    QUICHE_CHECK(client_session);
     client_session_.reset(client_session);
   }
 
   int CompleteCryptoHandshake() {
-    CHECK(server_connection_);
-    CHECK(server_session_ != nullptr);
+    QUICHE_CHECK(server_connection_);
+    QUICHE_CHECK(server_session_ != nullptr);
 
     return crypto_test_utils::HandshakeWithFakeClient(
         helpers_.back().get(), alarm_factories_.back().get(),
@@ -141,8 +141,8 @@ class QuicCryptoServerStreamTest : public QuicTest {
   // Performs a single round of handshake message-exchange between the
   // client and server.
   void AdvanceHandshakeWithFakeClient() {
-    CHECK(server_connection_);
-    CHECK(client_session_ != nullptr);
+    QUICHE_CHECK(server_connection_);
+    QUICHE_CHECK(client_session_ != nullptr);
 
     EXPECT_CALL(*client_session_, OnProofValid(_)).Times(testing::AnyNumber());
     EXPECT_CALL(*client_session_, OnProofVerifyDetailsAvailable(_))

@@ -9,10 +9,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -29,14 +27,6 @@
 
 namespace gfx {
 class Rect;
-}
-
-namespace ui {
-class Accelerator;
-}  // namespace ui
-
-namespace ui_devtools {
-class PageAgentViews;
 }
 
 namespace views {
@@ -317,7 +307,6 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
-  friend class ui_devtools::PageAgentViews;
 
   // Notify the BubbleDialogDelegate about changes in the anchor Widget. You do
   // not need to call these yourself.
@@ -333,10 +322,6 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   void OnDeactivate();
 
-  // Set from UI DevTools to prevent bubbles from closing in
-  // OnWidgetActivationChanged().
-  static bool devtools_dismiss_override_;
-
   gfx::Insets title_margins_;
   BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
   BubbleBorder::Shadow shadow_;
@@ -346,8 +331,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
   std::unique_ptr<AnchorWidgetObserver> anchor_widget_observer_;
   std::unique_ptr<BubbleWidgetObserver> bubble_widget_observer_;
-  std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
-      paint_as_active_subscription_;
+  base::CallbackListSubscription paint_as_active_subscription_;
   std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
   bool adjust_if_offscreen_ = true;
   bool focus_traversable_from_anchor_view_ = true;
@@ -411,7 +395,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
   void AddedToWidget() override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  protected:
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only

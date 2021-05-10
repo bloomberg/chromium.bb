@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -147,6 +147,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "WebSignIn";
       case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
         return "SafetyCheck";
+      case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
+        return "Kaleidoscope";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/containers/span.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -49,7 +49,7 @@ class MODULES_EXPORT QuicTransport final
   USING_PRE_FINALIZER(QuicTransport, Dispose);
 
  public:
-  using PassKey = util::PassKey<QuicTransport>;
+  using PassKey = base::PassKey<QuicTransport>;
   static QuicTransport* Create(ScriptState*,
                                const String& url,
                                QuicTransportOptions*,
@@ -96,6 +96,8 @@ class MODULES_EXPORT QuicTransport final
 
   // Removes the reference to a stream.
   void ForgetStream(uint32_t stream_id);
+
+  void SetDatagramWritableQueueExpirationDuration(base::TimeDelta duration);
 
   // ScriptWrappable implementation
   void Trace(Visitor* visitor) const override;
@@ -172,6 +174,8 @@ class MODULES_EXPORT QuicTransport final
   Member<ReadableStream> received_bidirectional_streams_;
   Member<StreamVendingUnderlyingSource>
       received_bidirectional_streams_underlying_source_;
+
+  const uint64_t inspector_transport_id_;
 };
 
 }  // namespace blink

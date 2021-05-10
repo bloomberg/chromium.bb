@@ -163,8 +163,10 @@ class HistoryService : public KeyedService {
   // should be the unique ID of the current navigation entry in the given
   // process.
   //
-  // |publicly_routable| is a property of the IP address at the URL visit time.
-  // See VisitRow for more details about this field.
+  // |floc_allowed| indicates whether this URL visit can be included in FLoC
+  // computation. See VisitRow::floc_allowed for details.
+  // TODO(yaoxia): Remove the floc_allowed param from this API as well as from
+  // HistoryAddPageArgs. This bit will never be set at this point.
   //
   // TODO(avi): This is no longer true. 'page id' was removed years ago, and
   // their uses replaced by globally-unique nav_entry_ids. Is ContextID still
@@ -189,7 +191,7 @@ class HistoryService : public KeyedService {
                ui::PageTransition transition,
                VisitSource visit_source,
                bool did_replace_entry,
-               bool publicly_routable);
+               bool floc_allowed);
 
   // For adding pages to history where no tracking information can be done.
   void AddPage(const GURL& url, base::Time time, VisitSource visit_source);
@@ -213,6 +215,11 @@ class HistoryService : public KeyedService {
                              int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
+
+  // Updates the history database by setting the floc allowed bit. The page can
+  // be identified by the combination of the context id, the navigation entry id
+  // and the url. No-op if the page is not found.
+  void SetFlocAllowed(ContextID context_id, int nav_entry_id, const GURL& url);
 
   // Querying ------------------------------------------------------------------
 
@@ -484,11 +491,10 @@ class HistoryService : public KeyedService {
   using FaviconsChangedCallback = FaviconsChangedCallbackList::CallbackType;
 
   // Add a callback to the list. The callback will remain registered until the
-  // returned Subscription is destroyed. The Subscription must be destroyed
+  // returned subscription is destroyed. The subscription must be destroyed
   // before HistoryService is destroyed.
-  std::unique_ptr<FaviconsChangedCallbackList::Subscription>
-  AddFaviconsChangedCallback(const FaviconsChangedCallback& callback)
-      WARN_UNUSED_RESULT;
+  base::CallbackListSubscription AddFaviconsChangedCallback(
+      const FaviconsChangedCallback& callback) WARN_UNUSED_RESULT;
 
   // Testing -------------------------------------------------------------------
 

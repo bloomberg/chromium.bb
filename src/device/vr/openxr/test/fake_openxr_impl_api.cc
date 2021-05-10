@@ -285,6 +285,11 @@ XrResult xrDestroyActionSet(XrActionSet action_set) {
 XrResult xrDestroyInstance(XrInstance instance) {
   DVLOG(2) << __FUNCTION__;
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  // Though Reset() primarily clears variables relating to being able to create
+  // a new session, some tests may instead destroy the device (to simulate a
+  // crash or simply removing the headset). It is impossible to keep an active
+  // session with a destroyed instance, so this ensures that the test helper is
+  // setup to allow a new session to be requested.
   g_test_helper.Reset();
   return XR_SUCCESS;
 }
@@ -292,6 +297,8 @@ XrResult xrDestroyInstance(XrInstance instance) {
 XrResult xrDestroySession(XrSession session) {
   DVLOG(2) << __FUNCTION__;
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  // Clear the test helper state so that tests can request multiple sessions.
+  g_test_helper.Reset();
   return XR_SUCCESS;
 }
 
@@ -658,6 +665,31 @@ XrResult xrGetReferenceSpaceBoundsRect(
   return XR_SUCCESS;
 }
 
+XrResult xrGetViewConfigurationProperties(
+    XrInstance instance,
+    XrSystemId system_id,
+    XrViewConfigurationType view_configuration_type,
+    XrViewConfigurationProperties* configuration_properties) {
+  DVLOG(2) << __FUNCTION__;
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
+  RETURN_IF(
+      view_configuration_type != XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+      XR_ERROR_VALIDATION_FAILURE, "viewConfigurationType must be stereo");
+  RETURN_IF(
+      configuration_properties->type == XR_TYPE_VIEW_CONFIGURATION_PROPERTIES,
+      XR_ERROR_VALIDATION_FAILURE,
+      "XrViewConfigurationProperties.type must be "
+      "XR_TYPE_VIEW_CONFIGURATION_PROPERTIES");
+  RETURN_IF(configuration_properties->next == nullptr,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrViewConfigurationProperties.next must be nullptr");
+  configuration_properties->viewConfigurationType =
+      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+  configuration_properties->fovMutable = XR_TRUE;
+  return XR_SUCCESS;
+}
+
 XrResult xrGetSystem(XrInstance instance,
                      const XrSystemGetInfo* get_info,
                      XrSystemId* system_id) {
@@ -938,6 +970,8 @@ XrResult XRAPI_PTR xrGetInstanceProcAddr(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroyActionSet);
   } else if (strcmp(name, "xrDestroyInstance") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroyInstance);
+  } else if (strcmp(name, "xrDestroySession") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroySession);
   } else if (strcmp(name, "xrDestroySpace") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroySpace);
   } else if (strcmp(name, "xrEndFrame") == 0) {
@@ -973,6 +1007,9 @@ XrResult XRAPI_PTR xrGetInstanceProcAddr(XrInstance instance,
   } else if (strcmp(name, "xrGetReferenceSpaceBoundsRect") == 0) {
     *function =
         reinterpret_cast<PFN_xrVoidFunction>(xrGetReferenceSpaceBoundsRect);
+  } else if (strcmp(name, "xrGetViewConfigurationProperties") == 0) {
+    *function =
+        reinterpret_cast<PFN_xrVoidFunction>(xrGetViewConfigurationProperties);
   } else if (strcmp(name, "xrGetSystem") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetSystem);
   } else if (strcmp(name, "xrLocateSpace") == 0) {

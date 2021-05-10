@@ -34,7 +34,6 @@ struct Token {
         TK_CONTINUE,
         TK_DISCARD,
         TK_RETURN,
-        TK_NULL_LITERAL,
         TK_IN,
         TK_OUT,
         TK_INOUT,
@@ -42,21 +41,11 @@ struct Token {
         TK_CONST,
         TK_FLAT,
         TK_NOPERSPECTIVE,
-        TK_READONLY,
-        TK_WRITEONLY,
-        TK_COHERENT,
-        TK_VOLATILE,
-        TK_RESTRICT,
-        TK_BUFFER,
         TK_INLINE,
         TK_HASSIDEEFFECTS,
-        TK_PLS,
-        TK_PLSIN,
-        TK_PLSOUT,
         TK_VARYING,
         TK_STRUCT,
         TK_LAYOUT,
-        TK_PRECISION,
         TK_ENUM,
         TK_CLASS,
         TK_IDENTIFIER,
@@ -107,18 +96,16 @@ struct Token {
         TK_BITWISEOREQ,
         TK_BITWISEXOREQ,
         TK_BITWISEANDEQ,
-        TK_LOGICALOREQ,
-        TK_LOGICALXOREQ,
-        TK_LOGICALANDEQ,
         TK_SEMICOLON,
         TK_ARROW,
         TK_WHITESPACE,
         TK_LINE_COMMENT,
         TK_BLOCK_COMMENT,
         TK_INVALID,
+        TK_NONE,
     };
 
-    Token() : fKind(Kind::TK_INVALID), fOffset(-1), fLength(-1) {}
+    Token() : fKind(Kind::TK_NONE), fOffset(-1), fLength(-1) {}
 
     Token(Kind kind, int32_t offset, int32_t length)
             : fKind(kind), fOffset(offset), fLength(length) {}
@@ -137,6 +124,10 @@ public:
     }
 
     Token next();
+
+    int32_t getCheckpoint() const { return fOffset; }
+
+    void rewindToCheckpoint(int32_t checkpoint) { fOffset = checkpoint; }
 
 private:
     const char* fText;

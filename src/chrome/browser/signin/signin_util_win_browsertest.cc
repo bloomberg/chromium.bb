@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/wincrypt_shim.h"
 #include "build/build_config.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -35,14 +37,15 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/test/browser_test.h"
 
+class SigninUIError;
+
 namespace {
 
 class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
   ~TestDiceTurnSyncOnHelperDelegate() override {}
 
   // DiceTurnSyncOnHelper::Delegate:
-  void ShowLoginError(const std::string& email,
-                      const std::string& error_message) override {}
+  void ShowLoginError(const SigninUIError& error) override {}
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
@@ -60,6 +63,7 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
     std::move(callback).Run(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
   void ShowSyncDisabledConfirmation(
+      bool is_managed_account,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override {}
   void ShowSyncSettings() override {}
@@ -91,9 +95,10 @@ void AssertSigninStarted(bool expect_is_started, Profile* profile) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
 
-  ProfileAttributesEntry* entry;
+  ProfileAttributesEntry* entry =
+      storage.GetProfileAttributesWithPath(profile->GetPath());
 
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  ASSERT_NE(entry, nullptr);
 
   ASSERT_EQ(expect_is_started, entry->IsSignedInWithCredentialProvider());
 }
@@ -299,8 +304,7 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, NoReauthAfterSignout) {
     auto* primary_account_mutator =
         IdentityManagerFactory::GetForProfile(profile)
             ->GetPrimaryAccountMutator();
-    primary_account_mutator->ClearPrimaryAccount(
-        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+    primary_account_mutator->RevokeSyncConsent(
         signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
         signin_metrics::SignoutDelete::DELETED);
 
@@ -328,7 +332,8 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, FixReauth) {
     // Make sure the profile stays signed in, but in an auth error state.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     signin::UpdatePersistentErrorOfRefreshTokenForAccount(
-        identity_manager, identity_manager->GetPrimaryAccountId(),
+        identity_manager,
+        identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
             GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                 CREDENTIALS_REJECTED_BY_SERVER));
@@ -463,7 +468,8 @@ IN_PROC_BROWSER_TEST_P(ExistingWinBrowserSigninUtilTest,
     signin::MakePrimaryAccountAvailable(
         identity_manager, base::UTF16ToUTF8(GetParam().existing_email));
 
-    ASSERT_TRUE(identity_manager->HasPrimaryAccount());
+    ASSERT_TRUE(
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   }
 }
 
@@ -618,7 +624,11 @@ class ExistingWinBrowserProfilesSigninUtilTest
                           L"foo@gmail.com",
                           "lst-123456",
                           0,
-                          1) {}
+                          1) {
+    // TODO(droger): Disable the profile picker using the local state preference
+    // instead.
+    feature_list_.InitAndDisableFeature(features::kNewProfilePicker);
+  }
 
  protected:
   bool SetUpUserDataDirectory() override {
@@ -639,6 +649,7 @@ class ExistingWinBrowserProfilesSigninUtilTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   registry_util::RegistryOverrideManager registry_override_;
 };
 
@@ -658,15 +669,17 @@ IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, PRE_PRE_Run) {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   ASSERT_TRUE(identity_manager);
-  ASSERT_TRUE(identity_manager->HasPrimaryAccount() ==
-              GetParam().cred_provider_used_other_profile);
+  ASSERT_TRUE(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync) ==
+      GetParam().cred_provider_used_other_profile);
 
   if (!GetParam().cred_provider_used_other_profile &&
       !GetParam().email_in_other_profile.empty()) {
     signin::MakePrimaryAccountAvailable(
         identity_manager, base::UTF16ToUTF8(GetParam().email_in_other_profile));
 
-    ASSERT_TRUE(identity_manager->HasPrimaryAccount());
+    ASSERT_TRUE(
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   }
 
   CreateAndSwitchToProfile(base::UTF16ToUTF8(GetParam().current_profile));
@@ -684,14 +697,16 @@ IN_PROC_BROWSER_TEST_P(ExistingWinBrowserProfilesSigninUtilTest, PRE_Run) {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   ASSERT_TRUE(identity_manager);
-  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
+  ASSERT_FALSE(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
 
   if (!GetParam().email_in_current_profile.empty()) {
     signin::MakePrimaryAccountAvailable(
         identity_manager,
         base::UTF16ToUTF8(GetParam().email_in_current_profile));
 
-    ASSERT_TRUE(identity_manager->HasPrimaryAccount());
+    ASSERT_TRUE(
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
   }
 }
 

@@ -23,6 +23,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Renderer.CompositedScrolling" enum="CompositedScrolling"
     expires_after="M85">
+  <obsolete>
+    Expired in M86.
+  </obsolete>
   <owner>hartmanng@chromium.org</owner>
   <summary>
     Total count of the number of RenderLayers which are scrollable areas, need
@@ -135,7 +138,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameBlinkCaptureDuration"
-    units="ms" expires_after="2021-03-28">
+    units="ms" expires_after="2021-06-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -146,7 +149,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameSuccess"
-    enum="BooleanSuccess" expires_after="2021-04-18">
+    enum="BooleanSuccess" expires_after="2021-06-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -156,7 +159,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration"
-    units="ms" expires_after="2021-03-08">
+    units="ms" expires_after="2021-06-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -167,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeSuccess"
-    enum="BooleanSuccess" expires_after="2021-03-08">
+    enum="BooleanSuccess" expires_after="2021-06-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -197,7 +200,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="RendererScheduler.QueueingDurationPerQueueType"
-    units="ms" expires_after="2021-04-04">
+    units="ms" expires_after="2021-08-09">
 <!-- Name completed by histogram_suffixes name="RendererScheduler.QueueType" -->
 
   <owner>kdillon@chromium.org</owner>
@@ -211,7 +214,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="RendererScheduler.RendererMainThreadLoad5" units="%"
-    expires_after="M85">
+    expires_after="M95">
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load (percentage of time spent in tasks), reported in
@@ -372,7 +375,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="RendererScheduler.TaskDurationPerTaskType2"
-    enum="RendererSchedulerTaskType" expires_after="M85">
+    enum="RendererSchedulerTaskType" expires_after="M95">
   <owner>altimin@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <summary>
@@ -482,9 +485,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="RendererScheduler.TaskTime2" units="microseconds"
-    expires_after="M85">
+    expires_after="never">
   <owner>sunyunjia@chromium.org</owner>
-  <owner>tdresser@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
   <summary>
     The duration of every task queued in the _renderer_ scheduler to see the
     distribution of the task duration.

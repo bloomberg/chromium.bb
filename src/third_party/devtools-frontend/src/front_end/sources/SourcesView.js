@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Platform from '../platform/platform.js';
 import * as QuickOpen from '../quick_open/quick_open.js';
@@ -15,16 +16,32 @@ import {EditingLocationHistoryManager} from './EditingLocationHistoryManager.js'
 import {Events as TabbedEditorContainerEvents, TabbedEditorContainer, TabbedEditorContainerDelegate} from './TabbedEditorContainer.js';  // eslint-disable-line no-unused-vars
 import {Events as UISourceCodeFrameEvents, UISourceCodeFrame} from './UISourceCodeFrame.js';
 
+export const UIStrings = {
+  /**
+  *@description Text to open a file
+  */
+  openFile: 'Open file',
+  /**
+  *@description Text to run commands
+  */
+  runCommand: 'Run command',
+  /**
+  *@description Text in Sources View of the Sources panel
+  */
+  dropInAFolderToAddToWorkspace: 'Drop in a folder to add to workspace',
+  /**
+  *@description Accessible label for Sources placeholder view actions list
+  */
+  sourceViewActions: 'Source View Actions',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/SourcesView.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {TabbedEditorContainerDelegate}
  * @implements {UI.SearchableView.Searchable}
  * @implements {UI.SearchableView.Replaceable}
- * @unrestricted
  */
 export class SourcesView extends UI.Widget.VBox {
-  /**
-   * @suppressGlobalPropertiesCheck
-   */
   constructor() {
     super();
     this.registerRequiredCSS('sources/sourcesView.css', {enableLegacyPatching: true});
@@ -37,7 +54,7 @@ export class SourcesView extends UI.Widget.VBox {
 
     const workspace = Workspace.Workspace.WorkspaceImpl.instance();
 
-    this._searchableView = new UI.SearchableView.SearchableView(this, 'sourcesViewSearchConfig');
+    this._searchableView = new UI.SearchableView.SearchableView(this, this, 'sourcesViewSearchConfig');
     this._searchableView.setMinimalSearchQuerySize(0);
     this._searchableView.show(this.element);
 
@@ -56,11 +73,9 @@ export class SourcesView extends UI.Widget.VBox {
     this._toolbarContainerElement = this.element.createChild('div', 'sources-toolbar');
     if (!Root.Runtime.experiments.isEnabled('sourcesPrettyPrint')) {
       const toolbarEditorActions = new UI.Toolbar.Toolbar('', this._toolbarContainerElement);
-      Root.Runtime.Runtime.instance().allInstances(EditorAction).then(actions => {
-        for (const action of /** @type {!Array<!EditorAction>} */ (actions)) {
-          toolbarEditorActions.appendToolbarItem(action.button(this));
-        }
-      });
+      for (const action of getRegisteredEditorActions()) {
+        toolbarEditorActions.appendToolbarItem(action.button(this));
+      }
     }
     this._scriptViewToolbar = new UI.Toolbar.Toolbar('', this._toolbarContainerElement);
     this._scriptViewToolbar.element.style.flex = 'auto';
@@ -120,16 +135,16 @@ export class SourcesView extends UI.Widget.VBox {
     this._placeholderOptionArray = [];
 
     const shortcuts = [
-      {actionId: 'quickOpen.show', description: ls`Open file`},
-      {actionId: 'commandMenu.show', description: ls`Run command`},
-      {actionId: 'sources.add-folder-to-workspace', description: ls`Drop in a folder to add to workspace`}
+      {actionId: 'quickOpen.show', description: i18nString(UIStrings.openFile)},
+      {actionId: 'commandMenu.show', description: i18nString(UIStrings.runCommand)},
+      {actionId: 'sources.add-folder-to-workspace', description: i18nString(UIStrings.dropInAFolderToAddToWorkspace)}
     ];
 
     const element = document.createElement('div');
     const list = element.createChild('div', 'tabbed-pane-placeholder');
     list.addEventListener('keydown', this._placeholderOnKeyDown.bind(this), false);
     UI.ARIAUtils.markAsList(list);
-    UI.ARIAUtils.setAccessibleName(list, ls`Source View Actions`);
+    UI.ARIAUtils.setAccessibleName(list, i18nString(UIStrings.sourceViewActions));
 
     for (let i = 0; i < shortcuts.length; i++) {
       const shortcut = shortcuts[i];
@@ -196,12 +211,6 @@ export class SourcesView extends UI.Widget.VBox {
       this._selectedIndex = newIndex;
       newElement.focus();
     }
-  }
-
-  _resetPlaceholderState() {
-    this._placeholderOptionArray[this._selectedIndex].element.tabIndex = -1;
-    this._placeholderOptionArray[0].element.tabIndex = 0;
-    this._selectedIndex = 0;
   }
 
   /**
@@ -276,7 +285,6 @@ export class SourcesView extends UI.Widget.VBox {
    */
   willHide() {
     UI.Context.Context.instance().setFlavor(SourcesView, null);
-    this._resetPlaceholderState();
     super.willHide();
   }
 
@@ -523,7 +531,7 @@ export class SourcesView extends UI.Widget.VBox {
       currentSourceFrame.setSearchableView(this._searchableView);
     }
 
-    this._searchableView.setReplaceable(!!currentSourceFrame && currentSourceFrame.canEditSource());
+    this._searchableView.setReplaceable(Boolean(currentSourceFrame) && currentSourceFrame.canEditSource());
     this._searchableView.refreshSearch();
     this._updateToolbarChangedListener();
     this._updateScriptViewToolbarItems();
@@ -637,7 +645,7 @@ export class SourcesView extends UI.Widget.VBox {
   replaceSelectionWith(searchConfig, replacement) {
     const sourceFrame = this.currentSourceFrame();
     if (!sourceFrame) {
-      console.assert(!!sourceFrame);
+      console.assert(Boolean(sourceFrame));
       return;
     }
     sourceFrame.replaceSelectionWith(searchConfig, replacement);
@@ -651,7 +659,7 @@ export class SourcesView extends UI.Widget.VBox {
   replaceAllWith(searchConfig, replacement) {
     const sourceFrame = this.currentSourceFrame();
     if (!sourceFrame) {
-      console.assert(!!sourceFrame);
+      console.assert(Boolean(sourceFrame));
       return;
     }
     sourceFrame.replaceAllWith(searchConfig, replacement);
@@ -714,11 +722,43 @@ export class EditorAction {
   }
 }
 
+/** @type {!Array<function(): !EditorAction>} */
+const registeredEditorActions = [];
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @param {function(): !EditorAction} editorAction
+ */
+export function registerEditorAction(editorAction) {
+  registeredEditorActions.push(editorAction);
+}
+
+/**
+ * @return {!Array<!EditorAction>}
+ */
+export function getRegisteredEditorActions() {
+  return registeredEditorActions.map(editorAction => editorAction());
+}
+
+
+/** @type {!SwitchFileActionDelegate} */
+let switchFileActionDelegateInstance;
+
+/**
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class SwitchFileActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!switchFileActionDelegateInstance || forceNew) {
+      switchFileActionDelegateInstance = new SwitchFileActionDelegate();
+    }
+
+    return switchFileActionDelegateInstance;
+  }
+
   /**
    * @param {!Workspace.UISourceCode.UISourceCode} currentUISourceCode
    * @return {?Workspace.UISourceCode.UISourceCode}
@@ -748,7 +788,7 @@ export class SwitchFileActionDelegate {
         candidates.push(uiSourceCode.name());
       }
     }
-    candidates.sort(String.naturalOrderComparator);
+    candidates.sort(Platform.StringUtilities.naturalOrderComparator);
     const index = Platform.NumberUtilities.mod(candidates.indexOf(name) + 1, candidates.length);
     const fullURL = (url ? url + '/' : '') + candidates[index];
     const nextUISourceCode = currentUISourceCode.project().uiSourceCodeForURL(fullURL);
@@ -779,11 +819,25 @@ export class SwitchFileActionDelegate {
   }
 }
 
+/** @type {!ActionDelegate} */
+let actionDelegateInstance;
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!ActionDelegate}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
+    }
+
+    return actionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!UI.Context.Context} context

@@ -22,6 +22,8 @@ source_set("declarative_net_request") {
     "request_action.h",
     "request_params.cc",
     "request_params.h",
+    "rules_count_pair.cc",
+    "rules_count_pair.h",
     "rules_monitor_service.cc",
     "rules_monitor_service.h",
     "ruleset_manager.cc",
@@ -65,6 +67,8 @@ source_set("core") {
   sources = [
     "constants.cc",
     "constants.h",
+    "file_backed_ruleset_source.cc",
+    "file_backed_ruleset_source.h",
     "flat_ruleset_indexer.cc",
     "flat_ruleset_indexer.h",
     "index_helper.cc",

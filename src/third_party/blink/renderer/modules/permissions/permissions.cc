@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -31,8 +32,23 @@ using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 using mojom::blink::PermissionService;
 
-Permissions::Permissions(ExecutionContext* execution_context)
-    : service_(execution_context) {}
+// static
+const char Permissions::kSupplementName[] = "Permissions";
+
+// static
+Permissions* Permissions::permissions(NavigatorBase& navigator) {
+  Permissions* supplement =
+      Supplement<NavigatorBase>::From<Permissions>(navigator);
+  if (!supplement) {
+    supplement = MakeGarbageCollected<Permissions>(navigator);
+    ProvideTo(navigator, supplement);
+  }
+  return supplement;
+}
+
+Permissions::Permissions(NavigatorBase& navigator)
+    : Supplement<NavigatorBase>(navigator),
+      service_(navigator.GetExecutionContext()) {}
 
 ScriptPromise Permissions::query(ScriptState* script_state,
                                  const ScriptValue& raw_permission,
@@ -51,10 +67,10 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   // likely be "prompt".
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   GetService(ExecutionContext::From(script_state))
-      ->HasPermission(std::move(descriptor),
-                      WTF::Bind(&Permissions::TaskComplete,
-                                WrapPersistent(this), WrapPersistent(resolver),
-                                WTF::Passed(std::move(descriptor_copy))));
+      ->HasPermission(
+          std::move(descriptor),
+          WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
+                    WrapPersistent(resolver), std::move(descriptor_copy)));
   return promise;
 }
 
@@ -77,8 +93,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   GetService(context)->RequestPermission(
       std::move(descriptor), LocalFrame::HasTransientUserActivation(frame),
       WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
-                WrapPersistent(resolver),
-                WTF::Passed(std::move(descriptor_copy))));
+                WrapPersistent(resolver), std::move(descriptor_copy)));
   return promise;
 }
 
@@ -98,8 +113,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
       ->RevokePermission(
           std::move(descriptor),
           WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
-                    WrapPersistent(resolver),
-                    WTF::Passed(std::move(descriptor_copy))));
+                    WrapPersistent(resolver), std::move(descriptor_copy)));
   return promise;
 }
 
@@ -150,15 +164,15 @@ ScriptPromise Permissions::requestAll(
       std::move(internal_permissions),
       LocalFrame::HasTransientUserActivation(frame),
       WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
-                WrapPersistent(resolver),
-                WTF::Passed(std::move(internal_permissions_copy)),
-                WTF::Passed(std::move(caller_index_to_internal_index))));
+                WrapPersistent(resolver), std::move(internal_permissions_copy),
+                std::move(caller_index_to_internal_index)));
   return promise;
 }
 
 void Permissions::Trace(Visitor* visitor) const {
   visitor->Trace(service_);
   ScriptWrappable::Trace(visitor);
+  Supplement<NavigatorBase>::Trace(visitor);
 }
 
 PermissionService* Permissions::GetService(

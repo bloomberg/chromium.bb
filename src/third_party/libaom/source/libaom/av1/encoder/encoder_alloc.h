@@ -71,11 +71,17 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   if (!is_stat_generation_stage(cpi)) {
     alloc_token_info(cm, token_info);
   }
+  if (cpi->td.mb.mv_costs) {
+    aom_free(cpi->td.mb.mv_costs);
+    cpi->td.mb.mv_costs = NULL;
+  }
+  CHECK_MEM_ERROR(cm, cpi->td.mb.mv_costs,
+                  (MvCosts *)aom_calloc(1, sizeof(MvCosts)));
 
   av1_setup_shared_coeff_buffer(&cpi->common, &cpi->td.shared_coeff_buf);
   av1_setup_sms_tree(cpi, &cpi->td);
   cpi->td.firstpass_ctx =
-      av1_alloc_pmc(cm, BLOCK_16X16, &cpi->td.shared_coeff_buf);
+      av1_alloc_pmc(cpi, BLOCK_16X16, &cpi->td.shared_coeff_buf);
 }
 
 static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
@@ -97,58 +103,6 @@ static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
   aom_free(cpi->active_map.map);
   CHECK_MEM_ERROR(cm, cpi->active_map.map,
                   aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
-}
-
-static AOM_INLINE void set_tpl_stats_block_size(uint8_t *block_mis_log2,
-                                                uint8_t *tpl_bsize_1d) {
-  // tpl stats bsize: 2 means 16x16
-  *block_mis_log2 = 2;
-  // Block size used in tpl motion estimation
-  *tpl_bsize_1d = 16;
-  // MIN_TPL_BSIZE_1D = 16;
-  assert(*tpl_bsize_1d >= 16);
-}
-
-static AOM_INLINE void setup_tpl_buffers(AV1_COMMON *const cm,
-                                         TplParams *const tpl_data) {
-  CommonModeInfoParams *const mi_params = &cm->mi_params;
-  set_tpl_stats_block_size(&tpl_data->tpl_stats_block_mis_log2,
-                           &tpl_data->tpl_bsize_1d);
-  const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
-  tpl_data->border_in_pixels =
-      ALIGN_POWER_OF_TWO(tpl_data->tpl_bsize_1d + 2 * AOM_INTERP_EXTEND, 5);
-
-  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
-    const int mi_cols =
-        ALIGN_POWER_OF_TWO(mi_params->mi_cols, MAX_MIB_SIZE_LOG2);
-    const int mi_rows =
-        ALIGN_POWER_OF_TWO(mi_params->mi_rows, MAX_MIB_SIZE_LOG2);
-
-    tpl_data->tpl_stats_buffer[frame].is_valid = 0;
-    tpl_data->tpl_stats_buffer[frame].width = mi_cols >> block_mis_log2;
-    tpl_data->tpl_stats_buffer[frame].height = mi_rows >> block_mis_log2;
-    tpl_data->tpl_stats_buffer[frame].stride =
-        tpl_data->tpl_stats_buffer[frame].width;
-    tpl_data->tpl_stats_buffer[frame].mi_rows = mi_params->mi_rows;
-    tpl_data->tpl_stats_buffer[frame].mi_cols = mi_params->mi_cols;
-  }
-
-  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
-    CHECK_MEM_ERROR(
-        cm, tpl_data->tpl_stats_pool[frame],
-        aom_calloc(tpl_data->tpl_stats_buffer[frame].width *
-                       tpl_data->tpl_stats_buffer[frame].height,
-                   sizeof(*tpl_data->tpl_stats_buffer[frame].tpl_stats_ptr)));
-    if (aom_alloc_frame_buffer(
-            &tpl_data->tpl_rec_pool[frame], cm->width, cm->height,
-            cm->seq_params.subsampling_x, cm->seq_params.subsampling_y,
-            cm->seq_params.use_highbitdepth, tpl_data->border_in_pixels,
-            cm->features.byte_alignment))
-      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                         "Failed to allocate frame buffer");
-  }
-
-  tpl_data->tpl_frame = &tpl_data->tpl_stats_buffer[REF_FRAMES + 1];
 }
 
 static AOM_INLINE void alloc_obmc_buffers(OBMCBuffer *obmc_buffer,
@@ -249,6 +203,11 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 
   release_obmc_buffers(&cpi->td.mb.obmc_buffer);
 
+  if (cpi->td.mb.mv_costs) {
+    aom_free(cpi->td.mb.mv_costs);
+    cpi->td.mb.mv_costs = NULL;
+  }
+
   aom_free(cpi->td.mb.inter_modes_info);
   cpi->td.mb.inter_modes_info = NULL;
 
@@ -339,6 +298,11 @@ static AOM_INLINE void alloc_altref_frame_buffer(AV1_COMP *cpi) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
 
+  // When lag_in_frames <= 1, alt-ref frames are not enabled. In this case,
+  // temporal filtering of key frames is disabled as well. Hence alt_ref_buffer
+  // allocation is avoided.
+  if (oxcf->gf_cfg.lag_in_frames <= 1) return;
+
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
   if (aom_realloc_frame_buffer(
           &cpi->alt_ref_buffer, oxcf->frm_dim_cfg.width,
@@ -361,13 +325,20 @@ static AOM_INLINE void alloc_util_frame_buffers(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
-  if (aom_realloc_frame_buffer(
-          &cpi->trial_frame_rst, cm->superres_upscaled_width,
-          cm->superres_upscaled_height, seq_params->subsampling_x,
-          seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_RESTORATION_FRAME_BORDER, byte_alignment, NULL, NULL, NULL))
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate trial restored frame buffer");
+  // The frame buffer trial_frame_rst is used during loop restoration filter
+  // search. Hence it is allocated only when loop restoration is used.
+  const int use_restoration = cm->seq_params.enable_restoration &&
+                              !cm->features.all_lossless &&
+                              !cm->tiles.large_scale;
+  if (use_restoration) {
+    if (aom_realloc_frame_buffer(
+            &cpi->trial_frame_rst, cm->superres_upscaled_width,
+            cm->superres_upscaled_height, seq_params->subsampling_x,
+            seq_params->subsampling_y, seq_params->use_highbitdepth,
+            AOM_RESTORATION_FRAME_BORDER, byte_alignment, NULL, NULL, NULL))
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate trial restored frame buffer");
+  }
 
   if (aom_realloc_frame_buffer(
           &cpi->scaled_source, cm->width, cm->height, seq_params->subsampling_x,

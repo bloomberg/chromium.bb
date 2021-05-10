@@ -22,12 +22,9 @@ source_set("mojo_cert_verifier") {
 }
 
 source_set("cert_verifier_creation") {
-  sources = [
-    "cert_verifier_creation.cc",
-    "cert_verifier_creation.h",
-  ]
+  sources = []
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [
       "system_trust_store_provider_chromeos.cc",
       "system_trust_store_provider_chromeos.h",

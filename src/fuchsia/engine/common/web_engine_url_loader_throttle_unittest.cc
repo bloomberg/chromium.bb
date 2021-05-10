@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/engine/common/cors_exempt_headers.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -20,31 +21,6 @@ constexpr char kUpperCaseCorsExemptHeader[] = "CORS-EXEMPT";
 constexpr char kMixedCaseCorsExemptHeader2[] = "Another-CoRs-ExEmPt-2";
 constexpr char kUpperCaseCorsExemptHeader2[] = "ANOTHER-CORS-EXEMPT-2";
 constexpr char kRequiresCorsHeader[] = "requires-cors";
-
-class TestCachedRulesProvider
-    : public WebEngineURLLoaderThrottle::CachedRulesProvider {
- public:
-  TestCachedRulesProvider() = default;
-  ~TestCachedRulesProvider() override = default;
-
-  void SetCachedRules(
-      scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
-          cached_rules) {
-    cached_rules_ = cached_rules;
-  }
-
-  // WebEngineURLLoaderThrottle::CachedRulesProvider implementation.
-  scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
-  GetCachedRules() override {
-    return cached_rules_;
-  }
-
- private:
-  scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
-      cached_rules_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCachedRulesProvider);
-};
 
 }  // namespace
 
@@ -76,12 +52,9 @@ TEST_F(WebEngineURLLoaderThrottleTest, WildcardHosts) {
   std::vector<mojom::UrlRequestRulePtr> rules;
   rules.push_back(std::move(rule));
 
-  TestCachedRulesProvider provider;
-  provider.SetCachedRules(
+  WebEngineURLLoaderThrottle throttle(
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
           std::move(rules)));
-
-  WebEngineURLLoaderThrottle throttle(&provider);
   bool defer = false;
 
   network::ResourceRequest request1;
@@ -133,12 +106,9 @@ TEST_F(WebEngineURLLoaderThrottleTest, CorsAwareHeaders) {
   std::vector<mojom::UrlRequestRulePtr> rules;
   rules.push_back(std::move(rule));
 
-  TestCachedRulesProvider provider;
-  provider.SetCachedRules(
+  WebEngineURLLoaderThrottle throttle(
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
           std::move(rules)));
-
-  WebEngineURLLoaderThrottle throttle(&provider);
 
   network::ResourceRequest request;
   request.url = GURL("http://test.net");
@@ -180,12 +150,9 @@ TEST_F(WebEngineURLLoaderThrottleTest, DataReplacementUrl) {
   std::vector<mojom::UrlRequestRulePtr> rules;
   rules.push_back(std::move(rule));
 
-  TestCachedRulesProvider provider;
-  provider.SetCachedRules(
+  WebEngineURLLoaderThrottle throttle(
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
           std::move(rules)));
-
-  WebEngineURLLoaderThrottle throttle(&provider);
   bool defer = false;
 
   network::ResourceRequest request;
@@ -211,7 +178,7 @@ class TestThrottleDelegate : public blink::URLLoaderThrottle::Delegate {
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     canceled_ = true;
-    cancel_reason_ = custom_reason.as_string();
+    cancel_reason_ = std::string(custom_reason);
   }
   void Resume() override {}
 
@@ -239,12 +206,9 @@ TEST_F(WebEngineURLLoaderThrottleTest, AllowAndDeny) {
     rules.push_back(std::move(rule));
   }
 
-  TestCachedRulesProvider provider;
-  provider.SetCachedRules(
+  WebEngineURLLoaderThrottle throttle(
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
           std::move(rules)));
-
-  WebEngineURLLoaderThrottle throttle(&provider);
   bool defer = false;
 
   TestThrottleDelegate delegate;

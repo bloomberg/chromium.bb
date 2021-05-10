@@ -16,11 +16,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_host_locator.h"
@@ -484,7 +484,7 @@ void SmbService::MountInternal(
                                     mount_id, std::move(callback)));
   } else {
     // If using kerberos, the hostname should not be resolved since kerberos
-    // service tickets are keyed on hosname.
+    // service tickets are keyed on hostname.
     const SmbUrl url = info.use_kerberos()
                            ? info.share_url()
                            : share_finder_->GetResolvedUrl(info.share_url());
@@ -678,7 +678,7 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   }
 
   // If using kerberos, the hostname should not be resolved since kerberos
-  // service tickets are keyed on hosname.
+  // service tickets are keyed on hostname.
   const SmbUrl resolved_url = is_kerberos_chromad
                                   ? parsed_url
                                   : share_finder_->GetResolvedUrl(parsed_url);
@@ -1048,7 +1048,7 @@ void SmbService::OnSuspendUnmountDone(
       power_manager_suspend_token);
 }
 
-void SmbService::SuspendDone(const base::TimeDelta& sleep_duration) {
+void SmbService::SuspendDone(base::TimeDelta sleep_duration) {
   // Don't iterate directly over the share map during the remount
   // process as shares can be removed on failure in OnSmbfsMountDone.
   std::vector<std::string> mount_ids;

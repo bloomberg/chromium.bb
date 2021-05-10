@@ -13,9 +13,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
+#include "chrome/browser/extensions/menu_manager_test_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -35,7 +37,6 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -92,54 +93,6 @@ class StateStoreObserver : public StateStore::TestObserver {
   std::string waiting_for_id_;
   base::RunLoop run_loop_;
   ScopedObserver<StateStore, StateStore::TestObserver> observed_{this};
-};
-
-// Observe when a extension's context menu data is read from storage.
-class MenuManagerObserver : public MenuManager::TestObserver {
- public:
-  explicit MenuManagerObserver(MenuManager* menu_manager)
-      : menu_manager_(menu_manager) {
-    observed_.Add(menu_manager_);
-  }
-
-  ~MenuManagerObserver() final = default;
-
-  void WaitForExtension(const std::string& extension_id) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    // The extension's menus may have already been loaded before we were
-    // able to observe it.
-    if (MenusItemsFound(extension_id))
-      return;
-
-    if (ids_with_reads_.count(extension_id) == 0) {
-      waiting_for_id_ = extension_id;
-      run_loop_.Run();
-      DCHECK(MenusItemsFound(extension_id));
-    }
-  }
-
-  void DidReadFromStorage(const std::string& extension_id) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (extension_id == waiting_for_id_) {
-      run_loop_.Quit();
-    } else {
-      ids_with_reads_.insert(extension_id);
-    }
-  }
-
- private:
-  bool MenusItemsFound(const std::string& extension_id) {
-    const extensions::MenuItem::ExtensionKey key(extension_id);
-    return menu_manager_->MenuItems(key) &&
-           !menu_manager_->MenuItems(key)->empty();
-  }
-
-  MenuManager* const menu_manager_;
-  std::set<std::string> ids_with_reads_;
-  std::string waiting_for_id_;
-  base::RunLoop run_loop_;
-  ScopedObserver<MenuManager, MenuManager::TestObserver> observed_{this};
 };
 
 constexpr char kPersistentExtensionId[] = "cmgkkmeeoiceijkpmaabbmpgnkpaaela";
@@ -306,15 +259,6 @@ class ExtensionContextMenuLazyTest
     : public ExtensionContextMenuBrowserTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  ExtensionContextMenuLazyTest() {
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker) {
-      current_channel_ =
-          std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
-    }
-  }
-
   void SetUpOnMainThread() override {
     ExtensionContextMenuBrowserTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts.
@@ -323,19 +267,19 @@ class ExtensionContextMenuLazyTest
   }
 
  protected:
-  const extensions::Extension* LoadExtensionWithParamFlags(
+  const extensions::Extension* LoadExtensionWithParamOptions(
       const base::FilePath& path,
-      int flags) {
+      LoadOptions options) {
     if (GetParam() == ContextType::kServiceWorker)
-      flags |= kFlagRunAsServiceWorkerBasedExtension;
+      options.load_as_service_worker = true;
 
-    return LoadExtensionWithFlags(path, flags);
+    return LoadExtension(path, options);
   }
 
   const extensions::Extension* LoadContextMenuExtension(
       base::StringPiece subdirectory) {
     base::FilePath extension_dir = GetRootDir().AppendASCII(subdirectory);
-    return LoadExtensionWithParamFlags(extension_dir, kFlagEnableFileAccess);
+    return LoadExtensionWithParamOptions(extension_dir, {});
   }
 
   // Helper to load an extension from context_menus/top_level/|subdirectory| in
@@ -344,14 +288,14 @@ class ExtensionContextMenuLazyTest
       base::StringPiece subdirectory) {
     base::FilePath extension_dir =
         GetRootDir().AppendASCII("top_level").AppendASCII(subdirectory);
-    return LoadExtensionWithParamFlags(extension_dir, kFlagEnableFileAccess);
+    return LoadExtensionWithParamOptions(extension_dir, {});
   }
 
   const extensions::Extension* LoadContextMenuExtensionWithIncognitoFlags(
       base::StringPiece subdirectory) {
     base::FilePath extension_dir = GetRootDir().AppendASCII(subdirectory);
-    return LoadExtensionWithParamFlags(
-        extension_dir, kFlagEnableFileAccess | kFlagEnableIncognito);
+    return LoadExtensionWithParamOptions(extension_dir,
+                                         {.allow_in_incognito = true});
   }
 
   base::FilePath GetDirForContext(base::StringPiece subdirectory) {
@@ -395,10 +339,6 @@ class ExtensionContextMenuLazyTest
     ASSERT_TRUE(update.WaitUntilSatisfied());
     ASSERT_EQ(!enabled, menu->IsCommandIdEnabled(command_id));
   }
-
- private:
-  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
-      current_channel_;
 };
 
 class ExtensionContextMenuPersistentTest
@@ -445,8 +385,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, PRE_Persistent) {
   ResultCatcher catcher;
   base::FilePath path =
       GetDirForContext("persistent").AddExtensionASCII(".crx");
-  const extensions::Extension* extension =
-      LoadExtensionWithFlags(path, kFlagNone);
+  const extensions::Extension* extension = LoadExtension(path);
   ASSERT_TRUE(extension);
 
   // Wait for the extension to tell us it's been installed and the
@@ -458,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, PRE_Persistent) {
 }
 
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, Persistent) {
-  MenuManagerObserver observer(menu_manager());
+  extensions::MenuManagerTestObserver observer(menu_manager());
   ResultCatcher catcher;
 
   // Wait for the context menu to finish loading.
@@ -768,27 +707,27 @@ static void VerifyMenuForSeparatorsTest(const MenuModel& menu) {
   //  normal3
 
   int index = 0;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_EQ(7, menu.GetItemCount());
 #else
   ASSERT_EQ(11, menu.GetItemCount());
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ExpectLabelAndType("radio1", MenuModel::TYPE_RADIO, menu, index++);
   ExpectLabelAndType("radio2", MenuModel::TYPE_RADIO, menu, index++);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
 #endif  // !OS_CHROMEOS
   ExpectLabelAndType("normal1", MenuModel::TYPE_COMMAND, menu, index++);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
 #endif  // !OS_CHROMEOS
   ExpectLabelAndType("normal2", MenuModel::TYPE_COMMAND, menu, index++);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
 #endif  // !OS_CHROMEOS
   ExpectLabelAndType("radio3", MenuModel::TYPE_RADIO, menu, index++);
   ExpectLabelAndType("radio4", MenuModel::TYPE_RADIO, menu, index++);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
 #endif  // !OS_CHROMEOS
   ExpectLabelAndType("normal3", MenuModel::TYPE_COMMAND, menu, index++);

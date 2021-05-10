@@ -25,10 +25,6 @@ class GrPipeline;
 struct IDXGraphicsAnalysis;
 #endif
 
-namespace SkSL {
-    class Compiler;
-}
-
 class GrD3DGpu : public GrGpu {
 public:
     static sk_sp<GrGpu> Make(const GrD3DBackendContext& backendContext, const GrContextOptions&,
@@ -36,7 +32,7 @@ public:
 
     ~GrD3DGpu() override;
 
-    const GrD3DCaps& d3dCaps() const { return static_cast<const GrD3DCaps&>(*fCaps); }
+    const GrD3DCaps& d3dCaps() const { return static_cast<const GrD3DCaps&>(*this->caps()); }
 
     GrD3DResourceProvider& resourceProvider() { return fResourceProvider; }
 
@@ -70,8 +66,6 @@ public:
                                                                int sampleCnt,
                                                                GrProtected) override;
     void deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&) override;
-
-    void testingOnly_flushGpuAndSync() override;
 
     void testingOnly_startCapture() override;
     void testingOnly_endCapture() override;
@@ -122,10 +116,7 @@ public:
     void submit(GrOpsRenderPass* renderPass) override;
 
     void checkFinishProcs() override { this->checkForFinishedCommandLists(); }
-
-    SkSL::Compiler* shaderCompiler() const {
-        return fCompiler.get();
-    }
+    void finishOutstandingGpuWork() override;
 
 private:
     enum class SyncQueue {
@@ -137,8 +128,6 @@ private:
              sk_sp<GrD3DMemoryAllocator>);
 
     void destroyResources();
-
-    void onResetContext(uint32_t resetBits) override {}
 
     sk_sp<GrTexture> onCreateTexture(SkISize,
                                      const GrBackendFormat&,
@@ -185,12 +174,13 @@ private:
 
     bool onTransferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
                             GrColorType surfaceColorType, GrColorType bufferColorType,
-                            GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) override {
+                            sk_sp<GrGpuBuffer> transferBuffer, size_t offset,
+                            size_t rowBytes) override {
         return true;
     }
     bool onTransferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                               GrColorType surfaceColorType, GrColorType bufferColorType,
-                              GrGpuBuffer* transferBuffer, size_t offset) override {
+                              sk_sp<GrGpuBuffer> transferBuffer, size_t offset) override {
         return true;
     }
     bool onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
@@ -304,8 +294,6 @@ private:
 #if GR_TEST_UTILS
     IDXGraphicsAnalysis* fGraphicsAnalysis;
 #endif
-
-    std::unique_ptr<SkSL::Compiler> fCompiler;
 
     using INHERITED = GrGpu;
 };

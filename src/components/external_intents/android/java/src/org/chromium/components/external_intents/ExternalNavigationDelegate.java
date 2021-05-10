@@ -102,8 +102,8 @@ public interface ExternalNavigationDelegate {
      * @param fallbackUrl The fallback URL to load if the intent cannot be handled by the embedder.
      * @return The OverrideUrlLoadingResult for the action taken by the embedder.
      */
-    @OverrideUrlLoadingResult
-    int handleIncognitoIntentTargetingSelf(Intent intent, String referrerUrl, String fallbackUrl);
+    OverrideUrlLoadingResult handleIncognitoIntentTargetingSelf(
+            Intent intent, String referrerUrl, String fallbackUrl);
 
     /**
      * Loads a URL as specified by |loadUrlParams| if possible. May fail in exceptional conditions

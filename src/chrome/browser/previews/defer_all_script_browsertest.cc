@@ -14,7 +14,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -27,13 +26,14 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/optimization_guide_constants.h"
-#include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/core/hints_component_info.h"
+#include "components/optimization_guide/core/hints_component_util.h"
+#include "components/optimization_guide/core/optimization_guide_constants.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_hints_component_update_listener.h"
+#include "components/optimization_guide/core/test_hints_component_creator.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -57,7 +57,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
          previews::features::kDeferAllScriptPreviews,
          optimization_guide::features::kOptimizationHints,
          features::kBackForwardCache},
-        {});
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
   }
 
   ~DeferAllScriptBrowserTest() override = default;
@@ -90,6 +91,9 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
     another_host_url_ =
         https_server_->GetURL("anotherhost.com", "/search_results_page.html");
 
+    https_no_transform_url_ = https_server_->GetURL(
+        "/defer_all_script_with_no_transform_header.html");
+
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -117,8 +121,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
       const optimization_guide::HintsComponentInfo& component_info) {
     base::HistogramTester histogram_tester;
 
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
+    optimization_guide::OptimizationHintsComponentUpdateListener::GetInstance()
+        ->MaybeUpdateHintsComponent(component_info);
 
     RetryForHistogramUntilCountReached(
         &histogram_tester,
@@ -147,8 +151,17 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
     ProcessHintsComponent(
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::DEFER_ALL_SCRIPT,
-            {hint_setup_url.host()}, page_pattern, {}));
+            {hint_setup_url.host()}, page_pattern));
     LoadHintsForUrl(hint_setup_url);
+  }
+
+  void SetDataSaverEnabled(content::BrowserContext* browser_context,
+                           bool enabled) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
+    base::RunLoop().RunUntilIdle();
   }
 
   content::WebContents* web_contents() const {
@@ -175,6 +188,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   const GURL& another_host_url() const { return another_host_url_; }
 
+  const GURL& https_no_transform_url() const { return https_no_transform_url_; }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
@@ -197,11 +212,22 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   GURL server_redirect_url_;
   GURL server_denylist_url_;
   GURL another_host_url_;
+  GURL https_no_transform_url_;
 
   GURL server_redirect_base_redirect_to_final_server_redirect_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
+
+namespace {
+
+GURL SetQuery(GURL url, const std::string& query) {
+  url::Replacements<char> repls;
+  repls.SetQuery(query.c_str(), url::Component(0, query.length()));
+  return url.ReplaceComponents(repls);
+}
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
@@ -214,7 +240,9 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
@@ -252,6 +280,28 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.OptOut.UserOptedOut.DeferAllScript", 1, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    DeferAllScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelistedNoTransform)) {
+  GURL url = https_no_transform_url();
+
+  // Whitelist DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
+
+  histogram_tester.ExpectTotalCount("Previews.PreviewShown.DeferAllScript", 0);
+}
+
 // Test with an incognito browser.
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
@@ -287,7 +337,10 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  ui_test_utils::NavigateToURL(browser(), server_denylist_url());
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(),
+                               SetQuery(server_denylist_url(), "foo"));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
@@ -320,7 +373,9 @@ IN_PROC_BROWSER_TEST_F(
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // The URL is not whitelisted.
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
@@ -337,6 +392,48 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 }
 
+IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(DisableDataSaver)) {
+  GURL url = https_url();
+
+  // Allow DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
+
+  base::HistogramTester histogram_tester;
+
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+  EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog(browser()));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
+
+  // Load another webpage. Previews should be triggerd.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "bar"));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      2);
+  EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog(browser()));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 2);
+
+  // Load another webpage with data saver disabled. Previews should not trigger.
+  SetDataSaverEnabled(browser()->profile(), false);
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "baz"));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      3);
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 2);
+}
+
 class DeferAllScriptBrowserTestWithCoinFlipHoldback
     : public DeferAllScriptBrowserTest {
  public:
@@ -346,7 +443,7 @@ class DeferAllScriptBrowserTestWithCoinFlipHoldback
     feature_list_.InitWithFeaturesAndParameters(
         {{previews::features::kCoinFlipHoldback,
           {{"force_coin_flip_always_holdback", "true"}}}},
-        {previews::features::kOfflinePreviews});
+        {});
   }
 
  private:
@@ -365,7 +462,9 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
@@ -556,7 +655,9 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Navigate to DeferAllScript url expecting a DeferAllScript preview.
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
@@ -742,7 +843,9 @@ IN_PROC_BROWSER_TEST_P(
 
   base::HistogramTester histogram_tester;
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Set query to ensure that it's not treated as a reload as preview metrics
+  // are not recorded for reloads.
+  ui_test_utils::NavigateToURL(browser(), SetQuery(url, "foo"));
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",

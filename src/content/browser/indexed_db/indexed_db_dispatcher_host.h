@@ -13,11 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom-forward.h"
-#include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
+#include "components/services/storage/public/mojom/file_system_access_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -29,6 +28,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class TaskRunner;
 }
 
 namespace content {
@@ -41,7 +41,13 @@ class IndexedDBTransaction;
 // happen on the IDB sequenced task runner.
 class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
  public:
-  explicit IndexedDBDispatcherHost(IndexedDBContextImpl* indexed_db_context);
+  explicit IndexedDBDispatcherHost(
+      IndexedDBContextImpl* indexed_db_context,
+      scoped_refptr<base::TaskRunner> io_task_runner);
+
+  IndexedDBDispatcherHost(const IndexedDBDispatcherHost&) = delete;
+  IndexedDBDispatcherHost& operator=(const IndexedDBDispatcherHost&) = delete;
+
   ~IndexedDBDispatcherHost() override;
 
   void AddReceiver(
@@ -64,8 +70,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_; }
-  storage::mojom::BlobStorageContext* mojo_blob_storage_context();
-  storage::mojom::NativeFileSystemContext* native_file_system_context();
 
   // Must be called on the IDB sequence.
   base::WeakPtr<IndexedDBDispatcherHost> AsWeakPtr() {
@@ -97,12 +101,12 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
  private:
   friend class IndexedDBDispatcherHostTest;
 
+  storage::mojom::BlobStorageContext* mojo_blob_storage_context();
+  storage::mojom::FileSystemAccessContext* file_system_access_context();
+
   // blink::mojom::IDBFactory implementation:
   void GetDatabaseInfo(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
                            pending_callbacks) override;
-  void GetDatabaseNames(
-      mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-          pending_callbacks) override;
   void Open(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
                 pending_callbacks,
             mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
@@ -128,8 +132,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   // IndexedDBDispatcherHost is owned by IndexedDBContextImpl.
   IndexedDBContextImpl* indexed_db_context_;
 
+  // Shared task runner used for async I/O while reading blob files.
+  const scoped_refptr<base::TaskRunner> io_task_runner_;
   // Shared task runner used to read blob files on.
-  scoped_refptr<base::TaskRunner> file_task_runner_;
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, url::Origin> receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBDatabase>
@@ -144,8 +150,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<IndexedDBDispatcherHost> weak_factory_{this};
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };
 
 }  // namespace content

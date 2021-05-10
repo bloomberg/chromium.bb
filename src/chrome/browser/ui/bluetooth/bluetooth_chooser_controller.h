@@ -33,6 +33,8 @@ class BluetoothChooserController : public ChooserController {
   bool ShouldShowReScanButton() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;
+  std::pair<base::string16, base::string16> GetThrobberLabelAndTooltip()
+      const override;
   size_t NumOptions() const override;
   int GetSignalStrengthLevel(size_t index) const override;
   bool IsConnected(size_t index) const override;
@@ -40,7 +42,7 @@ class BluetoothChooserController : public ChooserController {
   base::string16 GetOption(size_t index) const override;
   void RefreshOptions() override;
   void OpenAdapterOffHelpUrl() const override;
-  base::string16 GetStatus() const override;
+  void OpenPermissionPreferences() const override;
   void Select(const std::vector<size_t>& indices) override;
   void Cancel() override;
   void Close() override;
@@ -85,13 +87,14 @@ class BluetoothChooserController : public ChooserController {
   // Bluetooth adapter is turned on or off, or when re-scan happens.
   void ClearAllDevices();
 
+  int frame_tree_node_id_ = -1;
+
   std::vector<BluetoothDeviceInfo> devices_;
   std::unordered_map<std::string, base::string16> device_id_to_name_map_;
   // Maps from device name to number of devices with that name.
   std::unordered_map<base::string16, int> device_name_counts_;
 
   content::BluetoothChooser::EventHandler event_handler_;
-  base::string16 status_text_;
 
   base::WeakPtrFactory<BluetoothChooserController> weak_factory_{this};
 

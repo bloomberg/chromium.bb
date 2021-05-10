@@ -56,11 +56,8 @@
     Node effectiveRootScroller(Document document);
 
     [RaisesException] DOMString shadowRootType(Node root);
-    [RaisesException] boolean hasShadowInsertionPoint(Node root);
-    [RaisesException] boolean hasContentElement(Node root);
     [RaisesException] unsigned long countElementShadow(Node Root);
     DOMString shadowPseudoId(Element element);
-    [RaisesException] boolean isValidContentSelect(Element contentElement);
     Node treeScopeRootNode(Node node);
     Node parentTreeScope(Node node);
     [RaisesException] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
@@ -298,6 +295,8 @@
 
     [RaisesException] void forceCompositingUpdate(Document document);
 
+    void setForcedColorsAndDarkPreferredColorScheme(Document document);
+
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
     [CallWith=ScriptState] Promise<any> createResolvedPromise(any value);
@@ -415,11 +414,6 @@
     // instances that track visibility.
     boolean isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
 
-    // Disable the frequency capping for overlay popup detection. This
-    // eliminates the need to for waitings in web tests to trigger a detection
-    // event.
-    void DisableFrequencyCappingForOverlayPopupDetection();
-
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.
     [RaisesException] void addEmbedderCustomElementName(DOMString name);
@@ -451,4 +445,9 @@
     void generateTestReport(DOMString message);
 
     [RaisesException] void setIsAdSubframe(HTMLIFrameElement iframe);
+
+    [RaisesException, CallWith=ScriptState] ReadableStream createReadableStream(long queueSize, DOMString optimizer);
+    // The return value consists of a WritableStream (.stream) and a promise of
+    // a sink object (.sink).
+    [RaisesException, CallWith=ScriptState] any createWritableStreamAndSink(long queueSize, DOMString optimizer);
 };

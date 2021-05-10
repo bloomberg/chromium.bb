@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 FolderUploadConfirmationView::FolderUploadConfirmationView(
     const base::FilePath& path,
@@ -50,14 +51,14 @@ FolderUploadConfirmationView::FolderUploadConfirmationView(
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetUseDefaultFillLayout(true);
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(IDS_CONFIRM_FILE_UPLOAD_TEXT,
                                  path.BaseName().LossyDisplayName()),
       views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label.release());
+  AddChildView(std::move(label));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 }
@@ -83,6 +84,9 @@ views::Widget* FolderUploadConfirmationView::ShowDialog(
 views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
   return GetCancelButton();
 }
+
+BEGIN_METADATA(FolderUploadConfirmationView, views::DialogDelegateView)
+END_METADATA
 
 void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,

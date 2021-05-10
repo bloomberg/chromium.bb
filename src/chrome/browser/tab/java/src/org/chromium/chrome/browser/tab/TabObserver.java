@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * An observer that is notified of changes to a {@link Tab} object.
@@ -24,11 +25,8 @@ public interface TabObserver {
      * if not {@code null}, various states that a Tab should restore itself from.
      * @param tab The notifying {@link Tab}.
      * @param appId ID of the external app that opened this tab.
-     * @param hasThemeColor {@code true} if the tab has a theme color set. {@code null}
-     *        if theme color info is not available from TabState.
-     * @param themeColor Theme color.
      */
-    void onInitialized(Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor);
+    void onInitialized(Tab tab, String appId);
 
     /**
      * Called when a {@link Tab} is shown.
@@ -86,19 +84,17 @@ public interface TabObserver {
      * <p>
      * For visual loading indicators/throbbers, {@link #onLoadStarted(Tab)} and
      * {@link #onLoadStopped(Tab)} should be used to drive updates.
-     *
-     * @param tab The notifying {@link Tab}.
+     *  @param tab The notifying {@link Tab}.
      * @param url The committed URL being navigated to.
      */
-    void onPageLoadStarted(Tab tab, String url);
+    void onPageLoadStarted(Tab tab, GURL url);
 
     /**
      * Called when a tab has finished loading a page.
-     *
-     * @param tab The notifying {@link Tab}.
+     *  @param tab The notifying {@link Tab}.
      * @param url The committed URL that was navigated to.
      */
-    void onPageLoadFinished(Tab tab, String url);
+    void onPageLoadFinished(Tab tab, GURL url);
 
     /**
      * Called when a tab has failed loading a page.
@@ -182,9 +178,9 @@ public interface TabObserver {
 
     /**
      * Called when the WebContents starts loading. Different from
-     * {@link #onPageLoadStarted(Tab, String)}, if the user is navigated to a different url while
+     * {@link #onPageLoadStarted(Tab, GURL)}, if the user is navigated to a different url while
      * staying in the same html document, {@link #onLoadStarted(Tab)} will be called, while
-     * {@link #onPageLoadStarted(Tab, String)} will not.
+     * {@link #onPageLoadStarted(Tab, GURL)} will not.
      * @param tab The notifying {@link Tab}.
      * @param toDifferentDocument Whether this navigation will transition between
      * documents (i.e., not a fragment navigation or JS History API call).
@@ -209,19 +205,18 @@ public interface TabObserver {
      * @param tab The notifying {@link Tab}.
      * @param url The new URL.
      */
-    void onUpdateUrl(Tab tab, String url);
+    void onUpdateUrl(Tab tab, GURL url);
 
     // WebContentsObserver methods ---------------------------------------------------------
 
     /**
      * Called when an error occurs while loading a page and/or the page fails to load.
      * @param tab               The notifying {@link Tab}.
-     * @param isProvisionalLoad Whether the failed load occurred during the provisional load.
      * @param isMainFrame       Whether failed load happened for the main frame.
      * @param errorCode         Code for the occurring error.
      * @param failingUrl        The url that was loading when the error occurred.
      */
-    void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String failingUrl);
+    void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, GURL failingUrl);
 
     /**
      * Called when a navigation is started in the WebContents.
@@ -268,26 +263,23 @@ public interface TabObserver {
     void onBackgroundColorChanged(Tab tab, int color);
 
     /**
-     * Called when a {@link WebContents} object has been created.
-     * @param tab                    The notifying {@link Tab}.
-     * @param sourceWebContents      The {@link WebContents} that triggered the creation.
-     * @param openerRenderProcessId  The opener render process id.
-     * @param openerRenderFrameId    The opener render frame id.
-     * @param frameName              The name of the frame.
-     * @param targetUrl              The target url.
-     * @param newWebContents         The newly created {@link WebContents}.
-     */
-    void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderProcessId,
-            long openerRenderFrameId, String frameName, String targetUrl,
-            WebContents newWebContents);
-
-    /**
-     * Called when the Tab is attached or detached from an {@code Activity}.
+     * Called when the Tab is attached or detached from an {@code Activity}. By default, this will
+     * automatically unregister the tab observer if the Tab is detached from the window.
+     *
+     * TabObservers that are scoped to the Tab itself (either by direct ownership or through
+     * UserData) will need to override this behavior. To do so, ensure there's a functional hook to
+     * unregister the TabObserver to prevent leaking. When overriding this, keep in mind that tabs
+     * can outlive the activity in some cases (change of theme, changing from phone/tablet,
+     * multi-window, etc).
+     *
      * @param tab The notifying {@link Tab}.
      * @param window {@link WindowAndroid} which the Tab is being associated with. {@code null} if
      *         the tab is being detached.
      */
-    void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window);
+    default void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+        if (tab == null || window != null) return;
+        tab.removeObserver(this);
+    }
 
     /**
      * A notification when tab changes whether or not it is interactable and is accepting input.

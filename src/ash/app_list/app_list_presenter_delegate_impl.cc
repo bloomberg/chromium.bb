@@ -12,6 +12,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_features.h"
@@ -30,7 +31,6 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
@@ -81,7 +81,7 @@ bool IsShelfBackgroundTypeWithRoundedCorners(
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
     : controller_(controller) {
-  display_observer_.Add(display::Screen::GetScreen());
+  display_observation_.Observe(display::Screen::GetScreen());
 }
 
 AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
@@ -96,15 +96,11 @@ void AppListPresenterDelegateImpl::SetPresenter(
 void AppListPresenterDelegateImpl::Init(AppListView* view, int64_t display_id) {
   view_ = view;
   view->InitView(controller_->GetContainerForDisplayId(display_id));
-
-  // By setting us as DnD recipient, the app list knows that we can
-  // handle items.
-  Shelf* shelf = Shelf::ForWindow(Shell::GetRootWindowForDisplayId(display_id));
-  view->SetDragAndDropHostOfCurrentAppList(
-      shelf->shelf_widget()->GetDragAndDropHostForAppList());
 }
 
-void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
+void AppListPresenterDelegateImpl::ShowForDisplay(
+    AppListViewState preferred_state,
+    int64_t display_id) {
   is_visible_ = true;
 
   controller_->UpdateLauncherContainer(display_id);
@@ -117,12 +113,18 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
 
   Shelf* shelf =
       Shelf::ForWindow(view_->GetWidget()->GetNativeView()->GetRootWindow());
-  if (!shelf_observer_.IsObserving(shelf))
-    shelf_observer_.Add(shelf);
+  if (!shelf_observation_.IsObservingSource(shelf))
+    shelf_observation_.AddObservation(shelf);
 
+  // By setting us as a drag-and-drop recipient, the app list knows that we can
+  // handle items. Do this on every show because |view_| can be reused after a
+  // monitor is disconnected but that monitor's ShelfView and
+  // ScrollableShelfView are deleted. https://crbug.com/1163332
+  view_->SetDragAndDropHostOfCurrentAppList(
+      shelf->shelf_widget()->GetDragAndDropHostForAppList());
   view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
-  view_->Show(IsSideShelf(shelf));
+  view_->Show(preferred_state, IsSideShelf(shelf));
 
   SnapAppListBoundsToDisplayEdge();
 
@@ -140,7 +142,7 @@ void AppListPresenterDelegateImpl::OnClosing() {
 
 void AppListPresenterDelegateImpl::OnClosed() {
   if (!is_visible_)
-    shelf_observer_.RemoveAll();
+    shelf_observation_.RemoveAllObservations();
   controller_->ViewClosed();
 }
 

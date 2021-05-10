@@ -23,8 +23,10 @@ import "protos/perfetto/metrics/android/cpu_metric.proto";
 import "protos/perfetto/metrics/android/display_metrics.proto";
 import "protos/perfetto/metrics/android/gpu_metric.proto";
 import "protos/perfetto/metrics/android/heap_profile_callsites.proto";
+import "protos/perfetto/metrics/android/hwcomposer.proto";
 import "protos/perfetto/metrics/android/hwui_metric.proto";
 import "protos/perfetto/metrics/android/ion_metric.proto";
+import "protos/perfetto/metrics/android/jank_metric.proto";
 import "protos/perfetto/metrics/android/java_heap_histogram.proto";
 import "protos/perfetto/metrics/android/java_heap_stats.proto";
 import "protos/perfetto/metrics/android/lmk_metric.proto";
@@ -50,11 +52,12 @@ message TraceMetadata {
   optional int64 trace_size_bytes = 6;
   repeated string trace_trigger = 7;
   optional string unique_session_name = 8;
+  optional string trace_config_pbtxt = 9;
 }
 
 // Root message for all Perfetto-based metrics.
 //
-// Next id: 28
+// Next id: 29
 message TraceMetrics {
   reserved 4, 10, 13, 14, 19;
 
@@ -122,6 +125,12 @@ message TraceMetrics {
 
   // Frame timing and jank root causes for system UI interactions.
   optional AndroidSysUiCujMetrics android_sysui_cuj = 27;
+
+  // Metric associated with hwcomposer.
+  optional AndroidHwcomposerMetrics android_hwcomposer = 28;
+
+  // Detects common bad patterns that might lead to jank.
+  optional AndroidJankMetrics android_jank = 29;
 
   // Demo extensions.
   extensions 450 to 499;

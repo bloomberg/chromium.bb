@@ -42,9 +42,6 @@ import {RemoteObject} from './RemoteObject.js';  // eslint-disable-line no-unuse
 import {RuntimeModel} from './RuntimeModel.js';
 import {Capability, SDKModel, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
-/**
- * @unrestricted
- */
 export class DOMNode {
   /**
    * @param {!DOMModel} domModel
@@ -144,7 +141,7 @@ export class DOMNode {
     this._shadowRootType = payload.shadowRootType;
     this._frameOwnerFrameId = payload.frameId || null;
     this._xmlVersion = payload.xmlVersion;
-    this._isSVGNode = !!payload.isSVG;
+    this._isSVGNode = Boolean(payload.isSVG);
 
     if (payload.attributes) {
       this._setAttributesPayload(payload.attributes);
@@ -287,7 +284,7 @@ export class DOMNode {
    * @return {boolean}
    */
   hasShadowRoots() {
-    return !!this._shadowRoots.length;
+    return Boolean(this._shadowRoots.length);
   }
 
   /**
@@ -457,7 +454,7 @@ export class DOMNode {
    * @return {boolean}
    */
   isShadowRoot() {
-    return !!this._shadowRootType;
+    return Boolean(this._shadowRootType);
   }
 
   /**
@@ -904,7 +901,7 @@ export class DOMNode {
   /**
    * @param {!DOMNode} targetNode
    * @param {?DOMNode} anchorNode
-   * @param {function(?ProtocolClient.InspectorBackend.ProtocolError, !Protocol.DOM.NodeId=)=} callback
+   * @param {function(?ProtocolClient.InspectorBackend.ProtocolError, ?DOMNode)=} callback
    */
   copyTo(targetNode, anchorNode, callback) {
     this._agent
@@ -915,7 +912,7 @@ export class DOMNode {
             this._domModel.markUndoableState();
           }
           if (callback) {
-            callback(response.getError() || null, response.nodeId);
+            callback(response.getError() || null, this._domModel.nodeForId(response.nodeId));
           }
         });
   }
@@ -943,7 +940,7 @@ export class DOMNode {
    * @return {boolean}
    */
   isXMLNode() {
-    return !!this._xmlVersion;
+    return Boolean(this._xmlVersion);
   }
 
   /**
@@ -1107,7 +1104,6 @@ export class DOMNode {
     node.highlightForTwoSeconds();
 
     /**
-     * @suppressReceiverCheck
      * @this {!Element}
      */
     function scrollIntoView() {
@@ -1130,7 +1126,6 @@ export class DOMNode {
     await this._domModel.target().pageAgent().invoke_bringToFront();
 
     /**
-     * @suppressReceiverCheck
      * @this {!HTMLElement}
      */
     function focusInPage() {
@@ -1242,9 +1237,6 @@ export class DOMNodeShortcut {
   }
 }
 
-/**
- * @unrestricted
- */
 export class DOMDocument extends DOMNode {
   /**
    * @param {!DOMModel} domModel
@@ -1262,9 +1254,6 @@ export class DOMDocument extends DOMNode {
   }
 }
 
-/**
- * @unrestricted
- */
 export class DOMModel extends SDKModel {
   /**
    * @param {!Target} target

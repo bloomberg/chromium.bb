@@ -23,20 +23,17 @@ class ViewportOrientationTests : public DawnTest {};
 TEST_P(ViewportOrientationTests, OriginAt0x0) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 2, 2);
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        void main() {
-            gl_Position = vec4(-0.5f, 0.5f, 0.0f, 1.0f);
-            gl_PointSize = 1.0;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[builtin(position)]] var<out> Position : vec4<f32>;
+
+        [[stage(vertex)]] fn main() -> void {
+            Position = vec4<f32>(-0.5, 0.5, 0.0, 1.0);
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[location(0)]] var<out> fragColor : vec4<f32>;
+        [[stage(fragment)]] fn main() -> void {
+            fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
 
     utils::ComboRenderPipelineDescriptor descriptor(device);
@@ -68,4 +65,5 @@ DAWN_INSTANTIATE_TEST(ViewportOrientationTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

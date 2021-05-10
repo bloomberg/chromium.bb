@@ -131,7 +131,7 @@ void Accessors::ReconfigureToDataProperty(
 void Accessors::ArgumentsIteratorGetter(
     v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   i::Isolate* isolate = reinterpret_cast<i::Isolate*>(info.GetIsolate());
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   HandleScope scope(isolate);
   Object result = isolate->native_context()->array_values_iterator();
   info.GetReturnValue().Set(Utils::ToLocal(Handle<Object>(result, isolate)));
@@ -151,7 +151,7 @@ void Accessors::ArrayLengthGetter(
   i::Isolate* isolate = reinterpret_cast<i::Isolate*>(info.GetIsolate());
   RuntimeCallTimerScope timer(isolate,
                               RuntimeCallCounterId::kArrayLengthGetter);
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   HandleScope scope(isolate);
   JSArray holder = JSArray::cast(*Utils::OpenHandle(*info.Holder()));
   Object result = holder.length();
@@ -278,7 +278,7 @@ void Accessors::StringLengthGetter(
   i::Isolate* isolate = reinterpret_cast<i::Isolate*>(info.GetIsolate());
   RuntimeCallTimerScope timer(isolate,
                               RuntimeCallCounterId::kStringLengthGetter);
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   HandleScope scope(isolate);
 
   // We have a slight impedance mismatch between the external API and the way we
@@ -309,6 +309,12 @@ Handle<AccessorInfo> Accessors::MakeStringLengthInfo(Isolate* isolate) {
 static Handle<Object> GetFunctionPrototype(Isolate* isolate,
                                            Handle<JSFunction> function) {
   if (!function->has_prototype()) {
+    // We lazily allocate .prototype for functions, which confuses debug
+    // evaluate which assumes we can write to temporary objects we allocated
+    // during evaluation. We err on the side of caution here and prevent the
+    // newly allocated prototype from going into the temporary objects set,
+    // which means writes to it will be considered a side effect.
+    DisableTemporaryObjectTracking no_temp_tracking(isolate->debug());
     Handle<JSObject> proto = isolate->factory()->NewFunctionPrototype(function);
     JSFunction::SetPrototype(function, proto);
   }
@@ -463,20 +469,9 @@ Handle<JSObject> GetFrameArguments(Isolate* isolate,
     return ArgumentsForInlinedFunction(frame, function_index);
   }
 
-#ifdef V8_NO_ARGUMENTS_ADAPTOR
-  const int length = frame->GetActualArgumentCount();
-#else
-  // Find the frame that holds the actual arguments passed to the function.
-  if (it->frame()->has_adapted_arguments()) {
-    it->AdvanceOneFrame();
-    DCHECK(it->frame()->is_arguments_adaptor());
-  }
-  frame = it->frame();
-  const int length = frame->ComputeParametersCount();
-#endif
-
   // Construct an arguments object mirror for the right frame and the underlying
   // function.
+  const int length = frame->GetActualArgumentCount();
   Handle<JSFunction> function(frame->function(), isolate);
   Handle<JSObject> arguments =
       isolate->factory()->NewArgumentsObject(function, length);
@@ -777,8 +772,8 @@ void Accessors::ErrorStackGetter(
       Handle<JSObject>::cast(Utils::OpenHandle(*info.Holder()));
 
   // Retrieve the stack trace. It can either be structured data in the form of
-  // a FrameArray, an already formatted stack trace (string) or whatever the
-  // "prepareStackTrace" callback produced.
+  // a FixedArray of StackFrameInfo objects, an already formatted stack trace
+  // (string) or whatever the "prepareStackTrace" callback produced.
 
   Handle<Object> stack_trace;
   Handle<Symbol> stack_trace_symbol = isolate->factory()->stack_trace_symbol();
@@ -845,33 +840,6 @@ void Accessors::ErrorStackSetter(
 Handle<AccessorInfo> Accessors::MakeErrorStackInfo(Isolate* isolate) {
   return MakeAccessor(isolate, isolate->factory()->stack_string(),
                       &ErrorStackGetter, &ErrorStackSetter);
-}
-
-//
-// Accessors::RegExpResultIndices
-//
-
-void Accessors::RegExpResultIndicesGetter(
-    v8::Local<v8::Name> key, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  i::Isolate* isolate = reinterpret_cast<i::Isolate*>(info.GetIsolate());
-  HandleScope scope(isolate);
-  Handle<JSRegExpResult> regexp_result(
-      Handle<JSRegExpResult>::cast(Utils::OpenHandle(*info.Holder())));
-  MaybeHandle<JSArray> maybe_indices(
-      JSRegExpResult::GetAndCacheIndices(isolate, regexp_result));
-  Handle<JSArray> indices;
-  if (!maybe_indices.ToHandle(&indices)) {
-    isolate->OptionalRescheduleException(false);
-    Handle<Object> result = isolate->factory()->undefined_value();
-    info.GetReturnValue().Set(Utils::ToLocal(result));
-  } else {
-    info.GetReturnValue().Set(Utils::ToLocal(indices));
-  }
-}
-
-Handle<AccessorInfo> Accessors::MakeRegExpResultIndicesInfo(Isolate* isolate) {
-  return MakeAccessor(isolate, isolate->factory()->indices_string(),
-                      &RegExpResultIndicesGetter, nullptr);
 }
 
 }  // namespace internal

@@ -9,9 +9,9 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/style/color_mode_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/system/dark_mode/color_mode_observer.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -106,6 +106,14 @@ SkColor ResolveColor(AshColorProvider::ContentLayerType type,
   return cros_colors::ResolveColor(TypeToColorName(type), is_dark_mode);
 }
 
+// Notify all the other components to update on the color mode changes. Only
+// Chrome browser is notified currently, will include WebUI, Arc etc later.
+void NotifyColorModeChanges(bool is_dark_mode_enabled) {
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  native_theme->set_use_dark_colors(is_dark_mode_enabled);
+  native_theme->NotifyObservers();
+}
+
 }  // namespace
 
 AshColorProvider::AshColorProvider() {
@@ -165,8 +173,7 @@ void AshColorProvider::OnSessionStateChanged(
     session_manager::SessionState state) {
   if (!features::IsDarkLightModeEnabled())
     return;
-  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(
-      IsDarkModeEnabled());
+  NotifyColorModeChanges(IsDarkModeEnabled());
 }
 
 SkColor AshColorProvider::GetShieldLayerColor(ShieldLayerType type) const {
@@ -211,30 +218,47 @@ SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
 SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
   const bool is_dark_mode = IsDarkModeEnabled();
   switch (type) {
+    case ContentLayerType::kLoginScrollBarColor:
     case ContentLayerType::kSeparatorColor:
     case ContentLayerType::kShelfHandleColor:
       return is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0x24)
                           : SkColorSetA(SK_ColorBLACK, 0x24);
     case ContentLayerType::kIconColorSecondary:
       return gfx::kGoogleGrey500;
+    case ContentLayerType::kIconColorSecondaryBackground:
+      return is_dark_mode ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
     case ContentLayerType::kButtonLabelColor:
     case ContentLayerType::kButtonIconColor:
     case ContentLayerType::kAppStateIndicatorColor:
     case ContentLayerType::kSliderColorInactive:
     case ContentLayerType::kRadioColorInactive:
       return is_dark_mode ? gfx::kGoogleGrey200 : gfx::kGoogleGrey700;
+    case ContentLayerType::kSwitchKnobColorInactive:
+      return is_dark_mode ? gfx::kGoogleGrey800 : SK_ColorWHITE;
+    case ContentLayerType::kSwitchTrackColorInactive:
+      return GetSecondToneColor(is_dark_mode ? gfx::kGoogleGrey200
+                                             : gfx::kGoogleGrey700);
     case ContentLayerType::kButtonLabelColorBlue:
     case ContentLayerType::kSliderColorActive:
     case ContentLayerType::kRadioColorActive:
+    case ContentLayerType::kSwitchKnobColorActive:
       return is_dark_mode ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
+    case ContentLayerType::kSwitchTrackColorActive:
+      return GetSecondToneColor(
+          GetContentLayerColor(ContentLayerType::kSwitchKnobColorActive));
     case ContentLayerType::kButtonLabelColorPrimary:
     case ContentLayerType::kButtonIconColorPrimary:
+    case ContentLayerType::kBatteryBadgeColor:
       return is_dark_mode ? gfx::kGoogleGrey900 : gfx::kGoogleGrey200;
     case ContentLayerType::kAppStateIndicatorColorInactive:
       return GetDisabledColor(
           GetContentLayerColor(ContentLayerType::kAppStateIndicatorColor));
     case ContentLayerType::kCurrentDeskColor:
       return is_dark_mode ? SK_ColorWHITE : SK_ColorBLACK;
+    case ContentLayerType::kSwitchAccessInnerStrokeColor:
+      return gfx::kGoogleBlue300;
+    case ContentLayerType::kSwitchAccessOuterStrokeColor:
+      return gfx::kGoogleBlue900;
     default:
       return ResolveColor(type, is_dark_mode);
   }
@@ -335,7 +359,7 @@ void AshColorProvider::DecorateIconButton(views::ImageButton* button,
   button->SetImage(views::Button::STATE_NORMAL, new_normal_image);
   button->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(icon, icon_size, GetDisabledColor(icon_color)));
+      gfx::CreateVectorIcon(icon, icon_size, GetDisabledColor(normal_color)));
 }
 
 void AshColorProvider::AddObserver(ColorModeObserver* observer) {
@@ -366,9 +390,7 @@ void AshColorProvider::ToggleColorMode() {
   active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled,
                                         !IsDarkModeEnabled());
   active_user_pref_service_->CommitPendingWrite();
-
-  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(
-      IsDarkModeEnabled());
+  NotifyColorModeChanges(IsDarkModeEnabled());
 }
 
 void AshColorProvider::UpdateColorModeThemed(bool is_themed) {

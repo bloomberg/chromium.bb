@@ -37,7 +37,7 @@ viz_component("resource_format_utils") {
     "//ui/gfx/geometry:geometry",
   ]
   if (enable_vulkan) {
-    deps += [ "//third_party/vulkan_headers" ]
+    deps += [ "//third_party/vulkan-deps/vulkan-headers/src:vulkan_headers" ]
   }
   if (is_mac) {
     sources += [ "resources/resource_format_utils_mac.mm" ]
@@ -196,6 +196,8 @@ viz_component("common") {
     "quads/compositor_frame.h",
     "quads/compositor_frame_metadata.cc",
     "quads/compositor_frame_metadata.h",
+    "quads/compositor_frame_transition_directive.cc",
+    "quads/compositor_frame_transition_directive.h",
     "quads/compositor_render_pass.cc",
     "quads/compositor_render_pass.h",
     "quads/compositor_render_pass_draw_quad.cc",
@@ -245,6 +247,7 @@ viz_component("common") {
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
     "resources/return_callback.h",
+    "resources/returned_resource.cc",
     "resources/returned_resource.h",
     "resources/shared_bitmap.cc",
     "resources/shared_bitmap.h",
@@ -266,6 +269,9 @@ viz_component("common") {
     "surfaces/parent_local_surface_id_allocator.h",
     "surfaces/scoped_surface_id_allocator.cc",
     "surfaces/scoped_surface_id_allocator.h",
+    "surfaces/subtree_capture_id.cc",
+    "surfaces/subtree_capture_id.h",
+    "surfaces/subtree_capture_id_allocator.h",
     "surfaces/surface_id.cc",
     "surfaces/surface_id.h",
     "surfaces/surface_info.cc",
@@ -298,6 +304,7 @@ viz_component("common") {
     "//gpu/config",
     "//gpu/ipc/common:common",
     "//gpu/vulkan:buildflags",
+    "//media:media_buildflags",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/system",
     "//services/tracing/public/cpp:cpp",
@@ -353,6 +360,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gpu/context_cache_controller_unittest.cc",
+    "quads/compositor_frame_transition_directive_unittest.cc",
     "quads/compositor_render_pass_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_io_unittest.cc",

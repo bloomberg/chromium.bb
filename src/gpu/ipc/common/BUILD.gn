@@ -84,13 +84,6 @@ source_set("ipc_common_sources") {
     "result_codes.h",
   ]
 
-  if (is_mac) {
-    sources += [
-      "gpu_memory_buffer_impl_io_surface.cc",
-      "gpu_memory_buffer_impl_io_surface.h",
-    ]
-    frameworks = [ "IOSurface.framework" ]
-  }
   if (is_win) {
     sources += [
       "gpu_memory_buffer_impl_dxgi.cc",
@@ -138,6 +131,15 @@ source_set("ipc_common_sources") {
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
   ]
+
+  if (is_mac) {
+    sources += [
+      "gpu_memory_buffer_impl_io_surface.cc",
+      "gpu_memory_buffer_impl_io_surface.h",
+    ]
+    deps += [ "//ui/gfx:gfx_io_surface_hdr_metadata" ]
+    frameworks = [ "IOSurface.framework" ]
+  }
 
   if (!is_nacl) {
     deps += [ "//ui/gfx/ipc/skia" ]
@@ -199,7 +201,7 @@ source_set("vulkan_types") {
   sources = [ "vulkan_types.h" ]
   public_deps = [ "//ui/gfx" ]
   all_dependent_configs =
-      [ "//third_party/vulkan_headers:vulkan_headers_config" ]
+      [ "//third_party/vulkan-deps/vulkan-headers/src:vulkan_headers_config" ]
   configs += [ "//gpu:gpu_implementation" ]
 }
 
@@ -238,6 +240,9 @@ mojom("interfaces") {
   }
   if (use_x11) {
     enabled_features += [ "use_x11" ]
+  }
+  if (is_win || is_chromeos || is_chromeos_lacros) {
+    enabled_features += [ "has_gpu_revision_info" ]
   }
 
   shared_cpp_typemaps = [
@@ -544,6 +549,8 @@ mojom("vulkan_interface") {
       traits_public_deps = [ ":vulkan_types_mojom_traits" ]
     },
   ]
+
+  webui_module_path = "/"
 }
 
 mojom("test_interfaces") {

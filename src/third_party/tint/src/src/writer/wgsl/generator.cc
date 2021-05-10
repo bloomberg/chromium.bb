@@ -20,18 +20,13 @@ namespace tint {
 namespace writer {
 namespace wgsl {
 
-Generator::Generator(ast::Module module)
-    : Text(std::move(module)), impl_(std::make_unique<GeneratorImpl>()) {}
+Generator::Generator(const Program* program)
+    : impl_(std::make_unique<GeneratorImpl>(program)) {}
 
 Generator::~Generator() = default;
 
-void Generator::Reset() {
-  set_error("");
-  impl_ = std::make_unique<GeneratorImpl>();
-}
-
 bool Generator::Generate() {
-  auto ret = impl_->Generate(module_);
+  auto ret = impl_->Generate(nullptr);
   if (!ret) {
     error_ = impl_->error();
   }
@@ -40,7 +35,7 @@ bool Generator::Generate() {
 
 bool Generator::GenerateEntryPoint(ast::PipelineStage stage,
                                    const std::string& name) {
-  auto ret = impl_->GenerateEntryPoint(module_, stage, name);
+  auto ret = impl_->GenerateEntryPoint(stage, name);
   if (!ret) {
     error_ = impl_->error();
   }

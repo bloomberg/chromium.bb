@@ -170,7 +170,7 @@ namespace utils {
         descriptor.usage = usage | wgpu::BufferUsage::CopyDst;
         wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
 
-        device.GetDefaultQueue().WriteBuffer(buffer, 0, data, size);
+        device.GetQueue().WriteBuffer(buffer, 0, data, size);
         return buffer;
     }
 
@@ -303,19 +303,6 @@ namespace utils {
         return textureDataLayout;
     }
 
-    wgpu::SamplerDescriptor GetDefaultSamplerDescriptor() {
-        wgpu::SamplerDescriptor desc = {};
-
-        desc.minFilter = wgpu::FilterMode::Linear;
-        desc.magFilter = wgpu::FilterMode::Linear;
-        desc.mipmapFilter = wgpu::FilterMode::Linear;
-        desc.addressModeU = wgpu::AddressMode::Repeat;
-        desc.addressModeV = wgpu::AddressMode::Repeat;
-        desc.addressModeW = wgpu::AddressMode::Repeat;
-
-        return desc;
-    }
-
     wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
                                                  const wgpu::BindGroupLayout* bindGroupLayout) {
         wgpu::PipelineLayoutDescriptor descriptor;
@@ -331,9 +318,9 @@ namespace utils {
 
     wgpu::BindGroupLayout MakeBindGroupLayout(
         const wgpu::Device& device,
-        std::initializer_list<wgpu::BindGroupLayoutEntry> entriesInitializer) {
+        std::initializer_list<BindingLayoutEntryInitializationHelper> entriesInitializer) {
         std::vector<wgpu::BindGroupLayoutEntry> entries;
-        for (const wgpu::BindGroupLayoutEntry& entry : entriesInitializer) {
+        for (const BindingLayoutEntryInitializationHelper& entry : entriesInitializer) {
             entries.push_back(entry);
         }
 
@@ -341,6 +328,78 @@ namespace utils {
         descriptor.entryCount = static_cast<uint32_t>(entries.size());
         descriptor.entries = entries.data();
         return device.CreateBindGroupLayout(&descriptor);
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::BufferBindingType bufferType,
+        bool bufferHasDynamicOffset,
+        uint64_t bufferMinBindingSize) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        buffer.type = bufferType;
+        buffer.hasDynamicOffset = bufferHasDynamicOffset;
+        buffer.minBindingSize = bufferMinBindingSize;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::SamplerBindingType samplerType) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        sampler.type = samplerType;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::TextureSampleType textureSampleType,
+        wgpu::TextureViewDimension textureViewDimension,
+        bool textureMultisampled) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        texture.sampleType = textureSampleType;
+        texture.viewDimension = textureViewDimension;
+        texture.multisampled = textureMultisampled;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::StorageTextureAccess storageTextureAccess,
+        wgpu::TextureFormat format,
+        wgpu::TextureViewDimension textureViewDimension) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        storageTexture.access = storageTextureAccess;
+        storageTexture.format = format;
+        storageTexture.viewDimension = textureViewDimension;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::BindingType entryType,
+        bool bufferHasDynamicOffset,
+        uint64_t bufferMinBindingSize,
+        wgpu::TextureViewDimension textureViewDimension,
+        wgpu::TextureComponentType textureComponent,
+        wgpu::TextureFormat storageFormat) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        type = entryType;
+        hasDynamicOffset = bufferHasDynamicOffset;
+        minBufferBindingSize = bufferMinBindingSize;
+        viewDimension = textureViewDimension;
+        textureComponentType = textureComponent;
+        storageTextureFormat = storageFormat;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        const wgpu::BindGroupLayoutEntry& entry)
+        : wgpu::BindGroupLayoutEntry(entry) {
     }
 
     BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,

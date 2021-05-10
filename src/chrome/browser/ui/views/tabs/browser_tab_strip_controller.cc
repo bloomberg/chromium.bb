@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -67,6 +68,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/range/range.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 #include "url/origin.h"
@@ -79,7 +81,7 @@ namespace {
 bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = false;
   // For ash, always allow entering stacked mode.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   *adjust_layout = true;
   return prefs->GetBoolean(prefs::kTabStripStackedLayout);
 #else
@@ -221,8 +223,8 @@ BrowserTabStripController::BrowserTabStripController(
   local_pref_registrar_.Init(g_browser_process->local_state());
   local_pref_registrar_.Add(
       prefs::kTabStripStackedLayout,
-      base::Bind(&BrowserTabStripController::UpdateStackedLayout,
-                 base::Unretained(this)));
+      base::BindRepeating(&BrowserTabStripController::UpdateStackedLayout,
+                          base::Unretained(this)));
 }
 
 BrowserTabStripController::~BrowserTabStripController() {
@@ -420,13 +422,6 @@ bool BrowserTabStripController::ToggleTabGroupCollapsedState(
   }
   tabstrip_->ToggleTabGroup(group, !is_currently_collapsed, origin);
 
-  std::vector<int> tabs_in_group = ListTabsInGroup(group);
-  for (int i : tabs_in_group) {
-    tabstrip_->tab_at(i)->SetVisible(is_currently_collapsed);
-    if (base::FeatureList::IsEnabled(features::kTabGroupsCollapseFreezing))
-      model_->GetWebContentsAt(i)->SetPageFrozen(!is_currently_collapsed);
-  }
-
   tab_groups::TabGroupVisualData new_data(
       GetGroupTitle(group), GetGroupColorId(group), !is_currently_collapsed);
   model_->group_model()->GetTabGroup(group)->SetVisualData(new_data, true);
@@ -560,7 +555,17 @@ void BrowserTabStripController::SetVisualDataForGroup(
   model_->group_model()->GetTabGroup(group)->SetVisualData(visual_data);
 }
 
-std::vector<int> BrowserTabStripController::ListTabsInGroup(
+base::Optional<int> BrowserTabStripController::GetFirstTabInGroup(
+    const tab_groups::TabGroupId& group) const {
+  return model_->group_model()->GetTabGroup(group)->GetFirstTab();
+}
+
+base::Optional<int> BrowserTabStripController::GetLastTabInGroup(
+    const tab_groups::TabGroupId& group) const {
+  return model_->group_model()->GetTabGroup(group)->GetLastTab();
+}
+
+gfx::Range BrowserTabStripController::ListTabsInGroup(
     const tab_groups::TabGroupId& group) const {
   return model_->group_model()->GetTabGroup(group)->ListTabs();
 }
@@ -695,6 +700,33 @@ void BrowserTabStripController::OnTabGroupChanged(
       break;
     }
     case TabGroupChange::kVisualsChanged: {
+      const TabGroupChange::VisualsChange* visuals_delta =
+          change.GetVisualsChange();
+      const tab_groups::TabGroupVisualData* old_visuals =
+          visuals_delta->old_visuals;
+      const tab_groups::TabGroupVisualData* new_visuals =
+          visuals_delta->new_visuals;
+      if (old_visuals &&
+          old_visuals->is_collapsed() != new_visuals->is_collapsed()) {
+        gfx::Range tabs_in_group = ListTabsInGroup(change.group);
+        for (auto i = tabs_in_group.start(); i < tabs_in_group.end(); ++i) {
+          tabstrip_->tab_at(i)->SetVisible(!new_visuals->is_collapsed());
+          if (base::FeatureList::IsEnabled(
+                  features::kTabGroupsCollapseFreezing)) {
+            if (visuals_delta->new_visuals->is_collapsed()) {
+              tabstrip_->tab_at(i)->SetFreezingVoteToken(
+                  performance_manager::freezing::EmitFreezingVoteForWebContents(
+                      model_->GetWebContentsAt(i),
+                      performance_manager::freezing::FreezingVoteValue::
+                          kCanFreeze,
+                      "Collapsed Tab Group"));
+            } else {
+              tabstrip_->tab_at(i)->ReleaseFreezingVoteToken();
+            }
+          }
+        }
+      }
+
       tabstrip_->OnGroupVisualsChanged(change.group);
       break;
     }
@@ -764,7 +796,7 @@ void BrowserTabStripController::AddTab(WebContents* contents,
                       is_active);
 
   // Try to show tab groups IPH if needed.
-  if (tabstrip_->tab_count() >= 6) {
+  if (tabstrip_->GetTabCount() >= 6) {
     feature_engagement_tracker_->NotifyEvent(
         feature_engagement::events::kSixthTabOpened);
 

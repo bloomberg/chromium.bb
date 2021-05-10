@@ -7,7 +7,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookieControlsMode, SafeBrowsingSetting, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {flushTasks, isChildVisible, isVisible} from '../test_util.m.js';
@@ -17,7 +17,6 @@ import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
-import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
@@ -78,17 +77,16 @@ suite('PrivacyPage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       enableContentSettingsRedesign: false,
+      privacySandboxSettingsEnabled: false,
     });
   });
 
-  setup(async function() {
+  setup(function() {
     testClearBrowsingDataBrowserProxy = new TestClearBrowsingDataBrowserProxy();
     ClearBrowsingDataBrowserProxyImpl.instance_ =
         testClearBrowsingDataBrowserProxy;
     const testBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    const testSyncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
@@ -111,7 +109,7 @@ suite('PrivacyPage', function() {
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(page);
-    return testSyncBrowserProxy.whenCalled('getSyncStatus');
+    return flushTasks();
   });
 
   teardown(function() {
@@ -153,8 +151,66 @@ suite('PrivacyPage', function() {
         0);
     assertFalse(isChildVisible(page, '#notficationRadioGroup'));
   });
+
+  test('privacySandboxRowNotVisible', function() {
+    assertFalse(isChildVisible(page, '#privacySandboxLinkRow'));
+  });
 });
 
+suite('PrivacySandboxSettingsEnabled', function() {
+  /** @type {?TestMetricsBrowserProxy} */
+  let metricsBrowserProxy = null;
+  /** @type {!SettingsPrivacyPageElement} */
+  let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySandboxSettingsEnabled: true,
+    });
+  });
+
+  setup(function() {
+    metricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsPrivacyPageElement} */
+        (document.createElement('settings-privacy-page'));
+    page.prefs = {
+      privacy_sandbox: {
+        apis_enabled: {value: true},
+      },
+    };
+    document.body.appendChild(page);
+    return flushTasks();
+  });
+
+  test('privacySandboxRowVisible', function() {
+    assertTrue(isChildVisible(page, '#privacySandboxLinkRow'));
+  });
+
+  test('privacySandboxRowSublabel', async function() {
+    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    await flushTasks();
+    assertEquals(
+        loadTimeData.getString('privacySandboxTrialsEnabled'),
+        page.$$('#privacySandboxLinkRow').subLabel);
+
+    page.set('prefs.privacy_sandbox.apis_enabled.value', false);
+    await flushTasks();
+    assertEquals(
+        loadTimeData.getString('privacySandboxTrialsDisabled'),
+        page.$$('#privacySandboxLinkRow').subLabel);
+  });
+
+  test('clickPrivacySandboxRow', async function() {
+    page.$$('#privacySandboxLinkRow').click();
+    // Ensure UMA is logged.
+    assertEquals(
+        'Settings.PrivacySandbox.OpenedFromSettingsParent',
+        await metricsBrowserProxy.whenCalled('recordAction'));
+  });
+});
 
 suite('ContentSettingsRedesign', function() {
   /** @type {!SettingsPrivacyPageElement} */
@@ -362,6 +418,7 @@ suite('HappinessTrackingSurveys', function() {
 
   teardown(function() {
     page.remove();
+    Router.getInstance().navigateTo(routes.BASIC);
   });
 
   test('ClearBrowsingDataTrigger', function() {

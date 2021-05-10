@@ -7,7 +7,7 @@
 // Globally disable Metal testing for now
 4235 METAL : dEQP-EGL.* = SKIP
 
-// Only Vulkan supports multithreading
+// Only Vulkan and D3D11 support multithreading
 3916 OPENGL : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP
 3916 OPENGL : dEQP-EGL.functional.multithread.* = SKIP
 3916 OPENGL : dEQP-EGL.functional.render.multi_thread.* = SKIP
@@ -16,10 +16,6 @@
 3916 GLES : dEQP-EGL.functional.multithread.* = SKIP
 3916 GLES : dEQP-EGL.functional.render.multi_thread.* = SKIP
 3916 GLES : dEQP-EGL.functional.color_clears.multi_thread.* = SKIP
-3916 D3D11 : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP
-3916 D3D11 : dEQP-EGL.functional.multithread.* = SKIP
-3916 D3D11 : dEQP-EGL.functional.render.multi_thread.* = SKIP
-3916 D3D11 : dEQP-EGL.functional.color_clears.multi_thread.* = SKIP
 3916 D3D9 : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP
 3916 D3D9 : dEQP-EGL.functional.multithread.* = SKIP
 3916 D3D9 : dEQP-EGL.functional.render.multi_thread.* = SKIP
@@ -205,3 +201,37 @@
 // Very slow on Vulkan Linux
 5170 VULKAN LINUX : dEQP-EGL.functional.swap_buffers_with_damage.resize_after_swap.* = SKIP
 5170 VULKAN LINUX : dEQP-EGL.functional.swap_buffers_with_damage.resize_before_swap.* = SKIP
+
+// AddressSanitizer:DEADLYSIGNAL on Nexus 5X
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb565_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb565_no_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb565_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb888_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb888_no_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgb888_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgba4444_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgba4444_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_context.rgba8888_no_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.pbuffer.rgb888_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.platform_ext_window.rgb888_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.platform_ext_window.rgba8888_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.window.other = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.window.rgb565_no_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.window.rgb888_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.window.rgba4444_no_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.create_surface.window.rgba8888_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgb565_pbuffer = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgb565_pixmap = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgb565_window = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgb888_pbuffer = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgb888_pixmap = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgba4444_pbuffer = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.rgba8888_window = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_surface.simple.window.rgb565_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_surface.simple.window.rgb565_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_surface.simple.window.rgb565_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.query_surface.simple.window.rgb888_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb565_depth_no_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb565_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb565_no_depth_stencil = SKIP
+5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb888_no_depth_stencil = SKIP

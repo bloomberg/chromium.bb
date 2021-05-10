@@ -15,7 +15,7 @@ describe('Skottie behavior', () => {
     });
 
     const expectArrayCloseTo = (a, b, precision) => {
-        precision = precision || 14 // digits of precision in base 10
+        precision = precision || 14; // digits of precision in base 10
         expect(a.length).toEqual(b.length);
         for (let i=0; i<a.length; i++) {
           expect(a[i]).toBeCloseTo(b[i], precision);
@@ -40,6 +40,9 @@ describe('Skottie behavior', () => {
         });
         expect(animation).toBeTruthy();
         const bounds = CanvasKit.LTRBRect(0, 0, 500, 500);
+
+        const size = animation.size();
+        expectArrayCloseTo(size, Float32Array.of(800, 600), 4);
 
         canvas.clear(CanvasKit.WHITE);
         animation.render(canvas, bounds);
@@ -75,4 +78,139 @@ describe('Skottie behavior', () => {
         animation.render(canvas, bounds);
         animation.delete();
     }, washPromise);
+
+    it('can load audio assets', (done) => {
+        if (!CanvasKit.skottie || !CanvasKit.managed_skottie) {
+            console.warn('Skipping test because not compiled with skottie');
+            return;
+        }
+        const mockSoundMap = {
+            map : new Map(),
+            getPlayer : function(name) {return this.map.get(name)},
+            setPlayer : function(name, player) {this.map.set(name, player)},
+        };
+        function mockPlayer(name) {
+            this.name = name;
+            this.wasPlayed = false,
+            this.seek = function(t) {
+                this.wasPlayed = true;
+            }
+        }
+        for (let i = 0; i < 20; i++) {
+            var name = 'audio_' + i;
+            mockSoundMap.setPlayer(name, new mockPlayer(name));
+        }
+        fetch('/assets/audio_external.json')
+        .then((response) => response.text())
+        .then((lottie) => {
+            const animation = CanvasKit.MakeManagedAnimation(lottie, null, null, mockSoundMap);
+            expect(animation).toBeTruthy();
+            // 190 frames in sample lottie
+            for (let t = 0; t < 190; t++) {
+                animation.seekFrame(t);
+            }
+            animation.delete();
+            for(const player of mockSoundMap.map.values()) {
+                expect(player.wasPlayed).toBeTrue(player.name + " was not played");
+            }
+            done();
+        });
+    });
+
+    it('can get logs', (done) => {
+        if (!CanvasKit.skottie || !CanvasKit.managed_skottie) {
+            console.warn('Skipping test because not compiled with skottie');
+            return;
+        }
+
+        const logger = {
+           errors:   [],
+           warnings: [],
+
+           reset: function() { this.errors = []; this.warnings = []; },
+
+           // Logger API
+           onError:   function(err) { this.errors.push(err)   },
+           onWarning: function(wrn) { this.warnings.push(wrn) }
+        };
+
+        {
+            const json = `{
+                "v": "5.2.1",
+                "w": 100,
+                "h": 100,
+                "fr": 10,
+                "ip": 0,
+                "op": 100,
+                "layers": [{
+                    "ty": 3,
+                    "nm": "null",
+                    "ind": 0,
+                    "ip": 0
+                }]
+            }`;
+            const animation = CanvasKit.MakeManagedAnimation(json, null, null, null, logger);
+            expect(animation).toBeTruthy();
+            expect(logger.errors.length).toEqual(0);
+            expect(logger.warnings.length).toEqual(0);
+        }
+
+        {
+            const json = `{
+                "v": "5.2.1",
+                "w": 100,
+                "h": 100,
+                "fr": 10,
+                "ip": 0,
+                "op": 100,
+                "layers": [{
+                    "ty": 2,
+                    "nm": "image",
+                    "ind": 0,
+                    "ip": 0
+                }]
+            }`;
+            const animation = CanvasKit.MakeManagedAnimation(json, null, null, null, logger);
+            expect(animation).toBeTruthy();
+            expect(logger.errors.length).toEqual(1);
+            expect(logger.warnings.length).toEqual(0);
+
+            // Image layer missing refID
+            expect(logger.errors[0].includes('missing ref'));
+            logger.reset();
+        }
+
+        {
+            const json = `{
+                "v": "5.2.1",
+                "w": 100,
+                "h": 100,
+                "fr": 10,
+                "ip": 0,
+                "op": 100,
+                "layers": [{
+                    "ty": 1,
+                    "nm": "solid",
+                    "sw": 100,
+                    "sh": 100,
+                    "sc": "#aabbcc",
+                    "ind": 0,
+                    "ip": 0,
+                    "ef": [{
+                      "mn": "FOO"
+                    }]
+                }]
+            }`;
+            const animation = CanvasKit.MakeManagedAnimation(json, null, null, null, logger);
+            expect(animation).toBeTruthy();
+            expect(logger.errors.length).toEqual(0);
+            expect(logger.warnings.length).toEqual(1);
+
+            // Unsupported effect FOO
+            expect(logger.warnings[0].includes('FOO'));
+            logger.reset();
+        }
+
+        done();
+    });
 });

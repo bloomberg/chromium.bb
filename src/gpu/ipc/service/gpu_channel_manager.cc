@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/traced_value.h"
@@ -96,6 +98,15 @@ void FormatAllocationSourcesForTracing(
       allocation_sources[GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB]);
   dict->SetInteger("SKIA",
                    allocation_sources[GpuPeakMemoryAllocationSource::SKIA]);
+}
+
+void SetCrashKeyTimeDelta(base::debug::CrashKeyString* key,
+                          base::TimeDelta time_delta) {
+  auto str = base::StringPrintf(
+      "%d hours, %d min, %lld sec, %lld ms", time_delta.InHours(),
+      time_delta.InMinutes() % 60, time_delta.InSeconds() % 60ll,
+      time_delta.InMilliseconds() % 1000ll);
+  base::debug::SetCrashKeyString(key, str);
 }
 
 }  // namespace
@@ -581,12 +592,14 @@ void GpuChannelManager::DoWakeUpGpu() {
   const CommandBufferStub* stub = nullptr;
   for (const auto& kv : gpu_channels_) {
     const GpuChannel* channel = kv.second.get();
-    stub = channel->GetOneStub();
-    if (stub) {
-      DCHECK(stub->decoder_context());
+    const CommandBufferStub* stub_candidate = channel->GetOneStub();
+    if (stub_candidate) {
+      DCHECK(stub_candidate->decoder_context());
       // With Vulkan, Dawn, etc, RasterDecoders don't use GL.
-      if (stub->decoder_context()->GetGLContext())
+      if (stub_candidate->decoder_context()->GetGLContext()) {
+        stub = stub_candidate;
         break;
+      }
     }
   }
   if (!stub || !stub->decoder_context()->MakeCurrent())
@@ -738,8 +751,13 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
         ContextCreationAttribs(), use_passthrough_decoder);
 
     // Only skip validation if the GLContext will be used exclusively by the
-    // SharedContextState.
+    // SharedContextState and dcheck is off.
+#if DCHECK_IS_ON()
+    attribs.can_skip_validation = false;
+#else
     attribs.can_skip_validation = !use_virtualized_gl_contexts;
+#endif
+
     context =
         gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
     if (!context) {
@@ -826,6 +844,30 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
 void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Add crash keys for context lost count and time.
+  static auto* const lost_count_crash_key = base::debug::AllocateCrashKeyString(
+      "context-lost-count", base::debug::CrashKeySize::Size32);
+  // The context lost time since creation of |GpuChannelManager|.
+  static auto* const lost_time_crash_key = base::debug::AllocateCrashKeyString(
+      "context-lost-time", base::debug::CrashKeySize::Size64);
+  // The context lost interval since last context lost event.
+  static auto* const lost_interval_crash_key =
+      base::debug::AllocateCrashKeyString("context-lost-interval",
+                                          base::debug::CrashKeySize::Size64);
+
+  base::debug::SetCrashKeyString(
+      lost_count_crash_key, base::StringPrintf("%d", ++context_lost_count_));
+
+  auto lost_time = base::TimeTicks::Now() - creation_time_;
+  SetCrashKeyTimeDelta(lost_time_crash_key, lost_time);
+
+  if (!context_lost_time_.is_zero()) {
+    auto interval = lost_time - context_lost_time_;
+    SetCrashKeyTimeDelta(lost_interval_crash_key, interval);
+  }
+
+  context_lost_time_ = lost_time;
 
   if (synthetic_loss)
     return;

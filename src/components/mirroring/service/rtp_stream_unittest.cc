@@ -38,11 +38,10 @@ class DummyClient final : public RtpStreamClient {
   void OnError(const std::string& message) override {}
   void RequestRefreshFrame() override {}
   void CreateVideoEncodeAccelerator(
-      const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback)
-      override {}
+      media::cast::ReceiveVideoEncodeAcceleratorCallback callback) override {}
   void CreateVideoEncodeMemory(
       size_t size,
-      const media::cast::ReceiveVideoEncodeMemoryCallback& callback) override {}
+      media::cast::ReceiveVideoEncodeMemoryCallback callback) override {}
 
   base::WeakPtr<RtpStreamClient> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -87,7 +86,7 @@ TEST_F(RtpStreamTest, VideoStreaming) {
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
       media::PIXEL_FORMAT_I420, size, gfx::Rect(size), size, base::TimeDelta());
   media::cast::PopulateVideoFrame(video_frame.get(), 1);
-  video_frame->metadata()->reference_time = testing_clock_.NowTicks();
+  video_frame->metadata().reference_time = testing_clock_.NowTicks();
 
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),

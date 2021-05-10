@@ -40,7 +40,7 @@
 // After submitting changes to this file, you will need to follow the
 // instructions at go/quic_client_binary_update
 
-#include "net/third_party/quiche/src/quic/tools/quic_toy_client.h"
+#include "quic/tools/quic_toy_client.h"
 
 #include <iostream>
 #include <memory>
@@ -51,17 +51,17 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_system_event_loop.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_url.h"
+#include "common/platform/api/quiche_text_utils.h"
 
 namespace {
 
@@ -151,6 +151,13 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     false,
     "If true, start by proposing a version that is reserved for version "
     "negotiation.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    bool,
+    multi_packet_chlo,
+    false,
+    "If true, add a transport parameter to make the ClientHello span two "
+    "packets. Only works with QUIC+TLS.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
@@ -266,6 +273,15 @@ int QuicToyClient::SendRequestsAndPrintResponses(
     config.SetClientConnectionOptions(
         ParseQuicTagVector(client_connection_options_string));
   }
+  if (GetQuicFlag(FLAGS_multi_packet_chlo)) {
+    // Make the ClientHello span multiple packets by adding a custom transport
+    // parameter.
+    constexpr auto kCustomParameter =
+        static_cast<TransportParameters::TransportParameterId>(0x173E);
+    std::string custom_value(2000, '?');
+    config.custom_transport_parameters_to_send()[kCustomParameter] =
+        custom_value;
+  }
 
   int address_family_for_lookup = AF_UNSPEC;
   if (GetQuicFlag(FLAGS_ip_version_for_host_lookup) == "4") {
@@ -321,7 +337,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   // Construct the string body from flags, if provided.
   std::string body = GetQuicFlag(FLAGS_body);
   if (!GetQuicFlag(FLAGS_body_hex).empty()) {
-    DCHECK(GetQuicFlag(FLAGS_body).empty())
+    QUICHE_DCHECK(GetQuicFlag(FLAGS_body).empty())
         << "Only set one of --body and --body_hex.";
     body = absl::HexStringToBytes(GetQuicFlag(FLAGS_body_hex));
   }

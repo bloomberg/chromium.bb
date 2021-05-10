@@ -20,52 +20,56 @@
 #include "src/ast/float_literal.h"
 #include "src/ast/identifier_expression.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/module.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/type/f32_type.h"
 #include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
+#include "src/program.h"
+#include "src/type/f32_type.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Loop) {
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{});
+  auto* l = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(l);
 
-  ast::LoopStatement l(std::move(body), {});
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&l)) << g.error();
-  EXPECT_EQ(g.result(), R"(  for(;;) {
+  ASSERT_TRUE(gen.EmitStatement(l)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  for(;;) {
     discard_fragment();
   }
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_LoopWithContinuing) {
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* l = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(l);
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::ReturnStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::LoopStatement l(std::move(body), std::move(continuing));
+  gen.increment_indent();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&l)) << g.error();
-  EXPECT_EQ(g.result(), R"(  {
+  ASSERT_TRUE(gen.EmitStatement(l)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
     bool tint_msl_is_first_1 = true;
     for(;;) {
       if (!tint_msl_is_first_1) {
@@ -80,35 +84,34 @@ TEST_F(MslGeneratorImplTest, Emit_LoopWithContinuing) {
 }
 
 TEST_F(MslGeneratorImplTest, Emit_LoopNestedWithContinuing) {
-  ast::type::F32Type f32;
+  Global("lhs", ty.f32(), ast::StorageClass::kNone);
+  Global("rhs", ty.f32(), ast::StorageClass::kNone);
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::ReturnStatement>(),
+  });
+  auto* inner = create<ast::LoopStatement>(body, continuing);
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::ReturnStatement>());
+  body = create<ast::BlockStatement>(ast::StatementList{
+      inner,
+  });
 
-  auto inner = std::make_unique<ast::LoopStatement>(std::move(body),
-                                                    std::move(continuing));
+  continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::AssignmentStatement>(Expr("lhs"), Expr("rhs")),
+  });
 
-  body = std::make_unique<ast::BlockStatement>();
-  body->append(std::move(inner));
+  auto* outer = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(outer);
 
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
+  GeneratorImpl& gen = Build();
 
-  continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::AssignmentStatement>(
-      std::move(lhs), std::move(rhs)));
+  gen.increment_indent();
 
-  ast::LoopStatement outer(std::move(body), std::move(continuing));
-
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&outer)) << g.error();
-  EXPECT_EQ(g.result(), R"(  {
+  ASSERT_TRUE(gen.EmitStatement(outer)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
     bool tint_msl_is_first_1 = true;
     for(;;) {
       if (!tint_msl_is_first_1) {
@@ -154,34 +157,28 @@ TEST_F(MslGeneratorImplTest, Emit_LoopWithVarUsedInContinuing) {
   //   }
   // }
 
-  ast::type::F32Type f32;
+  Global("rhs", ty.f32(), ast::StorageClass::kNone);
 
-  auto var = std::make_unique<ast::Variable>(
-      "lhs", ast::StorageClass::kFunction, &f32);
-  var->set_constructor(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 2.4)));
+  auto* var = Var("lhs", ty.f32(), ast::StorageClass::kFunction, Expr(2.4f));
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::VariableDeclStatement>(std::move(var)));
-  body->append(std::make_unique<ast::VariableDeclStatement>(
-      std::make_unique<ast::Variable>("other", ast::StorageClass::kFunction,
-                                      &f32)));
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::VariableDeclStatement>(var),
+      create<ast::VariableDeclStatement>(
+          Var("other", ty.f32(), ast::StorageClass::kFunction))});
 
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
+  auto* continuing = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::AssignmentStatement>(Expr("lhs"), Expr("rhs")),
+  });
 
-  auto continuing = std::make_unique<ast::BlockStatement>();
-  continuing->append(std::make_unique<ast::AssignmentStatement>(
-      std::move(lhs), std::move(rhs)));
+  auto* outer = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(outer);
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ast::LoopStatement outer(std::move(body), std::move(continuing));
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&outer)) << g.error();
-  EXPECT_EQ(g.result(), R"(  {
+  ASSERT_TRUE(gen.EmitStatement(outer)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
     bool tint_msl_is_first_1 = true;
     float lhs;
     float other;
@@ -191,7 +188,7 @@ TEST_F(MslGeneratorImplTest, Emit_LoopWithVarUsedInContinuing) {
       }
       tint_msl_is_first_1 = false;
 
-      lhs = 2.40000010f;
+      lhs = 2.400000095f;
       other = 0.0f;
     }
   }

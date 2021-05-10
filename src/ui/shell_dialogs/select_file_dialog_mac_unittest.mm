@@ -166,6 +166,9 @@ TEST_F(SelectFileDialogMacTest, ExtensionPopup) {
   EXPECT_EQ(0, [popup indexOfSelectedItem]);
   EXPECT_TRUE([[panel allowedFileTypes] containsObject:@"htm"]);
   EXPECT_TRUE([[panel allowedFileTypes] containsObject:@"html"]);
+  // Extensions should appear in order of input.
+  EXPECT_LT([[panel allowedFileTypes] indexOfObject:@"html"],
+            [[panel allowedFileTypes] indexOfObject:@"htm"]);
   EXPECT_FALSE([[panel allowedFileTypes] containsObject:@"jpg"]);
 
   // Select the second item.
@@ -173,6 +176,9 @@ TEST_F(SelectFileDialogMacTest, ExtensionPopup) {
   EXPECT_EQ(1, [popup indexOfSelectedItem]);
   EXPECT_TRUE([[panel allowedFileTypes] containsObject:@"jpg"]);
   EXPECT_TRUE([[panel allowedFileTypes] containsObject:@"jpeg"]);
+  // Extensions should appear in order of input.
+  EXPECT_LT([[panel allowedFileTypes] indexOfObject:@"jpeg"],
+            [[panel allowedFileTypes] indexOfObject:@"jpg"]);
   EXPECT_FALSE([[panel allowedFileTypes] containsObject:@"html"]);
 }
 
@@ -428,10 +434,6 @@ TEST_F(SelectFileDialogMacTest, DialogMessage) {
 
 // Verify that multiple file dialogs are corrected handled.
 TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
-  // TODO(https://crbug.com/852536): Test fails on 10.10.
-  if (base::mac::IsOS10_10())
-    return;
-
   FileDialogArguments args(GetDefaultArguments());
   SelectFileWithParams(args);
   NSSavePanel* panel1 = GetPanel();

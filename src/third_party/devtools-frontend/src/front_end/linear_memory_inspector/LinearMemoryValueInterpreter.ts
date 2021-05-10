@@ -3,18 +3,54 @@
 // found in the LICENSE file.
 
 import './ValueInterpreterDisplay.js';
+import './ValueInterpreterSettings.js';
 
-import * as Elements from '../elements/elements.js';
+import * as ComponentHelpers from '../component_helpers/component_helpers.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
+import * as Components from '../ui/components/components.js';
 
 import type {ValueDisplayData} from './ValueInterpreterDisplay.js';
-import {Endianness, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
+import {Endianness, endiannessToLocalizedString, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
+import type {TypeToggleEvent, ValueInterpreterSettingsData} from './ValueInterpreterSettings.js';
+
+import * as i18n from '../i18n/i18n.js';
+export const UIStrings = {
+  /**
+  *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear Memory Inspector
+  */
+  toggleValueTypeSettings: 'Toggle value type settings',
+  /**
+  *@description Tooltip text that appears when hovering over the 'Little Endian' or 'Big Endian' setting in the Linear Memory Inspector
+  */
+  changeEndianness: 'Change Endianness',
+};
+const str_ = i18n.i18n.registerUIStrings('linear_memory_inspector/LinearMemoryValueInterpreter.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const {render, html} = LitHtml;
+const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
+
+export class EndiannessChangedEvent extends Event {
+  data: Endianness;
+
+  constructor(endianness: Endianness) {
+    super('endianness-changed');
+    this.data = endianness;
+  }
+}
+
+export class ValueTypeToggledEvent extends Event {
+  data: {type: ValueType, checked: boolean};
+
+  constructor(type: ValueType, checked: boolean) {
+    super('value-type-toggled');
+    this.data = {type, checked};
+  }
+}
 
 export interface LinearMemoryValueInterpreterData {
   value: ArrayBuffer;
-  valueTypes: ValueType[];
+  valueTypes: Set<ValueType>;
   endianness: Endianness;
   valueTypeModes?: Map<ValueType, ValueTypeMode>;
 }
@@ -23,8 +59,16 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
   private readonly shadow = this.attachShadow({mode: 'open'});
   private endianness = Endianness.Little;
   private buffer = new ArrayBuffer(0);
-  private valueTypes: ValueType[] = [];
+  private valueTypes: Set<ValueType> = new Set();
   private valueTypeModeConfig: Map<ValueType, ValueTypeMode> = new Map();
+  private showSettings = false;
+
+  constructor() {
+    super();
+    this.shadow.adoptedStyleSheets = [
+      ...getStyleSheets('ui/inspectorCommon.css', {enableLegacyPatching: true}),
+    ];
+  }
 
   set data(data: LinearMemoryValueInterpreterData) {
     this.endianness = data.endianness;
@@ -34,7 +78,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
     this.render();
   }
 
-  private render() {
+  private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -45,10 +89,14 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
         }
 
         .value-interpreter {
-          border: var(--divider-border, 1px solid #d0d0d0);
-          background-color: var(--toolbar-bg-color, #f3f3f3);
-          overflow: hidden;
           --text-highlight-color: #80868b;
+
+          border: var(--divider-border, 1px solid #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
+          background-color: var(--toolbar-bg-color, #f3f3f3); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
+          overflow: hidden;
+          width: 400px;
         }
 
         .settings-toolbar {
@@ -57,54 +105,109 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
           flex-wrap: nowrap;
           justify-content: space-between;
           padding-left: 12px;
-          padding-right: 12px
+          padding-right: 12px;
+          align-items: center;
         }
 
-        .settings-item {
-          line-height: 26px;
+        .settings-toolbar-button {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 20px;
+          height: 20px;
+          border: none;
+          background-color: transparent;
+          cursor: pointer;
+        }
+
+        .settings-toolbar-button devtools-icon {
+          height: 14px;
+          width: 14px;
+          min-height: 14px;
+          min-width: 14px;
+        }
+
+        .settings-toolbar-button.active devtools-icon {
+          --icon-color: var(--color-primary);
         }
 
         .divider {
           display: block;
           height: 1px;
           margin-bottom: 12px;
-          background-color: var(--divider-color,  #d0d0d0);
+          background-color: var(--divider-color, #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
       </style>
       <div class="value-interpreter">
         <div class="settings-toolbar">
-          <div class="settings-item">
-            <span>${this.endianness}</span>
+          ${this.renderEndiannessSetting()}
+          <button data-settings="true" class="settings-toolbar-button ${this.showSettings ? 'active' : ''}" title=${i18nString(UIStrings.toggleValueTypeSettings)} @click=${this.onSettingsToggle}>
             <devtools-icon
-              .data=${{iconName: 'dropdown_7x6_icon', color: 'rgb(110 110 110)', width: '7px'} as Elements.Icon.IconWithName}>
+              .data=${{ iconName: 'settings_14x14_icon', color: 'var(--color-text-secondary)', width: '14px' } as Components.Icon.IconWithName}>
             </devtools-icon>
-          </div>
-          <div class="settings-item">
-            <devtools-icon
-              .data=${{iconName: 'settings_14x14_icon', color: 'rgb(110 110 110)', width: '14px'} as Elements.Icon.IconWithName}>
-            </devtools-icon>
-          </div>
+          </button>
         </div>
         <span class="divider"></span>
-        <devtools-linear-memory-inspector-interpreter-display
-          .data=${{
-            buffer: this.buffer,
-            valueTypes: this.valueTypes,
-            endianness: this.endianness,
-            valueTypeModes: this.valueTypeModeConfig,
-          } as ValueDisplayData}>
-        </devtools-linear-memory-inspector-interpreter-display>
+        <div>
+          ${this.showSettings ?
+            html`
+              <devtools-linear-memory-inspector-interpreter-settings
+                .data=${{ valueTypes: this.valueTypes } as ValueInterpreterSettingsData}
+                @type-toggle=${this.onTypeToggle}>
+              </devtools-linear-memory-inspector-interpreter-settings>` :
+            html`
+              <devtools-linear-memory-inspector-interpreter-display
+                .data=${{
+                  buffer: this.buffer,
+                  valueTypes: this.valueTypes,
+                  endianness: this.endianness,
+                  valueTypeModes: this.valueTypeModeConfig,
+                } as ValueDisplayData}
+              </devtools-linear-memory-inspector-interpreter-display>`}
+        </div>
       </div>
     `,
-        this.shadow, {eventContext: this},
+      this.shadow, { eventContext: this },
     );
     // clang-format on
+  }
+
+  private onEndiannessChange(event: Event): void {
+    event.preventDefault();
+    const select = event.target as HTMLInputElement;
+    const endianness = select.value as Endianness;
+    this.dispatchEvent(new EndiannessChangedEvent(endianness));
+  }
+
+  private renderEndiannessSetting(): LitHtml.TemplateResult {
+    const onEnumSettingChange = this.onEndiannessChange.bind(this);
+    return html`
+    <label data-endianness-setting="true" title=${i18nString(UIStrings.changeEndianness)}>
+      <select class="chrome-select" data-endianness="true" @change=${onEnumSettingChange}>
+        ${[Endianness.Little, Endianness.Big].map(endianness => {
+      return html`<option value=${endianness} .selected=${this.endianness === endianness}>${
+          endiannessToLocalizedString(endianness)}</option>`;
+    })}
+      </select>
+    </label>
+    `;
+  }
+
+  private onSettingsToggle(): void {
+    this.showSettings = !this.showSettings;
+    this.render();
+  }
+
+  private onTypeToggle(e: TypeToggleEvent): void {
+    this.dispatchEvent(new ValueTypeToggledEvent(e.data.type, e.data.checked));
   }
 }
 
 customElements.define('devtools-linear-memory-inspector-interpreter', LinearMemoryValueInterpreter);
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-linear-memory-inspector-interpreter': LinearMemoryValueInterpreter;
   }

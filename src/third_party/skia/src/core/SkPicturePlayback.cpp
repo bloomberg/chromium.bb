@@ -22,20 +22,6 @@
 #include "src/core/SkVerticesPriv.h"
 #include "src/utils/SkPatchUtils.h"
 
-// matches old SkCanvas::SaveFlags
-enum LegacySaveFlags {
-    kClipToLayer_LegacySaveFlags      = 0x10,
-};
-
-SkCanvas::SaveLayerFlags SkCanvasPriv::LegacySaveFlagsToSaveLayerFlags(uint32_t flags) {
-    uint32_t layerFlags = 0;
-
-    if (0 == (flags & kClipToLayer_LegacySaveFlags)) {
-        layerFlags |= kDontClipToLayer_SaveLayerFlag;
-    }
-    return layerFlags;
-}
-
 static const SkRect* get_rect_ptr(SkReadBuffer* reader, SkRect* storage) {
     if (reader->readBool()) {
         reader->readRect(storage);
@@ -55,11 +41,11 @@ void SkPicturePlayback::draw(SkCanvas* canvas,
                         fPictureData->opData()->size());
 
     // Record this, so we can concat w/ it if we encounter a setMatrix()
-    SkMatrix initialMatrix = canvas->getTotalMatrix();
+    SkM44 initialMatrix = canvas->getLocalToDevice();
 
     SkAutoCanvasRestore acr(canvas, false);
 
-    while (!reader.eof()) {
+    while (!reader.eof() && reader.isValid()) {
         if (callback && callback->abort()) {
             return;
         }
@@ -96,8 +82,8 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
                                  DrawType op,
                                  uint32_t size,
                                  SkCanvas* canvas,
-                                 const SkMatrix& initialMatrix) {
-#define BREAK_ON_READ_ERROR(r) if (!r->isValid()) break
+                                 const SkM44& initialMatrix) {
+#define BREAK_ON_READ_ERROR(r)  if (!r->isValid()) break
 
     switch (op) {
         case NOOP: {
@@ -229,7 +215,12 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             }
             BREAK_ON_READ_ERROR(reader);
 
-            canvas->drawAtlas(atlas, xform, tex, colors, count, mode, cull, paint);
+            SkSamplingOptions sampling;
+            if (flags & DRAW_ATLAS_HAS_SAMPLING) {
+                sampling = reader->readSampling();
+                BREAK_ON_READ_ERROR(reader);
+            }
+            canvas->drawAtlas(atlas, xform, tex, colors, count, mode, sampling, cull, paint);
         } break;
         case DRAW_CLEAR: {
             auto c = reader->readInt();
@@ -281,7 +272,8 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             BREAK_ON_READ_ERROR(reader);
             canvas->experimental_DrawEdgeAAQuad(rect, clip, aaFlags, color, blend);
         } break;
-        case DRAW_EDGEAA_IMAGE_SET: {
+        case DRAW_EDGEAA_IMAGE_SET:
+        case DRAW_EDGEAA_IMAGE_SET2: {
             static const size_t kEntryReadSize =
                     4 * sizeof(uint32_t) + 2 * sizeof(SkRect) + sizeof(SkScalar);
             static const size_t kMatrixSize = 9 * sizeof(SkScalar); // != sizeof(SkMatrix)
@@ -291,6 +283,14 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
                 break;
             }
             const SkPaint* paint = fPictureData->optionalPaint(reader);
+
+            SkSamplingOptions sampling;
+            if (op == DRAW_EDGEAA_IMAGE_SET2) {
+                sampling = reader->readSampling();
+            } else {
+                sampling = SkSamplingOptions(paint ? paint->getFilterQuality()
+                                                   : kNone_SkFilterQuality);
+            }
 
             SkCanvas::SrcRectConstraint constraint =
                     reader->checkRange(SkCanvas::kStrict_SrcRectConstraint,
@@ -347,7 +347,7 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             BREAK_ON_READ_ERROR(reader);
 
             canvas->experimental_DrawEdgeAAImageSet(set.get(), cnt, dstClips, matrices.begin(),
-                                                    paint, constraint);
+                                                    sampling, paint, constraint);
         } break;
         case DRAW_IMAGE: {
             const SkPaint* paint = fPictureData->optionalPaint(reader);
@@ -356,7 +356,20 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             reader->readPoint(&loc);
             BREAK_ON_READ_ERROR(reader);
 
-            canvas->drawImage(image, loc.fX, loc.fY, paint);
+            canvas->drawImage(image, loc.fX, loc.fY,
+                              SkSamplingOptions(paint ? paint->getFilterQuality()
+                                                      : kNone_SkFilterQuality),
+                              paint);
+        } break;
+        case DRAW_IMAGE2: {
+            const SkPaint* paint = fPictureData->optionalPaint(reader);
+            const SkImage* image = fPictureData->getImage(reader);
+            SkPoint loc;
+            reader->readPoint(&loc);
+            SkSamplingOptions sampling = reader->readSampling();
+            BREAK_ON_READ_ERROR(reader);
+
+            canvas->drawImage(image, loc.fX, loc.fY, sampling, paint);
         } break;
         case DRAW_IMAGE_LATTICE: {
             const SkPaint* paint = fPictureData->optionalPaint(reader);
@@ -366,7 +379,22 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             const SkRect* dst = reader->skipT<SkRect>();
             BREAK_ON_READ_ERROR(reader);
 
-            canvas->drawImageLattice(image, lattice, *dst, paint);
+            SkFilterMode filter = SkFilterMode::kNearest;
+            if (paint && paint->getFilterQuality() != kNone_SkFilterQuality) {
+                filter = SkFilterMode::kLinear;
+            }
+            canvas->drawImageLattice(image, lattice, *dst, filter, paint);
+        } break;
+        case DRAW_IMAGE_LATTICE2: {
+            const SkPaint* paint = fPictureData->optionalPaint(reader);
+            const SkImage* image = fPictureData->getImage(reader);
+            SkCanvas::Lattice lattice;
+            (void)SkCanvasPriv::ReadLattice(*reader, &lattice);
+            const SkRect* dst = reader->skipT<SkRect>();
+            SkFilterMode filter = reader->read32LE(SkFilterMode::kLinear);
+            BREAK_ON_READ_ERROR(reader);
+
+            canvas->drawImageLattice(image, lattice, *dst, filter, paint);
         } break;
         case DRAW_IMAGE_NINE: {
             const SkPaint* paint = fPictureData->optionalPaint(reader);
@@ -377,7 +405,11 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             reader->readRect(&dst);
             BREAK_ON_READ_ERROR(reader);
 
-            canvas->drawImageNine(image, center, dst, paint);
+            SkFilterMode filter = SkFilterMode::kNearest;
+            if (paint && paint->getFilterQuality() != kNone_SkFilterQuality) {
+                filter = SkFilterMode::kLinear;
+            }
+            canvas->drawImageNine(image, center, dst, filter, paint);
         } break;
         case DRAW_IMAGE_RECT: {
             const SkPaint* paint = fPictureData->optionalPaint(reader);
@@ -395,7 +427,24 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             }
             BREAK_ON_READ_ERROR(reader);
 
-            canvas->legacy_drawImageRect(image, src, dst, paint, constraint);
+            auto sampling = SkSamplingOptions(paint ? paint->getFilterQuality()
+                                                    : kNone_SkFilterQuality);
+            if (src) {
+                canvas->drawImageRect(image, *src, dst, sampling, paint, constraint);
+            } else {
+                canvas->drawImageRect(image, dst, sampling, paint);
+            }
+        } break;
+        case DRAW_IMAGE_RECT2: {
+            const SkPaint* paint = fPictureData->optionalPaint(reader);
+            const SkImage* image = fPictureData->getImage(reader);
+            SkRect src = reader->readRect();
+            SkRect dst = reader->readRect();
+            SkSamplingOptions sampling = reader->readSampling();
+            auto constraint = reader->read32LE(SkCanvas::kFast_SrcRectConstraint);
+            BREAK_ON_READ_ERROR(reader);
+
+            canvas->drawImageRect(image, src, dst, sampling, paint, constraint);
         } break;
         case DRAW_OVAL: {
             const SkPaint& paint = fPictureData->requiredPaint(reader);
@@ -559,15 +608,6 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             }
             SkCanvasPriv::SaveBehind(canvas, subset);
         } break;
-        case SAVE_LAYER_SAVEFLAGS_DEPRECATED: {
-            SkRect storage;
-            const SkRect* boundsPtr = get_rect_ptr(reader, &storage);
-            const SkPaint* paint = fPictureData->optionalPaint(reader);
-            auto flags = SkCanvasPriv::LegacySaveFlagsToSaveLayerFlags(reader->readInt());
-            BREAK_ON_READ_ERROR(reader);
-
-            canvas->saveLayer(SkCanvas::SaveLayerRec(boundsPtr, paint, flags));
-        } break;
         case SAVE_LAYER_SAVELAYERREC: {
             SkCanvas::SaveLayerRec rec(nullptr, nullptr, nullptr, 0);
             const uint32_t flatFlags = reader->readInt();
@@ -602,11 +642,15 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             SkScalar sy = reader->readScalar();
             canvas->scale(sx, sy);
         } break;
+        case SET_M44: {
+            SkM44 m;
+            reader->read(&m);
+            canvas->setMatrix(initialMatrix * m);
+        } break;
         case SET_MATRIX: {
             SkMatrix matrix;
             reader->readMatrix(&matrix);
-            matrix.postConcat(initialMatrix);
-            canvas->setMatrix(matrix);
+            canvas->setMatrix(initialMatrix * SkM44(matrix));
         } break;
         case SKEW: {
             SkScalar sx = reader->readScalar();

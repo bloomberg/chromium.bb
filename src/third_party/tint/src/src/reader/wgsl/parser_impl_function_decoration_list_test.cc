@@ -23,34 +23,34 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, FunctionDecorationList_Parses) {
-  auto* p = parser("[[workgroup_size(2), workgroup_size(3, 4, 5)]]");
+  auto p = parser("[[workgroup_size(2), workgroup_size(3, 4, 5)]]");
   auto decos = p->decoration_list();
   EXPECT_FALSE(p->has_error()) << p->error();
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
   ASSERT_EQ(decos.value.size(), 2u);
 
-  auto deco_0 = ast::As<ast::FunctionDecoration>(std::move(decos.value[0]));
-  auto deco_1 = ast::As<ast::FunctionDecoration>(std::move(decos.value[1]));
+  auto* deco_0 = decos.value[0]->As<ast::FunctionDecoration>();
+  auto* deco_1 = decos.value[1]->As<ast::FunctionDecoration>();
   ASSERT_NE(deco_0, nullptr);
   ASSERT_NE(deco_1, nullptr);
 
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  ASSERT_TRUE(deco_0->IsWorkgroup());
-  std::tie(x, y, z) = deco_0->AsWorkgroup()->values();
+  ASSERT_TRUE(deco_0->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = deco_0->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 2u);
 
-  ASSERT_TRUE(deco_1->IsWorkgroup());
-  std::tie(x, y, z) = deco_1->AsWorkgroup()->values();
+  ASSERT_TRUE(deco_1->Is<ast::WorkgroupDecoration>());
+  std::tie(x, y, z) = deco_1->As<ast::WorkgroupDecoration>()->values();
   EXPECT_EQ(x, 3u);
   EXPECT_EQ(y, 4u);
   EXPECT_EQ(z, 5u);
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_Empty) {
-  auto* p = parser("[[]]");
+  auto p = parser("[[]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -59,7 +59,7 @@ TEST_F(ParserImplTest, FunctionDecorationList_Empty) {
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_Invalid) {
-  auto* p = parser("[[invalid]]");
+  auto p = parser("[[invalid]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -69,7 +69,7 @@ TEST_F(ParserImplTest, FunctionDecorationList_Invalid) {
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_ExtraComma) {
-  auto* p = parser("[[workgroup_size(2), ]]");
+  auto p = parser("[[workgroup_size(2), ]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -78,7 +78,7 @@ TEST_F(ParserImplTest, FunctionDecorationList_ExtraComma) {
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_MissingComma) {
-  auto* p = parser("[[workgroup_size(2) workgroup_size(2)]]");
+  auto p = parser("[[workgroup_size(2) workgroup_size(2)]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -87,7 +87,7 @@ TEST_F(ParserImplTest, FunctionDecorationList_MissingComma) {
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_BadDecoration) {
-  auto* p = parser("[[workgroup_size()]]");
+  auto p = parser("[[workgroup_size()]]");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);
@@ -98,7 +98,7 @@ TEST_F(ParserImplTest, FunctionDecorationList_BadDecoration) {
 }
 
 TEST_F(ParserImplTest, FunctionDecorationList_MissingRightAttr) {
-  auto* p = parser("[[workgroup_size(2), workgroup_size(3, 4, 5)");
+  auto p = parser("[[workgroup_size(2), workgroup_size(3, 4, 5)");
   auto decos = p->decoration_list();
   EXPECT_TRUE(p->has_error());
   EXPECT_TRUE(decos.errored);

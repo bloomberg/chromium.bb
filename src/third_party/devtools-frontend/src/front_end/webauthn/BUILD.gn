@@ -6,25 +6,32 @@ import("../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("webauthn") {
-  sources = [ "WebauthnPane.js" ]
+  sources = [ "WebauthnPane.ts" ]
 
   deps = [
     "../common:bundle",
     "../data_grid:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../ui:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "webauthn.js"
+  entrypoint = "webauthn.ts"
 
   deps = [ ":webauthn" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "webauthn-legacy.js"
+  entrypoint = "webauthn-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "webauthn-meta.ts"
 
   deps = [ ":bundle" ]
 }

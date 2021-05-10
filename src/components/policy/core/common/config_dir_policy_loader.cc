@@ -12,12 +12,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/core/common/policy_types.h"
@@ -67,9 +67,11 @@ void ConfigDirPolicyLoader::InitOnBackgroundThread() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::FilePathWatcher::Callback callback = base::BindRepeating(
       &ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
-  mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), false,
+  mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir),
+                           base::FilePathWatcher::Type::kNonRecursive,
                            callback);
-  recommended_watcher_.Watch(config_dir_.Append(kRecommendedConfigDir), false,
+  recommended_watcher_.Watch(config_dir_.Append(kRecommendedConfigDir),
+                             base::FilePathWatcher::Type::kNonRecursive,
                              callback);
 }
 

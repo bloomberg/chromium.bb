@@ -13,11 +13,25 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
+
+BEGIN_METADATA(DesktopMediaListController, ListView, views::View)
+END_METADATA
 
 DesktopMediaListController::DesktopMediaListController(
     DesktopMediaPickerDialogView* parent,
     std::unique_ptr<DesktopMediaList> media_list)
-    : dialog_(parent), media_list_(std::move(media_list)) {}
+    : dialog_(parent),
+      media_list_(std::move(media_list)),
+      auto_select_source_(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kAutoSelectDesktopCaptureSource)),
+      auto_accept_tab_capture_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kThisTabCaptureAutoAccept)),
+      auto_reject_tab_capture_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kThisTabCaptureAutoReject)) {}
 
 DesktopMediaListController::~DesktopMediaListController() = default;
 
@@ -30,7 +44,7 @@ std::unique_ptr<views::View> DesktopMediaListController::CreateView(
   auto view = std::make_unique<DesktopMediaListView>(
       this, generic_style, single_style, accessible_name);
   view_ = view.get();
-  view_observer_.Add(view_);
+  view_observations_.AddObservation(view_);
   return view;
 }
 
@@ -40,7 +54,7 @@ std::unique_ptr<views::View> DesktopMediaListController::CreateTabListView(
 
   auto view = std::make_unique<DesktopMediaTabList>(this, accessible_name);
   view_ = view.get();
-  view_observer_.Add(view_);
+  view_observations_.AddObservation(view_);
   return view;
 }
 
@@ -78,6 +92,10 @@ void DesktopMediaListController::AcceptSpecificSource(
   dialog_->AcceptSpecificSource(source);
 }
 
+void DesktopMediaListController::Reject() {
+  dialog_->Reject();
+}
+
 size_t DesktopMediaListController::GetSourceCount() const {
   return base::checked_cast<size_t>(media_list_->GetSourceCount());
 }
@@ -98,19 +116,18 @@ void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
         base::checked_cast<size_t>(index));
   }
 
-  std::string autoselect_source =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAutoSelectDesktopCaptureSource);
   const DesktopMediaList::Source& source = GetSource(index);
-  if (autoselect_source.empty() ||
-      source.name.find(base::ASCIIToUTF16(autoselect_source)) ==
-          base::string16::npos) {
-    return;
+
+  if (ShouldAutoAccept(source)) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DesktopMediaListController::AcceptSpecificSource,
+                       weak_factory_.GetWeakPtr(), source.id));
+  } else if (ShouldAutoReject(source)) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DesktopMediaListController::Reject,
+                                  weak_factory_.GetWeakPtr()));
   }
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DesktopMediaListController::AcceptSpecificSource,
-                     weak_factory_.GetWeakPtr(), source.id));
 }
 
 void DesktopMediaListController::OnSourceRemoved(DesktopMediaList* list,
@@ -147,6 +164,25 @@ void DesktopMediaListController::OnSourceThumbnailChanged(
 }
 
 void DesktopMediaListController::OnViewIsDeleting(views::View* view) {
-  view_observer_.Remove(view);
+  view_observations_.RemoveObservation(view);
   view_ = nullptr;
+}
+
+bool DesktopMediaListController::ShouldAutoAccept(
+    const DesktopMediaList::Source& source) const {
+  if (media_list_->GetMediaListType() == DesktopMediaList::Type::kCurrentTab) {
+    return auto_accept_tab_capture_;
+  }
+
+  return (!auto_select_source_.empty() &&
+          source.name.find(base::ASCIIToUTF16(auto_select_source_)) !=
+              base::string16::npos);
+}
+
+bool DesktopMediaListController::ShouldAutoReject(
+    const DesktopMediaList::Source& source) const {
+  if (media_list_->GetMediaListType() == DesktopMediaList::Type::kCurrentTab) {
+    return auto_reject_tab_capture_;
+  }
+  return false;
 }

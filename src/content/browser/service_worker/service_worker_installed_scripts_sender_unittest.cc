@@ -675,7 +675,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RemoteStorageDisconnection) {
 
   sender->Start();
 
-  registry()->SimulateStorageRestartForTesting();
+  helper()->SimulateStorageRestartForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(sender->last_finished_reason(), FinishedReason::kConnectionError);
@@ -700,8 +700,9 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, StorageDisabled) {
         info.second.WriteToDiskCache(context()->GetStorageControl()));
   version()->script_cache_map()->SetResources(records);
 
-  registry()->GetRemoteStorageControl()->Disable();
-  registry()->GetRemoteStorageControl().FlushForTesting();
+  base::RunLoop loop;
+  registry()->DisableStorageForTesting(loop.QuitClosure());
+  loop.Run();
 
   auto sender =
       std::make_unique<ServiceWorkerInstalledScriptsSender>(version());

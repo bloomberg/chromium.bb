@@ -23,7 +23,7 @@ const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -117,7 +117,7 @@ const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 const base::Feature kPageFreezingFromPerformanceManager{
@@ -125,7 +125,8 @@ const base::Feature kPageFreezingFromPerformanceManager{
 
 const base::Feature kUrgentDiscardingFromPerformanceManager{
   "UrgentDiscardingFromPerformanceManager",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    defined(OS_LINUX)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

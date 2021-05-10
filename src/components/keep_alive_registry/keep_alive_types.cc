@@ -24,6 +24,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS";
     case KeepAliveOrigin::BACKGROUND_SYNC:
       return out << "BACKGROUND_SYNC";
+    case KeepAliveOrigin::BROWSING_DATA_LIFETIME_MANAGER:
+      return out << "BROWSING_DATA_LIFETIME_MANAGER";
     case KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI:
       return out << "LOGIN_DISPLAY_HOST_WEBUI";
     case KeepAliveOrigin::PIN_MIGRATION:
@@ -42,6 +44,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "APP_LIST_SERVICE_VIEWS";
     case KeepAliveOrigin::APP_LIST_SHOWER:
       return out << "APP_LIST_SHOWER";
+    case KeepAliveOrigin::APP_START_URL_MIGRATION:
+      return out << "APP_START_URL_MIGRATION";
     case KeepAliveOrigin::CHROME_APP_DELEGATE:
       return out << "CHROME_APP_DELEGATE";
     case KeepAliveOrigin::CHROME_VIEWS_DELEGATE:

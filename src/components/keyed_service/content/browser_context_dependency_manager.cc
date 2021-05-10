@@ -41,7 +41,7 @@ void BrowserContextDependencyManager::DoCreateBrowserContextServices(
     bool is_testing_context) {
   TRACE_EVENT0(
       "browser",
-      "BrowserContextDependencyManager::DoCreateBrowserContextServices")
+      "BrowserContextDependencyManager::DoCreateBrowserContextServices");
   create_services_callbacks_.Notify(context);
   DependencyManager::CreateContextServices(context, is_testing_context);
 }
@@ -51,8 +51,7 @@ void BrowserContextDependencyManager::DestroyBrowserContextServices(
   DependencyManager::DestroyContextServices(context);
 }
 
-std::unique_ptr<
-    BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
+base::CallbackListSubscription
 BrowserContextDependencyManager::RegisterCreateServicesCallbackForTesting(
     const CreateServicesCallback& callback) {
   return create_services_callbacks_.Add(callback);

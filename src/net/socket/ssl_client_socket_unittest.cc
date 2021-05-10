@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -37,8 +38,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_and_ct_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
@@ -94,15 +97,16 @@
 #include "third_party/boringssl/src/include/openssl/pem.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using net::test::IsError;
 using net::test::IsOk;
 
 using testing::_;
-using testing::AnyOf;
+using testing::Bool;
+using testing::Combine;
 using testing::Return;
-using testing::Truly;
+using testing::Values;
+using testing::ValuesIn;
 
 namespace net {
 
@@ -707,7 +711,6 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
             std::make_unique<TestSSLConfigService>(SSLContextConfig())),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
         transport_security_state_(std::make_unique<TransportSecurityState>()),
-        ct_verifier_(std::make_unique<DoNothingCTVerifier>()),
         ct_policy_enforcer_(std::make_unique<MockCTPolicyEnforcer>()),
         ssl_client_session_cache_(std::make_unique<SSLClientSessionCache>(
             SSLClientSessionCache::Config())),
@@ -715,7 +718,6 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
             std::make_unique<SSLClientContext>(ssl_config_service_.get(),
                                                cert_verifier_.get(),
                                                transport_security_state_.get(),
-                                               ct_verifier_.get(),
                                                ct_policy_enforcer_.get(),
                                                ssl_client_session_cache_.get(),
                                                nullptr)) {
@@ -880,7 +882,6 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
-  std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   std::unique_ptr<SSLClientContext> context_;
@@ -1005,6 +1006,17 @@ class SSLClientSocketVersionTest
     : public SSLClientSocketTest,
       public ::testing::WithParamInterface<uint16_t> {
  protected:
+  SSLClientSocketVersionTest() {
+    // If the test is using legacy TLS versions, explicitly disable warnings
+    // (e.g., to cover cases like post-interstitial or when legacy TLS is
+    // explicitly allowed via configuration).
+    if (version() < SSL_PROTOCOL_VERSION_TLS1_2) {
+      SSLContextConfig config;
+      config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1;
+      ssl_config_service_->UpdateSSLConfigAndNotify(config);
+    }
+  }
+
   uint16_t version() const { return GetParam(); }
 
   SSLServerConfig GetServerConfig() {
@@ -1027,6 +1039,14 @@ class SSLClientSocketReadTest
           std::make_unique<ClientSocketFactoryWithoutReadIfReady>(
               socket_factory_);
       socket_factory_ = wrapped_socket_factory_.get();
+    }
+    // If the test is using legacy TLS versions, explicitly disable warnings
+    // (e.g., to cover cases like post-interstitial or when legacy TLS is
+    // explicitly allowed via configuration).
+    if (version() < SSL_PROTOCOL_VERSION_TLS1_2) {
+      SSLContextConfig config;
+      config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1;
+      ssl_config_service_->UpdateSSLConfigAndNotify(config);
     }
   }
 
@@ -1088,13 +1108,12 @@ class SSLClientSocketReadTest
   std::unique_ptr<ClientSocketFactory> wrapped_socket_factory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SSLClientSocketReadTest,
-    ::testing::Combine(::testing::Values(READ_IF_READY_SUPPORTED,
-                                         READ_IF_READY_NOT_SUPPORTED),
-                       ::testing::Values(TEST_SSL_READ_IF_READY, TEST_SSL_READ),
-                       ::testing::ValuesIn(GetTLSVersions())));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SSLClientSocketReadTest,
+                         Combine(Values(READ_IF_READY_SUPPORTED,
+                                        READ_IF_READY_NOT_SUPPORTED),
+                                 Values(TEST_SSL_READ_IF_READY, TEST_SSL_READ),
+                                 ValuesIn(GetTLSVersions())));
 
 // Verifies the correctness of GetSSLCertRequestInfo.
 class SSLClientSocketCertRequestInfoTest : public SSLClientSocketVersionTest {
@@ -1236,7 +1255,7 @@ int MakeHTTPRequest(StreamSocket* socket) {
   TestCompletionCallback callback;
   while (!request.empty()) {
     auto request_buffer =
-        base::MakeRefCounted<StringIOBuffer>(request.as_string());
+        base::MakeRefCounted<StringIOBuffer>(std::string(request));
     int rv = callback.GetResult(
         socket->Write(request_buffer.get(), request_buffer->size(),
                       callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -1457,12 +1476,9 @@ class HangingCertVerifier : public CertVerifier {
 
 }  // namespace
 
-// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
-// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
-
 INSTANTIATE_TEST_SUITE_P(TLSVersion,
                          SSLClientSocketVersionTest,
-                         ::testing::ValuesIn(GetTLSVersions()));
+                         ValuesIn(GetTLSVersions()));
 
 TEST_P(SSLClientSocketVersionTest, Connect) {
   ASSERT_TRUE(
@@ -1544,8 +1560,7 @@ TEST_P(SSLClientSocketVersionTest, SocketDestroyedDuringVerify) {
   HangingCertVerifier verifier;
   context_ = std::make_unique<SSLClientContext>(
       ssl_config_service_.get(), &verifier, transport_security_state_.get(),
-      ct_verifier_.get(), ct_policy_enforcer_.get(),
-      ssl_client_session_cache_.get(), nullptr);
+      ct_policy_enforcer_.get(), ssl_client_session_cache_.get(), nullptr);
 
   TestCompletionCallback callback;
   auto transport = std::make_unique<TCPClientSocket>(addr(), nullptr, nullptr,
@@ -2704,7 +2719,7 @@ TEST_P(SSLClientSocketVersionTest, VerifyReturnChainProperlyOrdered) {
 
 INSTANTIATE_TEST_SUITE_P(TLSVersion,
                          SSLClientSocketCertRequestInfoTest,
-                         ::testing::ValuesIn(GetTLSVersions()));
+                         ValuesIn(GetTLSVersions()));
 
 TEST_P(SSLClientSocketCertRequestInfoTest,
        DontRequestClientCertsIfServerCertInvalid) {
@@ -2786,20 +2801,24 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
   base::StringPiece sct_ext("\x00\x06\x00\x04test", 8);
 
   SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.signed_cert_timestamps_tls_ext = sct_ext.as_string();
+  ssl_options.signed_cert_timestamps_tls_ext = std::string(sct_ext);
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  MockCTVerifier ct_verifier;
-  context_ = std::make_unique<SSLClientContext>(
-      ssl_config_service_.get(), cert_verifier_.get(),
-      transport_security_state_.get(), &ct_verifier, ct_policy_enforcer_.get(),
-      ssl_client_session_cache_.get(), nullptr);
+  auto ct_verifier = std::make_unique<MockCTVerifier>();
 
   // Check that the SCT list is extracted from the TLS extension as expected,
   // while also simulating that it was an unparsable response.
   SignedCertificateTimestampAndStatusList sct_list;
-  EXPECT_CALL(ct_verifier, Verify(_, _, _, sct_ext, _, _))
+  EXPECT_CALL(*ct_verifier, Verify(_, _, _, sct_ext, _, _))
       .WillOnce(testing::SetArgPointee<4>(sct_list));
+
+  auto cert_and_ct_verifier = std::make_unique<CertAndCTVerifier>(
+      std::move(cert_verifier_), std::move(ct_verifier));
+
+  context_ = std::make_unique<SSLClientContext>(
+      ssl_config_service_.get(), cert_and_ct_verifier.get(),
+      transport_security_state_.get(), ct_policy_enforcer_.get(),
+      ssl_client_session_cache_.get(), nullptr);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
@@ -3265,8 +3284,8 @@ TEST_P(SSLClientSocketVersionTest,
 
   // Using a different NetworkIsolationKey shares session cache key because
   // sharding is disabled.
-  const auto kOriginA = url::Origin::Create(GURL("https://a.test"));
-  ssl_config.network_isolation_key = NetworkIsolationKey(kOriginA, kOriginA);
+  const SchemefulSite kSiteA(GURL("https://a.test"));
+  ssl_config.network_isolation_key = NetworkIsolationKey(kSiteA, kSiteA);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3274,8 +3293,8 @@ TEST_P(SSLClientSocketVersionTest,
   EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
   sock_.reset();
 
-  const auto kOriginB = url::Origin::Create(GURL("https://a.test"));
-  ssl_config.network_isolation_key = NetworkIsolationKey(kOriginB, kOriginB);
+  const SchemefulSite kSiteB(GURL("https://a.test"));
+  ssl_config.network_isolation_key = NetworkIsolationKey(kSiteB, kSiteB);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3292,10 +3311,10 @@ TEST_P(SSLClientSocketVersionTest,
   feature_list.InitAndEnableFeature(
       features::kPartitionSSLSessionsByNetworkIsolationKey);
 
-  const auto kOriginA = url::Origin::Create(GURL("https://a.test"));
-  const auto kOriginB = url::Origin::Create(GURL("https://b.test"));
-  const NetworkIsolationKey kNetworkIsolationKeyA(kOriginA, kOriginA);
-  const NetworkIsolationKey kNetworkIsolationKeyB(kOriginB, kOriginB);
+  const SchemefulSite kSiteA(GURL("https://a.test"));
+  const SchemefulSite kSiteB(GURL("https://b.test"));
+  const NetworkIsolationKey kNetworkIsolationKeyA(kSiteA, kSiteA);
+  const NetworkIsolationKey kNetworkIsolationKeyB(kSiteB, kSiteB);
 
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
@@ -4029,7 +4048,7 @@ TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
 
 INSTANTIATE_TEST_SUITE_P(RSAKeyUsageInstantiation,
                          SSLClientSocketKeyUsageTest,
-                         ::testing::ValuesIn(kKeyUsageTests));
+                         ValuesIn(kKeyUsageTests));
 
 // Test that when CT is required (in this case, by the delegate), the
 // absence of CT information is a socket error.
@@ -4393,7 +4412,7 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   transport_security_state_->AddExpectCT(
       host_port_pair().host(), expiry, true /* enforce */,
-      GURL("https://example-report.test"), NetworkIsolationKey());
+      GURL("https://example-report.test"), network_isolation_key);
   MockExpectCTReporter reporter;
   transport_security_state_->SetExpectCTReporter(&reporter);
 
@@ -4546,9 +4565,8 @@ TEST_P(SSLClientSocketVersionTest, SCTAuditingReportCollected) {
   MockSCTAuditingDelegate sct_auditing_delegate;
   context_ = std::make_unique<SSLClientContext>(
       ssl_config_service_.get(), cert_verifier_.get(),
-      transport_security_state_.get(), ct_verifier_.get(),
-      ct_policy_enforcer_.get(), ssl_client_session_cache_.get(),
-      &sct_auditing_delegate);
+      transport_security_state_.get(), ct_policy_enforcer_.get(),
+      ssl_client_session_cache_.get(), &sct_auditing_delegate);
 
   EXPECT_CALL(sct_auditing_delegate, IsSCTAuditingEnabled())
       .WillRepeatedly(Return(true));
@@ -5467,13 +5485,11 @@ class TLS13DowngradeTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     TLS13DowngradeTest,
-    ::testing::Combine(
-        ::testing::Values(
-            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
-            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
-            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2),
-        ::testing::Values(false, true),
-        ::testing::Values(false, true)));
+    Combine(Values(SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
+                   SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
+                   SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2),
+            Bool(),
+            Bool()));
 
 TEST_P(TLS13DowngradeTest, DowngradeEnforced) {
   SpawnedTestServer::SSLOptions ssl_options;
@@ -5485,6 +5501,13 @@ TEST_P(TLS13DowngradeTest, DowngradeEnforced) {
 
   SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  // If the test is using legacy TLS versions, explicitly disable warnings
+  // (e.g., to cover cases like post-interstitial or when legacy TLS is
+  // explicitly allowed via configuration).
+  if (tls_max_version() <
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2) {
+    config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1;
+  }
   ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
   CertVerifyResult verify_result;
@@ -5542,7 +5565,7 @@ class SSLHandshakeDetailsTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SSLHandshakeDetailsTest,
-                         ::testing::ValuesIn(kSSLHandshakeDetailsParams));
+                         ValuesIn(kSSLHandshakeDetailsParams));
 
 TEST_P(SSLHandshakeDetailsTest, Metrics) {
   // Enable all test features in the server.
@@ -5557,6 +5580,11 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
   SSLContextConfig client_context_config;
   client_context_config.version_min = GetParam().version;
   client_context_config.version_max = GetParam().version;
+  // If the test is using legacy TLS versions, explicitly disable warnings
+  // (e.g., to cover cases like post-interstitial or when legacy TLS is
+  // explicitly allowed via configuration).
+  if (GetParam().version < SSL_PROTOCOL_VERSION_TLS1_2)
+    client_context_config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1;
   ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
 
   SSLConfig client_config;
@@ -5861,6 +5889,10 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonReadServerHello) {
   EXPECT_GT(size, 0);
   EXPECT_EQ('1', buf->data()[size - 1]);
 
+  // 0-RTT metrics are logged on a PostTask, so if Read returns synchronously,
+  // it is possible the metrics haven't been picked up yet.
+  base::RunLoop().RunUntilIdle();
+
   SSLInfo ssl_info;
   ASSERT_TRUE(GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
@@ -5868,17 +5900,11 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonReadServerHello) {
   histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
 }
 
-TEST_F(SSLClientSocketTest, VersionOverride) {
-  // Enable all test features in the server.
+TEST_F(SSLClientSocketTest, VersionMaxOverride) {
   SSLServerConfig server_config;
-  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
-
-  SSLContextConfig context_config;
-  context_config.version_min = SSL_PROTOCOL_VERSION_TLS1_1;
-  context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
-  ssl_config_service_->UpdateSSLConfigAndNotify(context_config);
 
   // Connecting normally uses the global configuration.
   SSLConfig config;
@@ -5887,7 +5913,7 @@ TEST_F(SSLClientSocketTest, VersionOverride) {
   EXPECT_THAT(rv, IsOk());
   SSLInfo info;
   ASSERT_TRUE(sock_->GetSSLInfo(&info));
-  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_1,
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_3,
             SSLConnectionStatusToVersion(info.connection_status));
 
   // Individual sockets may override the maximum version.
@@ -5897,12 +5923,87 @@ TEST_F(SSLClientSocketTest, VersionOverride) {
   ASSERT_TRUE(sock_->GetSSLInfo(&info));
   EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
             SSLConnectionStatusToVersion(info.connection_status));
+}
+
+TEST_F(SSLClientSocketTest, VersionMinOverride) {
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  // Connecting normally uses the global configuration.
+  SSLConfig config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
+            SSLConnectionStatusToVersion(info.connection_status));
 
   // Individual sockets may also override the minimum version.
   config.version_min_override = SSL_PROTOCOL_VERSION_TLS1_3;
   config.version_max_override = SSL_PROTOCOL_VERSION_TLS1_3;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+class SSLClientSocketAlpsTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  SSLClientSocketAlpsTest()
+      : client_alps_enabled_(std::get<0>(GetParam())),
+        server_alps_enabled_(std::get<1>(GetParam())) {}
+  ~SSLClientSocketAlpsTest() override = default;
+  const bool client_alps_enabled_;
+  const bool server_alps_enabled_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, SSLClientSocketAlpsTest, Combine(Bool(), Bool()));
+
+TEST_P(SSLClientSocketAlpsTest, Alps) {
+  const std::string server_data = "server sends some test data";
+  const std::string client_data = "client also sends some data";
+
+  SSLServerConfig server_config;
+  server_config.alpn_protos = {kProtoHTTP2};
+  if (server_alps_enabled_) {
+    server_config.application_settings[kProtoHTTP2] =
+        std::vector<uint8_t>(server_data.begin(), server_data.end());
+  }
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+  client_config.alpn_protos = {kProtoHTTP2};
+  if (client_alps_enabled_) {
+    client_config.application_settings[kProtoHTTP2] =
+        std::vector<uint8_t>(client_data.begin(), client_data.end());
+  }
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_3,
+            SSLConnectionStatusToVersion(info.connection_status));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
+
+  EXPECT_EQ(true, sock_->WasAlpnNegotiated());
+  EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
+
+  // ALPS is negotiated only if ALPS is enabled both on client and server.
+  const auto alps_data_received_by_client = sock_->GetPeerApplicationSettings();
+
+  if (client_alps_enabled_ && server_alps_enabled_) {
+    ASSERT_TRUE(alps_data_received_by_client.has_value());
+    EXPECT_EQ(server_data, alps_data_received_by_client.value());
+  } else {
+    EXPECT_FALSE(alps_data_received_by_client.has_value());
+  }
 }
 
 }  // namespace net

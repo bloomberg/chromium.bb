@@ -23,6 +23,15 @@
   contain: strict;
 }
 
+:host(.invisible) {
+  visibility: hidden;
+  height: 0;
+}
+
+:host(.collapsed) {
+  visibility: collapse;
+  height: 0;
+}
 /* The font we use on Windows takes up more vertical space, so adjust
  * the height of the metrics sidebar pane accordingly.
  */
@@ -33,54 +42,62 @@
 .metrics .label {
   position: absolute;
   font-size: 10px;
-  margin-left: 3px;
-  padding-left: 2px;
-  padding-right: 2px;
+  left: 4px;
 }
 
 .metrics .position {
-  border: 1px rgb(66% 66% 66%) dotted;
-  background-color: white;
+  border: 1px rgb(66% 66% 66%) dotted; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   display: inline-block;
   text-align: center;
   padding: 3px;
   margin: 3px;
+  position: relative;
 }
 
 .metrics .margin {
-  border: 1px dashed rgb(48 57 66);
-  background-color: white;
+  border: 1px dashed rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
   padding: 3px 6px;
   margin: 3px;
+  position: relative;
 }
 
 .metrics .border {
-  border: 1px black solid;
-  background-color: white;
+  border: 1px #000 solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
   padding: 3px 6px;
   margin: 3px;
+  position: relative;
 }
 
 .metrics .padding {
-  border: 1px grey dashed;
-  background-color: white;
+  border: 1px #808080 dashed; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
   padding: 3px 6px;
   margin: 3px;
+  position: relative;
+  min-width: 120px;
 }
 
 .metrics .content {
   position: static;
-  border: 1px gray solid;
-  background-color: white;
+  border: 1px #808080 solid; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-background);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
@@ -117,7 +134,6 @@
 .metrics .bottom {
   display: inline-block;
 }
-
 /* All computed layout attributes except position have a quite light
  * background color applied to them, so the default light font in dark
  * mode is very low contrast. Therefore we swap back to a dark font by
@@ -129,7 +145,6 @@
 :host-context(.-theme-with-dark-background) .metrics .content {
   color: #222;
 }
-
 /* When you hover over margin the rest of the items get given a black
  * background and so then the black text we set above means the numbers
  * are invisible. So if you're hovering over the margin we set the

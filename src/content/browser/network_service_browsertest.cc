@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -37,6 +38,7 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -59,7 +61,7 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
       const GURL& url) override {
     std::string foo(url.path());
     if (url.path() == "/nobinding/")
-      web_ui->SetBindings(0);
+      web_ui->SetBindings(BINDINGS_POLICY_NONE);
     return HasWebUIScheme(url) ? std::make_unique<WebUIController>(web_ui)
                                : nullptr;
   }
@@ -69,10 +71,6 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
   bool UseWebUIForURL(BrowserContext* browser_context,
                       const GURL& url) override {
-    return HasWebUIScheme(url);
-  }
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 };
@@ -259,8 +257,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  context_params->cert_verifier_params =
-      GetCertVerifierParams(network::mojom::CertVerifierCreationParams::New());
+  context_params->cert_verifier_params = GetCertVerifierParams(
+      cert_verifier::mojom::CertVerifierCreationParams::New());
   context_params->http_cache_path = GetCacheDirectory();
   GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
@@ -426,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
   // If the renderer is hung the test will hang.
 }
 
-int64_t GetPreloadedFirstPartySetCountFromNetworkService() {
+int64_t GetFirstPartySetCountFromNetworkService() {
   DCHECK(!content::IsInProcessNetworkService());
 
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
@@ -437,8 +435,7 @@ int64_t GetPreloadedFirstPartySetCountFromNetworkService() {
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
   int64_t count = 0;
-  EXPECT_TRUE(
-      network_service_test->GetPreloadedFirstPartySetEntriesCount(&count));
+  EXPECT_TRUE(network_service_test->GetFirstPartySetEntriesCount(&count));
 
   return count;
 }
@@ -459,11 +456,43 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceWithFirstPartySetBrowserTest,
   if (IsInProcessNetworkService())
     return;
 
-  EXPECT_EQ(GetPreloadedFirstPartySetCountFromNetworkService(), 2);
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 3);
 
   SimulateNetworkServiceCrash();
 
-  EXPECT_EQ(GetPreloadedFirstPartySetCountFromNetworkService(), 2);
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 3);
+}
+
+class NetworkServiceWithoutFirstPartySetBrowserTest
+    : public NetworkServiceBrowserTest {
+ public:
+  NetworkServiceWithoutFirstPartySetBrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Supplying this switch should not enable the feature, since the feature
+    // was explicitly disabled.
+    NetworkServiceBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        network::switches::kUseFirstPartySet,
+        "https://example.com,https://member1.com,https://member2.com");
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceWithoutFirstPartySetBrowserTest,
+                       GetsEnableFirstPartySetsSwitch) {
+  if (IsInProcessNetworkService())
+    return;
+
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 0);
+
+  SimulateNetworkServiceCrash();
+
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 0);
 }
 
 // Tests that CORS is performed by the network service when |factory_override|
@@ -666,7 +695,7 @@ class NetworkServiceWithUDPSocketLimit : public NetworkServiceBrowserTest {
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
     context_params->cert_verifier_params = GetCertVerifierParams(
-        network::mojom::CertVerifierCreationParams::New());
+        cert_verifier::mojom::CertVerifierCreationParams::New());
     GetNetworkService()->CreateNetworkContext(
         network_context.BindNewPipeAndPassReceiver(),
         std::move(context_params));

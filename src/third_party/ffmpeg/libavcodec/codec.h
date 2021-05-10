@@ -236,7 +236,9 @@ typedef struct AVCodec {
      *****************************************************************
      */
     int priv_data_size;
+#if FF_API_NEXT
     struct AVCodec *next;
+#endif
     /**
      * @name Frame-level threading support functions
      * @{
@@ -318,7 +320,7 @@ typedef struct AVCodec {
      *
      * The user can only access this field via avcodec_get_hw_config().
      */
-    const struct AVCodecHWConfigInternal **hw_configs;
+    const struct AVCodecHWConfigInternal *const *hw_configs;
 
     /**
      * List of supported codec_tags, terminated by FF_CODEC_TAGS_END.

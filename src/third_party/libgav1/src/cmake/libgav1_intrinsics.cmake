@@ -38,6 +38,12 @@ macro(libgav1_get_intrinsics_flag_for_suffix)
     if(NOT MSVC)
       set(${intrinsics_VARIABLE} "${LIBGAV1_NEON_INTRINSICS_FLAG}")
     endif()
+  elseif(intrinsics_SUFFIX MATCHES "avx2")
+    if(MSVC)
+      set(${intrinsics_VARIABLE} "/arch:AVX2")
+    else()
+      set(${intrinsics_VARIABLE} "-mavx2")
+    endif()
   elseif(intrinsics_SUFFIX MATCHES "sse4")
     if(NOT MSVC)
       set(${intrinsics_VARIABLE} "-msse4.1")
@@ -57,7 +63,7 @@ endmacro()
 # necessary: libgav1_process_intrinsics_sources(SOURCES <sources>)
 #
 # Detects requirement for intrinsics flags using source file name suffix.
-# Currently supports only SSE4.1.
+# Currently supports AVX2 and SSE4.1.
 macro(libgav1_process_intrinsics_sources)
   unset(arg_TARGET)
   unset(arg_SOURCES)
@@ -69,6 +75,25 @@ macro(libgav1_process_intrinsics_sources)
   if(NOT (arg_TARGET AND arg_SOURCES))
     message(FATAL_ERROR "libgav1_process_intrinsics_sources: TARGET and "
                         "SOURCES required.")
+  endif()
+
+  if(LIBGAV1_ENABLE_AVX2 AND libgav1_have_avx2)
+    unset(avx2_sources)
+    list(APPEND avx2_sources ${arg_SOURCES})
+
+    list(FILTER avx2_sources INCLUDE REGEX
+         "${libgav1_avx2_source_file_suffix}$")
+
+    if(avx2_sources)
+      unset(avx2_flags)
+      libgav1_get_intrinsics_flag_for_suffix(SUFFIX
+                                             ${libgav1_avx2_source_file_suffix}
+                                             VARIABLE avx2_flags)
+      if(avx2_flags)
+        libgav1_set_compiler_flags_for_sources(SOURCES ${avx2_sources} FLAGS
+                                               ${avx2_flags})
+      endif()
+    endif()
   endif()
 
   if(LIBGAV1_ENABLE_SSE4_1 AND libgav1_have_sse4)

@@ -9,30 +9,27 @@
 namespace openscreen {
 namespace cast {
 
-LoopingFileSender::LoopingFileSender(TaskRunner* task_runner,
+LoopingFileSender::LoopingFileSender(Environment* environment,
                                      const char* path,
-                                     const IPEndpoint& remote_endpoint,
                                      SenderSession::ConfiguredSenders senders,
                                      int max_bitrate)
-    : env_(&Clock::now, task_runner),
+    : env_(environment),
       path_(path),
-      packet_router_(&env_),
+      packet_router_(env_),
       max_bitrate_(max_bitrate),
       audio_encoder_(senders.audio_sender->config().channels,
                      StreamingOpusEncoder::kDefaultCastAudioFramesPerSecond,
                      senders.audio_sender),
       video_encoder_(StreamingVp8Encoder::Parameters{},
-                     env_.task_runner(),
+                     env_->task_runner(),
                      senders.video_sender),
-      next_task_(env_.now_function(), env_.task_runner()),
-      console_update_task_(env_.now_function(), env_.task_runner()) {
-  env_.set_remote_endpoint(remote_endpoint);
+      next_task_(env_->now_function(), env_->task_runner()),
+      console_update_task_(env_->now_function(), env_->task_runner()) {
   // Opus and Vp8 are the default values for the config, and if these are set
   // to a different value that means we offered a codec that we do not
   // support, which is a developer error.
   OSP_CHECK(senders.audio_config.codec == AudioCodec::kOpus);
   OSP_CHECK(senders.video_config.codec == VideoCodec::kVp8);
-  OSP_LOG_INFO << "Streaming to " << remote_endpoint << "...";
   OSP_LOG_INFO << "Max allowed media bitrate (audio + video) will be "
                << max_bitrate_;
   bandwidth_being_utilized_ = max_bitrate_ / 2;
@@ -91,11 +88,11 @@ void LoopingFileSender::SendFileAgain() {
 
   OSP_DCHECK_EQ(num_capturers_running_, 0);
   num_capturers_running_ = 2;
-  capture_start_time_ = latest_frame_time_ = env_.now() + seconds(1);
-  audio_capturer_.emplace(&env_, path_, audio_encoder_.num_channels(),
+  capture_start_time_ = latest_frame_time_ = env_->now() + seconds(1);
+  audio_capturer_.emplace(env_, path_, audio_encoder_.num_channels(),
                           audio_encoder_.sample_rate(), capture_start_time_,
                           this);
-  video_capturer_.emplace(&env_, path_, capture_start_time_, this);
+  video_capturer_.emplace(env_, path_, capture_start_time_, this);
 
   next_task_.ScheduleFromNow([this] { ControlForNetworkCongestion(); },
                              kCongestionCheckInterval);
@@ -135,7 +132,7 @@ void LoopingFileSender::OnVideoFrame(const AVFrame& av_frame,
 void LoopingFileSender::UpdateStatusOnConsole() {
   const Clock::duration elapsed = latest_frame_time_ - capture_start_time_;
   const auto seconds_part = to_seconds(elapsed);
-  const auto millis_part = to_microseconds(elapsed - seconds_part);
+  const auto millis_part = to_milliseconds(elapsed - seconds_part);
   // The control codes here attempt to erase the current line the cursor is
   // on, and then print out the updated status text. If the terminal does not
   // support simple ANSI escape codes, the following will still work, but

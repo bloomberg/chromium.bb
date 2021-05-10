@@ -20,6 +20,12 @@ id<GREYMatcher> WindowWithNumber(int window_number) {
   return [ChromeMatchersAppInterface windowWithNumber:window_number];
 }
 
+id<GREYMatcher> MatchInWindowWithNumber(int window_number,
+                                        id<GREYMatcher> matcher) {
+  return grey_allOf(matcher, grey_ancestor(WindowWithNumber(window_number)),
+                    nil);
+}
+
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabel:label];
 }
@@ -249,6 +255,10 @@ id<GREYMatcher> SyncSettingsConfirmButton() {
   return [ChromeMatchersAppInterface syncSettingsConfirmButton];
 }
 
+id<GREYMatcher> AutofillCreditCardEditTableView() {
+  return [ChromeMatchersAppInterface autofillCreditCardEditTableView];
+}
+
 id<GREYMatcher> AutofillCreditCardTableView() {
   return [ChromeMatchersAppInterface autofillCreditCardTableView];
 }
@@ -279,10 +289,6 @@ id<GREYMatcher> AddCreditCardButton() {
 
 id<GREYMatcher> AddCreditCardCancelButton() {
   return [ChromeMatchersAppInterface addCreditCardCancelButton];
-}
-
-id<GREYMatcher> CreditCardScannerView() {
-  return [ChromeMatchersAppInterface creditCardScannerView];
 }
 
 id<GREYMatcher> ToolsMenuView() {
@@ -343,6 +349,11 @@ id<GREYMatcher> GoogleServicesSettingsView() {
 
 id<GREYMatcher> SettingsMenuBackButton() {
   return [ChromeMatchersAppInterface settingsMenuBackButton];
+}
+
+id<GREYMatcher> SettingsMenuBackButton(int window_number) {
+  return [ChromeMatchersAppInterface
+      settingsMenuBackButtonInWindowWithNumber:window_number];
 }
 
 id<GREYMatcher> SettingsMenuPrivacyButton() {
@@ -429,8 +440,16 @@ id<GREYMatcher> SystemSelectionCallout() {
   return [ChromeMatchersAppInterface systemSelectionCallout];
 }
 
+id<GREYMatcher> SystemSelectionCalloutLinkToTextButton() {
+  return [ChromeMatchersAppInterface systemSelectionCalloutLinkToTextButton];
+}
+
 id<GREYMatcher> SystemSelectionCalloutCopyButton() {
   return [ChromeMatchersAppInterface systemSelectionCalloutCopyButton];
+}
+
+id<GREYMatcher> CopyActivityButton() API_AVAILABLE(ios(13)) {
+  return [ChromeMatchersAppInterface copyActivityButton];
 }
 
 id<GREYMatcher> CopyLinkButton(BOOL use_new_string) {

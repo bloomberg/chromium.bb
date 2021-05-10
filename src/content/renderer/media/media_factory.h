@@ -64,9 +64,6 @@ struct RenderFrameMediaPlaybackOptions;
 // Assist to RenderFrameImpl in creating various media clients.
 class MediaFactory {
  public:
-  // Helper function returning whether VideoSurfaceLayer should be enabled.
-  static blink::WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode();
-
   // Helper function returning whether VideoSurfaceLayer should be enabled for
   // MediaStreams.
   static bool VideoSurfaceLayerEnabledForMS();
@@ -82,14 +79,6 @@ class MediaFactory {
   // factory duties. This should be called by RenderFrameImpl as soon as its own
   // interface provider is bound.
   void SetupMojo();
-
-  // Creates the VideoFrameSubmitter and its task_runner based on the current
-  // SurfaceLayerMode;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
-      scoped_refptr<base::SingleThreadTaskRunner>*
-          video_frame_compositor_task_runner,
-      const cc::LayerTreeSettings& settings,
-      media::MediaLog* media_log);
 
   // Creates a new WebMediaPlayer for the given |source| (either a stream or
   // URL). All pointers other than |initial_cdm| are required to be non-null.
@@ -108,12 +97,27 @@ class MediaFactory {
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
       viz::FrameSinkId parent_frame_sink_id,
-      const cc::LayerTreeSettings& settings);
+      const cc::LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          main_thread_compositor_task_runner);
 
   // Provides an EncryptedMediaClient to connect blink's EME layer to media's
   // implementation of requestMediaKeySystemAccess. Will always return the same
   // client whose lifetime is tied to this Factory (same as the RenderFrame).
   blink::WebEncryptedMediaClient* EncryptedMediaClient();
+
+  // Helper function so that RenderThreadImpl can create a DecoderFactory for
+  // WebRTC.  Ideally, it would ask per-frame for a decoder factory, but that
+  // requires changing quite a bit about WebRTC initialization.
+  //
+  // TODO(crbug.com/1157149): RenderThreadImpl should not own these.  Instead,
+  // ownership should be per-frame.  In that case, this doesn't need to be here;
+  // RenderFrameImpl already has as whole MediaFactory instance.  We'd just need
+  // to expose an instance method to get the decoder factory.
+  //
+  // `interface_factory` must outlive the returned DecoderFactory.
+  static std::unique_ptr<media::DefaultDecoderFactory> CreateDecoderFactory(
+      media::mojom::InterfaceFactory* interface_factory);
 
  private:
   std::unique_ptr<media::RendererFactorySelector> CreateRendererFactorySelector(
@@ -130,7 +134,9 @@ class MediaFactory {
       const blink::WebString& sink_id,
       blink::WebLocalFrame* frame,
       viz::FrameSinkId parent_frame_sink_id,
-      const cc::LayerTreeSettings& settings);
+      const cc::LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          main_thread_compositor_task_runner);
 
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.

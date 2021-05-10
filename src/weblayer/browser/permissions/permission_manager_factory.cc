@@ -8,6 +8,7 @@
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/contexts/payment_handler_permission_context.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -66,8 +67,11 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<GeolocationPermissionContext>(
           browser_context,
           std::make_unique<GeolocationPermissionContextDelegate>());
+  permission_contexts[ContentSettingsType::PAYMENT_HANDLER] =
+      std::make_unique<payments::PaymentHandlerPermissionContext>(
+          browser_context);
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   permission_contexts[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =
       std::make_unique<SafePermissionContext>(
           browser_context, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
@@ -88,7 +92,7 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   // For now, all requests are denied. As features are added, their permission
   // contexts can be added here instead of DeniedPermissionContext.
   for (content::PermissionType type : content::GetAllPermissionTypes()) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
     // PROTECTED_MEDIA_IDENTIFIER is only supported on Android/ChromeOS.
     if (type == content::PermissionType::PROTECTED_MEDIA_IDENTIFIER)
       continue;

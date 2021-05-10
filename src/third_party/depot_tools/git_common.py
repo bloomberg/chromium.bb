@@ -75,7 +75,7 @@ FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 
 
 # NOTE: This list is DEPRECATED in favor of the Infra Git wrapper:
-# https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+# https://chromium.googlesource.com/infra/infra/+/HEAD/go/src/infra/tools/git
 #
 # New entries should be added to the Git wrapper, NOT to this list. "git_retry"
 # is, similarly, being deprecated in favor of the Git wrapper.
@@ -629,7 +629,7 @@ def parse_commitrefs(*commitrefs):
 
   A commitref is anything which can resolve to a commit. Popular examples:
     * 'HEAD'
-    * 'origin/master'
+    * 'origin/main'
     * 'cool_branch~2'
   """
   try:
@@ -743,7 +743,7 @@ def run_stream(*cmd, **kwargs):
   stderr is dropped to avoid races if the process outputs to both stdout and
   stderr.
   """
-  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stderr', subprocess2.DEVNULL)
   kwargs.setdefault('stdout', subprocess2.PIPE)
   kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
@@ -760,7 +760,7 @@ def run_stream_with_retcode(*cmd, **kwargs):
 
   Raises subprocess2.CalledProcessError on nonzero return code.
   """
-  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stderr', subprocess2.DEVNULL)
   kwargs.setdefault('stdout', subprocess2.PIPE)
   kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
@@ -1045,10 +1045,11 @@ def get_branches_info(include_tracking_status):
     (branch, branch_hash, upstream_branch, tracking_status) = line.split(':')
 
     commits = None
-    base = get_or_create_merge_base(branch)
-    if base:
-      commits_list = run('rev-list', '--count', branch, '^%s' % base, '--')
-      commits = int(commits_list) or None
+    if include_tracking_status:
+      base = get_or_create_merge_base(branch)
+      if base:
+        commits_list = run('rev-list', '--count', branch, '^%s' % base, '--')
+        commits = int(commits_list) or None
 
     behind_match = re.search(r'behind (\d+)', tracking_status)
     behind = int(behind_match.group(1)) if behind_match else None

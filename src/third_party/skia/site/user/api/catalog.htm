@@ -3777,7 +3777,7 @@
     "name": "Xor"
 },
     "Canvas_Clip": {
-    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, scalePaint;\n    redPaint.setAntiAlias(true);\n    redPaint.setColor(SK_ColorRED);\n    canvas->save();\n    for (bool antialias : { false, true } ) {\n        canvas->save();\n        canvas->clipRect(SkRect::MakeWH(19.5f, 11.5f), antialias);\n        canvas->drawCircle(17, 11, 8, redPaint);\n        canvas->restore();\n        canvas->translate(16, 0);\n    }\n    canvas->restore();\n    SkMatrix matrix;\n    matrix.setScale(6, 6);\n    scalePaint.setImageFilter(\n            SkImageFilter::MakeMatrixFilter(matrix, kNone_SkFilterQuality, nullptr));\n    SkCanvas::SaveLayerRec saveLayerRec(\n            nullptr, &scalePaint, SkCanvas::kInitWithPrevious_SaveLayerFlag);\n    canvas->saveLayer(saveLayerRec);\n    canvas->restore();\n}",
+    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, scalePaint;\n    redPaint.setAntiAlias(true);\n    redPaint.setColor(SK_ColorRED);\n    canvas->save();\n    for (bool antialias : { false, true } ) {\n        canvas->save();\n        canvas->clipRect(SkRect::MakeWH(19.5f, 11.5f), antialias);\n        canvas->drawCircle(17, 11, 8, redPaint);\n        canvas->restore();\n        canvas->translate(16, 0);\n    }\n    canvas->restore();\n    SkMatrix matrix;\n    matrix.setScale(6, 6);\n    scalePaint.setImageFilter(\n            SkImageFilters::MatrixTransform(matrix, SkSamplingOptions(), nullptr));\n    SkCanvas::SaveLayerRec saveLayerRec(\n            nullptr, &scalePaint, SkCanvas::kInitWithPrevious_SaveLayerFlag);\n    canvas->saveLayer(saveLayerRec);\n    canvas->restore();\n}",
     "width": 256,
     "height": 90,
     "hash": "862cc026601a41a58df49c0b9f0d7777",
@@ -4609,7 +4609,7 @@
     "name": "SkCanvas::PointMode"
 },
     "SkCanvas_SaveLayerFlagsSet": {
-    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, bluePaint, scalePaint;\n    redPaint.setColor(SK_ColorRED);\n    canvas->drawCircle(21, 21, 8, redPaint);\n    bluePaint.setColor(SK_ColorBLUE);\n    canvas->drawCircle(31, 21, 8, bluePaint);\n    SkMatrix matrix;\n    matrix.setScale(4, 4);\n    scalePaint.setAlpha(0x40);\n    scalePaint.setImageFilter(\n            SkImageFilter::MakeMatrixFilter(matrix, kNone_SkFilterQuality, nullptr));\n    SkCanvas::SaveLayerRec saveLayerRec(nullptr, &scalePaint,\n            SkCanvas::kInitWithPrevious_SaveLayerFlag);\n    canvas->saveLayer(saveLayerRec);\n    canvas->restore();\n}\n",
+    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, bluePaint, scalePaint;\n    redPaint.setColor(SK_ColorRED);\n    canvas->drawCircle(21, 21, 8, redPaint);\n    bluePaint.setColor(SK_ColorBLUE);\n    canvas->drawCircle(31, 21, 8, bluePaint);\n    SkMatrix matrix;\n    matrix.setScale(4, 4);\n    scalePaint.setAlpha(0x40);\n    scalePaint.setImageFilter(\n            SkImageFilters::MatrixTransform(matrix, SkSamplingOptions(), nullptr));\n    SkCanvas::SaveLayerRec saveLayerRec(nullptr, &scalePaint,\n            SkCanvas::kInitWithPrevious_SaveLayerFlag);\n    canvas->saveLayer(saveLayerRec);\n    canvas->restore();\n}\n",
     "width": 256,
     "height": 160,
     "hash": "05db6a937225e8e31ae3481173d25dae",
@@ -4617,7 +4617,7 @@
     "name": "SkCanvas::SaveLayerFlagsSet"
 },
     "SkCanvas_SaveLayerRec": {
-    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, bluePaint;\n    redPaint.setAntiAlias(true);\n    redPaint.setColor(SK_ColorRED);\n    canvas->drawCircle(21, 21, 8, redPaint);\n    bluePaint.setColor(SK_ColorBLUE);\n    canvas->drawCircle(31, 21, 8, bluePaint);\n    SkMatrix matrix;\n    matrix.setScale(4, 4);\n    auto scaler = SkImageFilter::MakeMatrixFilter(matrix, kNone_SkFilterQuality, nullptr);\n    SkCanvas::SaveLayerRec saveLayerRec(nullptr, nullptr, scaler.get(), 0);\n    canvas->saveLayer(saveLayerRec);\n    canvas->drawCircle(125, 85, 8, redPaint);\n    canvas->restore();\n}\n",
+    "code": "void draw(SkCanvas* canvas) {\n    SkPaint redPaint, bluePaint;\n    redPaint.setAntiAlias(true);\n    redPaint.setColor(SK_ColorRED);\n    canvas->drawCircle(21, 21, 8, redPaint);\n    bluePaint.setColor(SK_ColorBLUE);\n    canvas->drawCircle(31, 21, 8, bluePaint);\n    SkMatrix matrix;\n    matrix.setScale(4, 4);\n    auto scaler = SkImageFilters::MatrixTransform(matrix, SkSamplingOptions(), nullptr);\n    SkCanvas::SaveLayerRec saveLayerRec(nullptr, nullptr, scaler.get(), 0);\n    canvas->saveLayer(saveLayerRec);\n    canvas->drawCircle(125, 85, 8, redPaint);\n    canvas->restore();\n}\n",
     "width": 256,
     "height": 160,
     "hash": "ee8c0b120234e27364f8c9a786cf8f89",
@@ -4831,14 +4831,6 @@
     "hash": "c5bfa944e17ba4a4400dc799f032069c",
     "file": "SkCanvas_Reference",
     "name": "SkCanvas::drawBitmapLattice"
-},
-    "SkCanvas_drawBitmapNine": {
-    "code": "void draw(SkCanvas* canvas) {\n    SkIRect center = { 20, 10, 50, 40 };\n    SkBitmap bitmap;\n    bitmap.allocPixels(SkImageInfo::MakeN32Premul(60, 60));\n    SkCanvas bitCanvas(bitmap);\n    SkPaint paint;\n    SkColor gray = 0xFF000000;\n    int left = 0;\n    for (auto right: { center.fLeft, center.fRight, bitmap.width() } ) {\n        int top = 0;\n        for (auto bottom: { center.fTop, center.fBottom, bitmap.height() } ) {\n            paint.setColor(gray);\n            bitCanvas.drawIRect(SkIRect::MakeLTRB(left, top, right, bottom), paint);\n            gray += 0x001f1f1f;\n            top = bottom;\n        }\n        left = right;\n    }\n    for (auto dest: { 20, 30, 40, 60, 90 } ) {\n        canvas->drawBitmapNine(bitmap, center, SkRect::MakeWH(dest, 110 - dest), nullptr);\n        canvas->translate(dest + 4, 0);\n    }\n}\n",
-    "width": 256,
-    "height": 128,
-    "hash": "e99e7be0d8f67dfacbecf85df585433d",
-    "file": "SkCanvas_Reference",
-    "name": "SkCanvas::drawBitmapNine"
 },
     "SkCanvas_drawBitmapRect": {
     "code": "void draw(SkCanvas* canvas) {\n    uint8_t pixels[][8] = { { 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00},\n                            { 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00},\n                            { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00},\n                            { 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0xFF, 0xFF},\n                            { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},\n                            { 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00},\n                            { 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00},\n                            { 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00} };\n    SkBitmap bitmap;\n    bitmap.installPixels(SkImageInfo::MakeA8(8, 8),\n            (void*) pixels, sizeof(pixels[0]));\n    SkPaint paint;\n    paint.setMaskFilter(SkMaskFilter::MakeBlur(kSolid_SkBlurStyle, 6));\n    for (auto color : { SK_ColorRED, SK_ColorBLUE, 0xFF007F00} ) {\n        paint.setColor(color);\n        canvas->drawBitmapRect(bitmap, SkRect::MakeWH(8, 8), SkRect::MakeWH(32, 32), &paint);\n        canvas->translate(48, 0);\n    }\n}\n",
@@ -9697,4 +9689,3 @@ onclick="handleMouseClick()"
 ></canvas >
 </body>
 </html>
-

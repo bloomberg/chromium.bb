@@ -46,7 +46,6 @@
 #include "media/base/media_switches.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/mac/vp9_super_frame_bitstream_filter.h"
-#include "media/gpu/mac/vt_beta_stubs.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -318,20 +317,8 @@ bool InitializeVideoToolboxInternal() {
 
   session.reset();
 
-  if (base::mac::IsAtLeastOS11()) {
-    // Until our target sdk version is 11.0 we need to dynamically link the
-    // VTRegisterSupplementalVideoDecoderIfAvailable() symbol in.
-    media_gpu_mac::StubPathMap paths;
-    paths[media_gpu_mac::kModuleVt_beta].push_back(FILE_PATH_LITERAL(
-        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
-    if (!media_gpu_mac::InitializeStubs(paths))
-      return true;  // VP9 support is optional.
-
-// __builtin_available doesn't work for 11.0 yet; https://crbug.com/1115294
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+  if (__builtin_available(macOS 11.0, *)) {
     VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
-#pragma clang diagnostic pop
 
     // Create a VP9 decoding session.
     if (!CreateVideoToolboxSession(
@@ -881,6 +868,21 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
         break;
       }
 
+      case H264NALU::kSEIMessage: {
+        H264SEIMessage sei_msg;
+        result = parser_.ParseSEI(&sei_msg);
+        if (result == H264Parser::kOk &&
+            sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
+            sei_msg.recovery_point.recovery_frame_cnt == 0) {
+          // We only support immediate recovery points. Supporting future points
+          // would require dropping |recovery_frame_cnt| frames when needed.
+          frame->has_recovery_point = true;
+        }
+        nalus.push_back(nalu);
+        data_size += kNALUHeaderLength + nalu.size;
+        break;
+      }
+
       case H264NALU::kSliceDataA:
       case H264NALU::kSliceDataB:
       case H264NALU::kSliceDataC:
@@ -956,7 +958,7 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
     }
   }
 
-  if (frame->is_idr)
+  if (frame->is_idr || frame->has_recovery_point)
     waiting_for_idr_ = false;
 
   // If no IDR has been seen yet, skip decoding. Note that Flash sends
@@ -1524,8 +1526,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
                   SFT_PLATFORM_ERROR);
   }
   gl_image->DisableInUseByWindowServer();
+
   gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
+  gl_image->SetColorSpaceShallow(color_space);
 
   scoped_refptr<Picture::ScopedSharedImage> scoped_shared_image;
   if (picture_info->uses_shared_images) {
@@ -1706,6 +1710,12 @@ bool VTVideoDecodeAccelerator::SupportsSharedImagePictureBuffers() const {
   return true;
 }
 
+VideoDecodeAccelerator::TextureAllocationMode
+VTVideoDecodeAccelerator::GetSharedImageTextureAllocationMode() const {
+  return VideoDecodeAccelerator::TextureAllocationMode::
+      kDoNotAllocateGLTextures;
+}
+
 // static
 VideoDecodeAccelerator::SupportedProfiles
 VTVideoDecodeAccelerator::GetSupportedProfiles(
@@ -1720,8 +1730,6 @@ VTVideoDecodeAccelerator::GetSupportedProfiles(
       if (workarounds.disable_accelerated_vp9_decode)
         continue;
       if (!base::mac::IsAtLeastOS11())
-        continue;
-      if (!base::FeatureList::IsEnabled(kVideoToolboxVp9Decoding))
         continue;
       if (__builtin_available(macOS 10.13, *)) {
         if ((supported_profile == VP9PROFILE_PROFILE0 ||

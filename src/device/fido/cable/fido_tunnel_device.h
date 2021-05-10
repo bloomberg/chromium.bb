@@ -38,9 +38,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTunnelDevice : public FidoDevice {
       base::span<const uint8_t, kQRSeedSize> local_identity_seed,
       const CableEidArray& decrypted_eid);
 
-  // This constructor is used for pairing-initiated connections.
+  // This constructor is used for pairing-initiated connections. If the given
+  // |Pairing| is reported by the tunnel server to be invalid (which can happen
+  // if the user opts to unlink all devices) then |pairing_is_invalid| is
+  // run.
   FidoTunnelDevice(network::mojom::NetworkContext* network_context,
-                   std::unique_ptr<Pairing> pairing);
+                   std::unique_ptr<Pairing> pairing,
+                   base::OnceClosure pairing_is_invalid);
 
   ~FidoTunnelDevice() override;
 
@@ -59,10 +63,54 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTunnelDevice : public FidoDevice {
 
  private:
   enum class State {
+    // QR (or server-link) handshakes advance through the states like this:
+    //
+    //  kConnecting
+    //      |
+    //   (Tunnel server connection completes and handshake is sent)
+    //      |
+    //      V
+    //  kHandshakeSent
+    //      |
+    //   (Handshake reply is received)
+    //      |
+    //      V
+    //  kWaitingForPostHandshakeMessage
+    //      |
+    //   (Post-handshake message is received)
+    //      |
+    //      V
+    //  kReady
+    //
+    //
+    // Paired connections are similar, but there's a race between the tunnel
+    // connection completing and the BLE advert being received.
+    //
+    //  kConnecting -------------------------------------
+    //      |                                           |
+    //   (Tunnel server connection completes)           |
+    //      |                              (BLE advert is received _then_
+    //      V                               tunnel connection completes.)
+    //  kWaitingForEID                                  |
+    //      |                                           |
+    //   (BLE advert is received and handshake is sent) |
+    //      |                                           |
+    //      V                                           |
+    //   kHandshakeSent   <------------------------------
+    //      |
+    //   (Handshake reply is received)
+    //      |
+    //      V
+    //  kWaitingForPostHandshakeMessage
+    //      |
+    //   (Post-handshake message is received)
+    //      |
+    //      V
+    //  kReady
     kConnecting,
-    kConnected,
+    kHandshakeSent,
     kWaitingForEID,
-    kHandshakeProcessed,
+    kWaitingForPostHandshakeMessage,
     kReady,
     kError,
   };
@@ -78,7 +126,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTunnelDevice : public FidoDevice {
     base::OnceCallback<void(std::unique_ptr<Pairing>)> pairing_callback;
     std::array<uint8_t, kQRSeedSize> local_identity_seed;
     uint32_t tunnel_server_domain;
-    base::Optional<HandshakeHash> handshake_hash;
   };
 
   struct PairedInfo {
@@ -93,13 +140,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTunnelDevice : public FidoDevice {
     base::Optional<CableEidArray> decrypted_eid;
     base::Optional<std::array<uint8_t, 32>> psk;
     base::Optional<std::vector<uint8_t>> handshake_message;
+    base::OnceClosure pairing_is_invalid;
   };
 
   void OnTunnelReady(
-      bool ok,
+      WebSocketAdapter::Result result,
       base::Optional<std::array<uint8_t, kRoutingIdSize>> routing_id);
   void OnTunnelData(base::Optional<base::span<const uint8_t>> data);
-  void ProcessHandshake(base::span<const uint8_t> data);
   void OnError();
   void MaybeFlushPendingMessage();
 
@@ -107,6 +154,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTunnelDevice : public FidoDevice {
   absl::variant<QRInfo, PairedInfo> info_;
   const std::array<uint8_t, 8> id_;
   std::unique_ptr<WebSocketAdapter> websocket_client_;
+  base::Optional<HandshakeInitiator> handshake_;
+  base::Optional<HandshakeHash> handshake_hash_;
   std::unique_ptr<Crypter> crypter_;
   std::vector<uint8_t> getinfo_response_bytes_;
   std::vector<uint8_t> pending_message_;

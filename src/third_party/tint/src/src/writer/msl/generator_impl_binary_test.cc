@@ -17,8 +17,9 @@
 #include "gtest/gtest.h"
 #include "src/ast/binary_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
@@ -33,19 +34,17 @@ inline std::ostream& operator<<(std::ostream& out, BinaryData data) {
   out << data.op;
   return out;
 }
-using MslBinaryTest = testing::TestWithParam<BinaryData>;
+using MslBinaryTest = TestParamHelper<BinaryData>;
 TEST_P(MslBinaryTest, Emit) {
   auto params = GetParam();
 
-  auto left = std::make_unique<ast::IdentifierExpression>("left");
-  auto right = std::make_unique<ast::IdentifierExpression>("right");
+  auto* expr =
+      create<ast::BinaryExpression>(params.op, Expr("left"), Expr("right"));
 
-  ast::BinaryExpression expr(params.op, std::move(left), std::move(right));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitExpression(&expr)) << g.error();
-  EXPECT_EQ(g.result(), params.result);
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), params.result);
 }
 INSTANTIATE_TEST_SUITE_P(
     MslGeneratorImplTest,

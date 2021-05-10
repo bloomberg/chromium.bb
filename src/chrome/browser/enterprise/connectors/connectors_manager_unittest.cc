@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 
 #include "base/json/json_reader.h"
@@ -13,13 +15,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +34,10 @@ constexpr AnalysisConnector kAllAnalysisConnectors[] = {
 
 constexpr ReportingConnector kAllReportingConnectors[] = {
     ReportingConnector::SECURITY_EVENT};
+
+constexpr FileSystemConnector kAllFileSystemConnectors[] = {
+    FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD,
+};
 
 constexpr char kEmptySettingsPref[] = "[]";
 
@@ -60,6 +65,29 @@ constexpr char kNormalReportingSettingsPref[] = R"([
   }
 ])";
 
+constexpr char kNormalSendDownloadToCloudPolicy[] = R"([
+  {
+    "service_provider": "box",
+    "enterprise_id": "1234567890",
+    "enable": [
+      {
+        "url_list": ["*"],
+        "mime_types": ["text/plain", "image/png", "application/zip"],
+      },
+    ],
+    "disable": [
+      {
+        "url_list": ["no.text.com", "no.text.no.image.com"],
+        "mime_types": ["text/plain"],
+      },
+      {
+        "url_list": ["no.image.com", "no.text.no.image.com"],
+        "mime_types": ["image/png"],
+      },
+    ],
+  },
+])";
+
 constexpr char kDlpAndMalwareUrl[] = "https://foo.com";
 constexpr char kOnlyDlpUrl[] = "https://no.malware.com";
 constexpr char kOnlyMalwareUrl[] = "https://no.dlp.com";
@@ -75,11 +103,7 @@ class ConnectorsManagerTest : public testing::Test {
     profile_ = profile_manager_.CreateTestingProfile("test-user");
   }
 
-  void SetUp() override { ConnectorsManager::GetInstance()->SetUpForTesting(); }
-
-  void TearDown() override {
-    ConnectorsManager::GetInstance()->TearDownForTesting();
-  }
+  PrefService* pref_service() { return profile_->GetPrefs(); }
 
   void ValidateSettings(const AnalysisSettings& settings) {
     ASSERT_EQ(settings.block_until_verdict, expected_block_until_verdict_);
@@ -99,22 +123,29 @@ class ConnectorsManagerTest : public testing::Test {
               settings.reporting_url);
   }
 
+  void ValidateSettings(const FileSystemSettings& settings) {
+    // Mime types are the only setting affect by the policy, the rest are
+    // just copied from the service provider comfig.  So only need to validate
+    // this in tests.
+    ASSERT_EQ(settings.mime_types, expected_mime_types_);
+  }
+
   class ScopedConnectorPref {
    public:
-    ScopedConnectorPref(const char* pref, const char* pref_value)
-        : pref_(pref) {
+    ScopedConnectorPref(PrefService* pref_service,
+                        const char* pref,
+                        const char* pref_value)
+        : pref_service_(pref_service), pref_(pref) {
       auto maybe_pref_value =
           base::JSONReader::Read(pref_value, base::JSON_ALLOW_TRAILING_COMMAS);
       EXPECT_TRUE(maybe_pref_value.has_value());
-      TestingBrowserProcess::GetGlobal()->local_state()->Set(
-          pref, maybe_pref_value.value());
+      pref_service_->Set(pref, maybe_pref_value.value());
     }
 
-    ~ScopedConnectorPref() {
-      TestingBrowserProcess::GetGlobal()->local_state()->ClearPref(pref_);
-    }
+    ~ScopedConnectorPref() { pref_service_->ClearPref(pref_); }
 
    private:
+    PrefService* pref_service_;
     const char* pref_;
   };
 
@@ -131,6 +162,8 @@ class ConnectorsManagerTest : public testing::Test {
   bool expected_block_password_protected_files_ = false;
   bool expected_block_large_files_ = false;
   bool expected_block_unsupported_file_types_ = false;
+
+  std::set<std::string> expected_mime_types_;
 };
 
 class ConnectorsManagerConnectorPoliciesTest
@@ -138,9 +171,7 @@ class ConnectorsManagerConnectorPoliciesTest
       public testing::WithParamInterface<
           std::tuple<AnalysisConnector, const char*>> {
  public:
-  ConnectorsManagerConnectorPoliciesTest() {
-    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
-  }
+  ConnectorsManagerConnectorPoliciesTest() = default;
 
   AnalysisConnector connector() const { return std::get<0>(GetParam()); }
 
@@ -161,11 +192,6 @@ class ConnectorsManagerConnectorPoliciesTest
           expected_settings.value().block_unsupported_file_types;
       expected_block_large_files_ = expected_settings.value().block_large_files;
     }
-  }
-
-  void SetUpExpectedReportingSettings(const char* pref) {
-    auto expected_settings = ExpectedReportingSettings(pref);
-    expect_settings_ = expected_settings.has_value();
   }
 
  protected:
@@ -191,36 +217,26 @@ class ConnectorsManagerConnectorPoliciesTest
     return settings;
   }
 
-  base::Optional<ReportingSettings> ExpectedReportingSettings(
-      const char* pref) {
-    if (pref == kEmptySettingsPref)
-      return base::nullopt;
-
-    ReportingSettings settings;
-    return settings;
-  }
-
   bool expect_settings_;
 };
 
 TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
-  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
+  ScopedConnectorPref scoped_pref(pref_service(), pref(),
+                                  kNormalAnalysisSettingsPref);
   SetUpExpectedAnalysisSettings(kNormalAnalysisSettingsPref);
 
   // Verify that the expected settings are returned normally.
   auto settings_from_manager =
-      ConnectorsManager::GetInstance()->GetAnalysisSettings(GURL(url()),
-                                                            connector());
+      manager.GetAnalysisSettings(GURL(url()), connector());
   ASSERT_EQ(expect_settings_, settings_from_manager.has_value());
   if (settings_from_manager.has_value())
     ValidateSettings(settings_from_manager.value());
 
   // Verify that the expected settings are also returned by the cached settings.
-  const auto& cached_settings = ConnectorsManager::GetInstance()
-                                    ->GetAnalysisConnectorsSettingsForTesting();
+  const auto& cached_settings =
+      manager.GetAnalysisConnectorsSettingsForTesting();
   ASSERT_EQ(1u, cached_settings.size());
   ASSERT_EQ(1u, cached_settings.count(connector()));
   ASSERT_EQ(1u, cached_settings.at(connector()).size());
@@ -233,20 +249,16 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
 }
 
 TEST_P(ConnectorsManagerConnectorPoliciesTest, EmptyPref) {
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // If the connector's settings list is empty, no analysis settings are ever
   // returned.
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
-  ScopedConnectorPref scoped_pref(pref(), kEmptySettingsPref);
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
+  ScopedConnectorPref scoped_pref(pref_service(), pref(), kEmptySettingsPref);
 
-  ASSERT_FALSE(ConnectorsManager::GetInstance()
-                   ->GetAnalysisSettings(GURL(url()), connector())
-                   .has_value());
+  ASSERT_FALSE(
+      manager.GetAnalysisSettings(GURL(url()), connector()).has_value());
 
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -276,17 +288,18 @@ class ConnectorsManagerAnalysisConnectorsTest
 };
 
 TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // The cache is initially empty.
-  auto* manager = ConnectorsManager::GetInstance();
-  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 
   // Once the pref is updated, the settings should be cached, and analysis
   // settings can be obtained.
   {
-    ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
+    ScopedConnectorPref scoped_pref(pref_service(), pref(),
+                                    kNormalAnalysisSettingsPref);
 
     const auto& cached_settings =
-        manager->GetAnalysisConnectorsSettingsForTesting();
+        manager.GetAnalysisConnectorsSettingsForTesting();
     ASSERT_FALSE(cached_settings.empty());
     ASSERT_EQ(1u, cached_settings.count(connector()));
     ASSERT_EQ(1u, cached_settings.at(connector()).size());
@@ -304,47 +317,18 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
   }
 
   // The cache should be empty again after the pref is reset.
-  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
 INSTANTIATE_TEST_CASE_P(ConnectorsManagerAnalysisConnectorsTest,
                         ConnectorsManagerAnalysisConnectorsTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
 
-class ConnectorsManagerAnalysisNoFeatureTest
-    : public ConnectorsManagerAnalysisConnectorsTest {
- public:
-  ConnectorsManagerAnalysisNoFeatureTest()
-      : ConnectorsManagerAnalysisConnectorsTest(false) {}
-};
-
-TEST_P(ConnectorsManagerAnalysisNoFeatureTest, Test) {
-  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
-
-  for (const char* url :
-       {kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl}) {
-    // Only base::nullopt should be returned when the feature is disabled,
-    // regardless of what Connector or URL is used.
-    auto settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
-        GURL(url), connector());
-    ASSERT_FALSE(settings.has_value());
-  }
-
-  // No cached settings imply the connector value was never read.
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
-}
-
-INSTANTIATE_TEST_CASE_P(,
-                        ConnectorsManagerAnalysisNoFeatureTest,
-                        testing::ValuesIn(kAllAnalysisConnectors));
-
-class ConnectorsManagerReportingDynamicTest
+class ConnectorsManagerReportingTest
     : public ConnectorsManagerTest,
       public testing::WithParamInterface<ReportingConnector> {
  public:
-  ConnectorsManagerReportingDynamicTest() {
+  ConnectorsManagerReportingTest() {
     scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
   }
 
@@ -353,18 +337,19 @@ class ConnectorsManagerReportingDynamicTest
   const char* pref() const { return ConnectorPref(connector()); }
 };
 
-TEST_P(ConnectorsManagerReportingDynamicTest, DynamicPolicies) {
+TEST_P(ConnectorsManagerReportingTest, DynamicPolicies) {
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
   // The cache is initially empty.
-  auto* manager = ConnectorsManager::GetInstance();
-  ASSERT_TRUE(manager->GetReportingConnectorsSettingsForTesting().empty());
+  ASSERT_TRUE(manager.GetReportingConnectorsSettingsForTesting().empty());
 
   // Once the pref is updated, the settings should be cached, and reporting
   // settings can be obtained.
   {
-    ScopedConnectorPref scoped_pref(pref(), kNormalReportingSettingsPref);
+    ScopedConnectorPref scoped_pref(pref_service(), pref(),
+                                    kNormalReportingSettingsPref);
 
     const auto& cached_settings =
-        manager->GetReportingConnectorsSettingsForTesting();
+        manager.GetReportingConnectorsSettingsForTesting();
     ASSERT_FALSE(cached_settings.empty());
     ASSERT_EQ(1u, cached_settings.count(connector()));
     ASSERT_EQ(1u, cached_settings.at(connector()).size());
@@ -376,77 +361,59 @@ TEST_P(ConnectorsManagerReportingDynamicTest, DynamicPolicies) {
   }
 
   // The cache should be empty again after the pref is reset.
-  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
-INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingDynamicTest,
-                        ConnectorsManagerReportingDynamicTest,
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingTest,
+                        ConnectorsManagerReportingTest,
                         testing::ValuesIn(kAllReportingConnectors));
 
-// Tests to make sure getting reporting settings work with both the feature flag
-// and the OnSecurityEventEnterpriseConnector policy. The parameter for these
-// tests is a tuple of:
-//
-//   enum class ReportingConnector[]: array of all reporting connectors.
-//   bool: enable feature flag.
-//   int: policy value.  0: don't set, 1: set to normal, 2: set to empty.
-class ConnectorsManagerReportingFeatureTest
+class ConnectorsManagerFileSystemTest
     : public ConnectorsManagerTest,
-      public testing::WithParamInterface<
-          std::tuple<ReportingConnector, bool, int>> {
+      public testing::WithParamInterface<FileSystemConnector> {
  public:
-  ConnectorsManagerReportingFeatureTest() {
-    if (enable_feature_flag()) {
-      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
-    }
+  ConnectorsManagerFileSystemTest() {
+    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
   }
 
-  ReportingConnector connector() const { return std::get<0>(GetParam()); }
-  bool enable_feature_flag() const { return std::get<1>(GetParam()); }
-  int policy_value() const { return std::get<2>(GetParam()); }
+  FileSystemConnector connector() const { return GetParam(); }
 
   const char* pref() const { return ConnectorPref(connector()); }
-
-  const char* pref_value() const {
-    switch (policy_value()) {
-      case 1:
-        return kNormalReportingSettingsPref;
-      case 2:
-        return kEmptySettingsPref;
-    }
-    NOTREACHED();
-    return nullptr;
-  }
-
-  bool reporting_enabled() const {
-    return enable_feature_flag() && policy_value() == 1;
-  }
 };
 
-TEST_P(ConnectorsManagerReportingFeatureTest, Test) {
-  std::unique_ptr<ScopedConnectorPref> scoped_pref;
-  if (policy_value() != 0)
-    scoped_pref = std::make_unique<ScopedConnectorPref>(pref(), pref_value());
+TEST_P(ConnectorsManagerFileSystemTest, DynamicPolicies) {
+  ConnectorsManager manager(pref_service(), GetServiceProviderConfig());
+  // The cache is initially empty.
+  ASSERT_TRUE(manager.GetFileSystemConnectorsSettingsForTesting().empty());
 
-  auto settings =
-      ConnectorsManager::GetInstance()->GetReportingSettings(connector());
-  EXPECT_EQ(reporting_enabled(), settings.has_value());
-  if (settings.has_value())
+  // Once the pref is updated, the settings should be cached, and reporting
+  // settings can be obtained.
+  {
+    ScopedConnectorPref scoped_pref(pref_service(), pref(),
+                                    kNormalSendDownloadToCloudPolicy);
+
+    const auto& cached_settings =
+        manager.GetFileSystemConnectorsSettingsForTesting();
+    ASSERT_FALSE(cached_settings.empty());
+    ASSERT_EQ(1u, cached_settings.count(connector()));
+    ASSERT_EQ(1u, cached_settings.at(connector()).size());
+
+    expected_mime_types_ = {"text/plain", "image/png", "application/zip"};
+
+    auto settings = cached_settings.at(connector())
+                        .at(0)
+                        .GetSettings(GURL("https://any.com"));
+    ASSERT_TRUE(settings.has_value());
+
     ValidateSettings(settings.value());
+  }
 
-  EXPECT_EQ(enable_feature_flag() && policy_value() == 1,
-            !ConnectorsManager::GetInstance()
-                 ->GetReportingConnectorsSettingsForTesting()
-                 .empty());
+  // The cache should be empty again after the pref is reset.
+  ASSERT_TRUE(manager.GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ,
-    ConnectorsManagerReportingFeatureTest,
-    testing::Combine(testing::ValuesIn(kAllReportingConnectors),
-                     testing::Bool(),
-                     testing::ValuesIn({0, 1, 2})));
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerFileSystemTest,
+                        ConnectorsManagerFileSystemTest,
+                        testing::ValuesIn(kAllFileSystemConnectors));
 
 }  // namespace enterprise_connectors

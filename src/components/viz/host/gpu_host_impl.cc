@@ -276,12 +276,6 @@ void GpuHostImpl::BindInterface(const std::string& interface_name,
   delegate_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void GpuHostImpl::RunService(
-    const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  delegate_->RunService(service_name, std::move(receiver));
-}
-
 mojom::GpuService* GpuHostImpl::gpu_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(gpu_service_remote_.is_bound());
@@ -511,6 +505,10 @@ void GpuHostImpl::DidLoseContext(bool offscreen,
 
 void GpuHostImpl::DisableGpuCompositing() {
   delegate_->DisableGpuCompositing();
+}
+
+void GpuHostImpl::DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) {
+  delegate_->DidUpdateGPUInfo(gpu_info);
 }
 
 #if defined(OS_WIN)

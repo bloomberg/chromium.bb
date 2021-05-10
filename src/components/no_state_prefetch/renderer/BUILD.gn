@@ -4,8 +4,10 @@
 
 static_library("renderer") {
   sources = [
-    "prerender_helper.cc",
-    "prerender_helper.h",
+    "no_state_prefetch_client.cc",
+    "no_state_prefetch_client.h",
+    "no_state_prefetch_helper.cc",
+    "no_state_prefetch_helper.h",
     "prerender_observer.h",
     "prerender_observer_list.cc",
     "prerender_observer_list.h",
@@ -13,8 +15,6 @@ static_library("renderer") {
     "prerender_render_frame_observer.h",
     "prerender_utils.cc",
     "prerender_utils.h",
-    "prerenderer_client.cc",
-    "prerenderer_client.h",
   ]
 
   deps = [

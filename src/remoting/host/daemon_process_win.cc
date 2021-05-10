@@ -42,6 +42,7 @@
 #include "remoting/host/switches.h"
 #include "remoting/host/win/etw_trace_consumer.h"
 #include "remoting/host/win/host_event_file_logger.h"
+#include "remoting/host/win/host_event_windows_event_logger.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
@@ -70,6 +71,7 @@ constexpr wchar_t kLoggingRegistryKeyName[] = L"SOFTWARE\\Chromoting\\logging";
 #endif
 
 constexpr wchar_t kLogToFileRegistryValue[] = L"LogToFile";
+constexpr wchar_t kLogToEventLogRegistryValue[] = L"LogToEventLog";
 
 }  // namespace
 
@@ -77,13 +79,7 @@ namespace remoting {
 
 class WtsTerminalMonitor;
 
-// The command line parameters that should be copied from the service's command
-// line to the host process.
-const char kEnableVp9SwitchName[] = "enable-vp9";
-const char kEnableH264SwitchName[] = "enable-h264";
-const char* kCopiedSwitchNames[] = {switches::kV, switches::kVModule,
-                                    kEnableVp9SwitchName,
-                                    kEnableH264SwitchName};
+const char* kCopiedSwitchNames[] = {switches::kV, switches::kVModule};
 
 class DaemonProcessWin : public DaemonProcess {
  public:
@@ -425,19 +421,33 @@ void DaemonProcessWin::ConfigureHostLogging() {
   if (logging_reg_key.HasValue(kLogToFileRegistryValue)) {
     DWORD enabled = 0;
     result = logging_reg_key.ReadValueDW(kLogToFileRegistryValue, &enabled);
-    if (result == ERROR_SUCCESS) {
+    if (result != ERROR_SUCCESS) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to read HKLM\\" << kLoggingRegistryKeyName << "\\"
+                  << kLogToFileRegistryValue;
+    } else if (enabled) {
       auto file_logger = HostEventFileLogger::Create();
       if (file_logger) {
         loggers.push_back(std::move(file_logger));
       }
-    } else {
-      ::SetLastError(result);
-      PLOG(ERROR) << "Failed to read HKLM\\" << kLoggingRegistryKeyName << "\\"
-                  << kLogToFileRegistryValue;
     }
   }
 
-  // TODO(joedow): Hook up a Windows Event Logger here.
+  // Check to see if Windows event logging has been enabled.
+  if (logging_reg_key.HasValue(kLogToEventLogRegistryValue)) {
+    DWORD enabled = 0;
+    result = logging_reg_key.ReadValueDW(kLogToEventLogRegistryValue, &enabled);
+    if (result != ERROR_SUCCESS) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to read HKLM\\" << kLoggingRegistryKeyName << "\\"
+                  << kLogToEventLogRegistryValue;
+    } else if (enabled) {
+      auto event_logger = HostEventWindowsEventLogger::Create();
+      if (event_logger) {
+        loggers.push_back(std::move(event_logger));
+      }
+    }
+  }
 
   if (loggers.empty()) {
     VLOG(1) << "No host event loggers have been configured.";

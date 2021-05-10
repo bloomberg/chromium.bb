@@ -31,7 +31,6 @@
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
-#include "chrome/browser/ssl/tls_deprecation_config.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -48,8 +47,10 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/reputation/core/safety_tip_test_utils.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/content/password_protection/password_protection_request_content.h"
+#include "components/safe_browsing/content/password_protection/password_protection_test_util.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -166,18 +167,6 @@ void InjectScript(content::WebContents* contents) {
         frame, "window.domAutomationController.send(true);", &js_result));
     EXPECT_TRUE(js_result);
   }
-}
-
-// Gets the Insecure Input Events from the entry's SSLStatus user data.
-security_state::InsecureInputEventData GetInputEvents(
-    content::NavigationEntry* entry) {
-  security_state::SSLStatusInputEventData* input_events =
-      static_cast<security_state::SSLStatusInputEventData*>(
-          entry->GetSSL().user_data.get());
-  if (input_events)
-    return *input_events->input_events();
-
-  return security_state::InsecureInputEventData();
 }
 
 // A delegate class that allows emulating selection of a file for an
@@ -517,25 +506,8 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
         contents->GetController().GetVisibleEntry();
     ASSERT_TRUE(entry);
 
-    // TODO(crbug.com/917693): Remove this conditional and hard-code the test
-    // expectation to DANGEROUS when the feature fully launches.
-    security_state::SecurityLevel expected_security_level =
-        security_state::NONE;
-    if (base::FeatureList::IsEnabled(
-            security_state::features::kMarkHttpAsFeature)) {
-      std::string parameter = base::GetFieldTrialParamValueByFeature(
-          security_state::features::kMarkHttpAsFeature,
-          security_state::features::kMarkHttpAsFeatureParameterName);
-      if (parameter ==
-          security_state::features::kMarkHttpAsParameterDangerous) {
-        expected_security_level = security_state::DANGEROUS;
-      } else {
-        expected_security_level = security_state::WARNING;
-      }
-    }
-
     EXPECT_EQ(use_secure_inner_origin ? security_state::NONE
-                                      : expected_security_level,
+                                      : security_state::WARNING,
               helper->GetSecurityLevel());
   }
 
@@ -1170,10 +1142,11 @@ IN_PROC_BROWSER_TEST_F(
   account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::GSUITE);
   account_type.set_is_account_syncing(true);
+  scoped_refptr<safe_browsing::PasswordProtectionRequest> request =
+      safe_browsing::CreateDummyRequest(contents);
   service->ShowModalWarning(
-      contents, RequestOutcome::UNKNOWN,
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
-      account_type);
+      request.get(), LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", account_type);
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
@@ -1218,9 +1191,11 @@ IN_PROC_BROWSER_TEST_F(
   safe_browsing::ChromePasswordProtectionService* service =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
+  scoped_refptr<safe_browsing::PasswordProtectionRequest> request =
+      safe_browsing::CreateDummyRequest(contents);
   service->ShowModalWarning(
-      contents, RequestOutcome::UNKNOWN,
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      request.get(), LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token",
       service->GetPasswordProtectionReusedPasswordAccountType(
           PasswordType::ENTERPRISE_PASSWORD, /*username=*/""));
   observer.WaitForDidChangeVisibleSecurityState();
@@ -1445,24 +1420,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                           true /* use_secure_inner_origin */);
 }
 
-class SecurityStateTabHelperTestWithFormsDangerous
-    : public SecurityStateTabHelperTest {
- public:
-  SecurityStateTabHelperTestWithFormsDangerous() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::
-              kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests that the security level of a HTTP page is not downgraded when a form
 // field is modified by JavaScript.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        SecurityLevelNotDowngradedAfterScriptModification) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1492,54 +1452,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
   InjectScript(contents);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-}
-
-// Tests that the security level of a HTTP page is downgraded from
-// WARNING to DANGEROUS after editing a form field in the relevant
-// configurations.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
-                       SecurityLevelDowngradedAfterFileSelection) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  // Navigate to an HTTP page. Use a non-local hostname so that it is
-  // not considered secure.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-
-  // Prepare a file for the upload form.
-  base::FilePath file_path;
-  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
-  file_path = file_path.AppendASCII("bar");
-
-  base::RunLoop run_loop;
-  // Fill out the form to refer to the test file.
-  SecurityStyleTestObserver observer(contents);
-  std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
-  contents->SetDelegate(delegate.get());
-  EXPECT_TRUE(
-      ExecuteScript(contents, "document.getElementById('fileinput').click();"));
-  run_loop.Run();
-  observer.WaitForDidChangeVisibleSecurityState();
-
-  // Verify that the security state degrades as expected.
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_TRUE(GetInputEvents(entry).insecure_field_edited);
-
-  // Verify that after a refresh, the DANGEROUS state is cleared.
-  contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  EXPECT_TRUE(content::WaitForLoadStop(contents));
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
 // Tests that the security state for a WebContents is up to date when the
@@ -1626,12 +1538,7 @@ IN_PROC_BROWSER_TEST_F(
   GURL mixed_content_url(https_server_.GetURL(replacement_path));
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
 
-  blink::SecurityStyle expected_mixed_content_security_style =
-      security_state::ShouldShowDangerTriangleForWarningLevel()
-          ? blink::SecurityStyle::kInsecure
-          : blink::SecurityStyle::kNeutral;
-  EXPECT_EQ(expected_mixed_content_security_style,
-            observer.latest_security_style());
+  EXPECT_EQ(blink::SecurityStyle::kInsecure, observer.latest_security_style());
 
   const content::SecurityStyleExplanations& mixed_content_explanation =
       observer.latest_explanations();
@@ -1718,49 +1625,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
-}
-
-class SecurityStateTabHelperTestWithHttpDangerous
-    : public SecurityStateTabHelperTest {
- public:
-  SecurityStateTabHelperTestWithHttpDangerous() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests that the security level of a HTTP page is downgraded to DANGEROUS when
-// MarkHttpAsDangerous is enabled.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpDangerous,
-                       SecurityLevelDangerous) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStyleTestObserver observer(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  // Navigate to an HTTP page. Use a non-local hostname so that it is
-  // not considered secure.
-  GURL http_url =
-      GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
-  ui_test_utils::NavigateToURL(browser(), http_url);
-
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken,
-            observer.latest_security_style());
-  const content::SecurityStyleExplanations& http_explanation =
-      observer.latest_explanations();
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),
-            http_explanation.summary);
 }
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
@@ -1915,7 +1779,6 @@ class BrowserTestNonsecureURLRequestWithLegacyTLSWarnings
 IN_PROC_BROWSER_TEST_F(
     BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
     DidChangeVisibleSecurityStateObserverObsoleteTLSSettings) {
-  InitializeEmptyLegacyTLSConfig();
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1923,10 +1786,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
 
-  EXPECT_EQ(security_state::ShouldShowDangerTriangleForWarningLevel()
-                ? blink::SecurityStyle::kInsecure
-                : blink::SecurityStyle::kNeutral,
-            observer.latest_security_style());
+  EXPECT_EQ(blink::SecurityStyle::kInsecure, observer.latest_security_style());
 
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
@@ -1948,28 +1808,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(std::string::npos, explanation.recommendations[1].find("GCM"));
 }
 
-// Tests that a connection with legacy TLS version (TLS 1.0/1.1) is not
-// downgraded to SecurityLevel WARNING if no config proto is set (i.e., so we
-// don't accidentally show the warning on control sites, see crbug.com/1011089).
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
-                       LegacyTLSNoProto) {
-  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* helper = SecurityStateTabHelper::FromWebContents(tab);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
-
-  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_TRUE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
-  EXPECT_EQ(security_state::SECURE, helper->GetSecurityLevel());
-}
 
 // Tests that a connection with legacy TLS versions (TLS 1.0/1.1) gets
 // downgraded to SecurityLevel WARNING and |connection_used_legacy_tls| is set.
 IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
                        LegacyTLSDowngradesSecurityLevel) {
-  // Set an empty config (otherwise all sites are treated as control).
-  InitializeEmptyLegacyTLSConfig();
 
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   auto* helper = SecurityStateTabHelper::FromWebContents(tab);
@@ -1977,32 +1820,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
   ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
 
   EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_FALSE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
-// Tests that a site in the set of control sites does not get downgraded to
-// SecurityLevel::WARNING even if it was loaded over TLS 1.0/1.1.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
-                       LegacyTLSControlSiteNotDowngraded) {
-  // Set up new experiment config proto.
-  InitializeLegacyTLSConfigWithControl();
-
-  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
-
-  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_TRUE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
-  EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
-
-  // Reset the config to be empty.
-  InitializeEmptyLegacyTLSConfig();
-  ASSERT_FALSE(ShouldSuppressLegacyTLSWarning(GURL(kLegacyTLSURL)));
-}
 
 // Tests that the SSLVersionMin policy can disable the Legacy TLS security
 // warning.
@@ -2020,46 +1840,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
   ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
 
   EXPECT_FALSE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_FALSE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
   EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
 
   g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
                                               original_pref);
 }
 
-// Tests that a page has consistent security state despite the config proto
-// getting loaded during the page visit lifetime (see crbug.com/1011089).
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
-                       LegacyTLSDelayedConfigLoad) {
-  // Navigate to an affected page before the config proto has been set.
-  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
-
-  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_TRUE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
-  EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
-
-  // Set the config proto.
-  InitializeEmptyLegacyTLSConfig();
-
-  // Security state for the current page should not change.
-  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_TRUE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
-  EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
-
-  // Refreshing the page should update the page's security state to now show a
-  // warning.
-  ui_test_utils::NavigateToURL(browser(), GURL(kLegacyTLSURL));
-  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
-  EXPECT_FALSE(
-      helper->GetVisibleSecurityState()->should_suppress_legacy_tls_warning);
-  EXPECT_EQ(helper->GetSecurityLevel(), security_state::WARNING);
-}
 
 // Tests that the Not Secure chip does not show for error pages on http:// URLs.
 // Regression test for https://crbug.com/760647.
@@ -2086,8 +1872,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
-                       MarkHttpAsWarningAndDangerousOnFormEdits) {
+// Tests that the security level of an HTTP page remains WARNING regardless of
+// whether a form was edited.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       MarkHttpAsWarningOnFormEdits) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStateTabHelper* helper =
@@ -2111,90 +1899,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
                             false);
   observer.WaitForDidChangeVisibleSecurityState();
 
-  // Verify that the security state degrades as expected.
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  const content::SecurityStyleExplanations& http_explanation =
-      observer.latest_explanations();
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),
-            http_explanation.summary);
-
-  // Verify security state stays degraded after same-page navigation.
-  ui_test_utils::NavigateToURL(
-      browser(), GetURLWithNonLocalHostname(
-                     embedded_test_server(),
-                     "/textinput/focus_input_on_load.html#fragment"));
-  EXPECT_TRUE(content::WaitForLoadStop(contents));
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-
-  // Verify that after a refresh, the DANGEROUS state is cleared.
-  contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  EXPECT_TRUE(content::WaitForLoadStop(contents));
+  // Verify that the security state remains the same.
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-}
-
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
-                       MarkHttpAsWarningAndDangerousOnFileInputEdits) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  // Navigate to an HTTP page. Use a non-local hostname so that it is
-  // not considered secure.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
-
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-  SecurityStyleTestObserver observer(contents);
-
-  // Prepare a file for the upload form.
-  base::FilePath file_path;
-  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
-  file_path = file_path.AppendASCII("bar");
-
-  base::RunLoop run_loop;
-  // Fill out the form to refer to the test file.
-  std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
-  contents->SetDelegate(delegate.get());
-  EXPECT_TRUE(
-      ExecuteScript(contents, "document.getElementById('fileinput').click();"));
-  run_loop.Run();
-  observer.WaitForDidChangeVisibleSecurityState();
-
-  // Verify that the security state degrades as expected.
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-}
-
-class SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled
-    : public SecurityStateTabHelperTestWithAutoupgradesDisabled {
- public:
-  SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled() {
-    feature_list_.InitAndDisableFeature(
-        security_state::features::kMarkHttpAsFeature);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests that the histogram for security level is recorded correctly for HTTP
-// pages.
-IN_PROC_BROWSER_TEST_F(
-    SecurityStateTabHelperTestWithAutoupgradesAndHttpWarningsDisabled,
-    HTTPSecurityLevelHistogram) {
-  const char kHistogramName[] = "Security.SecurityLevel.NoncryptographicScheme";
-
-  {
-    base::HistogramTester histograms;
-    // Use a non-local hostname so that the page is treated as Not Secure.
-    ui_test_utils::NavigateToURL(
-        browser(),
-        GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html"));
-    histograms.ExpectUniqueSample(kHistogramName, security_state::WARNING, 1);
-  }
 }
 
 // Tests that the histogram for security level is recorded correctly for HTTPS
@@ -2454,13 +2160,6 @@ class SignedExchangeSecurityStateTest
 };
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSecurityStateTest, SecurityLevelIsSecure) {
-  // Initialize an empty config for the legacy TLS experiment. Without a config,
-  // all sites are treated as control. This test specifically enables the legacy
-  // TLS experiment as a regression test for https://crbug.com/1041773, in which
-  // the legacy TLS experiment code incorrectly labeled SXGs as using a
-  // deprecated TLS version.
-  InitializeEmptyLegacyTLSConfig();
-
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -2487,13 +2186,6 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSecurityStateTest, SecurityLevelIsSecure) {
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSecurityStateTest,
                        SecurityLevelIsSecureAfterPrefetch) {
-  // Initialize an empty config for the legacy TLS experiment. Without a config,
-  // all sites are treated as control. This test specifically enables the legacy
-  // TLS experiment as a regression test for https://crbug.com/1041773, in which
-  // the legacy TLS experiment code incorrectly labeled SXGs as using a
-  // deprecated TLS version.
-  InitializeEmptyLegacyTLSConfig();
-
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 

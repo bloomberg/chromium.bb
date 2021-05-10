@@ -16,8 +16,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/banners/app_banner_metrics.h"
-#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,13 +32,15 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/webapps/browser/banners/app_banner_metrics.h"
+#include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
 
-namespace banners {
+namespace webapps {
 
 using State = AppBannerManager::State;
 
@@ -451,4 +451,4 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest_DisplayOverride,
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 }
 
-}  // namespace banners
+}  // namespace webapps

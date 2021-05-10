@@ -32,6 +32,7 @@
 #include "testing/utils/file_util.h"
 #include "testing/utils/hash.h"
 #include "testing/utils/path_service.h"
+#include "third_party/base/check.h"
 
 using pdfium::kHelloWorldChecksum;
 
@@ -258,7 +259,7 @@ TEST_F(FPDFEditEmbedderTest, EmbedNotoSansSCFont) {
   size_t file_length = 0;
   std::unique_ptr<char, pdfium::FreeDeleter> font_data =
       GetFileContents(font_path.c_str(), &file_length);
-  ASSERT(font_data);
+  DCHECK(font_data);
 
   ScopedFPDFFont font(FPDFText_LoadFont(
       document(), reinterpret_cast<const uint8_t*>(font_data.get()),
@@ -793,6 +794,71 @@ TEST_F(FPDFEditEmbedderTest, SetTextKeepClippingPath) {
   CloseSavedDocument();
 }
 
+TEST_F(FPDFEditEmbedderTest, BUG_1574) {
+  // Load document with some text within a clipping path.
+  ASSERT_TRUE(OpenDocument("bug_1574.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static constexpr char kOriginalChecksum[] =
+      "c17ce567e0fd2ecd14352cf56d8d574b";
+#else
+#if defined(OS_WIN)
+  static constexpr char kOriginalChecksum[] =
+      "297c5e52c38802106d570e35f94b5cfd";
+#elif defined(OS_APPLE)
+  static constexpr char kOriginalChecksum[] =
+      "6a11148c99a141eea7c2b91e6987eb97";
+#else
+  static constexpr char kOriginalChecksum[] =
+      "75b6f6da7c24f2e395edb1c7d81dc906";
+#endif
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  {
+    // When opened before any editing and saving, the text object is rendered.
+    ScopedFPDFBitmap original_bitmap = RenderPage(page);
+    CompareBitmap(original_bitmap.get(), 200, 300, kOriginalChecksum);
+  }
+
+  // "Change" the text in the objects to their current values to force them to
+  // regenerate when saving.
+  {
+    ScopedFPDFTextPage text_page(FPDFText_LoadPage(page));
+    ASSERT_TRUE(text_page);
+
+    ASSERT_EQ(2, FPDFPage_CountObjects(page));
+    FPDF_PAGEOBJECT text_obj = FPDFPage_GetObject(page, 1);
+    ASSERT_EQ(FPDF_PAGEOBJ_TEXT, FPDFPageObj_GetType(text_obj));
+
+    unsigned long size = FPDFTextObj_GetText(text_obj, text_page.get(),
+                                             /*buffer=*/nullptr, /*length=*/0);
+    ASSERT_GT(size, 0u);
+    std::vector<FPDF_WCHAR> buffer = GetFPDFWideStringBuffer(size);
+    ASSERT_EQ(size, FPDFTextObj_GetText(text_obj, text_page.get(),
+                                        buffer.data(), size));
+    EXPECT_TRUE(FPDFText_SetText(text_obj, buffer.data()));
+  }
+
+  // Save the file.
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  UnloadPage(page);
+
+  // Open the saved copy and render it.
+  ASSERT_TRUE(OpenSavedDocument());
+  FPDF_PAGE saved_page = LoadSavedPage(0);
+  ASSERT_TRUE(saved_page);
+
+  {
+    ScopedFPDFBitmap saved_bitmap = RenderSavedPage(saved_page);
+    CompareBitmap(saved_bitmap.get(), 200, 300, kOriginalChecksum);
+  }
+
+  CloseSavedPage(saved_page);
+  CloseSavedDocument();
+}
+
 TEST_F(FPDFEditEmbedderTest, RemovePageObject) {
   // Load document with some text.
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
@@ -935,13 +1001,7 @@ TEST_F(FPDFEditEmbedderTest, ReadMarkedObjectsIndirectDict) {
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_RemoveMarkedObjectsPrime DISABLED_RemoveMarkedObjectsPrime
-#else
-#define MAYBE_RemoveMarkedObjectsPrime RemoveMarkedObjectsPrime
-#endif
-TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveMarkedObjectsPrime) {
+TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
   // Load document with some text.
   ASSERT_TRUE(OpenDocument("text_in_page_marked.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -949,15 +1009,23 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveMarkedObjectsPrime) {
 
   // Show what the original file looks like.
   {
-#if defined(OS_APPLE)
-    const char kOriginalMD5[] = "adf815e53c788a5272b4df07c610a1da";
-#elif defined(OS_WIN)
-    const char kOriginalMD5[] = "00542ee435b37749c4453be63bf7bdb6";
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+    static constexpr char kOriginalChecksum[] =
+        "748ed321a485d246ca6260b9e30dd200";
 #else
-    const char kOriginalMD5[] = "41647268d5911d049801803b15c2dfb0";
+#if defined(OS_WIN)
+    static constexpr char kOriginalChecksum[] =
+        "00542ee435b37749c4453be63bf7bdb6";
+#elif defined(OS_APPLE)
+    static constexpr char kOriginalChecksum[] =
+        "adf815e53c788a5272b4df07c610a1da";
+#else
+    static constexpr char kOriginalChecksum[] =
+        "41647268d5911d049801803b15c2dfb0";
 #endif
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 200, 200, kOriginalMD5);
+    CompareBitmap(page_bitmap.get(), 200, 200, kOriginalChecksum);
   }
 
   constexpr int expected_object_count = 19;
@@ -993,20 +1061,32 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveMarkedObjectsPrime) {
   }
 
   EXPECT_EQ(11, FPDFPage_CountObjects(page));
-
-#if defined(OS_APPLE)
-  const char kNonPrimesMD5[] = "d29e2ddff56e0d12f340794d26796400";
-  const char kNonPrimesAfterSaveMD5[] = "10eff2cd0037b661496981779601fa6f";
-#elif defined(OS_WIN)
-  const char kNonPrimesMD5[] = "86e371fdae30c2471f476631f3f93413";
-  const char kNonPrimesAfterSaveMD5[] = "86e371fdae30c2471f476631f3f93413";
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static constexpr char kNonPrimesChecksum[] =
+      "e2927fe2b7bbb595aca2a0e19ef3f1e8";
+  static constexpr char kNonPrimesAfterSaveChecksum[] =
+      "e2927fe2b7bbb595aca2a0e19ef3f1e8";
 #else
-  const char kNonPrimesMD5[] = "67ab13115d0cc34e99a1003c28047b40";
-  const char kNonPrimesAfterSaveMD5[] = "67ab13115d0cc34e99a1003c28047b40";
+#if defined(OS_WIN)
+  static constexpr char kNonPrimesChecksum[] =
+      "86e371fdae30c2471f476631f3f93413";
+  static constexpr char kNonPrimesAfterSaveChecksum[] =
+      "86e371fdae30c2471f476631f3f93413";
+#elif defined(OS_APPLE)
+  static constexpr char kNonPrimesChecksum[] =
+      "d29e2ddff56e0d12f340794d26796400";
+  static constexpr char kNonPrimesAfterSaveChecksum[] =
+      "10eff2cd0037b661496981779601fa6f";
+#else
+  static constexpr char kNonPrimesChecksum[] =
+      "67ab13115d0cc34e99a1003c28047b40";
+  static constexpr char kNonPrimesAfterSaveChecksum[] =
+      "67ab13115d0cc34e99a1003c28047b40";
 #endif
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesMD5);
+    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesChecksum);
   }
 
   // Save the file.
@@ -1021,7 +1101,7 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveMarkedObjectsPrime) {
 
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(saved_page);
-    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesAfterSaveMD5);
+    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesAfterSaveChecksum);
   }
 
   CloseSavedPage(saved_page);

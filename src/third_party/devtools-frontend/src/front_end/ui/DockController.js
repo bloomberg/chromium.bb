@@ -30,17 +30,39 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 
-import {ActionDelegate} from './ActionDelegate.js';                 // eslint-disable-line no-unused-vars
+import {ActionDelegate} from './ActionRegistration.js';             // eslint-disable-line no-unused-vars
 import {Context} from './Context.js';                               // eslint-disable-line no-unused-vars
 import {Provider, ToolbarButton, ToolbarItem} from './Toolbar.js';  // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Text to close something
+  */
+  close: 'Close',
+  /**
+  *@description Text to dock the DevTools to the right of the browser tab
+  */
+  dockToRight: 'Dock to right',
+  /**
+  *@description Text to dock the DevTools to the bottom of the browser tab
+  */
+  dockToBottom: 'Dock to bottom',
+  /**
+  *@description Text to dock the DevTools to the left of the browser tab
+  */
+  dockToLeft: 'Dock to left',
+  /**
+  *@description Text to undock the DevTools
+  */
+  undockIntoSeparateWindow: 'Undock into separate window',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/DockController.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /** @type {!DockController} */
 let dockControllerInstance;
 
-/**
- * @unrestricted
- */
 export class DockController extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {boolean} canDock
@@ -49,7 +71,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     super();
     this._canDock = canDock;
 
-    this._closeButton = new ToolbarButton(Common.UIString.UIString('Close'), 'largeicon-delete');
+    this._closeButton = new ToolbarButton(i18nString(UIStrings.close), 'largeicon-delete');
     this._closeButton.addEventListener(
         ToolbarButton.Events.Click,
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.closeWindow.bind(
@@ -95,8 +117,8 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     }
 
     this._titles = [
-      Common.UIString.UIString('Dock to right'), Common.UIString.UIString('Dock to bottom'),
-      Common.UIString.UIString('Dock to left'), Common.UIString.UIString('Undock into separate window')
+      i18nString(UIStrings.dockToRight), i18nString(UIStrings.dockToBottom), i18nString(UIStrings.dockToLeft),
+      i18nString(UIStrings.undockIntoSeparateWindow)
     ];
     this._dockSideChanged();
   }
@@ -128,7 +150,6 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
 
   /**
    * @param {string} dockSide
-   * @suppressGlobalPropertiesCheck
    */
   setDockSide(dockSide) {
     if (states.indexOf(dockSide) === -1) {
@@ -195,11 +216,25 @@ export const Events = {
   AfterDockSideChanged: Symbol('AfterDockSideChanged')
 };
 
+/** @type {!ToggleDockActionDelegate} */
+let toggleDockActionDelegateInstance;
+
 /**
  * @implements {ActionDelegate}
- * @unrestricted
  */
 export class ToggleDockActionDelegate {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!toggleDockActionDelegateInstance || forceNew) {
+      toggleDockActionDelegateInstance = new ToggleDockActionDelegate();
+    }
+
+    return toggleDockActionDelegateInstance;
+  }
+
   /**
    * @override
    * @param {!Context} context
@@ -212,11 +247,25 @@ export class ToggleDockActionDelegate {
   }
 }
 
+/** @type {!CloseButtonProvider} */
+let closeButtonProviderInstance;
+
 /**
  * @implements {Provider}
- * @unrestricted
  */
 export class CloseButtonProvider {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!closeButtonProviderInstance || forceNew) {
+      closeButtonProviderInstance = new CloseButtonProvider();
+    }
+
+    return closeButtonProviderInstance;
+  }
+
   /**
    * @override
    * @return {?ToolbarItem}

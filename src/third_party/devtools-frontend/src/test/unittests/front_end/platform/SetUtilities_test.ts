@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {SetUtilities} from '../../../../front_end/platform/platform.js';
+import * as Plaform from '../../../../front_end/platform/platform.js';
 
 const {assert} = chai;
 
@@ -12,8 +12,21 @@ describe('SetUtilities', () => {
       const itemsToAdd = ['b', 'c', 'd'];
       const set = new Set(['a']);
 
-      SetUtilities.addAll(set, itemsToAdd);
+      Plaform.SetUtilities.addAll(set, itemsToAdd);
       assert.deepEqual([...set], ['a', 'b', 'c', 'd']);
+    });
+  });
+
+  describe('isEqual', () => {
+    it('checks if sets are equal', () => {
+      const isEqual = Plaform.SetUtilities.isEqual;
+      assert(isEqual(new Set(), new Set()));
+      assert(!isEqual(new Set(['a']), new Set()));
+      assert(isEqual(new Set(['a']), new Set(['a'])));
+      assert(!isEqual(new Set(['a']), new Set(['b'])));
+      assert(!isEqual(new Set(), new Set(['b'])));
+      const set = new Set(['a']);
+      assert(isEqual(set, set));
     });
   });
 });

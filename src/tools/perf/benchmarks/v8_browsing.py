@@ -11,19 +11,6 @@ from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
-V8_BROWSING_BENCHMARK_UMA = [
-    'V8.WasmCompileModuleMicroSeconds.wasm',
-    'V8.WasmCompileModuleAsyncMicroSeconds',
-    'V8.WasmCompileModuleStreamingMicroSeconds',
-    'V8.WasmFinishModuleStreamingMicroSeconds',
-    'V8.WasmTierUpModuleMicroSeconds',
-    'V8.WasmCompileFunctionMicroSeconds.wasm',
-    'V8.WasmInstantiateModuleMicroSeconds.wasm',
-    'V8.WasmModuleCodeSizeTopTierMiB',
-    'V8.WasmCompileFunctionPeakMemoryBytes',
-    'V8.WasmModuleCodeSizeMiB',
-]
-
 
 def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
   categories = [
@@ -33,6 +20,8 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
       'disabled-by-default-memory-infra',
       'toplevel',
       # V8 categories.
+      'cppgc',
+      'disabled-by-default-cppgc',
       'disabled-by-default-v8.gc',
       'v8',
       'v8.wasm',
@@ -57,17 +46,14 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
 
   options.config.chrome_trace_config.SetTraceBufferSizeInKb(400 * 1024)
 
-  options.config.chrome_trace_config.EnableUMAHistograms(
-      *V8_BROWSING_BENCHMARK_UMA)
-
   metrics = [
       'blinkGcMetric',
       'consoleErrorMetric',
       'expectedQueueingTimeMetric',
       'gcMetric',
       'memoryMetric',
+      'pcscanMetric',
       'reportedByPageMetric',
-      'umaMetric',
       'wasmMetric',
   ]
   options.ExtendTimelineBasedMetric(metrics)
@@ -90,9 +76,10 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     return options
 
 
-@benchmark.Info(
-    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
-    component='Blink>JavaScript')
+@benchmark.Info(emails=[
+    'mythria@chromium.org', 'tmrts@chromium.org', 'almuthanna@chromium.org'
+],
+                component='Blink>JavaScript')
 class V8DesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
@@ -105,6 +92,7 @@ class V8DesktopBrowsingBenchmark(
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
+    options.AppendExtraBrowserArgs(['--disable-popup-blocking'])
 
   @classmethod
   def Name(cls):
@@ -132,9 +120,10 @@ class V8MobileBrowsingBenchmark(
     return 'v8.browsing_mobile'
 
 
-@benchmark.Info(
-    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
-    component='Blink>JavaScript')
+@benchmark.Info(emails=[
+    'mythria@chromium.org', 'tmrts@chromium.org', 'almuthanna@chromium.org'
+],
+                component='Blink>JavaScript')
 class V8FutureDesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'

@@ -20,8 +20,6 @@ android_library("java") {
     "java/src/org/chromium/components/messages/MessageDispatcherBridge.java",
     "java/src/org/chromium/components/messages/MessageDispatcherProvider.java",
     "java/src/org/chromium/components/messages/MessageStateHandler.java",
-    "java/src/org/chromium/components/messages/MessageUtils.java",
-    "java/src/org/chromium/components/messages/MessageUtilsBridge.java",
     "java/src/org/chromium/components/messages/MessageWrapper.java",
     "java/src/org/chromium/components/messages/SingleActionMessage.java",
   ]
@@ -34,10 +32,13 @@ android_library("java") {
     "//components/browser_ui/banners/android:java",
     "//components/browser_ui/widget/android:java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//ui/android:ui_java",
   ]
+
+  srcjar_deps = [ ":message_enums_java" ]
 }
 
 android_resources("java_resources") {
@@ -56,7 +57,6 @@ android_resources("java_resources") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/messages/MessageDispatcherBridge.java",
-    "java/src/org/chromium/components/messages/MessageUtilsBridge.java",
     "java/src/org/chromium/components/messages/MessageWrapper.java",
   ]
 }
@@ -65,8 +65,7 @@ static_library("android") {
   sources = [
     "message_dispatcher_bridge.cc",
     "message_dispatcher_bridge.h",
-    "message_utils_bridge.cc",
-    "message_utils_bridge.h",
+    "message_enums.h",
     "message_wrapper.cc",
     "message_wrapper.h",
   ]
@@ -75,6 +74,23 @@ static_library("android") {
     "//base",
     "//content/public/browser",
   ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "mock_message_dispatcher_bridge.cc",
+    "mock_message_dispatcher_bridge.h",
+  ]
+
+  deps = [
+    ":android",
+    "//testing/gmock",
+  ]
+}
+
+java_cpp_enum("message_enums_java") {
+  sources = [ "message_enums.h" ]
 }
 
 # Build target for Messages manager code, that owns and initializes
@@ -104,10 +120,7 @@ static_library("feature_flags") {
     "messages_feature.cc",
     "messages_feature.h",
   ]
-  deps = [
-    ":android",
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 android_library("javatests") {
@@ -124,14 +137,14 @@ android_library("javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
-    "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
@@ -145,14 +158,19 @@ java_library("junit") {
   testonly = true
   sources = [
     "java/src/org/chromium/components/messages/MessageAutoDismissTimerTest.java",
+    "java/src/org/chromium/components/messages/MessageBannerMediatorUnitTest.java",
     "java/src/org/chromium/components/messages/MessageWrapperTest.java",
   ]
   deps = [
     ":java",
+    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:robolectric_all_java",
+    "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/hamcrest:hamcrest_core_java",
+    "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",

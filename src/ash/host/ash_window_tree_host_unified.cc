@@ -10,8 +10,8 @@
 #include "ash/host/ash_window_tree_host_mirroring_delegate.h"
 #include "ash/host/root_window_transformer.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -41,7 +41,7 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
             static_cast<aura::Window*>(nullptr), dst_root_);
       }
       ignore_result(
-          dst_root_->GetHost()->event_sink()->OnEventFromSource(event));
+          dst_root_->GetHost()->GetEventSink()->OnEventFromSource(event));
 
       // Reset the source host.
       delegate_->SetCurrentEventTargeterSourceHost(nullptr);

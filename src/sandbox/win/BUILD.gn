@@ -239,7 +239,7 @@ test("sbox_integration_tests") {
     ":sbox_integration_test_win_proc",
   ]
 
-  libs = [ "dxva2.lib" ]
+  libs = [ "ktmw32.lib" ]
 }
 
 shared_library("sbox_integration_test_hijack_dll") {

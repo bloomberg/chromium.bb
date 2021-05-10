@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.TraceEvent;
@@ -13,6 +14,7 @@ import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 
 /**
  * Creates Tabs.  If the TabCreator creates Tabs asynchronously, null pointers will be returned
@@ -41,12 +43,13 @@ public abstract class TabCreator {
      * On restore, allows us to create a frozen version of a tab using saved tab state we read
      * from disk.
      * @param state    The tab state that the tab can be restored from.
-     * @param id       The id to give the new tab.
      * @param criticalPersistedTabData serialized {@link CriticalPersistedTabData}
+     * @param id       The id to give the new tab.
+     * @param isIncognito if the {@link Tab} is incognito or not
      * @param index    The index for where to place the tab.
      */
-    public abstract Tab createFrozenTab(
-            TabState state, byte[] serializedCriticalPersistedTabData, int id, int index);
+    public abstract Tab createFrozenTab(TabState state, byte[] serializedCriticalPersistedTabData,
+            int id, boolean isIncognito, int index);
 
     /**
      * Creates a new tab and loads the specified URL in it. This is a convenience method for
@@ -68,8 +71,8 @@ public abstract class TabCreator {
      * @param url         URL to show in the Tab. (Needed only for asynchronous tab creation.)
      * @return            Whether a Tab was created successfully.
      */
-    public abstract boolean createTabWithWebContents(
-            @Nullable Tab parent, WebContents webContents, @TabLaunchType int type, String url);
+    public abstract boolean createTabWithWebContents(@Nullable Tab parent, WebContents webContents,
+            @TabLaunchType int type, @NonNull GURL url);
 
     /**
      * Creates a tab around the native web contents pointer.
@@ -80,8 +83,7 @@ public abstract class TabCreator {
      */
     public final boolean createTabWithWebContents(
             Tab parent, WebContents webContents, @TabLaunchType int type) {
-        return createTabWithWebContents(
-                parent, webContents, type, webContents.getVisibleUrlString());
+        return createTabWithWebContents(parent, webContents, type, webContents.getVisibleUrl());
     }
 
     /**

@@ -47,6 +47,7 @@ zx_vm_option_t PageAccessibilityToZxVmOptions(
     case PageRead:
       return ZX_VM_PERM_READ;
     case PageReadWrite:
+    case PageReadWriteTagged:
       return ZX_VM_PERM_READ | ZX_VM_PERM_WRITE;
     case PageReadExecute:
       return ZX_VM_PERM_READ | ZX_VM_PERM_EXECUTE;
@@ -180,19 +181,44 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   ZX_CHECK(status == ZX_OK, status);
 }
 
-void DecommitSystemPagesInternal(void* address, size_t length) {
+void DecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityDisposition accessibility_disposition) {
+  if (accessibility_disposition == PageUpdatePermissions) {
+    SetSystemPagesAccess(address, length, PageInaccessible);
+  }
+
   // TODO(https://crbug.com/1022062): Review whether this implementation is
   // still appropriate once DiscardSystemPagesInternal() migrates to a "lazy"
   // discardable API.
   DiscardSystemPagesInternal(address, length);
-
-  SetSystemPagesAccessInternal(address, length, PageInaccessible);
 }
 
-bool RecommitSystemPagesInternal(void* address,
-                                 size_t length,
-                                 PageAccessibilityConfiguration accessibility) {
-  SetSystemPagesAccessInternal(address, length, accessibility);
+void RecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility,
+    PageAccessibilityDisposition accessibility_disposition) {
+  // On Fuchsia systems, the caller needs to simply read the memory to recommit
+  // it. However, if decommit changed the permissions, recommit has to change
+  // them back.
+  if (accessibility_disposition == PageUpdatePermissions) {
+    SetSystemPagesAccess(address, length, accessibility);
+  }
+}
+
+bool TryRecommitSystemPagesInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility,
+    PageAccessibilityDisposition accessibility_disposition) {
+  // On Fuchsia systems, the caller needs to simply read the memory to recommit
+  // it. However, if decommit changed the permissions, recommit has to change
+  // them back.
+  if (accessibility_disposition == PageUpdatePermissions) {
+    return TrySetSystemPagesAccess(address, length, accessibility);
+  }
   return true;
 }
 

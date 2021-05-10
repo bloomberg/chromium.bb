@@ -8,8 +8,10 @@
 #ifndef SKSL_SYMBOLTABLE
 #define SKSL_SYMBOLTABLE
 
+#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
 #include "src/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLString.h"
 #include "src/sksl/ir/SkSLSymbol.h"
 
 #include <memory>
@@ -34,6 +36,11 @@ public:
     , fBuiltin(builtin)
     , fErrorReporter(parent->fErrorReporter) {}
 
+    /**
+     * If the input is a built-in symbol table, returns a new empty symbol table as a child of the
+     * input table. If the input is not a built-in symbol table, returns it as-is. Built-in symbol
+     * tables must not be mutated after creation, so they must be wrapped if mutation is necessary.
+     */
     static std::shared_ptr<SymbolTable> WrapIfBuiltin(std::shared_ptr<SymbolTable> symbolTable) {
         if (!symbolTable) {
             return nullptr;
@@ -44,9 +51,18 @@ public:
         return std::make_shared<SymbolTable>(std::move(symbolTable), /*builtin=*/false);
     }
 
+    /**
+     * Looks up the requested symbol and returns it. If a function has overloads, an
+     * UnresolvedFunction symbol (pointing to all of the candidates) will be added to the symbol
+     * table and returned.
+     */
     const Symbol* operator[](StringFragment name);
 
+    /**
+     * Creates a new name for a symbol which already exists; does not take ownership of Symbol*.
+     */
     void addAlias(StringFragment name, const Symbol* symbol);
+
     void addWithoutOwnership(const Symbol* symbol);
 
     template <typename T>
@@ -71,6 +87,13 @@ public:
         return ptr;
     }
 
+    /**
+     * Given type = `float` and arraySize = 5, creates the array type `float[5]` in the symbol
+     * table. The created array type is returned. `kUnsizedArray` can be passed as a `[]` dimension.
+     * If zero is passed, the base type is returned unchanged.
+     */
+    const Type* addArrayDimension(const Type* type, int arraySize);
+
     // Call fn for every symbol in the table.  You may not mutate anything.
     template <typename Fn>
     void foreach(Fn&& fn) const {
@@ -82,6 +105,7 @@ public:
         return fSymbols.count();
     }
 
+    /** Returns true if this is a built-in SymbolTable. */
     bool isBuiltin() const {
         return fBuiltin;
     }
@@ -109,6 +133,7 @@ private:
     }
 
     const Symbol* lookup(SymbolTable* writableSymbolTable, const SymbolKey& key);
+
     static std::vector<const FunctionDeclaration*> GetFunctions(const Symbol& s);
 
     bool fBuiltin = false;

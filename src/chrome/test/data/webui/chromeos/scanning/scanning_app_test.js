@@ -4,6 +4,7 @@
 
 import 'chrome://scanning/scanning_app.js';
 
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {setScanServiceForTesting} from 'chrome://scanning/mojo_interface_provider.js';
 import {ScannerArr} from 'chrome://scanning/scanning_app_types.js';
 import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
@@ -81,6 +82,9 @@ class FakeScanService {
     /** @private {?chromeos.scanning.mojom.ScanJobObserverRemote} */
     this.scanJobObserverRemote_ = null;
 
+    /** @private {boolean} */
+    this.failStartScan_ = false;
+
     this.resetForTest();
   }
 
@@ -88,9 +92,11 @@ class FakeScanService {
     this.scanners_ = [];
     this.capabilities_ = new Map();
     this.scanJobObserverRemote_ = null;
+    this.failStartScan_ = false;
     this.resolverMap_.set('getScanners', new PromiseResolver());
     this.resolverMap_.set('getScannerCapabilities', new PromiseResolver());
     this.resolverMap_.set('startScan', new PromiseResolver());
+    this.resolverMap_.set('cancelScan', new PromiseResolver());
   }
 
   /**
@@ -100,7 +106,7 @@ class FakeScanService {
    */
   getResolver_(methodName) {
     let method = this.resolverMap_.get(methodName);
-    assert(!!method, `Method '${methodName}' not found.`);
+    assertTrue(!!method, `Method '${methodName}' not found.`);
     return method;
   }
 
@@ -141,6 +147,11 @@ class FakeScanService {
     this.capabilities_ = capabilities;
   }
 
+  /** @param {boolean} failStartScan */
+  setFailStartScan(failStartScan) {
+    this.failStartScan_ = failStartScan;
+  }
+
   /**
    * @param {number} pageNumber
    * @param {number} progressPercent
@@ -164,10 +175,20 @@ class FakeScanService {
 
   /**
    * @param {boolean} success
+   * @param {!mojoBase.mojom.FilePath} lastScannedFilePath
    * @return {!Promise}
    */
-  simulateScanComplete(success) {
-    this.scanJobObserverRemote_.onScanComplete(success);
+  simulateScanComplete(success, lastScannedFilePath) {
+    this.scanJobObserverRemote_.onScanComplete(success, lastScannedFilePath);
+    return flushTasks();
+  }
+
+  /**
+   * @param {boolean} success
+   * @return {!Promise}
+   */
+  simulateCancelComplete(success) {
+    this.scanJobObserverRemote_.onCancelComplete(success);
     return flushTasks();
   }
 
@@ -203,8 +224,12 @@ class FakeScanService {
     return new Promise(resolve => {
       this.scanJobObserverRemote_ = remote;
       this.methodCalled('startScan');
-      resolve({success: true});
+      resolve({success: !this.failStartScan_});
     });
+  }
+
+  cancelScan() {
+    this.methodCalled('cancelScan');
   }
 }
 
@@ -214,6 +239,59 @@ export function scanningAppTest() {
 
   /** @type {?FakeScanService} */
   let fakeScanService_ = null;
+
+  /** @type {?HTMLSelectElement} */
+  let scannerSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let sourceSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let fileTypeSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let colorModeSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let pageSizeSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let resolutionSelect = null;
+
+  /** @type {?CrButtonElement} */
+  let scanButton = null;
+
+  /** @type {?CrButtonElement} */
+  let cancelButton = null;
+
+  /** @type {?HTMLElement} */
+  let helperText = null;
+
+  /** @type {?HTMLElement} */
+  let scanProgress = null;
+
+  /** @type {?HTMLElement} */
+  let progressText = null;
+
+  /** @type {?HTMLElement} */
+  let progressBar = null;
+
+  /** @type {?HTMLElement} */
+  let scannedImages = null;
+
+  /**
+   * @type {!Map<!mojoBase.mojom.UnguessableToken,
+   *     !chromeos.scanning.mojom.ScannerCapabilities>}
+   */
+  const capabilities = new Map();
+  capabilities.set(firstScannerId, firstCapabilities);
+  capabilities.set(secondScannerId, secondCapabilities);
+
+  /** @type {!ScannerArr} */
+  const expectedScanners = [
+    createScanner(firstScannerId, firstScannerName),
+    createScanner(secondScannerId, secondScannerName)
+  ];
 
   suiteSetup(() => {
     fakeScanService_ = new FakeScanService();
@@ -228,6 +306,19 @@ export function scanningAppTest() {
     fakeScanService_.resetForTest();
     scanningApp.remove();
     scanningApp = null;
+    scannerSelect = null;
+    sourceSelect = null;
+    fileTypeSelect = null;
+    colorModeSelect = null;
+    pageSizeSelect = null;
+    resolutionSelect = null;
+    scanButton = null;
+    cancelButton = null;
+    helperText = null;
+    scanProgress = null;
+    progressText = null;
+    progressBar = null;
+    scannedImages = null;
   });
 
   /**
@@ -242,7 +333,9 @@ export function scanningAppTest() {
     scanningApp = /** @type {!ScanningAppElement} */ (
         document.createElement('scanning-app'));
     document.body.appendChild(scanningApp);
-    assert(!!scanningApp);
+    assertTrue(!!scanningApp);
+    assertTrue(isVisible(
+        /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
     return fakeScanService_.whenCalled('getScanners');
   }
 
@@ -271,7 +364,18 @@ export function scanningAppTest() {
    * @return {!Promise}
    */
   function clickDoneButton() {
-    const button = scanningApp.$$('#doneButton');
+    const button = scanningApp.$$('scan-done-section').$$('#doneButton');
+    assertTrue(!!button);
+    button.click();
+    return flushTasks();
+  }
+
+  /**
+   * Clicks the "Ok" button to close the scan failed dialog.
+   * @return {!Promise}
+   */
+  function clickOkButton() {
+    const button = scanningApp.$$('#okButton');
     assertTrue(!!button);
     button.click();
     return flushTasks();
@@ -286,42 +390,15 @@ export function scanningAppTest() {
   }
 
   test('Scan', () => {
-    const expectedScanners = [
-      createScanner(firstScannerId, firstScannerName),
-      createScanner(secondScannerId, secondScannerName)
-    ];
 
-    let capabilities = new Map();
-    capabilities.set(firstScannerId, firstCapabilities);
-    capabilities.set(secondScannerId, secondCapabilities);
-
-    /** @type {!HTMLSelectElement} */
-    let scannerSelect;
-    /** @type {!HTMLSelectElement} */
-    let sourceSelect;
-    /** @type {!HTMLSelectElement} */
-    let fileTypeSelect;
-    /** @type {!HTMLSelectElement} */
-    let colorModeSelect;
-    /** @type {!HTMLSelectElement} */
-    let pageSizeSelect;
-    /** @type {!HTMLSelectElement} */
-    let resolutionSelect;
-    /** @type {!CrButtonElement} */
-    let scanButton;
-    /** @type {!HTMLElement} */
-    let statusText;
-    /** @type {!HTMLElement} */
-    let helperText;
-    /** @type {!HTMLElement} */
-    let scanProgress;
-    /** @type {!HTMLElement} */
-    let progressText;
-    /** @type {!HTMLElement} */
-    let progressBar;
+    /** @type {!mojoBase.mojom.FilePath} */
+    const lastScannedFilePath = {'path': '/test/path/scan.jpg'};
 
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
+
           scannerSelect = scanningApp.$$('#scannerSelect').$$('select');
           sourceSelect = scanningApp.$$('#sourceSelect').$$('select');
           fileTypeSelect = scanningApp.$$('#fileTypeSelect').$$('select');
@@ -330,12 +407,13 @@ export function scanningAppTest() {
           resolutionSelect = scanningApp.$$('#resolutionSelect').$$('select');
           scanButton =
               /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
-          statusText =
-              /** @type {!HTMLElement} */ (scanningApp.$$('#statusText'));
+          cancelButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#cancelButton'));
           helperText = scanningApp.$$('#scanPreview').$$('#helperText');
           scanProgress = scanningApp.$$('#scanPreview').$$('#scanProgress');
           progressText = scanningApp.$$('#scanPreview').$$('#progressText');
           progressBar = scanningApp.$$('#scanPreview').$$('paper-progress');
+          scannedImages = scanningApp.$$('#scanPreview').$$('#scannedImages');
           return fakeScanService_.whenCalled('getScannerCapabilities');
         })
         .then(() => {
@@ -345,10 +423,9 @@ export function scanningAppTest() {
           // if it exists.
           assertEquals(
               firstCapabilities.sources[1].name, scanningApp.selectedSource);
-          assertEquals(FileType.PNG.toString(), scanningApp.selectedFileType);
+          assertEquals(FileType.PDF.toString(), scanningApp.selectedFileType);
           assertEquals(
-              firstCapabilities.colorModes[0].toString(),
-              scanningApp.selectedColorMode);
+              ColorMode.COLOR.toString(), scanningApp.selectedColorMode);
           assertEquals(
               firstCapabilities.sources[0].pageSizes[1].toString(),
               scanningApp.selectedPageSize);
@@ -365,11 +442,14 @@ export function scanningAppTest() {
           assertFalse(pageSizeSelect.disabled);
           assertFalse(resolutionSelect.disabled);
           assertFalse(scanButton.disabled);
-          assertEquals('', statusText.textContent.trim());
-          assertTrue(isVisible(helperText));
-          assertFalse(isVisible(scanProgress));
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertFalse(
+              isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (helperText)));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (scanProgress)));
           assertFalse(isVisible(
-              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
 
           // Click the Scan button and wait till the scan is started.
           scanButton.click();
@@ -387,10 +467,13 @@ export function scanningAppTest() {
           assertTrue(pageSizeSelect.disabled);
           assertTrue(resolutionSelect.disabled);
           assertTrue(scanButton.disabled);
-          assertFalse(isVisible(helperText));
-          assertTrue(isVisible(scanProgress));
+          assertFalse(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (helperText)));
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (scanProgress)));
           assertFalse(isVisible(
-              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
           assertEquals('Scanning page 1', progressText.textContent.trim());
           assertEquals(0, progressBar.value);
 
@@ -423,14 +506,18 @@ export function scanningAppTest() {
         })
         .then(() => {
           // Complete the scan.
-          return fakeScanService_.simulateScanComplete(true);
+          return fakeScanService_.simulateScanComplete(
+              true, lastScannedFilePath);
         })
         .then(() => {
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (scannedImages)));
+          assertEquals(2, scannedImages.querySelectorAll('img').length);
           assertTrue(isVisible(
-              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
           assertEquals(
-              'Scanned files saved!',
-              scanningApp.$$('#fileSaved').textContent.trim());
+              lastScannedFilePath.path,
+              scanningApp.$$('scan-done-section').lastScannedFilePath.path);
 
           // Click the Done button to return to READY state.
           return clickDoneButton();
@@ -445,22 +532,204 @@ export function scanningAppTest() {
           assertFalse(pageSizeSelect.disabled);
           assertFalse(resolutionSelect.disabled);
           assertFalse(scanButton.disabled);
-          assertTrue(isVisible(helperText));
-          assertFalse(isVisible(scanProgress));
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertFalse(
+              isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (helperText)));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (scanProgress)));
           assertFalse(isVisible(
-              /** @type {!HTMLElement} */ (scanningApp.$$('#fileSaved'))));
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('scan-done-section'))));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (scannedImages)));
+          assertEquals(0, scannedImages.querySelectorAll('img').length);
+        });
+  });
+
+  test('ScanFailed', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // Simulate a progress update.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          // Simulate the scan failing.
+          return fakeScanService_.simulateScanComplete(false, {'path': ''});
+        })
+        .then(() => {
+          // The scan failed dialog should open.
+          assertTrue(scanningApp.$$('#scanFailedDialog').open);
+          // Click the dialog's Ok button to return to READY state.
+          return clickOkButton();
+        })
+        .then(() => {
+          // After the dialog closes, the scan button should be enabled and
+          // ready to start a new scan.
+          assertFalse(scanningApp.$$('#scanFailedDialog').open);
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+        });
+  });
+
+  test('CancelScan', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          cancelButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#cancelButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          // Before the scan button is clicked, the scan button should be
+          // visible and enabled, and the cancel button shouldn't be visible.
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertFalse(
+              isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // After the scan button is clicked and the scan has started, the scan
+          // button should be disabled and not visible, and the cancel button
+          // should be visible.
+          assertTrue(scanButton.disabled);
+          assertFalse(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+
+          // Simulate a progress update and verify the progress bar and text are
+          // updated correctly.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          // Click the cancel button to cancel the scan.
+          cancelButton.click();
+          return fakeScanService_.whenCalled('cancelScan');
+        })
+        .then(() => {
+          // Cancel button should be disabled while canceling is in progress.
+          assertTrue(cancelButton.disabled);
+          // Simulate cancel completing successfully.
+          return fakeScanService_.simulateCancelComplete(true);
+        })
+        .then(() => {
+          // After canceling is complete, the scan button should be visible and
+          // enabled, and the cancel button shouldn't be visible.
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertFalse(
+              isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+          assertTrue(scanningApp.$$('#toast').open);
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#toastInfoIcon'))));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
+          assertEquals(
+              scanningApp.i18n('scanCanceledToastText'),
+              scanningApp.$$('#toastText').textContent.trim());
+        });
+  });
+
+  test('CancelScanFailed', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          cancelButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#cancelButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          // Click the Scan button and wait till the scan is started.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          // Simulate a progress update and verify the progress bar and text are
+          // updated correctly.
+          return fakeScanService_.simulateProgress(1, 17);
+        })
+        .then(() => {
+          // Click the cancel button to cancel the scan.
+          cancelButton.click();
+          assertFalse(scanningApp.$$('#toast').open);
+          return fakeScanService_.whenCalled('cancelScan');
+        })
+        .then(() => {
+          // Cancel button should be disabled while canceling is in progress.
+          assertTrue(cancelButton.disabled);
+          // Simulate cancel failing.
+          return fakeScanService_.simulateCancelComplete(false);
+        })
+        .then(() => {
+          // After canceling fails, the error toast should pop up.
+          assertTrue(scanningApp.$$('#toast').open);
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#toastInfoIcon'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
+          assertEquals(
+              scanningApp.i18n('cancelFailedToastText'),
+              scanningApp.$$('#toastText').textContent.trim());
+          // The scan progress page should still be showing with the cancel
+          // button visible.
+          assertTrue(
+              isVisible(scanningApp.$$('#scanPreview').$$('#scanProgress')));
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
+          assertFalse(
+              isVisible(scanningApp.$$('#scanPreview').$$('#helperText')));
+          assertFalse(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+        });
+  });
+
+  test('ScanFailedToStart', () => {
+    fakeScanService_.setFailStartScan(true);
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          assertFalse(scanningApp.$$('#toast').open);
+          // Click the Scan button and the scan will fail to start.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          assertTrue(scanningApp.$$('#toast').open);
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#toastInfoIcon'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#getHelpLink'))));
+          assertEquals(
+              scanningApp.i18n('startScanFailedToast'),
+              scanningApp.$$('#toastText').textContent.trim());
+
+          assertFalse(scanButton.disabled);
+          assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
         });
   });
 
   test('PanelContainerContent', () => {
-    const scanners = [];
-    const capabilities = new Map();
-    return initializeScanningApp(scanners, capabilities).then(() => {
-      const panelContainer = scanningApp.$$('.panel-container');
+    return initializeScanningApp(expectedScanners, capabilities).then(() => {
+      const panelContainer = scanningApp.$$('#panelContainer');
       assertTrue(!!panelContainer);
 
-      const leftPanel = scanningApp.$$('.panel-container > .left-panel');
-      const rightPanel = scanningApp.$$('.panel-container > .right-panel');
+      const leftPanel = scanningApp.$$('#panelContainer > #leftPanel');
+      const rightPanel = scanningApp.$$('#panelContainer > #rightPanel');
 
       assertTrue(!!leftPanel);
       assertTrue(!!rightPanel);
@@ -468,10 +737,7 @@ export function scanningAppTest() {
   });
 
   test('MoreSettingsToggle', () => {
-    const scanners = [createScanner(firstScannerId, firstScannerName)];
-    const capabilities = new Map();
-    capabilities.set(firstScannerId, firstCapabilities);
-    return initializeScanningApp(scanners, capabilities)
+    return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
           return fakeScanService_.whenCalled('getScannerCapabilities');
         })
@@ -488,6 +754,37 @@ export function scanningAppTest() {
         })
         .then(() => {
           assertFalse(isSettingsOpen());
+        });
+  });
+
+  test('NoScanners', () => {
+    return initializeScanningApp(/*scanners=*/[], /*capabilities=*/ new Map())
+        .then(() => {
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#panelContainer'))));
+        });
+  });
+
+  test('RetryClickLoadsScanners', () => {
+    return initializeScanningApp(/*scanners=*/[], /*capabilities=*/ new Map())
+        .then(() => {
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#panelContainer'))));
+
+          fakeScanService_.setScanners(expectedScanners);
+          fakeScanService_.setCapabilities(capabilities);
+          scanningApp.$$('loading-page').$$('#retryButton').click();
+          return fakeScanService_.whenCalled('getScanners');
+        })
+        .then(() => {
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('#panelContainer'))));
         });
   });
 }

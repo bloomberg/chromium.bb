@@ -14,7 +14,6 @@
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -285,7 +284,7 @@ void ServiceWorkerNewScriptLoader::OnStartLoadingResponseBody(
   DCHECK_EQ(LoaderState::kWaitingForBody, network_loader_state_);
   // Create a pair of the consumer and producer for responding to the client.
   mojo::ScopedDataPipeConsumerHandle client_consumer;
-  if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
+  if (mojo::CreateDataPipe(nullptr, client_producer_, client_consumer) !=
       MOJO_RESULT_OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
                     ServiceWorkerConsts::kServiceWorkerFetchScriptError);

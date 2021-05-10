@@ -58,6 +58,7 @@
 #include "protos/perfetto/trace/sys_stats/sys_stats.pbzero.h"
 #include "protos/perfetto/trace/trace.pbzero.h"
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/track_event/chrome_thread_descriptor.pbzero.h"
 #include "protos/perfetto/trace/track_event/counter_descriptor.pbzero.h"
 #include "protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
 #include "protos/perfetto/trace/track_event/log_message.pbzero.h"
@@ -75,6 +76,7 @@ namespace {
 using ::testing::_;
 using ::testing::Args;
 using ::testing::AtLeast;
+using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::HasSubstr;
@@ -1325,6 +1327,9 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTrackDescriptors) {
     auto* thread_desc = track_desc->set_thread();
     thread_desc->set_pid(15);
     thread_desc->set_tid(16);
+    auto* chrome_thread = track_desc->set_chrome_thread();
+    chrome_thread->set_thread_type(
+        protos::pbzero::ChromeThreadDescriptor::THREAD_SAMPLING_PROFILER);
   }
   {
     auto* packet = trace_->add_packet();
@@ -1425,6 +1430,16 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTrackDescriptors) {
     ev1->set_name("ev3");
   }
 
+  EXPECT_CALL(*process_,
+              UpdateThreadNameByUtid(
+                  1u, storage_->InternString("StackSamplingProfiler"),
+                  ThreadNamePriority::kTrackDescriptorThreadType));
+  EXPECT_CALL(*process_,
+              UpdateThreadNameByUtid(2u, kNullStringId,
+                                     ThreadNamePriority::kTrackDescriptor));
+  EXPECT_CALL(*process_,
+              UpdateThreadNameByUtid(1u, kNullStringId,
+                                     ThreadNamePriority::kTrackDescriptor));
   EXPECT_CALL(*process_, UpdateThread(16, 15)).WillRepeatedly(Return(1));
   EXPECT_CALL(*process_, UpdateThread(17, 15)).WillRepeatedly(Return(2));
 
@@ -1451,13 +1466,13 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTrackDescriptors) {
       .WillOnce(Return(0u));
 
   EXPECT_CALL(*event_,
-              PushCounter(1015000, testing::DoubleEq(2007000), TrackId{4}));
+              PushCounter(1015000, testing::DoubleEq(2007000), TrackId{3}));
   EXPECT_CALL(*slice_, Scoped(1015000, TrackId{0}, cat_2, ev_2, 0, _))
       .WillOnce(Return(1u));
 
   EXPECT_CALL(*event_,
-              PushCounter(1016000, testing::DoubleEq(2008000), TrackId{5}));
-  EXPECT_CALL(*slice_, Scoped(1016000, TrackId{3}, cat_3, ev_3, 0, _))
+              PushCounter(1016000, testing::DoubleEq(2008000), TrackId{4}));
+  EXPECT_CALL(*slice_, Scoped(1016000, TrackId{2}, cat_3, ev_3, 0, _))
       .WillOnce(Return(2u));
 
   EXPECT_CALL(*slice_,
@@ -1469,11 +1484,10 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTrackDescriptors) {
   // First track is "Thread track 1"; second is "Async track 1", third is global
   // default track (parent of async track), fourth is "Thread track 2", fifth &
   // sixth are thread time tracks for thread 1 and 2.
-  EXPECT_EQ(storage_->track_table().row_count(), 6u);
+  EXPECT_EQ(storage_->track_table().row_count(), 5u);
   EXPECT_EQ(storage_->track_table().name().GetString(0), "Thread track 1");
   EXPECT_EQ(storage_->track_table().name().GetString(1), "Async track 1");
-  EXPECT_EQ(storage_->track_table().name().GetString(2), "Default Track");
-  EXPECT_EQ(storage_->track_table().name().GetString(3), "Thread track 2");
+  EXPECT_EQ(storage_->track_table().name().GetString(2), "Thread track 2");
   EXPECT_EQ(storage_->thread_track_table().row_count(), 2u);
   EXPECT_EQ(storage_->thread_track_table().utid()[0], 1u);
   EXPECT_EQ(storage_->thread_track_table().utid()[1], 2u);
@@ -2287,7 +2301,7 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
     legacy_event->set_thread_duration_us(15);
     legacy_event->set_global_id(99u);
     legacy_event->set_id_scope("scope1");
-    legacy_event->set_use_async_tts('?');
+    legacy_event->set_use_async_tts(true);
 
     auto* annotation1 = event->add_debug_annotations();
     annotation1->set_name_iid(1);

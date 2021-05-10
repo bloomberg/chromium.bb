@@ -13,11 +13,13 @@
 
 #include "base/auto_reset.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/version.h"
 #include "extensions/buildflags/buildflags.h"
+#include "extensions/common/extension_guid.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/hashed_extension_id.h"
@@ -45,7 +47,7 @@ class PermissionsParser;
 // Once created, an Extension object is immutable, with the exception of its
 // RuntimeData. This makes it safe to use on any thread, since access to the
 // RuntimeData is protected by a lock.
-class Extension : public base::RefCountedThreadSafe<Extension> {
+class Extension final : public base::RefCountedThreadSafe<Extension> {
  public:
   // Do not renumber or reorder these values, as they are stored on-disk in the
   // user's preferences.
@@ -254,6 +256,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   void SetManifestData(const std::string& key,
                        std::unique_ptr<ManifestData> data);
 
+  // Sets the GUID for this extension. Note: this should *only* be used when
+  // duplicating an existing extension; otherwise, the GUID will be
+  // appropriately set during creation (ensuring uniqueness).
+  void SetGUID(const ExtensionGuid& guid);
+
   // Accessors:
 
   const base::FilePath& path() const { return path_; }
@@ -262,6 +269,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   Manifest::Location location() const;
   const ExtensionId& id() const;
   const HashedExtensionId& hashed_id() const;
+  const ExtensionGuid& guid() const;
   const base::Version& version() const { return version_; }
   const std::string& version_name() const { return version_name_; }
   std::string VersionString() const;
@@ -338,17 +346,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
-  // Chooses the extension ID for an extension based on a variety of criteria.
-  // The chosen ID will be set in |manifest|.
-  static bool InitExtensionID(extensions::Manifest* manifest,
-                              const base::FilePath& path,
-                              const ExtensionId& explicit_id,
-                              int creation_flags,
-                              base::string16* error);
-
   Extension(const base::FilePath& path,
             std::unique_ptr<extensions::Manifest> manifest);
-  virtual ~Extension();
+  ~Extension();
 
   // Initialize the extension from a parsed manifest.
   // TODO(aa): Rename to just Init()? There's no Value here anymore.
@@ -465,6 +465,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The flags that were passed to InitFromValue.
   int creation_flags_;
+
+  // A dynamic ID that can be used when referencing extension resources via URL
+  // instead of an extension ID.
+  base::GUID guid_;
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };

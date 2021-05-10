@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -215,6 +216,9 @@ class CORE_EXPORT DisplayLockContext final
     return had_lifecycle_update_since_last_unlock_;
   }
 
+  // We unlock auto locks for printing, which is set here.
+  void SetShouldUnlockAutoForPrint(bool);
+
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and
   // |NotifyForcedUpdateScopeEnded()|.
@@ -261,6 +265,7 @@ class CORE_EXPORT DisplayLockContext final
   bool MarkForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkNeedsRepaintAndPaintArtifactCompositorUpdate();
+  bool MarkNeedsCullRectUpdate();
   bool MarkForCompositingUpdatesIfNeeded();
 
   bool IsElementDirtyForStyleRecalc() const;
@@ -318,6 +323,19 @@ class CORE_EXPORT DisplayLockContext final
   // a frame to ensure the lifecycle happens. Only affects locks with 'auto'
   // setting.
   void SetKeepUnlockedUntilLifecycleCount(int count);
+
+  // Returns true if the context can dirty element's style in the current
+  // processing. Note that this returns false if the document is doing a style
+  // recalc, or if we're currently setting a new requested state which happens
+  // in style adjustment.
+  bool CanDirtyStyle() const;
+
+  // When a scroller becomes locked, we store off its current scroll offset, to
+  // avoid losing the offset when the scroller becomes unlocked in the future.
+  // The following functions enable this functionality.
+  void StashScrollOffsetIfAvailable();
+  void RestoreScrollOffsetIfStashed();
+  bool HasStashedScrollOffset() const;
 
   WeakMember<Element> element_;
   WeakMember<Document> document_;
@@ -392,6 +410,7 @@ class CORE_EXPORT DisplayLockContext final
     kSubtreeHasFocus,
     kSubtreeHasSelection,
     kAutoStateUnlockedUntilLifecycle,
+    kAutoUnlockedForPrint,
     kNumRenderAffectingStates
   };
   void SetRenderAffectingState(RenderAffectingState state, bool flag);
@@ -403,6 +422,14 @@ class CORE_EXPORT DisplayLockContext final
   int keep_unlocked_count_ = 0;
 
   bool had_lifecycle_update_since_last_unlock_ = false;
+
+  // Tracks whether we're updating requested state, which can only happen from
+  // the style adjuster. Note that this is different from a InStyleRecalc check
+  // since we can also force update style outside of this call (via ensure
+  // computed style).
+  bool set_requested_state_scope_ = false;
+
+  base::Optional<ScrollOffset> stashed_scroll_offset_;
 };
 
 }  // namespace blink

@@ -66,33 +66,57 @@ void RunTestCase(TestCase test_case,
                                    base::nullopt /* server_time */);
   EXPECT_TRUE(cookie) << cookie_line << " from " << test_case.url
                       << " is not a valid cookie";
-  if (cookie)
-    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
+  if (cookie) {
+    EXPECT_EQ(test_case.should_match,
+              delete_info.Matches(
+                  *cookie,
+                  net::CookieAccessParams{
+                      net::CookieAccessSemantics::NONLEGACY, false,
+                      net::CookieSamePartyStatus::kNoSamePartyEnforcement}))
         << cookie->DebugString();
+  }
 
   cookie_line = std::string("A=2;domain=") + test_url.host();
   cookie =
       net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
                                    base::nullopt /* server_time */);
-  if (cookie)
-    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
+  if (cookie) {
+    EXPECT_EQ(test_case.should_match,
+              delete_info.Matches(
+                  *cookie,
+                  net::CookieAccessParams{
+                      net::CookieAccessSemantics::NONLEGACY, false,
+                      net::CookieSamePartyStatus::kNoSamePartyEnforcement}))
         << cookie->DebugString();
+  }
 
   cookie_line = std::string("A=2; HttpOnly;") + test_url.host();
   cookie =
       net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
                                    base::nullopt /* server_time */);
-  if (cookie)
-    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
+  if (cookie) {
+    EXPECT_EQ(test_case.should_match,
+              delete_info.Matches(
+                  *cookie,
+                  net::CookieAccessParams{
+                      net::CookieAccessSemantics::NONLEGACY, false,
+                      net::CookieSamePartyStatus::kNoSamePartyEnforcement}))
         << cookie->DebugString();
+  }
 
   cookie_line = std::string("A=2; HttpOnly; Secure;") + test_url.host();
   cookie =
       net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
                                    base::nullopt /* server_time */);
-  if (cookie)
-    EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
+  if (cookie) {
+    EXPECT_EQ(test_case.should_match,
+              delete_info.Matches(
+                  *cookie,
+                  net::CookieAccessParams{
+                      net::CookieAccessSemantics::NONLEGACY, false,
+                      net::CookieSamePartyStatus::kNoSamePartyEnforcement}))
         << cookie->DebugString();
+  }
 }
 
 void RunTestCase(

@@ -14,6 +14,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//third_party/google_benchmark/buildconfig.gni")
 import("webrtc.gni")
 if (rtc_enable_protobuf) {
   import("//third_party/protobuf/proto_library.gni")
@@ -87,6 +88,9 @@ if (!build_with_chromium) {
           "tools_webrtc/perf:webrtc_dashboard_upload",
         ]
       }
+    }
+    if (target_os == "android") {
+      deps += [ "tools_webrtc:binary_version_check" ]
     }
   }
 }
@@ -258,7 +262,7 @@ config("common_config") {
   }
 
   if (rtc_enable_sctp) {
-    defines += [ "HAVE_SCTP" ]
+    defines += [ "WEBRTC_HAVE_SCTP" ]
   }
 
   if (rtc_enable_external_auth) {
@@ -523,7 +527,7 @@ if (use_libfuzzer || use_afl) {
   }
 }
 
-if (rtc_include_tests) {
+if (rtc_include_tests && !build_with_chromium) {
   rtc_test("rtc_unittests") {
     testonly = true
 
@@ -536,6 +540,7 @@ if (rtc_include_tests) {
       "api/transport:stun_unittest",
       "api/video/test:rtc_api_video_unittests",
       "api/video_codecs/test:video_codecs_api_unittests",
+      "api/voip:compile_all_headers",
       "call:fake_network_pipe_unittests",
       "p2p:libstunprober_unittests",
       "p2p:rtc_p2p_unittests",
@@ -550,7 +555,6 @@ if (rtc_include_tests) {
       "rtc_base:untyped_function_unittest",
       "rtc_base:weak_ptr_unittests",
       "rtc_base/experiments:experiments_unittests",
-      "rtc_base/synchronization:sequence_checker_unittests",
       "rtc_base/task_utils:pending_task_safety_flag_unittests",
       "rtc_base/task_utils:to_queued_task_unittests",
       "sdk:sdk_tests",
@@ -580,12 +584,14 @@ if (rtc_include_tests) {
     }
   }
 
-  rtc_test("benchmarks") {
-    testonly = true
-    deps = [
-      "rtc_base/synchronization:mutex_benchmark",
-      "test:benchmark_main",
-    ]
+  if (enable_google_benchmarks) {
+    rtc_test("benchmarks") {
+      testonly = true
+      deps = [
+        "rtc_base/synchronization:mutex_benchmark",
+        "test:benchmark_main",
+      ]
+    }
   }
 
   # This runs tests that must run in real time and therefore can take some
@@ -695,6 +701,7 @@ if (rtc_include_tests) {
   rtc_test("voip_unittests") {
     testonly = true
     deps = [
+      "api/voip:compile_all_headers",
       "api/voip:voip_engine_factory_unittests",
       "audio/voip/test:audio_channel_unittests",
       "audio/voip/test:audio_egress_unittests",

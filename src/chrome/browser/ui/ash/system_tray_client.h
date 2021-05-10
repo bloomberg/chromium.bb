@@ -7,7 +7,7 @@
 
 #include "ash/public/cpp/system_tray_client.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/system/system_clock_observer.h"
+#include "chrome/browser/ash/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
@@ -16,13 +16,16 @@ struct LocaleInfo;
 class SystemTray;
 enum class LoginStatus;
 enum class NotificationStyle;
+enum class UpdateType;
 }  // namespace ash
+
+class Profile;
 
 // Handles method calls delegated back to chrome from ash. Also notifies ash of
 // relevant state changes in chrome.
 // TODO: Consider renaming this to SystemTrayClientImpl.
 class SystemTrayClient : public ash::SystemTrayClient,
-                         public chromeos::system::SystemClockObserver,
+                         public ash::system::SystemClockObserver,
                          public policy::CloudPolicyStore::Observer,
                          public UpgradeObserver {
  public:
@@ -31,15 +34,15 @@ class SystemTrayClient : public ash::SystemTrayClient,
 
   static SystemTrayClient* Get();
 
-  // Shows an update icon for an Adobe Flash update and forces a device reboot
-  // when the update is applied.
-  void SetFlashUpdateAvailable();
-
   // Specifies if notification is recommended or required by administrator and
   // triggers the notification to be shown with the given body and title.
+  // Only applies to OS updates.
   void SetUpdateNotificationState(ash::NotificationStyle style,
                                   const base::string16& notification_title,
                                   const base::string16& notification_body);
+
+  // Shows a notification that a Lacros browser update is available.
+  void SetLacrosUpdateAvailable();
 
   // Wrappers around ash::mojom::SystemTray interface:
   void SetPrimaryTrayEnabled(bool enabled);
@@ -59,10 +62,12 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void ShowSetTimeDialog() override;
   void ShowDisplaySettings() override;
   void ShowPowerSettings() override;
+  void ShowPrivacyAndSecuritySettings() override;
   void ShowChromeSlow() override;
   void ShowIMESettings() override;
   void ShowConnectedDevicesSettings() override;
   void ShowTetherNetworkSettings() override;
+  void ShowWifiSyncSettings() override;
   void ShowAboutChromeOS() override;
   void ShowHelp() override;
   void ShowAccessibilityHelp() override;
@@ -74,6 +79,7 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void ShowEnterpriseInfo() override;
   void ShowNetworkConfigure(const std::string& network_id) override;
   void ShowNetworkCreate(const std::string& type) override;
+  void ShowSettingsCellularSetup(bool show_psim_flow) override;
   void ShowThirdPartyVpnCreate(const std::string& extension_id) override;
   void ShowArcVpnCreate(const std::string& app_id) override;
   void ShowNetworkSettings(const std::string& network_id) override;
@@ -82,15 +88,18 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
 
  private:
+  // Observes profile changed and profile's policy changed.
+  class EnterpriseAccountObserver;
+
   // Helper function shared by ShowNetworkSettings() and ShowNetworkConfigure().
   void ShowNetworkSettingsHelper(const std::string& network_id,
                                  bool show_configure);
 
   // Requests that ash show the update available icon.
-  void HandleUpdateAvailable();
+  void HandleUpdateAvailable(ash::UpdateType update_type);
 
-  // chromeos::system::SystemClockObserver:
-  void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
+  // ash::system::SystemClockObserver:
+  void OnSystemClockChanged(ash::system::SystemClock* clock) override;
 
   // UpgradeObserver implementation.
   void OnUpdateOverCellularAvailable() override;
@@ -102,12 +111,10 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
   void UpdateEnterpriseDomainInfo();
+  void UpdateEnterpriseAccountDomainInfo(Profile* profile);
 
   // The system tray model in ash.
   ash::SystemTray* const system_tray_;
-
-  // Whether an Adobe Flash component update is available.
-  bool flash_update_available_ = false;
 
   // Tells update notification style, for example required by administrator.
   ash::NotificationStyle update_notification_style_;
@@ -122,6 +129,9 @@ class SystemTrayClient : public ash::SystemTrayClient,
   // suppress duplicate IPCs during the session.
   std::string last_enterprise_domain_manager_;
   bool last_active_directory_managed_ = false;
+  std::string last_enterprise_account_domain_manager_;
+
+  std::unique_ptr<EnterpriseAccountObserver> enterprise_account_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayClient);
 };

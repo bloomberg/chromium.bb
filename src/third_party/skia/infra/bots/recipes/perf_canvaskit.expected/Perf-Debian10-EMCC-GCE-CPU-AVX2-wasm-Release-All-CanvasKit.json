@@ -107,10 +107,10 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin"
     ],
     "infra_step": true,
-    "name": "Docker setup.mkdirs [START_DIR]/skia/modules/canvaskit/canvaskit/bin",
+    "name": "Docker setup.mkdirs [START_DIR]/skia/modules/canvaskit/npm_build/bin",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -124,10 +124,10 @@
       "/path/to/tmp/json",
       "copy",
       "[START_DIR]/build/canvaskit.wasm",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.wasm"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.wasm"
     ],
     "infra_step": true,
-    "name": "Docker setup.cp [START_DIR]/build/canvaskit.wasm [START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.wasm",
+    "name": "Docker setup.cp [START_DIR]/build/canvaskit.wasm [START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.wasm",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -136,10 +136,10 @@
     "cmd": [
       "chmod",
       "644",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.wasm"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.wasm"
     ],
     "infra_step": true,
-    "name": "Docker setup.chmod 644 [START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.wasm",
+    "name": "Docker setup.chmod 644 [START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.wasm",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -154,10 +154,10 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin"
     ],
     "infra_step": true,
-    "name": "Docker setup.mkdirs [START_DIR]/skia/modules/canvaskit/canvaskit/bin (2)",
+    "name": "Docker setup.mkdirs [START_DIR]/skia/modules/canvaskit/npm_build/bin (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -171,10 +171,10 @@
       "/path/to/tmp/json",
       "copy",
       "[START_DIR]/build/canvaskit.js",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.js"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.js"
     ],
     "infra_step": true,
-    "name": "Docker setup.cp [START_DIR]/build/canvaskit.js [START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.js",
+    "name": "Docker setup.cp [START_DIR]/build/canvaskit.js [START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.js",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -183,10 +183,10 @@
     "cmd": [
       "chmod",
       "644",
-      "[START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.js"
+      "[START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.js"
     ],
     "infra_step": true,
-    "name": "Docker setup.chmod 644 [START_DIR]/skia/modules/canvaskit/canvaskit/bin/canvaskit.js",
+    "name": "Docker setup.chmod 644 [START_DIR]/skia/modules/canvaskit/npm_build/bin/canvaskit.js",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -216,7 +216,7 @@
       "type=bind,source=[START_DIR],target=/SRC",
       "--mount",
       "type=bind,source=[START_DIR]/[SWARM_OUT_DIR],target=/OUT",
-      "gcr.io/skia-public/perf-karma-chrome-tests:77.0.3865.120_v1",
+      "gcr.io/skia-public/perf-karma-chrome-tests:87.0.4280.88_v1",
       "/SRC/skia/infra/canvaskit/perf_canvaskit.sh",
       "--builder",
       "Perf-Debian10-EMCC-GCE-CPU-AVX2-wasm-Release-All-CanvasKit",

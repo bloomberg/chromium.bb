@@ -107,6 +107,8 @@ class ASH_EXPORT AppListControllerImpl
   void SetItemMetadata(const std::string& id,
                        std::unique_ptr<AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
+  void SetItemNotificationBadgeColor(const std::string& id,
+                                     const SkColor color) override;
   void SetModelData(int profile_id,
                     std::vector<std::unique_ptr<AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
@@ -148,7 +150,8 @@ class ASH_EXPORT AppListControllerImpl
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
   void EndDragFromShelf(AppListViewState app_list_state);
-  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event,
+                              bool from_touchpad = false);
   // Toggles app list visibility. In tablet mode, this can only show the app
   // list (by hiding any windows that might be shown over the homde launcher).
   // |display_id| is the id of display where app list should toggle.
@@ -173,8 +176,6 @@ class ASH_EXPORT AppListControllerImpl
                         AppListLaunchType launch_type,
                         int suggestion_index,
                         bool launch_as_default) override;
-  void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
-                                int suggestion_index) override;
   void LogSearchAbandonHistogram() override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index) override;
@@ -208,10 +209,8 @@ class ASH_EXPORT AppListControllerImpl
       const base::string16& raw_query,
       const SearchResultIdWithPositionIndices& results,
       int position_index) override;
-  void MaybeIncreasePrivacyInfoShownCounts() override;
+  void MaybeIncreaseSuggestedContentInfoShownCount() override;
   bool IsAssistantAllowedAndEnabled() const override;
-  bool ShouldShowAssistantPrivacyInfo() const override;
-  void MarkAssistantPrivacyInfoDismissed() override;
   bool ShouldShowSuggestedContentInfo() const override;
   void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(AppListViewState state) override;
@@ -383,7 +382,7 @@ class ASH_EXPORT AppListControllerImpl
 
   // Checks the notification badging pref and then updates whether a
   // notification badge is shown for each AppListItem.
-  void UpdateAppBadging();
+  void UpdateAppNotificationBadging();
 
   // Whether the home launcher is
   // * being shown (either through an animation or a drag)

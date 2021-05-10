@@ -11,12 +11,15 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/optional.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_observer.h"
 
 class Browser;
@@ -38,6 +41,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ToolbarActionView::Delegate,
                                    public views::WidgetObserver {
  public:
+  METADATA_HEADER(ExtensionsToolbarContainer);
+
   using ToolbarIcons =
       std::map<ToolbarActionsModel::ActionId, ToolbarActionView*>;
 
@@ -49,10 +54,20 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
     // always enough space to show at least two icons.
     kNormal,
     // In compact mode, one or both of the menu icon and popped-out action may
-    // be hidden. Compact mode is used in smaller windows (e.g. webapps) where
+    // be hidden if the available space does not allow for them. Compact mode is
+    // used in smaller windows (e.g. web apps) where
     // there may not be enough space to display the buttons.
+    // TODO(crbug.com/1155421): Remove kCompact in favour of kAutoHide once the
+    // |kDesktopPWAsElidedExtensionsMenu| flag is removed.
     kCompact,
+    // In auto hide mode the menu icon is hidden until
+    // extensions_button()->ToggleExtensionsMenu() is called by the embedder.
+    // This is used for windows that want to minimize the number of visible
+    // icons in their toolbar (e.g. web apps).
+    kAutoHide,
   };
+
+  static void SetOnVisibleCallbackForTesting(base::OnceClosure callback);
 
   explicit ExtensionsToolbarContainer(
       Browser* browser,
@@ -79,6 +94,12 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void ShowWidgetForExtension(views::Widget* widget,
                               const std::string& extension_id);
 
+  // Event handler for when the extensions menu is opened.
+  void OnMenuOpening();
+
+  // Event handler for when the extensions menu is closed.
+  void OnMenuClosed();
+
   // Gets the widget that anchors to the extension (or is about to anchor to the
   // extension, pending pop-out).
   views::Widget* GetAnchoredWidgetForExtensionForTesting(
@@ -97,8 +118,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
-  const char* GetClassName() const override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event) override;
 
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(
@@ -116,12 +137,14 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   bool CloseOverflowMenuIfOpen() override;
   void PopOutAction(ToolbarActionViewController* action,
                     bool is_sticky,
-                    const base::Closure& closure) override;
+                    base::OnceClosure closure) override;
   bool ShowToolbarActionPopupForAPICall(const std::string& action_id) override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
   void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ToggleExtensionsMenu() override;
+  bool HasAnyExtensions() const override;
 
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
@@ -186,9 +209,16 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
                                   bool visible);
 
-  // Calls SetVisible to make sure that the container is showing only when there
-  // are extensions available.
+  // Calls SetVisible() with ShouldContainerBeVisible().
   void UpdateContainerVisibility();
+
+  // Returns whether the contianer should be showing, e.g. not if there are no
+  // extensions installed, nor if the container is inactive in kAutoHide mode.
+  bool ShouldContainerBeVisible() const;
+
+  // Queues up a call to UpdateContainerVisibility() for when the current layout
+  // animation ends.
+  void UpdateContainerVisibilityAfterAnimation();
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -217,8 +247,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   Browser* const browser_;
   ToolbarActionsModel* const model_;
-  ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
-      model_observer_;
+  base::ScopedObservation<ToolbarActionsModel, ToolbarActionsModel::Observer>
+      model_observation_{this};
   ExtensionsToolbarButton* const extensions_button_;
   DisplayMode display_mode_;
 

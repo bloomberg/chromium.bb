@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Root from '../root/root.js';
 
 import {Attributes, Cookie} from './Cookie.js';  // eslint-disable-line no-unused-vars
 import {Resource} from './Resource.js';          // eslint-disable-line no-unused-vars
@@ -57,16 +58,24 @@ export class CookieModel extends SDKModel {
    * @return {!Promise<void>}
    */
   async deleteCookie(cookie) {
-    await this._deleteAll([cookie]);
+    await this.deleteCookies([cookie]);
   }
 
   /**
    * @param {string=} domain
+   * @param {string=} securityOrigin
    * @return {!Promise<void>}
    */
-  async clear(domain) {
+  async clear(domain, securityOrigin) {
     const cookies = await this.getCookiesForDomain(domain || null);
-    await this._deleteAll(cookies);
+    if (securityOrigin) {
+      const cookiesToDelete = cookies.filter(cookie => {
+        return cookie.matchesSecurityOrigin(securityOrigin);
+      });
+      await this.deleteCookies(cookiesToDelete);
+    } else {
+      await this.deleteCookies(cookies);
+    }
   }
 
   /**
@@ -82,6 +91,9 @@ export class CookieModel extends SDKModel {
     if (cookie.expires()) {
       expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1000);
     }
+    const enabled = Root.Runtime.experiments.isEnabled('experimentalCookieFeatures');
+    /** @param {Protocol.Network.CookieSourceScheme} scheme */
+    const preserveUnset = scheme => scheme === Protocol.Network.CookieSourceScheme.Unset ? scheme : undefined;
     const protocolCookie = {
       name: cookie.name(),
       value: cookie.value(),
@@ -92,10 +104,14 @@ export class CookieModel extends SDKModel {
       httpOnly: cookie.httpOnly(),
       sameSite: cookie.sameSite(),
       expires,
-      priority: cookie.priority()
+      priority: cookie.priority(),
+      sameParty: cookie.sameParty(),
+      sourceScheme: enabled ? cookie.sourceScheme() : preserveUnset(cookie.sourceScheme()),
+      sourcePort: enabled ? cookie.sourcePort() : undefined,
     };
     const response = await this.target().networkAgent().invoke_setCookie(protocolCookie);
-    if (response.getError()) {
+    const error = response.getError();
+    if (error || !response.success) {
       return false;
     }
     return response.success;
@@ -136,7 +152,7 @@ export class CookieModel extends SDKModel {
    * @param {!Array<!Cookie>} cookies
    * @return {!Promise<void>}
    */
-  async _deleteAll(cookies) {
+  async deleteCookies(cookies) {
     const networkAgent = this.target().networkAgent();
     this._blockedCookies.clear();
     this._cookieToBlockedReasons.clear();

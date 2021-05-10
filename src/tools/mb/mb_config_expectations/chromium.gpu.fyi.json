@@ -15,8 +15,8 @@
   },
   "Android FYI 32 Vk Release (Pixel 2)": {
     "gn_args": {
-      "android32_ndk_api_level": 26,
-      "android64_ndk_api_level": 26,
+      "android32_ndk_api_level": 29,
+      "android64_ndk_api_level": 29,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
@@ -31,8 +31,8 @@
   },
   "Android FYI 32 dEQP Vk Release (Pixel 2)": {
     "gn_args": {
-      "android32_ndk_api_level": 26,
-      "android64_ndk_api_level": 26,
+      "android32_ndk_api_level": 29,
+      "android64_ndk_api_level": 29,
       "build_angle_deqp_tests": true,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
@@ -46,8 +46,8 @@
   },
   "Android FYI 64 Vk Release (Pixel 2)": {
     "gn_args": {
-      "android32_ndk_api_level": 26,
-      "android64_ndk_api_level": 26,
+      "android32_ndk_api_level": 29,
+      "android64_ndk_api_level": 29,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
@@ -63,8 +63,8 @@
   },
   "Android FYI 64 dEQP Vk Release (Pixel 2)": {
     "gn_args": {
-      "android32_ndk_api_level": 26,
-      "android64_ndk_api_level": 26,
+      "android32_ndk_api_level": 29,
+      "android64_ndk_api_level": 29,
       "build_angle_deqp_tests": true,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
@@ -131,20 +131,6 @@
       "use_static_angle": true
     }
   },
-  "Android FYI Release (Nexus 6P)": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_goma": true,
-      "use_static_angle": true
-    }
-  },
   "Android FYI Release (Nexus 9)": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -160,6 +146,19 @@
     }
   },
   "Android FYI Release (Pixel 2)": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_os": "android",
+      "use_goma": true,
+      "use_static_angle": true
+    }
+  },
+  "Android FYI Release (Pixel 4)": {
     "gn_args": {
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
@@ -241,11 +240,27 @@
       "use_goma": true
     }
   },
+  "GPU FYI Lacros x64 Builder": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_platform": "headless",
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_bundled_weston": true,
+      "use_goma": true,
+      "use_ozone": true,
+      "use_x11": false
+    }
+  },
   "GPU FYI Linux Builder": {
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -259,6 +274,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": true,
@@ -303,6 +319,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -316,6 +333,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": true,
@@ -337,8 +355,8 @@
   },
   "GPU FYI Perf Android 64 Builder": {
     "gn_args": {
-      "android32_ndk_api_level": 26,
-      "android64_ndk_api_level": 26,
+      "android32_ndk_api_level": 29,
+      "android64_ndk_api_level": 29,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
@@ -357,6 +375,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -371,6 +390,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": true,
@@ -397,6 +417,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -410,6 +431,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": true,
@@ -424,6 +446,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "enable_vulkan": true,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
@@ -438,6 +461,7 @@
     "gn_args": {
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
+      "enable_nacl": false,
       "enable_vulkan": true,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
@@ -463,6 +487,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,
@@ -522,6 +547,7 @@
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "internal_gles2_conform_tests": true,
       "is_component_build": false,

@@ -18,21 +18,20 @@
 
 #include "src/ast/struct_member_offset_decoration.h"
 
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StructMemberDecoration);
+
 namespace tint {
 namespace ast {
 
+constexpr const DecorationKind StructMemberDecoration::Kind;
+
 StructMemberDecoration::StructMemberDecoration(const Source& source)
-    : Decoration(DecorationKind::kStructMember, source) {}
+    : Base(source) {}
 
 StructMemberDecoration::~StructMemberDecoration() = default;
 
-bool StructMemberDecoration::IsOffset() const {
-  return false;
-}
-
-StructMemberOffsetDecoration* StructMemberDecoration::AsOffset() {
-  assert(IsOffset());
-  return static_cast<StructMemberOffsetDecoration*>(this);
+DecorationKind StructMemberDecoration::GetKind() const {
+  return Kind;
 }
 
 }  // namespace ast

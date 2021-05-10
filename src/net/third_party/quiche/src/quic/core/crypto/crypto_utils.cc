@@ -2,40 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
+#include "quic/core/crypto/crypto_utils.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
-#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_hkdf.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/crypto/aes_128_gcm_12_decrypter.h"
+#include "quic/core/crypto/aes_128_gcm_12_encrypter.h"
+#include "quic/core/crypto/aes_128_gcm_decrypter.h"
+#include "quic/core/crypto/aes_128_gcm_encrypter.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/null_decrypter.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/quic_hkdf.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 
@@ -55,11 +55,6 @@ namespace {
 // The implicit PRF is explicitly passed into HkdfExpandLabel as |prf|; the
 // Secret, Label, and Length are passed in as |secret|, |label|, and
 // |out_len|, respectively. The resulting expanded secret is returned.
-//
-// TODO(nharper): HkdfExpandLabel and SetKeyAndIV (below) implement what is
-// specified in draft-ietf-quic-tls-16. The latest editors' draft has changed
-// derivation again, and this will need to be updated to reflect those (and any
-// other future) changes.
 std::vector<uint8_t> HkdfExpandLabel(const EVP_MD* prf,
                                      const std::vector<uint8_t>& secret,
                                      const std::string& label,
@@ -136,15 +131,13 @@ std::vector<uint8_t> CryptoUtils::GenerateNextKeyPhaseSecret(
 
 namespace {
 
-// Salt from https://tools.ietf.org/html/draft-ietf-quic-tls-27#section-5.2
-const uint8_t kDraft27InitialSalt[] = {0xc3, 0xee, 0xf7, 0x12, 0xc7, 0x2e, 0xbb,
-                                       0x5a, 0x11, 0xa7, 0xd2, 0x43, 0x2b, 0xb4,
-                                       0x63, 0x65, 0xbe, 0xf9, 0xf5, 0x02};
-
 // Salt from https://tools.ietf.org/html/draft-ietf-quic-tls-29#section-5.2
 const uint8_t kDraft29InitialSalt[] = {0xaf, 0xbf, 0xec, 0x28, 0x99, 0x93, 0xd2,
                                        0x4c, 0x9e, 0x97, 0x86, 0xf1, 0x9c, 0x61,
                                        0x11, 0xe0, 0x43, 0x90, 0xa8, 0x99};
+const uint8_t kRFCv1InitialSalt[] = {0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34,
+                                     0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8,
+                                     0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a};
 
 // Salts used by deployed versions of QUIC. When introducing a new version,
 // generate a new salt by running `openssl rand -hex 20`.
@@ -153,10 +146,6 @@ const uint8_t kDraft29InitialSalt[] = {0xaf, 0xbf, 0xec, 0x28, 0x99, 0x93, 0xd2,
 const uint8_t kQ050Salt[] = {0x50, 0x45, 0x74, 0xef, 0xd0, 0x66, 0xfe,
                              0x2f, 0x9d, 0x94, 0x5c, 0xfc, 0xdb, 0xd3,
                              0xa7, 0xf0, 0xd3, 0xb5, 0x6b, 0x45};
-// Salt to use for initial obfuscators in version T050.
-const uint8_t kT050Salt[] = {0x7f, 0xf5, 0x79, 0xe5, 0xac, 0xd0, 0x72,
-                             0x91, 0x55, 0x80, 0x30, 0x4c, 0x43, 0xa2,
-                             0x36, 0x7c, 0x60, 0x48, 0x83, 0x10};
 // Salt to use for initial obfuscators in version T051.
 const uint8_t kT051Salt[] = {0x7a, 0x4e, 0xde, 0xf4, 0xe7, 0xcc, 0xee,
                              0x5f, 0xa4, 0x50, 0x6c, 0x19, 0x12, 0x4f,
@@ -169,20 +158,17 @@ const uint8_t kReservedForNegotiationSalt[] = {
 
 const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
                                      size_t* out_len) {
-  static_assert(SupportedVersions().size() == 7u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync with initial encryption salts");
-  if (version == ParsedQuicVersion::Draft29()) {
+  if (version == ParsedQuicVersion::RFCv1()) {
+    *out_len = ABSL_ARRAYSIZE(kRFCv1InitialSalt);
+    return kRFCv1InitialSalt;
+  } else if (version == ParsedQuicVersion::Draft29()) {
     *out_len = ABSL_ARRAYSIZE(kDraft29InitialSalt);
     return kDraft29InitialSalt;
-  } else if (version == ParsedQuicVersion::Draft27()) {
-    *out_len = ABSL_ARRAYSIZE(kDraft27InitialSalt);
-    return kDraft27InitialSalt;
   } else if (version == ParsedQuicVersion::T051()) {
     *out_len = ABSL_ARRAYSIZE(kT051Salt);
     return kT051Salt;
-  } else if (version == ParsedQuicVersion::T050()) {
-    *out_len = ABSL_ARRAYSIZE(kT050Salt);
-    return kT050Salt;
   } else if (version == ParsedQuicVersion::Q050()) {
     *out_len = ABSL_ARRAYSIZE(kQ050Salt);
     return kQ050Salt;
@@ -191,32 +177,27 @@ const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
     return kReservedForNegotiationSalt;
   }
   QUIC_BUG << "No initial obfuscation salt for version " << version;
-  *out_len = ABSL_ARRAYSIZE(kDraft27InitialSalt);
-  return kDraft27InitialSalt;
+  *out_len = ABSL_ARRAYSIZE(kReservedForNegotiationSalt);
+  return kReservedForNegotiationSalt;
 }
 
 const char kPreSharedKeyLabel[] = "QUIC PSK";
 
 // Retry Integrity Protection Keys and Nonces.
-// https://tools.ietf.org/html/draft-ietf-quic-tls-27#section-5.8
-const uint8_t kDraft27RetryIntegrityKey[] = {0x4d, 0x32, 0xec, 0xdb, 0x2a, 0x21,
-                                             0x33, 0xc8, 0x41, 0xe4, 0x04, 0x3d,
-                                             0xf2, 0x7d, 0x44, 0x30};
-const uint8_t kDraft27RetryIntegrityNonce[] = {
-    0x4d, 0x16, 0x11, 0xd0, 0x55, 0x13, 0xa5, 0x52, 0xc5, 0x87, 0xd5, 0x75};
-
 // https://tools.ietf.org/html/draft-ietf-quic-tls-29#section-5.8
 const uint8_t kDraft29RetryIntegrityKey[] = {0xcc, 0xce, 0x18, 0x7e, 0xd0, 0x9a,
                                              0x09, 0xd0, 0x57, 0x28, 0x15, 0x5a,
                                              0x6c, 0xb9, 0x6b, 0xe1};
 const uint8_t kDraft29RetryIntegrityNonce[] = {
     0xe5, 0x49, 0x30, 0xf9, 0x7f, 0x21, 0x36, 0xf0, 0x53, 0x0a, 0x8c, 0x1c};
+const uint8_t kRFCv1RetryIntegrityKey[] = {0xbe, 0x0c, 0x69, 0x0b, 0x9f, 0x66,
+                                           0x57, 0x5a, 0x1d, 0x76, 0x6b, 0x54,
+                                           0xe3, 0x68, 0xc8, 0x4e};
+const uint8_t kRFCv1RetryIntegrityNonce[] = {
+    0x46, 0x15, 0x99, 0xd3, 0x5d, 0x63, 0x2b, 0xf2, 0x23, 0x98, 0x25, 0xbb};
 
 // Keys used by Google versions of QUIC. When introducing a new version,
 // generate a new key by running `openssl rand -hex 16`.
-const uint8_t kT050RetryIntegrityKey[] = {0xc9, 0x2d, 0x32, 0x3d, 0x9c, 0xe3,
-                                          0x0d, 0xa0, 0x88, 0xb9, 0xb7, 0xbb,
-                                          0xdc, 0xcd, 0x50, 0xc8};
 const uint8_t kT051RetryIntegrityKey[] = {0x2e, 0xb9, 0x61, 0xa6, 0x79, 0x56,
                                           0xf8, 0x79, 0x53, 0x14, 0xda, 0xfb,
                                           0x2e, 0xbc, 0x83, 0xd7};
@@ -226,8 +207,6 @@ const uint8_t kReservedForNegotiationRetryIntegrityKey[] = {
     0x03, 0xe6, 0x7c, 0x7b, 0xd2, 0x44, 0xca, 0xd9};
 // Nonces used by Google versions of QUIC. When introducing a new version,
 // generate a new nonce by running `openssl rand -hex 12`.
-const uint8_t kT050RetryIntegrityNonce[] = {0x26, 0xe4, 0xd6, 0x23, 0x83, 0xd5,
-                                            0xc7, 0x60, 0xea, 0x02, 0xb4, 0x1f};
 const uint8_t kT051RetryIntegrityNonce[] = {0xb5, 0x0e, 0x4e, 0x53, 0x4c, 0xfc,
                                             0x0b, 0xbb, 0x85, 0xf2, 0xf9, 0xca};
 // Retry integrity nonce used by ParsedQuicVersion::ReservedForNegotiation().
@@ -237,12 +216,20 @@ const uint8_t kReservedForNegotiationRetryIntegrityNonce[] = {
 bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
                                   absl::string_view* key,
                                   absl::string_view* nonce) {
-  static_assert(SupportedVersions().size() == 7u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync with retry integrity keys");
-  if (!version.HasRetryIntegrityTag()) {
+  if (!version.UsesTls()) {
     QUIC_BUG << "Attempted to get retry integrity keys for invalid version "
              << version;
     return false;
+  } else if (version == ParsedQuicVersion::RFCv1()) {
+    *key = absl::string_view(
+        reinterpret_cast<const char*>(kRFCv1RetryIntegrityKey),
+        ABSL_ARRAYSIZE(kRFCv1RetryIntegrityKey));
+    *nonce = absl::string_view(
+        reinterpret_cast<const char*>(kRFCv1RetryIntegrityNonce),
+        ABSL_ARRAYSIZE(kRFCv1RetryIntegrityNonce));
+    return true;
   } else if (version == ParsedQuicVersion::Draft29()) {
     *key = absl::string_view(
         reinterpret_cast<const char*>(kDraft29RetryIntegrityKey),
@@ -251,14 +238,6 @@ bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
         reinterpret_cast<const char*>(kDraft29RetryIntegrityNonce),
         ABSL_ARRAYSIZE(kDraft29RetryIntegrityNonce));
     return true;
-  } else if (version == ParsedQuicVersion::Draft27()) {
-    *key = absl::string_view(
-        reinterpret_cast<const char*>(kDraft27RetryIntegrityKey),
-        ABSL_ARRAYSIZE(kDraft27RetryIntegrityKey));
-    *nonce = absl::string_view(
-        reinterpret_cast<const char*>(kDraft27RetryIntegrityNonce),
-        ABSL_ARRAYSIZE(kDraft27RetryIntegrityNonce));
-    return true;
   } else if (version == ParsedQuicVersion::T051()) {
     *key =
         absl::string_view(reinterpret_cast<const char*>(kT051RetryIntegrityKey),
@@ -266,14 +245,6 @@ bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
     *nonce = absl::string_view(
         reinterpret_cast<const char*>(kT051RetryIntegrityNonce),
         ABSL_ARRAYSIZE(kT051RetryIntegrityNonce));
-    return true;
-  } else if (version == ParsedQuicVersion::T050()) {
-    *key =
-        absl::string_view(reinterpret_cast<const char*>(kT050RetryIntegrityKey),
-                          ABSL_ARRAYSIZE(kT050RetryIntegrityKey));
-    *nonce = absl::string_view(
-        reinterpret_cast<const char*>(kT050RetryIntegrityNonce),
-        ABSL_ARRAYSIZE(kT050RetryIntegrityNonce));
     return true;
   } else if (version == ParsedQuicVersion::ReservedForNegotiation()) {
     *key = absl::string_view(
@@ -552,7 +523,7 @@ bool CryptoUtils::DeriveKeys(const ParsedQuicVersion& version,
       break;
     }
     default:
-      DCHECK(false);
+      QUICHE_DCHECK(false);
   }
 
   if (subkey_secret != nullptr) {
@@ -600,7 +571,7 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
     const CryptoHandshakeMessage& server_hello,
     const ParsedQuicVersionVector& negotiated_versions,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
 
   if (server_hello.tag() != kSHLO) {
     *error_details = "Bad tag";
@@ -632,7 +603,7 @@ QuicErrorCode CryptoUtils::ValidateServerHelloVersions(
     // reports that there was a version negotiation during the handshake.
     // Ensure that these two lists are identical.
     if (mismatch) {
-      *error_details = quiche::QuicheStrCat(
+      *error_details = absl::StrCat(
           "Downgrade attack detected: ServerVersions(", server_versions.size(),
           ")[", QuicVersionLabelVectorToString(server_versions, ",", 30),
           "] NegotiatedVersions(", negotiated_versions.size(), ")[",
@@ -678,7 +649,7 @@ QuicErrorCode CryptoUtils::ValidateClientHelloVersion(
     // downgrade attack.
     for (size_t i = 0; i < supported_versions.size(); ++i) {
       if (client_version == CreateQuicVersionLabel(supported_versions[i])) {
-        *error_details = quiche::QuicheStrCat(
+        *error_details = absl::StrCat(
             "Downgrade attack detected: ClientVersion[",
             QuicVersionLabelToString(client_version), "] ConnectionVersion[",
             ParsedQuicVersionToString(connection_version),

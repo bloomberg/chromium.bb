@@ -27,7 +27,6 @@ public:
     GrCircleBlurFragmentProcessor(const GrCircleBlurFragmentProcessor& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "CircleBlurFragmentProcessor"; }
-    bool usesExplicitReturn() const override;
     SkRect circleRect;
     float solidRadius;
     float textureRadius;
@@ -46,10 +45,9 @@ private:
             , solidRadius(solidRadius)
             , textureRadius(textureRadius) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
-        SkASSERT(blurProfile);
         this->registerChild(std::move(blurProfile), SkSL::SampleUsage::Explicit());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

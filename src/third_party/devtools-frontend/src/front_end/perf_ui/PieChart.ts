@@ -2,14 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
-const ls = Common.ls;
 const {render, html, svg} = LitHtml;
 
+import * as i18n from '../i18n/i18n.js';
+export const UIStrings = {
+  /**
+  *@description Text for sum
+  */
+  total: 'Total',
+};
+const str_ = i18n.i18n.registerUIStrings('perf_ui/PieChart.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+
 export interface Slice {
-  value: number, color: string, title: string
+  value: number;
+  color: string;
+  title: string;
 }
 
 export interface PieChartData {
@@ -28,10 +38,10 @@ export class PieChart extends HTMLElement {
   private readonly shadow = this.attachShadow({mode: 'open'});
   private chartName = '';
   private size = 0;
-  private formatter = (val: number) => val + '';
+  private formatter = (val: number): string => String(val);
   private showLegend = false;
   private total = 0;
-  private slices: ReadonlyArray<Slice> = [];
+  private slices: readonly Slice[] = [];
 
   private totalSelected = true;
   private sliceSelected = -1;
@@ -50,7 +60,7 @@ export class PieChart extends HTMLElement {
     this.render();
   }
 
-  private render() {
+  private render(): void {
     this.lastAngle = -Math.PI / 2;
     // clang-format off
     const output = html`
@@ -123,7 +133,8 @@ export class PieChart extends HTMLElement {
           margin: 0 6px;
           top: 1px;
           position: relative;
-          border: 1px solid rgb(100 100 100 / 20%);
+          border: 1px solid rgb(100 100 100 / 20%); /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
 
         .pie-chart-swatch.pie-chart-empty-swatch {
@@ -182,13 +193,13 @@ export class PieChart extends HTMLElement {
         </div>
         ${this.showLegend ? html`
         <div class="pie-chart-legend">
-          ${this.slices.map((slice, index) => {
+          ${this.slices.map((slice, index): LitHtml.TemplateResult => {
             const selected = this.sliceSelected === index;
             return html`
               <div class="pie-chart-legend-row ${selected ? 'selected' : ''}"
                   @click=${this.onSliceClicked(index)} tabIndex=${selected ? '0' : '-1'}>
                 <div class="pie-chart-size">${this.formatter(slice.value)}</div>
-                <div class="pie-chart-swatch" style="background-color: ${slice.color}"></div>
+                <div class="pie-chart-swatch" style="background-color: ${slice.color};"></div>
                 <div class="pie-chart-name">${slice.title}</div>
               </div>`;
           })}
@@ -196,7 +207,7 @@ export class PieChart extends HTMLElement {
               @click=${this.selectTotal} tabIndex=${this.totalSelected ? '0' : '-1'}>
             <div class="pie-chart-size">${this.formatter(this.total)}</div>
             <div class="pie-chart-swatch pie-chart-empty-swatch"></div>
-            <div class="pie-chart-name">${ls`Total`}</div>
+            <div class="pie-chart-name">${i18nString(UIStrings.total)}</div>
           </div>
         </div>
         ` : ''}
@@ -205,25 +216,25 @@ export class PieChart extends HTMLElement {
     render(output, this.shadow, {eventContext: this});
   }
 
-  private onSliceClicked(index: number) {
-    return () => {
+  private onSliceClicked(index: number): () => void {
+    return (): void => {
       this.selectSlice(index);
     };
   }
 
-  private selectSlice(index: number) {
+  private selectSlice(index: number): void {
     this.totalSelected = false;
     this.sliceSelected = index;
     this.render();
   }
 
-  private selectTotal() {
+  private selectTotal(): void {
     this.totalSelected = true;
     this.sliceSelected = -1;
     this.render();
   }
 
-  private selectAndFocusTotal() {
+  private selectAndFocusTotal(): void {
     this.selectTotal();
     // In order for the :focus-visible styles to work, we need to focus the
     // newly selected item. This is so that the outline is only shown for focus
@@ -231,16 +242,22 @@ export class PieChart extends HTMLElement {
     // when we click on something is not necessary. The same goes for focusing
     // slices below.
     const totalLegendRow = this.shadow.querySelector<HTMLDivElement>('.pie-chart-legend > :last-child');
-    totalLegendRow!.focus();
+    if (!totalLegendRow) {
+      return;
+    }
+    totalLegendRow.focus();
   }
 
-  private selectAndFocusSlice(index: number) {
+  private selectAndFocusSlice(index: number): void {
     this.selectSlice(index);
     const sliceLegendRow = this.shadow.querySelector<HTMLDivElement>(`.pie-chart-legend > :nth-child(${index + 1})`);
-    sliceLegendRow!.focus();
+    if (!sliceLegendRow) {
+      return;
+    }
+    sliceLegendRow.focus();
   }
 
-  private focusNextElement() {
+  private focusNextElement(): void {
     if (this.totalSelected) {
       this.selectAndFocusSlice(0);
     } else if (this.sliceSelected === this.slices.length - 1) {
@@ -250,7 +267,7 @@ export class PieChart extends HTMLElement {
     }
   }
 
-  private focusPreviousElement() {
+  private focusPreviousElement(): void {
     if (this.totalSelected) {
       this.selectAndFocusSlice(this.slices.length - 1);
     } else if (this.sliceSelected === 0) {
@@ -260,7 +277,7 @@ export class PieChart extends HTMLElement {
     }
   }
 
-  private onKeyDown(event: KeyboardEvent) {
+  private onKeyDown(event: KeyboardEvent): void {
     let handled = false;
     if (event.key === 'ArrowDown') {
       this.focusNextElement();
@@ -276,7 +293,7 @@ export class PieChart extends HTMLElement {
     }
   }
 
-  private getPathStringForSlice(slice: Slice) {
+  private getPathStringForSlice(slice: Slice): string|undefined {
     const value = slice.value;
     let sliceAngle = value / this.total * 2 * Math.PI;
     if (!isFinite(sliceAngle)) {
@@ -306,6 +323,7 @@ if (!customElements.get('devtools-perf-piechart')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-perf-piechart': PieChart;
   }

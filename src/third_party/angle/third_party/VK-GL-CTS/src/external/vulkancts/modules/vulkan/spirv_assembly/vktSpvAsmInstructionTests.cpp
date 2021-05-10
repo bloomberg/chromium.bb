@@ -63,6 +63,7 @@
 #include "vktSpvAsmComputeShaderTestUtil.hpp"
 #include "vktSpvAsmFloatControlsTests.hpp"
 #include "vktSpvAsmFromHlslTests.hpp"
+#include "vktSpvAsmEmptyStructTests.hpp"
 #include "vktSpvAsmGraphicsShaderTestUtil.hpp"
 #include "vktSpvAsmVariablePointersTests.hpp"
 #include "vktSpvAsmVariableInitTests.hpp"
@@ -83,6 +84,7 @@
 #include "vktSpvAsmNonSemanticInfoTests.hpp"
 #include "vktSpvAsm64bitCompareTests.hpp"
 #include "vktSpvAsmTrinaryMinMaxTests.hpp"
+#include "vktSpvAsmTerminateInvocationTests.hpp"
 
 #include <cmath>
 #include <limits>
@@ -3161,6 +3163,28 @@ void addOpUnreachableAmberTests(tcu::TestCaseGroup& group, tcu::TestContext& tes
 	}
 }
 
+void addOpSwitchAmberTests(tcu::TestCaseGroup& group, tcu::TestContext& testCtx)
+{
+	static const char dataDir[] = "spirv_assembly/instruction/compute/switch";
+
+	struct Case
+	{
+		string	name;
+		string	desc;
+	};
+
+	static const Case cases[] =
+	{
+		{ "switch-case-to-merge-block",	"Test switch containing a case that jumps directly to the merge block"	},
+	};
+
+	for (int i = 0; i < DE_LENGTH_OF_ARRAY(cases); ++i)
+	{
+		const string fileName = cases[i].name + ".amber";
+		group.addChild(cts_amber::createAmberTestCase(testCtx, cases[i].name.c_str(), cases[i].desc.c_str(), dataDir, fileName));
+	}
+}
+
 tcu::TestCaseGroup* createOpArrayLengthComputeGroup (tcu::TestContext& testCtx)
 {
 	de::MovePtr<tcu::TestCaseGroup>	group		(new tcu::TestCaseGroup(testCtx, "oparraylength", "Test the OpArrayLength instruction"));
@@ -4597,7 +4621,7 @@ tcu::TestCaseGroup* createOpPhiGroup (tcu::TestContext& testCtx)
 	vector<float>					outputFloats4	(numElements, 0);
 	vector<float>					outputFloats5	(numElements, 0);
 	std::string						codestring		= "ABC";
-	const int						test4Width		= 1024;
+	const int						test4Width		= 512;
 
 	// Build case 5 code string. Each iteration makes the hierarchy more complicated.
 	// 9 iterations with (7, 24) parameters makes the hierarchy 8 deep with about 1500 lines of
@@ -7935,6 +7959,8 @@ tcu::TestCaseGroup* createSwitchBlockOrderTests(tcu::TestContext& testCtx)
 
 	createTestsForAllStages("out_of_order", inputColors, outputColors, fragments, group.get());
 
+	addOpSwitchAmberTests(*group, testCtx);
+
 	return group.release();
 }
 
@@ -9728,12 +9754,13 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 	// A barrier inside a function body.
 	fragments["pre_main"] =
 		"%Workgroup = OpConstant %i32 2\n"
+		"%Invocation = OpConstant %i32 4\n"
 		"%WorkgroupAcquireRelease = OpConstant %i32 0x108\n";
 	fragments["testfun"] =
 		"%test_code = OpFunction %v4f32 None %v4f32_v4f32_function\n"
 		"%param1 = OpFunctionParameter %v4f32\n"
 		"%label_testfun = OpLabel\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"OpReturnValue %param1\n"
 		"OpFunctionEnd\n";
 	addTessCtrlTest(testGroup.get(), "in_function", fragments);
@@ -9741,6 +9768,7 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 	// Common setup code for the following tests.
 	fragments["pre_main"] =
 		"%Workgroup = OpConstant %i32 2\n"
+		"%Invocation = OpConstant %i32 4\n"
 		"%WorkgroupAcquireRelease = OpConstant %i32 0x108\n"
 		"%c_f32_5 = OpConstant %f32 5.\n";
 	const string setupPercentZero =	 // Begins %test_code function with code that sets %zero to 0u but cannot be optimized away.
@@ -9760,18 +9788,18 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 
 		"%case1 = OpLabel\n"
 		";This barrier should never be executed, but its presence makes test failure more likely when there's a bug.\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"%wrong_branch_alert1 = OpVectorInsertDynamic %v4f32 %param1 %c_f32_0_5 %c_i32_0\n"
 		"OpBranch %switch_exit\n"
 
 		"%switch_default = OpLabel\n"
 		"%wrong_branch_alert2 = OpVectorInsertDynamic %v4f32 %param1 %c_f32_0_5 %c_i32_0\n"
 		";This barrier should never be executed, but its presence makes test failure more likely when there's a bug.\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"OpBranch %switch_exit\n"
 
 		"%case0 = OpLabel\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"OpBranch %switch_exit\n"
 
 		"%switch_exit = OpLabel\n"
@@ -9789,12 +9817,12 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 
 		"%else = OpLabel\n"
 		";This barrier should never be executed, but its presence makes test failure more likely when there's a bug.\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"%wrong_branch_alert = OpVectorInsertDynamic %v4f32 %param1 %c_f32_0_5 %c_i32_0\n"
 		"OpBranch %exit\n"
 
 		"%then = OpLabel\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"OpBranch %exit\n"
 		"%exit = OpLabel\n"
 		"%ret = OpPhi %v4f32 %param1 %then %wrong_branch_alert %else\n"
@@ -9821,7 +9849,7 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 
 		"%exit = OpLabel\n"
 		"%val = OpPhi %f32 %val0 %else %val1 %then\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"%ret = OpVectorInsertDynamic %v4f32 %param1 %val %zero\n"
 		"OpReturnValue %ret\n"
 		"OpFunctionEnd\n";
@@ -9830,6 +9858,7 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 	// A barrier inside a loop.
 	fragments["pre_main"] =
 		"%Workgroup = OpConstant %i32 2\n"
+		"%Invocation = OpConstant %i32 4\n"
 		"%WorkgroupAcquireRelease = OpConstant %i32 0x108\n"
 		"%c_f32_10 = OpConstant %f32 10.\n";
 	fragments["testfun"] =
@@ -9843,7 +9872,7 @@ tcu::TestCaseGroup* createBarrierTests(tcu::TestContext& testCtx)
 		"%loop = OpLabel\n"
 		"%count = OpPhi %i32 %c_i32_4 %entry %count__ %loop\n"
 		"%val1 = OpPhi %f32 %val0 %entry %val %loop\n"
-		"OpControlBarrier %Workgroup %Workgroup %WorkgroupAcquireRelease\n"
+		"OpControlBarrier %Workgroup %Invocation %WorkgroupAcquireRelease\n"
 		"%fcount = OpConvertSToF %f32 %count\n"
 		"%val = OpFAdd %f32 %val1 %fcount\n"
 		"%count__ = OpISub %i32 %count %c_i32_1\n"
@@ -18775,7 +18804,8 @@ tcu::TestCaseGroup* createFloat32ComparisonComputeSet (tcu::TestContext& testCtx
 
 	const ComparisonCase			amberTests[]	=
 	{
-		{ "modfstruct",	"modf and modfStruct" }
+		{ "modfstruct",		"modf and modfStruct"	},
+		{ "frexpstruct",	"frexp and frexpStruct"	}
 	};
 
 	for (ComparisonCase test : amberTests)
@@ -18817,7 +18847,8 @@ tcu::TestCaseGroup* createFloat32ComparisonGraphicsSet (tcu::TestContext& testCt
 
 	const ComparisonCase			amberTests[]	=
 	{
-		{ "modfstruct",	"modf and modfStruct" }
+		{ "modfstruct",		"modf and modfStruct"	},
+		{ "frexpstruct",	"frexp and frexpStruct"	}
 	};
 
 	for (ComparisonCase test : amberTests)
@@ -20468,6 +20499,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createPtrAccessChainGroup(testCtx));
 	computeTests->addChild(createVectorShuffleGroup(testCtx));
 	computeTests->addChild(createHlslComputeGroup(testCtx));
+	computeTests->addChild(createEmptyStructComputeGroup(testCtx));
 	computeTests->addChild(create64bitCompareComputeGroup(testCtx));
 	computeTests->addChild(createOpArrayLengthComputeGroup(testCtx));
 
@@ -20540,6 +20572,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	instructionTests->addChild(createSpirvVersion1p4Group(testCtx));
 	instructionTests->addChild(createFunctionParamsGroup(testCtx));
 	instructionTests->addChild(createTrinaryMinMaxGroup(testCtx));
+	instructionTests->addChild(createTerminateInvocationGroup(testCtx));
 
 	return instructionTests.release();
 }

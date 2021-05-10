@@ -67,8 +67,9 @@ util::Status ProtoTraceReader::ParseExtensionDescriptor(ConstBytes descriptor) {
                                                        descriptor.size);
 
   auto extension = decoder.extension_set();
-  return context_->proto_to_args_table_->AddProtoFileDescriptor(extension.data,
-                                                                extension.size);
+  return context_->proto_to_args_table_->AddProtoFileDescriptor(
+      extension.data, extension.size,
+      /*merge_existing_messages=*/true);
 }
 
 util::Status ProtoTraceReader::ParsePacket(TraceBlobView packet) {
@@ -136,6 +137,16 @@ util::Status ProtoTraceReader::ParsePacket(TraceBlobView packet) {
       context_->storage->IncrementStats(stats::tokenizer_skipped_packets);
       return util::OkStatus();
     }
+  }
+
+  // Workaround a bug in the frame timeline traces which is emitting packets
+  // with zero timestamp (b/179905685).
+  // TODO(primiano): around mid-2021 there should be no traces that have this
+  // bug and we should be able to remove this workaround.
+  if (decoder.has_frame_timeline_event() && decoder.timestamp() == 0) {
+    context_->storage->IncrementStats(
+        stats::frame_timeline_event_parser_errors);
+    return util::OkStatus();
   }
 
   protos::pbzero::TracePacketDefaults::Decoder* defaults =
@@ -258,8 +269,10 @@ void ProtoTraceReader::HandleIncrementalStateCleared(
   GetIncrementalStateForPacketSequence(
       packet_decoder.trusted_packet_sequence_id())
       ->OnIncrementalStateCleared();
-  context_->track_tracker->OnIncrementalStateCleared(
-      packet_decoder.trusted_packet_sequence_id());
+  for (auto& module : context_->modules) {
+    module->OnIncrementalStateCleared(
+        packet_decoder.trusted_packet_sequence_id());
+  }
 }
 
 void ProtoTraceReader::HandlePreviousPacketDropped(

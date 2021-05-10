@@ -15,7 +15,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "crypto/random.h"
-#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/ash/camera_hal_dispatcher_impl.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -136,10 +136,20 @@ void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
       fd.get(), token, base::BindOnce([](bool success) {}));
 }
 
-void ArcCameraBridge::RegisterCameraHalClient(
+void ArcCameraBridge::RegisterCameraHalClientLegacy(
     mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
   media::CameraHalDispatcherImpl::GetInstance()->RegisterClient(
       std::move(client));
+}
+
+void ArcCameraBridge::RegisterCameraHalClient(
+    mojo::PendingRemote<cros::mojom::CameraHalClient> client,
+    RegisterCameraHalClientCallback callback) {
+  auto* dispatcher = media::CameraHalDispatcherImpl::GetInstance();
+  auto type = cros::mojom::CameraClientType::ANDROID;
+  dispatcher->RegisterClientWithToken(
+      std::move(client), type, dispatcher->GetTokenForTrustedClient(type),
+      std::move(callback));
 }
 
 }  // namespace arc

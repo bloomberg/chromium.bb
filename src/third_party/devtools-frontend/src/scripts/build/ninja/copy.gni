@@ -1,30 +1,25 @@
 # Copyright 2019 The Chromium Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("./node.gni")
 import("./vars.gni")
 
 template("copy_to_gen") {
-  action(target_name) {
+  node_action(target_name) {
     forward_variables_from(invoker,
                            [
                              "sources",
                              "visibility",
                              "deps",
+                             "testonly",
                            ])
 
-    script = "//third_party/node/node.py"
-
-    inputs =
-        [ devtools_location_prepend + "scripts/build/ninja/copy-files.js" ] +
-        sources
+    script = "scripts/build/ninja/copy-files.js"
 
     _copy_src = rebase_path(get_path_info(target_name, "dir"))
     _copy_dest = rebase_path(target_gen_dir)
 
     args = [
-      rebase_path(
-          devtools_location_prepend + "scripts/build/ninja/copy-files.js",
-          root_build_dir),
       _copy_src,
       _copy_dest,
       string_join(",", sources),
@@ -39,19 +34,16 @@ template("copy_to_gen") {
 
 template("copy_sources_to_resources") {
   _copy_action_name = "$target_name-copy"
-  action(_copy_action_name) {
+  node_action(_copy_action_name) {
     forward_variables_from(invoker,
                            [
                              "sources",
                              "deps",
                              "public_deps",
+                             "testonly",
                            ])
 
-    script = "//third_party/node/node.py"
-
-    inputs =
-        [ devtools_location_prepend + "scripts/build/ninja/copy-files.js" ] +
-        sources
+    script = "scripts/build/ninja/copy-files.js"
 
     # Figure out what the relative path is to the front_end folder.
     # We have to get the full path to the target_gen_dir
@@ -68,9 +60,6 @@ template("copy_sources_to_resources") {
         rebase_path("$root_out_dir/resources/inspector$_front_end_module_name")
 
     args = [
-      rebase_path(
-          devtools_location_prepend + "scripts/build/ninja/copy-files.js",
-          root_build_dir),
       _copy_src,
       _copy_dest,
       string_join(",", sources),
@@ -98,6 +87,8 @@ template("copy_gen_to_resources") {
                              "sources",
                              "deps",
                              "public_deps",
+                             "testonly",
+                             "data",
                            ])
 
     # Figure out what the relative path is to the front_end folder.
@@ -107,7 +98,7 @@ template("copy_gen_to_resources") {
     # resolve to the correct location.
     _front_end_module_name =
         string_replace(get_path_info(target_gen_dir, "abspath"),
-                       root_gen_dir + "/" + devtools_location + "front_end/",
+                       root_gen_dir + "/" + devtools_location + "front_end",
                        "")
 
     outputs =

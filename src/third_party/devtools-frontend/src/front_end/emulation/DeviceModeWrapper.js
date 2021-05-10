@@ -15,9 +15,6 @@ import {InspectedPagePlaceholder} from './InspectedPagePlaceholder.js';  // esli
 /** @type {!DeviceModeWrapper} */
 let deviceModeWrapperInstance;
 
-/**
- * @unrestricted
- */
 export class DeviceModeWrapper extends UI.Widget.VBox {
   /**
    * @param {!InspectedPagePlaceholder} inspectedPagePlaceholder
@@ -31,7 +28,7 @@ export class DeviceModeWrapper extends UI.Widget.VBox {
     this._toggleDeviceModeAction = UI.ActionRegistry.ActionRegistry.instance().action('emulation.toggle-device-mode');
     const model = DeviceModeModel.instance();
     this._showDeviceModeSetting = model.enabledSetting();
-    this._showDeviceModeSetting.setRequiresUserAction(!!Root.Runtime.Runtime.queryParam('hasOtherClients'));
+    this._showDeviceModeSetting.setRequiresUserAction(Boolean(Root.Runtime.Runtime.queryParam('hasOtherClients')));
     this._showDeviceModeSetting.addChangeListener(this._update.bind(this, false));
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.OverlayModel.OverlayModel, SDK.OverlayModel.Events.ScreenshotRequested,
@@ -120,9 +117,11 @@ export class DeviceModeWrapper extends UI.Widget.VBox {
   }
 }
 
+/** @type {!ActionDelegate} */
+let actionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ActionDelegate {
   /**
@@ -189,5 +188,16 @@ export class ActionDelegate {
       }
     }
     return false;
+  }
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
+    }
+
+    return actionDelegateInstance;
   }
 }

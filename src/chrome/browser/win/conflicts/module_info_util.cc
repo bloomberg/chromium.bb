@@ -101,7 +101,7 @@ base::string16 GetSubjectNameInFile(const base::FilePath& filename) {
   if (!subject_name_size)
     return base::string16();
 
-  base::string16 subject_name;
+  std::wstring subject_name;
   subject_name.resize(subject_name_size);
 
   // Get subject name.
@@ -115,7 +115,7 @@ base::string16 GetSubjectNameInFile(const base::FilePath& filename) {
   // characters.
   internal::NormalizeCertificateSubject(&subject_name);
 
-  return subject_name;
+  return base::AsString16(subject_name);
 }
 
 // Helper for scoped tracking a catalog admin context.
@@ -254,22 +254,24 @@ void GetCertificateInfo(const base::FilePath& filename,
 }
 
 bool IsMicrosoftModule(base::StringPiece16 subject) {
-  static constexpr wchar_t kMicrosoft[] = L"Microsoft ";
+  static constexpr base::char16 kMicrosoft[] = STRING16_LITERAL("Microsoft ");
   return base::StartsWith(subject, kMicrosoft);
 }
 
 StringMapping GetEnvironmentVariablesMapping(
-    const std::vector<base::string16>& environment_variables) {
+    const std::vector<std::wstring>& environment_variables) {
   std::unique_ptr<base::Environment> environment(base::Environment::Create());
 
   StringMapping string_mapping;
-  for (const base::string16& variable : environment_variables) {
+  for (const std::wstring& variable : environment_variables) {
     std::string value;
-    if (environment->GetVar(base::UTF16ToASCII(variable).c_str(), &value)) {
+    if (environment->GetVar(base::WideToASCII(variable).c_str(), &value)) {
       value = base::TrimString(value, "\\", base::TRIM_TRAILING).as_string();
       string_mapping.push_back(
           std::make_pair(base::i18n::ToLower(base::UTF8ToUTF16(value)),
-                         L"%" + base::i18n::ToLower(variable) + L"%"));
+                         STRING16_LITERAL("%") +
+                             base::i18n::ToLower(base::AsString16(variable)) +
+                             STRING16_LITERAL("%")));
     }
   }
 
@@ -334,9 +336,9 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
 
 namespace internal {
 
-void NormalizeCertificateSubject(base::string16* subject) {
+void NormalizeCertificateSubject(std::wstring* subject) {
   size_t first_null = subject->find(L'\0');
-  if (first_null != base::string16::npos)
+  if (first_null != std::wstring::npos)
     subject->resize(first_null);
 }
 

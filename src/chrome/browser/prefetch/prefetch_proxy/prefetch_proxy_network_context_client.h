@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_NETWORK_CONTEXT_CLIENT_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -19,32 +20,6 @@ class PrefetchProxyNetworkContextClient
   ~PrefetchProxyNetworkContextClient() override;
 
   // network::mojom::NetworkContextClient implementation:
-  void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
-      int32_t process_id,
-      int32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      bool first_auth_attempt,
-      const net::AuthChallengeInfo& auth_info,
-      network::mojom::URLResponseHeadPtr head,
-      mojo::PendingRemote<network::mojom::AuthChallengeResponder>
-          auth_challenge_responder) override;
-  void OnCertificateRequested(
-      const base::Optional<base::UnguessableToken>& window_id,
-      int32_t process_id,
-      int32_t routing_id,
-      uint32_t request_id,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojo::PendingRemote<network::mojom::ClientCertificateResponder>
-          cert_responder) override;
-  void OnSSLCertificateError(int32_t process_id,
-                             int32_t routing_id,
-                             const GURL& url,
-                             int net_error,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override;
   void OnFileUploadRequested(int32_t process_id,
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
@@ -69,7 +44,7 @@ class PrefetchProxyNetworkContextClient
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnTrustAnchorUsed() override;
 #endif
   void OnTrustTokenIssuanceDivertedToSystem(

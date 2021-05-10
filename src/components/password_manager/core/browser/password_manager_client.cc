@@ -44,7 +44,7 @@ void PasswordManagerClient::GeneratePassword(
 void PasswordManagerClient::UpdateCredentialCache(
     const url::Origin& origin,
     const std::vector<const PasswordForm*>& best_matches,
-    bool is_blacklisted) {}
+    bool is_blocklisted) {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const PasswordForm*>& best_matches,
@@ -91,6 +91,13 @@ bool PasswordManagerClient::IsIncognito() const {
   return false;
 }
 
+profile_metrics::BrowserProfileType PasswordManagerClient::GetProfileType()
+    const {
+  // This is an abstract interface and thus never instantiated directly,
+  // therefore it is safe to always return |kRegular| here.
+  return profile_metrics::BrowserProfileType::kRegular;
+}
+
 const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
   return nullptr;
 }
@@ -130,8 +137,8 @@ const autofill::LogManager* PasswordManagerClient::GetLogManager() const {
 
 void PasswordManagerClient::AnnotateNavigationEntry(bool has_password_field) {}
 
-std::string PasswordManagerClient::GetPageLanguage() const {
-  return std::string();
+autofill::LanguageCode PasswordManagerClient::GetPageLanguage() const {
+  return autofill::LanguageCode();
 }
 
 PasswordRequirementsService*

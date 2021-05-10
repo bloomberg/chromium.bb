@@ -33,7 +33,6 @@ ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
 }
 
 void ChildFrameCompositingHelper::ChildFrameGone(
-    const gfx::Size& frame_size_in_dip,
     float device_scale_factor) {
   surface_id_ = viz::SurfaceId();
   device_scale_factor_ = device_scale_factor;
@@ -42,10 +41,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
   crash_ui_layer_->SetMasksToBounds(true);
   crash_ui_layer_->SetIsDrawable(true);
 
-  bool prevent_contents_opaque_changes = false;
   bool is_surface_layer = false;
-  child_frame_compositor_->SetLayer(
-      crash_ui_layer_, prevent_contents_opaque_changes, is_surface_layer);
+  child_frame_compositor_->SetLayer(crash_ui_layer_, is_surface_layer);
 }
 
 void ChildFrameCompositingHelper::SetSurfaceId(
@@ -66,9 +63,7 @@ void ChildFrameCompositingHelper::SetSurfaceId(
 
   // TODO(lfg): Investigate if it's possible to propagate the information
   // about the child surface's opacity. https://crbug.com/629851.
-  bool prevent_contents_opaque_changes = true;
   child_frame_compositor_->SetLayer(surface_layer_,
-                                    prevent_contents_opaque_changes,
                                     true /* is_surface_layer */);
 
   UpdateVisibility(true);
@@ -84,7 +79,7 @@ void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   }
 }
 
-gfx::Rect ChildFrameCompositingHelper::PaintableRegion() {
+gfx::Rect ChildFrameCompositingHelper::PaintableRegion() const {
   DCHECK(crash_ui_layer_);
   return gfx::Rect(crash_ui_layer_->bounds());
 }
@@ -119,7 +114,7 @@ ChildFrameCompositingHelper::PaintContentsToDisplayList() {
                        .set_image(SkImage::MakeFromBitmap(*sad_bitmap),
                                   cc::PaintImage::GetNextContentId())
                        .TakePaintImage();
-      display_list->push<cc::DrawImageOp>(image, x, y, nullptr);
+      display_list->push<cc::DrawImageOp>(image, x, y);
 
       if (device_scale_factor_ != 1.f)
         display_list->push<cc::RestoreOp>();

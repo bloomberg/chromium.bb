@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +34,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/views_features.h"
 
 using media_session::mojom::MediaSessionAction;
@@ -76,7 +77,7 @@ views::Widget* MediaDialogView::ShowDialog(views::View* anchor_view,
 void MediaDialogView::HideDialog() {
   if (IsShowing()) {
     instance_->service_->SetDialogDelegate(nullptr);
-    speech::SODAInstaller::GetInstance()->RemoveObserver(instance_);
+    speech::SodaInstaller::GetInstance()->RemoveObserver(instance_);
     instance_->GetWidget()->Close();
   }
 
@@ -137,15 +138,8 @@ void MediaDialogView::AddedToWidget() {
   views::BubbleFrameView* frame = GetBubbleFrameView();
   if (frame)
     frame->SetCornerRadius(corner_radius);
-  if (!base::FeatureList::IsEnabled(
-          views::features::kEnableMDRoundedCornersOnDialogs)) {
-    SetPaintToLayer();
-    layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
-    if (base::FeatureList::IsEnabled(media::kLiveCaption))
-      layer()->SetFillsBoundsOpaquely(false);
-  }
   service_->SetDialogDelegate(this);
-  speech::SODAInstaller::GetInstance()->AddObserver(this);
+  speech::SodaInstaller::GetInstance()->AddObserver(this);
 }
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {
@@ -217,6 +211,9 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
       profile_(profile->GetOriginalProfile()),
       active_sessions_view_(
           AddChildView(std::make_unique<MediaNotificationListView>())) {
+  // Enable layer based clipping to ensure children using layers are clipped
+  // appropriately.
+  SetPaintClientToLayer(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   DCHECK(service_);
 }
@@ -245,18 +242,11 @@ void MediaDialogView::Init() {
               gfx::Insets(kLiveCaptionHorizontalMarginDip,
                           kLiveCaptionVerticalMarginDip),
               kLiveCaptionBetweenChildSpacing));
-  if (!base::FeatureList::IsEnabled(
-          views::features::kEnableMDRoundedCornersOnDialogs)) {
-    SkColor native_theme_bg_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_BubbleBackground);
-    live_caption_container->SetBackground(
-        views::CreateSolidBackground(native_theme_bg_color));
-  }
 
   auto live_caption_image = std::make_unique<views::ImageView>();
-  live_caption_image->SetImage(
-      gfx::CreateVectorIcon(kLiveCaptionIcon, kLiveCaptionImageWidthDip,
-                            SkColor(gfx::kGoogleGrey700)));
+  live_caption_image->SetImage(gfx::CreateVectorIcon(
+      vector_icons::kLiveCaptionOnIcon, kLiveCaptionImageWidthDip,
+      SkColor(gfx::kGoogleGrey700)));
   live_caption_container->AddChildView(std::move(live_caption_image));
 
   auto live_caption_title = std::make_unique<views::Label>(
@@ -281,9 +271,9 @@ void MediaDialogView::Init() {
     live_caption_title_->SetVisible(false);
   }
 
-  auto live_caption_button =
-      std::make_unique<views::ToggleButton>(base::BindRepeating(
-          &MediaDialogView::LiveCaptionButtonPressed, base::Unretained(this)));
+  auto live_caption_button = std::make_unique<views::ToggleButton>(
+      base::BindRepeating(&MediaDialogView::OnLiveCaptionButtonPressed,
+                          base::Unretained(this)));
   live_caption_button->SetIsOn(
       profile_->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
   live_caption_button->SetAccessibleName(live_caption_title_->GetText());
@@ -301,13 +291,15 @@ void MediaDialogView::WindowClosing() {
   if (instance_ == this) {
     instance_ = nullptr;
     service_->SetDialogDelegate(nullptr);
-    speech::SODAInstaller::GetInstance()->RemoveObserver(this);
+    speech::SodaInstaller::GetInstance()->RemoveObserver(this);
   }
 }
 
-void MediaDialogView::LiveCaptionButtonPressed(const ui::Event& event) {
+void MediaDialogView::OnLiveCaptionButtonPressed() {
   bool enabled = !profile_->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled);
   ToggleLiveCaption(enabled);
+  base::UmaHistogramBoolean(
+      "Accessibility.LiveCaption.EnableFromGlobalMediaControls", enabled);
 }
 
 void MediaDialogView::ToggleLiveCaption(bool enabled) {
@@ -320,19 +312,22 @@ void MediaDialogView::ToggleLiveCaption(bool enabled) {
   }
 }
 
-void MediaDialogView::OnSODAInstalled() {
+void MediaDialogView::OnSodaInstalled() {
+  speech::SodaInstaller::GetInstance()->RemoveObserver(this);
   live_caption_title_->SetText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION));
 }
 
-void MediaDialogView::OnSODAError() {
+void MediaDialogView::OnSodaError() {
   ToggleLiveCaption(false);
-  live_caption_title_->SetText(
-      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION));
-  // TODO(crbug.com/1055150): Show an error message as a toast.
+  live_caption_title_->SetText(l10n_util::GetStringUTF16(
+      IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_ERROR));
 }
 
-void MediaDialogView::OnSODAProgress(int progress) {
+void MediaDialogView::OnSodaProgress(int progress) {
   live_caption_title_->SetText(l10n_util::GetStringFUTF16Int(
       IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS, progress));
 }
+
+BEGIN_METADATA(MediaDialogView, views::BubbleDialogDelegateView)
+END_METADATA

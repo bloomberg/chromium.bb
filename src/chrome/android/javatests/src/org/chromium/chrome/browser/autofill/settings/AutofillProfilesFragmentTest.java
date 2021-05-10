@@ -15,17 +15,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
@@ -36,13 +39,15 @@ import java.util.concurrent.TimeoutException;
  * Unit test suite for AutofillProfilesFragment.
  */
 
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillProfilesFragmentTest {
     @Rule
     public final AutofillTestRule rule = new AutofillTestRule();
     @Rule
     public final SettingsActivityTestRule<AutofillProfilesFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AutofillProfilesFragment.class);
+    @Rule
+    public final TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Before
     public void setUp() throws TimeoutException {
@@ -66,6 +71,7 @@ public class AutofillProfilesFragmentTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES})
     public void testAddProfile() throws Exception {
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
@@ -82,8 +88,8 @@ public class AutofillProfilesFragmentTest {
 
         // Add a profile.
         updatePreferencesAndWait(autofillProfileFragment, addProfile,
-                new String[] {"Alice Doe", "Google", "111 Added St", "Los Angeles", "CA", "90291",
-                        "650-253-0000", "add@profile.com"},
+                new String[] {"Ms.", "Alice Doe", "Google", "111 Added St", "Los Angeles", "CA",
+                        "90291", "650-253-0000", "add@profile.com"},
                 R.id.editor_dialog_done_button, false);
 
         Assert.assertEquals(7 /* One toggle + one add button + five profiles. */,
@@ -98,6 +104,7 @@ public class AutofillProfilesFragmentTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES})
     public void testAddIncompletedProfile() throws Exception {
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
@@ -112,9 +119,41 @@ public class AutofillProfilesFragmentTest {
                         AutofillProfilesFragment.PREF_NEW_PROFILE);
         Assert.assertNotNull(addProfile);
 
-        // Try to add an incomplete profile.
-        updatePreferencesAndWait(autofillProfileFragment, addProfile, new String[] {"Mike Doe"},
-                R.id.editor_dialog_done_button, true);
+        // Add an incomplete profile.
+        updatePreferencesAndWait(autofillProfileFragment, addProfile, new String[] {"", "Mike Doe"},
+                R.id.editor_dialog_done_button, false);
+
+        // Incomplete profile should still be added.
+        Assert.assertEquals(7 /* One toggle + one add button + five profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
+        AutofillProfileEditorPreference addedProfile =
+                (AutofillProfileEditorPreference) fragment.findPreference("Mike Doe");
+        Assert.assertNotNull(addedProfile);
+        activity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES})
+    public void testAddProfileWithInvalidPhone() throws Exception {
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        AutofillProfilesFragment autofillProfileFragment =
+                (AutofillProfilesFragment) activity.getMainFragment();
+
+        // Check the preferences on the initial screen.
+        Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
+                autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
+        PreferenceFragmentCompat fragment = (PreferenceFragmentCompat) activity.getMainFragment();
+        AutofillProfileEditorPreference addProfile =
+                (AutofillProfileEditorPreference) fragment.findPreference(
+                        AutofillProfilesFragment.PREF_NEW_PROFILE);
+        Assert.assertNotNull(addProfile);
+
+        // Try to add a profile with invalid phone.
+        updatePreferencesAndWait(autofillProfileFragment, addProfile,
+                new String[] {"", "", "", "", "", "", "", "123"}, R.id.editor_dialog_done_button,
+                true);
         activity.finish();
     }
 
@@ -153,6 +192,7 @@ public class AutofillProfilesFragmentTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES})
     public void testEditProfile() throws Exception {
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
         AutofillProfilesFragment autofillProfileFragment =
@@ -169,8 +209,8 @@ public class AutofillProfilesFragmentTest {
 
         // Edit a profile.
         updatePreferencesAndWait(autofillProfileFragment, johnProfile,
-                new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles", "CA", "90291",
-                        "650-253-0000", "edit@profile.com"},
+                new String[] {"Dr.", "Emily Doe", "Google", "111 Edited St", "Los Angeles", "CA",
+                        "90291", "650-253-0000", "edit@profile.com"},
                 R.id.editor_dialog_done_button, false);
         // Check if the preferences are updated correctly.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
@@ -254,10 +294,12 @@ public class AutofillProfilesFragmentTest {
         // The keyboard is shown as soon as AutofillProfileEditorPreference comes into view.
         waitForKeyboardStatus(true, activity);
 
+        final List<EditText> fields =
+                fragment.getEditorDialogForTest().getEditableTextFieldsForTest();
+        // Ensure the first text field is focused.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { fields.get(0).requestFocus(); });
         // Hide the keyboard.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            List<EditText> fields =
-                    fragment.getEditorDialogForTest().getEditableTextFieldsForTest();
             KeyboardVisibilityDelegate.getInstance().hideKeyboard(fields.get(0));
         });
         // Check that the keyboard is hidden.

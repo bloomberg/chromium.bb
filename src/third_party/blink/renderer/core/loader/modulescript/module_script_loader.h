@@ -58,8 +58,8 @@ class CORE_EXPORT ModuleScriptLoader final
                     ModuleScriptLoaderClient*);
 
   // Implements ModuleScriptFetcher::Client.
-  void NotifyFetchFinished(
-      const base::Optional<ModuleScriptCreationParams>&,
+  void NotifyFetchFinishedSuccess(const ModuleScriptCreationParams&) override;
+  void NotifyFetchFinishedError(
       const HeapVector<Member<ConsoleMessage>>& error_messages) override;
 
   bool IsInitialState() const { return state_ == State::kInitial; }
@@ -77,10 +77,10 @@ class CORE_EXPORT ModuleScriptLoader final
 
   void AdvanceState(State new_state);
 
-  using PassKey = util::PassKey<ModuleScriptLoader>;
+  using PassKey = base::PassKey<ModuleScriptLoader>;
   // PassKey should be private and cannot be accessed from outside, but allow
   // accessing only from friend classes for testing.
-  static util::PassKey<ModuleScriptLoader> CreatePassKeyForTests() {
+  static base::PassKey<ModuleScriptLoader> CreatePassKeyForTests() {
     return PassKey();
   }
 

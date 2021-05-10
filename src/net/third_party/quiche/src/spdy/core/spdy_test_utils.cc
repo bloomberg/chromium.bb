@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
+#include "spdy/core/spdy_test_utils.h"
 
 #include <algorithm>
 #include <cstring>
@@ -11,9 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "common/platform/api/quiche_test.h"
+#include "common/quiche_endian.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 namespace test {
@@ -93,7 +93,7 @@ void SetFrameFlags(SpdySerializedFrame* frame, uint8_t flags) {
 }
 
 void SetFrameLength(SpdySerializedFrame* frame, size_t length) {
-  CHECK_GT(1u << 14, length);
+  QUICHE_CHECK_GT(1u << 14, length);
   {
     int32_t wire_length = quiche::QuicheEndian::HostToNet32(length);
     memcpy(frame->data(), reinterpret_cast<char*>(&wire_length) + 1, 3);

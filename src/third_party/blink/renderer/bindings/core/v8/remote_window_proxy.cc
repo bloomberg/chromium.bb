@@ -62,8 +62,6 @@ void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
   if (lifecycle_ == Lifecycle::kV8MemoryIsForciblyPurged) {
     DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
            next_status == Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged);
-    if (next_status == Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged)
-      global_proxy_.SetPhantom();
     lifecycle_ = next_status;
     return;
   }
@@ -74,18 +72,13 @@ void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
   if ((next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
        next_status == Lifecycle::kGlobalObjectIsDetached) &&
       !global_proxy_.IsEmpty()) {
+    v8::HandleScope handle_scope(GetIsolate());
     global_proxy_.Get().SetWrapperClassId(0);
     V8DOMWrapper::ClearNativeInfo(GetIsolate(),
                                   global_proxy_.NewLocal(GetIsolate()));
 #if DCHECK_IS_ON()
     DidDetachGlobalObject();
 #endif
-  }
-
-  if (next_status == Lifecycle::kFrameIsDetached) {
-    // The context's frame is detached from the DOM, so there shouldn't be a
-    // strong reference to the context.
-    global_proxy_.SetPhantom();
   }
 
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);

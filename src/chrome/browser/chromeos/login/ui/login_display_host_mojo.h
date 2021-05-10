@@ -15,8 +15,8 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ash/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
-#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
@@ -56,17 +56,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   void SetUserCount(int user_count);
 
-  // Show password changed dialog. If `show_password_error` is true, user
-  // already tried to enter old password but it turned out to be incorrect.
-  void ShowPasswordChangedDialog(bool show_password_error,
-                                 const AccountId& account_id);
-
   // Show allowlist check failed error. Happens after user completes online
   // signin but allowlist check fails.
   void ShowAllowlistCheckFailedError();
-
-  // Shows signin UI with specified email.
-  void ShowSigninUI(const std::string& email);
 
   UserSelectionScreen* user_selection_screen() {
     return user_selection_screen_.get();
@@ -91,12 +83,17 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
+  void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   void OnCancelPasswordChangedFlow() override;
+  void ShowEnableConsumerKioskScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
   bool HasUserPods() override;
+  void VerifyOwnerForKiosk(base::OnceClosure on_success) override;
+  void ShowPasswordChangedDialog(const AccountId& account_id,
+                                 bool show_password_error) override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 
@@ -166,6 +163,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // consume auth status events.
   void CreateExistingUserController();
 
+  // Consumer kiosk owner authentication functions.
+  void CheckOwnerCredentials(const UserContext& user_context);
+  void OnOwnerSigninSuccess();
+
   // State associated with a pending authentication attempt.
   struct AuthState {
     AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
@@ -216,6 +217,11 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Store which screen is currently displayed.
   DisplayedScreen displayed_screen_ = DisplayedScreen::SIGN_IN_SCREEN;
+
+  // Consumer kiosk owner fields.
+  AccountId owner_account_id_;
+  base::OnceClosure owner_verified_callback_;
+  scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
 
   ScopedObserver<views::View, views::ViewObserver> scoped_observer_{this};
 

@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "chrome/browser/net/secure_dns_config.h"
@@ -112,6 +113,8 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     // Initialize user policy.
     ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
+    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
+        .WillByDefault(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
@@ -183,7 +186,7 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
 
   std::unique_ptr<TestSecureDnsHandler> handler_;
   content::TestWebUI web_ui_;
-  policy::MockConfigurationPolicyProvider provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 
  private:
 #if defined(OS_WIN)
@@ -266,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicyChange) {
 
 // On platforms where enterprise policies do not have default values, test
 // that DoH is disabled when non-DoH policies are set.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
   policy::PolicyMap policy_map;
   SetPolicyForPolicyKey(&policy_map, policy::key::kIncognitoModeAvailability,

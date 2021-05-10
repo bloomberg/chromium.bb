@@ -123,824 +123,6 @@ static int fourcc_is_ivf(const char detect[4]) {
   return 0;
 }
 
-static const arg_def_t help =
-    ARG_DEF(NULL, "help", 0, "Show usage options and exit");
-static const arg_def_t debugmode =
-    ARG_DEF("D", "debug", 0, "Debug mode (makes output deterministic)");
-static const arg_def_t outputfile =
-    ARG_DEF("o", "output", 1, "Output filename");
-static const arg_def_t use_yv12 =
-    ARG_DEF(NULL, "yv12", 0, "Input file is YV12 ");
-static const arg_def_t use_i420 =
-    ARG_DEF(NULL, "i420", 0, "Input file is I420 (default)");
-static const arg_def_t use_i422 =
-    ARG_DEF(NULL, "i422", 0, "Input file is I422");
-static const arg_def_t use_i444 =
-    ARG_DEF(NULL, "i444", 0, "Input file is I444");
-static const arg_def_t codecarg = ARG_DEF(NULL, "codec", 1, "Codec to use");
-static const arg_def_t passes =
-    ARG_DEF("p", "passes", 1, "Number of passes (1/2)");
-static const arg_def_t pass_arg =
-    ARG_DEF(NULL, "pass", 1, "Pass to execute (1/2)");
-static const arg_def_t fpf_name =
-    ARG_DEF(NULL, "fpf", 1, "First pass statistics file name");
-static const arg_def_t limit =
-    ARG_DEF(NULL, "limit", 1, "Stop encoding after n input frames");
-static const arg_def_t skip =
-    ARG_DEF(NULL, "skip", 1, "Skip the first n input frames");
-static const arg_def_t good_dl =
-    ARG_DEF(NULL, "good", 0, "Use Good Quality Deadline");
-static const arg_def_t rt_dl =
-    ARG_DEF(NULL, "rt", 0, "Use Realtime Quality Deadline");
-static const arg_def_t quietarg =
-    ARG_DEF("q", "quiet", 0, "Do not print encode progress");
-static const arg_def_t verbosearg =
-    ARG_DEF("v", "verbose", 0, "Show encoder parameters");
-static const arg_def_t psnrarg = ARG_DEF(
-    NULL, "psnr", -1,
-    "Show PSNR in status line"
-    "(0: Disable PSNR status line display, 1: PSNR calculated using input "
-    "bit-depth (default), 2: PSNR calculated using stream bit-depth), "
-    "takes default option when arguments are not specified");
-static const arg_def_t use_cfg = ARG_DEF("c", "cfg", 1, "Config file to use");
-
-static const struct arg_enum_list test_decode_enum[] = {
-  { "off", TEST_DECODE_OFF },
-  { "fatal", TEST_DECODE_FATAL },
-  { "warn", TEST_DECODE_WARN },
-  { NULL, 0 }
-};
-static const arg_def_t recontest = ARG_DEF_ENUM(
-    NULL, "test-decode", 1, "Test encode/decode mismatch", test_decode_enum);
-static const arg_def_t framerate =
-    ARG_DEF(NULL, "fps", 1, "Stream frame rate (rate/scale)");
-static const arg_def_t use_webm =
-    ARG_DEF(NULL, "webm", 0, "Output WebM (default when WebM IO is enabled)");
-static const arg_def_t use_ivf = ARG_DEF(NULL, "ivf", 0, "Output IVF");
-static const arg_def_t use_obu = ARG_DEF(NULL, "obu", 0, "Output OBU");
-static const arg_def_t q_hist_n =
-    ARG_DEF(NULL, "q-hist", 1, "Show quantizer histogram (n-buckets)");
-static const arg_def_t rate_hist_n =
-    ARG_DEF(NULL, "rate-hist", 1, "Show rate histogram (n-buckets)");
-static const arg_def_t disable_warnings =
-    ARG_DEF(NULL, "disable-warnings", 0,
-            "Disable warnings about potentially incorrect encode settings.");
-static const arg_def_t disable_warning_prompt =
-    ARG_DEF("y", "disable-warning-prompt", 0,
-            "Display warnings, but do not prompt user to continue.");
-static const struct arg_enum_list bitdepth_enum[] = {
-  { "8", AOM_BITS_8 }, { "10", AOM_BITS_10 }, { "12", AOM_BITS_12 }, { NULL, 0 }
-};
-
-static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
-    "b", "bit-depth", 1,
-    "Bit depth for codec (8 for version <=1, 10 or 12 for version 2)",
-    bitdepth_enum);
-static const arg_def_t inbitdeptharg =
-    ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
-
-static const arg_def_t input_chroma_subsampling_x = ARG_DEF(
-    NULL, "input-chroma-subsampling-x", 1, "chroma subsampling x value.");
-static const arg_def_t input_chroma_subsampling_y = ARG_DEF(
-    NULL, "input-chroma-subsampling-y", 1, "chroma subsampling y value.");
-
-static const arg_def_t *main_args[] = { &help,
-                                        &use_cfg,
-                                        &debugmode,
-                                        &outputfile,
-                                        &codecarg,
-                                        &passes,
-                                        &pass_arg,
-                                        &fpf_name,
-                                        &limit,
-                                        &skip,
-                                        &good_dl,
-                                        &rt_dl,
-                                        &quietarg,
-                                        &verbosearg,
-                                        &psnrarg,
-                                        &use_webm,
-                                        &use_ivf,
-                                        &use_obu,
-                                        &q_hist_n,
-                                        &rate_hist_n,
-                                        &disable_warnings,
-                                        &disable_warning_prompt,
-                                        &recontest,
-                                        NULL };
-
-static const arg_def_t usage =
-    ARG_DEF("u", "usage", 1, "Usage profile number to use");
-static const arg_def_t threads =
-    ARG_DEF("t", "threads", 1, "Max number of threads to use");
-static const arg_def_t profile =
-    ARG_DEF(NULL, "profile", 1, "Bitstream profile number to use");
-static const arg_def_t width = ARG_DEF("w", "width", 1, "Frame width");
-static const arg_def_t height = ARG_DEF("h", "height", 1, "Frame height");
-static const arg_def_t forced_max_frame_width = ARG_DEF(
-    NULL, "forced_max_frame_width", 1, "Maximum frame width value to force");
-static const arg_def_t forced_max_frame_height = ARG_DEF(
-    NULL, "forced_max_frame_height", 1, "Maximum frame height value to force");
-#if CONFIG_WEBM_IO
-static const struct arg_enum_list stereo_mode_enum[] = {
-  { "mono", STEREO_FORMAT_MONO },
-  { "left-right", STEREO_FORMAT_LEFT_RIGHT },
-  { "bottom-top", STEREO_FORMAT_BOTTOM_TOP },
-  { "top-bottom", STEREO_FORMAT_TOP_BOTTOM },
-  { "right-left", STEREO_FORMAT_RIGHT_LEFT },
-  { NULL, 0 }
-};
-static const arg_def_t stereo_mode = ARG_DEF_ENUM(
-    NULL, "stereo-mode", 1, "Stereo 3D video format", stereo_mode_enum);
-#endif
-static const arg_def_t timebase = ARG_DEF(
-    NULL, "timebase", 1, "Output timestamp precision (fractional seconds)");
-static const arg_def_t global_error_resilient =
-    ARG_DEF(NULL, "global-error-resilient", 1,
-            "Enable global error resiliency features");
-static const arg_def_t lag_in_frames =
-    ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
-static const arg_def_t large_scale_tile = ARG_DEF(
-    NULL, "large-scale-tile", 1,
-    "Large scale tile coding (0: off (default), 1: on (ivf output only))");
-static const arg_def_t monochrome =
-    ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
-static const arg_def_t full_still_picture_hdr = ARG_DEF(
-    NULL, "full-still-picture-hdr", 0, "Use full header for still picture");
-static const arg_def_t use_16bit_internal =
-    ARG_DEF(NULL, "use-16bit-internal", 0, "Force use of 16-bit pipeline");
-
-static const arg_def_t *global_args[] = { &use_yv12,
-                                          &use_i420,
-                                          &use_i422,
-                                          &use_i444,
-                                          &usage,
-                                          &threads,
-                                          &profile,
-                                          &width,
-                                          &height,
-                                          &forced_max_frame_width,
-                                          &forced_max_frame_height,
-#if CONFIG_WEBM_IO
-                                          &stereo_mode,
-#endif
-                                          &timebase,
-                                          &framerate,
-                                          &global_error_resilient,
-                                          &bitdeptharg,
-                                          &lag_in_frames,
-                                          &large_scale_tile,
-                                          &monochrome,
-                                          &full_still_picture_hdr,
-                                          &use_16bit_internal,
-                                          NULL };
-
-static const arg_def_t dropframe_thresh =
-    ARG_DEF(NULL, "drop-frame", 1, "Temporal resampling threshold (buf %)");
-static const arg_def_t resize_mode =
-    ARG_DEF(NULL, "resize-mode", 1, "Frame resize mode");
-static const arg_def_t resize_denominator =
-    ARG_DEF(NULL, "resize-denominator", 1, "Frame resize denominator");
-static const arg_def_t resize_kf_denominator = ARG_DEF(
-    NULL, "resize-kf-denominator", 1, "Frame resize keyframe denominator");
-static const arg_def_t superres_mode =
-    ARG_DEF(NULL, "superres-mode", 1, "Frame super-resolution mode");
-static const arg_def_t superres_denominator = ARG_DEF(
-    NULL, "superres-denominator", 1, "Frame super-resolution denominator");
-static const arg_def_t superres_kf_denominator =
-    ARG_DEF(NULL, "superres-kf-denominator", 1,
-            "Frame super-resolution keyframe denominator");
-static const arg_def_t superres_qthresh = ARG_DEF(
-    NULL, "superres-qthresh", 1, "Frame super-resolution qindex threshold");
-static const arg_def_t superres_kf_qthresh =
-    ARG_DEF(NULL, "superres-kf-qthresh", 1,
-            "Frame super-resolution keyframe qindex threshold");
-static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
-                                                       { "cbr", AOM_CBR },
-                                                       { "cq", AOM_CQ },
-                                                       { "q", AOM_Q },
-                                                       { NULL, 0 } };
-static const arg_def_t end_usage =
-    ARG_DEF_ENUM(NULL, "end-usage", 1, "Rate control mode", end_usage_enum);
-static const arg_def_t target_bitrate =
-    ARG_DEF(NULL, "target-bitrate", 1, "Bitrate (kbps)");
-static const arg_def_t min_quantizer =
-    ARG_DEF(NULL, "min-q", 1, "Minimum (best) quantizer");
-static const arg_def_t max_quantizer =
-    ARG_DEF(NULL, "max-q", 1, "Maximum (worst) quantizer");
-static const arg_def_t undershoot_pct =
-    ARG_DEF(NULL, "undershoot-pct", 1, "Datarate undershoot (min) target (%)");
-static const arg_def_t overshoot_pct =
-    ARG_DEF(NULL, "overshoot-pct", 1, "Datarate overshoot (max) target (%)");
-static const arg_def_t buf_sz =
-    ARG_DEF(NULL, "buf-sz", 1, "Client buffer size (ms)");
-static const arg_def_t buf_initial_sz =
-    ARG_DEF(NULL, "buf-initial-sz", 1, "Client initial buffer size (ms)");
-static const arg_def_t buf_optimal_sz =
-    ARG_DEF(NULL, "buf-optimal-sz", 1, "Client optimal buffer size (ms)");
-static const arg_def_t bias_pct =
-    ARG_DEF(NULL, "bias-pct", 1, "CBR/VBR bias (0=CBR, 100=VBR)");
-static const arg_def_t minsection_pct =
-    ARG_DEF(NULL, "minsection-pct", 1, "GOP min bitrate (% of target)");
-static const arg_def_t maxsection_pct =
-    ARG_DEF(NULL, "maxsection-pct", 1, "GOP max bitrate (% of target)");
-static const arg_def_t *rc_args[] = { &dropframe_thresh,
-                                      &resize_mode,
-                                      &resize_denominator,
-                                      &resize_kf_denominator,
-                                      &superres_mode,
-                                      &superres_denominator,
-                                      &superres_kf_denominator,
-                                      &superres_qthresh,
-                                      &superres_kf_qthresh,
-                                      &end_usage,
-                                      &target_bitrate,
-                                      &min_quantizer,
-                                      &max_quantizer,
-                                      &undershoot_pct,
-                                      &overshoot_pct,
-                                      &buf_sz,
-                                      &buf_initial_sz,
-                                      &buf_optimal_sz,
-                                      &bias_pct,
-                                      &minsection_pct,
-                                      &maxsection_pct,
-                                      NULL };
-
-static const arg_def_t fwd_kf_enabled =
-    ARG_DEF(NULL, "enable-fwd-kf", 1, "Enable forward reference keyframes");
-static const arg_def_t kf_min_dist =
-    ARG_DEF(NULL, "kf-min-dist", 1, "Minimum keyframe interval (frames)");
-static const arg_def_t kf_max_dist =
-    ARG_DEF(NULL, "kf-max-dist", 1, "Maximum keyframe interval (frames)");
-static const arg_def_t kf_disabled =
-    ARG_DEF(NULL, "disable-kf", 0, "Disable keyframe placement");
-static const arg_def_t *kf_args[] = { &fwd_kf_enabled, &kf_min_dist,
-                                      &kf_max_dist, &kf_disabled, NULL };
-static const arg_def_t sframe_dist =
-    ARG_DEF(NULL, "sframe-dist", 1, "S-Frame interval (frames)");
-static const arg_def_t sframe_mode =
-    ARG_DEF(NULL, "sframe-mode", 1, "S-Frame insertion mode (1..2)");
-static const arg_def_t save_as_annexb =
-    ARG_DEF(NULL, "annexb", 1, "Save as Annex-B");
-static const arg_def_t noise_sens =
-    ARG_DEF(NULL, "noise-sensitivity", 1, "Noise sensitivity (frames to blur)");
-static const arg_def_t sharpness =
-    ARG_DEF(NULL, "sharpness", 1, "Loop filter sharpness (0..7), default is 0");
-static const arg_def_t static_thresh =
-    ARG_DEF(NULL, "static-thresh", 1, "Motion detection threshold");
-static const arg_def_t auto_altref =
-    ARG_DEF(NULL, "auto-alt-ref", 1, "Enable automatic alt reference frames");
-static const arg_def_t arnr_maxframes =
-    ARG_DEF(NULL, "arnr-maxframes", 1, "AltRef max frames (0..15)");
-static const arg_def_t arnr_strength =
-    ARG_DEF(NULL, "arnr-strength", 1, "AltRef filter strength (0..6)");
-static const struct arg_enum_list tuning_enum[] = {
-  { "psnr", AOM_TUNE_PSNR },
-  { "ssim", AOM_TUNE_SSIM },
-  { "vmaf_with_preprocessing", AOM_TUNE_VMAF_WITH_PREPROCESSING },
-  { "vmaf_without_preprocessing", AOM_TUNE_VMAF_WITHOUT_PREPROCESSING },
-  { "vmaf", AOM_TUNE_VMAF_MAX_GAIN },
-  { "vmaf_neg", AOM_TUNE_VMAF_NEG_MAX_GAIN },
-  { NULL, 0 }
-};
-static const arg_def_t tune_metric =
-    ARG_DEF_ENUM(NULL, "tune", 1, "Distortion metric tuned with", tuning_enum);
-static const arg_def_t cq_level =
-    ARG_DEF(NULL, "cq-level", 1, "Constant/Constrained Quality level");
-static const arg_def_t max_intra_rate_pct =
-    ARG_DEF(NULL, "max-intra-rate", 1, "Max I-frame bitrate (pct)");
-
-#if CONFIG_AV1_ENCODER
-static const arg_def_t cpu_used_av1 =
-    ARG_DEF(NULL, "cpu-used", 1,
-            "Speed setting (0..6 in good mode, 6..9 in realtime mode)");
-static const arg_def_t rowmtarg =
-    ARG_DEF(NULL, "row-mt", 1,
-            "Enable row based multi-threading (0: off, 1: on (default))");
-static const arg_def_t tile_cols =
-    ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
-static const arg_def_t tile_rows =
-    ARG_DEF(NULL, "tile-rows", 1, "Number of tile rows to use, log2");
-static const arg_def_t enable_tpl_model =
-    ARG_DEF(NULL, "enable-tpl-model", 1,
-            "RDO based on frame temporal dependency "
-            "(0: off, 1: backward source based). "
-            "This is required for deltaq mode.");
-static const arg_def_t enable_keyframe_filtering =
-    ARG_DEF(NULL, "enable-keyframe-filtering", 1,
-            "Apply temporal filtering on key frame"
-            "(0: no filter, 1: filter without overlay (default), "
-            "2: filter with overlay - experimental, may break random access in "
-            "players.)");
-static const arg_def_t tile_width =
-    ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
-static const arg_def_t tile_height =
-    ARG_DEF(NULL, "tile-height", 1, "Tile heights (command separated)");
-static const arg_def_t lossless =
-    ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
-static const arg_def_t enable_cdef =
-    ARG_DEF(NULL, "enable-cdef", 1,
-            "Enable the constrained directional enhancement filter (0: false, "
-            "1: true (default))");
-static const arg_def_t enable_restoration = ARG_DEF(
-    NULL, "enable-restoration", 1,
-    "Enable the loop restoration filter (0: false (default in Realtime mode), "
-    "1: true (default in Non-realtime mode))");
-static const arg_def_t enable_rect_partitions =
-    ARG_DEF(NULL, "enable-rect-partitions", 1,
-            "Enable rectangular partitions "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_ab_partitions =
-    ARG_DEF(NULL, "enable-ab-partitions", 1,
-            "Enable ab partitions (0: false, 1: true (default))");
-static const arg_def_t enable_1to4_partitions =
-    ARG_DEF(NULL, "enable-1to4-partitions", 1,
-            "Enable 1:4 and 4:1 partitions "
-            "(0: false, 1: true (default))");
-static const arg_def_t min_partition_size =
-    ARG_DEF(NULL, "min-partition-size", 1,
-            "Set min partition size "
-            "(4:4x4, 8:8x8, 16:16x16, 32:32x32, 64:64x64, 128:128x128). "
-            "On frame with 4k+ resolutions or higher speed settings, the min "
-            "partition size will have a minimum of 8.");
-static const arg_def_t max_partition_size =
-    ARG_DEF(NULL, "max-partition-size", 1,
-            "Set max partition size "
-            "(4:4x4, 8:8x8, 16:16x16, 32:32x32, 64:64x64, 128:128x128)");
-static const arg_def_t enable_dual_filter =
-    ARG_DEF(NULL, "enable-dual-filter", 1,
-            "Enable dual filter "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_chroma_deltaq =
-    ARG_DEF(NULL, "enable-chroma-deltaq", 1,
-            "Enable chroma delta quant "
-            "(0: false (default), 1: true)");
-static const arg_def_t enable_intra_edge_filter =
-    ARG_DEF(NULL, "enable-intra-edge-filter", 1,
-            "Enable intra edge filtering "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_order_hint =
-    ARG_DEF(NULL, "enable-order-hint", 1,
-            "Enable order hint "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_tx64 =
-    ARG_DEF(NULL, "enable-tx64", 1,
-            "Enable 64-pt transform (0: false, 1: true (default))");
-static const arg_def_t enable_flip_idtx =
-    ARG_DEF(NULL, "enable-flip-idtx", 1,
-            "Enable extended transform type (0: false, 1: true (default)) "
-            "including FLIPADST_DCT, DCT_FLIPADST, FLIPADST_FLIPADST, "
-            "ADST_FLIPADST, FLIPADST_ADST, IDTX, V_DCT, H_DCT, V_ADST, "
-            "H_ADST, V_FLIPADST, H_FLIPADST");
-static const arg_def_t enable_rect_tx =
-    ARG_DEF(NULL, "enable-rect-tx", 1,
-            "Enable rectangular transform (0: false, 1: true (default))");
-static const arg_def_t enable_dist_wtd_comp =
-    ARG_DEF(NULL, "enable-dist-wtd-comp", 1,
-            "Enable distance-weighted compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_masked_comp =
-    ARG_DEF(NULL, "enable-masked-comp", 1,
-            "Enable masked (wedge/diff-wtd) compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_onesided_comp =
-    ARG_DEF(NULL, "enable-onesided-comp", 1,
-            "Enable one sided compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_interintra_comp =
-    ARG_DEF(NULL, "enable-interintra-comp", 1,
-            "Enable interintra compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_smooth_interintra =
-    ARG_DEF(NULL, "enable-smooth-interintra", 1,
-            "Enable smooth interintra mode "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_diff_wtd_comp =
-    ARG_DEF(NULL, "enable-diff-wtd-comp", 1,
-            "Enable difference-weighted compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_interinter_wedge =
-    ARG_DEF(NULL, "enable-interinter-wedge", 1,
-            "Enable interinter wedge compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_interintra_wedge =
-    ARG_DEF(NULL, "enable-interintra-wedge", 1,
-            "Enable interintra wedge compound "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_global_motion =
-    ARG_DEF(NULL, "enable-global-motion", 1,
-            "Enable global motion "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_warped_motion =
-    ARG_DEF(NULL, "enable-warped-motion", 1,
-            "Enable local warped motion "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_filter_intra =
-    ARG_DEF(NULL, "enable-filter-intra", 1,
-            "Enable filter intra prediction mode "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_smooth_intra =
-    ARG_DEF(NULL, "enable-smooth-intra", 1,
-            "Enable smooth intra prediction modes "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_paeth_intra =
-    ARG_DEF(NULL, "enable-paeth-intra", 1,
-            "Enable Paeth intra prediction mode (0: false, 1: true (default))");
-static const arg_def_t enable_cfl_intra =
-    ARG_DEF(NULL, "enable-cfl-intra", 1,
-            "Enable chroma from luma intra prediction mode "
-            "(0: false, 1: true (default))");
-static const arg_def_t force_video_mode =
-    ARG_DEF(NULL, "force-video-mode", 1,
-            "Force video mode (0: false, 1: true (default))");
-static const arg_def_t enable_obmc = ARG_DEF(
-    NULL, "enable-obmc", 1, "Enable OBMC (0: false, 1: true (default))");
-static const arg_def_t enable_overlay =
-    ARG_DEF(NULL, "enable-overlay", 1,
-            "Enable coding overlay frames (0: false, 1: true (default))");
-static const arg_def_t enable_palette =
-    ARG_DEF(NULL, "enable-palette", 1,
-            "Enable palette prediction mode (0: false, 1: true (default))");
-static const arg_def_t enable_intrabc =
-    ARG_DEF(NULL, "enable-intrabc", 1,
-            "Enable intra block copy prediction mode "
-            "(0: false, 1: true (default))");
-static const arg_def_t enable_angle_delta =
-    ARG_DEF(NULL, "enable-angle-delta", 1,
-            "Enable intra angle delta (0: false, 1: true (default))");
-static const arg_def_t disable_trellis_quant =
-    ARG_DEF(NULL, "disable-trellis-quant", 1,
-            "Disable trellis optimization of quantized coefficients (0: false "
-            "1: true  2: true for rd search 3: true for estimate yrd serch "
-            "(default))");
-static const arg_def_t enable_qm =
-    ARG_DEF(NULL, "enable-qm", 1,
-            "Enable quantisation matrices (0: false (default), 1: true)");
-static const arg_def_t qm_min = ARG_DEF(
-    NULL, "qm-min", 1, "Min quant matrix flatness (0..15), default is 8");
-static const arg_def_t qm_max = ARG_DEF(
-    NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 15");
-static const arg_def_t reduced_tx_type_set = ARG_DEF(
-    NULL, "reduced-tx-type-set", 1, "Use reduced set of transform types");
-static const arg_def_t use_intra_dct_only =
-    ARG_DEF(NULL, "use-intra-dct-only", 1, "Use DCT only for INTRA modes");
-static const arg_def_t use_inter_dct_only =
-    ARG_DEF(NULL, "use-inter-dct-only", 1, "Use DCT only for INTER modes");
-static const arg_def_t use_intra_default_tx_only =
-    ARG_DEF(NULL, "use-intra-default-tx-only", 1,
-            "Use Default-transform only for INTRA modes");
-static const arg_def_t quant_b_adapt =
-    ARG_DEF(NULL, "quant-b-adapt", 1, "Use adaptive quantize_b");
-static const arg_def_t coeff_cost_upd_freq =
-    ARG_DEF(NULL, "coeff-cost-upd-freq", 1,
-            "Update freq for coeff costs"
-            "0: SB, 1: SB Row per Tile, 2: Tile, 3: Off");
-static const arg_def_t mode_cost_upd_freq =
-    ARG_DEF(NULL, "mode-cost-upd-freq", 1,
-            "Update freq for mode costs"
-            "0: SB, 1: SB Row per Tile, 2: Tile, 3: Off");
-static const arg_def_t mv_cost_upd_freq =
-    ARG_DEF(NULL, "mv-cost-upd-freq", 1,
-            "Update freq for mv costs"
-            "0: SB, 1: SB Row per Tile, 2: Tile, 3: Off");
-static const arg_def_t num_tg = ARG_DEF(
-    NULL, "num-tile-groups", 1, "Maximum number of tile groups, default is 1");
-static const arg_def_t mtu_size =
-    ARG_DEF(NULL, "mtu-size", 1,
-            "MTU size for a tile group, default is 0 (no MTU targeting), "
-            "overrides maximum number of tile groups");
-static const struct arg_enum_list timing_info_enum[] = {
-  { "unspecified", AOM_TIMING_UNSPECIFIED },
-  { "constant", AOM_TIMING_EQUAL },
-  { "model", AOM_TIMING_DEC_MODEL },
-  { NULL, 0 }
-};
-static const arg_def_t timing_info =
-    ARG_DEF_ENUM(NULL, "timing-info", 1,
-                 "Signal timing info in the bitstream (model unly works for no "
-                 "hidden frames, no super-res yet):",
-                 timing_info_enum);
-#if CONFIG_TUNE_VMAF
-static const arg_def_t vmaf_model_path =
-    ARG_DEF(NULL, "vmaf-model-path", 1, "Path to the VMAF model file");
-#endif
-static const arg_def_t film_grain_test =
-    ARG_DEF(NULL, "film-grain-test", 1,
-            "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
-            "... 16: test-16)");
-static const arg_def_t film_grain_table =
-    ARG_DEF(NULL, "film-grain-table", 1,
-            "Path to file containing film grain parameters");
-#if CONFIG_DENOISE
-static const arg_def_t denoise_noise_level =
-    ARG_DEF(NULL, "denoise-noise-level", 1,
-            "Amount of noise (from 0 = don't denoise, to 50)");
-static const arg_def_t denoise_block_size =
-    ARG_DEF(NULL, "denoise-block-size", 1, "Denoise block size (default = 32)");
-#endif
-static const arg_def_t enable_ref_frame_mvs =
-    ARG_DEF(NULL, "enable-ref-frame-mvs", 1,
-            "Enable temporal mv prediction (default is 1)");
-static const arg_def_t frame_parallel_decoding =
-    ARG_DEF(NULL, "frame-parallel", 1,
-            "Enable frame parallel decodability features "
-            "(0: false (default), 1: true)");
-static const arg_def_t error_resilient_mode =
-    ARG_DEF(NULL, "error-resilient", 1,
-            "Enable error resilient features "
-            "(0: false (default), 1: true)");
-static const arg_def_t aq_mode = ARG_DEF(
-    NULL, "aq-mode", 1,
-    "Adaptive quantization mode (0: off (default), 1: variance 2: complexity, "
-    "3: cyclic refresh)");
-static const arg_def_t deltaq_mode =
-    ARG_DEF(NULL, "deltaq-mode", 1,
-            "Delta qindex mode (0: off, 1: deltaq objective (default), "
-            "2: deltaq perceptual). "
-            "Currently this requires enable-tpl-model as a prerequisite.");
-static const arg_def_t deltalf_mode = ARG_DEF(
-    NULL, "delta-lf-mode", 1, "Enable delta-lf-mode (0: off (default), 1: on)");
-static const arg_def_t frame_periodic_boost =
-    ARG_DEF(NULL, "frame-boost", 1,
-            "Enable frame periodic boost (0: off (default), 1: on)");
-static const arg_def_t gf_cbr_boost_pct = ARG_DEF(
-    NULL, "gf-cbr-boost", 1, "Boost for Golden Frame in CBR mode (pct)");
-static const arg_def_t max_inter_rate_pct =
-    ARG_DEF(NULL, "max-inter-rate", 1, "Max P-frame bitrate (pct)");
-static const arg_def_t min_gf_interval = ARG_DEF(
-    NULL, "min-gf-interval", 1,
-    "min gf/arf frame interval (default 0, indicating in-built behavior)");
-static const arg_def_t max_gf_interval = ARG_DEF(
-    NULL, "max-gf-interval", 1,
-    "max gf/arf frame interval (default 0, indicating in-built behavior)");
-static const arg_def_t gf_min_pyr_height =
-    ARG_DEF(NULL, "gf-min-pyr-height", 1,
-            "Min height for GF group pyramid structure (0 (default) to 5)");
-static const arg_def_t gf_max_pyr_height =
-    ARG_DEF(NULL, "gf-max-pyr-height", 1,
-            "maximum height for GF group pyramid structure (0 to 5 (default))");
-static const arg_def_t max_reference_frames = ARG_DEF(
-    NULL, "max-reference-frames", 1,
-    "maximum number of reference frames allowed per frame (3 to 7 (default))");
-static const arg_def_t reduced_reference_set =
-    ARG_DEF(NULL, "reduced-reference-set", 1,
-            "Use reduced set of single and compound references (0: off "
-            "(default), 1: on)");
-static const arg_def_t target_seq_level_idx =
-    ARG_DEF(NULL, "target-seq-level-idx", 1,
-            "Target sequence level index. "
-            "Possible values are in the form of \"ABxy\"(pad leading zeros if "
-            "less than 4 digits). "
-            "AB: Operating point(OP) index; "
-            "xy: Target level index for the OP. "
-            "E.g. \"0\" means target level index 0 for the 0th OP; "
-            "\"1021\" means target level index 21 for the 10th OP.");
-static const arg_def_t set_min_cr =
-    ARG_DEF(NULL, "min-cr", 1,
-            "Set minimum compression ratio. Take integer values. Default is 0. "
-            "If non-zero, encoder will try to keep the compression ratio of "
-            "each frame to be higher than the given value divided by 100.");
-
-static const struct arg_enum_list color_primaries_enum[] = {
-  { "bt709", AOM_CICP_CP_BT_709 },
-  { "unspecified", AOM_CICP_CP_UNSPECIFIED },
-  { "bt601", AOM_CICP_CP_BT_601 },
-  { "bt470m", AOM_CICP_CP_BT_470_M },
-  { "bt470bg", AOM_CICP_CP_BT_470_B_G },
-  { "smpte240", AOM_CICP_CP_SMPTE_240 },
-  { "film", AOM_CICP_CP_GENERIC_FILM },
-  { "bt2020", AOM_CICP_CP_BT_2020 },
-  { "xyz", AOM_CICP_CP_XYZ },
-  { "smpte431", AOM_CICP_CP_SMPTE_431 },
-  { "smpte432", AOM_CICP_CP_SMPTE_432 },
-  { "ebu3213", AOM_CICP_CP_EBU_3213 },
-  { NULL, 0 }
-};
-
-static const arg_def_t input_color_primaries = ARG_DEF_ENUM(
-    NULL, "color-primaries", 1,
-    "Color primaries (CICP) of input content:", color_primaries_enum);
-
-static const struct arg_enum_list transfer_characteristics_enum[] = {
-  { "unspecified", AOM_CICP_CP_UNSPECIFIED },
-  { "bt709", AOM_CICP_TC_BT_709 },
-  { "bt470m", AOM_CICP_TC_BT_470_M },
-  { "bt470bg", AOM_CICP_TC_BT_470_B_G },
-  { "bt601", AOM_CICP_TC_BT_601 },
-  { "smpte240", AOM_CICP_TC_SMPTE_240 },
-  { "lin", AOM_CICP_TC_LINEAR },
-  { "log100", AOM_CICP_TC_LOG_100 },
-  { "log100sq10", AOM_CICP_TC_LOG_100_SQRT10 },
-  { "iec61966", AOM_CICP_TC_IEC_61966 },
-  { "bt1361", AOM_CICP_TC_BT_1361 },
-  { "srgb", AOM_CICP_TC_SRGB },
-  { "bt2020-10bit", AOM_CICP_TC_BT_2020_10_BIT },
-  { "bt2020-12bit", AOM_CICP_TC_BT_2020_12_BIT },
-  { "smpte2084", AOM_CICP_TC_SMPTE_2084 },
-  { "hlg", AOM_CICP_TC_HLG },
-  { "smpte428", AOM_CICP_TC_SMPTE_428 },
-  { NULL, 0 }
-};
-
-static const arg_def_t input_transfer_characteristics =
-    ARG_DEF_ENUM(NULL, "transfer-characteristics", 1,
-                 "Transfer characteristics (CICP) of input content:",
-                 transfer_characteristics_enum);
-
-static const struct arg_enum_list matrix_coefficients_enum[] = {
-  { "identity", AOM_CICP_MC_IDENTITY },
-  { "bt709", AOM_CICP_MC_BT_709 },
-  { "unspecified", AOM_CICP_MC_UNSPECIFIED },
-  { "fcc73", AOM_CICP_MC_FCC },
-  { "bt470bg", AOM_CICP_MC_BT_470_B_G },
-  { "bt601", AOM_CICP_MC_BT_601 },
-  { "smpte240", AOM_CICP_CP_SMPTE_240 },
-  { "ycgco", AOM_CICP_MC_SMPTE_YCGCO },
-  { "bt2020ncl", AOM_CICP_MC_BT_2020_NCL },
-  { "bt2020cl", AOM_CICP_MC_BT_2020_CL },
-  { "smpte2085", AOM_CICP_MC_SMPTE_2085 },
-  { "chromncl", AOM_CICP_MC_CHROMAT_NCL },
-  { "chromcl", AOM_CICP_MC_CHROMAT_CL },
-  { "ictcp", AOM_CICP_MC_ICTCP },
-  { NULL, 0 }
-};
-
-static const arg_def_t input_matrix_coefficients = ARG_DEF_ENUM(
-    NULL, "matrix-coefficients", 1,
-    "Matrix coefficients (CICP) of input content:", matrix_coefficients_enum);
-
-static const struct arg_enum_list chroma_sample_position_enum[] = {
-  { "unknown", AOM_CSP_UNKNOWN },
-  { "vertical", AOM_CSP_VERTICAL },
-  { "colocated", AOM_CSP_COLOCATED },
-  { NULL, 0 }
-};
-
-static const arg_def_t input_chroma_sample_position =
-    ARG_DEF_ENUM(NULL, "chroma-sample-position", 1,
-                 "The chroma sample position when chroma 4:2:0 is signaled:",
-                 chroma_sample_position_enum);
-
-static const struct arg_enum_list tune_content_enum[] = {
-  { "default", AOM_CONTENT_DEFAULT },
-  { "screen", AOM_CONTENT_SCREEN },
-  { NULL, 0 }
-};
-
-static const arg_def_t tune_content = ARG_DEF_ENUM(
-    NULL, "tune-content", 1, "Tune content type", tune_content_enum);
-
-static const arg_def_t cdf_update_mode =
-    ARG_DEF(NULL, "cdf-update-mode", 1,
-            "CDF update mode for entropy coding "
-            "(0: no CDF update; 1: update CDF on all frames(default); "
-            "2: selectively update CDF on some frames");
-
-static const struct arg_enum_list superblock_size_enum[] = {
-  { "dynamic", AOM_SUPERBLOCK_SIZE_DYNAMIC },
-  { "64", AOM_SUPERBLOCK_SIZE_64X64 },
-  { "128", AOM_SUPERBLOCK_SIZE_128X128 },
-  { NULL, 0 }
-};
-static const arg_def_t superblock_size = ARG_DEF_ENUM(
-    NULL, "sb-size", 1, "Superblock size to use", superblock_size_enum);
-
-static const arg_def_t set_tier_mask =
-    ARG_DEF(NULL, "set-tier-mask", 1,
-            "Set bit mask to specify which tier each of the 32 possible "
-            "operating points conforms to. "
-            "Bit value 0(defualt): Main Tier; 1: High Tier.");
-
-static const arg_def_t use_fixed_qp_offsets =
-    ARG_DEF(NULL, "use-fixed-qp-offsets", 1,
-            "Enable fixed QP offsets for frames at different levels of the "
-            "pyramid. Selected automatically from --cq-level if "
-            "--fixed-qp-offsets is not provided. If this option is not "
-            "specified (default), offsets are adaptively chosen by the "
-            "encoder.");
-
-static const arg_def_t fixed_qp_offsets =
-    ARG_DEF(NULL, "fixed-qp-offsets", 1,
-            "Set fixed QP offsets for frames at different levels of the "
-            "pyramid. Comma-separated list of 5 offsets for keyframe, ALTREF, "
-            "and 3 levels of internal alt-refs. If this option is not "
-            "specified (default), offsets are adaptively chosen by the "
-            "encoder.");
-
-static const arg_def_t vbr_corpus_complexity_lap = ARG_DEF(
-    NULL, "vbr-corpus-complexity-lap", 1,
-    "Set average corpus complexity per mb for single pass VBR using lap. "
-    "(0..10000), default is 0");
-
-static const arg_def_t *av1_args[] = { &cpu_used_av1,
-                                       &auto_altref,
-                                       &sharpness,
-                                       &static_thresh,
-                                       &rowmtarg,
-                                       &tile_cols,
-                                       &tile_rows,
-                                       &enable_tpl_model,
-                                       &enable_keyframe_filtering,
-                                       &arnr_maxframes,
-                                       &arnr_strength,
-                                       &tune_metric,
-                                       &cq_level,
-                                       &max_intra_rate_pct,
-                                       &max_inter_rate_pct,
-                                       &gf_cbr_boost_pct,
-                                       &lossless,
-                                       &enable_cdef,
-                                       &enable_restoration,
-                                       &enable_rect_partitions,
-                                       &enable_ab_partitions,
-                                       &enable_1to4_partitions,
-                                       &min_partition_size,
-                                       &max_partition_size,
-                                       &enable_dual_filter,
-                                       &enable_chroma_deltaq,
-                                       &enable_intra_edge_filter,
-                                       &enable_order_hint,
-                                       &enable_tx64,
-                                       &enable_flip_idtx,
-                                       &enable_rect_tx,
-                                       &enable_dist_wtd_comp,
-                                       &enable_masked_comp,
-                                       &enable_onesided_comp,
-                                       &enable_interintra_comp,
-                                       &enable_smooth_interintra,
-                                       &enable_diff_wtd_comp,
-                                       &enable_interinter_wedge,
-                                       &enable_interintra_wedge,
-                                       &enable_global_motion,
-                                       &enable_warped_motion,
-                                       &enable_filter_intra,
-                                       &enable_smooth_intra,
-                                       &enable_paeth_intra,
-                                       &enable_cfl_intra,
-                                       &force_video_mode,
-                                       &enable_obmc,
-                                       &enable_overlay,
-                                       &enable_palette,
-                                       &enable_intrabc,
-                                       &enable_angle_delta,
-                                       &disable_trellis_quant,
-                                       &enable_qm,
-                                       &qm_min,
-                                       &qm_max,
-                                       &reduced_tx_type_set,
-                                       &use_intra_dct_only,
-                                       &use_inter_dct_only,
-                                       &use_intra_default_tx_only,
-                                       &quant_b_adapt,
-                                       &coeff_cost_upd_freq,
-                                       &mode_cost_upd_freq,
-                                       &mv_cost_upd_freq,
-                                       &frame_parallel_decoding,
-                                       &error_resilient_mode,
-                                       &aq_mode,
-                                       &deltaq_mode,
-                                       &deltalf_mode,
-                                       &frame_periodic_boost,
-                                       &noise_sens,
-                                       &tune_content,
-                                       &cdf_update_mode,
-                                       &input_color_primaries,
-                                       &input_transfer_characteristics,
-                                       &input_matrix_coefficients,
-                                       &input_chroma_sample_position,
-                                       &min_gf_interval,
-                                       &max_gf_interval,
-                                       &gf_min_pyr_height,
-                                       &gf_max_pyr_height,
-                                       &superblock_size,
-                                       &num_tg,
-                                       &mtu_size,
-                                       &timing_info,
-                                       &film_grain_test,
-                                       &film_grain_table,
-#if CONFIG_DENOISE
-                                       &denoise_noise_level,
-                                       &denoise_block_size,
-#endif  // CONFIG_DENOISE
-                                       &max_reference_frames,
-                                       &reduced_reference_set,
-                                       &enable_ref_frame_mvs,
-                                       &target_seq_level_idx,
-                                       &set_tier_mask,
-                                       &set_min_cr,
-                                       &vbr_corpus_complexity_lap,
-                                       &bitdeptharg,
-                                       &inbitdeptharg,
-                                       &input_chroma_subsampling_x,
-                                       &input_chroma_subsampling_y,
-                                       &sframe_dist,
-                                       &sframe_mode,
-                                       &save_as_annexb,
-#if CONFIG_TUNE_VMAF
-                                       &vmaf_model_path,
-#endif
-                                       NULL };
 static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_ENABLEAUTOALTREF,
                                         AOME_SET_SHARPNESS,
@@ -1030,6 +212,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_DENOISE
                                         AV1E_SET_DENOISE_NOISE_LEVEL,
                                         AV1E_SET_DENOISE_BLOCK_SIZE,
+                                        AV1E_SET_ENABLE_DNL_DENOISING,
 #endif  // CONFIG_DENOISE
                                         AV1E_SET_MAX_REFERENCE_FRAMES,
                                         AV1E_SET_REDUCED_REFERENCE_SET,
@@ -1038,11 +221,205 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TIER_MASK,
                                         AV1E_SET_MIN_CR,
                                         AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP,
+                                        AV1E_SET_CHROMA_SUBSAMPLING_X,
+                                        AV1E_SET_CHROMA_SUBSAMPLING_Y,
 #if CONFIG_TUNE_VMAF
                                         AV1E_SET_VMAF_MODEL_PATH,
 #endif
                                         0 };
-#endif  // CONFIG_AV1_ENCODER
+
+const arg_def_t *main_args[] = { &g_av1_codec_arg_defs.help,
+                                 &g_av1_codec_arg_defs.use_cfg,
+                                 &g_av1_codec_arg_defs.debugmode,
+                                 &g_av1_codec_arg_defs.outputfile,
+                                 &g_av1_codec_arg_defs.codecarg,
+                                 &g_av1_codec_arg_defs.passes,
+                                 &g_av1_codec_arg_defs.pass_arg,
+                                 &g_av1_codec_arg_defs.fpf_name,
+                                 &g_av1_codec_arg_defs.limit,
+                                 &g_av1_codec_arg_defs.skip,
+                                 &g_av1_codec_arg_defs.good_dl,
+                                 &g_av1_codec_arg_defs.rt_dl,
+                                 &g_av1_codec_arg_defs.ai_dl,
+                                 &g_av1_codec_arg_defs.quietarg,
+                                 &g_av1_codec_arg_defs.verbosearg,
+                                 &g_av1_codec_arg_defs.psnrarg,
+                                 &g_av1_codec_arg_defs.use_webm,
+                                 &g_av1_codec_arg_defs.use_ivf,
+                                 &g_av1_codec_arg_defs.use_obu,
+                                 &g_av1_codec_arg_defs.q_hist_n,
+                                 &g_av1_codec_arg_defs.rate_hist_n,
+                                 &g_av1_codec_arg_defs.disable_warnings,
+                                 &g_av1_codec_arg_defs.disable_warning_prompt,
+                                 &g_av1_codec_arg_defs.recontest,
+                                 NULL };
+
+const arg_def_t *global_args[] = {
+  &g_av1_codec_arg_defs.use_yv12,
+  &g_av1_codec_arg_defs.use_i420,
+  &g_av1_codec_arg_defs.use_i422,
+  &g_av1_codec_arg_defs.use_i444,
+  &g_av1_codec_arg_defs.usage,
+  &g_av1_codec_arg_defs.threads,
+  &g_av1_codec_arg_defs.profile,
+  &g_av1_codec_arg_defs.width,
+  &g_av1_codec_arg_defs.height,
+  &g_av1_codec_arg_defs.forced_max_frame_width,
+  &g_av1_codec_arg_defs.forced_max_frame_height,
+#if CONFIG_WEBM_IO
+  &g_av1_codec_arg_defs.stereo_mode,
+#endif
+  &g_av1_codec_arg_defs.timebase,
+  &g_av1_codec_arg_defs.framerate,
+  &g_av1_codec_arg_defs.global_error_resilient,
+  &g_av1_codec_arg_defs.bitdeptharg,
+  &g_av1_codec_arg_defs.inbitdeptharg,
+  &g_av1_codec_arg_defs.lag_in_frames,
+  &g_av1_codec_arg_defs.large_scale_tile,
+  &g_av1_codec_arg_defs.monochrome,
+  &g_av1_codec_arg_defs.full_still_picture_hdr,
+  &g_av1_codec_arg_defs.use_16bit_internal,
+  &g_av1_codec_arg_defs.save_as_annexb,
+  NULL
+};
+
+const arg_def_t *rc_args[] = { &g_av1_codec_arg_defs.dropframe_thresh,
+                               &g_av1_codec_arg_defs.resize_mode,
+                               &g_av1_codec_arg_defs.resize_denominator,
+                               &g_av1_codec_arg_defs.resize_kf_denominator,
+                               &g_av1_codec_arg_defs.superres_mode,
+                               &g_av1_codec_arg_defs.superres_denominator,
+                               &g_av1_codec_arg_defs.superres_kf_denominator,
+                               &g_av1_codec_arg_defs.superres_qthresh,
+                               &g_av1_codec_arg_defs.superres_kf_qthresh,
+                               &g_av1_codec_arg_defs.end_usage,
+                               &g_av1_codec_arg_defs.target_bitrate,
+                               &g_av1_codec_arg_defs.min_quantizer,
+                               &g_av1_codec_arg_defs.max_quantizer,
+                               &g_av1_codec_arg_defs.undershoot_pct,
+                               &g_av1_codec_arg_defs.overshoot_pct,
+                               &g_av1_codec_arg_defs.buf_sz,
+                               &g_av1_codec_arg_defs.buf_initial_sz,
+                               &g_av1_codec_arg_defs.buf_optimal_sz,
+                               &g_av1_codec_arg_defs.bias_pct,
+                               &g_av1_codec_arg_defs.minsection_pct,
+                               &g_av1_codec_arg_defs.maxsection_pct,
+                               NULL };
+
+const arg_def_t *kf_args[] = { &g_av1_codec_arg_defs.fwd_kf_enabled,
+                               &g_av1_codec_arg_defs.kf_min_dist,
+                               &g_av1_codec_arg_defs.kf_max_dist,
+                               &g_av1_codec_arg_defs.kf_disabled,
+                               &g_av1_codec_arg_defs.sframe_dist,
+                               &g_av1_codec_arg_defs.sframe_mode,
+                               NULL };
+
+const arg_def_t *av1_args[] = {
+  &g_av1_codec_arg_defs.cpu_used_av1,
+  &g_av1_codec_arg_defs.auto_altref,
+  &g_av1_codec_arg_defs.sharpness,
+  &g_av1_codec_arg_defs.static_thresh,
+  &g_av1_codec_arg_defs.rowmtarg,
+  &g_av1_codec_arg_defs.tile_cols,
+  &g_av1_codec_arg_defs.tile_rows,
+  &g_av1_codec_arg_defs.enable_tpl_model,
+  &g_av1_codec_arg_defs.enable_keyframe_filtering,
+  &g_av1_codec_arg_defs.arnr_maxframes,
+  &g_av1_codec_arg_defs.arnr_strength,
+  &g_av1_codec_arg_defs.tune_metric,
+  &g_av1_codec_arg_defs.cq_level,
+  &g_av1_codec_arg_defs.max_intra_rate_pct,
+  &g_av1_codec_arg_defs.max_inter_rate_pct,
+  &g_av1_codec_arg_defs.gf_cbr_boost_pct,
+  &g_av1_codec_arg_defs.lossless,
+  &g_av1_codec_arg_defs.enable_cdef,
+  &g_av1_codec_arg_defs.enable_restoration,
+  &g_av1_codec_arg_defs.enable_rect_partitions,
+  &g_av1_codec_arg_defs.enable_ab_partitions,
+  &g_av1_codec_arg_defs.enable_1to4_partitions,
+  &g_av1_codec_arg_defs.min_partition_size,
+  &g_av1_codec_arg_defs.max_partition_size,
+  &g_av1_codec_arg_defs.enable_dual_filter,
+  &g_av1_codec_arg_defs.enable_chroma_deltaq,
+  &g_av1_codec_arg_defs.enable_intra_edge_filter,
+  &g_av1_codec_arg_defs.enable_order_hint,
+  &g_av1_codec_arg_defs.enable_tx64,
+  &g_av1_codec_arg_defs.enable_flip_idtx,
+  &g_av1_codec_arg_defs.enable_rect_tx,
+  &g_av1_codec_arg_defs.enable_dist_wtd_comp,
+  &g_av1_codec_arg_defs.enable_masked_comp,
+  &g_av1_codec_arg_defs.enable_onesided_comp,
+  &g_av1_codec_arg_defs.enable_interintra_comp,
+  &g_av1_codec_arg_defs.enable_smooth_interintra,
+  &g_av1_codec_arg_defs.enable_diff_wtd_comp,
+  &g_av1_codec_arg_defs.enable_interinter_wedge,
+  &g_av1_codec_arg_defs.enable_interintra_wedge,
+  &g_av1_codec_arg_defs.enable_global_motion,
+  &g_av1_codec_arg_defs.enable_warped_motion,
+  &g_av1_codec_arg_defs.enable_filter_intra,
+  &g_av1_codec_arg_defs.enable_smooth_intra,
+  &g_av1_codec_arg_defs.enable_paeth_intra,
+  &g_av1_codec_arg_defs.enable_cfl_intra,
+  &g_av1_codec_arg_defs.force_video_mode,
+  &g_av1_codec_arg_defs.enable_obmc,
+  &g_av1_codec_arg_defs.enable_overlay,
+  &g_av1_codec_arg_defs.enable_palette,
+  &g_av1_codec_arg_defs.enable_intrabc,
+  &g_av1_codec_arg_defs.enable_angle_delta,
+  &g_av1_codec_arg_defs.disable_trellis_quant,
+  &g_av1_codec_arg_defs.enable_qm,
+  &g_av1_codec_arg_defs.qm_min,
+  &g_av1_codec_arg_defs.qm_max,
+  &g_av1_codec_arg_defs.reduced_tx_type_set,
+  &g_av1_codec_arg_defs.use_intra_dct_only,
+  &g_av1_codec_arg_defs.use_inter_dct_only,
+  &g_av1_codec_arg_defs.use_intra_default_tx_only,
+  &g_av1_codec_arg_defs.quant_b_adapt,
+  &g_av1_codec_arg_defs.coeff_cost_upd_freq,
+  &g_av1_codec_arg_defs.mode_cost_upd_freq,
+  &g_av1_codec_arg_defs.mv_cost_upd_freq,
+  &g_av1_codec_arg_defs.frame_parallel_decoding,
+  &g_av1_codec_arg_defs.error_resilient_mode,
+  &g_av1_codec_arg_defs.aq_mode,
+  &g_av1_codec_arg_defs.deltaq_mode,
+  &g_av1_codec_arg_defs.deltalf_mode,
+  &g_av1_codec_arg_defs.frame_periodic_boost,
+  &g_av1_codec_arg_defs.noise_sens,
+  &g_av1_codec_arg_defs.tune_content,
+  &g_av1_codec_arg_defs.cdf_update_mode,
+  &g_av1_codec_arg_defs.input_color_primaries,
+  &g_av1_codec_arg_defs.input_transfer_characteristics,
+  &g_av1_codec_arg_defs.input_matrix_coefficients,
+  &g_av1_codec_arg_defs.input_chroma_sample_position,
+  &g_av1_codec_arg_defs.min_gf_interval,
+  &g_av1_codec_arg_defs.max_gf_interval,
+  &g_av1_codec_arg_defs.gf_min_pyr_height,
+  &g_av1_codec_arg_defs.gf_max_pyr_height,
+  &g_av1_codec_arg_defs.superblock_size,
+  &g_av1_codec_arg_defs.num_tg,
+  &g_av1_codec_arg_defs.mtu_size,
+  &g_av1_codec_arg_defs.timing_info,
+  &g_av1_codec_arg_defs.film_grain_test,
+  &g_av1_codec_arg_defs.film_grain_table,
+#if CONFIG_DENOISE
+  &g_av1_codec_arg_defs.denoise_noise_level,
+  &g_av1_codec_arg_defs.denoise_block_size,
+  &g_av1_codec_arg_defs.enable_dnl_denoising,
+#endif  // CONFIG_DENOISE
+  &g_av1_codec_arg_defs.max_reference_frames,
+  &g_av1_codec_arg_defs.reduced_reference_set,
+  &g_av1_codec_arg_defs.enable_ref_frame_mvs,
+  &g_av1_codec_arg_defs.target_seq_level_idx,
+  &g_av1_codec_arg_defs.set_tier_mask,
+  &g_av1_codec_arg_defs.set_min_cr,
+  &g_av1_codec_arg_defs.vbr_corpus_complexity_lap,
+  &g_av1_codec_arg_defs.input_chroma_subsampling_x,
+  &g_av1_codec_arg_defs.input_chroma_subsampling_y,
+#if CONFIG_TUNE_VMAF
+  &g_av1_codec_arg_defs.vmaf_model_path,
+#endif
+  NULL
+};
 
 static const arg_def_t *no_args[] = { NULL };
 
@@ -1116,6 +493,7 @@ struct stream_config {
 #if CONFIG_TUNE_VMAF
   const char *vmaf_model_path;
 #endif
+  aom_color_range_t color_range;
 };
 
 struct stream_state {
@@ -1186,77 +564,83 @@ static void parse_global_config(struct AvxEncoderConfig *global, char ***argv) {
   for (argi = argj = argv_local; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
 
-    if (arg_match(&arg, &use_cfg, argi)) {
+    if (arg_match(&arg, &g_av1_codec_arg_defs.use_cfg, argi)) {
       if (!cfg_included) {
         parse_cfg(arg.val, &global->encoder_config);
         cfg_included = 1;
       }
-    } else if (arg_match(&arg, &help, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.help, argi)) {
       show_help(stdout, 0);
       exit(EXIT_SUCCESS);
-    } else if (arg_match(&arg, &codecarg, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.codecarg, argi)) {
       global->codec = get_aom_encoder_by_short_name(arg.val);
       if (!global->codec)
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
-    } else if (arg_match(&arg, &passes, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.passes, argi)) {
       global->passes = arg_parse_uint(&arg);
 
       if (global->passes < 1 || global->passes > 2)
         die("Error: Invalid number of passes (%d)\n", global->passes);
-    } else if (arg_match(&arg, &pass_arg, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.pass_arg, argi)) {
       global->pass = arg_parse_uint(&arg);
 
       if (global->pass < 1 || global->pass > 2)
         die("Error: Invalid pass selected (%d)\n", global->pass);
-    } else if (arg_match(&arg, &input_chroma_sample_position, argi)) {
+    } else if (arg_match(&arg,
+                         &g_av1_codec_arg_defs.input_chroma_sample_position,
+                         argi)) {
       global->csp = arg_parse_enum(&arg);
       /* Flag is used by later code as well, preserve it. */
       argj++;
-    } else if (arg_match(&arg, &usage, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.usage, argi)) {
       global->usage = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &good_dl, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.good_dl, argi)) {
       global->usage = AOM_USAGE_GOOD_QUALITY;  // Good quality usage
-    else if (arg_match(&arg, &rt_dl, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.rt_dl, argi)) {
       global->usage = AOM_USAGE_REALTIME;  // Real-time usage
-    else if (arg_match(&arg, &use_yv12, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.ai_dl, argi)) {
+      global->usage = AOM_USAGE_ALL_INTRA;  // All intra usage
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_yv12, argi)) {
       global->color_type = YV12;
-    else if (arg_match(&arg, &use_i420, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_i420, argi)) {
       global->color_type = I420;
-    else if (arg_match(&arg, &use_i422, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_i422, argi)) {
       global->color_type = I422;
-    else if (arg_match(&arg, &use_i444, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_i444, argi)) {
       global->color_type = I444;
-    else if (arg_match(&arg, &quietarg, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.quietarg, argi)) {
       global->quiet = 1;
-    else if (arg_match(&arg, &verbosearg, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.verbosearg, argi)) {
       global->verbose = 1;
-    else if (arg_match(&arg, &limit, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.limit, argi)) {
       global->limit = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &skip, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.skip, argi)) {
       global->skip_frames = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &psnrarg, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.psnrarg, argi)) {
       if (arg.val)
         global->show_psnr = arg_parse_int(&arg);
       else
         global->show_psnr = 1;
-    } else if (arg_match(&arg, &recontest, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.recontest, argi)) {
       global->test_decode = arg_parse_enum_or_int(&arg);
-    } else if (arg_match(&arg, &framerate, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.framerate, argi)) {
       global->framerate = arg_parse_rational(&arg);
       validate_positive_rational(arg.name, &global->framerate);
       global->have_framerate = 1;
-    } else if (arg_match(&arg, &debugmode, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.debugmode, argi)) {
       global->debug = 1;
-    else if (arg_match(&arg, &q_hist_n, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.q_hist_n, argi)) {
       global->show_q_hist_buckets = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &rate_hist_n, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.rate_hist_n, argi)) {
       global->show_rate_hist_buckets = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &disable_warnings, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.disable_warnings, argi)) {
       global->disable_warnings = 1;
-    else if (arg_match(&arg, &disable_warning_prompt, argi))
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.disable_warning_prompt,
+                         argi)) {
       global->disable_warning_prompt = 1;
-    else
+    } else {
       argj++;
+    }
   }
 
   if (global->pass) {
@@ -1285,6 +669,11 @@ static void parse_global_config(struct AvxEncoderConfig *global, char ***argv) {
 
   if (global->usage == AOM_USAGE_REALTIME && global->passes > 1) {
     warn("Enforcing one-pass encoding in realtime mode\n");
+    global->passes = 1;
+  }
+
+  if (global->usage == AOM_USAGE_ALL_INTRA && global->passes > 1) {
+    warn("Enforcing one-pass encoding in all intra mode\n");
     global->passes = 1;
   }
 }
@@ -1327,6 +716,7 @@ static void open_input_file(struct AvxInputContext *input,
       input->framerate.denominator = input->y4m.fps_d;
       input->fmt = input->y4m.aom_fmt;
       input->bit_depth = input->y4m.bit_depth;
+      input->color_range = input->y4m.color_range;
     } else
       fatal("Unsupported Y4M stream.");
   } else if (input->detect.buf_read == 4 && fourcc_is_ivf(input->detect.buf)) {
@@ -1469,7 +859,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       continue;
     }
 
-    if (arg_match(&arg, &outputfile, argi)) {
+    if (arg_match(&arg, &g_av1_codec_arg_defs.outputfile, argi)) {
       config->out_fn = arg.val;
       if (!webm_forced) {
         const size_t out_fn_len = strlen(config->out_fn);
@@ -1483,143 +873,156 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
           config->write_ivf = 0;
         }
       }
-    } else if (arg_match(&arg, &fpf_name, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.fpf_name, argi)) {
       config->stats_fn = arg.val;
-    } else if (arg_match(&arg, &use_webm, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_webm, argi)) {
 #if CONFIG_WEBM_IO
       config->write_webm = 1;
       webm_forced = 1;
 #else
       die("Error: --webm specified but webm is disabled.");
 #endif
-    } else if (arg_match(&arg, &use_ivf, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_ivf, argi)) {
       config->write_webm = 0;
       config->write_ivf = 1;
-    } else if (arg_match(&arg, &use_obu, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_obu, argi)) {
       config->write_webm = 0;
       config->write_ivf = 0;
-    } else if (arg_match(&arg, &threads, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.threads, argi)) {
       config->cfg.g_threads = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &profile, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.profile, argi)) {
       config->cfg.g_profile = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &width, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.width, argi)) {
       config->cfg.g_w = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &height, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.height, argi)) {
       config->cfg.g_h = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &forced_max_frame_width, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.forced_max_frame_width,
+                         argi)) {
       config->cfg.g_forced_max_frame_width = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &forced_max_frame_height, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.forced_max_frame_height,
+                         argi)) {
       config->cfg.g_forced_max_frame_height = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &bitdeptharg, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.bitdeptharg, argi)) {
       config->cfg.g_bit_depth = arg_parse_enum_or_int(&arg);
-    } else if (arg_match(&arg, &inbitdeptharg, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.inbitdeptharg, argi)) {
       config->cfg.g_input_bit_depth = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &input_chroma_subsampling_x, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.input_chroma_subsampling_x,
+                         argi)) {
       stream->chroma_subsampling_x = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &input_chroma_subsampling_y, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.input_chroma_subsampling_y,
+                         argi)) {
       stream->chroma_subsampling_y = arg_parse_uint(&arg);
 #if CONFIG_WEBM_IO
-    } else if (arg_match(&arg, &stereo_mode, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.stereo_mode, argi)) {
       config->stereo_fmt = arg_parse_enum_or_int(&arg);
 #endif
-    } else if (arg_match(&arg, &timebase, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.timebase, argi)) {
       config->cfg.g_timebase = arg_parse_rational(&arg);
       validate_positive_rational(arg.name, &config->cfg.g_timebase);
-    } else if (arg_match(&arg, &global_error_resilient, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.global_error_resilient,
+                         argi)) {
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &lag_in_frames, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &large_scale_tile, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
       if (config->cfg.large_scale_tile) {
         global->codec = get_aom_encoder_by_short_name("av1");
       }
-    } else if (arg_match(&arg, &monochrome, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.monochrome, argi)) {
       config->cfg.monochrome = 1;
-    } else if (arg_match(&arg, &full_still_picture_hdr, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.full_still_picture_hdr,
+                         argi)) {
       config->cfg.full_still_picture_hdr = 1;
-    } else if (arg_match(&arg, &use_16bit_internal, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_16bit_internal,
+                         argi)) {
       config->use_16bit_internal = CONFIG_AV1_HIGHBITDEPTH;
       if (!config->use_16bit_internal) {
         warn("%s option ignored with CONFIG_AV1_HIGHBITDEPTH=0.\n", arg.name);
       }
-    } else if (arg_match(&arg, &dropframe_thresh, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_mode, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.resize_mode, argi)) {
       config->cfg.rc_resize_mode = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_denominator, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.resize_denominator,
+                         argi)) {
       config->cfg.rc_resize_denominator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_kf_denominator, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.resize_kf_denominator,
+                         argi)) {
       config->cfg.rc_resize_kf_denominator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_mode, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.superres_mode, argi)) {
       config->cfg.rc_superres_mode = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_denominator, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.superres_denominator,
+                         argi)) {
       config->cfg.rc_superres_denominator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_kf_denominator, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.superres_kf_denominator,
+                         argi)) {
       config->cfg.rc_superres_kf_denominator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_qthresh, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.superres_qthresh, argi)) {
       config->cfg.rc_superres_qthresh = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_kf_qthresh, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.superres_kf_qthresh,
+                         argi)) {
       config->cfg.rc_superres_kf_qthresh = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &end_usage, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.end_usage, argi)) {
       config->cfg.rc_end_usage = arg_parse_enum_or_int(&arg);
-    } else if (arg_match(&arg, &target_bitrate, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.target_bitrate, argi)) {
       config->cfg.rc_target_bitrate = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &min_quantizer, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.min_quantizer, argi)) {
       config->cfg.rc_min_quantizer = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &max_quantizer, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.max_quantizer, argi)) {
       config->cfg.rc_max_quantizer = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &undershoot_pct, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.undershoot_pct, argi)) {
       config->cfg.rc_undershoot_pct = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &overshoot_pct, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.overshoot_pct, argi)) {
       config->cfg.rc_overshoot_pct = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &buf_sz, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.buf_sz, argi)) {
       config->cfg.rc_buf_sz = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &buf_initial_sz, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.buf_initial_sz, argi)) {
       config->cfg.rc_buf_initial_sz = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &buf_optimal_sz, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.buf_optimal_sz, argi)) {
       config->cfg.rc_buf_optimal_sz = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &bias_pct, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.bias_pct, argi)) {
       config->cfg.rc_2pass_vbr_bias_pct = arg_parse_uint(&arg);
       if (global->passes < 2)
         warn("option %s ignored in one-pass mode.\n", arg.name);
-    } else if (arg_match(&arg, &minsection_pct, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.minsection_pct, argi)) {
       config->cfg.rc_2pass_vbr_minsection_pct = arg_parse_uint(&arg);
 
       if (global->passes < 2)
         warn("option %s ignored in one-pass mode.\n", arg.name);
-    } else if (arg_match(&arg, &maxsection_pct, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.maxsection_pct, argi)) {
       config->cfg.rc_2pass_vbr_maxsection_pct = arg_parse_uint(&arg);
 
       if (global->passes < 2)
         warn("option %s ignored in one-pass mode.\n", arg.name);
-    } else if (arg_match(&arg, &fwd_kf_enabled, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.fwd_kf_enabled, argi)) {
       config->cfg.fwd_kf_enabled = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &kf_min_dist, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.kf_min_dist, argi)) {
       config->cfg.kf_min_dist = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &kf_max_dist, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.kf_max_dist, argi)) {
       config->cfg.kf_max_dist = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &kf_disabled, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.kf_disabled, argi)) {
       config->cfg.kf_mode = AOM_KF_DISABLED;
-    } else if (arg_match(&arg, &sframe_dist, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.sframe_dist, argi)) {
       config->cfg.sframe_dist = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &sframe_mode, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.sframe_mode, argi)) {
       config->cfg.sframe_mode = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &save_as_annexb, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.save_as_annexb, argi)) {
       config->cfg.save_as_annexb = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &tile_width, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.tile_width, argi)) {
       config->cfg.tile_width_count =
           arg_parse_list(&arg, config->cfg.tile_widths, MAX_TILE_WIDTHS);
-    } else if (arg_match(&arg, &tile_height, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.tile_height, argi)) {
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
 #if CONFIG_TUNE_VMAF
-    } else if (arg_match(&arg, &vmaf_model_path, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.vmaf_model_path, argi)) {
       config->vmaf_model_path = arg.val;
 #endif
-    } else if (arg_match(&arg, &use_fixed_qp_offsets, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.use_fixed_qp_offsets,
+                         argi)) {
       config->cfg.use_fixed_qp_offsets = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &fixed_qp_offsets, argi)) {
+    } else if (arg_match(&arg, &g_av1_codec_arg_defs.fixed_qp_offsets, argi)) {
       const int fixed_qp_offset_count = arg_parse_list(
           &arg, config->cfg.fixed_qp_offsets, FIXED_QP_OFFSET_COUNT);
       if (fixed_qp_offset_count < FIXED_QP_OFFSET_COUNT) {
@@ -1629,7 +1032,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       }
       config->cfg.use_fixed_qp_offsets = 1;
     } else if (global->usage == AOM_USAGE_REALTIME &&
-               arg_match(&arg, &enable_restoration, argi)) {
+               arg_match(&arg, &g_av1_codec_arg_defs.enable_restoration,
+                         argi)) {
       if (arg_parse_uint(&arg) == 1) {
         warn("non-zero %s option ignored in realtime mode.\n", arg.name);
       }
@@ -1652,6 +1056,19 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
   if (global->usage == AOM_USAGE_REALTIME && config->cfg.g_lag_in_frames != 0) {
     warn("non-zero lag-in-frames option ignored in realtime mode.\n");
     config->cfg.g_lag_in_frames = 0;
+  }
+
+  if (global->usage == AOM_USAGE_ALL_INTRA) {
+    if (config->cfg.g_lag_in_frames != 0) {
+      warn("non-zero lag-in-frames option ignored in all intra mode.\n");
+      config->cfg.g_lag_in_frames = 0;
+    }
+    if (config->cfg.kf_max_dist != 0) {
+      warn(
+          "non-zero max key frame distance option ignored in all intra "
+          "mode.\n");
+      config->cfg.kf_max_dist = 0;
+    }
   }
   return eos_mark_found;
 }
@@ -1952,6 +1369,8 @@ static void initialize_encoder(struct stream_state *stream,
     AOM_CODEC_CONTROL_TYPECHECKED(&stream->encoder, AV1E_SET_FILM_GRAIN_TABLE,
                                   stream->config.film_grain_filename);
   }
+  AOM_CODEC_CONTROL_TYPECHECKED(&stream->encoder, AV1E_SET_COLOR_RANGE,
+                                stream->config.color_range);
 
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
@@ -2325,6 +1744,7 @@ int main(int argc, const char **argv_) {
   int profile_updated = 0;
 
   memset(&input, 0, sizeof(input));
+  memset(&raw, 0, sizeof(raw));
   exec_name = argv_[0];
 
   /* Setup default input stream settings */
@@ -2555,6 +1975,7 @@ int main(int argc, const char **argv_) {
 
     FOREACH_STREAM(stream, streams) {
       set_stream_dimensions(stream, input.width, input.height);
+      stream->config.color_range = input.color_range;
     }
     FOREACH_STREAM(stream, streams) { validate_stream_config(stream, &global); }
 
@@ -2599,14 +2020,10 @@ int main(int argc, const char **argv_) {
     }
 
     if (pass == (global.pass ? global.pass - 1 : 0)) {
-      if (input.file_type == FILE_TYPE_Y4M)
-        /*The Y4M reader does its own allocation.
-          Just initialize this here to avoid problems if we never read any
-          frames.*/
-        memset(&raw, 0, sizeof(raw));
-      else
+      // The Y4M reader does its own allocation.
+      if (input.file_type != FILE_TYPE_Y4M) {
         aom_img_alloc(&raw, input.fmt, input.width, input.height, 32);
-
+      }
       FOREACH_STREAM(stream, streams) {
         stream->rate_hist =
             init_rate_histogram(&stream->config.cfg, &global.framerate);

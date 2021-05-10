@@ -424,7 +424,7 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
     if (!(asf->hdr.flags & 0x01)) { // if we aren't streaming...
         int64_t fsize = avio_size(pb);
         if (fsize <= 0 || (int64_t)asf->hdr.file_size <= 0 ||
-            20*FFABS(fsize - (int64_t)asf->hdr.file_size) < FFMIN(fsize, asf->hdr.file_size))
+            FFABS(fsize - (int64_t)asf->hdr.file_size) < FFMIN(fsize, asf->hdr.file_size)/20)
             st->duration = asf->hdr.play_time /
                        (10000000 / 1000) - start_time;
     }
@@ -479,7 +479,7 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
         if (is_dvr_ms_audio) {
             // codec_id and codec_tag are unreliable in dvr_ms
             // files. Set them later by probing stream.
-            st->request_probe    = 1;
+            st->internal->request_probe    = 1;
             st->codecpar->codec_tag = 0;
         }
         if (st->codecpar->codec_id == AV_CODEC_ID_AAC)
@@ -607,6 +607,8 @@ static int asf_read_ext_stream_properties(AVFormatContext *s, int64_t size)
         ff_get_guid(pb, &g);
         size = avio_rl16(pb);
         ext_len = avio_rl32(pb);
+        if (ext_len < 0)
+            return AVERROR_INVALIDDATA;
         avio_skip(pb, ext_len);
         if (stream_num < 128 && i < FF_ARRAY_ELEMS(asf->streams[stream_num].payload)) {
             ASFPayload *p = &asf->streams[stream_num].payload[i];
@@ -769,6 +771,8 @@ static int asf_read_marker(AVFormatContext *s, int64_t size)
         avio_rl32(pb);             // send time
         avio_rl32(pb);             // flags
         name_len = avio_rl32(pb);  // name length
+        if ((unsigned)name_len > INT_MAX / 2)
+            return AVERROR_INVALIDDATA;
         if ((ret = avio_get_str16le(pb, name_len * 2, name,
                                     sizeof(name))) < name_len)
             avio_skip(pb, name_len - ret);
@@ -1678,11 +1682,11 @@ static int asf_read_seek(AVFormatContext *s, int stream_index,
             asf->index_read = -1;
     }
 
-    if (asf->index_read > 0 && st->index_entries) {
+    if (asf->index_read > 0 && st->internal->index_entries) {
         int index = av_index_search_timestamp(st, pts, flags);
         if (index >= 0) {
             /* find the position */
-            uint64_t pos = st->index_entries[index].pos;
+            uint64_t pos = st->internal->index_entries[index].pos;
 
             /* do the seek */
             av_log(s, AV_LOG_DEBUG, "SEEKTO: %"PRId64"\n", pos);

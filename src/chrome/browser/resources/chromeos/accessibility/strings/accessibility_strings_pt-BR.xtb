@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">Nenhum controle anterior</translation>
 <translation id="2045606329038304310">Controle de campo do formulário</translation>
 <translation id="2063539687800151747">Epígrafe</translation>
+<translation id="2074531330963286860">Ações disponíveis. Pressione Pesquisa + ponto final para visualizar</translation>
 <translation id="2086961585857038472">Próxima palavra</translation>
 <translation id="2087981446621639008">dtl lstdscr</translation>
 <translation id="2089387485033699258">pt-BR</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Próximo grupo</translation>
 <translation id="7813616274030162878">Menu do "acesso com interruptor"</translation>
 <translation id="7839679365527550018">Palavra anterior</translation>
+<translation id="7842115774595115751">Ativar controles de navegação</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7851816175263618915">Alguns indicadores de pontuação</translation>
 <translation id="7871691770940645922">Tela virtual em braille</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8989104346085848538">Para interromper a fala atual do ChromeVox, pressione a tecla Control.</translation>
+<translation id="8993737615451556423">Fornece controles para pausar e aumentar ou reduzir a velocidade da voz da leitura</translation>
 <translation id="9014206344398081366">Tutorial do ChromeVox</translation>
 <translation id="9040132695316389094">Cabeçalho 1</translation>
 <translation id="9061884144798498064">Selecione uma tabela em braille de oito pontos:</translation>

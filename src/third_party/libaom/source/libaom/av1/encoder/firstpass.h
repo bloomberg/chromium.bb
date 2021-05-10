@@ -30,10 +30,6 @@ extern "C" {
 
 #define VLOW_MOTION_THRESHOLD 950
 
-// size of firstpass macroblocks in terms of MIs.
-#define FP_MIB_SIZE 4
-#define FP_MIB_SIZE_LOG2 2
-
 /*!
  * \brief The stucture of acummulated frame stats in the first pass.
  */
@@ -331,12 +327,13 @@ struct EncodeFrameParams;
 struct AV1EncoderConfig;
 struct TileDataEnc;
 
-int av1_get_mb_rows_in_tile(TileInfo tile);
-int av1_get_mb_cols_in_tile(TileInfo tile);
+int av1_get_unit_rows_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);
+int av1_get_unit_cols_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);
 
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
 void av1_first_pass_row(struct AV1_COMP *cpi, struct ThreadData *td,
-                        struct TileDataEnc *tile_data, int mb_row);
+                        struct TileDataEnc *tile_data, const int mb_row,
+                        const BLOCK_SIZE fp_block_size);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_twopass_zero_stats(FIRSTPASS_STATS *section);

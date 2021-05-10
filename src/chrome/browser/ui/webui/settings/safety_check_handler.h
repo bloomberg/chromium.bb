@@ -13,9 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -178,12 +178,13 @@ class SafetyCheckHandler
  private:
   // These ensure integers are passed in the correct possitions in the extension
   // check methods.
-  using Compromised = util::StrongAlias<class CompromisedTag, int>;
-  using Done = util::StrongAlias<class DoneTag, int>;
-  using Total = util::StrongAlias<class TotalTag, int>;
-  using Blocklisted = util::StrongAlias<class BlocklistedTag, int>;
-  using ReenabledUser = util::StrongAlias<class ReenabledUserTag, int>;
-  using ReenabledAdmin = util::StrongAlias<class ReenabledAdminTag, int>;
+  using Compromised = base::StrongAlias<class CompromisedTag, int>;
+  using Weak = base::StrongAlias<class WeakTag, int>;
+  using Done = base::StrongAlias<class DoneTag, int>;
+  using Total = base::StrongAlias<class TotalTag, int>;
+  using Blocklisted = base::StrongAlias<class BlocklistedTag, int>;
+  using ReenabledUser = base::StrongAlias<class ReenabledUserTag, int>;
+  using ReenabledAdmin = base::StrongAlias<class ReenabledAdminTag, int>;
 
   // Handles triggering the safety check from the frontend (by user pressing a
   // button).
@@ -214,6 +215,7 @@ class SafetyCheckHandler
   void OnUpdateCheckResult(UpdateStatus status);
   void OnPasswordsCheckResult(PasswordsStatus status,
                               Compromised compromised,
+                              Weak weak,
                               Done done,
                               Total total);
   void OnExtensionsCheckResult(ExtensionsStatus status,
@@ -231,6 +233,7 @@ class SafetyCheckHandler
   base::string16 GetStringForSafeBrowsing(SafeBrowsingStatus status);
   base::string16 GetStringForPasswords(PasswordsStatus status,
                                        Compromised compromised,
+                                       Weak weak,
                                        Done done,
                                        Total total);
   base::string16 GetStringForExtensions(ExtensionsStatus status,
@@ -280,7 +283,7 @@ class SafetyCheckHandler
                         password_manager::IsLeaked is_leaked) override;
 
   // InsecureCredentialsManager::Observer implementation.
-  void OnCompromisedCredentialsChanged(
+  void OnInsecureCredentialsChanged(
       password_manager::InsecureCredentialsManager::CredentialsView credentials)
       override;
 
@@ -323,11 +326,13 @@ class SafetyCheckHandler
   extensions::PasswordsPrivateDelegate* passwords_delegate_ = nullptr;
   extensions::ExtensionPrefs* extension_prefs_ = nullptr;
   extensions::ExtensionServiceInterface* extension_service_ = nullptr;
-  ScopedObserver<password_manager::BulkLeakCheckServiceInterface,
-                 password_manager::BulkLeakCheckServiceInterface::Observer>
+  base::ScopedObservation<
+      password_manager::BulkLeakCheckServiceInterface,
+      password_manager::BulkLeakCheckServiceInterface::Observer>
       observed_leak_check_{this};
-  ScopedObserver<password_manager::InsecureCredentialsManager,
-                 password_manager::InsecureCredentialsManager::Observer>
+  base::ScopedObservation<
+      password_manager::InsecureCredentialsManager,
+      password_manager::InsecureCredentialsManager::Observer>
       observed_insecure_credentials_manager_{this};
   std::unique_ptr<TimestampDelegate> timestamp_delegate_;
   base::WeakPtrFactory<SafetyCheckHandler> weak_ptr_factory_{this};

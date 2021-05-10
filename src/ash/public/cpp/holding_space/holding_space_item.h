@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
@@ -45,10 +46,9 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
 
   bool operator==(const HoldingSpaceItem& rhs) const;
 
-  // Generates an item ID for a holding space item backed by a file, based on
-  // the file's file system URL.
-  static std::string GetFileBackedItemId(Type type,
-                                         const base::FilePath& file_path);
+  // Returns an image for a given type and file path.
+  using ImageResolver = base::OnceCallback<
+      std::unique_ptr<HoldingSpaceImage>(Type, const base::FilePath&)>;
 
   // Creates a HoldingSpaceItem that's backed by a file system URL.
   // NOTE: `file_system_url` is expected to be non-empty.
@@ -56,14 +56,7 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
       Type type,
       const base::FilePath& file_path,
       const GURL& file_system_url,
-      std::unique_ptr<HoldingSpaceImage> image);
-
-  // Returns a file system URL for a given file path.
-  using FileSystemUrlResolver = base::OnceCallback<GURL(const base::FilePath&)>;
-
-  // Returns an image for a given type and file path.
-  using ImageResolver = base::OnceCallback<
-      std::unique_ptr<HoldingSpaceImage>(Type, const base::FilePath&)>;
+      ImageResolver image_resolver);
 
   // Deserializes from `base::DictionaryValue` to `HoldingSpaceItem`.
   // This creates a partially initialized item with an empty file system URL.
@@ -81,6 +74,10 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
   // Serializes from `HoldingSpaceItem` to `base::DictionaryValue`.
   base::DictionaryValue Serialize() const;
 
+  // Adds `callback` to be notified when `this` gets deleted.
+  base::CallbackListSubscription AddDeletionCallback(
+      base::RepeatingClosureList::CallbackType callback) const;
+
   // Indicates whether the item has been finalized. This will be false for items
   // created using `Deserialize()` for which `Finalize()` has not yet been
   // called.
@@ -89,6 +86,17 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
 
   // Used to finalize partially initialized items created by `Deserialize()`.
   void Finalize(const GURL& file_system_url);
+
+  // Updates the file backing the item to `file_path` and `file_system_url`.
+  void UpdateBackingFile(const base::FilePath& file_path,
+                         const GURL& file_system_url);
+
+  // Invalidates the current holding space image, so fresh image representations
+  // are loaded when the image is next needed.
+  void InvalidateImage();
+
+  // Returns true if this item is a screen capture.
+  bool IsScreenCapture() const;
 
   const std::string& id() const { return id_; }
 
@@ -101,6 +109,8 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
   const base::FilePath& file_path() const { return file_path_; }
 
   const GURL& file_system_url() const { return file_system_url_; }
+
+  HoldingSpaceImage& image_for_testing() { return *image_; }
 
  private:
   // Constructor for file backed items.
@@ -127,6 +137,9 @@ class ASH_PUBLIC_EXPORT HoldingSpaceItem {
 
   // The image representation of the item.
   std::unique_ptr<HoldingSpaceImage> image_;
+
+  // Mutable to allow const access from `AddDeletionCallback()`.
+  mutable base::RepeatingClosureList deletion_callback_list_;
 };
 
 }  // namespace ash

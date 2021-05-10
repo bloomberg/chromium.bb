@@ -21,22 +21,19 @@ class EntryPointTests : public DawnTest {};
 
 // Test creating a render pipeline from two entryPoints in the same module.
 TEST_P(EntryPointTests, FragAndVertexSameModule) {
-    // TODO: Reenable once Tint is able to produce Vulkan 1.0 / 1.1 SPIR-V.
-    DAWN_SKIP_TEST_IF(IsVulkan());
-
+    // TODO(crbug.com/dawn/658): Crashes on bots
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
     wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
         [[builtin(position)]] var<out> Position : vec4<f32>;
 
-        [[stage(vertex)]]
-        fn vertex_main() -> void {
+        [[stage(vertex)]] fn vertex_main() -> void {
             Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             return;
         }
 
         [[location(0)]] var<out> outColor : vec4<f32>;
 
-        [[stage(fragment)]]
-        fn fragment_main() -> void {
+        [[stage(fragment)]] fn fragment_main() -> void {
           outColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
           return;
         }
@@ -69,9 +66,6 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
 
 // Test creating two compute pipelines from the same module.
 TEST_P(EntryPointTests, TwoComputeInModule) {
-    // TODO: Reenable once Tint is able to produce Vulkan 1.0 / 1.1 SPIR-V.
-    DAWN_SKIP_TEST_IF(IsVulkan());
-
     // TODO: Reenable once Tint's HLSL writer supports multiple entryPoints on a single stage.
     // https://crbug.com/tint/297
     DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
@@ -80,16 +74,14 @@ TEST_P(EntryPointTests, TwoComputeInModule) {
         [[block]] struct Data {
             [[offset(0)]] data : u32;
         };
-        [[binding(0), set(0)]] var<storage_buffer> data : Data;
+        [[binding(0), group(0)]] var<storage_buffer> data : Data;
 
-        [[stage(compute)]]
-        fn write1() -> void {
+        [[stage(compute)]] fn write1() -> void {
             data.data = 1u;
             return;
         }
 
-        [[stage(compute)]]
-        fn write42() -> void {
+        [[stage(compute)]] fn write42() -> void {
             data.data = 42u;
             return;
         }
@@ -148,4 +140,5 @@ DAWN_INSTANTIATE_TEST(EntryPointTests,
                       D3D12Backend({"use_tint_generator"}),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

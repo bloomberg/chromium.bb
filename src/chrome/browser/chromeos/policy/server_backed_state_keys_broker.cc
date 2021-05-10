@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
@@ -30,7 +30,7 @@ ServerBackedStateKeysBroker::ServerBackedStateKeysBroker(
 ServerBackedStateKeysBroker::~ServerBackedStateKeysBroker() {
 }
 
-ServerBackedStateKeysBroker::Subscription
+base::CallbackListSubscription
 ServerBackedStateKeysBroker::RegisterUpdateCallback(
     const UpdateCallback& callback) {
   if (!available())

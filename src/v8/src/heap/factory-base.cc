@@ -22,6 +22,7 @@
 #include "src/objects/source-text-module.h"
 #include "src/objects/string-inl.h"
 #include "src/objects/string.h"
+#include "src/objects/swiss-name-dictionary-inl.h"
 #include "src/objects/template-objects-inl.h"
 
 namespace v8 {
@@ -206,13 +207,15 @@ Handle<BytecodeArray> FactoryBase<Impl>::NewBytecodeArray(
 }
 
 template <typename Impl>
-Handle<Script> FactoryBase<Impl>::NewScript(Handle<String> source) {
+Handle<Script> FactoryBase<Impl>::NewScript(
+    Handle<PrimitiveHeapObject> source) {
   return NewScriptWithId(source, isolate()->GetNextScriptId());
 }
 
 template <typename Impl>
-Handle<Script> FactoryBase<Impl>::NewScriptWithId(Handle<String> source,
-                                                  int script_id) {
+Handle<Script> FactoryBase<Impl>::NewScriptWithId(
+    Handle<PrimitiveHeapObject> source, int script_id) {
+  DCHECK(source->IsString() || source->IsUndefined());
   // Create and initialize script object.
   ReadOnlyRoots roots = read_only_roots();
   Handle<Script> script =
@@ -275,14 +278,8 @@ Handle<UncompiledDataWithoutPreparseData>
 FactoryBase<Impl>::NewUncompiledDataWithoutPreparseData(
     Handle<String> inferred_name, int32_t start_position,
     int32_t end_position) {
-  Handle<UncompiledDataWithoutPreparseData> result = handle(
-      UncompiledDataWithoutPreparseData::cast(NewWithImmortalMap(
-          impl()->read_only_roots().uncompiled_data_without_preparse_data_map(),
-          AllocationType::kOld)),
-      isolate());
-
-  result->Init(impl(), *inferred_name, start_position, end_position);
-  return result;
+  return TorqueGeneratedFactory<Impl>::NewUncompiledDataWithoutPreparseData(
+      inferred_name, start_position, end_position, AllocationType::kOld);
 }
 
 template <typename Impl>
@@ -290,16 +287,9 @@ Handle<UncompiledDataWithPreparseData>
 FactoryBase<Impl>::NewUncompiledDataWithPreparseData(
     Handle<String> inferred_name, int32_t start_position, int32_t end_position,
     Handle<PreparseData> preparse_data) {
-  Handle<UncompiledDataWithPreparseData> result = handle(
-      UncompiledDataWithPreparseData::cast(NewWithImmortalMap(
-          impl()->read_only_roots().uncompiled_data_with_preparse_data_map(),
-          AllocationType::kOld)),
-      isolate());
-
-  result->Init(impl(), *inferred_name, start_position, end_position,
-               *preparse_data);
-
-  return result;
+  return TorqueGeneratedFactory<Impl>::NewUncompiledDataWithPreparseData(
+      inferred_name, start_position, end_position, preparse_data,
+      AllocationType::kOld);
 }
 
 template <typename Impl>
@@ -392,6 +382,20 @@ FactoryBase<Impl>::NewArrayBoilerplateDescription(
           NewStruct(ARRAY_BOILERPLATE_DESCRIPTION_TYPE, AllocationType::kOld));
   result->set_elements_kind(elements_kind);
   result->set_constant_elements(*constant_values);
+  return result;
+}
+
+template <typename Impl>
+Handle<RegExpBoilerplateDescription>
+FactoryBase<Impl>::NewRegExpBoilerplateDescription(Handle<FixedArray> data,
+                                                   Handle<String> source,
+                                                   Smi flags) {
+  Handle<RegExpBoilerplateDescription> result =
+      Handle<RegExpBoilerplateDescription>::cast(NewStruct(
+          REG_EXP_BOILERPLATE_DESCRIPTION_TYPE, AllocationType::kOld));
+  result->set_data(*data);
+  result->set_source(*source);
+  result->set_flags(flags.value());
   return result;
 }
 
@@ -505,10 +509,10 @@ Handle<String> FactoryBase<Impl>::InternalizeString(
 
 template <typename Impl>
 Handle<SeqOneByteString> FactoryBase<Impl>::NewOneByteInternalizedString(
-    const Vector<const uint8_t>& str, uint32_t hash_field) {
+    const Vector<const uint8_t>& str, uint32_t raw_hash_field) {
   Handle<SeqOneByteString> result =
-      AllocateRawOneByteInternalizedString(str.length(), hash_field);
-  DisallowHeapAllocation no_gc;
+      AllocateRawOneByteInternalizedString(str.length(), raw_hash_field);
+  DisallowGarbageCollection no_gc;
   MemCopy(result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded()),
           str.begin(), str.length());
   return result;
@@ -516,10 +520,10 @@ Handle<SeqOneByteString> FactoryBase<Impl>::NewOneByteInternalizedString(
 
 template <typename Impl>
 Handle<SeqTwoByteString> FactoryBase<Impl>::NewTwoByteInternalizedString(
-    const Vector<const uc16>& str, uint32_t hash_field) {
+    const Vector<const uc16>& str, uint32_t raw_hash_field) {
   Handle<SeqTwoByteString> result =
-      AllocateRawTwoByteInternalizedString(str.length(), hash_field);
-  DisallowHeapAllocation no_gc;
+      AllocateRawTwoByteInternalizedString(str.length(), raw_hash_field);
+  DisallowGarbageCollection no_gc;
   MemCopy(result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded()),
           str.begin(), str.length() * kUC16Size);
   return result;
@@ -540,7 +544,7 @@ MaybeHandle<SeqOneByteString> FactoryBase<Impl>::NewRawOneByteString(
   Handle<SeqOneByteString> string =
       handle(SeqOneByteString::cast(result), isolate());
   string->set_length(length);
-  string->set_hash_field(String::kEmptyHashField);
+  string->set_raw_hash_field(String::kEmptyHashField);
   DCHECK_EQ(size, string->Size());
   return string;
 }
@@ -560,7 +564,7 @@ MaybeHandle<SeqTwoByteString> FactoryBase<Impl>::NewRawTwoByteString(
   Handle<SeqTwoByteString> string =
       handle(SeqTwoByteString::cast(result), isolate());
   string->set_length(length);
-  string->set_hash_field(String::kEmptyHashField);
+  string->set_raw_hash_field(String::kEmptyHashField);
   DCHECK_EQ(size, string->Size());
   return string;
 }
@@ -582,8 +586,8 @@ MaybeHandle<String> FactoryBase<Impl>::NewConsString(
   int length = left_length + right_length;
 
   if (length == 2) {
-    uint16_t c1 = left->Get(0);
-    uint16_t c2 = right->Get(0);
+    uint16_t c1 = left->Get(0, isolate());
+    uint16_t c2 = right->Get(0, isolate());
     return MakeOrFindTwoCharacterString(c1, c2);
   }
 
@@ -608,19 +612,17 @@ MaybeHandle<String> FactoryBase<Impl>::NewConsString(
     if (is_one_byte) {
       Handle<SeqOneByteString> result =
           NewRawOneByteString(length, allocation).ToHandleChecked();
-      DisallowHeapAllocation no_gc;
-      uint8_t* dest =
-          result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded());
+      DisallowGarbageCollection no_gc;
+      SharedStringAccessGuardIfNeeded access_guard(isolate());
+      uint8_t* dest = result->GetChars(no_gc, access_guard);
       // Copy left part.
       {
-        SharedStringAccessGuardIfNeeded access_guard(*left);
         const uint8_t* src =
             left->template GetChars<uint8_t>(no_gc, access_guard);
         CopyChars(dest, src, left_length);
       }
       // Copy right part.
       {
-        SharedStringAccessGuardIfNeeded access_guard(*right);
         const uint8_t* src =
             right->template GetChars<uint8_t>(no_gc, access_guard);
         CopyChars(dest + left_length, src, right_length);
@@ -631,11 +633,12 @@ MaybeHandle<String> FactoryBase<Impl>::NewConsString(
     Handle<SeqTwoByteString> result =
         NewRawTwoByteString(length, allocation).ToHandleChecked();
 
-    DisallowHeapAllocation no_gc;
-    uc16* sink =
-        result->GetChars(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded());
-    String::WriteToFlat(*left, sink, 0, left->length());
-    String::WriteToFlat(*right, sink + left->length(), 0, right->length());
+    DisallowGarbageCollection no_gc;
+    SharedStringAccessGuardIfNeeded access_guard(isolate());
+    uc16* sink = result->GetChars(no_gc, access_guard);
+    String::WriteToFlat(*left, sink, 0, left->length(), access_guard);
+    String::WriteToFlat(*right, sink + left->length(), 0, right->length(),
+                        access_guard);
     return result;
   }
 
@@ -661,10 +664,10 @@ Handle<String> FactoryBase<Impl>::NewConsString(Handle<String> left,
                                    allocation)),
       isolate());
 
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   WriteBarrierMode mode = result->GetWriteBarrierMode(no_gc);
 
-  result->set_hash_field(String::kEmptyHashField);
+  result->set_raw_hash_field(String::kEmptyHashField);
   result->set_length(length);
   result->set_first(*left, mode);
   result->set_second(*right, mode);
@@ -688,8 +691,11 @@ template <typename Impl>
 Handle<ScopeInfo> FactoryBase<Impl>::NewScopeInfo(int length,
                                                   AllocationType type) {
   DCHECK(type == AllocationType::kOld || type == AllocationType::kReadOnly);
-  return Handle<ScopeInfo>::cast(NewFixedArrayWithMap(
-      read_only_roots().scope_info_map_handle(), length, type));
+  Handle<HeapObject> result =
+      Handle<HeapObject>::cast(NewFixedArray(length, type));
+  result->set_map_after_allocation(*read_only_roots().scope_info_map_handle(),
+                                   SKIP_WRITE_BARRIER);
+  return Handle<ScopeInfo>::cast(result);
 }
 
 template <typename Impl>
@@ -747,8 +753,8 @@ Handle<ClassPositions> FactoryBase<Impl>::NewClassPositions(int start,
 
 template <typename Impl>
 Handle<SeqOneByteString>
-FactoryBase<Impl>::AllocateRawOneByteInternalizedString(int length,
-                                                        uint32_t hash_field) {
+FactoryBase<Impl>::AllocateRawOneByteInternalizedString(
+    int length, uint32_t raw_hash_field) {
   CHECK_GE(String::kMaxLength, length);
   // The canonical empty_string is the only zero-length string we allow.
   DCHECK_IMPLIES(length == 0, !impl()->EmptyStringRootIsInitialized());
@@ -763,15 +769,15 @@ FactoryBase<Impl>::AllocateRawOneByteInternalizedString(int length,
   Handle<SeqOneByteString> answer =
       handle(SeqOneByteString::cast(result), isolate());
   answer->set_length(length);
-  answer->set_hash_field(hash_field);
+  answer->set_raw_hash_field(raw_hash_field);
   DCHECK_EQ(size, answer->Size());
   return answer;
 }
 
 template <typename Impl>
 Handle<SeqTwoByteString>
-FactoryBase<Impl>::AllocateRawTwoByteInternalizedString(int length,
-                                                        uint32_t hash_field) {
+FactoryBase<Impl>::AllocateRawTwoByteInternalizedString(
+    int length, uint32_t raw_hash_field) {
   CHECK_GE(String::kMaxLength, length);
   DCHECK_NE(0, length);  // Use Heap::empty_string() instead.
 
@@ -782,7 +788,7 @@ FactoryBase<Impl>::AllocateRawTwoByteInternalizedString(int length,
   Handle<SeqTwoByteString> answer =
       handle(SeqTwoByteString::cast(result), isolate());
   answer->set_length(length);
-  answer->set_hash_field(hash_field);
+  answer->set_raw_hash_field(raw_hash_field);
   DCHECK_EQ(size, result.Size());
   return answer;
 }
@@ -841,6 +847,43 @@ template <typename Impl>
 HeapObject FactoryBase<Impl>::AllocateRaw(int size, AllocationType allocation,
                                           AllocationAlignment alignment) {
   return impl()->AllocateRaw(size, allocation, alignment);
+}
+
+template <typename Impl>
+Handle<SwissNameDictionary>
+FactoryBase<Impl>::NewSwissNameDictionaryWithCapacity(
+    int capacity, AllocationType allocation) {
+  DCHECK(SwissNameDictionary::IsValidCapacity(capacity));
+
+  if (capacity == 0) {
+    DCHECK_NE(read_only_roots().at(RootIndex::kEmptySwissPropertyDictionary),
+              kNullAddress);
+
+    return read_only_roots().empty_swiss_property_dictionary_handle();
+  }
+
+  if (capacity > SwissNameDictionary::MaxCapacity()) {
+    isolate()->FatalProcessOutOfHeapMemory("invalid table size");
+  }
+
+  int meta_table_length = SwissNameDictionary::MetaTableSizeFor(capacity);
+  Handle<ByteArray> meta_table =
+      impl()->NewByteArray(meta_table_length, allocation);
+
+  Map map = read_only_roots().swiss_name_dictionary_map();
+  int size = SwissNameDictionary::SizeFor(capacity);
+  HeapObject result = AllocateRawWithImmortalMap(size, allocation, map);
+  Handle<SwissNameDictionary> table(SwissNameDictionary::cast(result),
+                                    isolate());
+  table->Initialize(isolate(), *meta_table, capacity);
+  return table;
+}
+
+template <typename Impl>
+Handle<SwissNameDictionary> FactoryBase<Impl>::NewSwissNameDictionary(
+    int at_least_space_for, AllocationType allocation) {
+  return NewSwissNameDictionaryWithCapacity(
+      SwissNameDictionary::CapacityFor(at_least_space_for), allocation);
 }
 
 // Instantiate FactoryBase for the two variants we want.

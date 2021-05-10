@@ -23,31 +23,31 @@ enum class PreviewsType {
 
   // The user is shown an offline page as a preview. Deprecated, and should not
   // be used.
-  DEPRECATED_OFFLINE = 1,
+  // DEPRECATED_OFFLINE = 1,
 
   // Replace images with placeholders. Deprecated, and should not be used.
-  DEPRECATED_LOFI = 2,
+  // DEPRECATED_LOFI = 2,
 
   // The user is shown a server lite page. Deprecated, and should not
   // be used.
-  DEPRECATED_LITE_PAGE = 3,
+  // DEPRECATED_LITE_PAGE = 3,
 
   // AMP version of the page is shown as a preview. Deprecated, and should not
   // be used.
-  DEPRECATED_AMP_REDIRECTION = 4,
+  // DEPRECATED_AMP_REDIRECTION = 4,
 
   // Preview that disables JavaScript for the navigation.
-  NOSCRIPT = 5,
+  // NOSCRIPT = 5,
 
   // Special value that indicates that no specific type is identified. This
   // might be used for checks or logging that applies to any type.
   UNSPECIFIED = 6,
 
   // Request that resource loading hints be used during pageload.
-  RESOURCE_LOADING_HINTS = 7,
+  // RESOURCE_LOADING_HINTS = 7,
 
   // Allows the browser to redirect navigations to a Lite Page server.
-  DEPRECATED_LITE_PAGE_REDIRECT = 8,
+  // DEPRECATED_LITE_PAGE_REDIRECT = 8,
 
   // Preview that defers script execution until after parsing completes.
   DEFER_ALL_SCRIPT = 9,
@@ -121,31 +121,10 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold();
 bool ArePreviewsAllowed();
 
 // Whether the preview type is enabled.
-bool IsNoScriptPreviewsEnabled();
-bool IsResourceLoadingHintsEnabled();
 bool IsDeferAllScriptPreviewsEnabled();
 
 // The blocklist version for each preview type.
-int NoScriptPreviewsVersion();
-int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();
-
-// For estimating NoScript data savings, this is the percentage factor to
-// multiple by the network bytes for inflating the original_bytes count.
-int NoScriptPreviewsInflationPercent();
-
-// For estimating NoScript data savings, this is the number of bytes to
-// for inflating the original_bytes count.
-int NoScriptPreviewsInflationBytes();
-
-// For estimating ResourceLoadingHints data savings, this is the percentage
-// factor to multiple by the network bytes for inflating the original_bytes
-// count.
-int ResourceLoadingHintsPreviewsInflationPercent();
-
-// For estimating ResourceLoadingHints data savings, this is the number of
-// bytes to for inflating the original_bytes count.
-int ResourceLoadingHintsPreviewsInflationBytes();
 
 // Forces the coin flip holdback, if enabled, to always come up "holdback".
 bool ShouldOverrideNavigationCoinFlipToHoldback();

@@ -10,14 +10,15 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -68,10 +69,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
@@ -185,7 +185,7 @@ class ScopedPreviewTestDelegate : printing::PrintPreviewUI::TestDelegate {
 
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_WIN)
 bool CopyTestDataAndGetTestFilePath(const base::FilePath& test_data_file,
                                     const base::FilePath& temp_dir,
                                     const char* filename,
@@ -198,7 +198,7 @@ bool CopyTestDataAndGetTestFilePath(const base::FilePath& test_data_file,
   *file_path = path;
   return true;
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_WIN)
 
 class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
  public:
@@ -235,8 +235,7 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
     base::FilePath file_path = test_doc.NormalizePathSeparators();
 
     base::FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
-    const extensions::Extension* extension =
-        LoadExtensionWithFlags(extension_path, kFlagNone);
+    const extensions::Extension* extension = LoadExtension(extension_path);
     ASSERT_TRUE(extension);
 
     apps::mojom::FilePathsPtr launch_files = apps::mojom::FilePaths::New();
@@ -259,8 +258,7 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
     extensions::ResultCatcher catcher;
 
     base::FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
-    const extensions::Extension* extension =
-        LoadExtensionWithFlags(extension_path, kFlagNone);
+    const extensions::Extension* extension = LoadExtension(extension_path);
     if (!extension) {
       message_ = "Failed to load extension.";
       return false;
@@ -293,7 +291,7 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
 };
 
 const char kChromiumURL[] = "http://chromium.org";
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 #endif
 
@@ -392,7 +390,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
   ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
+// Flaky on Mac10.13 Tests (dbg). See https://crbug.com/1155013
+#if defined(OS_MAC)
+#define MAYBE_AppWithContextMenuTextField DISABLED_AppWithContextMenuTextField
+#else
+#define MAYBE_AppWithContextMenuTextField AppWithContextMenuTextField
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_AppWithContextMenuTextField) {
   LoadAndLaunchPlatformApp("context_menu", "Launched");
 
   // The context_menu app has one context menu item. This, along with a
@@ -465,7 +470,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
+// https://crbug.com/1155013
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_DisallowNavigation) {
   TabsAddedNotificationObserver observer(browser(), 1);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -518,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 
 // Tests that extensions can't use platform-app-only APIs.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("platform_apps/apps_only"))
+  ASSERT_TRUE(RunExtensionTest({.name = "platform_apps/apps_only"},
+                               {.ignore_manifest_warnings = true}))
       << message_;
 }
 
@@ -590,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
 
 // ChromeOS does not support passing arguments on the command line, so the tests
 // that rely on this functionality are disabled.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that launch data is sent through if the file extension matches.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchFilesWithFileExtension) {
@@ -781,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithNothing) {
 }
 
 // Test that platform apps can use the chrome.fileSystem.getDisplayPath
-// function to get the native file system path of a file they are launched with.
+// function to get the File System Access path of a file they are launched with.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, GetDisplayPath) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
       "platform_apps/get_display_path", kTestFilePath))
@@ -800,18 +807,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
       << message_;
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/1000234): Re-enable this test.
-#define MAYBE_OpenLink DISABLED_OpenLink
-#else
-#define MAYBE_OpenLink OpenLink
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenLink) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_TRUE(StartEmbeddedTestServer());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
   LoadAndLaunchPlatformApp("open_link", "Launched");
-  ui_test_utils::TabAddedWaiter(browser()).Wait();
+  tab_added_waiter.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -821,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 
 // This appears to be unreliable.
 // TODO(stevenjb): Investigate and enable
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_WIN) || \
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN) || \
     defined(OS_MAC)
 #define MAYBE_AppWindowRestoreState DISABLED_AppWindowRestoreState
 #else
@@ -1231,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
                                         public AppWindowRegistry::Observer {
@@ -1258,7 +1260,7 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
 };
 
 // Seen to fail repeatedly on CrOS; crbug.com/774011.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_IncognitoComponentApp IncognitoComponentApp
 #else
 #define MAYBE_IncognitoComponentApp DISABLED_IncognitoComponentApp
@@ -1292,8 +1294,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
                    apps::mojom::LaunchContainer::kLaunchContainerWindow,
                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
                    true /* prefer_container */),
-               apps::mojom::LaunchSource::kFromTest,
-               display::kInvalidDisplayId);
+               apps::mojom::LaunchSource::kFromTest);
 
   while (!base::Contains(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();
@@ -1364,7 +1365,7 @@ IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
   EXPECT_EQ(1, num_request_restart_calls());
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Test that when an application is uninstalled and re-install it does not have
 // access to the previously set data.

@@ -6,17 +6,17 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/fake_cws.h"
-#include "chrome/browser/chromeos/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/app_mode/fake_cws.h"
+#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 #include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
@@ -32,7 +32,6 @@
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,6 +51,9 @@ constexpr char kTestKioskAccountId[] = "enterprise-kiosk-app@localhost";
 
 constexpr char kWifiServiceName[] = "stub_wifi";
 constexpr char kWifiNetworkName[] = "wifi-test-network";
+
+const test::UIPath kErrorMessageGuestSigninLink = {"error-message",
+                                                   "error-guest-signin-link"};
 
 ErrorScreen* GetScreen() {
   return static_cast<ErrorScreen*>(
@@ -85,6 +87,10 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
     GetScreen()->Show(wizard_context_.get());
 
     // Wait until network list adds the wifi test network.
+    OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+
+    EXPECT_TRUE(test::IsScanningRequestedOnErrorScreen());
+
     test::OobeJS()
         .CreateWaiter(WifiElementSelector(kWifiNetworkName) + " != null")
         ->Wait();
@@ -97,10 +103,9 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
 
  protected:
   std::string WifiElementSelector(const std::string& wifi_network_name) {
-    return base::StrCat(
-        {"$('offline-network-control').$$('#networkSelect')"
-         ".getNetworkListItemByNameForTest('",
-         wifi_network_name, "')"});
+    return test::GetOobeElementPath(
+               {"error-message", "offline-network-control", "networkSelect"}) +
+           ".getNetworkListItemByNameForTest('" + wifi_network_name + "')";
   }
 
   void ClickOnWifiNetwork(const std::string& wifi_network_name) {
@@ -232,13 +237,13 @@ IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, PRE_GuestLogin) {
   GetScreen()->Show(wizard_context_.get());
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
-  test::OobeJS().ExpectVisiblePath({"error-guest-signin-link"});
+  test::OobeJS().ExpectVisiblePath(kErrorMessageGuestSigninLink);
 
   base::RunLoop restart_job_waiter;
   FakeSessionManagerClient::Get()->set_restart_job_callback(
       restart_job_waiter.QuitClosure());
 
-  test::OobeJS().ClickOnPath({"error-guest-signin-link"});
+  test::OobeJS().ClickOnPath(kErrorMessageGuestSigninLink);
   restart_job_waiter.Run();
 }
 
@@ -278,23 +283,12 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
         kWifiServiceName, "wifi_guid", kWifiNetworkName, shill::kTypeWifi,
         shill::kStateOffline, /*visible=*/true);
 
-    apps_loaded_waiter_ =
-        std::make_unique<content::WindowedNotificationObserver>(
-            chrome::NOTIFICATION_KIOSK_APPS_LOADED,
-            content::NotificationService::AllSources());
-
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     network_helper_.reset();
-    apps_loaded_waiter_.reset();
     MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  }
-
- protected:
-  content::WindowedNotificationObserver* apps_loaded_waiter() {
-    return apps_loaded_waiter_.get();
   }
 
  private:
@@ -320,8 +314,6 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
 
-  std::unique_ptr<content::WindowedNotificationObserver> apps_loaded_waiter_;
-
   std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
   std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
 
@@ -339,17 +331,24 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 };
 
 // Verify that certificate manager dialog opens.
-// Disabled for being flaky. See crbug.com/1116058.
-IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, DISABLED_OpenCertificateConfig) {
-  apps_loaded_waiter()->Wait();
-  EXPECT_TRUE(ash::LoginScreenTestApi::LaunchApp(kTestKioskAppId));
+IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
+  while (!ash::LoginScreenTestApi::IsAppsButtonShown()) {
+    int ui_update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
+    ash::LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
+  }
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsAppsButtonShown());
+  ASSERT_TRUE(ash::LoginScreenTestApi::LaunchApp(kTestKioskAppId));
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
   DialogWindowWaiter waiter(
       l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE));
 
-  test::OobeJS().TapOnPath({"error-message-md-configure-certs-button"});
+  const test::UIPath kCertsButton = {"error-message", "configureCertsButton"};
+  test::OobeJS().CreateVisibilityWaiter(true, kCertsButton)->Wait();
+  test::OobeJS().ClickOnPath(kCertsButton);
+
   waiter.Wait();
 }
 

@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 
+#include <numeric>
+
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/json/json_reader.h"
@@ -11,6 +13,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -62,6 +65,15 @@ void OmniboxPedalProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 void OmniboxPedalProvider::ResetSession() {
   field_trial_triggered_in_session_ = false;
   field_trial_triggered_ = false;
+}
+
+size_t OmniboxPedalProvider::EstimateMemoryUsage() const {
+  size_t total = 0;
+  total += base::trace_event::EstimateMemoryUsage(dictionary_);
+  total += base::trace_event::EstimateMemoryUsage(ignore_group_);
+  total += base::trace_event::EstimateMemoryUsage(pedals_);
+  total += base::trace_event::EstimateMemoryUsage(tokenize_characters_);
+  return total;
 }
 
 OmniboxPedal* OmniboxPedalProvider::FindPedalMatch(

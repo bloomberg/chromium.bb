@@ -129,7 +129,7 @@ void main()
         ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_3D"));
 
         // http://anglebug.com/4927
-        ANGLE_SKIP_TEST_IF(IsPixel2() || IsOpenGLES());
+        ANGLE_SKIP_TEST_IF((IsPixel2() || IsNexus5X()) && IsOpenGLES());
 
         // Vertex Shader source
         constexpr char kVS[] = R"(attribute vec4 position;
@@ -609,6 +609,9 @@ TEST_P(MipmapTest, DISABLED_ThreeLevelsInitData)
 // conformance2/textures/misc/tex-mipmap-levels WebGL2 test.
 TEST_P(MipmapTestES3, GenerateMipmapPartialLevels)
 {
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
+
     const std::vector<GLColor> kRedData(64, GLColor::red);
     const std::vector<GLColor> kGreenData(16, GLColor::green);
     const std::vector<GLColor> kBlueData(4, GLColor::blue);
@@ -1152,7 +1155,7 @@ TEST_P(MipmapTest, MipmapsForTexture3DOES)
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_3D"));
 
     // http://anglebug.com/4927
-    ANGLE_SKIP_TEST_IF(IsPixel2() || IsOpenGLES());
+    ANGLE_SKIP_TEST_IF((IsPixel2() || IsNexus5X()) && IsOpenGLES());
 
     int px = getWindowWidth() / 2;
     int py = getWindowHeight() / 2;
@@ -1668,7 +1671,7 @@ TEST_P(MipmapTestES3, GenerateMipmapBaseLevel)
     // Observed incorrect rendering on AMD, sampling level 2 returns black.
     ANGLE_SKIP_TEST_IF(IsAMD() && IsDesktopOpenGL());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     glBindTexture(GL_TEXTURE_2D, mTexture);
@@ -1723,7 +1726,7 @@ TEST_P(MipmapTestES3, GenerateMipmapPreservesOutOfRangeMips)
     // http://anglebug.com/4786
     ANGLE_SKIP_TEST_IF(IsOpenGLES() && IsNVIDIAShield());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     constexpr GLint kTextureSize = 16;
@@ -1791,7 +1794,7 @@ TEST_P(MipmapTestES3, GenerateMipmapCubeBaseLevel)
     // Observed incorrect rendering on AMD, sampling level 2 returns black.
     ANGLE_SKIP_TEST_IF(IsAMD() && IsDesktopOpenGL());
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     ASSERT_EQ(getWindowWidth(), getWindowHeight());
@@ -1845,7 +1848,7 @@ TEST_P(MipmapTestES3, GenerateMipmapCubeBaseLevel)
 // the levelbase array, are left unchanged by this computation."
 TEST_P(MipmapTestES3, GenerateMipmapMaxLevel)
 {
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     glBindTexture(GL_TEXTURE_2D, mTexture);
@@ -1953,8 +1956,11 @@ TEST_P(MipmapTestES3, BaseLevelTextureBug)
     // Probably not Intel.
     ANGLE_SKIP_TEST_IF(IsOSX() && (IsNVIDIA() || IsIntel()));
 
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
+
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     std::vector<GLColor> texDataRed(2u * 2u, GLColor::red);
 
@@ -2048,6 +2054,10 @@ ANGLE_INSTANTIATE_TEST(MipmapTest, WithNoGenMultipleMipsPerPass(ES2_METAL()));
 ANGLE_INSTANTIATE_TEST(Mipmap3DBoxFilterTest,
                        ES2_METAL(),
                        WithNoGenMultipleMipsPerPass(ES2_METAL()));
+
+// This test suite is not instantiated on some OSes.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Mipmap3DBoxFilterTest);
+
 }  // namespace extraPlatforms
 
 ANGLE_INSTANTIATE_TEST_ES3(MipmapTestES3);

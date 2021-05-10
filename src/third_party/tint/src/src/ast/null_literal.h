@@ -23,21 +23,26 @@ namespace tint {
 namespace ast {
 
 /// A null literal
-class NullLiteral : public Literal {
+class NullLiteral : public Castable<NullLiteral, Literal> {
  public:
   /// Constructor
+  /// @param source the input source
   /// @param type the type
-  explicit NullLiteral(ast::type::Type* type);
+  NullLiteral(const Source& source, type::Type* type);
   ~NullLiteral() override;
-
-  /// @returns true if this is a null literal
-  bool IsNull() const override;
 
   /// @returns the name for this literal. This name is unique to this value.
   std::string name() const override;
 
+  /// @param sem the semantic info for the program
   /// @returns the literal as a string
-  std::string to_str() const override;
+  std::string to_str(const semantic::Info& sem) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  NullLiteral* Clone(CloneContext* ctx) const override;
 };
 
 }  // namespace ast

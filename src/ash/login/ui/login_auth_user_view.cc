@@ -39,7 +39,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -89,8 +88,6 @@ const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
 
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 24;
-
-constexpr SkColor kChallengeResponseErrorColor = gfx::kGoogleRed300;
 
 // Date time format containing only the day of the week, for example: "Tuesday".
 constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
@@ -444,9 +441,10 @@ class LoginAuthUserView::FingerprintView : public views::View {
     label_->SetTextBasedOnAuthAttempt(success);
 
     if (success) {
-      icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
-                                            kFingerprintIconSizeDp,
-                                            gfx::kGoogleGreen300));
+      icon_->SetImage(gfx::CreateVectorIcon(
+          kLockScreenFingerprintSuccessIcon, kFingerprintIconSizeDp,
+          AshColorProvider::Get()->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kIconColorPositive)));
     } else {
       SetIcon(FingerprintState::DISABLED_FROM_ATTEMPTS);
       // base::Unretained is safe because reset_state_ is owned by |this|.
@@ -628,9 +626,10 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
             AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kIconColorPrimary));
       case State::kFailure:
-        return gfx::CreateVectorIcon(kLockScreenSmartCardFailureIcon,
-                                     kChallengeResponseIconSizeDp,
-                                     kChallengeResponseErrorColor);
+        return gfx::CreateVectorIcon(
+            kLockScreenSmartCardFailureIcon, kChallengeResponseIconSizeDp,
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorAlert));
     }
   }
 
@@ -1228,7 +1227,7 @@ void LoginAuthUserView::SetAuthMethods(
 
   password_view_->SetEnabled(current_state.has_password);
   password_view_->SetEnabledOnEmptyPassword(HasAuthMethod(AUTH_TAP));
-  password_view_->SetFocusEnabledForChildViews(current_state.has_password);
+  password_view_->SetFocusEnabledForTextfield(current_state.has_password);
   password_view_->SetVisible(current_state.has_password);
   password_view_->layer()->SetOpacity(current_state.has_password ? 1 : 0);
 
@@ -1530,7 +1529,7 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
 
   Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
       current_user().basic_user_info.account_id, base::UTF16ToUTF8(password),
-      HasAuthMethod(AUTH_PIN),
+      ShouldAuthenticateWithPin(),
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1585,6 +1584,11 @@ void LoginAuthUserView::OnUserViewTap() {
 }
 
 void LoginAuthUserView::OnOnlineSignInMessageTap() {
+  // Do not show on secondary login screen as there is no OOBE there.
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::LOGIN_SECONDARY) {
+    return;
+  }
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
       current_user().basic_user_info.account_id);
 }
@@ -1621,6 +1625,11 @@ void LoginAuthUserView::OnPinTextChanged(bool is_empty) {
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
+}
+
+bool LoginAuthUserView::ShouldAuthenticateWithPin() const {
+  return input_field_mode_ == InputFieldMode::PIN_AND_PASSWORD ||
+         input_field_mode_ == InputFieldMode::PIN_WITH_TOGGLE;
 }
 
 void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {

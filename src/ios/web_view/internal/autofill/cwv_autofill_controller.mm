@@ -27,7 +27,6 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #include "components/sync/driver/sync_service.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
@@ -71,9 +70,6 @@ using autofill::FieldRendererId;
   // Javascript autofill manager associated with |webState|.
   JsAutofillManager* _JSAutofillManager;
 
-  // Javascript suggestion manager associated with |webState|.
-  JsSuggestionManager* _JSSuggestionManager;
-
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
 
@@ -96,7 +92,7 @@ using autofill::FieldRendererId;
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
 
-  NSString* _lastFormActivityWebFrameID;
+  std::string _lastFormActivityWebFrameID;
   NSString* _lastFormActivityTypedValue;
   NSString* _lastFormActivityType;
   FormRendererId _lastFormActivityUniqueFormID;
@@ -111,7 +107,6 @@ using autofill::FieldRendererId;
                               autofillClient
             autofillAgent:(AutofillAgent*)autofillAgent
         JSAutofillManager:(JsAutofillManager*)JSAutofillManager
-      JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
           passwordManager:(std::unique_ptr<password_manager::PasswordManager>)
                               passwordManager
     passwordManagerClient:
@@ -144,8 +139,6 @@ using autofill::FieldRendererId;
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
     _JSAutofillManager = JSAutofillManager;
-
-    _JSSuggestionManager = JSSuggestionManager;
 
     _passwordManagerClient = std::move(passwordManagerClient);
     _passwordManagerClient->set_bridge(self);
@@ -302,21 +295,20 @@ using autofill::FieldRendererId;
 }
 
 - (void)focusPreviousField {
-  [_JSSuggestionManager
-      selectPreviousElementInFrameWithID:_lastFormActivityWebFrameID];
+  autofill::JsSuggestionManager::GetOrCreateForWebState(_webState)
+      ->SelectPreviousElementInFrameWithID(_lastFormActivityWebFrameID);
 }
 
 - (void)focusNextField {
-  [_JSSuggestionManager
-      selectNextElementInFrameWithID:_lastFormActivityWebFrameID];
+  autofill::JsSuggestionManager::GetOrCreateForWebState(_webState)
+      ->SelectNextElementInFrameWithID(_lastFormActivityWebFrameID);
 }
 
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler {
-  [_JSSuggestionManager
-      fetchPreviousAndNextElementsPresenceInFrameWithID:
-          _lastFormActivityWebFrameID
-                                      completionHandler:completionHandler];
+  autofill::JsSuggestionManager::GetOrCreateForWebState(_webState)
+      ->FetchPreviousAndNextElementsPresenceInFrameWithID(
+          _lastFormActivityWebFrameID, base::BindOnce(completionHandler));
 }
 
 #pragma mark - CWVAutofillClientIOSBridge
@@ -494,7 +486,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsType = base::SysUTF8ToNSString(params.type);
   BOOL userInitiated = params.has_user_gesture;
 
-  _lastFormActivityWebFrameID = nsFrameID;
+  _lastFormActivityWebFrameID = GetWebFrameId(frame);
   _lastFormActivityTypedValue = nsValue;
   _lastFormActivityType = nsType;
   if (params.type == "focus") {
@@ -607,7 +599,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                           formPtr->Save();
                           break;
                         case CWVPasswordUserDecisionNever:
-                          formPtr->PermanentlyBlacklist();
+                          formPtr->Blocklist();
                           break;
                         case CWVPasswordUserDecisionNotThisTime:
                           // Do nothing.
@@ -671,6 +663,12 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
         notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(URL)
                              leakType:cwvLeakType];
   }
+}
+
+- (void)showPasswordProtectionWarning:(NSString*)warningText
+                           completion:(void (^)(safe_browsing::WarningAction))
+                                          completion {
+  // No op.
 }
 
 #pragma mark - SharedPasswordControllerDelegate

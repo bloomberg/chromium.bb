@@ -22,6 +22,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extension_test_util::LoadManifestUnchecked;
@@ -57,8 +58,9 @@ bool get_did_show_dialog_and_reset() {
   return tmp;
 }
 
-base::Callback<void(const PermissionIDSet&)> BindQuitLoop(base::RunLoop* loop) {
-  return base::Bind(
+base::OnceCallback<void(const PermissionIDSet&)> BindQuitLoop(
+    base::RunLoop* loop) {
+  return base::BindOnce(
       [](base::RunLoop* loop, const PermissionIDSet&) { loop->Quit(); }, loop);
 }
 
@@ -72,18 +74,18 @@ class ProgrammableInstallPrompt
   ~ProgrammableInstallPrompt() override {}
 
   void ShowDialog(
-      const DoneCallback& done_callback,
+      DoneCallback done_callback,
       const extensions::Extension* extension,
       const SkBitmap* icon,
       std::unique_ptr<Prompt> prompt,
       std::unique_ptr<const extensions::PermissionSet> custom_permissions,
       const ShowDialogCallback& show_dialog_callback) override {
-    done_callback_ = done_callback;
+    done_callback_ = std::move(done_callback);
     did_show_dialog = true;
   }
 
   void Resolve(ExtensionInstallPrompt::Result result) {
-    done_callback_.Run(result);
+    std::move(done_callback_).Run(result);
   }
 
  private:
@@ -156,14 +158,14 @@ PublicSessionPermissionHelperTest::CallHandlePermissionRequest(
     const PermissionIDSet& permissions) {
   auto* prompt = new ProgrammableInstallPrompt(web_contents());
   auto prompt_weak_ptr = prompt->AsWeakPtr();
-  auto factory_callback = base::Bind(
+  auto factory_callback = base::BindOnce(
       &PublicSessionPermissionHelperTest::ReturnPrompt, base::Unretained(this),
-      base::Passed(base::WrapUnique<ExtensionInstallPrompt>(prompt)));
+      base::WrapUnique<ExtensionInstallPrompt>(prompt));
   HandlePermissionRequest(
       *extension.get(), permissions, web_contents(),
-      base::Bind(&PublicSessionPermissionHelperTest::RequestResolved,
-                 base::Unretained(this)),
-      factory_callback);
+      base::BindOnce(&PublicSessionPermissionHelperTest::RequestResolved,
+                     base::Unretained(this)),
+      std::move(factory_callback));
   // In case all permissions were already prompted, ReturnPrompt isn't called
   // because of an early return in HandlePermissionRequest, and in that case the
   // prompt is free'd as soon as HandlePermissionRequest returns (because it's

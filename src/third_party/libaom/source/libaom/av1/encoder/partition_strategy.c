@@ -1564,7 +1564,7 @@ void av1_prune_ab_partitions(
 
   // Pruning: pruning out some ab partitions using a DNN taking rd costs of
   // sub-blocks from previous basic partition types.
-  if (cpi->sf.part_sf.ml_prune_ab_partition && ext_partition_allowed &&
+  if (cpi->sf.part_sf.ml_prune_partition && ext_partition_allowed &&
       partition_horz_allowed && partition_vert_allowed) {
     // TODO(huisu@google.com): x->source_variance may not be the current
     // block's variance. The correct one to use is pb_source_variance. Need to
@@ -1584,22 +1584,22 @@ void av1_prune_ab_partitions(
 
   // Pruning: pruning AB partitions based on the number of horz/vert wins
   // in the current block and sub-blocks in PARTITION_SPLIT.
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *horza_partition_allowed) {
     *horza_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 0, 1);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *horzb_partition_allowed) {
     *horzb_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 2, 3);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *verta_partition_allowed) {
     *verta_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 0, 2);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *vertb_partition_allowed) {
     *vertb_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 1, 3);

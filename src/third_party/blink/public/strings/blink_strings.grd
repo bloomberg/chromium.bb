@@ -76,6 +76,9 @@ below:
       <output filename="blink_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="blink_strings_zu.pak" type="data_package" lang="zu" />
     </if>
+    <if expr="chromeos or lacros">
+      <output filename="blink_strings_is.pak" type="data_package" lang="is" />
+    </if>
     <output filename="blink_strings_am.pak" type="data_package" lang="am" />
     <output filename="blink_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="blink_strings_bg.pak" type="data_package" lang="bg" />
@@ -91,7 +94,6 @@ below:
     <output filename="blink_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="blink_strings_et.pak" type="data_package" lang="et" />
     <output filename="blink_strings_fa.pak" type="data_package" lang="fa" />
-    <output filename="blink_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="blink_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="blink_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="blink_strings_fr.pak" type="data_package" lang="fr" />
@@ -132,6 +134,10 @@ below:
     <output filename="blink_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="blink_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="blink_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+
+    <!-- Pseudolocales -->
+    <output filename="blink_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
+    <output filename="blink_strings_en-XA.pak" type="data_package" lang="en-XA" />
   </outputs>
   <translations>
     <file path="translations/blink_strings_af.xtb" lang="af" />
@@ -216,7 +222,7 @@ below:
     <file path="translations/blink_strings_zh-TW.xtb" lang="zh-TW" />
     <file path="translations/blink_strings_zu.xtb" lang="zu" />
   </translations>
-  <release seq="1" allow_pseudo="false">
+  <release seq="1">
     <messages fallback_to_english="true">
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
@@ -599,6 +605,9 @@ below:
       <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
           meter
       </message>
+      <message name="IDS_AX_ROLE_MONTH" desc="Accessibility role description for a month input">
+        month picker
+      </message>
       <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="Accessibility role description for group of navigational links.">
         navigation
       </message>
@@ -727,6 +736,12 @@ below:
         <message name="IDS_AX_ROLE_POP_UP_BUTTON" desc="Accessibility role description for a pop up button">
           pop up button
         </message>
+        <message name="IDS_AX_ROLE_POP_UP_BUTTON_MENU" desc="Accessibility role description for a pop up button that opens a menu">
+          menu pop up button
+        </message>
+        <message name="IDS_AX_ROLE_POP_UP_BUTTON_DIALOG" desc="Accessibility role description for a pop up button that opens a dialog">
+          dialog pop up button
+        </message>
         <message name="IDS_AX_ROLE_PROGRESS_INDICATOR" desc="Accessibility role description for a progress indicator">
           progress indicator
         </message>
@@ -825,6 +840,18 @@ below:
         </message>
         <message name="IDS_AX_ARIA_CURRENT_TRUE" desc="Accessibility state description for aria-current value of true.">
           current item
+        </message>
+        <message name="IDS_AX_COMBOBOX_EXPANDED_AUTOCOMPLETE_DEFAULT" desc="Accessibility utterance for when a combobox element is expanded with an unknown number of autocomplete options available to the user.">
+          expanded, autocomplete options available.
+        </message>
+        <message name="IDS_AX_COMBOBOX_EXPANDED_AUTOCOMPLETE_X_OPTIONS_AVAILABLE" desc="Accessibility utterance for when a combobox element is expanded with a known number of autocomplete options available to the user.">
+          expanded, <ph name="COUNT">$1<ex>4</ex></ph> autocomplete options available.
+        </message>
+        <message name="IDS_AX_COMBOBOX_EXPANDED_DIALOG" desc="Accessibility utterance for when a combobox element is expanded with a child dialog pop-up that appears.">
+          expanded, dialog opened.
+        </message>
+        <message name="IDS_AX_COMBOBOX_EXPANDED" desc="Accessibility utterance for when a combobox element is expanded, but due to authoring errors we cannot say any more information than that.">
+          expanded.
         </message>
       </if>
 
@@ -1027,6 +1054,9 @@ below:
         <ph name="accName">$1<ex>Hazelnuts</ex></ph> not selected
       </message>
 
+      <message name="IDS_VIEW_SOURCE_LINE_WRAP" desc="Short phrase for the label describing the checkbox at the top of the view-source page. This checkbox controls whether long source lines are line-wrapped to fit on the screen, or not.">
+        Line wrap
+      </message>
 
       <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specific week (1-53) in a specific year shown in a form control">
         Week <ph name="WEEKNUMBER">$2<ex>51</ex></ph>, <ph name="YEAR">$1<ex>2012</ex></ph>

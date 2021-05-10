@@ -14,6 +14,7 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 JavaScriptTabModalDialogViewViews::~JavaScriptTabModalDialogViewViews() =
     default;
@@ -41,10 +42,6 @@ views::View* JavaScriptTabModalDialogViewViews::GetInitiallyFocusedView() {
   return text_box ? text_box : views::DialogDelegate::GetInitiallyFocusedView();
 }
 
-ui::ModalType JavaScriptTabModalDialogViewViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 void JavaScriptTabModalDialogViewViews::AddedToWidget() {
   auto* bubble_frame_view = static_cast<views::BubbleFrameView*>(
       GetWidget()->non_client_view()->frame_view());
@@ -65,6 +62,7 @@ JavaScriptTabModalDialogViewViews::JavaScriptTabModalDialogViewViews(
       default_prompt_text_(default_prompt_text),
       dialog_callback_(std::move(dialog_callback)),
       dialog_force_closed_callback_(std::move(dialog_force_closed_callback)) {
+  SetModalType(ui::MODAL_TYPE_CHILD);
   SetDefaultButton(ui::DIALOG_BUTTON_OK);
   const bool is_alert = dialog_type == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
   SetButtons(
@@ -104,6 +102,9 @@ JavaScriptTabModalDialogViewViews::JavaScriptTabModalDialogViewViews(
   constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::JAVA_SCRIPT);
 }
+
+BEGIN_METADATA(JavaScriptTabModalDialogViewViews, views::DialogDelegateView)
+END_METADATA
 
 // Creates a new JS dialog. Note the two callbacks; |dialog_callback| is for
 // user responses, while |dialog_force_closed_callback| is for when Views

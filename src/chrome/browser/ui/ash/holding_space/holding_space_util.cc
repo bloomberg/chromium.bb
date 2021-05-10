@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 
-#include "ash/public/cpp/file_icon_util.h"
-#include "ash/public/cpp/holding_space/holding_space_color_provider.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "base/barrier_closure.h"
@@ -24,34 +22,6 @@ namespace holding_space_util {
 namespace {
 
 base::Optional<base::Time> now_for_testing;
-
-// Helpers ---------------------------------------------------------------------
-
-gfx::ImageSkia GetPlaceholderImage(HoldingSpaceItem::Type type,
-                                   const base::FilePath& file_path) {
-  gfx::Size size;
-  switch (type) {
-    case HoldingSpaceItem::Type::kDownload:
-    case HoldingSpaceItem::Type::kNearbyShare:
-    case HoldingSpaceItem::Type::kPinnedFile:
-      size = gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize);
-      break;
-    case HoldingSpaceItem::Type::kScreenRecording:
-    case HoldingSpaceItem::Type::kScreenshot:
-      size = kHoldingSpaceScreenCaptureSize;
-      break;
-  }
-
-  const SkColor color = HoldingSpaceColorProvider::Get()->GetFileIconColor();
-
-  // NOTE: We superimpose the file type icon for `file_path` over a transparent
-  // bitmap in order to center it within the placeholder image at a fixed size.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width(), size.height());
-  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
-      gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
-      GetIconForPath(file_path, color));
-}
 
 }  // namespace
 
@@ -186,7 +156,7 @@ std::unique_ptr<HoldingSpaceImage> ResolveImage(
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path) {
   return std::make_unique<HoldingSpaceImage>(
-      GetPlaceholderImage(type, file_path),
+      HoldingSpaceImage::GetMaxSizeForType(type), file_path,
       base::BindRepeating(
           [](const base::WeakPtr<HoldingSpaceThumbnailLoader>& thumbnail_loader,
              const base::FilePath& file_path, const gfx::Size& size,
@@ -194,7 +164,7 @@ std::unique_ptr<HoldingSpaceImage> ResolveImage(
             if (thumbnail_loader)
               thumbnail_loader->Load({file_path, size}, std::move(callback));
           },
-          thumbnail_loader->GetWeakPtr(), file_path));
+          thumbnail_loader->GetWeakPtr()));
 }
 
 void SetNowForTesting(base::Optional<base::Time> now) {

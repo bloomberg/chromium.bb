@@ -14,24 +14,32 @@
 
 #include "src/ast/sint_literal.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::SintLiteral);
+
 namespace tint {
 namespace ast {
 
-SintLiteral::SintLiteral(ast::type::Type* type, int32_t value)
-    : IntLiteral(type), value_(value) {}
+SintLiteral::SintLiteral(const Source& source, type::Type* type, int32_t value)
+    : Base(source, type), value_(value) {}
 
 SintLiteral::~SintLiteral() = default;
 
-bool SintLiteral::IsSint() const {
-  return true;
-}
-
-std::string SintLiteral::to_str() const {
+std::string SintLiteral::to_str(const semantic::Info&) const {
   return std::to_string(value_);
 }
 
 std::string SintLiteral::name() const {
   return "__sint" + type()->type_name() + "_" + std::to_string(value_);
+}
+
+SintLiteral* SintLiteral::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type());
+  return ctx->dst->create<SintLiteral>(src, ty, value_);
 }
 
 }  // namespace ast

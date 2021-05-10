@@ -8,12 +8,12 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "media/base/media_content_type.h"
 
 namespace content {
@@ -21,7 +21,7 @@ namespace content {
 int MediaSessionController::player_count_ = 0;
 
 MediaSessionController::MediaSessionController(const MediaPlayerId& id,
-                                               WebContents* web_contents)
+                                               WebContentsImpl* web_contents)
     : id_(id),
       web_contents_(web_contents),
       media_session_(MediaSessionImpl::Get(web_contents)) {
@@ -50,31 +50,62 @@ bool MediaSessionController::OnPlaybackStarted() {
 
 void MediaSessionController::OnSuspend(int player_id) {
   DCHECK_EQ(player_id_, player_id);
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
   // TODO(crbug.com/953645): Set triggered_by_user to true ONLY if that action
   // was actually triggered by user as this will activate the frame.
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id,
-      true /* triggered_by_user */));
+  remote->RequestPause(/*triggered_by_user=*/true);
 }
 
 void MediaSessionController::OnResume(int player_id) {
   DCHECK_EQ(player_id_, player_id);
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->RequestPlay();
 }
 
 void MediaSessionController::OnSeekForward(int player_id,
                                            base::TimeDelta seek_time) {
   DCHECK_EQ(player_id_, player_id);
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_SeekForward(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id, seek_time));
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->RequestSeekForward(seek_time);
 }
 
 void MediaSessionController::OnSeekBackward(int player_id,
                                             base::TimeDelta seek_time) {
   DCHECK_EQ(player_id_, player_id);
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_SeekBackward(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id, seek_time));
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->RequestSeekBackward(seek_time);
 }
 
 void MediaSessionController::OnSetVolumeMultiplier(int player_id,
@@ -87,19 +118,37 @@ void MediaSessionController::OnSetVolumeMultiplier(int player_id,
 
 void MediaSessionController::OnEnterPictureInPicture(int player_id) {
   DCHECK_EQ(player_id_, player_id);
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_EnterPictureInPicture(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->RequestEnterPictureInPicture();
 }
 
 void MediaSessionController::OnExitPictureInPicture(int player_id) {
   DCHECK_EQ(player_id_, player_id);
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_ExitPictureInPicture(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->RequestExitPictureInPicture();
 }
 
 void MediaSessionController::OnSetAudioSinkId(
     int player_id,
     const std::string& raw_device_id) {
+  DCHECK_EQ(player_id_, player_id);
+
   // The sink id needs to be hashed before it is suitable for use in the
   // renderer process.
   auto salt_and_origin = content::GetMediaDeviceSaltAndOrigin(
@@ -113,8 +162,15 @@ void MediaSessionController::OnSetAudioSinkId(
   static_cast<RenderFrameHostImpl*>(id_.render_frame_host)
       ->SetAudioOutputDeviceIdForGlobalMediaControls(hashed_sink_id);
 
-  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_SetAudioSinkId(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id, hashed_sink_id));
+  media::mojom::MediaPlayer* remote =
+      web_contents_->media_web_contents_observer()->GetMediaPlayerRemote(id_);
+  if (!remote) {
+    // TODO(https://crbug.com/1161551): Remove this when lifetime bug is fixed.
+    NOTREACHED() << "Controller should not outlive remote MediaPlayer";
+    return;
+  }
+
+  remote->SetAudioSinkId(hashed_sink_id);
 }
 
 RenderFrameHost* MediaSessionController::render_frame_host() const {
@@ -213,9 +269,14 @@ bool MediaSessionController::AddOrRemovePlayer() {
   return true;
 }
 
+bool MediaSessionController::HasAudio(int player_id) const {
+  DCHECK_EQ(player_id_, player_id);
+  return has_audio_;
+}
+
 bool MediaSessionController::HasVideo(int player_id) const {
   DCHECK_EQ(player_id_, player_id);
-  return has_video_ && has_audio_;
+  return has_video_;
 }
 
 std::string MediaSessionController::GetAudioOutputSinkId(int player_id) const {

@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "src/ast/break_statement.h"
-#include "src/ast/module.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -27,11 +27,13 @@ namespace {
 using HlslGeneratorImplTest_Break = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Break, Emit_Break) {
-  ast::BreakStatement b;
+  auto* b = create<ast::BreakStatement>();
 
-  gen().increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen().EmitStatement(out(), &b)) << gen().error();
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(out, b)) << gen.error();
   EXPECT_EQ(result(), "  break;\n");
 }
 

@@ -23,7 +23,6 @@
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
-#include "chrome/browser/media/kaleidoscope/kaleidoscope_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -211,6 +210,7 @@ void MediaFeedsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kMediaFeedsBackgroundFetching, false);
   registry->RegisterBooleanPref(prefs::kMediaFeedsSafeSearchEnabled, false);
+  registry->RegisterBooleanPref(prefs::kMediaFeedsAutoSelectEnabled, false);
 }
 
 void MediaFeedsService::CheckItemsAgainstSafeSearch(
@@ -357,9 +357,15 @@ void MediaFeedsService::SetCookieChangeCallbackForTest(
 }
 
 void MediaFeedsService::DiscoverMediaFeed(const GURL& url) {
+  DiscoverMediaFeed(url, base::nullopt);
+}
+
+void MediaFeedsService::DiscoverMediaFeed(const GURL& url,
+                                          const base::Optional<GURL>& favicon) {
   GetMediaHistoryService()->DiscoverMediaFeed(
-      url, base::BindOnce(&MediaFeedsService::OnDiscoveredFeed,
-                          weak_factory_.GetWeakPtr()));
+      url, favicon,
+      base::BindOnce(&MediaFeedsService::OnDiscoveredFeed,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaFeedsService::ResetMediaFeed(const url::Origin& origin,
@@ -376,8 +382,7 @@ void MediaFeedsService::FetchTopMediaFeeds(base::OnceClosure callback) {
   // If the user has opted into auto selection of media feeds then we should get
   // the top media feeds based on heuristics. Otherwise, we should fallback to
   // feeds the user has opted into.
-  if (profile_->GetPrefs()->GetBoolean(
-          kaleidoscope::prefs::kKaleidoscopeAutoSelectMediaFeeds)) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kMediaFeedsAutoSelectEnabled)) {
     GetMediaHistoryService()->GetMediaFeeds(
         media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
             CreateTopFeedsForFetch(kMaxTopFeedsToFetch, kTopFeedsMinWatchTime),

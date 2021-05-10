@@ -94,47 +94,53 @@ struct CameraData {
 void init() {
     device = CreateCppDawnDevice();
 
-    queue = device.GetDefaultQueue();
+    queue = device.GetQueue();
     swapchain = GetSwapChain(device);
     swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
 
     initBuffers();
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform cameraData {
-            mat4 view;
-            mat4 proj;
-        } camera;
-        layout(set = 0, binding = 1) uniform modelData {
-            mat4 modelMatrix;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[block]] struct Camera {
+            [[offset(0)]] view : mat4x4<f32>;
+            [[offset(64)]] proj : mat4x4<f32>;
         };
-        layout(location = 0) in vec3 pos;
-        layout(location = 1) in vec3 col;
-        layout(location = 2) out vec3 f_col;
-        void main() {
+        [[group(0), binding(0)]] var<uniform> camera : Camera;
+
+        [[block]] struct Model {
+            [[offset(0)]] matrix : mat4x4<f32>;
+        };
+        [[group(0), binding(1)]] var<uniform> model : Model;
+
+        [[location(0)]] var<in> pos : vec3<f32>;
+        [[location(1)]] var<in> col : vec3<f32>;
+
+        [[location(2)]] var<out> f_col : vec3<f32>;
+        [[builtin(position)]] var<out> Position : vec4<f32>;
+
+        [[stage(vertex)]] fn main() -> void {
             f_col = col;
-            gl_Position = camera.proj * camera.view * modelMatrix * vec4(pos, 1.0);
+            Position = camera.proj * camera.view * model.matrix * vec4<f32>(pos, 1.0);
+            return;
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 2) in vec3 f_col;
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(f_col, 1.0);
+    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[location(0)]] var<out> FragColor : vec4<f32>;
+        [[location(2)]] var<in> f_col : vec3<f32>;
+
+        [[stage(fragment)]] fn main() -> void {
+            FragColor = vec4<f32>(f_col, 1.0);
+            return;
         })");
 
-    wgpu::ShaderModule fsReflectionModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 2) in vec3 f_col;
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(mix(f_col, vec3(0.5, 0.5, 0.5), 0.5), 1.0);
+    wgpu::ShaderModule fsReflectionModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        [[location(0)]] var<out> FragColor : vec4<f32>;
+        [[location(2)]] var<in> f_col : vec3<f32>;
+
+        [[stage(fragment)]] fn main() -> void {
+            FragColor = vec4<f32>(mix(f_col, vec3<f32>(0.5, 0.5, 0.5), vec3<f32>(0.5, 0.5, 0.5)), 1.0);
+            return;
         })");
 
     utils::ComboVertexStateDescriptor vertexState;
@@ -251,7 +257,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup[0]);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(36);
 
         pass.SetStencilReference(0x1);

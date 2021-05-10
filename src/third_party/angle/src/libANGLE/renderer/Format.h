@@ -52,6 +52,7 @@ struct Format final : private angle::NonCopyable
 
     constexpr bool hasDepthOrStencilBits() const;
     constexpr bool isLUMA() const;
+    constexpr bool isBGRA() const;
 
     constexpr bool isSint() const;
     constexpr bool isUint() const;
@@ -189,6 +190,12 @@ constexpr bool Format::isLUMA() const
     return redBits == 0 && (luminanceBits > 0 || alphaBits > 0);
 }
 
+constexpr bool Format::isBGRA() const
+{
+    return id == FormatID::B8G8R8A8_UNORM || id == FormatID::B8G8R8A8_UNORM_SRGB ||
+           id == FormatID::B8G8R8A8_TYPELESS || id == FormatID::B8G8R8A8_TYPELESS_SRGB;
+}
+
 constexpr bool Format::isSint() const
 {
     return componentType == GL_INT;
@@ -218,6 +225,9 @@ constexpr bool Format::isVertexTypeHalfFloat() const
 {
     return vertexAttribType == gl::VertexAttribType::HalfFloat;
 }
+
+template <typename T>
+using FormatMap = PackedEnumMap<FormatID, T, kNumANGLEFormats>;
 
 }  // namespace angle
 

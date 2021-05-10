@@ -122,7 +122,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   // closure (e.g. there was an error on the renderer side, or payment was
   // successful), this method is called. It is responsible for cleaning up,
   // such as possibly closing the dialog.
-  void OnConnectionTerminated();
+  void TerminateConnection();
 
   // Called when the user clicks on the "Pay" button.
   void Pay();

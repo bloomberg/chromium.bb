@@ -19,8 +19,9 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/safe_sprintf.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/math_util.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -52,6 +53,8 @@
 #include "ui/views/view_observer.h"
 
 namespace {
+
+using ::ash::AccessibilityManager;
 
 enum class TopChromeShownState {
   kFullyShown,
@@ -745,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
       scrollable_page_contents));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // http://crbug.com/1127805: Flaky on Chrome OS builders
 #define MAYBE_TestClosingATab DISABLED_TestClosingATab
 #else
@@ -1036,7 +1039,8 @@ class PageStateUpdateWaiter : content::WebContentsObserver {
 // Verifies that we ignore the shown ratios sent from widgets other than that of
 // the main frame (such as widgets of the drop-down menus in web pages).
 // https://crbug.com/891471.
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
+// TODO(crbug.com/1110442): flaky.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DISABLED_TestDropDowns) {
   browser_view()->frame()->Maximize();
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
@@ -1413,8 +1417,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   // Enable Chromevox (spoken feedback) and expect that top-chrome will be fully
   // shown, and sliding top-chrome is no longer enabled.
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  EXPECT_TRUE(chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   EXPECT_TRUE(
@@ -1424,10 +1428,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   // gesture scrolling.
   content::RenderFrameSubmissionObserver compositor_frame_waiter(
       active_contents);
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
+  AccessibilityManager::Get()->EnableSpokenFeedback(false);
   compositor_frame_waiter.WaitForAnyFrameSubmission();
-  EXPECT_FALSE(
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
 

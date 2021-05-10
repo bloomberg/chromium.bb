@@ -26,10 +26,10 @@
 
 class QueueTests : public DawnTest {};
 
-// Test that GetDefaultQueue always returns the same object.
-TEST_P(QueueTests, GetDefaultQueueSameObject) {
-    wgpu::Queue q1 = device.GetDefaultQueue();
-    wgpu::Queue q2 = device.GetDefaultQueue();
+// Test that GetQueue always returns the same object.
+TEST_P(QueueTests, GetQueueSameObject) {
+    wgpu::Queue q1 = device.GetQueue();
+    wgpu::Queue q2 = device.GetQueue();
     EXPECT_EQ(q1.Get(), q2.Get());
 }
 
@@ -38,6 +38,7 @@ DAWN_INSTANTIATE_TEST(QueueTests,
                       MetalBackend(),
                       NullBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class QueueWriteBufferTests : public DawnTest {};
@@ -111,11 +112,14 @@ TEST_P(QueueWriteBufferTests, ManyWriteBuffer) {
     // fails the test. Since GPUs may or may not complete by then, this test must be disabled OR
     // modified to be well-below the timeout limit.
 
-    // TODO (jiawei.shao@intel.com): find out why this test fails on Intel Vulkan Linux bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsLinux());
     // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=228): Re-enable
     // once the issue with Metal on 10.14.6 is fixed.
     DAWN_SKIP_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
+
+    // The Vulkan Validation Layers' memory barrier validation keeps track of every range written
+    // to independently which causes validation of each WriteBuffer to take increasing time, and
+    // this test to take forever. Skip it when VVLs are enabled.
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
 
     constexpr uint64_t kSize = 4000 * 1000;
     constexpr uint32_t kElements = 250 * 250;
@@ -174,12 +178,6 @@ TEST_P(QueueWriteBufferTests, SuperLargeWriteBuffer) {
 // Test a special code path: writing when dynamic uploader already contatins some unaligned
 // data, it might be necessary to use a ring buffer with properly aligned offset.
 TEST_P(QueueWriteBufferTests, UnalignedDynamicUploader) {
-    // TODO(dawn:483): Skipping test because WriteTexture inside UnalignDynamicUploader
-    // is not implemented. Moreover when using UnalignDynamicUploader we are assuming
-    // that WriteTexture implementation uses a DynamicUploader which might be false in the
-    // case of a future OpenGL implementation.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     utils::UnalignDynamicUploader(device);
 
     wgpu::BufferDescriptor descriptor;
@@ -197,6 +195,7 @@ DAWN_INSTANTIATE_TEST(QueueWriteBufferTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 // For MinimumDataSpec bytesPerRow and rowsPerImage, compute a default from the copy extent.
@@ -289,7 +288,7 @@ class QueueWriteTextureTests : public DawnTest {
                                   textureSpec.textureSize.height >> textureSpec.level,
                                   textureSpec.textureSize.depth};
         uint32_t bytesPerRow = dataSpec.bytesPerRow;
-        if (bytesPerRow == wgpu::kStrideUndefined) {
+        if (bytesPerRow == wgpu::kCopyStrideUndefined) {
             bytesPerRow = mipSize.width * bytesPerTexel;
         }
         uint32_t alignedBytesPerRow = Align(bytesPerRow, bytesPerTexel);
@@ -523,7 +522,7 @@ TEST_P(QueueWriteTextureTests, BytesPerRowWithOneRowCopy) {
         EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
 
         // bytesPerRow undefined
-        dataSpec.bytesPerRow = wgpu::kStrideUndefined;
+        dataSpec.bytesPerRow = wgpu::kCopyStrideUndefined;
         DoTest(textureSpec, dataSpec, copyExtent);
     }
 
@@ -583,7 +582,7 @@ TEST_P(QueueWriteTextureTests, StrideSpecialCases) {
     // bytesPerRow undefined
     for (const wgpu::Extent3D copyExtent :
          {wgpu::Extent3D{2, 1, 1}, {2, 0, 1}, {2, 1, 0}, {2, 0, 0}}) {
-        DoTest(textureSpec, MinimumDataSpec(copyExtent, wgpu::kStrideUndefined, 2), copyExtent);
+        DoTest(textureSpec, MinimumDataSpec(copyExtent, wgpu::kCopyStrideUndefined, 2), copyExtent);
     }
 
     // rowsPerImage 0
@@ -594,7 +593,8 @@ TEST_P(QueueWriteTextureTests, StrideSpecialCases) {
 
     // rowsPerImage undefined
     for (const wgpu::Extent3D copyExtent : {wgpu::Extent3D{2, 2, 1}, {2, 2, 0}}) {
-        DoTest(textureSpec, MinimumDataSpec(copyExtent, 256, wgpu::kStrideUndefined), copyExtent);
+        DoTest(textureSpec, MinimumDataSpec(copyExtent, 256, wgpu::kCopyStrideUndefined),
+               copyExtent);
     }
 }
 
@@ -613,4 +613,9 @@ TEST_P(QueueWriteTextureTests, UnalignedDynamicUploader) {
     DoTest(textureSpec, MinimumDataSpec(size), size);
 }
 
-DAWN_INSTANTIATE_TEST(QueueWriteTextureTests, D3D12Backend(), MetalBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(QueueWriteTextureTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

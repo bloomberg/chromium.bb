@@ -1,29 +1,5 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "panel",
-      "id": "cssoverview",
-      "title": "CSS Overview",
-      "className": "CssOverview.CSSOverviewPanel",
-      "order": 95,
-      "experiment": "cssOverview"
-    }
-  ],
-  "dependencies": [
-    "elements",
-    "ui",
-    "sdk",
-    "data_grid",
-    "extensions",
-    "color_picker"
-  ],
-  "modules": [
-    "css_overview-legacy.js"
-  ],
-  "skip_compilation": [
-    "css_overview-legacy.js"
-  ],
+  "modules": [],
   "resources": [
     "cssOverview.css",
     "cssOverviewStartView.css",

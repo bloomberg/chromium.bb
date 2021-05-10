@@ -2,16 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
-import("../optimize_webui.gni")
+import("../tools/optimize_webui.gni")
 import("settings.gni")
 
 preprocess_folder = "preprocessed"
@@ -42,8 +43,8 @@ if (optimize_webui) {
     ]
     excludes = [
       "chrome://resources/js/cr.m.js",
-      "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
-      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/js/bindings.js",
+      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js",
     ]
   }
 }
@@ -54,29 +55,36 @@ generate_grd("build_grd") {
   input_files = [
     "images/cookies_banner_dark.svg",
     "images/cookies_banner.svg",
+    "images/googleg_standard_clr_32px.svg",
     "images/password_check_neutral_dark.svg",
     "images/password_check_neutral.svg",
     "images/password_check_positive_dark.svg",
     "images/password_check_positive.svg",
     "images/permissions_banner_dark.svg",
     "images/permissions_banner.svg",
+    "images/privacy_sandbox_banner_dark.svg",
+    "images/privacy_sandbox_banner.svg",
     "images/safe_browsing_banner_dark.svg",
     "images/safe_browsing_banner.svg",
     "images/sync_banner_dark.svg",
     "images/sync_banner.svg",
+    "privacy_sandbox/privacy_sandbox.html",
     "settings.html",
   ]
   input_files_base_dir = rebase_path(".", "//")
 
+  grdp_files = [ "$target_gen_dir/privacy_sandbox/resources.grdp" ]
+  deps = [ "privacy_sandbox:build_grdp" ]
+
   if (optimize_webui) {
-    deps = [ ":build" ]
+    deps += [ ":build" ]
     manifest_files = [ "$target_gen_dir/$build_manifest" ]
     resource_path_rewrites = [
       "settings.rollup.js|settings.js",
       "lazy_load.rollup.js|lazy_load.js",
     ]
   } else {
-    deps = [
+    deps += [
       ":preprocess",
       ":preprocess_generated",
     ]
@@ -87,7 +95,7 @@ generate_grd("build_grd") {
   }
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -110,6 +118,7 @@ preprocess_grit("preprocess") {
     "hats_browser_proxy.js",
     "i18n_setup.js",
     "incompatible_applications_page/incompatible_applications_browser_proxy.js",
+    "languages_page/languages_settings_metrics_proxy.js",
     "lazy_load.js",
     "metrics_browser_proxy.js",
     "on_startup_page/on_startup_browser_proxy.js",
@@ -131,23 +140,27 @@ preprocess_grit("preprocess") {
     "site_settings/website_usage_browser_proxy.js",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [
       "autofill_page/blocking_request_manager.js",
       "languages_page/languages_metrics_proxy.js",
       "site_settings/android_info_browser_proxy.js",
     ]
   } else {
+    if (!is_chromeos_lacros) {
+      in_files += [
+        "default_browser_page/default_browser_browser_proxy.js",
+        "system_page/system_page_browser_proxy.js",
+      ]
+    }
     in_files += [
-      "default_browser_page/default_browser_browser_proxy.js",
       "people_page/import_data_browser_proxy.js",
       "people_page/manage_profile_browser_proxy.js",
-      "system_page/system_page_browser_proxy.js",
     ]
   }
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":polymer3_elements" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -181,6 +194,7 @@ preprocess_grit("preprocess_generated") {
     "autofill_page/passwords_section.js",
     "autofill_page/passwords_device_section.js",
     "autofill_page/password_edit_dialog.js",
+    "autofill_page/password_move_multiple_passwords_to_account_dialog.js",
     "autofill_page/password_move_to_account_dialog.js",
     "autofill_page/password_remove_dialog.js",
     "autofill_page/passwords_export_dialog.js",
@@ -210,6 +224,7 @@ preprocess_grit("preprocess_generated") {
     "languages_page/languages_browser_proxy.m.js",
     "languages_page/add_languages_dialog.js",
     "languages_page/languages_page.js",
+    "languages_page/languages_subpage.js",
     "lifetime_browser_proxy.m.js",
     "settings_menu/settings_menu.js",
     "on_startup_page/on_startup_page.js",
@@ -314,19 +329,23 @@ preprocess_grit("preprocess_generated") {
     in_files += [ "languages_page/edit_dictionary_page.js" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     in_files += [ "people_page/account_manager_browser_proxy.m.js" ]
   } else {
+    if (!is_chromeos_lacros) {
+      in_files += [
+        "default_browser_page/default_browser_page.js",
+        "system_page/system_page.js",
+      ]
+    }
     in_files += [
-      "default_browser_page/default_browser_page.js",
       "people_page/import_data_dialog.js",
       "people_page/manage_profile.js",
-      "system_page/system_page.js",
     ]
   }
 }
 
-grit("settings_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -354,19 +373,18 @@ group("closure_compile") {
     "people_page:closure_compile",
     "prefs:closure_compile",
     "privacy_page:closure_compile",
+    "privacy_sandbox:closure_compile",
     "search_engines_page:closure_compile",
     "settings_page:closure_compile",
   ]
 
-  if (is_chromeos) {
-    deps += [
-      "../../../test/data/webui/settings/chromeos:closure_compile",
-      "chromeos:closure_compile",
-    ]
+  if (is_chromeos_ash) {
+    deps += [ "../../../test/data/webui/settings/chromeos:closure_compile" ]
   }
 }
 
 js_type_check("local_resources") {
+  uses_legacy_modules = true
   deps = [
     ":extension_control_browser_proxy",
     ":global_scroll_target_behavior",
@@ -451,7 +469,7 @@ group("closure_compile_module") {
     "site_settings:closure_compile_module",
     "site_settings_page:closure_compile_module",
   ]
-  if (!is_chromeos) {
+  if (!is_chromeos_ash && !is_chromeos_lacros) {
     deps += [
       "default_browser_page:closure_compile_module",
       "system_page:closure_compile_module",
@@ -465,7 +483,7 @@ group("closure_compile_module") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [ "chromeos:closure_compile_module" ]
   }
 }
@@ -544,6 +562,7 @@ js_library("lazy_load") {
     "languages_page:languages_browser_proxy.m",
     "languages_page:languages_metrics_proxy",
     "languages_page:languages_page",
+    "languages_page:languages_settings_metrics_proxy",
     "privacy_page:cookies_page",
     "privacy_page:security_page",
     "site_settings:category_setting_exceptions",
@@ -662,7 +681,7 @@ group("polymer3_elements") {
     ":web_components_local",
   ]
 
-  if (!is_chromeos) {
+  if (!is_chromeos_ash && !is_chromeos_lacros) {
     public_deps += [
       "default_browser_page:web_components",
       "system_page:web_components",

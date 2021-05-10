@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
 namespace chromeos {
@@ -80,11 +80,6 @@ void QuickAnswersClient::OnAssistantSettingsEnabled(bool enabled) {
 
 void QuickAnswersClient::OnAssistantContextEnabled(bool enabled) {
   assistant_context_enabled_ = enabled;
-  NotifyEligibilityChanged();
-}
-
-void QuickAnswersClient::OnAssistantQuickAnswersEnabled(bool enabled) {
-  quick_answers_settings_enabled_ = enabled;
   NotifyEligibilityChanged();
 }
 

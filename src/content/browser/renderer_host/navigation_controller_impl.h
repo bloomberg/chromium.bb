@@ -25,14 +25,15 @@
 #include "content/browser/renderer_host/navigation_controller_delegate.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/common/navigation_client.mojom-forward.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/reload_type.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+#include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace content {
+class FrameTree;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
@@ -71,8 +72,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     DISALLOW_COPY_AND_ASSIGN(PendingEntryRef);
   };
 
-  NavigationControllerImpl(NavigationControllerDelegate* delegate,
-                           BrowserContext* browser_context);
+  NavigationControllerImpl(BrowserContext* browser_context,
+                           FrameTree& frame_tree,
+                           NavigationControllerDelegate* delegate);
   ~NavigationControllerImpl() override;
 
   // NavigationController implementation:
@@ -156,19 +158,20 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      const GlobalFrameRoutingId& initiator_routing_id,
+      const blink::LocalFrameToken* initiator_frame_token,
+      int initiator_process_id,
       const base::Optional<url::Origin>& initiator_origin,
       bool is_renderer_initiated,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
       ui::PageTransition page_transition,
       bool should_replace_current_entry,
-      NavigationDownloadPolicy download_policy,
+      blink::NavigationDownloadPolicy download_policy,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      const base::Optional<Impression>& impression);
+      const base::Optional<blink::Impression>& impression);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -236,13 +239,12 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // interaction. This is used for a new renderer-initiated navigation to decide
   // if the page that initiated the navigation should be skipped on
   // back/forward button.
-  bool RendererDidNavigate(
-      RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      LoadCommittedDetails* details,
-      bool is_same_document_navigation,
-      bool previous_document_was_activated,
-      NavigationRequest* navigation_request);
+  bool RendererDidNavigate(RenderFrameHostImpl* rfh,
+                           const mojom::DidCommitProvisionalLoadParams& params,
+                           LoadCommittedDetails* details,
+                           bool is_same_document_navigation,
+                           bool previous_document_was_activated,
+                           NavigationRequest* navigation_request);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
   // so that we know to load URLs that were pending as "lazy" loads.
@@ -284,6 +286,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Random data ---------------------------------------------------------------
 
+  FrameTree& frame_tree() { return frame_tree_; }
+
   SSLManager* ssl_manager() { return &ssl_manager_; }
 
   // Maximum number of entries before we start removing entries from the front.
@@ -319,6 +323,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // requests corresponding to the current pending entry.
   std::unique_ptr<PendingEntryRef> ReferencePendingEntry();
 
+  // Another page accessed the initial empty main document, which means it
+  // is no longer safe to display a pending URL without risking a URL spoof.
+  void DidAccessInitialMainDocument();
+
+  // The state for the page changed and should be updated in session history.
+  void UpdateStateForFrame(RenderFrameHostImpl* render_frame_host,
+                           const blink::PageState& page_state);
+
   // Like NavigationController::CreateNavigationEntry, but takes extra arguments
   // like |source_site_instance| and |should_replace_entry|. |web_contents| is
   // the WebContents that will contain the NavigationEntry, and may be null.
@@ -342,8 +354,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
-  FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest,
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest, PostThenReload);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest,
                            PostThenReplaceStateThenReload);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest,
+                           PostThenPushStateThenReloadThenHistory);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest,
+                           PostThenFragmentNavigationThenReloadThenHistory);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationControllerBrowserTest,
+      PostThenBrowserInitiatedFragmentNavigationThenReload);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest, PostSubframe);
 
   // Defines possible actions that are returned by
   // DetermineActionForHistoryNavigation().
@@ -452,7 +473,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool override_user_agent,
       bool should_replace_current_entry,
       bool has_user_gesture,
-      NavigationDownloadPolicy download_policy,
+      blink::NavigationDownloadPolicy download_policy,
       ReloadType reload_type,
       NavigationEntryImpl* entry,
       FrameNavigationEntry* frame_entry,
@@ -478,7 +499,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const mojom::DidCommitProvisionalLoadParams& params,
+      NavigationRequest* navigation_request);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.
@@ -489,40 +511,36 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // anything if some random subframe is loaded. It will return true if anything
   // changed, or false if not.
   //
-  // The NewPage and NewSubframe functions take in |replace_entry| to pass to
+  // The NewEntry and NewSubframe functions take in |replace_entry| to pass to
   // InsertOrReplaceEntry, in case the newly created NavigationEntry is meant to
   // replace the current one (e.g., for location.replace or successful loads
   // after net errors), in contrast to updating a NavigationEntry in place
   // (e.g., for history.replaceState).
-  void RendererDidNavigateToNewPage(
+  void RendererDidNavigateToNewEntry(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
       NavigationRequest* request);
-  void RendererDidNavigateToExistingPage(
+  void RendererDidNavigateToExistingEntry(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool was_restored,
       NavigationRequest* request,
       bool keep_pending_entry);
-  void RendererDidNavigateToSamePage(
-      RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool is_same_document,
-      NavigationRequest* request);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
       NavigationRequest* request);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      const mojom::DidCommitProvisionalLoadParams& params,
+      bool is_same_document,
       NavigationRequest* request);
 
   // Allows the derived class to issue notifications that a load has been
@@ -599,7 +617,23 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // pending NavigationEntry.
   void PendingEntryRefDeleted(PendingEntryRef* ref);
 
+  // Computes the policy container policies to be stored in the
+  // FrameNavigationEntry by RendererDidNavigate.
+  std::unique_ptr<PolicyContainerPolicies>
+  ComputePolicyContainerPoliciesForFrameEntry(RenderFrameHostImpl* rfh,
+                                              bool is_same_document,
+                                              NavigationRequest* request);
+
+  // Sets the history to |history_length| entries, with an offset of
+  // |history_offset|. This notifies all renderers involved in rendering the
+  // current page about the new offset and length.
+  void SetHistoryOffsetAndLength(int history_offset, int history_length);
+
   // ---------------------------------------------------------------------------
+
+  // The FrameTree this instance belongs to. Each FrameTree gets its own
+  // NavigationController.
+  FrameTree& frame_tree_;
 
   // The user browser context associated with this controller.
   BrowserContext* const browser_context_;

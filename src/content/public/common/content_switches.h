@@ -8,6 +8,7 @@
 #define CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "media/media_buildflags.h"
 
@@ -15,7 +16,6 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-CONTENT_EXPORT extern const char kAllowPreCommitInput[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowInsecureLocalhost[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
@@ -123,8 +123,6 @@ CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
 CONTENT_EXPORT extern const char kEnableStrictMixedContentChecking[];
 CONTENT_EXPORT extern const char kEnableStrictPowerfulFeatureRestrictions[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
-CONTENT_EXPORT extern const char kEnableTracing[];
-CONTENT_EXPORT extern const char kEnableTracingOutput[];
 CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];
 CONTENT_EXPORT extern const char kEnableUseZoomForDSF[];
 CONTENT_EXPORT extern const char kEnableViewport[];
@@ -150,6 +148,7 @@ CONTENT_EXPORT extern const char kInitialVirtualTime[];
 CONTENT_EXPORT extern const char kInProcessGPU[];
 CONTENT_EXPORT extern const char kIPCConnectionTimeout[];
 CONTENT_EXPORT extern const char kIsolateOrigins[];
+CONTENT_EXPORT extern const char kIsolationByDefault[];
 CONTENT_EXPORT extern const char kJavaScriptFlags[];
 CONTENT_EXPORT extern const char kJavaScriptHarmony[];
 CONTENT_EXPORT extern const char kEnableUnsafeFastJSCalls[];
@@ -167,6 +166,7 @@ CONTENT_EXPORT extern const char kMHTMLSkipNostoreAll[];
 CONTENT_EXPORT extern const char kMockCertVerifierDefaultResultForTesting[];
 CONTENT_EXPORT extern const char kMojoCoreLibraryPath[];
 CONTENT_EXPORT extern const char kMojoLocalStorage[];
+CONTENT_EXPORT extern const char kNoUnsandboxedZygote[];
 CONTENT_EXPORT extern const char kNoZygote[];
 extern const char kNoV8UntrustedCodeMitigations[];
 CONTENT_EXPORT extern const char kNumRasterThreads[];
@@ -179,6 +179,7 @@ CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
 CONTENT_EXPORT extern const char kProxyServer[];
 CONTENT_EXPORT extern const char kPullToRefresh[];
+CONTENT_EXPORT extern const char kQuotaChangeEventInterval[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteDebuggingPipe[];
 CONTENT_EXPORT extern const char kRemoteDebuggingPort[];
@@ -245,7 +246,7 @@ CONTENT_EXPORT extern const char kWebXrRuntimeOrientationSensors[];
 CONTENT_EXPORT extern const char kWebXrRuntimeOpenXr[];
 CONTENT_EXPORT extern const char kWebXrRuntimeWMR[];
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && !defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kEnableAcceleratedVideoDecode[];
 #endif
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
@@ -261,12 +262,13 @@ CONTENT_EXPORT extern const char kDisableTimeoutsForProfiling[];
 CONTENT_EXPORT extern const char kEnableAdaptiveSelectionHandleOrientation[];
 CONTENT_EXPORT extern const char kEnableLongpressDragSelection[];
 CONTENT_EXPORT extern const char kForceOnlineConnectionStateForIndicator[];
-extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
 #endif
 
@@ -287,6 +289,7 @@ CONTENT_EXPORT extern const char kPpapiAntialiasedTextEnabled[];
 CONTENT_EXPORT extern const char kPpapiSubpixelRenderingSetting[];
 CONTENT_EXPORT extern const char kRaiseTimerFrequency[];
 CONTENT_EXPORT extern const char kGpu2StartupDialog[];
+CONTENT_EXPORT extern const char kAudioProcessHighPriority[];
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

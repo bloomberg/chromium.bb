@@ -144,11 +144,6 @@ public:
         return fMustEnableAdvBlendEqs;
     }
 
-    bool fMustEnableSpecificAdvBlendEqs = false;
-    bool mustEnableSpecificAdvBlendEqs() const {
-        return fMustEnableSpecificAdvBlendEqs;
-    }
-
     bool fCanUseAnyFunctionInShader = true;
     bool canUseAnyFunctionInShader() const {
         return fCanUseAnyFunctionInShader;
@@ -185,6 +180,11 @@ public:
         // (which would then, being baked in, end up being used even in contexts where do loops are
         // not allowed)
         return fCanUseDoLoops;
+    }
+
+    bool fUseNodePools = true;
+    bool useNodePools() const {
+        return fUseNodePools;
     }
 
     const char* fShaderDerivativeExtensionString = nullptr;
@@ -475,8 +475,6 @@ bool type_to_grsltype(const Context& context, const Type& type, GrSLType* outTyp
 #endif
 
 void write_stringstream(const StringStream& d, OutputStream& out);
-
-NORETURN void sksl_abort();
 
 }  // namespace SkSL
 

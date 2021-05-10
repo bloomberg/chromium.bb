@@ -48,7 +48,6 @@
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
 #import "ios/web_view/internal/cwv_script_command_internal.h"
-#import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
@@ -123,10 +122,9 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
   // Stores the script command callbacks with subscriptions.
-  std::unordered_map<
-      std::string,
-      std::pair<web::WebState::ScriptCommandCallback,
-                std::unique_ptr<web::WebState::ScriptCommandSubscription>>>
+  std::unordered_map<std::string,
+                     std::pair<web::WebState::ScriptCommandCallback,
+                               base::CallbackListSubscription>>
       _scriptCommandCallbacks;
   CRWSessionStorage* _cachedSessionStorage;
 }
@@ -178,7 +176,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 @synthesize title = _title;
 @synthesize translationController = _translationController;
 @synthesize UIDelegate = _UIDelegate;
-@synthesize legacyScrollView = _legacyScrollView;
 @synthesize visibleURL = _visibleURL;
 @synthesize visibleSSLStatus = _visibleSSLStatus;
 
@@ -244,7 +241,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   if (self) {
     _configuration = configuration;
     [_configuration registerWebView:self];
-    _legacyScrollView = [[CWVScrollView alloc] init];
 
     [self resetWebStateWithSessionStorage:nil
                           WKConfiguration:wkConfiguration
@@ -360,9 +356,16 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   [self updateNavigationAvailability];
-  SEL selector = @selector(webViewDidStartProvisionalNavigation:);
-  if ([_navigationDelegate respondsToSelector:selector]) {
-    [_navigationDelegate webViewDidStartProvisionalNavigation:self];
+
+  if (!navigation->IsSameDocument()) {
+    SEL oldSelector = @selector(webViewDidStartProvisionalNavigation:);
+    if ([_navigationDelegate respondsToSelector:oldSelector]) {
+      [_navigationDelegate webViewDidStartProvisionalNavigation:self];
+    }
+    SEL newSelector = @selector(webViewDidStartNavigation:);
+    if ([_navigationDelegate respondsToSelector:newSelector]) {
+      [_navigationDelegate webViewDidStartNavigation:self];
+    }
   }
 }
 
@@ -374,7 +377,7 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   // TODO(crbug.com/898357): Remove this once crbug.com/898357 is fixed.
   [self updateVisibleSSLStatus];
 
-  if (navigation->HasCommitted() &&
+  if (navigation->HasCommitted() && !navigation->IsSameDocument() &&
       [_navigationDelegate
           respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
     [_navigationDelegate webViewDidCommitNavigation:self];
@@ -524,16 +527,21 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 }
 
 - (void)webState:(web::WebState*)webState
-    contextMenuConfigurationForLinkWithURL:(const GURL&)linkURL
-                         completionHandler:
-                             (void (^)(UIContextMenuConfiguration*))
-                                 completionHandler API_AVAILABLE(ios(13.0)) {
+    contextMenuConfigurationForParams:(const web::ContextMenuParams&)params
+                      previewProvider:
+                          (UIContextMenuContentPreviewProvider)previewProvider
+                    completionHandler:
+                        (void (^)(UIContextMenuConfiguration*))completionHandler
+    API_AVAILABLE(ios(13.0)) {
   SEL selector = @selector(webView:
       contextMenuConfigurationForLinkWithURL:completionHandler:);
   if ([_UIDelegate respondsToSelector:selector]) {
     [_UIDelegate webView:self
-        contextMenuConfigurationForLinkWithURL:net::NSURLWithGURL(linkURL)
+        contextMenuConfigurationForLinkWithURL:net::NSURLWithGURL(
+                                                   params.link_url)
                              completionHandler:completionHandler];
+  } else {
+    completionHandler(nil);
   }
 }
 
@@ -650,11 +658,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
       initWithPrefService:_configuration.browserState->GetPrefs()
                  webState:_webState.get()];
   JsAutofillManager* JSAutofillManager = [[JsAutofillManager alloc] init];
-  JsSuggestionManager* JSSuggestionManager =
-      base::mac::ObjCCastStrict<JsSuggestionManager>(
-          [_webState->GetJSInjectionReceiver()
-              instanceOfClass:[JsSuggestionManager class]]);
-  [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
 
   auto passwordManagerClient =
       ios_web_view::WebViewPasswordManagerClient::Create(
@@ -680,7 +683,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
              autofillClient:std::move(autofillClient)
               autofillAgent:autofillAgent
           JSAutofillManager:JSAutofillManager
-        JSSuggestionManager:JSSuggestionManager
             passwordManager:std::move(passwordManager)
       passwordManagerClient:std::move(passwordManagerClient)
       passwordManagerDriver:std::move(passwordManagerDriver)
@@ -821,8 +823,6 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 
   _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
       allowsBackForwardNavigationGestures;
-
-  _legacyScrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
   if (_translationController) {
     id<CWVTranslationControllerDelegate> delegate =

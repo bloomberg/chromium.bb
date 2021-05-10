@@ -270,7 +270,8 @@ class TestChannel : public sigslot::has_slots<> {
   explicit TestChannel(std::unique_ptr<Port> p1) : port_(std::move(p1)) {
     port_->SignalPortComplete.connect(this, &TestChannel::OnPortComplete);
     port_->SignalUnknownAddress.connect(this, &TestChannel::OnUnknownAddress);
-    port_->SignalDestroyed.connect(this, &TestChannel::OnSrcPortDestroyed);
+    port_->SubscribePortDestroyed(
+        [this](PortInterface* port) { OnSrcPortDestroyed(port); });
   }
 
   int complete_count() { return complete_count_; }
@@ -400,7 +401,7 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
         nat_factory2_(ss_.get(), kNatAddr2, SocketAddress()),
         nat_socket_factory1_(&nat_factory1_),
         nat_socket_factory2_(&nat_factory2_),
-        stun_server_(TestStunServer::Create(&main_, kStunAddr)),
+        stun_server_(TestStunServer::Create(ss_.get(), kStunAddr)),
         turn_server_(&main_, kTurnUdpIntAddr, kTurnUdpExtAddr),
         username_(rtc::CreateRandomString(ICE_UFRAG_LENGTH)),
         password_(rtc::CreateRandomString(ICE_PWD_LENGTH)),
@@ -777,7 +778,8 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
   bool role_conflict() const { return role_conflict_; }
 
   void ConnectToSignalDestroyed(PortInterface* port) {
-    port->SignalDestroyed.connect(this, &PortTest::OnDestroyed);
+    port->SubscribePortDestroyed(
+        [this](PortInterface* port) { OnDestroyed(port); });
   }
 
   void OnDestroyed(PortInterface* port) { ++ports_destroyed_; }

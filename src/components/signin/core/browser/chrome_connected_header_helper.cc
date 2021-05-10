@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -56,6 +57,8 @@ GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
 }
 
 }  // namespace
+
+const char kChromeConnectedCookieName[] = "CHROME_CONNECTED";
 
 ChromeConnectedHeaderHelper::ChromeConnectedHeaderHelper(
     AccountConsistencyMethod account_consistency)
@@ -129,20 +132,12 @@ bool ChromeConnectedHeaderHelper::ShouldBuildRequestHeader(
 bool ChromeConnectedHeaderHelper::IsUrlEligibleToIncludeGaiaId(
     const GURL& url,
     bool is_header_request) {
-  if (is_header_request) {
-    // Gaia ID is only necessary for Drive. Don't set it otherwise.
-    return IsDriveOrigin(url.GetOrigin());
-  }
-
-  // Cookie requests don't have the granularity to only include the Gaia ID for
-  // Drive origin. Set it on all google.com instead.
-  if (!url.SchemeIsCryptographic())
-    return false;
-
-  const std::string kGoogleDomain = "google.com";
-  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-      url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  return domain == kGoogleDomain;
+  // Gaia ID is only used by Google Drive on desktop to auto-enable offline
+  // mode. As Gaia ID  is personal identifiable information, we restrict its
+  // usage:
+  // * Avoid sending it in the cookie as not needed on iOS.
+  // * Only send it in the header to Drive URLs.
+  return is_header_request ? IsDriveOrigin(url.GetOrigin()) : false;
 }
 
 bool ChromeConnectedHeaderHelper::IsDriveOrigin(const GURL& url) {
@@ -156,27 +151,32 @@ bool ChromeConnectedHeaderHelper::IsDriveOrigin(const GURL& url) {
 
 bool ChromeConnectedHeaderHelper::IsUrlEligibleForRequestHeader(
     const GURL& url) {
-  // Only set the header for Drive and Gaia always, and other Google properties
-  // if account consistency is enabled. Vasquette, which is integrated with most
-  // Google properties, needs the header to redirect certain user actions to
-  // Chrome native UI. Drive and Gaia need the header to tell if the current
-  // user is connected.
-
   // Consider the account ID sensitive and limit it to secure domains.
   if (!url.SchemeIsCryptographic())
     return false;
 
-  GURL origin(url.GetOrigin());
-  bool is_google_url =
-      google_util::IsGoogleDomainUrl(
-          url, google_util::ALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS) ||
-      google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                      google_util::DISALLOW_NON_STANDARD_PORTS);
-  bool is_mirror_enabled =
-      account_consistency_ == AccountConsistencyMethod::kMirror;
-  return (is_mirror_enabled && is_google_url) || IsDriveOrigin(origin) ||
-         gaia::IsGaiaSignonRealm(origin);
+  switch (account_consistency_) {
+    case AccountConsistencyMethod::kDisabled:
+      return false;
+    case AccountConsistencyMethod::kDice:
+      // Google Drive uses the sync account ID present in the X-Chrome-Connected
+      // header to automatically turn on offline mode. So Chrome needs to send
+      // this header to Google Drive when Dice is enabled.
+      return IsDriveOrigin(url.GetOrigin());
+    case AccountConsistencyMethod::kMirror: {
+      // Set the X-Chrome-Connected header for all Google web properties if
+      // Mirror account consistency is enabled. Vasquette, which is integrated
+      // with most Google properties, needs the header to redirect certain user
+      // actions to Chrome native UI.
+      return google_util::IsGoogleDomainUrl(
+                 url, google_util::ALLOW_SUBDOMAIN,
+                 google_util::DISALLOW_NON_STANDARD_PORTS) ||
+             google_util::IsYoutubeDomainUrl(
+                 url, google_util::ALLOW_SUBDOMAIN,
+                 google_util::DISALLOW_NON_STANDARD_PORTS) ||
+             gaia::IsGaiaSignonRealm(url.GetOrigin());
+    }
+  }
 }
 
 std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
@@ -199,7 +199,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!force_account_consistency && gaia_id.empty()) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     if (base::FeatureList::IsEnabled(kMobileIdentityConsistency) &&
@@ -211,7 +211,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
     return std::string();
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (!gaia_id.empty() &&
       IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {

@@ -5,6 +5,7 @@
 import platform
 import sys
 import util
+import psutil
 
 import command_executor
 from command_executor import Command
@@ -13,7 +14,7 @@ from websocket_connection import WebSocketConnection
 
 ELEMENT_KEY_W3C = "element-6066-11e4-a52e-4f735466cecf"
 ELEMENT_KEY = "ELEMENT"
-MAX_RETRY_COUNT = 3
+MAX_RETRY_COUNT = 5
 
 class ChromeDriverException(Exception):
   pass
@@ -127,21 +128,43 @@ class ChromeDriver(object):
   retry_count = 0
   retried_tests = []
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, server_url, server_pid, **kwargs):
     try:
-      self._InternalInit(*args, **kwargs)
+      self._InternalInit(server_url, **kwargs)
     except Exception as e:
       if not e.message.startswith('timed out'):
         raise
       else:
+        # Kill ChromeDriver child processes recursively
+        # (i.e. browsers and their child processes etc)
+        # when there is a timeout for launching browser
+        if server_pid:
+          processes = psutil.Process(server_pid).children(recursive=True)
+          if len(processes):
+            print 'Terminating ', len(processes), ' processes'
+            for p in processes:
+              p.terminate()
+
+            gone, alive = psutil.wait_procs(processes, timeout=3)
+            if len(alive):
+              print 'Killing ', len(alive), ' processes'
+              for p in alive:
+                p.kill()
+
         if ChromeDriver.retry_count < MAX_RETRY_COUNT:
-          ChromeDriver.retry_count = ChromeDriver.retry_count + 1
           ChromeDriver.retried_tests.append(kwargs.get('test_name'))
-          self._InternalInit(*args, **kwargs)
+          try:
+            self._InternalInit(server_url, **kwargs)
+          except:
+            # Only count it as retry if failed
+            print 'Retry ', ChromeDriver.retry_count, ' failed'
+            ChromeDriver.retry_count = ChromeDriver.retry_count + 1
+            raise
         else:
           raise
 
-  def _InternalInit(self, server_url, chrome_binary=None, android_package=None,
+  def _InternalInit(self, server_url,
+      chrome_binary=None, android_package=None,
       android_activity=None, android_process=None,
       android_use_running_app=None, chrome_switches=None,
       chrome_extensions=None, chrome_log_path=None,
@@ -346,7 +369,7 @@ class ChromeDriver(object):
     # Can't issue a new command without session_id
     if not hasattr(self, '_session_id') or self._session_id == None:
       return
-    tempDriver = ChromeDriver(self._server_url,
+    tempDriver = ChromeDriver(self._server_url, None,
       debugger_address=self.debuggerAddress, test_name='_forceCrash')
     try:
       tempDriver.SendCommandAndGetResult("Page.crash", {})
@@ -665,8 +688,8 @@ class ChromeDriver(object):
   def GenerateTestReport(self, message):
     self.ExecuteCommand(Command.GENERATE_TEST_REPORT, {'message': message})
 
-  def SetTimezone(self, timezone):
-    return self.ExecuteCommand(Command.SET_TIMEZONE, {'timezone': timezone})
+  def SetTimeZone(self, timeZone):
+    return self.ExecuteCommand(Command.SET_TIME_ZONE, {'time_zone': timeZone})
 
   def AddVirtualAuthenticator(self, protocol=None, transport=None,
                               hasResidentKey=None, hasUserVerification=None,

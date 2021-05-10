@@ -32,19 +32,91 @@ import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
 import * as Extensions from '../extensions/extensions.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Root from '../root/root.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
+import {AccessibilityTreeView} from './AccessibilityTreeView.js';
 import {ComputedStyleWidget} from './ComputedStyleWidget.js';
-import {createElementsBreadcrumbs, DOMNode} from './ElementsBreadcrumbs_bridge.js';  // eslint-disable-line no-unused-vars
-import {ElementsTreeElement} from './ElementsTreeElement.js';  // eslint-disable-line no-unused-vars
+import {DOMNode, ElementsBreadcrumbs} from './ElementsBreadcrumbs.js';  // eslint-disable-line no-unused-vars
+import {ElementsTreeElement} from './ElementsTreeElement.js';           // eslint-disable-line no-unused-vars
 import {ElementsTreeElementHighlighter} from './ElementsTreeElementHighlighter.js';
 import {ElementsTreeOutline} from './ElementsTreeOutline.js';
 import {MarkerDecorator} from './MarkerDecorator.js';  // eslint-disable-line no-unused-vars
 import {MetricsSidebarPane} from './MetricsSidebarPane.js';
 import {Events as StylesSidebarPaneEvents, StylesSidebarPane} from './StylesSidebarPane.js';
 
+export const UIStrings = {
+  /**
+  * @description Placeholder text for the search box the Elements Panel. Selector refers to CSS
+  * selectors.
+  */
+  findByStringSelectorOrXpath: 'Find by string, selector, or `XPath`',
+  /**
+  * @description Button text for a button that takes the user to the Accessibility Tree View from the
+  * DOM tree view, in the Elements panel.
+  */
+  switchToAccessibilityTreeView: 'Switch to Accessibility Tree view',
+  /**
+  * @description Button text for a button that takes the user to the DOM tree view from the
+  * Accessibility Tree View, in the Elements panel.
+  */
+  switchToDomTreeView: 'Switch to DOM Tree view',
+  /**
+  * @description Label for a link to a rendering frame.
+  */
+  frame: 'Frame',
+  /**
+  * @description Tooltip for the the Computed Styles sidebar toggle in the Styles pane. Command to
+  * open/show the sidebar.
+  */
+  showComputedStylesSidebar: 'Show Computed Styles sidebar',
+  /**
+  * @description Tooltip for the the Computed Styles sidebar toggle in the Styles pane. Command to
+  * close/hide the sidebar.
+  */
+  hideComputedStylesSidebar: 'Hide Computed Styles sidebar',
+  /**
+  * @description Title of a pane in the Elements panel that shows computed styles for the selected
+  * HTML element. Computed styles are the final, actual styles of the element, including all
+  * implicit and specified styles.
+  */
+  computed: 'Computed',
+  /**
+  * @description Title of a pane in the Elements panel that shows the CSS styles for the selected
+  * HTML element.
+  */
+  styles: 'Styles',
+  /**
+  * @description A context menu item to reveal a node in the DOM tree of the Elements Panel
+  */
+  revealInElementsPanel: 'Reveal in Elements panel',
+  /**
+  * @description Warning/error text displayed when a node cannot be found in the current page.
+  */
+  nodeCannotBeFoundInTheCurrent: 'Node cannot be found in the current page.',
+  /**
+  * @description Console warning when a user tries to reveal a non-node type Remote Object. A remote
+  * object is a JavaScript object that is not stored in DevTools, that DevTools has a connection to.
+  * It should correspond to a local node.
+  */
+  theRemoteObjectCouldNotBe: 'The remote object could not be resolved to a valid node.',
+  /**
+  * @description Console warning when the user tries to reveal a deferred DOM Node that resolves as
+  * null. A deferred DOM node is a node we know about but have not yet fetched from the backend (we
+  * defer the work until later).
+  */
+  theDeferredDomNodeCouldNotBe: 'The deferred `DOM` Node could not be resolved to a valid node.',
+  /**
+  * @description Text in Elements Panel of the Elements panel. Shows the current CSS Pseudo-classes
+  * applicable to the selected HTML element.
+  * @example {::after, ::before} PH1
+  */
+  elementStateS: 'Element state: {PH1}',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/ElementsPanel.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  *
  * @param {!SDK.DOMModel.DOMNode} node
@@ -73,7 +145,6 @@ let elementsPanelInstance;
  * @implements {UI.SearchableView.Searchable}
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DOMModel.DOMModel>}
  * @implements {UI.View.ViewLocationResolver}
- * @unrestricted
  */
 export class ElementsPanel extends UI.Panel.Panel {
   constructor() {
@@ -84,13 +155,16 @@ export class ElementsPanel extends UI.Panel.Panel {
         UI.SplitWidget.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
     this._splitWidget.show(this.element);
 
-    this._searchableView = new UI.SearchableView.SearchableView(this);
+    this._searchableView = new UI.SearchableView.SearchableView(this, null);
     this._searchableView.setMinimumSize(25, 28);
-    this._searchableView.setPlaceholder(Common.UIString.UIString('Find by string, selector, or XPath'));
+    this._searchableView.setPlaceholder(i18nString(UIStrings.findByStringSelectorOrXpath));
     const stackElement = this._searchableView.element;
 
     this._contentElement = document.createElement('div');
     const crumbsContainer = document.createElement('div');
+    if (Root.Runtime.experiments.isEnabled('fullAccessibilityTree')) {
+      this._initializeFullAccessibilityTreeView(stackElement);
+    }
     stackElement.appendChild(this._contentElement);
     stackElement.appendChild(crumbsContainer);
 
@@ -108,8 +182,10 @@ export class ElementsPanel extends UI.Panel.Panel {
         .addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     crumbsContainer.id = 'elements-crumbs';
-
-    this._breadcrumbs = createElementsBreadcrumbs();
+    if (this.domTreeButton) {
+      this._accessibilityTreeView = new AccessibilityTreeView(this.domTreeButton);
+    }
+    this._breadcrumbs = new ElementsBreadcrumbs();
     this._breadcrumbs.addEventListener('node-selected', /** @param {!Event} event */ event => {
       this._crumbNodeSelected(/** @type {?} */ (event));
     });
@@ -150,6 +226,31 @@ export class ElementsPanel extends UI.Panel.Panel {
     this._currentSearchResultIndex = -1;  // -1 represents the initial invalid state
 
     this._pendingNodeReveal = false;
+  }
+
+  /**
+   * @param {UI.Widget.WidgetElement} stackElement
+   */
+  _initializeFullAccessibilityTreeView(stackElement) {
+    this._accessibilityTreeButton = document.createElement('button');
+    this._accessibilityTreeButton.textContent = i18nString(UIStrings.switchToAccessibilityTreeView);
+    this._accessibilityTreeButton.addEventListener('click', this._showAccessibilityTree.bind(this));
+
+    this.domTreeButton = document.createElement('button');
+    this.domTreeButton.textContent = i18nString(UIStrings.switchToDomTreeView);
+    this.domTreeButton.addEventListener('click', this._showDOMTree.bind(this));
+
+    stackElement.appendChild(this._accessibilityTreeButton);
+  }
+
+  _showAccessibilityTree() {
+    if (this._accessibilityTreeView) {
+      this._splitWidget.setMainWidget(this._accessibilityTreeView);
+    }
+  }
+
+  _showDOMTree() {
+    this._splitWidget.setMainWidget(this._searchableView);
   }
 
   /**
@@ -270,7 +371,7 @@ export class ElementsPanel extends UI.Panel.Panel {
       return;
     }
     header.removeChildren();
-    header.createChild('div', 'elements-tree-header-frame').textContent = Common.UIString.UIString('Frame');
+    header.createChild('div', 'elements-tree-header-frame').textContent = i18nString(UIStrings.frame);
     header.appendChild(Components.Linkifier.Linkifier.linkifyURL(
         target.inspectedURL(), /** @type {!Components.Linkifier.LinkifyURLOptions} */ ({text: target.name()})));
   }
@@ -411,6 +512,9 @@ export class ElementsPanel extends UI.Panel.Panel {
       return;
     }
     selectedNode.setAsInspectedNode();
+    if (this._accessibilityTreeView) {
+      this._accessibilityTreeView.setNode(selectedNode);
+    }
     if (focus) {
       this._selectedNodeOnReset = selectedNode;
       this._hasNonDefaultSelectedNode = true;
@@ -815,7 +919,6 @@ export class ElementsPanel extends UI.Panel.Panel {
   }
 
   /**
-   * @suppress {accessControls}
    * @param {!SDK.DOMModel.DOMNode} node
    * @param {boolean} focus
    * @param {boolean=} omitHighlight
@@ -929,15 +1032,26 @@ export class ElementsPanel extends UI.Panel.Panel {
       showMetricsWidgetInStylesPane();
     });
     this._stylesWidget.addEventListener(StylesSidebarPaneEvents.InitialUpdateCompleted, () => {
-      this._stylesWidget.appendToolbarItem(stylesSplitWidget.createShowHideSidebarButton(ls`Computed Styles sidebar`));
+      this._stylesWidget.appendToolbarItem(stylesSplitWidget.createShowHideSidebarButton(
+          i18nString(UIStrings.showComputedStylesSidebar), i18nString(UIStrings.hideComputedStylesSidebar)));
     });
+
+    const showMetricsWidgetInComputedPane = () => {
+      this._metricsWidget.show(computedStylePanesWrapper.element, this._computedStyleWidget.element);
+      this._metricsWidget.toggleVisibility(true /* visible */);
+      this._stylesWidget.removeEventListener(StylesSidebarPaneEvents.StylesUpdateCompleted, toggleMetricsWidget);
+    };
 
     const showMetricsWidgetInStylesPane = () => {
       const showMergedComputedPane = stylesSplitWidget.showMode() === UI.SplitWidget.ShowMode.Both;
       if (showMergedComputedPane) {
-        this._metricsWidget.show(computedStylePanesWrapper.element, this._computedStyleWidget.element);
+        showMetricsWidgetInComputedPane();
       } else {
         this._metricsWidget.show(matchedStylePanesWrapper.element);
+        if (!this._stylesWidget.hasMatchedStyles) {
+          this._metricsWidget.toggleVisibility(false /* invisible */);
+        }
+        this._stylesWidget.addEventListener(StylesSidebarPaneEvents.StylesUpdateCompleted, toggleMetricsWidget);
       }
     };
 
@@ -946,20 +1060,21 @@ export class ElementsPanel extends UI.Panel.Panel {
     /**
      * @param {!Common.EventTarget.EventTargetEvent} event
      */
+    const toggleMetricsWidget = event => {
+      this._metricsWidget.toggleVisibility(event.data.hasMatchedStyles);
+    };
+
+    /**
+     * @param {!Common.EventTarget.EventTargetEvent} event
+     */
     const tabSelected = event => {
       const tabId = /** @type {string} */ (event.data.tabId);
-      if (tabId === Common.UIString.UIString('Computed')) {
+      if (tabId === i18nString(UIStrings.computed)) {
         computedStylePanesWrapper.show(computedView.element);
-        this._metricsWidget.show(computedStylePanesWrapper.element, this._computedStyleWidget.element);
-      } else if (tabId === Common.UIString.UIString('Styles')) {
+        showMetricsWidgetInComputedPane();
+      } else if (tabId === i18nString(UIStrings.styles)) {
         stylesSplitWidget.setSidebarWidget(computedStylePanesWrapper);
-        if (this._stylesWidget.initialUpdateCompleted()) {
-          showMetricsWidgetInStylesPane();
-        } else {
-          this._stylesWidget.addEventListener(StylesSidebarPaneEvents.InitialUpdateCompleted, () => {
-            showMetricsWidgetInStylesPane();
-          });
-        }
+        showMetricsWidgetInStylesPane();
       }
 
       if (skippedInitialTabSelectedEvent) {
@@ -978,12 +1093,12 @@ export class ElementsPanel extends UI.Panel.Panel {
       this._splitWidget.installResizer(tabbedPane.headerElement());
     }
 
-    const stylesView = new UI.View.SimpleView(Common.UIString.UIString('Styles'));
+    const stylesView = new UI.View.SimpleView(i18nString(UIStrings.styles));
     this.sidebarPaneView.appendView(stylesView);
     stylesView.element.classList.add('flex-auto');
     stylesSplitWidget.show(stylesView.element);
 
-    const computedView = new UI.View.SimpleView(Common.UIString.UIString('Computed'));
+    const computedView = new UI.View.SimpleView(i18nString(UIStrings.computed));
     computedView.element.classList.add('composite', 'fill');
 
     tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, tabSelected, this);
@@ -1051,15 +1166,11 @@ export class ElementsPanel extends UI.Panel.Panel {
    * @param {!SDK.CSSModel.CSSModel} cssModel
    */
   _setupStyleTracking(cssModel) {
-    if (Root.Runtime.experiments.isEnabled('cssGridFeatures')) {
-      // Style tracking is conditional on enabling experimental Grid features
-      // because it's the only use case for now.
-      const gridStyleTracker = cssModel.createCSSPropertyTracker(TrackedCSSGridProperties);
-      gridStyleTracker.start();
-      this._gridStyleTrackerByCSSModel.set(cssModel, gridStyleTracker);
-      gridStyleTracker.addEventListener(
-          SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
-    }
+    const gridStyleTracker = cssModel.createCSSPropertyTracker(TrackedCSSGridProperties);
+    gridStyleTracker.start();
+    this._gridStyleTrackerByCSSModel.set(cssModel, gridStyleTracker);
+    gridStyleTracker.addEventListener(
+        SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this._trackedCSSPropertiesUpdated, this);
   }
 
   /**
@@ -1123,9 +1234,11 @@ const TrackedCSSGridProperties = [
   },
 ];
 
+/** @type {!ContextMenuProvider} */
+let contextMenuProviderInstance;
+
 /**
  * @implements {UI.ContextMenu.Provider}
- * @unrestricted
  */
 export class ContextMenuProvider {
   /**
@@ -1145,17 +1258,36 @@ export class ContextMenuProvider {
     if (ElementsPanel.instance().element.isAncestor(/** @type {!Node} */ (event.target))) {
       return;
     }
-    /** @type {function(?):*} */
+    /** @type {function():*} */
     const commandCallback = Common.Revealer.reveal.bind(Common.Revealer.Revealer, object);
-    contextMenu.revealSection().appendItem(Common.UIString.UIString('Reveal in Elements panel'), commandCallback);
+    contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInElementsPanel), commandCallback);
+  }
+
+  static instance() {
+    if (!contextMenuProviderInstance) {
+      contextMenuProviderInstance = new ContextMenuProvider();
+    }
+    return contextMenuProviderInstance;
   }
 }
-
+/** @type {DOMNodeRevealer} */
+let dOMNodeRevealerInstance;
 /**
  * @implements {Common.Revealer.Revealer}
- * @unrestricted
  */
 export class DOMNodeRevealer {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!dOMNodeRevealerInstance || forceNew) {
+      dOMNodeRevealerInstance = new DOMNodeRevealer();
+    }
+
+    return dOMNodeRevealerInstance;
+  }
+
   /**
    * @override
    * @param {!Object} node
@@ -1208,7 +1340,7 @@ export class DOMNodeRevealer {
 
         const isDocument = node instanceof SDK.DOMModel.DOMDocument;
         if (!isDocument && isDetached) {
-          const msg = ls`Node cannot be found in the current page.`;
+          const msg = i18nString(UIStrings.nodeCannotBeFoundInTheCurrent);
           Common.Console.Console.instance().warn(msg);
           reject(new Error(msg));
           return;
@@ -1226,7 +1358,7 @@ export class DOMNodeRevealer {
        */
       function checkRemoteObjectThenReveal(resolvedNode) {
         if (!resolvedNode) {
-          const msg = ls`The remote object could not be resolved into a valid node.`;
+          const msg = i18nString(UIStrings.theRemoteObjectCouldNotBe);
           Common.Console.Console.instance().warn(msg);
           reject(new Error(msg));
           return;
@@ -1239,7 +1371,7 @@ export class DOMNodeRevealer {
        */
       function checkDeferredDOMNodeThenReveal(resolvedNode) {
         if (!resolvedNode) {
-          const msg = ls`The deferred DOM Node could not be resolved into a valid node.`;
+          const msg = i18nString(UIStrings.theDeferredDomNodeCouldNotBe);
           Common.Console.Console.instance().warn(msg);
           reject(new Error(msg));
           return;
@@ -1250,11 +1382,26 @@ export class DOMNodeRevealer {
   }
 }
 
+/** @type {CSSPropertyRevealer} */
+let cSSPropertyRevealerInstance;
+
+
 /**
  * @implements {Common.Revealer.Revealer}
- * @unrestricted
  */
 export class CSSPropertyRevealer {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!cSSPropertyRevealerInstance || forceNew) {
+      cSSPropertyRevealerInstance = new CSSPropertyRevealer();
+    }
+
+    return cSSPropertyRevealerInstance;
+  }
+
   /**
    * @override
    * @param {!Object} property
@@ -1266,10 +1413,11 @@ export class CSSPropertyRevealer {
   }
 }
 
+/** @type {!ElementsActionDelegate} */
+let elementsActionDelegateInstance;
 
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ElementsActionDelegate {
   /**
@@ -1295,6 +1443,9 @@ export class ElementsActionDelegate {
       case 'elements.edit-as-html':
         treeOutline.toggleEditAsHTML(node);
         return true;
+      case 'elements.duplicate-element':
+        treeOutline.duplicateNode(node);
+        return true;
       case 'elements.undo':
         SDK.DOMModel.DOMModelUndoStack.instance().undo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
@@ -1306,13 +1457,38 @@ export class ElementsActionDelegate {
     }
     return false;
   }
+
+  /**
+   * @param {{forceNew: ?boolean}=} opts
+   * @return {!ElementsActionDelegate}
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!elementsActionDelegateInstance || forceNew) {
+      elementsActionDelegateInstance = new ElementsActionDelegate();
+    }
+
+    return elementsActionDelegateInstance;
+  }
 }
 
+/** @type {!PseudoStateMarkerDecorator} */
+let pseudoStateMarkerDecoratorInstance;
 /**
  * @implements {MarkerDecorator}
- * @unrestricted
  */
 export class PseudoStateMarkerDecorator {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!pseudoStateMarkerDecoratorInstance || forceNew) {
+      pseudoStateMarkerDecoratorInstance = new PseudoStateMarkerDecorator();
+    }
+
+    return pseudoStateMarkerDecoratorInstance;
+  }
   /**
    * @override
    * @param {!SDK.DOMModel.DOMNode} node
@@ -1324,6 +1500,6 @@ export class PseudoStateMarkerDecorator {
       return null;
     }
 
-    return {color: 'orange', title: Common.UIString.UIString('Element state: %s', ':' + pseudoState.join(', :'))};
+    return {color: 'orange', title: i18nString(UIStrings.elementStateS, {PH1: ':' + pseudoState.join(', :')})};
   }
 }

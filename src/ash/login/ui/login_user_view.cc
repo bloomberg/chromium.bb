@@ -17,6 +17,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
@@ -102,7 +103,10 @@ class IconRoundedView : public views::View {
  public:
   IconRoundedView(int size) : radius_(size / 2) {
     icon_ = gfx::ImageSkiaOperations::CreateResizedImage(
-        gfx::CreateVectorIcon(chromeos::kEnterpriseIcon, gfx::kGoogleGrey500),
+        gfx::CreateVectorIcon(
+            chromeos::kEnterpriseIcon,
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorSecondary)),
         skia::ImageOperations::RESIZE_BEST,
         gfx::Size(size * kIconProportion, size * kIconProportion));
   }
@@ -125,9 +129,9 @@ class IconRoundedView : public views::View {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconColorPrimary));
+        AshColorProvider::ContentLayerType::kIconColorSecondaryBackground));
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    // The white circle on which we paint the icon.
+    // The colored circle on which we paint the icon.
     canvas->DrawCircle(center_circle, radius_, flags);
     canvas->DrawImageInPath(icon_, image_bounds.x(), image_bounds.y(), path,
                             flags);
@@ -168,6 +172,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
     enterprise_icon_->SetVisible(false);
     AddChildView(enterprise_icon_);
   }
+
   ~UserImage() override = default;
 
   void UpdateForUser(const LoginUserInfo& user) {
@@ -458,6 +463,9 @@ LoginUserView::LoginUserView(
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this,
       base::BindRepeating(&LoginUserView::OnHover, base::Unretained(this)));
+
+  if (ash::Shell::HasInstance())
+    display_observation_.Observe(ash::Shell::Get()->display_configurator());
 }
 
 LoginUserView::~LoginUserView() = default;
@@ -535,6 +543,12 @@ void LoginUserView::SetTapEnabled(bool enabled) {
                                         : FocusBehavior::NEVER);
 }
 
+void LoginUserView::OnPowerStateChanged(
+    chromeos::DisplayPowerState power_state) {
+  bool is_display_on = power_state != chromeos::DISPLAY_POWER_ALL_OFF;
+  user_image_->SetAnimationEnabled(is_display_on && is_opaque_);
+}
+
 const char* LoginUserView::GetClassName() const {
   return kUserViewClassName;
 }
@@ -606,8 +620,14 @@ void LoginUserView::UpdateCurrentUserState() {
   }
   tap_button_->SetAccessibleName(accessible_name);
   if (dropdown_) {
-    dropdown_->SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME, email));
+    // The accessible name for the dropdown depends on whether it also contains
+    // the remove user button for the user in question.
+    accessible_name = l10n_util::GetStringFUTF16(
+        current_user_.can_remove
+            ? IDS_ASH_LOGIN_POD_REMOVE_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME
+            : IDS_ASH_LOGIN_POD_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME,
+        email);
+    dropdown_->SetAccessibleName(accessible_name);
   }
 
   user_image_->UpdateForUser(current_user_);

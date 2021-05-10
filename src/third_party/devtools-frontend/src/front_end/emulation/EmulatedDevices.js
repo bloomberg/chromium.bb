@@ -9,9 +9,6 @@ import * as UI from '../ui/ui.js';
 
 import {MaxDeviceSize, MinDeviceSize} from './DeviceModeModel.js';
 
-/**
- * @unrestricted
- */
 export class EmulatedDevice {
   constructor() {
     /** @type {string} */
@@ -205,16 +202,8 @@ export class EmulatedDevice {
       const rawUserAgent = /** @type {string} */ (parseValue(json, 'user-agent', 'string'));
       result.userAgent = SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(rawUserAgent);
 
-      const templateUserAgentMetadata = parseValue(json, 'user-agent-metadata', 'object', null);
-      if (templateUserAgentMetadata) {
-        if (templateUserAgentMetadata.brands === undefined) {
-          templateUserAgentMetadata.brands = SDK.NetworkManager.MultitargetNetworkManager.getChromeBrands();
-        }
-        if (templateUserAgentMetadata.fullVersion === undefined) {
-          templateUserAgentMetadata.fullVersion = SDK.NetworkManager.MultitargetNetworkManager.getChromeVersion();
-        }
-      }
-      result.userAgentMetadata = /** @type {?Protocol.Emulation.UserAgentMetadata} */ (templateUserAgentMetadata);
+      result.userAgentMetadata =
+          /** @type {?Protocol.Emulation.UserAgentMetadata} */ parseValue(json, 'user-agent-metadata', 'object', null);
 
       const capabilities = parseValue(json, 'capabilities', 'object', []);
       if (!Array.isArray(capabilities)) {
@@ -409,6 +398,10 @@ export class EmulatedDevice {
     json['dual-screen'] = this.isDualScreen;
     json['show'] = this._show;
 
+    if (this.userAgentMetadata) {
+      json['user-agent-metadata'] = this.userAgentMetadata;
+    }
+
     return json;
   }
 
@@ -575,9 +568,6 @@ export const _Show = {
 /** @type {!EmulatedDevicesList} */
 let _instance;
 
-/**
- * @unrestricted
- */
 export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();

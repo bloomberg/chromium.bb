@@ -29,10 +29,9 @@ class V8ContextTrackerTest : public PerformanceManagerBrowserTestHarness {
   V8ContextTrackerTest() = default;
   ~V8ContextTrackerTest() override = default;
 
-  void OnGraphCreated(Graph* graph) override {
-    graph->PassToGraph(
-        std::make_unique<execution_context::ExecutionContextRegistryImpl>());
-    graph->PassToGraph(std::make_unique<V8ContextTracker>());
+  void SetUp() override {
+    GetGraphFeaturesHelper().EnableV8ContextTracker();
+    Super::SetUp();
   }
 
   void ExpectCounts(size_t v8_context_count,
@@ -57,6 +56,62 @@ IN_PROC_BROWSER_TEST_F(V8ContextTrackerTest, AboutBlank) {
   ExpectCounts(0, 0, 0, 0);
   ASSERT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
   ExpectCounts(1, 1, 0, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(V8ContextTrackerTest, SameOriginIframeAttributionData) {
+  GURL urla(embedded_test_server()->GetURL("a.com", "/a_embeds_a.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), urla));
+
+  // Get pointers to the RFHs for each frame.
+  auto* contents = shell()->web_contents();
+  content::RenderFrameHost* main_rfh = contents->GetMainFrame();
+  content::RenderFrameHost* child_rfh = nullptr;
+  auto frames = contents->GetAllFrames();
+  ASSERT_EQ(2u, frames.size());
+  for (auto* rfh : contents->GetAllFrames()) {
+    if (rfh != main_rfh)
+      child_rfh = rfh;
+  }
+  auto frame_node =
+      PerformanceManager::GetFrameNodeForRenderFrameHost(child_rfh);
+
+  RunInGraph([&frame_node](Graph* graph) {
+    ASSERT_TRUE(frame_node);
+    auto* v8_context_tracker = V8ContextTracker::GetFromGraph(graph);
+    ASSERT_TRUE(v8_context_tracker);
+    auto* ec_state = v8_context_tracker->GetExecutionContextState(
+        frame_node->GetFrameToken());
+    ASSERT_TRUE(ec_state);
+    ASSERT_TRUE(ec_state->iframe_attribution_data);
+  });
+}
+
+IN_PROC_BROWSER_TEST_F(V8ContextTrackerTest, CrossOriginIframeAttributionData) {
+  GURL urla(embedded_test_server()->GetURL("a.com", "/a_embeds_b.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), urla));
+
+  // Get pointers to the RFHs for each frame.
+  auto* contents = shell()->web_contents();
+  content::RenderFrameHost* main_rfh = contents->GetMainFrame();
+  content::RenderFrameHost* child_rfh = nullptr;
+  auto frames = contents->GetAllFrames();
+  ASSERT_EQ(2u, frames.size());
+  for (auto* rfh : contents->GetAllFrames()) {
+    if (rfh != main_rfh)
+      child_rfh = rfh;
+  }
+  auto frame_node =
+      PerformanceManager::GetFrameNodeForRenderFrameHost(child_rfh);
+
+  RunInGraph([&frame_node](Graph* graph) {
+    ASSERT_TRUE(frame_node);
+    auto* v8_context_tracker = V8ContextTracker::GetFromGraph(graph);
+    ASSERT_TRUE(v8_context_tracker);
+    auto* ec_state = v8_context_tracker->GetExecutionContextState(
+        frame_node->GetFrameToken());
+    ASSERT_TRUE(ec_state);
+    ASSERT_TRUE(ec_state->iframe_attribution_data);
+  });
 }
 
 IN_PROC_BROWSER_TEST_F(V8ContextTrackerTest, SameDocNavigation) {

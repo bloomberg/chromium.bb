@@ -65,10 +65,11 @@ void WinHeapMemoryDumpImpl(WinHeapInfo* crt_heap_info) {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-void ReportDetailedPartitionAllocStats(ProcessMemoryDump* pmd) {
+void ReportPartitionAllocStats(ProcessMemoryDump* pmd, bool detailed) {
   SimplePartitionStatsDumper allocator_dumper;
-  internal::PartitionAllocMalloc::Allocator()->DumpStats("malloc", false,
-                                                         &allocator_dumper);
+  internal::PartitionAllocMalloc::Allocator()->DumpStats(
+      "malloc", !detailed /* is_light_dump */, &allocator_dumper);
+  // TODO(bartekn): Dump OriginalAllocator() into "malloc" as well.
 
   if (allocator_dumper.stats().has_thread_cache) {
     const auto& stats = allocator_dumper.stats().all_thread_caches_stats;
@@ -80,6 +81,28 @@ void ReportDetailedPartitionAllocStats(ProcessMemoryDump* pmd) {
         pmd->CreateAllocatorDump("malloc/thread_cache/main_thread");
     ReportPartitionAllocThreadCacheStats(main_thread_cache_dump,
                                          main_thread_stats);
+  }
+
+  // Not reported in UMA, detailed dumps only.
+  if (detailed) {
+    SimplePartitionStatsDumper aligned_allocator_dumper;
+    internal::PartitionAllocMalloc::AlignedAllocator()->DumpStats(
+        "malloc/aligned", !detailed /* is_light_dump */,
+        &aligned_allocator_dumper);
+    // These should be included in the overall figure, so using a child dump.
+    auto* aligned_allocator_dump = pmd->CreateAllocatorDump("malloc/aligned");
+    // See
+    // //base/allocator/allocator_shim_default_dispatch_to_partition_alloc.cc
+    // for the sum of the aligned and regular partitions.
+    aligned_allocator_dump->AddScalar(
+        "virtual_size", MemoryAllocatorDump::kUnitsBytes,
+        aligned_allocator_dumper.stats().total_mmapped_bytes);
+    aligned_allocator_dump->AddScalar(
+        MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
+        aligned_allocator_dumper.stats().total_resident_bytes);
+    aligned_allocator_dump->AddScalar(
+        "allocated_size", MemoryAllocatorDump::kUnitsBytes,
+        aligned_allocator_dumper.stats().total_active_bytes);
   }
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -113,9 +136,8 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   size_t allocated_objects_size = 0;
   size_t allocated_objects_count = 0;
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
-    ReportDetailedPartitionAllocStats(pmd);
-  }
+  ReportPartitionAllocStats(
+      pmd, args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 #if BUILDFLAG(USE_TCMALLOC)
@@ -227,9 +249,8 @@ void ReportPartitionAllocThreadCacheStats(MemoryAllocatorDump* dump,
   dump->AddScalar("cache_fill_count", "scalar", stats.cache_fill_count);
   dump->AddScalar("cache_fill_hits", "scalar", stats.cache_fill_hits);
   dump->AddScalar("cache_fill_misses", "scalar", stats.cache_fill_misses);
-  dump->AddScalar("cache_fill_bucket_full", "scalar",
-                  stats.cache_fill_bucket_full);
-  dump->AddScalar("cache_fill_too_large", "scalar", stats.cache_fill_too_large);
+
+  dump->AddScalar("batch_fill_count", "scalar", stats.batch_fill_count);
 
   dump->AddScalar("size", "bytes", stats.bucket_total_memory);
   dump->AddScalar("metadata_overhead", "bytes", stats.metadata_overhead);

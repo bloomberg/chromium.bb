@@ -19,24 +19,26 @@
 #include "src/ast/assignment_statement.h"
 #include "src/ast/identifier_expression.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_Assign) {
-  auto lhs = std::make_unique<ast::IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("rhs");
-  ast::AssignmentStatement assign(std::move(lhs), std::move(rhs));
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
+  auto* assign = create<ast::AssignmentStatement>(lhs, rhs);
 
-  GeneratorImpl g;
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitStatement(&assign)) << g.error();
-  EXPECT_EQ(g.result(), "  lhs = rhs;\n");
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(assign)) << gen.error();
+  EXPECT_EQ(gen.result(), "  lhs = rhs;\n");
 }
 
 }  // namespace

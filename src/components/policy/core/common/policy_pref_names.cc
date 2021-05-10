@@ -19,11 +19,15 @@ const char kSafeSitesFilterBehavior[] = "policy.safe_sites_filter_behavior";
 // "SystemFeaturesDisableList").
 const char kSystemFeaturesDisableList[] = "policy.system_features_disable_list";
 
+// Enum specifying the user experience of disabled features.
+// See the SystemFeaturesDisableMode policy for details.
+const char kSystemFeaturesDisableMode[] = "policy.system_features_disable_mode";
+
 // Blocks access to the listed host patterns.
-const char kUrlBlacklist[] = "policy.url_blacklist";
+const char kUrlBlocklist[] = "policy.url_blocklist";
 
 // Allows access to the listed host patterns, as exceptions to the blacklist.
-const char kUrlWhitelist[] = "policy.url_whitelist";
+const char kUrlAllowlist[] = "policy.url_allowlist";
 
 // Integer that specifies the policy refresh rate for user-policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane range

@@ -80,6 +80,8 @@ MockCrashEndpoint::Report MockCrashEndpoint::WaitForReport() {
 std::unique_ptr<net::test_server::HttpResponse>
 MockCrashEndpoint::HandleRequest(const net::test_server::HttpRequest& request) {
   GURL absolute_url = test_server_->GetURL(request.relative_url);
+  LOG(INFO) << "MockCrashEndpoint::HandleRequest(" << absolute_url.spec()
+            << ")";
   if (absolute_url.path() != kTestCrashEndpoint) {
     return nullptr;
   }
@@ -87,8 +89,8 @@ MockCrashEndpoint::HandleRequest(const net::test_server::HttpRequest& request) {
   ++report_count_;
   last_report_ = Report(absolute_url.query(), request.content);
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content("123");
+  http_response->set_code(response_code_);
+  http_response->set_content(response_content_);
   http_response->set_content_type("text/plain");
   if (on_report_) {
     on_report_.Run();

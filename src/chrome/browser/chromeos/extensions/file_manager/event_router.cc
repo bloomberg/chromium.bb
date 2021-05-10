@@ -10,13 +10,15 @@
 #include <set>
 #include <utility>
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -27,8 +29,8 @@
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -413,8 +415,8 @@ EventRouter::EventRouter(Profile* profile)
       drivefs_event_router_(
           std::make_unique<DriveFsEventRouterImpl>(profile, &file_watchers_)),
       dispatch_directory_change_event_impl_(
-          base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
-                     base::Unretained(this))) {
+          base::BindRepeating(&EventRouter::DispatchDirectoryChangeEventImpl,
+                              base::Unretained(this))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ObserveEvents();
 }
@@ -432,6 +434,10 @@ void EventRouter::OnIntentFiltersUpdated(
 
 void EventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
+  if (tablet_mode)
+    tablet_mode->RemoveObserver(this);
 
   auto* intent_helper =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
@@ -458,6 +464,7 @@ void EventRouter::Shutdown() {
     integration_service->RemoveObserver(this);
     integration_service->GetDriveFsHost()->RemoveObserver(
         drivefs_event_router_.get());
+    integration_service->GetDriveFsHost()->set_dialog_handler({});
   }
 
   VolumeManager* const volume_manager = VolumeManager::Get(profile_);
@@ -503,6 +510,9 @@ void EventRouter::ObserveEvents() {
     integration_service->AddObserver(this);
     integration_service->GetDriveFsHost()->AddObserver(
         drivefs_event_router_.get());
+    integration_service->GetDriveFsHost()->set_dialog_handler(
+        base::BindRepeating(&EventRouter::DisplayDriveConfirmDialog,
+                            weak_factory_.GetWeakPtr()));
   }
 
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
@@ -510,9 +520,8 @@ void EventRouter::ObserveEvents() {
   extensions::ExtensionRegistry::Get(profile_)->AddObserver(this);
 
   pref_change_registrar_->Init(profile_->GetPrefs());
-  base::Closure callback =
-      base::Bind(&EventRouter::OnFileManagerPrefsChanged,
-                 weak_factory_.GetWeakPtr());
+  auto callback = base::BindRepeating(&EventRouter::OnFileManagerPrefsChanged,
+                                      weak_factory_.GetWeakPtr());
   pref_change_registrar_->Add(drive::prefs::kDisableDriveOverCellular,
                               callback);
   pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
@@ -540,6 +549,10 @@ void EventRouter::ObserveEvents() {
       guest_os::GuestOsSharePath::GetForProfile(profile_);
   if (guest_os_share_path)
     guest_os_share_path->AddObserver(this);
+
+  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
+  if (tablet_mode)
+    tablet_mode->AddObserver(this);
 }
 
 // File watch setup routines.
@@ -556,8 +569,8 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
     watcher->AddExtension(extension_id);
     watcher->WatchLocalFile(
         profile_, local_path,
-        base::Bind(&EventRouter::HandleFileWatchNotification,
-                   weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&EventRouter::HandleFileWatchNotification,
+                            weak_factory_.GetWeakPtr()),
         std::move(callback));
 
     file_watchers_[local_path] = std::move(watcher);
@@ -723,7 +736,10 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
     file_definition.is_directory = true;
 
     file_manager::util::ConvertFileDefinitionToEntryDefinition(
-        profile_, *extension_id, file_definition,
+        util::GetFileSystemContextForExtensionId(profile_, *extension_id),
+        url::Origin::Create(
+            extensions::Extension::GetBaseURLFromExtensionId(*extension_id)),
+        file_definition,
         base::BindOnce(
             &EventRouter::DispatchDirectoryChangeEventWithEntryDefinition,
             weak_factory_.GetWeakPtr(), base::Owned(extension_id), got_error));
@@ -922,6 +938,28 @@ void EventRouter::OnUnshare(const std::string& vm_name,
   }
 }
 
+void EventRouter::OnTabletModeStarted() {
+  for (const auto& extension_id : GetEventListenerExtensionIds(
+           profile_, file_manager_private::OnTabletModeChanged::kEventName)) {
+    DispatchEventToExtension(
+        profile_, extension_id,
+        extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
+        file_manager_private::OnTabletModeChanged::kEventName,
+        file_manager_private::OnTabletModeChanged::Create(/*enabled=*/true));
+  }
+}
+
+void EventRouter::OnTabletModeEnded() {
+  for (const auto& extension_id : GetEventListenerExtensionIds(
+           profile_, file_manager_private::OnTabletModeChanged::kEventName)) {
+    DispatchEventToExtension(
+        profile_, extension_id,
+        extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
+        file_manager_private::OnTabletModeChanged::kEventName,
+        file_manager_private::OnTabletModeChanged::Create(/*enabled=*/false));
+  }
+}
+
 void EventRouter::OnCrostiniChanged(
     const std::string& vm_name,
     const std::string& pref_name,
@@ -951,6 +989,31 @@ void EventRouter::NotifyDriveConnectionStatusChanged() {
           FILE_MANAGER_PRIVATE_ON_DRIVE_CONNECTION_STATUS_CHANGED,
       file_manager_private::OnDriveConnectionStatusChanged::kEventName,
       file_manager_private::OnDriveConnectionStatusChanged::Create());
+}
+
+void EventRouter::DropFailedPluginVmDirectoryNotShared() {
+  for (const auto& extension_id : GetEventListenerExtensionIds(
+           profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
+    file_manager_private::CrostiniEvent event;
+    event.vm_name = plugin_vm::kPluginVmName;
+    event.event_type = file_manager_private::
+        CROSTINI_EVENT_TYPE_DROP_FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED;
+    DispatchEventToExtension(
+        profile_, extension_id,
+        extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+        file_manager_private::OnCrostiniChanged::kEventName,
+        file_manager_private::OnCrostiniChanged::Create(event));
+  }
+}
+
+void EventRouter::DisplayDriveConfirmDialog(
+    const drivefs::mojom::DialogReason& reason,
+    base::OnceCallback<void(drivefs::mojom::DialogResult)> callback) {
+  drivefs_event_router_->DisplayConfirmDialog(reason, std::move(callback));
+}
+
+void EventRouter::OnDriveDialogResult(drivefs::mojom::DialogResult result) {
+  drivefs_event_router_->OnDialogResult(result);
 }
 
 base::WeakPtr<EventRouter> EventRouter::GetWeakPtr() {

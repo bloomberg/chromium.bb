@@ -10,10 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/file_info.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
 
@@ -36,6 +37,12 @@ std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderNonBacked::Clone()
   // We skip copying the drag images.
   clone->html_ = html_;
   clone->base_url_ = base_url_;
+  clone->source_ =
+      source_ ? std::make_unique<ui::DataTransferEndpoint>(*source_.get())
+              : nullptr;
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  clone->originated_from_renderer_ = originated_from_renderer_;
+#endif
 
   return clone;
 }
@@ -43,13 +50,13 @@ std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderNonBacked::Clone()
 void OSExchangeDataProviderNonBacked::MarkOriginatedFromRenderer() {
   // TODO(dcheng): Currently unneeded because ChromeOS Aura correctly separates
   // URL and filename metadata, and does not implement the DownloadURL protocol.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   originated_from_renderer_ = true;
 #endif
 }
 
 bool OSExchangeDataProviderNonBacked::DidOriginateFromRenderer() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 #else
   return originated_from_renderer_;

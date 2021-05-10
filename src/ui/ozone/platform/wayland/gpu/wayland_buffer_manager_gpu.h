@@ -26,7 +26,6 @@
 
 namespace gfx {
 enum class SwapResult;
-class Rect;
 }  // namespace gfx
 
 namespace ui {
@@ -51,7 +50,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
       mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host,
       const base::flat_map<::gfx::BufferFormat, std::vector<uint64_t>>&
           buffer_formats_with_modifiers,
-      bool supports_dma_buf) override;
+      bool supports_dma_buf,
+      bool supports_acquire_fence) override;
 
   // These two calls get the surface, which backs the |widget| and notifies it
   // about the submission and the presentation. After the surface receives the
@@ -103,10 +103,13 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // logic as well. This call must not be done twice for the same |widget| until
   // the OnSubmission is called (which actually means the client can continue
   // sending buffer swap requests).
+  //
+  // CommitBuffer() calls CommitOverlays() to commit only a primary plane
+  // buffer.
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t buffer_id,
+                    const gfx::Rect& bounds_rect,
                     const gfx::Rect& damage_region);
-
   // Send overlay configurations for a frame to a WaylandWindow identified by
   // |widget|.
   void CommitOverlays(
@@ -123,6 +126,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
     gbm_device_ = std::move(gbm_device);
   }
 #endif
+
+  bool supports_acquire_fence() const { return supports_acquire_fence_; }
 
   // Adds a WaylandBufferManagerGpu binding.
   void AddBindingWaylandBufferManagerGpu(
@@ -148,9 +153,6 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                                     size_t length,
                                     gfx::Size size,
                                     uint32_t buffer_id);
-  void CommitBufferInternal(gfx::AcceleratedWidget widget,
-                            uint32_t buffer_id,
-                            const gfx::Rect& damage_region);
   void CommitOverlaysInternal(
       gfx::AcceleratedWidget widget,
       std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
@@ -178,6 +180,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // A DRM render node based gbm device.
   std::unique_ptr<GbmDevice> gbm_device_;
 #endif
+  // Whether Wayland server allows buffer submission with acquire fence.
+  bool supports_acquire_fence_ = false;
 
   mojo::Receiver<ozone::mojom::WaylandBufferManagerGpu> receiver_{this};
 

@@ -7,9 +7,6 @@ import * as Platform from '../platform/platform.js';
 import {TextCursor} from './TextCursor.js';
 import {SourceRange, TextRange} from './TextRange.js';
 
-/**
- * @unrestricted
- */
 export class Text {
   /**
    * @param {string} value
@@ -58,7 +55,8 @@ export class Text {
    */
   positionFromOffset(offset) {
     const lineEndings = this.lineEndings();
-    const lineNumber = lineEndings.lowerBound(offset);
+    const lineNumber =
+        Platform.ArrayUtilities.lowerBound(lineEndings, offset, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
     return {lineNumber: lineNumber, columnNumber: offset - (lineNumber && (lineEndings[lineNumber - 1] + 1))};
   }
 

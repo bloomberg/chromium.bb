@@ -150,6 +150,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="2045055672832940894">Önceki denetim yok</translation>
 <translation id="2045606329038304310">Form alanı kontrolü</translation>
 <translation id="2063539687800151747">Yazıt</translation>
+<translation id="2074531330963286860">Kullanılabilir işlemler mevcut. Görüntülemek için Ara ve Nokta tuşlarına basın</translation>
 <translation id="2086961585857038472">Sonraki Kelime</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">tr</translation>
@@ -913,6 +914,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7810781339813764006">Sonraki Grup</translation>
 <translation id="7813616274030162878">Anahtar Erişimi Menüsü</translation>
 <translation id="7839679365527550018">Önceki Kelime</translation>
+<translation id="7842115774595115751">Gezinme kontrollerini etkinleştir</translation>
 <translation id="7846634333498149051">Klavye</translation>
 <translation id="7851816175263618915">Bazı noktalama işaretleri</translation>
 <translation id="7871691770940645922">Sanal Braille Ekranı</translation>
@@ -1056,6 +1058,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Unut</translation>
 <translation id="8989104346085848538">Devam etmekte olan bir ChromeVox konuşmasını durdurmak için Control tuşuna basın.</translation>
+<translation id="8993737615451556423">Okuma sesini hızlandırma, yavaşlatma ve duraklatma kontrollerini sağlar</translation>
 <translation id="9014206344398081366">ChromeVox eğiticisi</translation>
 <translation id="9040132695316389094">Başlık 1</translation>
 <translation id="9061884144798498064">8 noktalı bir braille tablosu seçin:</translation>

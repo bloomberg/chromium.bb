@@ -41,11 +41,6 @@
 
 namespace extensions {
 
-static constexpr char kInstallResultExtensionErrorHistogramName[] =
-    "Webapp.InstallResultExtensionError.System.Profiles";
-static constexpr char kInstallResultExtensionDisabledReasonHistogramName[] =
-    "Webapp.InstallResultExtensionDisabledReason.System.Profiles";
-
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
     : externally_installed_app_prefs_(profile->GetPrefs()), profile_(profile) {
   crx_installer_factory_ = base::BindRepeating([](Profile* profile) {
@@ -72,23 +67,22 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
       weak_ptr_factory_.GetWeakPtr(), web_app_info.start_url, launch_type,
       web_app_info.enable_experimental_tabbed_window, options.locally_installed,
-      options.install_source == WebappInstallSource::SYSTEM_DEFAULT,
       std::move(callback), crx_installer));
 
   switch (options.install_source) {
       // TODO(nigeltao/ortuno): should these two cases lead to different
       // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-    case WebappInstallSource::INTERNAL_DEFAULT:
-    case WebappInstallSource::EXTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::INTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
       crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
       // CrxInstaller::InstallWebApp will OR the creation flags with
       // FROM_BOOKMARK.
       crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
-    case WebappInstallSource::EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::EXTERNAL_POLICY:
       crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
       break;
-    case WebappInstallSource::SYSTEM_DEFAULT:
+    case webapps::WebappInstallSource::SYSTEM_DEFAULT:
       // System Apps are considered EXTERNAL_COMPONENT as they are downloaded
       // from the WebUI they point to. COMPONENT seems like the more correct
       // value, but usages (icon loading, filesystem cleanup), are tightly
@@ -97,12 +91,12 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
       crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
-    case WebappInstallSource::ARC:
+    case webapps::WebappInstallSource::ARC:
       // Ensure that WebApk is not synced. There is some mechanism to propagate
       // the local source of data in place of usual extension sync.
       crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
       break;
-    case WebappInstallSource::COUNT:
+    case webapps::WebappInstallSource::COUNT:
       NOTREACHED();
       break;
     default:
@@ -159,22 +153,6 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     UninstallWebAppCallback callback) {
   // Bookmark apps don't support app installation from different sources.
   // |external_install_source| is ignored here.
-  UninstallExtension(app_id, std::move(callback));
-}
-
-bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
-    const web_app::AppId& app_id) const {
-  // Bookmark apps don't support app installation from different sources.
-  // The old system uninstalls extension completely, the implementation is
-  // the same:
-  return CanUserUninstallExternalApp(app_id);
-}
-
-void BookmarkAppInstallFinalizer::UninstallWebAppFromSyncByUser(
-    const web_app::AppId& app_id,
-    UninstallWebAppCallback callback) {
-  // Bookmark apps don't support app installation from different sources.
-  // Uninstall extension completely:
   UninstallExtension(app_id, std::move(callback));
 }
 
@@ -240,18 +218,10 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     LaunchType launch_type,
     bool enable_experimental_tabbed_window,
     bool is_locally_installed,
-    bool is_system_app,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    if (is_system_app) {
-      std::string extension_install_error_histogram_name =
-          std::string(kInstallResultExtensionErrorHistogramName) + "." +
-          web_app::GetProfileCategoryForLogging(profile_);
-      base::UmaHistogramEnumeration(extension_install_error_histogram_name,
-                                    error.value().detail());
-    }
     std::move(callback).Run(
         web_app::AppId(),
         web_app::InstallResultCode::kBookmarkExtensionInstallError);
@@ -266,13 +236,6 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
         ExtensionPrefs::Get(profile_)->GetDisableReasons(extension->id());
     LOG(ERROR) << "Installed extension was disabled: "
                << extension_disabled_reasons;
-    if (is_system_app) {
-      std::string extension_disabled_reason_histogram_name =
-          std::string(kInstallResultExtensionDisabledReasonHistogramName) +
-          "." + web_app::GetProfileCategoryForLogging(profile_);
-      base::UmaHistogramSparse(extension_disabled_reason_histogram_name,
-                               extension_disabled_reasons);
-    }
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;

@@ -202,6 +202,12 @@ void ParagraphImpl::layout(SkScalar rawWidth) {
         fMinIntrinsicWidth = fMaxIntrinsicWidth;
     }
 
+    // TODO: Since min and max are calculated differently it's possible to get a rounding error
+    //  that would make min > max. Sort it out later, make it the same for now
+    if (fMaxIntrinsicWidth < fMinIntrinsicWidth) {
+        fMaxIntrinsicWidth = fMinIntrinsicWidth;
+    }
+
     //SkDebugf("layout('%s', %f): %f %f\n", fText.c_str(), rawWidth, fMinIntrinsicWidth, fMaxIntrinsicWidth);
 }
 
@@ -293,6 +299,11 @@ bool ParagraphImpl::computeCodeUnitProperties() {
 
 // Clusters in the order of the input text
 void ParagraphImpl::buildClusterTable() {
+    int cluster_count = 1;
+    for (auto& run : fRuns) {
+        cluster_count += run.isPlaceholder() ? 1 : run.size();
+    }
+    fClusters.reserve_back(cluster_count);
 
     // Walk through all the run in the direction of input text
     for (auto& run : fRuns) {
@@ -308,7 +319,6 @@ void ParagraphImpl::buildClusterTable() {
             fCodeUnitProperties[run.textRange().start] |= CodeUnitFlags::kSoftLineBreakBefore;
             fCodeUnitProperties[run.textRange().end] |= CodeUnitFlags::kSoftLineBreakBefore;
         } else {
-            fClusters.reserve_back(fClusters.size() + run.size());
             // Walk through the glyph in the direction of input text
             run.iterateThroughClustersInTextOrder([runIndex, this](size_t glyphStart,
                                                                    size_t glyphEnd,
@@ -441,27 +451,6 @@ void ParagraphImpl::breakShapedTextIntoLines(SkScalar maxWidth) {
     fAlphabeticBaseline = fLines.empty() ? fEmptyMetrics.alphabeticBaseline() : fLines.front().alphabeticBaseline();
     fIdeographicBaseline = fLines.empty() ? fEmptyMetrics.ideographicBaseline() : fLines.front().ideographicBaseline();
     fExceededMaxLines = textWrapper.exceededMaxLines();
-
-    // Correct the first and the last line ascents/descents if required
-    if ((fParagraphStyle.getTextHeightBehavior() & TextHeightBehavior::kDisableFirstAscent) != 0) {
-        auto& firstLine = fLines.front();
-        auto delta = firstLine.metricsWithoutMultiplier(TextHeightBehavior::kDisableFirstAscent);
-        if (!SkScalarNearlyZero(delta)) {
-            fHeight += delta;
-            // Shift all the lines up
-            for (auto& line : fLines) {
-                if (line.isFirstLine()) continue;
-                line.shiftVertically(delta);
-            }
-        }
-    }
-
-    if ((fParagraphStyle.getTextHeightBehavior() & TextHeightBehavior::kDisableLastDescent) != 0) {
-        auto& lastLine = fLines.back();
-        auto delta = lastLine.metricsWithoutMultiplier(TextHeightBehavior::kDisableLastDescent);
-        // It's the last line. There is nothing below to shift
-        fHeight += delta;
-    }
 }
 
 void ParagraphImpl::formatLines(SkScalar maxWidth) {
@@ -546,6 +535,12 @@ BlockRange ParagraphImpl::findAllBlocks(TextRange textRange) {
             begin = index;
         }
         end = index;
+    }
+
+    if (begin == EMPTY_INDEX || end == EMPTY_INDEX) {
+        // It's possible if some text is not covered with any text style
+        // Not in Flutter but in direct use of SkParagraph
+        return EMPTY_RANGE;
     }
 
     return { begin, end + 1 };
@@ -666,7 +661,7 @@ PositionWithAffinity ParagraphImpl::getGlyphPositionAtCoordinate(SkScalar dx, Sk
         return {0, Affinity::kDownstream};
     }
 
-  ensureUTF16Mapping();
+    ensureUTF16Mapping();
 
     for (auto& line : fLines) {
         // Let's figure out if we can stop looking
@@ -822,22 +817,42 @@ void ParagraphImpl::setState(InternalState state) {
 }
 
 void ParagraphImpl::computeEmptyMetrics() {
-    auto defaultTextStyle = paragraphStyle().getTextStyle();
+
+    // The empty metrics is used to define the height of the empty lines
+    // Unfortunately, Flutter has 2 different cases for that:
+    // 1. An empty line inside the text
+    // 2. An empty paragraph
+    // In the first case SkParagraph takes the metrics from the default paragraph style
+    // In the second case it should take it from the current text style
+    bool emptyParagraph = fRuns.empty();
+    TextStyle textStyle = paragraphStyle().getTextStyle();
+    if (emptyParagraph && !fTextStyles.empty()) {
+        textStyle = fTextStyles.back().fStyle;
+    }
 
     auto typefaces = fontCollection()->findTypefaces(
-      defaultTextStyle.getFontFamilies(), defaultTextStyle.getFontStyle());
+      textStyle.getFontFamilies(), textStyle.getFontStyle());
     auto typeface = typefaces.empty() ? nullptr : typefaces.front();
 
-    SkFont font(typeface, defaultTextStyle.getFontSize());
-
+    SkFont font(typeface, textStyle.getFontSize());
     fEmptyMetrics = InternalLineMetrics(font, paragraphStyle().getStrutStyle().getForceStrutHeight());
-    if (!paragraphStyle().getStrutStyle().getForceStrutHeight() &&
-        defaultTextStyle.getHeightOverride()) {
-        auto multiplier =
-                defaultTextStyle.getHeight() * defaultTextStyle.getFontSize() / fEmptyMetrics.height();
-        fEmptyMetrics = InternalLineMetrics(fEmptyMetrics.ascent() * multiplier,
-                                      fEmptyMetrics.descent() * multiplier,
-                                      fEmptyMetrics.leading() * multiplier);
+
+    if (emptyParagraph) {
+        // For an empty text we apply both TextHeightBehaviour flags
+        // In case of non-empty paragraph TextHeightBehaviour flags will be applied at the appropriate place
+        auto disableFirstAscent = (paragraphStyle().getTextHeightBehavior() & TextHeightBehavior::kDisableFirstAscent) == TextHeightBehavior::kDisableFirstAscent;
+        auto disableLastDescent = (paragraphStyle().getTextHeightBehavior() & TextHeightBehavior::kDisableLastDescent) == TextHeightBehavior::kDisableLastDescent;
+        fEmptyMetrics.update(
+            disableFirstAscent ? fEmptyMetrics.rawAscent() : fEmptyMetrics.ascent(),
+            disableLastDescent ? fEmptyMetrics.rawDescent() : fEmptyMetrics.descent(),
+            fEmptyMetrics.leading());
+    } else if (!paragraphStyle().getStrutStyle().getForceStrutHeight() &&
+        textStyle.getHeightOverride()) {
+        auto multiplier = textStyle.getHeight() * textStyle.getFontSize() / fEmptyMetrics.height();
+        fEmptyMetrics.update(
+            fEmptyMetrics.ascent() * multiplier,
+            fEmptyMetrics.descent() * multiplier,
+            fEmptyMetrics.leading() * multiplier);
     }
 
     if (fParagraphStyle.getStrutStyle().getStrutEnabled()) {

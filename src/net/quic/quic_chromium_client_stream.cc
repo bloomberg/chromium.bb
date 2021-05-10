@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -78,6 +79,8 @@ void QuicChromiumClientStream::Handle::OnTrailingHeadersAvailable() {
   if (!stream_->DeliverTrailingHeaders(read_headers_buffer_, &rv))
     rv = ERR_QUIC_PROTOCOL_ERROR;
 
+  base::UmaHistogramBoolean(
+      "Net.QuicChromiumClientStream.TrailingHeadersProcessSuccess", rv >= 0);
   ResetAndRun(std::move(read_headers_callback_), rv);
 }
 
@@ -111,6 +114,13 @@ void QuicChromiumClientStream::Handle::OnClose() {
       net_error_ = ERR_QUIC_PROTOCOL_ERROR;
     }
   }
+  base::UmaHistogramSparse("Net.QuicChromiumClientStream.HandleOnCloseNetError",
+                           -net_error_);
+  base::UmaHistogramSparse(
+      "Net.QuicChromiumClientStream.HandleOnCloseStreamError", stream_error());
+  base::UmaHistogramSparse(
+      "Net.QuicChromiumClientStream.HandleOnCloseConnectionError",
+      connection_error());
   OnError(net_error_);
 }
 
@@ -399,6 +409,15 @@ int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {
   return net_error_;
 }
 
+void QuicChromiumClientStream::Handle::SetRequestIdempotency(
+    Idempotency idempotency) {
+  idempotency_ = idempotency;
+}
+
+Idempotency QuicChromiumClientStream::Handle::GetRequestIdempotency() const {
+  return idempotency_;
+}
+
 QuicChromiumClientStream::QuicChromiumClientStream(
     quic::QuicStreamId id,
     quic::QuicSpdyClientSessionBase* session,
@@ -541,7 +560,9 @@ size_t QuicChromiumClientStream::WriteHeaders(
   if (!session()->OneRttKeysAvailable()) {
     auto entry = header_block.find(":method");
     DCHECK(entry != header_block.end());
-    DCHECK_NE("POST", entry->second);
+    DCHECK(
+        entry->second != "POST" ||
+        (handle_ != nullptr && handle_->GetRequestIdempotency() == IDEMPOTENT));
   }
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
@@ -557,8 +578,9 @@ size_t QuicChromiumClientStream::WriteHeaders(
 
 bool QuicChromiumClientStream::WriteStreamData(absl::string_view data,
                                                bool fin) {
-  // Must not be called when data is buffered.
-  DCHECK(!HasBufferedData());
+  // For gQUIC, this must not be called when data is buffered because headers
+  // are sent on the dedicated header stream.
+  DCHECK(!HasBufferedData() || VersionUsesHttp3(quic_version_));
   // Writes the data, or buffers it.
   WriteOrBufferBody(data, fin);
   return !HasBufferedData();  // Was all data written?

@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.voice;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_LAST_VERSION;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_ENABLED;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_SUPPORTED;
 
 import android.content.Context;
 import android.content.Intent;
@@ -25,60 +23,73 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.signin.AccountManagerDelegateException;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service for state tracking and event delivery to classes that need to observe the state
  * of Assistant Voice Search.
  **/
 public class AssistantVoiceSearchService implements TemplateUrlService.TemplateUrlServiceObserver,
-                                                    GSAState.Observer, ProfileManager.Observer {
-    private static final String USER_ELIGIBILITY_HISTOGRAM =
-            "Assistant.VoiceSearch.UserEligibility";
+                                                    IdentityManager.Observer,
+                                                    AccountsChangeObserver {
+    @VisibleForTesting
+    static final String USER_ELIGIBILITY_HISTOGRAM = "Assistant.VoiceSearch.UserEligibility";
     @VisibleForTesting
     static final String USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM =
             "Assistant.VoiceSearch.UserEligibility.FailureReason";
+    @VisibleForTesting
+    static final String AGSA_VERSION_HISTOGRAM = "Assistant.VoiceSearch.AgsaVersion";
     private static final String DEFAULT_ASSISTANT_AGSA_MIN_VERSION = "11.7";
     private static final boolean DEFAULT_ASSISTANT_COLORFUL_MIC_ENABLED = false;
 
-    // Cached value for expensive content provider read.
-    // True - Value has been read and is true.
-    // False - Value has been read and is false.
-    // Null - Value hasn't been read.
-    private static Boolean sAgsaSupportsAssistantVoiceSearch;
-
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
     @IntDef({EligibilityFailureReason.AGSA_CANT_HANDLE_INTENT,
             EligibilityFailureReason.AGSA_VERSION_BELOW_MINIMUM,
-            EligibilityFailureReason.AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE,
-            EligibilityFailureReason.AGSA_DOESNT_SUPPORT_VOICE_SEARCH,
             EligibilityFailureReason.CHROME_NOT_GOOGLE_SIGNED,
             EligibilityFailureReason.AGSA_NOT_GOOGLE_SIGNED,
-            EligibilityFailureReason.ACCOUNT_MISMATCH, EligibilityFailureReason.MAX_VALUE})
+            EligibilityFailureReason.NON_GOOGLE_SEARCH_ENGINE,
+            EligibilityFailureReason.NO_CHROME_ACCOUNT, EligibilityFailureReason.LOW_END_DEVICE,
+            EligibilityFailureReason.MULTIPLE_ACCOUNTS_ON_DEVICE})
     @Retention(RetentionPolicy.SOURCE)
     @interface EligibilityFailureReason {
         int AGSA_CANT_HANDLE_INTENT = 0;
         int AGSA_VERSION_BELOW_MINIMUM = 1;
-        int AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE = 2;
-        int AGSA_DOESNT_SUPPORT_VOICE_SEARCH = 3;
+        // No longer used, replaced by Chrome-side eligibility checks.
+        // int AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE = 2;
+        // No longer used, replaced by Chrome-side eligibility checks.
+        // int AGSA_DOESNT_SUPPORT_VOICE_SEARCH = 3;
         int CHROME_NOT_GOOGLE_SIGNED = 4;
         int AGSA_NOT_GOOGLE_SIGNED = 5;
-        int ACCOUNT_MISMATCH = 6;
+        // No longer used, AGSA now supports attribution to arbitrary accounts.
+        // int ACCOUNT_MISMATCH = 6;
+        int NON_GOOGLE_SEARCH_ENGINE = 7;
+        int NO_CHROME_ACCOUNT = 8;
+        int LOW_END_DEVICE = 9;
+        int MULTIPLE_ACCOUNTS_ON_DEVICE = 10;
 
-        // STOP: When updating this, also update values in enums.xml.
-        int MAX_VALUE = 7;
+        // STOP: When updating this, also update values in enums.xml and make sure to update the
+        // IntDef above.
+        int NUM_ENTRIES = 11;
     }
 
     /** Allows outside classes to listen for changes in this service. */
@@ -99,34 +110,41 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
     private final TemplateUrlService mTemplateUrlService;
     private final GSAState mGsaState;
     private final SharedPreferencesManager mSharedPrefsManager;
+    private final IdentityManager mIdentityManager;
+    private final AccountManagerFacade mAccountManagerFacade;
 
     private boolean mIsDefaultSearchEngineGoogle;
     private boolean mIsAssistantVoiceSearchEnabled;
     private boolean mIsColorfulMicEnabled;
     private boolean mShouldShowColorfulMic;
+    private boolean mIsMultiAccountCheckEnabled;
     private String mMinAgsaVersion;
 
     public AssistantVoiceSearchService(@NonNull Context context,
             @NonNull ExternalAuthUtils externalAuthUtils,
             @NonNull TemplateUrlService templateUrlService, @NonNull GSAState gsaState,
-            @Nullable Observer observer, @NonNull SharedPreferencesManager sharedPrefsManager) {
+            @Nullable Observer observer, @NonNull SharedPreferencesManager sharedPrefsManager,
+            @NonNull IdentityManager identityManager,
+            @NonNull AccountManagerFacade accountManagerFacade) {
         mContext = context;
         mExternalAuthUtils = externalAuthUtils;
         mTemplateUrlService = templateUrlService;
         mGsaState = gsaState;
         mSharedPrefsManager = sharedPrefsManager;
         mObserver = observer;
+        mIdentityManager = identityManager;
+        mAccountManagerFacade = accountManagerFacade;
 
-        ProfileManager.addObserver(this);
-        mGsaState.addObserver(this);
+        mAccountManagerFacade.addObserver(this);
+        mIdentityManager.addObserver(this);
         mTemplateUrlService.addObserver(this);
         initializeAssistantVoiceSearchState();
     }
 
     public void destroy() {
         mTemplateUrlService.removeObserver(this);
-        mGsaState.removeObserver(this);
-        ProfileManager.removeObserver(this);
+        mIdentityManager.removeObserver(this);
+        mAccountManagerFacade.removeObserver(this);
     }
 
     private void notifyObserver() {
@@ -147,17 +165,13 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         mMinAgsaVersion = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "min_agsa_version");
 
+        mIsMultiAccountCheckEnabled = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "enable_multi_account_check",
+                /* default= */ true);
+
         mIsDefaultSearchEngineGoogle = mTemplateUrlService.isDefaultSearchEngineGoogle();
 
         mShouldShowColorfulMic = isColorfulMicEnabled();
-
-        // Baseline conditions to avoid doing the expensive query to a content provider.
-        if (mIsAssistantVoiceSearchEnabled && mIsDefaultSearchEngineGoogle
-                && !SysUtils.isLowEndDevice()) {
-            checkIfAssistantEnabled();
-        } else {
-            sAgsaSupportsAssistantVoiceSearch = false;
-        }
     }
 
     /** @return Whether the user has had a chance to enable the feature. */
@@ -167,16 +181,23 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
 
     /**
      * Checks if the client is eligible Assistant for voice search. It's
-     * {@link canRequestAssistantVoiceSearch} with an additional check for experiment groups.
+     * {@link canRequestAssistantVoiceSearch} with additional conditions:
+     * - The feature must be enabled.
+     * - The consent flow must be accepted.
      */
     public boolean shouldRequestAssistantVoiceSearch() {
         return mIsAssistantVoiceSearchEnabled && canRequestAssistantVoiceSearch()
                 && isEnabledByPreference();
     }
 
-    /** Checks if the client meetings the requirements to use Assistant for voice search. */
+    /**
+     * Checks if the client meets the device requirements to use Assistant for voice search. This
+     * doesn't check if the client should use Assistant voice search, which accounts for additional
+     * conditions.
+     */
     public boolean canRequestAssistantVoiceSearch() {
-        return mIsDefaultSearchEngineGoogle && isDeviceEligibleForAssistant();
+        return mIsAssistantVoiceSearchEnabled
+                && isDeviceEligibleForAssistant(/* returnImmediately= */ true, /* outList= */ null);
     }
 
     /**
@@ -213,43 +234,6 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
                 ASSISTANT_VOICE_SEARCH_ENABLED, /* default= */ false);
     }
 
-    /** Does expensive content provider read to determine if AGSA supports Assistant. */
-    private void checkIfAssistantEnabled() {
-        final String currentAgsaVersion = mGsaState.getAgsaVersionName();
-        if (mSharedPrefsManager.contains(ASSISTANT_VOICE_SEARCH_SUPPORTED)
-                && mSharedPrefsManager
-                           .readString(ASSISTANT_LAST_VERSION,
-                                   /* default= */ "n/a")
-                           .equals(currentAgsaVersion)) {
-            sAgsaSupportsAssistantVoiceSearch =
-                    mSharedPrefsManager.readBoolean(ASSISTANT_VOICE_SEARCH_SUPPORTED,
-                            /* default= */ false);
-            updateColorfulMicState();
-        } else {
-            DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-                // Only do this once per browser start.
-                if (sAgsaSupportsAssistantVoiceSearch != null) return;
-                sAgsaSupportsAssistantVoiceSearch = false;
-                new AsyncTask<Boolean>() {
-                    @Override
-                    public Boolean doInBackground() {
-                        return mGsaState.agsaSupportsAssistantVoiceSearch();
-                    }
-
-                    @Override
-                    public void onPostExecute(Boolean agsaSupportsAssistantVoiceSearch) {
-                        sAgsaSupportsAssistantVoiceSearch = agsaSupportsAssistantVoiceSearch;
-                        mSharedPrefsManager.writeBoolean(ASSISTANT_VOICE_SEARCH_SUPPORTED,
-                                sAgsaSupportsAssistantVoiceSearch);
-                        mSharedPrefsManager.writeString(
-                                ASSISTANT_LAST_VERSION, currentAgsaVersion);
-                        updateColorfulMicState();
-                    }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            });
-        }
-    }
-
     /** @return Whether the colorful mic is enabled. */
     private boolean isColorfulMicEnabled() {
         return mContext.getPackageManager() != null && mIsColorfulMicEnabled
@@ -265,56 +249,63 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         return mMinAgsaVersion;
     }
 
-    /** @return Whether the device is eligible to use assistant. */
+    /**
+     * Checks all Assistant eligibility conditions. Optionally assess all failure conditions.
+     * @param returnImmediately Whether to return as soon as the client is ineligible.
+     * @param outList A list that the failure reasons will be added to, when returnImmediately is
+     *                false. This list will not be altered when returnImmediately is true. Must be
+     *                non-null if returnImmediately is false.
+     * @return Whether the device is eligible for Assistant.
+     */
     @VisibleForTesting
-    protected boolean isDeviceEligibleForAssistant() {
+    protected boolean isDeviceEligibleForAssistant(
+            boolean returnImmediately, List<Integer> outList) {
+        assert returnImmediately || outList != null;
+
         if (!mGsaState.canAgsaHandleIntent(getAssistantVoiceSearchIntent())) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    EligibilityFailureReason.AGSA_CANT_HANDLE_INTENT,
-                    EligibilityFailureReason.MAX_VALUE);
-            return false;
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.AGSA_CANT_HANDLE_INTENT);
         }
 
         if (mGsaState.isAgsaVersionBelowMinimum(
                     mGsaState.getAgsaVersionName(), getAgsaMinVersion())) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    EligibilityFailureReason.AGSA_VERSION_BELOW_MINIMUM,
-                    EligibilityFailureReason.MAX_VALUE);
-            return false;
-        }
-
-        // Query AGSA to see if it can handle Assistant voice search.
-        if (sAgsaSupportsAssistantVoiceSearch == null || !sAgsaSupportsAssistantVoiceSearch) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    sAgsaSupportsAssistantVoiceSearch == null
-                            ? EligibilityFailureReason
-                                      .AGSA_DOESNT_SUPPORT_VOICE_SEARCH_CHECK_NOT_COMPLETE
-                            : EligibilityFailureReason.AGSA_DOESNT_SUPPORT_VOICE_SEARCH,
-                    EligibilityFailureReason.MAX_VALUE);
-            return false;
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.AGSA_VERSION_BELOW_MINIMUM);
         }
 
         // AGSA will throw an exception if Chrome isn't Google signed.
         if (!mExternalAuthUtils.isChromeGoogleSigned()) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    EligibilityFailureReason.CHROME_NOT_GOOGLE_SIGNED,
-                    EligibilityFailureReason.MAX_VALUE);
-            return false;
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.CHROME_NOT_GOOGLE_SIGNED);
         }
         if (!mExternalAuthUtils.isGoogleSigned(IntentHandler.PACKAGE_GSA)) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    EligibilityFailureReason.AGSA_NOT_GOOGLE_SIGNED,
-                    EligibilityFailureReason.MAX_VALUE);
-            return false;
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.AGSA_NOT_GOOGLE_SIGNED);
         }
 
-        if (!mGsaState.doesGsaAccountMatchChrome()) {
-            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
-                    EligibilityFailureReason.ACCOUNT_MISMATCH, EligibilityFailureReason.MAX_VALUE);
-            return false;
+        if (!mIsDefaultSearchEngineGoogle) {
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.NON_GOOGLE_SEARCH_ENGINE);
         }
 
-        return true;
+        if (!mIdentityManager.hasPrimaryAccount()) {
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.NO_CHROME_ACCOUNT);
+        }
+
+        if (SysUtils.isLowEndDevice()) {
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.LOW_END_DEVICE);
+        }
+
+        if (mIsMultiAccountCheckEnabled && doesViolateMultiAccountCheck()) {
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.MULTIPLE_ACCOUNTS_ON_DEVICE);
+        }
+
+        // Either we would have failed already or we have some errors on the list.
+        // Otherwise this client is eligible for assistant.
+        return returnImmediately || outList.size() == 0;
     }
 
     /** @return The Intent for Assistant voice search. */
@@ -324,10 +315,28 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         return intent;
     }
 
-    /** Records whether the user is eligible. */
+    /** Return the current user email or null if no account is present. */
+    public @Nullable String getUserEmail() {
+        CoreAccountInfo info = mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
+        return info == null ? null : info.getEmail();
+    }
+
+    /**
+     * Reports user eligilibility,
+     * - If the user is eligible, then it only reports to USER_ELIGIBILITY_HISTOGRAM.
+     * - If the user is ineligible, then it reports to USER_ELIGIBILITY_HISTOGRAM and the reason
+     *   to USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM.
+     */
     void reportUserEligibility() {
-        RecordHistogram.recordBooleanHistogram(
-                USER_ELIGIBILITY_HISTOGRAM, canRequestAssistantVoiceSearch());
+        List<Integer> failureReasons = new ArrayList<>();
+        boolean eligible = isDeviceEligibleForAssistant(
+                /* returnImmediately= */ false, /* outList */ failureReasons);
+        RecordHistogram.recordBooleanHistogram(USER_ELIGIBILITY_HISTOGRAM, eligible);
+
+        for (@EligibilityFailureReason int reason : failureReasons) {
+            RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,
+                    reason, EligibilityFailureReason.NUM_ENTRIES);
+        }
     }
 
     private void updateColorfulMicState() {
@@ -346,6 +355,19 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /** Wrapped multi-account check to handle the exception. */
+    @VisibleForTesting
+    boolean doesViolateMultiAccountCheck() {
+        if (!mAccountManagerFacade.isCachePopulated()) return true;
+
+        try {
+            return mAccountManagerFacade.getGoogleAccounts().size() > 1;
+        } catch (AccountManagerDelegateException e) {
+            // In case of an exception -- we can't be sure so default to true.
+            return true;
+        }
+    }
+
     // TemplateUrlService.TemplateUrlServiceObserver implementation
 
     @Override
@@ -358,22 +380,19 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         notifyObserver();
     }
 
-    // GSAState.Observer implementation
+    // IdentityManager.Observer implementation
 
     @Override
-    public void onSetGsaAccount() {
+    public void onPrimaryAccountChanged(PrimaryAccountChangeEvent eventDetails) {
         updateColorfulMicState();
     }
 
-    // ProfileManager.Observer implementation
+    // AccountsChangeObserver implementation
 
     @Override
-    public void onProfileAdded(Profile profile) {
+    public void onAccountsChanged() {
         updateColorfulMicState();
     }
-
-    @Override
-    public void onProfileDestroyed(Profile profile) {}
 
     // Test-only methods
 
@@ -383,8 +402,7 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         mShouldShowColorfulMic = enabled;
     }
 
-    /** Allows skipping the cross-app check for testing. */
-    public static void setAgsaSupportsAssistantVoiceSearchForTesting(Boolean value) {
-        sAgsaSupportsAssistantVoiceSearch = value;
+    void setMultiAccountCheckEnabledForTesting(boolean enabled) {
+        mIsMultiAccountCheckEnabled = enabled;
     }
 }

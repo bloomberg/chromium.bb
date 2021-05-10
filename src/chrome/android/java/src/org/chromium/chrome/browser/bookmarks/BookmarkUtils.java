@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -19,6 +20,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -49,9 +51,11 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +96,8 @@ public class BookmarkUtils {
                         ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR)
                 && AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION.getValue()
                            .equals("add_to_option");
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.READ_LATER) && !isAddToOptionVariation) {
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET)
+                && !isAddToOptionVariation) {
             // Show a bottom sheet to let the user select target bookmark folder.
             showBookmarkBottomSheet(bookmarkModel, tab, snackbarManager, bottomSheetController,
                     activity, fromCustomTab, callback);
@@ -136,6 +141,14 @@ public class BookmarkUtils {
             SnackbarManager snackbarManager, Activity activity, boolean fromCustomTab) {
         BookmarkId bookmarkId =
                 addBookmarkInternal(activity, bookmarkModel, tab.getTitle(), tab.getOriginalUrl());
+
+        if (bookmarkId != null && bookmarkId.getType() == BookmarkType.NORMAL) {
+            @BrowserProfileType
+            int type = Profile.getBrowserProfileTypeFromProfile(
+                    Profile.fromWebContents(tab.getWebContents()));
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Bookmarks.AddedPerProfileType", type, BrowserProfileType.MAX_VALUE + 1);
+        }
 
         Snackbar snackbar = null;
         if (bookmarkId == null) {
@@ -188,7 +201,7 @@ public class BookmarkUtils {
      * @param context The associated context.
      * @return The bookmark ID created after saving the article to the reading list.
      */
-    public static BookmarkId addToReadingList(String url, String title,
+    public static BookmarkId addToReadingList(GURL url, String title,
             SnackbarManager snackbarManager, BookmarkBridge bookmarkBridge, Context context) {
         assert bookmarkBridge.isBookmarkModelLoaded();
         BookmarkId bookmarkId = bookmarkBridge.addToReadingList(title, url);
@@ -210,7 +223,7 @@ public class BookmarkUtils {
      * Will reset last used parent if it fails to add a bookmark
      */
     private static BookmarkId addBookmarkInternal(
-            Context context, BookmarkModel bookmarkModel, String title, String url) {
+            Context context, BookmarkModel bookmarkModel, String title, GURL url) {
         BookmarkId parent = getLastUsedParent(context);
         BookmarkItem parentItem = null;
         if (parent != null) {
@@ -262,25 +275,56 @@ public class BookmarkUtils {
      * @param activity An activity to start the manager with.
      */
     public static void showBookmarkManager(Activity activity) {
-        ThreadUtils.assertOnUiThread();
-        String url = getFirstUrlToLoad(activity);
+        showBookmarkManager(activity, null);
+    }
 
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)) {
-            openUrl(activity, url, activity.getComponentName());
-        } else {
-            Intent intent = new Intent(activity, BookmarkActivity.class);
-            intent.setData(Uri.parse(url));
+    /**
+     * Shows bookmark main UI.
+     * @param activity An activity to start the manager with. If null, the bookmark manager will be
+     *         started as a new task.
+     * @param folderId The bookmark folder to open. If null, the bookmark manager will open the most
+     *         recent folder.
+     */
+    public static void showBookmarkManager(
+            @Nullable Activity activity, @Nullable BookmarkId folderId) {
+        ThreadUtils.assertOnUiThread();
+        Context context = activity == null ? ContextUtils.getApplicationContext() : activity;
+        String url = getFirstUrlToLoad(context, folderId);
+
+        // Tablet.
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
+            openUrl(context, url, activity == null ? null : activity.getComponentName());
+            return;
+        }
+
+        // Phone.
+        Intent intent = new Intent(context, BookmarkActivity.class);
+        intent.setData(Uri.parse(url));
+        if (activity != null) {
+            // Start from an existing activity.
             intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
             activity.startActivity(intent);
+        } else {
+            // Start a new task.
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            IntentHandler.startActivityForTrustedIntent(intent);
         }
     }
 
     /**
-     * The initial url the bookmark manager shows depends some experiments we run.
+     * @return the bookmark folder URL to open.
      */
-    private static String getFirstUrlToLoad(Context context) {
-        String lastUsedUrl = getLastUsedUrl(context);
-        return TextUtils.isEmpty(lastUsedUrl) ? UrlConstants.BOOKMARKS_URL : lastUsedUrl;
+    private static String getFirstUrlToLoad(Context context, @Nullable BookmarkId folderId) {
+        String url;
+        if (folderId == null) {
+            // Load most recently visited bookmark folder.
+            url = getLastUsedUrl(context);
+        } else {
+            // Load a specific folder.
+            url = BookmarkUIState.createFolderUrl(folderId).toString();
+        }
+
+        return TextUtils.isEmpty(url) ? UrlConstants.BOOKMARKS_URL : url;
     }
 
     /**
@@ -351,13 +395,33 @@ public class BookmarkUtils {
                 "Bookmarks.OpenBookmarkType", bookmarkId.getType(), BookmarkType.LAST + 1);
 
         BookmarkItem bookmarkItem = model.getBookmarkById(bookmarkId);
-        if (bookmarkItem.getId().getType() == BookmarkType.READING_LIST) {
+        assert bookmarkItem != null;
+        RecordHistogram.recordCustomTimesHistogram("Bookmarks.OpenBookmarkTimeInterval."
+                        + bookmarkTypeToHistogramSuffix(bookmarkId.getType()),
+                System.currentTimeMillis() - bookmarkItem.getDateAdded(), 1,
+                DateUtils.DAY_IN_MILLIS * 30, 50);
+
+        if (bookmarkItem.getId().getType() == BookmarkType.READING_LIST
+                && !bookmarkItem.isFolder()) {
             model.setReadStatusForReadingList(bookmarkItem.getUrl(), true);
-            openUrlInCustomTab(context, bookmarkItem.getUrl());
+            openUrlInCustomTab(context, bookmarkItem.getUrl().getSpec());
         } else {
-            openUrl(context, bookmarkItem.getUrl(), openBookmarkComponentName);
+            openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName);
         }
         return true;
+    }
+
+    private static String bookmarkTypeToHistogramSuffix(@BookmarkType int type) {
+        switch (type) {
+            case BookmarkType.NORMAL:
+                return "Normal";
+            case BookmarkType.PARTNER:
+                return "Partner";
+            case BookmarkType.READING_LIST:
+                return "ReadingList";
+        }
+        assert false : "Unknown BookmarkType";
+        return "";
     }
 
     /**

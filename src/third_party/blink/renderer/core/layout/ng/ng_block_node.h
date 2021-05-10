@@ -21,7 +21,7 @@ class NGEarlyBreak;
 class NGFragmentItems;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
-class NGPhysicalContainerFragment;
+class NGPhysicalFragment;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
 
@@ -88,7 +88,8 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       const MinMaxSizesInput&,
       const NGConstraintSpace* = nullptr) const;
 
-  MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesInput&) const;
+  MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesInput&,
+                                           const NGConstraintSpace&) const;
 
   NGLayoutInputNode FirstChild() const;
 
@@ -175,6 +176,11 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   // somewhere.
   void AddColumnResult(scoped_refptr<const NGLayoutResult>,
                        const NGBlockBreakToken* incoming_break_token) const;
+  // Add a column layout result to this node.
+  void AddColumnResult(scoped_refptr<const NGLayoutResult>) const;
+  // Replace an existing column layout result with a new one.
+  void ReplaceColumnResult(scoped_refptr<const NGLayoutResult>,
+                           const NGPhysicalBoxFragment& old_fragment) const;
 
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;
@@ -220,11 +226,6 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       const NGPhysicalBoxFragment& container,
       const NGFragmentItems& items,
       const NGBlockBreakToken* previous_break_token) const;
-  void CopyFragmentDataToLayoutBoxForInlineChildren(
-      const NGPhysicalContainerFragment& container,
-      LayoutUnit initial_container_width,
-      bool initial_container_is_flipped,
-      PhysicalOffset offset = {}) const;
   void PlaceChildrenInLayoutBox(
       const NGPhysicalBoxFragment&,
       const NGBlockBreakToken* previous_break_token) const;

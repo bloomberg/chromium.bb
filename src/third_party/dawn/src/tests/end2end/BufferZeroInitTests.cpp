@@ -162,14 +162,13 @@ class BufferZeroInitTest : public DawnTest {
                                                            expectedValues.size()));
     }
 
-    void TestBufferZeroInitInBindGroup(const char* computeShader,
+    void TestBufferZeroInitInBindGroup(wgpu::ShaderModule module,
                                        uint64_t bufferOffset,
                                        uint64_t boundBufferSize,
                                        const std::vector<uint32_t>& expectedBufferData) {
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.layout = nullptr;
-        pipelineDescriptor.computeStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, computeShader);
+        pipelineDescriptor.computeStage.module = module;
         pipelineDescriptor.computeStage.entryPoint = "main";
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDescriptor);
 
@@ -201,21 +200,28 @@ class BufferZeroInitTest : public DawnTest {
         EXPECT_PIXEL_RGBA8_EQ(kExpectedColor, outputTexture, 0u, 0u);
     }
 
+    void TestBufferZeroInitInBindGroup(const char* glslComputeShader,
+                                       uint64_t bufferOffset,
+                                       uint64_t boundBufferSize,
+                                       const std::vector<uint32_t>& expectedBufferData) {
+        return TestBufferZeroInitInBindGroup(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, glslComputeShader),
+            bufferOffset, boundBufferSize, expectedBufferData);
+    }
+
     wgpu::RenderPipeline CreateRenderPipelineForTest(const char* vertexShader,
                                                      uint32_t vertexBufferCount = 1u) {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vertexShader);
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, vertexShader);
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) in vec4 i_color;
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = i_color;
-                })");
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<in> i_color : vec4<f32>;
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = i_color;
+            })");
 
         ASSERT(vertexBufferCount <= 1u);
         utils::ComboRenderPipelineDescriptor descriptor(device);
@@ -250,20 +256,20 @@ class BufferZeroInitTest : public DawnTest {
     void TestBufferZeroInitAsVertexBuffer(uint64_t vertexBufferOffset) {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-        const char* vertexShader = R"(
-            #version 450
-            layout(location = 0) in vec4 pos;
-            layout(location = 0) out vec4 o_color;
-            void main() {
-                if (pos == vec4(0.f, 0.f, 0.f, 0.f)) {
-                    o_color = vec4(0.f, 1.f, 0.f, 1.f);
+        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(R"(
+            [[location(0)]] var<in> pos : vec4<f32>;
+            [[location(0)]] var<out> o_color : vec4<f32>;
+
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                if (all(pos == vec4<f32>(0.0, 0.0, 0.0, 0.0))) {
+                    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
                 } else {
-                    o_color = vec4(1.f, 0.f, 0.f, 1.f);
+                    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
                 }
-                gl_Position = vec4(0.f, 0.f, 0.f, 1.f);
-                gl_PointSize = 1.0f;
-            })";
-        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(vertexShader);
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            })");
 
         constexpr uint64_t kVertexAttributeSize = sizeof(float) * 4;
         const uint64_t vertexBufferSize = kVertexAttributeSize + vertexBufferOffset;
@@ -291,19 +297,22 @@ class BufferZeroInitTest : public DawnTest {
     void TestBufferZeroInitAsIndexBuffer(uint64_t indexBufferOffset) {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-        const char* vertexShader = R"(
-            #version 450
-            layout(location = 0) out vec4 o_color;
-            void main() {
-                if (gl_VertexIndex == 0u) {
-                    o_color = vec4(0.f, 1.f, 0.f, 1.f);
+        wgpu::RenderPipeline renderPipeline =
+            CreateRenderPipelineForTest(R"(
+            [[location(0)]] var<out> o_color : vec4<f32>;
+
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                if (VertexIndex == 0u) {
+                    o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
                 } else {
-                    o_color = vec4(1.f, 0.f, 0.f, 1.f);
+                    o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
                 }
-                gl_Position = vec4(0.f, 0.f, 0.f, 1.f);
-                gl_PointSize = 1.0f;
-            })";
-        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(vertexShader, 0u);
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            })",
+                                        0 /* vertexBufferCount */);
 
         // The buffer size cannot be less than 4
         const uint64_t indexBufferSize = sizeof(uint32_t) + indexBufferOffset;
@@ -321,8 +330,8 @@ class BufferZeroInitTest : public DawnTest {
 
         // Bind the buffer with offset == indexBufferOffset and size sizeof(uint32_t) as the index
         // buffer.
-        renderPass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint16,
-                                            indexBufferOffset, sizeof(uint32_t));
+        renderPass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, indexBufferOffset,
+                                  sizeof(uint32_t));
         renderPass.DrawIndexed(1);
         renderPass.EndPass();
 
@@ -335,16 +344,17 @@ class BufferZeroInitTest : public DawnTest {
         constexpr wgpu::Color kClearColorGreen = {0.f, 1.f, 0.f, 1.f};
 
         // As long as the vertex shader is executed once, the output color will be red.
-        const char* vertexShader = R"(
-            #version 450
-            layout(location = 0) out vec4 o_color;
-            void main() {
-                o_color = vec4(1.f, 0.f, 0.f, 1.f);
-                gl_Position = vec4(0.f, 0.f, 0.f, 1.f);
-                gl_PointSize = 1.f;
-            }
-        )";
-        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(vertexShader, 0);
+        wgpu::RenderPipeline renderPipeline =
+            CreateRenderPipelineForTest(R"(
+            [[location(0)]] var<out> o_color : vec4<f32>;
+
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            })",
+                                        0 /* vertexBufferCount */);
 
         // Clear the color attachment to green.
         wgpu::Texture colorAttachment =
@@ -372,17 +382,17 @@ class BufferZeroInitTest : public DawnTest {
         constexpr wgpu::Color kClearColorGreen = {0.f, 1.f, 0.f, 1.f};
 
         // As long as the vertex shader is executed once, the output color will be red.
-        const char* vertexShader = R"(
-            #version 450
-            layout(location = 0) out vec4 o_color;
-            void main() {
-                o_color = vec4(1.f, 0.f, 0.f, 1.f);
-                gl_Position = vec4(0.f, 0.f, 0.f, 1.f);
-                gl_PointSize = 1.f;
-            }
-        )";
+        wgpu::RenderPipeline renderPipeline =
+            CreateRenderPipelineForTest(R"(
+            [[location(0)]] var<out> o_color : vec4<f32>;
 
-        wgpu::RenderPipeline renderPipeline = CreateRenderPipelineForTest(vertexShader, 0u);
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+
+            [[stage(vertex)]] fn main() -> void {
+                o_color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+            })",
+                                        0 /* vertexBufferCount */);
         wgpu::Buffer indexBuffer =
             utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0});
 
@@ -401,7 +411,7 @@ class BufferZeroInitTest : public DawnTest {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
         renderPass.SetPipeline(renderPipeline);
-        renderPass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint16);
+        renderPass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16);
         renderPass.DrawIndexedIndirect(indirectBuffer, indirectBufferOffset);
         renderPass.EndPass();
 
@@ -415,16 +425,16 @@ class BufferZeroInitTest : public DawnTest {
         // As long as the comptue shader is executed once, the pixel color of outImage will be set
         // to red.
         const char* computeShader = R"(
-            #version 450
-            layout(set = 0, binding = 0, rgba8) uniform writeonly image2D outImage;
-            void main() {
-                imageStore(outImage, ivec2(0, 0), vec4(1.f, 0.f, 0.f, 1.f));
+            [[group(0), binding(0)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+
+            [[stage(compute)]] fn main() -> void {
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             })";
 
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.layout = nullptr;
         pipelineDescriptor.computeStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, computeShader);
+            utils::CreateShaderModuleFromWGSL(device, computeShader);
         pipelineDescriptor.computeStage.entryPoint = "main";
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDescriptor);
 
@@ -947,6 +957,9 @@ TEST_P(BufferZeroInitTest, Copy2DTextureToBuffer) {
 // Test that the code path of CopyTextureToBuffer clears the destination buffer correctly when it is
 // the first use of the buffer and the texture is a 2D array texture.
 TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
+    // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
     constexpr wgpu::Extent3D kTextureSize = {64u, 4u, 3u};
 
     // bytesPerRow == texelBlockSizeInBytes * copySize.width && rowsPerImage == copySize.height &&
@@ -975,27 +988,33 @@ TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
 // Test that the buffer will be lazy initialized correctly when its first use is to be bound as a
 // uniform buffer.
 TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
+    // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+
     const char* computeShader = R"(
-        #version 450
-        layout(set = 0, binding = 0, std140) uniform UBO {
-            uvec4 value;
-        } ubo;
-        layout(set = 0, binding = 1, rgba8) uniform writeonly image2D outImage;
-        void main() {
-            if (ubo.value == uvec4(0, 0, 0, 0)) {
-                imageStore(outImage, ivec2(0, 0), vec4(0.f, 1.f, 0.f, 1.f));
+        [[block]] struct UBO {
+            [[offset(0)]] value : vec4<u32>;
+        };
+        [[group(0), binding(0)]] var<uniform> ubo : UBO;
+        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+
+        [[stage(compute)]] fn main() -> void {
+            if (all(ubo.value == vec4<u32>(0, 0, 0, 0))) {
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
-                imageStore(outImage, ivec2(0, 0), vec4(1.f, 0.f, 0.f, 1.f));
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             }
         }
     )";
 
     constexpr uint32_t kBoundBufferSize = 16u;
 
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, computeShader);
+
     // Bind the whole buffer
     {
         const std::vector<uint32_t> expected(kBoundBufferSize / sizeof(uint32_t), 0u);
-        TestBufferZeroInitInBindGroup(computeShader, 0, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, 0, kBoundBufferSize, expected);
     }
 
     // Bind a range of a buffer
@@ -1004,34 +1023,39 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
         constexpr uint32_t kExtraBytes = 16u;
         const std::vector<uint32_t> expected(
             (kBoundBufferSize + kOffset + kExtraBytes) / sizeof(uint32_t), 0u);
-        TestBufferZeroInitInBindGroup(computeShader, kOffset, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, kOffset, kBoundBufferSize, expected);
     }
 }
 
 // Test that the buffer will be lazy initialized correctly when its first use is to be bound as a
 // read-only storage buffer.
 TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
+    // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+
     const char* computeShader = R"(
-        #version 450
-        layout(set = 0, binding = 0, std140) readonly buffer SSBO {
-            uvec4 value;
-        } ssbo;
-        layout(set = 0, binding = 1, rgba8) uniform writeonly image2D outImage;
-        void main() {
-            if (ssbo.value == uvec4(0, 0, 0, 0)) {
-                imageStore(outImage, ivec2(0, 0), vec4(0.f, 1.f, 0.f, 1.f));
+        [[block]] struct SSBO {
+            [[offset(0)]] value : vec4<u32>;
+        };
+        [[group(0), binding(0)]] var<storage> ssbo : SSBO;
+        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+
+        [[stage(compute)]] fn main() -> void {
+            if (all(ssbo.value == vec4<u32>(0, 0, 0, 0))) {
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
-                imageStore(outImage, ivec2(0, 0), vec4(1.f, 0.f, 0.f, 1.f));
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             }
         }
     )";
 
     constexpr uint32_t kBoundBufferSize = 16u;
+    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, computeShader);
 
     // Bind the whole buffer
     {
         const std::vector<uint32_t> expected(kBoundBufferSize / sizeof(uint32_t), 0u);
-        TestBufferZeroInitInBindGroup(computeShader, 0, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, 0, kBoundBufferSize, expected);
     }
 
     // Bind a range of a buffer
@@ -1040,13 +1064,18 @@ TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
         constexpr uint32_t kExtraBytes = 16u;
         const std::vector<uint32_t> expected(
             (kBoundBufferSize + kOffset + kExtraBytes) / sizeof(uint32_t), 0u);
-        TestBufferZeroInitInBindGroup(computeShader, kOffset, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, kOffset, kBoundBufferSize, expected);
     }
 }
 
 // Test that the buffer will be lazy initialized correctly when its first use is to be bound as a
 // storage buffer.
 TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
+    // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+
+    // TODO(crbug.com/tint/375): Enable once barriers are implemented
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator"));
     const char* computeShader = R"(
         #version 450
         layout(set = 0, binding = 0, std140) buffer SSBO {
@@ -1155,6 +1184,9 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDrawIndexedIndirect) {
 // Test the buffer will be lazily initialized correctly when its first use is an indirect buffer for
 // DispatchIndirect.
 TEST_P(BufferZeroInitTest, IndirectBufferForDispatchIndirect) {
+    // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+
     // Bind the whole buffer as an indirect buffer.
     {
         constexpr uint64_t kOffset = 0u;
@@ -1179,6 +1211,10 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
 
     // Skip if timestamp extension is not supported on device
     DAWN_SKIP_TEST_IF(!SupportsExtensions({"timestamp_query"}));
+
+    // TODO(crbug.com/tint/255, crbug.com/tint/256, crbug.com/tint/400, crbug.com/tint/417):
+    // Skip due to runtime array not currently supported in WGSL
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator"));
 
     constexpr uint64_t kBufferSize = 16u;
     constexpr wgpu::BufferUsage kBufferUsage =
@@ -1238,4 +1274,5 @@ DAWN_INSTANTIATE_TEST(BufferZeroInitTest,
                       D3D12Backend({"nonzero_clear_resources_on_creation_for_testing"}),
                       MetalBackend({"nonzero_clear_resources_on_creation_for_testing"}),
                       OpenGLBackend({"nonzero_clear_resources_on_creation_for_testing"}),
+                      OpenGLESBackend({"nonzero_clear_resources_on_creation_for_testing"}),
                       VulkanBackend({"nonzero_clear_resources_on_creation_for_testing"}));

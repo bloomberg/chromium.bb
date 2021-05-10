@@ -24,7 +24,8 @@ class TestDelegatedInkMetadata {
       : point_(metadata->point()),
         color_(metadata->color()),
         diameter_(metadata->diameter()),
-        area_(metadata->presentation_area()) {}
+        area_(metadata->presentation_area()),
+        is_hovering_(metadata->is_hovering()) {}
   explicit TestDelegatedInkMetadata(gfx::RectF area,
                                     float device_pixel_ratio = 1.0)
       : area_(area) {
@@ -43,18 +44,21 @@ class TestDelegatedInkMetadata {
     EXPECT_NEAR(area_.y(), actual.area_.y(), LayoutUnit::Epsilon());
     EXPECT_NEAR(area_.width(), actual.area_.width(), LayoutUnit::Epsilon());
     EXPECT_NEAR(area_.height(), actual.area_.height(), LayoutUnit::Epsilon());
+    EXPECT_EQ(is_hovering_, actual.is_hovering_);
   }
 
   void SetPoint(gfx::PointF pt) { point_ = pt; }
   void SetColor(SkColor color) { color_ = color; }
   void SetDiameter(double diameter) { diameter_ = diameter; }
   void SetArea(gfx::RectF area) { area_ = area; }
+  void SetHovering(bool hovering) { is_hovering_ = hovering; }
 
  private:
   gfx::PointF point_;
   SkColor color_;
   double diameter_;
   gfx::RectF area_;
+  bool is_hovering_;
 };
 
 DelegatedInkTrailPresenter* CreatePresenter(Element* element,
@@ -78,18 +82,24 @@ class DelegatedInkTrailPresenterUnitTest : public SimTest {
     SetWebViewSize(width + 1, height + 1);
   }
 
-  PointerEvent* CreatePointerMoveEvent(gfx::PointF pt) {
+  PointerEvent* CreatePointerMoveEvent(gfx::PointF pt, bool hovering) {
     PointerEventInit* init = PointerEventInit::Create();
     init->setClientX(pt.x());
     init->setClientY(pt.y());
+    if (!hovering) {
+      init->setButtons(MouseEvent::WebInputEventModifiersToButtons(
+          WebInputEvent::Modifiers::kLeftButtonDown));
+    }
     PointerEvent* event = PointerEvent::Create("pointermove", init);
     event->SetTrusted(true);
     return event;
   }
 
   TestDelegatedInkMetadata GetActualMetadata() {
-    return TestDelegatedInkMetadata(
-        WebWidgetClient().layer_tree_host()->DelegatedInkMetadataForTesting());
+    return TestDelegatedInkMetadata(WebView()
+                                        .MainFrameViewWidget()
+                                        ->LayerTreeHostForTesting()
+                                        ->DelegatedInkMetadataForTesting());
   }
 
   void SetPageZoomFactor(const float zoom) {
@@ -165,7 +175,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport,
   gfx::PointF pt(100, 100);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(GetDocument().GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ true), &style);
+  expected_metadata.SetHovering(true);
   expected_metadata.SetPoint(pt);
 
   expected_metadata.ExpectEqual(GetActualMetadata());
@@ -225,7 +236,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport,
   gfx::PointF pt(87, 113);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(GetDocument().GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ true), &style);
+  expected_metadata.SetHovering(true);
   pt.Scale(kZoom);
   expected_metadata.SetPoint(pt);
 
@@ -289,7 +301,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport, CanvasNotAtOrigin) {
   gfx::PointF pt(380, 175);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(GetDocument().GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ false), &style);
+  expected_metadata.SetHovering(false);
   expected_metadata.SetPoint(pt);
 
   expected_metadata.ExpectEqual(GetActualMetadata());
@@ -387,7 +400,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport, CanvasInIFrame) {
   gfx::PointF pt(380, 375);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ false), &style);
+  expected_metadata.SetHovering(false);
   expected_metadata.SetPoint(
       gfx::PointF(pt.x() + kIframeLeftOffset, pt.y() + kIframeTopOffset));
 
@@ -513,7 +527,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport, NestedIframe) {
   gfx::PointF pt(350, 375);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ true), &style);
+  expected_metadata.SetHovering(true);
   expected_metadata.SetPoint(gfx::PointF(pt.x() + kInnerIframeLeftOffset,
                                          pt.y() + kInnerIframeTopOffset));
 
@@ -596,7 +611,8 @@ TEST_P(DelegatedInkTrailPresenterCanvasBeyondViewport,
   gfx::PointF pt(380, 375);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ true), &style);
+  expected_metadata.SetHovering(true);
   expected_metadata.SetPoint(
       gfx::PointF(pt.x() + kIframeLeftOffset, pt.y() + kIframeTopOffset));
 
@@ -630,7 +646,8 @@ TEST_F(DelegatedInkTrailPresenterUnitTest, PresentationAreaNotProvided) {
   gfx::PointF pt(70, 109);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(GetDocument().GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ false), &style);
+  expected_metadata.SetHovering(false);
   expected_metadata.SetPoint(pt);
 
   expected_metadata.ExpectEqual(GetActualMetadata());
@@ -714,7 +731,8 @@ TEST_F(DelegatedInkTrailPresenterUnitTest, CanvasExtendsOutsideOfIframe) {
   gfx::PointF pt(102, 67);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ false), &style);
+  expected_metadata.SetHovering(false);
   expected_metadata.SetPoint(
       gfx::PointF(pt.x() + kIframeLeftOffset, pt.y() + kIframeTopOffset));
 
@@ -804,7 +822,8 @@ TEST_F(DelegatedInkTrailPresenterUnitTest, CanvasLeftAndAboveIframeBoundaries) {
   gfx::PointF pt(102, 67);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ true), &style);
+  expected_metadata.SetHovering(true);
   expected_metadata.SetPoint(
       gfx::PointF(pt.x() + kIframeLeftOffset, pt.y() + kIframeTopOffset));
 
@@ -925,7 +944,8 @@ TEST_F(DelegatedInkTrailPresenterUnitTest, OuterIframeClipsInnerIframe) {
   gfx::PointF pt(357, 401);
   presenter->updateInkTrailStartPoint(
       ToScriptStateForMainWorld(iframe_document->GetFrame()),
-      CreatePointerMoveEvent(pt), &style);
+      CreatePointerMoveEvent(pt, /*hovering*/ false), &style);
+  expected_metadata.SetHovering(false);
   expected_metadata.SetPoint(gfx::PointF(pt.x() + kInnerIframeLeftOffset,
                                          pt.y() + kInnerIframeTopOffset));
 

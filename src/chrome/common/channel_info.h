@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 class Environment;
@@ -41,6 +42,12 @@ std::string GetChannelName();
 version_info::Channel GetChannel();
 
 #if defined(OS_MAC)
+// Because the channel information on the Mac is baked into the Info.plist file,
+// and that file may change during an update, this function must be called
+// early in startup to cache the channel info so that the correct channel info
+// can be returned later.
+void CacheChannelInfo();
+
 // Maps the name of the channel to version_info::Channel, always returning
 // Channel::UNKNOWN for unbranded builds. For branded builds defaults to
 // Channel::STABLE, if channel is empty, else matches the name and returns
@@ -61,7 +68,9 @@ bool IsSideBySideCapable();
 std::string GetChannelSuffixForDataDir();
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Returns the channel-specific filename of the desktop shortcut used to launch
 // the browser.
 std::string GetDesktopName(base::Environment* env);

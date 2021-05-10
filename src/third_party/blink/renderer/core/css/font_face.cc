@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/local_font_face_source.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
@@ -121,7 +122,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
   if (source.IsArrayBuffer())
     return Create(context, family, source.GetAsArrayBuffer(), descriptors);
   if (source.IsArrayBufferView()) {
-    return Create(context, family, source.GetAsArrayBufferView().View(),
+    return Create(context, family, source.GetAsArrayBufferView().Get(),
                   descriptors);
   }
   NOTREACHED();
@@ -209,8 +210,6 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::LineGapOverride) &&
       font_face->SetPropertyFromStyle(properties,
                                       AtRuleDescriptorID::AdvanceOverride) &&
-      font_face->SetPropertyFromStyle(
-          properties, AtRuleDescriptorID::AdvanceProportionalOverride) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
     font_face->InitCSSFontFace(document->GetExecutionContext(), *src);
@@ -423,10 +422,7 @@ bool FontFace::SetPropertyValue(const CSSValue* value,
       line_gap_override_ = ConvertFontMetricOverrideValue(value);
       break;
     case AtRuleDescriptorID::AdvanceOverride:
-      advance_override_ = value;
-      break;
-    case AtRuleDescriptorID::AdvanceProportionalOverride:
-      advance_proportional_override_ = ConvertFontMetricOverrideValue(value);
+      advance_override_ = ConvertFontMetricOverrideValue(value);
       break;
     default:
       NOTREACHED();
@@ -871,7 +867,6 @@ void FontFace::Trace(Visitor* visitor) const {
   visitor->Trace(descent_override_);
   visitor->Trace(line_gap_override_);
   visitor->Trace(advance_override_);
-  visitor->Trace(advance_proportional_override_);
   visitor->Trace(error_);
   visitor->Trace(loaded_property_);
   visitor->Trace(css_font_face_);
@@ -914,13 +909,11 @@ FontMetricsOverride FontFace::GetFontMetricsOverride() const {
         To<CSSPrimitiveValue>(*line_gap_override_).GetFloatValue() / 100;
   }
   if (advance_override_) {
+    const CSSValuePair& pair = To<CSSValuePair>(*advance_override_);
     result.advance_override =
-        To<CSSPrimitiveValue>(*advance_override_).GetFloatValue();
-  }
-  if (advance_proportional_override_) {
-    result.advance_proportional_override =
-        To<CSSPrimitiveValue>(*advance_proportional_override_).GetFloatValue() /
-        100;
+        To<CSSPrimitiveValue>(pair.First()).GetFloatValue() / 100;
+    result.advance_override_vertical_upright =
+        To<CSSPrimitiveValue>(pair.Second()).GetFloatValue() / 100;
   }
   return result;
 }

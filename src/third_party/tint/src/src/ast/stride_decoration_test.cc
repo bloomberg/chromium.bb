@@ -14,31 +14,31 @@
 
 #include "src/ast/stride_decoration.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using StrideDecorationTest = testing::Test;
+using StrideDecorationTest = TestHelper;
 
 TEST_F(StrideDecorationTest, Creation) {
-  StrideDecoration d{2, Source{}};
-  EXPECT_EQ(2u, d.stride());
+  auto* d = create<StrideDecoration>(2);
+  EXPECT_EQ(2u, d->stride());
 }
 
 TEST_F(StrideDecorationTest, Is) {
-  StrideDecoration d{2, Source{}};
-  EXPECT_TRUE(d.IsStride());
+  auto* d = create<StrideDecoration>(2);
+  EXPECT_TRUE(d->Is<StrideDecoration>());
 }
 
 TEST_F(StrideDecorationTest, Source) {
-  StrideDecoration d{
-      2, Source{Source::Range{Source::Location{1, 2}, Source::Location{3, 4}}}};
-  EXPECT_EQ(d.GetSource().range.begin.line, 1u);
-  EXPECT_EQ(d.GetSource().range.begin.column, 2u);
-  EXPECT_EQ(d.GetSource().range.end.line, 3u);
-  EXPECT_EQ(d.GetSource().range.end.column, 4u);
+  auto* d = create<StrideDecoration>(
+      Source{Source::Range{Source::Location{1, 2}, Source::Location{3, 4}}}, 2);
+  EXPECT_EQ(d->source().range.begin.line, 1u);
+  EXPECT_EQ(d->source().range.begin.column, 2u);
+  EXPECT_EQ(d->source().range.end.line, 3u);
+  EXPECT_EQ(d->source().range.end.column, 4u);
 }
 
 }  // namespace

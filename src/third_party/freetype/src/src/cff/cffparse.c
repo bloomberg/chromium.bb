@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -713,9 +713,10 @@
            ( max_scaling - min_scaling ) > 9 )
       {
         FT_TRACE1(( "cff_parse_font_matrix:"
-                    " strange scaling values (minimum %ld, maximum %ld),\n"
-                    "                      "
-                    " using default matrix\n", min_scaling, max_scaling ));
+                    " strange scaling values (minimum %ld, maximum %ld),\n",
+                    min_scaling, max_scaling ));
+        FT_TRACE1(( "                      "
+                    " using default matrix\n" ));
         goto Unlikely;
       }
 

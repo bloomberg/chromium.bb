@@ -7,29 +7,30 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("timeline_model") {
   sources = [
-    "TimelineFrameModel.js",
-    "TimelineIRModel.js",
-    "TimelineJSProfile.js",
-    "TimelineModel.js",
-    "TimelineModelFilter.js",
-    "TimelineProfileTree.js",
-    "TracingLayerTree.js",
+    "TimelineFrameModel.ts",
+    "TimelineIRModel.ts",
+    "TimelineJSProfile.ts",
+    "TimelineModel.ts",
+    "TimelineModelFilter.ts",
+    "TimelineProfileTree.ts",
+    "TracingLayerTree.ts",
   ]
 
   deps = [
     "../common:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "timeline_model.js"
+  entrypoint = "timeline_model.ts"
 
   deps = [ ":timeline_model" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "timeline_model-legacy.js"
+  entrypoint = "timeline_model-legacy.ts"
 
   deps = [ ":bundle" ]
 }

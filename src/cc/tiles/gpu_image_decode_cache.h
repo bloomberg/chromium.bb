@@ -520,10 +520,7 @@ class CC_EXPORT GpuImageDecodeCache
               bool is_bitmap_backed,
               bool can_do_hardware_accelerated_decode,
               bool do_hardware_accelerated_decode,
-              bool is_yuv_format,
-              SkYUVColorSpace yuv_cs,
-              SkYUVAInfo::PlanarConfig yuv_config,
-              SkYUVAPixmapInfo::DataType yuv_dt);
+              base::Optional<SkYUVAPixmapInfo> yuva_pixmap_info);
 
     bool IsGpuOrTransferCache() const;
     bool HasUploadedData() const;
@@ -537,11 +534,8 @@ class CC_EXPORT GpuImageDecodeCache
     int upload_scale_mip_level;
     bool needs_mips = false;
     bool is_bitmap_backed;
-    bool is_yuv;
     bool is_budgeted = false;
-    base::Optional<SkYUVColorSpace> yuv_color_space;
-    base::Optional<SkYUVAInfo::PlanarConfig> yuv_planar_config;
-    base::Optional<SkYUVAPixmapInfo::DataType> yuv_data_type;
+    base::Optional<SkYUVAPixmapInfo> yuva_pixmap_info;
 
     // If true, this image is no longer in our |persistent_cache_| and will be
     // deleted as soon as its ref count reaches zero.
@@ -571,12 +565,12 @@ class CC_EXPORT GpuImageDecodeCache
   // the |in_use_cache_|.
   struct InUseCacheKeyHash;
   struct InUseCacheKey {
-    static InUseCacheKey FromDrawImage(const DrawImage& draw_image);
+    InUseCacheKey(const DrawImage& draw_image, int mip_level);
+
     bool operator==(const InUseCacheKey& other) const;
 
    private:
     friend struct GpuImageDecodeCache::InUseCacheKeyHash;
-    explicit InUseCacheKey(const DrawImage& draw_image);
 
     PaintImage::FrameKey frame_key;
     int upload_scale_mip_level;
@@ -590,6 +584,13 @@ class CC_EXPORT GpuImageDecodeCache
   // All private functions should only be called while holding |lock_|. Some
   // functions also require the |context_| lock. These are indicated by
   // additional comments.
+
+  // Calculate the mip level to upload-scale the image to before uploading. We
+  // use mip levels rather than exact scales to increase re-use of scaled
+  // images.
+  int CalculateUploadScaleMipLevel(const DrawImage& draw_image) const;
+
+  InUseCacheKey InUseCacheKeyFromDrawImage(const DrawImage& draw_image) const;
 
   // Similar to GetTaskForImageAndRef, but gets the dependent decode task
   // rather than the upload task, if necessary.
@@ -642,7 +643,8 @@ class CC_EXPORT GpuImageDecodeCache
       const SkImage* uploaded_v_image,
       const size_t image_width,
       const size_t image_height,
-      const SkYUVAInfo::PlanarConfig yuva_planar_config,
+      const SkYUVAInfo::PlaneConfig yuva_plane_config,
+      const SkYUVAInfo::Subsampling yuva_subsampling,
       const SkYUVColorSpace yuva_color_space,
       sk_sp<SkColorSpace> target_color_space,
       sk_sp<SkColorSpace> decoded_color_space) const;

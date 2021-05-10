@@ -7,16 +7,17 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("animation") {
   sources = [
-    "AnimationGroupPreviewUI.js",
-    "AnimationModel.js",
-    "AnimationScreenshotPopover.js",
-    "AnimationTimeline.js",
-    "AnimationUI.js",
+    "AnimationGroupPreviewUI.ts",
+    "AnimationModel.ts",
+    "AnimationScreenshotPopover.ts",
+    "AnimationTimeline.ts",
+    "AnimationUI.ts",
   ]
 
   deps = [
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../inline_editor:bundle",
     "../platform:bundle",
     "../sdk:bundle",
@@ -31,7 +32,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "animation-legacy.js"
+  entrypoint = "animation-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "animation-meta.ts"
 
   deps = [ ":bundle" ]
 }

@@ -12,12 +12,6 @@
 
 namespace blink {
 
-namespace {
-
-using performance_manager::mojom::InterventionPolicy;
-
-}  // namespace
-
 // static
 std::unique_ptr<DocumentResourceCoordinator>
 DocumentResourceCoordinator::MaybeCreate(
@@ -55,11 +49,6 @@ void DocumentResourceCoordinator::SetViewportIntersection(
   service_->SetViewportIntersection(viewport_intersection);
 }
 
-void DocumentResourceCoordinator::SetOriginTrialFreezePolicy(
-    InterventionPolicy policy) {
-  service_->SetOriginTrialFreezePolicy(policy);
-}
-
 void DocumentResourceCoordinator::SetIsAdFrame() {
   service_->SetIsAdFrame();
 }
@@ -80,6 +69,12 @@ void DocumentResourceCoordinator::SetHadFormInteraction() {
 void DocumentResourceCoordinator::OnFirstContentfulPaint(
     base::TimeDelta time_since_navigation_start) {
   service_->OnFirstContentfulPaint(time_since_navigation_start);
+}
+
+void DocumentResourceCoordinator::OnWebMemoryMeasurementRequested(
+    WebMemoryMeasurementMode mode,
+    OnWebMemoryMeasurementRequestedCallback callback) {
+  service_->OnWebMemoryMeasurementRequested(mode, std::move(callback));
 }
 
 }  // namespace blink

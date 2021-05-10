@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/child/child_process.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
@@ -31,7 +32,7 @@
 #include "services/network/network_sandbox_hook_linux.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/services/ime/ime_sandbox_hook.h"
 #include "chromeos/services/tts/tts_sandbox_hook.h"
 #endif
@@ -57,16 +58,20 @@ int UtilityMain(const MainFunctionParams& parameters) {
           : base::MessagePumpType::DEFAULT;
 
 #if defined(OS_MAC)
-  // On Mac, the TYPE_UI pump for the main thread is an NSApplication loop. In
-  // a sandboxed utility process, NSApp attempts to acquire more Mach resources
-  // than a restrictive sandbox policy should allow. Services that require a
-  // TYPE_UI pump generally just need a NS/CFRunLoop to pump system work
-  // sources, so choose that pump type instead. A NSRunLoop MessagePump is used
-  // for TYPE_UI MessageLoops on non-main threads.
-  base::MessagePump::OverrideMessagePumpForUIFactory(
-      []() -> std::unique_ptr<base::MessagePump> {
-        return std::make_unique<base::MessagePumpNSRunLoop>();
-      });
+  auto sandbox_type =
+      sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
+  if (sandbox_type != sandbox::policy::SandboxType::kNoSandbox) {
+    // On Mac, the TYPE_UI pump for the main thread is an NSApplication loop.
+    // In a sandboxed utility process, NSApp attempts to acquire more Mach
+    // resources than a restrictive sandbox policy should allow. Services that
+    // require a TYPE_UI pump generally just need a NS/CFRunLoop to pump system
+    // work sources, so choose that pump type instead. A NSRunLoop MessagePump
+    // is used for TYPE_UI MessageLoops on non-main threads.
+    base::MessagePump::OverrideMessagePumpForUIFactory(
+        []() -> std::unique_ptr<base::MessagePump> {
+          return std::make_unique<base::MessagePumpNSRunLoop>();
+        });
+  }
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -90,10 +95,10 @@ int UtilityMain(const MainFunctionParams& parameters) {
       sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
   if (parameters.zygote_child ||
       sandbox_type == sandbox::policy::SandboxType::kNetwork ||
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type == sandbox::policy::SandboxType::kIme ||
       sandbox_type == sandbox::policy::SandboxType::kTts ||
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type == sandbox::policy::SandboxType::kAudio ||
       sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition) {
     sandbox::policy::SandboxLinux::PreSandboxHook pre_sandbox_hook;
@@ -104,12 +109,12 @@ int UtilityMain(const MainFunctionParams& parameters) {
     else if (sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition)
       pre_sandbox_hook =
           base::BindOnce(&speech::SpeechRecognitionPreSandboxHook);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     else if (sandbox_type == sandbox::policy::SandboxType::kIme)
       pre_sandbox_hook = base::BindOnce(&chromeos::ime::ImePreSandboxHook);
     else if (sandbox_type == sandbox::policy::SandboxType::kTts)
       pre_sandbox_hook = base::BindOnce(&chromeos::tts::TtsPreSandboxHook);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     sandbox::policy::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),
@@ -169,6 +174,17 @@ int UtilityMain(const MainFunctionParams& parameters) {
     // Ensure RtlGenRandom is warm before the token is lowered; otherwise,
     // base::RandBytes() will CHECK fail when v8 is initialized.
     base::RandBytes(&buffer, sizeof(buffer));
+
+    if (sandbox_type == sandbox::policy::SandboxType::kNetwork) {
+      // Network service process needs FWPUCLNT.DLL to be loaded before sandbox
+      // lockdown otherwise getaddrinfo fails.
+      HMODULE fwpuclnt_pin = ::LoadLibrary(L"FWPUCLNT.DLL");
+      UNREFERENCED_PARAMETER(fwpuclnt_pin);
+      // Network service process needs urlmon.dll to be loaded before sandbox
+      // lockdown otherwise CoInternetCreateSecurityManager fails.
+      HMODULE urlmon_pin = ::LoadLibrary(L"urlmon.dll");
+      UNREFERENCED_PARAMETER(urlmon_pin);
+    }
     g_utility_target_services->LowerToken();
   }
 #endif

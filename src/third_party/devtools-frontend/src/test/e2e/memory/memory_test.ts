@@ -38,7 +38,7 @@ describe('The Memory Panel', async function() {
     await waitForSearchResultNumber(4);
     await findSearchResult(async p => {
       const el = await p.$(':scope > td > div > .object-value-function');
-      return !!el && await el.evaluate(el => el.textContent === 'leaking()');
+      return el !== null && await el.evaluate(el => el.textContent === 'leaking()');
     });
     await waitForRetainerChain([
       'Detached V8EventListener',
@@ -67,7 +67,7 @@ describe('The Memory Panel', async function() {
     await step('selecting the search result that we need', async () => {
       await findSearchResult(async p => {
         const el = await p.$(':scope > td > div > .object-value-function');
-        return !!el && await el.evaluate(el => el.textContent === 'myEventListener()');
+        return el !== null && await el.evaluate(el => el.textContent === 'myEventListener()');
       });
     });
 
@@ -122,7 +122,7 @@ describe('The Memory Panel', async function() {
     await waitForSearchResultNumber(8);
     await findSearchResult(async p => {
       const el = await p.$(':scope > td > div > .object-value-object');
-      return !!el && await el.evaluate(el => el.textContent === 'Retainer');
+      return el !== null && await el.evaluate(el => el.textContent === 'Retainer');
     });
     // The following line checks two things: That the property 'aUniqueName'
     // in the iframe is retaining the Retainer class object, and that the
@@ -160,8 +160,6 @@ describe('The Memory Panel', async function() {
       assert.fail('Could not find data-grid row with "shared in leaking()" text.');
     }
 
-    // TODO(jacktfranklin): Consider some helpers to make asserting on contents
-    // of the data-grid in the heap snapshot UI easier.
     const textOfEl = await sharedInLeakingElementRow.evaluate(e => e.textContent || '');
     // Double check we got the right element to avoid a confusing text failure
     // later down the line.
@@ -187,7 +185,7 @@ describe('The Memory Panel', async function() {
     if (!nextRow) {
       assert.fail('Could not find row below "shared in leaking()" row');
     }
-    const nextNextRow = await nextRow!.evaluateHandle(e => e.nextSibling);
+    const nextNextRow = await nextRow.evaluateHandle(e => e.nextSibling);
     if (!nextNextRow) {
       assert.fail('Could not find 2nd row below "shared in leaking()" row');
     }

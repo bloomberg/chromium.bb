@@ -188,22 +188,6 @@ class ToValueVisitor {
     // Obsolete, don't visit
   }
 
-  // PasswordSpecifics
-  std::unique_ptr<base::DictionaryValue> ToValue(
-      const sync_pb::PasswordSpecifics& proto) const {
-    auto value = ToValueImpl(proto);
-    value->Remove("client_only_encrypted_data", nullptr);
-    return value;
-  }
-
-  // PasswordSpecificsData
-  std::unique_ptr<base::DictionaryValue> ToValue(
-      const sync_pb::PasswordSpecificsData& proto) const {
-    auto value = ToValueImpl(proto);
-    value->SetString("password_value", "<redacted>");
-    return value;
-  }
-
   // AutofillWalletSpecifics
   std::unique_ptr<base::DictionaryValue> ToValue(
       const sync_pb::AutofillWalletSpecifics& proto) const {
@@ -325,8 +309,6 @@ IMPLEMENT_PROTO_TO_VALUE(EntitySpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ExperimentsSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ExtensionSettingSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ExtensionSpecifics)
-IMPLEMENT_PROTO_TO_VALUE(FaviconImageSpecifics)
-IMPLEMENT_PROTO_TO_VALUE(FaviconTrackingSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(GlobalIdDirective)
 IMPLEMENT_PROTO_TO_VALUE(HistoryDeleteDirectiveSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(LinkedAppIconInfo)

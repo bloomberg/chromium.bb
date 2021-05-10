@@ -122,6 +122,7 @@ void TetherControllerImpl::AttemptConnection() {
   user_action_recorder_->RecordTetherConnectionAttempt();
   util::LogTetherConnectionResult(
       util::TetherConnectionResult::kAttemptConnection);
+  is_attempting_connection_ = true;
 
   FeatureState feature_state =
       multidevice_setup_client_->GetFeatureState(Feature::kInstantTethering);
@@ -339,11 +340,11 @@ void TetherControllerImpl::OnVisibleTetherNetworkFetched(
   network_config::mojom::NetworkStatePropertiesPtr previous_tether_network =
       std::move(tether_network_);
 
-  // The number of tether networks should only ever be at most 1.
-  if (networks.size() == 1) {
+  if (!networks.empty()) {
+    // The number of tether networks is expected to be at most 1, though some
+    // tests do use multiple networks.
     tether_network_ = std::move(networks[0]);
   } else {
-    DCHECK(networks.empty());
     tether_network_ = nullptr;
   }
 
@@ -393,30 +394,37 @@ void TetherControllerImpl::UpdateStatus() {
   PA_LOG(INFO) << "TetherController status update: " << status_ << " => "
                << status;
 
-  // Log the connection attempt result if it has succeed.
-  if (status == Status::kConnected)
+  status_ = status;
+
+  if (is_attempting_connection_ && status_ == Status::kConnected)
     util::LogTetherConnectionResult(util::TetherConnectionResult::kSuccess);
 
-  status_ = status;
+  if (status_ != Status::kConnecting)
+    is_attempting_connection_ = false;
 
   NotifyStatusChanged();
 }
 
 TetherController::Status TetherControllerImpl::ComputeStatus() const {
-  bool does_sim_exist_with_reception =
-      phone_model_->phone_status_model().has_value() &&
-      phone_model_->phone_status_model()->mobile_status() ==
-          PhoneStatusModel::MobileStatus::kSimWithReception;
-
-  if (!does_sim_exist_with_reception)
-    return Status::kIneligibleForFeature;
-
   FeatureState feature_state =
       multidevice_setup_client_->GetFeatureState(Feature::kInstantTethering);
 
   if (feature_state != FeatureState::kDisabledByUser &&
       feature_state != FeatureState::kEnabledByUser) {
+    // Tethering may be for instance, prohibited by policy or not supported
+    // by the phone or Chromebook.
     return Status::kIneligibleForFeature;
+  }
+
+  if (phone_model_->phone_status_model().has_value()) {
+    // If the phone status exists, and it indicates that the phone
+    // does not have reception, the status becomes no kNoReception.
+    bool does_sim_exist_with_reception =
+        phone_model_->phone_status_model()->mobile_status() ==
+        PhoneStatusModel::MobileStatus::kSimWithReception;
+
+    if (!does_sim_exist_with_reception)
+      return Status::kNoReception;
   }
 
   if (connect_disconnect_status_ ==

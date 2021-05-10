@@ -7,15 +7,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
+#include "components/viz/service/surfaces/pending_copy_output_request.h"
 
 namespace viz {
 
@@ -300,8 +305,8 @@ void FrameSinkManagerImpl::RequestCopyOfOutput(
     // |request| will send an empty result when it goes out of scope.
     return;
   }
-  it->second->RequestCopyOfOutput(surface_id.local_surface_id(),
-                                  std::move(request));
+  it->second->RequestCopyOfOutput(PendingCopyOutputRequest{
+      surface_id.local_surface_id(), SubtreeCaptureId(), std::move(request)});
 }
 
 void FrameSinkManagerImpl::SetHitTestAsyncQueriedDebugRegions(
@@ -500,9 +505,10 @@ void FrameSinkManagerImpl::SubmitHitTestRegionList(
 
 void FrameSinkManagerImpl::OnFrameTokenChangedDirect(
     const FrameSinkId& frame_sink_id,
-    uint32_t frame_token) {
+    uint32_t frame_token,
+    base::TimeTicks activation_time) {
   if (client_)
-    client_->OnFrameTokenChanged(frame_sink_id, frame_token);
+    client_->OnFrameTokenChanged(frame_sink_id, frame_token, activation_time);
 }
 
 void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
@@ -510,13 +516,15 @@ void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
   if (client_remote_ || !ui_task_runner_) {
     // This is a Mojo client or a locally-connected client *without* a task
     // runner. In this case, call directly.
-    OnFrameTokenChangedDirect(frame_sink_id, frame_token);
+    OnFrameTokenChangedDirect(frame_sink_id, frame_token,
+                              /* activation_time =*/base::TimeTicks::Now());
   } else {
     // This is a locally-connected client *with* a task runner - post task.
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FrameSinkManagerImpl::OnFrameTokenChangedDirect,
-                       base::Unretained(this), frame_sink_id, frame_token));
+                       base::Unretained(this), frame_sink_id, frame_token,
+                       /* activation_time =*/base::TimeTicks::Now()));
   }
 }
 
@@ -656,4 +664,17 @@ void FrameSinkManagerImpl::EndThrottling() {
   }
   frame_sinks_throttled_ = false;
 }
+
+void FrameSinkManagerImpl::Throttle(const std::vector<FrameSinkId>& ids,
+                                    base::TimeDelta interval) {
+  for (auto& support_map_item : support_map_) {
+    support_map_item.second->ThrottleBeginFrame(base::TimeDelta());
+  }
+
+  // Set the |interval| for frame sinks whose ids are listed in |ids|.
+  for (const auto& id : ids) {
+    UpdateThrottlingRecursively(id, interval);
+  }
+}
+
 }  // namespace viz

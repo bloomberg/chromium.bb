@@ -56,8 +56,10 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fWritePixelsRowBytesSupport = false;
     fReadPixelsRowBytesSupport = false;
     fShouldCollapseSrcOverToSrcWhenAble = false;
+    fMustSyncGpuDuringAbandon = true;
     fDriverDisableCCPR = false;
     fDriverDisableMSAACCPR = false;
+    fDisableTessellationPathRenderer = false;
 
     fBlendEquationSupport = kBasic_BlendEquationSupport;
     fAdvBlendEqDisableFlags = 0;
@@ -116,6 +118,7 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     if (options.fDisableDriverCorrectnessWorkarounds) {
         SkASSERT(!fDriverDisableCCPR);
         SkASSERT(!fDriverDisableMSAACCPR);
+        SkASSERT(!fDisableTessellationPathRenderer);
         SkASSERT(!fAvoidStencilBuffers);
         SkASSERT(!fAvoidWritePixelsFastPath);
         SkASSERT(!fRequiresManualFBBarrierAfterTessellatedStencilDraw);
@@ -137,12 +140,7 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     fAllowCoverageCounting = !options.fDisableCoverageCountingPaths;
 
     fMaxTextureSize = std::min(fMaxTextureSize, options.fMaxTextureSizeOverride);
-    fMaxTileSize = fMaxTextureSize;
 #if GR_TEST_UTILS
-    // If the max tile override is zero, it means we should use the max texture size.
-    if (options.fMaxTileSizeOverride && options.fMaxTileSizeOverride < fMaxTextureSize) {
-        fMaxTileSize = options.fMaxTileSizeOverride;
-    }
     if (options.fSuppressDualSourceBlending) {
         // GrShaderCaps::applyOptionsOverrides already handled the rest; here we just need to make
         // sure mixed samples gets disabled if dual source blending is suppressed.
@@ -150,6 +148,9 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     }
     if (options.fClearAllTextures) {
         fShouldInitializeTextures = true;
+    }
+    if (options.fDisallowWritePixelRowBytes) {
+        fWritePixelsRowBytesSupport = false;
     }
 #endif
     if (options.fSuppressMipmapSupport) {
@@ -246,6 +247,8 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Disable CCPR on current driver [workaround]", fDriverDisableCCPR);
     writer->appendBool("Disable MSAA version of CCPR on current driver [workaround]",
                        fDriverDisableMSAACCPR);
+    writer->appendBool("Disable GrTessellationPathRenderer current driver [workaround]",
+                       fDisableTessellationPathRenderer);
     writer->appendBool("Clamp-to-border", fClampToBorderSupport);
 
     writer->appendBool("Prefer VRAM Use over flushes [workaround]", fPreferVRAMUseOverFlushes);

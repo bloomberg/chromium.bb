@@ -11,10 +11,10 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/device_service.h"
+#include "services/device/public/cpp/hid/hid_blocklist.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -25,10 +25,6 @@ constexpr char kHidVendorIdKey[] = "vendor-id";
 constexpr char kHidProductIdKey[] = "product-id";
 constexpr char kHidSerialNumberKey[] = "serial-number";
 
-bool CanStorePersistentEntry(const device::mojom::HidDeviceInfo& device) {
-  return !device.serial_number.empty() && !device.product_name.empty();
-}
-
 base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetStringKey(
@@ -36,7 +32,7 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
       base::UTF16ToUTF8(HidChooserContext::DisplayNameFromDeviceInfo(device)));
   value.SetIntKey(kHidVendorIdKey, device.vendor_id);
   value.SetIntKey(kHidProductIdKey, device.product_id);
-  if (CanStorePersistentEntry(device)) {
+  if (HidChooserContext::CanStorePersistentEntry(device)) {
     // Use the USB serial number as a persistent identifier. If it is
     // unavailable, only ephemeral permissions may be granted.
     value.SetStringKey(kHidSerialNumberKey, device.serial_number);
@@ -72,7 +68,7 @@ HidChooserContext::~HidChooserContext() {
     observer.OnHidChooserContextShutdown();
     DCHECK(!device_observer_list_.HasObserver(&observer));
   }
-  DCHECK(!permission_observer_list_.might_have_observers());
+  DCHECK(permission_observer_list_.empty());
 }
 
 // static
@@ -89,6 +85,12 @@ base::string16 HidChooserContext::DisplayNameFromDeviceInfo(
   return l10n_util::GetStringFUTF16(IDS_HID_CHOOSER_ITEM_WITH_NAME,
                                     base::UTF8ToUTF16(device.product_name),
                                     vendor_id_string, product_id_string);
+}
+
+// static
+bool HidChooserContext::CanStorePersistentEntry(
+    const device::mojom::HidDeviceInfo& device) {
+  return !device.serial_number.empty() && !device.product_name.empty();
 }
 
 base::string16 HidChooserContext::GetObjectDisplayName(
@@ -215,10 +217,8 @@ bool HidChooserContext::HasDevicePermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const device::mojom::HidDeviceInfo& device) {
-  if (UsbBlocklist::Get().IsExcluded(
-          {device.vendor_id, device.product_id, 0})) {
+  if (device::HidBlocklist::IsDeviceExcluded(device))
     return false;
-  }
 
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return false;

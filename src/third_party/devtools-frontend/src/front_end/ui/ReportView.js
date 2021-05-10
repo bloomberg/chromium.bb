@@ -4,10 +4,12 @@
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {Toolbar} from './Toolbar.js';
+import {Tooltip} from './Tooltip.js';
 import {VBox} from './Widget.js';
 
 /**
- * @unrestricted
+ * @deprecated Please consider using the web component version of this widget
+ *             (`ui/components/ReportView.ts`) for new code.
  */
 export class ReportView extends VBox {
   /**
@@ -15,13 +17,15 @@ export class ReportView extends VBox {
    */
   constructor(title) {
     super(true);
-    this.registerRequiredCSS('ui/reportView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/reportView.css', {enableLegacyPatching: false});
 
     this._contentBox = this.contentElement.createChild('div', 'report-content-box');
     this._headerElement = this._contentBox.createChild('div', 'report-header vbox');
     this._titleElement = this._headerElement.createChild('div', 'report-title');
     if (title) {
       this._titleElement.textContent = title;
+    } else {
+      this._headerElement.classList.add('hidden');
     }
     ARIAUtils.markAsHeading(this._titleElement, 1);
 
@@ -36,6 +40,7 @@ export class ReportView extends VBox {
       return;
     }
     this._titleElement.textContent = title;
+    this._headerElement.classList.toggle('hidden', Boolean(title));
   }
 
   /**
@@ -152,7 +157,7 @@ export class Section extends VBox {
     if (this._titleElement.textContent !== title) {
       this._titleElement.textContent = title;
     }
-    this._titleElement.title = tooltip || '';
+    Tooltip.install(this._titleElement, tooltip || '');
     this._titleElement.classList.toggle('hidden', !this._titleElement.textContent);
   }
 

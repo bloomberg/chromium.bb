@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Root from '../../root/root.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 
@@ -12,7 +9,6 @@ import * as ThemeSupport from '../../theme_support/theme_support.js';
  * @param {!Node} node
  * @param {string} cssFile
  * @param {!{enableLegacyPatching:boolean}} options
- * @suppressGlobalPropertiesCheck
  */
 export function appendStyle(node, cssFile, options = {
   enableLegacyPatching: false
@@ -21,7 +17,7 @@ export function appendStyle(node, cssFile, options = {
   if (!content) {
     console.error(cssFile + ' not preloaded. Check module.json');
   }
-  let styleElement = createElement('style');
+  let styleElement = document.createElement('style');
   styleElement.textContent = content;
   node.appendChild(styleElement);
 
@@ -32,7 +28,7 @@ export function appendStyle(node, cssFile, options = {
   if (options.enableLegacyPatching) {
     const themeStyleSheet = ThemeSupport.ThemeSupport.instance().themeStyleSheet(cssFile, content);
     if (themeStyleSheet) {
-      styleElement = createElement('style');
+      styleElement = document.createElement('style');
       styleElement.textContent = themeStyleSheet + '\n' + Root.Runtime.Runtime.resolveSourceURL(cssFile + '.theme');
       node.appendChild(styleElement);
     }

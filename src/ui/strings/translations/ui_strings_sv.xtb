@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Inbyggd skärm</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="3389286852084373014">Texten är för stor</translation>
+<translation id="3406306243914553062">HTML-innehåll</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> har fästs</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Nummer</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/sek</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Fortsätt att läsa på din mobila enhet <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3889424535448813030">Högerpil</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 månad sedan}other{# månader sedan}}</translation>
 <translation id="4289300219472526559">Börja tala</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> har flyttats till mappen <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Ta bort från urklipp.</translation>
 <translation id="4316910396681052118">ALLA APPAR</translation>
 <translation id="4491109536499578614">Bild</translation>
 <translation id="4588090240171750605">Rulla åt höger</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Vill du radera den här sökningen från historiken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">Borttagen.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">Igår</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{för 1 timme sedan}other{för # timmar sedan}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek kvar}other{# sek kvar}}</translation>
 <translation id="8134065097954893699">Sidan läses in igen</translation>
-<translation id="8144660977431427332">Sökningarna görs med Google Assistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autoslutför</translation>
 <translation id="815598010540052116">Rulla nedåt</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Flik</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Hexadecimalt färgvärde</translation>

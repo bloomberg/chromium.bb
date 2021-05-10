@@ -1,37 +1,11 @@
 {
-  "extensions": [
-    {
-      "type": "view",
-      "location": "drawer-view",
-      "id": "issues-pane",
-      "title": "Issues",
-      "order": 100,
-      "persistence": "closeable",
-      "className": "Issues.IssuesPane"
-    },
-    {
-      "type": "@Common.Revealer",
-      "contextTypes": [
-        "SDK.Issue"
-      ],
-      "destination": "Issues view",
-      "className": "Issues.IssueRevealer"
-    }
-  ],
   "dependencies": [
-    "common",
-    "platform",
-    "ui",
-    "host",
+    "browser_sdk",
     "components",
-    "sdk",
     "network",
-    "browser_sdk"
+    "ui"
   ],
   "modules": [
-    "issues-legacy.js"
-  ],
-  "skip_compilation": [
     "issues-legacy.js"
   ],
   "resources": [
@@ -45,12 +19,31 @@
     "descriptions/cspURLViolation.md",
     "descriptions/cspTrustedTypesSinkViolation.md",
     "descriptions/cspTrustedTypesPolicyViolation.md",
+    "descriptions/heavyAd.md",
+    "descriptions/LowTextContrast.md",
     "descriptions/mixedContent.md",
+    "descriptions/sharedArrayBuffer.md",
+    "descriptions/corsInsecurePrivateNetwork.md",
+    "descriptions/SameSiteExcludeContextDowngradeRead.md",
+    "descriptions/SameSiteExcludeContextDowngradeSet.md",
+    "descriptions/SameSiteExcludeNavigationContextDowngrade.md",
+    "descriptions/SameSiteNoneInsecureErrorRead.md",
+    "descriptions/SameSiteNoneInsecureErrorSet.md",
+    "descriptions/SameSiteNoneInsecureWarnRead.md",
+    "descriptions/SameSiteNoneInsecureWarnSet.md",
     "descriptions/SameSiteUnspecifiedLaxAllowUnsafeRead.md",
     "descriptions/SameSiteUnspecifiedLaxAllowUnsafeSet.md",
     "descriptions/SameSiteUnspecifiedTreatedAsLaxRead.md",
     "descriptions/SameSiteUnspecifiedTreatedAsLaxSet.md",
+    "descriptions/SameSiteWarnCrossDowngradeRead.md",
+    "descriptions/SameSiteWarnCrossDowngradeSet.md",
+    "descriptions/SameSiteWarnStrictLaxDowngradeStrict.md",
+    "descriptions/TwaHttpError.md",
+    "descriptions/TwaPageUnavailableOffline.md",
+    "descriptions/TwaDigitalAssetLinksFailed.md",
     "issuesPane.css",
-    "issuesTree.css"
+    "issuesTree.css",
+    "cspViolationsView.css",
+    "cspViolationsListView.css"
   ]
 }

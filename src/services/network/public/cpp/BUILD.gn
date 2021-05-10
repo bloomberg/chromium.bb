@@ -43,10 +43,6 @@ component("cpp") {
     "cors/origin_access_entry.h",
     "cors/origin_access_list.cc",
     "cors/origin_access_list.h",
-    "cors/preflight_cache.cc",
-    "cors/preflight_cache.h",
-    "cors/preflight_result.cc",
-    "cors/preflight_result.h",
     "cross_origin_embedder_policy_parser.cc",
     "cross_origin_embedder_policy_parser.h",
     "cross_origin_opener_policy_parser.cc",
@@ -83,8 +79,10 @@ component("cpp") {
     "network_switches.h",
     "not_implemented_url_loader_factory.cc",
     "not_implemented_url_loader_factory.h",
-    "origin_isolation_parser.cc",
-    "origin_isolation_parser.h",
+    "opaque_response_blocking.cc",
+    "opaque_response_blocking.h",
+    "origin_agent_cluster_parser.cc",
+    "origin_agent_cluster_parser.h",
     "parsed_headers.cc",
     "parsed_headers.h",
     "request_destination.cc",
@@ -93,6 +91,8 @@ component("cpp") {
     "request_mode.h",
     "resolve_host_client_base.cc",
     "resolve_host_client_base.h",
+    "self_deleting_url_loader_factory.cc",
+    "self_deleting_url_loader_factory.h",
     "session_cookie_delete_predicate.h",
     "shared_url_loader_factory.cc",
     "shared_url_loader_factory.h",
@@ -114,6 +114,8 @@ component("cpp") {
     "web_sandbox_flags.h",
     "wrapper_shared_url_loader_factory.cc",
     "wrapper_shared_url_loader_factory.h",
+    "x_frame_options_parser.cc",
+    "x_frame_options_parser.h",
   ]
 
   if (!is_ios) {
@@ -179,8 +181,27 @@ component("cookies_mojom_support") {
   ]
   deps = [
     ":crash_keys",
+    ":schemeful_site_mojom_support",
     "//net",
     "//services/network/public/mojom:cookies_mojom_shared",
+  ]
+  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+}
+
+component("network_param_mojom_support") {
+  sources = [
+    "net_ipc_param_traits.cc",
+    "net_ipc_param_traits.h",
+    "network_param_mojom_traits.cc",
+    "network_param_mojom_traits.h",
+  ]
+  deps = [
+    "//ipc",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+    "//net",
+    "//services/network/public/mojom:mojom_network_param_shared",
+    "//url/ipc:url_ipc",
+    "//url/mojom:url_mojom_origin",
   ]
   defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
 }
@@ -237,12 +258,8 @@ component("cpp_base") {
     "http_request_headers_mojom_traits.h",
     "isolation_info_mojom_traits.cc",
     "isolation_info_mojom_traits.h",
-    "isolation_opt_in_hints.cc",
-    "isolation_opt_in_hints.h",
     "mutable_network_traffic_annotation_tag_mojom_traits.h",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits.h",
-    "net_ipc_param_traits.cc",
-    "net_ipc_param_traits.h",
     "network_interface_mojom_traits.cc",
     "network_interface_mojom_traits.h",
     "network_ipc_param_traits.cc",
@@ -280,6 +297,7 @@ component("cpp_base") {
     ":crash_keys",
     ":cross_origin_embedder_policy",
     ":ip_address_mojom_support",
+    ":network_param_mojom_support",
     ":schemeful_site_mojom_support",
     "//services/network/public/mojom:url_loader_base",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -303,6 +321,21 @@ mojom("test_interfaces") {
   public_deps = [ "//services/network/public/mojom" ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [ "is_potentially_trustworthy_unittest.h" ]
+
+  public_deps = [
+    ":cpp",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url:url_test_support",
+  ]
+}
+
 source_set("tests") {
   testonly = true
 
@@ -316,8 +349,6 @@ source_set("tests") {
     "cors/cors_unittest.cc",
     "cors/origin_access_entry_unittest.cc",
     "cors/origin_access_list_unittest.cc",
-    "cors/preflight_cache_unittest.cc",
-    "cors/preflight_result_unittest.cc",
     "cross_origin_embedder_policy_parser_unittest.cc",
     "cross_origin_opener_policy_parser_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",
@@ -340,8 +371,9 @@ source_set("tests") {
     "network_isolation_key_mojom_traits_unittest.cc",
     "network_mojom_traits_unittest.cc",
     "network_quality_tracker_unittest.cc",
+    "opaque_response_blocking_unittest.cc",
     "optional_trust_token_params_unittest.cc",
-    "origin_isolation_parser_unittest.cc",
+    "origin_agent_cluster_parser_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "schemeful_site_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
@@ -350,6 +382,7 @@ source_set("tests") {
     "supports_loading_mode/supports_loading_mode_parser_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
     "web_sandbox_flags_unittests.cc",
+    "x_frame_options_parser_unittest.cc",
   ]
 
   if (!is_ios) {
@@ -359,6 +392,7 @@ source_set("tests") {
   deps = [
     ":cpp",
     ":test_interfaces",
+    ":test_support",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
@@ -371,6 +405,12 @@ source_set("tests") {
   ]
 
   public_deps = [ ":buildflags" ]
+}
+
+fuzzer_test("xfo_fuzzer") {
+  sources = [ "x_frame_options_parser_fuzzer.cc" ]
+  dict = "x_frame_options.dict"
+  deps = [ ":cpp" ]
 }
 
 fuzzer_test("cors_fuzzer") {

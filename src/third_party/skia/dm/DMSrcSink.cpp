@@ -222,7 +222,7 @@ Result BRDSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
             }
             alpha8_to_gray8(&bitmap);
 
-            canvas->drawBitmap(bitmap, 0, 0);
+            canvas->drawImage(bitmap.asImage(), 0, 0);
             return Result::Ok();
         }
         case kDivisor_Mode: {
@@ -278,7 +278,7 @@ Result BRDSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
                     }
 
                     alpha8_to_gray8(&bitmap);
-                    canvas->drawBitmapRect(bitmap,
+                    canvas->drawImageRect(bitmap.asImage().get(),
                             SkRect::MakeXYWH((SkScalar) scaledBorder, (SkScalar) scaledBorder,
                                     (SkScalar) (subsetWidth / fSampleSize),
                                     (SkScalar) (subsetHeight / fSampleSize)),
@@ -286,7 +286,8 @@ Result BRDSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
                                     (SkScalar) (top / fSampleSize),
                                     (SkScalar) (subsetWidth / fSampleSize),
                                     (SkScalar) (subsetHeight / fSampleSize)),
-                            nullptr);
+                            SkSamplingOptions(), nullptr,
+                            SkCanvas::kStrict_SrcRectConstraint);
                 }
             }
             return Result::Ok();
@@ -405,7 +406,7 @@ static void draw_to_canvas(SkCanvas* canvas, const SkImageInfo& info, void* pixe
     SkBitmap bitmap;
     bitmap.installPixels(info, pixels, rowBytes);
     swap_rb_if_necessary(bitmap, dstColorType);
-    canvas->drawBitmap(bitmap, left, top);
+    canvas->drawImage(bitmap.asImage(), left, top);
 }
 
 // For codec srcs, we want the "draw" step to be a memcpy.  Any interesting color space or
@@ -436,6 +437,13 @@ Result CodecSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
 
     // Try to scale the image if it is desired
     SkISize size = codec->getScaledDimensions(fScale);
+
+    std::unique_ptr<SkAndroidCodec> androidCodec;
+    if (1.0f != fScale && fMode == kAnimated_Mode) {
+        androidCodec = SkAndroidCodec::MakeFromData(encoded);
+        size = androidCodec->getSampledDimensions(1 / fScale);
+    }
+
     if (size == decodeInfo.dimensions() && 1.0f != fScale) {
         return Result::Skip("Test without scaling is uninteresting.");
     }
@@ -467,7 +475,16 @@ Result CodecSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
 
     switch (fMode) {
         case kAnimated_Mode: {
-            std::vector<SkCodec::FrameInfo> frameInfos = codec->getFrameInfo();
+            SkAndroidCodec::AndroidOptions androidOptions;
+            if (fScale != 1.0f) {
+                SkASSERT(androidCodec);
+                androidOptions.fSampleSize = 1 / fScale;
+                auto dims = androidCodec->getSampledDimensions(androidOptions.fSampleSize);
+                decodeInfo = decodeInfo.makeDimensions(dims);
+            }
+
+            std::vector<SkCodec::FrameInfo> frameInfos = androidCodec
+                    ? androidCodec->codec()->getFrameInfo() : codec->getFrameInfo();
             if (frameInfos.size() <= 1) {
                 return Result::Fatal("%s is not an animated image.", fPath.c_str());
             }
@@ -482,19 +499,21 @@ Result CodecSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
             SkAutoMalloc priorFramePixels;
             int cachedFrame = SkCodec::kNoFrame;
             for (int i = 0; static_cast<size_t>(i) < frameInfos.size(); i++) {
-                options.fFrameIndex = i;
+                androidOptions.fFrameIndex = i;
                 // Check for a prior frame
                 const int reqFrame = frameInfos[i].fRequiredFrame;
                 if (reqFrame != SkCodec::kNoFrame && reqFrame == cachedFrame
                         && priorFramePixels.get()) {
                     // Copy into pixels
                     memcpy(pixels.get(), priorFramePixels.get(), safeSize);
-                    options.fPriorFrame = reqFrame;
+                    androidOptions.fPriorFrame = reqFrame;
                 } else {
-                    options.fPriorFrame = SkCodec::kNoFrame;
+                    androidOptions.fPriorFrame = SkCodec::kNoFrame;
                 }
-                SkCodec::Result result = codec->getPixels(decodeInfo, pixels.get(),
-                                                          rowBytes, &options);
+                SkCodec::Result result = androidCodec
+                        ? androidCodec->getAndroidPixels(decodeInfo, pixels.get(), rowBytes,
+                                                         &androidOptions)
+                        : codec->getPixels(decodeInfo, pixels.get(), rowBytes, &androidOptions);
                 if (SkCodec::kInvalidInput == result && i > 0) {
                     // Some of our test images have truncated later frames. Treat that
                     // the same as incomplete.
@@ -759,30 +778,33 @@ SkISize CodecSrc::size() const {
         return {0, 0};
     }
 
-    auto imageSize = codec->getScaledDimensions(fScale);
-    if (fMode == kAnimated_Mode) {
-        // We'll draw one of each frame, so make it big enough to hold them all
-        // in a grid. The grid will be roughly square, with "factor" frames per
-        // row and up to "factor" rows.
-        const size_t count = codec->getFrameInfo().size();
-        const float root = sqrt((float) count);
-        const int factor = sk_float_ceil2int(root);
-        imageSize.fWidth  = imageSize.fWidth  * factor;
-        imageSize.fHeight = imageSize.fHeight * sk_float_ceil2int((float) count / (float) factor);
+    if (fMode != kAnimated_Mode) {
+        return codec->getScaledDimensions(fScale);
     }
+
+    // We'll draw one of each frame, so make it big enough to hold them all
+    // in a grid. The grid will be roughly square, with "factor" frames per
+    // row and up to "factor" rows.
+    const size_t count = codec->getFrameInfo().size();
+    const float root = sqrt((float) count);
+    const int factor = sk_float_ceil2int(root);
+
+    auto androidCodec = SkAndroidCodec::MakeFromCodec(std::move(codec));
+    auto imageSize = androidCodec->getSampledDimensions(1 / fScale);
+    imageSize.fWidth  = imageSize.fWidth  * factor;
+    imageSize.fHeight = imageSize.fHeight * sk_float_ceil2int((float) count / (float) factor);
     return imageSize;
 }
 
 Name CodecSrc::name() const {
+    Name name = SkOSPath::Basename(fPath.c_str());
+    if (fMode == kAnimated_Mode) {
+        name.append("_animated");
+    }
     if (1.0f == fScale) {
-        Name name = SkOSPath::Basename(fPath.c_str());
-        if (fMode == kAnimated_Mode) {
-            name.append("_animated");
-        }
         return name;
     }
-    SkASSERT(fMode != kAnimated_Mode);
-    return get_scaled_name(fPath, fScale);
+    return get_scaled_name(name.c_str(), fScale);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1019,23 +1041,18 @@ Result ColorCodecSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
         info = canvasInfo.makeDimensions(info.dimensions());
     }
 
-    SkBitmap bitmap;
-    if (!bitmap.tryAllocPixels(info)) {
-        return Result::Fatal("Image(%s) is too large (%d x %d)",
-                             fPath.c_str(), info.width(), info.height());
-    }
-
-    switch (auto r = codec->getPixels(info, bitmap.getPixels(), bitmap.rowBytes())) {
+    auto [image, result] = codec->getImage(info);
+    switch (result) {
         case SkCodec::kSuccess:
         case SkCodec::kErrorInInput:
         case SkCodec::kIncompleteInput:
-            canvas->drawBitmap(bitmap, 0,0);
+            canvas->drawImage(image, 0,0);
             return Result::Ok();
         case SkCodec::kInvalidConversion:
             // TODO(mtklein): why are there formats we can't decode to?
             return Result::Skip("SkCodec can't decode to this format.");
         default:
-            return Result::Fatal("Couldn't getPixels %s. Error code %d", fPath.c_str(), r);
+            return Result::Fatal("Couldn't getPixels %s. Error code %d", fPath.c_str(), result);
     }
 }
 
@@ -1202,9 +1219,8 @@ Result SkottieSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
             {
                 SkAutoCanvasRestore acr(canvas, true);
                 canvas->clipRect(dest, true);
-                canvas->concat(SkMatrix::MakeRectToRect(SkRect::MakeSize(animation->size()),
-                                                        dest,
-                                                        SkMatrix::kCenter_ScaleToFit));
+                canvas->concat(SkMatrix::RectToRect(SkRect::MakeSize(animation->size()), dest,
+                                                    SkMatrix::kCenter_ScaleToFit));
                 animation->seek(t);
                 animation->render(canvas);
             }
@@ -1259,9 +1275,8 @@ Result SkRiveSrc::draw(GrDirectContext*, SkCanvas* canvas) const {
     if (!bounds.isEmpty()) {
         // TODO: tiled frames when we add animation support
         SkAutoCanvasRestore acr(canvas, true);
-        canvas->concat(SkMatrix::MakeRectToRect(bounds,
-                                                SkRect::MakeWH(kTargetSize, kTargetSize),
-                                                SkMatrix::kCenter_ScaleToFit ));
+        canvas->concat(SkMatrix::RectToRect(bounds, SkRect::MakeWH(kTargetSize, kTargetSize),
+                                            SkMatrix::kCenter_ScaleToFit));
         for (const auto& ab : skrive->artboards()) {
             ab->render(canvas);
         }
@@ -1298,13 +1313,17 @@ SVGSrc::SVGSrc(Path path)
     : fName(SkOSPath::Basename(path.c_str()))
     , fScale(1) {
 
-    sk_sp<SkData> data(SkData::MakeFromFileName(path.c_str()));
-    if (!data) {
+    auto stream = SkStream::MakeFromFile(path.c_str());
+    if (!stream) {
         return;
     }
 
-    SkMemoryStream stream(std::move(data));
-    fDom = SkSVGDOM::MakeFromStream(stream);
+    auto rp = skresources::DataURIResourceProviderProxy::Make(
+                  skresources::FileResourceProvider::Make(SkOSPath::Dirname(path.c_str()),
+                                                          /*predecode=*/true),
+                  /*predecode=*/true);
+    fDom = SkSVGDOM::Builder().setResourceProvider(std::move(rp))
+                              .make(*stream);
     if (!fDom) {
         return;
     }
@@ -2186,7 +2205,7 @@ Result ViaUpright::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkS
     canvas.concat(upright);
     SkPaint paint;
     paint.setBlendMode(SkBlendMode::kSrc);
-    canvas.drawBitmap(*bitmap, 0, 0, &paint);
+    canvas.drawImage(bitmap->asImage(), 0, 0, SkSamplingOptions(), &paint);
 
     *bitmap = uprighted;
     return Result::Ok();

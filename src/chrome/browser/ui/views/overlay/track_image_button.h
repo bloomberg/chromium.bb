@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -17,16 +18,17 @@ namespace views {
 // A resizable previous/next track image button.
 class TrackImageButton : public views::ImageButton {
  public:
+  METADATA_HEADER(TrackImageButton);
+
   explicit TrackImageButton(PressedCallback callback,
                             const gfx::VectorIcon& icon,
                             base::string16 label);
+  TrackImageButton(const TrackImageButton&) = delete;
+  TrackImageButton& operator=(const TrackImageButton&) = delete;
   ~TrackImageButton() override = default;
 
-  // Get button size when visible.
-  gfx::Size GetLastVisibleSize() const;
-
-  // Toggle visibility.
-  void ToggleVisibility(bool is_visible);
+  // Overridden from views::View.
+  void SetVisible(bool is_visible) override;
 
  protected:
   // Overridden from views::View.
@@ -37,8 +39,6 @@ class TrackImageButton : public views::ImageButton {
 
   // Last visible size of the image button.
   gfx::Size last_visible_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrackImageButton);
 };
 
 }  // namespace views

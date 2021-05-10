@@ -8,7 +8,7 @@ aggregate_vector_icons("components_vector_icons") {
   icon_directory = "."
 
   sources = [
-    "accessibility.icon",
+    "add_cellular_network.icon",
     "ads.icon",
     "back_arrow.icon",
     "blocked_badge.icon",
@@ -46,6 +46,8 @@ aggregate_vector_icons("components_vector_icons") {
     "insert_drive_file_outline.icon",
     "launch.icon",
     "lightbulb_outline.icon",
+    "live_caption_off.icon",
+    "live_caption_on.icon",
     "location_on.icon",
     "lock.icon",
     "media_next_track.icon",
@@ -64,7 +66,6 @@ aggregate_vector_icons("components_vector_icons") {
     "open_in_new.icon",
     "page_info_content_paste.icon",
     "pause.icon",
-    "person.icon",
     "photo.icon",
     "play_arrow.icon",
     "protected_content.icon",
@@ -74,18 +75,19 @@ aggregate_vector_icons("components_vector_icons") {
     "save_original_file.icon",
     "screen_share.icon",
     "search.icon",
+    "select_window.icon",
     "sensors.icon",
     "serial_port.icon",
     "settings.icon",
     "sync.icon",
     "usb.icon",
     "videocam.icon",
+    "videocam_off.icon",
     "videogame_asset.icon",
     "volume_up.icon",
     "vr_headset.icon",
     "warning.icon",
     "wifi_add.icon",
-    "window_placement.icon",
   ]
 }
 

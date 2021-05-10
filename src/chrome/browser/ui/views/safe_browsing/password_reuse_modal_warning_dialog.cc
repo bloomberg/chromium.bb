@@ -15,7 +15,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -29,6 +29,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 using views::BoxLayout;
 
@@ -124,6 +125,7 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   show_check_passwords = password_type_.account_type() ==
                          ReusedPasswordAccountType::SAVED_PASSWORD;
 #endif
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowIcon(true);
   if (password_type.account_type() !=
           ReusedPasswordAccountType::SAVED_PASSWORD ||
@@ -242,10 +244,6 @@ gfx::Size PasswordReuseModalWarningDialog::CalculatePreferredSize() const {
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }
 
-ui::ModalType PasswordReuseModalWarningDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
 base::string16 PasswordReuseModalWarningDialog::GetWindowTitle() const {
   // It's ok to return an empty string for the title as this method
   // is from views::DialogDelegateView class.
@@ -305,5 +303,8 @@ WarningUIType PasswordReuseModalWarningDialog::GetObserverType() {
 void PasswordReuseModalWarningDialog::WebContentsDestroyed() {
   GetWidget()->Close();
 }
+
+BEGIN_METADATA(PasswordReuseModalWarningDialog, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace safe_browsing

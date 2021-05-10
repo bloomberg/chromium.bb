@@ -14,7 +14,14 @@
 #include "modules/svg/include/SkSVGValue.h"
 #include "src/core/SkTLazy.h"
 
-SkSVGNode::SkSVGNode(SkSVGTag t) : fTag(t) { }
+SkSVGNode::SkSVGNode(SkSVGTag t) : fTag(t) {
+    // Uninherited presentation attributes need a non-null default value.
+    fPresentationAttributes.fStopColor.set(SkSVGColor(SK_ColorBLACK));
+    fPresentationAttributes.fStopOpacity.set(SkSVGNumberType(1.0f));
+    fPresentationAttributes.fFloodColor.set(SkSVGColor(SK_ColorBLACK));
+    fPresentationAttributes.fFloodOpacity.set(SkSVGNumberType(1.0f));
+    fPresentationAttributes.fLightingColor.set(SkSVGColor(SK_ColorWHITE));
+}
 
 SkSVGNode::~SkSVGNode() { }
 
@@ -76,106 +83,96 @@ void SetInheritedByDefault(SkTLazy<T>& presentation_attribute, const T& value) {
     }
 }
 
-void SkSVGNode::setColor(const SkSVGColorType& color) {
-    // TODO: Color should be inherited by default
-    fPresentationAttributes.fColor.set(color);
-}
-
-void SkSVGNode::setFillOpacity(const SkSVGNumberType& opacity) {
-    fPresentationAttributes.fFillOpacity.set(SkSVGNumberType(SkTPin<SkScalar>(opacity, 0, 1)));
-}
-
-void SkSVGNode::setOpacity(const SkSVGNumberType& opacity) {
-    fPresentationAttributes.fOpacity.set(SkSVGNumberType(SkTPin<SkScalar>(opacity, 0, 1)));
-}
-
-void SkSVGNode::setStrokeDashOffset(const SkSVGLength& dashOffset) {
-    fPresentationAttributes.fStrokeDashOffset.set(dashOffset);
-}
-
-void SkSVGNode::setStrokeOpacity(const SkSVGNumberType& opacity) {
-    fPresentationAttributes.fStrokeOpacity.set(SkSVGNumberType(SkTPin<SkScalar>(opacity, 0, 1)));
-}
-
-void SkSVGNode::setStrokeMiterLimit(const SkSVGNumberType& ml) {
-    fPresentationAttributes.fStrokeMiterLimit.set(ml);
-}
-
-void SkSVGNode::setStrokeWidth(const SkSVGLength& strokeWidth) {
-    fPresentationAttributes.fStrokeWidth.set(strokeWidth);
-}
-
-void SkSVGNode::onSetAttribute(SkSVGAttribute attr, const SkSVGValue& v) {
-    switch (attr) {
-    case SkSVGAttribute::kColor:
-        if (const SkSVGColorValue* color = v.as<SkSVGColorValue>()) {
-            this->setColor(*color);
-        }
-        break;
-    case SkSVGAttribute::kFillOpacity:
-        if (const SkSVGNumberValue* opacity = v.as<SkSVGNumberValue>()) {
-            this->setFillOpacity(*opacity);
-        }
-        break;
-    case SkSVGAttribute::kFilter:
-        if (const SkSVGFilterValue* filter = v.as<SkSVGFilterValue>()) {
-            this->setFilter(*filter);
-        }
-        break;
-    case SkSVGAttribute::kOpacity:
-        if (const SkSVGNumberValue* opacity = v.as<SkSVGNumberValue>()) {
-            this->setOpacity(*opacity);
-        }
-        break;
-    case SkSVGAttribute::kStrokeDashOffset:
-        if (const SkSVGLengthValue* dashOffset= v.as<SkSVGLengthValue>()) {
-            this->setStrokeDashOffset(*dashOffset);
-        }
-        break;
-    case SkSVGAttribute::kStrokeOpacity:
-        if (const SkSVGNumberValue* opacity = v.as<SkSVGNumberValue>()) {
-            this->setStrokeOpacity(*opacity);
-        }
-        break;
-    case SkSVGAttribute::kStrokeMiterLimit:
-        if (const SkSVGNumberValue* miterLimit = v.as<SkSVGNumberValue>()) {
-            this->setStrokeMiterLimit(*miterLimit);
-        }
-        break;
-    case SkSVGAttribute::kStrokeWidth:
-        if (const SkSVGLengthValue* strokeWidth = v.as<SkSVGLengthValue>()) {
-            this->setStrokeWidth(*strokeWidth);
-        }
-        break;
-    default:
-#if defined(SK_VERBOSE_SVG_PARSING)
-        SkDebugf("attribute ID <%d> ignored for node <%d>\n", attr, fTag);
-#endif
-        break;
-    }
-}
-
 bool SkSVGNode::parseAndSetAttribute(const char* n, const char* v) {
-    return this->setClipPath(SkSVGAttributeParser::parse<SkSVGClip>     ("clip-path"       , n, v))
-        || this->setClipRule(SkSVGAttributeParser::parse<SkSVGFillRule> ("clip-rule"       , n, v))
-        || this->setFill    (SkSVGAttributeParser::parse<SkSVGPaint>    ("fill"            , n, v))
-        || this->setFillRule(SkSVGAttributeParser::parse<SkSVGFillRule> ("fill-rule"       , n, v))
-        || this->setFontFamily
-                          (SkSVGAttributeParser::parse<SkSVGFontFamily> ("font-family"     , n, v))
-        || this->setFontSize(SkSVGAttributeParser::parse<SkSVGFontSize> ("font-size"       , n, v))
-        || this->setFontStyle
-                            (SkSVGAttributeParser::parse<SkSVGFontStyle>("font-style"      , n, v))
-        || this->setFontWeight
-                           (SkSVGAttributeParser::parse<SkSVGFontWeight>("font-weight"     , n, v))
-        || this->setStroke  (SkSVGAttributeParser::parse<SkSVGPaint>    ("stroke"          , n, v))
-        || this->setStrokeDashArray
-                            (SkSVGAttributeParser::parse<SkSVGDashArray>("stroke-dasharray", n, v))
-        || this->setStrokeLineCap
-                            (SkSVGAttributeParser::parse<SkSVGLineCap>  ("stroke-linecap"  , n ,v))
-        || this->setStrokeLineJoin
-                            (SkSVGAttributeParser::parse<SkSVGLineJoin> ("stroke-linejoin" , n ,v))
-        || this->setTextAnchor
-                           (SkSVGAttributeParser::parse<SkSVGTextAnchor>("text-anchor"     , n, v))
-        || this->setVisibility
-                           (SkSVGAttributeParser::parse<SkSVGVisibility>("visibility"      , n, v));
+#define PARSE_AND_SET(svgName, attrName)                                                        \
+    this->set##attrName(                                                                        \
+            SkSVGAttributeParser::parseProperty<decltype(fPresentationAttributes.f##attrName)>( \
+                    svgName, n, v))
+
+    return PARSE_AND_SET(   "clip-path"                  , ClipPath)
+           || PARSE_AND_SET("clip-rule"                  , ClipRule)
+           || PARSE_AND_SET("color"                      , Color)
+           || PARSE_AND_SET("color-interpolation"        , ColorInterpolation)
+           || PARSE_AND_SET("color-interpolation-filters", ColorInterpolationFilters)
+           || PARSE_AND_SET("fill"                       , Fill)
+           || PARSE_AND_SET("fill-opacity"               , FillOpacity)
+           || PARSE_AND_SET("fill-rule"                  , FillRule)
+           || PARSE_AND_SET("filter"                     , Filter)
+           || PARSE_AND_SET("flood-color"                , FloodColor)
+           || PARSE_AND_SET("flood-opacity"              , FloodOpacity)
+           || PARSE_AND_SET("font-family"                , FontFamily)
+           || PARSE_AND_SET("font-size"                  , FontSize)
+           || PARSE_AND_SET("font-style"                 , FontStyle)
+           || PARSE_AND_SET("font-weight"                , FontWeight)
+           || PARSE_AND_SET("lighting-color"             , LightingColor)
+           || PARSE_AND_SET("mask"                       , Mask)
+           || PARSE_AND_SET("opacity"                    , Opacity)
+           || PARSE_AND_SET("stop-color"                 , StopColor)
+           || PARSE_AND_SET("stop-opacity"               , StopOpacity)
+           || PARSE_AND_SET("stroke"                     , Stroke)
+           || PARSE_AND_SET("stroke-dasharray"           , StrokeDashArray)
+           || PARSE_AND_SET("stroke-dashoffset"          , StrokeDashOffset)
+           || PARSE_AND_SET("stroke-linecap"             , StrokeLineCap)
+           || PARSE_AND_SET("stroke-linejoin"            , StrokeLineJoin)
+           || PARSE_AND_SET("stroke-miterlimit"          , StrokeMiterLimit)
+           || PARSE_AND_SET("stroke-opacity"             , StrokeOpacity)
+           || PARSE_AND_SET("stroke-width"               , StrokeWidth)
+           || PARSE_AND_SET("text-anchor"                , TextAnchor)
+           || PARSE_AND_SET("visibility"                 , Visibility);
+
+#undef PARSE_AND_SET
+}
+
+// https://www.w3.org/TR/SVG11/coords.html#PreserveAspectRatioAttribute
+SkMatrix SkSVGNode::ComputeViewboxMatrix(const SkRect& viewBox,
+                                         const SkRect& viewPort,
+                                         SkSVGPreserveAspectRatio par) {
+    SkASSERT(!viewBox.isEmpty());
+    SkASSERT(!viewPort.isEmpty());
+
+    auto compute_scale = [&]() -> SkV2 {
+        const auto sx = viewPort.width()  / viewBox.width(),
+                   sy = viewPort.height() / viewBox.height();
+
+        if (par.fAlign == SkSVGPreserveAspectRatio::kNone) {
+            // none -> anisotropic scaling, regardless of fScale
+            return {sx, sy};
+        }
+
+        // isotropic scaling
+        const auto s = par.fScale == SkSVGPreserveAspectRatio::kMeet
+                            ? std::min(sx, sy)
+                            : std::max(sx, sy);
+        return {s, s};
+    };
+
+    auto compute_trans = [&](const SkV2& scale) -> SkV2 {
+        static constexpr float gAlignCoeffs[] = {
+                0.0f, // Min
+                0.5f, // Mid
+                1.0f  // Max
+        };
+
+        const size_t x_coeff = par.fAlign >> 0 & 0x03,
+                     y_coeff = par.fAlign >> 2 & 0x03;
+
+        SkASSERT(x_coeff < SK_ARRAY_COUNT(gAlignCoeffs) &&
+                 y_coeff < SK_ARRAY_COUNT(gAlignCoeffs));
+
+        const auto tx = -viewBox.x() * scale.x,
+                   ty = -viewBox.y() * scale.y,
+                   dx = viewPort.width()  - viewBox.width() * scale.x,
+                   dy = viewPort.height() - viewBox.height() * scale.y;
+
+        return {
+            tx + dx * gAlignCoeffs[x_coeff],
+            ty + dy * gAlignCoeffs[y_coeff]
+        };
+    };
+
+    const auto s = compute_scale(),
+               t = compute_trans(s);
+
+    return SkMatrix::Translate(t.x, t.y) *
+           SkMatrix::Scale(s.x, s.y);
 }

@@ -162,7 +162,8 @@ void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
     const std::vector<ImageContext*>& contexts,
     sk_sp<SkColorSpace> image_color_space,
-    bool has_alpha) {
+    SkYUVAInfo::PlaneConfig plane_config,
+    SkYUVAInfo::Subsampling subsampling) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
   return nullptr;
@@ -178,6 +179,7 @@ FakeSkiaOutputSurface::CreateImageContext(
     const gpu::MailboxHolder& holder,
     const gfx::Size& size,
     ResourceFormat format,
+    bool concurrent_reads,
     const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
     sk_sp<SkColorSpace> color_space) {
   return std::make_unique<ExternalUseClient::ImageContext>(

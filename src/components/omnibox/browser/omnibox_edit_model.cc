@@ -61,28 +61,8 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
-// Histogram name which counts the number of times that the user text is
-// cleared.  IME users are sometimes in the situation that IME was
-// unintentionally turned on and failed to input latin alphabets (ASCII
-// characters) or the opposite case.  In that case, users may delete all
-// the text and the user text gets cleared.  We'd like to measure how often
-// this scenario happens.
-//
-// Note that since we don't currently correlate "text cleared" events with
-// IME usage, this also captures many other cases where users clear the text;
-// though it explicitly doesn't log deleting all the permanent text as
-// the first action of an editing sequence (see comments in
-// OnAfterPossibleChange()).
-const char kOmniboxUserTextClearedHistogram[] = "Omnibox.UserTextCleared";
-
 const char kOmniboxFocusResultedInNavigation[] =
     "Omnibox.FocusResultedInNavigation";
-
-enum UserTextClearedType {
-  OMNIBOX_USER_TEXT_CLEARED_BY_EDITING = 0,
-  OMNIBOX_USER_TEXT_CLEARED_WITH_ESCAPE = 1,
-  OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS,
-};
 
 // Histogram name which counts the number of times the user enters
 // keyword hint mode and via what method.  The possible values are listed
@@ -558,7 +538,9 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
   }
   input_ =
       AutocompleteInput(input_text, cursor_position, GetPageClassification(),
-                        client_->GetSchemeClassifier());
+                        client_->GetSchemeClassifier(),
+                        client_->ShouldDefaultTypedNavigationsToHttps(),
+                        client_->GetHttpsPortForTesting());
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
   input_.set_prevent_inline_autocomplete(
@@ -590,7 +572,6 @@ bool OmniboxEditModel::CanPasteAndGo(const base::string16& text) const {
 void OmniboxEditModel::PasteAndGo(const base::string16& text,
                                   base::TimeTicks match_selection_timestamp) {
   DCHECK(CanPasteAndGo(text));
-  UMA_HISTOGRAM_COUNTS_1M("Omnibox.PasteAndGo", 1);
 
   view_->RevertAll();
   AutocompleteMatch match;
@@ -779,8 +760,10 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     input_text = user_input_in_progress_ ? user_text_ : url_for_editing_;
   // Create a dummy AutocompleteInput for use in calling SuggestExactInput()
   // to create an alternate navigational match.
-  AutocompleteInput alternate_input(input_text, GetPageClassification(),
-                                    client_->GetSchemeClassifier());
+  AutocompleteInput alternate_input(
+      input_text, GetPageClassification(), client_->GetSchemeClassifier(),
+      client_->ShouldDefaultTypedNavigationsToHttps(),
+      client_->GetHttpsPortForTesting());
   // Somehow we can occasionally get here with no active tab.  It's not
   // clear why this happens.
   alternate_input.set_current_url(client_->GetURL());
@@ -895,9 +878,10 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     // For logging the below histogram, only record uses that depend on the
     // omnibox suggestion system, i.e., TYPED navigations.  That is, exclude
     // omnibox URL interactions that are treated as reloads or link-following
-    // (i.e., cut-and-paste of URLs).
+    // (i.e., cut-and-paste of URLs) or paste-and-go.
     if (ui::PageTransitionTypeIncludingQualifiersIs(
-            match.transition, ui::PAGE_TRANSITION_TYPED)) {
+            match.transition, ui::PAGE_TRANSITION_TYPED) &&
+        pasted_text.empty()) {
       navigation_metrics::RecordOmniboxURLNavigation(match.destination_url);
     }
 
@@ -938,7 +922,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         match.destination_url, match.post_content.get(), disposition,
         ui::PageTransitionFromInt(match.transition |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-        match.type, match_selection_timestamp);
+        match.type, match_selection_timestamp,
+        input_.added_default_scheme_to_typed_url());
 
     // The observer should have been synchronously notified of a pending load.
     if (observer && observer->HasSeenPendingLoad())
@@ -1121,6 +1106,10 @@ void OmniboxEditModel::ClearKeyword() {
   }
 }
 
+void OmniboxEditModel::ClearAdditionalText() {
+  view_->SetAdditionalText(base::string16());
+}
+
 void OmniboxEditModel::OnSetFocus(bool control_down) {
   last_omnibox_focus_ = base::TimeTicks::Now();
   user_input_since_focus_ = false;
@@ -1159,7 +1148,9 @@ void OmniboxEditModel::StartZeroSuggestRequest(
   // Send the textfield contents exactly as-is, as otherwise the verbatim
   // match can be wrong. The full page URL is anyways in set_current_url().
   input_ = AutocompleteInput(view_->GetText(), GetPageClassification(),
-                             client_->GetSchemeClassifier());
+                             client_->GetSchemeClassifier(),
+                             client_->ShouldDefaultTypedNavigationsToHttps(),
+                             client_->GetHttpsPortForTesting());
   input_.set_current_url(client_->GetURL());
   input_.set_current_title(client_->GetTitle());
   input_.set_focus_type(user_clobbered_permanent_text
@@ -1215,12 +1206,6 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   if (client_->CurrentPageExists() && !client_->IsLoading()) {
     client_->DiscardNonCommittedNavigations();
     view_->Update();
-  }
-
-  if (!user_text_.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kOmniboxUserTextClearedHistogram,
-                              OMNIBOX_USER_TEXT_CLEARED_WITH_ESCAPE,
-                              OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS);
   }
 
   // Unconditionally revert/select all.  This ensures any popup, whether due to
@@ -1486,16 +1471,6 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   has_temporary_text_ = false;
   just_deleted_text_ = state_changes.just_deleted_text;
 
-  if (user_input_in_progress_ && user_text_.empty()) {
-    // Log cases where the user started editing and then subsequently cleared
-    // all the text.  Note that this explicitly doesn't catch cases like
-    // "hit ctrl-l to select whole edit contents, then hit backspace", because
-    // in such cases, |user_input_in_progress| won't be true here.
-    UMA_HISTOGRAM_ENUMERATION(kOmniboxUserTextClearedHistogram,
-                              OMNIBOX_USER_TEXT_CLEARED_BY_EDITING,
-                              OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS);
-  }
-
   const bool no_selection =
       state_changes.new_sel_start == state_changes.new_sel_end;
 
@@ -1577,12 +1552,11 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   const base::string16 inline_autocompletion(match.inline_autocompletion);
   const base::string16 prefix_autocompletion(match.prefix_autocompletion);
   const auto split_autocompletion(match.split_autocompletion);
-  const base::string16 fill_into_edit_additional_text(
-      match.fill_into_edit_additional_text);
+  const base::string16 additional_text(match.additional_text);
   OnPopupDataChanged(base::string16(),
                      /*is_temporary_text=*/false, inline_autocompletion,
                      prefix_autocompletion, split_autocompletion, keyword,
-                     is_keyword_hint, fill_into_edit_additional_text);
+                     is_keyword_hint, additional_text);
 }
 
 // static

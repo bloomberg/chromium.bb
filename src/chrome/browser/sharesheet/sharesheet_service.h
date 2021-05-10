@@ -12,9 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_action_cache.h"
+#include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
@@ -55,18 +57,23 @@ class SharesheetService : public KeyedService {
   // Drive hosted document, only drive share action will be shown.
   void ShowBubble(content::WebContents* web_contents,
                   apps::mojom::IntentPtr intent,
-                  sharesheet::CloseCallback close_callback);
+                  SharesheetMetrics::LaunchSource source,
+                  CloseCallback close_callback);
   void ShowBubble(content::WebContents* web_contents,
                   apps::mojom::IntentPtr intent,
                   bool contains_hosted_document,
-                  sharesheet::CloseCallback close_callback);
-  void OnBubbleClosed(uint32_t id, const base::string16& active_action);
-  void OnTargetSelected(uint32_t delegate_id,
+                  SharesheetMetrics::LaunchSource source,
+                  CloseCallback close_callback);
+  void OnBubbleClosed(gfx::NativeWindow native_window,
+                      const base::string16& active_action);
+  void OnTargetSelected(gfx::NativeWindow native_window,
                         const base::string16& target_name,
                         const TargetType type,
                         apps::mojom::IntentPtr intent,
                         views::View* share_action_view);
-  SharesheetServiceDelegate* GetDelegate(uint32_t delegate_id);
+  SharesheetServiceDelegate* GetOrCreateDelegate(
+      gfx::NativeWindow native_window);
+  SharesheetServiceDelegate* GetDelegate(gfx::NativeWindow native_window);
 
   // If the files to share contains a Google Drive hosted document, only the
   // drive share action will be shown.
@@ -74,6 +81,8 @@ class SharesheetService : public KeyedService {
                        bool contains_hosted_document);
   Profile* GetProfile();
   const gfx::VectorIcon* GetVectorIcon(const base::string16& display_name);
+
+  static void SetSelectedAppForTesting(const base::string16& target_name);
 
  private:
   using SharesheetServiceIconLoaderCallback =
@@ -84,24 +93,29 @@ class SharesheetService : public KeyedService {
                     size_t index,
                     SharesheetServiceIconLoaderCallback callback);
 
+  void LaunchApp(const base::string16& target_name,
+                 apps::mojom::IntentPtr intent);
+
   void OnIconLoaded(std::vector<apps::IntentLaunchInfo> intent_launch_info,
                     std::vector<TargetInfo> targets,
                     size_t index,
                     SharesheetServiceIconLoaderCallback callback,
                     apps::mojom::IconValuePtr icon_value);
 
-  void OnAppIconsLoaded(std::unique_ptr<SharesheetServiceDelegate> delegate,
+  void OnAppIconsLoaded(SharesheetServiceDelegate* delegate,
                         apps::mojom::IntentPtr intent,
-                        sharesheet::CloseCallback close_callback,
+                        CloseCallback close_callback,
                         std::vector<TargetInfo> targets);
 
-  void ShowBubbleWithDelegate(
-      std::unique_ptr<SharesheetServiceDelegate> delegate,
-      apps::mojom::IntentPtr intent,
-      bool contains_hosted_document,
-      sharesheet::CloseCallback close_callback);
+  void ShowBubbleWithDelegate(SharesheetServiceDelegate* delegate,
+                              apps::mojom::IntentPtr intent,
+                              bool contains_hosted_document,
+                              CloseCallback close_callback);
 
-  uint32_t delegate_counter_ = 0;
+  void RecordUserActionMetrics(const base::string16& target_name);
+  void RecordTargetCountMetrics(const std::vector<TargetInfo>& targets);
+  void RecordShareActionMetrics(const base::string16& target_name);
+
   Profile* profile_;
   std::unique_ptr<SharesheetActionCache> sharesheet_action_cache_;
   apps::AppServiceProxy* app_service_proxy_;

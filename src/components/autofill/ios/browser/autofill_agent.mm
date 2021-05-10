@@ -4,6 +4,8 @@
 
 #import "components/autofill/ios/browser/autofill_agent.h"
 
+#import <UIKit/UIKit.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -48,8 +50,8 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
@@ -57,6 +59,7 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -103,35 +106,6 @@ void GetFormField(autofill::FormFieldData* field,
     // show suggestions that begin the same as the current value) with the
     // effect that one only suggestion would be returned; the value itself.
     field->value = base::string16();
-  }
-}
-
-void UpdateFieldManagerWithFillingResults(
-    scoped_refptr<FieldDataManager> fieldDataManager,
-    NSString* jsonString,
-    size_t numFieldsInFormData) {
-  std::map<uint32_t, base::string16> fillingResults;
-  if (autofill::ExtractFillingResults(jsonString, &fillingResults)) {
-    for (auto& fillData : fillingResults) {
-      fieldDataManager->UpdateFieldDataWithAutofilledValue(
-          FieldRendererId(fillData.first), fillData.second,
-          kAutofilledOnUserTrigger);
-    }
-  }
-  // TODO(crbug/1131038): Remove once the experiment is over.
-  UMA_HISTOGRAM_BOOLEAN("Autofill.FormFillSuccessIOS", !fillingResults.empty());
-}
-
-void UpdateFieldManagerForClearedIDs(
-    scoped_refptr<FieldDataManager> fieldDataManager,
-    NSString* jsonString) {
-  std::vector<uint32_t> clearingResults;
-  if (autofill::ExtractIDs(jsonString, &clearingResults)) {
-    for (auto uniqueID : clearingResults) {
-      fieldDataManager->UpdateFieldDataWithAutofilledValue(
-          FieldRendererId(uniqueID), base::string16(),
-          kAutofilledOnUserTrigger);
-    }
   }
 }
 
@@ -270,7 +244,7 @@ autofillManagerFromWebState:(web::WebState*)webState
                   ofFormsSeen:(const FormDataVector&)forms {
   DCHECK(autofillManager);
   DCHECK(!forms.empty());
-  autofillManager->OnFormsSeen(forms, base::TimeTicks::Now());
+  autofillManager->OnFormsSeen(forms);
 }
 
 // Notifies the autofill manager when forms are submitted.
@@ -425,6 +399,17 @@ autofillManagerFromWebState:(web::WebState*)webState
   completion(_mostRecentSuggestions, self);
 }
 
+- (void)updateFieldManagerForClearedIDs:(NSString*)jsonString {
+  std::vector<uint32_t> clearingResults;
+  if (autofill::ExtractIDs(jsonString, &clearingResults)) {
+    for (auto uniqueID : clearingResults) {
+      _fieldDataManager->UpdateFieldDataMap(FieldRendererId(uniqueID),
+                                            base::string16(),
+                                            kAutofilledOnUserTrigger);
+    }
+  }
+}
+
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
                uniqueFormID:(FormRendererId)uniqueFormID
@@ -471,8 +456,8 @@ autofillManagerFromWebState:(web::WebState*)webState
                          AutofillAgent* strongSelf = weakSelf;
                          if (!strongSelf)
                            return;
-                         UpdateFieldManagerForClearedIDs(
-                             strongSelf->_fieldDataManager, jsonString);
+                         [strongSelf
+                             updateFieldManagerForClearedIDs:jsonString];
                          suggestionHandledCompletionCopy();
                        }];
 
@@ -933,11 +918,29 @@ autofillManagerFromWebState:(web::WebState*)webState
           if (!strongSelf)
             return;
           if (success) {
-            strongSelf->_fieldDataManager->UpdateFieldDataWithAutofilledValue(
+            strongSelf->_fieldDataManager->UpdateFieldDataMap(
                 uniqueFieldID, value, kAutofilledOnUserTrigger);
           }
           suggestionHandledCompletionCopy();
         }];
+}
+
+- (void)updateFieldManagerWithFillingResults:(NSString*)jsonString {
+  std::map<uint32_t, base::string16> fillingResults;
+  if (autofill::ExtractFillingResults(jsonString, &fillingResults)) {
+    for (auto& fillData : fillingResults) {
+      _fieldDataManager->UpdateFieldDataMap(FieldRendererId(fillData.first),
+                                            fillData.second,
+                                            kAutofilledOnUserTrigger);
+    }
+  }
+  // TODO(crbug/1131038): Remove once the experiment is over.
+  UMA_HISTOGRAM_BOOLEAN("Autofill.FormFillSuccessIOS", !fillingResults.empty());
+
+  ukm::SourceId source_id = ukm::GetSourceIdForWebStateDocument(_webState);
+  ukm::builders::Autofill_FormFillSuccessIOS(source_id)
+      .SetFormFillSuccess(!fillingResults.empty())
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // Sends the the |data| to |frame| to actually fill the data.
@@ -948,7 +951,6 @@ autofillManagerFromWebState:(web::WebState*)webState
   SuggestionHandledCompletion suggestionHandledCompletionCopy =
       [_suggestionHandledCompletion copy];
   _suggestionHandledCompletion = nil;
-  size_t numFieldsInFormData = data->FindPath("fields")->DictSize();
   [_jsAutofillManager fillForm:std::move(data)
       forceFillFieldIdentifier:SysUTF16ToNSString(_pendingAutocompleteField)
         forceFillFieldUniqueID:_pendingAutocompleteFieldID
@@ -957,9 +959,7 @@ autofillManagerFromWebState:(web::WebState*)webState
                AutofillAgent* strongSelf = weakSelf;
                if (!strongSelf)
                  return;
-               UpdateFieldManagerWithFillingResults(
-                   strongSelf->_fieldDataManager, jsonString,
-                   numFieldsInFormData);
+               [strongSelf updateFieldManagerWithFillingResults:jsonString];
                // It is possible that the fill was not initiated by selecting
                // a suggestion in this case the callback is nil.
                if (suggestionHandledCompletionCopy)

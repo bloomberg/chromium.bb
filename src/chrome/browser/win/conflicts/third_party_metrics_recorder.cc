@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
@@ -83,8 +84,10 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
     ++unsigned_module_count_;
 
     // Put unsigned modules into the crash keys.
-    if (module_data.module_properties & ModuleInfoData::kPropertyLoadedModule)
-      AddUnsignedModuleToCrashkeys(module_data.inspection_result->basename);
+    if (module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) {
+      AddUnsignedModuleToCrashkeys(
+          base::AsWString(module_data.inspection_result->basename));
+    }
   }
 
   if (module_data.module_properties & ModuleInfoData::kPropertyShellExtension)
@@ -118,7 +121,7 @@ void ThirdPartyMetricsRecorder::OnModuleDatabaseIdle() {
 }
 
 void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
-    const base::string16& module_basename) {
+    const std::wstring& module_basename) {
   using UnsignedModulesKey = crash_reporter::CrashKeyString<kCrashKeySize>;
   static UnsignedModulesKey unsigned_modules_keys[] = {
       {"unsigned-modules-1", UnsignedModulesKey::Tag::kArray},
@@ -131,7 +134,7 @@ void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
   if (current_key_index_ >= base::size(unsigned_modules_keys))
     return;
 
-  std::string module = base::UTF16ToUTF8(module_basename);
+  std::string module = base::WideToUTF8(module_basename);
 
   // Truncate the basename if it doesn't fit in one crash key.
   size_t module_length = std::min(module.length(), kCrashKeySize);

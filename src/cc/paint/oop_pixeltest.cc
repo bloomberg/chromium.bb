@@ -520,9 +520,9 @@ TEST_P(OopImagePixelTest, DrawImage) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -559,9 +559,9 @@ TEST_P(OopImagePixelTest, DrawImageScaled) {
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
   display_item_list->push<ScaleOp>(0.5f, 0.5f);
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -633,9 +633,8 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
       PaintImage::GetNextId());
   auto paint_image = builder.TakePaintImage();
   auto paint_record = sk_make_sp<PaintOpBuffer>();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling, nullptr);
   auto paint_record_shader = PaintShader::MakePaintRecord(
       paint_record, gfx::RectToSkRect(rect), SkTileMode::kRepeat,
       SkTileMode::kRepeat, nullptr);
@@ -683,6 +682,10 @@ TEST_F(OopImagePixelTest, DrawRecordShaderTranslatedTileRect) {
   sk_sp<PaintShader> paint_record_shader = PaintShader::MakePaintRecord(
       shader_buffer, tile_rect, SkTileMode::kRepeat, SkTileMode::kRepeat,
       nullptr, PaintShader::ScalingBehavior::kRasterAtScale);
+  // Force paint_flags to convert this to kFixedScale, so we can safely compare
+  // pixels between direct and oop-r modes (since oop will convert to
+  // kFixedScale no matter what.
+  paint_record_shader->set_has_animated_images(true);
 
   gfx::Size output_size(10, 10);
 
@@ -728,9 +731,9 @@ TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -774,9 +777,9 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -819,9 +822,9 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -859,10 +862,10 @@ TEST_P(OopImagePixelTest, DrawImageWithSetMatrix) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  flags.setFilterQuality(FilterQuality());
-  display_item_list->push<SetMatrixOp>(SkMatrix::Scale(0.5f, 0.5f));
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  SkSamplingOptions sampling(FilterQuality());
+  display_item_list->push<SetMatrixOp>(SkM44::Scale(0.5f, 0.5f));
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                       nullptr);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -934,8 +937,7 @@ TEST_F(OopPixelTest, DrawMailboxBackedImage) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  PaintFlags flags;
-  display_item_list->push<DrawImageOp>(src_paint_image, 0.f, 0.f, &flags);
+  display_item_list->push<DrawImageOp>(src_paint_image, 0.f, 0.f);
   display_item_list->EndPaintOfUnpaired(gfx::Rect(options.resource_size));
   display_item_list->Finalize();
 
@@ -1712,7 +1714,12 @@ class OopRecordShaderPixelTest : public OopPixelTest,
         BuildTextBlob(SkTypeface::MakeDefault(), UseLcdText()), 0u, 0u, flags);
     auto paint_record_shader = PaintShader::MakePaintRecord(
         paint_record, SkRect::MakeWH(25, 25), SkTileMode::kRepeat,
-        SkTileMode::kRepeat, nullptr);
+        SkTileMode::kRepeat, nullptr,
+        PaintShader::ScalingBehavior::kRasterAtScale);
+    // Force paint_flags to convert this to kFixedScale, so we can safely
+    // compare pixels between direct and oop-r modes (since oop will convert to
+    // kFixedScale no matter what.
+    paint_record_shader->set_has_animated_images(true);
 
     auto display_item_list = base::MakeRefCounted<DisplayItemList>();
     display_item_list->StartPaint();
@@ -1737,7 +1744,7 @@ class OopRecordFilterPixelTest : public OopPixelTest,
                                  public ::testing::WithParamInterface<bool> {
  public:
   bool UseLcdText() const { return GetParam(); }
-  void RunTest(const SkMatrix& mat) {
+  void RunTest(const SkM44& mat) {
     RasterOptions options;
     options.resource_size = gfx::Size(100, 100);
     options.content_size = options.resource_size;
@@ -1771,13 +1778,16 @@ class OopRecordFilterPixelTest : public OopPixelTest,
 };
 
 TEST_P(OopRecordFilterPixelTest, FilterWithTextScaled) {
-  SkMatrix mat = SkMatrix::Scale(2.f, 2.f);
+  SkM44 mat = SkM44::Scale(2.f, 2.f);
   RunTest(mat);
 }
 
 TEST_P(OopRecordFilterPixelTest, FilterWithTextAndComplexCTM) {
-  SkMatrix mat = SkMatrix::Scale(2.f, 2.f);
-  mat.preSkew(2.f, 2.f);
+  SkM44 mat = SkM44::Scale(2.f, 2.f);
+  SkM44 skew = SkM44();
+  skew.setRC(0, 1, 2.f);
+  skew.setRC(1, 0, 2.f);
+  mat.preConcat(skew);
   RunTest(mat);
 }
 
@@ -1906,12 +1916,13 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   auto* sii = raster_context_provider_->SharedImageInterface();
   gpu::Mailbox dest_mailbox = CreateMailboxSharedImage(
       ri, sii, options, viz::ResourceFormat::RGBA_8888);
-  gpu::Mailbox y_mailbox = CreateMailboxSharedImage(
-      ri, sii, options, viz::ResourceFormat::LUMINANCE_8);
-  gpu::Mailbox u_mailbox = CreateMailboxSharedImage(
-      ri, sii, uv_options, viz::ResourceFormat::LUMINANCE_8);
-  gpu::Mailbox v_mailbox = CreateMailboxSharedImage(
-      ri, sii, uv_options, viz::ResourceFormat::LUMINANCE_8);
+  gpu::Mailbox yuv_mailboxes[3]{
+      CreateMailboxSharedImage(ri, sii, options,
+                               viz::ResourceFormat::LUMINANCE_8),
+      CreateMailboxSharedImage(ri, sii, uv_options,
+                               viz::ResourceFormat::LUMINANCE_8),
+      CreateMailboxSharedImage(ri, sii, uv_options,
+                               viz::ResourceFormat::LUMINANCE_8)};
 
   size_t y_pixels_size = options.resource_size.GetArea();
   size_t uv_pixels_size = uv_options.resource_size.GetArea();
@@ -1926,31 +1937,33 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
 
   // Upload initial yuv image data
   gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
-  UploadPixels(gl, y_mailbox, options.resource_size, GL_LUMINANCE,
+  UploadPixels(gl, yuv_mailboxes[0], options.resource_size, GL_LUMINANCE,
                GL_UNSIGNED_BYTE, y_pix.get());
-  UploadPixels(gl, u_mailbox, uv_options.resource_size, GL_LUMINANCE,
+  UploadPixels(gl, yuv_mailboxes[1], uv_options.resource_size, GL_LUMINANCE,
                GL_UNSIGNED_BYTE, u_pix.get());
-  UploadPixels(gl, v_mailbox, uv_options.resource_size, GL_LUMINANCE,
+  UploadPixels(gl, yuv_mailboxes[2], uv_options.resource_size, GL_LUMINANCE,
                GL_UNSIGNED_BYTE, v_pix.get());
   gl->OrderingBarrierCHROMIUM();
 
-  ri->ConvertYUVMailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace, y_mailbox,
-                               u_mailbox, v_mailbox);
+  ri->ConvertYUVAMailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace,
+                                SkYUVAInfo::PlaneConfig::kY_U_V,
+                                SkYUVAInfo::Subsampling::k420, yuv_mailboxes);
   ri->OrderingBarrierCHROMIUM();
   SkBitmap actual_bitmap = ReadbackMailbox(gl, dest_mailbox, options);
 
   // Create the expected result using SkImage::MakeFromYUVTextures
   GrBackendTexture backend_textures[3];
-  backend_textures[0] = MakeBackendTexture(gl, y_mailbox, options.resource_size,
-                                           GL_LUMINANCE8_EXT);
+  backend_textures[0] = MakeBackendTexture(
+      gl, yuv_mailboxes[0], options.resource_size, GL_LUMINANCE8_EXT);
   backend_textures[1] = MakeBackendTexture(
-      gl, u_mailbox, uv_options.resource_size, GL_LUMINANCE8_EXT);
+      gl, yuv_mailboxes[1], uv_options.resource_size, GL_LUMINANCE8_EXT);
   backend_textures[2] = MakeBackendTexture(
-      gl, v_mailbox, uv_options.resource_size, GL_LUMINANCE8_EXT);
+      gl, yuv_mailboxes[2], uv_options.resource_size, GL_LUMINANCE8_EXT);
 
   SkYUVAInfo yuva_info(
       {options.resource_size.width(), options.resource_size.height()},
-      SkYUVAInfo::PlanarConfig::kY_U_V_420, kJPEG_Full_SkYUVColorSpace);
+      SkYUVAInfo::PlaneConfig::kY_U_V, SkYUVAInfo::Subsampling::k420,
+      kJPEG_Full_SkYUVColorSpace);
   GrYUVABackendTextures yuva_textures(yuva_info, backend_textures,
                                       kTopLeft_GrSurfaceOrigin);
 
@@ -1972,9 +1985,9 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   sii->DestroySharedImage(sync_token, dest_mailbox);
-  sii->DestroySharedImage(sync_token, y_mailbox);
-  sii->DestroySharedImage(sync_token, u_mailbox);
-  sii->DestroySharedImage(sync_token, v_mailbox);
+  sii->DestroySharedImage(sync_token, yuv_mailboxes[0]);
+  sii->DestroySharedImage(sync_token, yuv_mailboxes[1]);
+  sii->DestroySharedImage(sync_token, yuv_mailboxes[2]);
 }
 
 TEST_F(OopPixelTest, ReadbackImagePixels) {
@@ -2031,10 +2044,11 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
 
   gpu::Mailbox dest_mailbox = CreateMailboxSharedImage(
       ri, sii, options, viz::ResourceFormat::RGBA_8888);
-  gpu::Mailbox y_mailbox = CreateMailboxSharedImage(
-      ri, sii, options, viz::ResourceFormat::LUMINANCE_8);
-  gpu::Mailbox uv_mailbox =
-      CreateMailboxSharedImage(ri, sii, uv_options, viz::ResourceFormat::RG_88);
+  gpu::Mailbox y_uv_mailboxes[2]{
+      CreateMailboxSharedImage(ri, sii, options,
+                               viz::ResourceFormat::LUMINANCE_8),
+      CreateMailboxSharedImage(ri, sii, uv_options, viz::ResourceFormat::RG_88),
+  };
 
   size_t y_pixels_size = options.resource_size.GetArea();
   size_t uv_pixels_size = uv_options.resource_size.GetArea() * 2;
@@ -2048,27 +2062,29 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   }
 
   gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
-  UploadPixels(gl, y_mailbox, options.resource_size, GL_LUMINANCE,
+  UploadPixels(gl, y_uv_mailboxes[0], options.resource_size, GL_LUMINANCE,
                GL_UNSIGNED_BYTE, y_pix.get());
-  UploadPixels(gl, uv_mailbox, uv_options.resource_size, GL_RG,
+  UploadPixels(gl, y_uv_mailboxes[1], uv_options.resource_size, GL_RG,
                GL_UNSIGNED_BYTE, uv_pix.get());
   gl->OrderingBarrierCHROMIUM();
 
-  ri->ConvertNV12MailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace, y_mailbox,
-                                uv_mailbox);
+  ri->ConvertYUVAMailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace,
+                                SkYUVAInfo::PlaneConfig::kY_UV,
+                                SkYUVAInfo::Subsampling::k420, y_uv_mailboxes);
   ri->OrderingBarrierCHROMIUM();
   SkBitmap actual_bitmap = ReadbackMailbox(gl, dest_mailbox, options);
 
   // Create the expected result using SkImage::MakeFromYUVTextures
   GrBackendTexture backend_textures[2];
-  backend_textures[0] = MakeBackendTexture(gl, y_mailbox, options.resource_size,
-                                           GL_LUMINANCE8_EXT);
-  backend_textures[1] =
-      MakeBackendTexture(gl, uv_mailbox, uv_options.resource_size, GL_RG8);
+  backend_textures[0] = MakeBackendTexture(
+      gl, y_uv_mailboxes[0], options.resource_size, GL_LUMINANCE8_EXT);
+  backend_textures[1] = MakeBackendTexture(gl, y_uv_mailboxes[1],
+                                           uv_options.resource_size, GL_RG8);
 
   SkYUVAInfo yuva_info(
       {options.resource_size.width(), options.resource_size.height()},
-      SkYUVAInfo::PlanarConfig::kY_UV_420, kJPEG_Full_SkYUVColorSpace);
+      SkYUVAInfo::PlaneConfig::kY_UV, SkYUVAInfo::Subsampling::k420,
+      kJPEG_Full_SkYUVColorSpace);
   GrYUVABackendTextures yuva_textures(yuva_info, backend_textures,
                                       kTopLeft_GrSurfaceOrigin);
   auto expected_image = SkImage::MakeFromYUVATextures(
@@ -2089,8 +2105,8 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   sii->DestroySharedImage(sync_token, dest_mailbox);
-  sii->DestroySharedImage(sync_token, y_mailbox);
-  sii->DestroySharedImage(sync_token, uv_mailbox);
+  sii->DestroySharedImage(sync_token, y_uv_mailboxes[0]);
+  sii->DestroySharedImage(sync_token, y_uv_mailboxes[1]);
 }
 #endif  // !defined(OS_ANDROID)
 

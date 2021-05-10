@@ -14,7 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/optimization_guide/test_optimization_guide_decider.h"
+#include "components/optimization_guide/content/browser/test_optimization_guide_decider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -154,24 +154,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void SeedOptimizationGuideDeciderWithDefaultResponses() {
     optimization_guide::OptimizationMetadata default_metadata;
 
-    optimization_guide::proto::PreviewsMetadata rlh_previews_metadata;
-    rlh_previews_metadata.set_inflation_percent(123);
-    auto* rlh1 = rlh_previews_metadata.add_resource_loading_hints();
-    rlh1->set_resource_pattern("resource1");
-    rlh1->set_loading_optimization_type(
-        optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    auto* rlh2 = rlh_previews_metadata.add_resource_loading_hints();
-    rlh2->set_resource_pattern("resource2");
-    rlh2->set_loading_optimization_type(
-        optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    rlh_previews_metadata.add_resource_loading_hints()->set_resource_pattern(
-        "shouldbeskipped");
-    // Should also be skipped since the resource pattern is empty.
-    rlh_previews_metadata.add_resource_loading_hints()
-        ->set_loading_optimization_type(
-            optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    optimization_guide::OptimizationMetadata rlh_metadata;
-    rlh_metadata.set_previews_metadata(rlh_previews_metadata);
 
     std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
              std::tuple<optimization_guide::OptimizationGuideDecision,
@@ -187,11 +169,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
              std::make_tuple(
                  optimization_guide::OptimizationGuideDecision::kUnknown,
                  default_metadata)},
-            {std::make_tuple(resource_loading_hints_url(),
-                             optimization_guide::proto::RESOURCE_LOADING),
-             std::make_tuple(
-                 optimization_guide::OptimizationGuideDecision::kTrue,
-                 rlh_metadata)},
         };
 
     optimization_guide_decider()->SetResponses(responses);
@@ -201,10 +178,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
   GURL hint_not_loaded_url() { return GURL("https://hintnotloaded.com/123"); }
 
-  GURL resource_loading_hints_url() {
-    return GURL("https://hasresourceloadinghints.com/123");
-  }
-
  private:
   std::unique_ptr<TestOptimizationGuideDecider> optimization_guide_decider_;
 };
@@ -213,27 +186,18 @@ TEST_F(PreviewsOptimizationGuideTest,
        InitializationRegistersCorrectOptimizationTypesAndTargets) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {previews::features::kDeferAllScriptPreviews,
-       previews::features::kNoScriptPreviews,
-       previews::features::kResourceLoadingHints},
-      {});
+      {previews::features::kDeferAllScriptPreviews}, {});
 
   PreviewsOptimizationGuide guide(optimization_guide_decider());
 
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
           optimization_guide_decider()->registered_optimization_types();
-  EXPECT_EQ(3u, registered_optimization_types.size());
+  EXPECT_EQ(1u, registered_optimization_types.size());
   // We expect for DEFER_ALL_SCRIPT, NOSCRIPT, and RESOURCE_LOADING to be
   // registered.
   EXPECT_TRUE(registered_optimization_types.find(
                   optimization_guide::proto::DEFER_ALL_SCRIPT) !=
-              registered_optimization_types.end());
-  EXPECT_TRUE(
-      registered_optimization_types.find(optimization_guide::proto::NOSCRIPT) !=
-      registered_optimization_types.end());
-  EXPECT_TRUE(registered_optimization_types.find(
-                  optimization_guide::proto::RESOURCE_LOADING) !=
               registered_optimization_types.end());
 
   // We expect that the PAINFUL_PAGE_LOAD optimization target is always
@@ -251,9 +215,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 TEST_F(PreviewsOptimizationGuideTest, InitializationRegistersOnlyEnabledTypes) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {}, {previews::features::kDeferAllScriptPreviews,
-           previews::features::kNoScriptPreviews,
-           previews::features::kResourceLoadingHints});
+      {}, {previews::features::kDeferAllScriptPreviews});
 
   PreviewsOptimizationGuide guide(optimization_guide_decider());
 
@@ -264,12 +226,6 @@ TEST_F(PreviewsOptimizationGuideTest, InitializationRegistersOnlyEnabledTypes) {
 
   EXPECT_EQ(registered_optimization_types.find(
                 optimization_guide::proto::DEFER_ALL_SCRIPT),
-            registered_optimization_types.end());
-  EXPECT_EQ(
-      registered_optimization_types.find(optimization_guide::proto::NOSCRIPT),
-      registered_optimization_types.end());
-  EXPECT_EQ(registered_optimization_types.find(
-                optimization_guide::proto::RESOURCE_LOADING),
             registered_optimization_types.end());
 
   // We expect that the PAINFUL_PAGE_LOAD optimization target is always
@@ -282,46 +238,6 @@ TEST_F(PreviewsOptimizationGuideTest, InitializationRegistersOnlyEnabledTypes) {
       registered_optimization_targets.find(
           optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) !=
       registered_optimization_targets.end());
-}
-
-TEST_F(PreviewsOptimizationGuideTest,
-       PreviewsTypeWithoutCorrespondingOptimizationTypeReturnsFalse) {
-  PreviewsOptimizationGuide guide(optimization_guide_decider());
-  SeedOptimizationGuideDeciderWithDefaultResponses();
-
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://whatever.com/"));
-
-  EXPECT_FALSE(guide.CanApplyPreview(
-      /*previews_data=*/nullptr, &navigation_handle,
-      PreviewsType::DEPRECATED_LOFI));
-}
-
-TEST_F(PreviewsOptimizationGuideTest,
-       CanApplyPreviewPopulatesResourceLoadingHintsCache) {
-  PreviewsOptimizationGuide guide(optimization_guide_decider());
-  SeedOptimizationGuideDeciderWithDefaultResponses();
-
-  // Make sure resource loading hints not cached.
-  std::vector<std::string> resource_loading_hints;
-  EXPECT_FALSE(guide.GetResourceLoadingHints(resource_loading_hints_url(),
-                                             &resource_loading_hints));
-  EXPECT_TRUE(resource_loading_hints.empty());
-
-  // Check if we can apply it and metadata is properly applied.
-  PreviewsUserData data(/*page_id=*/1);
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(resource_loading_hints_url());
-  EXPECT_TRUE(guide.CanApplyPreview(&data, &navigation_handle,
-                                    PreviewsType::RESOURCE_LOADING_HINTS));
-  EXPECT_EQ(123, data.data_savings_inflation_percent());
-
-  // Make sure resource loading hints are validated and cached.
-  EXPECT_TRUE(guide.GetResourceLoadingHints(resource_loading_hints_url(),
-                                            &resource_loading_hints));
-  EXPECT_EQ(2u, resource_loading_hints.size());
-  EXPECT_EQ("resource1", resource_loading_hints[0]);
-  EXPECT_EQ("resource2", resource_loading_hints[1]);
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -342,7 +258,8 @@ TEST_F(PreviewsOptimizationGuideTest,
       /*previews_data=*/nullptr, &navigation_handle,
       PreviewsType::DEFER_ALL_SCRIPT));
   EXPECT_FALSE(guide.CanApplyPreview(
-      /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
+      /*previews_data=*/nullptr, &navigation_handle,
+      PreviewsType::DEFER_ALL_SCRIPT));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -362,8 +279,6 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_TRUE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
       PreviewsType::DEFER_ALL_SCRIPT));
-  EXPECT_FALSE(guide.CanApplyPreview(
-      /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,

@@ -7,7 +7,7 @@
  */
 GEN('#include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"');
 
-GEN('#include "chromeos/constants/chromeos_features.h"');
+GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "third_party/blink/public/common/features.h"');
 
@@ -139,6 +139,19 @@ function sendTestMessage(data = undefined) {
 /** @return {!HTMLIFrameElement} */
 function queryIFrame() {
   return /** @type{!HTMLIFrameElement} */ (document.querySelector('iframe'));
+}
+
+/**
+ * Sets up a FakeFileSystemFileHandle to behave like a file which has been
+ * deleted or moved to a directory to which we do not have access.
+ * @param {!FakeFileSystemFileHandle} handle
+ */
+function makeFileNotFound(handle) {
+  // Mimic the exception that would be thrown when attempting to call getFile on
+  // a file which has been moved or deleted.
+  handle.getFileSync = () => {
+    throw new DOMException('File not found', 'NotFoundError');
+  };
 }
 
 // Tests that chrome://media-app is allowed to frame
@@ -387,28 +400,6 @@ TEST_F('MediaAppUIBrowserTest', 'LaunchUnopenableFile', async () => {
   testDone();
 });
 
-// Tests that unopenable files in the same directory are ignored at launch.
-TEST_F('MediaAppUIBrowserTest', 'LaunchWithUnopenableSibling', async () => {
-  const validHandle =
-      fileToFileHandle(await createTestImageFile(123, 456, 'allowed.png'));
-  const notAllowedHandle =
-      new FakeFileSystemFileHandle('not_allowed.png', 'image/png');
-  notAllowedHandle.getFileSync = () => {
-    throw new DOMException(
-        'Fake NotAllowedError for LaunchWithUnopenableSibling test.',
-        'NotAllowedError');
-  };
-
-  await launchWithHandles([validHandle, notAllowedHandle]);
-  const result = await waitForImageAndGetWidth('allowed.png');
-
-  assertEquals(`${TEST_IMAGE_WIDTH}`, result);
-  assertEquals(currentFiles.length, 1);  // Unopenable file ignored at launch.
-  assertEquals(currentFiles[0].handle.name, 'allowed.png');
-  assertEquals(await getFileErrors(), '');  // Ignored => no errors.
-  testDone();
-});
-
 // Tests that a file that becomes inaccessible after the initial app launch is
 // ignored on navigation, and shows an error when navigated to itself.
 TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
@@ -418,7 +409,6 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
     fileToFileHandle(await createTestImageFile(222 /* width */, 10, '2.png')),
     fileToFileHandle(await createTestImageFile(333 /* width */, 10, '3.png')),
   ];
-
   await launchWithHandles(handles);
   let result = await waitForImageAndGetWidth('1.png');
   assertEquals(result, '111');
@@ -454,7 +444,7 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
   result = await waitForErrorUX();
   assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
   assertEquals(currentFiles.length, 3);
-  assertEquals(await getFileErrors(), 'NotAllowedError,,');
+  assertEquals(await getFileErrors(), ',,NotAllowedError');
 
   // Navigating back to an openable file should still work, and the error should
   // "stick".
@@ -470,6 +460,7 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
 // Tests a hypothetical scenario where a file may be deleted and replaced with
 // an openable directory with the same name while the app is running.
 TEST_F('MediaAppUIBrowserTest', 'FileThatBecomesDirectory', async () => {
+  await sendTestMessage({suppressCrashReports: true});
   const handles = [
     fileToFileHandle(await createTestImageFile(111 /* width */, 10, '1.png')),
     fileToFileHandle(await createTestImageFile(222 /* width */, 10, '2.png')),
@@ -489,7 +480,7 @@ TEST_F('MediaAppUIBrowserTest', 'FileThatBecomesDirectory', async () => {
   result = await waitForErrorUX();
   assertMatch(result, GENERIC_ERROR_MESSAGE_REGEX);
   assertEquals(currentFiles.length, 2);
-  assertEquals(await getFileErrors(), 'NotAFile,');
+  assertEquals(await getFileErrors(), ',NotAFile');
 
   testDone();
 });
@@ -499,7 +490,7 @@ TEST_F('MediaAppUIBrowserTest', 'FileThatBecomesDirectory', async () => {
 TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
   const result = await mediaAppPageHandler.openFeedbackDialog();
 
-  assertEquals(result.errorMessage, '');
+  assertEquals(result.errorMessage, null);
   testDone();
 });
 
@@ -731,6 +722,39 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
   // The app should be in zero state with no media loaded.
   lastLoadedFiles = await getLoadedFiles();
   assertEquals(0, lastLoadedFiles.length);
+
+  testDone();
+});
+
+// Tests that the app gracefully handles a delete request on a file that's
+// been deleted or moved.
+TEST_F('MediaAppUIBrowserTest', 'DeleteMissingFile', async () => {
+  const directory = await launchWithFiles(
+      [await createTestImageFile(1, 1, 'first_file_name.png')]);
+  makeFileNotFound(directory.files[0]);
+
+  const messageDelete = {deleteLastFile: true};
+  const testResponse = await sendTestMessage(messageDelete);
+
+  assertEquals(
+      'deleteOriginalFile resolved file moved', testResponse.testQueryResult);
+
+  testDone();
+});
+
+// Tests that the app gracefully handles a rename request on a file that's
+// been deleted or moved.
+TEST_F('MediaAppUIBrowserTest', 'RenameMissingFile', async () => {
+  const directory =
+      await launchWithFiles([await createTestImageFile(1, 1, 'file_name.png')]);
+  makeFileNotFound(directory.files[0]);
+
+  const messageRename = {renameLastFile: 'new_file_name'};
+  const testResponse = await sendTestMessage(messageRename);
+
+  assertEquals(
+      'renameOriginalFile resolved FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY',
+      testResponse.testQueryResult);
 
   testDone();
 });
@@ -1005,25 +1029,6 @@ TEST_F('MediaAppUIBrowserTest', 'SaveAsErrorHandling', async () => {
   testDone();
 });
 
-// Tests the IPC behind the openFile delegate function.
-// TODO(b/165720635): Remove this once google3 shifts over to using openFile on
-// the fileList.
-TEST_F('MediaAppUIBrowserTest', 'LegacyOpenFileIPC', async () => {
-  const pickedFileHandle = new FakeFileSystemFileHandle('picked_file.jpg');
-  window.showOpenFilePicker = () => Promise.resolve([pickedFileHandle]);
-
-  await sendTestMessage({legacyOpenFile: true});
-
-  const lastToken = [...tokenMap.keys()].slice(-1)[0];
-  assertEquals(entryIndex, 0);
-  assertEquals(currentFiles.length, 1);
-  assertEquals(currentFiles[0].handle, pickedFileHandle);
-  assertEquals(currentFiles[0].handle.name, 'picked_file.jpg');
-  assertEquals(currentFiles[0].token, lastToken);
-  assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
-  testDone();
-});
-
 // Tests the IPC behind the openFile function on receivedFileList.
 TEST_F('MediaAppUIBrowserTest', 'OpenFileIPC', async () => {
   const pickedFileHandle = new FakeFileSystemFileHandle('picked_file.jpg');
@@ -1136,6 +1141,35 @@ TEST_F('MediaAppUIBrowserTest', 'SortedFilesByName', async () => {
   await launchWithFiles(files);
 
   assertFilesToBe(filesInReverseLexicographicOrder);
+
+  testDone();
+});
+
+// Tests that getFile is not called on all files in a directory on launch with
+// default sort order. This is to avoid a series of slow file system api calls
+// due to b/172529567.
+TEST_F('MediaAppUIBrowserTest', 'GetFileNotCalledOnAllFiles', async () => {
+  const handles = [
+    fileToFileHandle(await createTestImageFile(1, 1, '1.png')),
+    fileToFileHandle(await createTestImageFile(1, 1, '2.png')),
+    fileToFileHandle(await createTestImageFile(1, 1, '3.png')),
+    fileToFileHandle(await createTestImageFile(1, 1, '4.png')),
+  ];
+  const getFileCalls = [];
+  for (const handle of handles) {
+    handle.getFileSync = () => {
+      getFileCalls.push(handle.name);
+    };
+  }
+
+  await launchWithHandles(handles);
+
+  // Expect only the current file to have been opened. Note the current file is
+  // opened twice since the file is force refreshed before being sent over to
+  // the guest in addition to the original open.
+  assertEquals(getFileCalls.length, 2);
+  assertEquals(getFileCalls[0], '1.png');
+  assertEquals(getFileCalls[1], '1.png');
 
   testDone();
 });

@@ -3,8 +3,13 @@
 // found in the LICENSE file.
 
 #include "src/base/bits.h"
+#include "src/base/platform/wrappers.h"
 #include "src/codegen/assembler-inl.h"
+#include "src/codegen/machine-type.h"
+#include "src/common/globals.h"
+#include "src/compiler/backend/instruction-codes.h"
 #include "src/compiler/backend/instruction-selector-impl.h"
+#include "src/compiler/machine-operator.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/node-properties.h"
 
@@ -205,6 +210,14 @@ void VisitRRIR(InstructionSelector* selector, ArchOpcode opcode, Node* node) {
   selector->Emit(opcode, g.DefineAsRegister(node),
                  g.UseRegister(node->InputAt(0)), g.UseImmediate(imm),
                  g.UseUniqueRegister(node->InputAt(1)));
+}
+
+void VisitRRRR(InstructionSelector* selector, InstructionCode opcode,
+               Node* node) {
+  Arm64OperandGenerator g(selector);
+  selector->Emit(
+      opcode, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)),
+      g.UseRegister(node->InputAt(1)), g.UseRegister(node->InputAt(2)));
 }
 
 struct ExtendingLoadMatcher {
@@ -616,6 +629,84 @@ void EmitLoad(InstructionSelector* selector, Node* node, InstructionCode opcode,
   selector->Emit(opcode, arraysize(outputs), outputs, input_count, inputs);
 }
 
+void InstructionSelector::VisitPrefetchTemporal(Node* node) {
+  Arm64OperandGenerator g(this);
+  InstructionOperand inputs[2] = {g.UseRegister(node->InputAt(0)),
+                                  g.UseRegister(node->InputAt(1))};
+  InstructionCode opcode = kArm64Prfm;
+  opcode |= AddressingModeField::encode(kMode_MRR);
+  opcode |= MiscField::encode(PLDL1KEEP);
+  Emit(opcode, 0, nullptr, 2, inputs);
+}
+
+void InstructionSelector::VisitPrefetchNonTemporal(Node* node) {
+  Arm64OperandGenerator g(this);
+  InstructionOperand inputs[2] = {g.UseRegister(node->InputAt(0)),
+                                  g.UseRegister(node->InputAt(1))};
+  InstructionCode opcode = kArm64Prfm;
+  opcode |= AddressingModeField::encode(kMode_MRR);
+  opcode |= MiscField::encode(PLDL1STRM);
+  Emit(opcode, 0, nullptr, 2, inputs);
+}
+
+namespace {
+// Manually add base and index into a register to get the actual address.
+// This should be used prior to instructions that only support
+// immediate/post-index addressing, like ld1 and st1.
+InstructionOperand EmitAddBeforeLoadOrStore(InstructionSelector* selector,
+                                            Node* node,
+                                            InstructionCode* opcode) {
+  Arm64OperandGenerator g(selector);
+  InstructionOperand addr = g.TempRegister();
+  selector->Emit(kArm64Add, addr, g.UseRegister(node->InputAt(0)),
+                 g.UseRegister(node->InputAt(1)));
+  *opcode |= AddressingModeField::encode(kMode_MRI);
+  return addr;
+}
+}  // namespace
+
+void InstructionSelector::VisitLoadLane(Node* node) {
+  LoadLaneParameters params = LoadLaneParametersOf(node->op());
+  DCHECK(
+      params.rep == MachineType::Int8() || params.rep == MachineType::Int16() ||
+      params.rep == MachineType::Int32() || params.rep == MachineType::Int64());
+
+  InstructionCode opcode = kArm64LoadLane;
+  opcode |= LaneSizeField::encode(params.rep.MemSize() * kBitsPerByte);
+  if (params.kind == MemoryAccessKind::kProtected) {
+    opcode |= AccessModeField::encode(kMemoryAccessProtected);
+  }
+
+  Arm64OperandGenerator g(this);
+  InstructionOperand addr = EmitAddBeforeLoadOrStore(this, node, &opcode);
+  Emit(opcode, g.DefineSameAsFirst(node), g.UseRegister(node->InputAt(2)),
+       g.UseImmediate(params.laneidx), addr, g.TempImmediate(0));
+}
+
+void InstructionSelector::VisitStoreLane(Node* node) {
+  StoreLaneParameters params = StoreLaneParametersOf(node->op());
+  DCHECK_LE(MachineRepresentation::kWord8, params.rep);
+  DCHECK_GE(MachineRepresentation::kWord64, params.rep);
+
+  InstructionCode opcode = kArm64StoreLane;
+  opcode |=
+      LaneSizeField::encode(ElementSizeInBytes(params.rep) * kBitsPerByte);
+  if (params.kind == MemoryAccessKind::kProtected) {
+    opcode |= AccessModeField::encode(kMemoryAccessProtected);
+  }
+
+  Arm64OperandGenerator g(this);
+  InstructionOperand addr = EmitAddBeforeLoadOrStore(this, node, &opcode);
+  InstructionOperand inputs[4] = {
+      g.UseRegister(node->InputAt(2)),
+      g.UseImmediate(params.laneidx),
+      addr,
+      g.TempImmediate(0),
+  };
+
+  Emit(opcode, 0, nullptr, 4, inputs);
+}
+
 void InstructionSelector::VisitLoadTransform(Node* node) {
   LoadTransformParameters params = LoadTransformParametersOf(node->op());
   InstructionCode opcode = kArchNop;
@@ -623,22 +714,22 @@ void InstructionSelector::VisitLoadTransform(Node* node) {
   switch (params.transformation) {
     case LoadTransformation::kS128Load8Splat:
       opcode = kArm64LoadSplat;
-      opcode |= MiscField::encode(8);
+      opcode |= LaneSizeField::encode(8);
       require_add = true;
       break;
     case LoadTransformation::kS128Load16Splat:
       opcode = kArm64LoadSplat;
-      opcode |= MiscField::encode(16);
+      opcode |= LaneSizeField::encode(16);
       require_add = true;
       break;
     case LoadTransformation::kS128Load32Splat:
       opcode = kArm64LoadSplat;
-      opcode |= MiscField::encode(32);
+      opcode |= LaneSizeField::encode(32);
       require_add = true;
       break;
     case LoadTransformation::kS128Load64Splat:
       opcode = kArm64LoadSplat;
-      opcode |= MiscField::encode(64);
+      opcode |= LaneSizeField::encode(64);
       require_add = true;
       break;
     case LoadTransformation::kS128Load8x8S:
@@ -660,10 +751,10 @@ void InstructionSelector::VisitLoadTransform(Node* node) {
       opcode = kArm64S128Load32x2U;
       break;
     case LoadTransformation::kS128Load32Zero:
-      opcode = kArm64S128Load32Zero;
+      opcode = kArm64LdrS;
       break;
     case LoadTransformation::kS128Load64Zero:
-      opcode = kArm64S128Load64Zero;
+      opcode = kArm64LdrD;
       break;
     default:
       UNIMPLEMENTED();
@@ -684,13 +775,14 @@ void InstructionSelector::VisitLoadTransform(Node* node) {
   if (require_add) {
     // ld1r uses post-index, so construct address first.
     // TODO(v8:9886) If index can be immediate, use vldr without this add.
-    InstructionOperand addr = g.TempRegister();
-    Emit(kArm64Add, 1, &addr, 2, inputs);
-    inputs[0] = addr;
+    inputs[0] = EmitAddBeforeLoadOrStore(this, node, &opcode);
     inputs[1] = g.TempImmediate(0);
     opcode |= AddressingModeField::encode(kMode_MRI);
   } else {
     opcode |= AddressingModeField::encode(kMode_MRR);
+  }
+  if (params.kind == MemoryAccessKind::kProtected) {
+    opcode |= AccessModeField::encode(kMemoryAccessProtected);
   }
   Emit(opcode, 1, outputs, 2, inputs);
 }
@@ -762,7 +854,10 @@ void InstructionSelector::VisitLoad(Node* node) {
   }
   if (node->opcode() == IrOpcode::kPoisonedLoad) {
     CHECK_NE(poisoning_level_, PoisoningMitigationLevel::kDontPoison);
-    opcode |= MiscField::encode(kMemoryAccessPoisoned);
+    opcode |= AccessModeField::encode(kMemoryAccessPoisoned);
+  }
+  if (node->opcode() == IrOpcode::kProtectedLoad) {
+    opcode |= AccessModeField::encode(kMemoryAccessProtected);
   }
 
   EmitLoad(this, node, opcode, immediate_mode, rep);
@@ -770,10 +865,7 @@ void InstructionSelector::VisitLoad(Node* node) {
 
 void InstructionSelector::VisitPoisonedLoad(Node* node) { VisitLoad(node); }
 
-void InstructionSelector::VisitProtectedLoad(Node* node) {
-  // TODO(eholk)
-  UNIMPLEMENTED();
-}
+void InstructionSelector::VisitProtectedLoad(Node* node) { VisitLoad(node); }
 
 void InstructionSelector::VisitStore(Node* node) {
   Arm64OperandGenerator g(this);
@@ -791,8 +883,7 @@ void InstructionSelector::VisitStore(Node* node) {
   }
 
   // TODO(arm64): I guess this could be done in a better way.
-  if (write_barrier_kind != kNoWriteBarrier &&
-      V8_LIKELY(!FLAG_disable_write_barriers)) {
+  if (write_barrier_kind != kNoWriteBarrier && !FLAG_disable_write_barriers) {
     DCHECK(CanBeTaggedOrCompressedPointer(rep));
     AddressingMode addressing_mode;
     InstructionOperand inputs[3];
@@ -906,14 +997,15 @@ void InstructionSelector::VisitStore(Node* node) {
       opcode |= AddressingModeField::encode(kMode_MRR);
     }
 
+    if (node->opcode() == IrOpcode::kProtectedStore) {
+      opcode |= AccessModeField::encode(kMemoryAccessProtected);
+    }
+
     Emit(opcode, 0, nullptr, input_count, inputs);
   }
 }
 
-void InstructionSelector::VisitProtectedStore(Node* node) {
-  // TODO(eholk)
-  UNIMPLEMENTED();
-}
+void InstructionSelector::VisitProtectedStore(Node* node) { VisitStore(node); }
 
 void InstructionSelector::VisitSimd128ReverseBytes(Node* node) {
   UNREACHABLE();
@@ -1369,7 +1461,6 @@ void InstructionSelector::VisitWord64Ror(Node* node) {
   V(ChangeFloat64ToInt64, kArm64Float64ToInt64)               \
   V(ChangeFloat64ToUint32, kArm64Float64ToUint32)             \
   V(ChangeFloat64ToUint64, kArm64Float64ToUint64)             \
-  V(TruncateFloat64ToInt64, kArm64Float64ToInt64)             \
   V(TruncateFloat64ToUint32, kArm64Float64ToUint32)           \
   V(TruncateFloat64ToFloat32, kArm64Float64ToFloat32)         \
   V(TruncateFloat64ToWord32, kArchTruncateDoubleToI)          \
@@ -1655,7 +1746,7 @@ namespace {
 void VisitExtMul(InstructionSelector* selector, ArchOpcode opcode, Node* node,
                  int dst_lane_size) {
   InstructionCode code = opcode;
-  code |= MiscField::encode(dst_lane_size);
+  code |= LaneSizeField::encode(dst_lane_size);
   VisitRRR(selector, code, node);
 }
 }  // namespace
@@ -1712,7 +1803,7 @@ namespace {
 void VisitExtAddPairwise(InstructionSelector* selector, ArchOpcode opcode,
                          Node* node, int dst_lane_size) {
   InstructionCode code = opcode;
-  code |= MiscField::encode(dst_lane_size);
+  code |= LaneSizeField::encode(dst_lane_size);
   VisitRR(selector, code, node);
 }
 }  // namespace
@@ -1785,6 +1876,18 @@ void InstructionSelector::VisitTryTruncateFloat32ToInt64(Node* node) {
   }
 
   Emit(kArm64Float32ToInt64, output_count, outputs, 1, inputs);
+}
+
+void InstructionSelector::VisitTruncateFloat64ToInt64(Node* node) {
+  Arm64OperandGenerator g(this);
+
+  InstructionCode opcode = kArm64Float64ToInt64;
+  TruncateKind kind = OpParameter<TruncateKind>(node->op());
+  if (kind == TruncateKind::kSetOverflowToMin) {
+    opcode |= MiscField::encode(true);
+  }
+
+  Emit(opcode, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)));
 }
 
 void InstructionSelector::VisitTryTruncateFloat64ToInt64(Node* node) {
@@ -1999,20 +2102,23 @@ void InstructionSelector::EmitPrepareArguments(
   // Poke the arguments into the stack.
   while (slot >= 0) {
     PushParameter input0 = (*arguments)[slot];
+    // Skip holes in the param array. These represent both extra slots for
+    // multi-slot values and padding slots for alignment.
+    if (input0.node == nullptr) {
+      slot--;
+      continue;
+    }
     PushParameter input1 = slot > 0 ? (*arguments)[slot - 1] : PushParameter();
     // Emit a poke-pair if consecutive parameters have the same type.
     // TODO(arm): Support consecutive Simd128 parameters.
-    if (input0.node != nullptr && input1.node != nullptr &&
+    if (input1.node != nullptr &&
         input0.location.GetType() == input1.location.GetType()) {
       Emit(kArm64PokePair, g.NoOutput(), g.UseRegister(input0.node),
            g.UseRegister(input1.node), g.TempImmediate(slot));
       slot -= 2;
-    } else if (input0.node != nullptr) {
+    } else {
       Emit(kArm64Poke, g.NoOutput(), g.UseRegister(input0.node),
            g.TempImmediate(slot));
-      slot--;
-    } else {
-      // Skip any alignment holes in pushed nodes.
       slot--;
     }
   }
@@ -2023,7 +2129,6 @@ void InstructionSelector::EmitPrepareResults(
     Node* node) {
   Arm64OperandGenerator g(this);
 
-  int reverse_slot = 1;
   for (PushParameter output : *results) {
     if (!output.location.IsCallerFrameSlot()) continue;
     // Skip any alignment holes in nodes.
@@ -2038,16 +2143,15 @@ void InstructionSelector::EmitPrepareResults(
         MarkAsSimd128(output.node);
       }
 
+      int offset = call_descriptor->GetOffsetToReturns();
+      int reverse_slot = -output.location.GetLocation() - offset;
       Emit(kArm64Peek, g.DefineAsRegister(output.node),
            g.UseImmediate(reverse_slot));
     }
-    reverse_slot += output.location.GetSizeInPointers();
   }
 }
 
 bool InstructionSelector::IsTailCallAddressImmediate() { return false; }
-
-int InstructionSelector::GetTempsCountForTailCallFromJSFunction() { return 3; }
 
 namespace {
 
@@ -3305,32 +3409,42 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I16x8)                \
   V(I8x16)
 
-#define SIMD_UNOP_LIST(V)                                 \
-  V(F64x2Abs, kArm64F64x2Abs)                             \
-  V(F64x2Neg, kArm64F64x2Neg)                             \
-  V(F64x2Sqrt, kArm64F64x2Sqrt)                           \
-  V(F32x4SConvertI32x4, kArm64F32x4SConvertI32x4)         \
-  V(F32x4UConvertI32x4, kArm64F32x4UConvertI32x4)         \
-  V(F32x4Abs, kArm64F32x4Abs)                             \
-  V(F32x4Neg, kArm64F32x4Neg)                             \
-  V(F32x4Sqrt, kArm64F32x4Sqrt)                           \
-  V(F32x4RecipApprox, kArm64F32x4RecipApprox)             \
-  V(F32x4RecipSqrtApprox, kArm64F32x4RecipSqrtApprox)     \
-  V(I64x2Neg, kArm64I64x2Neg)                             \
-  V(I32x4SConvertF32x4, kArm64I32x4SConvertF32x4)         \
-  V(I32x4Neg, kArm64I32x4Neg)                             \
-  V(I32x4UConvertF32x4, kArm64I32x4UConvertF32x4)         \
-  V(I32x4Abs, kArm64I32x4Abs)                             \
-  V(I16x8Neg, kArm64I16x8Neg)                             \
-  V(I16x8Abs, kArm64I16x8Abs)                             \
-  V(I8x16Neg, kArm64I8x16Neg)                             \
-  V(I8x16Abs, kArm64I8x16Abs)                             \
-  V(S128Not, kArm64S128Not)                               \
-  V(V32x4AnyTrue, kArm64V128AnyTrue)                      \
-  V(V32x4AllTrue, kArm64V32x4AllTrue)                     \
-  V(V16x8AnyTrue, kArm64V128AnyTrue)                      \
-  V(V16x8AllTrue, kArm64V16x8AllTrue)                     \
-  V(V8x16AnyTrue, kArm64V128AnyTrue)                      \
+#define SIMD_UNOP_LIST(V)                                   \
+  V(F64x2Abs, kArm64F64x2Abs)                               \
+  V(F64x2Neg, kArm64F64x2Neg)                               \
+  V(F64x2Sqrt, kArm64F64x2Sqrt)                             \
+  V(F64x2ConvertLowI32x4S, kArm64F64x2ConvertLowI32x4S)     \
+  V(F64x2ConvertLowI32x4U, kArm64F64x2ConvertLowI32x4U)     \
+  V(F64x2PromoteLowF32x4, kArm64F64x2PromoteLowF32x4)       \
+  V(F32x4SConvertI32x4, kArm64F32x4SConvertI32x4)           \
+  V(F32x4UConvertI32x4, kArm64F32x4UConvertI32x4)           \
+  V(F32x4Abs, kArm64F32x4Abs)                               \
+  V(F32x4Neg, kArm64F32x4Neg)                               \
+  V(F32x4Sqrt, kArm64F32x4Sqrt)                             \
+  V(F32x4RecipApprox, kArm64F32x4RecipApprox)               \
+  V(F32x4RecipSqrtApprox, kArm64F32x4RecipSqrtApprox)       \
+  V(F32x4DemoteF64x2Zero, kArm64F32x4DemoteF64x2Zero)       \
+  V(I64x2Abs, kArm64I64x2Abs)                               \
+  V(I64x2Neg, kArm64I64x2Neg)                               \
+  V(I64x2BitMask, kArm64I64x2BitMask)                       \
+  V(I32x4SConvertF32x4, kArm64I32x4SConvertF32x4)           \
+  V(I32x4Neg, kArm64I32x4Neg)                               \
+  V(I32x4UConvertF32x4, kArm64I32x4UConvertF32x4)           \
+  V(I32x4Abs, kArm64I32x4Abs)                               \
+  V(I32x4BitMask, kArm64I32x4BitMask)                       \
+  V(I32x4TruncSatF64x2SZero, kArm64I32x4TruncSatF64x2SZero) \
+  V(I32x4TruncSatF64x2UZero, kArm64I32x4TruncSatF64x2UZero) \
+  V(I16x8Neg, kArm64I16x8Neg)                               \
+  V(I16x8Abs, kArm64I16x8Abs)                               \
+  V(I16x8BitMask, kArm64I16x8BitMask)                       \
+  V(I8x16Neg, kArm64I8x16Neg)                               \
+  V(I8x16Abs, kArm64I8x16Abs)                               \
+  V(I8x16BitMask, kArm64I8x16BitMask)                       \
+  V(S128Not, kArm64S128Not)                                 \
+  V(V128AnyTrue, kArm64V128AnyTrue)                         \
+  V(V64x2AllTrue, kArm64V64x2AllTrue)                       \
+  V(V32x4AllTrue, kArm64V32x4AllTrue)                       \
+  V(V16x8AllTrue, kArm64V16x8AllTrue)                       \
   V(V8x16AllTrue, kArm64V8x16AllTrue)
 
 #define SIMD_SHIFT_OP_LIST(V) \
@@ -3372,6 +3486,9 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I64x2Add, kArm64I64x2Add)                           \
   V(I64x2Sub, kArm64I64x2Sub)                           \
   V(I64x2Eq, kArm64I64x2Eq)                             \
+  V(I64x2Ne, kArm64I64x2Ne)                             \
+  V(I64x2GtS, kArm64I64x2GtS)                           \
+  V(I64x2GeS, kArm64I64x2GeS)                           \
   V(I32x4AddHoriz, kArm64I32x4AddHoriz)                 \
   V(I32x4Mul, kArm64I32x4Mul)                           \
   V(I32x4MinS, kArm64I32x4MinS)                         \
@@ -3433,7 +3550,7 @@ void InstructionSelector::VisitS128Const(Node* node) {
   static const int kUint32Immediates = 4;
   uint32_t val[kUint32Immediates];
   STATIC_ASSERT(sizeof(val) == kSimd128Size);
-  memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
+  base::Memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
   // If all bytes are zeros, avoid emitting code for generic constants
   bool all_zeros = !(val[0] || val[1] || val[2] || val[3]);
   InstructionOperand dst = g.DefineAsRegister(node);
@@ -3503,6 +3620,18 @@ SIMD_SHIFT_OP_LIST(SIMD_VISIT_SHIFT_OP)
 SIMD_BINOP_LIST(SIMD_VISIT_BINOP)
 #undef SIMD_VISIT_BINOP
 #undef SIMD_BINOP_LIST
+
+#define VISIT_SIGN_SELECT(NAME, SIZE)                 \
+  void InstructionSelector::Visit##NAME(Node* node) { \
+    InstructionCode opcode = kArm64SignSelect;        \
+    opcode |= LaneSizeField::encode(SIZE);            \
+    VisitRRRR(this, opcode, node);                    \
+  }
+
+VISIT_SIGN_SELECT(I8x16SignSelect, 8)
+VISIT_SIGN_SELECT(I16x8SignSelect, 16)
+VISIT_SIGN_SELECT(I32x4SignSelect, 32)
+VISIT_SIGN_SELECT(I64x2SignSelect, 64)
 
 void InstructionSelector::VisitI64x2Mul(Node* node) {
   Arm64OperandGenerator g(this);
@@ -3577,29 +3706,6 @@ VISIT_SIMD_QFMOP(F64x2Qfms)
 VISIT_SIMD_QFMOP(F32x4Qfma)
 VISIT_SIMD_QFMOP(F32x4Qfms)
 #undef VISIT_SIMD_QFMOP
-
-namespace {
-template <ArchOpcode opcode>
-void VisitBitMask(InstructionSelector* selector, Node* node) {
-  Arm64OperandGenerator g(selector);
-  InstructionOperand temps[] = {g.TempSimd128Register(),
-                                g.TempSimd128Register()};
-  selector->Emit(opcode, g.DefineAsRegister(node),
-                 g.UseRegister(node->InputAt(0)), arraysize(temps), temps);
-}
-}  // namespace
-
-void InstructionSelector::VisitI8x16BitMask(Node* node) {
-  VisitBitMask<kArm64I8x16BitMask>(this, node);
-}
-
-void InstructionSelector::VisitI16x8BitMask(Node* node) {
-  VisitBitMask<kArm64I16x8BitMask>(this, node);
-}
-
-void InstructionSelector::VisitI32x4BitMask(Node* node) {
-  VisitBitMask<kArm64I32x4BitMask>(this, node);
-}
 
 namespace {
 
@@ -3801,7 +3907,7 @@ namespace {
 void VisitSignExtendLong(InstructionSelector* selector, ArchOpcode opcode,
                          Node* node, int lane_size) {
   InstructionCode code = opcode;
-  code |= MiscField::encode(lane_size);
+  code |= LaneSizeField::encode(lane_size);
   VisitRR(selector, code, node);
 }
 }  // namespace
@@ -3856,7 +3962,7 @@ void InstructionSelector::VisitI16x8UConvertI8x16High(Node* node) {
 
 void InstructionSelector::VisitI8x16Popcnt(Node* node) {
   InstructionCode code = kArm64Cnt;
-  code |= MiscField::encode(8);
+  code |= LaneSizeField::encode(8);
   VisitRR(this, code, node);
 }
 

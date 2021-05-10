@@ -34,6 +34,8 @@
 #include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
+#include <algorithm>
+
 namespace dawn_native { namespace vulkan {
 
     namespace {
@@ -155,23 +157,35 @@ namespace dawn_native { namespace vulkan {
                 for (BindGroupIndex index : IterateBitSet(mBindGroupLayoutsMask)) {
                     BindGroupLayoutBase* layout = mBindGroups[index]->GetLayout();
                     for (BindingIndex binding{0}; binding < layout->GetBindingCount(); ++binding) {
-                        switch (layout->GetBindingInfo(binding).type) {
-                            case wgpu::BindingType::StorageBuffer:
-                            case wgpu::BindingType::ReadonlyStorageBuffer: {
+                        const BindingInfo& bindingInfo = layout->GetBindingInfo(binding);
+
+                        switch (bindingInfo.bindingType) {
+                            case BindingInfoType::Buffer: {
+                                wgpu::BufferUsage usage;
+                                switch (bindingInfo.buffer.type) {
+                                    case wgpu::BufferBindingType::Uniform:
+                                        usage = wgpu::BufferUsage::Uniform;
+                                        break;
+                                    case wgpu::BufferBindingType::Storage:
+                                    case wgpu::BufferBindingType::ReadOnlyStorage:
+                                        usage = wgpu::BufferUsage::Storage;
+                                        break;
+                                    case wgpu::BufferBindingType::Undefined:
+                                        UNREACHABLE();
+                                }
+
                                 VkBufferMemoryBarrier bufferBarrier;
                                 if (ToBackend(mBindGroups[index]
                                                   ->GetBindingAsBufferBinding(binding)
                                                   .buffer)
                                         ->TransitionUsageAndGetResourceBarrier(
-                                            wgpu::BufferUsage::Storage, &bufferBarrier, &srcStages,
-                                            &dstStages)) {
+                                            usage, &bufferBarrier, &srcStages, &dstStages)) {
                                     bufferBarriers.push_back(bufferBarrier);
                                 }
                                 break;
                             }
 
-                            case wgpu::BindingType::ReadonlyStorageTexture:
-                            case wgpu::BindingType::WriteonlyStorageTexture: {
+                            case BindingInfoType::StorageTexture: {
                                 TextureViewBase* view =
                                     mBindGroups[index]->GetBindingAsTextureView(binding);
                                 ToBackend(view->GetTexture())
@@ -180,21 +194,8 @@ namespace dawn_native { namespace vulkan {
                                         &imageBarriers, &srcStages, &dstStages);
                                 break;
                             }
-                            case wgpu::BindingType::UniformBuffer: {
-                                VkBufferMemoryBarrier bufferBarrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TransitionUsageAndGetResourceBarrier(
-                                            wgpu::BufferUsage::Uniform, &bufferBarrier, &srcStages,
-                                            &dstStages)) {
-                                    bufferBarriers.push_back(bufferBarrier);
-                                }
-                                break;
-                            }
 
-                            case wgpu::BindingType::SampledTexture:
-                            case wgpu::BindingType::MultisampledTexture: {
+                            case BindingInfoType::Texture: {
                                 TextureViewBase* view =
                                     mBindGroups[index]->GetBindingAsTextureView(binding);
                                 ToBackend(view->GetTexture())
@@ -204,8 +205,7 @@ namespace dawn_native { namespace vulkan {
                                 break;
                             }
 
-                            case wgpu::BindingType::Sampler:
-                            case wgpu::BindingType::ComparisonSampler:
+                            case BindingInfoType::Sampler:
                                 // Don't require barriers.
                                 break;
                         }
@@ -224,41 +224,6 @@ namespace dawn_native { namespace vulkan {
             }
         };
 
-        class IndexBufferTracker {
-          public:
-            void OnSetIndexBuffer(VkBuffer buffer, wgpu::IndexFormat format, VkDeviceSize offset) {
-                mIndexBuffer = buffer;
-                mOffset = offset;
-                mBufferIndexFormat = format;
-
-                mLastAppliedIndexFormat = wgpu::IndexFormat::Undefined;
-            }
-
-            void OnSetPipeline(RenderPipeline* pipeline) {
-                mPipelineIndexFormat = pipeline->GetVertexStateDescriptor()->indexFormat;
-            }
-
-            void Apply(Device* device, VkCommandBuffer commands) {
-                wgpu::IndexFormat newIndexFormat = mBufferIndexFormat;
-                if (newIndexFormat == wgpu::IndexFormat::Undefined) {
-                    newIndexFormat = mPipelineIndexFormat;
-                }
-
-                if (newIndexFormat != mLastAppliedIndexFormat) {
-                    device->fn.CmdBindIndexBuffer(commands, mIndexBuffer, mOffset,
-                                                  VulkanIndexType(newIndexFormat));
-                    mLastAppliedIndexFormat = newIndexFormat;
-                }
-            }
-
-          private:
-            wgpu::IndexFormat mBufferIndexFormat = wgpu::IndexFormat::Undefined;
-            wgpu::IndexFormat mPipelineIndexFormat = wgpu::IndexFormat::Undefined;
-            wgpu::IndexFormat mLastAppliedIndexFormat = wgpu::IndexFormat::Undefined;
-            VkBuffer mIndexBuffer = VK_NULL_HANDLE;
-            VkDeviceSize mOffset;
-        };
-
         MaybeError RecordBeginRenderPass(CommandRecordingContext* recordingContext,
                                          Device* device,
                                          BeginRenderPassCmd* renderPass) {
@@ -273,7 +238,7 @@ namespace dawn_native { namespace vulkan {
                      IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
                     const auto& attachmentInfo = renderPass->colorAttachments[i];
 
-                    bool hasResolveTarget = attachmentInfo.resolveTarget.Get() != nullptr;
+                    bool hasResolveTarget = attachmentInfo.resolveTarget != nullptr;
                     wgpu::LoadOp loadOp = attachmentInfo.loadOp;
 
                     query.SetColor(i, attachmentInfo.view->GetFormat().format, loadOp,
@@ -355,7 +320,7 @@ namespace dawn_native { namespace vulkan {
 
                 for (ColorAttachmentIndex i :
                      IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
-                    if (renderPass->colorAttachments[i].resolveTarget.Get() != nullptr) {
+                    if (renderPass->colorAttachments[i].resolveTarget != nullptr) {
                         TextureView* view =
                             ToBackend(renderPass->colorAttachments[i].resolveTarget.Get());
 
@@ -423,6 +388,48 @@ namespace dawn_native { namespace vulkan {
             device->fn.CmdWriteTimestamp(commands, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                          querySet->GetHandle(), cmd->queryIndex);
         }
+
+        void RecordResolveQuerySetCmd(VkCommandBuffer commands,
+                                      Device* device,
+                                      QuerySet* querySet,
+                                      uint32_t firstQuery,
+                                      uint32_t queryCount,
+                                      Buffer* destination,
+                                      uint64_t destinationOffset) {
+            const std::vector<bool>& availability = querySet->GetQueryAvailability();
+
+            auto currentIt = availability.begin() + firstQuery;
+            auto lastIt = availability.begin() + firstQuery + queryCount;
+
+            // Traverse available queries in the range of [firstQuery, firstQuery +  queryCount - 1]
+            while (currentIt != lastIt) {
+                auto firstTrueIt = std::find(currentIt, lastIt, true);
+                // No available query found for resolving
+                if (firstTrueIt == lastIt) {
+                    break;
+                }
+                auto nextFalseIt = std::find(firstTrueIt, lastIt, false);
+
+                // The query index of firstTrueIt where the resolving starts
+                uint32_t resolveQueryIndex = std::distance(availability.begin(), firstTrueIt);
+                // The queries count between firstTrueIt and nextFalseIt need to be resolved
+                uint32_t resolveQueryCount = std::distance(firstTrueIt, nextFalseIt);
+
+                // Calculate destinationOffset based on the current resolveQueryIndex and firstQuery
+                uint32_t resolveDestinationOffset =
+                    destinationOffset + (resolveQueryIndex - firstQuery) * sizeof(uint64_t);
+
+                // Resolve the queries between firstTrueIt and nextFalseIt (which is at most lastIt)
+                device->fn.CmdCopyQueryPoolResults(
+                    commands, querySet->GetHandle(), resolveQueryIndex, resolveQueryCount,
+                    destination->GetHandle(), resolveDestinationOffset, sizeof(uint64_t),
+                    VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+
+                // Set current interator to next false
+                currentIt = nextFalseIt;
+            }
+        }
+
     }  // anonymous namespace
 
     // static
@@ -451,7 +458,8 @@ namespace dawn_native { namespace vulkan {
 
         // Create the temporary buffer. Note that We don't need to respect WebGPU's 256 alignment
         // because it isn't a hard constraint in Vulkan.
-        uint64_t tempBufferSize = widthInBlocks * heightInBlocks * blockInfo.byteSize;
+        uint64_t tempBufferSize =
+            widthInBlocks * heightInBlocks * copySize.depth * blockInfo.byteSize;
         BufferDescriptor tempBufferDescriptor;
         tempBufferDescriptor.size = tempBufferSize;
         tempBufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
@@ -516,13 +524,16 @@ namespace dawn_native { namespace vulkan {
 
             for (size_t i = 0; i < usages.textures.size(); ++i) {
                 Texture* texture = ToBackend(usages.textures[i]);
-                // Clear textures that are not output attachments. Output attachments will be
-                // cleared in RecordBeginRenderPass by setting the loadop to clear when the
-                // texture subresource has not been initialized before the render pass.
-                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::RenderAttachment)) {
-                    texture->EnsureSubresourceContentInitialized(recordingContext,
-                                                                 texture->GetAllSubresources());
-                }
+
+                // Clear subresources that are not render attachments. Render attachments will be
+                // cleared in RecordBeginRenderPass by setting the loadop to clear when the texture
+                // subresource has not been initialized before the render pass.
+                usages.textureUsages[i].Iterate(
+                    [&](const SubresourceRange& range, wgpu::TextureUsage usage) {
+                        if (usage & ~wgpu::TextureUsage::RenderAttachment) {
+                            texture->EnsureSubresourceContentInitialized(recordingContext, range);
+                        }
+                    });
                 texture->TransitionUsageForPass(recordingContext, usages.textureUsages[i],
                                                 &imageBarriers, &srcStages, &dstStages);
             }
@@ -764,10 +775,9 @@ namespace dawn_native { namespace vulkan {
                         cmd->queryCount * sizeof(uint64_t));
                     destination->TransitionUsageNow(recordingContext, wgpu::BufferUsage::CopyDst);
 
-                    device->fn.CmdCopyQueryPoolResults(
-                        commands, querySet->GetHandle(), cmd->firstQuery, cmd->queryCount,
-                        destination->GetHandle(), cmd->destinationOffset, sizeof(uint64_t),
-                        VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+                    RecordResolveQuerySetCmd(commands, device, querySet, cmd->firstQuery,
+                                             cmd->queryCount, destination, cmd->destinationOffset);
+
                     break;
                 }
 
@@ -779,18 +789,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::InsertDebugMarker: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         InsertDebugMarkerCmd* cmd = mCommands.NextCommand<InsertDebugMarkerCmd>();
                         const char* label = mCommands.NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo{};
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerInsertEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdInsertDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(&mCommands, Command::InsertDebugMarker);
                     }
@@ -798,9 +809,9 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PopDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         mCommands.NextCommand<PopDebugGroupCmd>();
-                        device->fn.CmdDebugMarkerEndEXT(commands);
+                        device->fn.CmdEndDebugUtilsLabelEXT(commands);
                     } else {
                         SkipCommand(&mCommands, Command::PopDebugGroup);
                     }
@@ -808,18 +819,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PushDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         PushDebugGroupCmd* cmd = mCommands.NextCommand<PushDebugGroupCmd>();
                         const char* label = mCommands.NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo{};
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerBeginEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdBeginDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(&mCommands, Command::PushDebugGroup);
                     }
@@ -894,19 +906,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::InsertDebugMarker: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         InsertDebugMarkerCmd* cmd = mCommands.NextCommand<InsertDebugMarkerCmd>();
                         const char* label = mCommands.NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo;
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pNext = nullptr;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerInsertEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdInsertDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(&mCommands, Command::InsertDebugMarker);
                     }
@@ -914,9 +926,9 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PopDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         mCommands.NextCommand<PopDebugGroupCmd>();
-                        device->fn.CmdDebugMarkerEndEXT(commands);
+                        device->fn.CmdEndDebugUtilsLabelEXT(commands);
                     } else {
                         SkipCommand(&mCommands, Command::PopDebugGroup);
                     }
@@ -924,19 +936,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PushDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         PushDebugGroupCmd* cmd = mCommands.NextCommand<PushDebugGroupCmd>();
                         const char* label = mCommands.NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo;
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pNext = nullptr;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerBeginEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdBeginDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(&mCommands, Command::PushDebugGroup);
                     }
@@ -1000,7 +1012,6 @@ namespace dawn_native { namespace vulkan {
         }
 
         RenderDescriptorSetTracker descriptorSets = {};
-        IndexBufferTracker indexBufferTracker = {};
         RenderPipeline* lastPipeline = nullptr;
 
         auto EncodeRenderBundleCommand = [&](CommandIterator* iter, Command type) {
@@ -1018,7 +1029,6 @@ namespace dawn_native { namespace vulkan {
                     DrawIndexedCmd* draw = iter->NextCommand<DrawIndexedCmd>();
 
                     descriptorSets.Apply(device, recordingContext, VK_PIPELINE_BIND_POINT_GRAPHICS);
-                    indexBufferTracker.Apply(device, commands);
                     device->fn.CmdDrawIndexed(commands, draw->indexCount, draw->instanceCount,
                                               draw->firstIndex, draw->baseVertex,
                                               draw->firstInstance);
@@ -1041,7 +1051,6 @@ namespace dawn_native { namespace vulkan {
                     VkBuffer indirectBuffer = ToBackend(draw->indirectBuffer)->GetHandle();
 
                     descriptorSets.Apply(device, recordingContext, VK_PIPELINE_BIND_POINT_GRAPHICS);
-                    indexBufferTracker.Apply(device, commands);
                     device->fn.CmdDrawIndexedIndirect(
                         commands, indirectBuffer, static_cast<VkDeviceSize>(draw->indirectOffset),
                         1, 0);
@@ -1049,19 +1058,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::InsertDebugMarker: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         InsertDebugMarkerCmd* cmd = iter->NextCommand<InsertDebugMarkerCmd>();
                         const char* label = iter->NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo;
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pNext = nullptr;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerInsertEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdInsertDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(iter, Command::InsertDebugMarker);
                     }
@@ -1069,9 +1078,9 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PopDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         iter->NextCommand<PopDebugGroupCmd>();
-                        device->fn.CmdDebugMarkerEndEXT(commands);
+                        device->fn.CmdEndDebugUtilsLabelEXT(commands);
                     } else {
                         SkipCommand(iter, Command::PopDebugGroup);
                     }
@@ -1079,19 +1088,19 @@ namespace dawn_native { namespace vulkan {
                 }
 
                 case Command::PushDebugGroup: {
-                    if (device->GetDeviceInfo().HasExt(DeviceExt::DebugMarker)) {
+                    if (device->GetGlobalInfo().HasExt(InstanceExt::DebugUtils)) {
                         PushDebugGroupCmd* cmd = iter->NextCommand<PushDebugGroupCmd>();
                         const char* label = iter->NextData<char>(cmd->length + 1);
-                        VkDebugMarkerMarkerInfoEXT markerInfo;
-                        markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-                        markerInfo.pNext = nullptr;
-                        markerInfo.pMarkerName = label;
+                        VkDebugUtilsLabelEXT utilsLabel;
+                        utilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                        utilsLabel.pNext = nullptr;
+                        utilsLabel.pLabelName = label;
                         // Default color to black
-                        markerInfo.color[0] = 0.0;
-                        markerInfo.color[1] = 0.0;
-                        markerInfo.color[2] = 0.0;
-                        markerInfo.color[3] = 1.0;
-                        device->fn.CmdDebugMarkerBeginEXT(commands, &markerInfo);
+                        utilsLabel.color[0] = 0.0;
+                        utilsLabel.color[1] = 0.0;
+                        utilsLabel.color[2] = 0.0;
+                        utilsLabel.color[3] = 1.0;
+                        device->fn.CmdBeginDebugUtilsLabelEXT(commands, &utilsLabel);
                     } else {
                         SkipCommand(iter, Command::PushDebugGroup);
                     }
@@ -1115,8 +1124,8 @@ namespace dawn_native { namespace vulkan {
                     SetIndexBufferCmd* cmd = iter->NextCommand<SetIndexBufferCmd>();
                     VkBuffer indexBuffer = ToBackend(cmd->buffer)->GetHandle();
 
-                    indexBufferTracker.OnSetIndexBuffer(indexBuffer, cmd->format,
-                                                        static_cast<VkDeviceSize>(cmd->offset));
+                    device->fn.CmdBindIndexBuffer(commands, indexBuffer, cmd->offset,
+                                                  VulkanIndexType(cmd->format));
                     break;
                 }
 
@@ -1129,7 +1138,6 @@ namespace dawn_native { namespace vulkan {
                     lastPipeline = pipeline;
 
                     descriptorSets.OnSetPipeline(pipeline);
-                    indexBufferTracker.OnSetPipeline(pipeline);
                     break;
                 }
 
@@ -1219,6 +1227,22 @@ namespace dawn_native { namespace vulkan {
                             EncodeRenderBundleCommand(iter, type);
                         }
                     }
+                    break;
+                }
+
+                case Command::BeginOcclusionQuery: {
+                    BeginOcclusionQueryCmd* cmd = mCommands.NextCommand<BeginOcclusionQueryCmd>();
+
+                    device->fn.CmdBeginQuery(commands, ToBackend(cmd->querySet.Get())->GetHandle(),
+                                             cmd->queryIndex, 0);
+                    break;
+                }
+
+                case Command::EndOcclusionQuery: {
+                    EndOcclusionQueryCmd* cmd = mCommands.NextCommand<EndOcclusionQueryCmd>();
+
+                    device->fn.CmdEndQuery(commands, ToBackend(cmd->querySet.Get())->GetHandle(),
+                                           cmd->queryIndex);
                     break;
                 }
 

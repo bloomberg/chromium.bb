@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 class MediaDialogViewObserver;
 class MediaNotificationContainerImplView;
@@ -32,8 +33,13 @@ class ToggleButton;
 class MediaDialogView : public views::BubbleDialogDelegateView,
                         public MediaDialogDelegate,
                         public MediaNotificationContainerObserver,
-                        public speech::SODAInstaller::Observer {
+                        public speech::SodaInstaller::Observer {
  public:
+  METADATA_HEADER(MediaDialogView);
+
+  MediaDialogView(const MediaDialogView&) = delete;
+  MediaDialogView& operator=(const MediaDialogView&) = delete;
+
   static views::Widget* ShowDialog(views::View* anchor_view,
                                    MediaNotificationService* service,
                                    Profile* profile);
@@ -92,15 +98,15 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void WindowClosing() override;
 
   // views::Button::PressedCallback
-  void LiveCaptionButtonPressed(const ui::Event& event);
+  void OnLiveCaptionButtonPressed();
 
   void ToggleLiveCaption(bool enabled);
   void UpdateBubbleSize();
 
-  // SODAInstaller::Observer overrides:
-  void OnSODAInstalled() override;
-  void OnSODAError() override;
-  void OnSODAProgress(int progress) override;
+  // SodaInstaller::Observer overrides:
+  void OnSodaInstalled() override;
+  void OnSodaError() override;
+  void OnSodaProgress(int progress) override;
 
   MediaNotificationService* const service_;
 
@@ -119,8 +125,6 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   NewBadgeLabel* live_caption_title_new_badge_ = nullptr;
   views::Label* live_caption_title_ = nullptr;
   views::ToggleButton* live_caption_button_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaDialogView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_

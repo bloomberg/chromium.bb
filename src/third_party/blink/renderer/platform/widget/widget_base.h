@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view_delegate.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_base_input_handler.h"
@@ -46,12 +47,12 @@ class WidgetInputHandlerManager;
 class WidgetCompositor;
 
 namespace scheduler {
+class WebAgentGroupScheduler;
 class WebRenderWidgetSchedulingState;
-class WebThreadScheduler;
 }
 
 // This class is the foundational class for all widgets that blink creates.
-// (WebPagePopupImpl, WebFrameWidgetBase) will contain an instance of this
+// (WebPagePopupImpl, WebFrameWidgetImpl) will contain an instance of this
 // class. For simplicity purposes this class will be a member of those classes.
 //
 // Co-orindates handled in this class can be in the "blink coordinate space"
@@ -74,16 +75,25 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Initialize the compositor. |settings| is typically null. When |settings| is
   // null the default settings will be used, tests may provide a |settings|
   // object to override the defaults.
+  //
+  // TODO(dtapuska): The WebFrameWidgetImpl should be responsible for making
+  // the FrameWidgetInputHandlerImpl, but currently it is done in the general
+  // widget input handler classes directly, so we have to plumb through the
+  // main-thread mojom implementation.
+  // The `frame_widget_input_handler` must be invalidated when the WidgetBase is
+  // destroyed/invalidated.
   void InitializeCompositing(
-      scheduler::WebThreadScheduler* main_thread_scheduler,
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-      const cc::LayerTreeSettings* settings);
+      const cc::LayerTreeSettings* settings,
+      base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
+          frame_widget_input_handler);
 
   // Shutdown the compositor.
-  void Shutdown(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner);
+  void Shutdown();
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink, begin producing frames from the
@@ -114,12 +124,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Applies viewport related properties during a commit from the compositor
   // thread.
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override;
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override;
+  void UpdateCompositorScrollState(
+      const cc::CompositorCommitData& commit_data) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
   void OnDeferMainFrameUpdatesChanged(bool) override;
   void OnDeferCommitsChanged(bool) override;
@@ -139,6 +145,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       cc::ActiveFrameSequenceTrackers trackers) override;
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
+  std::unique_ptr<cc::WebVitalMetrics> GetWebVitalMetrics() override;
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
   void UpdateVisualState() override;
@@ -148,6 +155,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
+  bool IsComposited() const;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       const;
 
@@ -177,6 +185,10 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   WidgetBaseClient* client() { return client_; }
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
+
+  // Posts a task with the given delay, then calls ScheduleAnimation() on the
+  // WidgetBaseClient.
+  void RequestAnimationAfterDelay(const base::TimeDelta& delay);
 
   void ShowVirtualKeyboard();
   void UpdateSelectionBounds();
@@ -340,11 +352,24 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // our state.
   void SetHidden(bool hidden);
 
-  std::unique_ptr<LayerTreeView> layer_tree_view_;
-  scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
-  WidgetBaseClient* client_;
+  // Called after the delay given in `RequestAnimationAfterDelay()`.
+  void RequestAnimationAfterDelayTimerFired(TimerBase*);
+
+  // Indicates that we are never visible, so never produce graphical output.
+  const bool never_composited_;
+  // Indicates this is for a child local root.
+  const bool is_for_child_local_root_;
+  // When true, the device scale factor is a part of blink coordinates.
+  const bool use_zoom_for_dsf_;
+
+  // The client which handles behaviour specific to the type of widget.
+  WidgetBaseClient* const client_;
+
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
   mojo::AssociatedReceiver<mojom::blink::Widget> receiver_;
+
+  std::unique_ptr<LayerTreeView> layer_tree_view_;
+  scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
   std::unique_ptr<scheduler::WebRenderWidgetSchedulingState>
       render_widget_scheduling_state_;
   bool has_focus_ = false;
@@ -376,6 +401,13 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Stores the current virtualkeyboardpolicy of |webwidget_|.
   ui::mojom::VirtualKeyboardPolicy vk_policy_ =
       ui::mojom::VirtualKeyboardPolicy::AUTO;
+
+  // Stores the current control and selection bounds of |webwidget_|
+  // that are used to position the candidate window during IME composition.
+  // These are stored in DIPs if use-zoom-for-dsf is disabled and are relative
+  // to the widget
+  gfx::Rect frame_control_bounds_;
+  gfx::Rect frame_selection_bounds_;
 
   // Stores the current text input flags of |webwidget_|.
   int text_input_flags_ = 0;
@@ -430,16 +462,12 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // See https://crbug.com/1131389
   gfx::Size visible_viewport_size_in_dips_;
 
-  const bool use_zoom_for_dsf_;
-
   // Indicates that we shouldn't bother generated paint events.
   bool is_hidden_;
 
-  // Indicates that we are never visible, so never produce graphical output.
-  const bool never_composited_;
-
-  // Indicates this is for a child local root.
-  const bool is_for_child_local_root_;
+  // Delayed callback to ensure we have only one delayed ScheduleAnimation()
+  // call going at a time.
+  TaskRunnerTimer<WidgetBase> request_animation_after_delay_timer_;
 
   // The task runner on the main thread used for compositor tasks.
   scoped_refptr<base::SingleThreadTaskRunner>

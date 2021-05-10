@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -315,13 +315,13 @@ void ProviderAsyncFileUtil::CreateOrOpen(
       (file_flags & base::File::FLAG_CREATE_ALWAYS) ||
       (file_flags & base::File::FLAG_OPEN_TRUNCATED)) {
     std::move(callback).Run(base::File(base::File::FILE_ERROR_ACCESS_DENIED),
-                            base::Closure());
+                            base::OnceClosure());
     return;
   }
 
   NOTIMPLEMENTED();
   std::move(callback).Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
-                          base::Closure());
+                          base::OnceClosure());
 }
 
 void ProviderAsyncFileUtil::EnsureFileExists(
@@ -359,7 +359,7 @@ void ProviderAsyncFileUtil::GetFileInfo(
       FROM_HERE,
       base::BindOnce(
           &GetFileInfoOnUIThread, std::move(context), url, fields,
-          base::Bind(&OnGetFileInfo, fields, base::Passed(&callback))));
+          base::BindOnce(&OnGetFileInfo, fields, base::Passed(&callback))));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(

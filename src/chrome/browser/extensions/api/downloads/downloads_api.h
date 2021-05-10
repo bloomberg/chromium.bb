@@ -187,7 +187,8 @@ class DownloadsRemoveFileFunction : public ExtensionFunction {
 
 class DownloadsAcceptDangerFunction : public ExtensionFunction {
  public:
-  typedef base::Callback<void(DownloadDangerPrompt*)> OnPromptCreatedCallback;
+  using OnPromptCreatedCallback =
+      base::OnceCallback<void(DownloadDangerPrompt*)>;
   static void OnPromptCreatedForTesting(
       OnPromptCreatedCallback* callback) {
     on_prompt_created_ = callback;
@@ -297,7 +298,7 @@ class ExtensionDownloadsEventRouter
       public extensions::ExtensionRegistryObserver,
       public download::AllDownloadItemNotifier::Observer {
  public:
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       const base::FilePath& changed_filename,
       download::DownloadPathReservationTracker::FilenameConflictAction)>
       FilenameChangedCallback;
@@ -343,15 +344,15 @@ class ExtensionDownloadsEventRouter
 
   // Called by ChromeDownloadManagerDelegate during the filename determination
   // process, allows extensions to change the item's target filename. If no
-  // extension wants to change the target filename, then |no_change| will be
-  // called and the filename determination process will continue as normal. If
-  // an extension wants to change the target filename, then |change| will be
-  // called with the new filename and a flag indicating whether the new file
-  // should overwrite any old files of the same name.
+  // extension wants to change the target filename, then |filename_changed| will
+  // be called with an empty filename and the filename determination process
+  // will continue as normal. If an extension wants to change the target
+  // filename, then |filename_changed| will be called with the new filename and
+  // a flag indicating whether the new file should overwrite any old files of
+  // the same name.
   void OnDeterminingFilename(download::DownloadItem* item,
                              const base::FilePath& suggested_path,
-                             const base::Closure& no_change,
-                             const FilenameChangedCallback& change);
+                             FilenameChangedCallback filename_changed);
 
   // AllDownloadItemNotifier::Observer.
   void OnDownloadCreated(content::DownloadManager* manager,

@@ -208,7 +208,7 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
            .SubtreeWillChangeContents() &&
        squashing_layer.GetLayoutObject()
            .StyleRef()
-           .IsRunningAnimationOnCompositor()) ||
+           .RequiresPropertyNodeForAnimation()) ||
       squashing_layer.GetLayoutObject()
           .StyleRef()
           .ShouldCompositeForCurrentAnimations())
@@ -395,7 +395,7 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
   // squash layers painted after the iframe with layers painted before it.
   if (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
       To<LayoutEmbeddedContent>(layer->GetLayoutObject())
-          .ContentDocumentIsCompositing()) {
+          .ContentDocumentContainsGraphicsLayer()) {
     squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
         false;
   }

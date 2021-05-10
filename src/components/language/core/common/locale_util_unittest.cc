@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace language {
@@ -57,7 +58,12 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
     locale = es_locale;
     is_ui = ConvertToActualUILocale(&locale);
     EXPECT_TRUE(is_ui) << es_locale;
+#if defined(OS_IOS)
+    // iOS uses a different name for es-419 (es-MX).
+    EXPECT_EQ("es-MX", locale) << es_locale;
+#else
     EXPECT_EQ("es-419", locale) << es_locale;
+#endif
   }
 
   // English falls back to US.
@@ -105,7 +111,7 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
 //---------------------------------------------------------------------------
 // This only matters for ChromeOS and Windows, as they are the only systems
 // where users can set the display UI.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
   locale = "sd";  // Sindhi
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_FALSE(is_ui);

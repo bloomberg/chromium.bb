@@ -43,6 +43,16 @@ const gfx::ImageSkia& AppListItem::GetIcon(
   return metadata_->icon;
 }
 
+void AppListItem::SetNotificationBadgeColor(const SkColor color) {
+  if (notification_badge_color_ == color)
+    return;
+
+  notification_badge_color_ = color;
+  for (auto& observer : observers_) {
+    observer.ItemBadgeColorChanged();
+  }
+}
+
 void AppListItem::AddObserver(AppListItemObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -65,8 +75,8 @@ size_t AppListItem::ChildItemCount() const {
 }
 
 std::string AppListItem::ToDebugString() const {
-  return id().substr(0, 8) + " '" + name() + "'" + " [" +
-         position().ToDebugString() + "]";
+  return id().substr(0, 8) + " '" + (is_page_break() ? "page_break" : name()) +
+         "'" + " [" + position().ToDebugString() + "]";
 }
 
 // Protected methods
@@ -90,7 +100,7 @@ void AppListItem::SetNameAndShortName(const std::string& name,
     observer.ItemNameChanged();
 }
 
-void AppListItem::UpdateBadge(bool has_badge) {
+void AppListItem::UpdateNotificationBadge(bool has_badge) {
   if (has_notification_badge_ == has_badge)
     return;
 

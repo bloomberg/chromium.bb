@@ -12,6 +12,12 @@
 
 class GURL;
 
+namespace crosapi {
+namespace mojom {
+class BrowserInitParams;
+}  // namespace mojom
+}  // namespace crosapi
+
 namespace chromeos {
 
 // Interface to inject Chrome dependent behavior into LacrosChromeServiceImpl
@@ -19,6 +25,10 @@ namespace chromeos {
 class LacrosChromeServiceDelegate {
  public:
   virtual ~LacrosChromeServiceDelegate() = default;
+
+  // Called during startup when |init_params| become available.
+  virtual void OnInitialized(
+      const crosapi::mojom::BrowserInitParams& init_params) = 0;
 
   // Opens a new browser window.
   virtual void NewWindow() = 0;
@@ -31,16 +41,16 @@ class LacrosChromeServiceDelegate {
 
   using GetFeedbackDataCallback = base::OnceCallback<void(base::Value)>;
   // Gets lacros feedback data.
-  virtual void GetFeedbackData(GetFeedbackDataCallback callback) = 0;
+  virtual void GetFeedbackData(
+      GetFeedbackDataCallback callback) = 0;
 
-  using GetHistogramsCallback = base::OnceCallback<void(const std::string&)>;
   // Gets lacros histograms.
-  virtual void GetHistograms(GetHistogramsCallback callback) = 0;
+  using GetHistogramsCallback = base::OnceCallback<void(const std::string&)>;
+  virtual void GetHistograms(
+      GetHistogramsCallback callback) = 0;
 
-  using GetActiveTabUrlCallback =
-      base::OnceCallback<void(const base::Optional<GURL>&)>;
   // Gets Url of the active tab if there is any.
-  virtual void GetActiveTabUrl(GetActiveTabUrlCallback callback) = 0;
+  virtual GURL GetActiveTabUrl() = 0;
 };
 
 }  // namespace chromeos

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/chromeos_buildflags.h"
 #include "components/sync/driver/sync_user_settings.h"
 
 namespace syncer {
@@ -23,9 +24,6 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool IsSyncRequested() const override;
   void SetSyncRequested(bool requested) override;
 
-  bool IsSyncAllowedByPlatform() const override;
-  void SetSyncAllowedByPlatform(bool allowed) override;
-
   bool IsFirstSetupComplete() const override;
   void SetFirstSetupComplete(SyncFirstSetupCompleteSource source) override;
 
@@ -35,7 +33,7 @@ class TestSyncUserSettings : public SyncUserSettings {
                         UserSelectableTypeSet types) override;
   UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsSyncAllOsTypesEnabled() const override;
   UserSelectableOsTypeSet GetSelectedOsTypes() const override;
   void SetSelectedOsTypes(bool sync_all_os_types,
@@ -52,6 +50,8 @@ class TestSyncUserSettings : public SyncUserSettings {
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForPreferredDataTypes() const override;
+  bool IsPassphrasePromptMutedForCurrentProductVersion() const override;
+  void MarkPassphrasePromptMutedForCurrentProductVersion() override;
   bool IsTrustedVaultKeyRequired() const override;
   bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const override;
   bool IsTrustedVaultRecoverabilityDegraded() const override;
@@ -77,7 +77,7 @@ class TestSyncUserSettings : public SyncUserSettings {
 
   bool first_setup_complete_ = true;
   bool sync_everything_enabled_ = true;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool os_sync_feature_enabled_ = true;
   bool sync_all_os_types_enabled_ = true;
 #endif

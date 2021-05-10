@@ -2,7 +2,9 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="../deep_linking_behavior.html">
+<link rel="import" href="../os_route.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../controls/settings_radio_group.html">
 <link rel="import" href="../../controls/settings_dropdown_menu.html">
@@ -10,6 +12,7 @@
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="device_page_browser_proxy.html">
 
 <dom-module id="settings-pointers">
@@ -39,15 +42,15 @@
       <!-- Subsection title only appears if multiple sections are visible. -->
       <h2 hidden$="[[!showHeadings_]]">$i18n{mouseTitle}</h2>
       <div class$="[[subsectionClass_]]">
-        <!-- Do not change the mouse button pref before the mouse is released.
-             See crbug.com/686949 -->
         <div class="settings-box">
           <div class="start settings-box-text" id="mouseSwapButtonLabel">
             $i18n{mouseSwapButtons}
           </div>
-          <settings-dropdown-menu aria-labeledby="mouseSwapButtonLabel"
+          <settings-dropdown-menu id="mouseSwapButtonDropdown"
+              aria-labeledby="mouseSwapButtonLabel"
               pref="{{prefs.settings.mouse.primary_right}}"
               menu-options="[[swapPrimaryOptions]]"
+              on-settings-control-change="onMousePrimaryButtonChanged_"
               deep-link-focus-id$="[[Setting.kMouseSwapPrimaryButtons]]">
           </settings-dropdown-menu>
         </div>
@@ -56,6 +59,7 @@
               class="hr"
               pref="{{prefs.settings.mouse.acceleration}}"
               label="$i18n{mouseAccelerationLabel}"
+              on-change="onMouseAccelerationChanged_"
               deep-link-focus-id$="[[Setting.kMouseAcceleration]]">
           </settings-toggle-button>
         </template>
@@ -63,11 +67,13 @@
           <div class="start" id="mouseSpeedLabel" aria-hidden="true">
             $i18n{mouseSpeed}
           </div>
-          <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"
+          <settings-slider id="mouseSpeedSlider"
+              pref="{{prefs.settings.mouse.sensitivity2}}"
               ticks="[[sensitivityValues_]]"
               label-aria="$i18n{mouseSpeed}"
               label-min="$i18n{pointerSlow}"
               label-max="$i18n{pointerFast}"
+              on-cr-slider-value-changed="onMouseSpeedChanged_"
               deep-link-focus-id$="[[Setting.kMouseSpeed]]">
           </settings-slider>
         </div>
@@ -113,7 +119,40 @@
         <!-- Subsection title only appears if multiple sections are visible. -->
         <h2 hidden$="[[!showHeadings_]]">$i18n{pointingStickTitle}</h2>
         <div class$="[[subsectionClass_]]">
-          (Settings not implemented yet)
+          <div class="settings-box">
+            <div class="start settings-box-text"
+                id="pointingStickSwapButtonLabel">
+              $i18n{pointingStickPrimaryButton}
+            </div>
+            <settings-dropdown-menu id="pointingStickSwapButtonDropdown"
+                aria-labeledby="pointingStickSwapButtonLabel"
+                pref="{{prefs.settings.pointing_stick.primary_right}}"
+                menu-options="[[swapPrimaryOptions]]"
+                deep-link-focus-id$=
+                    "[[Setting.kPointingStickSwapPrimaryButtons]]">
+            </settings-dropdown-menu>
+          </div>
+          <template is="dom-if" if="[[allowDisableAcceleration_]]">
+            <settings-toggle-button id="pointingStickAcceleration"
+                class="hr"
+                pref="{{prefs.settings.pointing_stick.acceleration}}"
+                label="$i18n{pointingStickAccelerationLabel}"
+                deep-link-focus-id$="[[Setting.kPointingStickAcceleration]]">
+            </settings-toggle-button>
+          </template>
+          <div class="settings-box">
+            <div class="start" id="pointingStickSpeedLabel" aria-hidden="true">
+              $i18n{pointingStickSpeed}
+            </div>
+            <settings-slider id="pointingStickSpeedSlider"
+                pref="{{prefs.settings.pointing_stick.sensitivity}}"
+                ticks="[[sensitivityValues_]]"
+                label-aria="$i18n{pointingStickSpeed}"
+                label-min="$i18n{pointerSlow}"
+                label-max="$i18n{pointerFast}"
+                deep-link-focus-id$="[[Setting.kPointingStickSpeed]]">
+            </settings-slider>
+          </div>
         </div>
       </div>
     </template>

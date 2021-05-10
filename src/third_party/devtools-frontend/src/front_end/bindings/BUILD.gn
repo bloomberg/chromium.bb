@@ -7,7 +7,6 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("bindings") {
   sources = [
-    "BlackboxManager.js",
     "BreakpointManager.js",
     "CSSWorkspaceBinding.js",
     "CompilerScriptMapping.js",
@@ -16,6 +15,7 @@ devtools_module("bindings") {
     "DebuggerWorkspaceBinding.js",
     "DefaultScriptMapping.js",
     "FileUtils.js",
+    "IgnoreListManager.js",
     "LiveLocation.js",
     "NetworkProject.js",
     "PresentationConsoleMessageHelper.js",
@@ -30,6 +30,7 @@ devtools_module("bindings") {
   deps = [
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../text_utils:bundle",
     "../workspace:bundle",

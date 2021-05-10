@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/input_type_view.h"
 
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -77,7 +78,7 @@ void InputTypeView::DispatchSimulatedClickIfActive(KeyboardEvent& event) const {
   event.SetDefaultHandled();
 }
 
-void InputTypeView::AccessKeyAction(bool) {
+void InputTypeView::AccessKeyAction(SimulatedClickCreationScope) {
   GetElement().focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                  mojom::blink::FocusType::kNone, nullptr));
 }
@@ -188,7 +189,7 @@ bool InputTypeView::ShouldDrawCapsLockIndicator() const {
 
 void InputTypeView::UpdateClearButtonVisibility() {}
 
-void InputTypeView::UpdatePlaceholderText() {}
+void InputTypeView::UpdatePlaceholderText(bool) {}
 
 AXObject* InputTypeView::PopupRootAXObject() {
   return nullptr;
@@ -202,7 +203,8 @@ FormControlState InputTypeView::SaveFormControlState() const {
 }
 
 void InputTypeView::RestoreFormControlState(const FormControlState& state) {
-  GetElement().setValue(state[0]);
+  GetElement().setValue(state[0],
+                        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
 }
 
 bool InputTypeView::IsDraggedSlider() const {

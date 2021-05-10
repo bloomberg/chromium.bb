@@ -1,0 +1,103 @@
+<style>
+  :host {
+    /* values overriden in Javascript from constants.js */
+    --emoji-picker-height: 0;
+    --emoji-picker-width: 0;
+    --emoji-size: 0;
+    --emoji-per-row: 0;
+  }
+
+  :host {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Roboto', sans-serif;
+    height: calc(var(--emoji-picker-height) - 20px);
+    margin-top: 0;
+    padding: 10px;
+    width: calc(var(--emoji-picker-width) - 20px);
+  }
+
+  #searchContainer,
+  #listContainer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: hidden;
+    width: 100%;
+  }
+
+  #tabs {
+    display: flex;
+    flex-shrink: 0;
+    overflow-x: scroll;
+    /* scroll-behavior: smooth; */
+    width: 100%;
+  }
+
+  #groups {
+    flex-grow: 1;
+    overflow-y: scroll;
+    /* scroll-behavior: smooth; */
+  }
+
+  .divider {
+    border-top: 1px solid var(--cr-secondary-text-color);
+  }
+
+  .sr-only {
+    color: transparent;
+    position: absolute;
+    z-index: -2;
+  }
+</style>
+
+<div class="sr-only" aria-live="polite">
+  Insert emoji by activating them. Close with escape.
+  Some emoji have variants which can be opened with context menu.
+  Use the emoji group buttons or headings to jump to emoji groups.
+</div>
+
+<div id="message" class="sr-only" aria-live="polite"></div>
+
+<emoji-search
+    id$="searchContainer"
+    emoji-data="[[emojiData]]"
+    search="{{search}}">
+</emoji-search>
+
+<div id="listContainer">
+
+  <div class="sr-only" role="heading" aria-level="1">Emoji Group Buttons</div>
+
+  <div id="tabs">
+    <template is="dom-repeat" items="[[emojiGroupTabs]]">
+      <emoji-group-button
+          data-group$="[[item.groupId]]" group-id="[[item.groupId]]"
+          active="[[item.active]]" icon="[[item.icon]]"
+          name="[[item.name]]">
+      </emoji-group-button>
+    </template>
+  </div>
+
+  <div class="sr-only" role="heading" aria-level="1">Emoji Groups</div>
+
+  <div class="divider"></div>
+
+  <div id="groups" on-scroll="onEmojiScroll">
+    <!--
+      history is the "recently used" group and is populated in code,
+      whereas the other groups are created from the emoji metadata.
+    -->
+    <div data-group="history">
+      <template is="dom-if" if="[[history.emoji.length]]">
+        <emoji-group data="[[history]]"></emoji-group>
+      </template>
+    </div>
+    <template is="dom-repeat" items="[[emojiData]]">
+      <div data-group$="[[index]]">
+        <emoji-group data="[[item]]"></emoji-group>
+      </div>
+    </template>
+  </div>
+
+</div>

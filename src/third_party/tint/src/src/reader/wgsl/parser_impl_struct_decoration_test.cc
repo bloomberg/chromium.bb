@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/ast/struct_decoration.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
@@ -36,23 +37,23 @@ class StructDecorationTest
 
 TEST_P(StructDecorationTest, Parses) {
   auto params = GetParam();
-  auto* p = parser(params.input);
+  auto p = parser(params.input);
 
   auto deco = p->decoration();
   ASSERT_FALSE(p->has_error());
   EXPECT_TRUE(deco.matched);
   EXPECT_FALSE(deco.errored);
   ASSERT_NE(deco.value, nullptr);
-  auto struct_deco = ast::As<ast::StructDecoration>(std::move(deco.value));
+  auto* struct_deco = deco.value->As<ast::StructDecoration>();
   ASSERT_NE(struct_deco, nullptr);
-  EXPECT_EQ(struct_deco->IsBlock(), params.is_block);
+  EXPECT_EQ(struct_deco->Is<ast::StructBlockDecoration>(), params.is_block);
 }
 INSTANTIATE_TEST_SUITE_P(ParserImplTest,
                          StructDecorationTest,
                          testing::Values(StructDecorationData{"block", true}));
 
 TEST_F(ParserImplTest, StructDecoration_NoMatch) {
-  auto* p = parser("not-a-stage");
+  auto p = parser("not-a-stage");
   auto deco = p->decoration();
   EXPECT_FALSE(deco.matched);
   EXPECT_FALSE(deco.errored);

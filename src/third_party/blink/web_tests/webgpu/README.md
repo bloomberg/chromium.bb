@@ -2,13 +2,10 @@
 
 The WebGPU conformance test suite (CTS) is developed at
 <https://github.com/gpuweb/cts>. It is written in TypeScript and compiled to
-JavaScript to run as part of WPT. It currently has two branches:
-
-- `main`: Tests which do not use GLSL shaders.
-- `glsl-dependent`: With additional tests that use GLSL shaders compiled to SPIR-V.
+JavaScript to run as part of WPT.
 
 The `roll_webgpu_cts.sh` script in this directory rolls Chromium's
-`third_party/webgpu-cts/src/` to the latest `glsl-dependent` revision, builds
+`third_party/webgpu-cts/src/` to the latest revision, builds
 it, and saves the built files into `.../wpt_internal/webgpu/`.
 Once this is done, `.../wpt_internal/webgpu/cts.html` must also be regenerated.
 This is done with the `regenerate_internal_cts_html.sh` script.
@@ -24,17 +21,12 @@ instructions on performing a roll.
 
 ## How to roll the WebGPU CTS into Chromium
 
-1. Merge the cts `main` branch into `glsl-dependent` if it hasn't been
-    done recently (or ask kainino@ to do this).
-    1. Wait for
-        [Chromium's mirror](https://chromium.googlesource.com/external/github.com/gpuweb/cts/+log/refs/heads/glsl-dependent)
-        to pick up the changes (_usually_ &lt;10 minutes).
 1. Run `third_party/blink/web_tests/webgpu/roll_webgpu_cts.sh`.
 1. Repeat until regeneration succeeds:
     1. Run `third_party/blink/web_tests/webgpu/regenerate_internal_cts_html.sh`.
     1. In `third_party/blink/web_tests/WebGPUExpectations`,
         delete any expectations that caused regeneration errors
-        (or rename them if you can figure out what the name change was).
+        (or try to update them if there was a rename).
 1. Commit changes, upload patch (ignore line-length warnings in generated files).
 1. Run these tryjobs: `dawn-.*-deps-rel`.
 1. Make sure there isn't anything terribly wrong
@@ -45,7 +37,7 @@ instructions on performing a roll.
     1. Remove any expectations for "passed unexpectedly" test variants
         in `WebGPUExpectations`.
 1. Repeat until CQ passes:
-    1. Look at output of `webgpu_blink_web_tests` on all bots
+    1. Look at output of `webgpu_blink_web_tests` on all bots.
     1. Look at the output of `webgpu_blink_web_tests` (and related)
         on any failing bots.
     1. Add `WebGPUExpectations` lines for any test variants that
@@ -68,5 +60,4 @@ instructions on performing a roll.
 This is not necessary for the roll process, but if you want to run a test
 locally with `--enable-unsafe-webgpu`, you can easily do so here:
 
-*   <https://gpuweb-cts-glsl.github.io/standalone/> (`glsl-dependent` branch)
-*   <https://gpuweb.github.io/cts/standalone/> (`main` branch)
+*   <https://gpuweb.github.io/cts/standalone/>

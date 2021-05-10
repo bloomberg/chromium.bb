@@ -11,9 +11,12 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "pdf/document_layout.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace chrome_pdf {
 
@@ -36,8 +39,7 @@ void PreviewModeClient::ScrollToX(int x_in_screen_coords) {
   NOTREACHED();
 }
 
-void PreviewModeClient::ScrollToY(int y_in_screen_coords,
-                                  bool compensate_for_toolbar) {
+void PreviewModeClient::ScrollToY(int y_in_screen_coords) {
   NOTREACHED();
 }
 
@@ -129,8 +131,7 @@ PreviewModeClient::SearchString(const base::char16* string,
   return std::vector<SearchStringResult>();
 }
 
-void PreviewModeClient::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features) {
+void PreviewModeClient::DocumentLoadComplete() {
   client_->PreviewDocumentLoadComplete();
 }
 
@@ -155,13 +156,9 @@ bool PreviewModeClient::IsPrintPreview() {
   return true;
 }
 
-float PreviewModeClient::GetToolbarHeightInScreenCoords() {
-  return 0.0f;
-}
-
-uint32_t PreviewModeClient::GetBackgroundColor() {
+SkColor PreviewModeClient::GetBackgroundColor() {
   NOTREACHED();
-  return 0;
+  return SK_ColorTRANSPARENT;
 }
 
 void PreviewModeClient::SetSelectedText(const std::string& selected_text) {
@@ -176,6 +173,14 @@ void PreviewModeClient::SetLinkUnderCursor(
 bool PreviewModeClient::IsValidLink(const std::string& url) {
   NOTREACHED();
   return false;
+}
+
+void PreviewModeClient::ScheduleTaskOnMainThread(
+    base::TimeDelta delay,
+    ResultCallback callback,
+    int32_t result,
+    const base::Location& from_here) {
+  NOTREACHED();
 }
 
 }  // namespace chrome_pdf

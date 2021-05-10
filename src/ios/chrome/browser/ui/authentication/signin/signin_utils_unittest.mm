@@ -11,6 +11,7 @@
 #import "base/bind.h"
 #import "base/version.h"
 #import "components/pref_registry/pref_registry_syncable.h"
+#import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -39,10 +40,10 @@ namespace {
 class SigninUtilsTest : public BlockCleanupTest {
  public:
   SigninUtilsTest() : version_("1.0") {
-    SetSigninCurrentVersionForTesting(&version_);
+    signin::SetCurrentVersionForTesting(&version_);
   }
 
-  ~SigninUtilsTest() override { SetSigninCurrentVersionForTesting(nullptr); }
+  ~SigninUtilsTest() override { signin::SetCurrentVersionForTesting(nullptr); }
 
   void SetUp() override {
     BlockCleanupTest::SetUp();
@@ -88,54 +89,54 @@ class SigninUtilsTest : public BlockCleanupTest {
 // Should show the sign-in upgrade for the first time.
 TEST_F(SigninUtilsTest, TestWillDisplay) {
   EXPECT_TRUE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Should not show the sign-in upgrade twice on the same version.
 TEST_F(SigninUtilsTest, TestWillNotDisplaySameVersion) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
-// Should not show the sign-in upgrade twice until to major version after.
+// Should not show the sign-in upgrade twice until two major version after.
 TEST_F(SigninUtilsTest, TestWillNotDisplayOneMinorVersion) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   // Set the future version to be one minor release ahead.
   Version version_1_1("1.1");
-  SetSigninCurrentVersionForTesting(&version_1_1);
+  signin::SetCurrentVersionForTesting(&version_1_1);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
-// Should not show the sign-in upgrade twice until to major version after.
+// Should not show the sign-in upgrade twice until two major version after.
 TEST_F(SigninUtilsTest, TestWillNotDisplayTwoMinorVersions) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   // Set the future version to be two minor releases ahead.
   Version version_1_2("1.2");
-  SetSigninCurrentVersionForTesting(&version_1_2);
+  signin::SetCurrentVersionForTesting(&version_1_2);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
-// Should not show the sign-in upgrade twice until to major version after.
+// Should not show the sign-in upgrade twice until two major version after.
 TEST_F(SigninUtilsTest, TestWillNotDisplayOneMajorVersion) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   // Set the future version to be one major release ahead.
   Version version_2_0("2.0");
-  SetSigninCurrentVersionForTesting(&version_2_0);
+  signin::SetCurrentVersionForTesting(&version_2_0);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Should show the sign-in upgrade a second time, 2 version after.
 TEST_F(SigninUtilsTest, TestWillDisplayTwoMajorVersions) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   // Set the future version to be two major releases ahead.
   Version version_3_0("3.0");
-  SetSigninCurrentVersionForTesting(&version_3_0);
+  signin::SetCurrentVersionForTesting(&version_3_0);
   EXPECT_TRUE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Show the sign-in upgrade on version 1.0.
@@ -143,14 +144,14 @@ TEST_F(SigninUtilsTest, TestWillDisplayTwoMajorVersions) {
 // Move to version 5.0.
 // Expected: should not show the sign-in upgrade.
 TEST_F(SigninUtilsTest, TestWillShowTwoTimesOnly) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   Version version_3_0("3.0");
-  SetSigninCurrentVersionForTesting(&version_3_0);
-  SigninRecordVersionSeen();
+  signin::SetCurrentVersionForTesting(&version_3_0);
+  signin::RecordVersionSeen();
   Version version_5_0("5.0");
-  SetSigninCurrentVersionForTesting(&version_5_0);
+  signin::SetCurrentVersionForTesting(&version_5_0);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Show the sign-in upgrade on version 1.0.
@@ -159,16 +160,16 @@ TEST_F(SigninUtilsTest, TestWillShowTwoTimesOnly) {
 // Add new account.
 // Expected: should show the sign-in upgrade.
 TEST_F(SigninUtilsTest, TestWillShowForNewAccountAdded) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   Version version_3_0("3.0");
-  SetSigninCurrentVersionForTesting(&version_3_0);
-  SigninRecordVersionSeen();
+  signin::SetCurrentVersionForTesting(&version_3_0);
+  signin::RecordVersionSeen();
   Version version_5_0("5.0");
-  SetSigninCurrentVersionForTesting(&version_5_0);
+  signin::SetCurrentVersionForTesting(&version_5_0);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo1" ]);
   EXPECT_TRUE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Add new account.
@@ -181,12 +182,12 @@ TEST_F(SigninUtilsTest, TestWillNotShowWithAccountRemoved) {
   NSString* newAccountGaiaId = @"foo1";
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ newAccountGaiaId ]);
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   Version version_3_0("3.0");
-  SetSigninCurrentVersionForTesting(&version_3_0);
-  SigninRecordVersionSeen();
+  signin::SetCurrentVersionForTesting(&version_3_0);
+  signin::RecordVersionSeen();
   Version version_5_0("5.0");
-  SetSigninCurrentVersionForTesting(&version_5_0);
+  signin::SetCurrentVersionForTesting(&version_5_0);
   NSArray* allIdentities =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
           ->GetAllIdentities();
@@ -201,7 +202,7 @@ TEST_F(SigninUtilsTest, TestWillNotShowWithAccountRemoved) {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->ForgetIdentity(foo1Identity, nil);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Show the sign-in upgrade on version 1.0.
@@ -210,16 +211,16 @@ TEST_F(SigninUtilsTest, TestWillNotShowWithAccountRemoved) {
 // Add an account.
 // Expected: should not show the sign-in upgrade.
 TEST_F(SigninUtilsTest, TestWillNotShowNewAccountUntilTwoVersion) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   Version version_3_0("3.0");
-  SetSigninCurrentVersionForTesting(&version_3_0);
-  SigninRecordVersionSeen();
+  signin::SetCurrentVersionForTesting(&version_3_0);
+  signin::RecordVersionSeen();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo1" ]);
   Version version_4_0("4.0");
-  SetSigninCurrentVersionForTesting(&version_4_0);
+  signin::SetCurrentVersionForTesting(&version_4_0);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
 }
 
 // Show the sign-in upgrade on version 1.0.
@@ -228,13 +229,34 @@ TEST_F(SigninUtilsTest, TestWillNotShowNewAccountUntilTwoVersion) {
 // Expected: should not show the sign-in upgrade (only display every 2
 // versions).
 TEST_F(SigninUtilsTest, TestWillNotShowNewAccountUntilTwoVersionBis) {
-  SigninRecordVersionSeen();
+  signin::RecordVersionSeen();
   Version version_2_0("2.0");
-  SetSigninCurrentVersionForTesting(&version_2_0);
+  signin::SetCurrentVersionForTesting(&version_2_0);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentities(@[ @"foo1" ]);
   EXPECT_FALSE(
-      SigninShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+}
+
+// Should not show the sign-in upgrade if sign-in is disabled by policy.
+TEST_F(SigninUtilsTest, TestWillNotShowIfDisabledByPolicy) {
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->AddIdentities(@[ @"foo1" ]);
+  chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+
+  EXPECT_FALSE(
+      signin::ShouldPresentUserSigninUpgrade(chrome_browser_state_.get()));
+}
+
+// signin::IsSigninAllowed should respect the kSigninAllowed pref.
+TEST_F(SigninUtilsTest, TestSigninAllowedPref) {
+  // Sign-in is allowed by default.
+  EXPECT_TRUE(signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
+
+  // When sign-in is disabled by policy, the accessor should return false.
+  chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE(
+      signin::IsSigninAllowed(chrome_browser_state_.get()->GetPrefs()));
 }
 
 }  // namespace

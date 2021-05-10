@@ -74,11 +74,6 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     // creation.
     base::Time timestamp;
 
-    // Is this entry from the last session? This is set to true for entries that
-    // were closed during the last session, and false for entries that were
-    // closed during this session.
-    bool from_last_session = false;
-
     // Estimates memory usage. By default returns 0.
     virtual size_t EstimateMemoryUsage() const;
 
@@ -174,8 +169,10 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   virtual void RemoveObserver(TabRestoreServiceObserver* observer) = 0;
 
   // Creates a Tab to represent |live_tab| and notifies observers the list of
-  // entries has changed.
-  virtual void CreateHistoricalTab(LiveTab* live_tab, int index) = 0;
+  // entries has changed. If successful, returns the unique SessionID associated
+  // with the Tab.
+  virtual base::Optional<SessionID> CreateHistoricalTab(LiveTab* live_tab,
+                                                        int index) = 0;
 
   // TODO(blundell): Rename and fix comment.
   // Invoked when a browser is closing. If |context| is a tabbed browser with

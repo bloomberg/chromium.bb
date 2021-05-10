@@ -198,6 +198,11 @@ DnsResourceRecord BuildTestDnsRecord(
     std::string rdata,
     base::TimeDelta ttl = base::TimeDelta::FromDays(1));
 
+DnsResourceRecord BuildTestCnameRecord(
+    std::string name,
+    base::StringPiece canonical_name,
+    base::TimeDelta ttl = base::TimeDelta::FromDays(1));
+
 DnsResourceRecord BuildTestAddressRecord(
     std::string name,
     const IPAddress& ip,
@@ -228,7 +233,8 @@ DnsResponse BuildTestDnsResponse(
     uint16_t type,
     const std::vector<DnsResourceRecord>& answers,
     const std::vector<DnsResourceRecord>& authority = {},
-    const std::vector<DnsResourceRecord>& additional = {});
+    const std::vector<DnsResourceRecord>& additional = {},
+    uint8_t rcode = dns_protocol::kRcodeNOERROR);
 
 DnsResponse BuildTestDnsAddressResponse(std::string name,
                                         const IPAddress& ip,

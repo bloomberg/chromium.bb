@@ -50,7 +50,6 @@
 
 namespace cc {
 class PaintCanvas;
-struct BrowserControlsParams;
 }
 
 namespace gfx {
@@ -67,8 +66,8 @@ class WebFrame;
 class WebFrameWidget;
 class WebHitTestResult;
 class WebLocalFrame;
+class WebNoStatePrefetchClient;
 class WebPagePopup;
-class WebPrerendererClient;
 class WebRemoteFrame;
 class WebSettings;
 class WebString;
@@ -119,9 +118,6 @@ class WebView {
   // Destroys the WebView.
   virtual void Close() = 0;
 
-  // Sets whether the WebView is focused.
-  virtual void SetFocus(bool enable) = 0;
-
   // Called to inform WebViewImpl that a local main frame has been attached.
   // After this call MainFrameImpl() will return a valid frame until it is
   // detached.
@@ -137,8 +133,7 @@ class WebView {
   // Called to inform WebViewImpl that a remote main frame has been detached.
   virtual void DidDetachRemoteMainFrame() = 0;
 
-  // Initializes the various client interfaces.
-  virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
+  virtual void SetNoStatePrefetchClient(WebNoStatePrefetchClient*) = 0;
 
   // Options -------------------------------------------------------------
 
@@ -265,27 +260,6 @@ class WebView {
 
   virtual float ZoomFactorForDeviceScaleFactor() = 0;
 
-  // This method is used for testing.
-  // Resize the view at the same time as changing the state of the top
-  // controls. If |browser_controls_shrink_layout| is true, the embedder shrunk
-  // the WebView size by the browser controls height.
-  virtual void ResizeWithBrowserControls(
-      const gfx::Size& main_frame_widget_size,
-      float top_controls_height,
-      float bottom_controls_height,
-      bool browser_controls_shrink_layout) = 0;
-
-  // Same as ResizeWithBrowserControls(const gfx::Size&,float,float,bool), but
-  // includes all browser controls params such as the min heights.
-  virtual void ResizeWithBrowserControls(
-      const gfx::Size& main_frame_widget_size,
-      const gfx::Size& visible_viewport_size,
-      cc::BrowserControlsParams browser_controls_params) = 0;
-
-  // Same as ResizeWithBrowserControls, but keeps the same BrowserControl
-  // settings.
-  virtual void Resize(const gfx::Size&) = 0;
-
   // Override the screen orientation override.
   virtual void SetScreenOrientationOverrideForTesting(
       base::Optional<blink::mojom::ScreenOrientation> orientation) = 0;
@@ -391,13 +365,6 @@ class WebView {
   virtual void SetPageLifecycleStateFromNewPageCommit(
       mojom::PageVisibilityState visibility,
       mojom::PagehideDispatch pagehide_dispatch) = 0;
-
-  // i18n -----------------------------------------------------------------
-
-  // Inform the WebView that the accept languages have changed.
-  // If the WebView wants to get the accept languages value, it will have
-  // to call the WebViewClient::acceptLanguages().
-  virtual void AcceptLanguagesChanged() = 0;
 
   // Lifecycle state ------------------------------------------------------
 

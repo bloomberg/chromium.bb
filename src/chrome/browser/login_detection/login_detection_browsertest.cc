@@ -8,10 +8,14 @@
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
 #include "chrome/browser/login_detection/login_detection_type.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/site_isolation/features.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
@@ -28,11 +32,19 @@ class LoginDetectionBrowserTest : public InProcessBrowserTest {
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{kLoginDetection, {}},
-         {site_isolation::features::kSiteIsolationForPasswordSites, {}}},
+         {site_isolation::features::kSiteIsolationForPasswordSites, {}},
+         {optimization_guide::features::kOptimizationHints, {}}},
         {});
   }
 
   void SetUpOnMainThread() override {
+    auto* optimization_guide_decider =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    optimization_guide_decider->AddHintForTesting(
+        GURL("https://www.optguideloggedin.com/page.html"),
+        optimization_guide::proto::LOGIN_DETECTION, base::nullopt);
+
     https_test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_test_server_.Start());
     histogram_tester_ = std::make_unique<base::HistogramTester>();
@@ -54,12 +66,40 @@ class LoginDetectionBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Verifies that sites saved manual passworded list are detected correctly.
+IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest,
+                       NavigateToManualPasswordedSite) {
+  GURL test_url(https_test_server_.GetURL("www.saved.com", "/title1.html"));
+
+  // Initial navigation will not be treated as no login.
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kNoLogin);
+
+  // Use site-isolaiton to save the site to manual passworded list.
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), test_url);
+
+  // Subsequent navigation be detected as login.
+  ResetHistogramTester();
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kPasswordEnteredLogin);
+
+  // Navigations to other subdomains of saved.com are treated as login too.
+  ResetHistogramTester();
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_.GetURL("mobile.saved.com", "/title1.html"));
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kPasswordEnteredLogin);
+
+  ResetHistogramTester();
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_.GetURL("saved.com", "/title1.html"));
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kPasswordEnteredLogin);
+}
+
 IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest, PopUpBasedOAuthLoginFlow) {
   // Navigate to the OAuth requestor.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_.GetURL("www.foo.com", "/title1.html"));
-  ExpectLoginDetectionTypeMetric(
-      LoginDetectionTabHelper::LoginDetectionType::kNoLogin);
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kNoLogin);
   ResetHistogramTester();
 
   // Create a popup for the navigation flow.
@@ -74,8 +114,7 @@ IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest, PopUpBasedOAuthLoginFlow) {
   content::TestNavigationObserver observer(popup_contents);
   observer.WaitForNavigationFinished();
   // This popup navigation is treated as not logged-in too.
-  ExpectLoginDetectionTypeMetric(
-      LoginDetectionTabHelper::LoginDetectionType::kNoLogin);
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kNoLogin);
   ResetHistogramTester();
 
   // When the popup is closed, it will be detected as OAuth login.
@@ -83,14 +122,21 @@ IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest, PopUpBasedOAuthLoginFlow) {
   EXPECT_TRUE(ExecJs(popup_contents, "window.close()"));
   destroyed_watcher.Wait();
   ExpectLoginDetectionTypeMetric(
-      LoginDetectionTabHelper::LoginDetectionType::kOauthPopUpFirstTimeLoginFlow);
+      LoginDetectionType::kOauthPopUpFirstTimeLoginFlow);
   ResetHistogramTester();
 
   // Subsequent navigations to the OAuth requestor site will be treated as OAuth
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_.GetURL("www.foo.com", "/title3.html"));
+  ExpectLoginDetectionTypeMetric(LoginDetectionType::kOauthLogin);
+}
+
+IN_PROC_BROWSER_TEST_F(LoginDetectionBrowserTest,
+                       OptimizationGuideDetectedBlacklist) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("https://www.optguideloggedin.com/page.html"));
   ExpectLoginDetectionTypeMetric(
-      LoginDetectionTabHelper::LoginDetectionType::kOauthLogin);
+      LoginDetectionType::kOptimizationGuideDetected);
 }
 
 }  // namespace login_detection

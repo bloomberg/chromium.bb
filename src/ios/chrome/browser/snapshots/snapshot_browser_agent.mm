@@ -6,11 +6,11 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#import "base/ios/ios_util.h"
 #include "base/path_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
@@ -20,9 +20,12 @@
 
 namespace {
 
-const std::string kLegacyBaseDirectory = "Chromium";
-const std::string kSessionsDirectory = "Sessions";
-const std::string kSnapshotsDirectory = "Snapshots";
+const base::FilePath::CharType kLegacyBaseDirectory[] =
+    FILE_PATH_LITERAL("Chromium");
+const base::FilePath::CharType kSessionsDirectory[] =
+    FILE_PATH_LITERAL("Sessions");
+const base::FilePath::CharType kSnapshotsDirectory[] =
+    FILE_PATH_LITERAL("Snapshots");
 
 }  // namespace
 
@@ -128,7 +131,7 @@ base::FilePath SnapshotBrowserAgent::GetStoragePath() {
   // snapshots folder to a base path that already includes the browser state
   // path, sessions directory, and the session identifier.
   base::FilePath path = browser_->GetBrowserState()->GetStatePath();
-  if (IsSceneStartupSupported() && !session_identifier_.empty()) {
+  if (base::ios::IsSceneStartupSupported() && !session_identifier_.empty()) {
     path = path.Append(kSessionsDirectory)
                .Append(session_identifier_)
                .Append(kSnapshotsDirectory);

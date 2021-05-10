@@ -19,6 +19,7 @@
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLXferProcessor.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/dsl/priv/DSLFPs.h"
 
 const int GrGLSLProgramBuilder::kVarsPerBlock = 8;
 
@@ -35,6 +36,8 @@ GrGLSLProgramBuilder::GrGLSLProgramBuilder(GrRenderTarget* renderTarget,
         , fGeometryProcessor(nullptr)
         , fXferProcessor(nullptr)
         , fNumFragmentSamplers(0) {}
+
+GrGLSLProgramBuilder::~GrGLSLProgramBuilder() = default;
 
 void GrGLSLProgramBuilder::addFeature(GrShaderFlags shaders,
                                       uint32_t featureBit,
@@ -54,12 +57,14 @@ void GrGLSLProgramBuilder::addFeature(GrShaderFlags shaders,
 bool GrGLSLProgramBuilder::emitAndInstallProcs() {
     // First we loop over all of the installed processors and collect coord transforms.  These will
     // be sent to the GrGLSLPrimitiveProcessor in its emitCode function
+    SkSL::dsl::Start(this->shaderCompiler());
     SkString inputColor;
     SkString inputCoverage;
     this->emitAndInstallPrimProc(&inputColor, &inputCoverage);
     this->emitAndInstallFragProcs(&inputColor, &inputCoverage);
     this->emitAndInstallXferProc(inputColor, inputCoverage);
     fGeometryProcessor->emitTransformCode(&fVS, this->uniformHandler());
+    SkSL::dsl::End();
 
     return this->checkSamplerCounts();
 }
@@ -129,13 +134,17 @@ void GrGLSLProgramBuilder::emitAndInstallPrimProc(SkString* outputColor, SkStrin
 void GrGLSLProgramBuilder::emitAndInstallFragProcs(SkString* color, SkString* coverage) {
     int transformedCoordVarsIdx = 0;
     int fpCount = this->pipeline().numFragmentProcessors();
-    fFragmentProcessors = std::make_unique<std::unique_ptr<GrGLSLFragmentProcessor>[]>(fpCount);
+    SkASSERT(fFPImpls.empty());
+    fFPImpls.reserve(fpCount);
     for (int i = 0; i < fpCount; ++i) {
         SkString* inOut = this->pipeline().isColorFragmentProcessor(i) ? color : coverage;
         SkString output;
         const GrFragmentProcessor& fp = this->pipeline().getFragmentProcessor(i);
-        fFragmentProcessors[i] = std::unique_ptr<GrGLSLFragmentProcessor>(fp.createGLSLInstance());
-        output = this->emitFragProc(fp, *fFragmentProcessors[i], transformedCoordVarsIdx, *inOut,
+        fFPImpls.push_back(fp.makeProgramImpl());
+        output = this->emitFragProc(fp,
+                                    *fFPImpls.back(),
+                                    transformedCoordVarsIdx,
+                                    *inOut,
                                     output);
         for (const auto& subFP : GrFragmentProcessor::FPRange(fp)) {
             transformedCoordVarsIdx += subFP.numVaryingCoordsUsed();
@@ -173,7 +182,6 @@ SkString GrGLSLProgramBuilder::emitFragProc(const GrFragmentProcessor& fp,
                                            this->uniformHandler(),
                                            this->shaderCaps(),
                                            fp,
-                                           "_output",
                                            "_input",
                                            "_coords",
                                            coords,

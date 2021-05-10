@@ -15,6 +15,7 @@
 
 namespace apps_util {
 
+extern const char kIntentActionMain[];
 extern const char kIntentActionView[];
 extern const char kIntentActionSend[];
 extern const char kIntentActionSendMultiple[];
@@ -28,6 +29,14 @@ apps::mojom::IntentPtr CreateShareIntentFromFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types);
 
+// Create an intent struct from the filesystem urls, mime types
+// of a list of files, and the share text and title.
+apps::mojom::IntentPtr CreateShareIntentFromFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types,
+    const std::string& share_text,
+    const std::string& share_title);
+
 // Create an intent struct from the filesystem url, mime type
 // and the drive share url for a Google Drive file.
 apps::mojom::IntentPtr CreateShareIntentFromDriveFile(
@@ -36,8 +45,10 @@ apps::mojom::IntentPtr CreateShareIntentFromDriveFile(
     const GURL& drive_share_url,
     bool is_directory);
 
-// Create an intent struct from URL.
-apps::mojom::IntentPtr CreateShareIntentFromText(const std::string& share_text);
+// Create an intent struct from share text and title.
+apps::mojom::IntentPtr CreateShareIntentFromText(
+    const std::string& share_text,
+    const std::string& share_title);
 
 // Return true if |value| matches with the |condition_value|, based on the
 // pattern match type in the |condition_value|.
@@ -70,6 +81,40 @@ bool OnlyShareToDrive(const apps::mojom::IntentPtr& intent);
 
 // Check the if the intent is valid, e.g. action matches content.
 bool IsIntentValid(const apps::mojom::IntentPtr& intent);
+
+// Converts |intent| to base::Value, e.g.:
+// {
+//    "action": "xx",
+//    "url": "abc.com",
+//    "mime_type": "text/plain",
+//    "file_urls": "/abc, /a",
+//    "activity_name": "yy",
+//    "drive_share_url": "aa.com",
+//    "share_text": "text",
+//    "share_title": "title",
+// }
+base::Value ConvertIntentToValue(const apps::mojom::IntentPtr& intent);
+
+// Gets the string value from base::DictionaryValue, e.g. { "key": "value" }
+// returns "value".
+base::Optional<std::string> GetStringValueFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name);
+
+// Gets GURL from base::DictionaryValue, e.g. { "url": "abc.com" } returns
+// "abc.com".
+base::Optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
+                                          const std::string& key_name);
+
+// Gets std::vector<::GURL> from base::DictionaryValue, e.g. { "file_urls":
+// "/abc, /a" } returns std::vector<::GURL>{"/abc, /a"}.
+base::Optional<std::vector<::GURL>> GetFileUrlsFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name);
+
+// Converts base::Value to Intent.
+apps::mojom::IntentPtr ConvertValueToIntent(base::Value&& value);
+
 }  // namespace apps_util
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_UTIL_H_

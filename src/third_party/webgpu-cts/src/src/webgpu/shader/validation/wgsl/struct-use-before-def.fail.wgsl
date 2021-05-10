@@ -1,4 +1,4 @@
-# v-0007 - This fails because the structure is used before definition.
+// v-0007 - This fails because the structure is used before definition.
 
 const a : Foo;
 

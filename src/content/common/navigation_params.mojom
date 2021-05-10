@@ -11,7 +11,6 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
-import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/source_location.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
@@ -21,15 +20,14 @@ import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+import "third_party/blink/public/mojom/loader/mixed_content.mojom";
 import "third_party/blink/public/mojom/page/page.mojom";
 
 [Native]
 struct Impression;
-
-[Native]
-enum MixedContentContextType;
 
 [Native]
 struct NavigationDownloadPolicy;
@@ -51,9 +49,8 @@ struct InitiatorCSPInfo {
   network.mojom.CSPDisposition should_check_main_world_csp =
       network.mojom.CSPDisposition.CHECK;
 
-  // The relevant CSP policies and the initiator 'self' source to be used.
+  // The relevant CSP policies.
   array<network.mojom.ContentSecurityPolicy> initiator_csp;
-  network.mojom.CSPSource? initiator_self_source;
 };
 
 enum NavigationType {
@@ -95,12 +92,10 @@ enum NavigationType {
 // This struct holds parameters sent by the renderer to the browser, that are
 // needed to start a navigation.
 struct BeginNavigationParams {
-  // Routing id of the initiator of the navigation. This routing id may no
-  // longer be valid by the time the navigation is seen by the browser process,
-  // if the initiator frame is deleted before the navigation IPC arrives. A
-  // default value of MSG_ROUTING_NONE indicates this navigation is not
-  // associated with a frame.
-  int32 initiator_routing_id = -2;  // -2 == MSG_ROUTING_NONE
+  // The token of the RenderFrameHost that initiated the navigation. It might
+  // refer to a RenderFrameHost that doesn't exist anymore when the IPC reaches
+  // the browser process.
+  blink.mojom.LocalFrameToken? initiator_frame_token;
 
   // Additional HTTP request headers.
   string headers;
@@ -120,10 +115,8 @@ struct BeginNavigationParams {
       network.mojom.RequestDestination.kEmpty;
 
   // The mixed content context type for potential mixed content checks.
-  //
-  // [Native] enums are by default initialized to 0
-  // (i.e. blink::WebMixedContentContextType::kNotMixedContent below).
-  MixedContentContextType mixed_content_context_type;
+  blink.mojom.MixedContentContextType mixed_content_context_type =
+      blink.mojom.MixedContentContextType.kNotMixedContent;
 
   // Whether or not the navigation has been initiated by a form submission.
   bool is_form_submission = false;
@@ -146,13 +139,6 @@ struct BeginNavigationParams {
   // for details.
   mojo_base.mojom.DictionaryValue? devtools_initiator;
 
-  // Whether or not this navigation should unconditionally attach SameSite
-  // cookies, bypassing the usual site_for_cookies checks. Setting this to true
-  // causes SameSite cookies to be attached for cross-site requests (or requests
-  // that "look" cross-site). See the field of the same name in
-  // network::ResourceRequest.
-  bool force_ignore_site_for_cookies = false;
-
   // Specifies whether, and how, the navigation should execute a Trust Tokens
   // operation (https://github.com/wicg/trust-token-api) and attach headers
   // conveying the result of the operation. Set on some child frame navigations.
@@ -167,6 +153,10 @@ struct BeginNavigationParams {
   // in preparation for navigating. Used for metrics.
   mojo_base.mojom.TimeTicks before_unload_start;
   mojo_base.mojom.TimeTicks before_unload_end;
+
+  // Token to identify a WebBundle. Set on navigation to a resource in a
+  // WebBundle.
+  network.mojom.WebBundleTokenParams? web_bundle_token;
 };
 
 // Provided by the browser or the renderer -------------------------------------
@@ -261,8 +251,7 @@ struct CommonNavigationParams {
   // Whether this is a history navigation in a newly created child frame, in
   // which case the browser process is instructing the renderer process to load
   // a URL from a session history item.  Defaults to false.
-  // TODO(ahemery): Move this to BeginNavigationParams once we default to
-  // IsPerNavigationMojoInterface().
+  // TODO(ahemery): Move this to BeginNavigationParams.
   bool is_history_navigation_in_new_child_frame = false;
 
   // The time the input event leading to the navigation occurred. This will
@@ -340,7 +329,7 @@ struct CommitNavigationParams {
   // For browser-initiated navigations, this is the unique id of the
   // NavigationEntry being navigated to. (For renderer-initiated navigations it
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
-  // the resulting FrameHostMsg_DidCommitProvisionalLoad_Params.
+  // the resulting DidCommitProvisionalLoadParams.
   int32 nav_entry_id = 0;
 
   // If this is a history navigation, this contains a map of frame unique names
@@ -419,10 +408,8 @@ struct CommitNavigationParams {
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
 
-  // The IP address space into which this document is committing.
-  // https://wicg.github.io/cors-rfc1918/#address-space
-  network.mojom.IPAddressSpace ip_address_space =
-      network.mojom.IPAddressSpace.kUnknown;
+  // Whether this navigation was for prerendering.
+  bool is_prerendering = false;
 
   // The physical URL of Web Bundle from which the document is loaded.
   // Used as an additional identifier for MemoryCache.
@@ -459,9 +446,9 @@ struct CommitNavigationParams {
   // The names of origin trials to be force enabled for this navigation.
   array<string> force_enabled_origin_trials;
 
-  // Whether the page is origin isolated.
-  // https://github.com/WICG/origin-isolation
-  bool origin_isolated = false;
+  // Whether the page is in an origin-keyed agent cluster.
+  // https://html.spec.whatwg.org/C/#origin-keyed-agent-clusters
+  bool origin_agent_cluster = false;
 
   // Client-hints enabled; this is based on the top-level frame and should be
   // further narrowed down by feature policy.

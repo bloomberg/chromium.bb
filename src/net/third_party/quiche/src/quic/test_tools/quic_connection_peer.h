@@ -5,11 +5,13 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_QUIC_CONNECTION_PEER_H_
 #define QUICHE_QUIC_TEST_TOOLS_QUIC_CONNECTION_PEER_H_
 
+#include <cstddef>
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_connection_stats.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -84,6 +86,8 @@ class QuicConnectionPeer {
       QuicConnection* connection);
   static QuicAlarm* GetDiscardPreviousOneRttKeysAlarm(
       QuicConnection* connection);
+  static QuicAlarm* GetDiscardZeroRttDecryptionKeysAlarm(
+      QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
   // If |owns_writer| is true, takes ownership of |writer|.
@@ -124,9 +128,9 @@ class QuicConnectionPeer {
                                   PacketHeaderFormat format);
   static void AddBytesReceived(QuicConnection* connection, size_t length);
   static void SetAddressValidated(QuicConnection* connection);
-  static void SetEnableAeadLimits(QuicConnection* connection, bool enabled);
 
   static void SendConnectionClosePacket(QuicConnection* connection,
+                                        QuicIetfTransportErrorCodes ietf_error,
                                         QuicErrorCode error,
                                         const std::string& details);
 
@@ -157,13 +161,30 @@ class QuicConnectionPeer {
 
   static size_t NumUndecryptablePackets(QuicConnection* connection);
 
-  static const QuicCircularDeque<
-      std::pair<QuicPathFrameBuffer, QuicSocketAddress>>&
-  pending_path_challenge_payloads(QuicConnection* connection);
+  static size_t NumPendingPathChallengesToResponse(QuicConnection* connection);
 
   static void SetConnectionClose(QuicConnection* connection);
 
   static void SendPing(QuicConnection* connection);
+
+  static void SetLastPacketDestinationAddress(QuicConnection* connection,
+                                              const QuicSocketAddress& address);
+
+  static QuicPathValidator* path_validator(QuicConnection* connection);
+
+  static QuicByteCount BytesSentOnAlternativePath(QuicConnection* connection);
+
+  static QuicByteCount BytesReceivedOnAlternativePath(
+      QuicConnection* connection);
+
+  static bool IsAlternativePath(QuicConnection* connection,
+                                const QuicSocketAddress& self_address,
+                                const QuicSocketAddress& peer_address);
+
+  static bool IsAlternativePathValidated(QuicConnection* connection);
+
+  static QuicByteCount BytesReceivedBeforeAddressValidation(
+      QuicConnection* connection);
 };
 
 }  // namespace test

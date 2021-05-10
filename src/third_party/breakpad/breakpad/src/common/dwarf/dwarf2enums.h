@@ -162,19 +162,25 @@ enum DwarfForm {
 
   // Added in DWARF 5:
   DW_FORM_strx = 0x1a,
+  DW_FORM_addrx = 0x1b,
+  DW_FORM_ref_sup4 = 0x1c,
   DW_FORM_strp_sup = 0x1d,
+  DW_FORM_data16 = 0x1e,
   DW_FORM_line_strp = 0x1f,
 
   // DWARF 4, but value out of order.
   DW_FORM_ref_sig8 = 0x20,
 
   // Added in DWARF 5:
+  DW_FORM_implicit_const = 0x21,
+  DW_FORM_loclistx = 0x22,
+  DW_FORM_rnglistx = 0x23,
+  DW_FORM_ref_sup8 = 0x24,
   DW_FORM_strx1 = 0x25,
   DW_FORM_strx2 = 0x26,
   DW_FORM_strx3 = 0x27,
   DW_FORM_strx4 = 0x28,
 
-  DW_FORM_addrx = 0x1b,
   DW_FORM_addrx1 = 0x29,
   DW_FORM_addrx2 = 0x2a,
   DW_FORM_addrx3 = 0x2b,
@@ -264,6 +270,9 @@ enum DwarfAttribute {
   DW_AT_call_line     = 0x59,
   // DWARF 4
   DW_AT_linkage_name  = 0x6e,
+  // DWARF 5
+  DW_AT_addr_base = 0x73,
+  DW_AT_rnglists_base = 0x74,
   // SGI/MIPS extensions.
   DW_AT_MIPS_fde = 0x2001,
   DW_AT_MIPS_loop_begin = 0x2002,
@@ -314,6 +323,18 @@ enum DwarfAttribute {
   DW_AT_PGI_lbase    = 0x3a00,
   DW_AT_PGI_soffset  = 0x3a01,
   DW_AT_PGI_lstride  = 0x3a02
+};
+
+// .debug_rngslist entry types
+enum DwarfRngListEntry {
+  DW_RLE_end_of_list = 0,
+  DW_RLE_base_addressx = 1,
+  DW_RLE_startx_endx = 2,
+  DW_RLE_startx_length = 3,
+  DW_RLE_offset_pair = 4,
+  DW_RLE_base_address = 5,
+  DW_RLE_start_end = 6,
+  DW_RLE_start_length = 7,
 };
 
 // Line number content type codes (DWARF 5).

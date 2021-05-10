@@ -14,20 +14,30 @@
 
 #include "src/ast/struct_block_decoration.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::StructBlockDecoration);
+
 namespace tint {
 namespace ast {
 
 StructBlockDecoration::StructBlockDecoration(const Source& source)
-    : StructDecoration(source) {}
+    : Base(source) {}
 
 StructBlockDecoration::~StructBlockDecoration() = default;
 
-bool StructBlockDecoration::IsBlock() const {
-  return true;
+void StructBlockDecoration::to_str(const semantic::Info&,
+                                   std::ostream& out,
+                                   size_t indent) const {
+  make_indent(out, indent);
+  out << "block";
 }
 
-void StructBlockDecoration::to_str(std::ostream& out) const {
-  out << "block";
+StructBlockDecoration* StructBlockDecoration::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<StructBlockDecoration>(src);
 }
 
 }  // namespace ast

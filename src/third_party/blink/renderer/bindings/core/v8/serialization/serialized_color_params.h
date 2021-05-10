@@ -53,7 +53,8 @@ enum class SerializedPixelFormat : uint32_t {
   kF16 = 1,
   kRGBA8 = 2,
   kBGRA8 = 3,
-  kLast = kBGRA8,
+  kRGBX8 = 4,
+  kLast = kRGBX8,
 };
 
 // This enumeration specifies the values used to serialize
@@ -71,35 +72,52 @@ enum class SerializedOpacityMode : uint32_t {
   kLast = kOpaque,
 };
 
-class SerializedColorParams {
+class SerializedImageDataSettings {
  public:
-  SerializedColorParams();
-  SerializedColorParams(CanvasColorParams);
-  SerializedColorParams(CanvasColorParams, ImageDataStorageFormat);
-  SerializedColorParams(SerializedColorSpace,
-                        SerializedPixelFormat,
-                        SerializedOpacityMode,
-                        SerializedImageDataStorageFormat);
+  SerializedImageDataSettings(CanvasColorSpace, ImageDataStorageFormat);
+  SerializedImageDataSettings(SerializedColorSpace,
+                              SerializedImageDataStorageFormat);
 
-  CanvasColorParams GetCanvasColorParams() const;
   CanvasColorSpace GetColorSpace() const;
   ImageDataStorageFormat GetStorageFormat() const;
+  ImageDataSettings* GetImageDataSettings() const;
 
-  void SetSerializedColorSpace(SerializedColorSpace);
-  void SetSerializedPixelFormat(SerializedPixelFormat);
-  void SetSerializedOpacityMode(SerializedOpacityMode);
-  void SetSerializedImageDataStorageFormat(SerializedImageDataStorageFormat);
-
-  SerializedColorSpace GetSerializedColorSpace() const;
-  SerializedPixelFormat GetSerializedPixelFormat() const;
-  SerializedImageDataStorageFormat GetSerializedImageDataStorageFormat() const;
-  SerializedOpacityMode GetSerializedOpacityMode() const;
+  SerializedColorSpace GetSerializedColorSpace() const { return color_space_; }
+  SerializedImageDataStorageFormat GetSerializedImageDataStorageFormat() const {
+    return storage_format_;
+  }
 
  private:
-  SerializedColorSpace color_space_;
-  SerializedPixelFormat pixel_format_;
-  SerializedOpacityMode opacity_mode_;
-  SerializedImageDataStorageFormat storage_format_;
+  SerializedColorSpace color_space_ = SerializedColorSpace::kSRGB;
+  SerializedImageDataStorageFormat storage_format_ =
+      SerializedImageDataStorageFormat::kUint8Clamped;
+};
+
+class SerializedImageBitmapSettings {
+ public:
+  SerializedImageBitmapSettings();
+  explicit SerializedImageBitmapSettings(SkImageInfo);
+  SerializedImageBitmapSettings(SerializedColorSpace,
+                                SerializedPixelFormat,
+                                SerializedOpacityMode,
+                                uint32_t is_premultiplied);
+
+  SkImageInfo GetSkImageInfo(uint32_t width, uint32_t height) const;
+
+  SerializedColorSpace GetSerializedColorSpace() const { return color_space_; }
+  SerializedPixelFormat GetSerializedPixelFormat() const {
+    return pixel_format_;
+  }
+  SerializedOpacityMode GetSerializedOpacityMode() const {
+    return opacity_mode_;
+  }
+  uint32_t IsPremultiplied() const { return is_premultiplied_; }
+
+ private:
+  SerializedColorSpace color_space_ = SerializedColorSpace::kSRGB;
+  SerializedPixelFormat pixel_format_ = SerializedPixelFormat::kRGBA8;
+  SerializedOpacityMode opacity_mode_ = SerializedOpacityMode::kNonOpaque;
+  bool is_premultiplied_ = true;
 };
 
 }  // namespace blink

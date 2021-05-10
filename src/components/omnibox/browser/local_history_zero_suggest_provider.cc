@@ -35,14 +35,21 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/gurl.h"
 
 using metrics::OmniboxEventProto;
 
-namespace {
+// Default relevance for the LocalHistoryZeroSuggestProvider query suggestions
+// for authenticated and unauthenticated scenarios respectively. These values
+// are chosen to place local history zero-prefix suggestions below server
+// provided zps when the user is signed in (e.g., pSuggest) and above server
+// provided zps when the user is signed out (e.g., trending).
+// Server provided relevance for zps is expected to range from 550-1400.
+const int kLocalHistoryZPSAuthenticatedRelevance = 500;
+const int kLocalHistoryZPSUnauthenticatedRelevance = 1450;
 
-// Default relevance for the LocalHistoryZeroSuggestProvider query suggestions.
-const int kLocalHistoryZeroSuggestRelevance = 500;
+namespace {
 
 // Extracts the search terms from |url|. Collapses whitespaces, converts them to
 // lowercase and returns them. |template_url_service| must not be null.
@@ -58,17 +65,6 @@ base::string16 GetSearchTermsFromURL(const GURL& url,
 // Whether zero suggest suggestions are allowed in the given context.
 // Invoked early, confirms all the conditions for zero suggestions are met.
 bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
-  // TODO: The default-enabling on Android predated the
-  // omnibox::kNewSearchFeatures flag, so Android is not gated by it. Because
-  // of that, the new kLocalHistoryZeroSuggest flag can't control Android
-  // behavior. Once the kNewSearchFeatures flag is removed,
-  // kLocalHistoryZeroSuggest can control the feature on all plattforms.
-#if defined(OS_ANDROID)  // Default-enabled on Android.
-  return true;
-#else
-  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
-    return false;
-
   // Flag is default-enabled on Android and Desktop.
   if (base::FeatureList::IsEnabled(omnibox::kLocalHistoryZeroSuggest)) {
     return true;
@@ -88,7 +84,6 @@ bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
   }
 
   return false;
-#endif
 }
 
 }  // namespace
@@ -204,6 +199,13 @@ LocalHistoryZeroSuggestProvider::LocalHistoryZeroSuggestProvider(
 
 LocalHistoryZeroSuggestProvider::~LocalHistoryZeroSuggestProvider() {}
 
+bool LocalHistoryZeroSuggestProvider::IsSignedIn() {
+  const auto* identity_manager = client_->GetIdentityManager();
+  return identity_manager ? identity_manager->HasPrimaryAccount(
+                                signin::ConsentLevel::kNotRequired)
+                          : false;
+}
+
 void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
     const AutocompleteInput& input) {
   done_ = true;
@@ -244,7 +246,8 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
   };
   std::sort(results.begin(), results.end(), CompareByFrecency);
 
-  int relevance = kLocalHistoryZeroSuggestRelevance;
+  int relevance = IsSignedIn() ? kLocalHistoryZPSAuthenticatedRelevance
+                               : kLocalHistoryZPSUnauthenticatedRelevance;
   for (const auto& result : results) {
     SearchSuggestionParser::SuggestResult suggestion(
         /*suggestion=*/result.normalized_term,

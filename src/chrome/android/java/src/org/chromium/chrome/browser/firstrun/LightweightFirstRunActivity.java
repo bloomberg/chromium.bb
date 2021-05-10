@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -19,14 +20,12 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.policy.EnterpriseInfo;
-import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.components.browser_ui.widget.LoadingView;
-import org.chromium.components.policy.PolicyService;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -42,9 +41,7 @@ public class LightweightFirstRunActivity
     // @Nullable from members below.
     private static boolean sSupportSkippingTos = true;
 
-    private @Nullable FirstRunAppRestrictionInfo mFirstRunAppRestrictionInfo;
     private @Nullable SkipTosDialogPolicyListener mSkipTosDialogPolicyListener;
-    private @Nullable OneshotSupplierImpl<PolicyService> mPolicyServiceSupplier;
 
     private FirstRunFlowSequencer mFirstRunFlowSequencer;
     private TextView mTosAndPrivacyTextView;
@@ -52,26 +49,28 @@ public class LightweightFirstRunActivity
     private LoadingView mLoadingView;
     private View mLoadingViewContainer;
     private View mLightweightFreButtons;
+    private View mPrivacyDisclaimer;
     private boolean mViewCreated;
     private boolean mNativeInitialized;
     private boolean mTriggerAcceptAfterNativeInit;
 
     private long mViewCreatedTimeMs;
 
+    private Handler mHandler;
+    private Runnable mExitFreRunnable;
+
     public static final String EXTRA_ASSOCIATED_APP_NAME =
             "org.chromium.chrome.browser.firstrun.AssociatedAppName";
 
     public LightweightFirstRunActivity() {
-        if (sSupportSkippingTos) {
-            mFirstRunAppRestrictionInfo = FirstRunAppRestrictionInfo.takeMaybeInitialized();
-            mPolicyServiceSupplier = new OneshotSupplierImpl<>();
+        super();
 
-            mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(
-                    mFirstRunAppRestrictionInfo, mPolicyServiceSupplier,
+        if (sSupportSkippingTos) {
+            mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(getPolicyLoadListener(),
                     EnterpriseInfo.getInstance(), new LightWeightTosDialogMetricsNameProvider());
             // We can ignore the result from #onAvailable here, as views are not created at this
             // point.
-            mSkipTosDialogPolicyListener.onAvailable((b) -> onPolicyLoadListenerAvailable());
+            mSkipTosDialogPolicyListener.onAvailable((ignored) -> onPolicyLoadListenerAvailable());
         }
     }
 
@@ -147,6 +146,8 @@ public class LightweightFirstRunActivity
         mLoadingView = findViewById(R.id.loading_view);
         mLoadingViewContainer = findViewById(R.id.loading_view_container);
 
+        mPrivacyDisclaimer = findViewById(R.id.privacy_disclaimer);
+
         mViewCreated = true;
         mViewCreatedTimeMs = SystemClock.elapsedRealtime();
 
@@ -164,7 +165,7 @@ public class LightweightFirstRunActivity
     }
 
     private void setTosComponentVisibility(boolean isVisible) {
-        int visibility = isVisible ? View.VISIBLE : View.INVISIBLE;
+        int visibility = isVisible ? View.VISIBLE : View.GONE;
         mTosAndPrivacyTextView.setVisibility(visibility);
         mLightweightFreButtons.setVisibility(visibility);
     }
@@ -203,13 +204,6 @@ public class LightweightFirstRunActivity
         assert !mNativeInitialized;
 
         mNativeInitialized = true;
-
-        boolean isPolicyServiceNeeded =
-                mSkipTosDialogPolicyListener != null && mSkipTosDialogPolicyListener.get() == null;
-
-        if (mPolicyServiceSupplier != null && isPolicyServiceNeeded) {
-            mPolicyServiceSupplier.set(PolicyServiceFactory.getGlobalPolicyService());
-        }
         if (mTriggerAcceptAfterNativeInit) acceptTermsOfService();
     }
 
@@ -224,9 +218,11 @@ public class LightweightFirstRunActivity
 
         mLoadingView.destroy();
 
-        // As first run is complete, we no longer need FirstRunAppRestrictionInfo.
-        if (mFirstRunAppRestrictionInfo != null) mFirstRunAppRestrictionInfo.destroy();
         if (mSkipTosDialogPolicyListener != null) mSkipTosDialogPolicyListener.destroy();
+
+        if (mHandler != null && mExitFreRunnable != null) {
+            mHandler.removeCallbacks(mExitFreRunnable);
+        }
     }
 
     private void abortFirstRunExperience() {
@@ -240,9 +236,17 @@ public class LightweightFirstRunActivity
     }
 
     private void skipTosByPolicy() {
-        // TODO(crbug.com/1108564): Show the different UI that has the enterprise disclosure.
-        FirstRunStatus.setEphemeralSkipFirstRun(true);
-        exitLightweightFirstRun();
+        mLoadingViewContainer.setVisibility(View.GONE);
+        mPrivacyDisclaimer.setVisibility(View.VISIBLE);
+        mPrivacyDisclaimer.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+
+        mExitFreRunnable = () -> {
+            FirstRunStatus.setFirstRunSkippedByPolicy(true);
+            exitLightweightFirstRun();
+            mExitFreRunnable = null;
+        };
+        mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+        mHandler.postDelayed(mExitFreRunnable, FirstRunUtils.getSkipTosExitDelayMs());
     }
 
     private void exitLightweightFirstRun() {

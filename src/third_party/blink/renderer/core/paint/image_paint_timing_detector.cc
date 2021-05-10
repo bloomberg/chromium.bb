@@ -84,6 +84,9 @@ void ImagePaintTimingDetector::PopulateTraceValue(
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
   value.SetBoolean("isOOPIF",
                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
+  if (first_image_paint.lcp_rect_info_) {
+    first_image_paint.lcp_rect_info_->OutputToTraceValue(value);
+  }
 }
 
 void ImagePaintTimingDetector::ReportCandidateToTrace(
@@ -151,7 +154,7 @@ void ImagePaintTimingDetector::OnPaintFinished() {
     return;
 
   last_registered_frame_index_ = frame_index_ - 1;
-  RegisterNotifySwapTime();
+  RegisterNotifyPresentationTime();
 }
 
 void ImagePaintTimingDetector::NotifyImageRemoved(
@@ -179,24 +182,25 @@ void ImagePaintTimingDetector::StopRecordEntries() {
   }
 }
 
-void ImagePaintTimingDetector::RegisterNotifySwapTime() {
-  auto callback = WTF::Bind(&ImagePaintTimingDetector::ReportSwapTime,
+void ImagePaintTimingDetector::RegisterNotifyPresentationTime() {
+  auto callback = WTF::Bind(&ImagePaintTimingDetector::ReportPresentationTime,
                             WrapCrossThreadWeakPersistent(this),
                             last_registered_frame_index_);
   callback_manager_->RegisterCallback(std::move(callback));
-  num_pending_swap_callbacks_++;
+  num_pending_presentation_callbacks_++;
 }
 
-void ImagePaintTimingDetector::ReportSwapTime(unsigned last_queued_frame_index,
-                                              base::TimeTicks timestamp) {
+void ImagePaintTimingDetector::ReportPresentationTime(
+    unsigned last_queued_frame_index,
+    base::TimeTicks timestamp) {
   if (!is_recording_)
     return;
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
   records_manager_.AssignPaintTimeToRegisteredQueuedRecords(
       timestamp, last_queued_frame_index);
-  num_pending_swap_callbacks_--;
-  DCHECK_GE(num_pending_swap_callbacks_, 0);
+  num_pending_presentation_callbacks_--;
+  DCHECK_GE(num_pending_presentation_callbacks_, 0);
 }
 
 void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedRecords(
@@ -232,16 +236,21 @@ void ImagePaintTimingDetector::RecordImage(
     return;
   bool is_recorded_visible_image =
       records_manager_.IsRecordedVisibleImage(record_id);
+
   if (int depth = IgnorePaintTimingScope::IgnoreDepth()) {
     // Record the largest loaded image that is hidden due to documentElement
     // being invisible but by no other reason (i.e. IgnoreDepth() needs to be
     // 1).
     if (depth == 1 && IgnorePaintTimingScope::IsDocumentElementInvisible() &&
         !is_recorded_visible_image && cached_image.IsLoaded()) {
-      uint64_t rect_size = ComputeImageRectSize(image_border, intrinsic_size,
-                                                current_paint_chunk_properties,
-                                                object, cached_image);
-      records_manager_.MaybeUpdateLargestIgnoredImage(record_id, rect_size);
+      FloatRect mapped_visual_rect =
+          frame_view_->GetPaintTimingDetector().CalculateVisualRect(
+              image_border, current_paint_chunk_properties);
+      uint64_t rect_size = ComputeImageRectSize(
+          image_border, mapped_visual_rect, intrinsic_size,
+          current_paint_chunk_properties, object, cached_image);
+      records_manager_.MaybeUpdateLargestIgnoredImage(
+          record_id, rect_size, image_border, mapped_visual_rect);
     }
     return;
   }
@@ -269,13 +278,17 @@ void ImagePaintTimingDetector::RecordImage(
   // until the size is known.
   if (image_border.IsEmpty())
     return;
-  uint64_t rect_size = ComputeImageRectSize(image_border, intrinsic_size,
-                                            current_paint_chunk_properties,
-                                            object, cached_image);
+  FloatRect mapped_visual_rect =
+      frame_view_->GetPaintTimingDetector().CalculateVisualRect(
+          image_border, current_paint_chunk_properties);
+  uint64_t rect_size = ComputeImageRectSize(
+      image_border, mapped_visual_rect, intrinsic_size,
+      current_paint_chunk_properties, object, cached_image);
   if (rect_size == 0) {
     records_manager_.RecordInvisible(record_id);
   } else {
-    records_manager_.RecordVisible(record_id, rect_size);
+    records_manager_.RecordVisible(record_id, rect_size, image_border,
+                                   mapped_visual_rect);
     if (cached_image.IsLoaded()) {
       records_manager_.OnImageLoaded(record_id, frame_index_, style_image);
       need_update_timing_at_frame_end_ = true;
@@ -285,13 +298,11 @@ void ImagePaintTimingDetector::RecordImage(
 
 uint64_t ImagePaintTimingDetector::ComputeImageRectSize(
     const IntRect& image_border,
+    const FloatRect& mapped_visual_rect,
     const IntSize& intrinsic_size,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const LayoutObject& object,
     const ImageResourceContent& cached_image) {
-  FloatRect mapped_visual_rect =
-      frame_view_->GetPaintTimingDetector().CalculateVisualRect(
-          image_border, current_paint_chunk_properties);
   if (base::Optional<PaintTimingVisualizer>& visualizer =
           frame_view_->GetPaintTimingDetector().Visualizer()) {
     visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
@@ -383,19 +394,25 @@ void ImageRecordsManager::OnImageLoadedInternal(
 
 void ImageRecordsManager::MaybeUpdateLargestIgnoredImage(
     const RecordId& record_id,
-    const uint64_t& visual_size) {
+    const uint64_t& visual_size,
+    const IntRect& frame_visual_rect,
+    const FloatRect& root_visual_rect) {
   if (visual_size && (!largest_ignored_image_ ||
                       visual_size > largest_ignored_image_->first_size)) {
     largest_ignored_image_ =
-        CreateImageRecord(*record_id.first, record_id.second, visual_size);
+        CreateImageRecord(*record_id.first, record_id.second, visual_size,
+                          frame_visual_rect, root_visual_rect);
     largest_ignored_image_->load_time = base::TimeTicks::Now();
   }
 }
 
 void ImageRecordsManager::RecordVisible(const RecordId& record_id,
-                                        const uint64_t& visual_size) {
+                                        const uint64_t& visual_size,
+                                        const IntRect& frame_visual_rect,
+                                        const FloatRect& root_visual_rect) {
   std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(*record_id.first, record_id.second, visual_size);
+      CreateImageRecord(*record_id.first, record_id.second, visual_size,
+                        frame_visual_rect, root_visual_rect);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_images_.insert(record_id, std::move(record));
 }
@@ -403,12 +420,14 @@ void ImageRecordsManager::RecordVisible(const RecordId& record_id,
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const LayoutObject& object,
     const ImageResourceContent* cached_image,
-    const uint64_t& visual_size) {
+    const uint64_t& visual_size,
+    const IntRect& frame_visual_rect,
+    const FloatRect& root_visual_rect) {
   DCHECK_GT(visual_size, 0u);
   Node* node = object.GetNode();
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
-  std::unique_ptr<ImageRecord> record =
-      std::make_unique<ImageRecord>(node_id, cached_image, visual_size);
+  std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>(
+      node_id, cached_image, visual_size, frame_visual_rect, root_visual_rect);
   return record;
 }
 

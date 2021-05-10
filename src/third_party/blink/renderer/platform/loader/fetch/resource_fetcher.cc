@@ -47,6 +47,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -75,6 +77,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -242,50 +245,6 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
   return new_priority;
 }
 
-ResourceLoadPriority AdjustPriorityWithDeferScriptIntervention(
-    const FetchContext& fetch_context,
-    ResourceLoadPriority priority_so_far,
-    ResourceType type,
-    const ResourceRequestHead& resource_request,
-    FetchParameters::DeferOption defer_option,
-    bool is_link_preload) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kLowerJavaScriptPriorityWhenForceDeferred)) {
-    return priority_so_far;
-  }
-
-  PreviewsState context_previews_state = fetch_context.previews_state();
-
-  if (type != ResourceType::kScript)
-    return priority_so_far;
-
-  // If none of the JavaScript resources are render blocking (due to the
-  // DeferAllScript intervention), then lower their priority so they do not
-  // contend for network resources with higher priority resources that may be
-  // render blocking (e.g., html, css). ResourceLoadPriority::kMedium
-  // corresponds to a network priority of
-  // network::mojom::blink::RequestPriority::kLow which is considered delayable
-  // by the resource scheduler on the browser side.
-  if (RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
-      (context_previews_state & PreviewsTypes::kDeferAllScriptOn)) {
-    return std::min(priority_so_far, ResourceLoadPriority::kMedium);
-  }
-  return priority_so_far;
-}
-
-std::unique_ptr<TracedValue> BeginResourceLoadData(
-    const blink::ResourceRequest& request) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("url", request.Url().GetString());
-  return value;
-}
-
-std::unique_ptr<TracedValue> EndResourceLoadFailData() {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("outcome", "Fail");
-  return value;
-}
-
 std::unique_ptr<TracedValue> ResourcePrioritySetData(
     blink::ResourceLoadPriority priority) {
   auto value = std::make_unique<TracedValue>();
@@ -295,9 +254,9 @@ std::unique_ptr<TracedValue> ResourcePrioritySetData(
 
 // This function corresponds with step 2 substep 7 of
 // https://fetch.spec.whatwg.org/#main-fetch.
-void SetReferrer(ResourceRequest& request,
-                 const FetchClientSettingsObject& fetch_client_settings_object,
-                 UseCounter& use_counter) {
+void SetReferrer(
+    ResourceRequest& request,
+    const FetchClientSettingsObject& fetch_client_settings_object) {
   String referrer_to_use = request.ReferrerString();
   network::mojom::ReferrerPolicy referrer_policy_to_use =
       request.GetReferrerPolicy();
@@ -305,41 +264,11 @@ void SetReferrer(ResourceRequest& request,
   if (referrer_to_use == Referrer::ClientReferrerString())
     referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
 
-  bool used_referrer_policy_from_context = false;
-  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
-    used_referrer_policy_from_context = true;
+  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
     referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
-  }
 
   Referrer generated_referrer = SecurityPolicy::GenerateReferrer(
       referrer_policy_to_use, request.Url(), referrer_to_use);
-
-  // The request's referrer would be different in the absence of <meta
-  // name=referrer> tags with comma-separated-list values exactly when both
-  // 1. the request falls back to its client settings object's policy; and
-  // 2. if we recompute the referrer using the value of the client settings
-  // object's policy, disregarding any policy that came from a meta tag with a
-  // comma-separated value, we obtain a different referrer.
-  if (used_referrer_policy_from_context) {
-    base::Optional<network::mojom::blink::ReferrerPolicy>
-        policy_but_for_meta_tags_with_policy_lists =
-            fetch_client_settings_object
-                .GetReferrerPolicyDisregardingMetaTagsContainingLists();
-
-    bool referrer_would_be_different_absent_meta_tags_with_policy_lists =
-        policy_but_for_meta_tags_with_policy_lists.has_value() &&
-        (generated_referrer.referrer !=
-         SecurityPolicy::GenerateReferrer(
-             *policy_but_for_meta_tags_with_policy_lists, request.Url(),
-             referrer_to_use)
-             .referrer);
-
-    if (referrer_would_be_different_absent_meta_tags_with_policy_lists) {
-      use_counter.CountUse(
-          mojom::WebFeature::
-              kHTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest);
-    }
-  }
 
   request.SetReferrerString(generated_referrer.referrer);
   request.SetReferrerPolicy(generated_referrer.referrer_policy);
@@ -371,13 +300,15 @@ ResourceFetcherInit::ResourceFetcherInit(
     scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
     ResourceFetcher::LoaderFactory* loader_factory,
-    ContextLifecycleNotifier* context_lifecycle_notifier)
+    ContextLifecycleNotifier* context_lifecycle_notifier,
+    BackForwardCacheLoaderHelper* back_forward_cache_loader_helper)
     : properties(&properties),
       context(context),
       freezable_task_runner(std::move(freezable_task_runner)),
       unfreezable_task_runner(std::move(unfreezable_task_runner)),
       loader_factory(loader_factory),
-      context_lifecycle_notifier(context_lifecycle_notifier) {
+      context_lifecycle_notifier(context_lifecycle_notifier),
+      back_forward_cache_loader_helper(back_forward_cache_loader_helper) {
   DCHECK(context);
   DCHECK(this->freezable_task_runner);
   DCHECK(this->unfreezable_task_runner);
@@ -553,10 +484,6 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
                                             defer_option, is_link_preload);
 
-  priority = AdjustPriorityWithDeferScriptIntervention(
-      Context(), priority, type, resource_request, defer_option,
-      is_link_preload);
-
   if (properties_->IsSubframeDeprioritizationEnabled()) {
     if (properties_->IsMainFrame()) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -601,6 +528,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           init.frame_or_worker_scheduler,
           *console_logger_,
           init.loading_behavior_observer)),
+      back_forward_cache_loader_helper_(init.back_forward_cache_loader_helper),
       archive_(init.archive),
       resource_timing_report_timer_(
           freezable_task_runner_,
@@ -645,6 +573,11 @@ ResourceFetcher::IsControlledByServiceWorker() const {
 bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
                                         const FetchParameters& params,
                                         RevalidationPolicy policy) {
+  // MHTML documents should not trigger actual loads (i.e. all resource requests
+  // should be fulfilled by the MHTML archive).
+  if (archive_)
+    return false;
+
   // Defer a font load until it is actually needed unless this is a link
   // preload.
   if (resource->GetType() == ResourceType::kFont && !params.IsLinkPreload())
@@ -664,13 +597,15 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
     Resource* resource,
     const ResourceRequest& request,
-    bool is_static_data) {
+    bool is_static_data,
+    RenderBlockingBehavior render_blocking_behavior) {
   if (IsDetached() || !resource_load_observer_)
     return;
 
   resource_load_observer_->WillSendRequest(
       request.InspectorId(), request, ResourceResponse() /* redirects */,
-      resource->GetType(), resource->Options().initiator_info);
+      resource->GetType(), resource->Options().initiator_info,
+      render_blocking_behavior);
   resource_load_observer_->DidReceiveResponse(
       request.InspectorId(), request, resource->GetResponse(), resource,
       ResourceLoadObserver::ResponseSource::kFromMemoryCache);
@@ -707,7 +642,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   }
 }
 
-Resource* ResourceFetcher::ResourceForStaticData(
+Resource* ResourceFetcher::CreateResourceForStaticData(
     const FetchParameters& params,
     const ResourceFactory& factory) {
   const KURL& url = params.GetResourceRequest().Url();
@@ -801,11 +736,13 @@ void ResourceFetcher::MakePreloadedResourceBlockOnloadIfNeeded(
   }
 }
 
-void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
-                                             RevalidationPolicy policy,
-                                             const FetchParameters& params,
-                                             const ResourceFactory& factory,
-                                             bool is_static_data) const {
+void ResourceFetcher::UpdateMemoryCacheStats(
+    Resource* resource,
+    RevalidationPolicy policy,
+    const FetchParameters& params,
+    const ResourceFactory& factory,
+    bool is_static_data,
+    bool same_top_frame_site_resource_cached) const {
   if (is_static_data)
     return;
 
@@ -813,6 +750,11 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
     DEFINE_RESOURCE_HISTOGRAM("Preload.");
   } else {
     DEFINE_RESOURCE_HISTOGRAM("");
+
+    // Log metrics to evaluate effectiveness of the memory cache if it was
+    // partitioned by the top-frame site.
+    if (same_top_frame_site_resource_cached)
+      DEFINE_RESOURCE_HISTOGRAM("PerTopFrameSite.");
   }
 
   // Aims to count Resource only referenced from MemoryCache (i.e. what would be
@@ -924,6 +866,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   DCHECK_NE(computed_load_priority, ResourceLoadPriority::kUnresolved);
   resource_request.SetPriority(computed_load_priority);
+  resource_request.SetRenderBlockingBehavior(
+      params.GetRenderBlockingBehavior());
 
   if (resource_request.GetCacheMode() == mojom::FetchCacheMode::kDefault) {
     resource_request.SetCacheMode(Context().ResourceRequestCachePolicy(
@@ -947,8 +891,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
                                              http_names::kGET &&
                                          !params.IsStaleRevalidation());
 
-  SetReferrer(resource_request, properties_->GetFetchClientSettingsObject(),
-              GetUseCounter());
+  SetReferrer(resource_request, properties_->GetFetchClientSettingsObject());
 
   resource_request.SetExternalRequestStateFromRequestorAddressSpace(
       properties_->GetFetchClientSettingsObject().GetAddressSpace());
@@ -959,7 +902,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
                           TRACE_ID_LOCAL(resource_request.InspectorId())),
-      "data", ResourcePrioritySetData(resource_request.Priority()));
+      "priority", resource_request.Priority());
 
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
@@ -967,8 +910,9 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
                            reporting_disposition,
                            resource_request.GetRedirectInfo());
 
-  if (Context().CalculateIfAdSubresource(resource_request, resource_type,
-                                         options.initiator_info))
+  if (Context().CalculateIfAdSubresource(resource_request,
+                                         base::nullopt /* alias_url */,
+                                         resource_type, options.initiator_info))
     resource_request.SetIsAdResource();
 
   if (blocked_reason)
@@ -988,7 +932,35 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     resource_request.SetAllowStoredCredentials(false);
   }
 
+  if (resource_request.GetWebBundleTokenParams()) {
+    DCHECK_EQ(resource_request.GetRequestDestination(),
+              network::mojom::RequestDestination::kWebBundle);
+  } else {
+    AttachWebBundleTokenIfNeeded(resource_request);
+  }
+
   return base::nullopt;
+}
+
+bool ResourceFetcher::ShouldBeLoadedFromWebBundle(const KURL& url) const {
+  for (auto& bundle : subresource_web_bundles_) {
+    if (bundle->CanHandleRequest(url))
+      return true;
+  }
+  return false;
+}
+
+void ResourceFetcher::AttachWebBundleTokenIfNeeded(
+    ResourceRequest& resource_request) const {
+  for (auto& bundle : subresource_web_bundles_) {
+    if (!bundle->CanHandleRequest(resource_request.Url()))
+      continue;
+    resource_request.SetWebBundleTokenParams(
+        ResourceRequestHead::WebBundleTokenParams(bundle->GetBundleUrl(),
+                                                  bundle->WebBundleToken(),
+                                                  mojo::NullRemote()));
+    return;
+  }
 }
 
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
@@ -1022,8 +994,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       params.IsFromOriginDirtyStyleSheet());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
-      TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
-      "beginData", BeginResourceLoadData(resource_request));
+      TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)), "url",
+      resource_request.Url());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
@@ -1054,7 +1026,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   bool is_static_data = is_data_url || archive_;
   bool is_stale_revalidation = params.IsStaleRevalidation();
   if (!is_stale_revalidation && is_static_data) {
-    resource = ResourceForStaticData(params, factory);
+    resource = CreateResourceForStaticData(params, factory);
     if (resource) {
       policy =
           DetermineRevalidationPolicy(resource_type, params, *resource, true);
@@ -1068,6 +1040,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     }
   }
 
+  bool same_top_frame_site_resource_cached = false;
+  bool in_cached_resources_map = cached_resources_map_.Contains(
+      MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()));
+
   if (!is_stale_revalidation && !resource) {
     resource = MatchPreload(params, resource_type);
     if (resource) {
@@ -1076,16 +1052,28 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       // found, we may need to make it block the onload event.
       MakePreloadedResourceBlockOnloadIfNeeded(resource, params);
     } else if (IsMainThread()) {
-      resource = GetMemoryCache()->ResourceForURL(
-          params.Url(), GetCacheIdentifier(params.Url()));
+      if (base::FeatureList::IsEnabled(features::kScopeMemoryCachePerContext) &&
+          !in_cached_resources_map) {
+        resource = nullptr;
+      } else {
+        resource = GetMemoryCache()->ResourceForURL(
+            params.Url(), GetCacheIdentifier(params.Url()));
+      }
       if (resource) {
         policy = DetermineRevalidationPolicy(resource_type, params, *resource,
                                              is_static_data);
+        scoped_refptr<const SecurityOrigin> top_frame_origin =
+            resource_request.TopFrameOrigin();
+        if (top_frame_origin) {
+          same_top_frame_site_resource_cached =
+              resource->AppendTopFrameSiteForMetrics(*top_frame_origin);
+        }
       }
     }
   }
 
-  UpdateMemoryCacheStats(resource, policy, params, factory, is_static_data);
+  UpdateMemoryCacheStats(resource, policy, params, factory, is_static_data,
+                         same_top_frame_site_resource_cached);
 
   switch (policy) {
     case RevalidationPolicy::kReload:
@@ -1133,10 +1121,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
   if (policy == RevalidationPolicy::kUse &&
       resource->GetStatus() == ResourceStatus::kCached &&
-      !cached_resources_map_.Contains(
-          MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()))) {
+      !in_cached_resources_map) {
     // Loaded from MemoryCache.
-    DidLoadResourceFromMemoryCache(resource, resource_request, is_static_data);
+    DidLoadResourceFromMemoryCache(resource, resource_request, is_static_data,
+                                   params.GetRenderBlockingBehavior());
   }
   if (!is_stale_revalidation) {
     String resource_url =
@@ -1154,13 +1142,14 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // load-blocking. Lazy loaded images that are eventually fetched, however,
   // should always be added to |non_blocking_loaders_|, as they are never
   // load-blocking.
-  LoadBlockingPolicy load_blocking_policy = LoadBlockingPolicy::kDefault;
+  ImageLoadBlockingPolicy load_blocking_policy =
+      ImageLoadBlockingPolicy::kDefault;
   if (resource->GetType() == ResourceType::kImage) {
     image_resources_.insert(resource);
     not_loaded_image_resources_.insert(resource);
     if (params.GetImageRequestBehavior() ==
         FetchParameters::kNonBlockingImage) {
-      load_blocking_policy = LoadBlockingPolicy::kForceNonBlockingLoad;
+      load_blocking_policy = ImageLoadBlockingPolicy::kForceNonBlockingLoad;
     }
   }
 
@@ -1171,7 +1160,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (ResourceNeedsLoad(resource, params, policy)) {
     if (!StartLoad(resource,
                    std::move(params.MutableResourceRequest().MutableBody()),
-                   load_blocking_policy)) {
+                   load_blocking_policy, params.GetRenderBlockingBehavior())) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               freezable_task_runner_.get());
     }
@@ -1185,7 +1174,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     TRACE_EVENT_NESTABLE_ASYNC_END1(
         TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
         TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
-        "endData", EndResourceLoadFailData());
+        "outcome", "Fail");
   }
 
   return resource;
@@ -1250,22 +1239,10 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
-  for (auto& bundle : subresource_web_bundles_) {
-    if (!bundle->CanHandleRequest(request.Url()))
-      continue;
-    ResourceLoaderOptions new_options(options);
-    new_options.url_loader_factory = base::MakeRefCounted<base::RefCountedData<
-        mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>(
-        bundle->GetURLLoaderFactory());
-    // TODO(yoichio): CreateURLLoader take a ResourceRequestHead instead of
-    // ResourceRequest.
-    return loader_factory_->CreateURLLoader(ResourceRequest(request),
-                                            new_options, freezable_task_runner_,
-                                            unfreezable_task_runner_);
-  }
-  return loader_factory_->CreateURLLoader(ResourceRequest(request), options,
-                                          freezable_task_runner_,
-                                          unfreezable_task_runner_);
+  return loader_factory_->CreateURLLoader(
+      ResourceRequest(request), options, freezable_task_runner_,
+      unfreezable_task_runner_,
+      WebBackForwardCacheLoaderHelper(back_forward_cache_loader_helper_));
 }
 
 std::unique_ptr<WebCodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {
@@ -1287,9 +1264,12 @@ Resource* ResourceFetcher::CreateResourceForLoading(
     const ResourceFactory& factory) {
   const String cache_identifier =
       GetCacheIdentifier(params.GetResourceRequest().Url());
-  DCHECK(!IsMainThread() || params.IsStaleRevalidation() ||
-         !GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
-                                           cache_identifier));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kScopeMemoryCachePerContext)) {
+    DCHECK(!IsMainThread() || params.IsStaleRevalidation() ||
+           !GetMemoryCache()->ResourceForURL(params.GetResourceRequest().Url(),
+                                             cache_identifier));
+  }
 
   RESOURCE_LOADING_DVLOG(1) << "Loading Resource for "
                             << params.GetResourceRequest().Url().ElidedString();
@@ -1426,6 +1406,9 @@ void ResourceFetcher::PrintPreloadWarning(Resource* resource,
     case Resource::MatchStatus::kRequestHeadersDoNotMatch:
       builder.Append("because the request headers do not match.");
       break;
+    case Resource::MatchStatus::kScriptTypeDoesNotMatch:
+      builder.Append("because the script type does not match.");
+      break;
   }
   console_logger_->AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
                                      mojom::ConsoleMessageLevel::kWarning,
@@ -1519,6 +1502,8 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     bool is_static_data) const {
   const ResourceRequest& request = fetch_params.GetResourceRequest();
 
+  Resource* cached_resource_in_fetcher = CachedResource(request.Url());
+
   if (IsDownloadOrStreamRequest(request)) {
     return {RevalidationPolicy::kReload,
             "It is for download or for streaming."};
@@ -1578,7 +1563,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
 
   // If resource was populated from archive or data: url, use it.
   // This doesn't necessarily mean that |resource| was just created by using
-  // ResourceForStaticData().
+  // CreateResourceForStaticData().
   if (is_static_data) {
     return {RevalidationPolicy::kUse, "Use the existing static resource."};
   }
@@ -1640,7 +1625,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // validation. We restrict this only to images from memory cache which are the
   // same as the version in the current document.
   if (type == ResourceType::kImage &&
-      &existing_resource == CachedResource(request.Url())) {
+      &existing_resource == cached_resource_in_fetcher) {
     return {RevalidationPolicy::kUse,
             "Images can be reused without cache validation."};
   }
@@ -1758,6 +1743,8 @@ void ResourceFetcher::ClearContext() {
   resource_load_observer_ = nullptr;
   use_counter_->Detach();
   console_logger_->Detach();
+  if (back_forward_cache_loader_helper_)
+    back_forward_cache_loader_helper_->Detach();
   loader_factory_ = nullptr;
 
   unused_preloads_timer_.Cancel();
@@ -1962,17 +1949,31 @@ void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {
 }
 
 bool ResourceFetcher::StartLoad(Resource* resource) {
+  DCHECK(resource->GetType() == ResourceType::kFont ||
+         resource->GetType() == ResourceType::kImage);
   return StartLoad(resource, ResourceRequestBody(),
-                   LoadBlockingPolicy::kDefault);
+                   ImageLoadBlockingPolicy::kDefault,
+                   RenderBlockingBehavior::kNonBlocking);
 }
 
-bool ResourceFetcher::StartLoad(Resource* resource,
-                                ResourceRequestBody request_body,
-                                LoadBlockingPolicy policy) {
+bool ResourceFetcher::StartLoad(
+    Resource* resource,
+    ResourceRequestBody request_body,
+    ImageLoadBlockingPolicy policy,
+    RenderBlockingBehavior render_blocking_behavior) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
   ResourceLoader* loader = nullptr;
+
+  if (archive_ && resource->Url().ProtocolIsInHTTPFamily()) {
+    // MHTML documents should not trigger HTTP requests.
+    //
+    // TODO(lukasza): https://crbug.com/1151438: Remove the ad-hoc DwoC below,
+    // once the bug is fixed and verified.
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
+  }
 
   {
     // Forbids JavaScript/revalidation until start()
@@ -1995,7 +1996,7 @@ bool ResourceFetcher::StartLoad(Resource* resource,
       ResourceResponse response;
       resource_load_observer_->WillSendRequest(
           resource->InspectorId(), request, response, resource->GetType(),
-          resource->Options().initiator_info);
+          resource->Options().initiator_info, render_blocking_behavior);
     }
 
     using QuotaType = decltype(inflight_keepalive_bytes_);
@@ -2021,7 +2022,7 @@ bool ResourceFetcher::StartLoad(Resource* resource,
     // is handled by MakePreloadedResourceBlockOnloadIfNeeded().
     if (!resource->IsLinkPreload() &&
         resource->IsLoadEventBlockingResourceType() &&
-        policy != LoadBlockingPolicy::kForceNonBlockingLoad) {
+        policy != ImageLoadBlockingPolicy::kForceNonBlockingLoad) {
       loaders_.insert(loader);
     } else {
       non_blocking_loaders_.insert(loader);
@@ -2126,6 +2127,11 @@ String ResourceFetcher::GetCacheIdentifier(const KURL& url) const {
   if (properties_->WebBundlePhysicalUrl().IsValid())
     return properties_->WebBundlePhysicalUrl().GetString();
 
+  // Requests that can be satisfied via `archive_` (i.e. MHTML) or
+  // `subresource_web_bundles_` should not participate in the global caching,
+  // but should use a bundle/mhtml-specific cache.
+  if (archive_)
+    return archive_->GetCacheIdentifier();
   for (auto& bundle : subresource_web_bundles_) {
     if (bundle->CanHandleRequest(url))
       return bundle->GetCacheIdentifier();
@@ -2181,7 +2187,8 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
   }
   DCHECK_EQ(resource->GetStatus(), ResourceStatus::kCached);
   DidLoadResourceFromMemoryCache(resource, params.GetResourceRequest(),
-                                 false /* is_static_data */);
+                                 false /* is_static_data */,
+                                 params.GetRenderBlockingBehavior());
 }
 
 void ResourceFetcher::PrepareForLeakDetection() {
@@ -2270,14 +2277,6 @@ void ResourceFetcher::RemoveSubresourceWebBundle(
   subresource_web_bundles_.erase(&subresource_web_bundle);
 }
 
-void ResourceFetcher::EvictFromBackForwardCache(
-    mojom::RendererEvictionReason reason) {
-  if (!resource_load_observer_)
-    return;
-
-  resource_load_observer_->EvictFromBackForwardCache(reason);
-}
-
 void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(properties_);
@@ -2286,7 +2285,9 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(console_logger_);
   visitor->Trace(loader_factory_);
   visitor->Trace(scheduler_);
+  visitor->Trace(back_forward_cache_loader_helper_);
   visitor->Trace(archive_);
+  visitor->Trace(resource_timing_report_timer_);
   visitor->Trace(loaders_);
   visitor->Trace(non_blocking_loaders_);
   visitor->Trace(cached_resources_map_);

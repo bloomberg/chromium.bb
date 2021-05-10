@@ -16,7 +16,6 @@ devtools_module("perf_ui") {
     "NetworkPriorities.js",
     "OverviewGrid.js",
     "PieChart.ts",
-    "PieChart_bridge.js",
     "TimelineGrid.js",
     "TimelineOverviewPane.js",
   ]
@@ -25,12 +24,14 @@ devtools_module("perf_ui") {
     "../bindings:bundle",
     "../common:bundle",
     "../host:bundle",
+    "../i18n:bundle",
     "../platform:bundle",
     "../sdk:bundle",
     "../source_frame:bundle",
     "../text_editor:bundle",
     "../theme_support:bundle",
     "../third_party/lit-html:bundle",
+    "../timeline_model:bundle",
     "../ui:bundle",
     "../workspace:bundle",
   ]
@@ -49,6 +50,12 @@ devtools_entrypoint("bundle") {
 
 devtools_entrypoint("legacy") {
   entrypoint = "perf_ui-legacy.js"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "perf_ui-meta.ts"
 
   deps = [ ":bundle" ]
 }

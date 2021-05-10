@@ -10,12 +10,12 @@
 #include <string>
 
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_uint128.h"
 
 namespace quic {
 
@@ -382,11 +382,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   void SetDisableConnectionMigration();
   bool DisableConnectionMigration() const;
 
-  // Support handshake done.
-  void SetSupportHandshakeDone();
-  bool HandshakeDoneSupported() const;
-  bool PeerSupportsHandshakeDone() const;
-
   // Key update support.
   void SetKeyUpdateSupportedLocally();
   bool KeyUpdateSupportedForConnection() const;
@@ -396,14 +391,27 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // IPv6 alternate server address.
   void SetIPv6AlternateServerAddressToSend(
       const QuicSocketAddress& alternate_server_address_ipv6);
+  void SetIPv6AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv6,
+      const QuicConnectionId& connection_id,
+      QuicUint128 stateless_reset_token);
   bool HasReceivedIPv6AlternateServerAddress() const;
   const QuicSocketAddress& ReceivedIPv6AlternateServerAddress() const;
 
   // IPv4 alternate server address.
   void SetIPv4AlternateServerAddressToSend(
       const QuicSocketAddress& alternate_server_address_ipv4);
+  void SetIPv4AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv4,
+      const QuicConnectionId& connection_id,
+      QuicUint128 stateless_reset_token);
   bool HasReceivedIPv4AlternateServerAddress() const;
   const QuicSocketAddress& ReceivedIPv4AlternateServerAddress() const;
+
+  // Preferred Address Connection ID and Token.
+  bool HasReceivedPreferredAddressConnectionIdAndToken() const;
+  const std::pair<QuicConnectionId, QuicUint128>&
+  ReceivedPreferredAddressConnectionIdAndToken() const;
 
   // Original destination connection ID.
   void SetOriginalConnectionIdToSend(
@@ -582,10 +590,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Uses the disable_active_migration transport parameter in IETF QUIC.
   QuicFixedUint32 connection_migration_disabled_;
 
-  // Whether handshake done is supported. Only used in T050.
-  // Uses the support_handshake_done transport parameter in IETF QUIC.
-  QuicFixedUint32 support_handshake_done_;
-
   // Whether key update is supported by the peer. Uses key_update_not_yet
   // supported transport parameter in IETF QUIC.
   bool key_update_supported_remotely_;
@@ -598,6 +602,10 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Note that when QUIC_CRYPTO is in use, only one of the addresses is sent.
   QuicFixedSocketAddress alternate_server_address_ipv6_;
   QuicFixedSocketAddress alternate_server_address_ipv4_;
+  // Connection Id data to send from the server or receive at the client as part
+  // of the preferred address transport parameter.
+  absl::optional<std::pair<QuicConnectionId, QuicUint128>>
+      preferred_address_connection_id_and_token_;
 
   // Stateless reset token used in IETF public reset packet.
   // Uses the stateless_reset_token transport parameter in IETF QUIC.

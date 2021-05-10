@@ -10,7 +10,6 @@
 #include "src/core/SkMatrixProvider.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "tools/Resources.h"
@@ -39,7 +38,7 @@ public:
     bool onIsEqual(const GrFragmentProcessor& that) const override { return this == &that; }
 
 private:
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     float fXOffset;
     float fYOffset;
@@ -58,13 +57,12 @@ class GLSLSampleMatrixVariableEffect : public GrGLSLFragmentProcessor {
                                                                       "%g, %g, 1)",
                                                                       smve.fXOffset,
                                                                       smve.fYOffset).c_str());
-        fragBuilder->codeAppendf("%s = (%s + %s) / 2;\n", args.fOutputColor, sample1.c_str(),
-                                 sample2.c_str());
+        fragBuilder->codeAppendf("return (%s + %s) / 2;\n", sample1.c_str(), sample2.c_str());
     }
 };
 
-GrGLSLFragmentProcessor* SampleMatrixVariableEffect::onCreateGLSLInstance() const {
-    return new GLSLSampleMatrixVariableEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> SampleMatrixVariableEffect::onMakeProgramImpl() const {
+    return std::make_unique<GLSLSampleMatrixVariableEffect>();
 }
 
 DEF_SIMPLE_GPU_GM(sample_matrix_variable, ctx, rtCtx, canvas, 512, 256) {
@@ -98,7 +96,8 @@ DEF_SIMPLE_GPU_GM(sample_matrix_variable, ctx, rtCtx, canvas, 512, 256) {
         SkMatrix matrix;
         SkSimpleMatrixProvider matrixProvider(matrix);
         GrColorInfo colorInfo;
-        GrFPArgs args(ctx, matrixProvider, kHigh_SkFilterQuality, &colorInfo);
+        GrFPArgs args(ctx, matrixProvider, SkSamplingOptions(SkCubicResampler::Mitchell()),
+                      &colorInfo);
         std::unique_ptr<GrFragmentProcessor> gradientFP = as_SB(shader)->asFragmentProcessor(args);
         draw(std::move(gradientFP), -128, 256, 256, 0);
     }

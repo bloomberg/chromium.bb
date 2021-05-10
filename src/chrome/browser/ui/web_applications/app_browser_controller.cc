@@ -6,8 +6,12 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/installable/installable_manager.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
+// TODO(b/174811949): Hide behind ChromeOS build flag.
+#include "chrome/browser/chromeos/web_applications/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
@@ -30,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -51,9 +56,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
-#include "chrome/browser/ui/app_list/icon_standardizer.h"
 #endif
 
 namespace {
@@ -101,7 +106,10 @@ constexpr gfx::Rect TERMINAL_DEFAULT_BOUNDS(gfx::Point(64, 64),
 constexpr gfx::Size TERMINAL_SETTINGS_DEFAULT_SIZE(768, 512);
 constexpr gfx::Size HELP_DEFAULT_SIZE(960, 600);
 // The height of camera app window includes the top bar height which is 32.
-constexpr gfx::Size CAMERA_WINDOW_DEFAULT_SIZE(864, 486 + 32);
+constexpr gfx::Size CAMERA_WINDOW_DEFAULT_SIZE(kChromeCameraAppDefaultWidth,
+                                               kChromeCameraAppDefaultHeight +
+                                                   32);
+constexpr gfx::Size ECHE_DEFAULT_SIZE(480, 640);
 }  // namespace
 
 // static
@@ -138,14 +146,14 @@ AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
 }
 
 // static
-bool AppBrowserController::IsForWebAppBrowser(const Browser* browser) {
+bool AppBrowserController::IsWebApp(const Browser* browser) {
   return browser && browser->app_controller();
 }
 
 // static
-bool AppBrowserController::IsForWebAppBrowser(const Browser* browser,
-                                              const AppId& app_id) {
-  return IsForWebAppBrowser(browser) && browser->app_controller()->HasAppId() &&
+bool AppBrowserController::IsForWebApp(const Browser* browser,
+                                       const AppId& app_id) {
+  return IsWebApp(browser) && browser->app_controller()->HasAppId() &&
          browser->app_controller()->GetAppId() == app_id;
 }
 
@@ -179,6 +187,7 @@ AppBrowserController::AppBrowserController(
       // capability.
       has_tab_strip_(
           system_app_type_ == SystemAppType::TERMINAL ||
+          system_app_type_ == SystemAppType::CROSH ||
           (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
            HasAppId() &&
            WebAppProvider::Get(browser->profile())
@@ -238,7 +247,8 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
       // Some origins are (such as localhost) are considered secure even when
       // served over non-secure schemes. However, in order to hide the toolbar,
       // the 'considered secure' origin must also be in the app's scope.
-      return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
+      return out_of_scope ||
+             !webapps::InstallableManager::IsOriginConsideredSecure(url);
     }
 
     if (is_for_system_web_app()) {
@@ -264,7 +274,7 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
   // Insecure external web sites show the toolbar.
   // Note: IsContentSecure is false until a navigation is committed.
   if (!last_committed_url.is_empty() && !is_internal_start_url_scheme &&
-      !InstallableManager::IsContentSecure(web_contents)) {
+      !webapps::InstallableManager::IsContentSecure(web_contents)) {
     return true;
   }
 
@@ -282,7 +292,9 @@ bool AppBrowserController::HasTitlebarMenuButton() const {
 
 bool AppBrowserController::HasTitlebarAppOriginText() const {
   // Do not show origin text for System Apps.
-  return !is_for_system_web_app();
+  bool hide = is_for_system_web_app() ||
+              base::FeatureList::IsEnabled(features::kHideWebAppOriginText);
+  return !hide;
 }
 
 bool AppBrowserController::HasTitlebarContentSettings() const {
@@ -301,7 +313,7 @@ std::vector<PageActionIconType> AppBrowserController::GetTitleBarPageActions()
   types_enabled.push_back(PageActionIconType::kManagePasswords);
   types_enabled.push_back(PageActionIconType::kTranslate);
   types_enabled.push_back(PageActionIconType::kZoom);
-  types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
+  types_enabled.push_back(PageActionIconType::kFileSystemAccess);
   types_enabled.push_back(PageActionIconType::kCookieControls);
   types_enabled.push_back(PageActionIconType::kLocalCardMigration);
   types_enabled.push_back(PageActionIconType::kSaveCard);
@@ -324,6 +336,14 @@ AppBrowserController::GetTabMenuModelFactory() const {
 
 bool AppBrowserController::IsWindowControlsOverlayEnabled() const {
   return false;
+}
+
+base::string16 AppBrowserController::GetLaunchFlashText() const {
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsFlashAppNameInsteadOfOrigin)) {
+    return GetAppShortName();
+  }
+  return GetFormattedUrlOrigin();
 }
 
 bool AppBrowserController::IsHostedApp() const {
@@ -371,13 +391,18 @@ gfx::Rect AppBrowserController::GetDefaultBounds() const {
         display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
     bounds.ClampToCenteredSize(CAMERA_WINDOW_DEFAULT_SIZE);
     return bounds;
+  } else if (system_app_type_ == SystemAppType::ECHE) {
+    gfx::Rect bounds =
+        display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+    bounds.ClampToCenteredSize(ECHE_DEFAULT_SIZE);
+    return bounds;
   }
   return gfx::Rect();
 }
 
 bool AppBrowserController::ShouldShowTabContextMenuShortcut(
     int command_id) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1061822): Generalize ShouldShowTabContextMenuShortcut as
   // a SystemWebApp capability.
   if (system_app_type_ == SystemAppType::TERMINAL &&
@@ -447,7 +472,22 @@ base::string16 AppBrowserController::GetTitle() const {
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
-  return entry ? entry->GetTitle() : base::string16();
+  base::string16 raw_title = entry ? entry->GetTitle() : base::string16();
+
+  if (!base::FeatureList::IsEnabled(features::kPrefixWebAppWindowsWithAppName))
+    return raw_title;
+
+  base::string16 app_name =
+      base::ASCIIToUTF16(WebAppProvider::Get(browser()->profile())
+                             ->registrar()
+                             .GetAppShortName(GetAppId()));
+  if (base::StartsWith(raw_title, app_name)) {
+    return raw_title;
+  } else if (raw_title.empty()) {
+    return app_name;
+  } else {
+    return base::StrCat({app_name, base::ASCIIToUTF16(" - "), raw_title});
+  }
 }
 
 void AppBrowserController::OnTabStripModelChanged(
@@ -508,9 +548,9 @@ void AppBrowserController::OnTabRemoved(content::WebContents* contents) {}
 gfx::ImageSkia AppBrowserController::GetFallbackAppIcon() const {
   gfx::ImageSkia page_icon = browser()->GetCurrentPageIcon().AsImageSkia();
   if (!page_icon.isNull()) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-      return app_list::CreateStandardIconImage(page_icon);
+      return apps::CreateStandardIconImage(page_icon);
 #endif
     return page_icon;
   }

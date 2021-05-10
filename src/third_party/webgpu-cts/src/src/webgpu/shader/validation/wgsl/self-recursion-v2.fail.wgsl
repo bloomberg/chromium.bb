@@ -1,4 +1,4 @@
-# v-0004 - Self recursion is dis-allowed and `c` calls itself.
+// v-0004 - Self recursion is dis-allowed and `c` calls itself.
 
 fn d() -> i32 {
   return 2;

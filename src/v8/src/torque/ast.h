@@ -931,6 +931,8 @@ struct ClassFieldExpression {
   bool weak;
   bool const_qualified;
   bool generate_verify;
+  FieldSynchronization read_synchronization;
+  FieldSynchronization write_synchronization;
 };
 
 struct LabelAndTypes {

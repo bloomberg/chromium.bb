@@ -29,20 +29,26 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
 import {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventDescriptors, Events, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult} from './InspectorFrontendHostAPI.js';  // eslint-disable-line no-unused-vars
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
+export const UIStrings = {
+  /**
+  *@description Document title in Inspector Frontend Host of the DevTools window
+  *@example {example.com} PH1
+  */
+  devtoolsS: 'DevTools - {PH1}',
+};
+const str_ = i18n.i18n.registerUIStrings('host/InspectorFrontendHost.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {InspectorFrontendHostAPI}
- * @unrestricted
  */
 export class InspectorFrontendHostStub {
-  /**
-   * @suppressGlobalPropertiesCheck
-   */
   constructor() {
     /**
      * @param {!KeyboardEvent} event
@@ -51,7 +57,7 @@ export class InspectorFrontendHostStub {
     function stopEventPropagation(event) {
       // Let browser handle Ctrl+/Ctrl- shortcuts in hosted mode.
       const zoomModifier = this.platform() === 'mac' ? event.metaKey : event.ctrlKey;
-      if (zoomModifier && (event.keyCode === 187 || event.keyCode === 189)) {
+      if (zoomModifier && (event.key === '+' || event.key === '-')) {
         event.stopPropagation();
       }
     }
@@ -74,12 +80,11 @@ export class InspectorFrontendHostStub {
    * @return {string}
    */
   platform() {
-    let match = navigator.userAgent.match(/Windows NT/);
-    if (match) {
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes('Windows NT')) {
       return 'windows';
     }
-    match = navigator.userAgent.match(/Mac OS X/);
-    if (match) {
+    if (userAgent.includes('Mac OS X')) {
       return 'mac';
     }
     return 'linux';
@@ -157,33 +162,20 @@ export class InspectorFrontendHostStub {
   /**
    * @override
    * @param {string} url
-   * @suppressGlobalPropertiesCheck
    */
   inspectedURLChanged(url) {
-    document.title = Common.UIString.UIString('DevTools - %s', url.replace(/^https?:\/\//, ''));
+    document.title = i18nString(UIStrings.devtoolsS, {PH1: url.replace(/^https?:\/\//, '')});
   }
 
   /**
    * @override
    * @param {?(string|undefined)} text
-   * @suppressGlobalPropertiesCheck
    */
   copyText(text) {
     if (text === undefined || text === null) {
       return;
     }
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-    } else if (document.queryCommandSupported('copy')) {
-      const input = document.createElement('input');
-      input.value = text;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand('copy');
-      document.body.removeChild(input);
-    } else {
-      Common.Console.Console.instance().error('Clipboard is not enabled in hosted mode. Please inspect using chrome://inspect');
-    }
+    navigator.clipboard.writeText(text);
   }
 
   /**
@@ -245,7 +237,7 @@ export class InspectorFrontendHostStub {
       try {
         const trimmed = Platform.StringUtilities.trimURL(url);
         fileName = Platform.StringUtilities.removeURLFragment(trimmed);
-      } catch (err) {
+      } catch (error) {
         // If url is not a valid URL, it is probably a filename.
         fileName = url;
       }
@@ -566,30 +558,25 @@ export class InspectorFrontendHostStub {
 // @ts-ignore Global injected by devtools-compatibility.js
 export let InspectorFrontendHostInstance = window.InspectorFrontendHost;
 
-/**
- * @unrestricted
- */
 class InspectorFrontendAPIImpl {
   constructor() {
-    this._debugFrontend = (!!Root.Runtime.Runtime.queryParam('debugFrontend')) ||
+    this._debugFrontend = (Boolean(Root.Runtime.Runtime.queryParam('debugFrontend'))) ||
         // @ts-ignore Compatibility hacks
         (window['InspectorTest'] && window['InspectorTest']['debugTest']);
 
-    const descriptors = EventDescriptors;
-    for (let i = 0; i < descriptors.length; ++i) {
+    for (const descriptor of EventDescriptors) {
       // @ts-ignore Dispatcher magic
-      this[descriptors[i][1]] = this._dispatch.bind(this, descriptors[i][0], descriptors[i][2], descriptors[i][3]);
+      this[descriptor[1]] = this._dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
     }
   }
 
   /**
    * @param {symbol} name
-   * @param {!Array.<string>} signature
+   * @param {!Array<string>} signature
    * @param {boolean} runOnceLoaded
+   * @param {Array<string>} params
    */
-  _dispatch(name, signature, runOnceLoaded) {
-    const params = Array.prototype.slice.call(arguments, 3);
-
+  _dispatch(name, signature, runOnceLoaded, ...params) {
     if (this._debugFrontend) {
       setTimeout(() => innerDispatch(), 0);
     } else {
@@ -601,8 +588,8 @@ class InspectorFrontendAPIImpl {
       if (signature.length < 2) {
         try {
           InspectorFrontendHostInstance.events.dispatchEventToListeners(name, params[0]);
-        } catch (e) {
-          console.error(e + ' ' + e.stack);
+        } catch (error) {
+          console.error(error + ' ' + error.stack);
         }
         return;
       }
@@ -613,8 +600,8 @@ class InspectorFrontendAPIImpl {
       }
       try {
         InspectorFrontendHostInstance.events.dispatchEventToListeners(name, data);
-      } catch (e) {
-        console.error(e + ' ' + e.stack);
+      } catch (error) {
+        console.error(error + ' ' + error.stack);
       }
     }
   }
@@ -648,7 +635,7 @@ class InspectorFrontendAPIImpl {
         }
 
         console.error(
-            'Incompatible embedder: method Host.InspectorFrontendHost.' + name + ' is missing. Using stub instead.');
+            `Incompatible embedder: method Host.InspectorFrontendHost.${name} is missing. Using stub instead.`);
         // @ts-ignore Global injected by devtools-compatibility.js
         InspectorFrontendHostInstance[name] = stub;
       }
@@ -659,7 +646,7 @@ class InspectorFrontendAPIImpl {
   }
 
   // FIXME: This file is included into both apps, since the devtools_app needs the InspectorFrontendHostAPI only,
-  // so the host instance should not initialized there.
+  // so the host instance should not be initialized there.
   initializeInspectorFrontendHost();
   // @ts-ignore Global injected by devtools-compatibility.js
   window.InspectorFrontendAPI = new InspectorFrontendAPIImpl();

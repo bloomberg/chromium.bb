@@ -25,6 +25,7 @@ class ClipboardOzone : public Clipboard {
 
   // Clipboard overrides:
   void OnPreShutdown() override;
+  DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
@@ -61,6 +62,9 @@ class ClipboardOzone : public Clipboard {
                       const base::string16& type,
                       const DataTransferEndpoint* data_dst,
                       base::string16* result) const override;
+  void ReadFilenames(ClipboardBuffer buffer,
+                     const DataTransferEndpoint* data_dst,
+                     std::vector<ui::FileInfo>* result) const override;
   void ReadBookmark(const DataTransferEndpoint* data_dst,
                     base::string16* title,
                     std::string* url) const override;
@@ -83,6 +87,7 @@ class ClipboardOzone : public Clipboard {
                  size_t url_len) override;
   void WriteSvg(const char* markup_data, size_t markup_len) override;
   void WriteRTF(const char* rtf_data, size_t data_len) override;
+  void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
   void WriteBookmark(const char* title_data,
                      size_t title_len,
                      const char* url_data,
@@ -98,6 +103,8 @@ class ClipboardOzone : public Clipboard {
   class AsyncClipboardOzone;
 
   std::unique_ptr<AsyncClipboardOzone> async_clipboard_ozone_;
+  base::flat_map<ClipboardBuffer, std::unique_ptr<DataTransferEndpoint>>
+      data_src_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardOzone);
 };

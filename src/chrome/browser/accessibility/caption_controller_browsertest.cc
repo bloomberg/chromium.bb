@@ -5,8 +5,11 @@
 #include "chrome/browser/accessibility/caption_controller.h"
 
 #include "base/files/file_path.h"
+#include "base/ranges/ranges.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/caption_controller_factory.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/soda/pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
@@ -53,13 +57,22 @@ class CaptionControllerTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest overrides:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(media::kLiveCaption);
+    scoped_feature_list_.InitWithFeatures(
+        {media::kLiveCaption, media::kUseSodaForLiveCaption}, {});
     InProcessBrowserTest::SetUp();
   }
 
   void SetLiveCaptionEnabled(bool enabled) {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
                                                  enabled);
+    if (enabled)
+      speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
+  }
+
+  void SetLiveCaptionEnabledForProfile(bool enabled, Profile* profile) {
+    profile->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, enabled);
+    if (enabled)
+      speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
   }
 
   CaptionController* GetController() {
@@ -97,7 +110,7 @@ class CaptionControllerTest : public InProcessBrowserTest {
                                                 Profile* profile) {
     return GetControllerForProfile(profile)->DispatchTranscription(
         browser->tab_strip_model()->GetActiveWebContents(),
-        chrome::mojom::TranscriptionResult::New(text, true /* is_final */));
+        chrome::mojom::TranscriptionResult::New(text, false /* is_final */));
   }
 
   void OnError() { OnErrorOnBrowser(browser()); }
@@ -199,6 +212,17 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_EQ(0, NumBubbleControllers());
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnSodaInstalled) {
+  EXPECT_EQ(0, NumBubbleControllers());
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
+                                               true);
+  EXPECT_EQ(0, NumBubbleControllers());
+
+  // The UI is only created after SODA is installed.
+  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
+  EXPECT_EQ(1, NumBubbleControllers());
+}
+
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserAdded) {
   EXPECT_EQ(0, NumBubbleControllers());
 
@@ -242,12 +266,13 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserAdded_Incognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved) {
+  Profile* profile = browser()->profile();
   CaptionController* controller = GetController();
   Browser* browser1 = browser();
   // Add 3 browsers.
-  Browser* browser2 = CreateBrowser(browser()->profile());
-  Browser* browser3 = CreateBrowser(browser()->profile());
-  Browser* browser4 = CreateBrowser(browser()->profile());
+  Browser* browser2 = CreateBrowser(profile);
+  Browser* browser3 = CreateBrowser(profile);
+  Browser* browser4 = CreateBrowser(profile);
 
   SetLiveCaptionEnabled(true);
   EXPECT_EQ(4, NumBubbleControllers());
@@ -289,10 +314,22 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved) {
   chrome::CloseAllBrowsers();
   ui_test_utils::WaitForBrowserToClose();
   ui_test_utils::WaitForBrowserToClose();
-  EXPECT_EQ(nullptr,
-            controller->GetCaptionBubbleControllerForBrowser(browser2));
-  EXPECT_EQ(nullptr,
-            controller->GetCaptionBubbleControllerForBrowser(browser1));
+
+  if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
+    // With DestroyProfileOnBrowserClose, the Profile* is deleted entirely.
+    //
+    // TODO(crbug.com/88586): Remove the other branch once
+    // DestroyProfileOnBrowserClose becomes the default.
+    std::vector<Profile*> loaded_profiles =
+        g_browser_process->profile_manager()->GetLoadedProfiles();
+    auto it = base::ranges::find(loaded_profiles, profile);
+    EXPECT_EQ(loaded_profiles.end(), it);
+  } else {
+    EXPECT_EQ(nullptr,
+              controller->GetCaptionBubbleControllerForBrowser(browser2));
+    EXPECT_EQ(nullptr,
+              controller->GetCaptionBubbleControllerForBrowser(browser1));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved_Incognito) {
@@ -473,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError_MultipleBrowsers) {
 #endif
 }
 
-#if !defined(OS_CHROMEOS)  // No multi-profile on ChromeOS.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)  // No multi-profile on ChromeOS.
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
                        LiveCaptionEnabledChanged_MultipleProfiles) {
@@ -491,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_EQ(0, NumBubbleControllersForProfile(profile2));
 
   // Enable live caption on profile2.
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetLiveCaptionEnabledForProfile(true, profile2);
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile1));
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile2));
 
@@ -501,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile2));
 
   // Disable live caption on profile2.
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, false);
+  SetLiveCaptionEnabledForProfile(false, profile2);
   EXPECT_EQ(0, NumBubbleControllersForProfile(profile1));
   EXPECT_EQ(0, NumBubbleControllersForProfile(profile2));
 }
@@ -512,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserAdded_MultipleProfiles) {
 
   // Enable live caption on both profiles.
   SetLiveCaptionEnabled(true);
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetLiveCaptionEnabledForProfile(true, profile2);
 
   // Add a new browser to profile1. Test that there are caption bubble
   // controllers on all of the existing browsers.
@@ -556,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
 
   // Enable live caption on both profiles.
   SetLiveCaptionEnabled(true);
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetLiveCaptionEnabledForProfile(true, profile2);
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile1));
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile2));
 
@@ -595,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
 
   // Enable live caption on both profiles.
   SetLiveCaptionEnabled(true);
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetLiveCaptionEnabledForProfile(true, profile2);
 
   // Dispatch transcription routes the transcription to the right browser on the
   // right profile.
@@ -655,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError_MultipleProfiles) {
 
   // Enable live caption on both profiles.
   SetLiveCaptionEnabled(true);
-  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+  SetLiveCaptionEnabledForProfile(true, profile2);
 
   // OnError routes to the right browser on the right profile.
   OnErrorOnBrowserForProfile(browser1, profile1);
@@ -688,6 +725,6 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnError_MultipleProfiles) {
 #endif
 }
 
-#endif  // !defined (OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace captions

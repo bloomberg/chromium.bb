@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package cast.media;
 
+import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -110,17 +110,10 @@ message AudioDecoderBuffer {
   // Indicates if this is a special frame that indicates the end of the stream.
   // If true, functions to access the frame content cannot be called.
   bool end_of_stream = 3;
-}
 
-// Info on pipeline latency.
-message RenderingDelay {
-  // The amount of data in pipeline (in microseconds) that has not been rendered
-  // yet.
-  int64 delay_micros = 1;
-
-  // Capture time (in microseconds) with respect to the system clock (must be
-  // CLOCK_MONOTONIC_RAW) at which the delay measurement was taken.
-  google.protobuf.Timestamp capture_time = 2;
+  // Unique identifier.  This field should be greater than equal to 0 and
+  // incremented by one for each PushBuffeRequest.
+  int64 id = 4;
 }
 
 message MediaTime {
@@ -130,9 +123,18 @@ message MediaTime {
   // The end of stream has been rendered.
   bool end_of_stream = 2;
 
-  // Capture time (in microseconds) with respect to the system clock (must be
-  // CLOCK_MONOTONIC_RAW) at which the delay measurement was taken.
-  google.protobuf.Timestamp capture_time = 3;
+  // Capture time with respect to CLOCK_MONOTONIC_RAW at which the delay
+  // measurement was taken.
+  google.protobuf.Duration capture_time = 3;
+}
+
+message TimestampInfo {
+  // System timestamp with respect to CLOCK_MONOTONIC_RAW at which the
+  // corresponding buffer is expected to be rendered.
+  google.protobuf.Duration system_timestamp = 1;
+
+  // AudioDecoderBuffer.id associated with the |system_timestamp|.
+  int64 buffer_id = 2;
 }
 
 message InitializeRequest {
@@ -143,16 +145,35 @@ message InitializeRequest {
   CastAudioDecoderMode mode = 2;
 }
 
+message GetMinimumBufferingDelayResponse {
+  // The minimum buffering delay in microseconds.
+  int64 delay_micros = 1;
+}
+
 message StartRequest {
-  // The start playback timestamp in microseconds.
+  // The start presentation timestamp in microseconds.
   int64 pts_micros = 1;
+
+  // Timestamp information associated with the request.
+  // This field is optional and only used when this service is configured
+  // for CAST_AUDIO_DECODER_MODE_MULTIROOM_ONLY.
+  TimestampInfo timestamp_info = 2;
 }
 
 message StopRequest {}
 
 message PauseRequest {}
 
-message ResumeRequest {}
+message ResumeRequest {
+  // Timestamp information associated with the request.
+  // This field is optional and only used when this service is configured
+  // for CAST_AUDIO_DECODER_MODE_MULTIROOM_ONLY.
+  TimestampInfo resume_timestamp_info = 1;
+}
+
+message TimestampUpdateRequest {
+  TimestampInfo timestamp_info = 1;
+}
 
 message StateChangeRequest {
   oneof request {
@@ -160,6 +181,7 @@ message StateChangeRequest {
     StopRequest stop = 2;
     PauseRequest pause = 3;
     ResumeRequest resume = 4;
+    TimestampUpdateRequest timestamp_update = 5;
   }
 }
 
@@ -171,10 +193,10 @@ message StateChangeResponse {
 message PushBufferRequest {
   AudioDecoderBuffer buffer = 1;
 
-  // Audio configuration for this buffer and all subsequent buffers.  This
+  // Audio configuration for this buffer and all subsequent buffers. This
   // field must be populated for the first request or if there is an audio
   // configuration change.
-  optional AudioConfiguration audio_config = 2;
+  AudioConfiguration audio_config = 2;
 }
 
 message PushBufferResponse {
@@ -206,17 +228,25 @@ message GetMediaTimeResponse {
 //
 // Note that the received ordering between different RPC calls is not
 // guaranteed to match the sent order.
-service CastAudioDecoder {
+service CastRuntimeAudioChannel {
   // Initializes the service and places the pipeline into the 'Stopped' state.
   // This must be the first call received by the server, and no other calls
   // may be sent prior to receiving this call's response.
   rpc Initialize(InitializeRequest) returns (google.protobuf.Empty);
 
+  // Returns the minimum buffering delay (min_delay) required by Cast.  This is
+  // a constant value and only needs to be queried once for each service.
+  // During a StartRequest or ResumeRequest, the system timestamp must be
+  // greater than this delay and the current time in order for the buffer to be
+  // successfully rendered on remote devices.
+  rpc GetMinimumBufferDelay(google.protobuf.Empty)
+      returns (GetMinimumBufferingDelayResponse);
+
   // Update the pipeline state.
   //
   // StartRequest:
-  //   Places pipeline into 'Playing' state. Playback will start at given time
-  //   once buffers are pushed.
+  //   Places pipeline into 'Playing' state. Playback will start at the
+  //   specified buffer and system timestamp.
   //
   //   May only be called in the 'Stopped' state, and following this call the
   //   state machine will be in the 'Playing' state.
@@ -229,16 +259,36 @@ service CastAudioDecoder {
   //   this call the state machine will be in the 'Stopped' state.
   //
   // PauseRequest
-  //   Pauses media playback
+  //   Pauses media playback.
   //
   //   May only be called in the 'Playing' state, and following this call the
   //   state machine will be in the 'Paused' state.
   //
   // ResumeRequest
-  //   Resumes media playback
+  //   Resumes media playback at the specified buffer and system timestamp.
   //
   //   May only be called in the 'Paused' state, and following this call the
   //   state machine will be in the 'Playing'' state.
+  //
+  // TimestampUpdateRequest
+  //   Sends a timestamp update for a specified buffer for audio
+  //   synchronization. This should be called when operating in
+  //   CAST_AUDIO_DECODER_MODE_MULTIROOM_ONLY when the runtime has detected a
+  //   discrepancy in the system clock or pipeline delay from the original
+  //   playback schedule.  See example below:
+  //
+  //   Assume all buffers have duration of 100us.
+  //
+  //   StartRequest(id=1, system_timestamp=0);
+  //   -> Cast expects id=1 to play at 0, id=2 at 100us, id=3 at 200 us...
+  //
+  //   TimestampUpdateRequest(id=4, system_timestamp=405us);
+  //   -> Cast expects id=4 to play at 405, id=5 at 505us, id=6 at 605 us...
+  //
+  //   May be called from any state.
+  //
+  // A state transition may only occur after a successful PushBuffer()
+  // call has been made with a valid configuration.
   rpc StateChange(StateChangeRequest) returns (StateChangeResponse);
 
   // Sets the volume multiplier for this audio stream.

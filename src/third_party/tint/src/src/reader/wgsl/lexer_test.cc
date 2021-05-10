@@ -26,15 +26,15 @@ namespace {
 using LexerTest = testing::Test;
 
 TEST_F(LexerTest, Empty) {
-  Source::File file("test.wgsl", "");
-  Lexer l(&file);
+  Source::FileContent content("");
+  Lexer l("test.wgsl", &content);
   auto t = l.next();
   EXPECT_TRUE(t.IsEof());
 }
 
 TEST_F(LexerTest, Skips_Whitespace) {
-  Source::File file("test.wgsl", "\t\r\n\t    ident\t\n\t  \r ");
-  Lexer l(&file);
+  Source::FileContent content("\t\r\n\t    ident\t\n\t  \r ");
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsIdentifier());
@@ -49,11 +49,11 @@ TEST_F(LexerTest, Skips_Whitespace) {
 }
 
 TEST_F(LexerTest, Skips_Comments) {
-  Source::File file("test.wgsl", R"(#starts with comment
-ident1 #ends with comment
-# blank line
+  Source::FileContent content(R"(//starts with comment
+ident1 //ends with comment
+// blank line
  ident2)");
-  Lexer l(&file);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsIdentifier());
@@ -75,59 +75,6 @@ ident1 #ends with comment
   EXPECT_TRUE(t.IsEof());
 }
 
-TEST_F(LexerTest, StringTest_Parse) {
-  Source::File file("test.wgsl", R"(id "this is string content" id2)");
-  Lexer l(&file);
-
-  auto t = l.next();
-  EXPECT_TRUE(t.IsIdentifier());
-  EXPECT_EQ(t.to_str(), "id");
-  EXPECT_EQ(t.source().range.begin.line, 1u);
-  EXPECT_EQ(t.source().range.begin.column, 1u);
-  EXPECT_EQ(t.source().range.end.line, 1u);
-  EXPECT_EQ(t.source().range.end.column, 3u);
-
-  t = l.next();
-  EXPECT_TRUE(t.IsStringLiteral());
-  EXPECT_EQ(t.to_str(), "this is string content");
-  EXPECT_EQ(t.source().range.begin.line, 1u);
-  EXPECT_EQ(t.source().range.begin.column, 4u);
-  EXPECT_EQ(t.source().range.end.line, 1u);
-  EXPECT_EQ(t.source().range.end.column, 28u);
-
-  t = l.next();
-  EXPECT_TRUE(t.IsIdentifier());
-  EXPECT_EQ(t.to_str(), "id2");
-  EXPECT_EQ(t.source().range.begin.line, 1u);
-  EXPECT_EQ(t.source().range.begin.column, 29u);
-  EXPECT_EQ(t.source().range.end.line, 1u);
-  EXPECT_EQ(t.source().range.end.column, 32u);
-}
-
-TEST_F(LexerTest, StringTest_Unterminated) {
-  Source::File file("test.wgsl", R"(id "this is string content)");
-  Lexer l(&file);
-
-  auto t = l.next();
-  EXPECT_TRUE(t.IsIdentifier());
-  EXPECT_EQ(t.to_str(), "id");
-  EXPECT_EQ(t.source().range.begin.line, 1u);
-  EXPECT_EQ(t.source().range.begin.column, 1u);
-  EXPECT_EQ(t.source().range.end.line, 1u);
-  EXPECT_EQ(t.source().range.end.column, 3u);
-
-  t = l.next();
-  EXPECT_TRUE(t.IsStringLiteral());
-  EXPECT_EQ(t.to_str(), "this is string content");
-  EXPECT_EQ(t.source().range.begin.line, 1u);
-  EXPECT_EQ(t.source().range.begin.column, 4u);
-  EXPECT_EQ(t.source().range.end.line, 1u);
-  EXPECT_EQ(t.source().range.end.column, 27u);
-
-  t = l.next();
-  EXPECT_TRUE(t.IsEof());
-}
-
 struct FloatData {
   const char* input;
   float result;
@@ -139,8 +86,8 @@ inline std::ostream& operator<<(std::ostream& out, FloatData data) {
 using FloatTest = testing::TestWithParam<FloatData>;
 TEST_P(FloatTest, Parse) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsFloatLiteral());
@@ -175,8 +122,8 @@ INSTANTIATE_TEST_SUITE_P(LexerTest,
 
 using FloatTest_Invalid = testing::TestWithParam<const char*>;
 TEST_P(FloatTest_Invalid, Handles) {
-  Source::File file("test.wgsl", GetParam());
-  Lexer l(&file);
+  Source::FileContent content(GetParam());
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_FALSE(t.IsFloatLiteral());
@@ -193,8 +140,8 @@ INSTANTIATE_TEST_SUITE_P(LexerTest,
 
 using IdentifierTest = testing::TestWithParam<const char*>;
 TEST_P(IdentifierTest, Parse) {
-  Source::File file("test.wgsl", GetParam());
-  Lexer l(&file);
+  Source::FileContent content(GetParam());
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsIdentifier());
@@ -210,8 +157,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values("test01", "_test_", "test_", "_test", "_01", "_test01"));
 
 TEST_F(LexerTest, IdentifierTest_DoesNotStartWithNumber) {
-  Source::File file("test.wgsl", "01test");
-  Lexer l(&file);
+  Source::FileContent content("01test");
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_FALSE(t.IsIdentifier());
@@ -229,8 +176,8 @@ inline std::ostream& operator<<(std::ostream& out, HexSignedIntData data) {
 using IntegerTest_HexSigned = testing::TestWithParam<HexSignedIntData>;
 TEST_P(IntegerTest_HexSigned, Matches) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsSintLiteral());
@@ -252,16 +199,18 @@ INSTANTIATE_TEST_SUITE_P(
         HexSignedIntData{"0x7FFFFFFF", std::numeric_limits<int32_t>::max()}));
 
 TEST_F(LexerTest, IntegerTest_HexSignedTooLarge) {
-  Source::File file("test.wgsl", "0x80000000");
-  Lexer l(&file);
+  Source::FileContent content("0x80000000");
+  Lexer l("test.wgsl", &content);
+
   auto t = l.next();
   ASSERT_TRUE(t.IsError());
   EXPECT_EQ(t.to_str(), "i32 (0x80000000) too large");
 }
 
 TEST_F(LexerTest, IntegerTest_HexSignedTooSmall) {
-  Source::File file("test.wgsl", "-0x8000000F");
-  Lexer l(&file);
+  Source::FileContent content("-0x8000000F");
+  Lexer l("test.wgsl", &content);
+
   auto t = l.next();
   ASSERT_TRUE(t.IsError());
   EXPECT_EQ(t.to_str(), "i32 (-0x8000000F) too small");
@@ -278,8 +227,8 @@ inline std::ostream& operator<<(std::ostream& out, HexUnsignedIntData data) {
 using IntegerTest_HexUnsigned = testing::TestWithParam<HexUnsignedIntData>;
 TEST_P(IntegerTest_HexUnsigned, Matches) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsUintLiteral());
@@ -304,8 +253,9 @@ INSTANTIATE_TEST_SUITE_P(
                                        std::numeric_limits<uint32_t>::max()}));
 
 TEST_F(LexerTest, IntegerTest_HexUnsignedTooLarge) {
-  Source::File file("test.wgsl", "0xffffffffffu");
-  Lexer l(&file);
+  Source::FileContent content("0xffffffffffu");
+  Lexer l("test.wgsl", &content);
+
   auto t = l.next();
   ASSERT_TRUE(t.IsError());
   EXPECT_EQ(t.to_str(), "u32 (0xffffffffff) too large");
@@ -322,8 +272,8 @@ inline std::ostream& operator<<(std::ostream& out, UnsignedIntData data) {
 using IntegerTest_Unsigned = testing::TestWithParam<UnsignedIntData>;
 TEST_P(IntegerTest_Unsigned, Matches) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsUintLiteral());
@@ -351,8 +301,8 @@ inline std::ostream& operator<<(std::ostream& out, SignedIntData data) {
 using IntegerTest_Signed = testing::TestWithParam<SignedIntData>;
 TEST_P(IntegerTest_Signed, Matches) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsSintLiteral());
@@ -374,8 +324,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 using IntegerTest_Invalid = testing::TestWithParam<const char*>;
 TEST_P(IntegerTest_Invalid, Parses) {
-  Source::File file("test.wgsl", GetParam());
-  Lexer l(&file);
+  Source::FileContent content(GetParam());
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_FALSE(t.IsSintLiteral());
@@ -396,8 +346,8 @@ inline std::ostream& operator<<(std::ostream& out, TokenData data) {
 using PunctuationTest = testing::TestWithParam<TokenData>;
 TEST_P(PunctuationTest, Parses) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.Is(params.type));
@@ -430,12 +380,13 @@ INSTANTIATE_TEST_SUITE_P(
                     TokenData{"==", Token::Type::kEqualEqual},
                     TokenData{">", Token::Type::kGreaterThan},
                     TokenData{">=", Token::Type::kGreaterThanEqual},
+                    TokenData{">>", Token::Type::kShiftRight},
                     TokenData{"<", Token::Type::kLessThan},
                     TokenData{"<=", Token::Type::kLessThanEqual},
+                    TokenData{"<<", Token::Type::kShiftLeft},
                     TokenData{"%", Token::Type::kMod},
                     TokenData{"!=", Token::Type::kNotEqual},
                     TokenData{"-", Token::Type::kMinus},
-                    TokenData{"::", Token::Type::kNamespace},
                     TokenData{".", Token::Type::kPeriod},
                     TokenData{"+", Token::Type::kPlus},
                     TokenData{"|", Token::Type::kOr},
@@ -449,8 +400,8 @@ INSTANTIATE_TEST_SUITE_P(
 using KeywordTest = testing::TestWithParam<TokenData>;
 TEST_P(KeywordTest, Parses) {
   auto params = GetParam();
-  Source::File file("test.wgsl", params.input);
-  Lexer l(&file);
+  Source::FileContent content(params.input);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.Is(params.type)) << params.input;
@@ -468,14 +419,10 @@ INSTANTIATE_TEST_SUITE_P(
     KeywordTest,
     testing::Values(
         TokenData{"array", Token::Type::kArray},
-        TokenData{"binding", Token::Type::kBinding},
         TokenData{"bitcast", Token::Type::kBitcast},
-        TokenData{"block", Token::Type::kBlock},
         TokenData{"bool", Token::Type::kBool},
         TokenData{"break", Token::Type::kBreak},
-        TokenData{"builtin", Token::Type::kBuiltin},
         TokenData{"case", Token::Type::kCase},
-        TokenData{"compute", Token::Type::kCompute},
         TokenData{"const", Token::Type::kConst},
         TokenData{"continue", Token::Type::kContinue},
         TokenData{"continuing", Token::Type::kContinuing},
@@ -523,14 +470,12 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"rgba8uint", Token::Type::kFormatRgba8Uint},
         TokenData{"rgba8unorm", Token::Type::kFormatRgba8Unorm},
         TokenData{"rgba8unorm_srgb", Token::Type::kFormatRgba8UnormSrgb},
-        TokenData{"fragment", Token::Type::kFragment},
         TokenData{"function", Token::Type::kFunction},
         TokenData{"i32", Token::Type::kI32},
         TokenData{"if", Token::Type::kIf},
         TokenData{"image", Token::Type::kImage},
         TokenData{"import", Token::Type::kImport},
         TokenData{"in", Token::Type::kIn},
-        TokenData{"location", Token::Type::kLocation},
         TokenData{"loop", Token::Type::kLoop},
         TokenData{"mat2x2", Token::Type::kMat2x2},
         TokenData{"mat2x3", Token::Type::kMat2x3},
@@ -541,21 +486,17 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"mat4x2", Token::Type::kMat4x2},
         TokenData{"mat4x3", Token::Type::kMat4x3},
         TokenData{"mat4x4", Token::Type::kMat4x4},
-        TokenData{"offset", Token::Type::kOffset},
         TokenData{"out", Token::Type::kOut},
         TokenData{"private", Token::Type::kPrivate},
         TokenData{"ptr", Token::Type::kPtr},
         TokenData{"return", Token::Type::kReturn},
         TokenData{"sampler", Token::Type::kSampler},
         TokenData{"sampler_comparison", Token::Type::kComparisonSampler},
-        TokenData{"set", Token::Type::kSet},
-        TokenData{"stage", Token::Type::kStage},
-        TokenData{"storage_buffer", Token::Type::kStorageBuffer},
-        TokenData{"stride", Token::Type::kStride},
+        TokenData{"storage", Token::Type::kStorage},
+        TokenData{"storage_buffer", Token::Type::kStorage},
         TokenData{"struct", Token::Type::kStruct},
         TokenData{"switch", Token::Type::kSwitch},
         TokenData{"texture_1d", Token::Type::kTextureSampled1d},
-        TokenData{"texture_1d_array", Token::Type::kTextureSampled1dArray},
         TokenData{"texture_2d", Token::Type::kTextureSampled2d},
         TokenData{"texture_2d_array", Token::Type::kTextureSampled2dArray},
         TokenData{"texture_3d", Token::Type::kTextureSampled3d},
@@ -568,50 +509,11 @@ INSTANTIATE_TEST_SUITE_P(
                   Token::Type::kTextureDepthCubeArray},
         TokenData{"texture_multisampled_2d",
                   Token::Type::kTextureMultisampled2d},
-        TokenData{"texture_ro_1d", Token::Type::kTextureStorageReadonly1d},
-        TokenData{"texture_ro_1d_array",
-                  Token::Type::kTextureStorageReadonly1dArray},
-        TokenData{"texture_ro_2d", Token::Type::kTextureStorageReadonly2d},
-        TokenData{"texture_ro_2d_array",
-                  Token::Type::kTextureStorageReadonly2dArray},
-        TokenData{"texture_ro_3d", Token::Type::kTextureStorageReadonly3d},
-        TokenData{"texture_storage_ro_1d",
-                  Token::Type::kTextureStorageReadonly1d},
-        TokenData{"texture_storage_ro_1d_array",
-                  Token::Type::kTextureStorageReadonly1dArray},
-        TokenData{"texture_storage_ro_2d",
-                  Token::Type::kTextureStorageReadonly2d},
-        TokenData{"texture_storage_ro_2d_array",
-                  Token::Type::kTextureStorageReadonly2dArray},
-        TokenData{"texture_storage_ro_3d",
-                  Token::Type::kTextureStorageReadonly3d},
-        TokenData{"texture_storage_wo_1d",
-                  Token::Type::kTextureStorageWriteonly1d},
-        TokenData{"texture_storage_wo_1d_array",
-                  Token::Type::kTextureStorageWriteonly1dArray},
-        TokenData{"texture_storage_wo_2d",
-                  Token::Type::kTextureStorageWriteonly2d},
-        TokenData{"texture_storage_wo_2d_array",
-                  Token::Type::kTextureStorageWriteonly2dArray},
-        TokenData{"texture_storage_wo_3d",
-                  Token::Type::kTextureStorageWriteonly3d},
-        TokenData{"texture_sampled_1d", Token::Type::kTextureSampled1d},
-        TokenData{"texture_sampled_1d_array",
-                  Token::Type::kTextureSampled1dArray},
-        TokenData{"texture_sampled_2d", Token::Type::kTextureSampled2d},
-        TokenData{"texture_sampled_2d_array",
-                  Token::Type::kTextureSampled2dArray},
-        TokenData{"texture_sampled_3d", Token::Type::kTextureSampled3d},
-        TokenData{"texture_sampled_cube", Token::Type::kTextureSampledCube},
-        TokenData{"texture_sampled_cube_array",
-                  Token::Type::kTextureSampledCubeArray},
-        TokenData{"texture_wo_1d", Token::Type::kTextureStorageWriteonly1d},
-        TokenData{"texture_wo_1d_array",
-                  Token::Type::kTextureStorageWriteonly1dArray},
-        TokenData{"texture_wo_2d", Token::Type::kTextureStorageWriteonly2d},
-        TokenData{"texture_wo_2d_array",
-                  Token::Type::kTextureStorageWriteonly2dArray},
-        TokenData{"texture_wo_3d", Token::Type::kTextureStorageWriteonly3d},
+        TokenData{"texture_storage_1d", Token::Type::kTextureStorage1d},
+        TokenData{"texture_storage_2d", Token::Type::kTextureStorage2d},
+        TokenData{"texture_storage_2d_array",
+                  Token::Type::kTextureStorage2dArray},
+        TokenData{"texture_storage_3d", Token::Type::kTextureStorage3d},
         TokenData{"true", Token::Type::kTrue},
         TokenData{"type", Token::Type::kType},
         TokenData{"u32", Token::Type::kU32},
@@ -621,16 +523,14 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"vec2", Token::Type::kVec2},
         TokenData{"vec3", Token::Type::kVec3},
         TokenData{"vec4", Token::Type::kVec4},
-        TokenData{"vertex", Token::Type::kVertex},
         TokenData{"void", Token::Type::kVoid},
-        TokenData{"workgroup", Token::Type::kWorkgroup},
-        TokenData{"workgroup_size", Token::Type::kWorkgroupSize}));
+        TokenData{"workgroup", Token::Type::kWorkgroup}));
 
 using KeywordTest_Reserved = testing::TestWithParam<const char*>;
 TEST_P(KeywordTest_Reserved, Parses) {
   auto* keyword = GetParam();
-  Source::File file("test.wgsl", keyword);
-  Lexer l(&file);
+  Source::FileContent content(keyword);
+  Lexer l("test.wgsl", &content);
 
   auto t = l.next();
   EXPECT_TRUE(t.IsReservedKeyword());
@@ -644,6 +544,7 @@ INSTANTIATE_TEST_SUITE_P(LexerTest,
                                          "enum",
                                          "f16",
                                          "f64",
+                                         "handle",
                                          "i8",
                                          "i16",
                                          "i64",

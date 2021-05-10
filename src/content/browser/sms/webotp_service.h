@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/sms/sms_parser.h"
 #include "content/browser/sms/sms_queue.h"
 #include "content/browser/sms/user_consent_handler.h"
@@ -44,30 +45,33 @@ class CONTENT_EXPORT WebOTPService
                      mojo::PendingReceiver<blink::mojom::WebOTPService>);
 
   WebOTPService(SmsFetcher*,
-                RenderFrameHost*,
-                mojo::PendingReceiver<blink::mojom::WebOTPService>);
-  WebOTPService(SmsFetcher*,
-                std::unique_ptr<UserConsentHandler> consent_handler,
-                const url::Origin&,
+                const OriginList&,
                 RenderFrameHost*,
                 mojo::PendingReceiver<blink::mojom::WebOTPService>);
   ~WebOTPService() override;
 
   using FailureType = SmsFetcher::FailureType;
   using SmsParsingStatus = SmsParser::SmsParsingStatus;
+  using UserConsent = SmsFetcher::UserConsent;
 
   // blink::mojom::WebOTPService:
   void Receive(ReceiveCallback) override;
   void Abort() override;
 
   // content::SmsQueue::Subscriber
-  void OnReceive(const std::string& one_time_code) override;
+  void OnReceive(const std::string& one_time_code, UserConsent) override;
   void OnFailure(FailureType failure_type) override;
 
   // Completes the in-flight sms otp code request. Invokes the receive callback,
   // if one is available, with the provided status code and the existing one
   // time code.
   void CompleteRequest(blink::mojom::SmsStatus);
+  void SetConsentHandlerForTesting(UserConsentHandler*);
+
+  // Rejects the pending request if it has not been resolved naturally yet.
+  void OnTimeout();
+
+  void OnUserConsentComplete(UserConsentResult);
 
  protected:
   // content::WebContentsObserver:
@@ -76,18 +80,30 @@ class CONTENT_EXPORT WebOTPService
 
  private:
   void CleanUp();
+  UserConsentHandler* CreateConsentHandler(UserConsent);
+  UserConsentHandler* GetConsentHandler();
+  void RecordMetrics(blink::mojom::SmsStatus);
 
   // |fetcher_| is safe because all instances of SmsFetcher are owned
   // by the browser context, which transitively (through RenderFrameHost) owns
   // and outlives this class.
   SmsFetcher* fetcher_;
-  std::unique_ptr<UserConsentHandler> consent_handler_;
 
-  const url::Origin origin_;
+  const OriginList origin_list_;
   ReceiveCallback callback_;
   base::Optional<std::string> one_time_code_;
   base::TimeTicks start_time_;
   base::TimeTicks receive_time_;
+  // Timer to trigger timeout for any pending request. We (re)arm the timer
+  // every time we receive a new request.
+  base::DelayTimer timeout_timer_;
+  base::Optional<FailureType> prompt_failure_;
+
+  // The ptr is valid only when we are handling an incoming otp response.
+  std::unique_ptr<UserConsentHandler> consent_handler_;
+  // This is used to inject a mock consent handler for testing and it is owned
+  // by test code.
+  UserConsentHandler* consent_handler_for_test_{nullptr};
 
   SEQUENCE_CHECKER(sequence_checker_);
 

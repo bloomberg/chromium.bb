@@ -28,6 +28,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
+#include "cc/metrics/web_vital_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/render_frame_metadata_observer.h"
@@ -205,26 +206,11 @@ void LayerTreeView::ApplyViewportChanges(
   delegate_->ApplyViewportChanges(args);
 }
 
-void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+void LayerTreeView::UpdateCompositorScrollState(
+    const cc::CompositorCommitData& commit_data) {
   if (!delegate_)
     return;
-  delegate_->RecordManipulationTypeCounts(info);
-}
-
-void LayerTreeView::SendOverscrollEventFromImplSide(
-    const gfx::Vector2dF& overscroll_delta,
-    cc::ElementId scroll_latched_element_id) {
-  if (!delegate_)
-    return;
-  delegate_->SendOverscrollEventFromImplSide(overscroll_delta,
-                                             scroll_latched_element_id);
-}
-
-void LayerTreeView::SendScrollEndEventFromImplSide(
-    cc::ElementId scroll_latched_element_id) {
-  if (!delegate_)
-    return;
-  delegate_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
+  delegate_->UpdateCompositorScrollState(commit_data);
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
@@ -325,6 +311,12 @@ LayerTreeView::GetBeginMainFrameMetrics() {
   if (!delegate_)
     return nullptr;
   return delegate_->GetBeginMainFrameMetrics();
+}
+
+std::unique_ptr<cc::WebVitalMetrics> LayerTreeView::GetWebVitalMetrics() {
+  if (!delegate_)
+    return nullptr;
+  return delegate_->GetWebVitalMetrics();
 }
 
 void LayerTreeView::NotifyThroughputTrackerResults(

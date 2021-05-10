@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1175958423215084756">Konstatēta saite. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Galerijas attēli</translation>
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1473110567575736769">3 sekunžu taimeris</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">APTURĒTA</translation>
 <translation id="1862930711583847113">Nevar eksportēt failu <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Fotoattēlu izšķirtspēja</translation>
+<translation id="2022953316617983419">QR kods</translation>
 <translation id="2036868001356139588">Taimera ilgums</translation>
 <translation id="2050339315714019657">Portrets</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktīva</translation>
+<translation id="2144806332417375165">Pielāgoti video parametri</translation>
 <translation id="229579744168541441">Eksportēt diskā</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2501853267655415902">Ierakstīšana apturēta</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 kadri/s</translation>
 <translation id="3183731565330012717">Režģa veids</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
+<translation id="3240426699337459095">Saite nokopēta</translation>
 <translation id="3259149966178251584">Kameras izšķirtspēja</translation>
 <translation id="3517926952904427380">Nevar uzņemt portretu</translation>
 <translation id="3569311554794739032">Vai tiešām vēlaties noņemt failu <ph name="FILE" />?</translation>
-<translation id="3750315947605636967">Kamera tiek izmantota citā lietotnē</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3838931309141338733">Skenēt svītrkodu</translation>
+<translation id="3892148308691398805">Kopēt tekstu</translation>
 <translation id="4000398125663085899">Turpmāk jauni fotoattēli un videoklipi tiks saglabāti lietotnes Faili mapē: Mani faili &gt; Kamera</translation>
 <translation id="4118525110028899586">Pārtraukt ierakstīšanu</translation>
+<translation id="4269820728363426813">Kopēt saites adresi</translation>
 <translation id="4279490309300973883">Spoguļošana</translation>
 <translation id="4329152592498422850">Pārslēgt uz kvadrātveida fotoattēlu uzņemšanu</translation>
 <translation id="4383571725254449280">Drukāt veiktspējas žurnālus</translation>
@@ -68,11 +74,15 @@ Ja atsauksme ir par attēlu vai videoklipu kvalitāti, lūdzu, pievienojiet foto
 <translation id="7134221860976209830">10 sekunžu taimeris</translation>
 <translation id="7243947652761655814">Videoklipu izšķirtspēja</translation>
 <translation id="7337660886763914220">Failu sistēmas kļūdas.</translation>
+<translation id="7450541714075000668">Teksts ir nokopēts</translation>
 <translation id="7557677699350329807">Pārslēgties uz nākamo kameru</translation>
+<translation id="7607002721634913082">Apturēta</translation>
 <translation id="7608223098072244877">4 pa 4</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7670511624014457267">60 kadri/s</translation>
+<translation id="7974782136796202581">Rādīt pārvietošanas/noliekšanas/tālummaiņas opcijas</translation>
+<translation id="7983668134180549431">Konstatēts teksts.</translation>
 <translation id="8067883171444229417">Atskaņot videoklipu</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8145038249676204903">Pārslēgt, lai uzņemtu fotoattēlu</translation>

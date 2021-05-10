@@ -200,6 +200,15 @@ else:
                  '--verbose']
     buildbot_lib.Command(context, llvm_test)
 
+  sys.stdout.flush()
+
+  with buildbot_lib.Step('Saigo LLVM Regression', status,
+                         halt_on_fail=False):
+    llvm_saigo_test = [sys.executable,
+                 os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
+                 '--llvm-saigo-regression',
+                 '--verbose']
+    buildbot_lib.Command(context, llvm_saigo_test)
 
   sys.stdout.flush()
   # Now build all the packages (including the non-canonical ones) and extract

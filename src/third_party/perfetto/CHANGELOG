@@ -5,6 +5,91 @@ Unreleased:
     *
   UI:
     *
+  SDK:
+    * Use process start time hashed with the process id as a unique process
+      identifier, allowing multiple independent users of the SDK in the same
+      process to interleave their events on shared tracks.
+    * Record process and thread names into the trace.
+
+
+v12.1 - 2021-02-01:
+  Misc:
+    * Fixed CHANGELOG which was missed in the 12.0 branch cut, causing
+      mis-labeling of the version code in the v12.x branch as v11.0..N
+
+
+v12.0 - 2021-02-01:
+  Tracing service and probes:
+    * Added more helpful error messages if the client library is used without
+      having been initialized.
+    * Added //tools/record_android_trace script to facilitate recording traces
+      from Android devices, automating start + stop-via-ctrl+c + pull + open.
+    * Added auto-attachment of traces to Android bugreports if dumpstate is
+      invoked when a trace with bugreport_score > 0 is running.
+  SDK:
+    * Added ability to customize the timestamp of events via
+      ConvertTimestampToTraceTimeNs().
+    * Fixed support for category names that contain a space.
+  Trace Processor:
+    * Added ingestion and query support for Android end-to-end frame timing
+      events through the {actual, expected}_frame_timeline_slice tables.
+    * Added time-to-reportFullyDrawn (Android's API) to startup metrics.
+    * Fixed excessive memory usage when decoding traces containing callstacks
+      (https://github.com/google/perfetto/issues/83).
+  UI:
+    * Added ability to inspect the full trace config string from the
+      'Info and stats' page.
+    * Fixed 'TABLE/VIEW XXX already exists' in the Metrics page when running the
+      same metric twice.
+    * Fixed sorting of tracks using numeric sorting instead of lexicographic:
+      Thread {1, 2, 10, 11, 20} rather than Thread {1, 10, 11, 2, 20}.
+    * Fixed CSP-related bug that was preventing the UI to work on Firefox.
+    * Changed max zoom resolution to allow to zoom to sub-us events.
+
+
+v11.0 - 2021-01-01:
+  Tracing service and probes:
+    * Added trace packet interceptor API for rerouting trace data into
+      non-Perfetto systems.
+    * Added support for printing track events to the console.
+    * Added a way to observe track event tracing sessions starting and
+      stopping.
+  Trace Processor:
+    * Added "ancestor_slice" and "experimental_ancestor_stack_profile_callsite"
+      table functions to look up ancestors of CPU stack samples in profiler
+      tables.
+    * Added power metric reporting suspend/resume time periods.
+  UI:
+    * Fixed CPU time calculation in example queries.
+    * Added tracks to debug Android SystemUI jank.
+
+
+v10.0 - 2020-12-01:
+  Tracing service and probes:
+    * Fixed crash of tracing service if a client is unresponsive on the IPC
+      channel. Clients are disconnected if they don't respond to IPCs for 10s.
+    * Added cmdline arguments for integration within ChromeOS system image
+      (--{producer,consumer}-socket-{group,mode} for chmod-ing sockets).
+    * Changed path lookup logic for traced socket. /run/perfetto/ is used if the
+      directory exists, falling back on /tmp/ otherwise.
+    * Added support for kernel frame symbolization to the traced_perf callstack
+      sampler.
+    * Added support for resolving ftrace event arguments that require
+      symbolization against printk_format.
+  Trace Processor:
+    * Added .read command to inject a SQL query file, similar to the -q cmdline.
+    * Added trace-based metrics to root cause jank in Android System UI.
+    * Added symbolization support for ELF files on Windows for heap and
+      callstack profilers.
+    * Added support for symbolizing names of workqueue ftrace events.
+    * Improved Android startup metric with activity restart time.
+  UI:
+    * Added support for navigating flows with Ctrl+[ / Ctr+].
+    * Improved query result panel, moved to the bottom group allowing
+      simultaneous query result and timeline views.
+    * Fixed data corruption when recording traces via the WebUSB-based Record
+      page in the UI.
+
 
 v9.0 - 2020-11-01:
   Tracing service and probes:

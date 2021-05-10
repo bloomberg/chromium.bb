@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -11,7 +13,6 @@
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -64,15 +65,6 @@ IOSChromeMetricsServicesManagerClient::IOSChromeMetricsServicesManagerClient(
 IOSChromeMetricsServicesManagerClient::
     ~IOSChromeMetricsServicesManagerClient() = default;
 
-std::unique_ptr<rappor::RapporServiceImpl>
-IOSChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return std::make_unique<rappor::RapporServiceImpl>(
-      local_state_,
-      base::BindRepeating(
-          &IOSChromeMetricsServicesManagerClient::AreIncognitoTabsPresent));
-}
-
 std::unique_ptr<variations::VariationsService>
 IOSChromeMetricsServicesManagerClient::CreateVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -99,7 +91,7 @@ IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state_, enabled_state_provider_.get(), base::string16(),
+        local_state_, enabled_state_provider_.get(), std::wstring(),
         base::BindRepeating(&PostStoreMetricsClientInfo),
         base::BindRepeating(&LoadMetricsClientInfo));
   }

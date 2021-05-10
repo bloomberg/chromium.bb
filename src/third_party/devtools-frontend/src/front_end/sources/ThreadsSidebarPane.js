@@ -3,14 +3,29 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as i18n from '../i18n/i18n.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
+
+export const UIStrings = {
+  /**
+  *@description Text in Threads Sidebar Pane of the Sources panel
+  */
+  paused: 'paused',
+};
+const str_ = i18n.i18n.registerUIStrings('sources/ThreadsSidebarPane.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/** @type {!ThreadsSidebarPane} */
+let threadsSidebarPaneInstance;
 
 /**
  * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DebuggerModel.DebuggerModel>}
  * @implements {UI.ListControl.ListDelegate<!SDK.DebuggerModel.DebuggerModel>}
  */
 export class ThreadsSidebarPane extends UI.Widget.VBox {
+  /**
+   * @private
+   */
   constructor() {
     super(true);
     this.registerRequiredCSS('sources/threadsSidebarPane.css', {enableLegacyPatching: true});
@@ -20,11 +35,18 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     /** @type {!UI.ListControl.ListControl<!SDK.DebuggerModel.DebuggerModel>} */
     this._list = new UI.ListControl.ListControl(this._items, this, UI.ListControl.ListMode.NonViewport);
     const currentTarget = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
-    this._selectedModel = !!currentTarget ? currentTarget.model(SDK.DebuggerModel.DebuggerModel) : null;
+    this._selectedModel = currentTarget !== null ? currentTarget.model(SDK.DebuggerModel.DebuggerModel) : null;
     this.contentElement.appendChild(this._list.element);
 
     UI.Context.Context.instance().addFlavorChangeListener(SDK.SDKModel.Target, this._targetFlavorChanged, this);
     SDK.SDKModel.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
+  }
+
+  static instance() {
+    if (!threadsSidebarPaneInstance) {
+      threadsSidebarPaneInstance = new ThreadsSidebarPane();
+    }
+    return threadsSidebarPaneInstance;
   }
 
   /**
@@ -61,7 +83,7 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     }
 
     function updatePausedState() {
-      pausedState.textContent = debuggerModel.isPaused() ? ls`paused` : '';
+      pausedState.textContent = debuggerModel.isPaused() ? i18nString(UIStrings.paused) : '';
     }
 
     /**
@@ -166,7 +188,7 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     if (debuggerModel) {
       this._list.refreshItem(debuggerModel);
     }
-    if (!!this._selectedModel) {
+    if (this._selectedModel !== null) {
       this._list.refreshItem(this._selectedModel);
     }
     this._selectedModel = debuggerModel;

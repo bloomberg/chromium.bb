@@ -7,6 +7,7 @@
 
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 class FilePath;
@@ -50,8 +51,12 @@ enum {
                      // to set policies for chrome. This directory
                      // contains subdirectories.
 #endif
-#if defined(OS_CHROMEOS) || \
-    (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING)) || defined(OS_MAC)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if BUILDFLAG(IS_CHROMEOS_ASH) ||                            \
+    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+     BUILDFLAG(CHROMIUM_BRANDING)) ||                        \
+    defined(OS_MAC)
   DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions
                                  // on Chrome Mac and Chromium Linux.
                                  // On Chrome OS, this path is used for OEM
@@ -69,11 +74,6 @@ enum {
 
   DIR_DEFAULT_APPS,         // Directory where installer places .crx files
                             // to be installed when chrome is first run.
-  DIR_PEPPER_FLASH_PLUGIN,  // Directory to the bundled Pepper Flash plugin,
-                            // containing the plugin and the manifest.
-  DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,  // Base directory of the Pepper
-                                              // Flash plugins downloaded by the
-                                              // component updater.
   FILE_RESOURCE_MODULE,      // Full path and filename of the module that
                              // contains embedded resources (version,
                              // strings, images, etc.).
@@ -82,21 +82,19 @@ enum {
   FILE_RECORDED_SCRIPT,      // Full path to the script.log file that
                              // contains recorded browser events for
                              // playback.
-  FILE_PEPPER_FLASH_PLUGIN,  // Full path to the bundled Pepper Flash plugin
-                             // file.
-  DIR_PNACL_BASE,                   // Full path to the base dir for PNaCl.
-  DIR_PNACL_COMPONENT,              // Full path to the latest PNaCl version
-                                    // (subdir of DIR_PNACL_BASE).
+  DIR_PNACL_BASE,            // Full path to the base dir for PNaCl.
+  DIR_PNACL_COMPONENT,       // Full path to the latest PNaCl version
+                             // (subdir of DIR_PNACL_BASE).
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DIR_BUNDLED_WIDEVINE_CDM,  // Full path to the directory containing the
                              // bundled Widevine CDM.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   DIR_COMPONENT_UPDATED_WIDEVINE_CDM,  // Base directory of the Widevine CDM
                                        // downloaded by the component
                                        // updater.
   FILE_COMPONENT_WIDEVINE_CDM_HINT,    // A file in a known location that points
-                                     // to the component updated Widevine CDM.
-#endif                                 // !defined(OS_CHROMEOS)
+                                       // to the component updated Widevine CDM.
+#endif                                 // !BUILDFLAG(IS_CHROMEOS_ASH)
 #endif                  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   FILE_RESOURCES_PACK,  // Full path to the .pak file containing binary data.
                         // This includes data for internal pages (e.g., html
@@ -105,7 +103,7 @@ enum {
   FILE_DEV_UI_RESOURCES_PACK,  // Full path to the .pak file containing
                                // binary data for internal pages (e.g., html
                                // files and images).
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   DIR_CHROMEOS_WALLPAPERS,            // Directory where downloaded chromeos
                                       // wallpapers reside.
   DIR_CHROMEOS_WALLPAPER_THUMBNAILS,  // Directory where downloaded chromeos
@@ -113,9 +111,6 @@ enum {
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
 #endif
-  DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,  // Directory where sanitized
-                                             // supervised user whitelists are
-                                             // installed.
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
   DIR_NATIVE_MESSAGING,       // System directory where native messaging host
                               // manifest files are stored.
@@ -131,18 +126,17 @@ enum {
   DIR_GEN_TEST_DATA,  // Directory where generated test data resides.
   DIR_TEST_DATA,      // Directory where unit test data resides.
   DIR_TEST_TOOLS,     // Directory where unit test tools reside.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  FILE_COMPONENT_FLASH_HINT,  // A file in a known location that points to
-                              // the component updated flash plugin.
-#endif                        // defined(OS_LINUX) || defined(OS_CHROMEOS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // File containing the location of the updated TPM firmware binary in the file
   // system.
   FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
 
   // Flag file indicating SRK ROCA vulnerability status.
   FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
-#endif  // defined(OS_CHROMEOS)
+#endif                                       // BUILDFLAG(IS_CHROMEOS_ASH)
+  DIR_OPTIMIZATION_GUIDE_PREDICTION_MODELS,  // Directory where verified models
+                                             // downloaded by the Optimization
+                                             // Guide are stored.
   PATH_END
 };
 

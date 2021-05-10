@@ -55,7 +55,7 @@ class SenderSession final {
    public:
     // Called when a new set of senders has been negotiated. This may be
     // called multiple times during a session, once for every time Negotiate()
-    // is called on the SenderSession object. The negotation call also includes
+    // is called on the SenderSession object. The negotiation call also includes
     // capture recommendations that can be used by the sender to provide
     // an optimal video stream for the receiver.
     virtual void OnNegotiated(
@@ -75,12 +75,19 @@ class SenderSession final {
   // message port persist for at least the lifetime of the SenderSession. If
   // one of these classes needs to be reset, a new SenderSession should be
   // created.
+  //
+  // |message_source_id| and |message_destination_id| are the local and remote
+  // ID, respectively, to use when sending or receiving control messages (e.g.,
+  // OFFERs or ANSWERs) over the |message_port|. |message_port|'s SetClient()
+  // method will be called.
   SenderSession(IPAddress remote_address,
                 Client* const client,
                 Environment* environment,
-                MessagePort* message_port);
+                MessagePort* message_port,
+                std::string message_source_id,
+                std::string message_destination_id);
   SenderSession(const SenderSession&) = delete;
-  SenderSession(SenderSession&&) = delete;
+  SenderSession(SenderSession&&) noexcept = delete;
   SenderSession& operator=(const SenderSession&) = delete;
   SenderSession& operator=(SenderSession&&) = delete;
   ~SenderSession();
@@ -103,7 +110,7 @@ class SenderSession final {
   };
 
   // Specific message type handler methods.
-  void OnAnswer(SessionMessager::Message message);
+  void OnAnswer(ReceiverMessage message);
 
   // Used by SpawnSenders to generate a sender for a specific stream.
   std::unique_ptr<Sender> CreateSender(Ssrc receiver_ssrc,
@@ -123,9 +130,6 @@ class SenderSession final {
   // Spawn a set of configured senders from the currently stored negotiation.
   ConfiguredSenders SpawnSenders(const Answer& answer);
 
-  // The sender ID of the Receiver for this session.
-  std::string receiver_sender_id_;
-
   // The remote address of the receiver we are communicating with. Used
   // for both TLS and UDP traffic.
   const IPAddress remote_address_;
@@ -135,7 +139,7 @@ class SenderSession final {
   // port for communicating to the Receiver over TLS.
   Client* const client_;
   Environment* const environment_;
-  SessionMessager messager_;
+  SenderSessionMessager messager_;
 
   // The packet router used for messaging across all senders.
   SenderPacketRouter packet_router_;

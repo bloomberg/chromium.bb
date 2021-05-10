@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -33,10 +33,6 @@ bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
   std::vector<views::AXAuraObjWrapper*> children;
   GetChildren(&children);
   return base::Contains(children, child);
-}
-
-bool AXRootObjWrapper::IsIgnored() {
-  return false;
 }
 
 views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
@@ -71,7 +67,7 @@ void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->AddState(ax::mojom::State::kVertical);
 }
 
-int32_t AXRootObjWrapper::GetUniqueId() const {
+ui::AXNodeID AXRootObjWrapper::GetUniqueId() const {
   return unique_id_.Get();
 }
 

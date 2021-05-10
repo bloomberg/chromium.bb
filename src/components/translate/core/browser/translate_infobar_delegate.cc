@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -141,6 +142,24 @@ base::string16 TranslateInfoBarDelegate::target_language_name() const {
   return language_name_at(ui_delegate_.GetTargetLanguageIndex());
 }
 
+void TranslateInfoBarDelegate::GetLanguagesNames(
+    std::vector<base::string16>* languages) const {
+  DCHECK(languages != nullptr);
+  languages->clear();
+  for (size_t i = 0; i < ui_delegate_.GetNumberOfLanguages(); ++i) {
+    languages->push_back(ui_delegate_.GetLanguageNameAt(i));
+  }
+}
+void TranslateInfoBarDelegate::GetLanguagesCodes(
+    std::vector<std::string>* languages_codes) const {
+  DCHECK(languages_codes != nullptr);
+  languages_codes->clear();
+
+  for (size_t i = 0; i < ui_delegate_.GetNumberOfLanguages(); ++i) {
+    languages_codes->push_back(ui_delegate_.GetLanguageCodeAt(i));
+  }
+}
+
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(
     const std::string& language_code) {
   ui_delegate_.UpdateOriginalLanguage(language_code);
@@ -191,12 +210,12 @@ void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
   ui_delegate_.SetLanguageBlocked(!ui_delegate_.IsLanguageBlocked());
 }
 
-bool TranslateInfoBarDelegate::IsSiteBlacklisted() const {
-  return ui_delegate_.IsSiteBlacklisted();
+bool TranslateInfoBarDelegate::IsSiteOnNeverPromptList() const {
+  return ui_delegate_.IsSiteOnNeverPromptList();
 }
 
-void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  ui_delegate_.SetSiteBlacklist(!ui_delegate_.IsSiteBlacklisted());
+void TranslateInfoBarDelegate::ToggleNeverPrompt() {
+  ui_delegate_.SetNeverPrompt(!ui_delegate_.IsSiteOnNeverPromptList());
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() const {
@@ -240,8 +259,10 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
   }
   // This is the "Try again..." case.
   DCHECK(translate_manager_);
-  translate_manager_->TranslatePage(original_language_code(),
-                                    target_language_code(), false);
+  translate_manager_->TranslatePage(
+      original_language_code(), target_language_code(), false,
+      translate_manager_->GetActiveTranslateMetricsLogger()
+          ->GetNextManualTranslationType());
 }
 
 bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
@@ -292,6 +313,21 @@ void TranslateInfoBarDelegate::ResetTranslationDeniedCount() {
   prefs_->ResetTranslationDeniedCount(original_language_code());
 }
 
+void TranslateInfoBarDelegate::GetContentLanguagesNames(
+    std::vector<base::string16>* content_languages) const {
+  ui_delegate_.GetContentLanguagesNames(content_languages);
+}
+
+void TranslateInfoBarDelegate::GetContentLanguagesNativeNames(
+    std::vector<base::string16>* native_content_languages) const {
+  ui_delegate_.GetContentLanguagesNativeNames(native_content_languages);
+}
+
+void TranslateInfoBarDelegate::GetContentLanguagesCodes(
+    std::vector<std::string>* content_codes) const {
+  ui_delegate_.GetContentLanguagesCodes(content_codes);
+}
+
 bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
   // Don't trigger if it's off the record or already set to always translate.
   if (is_off_the_record() || ShouldAlwaysTranslate()) {
@@ -303,7 +339,8 @@ bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
        GetTranslationAutoAlwaysCount() < GetMaximumNumberOfAutoAlways());
 
   if (always_translate) {
-    // Auto-always will be triggered. Need to increment the auto-always counter.
+    // Auto-always will be triggered. Need to increment the auto-always
+    // counter.
     IncrementTranslationAutoAlwaysCount();
     // Reset translateAcceptedCount so that auto-always could be triggered
     // again.
@@ -321,8 +358,9 @@ bool TranslateInfoBarDelegate::ShouldAutoNeverTranslate() {
   int auto_never_count = GetTranslationAutoNeverCount();
 
   // At the beginning (auto_never_count == 0), deniedCount starts at 0 and is
-  // off-by-one (because this checking is done before increment). However, after
-  // auto-never is triggered once (auto_never_count > 0), deniedCount starts at
+  // off-by-one (because this checking is done before increment). However,
+  // after auto-never is triggered once (auto_never_count > 0), deniedCount
+  // starts at
   // 1.  So there is no off-by-one by then.
   int off_by_one = auto_never_count == 0 ? 1 : 0;
 
@@ -430,6 +468,7 @@ int TranslateInfoBarDelegate::GetIconId() const {
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   OnInfoBarClosedByUser();
+  ReportUIInteraction(UIInteraction::kCloseUIExplicitly);
 
   bool declined = false;
   bool has_observer = false;
@@ -480,6 +519,11 @@ int TranslateInfoBarDelegate::GetMaximumNumberOfAutoNever() {
 
 void TranslateInfoBarDelegate::OnInfoBarClosedByUser() {
   ui_delegate_.OnUIClosedByUser();
+}
+
+void TranslateInfoBarDelegate::ReportUIInteraction(
+    UIInteraction ui_interaction) {
+  ui_delegate_.ReportUIInteraction(ui_interaction);
 }
 
 }  // namespace translate

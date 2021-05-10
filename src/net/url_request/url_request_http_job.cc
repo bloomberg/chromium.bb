@@ -44,6 +44,7 @@
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/known_roots.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/filter/brotli_source_stream.h"
@@ -152,64 +153,23 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
       net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
 }
 
-template <typename CookieWithMetadata>
-bool ShouldMarkSameSiteCompatPairs(
-    const std::vector<CookieWithMetadata>& cookie_list,
-    const net::CookieOptions& options) {
-  // If the context is same-site then there cannot be any SameSite-by-default
-  // warnings, so the compat pair warning is irrelevant.
-  if (options.same_site_cookie_context().GetContextForCookieInclusion() >
-      net::CookieOptions::SameSiteCookieContext::ContextType::
-          SAME_SITE_LAX_METHOD_UNSAFE) {
-    return false;
-  }
-  return cookie_list.size() >= 2;
-}
-
-void MarkSameSiteCompatPairs(
-    std::vector<net::CookieWithAccessResult>& cookie_list,
-    const net::CookieOptions& options) {
-  for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
-    const net::CanonicalCookie& c1 = cookie_list[i].cookie;
-    for (size_t j = i + 1; j < cookie_list.size(); ++j) {
-      const net::CanonicalCookie& c2 = cookie_list[j].cookie;
-      if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
-        cookie_list[i].access_result.status.AddWarningReason(
-            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
-        cookie_list[j].access_result.status.AddWarningReason(
-            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
-      }
-    }
-  }
-}
-
-void MarkSameSiteCompatPairs(
-    std::vector<net::CookieAndLineWithAccessResult>& cookie_list,
-    const net::CookieOptions& options) {
-  for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
-    if (!cookie_list[i].cookie.has_value())
-      continue;
-    const net::CanonicalCookie& c1 = cookie_list[i].cookie.value();
-    for (size_t j = i + 1; j < cookie_list.size(); ++j) {
-      if (!cookie_list[j].cookie.has_value())
-        continue;
-      const net::CanonicalCookie& c2 = cookie_list[j].cookie.value();
-      if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
-        cookie_list[i].access_result.status.AddWarningReason(
-            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
-        cookie_list[j].access_result.status.AddWarningReason(
-            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
-      }
-    }
-  }
-}
-
 net::CookieOptions CreateCookieOptions(
-    net::CookieOptions::SameSiteCookieContext cookie_context) {
+    net::CookieOptions::SameSiteCookieContext same_site_context,
+    net::CookieOptions::SamePartyCookieContextType same_party_context,
+    const net::IsolationInfo& isolation_info,
+    bool is_in_nontrivial_first_party_set) {
   net::CookieOptions options;
   options.set_return_excluded_cookies();
   options.set_include_httponly();
-  options.set_same_site_cookie_context(cookie_context);
+  options.set_same_site_cookie_context(same_site_context);
+  options.set_same_party_cookie_context_type(same_party_context);
+  if (isolation_info.party_context().has_value()) {
+    // Count the top-frame site since it's not in the party_context.
+    options.set_full_party_context_size(isolation_info.party_context()->size() +
+                                        1);
+  }
+  options.set_is_in_nontrivial_first_party_set(
+      is_in_nontrivial_first_party_set);
   return options;
 }
 
@@ -355,6 +315,11 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     transaction_->GetConnectionAttempts(out);
   else
     out->clear();
+}
+
+void URLRequestHttpJob::CloseConnectionOnDestruction() {
+  DCHECK(transaction_);
+  transaction_->CloseConnectionOnDestruction();
 }
 
 int URLRequestHttpJob::NotifyConnectedCallback(const TransportInfo& info) {
@@ -583,12 +548,27 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
                                                request_->site_for_cookies())) {
       force_ignore_site_for_cookies = true;
     }
+    bool is_main_frame_navigation = IsolationInfo::RequestType::kMainFrame ==
+                                    request_->isolation_info().request_type();
     CookieOptions::SameSiteCookieContext same_site_context =
         net::cookie_util::ComputeSameSiteContextForRequest(
             request_->method(), request_->url(), request_->site_for_cookies(),
-            request_->initiator(), force_ignore_site_for_cookies);
+            request_->initiator(), is_main_frame_navigation,
+            force_ignore_site_for_cookies);
 
-    CookieOptions options = CreateCookieOptions(same_site_context);
+    net::SchemefulSite request_site(request_->url());
+
+    const CookieAccessDelegate* delegate =
+        cookie_store->cookie_access_delegate();
+
+    CookieOptions::SamePartyCookieContextType same_party_context =
+        net::cookie_util::ComputeSamePartyContext(
+            request_site, request_->isolation_info(), delegate);
+    bool is_in_nontrivial_first_party_set =
+        delegate && delegate->IsInNontrivialFirstPartySet(request_site);
+    CookieOptions options = CreateCookieOptions(
+        same_site_context, same_party_context, request_->isolation_info(),
+        is_in_nontrivial_first_party_set);
 
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
@@ -651,6 +631,17 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
   // after the delegate got a chance to block them.
   CookieAccessResultList maybe_sent_cookies = excluded_list;
 
+  // If the cookie was excluded due to the fix for crbug.com/1166211, this
+  // applies a warning to the status that will show up in the netlog.
+  // TODO(crbug.com/1166211): Remove once no longer needed.
+  if (options.same_site_cookie_context().AffectedByBugfix1166211()) {
+    for (auto& cookie_with_access_result : maybe_sent_cookies) {
+      options.same_site_cookie_context()
+          .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
+              cookie_with_access_result.access_result.status);
+    }
+  }
+
   if (!can_get_cookies) {
     for (CookieAccessResultList::iterator it = maybe_sent_cookies.begin();
          it != maybe_sent_cookies.end(); ++it) {
@@ -683,11 +674,6 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
           });
     }
   }
-
-  // Mark the CookieInclusionStatuses of items in |maybe_sent_cookies| if they
-  // are part of a presumed SameSite compatibility pair.
-  if (ShouldMarkSameSiteCompatPairs(maybe_sent_cookies, options))
-    MarkSameSiteCompatPairs(maybe_sent_cookies, options);
 
   request_->set_maybe_sent_cookies(std::move(maybe_sent_cookies));
 
@@ -727,15 +713,27 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->url(), request_->site_for_cookies())) {
     force_ignore_site_for_cookies = true;
   }
+  bool is_main_frame_navigation = IsolationInfo::RequestType::kMainFrame ==
+                                  request_->isolation_info().request_type();
   CookieOptions::SameSiteCookieContext same_site_context =
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url(), request_->site_for_cookies(), request_->initiator(),
-          force_ignore_site_for_cookies);
+          is_main_frame_navigation, force_ignore_site_for_cookies);
 
-  CookieOptions options = CreateCookieOptions(same_site_context);
+  const CookieAccessDelegate* delegate = cookie_store->cookie_access_delegate();
+  net::SchemefulSite request_site(request_->url());
 
-  // Set all cookies, without waiting for them to be set. Any subsequent read
-  // will see the combined result of all cookie operation.
+  CookieOptions::SamePartyCookieContextType same_party_context =
+      net::cookie_util::ComputeSamePartyContext(
+          request_site, request_->isolation_info(), delegate);
+  bool is_in_nontrivial_first_party_set =
+      delegate && delegate->IsInNontrivialFirstPartySet(request_site);
+  CookieOptions options = CreateCookieOptions(
+      same_site_context, same_party_context, request_->isolation_info(),
+      is_in_nontrivial_first_party_set);
+
+  // Set all cookies, without waiting for them to be set. Any subsequent
+  // read will see the combined result of all cookie operation.
   const base::StringPiece name("Set-Cookie");
   std::string cookie_string;
   size_t iter = 0;
@@ -745,10 +743,10 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // list has been fully processed, and it can either be called in the
   // callback or after the loop is called, depending on how the last element
   // was handled. |num_cookie_lines_left_| keeps track of how many async
-  // callbacks are currently out (starting from 1 to make sure the loop runs all
-  // the way through before trying to exit). If there are any callbacks still
-  // waiting when the loop ends, then NotifyHeadersComplete will be called when
-  // it reaches 0 in the callback itself.
+  // callbacks are currently out (starting from 1 to make sure the loop runs
+  // all the way through before trying to exit). If there are any callbacks
+  // still waiting when the loop ends, then NotifyHeadersComplete will be
+  // called when it reaches 0 in the callback itself.
   num_cookie_lines_left_ = 1;
   while (headers->EnumerateHeader(&iter, name, &cookie_string)) {
     CookieInclusionStatus returned_status;
@@ -775,7 +773,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       continue;
     }
 
-    request_->context()->cookie_store()->SetCanonicalCookieAsync(
+    cookie_store->SetCanonicalCookieAsync(
         std::move(cookie), request_->url(), options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options, cookie_to_return,
@@ -785,15 +783,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // loop has been exited.
   num_cookie_lines_left_--;
 
-  if (num_cookie_lines_left_ == 0) {
-    // Mark the CookieInclusionStatuses of items in
-    // |set_cookie_access_result_list_| if they are part of a presumed SameSite
-    // compatibility pair.
-    if (ShouldMarkSameSiteCompatPairs(set_cookie_access_result_list_, options))
-      MarkSameSiteCompatPairs(set_cookie_access_result_list_, options);
-
+  if (num_cookie_lines_left_ == 0)
     NotifyHeadersComplete();
-  }
 }
 
 void URLRequestHttpJob::OnSetCookieResult(
@@ -812,6 +803,15 @@ void URLRequestHttpJob::OnSetCookieResult(
                                        access_result.status, capture_mode);
                                  });
   }
+
+  // If the cookie was excluded due to the fix for crbug.com/1166211, this
+  // applies a warning to the status that will show up in the netlog.
+  // TODO(crbug.com/1166211): Remove once no longer needed.
+  if (options.same_site_cookie_context().AffectedByBugfix1166211()) {
+    options.same_site_cookie_context()
+        .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
+            access_result.status);
+  }
   set_cookie_access_result_list_.emplace_back(
       std::move(cookie), std::move(cookie_string), access_result);
 
@@ -820,15 +820,8 @@ void URLRequestHttpJob::OnSetCookieResult(
   // If all the cookie lines have been handled, |set_cookie_access_result_list_|
   // now reflects the result of all Set-Cookie lines, and the request can be
   // continued.
-  if (num_cookie_lines_left_ == 0) {
-    // Mark the CookieInclusionStatuses of items in
-    // |set_cookie_access_result_list_| if they are part of a presumed SameSite
-    // compatibility pair.
-    if (ShouldMarkSameSiteCompatPairs(set_cookie_access_result_list_, options))
-      MarkSameSiteCompatPairs(set_cookie_access_result_list_, options);
-
+  if (num_cookie_lines_left_ == 0)
     NotifyHeadersComplete();
-  }
 }
 
 void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {
@@ -1122,14 +1115,6 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
         // Request will not be canceled; though
         // it is expected that user will see malformed / garbage response.
         return upstream;
-      case SourceStream::TYPE_GZIP_FALLBACK_DEPRECATED:
-      case SourceStream::TYPE_SDCH_DEPRECATED:
-      case SourceStream::TYPE_SDCH_POSSIBLE_DEPRECATED:
-      case SourceStream::TYPE_REJECTED:
-      case SourceStream::TYPE_INVALID:
-      case SourceStream::TYPE_MAX:
-        NOTREACHED();
-        return nullptr;
     }
   }
 
@@ -1144,14 +1129,8 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
       case SourceStream::TYPE_DEFLATE:
         downstream = GzipSourceStream::Create(std::move(upstream), type);
         break;
-      case SourceStream::TYPE_GZIP_FALLBACK_DEPRECATED:
-      case SourceStream::TYPE_SDCH_DEPRECATED:
-      case SourceStream::TYPE_SDCH_POSSIBLE_DEPRECATED:
       case SourceStream::TYPE_NONE:
-      case SourceStream::TYPE_INVALID:
-      case SourceStream::TYPE_REJECTED:
       case SourceStream::TYPE_UNKNOWN:
-      case SourceStream::TYPE_MAX:
         NOTREACHED();
         return nullptr;
     }

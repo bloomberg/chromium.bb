@@ -299,10 +299,10 @@ Polymer({
     }
 
     let i18nId;
-    // <if expr="is_linux and not chromeos">
+    // <if expr="is_linux and not chromeos and not lacros">
     i18nId = useSystemTheme ? 'systemTheme' : 'classicTheme';
     // </if>
-    // <if expr="not is_linux or chromeos">
+    // <if expr="not is_linux or chromeos or lacros">
     i18nId = 'chooseFromWebStore';
     // </if>
     this.themeSublabel_ = this.i18n(i18nId);
@@ -322,5 +322,14 @@ Polymer({
    */
   zoomValuesEqual_(zoom1, zoom2) {
     return Math.abs(zoom1 - zoom2) <= 0.001;
+  },
+
+  /**
+   * @param {boolean} previousIsVisible
+   * @param {boolean} nextIsVisible
+   * @return {boolean}
+   */
+  showHr_(previousIsVisible, nextIsVisible) {
+    return previousIsVisible && nextIsVisible;
   },
 });

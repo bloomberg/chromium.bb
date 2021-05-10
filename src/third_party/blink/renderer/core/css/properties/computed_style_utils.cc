@@ -330,69 +330,42 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
   return list;
 }
 
+static CSSNumericLiteralValue* ValueForImageSlice(const Length& slice) {
+  // TODO(alancutter): Make this code aware of calc lengths.
+  return CSSNumericLiteralValue::Create(
+      slice.Value(), slice.IsPercentOrCalc()
+                         ? CSSPrimitiveValue::UnitType::kPercentage
+                         : CSSPrimitiveValue::UnitType::kNumber);
+}
+
 cssvalue::CSSBorderImageSliceValue*
 ComputedStyleUtils::ValueForNinePieceImageSlice(const NinePieceImage& image) {
+  const LengthBox& slices = image.ImageSlices();
+
   // Create the slices.
-  CSSPrimitiveValue* top = nullptr;
+  CSSPrimitiveValue* top = ValueForImageSlice(slices.Top());
+
   CSSPrimitiveValue* right = nullptr;
   CSSPrimitiveValue* bottom = nullptr;
   CSSPrimitiveValue* left = nullptr;
-
-  // TODO(alancutter): Make this code aware of calc lengths.
-  if (image.ImageSlices().Top().IsPercentOrCalc()) {
-    top = CSSNumericLiteralValue::Create(
-        image.ImageSlices().Top().Value(),
-        CSSPrimitiveValue::UnitType::kPercentage);
-  } else {
-    top = CSSNumericLiteralValue::Create(image.ImageSlices().Top().Value(),
-                                         CSSPrimitiveValue::UnitType::kNumber);
-  }
-
-  if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
-      image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-      image.ImageSlices().Left() == image.ImageSlices().Top()) {
+  if (slices.Right() == slices.Top() && slices.Bottom() == slices.Top() &&
+      slices.Left() == slices.Top()) {
     right = top;
     bottom = top;
     left = top;
   } else {
-    if (image.ImageSlices().Right().IsPercentOrCalc()) {
-      right = CSSNumericLiteralValue::Create(
-          image.ImageSlices().Right().Value(),
-          CSSPrimitiveValue::UnitType::kPercentage);
-    } else {
-      right =
-          CSSNumericLiteralValue::Create(image.ImageSlices().Right().Value(),
-                                         CSSPrimitiveValue::UnitType::kNumber);
-    }
+    right = ValueForImageSlice(slices.Right());
 
-    if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-        image.ImageSlices().Right() == image.ImageSlices().Left()) {
+    if (slices.Bottom() == slices.Top() && slices.Right() == slices.Left()) {
       bottom = top;
       left = right;
     } else {
-      if (image.ImageSlices().Bottom().IsPercentOrCalc()) {
-        bottom = CSSNumericLiteralValue::Create(
-            image.ImageSlices().Bottom().Value(),
-            CSSPrimitiveValue::UnitType::kPercentage);
-      } else {
-        bottom = CSSNumericLiteralValue::Create(
-            image.ImageSlices().Bottom().Value(),
-            CSSPrimitiveValue::UnitType::kNumber);
-      }
+      bottom = ValueForImageSlice(slices.Bottom());
 
-      if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
+      if (slices.Left() == slices.Right())
         left = right;
-      } else {
-        if (image.ImageSlices().Left().IsPercentOrCalc()) {
-          left = CSSNumericLiteralValue::Create(
-              image.ImageSlices().Left().Value(),
-              CSSPrimitiveValue::UnitType::kPercentage);
-        } else {
-          left = CSSNumericLiteralValue::Create(
-              image.ImageSlices().Left().Value(),
-              CSSPrimitiveValue::UnitType::kNumber);
-        }
-      }
+      else
+        left = ValueForImageSlice(slices.Left());
     }
   }
 
@@ -590,12 +563,14 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   if (offset.IsPercentOrCalc() && box && layout_object->IsPositioned()) {
     LayoutUnit containing_block_size;
     if (layout_object->IsStickyPositioned()) {
-      const LayoutBox& enclosing_scrollport_box = box->EnclosingScrollportBox();
-      bool use_inline_size = is_horizontal_property ==
-                             enclosing_scrollport_box.IsHorizontalWritingMode();
+      const LayoutBox* enclosing_scrollport_box = box->EnclosingScrollportBox();
+      DCHECK(enclosing_scrollport_box);
+      bool use_inline_size =
+          is_horizontal_property ==
+          enclosing_scrollport_box->IsHorizontalWritingMode();
       containing_block_size =
-          use_inline_size ? enclosing_scrollport_box.ContentLogicalWidth()
-                          : enclosing_scrollport_box.ContentLogicalHeight();
+          use_inline_size ? enclosing_scrollport_box->ContentLogicalWidth()
+                          : enclosing_scrollport_box->ContentLogicalHeight();
     } else {
       containing_block_size =
           is_horizontal_property ==
@@ -1365,6 +1340,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
                   : style.GridTemplateRows().LegacyTrackList();
   const Vector<GridTrackSize>& auto_repeat_track_sizes =
       is_row_axis ? style.GridAutoRepeatColumns() : style.GridAutoRepeatRows();
+
+  // TODO(crbug.com/1045599): Implement similar logic for GridNG.
   bool is_layout_grid = layout_object && layout_object->IsLayoutGrid();
 
   // Handle the 'none' case.
@@ -1374,8 +1351,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
     auto& positions = is_row_axis
-                          ? ToLayoutGrid(layout_object)->ColumnPositions()
-                          : ToLayoutGrid(layout_object)->RowPositions();
+                          ? To<LayoutGrid>(layout_object)->ColumnPositions()
+                          : To<LayoutGrid>(layout_object)->RowPositions();
     track_list_is_empty = positions.size() == 1;
   }
 
@@ -1387,7 +1364,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   // If the element is a grid container, the resolved value is the used value,
   // specifying track sizes in pixels and expanding the repeat() notation.
   if (is_layout_grid) {
-    const auto* grid = ToLayoutGrid(layout_object);
+    const auto* grid = To<LayoutGrid>(layout_object);
     OrderedNamedLinesCollectorInGridLayout collector(
         style, is_row_axis, grid->AutoRepeatCountForDirection(direction),
         auto_repeat_track_sizes.size());
@@ -2048,22 +2025,13 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
   for (const ContentData* content_data = style.GetContentData(); content_data;
        content_data = content_data->Next()) {
     if (content_data->IsCounter()) {
-      const CounterContent* counter =
-          To<CounterContentData>(content_data)->Counter();
-      DCHECK(counter);
+      const CounterContentData& counter = To<CounterContentData>(*content_data);
       auto* identifier =
-          MakeGarbageCollected<CSSCustomIdentValue>(counter->Identifier());
+          MakeGarbageCollected<CSSCustomIdentValue>(counter.Identifier());
       auto* separator =
-          MakeGarbageCollected<CSSStringValue>(counter->Separator());
-      CSSValueID list_style_ident = CSSValueID::kNone;
-      if (counter->ListStyle() != EListStyleType::kNone) {
-        // TODO(sashab): Change this to use a converter instead of
-        // CSSPrimitiveValueMappings.
-        list_style_ident =
-            CSSIdentifierValue::Create(counter->ListStyle())->GetValueID();
-      }
-      CSSIdentifierValue* list_style =
-          CSSIdentifierValue::Create(list_style_ident);
+          MakeGarbageCollected<CSSStringValue>(counter.Separator());
+      auto* list_style =
+          MakeGarbageCollected<CSSCustomIdentValue>(counter.ListStyle());
       list->Append(*MakeGarbageCollected<cssvalue::CSSCounterValue>(
           identifier, list_style, separator));
     } else if (content_data->IsImage()) {

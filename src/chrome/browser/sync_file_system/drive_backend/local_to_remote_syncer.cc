@@ -253,7 +253,7 @@ void LocalToRemoteSyncer::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
 }
 
 void LocalToRemoteSyncer::MoveToBackground(
-    const Continuation& continuation,
+    Continuation continuation,
     std::unique_ptr<SyncTaskToken> token) {
   std::unique_ptr<TaskBlocker> blocker(new TaskBlocker);
   blocker->app_id = url_.origin().host();
@@ -276,12 +276,12 @@ void LocalToRemoteSyncer::MoveToBackground(
   // After the invocation of ContinueAsBackgroundTask
   SyncTaskManager::UpdateTaskBlocker(
       std::move(token), std::move(blocker),
-      base::Bind(&LocalToRemoteSyncer::ContinueAsBackgroundTask,
-                 weak_ptr_factory_.GetWeakPtr(), continuation));
+      base::BindOnce(&LocalToRemoteSyncer::ContinueAsBackgroundTask,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(continuation)));
 }
 
 void LocalToRemoteSyncer::ContinueAsBackgroundTask(
-    const Continuation& continuation,
+    Continuation continuation,
     std::unique_ptr<SyncTaskToken> token) {
   // The SyncTask runs as a background task beyond this point.
   // Note that any task can run between MoveToBackground() and
@@ -315,7 +315,7 @@ void LocalToRemoteSyncer::ContinueAsBackgroundTask(
     }
   }
 
-  continuation.Run(std::move(token));
+  std::move(continuation).Run(std::move(token));
 }
 
 void LocalToRemoteSyncer::SyncCompleted(std::unique_ptr<SyncTaskToken> token,
@@ -528,7 +528,7 @@ void LocalToRemoteSyncer::UploadExistingFile(
       remote_file_tracker_->file_id(), local_path_, "application/octet_stream",
       options,
       base::BindOnce(&LocalToRemoteSyncer::DidUploadExistingFile,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(token)),
       google_apis::ProgressCallback());
 }
 
@@ -601,7 +601,7 @@ void LocalToRemoteSyncer::UpdateRemoteMetadata(
   drive_service()->GetFileResource(
       file_id, base::BindOnce(&LocalToRemoteSyncer::DidGetRemoteMetadata,
                               weak_ptr_factory_.GetWeakPtr(), file_id,
-                              base::Passed(&token)));
+                              std::move(token)));
 }
 
 void LocalToRemoteSyncer::DidGetRemoteMetadata(
@@ -647,7 +647,7 @@ void LocalToRemoteSyncer::UploadNewFile(std::unique_ptr<SyncTaskToken> token) {
       title.AsUTF8Unsafe(), GetMimeTypeFromTitle(title),
       drive::UploadNewFileOptions(),
       base::BindOnce(&LocalToRemoteSyncer::DidUploadNewFile,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(token)),
       google_apis::ProgressCallback());
 }
 

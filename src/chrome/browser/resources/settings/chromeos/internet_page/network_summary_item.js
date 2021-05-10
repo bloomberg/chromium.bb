@@ -74,6 +74,14 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
+
+    /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
+    },
   },
 
   /*
@@ -107,6 +115,9 @@ Polymer({
         }
         if (deviceState.deviceState === mojom.DeviceStateType.kDisabling) {
           return this.i18n('internetDeviceDisabling');
+        }
+        if (deviceState.deviceState === mojom.DeviceStateType.kInhibited) {
+          return this.i18n('internetDeviceBusy');
         }
       } else if (deviceState.type === mojom.NetworkType.kTether) {
         if (deviceState.deviceState === mojom.DeviceStateType.kUninitialized) {
@@ -152,9 +163,16 @@ Polymer({
       return name ? this.i18n('networkListItemConnectingTo', name) :
                     this.i18n('networkListItemConnecting');
     }
-    if (networkState.type === mojom.NetworkType.kCellular && deviceState &&
-        deviceState.scanning) {
-      return this.i18n('internetMobileSearching');
+    if (networkState.type === mojom.NetworkType.kCellular && deviceState) {
+      // If there is no cellular SIM and the updated UI flag is disabled,
+      // simply display 'Off'. See b/162564761 for details.
+      if (deviceState.simAbsent &&
+          !loadTimeData.getBoolean('updatedCellularActivationUi')) {
+        return this.i18n('deviceOff');
+      }
+      if (deviceState.scanning) {
+        return this.i18n('internetMobileSearching');
+      }
     }
     return this.i18n('networkListItemNotConnected');
   },
@@ -196,16 +214,22 @@ Polymer({
     if (!deviceState || deviceState.type !== mojom.NetworkType.kCellular) {
       return false;
     }
+
+    if (this.isUpdatedCellularUiEnabled_) {
+      // Do not show simInfo if |updatedCellularActivationUi| flag is enabled.
+      return false;
+    }
+
     return this.simLockedOrAbsent_(deviceState);
   },
 
   /**
-   * @param {!OncMojo.DeviceStateProperties} deviceState
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {boolean}
    * @private
    */
   simLockedOrAbsent_(deviceState) {
-    if (this.deviceIsEnabled_(deviceState)) {
+    if (!deviceState) {
       return false;
     }
     if (deviceState.simAbsent) {
@@ -267,6 +291,7 @@ Polymer({
   enableToggleIsEnabled_(deviceState) {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState.deviceState !== mojom.DeviceStateType.kProhibited &&
+        deviceState.deviceState !== mojom.DeviceStateType.kInhibited &&
         !OncMojo.deviceStateIsIntermediate(deviceState.deviceState);
   },
 
@@ -391,11 +416,28 @@ Polymer({
       return false;
     }
     const type = deviceState.type;
+
     if (type === mojom.NetworkType.kTether ||
         (type === mojom.NetworkType.kCellular && this.tetherDeviceState)) {
       // The "Mobile data" subpage should always be shown if Tether is
       // available, even if there are currently no associated networks.
       return true;
+    }
+
+    if (type === mojom.NetworkType.kCellular) {
+      if (this.isUpdatedCellularUiEnabled_) {
+        // When network type is Cellular and |updatedCellularActivationUi| is
+        // enabled, always show "Mobile data" subpage, when eSim is available
+        // or multiple pSimSlots are available
+        const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
+        if (eSimSlots > 0 || pSimSlots > 1) {
+          return true;
+        }
+      } else if (this.simLockedOrAbsent_(deviceState)) {
+        // No subpage should be shown if the SIM is locked/absent. The user
+        // should unlock their SIM before a subpage is possible.
+        return false;
+      }
     }
 
     if (type === mojom.NetworkType.kVPN) {
@@ -475,6 +517,11 @@ Polymer({
    * @private
    */
   showArrowButton_(activeNetworkState, deviceState, networkStateList) {
+    // If SIM info is shown on the right side of the item, no arrow should be
+    // shown.
+    if (this.showSimInfo_(deviceState)) {
+      return false;
+    }
     if (!this.deviceIsEnabled_(deviceState)) {
       return false;
     }

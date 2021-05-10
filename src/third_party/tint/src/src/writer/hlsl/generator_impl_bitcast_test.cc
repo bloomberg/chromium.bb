@@ -16,10 +16,10 @@
 
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/u32_type.h"
+#include "src/program.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/u32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -30,29 +30,32 @@ namespace {
 using HlslGeneratorImplTest_Bitcast = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Bitcast, EmitExpression_Bitcast_Float) {
-  ast::type::F32Type f32;
-  auto id = std::make_unique<ast::IdentifierExpression>("id");
-  ast::BitcastExpression bitcast(&f32, std::move(id));
+  auto* id = Expr("id");
+  auto* bitcast = create<ast::BitcastExpression>(ty.f32(), id);
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &bitcast)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, bitcast)) << gen.error();
   EXPECT_EQ(result(), "asfloat(id)");
 }
 
 TEST_F(HlslGeneratorImplTest_Bitcast, EmitExpression_Bitcast_Int) {
-  ast::type::I32Type i32;
-  auto id = std::make_unique<ast::IdentifierExpression>("id");
-  ast::BitcastExpression bitcast(&i32, std::move(id));
+  auto* id = Expr("id");
+  auto* bitcast = create<ast::BitcastExpression>(ty.i32(), id);
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &bitcast)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, bitcast)) << gen.error();
   EXPECT_EQ(result(), "asint(id)");
 }
 
 TEST_F(HlslGeneratorImplTest_Bitcast, EmitExpression_Bitcast_Uint) {
-  ast::type::U32Type u32;
-  auto id = std::make_unique<ast::IdentifierExpression>("id");
-  ast::BitcastExpression bitcast(&u32, std::move(id));
+  auto* id = Expr("id");
+  auto* bitcast = create<ast::BitcastExpression>(ty.u32(), id);
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &bitcast)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, bitcast)) << gen.error();
   EXPECT_EQ(result(), "asuint(id)");
 }
 

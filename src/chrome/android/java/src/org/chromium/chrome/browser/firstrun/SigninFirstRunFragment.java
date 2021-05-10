@@ -4,30 +4,31 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
-
-import androidx.fragment.app.Fragment;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SigninFragmentBase;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
-/** A {@link Fragment} to handle sign-in within the first run experience. */
+import java.util.List;
+
+/**
+ * Implementation of {@link SigninFragmentBase} for the first run experience.
+ */
 public class SigninFirstRunFragment extends SigninFragmentBase implements FirstRunFragment {
     // Per-page parameters:
-    public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
+    // TODO(crbug/1168516): Remove CHILD_ACCOUNT_STATUS
     public static final String CHILD_ACCOUNT_STATUS = "ChildAccountStatus";
-
-    private Bundle mArguments;
 
     // Every fragment must have a public default constructor.
     public SigninFirstRunFragment() {}
@@ -35,29 +36,21 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
-        Bundle freProperties = getPageDelegate().getProperties();
-        String forceAccountTo = freProperties.getString(FORCE_SIGNIN_ACCOUNT_TO);
-        if (forceAccountTo == null) {
-            mArguments = createArguments(null);
-        } else {
-            @ChildAccountStatus.Status
-            int childAccountStatus = freProperties.getInt(CHILD_ACCOUNT_STATUS);
-            mArguments = createArgumentsForForcedSigninFlow(forceAccountTo, childAccountStatus);
-        }
-
+        final List<Account> accounts =
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
+        final Bundle freProperties = getPageDelegate().getProperties();
+        final @ChildAccountStatus.Status int childAccountStatus =
+                freProperties.getInt(CHILD_ACCOUNT_STATUS);
+        setArguments(ChildAccountStatus.isChild(childAccountStatus)
+                        ? createArgumentsForForcedSigninFlow(
+                                accounts.get(0).name, childAccountStatus)
+                        : createArguments(null));
         // Records if there are {0, 1, 2+} accounts on device for default/non-default flows.
-        int numAccounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().size();
         RecordHistogram.recordCountHistogram(
-                "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", Math.min(numAccounts, 2));
+                "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", Math.min(accounts.size(), 2));
         RecordUserAction.record("MobileFre.SignInShown");
-        RecordUserAction.record("Signin_Signin_FromStartPage");
-        SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
-    }
-
-    @Override
-    protected Bundle getSigninArguments() {
-        return mArguments;
+        SigninMetricsUtils.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
+        SigninMetricsUtils.logSigninUserActionForAccessPoint(SigninAccessPoint.START_PAGE);
     }
 
     @Override

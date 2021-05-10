@@ -5,10 +5,11 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_SIMPLE_SESSION_NOTIFIER_H_
 #define QUICHE_QUIC_TEST_TOOLS_SIMPLE_SESSION_NOTIFIER_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval_set.h"
-#include "net/third_party/quiche/src/quic/core/session_notifier_interface.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/core/quic_circular_deque.h"
+#include "quic/core/quic_interval_set.h"
+#include "quic/core/session_notifier_interface.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 
@@ -34,6 +35,10 @@ class SimpleSessionNotifier : public SessionNotifierInterface {
                               QuicStreamOffset bytes_written);
   // Tries to write PING.
   void WriteOrBufferPing();
+
+  // Tries to write ACK_FREQUENCY.
+  void WriteOrBufferAckFrequency(
+      const QuicAckFrequencyFrame& ack_frequency_frame);
 
   // Tries to write CRYPTO data and returns the number of bytes written.
   size_t WriteCryptoData(EncryptionLevel level,
@@ -102,7 +107,7 @@ class SimpleSessionNotifier : public SessionNotifierInterface {
 
   friend std::ostream& operator<<(std::ostream& os, const StreamState& s);
 
-  using StreamMap = QuicHashMap<QuicStreamId, StreamState>;
+  using StreamMap = absl::flat_hash_map<QuicStreamId, StreamState>;
 
   void OnStreamDataConsumed(QuicStreamId id,
                             QuicStreamOffset offset,

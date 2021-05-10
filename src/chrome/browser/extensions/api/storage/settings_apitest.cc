@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -34,9 +35,9 @@
 #include "components/sync/test/model/sync_error_factory_mock.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/value_store/settings_namespace.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -49,9 +50,10 @@ using settings_namespace::MANAGED;
 using settings_namespace::Namespace;
 using settings_namespace::SYNC;
 using settings_namespace::ToString;
-using testing::Mock;
-using testing::Return;
 using testing::_;
+using testing::Mock;
+using testing::NiceMock;
+using testing::Return;
 
 namespace {
 
@@ -78,8 +80,10 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillByDefault(Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
+        .WillByDefault(Return(true));
     policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -129,7 +133,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
                 kModelType, syncer::SyncDataList(),
                 std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
                     sync_processor),
-                std::make_unique<syncer::SyncErrorFactoryMock>())
+                std::make_unique<NiceMock<syncer::SyncErrorFactoryMock>>())
             .has_value());
   }
 
@@ -198,8 +202,9 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     // initialisation race conditions.
     const Extension* extension = NULL;
     if (extension_dir) {
-      extension = LoadExtensionIncognito(
-          test_data_dir_.AppendASCII("settings").AppendASCII(*extension_dir));
+      extension = LoadExtension(
+          test_data_dir_.AppendASCII("settings").AppendASCII(*extension_dir),
+          {.allow_in_incognito = true});
       EXPECT_TRUE(extension);
     }
 
@@ -232,7 +237,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
  protected:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
@@ -429,7 +434,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
   EXPECT_TRUE(frontend->IsStorageEnabled(MANAGED));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
+// Bulk disabled as part of arm64 bot stabilization: https://crbug.com/1154345
+// TODO(crbug.com/1177118) Re-enable test
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_ExtensionsSchemas) {
   // Verifies that the Schemas for the extensions domain are created on startup.
   Profile* profile = browser()->profile();
   ExtensionSystem* extension_system = ExtensionSystem::Get(profile);
@@ -451,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   EXPECT_FALSE(registry->schema_map()->GetSchema(policy::PolicyNamespace(
       policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId)));
 
-  MockSchemaRegistryObserver observer;
+  NiceMock<MockSchemaRegistryObserver> observer;
   registry->AddObserver(&observer);
 
   // Install a managed extension.
@@ -508,7 +515,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   EXPECT_EQ(base::Value::Type::INTEGER, dict.GetProperty("anything").type());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
+// Bulk disabled as part of arm64 bot stabilization: https://crbug.com/1154345
+// TODO(crbug.com/1177118) Re-enable test
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_ManagedStorage) {
   // Set policies for the test extension.
   std::unique_ptr<base::DictionaryValue> policy =
       extensions::DictionaryBuilder()

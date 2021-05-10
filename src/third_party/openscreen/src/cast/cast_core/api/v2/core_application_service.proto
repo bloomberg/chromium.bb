@@ -29,17 +29,15 @@ service CoreApplicationService {
   // application upon failures.
   rpc OnApplicationStatus(ApplicationStatus) returns (google.protobuf.Empty);
 
-  // "MessageConnectorService" provides the transport for MessagePorts.
-  // MessagePorts are connected using other services (e.g. ApiBindings), then
-  // registered with the MessageConnectorService to communicate over IPC
-  rpc PostMessage(cast.web.Message) returns (cast.web.ChannelStatus);
+  // Posts messages between MessagePorts. MessagePorts are connected using other
+  // services (e.g. ApiBindings), then registered with the
+  // MessageConnectorService to communicate over IPC.
+  rpc PostMessage(cast.web.Message) returns (cast.web.MessagePortStatus);
 
-  // "ApiBindings", used for retrieving and initializing Cast bindings
-  // Gets the list of bindings to early-inject into the page at load time.
+  // Gets the list of bindings to early-inject into javascript at page load.
   rpc GetAll(google.protobuf.Empty) returns (cast.bindings.GetAllResponse);
 
-  // Should be invoked when connecting a named MessagePort to a native
-  // bindings backend.
+  // Connects to a binding returned by GetAll.
   rpc Connect(cast.bindings.ConnectRequest) returns (google.protobuf.Empty);
 }
 

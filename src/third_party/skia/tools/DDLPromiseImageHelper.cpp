@@ -10,8 +10,6 @@
 #include "include/core/SkDeferredDisplayListRecorder.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkSerialProcs.h"
-#include "include/core/SkYUVAIndex.h"
-#include "include/core/SkYUVASizeInfo.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrYUVABackendTextures.h"
 #include "src/codec/SkCodecImageGenerator.h"
@@ -37,7 +35,7 @@ DDLPromiseImageHelper::PromiseImageInfo::PromiseImageInfo(PromiseImageInfo&& oth
         , fBaseLevel(other.fBaseLevel)
         , fMipLevels(std::move(other.fMipLevels))
         , fYUVAPixmaps(std::move(other.fYUVAPixmaps)) {
-    for (int i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
+    for (int i = 0; i < SkYUVAInfo::kMaxPlanes; ++i) {
         fCallbackContexts[i] = std::move(other.fCallbackContexts[i]);
     }
 }
@@ -121,8 +119,12 @@ static GrBackendTexture create_yuva_texture(GrDirectContext* direct,
     auto markFinished = [](void* context) {
         *(bool*)context = true;
     };
-    auto beTex = direct->createBackendTexture(&pm, 1, GrRenderable::kNo, GrProtected::kNo,
-                                              markFinished, &finishedBECreate);
+    auto beTex = direct->createBackendTexture(pm,
+                                              kTopLeft_GrSurfaceOrigin,
+                                              GrRenderable::kNo,
+                                              GrProtected::kNo,
+                                              markFinished,
+                                              &finishedBECreate);
     if (beTex.isValid()) {
         direct->submit();
         while (!finishedBECreate) {
@@ -164,9 +166,13 @@ void DDLPromiseImageHelper::CreateBETexturesForPromiseImage(GrDirectContext* dir
         auto markFinished = [](void* context) {
             *(bool*)context = true;
         };
-        auto backendTex = direct->createBackendTexture(mipLevels.get(), info->numMipLevels(),
-                                                       GrRenderable::kNo, GrProtected::kNo,
-                                                       markFinished, &finishedBECreate);
+        auto backendTex = direct->createBackendTexture(mipLevels.get(),
+                                                       info->numMipLevels(),
+                                                       kTopLeft_GrSurfaceOrigin,
+                                                       GrRenderable::kNo,
+                                                       GrProtected::kNo,
+                                                       markFinished,
+                                                       &finishedBECreate);
         SkASSERT(backendTex.isValid());
         direct->submit();
         while (!finishedBECreate) {
@@ -306,16 +312,16 @@ sk_sp<SkImage> DDLPromiseImageHelper::CreatePromiseImages(const void* rawData,
     // texture wouldn't fit on the GPU. Create a separate bitmap-backed image for each thread.
     if (!curImage.isYUV() && !curImage.callbackContext(0)) {
         SkASSERT(curImage.baseLevel().isImmutable());
-        return SkImage::MakeFromBitmap(curImage.baseLevel());
+        return curImage.baseLevel().asImage();
     }
 
     SkASSERT(curImage.index() == *indexPtr);
 
     sk_sp<SkImage> image;
     if (curImage.isYUV()) {
-        GrBackendFormat backendFormats[SkYUVASizeInfo::kMaxCount];
+        GrBackendFormat backendFormats[SkYUVAInfo::kMaxPlanes];
         const SkYUVAInfo& yuvaInfo = curImage.yuvaInfo();
-        void* contexts[SkYUVASizeInfo::kMaxCount] = { nullptr, nullptr, nullptr, nullptr };
+        void* contexts[SkYUVAInfo::kMaxPlanes] = {nullptr, nullptr, nullptr, nullptr};
         int textureCount = yuvaInfo.numPlanes();
         for (int i = 0; i < textureCount; ++i) {
             backendFormats[i] = curImage.backendFormat(i);
@@ -332,19 +338,13 @@ sk_sp<SkImage> DDLPromiseImageHelper::CreatePromiseImages(const void* rawData,
                 PromiseImageCallbackContext::PromiseImageFulfillProc,
                 PromiseImageCallbackContext::PromiseImageReleaseProc,
                 contexts);
+        if (!image) {
+            return nullptr;
+        }
         for (int i = 0; i < textureCount; ++i) {
             curImage.callbackContext(i)->wasAddedToImage();
         }
 
-#ifdef SK_DEBUG
-        {
-            // By the peekProxy contract this image should not have a single backing proxy so
-            // should return null. The call should also not trigger the conversion to RGBA.
-            SkImage_GpuYUVA* yuva = reinterpret_cast<SkImage_GpuYUVA*>(image.get());
-            SkASSERT(!yuva->peekProxy());
-            SkASSERT(!yuva->peekProxy());  // the first call didn't force a conversion to RGBA
-        }
-#endif
     } else {
         const GrBackendFormat& backendFormat = curImage.backendFormat(0);
         SkASSERT(backendFormat.isValid());
@@ -398,7 +398,9 @@ int DDLPromiseImageHelper::addImage(SkImage* image) {
     SkYUVAPixmapInfo yuvaInfo;
     if (codec && codec->queryYUVAInfo(fSupportedYUVADataTypes, &yuvaInfo)) {
         auto yuvaPixmaps = SkYUVAPixmaps::Allocate(yuvaInfo);
-        SkAssertResult(codec->getYUVAPlanes(yuvaPixmaps));
+        if (!codec->getYUVAPlanes(yuvaPixmaps)) {
+            return -1;
+        }
         SkASSERT(yuvaPixmaps.isValid());
         newImageInfo.setYUVPlanes(std::move(yuvaPixmaps));
     } else {

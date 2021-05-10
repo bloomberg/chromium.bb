@@ -411,7 +411,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::WillRemoveNode(Node& node) {
         NodeTraversal::NextSkippingChildren(*first_node_inserted_);
   } else if (last_node_inserted_ == node) {
     last_node_inserted_ =
-        NodeTraversal::PreviousSkippingChildren(*last_node_inserted_);
+        NodeTraversal::PreviousAbsoluteSibling(*last_node_inserted_);
   }
   if (node.contains(ref_node_))
     ref_node_ = NodeTraversal::NextSkippingChildren(node);
@@ -820,10 +820,13 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
   // can't insert into those elements.
   auto* first_node_inserted =
       DynamicTo<Text>(inserted_nodes.FirstNodeInserted());
-  if (first_node_inserted && !NodeHasVisibleLayoutText(*first_node_inserted)) {
-    inserted_nodes.WillRemoveNode(*first_node_inserted);
-    // Removing a Text node won't dispatch synchronous events.
-    RemoveNode(first_node_inserted, ASSERT_NO_EDITING_ABORT);
+  if (first_node_inserted) {
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+    if (!NodeHasVisibleLayoutText(*first_node_inserted)) {
+      inserted_nodes.WillRemoveNode(*first_node_inserted);
+      // Removing a Text node won't dispatch synchronous events.
+      RemoveNode(first_node_inserted, ASSERT_NO_EDITING_ABORT);
+    }
   }
 }
 

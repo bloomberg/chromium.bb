@@ -806,9 +806,9 @@ calculate_gf_length(). The following encoder use cases are supported:
 </ul>
 
 Except for the first trivial case where there is no prior knowledge of the
-following frames, the function \ref calculate_gf_length() tries to
-determine the GF group length based on the first pass statistics. As shown
-in figure [TODO BohalLi@], the determination is divided into two parts:
+following frames, the function \ref calculate_gf_length() tries to determine the
+GF group length based on the first pass statistics. The determination is divided
+into two parts:
 
 <ol>
    <li>Baseline decision based on accumulated statistics: this part of the function
@@ -820,11 +820,10 @@ in figure [TODO BohalLi@], the determination is divided into two parts:
    first-pass statistics, the baseline decision is set at the current point.</li>
 
    <li>If we are not at the end of the first-pass statistics, the next part will
-   try to refine the baseline decision. The algorithm is based on
-   \ref FIRSTPASS_STATS.coded_error. It tries to label the frames in the
-   baseline group into two classes: high-error and low-error, and cuts the GF
-   group at the furthest location that is also of the low-error class.
-   Detailed algorithm description is introduced here [TODO].</li>
+   try to refine the baseline decision. This algorithm is based on the analysis
+   of firstpass stats. It tries to cut the groups in stable regions or
+   relatively stable points. Also it tries to avoid cutting in a blending
+   region.</li>
 </ol>
 
 As mentioned, for two-pass encoding, the function \ref
@@ -846,7 +845,9 @@ decided that we should use a maximum GF length of 16, the function
 \ref calculate_gf_length() is called again with the updated maximum
 length, and it only sets the length for a single GF group
 (\ref RATE_CONTROL.intervals_till_gf_calculate_due is set to 1). This process
-is shown in [TODO BohalLi@].
+is shown below.
+
+\image html tplgfgroupdiagram.png "" width=40%
 
 Before encoding each frame, the encoder checks
 \ref RATE_CONTROL.frames_till_gf_update_due. If it is zero, indicating
@@ -863,40 +864,39 @@ The function \ref define_gf_group() defines the frame structure as well
 as other GF group level parameters (e.g. bit allocation) once the length of
 the current GF group is determined.
 
-The function first iterates through the first pass statistics in the GF group
-to accumulate various stats, using (TODO REF) accumulate_this_frame_stats()
-and (TODO REF)accumulate_next_frame_stats(). The accumulated statistics are
-then used to determine the use of the use of ALTREF frame along with other
-properties of the GF group. The values of \ref RATE_CONTROL.cur_gf_index,
-\ref RATE_CONTROL.intervals_till_gf_calculate_due and
-\ref RATE_CONTROL.frames_till_gf_update_due are also updated accordingly.
+The function first iterates through the first pass statistics in the GF group to
+accumulate various stats, using accumulate_this_frame_stats() and
+accumulate_next_frame_stats(). The accumulated statistics are then used to
+determine the use of the use of ALTREF frame along with other properties of the
+GF group. The values of \ref RATE_CONTROL.cur_gf_index, \ref
+RATE_CONTROL.intervals_till_gf_calculate_due and \ref
+RATE_CONTROL.frames_till_gf_update_due are also updated accordingly.
 
-The function \ref av1_gop_setup_structure() is called at the end to
-determine the frame layers and reference maps in the GF group, as shown in
-[TODO BohalLi@]. The (TODO REF) construct_multi_layer_gf_structure()
-function sets the frame update types for each frame and the group structure.
+The function \ref av1_gop_setup_structure() is called at the end to determine
+the frame layers and reference maps in the GF group, where the
+construct_multi_layer_gf_structure() function sets the frame update types for
+each frame and the group structure.
 
 - If ALTREF frames are allowed for the GF group: the first frame is set to
-  KF_UPDATE, OVERLAY_UPDATE or GF_UPDATE based on the previous GF group
-  (if it exists). The last frame of the GF group is set to ARF_UPDATE.
-  Then in (TODO REF) set_multi_layer_params(), frame update types are
-  determined recursively in a binary tree fashion, and assigned to give
-  the final IBBB structure for the group.
-    - If the current branch has more than 2 frames and we have not reached
-      maximum layer depth, then the middle frame is set as INTNL_ARF_UPDATE,
-      and the left and right branches are processed recursively.
-    - If the current branch has less than 3 frames, or we have reached maximum
-      layer depth, then every frame in the branch is set to LF_UPDATE.
-- If ALTREF frame is not allowed for the GF group: the first frame is set to
-  KF_UPDATE, OVERLAY_UPDATE or GF_UPDATE, and the rest of them are set as
-  LF_UPDATE. This basically forms an IPPP GF group structure.
+  KF_UPDATE, GF_UPDATE or ARF_UPDATE. The last frames of the GF group is set to
+  OVERLAY_UPDATE.  Then in set_multi_layer_params(), frame update
+  types are determined recursively in a binary tree fashion, and assigned to
+  give the final IBBB structure for the group.  - If the current branch has more
+  than 2 frames and we have not reached maximum layer depth, then the middle
+  frame is set as INTNL_ARF_UPDATE, and the left and right branches are
+  processed recursively.  - If the current branch has less than 3 frames, or we
+  have reached maximum layer depth, then every frame in the branch is set to
+  LF_UPDATE.
 
-The encoder may use Temporal dependancy modelling (TPL - see
-\ref architecture_enc_tpl) to determine whether we should use a maximum length
-of 32 or 16 for the current GF group. This requires calls to
-\ref define_gf_group() but should not change other settings (since it is in
-essence a trial). This special case is indicated by the setting parameter
-<b>is_final_pass</b> for to zero.
+- If ALTREF frame is not allowed for the GF group: the frames are set
+  as LF_UPDATE. This basically forms an IPPP GF group structure.
+
+As mentioned, the encoder may use Temporal dependancy modelling (TPL - see \ref
+architecture_enc_tpl) to determine whether we should use a maximum length of 32
+or 16 for the current GF group. This requires calls to \ref define_gf_group()
+but should not change other settings (since it is in essence a trial). This
+special case is indicated by the setting parameter <b>is_final_pass</b> for to
+zero.
 
 For single pass encodes where look-ahead processing is disabled
 (\ref AV1_COMP.lap_enabled = 0), \ref define_gf_group_pass0() is used
@@ -1105,7 +1105,7 @@ frame inter prediction modes (7 reference frames x 4 modes x 2 for OBMC
 
 As with the intra mode search, libaom supports an RD based pathway and a non
 rd pathway for speed critical use cases.  The entry points for these two cases
-are \ref av1_rd_pick_inter_mode_sb() and \ref av1_nonrd_pick_inter_mode_sb()
+are \ref av1_rd_pick_inter_mode() and \ref av1_nonrd_pick_inter_mode_sb()
 respectively.
 
 Various heuristics and predictive strategies are used to prune the search tree
@@ -1293,14 +1293,14 @@ Related functions:
 - \ref av1_cost_coeffs_txb_estimate()
 
 \paragraph architecture_entropy_coef_opt Quantized level optimization
-Beside computing entropy cost, the encoder also uses \ref av1_optimize_txb_new()
+Beside computing entropy cost, the encoder also uses \ref av1_optimize_txb()
 to adjust the coefficient’s quantized levels to achieve optimal RD trade-off.
-In \ref av1_optimize_txb_new(), the encoder goes through each quantized
+In \ref av1_optimize_txb(), the encoder goes through each quantized
 coefficient and lowers the quantized coefficient level by one if the action
 yields a better RD score.
 
 Related functions:
-- \ref av1_optimize_txb_new()
+- \ref av1_optimize_txb()
 
 All the related functions are listed in \ref coefficient_coding.
 

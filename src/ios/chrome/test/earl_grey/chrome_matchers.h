@@ -21,6 +21,11 @@ namespace chrome_test_util {
 // test will have consecutive numbers.
 id<GREYMatcher> WindowWithNumber(int window_number);
 
+// Shorthand matcher for creating a matcher that ensures the given matcher
+// matches elements under the given window.
+id<GREYMatcher> MatchInWindowWithNumber(int window_number,
+                                        id<GREYMatcher> matcher);
+
 // Matcher for element with accessibility label corresponding to |message_id|
 // and accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
@@ -191,6 +196,9 @@ id<GREYMatcher> SettingsDoneButton();
 // settings' navigation bar.
 id<GREYMatcher> SyncSettingsConfirmButton();
 
+// Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
+id<GREYMatcher> AutofillCreditCardEditTableView();
+
 // Returns matcher for the Autofill Credit Card "Payment Methods" view in the
 // settings menu.
 id<GREYMatcher> AutofillCreditCardTableView();
@@ -218,9 +226,6 @@ id<GREYMatcher> AddCreditCardButton();
 // Returns matcher for the "Cancel" button in the Payment Methods add credit
 // card view.
 id<GREYMatcher> AddCreditCardCancelButton();
-
-// Returns matcher for the "Credit Card Scanner" view.
-id<GREYMatcher> CreditCardScannerView();
 
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();
@@ -271,6 +276,10 @@ id<GREYMatcher> GoogleServicesSettingsView();
 
 // Returns matcher for the back button on a settings menu.
 id<GREYMatcher> SettingsMenuBackButton();
+
+// Returns matcher for the back button on a settings menu in given window
+// number.
+id<GREYMatcher> SettingsMenuBackButton(int window_number);
 
 // Returns matcher for the Privacy cell on the main Settings screen.
 id<GREYMatcher> SettingsMenuPrivacyButton();
@@ -338,8 +347,16 @@ id<GREYMatcher> RecentTabsMenuButton();
 // Returns matcher for the system selection callout.
 id<GREYMatcher> SystemSelectionCallout();
 
+// Returns a matcher for the Link to text button in the edit menu.
+id<GREYMatcher> SystemSelectionCalloutLinkToTextButton();
+
 // Returns matcher for the copy button on the system selection callout.
 id<GREYMatcher> SystemSelectionCalloutCopyButton();
+
+// Matcher for a Copy button, such as the one in the Activity View. This matcher
+// is very broad and will look for any button with a matching string.
+// Only the iOS 13 Activity View is reachable by EarlGrey.
+id<GREYMatcher> CopyActivityButton() API_AVAILABLE(ios(13));
 
 // Matcher for the Copy Link option in the updated context menus when long
 // pressing on a link. |use_new_string| determines which string to use.

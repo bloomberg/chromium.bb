@@ -14,25 +14,28 @@
 
 #include "src/ast/bitcast_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::BitcastExpression);
+
 namespace tint {
 namespace ast {
 
-BitcastExpression::BitcastExpression() : Expression() {}
-
-BitcastExpression::BitcastExpression(type::Type* type,
-                                     std::unique_ptr<Expression> expr)
-    : Expression(), type_(type), expr_(std::move(expr)) {}
-
 BitcastExpression::BitcastExpression(const Source& source,
                                      type::Type* type,
-                                     std::unique_ptr<Expression> expr)
-    : Expression(source), type_(type), expr_(std::move(expr)) {}
+                                     Expression* expr)
+    : Base(source), type_(type), expr_(expr) {}
 
 BitcastExpression::BitcastExpression(BitcastExpression&&) = default;
 BitcastExpression::~BitcastExpression() = default;
 
-bool BitcastExpression::IsBitcast() const {
-  return true;
+BitcastExpression* BitcastExpression::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* ty = ctx->Clone(type_);
+  auto* e = ctx->Clone(expr_);
+  return ctx->dst->create<BitcastExpression>(src, ty, e);
 }
 
 bool BitcastExpression::IsValid() const {
@@ -41,10 +44,13 @@ bool BitcastExpression::IsValid() const {
   return type_ != nullptr;
 }
 
-void BitcastExpression::to_str(std::ostream& out, size_t indent) const {
+void BitcastExpression::to_str(const semantic::Info& sem,
+                               std::ostream& out,
+                               size_t indent) const {
   make_indent(out, indent);
-  out << "Bitcast<" << type_->type_name() << ">{" << std::endl;
-  expr_->to_str(out, indent + 2);
+  out << "Bitcast[" << result_type_str(sem) << "]<" << type_->type_name()
+      << ">{" << std::endl;
+  expr_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

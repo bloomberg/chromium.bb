@@ -4,23 +4,23 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
@@ -54,13 +54,15 @@ void CreateAndStartUserSession(const AccountId& account_id) {
   SessionManager::Get()->SessionStarted();
 }
 
-class SettingsTestObserver : public chrome::SettingsWindowManagerObserver {
- public:
-  void OnNewSettingsWindow(Browser* settings_browser) override {
-    ++new_settings_count_;
-  }
-  int new_settings_count_ = 0;
-};
+// Return the number of windows that hosts OS Settings.
+size_t GetNumberOfSettingsWindows() {
+  auto* browser_list = BrowserList::GetInstance();
+  return std::count_if(browser_list->begin(), browser_list->end(),
+                       [](Browser* browser) {
+                         return web_app::IsBrowserForSystemWebApp(
+                             browser, web_app::SystemAppType::SETTINGS);
+                       });
+}
 
 // Give the underlying function a clearer name.
 Browser* GetLastActiveBrowser() {
@@ -182,25 +184,25 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
 void TestOpenSettingFromArc(Browser* browser,
                             ChromePage page,
                             const GURL& expected_url,
-                            int expected_setting_window_count) {
+                            size_t expected_setting_window_count) {
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
-  SettingsTestObserver observer;
-  auto* settings = chrome::SettingsWindowManager::GetInstance();
-  settings->AddObserver(&observer);
-
   ChromeNewWindowClient::Get()->OpenChromePageFromArc(page);
-  EXPECT_EQ(expected_setting_window_count, observer.new_settings_count_);
+
+  // The above OpenChromePageFromArc() should trigger an asynchronous call to
+  // launch OS Settings SWA. Flush Mojo calls so the browser window is created.
+  web_app::FlushSystemWebAppLaunchesForTesting(
+      GetLastActiveBrowser()->profile());
+
+  EXPECT_EQ(expected_setting_window_count, GetNumberOfSettingsWindows());
 
   // The right settings are loaded (not just the settings main page).
   content::WebContents* contents =
       GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(expected_url, contents->GetVisibleURL());
-
-  settings->RemoveObserver(&observer);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
@@ -209,30 +211,24 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
   TestOpenSettingFromArc(
       browser(), ChromePage::AUTOFILL,
       GURL("chrome://settings/").Resolve(chrome::kAutofillSubPage),
-      /*expected_setting_window_count=*/0);
+      /*expected_setting_window_count=*/0u);
 
   // But opening an OS setting should open the OS setting window.
   TestOpenSettingFromArc(
       browser(), ChromePage::POWER,
       GURL("chrome://os-settings/")
           .Resolve(chromeos::settings::mojom::kPowerSubpagePath),
-      /*expected_setting_window_count=*/1);
+      /*expected_setting_window_count=*/1u);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, OpenAboutChromePage) {
-  SettingsTestObserver observer;
-  auto* settings = chrome::SettingsWindowManager::GetInstance();
-  settings->AddObserver(&observer);
-
   // Opening an about: chrome page opens a new tab, and not the Settings window.
   ChromeNewWindowClient::Get()->OpenChromePageFromArc(ChromePage::ABOUTHISTORY);
-  EXPECT_EQ(0, observer.new_settings_count_);
+  EXPECT_EQ(0u, GetNumberOfSettingsWindows());
 
   content::WebContents* contents =
       GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(GURL(chrome::kChromeUIHistoryURL), contents->GetVisibleURL());
-
-  settings->RemoveObserver(&observer);
 }
 
 void TestOpenChromePage(ChromePage page, const GURL& expected_url) {
@@ -242,190 +238,215 @@ void TestOpenChromePage(ChromePage page, const GURL& expected_url) {
   EXPECT_EQ(expected_url, contents->GetVisibleURL());
 }
 
+class TestSettingsWindowManager : public chrome::SettingsWindowManager {
+ public:
+  void ShowChromePageForProfile(Profile* profile, const GURL& gurl) override {
+    last_navigation_url_ = gurl;
+    chrome::SettingsWindowManager::ShowChromePageForProfile(profile, gurl);
+  }
+  const GURL& last_navigation_url() { return last_navigation_url_; }
+
+ private:
+  GURL last_navigation_url_;
+};
+
+void TestOpenOSSettingsChromePage(ChromePage page, const GURL& expected_url) {
+  TestSettingsWindowManager test_manager;
+  chrome::SettingsWindowManager::SetInstanceForTesting(&test_manager);
+
+  ChromeNewWindowClient::Get()->OpenChromePageFromArc(page);
+  web_app::FlushSystemWebAppLaunchesForTesting(
+      ProfileManager::GetActiveUserProfile());
+
+  EXPECT_EQ(expected_url, test_manager.last_navigation_url());
+
+  chrome::SettingsWindowManager::SetInstanceForTesting(nullptr);
+}
+
 void TestAllOSSettingPages(const GURL& base_url) {
-  TestOpenChromePage(ChromePage::MAIN, base_url);
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(ChromePage::MAIN, base_url);
+  TestOpenOSSettingsChromePage(
       ChromePage::MULTIDEVICE,
       base_url.Resolve(chromeos::settings::mojom::kMultiDeviceSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::WIFI,
       base_url.Resolve(chromeos::settings::mojom::kWifiNetworksSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::POWER,
       base_url.Resolve(chromeos::settings::mojom::kPowerSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::BLUETOOTH,
       base_url.Resolve(
           chromeos::settings::mojom::kBluetoothDevicesSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::DATETIME,
       base_url.Resolve(chromeos::settings::mojom::kDateAndTimeSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::DISPLAY,
       base_url.Resolve(chromeos::settings::mojom::kDisplaySubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::HELP,
       base_url.Resolve(chromeos::settings::mojom::kAboutChromeOsSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ACCOUNTS,
       base_url.Resolve(
           chromeos::settings::mojom::kManageOtherPeopleSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::BLUETOOTHDEVICES,
       base_url.Resolve(
           chromeos::settings::mojom::kBluetoothDevicesSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CHANGEPICTURE,
       base_url.Resolve(chromeos::settings::mojom::kChangePictureSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CUPSPRINTERS,
       base_url.Resolve(chromeos::settings::mojom::kPrintingDetailsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::KEYBOARDOVERLAY,
       base_url.Resolve(chromeos::settings::mojom::kKeyboardSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGES,
       base_url.Resolve(
           chromeos::settings::mojom::kLanguagesAndInputSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESDETAILS,
       base_url.Resolve(
           chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESEDITDICTIONARY,
       base_url.Resolve(chromeos::settings::mojom::kEditDictionarySubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESINPUT,
       base_url.Resolve(chromeos::settings::mojom::kInputSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESINPUTMETHODS,
       base_url.Resolve(
           chromeos::settings::mojom::kManageInputMethodsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESLANGUAGES,
       base_url.Resolve(chromeos::settings::mojom::kLanguagesSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSLANGUAGESSMARTINPUTS,
       base_url.Resolve(chromeos::settings::mojom::kSmartInputsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::LOCKSCREEN,
       base_url.Resolve(
           chromeos::settings::mojom::kSecurityAndSignInSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::MANAGEACCESSIBILITY,
       base_url.Resolve(
           chromeos::settings::mojom::kManageAccessibilitySubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::NETWORKSTYPEVPN,
       base_url.Resolve(chromeos::settings::mojom::kVpnDetailsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSPEOPLE,
       base_url.Resolve(chromeos::settings::mojom::kPeopleSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSPRINTING,
       base_url.Resolve(chromeos::settings::mojom::kPrintingSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::POINTEROVERLAY,
       base_url.Resolve(chromeos::settings::mojom::kPointersSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSRESET,
       base_url.Resolve(chromeos::settings::mojom::kResetSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::STORAGE,
       base_url.Resolve(chromeos::settings::mojom::kStorageSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSACCESSIBILITY,
       base_url.Resolve(chromeos::settings::mojom::kAccessibilitySectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ACCOUNTMANAGER,
       base_url.Resolve(chromeos::settings::mojom::kMyAccountsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::AMBIENTMODE,
       base_url.Resolve(chromeos::settings::mojom::kAmbientModeSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ANDROIDAPPSDETAILS,
       base_url.Resolve(chromeos::settings::mojom::kGooglePlayStoreSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ANDROIDAPPSDETAILSINBROWSERSETTINGS,
       base_url.Resolve(chromeos::settings::mojom::kGooglePlayStoreSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::APPMANAGEMENTDETAILS,
       base_url.Resolve(chromeos::settings::mojom::kAppDetailsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::APPMANAGEMENT,
       base_url.Resolve(chromeos::settings::mojom::kAppManagementSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ASSISTANT,
       base_url.Resolve(chromeos::settings::mojom::kAssistantSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CONNECTEDDEVICES,
       base_url.Resolve(
           chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CROSTINISHAREDPATHS,
       base_url.Resolve(
           chromeos::settings::mojom::kCrostiniManageSharedFoldersSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CROSTINISHAREDUSBDEVICES,
       base_url.Resolve(
           chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CROSTINIEXPORTIMPORT,
       base_url.Resolve(
           chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::EXTERNALSTORAGE,
       base_url.Resolve(chromeos::settings::mojom::kExternalStorageSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::INTERNET,
       base_url.Resolve(chromeos::settings::mojom::kNetworkSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::KERBEROSACCOUNTS,
       base_url.Resolve(
           chromeos::settings::mojom::kKerberosAccountsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::KNOWNNETWORKS,
       base_url.Resolve(chromeos::settings::mojom::kKnownNetworksSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::MANAGEACCESSIBILITYTTS,
       base_url.Resolve(chromeos::settings::mojom::kTextToSpeechSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::PLUGINVMSHAREDPATHS,
       base_url.Resolve(
           chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSSEARCH,
       base_url.Resolve(
           chromeos::settings::mojom::kSearchAndAssistantSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::OSPRIVACY,
       base_url.Resolve(
           chromeos::settings::mojom::kPrivacyAndSecuritySectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::SMARTLOCKSETTINGS,
       base_url.Resolve(chromeos::settings::mojom::kSmartLockSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::STYLUS,
       base_url.Resolve(chromeos::settings::mojom::kStylusSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::SWITCHACCESS,
       base_url.Resolve(
           chromeos::settings::mojom::kSwitchAccessOptionsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::TETHERSETTINGS,
       base_url.Resolve(
           chromeos::settings::mojom::kMobileDataNetworksSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::ETHERNET,
       base_url.Resolve(chromeos::settings::mojom::kEthernetDetailsSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::CELLULAR,
       base_url.Resolve(
           chromeos::settings::mojom::kMobileDataNetworksSubpagePath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::KERBEROS,
       base_url.Resolve(chromeos::settings::mojom::kKerberosSectionPath));
-  TestOpenChromePage(
+  TestOpenOSSettingsChromePage(
       ChromePage::KERBEROSACCOUNTSV2,
       base_url.Resolve(
           chromeos::settings::mojom::kKerberosAccountsV2SubpagePath));

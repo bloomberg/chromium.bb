@@ -163,6 +163,11 @@ class WebAppDatabaseTest : public WebAppTest {
     return url_handlers;
   }
 
+  static blink::mojom::CaptureLinks CreateCaptureLinks(uint32_t suffix) {
+    return static_cast<blink::mojom::CaptureLinks>(
+        suffix % static_cast<uint32_t>(blink::mojom::CaptureLinks::kMaxValue));
+  }
+
   static std::vector<WebApplicationShortcutsMenuItemInfo>
   CreateShortcutsMenuItemInfos(const std::string& base_url, uint32_t suffix) {
     std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
@@ -267,7 +272,7 @@ class WebAppDatabaseTest : public WebAppTest {
       app->SetLaunchQueryParams(base::NumberToString(random.next_uint()));
 
     const RunOnOsLoginMode run_on_os_login_modes[3] = {
-        RunOnOsLoginMode::kUndefined, RunOnOsLoginMode::kWindowed,
+        RunOnOsLoginMode::kNotRun, RunOnOsLoginMode::kWindowed,
         RunOnOsLoginMode::kMinimized};
     app->SetRunOnOsLoginMode(run_on_os_login_modes[random.next_uint(3)]);
 
@@ -302,6 +307,7 @@ class WebAppDatabaseTest : public WebAppTest {
       app->SetShareTarget(CreateShareTarget(random.next_uint()));
     app->SetProtocolHandlers(CreateProtocolHandlers(random.next_uint()));
     app->SetUrlHandlers(CreateUrlHandlers(random.next_uint()));
+    app->SetCaptureLinks(CreateCaptureLinks(random.next_uint()));
 
     const int num_additional_search_terms = random.next_uint(8);
     std::vector<std::string> additional_search_terms(
@@ -316,6 +322,7 @@ class WebAppDatabaseTest : public WebAppTest {
         CreateShortcutsMenuItemInfos(base_url, random.next_uint()));
     app->SetDownloadedShortcutsMenuIconsSizes(
         CreateDownloadedShortcutsMenuIconsSizes());
+    app->SetManifestUrl(GURL(base_url + "manifest" + seed_str + ".json"));
 
     if (IsChromeOs()) {
       auto chromeos_data = base::make_optional<WebAppChromeOsData>();
@@ -600,7 +607,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
-  EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kUndefined);
+  EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
+  EXPECT_TRUE(app->manifest_url().is_empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -655,7 +663,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->url_handlers().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
-  EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kUndefined);
+  EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
+  EXPECT_TRUE(app_copy->manifest_url().is_empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -748,6 +757,21 @@ TEST_F(WebAppDatabaseTest, WebAppWithShareTargetRoundTrip) {
   share_target.params.text = "Text";
   share_target.params.url = "Url";
   app->SetShareTarget(std::move(share_target));
+
+  controller().RegisterApp(std::move(app));
+
+  Registry registry = database_factory().ReadRegistry();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
+}
+
+TEST_F(WebAppDatabaseTest, WebAppWithCaptureLinksRoundTrip) {
+  controller().Init();
+
+  const std::string base_url = "https://example.com/path";
+  auto app = CreateWebApp(base_url, 0);
+  auto app_id = app->app_id();
+
+  app->SetCaptureLinks(blink::mojom::CaptureLinks::kExistingClientNavigate);
 
   controller().RegisterApp(std::move(app));
 

@@ -5,19 +5,21 @@
 #ifndef CC_ANIMATION_KEYFRAME_EFFECT_H_
 #define CC_ANIMATION_KEYFRAME_EFFECT_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/target_property.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
-
-#include <memory>
-#include <vector>
 
 namespace cc {
 
@@ -80,8 +82,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
 
   virtual void Tick(base::TimeTicks monotonic_time);
   static void TickKeyframeModel(base::TimeTicks monotonic_time,
-                                KeyframeModel* keyframe_model,
-                                AnimationTarget* target);
+                                KeyframeModel* keyframe_model);
   void RemoveFromTicking();
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
@@ -115,15 +116,10 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
 
   bool AnimationsPreserveAxisAlignment() const;
 
-  // Gets scales transform animations. On return, |maximum_scale| is the maximum
-  // scale along any dimension at any destination in active scale animations,
-  // and |starting_scale| is the maximum of starting animation scale along any
-  // dimension at any destination in active scale animations. They are set to
-  // kNotScaled if there is no active scale animation or the scales cannot be
-  // computed. Returns false if the scales cannot be computed.
-  bool GetAnimationScales(ElementListType,
-                          float* maximum_scale,
-                          float* starting_scale) const;
+  // Returns the maximum scale along any dimension at any destination in active
+  // scale animations, or kInvalidScale if there is no active transform
+  // animation or the scale cannot be computed.
+  float MaximumScale(ElementListType) const;
 
   // Returns true if there is a keyframe_model that is either currently
   // animating the given property or scheduled to animate this property in the
@@ -152,6 +148,12 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void PushPropertiesTo(KeyframeEffect* keyframe_effect_impl);
 
   std::string KeyframeModelsToString() const;
+
+  // Iterates through all |keyframe_models_| and returns the minimum of their
+  // animation curve's tick intervals.
+  // Returns 0 if there is a continuous animation which should be ticked as
+  // fast as possible.
+  base::TimeDelta MinimumTickInterval() const;
 
  private:
   void StartKeyframeModels(base::TimeTicks monotonic_time);

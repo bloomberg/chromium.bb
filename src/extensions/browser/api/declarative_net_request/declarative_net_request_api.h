@@ -50,6 +50,36 @@ class DeclarativeNetRequestGetDynamicRulesFunction : public ExtensionFunction {
       declarative_net_request::ReadJSONRulesResult read_json_result);
 };
 
+class DeclarativeNetRequestUpdateSessionRulesFunction
+    : public ExtensionFunction {
+ public:
+  DeclarativeNetRequestUpdateSessionRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.updateSessionRules",
+                             DECLARATIVENETREQUEST_UPDATESESSIONRULES)
+
+ protected:
+  ~DeclarativeNetRequestUpdateSessionRulesFunction() override;
+
+  // ExtensionFunction override:
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  void OnSessionRulesUpdated(base::Optional<std::string> error);
+};
+
+class DeclarativeNetRequestGetSessionRulesFunction : public ExtensionFunction {
+ public:
+  DeclarativeNetRequestGetSessionRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getSessionRules",
+                             DECLARATIVENETREQUEST_GETSESSIONRULES)
+
+ protected:
+  ~DeclarativeNetRequestGetSessionRulesFunction() override;
+
+  // ExtensionFunction override:
+  ExtensionFunction::ResponseAction Run() override;
+};
+
 class DeclarativeNetRequestUpdateEnabledRulesetsFunction
     : public ExtensionFunction {
  public:

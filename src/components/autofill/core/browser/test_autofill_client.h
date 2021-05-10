@@ -28,6 +28,7 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/version_info/channel.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 #if !defined(OS_IOS)
@@ -43,9 +44,11 @@ class TestAutofillClient : public AutofillClient {
   ~TestAutofillClient() override;
 
   // AutofillClient:
+  version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
@@ -55,9 +58,10 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   AutofillOfferManager* GetAutofillOfferManager() override;
-  const GURL& GetLastCommittedURL() override;
+  const GURL& GetLastCommittedURL() const override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   translate::LanguageState* GetLanguageState() override;
+  translate::TranslateDriver* GetTranslateDriver() override;
 #if !defined(OS_IOS)
   std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
       content::RenderFrameHost* rfh) override;
@@ -118,6 +122,9 @@ class TestAutofillClient : public AutofillClient {
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ConfirmSaveAddressProfile(
+      const AutofillProfile& profile,
+      AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
@@ -141,9 +148,9 @@ class TestAutofillClient : public AutofillClient {
   // By default, TestAutofillClient will report that the context is
   // secure. This can be adjusted by calling set_form_origin() with an
   // http:// URL.
-  bool IsContextSecure() override;
+  bool IsContextSecure() const override;
   bool ShouldShowSigninPromo() override;
-  bool AreServerCardsSupported() override;
+  bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
 
   // RiskDataLoader:
@@ -230,6 +237,10 @@ class TestAutofillClient : public AutofillClient {
     autofill_offer_manager_ = std::move(autofill_offer_manager);
   }
 
+  void set_channel_for_testing(const version_info::Channel channel) {
+    channel_for_testing_ = channel;
+  }
+
   GURL form_origin() { return form_origin_; }
 
   ukm::TestUkmRecorder* GetTestUkmRecorder();
@@ -264,6 +275,8 @@ class TestAutofillClient : public AutofillClient {
   // Populated if name fix flow was offered. True if bubble was shown, false
   // otherwise.
   base::Optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
+
+  version_info::Channel channel_for_testing_ = version_info::Channel::UNKNOWN;
 
   // Populated if local save or upload was offered.
   base::Optional<SaveCreditCardOptions> save_credit_card_options_;

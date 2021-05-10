@@ -44,6 +44,7 @@
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -674,6 +675,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   ROUTE_FUNCTION(GetState);
   ROUTE_FUNCTION(CreateAutomationPosition);
   ROUTE_FUNCTION(GetAccessibilityFocus);
+  ROUTE_FUNCTION(SetDesktopID);
 #undef ROUTE_FUNCTION
 
   // Bindings that take a Tree ID and return a property of the tree.
@@ -947,6 +949,24 @@ void AutomationInternalCustomBindings::AddRoutes() {
         std::vector<int> word_ends = ui::GetWordEndOffsets(
             node->GetString16Attribute(ax::mojom::StringAttribute::kName));
         result.Set(gin::ConvertToV8(isolate, word_ends));
+      });
+  RouteNodeIDFunction(
+      "GetSentenceStartOffsets",
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        const std::vector<int>& sentence_starts =
+            AutomationInternalCustomBindings::CalculateSentenceBoundary(
+                tree_wrapper, node, true /* start_boundary */);
+        result.Set(gin::ConvertToV8(isolate, sentence_starts));
+      });
+  RouteNodeIDFunction(
+      "GetSentenceEndOffsets",
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        const std::vector<int>& sentence_ends =
+            AutomationInternalCustomBindings::CalculateSentenceBoundary(
+                tree_wrapper, node, false /* start_boundary */);
+        result.Set(gin::ConvertToV8(isolate, sentence_ends));
       });
   RouteNodeIDFunction("GetMarkers", [](v8::Isolate* isolate,
                                        v8::ReturnValue<v8::Value> result,
@@ -1512,6 +1532,9 @@ void AutomationInternalCustomBindings::AddRoutes() {
             static_cast<ax::mojom::DefaultActionVerb>(
                 node->data().GetIntAttribute(
                     ax::mojom::IntAttribute::kDefaultActionVerb));
+        if (default_action_verb == ax::mojom::DefaultActionVerb::kNone)
+          return;
+
         const std::string& default_action_verb_str =
             ui::ToString(default_action_verb);
         result.Set(
@@ -1642,8 +1665,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
               GetAutomationAXTreeWrapperFromTreeID(
                   accessibility_focused_tree_id_);
           if (previous_tree_wrapper) {
-            previous_tree_wrapper->SetAccessibilityFocus(
-                ui::AXNode::kInvalidAXID);
+            previous_tree_wrapper->SetAccessibilityFocus(ui::kInvalidAXNodeID);
           }
         }
         accessibility_focused_tree_id_ = tree_id;
@@ -1662,6 +1684,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
                   .ToLocalChecked());
         }
       });
+  RouteNodeIDFunction("GetValue", [](v8::Isolate* isolate,
+                                     v8::ReturnValue<v8::Value> result,
+                                     AutomationAXTreeWrapper* tree_wrapper,
+                                     ui::AXNode* node) {
+    const std::string value_str = node->GetValueForControl();
+    result.Set(
+        v8::String::NewFromUtf8(isolate, value_str.c_str()).ToLocalChecked());
+  });
   RouteNodeIDPlusEventFunction(
       "EventListenerAdded",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -1687,8 +1717,6 @@ void AutomationInternalCustomBindings::Invalidate() {
   tree_id_to_tree_wrapper_map_.clear();
 }
 
-// http://crbug.com/784266
-// clang-format off
 void AutomationInternalCustomBindings::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
@@ -1697,7 +1725,7 @@ void AutomationInternalCustomBindings::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChange,
                         OnAccessibilityLocationChange)
   IPC_END_MESSAGE_MAP()
-}  // clang-format on
+}
 
 AutomationAXTreeWrapper* AutomationInternalCustomBindings::
     GetAutomationAXTreeWrapperFromTreeID(ui::AXTreeID tree_id) const {
@@ -1893,26 +1921,33 @@ bool AutomationInternalCustomBindings::GetFocusInternal(
 
 void AutomationInternalCustomBindings::GetFocus(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 1 || !args[0]->IsString()) {
+  if (args.Length() != 0) {
     ThrowInvalidArgumentsException(this);
     return;
   }
 
-  ui::AXTreeID tree_id = ui::AXTreeID::FromString(
-      *v8::String::Utf8Value(args.GetIsolate(), args[0]));
-  AutomationAXTreeWrapper* tree_wrapper =
-      GetAutomationAXTreeWrapperFromTreeID(tree_id);
-  if (!tree_wrapper)
+  AutomationAXTreeWrapper* desktop_tree =
+      GetAutomationAXTreeWrapperFromTreeID(desktop_tree_id_);
+  AutomationAXTreeWrapper* focused_wrapper = nullptr;
+  ui::AXNode* focused_node = nullptr;
+  if (desktop_tree &&
+      !GetFocusInternal(desktop_tree, &focused_wrapper, &focused_node))
     return;
 
-  AutomationAXTreeWrapper* focused_tree_wrapper = nullptr;
-  ui::AXNode* focused_node = nullptr;
-  if (!GetFocusInternal(tree_wrapper, &focused_tree_wrapper, &focused_node))
-    return;
+  if (!desktop_tree) {
+    focused_wrapper = GetAutomationAXTreeWrapperFromTreeID(focus_tree_id_);
+    if (!focused_wrapper)
+      return;
+
+    focused_node = focused_wrapper->GetNodeFromTree(
+        focused_wrapper->GetTreeID(), focus_id_);
+    if (!focused_node)
+      return;
+  }
 
   args.GetReturnValue().Set(
       gin::DataObjectBuilder(GetIsolate())
-          .Set("treeId", focused_tree_wrapper->GetTreeID().ToString())
+          .Set("treeId", focused_wrapper->GetTreeID().ToString())
           .Set("nodeId", focused_node->id())
           .Build());
 }
@@ -1933,6 +1968,17 @@ void AutomationInternalCustomBindings::GetAccessibilityFocus(
           .Set("treeId", accessibility_focused_tree_id_.ToString())
           .Set("nodeId", node->id())
           .Build());
+}
+
+void AutomationInternalCustomBindings::SetDesktopID(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 1 || !args[0]->IsString()) {
+    ThrowInvalidArgumentsException(this);
+    return;
+  }
+
+  desktop_tree_id_ = ui::AXTreeID::FromString(
+      *v8::String::Utf8Value(args.GetIsolate(), args[0]));
 }
 
 void AutomationInternalCustomBindings::GetHtmlAttributes(
@@ -2439,11 +2485,11 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
                     ax_event == ax::mojom::Event::kMediaStartedPlaying ||
                     ax_event == ax::mojom::Event::kMediaStoppedPlaying;
 
-  // If we don't explicitly recognize the event type, require a valid node
-  // target.
+  // If we don't explicitly recognize the event type, require a valid, unignored
+  // node target.
   ui::AXNode* node =
       tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), event.id);
-  if (!fire_event && !node)
+  if (!fire_event && (!node || node->data().IsIgnored()))
     return;
 
   while (node && tree_wrapper && !fire_event) {
@@ -2461,6 +2507,8 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
   event_params.SetKey("eventType", base::Value(automation_event_type_str));
 
   event_params.SetKey("eventFrom", base::Value(ui::ToString(event.event_from)));
+  event_params.SetKey("eventFromAction",
+                      base::Value(ui::ToString(event.event_from_action)));
   event_params.SetKey("actionRequestID", base::Value(event.action_request_id));
   event_params.SetKey("mouseX", base::Value(mouse_location.x()));
   event_params.SetKey("mouseY", base::Value(mouse_location.y()));
@@ -2490,46 +2538,56 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
 void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
     AutomationAXTreeWrapper* tree,
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
-  // Only send focus or blur if we got one of these events from the originating
-  // renderer. While sending events purely based upon whether the targeted
-  // focus/blur node changed may work, we end up firing too many events since
-  // intermediate states trigger more events than likely necessary. Also, the
-  // |event_from| field is only properly associated with focus/blur when the
-  // event type is also focus/blur.
-  base::Optional<ax::mojom::EventFrom> event_from;
-  for (const auto& event : event_bundle.events) {
-    if (event.event_type == ax::mojom::Event::kBlur ||
-        event.event_type == ax::mojom::Event::kFocus)
-      event_from = event.event_from;
-  }
-
-  if (!event_from) {
-    // There was no explicit focus/blur; return early.
-    // Make an exception for the desktop tree, where we can reliably infer
-    // focus/blur even without an explicit event.
-    if (!tree->IsDesktopTree())
-      return;
-
-    event_from = ax::mojom::EventFrom::kNone;
-  }
-
-  // Get the root-most tree.
-  AutomationAXTreeWrapper* root_tree = tree;
-  while ((tree = AutomationAXTreeWrapper::GetParentOfTreeId(
-              root_tree->GetTreeID())))
-    root_tree = tree;
-
-  ui::AXNode* new_node = nullptr;
-  AutomationAXTreeWrapper* new_wrapper = nullptr;
-  if (!GetFocusInternal(root_tree, &new_wrapper, &new_node))
-    return;
-
   ui::AXNode* old_node = nullptr;
   AutomationAXTreeWrapper* old_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(focus_tree_id_);
-  if (old_wrapper)
+  if (old_wrapper) {
     old_node =
         old_wrapper->GetNodeFromTree(old_wrapper->GetTreeID(), focus_id_);
+  }
+
+  // Determine whether old focus was lost.
+  bool lost_old_focus = old_node == nullptr;
+
+  // Determine whether there's a focus or blur event and take its event from.
+  // Also, save the raw event target (tree + node).
+  ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone;
+  ax::mojom::Action event_from_action = ax::mojom::Action::kNone;
+  ui::AXNodeData::AXID raw_focus_target_id = ui::AXNodeData::kInvalidAXID;
+  bool event_bundle_has_focus_or_blur = false;
+  for (const auto& event : event_bundle.events) {
+    bool is_blur = event.event_type == ax::mojom::Event::kBlur;
+    bool is_focus = event.event_type == ax::mojom::Event::kFocus;
+    if (is_blur || is_focus) {
+      event_from = event.event_from;
+      event_from_action = event.event_from_action;
+      event_bundle_has_focus_or_blur = true;
+    }
+
+    if (is_focus)
+      raw_focus_target_id = event.id;
+  }
+
+  bool is_from_desktop = tree->IsDesktopTree();
+  if (!event_bundle_has_focus_or_blur && !lost_old_focus && !is_from_desktop)
+    return;
+
+  AutomationAXTreeWrapper* desktop_tree =
+      GetAutomationAXTreeWrapperFromTreeID(desktop_tree_id_);
+  ui::AXNode* new_node = nullptr;
+  AutomationAXTreeWrapper* new_wrapper = nullptr;
+  if (desktop_tree && !GetFocusInternal(desktop_tree, &new_wrapper, &new_node))
+    return;
+
+  if (!desktop_tree) {
+    // Can occur if the extension does not have desktop permission,
+    // chrome.automation.getDesktop has yet to be called, or if this platform
+    // does not support Aura.
+    new_wrapper = tree;
+    new_node = tree->tree()->GetFromId(raw_focus_target_id);
+    if (!new_node)
+      return;
+  }
 
   if (new_wrapper == old_wrapper && new_node == old_node)
     return;
@@ -2538,7 +2596,8 @@ void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
   if (old_node) {
     ui::AXEvent blur_event;
     blur_event.id = old_node->id();
-    blur_event.event_from = *event_from;
+    blur_event.event_from = event_from;
+    blur_event.event_from_action = event_from_action;
     blur_event.event_type = ax::mojom::Event::kBlur;
     SendAutomationEvent(old_wrapper->GetTreeID(), event_bundle.mouse_location,
                         blur_event);
@@ -2551,7 +2610,8 @@ void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
   if (new_node) {
     ui::AXEvent focus_event;
     focus_event.id = new_node->id();
-    focus_event.event_from = *event_from;
+    focus_event.event_from = event_from;
+    focus_event.event_from_action = event_from_action;
     focus_event.event_type = ax::mojom::Event::kFocus;
     SendAutomationEvent(new_wrapper->GetTreeID(), event_bundle.mouse_location,
                         focus_event);
@@ -2651,4 +2711,73 @@ AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
   return l10n_util::GetStringUTF8(message_id);
 }
 
+std::vector<int> AutomationInternalCustomBindings::CalculateSentenceBoundary(
+    AutomationAXTreeWrapper* tree_wrapper,
+    ui::AXNode* node,
+    bool start_boundary) {
+  // Create an empty vector for storing final results and deal with the node
+  // without a name.
+  std::vector<int> sentence_boundary;
+  base::string16 node_name =
+      node->GetString16Attribute(ax::mojom::StringAttribute::kName);
+  if (node_name.empty()) {
+    return sentence_boundary;
+  }
+
+  // We will calculate the boundary of a combined string, which consists
+  // of|pre_str|, |post_str|. When the node is inside a paragraph, the |pre_str|
+  // is the string from the beginning of the paragraph to the head of current
+  // node. The |post_str| is the string from the head of current node to the end
+  // of the paragraph.
+  base::string16 pre_str;
+  base::string16 post_str;
+  ui::AXNodePosition::AXPositionInstance head_pos =
+      ui::AXNodePosition::CreatePosition(*node,
+                                         0 /* child_index_or_text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream)
+          ->CreatePositionAtStartOfAnchor();
+
+  // If the head of current node is not at the start of paragraph, we need to
+  // change the empty |pre_str| with the string from the beginning of the
+  // paragraph to the head of current node.
+  if (!head_pos->AtStartOfParagraph()) {
+    ui::AXNodePosition::AXPositionInstance start_para_pos =
+        head_pos->CreatePreviousParagraphStartPosition(
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
+    ui::AXRange<ui::AXPosition<ui::AXNodePosition, ui::AXNode>> pre_range(
+        start_para_pos->Clone(), head_pos->Clone());
+    pre_str = pre_range.GetText();
+  }
+
+  // Change the empty |post_str| with the string from the head of the current
+  // node to the end of the paragraph.
+  ui::AXNodePosition::AXPositionInstance end_para_pos =
+      head_pos->CreateNextParagraphEndPosition(
+          ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ui::AXRange<ui::AXPosition<ui::AXNodePosition, ui::AXNode>> post_range(
+      head_pos->Clone(), end_para_pos->Clone());
+  post_str = post_range.GetText();
+
+  // Calculate the boundary of the |combined_str|.
+  base::string16 combined_str = pre_str + post_str;
+  auto boundary_func = start_boundary ? &ui::GetSentenceStartOffsets
+                                      : &ui::GetSentenceEndOffsets;
+  std::vector<int> combined_sentence_boundary = boundary_func(combined_str);
+
+  // To get the final result, we need to get rid of indexes that do not belong
+  // to the current node. First, we subtract the length of |pre_str| from the
+  // |combined_sentence_boundary| vector. Then, we only save the non-negative
+  // elements that equal or smaller than |max_index| into |sentence_boundary|.
+  // Note that an end boundary index can be outside of the current node, thus
+  // the |max_index| is set to the length of |node_name|.
+  int pre_str_length = pre_str.length();
+  int max_index = start_boundary ? node_name.length() - 1 : node_name.length();
+  for (int& index : combined_sentence_boundary) {
+    index -= pre_str_length;
+    if (index >= 0 && index <= max_index) {
+      sentence_boundary.push_back(index);
+    }
+  }
+  return sentence_boundary;
+}
 }  // namespace extensions

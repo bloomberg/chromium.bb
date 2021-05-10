@@ -71,10 +71,6 @@ class AvatarMenu :
     // Whether or not the current profile requires sign-in before use.
     bool signin_required;
 
-    // Whether or not the current profile is a legacy supervised user profile
-    // (see SupervisedUserService).
-    bool legacy_supervised;
-
     // Whether or not the profile is associated with a child account
     // (see SupervisedUserService).
     bool child_account;

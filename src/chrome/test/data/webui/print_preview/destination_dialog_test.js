@@ -4,7 +4,6 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, InvitationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, RecentDestination} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -47,10 +46,6 @@ suite(destination_dialog_test.suiteName, function() {
 
   /** @type {!Array<!RecentDestination>} */
   let recentDestinations = [];
-
-  /** @type {boolean} */
-  const saveToDriveFlagEnabled =
-      isChromeOS && loadTimeData.getBoolean('printSaveToDrive');
 
   /** @override */
   suiteSetup(function() {
@@ -114,11 +109,10 @@ suite(destination_dialog_test.suiteName, function() {
     assertEquals(
         'rgb(32, 33, 36)',
         window.getComputedStyle(printerItems[0].$$('.name')).color);
-    // FooName will be second since it was updated by capabilities fetch.
-    assertEquals('FooName', getDisplayedName(printerItems[1]));
-    Array.from(printerItems).slice(2).forEach((item, index) => {
+    Array.from(printerItems).slice(1, 5).forEach((item, index) => {
       assertEquals(destinations[index].displayName, getDisplayedName(item));
     });
+    assertEquals('FooName', getDisplayedName(printerItems[5]));
   });
 
   // Test that clicking a provisional destination shows the provisional
@@ -198,10 +192,6 @@ suite(destination_dialog_test.suiteName, function() {
         'print-preview-destination-list-item:not([hidden])');
     assertEquals(numPrinters, printerItems.length);
 
-    if (isChromeOS && saveToDriveFlagEnabled) {
-      return;
-    }
-
     const drivePrinter = Array.from(printerItems).find(item => {
       return item.destination.id === Destination.GooglePromotedId.DOCS;
     });
@@ -221,8 +211,7 @@ suite(destination_dialog_test.suiteName, function() {
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(user2));
     // Override so that privet printers will also be fetched, since we are
     // simulating the case where the enterprise override is enabled.
-    loadTimeData.overrideValues(
-        {'cloudPrintDeprecationWarningsSuppressed': true});
+    loadTimeData.overrideValues({'forceEnablePrivetPrinting': true});
     let userSelect = null;
 
     await finishSetup();
@@ -251,8 +240,7 @@ suite(destination_dialog_test.suiteName, function() {
     assertSignedInState(user1, 1);
 
     // Now have 7 printers (Google Drive), with user1 signed in.
-    // On CrOS we do not show Save to Drive destination so 6 printers expected.
-    const expectedPrinters = isChromeOS && saveToDriveFlagEnabled ? 6 : 7;
+    const expectedPrinters = 7;
     assertNumPrintersWithDriveAccount(expectedPrinters, user1);
     assertEquals(3, nativeLayer.getCallCount('getPrinters'));
     // Cloud printers should have been re-fetched.

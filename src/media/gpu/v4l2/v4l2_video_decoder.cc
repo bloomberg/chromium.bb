@@ -31,7 +31,7 @@ constexpr int k1080pArea = 1920 * 1088;
 constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 // Input bitstream buffer size for up to 4k streams.
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
-constexpr size_t kNumInputBuffers = 16;
+constexpr size_t kNumInputBuffers = 8;
 
 // Input format V4L2 fourccs this class supports.
 constexpr uint32_t kSupportedInputFourccs[] = {
@@ -45,6 +45,9 @@ constexpr uint32_t kSupportedInputFourccs[] = {
 constexpr size_t kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1;
 
 }  // namespace
+
+// static
+base::AtomicRefCount V4L2VideoDecoder::num_instances_(0);
 
 // static
 std::unique_ptr<DecoderInterface> V4L2VideoDecoder::Create(
@@ -80,6 +83,7 @@ V4L2VideoDecoder::V4L2VideoDecoder(
     base::WeakPtr<DecoderInterface::Client> client,
     scoped_refptr<V4L2Device> device)
     : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
+      can_use_decoder_(num_instances_.Increment() < kMaxNumOfInstances),
       device_(std::move(device)),
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -110,16 +114,25 @@ V4L2VideoDecoder::~V4L2VideoDecoder() {
   }
 
   weak_this_factory_.InvalidateWeakPtrs();
+  num_instances_.Decrement();
 }
 
 void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   InitCB init_cb,
-                                  const OutputCB& output_cb) {
+                                  const OutputCB& output_cb,
+                                  const WaitingCB& /*waiting_cb*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(config.IsValidConfig());
   DCHECK(state_ == State::kUninitialized || state_ == State::kDecoding);
   DVLOGF(3);
+
+  if (!can_use_decoder_) {
+    VLOGF(1) << "Reached maximum number of decoder instances ("
+             << kMaxNumOfInstances << ")";
+    std::move(init_cb).Run(StatusCode::kDecoderCreationFailed);
+    return;
+  }
 
   if (cdm_context || config.is_encrypted()) {
     VLOGF(1) << "V4L2 decoder does not support encrypted stream";
@@ -152,35 +165,25 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
     SetState(State::kUninitialized);
   }
 
-  // Open V4L2 device.
-  VideoCodecProfile profile = config.profile();
-  uint32_t input_format_fourcc_stateless =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, true);
-  if (!input_format_fourcc_stateless ||
-      !device_->Open(V4L2Device::Type::kDecoder,
-                     input_format_fourcc_stateless)) {
-    VLOGF(1) << "Failed to open device for profile: " << profile
-             << " fourcc: " << FourccToString(input_format_fourcc_stateless);
-    input_format_fourcc_stateless = 0;
-  } else {
-    VLOGF(1) << "Found V4L2 device capable of stateless decoding for "
-             << FourccToString(input_format_fourcc_stateless);
+  const VideoCodecProfile profile = config.profile();
+  constexpr bool kStateful = false;
+  constexpr bool kStateless = true;
+  base::Optional<std::pair<bool, uint32_t>> api_and_format;
+  // Try both kStateful and kStateless APIs via |fourcc| and select the first
+  // combination where Open()ing the |device_| works.
+  for (const auto api : {kStateful, kStateless}) {
+    const auto fourcc = V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, api);
+    constexpr uint32_t kInvalidV4L2PixFmt = 0;
+    if (fourcc == kInvalidV4L2PixFmt ||
+        !device_->Open(V4L2Device::Type::kDecoder, fourcc)) {
+      continue;
+    }
+    api_and_format = std::make_pair(api, fourcc);
+    break;
   }
 
-  uint32_t input_format_fourcc_stateful =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, false);
-  if (!input_format_fourcc_stateful ||
-      !device_->Open(V4L2Device::Type::kDecoder,
-                     input_format_fourcc_stateful)) {
-    VLOGF(1) << "Failed to open device for profile: " << profile
-             << " fourcc: " << FourccToString(input_format_fourcc_stateful);
-    input_format_fourcc_stateful = 0;
-  } else {
-    VLOGF(1) << "Found V4L2 device capable of stateful decoding for "
-             << FourccToString(input_format_fourcc_stateful);
-  }
-
-  if (!input_format_fourcc_stateless && !input_format_fourcc_stateful) {
+  if (!api_and_format.has_value()) {
+    VLOGF(1) << "No V4L2 API found for profile: " << GetProfileName(profile);
     std::move(init_cb).Run(StatusCode::kV4l2NoDecoder);
     return;
   }
@@ -206,19 +209,19 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  uint32_t input_format_fourcc;
-  if (input_format_fourcc_stateful) {
+  const auto preferred_api_and_format = api_and_format.value();
+  const uint32_t input_format_fourcc = preferred_api_and_format.second;
+  if (preferred_api_and_format.first == kStateful) {
+    VLOGF(1) << "Using a stateful API for profile: " << GetProfileName(profile)
+             << " and fourcc: " << FourccToString(input_format_fourcc);
     backend_ = std::make_unique<V4L2StatefulVideoDecoderBackend>(
         this, device_, profile, decoder_task_runner_);
-    input_format_fourcc = input_format_fourcc_stateful;
-  } else if (input_format_fourcc_stateless) {
+  } else {
+    DCHECK_EQ(preferred_api_and_format.first, kStateless);
+    VLOGF(1) << "Using a stateless API for profile: " << GetProfileName(profile)
+             << " and fourcc: " << FourccToString(input_format_fourcc);
     backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
         this, device_, profile, decoder_task_runner_);
-    input_format_fourcc = input_format_fourcc_stateless;
-  } else {
-    VLOGF(1) << "No backend capable of taking this profile.";
-    std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
-    return;
   }
 
   if (!backend_->Initialize()) {
@@ -227,7 +230,6 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
     std::move(init_cb).Run(StatusCode::kV4l2BadFormat);
@@ -361,6 +363,7 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
       return false;
     }
 
+    VLOGF(1) << "buffer modifier: " << std::hex << layout->modifier();
     if (layout->modifier() &&
         layout->modifier() != gfx::NativePixmapHandle::kNoModifier) {
       base::Optional<struct v4l2_format> modifier_format =

@@ -59,7 +59,6 @@
 #include "src/objects/field-index.h"
 #include "src/objects/field-type.h"
 #include "src/objects/foreign.h"
-#include "src/objects/frame-array-inl.h"
 #include "src/objects/free-space-inl.h"
 #include "src/objects/function-kind.h"
 #include "src/objects/hash-table-inl.h"
@@ -138,7 +137,7 @@ ShouldThrow GetShouldThrow(Isolate* isolate, Maybe<ShouldThrow> should_throw) {
   if (mode == LanguageMode::kStrict) return kThrowOnError;
 
   for (StackFrameIterator it(isolate); !it.done(); it.Advance()) {
-    if (!(it.frame()->is_optimized() || it.frame()->is_interpreted())) {
+    if (!(it.frame()->is_optimized() || it.frame()->is_unoptimized())) {
       continue;
     }
     // Get the language mode from closure.
@@ -180,6 +179,20 @@ std::ostream& operator<<(std::ostream& os, InstanceType instance_type) {
     return os << #TYPE;
     INSTANCE_TYPE_LIST(WRITE_TYPE)
 #undef WRITE_TYPE
+  }
+  UNREACHABLE();
+}
+
+std::ostream& operator<<(std::ostream& os, PropertyCellType type) {
+  switch (type) {
+    case PropertyCellType::kUndefined:
+      return os << "Undefined";
+    case PropertyCellType::kConstant:
+      return os << "Constant";
+    case PropertyCellType::kConstantType:
+      return os << "ConstantType";
+    case PropertyCellType::kMutable:
+      return os << "Mutable";
   }
   UNREACHABLE();
 }
@@ -869,6 +882,9 @@ MaybeHandle<Object> Object::OrdinaryHasInstance(Isolate* isolate,
   // Check if {callable} is a bound function, and if so retrieve its
   // [[BoundTargetFunction]] and use that instead of {callable}.
   if (callable->IsJSBoundFunction()) {
+    // Since there is a mutual recursion here, we might run out of stack
+    // space for long chains of bound functions.
+    STACK_CHECK(isolate, MaybeHandle<Object>());
     Handle<Object> bound_callable(
         Handle<JSBoundFunction>::cast(callable)->bound_target_function(),
         isolate);
@@ -1295,6 +1311,8 @@ Handle<SharedFunctionInfo> FunctionTemplateInfo::GetOrCreateSharedFunctionInfo(
 }
 
 bool FunctionTemplateInfo::IsTemplateFor(Map map) {
+  RuntimeCallTimerScope timer(GetIsolate(),
+                              RuntimeCallCounterId::kIsTemplateFor);
   // There is a constraint on the object; check.
   if (!map.IsJSObjectMap()) return false;
   // Fetch the constructor function of the object.
@@ -1463,15 +1481,17 @@ MaybeHandle<Object> Object::GetPropertyWithAccessor(LookupIterator* it) {
     return reboxed_result;
   }
 
+  Handle<AccessorPair> accessor_pair = Handle<AccessorPair>::cast(structure);
   // AccessorPair with 'cached' private property.
-  if (it->TryLookupCachedProperty()) {
+  if (it->TryLookupCachedProperty(accessor_pair)) {
     return Object::GetProperty(it);
   }
 
   // Regular accessor.
-  Handle<Object> getter(AccessorPair::cast(*structure).getter(), isolate);
+  Handle<Object> getter(accessor_pair->getter(), isolate);
   if (getter->IsFunctionTemplateInfo()) {
-    SaveAndSwitchContext save(isolate, *holder->GetCreationContext());
+    SaveAndSwitchContext save(isolate,
+                              *holder->GetCreationContext().ToHandleChecked());
     return Builtins::InvokeApiFunction(
         isolate, false, Handle<FunctionTemplateInfo>::cast(getter), receiver, 0,
         nullptr, isolate->factory()->undefined_value());
@@ -1576,7 +1596,8 @@ Maybe<bool> Object::SetPropertyWithAccessor(
   // Regular accessor.
   Handle<Object> setter(AccessorPair::cast(*structure).setter(), isolate);
   if (setter->IsFunctionTemplateInfo()) {
-    SaveAndSwitchContext save(isolate, *holder->GetCreationContext());
+    SaveAndSwitchContext save(isolate,
+                              *holder->GetCreationContext().ToHandleChecked());
     Handle<Object> argv[] = {value};
     RETURN_ON_EXCEPTION_VALUE(
         isolate,
@@ -1632,7 +1653,7 @@ Maybe<bool> Object::SetPropertyWithDefinedSetter(
 }
 
 Map Object::GetPrototypeChainRootMap(Isolate* isolate) const {
-  DisallowHeapAllocation no_alloc;
+  DisallowGarbageCollection no_alloc;
   if (IsSmi()) {
     Context native_context = isolate->context().native_context();
     return native_context.number_function().initial_map();
@@ -1643,7 +1664,7 @@ Map Object::GetPrototypeChainRootMap(Isolate* isolate) const {
 }
 
 Smi Object::GetOrCreateHash(Isolate* isolate) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   Object hash = Object::GetSimpleHash(*this);
   if (hash.IsSmi()) return Smi::cast(hash);
 
@@ -1688,6 +1709,7 @@ bool Object::SameValueZero(Object other) {
 MaybeHandle<Object> Object::ArraySpeciesConstructor(
     Isolate* isolate, Handle<Object> original_array) {
   Handle<Object> default_species = isolate->array_function();
+  if (!FLAG_builtin_subclassing) return default_species;
   if (original_array->IsJSArray() &&
       Handle<JSArray>::cast(original_array)->HasArrayPrototype(isolate) &&
       Protectors::IsArraySpeciesLookupChainIntact(isolate)) {
@@ -2032,8 +2054,8 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {  // NOLINT
 
     case SHARED_FUNCTION_INFO_TYPE: {
       SharedFunctionInfo shared = SharedFunctionInfo::cast(*this);
-      std::unique_ptr<char[]> debug_name = shared.DebugName().ToCString();
-      if (debug_name[0] != 0) {
+      std::unique_ptr<char[]> debug_name = shared.DebugNameCStr();
+      if (debug_name[0] != '\0') {
         os << "<SharedFunctionInfo " << debug_name.get() << ">";
       } else {
         os << "<SharedFunctionInfo>";
@@ -2060,8 +2082,8 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {  // NOLINT
     case SCOPE_INFO_TYPE: {
       ScopeInfo scope = ScopeInfo::cast(*this);
       os << "<ScopeInfo";
-      if (scope.length()) os << " " << scope.scope_type() << " ";
-      os << "[" << scope.length() << "]>";
+      if (!scope.IsEmpty()) os << " " << scope.scope_type();
+      os << ">";
       break;
     }
     case CODE_TYPE: {
@@ -2130,7 +2152,7 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {  // NOLINT
       os << " value=";
       HeapStringAllocator allocator;
       StringStream accumulator(&allocator);
-      cell.value().ShortPrint(&accumulator);
+      cell.value(kAcquireLoad).ShortPrint(&accumulator);
       os << accumulator.ToCString().get();
       os << '>';
       break;
@@ -2162,11 +2184,6 @@ void Tuple2::BriefPrintDetails(std::ostream& os) {
 
 void ClassPositions::BriefPrintDetails(std::ostream& os) {
   os << " " << start() << ", " << end();
-}
-
-void ArrayBoilerplateDescription::BriefPrintDetails(std::ostream& os) {
-  os << " " << ElementsKindToString(elements_kind()) << ", "
-     << Brief(constant_elements());
 }
 
 void CallableTask::BriefPrintDetails(std::ostream& os) {
@@ -2270,6 +2287,10 @@ int HeapObject::SizeFromMap(Map map) const {
     return SmallOrderedNameDictionary::SizeFor(
         SmallOrderedNameDictionary::unchecked_cast(*this).Capacity());
   }
+  if (instance_type == SWISS_NAME_DICTIONARY_TYPE) {
+    return SwissNameDictionary::SizeFor(
+        SwissNameDictionary::unchecked_cast(*this).Capacity());
+  }
   if (instance_type == PROPERTY_ARRAY_TYPE) {
     return PropertyArray::SizeFor(
         PropertyArray::cast(*this).synchronized_length());
@@ -2300,7 +2321,7 @@ int HeapObject::SizeFromMap(Map map) const {
         CoverageInfo::unchecked_cast(*this).slot_count());
   }
   if (instance_type == WASM_ARRAY_TYPE) {
-    return WasmArray::SizeFor(map, WasmArray::cast(*this).length());
+    return WasmArray::GcSafeSizeFor(map, WasmArray::cast(*this).length());
   }
   DCHECK_EQ(instance_type, EMBEDDER_DATA_ARRAY_TYPE);
   return EmbedderDataArray::SizeFor(
@@ -2418,7 +2439,7 @@ void HeapObject::RehashBasedOnMap(Isolate* isolate) {
     case INTERNALIZED_STRING_TYPE:
       // Rare case, rehash read-only space strings before they are sealed.
       DCHECK(ReadOnlyHeap::Contains(*this));
-      String::cast(*this).Hash();
+      String::cast(*this).EnsureHash();
       break;
     default:
       UNREACHABLE();
@@ -2582,6 +2603,13 @@ Maybe<bool> Object::SetProperty(LookupIterator* it, Handle<Object> value,
   if (it->GetReceiver()->IsJSGlobalObject() &&
       (GetShouldThrow(it->isolate(), should_throw) ==
        ShouldThrow::kThrowOnError)) {
+    if (it->state() == LookupIterator::TRANSITION) {
+      // The property cell that we have created is garbage because we are going
+      // to throw now instead of putting it into the global dictionary. However,
+      // the cell might already have been stored into the feedback vector, so
+      // we must invalidate it nevertheless.
+      it->transition_cell()->ClearAndInvalidate(ReadOnlyRoots(it->isolate()));
+    }
     it->isolate()->Throw(*it->isolate()->factory()->NewReferenceError(
         MessageTemplate::kNotDefined, it->GetName()));
     return Nothing<bool>();
@@ -2885,7 +2913,7 @@ struct FixedArrayAppender {
   }
   static void Insert(Handle<Name> key, Handle<AccessorInfo> entry,
                      int valid_descriptors, Handle<FixedArray> array) {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     array->set(valid_descriptors, *entry);
   }
 };
@@ -3515,11 +3543,14 @@ Maybe<bool> JSProxy::SetPrivateSymbol(Isolate* isolate, Handle<JSProxy> proxy,
   if (it.IsFound()) {
     DCHECK_EQ(LookupIterator::DATA, it.state());
     DCHECK_EQ(DONT_ENUM, it.property_attributes());
+    // We are not tracking constness for private symbols added to JSProxy
+    // objects.
+    DCHECK_EQ(PropertyConstness::kMutable, it.property_details().constness());
     it.WriteDataValue(value, false);
     return Just(true);
   }
 
-  PropertyDetails details(kData, DONT_ENUM, PropertyCellType::kNoCell);
+  PropertyDetails details(kData, DONT_ENUM, PropertyConstness::kMutable);
   if (V8_DICT_MODE_PROTOTYPES_BOOL) {
     Handle<OrderedNameDictionary> dict(proxy->property_dictionary_ordered(),
                                        isolate);
@@ -3903,7 +3934,7 @@ void FixedArray::Shrink(Isolate* isolate, int new_length) {
 }
 
 void FixedArray::CopyTo(int pos, FixedArray dest, int dest_pos, int len) const {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   // Return early if len == 0 so that we don't try to read the write barrier off
   // a canonical read-only empty fixed array.
   if (len == 0) return;
@@ -4246,67 +4277,6 @@ Handle<RegExpMatchInfo> RegExpMatchInfo::ReserveCaptures(
   return result;
 }
 
-// static
-Handle<FrameArray> FrameArray::AppendJSFrame(Handle<FrameArray> in,
-                                             Handle<Object> receiver,
-                                             Handle<JSFunction> function,
-                                             Handle<AbstractCode> code,
-                                             int offset, int flags,
-                                             Handle<FixedArray> parameters) {
-  const int frame_count = in->FrameCount();
-  const int new_length = LengthFor(frame_count + 1);
-  Handle<FrameArray> array =
-      EnsureSpace(function->GetIsolate(), in, new_length);
-  array->SetReceiver(frame_count, *receiver);
-  array->SetFunction(frame_count, *function);
-  array->SetCode(frame_count, *code);
-  array->SetOffset(frame_count, Smi::FromInt(offset));
-  array->SetFlags(frame_count, Smi::FromInt(flags));
-  array->SetParameters(frame_count, *parameters);
-  array->set(kFrameCountIndex, Smi::FromInt(frame_count + 1));
-  return array;
-}
-
-// static
-Handle<FrameArray> FrameArray::AppendWasmFrame(
-    Handle<FrameArray> in, Handle<WasmInstanceObject> wasm_instance,
-    int wasm_function_index, wasm::WasmCode* code, int offset, int flags) {
-  // This must be either a compiled or interpreted wasm frame, or an asm.js
-  // frame (which is always compiled).
-  DCHECK_EQ(1,
-            ((flags & kIsWasmFrame) != 0) + ((flags & kIsAsmJsWasmFrame) != 0));
-  Isolate* isolate = wasm_instance->GetIsolate();
-  const int frame_count = in->FrameCount();
-  const int new_length = LengthFor(frame_count + 1);
-  Handle<FrameArray> array = EnsureSpace(isolate, in, new_length);
-  // The {code} will be {nullptr} for interpreted wasm frames.
-  Handle<Object> code_ref = isolate->factory()->undefined_value();
-  if (code) {
-    auto native_module = wasm_instance->module_object().shared_native_module();
-    code_ref = Managed<wasm::GlobalWasmCodeRef>::Allocate(
-        isolate, 0, code, std::move(native_module));
-  }
-  array->SetWasmInstance(frame_count, *wasm_instance);
-  array->SetWasmFunctionIndex(frame_count, Smi::FromInt(wasm_function_index));
-  array->SetWasmCodeObject(frame_count, *code_ref);
-  array->SetOffset(frame_count, Smi::FromInt(offset));
-  array->SetFlags(frame_count, Smi::FromInt(flags));
-  array->set(kFrameCountIndex, Smi::FromInt(frame_count + 1));
-  return array;
-}
-
-void FrameArray::ShrinkToFit(Isolate* isolate) {
-  Shrink(isolate, LengthFor(FrameCount()));
-}
-
-// static
-Handle<FrameArray> FrameArray::EnsureSpace(Isolate* isolate,
-                                           Handle<FrameArray> array,
-                                           int length) {
-  return Handle<FrameArray>::cast(
-      EnsureSpaceInFixedArray(isolate, array, length));
-}
-
 template <typename LocalIsolate>
 Handle<DescriptorArray> DescriptorArray::Allocate(LocalIsolate* isolate,
                                                   int nof_descriptors,
@@ -4560,7 +4530,7 @@ namespace {
 template <typename sinkchar>
 void WriteFixedArrayToFlat(FixedArray fixed_array, int length, String separator,
                            sinkchar* sink, int sink_length) {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   CHECK_GT(length, 0);
   CHECK_LE(length, fixed_array.length());
 #ifdef DEBUG
@@ -4575,8 +4545,7 @@ void WriteFixedArrayToFlat(FixedArray fixed_array, int length, String separator,
   if (use_one_byte_separator_fast_path) {
     CHECK(StringShape(separator).IsSequentialOneByte());
     CHECK_EQ(separator.length(), 1);
-    separator_one_char =
-        SeqOneByteString::cast(separator).GetChars(no_allocation)[0];
+    separator_one_char = SeqOneByteString::cast(separator).GetChars(no_gc)[0];
   }
 
   uint32_t num_separators = 0;
@@ -4643,7 +4612,7 @@ Address JSArray::ArrayJoinConcatToSequentialString(Isolate* isolate,
                                                    intptr_t length,
                                                    Address raw_separator,
                                                    Address raw_dest) {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   DisallowJavascriptExecution no_js(isolate);
   FixedArray fixed_array = FixedArray::cast(Object(raw_fixed_array));
   String separator = String::cast(Object(raw_separator));
@@ -4654,12 +4623,12 @@ Address JSArray::ArrayJoinConcatToSequentialString(Isolate* isolate,
 
   if (StringShape(dest).IsSequentialOneByte()) {
     WriteFixedArrayToFlat(fixed_array, static_cast<int>(length), separator,
-                          SeqOneByteString::cast(dest).GetChars(no_allocation),
+                          SeqOneByteString::cast(dest).GetChars(no_gc),
                           dest.length());
   } else {
     DCHECK(StringShape(dest).IsSequentialTwoByte());
     WriteFixedArrayToFlat(fixed_array, static_cast<int>(length), separator,
-                          SeqTwoByteString::cast(dest).GetChars(no_allocation),
+                          SeqTwoByteString::cast(dest).GetChars(no_gc),
                           dest.length());
   }
   return dest.ptr();
@@ -4745,7 +4714,7 @@ int Script::GetEvalPosition(Isolate* isolate, Handle<Script> script) {
       Handle<SharedFunctionInfo> shared =
           handle(script->eval_from_shared(), isolate);
       SharedFunctionInfo::EnsureSourcePositionsAvailable(isolate, shared);
-      position = shared->abstract_code().SourcePosition(-position);
+      position = shared->abstract_code(isolate).SourcePosition(-position);
     }
     DCHECK_GE(position, 0);
     script->set_eval_from_position(position);
@@ -4791,7 +4760,7 @@ bool Script::GetPositionInfo(Handle<Script> script, int position,
 bool Script::IsUserJavaScript() const { return type() == Script::TYPE_NORMAL; }
 
 bool Script::ContainsAsmModule() {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   SharedFunctionInfo::ScriptIterator iter(this->GetIsolate(), *this);
   for (SharedFunctionInfo info = iter.Next(); !info.is_null();
        info = iter.Next()) {
@@ -4826,7 +4795,7 @@ bool GetPositionInfoSlowImpl(const Vector<Char>& source, int position,
   return false;
 }
 bool GetPositionInfoSlow(const Script script, int position,
-                         const DisallowHeapAllocation& no_gc,
+                         const DisallowGarbageCollection& no_gc,
                          Script::PositionInfo* info) {
   if (!script.source().IsString()) {
     return false;
@@ -4842,7 +4811,7 @@ bool GetPositionInfoSlow(const Script script, int position,
 
 bool Script::GetPositionInfo(int position, PositionInfo* info,
                              OffsetFlag offset_flag) const {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
 
   // For wasm, we use the byte offset as the column.
   if (type() == Script::TYPE_WASM) {
@@ -4859,7 +4828,7 @@ bool Script::GetPositionInfo(int position, PositionInfo* info,
 
   if (line_ends().IsUndefined()) {
     // Slow mode: we do not have line_ends. We have to iterate through source.
-    if (!GetPositionInfoSlow(*this, position, no_allocation, info)) {
+    if (!GetPositionInfoSlow(*this, position, no_gc, info)) {
       return false;
     }
   } else {
@@ -5172,39 +5141,6 @@ bool JSArray::WouldChangeReadOnlyLength(Handle<JSArray> array, uint32_t index) {
   return false;
 }
 
-// Certain compilers request function template instantiation when they
-// see the definition of the other template functions in the
-// class. This requires us to have the template functions put
-// together, so even though this function belongs in objects-debug.cc,
-// we keep it here instead to satisfy certain compilers.
-#ifdef OBJECT_PRINT
-template <typename Derived, typename Shape>
-void Dictionary<Derived, Shape>::Print(std::ostream& os) {
-  DisallowHeapAllocation no_gc;
-  IsolateRoot isolate = GetIsolateForPtrCompr(*this);
-  ReadOnlyRoots roots = this->GetReadOnlyRoots(isolate);
-  Derived dictionary = Derived::cast(*this);
-  for (InternalIndex i : dictionary.IterateEntries()) {
-    Object k = dictionary.KeyAt(isolate, i);
-    if (!dictionary.ToKey(roots, i, &k)) continue;
-    os << "\n   ";
-    if (k.IsString()) {
-      String::cast(k).PrintUC16(os);
-    } else {
-      os << Brief(k);
-    }
-    os << ": " << Brief(dictionary.ValueAt(i)) << " ";
-    dictionary.DetailsAt(i).PrintAsSlowTo(os);
-  }
-}
-template <typename Derived, typename Shape>
-void Dictionary<Derived, Shape>::Print() {
-  StdoutStream os;
-  Print(os);
-  os << std::endl;
-}
-#endif
-
 int FixedArrayBase::GetMaxLengthForNewSpaceAllocation(ElementsKind kind) {
   return ((kMaxRegularHeapObjectSize - FixedArrayBase::kHeaderSize) >>
           ElementsKindToShiftSize(kind));
@@ -5452,7 +5388,7 @@ Handle<Object> JSPromise::TriggerPromiseReactions(Isolate* isolate,
   // We need to reverse the {reactions} here, since we record them
   // on the JSPromise in the reverse order.
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     Object current = *reactions;
     Object reversed = Smi::zero();
     while (!current.IsSmi()) {
@@ -5523,7 +5459,7 @@ Handle<Object> JSPromise::TriggerPromiseReactions(Isolate* isolate,
           static_cast<int>(PromiseFulfillReactionJobTask::
                                kContinuationPreservedEmbedderDataOffset));
     } else {
-      DisallowHeapAllocation no_gc;
+      DisallowGarbageCollection no_gc;
       task->synchronized_set_map(
           ReadOnlyRoots(isolate).promise_reject_reaction_job_task_map());
       Handle<PromiseRejectReactionJobTask>::cast(task)->set_argument(*argument);
@@ -5599,7 +5535,7 @@ Handle<Derived> HashTable<Derived, Shape>::NewInternal(
 
 template <typename Derived, typename Shape>
 void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   WriteBarrierMode mode = new_table.GetWriteBarrierMode(no_gc);
 
   DCHECK_LT(NumberOfElements(), new_table.Capacity());
@@ -5663,7 +5599,7 @@ void HashTable<Derived, Shape>::Swap(InternalIndex entry1, InternalIndex entry2,
 
 template <typename Derived, typename Shape>
 void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   WriteBarrierMode mode = GetWriteBarrierMode(no_gc);
   ReadOnlyRoots roots = GetReadOnlyRoots(isolate);
   uint32_t capacity = Capacity();
@@ -5984,7 +5920,7 @@ Handle<SimpleNumberDictionary> SimpleNumberDictionary::Set(
 
 void NumberDictionary::UpdateMaxNumberKey(uint32_t key,
                                           Handle<JSObject> dictionary_holder) {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   // If the dictionary requires slow elements an element has already
   // been added at a high index.
   if (requires_slow_elements()) return;
@@ -6021,7 +5957,7 @@ Handle<NumberDictionary> NumberDictionary::Set(
 void NumberDictionary::CopyValuesTo(FixedArray elements) {
   ReadOnlyRoots roots = GetReadOnlyRoots();
   int pos = 0;
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   WriteBarrierMode mode = elements.GetWriteBarrierMode(no_gc);
   for (InternalIndex i : this->IterateEntries()) {
     Object k;
@@ -6055,7 +5991,7 @@ Handle<FixedArray> BaseNameDictionary<Derived, Shape>::IterationIndices(
   ReadOnlyRoots roots(isolate);
   int array_size = 0;
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     Derived raw_dictionary = *dictionary;
     for (InternalIndex i : dictionary->IterateEntries()) {
       Object k;
@@ -6107,7 +6043,7 @@ template <typename Derived, typename Shape>
 Object ObjectHashTableBase<Derived, Shape>::Lookup(IsolateRoot isolate,
                                                    Handle<Object> key,
                                                    int32_t hash) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   ReadOnlyRoots roots = this->GetReadOnlyRoots(isolate);
   DCHECK(this->IsKey(roots, *key));
 
@@ -6118,7 +6054,7 @@ Object ObjectHashTableBase<Derived, Shape>::Lookup(IsolateRoot isolate,
 
 template <typename Derived, typename Shape>
 Object ObjectHashTableBase<Derived, Shape>::Lookup(Handle<Object> key) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   IsolateRoot isolate = GetIsolateForPtrCompr(*this);
   ReadOnlyRoots roots = this->GetReadOnlyRoots(isolate);
@@ -6344,7 +6280,7 @@ Handle<JSArray> JSWeakCollection::GetEntries(Handle<JSWeakCollection> holder,
   }
 
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     ReadOnlyRoots roots = ReadOnlyRoots(isolate);
     int count = 0;
     for (int i = 0;
@@ -6364,41 +6300,30 @@ Handle<JSArray> JSWeakCollection::GetEntries(Handle<JSWeakCollection> holder,
 }
 
 void PropertyCell::ClearAndInvalidate(ReadOnlyRoots roots) {
-  // Cell is officially mutable henceforth.
   DCHECK(!value().IsTheHole(roots));
   PropertyDetails details = property_details();
-  details = details.set_cell_type(PropertyCellType::kInvalidated);
-  set_value(roots.the_hole_value());
-  set_property_details(details);
+  details = details.set_cell_type(PropertyCellType::kConstant);
+  Transition(details, roots.the_hole_value_handle());
   dependent_code().DeoptimizeDependentCodeGroup(
       DependentCode::kPropertyCellChangedGroup);
 }
 
 // static
 Handle<PropertyCell> PropertyCell::InvalidateAndReplaceEntry(
-    Isolate* isolate, Handle<GlobalDictionary> dictionary,
-    InternalIndex entry) {
+    Isolate* isolate, Handle<GlobalDictionary> dictionary, InternalIndex entry,
+    PropertyDetails new_details, Handle<Object> new_value) {
   Handle<PropertyCell> cell(dictionary->CellAt(entry), isolate);
   Handle<Name> name(cell->name(), isolate);
-  PropertyDetails details = cell->property_details();
-  DCHECK(details.IsConfigurable());
+  DCHECK(cell->property_details().IsConfigurable());
   DCHECK(!cell->value().IsTheHole(isolate));
 
-  // Swap with a copy.
-  Handle<PropertyCell> new_cell = isolate->factory()->NewPropertyCell(name);
-  new_cell->set_value(cell->value());
-  // Cell is officially mutable henceforth.
-  details = details.set_cell_type(PropertyCellType::kMutable);
-  new_cell->set_property_details(details);
+  // Swap with a new property cell.
+  Handle<PropertyCell> new_cell =
+      isolate->factory()->NewPropertyCell(name, new_details, new_value);
   dictionary->ValueAtPut(entry, *new_cell);
 
   cell->ClearAndInvalidate(ReadOnlyRoots(isolate));
   return new_cell;
-}
-
-PropertyCellConstantType PropertyCell::GetConstantType() {
-  if (value().IsSmi()) return PropertyCellConstantType::kSmi;
-  return PropertyCellConstantType::kStableMap;
 }
 
 static bool RemainsConstantType(Handle<PropertyCell> cell,
@@ -6415,10 +6340,10 @@ static bool RemainsConstantType(Handle<PropertyCell> cell,
 }
 
 // static
-PropertyCellType PropertyCell::TypeForUninitializedCell(Isolate* isolate,
-                                                        Handle<Object> value) {
-  if (value->IsUndefined(isolate)) return PropertyCellType::kUndefined;
-  return PropertyCellType::kConstant;
+PropertyCellType PropertyCell::InitialType(Isolate* isolate,
+                                           Handle<Object> value) {
+  return value->IsUndefined(isolate) ? PropertyCellType::kUndefined
+                                     : PropertyCellType::kConstant;
 }
 
 // static
@@ -6426,20 +6351,9 @@ PropertyCellType PropertyCell::UpdatedType(Isolate* isolate,
                                            Handle<PropertyCell> cell,
                                            Handle<Object> value,
                                            PropertyDetails details) {
-  PropertyCellType type = details.cell_type();
   DCHECK(!value->IsTheHole(isolate));
-  if (cell->value().IsTheHole(isolate)) {
-    switch (type) {
-      // Only allow a cell to transition once into constant state.
-      case PropertyCellType::kUninitialized:
-        return TypeForUninitializedCell(isolate, value);
-      case PropertyCellType::kInvalidated:
-        return PropertyCellType::kMutable;
-      default:
-        UNREACHABLE();
-    }
-  }
-  switch (type) {
+  DCHECK(!cell->value().IsTheHole(isolate));
+  switch (details.cell_type()) {
     case PropertyCellType::kUndefined:
       return PropertyCellType::kConstant;
     case PropertyCellType::kConstant:
@@ -6453,74 +6367,104 @@ PropertyCellType PropertyCell::UpdatedType(Isolate* isolate,
     case PropertyCellType::kMutable:
       return PropertyCellType::kMutable;
   }
-  UNREACHABLE();
 }
 
-Handle<PropertyCell> PropertyCell::PrepareForValue(
+Handle<PropertyCell> PropertyCell::PrepareForAndSetValue(
     Isolate* isolate, Handle<GlobalDictionary> dictionary, InternalIndex entry,
     Handle<Object> value, PropertyDetails details) {
   DCHECK(!value->IsTheHole(isolate));
   Handle<PropertyCell> cell(dictionary->CellAt(entry), isolate);
+  CHECK(!cell->value().IsTheHole(isolate));
   const PropertyDetails original_details = cell->property_details();
   // Data accesses could be cached in ics or optimized code.
   bool invalidate =
       original_details.kind() == kData && details.kind() == kAccessor;
-  int index;
-  PropertyCellType old_type = original_details.cell_type();
-  // Preserve the enumeration index unless the property was deleted or never
-  // initialized.
-  if (cell->value().IsTheHole(isolate)) {
-    index = GlobalDictionary::NextEnumerationIndex(isolate, dictionary);
-    dictionary->set_next_enumeration_index(index + 1);
-  } else {
-    index = original_details.dictionary_index();
-  }
+  int index = original_details.dictionary_index();
   DCHECK_LT(0, index);
   details = details.set_index(index);
 
   PropertyCellType new_type =
       UpdatedType(isolate, cell, value, original_details);
-  if (invalidate) {
-    cell = PropertyCell::InvalidateAndReplaceEntry(isolate, dictionary, entry);
-  }
-
-  // Install new property details.
   details = details.set_cell_type(new_type);
-  cell->set_property_details(details);
 
-  if (new_type == PropertyCellType::kConstant ||
-      new_type == PropertyCellType::kConstantType) {
-    // Store the value now to ensure that the cell contains the constant or
-    // type information. Otherwise subsequent store operation will turn
-    // the cell to mutable.
-    cell->set_value(*value);
-  }
-
-  // Deopt when transitioning from a constant type.
-  if (!invalidate && (old_type != new_type ||
-                      original_details.IsReadOnly() != details.IsReadOnly())) {
-    cell->dependent_code().DeoptimizeDependentCodeGroup(
-        DependentCode::kPropertyCellChangedGroup);
+  if (invalidate) {
+    cell = PropertyCell::InvalidateAndReplaceEntry(isolate, dictionary, entry,
+                                                   details, value);
+  } else {
+    cell->Transition(details, value);
+    // Deopt when transitioning from a constant type or when making a writable
+    // property read-only. Making a read-only property writable again is not
+    // interesting because Turbofan does not currently rely on read-only unless
+    // the property is also configurable, in which case it will stay read-only
+    // forever.
+    if (original_details.cell_type() != new_type ||
+        (!original_details.IsReadOnly() && details.IsReadOnly())) {
+      cell->dependent_code().DeoptimizeDependentCodeGroup(
+          DependentCode::kPropertyCellChangedGroup);
+    }
   }
   return cell;
 }
 
 // static
-void PropertyCell::SetValueWithInvalidation(Isolate* isolate,
-                                            const char* cell_name,
-                                            Handle<PropertyCell> cell,
-                                            Handle<Object> new_value) {
-  if (cell->value() != *new_value) {
-    cell->set_value(*new_value);
-    cell->dependent_code().DeoptimizeDependentCodeGroup(
+void PropertyCell::InvalidateProtector() {
+  if (value() != Smi::FromInt(Protectors::kProtectorInvalid)) {
+    DCHECK_EQ(value(), Smi::FromInt(Protectors::kProtectorValid));
+    set_value(Smi::FromInt(Protectors::kProtectorInvalid), kReleaseStore);
+    dependent_code().DeoptimizeDependentCodeGroup(
         DependentCode::kPropertyCellChangedGroup);
   }
 }
 
+// static
+bool PropertyCell::CheckDataIsCompatible(PropertyDetails details,
+                                         Object value) {
+  DisallowGarbageCollection no_gc;
+  PropertyCellType cell_type = details.cell_type();
+  if (value.IsTheHole()) {
+    CHECK_EQ(cell_type, PropertyCellType::kConstant);
+  } else {
+    CHECK_EQ(value.IsAccessorInfo() || value.IsAccessorPair(),
+             details.kind() == kAccessor);
+    DCHECK_IMPLIES(cell_type == PropertyCellType::kUndefined,
+                   value.IsUndefined());
+  }
+  return true;
+}
+
+#ifdef DEBUG
+bool PropertyCell::CanTransitionTo(PropertyDetails new_details,
+                                   Object new_value) const {
+  // Extending the implementation of PropertyCells with additional states
+  // and/or transitions likely requires changes to PropertyCellData::Serialize.
+  DisallowGarbageCollection no_gc;
+  DCHECK(CheckDataIsCompatible(new_details, new_value));
+  switch (property_details().cell_type()) {
+    case PropertyCellType::kUndefined:
+      return new_details.cell_type() != PropertyCellType::kUndefined;
+    case PropertyCellType::kConstant:
+      return !value().IsTheHole() &&
+             new_details.cell_type() != PropertyCellType::kUndefined;
+    case PropertyCellType::kConstantType:
+      return new_details.cell_type() == PropertyCellType::kConstantType ||
+             new_details.cell_type() == PropertyCellType::kMutable ||
+             (new_details.cell_type() == PropertyCellType::kConstant &&
+              new_value.IsTheHole());
+    case PropertyCellType::kMutable:
+      return new_details.cell_type() == PropertyCellType::kMutable ||
+             (new_details.cell_type() == PropertyCellType::kConstant &&
+              new_value.IsTheHole());
+  }
+  UNREACHABLE();
+}
+#endif  // DEBUG
+
 int JSGeneratorObject::source_position() const {
   CHECK(is_suspended());
   DCHECK(function().shared().HasBytecodeArray());
-  DCHECK(function().shared().GetBytecodeArray().HasSourcePositionTable());
+  Isolate* isolate = GetIsolate();
+  DCHECK(
+      function().shared().GetBytecodeArray(isolate).HasSourcePositionTable());
 
   int code_offset = Smi::ToInt(input_or_debug_pos());
 
@@ -6528,14 +6472,14 @@ int JSGeneratorObject::source_position() const {
   // is used in the source position table, hence the subtraction.
   code_offset -= BytecodeArray::kHeaderSize - kHeapObjectTag;
   AbstractCode code =
-      AbstractCode::cast(function().shared().GetBytecodeArray());
+      AbstractCode::cast(function().shared().GetBytecodeArray(isolate));
   return code.SourcePosition(code_offset);
 }
 
 // static
 AccessCheckInfo AccessCheckInfo::Get(Isolate* isolate,
                                      Handle<JSObject> receiver) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   DCHECK(receiver->map().is_access_check_needed());
   Object maybe_constructor = receiver->map().GetConstructor();
   if (maybe_constructor.IsFunctionTemplateInfo()) {
@@ -6571,7 +6515,7 @@ MaybeHandle<Name> FunctionTemplateInfo::TryGetCachedPropertyName(
 }
 
 Address Smi::LexicographicCompare(Isolate* isolate, Smi x, Smi y) {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
   DisallowJavascriptExecution no_js(isolate);
 
   int x_value = Smi::ToInt(x);
@@ -6732,7 +6676,7 @@ EXTERN_DEFINE_BASE_NAME_DICTIONARY(GlobalDictionary, GlobalDictionaryShape)
 void JSFinalizationRegistry::RemoveCellFromUnregisterTokenMap(
     Isolate* isolate, Address raw_finalization_registry,
     Address raw_weak_cell) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   JSFinalizationRegistry finalization_registry =
       JSFinalizationRegistry::cast(Object(raw_finalization_registry));
   WeakCell weak_cell = WeakCell::cast(Object(raw_weak_cell));

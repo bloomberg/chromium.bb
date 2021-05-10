@@ -38,12 +38,6 @@ void FCMInvalidationService::Init() {
 
   if (IsReadyToStart()) {
     StartInvalidator();
-  } else {
-    if (identity_provider_->GetActiveAccountId().empty()) {
-      ReportInvalidatorState(syncer::NOT_STARTED_NO_ACTIVE_ACCOUNT);
-    } else {
-      ReportInvalidatorState(syncer::NOT_STARTED_NO_REFRESH_TOKEN);
-    }
   }
 
   identity_provider_->AddObserver(this);
@@ -70,8 +64,6 @@ void FCMInvalidationService::OnActiveAccountLogin() {
   }
   if (IsReadyToStart()) {
     StartInvalidator();
-  } else {
-    ReportInvalidatorState(syncer::NOT_STARTED_NO_REFRESH_TOKEN);
   }
 }
 
@@ -122,8 +114,7 @@ bool FCMInvalidationService::IsReadyToStart() {
   // and token is available). As currently observed, FCMInvalidationService
   // isn't always notified on Android when token is available.
   if (base::FeatureList::IsEnabled(
-          invalidation::switches::
-              kFCMInvalidationsStartOnceActiveAccountAvailable)) {
+          switches::kFCMInvalidationsStartOnceActiveAccountAvailable)) {
     valid_account_info_available =
         !identity_provider_->GetActiveAccountId().empty();
   }

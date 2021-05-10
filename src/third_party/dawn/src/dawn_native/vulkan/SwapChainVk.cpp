@@ -15,6 +15,7 @@
 #include "dawn_native/vulkan/SwapChainVk.h"
 
 #include "common/Compiler.h"
+#include "dawn_native/Instance.h"
 #include "dawn_native/Surface.h"
 #include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/BackendVk.h"
@@ -24,6 +25,10 @@
 #include "dawn_native/vulkan/VulkanError.h"
 
 #include <algorithm>
+
+#if defined(DAWN_USE_X11)
+#    include "dawn_native/XlibXcbFunctions.h"
+#endif  // defined(DAWN_USE_X11)
 
 namespace dawn_native { namespace vulkan {
 
@@ -130,7 +135,7 @@ namespace dawn_native { namespace vulkan {
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
 
 #if defined(DAWN_USE_X11)
-                case Surface::Type::Xlib:
+                case Surface::Type::Xlib: {
                     if (info.HasExt(InstanceExt::XlibSurface)) {
                         VkXlibSurfaceCreateInfoKHR createInfo;
                         createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -142,10 +147,35 @@ namespace dawn_native { namespace vulkan {
                         VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
                         DAWN_TRY(CheckVkSuccess(
                             fn.CreateXlibSurfaceKHR(instance, &createInfo, nullptr, &*vkSurface),
-                            "CreateWin32Surface"));
+                            "CreateXlibSurface"));
+                        return vkSurface;
+                    }
+
+                    // Fall back to using XCB surfaces if the Xlib extension isn't available.
+                    // See https://xcb.freedesktop.org/MixingCalls/ for more information about
+                    // interoperability between Xlib and XCB
+                    const XlibXcbFunctions* xlibXcb =
+                        backend->GetInstance()->GetOrCreateXlibXcbFunctions();
+                    ASSERT(xlibXcb != nullptr);
+
+                    if (info.HasExt(InstanceExt::XcbSurface) && xlibXcb->IsLoaded()) {
+                        VkXcbSurfaceCreateInfoKHR createInfo;
+                        createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+                        createInfo.pNext = nullptr;
+                        createInfo.flags = 0;
+                        // The XCB connection lives as long as the X11 display.
+                        createInfo.connection = xlibXcb->xGetXCBConnection(
+                            static_cast<Display*>(surface->GetXDisplay()));
+                        createInfo.window = surface->GetXWindow();
+
+                        VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
+                        DAWN_TRY(CheckVkSuccess(
+                            fn.CreateXcbSurfaceKHR(instance, &createInfo, nullptr, &*vkSurface),
+                            "CreateXcbSurfaceKHR"));
                         return vkSurface;
                     }
                     break;
+                }
 #endif  // defined(DAWN_USE_X11)
 
                 default:
@@ -590,7 +620,7 @@ namespace dawn_native { namespace vulkan {
 
         // In the happy path we can use the swapchain image directly.
         if (!mConfig.needsBlit) {
-            return mTexture->CreateView(nullptr);
+            return mTexture->CreateView();
         }
 
         // The blit texture always perfectly matches what the user requested for the swapchain.
@@ -598,16 +628,16 @@ namespace dawn_native { namespace vulkan {
         TextureDescriptor desc = GetSwapChainBaseTextureDescriptor(this);
         DAWN_TRY_ASSIGN(mBlitTexture,
                         Texture::Create(device, &desc, VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
-        return mBlitTexture->CreateView(nullptr);
+        return mBlitTexture->CreateView();
     }
 
     void SwapChain::DetachFromSurfaceImpl() {
-        if (mTexture) {
+        if (mTexture != nullptr) {
             mTexture->Destroy();
             mTexture = nullptr;
         }
 
-        if (mBlitTexture) {
+        if (mBlitTexture != nullptr) {
             mBlitTexture->Destroy();
             mBlitTexture = nullptr;
         }

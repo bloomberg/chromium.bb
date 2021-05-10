@@ -11,7 +11,7 @@
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
-#define SVT_FULL_VERSION STR(SVT_VERSION_MAJOR) "." STR(SVT_VERSION_MINOR) "." STR(SVT_VERSION_PATCHLEVEL);
+#define SVT_FULL_VERSION STR(SVT_VERSION_MAJOR) "." STR(SVT_VERSION_MINOR) "." STR(SVT_VERSION_PATCHLEVEL)
 
 typedef struct avifCodecInternal
 {
@@ -249,8 +249,10 @@ static avifResult dequeue_frame(avifCodec * codec, avifCodecEncodeOutput * outpu
         if (output_buf != NULL) {
             encode_at_eos = ((output_buf->flags & EB_BUFFERFLAG_EOS) == EB_BUFFERFLAG_EOS);
             if (output_buf->p_buffer && (output_buf->n_filled_len > 0)) {
-                avifCodecEncodeOutputAddSample(
-                    output, output_buf->p_buffer, output_buf->n_filled_len, (output_buf->pic_type == EB_AV1_KEY_PICTURE));
+                avifCodecEncodeOutputAddSample(output,
+                                               output_buf->p_buffer,
+                                               output_buf->n_filled_len,
+                                               (output_buf->pic_type == EB_AV1_KEY_PICTURE));
             }
             svt_av1_enc_release_out_buffer(&output_buf);
         }

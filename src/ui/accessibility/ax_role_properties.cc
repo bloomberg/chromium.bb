@@ -5,19 +5,30 @@
 #include "ui/accessibility/ax_role_properties.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr bool kExposeLayoutTableAsDataTable = true;
 #else
 constexpr bool kExposeLayoutTableAsDataTable = false;
 #endif  // defined(OS_WIN)
 
 }  // namespace
+
+bool CanHaveInlineTextBoxChildren(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kLineBreak:
+    case ax::mojom::Role::kStaticText:
+      return true;
+    default:
+      return false;
+  }
+}
 
 bool HasPresentationalChildren(const ax::mojom::Role role) {
   // See http://www.w3.org/TR/core-aam-1.1/#exclude_elements2.
@@ -204,17 +215,6 @@ bool IsControlOnAndroid(const ax::mojom::Role role, bool isFocusable) {
   }
 }
 
-bool IsDocument(const ax::mojom::Role role) {
-  switch (role) {
-    case ax::mojom::Role::kDocument:
-    case ax::mojom::Role::kRootWebArea:
-    case ax::mojom::Role::kWebArea:
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool IsDialog(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kAlertDialog:
@@ -303,6 +303,7 @@ bool IsItemLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kDescriptionListTerm:
     case ax::mojom::Role::kTerm:
+      DCHECK(!IsSetLike(role)) << "Role cannot be both item-like and set-like.";
       return true;
     default:
       return false;
@@ -392,6 +393,19 @@ bool IsMenuRelated(const ax::mojom::Role role) {
   }
 }
 
+bool IsPlatformDocument(const ax::mojom::Role role) {
+  // "ax::mojom::Role::kDocument" is excluded because it refers to nodes with
+  // the ARIA document role. These are not at the root of an HTML document. They
+  // can appear anywhere within an HTML document, but never at its root.
+  switch (role) {
+    case ax::mojom::Role::kPdfRoot:
+    case ax::mojom::Role::kRootWebArea:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsPresentational(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kNone:
@@ -472,6 +486,19 @@ bool IsReadOnlySupported(const ax::mojom::Role role) {
     case ax::mojom::Role::kRowHeader:
     case ax::mojom::Role::kColumnHeader:
       return false;
+    default:
+      return false;
+  }
+}
+
+bool IsRootLike(ax::mojom::Role role) {
+  if (IsDialog(role) || IsPlatformDocument(role))
+    return true;
+
+  switch (role) {
+    case ax::mojom::Role::kDesktop:
+    case ax::mojom::Role::kWindow:
+      return true;
     default:
       return false;
   }
@@ -610,8 +637,8 @@ bool IsStructure(const ax::mojom::Role role) {
 
   switch (role) {
     case ax::mojom::Role::kApplication:
-    case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kArticle:  // Subclass of kDocument.
+    case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kPresentational:
     case ax::mojom::Role::kRowGroup:
     case ax::mojom::Role::kSplitter:
@@ -706,37 +733,46 @@ bool IsText(ax::mojom::Role role) {
   }
 }
 
+bool IsComboBox(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ShouldHaveReadonlyStateByDefault(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kArticle:
     case ax::mojom::Role::kDefinition:
     case ax::mojom::Role::kDescriptionList:
     case ax::mojom::Role::kDescriptionListTerm:
+    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kGraphicsDocument:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kImageMap:
     case ax::mojom::Role::kList:
     case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kPdfRoot:
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kTerm:
     case ax::mojom::Role::kTimer:
     case ax::mojom::Role::kToolbar:
     case ax::mojom::Role::kTooltip:
-    case ax::mojom::Role::kWebArea:
       return true;
 
     case ax::mojom::Role::kGrid:
-      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
-      // need to determine whether grids/treegrids should really be readonly
-      // or editable by default
-      break;
-
+      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1.
+      // We need to determine whether grids/treegrids should really be readonly
+      // or editable by default.
     default:
-      break;
+      return false;
   }
-  return false;
 }
 
 bool SupportsExpandCollapse(const ax::mojom::Role role) {

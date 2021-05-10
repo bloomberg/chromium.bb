@@ -61,34 +61,10 @@ static constexpr bool GrIsPrimTypeLines(GrPrimitiveType type) {
     return GrPrimitiveType::kLines == type || GrPrimitiveType::kLineStrip == type;
 }
 
-static constexpr bool GrIsPrimTypeTris(GrPrimitiveType type) {
-    return GrPrimitiveType::kTriangles == type || GrPrimitiveType::kTriangleStrip == type;
-}
-
 enum class GrPrimitiveRestart : bool {
     kNo = false,
     kYes = true
 };
-
-struct GrDrawIndirectCommand {
-    uint32_t fVertexCount;
-    uint32_t fInstanceCount;
-    uint32_t fBaseVertex;
-    uint32_t fBaseInstance;
-};
-
-static_assert(sizeof(GrDrawIndirectCommand) == 16, "GrDrawIndirectCommand must be tightly packed");
-
-struct GrDrawIndexedIndirectCommand {
-    uint32_t fIndexCount;
-    uint32_t fInstanceCount;
-    uint32_t fBaseIndex;
-    int32_t fBaseVertex;
-    uint32_t fBaseInstance;
-};
-
-static_assert(sizeof(GrDrawIndexedIndirectCommand) == 20,
-              "GrDrawIndexedIndirectCommand must be tightly packed");
 
 /**
  * Should a created surface be texturable?
@@ -308,6 +284,9 @@ static inline GrQuadAAFlags SkToGrQuadAAFlags(unsigned flags) {
 enum GrSLType {
     kVoid_GrSLType,
     kBool_GrSLType,
+    kBool2_GrSLType,
+    kBool3_GrSLType,
+    kBool4_GrSLType,
     kByte_GrSLType,
     kByte2_GrSLType,
     kByte3_GrSLType,
@@ -344,6 +323,8 @@ enum GrSLType {
     kInt4_GrSLType,
     kUint_GrSLType,
     kUint2_GrSLType,
+    kUint3_GrSLType,
+    kUint4_GrSLType,
     kTexture2DSampler_GrSLType,
     kTextureExternalSampler_GrSLType,
     kTexture2DRectSampler_GrSLType,
@@ -411,6 +392,9 @@ static constexpr bool GrSLTypeIsFloatType(GrSLType type) {
         case kTextureExternalSampler_GrSLType:
         case kTexture2DRectSampler_GrSLType:
         case kBool_GrSLType:
+        case kBool2_GrSLType:
+        case kBool3_GrSLType:
+        case kBool4_GrSLType:
         case kByte_GrSLType:
         case kByte2_GrSLType:
         case kByte3_GrSLType:
@@ -433,6 +417,8 @@ static constexpr bool GrSLTypeIsFloatType(GrSLType type) {
         case kInt4_GrSLType:
         case kUint_GrSLType:
         case kUint2_GrSLType:
+        case kUint3_GrSLType:
+        case kUint4_GrSLType:
         case kTexture2D_GrSLType:
         case kSampler_GrSLType:
         case kInput_GrSLType:
@@ -457,6 +443,7 @@ static constexpr int GrSLTypeVecLength(GrSLType type) {
 
         case kFloat2_GrSLType:
         case kHalf2_GrSLType:
+        case kBool2_GrSLType:
         case kByte2_GrSLType:
         case kUByte2_GrSLType:
         case kShort2_GrSLType:
@@ -467,20 +454,24 @@ static constexpr int GrSLTypeVecLength(GrSLType type) {
 
         case kFloat3_GrSLType:
         case kHalf3_GrSLType:
+        case kBool3_GrSLType:
         case kByte3_GrSLType:
         case kUByte3_GrSLType:
         case kShort3_GrSLType:
         case kUShort3_GrSLType:
         case kInt3_GrSLType:
+        case kUint3_GrSLType:
             return 3;
 
         case kFloat4_GrSLType:
         case kHalf4_GrSLType:
+        case kBool4_GrSLType:
         case kByte4_GrSLType:
         case kUByte4_GrSLType:
         case kShort4_GrSLType:
         case kUShort4_GrSLType:
         case kInt4_GrSLType:
+        case kUint4_GrSLType:
             return 4;
 
         case kFloat2x2_GrSLType:
@@ -558,7 +549,12 @@ static constexpr bool GrSLTypeIsCombinedSamplerType(GrSLType type) {
         case kInt4_GrSLType:
         case kUint_GrSLType:
         case kUint2_GrSLType:
+        case kUint3_GrSLType:
+        case kUint4_GrSLType:
         case kBool_GrSLType:
+        case kBool2_GrSLType:
+        case kBool3_GrSLType:
+        case kBool4_GrSLType:
         case kByte_GrSLType:
         case kByte2_GrSLType:
         case kByte3_GrSLType:
@@ -680,8 +676,9 @@ enum class GrGpuBufferType {
     kDrawIndirect,
     kXferCpuToGpu,
     kXferGpuToCpu,
+    kUniform,
 };
-static const int kGrGpuBufferTypeCount = static_cast<int>(GrGpuBufferType::kXferGpuToCpu) + 1;
+static const int kGrGpuBufferTypeCount = static_cast<int>(GrGpuBufferType::kUniform) + 1;
 
 /**
  * Provides a performance hint regarding the frequency at which a data store will be accessed.
@@ -784,7 +781,7 @@ enum class GpuPathRenderers {
     kAALinearizing     =   1 << 6,
     kSmall             =   1 << 7,
     kTriangulating     =   1 << 8,
-    kDefault           = ((1 << 9) - 1) & ~kTessellation  // All but kTessellation.
+    kDefault           = ((1 << 9) - 1)  // All path renderers.
 };
 
 /**
@@ -820,6 +817,7 @@ enum class GrColorType {
     kRGBA_1010102,
     kBGRA_1010102,
     kGray_8,
+    kGrayAlpha_88,
     kAlpha_F16,
     kRGBA_F16,
     kRGBA_F16_Clamped,
@@ -867,6 +865,7 @@ static constexpr SkColorType GrColorTypeToSkColorType(GrColorType ct) {
         case GrColorType::kRGBA_1010102:     return kRGBA_1010102_SkColorType;
         case GrColorType::kBGRA_1010102:     return kBGRA_1010102_SkColorType;
         case GrColorType::kGray_8:           return kGray_8_SkColorType;
+        case GrColorType::kGrayAlpha_88:     return kUnknown_SkColorType;
         case GrColorType::kAlpha_F16:        return kA16_float_SkColorType;
         case GrColorType::kRGBA_F16:         return kRGBA_F16_SkColorType;
         case GrColorType::kRGBA_F16_Clamped: return kRGBA_F16Norm_SkColorType;
@@ -936,6 +935,7 @@ static constexpr uint32_t GrColorTypeChannelFlags(GrColorType ct) {
         case GrColorType::kRGBA_1010102:     return kRGBA_SkColorChannelFlags;
         case GrColorType::kBGRA_1010102:     return kRGBA_SkColorChannelFlags;
         case GrColorType::kGray_8:           return kGray_SkColorChannelFlag;
+        case GrColorType::kGrayAlpha_88:     return kGrayAlpha_SkColorChannelFlags;
         case GrColorType::kAlpha_F16:        return kAlpha_SkColorChannelFlag;
         case GrColorType::kRGBA_F16:         return kRGBA_SkColorChannelFlags;
         case GrColorType::kRGBA_F16_Clamped: return kRGBA_SkColorChannelFlags;
@@ -1009,6 +1009,10 @@ public:
         return {0, 0, 0, 0, grayBits, e};
     }
 
+    static constexpr GrColorTypeDesc MakeGrayAlpha(int grayAlpha, GrColorTypeEncoding e) {
+        return {0, 0, 0, 0, grayAlpha, e};
+    }
+
     static constexpr GrColorTypeDesc MakeInvalid() { return {}; }
 
     constexpr int r() const { return fRBits; }
@@ -1073,6 +1077,8 @@ static constexpr GrColorTypeDesc GrGetColorTypeDesc(GrColorType ct) {
             return GrColorTypeDesc::MakeRGBA(10, 2, GrColorTypeEncoding::kUnorm);
         case GrColorType::kGray_8:
             return GrColorTypeDesc::MakeGray(8, GrColorTypeEncoding::kUnorm);
+        case GrColorType::kGrayAlpha_88:
+            return GrColorTypeDesc::MakeGrayAlpha(8, GrColorTypeEncoding::kUnorm);
         case GrColorType::kAlpha_F16:
             return GrColorTypeDesc::MakeAlpha(16, GrColorTypeEncoding::kFloat);
         case GrColorType::kRGBA_F16:
@@ -1155,6 +1161,7 @@ static constexpr size_t GrColorTypeBytesPerPixel(GrColorType ct) {
         case GrColorType::kRGBA_1010102:     return 4;
         case GrColorType::kBGRA_1010102:     return 4;
         case GrColorType::kGray_8:           return 1;
+        case GrColorType::kGrayAlpha_88:     return 2;
         case GrColorType::kAlpha_F16:        return 2;
         case GrColorType::kRGBA_F16:         return 8;
         case GrColorType::kRGBA_F16_Clamped: return 8;
@@ -1293,6 +1300,7 @@ static constexpr const char* GrColorTypeToStr(GrColorType ct) {
         case GrColorType::kRGBA_1010102:     return "kRGBA_1010102";
         case GrColorType::kBGRA_1010102:     return "kBGRA_1010102";
         case GrColorType::kGray_8:           return "kGray_8";
+        case GrColorType::kGrayAlpha_88:     return "kGrayAlpha_88";
         case GrColorType::kAlpha_F16:        return "kAlpha_F16";
         case GrColorType::kRGBA_F16:         return "kRGBA_F16";
         case GrColorType::kRGBA_F16_Clamped: return "kRGBA_F16_Clamped";

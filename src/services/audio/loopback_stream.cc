@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/sync_socket.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -171,7 +171,7 @@ void LoopbackStream::OnMemberJoinedGroup(LoopbackGroupMember* member) {
   }
 
   TRACE_EVENT1("audio", "LoopbackStream::OnMemberJoinedGroup", "member",
-               member);
+               static_cast<void*>(member));
 
   const media::AudioParameters& input_params = member->GetAudioParameters();
   const auto emplace_result = snoopers_.emplace(
@@ -196,7 +196,8 @@ void LoopbackStream::OnMemberLeftGroup(LoopbackGroupMember* member) {
     return;
   }
 
-  TRACE_EVENT1("audio", "LoopbackStream::OnMemberLeftGroup", "member", member);
+  TRACE_EVENT1("audio", "LoopbackStream::OnMemberLeftGroup", "member",
+               static_cast<void*>(member));
 
   SnooperNode* const snooper = &(snoop_it->second);
   member->StopSnooping(snooper);

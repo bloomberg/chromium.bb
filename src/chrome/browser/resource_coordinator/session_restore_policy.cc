@@ -11,14 +11,13 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/common/url_constants.h"
@@ -26,6 +25,7 @@
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/persistence/site_data/site_data_reader.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -85,7 +85,7 @@ class SysInfoDelegate : public SessionRestorePolicy::Delegate {
         controller.GetEntryAtIndex(controller.GetCurrentEntryIndex());
     DCHECK(nav_entry);
 
-    auto* engagement_svc = SiteEngagementService::Get(
+    auto* engagement_svc = site_engagement::SiteEngagementService::Get(
         Profile::FromBrowserContext(contents->GetBrowserContext()));
     double engagement =
         engagement_svc->GetDetails(nav_entry->GetURL()).total_score;

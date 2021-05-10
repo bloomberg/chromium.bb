@@ -5,10 +5,10 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
-import("../optimize_webui.gni")
+import("../tools/optimize_webui.gni")
 
 preprocess_folder = "preprocessed"
 preprocess_manifest = "preprocessed_manifest.json"
@@ -69,7 +69,7 @@ generate_grd("build_grd") {
   }
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -84,7 +84,7 @@ preprocess_grit("preprocess") {
   ]
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":web_components" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -103,7 +103,7 @@ preprocess_grit("preprocess_generated") {
   ]
 }
 
-grit("history_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -190,8 +190,8 @@ js_library("history_toolbar") {
     ":constants",
     ":externs",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar.m",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay.m",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",
   ]

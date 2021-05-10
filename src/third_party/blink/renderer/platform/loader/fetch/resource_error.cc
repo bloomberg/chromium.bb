@@ -180,7 +180,8 @@ bool ResourceError::IsCancellation() const {
 }
 
 bool ResourceError::IsTrustTokenCacheHit() const {
-  return error_code_ == net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT;
+  return error_code_ ==
+         net::ERR_TRUST_TOKEN_OPERATION_SUCCESS_WITHOUT_SENDING_REQUEST;
 }
 
 bool ResourceError::IsUnactionableTrustTokensStatus() const {
@@ -300,9 +301,8 @@ String DescriptionForBlockedByClientOrResponse(int error, int extended_error) {
     case ResourceRequestBlockedReason::kCorpNotSameSite:
       detail = "NotSameSite";
       break;
-    case ResourceRequestBlockedReason::
-        kBlockedByExtensionCrbug1128174Investigation:
-      detail = "BlockedByExtensionCrbug1128174Investigation";
+    case ResourceRequestBlockedReason::kConversionRequest:
+      detail = "ConversionRequest";
       break;
   }
   return WebString::FromASCII(net::ErrorToString(error) + "." + detail);

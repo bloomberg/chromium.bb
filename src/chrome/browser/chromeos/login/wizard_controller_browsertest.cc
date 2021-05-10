@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
+#include "ash/components/audio/cras_audio_handler.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,37 +19,37 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
+#include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
+#include "chrome/browser/ash/login/enrollment/mock_auto_enrollment_check_screen.h"
+#include "chrome/browser/ash/login/enrollment/mock_enrollment_screen.h"
+#include "chrome/browser/ash/login/screens/device_disabled_screen.h"
+#include "chrome/browser/ash/login/screens/error_screen.h"
+#include "chrome/browser/ash/login/screens/hid_detection_screen.h"
+#include "chrome/browser/ash/login/screens/mock_arc_terms_of_service_screen.h"
+#include "chrome/browser/ash/login/screens/mock_demo_preferences_screen.h"
+#include "chrome/browser/ash/login/screens/mock_demo_setup_screen.h"
+#include "chrome/browser/ash/login/screens/mock_device_disabled_screen_view.h"
+#include "chrome/browser/ash/login/screens/mock_enable_adb_sideloading_screen.h"
+#include "chrome/browser/ash/login/screens/mock_enable_debugging_screen.h"
+#include "chrome/browser/ash/login/screens/mock_eula_screen.h"
+#include "chrome/browser/ash/login/screens/mock_network_screen.h"
+#include "chrome/browser/ash/login/screens/mock_update_screen.h"
+#include "chrome/browser/ash/login/screens/mock_welcome_screen.h"
+#include "chrome/browser/ash/login/screens/mock_wrong_hwid_screen.h"
+#include "chrome/browser/ash/login/screens/reset_screen.h"
+#include "chrome/browser/ash/login/screens/welcome_screen.h"
+#include "chrome/browser/ash/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
-#include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
-#include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_demo_preferences_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_demo_setup_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/mock_enable_adb_sideloading_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_welcome_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_wrong_hwid_screen.h"
-#include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
-#include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -62,7 +64,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/fake_auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -75,8 +76,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -102,7 +101,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -149,6 +147,9 @@ const char kTimezoneResponseBody[] =
     "}";
 
 const char kDisabledMessage[] = "This device has been disabled.";
+
+const test::UIPath kGuestSessionLink = {"error-message",
+                                        "error-guest-signin-fix-network"};
 
 // Matches on the mode parameter of an EnrollmentConfig object.
 MATCHER_P(EnrollmentModeMatches, mode, "") {
@@ -251,8 +252,8 @@ void RunSwitchLanguageTest(const std::string& locale,
                            const bool expect_success) {
   SwitchLanguageTestData data;
   locale_util::SwitchLanguageCallback callback(
-      base::Bind(&OnLocaleSwitched, base::Unretained(&data)));
-  locale_util::SwitchLanguage(locale, true, false, callback,
+      base::BindOnce(&OnLocaleSwitched, base::Unretained(&data)));
+  locale_util::SwitchLanguage(locale, true, false, std::move(callback),
                               ProfileManager::GetActiveUserProfile());
 
   // Token writing moves control to BlockingPool and back.
@@ -467,15 +468,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
             cras->GetOutputVolumePercent());
 }
 
-class TimeZoneTestRunner {
- public:
-  void OnResolved() { loop_.Quit(); }
-  void Run() { loop_.Run(); }
-
- private:
-  base::RunLoop loop_;
-};
-
 class WizardControllerFlowTest : public WizardControllerTest {
  protected:
   WizardControllerFlowTest() {}
@@ -484,7 +476,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
+    branded_build_override_ =
+        WizardController::ForceBrandedBuildForTesting(true);
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -650,15 +643,13 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   void WaitUntilTimezoneResolved() {
-    auto runner = std::make_unique<TimeZoneTestRunner>();
+    base::RunLoop loop;
     if (!WizardController::default_controller()
-             ->SetOnTimeZoneResolvedForTesting(
-                 base::Bind(&TimeZoneTestRunner::OnResolved,
-                            base::Unretained(runner.get())))) {
+             ->SetOnTimeZoneResolvedForTesting(loop.QuitClosure())) {
       return;
     }
 
-    runner->Run();
+    loop.Run();
   }
 
   void ResetAutoEnrollmentCheckScreen() {
@@ -1070,12 +1061,10 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
 
   static void WaitForAutoEnrollmentState(policy::AutoEnrollmentState state) {
     base::RunLoop loop;
-    std::unique_ptr<
-        AutoEnrollmentController::ProgressCallbackList::Subscription>
-        progress_subscription(
-            auto_enrollment_controller()->RegisterProgressCallback(
-                base::BindRepeating(&QuitLoopOnAutoEnrollmentProgress, state,
-                                    &loop)));
+    base::CallbackListSubscription progress_subscription =
+        auto_enrollment_controller()->RegisterProgressCallback(
+            base::BindRepeating(&QuitLoopOnAutoEnrollmentProgress, state,
+                                &loop));
     loop.Run();
   }
 
@@ -1309,16 +1298,14 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
             GetErrorScreen()->GetParentScreen());
 
-  constexpr char guest_session_link_display[] =
-      "window.getComputedStyle($('error-guest-signin-fix-network')).display";
   if (IsFREExplicitlyRequired()) {
     // Check that guest sign-in is not allowed on the network error screen
     // (because the check_enrollment VPD key was set to "1", making FRE
     // explicitly required).
-    EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
+    test::OobeJS().ExpectHiddenPath(kGuestSessionLink);
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
-    EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
+    test::OobeJS().ExpectVisiblePath(kGuestSessionLink);
   }
   EXPECT_EQ(0,
             FakeCryptohomeClient::Get()
@@ -1410,13 +1397,10 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
               GetErrorScreen()->GetParentScreen());
 
-    constexpr char guest_session_link_display[] =
-        "window.getComputedStyle($('error-guest-signin-fix-network'))."
-        "display";
     // Check that guest sign-in is not allowed on the network error screen
     // (because the check_enrollment VPD key was set to "1", making FRE
     // explicitly required).
-    EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
+    test::OobeJS().ExpectHiddenPath(kGuestSessionLink);
 
     base::DictionaryValue device_state;
     device_state.SetString(policy::kDeviceStateMode,
@@ -1640,12 +1624,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ(AutoEnrollmentCheckScreenView::kScreenId.AsId(),
             GetErrorScreen()->GetParentScreen());
 
-  constexpr char guest_session_link_display[] =
-      "window.getComputedStyle($('error-guest-signin-fix-network'))."
-      "display";
   // Check that guest sign-in is allowed on the network error screen for initial
   // enrollment.
-  EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
+  test::OobeJS().ExpectVisiblePath(kGuestSessionLink);
 
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
@@ -2035,13 +2016,14 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   // Checks visibility of the error message and powerwash button.
-  test::OobeJS().ExpectVisible({"error-message"});
-  test::OobeJS().ExpectHasClass("ui-state-local-state-error",
-                                {"error-message"});
+  test::OobeJS().ExpectVisible("error-message");
+  test::OobeJS().ExpectVisiblePath({"error-message", "powerwashButton"});
+  test::OobeJS().ExpectVisiblePath({"error-message", "localStateErrorText"});
+  test::OobeJS().ExpectVisiblePath({"error-message", "guestSessionText"});
 
   // Emulates user click on the "Restart and Powerwash" button.
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
-  test::OobeJS().TapOn("error-message-md-powerwash-button");
+  test::OobeJS().TapOnPath({"error-message", "powerwashButton"});
   ASSERT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 }
 
@@ -2725,7 +2707,8 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
+    branded_build_override_ =
+        WizardController::ForceBrandedBuildForTesting(true);
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -2844,37 +2827,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
   EXPECT_FALSE(configuration->DictEmpty());
 }
 
-class HIDDetectionScreenDisabledAfterRestartTest : public OobeBaseTest {
- public:
-  HIDDetectionScreenDisabledAfterRestartTest() = default;
-  // OobeBaseTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    OobeBaseTest::SetUpCommandLine(command_line);
-    // Emulating Chrome restart without the flag.
-    if (content::IsPreTest()) {
-      command_line->AppendSwitch(
-          switches::kDisableHIDDetectionOnOOBEForTesting);
-    }
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
-                       PRE_SkipToUpdate) {
-  // Pref should be false by default.
-  EXPECT_FALSE(StartupUtils::IsHIDDetectionScreenDisabledForTests());
-
-  WizardController::default_controller()->SkipToUpdateForTesting();
-  // SkipToUpdateForTesting should set the pref when
-  // switches::kDisableHIDDetectionOnOOBEForTesting is passed.
-  EXPECT_TRUE(StartupUtils::IsHIDDetectionScreenDisabledForTests());
-}
-
-IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
-                       SkipToUpdate) {
-  // The pref should persist restart.
-  EXPECT_TRUE(StartupUtils::IsHIDDetectionScreenDisabledForTests());
-}
-
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
 // TODO(merkulova): Add tests for bluetooth HID detection screen variations when
@@ -2889,8 +2841,6 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
 // TODO(alemate): Add tests for Sync Consent UI.
 
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
-
-// TODO(alemate): Add tests for Discover UI.
 
 // TODO(alemate): Add tests for Marketing Opt-In.
 

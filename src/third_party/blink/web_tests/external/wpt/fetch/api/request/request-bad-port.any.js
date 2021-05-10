@@ -60,9 +60,13 @@ var BLOCKED_PORTS_LIST = [
     636,  // ldap+ssl
     993,  // ldap+ssl
     995,  // pop3+ssl
+    1720, // h323hostcall
+    1723, // pptp
     2049, // nfs
     3659, // apple-sasl
     4045, // lockd
+    5060, // sip
+    5061, // sips
     6000, // x11
     6665, // irc (alternate)
     6666, // irc (alternate)

@@ -13,7 +13,6 @@ namespace omnibox {
 // Instead, use the categorized and alphabetized lists below this "big blob".
 // You can create a new category if none of the existing ones fit.
 extern const base::Feature kHideFileUrlScheme;
-extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kExperimentalKeywordMode;
@@ -31,10 +30,6 @@ extern const base::Feature kDebounceDocumentProvider;
 // TODO(tommycli): There are more flags above that belong in this category.
 extern const base::Feature kOmniboxDemoteByType;
 
-// A special flag, enabled by default, that can be used to disable all new
-// search features (e.g. zero suggest).
-extern const base::Feature kNewSearchFeatures;
-
 // Features below this line should be sorted alphabetically by their comments.
 
 // Entity suggestion features.
@@ -42,8 +37,6 @@ extern const base::Feature kEntitySuggestionsReduceLatency;
 
 // Num suggestions - these affect how many suggestions are shown based on e.g.
 // focus, page context, provider, or URL v non-URL.
-// Note that all of these are overridden and default values used instead if
-// kNewSearchFeatures is disabled.
 extern const base::Feature kMaxZeroSuggestMatches;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 // The default value is established here as a bool so it can be referred to in
@@ -76,6 +69,10 @@ extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 // Provider-specific - These features change the behavior of specific providers.
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
 extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
+extern const base::Feature kDisableCGIParamMatching;
+extern const base::Feature kNativeVoiceSuggestProvider;
+extern const base::Feature kShortBookmarkSuggestions;
+extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
@@ -103,6 +100,7 @@ extern const base::Feature kMaybeElideToRegistrableDomain;
 
 // Navigation experiments.
 extern const base::Feature kDefaultTypedNavigationsToHttps;
+extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
 
 // Experiment to control whether visits from CCT are hidden.
 // TODO(https://crbug.com/1141501): this is for an experiment, and will be

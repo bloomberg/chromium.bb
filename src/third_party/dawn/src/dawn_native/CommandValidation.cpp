@@ -27,348 +27,53 @@
 
 namespace dawn_native {
 
-    namespace {
-
-        inline MaybeError ValidateRenderBundleCommand(CommandIterator* commands,
-                                                      Command type,
-                                                      CommandBufferStateTracker* commandBufferState,
-                                                      const AttachmentState* attachmentState,
-                                                      uint64_t* debugGroupStackSize,
-                                                      const char* disallowedMessage) {
-            switch (type) {
-                case Command::Draw: {
-                    commands->NextCommand<DrawCmd>();
-                    DAWN_TRY(commandBufferState->ValidateCanDraw());
-                    break;
-                }
-
-                case Command::DrawIndexed: {
-                    commands->NextCommand<DrawIndexedCmd>();
-                    DAWN_TRY(commandBufferState->ValidateCanDrawIndexed());
-                    break;
-                }
-
-                case Command::DrawIndirect: {
-                    commands->NextCommand<DrawIndirectCmd>();
-                    DAWN_TRY(commandBufferState->ValidateCanDraw());
-                    break;
-                }
-
-                case Command::DrawIndexedIndirect: {
-                    commands->NextCommand<DrawIndexedIndirectCmd>();
-                    DAWN_TRY(commandBufferState->ValidateCanDrawIndexed());
-                    break;
-                }
-
-                case Command::InsertDebugMarker: {
-                    InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    break;
-                }
-
-                case Command::PopDebugGroup: {
-                    commands->NextCommand<PopDebugGroupCmd>();
-                    DAWN_TRY(ValidateCanPopDebugGroup(*debugGroupStackSize));
-                    *debugGroupStackSize -= 1;
-                    break;
-                }
-
-                case Command::PushDebugGroup: {
-                    PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    *debugGroupStackSize += 1;
-                    break;
-                }
-
-                case Command::SetRenderPipeline: {
-                    SetRenderPipelineCmd* cmd = commands->NextCommand<SetRenderPipelineCmd>();
-                    RenderPipelineBase* pipeline = cmd->pipeline.Get();
-
-                    if (DAWN_UNLIKELY(pipeline->GetAttachmentState() != attachmentState)) {
-                        return DAWN_VALIDATION_ERROR("Pipeline attachment state is not compatible");
-                    }
-                    commandBufferState->SetRenderPipeline(pipeline);
-                    break;
-                }
-
-                case Command::SetBindGroup: {
-                    SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
-                    if (cmd->dynamicOffsetCount > 0) {
-                        commands->NextData<uint32_t>(cmd->dynamicOffsetCount);
-                    }
-
-                    commandBufferState->SetBindGroup(cmd->index, cmd->group.Get());
-                    break;
-                }
-
-                case Command::SetIndexBuffer: {
-                    SetIndexBufferCmd* cmd = commands->NextCommand<SetIndexBufferCmd>();
-                    commandBufferState->SetIndexBuffer(cmd->format);
-                    break;
-                }
-
-                case Command::SetVertexBuffer: {
-                    SetVertexBufferCmd* cmd = commands->NextCommand<SetVertexBufferCmd>();
-                    commandBufferState->SetVertexBuffer(cmd->slot);
-                    break;
-                }
-
-                default:
-                    return DAWN_VALIDATION_ERROR(disallowedMessage);
-            }
-
-            return {};
-        }
-
-    }  // namespace
-
-    MaybeError ValidateCanPopDebugGroup(uint64_t debugGroupStackSize) {
-        if (debugGroupStackSize == 0) {
-            return DAWN_VALIDATION_ERROR("Pop must be balanced by a corresponding Push.");
-        }
-        return {};
-    }
-
-    MaybeError ValidateFinalDebugGroupStackSize(uint64_t debugGroupStackSize) {
-        if (debugGroupStackSize != 0) {
-            return DAWN_VALIDATION_ERROR("Each Push must be balanced by a corresponding Pop.");
-        }
-        return {};
-    }
-
-    MaybeError ValidateRenderBundle(CommandIterator* commands,
-                                    const AttachmentState* attachmentState) {
-        CommandBufferStateTracker commandBufferState;
-        uint64_t debugGroupStackSize = 0;
-
-        Command type;
-        while (commands->NextCommandId(&type)) {
-            DAWN_TRY(ValidateRenderBundleCommand(commands, type, &commandBufferState,
-                                                 attachmentState, &debugGroupStackSize,
-                                                 "Command disallowed inside a render bundle"));
-        }
-
-        DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
-        return {};
-    }
-
-    MaybeError ValidateRenderPass(CommandIterator* commands, const BeginRenderPassCmd* renderPass) {
-        CommandBufferStateTracker commandBufferState;
-        uint64_t debugGroupStackSize = 0;
-
-        Command type;
-        while (commands->NextCommandId(&type)) {
-            switch (type) {
-                case Command::EndRenderPass: {
-                    commands->NextCommand<EndRenderPassCmd>();
-                    DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
-                    return {};
-                }
-
-                case Command::ExecuteBundles: {
-                    ExecuteBundlesCmd* cmd = commands->NextCommand<ExecuteBundlesCmd>();
-                    auto bundles = commands->NextData<Ref<RenderBundleBase>>(cmd->count);
-                    for (uint32_t i = 0; i < cmd->count; ++i) {
-                        if (DAWN_UNLIKELY(renderPass->attachmentState.Get() !=
-                                          bundles[i]->GetAttachmentState())) {
-                            return DAWN_VALIDATION_ERROR(
-                                "Render bundle is not compatible with render pass");
-                        }
-                    }
-
-                    if (cmd->count > 0) {
-                        // Reset state. It is invalidated after render bundle execution.
-                        commandBufferState = CommandBufferStateTracker{};
-                    }
-
-                    break;
-                }
-
-                case Command::SetStencilReference: {
-                    commands->NextCommand<SetStencilReferenceCmd>();
-                    break;
-                }
-
-                case Command::SetBlendColor: {
-                    commands->NextCommand<SetBlendColorCmd>();
-                    break;
-                }
-
-                case Command::SetViewport: {
-                    commands->NextCommand<SetViewportCmd>();
-                    break;
-                }
-
-                case Command::SetScissorRect: {
-                    commands->NextCommand<SetScissorRectCmd>();
-                    break;
-                }
-
-                case Command::WriteTimestamp: {
-                    commands->NextCommand<WriteTimestampCmd>();
-                    break;
-                }
-
-                default:
-                    DAWN_TRY(ValidateRenderBundleCommand(
-                        commands, type, &commandBufferState, renderPass->attachmentState.Get(),
-                        &debugGroupStackSize, "Command disallowed inside a render pass"));
-            }
-        }
-
-        UNREACHABLE();
-        return DAWN_VALIDATION_ERROR("Unfinished render pass");
-    }
-
-    MaybeError ValidateComputePass(CommandIterator* commands) {
-        CommandBufferStateTracker commandBufferState;
-        uint64_t debugGroupStackSize = 0;
-
-        Command type;
-        while (commands->NextCommandId(&type)) {
-            switch (type) {
-                case Command::EndComputePass: {
-                    commands->NextCommand<EndComputePassCmd>();
-                    DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
-                    return {};
-                }
-
-                case Command::Dispatch: {
-                    commands->NextCommand<DispatchCmd>();
-                    DAWN_TRY(commandBufferState.ValidateCanDispatch());
-                    break;
-                }
-
-                case Command::DispatchIndirect: {
-                    commands->NextCommand<DispatchIndirectCmd>();
-                    DAWN_TRY(commandBufferState.ValidateCanDispatch());
-                    break;
-                }
-
-                case Command::InsertDebugMarker: {
-                    InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    break;
-                }
-
-                case Command::PopDebugGroup: {
-                    commands->NextCommand<PopDebugGroupCmd>();
-                    DAWN_TRY(ValidateCanPopDebugGroup(debugGroupStackSize));
-                    debugGroupStackSize--;
-                    break;
-                }
-
-                case Command::PushDebugGroup: {
-                    PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
-                    commands->NextData<char>(cmd->length + 1);
-                    debugGroupStackSize++;
-                    break;
-                }
-
-                case Command::SetComputePipeline: {
-                    SetComputePipelineCmd* cmd = commands->NextCommand<SetComputePipelineCmd>();
-                    ComputePipelineBase* pipeline = cmd->pipeline.Get();
-                    commandBufferState.SetComputePipeline(pipeline);
-                    break;
-                }
-
-                case Command::SetBindGroup: {
-                    SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
-                    if (cmd->dynamicOffsetCount > 0) {
-                        commands->NextData<uint32_t>(cmd->dynamicOffsetCount);
-                    }
-                    commandBufferState.SetBindGroup(cmd->index, cmd->group.Get());
-                    break;
-                }
-
-                case Command::WriteTimestamp: {
-                    commands->NextCommand<WriteTimestampCmd>();
-                    break;
-                }
-
-                default:
-                    return DAWN_VALIDATION_ERROR("Command disallowed inside a compute pass");
-            }
-        }
-
-        UNREACHABLE();
-        return DAWN_VALIDATION_ERROR("Unfinished compute pass");
-    }
-
     // Performs the per-pass usage validation checks
     // This will eventually need to differentiate between render and compute passes.
     // It will be valid to use a buffer both as uniform and storage in the same compute pass.
+    // TODO(yunchao.he@intel.com): add read/write usage tracking for compute
     MaybeError ValidatePassResourceUsage(const PassResourceUsage& pass) {
+        // TODO(cwallez@chromium.org): Remove this special casing once the PassResourceUsage is a
+        // SyncScopeResourceUsage.
+        if (pass.passType != PassType::Render) {
+            return {};
+        }
+
         // Buffers can only be used as single-write or multiple read.
         for (size_t i = 0; i < pass.buffers.size(); ++i) {
-            const BufferBase* buffer = pass.buffers[i];
             wgpu::BufferUsage usage = pass.bufferUsages[i];
-
-            if (usage & ~buffer->GetUsage()) {
-                return DAWN_VALIDATION_ERROR("Buffer missing usage for the pass");
-            }
-
             bool readOnly = IsSubset(usage, kReadOnlyBufferUsages);
             bool singleUse = wgpu::HasZeroOrOneBits(usage);
 
-            if (pass.passType == PassType::Render && !readOnly && !singleUse) {
+            if (!readOnly && !singleUse) {
                 return DAWN_VALIDATION_ERROR(
                     "Buffer used as writable usage and another usage in pass");
             }
         }
 
-        // Textures can only be used as single-write or multiple read.
-        for (size_t i = 0; i < pass.textures.size(); ++i) {
-            const TextureBase* texture = pass.textures[i];
-            const PassTextureUsage& textureUsage = pass.textureUsages[i];
-            wgpu::TextureUsage usage = textureUsage.usage;
-
-            if (usage & ~texture->GetUsage()) {
-                return DAWN_VALIDATION_ERROR("Texture missing usage for the pass");
-            }
-
-            // TODO (yunchao.he@intel.com): add read/write usage tracking for compute
-
-            // The usage variable for the whole texture is a fast path for texture usage tracking.
-            // Because in most cases a texture (with or without subresources) is used as
-            // single-write or multiple read, then we can skip iterating the subresources' usages.
-            bool readOnly = IsSubset(usage, kReadOnlyTextureUsages);
-            bool singleUse = wgpu::HasZeroOrOneBits(usage);
-            if (pass.passType != PassType::Render || readOnly || singleUse) {
-                continue;
-            }
-            // Inspect the subresources if the usage of the whole texture violates usage validation.
-            // Every single subresource can only be used as single-write or multiple read.
-            for (wgpu::TextureUsage subresourceUsage : textureUsage.subresourceUsages) {
-                bool readOnly = IsSubset(subresourceUsage, kReadOnlyTextureUsages);
-                bool singleUse = wgpu::HasZeroOrOneBits(subresourceUsage);
-                if (!readOnly && !singleUse) {
-                    return DAWN_VALIDATION_ERROR(
+        // Check that every single subresource is used as either a single-write usage or a
+        // combination of readonly usages.
+        for (const PassTextureUsage& textureUsage : pass.textureUsages) {
+            MaybeError error = {};
+            textureUsage.Iterate([&](const SubresourceRange&, const wgpu::TextureUsage& usage) {
+                bool readOnly = IsSubset(usage, kReadOnlyTextureUsages);
+                bool singleUse = wgpu::HasZeroOrOneBits(usage);
+                if (!readOnly && !singleUse && !error.IsError()) {
+                    error = DAWN_VALIDATION_ERROR(
                         "Texture used as writable usage and another usage in render pass");
                 }
-            }
+            });
+            DAWN_TRY(std::move(error));
         }
         return {};
     }
 
-    MaybeError ValidateTimestampQuery(QuerySetBase* querySet,
-                                      uint32_t queryIndex,
-                                      const UsedQueryMap& usedQueryIndices) {
+    MaybeError ValidateTimestampQuery(QuerySetBase* querySet, uint32_t queryIndex) {
         if (querySet->GetQueryType() != wgpu::QueryType::Timestamp) {
-            return DAWN_VALIDATION_ERROR("The query type of query set must be Timestamp");
+            return DAWN_VALIDATION_ERROR("The type of query set must be Timestamp");
         }
 
         if (queryIndex >= querySet->GetQueryCount()) {
             return DAWN_VALIDATION_ERROR("Query index exceeds the number of queries in query set");
-        }
-
-        UsedQueryMap::const_iterator it = usedQueryIndices.find(querySet);
-        if (it != usedQueryIndices.end()) {
-            // Get the used query index records
-            const std::vector<bool>& queryIndices = it->second;
-            if (queryIndices[queryIndex] == 1) {
-                return DAWN_VALIDATION_ERROR("Duplicated query index writen");
-            }
         }
 
         return {};
@@ -417,8 +122,8 @@ namespace dawn_native {
         //
         // This means that if the computation of depth * bytesPerImage doesn't overflow, none of the
         // computations for requiredBytesInCopy will. (and it's not a very pessimizing check)
-        ASSERT(copySize.depth <= 1 ||
-               (bytesPerRow != wgpu::kStrideUndefined && rowsPerImage != wgpu::kStrideUndefined));
+        ASSERT(copySize.depth <= 1 || (bytesPerRow != wgpu::kCopyStrideUndefined &&
+                                       rowsPerImage != wgpu::kCopyStrideUndefined));
         uint64_t bytesPerImage = Safe32x32(bytesPerRow, rowsPerImage);
         if (bytesPerImage > std::numeric_limits<uint64_t>::max() / copySize.depth) {
             return DAWN_VALIDATION_ERROR("requiredBytesInCopy is too large.");
@@ -426,7 +131,7 @@ namespace dawn_native {
 
         uint64_t requiredBytesInCopy = bytesPerImage * (copySize.depth - 1);
         if (heightInBlocks > 0) {
-            ASSERT(heightInBlocks <= 1 || bytesPerRow != wgpu::kStrideUndefined);
+            ASSERT(heightInBlocks <= 1 || bytesPerRow != wgpu::kCopyStrideUndefined);
             uint64_t bytesInLastImage = Safe32x32(bytesPerRow, heightInBlocks - 1) + bytesInLastRow;
             requiredBytesInCopy += bytesInLastImage;
         }
@@ -465,7 +170,7 @@ namespace dawn_native {
                 device->EmitDeprecationWarning(
                     "rowsPerImage soon must be non-zero or unspecified if copy depth == 1 (it will "
                     "no longer default to the copy height).");
-                layout.rowsPerImage = wgpu::kStrideUndefined;
+                layout.rowsPerImage = wgpu::kCopyStrideUndefined;
             }
         }
 
@@ -479,12 +184,13 @@ namespace dawn_native {
             device->EmitDeprecationWarning(
                 "Soon, even if copy height == 1, bytesPerRow must be >= the byte size of each row "
                 "or left unspecified.");
-            layout.bytesPerRow = wgpu::kStrideUndefined;
+            layout.bytesPerRow = wgpu::kCopyStrideUndefined;
         }
         return layout;
     }
 
-    // Replace wgpu::kStrideUndefined with real values, so backends don't have to think about it.
+    // Replace wgpu::kCopyStrideUndefined with real values, so backends don't have to think about
+    // it.
     void ApplyDefaultTextureDataLayoutOptions(TextureDataLayout* layout,
                                               const TexelBlockInfo& blockInfo,
                                               const Extent3D& copyExtent) {
@@ -492,7 +198,7 @@ namespace dawn_native {
         ASSERT(copyExtent.height % blockInfo.height == 0);
         uint32_t heightInBlocks = copyExtent.height / blockInfo.height;
 
-        if (layout->bytesPerRow == wgpu::kStrideUndefined) {
+        if (layout->bytesPerRow == wgpu::kCopyStrideUndefined) {
             ASSERT(copyExtent.width % blockInfo.width == 0);
             uint32_t widthInBlocks = copyExtent.width / blockInfo.width;
             uint32_t bytesInLastRow = widthInBlocks * blockInfo.byteSize;
@@ -500,7 +206,7 @@ namespace dawn_native {
             ASSERT(heightInBlocks <= 1 && copyExtent.depth <= 1);
             layout->bytesPerRow = Align(bytesInLastRow, kTextureBytesPerRowAlignment);
         }
-        if (layout->rowsPerImage == wgpu::kStrideUndefined) {
+        if (layout->rowsPerImage == wgpu::kCopyStrideUndefined) {
             ASSERT(copyExtent.depth <= 1);
             layout->rowsPerImage = heightInBlocks;
         }
@@ -513,12 +219,12 @@ namespace dawn_native {
         ASSERT(copyExtent.height % blockInfo.height == 0);
         uint32_t heightInBlocks = copyExtent.height / blockInfo.height;
 
-        if (copyExtent.depth > 1 && (layout.bytesPerRow == wgpu::kStrideUndefined ||
-                                     layout.rowsPerImage == wgpu::kStrideUndefined)) {
+        if (copyExtent.depth > 1 && (layout.bytesPerRow == wgpu::kCopyStrideUndefined ||
+                                     layout.rowsPerImage == wgpu::kCopyStrideUndefined)) {
             return DAWN_VALIDATION_ERROR(
                 "If copy depth > 1, bytesPerRow and rowsPerImage must be specified.");
         }
-        if (heightInBlocks > 1 && layout.bytesPerRow == wgpu::kStrideUndefined) {
+        if (heightInBlocks > 1 && layout.bytesPerRow == wgpu::kCopyStrideUndefined) {
             return DAWN_VALIDATION_ERROR("If heightInBlocks > 1, bytesPerRow must be specified.");
         }
 
@@ -529,12 +235,14 @@ namespace dawn_native {
                std::numeric_limits<uint32_t>::max());
         uint32_t bytesInLastRow = widthInBlocks * blockInfo.byteSize;
 
-        // These != wgpu::kStrideUndefined checks are technically redundant with the > checks, but
-        // they should get optimized out.
-        if (layout.bytesPerRow != wgpu::kStrideUndefined && bytesInLastRow > layout.bytesPerRow) {
+        // These != wgpu::kCopyStrideUndefined checks are technically redundant with the > checks,
+        // but they should get optimized out.
+        if (layout.bytesPerRow != wgpu::kCopyStrideUndefined &&
+            bytesInLastRow > layout.bytesPerRow) {
             return DAWN_VALIDATION_ERROR("The byte size of each row must be <= bytesPerRow.");
         }
-        if (layout.rowsPerImage != wgpu::kStrideUndefined && heightInBlocks > layout.rowsPerImage) {
+        if (layout.rowsPerImage != wgpu::kCopyStrideUndefined &&
+            heightInBlocks > layout.rowsPerImage) {
             return DAWN_VALIDATION_ERROR(
                 "The height of each image, in blocks, must be <= rowsPerImage.");
         }
@@ -560,7 +268,7 @@ namespace dawn_native {
     MaybeError ValidateBufferCopyView(DeviceBase const* device,
                                       const BufferCopyView& bufferCopyView) {
         DAWN_TRY(device->ValidateObject(bufferCopyView.buffer));
-        if (bufferCopyView.layout.bytesPerRow != wgpu::kStrideUndefined) {
+        if (bufferCopyView.layout.bytesPerRow != wgpu::kCopyStrideUndefined) {
             if (bufferCopyView.layout.bytesPerRow % kTextureBytesPerRowAlignment != 0) {
                 return DAWN_VALIDATION_ERROR("bytesPerRow must be a multiple of 256");
             }
@@ -578,7 +286,7 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("mipLevel out of range");
         }
 
-        if (TryConvertAspect(texture->GetFormat(), textureCopy.aspect) == Aspect::None) {
+        if (SelectFormatAspects(texture->GetFormat(), textureCopy.aspect) == Aspect::None) {
             return DAWN_VALIDATION_ERROR("Texture does not have selected aspect for texture copy.");
         }
 
@@ -647,13 +355,15 @@ namespace dawn_native {
         return {};
     }
 
-    // Always returns a single aspect (color, stencil, or depth).
+    // Always returns a single aspect (color, stencil, depth, or ith plane for multi-planar
+    // formats).
     ResultOrError<Aspect> SingleAspectUsedByTextureCopyView(const TextureCopyView& view) {
         const Format& format = view.texture->GetFormat();
         switch (view.aspect) {
             case wgpu::TextureAspect::All:
                 if (HasOneBit(format.aspects)) {
-                    return Aspect{format.aspects};
+                    Aspect single = format.aspects;
+                    return single;
                 } else {
                     return DAWN_VALIDATION_ERROR(
                         "A single aspect must be selected for multi-planar formats in "
@@ -666,6 +376,9 @@ namespace dawn_native {
             case wgpu::TextureAspect::StencilOnly:
                 ASSERT(format.aspects & Aspect::Stencil);
                 return Aspect::Stencil;
+            case wgpu::TextureAspect::Plane0Only:
+            case wgpu::TextureAspect::Plane1Only:
+                UNREACHABLE();
         }
     }
 
@@ -695,10 +408,15 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Source and destination texture formats must match.");
         }
 
-        if (src.aspect != wgpu::TextureAspect::All || dst.aspect != wgpu::TextureAspect::All) {
-            // Metal cannot select a single aspect for texture-to-texture copies
+        // Metal cannot select a single aspect for texture-to-texture copies.
+        const Format& format = src.texture->GetFormat();
+        if (SelectFormatAspects(format, src.aspect) != format.aspects) {
             return DAWN_VALIDATION_ERROR(
-                "Texture aspect must be \"all\" for texture to texture copies");
+                "Source aspect doesn't select all the aspects of the source format.");
+        }
+        if (SelectFormatAspects(format, dst.aspect) != format.aspects) {
+            return DAWN_VALIDATION_ERROR(
+                "Destination aspect doesn't select all the aspects of the destination format.");
         }
 
         if (src.texture == dst.texture && src.mipLevel == dst.mipLevel) {

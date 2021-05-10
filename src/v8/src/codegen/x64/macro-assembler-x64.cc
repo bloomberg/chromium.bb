@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdint>
 #if V8_TARGET_ARCH_X64
 
 #include "src/base/bits.h"
@@ -14,6 +15,7 @@
 #include "src/codegen/register-configuration.h"
 #include "src/codegen/string-constants.h"
 #include "src/codegen/x64/assembler-x64.h"
+#include "src/codegen/x64/register-x64.h"
 #include "src/common/external-pointer.h"
 #include "src/common/globals.h"
 #include "src/debug/debug.h"
@@ -202,6 +204,15 @@ void TurboAssembler::LoadTaggedPointerField(Register destination,
   }
 }
 
+void TurboAssembler::LoadTaggedSignedField(Register destination,
+                                           Operand field_operand) {
+  if (COMPRESS_POINTERS_BOOL) {
+    DecompressTaggedSigned(destination, field_operand);
+  } else {
+    mov_tagged(destination, field_operand);
+  }
+}
+
 void TurboAssembler::LoadAnyTaggedField(Register destination,
                                         Operand field_operand) {
   if (COMPRESS_POINTERS_BOOL) {
@@ -252,6 +263,16 @@ void TurboAssembler::StoreTaggedField(Operand dst_field_operand,
     movl(dst_field_operand, value);
   } else {
     movq(dst_field_operand, value);
+  }
+}
+
+void TurboAssembler::StoreTaggedSignedField(Operand dst_field_operand,
+                                            Smi value) {
+  if (SmiValuesAre32Bits()) {
+    movl(Operand(dst_field_operand, kSmiShift / kBitsPerByte),
+         Immediate(value.value()));
+  } else {
+    StoreTaggedField(dst_field_operand, Immediate(value));
   }
 }
 
@@ -389,10 +410,8 @@ void TurboAssembler::CallEphemeronKeyBarrier(Register object, Register address,
 void TurboAssembler::CallRecordWriteStub(
     Register object, Register address,
     RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode) {
-  CallRecordWriteStub(
-      object, address, remembered_set_action, fp_mode,
-      isolate()->builtins()->builtin_handle(Builtins::kRecordWrite),
-      kNullAddress);
+  CallRecordWriteStub(object, address, remembered_set_action, fp_mode,
+                      Builtins::kRecordWrite, kNullAddress);
 }
 
 void TurboAssembler::CallRecordWriteStub(
@@ -400,14 +419,15 @@ void TurboAssembler::CallRecordWriteStub(
     RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
     Address wasm_target) {
   CallRecordWriteStub(object, address, remembered_set_action, fp_mode,
-                      Handle<Code>::null(), wasm_target);
+                      Builtins::kNoBuiltinId, wasm_target);
 }
 
 void TurboAssembler::CallRecordWriteStub(
     Register object, Register address,
     RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
-    Handle<Code> code_target, Address wasm_target) {
-  DCHECK_NE(code_target.is_null(), wasm_target == kNullAddress);
+    int builtin_index, Address wasm_target) {
+  DCHECK_NE(builtin_index == Builtins::kNoBuiltinId,
+            wasm_target == kNullAddress);
 
   RecordWriteDescriptor descriptor;
   RegList registers = descriptor.allocatable_registers();
@@ -436,10 +456,14 @@ void TurboAssembler::CallRecordWriteStub(
   } else {
     movq(fp_mode_parameter, remembered_set_parameter);
   }
-  if (code_target.is_null()) {
+  if (builtin_index == Builtins::kNoBuiltinId) {
     // Use {near_call} for direct Wasm call within a module.
     near_call(wasm_target, RelocInfo::WASM_STUB_CALL);
+  } else if (options().inline_offheap_trampolines) {
+    CallBuiltin(builtin_index);
   } else {
+    Handle<Code> code_target =
+        isolate()->builtins()->builtin_handle(Builtins::kRecordWrite);
     Call(code_target, RelocInfo::CODE_TARGET);
   }
 
@@ -689,6 +713,59 @@ int TurboAssembler::PopCallerSaved(SaveFPRegsMode fp_mode, Register exclusion1,
 
   return bytes;
 }
+
+void TurboAssembler::Movdqa(XMMRegister dst, Operand src) {
+  // See comments in Movdqa(XMMRegister, XMMRegister).
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vmovdqa(dst, src);
+  } else {
+    movaps(dst, src);
+  }
+}
+
+void TurboAssembler::Movdqa(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    // Many AVX processors have separate integer/floating-point domains. Use the
+    // appropriate instructions.
+    vmovdqa(dst, src);
+  } else {
+    // On SSE, movaps is 1 byte shorter than movdqa, and has the same behavior.
+    // Most SSE processors also don't have the same delay moving between integer
+    // and floating-point domains.
+    movaps(dst, src);
+  }
+}
+
+void TurboAssembler::Movapd(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vmovapd(dst, src);
+  } else {
+    // On SSE, movaps is 1 byte shorter than movapd, and has the same behavior.
+    movaps(dst, src);
+  }
+}
+
+template <typename Dst, typename Src>
+void TurboAssembler::Movdqu(Dst dst, Src src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vmovdqu(dst, src);
+  } else {
+    // movups is 1 byte shorter than movdqu. On most SSE systems, this incurs
+    // no delay moving between integer and floating-point domain.
+    movups(dst, src);
+  }
+}
+
+template void TurboAssembler::Movdqu<XMMRegister, Operand>(XMMRegister dst,
+                                                           Operand src);
+template void TurboAssembler::Movdqu<Operand, XMMRegister>(Operand dst,
+                                                           XMMRegister src);
+template void TurboAssembler::Movdqu<XMMRegister, XMMRegister>(XMMRegister dst,
+                                                               XMMRegister src);
 
 void TurboAssembler::Cvtss2sd(XMMRegister dst, XMMRegister src) {
   if (CpuFeatures::IsSupported(AVX)) {
@@ -1031,17 +1108,7 @@ void TurboAssembler::Set(Operand dst, intptr_t x) {
 // Smi tagging, untagging and tag detection.
 
 Register TurboAssembler::GetSmiConstant(Smi source) {
-  STATIC_ASSERT(kSmiTag == 0);
-  int value = source.value();
-  if (value == 0) {
-    xorl(kScratchRegister, kScratchRegister);
-    return kScratchRegister;
-  }
-  if (SmiValuesAre32Bits()) {
-    Move(kScratchRegister, source);
-  } else {
-    movl(kScratchRegister, Immediate(source));
-  }
+  Move(kScratchRegister, source);
   return kScratchRegister;
 }
 
@@ -1050,8 +1117,17 @@ void TurboAssembler::Move(Register dst, Smi source) {
   int value = source.value();
   if (value == 0) {
     xorl(dst, dst);
-  } else {
+  } else if (SmiValuesAre32Bits() || value < 0) {
     Move(dst, source.ptr(), RelocInfo::NONE);
+  } else {
+    uint32_t uvalue = static_cast<uint32_t>(source.ptr());
+    if (uvalue <= 0xFF) {
+      // Emit shorter instructions for small Smis
+      xorl(dst, dst);
+      movb(dst, Immediate(uvalue));
+    } else {
+      movl(dst, Immediate(uvalue));
+    }
   }
 }
 
@@ -1293,6 +1369,15 @@ void TurboAssembler::Move(Register dst, Register src) {
   }
 }
 
+void TurboAssembler::Move(Register dst, Operand src) { movq(dst, src); }
+void TurboAssembler::Move(Register dst, Immediate src) { movl(dst, src); }
+
+void TurboAssembler::Move(XMMRegister dst, XMMRegister src) {
+  if (dst != src) {
+    Movaps(dst, src);
+  }
+}
+
 void TurboAssembler::MovePair(Register dst0, Register src0, Register dst1,
                               Register src1) {
   if (dst0 != src1) {
@@ -1381,16 +1466,6 @@ void MacroAssembler::Absps(XMMRegister dst) {
 void MacroAssembler::Negps(XMMRegister dst) {
   Xorps(dst, ExternalReferenceAsOperand(
                  ExternalReference::address_of_float_neg_constant()));
-}
-
-void MacroAssembler::Abspd(XMMRegister dst) {
-  Andps(dst, ExternalReferenceAsOperand(
-                 ExternalReference::address_of_double_abs_constant()));
-}
-
-void MacroAssembler::Negpd(XMMRegister dst) {
-  Xorps(dst, ExternalReferenceAsOperand(
-                 ExternalReference::address_of_double_neg_constant()));
 }
 
 void MacroAssembler::Cmp(Register dst, Handle<Object> source) {
@@ -1551,6 +1626,7 @@ void TurboAssembler::Jump(Handle<Code> code_object, RelocInfo::Mode rmode,
       Address entry = d.InstructionStartOfBuiltin(builtin_index);
       Move(kScratchRegister, entry, RelocInfo::OFF_HEAP_TARGET);
       jmp(kScratchRegister);
+      if (FLAG_code_comments) RecordComment("]");
       bind(&skip);
       return;
     }
@@ -1633,6 +1709,18 @@ void TurboAssembler::CallBuiltin(int builtin_index) {
   Address entry = d.InstructionStartOfBuiltin(builtin_index);
   Move(kScratchRegister, entry, RelocInfo::OFF_HEAP_TARGET);
   call(kScratchRegister);
+  if (FLAG_code_comments) RecordComment("]");
+}
+
+void TurboAssembler::TailCallBuiltin(int builtin_index) {
+  DCHECK(Builtins::IsBuiltinId(builtin_index));
+  RecordCommentForOffHeapTrampoline(builtin_index);
+  CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
+  EmbeddedData d = EmbeddedData::FromBlob();
+  Address entry = d.InstructionStartOfBuiltin(builtin_index);
+  Move(kScratchRegister, entry, RelocInfo::OFF_HEAP_TARGET);
+  jmp(kScratchRegister);
+  if (FLAG_code_comments) RecordComment("]");
 }
 
 void TurboAssembler::LoadCodeObjectEntry(Register destination,
@@ -1683,9 +1771,17 @@ void TurboAssembler::CallCodeObject(Register code_object) {
   call(code_object);
 }
 
-void TurboAssembler::JumpCodeObject(Register code_object) {
+void TurboAssembler::JumpCodeObject(Register code_object, JumpMode jump_mode) {
   LoadCodeObjectEntry(code_object, code_object);
-  jmp(code_object);
+  switch (jump_mode) {
+    case JumpMode::kJump:
+      jmp(code_object);
+      return;
+    case JumpMode::kPushAndReturn:
+      pushq(code_object);
+      Ret();
+      return;
+  }
 }
 
 void TurboAssembler::RetpolineCall(Register reg) {
@@ -1727,15 +1823,79 @@ void TurboAssembler::RetpolineJump(Register reg) {
   ret(0);
 }
 
-void TurboAssembler::Shufps(XMMRegister dst, XMMRegister src, byte imm8) {
+void TurboAssembler::Pmaddwd(XMMRegister dst, XMMRegister src1, Operand src2) {
   if (CpuFeatures::IsSupported(AVX)) {
     CpuFeatureScope avx_scope(this, AVX);
-    vshufps(dst, src, src, imm8);
+    vpmaddwd(dst, src1, src2);
   } else {
-    if (dst != src) {
-      movss(dst, src);
+    if (dst != src1) {
+      movaps(dst, src1);
     }
-    shufps(dst, src, static_cast<byte>(0));
+    pmaddwd(dst, src2);
+  }
+}
+
+void TurboAssembler::Pmaddwd(XMMRegister dst, XMMRegister src1,
+                             XMMRegister src2) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpmaddwd(dst, src1, src2);
+  } else {
+    if (dst != src1) {
+      movaps(dst, src1);
+    }
+    pmaddwd(dst, src2);
+  }
+}
+
+void TurboAssembler::Pmaddubsw(XMMRegister dst, XMMRegister src1,
+                               Operand src2) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpmaddubsw(dst, src1, src2);
+  } else {
+    CpuFeatureScope ssse3_scope(this, SSSE3);
+    if (dst != src1) {
+      movaps(dst, src1);
+    }
+    pmaddubsw(dst, src2);
+  }
+}
+
+void TurboAssembler::Pmaddubsw(XMMRegister dst, XMMRegister src1,
+                               XMMRegister src2) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpmaddubsw(dst, src1, src2);
+  } else {
+    CpuFeatureScope ssse3_scope(this, SSSE3);
+    if (dst != src1) {
+      movaps(dst, src1);
+    }
+    pmaddubsw(dst, src2);
+  }
+}
+
+void TurboAssembler::Unpcklps(XMMRegister dst, XMMRegister src1, Operand src2) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vunpcklps(dst, src1, src2);
+  } else {
+    DCHECK_EQ(dst, src1);
+    unpcklps(dst, src2);
+  }
+}
+
+void TurboAssembler::Shufps(XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                            byte imm8) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vshufps(dst, src1, src2, imm8);
+  } else {
+    if (dst != src1) {
+      movaps(dst, src1);
+    }
+    shufps(dst, src2, imm8);
   }
 }
 
@@ -1906,6 +2066,7 @@ void TurboAssembler::Pblendvb(XMMRegister dst, XMMRegister src1,
     CpuFeatureScope avx_scope(this, AVX);
     vpblendvb(dst, src1, src2, mask);
   } else {
+    CpuFeatureScope scope(this, SSE4_1);
     DCHECK_EQ(dst, src1);
     DCHECK_EQ(xmm0, mask);
     pblendvb(dst, src2);
@@ -1918,6 +2079,7 @@ void TurboAssembler::Blendvps(XMMRegister dst, XMMRegister src1,
     CpuFeatureScope avx_scope(this, AVX);
     vblendvps(dst, src1, src2, mask);
   } else {
+    CpuFeatureScope scope(this, SSE4_1);
     DCHECK_EQ(dst, src1);
     DCHECK_EQ(xmm0, mask);
     blendvps(dst, src2);
@@ -1930,6 +2092,7 @@ void TurboAssembler::Blendvpd(XMMRegister dst, XMMRegister src1,
     CpuFeatureScope avx_scope(this, AVX);
     vblendvpd(dst, src1, src2, mask);
   } else {
+    CpuFeatureScope scope(this, SSE4_1);
     DCHECK_EQ(dst, src1);
     DCHECK_EQ(xmm0, mask);
     blendvpd(dst, src2);
@@ -1952,13 +2115,551 @@ void TurboAssembler::Pshufb(XMMRegister dst, XMMRegister src,
   }
 }
 
+void TurboAssembler::Pmulhrsw(XMMRegister dst, XMMRegister src1,
+                              XMMRegister src2) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpmulhrsw(dst, src1, src2);
+  } else {
+    if (dst != src1) {
+      Movdqa(dst, src1);
+    }
+    CpuFeatureScope sse_scope(this, SSSE3);
+    pmulhrsw(dst, src2);
+  }
+}
+
+void TurboAssembler::I32x4SConvertI16x8High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    // src = |a|b|c|d|e|f|g|h| (high)
+    // dst = |e|e|f|f|g|g|h|h|
+    vpunpckhwd(dst, src, src);
+    vpsrad(dst, dst, 16);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE4_1);
+    if (dst == src) {
+      // 2 bytes shorter than pshufd, but has depdency on dst.
+      movhlps(dst, src);
+      pmovsxwd(dst, dst);
+    } else {
+      // No dependency on dst.
+      pshufd(dst, src, 0xEE);
+      pmovsxwd(dst, dst);
+    }
+  }
+}
+
+void TurboAssembler::I32x4UConvertI16x8High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    // scratch = |0|0|0|0|0|0|0|0|
+    // src     = |a|b|c|d|e|f|g|h|
+    // dst     = |0|a|0|b|0|c|0|d|
+    XMMRegister scratch = dst == src ? kScratchDoubleReg : dst;
+    vpxor(scratch, scratch, scratch);
+    vpunpckhwd(dst, src, scratch);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE4_1);
+    if (dst == src) {
+      // xorps can be executed on more ports than pshufd.
+      xorps(kScratchDoubleReg, kScratchDoubleReg);
+      punpckhwd(dst, kScratchDoubleReg);
+    } else {
+      // No dependency on dst.
+      pshufd(dst, src, 0xEE);
+      pmovzxwd(dst, dst);
+    }
+  }
+}
+
+void TurboAssembler::I16x8SConvertI8x16High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    // src = |a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p| (high)
+    // dst = |i|i|j|j|k|k|l|l|m|m|n|n|o|o|p|p|
+    vpunpckhbw(dst, src, src);
+    vpsraw(dst, dst, 8);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE4_1);
+    if (dst == src) {
+      // 2 bytes shorter than pshufd, but has depdency on dst.
+      movhlps(dst, src);
+      pmovsxbw(dst, dst);
+    } else {
+      // No dependency on dst.
+      pshufd(dst, src, 0xEE);
+      pmovsxbw(dst, dst);
+    }
+  }
+}
+
+void TurboAssembler::I16x8UConvertI8x16High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    // scratch = |0|0|0|0|0|0|0|0 | 0|0|0|0|0|0|0|0|
+    // src     = |a|b|c|d|e|f|g|h | i|j|k|l|m|n|o|p|
+    // dst     = |0|a|0|b|0|c|0|d | 0|e|0|f|0|g|0|h|
+    XMMRegister scratch = dst == src ? kScratchDoubleReg : dst;
+    vpxor(scratch, scratch, scratch);
+    vpunpckhbw(dst, src, scratch);
+  } else {
+    if (dst == src) {
+      // xorps can be executed on more ports than pshufd.
+      xorps(kScratchDoubleReg, kScratchDoubleReg);
+      punpckhbw(dst, kScratchDoubleReg);
+    } else {
+      CpuFeatureScope sse_scope(this, SSE4_1);
+      // No dependency on dst.
+      pshufd(dst, src, 0xEE);
+      pmovzxbw(dst, dst);
+    }
+  }
+}
+
+void TurboAssembler::I64x2SConvertI32x4High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpunpckhqdq(dst, src, src);
+    vpmovsxdq(dst, dst);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE4_1);
+    pshufd(dst, src, 0xEE);
+    pmovsxdq(dst, dst);
+  }
+}
+
+void TurboAssembler::I64x2UConvertI32x4High(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpxor(kScratchDoubleReg, kScratchDoubleReg, kScratchDoubleReg);
+    vpunpckhdq(dst, src, kScratchDoubleReg);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE4_1);
+    pshufd(dst, src, 0xEE);
+    pmovzxdq(dst, dst);
+  }
+}
+
+// 1. Unpack src0, src0 into even-number elements of scratch.
+// 2. Unpack src1, src1 into even-number elements of dst.
+// 3. Multiply 1. with 2.
+// For non-AVX, use non-destructive pshufd instead of punpckldq/punpckhdq.
+void TurboAssembler::I64x2ExtMul(XMMRegister dst, XMMRegister src1,
+                                 XMMRegister src2, bool low, bool is_signed) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    if (low) {
+      vpunpckldq(kScratchDoubleReg, src1, src1);
+      vpunpckldq(dst, src2, src2);
+    } else {
+      vpunpckhdq(kScratchDoubleReg, src1, src1);
+      vpunpckhdq(dst, src2, src2);
+    }
+    if (is_signed) {
+      vpmuldq(dst, kScratchDoubleReg, dst);
+    } else {
+      vpmuludq(dst, kScratchDoubleReg, dst);
+    }
+  } else {
+    uint8_t mask = low ? 0x50 : 0xFA;
+    pshufd(kScratchDoubleReg, src1, mask);
+    pshufd(dst, src2, mask);
+    if (is_signed) {
+      CpuFeatureScope avx_scope(this, SSE4_1);
+      pmuldq(dst, kScratchDoubleReg);
+    } else {
+      pmuludq(dst, kScratchDoubleReg);
+    }
+  }
+}
+
+// 1. Multiply low word into scratch.
+// 2. Multiply high word (can be signed or unsigned) into dst.
+// 3. Unpack and interleave scratch and dst into dst.
+void TurboAssembler::I32x4ExtMul(XMMRegister dst, XMMRegister src1,
+                                 XMMRegister src2, bool low, bool is_signed) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpmullw(kScratchDoubleReg, src1, src2);
+    is_signed ? vpmulhw(dst, src1, src2) : vpmulhuw(dst, src1, src2);
+    low ? vpunpcklwd(dst, kScratchDoubleReg, dst)
+        : vpunpckhwd(dst, kScratchDoubleReg, dst);
+  } else {
+    DCHECK_EQ(dst, src1);
+    movdqu(kScratchDoubleReg, src1);
+    pmullw(dst, src2);
+    is_signed ? pmulhw(kScratchDoubleReg, src2)
+              : pmulhuw(kScratchDoubleReg, src2);
+    low ? punpcklwd(dst, kScratchDoubleReg) : punpckhwd(dst, kScratchDoubleReg);
+  }
+}
+
+void TurboAssembler::I16x8ExtMul(XMMRegister dst, XMMRegister src1,
+                                 XMMRegister src2, bool low, bool is_signed) {
+  if (low) {
+    is_signed ? Pmovsxbw(kScratchDoubleReg, src1)
+              : Pmovzxbw(kScratchDoubleReg, src1);
+    is_signed ? Pmovsxbw(dst, src2) : Pmovzxbw(dst, src2);
+    Pmullw(dst, kScratchDoubleReg);
+  } else {
+    Palignr(kScratchDoubleReg, src1, uint8_t{8});
+    is_signed ? Pmovsxbw(kScratchDoubleReg, kScratchDoubleReg)
+              : Pmovzxbw(kScratchDoubleReg, kScratchDoubleReg);
+    Palignr(dst, src2, uint8_t{8});
+    is_signed ? Pmovsxbw(dst, dst) : Pmovzxbw(dst, dst);
+    Pmullw(dst, kScratchDoubleReg);
+  }
+}
+
+void TurboAssembler::I16x8Q15MulRSatS(XMMRegister dst, XMMRegister src1,
+                                      XMMRegister src2) {
+  // k = i16x8.splat(0x8000)
+  Pcmpeqd(kScratchDoubleReg, kScratchDoubleReg);
+  Psllw(kScratchDoubleReg, byte{15});
+
+  Pmulhrsw(dst, src1, src2);
+  Pcmpeqw(kScratchDoubleReg, dst);
+  Pxor(dst, kScratchDoubleReg);
+}
+
+void TurboAssembler::S128Store32Lane(Operand dst, XMMRegister src,
+                                     uint8_t laneidx) {
+  if (laneidx == 0) {
+    Movss(dst, src);
+  } else {
+    DCHECK_GE(3, laneidx);
+    Extractps(dst, src, laneidx);
+  }
+}
+
+void TurboAssembler::S128Store64Lane(Operand dst, XMMRegister src,
+                                     uint8_t laneidx) {
+  if (laneidx == 0) {
+    Movlps(dst, src);
+  } else {
+    DCHECK_EQ(1, laneidx);
+    Movhps(dst, src);
+  }
+}
+
+void TurboAssembler::I8x16Popcnt(XMMRegister dst, XMMRegister src,
+                                 XMMRegister tmp) {
+  DCHECK_NE(dst, tmp);
+  DCHECK_NE(src, tmp);
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vmovdqa(tmp, ExternalReferenceAsOperand(
+                     ExternalReference::address_of_wasm_i8x16_splat_0x0f()));
+    vpandn(kScratchDoubleReg, tmp, src);
+    vpand(dst, tmp, src);
+    vmovdqa(tmp, ExternalReferenceAsOperand(
+                     ExternalReference::address_of_wasm_i8x16_popcnt_mask()));
+    vpsrlw(kScratchDoubleReg, kScratchDoubleReg, 4);
+    vpshufb(dst, tmp, dst);
+    vpshufb(kScratchDoubleReg, tmp, kScratchDoubleReg);
+    vpaddb(dst, dst, kScratchDoubleReg);
+  } else if (CpuFeatures::IsSupported(ATOM)) {
+    // Pre-Goldmont low-power Intel microarchitectures have very slow
+    // PSHUFB instruction, thus use PSHUFB-free divide-and-conquer
+    // algorithm on these processors. ATOM CPU feature captures exactly
+    // the right set of processors.
+    xorps(tmp, tmp);
+    pavgb(tmp, src);
+    if (dst != src) {
+      movaps(dst, src);
+    }
+    andps(tmp, ExternalReferenceAsOperand(
+                   ExternalReference::address_of_wasm_i8x16_splat_0x55()));
+    psubb(dst, tmp);
+    Operand splat_0x33 = ExternalReferenceAsOperand(
+        ExternalReference::address_of_wasm_i8x16_splat_0x33());
+    movaps(tmp, dst);
+    andps(dst, splat_0x33);
+    psrlw(tmp, 2);
+    andps(tmp, splat_0x33);
+    paddb(dst, tmp);
+    movaps(tmp, dst);
+    psrlw(dst, 4);
+    paddb(dst, tmp);
+    andps(dst, ExternalReferenceAsOperand(
+                   ExternalReference::address_of_wasm_i8x16_splat_0x0f()));
+  } else {
+    movaps(tmp, ExternalReferenceAsOperand(
+                    ExternalReference::address_of_wasm_i8x16_splat_0x0f()));
+    Operand mask = ExternalReferenceAsOperand(
+        ExternalReference::address_of_wasm_i8x16_popcnt_mask());
+    Move(kScratchDoubleReg, tmp);
+    andps(tmp, src);
+    andnps(kScratchDoubleReg, src);
+    psrlw(kScratchDoubleReg, 4);
+    movaps(dst, mask);
+    pshufb(dst, tmp);
+    movaps(tmp, mask);
+    pshufb(tmp, kScratchDoubleReg);
+    paddb(dst, tmp);
+  }
+}
+
+void TurboAssembler::F64x2ConvertLowI32x4U(XMMRegister dst, XMMRegister src) {
+  // dst = [ src_low, 0x43300000, src_high, 0x4330000 ];
+  // 0x43300000'00000000 is a special double where the significand bits
+  // precisely represents all uint32 numbers.
+  Unpcklps(dst, src,
+           ExternalReferenceAsOperand(
+               ExternalReference::
+                   address_of_wasm_f64x2_convert_low_i32x4_u_int_mask()));
+  Subpd(dst, ExternalReferenceAsOperand(
+                 ExternalReference::address_of_wasm_double_2_power_52()));
+}
+
+void TurboAssembler::I32x4TruncSatF64x2SZero(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    XMMRegister original_dst = dst;
+    // Make sure we don't overwrite src.
+    if (dst == src) {
+      DCHECK_NE(src, kScratchDoubleReg);
+      dst = kScratchDoubleReg;
+    }
+    // dst = 0 if src == NaN, else all ones.
+    vcmpeqpd(dst, src, src);
+    // dst = 0 if src == NaN, else INT32_MAX as double.
+    vandpd(dst, dst,
+           ExternalReferenceAsOperand(
+               ExternalReference::address_of_wasm_int32_max_as_double()));
+    // dst = 0 if src == NaN, src is saturated to INT32_MAX as double.
+    vminpd(dst, src, dst);
+    // Values > INT32_MAX already saturated, values < INT32_MIN raises an
+    // exception, which is masked and returns 0x80000000.
+    vcvttpd2dq(dst, dst);
+    if (original_dst != dst) {
+      Move(original_dst, dst);
+    }
+  } else {
+    if (dst != src) {
+      Move(dst, src);
+    }
+    Move(kScratchDoubleReg, dst);
+    cmpeqpd(kScratchDoubleReg, dst);
+    andps(kScratchDoubleReg,
+          ExternalReferenceAsOperand(
+              ExternalReference::address_of_wasm_int32_max_as_double()));
+    minpd(dst, kScratchDoubleReg);
+    cvttpd2dq(dst, dst);
+  }
+}
+
+void TurboAssembler::I32x4TruncSatF64x2UZero(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vxorpd(kScratchDoubleReg, kScratchDoubleReg, kScratchDoubleReg);
+    // Saturate to 0.
+    vmaxpd(dst, src, kScratchDoubleReg);
+    // Saturate to UINT32_MAX.
+    vminpd(dst, dst,
+           ExternalReferenceAsOperand(
+               ExternalReference::address_of_wasm_uint32_max_as_double()));
+    // Truncate.
+    vroundpd(dst, dst, kRoundToZero);
+    // Add to special double where significant bits == uint32.
+    vaddpd(dst, dst,
+           ExternalReferenceAsOperand(
+               ExternalReference::address_of_wasm_double_2_power_52()));
+    // Extract low 32 bits of each double's significand, zero top lanes.
+    // dst = [dst[0], dst[2], 0, 0]
+    vshufps(dst, dst, kScratchDoubleReg, 0x88);
+  } else {
+    CpuFeatureScope scope(this, SSE4_1);
+    if (dst != src) {
+      Move(dst, src);
+    }
+    xorps(kScratchDoubleReg, kScratchDoubleReg);
+    maxpd(dst, kScratchDoubleReg);
+    minpd(dst, ExternalReferenceAsOperand(
+                   ExternalReference::address_of_wasm_uint32_max_as_double()));
+    roundpd(dst, dst, kRoundToZero);
+    addpd(dst, ExternalReferenceAsOperand(
+                   ExternalReference::address_of_wasm_double_2_power_52()));
+    shufps(dst, kScratchDoubleReg, 0x88);
+  }
+}
+
+void TurboAssembler::I64x2Abs(XMMRegister dst, XMMRegister src) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    XMMRegister tmp = dst == src ? kScratchDoubleReg : dst;
+    CpuFeatureScope avx_scope(this, AVX);
+    vpxor(tmp, tmp, tmp);
+    vpsubq(tmp, tmp, src);
+    vblendvpd(dst, src, tmp, src);
+  } else {
+    CpuFeatureScope sse_scope(this, SSE3);
+    movshdup(kScratchDoubleReg, src);
+    if (dst != src) {
+      movaps(dst, src);
+    }
+    psrad(kScratchDoubleReg, 31);
+    xorps(dst, kScratchDoubleReg);
+    psubq(dst, kScratchDoubleReg);
+  }
+}
+
+void TurboAssembler::I64x2GtS(XMMRegister dst, XMMRegister src0,
+                              XMMRegister src1) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpcmpgtq(dst, src0, src1);
+  } else if (CpuFeatures::IsSupported(SSE4_2)) {
+    CpuFeatureScope sse_scope(this, SSE4_2);
+    DCHECK_EQ(dst, src0);
+    pcmpgtq(dst, src1);
+  } else {
+    DCHECK_NE(dst, src0);
+    DCHECK_NE(dst, src1);
+    movdqa(dst, src1);
+    movdqa(kScratchDoubleReg, src0);
+    psubq(dst, src0);
+    pcmpeqd(kScratchDoubleReg, src1);
+    pand(dst, kScratchDoubleReg);
+    movdqa(kScratchDoubleReg, src0);
+    pcmpgtd(kScratchDoubleReg, src1);
+    por(dst, kScratchDoubleReg);
+    pshufd(dst, dst, 0xF5);
+  }
+}
+
+void TurboAssembler::I64x2GeS(XMMRegister dst, XMMRegister src0,
+                              XMMRegister src1) {
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpcmpgtq(dst, src1, src0);
+    vpcmpeqd(kScratchDoubleReg, kScratchDoubleReg, kScratchDoubleReg);
+    vpxor(dst, dst, kScratchDoubleReg);
+  } else if (CpuFeatures::IsSupported(SSE4_2)) {
+    CpuFeatureScope sse_scope(this, SSE4_2);
+    DCHECK_NE(dst, src0);
+    if (dst != src1) {
+      movdqa(dst, src1);
+    }
+    pcmpgtq(dst, src0);
+    pcmpeqd(kScratchDoubleReg, kScratchDoubleReg);
+    pxor(dst, kScratchDoubleReg);
+  } else {
+    DCHECK_NE(dst, src0);
+    DCHECK_NE(dst, src1);
+    movdqa(dst, src0);
+    movdqa(kScratchDoubleReg, src1);
+    psubq(dst, src1);
+    pcmpeqd(kScratchDoubleReg, src0);
+    pand(dst, kScratchDoubleReg);
+    movdqa(kScratchDoubleReg, src1);
+    pcmpgtd(kScratchDoubleReg, src0);
+    por(dst, kScratchDoubleReg);
+    pshufd(dst, dst, 0xF5);
+    pcmpeqd(kScratchDoubleReg, kScratchDoubleReg);
+    pxor(dst, kScratchDoubleReg);
+  }
+}
+
+void TurboAssembler::I16x8ExtAddPairwiseI8x16S(XMMRegister dst,
+                                               XMMRegister src) {
+  // pmaddubsw treats the first operand as unsigned, so the external reference
+  // to be passed to it as the first operand.
+  Operand op = ExternalReferenceAsOperand(
+      ExternalReference::address_of_wasm_i8x16_splat_0x01());
+  if (dst == src) {
+    if (CpuFeatures::IsSupported(AVX)) {
+      CpuFeatureScope avx_scope(this, AVX);
+      vmovdqa(kScratchDoubleReg, op);
+      vpmaddubsw(dst, kScratchDoubleReg, src);
+    } else {
+      CpuFeatureScope sse_scope(this, SSSE3);
+      movaps(kScratchDoubleReg, op);
+      pmaddubsw(kScratchDoubleReg, src);
+      movaps(dst, kScratchDoubleReg);
+    }
+  } else {
+    Movdqa(dst, op);
+    Pmaddubsw(dst, dst, src);
+  }
+}
+
+void TurboAssembler::I32x4ExtAddPairwiseI16x8U(XMMRegister dst,
+                                               XMMRegister src) {
+  // src = |a|b|c|d|e|f|g|h|
+  // kScratchDoubleReg = i32x4.splat(0x0000FFFF)
+  Pcmpeqd(kScratchDoubleReg, kScratchDoubleReg);
+  Psrld(kScratchDoubleReg, byte{16});
+  // kScratchDoubleReg =|0|b|0|d|0|f|0|h|
+  Pand(kScratchDoubleReg, src);
+  // dst = |0|a|0|c|0|e|0|g|
+  Psrld(dst, src, byte{16});
+  // dst = |a+b|c+d|e+f|g+h|
+  Paddd(dst, kScratchDoubleReg);
+}
+
+void TurboAssembler::I8x16Swizzle(XMMRegister dst, XMMRegister src,
+                                  XMMRegister mask) {
+  // Out-of-range indices should return 0, add 112 so that any value > 15
+  // saturates to 128 (top bit set), so pshufb will zero that lane.
+  Operand op = ExternalReferenceAsOperand(
+      ExternalReference::address_of_wasm_i8x16_swizzle_mask());
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpaddusb(kScratchDoubleReg, mask, op);
+    vpshufb(dst, src, kScratchDoubleReg);
+  } else {
+    CpuFeatureScope sse_scope(this, SSSE3);
+    movdqa(kScratchDoubleReg, op);
+    if (dst != src) {
+      movaps(dst, src);
+    }
+    paddusb(kScratchDoubleReg, mask);
+    pshufb(dst, kScratchDoubleReg);
+  }
+}
+
+void TurboAssembler::Abspd(XMMRegister dst) {
+  Andps(dst, ExternalReferenceAsOperand(
+                 ExternalReference::address_of_double_abs_constant()));
+}
+
+void TurboAssembler::Negpd(XMMRegister dst) {
+  Xorps(dst, ExternalReferenceAsOperand(
+                 ExternalReference::address_of_double_neg_constant()));
+}
+
 void TurboAssembler::Psrld(XMMRegister dst, byte imm8) {
+  Psrld(dst, dst, imm8);
+}
+
+void TurboAssembler::Psrld(XMMRegister dst, XMMRegister src, byte imm8) {
   if (CpuFeatures::IsSupported(AVX)) {
     CpuFeatureScope scope(this, AVX);
-    vpsrld(dst, dst, imm8);
+    vpsrld(dst, src, imm8);
   } else {
     DCHECK(!IsEnabled(AVX));
+    DCHECK_EQ(dst, src);
     psrld(dst, imm8);
+  }
+}
+
+void TurboAssembler::S128Select(XMMRegister dst, XMMRegister mask,
+                                XMMRegister src1, XMMRegister src2) {
+  // v128.select = v128.or(v128.and(v1, c), v128.andnot(v2, c)).
+  // pandn(x, y) = !x & y, so we have to flip the mask and input.
+  if (CpuFeatures::IsSupported(AVX)) {
+    CpuFeatureScope avx_scope(this, AVX);
+    vpandn(kScratchDoubleReg, mask, src2);
+    vpand(dst, src1, mask);
+    vpor(dst, dst, kScratchDoubleReg);
+  } else {
+    DCHECK_EQ(dst, mask);
+    // Use float ops as they are 1 byte shorter than int ops.
+    movaps(kScratchDoubleReg, mask);
+    andnps(kScratchDoubleReg, src2);
+    andps(dst, src1);
+    orps(dst, kScratchDoubleReg);
   }
 }
 
@@ -2161,6 +2862,15 @@ void MacroAssembler::CmpInstanceType(Register map, InstanceType type) {
   cmpw(FieldOperand(map, Map::kInstanceTypeOffset), Immediate(type));
 }
 
+void MacroAssembler::CmpInstanceTypeRange(Register map,
+                                          InstanceType lower_limit,
+                                          InstanceType higher_limit) {
+  DCHECK_LT(lower_limit, higher_limit);
+  movzxwl(kScratchRegister, FieldOperand(map, Map::kInstanceTypeOffset));
+  leal(kScratchRegister, Operand(kScratchRegister, 0u - lower_limit));
+  cmpl(kScratchRegister, Immediate(higher_limit - lower_limit));
+}
+
 void MacroAssembler::AssertNotSmi(Register object) {
   if (emit_debug_code()) {
     Condition is_smi = CheckSmi(object);
@@ -2209,9 +2919,10 @@ void MacroAssembler::AssertFunction(Register object) {
     testb(object, Immediate(kSmiTagMask));
     Check(not_equal, AbortReason::kOperandIsASmiAndNotAFunction);
     Push(object);
-    CmpObjectType(object, JS_FUNCTION_TYPE, object);
+    LoadMap(object, object);
+    CmpInstanceTypeRange(object, FIRST_JS_FUNCTION_TYPE, LAST_JS_FUNCTION_TYPE);
     Pop(object);
-    Check(equal, AbortReason::kOperandIsNotAFunction);
+    Check(below_equal, AbortReason::kOperandIsNotAFunction);
   }
 }
 
@@ -2482,7 +3193,6 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
                                     Label* done, InvokeFlag flag) {
   if (expected_parameter_count != actual_parameter_count) {
     Label regular_invoke;
-#ifdef V8_NO_ARGUMENTS_ADAPTOR
     // If the expected parameter count is equal to the adaptor sentinel, no need
     // to push undefined value as arguments.
     cmpl(expected_parameter_count, Immediate(kDontAdaptArgumentsSentinel));
@@ -2540,22 +3250,6 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
       CallRuntime(Runtime::kThrowStackOverflow);
       int3();  // This should be unreachable.
     }
-#else
-    // Both expected and actual are in (different) registers. This
-    // is the case when we invoke functions using call and apply.
-    cmpq(expected_parameter_count, actual_parameter_count);
-    j(equal, &regular_invoke, Label::kNear);
-    DCHECK_EQ(actual_parameter_count, rax);
-    DCHECK_EQ(expected_parameter_count, rbx);
-    Handle<Code> adaptor = BUILTIN_CODE(isolate(), ArgumentsAdaptorTrampoline);
-    if (flag == CALL_FUNCTION) {
-      Call(adaptor, RelocInfo::CODE_TARGET);
-      jmp(done, Label::kNear);
-    } else {
-      Jump(adaptor, RelocInfo::CODE_TARGET);
-    }
-#endif
-
     bind(&regular_invoke);
   } else {
     Move(rax, actual_parameter_count);
@@ -2610,11 +3304,16 @@ void TurboAssembler::Prologue() {
 void TurboAssembler::EnterFrame(StackFrame::Type type) {
   pushq(rbp);
   movq(rbp, rsp);
-  Push(Immediate(StackFrame::TypeToMarker(type)));
+  if (!StackFrame::IsJavaScript(type)) {
+    Push(Immediate(StackFrame::TypeToMarker(type)));
+  }
 }
 
 void TurboAssembler::LeaveFrame(StackFrame::Type type) {
-  if (emit_debug_code()) {
+  // TODO(v8:11429): Consider passing BASELINE instead, and checking for
+  // IsJSFrame or similar. Could then unify with manual frame leaves in the
+  // interpreter too.
+  if (emit_debug_code() && !StackFrame::IsJavaScript(type)) {
     cmpq(Operand(rbp, CommonFrameConstants::kContextOrFrameTypeOffset),
          Immediate(StackFrame::TypeToMarker(type)));
     Check(equal, AbortReason::kStackFrameTypesMustMatch);
@@ -2646,11 +3345,13 @@ void TurboAssembler::AllocateStackSpace(Register bytes_scratch) {
 }
 
 void TurboAssembler::AllocateStackSpace(int bytes) {
+  DCHECK_GE(bytes, 0);
   while (bytes > kStackPageSize) {
     subq(rsp, Immediate(kStackPageSize));
     movb(Operand(rsp, 0), Immediate(0));
     bytes -= kStackPageSize;
   }
+  if (bytes == 0) return;
   subq(rsp, Immediate(bytes));
 }
 #endif
@@ -2952,13 +3653,13 @@ void TurboAssembler::ComputeCodeStartAddress(Register dst) {
 }
 
 void TurboAssembler::ResetSpeculationPoisonRegister() {
-  // TODO(tebbi): Perhaps, we want to put an lfence here.
+  // TODO(turbofan): Perhaps, we want to put an lfence here.
   Set(kSpeculationPoisonRegister, -1);
 }
 
 void TurboAssembler::CallForDeoptimization(Builtins::Name target, int,
                                            Label* exit, DeoptimizeKind kind,
-                                           Label*) {
+                                           Label* ret, Label*) {
   // Note: Assembler::call is used here on purpose to guarantee fixed-size
   // exits even on Atom CPUs; see TurboAssembler::Call for Atom-specific
   // performance tuning which emits a different instruction sequence.
@@ -2967,7 +3668,16 @@ void TurboAssembler::CallForDeoptimization(Builtins::Name target, int,
             (kind == DeoptimizeKind::kLazy)
                 ? Deoptimizer::kLazyDeoptExitSize
                 : Deoptimizer::kNonLazyDeoptExitSize);
-  USE(exit, kind);
+
+  if (kind == DeoptimizeKind::kEagerWithResume) {
+    bool old_predictable_code_size = predictable_code_size();
+    set_predictable_code_size(true);
+    jmp(ret);
+
+    DCHECK_EQ(SizeOfCodeGeneratedSince(exit),
+              Deoptimizer::kEagerWithResumeBeforeArgsSize);
+    set_predictable_code_size(old_predictable_code_size);
+  }
 }
 
 void TurboAssembler::Trap() { int3(); }

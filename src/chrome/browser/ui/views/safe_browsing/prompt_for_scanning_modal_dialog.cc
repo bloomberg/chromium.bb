@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace safe_browsing {
@@ -44,6 +45,7 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
     const base::string16& filename,
     base::OnceClosure accept_callback,
     base::OnceClosure open_now_callback) {
+  SetModalType(ui::MODAL_TYPE_CHILD);
   SetTitle(IDS_DEEP_SCANNING_INFO_DIALOG_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -118,8 +120,7 @@ bool PromptForScanningModalDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-ui::ModalType PromptForScanningModalDialog::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
+BEGIN_METADATA(PromptForScanningModalDialog, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace safe_browsing

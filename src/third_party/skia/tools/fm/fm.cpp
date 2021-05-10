@@ -169,22 +169,20 @@ static void init(Source* source, std::shared_ptr<SkCodec> codec) {
             info = canvas->imageInfo().makeDimensions(info.dimensions());
         }
 
-        SkBitmap bm;
-        bm.allocPixels(info);
-        switch (SkCodec::Result result = codec->getPixels(info, bm.getPixels(), bm.rowBytes())) {
-            case SkCodec::kSuccess:
-            case SkCodec::kErrorInInput:
-            case SkCodec::kIncompleteInput: canvas->drawBitmap(bm, 0,0);
-                                            break;
-            default: return fail("codec->getPixels() failed: %d\n", result);
+        auto [image, result] = codec->getImage(info);
+        if (image) {
+            canvas->drawImage(image, 0,0);
+            return ok;
         }
-        return ok;
+        return fail("codec->getPixels() failed: %d\n", result);
     };
 }
 
 static void init(Source* source, sk_sp<SkSVGDOM> svg) {
-    source->size = svg->containerSize().isEmpty() ? SkISize{1000,1000}
-                                                  : svg->containerSize().toCeil();
+    if (svg->containerSize().isEmpty()) {
+        svg->setContainerSize({1000,1000});
+    }
+    source->size = svg->containerSize().toCeil();
     source->draw = [svg](SkCanvas* canvas) {
         svg->render(canvas);
         return ok;
@@ -211,9 +209,8 @@ static void init(Source* source, sk_sp<skottie::Animation> animation) {
 
             SkAutoCanvasRestore _(canvas, /*doSave=*/true);
             canvas->clipRect(dst, /*doAntiAlias=*/true);
-            canvas->concat(SkMatrix::MakeRectToRect(SkRect::MakeSize(animation->size()),
-                                                    dst,
-                                                    SkMatrix::kCenter_ScaleToFit));
+            canvas->concat(SkMatrix::RectToRect(SkRect::MakeSize(animation->size()), dst,
+                                                SkMatrix::kCenter_ScaleToFit));
             float t = (y*tiles + x) * dt;
             animation->seek(t);
             animation->render(canvas);
@@ -425,23 +422,20 @@ int main(int argc, char** argv) {
     SkTArray<Source> sources;
     for (const SkString& name : FLAGS_sources) {
         Source* source = &sources.push_back();
+        source->name = name;
 
         if (skiagm::GMFactory* factory = gm_factories.find(name)) {
             std::shared_ptr<skiagm::GM> gm{(*factory)()};
-            source->name = name;
             init(source, std::move(gm));
             continue;
         }
 
         if (const skiatest::Test** test = tests.find(name)) {
-            source->name = name;
             init(source, **test);
             continue;
         }
 
         if (sk_sp<SkData> blob = SkData::MakeFromFileName(name.c_str())) {
-            source->name = SkOSPath::Basename(name.c_str());
-
             if (name.endsWith(".skp")) {
                 if (sk_sp<SkPicture> pic = SkPicture::MakeFromData(blob.get())) {
                     init(source, pic);

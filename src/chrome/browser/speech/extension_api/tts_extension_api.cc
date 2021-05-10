@@ -14,18 +14,21 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "content/public/browser/tts_controller.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/extension_host.h"
+#include "extensions/browser/process_manager.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace constants = tts_extension_api_constants;
 
@@ -270,20 +273,29 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
   // the behavior more predictable and easier to write unit tests for too.
   Respond(NoArguments());
 
-  std::unique_ptr<content::TtsUtterance> utterance =
-      content::TtsUtterance::Create(browser_context());
+  std::unique_ptr<content::TtsUtterance> utterance;
+  if (extension()) {
+    extensions::ExtensionHost* host =
+        extensions::ProcessManager::Get(browser_context())
+            ->GetBackgroundHostForExtension(extension()->id());
+    utterance = content::TtsUtterance::Create(host->host_contents());
+  } else {
+    utterance = content::TtsUtterance::Create(browser_context());
+  }
+
   utterance->SetText(text);
   utterance->SetVoiceName(voice_name);
   utterance->SetSrcId(src_id);
   utterance->SetSrcUrl(source_url());
   utterance->SetLang(lang);
   utterance->SetContinuousParameters(rate, pitch, volume);
-  utterance->SetCanEnqueue(can_enqueue);
+  utterance->SetShouldClearQueue(!can_enqueue);
   utterance->SetRequiredEventTypes(required_event_types);
   utterance->SetDesiredEventTypes(desired_event_types);
   utterance->SetEngineId(voice_extension_id);
   utterance->SetOptions(options.get());
-  utterance->SetEventDelegate(new TtsExtensionEventHandler(extension_id()));
+  if (extension())
+    utterance->SetEventDelegate(new TtsExtensionEventHandler(extension_id()));
 
   content::TtsController* controller = content::TtsController::GetInstance();
   controller->SpeakOrEnqueue(std::move(utterance));
@@ -352,11 +364,11 @@ TtsAPI::TtsAPI(content::BrowserContext* context) {
   registry.RegisterFunction<TtsPauseFunction>();
   registry.RegisterFunction<TtsResumeFunction>();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ensure we're observing newly added engines for the given context.
   TtsEngineExtensionObserverChromeOS::GetInstance(
       Profile::FromBrowserContext(context));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 TtsAPI::~TtsAPI() {

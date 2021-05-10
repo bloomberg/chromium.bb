@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_replication_state.h"
+#include "content/common/frame_replication_state.mojom-forward.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
@@ -93,29 +93,23 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool IsMainFrame() const;
 
-  struct ResetForNavigationResult {
-    bool changed_frame_policy = false;
-  };
-
-  // Clears any state in this node which was set by the document itself (CSP
-  // Headers, Feature Policy Headers, and CSP-set sandbox flags), and notifies
-  // proxies as appropriate. Invoked after committing navigation to a new
-  // document (since the new document comes with a fresh set of CSP and
-  // Feature-Policy HTTP headers).
-  // Returns the details of the reset result — whether any important state (e.g.
-  // frame policy headers) was lost during the update.
-  ResetForNavigationResult ResetForNavigation(
-      bool was_served_from_back_forward_cache);
+  // Clears any state in this node which was set by the document itself (CSP &
+  // UserActivationState) and notifies proxies as appropriate. Invoked after
+  // committing navigation to a new document (since the new document comes with
+  // a fresh set of CSP).
+  // TODO(arthursonzogni): Remove this function. The frame/document must not be
+  // left temporarily with lax state.
+  void ResetForNavigation(bool was_served_from_back_forward_cache);
 
   FrameTree* frame_tree() const { return frame_tree_; }
   Navigator& navigator() { return frame_tree()->navigator(); }
 
   RenderFrameHostManager* render_manager() { return &render_manager_; }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
-  const std::string& frame_name() const { return replication_state_.name; }
+  const std::string& frame_name() const { return replication_state_->name; }
 
   const std::string& unique_name() const {
-    return replication_state_.unique_name;
+    return replication_state_->unique_name;
   }
 
   // See comment on the member declaration.
@@ -195,7 +189,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // which will behave correctly even when the RenderFrameHost is not the
   // current one for this frame (such as when it's pending deletion).
   const url::Origin& current_origin() const {
-    return replication_state_.origin;
+    return replication_state_->origin;
   }
 
   // Set the current origin and notify proxies about the update.
@@ -205,9 +199,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name, const std::string& unique_name);
 
-  // Add CSP headers to replication state, notify proxies about the update.
+  // Add CSPs to replication state, notify proxies about the update.
   void AddContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers);
+      std::vector<network::mojom::ContentSecurityPolicyPtr> csps);
 
   // Sets the current insecure request policy, and notifies proxies about the
   // update.
@@ -249,7 +243,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // element attributes since the frame was last navigated; use
   // pending_frame_policy() for those.
   const blink::FramePolicy& effective_frame_policy() const {
-    return replication_state_.frame_policy;
+    return replication_state_->frame_policy;
   }
 
   // Set the frame_policy provided in function parameter as active frame policy,
@@ -275,12 +269,12 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   bool HasSameOrigin(const FrameTreeNode& node) const {
-    return replication_state_.origin.IsSameOriginWith(
-        node.replication_state_.origin);
+    return replication_state_->origin.IsSameOriginWith(
+        node.replication_state_->origin);
   }
 
-  const FrameReplicationState& current_replication_state() const {
-    return replication_state_;
+  const mojom::FrameReplicationState& current_replication_state() const {
+    return *replication_state_;
   }
 
   RenderFrameHostImpl* current_frame_host() const {
@@ -381,7 +375,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // on navigation (which does not include the CSP-set flags), use
   // effective_frame_policy().
   network::mojom::WebSandboxFlags active_sandbox_flags() const {
-    return replication_state_.active_sandbox_flags;
+    return replication_state_->active_sandbox_flags;
   }
 
   // Updates the active sandbox flags in this frame, in response to a
@@ -399,7 +393,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns whether the frame received a user gesture on a previous navigation
   // on the same eTLD+1.
   bool has_received_user_gesture_before_nav() const {
-    return replication_state_.has_received_user_gesture_before_nav;
+    return replication_state_->has_received_user_gesture_before_nav;
   }
 
   // When a tab is discarded, WebContents sets was_discarded on its
@@ -429,13 +423,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
 
   blink::mojom::FrameOwnerElementType frame_owner_element_type() const {
-    return replication_state_.frame_owner_element_type;
+    return replication_state_->frame_owner_element_type;
   }
-  // Only meaningful to call on a root frame. The value of |feature_state| will
-  // be nontrivial if there is an opener which is restricted in some of the
-  // feature policies.
-  void SetOpenerFeaturePolicyState(
-      const blink::FeaturePolicyFeatureState& feature_state);
 
   void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
 
@@ -489,9 +478,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // The FrameTree that owns us.
   FrameTree* frame_tree_;  // not owned.
 
-  // Manages creation and swapping of RenderFrameHosts for this frame.
-  RenderFrameHostManager render_manager_;
-
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
   const int frame_tree_node_id_;
@@ -544,12 +530,12 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.
-  FrameReplicationState replication_state_;
+  mojom::FrameReplicationStatePtr replication_state_;
 
   // Track the pending sandbox flags and container policy for this frame. When a
   // parent frame dynamically updates 'sandbox', 'allow', 'allowfullscreen',
   // 'allowpaymentrequest' or 'src' attributes, the updated policy for the frame
-  // is stored here, and transferred into replication_state_.frame_policy when
+  // is stored here, and transferred into replication_state_->frame_policy when
   // they take effect on the next frame navigation.
   blink::FramePolicy pending_frame_policy_;
 
@@ -598,6 +584,18 @@ class CONTENT_EXPORT FrameTreeNode {
   // browser process activities to this node (when possible).  It is unrelated
   // to the core logic of FrameTreeNode.
   FrameTreeNodeBlameContext blame_context_;
+
+  // Manages creation and swapping of RenderFrameHosts for this frame.
+  //
+  // This field needs to be declared last, because destruction of
+  // RenderFrameHostManager may call arbitrary callbacks (e.g. via
+  // WebContentsObserver::DidFinishNavigation fired after RenderFrameHostManager
+  // destructs a RenderFrameHostImpl and its NavigationRequest).  Such callbacks
+  // may try to use FrameTreeNode's fields above - this would be an undefined
+  // behavior if the fields (even trivially-destructible ones) were destructed
+  // before the RenderFrameHostManager's destructor runs.  See also
+  // https://crbug.com/1157988.
+  RenderFrameHostManager render_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

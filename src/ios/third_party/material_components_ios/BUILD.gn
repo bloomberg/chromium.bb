@@ -235,6 +235,7 @@ _mdc_public_headers = [
   "src/components/List/src/MDCBaseCell.h",
   "src/components/List/src/MDCSelfSizingLayoutAttributes.h",
   "src/components/List/src/MDCSelfSizingStereoCell.h",
+  "src/components/List/src/MDCSelfSizingStereoCellImageViewVerticalPosition.h",
   "src/components/List/src/MaterialList.h",
   "src/components/List/src/Theming/MDCBaseCell+MaterialTheming.h",
   "src/components/List/src/Theming/MDCSelfSizingStereoCell+MaterialTheming.h",
@@ -359,6 +360,7 @@ _mdc_public_headers = [
   "src/components/Tabs/src/TabBarView/MaterialTabs+TabBarView.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewIndicatorView.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewItemView.h",
+  "src/components/Tabs/src/TabBarView/private/MDCTabBarViewItemViewDelegate.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewPrivateIndicatorContext.h",
   "src/components/Tabs/src/TabBarViewTheming/MDCTabBarView+MaterialTheming.h",
   "src/components/Tabs/src/TabBarViewTheming/MaterialTabs+TabBarViewTheming.h",
@@ -508,6 +510,7 @@ _mdc_public_headers = [
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlLabelAnimation.h",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlLabelPosition.h",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlPlaceholderSupport.h",
+  "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlSideViewSupport.h",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlVerticalPositioningReference.h",
   "src/components/private/TextControlsPrivate/src/Shared/MaterialTextControlsPrivate+Shared.h",
   "src/components/private/TextControlsPrivate/src/Shared/UIBezierPath+MDCTextControlStyle.h",
@@ -1043,6 +1046,7 @@ _mdc_sources = [
   "src/components/List/src/MDCSelfSizingLayoutAttributes.h",
   "src/components/List/src/MDCSelfSizingStereoCell.h",
   "src/components/List/src/MDCSelfSizingStereoCell.m",
+  "src/components/List/src/MDCSelfSizingStereoCellImageViewVerticalPosition.h",
   "src/components/List/src/MaterialList.h",
   "src/components/List/src/Theming/MDCBaseCell+MaterialTheming.h",
   "src/components/List/src/Theming/MDCBaseCell+MaterialTheming.m",
@@ -1228,6 +1232,7 @@ _mdc_sources = [
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewIndicatorView.m",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewItemView.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewItemView.m",
+  "src/components/Tabs/src/TabBarView/private/MDCTabBarViewItemViewDelegate.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewPrivateIndicatorContext.h",
   "src/components/Tabs/src/TabBarView/private/MDCTabBarViewPrivateIndicatorContext.m",
   "src/components/Tabs/src/TabBarViewTheming/MDCTabBarView+MaterialTheming.h",
@@ -1471,6 +1476,8 @@ _mdc_sources = [
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlLabelPosition.m",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlPlaceholderSupport.h",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlPlaceholderSupport.m",
+  "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlSideViewSupport.h",
+  "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlSideViewSupport.m",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlVerticalPositioningReference.h",
   "src/components/private/TextControlsPrivate/src/Shared/MDCTextControlVerticalPositioningReference.m",
   "src/components/private/TextControlsPrivate/src/Shared/MaterialTextControlsPrivate+Shared.h",
@@ -1539,6 +1546,13 @@ config("disable_deprecated_errors") {
   ]
 }
 
+# TODO(crbug.com/1153275): MDCTabBarViewItemView.h has incomplete nullability
+# specification, causing compilation to fail. Disable the warning until this
+# is fixed in MDC. Remove this once fixed.
+config("disable_nullability_completeness") {
+  cflags = [ "-Wno-nullability-completeness" ]
+}
+
 ios_framework_bundle("material_components_ios") {
   sources = _mdc_sources
 
@@ -1576,6 +1590,11 @@ ios_framework_bundle("material_components_ios") {
     # material_components_ios internally uses deprecated methods.
     # Disable the warning about deprecation usage.
     ":disable_deprecated_errors",
+
+    # TODO(crbug.com/1153275): MDCTabBarViewItemView.h has incomplete
+    # nullability specification, causing compilation to fail. Disable
+    # the warning until this is fixed in MDC. Remove this once fixed.
+    ":disable_nullability_completeness",
   ]
 }
 

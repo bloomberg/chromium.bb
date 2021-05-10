@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
@@ -26,13 +28,14 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
+import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.url.GURL;
 
 /**
  * Content container for an OverlayPanel. This class is responsible for the management of the
@@ -215,14 +218,7 @@ public class OverlayPanelContent {
             }
 
             @Override
-            public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
-                    int disposition, boolean isRendererInitiated) {
-                mContentDelegate.onOpenNewTabRequested(url);
-            }
-
-            @Override
-            public boolean shouldCreateWebContents(String targetUrl) {
-                mContentDelegate.onOpenNewTabRequested(targetUrl);
+            public boolean shouldCreateWebContents(GURL targetUrl) {
                 return false;
             }
 
@@ -320,8 +316,10 @@ public class OverlayPanelContent {
             destroyWebContents();
         }
 
+        Profile profile = IncognitoUtils.getProfileFromWindowAndroid(
+                mActivity.getWindowAndroid(), mIsIncognito);
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        mWebContents = WebContentsFactory.createWebContents(mIsIncognito, true);
+        mWebContents = WebContentsFactory.createWebContents(profile, true);
 
         ContentView cv = ContentView.createContentView(
                 mActivity, null /* eventOffsetHandler */, mWebContents);
@@ -336,7 +334,7 @@ public class OverlayPanelContent {
         OverlayViewDelegate delegate = new OverlayViewDelegate(cv);
         mWebContents.initialize(ChromeVersionInfo.getProductVersion(), delegate, cv,
                 mActivity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-        ContentUtils.setUserAgentOverride(mWebContents);
+        ContentUtils.setUserAgentOverride(mWebContents, /* overrideInNewTabs= */ false);
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
         OverlayPanelContentJni.get().setWebContents(mNativeOverlayPanelContentPtr,
@@ -345,8 +343,8 @@ public class OverlayPanelContent {
         mWebContentsObserver =
                 new WebContentsObserver(mWebContents) {
                     @Override
-                    public void didStartLoading(String url) {
-                        mContentDelegate.onContentLoadStarted(url);
+                    public void didStartLoading(GURL url) {
+                        mContentDelegate.onContentLoadStarted();
                     }
 
                     @Override
@@ -355,14 +353,14 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void navigationEntryCommitted() {
+                    public void navigationEntryCommitted(LoadCommittedDetails details) {
                         mContentDelegate.onNavigationEntryCommitted();
                     }
 
                     @Override
                     public void didStartNavigation(NavigationHandle navigation) {
                         if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
-                            String url = navigation.getUrlString();
+                            String url = navigation.getUrl().getSpec();
                             mContentDelegate.onMainFrameLoadStarted(
                                     url, !TextUtils.equals(url, mLoadedUrl));
                         }
@@ -377,8 +375,8 @@ public class OverlayPanelContent {
                     public void didFinishNavigation(NavigationHandle navigation) {
                         if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                             mIsProcessingPendingNavigation = false;
-                            mContentDelegate.onMainFrameNavigation(navigation.getUrlString(),
-                                    !TextUtils.equals(navigation.getUrlString(), mLoadedUrl),
+                            mContentDelegate.onMainFrameNavigation(navigation.getUrl().getSpec(),
+                                    !TextUtils.equals(navigation.getUrl().getSpec(), mLoadedUrl),
                                     isHttpFailureCode(navigation.httpStatusCode()),
                                     navigation.isErrorPage());
                         }

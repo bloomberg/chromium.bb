@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PrefsManager} from './prefs_manager.js';
+
 class SelectToSpeakOptionsPage {
   constructor() {
     this.init_();
@@ -43,6 +45,22 @@ class SelectToSpeakOptionsPage {
             elem.setAttribute('aria-hidden', true);
           }
         });
+    this.syncCheckboxControlToPref_('navigationControls', 'navigationControls');
+    // Hide navigation control setting if feature is not enabled
+    const AccessibilityFeature =
+        chrome.accessibilityPrivate.AccessibilityFeature;
+    chrome.accessibilityPrivate.isFeatureEnabled(
+        AccessibilityFeature.SELECT_TO_SPEAK_NAVIGATION_CONTROL, (result) => {
+          const elem = document.getElementById('navigationControlsOption');
+          if (!result) {
+            elem.classList.add('hidden');
+            elem.setAttribute('aria-hidden', true);
+          } else {
+            elem.classList.remove('hidden');
+            elem.setAttribute('aria-hidden', false);
+          }
+        });
+
     this.setUpHighlightListener_();
     this.setUpTtsButtonClickListener_();
     chrome.metricsPrivate.recordUserAction(

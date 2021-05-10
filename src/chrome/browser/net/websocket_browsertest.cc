@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -115,10 +116,14 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
 
     process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
         url, requested_protocols, site_for_cookies, isolation_info,
-        std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
-        origin, network::mojom::kWebSocketOptionNone,
+        std::move(additional_headers), process->GetID(), origin,
+        network::mojom::kWebSocketOptionNone,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(handshake_client), mojo::NullRemote(), mojo::NullRemote());
+        std::move(handshake_client),
+        process->GetStoragePartition()->CreateAuthAndCertObserverForFrame(
+            process->GetID(), frame->GetRoutingID()),
+        /*auth_handler=*/mojo::NullRemote(),
+        /*header_client=*/mojo::NullRemote());
   }
 
   net::SpawnedTestServer ws_server_;
@@ -213,7 +218,15 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketSplitSegments) {
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SecureWebSocketSplitRecords) {
+// TODO(crbug.com/1176880): Disabled on macOS because the WSS SpawnedTestServer
+// does not support modern TLS on the macOS bots.
+#if defined(OS_MAC)
+#define MAYBE_SecureWebSocketSplitRecords DISABLED_SecureWebSocketSplitRecords
+#else
+#define MAYBE_SecureWebSocketSplitRecords SecureWebSocketSplitRecords
+#endif
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
+                       MAYBE_SecureWebSocketSplitRecords) {
   // Launch a secure WebSocket server.
   ASSERT_TRUE(wss_server_.Start());
 
@@ -269,7 +282,15 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketBasicAuthInHTTPURL) {
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketBasicAuthInHTTPSURL) {
+// TODO(crbug.com/1176880): Disabled on macOS because the WSS SpawnedTestServer
+// does not support modern TLS on the macOS bots.
+#if defined(OS_MAC)
+#define MAYBE_WebSocketBasicAuthInHTTPSURL DISABLED_WebSocketBasicAuthInHTTPSURL
+#else
+#define MAYBE_WebSocketBasicAuthInHTTPSURL WebSocketBasicAuthInHTTPSURL
+#endif
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
+                       MAYBE_WebSocketBasicAuthInHTTPSURL) {
   // Launch a basic-auth-protected secure WebSocket server.
   wss_server_.set_websocket_basic_auth(true);
   ASSERT_TRUE(wss_server_.Start());
@@ -345,7 +366,14 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserConnectToTest,
 // HTTPS connection limits should not be applied to wss:. This is only tested
 // for secure connections here because the unencrypted case is tested in the
 // Blink layout tests, and browser tests are expensive to run.
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
+// TODO(crbug.com/1176880): Disabled on macOS because the WSS SpawnedTestServer
+// does not support modern TLS on the macOS bots.
+#if defined(OS_MAC)
+#define MAYBE_SSLConnectionLimit DISABLED_SSLConnectionLimit
+#else
+#define MAYBE_SSLConnectionLimit SSLConnectionLimit
+#endif
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, MAYBE_SSLConnectionLimit) {
   ASSERT_TRUE(wss_server_.Start());
 
   NavigateToHTTPS("multiple-connections.html");
@@ -354,7 +382,14 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
 }
 
 // Regression test for crbug.com/903553005
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
+// TODO(crbug.com/1176880): Disabled on macOS because the WSS SpawnedTestServer
+// does not support modern TLS on the macOS bots.
+#if defined(OS_MAC)
+#define MAYBE_WebSocketAppliesHSTS DISABLED_WebSocketAppliesHSTS
+#else
+#define MAYBE_WebSocketAppliesHSTS WebSocketAppliesHSTS
+#endif
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, MAYBE_WebSocketAppliesHSTS) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
@@ -438,8 +473,7 @@ class ExpectInvalidUtf8Client : public network::mojom::WebSocketClient {
 
  private:
   void OnDisconnect(uint32_t reason, const std::string& message) {
-    if (reason == network::mojom::WebSocket::kInternalFailure &&
-        message == "Browser sent a text frame containing invalid UTF-8") {
+    if (message == "Browser sent a text frame containing invalid UTF-8") {
       std::move(success_closure_).Run();
     } else {
       ADD_FAILURE() << "Unexpected disconnect: reason=" << reason
@@ -558,7 +592,7 @@ class FailureMonitoringHandshakeClient
     int response_code = -1;
   };
 
-  explicit FailureMonitoringHandshakeClient(base::Closure quit)
+  explicit FailureMonitoringHandshakeClient(base::OnceClosure quit)
       : quit_(std::move(quit)) {}
 
   FailureMonitoringHandshakeClient(const FailureMonitoringHandshakeClient&) =
@@ -596,7 +630,7 @@ class FailureMonitoringHandshakeClient
 
  private:
   Result result_;
-  base::Closure quit_;
+  base::OnceClosure quit_;
   mojo::Receiver<network::mojom::WebSocketHandshakeClient>
       handshake_client_receiver_{this};
 };

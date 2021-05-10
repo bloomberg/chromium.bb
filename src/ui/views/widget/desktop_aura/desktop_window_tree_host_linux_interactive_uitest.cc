@@ -20,9 +20,9 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 #endif  // defined(USE_X11)
 
@@ -79,8 +79,7 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostLinux* desktop_host,
       .same_screen = true,
   };
 
-  x11::Event x11_event(xev);
-  ui::X11EventSource::GetInstance()->ProcessXEvent(&x11_event);
+  connection->DispatchEvent(x11::Event{xev});
 }
 
 // Blocks till |window| gets activated.
@@ -98,10 +97,10 @@ class ActivationWaiter : public ui::X11PropertyChangeWaiter {
 
  private:
   // ui::X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(x11::Event* event) override {
+  bool ShouldKeepOnWaiting() override {
     x11::Window window = x11::Window::None;
-    ui::GetProperty(ui::GetX11RootWindow(), gfx::GetAtom("_NET_ACTIVE_WINDOW"),
-                    &window);
+    GetProperty(ui::GetX11RootWindow(), x11::GetAtom("_NET_ACTIVE_WINDOW"),
+                &window);
     return window != window_;
   }
 
@@ -510,9 +509,6 @@ TEST_F(DesktopWindowTreeHostLinuxTest,
 // Chrome even if it not possible to deactivate the window wrt to the x server.
 // This behavior is required by several interactive_ui_tests.
 TEST_F(DesktopWindowTreeHostLinuxTest, Deactivate) {
-  // TODO(1109112): enable this test.
-  if (features::IsUsingOzonePlatform())
-    GTEST_SKIP();
   std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
 
   ActivationWaiter waiter(static_cast<x11::Window>(
@@ -538,9 +534,6 @@ TEST_F(DesktopWindowTreeHostLinuxTest, Deactivate) {
 // Chrome synchronously switches the window that mouse events are forwarded to
 // when capture is changed.
 TEST_F(DesktopWindowTreeHostLinuxTest, CaptureEventForwarding) {
-  // TODO(1109112): enable this test.
-  if (features::IsUsingOzonePlatform())
-    GTEST_SKIP();
   std::unique_ptr<Widget> widget1(CreateWidget(gfx::Rect(100, 100, 100, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
   DesktopWindowTreeHostLinux* host1 =
@@ -615,9 +608,6 @@ TEST_F(DesktopWindowTreeHostLinuxTest, CaptureEventForwarding) {
 }
 
 TEST_F(DesktopWindowTreeHostLinuxTest, InputMethodFocus) {
-  // TODO(1109112): enable this test.
-  if (features::IsUsingOzonePlatform())
-    GTEST_SKIP();
   std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
 
   // Waiter should be created as early as possible so that PropertyNotify has

@@ -120,10 +120,29 @@ BoundRemoteMapToPendingRemoteMap(
   return output;
 }
 
+// TODO(https://crbug.com/1114822): Remove ScopedRequestCrashKeys (it duplicates
+// a similar class in //services/network/crash_keys.h) once it is no longer used
+// below.
 class ScopedRequestCrashKeys {
  public:
-  explicit ScopedRequestCrashKeys(const network::ResourceRequest& request);
-  ~ScopedRequestCrashKeys();
+  static base::debug::CrashKeyString* GetRequestUrlCrashKey() {
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "request_url", base::debug::CrashKeySize::Size256);
+    return crash_key;
+  }
+
+  static base::debug::CrashKeyString* GetRequestInitiatorCrashKey() {
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "request_initiator", base::debug::CrashKeySize::Size64);
+    return crash_key;
+  }
+
+  explicit ScopedRequestCrashKeys(const network::ResourceRequest& request)
+      : url_(GetRequestUrlCrashKey(), request.url.possibly_invalid_spec()),
+        request_initiator_(GetRequestInitiatorCrashKey(),
+                           base::OptionalOrNullptr(request.request_initiator)) {
+  }
+  ~ScopedRequestCrashKeys() = default;
 
   ScopedRequestCrashKeys(const ScopedRequestCrashKeys&) = delete;
   ScopedRequestCrashKeys& operator=(const ScopedRequestCrashKeys&) = delete;
@@ -132,26 +151,6 @@ class ScopedRequestCrashKeys {
   base::debug::ScopedCrashKeyString url_;
   url::debug::ScopedOriginCrashKey request_initiator_;
 };
-
-base::debug::CrashKeyString* GetRequestUrlCrashKey() {
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "request_url", base::debug::CrashKeySize::Size256);
-  return crash_key;
-}
-
-base::debug::CrashKeyString* GetRequestInitiatorCrashKey() {
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "request_initiator", base::debug::CrashKeySize::Size64);
-  return crash_key;
-}
-
-ScopedRequestCrashKeys::ScopedRequestCrashKeys(
-    const network::ResourceRequest& request)
-    : url_(GetRequestUrlCrashKey(), request.url.possibly_invalid_spec()),
-      request_initiator_(GetRequestInitiatorCrashKey(),
-                         base::OptionalOrNullptr(request.request_initiator)) {}
-
-ScopedRequestCrashKeys::~ScopedRequestCrashKeys() = default;
 
 }  // namespace
 
@@ -238,24 +237,6 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
   if (base_result)
     return base_result;
 
-  // All renderer-initiated requests need to provide a value for
-  // |request_initiator| - this is enforced by
-  // CorsURLLoaderFactory::IsValidRequest (see the
-  // InitiatorLockCompatibility::kNoInitiator case).
-  DCHECK(request.request_initiator.has_value());
-  if (is_deprecated_process_wide_factory_) {
-    // The CHECK condition below (in a Renderer process) is also enforced later
-    // (in the NetworkService process) by CorsURLLoaderFactory::IsValidRequest
-    // (see the InitiatorLockCompatibility::kNoLock case) - this enforcement may
-    // result in a renderer kill when the NetworkService is hosted in a separate
-    // process from the Browser process.  Despite the redundancy, we want to
-    // also have the CHECK below, so that the Renderer process terminates
-    // earlier, with a callstack that (unlike the NetworkService
-    // mojo::ReportBadMessage) is hopefully useful for tracking down the source
-    // of the problem.
-    CHECK(request.request_initiator->opaque());
-  }
-
   InitDirectNetworkFactoryIfNecessary();
   DCHECK(direct_network_factory_);
   return direct_network_factory_.get();
@@ -293,14 +274,6 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
   // special prefetch handling.
   // TODO(horo): Move this routing logic to network service, when we will have
   // the special prefetch handling in network service.
-  if ((request.resource_type ==
-       static_cast<int>(blink::mojom::ResourceType::kPrefetch)) &&
-      prefetch_loader_factory_) {
-    prefetch_loader_factory_->CreateLoaderAndStart(
-        std::move(loader), routing_id, request_id, options, request,
-        std::move(client), traffic_annotation);
-    return;
-  }
   if ((request.load_flags & net::LOAD_PREFETCH) && prefetch_loader_factory_) {
     // This is no-state prefetch (see
     // WebURLRequest::GetLoadFlagsForWebUrlRequest).

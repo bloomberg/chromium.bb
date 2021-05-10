@@ -265,25 +265,31 @@ class MultisampledRenderingTest : public DawnTest {
 // Test using one multisampled color attachment with resolve target can render correctly.
 TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
     constexpr bool kTestDepth = false;
-    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
     wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
     constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
 
-    // Draw a green triangle.
-    {
-        utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
-            kTestDepth);
-        std::array<float, 4> kUniformData = {kGreen.r, kGreen.g, kGreen.b, kGreen.a};
-        constexpr uint32_t kSize = sizeof(kUniformData);
-        EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kUniformData.data(), kSize);
+    // storeOp should not affect the result in the resolve target.
+    for (wgpu::StoreOp storeOp : {wgpu::StoreOp::Store, wgpu::StoreOp::Clear}) {
+        wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+
+        // Draw a green triangle.
+        {
+            utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
+                {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
+                kTestDepth);
+            renderPass.cColorAttachments[0].storeOp = storeOp;
+            std::array<float, 4> kUniformData = {kGreen.r, kGreen.g, kGreen.b, kGreen.a};
+            constexpr uint32_t kSize = sizeof(kUniformData);
+            EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kUniformData.data(),
+                                    kSize);
+        }
+
+        wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+        queue.Submit(1, &commandBuffer);
+
+        VerifyResolveTarget(kGreen, mResolveTexture);
     }
-
-    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    queue.Submit(1, &commandBuffer);
-
-    VerifyResolveTarget(kGreen, mResolveTexture);
 }
 
 // Test that a single-layer multisampled texture view can be created and resolved from.
@@ -470,7 +476,7 @@ TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
 // Test using a layer of a 2D texture as resolve target works correctly.
 TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
     // TODO(dawn:462): Investigate backend validation failure.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsNvidia() && IsBackendValidationEnabled());
+    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
 
     constexpr uint32_t kBaseMipLevel = 2;
 
@@ -508,7 +514,7 @@ TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
 // Test using a level or a layer of a 2D array texture as resolve target works correctly.
 TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
     // TODO(dawn:462): Investigate backend validation failure.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsNvidia() && IsBackendValidationEnabled());
+    DAWN_SKIP_TEST_IF(IsD3D12() && IsBackendValidationEnabled());
 
     wgpu::TextureView multisampledColorView2 =
         CreateTextureForRenderAttachment(kColorFormat, kSampleCount).CreateView();
@@ -667,9 +673,6 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithSampleMas
 
 // Test multisampled rendering with depth test works correctly with a non-default sample mask.
 TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTestAndSampleMask) {
-    // TODO(dawn:491): Find out why this test doesn't work on Windows Intel Vulkan.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
-
     constexpr bool kTestDepth = true;
     // The second sample is included in the first render pass and it's covered by the triangle.
     constexpr uint32_t kSampleMaskGreen = kSecondSampleMaskBit;
@@ -730,6 +733,14 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTestAndSampleMas
 // Test using one multisampled color attachment with resolve target can render correctly
 // with non-default sample mask and shader-output mask.
 TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOutputMask) {
+    // TODO(github.com/KhronosGroup/SPIRV-Cross/issues/1626): SPIRV-Cross produces bad GLSL for
+    // unsigned SampleMask builtins
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator") && (IsOpenGL() || IsOpenGLES()));
+
+    // TODO(crbug.com/dawn/673): Work around or enforce via validation that sample variables are not
+    // supported on some platforms.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_sample_variables"));
+
     constexpr bool kTestDepth = false;
     wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
 
@@ -773,6 +784,14 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOut
 // Test doing MSAA resolve into multiple resolve targets works correctly with a non-default
 // shader-output mask.
 TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithShaderOutputMask) {
+    // TODO(github.com/KhronosGroup/SPIRV-Cross/issues/1626): SPIRV-Cross produces bad GLSL for
+    // unsigned SampleMask builtins
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator") && (IsOpenGL() || IsOpenGLES()));
+
+    // TODO(crbug.com/dawn/673): Work around or enforce via validation that sample variables are not
+    // supported on some platforms.
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_sample_variables"));
+
     wgpu::TextureView multisampledColorView2 =
         CreateTextureForRenderAttachment(kColorFormat, kSampleCount).CreateView();
     wgpu::Texture resolveTexture2 = CreateTextureForRenderAttachment(kColorFormat, 1);
@@ -868,7 +887,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverage) {
 
 // Test doing MSAA resolve into multiple resolve targets works correctly with
 // alphaToCoverage. The alphaToCoverage mask is computed based on the alpha
-// component of the first color output attachment.
+// component of the first color render attachment.
 TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithAlphaToCoverage) {
     wgpu::TextureView multisampledColorView2 =
         CreateTextureForRenderAttachment(kColorFormat, kSampleCount).CreateView();
@@ -879,7 +898,7 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithAlphaToCo
     constexpr bool kAlphaToCoverageEnabled = true;
 
     // The alpha-to-coverage mask should not depend on the alpha component of the
-    // second color output attachment.
+    // second color render attachment.
     // We test alpha = 0.51f and 0.99f instead of 0.50f and 1.00f because there are some rounding
     // differences on QuadroP400 devices in that case.
     for (float alpha : {0.0f, 0.51f, 0.99f}) {
@@ -924,7 +943,7 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithAlphaToCo
 TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTestAndAlphaToCoverage) {
     // This test fails because Swiftshader is off-by-one with its ((a+b)/2 + (c+d)/2)/2 fast resolve
     // algorithm.
-    DAWN_SKIP_TEST_IF(IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsSwiftshader() || IsANGLE());
 
     constexpr bool kTestDepth = true;
     constexpr uint32_t kSampleMask = 0xFFFFFFFF;
@@ -985,7 +1004,7 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTestAndAlphaToCo
 TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverageAndSampleMask) {
     // This test fails because Swiftshader is off-by-one with its ((a+b)/2 + (c+d)/2)/2 fast resolve
     // algorithm.
-    DAWN_SKIP_TEST_IF(IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsSwiftshader() || IsANGLE());
 
     // TODO(dawn:491): This doesn't work on Metal, because we're using both the shader-output
     // mask (emulting the sampleMask from RenderPipeline) and alpha-to-coverage at the same
@@ -1030,7 +1049,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverageAndSamp
 TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverageAndRasterizationMask) {
     // This test fails because Swiftshader is off-by-one with its ((a+b)/2 + (c+d)/2)/2 fast resolve
     // algorithm.
-    DAWN_SKIP_TEST_IF(IsSwiftshader());
+    DAWN_SKIP_TEST_IF(IsSwiftshader() || IsANGLE());
 
     constexpr bool kTestDepth = false;
     constexpr float kMSAACoverage = 0.50f;
@@ -1072,6 +1091,7 @@ DAWN_INSTANTIATE_TEST(MultisampledRenderingTest,
                       D3D12Backend({}, {"use_d3d12_render_pass"}),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend(),
                       MetalBackend({"emulate_store_and_msaa_resolve"}),
                       MetalBackend({"always_resolve_into_zero_level_and_layer"}),

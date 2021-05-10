@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {BackgroundBase} from './background/background_base.m.js';
+
 /**
- * @constructor
  * @extends {Window}
  */
-class BackgroundWindow {
+/* #export */ class BackgroundWindow {
   constructor() {
     /**
-     * @type {FileBrowserBackground}
+     * For File Manager it uses FileBrowserBackgroundFull.
+     * For all other apps it uses BackgroundBase.
+     *
+     * TODO(crbug.com/1148545): Add `FileBrowserBackgroundFull` together with
+     * `BackgroundBase` below.
+     *
+     * @type {!BackgroundBase}
      */
     this.background;
-
-    /**
-     * @type {!Object}
-     */
-    this.launcher = {};
   }
-  /**
-   * @param {Window} window
-   */
-  registerDialog(window) {}
 }

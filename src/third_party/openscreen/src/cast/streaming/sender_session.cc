@@ -14,12 +14,12 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
-#include "cast/common/channel/message_util.h"
 #include "cast/streaming/capture_recommendations.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/message_fields.h"
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/sender.h"
+#include "cast/streaming/sender_message.h"
 #include "util/crypto/random_bytes.h"
 #include "util/json/json_helpers.h"
 #include "util/json/json_serialization.h"
@@ -35,7 +35,6 @@ AudioStream CreateStream(int index, const AudioCaptureConfig& config) {
       Stream{index,
              Stream::Type::kAudioSource,
              config.channels,
-             CodecToString(config.codec),
              GetPayloadType(config.codec),
              GenerateSsrc(true /*high_priority*/),
              config.target_playout_delay,
@@ -44,6 +43,7 @@ AudioStream CreateStream(int index, const AudioCaptureConfig& config) {
              false /* receiver_rtcp_event_log */,
              {} /* receiver_rtcp_dscp */,
              config.sample_rate},
+      config.codec,
       (config.bit_rate >= capture_recommendations::kDefaultAudioMinBitRate)
           ? config.bit_rate
           : capture_recommendations::kDefaultAudioMaxBitRate};
@@ -63,7 +63,6 @@ VideoStream CreateStream(int index, const VideoCaptureConfig& config) {
       Stream{index,
              Stream::Type::kVideoSource,
              kVideoStreamChannelCount,
-             CodecToString(config.codec),
              GetPayloadType(config.codec),
              GenerateSsrc(false /*high_priority*/),
              config.target_playout_delay,
@@ -72,6 +71,7 @@ VideoStream CreateStream(int index, const VideoCaptureConfig& config) {
              false /* receiver_rtcp_event_log */,
              {} /* receiver_rtcp_dscp */,
              kRtpVideoTimebase},
+      config.codec,
       SimpleFraction{config.max_frame_rate.numerator,
                      config.max_frame_rate.denominator},
       (config.max_bit_rate >
@@ -98,12 +98,7 @@ void CreateStreamList(int offset_index,
 
 Offer CreateOffer(const std::vector<AudioCaptureConfig>& audio_configs,
                   const std::vector<VideoCaptureConfig>& video_configs) {
-  Offer offer{
-      {CastMode::Type::kMirroring},
-      false /* supports_wifi_status_reporting */,
-      {} /* audio_streams */,
-      {} /* video_streams */
-  };
+  Offer offer;
 
   // NOTE here: IDs will always follow the pattern:
   // [0.. audio streams... N - 1][N.. video streams.. K]
@@ -148,25 +143,24 @@ SenderSession::Client::~Client() = default;
 SenderSession::SenderSession(IPAddress remote_address,
                              Client* const client,
                              Environment* environment,
-                             MessagePort* message_port)
+                             MessagePort* message_port,
+                             std::string message_source_id,
+                             std::string message_destination_id)
     : remote_address_(remote_address),
       client_(client),
       environment_(environment),
-      messager_(message_port,
-                MakeUniqueSessionId("sender"),
-                [this](Error error) {
-                  OSP_DLOG_WARN << "SenderSession message port error: "
-                                << error;
-                  client_->OnError(this, error);
-                }),
+      messager_(
+          message_port,
+          std::move(message_source_id),
+          std::move(message_destination_id),
+          [this](Error error) {
+            OSP_DLOG_WARN << "SenderSession message port error: " << error;
+            client_->OnError(this, error);
+          },
+          environment->task_runner()),
       packet_router_(environment_) {
   OSP_DCHECK(client_);
   OSP_DCHECK(environment_);
-
-  messager_.SetHandler(kMessageTypeAnswer,
-                       [this](SessionMessager::Message message) {
-                         OnAnswer(std::move(message));
-                       });
 }
 
 SenderSession::~SenderSession() = default;
@@ -183,48 +177,33 @@ Error SenderSession::Negotiate(std::vector<AudioCaptureConfig> audio_configs,
   }
 
   Offer offer = CreateOffer(audio_configs, video_configs);
-  ErrorOr<Json::Value> json_offer = offer.ToJson();
-  if (json_offer.is_error()) {
-    return std::move(json_offer.error());
-  }
-
   current_negotiation_ = std::unique_ptr<Negotiation>(new Negotiation{
-      std::move(offer), std::move(audio_configs), std::move(video_configs)});
+      offer, std::move(audio_configs), std::move(video_configs)});
 
-  Json::Value message_body;
-  message_body[kMessageType] = kMessageTypeOffer;
-  message_body[kOfferMessageBody] = std::move(json_offer.value());
-
-  // Currently we don't have a way to discover the ID of the receiver we
-  // are connected to, since we have to send the first message.
-  // TODO(jophba): migrate to discovered receiver ID when available.
-  static constexpr char kPlaceholderReceiverSenderId[] = "receiver-12345";
-  messager_.SendMessage(SessionMessager::Message{
-      kPlaceholderReceiverSenderId, kCastWebrtcNamespace,
-      ++current_sequence_number_, std::move(message_body)});
-  return Error::None();
+  return messager_.SendRequest(
+      SenderMessage{SenderMessage::Type::kOffer, ++current_sequence_number_,
+                    true, std::move(offer)},
+      ReceiverMessage::Type::kAnswer,
+      [this](ReceiverMessage message) { OnAnswer(message); });
 }
 
-void SenderSession::OnAnswer(SessionMessager::Message message) {
-  if (message.sequence_number != current_sequence_number_) {
-    OSP_DLOG_WARN << "Received a stale answer message, dropping.";
-    return;
-  } else if (message.sequence_number > current_sequence_number_) {
-    OSP_DLOG_WARN
-        << "Received an answer with an unexpected sequence number, dropping.";
-    return;
-  }
-
-  Answer answer;
-  if (!Answer::ParseAndValidate(message.body, &answer)) {
-    client_->OnError(this, Error(Error::Code::kJsonParseError,
-                                 "Received invalid answer message"));
-    OSP_DLOG_WARN << "Received invalid answer message";
+void SenderSession::OnAnswer(ReceiverMessage message) {
+  OSP_LOG_WARN << "Message sn: " << message.sequence_number
+               << ", current: " << current_sequence_number_;
+  if (!message.valid) {
+    if (absl::holds_alternative<ReceiverError>(message.body)) {
+      client_->OnError(
+          this, Error(Error::Code::kParameterInvalid,
+                      absl::get<ReceiverError>(message.body).description));
+    } else {
+      client_->OnError(this, Error(Error::Code::kJsonParseError,
+                                   "Received invalid answer message"));
+    }
     return;
   }
 
+  const Answer& answer = absl::get<Answer>(message.body);
   ConfiguredSenders senders = SpawnSenders(answer);
-
   // If we didn't select any senders, the negotiation was unsuccessful.
   if (senders.audio_sender == nullptr && senders.video_sender == nullptr) {
     return;
@@ -236,9 +215,15 @@ void SenderSession::OnAnswer(SessionMessager::Message message) {
 std::unique_ptr<Sender> SenderSession::CreateSender(Ssrc receiver_ssrc,
                                                     const Stream& stream,
                                                     RtpPayloadType type) {
-  SessionConfig config{
-      stream.ssrc,         receiver_ssrc,  stream.rtp_timebase, stream.channels,
-      stream.target_delay, stream.aes_key, stream.aes_iv_mask};
+  // Session config is currently only for mirroring.
+  SessionConfig config{stream.ssrc,
+                       receiver_ssrc,
+                       stream.rtp_timebase,
+                       stream.channels,
+                       stream.target_delay,
+                       stream.aes_key,
+                       stream.aes_iv_mask,
+                       /* is_pli_enabled*/ true};
 
   return std::make_unique<Sender>(environment_, &packet_router_,
                                   std::move(config), type);
@@ -285,7 +270,7 @@ SenderSession::ConfiguredSenders SenderSession::SpawnSenders(
   OSP_DCHECK(current_negotiation_);
 
   // Although we already have a message port set up with the TLS
-  // address of the receiver, we don't know where to send the seperate UDP
+  // address of the receiver, we don't know where to send the separate UDP
   // stream until we get the ANSWER message here.
   environment_->set_remote_endpoint(
       IPEndpoint{remote_address_, static_cast<uint16_t>(answer.udp_port)});

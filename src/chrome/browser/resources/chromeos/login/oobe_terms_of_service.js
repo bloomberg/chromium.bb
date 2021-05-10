@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
 
+(function() {
 
 // Enum that describes the current state of the Terms Of Service screen
-var TermsOfServiceScreenState = {LOADING: 0, LOADED: 1, ERROR: 2};
+const UIState = {
+  LOADING: 'loading',
+  LOADED: 'loaded',
+  ERROR: 'error',
+};
 
 /**
  * @fileoverview Polymer element for displaying material design Terms Of Service
@@ -14,7 +20,12 @@ var TermsOfServiceScreenState = {LOADING: 0, LOADED: 1, ERROR: 2};
 Polymer({
   is: 'terms-of-service-element',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   properties: {
 
@@ -27,30 +38,33 @@ Polymer({
     // Whether the accept button is disabled.
     acceptButtonDisabled_: {type: Boolean, value: true},
 
-    // The domain that the terms of service belongs to.
-    tosDomain_: {type: String, value: ''},
-
-    // The current state of the screen.
-    uiState: {type: Number, value: 0 /* TermsOfServiceScreenState.LOADING */},
+    // The manager that the terms of service belongs to.
+    tosManager_: {type: String, value: ''},
   },
 
+  defaultUIStep() {
+    return UIState.LOADING;
+  },
+
+  UI_STEPS: UIState,
+
   // Whether the screen is still loading.
-  isLoading_(state) {
-    return state == TermsOfServiceScreenState.LOADING;
+  isLoading_() {
+    return this.uiStep == UIState.LOADING;
   },
 
   // Whether the screen has finished loading.
-  isLoaded_(state) {
-    return state == TermsOfServiceScreenState.LOADED;
+  isLoaded_() {
+    return this.uiStep == UIState.LOADED;
   },
 
   // Whether the screen is in an error state.
-  isInErrorState_(state) {
-    return state == TermsOfServiceScreenState.ERROR;
+  hasError_() {
+    return this.uiStep == UIState.ERROR;
   },
 
   EXTERNAL_API: [
-    'setDomain',
+    'setManager',
     'setTermsOfServiceLoadError',
     'setTermsOfService',
   ],
@@ -125,11 +139,11 @@ Polymer({
 
   /**
    * Updates headings on the screen to indicate that the Terms of Service
-   * being shown belong to |domain|.
-   * @param {string} domain The domain whose Terms of Service are being shown.
+   * being shown belong to |manager|.
+   * @param {string} manager The manager whose Terms of Service are being shown.
    */
-  setDomain(domain) {
-    this.tosDomain_ = domain;
+  setManager(manager) {
+    this.tosManager_ = manager;
   },
 
   /**
@@ -139,7 +153,7 @@ Polymer({
   setTermsOfServiceLoadError() {
     // Disable the accept button, hide the iframe, show warning icon and retry
     // button.
-    this.uiState = TermsOfServiceScreenState.ERROR;
+    this.setUIStep(UIState.ERROR);
 
     this.acceptButtonDisabled_ = true;
     this.backButtonDisabled_ = false;
@@ -178,7 +192,7 @@ Polymer({
 
     // Mark the loading as complete.
     this.acceptButtonDisabled_ = false;
-    this.uiState = TermsOfServiceScreenState.LOADED;
+    this.setUIStep(UIState.LOADED);
   },
-
 });
+})();

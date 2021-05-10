@@ -30,7 +30,8 @@ class WindowTreeHost;
 
 namespace views {
 class MenuRunner;
-}
+class Widget;
+}  // namespace views
 
 namespace wm {
 class ScopedCaptureClient;
@@ -217,10 +218,16 @@ class ASH_EXPORT RootWindowController {
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
   void HideContextMenu();
+  void HideContextMenuNoAnimation();
   bool IsContextMenuShown() const;
 
   // Called when the login status changes after login (such as lock/unlock).
   void UpdateAfterLoginStatusChange(LoginStatus status);
+
+  void CreateAmbientWidget();
+  void CloseAmbientWidget(bool immediately);
+
+  views::Widget* ambient_widget_for_testing() { return ambient_widget_.get(); }
 
   // Returns accessibility panel layout manager for this root window.
   AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManagerForTest();
@@ -304,6 +311,8 @@ class ASH_EXPORT RootWindowController {
 
   std::unique_ptr<LockScreenActionBackgroundController>
       lock_screen_action_background_controller_;
+
+  std::unique_ptr<views::Widget> ambient_widget_;
 
   // Whether child windows have been closed during shutdown. Exists to avoid
   // calling related cleanup code more than once.

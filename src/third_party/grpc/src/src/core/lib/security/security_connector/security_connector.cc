@@ -46,6 +46,8 @@ grpc_server_security_connector::grpc_server_security_connector(
     : grpc_security_connector(url_scheme),
       server_creds_(std::move(server_creds)) {}
 
+grpc_server_security_connector::~grpc_server_security_connector() = default;
+
 grpc_channel_security_connector::grpc_channel_security_connector(
     const char* url_scheme,
     grpc_core::RefCountedPtr<grpc_channel_credentials> channel_creds,
@@ -53,6 +55,7 @@ grpc_channel_security_connector::grpc_channel_security_connector(
     : grpc_security_connector(url_scheme),
       channel_creds_(std::move(channel_creds)),
       request_metadata_creds_(std::move(request_metadata_creds)) {}
+
 grpc_channel_security_connector::~grpc_channel_security_connector() {}
 
 int grpc_security_connector_cmp(const grpc_security_connector* sc,
@@ -106,7 +109,7 @@ grpc_arg grpc_security_connector_to_arg(grpc_security_connector* sc) {
 }
 
 grpc_security_connector* grpc_security_connector_from_arg(const grpc_arg* arg) {
-  if (strcmp(arg->key, GRPC_ARG_SECURITY_CONNECTOR)) return nullptr;
+  if (strcmp(arg->key, GRPC_ARG_SECURITY_CONNECTOR) != 0) return nullptr;
   if (arg->type != GRPC_ARG_POINTER) {
     gpr_log(GPR_ERROR, "Invalid type %d for arg %s", arg->type,
             GRPC_ARG_SECURITY_CONNECTOR);

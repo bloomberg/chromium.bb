@@ -27,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_configuration.h"
@@ -34,6 +35,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_decoding_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_configuration.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -172,7 +175,8 @@ class FakeMediaMetricsProvider
     FAIL();
   }
   void Initialize(bool is_mse,
-                  media::mojom::MediaURLScheme url_scheme) override {}
+                  media::mojom::MediaURLScheme url_scheme,
+                  media::mojom::MediaStreamType media_stream_type) override {}
   void OnError(media::mojom::PipelineStatus status) override {}
   void SetIsEME() override {}
   void SetTimeToMetadata(base::TimeDelta elapsed) override {}
@@ -185,9 +189,9 @@ class FakeMediaMetricsProvider
   void SetHasAudio(media::mojom::AudioCodec audio_codec) override {}
   void SetHasVideo(media::mojom::VideoCodec video_codec) override {}
   void SetVideoPipelineInfo(
-      media::mojom::blink::PipelineDecoderInfoPtr info) override {}
+      media::mojom::blink::VideoDecoderInfoPtr info) override {}
   void SetAudioPipelineInfo(
-      media::mojom::blink::PipelineDecoderInfoPtr info) override {}
+      media::mojom::blink::AudioDecoderInfoPtr info) override {}
 
  private:
   mojo::Receiver<media::mojom::blink::MediaMetricsProvider> receiver_{this};
@@ -286,8 +290,8 @@ class MediaCapabilitiesTestContext {
                       &MockPerfHistoryService::BindRequest,
                       base::Unretained(perf_history_service_.get()))));
 
-    media_capabilities_ = MakeGarbageCollected<MediaCapabilities>(
-        v8_scope_.GetExecutionContext());
+    media_capabilities_ = MediaCapabilities::mediaCapabilities(
+        *v8_scope_.GetWindow().navigator());
   }
 
   ~MediaCapabilitiesTestContext() {
@@ -630,8 +634,13 @@ TEST(MediaCapabilitiesTests, PredictPowerEfficientWithGpuFactories) {
         .WillOnce(Return(false));
     EXPECT_CALL(*mock_gpu_factories, NotifyDecoderSupportKnown(_))
         .WillOnce(GpuFactoriesNotifyCallback());
+
+    // MediaCapabilities calls IsDecoderSupportKnown() once, and
+    // GpuVideoAcceleratorFactories::IsDecoderConfigSupported() also calls it
+    // once internally.
     EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
-        .WillOnce(Return(true));
+        .Times(2)
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
         .WillOnce(
             Return(media::GpuVideoAcceleratorFactories::Supported::kTrue));
@@ -651,7 +660,8 @@ TEST(MediaCapabilitiesTests, PredictPowerEfficientWithGpuFactories) {
       .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*power_eff*/ true));
   EXPECT_CALL(context.GetMockPlatform(), GetGpuFactories());
   EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
-      .WillOnce(Return(true));
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
       .WillRepeatedly(
           Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
@@ -923,8 +933,12 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
     EXPECT_CALL(*mock_gpu_factories, NotifyDecoderSupportKnown(_))
         .WillOnce(
             Invoke(&cb_saver, &CallbackSaver::SaveGpuFactoriesNotifyCallback));
+    // MediaCapabilities calls IsDecoderSupportKnown() once, and
+    // GpuVideoAcceleratorFactories::IsDecoderConfigSupported() also calls it
+    // once internally.
     EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
-        .WillOnce(Return(true));
+        .Times(2)
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
         .WillRepeatedly(
             Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));

@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -174,9 +174,9 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
     base::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
-    ShowSingletonTabOverwritingNTP(
-        browser_, GetSingletonTabNavigateParams(
-                      browser_, GURL(chrome::kChromeUIHistoryURL)));
+    NavigateParams params(GetSingletonTabNavigateParams(
+        browser_, GURL(chrome::kChromeUIHistoryURL)));
+    ShowSingletonTabOverwritingNTP(browser_, &params);
     return;
   }
 

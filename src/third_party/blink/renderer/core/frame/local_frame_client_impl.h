@@ -64,7 +64,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
 
   // LocalFrameClient ----------------------------------------------
   WebContentCaptureClient* GetWebContentCaptureClient() const override;
-  void DidCreateInitialEmptyDocument() override;
   void DidCommitDocumentReplacementNavigation(DocumentLoader*) override;
   // Notifies the WebView delegate that the JS window object has been cleared,
   // giving it a chance to bind native objects to the window before script
@@ -93,12 +92,16 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidHandleOnloadEvents() override;
   void DidFinishSameDocumentNavigation(HistoryItem*,
                                        WebHistoryCommitType,
-                                       bool content_initiated) override;
+                                       bool content_initiated,
+                                       bool is_history_api_navigation) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidCommitLoad(
       HistoryItem*,
       WebHistoryCommitType,
-      bool should_reset_browser_interface_broker) override;
+      bool should_reset_browser_interface_broker,
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
   void DispatchDidFinishDocumentLoad() override;
   void DispatchDidFinishLoad() override;
@@ -112,7 +115,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       NavigationPolicy,
       WebFrameLoadType,
       bool is_client_redirect,
-      TriggeringEventInfo,
+      mojom::blink::TriggeringEventInfo,
       HTMLFormElement*,
       network::mojom::CSPDisposition should_bypass_main_world_csp,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
@@ -121,9 +124,11 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       const base::Optional<WebImpression>& impression,
       WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
           initiator_csp,
-      network::mojom::blink::CSPSourcePtr initiator_self_source,
       network::mojom::IPAddressSpace,
-      mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>,
+      const LocalFrameToken* initiator_frame_token,
+      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+          initiator_policy_container_keep_alive_handle) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -136,6 +141,8 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(mojom::CSSSampleId, bool) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
+  void DidObserveInputForLayoutShiftTracking(
+      base::TimeTicks timestamp) override;
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
@@ -190,10 +197,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   bool AllowContentInitiatedDataUrlNavigations(const KURL&) override;
 
   void DidChangeName(const String&) override;
-  void DidSetFramePolicyHeaders(
-      network::mojom::blink::WebSandboxFlags,
-      const ParsedFeaturePolicy& fp_header,
-      const blink::DocumentPolicyFeatureState& dp_header) override;
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
@@ -236,12 +239,14 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
 
   Frame* FindFrame(const AtomicString& name) const override;
 
-  void FrameRectsChanged(const IntRect&) override;
-
   void FocusedElementChanged(Element* element) override;
 
   void OnMainFrameIntersectionChanged(
       const IntRect& intersection_rect) override;
+
+  void OnOverlayPopupAdDetected() override;
+
+  void OnLargeStickyAdDetected() override;
 
   bool IsPluginHandledExternally(HTMLPlugInElement&,
                                  const KURL&,

@@ -20,6 +20,9 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/av1_noise_estimate.h"
 #include "av1/encoder/encoder.h"
+#if CONFIG_AV1_TEMPORAL_DENOISING
+#include "av1/encoder/av1_temporal_denoiser.h"
+#endif
 
 #if CONFIG_AV1_TEMPORAL_DENOISING
 // For SVC: only do noise estimation on top spatial layer.
@@ -120,7 +123,7 @@ void av1_update_noise_estimate(AV1_COMP *const cpi) {
   const int low_res = (cm->width <= 352 && cm->height <= 288);
   // Estimate of noise level every frame_period frames.
   int frame_period = 8;
-  int thresh_consec_zeromv = 6;
+  int thresh_consec_zeromv = 2;
   int frame_counter = cm->current_frame.frame_number;
   // Estimate is between current source and last source.
   YV12_BUFFER_CONFIG *last_source = cpi->last_source;
@@ -278,7 +281,6 @@ void av1_update_noise_estimate(AV1_COMP *const cpi) {
         max_bin = bin_cnt;
       }
     }
-
     // Scale by 40 to work with existing thresholds
     ne->value = (int)((3 * ne->value + max_bin * 40) >> 2);
     // Quickly increase VNR strength when the noise level increases suddenly.

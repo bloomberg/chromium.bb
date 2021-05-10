@@ -11,11 +11,6 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to add a custom drop interaction to web
-// content.
-extern const char kAddWebContentDropInteractionName[];
-extern const char kAddWebContentDropInteractionDescription[];
-
 // Title and description for the flag to control the autofill query cache.
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
@@ -23,19 +18,6 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
-
-// Title and description for the flag to control card nickname management.
-extern const char kAutofillEnableCardNicknameManagementName[];
-extern const char kAutofillEnableCardNicknameManagementDescription[];
-
-// Title and description for the flag to control card nickname upstream.
-extern const char kAutofillEnableCardNicknameUpstreamName[];
-extern const char kAutofillEnableCardNicknameUpstreamDescription[];
-
-// Title and description for the flag to control enabling Google-issued cards in
-// autofill suggestions.
-extern const char kAutofillEnableGoogleIssuedCardName[];
-extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
 // Title and description for the flag to control offers in downstream.
 extern const char kAutofillEnableOffersInDownstreamName[];
@@ -101,21 +83,32 @@ extern const char kSyntheticCrashReportsForUteDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
+// Title and description for the flag to control if change password url should
+// be obtained by affiliation service.
+extern const char kChangePasswordAffiliationInfoName[];
+extern const char kChangePasswordAffiliationInfoDescription[];
+
+// Title and description for the flag to control which crash generation tool
+// is used.
+extern const char kCrashpadIOSName[];
+extern const char kCrashpadIOSDescription[];
+
 // Title and description for the flag that controls whether Collections are
 // presented using the new iOS13 Card style or the custom legacy one.
 extern const char kCollectionsCardPresentationStyleName[];
 extern const char kCollectionsCardPresentationStyleDescription[];
-
-// Title and description for the flag to scan a new credit card using the
-// camera.
-extern const char kCreditCardScannerName[];
-extern const char kCreditCardScannerDescription[];
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 // Title and description for the flag to enable configurable DCHECKs.
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+// Title and description for the flag to show a modified fullscreen modal promo
+// with a button that would send the users in the Settings.app to update the
+// default browser. Different from kDefaultBrowserFullscreenPromoExperimentName.
+extern const char kDefaultBrowserFullscreenPromoCTAExperimentName[];
+extern const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[];
 
 // Title and description for the flag to add the button in the settings to send
 // the users in the Settings.app to update the default browser.
@@ -127,34 +120,25 @@ extern const char kDefaultBrowserSettingsDescription[];
 extern const char kDefaultToDesktopOnIPadName[];
 extern const char kDefaultToDesktopOnIPadDescription[];
 
-// Title and description for the flag to show a fullscreen modal promo with a
-// button that would send the users in the Settings.app to update the default
-// browser.
-extern const char kDefaultBrowserFullscreenPromoName[];
-extern const char kDefaultBrowserFullscreenPromoDescription[];
-
 // Title and description for the flag to control the delay (in minutes) for
 // polling for the existence of Gaia cookies for google.com.
 extern const char kDelayThresholdMinutesToUpdateGaiaCookieName[];
 extern const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[];
+
+// Title and description for the flag to detect change password form
+// submisison when the form is cleared by the website.
+extern const char kDetectFormSubmissionOnFormClearIOSName[];
+extern const char kDetectFormSubmissionOnFormClearIOSDescription[];
 
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
-// Title and description for the flag to disable progress bar animation.
-extern const char kDisableProgressBarAnimationName[];
-extern const char kDisableProgressBarAnimationDescription[];
-
 // Title and description for the flag to replace the Zine feed with the
 // Discover feed in the Bling NTP.
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
-
-// Title and description for the flag to enable drag and drop.
-extern const char kDragAndDropName[];
-extern const char kDragAndDropDescription[];
 
 // Title and description for the flag to enable EditBookmarks enterprise
 // policy on iOS.
@@ -170,11 +154,6 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kEmbedderBlockRestoreUrlName[];
 extern const char kEmbedderBlockRestoreUrlDescription[];
 
-// Title and description for the flag to enable caching of unmasked server
-// cards until page navigation to simplify consecutive fills on the same page.
-extern const char kEnableAutofillCacheServerCardInfoName[];
-extern const char kEnableAutofillCacheServerCardInfoDescription[];
-
 // Title and description for the flag to enable the confirmational action sheet
 // for the tab grid "Close All" action.
 extern const char kEnableCloseAllTabsConfirmationName[];
@@ -184,19 +163,20 @@ extern const char kEnableCloseAllTabsConfirmationDescription[];
 extern const char kEnableFullPageScreenshotName[];
 extern const char kEnableFullPageScreenshotDescription[];
 
+// Title and description for the flag to enable incognito mode management.
+extern const char kEnableIncognitoModeAvailabilityIOSName[];
+extern const char kEnableIncognitoModeAvailabilityIOSDescription[];
+
 // Title and description for the flag to enable to show a different UI when the
 // setting is managed by an enterprise policy.
 extern const char kEnableIOSManagedSettingsUIName[];
 extern const char kEnableIOSManagedSettingsUIDescription[];
 
-// Title and description for the flag to enable MyGoogle account management
-// UI in iOS Settings.
-extern const char kEnableMyGoogleName[];
-extern const char kEnableMyGoogleDescription[];
-
-// Title and description for the flag to enable new context menus for native UI.
-extern const char kEnableNativeContextMenusName[];
-extern const char kEnableNativeContextMenusDescription[];
+// Title and description for the flag to enable UI that allows the user to
+// create a strong password even if the field wasn't parsed as a new password
+// field.
+extern const char kEnableManualPasswordGenerationName[];
+extern const char kEnableManualPasswordGenerationDescription[];
 
 // Title and description for the flag to enable an expanded tab strip.
 extern const char kExpandedTabStripName[];
@@ -219,11 +199,6 @@ extern const char kForceUnstackedTabstripDescription[];
 extern const char kFullscreenSmoothScrollingName[];
 extern const char kFullscreenSmoothScrollingDescription[];
 
-// Title and description for the flag to scope FullscreenController to a
-// Browser.
-extern const char kFullscreenControllerBrowserScopedName[];
-extern const char kFullscreenControllerBrowserScopedDescription[];
-
 // Title and dscription for the flag to allow biometric authentication for
 // accessing incognito.
 extern const char kIncognitoAuthenticationName[];
@@ -239,15 +214,6 @@ extern const char kIllustratedEmptyStatesDescription[];
 extern const char kInfobarOverlayUIName[];
 extern const char kInfobarOverlayUIDescription[];
 
-// Title and description for the flag to enable the new UI Reboot on Infobars.
-extern const char kInfobarUIRebootName[];
-extern const char kInfobarUIRebootDescription[];
-
-// Title and description for the flag to enable the new UI Reboot on Infobars
-// only on iOS13.
-extern const char kInfobarUIRebootOnlyiOS13Name[];
-extern const char kInfobarUIRebootOnlyiOS13Description[];
-
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];
@@ -258,15 +224,15 @@ extern const char kInProductHelpDemoModeDescription[];
 extern const char kIOSLegacyTLSInterstitialsName[];
 extern const char kIOSLegacyTLSInterstitialsDescription[];
 
-// Title and description for the flag to enable interstitials on lookalike
-// URL navigations.
-extern const char kIOSLookalikeUrlNavigationSuggestionsUIName[];
-extern const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[];
-
 // Title and description for the flag to persist the Crash Restore Infobar
 // across navigations.
 extern const char kIOSPersistCrashRestoreName[];
 extern const char kIOSPersistCrashRestoreDescription[];
+
+// Title and description for the flag to enable Shared Highlighting color
+// change in iOS.
+extern const char kIOSSharedHighlightingColorChangeName[];
+extern const char kIOSSharedHighlightingColorChangeDescription[];
 
 // Title and description for the flag to experiment with different location
 // permission user experiences.
@@ -281,11 +247,6 @@ extern const char kLockBottomToolbarDescription[];
 // policy on iOS.
 extern const char kManagedBookmarksIOSName[];
 extern const char kManagedBookmarksIOSDescription[];
-
-// Title, description, and options for the MarkHttpAs setting that controls
-// display of omnibox warnings about non-secure pages.
-extern const char kMarkHttpAsName[];
-extern const char kMarkHttpAsDescription[];
 
 // Title and description for the flag where the Google SRP is requested in
 // mobile mode by default.
@@ -322,20 +283,24 @@ extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
-// Title and description for the flag to enable the new design of the page info.
-extern const char kPageInfoRefactoringName[];
-extern const char kPageInfoRefactoringDescription[];
-
 // Title and description for the flag to control Omnibox Local zero-prefix
 // suggestions.
 extern const char kOmniboxLocalHistoryZeroSuggestName[];
 extern const char kOmniboxLocalHistoryZeroSuggestDescription[];
 
-#if defined(__IPHONE_13_4)
-// Title and description for the flag to enable pointer support on tablets.
-extern const char kPointerSupportName[];
-extern const char kPointerSupportDescription[];
-#endif  // defined(__IPHONE_13_4)
+// Title and description for the flag to swap Omnibox Textfield implementation
+// to a new experimental one.
+extern const char kOmniboxNewImplementationName[];
+extern const char kOmniboxNewImplementationDescription[];
+
+// Title and description for the flag to enable PhishGuard password reuse
+// detection.
+extern const char kPasswordReuseDetectionName[];
+extern const char kPasswordReuseDetectionDescription[];
+
+// Title and description for the flag that enables the refactored new tab page.
+extern const char kRefactoredNTPName[];
+extern const char kRefactoredNTPDescription[];
 
 // Title and description for the flag that makes Safe Browsing available.
 extern const char kSafeBrowsingAvailableName[];
@@ -348,11 +313,6 @@ extern const char kSafeBrowsingRealTimeLookupDescription[];
 // Title and description for the flag to enable safety check on iOS.
 extern const char kSafetyCheckIOSName[];
 extern const char kSafetyCheckIOSDescription[];
-
-// Title and description for the flag that enables Messages UI on
-// SaveCard Infobars.
-extern const char kSaveCardInfobarMessagesUIName[];
-extern const char kSaveCardInfobarMessagesUIDescription[];
 
 // Title and description for the flag to enable integration with the ScreenTime
 // system.
@@ -382,15 +342,28 @@ extern const char kSettingsRefreshDescription[];
 extern const char kSharedHighlightingIOSName[];
 extern const char kSharedHighlightingIOSDescription[];
 
+// Title and description for the flag to use a sites blocklist when generating
+// URLs for Shared Highlighting (Link to Text).
+extern const char kSharedHighlightingUseBlocklistIOSName[];
+extern const char kSharedHighlightingUseBlocklistIOSDescription[];
+
 // Title and description for the flag to enable annotating web forms with
 // Autofill field type predictions as placeholder.
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
+// Title and description for the flag to enable simplify sign-out on iOS.
+extern const char kSimplifySignOutIOSName[];
+extern const char kSimplifySignOutIOSDescription[];
+
 // Title and description for the flag to use |-drawViewHierarchy:| for taking
 // snapshots.
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
+
+// Title and description for the flag to enable the Start Surface.
+extern const char kStartSurfaceName[];
+extern const char kStartSurfaceDescription[];
 
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
@@ -402,11 +375,6 @@ extern const char kSyncSandboxDescription[];
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
 
-// Title and description for the flag to enable the Messages UI for Translate
-// Infobars.
-extern const char kTranslateInfobarMessagesUIName[];
-extern const char kTranslateInfobarMessagesUIDescription[];
-
 // Title and description for the flag to enable URLBlocklist/URLAllowlist
 // enterprise policy.
 extern const char kURLBlocklistIOSName[];
@@ -415,6 +383,10 @@ extern const char kURLBlocklistIOSDescription[];
 // Title and description for the flag to enable the new error page workflow.
 extern const char kUseJSForErrorPageName[];
 extern const char kUseJSForErrorPageDescription[];
+
+// Title and description for the flag to enable use of hash affiliation service.
+extern const char kUseOfHashAffiliationFetcherName[];
+extern const char kUseOfHashAffiliationFetcherDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
@@ -440,11 +412,24 @@ extern const char kWebPageAlternativeTextZoomDescription[];
 extern const char kWebViewNativeContextMenuName[];
 extern const char kWebViewNativeContextMenuDescription[];
 
-extern const char kWellKnownChangePasswordName[];
-extern const char kWellKnownChangePasswordDescription[];
-
+// Title and description for the flag to restore Gaia cookies as soon as Chrome
+// detects that they have been removed.
 extern const char kRestoreGaiaCookiesIfDeletedName[];
 extern const char kRestoreGaiaCookiesIfDeletedDescription[];
+
+// Title and description for the flag to restore Gaia cookies when the user
+// explicitly requests to be signed in to a Google service.
+extern const char kRestoreGaiaCookiesOnUserActionName[];
+extern const char kRestoreGaiaCookiesOnUserActionDescription[];
+
+extern const char kRecordSnapshotSizeName[];
+extern const char kRecordSnapshotSizeDescription[];
+
+// Title and description for the flag to show a modified fullscreen modal promo
+// with a button that would send the users in the Settings.app to update the
+// default browser.
+extern const char kDefaultBrowserFullscreenPromoExperimentName[];
+extern const char kDefaultBrowserFullscreenPromoExperimentDescription[];
 
 // Please add names and descriptions above in alphabetical order.
 

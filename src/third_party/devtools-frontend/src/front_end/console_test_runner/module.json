@@ -2,12 +2,10 @@
   "dependencies": [
     "test_runner",
     "console",
+    "object_ui",
     "console_counters"
   ],
   "modules": [
-    "console_test_runner.js"
-  ],
-  "skip_compilation": [
     "console_test_runner.js"
   ]
 }

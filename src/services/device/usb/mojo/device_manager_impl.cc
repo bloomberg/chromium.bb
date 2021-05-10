@@ -25,10 +25,10 @@
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_service.h"
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "services/device/usb/usb_device_linux.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace device {
 namespace usb {
@@ -116,7 +116,7 @@ void DeviceManagerImpl::OnPermissionGrantedToRefresh(
 }
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void DeviceManagerImpl::CheckAccess(const std::string& guid,
                                     CheckAccessCallback callback) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
@@ -169,7 +169,7 @@ void DeviceManagerImpl::OnOpenFileDescriptorError(
              << message;
   std::move(callback).Run(base::File());
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void DeviceManagerImpl::SetClient(
     mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {

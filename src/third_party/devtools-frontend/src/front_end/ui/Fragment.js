@@ -62,7 +62,6 @@ export class Fragment {
   /**
    * @param {!TemplateDefinition} strings
    * @return {!_Template}
-   * @suppressGlobalPropertiesCheck
    */
   static _template(strings) {
     let html = '';
@@ -232,7 +231,7 @@ export class Fragment {
       }
       return node;
     }
-    return document.createTextNode('' + value);
+    return document.createTextNode(String(value));
   }
 }
 
@@ -252,7 +251,7 @@ export const html = (strings, ...vararg) => {
   return Fragment.cached(strings, ...vararg).element();
 };
 
-/** @typedef {(!Array<string>|!ITemplateArray)} */
+/** @typedef {(!Array<string>|!TemplateStringsArray)} */
 // @ts-ignore typedef
 export let TemplateDefinition;
 

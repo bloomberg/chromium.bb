@@ -38,7 +38,8 @@ TEST_F(SyncDataTest, CreateLocalDelete) {
   SyncData data = SyncData::CreateLocalDelete(kSyncTag, kDatatype);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
+  EXPECT_EQ(ClientTagHash::FromUnhashed(PREFERENCES, kSyncTag),
+            data.GetClientTagHash());
   EXPECT_EQ(kDatatype, data.GetDataType());
 }
 
@@ -48,18 +49,24 @@ TEST_F(SyncDataTest, CreateLocalData) {
       SyncData::CreateLocalData(kSyncTag, kNonUniqueTitle, specifics);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
+  EXPECT_EQ(ClientTagHash::FromUnhashed(PREFERENCES, kSyncTag),
+            data.GetClientTagHash());
   EXPECT_EQ(kDatatype, data.GetDataType());
   EXPECT_EQ(kNonUniqueTitle, data.GetTitle());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
+  EXPECT_FALSE(data.ToString().empty());
 }
 
 TEST_F(SyncDataTest, CreateRemoteData) {
   specifics.mutable_preference();
-  SyncData data = SyncData::CreateRemoteData(specifics);
+  SyncData data = SyncData::CreateRemoteData(
+      specifics, ClientTagHash::FromUnhashed(PREFERENCES, kSyncTag));
   EXPECT_TRUE(data.IsValid());
   EXPECT_FALSE(data.IsLocal());
+  EXPECT_EQ(ClientTagHash::FromUnhashed(PREFERENCES, kSyncTag),
+            data.GetClientTagHash());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
+  EXPECT_FALSE(data.ToString().empty());
 }
 
 }  // namespace

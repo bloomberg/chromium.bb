@@ -5,7 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
@@ -41,7 +41,7 @@ generate_grd("build_grd") {
   ]
 }
 
-preprocess_grit("preprocess") {
+preprocess_if_expr("preprocess") {
   in_folder = "./"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_manifest"
@@ -54,7 +54,7 @@ preprocess_grit("preprocess") {
   ]
 }
 
-preprocess_grit("preprocess_generated") {
+preprocess_if_expr("preprocess_generated") {
   deps = [ ":web_components" ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
@@ -68,7 +68,7 @@ preprocess_grit("preprocess_generated") {
   ]
 }
 
-grit("tab_strip_resources") {
+grit("resources") {
   defines = chrome_grit_defines
 
   # These arguments are needed since the grd is generated at build time.
@@ -86,7 +86,6 @@ grit("tab_strip_resources") {
 }
 
 js_type_check("closure_compile") {
-  uses_js_modules = true
   deps = [
     ":alert_indicator",
     ":alert_indicators",
@@ -170,6 +169,7 @@ js_library("tab_list") {
     ":tab_strip_embedder_proxy",
     ":tabs_api_proxy",
     "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:event_tracker.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",

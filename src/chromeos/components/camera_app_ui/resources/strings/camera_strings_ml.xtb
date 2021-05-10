@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1175958423215084756">ലിങ്ക് തിരിച്ചറിഞ്ഞു. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ഗാലറി ചിത്രങ്ങൾ</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
 <translation id="1473110567575736769">3 സെക്കൻഡ് ടൈമർ</translation>
@@ -10,9 +11,11 @@
 <translation id="1851616744363735765">താൽക്കാലികമായി നിർത്തി</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> എക്‌സ്‌പോർട്ട് ചെയ്യാനായില്ല</translation>
 <translation id="1899697626337024495">ഫോട്ടോ റെസല്യൂഷൻ</translation>
+<translation id="2022953316617983419">QR കോഡ്</translation>
 <translation id="2036868001356139588">ടൈമർ ദൈർഘ്യം</translation>
 <translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> സജീവമാണ്</translation>
+<translation id="2144806332417375165">ഇഷ്‌ടാനുസൃത വീഡിയോ പാരാമീറ്ററുകൾ</translation>
 <translation id="229579744168541441">ഡിസ്‌ക്കിലേക്ക് എക്‌സ്‌പോർട്ട് ചെയ്യുക</translation>
 <translation id="2501278716633472235">പിന്നോട്ട് പോകുക</translation>
 <translation id="2501853267655415902">റെക്കോർഡ് ചെയ്യൽ നിർത്തി</translation>
@@ -27,13 +30,16 @@
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">ഗ്രിഡ് തരം</translation>
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
+<translation id="3240426699337459095">ലിങ്ക് പകർത്തി</translation>
 <translation id="3259149966178251584">ക്യാമറ റെസല്യൂഷൻ</translation>
 <translation id="3517926952904427380">പോർട്രെയ്റ്റ് ഫോട്ടോ എടുക്കാനായില്ല</translation>
 <translation id="3569311554794739032">"<ph name="FILE" />" നീക്കംചെയ്യണമെന്ന് തീർച്ചയാണോ?</translation>
-<translation id="3750315947605636967">നിങ്ങളുടെ ക്യാമറ മറ്റൊരു ആപ്പ് ഉപയോഗിക്കുന്നു</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
+<translation id="3838931309141338733">ബാർകോഡ് സ്‌കാൻ ചെയ്യുക</translation>
+<translation id="3892148308691398805">ടെക്‌സ്‌റ്റ് പകർത്തുക</translation>
 <translation id="4000398125663085899">പുതിയ ഫോട്ടോകളും വീഡിയോകളും ഇപ്പോൾ Files ആപ്പ്: എന്റെ ഫയലുകൾ &gt; ക്യാമറ എന്നതിലെ ഒരു ഫോൾഡറിലേക്ക് സംരക്ഷിക്കും</translation>
 <translation id="4118525110028899586">റെക്കോർഡ് ചെയ്യൽ തൽക്കാലം നിർത്തുക</translation>
+<translation id="4269820728363426813">ലിങ്ക് വിലാസം പകർത്തുക</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4329152592498422850">സമചതുര ഫോട്ടോയെടുക്കൽ മോഡിലേക്ക് മാറുക</translation>
 <translation id="4383571725254449280">പ്രകടന ലോഗുകൾ പ്രിന്റ് ചെയ്യുക</translation>
@@ -56,7 +62,7 @@
 <translation id="6233780560267770709">3 ബൈ 3</translation>
 <translation id="6243827288366940320">ഗോൾഡൻ റേഷ്യോ</translation>
 <translation id="6248749904681914629">എക്‌സ്‌റ്റേണൽ ക്യാമറ</translation>
-<translation id="6353688143752491039">ക്യാമറ ആപ്പിനെക്കുറിച്ച് ഫീഡ്‌ബാക്ക് നൽകിയതിന് നന്ദി.
+<translation id="6353688143752491039">Camera ആപ്പിനെക്കുറിച്ച് ഫീഡ്‌ബാക്ക് നൽകിയതിന് നന്ദി.
 
 നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് ചിത്രത്തെക്കുറിച്ചോ വീഡിയോ നിലവാരത്തെക്കുറിച്ചോ ആണെങ്കിൽ, സാമ്പിൾ ഫോട്ടോയോ വീഡിയോയോ അറ്റാച്ച് ചെയ്‌ത് പ്രശ്‌നം എന്താണെന്ന് വിവരിക്കുക. (ഉദാഹരണത്തിന്, ഫോട്ടോ വളരെ ഇരുണ്ടതാണ് അല്ലെങ്കിൽ വസ്‌തു ഫോക്കസിലല്ല ഉള്ളത്.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> മെഗാ പിക്‌സൽ</translation>
@@ -68,11 +74,15 @@
 <translation id="7134221860976209830">10 സെക്കൻഡ് ടൈമർ</translation>
 <translation id="7243947652761655814">വീഡിയോ റെസല്യൂഷൻ</translation>
 <translation id="7337660886763914220">ഫയൽ സിസ്‌റ്റം പിശകുകൾ.</translation>
+<translation id="7450541714075000668">ടെക്‌സ്റ്റ് പകർത്തി</translation>
 <translation id="7557677699350329807">അടുത്ത ക്യാമറയിലേക്ക് മാറുക</translation>
+<translation id="7607002721634913082">അല്പംനിര്‍ത്തി</translation>
 <translation id="7608223098072244877">4 ബൈ 4</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7974782136796202581">പാൻ/ടിൽറ്റ്/സൂം ഓപ്ഷനുകൾ കാണിക്കുക</translation>
+<translation id="7983668134180549431">ടെക്‌സ്റ്റ് തിരിച്ചറിഞ്ഞു.</translation>
 <translation id="8067883171444229417">വീഡിയോ പ്ലേ ചെയ്യുക</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8145038249676204903">ഫോട്ടോ എടുക്കുന്നതിലേക്ക് മാറുക</translation>

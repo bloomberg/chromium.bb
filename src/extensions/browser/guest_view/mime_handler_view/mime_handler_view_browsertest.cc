@@ -21,8 +21,6 @@
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
-#include "components/printing/common/print.mojom.h"
-#include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,6 +29,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
@@ -38,6 +37,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/test/result_catcher.h"
@@ -57,9 +57,6 @@ using guest_view::GuestViewManager;
 using guest_view::GuestViewManagerDelegate;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
-
-// The test extension id is set by the key value in the manifest.
-const char kExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
 class MimeHandlerViewTest : public extensions::ExtensionApiTest {
  public:
@@ -107,8 +104,7 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
 
   MimeHandlerViewGuest* GetLastGuestView() const {
     return MimeHandlerViewGuest::FromWebContents(
-               GetGuestViewManager()->GetLastGuestCreated())
-        ->As<MimeHandlerViewGuest>();
+        GetGuestViewManager()->GetLastGuestCreated());
   }
 
   const extensions::Extension* LoadTestExtension() {
@@ -117,7 +113,8 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
     if (!extension)
       return nullptr;
 
-    CHECK_EQ(std::string(kExtensionId), extension->id());
+    EXPECT_EQ(std::string(extension_misc::kMimeHandlerPrivateTestExtensionId),
+              extension->id());
 
     return extension;
   }
@@ -125,7 +122,7 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   void RunTestWithUrl(const GURL& url) {
     // Use the testing subclass of MimeHandlerViewGuest.
     GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-        base::Bind(&TestMimeHandlerViewGuest::Create));
+        base::BindRepeating(&TestMimeHandlerViewGuest::Create));
 
     const extensions::Extension* extension = LoadTestExtension();
     ASSERT_TRUE(extension);
@@ -182,60 +179,6 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
   gv_manager->WaitForAllGuestsDeleted();
   EXPECT_EQ(1U, gv_manager->num_guests_created());
 }
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class PrintPreviewWaiter : public content::BrowserMessageFilter {
- public:
-  PrintPreviewWaiter() : BrowserMessageFilter(PrintMsgStart) {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(PrintPreviewWaiter, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
-    IPC_END_MESSAGE_MAP()
-    return false;
-  }
-
-  void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,
-                         const printing::mojom::PreviewIds& ids) {
-    // Expect that there is at least one page.
-    did_load_ = true;
-    run_loop_.Quit();
-
-    EXPECT_TRUE(params.page_count >= 1);
-  }
-
-  void Wait() {
-    if (!did_load_)
-      run_loop_.Run();
-  }
-
- private:
-  ~PrintPreviewWaiter() override = default;
-
-  bool did_load_ = false;
-  base::RunLoop run_loop_;
-};
-
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedThenPrint) {
-  RunTest("test_embedded.html");
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  auto* gv_manager = GetGuestViewManager();
-  gv_manager->WaitForAllGuestsDeleted();
-  EXPECT_EQ(1U, gv_manager->num_guests_created());
-
-  // Verify that print dialog comes up.
-  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* main_frame = web_contents->GetMainFrame();
-  auto print_preview_waiter = base::MakeRefCounted<PrintPreviewWaiter>();
-  web_contents->GetMainFrame()->GetProcess()->AddFilter(
-      print_preview_waiter.get());
-  // Use setTimeout() to prevent ExecuteScript() from blocking on the print
-  // dialog.
-  ASSERT_TRUE(content::ExecuteScript(
-      main_frame, "setTimeout(function() { window.print(); }, 0)"));
-  print_preview_waiter->Wait();
-}
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // This test start with an <object> that has a content frame. Then the content
 // frame (plugin frame) is navigated to a cross-origin target page. After the
@@ -386,16 +329,13 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
   RunTest("testBasic.csv");
   // Verify that for a navigation to a MimeHandlerView MIME type, exactly one
-  // stream is intercepted. This means :
-  // a- For BrowserPlugin-based MHV the PluginDocument passes the |view_id| to
-  //    MimeHandlerViewContainer (so a new request is not sent).
-  // b- For frame-based MimeHandlerView we do not create a PluginDocument. If a
-  //    PluginDocument was created here, the |view_id| associated with the
-  //    stream intercepted from navigation response would be lost (
-  //    PluginDocument does not talk to a MimeHandlerViewFrameContainer). Then,
-  //    the newly added <embed> by the PluginDocument would send its own request
-  //    leading to a total of 2 intercepted streams. The first one (from
-  //    navigation) would never be released.
+  // stream is intercepted. This means we do not create a PluginDocument. If a
+  // PluginDocument was created here, the |view_id| associated with the
+  // stream intercepted from navigation response would be lost (
+  // PluginDocument does not talk to a MimeHandlerViewFrameContainer). Then,
+  // the newly added <embed> by the PluginDocument would send its own request
+  // leading to a total of 2 intercepted streams. The first one (from
+  // navigation) would never be released.
   EXPECT_EQ(0U, MimeHandlerStreamManager::Get(
                     GetEmbedderWebContents()->GetBrowserContext())
                     ->streams_.size());
@@ -583,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, AdoptNodeInOnLoadDoesNotCrash) {
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
   // Use the testing subclass of MimeHandlerViewGuest.
   GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::Bind(&TestMimeHandlerViewGuest::Create));
+      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
 
   const extensions::Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
@@ -626,4 +566,39 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
       content::EvalJs(
           main_rfh,
           "sandbox2.contentDocument.getElementById('fallback').innerText"));
+}
+
+// Tests that a MimeHandlerViewGuest auto-rejects pointer lock requests.
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, RejectPointLock) {
+  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
+      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+
+  auto* extension = LoadTestExtension();
+  ASSERT_TRUE(extension);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/test_embedded.html"));
+
+  auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  // Make sure the load has started, before waiting for it to stop.
+  // This is a little hacky, but will unjank the test for now.
+  while (!guest_contents->IsLoading() &&
+         !guest_contents->GetController().GetLastCommittedEntry()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  EXPECT_TRUE(WaitForLoadStop(guest_contents));
+  content::RenderFrameHost* guest_rfh = guest_contents->GetMainFrame();
+  EXPECT_EQ(false, content::EvalJs(guest_rfh, R"code(
+    var promise = new Promise((resolve, reject) => {
+      document.addEventListener('pointerlockchange', () => resolve(true));
+      document.addEventListener('pointerlockerror', () => resolve(false));
+    });
+    document.body.requestPointerLock();
+    (async ()=> { return await promise; })();
+  )code",
+                                   content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                                   1 /* world_id */));
 }

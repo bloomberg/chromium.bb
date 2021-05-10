@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -127,8 +127,7 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   }
 
   auto watcher = std::make_unique<base::FilePathWatcher>();
-  bool success = watcher->Watch(path,
-                                true /*recursive*/,
+  bool success = watcher->Watch(path, base::FilePathWatcher::Type::kRecursive,
                                 base::Bind(&FileWatchManager::OnFilePathChanged,
                                            weak_factory_.GetWeakPtr()));
 

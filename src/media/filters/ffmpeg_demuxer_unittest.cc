@@ -779,7 +779,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(FFmpegDemuxerTest, TestAudioNegativeTimestamps) {
   // Note: This test will _crash_ the browser if negative timestamp
   // values are skipped, since this file is heavily truncated to avoid
@@ -795,7 +795,7 @@ TEST_F(FFmpegDemuxerTest, TestAudioNegativeTimestamps) {
   Read(audio, FROM_HERE, 104, 77619, true);
   Read(audio, FROM_HERE, 104, 103492, true);
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Similar to the test above, but using an opus clip plus h264 b-frames to
 // ensure we don't apply chained ogg workarounds to other content.
@@ -1653,10 +1653,10 @@ TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledAudioStream) {
 }
 
 namespace {
-void QuitLoop(base::Closure quit_closure,
+void QuitLoop(base::OnceClosure quit_closure,
               DemuxerStream::Type type,
               const std::vector<DemuxerStream*>& streams) {
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void DisableAndEnableDemuxerTracks(

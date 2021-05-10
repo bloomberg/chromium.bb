@@ -43,6 +43,7 @@ PASS childWindow.navigator.virtualKeyboard.boundingRect.x is 0
 PASS childWindow.navigator.virtualKeyboard.boundingRect.y is 0
 PASS childWindow.navigator.virtualKeyboard.ongeometrychange is null
 PASS childWindow.navigator.virtualKeyboard.overlaysContent is false
+PASS childWindow.navigator.webdriver is false
 PASS childWindow.onabort is null
 PASS childWindow.onafterprint is null
 PASS childWindow.onanimationend is null
@@ -53,6 +54,7 @@ PASS childWindow.onauxclick is null
 PASS childWindow.onbeforeinstallprompt is null
 PASS childWindow.onbeforeprint is null
 PASS childWindow.onbeforeunload is null
+PASS childWindow.onbeforexrselect is null
 PASS childWindow.onblur is null
 PASS childWindow.oncancel is null
 PASS childWindow.oncanplay is null

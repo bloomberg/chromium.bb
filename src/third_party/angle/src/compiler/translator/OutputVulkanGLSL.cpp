@@ -50,13 +50,17 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
 {
     const TType &type = variable->getType();
 
-    bool needsSetBinding =
-        IsSampler(type.getBasicType()) || type.isInterfaceBlock() || IsImage(type.getBasicType());
+    bool needsSetBinding = IsSampler(type.getBasicType()) ||
+                           (type.isInterfaceBlock() && (type.getQualifier() == EvqUniform ||
+                                                        type.getQualifier() == EvqBuffer)) ||
+                           IsImage(type.getBasicType()) || IsSubpassInputType(type.getBasicType());
     bool needsLocation = type.getQualifier() == EvqAttribute ||
                          type.getQualifier() == EvqVertexIn ||
                          type.getQualifier() == EvqFragmentOut || IsVarying(type.getQualifier());
+    bool needsInputAttachmentIndex = IsSubpassInputType(type.getBasicType());
 
-    if (!NeedsToWriteLayoutQualifier(type) && !needsSetBinding && !needsLocation)
+    if (!NeedsToWriteLayoutQualifier(type) && !needsSetBinding && !needsLocation &&
+        !needsInputAttachmentIndex)
     {
         return;
     }
@@ -103,16 +107,23 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
     {
         matrixPacking = getMatrixPackingString(layoutQualifier.matrixPacking);
     }
-
-    const char *separator = "";
+    const char *kCommaSeparator = ", ";
+    const char *separator       = "";
     out << "layout(";
+
+    // If the resource declaration is about input attachment, need to specify input_attachment_index
+    if (needsInputAttachmentIndex)
+    {
+        out << "input_attachment_index=" << layoutQualifier.inputAttachmentIndex;
+        separator = kCommaSeparator;
+    }
 
     // If the resource declaration requires set & binding layout qualifiers, specify arbitrary
     // ones.
     if (needsSetBinding)
     {
-        out << "set=0, binding=" << nextUnusedBinding();
-        separator = ", ";
+        out << separator << "set=0, binding=" << nextUnusedBinding();
+        separator = kCommaSeparator;
     }
 
     if (needsLocation)
@@ -122,8 +133,8 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
                                 ? nextUnusedInputLocation(locationCount)
                                 : nextUnusedOutputLocation(locationCount);
 
-        out << "location=" << location;
-        separator = ", ";
+        out << separator << "location=" << location;
+        separator = kCommaSeparator;
     }
 
     // Output the list of qualifiers already known at this stage, i.e. everything other than
@@ -133,12 +144,12 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
     if (blockStorage)
     {
         out << separator << blockStorage;
-        separator = ", ";
+        separator = kCommaSeparator;
     }
     if (matrixPacking)
     {
         out << separator << matrixPacking;
-        separator = ", ";
+        separator = kCommaSeparator;
     }
     if (!otherQualifiers.empty())
     {

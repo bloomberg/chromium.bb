@@ -146,6 +146,7 @@ component("events_base") {
   deps = [
     ":dom_keycode_converter",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
   ]
 
   public_deps = [
@@ -228,6 +229,8 @@ component("events") {
   if (is_win) {
     public += [
       "win/events_win_utils.h",
+      "win/keyboard_hook_monitor.h",
+      "win/keyboard_hook_observer.h",
       "win/system_event_state_lookup.h",
     ]
 
@@ -236,6 +239,8 @@ component("events") {
       "keycodes/platform_key_map_win.h",
       "win/events_win.cc",
       "win/events_win_utils.cc",
+      "win/keyboard_hook_monitor_impl.cc",
+      "win/keyboard_hook_monitor_impl.h",
       "win/keyboard_hook_win_base.cc",
       "win/keyboard_hook_win_base.h",
       "win/media_keyboard_hook_win.cc",
@@ -346,6 +351,8 @@ component("events") {
       "gestures/gesture_recognizer_impl.cc",
       "gestures/motion_event_aura.cc",
     ]
+
+    deps += [ "//build:chromeos_buildflags" ]
   }
 
   if (is_win || is_mac || use_x11 || use_ozone) {
@@ -437,6 +444,7 @@ component("gesture_detection") {
     ":events_base",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -483,7 +491,11 @@ static_library("test_support") {
   ]
 
   if (is_win) {
-    sources += [ "test/keyboard_layout_win.cc" ]
+    sources += [
+      "test/keyboard_hook_monitor_utils.cc",
+      "test/keyboard_hook_monitor_utils.h",
+      "test/keyboard_layout_win.cc",
+    ]
   }
 
   if (is_mac) {
@@ -503,6 +515,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//skia",
     "//ui/events/platform",
     "//ui/gfx",

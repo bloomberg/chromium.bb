@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
@@ -19,7 +18,7 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace syncer {
+namespace invalidation {
 
 class TopicInvalidationMap;
 
@@ -38,7 +37,7 @@ class FCMInvalidationListener
  public:
   class Delegate {
    public:
-    virtual ~Delegate();
+    virtual ~Delegate() = default;
 
     virtual void OnInvalidate(const TopicInvalidationMap& invalidations) = 0;
 
@@ -47,7 +46,9 @@ class FCMInvalidationListener
 
   explicit FCMInvalidationListener(
       std::unique_ptr<FCMSyncNetworkChannel> network_channel);
-
+  FCMInvalidationListener(const FCMInvalidationListener& other) = delete;
+  FCMInvalidationListener& operator=(const FCMInvalidationListener& other) =
+      delete;
   ~FCMInvalidationListener() override;
 
   void Start(Delegate* delegate,
@@ -65,9 +66,8 @@ class FCMInvalidationListener
   void ClearInstanceIDToken();
 
   // AckHandler implementation.
-  void Acknowledge(const Topic& topic,
-                   const syncer::AckHandle& handle) override;
-  void Drop(const Topic& topic, const syncer::AckHandle& handle) override;
+  void Acknowledge(const Topic& topic, const AckHandle& handle) override;
+  void Drop(const Topic& topic, const AckHandle& handle) override;
 
   // FCMSyncNetworkChannel::Observer implementation.
   void OnFCMChannelStateChanged(FcmChannelState state) override;
@@ -148,10 +148,8 @@ class FCMInvalidationListener
   bool topics_update_requested_ = false;
 
   base::WeakPtrFactory<FCMInvalidationListener> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FCMInvalidationListener);
 };
 
-}  // namespace syncer
+}  // namespace invalidation
 
 #endif  // COMPONENTS_INVALIDATION_IMPL_FCM_INVALIDATION_LISTENER_H_

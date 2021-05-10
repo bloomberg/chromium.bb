@@ -797,6 +797,7 @@ static void idtx8x8_neon(int32x4_t *in, int32x4_t *out, int bit, int col_num) {
     out[7 + 8 * i] = vshlq_n_s32(in[7 + 8 * i], 1);
   }
 }
+#if !CONFIG_REALTIME_ONLY
 static void idtx32x8_neon(int32x4_t *in, int32x4_t *out, int bit, int col_num) {
   (void)bit;
   (void)col_num;
@@ -811,6 +812,7 @@ static void idtx32x8_neon(int32x4_t *in, int32x4_t *out, int bit, int col_num) {
     out[j + 8 * 7] = vshlq_n_s32(in[j + 8 * 7], 1);
   }
 }
+#endif
 void av1_fwd_txfm2d_8x8_neon(const int16_t *input, int32_t *coeff, int stride,
                              TX_TYPE tx_type, int bd) {
   int32x4_t in[16], out[16];
@@ -1115,6 +1117,7 @@ static INLINE void load_buffer_4x8(const int16_t *input, int32x4_t *out,
   load_buffer_4x4(botL, out + 4, stride, flipud, fliplr, v_shift);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static INLINE void load_buffer_4x16(const int16_t *input, int32x4_t *out,
                                     const int stride, const int flipud,
                                     const int fliplr,
@@ -1132,6 +1135,7 @@ static INLINE void load_buffer_4x16(const int16_t *input, int32x4_t *out,
   load_buffer_4x8(topL, out, stride, flipud, fliplr, v_shift);
   load_buffer_4x8(botL, out + 8, stride, flipud, fliplr, v_shift);
 }
+#endif
 
 static INLINE void load_buffer_32x8n(const int16_t *input, int32x4_t *out,
                                      int stride, int flipud, int fliplr,
@@ -1793,6 +1797,7 @@ static const fwd_transform_1d_neon col_highbd_txfm8x8_arr[TX_TYPES] = {
   fadst8x8_neon,  // V_FLIPADST
   idtx8x8_neon    // H_FLIPADST
 };
+#if !CONFIG_REALTIME_ONLY
 static const fwd_transform_1d_neon row_highbd_txfm32x8_arr[TX_TYPES] = {
   fdct8x8_neon,   // DCT_DCT
   NULL,           // ADST_DCT
@@ -1811,6 +1816,7 @@ static const fwd_transform_1d_neon row_highbd_txfm32x8_arr[TX_TYPES] = {
   NULL,           // V_FLIPADST
   NULL,           // H_FLIPADST
 };
+#endif
 static const fwd_transform_1d_neon col_highbd_txfm4x8_arr[TX_TYPES] = {
   fdct4x8_neon,   // DCT_DCT
   fadst8x8_neon,  // ADST_DCT
@@ -3421,6 +3427,7 @@ static INLINE void transpose_8nx8n(const int32x4_t *input, int32x4_t *output,
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 void av1_fwd_txfm2d_4x16_neon(const int16_t *input, int32_t *coeff, int stride,
                               TX_TYPE tx_type, int bd) {
   (void)bd;
@@ -3452,6 +3459,7 @@ void av1_fwd_txfm2d_4x16_neon(const int16_t *input, int32_t *coeff, int stride,
     row_txfm(in + i, outcoeff128 + i * txfm_size_col, bitrow, txfm_size_col);
   }
 }
+#endif
 
 void av1_fwd_txfm2d_16x4_neon(const int16_t *input, int32_t *coeff, int stride,
                               TX_TYPE tx_type, int bd) {
@@ -3637,6 +3645,7 @@ void av1_fwd_txfm2d_32x16_neon(const int16_t *input, int32_t *coeff, int stride,
   (void)bd;
 }
 
+#if !CONFIG_REALTIME_ONLY
 void av1_fwd_txfm2d_8x32_neon(const int16_t *input, int32_t *coeff, int stride,
                               TX_TYPE tx_type, int bd) {
   int32x4_t in[64];
@@ -3707,6 +3716,7 @@ void av1_fwd_txfm2d_32x8_neon(const int16_t *input, int32_t *coeff, int stride,
   transpose_8nx8n(in, outcoef128, txfm_size_row, txfm_size_col);
   (void)bd;
 }
+#endif
 
 void av1_fwd_txfm2d_4x8_neon(const int16_t *input, int32_t *coeff, int stride,
                              TX_TYPE tx_type, int bd) {
@@ -3771,6 +3781,7 @@ void av1_fwd_txfm2d_8x4_neon(const int16_t *input, int32_t *coeff, int stride,
   (void)bd;
 }
 
+#if !CONFIG_REALTIME_ONLY
 void av1_fwd_txfm2d_16x64_neon(const int16_t *input, int32_t *coeff, int stride,
                                TX_TYPE tx_type, int bd) {
   int32x4_t in[256];
@@ -3855,6 +3866,7 @@ void av1_fwd_txfm2d_64x16_neon(const int16_t *input, int32_t *coeff, int stride,
   transpose_8nx8n(in, outcoeff128, txfm_size_row, 32);
   (void)bd;
 }
+#endif
 
 static void fdct64_new_neon(int32x4_t *input, int32x4_t *output,
                             const int8_t cos_bit, const int8_t *stage_range) {

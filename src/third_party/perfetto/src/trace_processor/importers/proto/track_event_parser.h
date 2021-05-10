@@ -17,6 +17,9 @@
 #ifndef SRC_TRACE_PROCESSOR_IMPORTERS_PROTO_TRACK_EVENT_PARSER_H_
 #define SRC_TRACE_PROCESSOR_IMPORTERS_PROTO_TRACK_EVENT_PARSER_H_
 
+#include <array>
+#include <map>
+
 #include "perfetto/base/build_config.h"
 #include "perfetto/protozero/field.h"
 #include "src/trace_processor/importers/common/args_tracker.h"
@@ -32,23 +35,22 @@ class Value;
 }
 
 namespace perfetto {
-
 namespace trace_processor {
 
 // Field numbers to be added to args table automatically via reflection
 //
 // TODO(ddrone): replace with a predicate on field id to import new fields
 // automatically
-static constexpr uint16_t kReflectFields[] = {24, 25, 26, 27, 28, 29, 32,
-                                              33, 34, 35, 38, 39, 40, 41,
-                                              42};
+static constexpr uint16_t kReflectFields[] = {24, 25, 26, 27, 28, 29, 32, 33,
+                                              34, 35, 38, 39, 40, 41, 42, 43};
 
 class PacketSequenceStateGeneration;
 class TraceProcessorContext;
+class TrackEventTracker;
 
 class TrackEventParser {
  public:
-  explicit TrackEventParser(TraceProcessorContext* context);
+  TrackEventParser(TraceProcessorContext*, TrackEventTracker*);
 
   void ParseTrackDescriptor(protozero::ConstBytes);
   UniquePid ParseProcessDescriptor(protozero::ConstBytes);
@@ -66,6 +68,7 @@ class TrackEventParser {
   void ParseCounterDescriptor(TrackId, protozero::ConstBytes);
 
   TraceProcessorContext* context_;
+  TrackEventTracker* track_event_tracker_;
 
   const StringId counter_name_thread_time_id_;
   const StringId counter_name_thread_instruction_count_id_;
@@ -101,7 +104,8 @@ class TrackEventParser {
 
   std::array<StringId, 38> chrome_legacy_ipc_class_ids_;
   std::array<StringId, 9> chrome_process_name_ids_;
-  std::array<StringId, 14> chrome_thread_name_ids_;
+  std::map<uint32_t /* ChromeThreadDescriptor::ThreadType */, StringId>
+      chrome_thread_name_ids_;
   std::array<StringId, 4> counter_unit_ids_;
 
   std::vector<uint16_t> reflect_fields_;

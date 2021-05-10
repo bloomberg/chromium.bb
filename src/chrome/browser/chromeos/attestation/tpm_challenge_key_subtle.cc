@@ -11,6 +11,8 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -19,8 +21,6 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +28,8 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -279,7 +280,7 @@ std::string TpmChallengeKeySubtleImpl::GetEmail() const {
 
   switch (key_type_) {
     case KEY_DEVICE:
-      return InstallAttributes::Get()->GetDomain();
+      return std::string();
     case KEY_USER:
       return GetAccountId().GetUserEmail();
   }
@@ -418,9 +419,11 @@ void TpmChallengeKeySubtleImpl::GetEnrollmentPreparationsCallback(
   }
 
   if (!AttestationClient::IsAttestationPrepared(reply)) {
-    CryptohomeClient::Get()->TpmIsEnabled(base::BindOnce(
-        &TpmChallengeKeySubtleImpl::PrepareKeyErrorHandlerCallback,
-        weak_factory_.GetWeakPtr()));
+    TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+        ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+        base::BindOnce(
+            &TpmChallengeKeySubtleImpl::PrepareKeyErrorHandlerCallback,
+            weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -433,15 +436,16 @@ void TpmChallengeKeySubtleImpl::GetEnrollmentPreparationsCallback(
 }
 
 void TpmChallengeKeySubtleImpl::PrepareKeyErrorHandlerCallback(
-    base::Optional<bool> is_tpm_enabled) {
+    const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!is_tpm_enabled.has_value()) {
+  if (reply.status() != ::tpm_manager::STATUS_SUCCESS) {
+    LOG(ERROR) << "Failed to get TPM status; status: " << reply.status();
     std::move(callback_).Run(Result::MakeError(ResultCode::kDbusError));
     return;
   }
 
-  if (is_tpm_enabled.value()) {
+  if (reply.is_enabled()) {
     std::move(callback_).Run(
         Result::MakeError(ResultCode::kResetRequiredError));
   } else {
@@ -544,7 +548,7 @@ void TpmChallengeKeySubtleImpl::PrepareKeyFinished(
     return;
   }
 
-  if (profile_ && will_register_key_) {
+  if (will_register_key_) {
     public_key_ = reply.public_key();
   }
 
@@ -644,6 +648,7 @@ void TpmChallengeKeySubtleImpl::RegisterKeyCallback(
       break;
   }
 
+  DCHECK(!public_key_.empty());
   key_permissions_manager->AllowKeyForUsage(
       base::BindOnce(&TpmChallengeKeySubtleImpl::MarkCorporateKeyCallback,
                      weak_factory_.GetWeakPtr()),

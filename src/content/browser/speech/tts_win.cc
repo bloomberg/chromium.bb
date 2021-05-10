@@ -262,12 +262,12 @@ void TtsPlatformImplBackgroundWorker::ProcessSpeech(
     // The TTS api allows a range of -10 to 10 for speech pitch:
     // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms720500(v%3Dvs.85)
     // Note that the API requires an integer value, so be sure to cast the pitch
-    // value to an int before calling NumberToString16. TODO(dtseng): cleanup if
+    // value to an int before calling NumberToWString. TODO(dtseng): cleanup if
     // we ever use any other properties that require xml.
     double adjusted_pitch =
         std::max<double>(-10, std::min<double>(params.pitch * 10 - 10, 10));
     std::wstring adjusted_pitch_string =
-        base::NumberToString16(static_cast<int>(adjusted_pitch));
+        base::NumberToWString(static_cast<int>(adjusted_pitch));
     prefix = L"<pitch absmiddle=\"" + adjusted_pitch_string + L"\">";
     suffix = L"</pitch>";
   }
@@ -530,8 +530,8 @@ void TtsPlatformImplWin::Speak(
 bool TtsPlatformImplWin::StopSpeaking() {
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::StopSpeaking,
-               paused_);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::StopSpeaking)
+      .WithArgs(paused_);
   paused_ = false;
 
   is_speaking_ = false;
@@ -546,7 +546,7 @@ void TtsPlatformImplWin::Pause() {
 
   if (paused_ || !is_speaking_)
     return;
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Pause);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Pause);
   paused_ = true;
 }
 
@@ -557,7 +557,7 @@ void TtsPlatformImplWin::Resume() {
   if (!paused_)
     return;
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Resume);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Resume);
   paused_ = false;
 }
 
@@ -576,7 +576,7 @@ void TtsPlatformImplWin::GetVoices(std::vector<VoiceData>* out_voices) {
 void TtsPlatformImplWin::Shutdown() {
   // This is required to ensures the object is released before the COM is
   // uninitialized. Otherwise, this is causing shutdown hangs.
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Shutdown);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Shutdown);
 }
 
 void TtsPlatformImplWin::OnInitializeComplete(bool success,
@@ -622,9 +622,9 @@ void TtsPlatformImplWin::ProcessSpeech(
     const std::string& parsed_utterance) {
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::ProcessSpeech,
-               utterance_id, lang, voice, params, std::move(on_speak_finished),
-               parsed_utterance);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::ProcessSpeech)
+      .WithArgs(utterance_id, lang, voice, params, std::move(on_speak_finished),
+                parsed_utterance);
 }
 
 TtsPlatformImplWin::TtsPlatformImplWin()
@@ -632,7 +632,7 @@ TtsPlatformImplWin::TtsPlatformImplWin()
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       worker_(worker_task_runner_, worker_task_runner_) {
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  worker_.Post(FROM_HERE, &TtsPlatformImplBackgroundWorker::Initialize);
+  worker_.AsyncCall(&TtsPlatformImplBackgroundWorker::Initialize);
 }
 
 // static

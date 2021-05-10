@@ -10,6 +10,7 @@
 #include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
 #include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/components/camera_app_ui/camera_app_window_state_controller.h"
@@ -30,6 +31,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
                                    arc::mojom::CameraIntentAction,
                                    const std::vector<uint8_t>&,
                                    HandleCameraResultCallback)>;
+  using SendBroadcastCallback =
+      base::RepeatingCallback<void(bool, std::string)>;
   using TabletModeMonitor = mojom::TabletModeMonitor;
   using ScreenStateMonitor = mojom::ScreenStateMonitor;
   using ExternalScreenMonitor = mojom::ExternalScreenMonitor;
@@ -37,6 +40,7 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
 
   CameraAppHelperImpl(chromeos::CameraAppUI* camera_app_ui,
                       CameraResultCallback camera_result_callback,
+                      SendBroadcastCallback send_broadcast_callback,
                       aura::Window* window);
   ~CameraAppHelperImpl() override;
   void Bind(mojo::PendingReceiver<mojom::CameraAppHelper> receiver);
@@ -65,6 +69,7 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
       SetCameraUsageMonitorCallback callback) override;
   void GetWindowStateController(
       GetWindowStateControllerCallback callback) override;
+  void SendNewCaptureBroadcast(bool is_video, const std::string& name) override;
 
  private:
   void CheckExternalScreenState();
@@ -88,7 +93,11 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
 
   CameraResultCallback camera_result_callback_;
 
+  SendBroadcastCallback send_broadcast_callback_;
+
   bool has_external_screen_;
+
+  base::Optional<uint32_t> pending_intent_id_;
 
   aura::Window* window_;
 

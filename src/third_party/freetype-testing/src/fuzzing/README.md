@@ -71,8 +71,6 @@ https://www.freetype.org/freetype2/docs/reference/ft2-version.html
 |       | Function                       | Fuzzed             | Resources |
 | ----- | ------------------------------ | :----------------: | --------- |
 | 1.1.1 | `FT_Library_Version`           | :heavy_check_mark: | Library   |
-| 1.1.2 | `FT_Face_CheckTrueTypePatents` | :heavy_check_mark: | Face      |
-| 1.1.3 | `FT_Face_SetUnpatentedHinting` | :heavy_check_mark: | Face      |
 
 ### Base Interface
 

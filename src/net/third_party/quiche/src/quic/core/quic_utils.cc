@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/quic_utils.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -12,16 +12,16 @@
 #include "absl/base/macros.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_prefetch.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_prefetch.h"
+#include "quic/platform/api/quic_uint128.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 namespace {
@@ -170,7 +170,7 @@ const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
     RETURN_STRING_LITERAL(RTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PROBE_RETRANSMITTED);
-    RETURN_STRING_LITERAL(NOT_CONTRIBUTING_RTT)
+    RETURN_STRING_LITERAL(NOT_CONTRIBUTING_RTT);
   }
   return "INVALID_SENT_PACKET_STATE";
 }
@@ -244,8 +244,8 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
     iov_offset -= iov[iovnum].iov_len;
     ++iovnum;
   }
-  DCHECK_LE(iovnum, iov_count);
-  DCHECK_LE(iov_offset, iov[iovnum].iov_len);
+  QUICHE_DCHECK_LE(iovnum, iov_count);
+  QUICHE_DCHECK_LE(iov_offset, iov[iovnum].iov_len);
   if (iovnum >= iov_count || buffer_length == 0) {
     return;
   }
@@ -351,6 +351,10 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
       return PTO_RETRANSMITTED;
     case PROBING_RETRANSMISSION:
       return PROBE_RETRANSMITTED;
+    case PATH_RETRANSMISSION:
+      return NOT_CONTRIBUTING_RTT;
+    case ALL_INITIAL_RETRANSMISSION:
+      return UNACKABLE;
     default:
       QUIC_BUG << retransmission_type << " is not a retransmission_type";
       return UNACKABLE;
@@ -393,7 +397,7 @@ bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  DCHECK(!VersionUsesHttp3(version));
+  QUICHE_DCHECK(!VersionUsesHttp3(version));
   return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
@@ -431,7 +435,7 @@ bool QuicUtils::IsOutgoingStreamId(ParsedQuicVersion version,
 // static
 bool QuicUtils::IsBidirectionalStreamId(QuicStreamId id,
                                         ParsedQuicVersion version) {
-  DCHECK(version.HasIetfQuicFrames());
+  QUICHE_DCHECK(version.HasIetfQuicFrames());
   return id % 4 < 2;
 }
 
@@ -440,26 +444,26 @@ StreamType QuicUtils::GetStreamType(QuicStreamId id,
                                     Perspective perspective,
                                     bool peer_initiated,
                                     ParsedQuicVersion version) {
-  DCHECK(version.HasIetfQuicFrames());
+  QUICHE_DCHECK(version.HasIetfQuicFrames());
   if (IsBidirectionalStreamId(id, version)) {
     return BIDIRECTIONAL;
   }
 
   if (peer_initiated) {
     if (perspective == Perspective::IS_SERVER) {
-      DCHECK_EQ(2u, id % 4);
+      QUICHE_DCHECK_EQ(2u, id % 4);
     } else {
-      DCHECK_EQ(Perspective::IS_CLIENT, perspective);
-      DCHECK_EQ(3u, id % 4);
+      QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, perspective);
+      QUICHE_DCHECK_EQ(3u, id % 4);
     }
     return READ_UNIDIRECTIONAL;
   }
 
   if (perspective == Perspective::IS_SERVER) {
-    DCHECK_EQ(3u, id % 4);
+    QUICHE_DCHECK_EQ(3u, id % 4);
   } else {
-    DCHECK_EQ(Perspective::IS_CLIENT, perspective);
-    DCHECK_EQ(2u, id % 4);
+    QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, perspective);
+    QUICHE_DCHECK_EQ(2u, id % 4);
   }
   return WRITE_UNIDIRECTIONAL;
 }
@@ -661,7 +665,7 @@ EncryptionLevel QuicUtils::GetEncryptionLevel(
     case APPLICATION_DATA:
       return ENCRYPTION_FORWARD_SECURE;
     default:
-      DCHECK(false);
+      QUICHE_DCHECK(false);
       return NUM_ENCRYPTION_LEVELS;
   }
 }

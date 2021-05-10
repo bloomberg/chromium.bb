@@ -62,15 +62,18 @@ void TriggerScriptBridgeAndroid::StartTriggerScript(
         reinterpret_cast<void*>(jservice_request_sender)));
     // TODO(b/171776026): consider exposing this in proto.
     disable_header_animations_for_testing_ = true;
-  } else if (trigger_context->GetBase64TriggerScriptsResponseProto()
+  } else if (trigger_context->GetScriptParameters()
+                 .GetBase64TriggerScriptsResponseProto()
                  .has_value()) {
     std::string response;
-    if (!base::Base64UrlDecode(
-            trigger_context->GetBase64TriggerScriptsResponseProto().value(),
-            base::Base64UrlDecodePolicy::IGNORE_PADDING, &response)) {
+    if (!base::Base64UrlDecode(trigger_context->GetScriptParameters()
+                                   .GetBase64TriggerScriptsResponseProto()
+                                   .value(),
+                               base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                               &response)) {
       LOG(ERROR) << "Failed to base64-decode trigger scripts response";
       Metrics::RecordLiteScriptFinished(
-          ukm::UkmRecorder::Get(), web_contents,
+          ukm::UkmRecorder::Get(), web_contents, UNSPECIFIED_TRIGGER_UI_TYPE,
           Metrics::LiteScriptFinishedState::LITE_SCRIPT_BASE64_DECODING_ERROR);
       return;
     }

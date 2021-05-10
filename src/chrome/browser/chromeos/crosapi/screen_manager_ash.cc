@@ -14,8 +14,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/crosapi/cpp/bitmap.h"
-#include "chromeos/crosapi/cpp/bitmap_util.h"
 #include "ui/aura/window_observer.h"
 #include "ui/snapshot/snapshot.h"
 
@@ -206,34 +204,17 @@ void ScreenManagerAsh::BindReceiver(
 
 void ScreenManagerAsh::DeprecatedTakeScreenSnapshot(
     DeprecatedTakeScreenSnapshotCallback callback) {
-  GetScreenCapturerImpl()->TakeSnapshot(
-      GetScreenCapturerImpl()->GetPrimaryRootWindowId(),
-      base::BindOnce(
-          [](DeprecatedTakeScreenSnapshotCallback callback, bool success,
-             const SkBitmap& bitmap) {
-            // Ignore |success| param.
-            std::move(callback).Run(BitmapFromSkBitmap(bitmap));
-          },
-          std::move(callback)));
+  NOTIMPLEMENTED();
 }
-
 void ScreenManagerAsh::DeprecatedListWindows(
     DeprecatedListWindowsCallback callback) {
-  GetWindowCapturerImpl()->ListSources(std::move(callback));
+  NOTIMPLEMENTED();
 }
-
 void ScreenManagerAsh::DeprecatedTakeWindowSnapshot(
     uint64_t id,
     DeprecatedTakeWindowSnapshotCallback callback) {
-  GetWindowCapturerImpl()->TakeSnapshot(
-      id, base::BindOnce(
-              [](DeprecatedTakeWindowSnapshotCallback callback, bool success,
-                 const SkBitmap& bitmap) {
-                std::move(callback).Run(success, BitmapFromSkBitmap(bitmap));
-              },
-              std::move(callback)));
+  NOTIMPLEMENTED();
 }
-
 void ScreenManagerAsh::GetScreenCapturer(
     mojo::PendingReceiver<mojom::SnapshotCapturer> receiver) {
   GetScreenCapturerImpl()->BindReceiver(std::move(receiver));

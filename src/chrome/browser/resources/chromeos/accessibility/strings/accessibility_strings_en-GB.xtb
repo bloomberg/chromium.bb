@@ -150,6 +150,7 @@
 <translation id="2045055672832940894">No previous control</translation>
 <translation id="2045606329038304310">Form field control</translation>
 <translation id="2063539687800151747">Epigraph</translation>
+<translation id="2074531330963286860">Actions available. Press Search+Period to view</translation>
 <translation id="2086961585857038472">Next word</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
@@ -914,6 +915,7 @@
 <translation id="7810781339813764006">Next Group</translation>
 <translation id="7813616274030162878">Switch Access Menu</translation>
 <translation id="7839679365527550018">Previous Word</translation>
+<translation id="7842115774595115751">Enable navigation controls</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7851816175263618915">Some punctuation</translation>
 <translation id="7871691770940645922">Virtual Braille Display</translation>
@@ -1057,6 +1059,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8989104346085848538">To stop any current ChromeVox speech, press the control key.</translation>
+<translation id="8993737615451556423">Provides controls to speed up, slow down and pause the reading voice</translation>
 <translation id="9014206344398081366">ChromeVox tutorial</translation>
 <translation id="9040132695316389094">Heading 1</translation>
 <translation id="9061884144798498064">Select an 8-dot braille table:</translation>

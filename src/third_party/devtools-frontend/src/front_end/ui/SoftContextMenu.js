@@ -28,10 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// @ts-nocheck
-// TODO(crbug.com/1011811): Enable TypeScript compiler checks
-
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as ThemeSupport from '../theme_support/theme_support.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
@@ -39,13 +37,35 @@ import {AnchorBehavior, GlassPane, MarginBehavior, PointerEventsBehavior, SizeBe
 import {Icon} from './Icon.js';
 import {createTextChild, ElementFocusRestorer} from './UIUtils.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  *@description Text exposed to screen readers on checked items.
+  */
+  checked: 'checked',
+  /**
+  *@description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
+  */
+  unchecked: 'unchecked',
+  /**
+  *@description Accessibility label for checkable SoftContextMenuItems with shortcuts
+  *@example {Open File} PH1
+  *@example {Ctrl + P} PH2
+  *@example {checked} PH3
+  */
+  sSS: '{PH1}, {PH2}, {PH3}',
+  /**
+  *@description Generic text with two placeholders separated by a comma
+  *@example {1 613 680} PH1
+  *@example {44 %} PH2
+  */
+  sS: '{PH1}, {PH2}',
+};
+const str_ = i18n.i18n.registerUIStrings('ui/SoftContextMenu.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SoftContextMenu {
   /**
    * @param {!Array.<!SoftContextMenuDescriptor>} items
-   * @param {function(string):void} itemSelectedCallback
+   * @param {function(number):void} itemSelectedCallback
    * @param {!SoftContextMenu=} parentMenu
    */
   constructor(items, itemSelectedCallback, parentMenu) {
@@ -54,6 +74,11 @@ export class SoftContextMenu {
     this._parentMenu = parentMenu;
     /** @type {?HTMLElement} */
     this._highlightedMenuItemElement = null;
+
+    /**
+     * @type {!WeakMap<!HTMLElement, !ElementMenuDetails>}
+     */
+    this.detailsForElementMap = new WeakMap();
   }
 
   /**
@@ -154,7 +179,7 @@ export class SoftContextMenu {
       return this._createSubMenu(item);
     }
 
-    const menuItemElement = document.createElement('div');
+    const menuItemElement = /** @type {!HTMLElement} */ (document.createElement('div'));
     menuItemElement.classList.add('soft-context-menu-item');
     menuItemElement.tabIndex = -1;
     ARIAUtils.markAsMenuItem(menuItemElement);
@@ -163,11 +188,20 @@ export class SoftContextMenu {
     if (!item.checked) {
       checkMarkElement.style.opacity = '0';
     }
+    /** @type {!ElementMenuDetails} */
+    const detailsForElement = {
+      actionId: undefined,
+      isSeparator: undefined,
+      customElement: undefined,
+      subItems: undefined,
+      subMenuTimer: undefined,
+    };
 
     if (item.element) {
       const wrapper = menuItemElement.createChild('div', 'soft-context-menu-custom-item');
       wrapper.appendChild(item.element);
-      menuItemElement._customElement = item.element;
+      detailsForElement.customElement = /** @type {!HTMLElement} */ (item.element);
+      this.detailsForElementMap.set(menuItemElement, detailsForElement);
       return menuItemElement;
     }
 
@@ -175,7 +209,7 @@ export class SoftContextMenu {
       menuItemElement.classList.add('soft-context-menu-disabled');
     }
     createTextChild(menuItemElement, item.label || '');
-    menuItemElement.createChild('span', 'soft-context-menu-shortcut').textContent = item.shortcut;
+    menuItemElement.createChild('span', 'soft-context-menu-shortcut').textContent = item.shortcut || '';
 
     menuItemElement.addEventListener('mousedown', this._menuItemMouseDown.bind(this), false);
     menuItemElement.addEventListener('mouseup', this._menuItemMouseUp.bind(this), false);
@@ -185,22 +219,23 @@ export class SoftContextMenu {
     menuItemElement.addEventListener(
         'mouseleave', /** @type {!EventListener} */ (this._menuItemMouseLeave.bind(this)), false);
 
-    menuItemElement._actionId = item.id;
+    detailsForElement.actionId = item.id;
 
     let accessibleName = item.label || '';
 
     if (item.type === 'checkbox') {
-      const checkedState = item.checked ? ls`checked` : ls`unchecked`;
+      const checkedState = item.checked ? i18nString(UIStrings.checked) : i18nString(UIStrings.unchecked);
       if (item.shortcut) {
-        accessibleName = ls`${item.label}, ${item.shortcut}, ${checkedState}`;
+        accessibleName = i18nString(UIStrings.sSS, {PH1: item.label, PH2: item.shortcut, PH3: checkedState});
       } else {
-        accessibleName = ls`${item.label}, ${checkedState}`;
+        accessibleName = i18nString(UIStrings.sS, {PH1: item.label, PH2: checkedState});
       }
     } else if (item.shortcut) {
-      accessibleName = ls`${item.label}, ${item.shortcut}`;
+      accessibleName = i18nString(UIStrings.sS, {PH1: item.label, PH2: item.shortcut});
     }
     ARIAUtils.setAccessibleName(menuItemElement, accessibleName);
 
+    this.detailsForElementMap.set(menuItemElement, detailsForElement);
     return menuItemElement;
   }
 
@@ -208,11 +243,17 @@ export class SoftContextMenu {
    * @param {!SoftContextMenuDescriptor} item
    */
   _createSubMenu(item) {
-    const menuItemElement = document.createElement('div');
+    const menuItemElement = /** @type {!HTMLElement} */ (document.createElement('div'));
     menuItemElement.classList.add('soft-context-menu-item');
-    menuItemElement._subItems = item.subItems;
     menuItemElement.tabIndex = -1;
     ARIAUtils.markAsMenuItemSubMenu(menuItemElement);
+    this.detailsForElementMap.set(menuItemElement, {
+      subItems: item.subItems,
+      actionId: undefined,
+      isSeparator: undefined,
+      customElement: undefined,
+      subMenuTimer: undefined,
+    });
 
     // Occupy the same space on the left in all items.
     const checkMarkElement = Icon.create('smallicon-checkmark', 'soft-context-menu-item-checkmark');
@@ -245,9 +286,15 @@ export class SoftContextMenu {
   }
 
   _createSeparator() {
-    const separatorElement = document.createElement('div');
+    const separatorElement = /** @type {!HTMLElement} */ (document.createElement('div'));
     separatorElement.classList.add('soft-context-menu-separator');
-    separatorElement._isSeparator = true;
+    this.detailsForElementMap.set(separatorElement, {
+      subItems: undefined,
+      actionId: undefined,
+      isSeparator: true,
+      customElement: undefined,
+      subMenuTimer: undefined,
+    });
     separatorElement.createChild('div', 'separator-line');
     return separatorElement;
   }
@@ -284,14 +331,17 @@ export class SoftContextMenu {
    * @param {!Event} event
    */
   _triggerAction(menuItemElement, event) {
-    if (!menuItemElement._subItems) {
-      this._root().discard();
-      event.consume(true);
-      if (typeof menuItemElement._actionId !== 'undefined') {
-        this._itemSelectedCallback(menuItemElement._actionId);
-        delete menuItemElement._actionId;
+    const detailsForElement = this.detailsForElementMap.get(menuItemElement);
+    if (detailsForElement) {
+      if (!detailsForElement.subItems) {
+        this._root().discard();
+        event.consume(true);
+        if (typeof detailsForElement.actionId !== 'undefined') {
+          this._itemSelectedCallback(detailsForElement.actionId);
+          delete detailsForElement.actionId;
+        }
+        return;
       }
-      return;
     }
 
     this._showSubMenu(menuItemElement);
@@ -302,9 +352,13 @@ export class SoftContextMenu {
    * @param {!HTMLElement} menuItemElement
    */
   _showSubMenu(menuItemElement) {
-    if (menuItemElement._subMenuTimer) {
-      clearTimeout(menuItemElement._subMenuTimer);
-      delete menuItemElement._subMenuTimer;
+    const detailsForElement = this.detailsForElementMap.get(menuItemElement);
+    if (!detailsForElement) {
+      return;
+    }
+    if (detailsForElement.subMenuTimer) {
+      window.clearTimeout(detailsForElement.subMenuTimer);
+      delete detailsForElement.subMenuTimer;
     }
     if (this._subMenu || !this._document) {
       return;
@@ -312,7 +366,10 @@ export class SoftContextMenu {
 
     this._activeSubMenuElement = menuItemElement;
     ARIAUtils.setExpanded(menuItemElement, true);
-    this._subMenu = new SoftContextMenu(menuItemElement._subItems, this._itemSelectedCallback, this);
+    if (!detailsForElement.subItems) {
+      return;
+    }
+    this._subMenu = new SoftContextMenu(detailsForElement.subItems, this._itemSelectedCallback, this);
     const anchorBox = menuItemElement.boxInWindow();
     // Adjust for padding.
     anchorBox.y -= 5;
@@ -352,103 +409,150 @@ export class SoftContextMenu {
     if (this._highlightedMenuItemElement === menuItemElement) {
       return;
     }
-
     if (this._subMenu) {
       this._subMenu.discard();
     }
     if (this._highlightedMenuItemElement) {
+      const detailsForElement = this.detailsForElementMap.get(this._highlightedMenuItemElement);
       this._highlightedMenuItemElement.classList.remove('force-white-icons');
       this._highlightedMenuItemElement.classList.remove('soft-context-menu-item-mouse-over');
-      if (this._highlightedMenuItemElement._subItems && this._highlightedMenuItemElement._subMenuTimer) {
-        clearTimeout(this._highlightedMenuItemElement._subMenuTimer);
-        delete this._highlightedMenuItemElement._subMenuTimer;
+      if (detailsForElement && detailsForElement.subItems && detailsForElement.subMenuTimer) {
+        window.clearTimeout(detailsForElement.subMenuTimer);
+        delete detailsForElement.subMenuTimer;
       }
     }
+
     this._highlightedMenuItemElement = menuItemElement;
     if (this._highlightedMenuItemElement) {
       if (ThemeSupport.ThemeSupport.instance().hasTheme() || Host.Platform.isMac()) {
         this._highlightedMenuItemElement.classList.add('force-white-icons');
       }
       this._highlightedMenuItemElement.classList.add('soft-context-menu-item-mouse-over');
-      if (this._highlightedMenuItemElement._customElement) {
-        this._highlightedMenuItemElement._customElement.focus();
+      const detailsForElement = this.detailsForElementMap.get(this._highlightedMenuItemElement);
+      if (detailsForElement && detailsForElement.customElement) {
+        detailsForElement.customElement.focus();
       } else {
         this._highlightedMenuItemElement.focus();
       }
-      if (scheduleSubMenu && this._highlightedMenuItemElement._subItems &&
-          !this._highlightedMenuItemElement._subMenuTimer) {
-        this._highlightedMenuItemElement._subMenuTimer =
-            setTimeout(this._showSubMenu.bind(this, this._highlightedMenuItemElement), 150);
+      if (scheduleSubMenu && detailsForElement && detailsForElement.subItems && !detailsForElement.subMenuTimer) {
+        detailsForElement.subMenuTimer =
+            window.setTimeout(this._showSubMenu.bind(this, this._highlightedMenuItemElement), 150);
       }
     }
   }
 
   _highlightPrevious() {
-    let menuItemElement = this._highlightedMenuItemElement ? this._highlightedMenuItemElement.previousSibling :
-                                                             this._contextMenuElement.lastChild;
-    while (menuItemElement &&
-           (menuItemElement._isSeparator || menuItemElement.classList.contains('soft-context-menu-disabled'))) {
+    let menuItemElement = this._highlightedMenuItemElement ?
+        this._highlightedMenuItemElement.previousSibling :
+        this._contextMenuElement ? this._contextMenuElement.lastChild : null;
+    let menuItemDetails =
+        menuItemElement ? this.detailsForElementMap.get(/** @type {!HTMLElement} */ (menuItemElement)) : undefined;
+    while (menuItemElement && menuItemDetails &&
+           (menuItemDetails.isSeparator ||
+            /** @type {!HTMLElement} */ (menuItemElement).classList.contains('soft-context-menu-disabled'))) {
       menuItemElement = menuItemElement.previousSibling;
+      menuItemDetails =
+          menuItemElement ? this.detailsForElementMap.get(/** @type {!HTMLElement} */ (menuItemElement)) : undefined;
     }
     if (menuItemElement) {
-      this._highlightMenuItem(menuItemElement, false);
+      this._highlightMenuItem(/** @type {!HTMLElement} */ (menuItemElement), false);
     }
   }
 
   _highlightNext() {
-    let menuItemElement = this._highlightedMenuItemElement ? this._highlightedMenuItemElement.nextSibling :
-                                                             this._contextMenuElement.firstChild;
+    let menuItemElement = this._highlightedMenuItemElement ?
+        this._highlightedMenuItemElement.nextSibling :
+        this._contextMenuElement ? this._contextMenuElement.firstChild : null;
+    let menuItemDetails =
+        menuItemElement ? this.detailsForElementMap.get(/** @type {!HTMLElement} */ (menuItemElement)) : undefined;
     while (menuItemElement &&
-           (menuItemElement._isSeparator || menuItemElement.classList.contains('soft-context-menu-disabled'))) {
+           (menuItemDetails && menuItemDetails.isSeparator ||
+            /** @type {!HTMLElement} */ (menuItemElement).classList.contains('soft-context-menu-disabled'))) {
       menuItemElement = menuItemElement.nextSibling;
+      menuItemDetails =
+          menuItemElement ? this.detailsForElementMap.get(/** @type {!HTMLElement} */ (menuItemElement)) : undefined;
     }
     if (menuItemElement) {
-      this._highlightMenuItem(menuItemElement, false);
+      this._highlightMenuItem(/** @type {!HTMLElement} */ (menuItemElement), false);
     }
   }
 
+  /**
+   *
+   * @param {!Event} event
+   */
   _menuKeyDown(event) {
-    switch (event.key) {
+    const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+    /**
+     * @this {!SoftContextMenu}
+     */
+    function onEnterOrSpace() {
+      if (!this._highlightedMenuItemElement) {
+        return;
+      }
+      const detailsForElement = this.detailsForElementMap.get(this._highlightedMenuItemElement);
+      if (!detailsForElement || detailsForElement.customElement) {
+        // The custom element will handle the event, so return early and do not consume it.
+        return;
+      }
+      this._triggerAction(this._highlightedMenuItemElement, keyboardEvent);
+      if (detailsForElement.subItems && this._subMenu) {
+        this._subMenu._highlightNext();
+      }
+      keyboardEvent.consume(true);
+    }
+
+    switch (keyboardEvent.key) {
       case 'ArrowUp':
         this._highlightPrevious();
+        keyboardEvent.consume(true);
         break;
       case 'ArrowDown':
         this._highlightNext();
+        keyboardEvent.consume(true);
         break;
       case 'ArrowLeft':
         if (this._parentMenu) {
           this._highlightMenuItem(null, false);
           this.discard();
         }
+        keyboardEvent.consume(true);
         break;
-      case 'ArrowRight':
+      case 'ArrowRight': {
         if (!this._highlightedMenuItemElement) {
           break;
         }
-        if (this._highlightedMenuItemElement._subItems) {
+        const detailsForElement = this.detailsForElementMap.get(this._highlightedMenuItemElement);
+        if (detailsForElement && detailsForElement.subItems) {
           this._showSubMenu(this._highlightedMenuItemElement);
-          this._subMenu._highlightNext();
+          if (this._subMenu) {
+            this._subMenu._highlightNext();
+          }
         }
+        keyboardEvent.consume(true);
         break;
+      }
       case 'Escape':
         this.discard();
+        keyboardEvent.consume(true);
         break;
+      /**
+       * Important: we don't consume the event by default for `Enter` or `Space`
+       * key events, as if there's a custom sub menu we pass the event onto
+       * that.
+       */
       case 'Enter':
-        if (!isEnterKey(event)) {
+        if (!(keyboardEvent.key === 'Enter')) {
           return;
         }
-      // Fall through
-      case ' ':  // Space
-        if (!this._highlightedMenuItemElement || this._highlightedMenuItemElement._customElement) {
-          return;
-        }
-        this._triggerAction(this._highlightedMenuItemElement, event);
-        if (this._highlightedMenuItemElement._subItems && this._subMenu) {
-          this._subMenu._highlightNext();
-        }
+        onEnterOrSpace.call(this);
         break;
+      case ' ':
+        onEnterOrSpace.call(this);
+        break;
+      default:
+        keyboardEvent.consume(true);
     }
-    event.consume(true);
   }
 }
 
@@ -465,3 +569,15 @@ export class SoftContextMenu {
 }} */
 // @ts-ignore typedef
 export let SoftContextMenuDescriptor;
+
+/** @typedef
+{{
+    customElement: (HTMLElement|undefined),
+    isSeparator: (boolean|undefined),
+    subMenuTimer: (number|undefined),
+    subItems: (!Array.<!SoftContextMenuDescriptor>|undefined),
+    actionId: (number|undefined),
+}} */
+// @ts-ignore typedef
+// eslint-disable-next-line no-unused-vars
+let ElementMenuDetails;

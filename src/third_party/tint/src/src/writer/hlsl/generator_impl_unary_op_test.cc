@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/unary_op_expression.h"
+#include "src/program.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -33,14 +33,16 @@ inline std::ostream& operator<<(std::ostream& out, UnaryOpData data) {
   out << data.op;
   return out;
 }
-using HlslUnaryOpTest = TestHelperBase<testing::TestWithParam<UnaryOpData>>;
+using HlslUnaryOpTest = TestParamHelper<UnaryOpData>;
 TEST_P(HlslUnaryOpTest, Emit) {
   auto params = GetParam();
 
-  auto expr = std::make_unique<ast::IdentifierExpression>("expr");
-  ast::UnaryOpExpression op(params.op, std::move(expr));
+  auto* expr = Expr("expr");
+  auto* op = create<ast::UnaryOpExpression>(params.op, expr);
 
-  ASSERT_TRUE(gen().EmitExpression(pre(), out(), &op)) << gen().error();
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitExpression(pre, out, op)) << gen.error();
   EXPECT_EQ(result(), std::string(params.name) + "(expr)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_UnaryOp,

@@ -1429,6 +1429,9 @@ TEST_P(VertexAttributeTest, DrawArraysWithUnalignedShortBufferOffset)
 // draw.
 TEST_P(VertexAttributeTest, DrawArraysWithShortBufferOffsetNotMultipleOf4)
 {
+    // http://anglebug.com/5399
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsVulkan());
+
     initBasicProgram();
     glUseProgram(mProgram);
 
@@ -3139,6 +3142,9 @@ TEST_P(VertexAttributeTest, AliasingVectorAttribLocations)
     // http://anglebug.com/3467
     ANGLE_SKIP_TEST_IF(IsD3D());
 
+    // TODO(anglebug.com/5491): iOS GLSL compiler rejects attribute aliasing.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     constexpr char kVS[] = R"(attribute vec4 position;
 // 4 aliasing attributes
 attribute float attr0f;
@@ -3295,6 +3301,9 @@ TEST_P(VertexAttributeTest, AliasingMatrixAttribLocations)
 
     // http://anglebug.com/3467
     ANGLE_SKIP_TEST_IF(IsD3D());
+
+    // TODO(anglebug.com/5491): iOS GLSL compiler rejects attribute aliasing.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr char kVS[] = R"(attribute vec4 position;
 // attributes aliasing location 0 and above
@@ -3527,6 +3536,9 @@ TEST_P(VertexAttributeTest, AliasingVectorAttribLocationsDifferingPrecisions)
 
     // http://anglebug.com/3467
     ANGLE_SKIP_TEST_IF(IsD3D());
+
+    // TODO(anglebug.com/5491): iOS GLSL compiler rejects attribute aliasing.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr char kVS[] = R"(attribute vec4 position;
 // aliasing attributes.

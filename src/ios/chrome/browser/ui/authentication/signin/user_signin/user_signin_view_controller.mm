@@ -6,14 +6,12 @@
 
 #import <MaterialComponents/MaterialActivityIndicator.h>
 
-#include "base/feature_list.h"
+#import "base/check_op.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/gradient_view.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -193,6 +191,7 @@ enum AuthenticationButtonType {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  DCHECK(self.unifiedConsentViewController);
   self.view.backgroundColor = self.systemBackgroundColor;
 
   self.containerView = [[UIView alloc] init];
@@ -307,7 +306,7 @@ enum AuthenticationButtonType {
 #pragma mark - Properties
 
 - (UIColor*)systemBackgroundColor {
-  return UIColor.cr_systemBackgroundColor;
+  return [UIColor colorNamed:kPrimaryBackgroundColor];
 }
 
 - (NSString*)confirmationButtonTitle {
@@ -456,15 +455,11 @@ enum AuthenticationButtonType {
 // Enables pointer support for the button if it is supported on the iOS version.
 - (void)maybeEnablePointerSupportWithButton:(UIButton*)button {
   DCHECK(button);
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       button.pointerInteractionEnabled = YES;
       button.pointerStyleProvider =
           CreateOpaqueOrTransparentButtonPointerStyleProvider();
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 }
 
 - (void)setBlueBackgroundStylingWithButton:(UIButton*)button {

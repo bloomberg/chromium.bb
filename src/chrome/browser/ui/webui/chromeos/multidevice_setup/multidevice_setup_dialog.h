@@ -46,7 +46,10 @@ class MultiDeviceSetupDialog : public SystemWebDialogDelegate {
   void OnDialogClosed(const std::string& json_retval) override;
 
  private:
+  GURL CreateMultiDeviceSetupURL();
+
   static MultiDeviceSetupDialog* current_instance_;
+  static gfx::NativeWindow containing_window_;
 
   // List of callbacks that have registered themselves to be invoked once this
   // dialog is closed.

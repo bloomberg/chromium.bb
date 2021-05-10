@@ -3,15 +3,37 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from '../sdk/sdk.js';
 import * as UI from '../ui/ui.js';
 
 import {ElementsPanel} from './ElementsPanel.js';
 
-/**
- * @unrestricted
- */
+export const UIStrings = {
+  /**
+  * @description Prompt text for a text field in the Classes Pane Widget of the Elements panel.
+  * Class refers to a CSS class.
+  */
+  addNewClass: 'Add new class',
+  /**
+  * @description Screen reader announcement string when adding a CSS class via the Classes Pane Widget.
+  * @example {vbox flex-auto} PH1
+  */
+  classesSAdded: 'Classes {PH1} added',
+  /**
+  * @description Screen reader announcement string when adding a class via the Classes Pane Widget.
+  * @example {title-container} PH1
+  */
+  classSAdded: 'Class {PH1} added',
+  /**
+  * @description Accessible title read by screen readers for the Classes Pane Widget of the Elements
+  * panel. Element is a HTML DOM Element and classes refers to CSS classes.
+  */
+  elementClasses: 'Element Classes',
+};
+const str_ = i18n.i18n.registerUIStrings('elements/ClassesPaneWidget.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ClassesPaneWidget extends UI.Widget.Widget {
   constructor() {
     super(true);
@@ -26,8 +48,8 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     this._prompt.setAutocompletionTimeout(0);
     this._prompt.renderAsBlock();
 
-    const proxyElement = this._prompt.attach(this._input);
-    this._prompt.setPlaceholder(Common.UIString.UIString('Add new class'));
+    const proxyElement = /** @type {!HTMLElement} */ (this._prompt.attach(this._input));
+    this._prompt.setPlaceholder(i18nString(UIStrings.addNewClass));
     this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this._onTextChanged, this);
     proxyElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
@@ -52,14 +74,14 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
   }
 
   /**
-   * @param {!Event} event
+   * @param {!KeyboardEvent} event
    */
   _onKeyDown(event) {
-    if (!isEnterKey(event) && !isEscKey(event)) {
+    if (!(event.key === 'Enter') && !isEscKey(event)) {
       return;
     }
 
-    if (isEnterKey(event)) {
+    if (event.key === 'Enter') {
       event.consume();
       if (this._prompt.acceptAutoComplete()) {
         return;
@@ -95,8 +117,8 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
 
     // annoucementString is used for screen reader to announce that the class(es) has been added successfully.
     const joinClassString = classNames.join(' ');
-    const announcementString =
-        classNames.length > 1 ? ls`Classes ${joinClassString} added.` : ls`Class ${joinClassString} added.`;
+    const announcementString = classNames.length > 1 ? i18nString(UIStrings.classesSAdded, {PH1: joinClassString}) :
+                                                       i18nString(UIStrings.classSAdded, {PH1: joinClassString});
     UI.ARIAUtils.alert(announcementString, this.contentElement);
 
     this._installNodeClasses(node);
@@ -267,17 +289,32 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
 /** @type {!WeakMap<!SDK.DOMModel.DOMNode, !Map<string, boolean>>} */
 const cachedClassesMap = new WeakMap();
 
+/** @type {!ButtonProvider} */
+let buttonProviderInstance;
+
 /**
  * @implements {UI.Toolbar.Provider}
- * @unrestricted
  */
 export class ButtonProvider {
+  /** @private */
   constructor() {
-    this._button = new UI.Toolbar.ToolbarToggle(Common.UIString.UIString('Element Classes'), '');
+    this._button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.elementClasses), '');
     this._button.setText('.cls');
     this._button.element.classList.add('monospace');
     this._button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._clicked, this);
     this._view = new ClassesPaneWidget();
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!buttonProviderInstance || forceNew) {
+      buttonProviderInstance = new ButtonProvider();
+    }
+
+    return buttonProviderInstance;
   }
 
   _clicked() {
@@ -293,9 +330,6 @@ export class ButtonProvider {
   }
 }
 
-/**
- * @unrestricted
- */
 export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
   /**
    * @param {function(!SDK.DOMModel.DOMNode):!Map<string, boolean>} nodeClasses
@@ -352,39 +386,40 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
-  _buildClassNameCompletions(expression, prefix, force) {
+  async _buildClassNameCompletions(expression, prefix, force) {
     if (!prefix || force) {
       this._classNamesPromise = null;
     }
 
     const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!selectedNode || (!prefix && !force && !expression.trim())) {
-      return Promise.resolve([]);
+      return [];
     }
 
     if (!this._classNamesPromise || this._selectedFrameId !== selectedNode.frameId()) {
       this._classNamesPromise = this._getClassNames(selectedNode);
     }
 
-    return this._classNamesPromise.then(completions => {
-      const classesMap = this._nodeClasses(/** @type {!SDK.DOMModel.DOMNode} */ (selectedNode));
-      completions = completions.filter(value => !classesMap.get(value));
+    let completions = await this._classNamesPromise;
+    const classesMap = this._nodeClasses(/** @type {!SDK.DOMModel.DOMNode} */ (selectedNode));
+    completions = completions.filter(value => !classesMap.get(value));
 
-      if (prefix[0] === '.') {
-        completions = completions.map(value => '.' + value);
-      }
-      return completions.filter(value => value.startsWith(prefix)).sort().map(completion => ({
-                                                                                text: completion,
-                                                                                title: undefined,
-                                                                                subtitle: undefined,
-                                                                                iconType: undefined,
-                                                                                priority: undefined,
-                                                                                isSecondary: undefined,
-                                                                                subtitleRenderer: undefined,
-                                                                                selectionRange: undefined,
-                                                                                hideGhostText: undefined,
-                                                                                iconElement: undefined,
-                                                                              }));
+    if (prefix[0] === '.') {
+      completions = completions.map(value => '.' + value);
+    }
+    return completions.filter(value => value.startsWith(prefix)).sort().map(completion => {
+      return {
+        text: completion,
+        title: undefined,
+        subtitle: undefined,
+        iconType: undefined,
+        priority: undefined,
+        isSecondary: undefined,
+        subtitleRenderer: undefined,
+        selectionRange: undefined,
+        hideGhostText: undefined,
+        iconElement: undefined,
+      };
     });
   }
 }

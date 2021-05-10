@@ -8,9 +8,10 @@
 #ifndef SKSL_BINARYEXPRESSION
 #define SKSL_BINARYEXPRESSION
 
-#include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLLexer.h"
+#include "src/sksl/SkSLOperators.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
@@ -21,8 +22,6 @@ namespace SkSL {
 
 static inline bool check_ref(const Expression& expr) {
     switch (expr.kind()) {
-        case Expression::Kind::kExternalValue:
-            return true;
         case Expression::Kind::kFieldAccess:
             return check_ref(*expr.as<FieldAccess>().base());
         case Expression::Kind::kIndex:
@@ -50,14 +49,14 @@ class BinaryExpression final : public Expression {
 public:
     static constexpr Kind kExpressionKind = Kind::kBinary;
 
-    BinaryExpression(int offset, std::unique_ptr<Expression> left, Token::Kind op,
+    BinaryExpression(int offset, std::unique_ptr<Expression> left, Operator op,
                      std::unique_ptr<Expression> right, const Type* type)
     : INHERITED(offset, kExpressionKind, type)
     , fLeft(std::move(left))
     , fOperator(op)
     , fRight(std::move(right)) {
         // If we are assigning to a VariableReference, ensure that it is set to Write or ReadWrite
-        SkASSERT(!Compiler::IsAssignment(op) || check_ref(*this->left()));
+        SkASSERT(!op.isAssignment() || check_ref(*this->left()));
     }
 
     std::unique_ptr<Expression>& left() {
@@ -76,7 +75,7 @@ public:
         return fRight;
     }
 
-    Token::Kind getOperator() const {
+    Operator getOperator() const {
         return fOperator;
     }
 
@@ -86,13 +85,12 @@ public:
 
     std::unique_ptr<Expression> constantPropagate(const IRGenerator& irGenerator,
                                                   const DefinitionMap& definitions) override {
-        return irGenerator.constantFold(*this->left(),
-                                        this->getOperator(),
-                                        *this->right());
+        return ConstantFolder::Simplify(irGenerator.fContext, fOffset, *this->left(),
+                                        this->getOperator(), *this->right());
     }
 
     bool hasProperty(Property property) const override {
-        if (property == Property::kSideEffects && Compiler::IsAssignment(this->getOperator())) {
+        if (property == Property::kSideEffects && this->getOperator().isAssignment()) {
             return true;
         }
         return this->left()->hasProperty(property) || this->right()->hasProperty(property);
@@ -108,13 +106,13 @@ public:
 
     String description() const override {
         return "(" + this->left()->description() + " " +
-               Compiler::OperatorName(this->getOperator()) + " " + this->right()->description() +
+               this->getOperator().operatorName() + " " + this->right()->description() +
                ")";
     }
 
 private:
     std::unique_ptr<Expression> fLeft;
-    Token::Kind fOperator;
+    Operator fOperator;
     std::unique_ptr<Expression> fRight;
 
     using INHERITED = Expression;

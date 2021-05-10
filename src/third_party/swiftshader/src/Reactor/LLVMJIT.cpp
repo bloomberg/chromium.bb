@@ -16,6 +16,7 @@
 
 #include "Debug.hpp"
 #include "ExecutableMemory.hpp"
+#include "LLVMAsm.hpp"
 #include "Routine.hpp"
 
 // TODO(b/143539525): Eliminate when warning has been fixed.
@@ -28,7 +29,9 @@ __pragma(warning(push))
 #include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/IR/DiagnosticInfo.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
@@ -51,7 +54,11 @@ extern "C" signed __aeabi_idivmod();
 #endif
 
 #if __has_feature(memory_sanitizer)
-#	include "sanitizer/msan_interface.h"  // TODO(b/155148722): Remove when we no longer unpoison all writes.
+
+// TODO(b/155148722): Remove when we no longer unpoison all writes.
+#	if !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
+#		include "sanitizer/msan_interface.h"
+#	endif
 
 #	include <dlfcn.h>  // dlsym()
 
@@ -105,6 +112,17 @@ static void *getTLSAddress(void *control)
 
 namespace {
 
+// TODO(b/174587935): Eliminate command-line parsing.
+bool parseCommandLineOptionsOnce(int argc, const char *const *argv)
+{
+	// Use a static immediately invoked lambda to make this thread safe
+	static auto initialized = [=]() {
+		return llvm::cl::ParseCommandLineOptions(argc, argv);
+	}();
+
+	return initialized;
+}
+
 // JITGlobals is a singleton that holds all the immutable machine specific
 // information for the host device.
 class JITGlobals
@@ -128,6 +146,16 @@ private:
 JITGlobals *JITGlobals::get()
 {
 	static JITGlobals instance = [] {
+		const char *argv[] = {
+			"Reactor",
+#if defined(__i386__) || defined(__x86_64__)
+			"-x86-asm-syntax=intel",  // Use Intel syntax rather than the default AT&T
+#endif
+			"-warn-stack-size=524288"  // Warn when a function uses more than 512 KiB of stack memory
+		};
+
+		parseCommandLineOptionsOnce(sizeof(argv) / sizeof(argv[0]), argv);
+
 		llvm::InitializeNativeTarget();
 		llvm::InitializeNativeTargetAsmPrinter();
 		llvm::InitializeNativeTargetAsmParser();
@@ -198,6 +226,14 @@ JITGlobals::JITGlobals(llvm::orc::JITTargetMachineBuilder &&jitTargetMachineBuil
 
 llvm::CodeGenOpt::Level JITGlobals::toLLVM(rr::Optimization::Level level)
 {
+	// TODO(b/173257647): MemorySanitizer instrumentation produces IR which takes
+	// a lot longer to process by the machine code optimization passes. Disabling
+	// them has a negligible effect on code quality but compiles much faster.
+	if(__has_feature(memory_sanitizer))
+	{
+		return llvm::CodeGenOpt::None;
+	}
+
 	switch(level)
 	{
 		case rr::Optimization::Level::None: return llvm::CodeGenOpt::None;
@@ -206,6 +242,7 @@ llvm::CodeGenOpt::Level JITGlobals::toLLVM(rr::Optimization::Level level)
 		case rr::Optimization::Level::Aggressive: return llvm::CodeGenOpt::Aggressive;
 		default: UNREACHABLE("Unknown Optimization Level %d", int(level));
 	}
+
 	return llvm::CodeGenOpt::Default;
 }
 
@@ -443,6 +480,7 @@ class ExternalSymbolGenerator : public llvm::orc::JITDylib::DefinitionGenerator
 			functions.try_emplace("exp2f", reinterpret_cast<void *>(exp2f));
 			functions.try_emplace("log2f", reinterpret_cast<void *>(log2f));
 
+			functions.try_emplace("fmod", reinterpret_cast<void *>(static_cast<double (*)(double, double)>(fmod)));
 			functions.try_emplace("sin", reinterpret_cast<void *>(static_cast<double (*)(double)>(sin)));
 			functions.try_emplace("cos", reinterpret_cast<void *>(static_cast<double (*)(double)>(cos)));
 			functions.try_emplace("asin", reinterpret_cast<void *>(static_cast<double (*)(double)>(asin)));
@@ -497,9 +535,20 @@ class ExternalSymbolGenerator : public llvm::orc::JITDylib::DefinitionGenerator
 			functions.try_emplace("sync_fetch_and_min_4", reinterpret_cast<void *>(sync_fetch_and_min_4));
 			functions.try_emplace("sync_fetch_and_umax_4", reinterpret_cast<void *>(sync_fetch_and_umax_4));
 			functions.try_emplace("sync_fetch_and_umin_4", reinterpret_cast<void *>(sync_fetch_and_umin_4));
+
+#	if defined(__i386__)
+			// TODO(b/172974501): Workaround for an x86-32 issue where an R_386_PC32 relocation is used
+			// When calling a C function from Reactor code, who's address is not associated with any symbol
+			// (since it's an absolute constant), but it still invokes the symbol resolver for "".
+			functions.try_emplace("", nullptr);
+#	endif
 #endif
 #if __has_feature(memory_sanitizer)
-			functions.try_emplace("msan_unpoison", reinterpret_cast<void *>(__msan_unpoison));  // TODO(b/155148722): Remove when we no longer unpoison all writes.
+
+// TODO(b/155148722): Remove when we no longer unpoison all writes.
+#	if !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
+			functions.try_emplace("msan_unpoison", reinterpret_cast<void *>(__msan_unpoison));
+#	endif
 
 			functions.try_emplace("emutls_get_address", reinterpret_cast<void *>(rr::getTLSAddress));
 			functions.try_emplace("emutls_v.__msan_retval_tls", reinterpret_cast<void *>(static_cast<uintptr_t>(rr::MSanTLS::retval)));
@@ -599,35 +648,62 @@ auto &Unwrap(T &&v)
 	return v;
 }
 
+// Sets *fatal to true if a diagnostic is received which makes a routine invalid or unusable.
+struct FatalDiagnosticsHandler : public llvm::DiagnosticHandler
+{
+	FatalDiagnosticsHandler(bool *fatal)
+	    : fatal(fatal)
+	{}
+
+	bool handleDiagnostics(const llvm::DiagnosticInfo &info) override
+	{
+		switch(info.getSeverity())
+		{
+			case llvm::DS_Error:
+				ASSERT_MSG(false, "LLVM JIT compilation failure");
+				*fatal = true;
+				break;
+			case llvm::DS_Warning:
+				if(info.getKind() == llvm::DK_StackSize)
+				{
+					// Stack size limit exceeded
+					*fatal = true;
+				}
+				break;
+			case llvm::DS_Remark:
+				break;
+			case llvm::DS_Note:
+				break;
+		}
+
+		return true;  // Diagnostic handled, don't let LLVM print it.
+	}
+
+	bool *fatal;
+};
+
 // JITRoutine is a rr::Routine that holds a LLVM JIT session, compiler and
 // object layer as each routine may require different target machine
 // settings and no Reactor routine directly links against another.
 class JITRoutine : public rr::Routine
 {
-	llvm::orc::ExecutionSession session;
-	llvm::orc::RTDyldObjectLinkingLayer objectLayer;
-	llvm::orc::IRCompileLayer compileLayer;
-	llvm::orc::MangleAndInterner mangle;
-	llvm::orc::ThreadSafeContext ctx;
-	llvm::orc::JITDylib &dylib;
-	std::vector<const void *> addresses;
-
 public:
 	JITRoutine(
 	    std::unique_ptr<llvm::Module> module,
+	    std::unique_ptr<llvm::LLVMContext> context,
+	    const char *name,
 	    llvm::Function **funcs,
 	    size_t count,
 	    const rr::Config &config)
-	    : objectLayer(session, []() {
+	    : name(name)
+	    , objectLayer(session, []() {
 		    static MemoryMapper memoryMapper;
 		    return std::make_unique<llvm::SectionMemoryManager>(&memoryMapper);
 	    })
-	    , compileLayer(session, objectLayer, std::make_unique<llvm::orc::ConcurrentIRCompiler>(JITGlobals::get()->getTargetMachineBuilder(config.getOptimization().getLevel())))
-	    , mangle(session, JITGlobals::get()->getDataLayout())
-	    , ctx(std::make_unique<llvm::LLVMContext>())
-	    , dylib(Unwrap(session.createJITDylib("<routine>")))
 	    , addresses(count)
 	{
+		bool fatalCompileIssue = false;
+		context->setDiagnosticHandler(std::make_unique<FatalDiagnosticsHandler>(&fatalCompileIssue), true);
 
 #ifdef ENABLE_RR_DEBUG_INFO
 		// TODO(b/165000222): Update this on next LLVM roll.
@@ -652,36 +728,60 @@ public:
 			objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
 		}
 
-		dylib.addGenerator(std::make_unique<ExternalSymbolGenerator>());
+		llvm::SmallVector<llvm::orc::SymbolStringPtr, 8> functionNames(count);
+		llvm::orc::MangleAndInterner mangle(session, JITGlobals::get()->getDataLayout());
 
-		llvm::SmallVector<llvm::orc::SymbolStringPtr, 8> names(count);
 		for(size_t i = 0; i < count; i++)
 		{
 			auto func = funcs[i];
-			func->setLinkage(llvm::GlobalValue::ExternalLinkage);
-			func->setDoesNotThrow();
+
 			if(!func->hasName())
 			{
 				func->setName("f" + llvm::Twine(i).str());
 			}
-			names[i] = mangle(func->getName());
+
+			functionNames[i] = mangle(func->getName());
 		}
 
-		// Once the module is passed to the compileLayer, the
-		// llvm::Functions are freed. Make sure funcs are not referenced
-		// after this point.
+#ifdef ENABLE_RR_EMIT_ASM_FILE
+		const auto asmFilename = rr::AsmFile::generateFilename(name);
+		rr::AsmFile::emitAsmFile(asmFilename, JITGlobals::get()->getTargetMachineBuilder(config.getOptimization().getLevel()), *module);
+#endif
+
+		// Once the module is passed to the compileLayer, the llvm::Functions are freed.
+		// Make sure funcs are not referenced after this point.
 		funcs = nullptr;
 
-		llvm::cantFail(compileLayer.add(dylib, llvm::orc::ThreadSafeModule(std::move(module), ctx)));
+		llvm::orc::IRCompileLayer compileLayer(session, objectLayer, std::make_unique<llvm::orc::ConcurrentIRCompiler>(JITGlobals::get()->getTargetMachineBuilder(config.getOptimization().getLevel())));
+		llvm::orc::JITDylib &dylib(Unwrap(session.createJITDylib("<routine>")));
+		dylib.addGenerator(std::make_unique<ExternalSymbolGenerator>());
+
+		llvm::cantFail(compileLayer.add(dylib, llvm::orc::ThreadSafeModule(std::move(module), std::move(context))));
 
 		// Resolve the function addresses.
 		for(size_t i = 0; i < count; i++)
 		{
-			auto symbol = session.lookup({ &dylib }, names[i]);
+			fatalCompileIssue = false;  // May be set to true by session.lookup()
+
+			// This is where the actual compilation happens.
+			auto symbol = session.lookup({ &dylib }, functionNames[i]);
+
 			ASSERT_MSG(symbol, "Failed to lookup address of routine function %d: %s",
 			           (int)i, llvm::toString(symbol.takeError()).c_str());
-			addresses[i] = reinterpret_cast<void *>(static_cast<intptr_t>(symbol->getAddress()));
+
+			if(fatalCompileIssue)
+			{
+				addresses[i] = nullptr;
+			}
+			else  // Successful compilation
+			{
+				addresses[i] = reinterpret_cast<void *>(static_cast<intptr_t>(symbol->getAddress()));
+			}
 		}
+
+#ifdef ENABLE_RR_EMIT_ASM_FILE
+		rr::AsmFile::fixupAsmFile(asmFilename, addresses);
+#endif
 	}
 
 	~JITRoutine()
@@ -698,6 +798,12 @@ public:
 	{
 		return addresses[index];
 	}
+
+private:
+	std::string name;
+	llvm::orc::ExecutionSession session;
+	llvm::orc::RTDyldObjectLinkingLayer objectLayer;
+	std::vector<const void *> addresses;
 };
 
 }  // anonymous namespace
@@ -706,8 +812,9 @@ namespace rr {
 
 JITBuilder::JITBuilder(const rr::Config &config)
     : config(config)
-    , module(new llvm::Module("", context))
-    , builder(new llvm::IRBuilder<>(context))
+    , context(new llvm::LLVMContext())
+    , module(new llvm::Module("", *context))
+    , builder(new llvm::IRBuilder<>(*context))
 {
 	module->setTargetTriple(LLVM_DEFAULT_TARGET_TRIPLE);
 	module->setDataLayout(JITGlobals::get()->getDataLayout());
@@ -754,10 +861,10 @@ void JITBuilder::optimize(const rr::Config &cfg)
 	passManager.run(*module);
 }
 
-std::shared_ptr<rr::Routine> JITBuilder::acquireRoutine(llvm::Function **funcs, size_t count, const rr::Config &cfg)
+std::shared_ptr<rr::Routine> JITBuilder::acquireRoutine(const char *name, llvm::Function **funcs, size_t count, const rr::Config &cfg)
 {
 	ASSERT(module);
-	return std::make_shared<JITRoutine>(std::move(module), funcs, count, cfg);
+	return std::make_shared<JITRoutine>(std::move(module), std::move(context), name, funcs, count, cfg);
 }
 
 }  // namespace rr

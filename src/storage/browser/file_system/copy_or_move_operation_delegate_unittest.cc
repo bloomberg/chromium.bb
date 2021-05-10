@@ -12,14 +12,15 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -191,12 +192,12 @@ class CopyOrMoveOperationTestHelper {
              bool init_copy_or_move_validator) {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.GetPath();
-    quota_manager_ =
-        new MockQuotaManager(false /* is_incognito */, base_dir,
-                             base::ThreadTaskRunnerHandle::Get().get(),
-                             nullptr /* special storage policy */);
-    quota_manager_proxy_ = new MockQuotaManagerProxy(
-        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+    quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
+        false /* is_incognito */, base_dir,
+        base::ThreadTaskRunnerHandle::Get().get(),
+        nullptr /* special storage policy */);
+    quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>(
+        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
     file_system_context_ =
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
@@ -210,8 +211,7 @@ class CopyOrMoveOperationTestHelper {
     if (dest_type_ == kFileSystemTypeTest) {
       TestFileSystemBackend* test_backend =
           static_cast<TestFileSystemBackend*>(backend);
-      std::unique_ptr<CopyOrMoveFileValidatorFactory> factory(
-          new TestValidatorFactory);
+      auto factory = std::make_unique<TestValidatorFactory>();
       test_backend->set_require_copy_or_move_validator(
           require_copy_or_move_validator);
       if (init_copy_or_move_validator)

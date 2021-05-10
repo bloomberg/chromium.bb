@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -281,7 +282,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     base::RunLoop run_loop;
     install_manager().InstallWebAppFromManifestWithFallback(
         web_contents(), /*force_shortcut_app=*/false,
-        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -331,7 +332,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     base::RunLoop run_loop;
     install_manager().InstallWebAppFromInfo(
         std::move(web_application_info), ForInstallableSite::kYes,
-        WebappInstallSource::SYSTEM_DEFAULT,
+        webapps::WebappInstallSource::SYSTEM_DEFAULT,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               result.app_id = installed_app_id;
@@ -392,18 +393,6 @@ class WebAppInstallManagerTest : public WebAppTest {
     finalizer().UninstallExternalWebAppByUrl(
         app_url, external_install_source,
         base::BindLambdaForTesting([&](bool uninstalled) {
-          result = uninstalled;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return result;
-  }
-
-  bool UninstallWebAppFromSyncByUser(const AppId& app_id) {
-    bool result = false;
-    base::RunLoop run_loop;
-    finalizer().UninstallWebAppFromSyncByUser(
-        app_id, base::BindLambdaForTesting([&](bool uninstalled) {
           result = uninstalled;
           run_loop.Quit();
         }));
@@ -674,9 +663,9 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   const std::string url_path{"https://example.com/path"};
   const GURL url{url_path};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool expect_locally_installed = true;
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
   bool expect_locally_installed = false;
 #endif
 
@@ -750,9 +739,9 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
 TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   const GURL url{"https://example.com/path"};
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool expect_locally_installed = true;
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
   bool expect_locally_installed = false;
 #endif
 
@@ -841,7 +830,7 @@ TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
   file_utils().SetNextDeleteFileRecursivelyResult(true);
 
   enum Event {
-    kObserver_OnWebAppUninstalled,
+    kObserver_OnWebAppWillBeUninstalled,
     kUninstallWebAppsAfterSync_Callback
   };
   std::vector<Event> event_order;
@@ -850,7 +839,7 @@ TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
   observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
         EXPECT_EQ(uninstalled_app_id, app_id);
-        event_order.push_back(Event::kObserver_OnWebAppUninstalled);
+        event_order.push_back(Event::kObserver_OnWebAppWillBeUninstalled);
       }));
 
   base::RunLoop run_loop;
@@ -874,7 +863,7 @@ TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
   run_loop.Run();
 
   const std::vector<Event> expected_event_order{
-      Event::kObserver_OnWebAppUninstalled,
+      Event::kObserver_OnWebAppWillBeUninstalled,
       Event::kUninstallWebAppsAfterSync_Callback};
   EXPECT_EQ(expected_event_order, event_order);
 }
@@ -892,7 +881,6 @@ TEST_F(WebAppInstallManagerTest, PolicyAndUser_UninstallExternalWebApp) {
       external_app_url, app_id, ExternalInstallSource::kExternalPolicy);
   InitRegistrarWithApp(std::move(policy_and_user_app));
 
-  EXPECT_TRUE(finalizer().CanUserUninstallFromSync(app_id));
   EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
 
   bool observer_uninstall_called = false;
@@ -912,63 +900,8 @@ TEST_F(WebAppInstallManagerTest, PolicyAndUser_UninstallExternalWebApp) {
 
   EXPECT_TRUE(registrar().GetAppById(app_id));
   EXPECT_FALSE(observer_uninstall_called);
-  EXPECT_TRUE(finalizer().CanUserUninstallFromSync(app_id));
   EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
   EXPECT_TRUE(finalizer().CanUserUninstallExternalApp(app_id));
-
-  // Uninstall user app last.
-  file_utils().SetNextDeleteFileRecursivelyResult(true);
-
-  EXPECT_TRUE(UninstallWebAppFromSyncByUser(app_id));
-
-  EXPECT_FALSE(registrar().GetAppById(app_id));
-  EXPECT_TRUE(observer_uninstall_called);
-  EXPECT_FALSE(finalizer().CanUserUninstallFromSync(app_id));
-  EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
-  EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
-}
-
-TEST_F(WebAppInstallManagerTest, PolicyAndUser_UninstallWebAppFromSyncByUser) {
-  std::unique_ptr<WebApp> policy_and_user_app =
-      CreateWebApp(GURL("https://example.com/path"), Source::kSync,
-                   /*user_display_mode=*/DisplayMode::kStandalone);
-  policy_and_user_app->AddSource(Source::kPolicy);
-
-  const AppId app_id = policy_and_user_app->app_id();
-  const GURL external_app_url("https://example.com/path/policy");
-
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalPolicy);
-  InitRegistrarWithApp(std::move(policy_and_user_app));
-
-  EXPECT_TRUE(finalizer().CanUserUninstallFromSync(app_id));
-  EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
-
-  bool observer_uninstall_called = false;
-  WebAppInstallObserver observer(&registrar());
-  observer.SetWebAppUninstalledDelegate(
-      base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
-        observer_uninstall_called = true;
-      }));
-
-  // Uninstall user app first.
-  EXPECT_TRUE(UninstallWebAppFromSyncByUser(app_id));
-
-  EXPECT_TRUE(registrar().GetAppById(app_id));
-  EXPECT_FALSE(observer_uninstall_called);
-  EXPECT_FALSE(finalizer().CanUserUninstallFromSync(app_id));
-  EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
-  EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
-
-  // Uninstall policy app last.
-  file_utils().SetNextDeleteFileRecursivelyResult(true);
-
-  EXPECT_TRUE(UninstallExternalWebAppByUrl(
-      external_app_url, ExternalInstallSource::kExternalPolicy));
-  EXPECT_FALSE(registrar().GetAppById(app_id));
-  EXPECT_TRUE(observer_uninstall_called);
-  EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));
-  EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
 }
 
 TEST_F(WebAppInstallManagerTest, DefaultAndUser_UninstallExternalAppByUser) {
@@ -1053,9 +986,9 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
   const AppId app_id2 =
       InstallBookmarkAppFromSync(url2, /*server_open_as_window=*/false);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_TRUE(registrar().GetAppById(app_id1)->is_locally_installed());
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_FALSE(registrar().GetAppById(app_id1)->is_locally_installed());
 #endif
 
@@ -1090,9 +1023,9 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadFailed) {
   auto app_id2 =
       InstallBookmarkAppFromSync(url2, /*server_open_as_window=*/true);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_TRUE(registrar().GetAppById(app_id1)->is_locally_installed());
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_FALSE(registrar().GetAppById(app_id1)->is_locally_installed());
 #endif
 
@@ -1700,7 +1633,9 @@ TEST_F(WebAppInstallManagerTest,
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
-  EXPECT_EQ(DisplayMode::kStandalone,
+  // InstallWebAppFromManifestWithFallback sets user_display_mode to kBrowser
+  // because TestAcceptDialogCallback doesn't set open_as_window to true.
+  EXPECT_EQ(DisplayMode::kBrowser,
             registrar().GetAppEffectiveDisplayMode(app_id));
 }
 

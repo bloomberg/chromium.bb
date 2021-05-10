@@ -92,8 +92,6 @@ BlinkGuardPageSize() {
 static_assert(8 == sizeof(double), "We expect sizeof(double) to be 8");
 constexpr size_t kAllocationGranularity = sizeof(double);
 constexpr size_t kAllocationMask = kAllocationGranularity - 1;
-constexpr size_t kMaxHeapObjectSizeLog2 = 27;
-constexpr size_t kMaxHeapObjectSize = 1 << kMaxHeapObjectSizeLog2;
 constexpr size_t kLargeObjectSizeThreshold = kBlinkPageSize / 2;
 
 // A zap value used for freed memory that is allowed to be added to the free
@@ -505,6 +503,18 @@ class BasePage {
 
   void SetAsYoung(bool young) { is_young_ = young; }
 
+  // The number of bytes that allocated on the page and are not freed yet.
+  size_t AllocatedBytes() { return allocated_bytes_; }
+
+  void SetAllocatedBytes(size_t bytes) { allocated_bytes_ = bytes; }
+
+  void IncreaseAllocatedBytes(size_t bytes) { allocated_bytes_ += bytes; }
+
+  void DecreaseAllocatedBytes(size_t bytes) {
+    DCHECK_GE(allocated_bytes_, bytes);
+    allocated_bytes_ -= bytes;
+  }
+
   virtual void VerifyMarking() = 0;
 
  private:
@@ -523,6 +533,11 @@ class BasePage {
   PageMemory* const storage_;
   BaseArena* const arena_;
   ThreadState* const thread_state_;
+
+  // The counter is updated by the sweeper and the allocator.
+  // It is the sum of objects marked at the last GC and objects allocated on
+  // the page since the last GC.
+  size_t allocated_bytes_ = 0;
 
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true upon completion of sweeping that page.
@@ -999,6 +1014,7 @@ class PLATFORM_EXPORT BaseArena {
   void CollectStatistics(std::string, ThreadState::Statistics*);
   virtual void CollectFreeListStatistics(
       ThreadState::Statistics::FreeListStatistics*) {}
+  size_t AllocatedBytes();
 
 #if DCHECK_IS_ON()
   BasePage* FindPageFromAddress(ConstAddress) const;

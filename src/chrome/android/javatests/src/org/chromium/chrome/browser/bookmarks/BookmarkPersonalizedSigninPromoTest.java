@@ -25,18 +25,22 @@ import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
-import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.BookmarkTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -45,16 +49,26 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(Batch.PER_CLASS)
 public class BookmarkPersonalizedSigninPromoTest {
-    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private final BookmarkTestRule mBookmarkTestRule = new BookmarkTestRule();
 
-    // As bookmarks need the fake AccountManagerFacade in SyncTestRule,
-    // BookmarkTestRule should be initialized after and destroyed before the
-    // SyncTestRule.
+    @ClassRule
+    public static final ChromeTabbedActivityTestRule sActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
     @Rule
-    public final RuleChain chain = RuleChain.outerRule(mSyncTestRule).around(mBookmarkTestRule);
+    public final BlankCTATabInitialStateRule mInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
+
+    // As bookmarks need the fake AccountManagerFacade in AccountManagerTestRule,
+    // BookmarkTestRule should be initialized after and destroyed before the
+    // AccountManagerTestRule.
+    @Rule
+    public final RuleChain chain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mBookmarkTestRule);
 
     private final SigninActivityLauncherImpl mMockSigninActivityLauncherImpl =
             mock(SigninActivityLauncherImpl.class);
@@ -78,7 +92,8 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncherImpl.get())
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
-        CoreAccountInfo accountInfo = mSyncTestRule.addTestAccount();
+        CoreAccountInfo accountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
         verify(mMockSigninActivityLauncherImpl)
@@ -92,7 +107,8 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncherImpl.get())
                 .launchActivityForPromoChooseAccountFlow(any(Context.class), anyInt(), anyString());
-        CoreAccountInfo accountInfo = mSyncTestRule.addTestAccount();
+        CoreAccountInfo accountInfo =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
         verify(mMockSigninActivityLauncherImpl)
@@ -114,7 +130,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void showBookmarkManagerAndCheckSigninPromoIsDisplayed() {
-        mBookmarkTestRule.showBookmarkManager(mSyncTestRule.getActivity());
+        mBookmarkTestRule.showBookmarkManager(sActivityTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
     }
 }

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
@@ -18,12 +19,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/install_event_log_util.h"
 #include "chrome/browser/policy/messaging_layer/public/mock_report_queue.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/profiles/reporting_util.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/reporting/util/status.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -180,8 +181,9 @@ class ExtensionInstallEventLogUploaderTest : public testing::Test {
   void CompleteUpload(bool success) {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
+    base::Value events = ConvertExtensionProtoToValue(&log_, context);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertExtensionProtoToValue(&log_, context), std::move(context));
+        std::move(events), std::move(context));
 
     waiter_.IncreaseCounterLimit();
 
@@ -208,8 +210,9 @@ class ExtensionInstallEventLogUploaderTest : public testing::Test {
   void CaptureUpload(reporting::MockReportQueue::EnqueueCallback* callback) {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
+    base::Value events = ConvertExtensionProtoToValue(&log_, context);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertExtensionProtoToValue(&log_, context), std::move(context));
+        std::move(events), std::move(context));
 
     EXPECT_CALL(*mock_report_queue_,
                 ValueEnqueue_(MatchEvents(&value_report_), _, _))

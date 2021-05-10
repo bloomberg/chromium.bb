@@ -31,6 +31,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -42,8 +44,9 @@
 #endif
 
 @interface ClearBrowsingDataTableViewController () <
-    TableViewTextLinkCellDelegate,
-    ClearBrowsingDataConsumer>
+    TableViewLinkHeaderFooterItemDelegate,
+    ClearBrowsingDataConsumer,
+    UIGestureRecognizerDelegate>
 
 // TODO(crbug.com/850699): remove direct dependency and replace with
 // delegate.
@@ -90,7 +93,10 @@
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)initWithBrowser:(Browser*)browser {
-  self = [super initWithStyle:UITableViewStylePlain];
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? ChromeTableViewStyle()
+                               : UITableViewStylePlain;
+  self = [super initWithStyle:style];
   if (self) {
     _browser = browser;
     _browserState = browser->GetBrowserState();
@@ -131,16 +137,20 @@
   ]
                animated:YES];
 
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
-  self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
-  self.tableView.accessibilityIdentifier =
-      kClearBrowsingDataViewAccessibilityIdentifier;
-  self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
-  // TableView configuration
-  self.tableView.estimatedRowHeight = 56;
-  self.tableView.rowHeight = UITableViewAutomaticDimension;
-  self.tableView.estimatedSectionHeaderHeight = 0;
+  if (!base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.accessibilityIdentifier =
+        kClearBrowsingDataViewAccessibilityIdentifier;
+    self.styler.tableViewBackgroundColor =
+        [UIColor colorNamed:kPrimaryBackgroundColor];
+    self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
+
+    // TableView configuration
+    self.tableView.estimatedRowHeight = 56;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedSectionHeaderHeight = 0;
+  }
+
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
   // Adds the "Done" button and hooks it up to |dismiss|.
@@ -191,6 +201,24 @@
     [self.alertCoordinator stop];
     self.alertCoordinator = nil;
   }
+  if (self.overlayCoordinator.started) {
+    [self.overlayCoordinator stop];
+    self.navigationController.interactivePopGestureRecognizer.delegate = nil;
+    self.overlayCoordinator = nil;
+  }
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
+  if (gestureRecognizer ==
+      self.navigationController.interactivePopGestureRecognizer) {
+    // This view controller should only be observing gestures when the activity
+    // overlay is showing (e.g. when Clear Browsing Data is in progress and the
+    // user should not be able to swipe away from this view).
+    return NO;
+  }
+  return YES;
 }
 
 #pragma mark - UITableViewDataSource
@@ -201,18 +229,6 @@
                              cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
-    case ItemTypeFooterSavedSiteData:
-    case ItemTypeFooterClearSyncAndSavedSiteData:
-    case ItemTypeFooterGoogleAccountAndMyActivity: {
-      TableViewTextLinkCell* tableViewTextLinkCell =
-          base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
-      [tableViewTextLinkCell setDelegate:self];
-      tableViewTextLinkCell.selectionStyle = UITableViewCellSelectionStyleNone;
-      // Hide the cell separator inset for footnotes.
-      tableViewTextLinkCell.separatorInset =
-          UIEdgeInsetsMake(0, tableViewTextLinkCell.bounds.size.width, 0, 0);
-      break;
-    }
     case ItemTypeDataTypeBrowsingHistory:
     case ItemTypeDataTypeCookiesSiteData:
     case ItemTypeDataTypeCache:
@@ -230,13 +246,30 @@
 
 #pragma mark - UITableViewDelegate
 
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  UIView* view = [super tableView:tableView viewForFooterInSection:section];
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case SectionIdentifierSavedSiteData:
+    case SectionIdentifierGoogleAccount: {
+      TableViewLinkHeaderFooterView* linkView =
+          base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+      linkView.delegate = self;
+    } break;
+    default:
+      break;
+  }
+  return view;
+}
+
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   NSInteger sectionIdentifier =
       [self.tableViewModel sectionIdentifierForSection:section];
   switch (sectionIdentifier) {
     case SectionIdentifierGoogleAccount:
-    case SectionIdentifierClearSyncAndSavedSiteData:
     case SectionIdentifierSavedSiteData:
       return 5;
     default:
@@ -277,12 +310,10 @@
   [self updateToolbarButtons];
 }
 
-#pragma mark - TableViewTextLinkCellDelegate
+#pragma mark - TableViewLinkHeaderFooterItemDelegate
 
-- (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
-            didRequestOpenURL:(const GURL&)URL {
-  GURL copiedURL(URL);
-  [self.delegate openURL:copiedURL];
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)url {
+  [self.delegate openURL:url];
 }
 
 #pragma mark - ClearBrowsingDataConsumer
@@ -298,8 +329,8 @@
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
   } else {
     // Reload the item instead of reconfiguring it. This might update
-    // TableViewTextLinkItems which which can have different number of lines,
-    // thus the cell height needs to adapt accordingly.
+    // TableViewLinkHeaderFooterView which which can have different number of
+    // lines, thus the cell height needs to adapt accordingly.
     [self reloadCellsForItems:@[ item ]
              withRowAnimation:UITableViewRowAnimationAutomatic];
   }
@@ -322,6 +353,9 @@
 
   self.overlayCoordinator.blockAllWindows = YES;
 
+  // Observe Gestures while overlay is visible to prevent user from swiping away
+  // from this view during the process of clear browsing data.
+  self.navigationController.interactivePopGestureRecognizer.delegate = self;
   [self.overlayCoordinator start];
 
   __weak ClearBrowsingDataTableViewController* weakSelf = self;
@@ -337,6 +371,7 @@
     // least 1 second instead of looking like a glitch.
     dispatch_after(timeOneSecondLater, dispatch_get_main_queue(), ^{
       [self.overlayCoordinator stop];
+      self.navigationController.interactivePopGestureRecognizer.delegate = nil;
       if (completionBlock)
         completionBlock();
     });

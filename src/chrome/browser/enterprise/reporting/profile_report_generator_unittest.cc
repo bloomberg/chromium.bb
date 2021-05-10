@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -102,7 +103,7 @@ class ProfileReportGeneratorTest : public ::testing::Test {
     EXPECT_TRUE(report);
     EXPECT_EQ(profile()->GetProfileUserName(), report->name());
     EXPECT_EQ(profile()->GetPath().AsUTF8Unsafe(), report->id());
-    EXPECT_TRUE(report->is_full_report());
+    EXPECT_TRUE(report->is_detail_available());
 
     return report;
   }
@@ -172,7 +173,7 @@ TEST_F(ProfileReportGeneratorTest, SignedInProfile) {
   EXPECT_TRUE(report->has_chrome_signed_in_user());
   EXPECT_EQ(expected_info.email, report->chrome_signed_in_user().email());
   EXPECT_EQ(expected_info.gaia,
-            report->chrome_signed_in_user().obfudscated_gaia_id());
+            report->chrome_signed_in_user().obfuscated_gaia_id());
 }
 
 TEST_F(ProfileReportGeneratorTest, PoliciesDisabled) {
@@ -285,7 +286,7 @@ TEST_F(ProfileReportGeneratorTest, ExtensionRequestOnlyReport) {
   // users info are included on CrOS only.
   EXPECT_TRUE(report);
   EXPECT_EQ(profile()->GetPath().AsUTF8Unsafe(), report->id());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(profile()->GetProfileUserName(), report->name());
   EXPECT_TRUE(report->has_chrome_signed_in_user());
 #else
@@ -300,7 +301,7 @@ TEST_F(ProfileReportGeneratorTest, ExtensionRequestOnlyReport) {
   EXPECT_EQ(0, report->chrome_policies_size());
   EXPECT_EQ(0, report->extensions_size());
   EXPECT_EQ(0, report->policy_fetched_timestamps_size());
-  EXPECT_TRUE(report->is_full_report());
+  EXPECT_TRUE(report->is_detail_available());
 }
 
 TEST_F(ProfileReportGeneratorTest, ExtensionRequestOnlyReportWithoutPolicy) {

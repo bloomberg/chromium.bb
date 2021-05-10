@@ -20,6 +20,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "ipc/ipc_param_traits.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/scheme_host_port.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -56,8 +57,6 @@ struct UrlOriginAdapter;
 }  // namespace mojo
 
 namespace net {
-class NetworkIsolationKey;
-class OpaqueNonTransientNetworkIsolationKeyTest;
 class SchemefulSite;
 }  // namespace net
 
@@ -297,13 +296,13 @@ class COMPONENT_EXPORT(URL) Origin {
       const base::android::JavaRef<jobject>& java_origin);
 #endif  // OS_ANDROID
 
+  void WriteIntoTracedValue(perfetto::TracedValue context) const;
+
  private:
   friend class blink::SecurityOrigin;
-  friend class net::NetworkIsolationKey;
   // SchemefulSite needs access to the serialization/deserialization logic which
   // includes the nonce.
   friend class net::SchemefulSite;
-  friend class net::OpaqueNonTransientNetworkIsolationKeyTest;
   friend class OriginTest;
   friend struct mojo::UrlOriginAdapter;
   friend struct ipc_fuzzer::FuzzTraits<Origin>;

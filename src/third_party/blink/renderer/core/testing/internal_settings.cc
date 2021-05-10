@@ -57,13 +57,16 @@
 
 namespace blink {
 
+using mojom::blink::HoverType;
+using mojom::blink::PointerType;
+
 InternalSettings::Backup::Backup(Settings* settings)
     : original_csp_(RuntimeEnabledFeatures::
                         ExperimentalContentSecurityPolicyFeaturesEnabled()),
       original_editing_behavior_(settings->GetEditingBehaviorType()),
-      original_text_autosizing_enabled_(settings->TextAutosizingEnabled()),
+      original_text_autosizing_enabled_(settings->GetTextAutosizingEnabled()),
       original_text_autosizing_window_size_override_(
-          settings->TextAutosizingWindowSizeOverride()),
+          settings->GetTextAutosizingWindowSizeOverride()),
       original_accessibility_font_scale_factor_(
           settings->GetAccessibilityFontScaleFactor()),
       original_media_type_override_(settings->GetMediaTypeOverride()),
@@ -121,7 +124,7 @@ void InternalSettings::ResetToConsistentState() {
   backup_.RestoreTo(GetSettings());
   backup_ = Backup(GetSettings());
   backup_.original_text_autosizing_enabled_ =
-      GetSettings()->TextAutosizingEnabled();
+      GetSettings()->GetTextAutosizingEnabled();
 
   InternalSettingsGenerated::resetToConsistentState();
 }
@@ -373,11 +376,11 @@ void InternalSettings::setAvailablePointerTypes(
     String token = split_token.StripWhiteSpace();
 
     if (token == "coarse") {
-      pointer_types |= ui::POINTER_TYPE_COARSE;
+      pointer_types |= static_cast<int>(PointerType::kPointerCoarseType);
     } else if (token == "fine") {
-      pointer_types |= ui::POINTER_TYPE_FINE;
+      pointer_types |= static_cast<int>(PointerType::kPointerFineType);
     } else if (token == "none") {
-      pointer_types |= ui::POINTER_TYPE_NONE;
+      pointer_types |= static_cast<int>(PointerType::kPointerNone);
     } else {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -418,13 +421,13 @@ void InternalSettings::setPrimaryPointerType(const String& pointer,
   InternalSettingsGuardForSettings();
   String token = pointer.StripWhiteSpace();
 
-  ui::PointerType type = ui::POINTER_TYPE_NONE;
+  PointerType type = PointerType::kPointerNone;
   if (token == "coarse") {
-    type = ui::POINTER_TYPE_COARSE;
+    type = PointerType::kPointerCoarseType;
   } else if (token == "fine") {
-    type = ui::POINTER_TYPE_FINE;
+    type = PointerType::kPointerFineType;
   } else if (token == "none") {
-    type = ui::POINTER_TYPE_NONE;
+    type = PointerType::kPointerNone;
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -448,9 +451,9 @@ void InternalSettings::setAvailableHoverTypes(const String& types,
   for (const String& split_token : tokens) {
     String token = split_token.StripWhiteSpace();
     if (token == "none") {
-      hover_types |= ui::HOVER_TYPE_NONE;
+      hover_types |= static_cast<int>(HoverType::kHoverNone);
     } else if (token == "hover") {
-      hover_types |= ui::HOVER_TYPE_HOVER;
+      hover_types |= static_cast<int>(HoverType::kHoverHoverType);
     } else {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -467,11 +470,11 @@ void InternalSettings::setPrimaryHoverType(const String& type,
   InternalSettingsGuardForSettings();
   String token = type.StripWhiteSpace();
 
-  ui::HoverType hover_type = ui::HOVER_TYPE_NONE;
+  HoverType hover_type = HoverType::kHoverNone;
   if (token == "none") {
-    hover_type = ui::HOVER_TYPE_NONE;
+    hover_type = HoverType::kHoverNone;
   } else if (token == "hover") {
-    hover_type = ui::HOVER_TYPE_HOVER;
+    hover_type = HoverType::kHoverHoverType;
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,

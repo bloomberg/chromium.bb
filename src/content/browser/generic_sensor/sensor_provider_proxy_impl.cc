@@ -80,8 +80,7 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
       PermissionType::SENSORS, render_frame_host_,
       render_frame_host_->GetLastCommittedURL().GetOrigin(), false,
       base::BindOnce(&SensorProviderProxyImpl::OnPermissionRequestCompleted,
-                     weak_factory_.GetWeakPtr(), type,
-                     base::Passed(std::move(callback))));
+                     weak_factory_.GetWeakPtr(), type, std::move(callback)));
 }
 
 void SensorProviderProxyImpl::OnPermissionRequestCompleted(
@@ -121,6 +120,7 @@ SensorTypeToFeaturePolicyFeatures(SensorType type) {
       return {blink::mojom::FeaturePolicyFeature::kAmbientLightSensor};
     case SensorType::ACCELEROMETER:
     case SensorType::LINEAR_ACCELERATION:
+    case SensorType::GRAVITY:
       return {blink::mojom::FeaturePolicyFeature::kAccelerometer};
     case SensorType::GYROSCOPE:
       return {blink::mojom::FeaturePolicyFeature::kGyroscope};

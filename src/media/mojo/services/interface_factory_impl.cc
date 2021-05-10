@@ -34,6 +34,11 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
+#if defined(OS_WIN)
+#include "media/mojo/services/media_foundation_renderer_wrapper.h"
+#include "media/mojo/services/mojo_renderer_service.h"
+#endif  // defined(OS_WIN)
+
 namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
@@ -101,16 +106,8 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
       std::make_unique<MojoRendererService>(&cdm_service_context_,
                                             std::move(renderer));
 
-  MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
-
-  mojo::ReceiverId receiver_id = renderer_receivers_.Add(
-      std::move(mojo_renderer_service), std::move(receiver));
-
-  // base::Unretained() is safe because the callback will be fired by
-  // |mojo_renderer_service|, which is owned by |renderer_receivers_|.
-  mojo_renderer_service_ptr->set_bad_message_cb(base::BindRepeating(
-      base::IgnoreResult(&mojo::UniqueReceiverSet<mojom::Renderer>::Remove),
-      base::Unretained(&renderer_receivers_), receiver_id));
+  renderer_receivers_.Add(std::move(mojo_renderer_service),
+                          std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
 
@@ -131,16 +128,8 @@ void InterfaceFactoryImpl::CreateCastRenderer(
       std::make_unique<MojoRendererService>(&cdm_service_context_,
                                             std::move(renderer));
 
-  MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
-
-  mojo::ReceiverId receiver_id = renderer_receivers_.Add(
-      std::move(mojo_renderer_service), std::move(receiver));
-
-  // base::Unretained() is safe because the callback will be fired by
-  // |mojo_renderer_service|, which is owned by |renderer_receivers_|.
-  mojo_renderer_service_ptr->set_bad_message_cb(base::BindRepeating(
-      base::IgnoreResult(&mojo::UniqueReceiverSet<mojom::Renderer>::Remove),
-      base::Unretained(&renderer_receivers_), receiver_id));
+  renderer_receivers_.Add(std::move(mojo_renderer_service),
+                          std::move(receiver));
 }
 #endif
 
@@ -162,6 +151,21 @@ void InterfaceFactoryImpl::CreateFlingingRenderer(
   NOTREACHED();
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+void InterfaceFactoryImpl::CreateMediaFoundationRenderer(
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
+        renderer_extension_receiver) {
+  DVLOG(1) << __func__ << ": this=" << this;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  CreateMediaFoundationRendererOnTaskRunner(
+      std::move(task_runner), std::move(receiver),
+      std::move(renderer_extension_receiver));
+}
+#endif  // defined (OS_WIN)
 
 void InterfaceFactoryImpl::CreateCdm(const std::string& key_system,
                                      const CdmConfig& cdm_config,
@@ -281,5 +285,34 @@ void InterfaceFactoryImpl::OnCdmServiceCreated(
 }
 
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
+
+#if defined(OS_WIN)
+void InterfaceFactoryImpl::CreateMediaFoundationRendererOnTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
+        renderer_extension_receiver) {
+  DVLOG(1) << __func__ << ": this=" << this;
+
+  if (!task_runner->RunsTasksInCurrentSequence()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &InterfaceFactoryImpl::CreateMediaFoundationRendererOnTaskRunner,
+            base::Unretained(this), task_runner, std::move(receiver),
+            std::move(renderer_extension_receiver)));
+    return;
+  }
+
+  DVLOG(1) << __func__ << ": this=" << this;
+
+  auto renderer = std::make_unique<media::MediaFoundationRendererWrapper>(
+      /*muted=*/false, std::move(task_runner),
+      std::move(renderer_extension_receiver));
+
+  media::MojoRendererService::Create(&cdm_service_context_, std::move(renderer),
+                                     std::move(receiver));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace media

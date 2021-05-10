@@ -16,15 +16,17 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
+#include "third_party/blink/renderer/core/paint/text_painter_base.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -44,18 +46,13 @@ static inline bool TextShouldBePainted(
 bool SVGInlineTextBoxPainter::ShouldPaintSelection(
     const PaintInfo& paint_info) const {
   // Don't paint selections when printing.
-  if (paint_info.IsPrinting())
+  if (InlineLayoutObject().GetDocument().Printing())
     return false;
   // Don't paint selections when rendering a mask, clip-path (as a mask),
   // pattern or feImage (element reference.)
   if (paint_info.IsRenderingResourceSubtree())
     return false;
   return svg_inline_text_box_.IsSelected();
-}
-
-static bool HasShadow(const PaintInfo& paint_info, const ComputedStyle& style) {
-  // Text shadows are disabled when printing. http://crbug.com/258321
-  return style.TextShadow() && !paint_info.IsPrinting();
 }
 
 LayoutObject& SVGInlineTextBoxPainter::InlineLayoutObject() const {
@@ -124,10 +121,9 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     const PaintInfo& paint_info,
     LayoutObject& parent_layout_object) {
   const ComputedStyle& style = parent_layout_object.StyleRef();
-  const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  bool has_fill = svg_style.HasFill();
-  bool has_visible_stroke = svg_style.HasVisibleStroke();
+  bool has_fill = style.HasFill();
+  bool has_visible_stroke = style.HasVisibleStroke();
 
   const ComputedStyle* selection_style = &style;
   bool should_paint_selection = ShouldPaintSelection(paint_info);
@@ -135,12 +131,10 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     selection_style =
         parent_layout_object.GetCachedPseudoElementStyle(kPseudoIdSelection);
     if (selection_style) {
-      const SVGComputedStyle& svg_selection_style = selection_style->SvgStyle();
-
       if (!has_fill)
-        has_fill = svg_selection_style.HasFill();
+        has_fill = selection_style->HasFill();
       if (!has_visible_stroke)
-        has_visible_stroke = svg_selection_style.HasVisibleStroke();
+        has_visible_stroke = selection_style->HasVisibleStroke();
     } else {
       selection_style = &style;
     }
@@ -175,7 +169,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     }
 
     for (int i = 0; i < 3; i++) {
-      switch (svg_style.PaintOrderType(i)) {
+      switch (style.PaintOrderType(i)) {
         case PT_FILL:
           if (has_fill) {
             PaintText(paint_info, style, *selection_style, fragment,
@@ -210,17 +204,16 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
 
 void SVGInlineTextBoxPainter::PaintSelectionBackground(
     const PaintInfo& paint_info) {
-  if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
-      EVisibility::kVisible)
+  auto layout_item = svg_inline_text_box_.GetLineLayoutItem();
+  if (layout_item.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  DCHECK(!paint_info.IsPrinting());
+  DCHECK(!layout_item.GetDocument().Printing());
 
   if (paint_info.phase == PaintPhase::kSelectionDragImage ||
       !ShouldPaintSelection(paint_info))
     return;
 
-  auto layout_item = svg_inline_text_box_.GetLineLayoutItem();
   Color background_color = HighlightPaintingUtils::HighlightBackgroundColor(
       layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode(),
       kPseudoIdSelection);
@@ -346,12 +339,10 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
       FloatRect(decoration_origin,
                 FloatSize(fragment.width, thickness / scaling_factor)));
 
-  const SVGComputedStyle& svg_decoration_style = decoration_style.SvgStyle();
-
   for (int i = 0; i < 3; i++) {
-    switch (svg_decoration_style.PaintOrderType(i)) {
+    switch (decoration_style.PaintOrderType(i)) {
       case PT_FILL:
-        if (svg_decoration_style.HasFill()) {
+        if (decoration_style.HasFill()) {
           PaintFlags fill_flags;
           if (!SVGObjectPainter(*decoration_layout_object)
                    .PreparePaint(paint_info, decoration_style, kApplyToFillMode,
@@ -362,17 +353,17 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
         }
         break;
       case PT_STROKE:
-        if (svg_decoration_style.HasVisibleStroke()) {
+        if (decoration_style.HasVisibleStroke()) {
           PaintFlags stroke_flags;
           if (!SVGObjectPainter(*decoration_layout_object)
                    .PreparePaint(paint_info, decoration_style,
                                  kApplyToStrokeMode, stroke_flags))
             break;
           stroke_flags.setAntiAlias(true);
-          float stroke_scale_factor =
-              svg_decoration_style.VectorEffect() == VE_NON_SCALING_STROKE
-                  ? 1 / scaling_factor
-                  : 1;
+          float stroke_scale_factor = decoration_style.VectorEffect() ==
+                                              EVectorEffect::kNonScalingStroke
+                                          ? 1 / scaling_factor
+                                          : 1;
           StrokeData stroke_data;
           SVGLayoutSupport::ApplyStrokeStyleToStrokeData(
               stroke_data, decoration_style, *decoration_layout_object,
@@ -421,9 +412,11 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
     return false;
   flags.setAntiAlias(true);
 
-  if (HasShadow(paint_info, style)) {
-    flags.setLooper(style.TextShadow()->CreateDrawLooper(
-        DrawLooperBuilder::kShadowRespectsAlpha,
+  if (style.TextShadow() &&
+      // Text shadows are disabled when printing. http://crbug.com/258321
+      !InlineLayoutObject().GetDocument().Printing()) {
+    flags.setLooper(TextPainterBase::CreateDrawLooper(
+        style.TextShadow(), DrawLooperBuilder::kShadowRespectsAlpha,
         style.VisitedDependentColor(GetCSSPropertyColor()),
         style.UsedColorScheme()));
   }
@@ -431,7 +424,7 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
   if (resource_mode == kApplyToStrokeMode) {
     // The stroke geometry needs be generated based on the scaled font.
     float stroke_scale_factor =
-        style.SvgStyle().VectorEffect() != VE_NON_SCALING_STROKE
+        style.VectorEffect() != EVectorEffect::kNonScalingStroke
             ? scaling_factor
             : 1;
     StrokeData stroke_data;
@@ -485,6 +478,48 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   }
 }
 
+namespace {
+
+class SelectionStyleScope {
+  STACK_ALLOCATED();
+
+ public:
+  SelectionStyleScope(LayoutObject&,
+                      const ComputedStyle& style,
+                      const ComputedStyle& selection_style);
+  SelectionStyleScope(const SelectionStyleScope&) = delete;
+  SelectionStyleScope& operator=(const SelectionStyleScope) = delete;
+  ~SelectionStyleScope();
+
+ private:
+  LayoutObject& layout_object_;
+  const ComputedStyle& selection_style_;
+  const bool styles_are_equal_;
+};
+
+SelectionStyleScope::SelectionStyleScope(LayoutObject& layout_object,
+                                         const ComputedStyle& style,
+                                         const ComputedStyle& selection_style)
+    : layout_object_(layout_object),
+      selection_style_(selection_style),
+      styles_are_equal_(style == selection_style) {
+  if (styles_are_equal_)
+    return;
+  DCHECK(IsA<SVGElement>(layout_object.GetNode()) &&
+         !layout_object.IsSVGInlineText());
+  auto& element = To<SVGElement>(*layout_object_.GetNode());
+  SVGResources::UpdatePaints(element, nullptr, selection_style_);
+}
+
+SelectionStyleScope::~SelectionStyleScope() {
+  if (styles_are_equal_)
+    return;
+  auto& element = To<SVGElement>(*layout_object_.GetNode());
+  SVGResources::ClearPaints(element, &selection_style_);
+}
+
+}  // namespace
+
 void SVGInlineTextBoxPainter::PaintText(
     const PaintInfo& paint_info,
     const ComputedStyle& style,
@@ -527,9 +562,8 @@ void SVGInlineTextBoxPainter::PaintText(
   // Draw text using selection style from the start to the end position of the
   // selection.
   {
-    SVGResourcesCache::TemporaryStyleScope scope(ParentInlineLayoutObject(),
-                                                 style, selection_style);
-
+    SelectionStyleScope scope(ParentInlineLayoutObject(), style,
+                              selection_style);
     PaintFlags flags;
     if (SetupTextPaint(paint_info, selection_style, resource_mode, flags,
                        shader_transform)) {

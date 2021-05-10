@@ -17,7 +17,7 @@ namespace chromeos {
 // suggestion according to the user action.
 class Suggester {
  public:
-  virtual ~Suggester() {}
+  virtual ~Suggester() = default;
 
   // Called when a text field gains focus, and suggester starts working.
   virtual void OnFocus(int context_id) = 0;
@@ -27,8 +27,7 @@ class Suggester {
 
   // Called when suggestion is being shown.
   // Returns SuggestionStatus as suggester handles the event.
-  virtual SuggestionStatus HandleKeyEvent(
-      const InputMethodEngineBase::KeyboardEvent& event) = 0;
+  virtual SuggestionStatus HandleKeyEvent(const ui::KeyEvent& event) = 0;
 
   // Check if suggestion should be displayed according to the surrounding text
   // information.

@@ -44,9 +44,12 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
     dawn_desc.label = label.c_str();
   }
 
-  return MakeGarbageCollected<GPURenderBundleEncoder>(
-      device, device->GetProcs().deviceCreateRenderBundleEncoder(
-                  device->GetHandle(), &dawn_desc));
+  GPURenderBundleEncoder* encoder =
+      MakeGarbageCollected<GPURenderBundleEncoder>(
+          device, device->GetProcs().deviceCreateRenderBundleEncoder(
+                      device->GetHandle(), &dawn_desc));
+  encoder->setLabel(webgpu_desc->label());
+  return encoder;
 }
 
 GPURenderBundleEncoder::GPURenderBundleEncoder(
@@ -54,11 +57,10 @@ GPURenderBundleEncoder::GPURenderBundleEncoder(
     WGPURenderBundleEncoder render_bundle_encoder)
     : DawnObject<WGPURenderBundleEncoder>(device, render_bundle_encoder) {}
 
-GPURenderBundleEncoder::~GPURenderBundleEncoder() {
-  if (IsDawnControlClientDestroyed()) {
-    return;
-  }
-  GetProcs().renderBundleEncoderRelease(GetHandle());
+void GPURenderBundleEncoder::setBindGroup(uint32_t index,
+                                          GPUBindGroup* bindGroup) {
+  GetProcs().renderBundleEncoderSetBindGroup(
+      GetHandle(), index, bindGroup->GetHandle(), 0, nullptr);
 }
 
 void GPURenderBundleEncoder::setBindGroup(
@@ -110,28 +112,11 @@ void GPURenderBundleEncoder::setPipeline(GPURenderPipeline* pipeline) {
 }
 
 void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
+                                            const V8GPUIndexFormat& format,
                                             uint64_t offset,
                                             uint64_t size) {
-  device_->AddConsoleWarning(
-      "Calling setIndexBuffer without a GPUIndexFormat is deprecated.");
-  GetProcs().renderBundleEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
-                                               offset, size);
-}
-
-void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
-                                            const WTF::String& format,
-                                            uint64_t offset,
-                                            uint64_t size,
-                                            ExceptionState& exception_state) {
-  if (format != "uint16" && format != "uint32") {
-    exception_state.ThrowTypeError(
-        "The provided value '" + format +
-        "' is not a valid enum value of type GPUIndexFormat.");
-    return;
-  }
   GetProcs().renderBundleEncoderSetIndexBufferWithFormat(
-      GetHandle(), buffer->GetHandle(), AsDawnEnum<WGPUIndexFormat>(format),
-      offset, size);
+      GetHandle(), buffer->GetHandle(), AsDawnEnum(format), offset, size);
 }
 
 void GPURenderBundleEncoder::setVertexBuffer(uint32_t slot,

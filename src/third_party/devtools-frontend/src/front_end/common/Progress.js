@@ -68,9 +68,6 @@ export class Progress {
   }
 }
 
-/**
- * @unrestricted
- */
 export class CompositeProgress {
   /**
    * @param {!Progress} parent
@@ -118,7 +115,6 @@ export class CompositeProgress {
 
 /**
  * @implements {Progress}
- * @unrestricted
  */
 export class SubProgress {
   /**
@@ -191,7 +187,6 @@ export class SubProgress {
 
 /**
  * @implements {Progress}
- * @unrestricted
  */
 export class ProgressProxy {
   /**

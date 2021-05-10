@@ -18,52 +18,52 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
 #include "src/writer/wgsl/generator_impl.h"
+#include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 namespace {
 
-using WgslGeneratorImplTest = testing::Test;
+using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_If) {
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(cond, body, ast::ElseStatementList{});
 
-  ast::IfStatement i(std::move(cond), std::move(body));
+  GeneratorImpl& gen = Build();
 
-  GeneratorImpl g;
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitStatement(&i)) << g.error();
-  EXPECT_EQ(g.result(), R"(  if (cond) {
+  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  if (cond) {
     discard;
   }
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_IfWithElseIf) {
-  auto else_cond = std::make_unique<ast::IdentifierExpression>("else_cond");
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::DiscardStatement>());
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_cond),
-                                                       std::move(else_body)));
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      Expr("cond"), body,
+      ast::ElseStatementList{
+          create<ast::ElseStatement>(Expr("else_cond"), else_body)});
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
+  gen.increment_indent();
 
-  GeneratorImpl g;
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&i)) << g.error();
-  EXPECT_EQ(g.result(), R"(  if (cond) {
+  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  if (cond) {
     discard;
   } elseif (else_cond) {
     discard;
@@ -72,24 +72,24 @@ TEST_F(WgslGeneratorImplTest, Emit_IfWithElseIf) {
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_IfWithElse) {
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::DiscardStatement>());
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_body)));
+  auto* cond = Expr("cond");
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      cond, body,
+      ast::ElseStatementList{create<ast::ElseStatement>(nullptr, else_body)});
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  GeneratorImpl& gen = Build();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
+  gen.increment_indent();
 
-  GeneratorImpl g;
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&i)) << g.error();
-  EXPECT_EQ(g.result(), R"(  if (cond) {
+  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  if (cond) {
     discard;
   } else {
     discard;
@@ -98,31 +98,30 @@ TEST_F(WgslGeneratorImplTest, Emit_IfWithElse) {
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_IfWithMultiple) {
-  auto else_cond = std::make_unique<ast::IdentifierExpression>("else_cond");
+  auto* else_body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  auto else_body = std::make_unique<ast::BlockStatement>();
-  else_body->append(std::make_unique<ast::DiscardStatement>());
+  auto* else_body_2 = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
 
-  auto else_body_2 = std::make_unique<ast::BlockStatement>();
-  else_body_2->append(std::make_unique<ast::DiscardStatement>());
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::DiscardStatement>(),
+  });
+  auto* i = create<ast::IfStatement>(
+      Expr("cond"), body,
+      ast::ElseStatementList{
+          create<ast::ElseStatement>(Expr("else_cond"), else_body),
+          create<ast::ElseStatement>(nullptr, else_body_2),
+      });
 
-  ast::ElseStatementList elses;
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_cond),
-                                                       std::move(else_body)));
-  elses.push_back(std::make_unique<ast::ElseStatement>(std::move(else_body_2)));
+  GeneratorImpl& gen = Build();
 
-  auto cond = std::make_unique<ast::IdentifierExpression>("cond");
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::DiscardStatement>());
+  gen.increment_indent();
 
-  ast::IfStatement i(std::move(cond), std::move(body));
-  i.set_else_statements(std::move(elses));
-
-  GeneratorImpl g;
-  g.increment_indent();
-
-  ASSERT_TRUE(g.EmitStatement(&i)) << g.error();
-  EXPECT_EQ(g.result(), R"(  if (cond) {
+  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  if (cond) {
     discard;
   } elseif (else_cond) {
     discard;

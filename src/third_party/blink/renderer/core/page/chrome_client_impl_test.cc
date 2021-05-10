@@ -65,9 +65,9 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicyFeatureState&,
                       const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture) override {
+                      bool& consumed_user_gesture,
+                      const base::Optional<WebImpression>&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
 
@@ -98,11 +98,10 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
   bool consumed_user_gesture = false;
-  EXPECT_EQ(nullptr,
-            chrome_client_impl_->CreateWindow(
-                frame, request, "", features,
-                network::mojom::blink::WebSandboxFlags::kNone,
-                FeaturePolicyFeatureState(), "", consumed_user_gesture));
+  EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
+                         frame, request, "", features,
+                         network::mojom::blink::WebSandboxFlags::kNone, "",
+                         consumed_user_gesture));
 }
 
 class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,

@@ -50,14 +50,15 @@ GetPrefetchSuggestionsTask::GetPrefetchSuggestionsTask(
 GetPrefetchSuggestionsTask::~GetPrefetchSuggestionsTask() = default;
 
 void GetPrefetchSuggestionsTask::Run() {
-  if (stream_->GetModel()) {
-    PullSuggestionsFromModel(*stream_->GetModel());
+  if (stream_->GetModel(kInterestStream)) {
+    PullSuggestionsFromModel(*stream_->GetModel(kInterestStream));
     return;
   }
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      LoadStreamFromStoreTask::LoadType::kFullLoad, stream_->GetStore(),
-      stream_->GetClock(),
+      LoadStreamFromStoreTask::LoadType::kFullLoad, kInterestStream,
+      stream_->GetStore(),
+      /*missed_last_refresh=*/false,
       base::BindOnce(&GetPrefetchSuggestionsTask::LoadStreamComplete,
                      base::Unretained(this)));
 

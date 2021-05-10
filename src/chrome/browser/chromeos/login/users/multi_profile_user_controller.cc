@@ -8,8 +8,8 @@
 
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -151,9 +151,10 @@ void MultiProfileUserController::StartObserving(Profile* user_profile) {
 
   std::unique_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar);
   registrar->Init(user_profile->GetPrefs());
-  registrar->Add(prefs::kMultiProfileUserBehavior,
-                 base::Bind(&MultiProfileUserController::OnUserPrefChanged,
-                            base::Unretained(this), user_profile));
+  registrar->Add(
+      prefs::kMultiProfileUserBehavior,
+      base::BindRepeating(&MultiProfileUserController::OnUserPrefChanged,
+                          base::Unretained(this), user_profile));
   pref_watchers_.push_back(std::move(registrar));
 
   OnUserPrefChanged(user_profile);

@@ -110,8 +110,9 @@ private:
     UniformHandle bias23Var;
     UniformHandle thresholdVar;
 };
-GrGLSLFragmentProcessor* GrDualIntervalGradientColorizer::onCreateGLSLInstance() const {
-    return new GrGLSLDualIntervalGradientColorizer();
+std::unique_ptr<GrGLSLFragmentProcessor> GrDualIntervalGradientColorizer::onMakeProgramImpl()
+        const {
+    return std::make_unique<GrGLSLDualIntervalGradientColorizer>();
 }
 void GrDualIntervalGradientColorizer::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                             GrProcessorKeyBuilder* b) const {}
@@ -125,7 +126,6 @@ bool GrDualIntervalGradientColorizer::onIsEqual(const GrFragmentProcessor& other
     if (threshold != that.threshold) return false;
     return true;
 }
-bool GrDualIntervalGradientColorizer::usesExplicitReturn() const { return true; }
 GrDualIntervalGradientColorizer::GrDualIntervalGradientColorizer(
         const GrDualIntervalGradientColorizer& src)
         : INHERITED(kGrDualIntervalGradientColorizer_ClassID, src.optimizationFlags())

@@ -13,18 +13,17 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/input_host_helper.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/native_input_method_engine.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -162,25 +161,6 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   ~ImeObserverChromeOS() override = default;
 
   // chromeos::InputMethodEngineBase::Observer overrides.
-  void OnInputContextUpdate(
-      const IMEEngineHandlerInterface::InputContext& context) override {
-    if (extension_id_.empty() ||
-        !HasListener(input_ime::OnInputContextUpdate::kEventName))
-      return;
-
-    input_ime::InputContext context_value;
-    context_value.context_id = context.id;
-    context_value.type =
-        input_ime::ParseInputContextType(ConvertInputContextType(context));
-
-    std::unique_ptr<base::ListValue> args(
-        input_ime::OnInputContextUpdate::Create(context_value));
-
-    DispatchEventToExtension(
-        extensions::events::INPUT_IME_ON_INPUT_CONTEXT_UPDATE,
-        input_ime::OnInputContextUpdate::kEventName, std::move(args));
-  }
-
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
@@ -457,9 +437,14 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_SENTENCES)
       return input_method_private::AUTO_CAPITALIZE_TYPE_SENTENCES;
 
-    // Autocapitalize flag may be missing for native text fields.
-    // See https://crbug.com/1002713.
-    return input_method_private::AUTO_CAPITALIZE_TYPE_NONE;
+    // Autocapitalize flag may be missing for native text fields, crbug/1002713.
+    // As a safe default, use input_method_private::AUTO_CAPITALIZE_TYPE_OFF
+    // ("off" in API specs). This corresponds to Blink's "off" represented by
+    // ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE. Note: This fallback must not be
+    // input_method_private::AUTO_CAPITALIZE_TYPE_NONE which means "unspecified"
+    // and translates to JS falsy empty string, because the API specifies a
+    // non-falsy AutoCapitalizeType enum for InputContext.autoCapitalize.
+    return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
   }
 
   bool ConvertInputContextSpellCheck(
@@ -563,10 +548,17 @@ bool InputImeEventRouter::RegisterImeExtension(
   // descriptors for component IME extensions are managed by InputMethodUtil.
   if (!comp_ext_ime_manager->IsAllowlistedExtension(extension_id)) {
     for (const auto& component : input_components) {
-      DCHECK(component.type == INPUT_COMPONENT_TYPE_IME);
+      // For legacy reasons, multiple physical keyboard XKB layouts can be
+      // specified in the IME extension manifest for each input method. However,
+      // CrOS only supports one layout per input method. Thus use the "first"
+      // layout if specified, else default to "us". Please note however, as
+      // "layouts" in the manifest are considered unordered and parsed into an
+      // std::set, if there are multiple, it's actually undefined as to which
+      // "first" entry is used. CrOS IME extension manifests should therefore
+      // specify one and only one layout per input method to avoid confusion.
+      const std::string& layout =
+          component.layouts.empty() ? "us" : *component.layouts.begin();
 
-      std::vector<std::string> layouts;
-      layouts.assign(component.layouts.begin(), component.layouts.end());
       std::vector<std::string> languages;
       languages.assign(component.languages.begin(), component.languages.end());
 
@@ -574,14 +566,11 @@ bool InputImeEventRouter::RegisterImeExtension(
           chromeos::extension_ime_util::GetInputMethodID(extension_id,
                                                          component.id);
       descriptors.push_back(chromeos::input_method::InputMethodDescriptor(
-          input_method_id,
-          component.name,
+          input_method_id, component.name,
           std::string(),  // TODO(uekawa): Set short name.
-          layouts,
-          languages,
+          layout, languages,
           false,  // 3rd party IMEs are always not for login.
-          component.options_page_url,
-          component.input_view_url));
+          component.options_page_url, component.input_view_url));
     }
   }
 

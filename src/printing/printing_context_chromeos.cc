@@ -30,11 +30,23 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/printing_features.h"
+#include "printing/printing_utils.h"
 #include "printing/units.h"
 
 namespace printing {
 
 namespace {
+
+// We only support sending username for secure printers.
+const char kUsernamePlaceholder[] = "chronos";
+
+// We only support sending document name for secure printers.
+const char kDocumentNamePlaceholder[] = "-";
+
+bool IsUriInsecure(const base::StringPiece uri) {
+  return !base::StartsWith(uri, "ipps:") && !base::StartsWith(uri, "https:") &&
+         !base::StartsWith(uri, "usb:") && !base::StartsWith(uri, "ippusb:");
+}
 
 // Returns a new char buffer which is a null-terminated copy of |value|.  The
 // caller owns the returned string.
@@ -178,7 +190,7 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
   options.push_back(
       ConstructOption(kIppColor,
                       GetIppColorModelForModel(settings.color())));  // color
-  options.push_back(ConstructOption(kIppDuplex, sides));         // duplexing
+  options.push_back(ConstructOption(kIppDuplex, sides));  // duplexing
   options.push_back(
       ConstructOption(kIppMedia,
                       settings.requested_media().vendor_id));  // paper size
@@ -200,37 +212,35 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
     options.push_back(ConstructOption(kIppResolution, dpi + "dpi"));
   }
 
-  if (base::FeatureList::IsEnabled(
-          printing::features::kAdvancedPpdAttributes)) {
-    size_t regular_attr_count = options.size();
-    std::map<std::string, std::vector<std::string>> multival;
-    for (const auto& setting : settings.advanced_settings()) {
-      const std::string& key = setting.first;
-      const std::string& value = setting.second.GetString();
-      if (value.empty())
-        continue;
+  size_t regular_attr_count = options.size();
+  std::map<std::string, std::vector<std::string>> multival;
+  for (const auto& setting : settings.advanced_settings()) {
+    const std::string& key = setting.first;
+    const std::string& value = setting.second.GetString();
+    if (value.empty())
+      continue;
 
-      // Check for multivalue enum ("attribute/value").
-      size_t pos = key.find('/');
-      if (pos == std::string::npos) {
-        // Regular value.
-        ReportEnumUsage(key);
-        options.push_back(ConstructOption(key, value));
-        continue;
-      }
-      // Store selected enum values.
-      if (value == kOptionTrue)
-        multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
+    // Check for multivalue enum ("attribute/value").
+    size_t pos = key.find('/');
+    if (pos == std::string::npos) {
+      // Regular value.
+      ReportEnumUsage(key);
+      options.push_back(ConstructOption(key, value));
+      continue;
     }
-    // Pass multivalue enums as comma-separated lists.
-    for (const auto& it : multival) {
-      ReportEnumUsage(it.first);
-      options.push_back(
-          ConstructOption(it.first, base::JoinString(it.second, ",")));
-    }
-    base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesUsed",
-                                 options.size() - regular_attr_count);
+    // Store selected enum values.
+    if (value == kOptionTrue)
+      multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
   }
+
+  // Pass multivalue enums as comma-separated lists.
+  for (const auto& it : multival) {
+    ReportEnumUsage(it.first);
+    options.push_back(
+        ConstructOption(it.first, base::JoinString(it.second, ",")));
+  }
+  base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesUsed",
+                               options.size() - regular_attr_count);
 
   return options;
 }
@@ -242,7 +252,14 @@ std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 
 PrintingContextChromeos::PrintingContextChromeos(Delegate* delegate)
     : PrintingContext(delegate),
-      connection_(GURL(), HTTP_ENCRYPT_NEVER, true),
+      connection_(CupsConnection::Create(GURL(), HTTP_ENCRYPT_NEVER, true)),
+      send_user_info_(false) {}
+
+PrintingContextChromeos::PrintingContextChromeos(
+    Delegate* delegate,
+    std::unique_ptr<CupsConnection> connection)
+    : PrintingContext(delegate),
+      connection_(std::move(connection)),
       send_user_info_(false) {}
 
 PrintingContextChromeos::~PrintingContextChromeos() {
@@ -357,14 +374,12 @@ PrintingContext::Result PrintingContextChromeos::UpdatePrinterSettings(
   send_user_info_ = settings_->send_user_info();
   if (send_user_info_) {
     DCHECK(printer_);
-    std::string uri_string = printer_->GetUri();
-    const base::StringPiece uri(uri_string);
-    if (!base::StartsWith(uri, "ipps:") && !base::StartsWith(uri, "https:") &&
-        !base::StartsWith(uri, "usb:") && !base::StartsWith(uri, "ippusb:")) {
-      return OnError();
+    if (IsUriInsecure(printer_->GetUri())) {
+      username_ = kUsernamePlaceholder;
+    } else {
+      username_ = settings_->username();
     }
   }
-  username_ = send_user_info_ ? settings_->username() : std::string();
 
   return OK;
 }
@@ -373,7 +388,7 @@ PrintingContext::Result PrintingContextChromeos::InitializeDevice(
     const std::string& device) {
   DCHECK(!in_print_job_);
 
-  std::unique_ptr<CupsPrinter> printer = connection_.GetPrinter(device);
+  std::unique_ptr<CupsPrinter> printer = connection_->GetPrinter(device);
   if (!printer) {
     LOG(WARNING) << "Could not initialize device";
     return OnError();
@@ -390,8 +405,14 @@ PrintingContext::Result PrintingContextChromeos::NewDocument(
   in_print_job_ = true;
 
   std::string converted_name;
-  if (send_user_info_)
-    converted_name = base::UTF16ToUTF8(document_name);
+  if (send_user_info_) {
+    DCHECK(printer_);
+    if (IsUriInsecure(printer_->GetUri())) {
+      converted_name = kDocumentNamePlaceholder;
+    } else {
+      converted_name = base::UTF16ToUTF8(document_name);
+    }
+  }
 
   std::vector<cups_option_t> options;
   for (const ScopedCupsOption& option : cups_options_) {

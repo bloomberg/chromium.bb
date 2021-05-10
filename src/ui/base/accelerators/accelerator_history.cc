@@ -4,11 +4,49 @@
 
 #include "ui/base/accelerators/accelerator_history.h"
 
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "ui/events/event.h"
+#include "ui/events/event_target.h"
+
 namespace ui {
 
-AcceleratorHistory::AcceleratorHistory() {}
+namespace {
 
-AcceleratorHistory::~AcceleratorHistory() {}
+bool ShouldFilter(ui::KeyEvent* event) {
+  const ui::EventType type = event->type();
+  if (!event->target() ||
+      (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED) ||
+      event->is_char() || !event->target() ||
+      // Key events with key code of VKEY_PROCESSKEY, usually created by virtual
+      // keyboard (like handwriting input), have no effect on accelerator and
+      // they may disturb the accelerator history. So filter them out. (see
+      // https://crbug.com/918317)
+      event->key_code() == ui::VKEY_PROCESSKEY) {
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
+AcceleratorHistory::AcceleratorHistory() = default;
+
+AcceleratorHistory::~AcceleratorHistory() = default;
+
+void AcceleratorHistory::OnKeyEvent(ui::KeyEvent* event) {
+  DCHECK(event->target());
+  if (!ShouldFilter(event))
+    StoreCurrentAccelerator(ui::Accelerator(*event));
+}
+
+void AcceleratorHistory::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    InterruptCurrentAccelerator();
+  }
+}
 
 void AcceleratorHistory::StoreCurrentAccelerator(
     const Accelerator& accelerator) {
@@ -22,7 +60,19 @@ void AcceleratorHistory::StoreCurrentAccelerator(
     if (!currently_pressed_keys_.emplace(accelerator.key_code()).second)
       return;
   } else {
-    currently_pressed_keys_.erase(accelerator.key_code());
+    if (!currently_pressed_keys_.erase(accelerator.key_code())) {
+      // If the released accelerator doesn't have a corresponding press stored,
+      // likely the language was changed between press and release. Clear
+      // `currently_pressed_keys_` to prevent keys being left pressed.
+      std::string pressed_keys;
+      for (auto key_code : currently_pressed_keys_)
+        pressed_keys.append(base::NumberToString(key_code).append(" "));
+      LOG(WARNING) << "Key Release (" << accelerator.key_code()
+                   << ") delivered with no corresponding Press. "
+                      "Clearing all pressed keys: "
+                   << pressed_keys;
+      currently_pressed_keys_.clear();
+    }
   }
 
   if (accelerator != current_accelerator_) {

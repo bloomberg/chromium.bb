@@ -28,6 +28,7 @@
 #include "include/gpu/GrTypes.h"
 #include "include/private/SkTArray.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrPixmap.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 #include "tools/ToolUtils.h"
@@ -36,7 +37,7 @@
 #include <string.h>
 #include <utility>
 
-class GrRenderTargetContext;
+class GrSurfaceDrawContext;
 
 static const int kNumMatrices = 6;
 static const int kImageSize = 128;
@@ -93,8 +94,7 @@ static sk_sp<SkImage> make_text_image(GrDirectContext* direct, const char* text,
 
     SkRect bounds;
     font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds);
-    const SkMatrix mat = SkMatrix::MakeRectToRect(bounds, SkRect::MakeWH(kLabelSize, kLabelSize),
-                                                  SkMatrix::kFill_ScaleToFit);
+    const SkMatrix mat = SkMatrix::RectToRect(bounds, SkRect::MakeWH(kLabelSize, kLabelSize));
 
     const SkImageInfo ii = SkImageInfo::MakeN32Premul(kLabelSize, kLabelSize);
     sk_sp<SkSurface> surf = SkSurface::MakeRaster(ii);
@@ -133,7 +133,7 @@ static sk_sp<SkImage> make_reference_image(GrDirectContext* context,
     auto origin = bottomLeftOrigin ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
 
     auto view = sk_gpu_test::MakeTextureProxyViewFromData(context, GrRenderable::kNo, origin,
-                                                          bm.info(), bm.getPixels(), bm.rowBytes());
+                                                          bm.pixmap());
     if (!view) {
         return nullptr;
     }
@@ -200,7 +200,8 @@ private:
                 canvas->drawImageRect(image, kSubsets[matIndex],
                                       drawScaled ? SkRect::MakeWH(kImageSize, kImageSize)
                                                  : kSubsets[matIndex],
-                                      nullptr, SkCanvas::kFast_SrcRectConstraint);
+                                      SkSamplingOptions(), nullptr,
+                                      SkCanvas::kFast_SrcRectConstraint);
             } else {
                 canvas->drawImage(image, 0, 0);
             }
@@ -268,7 +269,7 @@ private:
         fReferenceImages[0] = fReferenceImages[1] = nullptr;
     }
 
-    void onDraw(GrRecordingContext*, GrRenderTargetContext*, SkCanvas* canvas) override {
+    void onDraw(GrRecordingContext*, GrSurfaceDrawContext*, SkCanvas* canvas) override {
         SkASSERT(fReferenceImages[0] && fReferenceImages[1]);
 
         canvas->save();

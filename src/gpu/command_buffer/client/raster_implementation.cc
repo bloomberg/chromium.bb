@@ -1138,32 +1138,23 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
 }
 
 namespace {
-constexpr size_t kNumMailboxes = 4;
+constexpr size_t kNumMailboxes = SkYUVAInfo::kMaxPlanes + 1;
 }  // namespace
 
-void RasterImplementation::ConvertYUVMailboxesToRGB(
+void RasterImplementation::ConvertYUVAMailboxesToRGB(
     const gpu::Mailbox& dest_mailbox,
     SkYUVColorSpace planes_yuv_color_space,
-    const gpu::Mailbox& y_plane_mailbox,
-    const gpu::Mailbox& u_plane_mailbox,
-    const gpu::Mailbox& v_plane_mailbox) {
-  gpu::Mailbox mailboxes[kNumMailboxes] = {y_plane_mailbox, u_plane_mailbox,
-                                           v_plane_mailbox, dest_mailbox};
-  helper_->ConvertYUVMailboxesToRGBINTERNALImmediate(
-      planes_yuv_color_space, GL_FALSE, reinterpret_cast<GLbyte*>(mailboxes));
-}
-
-void RasterImplementation::ConvertNV12MailboxesToRGB(
-    const gpu::Mailbox& dest_mailbox,
-    SkYUVColorSpace planes_yuv_color_space,
-    const gpu::Mailbox& y_plane_mailbox,
-    const gpu::Mailbox& uv_planes_mailbox) {
-  // We send an empty Mailbox in place of the v plane because NV12 combine the u
-  // and v planes.
-  gpu::Mailbox mailboxes[kNumMailboxes] = {y_plane_mailbox, uv_planes_mailbox,
-                                           gpu::Mailbox(), dest_mailbox};
-  helper_->ConvertYUVMailboxesToRGBINTERNALImmediate(
-      planes_yuv_color_space, GL_TRUE, reinterpret_cast<GLbyte*>(mailboxes));
+    SkYUVAInfo::PlaneConfig plane_config,
+    SkYUVAInfo::Subsampling subsampling,
+    const gpu::Mailbox yuva_plane_mailboxes[]) {
+  gpu::Mailbox mailboxes[kNumMailboxes]{};
+  for (int i = 0; i < SkYUVAInfo::NumPlanes(plane_config); ++i) {
+    mailboxes[i] = yuva_plane_mailboxes[i];
+  }
+  mailboxes[kNumMailboxes - 1] = dest_mailbox;
+  helper_->ConvertYUVAMailboxesToRGBINTERNALImmediate(
+      planes_yuv_color_space, static_cast<GLenum>(plane_config),
+      static_cast<GLenum>(subsampling), reinterpret_cast<GLbyte*>(mailboxes));
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(
@@ -1330,6 +1321,9 @@ void RasterImplementation::ReadbackImagePixels(
   GLint shm_id = scoped_shared_memory.shm_id();
   GLuint shm_offset = scoped_shared_memory.offset();
   void* address = scoped_shared_memory.address();
+  auto result =
+      GetResultAs<cmds::ReadbackImagePixelsINTERNALImmediate::Result>();
+  *result = 0;
 
   if (dst_info.colorSpace()) {
     size_t bytes_written = dst_info.colorSpace()->writeToMemory(address);
@@ -1339,8 +1333,12 @@ void RasterImplementation::ReadbackImagePixels(
   helper_->ReadbackImagePixelsINTERNALImmediate(
       src_x, src_y, dst_info.width(), dst_info.height(), dst_row_bytes,
       dst_info.colorType(), dst_info.alphaType(), shm_id, shm_offset,
-      pixels_offset, source_mailbox.name);
+      pixels_offset, GetResultShmId(), result.offset(), source_mailbox.name);
   WaitForCmd();
+
+  if (!*result)
+    return;
+
   memcpy(dst_pixels, static_cast<uint8_t*>(address) + pixels_offset, dst_size);
 }
 

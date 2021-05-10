@@ -11,10 +11,8 @@ import * as UI from '../ui/ui.js';
  * @type {?SensorsView}
  */
 let _instanceObject = null;
+const {ls} = Common;
 
-/**
- * @unrestricted
- */
 export class SensorsView extends UI.Widget.VBox {
   constructor() {
     super(true);
@@ -246,7 +244,7 @@ export class SensorsView extends UI.Widget.VBox {
         this._latitudeInput, this._applyLocationUserInput.bind(this), SDK.EmulationModel.Location.latitudeValidator,
         true, 0.1);
     this._latitudeSetter(String(location.latitude));
-    this._latitudeInput.title = modifierKeyMessage;
+    UI.Tooltip.Tooltip.install(this._latitudeInput, modifierKeyMessage);
     latitudeGroup.appendChild(UI.UIUtils.createLabel(ls`Latitude`, 'latlong-title', this._latitudeInput));
 
     this._longitudeInput = UI.UIUtils.createInput('', 'number');
@@ -257,7 +255,7 @@ export class SensorsView extends UI.Widget.VBox {
         this._longitudeInput, this._applyLocationUserInput.bind(this), SDK.EmulationModel.Location.longitudeValidator,
         true, 0.1);
     this._longitudeSetter(String(location.longitude));
-    this._longitudeInput.title = modifierKeyMessage;
+    UI.Tooltip.Tooltip.install(this._longitudeInput, modifierKeyMessage);
     longitudeGroup.appendChild(UI.UIUtils.createLabel(ls`Longitude`, 'latlong-title', this._longitudeInput));
 
     this._timezoneInput = UI.UIUtils.createInput('', 'text');
@@ -424,11 +422,11 @@ export class SensorsView extends UI.Widget.VBox {
     if (disable) {
       this._deviceOrientationFieldset.disabled = true;
       this._stageElement.classList.add('disabled');
-      this._stageElement.title = ls`Enable orientation to rotate`;
+      UI.Tooltip.Tooltip.install(this._stageElement, ls`Enable orientation to rotate`);
     } else {
       this._deviceOrientationFieldset.disabled = false;
       this._stageElement.classList.remove('disabled');
-      this._stageElement.title = ls`Shift+drag horizontally to rotate around the y-axis`;
+      UI.Tooltip.Tooltip.install(this._stageElement, ls`Shift+drag horizontally to rotate around the y-axis`);
     }
   }
 
@@ -501,6 +499,9 @@ export class SensorsView extends UI.Widget.VBox {
     }
 
     if (modificationSource !== DeviceOrientationModificationSource.UserInput) {
+      // Even though the angles in |deviceOrientation| will not be rounded
+      // here, their precision will be rounded by CSS when we change
+      // |this._orientationLayer.style| in _setBoxOrientation().
       this._alphaSetter(String(roundAngle(deviceOrientation.alpha)));
       this._betaSetter(String(roundAngle(deviceOrientation.beta)));
       this._gammaSetter(String(roundAngle(deviceOrientation.gamma)));
@@ -522,15 +523,14 @@ export class SensorsView extends UI.Widget.VBox {
    * @param {!Element} parentElement
    * @param {!HTMLInputElement} input
    * @param {string} label
+   * @param {function(string):{valid: boolean, errorMessage: (string|undefined)}} validator
    * @return {function(string)}
    */
-  _createAxisInput(parentElement, input, label) {
+  _createAxisInput(parentElement, input, label, validator) {
     const div = parentElement.createChild('div', 'orientation-axis-input-container');
     div.appendChild(input);
     div.appendChild(UI.UIUtils.createLabel(label, /* className */ '', input));
-    input.type = 'number';
-    return UI.UIUtils.bindInput(
-        input, this._applyDeviceOrientationUserInput.bind(this), SDK.EmulationModel.DeviceOrientation.validator, true);
+    return UI.UIUtils.bindInput(input, this._applyDeviceOrientationUserInput.bind(this), validator, true);
   }
 
   /**
@@ -542,21 +542,25 @@ export class SensorsView extends UI.Widget.VBox {
     fieldsetElement.classList.add('device-orientation-override-section');
     const cellElement = fieldsetElement.createChild('td', 'orientation-inputs-cell');
 
-    this._alphaElement = UI.UIUtils.createInput();
+    this._alphaElement = UI.UIUtils.createInput('', 'number');
     this._alphaElement.setAttribute('step', 'any');
-    this._alphaSetter =
-        this._createAxisInput(cellElement, this._alphaElement, Common.UIString.UIString('\u03B1 (alpha)'));
+    this._alphaSetter = this._createAxisInput(
+        cellElement, this._alphaElement, Common.UIString.UIString('\u03B1 (alpha)'),
+        SDK.EmulationModel.DeviceOrientation.alphaAngleValidator);
     this._alphaSetter(String(deviceOrientation.alpha));
 
-    this._betaElement = UI.UIUtils.createInput();
+    this._betaElement = UI.UIUtils.createInput('', 'number');
     this._betaElement.setAttribute('step', 'any');
-    this._betaSetter = this._createAxisInput(cellElement, this._betaElement, Common.UIString.UIString('\u03B2 (beta)'));
+    this._betaSetter = this._createAxisInput(
+        cellElement, this._betaElement, Common.UIString.UIString('\u03B2 (beta)'),
+        SDK.EmulationModel.DeviceOrientation.betaAngleValidator);
     this._betaSetter(String(deviceOrientation.beta));
 
-    this._gammaElement = UI.UIUtils.createInput();
+    this._gammaElement = UI.UIUtils.createInput('', 'number');
     this._gammaElement.setAttribute('step', 'any');
-    this._gammaSetter =
-        this._createAxisInput(cellElement, this._gammaElement, Common.UIString.UIString('\u03B3 (gamma)'));
+    this._gammaSetter = this._createAxisInput(
+        cellElement, this._gammaElement, Common.UIString.UIString('\u03B3 (gamma)'),
+        SDK.EmulationModel.DeviceOrientation.gammaAngleValidator);
     this._gammaSetter(String(deviceOrientation.gamma));
 
     const resetButton = UI.UIUtils.createTextButton(
@@ -578,12 +582,33 @@ export class SensorsView extends UI.Widget.VBox {
       this._stageElement.classList.remove('is-animating');
     }
 
-    // The CSS transform should not depend on matrix3d, which does not interpolate well.
-    const matrix = new WebKitCSSMatrix();
-    this._boxMatrix = matrix.rotate(-deviceOrientation.beta, deviceOrientation.gamma, -deviceOrientation.alpha);
-    const eulerAngles =
-        new UI.Geometry.EulerAngles(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
-    this._orientationLayer.style.transform = eulerAngles.toRotate3DString();
+    // It is important to explain the multiple conversions happening here. A
+    // few notes on coordinate spaces first:
+    // 1. The CSS coordinate space is left-handed. X and Y are parallel to the
+    //    screen, and Z is perpendicular to the screen. X is positive to the
+    //    right, Y is positive downwards and Z increases towards the viewer.
+    //    See https://drafts.csswg.org/css-transforms-2/#transform-rendering
+    //    for more information.
+    // 2. The Device Orientation coordinate space is right-handed. X and Y are
+    //    parallel to the screen, and Z is perpenticular to the screen. X is
+    //    positive to the right, Y is positive upwards and Z increases towards
+    //    the viewer. See
+    //    https://w3c.github.io/deviceorientation/#deviceorientation for more
+    //    information.
+    // 3. Additionally, the phone model we display is rotated +90 degrees in
+    //    the X axis in the CSS coordinate space (i.e. when all angles are 0 we
+    //    cannot see its screen in DevTools).
+    //
+    // |this._boxMatrix| is set in the Device Orientation coordinate space
+    // because it represents the phone model we show users and also because the
+    // calculations in UI.Geometry.EulerAngles assume this coordinate space (so
+    // we apply the rotations in the Z-X'-Y'' order).
+    // The CSS transforms, on the other hand, are done in the CSS coordinate
+    // space, so we need to convert 2) to 1) while keeping 3) in mind. We can
+    // cover 3) by swapping the Y and Z axes, and 2) by inverting the X axis.
+    const {alpha, beta, gamma} = deviceOrientation;
+    this._boxMatrix = new DOMMatrixReadOnly().rotate(0, 0, alpha).rotate(beta, 0, 0).rotate(0, gamma, 0);
+    this._orientationLayer.style.transform = `rotateY(${alpha}deg) rotateX(${- beta}deg) rotateZ(${gamma}deg)`;
   }
 
   /**
@@ -603,24 +628,24 @@ export class SensorsView extends UI.Widget.VBox {
     event.consume(true);
     let axis, angle;
     if (event.shiftKey) {
-      axis = new UI.Geometry.Vector(0, 0, -1);
-      angle = (this._mouseDownVector.x - mouseMoveVector.x) * ShiftDragOrientationSpeed;
+      axis = new UI.Geometry.Vector(0, 0, 1);
+      angle = (mouseMoveVector.x - this._mouseDownVector.x) * ShiftDragOrientationSpeed;
     } else {
       axis = UI.Geometry.crossProduct(this._mouseDownVector, mouseMoveVector);
       angle = UI.Geometry.calculateAngle(this._mouseDownVector, mouseMoveVector);
     }
 
-    // The mouse movement vectors occur in the screen space, which is offset by 90 degrees from
-    // the actual device orientation.
-    let currentMatrix = new WebKitCSSMatrix();
-    currentMatrix = currentMatrix.rotate(-90, 0, 0)
-                        .rotateAxisAngle(axis.x, axis.y, axis.z, angle)
-                        .rotate(90, 0, 0)
-                        .multiply(this._originalBoxMatrix);
+    // See the comment in _setBoxOrientation() for a longer explanation about
+    // the CSS coordinate space, the Device Orientation coordinate space and
+    // the conversions we make. |axis| and |angle| are in the CSS coordinate
+    // space, while |this._originalBoxMatrix| is rotated and in the Device
+    // Orientation coordinate space, which is why we swap Y and Z and invert X.
+    const currentMatrix =
+        new DOMMatrixReadOnly().rotateAxisAngle(-axis.x, axis.z, axis.y, angle).multiply(this._originalBoxMatrix);
 
-    const eulerAngles = UI.Geometry.EulerAngles.fromRotationMatrix(currentMatrix);
+    const eulerAngles = UI.Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
     const newOrientation =
-        new SDK.EmulationModel.DeviceOrientation(-eulerAngles.alpha, -eulerAngles.beta, eulerAngles.gamma);
+        new SDK.EmulationModel.DeviceOrientation(eulerAngles.alpha, eulerAngles.beta, eulerAngles.gamma);
     this._setDeviceOrientation(newOrientation, DeviceOrientationModificationSource.UserDrag);
     this._setSelectElementLabel(this._orientationSelectElement, NonPresetOptions.Custom);
     return false;
@@ -707,16 +732,18 @@ export const PresetOrientations = [{
   value: [
     {title: Common.UIString.UIString('Portrait'), orientation: '[0, 90, 0]'},
     {title: Common.UIString.UIString('Portrait upside down'), orientation: '[180, -90, 0]'},
-    {title: Common.UIString.UIString('Landscape left'), orientation: '[0, 90, -90]'},
-    {title: Common.UIString.UIString('Landscape right'), orientation: '[0, 90, 90]'},
+    {title: Common.UIString.UIString('Landscape left'), orientation: '[90, 0, -90]'},
+    {title: Common.UIString.UIString('Landscape right'), orientation: '[90, -180, -90]'},
     {title: Common.UIString.UIString('Display up'), orientation: '[0, 0, 0]'},
-    {title: Common.UIString.UIString('Display down'), orientation: '[0, 180, 0]'}
+    {title: Common.UIString.UIString('Display down'), orientation: '[0, -180, 0]'}
   ]
 }];
 
+/** @type {!ShowActionDelegate} */
+let showActionDelegateInstance;
+
 /**
- * @implements {UI.ActionDelegate.ActionDelegate}
- * @unrestricted
+ * @implements {UI.ActionRegistration.ActionDelegate}
  */
 export class ShowActionDelegate {
   /**
@@ -728,6 +755,17 @@ export class ShowActionDelegate {
   handleAction(context, actionId) {
     UI.ViewManager.ViewManager.instance().showView('sensors');
     return true;
+  }
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!showActionDelegateInstance || forceNew) {
+      showActionDelegateInstance = new ShowActionDelegate();
+    }
+
+    return showActionDelegateInstance;
   }
 }
 

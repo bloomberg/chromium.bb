@@ -11,6 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_test_utils.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -19,8 +20,10 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/test_window_builder.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
@@ -468,8 +471,11 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
 
 // Test that we exit overview mode when enabling the docked magnifier.
 TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
+  std::unique_ptr<aura::Window> window =
+      TestWindowBuilder()
+          .SetBounds(gfx::Rect(0, 0, 200, 200))
+          .AllowAllWindowStates()
+          .Build();
   WindowState::Get(window.get())->Maximize();
 
   // Enable overview mode followed by the magnifier.
@@ -504,13 +510,32 @@ TEST_F(DockedMagnifierTest, OverviewTabbing) {
   const auto* desk_bar_view = GetOverviewSession()
                                   ->GetGridWithRootWindow(root_window)
                                   ->desks_bar_view();
+  if (features::IsBentoEnabled()) {
+    ASSERT_TRUE(desk_bar_view->IsZeroState());
 
-  // Tab once. The viewport should be centered on the center of the new desk
-  // button.
-  SendKey(ui::VKEY_TAB);
-  TestMagnifierLayerTransform(
-      desk_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
-      root_window);
+    // Tab once. The viewport should be centered on the center of the default
+    // desk button in the zero state desks bar.
+    SendKey(ui::VKEY_TAB);
+    TestMagnifierLayerTransform(desk_bar_view->zero_state_default_desk_button()
+                                    ->GetBoundsInScreen()
+                                    .CenterPoint(),
+                                root_window);
+
+    // Tab one more time. The viewport should be centered on the center of the
+    // new desk button in the zero state desks bar.
+    SendKey(ui::VKEY_TAB);
+    TestMagnifierLayerTransform(desk_bar_view->zero_state_new_desk_button()
+                                    ->GetBoundsInScreen()
+                                    .CenterPoint(),
+                                root_window);
+  } else {
+    // Tab once. The viewport should be centered on the center of the new desk
+    // button.
+    SendKey(ui::VKEY_TAB);
+    TestMagnifierLayerTransform(
+        desk_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
+        root_window);
+  }
 
   // Tab one more time. The viewport should be centered on the beginning of the
   // overview item's title.
@@ -531,8 +556,11 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
+  std::unique_ptr<aura::Window> window =
+      TestWindowBuilder()
+          .SetBounds(gfx::Rect(0, 0, 200, 200))
+          .AllowAllWindowStates()
+          .Build();
   WindowState::Get(window.get())->Maximize();
 
   EXPECT_EQ(split_view_controller()->state(),
@@ -575,10 +603,16 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
-  std::unique_ptr<aura::Window> window2(
-      CreateTestWindowInShell(SK_ColorWHITE, 200, gfx::Rect(0, 0, 200, 200)));
+  std::unique_ptr<aura::Window> window1 =
+      TestWindowBuilder()
+          .SetBounds(gfx::Rect(0, 0, 200, 200))
+          .AllowAllWindowStates()
+          .Build();
+  std::unique_ptr<aura::Window> window2 =
+      TestWindowBuilder()
+          .SetBounds(gfx::Rect(0, 0, 200, 200))
+          .AllowAllWindowStates()
+          .Build();
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();

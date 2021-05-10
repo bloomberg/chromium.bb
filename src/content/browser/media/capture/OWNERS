@@ -1,4 +1,3 @@
-miu@chromium.org
 mfoltz@chromium.org
 sergeyu@chromium.org
 wez@chromium.org
@@ -8,5 +7,4 @@ per-file desktop*=braveyao@chromium.org
 per-file screen_capture*=braveyao@chromium.org
 
 per-file image_capture*=mcasas@chromium.org
-
-# COMPONENT: Internals>Media>ScreenCapture
+per-file web_contents_*=ilnik@chromium.org

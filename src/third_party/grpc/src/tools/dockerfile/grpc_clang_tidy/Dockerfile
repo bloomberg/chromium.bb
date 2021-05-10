@@ -12,31 +12,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
-
-
-RUN apt-get update && apt-get -y install wget xz-utils
-RUN wget http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-RUN tar xf clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-RUN ln -s /clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang-format /usr/local/bin/clang-format
-ENV CLANG_FORMAT=clang-format
-RUN ln -s /clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang-tidy /usr/local/bin/clang-tidy
-ENV CLANG_TIDY=clang-tidy
-
-#====================
-# Python dependencies
-
-# Install dependencies
-
+FROM debian:10
+  
+# Install Git and basic packages.
 RUN apt-get update && apt-get install -y \
-    python-all-dev \
-    python3-all-dev \
-    python-pip
+  autoconf \
+  autotools-dev \
+  build-essential \
+  bzip2 \
+  ccache \
+  curl \
+  dnsutils \
+  gcc \
+  gcc-multilib \
+  git \
+  golang \
+  gyp \
+  lcov \
+  libc6 \
+  libc6-dbg \
+  libc6-dev \
+  libgtest-dev \
+  libtool \
+  make \
+  perl \
+  strace \
+  python-dev \
+  python-setuptools \
+  python-yaml \
+  telnet \
+  unzip \
+  wget \
+  zip && apt-get clean
 
-# Install Python packages from PyPI
-RUN pip install --upgrade pip==10.0.1
-RUN pip install virtualenv
-RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 twisted==17.5.0
+#================
+# Build profiling
+RUN apt-get update && apt-get install -y time && apt-get clean
+
+# Install Python 2.7
+RUN apt-get update && apt-get install -y python2.7 python-all-dev
+RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
+
+# Google Cloud platform API libraries
+RUN pip install --upgrade google-api-python-client oauth2client
+
+
+RUN mkdir /var/local/jenkins
+
+
+
+# Add buster-backports for more recent clang packages
+RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/buster-backports.list
+
+# Install clang-tidy 7
+RUN apt-get update && apt-get install -y clang-tidy-8 jq
+ENV CLANG_TIDY=clang-tidy-8
 
 ADD clang_tidy_all_the_things.sh /
 

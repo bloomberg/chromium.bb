@@ -30,13 +30,16 @@ class PermissionPromptImpl : public permissions::PermissionPrompt,
   ~PermissionPromptImpl() override;
 
   // permissions::PermissionPrompt:
-  void UpdateAnchorPosition() override;
+  void UpdateAnchor() override;
   TabSwitchingBehavior GetTabSwitchingBehavior() override;
   permissions::PermissionPromptDisposition GetPromptDisposition()
       const override;
 
   PermissionPromptBubbleView* prompt_bubble_for_testing() {
-    return prompt_bubble_;
+    if (prompt_bubble_)
+      return prompt_bubble_;
+    return permission_chip_ ? permission_chip_->prompt_bubble_for_testing()
+                            : nullptr;
   }
 
   // views::WidgetObserver:
@@ -46,6 +49,10 @@ class PermissionPromptImpl : public permissions::PermissionPrompt,
   LocationBarView* GetLocationBarView();
 
   void ShowBubble();
+
+  void ShowChipUI();
+
+  bool ShouldCurrentRequestUseChipUI();
 
   // The popup bubble. Not owned by this class; it will delete itself when a
   // decision is made.
@@ -60,7 +67,9 @@ class PermissionPromptImpl : public permissions::PermissionPrompt,
 
   permissions::PermissionPrompt::Delegate* const delegate_;
 
-  Browser* const browser_;
+  Browser* browser_;
+
+  base::TimeTicks permission_requested_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptImpl);
 };

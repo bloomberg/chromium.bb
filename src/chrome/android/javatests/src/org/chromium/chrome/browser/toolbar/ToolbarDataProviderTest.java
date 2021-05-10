@@ -9,9 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
 
-import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
-
 import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
@@ -23,12 +20,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -38,15 +30,12 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.TimeoutException;
-
 /**
  * Instrumentation tests for {@link ToolbarDataProvider}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-@Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
 @Batch(PER_CLASS)
 public class ToolbarDataProviderTest {
     @Rule
@@ -54,9 +43,6 @@ public class ToolbarDataProviderTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
-    @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     @Rule
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
@@ -80,36 +66,6 @@ public class ToolbarDataProviderTest {
         ToolbarPhone toolbar = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = toolbar.getToolbarDataProvider().getProfile();
-            assertFalse(profile.isOffTheRecord());
-        });
-    }
-
-    @Test
-    @MediumTest
-    public void testNonPrimaryOTRProfileUsedForIncognitoCCT() throws TimeoutException {
-        Intent intent = CustomTabsTestUtils.createMinimalIncognitoCustomTabIntent(
-                InstrumentationRegistry.getContext(), "about:blank");
-        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-        CustomTabToolbar customTabToolbar =
-                mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = customTabToolbar.getToolbarDataProvider().getProfile();
-            assertTrue(profile.isOffTheRecord());
-            assertFalse(profile.isPrimaryOTRProfile());
-        });
-    }
-
-    @Test
-    @MediumTest
-    public void testRegularProfileUsedForRegularCCT() {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getContext(), "about:blank");
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-        CustomTabToolbar customTabToolbar =
-                mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = customTabToolbar.getToolbarDataProvider().getProfile();
             assertFalse(profile.isOffTheRecord());
         });
     }

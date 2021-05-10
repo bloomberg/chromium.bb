@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_D3D12_SHADERMODULED3D12_H_
 #define DAWNNATIVE_D3D12_SHADERMODULED3D12_H_
 
+#include "dawn_native/PersistentCache.h"
 #include "dawn_native/ShaderModule.h"
 
 #include "dawn_native/d3d12/d3d12_platform.h"
@@ -24,35 +25,61 @@ namespace dawn_native { namespace d3d12 {
     class Device;
     class PipelineLayout;
 
-    ResultOrError<ComPtr<IDxcBlob>> CompileShaderDXC(Device* device,
-                                                     SingleShaderStage stage,
-                                                     const std::string& hlslSource,
-                                                     const char* entryPoint,
-                                                     uint32_t compileFlags);
-    ResultOrError<ComPtr<ID3DBlob>> CompileShaderFXC(Device* device,
-                                                     SingleShaderStage stage,
-                                                     const std::string& hlslSource,
-                                                     const char* entryPoint,
-                                                     uint32_t compileFlags);
+    struct FirstOffsetInfo {
+        bool usesVertexIndex;
+        uint32_t vertexIndexOffset;
+        bool usesInstanceIndex;
+        uint32_t instanceIndexOffset;
+    };
+
+    // Manages a ref to one of the various representations of shader blobs and information used to
+    // emulate vertex/instance index starts
+    struct CompiledShader {
+        ScopedCachedBlob cachedShader;
+        ComPtr<ID3DBlob> compiledFXCShader;
+        ComPtr<IDxcBlob> compiledDXCShader;
+        D3D12_SHADER_BYTECODE GetD3D12ShaderBytecode() const;
+
+        FirstOffsetInfo firstOffsetInfo;
+    };
 
     class ShaderModule final : public ShaderModuleBase {
       public:
         static ResultOrError<ShaderModule*> Create(Device* device,
-                                                   const ShaderModuleDescriptor* descriptor);
+                                                   const ShaderModuleDescriptor* descriptor,
+                                                   ShaderModuleParseResult* parseResult);
 
-        ResultOrError<std::string> TranslateToHLSLWithTint(
-            const char* entryPointName,
-            SingleShaderStage stage,
-            PipelineLayout* layout,
-            std::string* remappedEntryPointName) const;
+        ResultOrError<CompiledShader> Compile(const char* entryPointName,
+                                              SingleShaderStage stage,
+                                              PipelineLayout* layout,
+                                              uint32_t compileFlags);
+
+      private:
+        ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
+        ~ShaderModule() override = default;
+        MaybeError Initialize(ShaderModuleParseResult* parseResult);
+
+        ResultOrError<std::string> TranslateToHLSLWithTint(const char* entryPointName,
+                                                           SingleShaderStage stage,
+                                                           PipelineLayout* layout,
+                                                           std::string* remappedEntryPointName,
+                                                           FirstOffsetInfo* firstOffsetInfo) const;
 
         ResultOrError<std::string> TranslateToHLSLWithSPIRVCross(const char* entryPointName,
                                                                  SingleShaderStage stage,
                                                                  PipelineLayout* layout) const;
 
-      private:
-        ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
-        ~ShaderModule() override = default;
+        ResultOrError<PersistentCacheKey> CreateHLSLKey(const char* entryPointName,
+                                                        SingleShaderStage stage,
+                                                        const std::string& hlslSource,
+                                                        uint32_t compileFlags) const;
+
+        ResultOrError<uint64_t> GetDXCompilerVersion() const;
+        uint64_t GetD3DCompilerVersion() const;
+
+#ifdef DAWN_ENABLE_WGSL
+        std::unique_ptr<tint::Program> mTintProgram;
+#endif
     };
 
 }}  // namespace dawn_native::d3d12

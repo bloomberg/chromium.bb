@@ -18,7 +18,6 @@
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/input_messages.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -149,15 +148,18 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
 
   @autoreleasepool {
     int32_t routing_id = process_host->GetNextRoutingID();
-    RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
-        &delegate, *agent_scheduling_group_host, routing_id,
-        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
+    std::unique_ptr<RenderWidgetHostImpl> render_widget =
+        RenderWidgetHostImpl::Create(
+            /*frmae_tree=*/nullptr, &delegate, *agent_scheduling_group_host,
+            routing_id,
+            /*hidden=*/false, /*renderer_initiated_creation=*/false,
+            std::make_unique<FrameTokenMessageQueue>());
 
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
     // Owned by its |GetInProcessNSView()|, i.e. |rwhv_cocoa|.
     RenderWidgetHostViewMac* rwhv_mac =
-        new RenderWidgetHostViewMac(render_widget);
+        new RenderWidgetHostViewMac(render_widget.get());
     base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
         [rwhv_mac->GetInProcessNSView() retain]);
 
@@ -178,9 +180,6 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
     size_t num_edit_commands = [edit_command_strings count];
     EXPECT_EQ(delegate.edit_command_message_count_, num_edit_commands);
     rwhv_cocoa.reset();
-
-    // The |render_widget|'s process needs to be deleted within |message_loop|.
-    delete render_widget;
   }
   process_host->Cleanup();
   ui::WindowResizeHelperMac::Get()->ShutdownForTests();

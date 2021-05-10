@@ -9,9 +9,10 @@
 
 #include <set>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "components/variations/variations_seed_processor.h"
 
 namespace variations {
 namespace {
@@ -63,6 +64,25 @@ bool CheckStudyFormFactor(const Study::Filter& filter,
 
   // Omit if we match the blacklist.
   return !base::Contains(filter.exclude_form_factor(), form_factor);
+}
+
+bool CheckStudyCpuArchitecture(const Study::Filter& filter,
+                               Study::CpuArchitecture cpu_architecture) {
+  // Empty allowlist and denylist signifies matching any CPU architecture.
+  if (filter.cpu_architecture_size() == 0 &&
+      filter.exclude_cpu_architecture_size() == 0) {
+    return true;
+  }
+
+  // Allow the cpu_architecture if it matches the allowlist.
+  // Note if both a allowlist and denylist are specified, the denylist is
+  // ignored. We do not expect both to be present for Chrome due to server-side
+  // checks.
+  if (filter.cpu_architecture_size() > 0)
+    return base::Contains(filter.cpu_architecture(), cpu_architecture);
+
+  // Omit if we match the denylist.
+  return !base::Contains(filter.exclude_cpu_architecture(), cpu_architecture);
 }
 
 bool CheckStudyHardwareClass(const Study::Filter& filter,
@@ -246,7 +266,25 @@ bool IsStudyExpired(const Study& study, const base::Time& date_time) {
 }
 
 bool ShouldAddStudy(const Study& study,
-                    const ClientFilterableState& client_state) {
+                    const ClientFilterableState& client_state,
+                    const VariationsLayers& layers) {
+  if (study.has_layer()) {
+    if (!layers.IsLayerMemberActive(study.layer().layer_id(),
+                                    study.layer().layer_member_id())) {
+      DVLOG(1) << "Filtered out study " << study.name()
+               << " due to layer member not being active.";
+      return false;
+    }
+
+    if (VariationsSeedProcessor::ShouldStudyUseLowEntropy(study) &&
+        layers.IsLayerUsingDefaultEntropy(study.layer().layer_id())) {
+      DVLOG(1) << "Filtered out study " << study.name()
+               << " due to requiring a low entropy source yet being a member "
+                  "of a layer using the default entropy source.";
+      return false;
+    }
+  }
+
   if (study.has_filter()) {
     if (!CheckStudyChannel(study.filter(), client_state.channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
@@ -256,6 +294,13 @@ bool ShouldAddStudy(const Study& study,
     if (!CheckStudyFormFactor(study.filter(), client_state.form_factor)) {
       DVLOG(1) << "Filtered out study " << study.name() <<
                   " due to form factor.";
+      return false;
+    }
+
+    if (!CheckStudyCpuArchitecture(study.filter(),
+                                   client_state.cpu_architecture)) {
+      DVLOG(1) << "Filtered out study " << study.name()
+               << " due to cpu architecture.";
       return false;
     }
 
@@ -332,6 +377,7 @@ bool ShouldAddStudy(const Study& study,
 
 void FilterAndValidateStudies(const VariationsSeed& seed,
                               const ClientFilterableState& client_state,
+                              const VariationsLayers& layers,
                               std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(client_state.version.IsValid());
 
@@ -344,7 +390,7 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
 
   for (int i = 0; i < seed.study_size(); ++i) {
     const Study& study = seed.study(i);
-    if (!internal::ShouldAddStudy(study, client_state))
+    if (!internal::ShouldAddStudy(study, client_state, layers))
       continue;
 
     if (internal::IsStudyExpired(study, client_state.reference_date)) {

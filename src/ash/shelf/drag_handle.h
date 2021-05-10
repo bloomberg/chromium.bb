@@ -16,20 +16,22 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view_targeter_delegate.h"
 
 namespace ash {
 
-class ASH_EXPORT DragHandle : public views::View,
+class ASH_EXPORT DragHandle : public views::Button,
                               public views::ViewTargeterDelegate,
+                              public AccessibilityObserver,
                               public OverviewObserver,
                               public ShellObserver,
                               public ui::ImplicitAnimationObserver,
-                              public SplitViewObserver {
+                              public SplitViewObserver,
+                              public ShelfObserver {
  public:
   DragHandle(int drag_handle_corner_radius, Shelf* shelf);
   DragHandle(const DragHandle&) = delete;
@@ -67,6 +69,8 @@ class ASH_EXPORT DragHandle : public views::View,
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;
@@ -77,6 +81,10 @@ class ASH_EXPORT DragHandle : public views::View,
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
+
+  // ShelfObserver:
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
 
   ContextualNudge* drag_handle_nudge() { return drag_handle_nudge_; }
 
@@ -105,6 +113,13 @@ class ASH_EXPORT DragHandle : public views::View,
   }
 
  private:
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+
+  // Show/hide hotseat in tablet mode. This is only available when spoken
+  // feedback is enabled.
+  void ButtonPressed();
+
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
@@ -161,16 +176,19 @@ class ASH_EXPORT DragHandle : public views::View,
 
   std::unique_ptr<Shelf::ScopedAutoHideLock> auto_hide_lock_;
 
-  ScopedObserver<SplitViewController, SplitViewObserver> split_view_observer_{
-      this};
+  base::ScopedClosureRunner force_show_hotseat_resetter_;
 
-  ScopedObserver<OverviewController, OverviewObserver> overview_observer_{this};
+  base::ScopedObservation<SplitViewController, SplitViewObserver>
+      split_view_observation_{this};
 
-  ScopedObserver<Shell,
-                 ShellObserver,
-                 &Shell::AddShellObserver,
-                 &Shell::RemoveShellObserver>
-      shell_observer_{this};
+  base::ScopedObservation<OverviewController, OverviewObserver>
+      overview_observation_{this};
+
+  base::ScopedObservation<Shell,
+                          ShellObserver,
+                          &Shell::AddShellObserver,
+                          &Shell::RemoveShellObserver>
+      shell_observation_{this};
 
   base::WeakPtrFactory<DragHandle> weak_factory_{this};
 };

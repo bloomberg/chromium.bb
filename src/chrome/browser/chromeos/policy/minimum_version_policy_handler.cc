@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -26,8 +28,6 @@
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -71,10 +71,10 @@ void OpenEnterpriseInfoPage() {
   SystemTrayClient::Get()->ShowEnterpriseInfo();
 }
 
-std::string GetEnterpriseDomainName() {
+std::string GetEnterpriseManager() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
-      ->GetEnterpriseDisplayDomain();
+      ->GetEnterpriseDomainManager();
 }
 
 BuildState* GetBuildState() {
@@ -161,8 +161,8 @@ MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
       clock_(base::DefaultClock::GetInstance()) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kDeviceMinimumVersion,
-      base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&MinimumVersionPolicyHandler::OnPolicyChanged,
+                          weak_factory_.GetWeakPtr()));
 
   // Fire it once so we're sure we get an invocation on startup.
   OnPolicyChanged();
@@ -491,7 +491,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
 
   NotificationType type = NotificationType::kNoConnection;
   base::OnceClosure button_click_callback;
-  std::string domain_name = GetEnterpriseDomainName();
+  std::string manager = GetEnterpriseManager();
   base::string16 device_type = ui::GetChromeOSDeviceName();
   auto close_callback =
       base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
@@ -513,7 +513,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
     NOTREACHED();
     return;
   }
-  notification_handler_->Show(type, warning, domain_name, device_type,
+  notification_handler_->Show(type, warning, manager, device_type,
                               std::move(button_click_callback),
                               std::move(close_callback));
 

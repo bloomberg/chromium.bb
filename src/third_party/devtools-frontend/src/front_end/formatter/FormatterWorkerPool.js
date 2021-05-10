@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as FormatterActions from '../formatter_worker/FormatterActions.js';  // eslint-disable-line rulesdir/es_modules_import
 
 const MAX_WORKERS = Math.min(2, navigator.hardwareConcurrency - 1);
 
 /** @type {!FormatterWorkerPool} */
 let formatterWorkerPoolInstance;
 
-/**
- * @unrestricted
- */
 export class FormatterWorkerPool {
   constructor() {
     /** @type {!Array<!Task>} */
@@ -35,7 +33,8 @@ export class FormatterWorkerPool {
    * @return {!Common.Worker.WorkerWrapper}
    */
   _createWorker() {
-    const worker = new Common.Worker.WorkerWrapper('formatter_worker_entrypoint');
+    const worker = Common.Worker.WorkerWrapper.fromURL(
+        new URL('../formatter_worker/formatter_worker-entrypoint.js', import.meta.url));
     worker.onmessage = this._onWorkerMessage.bind(this, worker);
     worker.onerror = this._onWorkerError.bind(this, worker);
     return worker;
@@ -116,14 +115,14 @@ export class FormatterWorkerPool {
         callback(true, null);
         return;
       }
-      const isLastChunk = 'isLastChunk' in data && !!data['isLastChunk'];
+      const isLastChunk = 'isLastChunk' in data && Boolean(data['isLastChunk']);
       const chunk = 'chunk' in data && data['chunk'];
       callback(isLastChunk, chunk);
     }
   }
 
   /**
-   * @param {string} methodName
+   * @param {!FormatterActions.FormatterActions} methodName
    * @param {!Object<string, string>} params
    * @return {!Promise<*>}
    */
@@ -143,7 +142,7 @@ export class FormatterWorkerPool {
    */
   format(mimeType, content, indentString) {
     const parameters = {mimeType: mimeType, content: content, indentString: indentString};
-    return /** @type {!Promise<!FormatResult>} */ (this._runTask('format', parameters));
+    return /** @type {!Promise<!FormatResult>} */ (this._runTask(FormatterActions.FormatterActions.FORMAT, parameters));
   }
 
   /**
@@ -151,7 +150,8 @@ export class FormatterWorkerPool {
    * @return {!Promise<!Array<!{name: string, offset: number}>>}
    */
   javaScriptIdentifiers(content) {
-    return this._runTask('javaScriptIdentifiers', {content: content}).then(ids => ids || []);
+    return this._runTask(FormatterActions.FormatterActions.JAVASCRIPT_IDENTIFIERS, {content: content})
+        .then(ids => ids || []);
   }
 
   /**
@@ -159,7 +159,8 @@ export class FormatterWorkerPool {
    * @return {!Promise<string>}
    */
   evaluatableJavaScriptSubstring(content) {
-    return this._runTask('evaluatableJavaScriptSubstring', {content: content}).then(text => text || '');
+    return this._runTask(FormatterActions.FormatterActions.EVALUATE_JAVASCRIPT_SUBSTRING, {content: content})
+        .then(text => text || '');
   }
 
   /**
@@ -167,7 +168,7 @@ export class FormatterWorkerPool {
    * @param {function(boolean, !Array<!CSSRule>):void} callback
    */
   parseCSS(content, callback) {
-    this._runChunkedTask('parseCSS', {content: content}, onDataChunk);
+    this._runChunkedTask(FormatterActions.FormatterActions.PARSE_CSS, {content: content}, onDataChunk);
 
     /**
      * @param {boolean} isLastChunk
@@ -184,7 +185,7 @@ export class FormatterWorkerPool {
    * @param {function(boolean, !Array<!JSOutlineItem>):void} callback
    */
   javaScriptOutline(content, callback) {
-    this._runChunkedTask('javaScriptOutline', {content: content}, onDataChunk);
+    this._runChunkedTask(FormatterActions.FormatterActions.JAVASCRIPT_OUTLINE, {content: content}, onDataChunk);
 
     /**
      * @param {boolean} isLastChunk
@@ -241,7 +242,8 @@ export class FormatterWorkerPool {
    * @return {!Promise<?string>}
    */
   findLastExpression(content) {
-    return /** @type {!Promise<?string>} */ (this._runTask('findLastExpression', {content}));
+    return /** @type {!Promise<?string>} */ (
+        this._runTask(FormatterActions.FormatterActions.FIND_LAST_EXPRESSION, {content}));
   }
 
   /**
@@ -250,7 +252,7 @@ export class FormatterWorkerPool {
    */
   findLastFunctionCall(content) {
     return /** @type {!Promise<?{baseExpression: string, receiver: string, argumentIndex: number, functionName: string}>} */ (
-        this._runTask('findLastFunctionCall', {content}));
+        this._runTask(FormatterActions.FormatterActions.FIND_LAST_FUNCTION_CALL, {content}));
   }
 
   /**
@@ -258,13 +260,11 @@ export class FormatterWorkerPool {
    * @return {!Promise<!Array<string>>}
    */
   argumentsList(content) {
-    return /** @type {!Promise<!Array<string>>} */ (this._runTask('argumentsList', {content}));
+    return /** @type {!Promise<!Array<string>>} */ (
+        this._runTask(FormatterActions.FormatterActions.ARGUMENTS_LIST, {content}));
   }
 }
 
-/**
- * @unrestricted
- */
 class Task {
   /**
    * @param {string} method

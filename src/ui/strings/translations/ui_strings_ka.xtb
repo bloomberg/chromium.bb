@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">ჩაშენებული ეკრანი</translation>
 <translation id="335581015389089642">მეტყველება</translation>
 <translation id="3389286852084373014">ტექსტი მეტისმეტად დიდია</translation>
+<translation id="3406306243914553062">HTML კონტენტი</translation>
 <translation id="348799646910989694">თარო ავტომატურად დამალულია</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ჩამაგრებულია</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{დარჩენილია 1 დღე}other{დარჩენილია # დღე}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">ნომერი</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> გიგაბაიტი/წ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> გიგაბაიტი</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">კითხვის გაგრძელება თქვენი მობილური მოწყობილობიდან <ph name="TITLE" /></translation>
 <translation id="385051799172605136">უკან</translation>
 <translation id="3889424535448813030">მარჯვენა ისარი</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 თვის წინ}other{# თვის წინ}}</translation>
 <translation id="4289300219472526559">დაიწყეთ ლაპარაკი</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> გადატანილია საქაღალდეში <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">გაცვლის ბუფერიდან ამოშლა.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
 <translation id="4491109536499578614">გამოსახულება</translation>
 <translation id="4588090240171750605">გადაადგილება მარჯვნივ</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">გსურთ ამ ძიების წაშლა თქვენი ისტორიიდან?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ტბაიტი</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">ამოიშალა.</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
 <translation id="7781829728241885113">გუშინ</translation>
 <translation id="7814458197256864873">&amp;კოპირება</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 საათის წინ}other{# საათის წინ}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{დარჩენილია 1 წმ}other{დარჩენილია # წმ}}</translation>
 <translation id="8134065097954893699">ამ გვერდის ხელახლა ჩატვირთვა</translation>
-<translation id="8144660977431427332">თქვენს ძიებებს უზრუნველყოფს Google ასისტენტი. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ავტომატური დასრულება</translation>
 <translation id="815598010540052116">გადაადგილება ქვემოთ</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">ერთი გვერდით ქვემოთ</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">ჩანართი</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, აპი</translation>
 <translation id="8259556432390118667">ფერის თექვსმეტობითი მნიშვნელობა</translation>

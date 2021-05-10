@@ -34,11 +34,11 @@
 }
 
 .style-panes-wrapper {
-  overflow: scroll;
+  overflow: hidden scroll;
 }
 
-.style-panes-wrapper > div:not(:first-child) {
-  border-top: 1px solid var(--divider-color);
+.style-panes-wrapper > div:not(:last-child) {
+  border-bottom: 1px solid var(--divider-color);
 }
 
 #elements-content:not(.elements-wrap) > div {
@@ -47,7 +47,7 @@
 }
 
 #elements-crumbs {
-  background-color: white;
+  background-color: var(--color-background);
   border-top: 1px solid var(--divider-color);
   overflow: hidden;
   width: 100%;

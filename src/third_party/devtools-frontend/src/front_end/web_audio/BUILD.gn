@@ -7,14 +7,15 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("web_audio") {
   sources = [
-    "AudioContextContentBuilder.js",
-    "AudioContextSelector.js",
-    "WebAudioModel.js",
-    "WebAudioView.js",
+    "AudioContextContentBuilder.ts",
+    "AudioContextSelector.ts",
+    "WebAudioModel.ts",
+    "WebAudioView.ts",
   ]
 
   deps = [
     "../common:bundle",
+    "../i18n:bundle",
     "../sdk:bundle",
     "../ui:bundle",
     "graph_visualizer:bundle",
@@ -28,7 +29,13 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "web_audio-legacy.js"
+  entrypoint = "web_audio-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "web_audio-meta.ts"
 
   deps = [ ":bundle" ]
 }

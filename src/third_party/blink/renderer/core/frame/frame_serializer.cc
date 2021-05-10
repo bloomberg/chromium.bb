@@ -506,7 +506,8 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
 
     // Rules inheriting CSSGroupingRule
     case CSSRule::kMediaRule:
-    case CSSRule::kSupportsRule: {
+    case CSSRule::kSupportsRule:
+    case CSSRule::kContainerRule: {
       CSSRuleList* rule_list = rule->cssRules();
       for (unsigned i = 0; i < rule_list->length(); ++i)
         SerializeCSSRule(rule_list->item(i));
@@ -519,7 +520,8 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
       break;
 
     case CSSRule::kCounterStyleRule:
-      // TODO(crbug.com/687225): Implement
+      // TODO(crbug.com/1176323): Handle image symbols in @counter-style rules
+      // when we implement it.
       break;
 
     // Rules in which no external resources can be referenced

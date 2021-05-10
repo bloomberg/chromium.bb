@@ -88,9 +88,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
-  void UpdateFrameWithPriority(
-      base::Optional<FramePriority> previous_priority,
-      base::Optional<FramePriority> new_priority) override;
   int VisibleClientCount() override;
   unsigned int GetFrameDepth() override;
   bool GetIntersectsViewport() override;
@@ -112,8 +109,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsInitializedAndNotDead() override;
   void SetBlocked(bool blocked) override;
   bool IsBlocked() override;
-  std::unique_ptr<BlockStateChangedCallbackList::Subscription>
-  RegisterBlockStateChangedCallback(
+  base::CallbackListSubscription RegisterBlockStateChangedCallback(
       const BlockStateChangedCallback& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
@@ -175,13 +171,17 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
       override {}
-  void BindNativeFileSystemManager(
+  void BindFileSystemAccessManager(
       const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver)
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver)
       override {}
   void BindIndexedDB(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
+  void BindBucketManagerHost(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
+      override {}
   void BindRestrictedCookieManagerForServiceWorker(
       const url::Origin& origin,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
@@ -261,7 +261,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int id_;
   bool has_connection_;
   BrowserContext* browser_context_;
-  base::ObserverList<RenderProcessHostObserver>::Unchecked observers_;
+  base::ObserverList<RenderProcessHostObserver> observers_;
 
   base::flat_set<PriorityClient*> priority_clients_;
   int prev_routing_id_;

@@ -53,10 +53,6 @@ source_set("metatrace") {
   ]
 }
 
-source_set("track_event_descriptor") {
-  sources = [ "importers/proto/track_event.descriptor.h" ]
-}
-
 source_set("ftrace_descriptors") {
   sources = [
     "importers/ftrace/ftrace_descriptors.cc",
@@ -92,6 +88,10 @@ source_set("storage_minimal") {
     "importers/proto/async_track_set_tracker.h",
     "importers/proto/heap_profile_tracker.cc",
     "importers/proto/heap_profile_tracker.h",
+    "importers/proto/memory_tracker_snapshot_module.cc",
+    "importers/proto/memory_tracker_snapshot_module.h",
+    "importers/proto/memory_tracker_snapshot_parser.cc",
+    "importers/proto/memory_tracker_snapshot_parser.h",
     "importers/proto/metadata_tracker.cc",
     "importers/proto/metadata_tracker.h",
     "importers/proto/packet_sequence_state.cc",
@@ -119,6 +119,8 @@ source_set("storage_minimal") {
     "importers/proto/track_event_parser.h",
     "importers/proto/track_event_tokenizer.cc",
     "importers/proto/track_event_tokenizer.h",
+    "importers/proto/track_event_tracker.cc",
+    "importers/proto/track_event_tracker.h",
     "importers/syscalls/syscall_tracker.h",
     "importers/systrace/systrace_line.h",
     "timestamped_trace_piece.h",
@@ -133,12 +135,14 @@ source_set("storage_minimal") {
     "virtual_destructors.cc",
   ]
   deps = [
-    ":track_event_descriptor",
     "../../gn:default_deps",
     "../base",
     "../protozero",
     "containers",
     "importers:common",
+    "importers:gen_cc_chrome_track_event_descriptor",
+    "importers:gen_cc_track_event_descriptor",
+    "importers/memory_tracker:graph_processor",
     "storage",
     "tables",
     "types",
@@ -210,6 +214,8 @@ source_set("storage_full") {
     "importers/proto/android_probes_parser.h",
     "importers/proto/android_probes_tracker.cc",
     "importers/proto/android_probes_tracker.h",
+    "importers/proto/frame_timeline_event_parser.cc",
+    "importers/proto/frame_timeline_event_parser.h",
     "importers/proto/gpu_event_parser.cc",
     "importers/proto/gpu_event_parser.h",
     "importers/proto/graphics_event_module.cc",
@@ -284,8 +290,8 @@ source_set("export_json") {
 if (enable_perfetto_trace_processor_sqlite) {
   source_set("lib") {
     sources = [
-      "dynamic/ancestor_slice_generator.cc",
-      "dynamic/ancestor_slice_generator.h",
+      "dynamic/ancestor_generator.cc",
+      "dynamic/ancestor_generator.h",
       "dynamic/connected_flow_generator.cc",
       "dynamic/connected_flow_generator.h",
       "dynamic/descendant_slice_generator.cc",
@@ -343,15 +349,13 @@ if (enable_perfetto_trace_processor_sqlite) {
       ":lib",
       "../../gn:default_deps",
       "../../gn:protobuf_full",
+      "../../src/profiling:deobfuscator",
       "../../src/profiling/symbolizer",
       "../../src/profiling/symbolizer:symbolize_database",
       "../base",
       "metrics:lib",
       "util",
     ]
-    if (enable_perfetto_version_gen) {
-      deps += [ "../../gn/standalone:gen_git_revision" ]
-    }
     if (enable_perfetto_trace_processor_linenoise) {
       deps += [ "../../gn:linenoise" ]
     }
@@ -363,6 +367,14 @@ if (enable_perfetto_trace_processor_sqlite) {
       "util/proto_to_json.cc",
       "util/proto_to_json.h",
     ]
+    if (perfetto_build_standalone && !is_perfetto_build_generator) {
+      data_deps = [
+        # The diff testing framework depends on these descriptors.
+        "../../protos/perfetto/metrics:descriptor",
+        "../../protos/perfetto/trace:descriptor",
+        "../../protos/perfetto/trace:test_extensions_descriptor",
+      ]
+    }
   }
 }  # if (enable_perfetto_trace_processor_sqlite)
 
@@ -376,6 +388,7 @@ perfetto_unittest_source_set("unittests") {
     "importers/memory_tracker/graph_unittest.cc",
     "importers/memory_tracker/raw_process_memory_node_unittest.cc",
     "importers/proto/args_table_utils_unittest.cc",
+    "importers/proto/async_track_set_tracker_unittest.cc",
     "importers/proto/heap_graph_tracker_unittest.cc",
     "importers/proto/heap_profile_tracker_unittest.cc",
     "importers/proto/proto_trace_parser_unittest.cc",

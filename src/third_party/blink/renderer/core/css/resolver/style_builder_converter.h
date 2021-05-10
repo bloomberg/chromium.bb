@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_offset_rotation.h"
 #include "third_party/blink/renderer/core/style/style_reflection.h"
-#include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
@@ -99,9 +98,6 @@ class StyleBuilderConverter {
  public:
   static scoped_refptr<StyleReflection> ConvertBoxReflect(StyleResolverState&,
                                                           const CSSValue&);
-  static Color ConvertColor(StyleResolverState&,
-                            const CSSValue&,
-                            bool for_visited_link = false);
   template <typename T>
   static T ConvertComputedLength(StyleResolverState&, const CSSValue&);
   static LengthBox ConvertClip(StyleResolverState&, const CSSValue&);
@@ -111,7 +107,8 @@ class StyleBuilderConverter {
       StyleResolverState&,
       const CSSValue&);
   static FilterOperations ConvertFilterOperations(StyleResolverState&,
-                                                  const CSSValue&);
+                                                  const CSSValue&,
+                                                  CSSPropertyID);
   static FilterOperations ConvertOffscreenFilterOperations(const CSSValue&,
                                                            const Font&);
   template <typename T>
@@ -204,7 +201,9 @@ class StyleBuilderConverter {
   static StyleAutoColor ConvertStyleAutoColor(StyleResolverState&,
                                               const CSSValue&,
                                               bool for_visited_link = false);
-  static SVGPaint ConvertSVGPaint(StyleResolverState&, const CSSValue&);
+  static SVGPaint ConvertSVGPaint(StyleResolverState&,
+                                  const CSSValue&,
+                                  bool for_visited_link);
   static TextDecorationThickness ConvertTextDecorationThickness(
       StyleResolverState&,
       const CSSValue&);
@@ -279,7 +278,7 @@ class StyleBuilderConverter {
 
   static LengthSize ConvertIntrinsicSize(StyleResolverState&, const CSSValue&);
 
-  static StyleAspectRatio ConvertAspectRatio(StyleResolverState&,
+  static StyleAspectRatio ConvertAspectRatio(const StyleResolverState&,
                                              const CSSValue&);
 
   static bool ConvertInternalAlignSelfBlock(StyleResolverState& state,

@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -35,12 +35,14 @@
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -99,6 +101,9 @@ class AppServiceWrapperTest : public ::testing::Test {
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableDefaultApps);
 
     feature_list_.InitAndEnableFeature(features::kPerAppTimeLimits);
 
@@ -252,6 +257,7 @@ class AppServiceWrapperTest : public ::testing::Test {
     provider->Start();
   }
 
+  base::test::ScopedCommandLine scoped_command_line_;
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
 

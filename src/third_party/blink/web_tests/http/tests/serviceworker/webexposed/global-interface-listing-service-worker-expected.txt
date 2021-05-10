@@ -558,7 +558,6 @@ interface FileSystemHandle
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
-    method close
     method constructor
     method seek
     method truncate
@@ -712,23 +711,6 @@ interface IDBObjectStore
     method put
     method putAllValues
     setter name
-interface IDBObservation
-    attribute @@toStringTag
-    getter key
-    getter type
-    getter value
-    method constructor
-interface IDBObserver
-    attribute @@toStringTag
-    method constructor
-    method observe
-    method unobserve
-interface IDBObserverChanges
-    attribute @@toStringTag
-    getter database
-    getter records
-    getter transaction
-    method constructor
 interface IDBOpenDBRequest : IDBRequest
     attribute @@toStringTag
     getter onblocked
@@ -789,7 +771,7 @@ interface ImageData
     getter height
     getter width
     method constructor
-    method getColorSettings
+    method getSettings
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor
@@ -895,13 +877,16 @@ interface NativeIOFile
     method read
     method setLength
     method write
-interface NativeIOManager
+interface NativeIOFileManager
     attribute @@toStringTag
     method constructor
     method delete
     method getAll
+    method getRemainingCapacity
     method open
+    method releaseCapacity
     method rename
+    method requestCapacity
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor
@@ -981,6 +966,7 @@ interface OffscreenCanvasRenderingContext2D
     getter filter
     getter font
     getter fontKerning
+    getter fontStretch
     getter fontVariantCaps
     getter globalAlpha
     getter globalCompositeOperation
@@ -1028,6 +1014,7 @@ interface OffscreenCanvasRenderingContext2D
     method lineTo
     method measureText
     method moveTo
+    method perspective
     method putImageData
     method quadraticCurveTo
     method rect
@@ -1035,6 +1022,8 @@ interface OffscreenCanvasRenderingContext2D
     method resetTransform
     method restore
     method rotate
+    method rotate3d
+    method rotateAxis
     method roundRect
     method save
     method scale
@@ -1050,6 +1039,7 @@ interface OffscreenCanvasRenderingContext2D
     setter filter
     setter font
     setter fontKerning
+    setter fontStretch
     setter fontVariantCaps
     setter globalAlpha
     setter globalCompositeOperation
@@ -1270,6 +1260,14 @@ interface QuicTransport
     method receiveDatagrams
     method receiveStreams
     method sendDatagrams
+interface ReadableByteStreamController
+    attribute @@toStringTag
+    getter byobRequest
+    getter desiredSize
+    method close
+    method constructor
+    method enqueue
+    method error
 interface ReadableStream
     attribute @@toStringTag
     getter locked
@@ -1279,6 +1277,26 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
+interface ReadableStreamBYOBReader
+    attribute @@toStringTag
+    getter closed
+    method cancel
+    method constructor
+    method read
+    method releaseLock
+interface ReadableStreamBYOBRequest
+    attribute @@toStringTag
+    getter view
+    method constructor
+    method respond
+    method respondWithNewView
+interface ReadableStreamDefaultController
+    attribute @@toStringTag
+    getter desiredSize
+    method close
+    method constructor
+    method enqueue
+    method error
 interface ReadableStreamDefaultReader
     attribute @@toStringTag
     getter closed
@@ -1399,6 +1417,20 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
+interface StorageBucket
+    attribute @@toStringTag
+    method constructor
+    method durability
+    method estimate
+    method expires
+    method persisted
+    method setExpires
+interface StorageBucketManager
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method keys
+    method open
 interface StorageManager : EventTarget
     attribute @@toStringTag
     getter onquotachange
@@ -1528,6 +1560,11 @@ interface URL
     setter protocol
     setter search
     setter username
+interface URLPattern
+    attribute @@toStringTag
+    method constructor
+    method exec
+    method test
 interface URLSearchParams
     attribute @@toStringTag
     method @@iterator
@@ -2871,6 +2908,7 @@ interface WebTransport
     method constructor
     method createBidirectionalStream
     method createUnidirectionalStream
+    method setDatagramWritableQueueExpirationDuration
 interface WindowClient : Client
     attribute @@toStringTag
     getter focused
@@ -2888,7 +2926,6 @@ interface WorkerGlobalScope : EventTarget
     getter indexedDB
     getter isSecureContext
     getter location
-    getter nativeIO
     getter navigator
     getter onerror
     getter onlanguagechange
@@ -2898,6 +2935,7 @@ interface WorkerGlobalScope : EventTarget
     getter origin
     getter performance
     getter self
+    getter storageFoundation
     getter trustedTypes
     method atob
     method btoa
@@ -2946,12 +2984,10 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
-    getter serial
     getter storage
-    getter usb
+    getter storageBuckets
     getter userAgent
     getter userAgentData
-    getter wakeLock
     method clearAppBadge
     method constructor
     method setAppBadge

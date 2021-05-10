@@ -22,7 +22,6 @@ class DisplaySettingsHandler;
 class AccessibilityControllerClient;
 class AmbientClientImpl;
 class AppListClientImpl;
-class ArcChromeActionsClient;
 class AshShellInit;
 class CastConfigControllerMediaRouter;
 class ChromeNewWindowClient;
@@ -41,6 +40,7 @@ class TabletModePageBehavior;
 class VpnListForwarder;
 class WallpaperControllerClient;
 class MediaNotificationProviderImpl;
+class ProjectorClientImpl;
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 class ExoParts;
@@ -81,7 +81,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<AccessibilityControllerClient>
       accessibility_controller_client_;
   std::unique_ptr<AppListClientImpl> app_list_client_;
-  std::unique_ptr<ArcChromeActionsClient> arc_chrome_actions_client_;
   std::unique_ptr<ChromeNewWindowClient> chrome_new_window_client_;
   std::unique_ptr<ImeControllerClient> ime_controller_client_;
   std::unique_ptr<InSessionAuthDialogClient> in_session_auth_dialog_client_;
@@ -92,6 +91,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<TabletModePageBehavior> tablet_mode_page_behavior_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<ProjectorClientImpl> projector_client_;
   // TODO(stevenjb): Move NetworkPortalNotificationController to c/b/ui/ash and
   // elim chromeos:: namespace. https://crbug.com/798569.
   std::unique_ptr<chromeos::NetworkPortalNotificationController>

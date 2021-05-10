@@ -15,12 +15,12 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -98,15 +98,6 @@ enum FieldFilterMask {
                                      FILTER_READONLY_ELEMENTS |
                                      FILTER_NON_FOCUSABLE_ELEMENTS,
 };
-
-// Returns whether sending autofill field metadata to the server is enabled.
-// TODO(crbug.com/938804): Remove this when button titles are crowdsourced in
-// all channels.
-bool IsAutofillFieldMetadataEnabled() {
-  static base::NoDestructor<std::string> kGroupName(
-      base::FieldTrialList::FindFullName("AutofillFieldMetadata"));
-  return base::StartsWith(*kGroupName, "Enabled", base::CompareCase::SENSITIVE);
-}
 
 void TruncateString(base::string16* str, size_t max_length) {
   if (str->length() > max_length)
@@ -999,7 +990,7 @@ typedef void (*Callback)(const FormFieldData&,
                          bool, /* is_initiating_element */
                          blink::WebFormControlElement*);
 
-void ForEachMatchingFormFieldCommon(
+std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
     std::vector<WebFormControlElement>* control_elements,
     const WebElement& initiating_element,
     const FormData& data,
@@ -1008,6 +999,9 @@ void ForEachMatchingFormFieldCommon(
     bool is_preview,
     const Callback& callback) {
   DCHECK(control_elements);
+
+  std::vector<WebFormControlElement> matching_fields;
+  matching_fields.reserve(control_elements->size());
 
   const bool num_elements_matches_num_fields =
       control_elements->size() == data.fields.size();
@@ -1023,7 +1017,7 @@ void ForEachMatchingFormFieldCommon(
     // restrictions are applied.
     //
     // TODO(crbug/847221): Add a UKM to capture these events.
-    return;
+    return matching_fields;
   }
 
   // The intended behaviour is:
@@ -1072,6 +1066,7 @@ void ForEachMatchingFormFieldCommon(
       if (!is_preview && element->Focused())
         initially_focused_element = element;
 
+      matching_fields.push_back(*element);
       callback(data.fields[i], is_initiating_element, element);
       continue;
     }
@@ -1115,7 +1110,7 @@ void ForEachMatchingFormFieldCommon(
   // If there is no other field to be autofilled, sending the blur event and
   // then the focus event for the initiating element does not make sense.
   if (autofillable_elements_index.empty())
-    return;
+    return matching_fields;
 
   // A blur event is emitted for the focused element if it is the initiating
   // element before all other elements are autofilled.
@@ -1123,50 +1118,58 @@ void ForEachMatchingFormFieldCommon(
     initially_focused_element->DispatchBlurEvent();
 
   // Autofill the non-initiating elements.
-  for (const auto& index : autofillable_elements_index)
+  for (const auto& index : autofillable_elements_index) {
+    matching_fields.push_back((*control_elements)[index]);
     callback(data.fields[index], false, &(*control_elements)[index]);
+  }
 
   // A focus event is emitted for the initiating element after autofilling is
   // completed. It is not intended to work for the preview filling.
   if (initially_focused_element)
     initially_focused_element->DispatchFocusEvent();
+
+  return matching_fields;
 }
 
 // For each autofillable field in |data| that matches a field in the |form|,
 // the |callback| is invoked with the corresponding |form| field data.
-void ForEachMatchingFormField(const WebFormElement& form_element,
-                              const WebElement& initiating_element,
-                              const FormData& data,
-                              FieldFilterMask filters,
-                              bool force_override,
-                              bool is_preview,
-                              const Callback& callback) {
+std::vector<WebFormControlElement> ForEachMatchingFormField(
+    const WebFormElement& form_element,
+    const WebElement& initiating_element,
+    const FormData& data,
+    FieldFilterMask filters,
+    bool force_override,
+    bool is_preview,
+    const Callback& callback) {
   std::vector<WebFormControlElement> control_elements =
       ExtractAutofillableElementsInForm(form_element);
-  ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
-                                 filters, force_override, is_preview, callback);
+  return ForEachMatchingFormFieldCommon(&control_elements, initiating_element,
+                                        data, filters, force_override,
+                                        is_preview, callback);
 }
 
 // For each autofillable field in |data| that matches a field in the set of
 // unowned autofillable form fields, the |callback| is invoked with the
 // corresponding |data| field.
-void ForEachMatchingUnownedFormField(const WebElement& initiating_element,
-                                     const FormData& data,
-                                     FieldFilterMask filters,
-                                     bool force_override,
-                                     bool is_preview,
-                                     const Callback& callback) {
+std::vector<WebFormControlElement> ForEachMatchingUnownedFormField(
+    const WebElement& initiating_element,
+    const FormData& data,
+    FieldFilterMask filters,
+    bool force_override,
+    bool is_preview,
+    const Callback& callback) {
   if (initiating_element.IsNull())
-    return;
+    return {};
 
   std::vector<WebFormControlElement> control_elements =
       GetUnownedAutofillableFormFieldElements(
           initiating_element.GetDocument().All(), nullptr);
   if (!IsElementInControlElementSet(initiating_element, control_elements))
-    return;
+    return {};
 
-  ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
-                                 filters, force_override, is_preview, callback);
+  return ForEachMatchingFormFieldCommon(&control_elements, initiating_element,
+                                        data, filters, force_override,
+                                        is_preview, callback);
 }
 
 // Sets the |field|'s value to the value in |data|, and specifies the section
@@ -1589,6 +1592,32 @@ bool IsSomeControlElementVisible(
   return false;
 }
 
+bool IsSomeControlElementVisible(
+    blink::WebLocalFrame* frame,
+    const std::set<FieldRendererId>& control_elements) {
+  // This is basically a set intersection of |control_elements| and the form
+  // controls on the website. We don't call IsFormControlVisible() on each
+  // element in |control_elements| as that would be O(N * M). Iterating over
+  // all form controls on the website and checking their existence in
+  // control_lements makes this O(N log M), where N is the number of form
+  // controls on the website and M the number of elements in |control_elements|.
+  WebDocument doc = frame->GetDocument();
+  if (doc.IsNull())
+    return false;
+  WebElementCollection elements = doc.All();
+
+  for (WebElement element = elements.FirstItem(); !element.IsNull();
+       element = elements.NextItem()) {
+    if (!element.IsFormControlElement() || !IsWebElementVisible(element))
+      continue;
+    WebFormControlElement control = element.To<WebFormControlElement>();
+    FieldRendererId field_renderer_id(control.UniqueRendererFormControlId());
+    if (control_elements.find(field_renderer_id) != control_elements.end())
+      return true;
+  }
+  return false;
+}
+
 bool AreFormContentsVisible(const WebFormElement& form) {
   return IsSomeControlElementVisible(form.GetFormControlElements());
 }
@@ -1663,10 +1692,8 @@ bool IsWebElementVisible(const blink::WebElement& element) {
 
 base::string16 GetFormIdentifier(const WebFormElement& form) {
   base::string16 identifier = form.GetName().Utf16();
-  static base::NoDestructor<WebString> kId("id");
   if (identifier.empty())
-    identifier = form.GetAttribute(*kId).Utf16();
-
+    identifier = form.GetIdAttribute().Utf16();
   return identifier;
 }
 
@@ -1716,7 +1743,6 @@ void WebFormControlElementToFormField(
   DCHECK(field);
   DCHECK(!element.IsNull());
   static base::NoDestructor<WebString> kAutocomplete("autocomplete");
-  static base::NoDestructor<WebString> kId("id");
   static base::NoDestructor<WebString> kName("name");
   static base::NoDestructor<WebString> kRole("role");
   static base::NoDestructor<WebString> kPlaceholder("placeholder");
@@ -1725,7 +1751,7 @@ void WebFormControlElementToFormField(
   // Save both id and name attributes, if present. If there is only one of them,
   // it will be saved to |name|. See HTMLFormControlElement::nameForAutofill.
   field->name = element.NameForAutofill().Utf16();
-  field->id_attribute = element.GetAttribute(*kId).Utf16();
+  field->id_attribute = element.GetIdAttribute().Utf16();
   field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id =
       FieldRendererId(element.UniqueRendererFormControlId());
@@ -1837,15 +1863,15 @@ void WebFormControlElementToFormField(
   if (field_data_manager &&
       field->properties_mask & (FieldPropertiesFlags::kUserTyped |
                                 FieldPropertiesFlags::kAutofilled)) {
-    const base::string16 typed_value = field_data_manager->GetUserTypedValue(
+    const base::string16 user_input = field_data_manager->GetUserInput(
         FieldRendererId(element.UniqueRendererFormControlId()));
 
     // The typed value is preserved for all passwords. It is also preserved for
     // potential usernames, as long as the |value| is not deemed acceptable.
     if (field->form_control_type == "password" ||
-        !ScriptModifiedUsernameAcceptable(value, typed_value,
+        !ScriptModifiedUsernameAcceptable(value, user_input,
                                           field_data_manager)) {
-      field->typed_value = typed_value;
+      field->user_input = user_input;
     }
   }
 }
@@ -2059,85 +2085,66 @@ bool FindFormAndFieldForFormControlElement(
       element, field_data_manager, form_util::EXTRACT_NONE, form, field);
 }
 
-void FillForm(const FormData& form, const WebFormControlElement& element) {
+std::vector<WebFormControlElement> FillForm(
+    const FormData& form,
+    const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
-    ForEachMatchingUnownedFormField(element, form,
+    return ForEachMatchingUnownedFormField(element, form,
+                                           FILTER_ALL_NON_EDITABLE_ELEMENTS,
+                                           false, /* dont force override */
+                                           false, /* not a preview filling */
+                                           &FillFormField);
+  } else {
+    return ForEachMatchingFormField(form_element, element, form,
                                     FILTER_ALL_NON_EDITABLE_ELEMENTS,
                                     false, /* dont force override */
                                     false, /* not a preview filling */
                                     &FillFormField);
-    return;
   }
-
-  ForEachMatchingFormField(form_element, element, form,
-                           FILTER_ALL_NON_EDITABLE_ELEMENTS,
-                           false, /* dont force override */
-                           false, /* not a preview filling */
-                           &FillFormField);
 }
 
-void PreviewForm(const FormData& form, const WebFormControlElement& element) {
+std::vector<WebFormControlElement> PreviewForm(
+    const FormData& form,
+    const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
-    ForEachMatchingUnownedFormField(element, form,
+    return ForEachMatchingUnownedFormField(element, form,
+                                           FILTER_ALL_NON_EDITABLE_ELEMENTS,
+                                           false, /* dont force override */
+                                           true,  /* preview filling */
+                                           &PreviewFormField);
+  } else {
+    return ForEachMatchingFormField(form_element, element, form,
                                     FILTER_ALL_NON_EDITABLE_ELEMENTS,
                                     false, /* dont force override */
                                     true,  /* preview filling */
                                     &PreviewFormField);
-    return;
   }
-
-  ForEachMatchingFormField(form_element, element, form,
-                           FILTER_ALL_NON_EDITABLE_ELEMENTS,
-                           false, /* dont force override */
-                           true,  /* preview filling */
-                           &PreviewFormField);
 }
 
-bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
-                                   blink::WebAutofillState old_autofill_state) {
-  WebFormElement form_element = element.Form();
-  std::vector<WebFormControlElement> control_elements;
-  if (form_element.IsNull()) {
-    control_elements = GetUnownedAutofillableFormFieldElements(
-        element.GetDocument().All(), nullptr);
-    if (!IsElementInControlElementSet(element, control_elements))
-      return false;
-  } else {
-    control_elements = ExtractAutofillableElementsInForm(form_element);
-  }
-
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    // There might be unrelated elements in this form which have already been
-    // auto-filled.  For example, the user might have already filled the address
-    // part of a form and now be dealing with the credit card section.  We only
-    // want to reset the auto-filled status for fields that were previewed.
-    WebFormControlElement control_element = control_elements[i];
-
-    // Only text input, textarea and select elements can be previewed.
-    WebInputElement* input_element = ToWebInputElement(&control_element);
-    if (!IsTextInput(input_element) && !IsMonthInput(input_element) &&
-        !IsTextAreaElement(control_element) &&
-        !IsSelectElement(control_element))
+void ClearPreviewedElements(
+    std::vector<blink::WebFormControlElement>& previewed_elements,
+    const WebFormControlElement& initiating_element,
+    blink::WebAutofillState old_autofill_state) {
+  for (WebFormControlElement& control_element : previewed_elements) {
+    if (control_element.IsNull())
       continue;
 
     // Only clear previewed fields.
     if (control_element.GetAutofillState() != WebAutofillState::kPreviewed)
       continue;
 
-    if ((IsTextInput(input_element) || IsMonthInput(input_element) ||
-         IsTextAreaElement(control_element) ||
-         IsSelectElement(control_element)) &&
-        control_element.SuggestedValue().IsEmpty())
+    if (control_element.SuggestedValue().IsEmpty())
       continue;
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
+    WebInputElement* input_element = ToWebInputElement(&control_element);
     if (IsTextInput(input_element) || IsMonthInput(input_element) ||
         IsTextAreaElement(control_element)) {
       control_element.SetSuggestedValue(WebString());
-      bool is_initiating_node = (element == control_element);
+      bool is_initiating_node = (initiating_element == control_element);
       if (is_initiating_node) {
         // Clearing the suggested value in the focused node (above) can cause
         // selection to be lost. We force selection range to restore the text
@@ -2145,17 +2152,14 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
         int length = control_element.Value().length();
         control_element.SetSelectionRange(length, length);
         control_element.SetAutofillState(old_autofill_state);
-
       } else {
         control_element.SetAutofillState(WebAutofillState::kNotFilled);
       }
-    } else if (IsSelectElement(control_element)) {
+    } else {
       control_element.SetSuggestedValue(WebString());
       control_element.SetAutofillState(WebAutofillState::kNotFilled);
     }
   }
-
-  return true;
 }
 
 bool IsWebpageEmpty(const blink::WebLocalFrame* frame) {
@@ -2211,9 +2215,10 @@ base::string16 FindChildText(const WebNode& node) {
 ButtonTitleList GetButtonTitles(const WebFormElement& web_form,
                                 const WebDocument& document,
                                 ButtonTitlesCache* button_titles_cache) {
-  DCHECK(button_titles_cache);
-  if (!IsAutofillFieldMetadataEnabled() && web_form.IsNull())
+  if (!button_titles_cache) {
+    // Button titles scraping is disabled for this form.
     return ButtonTitleList();
+  }
 
   // True if the cache has no entry for |web_form|.
   bool cache_miss = true;

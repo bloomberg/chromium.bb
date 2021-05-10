@@ -77,7 +77,7 @@ void BookmarkAppRegistrar::OnExtensionUninstalled(
     DCHECK(!bookmark_app_being_observed_);
     bookmark_app_being_observed_ = extension;
 
-    NotifyWebAppUninstalled(extension->id());
+    NotifyWebAppWillBeUninstalled(extension->id());
     os_integration_manager().UninstallAllOsHooks(extension->id(),
                                                   base::DoNothing());
 
@@ -158,6 +158,12 @@ const apps::ShareTarget* BookmarkAppRegistrar::GetAppShareTarget(
   return nullptr;
 }
 
+// Only implemented for WebApp. Bookmark apps are going away.
+blink::mojom::CaptureLinks BookmarkAppRegistrar::GetAppCaptureLinks(
+    const web_app::AppId& app_id) const {
+  return blink::mojom::CaptureLinks::kUndefined;
+}
+
 base::Optional<GURL> BookmarkAppRegistrar::GetAppScopeInternal(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkAppDchecked(app_id);
@@ -234,6 +240,18 @@ std::vector<DisplayMode> BookmarkAppRegistrar::GetAppDisplayModeOverride(
     const web_app::AppId& app_id) const {
   NOTIMPLEMENTED();
   return std::vector<DisplayMode>();
+}
+
+apps::UrlHandlers BookmarkAppRegistrar::GetAppUrlHandlers(
+    const web_app::AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return std::vector<apps::UrlHandlerInfo>();
+}
+
+GURL BookmarkAppRegistrar::GetAppManifestUrl(
+    const web_app::AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return GURL::EmptyGURL();
 }
 
 base::Time BookmarkAppRegistrar::GetAppLastLaunchTime(
@@ -323,7 +341,7 @@ BookmarkAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
 web_app::RunOnOsLoginMode BookmarkAppRegistrar::GetAppRunOnOsLoginMode(
     const web_app::AppId& app_id) const {
   NOTIMPLEMENTED();
-  return web_app::RunOnOsLoginMode::kUndefined;
+  return web_app::RunOnOsLoginMode::kNotRun;
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {

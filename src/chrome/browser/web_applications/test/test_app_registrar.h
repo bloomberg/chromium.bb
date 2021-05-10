@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -64,11 +65,15 @@ class TestAppRegistrar : public AppRegistrar {
       const AppId& app_id) const override;
   const apps::ShareTarget* GetAppShareTarget(
       const AppId& app_id) const override;
+  blink::mojom::CaptureLinks GetAppCaptureLinks(
+      const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<DisplayMode> GetAppDisplayModeOverride(
       const AppId& app_id) const override;
+  apps::UrlHandlers GetAppUrlHandlers(const AppId& app_id) const override;
+  GURL GetAppManifestUrl(const web_app::AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(

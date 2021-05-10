@@ -21,7 +21,6 @@ import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +32,6 @@ import org.mockito.Mock;
 import org.chromium.base.Callback;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
-import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -41,11 +39,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.incognito.interstitial.IncognitoInterstitialDelegate;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
-import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
-import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
+import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerBottomSheetCoordinator;
+import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -116,14 +113,7 @@ public class AccountPickerBottomSheetRenderTest {
     @Before
     public void setUp() {
         initMocks(this);
-        IncognitoUtils.setEnabledForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        IncognitoUtils.setEnabledForTesting(null);
     }
 
     @AfterClass
@@ -185,9 +175,7 @@ public class AccountPickerBottomSheetRenderTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testTryAgainButtonOnSignInGeneralErrorSheet(boolean nightModeEnabled)
             throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        CoreAccountInfo coreAccountInfo =
-                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccount(PROFILE_DATA1);
         // Throws a connection error during the sign-in action
         doAnswer(invocation -> {
             Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
@@ -207,9 +195,7 @@ public class AccountPickerBottomSheetRenderTest {
     @Feature("RenderTest")
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testSigninGeneralErrorView(boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        CoreAccountInfo coreAccountInfo =
-                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccount(PROFILE_DATA1);
         // Throws a connection error during the sign-in action
         doAnswer(invocation -> {
             Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
@@ -229,9 +215,7 @@ public class AccountPickerBottomSheetRenderTest {
     @Feature("RenderTest")
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testSigninAuthErrorView(boolean nightModeEnabled) throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        CoreAccountInfo coreAccountInfo =
-                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccount(PROFILE_DATA1);
         // Throws an authentication error during the sign-in action
         doAnswer(invocation -> {
             Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
@@ -253,9 +237,7 @@ public class AccountPickerBottomSheetRenderTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testSigninAgainButtonOnSigninAuthErrorSheet(boolean nightModeEnabled)
             throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        CoreAccountInfo coreAccountInfo =
-                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.addAccount(PROFILE_DATA1);
         // Throws an auth error during the sign-in action
         doAnswer(invocation -> {
             Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
@@ -274,7 +256,7 @@ public class AccountPickerBottomSheetRenderTest {
             return null;
         })
                 .when(mAccountPickerDelegateMock)
-                .updateCredentials(eq(PROFILE_DATA1.getAccountName()), any());
+                .updateCredentials(eq(PROFILE_DATA1.getAccountEmail()), any());
         onView(withText(R.string.auth_error_card_button)).perform(click());
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
@@ -348,7 +330,7 @@ public class AccountPickerBottomSheetRenderTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator = new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
                     getBottomSheetController(), mAccountPickerDelegateMock,
-                    mIncognitoInterstitialDelegateMock);
+                    mIncognitoInterstitialDelegateMock, true);
         });
         CriteriaHelper.pollUiThread(mCoordinator.getBottomSheetViewForTesting().findViewById(
                 R.id.account_picker_selected_account)::isShown);

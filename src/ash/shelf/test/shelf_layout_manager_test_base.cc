@@ -4,18 +4,14 @@
 
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
 
-#include "ash/home_screen/home_launcher_gesture_handler.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/client/aura_constants.h"
@@ -181,7 +177,7 @@ void ShelfLayoutManagerTestBase::UpdateAutoHideStateNow() {
 }
 
 aura::Window* ShelfLayoutManagerTestBase::CreateTestWindow() {
-  aura::Window* window = window_factory::NewWindow().release();
+  aura::Window* window = new aura::Window(nullptr);
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
@@ -191,7 +187,7 @@ aura::Window* ShelfLayoutManagerTestBase::CreateTestWindow() {
 
 aura::Window* ShelfLayoutManagerTestBase::CreateTestWindowInParent(
     aura::Window* root_window) {
-  aura::Window* window = window_factory::NewWindow().release();
+  aura::Window* window = new aura::Window(nullptr);
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);

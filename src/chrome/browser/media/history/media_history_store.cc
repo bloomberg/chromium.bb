@@ -15,7 +15,6 @@
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
-#include "chrome/browser/media/history/media_history_kaleidoscope_data_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
@@ -24,6 +23,7 @@
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_position.h"
+#include "sql/database.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -35,7 +35,7 @@
 
 namespace {
 
-constexpr int kCurrentVersionNumber = 4;
+constexpr int kCurrentVersionNumber = 5;
 constexpr int kCompatibleVersionNumber = 1;
 
 constexpr base::FilePath::CharType kMediaHistoryDatabaseName[] =
@@ -134,6 +134,26 @@ int MigrateFrom3To4(sql::Database* db, sql::MetaTable* meta_table) {
   return 3;
 }
 
+int MigrateFrom4To5(sql::Database* db, sql::MetaTable* meta_table) {
+  // Version 5 adds a new column to mediaFeed.
+  const int target_version = 5;
+
+  // The mediaFeed table might not exist if the feature is disabled.
+  if (!db->DoesTableExist("mediaFeed")) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+
+  static const char k4To5Sql[] =
+      "ALTER TABLE mediaFeed ADD COLUMN favicon TEXT DEFAULT 0;";
+  sql::Transaction transaction(db);
+  if (transaction.Begin() && db->Execute(k4To5Sql) && transaction.Commit()) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+  return 4;
+}
+
 bool IsCauseFromExpiration(const net::CookieChangeCause& cause) {
   return cause == net::CookieChangeCause::UNKNOWN_DELETION ||
          cause == net::CookieChangeCause::EXPIRED ||
@@ -178,7 +198,10 @@ MediaHistoryStore::MediaHistoryStore(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : db_task_runner_(db_task_runner),
       db_path_(GetDBPath(profile)),
-      db_(std::make_unique<sql::Database>()),
+      db_(std::make_unique<sql::Database>(
+          sql::DatabaseOptions{.exclusive_locking = true,
+                               .page_size = 4096,
+                               .cache_size = 500})),
       meta_table_(std::make_unique<sql::MetaTable>()),
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
@@ -192,11 +215,8 @@ MediaHistoryStore::MediaHistoryStore(
       feed_items_table_(IsMediaFeedsEnabled()
                             ? new MediaHistoryFeedItemsTable(db_task_runner_)
                             : nullptr),
-      kaleidoscope_table_(
-          new MediaHistoryKaleidoscopeDataTable(db_task_runner_)),
       initialization_successful_(false) {
   db_->set_histogram_tag("MediaHistory");
-  db_->set_exclusive_locking();
 
   // To recover from corruption.
   db_->set_error_callback(
@@ -431,6 +451,8 @@ sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
     cur_version = MigrateFrom2To3(db_.get(), meta_table_.get());
   if (cur_version == 3)
     cur_version = MigrateFrom3To4(db_.get(), meta_table_.get());
+  if (cur_version == 4)
+    cur_version = MigrateFrom4To5(db_.get(), meta_table_.get());
 
   if (cur_version == kCurrentVersionNumber)
     return sql::INIT_OK;
@@ -455,8 +477,6 @@ sql::InitStatus MediaHistoryStore::InitializeTables() {
     status = feeds_table_->Initialize(db_.get());
   if (feed_items_table_ && status == sql::INIT_OK)
     status = feed_items_table_->Initialize(db_.get());
-  if (status == sql::INIT_OK)
-    status = kaleidoscope_table_->Initialize(db_.get());
 
   return status;
 }
@@ -757,7 +777,8 @@ std::set<GURL> MediaHistoryStore::GetURLsInTableForTest(
   return urls;
 }
 
-void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
+void MediaHistoryStore::DiscoverMediaFeed(const GURL& url,
+                                          const base::Optional<GURL>& favicon) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!CanAccessDatabase())
     return;
@@ -771,7 +792,7 @@ void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
   }
 
   if (!(CreateOriginId(url::Origin::Create(url)) &&
-        feeds_table_->DiscoverFeed(url))) {
+        feeds_table_->DiscoverFeed(url, favicon))) {
     DB()->RollbackTransaction();
     return;
   }
@@ -1216,60 +1237,6 @@ void MediaHistoryStore::UpdateFeedUserStatus(
   }
 
   if (!feeds_table_->UpdateFeedUserStatus(feed_id, status)) {
-    DB()->RollbackTransaction();
-    return;
-  }
-
-  DB()->CommitTransaction();
-}
-
-void MediaHistoryStore::SetKaleidoscopeData(
-    media::mojom::GetCollectionsResponsePtr data,
-    const std::string& gaia_id) {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (!CanAccessDatabase())
-    return;
-
-  if (!DB()->BeginTransaction()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
-    return;
-  }
-
-  if (!kaleidoscope_table_->Set(std::move(data), gaia_id)) {
-    DB()->RollbackTransaction();
-    return;
-  }
-
-  DB()->CommitTransaction();
-}
-
-media::mojom::GetCollectionsResponsePtr MediaHistoryStore::GetKaleidoscopeData(
-    const std::string& gaia_id) {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (!CanAccessDatabase())
-    return nullptr;
-
-  if (!DB()->BeginTransaction()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
-    return nullptr;
-  }
-
-  auto out = kaleidoscope_table_->Get(gaia_id);
-  DB()->CommitTransaction();
-  return out;
-}
-
-void MediaHistoryStore::DeleteKaleidoscopeData() {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (!CanAccessDatabase())
-    return;
-
-  if (!DB()->BeginTransaction()) {
-    DLOG(ERROR) << "Failed to begin the transaction.";
-    return;
-  }
-
-  if (!kaleidoscope_table_->Delete()) {
     DB()->RollbackTransaction();
     return;
   }

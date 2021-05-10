@@ -4,22 +4,23 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/guest_os_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
@@ -37,11 +38,12 @@ const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniDetailsSubpagePath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDetails},
-       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, IDS_OS_SETTINGS_TAG_CROSTINI_ALT2,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES,
        mojom::kCrostiniUsbPreferencesSubpagePath,
        mojom::SearchResultIcon::kPenguin,
@@ -52,7 +54,7 @@ const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
         SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE,
        mojom::kCrostiniDetailsSubpagePath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kUninstallCrostini},
@@ -89,14 +91,15 @@ const std::vector<SearchConcept>& GetCrostiniOptedOutSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniSectionPath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSection,
        {.section = mojom::Section::kCrostini},
-       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, IDS_OS_SETTINGS_TAG_CROSTINI_ALT2,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
        mojom::kCrostiniSectionPath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kSetUpCrostini},
@@ -123,7 +126,7 @@ const std::vector<SearchConcept>& GetCrostiniAdbSideloadingSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ADB,
        mojom::kCrostiniDevelopAndroidAppsSubpagePath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kCrostiniAdbDebugging},
@@ -131,7 +134,7 @@ const std::vector<SearchConcept>& GetCrostiniAdbSideloadingSearchConcepts() {
         SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS,
        mojom::kCrostiniDevelopAndroidAppsSubpagePath,
-       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultIcon::kDeveloperTags,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDevelopAndroidApps},
@@ -233,23 +236,10 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
-      {"crostiniSharedPaths", IDS_SETTINGS_CROSTINI_SHARED_PATHS},
-      {"crostiniSharedPathsListHeading",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_HEADING},
       {"crostiniSharedPathsInstructionsAdd",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_ADD},
-      {"crostiniSharedPathsInstructionsRemove",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_REMOVE},
-      {"crostiniSharedPathsRemoveSharing",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_SHARING},
       {"crostiniSharedPathsRemoveFailureDialogMessage",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE},
-      {"crostiniSharedPathsRemoveFailureDialogTitle",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_DIALOG_TITLE},
-      {"crostiniSharedPathsRemoveFailureTryAgain",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_FAILURE_TRY_AGAIN},
-      {"crostiniSharedPathsListEmptyMessage",
-       IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_EMPTY_MESSAGE},
       {"crostiniExportImportTitle", IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE},
       {"crostiniExport", IDS_SETTINGS_CROSTINI_EXPORT},
       {"crostiniExportLabel", IDS_SETTINGS_CROSTINI_EXPORT_LABEL},
@@ -262,18 +252,8 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniImportConfirmationDialogConfirmationButton",
        IDS_SETTINGS_CROSTINI_IMPORT},
       {"crostiniRemoveButton", IDS_SETTINGS_CROSTINI_REMOVE_BUTTON},
-      {"crostiniSharedUsbDevicesLabel",
-       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL},
       {"crostiniSharedUsbDevicesDescription",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_DESCRIPTION},
-      {"crostiniSharedUsbDevicesExtraDescription",
-       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION},
-      {"crostiniSharedUsbDevicesListEmptyMessage",
-       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE},
-      {"crostiniSharedUsbDevicesInUse",
-       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_IN_USE},
-      {"crostiniSharedUsbDevicesReassign",
-       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_REASSIGN},
       {"crostiniArcAdbTitle", IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE},
       {"crostiniArcAdbDescription", IDS_SETTINGS_CROSTINI_ARC_ADB_DESCRIPTION},
       {"crostiniArcAdbLabel", IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL},
@@ -367,13 +347,18 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniMicDialogLabel", IDS_SETTINGS_CROSTINI_MIC_DIALOG_LABEL},
       {"crostiniMicDialogShutdownButton",
        IDS_SETTINGS_CROSTINI_MIC_DIALOG_SHUTDOWN_BUTTON},
+      {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddBoolean("showCrostini", IsCrostiniAllowed());
+  // Should the crostini section in settings be displayed?
+  html_source->AddBoolean(
+      "showCrostini",
+      crostini::CrostiniFeatures::Get()->CouldBeAllowed(profile()));
+  // Should we actually enable the button to install it?
   html_source->AddBoolean(
       "allowCrostini",
-      crostini::CrostiniFeatures::Get()->IsUIAllowed(profile()));
+      crostini::CrostiniFeatures::Get()->IsAllowedNow(profile()));
 
   html_source->AddString(
       "crostiniSubtext",
@@ -385,9 +370,6 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL,
           base::ASCIIToUTF16(chrome::kArcAdbSideloadingLearnMoreURL)));
-  html_source->AddString("crostiniRemove", l10n_util::GetStringFUTF16(
-                                               IDS_SETTINGS_CROSTINI_REMOVE,
-                                               ui::GetChromeOSDeviceName()));
   html_source->AddString(
       "crostiniArcAdbConfirmationMessageEnable",
       l10n_util::GetStringFUTF16(
@@ -430,8 +412,8 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 }
 
 void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
-  if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile(),
-                                                     /*check_policy=*/false)) {
+  if (crostini::CrostiniFeatures::Get()->CouldBeAllowed(profile())) {
+    web_ui->AddMessageHandler(std::make_unique<GuestOsHandler>(profile()));
     web_ui->AddMessageHandler(std::make_unique<CrostiniHandler>(profile()));
   }
 }
@@ -445,7 +427,7 @@ mojom::Section CrostiniSection::GetSection() const {
 }
 
 mojom::SearchResultIcon CrostiniSection::GetSectionIcon() const {
-  return mojom::SearchResultIcon::kPenguin;
+  return mojom::SearchResultIcon::kDeveloperTags;
 }
 
 std::string CrostiniSection::GetSectionPath() const {
@@ -464,7 +446,7 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Crostini details.
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_CROSTINI_LABEL,
                                      mojom::Subpage::kCrostiniDetails,
-                                     mojom::SearchResultIcon::kPenguin,
+                                     mojom::SearchResultIcon::kDeveloperTags,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kCrostiniDetailsSubpagePath);
   static constexpr mojom::Setting kCrostiniDetailsSettings[] = {
@@ -478,7 +460,7 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // Manage shared folders.
   generator->RegisterNestedSubpage(
-      IDS_SETTINGS_CROSTINI_SHARED_PATHS,
+      IDS_SETTINGS_GUEST_OS_SHARED_PATHS,
       mojom::Subpage::kCrostiniManageSharedFolders,
       mojom::Subpage::kCrostiniDetails, mojom::SearchResultIcon::kPenguin,
       mojom::SearchResultDefaultRank::kMedium,
@@ -486,7 +468,7 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // USB preferences.
   generator->RegisterNestedSubpage(
-      IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL,
+      IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_LABEL,
       mojom::Subpage::kCrostiniUsbPreferences, mojom::Subpage::kCrostiniDetails,
       mojom::SearchResultIcon::kPenguin,
       mojom::SearchResultDefaultRank::kMedium,
@@ -510,7 +492,7 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterNestedSubpage(
       IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE,
       mojom::Subpage::kCrostiniDevelopAndroidApps,
-      mojom::Subpage::kCrostiniDetails, mojom::SearchResultIcon::kPenguin,
+      mojom::Subpage::kCrostiniDetails, mojom::SearchResultIcon::kDeveloperTags,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kCrostiniDevelopAndroidAppsSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kCrostiniAdbDebugging,
@@ -523,11 +505,6 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                    mojom::SearchResultIcon::kPenguin,
                                    mojom::SearchResultDefaultRank::kMedium,
                                    mojom::kCrostiniPortForwardingSubpagePath);
-}
-
-bool CrostiniSection::IsCrostiniAllowed() {
-  return crostini::CrostiniFeatures::Get()->IsUIAllowed(profile(),
-                                                        /*check_policy=*/false);
 }
 
 bool CrostiniSection::IsExportImportAllowed() {
@@ -553,7 +530,7 @@ void CrostiniSection::UpdateSearchTags() {
   updater.RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
   updater.RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
 
-  if (!IsCrostiniAllowed())
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile()))
     return;
 
   if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {

@@ -372,6 +372,31 @@ unsigned FontDescription::GetHash() const {
   return hash;
 }
 
+void FontDescription::SetOrientation(FontOrientation orientation) {
+  fields_.orientation_ = static_cast<unsigned>(orientation);
+  UpdateSyntheticOblique();
+}
+
+void FontDescription::SetStyle(FontSelectionValue value) {
+  font_selection_request_.slope = value;
+  original_slope = value;
+  UpdateSyntheticOblique();
+}
+
+void FontDescription::UpdateSyntheticOblique() {
+  // Doing synthetic oblique for vertical writing mode with upright text
+  // orientation when negative angle parameter of "oblique" keyword, e.g.
+  // "font-style: oblique -15deg" for simulating "tts:fontShear"[1][2], we
+  // need to have normal font style instead of italic/oblique.
+  // [1]
+  // https://www.w3.org/TR/2018/REC-ttml2-20181108/#style-attribute-fontShear
+  // [2] See http://crbug.com/1112923
+  fields_.synthetic_oblique_ =
+      IsVerticalAnyUpright() && original_slope < FontSelectionValue(0);
+  font_selection_request_.slope =
+      fields_.synthetic_oblique_ ? NormalSlopeValue() : original_slope;
+}
+
 SkFontStyle FontDescription::SkiaFontStyle() const {
   // FIXME(drott): This is a lossy conversion, compare
   // https://bugs.chromium.org/p/skia/issues/detail?id=6844
@@ -475,6 +500,18 @@ String FontDescription::ToString(GenericFamilyType familyType) {
   return "Unknown";
 }
 
+String FontDescription::ToString(LigaturesState state) {
+  switch (state) {
+    case LigaturesState::kNormalLigaturesState:
+      return "Normal";
+    case LigaturesState::kDisabledLigaturesState:
+      return "Disabled";
+    case LigaturesState::kEnabledLigaturesState:
+      return "Enabled";
+  }
+  return "Unknown";
+}
+
 String FontDescription::ToString(Kerning kerning) {
   switch (kerning) {
     case Kerning::kAutoKerning:
@@ -487,15 +524,26 @@ String FontDescription::ToString(Kerning kerning) {
   return "Unknown";
 }
 
-String FontDescription::ToString(LigaturesState state) {
-  switch (state) {
-    case LigaturesState::kNormalLigaturesState:
-      return "Normal";
-    case LigaturesState::kDisabledLigaturesState:
-      return "Disabled";
-    case LigaturesState::kEnabledLigaturesState:
-      return "Enabled";
-  }
+String FontDescription::ToString(FontSelectionValue selection_value) {
+  if (selection_value == UltraCondensedWidthValue())
+    return "Ultra-Condensed";
+  else if (selection_value == ExtraCondensedWidthValue())
+    return "Extra-Condensed";
+  else if (selection_value == CondensedWidthValue())
+    return "Condensed";
+  else if (selection_value == SemiCondensedWidthValue())
+    return "Semi-Condensed";
+  else if (selection_value == NormalWidthValue())
+    return "Normal";
+  else if (selection_value == SemiExpandedWidthValue())
+    return "Semi-Expanded";
+  else if (selection_value == ExpandedWidthValue())
+    return "Expanded";
+  else if (selection_value == ExtraExpandedWidthValue())
+    return "Extra-Expanded";
+  else if (selection_value == UltraExpandedWidthValue())
+    return "Ultra-Expanded";
+
   return "Unknown";
 }
 

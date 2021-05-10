@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -78,6 +79,8 @@ enum AppMenuAction {
   MENU_ACTION_APP_INFO = 50,
   // Only used by WebAppMenuModel:
   MENU_ACTION_UNINSTALL_APP = 51,
+  MENU_ACTION_SHOW_KALEIDOSCOPE = 52,
+  MENU_ACTION_CHROME_TIPS = 53,
   LIMIT_MENU_ACTION
 };
 
@@ -198,11 +201,11 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // took to select the command.
   void LogMenuMetrics(int command_id);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Disables/Enables the settings item based on kSystemFeaturesDisableList
   // pref.
   void UpdateSettingsItemState();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Time menu has been open. Used by LogMenuMetrics() to record the time
   // to action when the user selects a menu item.
@@ -231,8 +234,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
   Browser* const browser_;  // weak
   AppMenuIconController* const app_menu_icon_controller_;
 
-  std::unique_ptr<content::HostZoomMap::Subscription>
-      browser_zoom_subscription_;
+  base::CallbackListSubscription browser_zoom_subscription_;
 
   PrefChangeRegistrar local_state_pref_change_registrar_;
 

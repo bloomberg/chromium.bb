@@ -17,7 +17,6 @@
 
 #include "api/peer_connection_interface.h"
 #include "api/proxy.h"
-#include "rtc_base/bind.h"
 
 namespace webrtc {
 
@@ -34,6 +33,10 @@ PROXY_METHOD4(rtc::scoped_refptr<PeerConnectionInterface>,
               PeerConnectionObserver*)
 PROXY_METHOD2(rtc::scoped_refptr<PeerConnectionInterface>,
               CreatePeerConnection,
+              const PeerConnectionInterface::RTCConfiguration&,
+              PeerConnectionDependencies)
+PROXY_METHOD2(RTCErrorOr<rtc::scoped_refptr<PeerConnectionInterface>>,
+              CreatePeerConnectionOrError,
               const PeerConnectionInterface::RTCConfiguration&,
               PeerConnectionDependencies)
 PROXY_CONSTMETHOD1(webrtc::RtpCapabilities,

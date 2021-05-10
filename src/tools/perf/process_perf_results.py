@@ -22,6 +22,8 @@ logging.basicConfig(
     format='(%(levelname)s) %(asctime)s pid=%(process)d'
            '  %(module)s.%(funcName)s:%(lineno)d  %(message)s')
 
+import cross_device_test_config
+
 from core import path_util
 from core import upload_results_to_perf_dashboard
 from core import results_merger
@@ -54,7 +56,6 @@ DATA_FORMAT_CHARTJSON = 'chartjson'
 DATA_FORMAT_HISTOGRAMS = 'histograms'
 DATA_FORMAT_UNKNOWN = 'unknown'
 
-
 def _GetMachineGroup(build_properties):
   machine_group = None
   if build_properties.get('perf_dashboard_machine_group', False):
@@ -62,12 +63,16 @@ def _GetMachineGroup(build_properties):
     # in the build properties
     machine_group =  build_properties['perf_dashboard_machine_group']
   else:
-    mastername_mapping = {}
+    builder_group_mapping = {}
     with open(MACHINE_GROUP_JSON_FILE) as fp:
-      mastername_mapping = json.load(fp)
-      legacy_mastername = build_properties['mastername']
-      if mastername_mapping.get(legacy_mastername):
-        machine_group = mastername_mapping[legacy_mastername]
+      builder_group_mapping = json.load(fp)
+      if build_properties.get('builder_group', False):
+        legacy_builder_group = build_properties['builder_group']
+      else:
+        # TODO(crbug.com/1153958): remove reference to mastername.
+        legacy_builder_group = build_properties['mastername']
+      if builder_group_mapping.get(legacy_builder_group):
+        machine_group = builder_group_mapping[legacy_builder_group]
   if not machine_group:
     raise ValueError(
         'Must set perf_dashboard_machine_group or have a valid '
@@ -139,7 +144,11 @@ def _determine_data_format(json_file):
     _data_format_cache[json_file] = DATA_FORMAT_UNKNOWN
   return _data_format_cache[json_file]
 
-def _merge_json_output(output_json, jsons_to_merge, extra_links):
+
+def _merge_json_output(output_json,
+                       jsons_to_merge,
+                       extra_links,
+                       test_cross_device=False):
   """Merges the contents of one or more results JSONs.
 
   Args:
@@ -150,7 +159,8 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
       which describe the data, and value is logdog url that contain the data.
   """
   begin_time = time.time()
-  merged_results = results_merger.merge_test_results(jsons_to_merge)
+  merged_results = results_merger.merge_test_results(jsons_to_merge,
+                                                     test_cross_device)
 
   # Only append the perf results links if present
   if extra_links:
@@ -249,12 +259,11 @@ def _handle_perf_logs(benchmark_directory_map, extra_links):
 def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
   begin_time = time.time()
   with open(benchmarks_shard_map_file) as f:
-    benchmarks_shard_data = json.load(f)
+    benchmarks_shard_data = f.read()
     logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Shard_Map')
-    logdog_stream = logdog_helper.text(
-        logdog_file_name, json.dumps(benchmarks_shard_data, sort_keys=True,
-                                     indent=4, separators=(',', ': ')),
-        content_type=JSON_CONTENT_TYPE)
+    logdog_stream = logdog_helper.text(logdog_file_name,
+                                       benchmarks_shard_data,
+                                       content_type=JSON_CONTENT_TYPE)
     extra_links['Benchmarks shard map'] = logdog_stream
   end_time = time.time()
   print_duration('Generating benchmark shard map stream', begin_time, end_time)
@@ -348,16 +357,16 @@ def process_perf_results(output_json,
   benchmark_enabled_map = _handle_perf_json_test_results(
       benchmark_directory_map, test_results_list)
 
+  build_properties_map = json.loads(build_properties)
+  if not configuration_name:
+    # we are deprecating perf-id crbug.com/817823
+    configuration_name = build_properties_map['buildername']
+
   if not smoke_test_mode and handle_perf:
     try:
-      build_properties = json.loads(build_properties)
-      if not configuration_name:
-        # we are deprecating perf-id crbug.com/817823
-        configuration_name = build_properties['buildername']
-
       return_code, benchmark_upload_result_map = _handle_perf_results(
-          benchmark_enabled_map, benchmark_directory_map,
-          configuration_name, build_properties, extra_links, output_results_dir)
+          benchmark_enabled_map, benchmark_directory_map, configuration_name,
+          build_properties_map, extra_links, output_results_dir)
     except Exception:
       logging.exception('Error handling perf results jsons')
       return_code = 1
@@ -365,7 +374,12 @@ def process_perf_results(output_json,
   if handle_non_perf:
     # Finally, merge all test results json, add the extra links and write out to
     # output location
-    _merge_json_output(output_json, test_results_list, extra_links)
+    try:
+      _merge_json_output(
+          output_json, test_results_list, extra_links,
+          configuration_name in cross_device_test_config.TARGET_DEVICES)
+    except Exception:
+      logging.exception('Error handling test results jsons.')
 
   end_time = time.time()
   print_duration('Total process_perf_results', begin_time, end_time)
@@ -646,8 +660,8 @@ def main():
   parser.add_argument(
       '--skip-perf',
       action='store_true',
-      help='In lightweight mode, this indicates the workflow is from processor,'
-      ' otherwise its value is ignored.')
+      help='In lightweight mode, using --skip-perf will skip the performance'
+      ' data handling.')
   parser.add_argument(
       '--lightweight',
       action='store_true',

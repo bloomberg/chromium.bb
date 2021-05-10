@@ -12,11 +12,11 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_required_timer.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 RelaunchNotificationControllerPlatformImpl::
     RelaunchNotificationControllerPlatformImpl() = default;
@@ -27,15 +27,7 @@ RelaunchNotificationControllerPlatformImpl::
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
     base::Time /*detection_time*/,
     bool past_deadline) {
-  RecordRecommendedShowResult();
   RefreshRelaunchRecommendedTitle(past_deadline);
-}
-
-void RelaunchNotificationControllerPlatformImpl::RecordRecommendedShowResult() {
-  if (!recorded_shown_) {
-    relaunch_notification::RecordRecommendedShowResult();
-    recorded_shown_ = true;
-  }
 }
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
@@ -47,8 +39,6 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
         base::BindRepeating(&RelaunchNotificationControllerPlatformImpl::
                                 RefreshRelaunchRequiredTitle,
                             base::Unretained(this)));
-
-    relaunch_notification::RecordRequiredShowResult();
   }
 
   RefreshRelaunchRequiredTitle();
@@ -64,7 +54,6 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
 void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
   SystemTrayClient::Get()->SetUpdateNotificationState(
       ash::NotificationStyle::kDefault, base::string16(), base::string16());
-  recorded_shown_ = false;
   relaunch_required_timer_.reset();
   on_visible_.Reset();
   StopObserving();
@@ -78,7 +67,7 @@ void RelaunchNotificationControllerPlatformImpl::SetDeadline(
 
 void RelaunchNotificationControllerPlatformImpl::
     RefreshRelaunchRecommendedTitle(bool past_deadline) {
-  std::string enterprise_display_domain =
+  std::string enterprise_domain_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetEnterpriseDomainManager();
@@ -86,16 +75,16 @@ void RelaunchNotificationControllerPlatformImpl::
     SystemTrayClient::Get()->SetUpdateNotificationState(
         ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_TITLE),
-        l10n_util::GetStringFUTF16(
-            IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY,
-            base::UTF8ToUTF16(enterprise_display_domain)));
+        l10n_util::GetStringFUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY,
+                                   base::UTF8ToUTF16(enterprise_domain_manager),
+                                   ui::GetChromeOSDeviceName()));
   } else {
     SystemTrayClient::Get()->SetUpdateNotificationState(
         ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_TITLE),
-        l10n_util::GetStringFUTF16(
-            IDS_RELAUNCH_RECOMMENDED_BODY,
-            base::UTF8ToUTF16(enterprise_display_domain)));
+        l10n_util::GetStringFUTF16(IDS_RELAUNCH_RECOMMENDED_BODY,
+                                   base::UTF8ToUTF16(enterprise_domain_manager),
+                                   ui::GetChromeOSDeviceName()));
   }
 }
 
@@ -115,7 +104,8 @@ void RelaunchNotificationControllerPlatformImpl::
         relaunch_required_timer_->GetWindowTitle(),
         l10n_util::GetStringFUTF16(
             IDS_RELAUNCH_REQUIRED_BODY,
-            base::UTF8ToUTF16(connector->GetEnterpriseDomainManager())));
+            base::UTF8ToUTF16(connector->GetEnterpriseDomainManager()),
+            ui::GetChromeOSDeviceName()));
   }
 }
 
@@ -143,13 +133,13 @@ bool RelaunchNotificationControllerPlatformImpl::CanScheduleReboot() {
 }
 
 void RelaunchNotificationControllerPlatformImpl::StartObserving() {
-  if (!display_observer_.IsObservingSources())
-    display_observer_.Add(ash::Shell::Get()->display_configurator());
-  if (!session_observer_.IsObservingSources())
-    session_observer_.Add(session_manager::SessionManager::Get());
+  if (!display_observation_.IsObserving())
+    display_observation_.Observe(ash::Shell::Get()->display_configurator());
+  if (!session_observation_.IsObserving())
+    session_observation_.Observe(session_manager::SessionManager::Get());
 }
 
 void RelaunchNotificationControllerPlatformImpl::StopObserving() {
-  display_observer_.RemoveAll();
-  session_observer_.RemoveAll();
+  display_observation_.Reset();
+  session_observation_.Reset();
 }

@@ -1,0 +1,59 @@
+<style>
+  :host {
+    height: 100%;
+    width: 100%;
+  }
+
+  #files {
+    display: flex;
+  }
+
+  .file {
+    color: var(--cr-primary-text-color);
+    display: block;
+    margin-inline-start: 16px;
+    text-decoration: none;
+    width: 165px;
+  }
+
+  .file-icon-container {
+    align-items: center;
+    background: var(--google-grey-refresh-100);
+    border-radius: 4px;
+    display: flex;
+    height: 136px;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .file-icon {
+    max-height: 80px;
+    width: 80px;
+  }
+
+  .file-description {
+    color: var(--cr-secondary-text-color);
+  }
+</style>
+<ntp-module-header
+    disable-text="[[i18nRecursive('',
+                                  'modulesDisableButtonText',
+                                  'modulesDriveSentence')]]"
+    on-disable-button-click="onDisableButtonClick_">
+  $i18n{modulesDriveTitle}
+</ntp-module-header>
+<div id="files">
+  <template id="fileRepeat" is="dom-repeat" items="[[files]]">
+    <a class="file" href="[[getTargetUrl_(item)]]">
+      <div class="file-icon-container">
+        <img
+            class="file-icon"
+            draggable="false"
+            src="[[getImageSrc_(item)]]">
+        </img>
+      </div>
+      <div class="file-title">[[item.title]]</div>
+      <div class="file-description">[[item.justificationText]]</div>
+    </a>
+  </template>
+</div>

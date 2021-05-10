@@ -1,8 +1,8 @@
-#include "net/third_party/quiche/src/spdy/core/spdy_header_storage.h"
+#include "spdy/core/spdy_header_storage.h"
 
 #include <cstring>
 
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
+#include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
 namespace {
@@ -34,7 +34,7 @@ absl::string_view SpdyHeaderStorage::WriteFragments(
   }
   char* dst = arena_.Alloc(total_size);
   size_t written = Join(dst, fragments, separator);
-  DCHECK_EQ(written, total_size);
+  QUICHE_DCHECK_EQ(written, total_size);
   return absl::string_view(dst, total_size);
 }
 

@@ -49,6 +49,10 @@ const char kPageWithAdScript[] = R"HTML(
     <head><script defer src="script.js?ad=true"></script></head>
     <body><div class="test">Test</div></body>
     )HTML";
+const char kPageWithFrame[] = R"HTML(
+    <head></head>
+    <body><div class="test">Test</div><iframe src="frame.html"></iframe></body>
+    )HTML";
 const char kPageWithStyleTagLoadingVanillaResources[] = R"HTML(
     <head><style>
       @font-face {
@@ -62,12 +66,6 @@ const char kPageWithStyleTagLoadingVanillaResources[] = R"HTML(
     </style></head>
     <body><div class="test">Test</div></body>
     )HTML";
-
-const char kScriptToCreateFrame[] = R"SCRIPT(
-    let iframe = document.createElement("iframe");
-    iframe.src = "frame.html";
-    document.body.appendChild(iframe);
-    )SCRIPT";
 
 const char kStylesheetWithVanillaResources[] = R"CSS(
     @font-face {
@@ -142,20 +140,19 @@ class TestAdTracker : public AdTracker {
   }
 
   bool CalculateIfAdSubresource(ExecutionContext* execution_context,
-                                const ResourceRequest& resource_request,
+                                const KURL& request_url,
                                 ResourceType resource_type,
                                 const FetchInitiatorInfo& initiator_info,
                                 bool ad_request) override {
-    if (!ad_suffix_.IsEmpty() &&
-        resource_request.Url().GetString().EndsWith(ad_suffix_)) {
+    if (!ad_suffix_.IsEmpty() && request_url.GetString().EndsWith(ad_suffix_)) {
       ad_request = true;
     }
 
     ad_request = AdTracker::CalculateIfAdSubresource(
-        execution_context, resource_request, resource_type, initiator_info,
+        execution_context, request_url, resource_type, initiator_info,
         ad_request);
 
-    String resource_url = resource_request.Url().GetString();
+    String resource_url = request_url.GetString();
     is_ad_.insert(resource_url, ad_request);
 
     if (quit_closure_ && url_to_wait_for_ == resource_url) {
@@ -261,36 +258,6 @@ TEST_F(AdTrackerTest, TopScriptTaggedAsAdResource) {
       AdTracker::StackType::kBottomAndTop));
   EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
       AdTracker::StackType::kBottomOnly));
-}
-
-TEST_F(AdTrackerTest, TopOfStackOnly_NoAdsOnTop) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTopOfStackAdTagging);
-  CreateAdTracker();
-
-  String ad_script_url("https://example.com/bar.js");
-  AppendToKnownAdScripts(ad_script_url);
-
-  WillExecuteScript(ad_script_url);
-  WillExecuteScript("https://example.com/foo.js");
-  ad_tracker_->SetScriptAtTopOfStack("https://www.example.com/baz.js");
-
-  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
-}
-
-TEST_F(AdTrackerTest, TopOfStackOnly_AdsOnTop) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTopOfStackAdTagging);
-  CreateAdTracker();
-
-  String ad_script_url("https://example.com/bar.js");
-  AppendToKnownAdScripts(ad_script_url);
-
-  WillExecuteScript(ad_script_url);
-  WillExecuteScript("https://example.com/foo.js");
-  ad_tracker_->SetScriptAtTopOfStack(ad_script_url);
-
-  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
 }
 
 // Tests that if neither script in the stack is an ad,
@@ -463,25 +430,11 @@ TEST_F(AdTrackerSimTest, ScriptLoadedWhileExecutingAdScript) {
 
 // Unknown script running in an ad context should be labeled as ad script.
 TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
-  const char kAdScriptUrl[] = "https://example.com/ad_script.js";
-  SimSubresourceRequest ad_script(kAdScriptUrl, "text/javascript");
-
-  ad_tracker_->SetAdSuffix("ad_script.js");
-
   // Create an iframe that's considered an ad.
-  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
-  ad_script.Complete(R"SCRIPT(
-    frame = document.createElement("iframe");
-    document.body.appendChild(frame);
-    )SCRIPT");
-
-  // Wait for script to run.
-  base::RunLoop().RunUntilIdle();
-
-  // The child frame should be an ad subframe.
+  main_resource_->Complete("<body><iframe></iframe></body>");
   auto* child_frame =
       To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
-  EXPECT_TRUE(child_frame->IsAdSubframe());
+  child_frame->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
 
   // Now run unknown script in the child's context. It should be considered an
   // ad based on context alone.
@@ -561,27 +514,15 @@ TEST_F(AdTrackerSimTest, RedirectToAdUrl) {
 }
 
 TEST_F(AdTrackerSimTest, AdResourceDetectedByContext) {
-  SimSubresourceRequest ad_script("https://example.com/ad_script.js",
-                                  "text/javascript");
   SimRequest ad_frame("https://example.com/ad_frame.html", "text/html");
   SimSubresourceRequest foo_css("https://example.com/foo.css", "text/style");
-  ad_tracker_->SetAdSuffix("ad_script.js");
 
   // Create an iframe that's considered an ad.
-  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
-  ad_script.Complete(R"SCRIPT(
-    frame = document.createElement("iframe");
-    frame.src="ad_frame.html";
-    document.body.appendChild(frame);
-    )SCRIPT");
-
-  // Wait for script to run.
-  base::RunLoop().RunUntilIdle();
-
-  // The child frame should be an ad subframe.
+  main_resource_->Complete(
+      "<body><iframe src='ad_frame.html'></iframe></body>");
   auto* child_frame =
       To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
-  EXPECT_TRUE(child_frame->IsAdSubframe());
+  child_frame->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
 
   // Load a resource from the frame. It should be detected as an ad resource due
   // to its context.
@@ -596,7 +537,8 @@ TEST_F(AdTrackerSimTest, AdResourceDetectedByContext) {
 }
 
 // When inline script in an ad frame inserts an iframe into a non-ad frame, the
-// new frame should be considered an ad.
+// new frame should be considered as created by ad script (and would therefore
+// be tagged as an ad).
 TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
   SimSubresourceRequest ad_script("https://example.com/ad_script.js",
                                   "text/javascript");
@@ -613,9 +555,13 @@ TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
   // Wait for script to run.
   base::RunLoop().RunUntilIdle();
 
-  // Verify that the new frame is an ad frame.
-  EXPECT_TRUE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
-                  ->IsAdSubframe());
+  auto* child_frame =
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+
+  // Verify that the new frame is considered created by ad script then set it
+  // as an ad subframe. This emulates the embedder tagging a frame as an ad.
+  EXPECT_TRUE(child_frame->IsSubframeCreatedByAdScript());
+  child_frame->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
 
   // Create a new sibling frame to the ad frame. The ad context calls the non-ad
   // context's (top frame) appendChild.
@@ -627,10 +573,10 @@ TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
     </script>
     )HTML");
 
-  // The new sibling frame should also be identified as an ad.
+  // The new sibling frame should also be identified as created by ad script.
   EXPECT_TRUE(
       To<LocalFrame>(GetDocument().GetFrame()->Tree().ScopedChild("ad_sibling"))
-          ->IsAdSubframe());
+          ->IsSubframeCreatedByAdScript());
 }
 
 // Image loaded by ad script is tagged as ad.
@@ -782,7 +728,7 @@ TEST_F(AdTrackerSimTest, DataURLImageLoadedWhileExecutingAdScriptAsyncEnabled) {
   EXPECT_TRUE(image_element->IsAdRelated());
 }
 
-// Frame loaded by ad script is tagged as ad.
+// Frame loaded by ad script is considered created by ad script.
 TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
   const char kAdUrl[] = "https://example.com/ad_script.js";
   const char kVanillaUrl[] = "https://example.com/vanilla_page.html";
@@ -804,13 +750,19 @@ TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
   // Wait for script to run.
   base::RunLoop().RunUntilIdle();
 
+  auto* child_frame =
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+
+  // Verify that the new frame is considered created by ad script then set it
+  // as an ad subframe. This emulates the SubresourceFilterAgent's tagging.
+  EXPECT_TRUE(child_frame->IsSubframeCreatedByAdScript());
+  child_frame->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
+
   vanilla_page.Complete("<img src=vanilla_img.jpg></img>");
   vanilla_image.Complete("");
 
   EXPECT_TRUE(IsKnownAdScript(GetDocument().GetExecutionContext(), kAdUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
-  Frame* child_frame = GetDocument().GetFrame()->Tree().FirstChild();
-  EXPECT_TRUE(To<LocalFrame>(child_frame)->IsAdSubframe());
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaImgUrl));
 }
 
@@ -876,9 +828,9 @@ TEST_F(AdTrackerSimTest, SameOriginSubframeFromAdScript) {
 
   iframe_resource.Complete("iframe data");
 
-  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
-  auto* local_subframe = To<LocalFrame>(subframe);
-  EXPECT_TRUE(local_subframe->IsAdSubframe());
+  auto* subframe =
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(subframe->IsSubframeCreatedByAdScript());
 }
 
 TEST_F(AdTrackerSimTest, SameOriginDocWrittenSubframeFromAdScript) {
@@ -901,9 +853,9 @@ TEST_F(AdTrackerSimTest, SameOriginDocWrittenSubframeFromAdScript) {
   // Wait for script to run.
   base::RunLoop().RunUntilIdle();
 
-  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
-  auto* local_subframe = To<LocalFrame>(subframe);
-  EXPECT_TRUE(local_subframe->IsAdSubframe());
+  auto* subframe =
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(subframe->IsSubframeCreatedByAdScript());
 }
 
 // This test class allows easy running of tests that only differ by whether
@@ -1012,21 +964,23 @@ TEST_P(AdTrackerVanillaOrAdSimTest, LinkRelStylesheetAddedByScript) {
 }
 
 TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
-  String script_url = FlipURLOnAdRun("https://example.com/script.js");
   String vanilla_stylesheet_url = "https://example.com/style.css";
   String vanilla_font_url = "https://example.com/font.woff2";
   String vanilla_image_url = "https://example.com/pixel.png";
   SimRequest frame("https://example.com/frame.html", "text/html");
-  SimSubresourceRequest script(script_url, "text/javascript");
   SimSubresourceRequest stylesheet(vanilla_stylesheet_url, "text/css");
   SimSubresourceRequest font(vanilla_font_url, "font/woff2");
   SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
-  main_resource_->Complete(IsAdRun() ? kPageWithAdScript
-                                     : kPageWithVanillaScript);
-  script.Complete(kScriptToCreateFrame);
+  main_resource_->Complete(kPageWithFrame);
+  if (IsAdRun()) {
+    auto* subframe =
+        To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+    subframe->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
+  }
+
   frame.Complete(kPageWithVanillaExternalStylesheet);
   stylesheet.Complete(kStylesheetWithVanillaResources);
 
@@ -1037,11 +991,6 @@ TEST_P(AdTrackerVanillaOrAdSimTest, ExternalStylesheetInFrame) {
   font.Complete();
   image.Complete();
 
-  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
-  auto* local_subframe = To<LocalFrame>(subframe);
-  EXPECT_EQ(local_subframe->IsAdSubframe(), IsAdRun());
-
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_stylesheet_url),
             IsAdRun());
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
@@ -1099,19 +1048,21 @@ TEST_F(AdTrackerSimTest, StyleTagInMainframe) {
 // according to the heuristic that all requests from an ad frame should also be
 // tagged as ads.
 TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagInSubframe) {
-  String script_url = FlipURLOnAdRun("https://example.com/script.js");
   String vanilla_font_url = "https://example.com/font.woff2";
   String vanilla_image_url = "https://example.com/pixel.png";
   SimRequest frame("https://example.com/frame.html", "text/html");
-  SimSubresourceRequest script(script_url, "text/javascript");
   SimSubresourceRequest font(vanilla_font_url, "font/woff2");
   SimSubresourceRequest image(vanilla_image_url, "image/png");
 
   ad_tracker_->SetAdSuffix("ad=true");
 
-  main_resource_->Complete(IsAdRun() ? kPageWithAdScript
-                                     : kPageWithVanillaScript);
-  script.Complete(kScriptToCreateFrame);
+  main_resource_->Complete(kPageWithFrame);
+  if (IsAdRun()) {
+    auto* subframe =
+        To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
+    subframe->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
+  }
+
   frame.Complete(kPageWithStyleTagLoadingVanillaResources);
 
   // Wait for stylesheet to fetch resources.
@@ -1121,11 +1072,6 @@ TEST_P(AdTrackerVanillaOrAdSimTest, StyleTagInSubframe) {
   font.Complete();
   image.Complete();
 
-  Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
-  auto* local_subframe = To<LocalFrame>(subframe);
-  EXPECT_EQ(local_subframe->IsAdSubframe(), IsAdRun());
-
-  EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(script_url), IsAdRun());
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_font_url), IsAdRun());
   EXPECT_EQ(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url),
             IsAdRun());
@@ -1484,6 +1430,80 @@ TEST_F(AdTrackerSimTest, AdModuleScript_ResourceTagged) {
   ad_tracker_->WaitForSubresource(vanilla_image_url);
 
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+// A resource fetched with ad script at top of stack is still tagged as an ad
+// when the ad script defines a sourceURL.
+TEST_F(AdTrackerSimTest, AdScriptWithSourceURLAtTopOfStack_StillTagged) {
+  String vanilla_script_url = "https://example.com/script.js";
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest vanilla_script(vanilla_script_url, "text/javascript");
+  SimSubresourceRequest ad_script(ad_script_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <head><script src="script.js?ad=true"></script>
+          <script src="script.js"></script></head>
+    <body><div>Test</div></body>
+  )HTML");
+
+  // We don't directly fetch in ad script as we aim to test ScriptAtTopOfStack()
+  // not WillExecuteScript().
+  ad_script.Complete(R"SCRIPT(
+    function getImage() { fetch('pixel.png'); }
+    //# sourceURL=source.js
+  )SCRIPT");
+
+  vanilla_script.Complete(R"SCRIPT(
+    getImage();
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script_url));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
+}
+
+// A dynamically added script with no src is still tagged as an ad if created
+// by an ad script even if it defines a sourceURL.
+TEST_F(AdTrackerSimTest, InlineAdScriptWithSourceURLAtTopOfStack_StillTagged) {
+  String ad_script_url = "https://example.com/script.js?ad=true";
+  String vanilla_script_url = "https://example.com/script.js";
+  String vanilla_image_url = "https://example.com/pixel.png";
+  SimSubresourceRequest ad_script(ad_script_url, "text/javascript");
+  SimSubresourceRequest vanilla_script(vanilla_script_url, "text/javascript");
+  SimSubresourceRequest image(vanilla_image_url, "image/png");
+
+  ad_tracker_->SetAdSuffix("ad=true");
+
+  main_resource_->Complete(R"HTML(
+    <body><script src="script.js?ad=true"></script>
+        <script src="script.js"></script></body>
+  )HTML");
+
+  ad_script.Complete(R"SCRIPT(
+    let script = document.createElement("script");
+    let text = document.createTextNode(
+        "function getImage() { fetch('pixel.png'); } \n"
+        + "//# sourceURL=source.js");
+    script.appendChild(text);
+    document.body.appendChild(script);
+  )SCRIPT");
+
+  // Fetch a resource using the function defined by dynamically added ad script.
+  vanilla_script.Complete(R"SCRIPT(
+    getImage();
+  )SCRIPT");
+
+  ad_tracker_->WaitForSubresource(vanilla_image_url);
+
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(ad_script_url));
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_script_url));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(vanilla_image_url));
 }
 

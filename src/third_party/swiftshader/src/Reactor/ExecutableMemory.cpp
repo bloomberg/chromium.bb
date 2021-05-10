@@ -20,7 +20,7 @@
 #	ifndef WIN32_LEAN_AND_MEAN
 #		define WIN32_LEAN_AND_MEAN
 #	endif
-#	include <windows.h>
+#	include <Windows.h>
 #	include <intrin.h>
 #elif defined(__Fuchsia__)
 #	include <unistd.h>
@@ -33,6 +33,10 @@
 #	include <unistd.h>
 #endif
 
+#if defined(__ANDROID__)
+#	include <sys/prctl.h>
+#endif
+
 #include <memory.h>
 
 #undef allocate
@@ -41,6 +45,9 @@
 #if(defined(__i386__) || defined(_M_IX86) || defined(__x86_64__) || defined(_M_X64)) && !defined(__x86__)
 #	define __x86__
 #endif
+
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace rr {
 namespace {
@@ -55,7 +62,7 @@ void *allocateRaw(size_t bytes, size_t alignment)
 {
 	ASSERT((alignment & (alignment - 1)) == 0);  // Power of 2 alignment.
 
-#if defined(LINUX_ENABLE_NAMED_MMAP)
+#if defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME)
 	if(alignment < sizeof(void *))
 	{
 		return malloc(bytes);
@@ -128,30 +135,31 @@ int permissionsToMmapProt(int permissions)
 }
 #endif  // !defined(_WIN32) && !defined(__Fuchsia__)
 
-#if defined(LINUX_ENABLE_NAMED_MMAP)
+#if defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME)
+#	if !defined(__ANDROID__)
 // Create a file descriptor for anonymous memory with the given
 // name. Returns -1 on failure.
 // TODO: remove once libc wrapper exists.
-int memfd_create(const char *name, unsigned int flags)
+static int memfd_create(const char *name, unsigned int flags)
 {
-#	if __aarch64__
-#		define __NR_memfd_create 279
-#	elif __arm__
-#		define __NR_memfd_create 279
-#	elif __powerpc64__
-#		define __NR_memfd_create 360
-#	elif __i386__
-#		define __NR_memfd_create 356
-#	elif __x86_64__
-#		define __NR_memfd_create 319
-#	endif /* __NR_memfd_create__ */
-#	ifdef __NR_memfd_create
+#		if __aarch64__
+#			define __NR_memfd_create 279
+#		elif __arm__
+#			define __NR_memfd_create 279
+#		elif __powerpc64__
+#			define __NR_memfd_create 360
+#		elif __i386__
+#			define __NR_memfd_create 356
+#		elif __x86_64__
+#			define __NR_memfd_create 319
+#		endif /* __NR_memfd_create__ */
+#		ifdef __NR_memfd_create
 	// In the event of no system call this returns -1 with errno set
 	// as ENOSYS.
 	return syscall(__NR_memfd_create, name, flags);
-#	else
+#		else
 	return -1;
-#	endif
+#		endif
 }
 
 // Returns a file descriptor for use with an anonymous mmap, if
@@ -159,9 +167,15 @@ int memfd_create(const char *name, unsigned int flags)
 // MAP_PRIVATE so that underlying pages aren't shared.
 int anonymousFd()
 {
-	static int fd = memfd_create("SwiftShader JIT", 0);
+	static int fd = memfd_create(MACRO_STRINGIFY(REACTOR_ANONYMOUS_MMAP_NAME), 0);
 	return fd;
 }
+#	else   // defined(__ANDROID__)
+int anonymousFd()
+{
+	return -1;
+}
+#	endif  // defined(__ANDROID__)
 
 // Ensure there is enough space in the "anonymous" fd for length.
 void ensureAnonFileSize(int anonFd, size_t length)
@@ -169,11 +183,12 @@ void ensureAnonFileSize(int anonFd, size_t length)
 	static size_t fileSize = 0;
 	if(length > fileSize)
 	{
-		ftruncate(anonFd, length);
+		[[maybe_unused]] int result = ftruncate(anonFd, length);
+		ASSERT(result == 0);
 		fileSize = length;
 	}
 }
-#endif  // defined(LINUX_ENABLE_NAMED_MMAP)
+#endif  // defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME)
 
 #if defined(__Fuchsia__)
 zx_vm_option_t permissionsToZxVmOptions(int permissions)
@@ -226,7 +241,7 @@ void *allocate(size_t bytes, size_t alignment)
 
 void deallocate(void *memory)
 {
-#if defined(LINUX_ENABLE_NAMED_MMAP)
+#if defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME)
 	free(memory);
 #else
 	if(memory)
@@ -252,7 +267,7 @@ void *allocateMemoryPages(size_t bytes, int permissions, bool need_exec)
 	size_t length = roundUp(bytes, pageSize);
 	void *mapping = nullptr;
 
-#if defined(LINUX_ENABLE_NAMED_MMAP)
+#if defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME)
 	int flags = MAP_PRIVATE;
 
 	// Try to name the memory region for the executable code,
@@ -274,6 +289,17 @@ void *allocateMemoryPages(size_t bytes, int permissions, bool need_exec)
 	{
 		mapping = nullptr;
 	}
+#	if defined(__ANDROID__)
+	else
+	{
+		// On Android, prefer to use a non-standard prctl called
+		// PR_SET_VMA_ANON_NAME to set the name of a private anonymous
+		// mapping, as Android restricts EXECUTE permission on
+		// CoW/shared anonymous mappings with sepolicy neverallows.
+		prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, mapping, length,
+		      MACRO_STRINGIFY(REACTOR_ANONYMOUS_MMAP_NAME));
+	}
+#	endif  // __ANDROID__
 #elif defined(__Fuchsia__)
 	zx_handle_t vmo;
 	if(zx_vmo_create(length, 0, &vmo) != ZX_OK)
@@ -329,7 +355,10 @@ void *allocateMemoryPages(size_t bytes, int permissions, bool need_exec)
 void protectMemoryPages(void *memory, size_t bytes, int permissions)
 {
 	if(bytes == 0)
+	{
 		return;
+	}
+
 	bytes = roundUp(bytes, memoryPageSize());
 
 #if defined(_WIN32)
@@ -358,7 +387,7 @@ void deallocateMemoryPages(void *memory, size_t bytes)
 	    VirtualProtect(memory, bytes, PAGE_READWRITE, &oldProtection);
 	ASSERT(result);
 	deallocate(memory);
-#elif defined(LINUX_ENABLE_NAMED_MMAP) || defined(__APPLE__)
+#elif defined(__APPLE__) || (defined(__linux__) && defined(REACTOR_ANONYMOUS_MMAP_NAME))
 	size_t pageSize = memoryPageSize();
 	size_t length = (bytes + pageSize - 1) & ~(pageSize - 1);
 	int result = munmap(memory, length);

@@ -1,4 +1,4 @@
-# v-0006 - Fails because struct 'boo' does not have a member 't'.
+// v-0007 - Fails because struct 'boo' does not have a member 't'.
 
 struct boo {
   z : f32;

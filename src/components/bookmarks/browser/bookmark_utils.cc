@@ -10,13 +10,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -296,7 +296,7 @@ void PasteFromClipboard(BookmarkModel* model,
     GURL url = GetUrlFromClipboard(/*notify_if_restricted=*/true);
     if (!url.is_valid())
       return;
-    BookmarkNode node(/*id=*/0, base::GenerateGUID(), url);
+    BookmarkNode node(/*id=*/0, base::GUID::GenerateRandomV4(), url);
     node.SetTitle(base::ASCIIToUTF16(url.spec()));
     bookmark_data = BookmarkNodeData(&node);
   }
@@ -417,11 +417,10 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
 std::vector<base::string16> ParseBookmarkQuery(
     const bookmarks::QueryFields& query) {
   std::vector<base::string16> query_words;
-  query_parser::QueryParser parser;
   if (query.word_phrase_query) {
-    parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
-                           query_parser::MatchingAlgorithm::DEFAULT,
-                           &query_words);
+    query_parser::QueryParser::ParseQueryWords(
+        base::i18n::ToLower(*query.word_phrase_query),
+        query_parser::MatchingAlgorithm::DEFAULT, &query_words);
   }
   return query_words;
 }
@@ -448,6 +447,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kShowAppsShortcutInBookmarkBar,
       true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kShowReadingListInBookmarkBar, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kShowManagedBookmarksInBookmarkBar,

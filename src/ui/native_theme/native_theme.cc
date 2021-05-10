@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -28,11 +28,11 @@ namespace ui {
 
 namespace {
 // clang-format off
-const base::flat_map<NativeTheme::ColorId, ColorId>&
-NativeThemeColorIdToColorIdMap() {
+bool NativeThemeColorIdToColorId(NativeTheme::ColorId native_theme_color_id,
+                                 ColorId* color_id) {
   using NTCID = NativeTheme::ColorId;
-  static const base::NoDestructor<base::flat_map<NativeTheme::ColorId, ColorId>>
-      map({
+  static constexpr const auto map =
+      base::MakeFixedFlatMap<NativeTheme::ColorId, ColorId>({
         {NTCID::kColorId_AlertSeverityHigh, kColorAlertHighSeverity},
         {NTCID::kColorId_AlertSeverityLow, kColorAlertLowSeverity},
         {NTCID::kColorId_AlertSeverityMedium, kColorAlertMediumSeverity},
@@ -150,7 +150,13 @@ NativeThemeColorIdToColorIdMap() {
           kColorTreeNodeForegroundSelectedUnfocused},
         {NTCID::kColorId_WindowBackground, kColorWindowBackground},
       });
-  return *map;
+  DCHECK(color_id);
+  auto* color_it = map.find(native_theme_color_id);
+  if (color_it != map.cend()) {
+    *color_id = color_it->second;
+    return true;
+  }
+  return false;
 }
 // clang-format on
 
@@ -191,11 +197,10 @@ SkColor NativeTheme::GetSystemColor(ColorId color_id,
     // TODO(http://crbug.com/1057754): Handle high contrast modes.
     auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
         color_mode, ColorProviderManager::ContrastMode::kNormal);
-    auto color_id_map = NativeThemeColorIdToColorIdMap();
-    auto result = color_id_map.find(color_id);
-    if (result != color_id_map.cend()) {
+    ui::ColorId provider_color_id;
+    if (NativeThemeColorIdToColorId(color_id, &provider_color_id)) {
       ReportHistogramBooleanUsesColorProvider(true);
-      return color_provider->GetColor(result->second);
+      return color_provider->GetColor(provider_color_id);
     }
   }
   ReportHistogramBooleanUsesColorProvider(false);
@@ -212,8 +217,7 @@ SkColor NativeTheme::FocusRingColorForBaseColor(SkColor base_color) const {
 
 float NativeTheme::GetBorderRadiusForPart(Part part,
                                           float width,
-                                          float height,
-                                          float zoom) const {
+                                          float height) const {
   return 0;
 }
 
@@ -232,7 +236,7 @@ void NativeTheme::NotifyObservers() {
 
 NativeTheme::NativeTheme(bool should_use_dark_colors)
     : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
-      is_high_contrast_(IsForcedHighContrast()),
+      forced_colors_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
       preferred_contrast_(CalculatePreferredContrast()) {
 #if !defined(OS_ANDROID)
@@ -260,8 +264,14 @@ bool NativeTheme::ShouldUseDarkColors() const {
   return should_use_dark_colors_;
 }
 
-bool NativeTheme::UsesHighContrastColors() const {
-  return is_high_contrast_;
+bool NativeTheme::UserHasContrastPreference() const {
+  return GetPreferredContrast() !=
+             NativeTheme::PreferredContrast::kNoPreference ||
+         InForcedColorsMode();
+}
+
+bool NativeTheme::InForcedColorsMode() const {
+  return forced_colors_;
 }
 
 NativeTheme::PlatformHighContrastColorScheme
@@ -336,16 +346,16 @@ void NativeTheme::set_system_colors(
 
 bool NativeTheme::UpdateSystemColorInfo(
     bool is_dark_mode,
-    bool is_high_contrast,
+    bool forced_colors,
     const base::flat_map<SystemThemeColor, uint32_t>& colors) {
   bool did_system_color_info_change = false;
   if (is_dark_mode != ShouldUseDarkColors()) {
     did_system_color_info_change = true;
     set_use_dark_colors(is_dark_mode);
   }
-  if (is_high_contrast != UsesHighContrastColors()) {
+  if (forced_colors != InForcedColorsMode()) {
     did_system_color_info_change = true;
-    set_high_contrast(is_high_contrast);
+    set_forced_colors(forced_colors);
   }
   for (const auto& color : colors) {
     if (color.second != GetSystemThemeColor(color.first)) {
@@ -366,7 +376,7 @@ NativeTheme::ColorSchemeNativeThemeObserver::~ColorSchemeNativeThemeObserver() =
 void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
   bool should_use_dark_colors = observed_theme->ShouldUseDarkColors();
-  bool is_high_contrast = observed_theme->UsesHighContrastColors();
+  bool forced_colors = observed_theme->InForcedColorsMode();
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   PreferredContrast preferred_contrast = observed_theme->GetPreferredContrast();
@@ -376,8 +386,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     theme_to_update_->set_use_dark_colors(should_use_dark_colors);
     notify_observers = true;
   }
-  if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
-    theme_to_update_->set_high_contrast(is_high_contrast);
+  if (theme_to_update_->InForcedColorsMode() != forced_colors) {
+    theme_to_update_->set_forced_colors(forced_colors);
     notify_observers = true;
   }
   if (theme_to_update_->GetPreferredColorScheme() != preferred_color_scheme) {

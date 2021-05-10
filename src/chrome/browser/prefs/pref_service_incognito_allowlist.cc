@@ -8,11 +8,11 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 
@@ -20,16 +20,16 @@
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/ash_pref_names.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
 // List of keys that can be changed in the user prefs file by the incognito
 // profile.
 const char* const kPersistentPrefNames[] = {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Accessibility preferences should be persisted if they are changed in
     // incognito mode.
     ash::prefs::kAccessibilityLargeCursorEnabled,
@@ -40,6 +40,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityScreenMagnifierCenterFocus,
     ash::prefs::kAccessibilityScreenMagnifierEnabled,
     ash::prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled,
+    ash::prefs::kAccessibilityScreenMagnifierMouseFollowingMode,
     ash::prefs::kAccessibilityScreenMagnifierScale,
     ash::prefs::kAccessibilityVirtualKeyboardEnabled,
     ash::prefs::kAccessibilityMonoAudioEnabled,
@@ -56,15 +57,13 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityFocusHighlightEnabled,
     ash::prefs::kAccessibilitySelectToSpeakEnabled,
     ash::prefs::kAccessibilitySwitchAccessEnabled,
-    ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes,
-    ash::prefs::kAccessibilitySwitchAccessSelectSetting,
-    ash::prefs::kAccessibilitySwitchAccessNextKeyCodes,
-    ash::prefs::kAccessibilitySwitchAccessNextSetting,
-    ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
-    ash::prefs::kAccessibilitySwitchAccessPreviousSetting,
+    ash::prefs::kAccessibilitySwitchAccessSelectDeviceKeyCodes,
+    ash::prefs::kAccessibilitySwitchAccessNextDeviceKeyCodes,
+    ash::prefs::kAccessibilitySwitchAccessPreviousDeviceKeyCodes,
     ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled,
     ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
     ash::prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+    ash::prefs::kAccessibilitySwitchAccessPointScanSpeedDipsPerSecond,
     ash::prefs::kAccessibilityDictationEnabled,
     ash::prefs::kDockedMagnifierEnabled,
     ash::prefs::kDockedMagnifierScale,
@@ -72,7 +71,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kShouldAlwaysShowAccessibilityMenu,
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if !defined(OS_ANDROID)
     kAnimationPolicyAllowed,
     kAnimationPolicyOnce,
@@ -88,6 +87,7 @@ const char* const kPersistentPrefNames[] = {
     bookmarks::prefs::kManagedBookmarks,
     bookmarks::prefs::kManagedBookmarksFolderName,
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+    bookmarks::prefs::kShowReadingListInBookmarkBar,
     bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
     bookmarks::prefs::kShowBookmarkBar,
 #if defined(OS_ANDROID)
@@ -136,17 +136,13 @@ const char* const kPersistentPrefNames[] = {
     prefs::kShowFullscreenToolbar,
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // Toggleing custom frames affects all open windows in the profile, hence
     // should be written to the regular profile when changed in incognito mode.
     prefs::kUseCustomChromeFrame,
 #endif
-
-    // Rappor preferences are not used in incognito mode, but they are written
-    // in startup if they don't exist. So if the startup would be in incognito,
-    // they need to be persisted.
-    rappor::prefs::kRapporCohortSeed,
-    rappor::prefs::kRapporSecret,
 
     // Reading list preferences are common between incognito and regular mode.
     reading_list::prefs::kReadingListHasUnseenEntries,
@@ -169,10 +165,10 @@ const char* const kPersistentPrefNames[] = {
 namespace prefs {
 
 std::vector<const char*> GetIncognitoPersistentPrefsAllowlist() {
-  std::vector<const char*> whitelist;
-  whitelist.insert(whitelist.end(), kPersistentPrefNames,
+  std::vector<const char*> allowlist;
+  allowlist.insert(allowlist.end(), kPersistentPrefNames,
                    kPersistentPrefNames + base::size(kPersistentPrefNames));
-  return whitelist;
+  return allowlist;
 }
 
 }  // namespace prefs

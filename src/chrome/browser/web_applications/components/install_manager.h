@@ -11,20 +11,23 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/system_web_app_types.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
-enum class WebappInstallSource;
+class Profile;
 struct WebApplicationInfo;
 
 namespace content {
 class WebContents;
 }
 
-class Profile;
+namespace webapps {
+enum class WebappInstallSource;
+}
 
 namespace web_app {
 
@@ -75,7 +78,7 @@ class InstallManager {
   virtual void InstallWebAppFromManifest(
       content::WebContents* web_contents,
       bool bypass_service_worker_check,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;
 
@@ -87,7 +90,7 @@ class InstallManager {
   virtual void InstallWebAppFromManifestWithFallback(
       content::WebContents* web_contents,
       bool force_shortcut_app,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;
 
@@ -124,13 +127,15 @@ class InstallManager {
     std::vector<std::string> additional_search_terms;
 
     base::Optional<std::string> launch_query_params;
+    base::Optional<SystemAppType> system_app_type;
   };
   // Starts a background web app installation process for a given
   // |web_contents|.
-  virtual void InstallWebAppWithParams(content::WebContents* web_contents,
-                                       const InstallParams& install_params,
-                                       WebappInstallSource install_source,
-                                       OnceInstallCallback callback) = 0;
+  virtual void InstallWebAppWithParams(
+      content::WebContents* web_contents,
+      const InstallParams& install_params,
+      webapps::WebappInstallSource install_source,
+      OnceInstallCallback callback) = 0;
 
   // Starts a web app installation process using prefilled
   // |web_application_info| which holds all the data needed for installation.
@@ -139,14 +144,14 @@ class InstallManager {
   virtual void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       OnceInstallCallback callback) = 0;
 
   virtual void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
       const base::Optional<InstallParams>& install_params,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       OnceInstallCallback callback) = 0;
 
   // For backward compatibility with ExtensionSyncService-based system:
@@ -176,7 +181,7 @@ class InstallManager {
   // valid manifest. Calls |callback| with results.
   virtual void LoadWebAppAndCheckManifest(
       const GURL& web_app_url,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       WebAppManifestCheckCallback callback) = 0;
 
   void DisableBookmarkAppSyncInstallForTesting() {

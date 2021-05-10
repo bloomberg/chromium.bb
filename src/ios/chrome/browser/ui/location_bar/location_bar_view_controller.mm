@@ -535,6 +535,7 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 // here.
 - (void)shareButtonPressed {
   RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
+  [self.delegate recordShareButtonPressed];
 }
 
 // Updates the cached clipboard content type and calls |completion| when the
@@ -597,12 +598,12 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                action:@selector(searchCopiedText:)]);
 
     BOOL updateSuccessful = [self updateCachedClipboardStateWithCompletion:^() {
-      if (@available(iOS 13, *)) {
-        [menu showMenuFromView:self.view rect:self.locationBarSteadyView.frame];
-      } else {
-        [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
-        [menu setMenuVisible:YES animated:YES];
-      }
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
+      [menu setMenuVisible:YES animated:YES];
+#else
+      [menu showMenuFromView:self.view rect:self.locationBarSteadyView.frame];
+#endif
       // When the menu is manually presented, it doesn't get focused by
       // Voiceover. This notification forces voiceover to select the
       // presented menu.
@@ -667,10 +668,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
       base::BindOnce(^(base::Optional<GURL> optionalURL) {
-        NSString* url;
-        if (optionalURL) {
-          url = base::SysUTF8ToNSString(optionalURL.value().spec());
+        if (!optionalURL) {
+          return;
         }
+        NSString* url = base::SysUTF8ToNSString(optionalURL.value().spec());
         dispatch_async(dispatch_get_main_queue(), ^{
           [self.dispatcher loadQuery:url immediately:YES];
           [self.dispatcher cancelOmniboxEdit];
@@ -685,10 +686,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
       base::BindOnce(^(base::Optional<base::string16> optionalText) {
-        NSString* query;
-        if (optionalText) {
-          query = base::SysUTF16ToNSString(optionalText.value());
+        if (!optionalText) {
+          return;
         }
+        NSString* query = base::SysUTF16ToNSString(optionalText.value());
         dispatch_async(dispatch_get_main_queue(), ^{
           [self.dispatcher loadQuery:query immediately:YES];
           [self.dispatcher cancelOmniboxEdit];

@@ -92,9 +92,6 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   RetrievePolicyResponseType BlockingRetrievePolicyForUser(
       const cryptohome::AccountIdentifier& cryptohome_id,
       std::string* policy_out) override;
-  void RetrievePolicyForUserWithoutSession(
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      RetrievePolicyCallback callback) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       RetrievePolicyCallback callback) override;
@@ -120,6 +117,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   bool SupportsBrowserRestart() const override;
   void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override;
+  void SetFeatureFlagsForUser(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const std::vector<std::string>& feature_flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
 
   void StartArcMiniContainer(
@@ -186,9 +186,6 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       const cryptohome::AccountIdentifier& cryptohome_id) const;
   void set_user_policy(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::string& policy_blob);
-  void set_user_policy_without_session(
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::string& policy_blob);
 
   // Accessors for device local account policy. Only available for
   // PolicyStorageType::kInMemory.
@@ -264,6 +261,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     adb_sideload_enabled_ = adb_sideload_enabled;
   }
 
+  void set_adb_sideload_response(AdbSideloadResponseCode response) {
+    adb_sideload_response_ = response;
+  }
+
   bool session_stopped() const { return session_stopped_; }
 
   const SessionManagerClient::ActiveSessionsMap& user_sessions() const {
@@ -301,9 +302,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   // If set to true, StorePolicy() always fails.
   bool force_store_policy_failure_ = false;
 
-  // It set to true, RetrievePolicy() always succeeds with an empty policy blob.
+  // If set to true, RetrievePolicy() always succeeds with an empty policy blob.
   // This simulates a policy load error in session manager.
   bool force_retrieve_policy_load_error_ = false;
+
+  // The response that will be returned when QueryAdbSideload() is called.
+  AdbSideloadResponseCode adb_sideload_response_ =
+      AdbSideloadResponseCode::SUCCESS;
 
   int clear_forced_re_enrollment_vpd_call_count_ = 0;
   // Callback which is run after calling |StartDeviceWipe| or
@@ -348,5 +353,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::FakeSessionManagerClient;
+}
 
 #endif  // CHROMEOS_DBUS_SESSION_MANAGER_FAKE_SESSION_MANAGER_CLIENT_H_

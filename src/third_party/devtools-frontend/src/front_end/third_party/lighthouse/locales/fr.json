@@ -254,15 +254,6 @@
   "lighthouse-core/audits/accessibility/label.js | title": {
     "message": "Les éléments de formulaire sont associés à des libellés"
   },
-  "lighthouse-core/audits/accessibility/layout-table.js | description": {
-    "message": "Un tableau utilisé pour la mise en page ne doit pas inclure d'éléments de données tels que les éléments \"th\" ou \"caption\", ou encore l'attribut \"summary\", car cela peut perturber l'expérience des utilisateurs de lecteurs d'écran. [En savoir plus](https://web.dev/layout-table/)"
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | failureTitle": {
-    "message": "Les éléments `<table>` de présentation n'évitent pas d'utiliser `<th>`, `<caption>` ni l'attribut `[summary]`."
-  },
-  "lighthouse-core/audits/accessibility/layout-table.js | title": {
-    "message": "Les éléments `<table>` de présentation ne font pas appel aux éléments `<th>` et `<caption>`, ni à l'attribut `[summary]`."
-  },
   "lighthouse-core/audits/accessibility/link-name.js | description": {
     "message": "Rédigez du texte visible et unique pour les liens (et pour le texte de substitution des images, si vous vous en servez dans des liens), afin que les utilisateurs de lecteurs d'écran puissent facilement positionner le curseur dessus et bénéficient d'une meilleure expérience de navigation. [En savoir plus](https://web.dev/link-name/)"
   },
@@ -362,15 +353,6 @@
   "lighthouse-core/audits/accessibility/video-caption.js | title": {
     "message": "Les éléments `<video>` contiennent un élément `<track>` possédant l'attribut `[kind=\"captions\"]`"
   },
-  "lighthouse-core/audits/accessibility/video-description.js | description": {
-    "message": "Les descriptions audio fournissent des informations pertinentes qui ne sont pas comprises dans le dialogue des vidéos, comme les expressions faciales et les scènes. [En savoir plus](https://web.dev/video-description/)"
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | failureTitle": {
-    "message": "Les éléments `<video>` ne contiennent pas d'élément `<track>` possédant l'attribut `[kind=\"description\"]`."
-  },
-  "lighthouse-core/audits/accessibility/video-description.js | title": {
-    "message": "Les éléments `<video>` contiennent un élément `<track>` possédant l'attribut `[kind=\"description\"]`"
-  },
   "lighthouse-core/audits/apple-touch-icon.js | description": {
     "message": "Définissez un attribut `apple-touch-icon` afin d'optimiser l'affichage de votre progressive web app sur l'écran d'accueil des appareils iOS. Il doit mener vers une image PNG carrée opaque de 180 ou 192 pixels. [Découvrez-en davantage](https://web.dev/apple-touch-icon/)."
   },
@@ -384,16 +366,16 @@
     "message": "La valeur de l'attribut `apple-touch-icon` est valide"
   },
   "lighthouse-core/audits/autocomplete.js | columnCurrent": {
-    "message": "Current Value"
+    "message": "Valeur actuelle"
   },
   "lighthouse-core/audits/autocomplete.js | columnSuggestions": {
-    "message": "Suggested Token"
+    "message": "Jeton suggéré"
   },
   "lighthouse-core/audits/autocomplete.js | description": {
-    "message": "`autocomplete` helps users submit forms quicker. To reduce user effort, consider enabling by setting the `autocomplete` attribute to a valid value. [Learn more](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
+    "message": "`autocomplete` permet aux utilisateurs d'envoyer des formulaires plus rapidement. Pour leur faire gagner du temps, envisagez d'activer cette fonctionnalité en définissant l'attribut `autocomplete` sur une valeur valide. [En savoir plus](https://developers.google.com/web/fundamentals/design-and-ux/input/forms#use_metadata_to_enable_auto-complete)"
   },
   "lighthouse-core/audits/autocomplete.js | failureTitle": {
-    "message": "`<input>` elements do not have correct `autocomplete` attributes"
+    "message": "Les éléments `<input>` ne possèdent pas d'attributs `autocomplete` corrects"
   },
   "lighthouse-core/audits/autocomplete.js | manualReview": {
     "message": "Nécessite une vérification manuelle"
@@ -402,10 +384,10 @@
     "message": "Vérifiez l'ordre des jetons"
   },
   "lighthouse-core/audits/autocomplete.js | title": {
-    "message": "`<input>` elements correctly use `autocomplete`"
+    "message": "Les éléments `<input>` utilisent correctement `autocomplete`"
   },
   "lighthouse-core/audits/autocomplete.js | warningInvalid": {
-    "message": "`autocomplete` token(s): \"{token}\" is invalid in {snippet}"
+    "message": "Jeton(s) `autocomplete` : \"{token}\" n'est pas valide dans {snippet}"
   },
   "lighthouse-core/audits/autocomplete.js | warningOrder": {
     "message": "Vérifier l'ordre des jetons : \"{tokens}\" dans {snippet}"
@@ -585,7 +567,7 @@
     "message": "API Application Cache non utilisée"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
-    "message": "A character encoding declaration is required. It can be done with a `<meta>` tag in the first 1024 bytes of the HTML or in the Content-Type HTTP response header. [Learn more](https://web.dev/charset/)."
+    "message": "La déclaration d'encodage des caractères est obligatoire. Elle peut être effectuée avec une balise `<meta>` dans les 1 024 premiers octets du code HTML, ou dans l'en-tête de réponse HTTP Content-Type. [En savoir plus](https://web.dev/charset/)"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | failureTitle": {
     "message": "La déclaration de charset est manquante ou intervient trop tard dans le code HTML"
@@ -665,6 +647,24 @@
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | title": {
     "message": "Aucune autorisation de géolocalisation n'est demandée au chargement de la page"
   },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | columnIssueType": {
+    "message": "Type de problème"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | description": {
+    "message": "Les problèmes enregistrés dans le panneau `Issues` des outils de développement Chrome indiquent des problèmes non résolus. Ceux-ci peuvent être dus à des requêtes réseau qui ont échoué, à des contrôles de sécurité insuffisants ou à d'autres problèmes du navigateur. Ouvrez le panneau \"Issues\" dans les outils de développement Chrome pour en savoir plus sur chaque problème."
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | failureTitle": {
+    "message": "Des problèmes ont été enregistrés dans le panneau `Issues` des outils de développement Chrome"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeBlockedByResponse": {
+    "message": "Bloqué par le règlement multi-origines"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | issueTypeHeavyAds": {
+    "message": "Utilisation intensive de ressources par les annonces"
+  },
+  "lighthouse-core/audits/dobetterweb/inspector-issues.js | title": {
+    "message": "Aucun problème dans le panneau `Issues` des outils de développement Chrome"
+  },
   "lighthouse-core/audits/dobetterweb/js-libraries.js | columnVersion": {
     "message": "Version"
   },
@@ -735,7 +735,7 @@
     "message": "Protocole"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | description": {
-    "message": "Le protocole HTTP/2 offre de nombreux avantages par rapport à HTTP/1.1, comme les en-têtes binaires, le multiplexage et la fonctionnalité Push des serveurs. [En savoir plus](https://web.dev/uses-http2/)"
+    "message": "Le protocole HTTP/2 offre de nombreux avantages par rapport à HTTP/1.1, comme les en-têtes binaires et le multiplexage. [En savoir plus](https://web.dev/uses-http2/)"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | displayValue": {
     "message": "{itemCount,plural, =1{1 requête non traitée via le protocole HTTP/2}one{# requête non traitée via le protocole HTTP/2}other{# requêtes non traitées via le protocole HTTP/2}}"
@@ -751,9 +751,6 @@
   },
   "lighthouse-core/audits/dobetterweb/uses-passive-event-listeners.js | title": {
     "message": "La page utilise des écouteurs d'événements passifs pour améliorer les performances de défilement"
-  },
-  "lighthouse-core/audits/errors-in-console.js | columnDesc": {
-    "message": "Description"
   },
   "lighthouse-core/audits/errors-in-console.js | description": {
     "message": "Les erreurs enregistrées dans la console indiquent des problèmes non résolus. Ces derniers peuvent être dus à des requêtes réseau qui ont échoué et à d'autres problèmes du navigateur. [En savoir plus](https://web.dev/errors-in-console/)"
@@ -791,9 +788,6 @@
   "lighthouse-core/audits/image-aspect-ratio.js | title": {
     "message": "Images affichées au bon format"
   },
-  "lighthouse-core/audits/image-aspect-ratio.js | warningCompute": {
-    "message": "Informations sur la taille d'image non valides {url}"
-  },
   "lighthouse-core/audits/image-size-responsive.js | columnActual": {
     "message": "Taille réelle"
   },
@@ -812,14 +806,98 @@
   "lighthouse-core/audits/image-size-responsive.js | title": {
     "message": "Images diffusées dans la résolution appropriée"
   },
+  "lighthouse-core/audits/installable-manifest.js | already-installed": {
+    "message": "L'application est déjà installée"
+  },
+  "lighthouse-core/audits/installable-manifest.js | cannot-download-icon": {
+    "message": "L'icône téléchargée était vide ou corrompue"
+  },
+  "lighthouse-core/audits/installable-manifest.js | columnValue": {
+    "message": "Motif de l'échec"
+  },
   "lighthouse-core/audits/installable-manifest.js | description": {
-    "message": "Les utilisateurs peuvent être invités à ajouter votre application à leur écran d'accueil par le biais de leur navigateur. Cette fonctionnalité peut contribuer à une hausse de l'engagement. [Découvrez-en davantage](https://web.dev/installable-manifest/)."
+    "message": "Service worker est une technologie qui permet à votre application d'exploiter de nombreuses fonctionnalités propres aux progressive web apps, comme le fonctionnement hors connexion, l'ajout à l'écran d'accueil et les notifications push. Lorsqu'un service worker et un fichier manifeste sont correctement implémentés, les utilisateurs peuvent être invités à ajouter votre application à leur écran d'accueil par le biais de leur navigateur. Cette fonctionnalité peut contribuer à une hausse de l'engagement. [En savoir plus](https://web.dev/installable-manifest/)"
+  },
+  "lighthouse-core/audits/installable-manifest.js | displayValue": {
+    "message": "{itemCount,plural, =1{1 motif}one{# motif}other{# motifs}}"
   },
   "lighthouse-core/audits/installable-manifest.js | failureTitle": {
-    "message": "Le fichier manifeste de l'application Web ne respecte pas les conditions d'installation requises"
+    "message": "Le fichier manifeste ou le service worker de l'application Web ne respectent pas les conditions d'installation requises"
+  },
+  "lighthouse-core/audits/installable-manifest.js | ids-do-not-match": {
+    "message": "L'URL de l'application Play Store et l'ID Play Store ne correspondent pas"
+  },
+  "lighthouse-core/audits/installable-manifest.js | in-incognito": {
+    "message": "La page est chargée dans une fenêtre de navigation privée"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-not-supported": {
+    "message": "La propriété \"display\" du fichier manifeste doit avoir la valeur \"standalone\", \"fullscreen\" ou \"minimal-ui\""
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-display-override-not-supported": {
+    "message": "Le fichier manifeste contient le champ \"display_override\" et le premier mode d'affichage pris en charge doit être \"standalone\", \"fullscreen\" ou \"minimal-ui\""
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-empty": {
+    "message": "Le fichier manifeste n'a pas pu être récupéré, est vide ou n'a pas pu être analysé"
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-location-changed": {
+    "message": "L'URL du fichier manifeste a changé pendant la récupération du fichier manifeste."
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-name-or-short-name": {
+    "message": "Le fichier manifeste ne contient ni un champ \"name\", ni un champ \"short_name\""
+  },
+  "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
+    "message": "Le fichier manifeste ne contient aucune icône adaptée. Un format PNG, SVG ou WebP d'au moins {value0} px est requis, les attributs de taille doivent être définis et, s'il est défini, l'attribut d'usage doit inclure \"any\" ou \"maskable\"."
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
+    "message": "Aucune icône fournie ne fait au moins {value0} px carré(s) au format PNG, SVG ou WebP"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
+    "message": "L'icône téléchargée était vide ou corrompue"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-id-specified": {
+    "message": "Aucun ID Play Store fourni"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-manifest": {
+    "message": "La page n'a aucune URL <lien> de fichier manifeste"
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-matching-service-worker": {
+    "message": "Aucun service worker correspondant n'a été détecté. Vous devrez peut-être recharger la page ou vérifier que le champ d'application du service worker pour la page actuelle inclut le champ d'application et l'URL de démarrage du fichier manifeste."
+  },
+  "lighthouse-core/audits/installable-manifest.js | no-url-for-service-worker": {
+    "message": "Impossible de contrôler le service worker sans un champ \"start_url\" dans le fichier manifeste"
+  },
+  "lighthouse-core/audits/installable-manifest.js | noErrorId": {
+    "message": "Le code d'erreur d'installation \"{errorId}\" n'est pas reconnu"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-from-secure-origin": {
+    "message": "L'origine de la page n'est pas sécurisée"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-in-main-frame": {
+    "message": "La page n'est pas chargée dans le frame principal"
+  },
+  "lighthouse-core/audits/installable-manifest.js | not-offline-capable": {
+    "message": "La page ne fonctionne pas hors connexion"
+  },
+  "lighthouse-core/audits/installable-manifest.js | platform-not-supported-on-android": {
+    "message": "La plate-forme d'applications indiquée n'est pas compatible avec Android"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications": {
+    "message": "Le fichier manifeste indique prefer_related_applications: true"
+  },
+  "lighthouse-core/audits/installable-manifest.js | prefer-related-applications-only-beta-stable": {
+    "message": "prefer_related_applications est uniquement disponible dans la version bêta et les versions stables de Chrome sur Android."
+  },
+  "lighthouse-core/audits/installable-manifest.js | start-url-not-valid": {
+    "message": "L'URL de démarrage du fichier manifeste n'est pas valide"
   },
   "lighthouse-core/audits/installable-manifest.js | title": {
-    "message": "Le fichier manifeste de l'application Web respecte les conditions d'installation requises"
+    "message": "Le fichier manifeste et le service worker de l'application Web respectent les conditions d'installation requises"
+  },
+  "lighthouse-core/audits/installable-manifest.js | url-not-supported-for-webapk": {
+    "message": "Une URL du fichier manifeste contient un nom d'utilisateur, un mot de passe ou un port"
+  },
+  "lighthouse-core/audits/installable-manifest.js | warn-not-offline-capable": {
+    "message": "La page ne fonctionne pas hors connexion. La page ne sera pas considérée comme installable après le lancement de la version stable de Chrome 93 en août 2021."
   },
   "lighthouse-core/audits/is-on-https.js | allowed": {
     "message": "Autorisée"
@@ -834,7 +912,7 @@
     "message": "Demande de résolution"
   },
   "lighthouse-core/audits/is-on-https.js | description": {
-    "message": "All sites should be protected with HTTPS, even ones that don't handle sensitive data. This includes avoiding [mixed content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), where some resources are loaded over HTTP despite the initial request being served over HTTPS. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users, and is a prerequisite for HTTP/2 and many new web platform APIs. [Learn more](https://web.dev/is-on-https/)."
+    "message": "Tous les sites doivent être protégés par le protocole HTTPS, même ceux qui ne traitent pas de données sensibles. Par conséquent, vous devez éviter le [contenu mixte](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content), qui provoque le chargement de certaines ressources sur HTTP bien que la demande initiale soit diffusée via HTTPS. Le protocole HTTPS empêche les intrus de détourner ou d’écouter passivement les communications entre votre application et les utilisateurs. Il constitue également une condition préalable à l'utilisation de HTTP/2 et de nombreuses nouvelles API de plates-formes Web. [En savoir plus](https://web.dev/is-on-https/)"
   },
   "lighthouse-core/audits/is-on-https.js | displayValue": {
     "message": "{itemCount,plural, =1{1 requête non sécurisée trouvée}one{# requête non sécurisée trouvée}other{# requêtes non sécurisées trouvées}}"
@@ -880,24 +958,6 @@
   },
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "Éviter les changements de mise en page importants"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | description": {
-    "message": "Le chargement rapide des pages sur un réseau mobile garantit une expérience utilisateur de qualité. [En savoir plus](https://web.dev/load-fast-enough-for-pwa/)"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueText": {
-    "message": "Page interactive en {timeInMs, number, seconds} s"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | displayValueTextWithOverride": {
-    "message": "Page devenue interactive sur un réseau mobile au bout de {timeInMs, number, seconds} s"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | explanationLoadSlow": {
-    "message": "Votre page se charge trop lentement. L'utilisateur ne peut pas interagir avec en moins de 10 secondes. Pour découvrir comment l'améliorer, consultez les conseils et les diagnostics de la section \"Performances\"."
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | failureTitle": {
-    "message": "Le chargement de la page n'est pas suffisamment rapide sur les réseaux mobiles"
-  },
-  "lighthouse-core/audits/load-fast-enough-for-pwa.js | title": {
-    "message": "Le chargement de la page est suffisamment rapide sur les réseaux mobiles"
   },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "Indique les tâches les plus longues du thread principal, ce qui est utile pour identifier celles qui entraînent le plus de retard. [En savoir plus](https://web.dev/long-tasks-devtools/)"
@@ -1025,21 +1085,6 @@
   "lighthouse-core/audits/non-composited-animations.js | unsupportedTimingParameters": {
     "message": "L'effet comporte des paramètres de minutage non compatibles"
   },
-  "lighthouse-core/audits/offline-start-url.js | description": {
-    "message": "Les service workers garantissent le bon fonctionnement de votre application Web, indépendamment des aléas du réseau. [Découvrez-en davantage](https://web.dev/offline-start-url/)."
-  },
-  "lighthouse-core/audits/offline-start-url.js | errorLoading": {
-    "message": "Erreur lors du chargement de {url} dans Service Worker ; code d'état {statusCode} renvoyé"
-  },
-  "lighthouse-core/audits/offline-start-url.js | failureTitle": {
-    "message": "`start_url` ne retourne pas de code 200 en mode hors connexion"
-  },
-  "lighthouse-core/audits/offline-start-url.js | title": {
-    "message": "`start_url` retourne un code 200 en mode hors connexion"
-  },
-  "lighthouse-core/audits/offline-start-url.js | warningCantStart": {
-    "message": "Lighthouse ne parvient pas à lire l'attribut `start_url` du fichier manifeste et considère donc `start_url` comme étant l'URL du document. Message d'erreur : \"{manifestWarning}\"."
-  },
   "lighthouse-core/audits/performance-budget.js | description": {
     "message": "Maintenez le volume et la taille des requêtes réseau sous les objectifs définis par le budget de performances fourni. [En savoir plus](https://developers.google.com/web/tools/lighthouse/audits/budgets)"
   },
@@ -1057,6 +1102,12 @@
   },
   "lighthouse-core/audits/preload-fonts.js | title": {
     "message": "Les polices qui utilisent `font-display: optional` sont préchargées"
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | description": {
+    "message": "Préchargez l'image utilisée par l'élément LCP pour améliorer la durée de votre LCP. [En savoir plus](https://web.dev/optimize-lcp/#preload-important-resources)"
+  },
+  "lighthouse-core/audits/preload-lcp-image.js | title": {
+    "message": "Précharger l'image Largest Contentful Paint"
   },
   "lighthouse-core/audits/redirects-http.js | description": {
     "message": "Si vous avez déjà configuré le protocole HTTPS, veillez à rediriger tout le trafic HTTP vers HTTPS afin de proposer des fonctionnalités Web sûres à tous vos utilisateurs. [Découvrez-en davantage](https://web.dev/redirects-http/)."
@@ -1313,8 +1364,32 @@
   "lighthouse-core/audits/themed-omnibox.js | title": {
     "message": "Une couleur de thème est configurée pour la barre d'adresse."
   },
-  "lighthouse-core/audits/third-party-summary.js | columnBlockingTime": {
-    "message": "Durée de blocage du thread principal"
+  "lighthouse-core/audits/third-party-facades.js | categoryCustomerSuccess": {
+    "message": "{productName} (témoignages)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryMarketing": {
+    "message": "{productName} (marketing)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categorySocial": {
+    "message": "{productName} (réseau social)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | categoryVideo": {
+    "message": "{productName} (vidéo)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | columnProduct": {
+    "message": "Produit"
+  },
+  "lighthouse-core/audits/third-party-facades.js | description": {
+    "message": "Certaines intégrations tierces peuvent être chargées de manière différée. Vous pouvez envisager de les remplacer par une façade tant qu'elles ne sont pas requises. [En savoir plus](https://web.dev/third-party-facades/)"
+  },
+  "lighthouse-core/audits/third-party-facades.js | displayValue": {
+    "message": "{itemCount,plural, =1{# autre façade disponible}one{# autre façade disponible}other{# autres façades disponibles}}"
+  },
+  "lighthouse-core/audits/third-party-facades.js | failureTitle": {
+    "message": "Certaines ressources tierces peuvent être chargées en différé avec une façade"
+  },
+  "lighthouse-core/audits/third-party-facades.js | title": {
+    "message": "Ressources tierces pouvant être chargées de façon différée avec des façades"
   },
   "lighthouse-core/audits/third-party-summary.js | columnThirdParty": {
     "message": "Tiers"
@@ -1327,9 +1402,6 @@
   },
   "lighthouse-core/audits/third-party-summary.js | failureTitle": {
     "message": "Réduire l'impact du code tiers"
-  },
-  "lighthouse-core/audits/third-party-summary.js | otherValue": {
-    "message": "Autres ressources"
   },
   "lighthouse-core/audits/third-party-summary.js | title": {
     "message": "Réduire au maximum l'utilisation de code tiers"
@@ -1368,7 +1440,7 @@
     "message": "Marques et mesures du temps utilisateur"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | crossoriginWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "Un élément `<link rel=preconnect>` a été trouvé pour \"{securityOrigin}\", mais il n'a pas été utilisé par le navigateur. Vérifiez que vous utilisez correctement l'attribut `crossorigin`."
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | description": {
     "message": "Envisagez d'ajouter les indices de ressources `preconnect` ou `dns-prefetch` pour établir les premières connexions avec des origines tierces importantes. [Découvrez-en davantage](https://web.dev/uses-rel-preconnect/)."
@@ -1377,13 +1449,13 @@
     "message": "Connectez-vous à l'avance aux origines souhaitées"
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | tooManyPreconnectLinksWarning": {
-    "message": "More than 2 `<link rel=preconnect>` connections were found. These should be used sparingly and only to the most important origins."
+    "message": "Plusieurs connexions `<link rel=preconnect>` ont été identifiées. Elles doivent être utilisées avec parcimonie et limitées aux origines les plus importantes."
   },
   "lighthouse-core/audits/uses-rel-preconnect.js | unusedWarning": {
-    "message": "A `<link rel=preconnect>` was found for \"{securityOrigin}\" but was not used by the browser. Only use `preconnect` for important origins that the page will certainly request."
+    "message": "Un élément `<link rel=preconnect>` a été trouvé pour \"{securityOrigin}\", mais il n'a pas été utilisé par le navigateur. N'utilisez `preconnect` que pour des origines importantes que la page demandera certainement."
   },
   "lighthouse-core/audits/uses-rel-preload.js | crossoriginWarning": {
-    "message": "A preload `<link>` was found for \"{preloadURL}\" but was not used by the browser. Check that you are using the `crossorigin` attribute properly."
+    "message": "Un préchargement `<link>` a été trouvé pour \"{preloadURL}\", mais il n'a pas été utilisé par le navigateur. Vérifiez que vous utilisez correctement l'attribut `crossorigin`."
   },
   "lighthouse-core/audits/uses-rel-preload.js | description": {
     "message": "Envisagez d'utiliser `<link rel=preload>` pour hiérarchiser la récupération des ressources actuellement requises pour le chargement ultérieur de la page. [En savoir plus](https://web.dev/uses-rel-preload/)"
@@ -1420,30 +1492,6 @@
   },
   "lighthouse-core/audits/viewport.js | title": {
     "message": "Une balise `<meta name=\"viewport\">` ayant l'attribut `width` ou `initial-scale` est configurée"
-  },
-  "lighthouse-core/audits/without-javascript.js | description": {
-    "message": "Nous vous recommandons d'afficher du contenu même lorsque JavaScript est indisponible. Il peut s'agir d'un simple avertissement informant l'utilisateur que JavaScript est requis pour utiliser votre application. [Découvrez-en davantage](https://web.dev/without-javascript/)."
-  },
-  "lighthouse-core/audits/without-javascript.js | explanation": {
-    "message": "Il est recommandé d'afficher du contenu dans le corps de la page lorsque les scripts sont indisponibles."
-  },
-  "lighthouse-core/audits/without-javascript.js | failureTitle": {
-    "message": "Aucun contenu de remplacement ne s'affiche lorsque JavaScript est indisponible"
-  },
-  "lighthouse-core/audits/without-javascript.js | title": {
-    "message": "Du contenu s'affiche lorsque JavaScript est indisponible"
-  },
-  "lighthouse-core/audits/works-offline.js | description": {
-    "message": "Si vous développez une progressive web app, envisagez d'utiliser un service worker afin que votre application soit accessible hors connexion. [Découvrez-en davantage](https://web.dev/works-offline/)."
-  },
-  "lighthouse-core/audits/works-offline.js | failureTitle": {
-    "message": "La page actuelle ne retourne pas de code 200 en mode hors connexion"
-  },
-  "lighthouse-core/audits/works-offline.js | title": {
-    "message": "La page actuelle retourne un code 200 en mode hors connexion"
-  },
-  "lighthouse-core/audits/works-offline.js | warningNoLoad": {
-    "message": "Il est possible que cette page ne se charge pas hors connexion, car votre URL de test ({requested}) redirige vers \"{final}\". Testez directement la seconde URL."
   },
   "lighthouse-core/config/default-config.js | a11yAriaGroupDescription": {
     "message": "Servez-vous de ces indications pour améliorer l'utilisation des éléments ARIA dans votre application et ainsi optimiser l'expérience des utilisateurs de technologies d'assistance, comme les lecteurs d'écran."
@@ -1562,9 +1610,6 @@
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
     "message": "Progressive web app"
   },
-  "lighthouse-core/config/default-config.js | pwaFastReliableGroupTitle": {
-    "message": "Rapide et fiable"
-  },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "Possibilités d'installation"
   },
@@ -1598,14 +1643,26 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "Adapté aux mobiles"
   },
+  "lighthouse-core/gather/driver.js | warningData": {
+    "message": "{locationCount,plural, =1{L'emplacement suivant peut contenir des données qui affectent les performances de chargement : {locations}. Effectuez un audit de cette page dans une fenêtre de navigation privée afin que ces ressources n'affectent pas vos scores.}one{L'emplacement suivant peut contenir des données qui affectent les performances de chargement : {locations}. Effectuez un audit de cette page dans une fenêtre de navigation privée afin que ces ressources n'affectent pas vos scores.}other{Les emplacements suivants peuvent contenir des données qui affectent les performances de chargement : : {locations}. Effectuez un audit de cette page dans une fenêtre de navigation privée afin que ces ressources n'affectent pas vos scores.}}"
+  },
   "lighthouse-core/gather/gather-runner.js | warningRedirected": {
     "message": "Il est possible que cette page ne se charge pas comme prévu, car votre URL de test ({requested}) redirige vers {final}. Essayez de tester directement la seconde URL."
+  },
+  "lighthouse-core/gather/gather-runner.js | warningSlowHostCpu": {
+    "message": "L'appareil testé semble avoir un processeur plus lent qu'attendu par Lighthouse. Cela peut avoir des répercussions négatives sur votre score lié aux performances. En savoir plus sur le [calibrage d'un multiplicateur de ralentissement de processeur adapté](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)"
   },
   "lighthouse-core/gather/gather-runner.js | warningTimeout": {
     "message": "Le chargement de la page a été trop lent et a dépassé la limite de temps. Il est possible que les résultats soient incomplets."
   },
+  "lighthouse-core/lib/i18n/i18n.js | columnBlockingTime": {
+    "message": "Durée de blocage du thread principal"
+  },
   "lighthouse-core/lib/i18n/i18n.js | columnCacheTTL": {
     "message": "Cache de la valeur TTL"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | columnDescription": {
+    "message": "Description"
   },
   "lighthouse-core/lib/i18n/i18n.js | columnDuration": {
     "message": "Durée"
@@ -1709,6 +1766,9 @@
   "lighthouse-core/lib/i18n/i18n.js | otherResourceType": {
     "message": "Autre"
   },
+  "lighthouse-core/lib/i18n/i18n.js | otherResourcesLabel": {
+    "message": "Autres ressources"
+  },
   "lighthouse-core/lib/i18n/i18n.js | scriptResourceType": {
     "message": "Script"
   },
@@ -1751,6 +1811,9 @@
   "lighthouse-core/lib/lh-error.js | missingRequiredArtifact": {
     "message": "La ressource {artifactName} nécessaire n'a pas été collectée."
   },
+  "lighthouse-core/lib/lh-error.js | noFcp": {
+    "message": "Aucun contenu n'a été affiché sur la page. Assurez-vous de conserver la fenêtre du navigateur au premier plan pendant le chargement et réessayez. ({errorCode})"
+  },
   "lighthouse-core/lib/lh-error.js | notHtml": {
     "message": "La page fournie n'est pas au format HTML (diffusée avec le type MIME {mimeType})."
   },
@@ -1786,9 +1849,6 @@
   },
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "L'URL que vous avez fournie ne semble pas valide."
-  },
-  "lighthouse-core/report/html/renderer/util.js | auditGroupExpandTooltip": {
-    "message": "Afficher les audits"
   },
   "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
     "message": "Affichez la calculatrice."
@@ -1923,34 +1983,34 @@
     "message": "Avertissements : "
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
-    "message": "For animated content, use [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) to minimize CPU usage when the content is offscreen."
+    "message": "Pour le contenu animé, utilisez [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) afin que le processeur soit sollicité le moins possible lorsque le contenu se situe hors écran."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
-    "message": "Ensure that you are using [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) for images to automatically lazy-load. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)."
+    "message": "Vérifiez si vous utilisez bien [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) pour les images qui doivent être chargées automatiquement de manière différée. [En savoir plus](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | render-blocking-resources": {
     "message": "Utilisez des outils comme [AMP Optimizer](https://github.com/ampproject/amp-toolbox/tree/master/packages/optimizer) pour [effectuer un rendu côté serveur de la mise en page de pages AMP](https://amp.dev/documentation/guides-and-tutorials/optimize-and-measure/server-side-rendering/)."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | unminified-css": {
-    "message": "Refer to the [AMP documentation](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/) to ensure all styles are supported."
+    "message": "Consultez la [documentation AMP](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/style_pages/) pour vérifier si tous les styles sont bien compatibles."
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
-    "message": "The [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) component supports the [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) attribute to specify which image assets to use based on the screen size. [Learn more](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)."
+    "message": "Le composant [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) accepte l'attribut [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/) afin de spécifier les éléments image à utiliser en fonction de la taille de l'écran. [En savoir plus](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Consider displaying all [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) components in WebP formats while specifying an appropriate fallback for other browsers. [Learn more](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)."
+    "message": "Envisagez d'afficher tous vos composants [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) dans des formats WebP tout en spécifiant une solution de remplacement appropriée pour les autres navigateurs. [En savoir plus](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "Envisagez d'utiliser le défilement virtuel avec le kit de développement de composants si des listes très volumineuses sont affichées. [En savoir plus](https://web.dev/virtualize-lists-with-angular-cdk/)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | total-byte-weight": {
-    "message": "Apply [route-level code splitting](https://web.dev/route-level-code-splitting-in-angular/) to minimize the size of your JavaScript bundles. Also, consider precaching assets with the [Angular service worker](https://web.dev/precaching-with-the-angular-service-worker/)."
+    "message": "[Divisez le code au niveau du routage](https://web.dev/route-level-code-splitting-in-angular/) afin de réduire au maximum la taille de vos groupes JavaScript. Envisagez également de mettre préalablement en cache les éléments avec le [service worker Angular](https://web.dev/precaching-with-the-angular-service-worker/)."
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unminified-warning": {
     "message": "Si vous utilisez Angular CLI, assurez-vous que les builds sont générées en mode de production. [En savoir plus](https://angular.io/guide/deployment#enable-runtime-production-mode)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | unused-javascript": {
-    "message": "If you are using Angular CLI, include source maps in your production build to inspect your bundles. [Learn more](https://angular.io/guide/deployment#inspect-the-bundles)."
+    "message": "Si vous utilisez l'interface de ligne de commande Angular, incluez des mappages sources dans votre build de production pour inspecter vos groupes. [En savoir plus](https://angular.io/guide/deployment#inspect-the-bundles)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | uses-rel-preload": {
     "message": "Préchargez les routages à l'avance pour une navigation plus rapide. [En savoir plus](https://web.dev/route-preloading-in-angular/)"
@@ -1965,10 +2025,10 @@
     "message": "Lorsque vous définissez des polices personnalisées dans votre thème, vous pouvez le spécifier avec `@font-display`."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
-    "message": "Install [a Drupal module](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) that can lazy load images. Such modules provide the ability to defer any offscreen images to improve performance."
+    "message": "Installez un [module Drupal](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) qui peut effectuer le chargement différé des images. Ce type de module offre la possibilité de différer le chargement des images hors écran pour améliorer les performances."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
-    "message": "Consider using a module to inline critical CSS and JavaScript, or potentially load assets asynchronously via JavaScript such as the [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg) module. Beware that optimizations provided by this module may break your site, so you will likely need to make code changes."
+    "message": "Vous pouvez envisager d'utiliser un module permettant d'aligner les codes CSS et JavaScript critiques, ou éventuellement de charger les éléments de manière asynchrone via JavaScript (le module [Advanced CSS/JS Aggregation](https://www.drupal.org/project/advagg), par exemple). Gardez en tête qu'à cause des optimisations fournies par ce module, votre site peut cesser de fonctionner. Vous devrez donc probablement modifier le code."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
     "message": "Les thèmes, les modules et les spécifications du serveur sont autant d'éléments qui influent sur le temps de réponse du serveur. Vous pouvez envisager d'utiliser un module plus optimisé ou un plug-in d'optimisation plus performant, ou bien de mettre à niveau votre serveur. Vos serveurs d'hébergement doivent exploiter la mise en cache du code d'opération PHP, la mise en cache de la mémoire pour réduire les temps d'interrogation des bases de données (avec Redis ou Memcached, par exemple), ainsi qu'une logique applicative optimisée pour accélérer la préparation des pages."
@@ -1986,7 +2046,7 @@
     "message": "Vous pouvez envisager de supprimer les règles CSS inutilisées et de n'attacher que les bibliothèques Drupal nécessaires à la page (ou au composant de page) concernés. Pour plus d'informations, consultez la [documentation Drupal](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library). Pour déterminer quelles bibliothèques attachées ajoutent des CSS superflus, essayez d'exécuter la [couverture de code](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) dans Chrome DevTools. Lorsque le regroupement de CSS est désactivé sur votre site Drupal, vous pouvez identifier le thème ou le module qui en est responsable à partir de l'URL de la feuille de style. Recherchez les thèmes ou les modules pour lesquels un grand nombre de feuilles de style présentent beaucoup d'éléments en rouge dans la couverture de code. Un thème ou un module ne doit mettre une feuille de style en file d'attente que si elle est effectivement utilisée sur la page."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | unused-javascript": {
-    "message": "Consider removing unused JavaScript assets and only attach the needed Drupal libraries to the relevant page or component in a page. See the [Drupal documentation link](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library) for details. To identify attached libraries that are adding extraneous JavaScript, try running [code coverage](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) in Chrome DevTools. You can identify the theme/module responsible from the URL of the script when JavaScript aggregation is disabled in your Drupal site. Look out for themes/modules that have many scripts in the list which have a lot of red in code coverage. A theme/module should only enqueue a script if it is actually used on the page."
+    "message": "Vous pouvez envisager de supprimer les éléments JavaScript inutilisés et d'attacher uniquement les bibliothèques Drupal nécessaires à la page ou au composant de page concernés. Pour plus d'informations, consultez la [documentation Drupal](https://www.drupal.org/docs/8/creating-custom-modules/adding-stylesheets-css-and-javascript-js-to-a-drupal-8-module#library). Pour déterminer quelles bibliothèques attachées ajoutent des scripts JavaScript superflus, exécutez une [couverture de code](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) dans Chrome DevTools. Lorsque l'agrégation JavaScript est désactivée sur votre site Drupal, vous pouvez identifier le thème ou le module responsable à partir de l'URL du script. Recherchez les thèmes ou les modules pour lesquels un grand nombre de scripts présentent beaucoup d'éléments en rouge dans la couverture de code. Un thème ou un module ne doit mettre un script en file d'attente que s'il est effectivement utilisé dans la page."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-long-cache-ttl": {
     "message": "Définissez le paramètre \"Âge maximum du navigateur et du proxy cache\" sur la page \"Administration > Configuration > Développement. Apprenez-en davantage sur le [cache Drupal et l'optimisation des performances](https://www.drupal.org/docs/7/managing-site-performance-and-scalability/caching-to-improve-performance/caching-overview#s-drupal-performance-resources)."
@@ -2001,13 +2061,13 @@
     "message": "Assurez-vous que vous utilisez le module natif [Responsive Image Styles](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8) fourni par Drupal (disponible sous Drupal 8 et versions ultérieures). Utilisez Responsive Image Styles lors du rendu des champs d'image par les modes Vue, les vues ou les images importés via l'éditeur WYSIWYG."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Consider installing and configuring [a module to leverage WebP image formats](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) in your site. Such modules automatically generate a WebP version of your uploaded images to optimize loading times."
+    "message": "Vous pouvez envisager d'installer et de configurer un [module pour utiliser les images au format WebP](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) sur votre site. Ces modules génèrent automatiquement une version WebP de vos images importées afin d'optimiser les temps de chargement."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "Vous pouvez envisager d'importer votre GIF dans un service qui permettra de l'intégrer dans une vidéo HTML5."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
-    "message": "Install a [lazy-load Joomla plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) that provides the ability to defer any offscreen images, or switch to a template that provides that functionality. Starting with Joomla 4.0, a dedicated lazy-loading plugin can be enabled by using the \"Content - Lazy Loading Images\" plugin. Also consider using [an AMP plugin](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=amp)."
+    "message": "Installez un [plug-in Joomla de chargement différé](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) pour différer le chargement des images hors écran, ou remplacez le modèle par un autre qui offre cette fonctionnalité. À partir de Joomla 4.0, toutes les nouvelles images obtiendront [automatiquement](https://github.com/joomla/joomla-cms/pull/30748) l'attribut `loading` du noyau."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | render-blocking-resources": {
     "message": "Divers plug-ins Joomla peuvent vous aider à [aligner des éléments critiques](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance) ou à [différer le chargement des ressources moins importantes](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=performance). Gardez en tête qu'à cause des optimisations fournies par ces plug-ins, certaines fonctionnalités de votre thème ou de vos plug-ins peuvent rencontrer des problèmes. Vous devez donc les tester minutieusement."
@@ -2081,8 +2141,50 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
     "message": "Pensez à rechercher des extensions tierces sur la [Place de marché de Magento](https://marketplace.magento.com/catalogsearch/result/?q=webp) afin de profiter des nouveaux formats d'image."
   },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
+    "message": "[Remplacez les GIF animés par des vidéos](https://web.dev/replace-gifs-with-videos/) pour un chargement plus rapide de la page et envisagez d'utiliser des formats de fichiers modernes comme [WebM](https://web.dev/replace-gifs-with-videos/#create-webm-videos) ou [AV1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder) pour améliorer le rendement de compression et atteindre un niveau 30 % supérieur au niveau du codec vidéo phare du moment, VP9."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
+    "message": "Envisagez d'installer un [plug-in de chargement différé des images](https://octobercms.com/plugins?search=lazy) offrant la possibilité de différer le chargement des images hors écran, ou passez à un thème qui offre cette fonctionnalité. Vous pouvez également envisager d'utiliser [le plug-in AMP](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages)."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
+    "message": "Il existe de nombreux plug-ins qui aident à [aligner des éléments critiques](https://octobercms.com/plugins?search=css). Ces plug-ins peuvent affecter le fonctionnement d'autres plug-ins. Vous devez donc les tester minutieusement."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+    "message": "Les thèmes, les plug-ins et les spécifications du serveur sont autant d'éléments qui influent sur le temps de réponse du serveur. Vous pouvez envisager d'utiliser un thème plus optimisé ou un plug-in d'optimisation plus performant, ou bien de mettre le serveur à niveau. Le CMS October permet également aux développeurs d'utiliser [`Queues`](https://octobercms.com/docs/services/queues) pour reporter le traitement d'une tâche chronophage, par exemple l'envoi d'un e-mail. Cela accélère considérablement les requêtes Web."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
+    "message": "Vous pouvez envisager d'afficher des extraits dans vos listes d'articles (par exemple en utilisant un bouton `show more`), de réduire le nombre d'articles affichés sur une page Web donnée, de répartir vos articles longs sur plusieurs pages ou d'utiliser un plug-in qui charge les commentaires de façon différée."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-css": {
+    "message": "De nombreux [plug-ins](https://octobercms.com/plugins?search=css) permettent d'accélérer un site Web en concaténant, minimisant et compressant les styles. L'utilisation d'un processus de compilation pour réaliser cette minimisation en amont peut accélérer le développement."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unminified-javascript": {
+    "message": "De nombreux [plug-ins](https://octobercms.com/plugins?search=javascript) permettent d'accélérer un site Web en concaténant, minimisant et compressant les scripts. L'utilisation d'un processus de compilation pour réaliser cette minimisation en amont peut accélérer le développement."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-css-rules": {
+    "message": "Vous pouvez vérifier si des [plug-ins](https://octobercms.com/plugins) chargent des feuilles de style CSS inutilisées sur le site Web. Pour identifier les plug-ins qui ajoutent des feuilles de style CSS superflues, lancez la [couverture de code](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) dans les outils de développement Chrome. Identifiez le thème/plug-in responsable à partir de l'URL de la feuille de style. Recherchez les plug-ins pour lesquels un grand nombre de feuilles de style présentent beaucoup d'éléments en rouge dans la couverture de code. Un plug-in ne doit ajouter une feuille de style que si elle est effectivement utilisée sur la page."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | unused-javascript": {
+    "message": "Vous pouvez vérifier si des [plug-ins](https://octobercms.com/plugins?search=javascript) chargent du code JavaScript inutilisé dans la page Web. Pour identifier les plug-ins qui ajoutent du code JavaScript superflu, lancez la [couverture de code](https://developers.google.com/web/updates/2017/04/devtools-release-notes#coverage) dans les outils de développement Chrome. Identifiez le thème/plug-in responsable à partir de l'URL du script. Recherchez les plug-ins pour lesquels un grand nombre de scripts présentent beaucoup d'éléments en rouge dans la couverture de code. Un plug-in ne doit ajouter un script que s'il est effectivement utilisé sur la page."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-long-cache-ttl": {
+    "message": "En savoir plus sur la [prévention de requêtes réseau inutiles avec le cache HTTP](https://web.dev/http-cache/#caching-checklist). De nombreux [plug-ins](https://octobercms.com/plugins?search=Caching) peuvent être utilisés pour accélérer la mise en cache."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-optimized-images": {
+    "message": "Vous pouvez envisager d'utiliser un [plug-in d'optimisation d'image](https://octobercms.com/plugins?search=image) pour compresser les images sans dégrader leur qualité."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-responsive-images": {
+    "message": "Importez des images directement via le gestionnaire de médias pour vous assurer que les tailles d'images requises sont disponibles. Envisagez d'utiliser le [filtre de redimensionnement](https://octobercms.com/docs/markup/filter-resize) ou un [plug-in de redimensionnement d'images](https://octobercms.com/plugins?search=image) pour vous assurer que les tailles d'image optimales sont utilisées."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
+    "message": "Activez la compression de texte dans la configuration de votre serveur Web."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
+    "message": "Vous pouvez envisager d'utiliser un [plug-in](https://octobercms.com/plugins?search=image) ou un service qui convertit automatiquement les images importées dans un format optimal. Les [images sans perte WebP](https://developers.google.com/speed/webp) sont 26 % plus petites que les images au format PNG et 25 à 34 % plus petites que les images au format JPEG comparables avec un indice de qualité SSIM équivalent. Vous pouvez également envisager d'utiliser le format d'image nouvelle génération [AVIF](https://jakearchibald.com/2020/avif-has-landed/)."
+  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
-    "message": "Consider using a “windowing” library like `react-window` to minimize the number of DOM nodes created if you are rendering many repeated elements on the page. [Learn more](https://web.dev/virtualize-long-lists-react-window/). Also, minimize unnecessary re-renders using [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent), or [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) and [skip effects](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) only until certain dependencies have changed if you are using the `Effect` hook to improve runtime performance."
+    "message": "Envisagez d'utiliser une bibliothèque de fenêtrage comme `react-window` pour réduire au maximum le nombre de nœuds DOM créés si vous affichez de nombreux éléments répétés sur la page. [En savoir plus](https://web.dev/virtualize-long-lists-react-window/) Limitez également autant que possible les nouveaux rendus inutiles avec [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) ou [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo), et [ignorez les effets](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) jusqu'à ce que certaines dépendances aient changé si vous utilisez le hook `Effect` pour améliorer les performances d'exécution."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "Si vous utilisez React Router, réduisez au maximum l'utilisation du composant `<Redirect>` pour la [navigation vers des itinéraires](https://reacttraining.com/react-router/web/api/Redirect)."
@@ -2091,10 +2193,10 @@
     "message": "Si vous êtes en train d'effectuer un rendu de composants React côté serveur, envisagez d'utiliser `renderToNodeStream()` ou `renderToStaticNodeStream()` pour permettre au client de recevoir et d'hydrater différentes parties du balisage au lieu de tout faire simultanément. [En savoir plus](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
-    "message": "If your build system minifies CSS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "Si votre système de compilation réduit automatiquement la taille de vos fichiers CSS, assurez-vous de déployer le build de production de votre application. Vous pouvez le vérifier avec l'extension React Developer Tools. [En savoir plus](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-javascript": {
-    "message": "If your build system minifies JS files automatically, ensure that you are deploying the production build of your application. You can check this with the React Developer Tools extension. [Learn more](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)."
+    "message": "Si votre système de compilation réduit automatiquement la taille des fichiers JS, assurez-vous de déployer le build de production de votre application. Vous pouvez le vérifier avec l'extension React Developer Tools. [En savoir plus](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build)"
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unused-javascript": {
     "message": "Si vous n'effectuez pas de rendu côté serveur, [divisez vos groupes JavaScript](https://web.dev/code-splitting-suspense/) avec `React.lazy()`. Sinon, divisez le code en utilisant une bibliothèque tierce, telle que [loadable-components](https://www.smooth-code.com/open-source/loadable-components/docs/getting-started/)."

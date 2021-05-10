@@ -140,28 +140,6 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
   }
 }
 
-TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
-  const char* test_cases[][2] = {{"::content", "::content"},
-                                 {".a::content", ".a::content"},
-                                 {"::content.a", "::content.a"},
-                                 {"::content.a.b", "::content.a.b"},
-                                 {".a::content.b", ".a::content.b"},
-                                 {"::content:not(#id)", "::content:not(#id)"}};
-
-  for (auto** test_case : test_cases) {
-    SCOPED_TRACE(test_case[0]);
-    CSSTokenizer tokenizer(test_case[0]);
-    const auto tokens = tokenizer.TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
-    CSSSelectorList list = CSSSelectorParser::ParseSelector(
-        range,
-        MakeGarbageCollected<CSSParserContext>(
-            kHTMLStandardMode, SecureContextMode::kInsecureContext),
-        nullptr);
-    EXPECT_EQ(test_case[1], list.SelectorsText());
-  }
-}
-
 TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
   const char* test_cases[] = {":not(::before)",
                               ":not(::content)",
@@ -255,22 +233,6 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
         range,
         MakeGarbageCollected<CSSParserContext>(
             kUASheetMode, SecureContextMode::kInsecureContext),
-        nullptr);
-    EXPECT_TRUE(list.IsValid());
-  }
-}
-
-TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
-  const char* test_cases[] = {"::content *", "::content div::before"};
-
-  for (auto* test_case : test_cases) {
-    CSSTokenizer tokenizer(test_case);
-    const auto tokens = tokenizer.TokenizeToEOF();
-    CSSParserTokenRange range(tokens);
-    CSSSelectorList list = CSSSelectorParser::ParseSelector(
-        range,
-        MakeGarbageCollected<CSSParserContext>(
-            kHTMLStandardMode, SecureContextMode::kInsecureContext),
         nullptr);
     EXPECT_TRUE(list.IsValid());
   }
@@ -441,44 +403,6 @@ INSTANTIATE_TEST_SUITE_P(InvalidPseudoIsArguments,
                          SelectorParseTest,
                          testing::ValuesIn(invalid_pseudo_is_argments_data));
 
-// To reduce complexity, ShadowDOM v0 features are not supported in
-// combination with nested complex selectors, e.g. :is/:where.
-static const SelectorTestCase shadow_v0_with_nested_complex_data[] = {
-    // clang-format off
-    {":is(.a) ::content", ""},
-    {":is(.a /deep/ .b)", ":is()"},
-    {":is(::content)", ":is()"},
-    {":is(::shadow)", ":is()"},
-    {":is(::content .a)", ":is()"},
-    {":is(::shadow .b)", ":is()"},
-    {":is(.a)::shadow", ""},
-    {":is(.a) ::content", ""},
-    {":is(.a) ::shadow", ""},
-    {"::content :is(.a)", ""},
-    {"::shadow :is(.a)", ""},
-    {":is(.a) /deep/ .b", ""},
-    {":.a /deep/ :is(.b)", ""},
-    {":where(.a /deep/ .b)", ":where()"},
-    {":where(.a) ::shadow", ""},
-    {":not(.a .b)::shadow", ""},
-    {":not(.a .b)::content", ""},
-    {":not(.a .b) ::shadow", ""},
-    {":not(.a .b) ::content", ""},
-    {":not(.a, .b) ::content", ""},
-    {":not(.a .b) /deep/ .c", ""},
-    {":not(.a, .b) /deep/ .c", ""},
-    {".a /deep/ :not(.b .c)", ""},
-    // For backwards compatibility, ShadowDOM v0 features are allowed if
-    // there is a single compound argument to :not().
-    {":not(.a) /deep/ .b", ":not(.a) /deep/ .b"},
-    {":not(.a)::content", ":not(.a)::content"},
-    // clang-format on
-};
-
-INSTANTIATE_TEST_SUITE_P(ShadowDomV0WithNestedComplexSelector,
-                         SelectorParseTest,
-                         testing::ValuesIn(shadow_v0_with_nested_complex_data));
-
 static const SelectorTestCase is_where_nesting_data[] = {
     // clang-format off
     // These pseudos only accept compound selectors:
@@ -494,7 +418,7 @@ static const SelectorTestCase is_where_nesting_data[] = {
     {"::cue(:is(.a .b))", "::cue(:is())"},
     {"::cue(:is(.a + .b))", "::cue(:is())"},
     {"::cue(:is(.a, .b + .c))", "::cue(:is(.a))"},
-    // Only user-action pseudos + :state() are allowed after kPseudoPart:
+    // Only user-action pseudos + :--state are allowed after kPseudoPart:
     {"::part(foo):is(.a)", "::part(foo):is()"},
     {"::part(foo):is(.a:hover)", "::part(foo):is()"},
     {"::part(foo):is(:hover.a)", "::part(foo):is()"},
@@ -505,7 +429,7 @@ static const SelectorTestCase is_where_nesting_data[] = {
     {"::part(foo):is(:hover, :where(.a))",
      "::part(foo):is(:hover, :where())"},
     {"::part(foo):is(:hover, .a)", "::part(foo):is(:hover)"},
-    {"::part(foo):is(:state(bar), .a)", "::part(foo):is(:state(bar))"},
+    {"::part(foo):is(:--bar, .a)", "::part(foo):is(:--bar)"},
     {"::part(foo):is(:enabled)", "::part(foo):is()"},
     // Only scrollbar pseudos after kPseudoScrollbar:
     {"::-webkit-scrollbar:is(:focus)", "::-webkit-scrollbar:is()"},
@@ -544,7 +468,7 @@ static const SelectorTestCase is_where_nesting_data[] = {
     {"::part(foo):is(:is(:hover))"},
     {"::part(foo):is(:focus, :hover)"},
     {"::part(foo):is(:focus, :is(:hover))"},
-    {"::part(foo):is(:focus, :state(bar))"},
+    {"::part(foo):is(:focus, :--bar)"},
     {"::-webkit-scrollbar:is(:enabled)"},
     {"::selection:is(:window-inactive)"},
     {"::-webkit-input-placeholder:is(:hover)"},
@@ -873,7 +797,7 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
       {
           "*::placeholder",
           {
-              {"placeholder", CSSSelector::kShadowPseudo},
+              {"placeholder", CSSSelector::kUAShadow},
               {g_null_atom, CSSSelector::kSubSelector},
           },
       },
@@ -887,7 +811,7 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
       {
           "::slotted(*)::placeholder",
           {
-              {"placeholder", CSSSelector::kShadowPseudo},
+              {"placeholder", CSSSelector::kUAShadow},
               {"slotted", CSSSelector::kShadowSlot},
               {g_null_atom, CSSSelector::kSubSelector},
           },
@@ -902,7 +826,7 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
       {
           "video::-webkit-media-controls",
           {
-              {"-webkit-media-controls", CSSSelector::kShadowPseudo},
+              {"-webkit-media-controls", CSSSelector::kUAShadow},
               {"video", CSSSelector::kSubSelector},
           },
       },

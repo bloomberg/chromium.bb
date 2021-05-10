@@ -57,7 +57,7 @@ struct PasswordFormData {
   const wchar_t* submit_element;
   const wchar_t* username_element;
   const wchar_t* password_element;
-  const wchar_t* username_value;  // Set to NULL for a blacklist entry.
+  const wchar_t* username_value;  // Set to NULL for a blocklist entry.
   const wchar_t* password_value;
   const double last_usage_time;
   const double creation_time;
@@ -125,13 +125,13 @@ class PasswordHashDataMatcher
     : public ::testing::MatcherInterface<base::Optional<PasswordHashData>> {
  public:
   explicit PasswordHashDataMatcher(base::Optional<PasswordHashData> expected);
-  virtual ~PasswordHashDataMatcher() {}
+  ~PasswordHashDataMatcher() override = default;
 
   // ::testing::MatcherInterface overrides
-  virtual bool MatchAndExplain(base::Optional<PasswordHashData> hash_data,
-                               ::testing::MatchResultListener* listener) const;
-  virtual void DescribeTo(::std::ostream* os) const;
-  virtual void DescribeNegationTo(::std::ostream* os) const;
+  bool MatchAndExplain(base::Optional<PasswordHashData> hash_data,
+                       ::testing::MatchResultListener* listener) const override;
+  void DescribeTo(::std::ostream* os) const override;
+  void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
   const base::Optional<PasswordHashData> expected_;

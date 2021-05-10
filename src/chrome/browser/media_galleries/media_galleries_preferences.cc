@@ -12,9 +12,9 @@
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -221,7 +222,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
   MediaGalleryPrefId pref_id;
   base::string16 display_name;
   std::string device_id;
-  base::FilePath::StringType path;
+  std::string path;
   MediaGalleryPrefInfo::Type type = MediaGalleryPrefInfo::kInvalidType;
   base::string16 volume_label;
   base::string16 vendor_name;
@@ -267,7 +268,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
   out_gallery_info->pref_id = pref_id;
   out_gallery_info->display_name = display_name;
   out_gallery_info->device_id = device_id;
-  out_gallery_info->path = base::FilePath(path);
+  out_gallery_info->path = base::FilePath::FromUTF8Unsafe(path);
   out_gallery_info->type = type;
   out_gallery_info->volume_label = volume_label;
   out_gallery_info->vendor_name = vendor_name;
@@ -287,7 +288,7 @@ std::unique_ptr<base::DictionaryValue> CreateGalleryPrefInfoDictionary(
   dict->SetString(kMediaGalleriesPrefIdKey,
                   base::NumberToString(gallery.pref_id));
   dict->SetString(kMediaGalleriesDeviceIdKey, gallery.device_id);
-  dict->SetString(kMediaGalleriesPathKey, gallery.path.value());
+  dict->SetString(kMediaGalleriesPathKey, gallery.path.AsUTF8Unsafe());
   dict->SetString(kMediaGalleriesTypeKey, TypeToStringValue(gallery.type));
 
   if (gallery.default_gallery_type != MediaGalleryPrefInfo::kNotDefault) {
@@ -398,7 +399,7 @@ base::string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
     if (!display_name.empty())
       return display_name;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // See chrome/browser/chromeos/fileapi/file_system_backend.cc
     base::FilePath download_path;
     if (base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,

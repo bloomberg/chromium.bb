@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/task/thread_pool.h"
 #include "net/base/load_flags.h"
@@ -55,6 +56,13 @@ BeginIssuanceOnPostedSequence(std::unique_ptr<Cryptographer> cryptographer,
 TrustTokenRequestIssuanceHelper::CryptographerAndUnblindedTokens
 ConfirmIssuanceOnPostedSequence(std::unique_ptr<Cryptographer> cryptographer,
                                 std::string response_header) {
+  // From the "spec" (design doc): "If the response has an empty Sec-Trust-Token
+  // header, return; this is a 'success' response bearing 0 tokens"
+  if (response_header.empty()) {
+    return {std::move(cryptographer),
+            std::make_unique<Cryptographer::UnblindedTokens>()};
+  }
+
   std::unique_ptr<Cryptographer::UnblindedTokens> unblinded_tokens =
       cryptographer->ConfirmIssuance(response_header);
   return {std::move(cryptographer), std::move(unblinded_tokens)};
@@ -88,6 +96,7 @@ TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
     std::unique_ptr<LocalTrustTokenOperationDelegate> local_operation_delegate,
     base::RepeatingCallback<bool(mojom::TrustTokenKeyCommitmentResult::Os)>
         is_current_os_callback,
+    MetricsDelegate* metrics_delegate,
     net::NetLogWithSource net_log)
     : top_level_origin_(std::move(top_level_origin)),
       token_store_(token_store),
@@ -95,6 +104,7 @@ TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
       cryptographer_(std::move(cryptographer)),
       local_operation_delegate_(std::move(local_operation_delegate)),
       is_current_os_callback_(std::move(is_current_os_callback)),
+      metrics_delegate_(metrics_delegate),
       net_log_(std::move(net_log)) {
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
@@ -160,9 +170,9 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
           return is_current_os_callback_.Run(os);
         });
     if (!should_divert_issuance_request_to_os_ &&
-        commitment_result->unavailable_local_issuance_fallback ==
+        commitment_result->unavailable_local_operation_fallback ==
             mojom::TrustTokenKeyCommitmentResult::
-                UnavailableLocalIssuanceFallback::kReturnWithError) {
+                UnavailableLocalOperationFallback::kReturnWithError) {
       // If the issuer requests that issuance be mediated by the OS on at least
       // one platform, and we aren't on that platform, and the issuer has
       // configured that we should return with an error in this case, do so.
@@ -230,6 +240,7 @@ void TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete(
     auto fulfill_request = mojom::FulfillTrustTokenIssuanceRequest::New();
     fulfill_request->issuer = url::Origin::Create(request->url());
     fulfill_request->request = std::move(*maybe_blinded_tokens);
+    metrics_delegate_->WillExecutePlatformProvidedOperation();
     local_operation_delegate_->FulfillIssuance(
         std::move(fulfill_request),
         base::BindOnce(&TrustTokenRequestIssuanceHelper::
@@ -286,22 +297,29 @@ void TrustTokenRequestIssuanceHelper::Finalize(
 
   response->headers->RemoveHeader(kTrustTokensSecTrustTokenHeader);
 
-  ConfirmIssuanceResponse(std::move(header_value), std::move(done));
+  ProcessIssuanceResponse(std::move(header_value), std::move(done));
 }
 
-void TrustTokenRequestIssuanceHelper::ConfirmIssuanceResponse(
+void TrustTokenRequestIssuanceHelper::ProcessIssuanceResponse(
     std::string issuance_response,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
+  if (issuance_response.empty()) {
+    OnDoneProcessingIssuanceResponse(
+        std::move(done), {std::move(cryptographer_),
+                          std::make_unique<Cryptographer::UnblindedTokens>()});
+    return;
+  }
+
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ConfirmIssuanceOnPostedSequence,
                      std::move(cryptographer_), std::move(issuance_response)),
-      base::BindOnce(&TrustTokenRequestIssuanceHelper::
-                         OnDelegateConfirmIssuanceCallComplete,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(done)));
+      base::BindOnce(
+          &TrustTokenRequestIssuanceHelper::OnDoneProcessingIssuanceResponse,
+          weak_ptr_factory_.GetWeakPtr(), std::move(done)));
 }
 
-void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
+void TrustTokenRequestIssuanceHelper::OnDoneProcessingIssuanceResponse(
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
     CryptographerAndUnblindedTokens cryptographer_and_unblinded_tokens) {
   cryptographer_ = std::move(cryptographer_and_unblinded_tokens.cryptographer);
@@ -321,9 +339,11 @@ void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
   token_store_->AddTokens(*issuer_, base::make_span(maybe_tokens->tokens),
                           maybe_tokens->body_of_verifying_key);
 
+  num_obtained_tokens_ = maybe_tokens->tokens.size();
+
   net_log_.EndEvent(
       net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE,
-      [num_obtained_tokens = maybe_tokens->tokens.size()]() {
+      [num_obtained_tokens = *num_obtained_tokens_]() {
         base::Value ret = CreateLogValue("Success");
         ret.SetIntKey("# tokens obtained", num_obtained_tokens);
         return ret;
@@ -335,6 +355,8 @@ void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
 void TrustTokenRequestIssuanceHelper::DoneRequestingLocallyFulfilledIssuance(
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
     mojom::FulfillTrustTokenIssuanceAnswerPtr answer) {
+  base::UmaHistogramEnumeration(
+      "Net.TrustTokens.IssuanceHelperLocalFulfillResult", answer->status);
   switch (answer->status) {
     case mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound: {
       std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
@@ -352,7 +374,7 @@ void TrustTokenRequestIssuanceHelper::DoneRequestingLocallyFulfilledIssuance(
   // the main response processing logic when executing issuance locally:
   net_log_.BeginEvent(
       net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE);
-  ConfirmIssuanceResponse(
+  ProcessIssuanceResponse(
       std::move(answer->response),
       base::BindOnce(&TrustTokenRequestIssuanceHelper::
                          DoneFinalizingLocallyFulfilledIssuance,
@@ -369,6 +391,23 @@ void TrustTokenRequestIssuanceHelper::DoneFinalizingLocallyFulfilledIssuance(
   }
 
   std::move(done).Run(status);
+}
+
+mojom::TrustTokenOperationResultPtr
+TrustTokenRequestIssuanceHelper::CollectOperationResultWithStatus(
+    mojom::TrustTokenOperationStatus status) {
+  mojom::TrustTokenOperationResultPtr operation_result =
+      mojom::TrustTokenOperationResult::New();
+  operation_result->status = status;
+  operation_result->type = mojom::TrustTokenOperationType::kIssuance;
+  operation_result->top_level_origin = top_level_origin_;
+  if (issuer_) {
+    operation_result->issuer = *issuer_;
+  }
+  if (num_obtained_tokens_) {
+    operation_result->issued_token_count = *num_obtained_tokens_;
+  }
+  return operation_result;
 }
 
 }  // namespace network

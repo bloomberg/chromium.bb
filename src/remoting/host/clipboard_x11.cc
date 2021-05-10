@@ -19,7 +19,7 @@
 namespace remoting {
 
 // This code is expected to be called on the desktop thread only.
-class ClipboardX11 : public Clipboard, public x11::Connection::Delegate {
+class ClipboardX11 : public Clipboard, public x11::EventObserver {
  public:
   ClipboardX11();
   ~ClipboardX11() override;
@@ -34,9 +34,8 @@ class ClipboardX11 : public Clipboard, public x11::Connection::Delegate {
                           const std::string& data);
   void PumpXEvents();
 
-  // x11::Connection::Delegate:
-  bool ShouldContinueStream() const override;
-  void DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
   std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
 
@@ -57,6 +56,9 @@ class ClipboardX11 : public Clipboard, public x11::Connection::Delegate {
 ClipboardX11::ClipboardX11() = default;
 
 ClipboardX11::~ClipboardX11() {
+  if (connection_) {
+    connection_->RemoveEventObserver(this);
+  }
   x_connection_watch_controller_ = nullptr;
 }
 
@@ -69,6 +71,7 @@ void ClipboardX11::Start(
     LOG(ERROR) << "Couldn't open X display";
     return;
   }
+  connection_->AddEventObserver(this);
   client_clipboard_.swap(client_clipboard);
 
   x_server_clipboard_.Init(
@@ -98,16 +101,11 @@ void ClipboardX11::OnClipboardChanged(const std::string& mime_type,
 
 void ClipboardX11::PumpXEvents() {
   DCHECK(connection_->Ready());
-
-  connection_->Dispatch(this);
+  connection_->DispatchAll();
 }
 
-bool ClipboardX11::ShouldContinueStream() const {
-  return true;
-}
-
-void ClipboardX11::DispatchXEvent(x11::Event* event) {
-  x_server_clipboard_.ProcessXEvent(*event);
+void ClipboardX11::OnEvent(const x11::Event& event) {
+  x_server_clipboard_.ProcessXEvent(event);
 }
 
 std::unique_ptr<Clipboard> Clipboard::Create() {

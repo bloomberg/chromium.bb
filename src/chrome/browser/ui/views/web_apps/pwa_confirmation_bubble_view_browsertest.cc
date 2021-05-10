@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-#include <utility>
-
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -22,22 +17,18 @@
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "content/public/test/browser_test.h"
-#include "ui/views/controls/button/checkbox.h"
+#include "services/preferences/public/cpp/dictionary_value_update.h"
+#include "services/preferences/public/cpp/scoped_pref_update.h"
 
 class PWAConfirmationBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
   PWAConfirmationBubbleViewBrowserTest() {
-    // Tests will crash if kDesktopPWAsRunOnOsLogin feature flag is not enabled.
-    // AcceptBubbleInPWAWindowRunOnOsLoginChecked and
-    // AcceptBubbleInPWAWindowRunOnOsLoginUnchecked tests interact with the
-    // checkbox which is only added if feature flag is enabled.
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsRunOnOsLogin,
-         feature_engagement::kIPHDesktopPwaInstallFeature},
-        {});
+        {feature_engagement::kIPHDesktopPwaInstallFeature}, {});
   }
   ~PWAConfirmationBubbleViewBrowserTest() override = default;
 
@@ -47,35 +38,6 @@ class PWAConfirmationBubbleViewBrowserTest : public InProcessBrowserTest {
     app_info->start_url = GURL("https://example2.com");
     app_info->open_as_window = true;
     return app_info;
-  }
-
-  std::unique_ptr<WebApplicationInfo> GetCallbackAppInfoFromDialog(
-      bool run_on_os_login_checked) {
-    std::unique_ptr<WebApplicationInfo> resulting_app_info = nullptr;
-    auto app_info = GetAppInfo();
-
-    base::RunLoop loop;
-    // Show the PWA install dialog.
-    chrome::ShowPWAInstallBubble(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        std::move(app_info),
-        base::BindLambdaForTesting(
-            [&](bool accepted,
-                std::unique_ptr<WebApplicationInfo> app_info_callback) {
-              resulting_app_info = std::move(app_info_callback);
-              loop.Quit();
-            }));
-
-    // Get bubble dialog, set checkbox and accept.
-    PWAConfirmationBubbleView* bubble_dialog =
-        PWAConfirmationBubbleView::GetBubbleForTesting();
-    bubble_dialog->GetRunOnOsLoginCheckboxForTesting()->SetChecked(
-        run_on_os_login_checked);
-    bubble_dialog->Accept();
-
-    loop.Run();
-
-    return resulting_app_info;
   }
 
  private:
@@ -106,20 +68,6 @@ IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
   chrome::ShowPWAInstallBubble(
       browser->tab_strip_model()->GetActiveWebContents(), std::move(app_info),
       base::DoNothing());
-}
-
-IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
-                       AcceptBubbleInPWAWindowRunOnOsLoginChecked) {
-  auto resulting_app_info =
-      GetCallbackAppInfoFromDialog(/*run_on_os_login_checked=*/true);
-  EXPECT_TRUE(resulting_app_info->run_on_os_login);
-}
-
-IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
-                       AcceptBubbleInPWAWindowRunOnOsLoginUnchecked) {
-  auto resulting_app_info =
-      GetCallbackAppInfoFromDialog(/*run_on_os_login_checked=*/false);
-  EXPECT_FALSE(resulting_app_info->run_on_os_login);
 }
 
 IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
@@ -167,13 +115,70 @@ IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
 
   bubble_dialog->CancelDialog();
   loop.Run();
-  PrefService* prefs = Profile::FromBrowserContext(browser()
-                                                       ->tab_strip_model()
-                                                       ->GetActiveWebContents()
-                                                       ->GetBrowserContext())
-                           ->GetPrefs();
+  PrefService* pref_service =
+      Profile::FromBrowserContext(browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetBrowserContext())
+          ->GetPrefs();
   web_app::AppId app_id = web_app::GenerateAppIdFromURL(start_url);
-  EXPECT_EQ(web_app::GetIntWebAppPref(prefs, app_id, web_app::kIphIgnoreCount)
-                .value(),
-            1);
+  EXPECT_EQ(
+      web_app::GetIntWebAppPref(pref_service, app_id, web_app::kIphIgnoreCount)
+          .value(),
+      1);
+  EXPECT_TRUE(web_app::GetTimeWebAppPref(pref_service, app_id,
+                                         web_app::kIphLastIgnoreTime)
+                  .has_value());
+  {
+    auto* dict =
+        pref_service->GetDictionary(prefs::kWebAppsAppAgnosticIphState);
+    EXPECT_EQ(dict->FindIntKey(web_app::kIphIgnoreCount).value_or(0), 1);
+    EXPECT_NE(dict->FindKey(web_app::kIphLastIgnoreTime), nullptr);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
+                       AcceptDialogResetIphCounters) {
+  auto app_info = GetAppInfo();
+  GURL start_url = app_info->start_url;
+  web_app::AppId app_id = web_app::GenerateAppIdFromURL(start_url);
+  PrefService* pref_service =
+      Profile::FromBrowserContext(browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetBrowserContext())
+          ->GetPrefs();
+  web_app::UpdateIntWebAppPref(pref_service, app_id, web_app::kIphIgnoreCount,
+                               1);
+  {
+    prefs::ScopedDictionaryPrefUpdate update(
+        pref_service, prefs::kWebAppsAppAgnosticIphState);
+    update->SetInteger(web_app::kIphIgnoreCount, 1);
+  }
+  base::RunLoop loop;
+  // Show the PWA install dialog.
+  chrome::ShowPWAInstallBubble(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(app_info),
+      base::BindLambdaForTesting(
+          [&](bool accepted,
+              std::unique_ptr<WebApplicationInfo> app_info_callback) {
+            loop.Quit();
+          }),
+      chrome::PwaInProductHelpState::kShown);
+
+  PWAConfirmationBubbleView* bubble_dialog =
+      PWAConfirmationBubbleView::GetBubbleForTesting();
+
+  bubble_dialog->AcceptDialog();
+  loop.Run();
+
+  EXPECT_EQ(
+      web_app::GetIntWebAppPref(pref_service, app_id, web_app::kIphIgnoreCount)
+          .value(),
+      0);
+  {
+    auto* dict =
+        pref_service->GetDictionary(prefs::kWebAppsAppAgnosticIphState);
+    EXPECT_EQ(dict->FindIntKey(web_app::kIphIgnoreCount).value_or(0), 0);
+  }
 }

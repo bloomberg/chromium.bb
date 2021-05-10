@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_document_content.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_symbol_element.h"
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
@@ -93,7 +94,7 @@ SVGUseElement::SVGUseElement(Document& document)
 SVGUseElement::~SVGUseElement() = default;
 
 void SVGUseElement::Trace(Visitor* visitor) const {
-  visitor->Trace(cache_entry_);
+  visitor->Trace(document_content_);
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -101,7 +102,7 @@ void SVGUseElement::Trace(Visitor* visitor) const {
   visitor->Trace(target_id_observer_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
-  SVGExternalDocumentCache::Client::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 #if DCHECK_IS_ON()
@@ -195,12 +196,13 @@ void SVGUseElement::UpdateTargetReference() {
   element_url_ = GetDocument().CompleteURL(url_string);
   element_url_is_local_ = url_string.StartsWith('#');
   if (!IsStructurallyExternal() || !GetDocument().IsActive()) {
-    cache_entry_ = nullptr;
+    ClearResource();
+    document_content_ = nullptr;
     return;
   }
   if (!element_url_.HasFragmentIdentifier() ||
-      (cache_entry_ &&
-       EqualIgnoringFragmentIdentifier(element_url_, cache_entry_->Url()))) {
+      (document_content_ && EqualIgnoringFragmentIdentifier(
+                                element_url_, document_content_->Url()))) {
     return;
   }
 
@@ -213,11 +215,18 @@ void SVGUseElement::UpdateTargetReference() {
     context_document =
         To<LocalDOMWindow>(GetDocument().GetExecutionContext())->document();
   }
-  cache_entry_ = SVGExternalDocumentCache::From(*context_document)
-                     ->Get(this, element_url_, localName());
+
+  ExecutionContext* execution_context = context_document->GetExecutionContext();
+  ResourceLoaderOptions options(execution_context->GetCurrentWorld());
+  options.initiator_info.name = localName();
+  FetchParameters params(ResourceRequest(element_url_), options);
+  document_content_ =
+      SVGResourceDocumentContent::Fetch(params, *context_document, this);
 }
 
-void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGUseElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kXAttr || attr_name == svg_names::kYAttr ||
       attr_name == svg_names::kWidthAttr ||
       attr_name == svg_names::kHeightAttr) {
@@ -249,7 +258,7 @@ void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 static bool IsDisallowedElement(const Element& element) {
@@ -312,9 +321,9 @@ Element* SVGUseElement::ResolveTargetElement() {
                              WrapWeakPersistent(this)));
     }
   }
-  if (!cache_entry_ || !cache_entry_->GetDocument())
+  if (!document_content_ || !document_content_->GetDocument())
     return nullptr;
-  return cache_entry_->GetDocument()->getElementById(element_identifier);
+  return document_content_->GetDocument()->getElementById(element_identifier);
 }
 
 SVGElement* SVGUseElement::InstanceRoot() const {
@@ -585,12 +594,12 @@ void SVGUseElement::DispatchPendingEvent() {
   DispatchEvent(*Event::Create(event_type_names::kLoad));
 }
 
-void SVGUseElement::NotifyFinished(Document* external_document) {
+void SVGUseElement::NotifyFinished(Resource* resource) {
   if (!isConnected())
     return;
 
   InvalidateShadowTree();
-  if (!external_document) {
+  if (resource->ErrorOccurred() || !document_content_->GetDocument()) {
     DispatchEvent(*Event::Create(event_type_names::kError));
   } else {
     if (have_fired_load_event_)
@@ -604,6 +613,10 @@ void SVGUseElement::NotifyFinished(Document* external_document) {
         ->PostTask(FROM_HERE, WTF::Bind(&SVGUseElement::DispatchPendingEvent,
                                         WrapPersistent(this)));
   }
+}
+
+String SVGUseElement::DebugName() const {
+  return "SVGUseElement";
 }
 
 }  // namespace blink

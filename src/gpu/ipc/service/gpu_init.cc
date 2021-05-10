@@ -107,7 +107,8 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info,
 #endif
 }
 
-#if BUILDFLAG(IS_LACROS) || (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST))
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST))
 bool CanAccessNvidiaDeviceFile() {
   bool res = true;
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -118,7 +119,7 @@ bool CanAccessNvidiaDeviceFile() {
   }
   return res;
 }
-#endif  // BUILDFLAG(IS_LACROS) || (defined(OS_LINUX)  &&
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || (defined(OS_LINUX)  &&
         // !BUILDFLAG(IS_CHROMECAST))
 
 class GpuWatchdogInit {
@@ -205,7 +206,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     device_perf_info_ = device_perf_info;
   }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
       gpu_info_.gpu.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
@@ -251,7 +252,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   bool delayed_watchdog_enable = false;
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Don't start watchdog immediately, to allow developers to switch to VT2 on
   // startup.
   delayed_watchdog_enable = true;
@@ -317,6 +318,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::InitParams params;
     params.single_process = false;
+    params.enable_native_gpu_memory_buffers =
+        gpu_preferences.enable_native_gpu_memory_buffers;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    params.allow_sync_and_real_buffer_page_flip_testing =
+        gpu_preferences_.enable_chromeos_direct_video_decoder;
+#else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    params.allow_sync_and_real_buffer_page_flip_testing = true;
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ui::OzonePlatform::InitializeForGPU(params);
     // We need to get supported formats before sandboxing to avoid an known
     // issue which breaks the camera preview. (b/166850715)
@@ -339,6 +350,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
             << "on Linux";
     return false;
 #else
+    SaveHardwareGpuInfoAndGpuFeatureInfo();
     gl::init::ShutdownGL(true);
     gl_initialized = false;
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -404,11 +416,22 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
   // Do this after GL is initialized so extensions can be queried.
-  gpu_info_.passthrough_cmd_decoder =
-      gles2::UsePassthroughCommandDecoder(command_line) &&
-      gles2::PassthroughCommandDecoderSupported();
+  if (gles2::UsePassthroughCommandDecoder(command_line)) {
+    gpu_info_.passthrough_cmd_decoder =
+        gles2::PassthroughCommandDecoderSupported();
+#if defined(OS_ANDROID)
+    // We never use swiftshader on Android
+    LOG_IF(DFATAL, !gpu_info_.passthrough_cmd_decoder)
+#else
+    LOG_IF(ERROR, !gpu_info_.passthrough_cmd_decoder)
+#endif
+        << "Passthrough is not supported, GL is "
+        << gl::GetGLImplementationName(gl::GetGLImplementation());
+  } else {
+    gpu_info_.passthrough_cmd_decoder = false;
+  }
 
-  // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
+  // We need to collect GL strings (VENDOR, RENDERER) for blocklisting purposes.
   if (!gl_disabled) {
     if (!gl_use_swiftshader_) {
       if (!CollectGraphicsInfo(&gpu_info_))
@@ -426,6 +449,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                 << "on Linux";
         return false;
 #else
+        SaveHardwareGpuInfoAndGpuFeatureInfo();
         gl::init::ShutdownGL(true);
         watchdog_thread_ = nullptr;
         watchdog_init.SetGpuWatchdogPtr(nullptr);
@@ -595,6 +619,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(OS_WIN)
   if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_DECODE_SWAP_CHAIN))
     gl::DirectCompositionSurfaceWin::DisableDecodeSwapChain();
+  if (gpu_feature_info_.IsWorkaroundEnabled(
+          DISABLE_DIRECT_COMPOSITION_SW_VIDEO_OVERLAYS)) {
+    gl::DirectCompositionSurfaceWin::DisableSoftwareOverlays();
+  }
 #endif
 
   return true;
@@ -633,6 +661,14 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    params.allow_sync_and_real_buffer_page_flip_testing =
+        gpu_preferences_.enable_chromeos_direct_video_decoder;
+#else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    params.allow_sync_and_real_buffer_page_flip_testing = true;
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ui::OzonePlatform::InitializeForGPU(params);
   }
 #endif
@@ -674,6 +710,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (gl_use_swiftshader_) {
+      SaveHardwareGpuInfoAndGpuFeatureInfo();
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
@@ -712,6 +749,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (gl_use_swiftshader_) {
+      SaveHardwareGpuInfoAndGpuFeatureInfo();
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
@@ -749,10 +787,13 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 }
 #endif  // OS_ANDROID
 
-void GpuInit::AdjustInfoToSwiftShader() {
+void GpuInit::SaveHardwareGpuInfoAndGpuFeatureInfo() {
   gpu_info_for_hardware_gpu_ = gpu_info_;
-  gpu_info_.passthrough_cmd_decoder = false;
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
+}
+
+void GpuInit::AdjustInfoToSwiftShader() {
+  gpu_info_.passthrough_cmd_decoder = false;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
   CollectContextGraphicsInfo(&gpu_info_);
 
@@ -817,8 +858,9 @@ bool GpuInit::InitializeVulkan() {
 
   if (!use_swiftshader && !forced_native &&
       !CheckVulkanCompabilities(
-          vulkan_implementation_->GetVulkanInstance()->vulkan_info(),
-          gpu_info_)) {
+          vulkan_implementation_->GetVulkanInstance()->vulkan_info(), gpu_info_,
+          base::GetFieldTrialParamValueByFeature(features::kVulkan,
+                                                 "enable_by_device_name"))) {
     vulkan_implementation_.reset();
     return false;
   }

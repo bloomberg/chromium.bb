@@ -40,11 +40,13 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/base/thread_utils.h"
 #include "perfetto/base/time.h"
+#include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/base/utils.h"
 #include "src/profiling/memory/sampler.h"
 #include "src/profiling/memory/scoped_spinlock.h"
+#include "src/profiling/memory/shared_ring_buffer.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
@@ -165,7 +167,7 @@ std::shared_ptr<Client> Client::CreateAndHandshake(
     return nullptr;
   }
 
-  PERFETTO_DCHECK(sock.IsBlocking());
+  sock.DcheckIsBlocking(true);
 
   // We might be running in a process that is not dumpable (such as app
   // processes on user builds), in which case the /proc/self/mem will be chown'd
@@ -371,6 +373,7 @@ bool Client::RecordMalloc(uint32_t heap_id,
   const char* stackend = GetStackEnd(stackptr);
   if (!stackend) {
     PERFETTO_ELOG("Failed to find stackend.");
+    shmem_.SetErrorState(SharedRingBuffer::kInvalidStackBounds);
     return false;
   }
   uint64_t stack_size = static_cast<uint64_t>(stackend - stackptr);
@@ -421,7 +424,7 @@ int64_t Client::SendWireMessageWithRetriesIfBlocking(const WireMessage& msg) {
     }
   }
   if (IsConnected())
-    shmem_.SetHitTimeout();
+    shmem_.SetErrorState(SharedRingBuffer::kHitTimeout);
   PERFETTO_PLOG("Failed to write to shared ring buffer. Disconnecting.");
   return -1;
 }
@@ -446,12 +449,16 @@ bool Client::RecordFree(uint32_t heap_id, const uint64_t alloc_address) {
   if (bytes_free == -1)
     return false;
   // Seems like we are filling up the shmem with frees. Flush.
-  if (static_cast<uint64_t>(bytes_free) < shmem_.size() / 2)
+  if (static_cast<uint64_t>(bytes_free) < shmem_.size() / 2 &&
+      shmem_.GetAndResetReaderPaused()) {
     return SendControlSocketByte();
+  }
   return true;
 }
 
-bool Client::RecordHeapName(uint32_t heap_id, const char* heap_name) {
+bool Client::RecordHeapInfo(uint32_t heap_id,
+                            const char* heap_name,
+                            uint64_t interval) {
   if (PERFETTO_UNLIKELY(IsPostFork())) {
     return postfork_return_value_;
   }
@@ -460,6 +467,7 @@ bool Client::RecordHeapName(uint32_t heap_id, const char* heap_name) {
   hnr.heap_id = heap_id;
   strncpy(&hnr.heap_name[0], heap_name, sizeof(hnr.heap_name));
   hnr.heap_name[sizeof(hnr.heap_name) - 1] = '\0';
+  hnr.sample_interval = interval;
 
   WireMessage msg = {};
   msg.record_type = RecordType::HeapName;
@@ -468,7 +476,7 @@ bool Client::RecordHeapName(uint32_t heap_id, const char* heap_name) {
 }
 
 bool Client::IsConnected() {
-  PERFETTO_DCHECK(!sock_.IsBlocking());
+  sock_.DcheckIsBlocking(false);
   char buf[1];
   ssize_t recv_bytes = sock_.Receive(buf, sizeof(buf), nullptr, 0);
   if (recv_bytes == 0)

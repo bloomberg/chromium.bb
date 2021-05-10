@@ -46,6 +46,9 @@ need to be translated for each locale.-->
       <output filename="ui_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="ui_strings_zu.pak" type="data_package" lang="zu" />
     </if>
+    <if expr="chromeos or lacros">
+      <output filename="ui_strings_is.pak" type="data_package" lang="is" />
+    </if>
     <output filename="ui_strings_am.pak" type="data_package" lang="am" />
     <output filename="ui_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="ui_strings_bg.pak" type="data_package" lang="bg" />
@@ -67,7 +70,6 @@ need to be translated for each locale.-->
     </if>
     <output filename="ui_strings_et.pak" type="data_package" lang="et" />
     <output filename="ui_strings_fa.pak" type="data_package" lang="fa" />
-    <output filename="ui_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="ui_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="ui_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="ui_strings_fr.pak" type="data_package" lang="fr" />
@@ -114,6 +116,10 @@ need to be translated for each locale.-->
     <output filename="ui_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="ui_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="ui_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+
+    <!-- Pseudolocales -->
+    <output filename="ui_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
+    <output filename="ui_strings_en-XA.pak" type="data_package" lang="en-XA" />
   </outputs>
   <translations>
     <file path="translations/ui_strings_af.xtb" lang="af" />
@@ -198,7 +204,7 @@ need to be translated for each locale.-->
     <file path="translations/ui_strings_zh-TW.xtb" lang="zh-TW" />
     <file path="translations/ui_strings_zu.xtb" lang="zu" />
   </translations>
-  <release seq="1" allow_pseudo="false">
+  <release seq="1">
     <messages fallback_to_english="true">
 
       <!-- time format -->
@@ -366,6 +372,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
         (empty)
       </message>
+        <message name="IDS_CLIPBOARD_MENU_HTML" desc="Used when HTML is stored in the clipboard history">
+        HTML Content
+      </message>
       <message name="IDS_CLIPBOARD_MENU_IMAGE" desc="Used when an image is stored in the clipboard history">
         Image
       </message>
@@ -394,6 +403,12 @@ need to be translated for each locale.-->
       <!-- General application strings -->
       <message name="IDS_SENTENCE_END" desc="The symbol that is used to end a sentence.">
         .
+      </message>
+      <message name="IDS_CONCAT_TWO_STRINGS_WITH_COMMA" desc="This string concatenates two other strings. In the English language, this particular concatenation is done via a comma and a whitespace in between the other strings. For example: '1 compromised password, 2 weak passwords'">
+        <ph name="TYPE_1">$1<ex>2 compromised passwords</ex></ph>, <ph name="TYPE_2">$2<ex>7 weak passwords</ex></ph>
+      </message>
+      <message name="IDS_CONCAT_TWO_STRINGS_WITH_PERIODS" desc="This string concatenates two other strings. In the English language, this particular concatenation is done via a period and a whitespace after the first string, and a period after the second string. For example: '1 compromised password. 2 weak passwords.'">
+        <ph name="TYPE_1">$1<ex>2 compromised passwords</ex></ph>. <ph name="TYPE_2">$2<ex>7 weak passwords</ex></ph>.
       </message>
       <if expr="is_win or is_ios">
         <message name="IDS_APP_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
@@ -609,6 +624,11 @@ need to be translated for each locale.-->
       <if expr="is_macosx">
         <message name="IDS_CONTENT_CONTEXT_EMOJI" desc="The context menu item to display the OS-provided emoji picker.">
           Emoji &amp;&amp; Symbols
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_APP_SHOW_CLIPBOARD_HISTORY" desc="The context menu item to show the clipboard history menu.">
+          Clipboard
         </message>
       </if>
 
@@ -1020,12 +1040,6 @@ need to be translated for each locale.-->
       <message name="IDS_APP_LIST_MANAGE_SETTINGS" desc="Text of Manage settings links.">
         Manage settings
       </message>
-      <message name="IDS_APP_LIST_ASSISTANT_PRIVACY_INFO" desc="Text shown in Launcher to imply Assistant search.">
-        Your searches are powered by the Google Assistant. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
-      </message>
-      <message name="IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE" desc="Close button text.">
-        Close
-      </message>
       <message name="IDS_APP_LIST_SUGGESTED_CONTENT_INFO" desc="Text shown in launcher to notify users about Suggested Content. Suggested Content includes app search recommendations and website recommendations which can show up in places such as launcher search and suggestion chips.">
           Chrome OS shows suggestions for new content to explore. Sends statistics to improve quality only if you’ve chosen to share usage data. <ph name="MANAGE_SETTINGS">$1<ex>Manage settings</ex></ph>
       </message>
@@ -1068,6 +1082,12 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_CLIPBOARD_HISTORY_MENU_TITLE" desc="The title of the clipboard history menu which shows the history of the clipboard data">
         Clipboard history
+      </message>
+      <message name="IDS_CLIPBOARD_HISTORY_DELETE_BUTTON" desc="Accessibility name of the button which functions to delete a clipboard history menu entry">
+        Remove from clipboard.
+      </message>
+      <message name="IDS_CLIPBOARD_HISTORY_ITEM_DELETION" desc="Accessibility text when a clipboard history menu entry is deleted">
+        Removed.
       </message>
 
       <!-- Strings describing the touch calibration UX -->

@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.sync;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -13,17 +19,20 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.annotation.Nullable;
 import androidx.preference.TwoStatePreference;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Promise;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.uid.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.uid.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.uid.UuidBasedUniqueIdentificationGenerator;
@@ -108,8 +117,8 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         public Promise<PendingIntent> createKeyRetrievalIntent(CoreAccountInfo accountInfo) {
             Context context = InstrumentationRegistry.getContext();
             Intent intent = new Intent(context, DummyKeyRetrievalActivity.class);
-            return Promise.fulfilled(
-                    PendingIntent.getActivity(context, 0 /* requestCode */, intent, 0 /* flags */));
+            return Promise.fulfilled(PendingIntent.getActivity(context, 0 /* requestCode */, intent,
+                    IntentUtils.getPendingIntentMutabilityFlag(false)));
         }
 
         @Override
@@ -134,7 +143,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mProfileSyncService.requestStop();
+            mProfileSyncService.setSyncRequested(false);
             FakeServerHelper.deleteFakeServer();
         });
         ProfileSyncService.resetForTests();
@@ -197,8 +206,9 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     public CoreAccountInfo setUpAccountAndEnableSyncForTesting() {
         CoreAccountInfo accountInfo =
                 mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync(mProfileSyncService);
+        // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         SyncTestUtil.triggerSyncAndWaitForCompletion();
         return accountInfo;
     }
@@ -208,9 +218,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      * @return the test accountInfo that is signed in.
      */
     public CoreAccountInfo setUpAccountAndSignInForTesting() {
-        CoreAccountInfo accountInfo = mAccountManagerTestRule.addTestAccountThenSignin();
-        enableUKM();
-        return accountInfo;
+        return mAccountManagerTestRule.addTestAccountThenSignin();
     }
 
     /**
@@ -220,29 +228,33 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     public CoreAccountInfo setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
         CoreAccountInfo accountInfo = mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync(
                 /* profileSyncService= */ null);
+        // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
         SyncTestUtil.waitForSyncTransportActive();
         return accountInfo;
     }
 
     public void startSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mProfileSyncService.requestStart(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mProfileSyncService.setSyncRequested(true); });
     }
 
     public void startSyncAndWait() {
         startSync();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
     }
 
     public void stopSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mProfileSyncService.requestStop(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mProfileSyncService.setSyncRequested(false); });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     public void signinAndEnableSync(final CoreAccountInfo accountInfo) {
         SigninTestUtil.signinAndEnableSync(accountInfo, mProfileSyncService);
+        // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
-        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.waitForSyncFeatureActive();
         SyncTestUtil.triggerSyncAndWaitForCompletion();
     }
 
@@ -410,12 +422,9 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
     // UI interaction convenience methods.
     public void togglePreference(final TwoStatePreference pref) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            boolean newValue = !pref.isChecked();
-            pref.getOnPreferenceChangeListener().onPreferenceChange(pref, newValue);
-            pref.setChecked(newValue);
-        });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        onView(withId(R.id.recycler_view))
+                .perform(RecyclerViewActions.actionOnItem(
+                        hasDescendant(withText(pref.getTitle().toString())), click()));
     }
 
     /**

@@ -16,27 +16,30 @@ class GrStencilSettings;
 
 class GrProgramInfo {
 public:
-    GrProgramInfo(int numSamples,
-                  int numStencilSamples,
-                  const GrBackendFormat& backendFormat,
-                  GrSurfaceOrigin origin,
+    GrProgramInfo(const GrSurfaceProxyView& targetView,
                   const GrPipeline* pipeline,
                   const GrUserStencilSettings* userStencilSettings,
                   const GrPrimitiveProcessor* primProc,
                   GrPrimitiveType primitiveType,
                   uint8_t tessellationPatchVertexCount,
-                  GrXferBarrierFlags renderPassXferBarriers)
-            : fNumSamples(numSamples)
-            , fNumStencilSamples(numStencilSamples)
-            , fBackendFormat(backendFormat)
-            , fOrigin(origin)
+                  GrXferBarrierFlags renderPassXferBarriers,
+                  GrLoadOp colorLoadOp)
+            : fNumSamples(targetView.asRenderTargetProxy()->numSamples())
+            , fNumStencilSamples(targetView.asRenderTargetProxy()->numStencilSamples())
+            , fBackendFormat(targetView.proxy()->backendFormat())
+            , fOrigin(targetView.origin())
+            , fTargetSupportsVkResolveLoad(
+                      targetView.asRenderTargetProxy()->numSamples() > 1 &&
+                      targetView.asTextureProxy() &&
+                      targetView.asRenderTargetProxy()->supportsVkInputAttachment())
             , fPipeline(pipeline)
             , fUserStencilSettings(userStencilSettings)
             , fPrimProc(primProc)
             , fPrimitiveType(primitiveType)
             , fTessellationPatchVertexCount(tessellationPatchVertexCount)
             , fRenderPassXferBarriers(renderPassXferBarriers)
-            , fIsMixedSampled(this->isStencilEnabled() && numStencilSamples > numSamples) {
+            , fColorLoadOp(colorLoadOp)
+            , fIsMixedSampled(this->isStencilEnabled() && fNumStencilSamples > fNumSamples) {
         SkASSERT(this->numRasterSamples() > 0);
         SkASSERT((GrPrimitiveType::kPatches == fPrimitiveType) ==
                  (fTessellationPatchVertexCount > 0));
@@ -74,7 +77,11 @@ public:
         return fTessellationPatchVertexCount;
     }
 
+    bool targetSupportsVkResolveLoad() const { return fTargetSupportsVkResolveLoad; }
+
     GrXferBarrierFlags renderPassBarriers() const { return fRenderPassXferBarriers; }
+
+    GrLoadOp colorLoadOp() const { return fColorLoadOp; }
 
     uint16_t primitiveTypeKey() const {
         return ((uint16_t)fPrimitiveType << 8) | fTessellationPatchVertexCount;
@@ -104,6 +111,7 @@ private:
     const int                             fNumStencilSamples;
     const GrBackendFormat                 fBackendFormat;
     const GrSurfaceOrigin                 fOrigin;
+    const bool                            fTargetSupportsVkResolveLoad;
     const GrPipeline*                     fPipeline;
     const GrUserStencilSettings*          fUserStencilSettings;
     const GrPrimitiveProcessor*           fPrimProc;
@@ -111,6 +119,7 @@ private:
     GrPrimitiveType                       fPrimitiveType;
     uint8_t                               fTessellationPatchVertexCount;  // GrPrimType::kPatches.
     GrXferBarrierFlags                    fRenderPassXferBarriers;
+    GrLoadOp                              fColorLoadOp;
     const bool                            fIsMixedSampled;
 };
 

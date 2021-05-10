@@ -1,4 +1,4 @@
-# v-0008: line 6: switch statement must have exactly one default clause
+// v-0008: line 6: switch statement must have exactly one default clause
 
 [[stage(vertex)]]
 fn main() -> void {

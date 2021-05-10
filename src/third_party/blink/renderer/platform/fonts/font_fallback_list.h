@@ -36,6 +36,7 @@
 namespace blink {
 
 class FontDescription;
+class FontFallbackMap;
 
 const int kCAllFamiliesScanned = -1;
 
@@ -46,36 +47,32 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   USING_FAST_MALLOC(FontFallbackList);
 
  public:
-  static scoped_refptr<FontFallbackList> Create(FontSelector* font_selector) {
-    return base::AdoptRef(new FontFallbackList(font_selector));
+  static scoped_refptr<FontFallbackList> Create(
+      FontFallbackMap& font_fallback_map) {
+    return base::AdoptRef(new FontFallbackList(font_fallback_map));
   }
 
-  ~FontFallbackList() { ReleaseFontData(); }
+  ~FontFallbackList();
 
   // Returns whether the cached data is valid. We can use a FontFallbackList
   // only when it's valid.
-  bool IsValid() const;
+  bool IsValid() const { return !is_invalid_; }
 
   // Called when font updates (see class comment) have made the cached data
   // invalid. Once marked, a Font object cannot reuse |this|, but have to work
   // on a new instance obtained from FontFallbackMap.
   void MarkInvalid() {
-    DCHECK(RuntimeEnabledFeatures::
-               CSSReducedFontLoadingLayoutInvalidationsEnabled());
     is_invalid_ = true;
   }
 
-  // Clears all the stale data, and reset the state for replenishment. Note that
-  // this is a deprecated function, and will be removed after we launch feature
-  // CSSReducedFontLoadingLayoutInvalidations. With the feature, we'll never
-  // revalidate a FontFallbackList, but create a new FontFallbackList instead.
-  void RevalidateDeprecated();
-
   bool ShouldSkipDrawing() const;
 
-  FontSelector* GetFontSelector() const { return font_selector_.Get(); }
-  // FIXME: It should be possible to combine fontSelectorVersion and generation.
-  unsigned FontSelectorVersion() const { return font_selector_version_; }
+  // Returns false only after the WeakPersistent to FontFallbackMap is turned to
+  // nullptr due to GC.
+  bool HasFontFallbackMap() const { return font_fallback_map_; }
+  FontFallbackMap& GetFontFallbackMap() const { return *font_fallback_map_; }
+
+  FontSelector* GetFontSelector() const;
   uint16_t Generation() const { return generation_; }
 
   ShapeCache* GetShapeCache(const FontDescription& font_description) {
@@ -113,7 +110,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   bool HasAdvanceOverride() const { return has_advance_override_; }
 
  private:
-  explicit FontFallbackList(FontSelector* font_selector);
+  explicit FontFallbackList(FontFallbackMap& font_fallback_map);
 
   scoped_refptr<FontData> GetFontData(const FontDescription&);
 
@@ -126,8 +123,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   Vector<scoped_refptr<FontData>, 1> font_list_;
   const SimpleFontData* cached_primary_simple_font_data_;
-  const Persistent<FontSelector> font_selector_;
-  unsigned font_selector_version_;
+  const WeakPersistent<FontFallbackMap> font_fallback_map_;
   int family_index_;
   uint16_t generation_;
   bool has_loading_fallback_ : 1;

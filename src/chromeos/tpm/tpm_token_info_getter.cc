@@ -10,9 +10,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/task_runner.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 
 namespace {
 
@@ -68,6 +71,11 @@ void TPMTokenInfoGetter::Start(TpmTokenInfoCallback callback) {
   Continue();
 }
 
+void TPMTokenInfoGetter::SetSystemSlotSoftwareFallback(
+    bool use_system_slot_software_fallback) {
+  use_system_slot_software_fallback_ = use_system_slot_software_fallback;
+}
+
 TPMTokenInfoGetter::TPMTokenInfoGetter(
     TPMTokenInfoGetter::Type type,
     const AccountId& account_id,
@@ -87,8 +95,10 @@ void TPMTokenInfoGetter::Continue() {
       NOTREACHED();
       break;
     case STATE_STARTED:
-      cryptohome_client_->TpmIsEnabled(base::BindOnce(
-          &TPMTokenInfoGetter::OnTpmIsEnabled, weak_factory_.GetWeakPtr()));
+      TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+          ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+          base::BindOnce(&TPMTokenInfoGetter::OnGetTpmStatus,
+                         weak_factory_.GetWeakPtr()));
       break;
     case STATE_TPM_ENABLED:
       if (type_ == TYPE_SYSTEM) {
@@ -100,6 +110,15 @@ void TPMTokenInfoGetter::Continue() {
             cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
             base::BindOnce(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
                            weak_factory_.GetWeakPtr()));
+      }
+      break;
+    case STATE_SYSTEM_SLOT_SOFTWARE_FALLBACK:
+      if (type_ == TYPE_SYSTEM) {
+        cryptohome_client_->Pkcs11GetTpmTokenInfo(
+            base::BindOnce(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
+                           weak_factory_.GetWeakPtr()));
+      } else {  // if (type_ == TYPE_USER)
+        NOTREACHED();
       }
       break;
     case STATE_DONE:
@@ -115,13 +134,24 @@ void TPMTokenInfoGetter::RetryLater() {
   tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
 }
 
-void TPMTokenInfoGetter::OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled) {
-  if (!tpm_is_enabled.has_value()) {
+void TPMTokenInfoGetter::OnGetTpmStatus(
+    const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
+  if (reply.status() != ::tpm_manager::STATUS_SUCCESS) {
+    LOG(WARNING) << "Failed to get tpm status; status: " << reply.status();
     RetryLater();
     return;
   }
 
-  if (!tpm_is_enabled.value()) {
+  if (!reply.is_enabled()) {
+    // In case the TPM is disabled and use_system_slot_software_fallback_ is
+    // true, we continue the token info retrieval for the system slot in order
+    // to fall back to a software-backed initialization.
+    if (use_system_slot_software_fallback_) {
+      state_ = STATE_SYSTEM_SLOT_SOFTWARE_FALLBACK;
+      Continue();
+      return;
+    }
+
     state_ = STATE_DONE;
     std::move(callback_).Run(base::nullopt);
     return;

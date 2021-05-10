@@ -71,6 +71,7 @@ HidDetectionSkipTest.*
 HidDetectionTest.*
 InitialEnrollmentTest.*
 InterruptedAutoStartEnrollmentTest.*
+InvalidPendingScreenTest.*
 KioskEnrollmentTest.*
 KioskEnterpriseTest.*
 KioskHiddenWebUITest.*
@@ -80,6 +81,7 @@ KioskVirtualKeyboardTest.*
 LoginCursorTest.*
 LoginOfflineTest.*
 LoginPolicyTestBase.*
+LoginUIShelfVisibilityTest.*
 MarketingOptInDefaultContries/MarketingOptInScreenTest.*
 MarketingOptInDoubleOptInCountriesContries/MarketingOptInScreenTest.*
 MarketingOptInExtendedContries/MarketingOptInScreenTest.*
@@ -131,6 +133,7 @@ TermsOfServiceScreenTest.*
 UpdateRequiredScreenPolicyPresentTest.*
 UpdateRequiredScreenTest.*
 UpdateScreenTest.*
+BetterUpdateScreenTest.*
 UserCloudExternalDataManagerTest.*
 UserCreationScreenEnrolledTest.*
 UserCreationScreenLoginTest.*
@@ -142,6 +145,8 @@ WebviewClientCertsTokenLoadingLoginTest.*
 WebviewLoginTest.*
 WebviewProxyAuthLoginTest.*
 WelcomeScreenBrowserTest.*
+WelcomeScreenChromeVoxHintTest.*
+WelcomeScreenInternationalChromeVoxHintTest.*
 WelcomeScreenSystemDevModeBrowserTest.*
 WelcomeScreenTimezone.*
 WizardControllerBrokenLocalStateTest.*

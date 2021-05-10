@@ -46,6 +46,8 @@ def CMDmovechanges(parser, args):
 
   (opt, args) = parser.parse_args(args)
   assert opt.destination_branch, "--destination_branch not defined"
+  for p in opt.params:
+    assert '=' in p, '--param is key=value, not "%s"' % p
   host = urlparse.urlparse(opt.host).netloc
 
   limit = 100
@@ -96,6 +98,35 @@ def CMDbranch(parser, args):
 
 
 @subcommand.usage('[args ...]')
+def CMDhead(parser, args):
+  parser.add_option('--branch', dest='branch', help='branch name')
+
+  (opt, args) = parser.parse_args(args)
+  assert opt.project, "--project not defined"
+  assert opt.branch, "--branch not defined"
+
+  project = quote_plus(opt.project)
+  host = urlparse.urlparse(opt.host).netloc
+  branch = quote_plus(opt.branch)
+  result = gerrit_util.UpdateHead(host, project, branch)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDheadinfo(parser, args):
+
+  (opt, args) = parser.parse_args(args)
+  assert opt.project, "--project not defined"
+
+  project = quote_plus(opt.project)
+  host = urlparse.urlparse(opt.host).netloc
+  result = gerrit_util.GetHead(host, project)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
 def CMDchanges(parser, args):
   parser.add_option('-p', '--param', dest='params', action='append',
                     help='repeatable query parameter, format: -p key=value')
@@ -108,6 +139,8 @@ def CMDchanges(parser, args):
                          '(starting with the most recent)')
 
   (opt, args) = parser.parse_args(args)
+  for p in opt.params:
+    assert '=' in p, '--param is key=value, not "%s"' % p
 
   result = gerrit_util.QueryChanges(
       urlparse.urlparse(opt.host).netloc,

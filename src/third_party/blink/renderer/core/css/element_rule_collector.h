@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/resolver/match_request.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -42,19 +43,12 @@ class RuleData;
 class SelectorFilter;
 class StyleRuleUsageTracker;
 
-// TODO(kochi): ShadowV0CascadeOrder is used only for Shadow DOM V0
-// bug-compatible cascading order. Once Shadow DOM V0 implementation is gone,
-// remove this completely.
-using ShadowV0CascadeOrder = unsigned;
-const ShadowV0CascadeOrder kIgnoreCascadeOrder = 0;
-
 class MatchedRule {
   DISALLOW_NEW();
 
  public:
   MatchedRule(const RuleData* rule_data,
               unsigned specificity,
-              ShadowV0CascadeOrder cascade_order,
               unsigned style_sheet_index,
               const CSSStyleSheet* parent_style_sheet)
       : rule_data_(rule_data),
@@ -62,10 +56,8 @@ class MatchedRule {
         parent_style_sheet_(parent_style_sheet) {
     DCHECK(rule_data_);
     static const unsigned kBitsForPositionInRuleData = 18;
-    static const unsigned kBitsForStyleSheetIndex = 32;
-    position_ = ((uint64_t)cascade_order
-                 << (kBitsForStyleSheetIndex + kBitsForPositionInRuleData)) +
-                ((uint64_t)style_sheet_index << kBitsForPositionInRuleData) +
+    position_ = (static_cast<uint64_t>(style_sheet_index)
+                 << kBitsForPositionInRuleData) +
                 rule_data_->GetPosition();
   }
 
@@ -108,6 +100,7 @@ class CORE_EXPORT ElementRuleCollector {
 
  public:
   ElementRuleCollector(const ElementResolveContext&,
+                       const StyleRecalcContext&,
                        const SelectorFilter&,
                        MatchResult&,
                        ComputedStyle*,
@@ -131,15 +124,11 @@ class CORE_EXPORT ElementRuleCollector {
   RuleIndexList* MatchedCSSRuleList();
 
   void CollectMatchingRules(const MatchRequest&,
-                            ShadowV0CascadeOrder = kIgnoreCascadeOrder,
                             bool matching_tree_boundary_rules = false);
-  void CollectMatchingShadowHostRules(
-      const MatchRequest&,
-      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
-  void CollectMatchingPartPseudoRules(
-      const MatchRequest&,
-      PartNames&,
-      ShadowV0CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingShadowHostRules(const MatchRequest&);
+  void CollectMatchingPartPseudoRules(const MatchRequest&,
+                                      PartNames&,
+                                      bool for_shadow_pseudo);
   void SortAndTransferMatchedRules();
   void ClearMatchedRules();
   void AddElementStyleProperties(const CSSPropertyValueSet*,
@@ -160,18 +149,23 @@ class CORE_EXPORT ElementRuleCollector {
   void AddMatchedRulesToTracker(StyleRuleUsageTracker*) const;
 
  private:
+  struct PartRequest {
+    PartNames& part_names;
+    // If this is true, we're matching for a pseudo-element of the part, such as
+    // ::placeholder.
+    bool for_shadow_pseudo = false;
+  };
+
   template <typename RuleDataListType>
   void CollectMatchingRulesForList(const RuleDataListType*,
-                                   ShadowV0CascadeOrder,
                                    const MatchRequest&,
-                                   PartNames* = nullptr);
+                                   PartRequest* = nullptr);
 
   bool Match(SelectorChecker&,
              const SelectorChecker::SelectorCheckingContext&,
              MatchResult&);
   void DidMatchRule(const RuleData*,
                     const SelectorChecker::MatchResult&,
-                    ShadowV0CascadeOrder,
                     const MatchRequest&);
 
   template <class CSSRuleCollection>
@@ -185,6 +179,7 @@ class CORE_EXPORT ElementRuleCollector {
 
  private:
   const ElementResolveContext& context_;
+  StyleRecalcContext style_recalc_context_;
   const SelectorFilter& selector_filter_;
   scoped_refptr<ComputedStyle>
       style_;  // FIXME: This can be mutated during matching!

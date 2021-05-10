@@ -1,4 +1,18 @@
-export const description = '';
+export const description = `
+TODO: review and make sure these cases are covered:
+> - mapAsync + getMappedRange
+>     - oom on buffer creation should be followed by validation-failure to mapAsync
+>     - ?
+> - createBufferMapped + getMappedRange
+>     - getMappedRange should always be allowed even if the buffer creation was oom
+>         - unless the range is so huge that an ArrayBuffer can't be created
+>
+> These tests should also test ArrayBuffer detaching (anytime the buffer mapping succeeds)
+> because the mapped ranges may be backed by different types of memory (shmem vs local mem vs real
+> mapped mem).
+>
+> TODO: currently test a huge number, but should also test smaller, but still very large allocations (like 128GiB)
+`;
 
 import { poptions, params, pbool } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';

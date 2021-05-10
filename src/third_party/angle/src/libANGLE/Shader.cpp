@@ -92,6 +92,12 @@ const char *GetShaderTypeString(ShaderType type)
         case ShaderType::Geometry:
             return "GEOMETRY";
 
+        case ShaderType::TessControl:
+            return "TESS_CONTROL";
+
+        case ShaderType::TessEvaluation:
+            return "TESS_EVALUATION";
+
         default:
             UNREACHABLE();
             return "";
@@ -318,7 +324,13 @@ void Shader::compile(const Context *context)
     mState.mGeometryShaderOutputPrimitiveType.reset();
     mState.mGeometryShaderMaxVertices.reset();
     mState.mGeometryShaderInvocations      = 1;
+    mState.mTessControlShaderVertices      = 0;
+    mState.mTessGenMode                    = 0;
+    mState.mTessGenSpacing                 = 0;
+    mState.mTessGenVertexOrder             = 0;
+    mState.mTessGenPointMode               = 0;
     mState.mEarlyFragmentTestsOptimization = false;
+    mState.mSpecConstUsageBits.reset();
 
     mState.mCompileStatus = CompileStatus::COMPILE_REQUESTED;
     mBoundCompiler.set(context, context->getCompiler());
@@ -432,6 +444,8 @@ void Shader::resolveCompile()
     mState.mUniforms            = GetShaderVariables(sh::GetUniforms(compilerHandle));
     mState.mUniformBlocks       = GetShaderVariables(sh::GetUniformBlocks(compilerHandle));
     mState.mShaderStorageBlocks = GetShaderVariables(sh::GetShaderStorageBlocks(compilerHandle));
+    mState.mSpecConstUsageBits =
+        rx::SpecConstUsageBits(sh::GetShaderSpecConstUsageBits(compilerHandle));
 
     switch (mState.mShaderType)
     {
@@ -518,6 +532,36 @@ void Shader::resolveCompile()
             mState.mGeometryShaderInvocations = sh::GetGeometryShaderInvocations(compilerHandle);
             break;
         }
+        case ShaderType::TessControl:
+        {
+            mState.mInputVaryings  = GetShaderVariables(sh::GetInputVaryings(compilerHandle));
+            mState.mOutputVaryings = GetShaderVariables(sh::GetOutputVaryings(compilerHandle));
+            mState.mTessControlShaderVertices = sh::GetTessControlShaderVertices(compilerHandle);
+            break;
+        }
+        case ShaderType::TessEvaluation:
+        {
+            mState.mInputVaryings  = GetShaderVariables(sh::GetInputVaryings(compilerHandle));
+            mState.mOutputVaryings = GetShaderVariables(sh::GetOutputVaryings(compilerHandle));
+            if (sh::HasValidTessGenMode(compilerHandle))
+            {
+                mState.mTessGenMode = sh::GetTessGenMode(compilerHandle);
+            }
+            if (sh::HasValidTessGenSpacing(compilerHandle))
+            {
+                mState.mTessGenSpacing = sh::GetTessGenSpacing(compilerHandle);
+            }
+            if (sh::HasValidTessGenVertexOrder(compilerHandle))
+            {
+                mState.mTessGenVertexOrder = sh::GetTessGenVertexOrder(compilerHandle);
+            }
+            if (sh::HasValidTessGenPointMode(compilerHandle))
+            {
+                mState.mTessGenPointMode = sh::GetTessGenPointMode(compilerHandle);
+            }
+            break;
+        }
+
         default:
             UNREACHABLE();
     }
@@ -625,9 +669,8 @@ const std::vector<sh::ShaderVariable> &Shader::getActiveOutputVariables()
 
 std::string Shader::getTransformFeedbackVaryingMappedName(const std::string &tfVaryingName)
 {
-    // TODO(jiawei.shao@intel.com): support transform feedback on geometry shader.
-    ASSERT(mState.getShaderType() == ShaderType::Vertex ||
-           mState.getShaderType() == ShaderType::Geometry);
+    ASSERT(mState.getShaderType() != ShaderType::Fragment &&
+           mState.getShaderType() != ShaderType::Compute);
     const auto &varyings = getOutputVaryings();
     auto bracketPos      = tfVaryingName.find("[");
     if (bracketPos != std::string::npos)
@@ -655,8 +698,21 @@ std::string Shader::getTransformFeedbackVaryingMappedName(const std::string &tfV
             {
                 GLuint fieldIndex = 0;
                 const auto *field = varying.findField(tfVaryingName, &fieldIndex);
-                ASSERT(field != nullptr && !field->isStruct() && !field->isArray());
-                return varying.mappedName + "." + field->mappedName;
+                if (field == nullptr)
+                {
+                    continue;
+                }
+                ASSERT(field != nullptr && !field->isStruct() &&
+                       (!field->isArray() || varying.isShaderIOBlock));
+                std::string mappedName;
+                // If it's an I/O block without an instance name, don't include the block name.
+                if (!varying.isShaderIOBlock || !varying.name.empty())
+                {
+                    mappedName = varying.isShaderIOBlock ? varying.mappedStructOrBlockName
+                                                         : varying.mappedName;
+                    mappedName += '.';
+                }
+                return mappedName + field->mappedName;
             }
         }
     }
@@ -698,6 +754,36 @@ Optional<GLint> Shader::getGeometryShaderMaxVertices()
 {
     resolveCompile();
     return mState.mGeometryShaderMaxVertices;
+}
+
+int Shader::getTessControlShaderVertices()
+{
+    resolveCompile();
+    return mState.mTessControlShaderVertices;
+}
+
+GLenum Shader::getTessGenMode()
+{
+    resolveCompile();
+    return mState.mTessGenMode;
+}
+
+GLenum Shader::getTessGenSpacing()
+{
+    resolveCompile();
+    return mState.mTessGenSpacing;
+}
+
+GLenum Shader::getTessGenVertexOrder()
+{
+    resolveCompile();
+    return mState.mTessGenVertexOrder;
+}
+
+GLenum Shader::getTessGenPointMode()
+{
+    resolveCompile();
+    return mState.mTessGenPointMode;
 }
 
 const std::string &Shader::getCompilerResourcesString() const

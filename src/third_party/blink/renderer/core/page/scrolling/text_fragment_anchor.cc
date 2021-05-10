@@ -105,11 +105,12 @@ bool TextFragmentAnchor::GenerateNewToken(const DocumentLoader& loader) {
   }
 
   // A new permission to invoke should only be granted if the navigation had a
-  // user gesture attached to it. Browser initiated navigations (e.g. typed
-  // address in the omnibox) don't carry the |had_transient_activation_| bit so
-  // we have to check that separately but we consider that user initiated as
-  // well.
-  return loader.HadTransientActivation() || loader.IsBrowserInitiated();
+  // transient user activation attached to it. Browser initiated navigations
+  // (e.g. typed address in the omnibox) don't carry the transient user
+  // activation bit so we have to check that separately but we consider that
+  // user initiated as well.
+  return loader.LastNavigationHadTransientUserActivation() ||
+         loader.IsBrowserInitiated();
 }
 
 // static
@@ -192,8 +193,11 @@ TextFragmentAnchor::TextFragmentAnchor(
       frame.GetDocument()->GetFragmentDirective().length());
 
   text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
-  for (TextFragmentSelector selector : text_fragment_selectors)
-    text_fragment_finders_.emplace_back(*this, selector);
+  for (TextFragmentSelector selector : text_fragment_selectors) {
+    text_fragment_finders_.push_back(MakeGarbageCollected<TextFragmentFinder>(
+        *this, selector, frame_->GetDocument(),
+        TextFragmentFinder::FindBufferRunnerType::kSynchronous));
+  }
 }
 
 bool TextFragmentAnchor::Invoke() {
@@ -259,7 +263,7 @@ bool TextFragmentAnchor::Invoke() {
 
     metrics_->ResetMatchCount();
     for (auto& finder : text_fragment_finders_)
-      finder.FindMatch(*frame_->GetDocument());
+      finder->FindMatch();
   }
 
   if (beforematch_state_ != kEventQueued)
@@ -308,6 +312,7 @@ void TextFragmentAnchor::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);
+  visitor->Trace(text_fragment_finders_);
   FragmentAnchor::Trace(visitor);
 }
 
@@ -378,7 +383,6 @@ void TextFragmentAnchor::DidFindMatch(
   did_find_match_ = true;
 
   if (first_match_needs_scroll_) {
-    metrics_->SetSearchEngineSource(HasSearchEngineSource());
     first_match_needs_scroll_ = false;
 
     PhysicalRect bounding_box(ComputeTextRect(range));
@@ -435,6 +439,7 @@ void TextFragmentAnchor::DidFinishSearch() {
   DCHECK(!search_finished_);
   search_finished_ = true;
 
+  metrics_->SetSearchEngineSource(HasSearchEngineSource());
   metrics_->ReportMetrics();
 
   if (!did_find_match_) {

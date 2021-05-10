@@ -38,6 +38,10 @@ class ASH_EXPORT OverviewHighlightController {
     virtual void MaybeActivateHighlightedView() = 0;
     virtual void MaybeCloseHighlightedView() = 0;
 
+    // Attempts to swap the view with its neighbor views. (Mainly used for
+    // |DeskMiniView|).
+    virtual void MaybeSwapHighlightedView(bool right) = 0;
+
     void SetHighlightVisibility(bool visible);
 
     // Returns true if this is the current highlighted view.
@@ -76,6 +80,13 @@ class ASH_EXPORT OverviewHighlightController {
   // Moves the focus ring to the next traversable view.
   void MoveHighlight(bool reverse);
 
+  // Moves the focus ring directly to |target_view|. |target_view| must be a
+  // traversable view, i.e. one of the views returned by GetTraversableViews().
+  // This should be used when a view requests focus directly so the overview
+  // highlight can be in-sync with focus. Due to this expected use, this does
+  // not trigger an accessibility event.
+  void MoveHighlightToView(OverviewHighlightableView* target_view);
+
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.
   // Note: When removing multiple highlightable views in one call, by calling
@@ -93,6 +104,9 @@ class ASH_EXPORT OverviewHighlightController {
   bool MaybeActivateHighlightedView();
   bool MaybeCloseHighlightedView();
 
+  // Swap the currently highlighted view with its neighbor views.
+  bool MaybeSwapHighlightedView(bool right);
+
   // Tries to get the item that is currently highlighted. Returns null if there
   // is no highlight, or if the highlight is on a desk view.
   OverviewItem* GetHighlightedItem() const;
@@ -107,8 +121,12 @@ class ASH_EXPORT OverviewHighlightController {
   // Includes desk mini views, the new desk button and overview items.
   std::vector<OverviewHighlightableView*> GetTraversableViews() const;
 
+  // Sets |highlighted_view_| to |view_to_be_highlighted| and updates the
+  // highlight visibility for the previous |highlighted_view_|.
+  // |suppress_accessibility_event| should be true if |view_to_be_highlighted|
+  // will also request focus to avoid double emitting event.
   void UpdateHighlight(OverviewHighlightableView* view_to_be_highlighted,
-                       bool reverse);
+                       bool suppress_accessibility_event = false);
 
   // The overview session which owns this object. Guaranteed to be non-null for
   // the lifetime of |this|.

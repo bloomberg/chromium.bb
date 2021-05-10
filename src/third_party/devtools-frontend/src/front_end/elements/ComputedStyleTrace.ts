@@ -26,7 +26,7 @@ export class ComputedStyleTrace extends HTMLElement {
     this.render();
   }
 
-  private render() {
+  private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -49,6 +49,7 @@ export class ComputedStyleTrace extends HTMLElement {
         .goto {
           /* TODO: reuse with ComputedStyleProperty */
           --size: 16px;
+
           display: none;
           position: absolute;
           width: var(--size);
@@ -72,7 +73,8 @@ export class ComputedStyleTrace extends HTMLElement {
         }
 
         .trace-selector {
-          color: gray;
+          color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
           padding-left: 2em;
         }
 
@@ -83,7 +85,6 @@ export class ComputedStyleTrace extends HTMLElement {
           position: relative;
           z-index: 1;
         }
-
         /* high-contrast styles */
         @media (forced-colors: active) {
           :host-context(.monospace.computed-properties) .computed-style-trace:hover {
@@ -117,6 +118,7 @@ export class ComputedStyleTrace extends HTMLElement {
 customElements.define('devtools-computed-style-trace', ComputedStyleTrace);
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-computed-style-trace': ComputedStyleTrace;
   }

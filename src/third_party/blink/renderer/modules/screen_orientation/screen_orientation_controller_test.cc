@@ -11,7 +11,8 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
@@ -202,16 +203,17 @@ TEST_F(ScreenOrientationControllerTest, RaceScenario) {
   EXPECT_FALSE(callback_results2.failed_);
 }
 
-class ScreenInfoWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
+class ScreenInfoWebFrameWidget : public frame_test_helpers::TestWebFrameWidget {
  public:
-  ScreenInfoWebWidgetClient() = default;
-  ~ScreenInfoWebWidgetClient() override = default;
+  template <typename... Args>
+  explicit ScreenInfoWebFrameWidget(Args&&... args)
+      : frame_test_helpers::TestWebFrameWidget(std::forward<Args>(args)...) {
+    screen_info_.orientation_angle = 1234;
+  }
+  ~ScreenInfoWebFrameWidget() override = default;
 
-  // frame_test_helpers::TestWebWidgetClient:
+  // frame_test_helpers::TestWebFrameWidget overrides.
   ScreenInfo GetInitialScreenInfo() override { return screen_info_; }
-
-  void SetAngle(uint16_t angle) { screen_info_.orientation_angle = angle; }
 
  private:
   ScreenInfo screen_info_;
@@ -227,11 +229,12 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
       WebString::FromUTF8(base_url), test::CoreTestDataPath(),
       WebString::FromUTF8("visible_iframe.html"));
 
-  frame_test_helpers::WebViewHelper web_view_helper;
-  ScreenInfoWebWidgetClient client;
-  client.SetAngle(1234);
-  web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr,
-                                    &client);
+  frame_test_helpers::CreateTestWebFrameWidgetCallback create_widget_callback =
+      base::BindRepeating(
+          &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
+              ScreenInfoWebFrameWidget>);
+  frame_test_helpers::WebViewHelper web_view_helper(create_widget_callback);
+  web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr);
 
   Page* page = web_view_helper.GetWebView()->GetPage();
   LocalFrame* frame = To<LocalFrame>(page->MainFrame());
@@ -270,10 +273,7 @@ TEST_F(ScreenOrientationControllerTest,
       WebString::FromUTF8("visible_iframe.html"));
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  ScreenInfoWebWidgetClient client;
-  client.SetAngle(1234);
-  web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr,
-                                    &client);
+  web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr);
 
   Page* page = web_view_helper.GetWebView()->GetPage();
   LocalFrame* frame = To<LocalFrame>(page->MainFrame());
@@ -289,7 +289,7 @@ TEST_F(ScreenOrientationControllerTest,
   blink::ScreenInfo screen_info;
   screen_info.orientation_angle = 90;
   auto* web_frame_widget_base =
-      static_cast<WebFrameWidgetBase*>(frame->GetWidgetForLocalRoot());
+      static_cast<WebFrameWidgetImpl*>(frame->GetWidgetForLocalRoot());
   web_frame_widget_base->UpdateScreenInfo(screen_info);
   EXPECT_EQ(grandchild_orientation->angle(), 90);
 

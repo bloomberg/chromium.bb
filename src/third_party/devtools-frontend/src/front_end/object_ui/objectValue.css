@@ -4,28 +4,14 @@
  * found in the LICENSE file.
  */
 
-.object-value-scientific-notation-exponent {
-  flex-shrink: 0;
-}
-
-.object-value-scientific-notation-mantissa {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 1;
-  min-width: 1ex;
-}
-
-.object-value-scientific-notation-number {
-  display: flex !important;
-}
-
 .value.object-value-node:hover {
   background-color: var(--item-hover-color);
 }
 
 .object-value-function-prefix,
 .object-value-boolean {
-  color: rgb(13 34 170);
+  color: rgb(13 34 170); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .object-value-function {
@@ -33,16 +19,19 @@
 }
 
 .object-value-function.linkified:hover {
-  background-color: rgb(0 0 0 / 10%);
+  background-color: rgb(0 0 0 / 10%); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   cursor: pointer;
 }
 
 .object-value-number {
-  color: rgb(28 0 207);
+  color: rgb(28 0 207); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .object-value-bigint {
-  color: rgb(0 93 0);
+  color: rgb(0 93 0); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .object-value-string,
@@ -50,7 +39,8 @@
 .object-value-symbol {
   white-space: pre;
   unicode-bidi: -webkit-isolate;
-  color: rgb(196 26 22);
+  color: rgb(196 26 22); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .-theme-with-dark-background .object-value-string,
@@ -62,20 +52,32 @@
   color: rgb(242 139 84);
 }
 
-.object-value-string-quote {
-  color: #222;
-}
-
 .object-value-node {
   position: relative;
   vertical-align: baseline;
-  color: rgb(48 57 66);
+  color: rgb(48 57 66); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   display: inline-block;
+}
+
+.object-value-arraybuffer,
+.object-value-dataview,
+.object-value-typedarray,
+.object-value-webassemblymemory {
+  display: inline-flex;
+}
+
+.object-value-arraybuffer devtools-icon,
+.object-value-dataview devtools-icon,
+.object-value-typedarray devtools-icon,
+.object-value-webassemblymemory devtools-icon {
+  cursor: pointer;
 }
 
 .object-value-null,
 .object-value-undefined {
-  color: rgb(94 94 94);
+  color: rgb(94 94 94); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .-theme-with-dark-background .object-value-null,
@@ -102,7 +104,8 @@
 }
 
 .object-properties-section .object-description {
-  color: gray;
+  color: #808080; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 .value .object-properties-preview {
@@ -110,12 +113,14 @@
 }
 
 .name {
-  color: rgb(136 19 145);
+  color: rgb(136 19 145); /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
   flex-shrink: 0;
 }
 
 .object-properties-preview .name {
-  color: #565656;
+  color: #565656; /* stylelint-disable-line plugin/use_theme_colors */
+  /* See: crbug.com/1152736 for color variable migration. */
 }
 
 @media (forced-colors: active) {

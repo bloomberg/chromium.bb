@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -68,7 +69,7 @@ base::string16 SigninGlobalError::MenuItemLabel() {
 }
 
 void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (error_controller_->auth_error().state() !=
       GoogleServiceAuthError::NONE) {
     DVLOG(1) << "Signing out the user to fix a sync error.";
@@ -109,8 +110,10 @@ std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
   // If the user isn't signed in, no need to display an error bubble.
   auto* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
-  if (identity_manager && !identity_manager->HasPrimaryAccount())
+  if (identity_manager &&
+      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     return messages;
+  }
 
   if (!error_controller_->HasError())
     return messages;

@@ -14,6 +14,7 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/previews_resource_loading_hints.mojom.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -26,7 +27,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
 ResourceLoadingHintsWebContentsObserver::
@@ -55,8 +55,6 @@ void ResourceLoadingHintsWebContentsObserver::ReadyToCommitNavigation(
       navigation_handle->IsSameDocument()) {
     return;
   }
-
-  SendResourceLoadingHints(navigation_handle);
 }
 
 void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
@@ -72,82 +70,10 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
   ReportRedirects(navigation_handle);
 }
 
-void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  if (!ui_tab_helper)
-    return;
-
-  previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
-
-  if (!previews_user_data ||
-      previews_user_data->CommittedPreviewsType() !=
-          previews::PreviewsType::RESOURCE_LOADING_HINTS) {
-    return;
-  }
-
-  DCHECK(previews::params::IsResourceLoadingHintsEnabled());
-  DCHECK(navigation_handle->GetURL().SchemeIsHTTPOrHTTPS());
-
-  bool is_redirect = previews_user_data->is_redirect();
-
-  mojo::Remote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
-      hints_receiver;
-
-  blink::mojom::PreviewsResourceLoadingHintsPtr hints_ptr =
-      blink::mojom::PreviewsResourceLoadingHints::New();
-
-  const std::vector<std::string>& hints =
-      GetResourceLoadingHintsResourcePatternsToBlock(
-          navigation_handle->GetURL());
-
-  if (is_redirect) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect",
-        !hints.empty());
-  }
-
-  if (hints.empty())
-    return;
-
-  hints_ptr->ukm_source_id = ukm::ConvertToSourceId(
-      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  for (const std::string& hint : hints)
-    hints_ptr->subresources_to_block.push_back(hint);
-
-  auto hints_receiver_associated =
-      GetResourceLoadingHintsReceiver(navigation_handle);
-  hints_receiver_associated->SetResourceLoadingHints(std::move(hints_ptr));
-}
-
-const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::
-    GetResourceLoadingHintsResourcePatternsToBlock(
-        const GURL& document_gurl) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(profile_);
-
-  PreviewsService* previews_service =
-      PreviewsServiceFactory::GetForProfile(profile_);
-  previews::PreviewsOptimizationGuide* previews_optimization_guide =
-      previews_service->previews_ui_service()
-          ->previews_decider_impl()
-          ->previews_opt_guide();
-  std::vector<std::string> resource_patterns_to_block;
-  if (previews_optimization_guide) {
-    previews_optimization_guide->GetResourceLoadingHints(
-        document_gurl, &resource_patterns_to_block);
-  }
-  return resource_patterns_to_block;
-}
-
-mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+mojo::AssociatedRemote<previews::mojom::PreviewsResourceLoadingHintsReceiver>
 ResourceLoadingHintsWebContentsObserver::GetResourceLoadingHintsReceiver(
     content::NavigationHandle* navigation_handle) {
-  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+  mojo::AssociatedRemote<previews::mojom::PreviewsResourceLoadingHintsReceiver>
       loading_hints_agent;
 
   if (navigation_handle->GetRenderFrameHost()

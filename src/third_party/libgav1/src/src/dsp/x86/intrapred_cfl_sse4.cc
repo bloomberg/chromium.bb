@@ -15,7 +15,7 @@
 #include "src/dsp/intrapred.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 
 #include <smmintrin.h>
 
@@ -29,6 +29,7 @@
 #include "src/dsp/x86/common_sse4.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
+#include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -40,8 +41,8 @@ namespace {
 
 inline __m128i CflPredictUnclipped(const __m128i* input, __m128i alpha_q12,
                                    __m128i alpha_sign, __m128i dc_q0) {
-  __m128i ac_q3 = LoadUnaligned16(input);
-  __m128i ac_sign = _mm_sign_epi16(alpha_sign, ac_q3);
+  const __m128i ac_q3 = LoadUnaligned16(input);
+  const __m128i ac_sign = _mm_sign_epi16(alpha_sign, ac_q3);
   __m128i scaled_luma_q0 = _mm_mulhrs_epi16(_mm_abs_epi16(ac_q3), alpha_q12);
   scaled_luma_q0 = _mm_sign_epi16(scaled_luma_q0, ac_sign);
   return _mm_add_epi16(scaled_luma_q0, dc_q0);
@@ -88,8 +89,7 @@ void CflIntraPredictor_SSE4_1(
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_4xH_SSE4_1(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* const source, ptrdiff_t stride) {
   static_assert(block_height_log2 <= 4, "");
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
@@ -119,12 +119,15 @@ void CflSubsampler444_4xH_SSE4_1(
   } while (y < visible_height);
 
   if (!is_inside) {
-    int y = visible_height;
+    // Replicate the 2 high lanes.
+    samples = _mm_shuffle_epi32(samples, 0xee);
     do {
+      StoreLo8(luma_ptr, samples);
+      luma_ptr += kCflLumaBufferStride;
       StoreHi8(luma_ptr, samples);
       luma_ptr += kCflLumaBufferStride;
       sum = _mm_add_epi16(sum, samples);
-      ++y;
+      y += 2;
     } while (y < block_height);
   }
 
@@ -152,15 +155,15 @@ void CflSubsampler444_4xH_SSE4_1(
   static_assert(block_height_log2 <= 4, "");
   assert(max_luma_width >= 4);
   assert(max_luma_height >= 4);
-  const int block_height = 1 << block_height_log2;
-  const int block_width = 4;
+  static_cast<void>(max_luma_width);
+  constexpr int block_height = 1 << block_height_log2;
 
-  if (block_height <= max_luma_height && block_width <= max_luma_width) {
-    CflSubsampler444_4xH_SSE4_1<block_height_log2, true>(
-        luma, max_luma_width, max_luma_height, source, stride);
+  if (block_height <= max_luma_height) {
+    CflSubsampler444_4xH_SSE4_1<block_height_log2, true>(luma, max_luma_height,
+                                                         source, stride);
   } else {
-    CflSubsampler444_4xH_SSE4_1<block_height_log2, false>(
-        luma, max_luma_width, max_luma_height, source, stride);
+    CflSubsampler444_4xH_SSE4_1<block_height_log2, false>(luma, max_luma_height,
+                                                          source, stride);
   }
 }
 
@@ -655,10 +658,11 @@ inline void CflSubsampler420Impl_WxH_SSE4_1(
   __m128i final_sum = zero;
   const int block_height = 1 << block_height_log2;
   const int luma_height = std::min(block_height, max_luma_height >> 1);
+  static_assert(max_luma_width <= 32, "");
 
   int16_t* luma_ptr = luma[0];
   __m128i final_row_result;
-  // Begin first y section, covering width up to 16.
+  // Begin first y section, covering width up to 32.
   int y = 0;
   do {
     const uint8_t* src_next = src + stride;
@@ -694,22 +698,16 @@ inline void CflSubsampler420Impl_WxH_SSE4_1(
     final_row_result =
         StoreLumaResults8_420(luma_sum2, luma_sum3, luma_ptr + 8);
     sum = _mm_add_epi16(sum, final_row_result);
+    if (block_width_log2 == 5) {
+      const __m128i wide_fill = LastRowResult(final_row_result);
+      sum = _mm_add_epi16(sum, wide_fill);
+      sum = _mm_add_epi16(sum, wide_fill);
+    }
     final_sum = _mm_add_epi32(final_sum, _mm_cvtepu16_epi32(sum));
     final_sum = _mm_add_epi32(final_sum, _mm_unpackhi_epi16(sum, zero));
     src += stride << 1;
     luma_ptr += kCflLumaBufferStride;
   } while (++y < luma_height);
-
-  // Because max_luma_width is at most 32, any values beyond x=16 will
-  // necessarily be duplicated.
-  if (block_width_log2 == 5) {
-    const __m128i wide_fill = LastRowResult(final_row_result);
-    // Multiply duplicated value by number of occurrences, height * 4, since
-    // there are 16 in each row and the value appears in the vector 4 times.
-    final_sum = _mm_add_epi32(
-        final_sum,
-        _mm_slli_epi32(_mm_cvtepi16_epi32(wide_fill), block_height_log2 + 2));
-  }
 
   // Begin second y section.
   if (y < block_height) {
@@ -717,6 +715,15 @@ inline void CflSubsampler420Impl_WxH_SSE4_1(
         LoadUnaligned16(luma_ptr - kCflLumaBufferStride);
     const __m128i final_fill1 =
         LoadUnaligned16(luma_ptr - kCflLumaBufferStride + 8);
+    __m128i wide_fill;
+
+    if (block_width_log2 == 5) {
+      // There are 16 16-bit fill values per row, shifting by 2 accounts for
+      // the widening to 32-bit.
+      wide_fill =
+          _mm_slli_epi32(_mm_cvtepi16_epi32(LastRowResult(final_fill1)), 2);
+    }
+
     const __m128i final_inner_sum = _mm_add_epi16(final_fill0, final_fill1);
     const __m128i final_inner_sum0 = _mm_cvtepu16_epi32(final_inner_sum);
     const __m128i final_inner_sum1 = _mm_unpackhi_epi16(final_inner_sum, zero);
@@ -726,6 +733,9 @@ inline void CflSubsampler420Impl_WxH_SSE4_1(
     do {
       StoreUnaligned16(luma_ptr, final_fill0);
       StoreUnaligned16(luma_ptr + 8, final_fill1);
+      if (block_width_log2 == 5) {
+        final_sum = _mm_add_epi32(final_sum, wide_fill);
+      }
       luma_ptr += kCflLumaBufferStride;
 
       final_sum = _mm_add_epi32(final_sum, final_fill_to_sum);
@@ -747,14 +757,10 @@ inline void CflSubsampler420Impl_WxH_SSE4_1(
     const __m128i samples1 = LoadUnaligned16(luma_ptr + 8);
     final_row_result = _mm_sub_epi16(samples1, averages);
     StoreUnaligned16(luma_ptr + 8, final_row_result);
-  }
-  if (block_width_log2 == 5) {
-    int16_t* wide_luma_ptr = luma[0] + 16;
-    const __m128i wide_fill = LastRowResult(final_row_result);
-    for (int i = 0; i < block_height;
-         ++i, wide_luma_ptr += kCflLumaBufferStride) {
-      StoreUnaligned16(wide_luma_ptr, wide_fill);
-      StoreUnaligned16(wide_luma_ptr + 8, wide_fill);
+    if (block_width_log2 == 5) {
+      const __m128i wide_fill = LastRowResult(final_row_result);
+      StoreUnaligned16(luma_ptr + 16, wide_fill);
+      StoreUnaligned16(luma_ptr + 24, wide_fill);
     }
   }
 }
@@ -958,12 +964,152 @@ void Init8bpp() {
 }  // namespace
 }  // namespace low_bitdepth
 
-void IntraPredCflInit_SSE4_1() { low_bitdepth::Init8bpp(); }
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
+
+//------------------------------------------------------------------------------
+// CflIntraPredictor_10bpp_SSE4_1
+
+inline __m128i CflPredictUnclipped(const __m128i* input, __m128i alpha_q12,
+                                   __m128i alpha_sign, __m128i dc_q0) {
+  const __m128i ac_q3 = LoadUnaligned16(input);
+  const __m128i ac_sign = _mm_sign_epi16(alpha_sign, ac_q3);
+  __m128i scaled_luma_q0 = _mm_mulhrs_epi16(_mm_abs_epi16(ac_q3), alpha_q12);
+  scaled_luma_q0 = _mm_sign_epi16(scaled_luma_q0, ac_sign);
+  return _mm_add_epi16(scaled_luma_q0, dc_q0);
+}
+
+inline __m128i ClipEpi16(__m128i x, __m128i min, __m128i max) {
+  return _mm_max_epi16(_mm_min_epi16(x, max), min);
+}
+
+template <int width, int height>
+void CflIntraPredictor_10bpp_SSE4_1(
+    void* const dest, ptrdiff_t stride,
+    const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
+    const int alpha) {
+  constexpr int kCflLumaBufferStrideLog2_16i = 5;
+  constexpr int kCflLumaBufferStrideLog2_128i =
+      kCflLumaBufferStrideLog2_16i - 3;
+  constexpr int kRowIncr = 1 << kCflLumaBufferStrideLog2_128i;
+  auto* dst = static_cast<uint16_t*>(dest);
+  const __m128i alpha_sign = _mm_set1_epi16(alpha);
+  const __m128i alpha_q12 = _mm_slli_epi16(_mm_abs_epi16(alpha_sign), 9);
+  auto* row = reinterpret_cast<const __m128i*>(luma);
+  const __m128i* row_end = row + (height << kCflLumaBufferStrideLog2_128i);
+  const __m128i dc_val = _mm_set1_epi16(dst[0]);
+  const __m128i min = _mm_setzero_si128();
+  const __m128i max = _mm_set1_epi16((1 << kBitdepth10) - 1);
+
+  stride >>= 1;
+
+  do {
+    __m128i res = CflPredictUnclipped(row, alpha_q12, alpha_sign, dc_val);
+    res = ClipEpi16(res, min, max);
+    if (width == 4) {
+      StoreLo8(dst, res);
+    } else if (width == 8) {
+      StoreUnaligned16(dst, res);
+    } else if (width == 16) {
+      StoreUnaligned16(dst, res);
+      const __m128i res_1 =
+          CflPredictUnclipped(row + 1, alpha_q12, alpha_sign, dc_val);
+      StoreUnaligned16(dst + 8, ClipEpi16(res_1, min, max));
+    } else {
+      StoreUnaligned16(dst, res);
+      const __m128i res_1 =
+          CflPredictUnclipped(row + 1, alpha_q12, alpha_sign, dc_val);
+      StoreUnaligned16(dst + 8, ClipEpi16(res_1, min, max));
+      const __m128i res_2 =
+          CflPredictUnclipped(row + 2, alpha_q12, alpha_sign, dc_val);
+      StoreUnaligned16(dst + 16, ClipEpi16(res_2, min, max));
+      const __m128i res_3 =
+          CflPredictUnclipped(row + 3, alpha_q12, alpha_sign, dc_val);
+      StoreUnaligned16(dst + 24, ClipEpi16(res_3, min, max));
+    }
+
+    dst += stride;
+  } while ((row += kRowIncr) < row_end);
+}
+
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize4x4_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize4x4] =
+      CflIntraPredictor_10bpp_SSE4_1<4, 4>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize4x8_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize4x8] =
+      CflIntraPredictor_10bpp_SSE4_1<4, 8>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize4x16_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize4x16] =
+      CflIntraPredictor_10bpp_SSE4_1<4, 16>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize8x4_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize8x4] =
+      CflIntraPredictor_10bpp_SSE4_1<8, 4>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize8x8_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize8x8] =
+      CflIntraPredictor_10bpp_SSE4_1<8, 8>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize8x16_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize8x16] =
+      CflIntraPredictor_10bpp_SSE4_1<8, 16>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize8x32_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize8x32] =
+      CflIntraPredictor_10bpp_SSE4_1<8, 32>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize16x4_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize16x4] =
+      CflIntraPredictor_10bpp_SSE4_1<16, 4>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize16x8_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize16x8] =
+      CflIntraPredictor_10bpp_SSE4_1<16, 8>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize16x16_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize16x16] =
+      CflIntraPredictor_10bpp_SSE4_1<16, 16>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize16x32_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize16x32] =
+      CflIntraPredictor_10bpp_SSE4_1<16, 32>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize32x8_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize32x8] =
+      CflIntraPredictor_10bpp_SSE4_1<32, 8>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize32x16_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize32x16] =
+      CflIntraPredictor_10bpp_SSE4_1<32, 16>;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(TransformSize32x32_CflIntraPredictor)
+  dsp->cfl_intra_predictors[kTransformSize32x32] =
+      CflIntraPredictor_10bpp_SSE4_1<32, 32>;
+#endif
+}
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+void IntraPredCflInit_SSE4_1() {
+  low_bitdepth::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+}
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_SSE4_1
+#else  // !LIBGAV1_TARGETING_SSE4_1
 
 namespace libgav1 {
 namespace dsp {
@@ -973,4 +1119,4 @@ void IntraPredCflInit_SSE4_1() {}
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1

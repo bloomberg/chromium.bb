@@ -577,42 +577,6 @@ gfx::RectF MathUtil::ScaleRectProportional(const gfx::RectF& input_outer_rect,
   return output_inner_rect;
 }
 
-static inline bool NearlyZero(double value) {
-  return std::abs(value) < std::numeric_limits<double>::epsilon();
-}
-
-static inline float ScaleOnAxis(double a, double b, double c) {
-  if (NearlyZero(b) && NearlyZero(c))
-    return std::abs(a);
-  if (NearlyZero(a) && NearlyZero(c))
-    return std::abs(b);
-  if (NearlyZero(a) && NearlyZero(b))
-    return std::abs(c);
-
-  // Do the sqrt as a double to not lose precision.
-  return static_cast<float>(std::sqrt(a * a + b * b + c * c));
-}
-
-gfx::Vector2dF MathUtil::ComputeTransform2dScaleComponents(
-    const gfx::Transform& transform,
-    float fallback_value) {
-  if (transform.HasPerspective())
-    return gfx::Vector2dF(fallback_value, fallback_value);
-  float x_scale = ScaleOnAxis(transform.matrix().getDouble(0, 0),
-                              transform.matrix().getDouble(1, 0),
-                              transform.matrix().getDouble(2, 0));
-  float y_scale = ScaleOnAxis(transform.matrix().getDouble(0, 1),
-                              transform.matrix().getDouble(1, 1),
-                              transform.matrix().getDouble(2, 1));
-  return gfx::Vector2dF(x_scale, y_scale);
-}
-
-float MathUtil::ComputeApproximateMaxScale(const gfx::Transform& transform) {
-  gfx::RectF unit(0.f, 0.f, 1.f, 1.f);
-  transform.TransformRect(&unit);
-  return std::max(unit.width(), unit.height());
-}
-
 float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
                                             const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
@@ -866,6 +830,41 @@ bool MathUtil::IsNearlyTheSameForTesting(const gfx::PointF& left,
 bool MathUtil::IsNearlyTheSameForTesting(const gfx::Point3F& left,
                                          const gfx::Point3F& right) {
   return IsNearlyTheSame(left, right);
+}
+
+// Equivalent to SkMatrix::HasPerspective
+bool MathUtil::SkM44HasPerspective(const SkM44& m) {
+  return (m.rc(3, 0) != 0 || m.rc(3, 1) != 0 || m.rc(3, 2) != 0 ||
+          m.rc(3, 3) != 1);
+}
+
+// Since some operations assume a 2d transformation, check to make sure that
+// is the case by seeing that the z-axis is identity
+bool MathUtil::SkM44Is2D(const SkM44& m) {
+  return (m.rc(0, 2) == 0 && m.rc(1, 2) == 0 && m.rc(2, 2) == 1 &&
+          m.rc(2, 0) == 0 && m.rc(2, 1) == 0 && m.rc(2, 3) == 0 &&
+          m.rc(3, 2) == 0);
+}
+
+// Equivalent to SkMatrix::PreservesAxisAlignment
+// Checks if the transformation is a 90 degree rotation or scaling
+// See SkMatrix::computeTypeMask
+bool MathUtil::SkM44Preserves2DAxisAlignment(const SkM44& m) {
+  // Conservatively assume that perspective transforms would not preserve
+  // axis-alignment
+  if (!SkM44Is2D(m) || SkM44HasPerspective(m))
+    return false;
+
+  // Does the matrix have skew components
+  if (m.rc(0, 1) != 0 || m.rc(1, 0) != 0) {
+    // Rects only map to rects if both skews are non-zero and both scale
+    // components are zero (i.e. it's a +/-90-degree rotation)
+    return (m.rc(0, 0) == 0 && m.rc(1, 1) == 0 && m.rc(0, 1) != 0 &&
+            m.rc(1, 0) != 0);
+  }
+  // Since the matrix has no skewing, it maps to a rectangle so long as the
+  // scale components are non-zero
+  return (m.rc(0, 0) != 0 && m.rc(1, 1) != 0);
 }
 
 }  // namespace cc

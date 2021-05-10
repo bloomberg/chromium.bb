@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
@@ -140,6 +141,58 @@ TEST_F(CompositeEditCommandTest,
       "<style>div{-webkit-user-modify:read-only;user-select:none;}</style>"
       "foo",
       body->innerHTML());
+}
+
+TEST_F(CompositeEditCommandTest,
+       MoveParagraphContentsToNewBlockWithUAShadowDOM1) {
+  SetBodyContent("<object contenteditable><input></object>");
+  base::RunLoop().RunUntilIdle();
+
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
+  Element* input = GetDocument().QuerySelector("input");
+  Position pos = Position::BeforeNode(*input);
+  EditingState editing_state;
+
+  // Should not crash
+  sample.MoveParagraphContentsToNewBlockIfNecessary(pos, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
+  EXPECT_EQ("<object contenteditable=\"\"><div><input></div></object>",
+            GetDocument().body()->innerHTML());
+}
+
+TEST_F(CompositeEditCommandTest,
+       MoveParagraphContentsToNewBlockWithUAShadowDOM2) {
+  GetDocument().setDesignMode("on");
+  SetBodyContent("<span></span><button><meter></meter></button>");
+
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
+  Element* button = GetDocument().QuerySelector("button");
+  Position pos = Position(button, 0);
+  EditingState editing_state;
+
+  // Should not crash
+  sample.MoveParagraphContentsToNewBlockIfNecessary(pos, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
+  EXPECT_EQ("<div></div><span></span><button><meter></meter></button>",
+            GetDocument().body()->innerHTML());
+}
+
+TEST_F(CompositeEditCommandTest,
+       MoveParagraphContentsToNewBlockWithButtonAndBr) {
+  GetDocument().setDesignMode("on");
+  InsertStyleElement("br { content: 'x'; }");
+  SetBodyContent("<button><br></button>");
+
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
+  Element* button = GetDocument().QuerySelector("button");
+  Position pos = Position(button, 0);
+  EditingState editing_state;
+
+  // Should not crash
+  sample.MoveParagraphContentsToNewBlockIfNecessary(pos, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
+  EXPECT_EQ("<button><div><br></div><br></button>",
+            GetDocument().body()->innerHTML());
 }
 
 TEST_F(CompositeEditCommandTest, InsertNodeOnDisconnectedParent) {

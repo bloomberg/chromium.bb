@@ -431,6 +431,15 @@ base::Optional<KURL> ImportMap::ResolveImportsMatch(
     return ResolveImportsMatchInternal(key, exact, debug_message);
   }
 
+  // <spec step="1.2">... either asURL is null, or asURL is special</spec>
+  if (parsed_specifier.GetType() == ParsedSpecifier::Type::kURL &&
+      !SchemeRegistry::IsSpecialScheme(parsed_specifier.GetUrl().Protocol())) {
+    *debug_message = "Import Map: \"" + key +
+                     "\" skips prefix match because of non-special URL scheme";
+
+    return base::nullopt;
+  }
+
   // Step 1.2.
   if (auto prefix_match = MatchPrefix(parsed_specifier, specifier_map)) {
     return ResolveImportsMatchInternal(key, *prefix_match, debug_message);
@@ -483,7 +492,17 @@ KURL ImportMap::ResolveImportsMatchInternal(const String& key,
     return NullURL();
   }
 
-  // <spec step="1.2.8">Return url.</spec>
+  // <spec step="1.2.8">If the serialization of url does not start with the
+  // serialization of resolutionResult, then throw a TypeError indicating that
+  // resolution of normalizedSpecifier was blocked due to it backtracking above
+  // its prefix specifierKey.</spec>
+  if (!url.GetString().StartsWith(matched->value.GetString())) {
+    *debug_message = "Import Map: \"" + key + "\" matches with \"" +
+                     matched->key + "\" but is blocked due to backtracking";
+    return NullURL();
+  }
+
+  // <spec step="1.2.9">Return url.</spec>
   *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                    matched->key + "\" and is mapped to " + url.ElidedString();
   return url;

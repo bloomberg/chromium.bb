@@ -12,6 +12,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
@@ -34,6 +35,7 @@
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -41,9 +43,9 @@
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
+#include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model/model_type_store_service.h"
-#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
-#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
+#include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -52,8 +54,8 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_model_type_controller.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #endif
 
 using syncer::DataTypeController;
@@ -338,7 +340,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
             dump_stack));
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // When SplitSettingsSync is enabled the controller is created in
   // ChromeSyncClient.
   if (!disabled_types.Has(syncer::PRINTERS) &&
@@ -346,7 +348,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     controllers.push_back(
         CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Reading list sync is enabled by default only on iOS. Register unless
   // Reading List or Reading List Sync is explicitly disabled.
@@ -370,7 +372,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
             .get();
     controllers.push_back(
         std::make_unique<send_tab_to_self::SendTabToSelfModelTypeController>(
-            sync_service,
             /*delegate_for_full_sync_mode=*/
             std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
                 delegate),
@@ -415,24 +416,40 @@ std::unique_ptr<syncer::SyncEngine>
 ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
-    syncer::SyncInvalidationsService* sync_invalidation_service,
-    const base::WeakPtr<syncer::SyncPrefs>& sync_prefs) {
+    syncer::SyncInvalidationsService* sync_invalidation_service) {
   return std::make_unique<syncer::SyncEngineImpl>(
       name, invalidator, sync_invalidation_service,
       std::make_unique<browser_sync::ActiveDevicesProviderImpl>(
           sync_client_->GetDeviceInfoSyncService()->GetDeviceInfoTracker(),
           base::DefaultClock::GetInstance()),
-      sync_prefs, sync_client_->GetModelTypeStoreService()->GetSyncDataPath(),
-      engines_and_directory_deletion_thread_);
+      std::make_unique<syncer::SyncTransportDataPrefs>(
+          sync_client_->GetPrefService()),
+      sync_client_->GetModelTypeStoreService()->GetSyncDataPath(),
+      engines_and_directory_deletion_thread_,
+      base::BindRepeating(&syncer::SyncClient::OnLocalSyncTransportDataCleared,
+                          base::Unretained(sync_client_)));
 }
 
 void ProfileSyncComponentsFactoryImpl::
-    DeleteLegacyDirectoryFilesAndNigoriStorage() {
-  engines_and_directory_deletion_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &syncer::DeleteLegacyDirectoryFilesAndNigoriStorage,
-          sync_client_->GetModelTypeStoreService()->GetSyncDataPath()));
+    ClearAllTransportDataExceptEncryptionBootstrapToken() {
+  syncer::SyncTransportDataPrefs sync_transport_data_prefs(
+      sync_client_->GetPrefService());
+
+  // Clearing the Directory via DeleteLegacyDirectoryFilesAndNigoriStorage()
+  // means there's IO involved which may be considerable overhead if
+  // triggered consistently upon browser startup (which is the case for
+  // certain codepaths such as the user being signed out). To avoid that, prefs
+  // are used to determine whether it's worth it.
+  if (!sync_transport_data_prefs.GetCacheGuid().empty()) {
+    engines_and_directory_deletion_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &syncer::DeleteLegacyDirectoryFilesAndNigoriStorage,
+            sync_client_->GetModelTypeStoreService()->GetSyncDataPath()));
+  }
+
+  sync_transport_data_prefs.ClearAllExceptEncryptionBootstrapToken();
+  sync_client_->OnLocalSyncTransportDataCleared();
 }
 
 std::unique_ptr<syncer::ModelTypeControllerDelegate>

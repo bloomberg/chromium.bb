@@ -16,12 +16,12 @@ GPU_EXPORT extern const char kGpuBlocklistTestGroup[];
 GPU_EXPORT extern const char kGpuDriverBugListTestGroup[];
 GPU_EXPORT extern const char kGpuPreferences[];
 GPU_EXPORT extern const char kIgnoreGpuBlocklist[];
-GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
 GPU_EXPORT extern const char kShaderDiskCacheSizeKB[];
 GPU_EXPORT extern const char kDisableGpuProcessForDX12InfoCollection[];
 GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
 GPU_EXPORT extern const char kEnableDawnBackendValidation[];
-GPU_EXPORT extern const char kDisableDawnRobustness[];
+GPU_EXPORT extern const char kEnableDawnFeatures[];
+GPU_EXPORT extern const char kDisableDawnFeatures[];
 GPU_EXPORT extern const char kUseHighGPUThreadPriorityForPerfTests[];
 GPU_EXPORT extern const char kNoDelayForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableGpuBlockedTime[];
@@ -36,6 +36,7 @@ GPU_EXPORT extern const char kEnforceVulkanProtectedMemory[];
 GPU_EXPORT extern const char kDisableVulkanFallbackToGLForTesting[];
 GPU_EXPORT extern const char kVulkanHeapMemoryLimitMb[];
 GPU_EXPORT extern const char kVulkanSyncCpuMemoryLimitMb[];
+GPU_EXPORT extern const char kForceBrowserCrashOnGpuCrash[];
 
 }  // namespace switches
 

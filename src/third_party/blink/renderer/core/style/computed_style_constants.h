@@ -65,6 +65,8 @@ enum PseudoId : uint8_t {
   kPseudoIdSelection,
   kPseudoIdScrollbar,
   kPseudoIdTargetText,
+  kPseudoIdSpellingError,
+  kPseudoIdGrammarError,
   // Internal IDs follow:
   kPseudoIdFirstLineInherited,
   kPseudoIdScrollbarThumb,
@@ -164,13 +166,15 @@ enum GridAutoFlow {
                          int(kInternalAutoFlowDirectionColumn)
 };
 
-static const size_t kContainmentBits = 4;
+static const size_t kContainmentBits = 5;
 enum Containment {
   kContainsNone = 0x0,
   kContainsLayout = 0x1,
   kContainsStyle = 0x2,
   kContainsPaint = 0x4,
-  kContainsSize = 0x8,
+  kContainsBlockSize = 0x8,
+  kContainsInlineSize = 0x10,
+  kContainsSize = kContainsBlockSize | kContainsInlineSize,
   kContainsStrict = kContainsLayout | kContainsPaint | kContainsSize,
   kContainsContent = kContainsLayout | kContainsPaint,
 };
@@ -279,6 +283,96 @@ inline ScrollbarGutter operator|(ScrollbarGutter a, ScrollbarGutter b) {
 inline ScrollbarGutter& operator|=(ScrollbarGutter& a, ScrollbarGutter b) {
   return a = a | b;
 }
+
+// https://drafts.csswg.org/css-counter-styles-3/#predefined-counters
+enum class EListStyleType : unsigned {
+  // https://drafts.csswg.org/css-counter-styles-3/#simple-symbolic
+  kDisc,
+  kCircle,
+  kSquare,
+  kDisclosureOpen,
+  kDisclosureClosed,
+
+  // https://drafts.csswg.org/css-counter-styles-3/#simple-numeric
+  kDecimal,
+  kDecimalLeadingZero,
+  kArabicIndic,
+  kBengali,
+  kCambodian,
+  kKhmer,
+  kDevanagari,
+  kGujarati,
+  kGurmukhi,
+  kKannada,
+  kLao,
+  kMalayalam,
+  kMongolian,
+  kMyanmar,
+  kOriya,
+  kPersian,
+  kUrdu,
+  kTelugu,
+  kTibetan,
+  kThai,
+  kLowerRoman,
+  kUpperRoman,
+
+  // https://drafts.csswg.org/css-counter-styles-3/#simple-alphabetic
+  kLowerGreek,
+  kLowerAlpha,
+  kLowerLatin,
+  kUpperAlpha,
+  kUpperLatin,
+
+  // https://drafts.csswg.org/css-counter-styles-3/#simple-fixed
+  kCjkEarthlyBranch,
+  kCjkHeavenlyStem,
+
+  kEthiopicHalehame,
+  kEthiopicHalehameAm,
+  kEthiopicHalehameTiEr,
+  kEthiopicHalehameTiEt,
+  kHangul,
+  kHangulConsonant,
+  kKoreanHangulFormal,
+  kKoreanHanjaFormal,
+  kKoreanHanjaInformal,
+  kHebrew,
+  kArmenian,
+  kLowerArmenian,
+  kUpperArmenian,
+  kGeorgian,
+  kCjkIdeographic,
+  kSimpChineseFormal,
+  kSimpChineseInformal,
+  kTradChineseFormal,
+  kTradChineseInformal,
+  kHiragana,
+  kKatakana,
+  kHiraganaIroha,
+  kKatakanaIroha,
+  kNone,
+  kString,
+};
+
+enum class EBaselineShiftType : unsigned { kLength, kSub, kSuper };
+
+enum EPaintOrderType {
+  PT_NONE = 0,
+  PT_FILL = 1,
+  PT_STROKE = 2,
+  PT_MARKERS = 3
+};
+
+enum EPaintOrder {
+  kPaintOrderNormal,
+  kPaintOrderFillStrokeMarkers,
+  kPaintOrderFillMarkersStroke,
+  kPaintOrderStrokeFillMarkers,
+  kPaintOrderStrokeMarkersFill,
+  kPaintOrderMarkersFillStroke,
+  kPaintOrderMarkersStrokeFill
+};
 
 }  // namespace blink
 

@@ -20,7 +20,6 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
@@ -54,8 +53,7 @@ void AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(Profile* profile,
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
                           WindowOpenDisposition::NEW_WINDOW,
                           false /* preferred_containner */),
-      apps::mojom::LaunchSource::kFromChromeInternal,
-      display::kInvalidDisplayId);
+      apps::mojom::LaunchSource::kFromChromeInternal);
 }
 
 bool AndroidSmsAppManagerImpl::PwaDelegate::TransferItemAttributes(
@@ -121,7 +119,8 @@ void AndroidSmsAppManagerImpl::SetUpAndroidSmsApp() {
   if (is_new_app_setup_in_progress_)
     return;
 
-  base::Optional<PwaDomain> migrating_from = GetInstalledPwaDomain();
+  base::Optional<PwaDomain> migrating_from =
+      GetInstalledPwaDomainForMigration();
 
   // If the preferred domain is already installed, no migration is happening at
   // all.
@@ -176,6 +175,18 @@ void AndroidSmsAppManagerImpl::ExecuteOnAppRegistryReady(
 }
 
 base::Optional<PwaDomain> AndroidSmsAppManagerImpl::GetInstalledPwaDomain() {
+  PwaDomain preferred_domain = GetPreferredPwaDomain();
+  if (setup_controller_->GetPwa(GetAndroidMessagesURL(
+          true /* use_install_url */, preferred_domain))) {
+    return preferred_domain;
+  }
+
+  // If the preferred PWA app is not installed. Check all migration domains.
+  return GetInstalledPwaDomainForMigration();
+}
+
+base::Optional<PwaDomain>
+AndroidSmsAppManagerImpl::GetInstalledPwaDomainForMigration() {
   for (auto* it = std::begin(kDomains); it != std::end(kDomains); ++it) {
     if (setup_controller_->GetPwa(
             GetAndroidMessagesURL(true /* use_install_url */, *it))) {

@@ -45,7 +45,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
       ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
       is_render_surface_list_member_(false),
-      can_use_cached_backdrop_filtered_result_(false),
+      intersects_damage_under_(true),
       nearest_occlusion_immune_ancestor_(nullptr) {
   damage_tracker_ = DamageTracker::Create();
 }
@@ -157,8 +157,17 @@ bool RenderSurfaceImpl::HasCopyRequest() const {
   return OwningEffectNode()->has_copy_request;
 }
 
+viz::SubtreeCaptureId RenderSurfaceImpl::SubtreeCaptureId() const {
+  return OwningEffectNode()->subtree_capture_id;
+}
+
 bool RenderSurfaceImpl::ShouldCacheRenderSurface() const {
   return OwningEffectNode()->cache_render_surface;
+}
+
+bool RenderSurfaceImpl::CopyOfOutputRequired() const {
+  return HasCopyRequest() || ShouldCacheRenderSurface() ||
+         SubtreeCaptureId().is_valid();
 }
 
 int RenderSurfaceImpl::TransformTreeIndex() const {
@@ -210,7 +219,7 @@ gfx::Rect RenderSurfaceImpl::CalculateExpandedClipForFilters(
 }
 
 gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
-  if (ShouldCacheRenderSurface() || HasCopyRequest() || !is_clipped())
+  if (CopyOfOutputRequired() || !is_clipped())
     return accumulated_content_rect();
 
   if (accumulated_content_rect().IsEmpty())
@@ -377,6 +386,7 @@ RenderSurfaceImpl::CreateRenderPass() {
   pass->backdrop_filters = BackdropFilters();
   pass->backdrop_filter_bounds = BackdropFilterBounds();
   pass->generate_mipmap = TrilinearFiltering();
+  pass->subtree_capture_id = SubtreeCaptureId();
   pass->cache_render_pass = ShouldCacheRenderSurface();
   pass->has_damage_from_contributing_content =
       HasDamageFromeContributingContent();
@@ -413,7 +423,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   }
 
   LayerImpl* mask_layer = BackdropMaskLayer();
-  viz::ResourceId mask_resource_id = 0;
+  viz::ResourceId mask_resource_id = viz::kInvalidResourceId;
   gfx::Size mask_texture_size;
   gfx::RectF mask_uv_rect;
   gfx::Vector2dF surface_contents_scale =
@@ -452,13 +462,12 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
   auto* quad =
       render_pass->CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
-  quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
-               /*needs_blending=*/true, render_pass_id(), mask_resource_id,
-               mask_uv_rect, mask_texture_size, surface_contents_scale,
-               gfx::PointF(), tex_coord_rect,
-               !layer_tree_impl_->settings().enable_edge_anti_aliasing,
-               OwningEffectNode()->backdrop_filter_quality,
-               can_use_cached_backdrop_filtered_result_);
+  quad->SetAll(
+      shared_quad_state, content_rect(), unoccluded_content_rect,
+      /*needs_blending=*/true, render_pass_id(), mask_resource_id, mask_uv_rect,
+      mask_texture_size, surface_contents_scale, gfx::PointF(), tex_coord_rect,
+      !layer_tree_impl_->settings().enable_edge_anti_aliasing,
+      OwningEffectNode()->backdrop_filter_quality, intersects_damage_under_);
 }
 
 }  // namespace cc

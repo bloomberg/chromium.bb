@@ -65,7 +65,7 @@ TEST(CallCFunction) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result =
+    TNode<IntPtrT> const result = m.UncheckedCast<IntPtrT>(
         m.CallCFunction(fun_constant, type_intptr,
                         std::make_pair(type_intptr, m.IntPtrConstant(0)),
                         std::make_pair(type_intptr, m.IntPtrConstant(1)),
@@ -76,7 +76,7 @@ TEST(CallCFunction) {
                         std::make_pair(type_intptr, m.IntPtrConstant(6)),
                         std::make_pair(type_intptr, m.IntPtrConstant(7)),
                         std::make_pair(type_intptr, m.IntPtrConstant(8)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(9)));
+                        std::make_pair(type_intptr, m.IntPtrConstant(9))));
     m.Return(m.SmiTag(result));
   }
 
@@ -99,11 +99,12 @@ TEST(CallCFunctionWithCallerSavedRegisters) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result = m.CallCFunctionWithCallerSavedRegisters(
-        fun_constant, type_intptr, kSaveFPRegs,
-        std::make_pair(type_intptr, m.IntPtrConstant(0)),
-        std::make_pair(type_intptr, m.IntPtrConstant(1)),
-        std::make_pair(type_intptr, m.IntPtrConstant(2)));
+    TNode<IntPtrT> const result =
+        m.UncheckedCast<IntPtrT>(m.CallCFunctionWithCallerSavedRegisters(
+            fun_constant, type_intptr, kSaveFPRegs,
+            std::make_pair(type_intptr, m.IntPtrConstant(0)),
+            std::make_pair(type_intptr, m.IntPtrConstant(1)),
+            std::make_pair(type_intptr, m.IntPtrConstant(2))));
     m.Return(m.SmiTag(result));
   }
 
@@ -881,7 +882,8 @@ void TestNameDictionaryLookup() {
   };
 
   for (size_t i = 0; i < arraysize(keys); i++) {
-    Handle<Object> value = factory->NewPropertyCell(keys[i]);
+    Handle<Object> value =
+        factory->NewPropertyCell(keys[i], fake_details, keys[i]);
     dictionary =
         Dictionary::Add(isolate, dictionary, keys[i], value, fake_details);
   }
@@ -1294,7 +1296,7 @@ TEST(TryHasOwnProperty) {
   {
     // Dictionary mode object.
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     Handle<JSObject> object = factory->NewJSObject(function);
     AddProperties(object, names, arraysize(names));
     JSObject::NormalizeProperties(isolate, object, CLEAR_INOBJECT_PROPERTIES, 0,
@@ -1313,7 +1315,7 @@ TEST(TryHasOwnProperty) {
   {
     // Global object.
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     JSFunction::EnsureHasInitialMap(function);
     function->initial_map().set_instance_type(JS_GLOBAL_OBJECT_TYPE);
     function->initial_map().set_is_prototype_map(true);
@@ -1364,7 +1366,7 @@ TEST(TryHasOwnProperty) {
 
   {
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     Handle<JSProxy> object = factory->NewJSProxy(function, objects[0]);
     CHECK_EQ(JS_PROXY_TYPE, object->map().instance_type());
     ft.CheckTrue(object, names[0], expect_bailout);
@@ -1437,11 +1439,11 @@ TEST(TryGetOwnProperty) {
       factory->NewPrivateSymbol(),
   };
   Handle<Object> values[] = {
-      factory->NewFunctionForTest(factory->empty_string()),
+      factory->NewFunctionForTesting(factory->empty_string()),
       factory->NewSymbol(),
       factory->InternalizeUtf8String("a"),
       CreateAccessorPair(&ft, "() => 188;", "() => 199;"),
-      factory->NewFunctionForTest(factory->InternalizeUtf8String("bb")),
+      factory->NewFunctionForTesting(factory->InternalizeUtf8String("bb")),
       factory->InternalizeUtf8String("ccc"),
       CreateAccessorPair(&ft, "() => 88;", nullptr),
       handle(Smi::FromInt(1), isolate),
@@ -1450,7 +1452,7 @@ TEST(TryGetOwnProperty) {
       factory->NewHeapNumber(4.2),
       handle(Smi::FromInt(153), isolate),
       factory->NewJSObject(
-          factory->NewFunctionForTest(factory->empty_string())),
+          factory->NewFunctionForTesting(factory->empty_string())),
       factory->NewPrivateSymbol(),
   };
   STATIC_ASSERT(arraysize(values) < arraysize(names));
@@ -1501,7 +1503,7 @@ TEST(TryGetOwnProperty) {
   {
     // Dictionary mode object.
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     Handle<JSObject> object = factory->NewJSObject(function);
     AddProperties(object, names, arraysize(names), values, arraysize(values),
                   rand_gen.NextInt());
@@ -1573,7 +1575,7 @@ TEST(TryGetOwnProperty) {
 
   {
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     Handle<JSProxy> object = factory->NewJSProxy(function, objects[0]);
     CHECK_EQ(JS_PROXY_TYPE, object->map().instance_type());
     Handle<Object> value = ft.Call(object, names[0]).ToHandleChecked();
@@ -1809,7 +1811,7 @@ TEST(TryLookupElement) {
   {
     Handle<JSArray> handler = factory->NewJSArray(0);
     Handle<JSFunction> function =
-        factory->NewFunctionForTest(factory->empty_string());
+        factory->NewFunctionForTesting(factory->empty_string());
     Handle<JSProxy> object = factory->NewJSProxy(function, handler);
     CHECK_EQ(JS_PROXY_TYPE, object->map().instance_type());
     ft.CheckTrue(object, smi0, expect_bailout);
@@ -1902,7 +1904,20 @@ TEST(AllocateJSObjectFromMap) {
   }
 }
 
-TEST(AllocateNameDictionary) {
+namespace {
+
+template <typename Dictionary>
+using CSAAllocator =
+    std::function<TNode<Dictionary>(CodeStubAssembler&, TNode<IntPtrT>)> const&;
+
+template <typename Dictionary>
+using Allocator = std::function<Handle<Dictionary>(Isolate*, int)> const&;
+
+// Tests that allocation code emitted by {csa_alloc} yields ordered hash tables
+// identical to those produced by {alloc}.
+template <typename Dictionary>
+void TestDictionaryAllocation(CSAAllocator<Dictionary> csa_alloc,
+                              Allocator<Dictionary> alloc, int max_capacity) {
   Isolate* isolate(CcTest::InitIsolateOnce());
 
   const int kNumParams = 1;
@@ -1911,24 +1926,69 @@ TEST(AllocateNameDictionary) {
 
   {
     auto capacity = m.Parameter<Smi>(1);
-    TNode<NameDictionary> result =
-        m.AllocateNameDictionary(m.SmiUntag(capacity));
+    TNode<Dictionary> result = csa_alloc(m, m.SmiUntag(capacity));
     m.Return(result);
   }
 
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
 
   {
-    for (int i = 0; i < 256; i = i * 1.1 + 1) {
+    for (int i = 0; i < max_capacity; i = i * 1.1 + 1) {
       Handle<HeapObject> result = Handle<HeapObject>::cast(
           ft.Call(handle(Smi::FromInt(i), isolate)).ToHandleChecked());
-      Handle<NameDictionary> dict = NameDictionary::New(isolate, i);
+      Handle<Dictionary> dict = alloc(isolate, i);
       // Both dictionaries should be memory equal.
       int size = dict->Size();
       CHECK_EQ(0, memcmp(reinterpret_cast<void*>(dict->address()),
                          reinterpret_cast<void*>(result->address()), size));
     }
   }
+}
+
+}  // namespace
+
+TEST(AllocateNameDictionary) {
+  auto csa_alloc = [](CodeStubAssembler& m, TNode<IntPtrT> cap) {
+    return m.AllocateNameDictionary(cap);
+  };
+  auto alloc = [](Isolate* isolate, int capacity) {
+    return NameDictionary::New(isolate, capacity);
+  };
+  TestDictionaryAllocation<NameDictionary>(csa_alloc, alloc, 256);
+}
+
+TEST(AllocateOrderedNameDictionary) {
+  auto csa_alloc = [](CodeStubAssembler& m, TNode<IntPtrT> cap) {
+    return m.AllocateOrderedNameDictionary(cap);
+  };
+  auto alloc = [](Isolate* isolate, int capacity) {
+    return OrderedNameDictionary::Allocate(isolate, capacity).ToHandleChecked();
+  };
+  TestDictionaryAllocation<OrderedNameDictionary>(csa_alloc, alloc, 256);
+}
+
+TEST(AllocateOrderedHashSet) {
+  // ignoring capacitites, as the API cannot take them
+  auto csa_alloc = [](CodeStubAssembler& m, TNode<IntPtrT> cap) {
+    return m.AllocateOrderedHashSet();
+  };
+  auto alloc = [](Isolate* isolate, int capacity) {
+    return OrderedHashSet::Allocate(isolate, OrderedHashSet::kInitialCapacity)
+        .ToHandleChecked();
+  };
+  TestDictionaryAllocation<OrderedHashSet>(csa_alloc, alloc, 1);
+}
+
+TEST(AllocateOrderedHashMap) {
+  // ignoring capacities, as the API cannot take them
+  auto csa_alloc = [](CodeStubAssembler& m, TNode<IntPtrT> cap) {
+    return m.AllocateOrderedHashMap();
+  };
+  auto alloc = [](Isolate* isolate, int capacity) {
+    return OrderedHashMap::Allocate(isolate, OrderedHashMap::kInitialCapacity)
+        .ToHandleChecked();
+  };
+  TestDictionaryAllocation<OrderedHashMap>(csa_alloc, alloc, 1);
 }
 
 TEST(PopAndReturnFromJSBuiltinWithStackParameters) {
@@ -2133,7 +2193,7 @@ TEST(OneToTwoByteStringCopy) {
                                .ToHandleChecked();
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
            Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[0]);
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
@@ -2166,7 +2226,7 @@ TEST(OneToOneByteStringCopy) {
                                .ToHandleChecked();
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
            Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[0]);
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
@@ -2199,7 +2259,7 @@ TEST(OneToOneByteStringCopyNonZeroStart) {
                                .ToHandleChecked();
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
            Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[3]);
   CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
@@ -2232,7 +2292,7 @@ TEST(TwoToTwoByteStringCopy) {
                                .ToHandleChecked();
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[0],
            Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[0]);
   CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[1],
@@ -2689,7 +2749,8 @@ TEST(CreatePromiseResolvingFunctions) {
       m.NewJSPromise(context, m.UndefinedConstant());
   PromiseResolvingFunctions funcs = m.CreatePromiseResolvingFunctions(
       context, promise, m.BooleanConstant(false), native_context);
-  Node *resolve = funcs.resolve, *reject = funcs.reject;
+  TNode<JSFunction> resolve = funcs.resolve;
+  TNode<JSFunction> reject = funcs.reject;
   TNode<IntPtrT> const kSize = m.IntPtrConstant(2);
   TNode<FixedArray> const arr =
       m.Cast(m.AllocateFixedArray(PACKED_ELEMENTS, kSize));
@@ -3144,7 +3205,8 @@ TEST(IsWhiteSpaceOrLineTerminator) {
   {  // Returns true if whitespace, false otherwise.
     CodeStubAssembler m(asm_tester.state());
     Label if_true(&m), if_false(&m);
-    m.Branch(m.IsWhiteSpaceOrLineTerminator(m.SmiToInt32(m.Parameter<Smi>(1))),
+    m.Branch(m.IsWhiteSpaceOrLineTerminator(
+                 m.UncheckedCast<Uint16T>(m.SmiToInt32(m.Parameter<Smi>(1)))),
              &if_true, &if_false);
     m.BIND(&if_true);
     m.Return(m.TrueConstant());
@@ -3794,8 +3856,8 @@ TEST(InstructionSchedulingCallerSavedRegisters) {
   CodeStubAssembler m(asm_tester.state());
 
   {
-    Node* x = m.SmiUntag(m.Parameter<Smi>(1));
-    Node* y = m.WordOr(m.WordShr(x, 1), m.IntPtrConstant(1));
+    TNode<IntPtrT> x = m.SmiUntag(m.Parameter<Smi>(1));
+    TNode<WordT> y = m.WordOr(m.WordShr(x, 1), m.IntPtrConstant(1));
     TNode<ExternalReference> isolate_ptr =
         m.ExternalConstant(ExternalReference::isolate_address(isolate));
     m.CallCFunctionWithCallerSavedRegisters(

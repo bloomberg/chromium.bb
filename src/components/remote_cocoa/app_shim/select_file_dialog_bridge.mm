@@ -13,6 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -320,7 +321,7 @@ void SelectFileDialogBridge::SetAccessoryView(
 
     // Populate file_type_lists.
     // Set to store different extensions in the current extension group.
-    NSMutableSet* file_type_set = [NSMutableSet set];
+    NSMutableArray* file_type_array = [NSMutableArray array];
     for (const base::FilePath::StringType& ext : ext_list) {
       if (ext == default_extension)
         default_extension_index = i;
@@ -329,8 +330,11 @@ void SelectFileDialogBridge::SetAccessoryView(
       // we nil check before adding to |file_type_set|. See crbug.com/630101 and
       // rdar://27490414.
       base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
-      if (uti)
-        [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
+      if (uti) {
+        NSString* uti_ns = base::mac::CFToNSCast(uti.get());
+        if (![file_type_array containsObject:uti_ns])
+          [file_type_array addObject:uti_ns];
+      }
 
       // Always allow the extension itself, in case the UTI doesn't map
       // back to the original extension correctly. This occurs with dynamic
@@ -338,9 +342,11 @@ void SelectFileDialogBridge::SetAccessoryView(
       // See http://crbug.com/148840, http://openradar.me/12316273
       base::ScopedCFTypeRef<CFStringRef> ext_cf(
           base::SysUTF8ToCFStringRef(ext));
-      [file_type_set addObject:base::mac::CFToNSCast(ext_cf.get())];
+      NSString* ext_ns = base::mac::CFToNSCast(ext_cf.get());
+      if (![file_type_array containsObject:ext_ns])
+        [file_type_array addObject:ext_ns];
     }
-    [file_type_lists addObject:[file_type_set allObjects]];
+    [file_type_lists addObject:file_type_array];
   }
 
   if (file_types->include_all_files || file_types->extensions.empty()) {

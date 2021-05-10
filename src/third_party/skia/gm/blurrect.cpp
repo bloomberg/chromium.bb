@@ -232,7 +232,7 @@ DEF_SIMPLE_GM(blurrect_gallery, canvas, 1200, 1024) {
                     canvas->save();
                     canvas->translate((SkScalar)cur_x, (SkScalar)cur_y);
                     canvas->translate(-(bm.width() - r.width())/2, -(bm.height()-r.height())/2);
-                    canvas->drawBitmap(bm, 0.f, 0.f, nullptr);
+                    canvas->drawImage(bm.asImage(), 0.f, 0.f);
                     canvas->restore();
 
                     cur_x += bm.width() + fPadding;
@@ -306,7 +306,7 @@ protected:
                                 break;
                         }
                         auto pad = PadForSigma(sigma);
-                        canvas->drawImage(img, -pad, -pad, &paint);
+                        canvas->drawImage(img, -pad, -pad, SkSamplingOptions(), &paint);
 #if 0  // Uncomment to hairline stroke around blurred rect in red on top of the blur result.
        // The rect is defined at integer coords. We inset by 1/2 pixel so our stroke lies on top
        // of the edge pixels.
@@ -386,7 +386,7 @@ private:
                     *bmp.getAddr8(x, y) = SkToU8(sk_float_round2int(255.f * result));
                 }
             }
-            return SkImage::MakeFromBitmap(bmp);
+            return bmp.asImage();
         };
 
         // Number of times to subsample (in both X and Y). If fRecalcMasksForAnimation is true
@@ -470,9 +470,9 @@ private:
                     SkPaint paint;
                     paint.setBlendMode(SkBlendMode::kSrc);
                     paint.setColorFilter(std::move(greenifyCF));
-                    surf->getCanvas()->drawImage(a, 0, 0, &paint);
+                    surf->getCanvas()->drawImage(a, 0, 0, SkSamplingOptions(), &paint);
                     paint.setBlendMode(SkBlendMode::kDifference);
-                    surf->getCanvas()->drawImage(r, 0, 0, &paint);
+                    surf->getCanvas()->drawImage(r, 0, 0, SkSamplingOptions(), &paint);
                     d = surf->makeImageSnapshot();
                 }
             }

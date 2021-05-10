@@ -10,6 +10,9 @@ if (is_android) {
 
 proto_library("proto") {
   sources = [
+    "action_strategy.proto",
+    "action_value.proto",
+    "dom_action.proto",
     "generic_ui.proto",
     "model.proto",
     "service.proto",
@@ -32,6 +35,8 @@ static_library("browser") {
     "actions/configure_bottom_sheet_action.h",
     "actions/configure_ui_state_action.cc",
     "actions/configure_ui_state_action.h",
+    "actions/dispatch_js_event_action.cc",
+    "actions/dispatch_js_event_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
     "actions/fallback_handler/required_field.cc",
@@ -46,12 +51,16 @@ static_library("browser") {
     "actions/highlight_element_action.h",
     "actions/navigate_action.cc",
     "actions/navigate_action.h",
+    "actions/perform_on_single_element_action.cc",
+    "actions/perform_on_single_element_action.h",
     "actions/popup_message_action.cc",
     "actions/popup_message_action.h",
     "actions/presave_generated_password_action.cc",
     "actions/presave_generated_password_action.h",
     "actions/prompt_action.cc",
     "actions/prompt_action.h",
+    "actions/release_elements_action.cc",
+    "actions/release_elements_action.h",
     "actions/save_generated_password_action.cc",
     "actions/save_generated_password_action.h",
     "actions/select_option_action.cc",
@@ -134,6 +143,8 @@ static_library("browser") {
     "generic_ui_replace_placeholders.h",
     "info_box.cc",
     "info_box.h",
+    "intent_strings.cc",
+    "intent_strings.h",
     "metrics.cc",
     "metrics.h",
     "onboarding_result.h",
@@ -151,6 +162,8 @@ static_library("browser") {
     "script_executor.cc",
     "script_executor.h",
     "script_executor_delegate.h",
+    "script_parameters.cc",
+    "script_parameters.h",
     "script_precondition.cc",
     "script_precondition.h",
     "script_tracker.cc",
@@ -162,10 +175,6 @@ static_library("browser") {
     "service/access_token_fetcher.h",
     "service/api_key_fetcher.cc",
     "service/api_key_fetcher.h",
-    "service/lite_service.cc",
-    "service/lite_service.h",
-    "service/lite_service_util.cc",
-    "service/lite_service_util.h",
     "service/server_url_fetcher.cc",
     "service/server_url_fetcher.h",
     "service/service.h",
@@ -179,6 +188,8 @@ static_library("browser") {
     "service/service_request_sender_local_impl.h",
     "service/simple_url_loader_factory.cc",
     "service/simple_url_loader_factory.h",
+    "startup_util.cc",
+    "startup_util.h",
     "state.h",
     "string_conversions_util.cc",
     "string_conversions_util.h",
@@ -212,16 +223,23 @@ static_library("browser") {
     "viewport_mode.h",
     "wait_for_document_operation.cc",
     "wait_for_document_operation.h",
+    "wait_for_dom_observer.h",
     "web/check_on_top_worker.cc",
     "web/check_on_top_worker.h",
+    "web/element.cc",
+    "web/element.h",
     "web/element_finder.cc",
     "web/element_finder.h",
     "web/element_position_getter.cc",
     "web/element_position_getter.h",
     "web/element_rect_getter.cc",
     "web/element_rect_getter.h",
+    "web/element_store.cc",
+    "web/element_store.h",
     "web/js_snippets.cc",
     "web/js_snippets.h",
+    "web/send_keyboard_input_worker.cc",
+    "web/send_keyboard_input_worker.h",
     "web/web_controller.cc",
     "web/web_controller.h",
     "web/web_controller_util.cc",
@@ -236,6 +254,7 @@ static_library("browser") {
   deps = [
     ":proto",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -278,6 +297,8 @@ static_library("unit_test_support") {
     "mock_website_login_manager.h",
     "service/mock_service.cc",
     "service/mock_service.h",
+    "web/fake_element_store.cc",
+    "web/fake_element_store.h",
     "web/mock_web_controller.cc",
     "web/mock_web_controller.h",
   ]
@@ -304,13 +325,17 @@ source_set("unit_tests") {
     "actions/click_action_unittest.cc",
     "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
+    "actions/dispatch_js_event_action_unittest.cc",
+    "actions/fallback_handler/required_field_unittest.cc",
     "actions/fallback_handler/required_fields_fallback_handler_unittest.cc",
     "actions/generate_password_for_form_field_action_unittest.cc",
     "actions/get_element_status_action_unittest.cc",
     "actions/highlight_element_action_unittest.cc",
+    "actions/perform_on_single_element_action_unittest.cc",
     "actions/popup_message_action_unittest.cc",
     "actions/presave_generated_password_action_unittest.cc",
     "actions/prompt_action_unittest.cc",
+    "actions/release_elements_action_unittest.cc",
     "actions/save_generated_password_action_unittest.cc",
     "actions/select_option_action_unittest.cc",
     "actions/set_attribute_action_unittest.cc",
@@ -344,12 +369,11 @@ source_set("unit_tests") {
     "radio_button_controller_unittest.cc",
     "retry_timer_unittest.cc",
     "script_executor_unittest.cc",
+    "script_parameters_unittest.cc",
     "script_precondition_unittest.cc",
     "script_tracker_unittest.cc",
     "selector_unittest.cc",
     "service/api_key_fetcher_unittest.cc",
-    "service/lite_service_unittest.cc",
-    "service/lite_service_util_unittest.cc",
     "service/mock_access_token_fetcher.cc",
     "service/mock_access_token_fetcher.h",
     "service/mock_service_request_sender.cc",
@@ -362,6 +386,7 @@ source_set("unit_tests") {
     "service/service_impl_unittest.cc",
     "service/service_request_sender_impl_unittest.cc",
     "service/service_request_sender_local_impl_unittest.cc",
+    "startup_util_unittest.cc",
     "string_conversions_util_unittest.cc",
     "test_util.cc",
     "test_util.h",
@@ -379,6 +404,7 @@ source_set("unit_tests") {
     "user_model_unittest.cc",
     "value_util_unittest.cc",
     "wait_for_document_operation_unittest.cc",
+    "web/element_store_unittest.cc",
     "website_login_manager_impl_unittest.cc",
   ]
 
@@ -421,6 +447,9 @@ if (is_android) {
   proto_java_library("proto_java") {
     proto_path = "//components/autofill_assistant/browser/"
     sources = [
+      "$proto_path/action_strategy.proto",
+      "$proto_path/action_value.proto",
+      "$proto_path/dom_action.proto",
       "$proto_path/generic_ui.proto",
       "$proto_path/model.proto",
       "$proto_path/service.proto",
@@ -440,6 +469,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_strings("autofill_assistant_intent_strings_java") {
+    sources = [ "intent_strings.cc" ]
+
+    template = "java_templates/IntentStrings.java.tmpl"
+  }
+
   static_library("test_support") {
     testonly = true
     sources = [
@@ -447,6 +482,8 @@ if (is_android) {
       "service/java_service.h",
       "service/java_service_request_sender.cc",
       "service/java_service_request_sender.h",
+      "service/java_test_endpoint_service.cc",
+      "service/java_test_endpoint_service.h",
     ]
 
     deps = [
@@ -454,6 +491,7 @@ if (is_android) {
       ":proto",
       "//base",
       "//chrome/android/features/autofill_assistant:test_support_jni_headers",
+      "//content/public/browser",
       "//net",
       "//url:url",
     ]

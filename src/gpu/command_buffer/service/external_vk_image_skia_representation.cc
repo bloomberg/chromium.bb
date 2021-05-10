@@ -80,7 +80,37 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
 
   access_mode_ = kWrite;
 
-  // If Vulkan/GL/Dawn share the same memory backing, we need set
+  if (backing_impl()->need_synchronization()) {
+    // If Vulkan/GL/Dawn share the same memory backing, we need to set
+    // |end_state| VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the
+    // VkImage to VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
+    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
+  }
+
+  return surface;
+}
+
+sk_sp<SkPromiseImageTexture>
+ExternalVkImageSkiaRepresentation::BeginWriteAccess(
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+  if (access_mode_ != kNone) {
+    LOG(DFATAL) << "Previous access hasn't ended yet. mode=" << access_mode_;
+    return nullptr;
+  }
+
+  auto promise_texture =
+      BeginAccess(false /* readonly */, begin_semaphores, end_semaphores);
+  if (!promise_texture) {
+    LOG(ERROR) << "BeginAccess failed";
+    return nullptr;
+  }
+
+  access_mode_ = kWrite;
+
+  // If Vulkan/GL/Dawn share the same memory backing, we need to set
   // |end_state| VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the
   // VkImage to VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
   if (backing_impl()->need_synchronization()) {
@@ -88,7 +118,7 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
-  return surface;
+  return promise_texture;
 }
 
 void ExternalVkImageSkiaRepresentation::EndWriteAccess(
@@ -97,9 +127,11 @@ void ExternalVkImageSkiaRepresentation::EndWriteAccess(
     LOG(DFATAL) << "BeginWriteAccess is not called mode=" << access_mode_;
     return;
   }
-  surface->getCanvas()->restoreToCount(1);
-  surface = nullptr;
-  DCHECK(backing_impl()->context_state()->CachedSkSurfaceIsUnique(this));
+  if (surface) {
+    surface->getCanvas()->restoreToCount(1);
+    surface = nullptr;
+    DCHECK(backing_impl()->context_state()->CachedSkSurfaceIsUnique(this));
+  }
   EndAccess(false /* readonly */);
   access_mode_ = kNone;
 }

@@ -33,6 +33,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -56,25 +57,28 @@ class NavigationURLLoaderTest : public testing::Test {
       NavigationURLLoaderDelegate* delegate) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
-            MSG_ROUTING_NONE /* initiator_routing_id */,
+            base::nullopt /* initiator_frame_token */,
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
             network::mojom::RequestDestination::kDocument,
-            blink::WebMixedContentContextType::kBlockable,
+            blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
             GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */,
-            false /* force_ignore_site_for_cookies */,
             nullptr /* trust_token_params */, base::nullopt /* impression */,
             base::TimeTicks() /* renderer_before_unload_start */,
-            base::TimeTicks() /* renderer_before_unload_end */);
+            base::TimeTicks() /* renderer_before_unload_end */,
+            base::nullopt /* web_bundle_token */);
     auto common_params = CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
+
+    StoragePartition* storage_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_.get());
 
     url::Origin origin = url::Origin::Create(url);
     std::unique_ptr<NavigationRequestInfo> request_info(
@@ -93,10 +97,11 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* obey_origin_policy */, {} /* cors_exempt_headers */,
             nullptr /* client_security_state */));
     return NavigationURLLoader::Create(
-        browser_context_.get(),
-        BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
-        std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate,
-        NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote());
+        browser_context_.get(), storage_partition, std::move(request_info),
+        nullptr, nullptr, nullptr, nullptr, delegate,
+        NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote(),
+        storage_partition->CreateAuthAndCertObserverForNavigationRequest(
+            -1 /* frame_tree_node_id */));
   }
 
  protected:

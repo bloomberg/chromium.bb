@@ -51,7 +51,7 @@ class SupervisorBridge : public ntp_tiles::MostVisitedSitesSupervisor,
 
   void SetObserver(Observer* observer) override;
   bool IsBlocked(const GURL& url) override;
-  std::vector<MostVisitedSitesSupervisor::Whitelist> GetWhitelists() override;
+  std::vector<MostVisitedSitesSupervisor::Allowlist> GetAllowlists() override;
   bool IsChildProfile() override;
 
   // SupervisedUserServiceObserver implementation.
@@ -91,18 +91,10 @@ bool SupervisorBridge::IsBlocked(const GURL& url) {
          SupervisedUserURLFilter::FilteringBehavior::BLOCK;
 }
 
-std::vector<ntp_tiles::MostVisitedSitesSupervisor::Whitelist>
-SupervisorBridge::GetWhitelists() {
-  std::vector<MostVisitedSitesSupervisor::Whitelist> results;
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  for (const auto& whitelist : supervised_user_service->allowlists()) {
-    results.emplace_back(Whitelist{
-        whitelist->title(), whitelist->entry_point(),
-        whitelist->large_icon_path(),
-    });
-  }
-  return results;
+std::vector<ntp_tiles::MostVisitedSitesSupervisor::Allowlist>
+SupervisorBridge::GetAllowlists() {
+  // TODO(crbug.com/1149782): Remove allowlists from New Tab Page.
+  return {};
 }
 
 bool SupervisorBridge::IsChildProfile() {

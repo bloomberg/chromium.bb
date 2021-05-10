@@ -20,7 +20,6 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -31,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -84,7 +85,7 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
-bool IsFrameLazyLoadable(const ExecutionContext* context,
+bool IsFrameLazyLoadable(ExecutionContext* context,
                          const KURL& url,
                          bool is_loading_attr_lazy,
                          bool should_lazy_load_children) {
@@ -97,6 +98,11 @@ bool IsFrameLazyLoadable(const ExecutionContext* context,
   // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
   // that it doesn't make sense to lazily load.
   if (!url.ProtocolIsInHTTPFamily())
+    return false;
+
+  // Do not lazyload frames when JavaScript is disabled, regardless of the
+  // `loading` attribute.
+  if (!context->CanExecuteScripts(kNotAboutToExecuteScript))
     return false;
 
   if (is_loading_attr_lazy)
@@ -198,6 +204,12 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
   DCHECK(!lazy_load_frame_observer_ ||
          !lazy_load_frame_observer_->IsLazyLoadPending());
 
+  DCHECK_NE(content_frame_, &frame);
+  auto* resource_coordinator = RendererResourceCoordinator::Get();
+  if (content_frame_)
+    resource_coordinator->OnBeforeContentFrameDetached(*content_frame_, *this);
+  resource_coordinator->OnBeforeContentFrameAttached(frame, *this);
+
   content_frame_ = &frame;
 
   // Invalidate compositing inputs, because a remote frame child can cause the
@@ -226,6 +238,9 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
   CancelPendingLazyLoad();
 
   DCHECK_EQ(content_frame_->Owner(), this);
+  RendererResourceCoordinator::Get()->OnBeforeContentFrameDetached(
+      *content_frame_, *this);
+
   content_frame_ = nullptr;
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
@@ -385,9 +400,6 @@ void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
 }
 
 void HTMLFrameOwnerElement::CSPAttributeChanged() {
-  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
-    return;
-
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of
   // swapping one frame for another, in which case the final state
@@ -397,8 +409,14 @@ void HTMLFrameOwnerElement::CSPAttributeChanged() {
 
   String fake_header =
       "HTTP/1.1 200 OK\nContent-Security-Policy: " + RequiredCsp();
+  // ParseHeaders needs a url to resolve report endpoints and for matching the
+  // keyword 'self'. However, the csp attribute does not allow report
+  // endpoints. Moreover, in the csp attribute, 'self' should not match the
+  // owner's url, but rather the frame src url. This is taken care by the
+  // Content-Security-Policy Embedded Enforcement algorithm, implemented in the
+  // AncestorThrottle. That's why we pass an empty url here.
   network::mojom::blink::ParsedHeadersPtr parsed_headers =
-      ParseHeaders(fake_header, GetDocument().Url());
+      ParseHeaders(fake_header, KURL());
 
   DCHECK_LE(parsed_headers->content_security_policy.size(), 1u);
 

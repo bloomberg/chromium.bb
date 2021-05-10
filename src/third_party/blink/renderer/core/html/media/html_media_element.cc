@@ -36,11 +36,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "media/base/logging_override_if_enabled.h"
+#include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -53,6 +56,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
+#include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -68,9 +72,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
+#include "third_party/blink/renderer/core/html/media/audio_output_device_controller.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
@@ -531,7 +537,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
       controls_list_(MakeGarbageCollected<HTMLMediaElementControlsList>(this)),
-      lazy_load_intersection_observer_(nullptr) {
+      lazy_load_intersection_observer_(nullptr),
+      media_player_host_remote_(GetExecutionContext()),
+      media_player_observer_remote_set_(GetExecutionContext()),
+      media_player_receiver_set_(this, GetExecutionContext()) {
   DVLOG(1) << "HTMLMediaElement(" << *this << ")";
 
   LocalFrame* frame = document.GetFrame();
@@ -1319,6 +1328,17 @@ void HTMLMediaElement::StartPlayerLoad() {
 
   OnWebMediaPlayerCreated();
 
+  // Setup the communication channels between the renderer and browser processes
+  // via the MediaPlayer and MediaPlayerObserver mojo interfaces.
+  DCHECK(media_player_receiver_set_.empty());
+  mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayer>
+      media_player_remote;
+  BindMediaPlayerReceiver(
+      media_player_remote.InitWithNewEndpointAndPassReceiver());
+
+  GetMediaPlayerHostRemote().OnMediaPlayerAdded(
+      std::move(media_player_remote), web_media_player_->GetDelegateId());
+
   if (GetLayoutObject())
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
   // Make sure if we create/re-create the WebMediaPlayer that we update our
@@ -1334,7 +1354,11 @@ void HTMLMediaElement::StartPlayerLoad() {
   web_media_player_->RequestRemotePlaybackDisabled(
       FastHasAttribute(html_names::kDisableremoteplaybackAttr));
 
-  auto load_timing = web_media_player_->Load(GetLoadType(), source, CorsMode());
+  bool is_cache_disabled = false;
+  probe::IsCacheDisabled(GetDocument().GetExecutionContext(),
+                         &is_cache_disabled);
+  auto load_timing = web_media_player_->Load(GetLoadType(), source, CorsMode(),
+                                             is_cache_disabled);
   if (load_timing == WebMediaPlayer::LoadTiming::kDeferred) {
     // Deferred media loading is not part of the spec, but intuition is that
     // this should not hold up the Window's "load" event (similar to user
@@ -1441,6 +1465,18 @@ WebMediaPlayer::LoadType HTMLMediaElement::GetLoadType() const {
 bool HTMLMediaElement::PausedWhenVisible() const {
   return paused_ && GetWebMediaPlayer() &&
          !GetWebMediaPlayer()->PausedWhenHidden();
+}
+
+void HTMLMediaElement::DidAudioOutputSinkChanged(
+    const String& hashed_device_id) {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnAudioOutputSinkChanged(hashed_device_id);
+}
+
+void HTMLMediaElement::AddMediaPlayerObserverForTesting(
+    mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayerObserver>
+        observer) {
+  AddMediaPlayerObserver(std::move(observer));
 }
 
 bool HTMLMediaElement::TextTracksAreReady() const {
@@ -1927,6 +1963,8 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       Seek(initial_playback_position);
       jumped = true;
     }
+
+    web_media_player_->SetAutoplayInitiated(true);
 
     UpdateLayoutObject();
   }
@@ -3438,11 +3476,6 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
     Seek(duration);
 }
 
-void HTMLMediaElement::RequestSeek(double time) {
-  // The player is the source of this seek request.
-  setCurrentTime(time);
-}
-
 bool HTMLMediaElement::HasRemoteRoutes() const {
   // TODO(mlamouri): used by MediaControlsPainter; should be refactored out.
   return RemotePlaybackClient() &&
@@ -3644,7 +3677,13 @@ void HTMLMediaElement::
   if (web_media_player_) {
     audio_source_provider_.Wrap(nullptr);
     web_media_player_.reset();
+
+    // The lifetime of the mojo endpoints are tied to the WebMediaPlayer's, so
+    // we need to reset those as well.
+    media_player_receiver_set_.Clear();
+    media_player_observer_remote_set_.Clear();
   }
+  OnWebMediaPlayerCleared();
 }
 
 void HTMLMediaElement::ClearMediaPlayer() {
@@ -4082,13 +4121,33 @@ bool HTMLMediaElement::IsInteractiveContent() const {
   return FastHasAttribute(html_names::kControlsAttr);
 }
 
+void HTMLMediaElement::BindMediaPlayerReceiver(
+    mojo::PendingAssociatedReceiver<media::mojom::blink::MediaPlayer>
+        receiver) {
+  mojo::ReceiverId receiver_id = media_player_receiver_set_.Add(
+      std::move(receiver),
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
+
+  media_player_receiver_set_.set_disconnect_handler(WTF::BindRepeating(
+      [](HTMLMediaElement* html_media_element, mojo::ReceiverId receiver_id) {
+        html_media_element->media_player_receiver_set_.Remove(receiver_id);
+      },
+      WrapWeakPersistent(this), receiver_id));
+}
+
 void HTMLMediaElement::Trace(Visitor* visitor) const {
   visitor->Trace(audio_source_node_);
+  visitor->Trace(load_timer_);
+  visitor->Trace(progress_event_timer_);
+  visitor->Trace(playback_progress_timer_);
+  visitor->Trace(audio_tracks_timer_);
+  visitor->Trace(removed_from_document_timer_);
   visitor->Trace(played_time_ranges_);
   visitor->Trace(async_event_queue_);
   visitor->Trace(error_);
   visitor->Trace(current_source_node_);
   visitor->Trace(next_child_node_to_consider_);
+  visitor->Trace(deferred_load_timer_);
   visitor->Trace(media_source_tracer_);
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
@@ -4104,6 +4163,9 @@ void HTMLMediaElement::Trace(Visitor* visitor) const {
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
   visitor->Trace(lazy_load_intersection_observer_);
+  visitor->Trace(media_player_host_remote_);
+  visitor->Trace(media_player_observer_remote_set_);
+  visitor->Trace(media_player_receiver_set_);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
   ExecutionContextLifecycleStateObserver::Trace(visitor);
@@ -4247,7 +4309,10 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
   if (InActiveDocument())
     return;
 
-  PauseInternal();
+  // Video should not pause when playing in Picture-in-Picture and subsequently
+  // removed from the Document.
+  if (!PictureInPictureController::IsElementInPictureInPicture(this))
+    PauseInternal();
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
@@ -4335,17 +4400,142 @@ bool HTMLMediaElement::WasAutoplayInitiated() {
   return autoplay_policy_->WasAutoplayInitiated();
 }
 
-void HTMLMediaElement::RequestPlay() {
+void HTMLMediaElement::ResumePlayback() {
   autoplay_policy_->EnsureAutoplayInitiatedSet();
   PlayInternal();
 }
 
-void HTMLMediaElement::RequestPause() {
+void HTMLMediaElement::PausePlayback() {
   PauseInternal();
 }
 
-void HTMLMediaElement::RequestMuted(bool muted) {
-  setMuted(muted);
+void HTMLMediaElement::DidPlayerStartPlaying() {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnMediaPlaying();
+}
+
+void HTMLMediaElement::DidPlayerPaused(bool stream_ended) {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnMediaPaused(stream_ended);
+}
+
+void HTMLMediaElement::DidPlayerMutedStatusChange(bool muted) {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnMutedStatusChanged(muted);
+}
+
+void HTMLMediaElement::DidMediaMetadataChange(
+    bool has_audio,
+    bool has_video,
+    media::MediaContentType media_content_type) {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnMediaMetadataChanged(has_audio, has_video, media_content_type);
+}
+
+void HTMLMediaElement::DidPlayerMediaPositionStateChange(
+    double playback_rate,
+    base::TimeDelta duration,
+    base::TimeDelta position) {
+  for (auto& observer : media_player_observer_remote_set_) {
+    observer->OnMediaPositionStateChanged(
+        media_session::mojom::blink::MediaPosition::New(
+            playback_rate, duration, position, base::TimeTicks::Now()));
+  }
+}
+
+void HTMLMediaElement::DidDisableAudioOutputSinkChanges() {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnAudioOutputSinkChangingDisabled();
+}
+
+void HTMLMediaElement::DidPlayerSizeChange(const gfx::Size& size) {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnMediaSizeChanged(size);
+}
+
+void HTMLMediaElement::DidBufferUnderflow() {
+  for (auto& observer : media_player_observer_remote_set_)
+    observer->OnBufferUnderflow();
+}
+
+void HTMLMediaElement::DidSeek() {
+  // Send the seek updates to the browser process only once per second.
+  if (last_seek_update_time_.is_null() ||
+      (base::TimeTicks::Now() - last_seek_update_time_ >=
+       base::TimeDelta::FromSeconds(1))) {
+    last_seek_update_time_ = base::TimeTicks::Now();
+    for (auto& observer : media_player_observer_remote_set_)
+      observer->OnSeek();
+  }
+}
+
+media::mojom::blink::MediaPlayerHost&
+HTMLMediaElement::GetMediaPlayerHostRemote() {
+  // It is an error to call this before having access to the document's frame.
+  DCHECK(GetDocument().GetFrame());
+  if (!media_player_host_remote_.is_bound()) {
+    GetDocument()
+        .GetFrame()
+        ->GetRemoteNavigationAssociatedInterfaces()
+        ->GetInterface(media_player_host_remote_.BindNewEndpointAndPassReceiver(
+            GetDocument().GetTaskRunner(TaskType::kInternalMedia)));
+  }
+  return *media_player_host_remote_.get();
+}
+
+void HTMLMediaElement::AddMediaPlayerObserver(
+    mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayerObserver>
+        observer) {
+  media_player_observer_remote_set_.Add(
+      std::move(observer),
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
+
+  media_player_observer_remote_set_.set_disconnect_handler(WTF::BindRepeating(
+      [](HTMLMediaElement* html_media_element,
+         mojo::RemoteSetElementId remote_id) {
+        html_media_element->media_player_observer_remote_set_.Remove(remote_id);
+      },
+      WrapWeakPersistent(this)));
+}
+
+void HTMLMediaElement::RequestPlay() {
+  LocalFrame* frame = GetDocument().GetFrame();
+  if (frame) {
+    LocalFrame::NotifyUserActivation(
+        frame, mojom::blink::UserActivationNotificationType::kInteraction);
+  }
+  autoplay_policy_->EnsureAutoplayInitiatedSet();
+  PlayInternal();
+}
+
+void HTMLMediaElement::RequestPause(bool triggered_by_user) {
+  if (triggered_by_user) {
+    LocalFrame* frame = GetDocument().GetFrame();
+    if (frame) {
+      LocalFrame::NotifyUserActivation(
+          frame, mojom::blink::UserActivationNotificationType::kInteraction);
+    }
+  }
+  PauseInternal();
+}
+
+void HTMLMediaElement::RequestSeekForward(base::TimeDelta seek_time) {
+  double seconds = seek_time.InSecondsF();
+  DCHECK_GE(seconds, 0) << "Attempted to seek by a negative number of seconds";
+  setCurrentTime(currentTime() + seconds);
+}
+
+void HTMLMediaElement::RequestSeekBackward(base::TimeDelta seek_time) {
+  double seconds = seek_time.InSecondsF();
+  DCHECK_GE(seconds, 0) << "Attempted to seek by a negative number of seconds";
+  setCurrentTime(currentTime() - seconds);
+}
+
+void HTMLMediaElement::SetAudioSinkId(const String& sink_id) {
+  auto* audio_output_controller = AudioOutputDeviceController::From(*this);
+  DCHECK(audio_output_controller);
+
+  audio_output_controller->SetSinkId(sink_id);
 }
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {

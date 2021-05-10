@@ -11,7 +11,8 @@
 #include "base/component_export.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
+#include "build/chromeos_buildflags.h"
+#include "ui/base/clipboard/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
@@ -110,7 +111,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
   base::string16 html_;
   GURL base_url_;
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // For marking data originating from the renderer.
   bool originated_from_renderer_ = false;
 #endif
 

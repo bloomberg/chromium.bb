@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -136,6 +137,10 @@ class BASE_EXPORT HangWatchScopeDisabled {
 // within a single process. This instance must outlive all monitored threads.
 class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
  public:
+  // Determines if the HangWatcher is activated. When false the HangWatcher
+  // thread never started.
+  static const base::Feature kEnableHangWatcher;
+
   // Describes the type of a thread for logging purposes.
   enum class ThreadType {
     kIOThread = 0,
@@ -162,6 +167,11 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // startup while single-threaded.
   static void InitializeOnMainThread();
 
+  // Returns the values that were set through InitializeOnMainThread() to their
+  // default value. Used for testing since in prod initialization should happen
+  // only once.
+  static void UnitializeOnMainThreadForTesting();
+
   // Thread safe functions to verify if hang watching is activated. If called
   // before InitializeOnMainThread returns the default value which is false.
   static bool IsEnabled();
@@ -169,11 +179,16 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   static bool IsIOThreadHangWatchingEnabled();
   static bool IsUIThreadHangWatchingEnabled();
 
+  // Returns true if crash dump reporting is configured for any thread type.
+  static bool IsCrashReportingEnabled();
+
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be
-  // called from the registered thread before it's joined.
-  ScopedClosureRunner RegisterThread(ThreadType thread_type)
-      LOCKS_EXCLUDED(watch_state_lock_) WARN_UNUSED_RESULT;
+  // called from the registered thread before it's joined. Returns a null
+  // closure in the case where there is no HangWatcher instance to register the
+  // thread with.
+  static ScopedClosureRunner RegisterThread(ThreadType thread_type)
+      WARN_UNUSED_RESULT;
 
   // Choose a closure to be run at the end of each call to Monitor(). Use only
   // for testing. Reentering the HangWatcher in the closure must be done with
@@ -220,6 +235,10 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   void Start();
 
  private:
+  // See comment of ::RegisterThread() for details.
+  ScopedClosureRunner RegisterThreadInternal(ThreadType thread_type)
+      LOCKS_EXCLUDED(watch_state_lock_) WARN_UNUSED_RESULT;
+
   // Use to assert that functions are called on the monitoring thread.
   THREAD_CHECKER(hang_watcher_thread_checker_);
 
@@ -255,8 +274,13 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
     // Construct the snapshot from provided data. |snapshot_time| can be
     // different than now() to be coherent with other operations recently done
-    // on |watch_states|. If any deadline in |watch_states| is before
-    // |deadline_ignore_threshold|, the snapshot is empty.
+    // on |watch_states|. The snapshot can be empty for a number of reasons:
+    // 1. If any deadline in |watch_states| is before
+    // |deadline_ignore_threshold|.
+    // 2. If some of the hung threads could not be marked as blocking on
+    // capture.
+    // 3. If none of the hung threads are of a type configured to trigger a
+    // crash dump.
     WatchStateSnapShot(const HangWatchStates& watch_states,
                        base::TimeTicks deadline_ignore_threshold);
     WatchStateSnapShot(const WatchStateSnapShot& other);

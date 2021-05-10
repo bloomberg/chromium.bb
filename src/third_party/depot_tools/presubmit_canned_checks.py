@@ -104,17 +104,11 @@ def CheckChangeWasUploaded(input_api, output_api):
 
 ### Content checks
 
-def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None,
-                          bot_whitelist=None):
+
+def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if bot_whitelist is not None:
-    warn('Use bot_allowlist in CheckAuthorizedAuthor')
-  if bot_allowlist is None:
-    bot_allowlist = bot_whitelist
-
   if input_api.is_committing:
     error_type = output_api.PresubmitError
   else:
@@ -619,25 +613,21 @@ def CheckTreeIsOpen(input_api, output_api,
                                       long_text=str(e))]
   return []
 
-def GetUnitTestsInDirectory(
-    input_api, output_api, directory, files_to_check=None, files_to_skip=None,
-    env=None, run_on_python2=True, run_on_python3=True, whitelist=None,
-    blacklist=None, allowlist=None, blocklist=None):
+def GetUnitTestsInDirectory(input_api,
+                            output_api,
+                            directory,
+                            files_to_check=None,
+                            files_to_skip=None,
+                            env=None,
+                            run_on_python2=True,
+                            run_on_python3=True,
+                            allowlist=None,
+                            blocklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
   It's mainly a wrapper for RunUnitTests. Use allowlist and blocklist to filter
   tests accordingly.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if allowlist is not None or whitelist is not None:
-    warn('Use files_to_check in GetUnitTestsInDirectory')
-  if blocklist is not None or blacklist is not None:
-    warn('Use files_to_skip in GetUnitTestsInDirectory')
-  if files_to_check is None:
-    files_to_check = allowlist or whitelist
-  if files_to_skip is None:
-    files_to_skip = blocklist or blacklist
-
   unit_tests = []
   test_path = input_api.os_path.abspath(
       input_api.os_path.join(input_api.PresubmitLocalPath(), directory))
@@ -720,26 +710,18 @@ def GetUnitTests(
   return results
 
 
-def GetUnitTestsRecursively(input_api, output_api, directory,
-                            files_to_check=None, files_to_skip=None,
-                            run_on_python2=True, run_on_python3=True,
-                            whitelist=None, blacklist=None, allowlist=None,
-                            blocklist=None):
-  """Gets all files in the directory tree (git repo) that match the whitelist.
+def GetUnitTestsRecursively(input_api,
+                            output_api,
+                            directory,
+                            files_to_check,
+                            files_to_skip,
+                            run_on_python2=True,
+                            run_on_python3=True):
+  """Gets all files in the directory tree (git repo) that match files_to_check.
 
   Restricts itself to only find files within the Change's source repo, not
   dependencies.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if files_to_check is None:
-    warn('Use files_to_check in GetUnitTestsRecursively')
-    files_to_check = allowlist or whitelist
-  if files_to_skip is None:
-    warn('Use files_to_skip in GetUnitTestsRecursively')
-    files_to_skip = blocklist or blacklist
-  assert files_to_check is not None
-  assert files_to_skip is not None
-
   def check(filename):
     return (any(input_api.re.match(f, filename) for f in files_to_check) and
             not any(input_api.re.match(f, filename) for f in files_to_skip))
@@ -872,25 +854,20 @@ def _FetchAllFiles(input_api, files_to_check, files_to_skip):
   return files
 
 
-def GetPylint(input_api, output_api, files_to_check=None, files_to_skip=None,
-              disabled_warnings=None, extra_paths_list=None, pylintrc=None,
-              white_list=None, black_list=None, allow_list=None,
-              block_list=None):
+def GetPylint(input_api,
+              output_api,
+              files_to_check=None,
+              files_to_skip=None,
+              disabled_warnings=None,
+              extra_paths_list=None,
+              pylintrc=None):
   """Run pylint on python files.
 
   The default files_to_check enforces looking only at *.py files.
   """
 
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if allow_list or white_list:
-    warn('Use files_to_check in GetPylint')
-  if block_list or black_list:
-    warn('Use files_to_skip in GetPylint')
-
-  files_to_check = tuple(files_to_check or allow_list or white_list or
-                         (r'.*\.py$',))
-  files_to_skip = tuple(files_to_skip or block_list or black_list or
-                    input_api.DEFAULT_FILES_TO_SKIP)
+  files_to_check = tuple(files_to_check or (r'.*\.py$', ))
+  files_to_skip = tuple(files_to_skip or input_api.DEFAULT_FILES_TO_SKIP)
   extra_paths_list = extra_paths_list or []
 
   if input_api.is_committing:
@@ -1069,6 +1046,33 @@ def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
       name, cmd, kwargs, output_api.PresubmitError)]
 
 
+def CheckNoNewMetadataInOwners(input_api, output_api):
+  """Check that no metadata is added to OWNERS files."""
+  _METADATA_LINE_RE = input_api.re.compile(
+      r'^#\s*(TEAM|COMPONENT|OS|WPT-NOTIFY)+\s*:\s*\S+$',
+      input_api.re.MULTILINE | input_api.re.IGNORECASE)
+  affected_files = input_api.change.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda f: input_api.basename(f.LocalPath()) == 'OWNERS')
+
+  errors = []
+  for f in affected_files:
+    for _, line in f.ChangedContents():
+      if _METADATA_LINE_RE.search(line):
+        errors.append(f.AbsoluteLocalPath())
+        break
+
+  if not errors:
+    return []
+
+  return [output_api.PresubmitError(
+      'New metadata was added to the following OWNERS files, but should '
+      'have been added to DIR_METADATA files instead:\n' +
+      '\n'.join(errors) + '\n' +
+      'See https://source.chromium.org/chromium/infra/infra/+/HEAD:'
+      'go/src/infra/tools/dirmd/proto/dir_metadata.proto for details.')]
+
+
 def CheckOwnersDirMetadataExclusive(input_api, output_api):
   """Check that metadata in OWNERS files and DIR_METADATA files are mutually
   exclusive.
@@ -1121,7 +1125,8 @@ def CheckOwnersFormat(input_api, output_api):
         'Error parsing OWNERS files:\n%s' % e)]
 
 
-def CheckOwners(input_api, output_api, source_file_filter=None):
+def CheckOwners(
+    input_api, output_api, source_file_filter=None, allow_tbr=True):
   if input_api.change.issue:
     # Skip OWNERS check when Bot-Commit label is approved. This label is
     # intended for commits made by trusted bots that don't require review nor
@@ -1134,32 +1139,25 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     if input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue):
       return []
 
+  # Ignore tbr if not allowed for this repo.
+  tbr = input_api.tbr and allow_tbr
+
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
-  owners_db = input_api.owners_db
-  owners_db.override_files = input_api.change.OriginalOwnersFiles()
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
-      input_api,
-      owners_db.email_regexp,
-      approval_needed=input_api.is_committing)
+      input_api, approval_needed=input_api.is_committing)
 
   owner_email = owner_email or input_api.change.author_email
 
-  finder = input_api.owners_finder(
-      affected_files,
-      input_api.change.RepositoryRoot(),
-      owner_email,
-      reviewers,
-      fopen=open,
-      os_path=input_api.os_path,
-      email_postfix='',
-      disable_color=True,
-      override_files=input_api.change.OriginalOwnersFiles())
-  missing_files = finder.unreviewed_files
+  approval_status = input_api.owners_client.GetFilesApprovalStatus(
+      affected_files, reviewers.union([owner_email]), [])
+  missing_files = [
+      f for f in affected_files
+      if approval_status[f] != input_api.owners_client.APPROVED]
   affects_owners = any('OWNERS' in name for name in missing_files)
 
   if input_api.is_committing:
-    if input_api.tbr and not affects_owners:
+    if tbr and not affects_owners:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     needed = 'LGTM from an OWNER'
@@ -1181,19 +1179,14 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     output_list = [
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
-    if input_api.tbr and affects_owners:
+    if tbr and affects_owners:
       output_list.append(output_fn('TBR for OWNERS files are ignored.'))
     if not input_api.is_committing:
-      suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      owners_with_comments = []
-      def RecordComments(text):
-        owners_with_comments.append(finder.print_indent() + text)
-      finder.writeln = RecordComments
-      for owner in suggested_owners:
-        finder.print_comments(owner)
+      suggested_owners = input_api.owners_client.SuggestOwners(
+          missing_files, exclude=[owner_email])
       output_list.append(output_fn('Suggested OWNERS: ' +
           '(Use "git-cl owners" to interactively select owners.)\n    %s' %
-          ('\n    '.join(owners_with_comments))))
+          ('\n    '.join(suggested_owners))))
     return output_list
 
   if input_api.is_committing and not reviewers:
@@ -1201,12 +1194,15 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   return []
 
 
-def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
+def GetCodereviewOwnerAndReviewers(
+    input_api, _email_regexp=None, approval_needed=True):
   """Return the owner and reviewers of a change, if any.
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
   """
+  # Recognizes 'X@Y' email addresses. Very simplistic.
+  EMAIL_REGEXP = input_api.re.compile(r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$')
   issue = input_api.change.issue
   if not issue:
     return None, (set() if approval_needed else
@@ -1215,7 +1211,7 @@ def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
   owner_email = input_api.gerrit.GetChangeOwner(issue)
   reviewers = set(
       r for r in input_api.gerrit.GetChangeReviewers(issue, approval_needed)
-      if _match_reviewer_email(r, owner_email, email_regexp))
+      if _match_reviewer_email(r, owner_email, EMAIL_REGEXP))
   input_api.logging.debug('owner: %s; approvals given by: %s',
                           owner_email, ', '.join(sorted(reviewers)))
   return owner_email, reviewers

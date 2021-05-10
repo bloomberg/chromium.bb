@@ -26,7 +26,7 @@ static AOM_INLINE int set_deltaq_rdmult(const AV1_COMP *const cpi,
                                       quant_params->y_dc_delta_q);
 }
 
-void av1_set_ssim_rdmult(const AV1_COMP *const cpi, MvCosts *const mv_costs,
+void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
                          const int mi_col, int *const rdmult) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -58,7 +58,7 @@ void av1_set_ssim_rdmult(const AV1_COMP *const cpi, MvCosts *const mv_costs,
 
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
-  av1_set_error_per_bit(mv_costs, *rdmult);
+  av1_set_error_per_bit(errorperbit, *rdmult);
   aom_clear_system_state();
 }
 
@@ -131,7 +131,7 @@ int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   geom_mean_of_scale = exp(geom_mean_of_scale / base_block_count);
   int rdmult = (int)((double)orig_rdmult * geom_mean_of_scale + 0.5);
   rdmult = AOMMAX(rdmult, 0);
-  av1_set_error_per_bit(&x->mv_costs, rdmult);
+  av1_set_error_per_bit(&x->errorperbit, rdmult);
   aom_clear_system_state();
   if (bsize == cm->seq_params.sb_size) {
     const int rdmult_sb = set_deltaq_rdmult(cpi, x);
@@ -316,12 +316,6 @@ void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif
   if (!frame_is_intra_only(cm)) {
-    if (is_inter_block(mi_addr)) {
-      // TODO(sarahparker): global motion stats need to be handled per-tile
-      // to be compatible with tile-based threading.
-      update_global_motion_used(mi_addr->mode, bsize, mi_addr, rdc);
-    }
-
     if (cm->features.interp_filter == SWITCHABLE &&
         mi_addr->motion_mode != WARPED_CAUSAL &&
         !is_nontrans_global_motion(xd, xd->mi[0])) {
@@ -1174,16 +1168,16 @@ void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int offset) {
   last_src_y += offset;
   tmp_variance = cpi->fn_ptr[bsize].vf(src_y, src_ystride, last_src_y,
                                        last_src_ystride, &tmp_sse);
-
-  x->content_state_sb = kMedSad;
-  // Note: tmp_sse - tmp_variance = ((sum * sum) >> 12)
-  // Detect large lighting change;
-  if (tmp_variance < (tmp_sse >> 1) && (tmp_sse - tmp_variance) > sum_sq_thresh)
-    x->content_state_sb = kLowVarHighSumdiff;
-  else if (tmp_sse < avg_source_sse_threshold)
-    x->content_state_sb = kLowSad;
+  if (tmp_sse < avg_source_sse_threshold)
+    x->content_state_sb.source_sad = kLowSad;
   else if (tmp_sse > avg_source_sse_threshold_high)
-    x->content_state_sb = kHighSad;
+    x->content_state_sb.source_sad = kHighSad;
+  // Detect large lighting change.
+  // Note: tmp_sse - tmp_variance = ((sum * sum) >> 12)
+  if (tmp_variance < (tmp_sse >> 1) && (tmp_sse - tmp_variance) > sum_sq_thresh)
+    x->content_state_sb.lighting_change = 1;
+  if ((tmp_sse - tmp_variance) < (sum_sq_thresh >> 1))
+    x->content_state_sb.low_sumdiff = 1;
 }
 
 // Memset the mbmis at the current superblock to 0
@@ -1339,27 +1333,22 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
 
   switch (cpi->oxcf.cost_upd_freq.coeff) {
-    case COST_UPD_OFF: break;
+    case COST_UPD_OFF:
     case COST_UPD_TILE:  // Tile level
-      if (mi_row != tile_info->mi_row_start) break;
-      AOM_FALLTHROUGH_INTENDED;
+      break;
     case COST_UPD_SBROW:  // SB row level in tile
       if (mi_col != tile_info->mi_col_start) break;
       AOM_FALLTHROUGH_INTENDED;
     case COST_UPD_SB:  // SB level
-      if (cpi->sf.inter_sf.disable_sb_level_coeff_cost_upd &&
-          mi_col != tile_info->mi_col_start)
-        break;
       av1_fill_coeff_costs(&x->coeff_costs, xd->tile_ctx, num_planes);
       break;
     default: assert(0);
   }
 
   switch (cpi->oxcf.cost_upd_freq.mode) {
-    case COST_UPD_OFF: break;
+    case COST_UPD_OFF:
     case COST_UPD_TILE:  // Tile level
-      if (mi_row != tile_info->mi_row_start) break;
-      AOM_FALLTHROUGH_INTENDED;
+      break;
     case COST_UPD_SBROW:  // SB row level in tile
       if (mi_col != tile_info->mi_col_start) break;
       AOM_FALLTHROUGH_INTENDED;
@@ -1369,10 +1358,9 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
     default: assert(0);
   }
   switch (cpi->oxcf.cost_upd_freq.mv) {
-    case COST_UPD_OFF: break;
+    case COST_UPD_OFF:
     case COST_UPD_TILE:  // Tile level
-      if (mi_row != tile_info->mi_row_start) break;
-      AOM_FALLTHROUGH_INTENDED;
+      break;
     case COST_UPD_SBROW:  // SB row level in tile
       if (mi_col != tile_info->mi_col_start) break;
       AOM_FALLTHROUGH_INTENDED;
@@ -1380,7 +1368,7 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
       // Checks for skip status of mv cost update.
       if (skip_mv_cost_update(cpi, tile_info, mi_row, mi_col)) break;
       av1_fill_mv_costs(xd->tile_ctx, cm->features.cur_frame_force_integer_mv,
-                        cm->features.allow_high_precision_mv, &x->mv_costs);
+                        cm->features.allow_high_precision_mv, x->mv_costs);
       break;
     default: assert(0);
   }

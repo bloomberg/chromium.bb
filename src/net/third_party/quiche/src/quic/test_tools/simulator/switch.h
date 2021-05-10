@@ -7,8 +7,9 @@
 
 #include <deque>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/queue.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/test_tools/simulator/queue.h"
 
 namespace quic {
 namespace simulator {
@@ -30,7 +31,7 @@ class Switch {
   // Returns Endpoint associated with the port under number |port_number|.  Just
   // like on most real switches, port numbering starts with 1.
   inline Endpoint* port(SwitchPortNumber port_number) {
-    DCHECK_NE(port_number, 0u);
+    QUICHE_DCHECK_NE(port_number, 0u);
     return &ports_[port_number - 1];
   }
 
@@ -80,7 +81,7 @@ class Switch {
   // This can not be a QuicCircularDeque since pointers into this are
   // assumed to be stable.
   std::deque<Port> ports_;
-  QuicHashMap<std::string, Port*> switching_table_;
+  absl::flat_hash_map<std::string, Port*> switching_table_;
 };
 
 }  // namespace simulator

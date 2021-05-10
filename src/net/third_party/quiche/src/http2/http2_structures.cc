@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/http2_structures.h"
+#include "http2/http2_structures.h"
 
 #include <cstring>  // For std::memcmp
 #include <sstream>
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
@@ -21,9 +21,9 @@ bool Http2FrameHeader::IsProbableHttpResponse() const {
 }
 
 std::string Http2FrameHeader::ToString() const {
-  return quiche::QuicheStrCat(
-      "length=", payload_length, ", type=", Http2FrameTypeToString(type),
-      ", flags=", FlagsToString(), ", stream=", stream_id);
+  return absl::StrCat("length=", payload_length,
+                      ", type=", Http2FrameTypeToString(type),
+                      ", flags=", FlagsToString(), ", stream=", stream_id);
 }
 
 std::string Http2FrameHeader::FlagsToString() const {
@@ -128,6 +128,24 @@ bool operator==(const Http2AltSvcFields& a, const Http2AltSvcFields& b) {
 }
 std::ostream& operator<<(std::ostream& out, const Http2AltSvcFields& v) {
   return out << "origin_length=" << v.origin_length;
+}
+
+// Http2PriorityUpdateFields:
+
+bool operator==(const Http2PriorityUpdateFields& a,
+                const Http2PriorityUpdateFields& b) {
+  return a.prioritized_stream_id == b.prioritized_stream_id;
+}
+
+std::string Http2PriorityUpdateFields::ToString() const {
+  std::stringstream ss;
+  ss << "prioritized_stream_id=" << prioritized_stream_id;
+  return ss.str();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const Http2PriorityUpdateFields& v) {
+  return out << v.ToString();
 }
 
 }  // namespace http2

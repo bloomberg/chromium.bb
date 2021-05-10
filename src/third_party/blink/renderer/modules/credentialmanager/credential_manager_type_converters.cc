@@ -189,7 +189,7 @@ Vector<uint8_t> ConvertFixedSizeArray(
   }
 
   if (buffer.IsArrayBufferView() &&
-      buffer.GetAsArrayBufferView().View()->byteLength() != length) {
+      buffer.GetAsArrayBufferView()->byteLength() != length) {
     return Vector<uint8_t>();
   }
 
@@ -208,10 +208,10 @@ TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView>::Convert(
                       buffer.GetAsArrayBuffer()->ByteLength()));
   } else {
     DCHECK(buffer.IsArrayBufferView());
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  base::checked_cast<wtf_size_t>(
-                      buffer.GetAsArrayBufferView().View()->byteLength()));
+    vector.Append(
+        static_cast<uint8_t*>(buffer.GetAsArrayBufferView()->BaseAddress()),
+        base::checked_cast<wtf_size_t>(
+            buffer.GetAsArrayBufferView()->byteLength()));
   }
   return vector;
 }
@@ -321,12 +321,15 @@ TypeConverter<AuthenticatorAttachment, base::Optional<String>>::Convert(
 }
 
 // static
-LargeBlobSupport TypeConverter<LargeBlobSupport, String>::Convert(
-    const String& large_blob_support) {
-  if (large_blob_support == "required")
-    return LargeBlobSupport::REQUIRED;
-  if (large_blob_support == "preferred")
-    return LargeBlobSupport::PREFERRED;
+LargeBlobSupport
+TypeConverter<LargeBlobSupport, base::Optional<String>>::Convert(
+    const base::Optional<String>& large_blob_support) {
+  if (large_blob_support) {
+    if (*large_blob_support == "required")
+      return LargeBlobSupport::REQUIRED;
+    if (*large_blob_support == "preferred")
+      return LargeBlobSupport::PREFERRED;
+  }
 
   // Unknown values are treated as preferred.
   return LargeBlobSupport::PREFERRED;
@@ -570,9 +573,12 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
                  WebAuthenticationResidentKeyRequirementEnabled());
       mojo_options->cred_props = true;
     }
-    if (extensions->largeBlob()) {
-      mojo_options->large_blob_enable =
-          ConvertTo<LargeBlobSupport>(extensions->largeBlob()->support());
+    if (extensions->hasLargeBlob()) {
+      base::Optional<WTF::String> support;
+      if (extensions->largeBlob()->hasSupport()) {
+        support = extensions->largeBlob()->support();
+      }
+      mojo_options->large_blob_enable = ConvertTo<LargeBlobSupport>(support);
     }
   }
 
@@ -585,14 +591,31 @@ TypeConverter<CableAuthenticationPtr, blink::CableAuthenticationData>::Convert(
     const blink::CableAuthenticationData& data) {
   auto entity = CableAuthentication::New();
   entity->version = data.version();
-  entity->client_eid = ConvertFixedSizeArray(data.clientEid(), 16);
-  entity->authenticator_eid =
-      ConvertFixedSizeArray(data.authenticatorEid(), 16);
-  entity->session_pre_key = ConvertFixedSizeArray(data.sessionPreKey(), 32);
-  if (entity->client_eid.IsEmpty() || entity->authenticator_eid.IsEmpty() ||
-      entity->session_pre_key.IsEmpty()) {
-    return nullptr;
+  switch (entity->version) {
+    case 1:
+      entity->client_eid = ConvertFixedSizeArray(data.clientEid(), 16);
+      entity->authenticator_eid =
+          ConvertFixedSizeArray(data.authenticatorEid(), 16);
+      entity->session_pre_key = ConvertFixedSizeArray(data.sessionPreKey(), 32);
+      if (entity->client_eid->IsEmpty() ||
+          entity->authenticator_eid->IsEmpty() ||
+          entity->session_pre_key->IsEmpty()) {
+        return nullptr;
+      }
+      break;
+
+    case 2:
+      entity->server_link_data =
+          ConvertTo<Vector<uint8_t>>(data.sessionPreKey());
+      if (entity->server_link_data->IsEmpty()) {
+        return nullptr;
+      }
+      break;
+
+    default:
+      return nullptr;
   }
+
   return entity;
 }
 
@@ -651,7 +674,7 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     if (extensions->hasCableAuthentication()) {
       Vector<CableAuthenticationPtr> mojo_data;
       for (auto& data : extensions->cableAuthentication()) {
-        if (data->version() != 1) {
+        if (data->version() < 1 || data->version() > 2) {
           continue;
         }
         CableAuthenticationPtr mojo_cable = CableAuthentication::From(*data);

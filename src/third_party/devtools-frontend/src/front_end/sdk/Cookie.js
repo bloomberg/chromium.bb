@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- *  @unrestricted
- */
 export class Cookie {
   /**
      * @param {string} name
@@ -43,6 +40,15 @@ export class Cookie {
     }
     if (protocolCookie['sameSite']) {
       cookie.addAttribute('sameSite', protocolCookie['sameSite']);
+    }
+    if (protocolCookie.sameParty) {
+      cookie.addAttribute('sameParty');
+    }
+    if ('sourcePort' in protocolCookie) {
+      cookie.addAttribute('sourcePort', protocolCookie.sourcePort);
+    }
+    if ('sourceScheme' in protocolCookie) {
+      cookie.addAttribute('sourceScheme', protocolCookie.sourceScheme);
     }
     cookie.setSize(protocolCookie['size']);
     return cookie;
@@ -100,6 +106,13 @@ export class Cookie {
   }
 
   /**
+   * @return boolean
+   */
+  sameParty() {
+    return 'sameparty' in this._attributes;
+  }
+
+  /**
    * @return {!Protocol.Network.CookiePriority}
    */
   priority() {
@@ -144,6 +157,20 @@ export class Cookie {
   }
 
   /**
+   * @return {number}
+   */
+  sourcePort() {
+    return /** @type {number} */ (this._attributes['sourceport']);
+  }
+
+  /**
+   * @return {Protocol.Network.CookieSourceScheme}
+   */
+  sourceScheme() {
+    return /** @type {Protocol.Network.CookieSourceScheme} */ (this._attributes['sourcescheme']);
+  }
+
+  /**
      * @return {number}
      */
   size() {
@@ -151,13 +178,22 @@ export class Cookie {
   }
 
   /**
-     * @return {string|null}
-     */
+   * @deprecated
+   * @return {string|null}
+   */
   url() {
     if (!this.domain() || !this.path()) {
       return null;
     }
-    return (this.secure() ? 'https://' : 'http://') + this.domain() + this.path();
+    let port = '';
+    const sourcePort = this.sourcePort();
+    // Do not include standard ports to ensure the back-end will change standard ports according to the scheme.
+    if (sourcePort && sourcePort !== 80 && sourcePort !== 443) {
+      port = `:${this.sourcePort()}`;
+    }
+    // We must not consider the this.sourceScheme() here, otherwise it will be impossible to set a cookie without
+    // the Secure attribute from a secure origin.
+    return (this.secure() ? 'https://' : 'http://') + this.domain() + port + this.path();
   }
 
   /**
@@ -186,7 +222,7 @@ export class Cookie {
 
   /**
    * @param {string} key
-   * @param {string|number=} value
+   * @param {string|number|boolean=} value
    */
   addAttribute(key, value) {
     const normalizedKey = key.toLowerCase();
@@ -212,6 +248,57 @@ export class Cookie {
   getCookieLine() {
     return this._cookieLine;
   }
+
+  /**
+   * @param {string} securityOrigin
+   * @returns {boolean}
+   */
+  matchesSecurityOrigin(securityOrigin) {
+    const hostname = new URL(securityOrigin).hostname;
+    return Cookie.isDomainMatch(this.domain(), hostname);
+  }
+
+  /**
+   * @param {string} domain
+   * @param {string} hostname
+   * @returns {boolean}
+   */
+  static isDomainMatch(domain, hostname) {
+    // This implementation mirrors
+    // https://source.chromium.org/search?q=net::cookie_util::IsDomainMatch()
+    //
+    // Can domain match in two ways; as a domain cookie (where the cookie
+    // domain begins with ".") or as a host cookie (where it doesn't).
+
+    // Some consumers of the CookieMonster expect to set cookies on
+    // URLs like http://.strange.url.  To retrieve cookies in this instance,
+    // we allow matching as a host cookie even when the domain_ starts with
+    // a period.
+    if (hostname === domain) {
+      return true;
+    }
+
+    // Domain cookie must have an initial ".".  To match, it must be
+    // equal to url's host with initial period removed, or a suffix of
+    // it.
+
+    // Arguably this should only apply to "http" or "https" cookies, but
+    // extension cookie tests currently use the funtionality, and if we
+    // ever decide to implement that it should be done by preventing
+    // such cookies from being set.
+    if (!domain || domain[0] !== '.') {
+      return false;
+    }
+
+    // The host with a "." prefixed.
+    if (domain.substr(1) === hostname) {
+      return true;
+    }
+
+    // A pure suffix of the host (ok since we know the domain already
+    // starts with a ".")
+    return hostname.length > domain.length && hostname.endsWith(domain);
+  }
 }
 
 /**
@@ -235,6 +322,9 @@ export const Attributes = {
   HttpOnly: 'httpOnly',
   Secure: 'secure',
   SameSite: 'sameSite',
+  SameParty: 'sameParty',
+  SourceScheme: 'sourceScheme',
+  SourcePort: 'sourcePort',
   Priority: 'priority',
 };
 

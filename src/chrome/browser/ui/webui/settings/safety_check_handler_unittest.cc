@@ -16,15 +16,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/ui/webui/help/test_version_updater.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/passwords_private.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
@@ -34,6 +37,8 @@
 #include "components/safety_check/test_update_check_helper.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
@@ -45,7 +50,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/chromeos/devicetype_utils.h"
 #endif
 
@@ -64,8 +69,8 @@ constexpr char kChromeCleaner[] = "chrome-cleaner";
 #endif
 
 namespace {
-using Enabled = util::StrongAlias<class EnabledTag, bool>;
-using UserCanDisable = util::StrongAlias<class UserCanDisableTag, bool>;
+using Enabled = base::StrongAlias<class EnabledTag, bool>;
+using UserCanDisable = base::StrongAlias<class UserCanDisableTag, bool>;
 
 class TestingSafetyCheckHandler : public SafetyCheckHandler {
  public:
@@ -96,8 +101,7 @@ class TestDestructionVersionUpdater : public TestVersionUpdater {
  public:
   ~TestDestructionVersionUpdater() override { destructor_invoked_ = true; }
 
-  void CheckForUpdate(const StatusCallback& callback,
-                      const PromoteCallback&) override {}
+  void CheckForUpdate(StatusCallback callback, PromoteCallback) override {}
 
   static bool GetDestructorInvoked() { return destructor_invoked_; }
 
@@ -144,6 +148,10 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     compromised_password_count_ = compromised_password_count;
   }
 
+  void SetNumWeakCredentials(int weak_password_count) {
+    weak_password_count_ = weak_password_count;
+  }
+
   void SetPasswordCheckState(
       extensions::api::passwords_private::PasswordCheckState state) {
     state_ = state;
@@ -155,11 +163,23 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
   }
 
   void InvokeOnCompromisedCredentialsChanged() {
+    // Compromised credentials can be added only after password form to which
+    // they corresponds exists.
+    password_manager::PasswordForm form;
+    form.signon_realm = std::string("test.com");
+    form.url = GURL("test.com");
     // Credentials have to be unique, so the callback is always invoked.
-    store_->AddCompromisedCredentials(
-        {"test.com",
-         base::ASCIIToUTF16("test" +
-                            base::NumberToString(test_credential_counter_++))});
+    form.username_value = base::ASCIIToUTF16(
+        "test" + base::NumberToString(test_credential_counter_++));
+    form.password_value = base::ASCIIToUTF16("password");
+    form.username_element = base::ASCIIToUTF16("username_element");
+    store_->AddLogin(form);
+    base::RunLoop().RunUntilIdle();
+
+    store_->AddInsecureCredential(password_manager::CompromisedCredentials(
+        form.signon_realm, form.username_value, base::Time(),
+        password_manager::InsecureType::kLeaked,
+        password_manager::IsMuted(false)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -171,6 +191,16 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
       compromised[i].username = "test" + base::NumberToString(i);
     }
     return compromised;
+  }
+
+  std::vector<extensions::api::passwords_private::InsecureCredential>
+  GetWeakCredentials() override {
+    std::vector<extensions::api::passwords_private::InsecureCredential> weak(
+        weak_password_count_);
+    for (int i = 0; i < weak_password_count_; ++i) {
+      weak[i].username = "test" + base::NumberToString(i);
+    }
+    return weak;
   }
 
   extensions::api::passwords_private::PasswordCheckStatus
@@ -192,6 +222,7 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  private:
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;
   int compromised_password_count_ = 0;
+  int weak_password_count_ = 0;
   int done_ = 0;
   int total_ = 0;
   int test_credential_counter_ = 0;
@@ -249,7 +280,7 @@ class TestChromeCleanerControllerDelegate
 
 }  // namespace
 
-class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
+class SafetyCheckHandlerTest : public testing::Test {
  public:
   void SetUp() override;
   void TearDown() override;
@@ -274,6 +305,9 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
   void ReplaceBrowserName(base::string16* s);
 
  protected:
+  content::BrowserTaskEnvironment browser_task_environment_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<content::WebContents> web_contents_;
   safety_check::TestUpdateCheckHelper* update_helper_ = nullptr;
   TestVersionUpdater* version_updater_ = nullptr;
   std::unique_ptr<password_manager::BulkLeakCheckService> test_leak_service_;
@@ -283,13 +317,20 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
   base::HistogramTester histogram_tester_;
+  base::test::ScopedFeatureList feature_list_;
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   TestChromeCleanerControllerDelegate test_chrome_cleaner_controller_delegate_;
 #endif
 };
 
 void SafetyCheckHandlerTest::SetUp() {
-  ChromeRenderViewHostTestHarness::SetUp();
+  feature_list_.InitWithFeatures({features::kSafetyCheckWeakPasswords}, {});
+
+  TestingProfile::Builder builder;
+  profile_ = builder.Build();
+
+  web_contents_ = content::WebContents::Create(
+      content::WebContents::CreateParams(profile_.get()));
 
   // The unique pointer to a TestVersionUpdater gets moved to
   // SafetyCheckHandler, but a raw pointer is retained here to change its
@@ -301,8 +342,8 @@ void SafetyCheckHandlerTest::SetUp() {
   test_leak_service_ = std::make_unique<password_manager::BulkLeakCheckService>(
       nullptr, nullptr);
   test_passwords_delegate_.SetBulkLeakCheckService(test_leak_service_.get());
-  test_web_ui_.set_web_contents(web_contents());
-  test_extension_prefs_ = extensions::ExtensionPrefs::Get(profile());
+  test_web_ui_.set_web_contents(web_contents_.get());
+  test_extension_prefs_ = extensions::ExtensionPrefs::Get(profile_.get());
   auto timestamp_delegate = std::make_unique<TestTimestampDelegate>();
   safety_check_ = std::make_unique<TestingSafetyCheckHandler>(
       std::move(update_helper), std::move(version_updater),
@@ -312,11 +353,12 @@ void SafetyCheckHandlerTest::SetUp() {
   test_web_ui_.ClearTrackedCalls();
   safety_check_->set_web_ui(&test_web_ui_);
   safety_check_->AllowJavascript();
+
+  browser_task_environment_.RunUntilIdle();
 }
 
 void SafetyCheckHandlerTest::TearDown() {
   test_passwords_delegate_.TearDown();
-  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 const base::DictionaryValue*
@@ -403,7 +445,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kUpdated));
   ASSERT_TRUE(event);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   base::string16 expected = base::ASCIIToUTF16("Your ") +
                             ui::GetChromeOSDeviceName() +
                             base::ASCIIToUTF16(" is up to date");
@@ -424,7 +466,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updating) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kUpdating));
   ASSERT_TRUE(event);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   VerifyDisplayString(event, "Updating your device");
 #else
   VerifyDisplayString(event, "Updating Browser");
@@ -442,7 +484,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
           kUpdates,
           static_cast<int>(SafetyCheckHandler::UpdateStatus::kRelaunch));
   ASSERT_TRUE(event);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   VerifyDisplayString(
       event, "Nearly up to date! Restart your device to finish updating.");
 #else
@@ -955,7 +997,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_SafeStateThenMoreEvents) {
   EXPECT_FALSE(event2);
 }
 
-TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_OnlyCompromisedExist) {
   constexpr int kCompromised = 7;
   test_passwords_delegate_.SetNumCompromisedCredentials(kCompromised);
   safety_check_->PerformSafetyCheck();
@@ -979,6 +1021,60 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
   histogram_tester_.ExpectBucketCount(
       "Settings.SafetyCheck.PasswordsResult",
       SafetyCheckHandler::PasswordsStatus::kCompromisedExist, 1);
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedAndWeakExist) {
+  constexpr int kCompromised = 7;
+  constexpr int kWeak = 13;
+  test_passwords_delegate_.SetNumCompromisedCredentials(kCompromised);
+  test_passwords_delegate_.SetNumWeakCredentials(kWeak);
+  safety_check_->PerformSafetyCheck();
+  // First, a "running" change of state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(GetSafetyCheckStatusChangedWithDataIfExists(
+      kPasswords,
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  // Compromised passwords found state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kIdle);
+  const base::DictionaryValue* event2 =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(
+              SafetyCheckHandler::PasswordsStatus::kCompromisedExist));
+  ASSERT_TRUE(event2);
+  VerifyDisplayString(
+      event2, base::NumberToString(kCompromised) + " compromised passwords, " +
+                  base::NumberToString(kWeak) + " weak passwords");
+  histogram_tester_.ExpectBucketCount(
+      "Settings.SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kCompromisedExist, 1);
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_OnlyWeakExist) {
+  constexpr int kWeak = 13;
+  test_passwords_delegate_.SetNumWeakCredentials(kWeak);
+  safety_check_->PerformSafetyCheck();
+  // First, a "running" change of state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(GetSafetyCheckStatusChangedWithDataIfExists(
+      kPasswords,
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  // Compromised passwords found state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kIdle);
+  const base::DictionaryValue* event2 =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(
+              SafetyCheckHandler::PasswordsStatus::kWeakPasswordsExist));
+  ASSERT_TRUE(event2);
+  VerifyDisplayString(event2, base::NumberToString(kWeak) + " weak passwords");
+  histogram_tester_.ExpectBucketCount(
+      "Settings.SafetyCheck.PasswordsResult",
+      SafetyCheckHandler::PasswordsStatus::kWeakPasswordsExist, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {

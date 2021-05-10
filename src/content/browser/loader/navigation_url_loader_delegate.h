@@ -12,11 +12,12 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/public/common/navigation_policy.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/navigation/navigation_policy.h"
 
 namespace net {
+class NetworkIsolationKey;
 struct RedirectInfo;
 }
 
@@ -34,8 +35,13 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
  public:
   // Called when the request is redirected. Call FollowRedirect to continue
   // processing the request.
+  //
+  // |network_isolation_key| is the NetworkIsolationKey associated with the
+  // request that was redirected, not the one that will be used if the redirect
+  // is followed.
   virtual void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::URLResponseHeadPtr response) = 0;
 
   // Called when the request receives its response. No further calls will be
@@ -51,13 +57,17 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // disallowed.
   //
   // |download_policy| specifies if downloading is disallowed.
+  //
+  // Invoking this method will delete the URLLoader, so it needs to take all
+  // arguments by value.
   virtual void OnResponseStarted(
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
-      const GlobalRequestID& request_id,
+      GlobalRequestID request_id,
       bool is_download,
-      NavigationDownloadPolicy download_policy,
+      blink::NavigationDownloadPolicy download_policy,
+      net::NetworkIsolationKey network_isolation_key,
       base::Optional<SubresourceLoaderParams> subresource_loader_params) = 0;
 
   // Called if the request fails before receving a response. Specific
@@ -68,12 +78,6 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // a certificate error.
   virtual void OnRequestFailed(
       const network::URLLoaderCompletionStatus& status) = 0;
-
-  // Called after the network request has begun on the IO thread at time
-  // |timestamp|. This is just a thread hop but is used to compare timing
-  // against the pre-PlzNavigate codepath which didn't start the network request
-  // until after the renderer was initialized.
-  virtual void OnRequestStarted(base::TimeTicks timestamp) = 0;
 
  protected:
   NavigationURLLoaderDelegate() {}

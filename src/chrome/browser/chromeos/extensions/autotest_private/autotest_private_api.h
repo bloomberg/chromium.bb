@@ -14,10 +14,10 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/compiler_specific.h"
 #include "base/optional.h"
+#include "base/scoped_observation.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom-forward.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
@@ -378,14 +378,24 @@ class AutotestPrivateGetClipboardTextDataFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetClipboardTextDataFunction : public ExtensionFunction {
+class AutotestPrivateSetClipboardTextDataFunction
+    : public ExtensionFunction,
+      public ui::ClipboardObserver {
  public:
+  AutotestPrivateSetClipboardTextDataFunction();
+
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setClipboardTextData",
                              AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA)
 
  private:
   ~AutotestPrivateSetClipboardTextDataFunction() override;
   ResponseAction Run() override;
+
+  // ui::ClipboardObserver:
+  void OnClipboardDataChanged() override;
+
+  base::ScopedObservation<ui::ClipboardMonitor, ui::ClipboardObserver>
+      observation_{this};
 };
 
 class AutotestPrivateSetCrostiniEnabledFunction : public ExtensionFunction {
@@ -1188,10 +1198,8 @@ class AutotestPrivateSetMetricsEnabledFunction : public ExtensionFunction {
   ~AutotestPrivateSetMetricsEnabledFunction() override;
   ResponseAction Run() override;
 
-  void OnStatsReportingStateChanged();
+  void OnDeviceSettingsStored();
 
-  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
-      stats_reporting_observer_subscription_;
   bool target_value_ = false;
 };
 

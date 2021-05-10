@@ -13,7 +13,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -25,11 +27,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -69,7 +73,7 @@ const char kExamplePslHostname[] = "psl.example.com";
 
 // Note: This helper applies to ChromeOS too, but is currently unused there. So
 // define it out to prevent a compile error due to the unused function.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void GetNewTab(Browser* browser, content::WebContents** web_contents) {
   PasswordManagerBrowserTestBase::GetNewTab(browser, web_contents);
 }
@@ -89,7 +93,7 @@ class PathDeletionWaiter {
     if (!base::PathExists(path_)) {
       return true;
     }
-    watcher_.Watch(path_, /*recursive=*/true,
+    watcher_.Watch(path_, base::FilePathWatcher::Type::kRecursive,
                    base::BindRepeating(&PathDeletionWaiter::PathChanged,
                                        base::Unretained(this)));
     run_loop_.Run();
@@ -108,7 +112,7 @@ class PathDeletionWaiter {
   base::RunLoop run_loop_;
 };
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // This test fixture is similar to SingleClientPasswordsSyncTest, but it also
 // sets up all the necessary test hooks etc for PasswordManager code (like
@@ -157,7 +161,7 @@ class PasswordManagerSyncTest : public SyncTest {
   void SetUpInProcessBrowserTestFixture() override {
     SyncTest::SetUpInProcessBrowserTestFixture();
 
-    test_signin_client_factory_ =
+    test_signin_client_subscription_ =
         secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
     mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
@@ -356,8 +360,7 @@ class PasswordManagerSyncTest : public SyncTest {
 
   base::test::ScopedFeatureList feature_list_;
 
-  secondary_account_helper::ScopedSigninClientFactory
-      test_signin_client_factory_;
+  base::CallbackListSubscription test_signin_client_subscription_;
 
   // A test server instance that runs on HTTPS (as opposed to the default
   // |embedded_test_server()|). This is necessary to simulate Gaia pages, which
@@ -369,7 +372,7 @@ class PasswordManagerSyncTest : public SyncTest {
   AccountInfo signed_in_account_;
 };
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   content::WebContents* web_contents = nullptr;
@@ -748,6 +751,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                        OfferToSaveNonPrimaryAccountCredential) {
+  // Disable signin interception, because it suppresses the password bubble.
+  // See PasswordManagerBrowserTestWithSigninInterception for tests with
+  // interception enabled.
+  g_browser_process->local_state()->SetBoolean(prefs::kBrowserAddPersonEnabled,
+                                               false);
+
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   SetupSyncTransportWithPasswordAccountStorage();
@@ -843,8 +852,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   content::BrowsingDataRemoverCompletionObserver observer(remover);
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(),
-      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_ACCOUNT_PASSWORDS,
+      chrome_browsing_data_remover::DATA_TYPE_SITE_DATA |
+          chrome_browsing_data_remover::DATA_TYPE_ACCOUNT_PASSWORDS,
       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
 
@@ -969,6 +978,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerTurnAccountStorageOffSyncTest,
   EXPECT_TRUE(waiter.WaitForPathToBeDeleted());
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace

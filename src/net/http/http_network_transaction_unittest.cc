@@ -52,6 +52,7 @@
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -580,8 +581,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
   const CommonConnectJobParams dummy_connect_job_params_;
 
   const net::NetworkIsolationKey kNetworkIsolationKey =
-      NetworkIsolationKey(url::Origin::Create(GURL("https://foo.test/")),
-                          url::Origin::Create(GURL("https://bar.test/")));
+      NetworkIsolationKey(SchemefulSite(GURL("https://foo.test/")),
+                          SchemefulSite(GURL("https://bar.test/")));
 
   // These clocks are defined here, even though they're only used in the
   // Reporting tests below, since they need to be destroyed after
@@ -775,9 +776,6 @@ bool CheckNTLMProxyAuth(
 #endif  // defined(NTLM_PORTABLE)
 
 }  // namespace
-
-// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
-// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
 
 TEST_F(HttpNetworkTransactionTest, Basic) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -4408,10 +4406,10 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
 // affects server credentials, not proxy credentials.
 TEST_F(HttpNetworkTransactionTest,
        BasicAuthProxyMatchesServerAuthWithNetworkIsolationKeyNoTunnel) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   // This test would need to use a single socket without this option enabled.
   // Best to use this option when it would affect a test, as it will eventually
@@ -4659,10 +4657,10 @@ TEST_F(HttpNetworkTransactionTest,
 // Much like the test above, but uses tunnelled connections.
 TEST_F(HttpNetworkTransactionTest,
        BasicAuthProxyMatchesServerAuthWithNetworkIsolationKeyWithTunnel) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   // This test would need to use a single socket without this option enabled.
   // Best to use this option when it would affect a test, as it will eventually
@@ -6288,7 +6286,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
 
 // Make sure that NetworkIsolationKeys are passed down to the proxy layer.
 TEST_F(HttpNetworkTransactionTest, ProxyResolvedWithNetworkIsolationKey) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const SchemefulSite kSite(GURL("https://foo.test/"));
 
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
@@ -6418,6 +6416,9 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
 
+  // DNS aliases should be empty when using a proxy.
+  EXPECT_TRUE(response->dns_aliases.empty());
+
   TransportInfo expected_transport;
   expected_transport.type = TransportType::kProxied;
   expected_transport.endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 70);
@@ -6485,6 +6486,9 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   EXPECT_TRUE(response->proxy_server.is_https());
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  // DNS aliases should be empty when using a proxy.
+  EXPECT_TRUE(response->dns_aliases.empty());
 
   TransportInfo expected_transport;
   expected_transport.type = TransportType::kProxied;
@@ -9390,6 +9394,105 @@ TEST_F(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+}
+
+TEST_F(HttpNetworkTransactionTest, CloseConnectionOnDestruction) {
+  enum class TestCase {
+    kReadHeaders,
+    kReadPartOfBodyRead,
+    kReadAllOfBody,
+  };
+
+  for (auto test_case : {TestCase::kReadHeaders, TestCase::kReadPartOfBodyRead,
+                         TestCase::kReadAllOfBody}) {
+    SCOPED_TRACE(testing::Message()
+                 << "Test case: " << static_cast<int>(test_case));
+    for (bool close_connection : {false, true}) {
+      if (test_case != TestCase::kReadAllOfBody || close_connection == false)
+        continue;
+      SCOPED_TRACE(testing::Message()
+                   << "Close connection: " << close_connection);
+
+      HttpRequestInfo request;
+      request.method = "GET";
+      request.url = GURL("http://foo.test/");
+      request.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+      std::unique_ptr<HttpNetworkSession> session(
+          CreateSession(&session_deps_));
+
+      std::unique_ptr<HttpNetworkTransaction> trans =
+          std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                   session.get());
+
+      MockRead data_reads[] = {
+          // A part of the response body is received with the response headers.
+          MockRead("HTTP/1.1 200 OK\r\n"
+                   "Content-Length: 11\r\n\r\n"
+                   "hello world"),
+          MockRead(SYNCHRONOUS, OK),
+      };
+
+      StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+      session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+      TestCompletionCallback callback;
+
+      int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+      const HttpResponseInfo* response = trans->GetResponseInfo();
+      ASSERT_TRUE(response);
+
+      EXPECT_TRUE(response->headers);
+      std::string status_line = response->headers->GetStatusLine();
+      EXPECT_EQ("HTTP/1.1 200 OK", status_line);
+
+      EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+      std::string response_data;
+      switch (test_case) {
+        case TestCase::kReadHeaders: {
+          // Already read the headers, nothing else to do.
+          break;
+        }
+
+        case TestCase::kReadPartOfBodyRead: {
+          scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(5);
+          rv = trans->Read(buf.get(), 5, callback.callback());
+          ASSERT_EQ(5, callback.GetResult(rv));
+          response_data.assign(buf->data(), 5);
+          EXPECT_EQ("hello", response_data);
+          break;
+        }
+
+        case TestCase::kReadAllOfBody: {
+          rv = ReadTransaction(trans.get(), &response_data);
+          EXPECT_THAT(rv, IsOk());
+          EXPECT_EQ("hello world", response_data);
+          break;
+        }
+      }
+
+      if (close_connection)
+        trans->CloseConnectionOnDestruction();
+      trans.reset();
+
+      // Wait for the socket to be drained and added to the socket pool or
+      // destroyed.
+      base::RunLoop().RunUntilIdle();
+
+      // In the case all the body was read, the socket will have been released
+      // before the CloseConnectionOnDestruction() call, so will not be
+      // destroyed.
+      if (close_connection && test_case != TestCase::kReadAllOfBody) {
+        EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
+      } else {
+        EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+      }
+    }
+  }
 }
 
 // Grab a socket, use it, and put it back into the pool. Then, make
@@ -13346,10 +13449,10 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.http_server_properties =
       std::make_unique<HttpServerProperties>();
 
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const SchemefulSite kSite2(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
 
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -22161,10 +22264,10 @@ TEST_F(HttpNetworkTransactionTest, ClientCertSocketReuse) {
 // same key, the second a different one. Checks that the requests are
 // partitioned across sockets as expected.
 TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
-  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
-  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
-  NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
-  NetworkIsolationKey network_isolation_key2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("http://origin1/"));
+  const SchemefulSite kSite2(GURL("http://origin2/"));
+  NetworkIsolationKey network_isolation_key1(kSite1, kSite1);
+  NetworkIsolationKey network_isolation_key2(kSite2, kSite2);
 
   for (bool partition_connections : {false, true}) {
     SCOPED_TRACE(partition_connections);
@@ -22309,10 +22412,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
 }
 
 TEST_F(HttpNetworkTransactionTest, NetworkIsolationH2) {
-  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
-  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
-  NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
-  NetworkIsolationKey network_isolation_key2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("http://origin1/"));
+  const SchemefulSite kSite2(GURL("http://origin2/"));
+  NetworkIsolationKey network_isolation_key1(kSite1, kSite1);
+  NetworkIsolationKey network_isolation_key2(kSite2, kSite2);
 
   // Whether to use an H2 proxy. When false, uses HTTPS H2 requests without a
   // proxy, when true, uses HTTP requests over an H2 proxy. It's unnecessary to
@@ -22539,12 +22642,12 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationPreconnect) {
     kDontUsePreconnect,
   };
 
-  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
-  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
-  const auto kOrigin3 = url::Origin::Create(GURL("http://origin3/"));
-  NetworkIsolationKey preconnect1_isolation_key(kOrigin1, kOrigin1);
-  NetworkIsolationKey preconnect2_isolation_key(kOrigin2, kOrigin2);
-  NetworkIsolationKey not_preconnected_isolation_key(kOrigin3, kOrigin3);
+  const SchemefulSite kSite1(GURL("http://origin1/"));
+  const SchemefulSite kSite2(GURL("http://origin2/"));
+  const SchemefulSite kSite3(GURL("http://origin3/"));
+  NetworkIsolationKey preconnect1_isolation_key(kSite1, kSite1);
+  NetworkIsolationKey preconnect2_isolation_key(kSite2, kSite2);
+  NetworkIsolationKey not_preconnected_isolation_key(kSite3, kSite3);
 
   // Test that only preconnects with
   for (TestCase test_case :
@@ -22659,10 +22762,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSL) {
        features::kPartitionSSLSessionsByNetworkIsolationKey},
       {});
 
-  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
-  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("http://origin1/"));
+  const SchemefulSite kSite2(GURL("http://origin2/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // The server always sends Connection: close, so each request goes over a
@@ -22781,10 +22884,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
       ConfiguredProxyResolutionService::CreateFixed(
           "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
-  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
-  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
-  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const SchemefulSite kSite1(GURL("http://origin1/"));
+  const SchemefulSite kSite2(GURL("http://origin2/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Make both a tunneled and non-tunneled request.
@@ -23302,6 +23405,122 @@ TEST_F(HttpNetworkTransactionTest, PostHandshakeClientCertWithSockets) {
       IsOk());
   EXPECT_EQ("post-auth", response_post_auth_bar);
   trans_post_auth_bar.reset();
+}
+
+TEST_F(HttpNetworkTransactionTest, RequestWithDnsAliases) {
+  // Create a request.
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Add a rule with DNS aliases to the host resolver.
+  std::vector<std::string> aliases({"alias1", "alias2", "www.example.org"});
+  auto* rules = session_deps_.host_resolver->rules();
+  rules->AddIPLiteralRuleWithDnsAliases("www.example.org", "127.0.0.1",
+                                        std::move(aliases));
+  session_deps_.host_resolver->set_rules(rules);
+
+  // Create a HttpNetworkSession.
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Create a transaction.
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  // Prepare the expected data to be written and read. The client should send
+  // the request below.
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The server should respond with the following.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  TestCompletionCallback callback;
+
+  // Start the transaction.
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Wait for completion.
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Get the response info.
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+
+  // Verify that the alias list was stored in the response info as expected.
+  ASSERT_TRUE(response);
+  EXPECT_THAT(response->dns_aliases,
+              testing::ElementsAre("alias1", "alias2", "www.example.org"));
+}
+
+TEST_F(HttpNetworkTransactionTest, RequestWithNoAdditionalDnsAliases) {
+  // Create a request.
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Add a rule without DNS aliases to the host resolver. The parameter is an
+  // empty vector.
+  std::vector<std::string> aliases;
+  auto* rules = session_deps_.host_resolver->rules();
+  rules->AddIPLiteralRuleWithDnsAliases("www.example.org", "127.0.0.1",
+                                        std::move(aliases));
+  session_deps_.host_resolver->set_rules(rules);
+
+  // Create a HttpNetworkSession.
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Create a transaction.
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  // Prepare the expected data to be written and read. The client should send
+  // the request below.
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The server should respond with the following.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  TestCompletionCallback callback;
+
+  // Start the transaction.
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Wait for completion.
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Get the response info.
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+
+  // Verify that the alias list was stored in the response info as expected.
+  ASSERT_TRUE(response);
+  EXPECT_THAT(response->dns_aliases, testing::ElementsAre("www.example.org"));
 }
 
 }  // namespace net

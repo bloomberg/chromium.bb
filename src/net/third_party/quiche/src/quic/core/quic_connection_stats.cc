@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
+#include "quic/core/quic_connection_stats.h"
 
 namespace quic {
 
@@ -58,6 +58,11 @@ std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << " key_update_count: " << s.key_update_count;
   os << " num_failed_authentication_packets_received: "
      << s.num_failed_authentication_packets_received;
+  os << " num_tls_server_zero_rtt_packets_received_after_discarding_decrypter: "
+     << s.num_tls_server_zero_rtt_packets_received_after_discarding_decrypter;
+  os << " address_validated_via_decrypting_packet: "
+     << s.address_validated_via_decrypting_packet;
+  os << " address_validated_via_token: " << s.address_validated_via_token;
   os << " }";
 
   return os;

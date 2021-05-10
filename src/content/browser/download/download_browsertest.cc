@@ -691,20 +691,17 @@ class DownloadInProgressObserver : public DownloadTestObserverInProgress {
   DownloadManager* manager_;
 };
 
-class ErrorStreamCountingObserver : download::DownloadItem::Observer {
+class DownloadCountingObserver : public download::DownloadItem::Observer {
  public:
-  ErrorStreamCountingObserver() : item_(nullptr), count_(0) {}
+  DownloadCountingObserver() : item_(nullptr), count_(0) {}
 
-  ~ErrorStreamCountingObserver() override {
+  ~DownloadCountingObserver() override {
     if (item_)
       item_->RemoveObserver(this);
   }
 
   void OnDownloadUpdated(download::DownloadItem* download) override {
-    std::unique_ptr<base::HistogramSamples> samples =
-        histogram_tester_.GetHistogramSamplesSinceCreation(
-            "Download.ParallelDownload.CreationFailureReason");
-    if (samples->TotalCount() == count_ && completion_closure_)
+    if (IsCountReached(download, count_) && completion_closure_)
       std::move(completion_closure_).Run();
   }
 
@@ -713,6 +710,8 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
   }
 
   void WaitForFinished(download::DownloadItem* item, int count) {
+    if (IsCountReached(item, count))
+      return;
     item_ = item;
     count_ = count;
     if (item_) {
@@ -723,11 +722,33 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
     }
   }
 
+ protected:
+  virtual bool IsCountReached(download::DownloadItem* download, int count) = 0;
+
  private:
-  base::HistogramTester histogram_tester_;
   download::DownloadItem* item_;
   int count_;
   base::OnceClosure completion_closure_;
+};
+
+class ReceivedSlicesCountingObserver : public DownloadCountingObserver {
+ private:
+  bool IsCountReached(download::DownloadItem* download, int count) override {
+    return download->GetReceivedSlices().size() >= static_cast<size_t>(count);
+  }
+};
+
+class ErrorStreamCountingObserver : public DownloadCountingObserver {
+ private:
+  bool IsCountReached(download::DownloadItem* download, int count) override {
+    std::unique_ptr<base::HistogramSamples> samples =
+        histogram_tester_.GetHistogramSamplesSinceCreation(
+            "Download.ParallelDownload.CreationFailureReason");
+    return samples->TotalCount() == count;
+  }
+
+ private:
+  base::HistogramTester histogram_tester_;
 };
 
 // Class to wait for a WebContents to kick off a specified number of
@@ -934,6 +955,8 @@ class DownloadContentTest : public ContentBrowserTest {
                              real_host);
     host_resolver()->AddRule(TestDownloadHttpResponse::kTestDownloadHostName,
                              real_host);
+    host_resolver()->AddRule("a.test", "127.0.0.1");
+    host_resolver()->AddRule("b.test", "127.0.0.1");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -3486,10 +3509,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
 
   ASSERT_GE(2u, requests.size());
   net::test_server::HttpRequest last_request = requests.back()->http_request;
-  EXPECT_TRUE(last_request.headers.find(net::HttpRequestHeaders::kReferer) !=
-              last_request.headers.end());
-  EXPECT_EQ(document_url.spec(),
-            last_request.headers.at(net::HttpRequestHeaders::kReferer));
+  ASSERT_TRUE(
+      base::Contains(last_request.headers, net::HttpRequestHeaders::kReferer));
+  EXPECT_EQ(last_request.headers.at(net::HttpRequestHeaders::kReferer),
+            document_url.GetOrigin().spec());
 }
 
 // Test that the referrer header is dropped for HTTP downloads from HTTPS.
@@ -3522,30 +3545,38 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForHTTPS) {
   ASSERT_TRUE(http_origin.ShutdownAndWaitUntilComplete());
 }
 
-// Check that the cookie policy is correctly updated when downloading a file
-// that redirects cross origin.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
-  net::EmbeddedTestServer origin_one;
-  net::EmbeddedTestServer origin_two;
+// Check that the site-for-cookies is correctly updated when downloading a file
+// that redirects cross site, by verifying that a SameSite cookie can be set
+// following a cross-site redirect.
+// (It is not enough to redirect across origins with the same host but different
+// port numbers, because cookies do not respect ports.)
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, UpdateSiteForCookies) {
+  net::EmbeddedTestServer site_a;
+  net::EmbeddedTestServer site_b;
 
-  // |url| redirects to a different origin |download| which tries to set a
-  // cookie.
-  base::StringPairs cookie_header;
-  cookie_header.push_back(
-      std::make_pair(std::string("Set-Cookie"), std::string("A=B")));
-  origin_one.RegisterRequestHandler(CreateBasicResponseHandler(
-      "/foo", net::HTTP_OK, cookie_header, "application/octet-stream", "abcd"));
-  ASSERT_TRUE(origin_one.Start());
+  base::StringPairs cookie_headers;
+  cookie_headers.push_back(std::make_pair(std::string("Set-Cookie"),
+                                          std::string("A=lax; SameSite=Lax")));
+  cookie_headers.push_back(std::make_pair(
+      std::string("Set-Cookie"), std::string("B=strict; SameSite=Strict")));
 
-  origin_two.RegisterRequestHandler(
-      CreateRedirectHandler("/bar", origin_one.GetURL("/foo")));
-  ASSERT_TRUE(origin_two.Start());
+  // This will request a URL on b.test, which redirects to a url that sets the
+  // cookies on a.test.
+  site_a.RegisterRequestHandler(CreateBasicResponseHandler(
+      "/sets-samesite-cookies", net::HTTP_OK, cookie_headers,
+      "application/octet-stream", "abcd"));
+  ASSERT_TRUE(site_a.Start());
+  site_b.RegisterRequestHandler(
+      CreateRedirectHandler("/redirected-download",
+                            site_a.GetURL("a.test", "/sets-samesite-cookies")));
+  ASSERT_TRUE(site_b.Start());
 
   // Download the file.
   SetupEnsureNoPendingDownloads();
   std::unique_ptr<download::DownloadUrlParameters> download_parameters(
       DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-          shell()->web_contents(), origin_two.GetURL("/bar"),
+          shell()->web_contents(),
+          site_b.GetURL("b.test", "/redirected-download"),
           TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
   DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
@@ -3559,10 +3590,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
 
-  // Check that the cookies were correctly set.
-  EXPECT_EQ("A=B",
+  // Check that the cookies were correctly set on a.test.
+  EXPECT_EQ("A=lax; B=strict",
             content::GetCookies(shell()->web_contents()->GetBrowserContext(),
-                                origin_one.GetURL("/")));
+                                site_a.GetURL("a.test", "/")));
 }
 
 // A filename suggestion specified via a @download attribute should not be
@@ -3593,7 +3624,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // if there were a top-level navigation to the final URL.
   net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kMainFrame, final_url_origin,
-      final_url_origin, net::SiteForCookies::FromOrigin(final_url_origin));
+      final_url_origin, net::SiteForCookies::FromOrigin(final_url_origin),
+      std::set<net::SchemefulSite>());
 
   // <origin_one>/download-attribute.html initiates a download of
   // <origin_one>/ping, which redirects to <origin_two>/download.
@@ -4146,7 +4178,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // navigation to the download.
   net::IsolationInfo expected_isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kSubFrame, download_origin,
-      download_origin, net::SiteForCookies::FromOrigin(download_origin));
+      download_origin, net::SiteForCookies::FromOrigin(download_origin),
+      std::set<net::SchemefulSite>());
 
   GURL frame_url = origin_one.GetURL("/download-attribute.html?target=" +
                                      download_url.spec());
@@ -4325,14 +4358,7 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
 
 // Verify that if the second request fails after the beginning request takes
 // over and completes its slice, download should complete.
-// Flaky on Windows and Linux.  http://crbug.com/1106059
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_MiddleSliceDelayedError DISABLED_MiddleSliceDelayedError
-#else
-#define MAYBE_MiddleSliceDelayedError MiddleSliceDelayedError
-#endif
-
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_MiddleSliceDelayedError) {
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MiddleSliceDelayedError) {
   scoped_refptr<TestFileErrorInjector> injector(
       TestFileErrorInjector::Create(DownloadManagerForShell(shell())));
 
@@ -4364,6 +4390,12 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_MiddleSliceDelayedError) {
 
   // Wait for the 3rd request to complete first.
   test_response_handler()->WaitUntilCompletion(1);
+  ReceivedSlicesCountingObserver obs;
+  obs.WaitForFinished(download, 2);
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices =
+      download->GetReceivedSlices();
+  EXPECT_EQ(received_slices[1].offset + received_slices[1].received_bytes,
+            5097152);
   // Now resume the first request and wait for it to complete.
   request_pause_handler.Resume();
   test_response_handler()->WaitUntilCompletion(2);
@@ -4374,6 +4406,7 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_MiddleSliceDelayedError) {
   const TestDownloadResponseHandler::CompletedRequests& completed_requests =
       test_response_handler()->completed_requests();
   EXPECT_EQ(3u, completed_requests.size());
+  WaitForCompletion(download);
   ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
                             download->GetTargetFilePath());
 }
@@ -4700,7 +4733,7 @@ class MhtmlLoadingTest : public DownloadContentTest {
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
     path = path.Append(GetTestDataFilePath());
     path = path.Append(file_path);
-    return GURL(FILE_PATH_LITERAL("file:") + path.value());
+    return GURL("file:" + path.AsUTF8Unsafe());
   }
 };
 

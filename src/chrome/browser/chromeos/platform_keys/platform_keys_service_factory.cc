@@ -10,10 +10,10 @@
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -51,7 +51,7 @@ void GetCertDatabaseOnIoThread(
 
   base::RepeatingCallback<void(net::NSSCertDatabase*)> on_got_on_io_thread =
       base::BindRepeating(&DidGetCertDbOnIoThread, origin_task_runner,
-                          base::AdaptCallbackForRepeating(std::move(callback)));
+                          base::Passed(&callback));
   net::NSSCertDatabase* cert_db =
       GetNSSCertDatabaseForResourceContext(context, on_got_on_io_thread);
 
@@ -177,8 +177,7 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   std::unique_ptr<PlatformKeysServiceImplDelegate> delegate;
   Profile* profile = Profile::FromBrowserContext(context);
-  if (ProfileHelper::IsSigninProfile(profile) ||
-      ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!ProfileHelper::IsRegularProfile(profile)) {
     delegate = std::make_unique<DelegateForDevice>();
   } else {
     delegate = std::make_unique<DelegateForUser>(context);

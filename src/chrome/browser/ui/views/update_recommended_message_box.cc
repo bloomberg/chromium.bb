@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,7 +17,7 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #endif
@@ -39,10 +40,11 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
                  l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_NOT_NOW));
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetOwnedByWidget(true);
   SetTitle(IDS_UPDATE_RECOMMENDED_DIALOG_TITLE);
   base::string16 update_message;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   update_message = l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED);
 #else
   update_message = l10n_util::GetPluralStringFUTF16(
@@ -66,7 +68,7 @@ bool UpdateRecommendedMessageBox::Accept() {
 }
 
 bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 #else
   return true;
@@ -75,10 +77,6 @@ bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
 
 bool UpdateRecommendedMessageBox::ShouldShowCloseButton() const {
   return false;
-}
-
-ui::ModalType UpdateRecommendedMessageBox::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
 }
 
 views::View* UpdateRecommendedMessageBox::GetContentsView() {

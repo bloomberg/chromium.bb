@@ -16,6 +16,11 @@
  *
  */
 
+/**
+ * class Call
+ * @see https://github.com/grpc/grpc/tree/master/src/php/ext/grpc/call.c
+ */
+
 #include "call.h"
 
 #include <ext/spl/spl_exceptions.h>
@@ -99,9 +104,7 @@ zval *grpc_parse_metadata_array(grpc_metadata_array
       PHP_GRPC_FREE_STD_ZVAL(inner_array);
     }
     efree(str_key);
-#if PHP_MAJOR_VERSION >= 7
     efree(str_val);
-#endif
   }
   return array;
 }
@@ -193,7 +196,7 @@ zval *grpc_php_wrap_call(grpc_call *wrapped, bool owned TSRMLS_DC) {
  *                             Must not be closed.
  * @param string $method The method to call
  * @param Timeval $deadline_obj The deadline for completing the call
- * @param string $host_override The host is set by user (optional)
+ * @param string $host_override = "" The host is set by user (optional)
  */
 PHP_METHOD(Call, __construct) {
   zval *channel_obj;
@@ -294,8 +297,8 @@ PHP_METHOD(Call, startBatch) {
   grpc_byte_buffer *message;
   int cancelled;
   grpc_call_error error;
-  char *message_str;
-  size_t message_len;
+
+  zend_string* zmessage = NULL;
 
   grpc_metadata_array_init(&metadata);
   grpc_metadata_array_init(&trailing_metadata);
@@ -453,9 +456,7 @@ PHP_METHOD(Call, startBatch) {
   }
   grpc_completion_queue_pluck(completion_queue, call->wrapped,
                               gpr_inf_future(GPR_CLOCK_REALTIME), NULL);
-#if PHP_MAJOR_VERSION >= 7
   zval *recv_md;
-#endif
   for (int i = 0; i < op_num; i++) {
     switch(ops[i].op) {
     case GRPC_OP_SEND_INITIAL_METADATA:
@@ -471,38 +472,31 @@ PHP_METHOD(Call, startBatch) {
       add_property_bool(result, "send_status", true);
       break;
     case GRPC_OP_RECV_INITIAL_METADATA:
-#if PHP_MAJOR_VERSION < 7
-      array = grpc_parse_metadata_array(&recv_metadata TSRMLS_CC);
-      add_property_zval(result, "metadata", array);
-#else
       recv_md = grpc_parse_metadata_array(&recv_metadata);
       add_property_zval(result, "metadata", recv_md);
       zval_ptr_dtor(recv_md);
       PHP_GRPC_FREE_STD_ZVAL(recv_md);
-#endif
       PHP_GRPC_DELREF(array);
       break;
     case GRPC_OP_RECV_MESSAGE:
-      byte_buffer_to_string(message, &message_str, &message_len);
-      if (message_str == NULL) {
+      zmessage = byte_buffer_to_zend_string(message);
+
+      if (zmessage == NULL) {
         add_property_null(result, "message");
       } else {
-        php_grpc_add_property_stringl(result, "message", message_str,
-                                      message_len, false);
+        zval zmessage_val;
+        ZVAL_NEW_STR(&zmessage_val, zmessage);
+        add_property_zval(result, "message", &zmessage_val);
+        zval_ptr_dtor(&zmessage_val);
       }
       break;
     case GRPC_OP_RECV_STATUS_ON_CLIENT:
       PHP_GRPC_MAKE_STD_ZVAL(recv_status);
       object_init(recv_status);
-#if PHP_MAJOR_VERSION < 7
-      array = grpc_parse_metadata_array(&recv_trailing_metadata TSRMLS_CC);
-      add_property_zval(recv_status, "metadata", array);
-#else
       recv_md = grpc_parse_metadata_array(&recv_trailing_metadata);
       add_property_zval(recv_status, "metadata", recv_md);
       zval_ptr_dtor(recv_md);
       PHP_GRPC_FREE_STD_ZVAL(recv_md);
-#endif
       PHP_GRPC_DELREF(array);
       add_property_long(recv_status, "code", status);
       char *status_details_text = grpc_slice_to_c_string(recv_status_details);
@@ -510,9 +504,7 @@ PHP_METHOD(Call, startBatch) {
                                    true);
       gpr_free(status_details_text);
       add_property_zval(result, "status", recv_status);
-#if PHP_MAJOR_VERSION >= 7
       zval_ptr_dtor(recv_status);
-#endif
       PHP_GRPC_DELREF(recv_status);
       PHP_GRPC_FREE_STD_ZVAL(recv_status);
       break;
@@ -537,7 +529,6 @@ cleanup:
     }
     if (ops[i].op == GRPC_OP_RECV_MESSAGE) {
       grpc_byte_buffer_destroy(message);
-      PHP_GRPC_FREE_STD_ZVAL(message_str);
     }
   }
   RETURN_DESTROY_ZVAL(result);

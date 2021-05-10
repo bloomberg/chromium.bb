@@ -26,12 +26,14 @@
 #include "base/process/internal_linux.h"
 #include "base/process/process_metrics_iocounters.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 
@@ -44,7 +46,7 @@ void TrimKeyValuePairs(StringPairs* pairs) {
   }
 }
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Read a file with a single number string and return the number as a uint64_t.
 uint64_t ReadFileToUint64(const FilePath& file) {
   std::string file_contents;
@@ -523,7 +525,7 @@ std::unique_ptr<DictionaryValue> SystemMemoryInfoKB::ToValue() const {
   res->SetIntKey("swap_used", swap_total - swap_free);
   res->SetIntKey("dirty", dirty);
   res->SetIntKey("reclaimable", reclaimable);
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   res->SetIntKey("shmem", shmem);
   res->SetIntKey("slab", slab);
 #endif
@@ -554,7 +556,7 @@ bool ParseProcMeminfo(StringPiece meminfo_data, SystemMemoryInfoKB* meminfo) {
     // tokens.
     if (tokens.size() <= 1) {
       DLOG(WARNING) << "meminfo: tokens: " << tokens.size()
-                    << " malformed line: " << line.as_string();
+                    << " malformed line: " << line;
       continue;
     }
 
@@ -585,7 +587,7 @@ bool ParseProcMeminfo(StringPiece meminfo_data, SystemMemoryInfoKB* meminfo) {
       target = &meminfo->dirty;
     else if (tokens[0] == "SReclaimable:")
       target = &meminfo->reclaimable;
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // Chrome OS has a tweaked kernel that allows querying Shmem, which is
     // usually video memory otherwise invisible to the OS.
     else if (tokens[0] == "Shmem:")
@@ -657,10 +659,9 @@ bool ParseProcVmstat(StringPiece vmstat_data, VmStatInfo* vmstat) {
 }
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
-  // Synchronously reading files in /proc is safe.
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
   // Used memory is: total - free - buffers - caches
+  // ReadFileToStringNonBlocking doesn't require ScopedAllowIO, and reading
+  // /proc/meminfo is fast. See crbug.com/1160988 for details.
   FilePath meminfo_file("/proc/meminfo");
   std::string meminfo_data;
   if (!ReadFileToStringNonBlocking(meminfo_file, &meminfo_data)) {
@@ -810,7 +811,7 @@ bool GetSystemDiskInfo(SystemDiskInfo* diskinfo) {
         line, kWhitespaceASCII, TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
 
     // Fields may have overflowed and reset to zero.
-    if (!IsValidDiskName(disk_fields[kDiskDriveName].as_string()))
+    if (!IsValidDiskName(disk_fields[kDiskDriveName]))
       continue;
 
     StringToUint64(disk_fields[kDiskReads], &reads);
@@ -845,7 +846,7 @@ TimeDelta GetUserCpuTimeSinceBoot() {
   return internal::GetUserCpuTimeSinceBoot();
 }
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 std::unique_ptr<Value> SwapInfo::ToValue() const {
   auto res = std::make_unique<DictionaryValue>();
 
@@ -886,7 +887,7 @@ bool ParseZramMmStat(StringPiece mm_stat_data, SwapInfo* swap_info) {
       mm_stat_data, kWhitespaceASCII, TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
   if (tokens.size() < 7) {
     DLOG(WARNING) << "zram mm_stat: tokens: " << tokens.size()
-                  << " malformed line: " << mm_stat_data.as_string();
+                  << " malformed line: " << mm_stat_data;
     return false;
   }
 
@@ -914,7 +915,7 @@ bool ParseZramStat(StringPiece stat_data, SwapInfo* swap_info) {
       stat_data, kWhitespaceASCII, TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
   if (tokens.size() < 11) {
     DLOG(WARNING) << "zram stat: tokens: " << tokens.size()
-                  << " malformed line: " << stat_data.as_string();
+                  << " malformed line: " << stat_data;
     return false;
   }
 
@@ -1059,7 +1060,7 @@ bool GetGraphicsMemoryInfo(GraphicsMemoryInfoKB* gpu_meminfo) {
   return gpu_meminfo->gpu_memory_size != -1;
 }
 
-#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 int ProcessMetrics::GetIdleWakeupsPerSecond() {

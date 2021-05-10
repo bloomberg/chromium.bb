@@ -22,6 +22,7 @@
 
 #include "base/pending_task.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
@@ -121,6 +122,7 @@ typedef FILE* FileHandle;
 #include "base/test/scoped_logging_settings.h"
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
+#include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -130,7 +132,7 @@ typedef FILE* FileHandle;
 #include "base/posix/safe_strerror.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/files/scoped_file.h"
 #endif
 
@@ -157,7 +159,7 @@ int g_min_log_level = 0;
 // LoggingDestination values joined by bitwise OR.
 int g_logging_destination = LOG_DEFAULT;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Specifies the format of log header for chrome os.
 LogFormat g_log_format = LogFormat::LOG_FORMAT_SYSLOG;
 #endif
@@ -365,7 +367,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
            0u);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   g_log_format = settings.log_format;
 #endif
 
@@ -399,9 +401,8 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     const char* log_tag_data = log_tag.data();
 
     fx_logger_config_t config = {
-        .min_severity = FX_LOG_INFO,
+        .min_severity = g_vlog_info ? FX_LOG_DEBUG : FX_LOG_INFO,
         .console_fd = -1,
-        .log_service_channel = ZX_HANDLE_INVALID,
         .tags = &log_tag_data,
         .num_tags = 1,
     };
@@ -421,7 +422,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   // default log file will re-initialize to the new options.
   CloseLogFileUnlocked();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (settings.log_file) {
     DCHECK(!settings.log_file_path);
     g_log_file = settings.log_file;
@@ -793,6 +794,11 @@ LogMessage::~LogMessage() {
         severity = FX_LOG_ERROR;
         break;
     }
+    // TODO(https://crbug.com/1188820): Integrate verbose levels with the switch
+    // statement.
+    if (severity_ <= LOGGING_VERBOSE) {
+      severity = FX_LOG_DEBUG;
+    }
 
     fx_logger_t* logger = fx_log_get_logger();
     if (logger) {
@@ -895,13 +901,13 @@ void LogMessage::Init(const char* file, int line) {
   // Stores the base name as the null-terminated suffix substring of |filename|.
   file_basename_ = filename.data();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (g_log_format == LogFormat::LOG_FORMAT_SYSLOG) {
     InitWithSyslogPrefix(
         filename, line, TickCount(), log_severity_name(severity_), g_log_prefix,
         g_log_process_id, g_log_thread_id, g_log_timestamp, g_log_tickcount);
   } else
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   {
     // TODO(darin): It might be nice if the columns were fixed width.
     stream_ << '[';
@@ -1031,7 +1037,7 @@ void CloseLogFile() {
   CloseLogFileUnlocked();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 FILE* DuplicateLogFILE() {
   if ((g_logging_destination & LOG_TO_FILE) == 0 || !InitializeLogFileHandle())
     return nullptr;
@@ -1058,9 +1064,9 @@ ScopedLoggingSettings::ScopedLoggingSettings()
       enable_tickcount_(g_log_tickcount),
       min_log_level_(GetMinLogLevel()),
       message_handler_(GetLogMessageHandler()) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   log_format_ = g_log_format;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 ScopedLoggingSettings::~ScopedLoggingSettings() {
@@ -1071,16 +1077,16 @@ ScopedLoggingSettings::~ScopedLoggingSettings() {
   SetMinLogLevel(min_log_level_);
   SetLogMessageHandler(message_handler_);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   g_log_format = log_format_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ScopedLoggingSettings::SetLogFormat(LogFormat log_format) const {
   g_log_format = log_format;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void RawLog(int level, const char* message) {
   if (level >= g_min_log_level && message) {
@@ -1131,5 +1137,22 @@ std::wstring GetLogFileFullPath() {
 }  // namespace logging
 
 std::ostream& std::operator<<(std::ostream& out, const wchar_t* wstr) {
-  return out << (wstr ? base::WideToUTF8(wstr) : std::string());
+  return out << (wstr ? base::WStringPiece(wstr) : base::WStringPiece());
+}
+
+std::ostream& std::operator<<(std::ostream& out, const std::wstring& wstr) {
+  return out << base::WStringPiece(wstr);
+}
+
+std::ostream& std::operator<<(std::ostream& out, const char16_t* str16) {
+  // TODO(crbug.com/911896): Drop cast once base::char16 is char16_t everywhere.
+  return out << (str16 ? base::StringPiece16(
+                             reinterpret_cast<const base::char16*>(str16))
+                       : base::StringPiece16());
+}
+
+std::ostream& std::operator<<(std::ostream& out, const std::u16string& str16) {
+  // TODO(crbug.com/911896): Drop cast once base::char16 is char16_t everywhere.
+  return out << base::StringPiece16(
+             reinterpret_cast<const base::char16*>(str16.data()), str16.size());
 }

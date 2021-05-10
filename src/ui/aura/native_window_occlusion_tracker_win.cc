@@ -22,58 +22,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/win/hwnd_util.h"
-
-const CLSID CLSID_ImmersiveShell = {
-    0xC2F03A33,
-    0x21F5,
-    0x47FA,
-    {0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39}};
-
-const CLSID CLSID_VirtualDesktopAPI_Unknown = {
-    0xC5E0CDCA,
-    0x7B6E,
-    0x41B2,
-    {0x9F, 0xC4, 0xD9, 0x39, 0x75, 0xCC, 0x46, 0x7B}};
-
-struct IApplicationView : public IUnknown {
- public:
-};
-
-MIDL_INTERFACE("FF72FFDD-BE7E-43FC-9C03-AD81681E88E4")
-IVirtualDesktop : public IUnknown {
- public:
-  virtual HRESULT STDMETHODCALLTYPE IsViewVisible(IApplicationView * pView,
-                                                  int* pfVisible) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetID(GUID * pGuid) = 0;
-};
-
-enum AdjacentDesktop { LeftDirection = 3, RightDirection = 4 };
-
-MIDL_INTERFACE("F31574D6-B682-4cdc-BD56-1827860ABEC6")
-IVirtualDesktopManagerInternal : public IUnknown {
- public:
-  virtual HRESULT STDMETHODCALLTYPE GetCount(UINT * pCount) = 0;
-  virtual HRESULT STDMETHODCALLTYPE MoveViewToDesktop(
-      IApplicationView * pView, IVirtualDesktop * pDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE CanViewMoveDesktops(
-      IApplicationView * pView, int* pfCanViewMoveDesktops) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetCurrentDesktop(IVirtualDesktop *
-                                                      *desktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetDesktops(IObjectArray * *ppDesktops) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetAdjacentDesktop(
-      IVirtualDesktop * pDesktopReference, AdjacentDesktop uDirection,
-      IVirtualDesktop * *ppAdjacentDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SwitchDesktop(IVirtualDesktop *
-                                                  pDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE CreateDesktopW(IVirtualDesktop *
-                                                   *ppNewDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE RemoveDesktop(
-      IVirtualDesktop * pRemove, IVirtualDesktop * pFallbackDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE FindDesktop(
-      GUID * desktopId, IVirtualDesktop * *ppDesktop) = 0;
-};
 
 namespace aura {
 
@@ -82,9 +31,6 @@ namespace {
 // ~16 ms = time between frames when frame rate is 60 FPS.
 const base::TimeDelta kUpdateOcclusionDelay =
     base::TimeDelta::FromMilliseconds(16);
-
-const base::TimeDelta kUpdateVirtualDesktopDelay =
-    base::TimeDelta::FromMilliseconds(1000);
 
 // This global variable can be accessed only on main thread.
 NativeWindowOcclusionTrackerWin* g_tracker = nullptr;
@@ -221,7 +167,12 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
   if (IsIconic(hwnd))
     return false;
 
-  LONG ex_styles = GetWindowLong(hwnd, GWL_EXSTYLE);
+  LONG styles = ::GetWindowLong(hwnd, GWL_STYLE);
+  // Ignore popup windows since they're transient.
+  if (styles & WS_POPUP)
+    return false;
+
+  LONG ex_styles = ::GetWindowLong(hwnd, GWL_EXSTYLE);
   // Filter out "transparent" windows, windows where the mouse clicks fall
   // through them.
   if (ex_styles & WS_EX_TRANSPARENT)
@@ -362,19 +313,6 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
     ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
                        IID_PPV_ARGS(&virtual_desktop_manager_));
-
-    Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
-    if (base::FeatureList::IsEnabled(
-            features::kCalculateNativeWinOcclusionCheckVirtualDesktopUsed) &&
-        SUCCEEDED(::CoCreateInstance(CLSID_ImmersiveShell, NULL,
-                                     CLSCTX_LOCAL_SERVER,
-                                     IID_PPV_ARGS(&service_provider)))) {
-      service_provider->QueryService(
-          CLSID_VirtualDesktopAPI_Unknown,
-          IID_PPV_ARGS(&virtual_desktop_manager_internal_));
-      if (virtual_desktop_manager_internal_)
-        ComputeVirtualDesktopUsed();
-    }
   }
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -418,12 +356,12 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     DisableOcclusionTrackingForWindow(HWND hwnd) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   root_window_hwnds_occlusion_state_.erase(hwnd);
+  if (moving_window_ == hwnd)
+    moving_window_ = 0;
   if (root_window_hwnds_occlusion_state_.empty()) {
     UnregisterEventHooks();
     if (occlusion_update_timer_.IsRunning())
       occlusion_update_timer_.Stop();
-    if (virtual_desktop_update_timer_.IsRunning())
-      virtual_desktop_update_timer_.Stop();
   }
 }
 
@@ -570,25 +508,12 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
-    ComputeVirtualDesktopUsed() {
-  UINT count = 0;
-  if (SUCCEEDED(virtual_desktop_manager_internal_->GetCount(&count)))
-    virtual_desktops_used_ = count > 1;
-}
-
-void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     ScheduleOcclusionCalculationIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!occlusion_update_timer_.IsRunning()) {
+  if (!occlusion_update_timer_.IsRunning())
     occlusion_update_timer_.Start(
         FROM_HERE, kUpdateOcclusionDelay, this,
         &WindowOcclusionCalculator::ComputeNativeWindowOcclusionStatus);
-    if (virtual_desktop_manager_internal_) {
-      virtual_desktop_update_timer_.Start(
-          FROM_HERE, kUpdateVirtualDesktopDelay, this,
-          &WindowOcclusionCalculator::ComputeVirtualDesktopUsed);
-    }
-  }
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -694,6 +619,10 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     return true;
   }
 
+  // Ignore moving windows when deciding if windows under it are occluded.
+  if (hwnd == moving_window_)
+    return true;
+
   // Check if |hwnd| is a root window; if so, we're done figuring out
   // if it's occluded because we've seen all the windows "over" it.
   auto it = root_window_hwnds_occlusion_state_.find(hwnd);
@@ -739,6 +668,10 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   if (id_object != OBJID_WINDOW)
     return;
 
+  // We generally ignore events for poup windows, except for when the taskbar
+  // is hidden, in which case we recalculate occlusion.
+  bool calculate_occlusion = !(::GetWindowLong(hwnd, GWL_STYLE) & WS_POPUP);
+
   // Detect if either the alt tab view or the task list thumbnail is being
   // shown. If so, mark all non-hidden windows as occluded, and remember that
   // we're in the showing_thumbnails state. This lasts until we get told that
@@ -748,7 +681,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     // needed.
     if (showing_thumbnails_)
       return;
-    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
+    std::string hwnd_class_name = base::WideToUTF8(gfx::GetClassName(hwnd));
     if ((hwnd_class_name == "MultitaskingViewFrame" ||
          hwnd_class_name == "TaskListThumbnailWnd")) {
       showing_thumbnails_ = true;
@@ -763,30 +696,44 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     // needed.
     if (!showing_thumbnails_)
       return;
-    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
+    std::string hwnd_class_name = base::WideToUTF8(gfx::GetClassName(hwnd));
     if (hwnd_class_name == "MultitaskingViewFrame" ||
         hwnd_class_name == "TaskListThumbnailWnd") {
       showing_thumbnails_ = false;
-      // Let occlusion calculation fix occlusion state.
+      // Let occlusion calculation fix occlusion state, even though hwnd might
+      // be a popup window.
+      calculate_occlusion = true;
+    }
+  }
+  // Don't continually calculate occlusion while a window is moving (unless it's
+  // a root window), but instead once at the beginning and once at the end.
+  // Remember the window being moved so if it's a root window, we can ignore
+  // it when deciding if windows under it are occluded.
+  else if (event == EVENT_SYSTEM_MOVESIZESTART) {
+    moving_window_ = hwnd;
+  } else if (event == EVENT_SYSTEM_MOVESIZEEND) {
+    moving_window_ = 0;
+  } else if (moving_window_ != 0) {
+    if (event == EVENT_OBJECT_LOCATIONCHANGE ||
+        event == EVENT_OBJECT_STATECHANGE) {
+      // Ignore move events if it's not a root window that's being moved. If it
+      // is a root window, we want to calculate occlusion to support tab
+      // dragging to windows that were occluded when the drag was started but
+      // are no longer occluded.
+      if (root_window_hwnds_occlusion_state_.find(hwnd) ==
+          root_window_hwnds_occlusion_state_.end()) {
+        return;
+      }
+    } else {
+      // If we get an event that isn't a location/state change, then we probably
+      // missed the movesizeend notification, or got events out of order. In
+      // that case, we want to go back to normal occlusion calculation.
+      moving_window_ = 0;
     }
   }
 
-  // Don't continually calculate occlusion while a window is moving, but rather
-  // once at the beginning and once at the end.
-  if (event == EVENT_SYSTEM_MOVESIZESTART) {
-    window_is_moving_ = true;
-  } else if (event == EVENT_SYSTEM_MOVESIZEEND) {
-    window_is_moving_ = false;
-  } else if (window_is_moving_) {
-    if (event == EVENT_OBJECT_LOCATIONCHANGE ||
-        event == EVENT_OBJECT_STATECHANGE) {
-      return;
-    }
-    // If we get an event that isn't a location/state change, then we probably
-    // missed the movesizeend notification, or got events out of order. In
-    // that case, we want to go back to calculating occlusion.
-    window_is_moving_ = false;
-  }
+  if (!calculate_occlusion)
+    return;
 
   // ProcessEventHookCallback is called from the task_runner's PeekMessage
   // call, on the task runner's thread, but before the task_tracker thread sets
@@ -822,7 +769,7 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 
 base::Optional<bool> NativeWindowOcclusionTrackerWin::
     WindowOcclusionCalculator::IsWindowOnCurrentVirtualDesktop(HWND hwnd) {
-  if (!virtual_desktop_manager_ || !virtual_desktops_used_)
+  if (!virtual_desktop_manager_)
     return true;
 
   BOOL on_current_desktop;

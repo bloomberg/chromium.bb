@@ -49,9 +49,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowLayerDrawn, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kConstrainedWindowKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCreatedByUserGesture, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDrawAttentionKey, false)
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
-                                   kEmbeddedWindowEnsureNotInRect,
-                                   nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusClient*, kFocusClientKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kChildModalParentKey, nullptr)
@@ -75,8 +72,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSkipImeProcessing, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTitleKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kVisibleOnAllWorkspacesKey, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowCornerRadiusKey, -1)
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowWorkspaceKey, kUnassignedWorkspace)
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::ZOrderLevel,
                              kZOrderingKey,
                              ui::ZOrderLevel::kNormal)

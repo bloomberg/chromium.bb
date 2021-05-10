@@ -24,6 +24,7 @@
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -137,7 +138,7 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
   void OnDownloadStored(DownloadItem* item,
                         const history::DownloadRow& info) override {
     persisted_ = persisted_ || filter_.Run(item, info);
-    if (persisted_ && !quit_waiting_callback_.is_null())
+    if (persisted_ && quit_waiting_callback_)
       std::move(quit_waiting_callback_).Run();
   }
 
@@ -173,7 +174,7 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
 
   void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) override {
     removed_ = ids.find(download_id_) != ids.end();
-    if (removed_ && !quit_waiting_callback_.is_null())
+    if (removed_ && quit_waiting_callback_)
       std::move(quit_waiting_callback_).Run();
   }
 
@@ -251,7 +252,6 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
       base::RunLoop run_loop;
       quit_waiting_callback_ = run_loop.QuitClosure();
       run_loop.Run();
-      quit_waiting_callback_ = base::Closure();
     }
 
     *items_seen = items_seen_;
@@ -265,18 +265,18 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
     DCHECK_EQ(manager, manager_);
     items_seen_.push_back(item);
 
-    if (!quit_waiting_callback_.is_null())
-      quit_waiting_callback_.Run();
+    if (quit_waiting_callback_)
+      std::move(quit_waiting_callback_).Run();
   }
 
   void ManagerGoingDown(DownloadManager* manager) override {
     manager_->RemoveObserver(this);
     manager_ = nullptr;
-    if (!quit_waiting_callback_.is_null())
-      quit_waiting_callback_.Run();
+    if (quit_waiting_callback_)
+      std::move(quit_waiting_callback_).Run();
   }
 
-  base::Closure quit_waiting_callback_;
+  base::OnceClosure quit_waiting_callback_;
   DownloadManager* manager_;
   std::vector<DownloadItem*> items_seen_;
 
@@ -793,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SavePageAsMHTML) {
   }
 
 // On ChromeOS, the default should be MHTML.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_EQ("mhtml",
             select_file_dialog_factory->GetLastDialog()->default_extension());
 #else
@@ -802,15 +802,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SavePageAsMHTML) {
 #endif
 
   // Save the file as MHTML. Run until save completes.
+  base::RunLoop run_loop;
+  content::SavePackageFinishedObserver observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      run_loop.QuitClosure());
   ASSERT_TRUE(select_file_dialog_factory->GetLastDialog()->CallFileSelected(
       full_file_name, "mhtml"));
-  {
-    base::RunLoop run_loop;
-    content::SavePackageFinishedObserver observer(
-        content::BrowserContext::GetDownloadManager(browser()->profile()),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  run_loop.Run();
 
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
@@ -1310,8 +1308,9 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSite) {
 
 // Test compares original-vs-saved for a page with <object> elements.
 // (see crbug.com/553478).
+// crbug.com/1070886: disabled because of flakiness.
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
-                       ObjectElementsViaHttp) {
+                       DISABLED_ObjectElementsViaHttp) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
 

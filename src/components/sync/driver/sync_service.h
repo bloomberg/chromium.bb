@@ -311,10 +311,6 @@ class SyncService : public KeyedService {
   // be the empty set. Once the configuration completes the set will be updated.
   virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
-  // Returns the set of currently backed off data types (e.g. returns non-empty
-  // result when the network was disabled during last sync cycle).
-  virtual ModelTypeSet GetBackedOffDataTypes() const = 0;
-
   //////////////////////////////////////////////////////////////////////////////
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
@@ -322,6 +318,10 @@ class SyncService : public KeyedService {
   // Stops sync-the-feature and clears all local data. Sync-the-transport may
   // remain active after calling this.
   virtual void StopAndClear() = 0;
+
+  // Controls whether sync is allowed at the platform level. If set to false
+  // sync will be disabled with DISABLE_REASON_PLATFORM_OVERRIDE.
+  virtual void SetSyncAllowedByPlatform(bool allowed) = 0;
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're

@@ -17,6 +17,8 @@
 
 #include "dawn_native/ObjectBase.h"
 
+#include <cstddef>
+
 namespace dawn_native {
 
     // Some objects are cached so that instead of creating new duplicate objects,
@@ -29,11 +31,25 @@ namespace dawn_native {
 
         bool IsCachedReference() const;
 
+        // Functor necessary for the unordered_set<CachedObject*>-based cache.
+        struct HashFunc {
+            size_t operator()(const CachedObject* obj) const;
+        };
+
+        size_t GetContentHash() const;
+        void SetContentHash(size_t contentHash);
+
       private:
         friend class DeviceBase;
         void SetIsCachedReference();
 
         bool mIsCachedReference = false;
+
+        // Called by ObjectContentHasher upon creation to record the object.
+        virtual size_t ComputeContentHash() = 0;
+
+        size_t mContentHash = 0;
+        bool mIsContentHashInitialized = false;
     };
 
 }  // namespace dawn_native

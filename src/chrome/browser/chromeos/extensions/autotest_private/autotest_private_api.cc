@@ -58,7 +58,11 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/stats_reporting_controller.h"
+#include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -66,7 +70,6 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
-#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -76,14 +79,12 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
-#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -130,6 +131,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
+#include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/tracing_controller.h"
@@ -193,18 +195,19 @@ int AccessArray(const volatile int arr[], const volatile int* index) {
 std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
                                                     bool effective_perm) {
   const PermissionsData* permissions_data = ext->permissions_data();
-  const URLPatternSet& pattern_set =
-      effective_perm ? static_cast<const URLPatternSet&>(
-                           permissions_data->GetEffectiveHostPermissions(
-                               PermissionsData::EffectiveHostPermissionsMode::
-                                   kIncludeTabSpecific))
-                     : permissions_data->active_permissions().explicit_hosts();
+
+  const URLPatternSet* pattern_set = nullptr;
+  URLPatternSet effective_hosts;
+  if (effective_perm) {
+    effective_hosts = permissions_data->GetEffectiveHostPermissions();
+    pattern_set = &effective_hosts;
+  } else {
+    pattern_set = &permissions_data->active_permissions().explicit_hosts();
+  }
 
   auto permissions = std::make_unique<base::ListValue>();
-  for (URLPatternSet::const_iterator perm = pattern_set.begin();
-       perm != pattern_set.end(); ++perm) {
-    permissions->AppendString(perm->GetAsString());
-  }
+  for (const auto& perm : *pattern_set)
+    permissions->AppendString(perm.GetAsString());
 
   return permissions;
 }
@@ -395,6 +398,8 @@ api::autotest_private::AppReadiness GetAppReadiness(
     case apps::mojom::Readiness::kUninstalledByUser:
       return api::autotest_private::AppReadiness::
           APP_READINESS_UNINSTALLEDBYUSER;
+    case apps::mojom::Readiness::kRemoved:
+      return api::autotest_private::AppReadiness::APP_READINESS_REMOVED;
     case apps::mojom::Readiness::kUnknown:
       return api::autotest_private::AppReadiness::APP_READINESS_NONE;
   }
@@ -485,6 +490,10 @@ std::string SetWhitelistedPref(Profile* profile,
     DCHECK(value.is_bool());
   } else if (pref_name == prefs::kLanguagePreloadEngines) {
     DCHECK(value.is_string());
+  } else if (pref_name == plugin_vm::prefs::kPluginVmCameraAllowed) {
+    DCHECK(value.is_bool());
+  } else if (pref_name == plugin_vm::prefs::kPluginVmMicAllowed) {
+    DCHECK(value.is_bool());
   } else {
     return "The pref " + pref_name + " is not whitelisted.";
   }
@@ -1520,10 +1529,9 @@ AutotestPrivateGetArcStartTimeFunction::Run() {
   if (!arc_session_manager)
     return RespondNow(Error("Could not find ARC session manager"));
 
-  double start_time =
-      (arc_session_manager->arc_start_time() - base::TimeTicks())
-          .InMillisecondsF();
-  return RespondNow(OneArgument(base::Value(start_time)));
+  const double start_ticks =
+      (arc_session_manager->start_time() - base::TimeTicks()).InMillisecondsF();
+  return RespondNow(OneArgument(base::Value(start_ticks)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1542,8 +1550,26 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcStateFunction::Run() {
   if (!arc::IsArcAllowedForProfile(profile))
     return RespondNow(Error("ARC is not available for the current user"));
 
+  arc::ArcSessionManager* const arc_session_manager =
+      arc::ArcSessionManager::Get();
+  if (!arc_session_manager)
+    return RespondNow(Error("Could not find ARC session manager"));
+
+  const base::Time now_time = base::Time::Now();
+  const base::TimeTicks now_ticks = base::TimeTicks::Now();
+  const base::TimeTicks pre_start_time = arc_session_manager->pre_start_time();
+  const base::TimeTicks start_time = arc_session_manager->start_time();
+
   arc_state.provisioned = arc::IsArcProvisioned(profile);
   arc_state.tos_needed = arc::IsArcTermsOfServiceNegotiationNeeded(profile);
+  arc_state.pre_start_time =
+      pre_start_time.is_null()
+          ? 0
+          : (now_time - (now_ticks - pre_start_time)).ToJsTime();
+  arc_state.start_time = start_time.is_null()
+                             ? 0
+                             : (now_time - (now_ticks - start_time)).ToJsTime();
+
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(arc_state.ToValue())));
 }
@@ -1889,10 +1915,9 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
   if (!app_type.has_value())
     return RespondNow(Error("No mapped system web app found"));
 
-  auto* browser =
-      web_app::LaunchSystemWebApp(profile, *app_type, GURL(params->url));
-  if (!browser)
-    return RespondNow(Error("Failed to launch system web app"));
+  web_app::LaunchSystemWebAppAsync(profile, *app_type,
+                                   {.url = GURL(params->url)});
+
   return RespondNow(NoArguments());
 }
 
@@ -1941,10 +1966,14 @@ AutotestPrivateGetClipboardTextDataFunction::Run() {
 ///////////////////////////////////////////////////////////////////////////////
 
 AutotestPrivateSetClipboardTextDataFunction::
+    AutotestPrivateSetClipboardTextDataFunction() = default;
+
+AutotestPrivateSetClipboardTextDataFunction::
     ~AutotestPrivateSetClipboardTextDataFunction() = default;
 
 ExtensionFunction::ResponseAction
 AutotestPrivateSetClipboardTextDataFunction::Run() {
+  observation_.Observe(ui::ClipboardMonitor::GetInstance());
   std::unique_ptr<api::autotest_private::SetClipboardTextData::Params> params(
       api::autotest_private::SetClipboardTextData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -1953,7 +1982,12 @@ AutotestPrivateSetClipboardTextDataFunction::Run() {
   ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
   clipboard_writer.WriteText(data);
 
-  return RespondNow(NoArguments());
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void AutotestPrivateSetClipboardTextDataFunction::OnClipboardDataChanged() {
+  observation_.Reset();
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1971,7 +2005,7 @@ AutotestPrivateSetCrostiniEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetCrostiniEnabledFunction " << params->enabled;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile))
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Set the preference to indicate Crostini is enabled/disabled.
@@ -1997,7 +2031,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateInstallCrostiniFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile))
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Run GUI installer which will install crostini vm / container and
@@ -2038,7 +2072,7 @@ AutotestPrivateRunCrostiniUninstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateRunCrostiniUninstallerFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile))
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   // Run GUI uninstaller which will remove crostini vm / container. We then
@@ -2074,7 +2108,8 @@ ExtensionFunction::ResponseAction AutotestPrivateExportCrostiniFunction::Run() {
   DVLOG(1) << "AutotestPrivateExportCrostiniFunction " << params->path;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile)) {
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile) ||
+      !crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile)) {
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
   }
 
@@ -2115,7 +2150,8 @@ ExtensionFunction::ResponseAction AutotestPrivateImportCrostiniFunction::Run() {
   DVLOG(1) << "AutotestPrivateImportCrostiniFunction " << params->path;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile))
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile) ||
+      !crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile))
     return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
 
   base::FilePath path(params->path);
@@ -2215,12 +2251,13 @@ AutotestPrivateTakeScreenshotFunction::
 ExtensionFunction::ResponseAction AutotestPrivateTakeScreenshotFunction::Run() {
   DVLOG(1) << "AutotestPrivateTakeScreenshotFunction";
   auto grabber = std::make_unique<ui::ScreenshotGrabber>();
+  auto* const grabber_ptr = grabber.get();
   // TODO(mash): Fix for mash, http://crbug.com/557397
   aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
   // Pass the ScreenshotGrabber to the callback so that it stays alive for the
   // duration of the operation, it'll then get deallocated when the callback
   // completes.
-  grabber->TakeScreenshot(
+  grabber_ptr->TakeScreenshot(
       primary_root, primary_root->bounds(),
       base::BindOnce(&AutotestPrivateTakeScreenshotFunction::ScreenshotTaken,
                      this, std::move(grabber)));
@@ -2261,7 +2298,8 @@ AutotestPrivateTakeScreenshotForDisplayFunction::Run() {
     const int64_t display_id =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
     if (display_id == target_display_id) {
-      grabber->TakeScreenshot(
+      auto* const grabber_ptr = grabber.get();
+      grabber_ptr->TakeScreenshot(
           window, window->bounds(),
           base::BindOnce(
               &AutotestPrivateTakeScreenshotForDisplayFunction::ScreenshotTaken,
@@ -2462,7 +2500,8 @@ AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
 
   // Load a model. This will first bootstrap the Mojo connection to ML Service.
   chromeos::machine_learning::ServiceConnection::GetInstance()
-      ->LoadBuiltinModel(
+      ->GetMachineLearningService()
+      .LoadBuiltinModel(
           chromeos::machine_learning::mojom::BuiltinModelSpec::New(
               chromeos::machine_learning::mojom::BuiltinModelId::TEST_MODEL),
           model_.BindNewPipeAndPassReceiver(),
@@ -2705,7 +2744,6 @@ class AssistantInteractionHelper
   void OnHtmlResponse(const std::string& response,
                       const std::string& fallback) override {
     result_.SetKey("htmlResponse", base::Value(response));
-    result_.SetKey("htmlFallback", base::Value(fallback));
     CheckResponseIsValid(__FUNCTION__);
   }
 
@@ -3034,6 +3072,7 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
     app.app_id = update.AppId();
     app.name = update.Name();
     app.short_name = update.ShortName();
+    app.publisher_id = update.PublisherId();
     app.additional_search_terms = update.AdditionalSearchTerms();
     app.type = GetAppType(update.AppType());
     app.install_source = GetAppInstallSource(update.InstallSource());
@@ -3815,9 +3854,9 @@ ExtensionFunction::ResponseAction AutotestPrivateCloseAppWindowFunction::Run() {
 
 // Used to notify when when a certain URL contains a WPA.
 class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
-    : public banners::AppBannerManager::Observer {
+    : public webapps::AppBannerManager::Observer {
  public:
-  PWABannerObserver(banners::AppBannerManager* manager,
+  PWABannerObserver(webapps::AppBannerManager* manager,
                     base::OnceCallback<void()> callback)
       : callback_(std::move(callback)), app_banner_manager_(manager) {
     DCHECK(manager);
@@ -3857,12 +3896,12 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
   }
 
  private:
-  using Installable = banners::AppBannerManager::InstallableWebAppCheckResult;
+  using Installable = webapps::AppBannerManager::InstallableWebAppCheckResult;
 
-  ScopedObserver<banners::AppBannerManager, banners::AppBannerManager::Observer>
+  ScopedObserver<webapps::AppBannerManager, webapps::AppBannerManager::Observer>
       observer_{this};
   base::OnceCallback<void()> callback_;
-  banners::AppBannerManager* app_banner_manager_;
+  webapps::AppBannerManager* app_banner_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PWABannerObserver);
 };
@@ -3913,8 +3952,8 @@ AutotestPrivateInstallPWAForCurrentURLFunction::Run() {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  banners::AppBannerManager* app_banner_manager =
-      banners::AppBannerManagerDesktop::FromWebContents(web_contents);
+  webapps::AppBannerManager* app_banner_manager =
+      webapps::AppBannerManagerDesktop::FromWebContents(web_contents);
   if (!app_banner_manager) {
     return RespondNow(Error("Failed to create AppBannerManager"));
   }
@@ -4322,6 +4361,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
 
 AutotestPrivateSetMetricsEnabledFunction::
     AutotestPrivateSetMetricsEnabledFunction() = default;
+
 AutotestPrivateSetMetricsEnabledFunction::
     ~AutotestPrivateSetMetricsEnabledFunction() = default;
 
@@ -4337,34 +4377,47 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
-  chromeos::StatsReportingController* stats_reporting_controller =
-      chromeos::StatsReportingController::Get();
-
-  // Set the preference to indicate metrics are enabled/disabled.
-  stats_reporting_controller->SetEnabled(profile, target_value_);
-  if (stats_reporting_controller->IsEnabled() == target_value_) {
+  bool value;
+  if (chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                                &value) &&
+      value == target_value_) {
     VLOG(1) << "Value at target; returning early";
     return RespondNow(NoArguments());
   }
-  stats_reporting_observer_subscription_ =
-      chromeos::StatsReportingController::Get()->AddObserver(
-          base::BindRepeating(&AutotestPrivateSetMetricsEnabledFunction::
-                                  OnStatsReportingStateChanged,
-                              this));
+
+  chromeos::StatsReportingController* stats_reporting_controller =
+      chromeos::StatsReportingController::Get();
+
+  stats_reporting_controller->SetOnDeviceSettingsStoredCallBack(base::BindOnce(
+      &AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored, this));
+
+  // Set the preference to indicate metrics are enabled/disabled.
+  stats_reporting_controller->SetEnabled(profile, target_value_);
+
   return RespondLater();
 }
 
-void AutotestPrivateSetMetricsEnabledFunction::OnStatsReportingStateChanged() {
-  bool actual = chromeos::StatsReportingController::Get()->IsEnabled();
+void AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored() {
+  bool actual;
+  if (!chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                                 &actual)) {
+    NOTREACHED() << "AutotestPrivateSetMetricsEnabledFunction: "
+                 << "kStatsReportingPref should be set";
+    Respond(Error(base::StrCat(
+        {"Failed to set metrics consent: ", chromeos::kStatsReportingPref,
+         " is not set."})));
+    return;
+  }
   VLOG(1) << "AutotestPrivateSetMetricsEnabledFunction: actual: "
           << std::boolalpha << actual << " and expected: " << std::boolalpha
           << target_value_;
   if (actual == target_value_) {
     Respond(NoArguments());
   } else {
-    Respond(Error("Failed to set metrics consent"));
+    Respond(Error(base::StrCat(
+        {"Failed to set metrics consent: ", chromeos::kStatsReportingPref,
+         " has wrong value."})));
   }
-  stats_reporting_observer_subscription_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

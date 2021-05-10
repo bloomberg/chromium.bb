@@ -349,23 +349,22 @@ static void test_peephole() {
     }
 }
 
-#ifndef SK_DEBUG
-// Only test this is in release mode. We deliberately crash in debug mode, since a valid caller
-// should never do this.
-static void test_bad_bitmap() {
-    // This bitmap has a width and height but no pixels. As a result, attempting to record it will
-    // fail.
+static void test_bad_bitmap(skiatest::Reporter* reporter) {
+    // missing pixels should return null for image
     SkBitmap bm;
     bm.setInfo(SkImageInfo::MakeN32Premul(100, 100));
+    auto img = bm.asImage();
+    REPORTER_ASSERT(reporter, !img);
+
+    // make sure we don't crash on a null image
     SkPictureRecorder recorder;
     SkCanvas* recordingCanvas = recorder.beginRecording(100, 100);
-    recordingCanvas->drawBitmap(bm, 0, 0);
+    recordingCanvas->drawImage(nullptr, 0, 0);
     sk_sp<SkPicture> picture(recorder.finishRecordingAsPicture());
 
     SkCanvas canvas;
     canvas.drawPicture(picture);
 }
-#endif
 
 static void test_clip_bound_opt(skiatest::Reporter* reporter) {
     // Test for crbug.com/229011
@@ -562,9 +561,8 @@ DEF_TEST(Picture, reporter) {
 #ifdef SK_DEBUG
     test_deleting_empty_picture();
     test_serializing_empty_picture();
-#else
-    test_bad_bitmap();
 #endif
+    test_bad_bitmap(reporter);
     test_unbalanced_save_restores(reporter);
     test_peephole();
     test_clip_bound_opt(reporter);
@@ -574,13 +572,14 @@ DEF_TEST(Picture, reporter) {
 }
 
 static void draw_bitmaps(const SkBitmap bitmap, SkCanvas* canvas) {
-    const SkPaint paint;
     const SkRect rect = { 5.0f, 5.0f, 8.0f, 8.0f };
+    auto img = bitmap.asImage();
 
     // Don't care what these record, as long as they're legal.
-    canvas->drawBitmap(bitmap, 0.0f, 0.0f, &paint);
-    canvas->drawBitmapRect(bitmap, rect, rect, &paint, SkCanvas::kStrict_SrcRectConstraint);
-    canvas->drawBitmap(bitmap, 1, 1);   // drawSprite
+    canvas->drawImage(img, 0.0f, 0.0f);
+    canvas->drawImageRect(img, rect, rect, SkSamplingOptions(), nullptr,
+                          SkCanvas::kStrict_SrcRectConstraint);
+    canvas->drawImage(img, 1, 1);   // drawSprite
 }
 
 static void test_draw_bitmaps(SkCanvas* canvas) {
@@ -632,8 +631,8 @@ DEF_TEST(DontOptimizeSaveLayerDrawDrawRestore, reporter) {
     canvas->drawColor(0);
 
     canvas->saveLayer(nullptr, &semiTransparent);
-    canvas->drawBitmap(blueBM, 25, 25);
-    canvas->drawBitmap(redBM, 50, 50);
+    canvas->drawImage(blueBM.asImage(), 25, 25);
+    canvas->drawImage(redBM.asImage(), 50, 50);
     canvas->restore();
 
     sk_sp<SkPicture> picture(recorder.finishRecordingAsPicture());
@@ -715,8 +714,8 @@ DEF_TEST(Picture_BitmapLeak, r) {
         // place it inside local braces.
         SkPictureRecorder rec;
         SkCanvas* canvas = rec.beginRecording(1920, 1200);
-            canvas->drawBitmap(mut, 0, 0);
-            canvas->drawBitmap(immut, 800, 600);
+            canvas->drawImage(mut.asImage(), 0, 0);
+            canvas->drawImage(immut.asImage(), 800, 600);
         pic = rec.finishRecordingAsPicture();
     }
 

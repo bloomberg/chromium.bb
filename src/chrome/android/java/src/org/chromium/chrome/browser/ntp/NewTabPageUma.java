@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -156,6 +156,7 @@ public class NewTabPageUma {
     private final Supplier<Long> mLastInteractionTime;
     private final boolean mActivityHadWarmStart;
     private final Supplier<Intent> mActivityIntent;
+    private TabCreationRecorder mTabCreationRecorder;
 
     /**
      * Constructor.
@@ -216,7 +217,8 @@ public class NewTabPageUma {
      * users navigate back to already opened NTPs.
      */
     public void monitorNTPCreation() {
-        mTabModelSelector.addObserver(new TabCreationRecorder());
+        mTabCreationRecorder = new TabCreationRecorder();
+        mTabModelSelector.addObserver(mTabCreationRecorder);
     }
 
     /**
@@ -290,7 +292,7 @@ public class NewTabPageUma {
      * Records the number of new NTPs opened in a new tab. Use through
      * {@link NewTabPageUma#monitorNTPCreation(TabModelSelector)}.
      */
-    private static class TabCreationRecorder extends EmptyTabModelSelectorObserver {
+    private static class TabCreationRecorder implements TabModelSelectorObserver {
         @Override
         public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
             if (!UrlUtilities.isNTPUrl(tab.getUrlString())) return;
@@ -320,5 +322,10 @@ public class NewTabPageUma {
                 return true;
             }
         });
+    }
+
+    /** Destroy and unhook objects at destruction. */
+    public void destroy() {
+        if (mTabCreationRecorder != null) mTabModelSelector.removeObserver(mTabCreationRecorder);
     }
 }

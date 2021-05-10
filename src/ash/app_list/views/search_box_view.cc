@@ -34,7 +34,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/composition_text.h"
@@ -64,8 +63,6 @@ constexpr int kSearchBoxFocusRingWidth = 2;
 
 // Padding between the focus ring and the search box view
 constexpr int kSearchBoxFocusRingPadding = 4;
-
-constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
 constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
@@ -137,6 +134,7 @@ void SearchBoxView::ClearSearch() {
 void SearchBoxView::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
   if (located_event->type() == ui::ET_MOUSEWHEEL) {
     if (!app_list_view_->HandleScroll(
+            located_event->location(),
             located_event->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL)) {
       return;
     }
@@ -209,7 +207,7 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
     bounds.Inset(-kSearchBoxFocusRingPadding, -kSearchBoxFocusRingPadding);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kSearchBoxFocusRingColor);
+    flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
     flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
     flags.setStrokeWidth(kSearchBoxFocusRingWidth);
     canvas->DrawRoundRect(bounds, kSearchBoxFocusRingCornerRadius, flags);
@@ -218,6 +216,13 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
 
 const char* SearchBoxView::GetClassName() const {
   return "SearchBoxView";
+}
+
+void SearchBoxView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  SetupAssistantButton();
+  SetupCloseButton();
+  OnWallpaperColorsChanged();
 }
 
 // static
@@ -403,7 +408,8 @@ void SearchBoxView::OnWallpaperColorsChanged() {
   UpdateSearchIcon();
   AppListColorProvider* app_list_color_provider = AppListColorProvider::Get();
   search_box()->set_placeholder_text_color(
-      app_list_color_provider->GetSearchBoxPlaceholderTextColor());
+      app_list_color_provider->GetSearchBoxTextColor(
+          kDeprecatedSearchBoxPlaceholderTextColor));
   search_box()->SetTextColor(app_list_color_provider->GetSearchBoxTextColor(
       kDeprecatedSearchBoxTextDefaultColor));
   if (features::IsDarkLightModeEnabled()) {
@@ -734,7 +740,8 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
                                      const ui::MouseEvent& mouse_event) {
   if (mouse_event.type() == ui::ET_MOUSEWHEEL) {
     return app_list_view_->HandleScroll(
-        (&mouse_event)->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL);
+        mouse_event.location(), (&mouse_event)->AsMouseWheelEvent()->offset(),
+        ui::ET_MOUSEWHEEL);
   }
   if (mouse_event.type() == ui::ET_MOUSE_PRESSED && HasAutocompleteText())
     AcceptAutocompleteText();

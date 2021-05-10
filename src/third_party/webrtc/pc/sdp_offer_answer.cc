@@ -39,7 +39,6 @@
 #include "p2p/base/transport_description.h"
 #include "p2p/base/transport_description_factory.h"
 #include "p2p/base/transport_info.h"
-#include "pc/connection_context.h"
 #include "pc/data_channel_utils.h"
 #include "pc/media_protocol_names.h"
 #include "pc/media_stream.h"
@@ -54,7 +53,6 @@
 #include "pc/stats_collector.h"
 #include "pc/usage_pattern.h"
 #include "pc/webrtc_session_description_factory.h"
-#include "rtc_base/bind.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
@@ -731,6 +729,21 @@ bool CanAddLocalMediaStream(webrtc::StreamCollectionInterface* current_streams,
   return true;
 }
 
+rtc::scoped_refptr<webrtc::DtlsTransport> LookupDtlsTransportByMid(
+    rtc::Thread* network_thread,
+    JsepTransportController* controller,
+    const std::string& mid) {
+  // TODO(tommi): Can we post this (and associated operations where this
+  // function is called) to the network thread and avoid this Invoke?
+  // We might be able to simplify a few things if we set the transport on
+  // the network thread and then update the implementation to check that
+  // the set_ and relevant get methods are always called on the network
+  // thread (we'll need to update proxy maps).
+  return network_thread->Invoke<rtc::scoped_refptr<webrtc::DtlsTransport>>(
+      RTC_FROM_HERE,
+      [controller, &mid] { return controller->LookupDtlsTransportByMid(mid); });
+}
+
 }  // namespace
 
 // Used by parameterless SetLocalDescription() to create an offer or answer.
@@ -1310,8 +1323,8 @@ RTCError SdpOfferAnswerHandler::ApplyLocalDescription(
       // Note that code paths that don't set MID won't be able to use
       // information about DTLS transports.
       if (transceiver->mid()) {
-        auto dtls_transport = transport_controller()->LookupDtlsTransportByMid(
-            *transceiver->mid());
+        auto dtls_transport = LookupDtlsTransportByMid(
+            pc_->network_thread(), transport_controller(), *transceiver->mid());
         transceiver->internal()->sender_internal()->set_transport(
             dtls_transport);
         transceiver->internal()->receiver_internal()->set_transport(
@@ -1727,9 +1740,9 @@ RTCError SdpOfferAnswerHandler::ApplyRemoteDescription(
         transceiver->internal()->set_current_direction(local_direction);
         // 2.2.8.1.11.[3-6]: Set the transport internal slots.
         if (transceiver->mid()) {
-          auto dtls_transport =
-              transport_controller()->LookupDtlsTransportByMid(
-                  *transceiver->mid());
+          auto dtls_transport = LookupDtlsTransportByMid(pc_->network_thread(),
+                                                         transport_controller(),
+                                                         *transceiver->mid());
           transceiver->internal()->sender_internal()->set_transport(
               dtls_transport);
           transceiver->internal()->receiver_internal()->set_transport(
@@ -1941,8 +1954,7 @@ void SdpOfferAnswerHandler::DoSetLocalDescription(
     // TODO(deadbeef): We already had to hop to the network thread for
     // MaybeStartGathering...
     pc_->network_thread()->Invoke<void>(
-        RTC_FROM_HERE, rtc::Bind(&cricket::PortAllocator::DiscardCandidatePool,
-                                 port_allocator()));
+        RTC_FROM_HERE, [this] { port_allocator()->DiscardCandidatePool(); });
     // Make UMA notes about what was agreed to.
     ReportNegotiatedSdpSemantics(*local_description());
   }
@@ -2158,6 +2170,7 @@ void SdpOfferAnswerHandler::DoSetRemoteDescription(
       desc->GetType() == SdpType::kAnswer) {
     // Report to UMA the format of the received offer or answer.
     pc_->ReportSdpFormatReceived(*desc);
+    pc_->ReportSdpBundleUsage(*desc);
   }
 
   // Handle remote descriptions missing a=mid lines for interop with legacy end
@@ -2200,8 +2213,7 @@ void SdpOfferAnswerHandler::DoSetRemoteDescription(
     // TODO(deadbeef): We already had to hop to the network thread for
     // MaybeStartGathering...
     pc_->network_thread()->Invoke<void>(
-        RTC_FROM_HERE, rtc::Bind(&cricket::PortAllocator::DiscardCandidatePool,
-                                 port_allocator()));
+        RTC_FROM_HERE, [this] { port_allocator()->DiscardCandidatePool(); });
     // Make UMA notes about what was agreed to.
     ReportNegotiatedSdpSemantics(*remote_description());
   }
@@ -2782,7 +2794,7 @@ bool SdpOfferAnswerHandler::IceRestartPending(
 
 bool SdpOfferAnswerHandler::NeedsIceRestart(
     const std::string& content_name) const {
-  return transport_controller()->NeedsIceRestart(content_name);
+  return pc_->NeedsIceRestart(content_name);
 }
 
 absl::optional<rtc::SSLRole> SdpOfferAnswerHandler::GetDtlsRole(
@@ -3544,8 +3556,7 @@ void SdpOfferAnswerHandler::GetOptionsForOffer(
   session_options->pooled_ice_credentials =
       pc_->network_thread()->Invoke<std::vector<cricket::IceParameters>>(
           RTC_FROM_HERE,
-          rtc::Bind(&cricket::PortAllocator::GetPooledIceCredentials,
-                    port_allocator()));
+          [this] { return port_allocator()->GetPooledIceCredentials(); });
   session_options->offer_extmap_allow_mixed =
       pc_->configuration()->offer_extmap_allow_mixed;
 
@@ -3809,8 +3820,7 @@ void SdpOfferAnswerHandler::GetOptionsForAnswer(
   session_options->pooled_ice_credentials =
       pc_->network_thread()->Invoke<std::vector<cricket::IceParameters>>(
           RTC_FROM_HERE,
-          rtc::Bind(&cricket::PortAllocator::GetPooledIceCredentials,
-                    port_allocator()));
+          [this] { return port_allocator()->GetPooledIceCredentials(); });
 }
 
 void SdpOfferAnswerHandler::GetOptionsForPlanBAnswer(
@@ -4281,13 +4291,11 @@ RTCError SdpOfferAnswerHandler::PushdownMediaDescription(
   // Need complete offer/answer with an SCTP m= section before starting SCTP,
   // according to https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-19
   if (pc_->sctp_mid() && local_description() && remote_description()) {
-    rtc::scoped_refptr<SctpTransport> sctp_transport =
-        transport_controller()->GetSctpTransport(*(pc_->sctp_mid()));
     auto local_sctp_description = cricket::GetFirstSctpDataContentDescription(
         local_description()->description());
     auto remote_sctp_description = cricket::GetFirstSctpDataContentDescription(
         remote_description()->description());
-    if (sctp_transport && local_sctp_description && remote_sctp_description) {
+    if (local_sctp_description && remote_sctp_description) {
       int max_message_size;
       // A remote max message size of zero means "any size supported".
       // We configure the connection with our own max message size.
@@ -4298,8 +4306,9 @@ RTCError SdpOfferAnswerHandler::PushdownMediaDescription(
             std::min(local_sctp_description->max_message_size(),
                      remote_sctp_description->max_message_size());
       }
-      sctp_transport->Start(local_sctp_description->port(),
-                            remote_sctp_description->port(), max_message_size);
+      pc_->StartSctpTransport(local_sctp_description->port(),
+                              remote_sctp_description->port(),
+                              max_message_size);
     }
   }
 
@@ -4459,40 +4468,23 @@ bool SdpOfferAnswerHandler::UseCandidatesInSessionDescription(
 bool SdpOfferAnswerHandler::UseCandidate(
     const IceCandidateInterface* candidate) {
   RTC_DCHECK_RUN_ON(signaling_thread());
+
+  rtc::Thread::ScopedDisallowBlockingCalls no_blocking_calls;
+
   RTCErrorOr<const cricket::ContentInfo*> result =
       FindContentInfo(remote_description(), candidate);
-  if (!result.ok()) {
-    RTC_LOG(LS_ERROR) << "UseCandidate: Invalid candidate. "
-                      << result.error().message();
+  if (!result.ok())
     return false;
+
+  const cricket::Candidate& c = candidate->candidate();
+  RTCError error = cricket::VerifyCandidate(c);
+  if (!error.ok()) {
+    RTC_LOG(LS_WARNING) << "Invalid candidate: " << c.ToString();
+    return true;
   }
-  std::vector<cricket::Candidate> candidates;
-  candidates.push_back(candidate->candidate());
-  // Invoking BaseSession method to handle remote candidates.
-  RTCError error = transport_controller()->AddRemoteCandidates(
-      result.value()->name, candidates);
-  if (error.ok()) {
-    ReportRemoteIceCandidateAdded(candidate->candidate());
-    // Candidates successfully submitted for checking.
-    if (pc_->ice_connection_state() ==
-            PeerConnectionInterface::kIceConnectionNew ||
-        pc_->ice_connection_state() ==
-            PeerConnectionInterface::kIceConnectionDisconnected) {
-      // If state is New, then the session has just gotten its first remote ICE
-      // candidates, so go to Checking.
-      // If state is Disconnected, the session is re-using old candidates or
-      // receiving additional ones, so go to Checking.
-      // If state is Connected, stay Connected.
-      // TODO(bemasc): If state is Connected, and the new candidates are for a
-      // newly added transport, then the state actually _should_ move to
-      // checking.  Add a way to distinguish that case.
-      pc_->SetIceConnectionState(
-          PeerConnectionInterface::kIceConnectionChecking);
-    }
-    // TODO(bemasc): If state is Completed, go back to Connected.
-  } else {
-    RTC_LOG(LS_WARNING) << error.message();
-  }
+
+  pc_->AddRemoteCandidate(result.value()->name, c);
+
   return true;
 }
 
@@ -4525,22 +4517,16 @@ bool SdpOfferAnswerHandler::ReadyToUseRemoteCandidate(
     return false;
   }
 
-  std::string transport_name = GetTransportName(result.value()->name);
-  return !transport_name.empty();
-}
-
-void SdpOfferAnswerHandler::ReportRemoteIceCandidateAdded(
-    const cricket::Candidate& candidate) {
-  pc_->NoteUsageEvent(UsageEvent::REMOTE_CANDIDATE_ADDED);
-  if (candidate.address().IsPrivateIP()) {
-    pc_->NoteUsageEvent(UsageEvent::REMOTE_PRIVATE_CANDIDATE_ADDED);
+  bool has_transport = false;
+  cricket::ChannelInterface* channel = pc_->GetChannel(result.value()->name);
+  if (channel) {
+    has_transport = !channel->transport_name().empty();
+  } else if (data_channel_controller()->data_channel_transport()) {
+    auto sctp_mid = pc_->sctp_mid();
+    RTC_DCHECK(sctp_mid);
+    has_transport = (result.value()->name == *sctp_mid);
   }
-  if (candidate.address().IsUnresolvedIP()) {
-    pc_->NoteUsageEvent(UsageEvent::REMOTE_MDNS_CANDIDATE_ADDED);
-  }
-  if (candidate.address().family() == AF_INET6) {
-    pc_->NoteUsageEvent(UsageEvent::REMOTE_IPV6_CANDIDATE_ADDED);
-  }
+  return has_transport;
 }
 
 RTCErrorOr<const cricket::ContentInfo*> SdpOfferAnswerHandler::FindContentInfo(
@@ -4649,6 +4635,7 @@ cricket::VoiceChannel* SdpOfferAnswerHandler::CreateVoiceChannel(
 cricket::VideoChannel* SdpOfferAnswerHandler::CreateVideoChannel(
     const std::string& mid) {
   RTC_DCHECK_RUN_ON(signaling_thread());
+  // NOTE: This involves a non-ideal hop (Invoke) over to the network thread.
   RtpTransportInternal* rtp_transport = pc_->GetRtpTransport(mid);
 
   // TODO(bugs.webrtc.org/11992): CreateVideoChannel internally switches to the
@@ -4677,10 +4664,10 @@ bool SdpOfferAnswerHandler::CreateDataChannel(const std::string& mid) {
   RTC_DCHECK_RUN_ON(signaling_thread());
   switch (pc_->data_channel_type()) {
     case cricket::DCT_SCTP:
-      if (pc_->network_thread()->Invoke<bool>(
-              RTC_FROM_HERE,
-              rtc::Bind(&PeerConnection::SetupDataChannelTransport_n, pc_,
-                        mid))) {
+      if (pc_->network_thread()->Invoke<bool>(RTC_FROM_HERE, [this, &mid] {
+            RTC_DCHECK_RUN_ON(pc_->network_thread());
+            return pc_->SetupDataChannelTransport_n(mid);
+          })) {
         pc_->SetSctpDataMid(mid);
       } else {
         return false;
@@ -4731,12 +4718,6 @@ void SdpOfferAnswerHandler::DestroyDataChannelTransport() {
     DestroyChannelInterface(data_channel_controller()->rtp_data_channel());
     data_channel_controller()->set_rtp_data_channel(nullptr);
   }
-
-  // Note: Cannot use rtc::Bind to create a functor to invoke because it will
-  // grab a reference to this PeerConnection. If this is called from the
-  // PeerConnection destructor, the RefCountedObject vtable will have already
-  // been destroyed (since it is a subclass of PeerConnection) and using
-  // rtc::Bind will cause "Pure virtual function called" error to appear.
 
   if (pc_->sctp_mid()) {
     RTC_DCHECK_RUN_ON(pc_->signaling_thread());

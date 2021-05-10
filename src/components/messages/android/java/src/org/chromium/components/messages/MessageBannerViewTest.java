@@ -9,12 +9,16 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.test.filters.MediumTest;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,18 +27,33 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.ui.test.util.DummyUiActivity;
 
 /**
  * Instrumentation tests for MessageBannerView.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class MessageBannerViewTest extends DummyUiActivityTestCase {
+@Batch(Batch.UNIT_TESTS)
+public class MessageBannerViewTest {
     private static final String SECONDARY_ACTION_TEXT = "SecondaryActionText";
+
+    @ClassRule
+    public static DisableAnimationsTestRule sDisableAnimationsRule =
+            new DisableAnimationsTestRule();
+
+    @ClassRule
+    public static BaseActivityTestRule<DummyUiActivity> sActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
+
+    private static Activity sActivity;
+    private static ViewGroup sContentView;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -44,16 +63,23 @@ public class MessageBannerViewTest extends DummyUiActivityTestCase {
 
     MessageBannerView mMessageBannerView;
 
-    @Override
-    public void setUpTest() throws Exception {
-        super.setUpTest();
+    @BeforeClass
+    public static void setupSuite() {
+        sActivityTestRule.launchActivity(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ViewGroup contentView = new FrameLayout(getActivity());
-            getActivity().setContentView(contentView);
-            LayoutInflater layoutInflater = getActivity().getLayoutInflater();
-            mMessageBannerView = (MessageBannerView) layoutInflater.inflate(
-                    R.layout.message_banner_view, contentView, false);
-            contentView.addView(mMessageBannerView);
+            sActivity = sActivityTestRule.getActivity();
+            sContentView = new FrameLayout(sActivity);
+            sActivity.setContentView(sContentView);
+        });
+    }
+
+    @Before
+    public void setupTest() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            sContentView.removeAllViews();
+            mMessageBannerView = (MessageBannerView) LayoutInflater.from(sActivity).inflate(
+                    R.layout.message_banner_view, sContentView, false);
+            sContentView.addView(mMessageBannerView);
         });
     }
 

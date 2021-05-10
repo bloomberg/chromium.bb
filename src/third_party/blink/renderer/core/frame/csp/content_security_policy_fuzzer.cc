@@ -26,19 +26,29 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   LEAK_SANITIZER_DISABLED_SCOPE;
   g_page_holder = std::make_unique<DummyPageHolder>().release();
 
-  // Set loader sandbox flags and install a new document so the document
-  // has all possible sandbox flags set on the document already when the
-  // CSP is bound.
   scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
-  g_page_holder->GetFrame().Loader().ForceSandboxFlags(
-      network::mojom::blink::WebSandboxFlags::kAll);
   g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
       "text/html", empty_document_data);
   return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  String header = String::FromUTF8(data, size);
+  // We need two pieces of input: a URL and a CSP string. Split |data| in two at
+  // the first whitespace.
+  const uint8_t* it = data;
+  for (; it < data + size; it++) {
+    if (base::IsAsciiWhitespace(*reinterpret_cast<const char*>(it))) {
+      it++;
+      break;
+    }
+  }
+  if (it == data + size) {
+    // Not much point in going on with an empty CSP string.
+    return EXIT_SUCCESS;
+  }
+
+  String url = String(data, it - 1 - data);
+  String header = String(it, size - (it - data));
   unsigned hash = header.IsNull() ? 0 : header.Impl()->GetHash();
 
   // Use the 'hash' value to pick header_type and header_source input.
@@ -57,9 +67,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
             : network::mojom::ContentSecurityPolicySource::kOriginPolicy;
   }
 
+  scoped_refptr<SecurityOrigin> self_origin = SecurityOrigin::Create(KURL(url));
+
   // Construct and initialize a policy from the string.
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp->DidReceiveHeader(header, header_type, header_source);
+  csp->DidReceiveHeader(header, *self_origin, header_type, header_source);
   auto& context = g_page_holder->GetFrame().DomWindow()->GetSecurityContext();
   context.SetContentSecurityPolicy(csp);
 

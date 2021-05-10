@@ -7,7 +7,9 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cache_stats_recorder.h"
@@ -42,7 +44,7 @@
 #elif defined(OS_WIN)
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -81,7 +83,9 @@ void MaybeCreateSafeBrowsingForRenderer(
     content::ResourceContext* resource_context,
     base::RepeatingCallback<scoped_refptr<safe_browsing::UrlCheckerDelegate>(
         bool safe_browsing_enabled,
-        bool should_check_on_sb_disabled)> get_checker_delegate,
+        bool should_check_on_sb_disabled,
+        const std::vector<std::string>& allowlist_domains)>
+        get_checker_delegate,
     mojo::PendingReceiver<safe_browsing::mojom::SafeBrowsing> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -90,9 +94,26 @@ void MaybeCreateSafeBrowsingForRenderer(
   if (!render_process_host)
     return;
 
-  bool safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
-      *Profile::FromBrowserContext(render_process_host->GetBrowserContext())
-           ->GetPrefs());
+  PrefService* pref_service =
+      Profile::FromBrowserContext(render_process_host->GetBrowserContext())
+          ->GetPrefs();
+
+  std::vector<std::string> allowlist_domains =
+      safe_browsing::GetURLAllowlistByPolicy(pref_service);
+
+  // Log the size of the domains to make sure copying them is
+  // not too expensive.
+  if (allowlist_domains.size() > 0) {
+    int total_size = 0;
+    for (const auto& domains : allowlist_domains) {
+      total_size += domains.size();
+    }
+    base::UmaHistogramCounts10000(
+        "SafeBrowsing.Policy.AllowlistDomainsTotalSize", total_size);
+  }
+
+  bool safe_browsing_enabled =
+      safe_browsing::IsSafeBrowsingEnabled(*pref_service);
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -102,7 +123,8 @@ void MaybeCreateSafeBrowsingForRenderer(
                               // Navigation initiated from renderer should never
                               // check when safe browsing is disabled, because
                               // enterprise check only supports mainframe URL.
-                              /*should_check_on_sb_disabled=*/false),
+                              /*should_check_on_sb_disabled=*/false,
+                              allowlist_domains),
           std::move(receiver)));
 }
 
@@ -183,7 +205,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       content::GetUIThreadTaskRunner({}));
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (performance_manager::mechanism::userspace_swap::
           UserspaceSwapInitializationImpl::UserspaceSwapSupportedAndEnabled()) {
     registry->AddInterface(
@@ -226,7 +248,7 @@ void ChromeContentBrowserClient::BindMediaServiceReceiver(
 void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  chrome::internal::PopulateChromeFrameBinders(map);
+  chrome::internal::PopulateChromeFrameBinders(map, render_frame_host);
   chrome::internal::PopulateChromeWebUIFrameBinders(map);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -294,10 +316,10 @@ void ChromeContentBrowserClient::BindGpuHostReceiver(
     return;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (auto r = receiver.As<chromeos::cdm::mojom::CdmFactoryDaemon>())
     chromeos::CdmFactoryDaemonProxy::Create(std::move(r));
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeContentBrowserClient::BindUtilityHostReceiver(

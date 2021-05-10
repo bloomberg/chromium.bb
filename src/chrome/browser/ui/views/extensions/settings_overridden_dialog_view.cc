@@ -16,6 +16,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 SettingsOverriddenDialogView::SettingsOverriddenDialogView(
     std::unique_ptr<SettingsOverriddenDialogController> controller)
@@ -43,11 +44,10 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
   SetCancelCallback(make_result_callback(DialogResult::kKeepNewSettings));
   SetCloseCallback(make_result_callback(DialogResult::kDialogDismissed));
 
-  // Modals shouldn't show a close button according to the latest style
-  // guidelines. Note the dialog can still be dismissed by user action via the
-  // escape key (in addition to closing automatically if the parent widget
-  // is destroyed).
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   SettingsOverriddenDialogController::ShowParams show_params =
       controller_->GetShowParams();
@@ -90,17 +90,6 @@ void SettingsOverriddenDialogView::Show(gfx::NativeWindow parent) {
   controller_->OnDialogShown();
 }
 
-ui::ModalType SettingsOverriddenDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-gfx::Size SettingsOverriddenDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
 void SettingsOverriddenDialogView::NotifyControllerOfResult(
     SettingsOverriddenDialogController::DialogResult result) {
   DCHECK(!result_)
@@ -110,6 +99,9 @@ void SettingsOverriddenDialogView::NotifyControllerOfResult(
   result_ = result;
   controller_->HandleDialogResult(result);
 }
+
+BEGIN_METADATA(SettingsOverriddenDialogView, views::DialogDelegateView)
+END_METADATA
 
 namespace chrome {
 

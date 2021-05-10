@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/gurl_abstract_tests.h"
 #include "url/origin.h"
 #include "url/url_canon.h"
 #include "url/url_test_utils.h"
@@ -480,22 +481,24 @@ TEST(GURLTest, Replacements) {
     const char* ref;
     const char* expected;
   } replace_cases[] = {
-      {"http://www.google.com/foo/bar.html?foo#bar", NULL, NULL, NULL, NULL,
-       NULL, "/", "", "", "http://www.google.com/"},
+      {"http://www.google.com/foo/bar.html?foo#bar", nullptr, nullptr, nullptr,
+       nullptr, nullptr, "/", "", "", "http://www.google.com/"},
       {"http://www.google.com/foo/bar.html?foo#bar", "javascript", "", "", "",
        "", "window.open('foo');", "", "", "javascript:window.open('foo');"},
-      {"file:///C:/foo/bar.txt", "http", NULL, NULL, "www.google.com", "99",
-       "/foo", "search", "ref", "http://www.google.com:99/foo?search#ref"},
+      {"file:///C:/foo/bar.txt", "http", nullptr, nullptr, "www.google.com",
+       "99", "/foo", "search", "ref",
+       "http://www.google.com:99/foo?search#ref"},
 #ifdef WIN32
       {"http://www.google.com/foo/bar.html?foo#bar", "file", "", "", "", "",
        "c:\\", "", "", "file:///C:/"},
 #endif
-      {"filesystem:http://www.google.com/foo/bar.html?foo#bar", NULL, NULL,
-       NULL, NULL, NULL, "/", "", "", "filesystem:http://www.google.com/foo/"},
+      {"filesystem:http://www.google.com/foo/bar.html?foo#bar", nullptr,
+       nullptr, nullptr, nullptr, nullptr, "/", "", "",
+       "filesystem:http://www.google.com/foo/"},
       // Lengthen the URL instead of shortening it, to test creation of
       // inner_url.
-      {"filesystem:http://www.google.com/foo/", NULL, NULL, NULL, NULL, NULL,
-       "bar.html", "foo", "bar",
+      {"filesystem:http://www.google.com/foo/", nullptr, nullptr, nullptr,
+       nullptr, nullptr, "bar.html", "foo", "bar",
        "filesystem:http://www.google.com/foo/bar.html?foo#bar"},
   };
 
@@ -554,13 +557,17 @@ TEST(GURLTest, PathForRequest) {
     const char* expected;
     const char* inner_expected;
   } cases[] = {
-    {"http://www.google.com", "/", NULL},
-    {"http://www.google.com/", "/", NULL},
-    {"http://www.google.com/foo/bar.html?baz=22", "/foo/bar.html?baz=22", NULL},
-    {"http://www.google.com/foo/bar.html#ref", "/foo/bar.html", NULL},
-    {"http://www.google.com/foo/bar.html?query#ref", "/foo/bar.html?query", NULL},
-    {"filesystem:http://www.google.com/temporary/foo/bar.html?query#ref", "/foo/bar.html?query", "/temporary"},
-    {"filesystem:http://www.google.com/temporary/foo/bar.html?query", "/foo/bar.html?query", "/temporary"},
+      {"http://www.google.com", "/", nullptr},
+      {"http://www.google.com/", "/", nullptr},
+      {"http://www.google.com/foo/bar.html?baz=22", "/foo/bar.html?baz=22",
+       nullptr},
+      {"http://www.google.com/foo/bar.html#ref", "/foo/bar.html", nullptr},
+      {"http://www.google.com/foo/bar.html?query#ref", "/foo/bar.html?query",
+       nullptr},
+      {"filesystem:http://www.google.com/temporary/foo/bar.html?query#ref",
+       "/foo/bar.html?query", "/temporary"},
+      {"filesystem:http://www.google.com/temporary/foo/bar.html?query",
+       "/foo/bar.html?query", "/temporary"},
   };
 
   for (size_t i = 0; i < base::size(cases); i++) {
@@ -877,44 +884,6 @@ TEST(GURLTest, PathForNonStandardURLs) {
   }
 }
 
-TEST(GURLTest, IsAboutBlank) {
-  const std::string kAboutBlankUrls[] = {"about:blank", "about:blank?foo",
-                                         "about:blank/#foo",
-                                         "about:blank?foo#foo"};
-  for (const auto& url : kAboutBlankUrls)
-    EXPECT_TRUE(GURL(url).IsAboutBlank()) << url;
-
-  const std::string kNotAboutBlankUrls[] = {
-      "http:blank",      "about:blan",          "about://blank",
-      "about:blank/foo", "about://:8000/blank", "about://foo:foo@/blank",
-      "foo@about:blank", "foo:bar@about:blank", "about:blank:8000",
-      "about:blANk"};
-  for (const auto& url : kNotAboutBlankUrls)
-    EXPECT_FALSE(GURL(url).IsAboutBlank()) << url;
-}
-
-TEST(GURLTest, IsAboutSrcdoc) {
-  const std::string kAboutSrcdocUrls[] = {
-      "about:srcdoc", "about:srcdoc/", "about:srcdoc?foo", "about:srcdoc/#foo",
-      "about:srcdoc?foo#foo"};
-  for (const auto& url : kAboutSrcdocUrls)
-    EXPECT_TRUE(GURL(url).IsAboutSrcdoc()) << url;
-
-  const std::string kNotAboutSrcdocUrls[] = {"http:srcdoc",
-                                             "about:srcdo",
-                                             "about://srcdoc",
-                                             "about://srcdoc\\",
-                                             "about:srcdoc/foo",
-                                             "about://:8000/srcdoc",
-                                             "about://foo:foo@/srcdoc",
-                                             "foo@about:srcdoc",
-                                             "foo:bar@about:srcdoc",
-                                             "about:srcdoc:8000",
-                                             "about:srCDOc"};
-  for (const auto& url : kNotAboutSrcdocUrls)
-    EXPECT_FALSE(GURL(url).IsAboutSrcdoc()) << url;
-}
-
 TEST(GURLTest, EqualsIgnoringRef) {
   const struct {
     const char* url_a;
@@ -984,6 +953,21 @@ TEST(GURLTest, DebugAlias) {
   EXPECT_STREQ("https://foo.com/bar", url_debug_alias);
 }
 
+TEST(GURLTest, InvalidHost) {
+  // This contains an invalid percent escape (%T%) and also a valid
+  // percent escape that's not 7-bit ascii (%ae), so that the unescaped
+  // host contains both an invalid percent escape and invalid UTF-8.
+  GURL url("http://%T%Ae");
+
+  EXPECT_FALSE(url.is_valid());
+  EXPECT_TRUE(url.SchemeIs(url::kHttpScheme));
+
+  // The invalid percent escape becomes an escaped percent sign (%25), and the
+  // invalid UTF-8 character becomes REPLACEMENT CHARACTER' (U+FFFD) encoded as
+  // UTF-8.
+  EXPECT_EQ(url.host_piece(), "%25t%EF%BF%BD");
+}
+
 TEST(GURLTest, PortZero) {
   GURL port_zero_url("http://127.0.0.1:0/blah");
 
@@ -1022,5 +1006,19 @@ TEST(GURLTest, PortZero) {
   url::Origin default_port_origin = url::Origin::Create(default_port);
   EXPECT_FALSE(default_port_origin.IsSameOriginWith(resolved_origin));
 }
+
+class GURLTestTraits {
+ public:
+  using UrlType = GURL;
+
+  static UrlType CreateUrlFromString(base::StringPiece s) { return GURL(s); }
+  static bool IsAboutBlank(const UrlType& url) { return url.IsAboutBlank(); }
+  static bool IsAboutSrcdoc(const UrlType& url) { return url.IsAboutSrcdoc(); }
+
+  // Only static members.
+  GURLTestTraits() = delete;
+};
+
+INSTANTIATE_TYPED_TEST_SUITE_P(GURL, AbstractUrlTest, GURLTestTraits);
 
 }  // namespace url

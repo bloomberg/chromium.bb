@@ -4,17 +4,23 @@
 
 // @ts-nocheck File doesn't need to be checked by TS.
 
+const colors = require('ansi-colors');
 const path = require('path');
 const glob = require('glob');
 const fs = require('fs');
 const rimraf = require('rimraf');
+const debugCheck = require('./debug-check.js');
 
 // false by default
-const DEBUG_ENABLED = !!process.env['DEBUG'];
-const COVERAGE_ENABLED = !!process.env['COVERAGE'];
+const DEBUG_ENABLED = Boolean(process.env['DEBUG']);
+const REPEAT_ENABLED = Boolean(process.env['REPEAT']);
+const COVERAGE_ENABLED = Boolean(process.env['COVERAGE']);
+const EXPANDED_REPORTING = Boolean(process.env['EXPANDED_REPORTING']);
 
 // true by default
 const TEXT_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_TEXT_COVERAGE'];
+// true by default
+const HTML_COVERAGE_ENABLED = COVERAGE_ENABLED && !process.env['NO_HTML_COVERAGE'];
 const COVERAGE_OUTPUT_DIRECTORY = 'karma-coverage';
 
 if (COVERAGE_ENABLED) {
@@ -25,17 +31,36 @@ if (COVERAGE_ENABLED) {
   if (fs.existsSync(fullPathToDirectory)) {
     rimraf.sync(fullPathToDirectory);
   }
+
+  debugCheck(__dirname).then(isDebug => {
+    if (!isDebug) {
+      const warning = `The unit tests appear to be running against a non-debug build and
+your coverage report will likely be incomplete due to bundling.
+
+In order to get a complete coverage report please run against a
+target with is_debug = true in the args.gn file.`;
+      console.warn(colors.magenta(warning));
+    }
+  });
 }
 
 const GEN_DIRECTORY = path.join(__dirname, '..', '..');
 const ROOT_DIRECTORY = path.join(GEN_DIRECTORY, '..', '..', '..');
 const browsers = DEBUG_ENABLED ? ['Chrome'] : ['ChromeHeadless'];
+const singleRun = !(DEBUG_ENABLED || REPEAT_ENABLED);
 
 const coverageReporters = COVERAGE_ENABLED ? ['coverage'] : [];
 const coveragePreprocessors = COVERAGE_ENABLED ? ['coverage'] : [];
-const commonIstanbulReporters = [{type: 'html'}, {type: 'json-summary'}];
-const istanbulReportOutputs =
-    TEXT_COVERAGE_ENABLED ? [{type: 'text'}, ...commonIstanbulReporters] : commonIstanbulReporters;
+const commonIstanbulReporters = [{type: 'json-summary'}];
+const istanbulReportOutputs = commonIstanbulReporters;
+
+if (TEXT_COVERAGE_ENABLED) {
+  istanbulReportOutputs.push({type: 'text'});
+}
+
+if (HTML_COVERAGE_ENABLED) {
+  istanbulReportOutputs.push({type: 'html'});
+}
 
 const UNIT_TESTS_ROOT_FOLDER = path.join(ROOT_DIRECTORY, 'test', 'unittests');
 const UNIT_TESTS_FOLDERS = [
@@ -81,35 +106,41 @@ for (const pattern of TEST_FILES) {
 }
 
 module.exports = function(config) {
+  const targetDir = path.relative(process.cwd(), GEN_DIRECTORY);
   const options = {
     basePath: ROOT_DIRECTORY,
+    autoWatchBatchDelay: 3000,
 
     files: [
       // Ensure the test setup goes first because Karma registers with Mocha in file order, and the hooks in the test_setup
       // must be set before any other hooks in order to ensure all tests get the same environment.
       testSetupFilePattern,
       ...testFiles,
-      ...TEST_FILES_SOURCE_MAPS.map(pattern => ({pattern, served: true, included: false})),
-      ...TEST_SOURCES.map(source => ({pattern: source, served: true, included: false})),
+      ...TEST_FILES_SOURCE_MAPS.map(pattern => ({pattern, served: true, included: false, watched: false})),
+      ...TEST_SOURCES.map(source => ({pattern: source, served: true, included: false, watched: false})),
       {pattern: path.join(GEN_DIRECTORY, 'front_end/Images/*.{svg,png}'), served: true, included: false},
+      {pattern: path.join(GEN_DIRECTORY, 'front_end/i18n/locales/*.json'), served: true, included: false},
+      // Inject the CSS color theme variables into the page so any rendered
+      // components have access to them.
+      {pattern: path.join(GEN_DIRECTORY, 'front_end/ui/themeColors.css'), served: true, included: true},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.css'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.js'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.js.map'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.mjs'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'front_end/**/*.mjs.map'), served: true, included: false},
-      {pattern: path.join(ROOT_DIRECTORY, 'front_end/**/*.ts'), served: true, included: false},
+      {pattern: path.join(ROOT_DIRECTORY, 'front_end/**/*.ts'), served: true, included: false, watched: false},
       {pattern: path.join(GEN_DIRECTORY, 'inspector_overlay/**/*.js'), served: true, included: false},
       {pattern: path.join(GEN_DIRECTORY, 'inspector_overlay/**/*.js.map'), served: true, included: false},
     ],
 
     reporters: [
-      'dots',
+      EXPANDED_REPORTING ? 'spec' : 'dots',
       ...coverageReporters,
     ],
 
     browsers,
 
-    frameworks: ['mocha', 'chai'],
+    frameworks: ['mocha', 'chai', 'sinon'],
 
     client: {
       /*
@@ -117,28 +148,31 @@ module.exports = function(config) {
        * preloads some CSS files and it needs to know the target directory to do
        * so.
        */
-      targetDir: path.relative(process.cwd(), GEN_DIRECTORY),
+      targetDir,
     },
 
     plugins: [
       require('karma-chrome-launcher'),
       require('karma-mocha'),
       require('karma-chai'),
+      require('karma-sinon'),
       require('karma-sourcemap-loader'),
+      require('karma-spec-reporter'),
       require('karma-coverage'),
     ],
 
     preprocessors: {
       '**/*.{js,mjs}': ['sourcemap'],
-      [path.join(GEN_DIRECTORY, 'front_end/!(third_party)/**/!(wasm_source_map|*_bridge).{js,mjs}')]:
-          [...coveragePreprocessors],
+      [path.join(GEN_DIRECTORY, 'front_end/!(third_party|component_docs)/**/*.{js,mjs}')]: [...coveragePreprocessors],
+      [path.join(GEN_DIRECTORY, 'inspector_overlay/**/*.{js,mjs}')]: [...coveragePreprocessors],
     },
 
-    proxies: {'/Images': 'front_end/Images'},
+    proxies:
+        {'/Images': `/base/${targetDir}/front_end/Images`, '/locales': `/base/${targetDir}/front_end/i18n/locales`},
 
-    coverageReporter: {dir: COVERAGE_OUTPUT_DIRECTORY, reporters: istanbulReportOutputs},
+    coverageReporter: {dir: COVERAGE_OUTPUT_DIRECTORY, subdir: '.', reporters: istanbulReportOutputs},
 
-    singleRun: !DEBUG_ENABLED,
+    singleRun,
   };
 
   config.set(options);

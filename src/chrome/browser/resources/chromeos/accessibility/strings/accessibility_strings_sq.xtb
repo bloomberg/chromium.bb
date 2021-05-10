@@ -150,6 +150,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="2045055672832940894">Nuk ka kontroll të mëparshëm</translation>
 <translation id="2045606329038304310">Kontrolli i fushës së formës</translation>
 <translation id="2063539687800151747">Epigraf</translation>
+<translation id="2074531330963286860">Veprimet e mundshme. Shtyp Kërko+Pikë për të parë</translation>
 <translation id="2086961585857038472">Fjala tjetër</translation>
 <translation id="2087981446621639008">detaje liste përshkrimesh</translation>
 <translation id="2089387485033699258">sq</translation>
@@ -914,6 +915,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="7810781339813764006">Grupi tjetër</translation>
 <translation id="7813616274030162878">Menyja e "Qasjes me çelës"</translation>
 <translation id="7839679365527550018">Fjala e mëparshme</translation>
+<translation id="7842115774595115751">Aktivizo kontrollet e navigimit</translation>
 <translation id="7846634333498149051">Tastiera</translation>
 <translation id="7851816175263618915">Disa shenja pikësimi</translation>
 <translation id="7871691770940645922">Ekrani virtual Braille</translation>
@@ -1014,7 +1016,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="8603071050456974042">Paneli i ChromeVox</translation>
 <translation id="8606621670302093223">Kontrolli i datës</translation>
 <translation id="8613709718990529335">Bisk</translation>
-<translation id="8614129468475308349">Shumë mirë! Ke mësuar bazat e ChromeVox. Mund ta përsërisësh përsëri udhëzuesin ose dil nga ky udhëzues duke gjetur dhe duke klikuar një buton poshtë.</translation>
+<translation id="8614129468475308349">Shumë mirë! Ke mësuar bazat e ChromeVox. Mund ta shfletosh nga e para udhëzuesin ose dil nga ai duke gjetur dhe duke klikuar një buton poshtë.</translation>
 <translation id="8625173877182443267">Nuk ka titull tjetër të nivelit 6</translation>
 <translation id="8628186274519446680">Domate</translation>
 <translation id="8638532244051952400">Njofto për koordinatat e qelizës aktuale</translation>
@@ -1057,6 +1059,7 @@ Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Harro</translation>
 <translation id="8989104346085848538">Për të ndaluar çdo ligjërim aktual të ChromeVox, shtyp tastin Control.</translation>
+<translation id="8993737615451556423">Ofron kontrollet për të shpejtuar, ngadalësuar dhe vendosur në pauzë zërin e leximit</translation>
 <translation id="9014206344398081366">Udhëzuesi i ChromeVox</translation>
 <translation id="9040132695316389094">Titulli 1</translation>
 <translation id="9061884144798498064">Zgjidh një tabelë brejl me 8 pika:</translation>

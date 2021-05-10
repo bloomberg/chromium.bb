@@ -242,6 +242,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                              int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
+  void SetFlocAllowed(ContextID context_id, int nav_entry_id, const GURL& url);
 
   // Querying ------------------------------------------------------------------
 
@@ -670,7 +671,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       bool hidden,
       VisitSource visit_source,
       bool should_increment_typed_count,
-      bool publicly_routable,
+      bool floc_allowed,
       base::Optional<base::string16> title = base::nullopt);
 
   // Returns a redirect chain in |redirects| for the VisitID

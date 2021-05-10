@@ -4,10 +4,13 @@
 
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -81,6 +84,9 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       break;
     case ui::VKEY_MEDIA_LAUNCH_APP2:
       msg_id = IDS_KSV_KEY_FULLSCREEN;
+      break;
+    case ui::VKEY_SNAPSHOT:
+      msg_id = IDS_KSV_KEY_SNAPSHOT;
       break;
     case ui::VKEY_UNKNOWN:
       // TODO(wutao): make this reliable.
@@ -203,6 +209,8 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
       return &kKsvArrowRightIcon;
     case ui::VKEY_PRIVACY_SCREEN_TOGGLE:
       return &kKsvPrivacyScreenToggleIcon;
+    case ui::VKEY_SNAPSHOT:
+      return &kKsvSnapshotIcon;
     default:
       return nullptr;
   }
@@ -634,6 +642,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
        {},
        // |accelerator_ids|
+       {{ui::VKEY_SNAPSHOT, ui::EF_NONE}}},
+
+      {// |categories|
+       {ShortcutCategory::kPopular},
+       IDS_KSV_DESCRIPTION_TAKE_FULLSCREEN_SCREENSHOT,
+       {},
+       // |accelerator_ids|
        {{ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
@@ -698,6 +713,14 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |accelerator_ids|
        {{ui::VKEY_OEM_6, ui::EF_ALT_DOWN}}},
+      {// |categories|
+       {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+       IDS_KSV_DESCRIPTION_CLIPBOARD_HISTORY,
+       {},
+       // |accelerator_ids|
+       {},
+       // |shortcut_key_codes|
+       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_V}},
       {// |categories|
        {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
        IDS_KSV_DESCRIPTION_COPY,
@@ -1424,6 +1447,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |accelerator_ids|
        {{ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE}}},
+
+      {// |categories|
+       {ShortcutCategory::kTextEditing},
+       IDS_KSV_DESCRIPTION_SHOW_EMOJI_PICKER,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN}}},
   });
 
   static bool is_initialized = false;
@@ -1432,7 +1462,40 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
   // string.
   if (!is_initialized) {
     is_initialized = true;
+
+    // Include diagnostics shortcuts only when experiment flag is enabled.
+    if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
+      const KeyboardShortcutItem diagnostics_shortcut = {
+          // |categories|
+          {ShortcutCategory::kSystemAndDisplay},
+          IDS_KSV_DESCRIPTION_OPEN_DIAGNOSTICS,
+          {},
+          // |accelerator_ids|
+          {{ui::VKEY_ESCAPE, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN}}};
+      item_list->emplace_back(diagnostics_shortcut);
+    }
+
     for (auto& item : *item_list) {
+      // Capture mode is an improved screenshot and video recording tool, and
+      // the shortuct messages reflect the differences. If capture mode is
+      // disabled, we will swap the strings.
+      // TODO(sammiequon): Remove the strings suffixed with _OLD once capture
+      // mode can no longer be disabled.
+      if (!ash::features::IsCaptureModeEnabled()) {
+        static base::flat_map<int, int> new_to_old_message_id_map = {
+            {IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_FULLSCREEN_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT_OLD}};
+        const int id = item.description_message_id;
+        if (new_to_old_message_id_map.contains(id))
+          item.description_message_id = new_to_old_message_id_map[id];
+      }
+
       if (item.shortcut_key_codes.empty() && !item.accelerator_ids.empty()) {
         // Only use the first |accelerator_id| because the modifiers are the
         // same even if it is a grouped accelerators.

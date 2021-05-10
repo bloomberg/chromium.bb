@@ -42,8 +42,6 @@ class Token {
 
     /// An identifier
     kIdentifier,
-    /// A string value
-    kStringLiteral,
     /// A float value
     kFloatLiteral,
     /// An signed int value
@@ -85,16 +83,18 @@ class Token {
     kGreaterThan,
     /// A '>='
     kGreaterThanEqual,
+    /// A '>>'
+    kShiftRight,
     /// A '<'
     kLessThan,
     /// A '<='
     kLessThanEqual,
+    /// A '<<'
+    kShiftLeft,
     /// A '%'
     kMod,
     /// A '-'
     kMinus,
-    /// A '::'
-    kNamespace,
     /// A '!='
     kNotEqual,
     /// A '.'
@@ -118,22 +118,14 @@ class Token {
 
     /// A 'array'
     kArray,
-    /// A 'binding'
-    kBinding,
     /// A 'bitcast'
     kBitcast,
     /// A 'bool'
     kBool,
-    /// A 'block'
-    kBlock,
     /// A 'break'
     kBreak,
-    /// A 'builtin'
-    kBuiltin,
     /// A 'case'
     kCase,
-    /// A 'compute'
-    kCompute,
     /// A 'const'
     kConst,
     /// A 'continue'
@@ -228,8 +220,6 @@ class Token {
     kFormatRgba8Unorm,
     // A 'Rgba8UnormSrgb' format
     kFormatRgba8UnormSrgb,
-    /// A 'fragment'
-    kFragment,
     /// A 'function'
     kFunction,
     /// A 'i32'
@@ -242,8 +232,6 @@ class Token {
     kImport,
     /// A 'in'
     kIn,
-    /// A 'location'
-    kLocation,
     /// A 'loop'
     kLoop,
     /// A 'mat2x2'
@@ -264,8 +252,6 @@ class Token {
     kMat4x3,
     /// A 'mat4x4'
     kMat4x4,
-    /// A 'offset'
-    kOffset,
     /// A 'out'
     kOut,
     /// A 'private'
@@ -278,14 +264,8 @@ class Token {
     kSampler,
     /// A 'sampler_comparison'
     kComparisonSampler,
-    /// A 'set'
-    kSet,
-    /// A 'storage_buffer'
-    kStorageBuffer,
-    /// A 'stage'
-    kStage,
-    /// A 'stride'
-    kStride,
+    /// A 'storage'
+    kStorage,
     /// A 'struct'
     kStruct,
     /// A 'switch'
@@ -300,20 +280,8 @@ class Token {
     kTextureDepthCubeArray,
     /// A 'texture_multisampled_2d'
     kTextureMultisampled2d,
-    /// A 'texture_storage_ro_1d'
-    kTextureStorageReadonly1d,
-    /// A 'texture_storage_ro_2d_array'
-    kTextureStorageReadonly1dArray,
-    /// A 'texture_storage_ro_2d'
-    kTextureStorageReadonly2d,
-    /// A 'texture_storage_ro_2d_array'
-    kTextureStorageReadonly2dArray,
-    /// A 'texture_storage_ro_3d'
-    kTextureStorageReadonly3d,
     /// A 'texture_1d'
     kTextureSampled1d,
-    /// A 'texture_1d_array'
-    kTextureSampled1dArray,
     /// A 'texture_2d'
     kTextureSampled2d,
     /// A 'texture_2d_array'
@@ -324,16 +292,14 @@ class Token {
     kTextureSampledCube,
     /// A 'texture_cube_array'
     kTextureSampledCubeArray,
-    /// A 'texture_wo_1d'
-    kTextureStorageWriteonly1d,
-    /// A 'texture_wo_2d_array'
-    kTextureStorageWriteonly1dArray,
-    /// A 'texture_wo_2d'
-    kTextureStorageWriteonly2d,
-    /// A 'texture_wo_2d_array'
-    kTextureStorageWriteonly2dArray,
-    /// A 'texture_wo_3d'
-    kTextureStorageWriteonly3d,
+    /// A 'texture_storage_1d'
+    kTextureStorage1d,
+    /// A 'texture_storage_2d'
+    kTextureStorage2d,
+    /// A 'texture_storage_2d_array'
+    kTextureStorage2dArray,
+    /// A 'texture_storage_3d'
+    kTextureStorage3d,
     /// A 'true'
     kTrue,
     /// A 'type'
@@ -352,14 +318,10 @@ class Token {
     kVec3,
     /// A 'vec4'
     kVec4,
-    /// A 'vertex'
-    kVertex,
     /// A 'void'
     kVoid,
     /// A 'workgroup'
     kWorkgroup,
-    /// A 'workgroup_size'
-    kWorkgroupSize,
   };
 
   /// Converts a token type to a name
@@ -404,7 +366,7 @@ class Token {
 
   /// Returns true if the token is of the given type
   /// @param t the type to check against.
-  /// @returns true if the token is of type |t|
+  /// @returns true if the token is of type `t`
   bool Is(Type t) const { return type_ == t; }
 
   /// @returns true if the token is uninitialized
@@ -417,8 +379,6 @@ class Token {
   bool IsEof() const { return type_ == Type::kEOF; }
   /// @returns true if the token is an identifier
   bool IsIdentifier() const { return type_ == Type::kIdentifier; }
-  /// @returns true if the token is a string
-  bool IsStringLiteral() const { return type_ == Type::kStringLiteral; }
   /// @returns true if the token is a float
   bool IsFloatLiteral() const { return type_ == Type::kFloatLiteral; }
   /// @returns true if the token is an signed int
@@ -460,16 +420,18 @@ class Token {
   bool IsGreaterThan() const { return type_ == Type::kGreaterThan; }
   /// @returns true if token is a '>='
   bool IsGreaterThanEqual() const { return type_ == Type::kGreaterThanEqual; }
+  /// @returns true if token is a '>>'
+  bool IsShiftRight() const { return type_ == Type::kShiftRight; }
   /// @returns true if token is a '<'
   bool IsLessThan() const { return type_ == Type::kLessThan; }
   /// @returns true if token is a '<='
   bool IsLessThanEqual() const { return type_ == Type::kLessThanEqual; }
+  /// @returns true if token is a '<<'
+  bool IsShiftLeft() const { return type_ == Type::kShiftLeft; }
   /// @returns true if token is a '%'
   bool IsMod() const { return type_ == Type::kMod; }
   /// @returns true if token is a '-'
   bool IsMinus() const { return type_ == Type::kMinus; }
-  /// @returns true if token is a '::'
-  bool IsNamespace() const { return type_ == Type::kNamespace; }
   /// @returns true if token is a '!='
   bool IsNotEqual() const { return type_ == Type::kNotEqual; }
   /// @returns true if token is a '.'
@@ -493,24 +455,16 @@ class Token {
 
   /// @returns true if token is a 'array'
   bool IsArray() const { return type_ == Type::kArray; }
-  /// @returns true if token is a 'binding'
-  bool IsBinding() const { return type_ == Type::kBinding; }
   /// @returns true if token is a 'bitcast'
   bool IsBitcast() const { return type_ == Type::kBitcast; }
-  /// @returns true if token is a 'block'
-  bool IsBlock() const { return type_ == Type::kBlock; }
   /// @returns true if token is a 'bool'
   bool IsBool() const { return type_ == Type::kBool; }
   /// @returns true if token is a 'break'
   bool IsBreak() const { return type_ == Type::kBreak; }
-  /// @returns true if token is a 'builtin'
-  bool IsBuiltin() const { return type_ == Type::kBuiltin; }
   /// @returns true if token is a 'case'
   bool IsCase() const { return type_ == Type::kCase; }
   /// @returns true if token is a 'sampler_comparison'
   bool IsComparisonSampler() const { return type_ == Type::kComparisonSampler; }
-  /// @returns true if token is a 'compute'
-  bool IsCompute() const { return type_ == Type::kCompute; }
   /// @returns true if token is a 'const'
   bool IsConst() const { return type_ == Type::kConst; }
   /// @returns true if token is a 'continue'
@@ -613,8 +567,6 @@ class Token {
   bool IsFormatRgba8UnormSrgb() const {
     return type_ == Type::kFormatRgba8UnormSrgb;
   }
-  /// @returns true if token is a 'fragment'
-  bool IsFragment() const { return type_ == Type::kFragment; }
   /// @returns true if token is a 'function'
   bool IsFunction() const { return type_ == Type::kFunction; }
   /// @returns true if token is a 'i32'
@@ -627,8 +579,6 @@ class Token {
   bool IsImport() const { return type_ == Type::kImport; }
   /// @returns true if token is a 'in'
   bool IsIn() const { return type_ == Type::kIn; }
-  /// @returns true if token is a 'location'
-  bool IsLocation() const { return type_ == Type::kLocation; }
   /// @returns true if token is a 'loop'
   bool IsLoop() const { return type_ == Type::kLoop; }
   /// @returns true if token is a 'mat2x2'
@@ -649,8 +599,6 @@ class Token {
   bool IsMat4x3() const { return type_ == Type::kMat4x3; }
   /// @returns true if token is a 'mat4x4'
   bool IsMat4x4() const { return type_ == Type::kMat4x4; }
-  /// @returns true if token is a 'offset'
-  bool IsOffset() const { return type_ == Type::kOffset; }
   /// @returns true if token is a 'out'
   bool IsOut() const { return type_ == Type::kOut; }
   /// @returns true if token is a 'private'
@@ -661,14 +609,8 @@ class Token {
   bool IsReturn() const { return type_ == Type::kReturn; }
   /// @returns true if token is a 'sampler'
   bool IsSampler() const { return type_ == Type::kSampler; }
-  /// @returns true if token is a 'set'
-  bool IsSet() const { return type_ == Type::kSet; }
-  /// @returns true if token is a 'stage'
-  bool IsStage() const { return type_ == Type::kStage; }
-  /// @returns true if token is a 'storage_buffer'
-  bool IsStorageBuffer() const { return type_ == Type::kStorageBuffer; }
-  /// @returns true if token is a 'stride'
-  bool IsStride() const { return type_ == Type::kStride; }
+  /// @returns true if token is a 'storage'
+  bool IsStorage() const { return type_ == Type::kStorage; }
   /// @returns true if token is a 'struct'
   bool IsStruct() const { return type_ == Type::kStruct; }
   /// @returns true if token is a 'switch'
@@ -689,32 +631,18 @@ class Token {
   bool IsTextureMultisampled2d() const {
     return type_ == Type::kTextureMultisampled2d;
   }
-  /// @returns true if token is a 'texture_storage_ro_1d'
-  bool IsTextureStorageReadonly1d() const {
-    return type_ == Type::kTextureStorageReadonly1d;
+  /// @returns true if token is a 'texture_storage_1d'
+  bool IsTextureStorage1d() const { return type_ == Type::kTextureStorage1d; }
+  /// @returns true if token is a 'texture_storage_2d'
+  bool IsTextureStorage2d() const { return type_ == Type::kTextureStorage2d; }
+  /// @returns true if token is a 'texture_storage_2d_array'
+  bool IsTextureStorage2dArray() const {
+    return type_ == Type::kTextureStorage2dArray;
   }
-  /// @returns true if token is a 'texture_storage_ro_1d_array'
-  bool IsTextureStorageReadonly1dArray() const {
-    return type_ == Type::kTextureStorageReadonly1dArray;
-  }
-  /// @returns true if token is a 'texture_storage_ro_2d'
-  bool IsTextureStorageReadonly2d() const {
-    return type_ == Type::kTextureStorageReadonly2d;
-  }
-  /// @returns true if token is a 'texture_storage_ro_2d_array'
-  bool IsTextureStorageReadonly2dArray() const {
-    return type_ == Type::kTextureStorageReadonly2dArray;
-  }
-  /// @returns true if token is a 'texture_storage_ro_3d'
-  bool IsTextureStorageReadonly3d() const {
-    return type_ == Type::kTextureStorageReadonly3d;
-  }
+  /// @returns true if token is a 'texture_storage_3d'
+  bool IsTextureStorage3d() const { return type_ == Type::kTextureStorage3d; }
   /// @returns true if token is a 'texture_1d'
   bool IsTextureSampled1d() const { return type_ == Type::kTextureSampled1d; }
-  /// @returns true if token is a 'texture_1d_array'
-  bool IsTextureSampled1dArray() const {
-    return type_ == Type::kTextureSampled1dArray;
-  }
   /// @returns true if token is a 'texture_2d'
   bool IsTextureSampled2d() const { return type_ == Type::kTextureSampled2d; }
   /// @returns true if token is a 'texture_2d_array'
@@ -730,26 +658,6 @@ class Token {
   /// @returns true if token is a 'texture_cube_array'
   bool IsTextureSampledCubeArray() const {
     return type_ == Type::kTextureSampledCubeArray;
-  }
-  /// @returns true if token is a 'texture_storage_wo_1d'
-  bool IsTextureStorageWriteonly1d() const {
-    return type_ == Type::kTextureStorageWriteonly1d;
-  }
-  /// @returns true if token is a 'texture_storage_wo_1d_array'
-  bool IsTextureStorageWriteonly1dArray() const {
-    return type_ == Type::kTextureStorageWriteonly1dArray;
-  }
-  /// @returns true if token is a 'texture_storage_wo_2d'
-  bool IsTextureStorageWriteonly2d() const {
-    return type_ == Type::kTextureStorageWriteonly2d;
-  }
-  /// @returns true if token is a 'texture_storage_wo_2d_array'
-  bool IsTextureStorageWriteonly2dArray() const {
-    return type_ == Type::kTextureStorageWriteonly2dArray;
-  }
-  /// @returns true if token is a 'texture_storage_wo_3d'
-  bool IsTextureStorageWriteonly3d() const {
-    return type_ == Type::kTextureStorageWriteonly3d;
   }
   /// @returns true if token is a 'true'
   bool IsTrue() const { return type_ == Type::kTrue; }
@@ -769,14 +677,10 @@ class Token {
   bool IsVec3() const { return type_ == Type::kVec3; }
   /// @returns true if token is a 'vec4'
   bool IsVec4() const { return type_ == Type::kVec4; }
-  /// @returns true if token is a 'vertex'
-  bool IsVertex() const { return type_ == Type::kVertex; }
   /// @returns true if token is a 'void'
   bool IsVoid() const { return type_ == Type::kVoid; }
   /// @returns true if token is a 'workgroup'
   bool IsWorkgroup() const { return type_ == Type::kWorkgroup; }
-  /// @returns true if token is a 'workgroup_size'
-  bool IsWorkgroupSize() const { return type_ == Type::kWorkgroupSize; }
 
   /// @returns the source information for this token
   Source source() const { return source_; }

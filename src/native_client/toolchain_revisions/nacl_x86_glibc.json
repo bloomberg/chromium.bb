@@ -34,11 +34,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "8a6f93d2b65c8c147a56586e307866e2f43ce299",
+          "hash": "f1721831a3a8a9e91026f3219fa6d38697d1fb07",
           "log_url": null,
           "name": "core_sdk.tar.bz2",
           "tar_src_dir": "core_sdk",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r9ff1dc0c05b45941b86bed303a87a9eac17192ea/core_sdk_mac_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain_manual/r1/core_sdk_mac_x86.tar.bz2"
         },
         {
           "extract_dir": "",
@@ -50,11 +50,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "f7ae257a015d2bdf3e3f3afd167e80e633e687ba",
+          "hash": "6b4a380bbf9a714586feaf9b79b67c7b60bf023a",
           "log_url": null,
           "name": "toolchain.tar.bz2",
           "tar_src_dir": "toolchain/mac_x86",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r9ff1dc0c05b45941b86bed303a87a9eac17192ea/toolchain_mac_x86.tar.bz2"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain_manual/r1/toolchain_mac_x86.tar.bz2"
         }
       ],
       "version": 1
@@ -89,6 +89,6 @@
       "version": 1
     }
   },
-  "revision": "9ff1dc0c05b45941b86bed303a87a9eac17192ea",
-  "revision_hash": "331b7b7714fcacb778a7e95f2617e3a430d7e8a6"
+  "revision": "73e5a44d837e54d335b4c618e1dd5d2028947a67",
+  "revision_hash": "b1d320d14513f72712b77cf76d1076d3f76feb12"
 }

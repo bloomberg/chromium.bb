@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/borealis/borealis_task.h"
+
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/borealis/borealis_context.h"
 #include "chrome/browser/chromeos/borealis/borealis_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -57,7 +58,6 @@ void MountDlc::OnMountDlc(
     Complete(BorealisStartupResult::kMountFailed,
              "Mounting the DLC for Borealis failed: " + install_result.error);
   } else {
-    context->set_root_path(install_result.root_path);
     Complete(BorealisStartupResult::kSuccess, "");
   }
 }
@@ -106,9 +106,7 @@ StartBorealisVm::~StartBorealisVm() = default;
 
 void StartBorealisVm::RunInternal(BorealisContext* context) {
   vm_tools::concierge::StartVmRequest request;
-  vm_tools::concierge::VirtualMachineSpec* vm = request.mutable_vm();
-  vm->set_kernel(context->root_path() + "/vm_kernel");
-  vm->set_rootfs(context->root_path() + "/vm_rootfs.img");
+  request.mutable_vm()->set_dlc_id(kBorealisDlcName);
   request.set_start_termina(false);
   request.set_owner_id(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(context->profile()));

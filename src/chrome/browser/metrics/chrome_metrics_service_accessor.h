@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/common/metrics.mojom.h"
@@ -28,9 +29,9 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class ChromeCameraAppUIDelegate;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
@@ -73,6 +74,10 @@ class ReporterRunner;
 namespace settings {
 class MetricsReportingHandler;
 }
+
+namespace feed {
+class FeedServiceDelegateImpl;
+}  // namespace feed
 
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
@@ -122,16 +127,18 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class Browser;
   friend class OptimizationGuideKeyedService;
   friend class WebUITabStripFieldTrial;
+  friend class feed::FeedServiceDelegateImpl;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class ChromeCameraAppUIDelegate;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
   friend class ForceFieldTrialsBrowserTest;
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;
+  friend class ClonedInstallClientIdResetBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServicesManagerClientTest,

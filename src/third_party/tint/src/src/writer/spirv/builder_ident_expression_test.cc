@@ -20,51 +20,34 @@
 #include "src/ast/identifier_expression.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/i32_type.h"
-#include "src/ast/type/vector_type.h"
 #include "src/ast/type_constructor_expression.h"
 #include "src/ast/variable.h"
-#include "src/context.h"
+#include "src/type/f32_type.h"
+#include "src/type/i32_type.h"
+#include "src/type/vector_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, IdentifierExpression_GlobalConst) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = GlobalConst("var", ty.f32(), init);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  auto* expr = Expr("var");
+  WrapInFunction(expr);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(init.get())) << td.error();
+  spirv::Builder& b = Build();
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
-  v.set_constructor(std::move(init));
-  v.set_is_const(true);
-
-  td.RegisterVariableForTesting(&v);
-
-  Builder b(&mod);
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
@@ -74,25 +57,20 @@ TEST_F(BuilderTest, IdentifierExpression_GlobalConst) {
 %5 = OpConstantComposite %1 %3 %3 %4
 )");
 
-  ast::IdentifierExpression expr("var");
-  ASSERT_TRUE(td.DetermineResultType(&expr));
-
-  EXPECT_EQ(b.GenerateIdentifierExpression(&expr), 5u);
+  EXPECT_EQ(b.GenerateIdentifierExpression(expr), 5u);
 }
 
 TEST_F(BuilderTest, IdentifierExpression_GlobalVar) {
-  ast::type::F32Type f32;
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kOutput);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
+  auto* expr = Expr("var");
+  WrapInFunction(expr);
 
-  Builder b(&mod);
+  spirv::Builder& b = Build();
+
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateGlobalVariable(&v)) << b.error();
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "tint_766172"
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "var"
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeFloat 32
 %2 = OpTypePointer Output %3
@@ -100,38 +78,20 @@ TEST_F(BuilderTest, IdentifierExpression_GlobalVar) {
 %1 = OpVariable %2 Output %4
 )");
 
-  ast::IdentifierExpression expr("var");
-  ASSERT_TRUE(td.DetermineResultType(&expr));
-  EXPECT_EQ(b.GenerateIdentifierExpression(&expr), 1u);
+  EXPECT_EQ(b.GenerateIdentifierExpression(expr), 1u);
 }
 
 TEST_F(BuilderTest, IdentifierExpression_FunctionConst) {
-  ast::type::F32Type f32;
-  ast::type::VectorType vec(&f32, 3);
+  auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  ast::ExpressionList vals;
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 1.0f)));
-  vals.push_back(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::FloatLiteral>(&f32, 3.0f)));
+  auto* v = Const("var", ty.f32(), init);
 
-  auto init =
-      std::make_unique<ast::TypeConstructorExpression>(&vec, std::move(vals));
+  auto* expr = Expr("var");
+  WrapInFunction(v, expr);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  EXPECT_TRUE(td.DetermineResultType(init.get())) << td.error();
+  spirv::Builder& b = Build();
 
-  ast::Variable v("var", ast::StorageClass::kOutput, &f32);
-  v.set_constructor(std::move(init));
-  v.set_is_const(true);
-  td.RegisterVariableForTesting(&v);
-
-  Builder b(&mod);
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
@@ -141,24 +101,19 @@ TEST_F(BuilderTest, IdentifierExpression_FunctionConst) {
 %5 = OpConstantComposite %1 %3 %3 %4
 )");
 
-  ast::IdentifierExpression expr("var");
-  ASSERT_TRUE(td.DetermineResultType(&expr));
-  EXPECT_EQ(b.GenerateIdentifierExpression(&expr), 5u);
+  EXPECT_EQ(b.GenerateIdentifierExpression(expr), 5u);
 }
 
 TEST_F(BuilderTest, IdentifierExpression_FunctionVar) {
-  ast::type::F32Type f32;
-  ast::Variable v("var", ast::StorageClass::kNone, &f32);
+  auto* v = Var("var", ty.f32(), ast::StorageClass::kNone);
+  auto* expr = Expr("var");
+  WrapInFunction(v, expr);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  td.RegisterVariableForTesting(&v);
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_TRUE(b.GenerateFunctionVariable(&v)) << b.error();
-  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "tint_766172"
+  EXPECT_TRUE(b.GenerateFunctionVariable(v)) << b.error();
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %1 "var"
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeFloat 32
 %2 = OpTypePointer Function %3
@@ -170,35 +125,22 @@ TEST_F(BuilderTest, IdentifierExpression_FunctionVar) {
             R"(%1 = OpVariable %2 Function %4
 )");
 
-  ast::IdentifierExpression expr("var");
-  ASSERT_TRUE(td.DetermineResultType(&expr));
-  EXPECT_EQ(b.GenerateIdentifierExpression(&expr), 1u);
+  EXPECT_EQ(b.GenerateIdentifierExpression(expr), 1u);
 }
 
 TEST_F(BuilderTest, IdentifierExpression_Load) {
-  ast::type::I32Type i32;
+  auto* var = Global("var", ty.i32(), ast::StorageClass::kPrivate);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
+  auto* expr = Add("var", "var");
+  WrapInFunction(expr);
 
-  ast::Variable var("var", ast::StorageClass::kPrivate, &i32);
+  spirv::Builder& b = Build();
 
-  td.RegisterVariableForTesting(&var);
-
-  auto lhs = std::make_unique<ast::IdentifierExpression>("var");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("var");
-
-  ast::BinaryExpression expr(ast::BinaryOp::kAdd, std::move(lhs),
-                             std::move(rhs));
-
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  ASSERT_TRUE(b.GenerateGlobalVariable(&var)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(var)) << b.error();
 
-  EXPECT_EQ(b.GenerateBinaryExpression(&expr), 7u) << b.error();
+  EXPECT_EQ(b.GenerateBinaryExpression(expr->As<ast::BinaryExpression>()), 7u)
+      << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%3 = OpTypeInt 32 1
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
@@ -212,32 +154,18 @@ TEST_F(BuilderTest, IdentifierExpression_Load) {
 }
 
 TEST_F(BuilderTest, IdentifierExpression_NoLoadConst) {
-  ast::type::I32Type i32;
+  auto* var = GlobalConst("var", ty.i32(), Expr(2));
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
+  auto* expr = Add("var", "var");
+  WrapInFunction(expr);
 
-  ast::Variable var("var", ast::StorageClass::kNone, &i32);
-  var.set_constructor(std::make_unique<ast::ScalarConstructorExpression>(
-      std::make_unique<ast::SintLiteral>(&i32, 2)));
-  var.set_is_const(true);
+  spirv::Builder& b = Build();
 
-  td.RegisterVariableForTesting(&var);
-
-  auto lhs = std::make_unique<ast::IdentifierExpression>("var");
-  auto rhs = std::make_unique<ast::IdentifierExpression>("var");
-
-  ast::BinaryExpression expr(ast::BinaryOp::kAdd, std::move(lhs),
-                             std::move(rhs));
-
-  ASSERT_TRUE(td.DetermineResultType(&expr)) << td.error();
-
-  Builder b(&mod);
   b.push_function(Function{});
-  ASSERT_TRUE(b.GenerateGlobalVariable(&var)) << b.error();
+  ASSERT_TRUE(b.GenerateGlobalVariable(var)) << b.error();
 
-  EXPECT_EQ(b.GenerateBinaryExpression(&expr), 3u) << b.error();
+  EXPECT_EQ(b.GenerateBinaryExpression(expr->As<ast::BinaryExpression>()), 3u)
+      << b.error();
   EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeInt 32 1
 %2 = OpConstant %1 2
 )");

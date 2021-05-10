@@ -11,12 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/feed/core/v2/common_enums.h"
 #include "components/feed/core/v2/enums.h"
-#include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/types.h"
 
-namespace base {
-class TickClock;
-}  // namespace base
+class PrefService;
 namespace feed {
 
 // Reports UMA metrics for feed.
@@ -28,8 +27,7 @@ class MetricsReporter {
   // sheet.
   static const int kUnknownCardIndex = INT_MAX;
 
-  explicit MetricsReporter(const base::TickClock* clock,
-                           PrefService* profile_prefs);
+  explicit MetricsReporter(PrefService* profile_prefs);
   virtual ~MetricsReporter();
   MetricsReporter(const MetricsReporter&) = delete;
   MetricsReporter& operator=(const MetricsReporter&) = delete;
@@ -41,20 +39,8 @@ class MetricsReporter {
   void OpenAction(int index_in_stream);
   void OpenVisitComplete(base::TimeDelta visit_time);
   void OpenInNewTabAction(int index_in_stream);
-  void OpenInNewIncognitoTabAction();
-  void SendFeedbackAction();
-  void LearnMoreAction();
-  void DownloadAction();
-  void NavigationStarted();
   void PageLoaded();
-  void RemoveAction();
-  void NotInterestedInAction();
-  void ManageInterestsAction();
-  void ContextMenuOpened();
-  void EphemeralStreamChange();
-  void EphemeralStreamChangeRejected();
-  void TurnOnAction();
-  void TurnOffAction();
+  void OtherUserAction(FeedUserActionType action_type);
 
   // Indicates the user scrolled the feed by |distance_dp| and then stopped
   // scrolling.
@@ -74,6 +60,8 @@ class MetricsReporter {
 
   virtual void OnLoadStream(LoadStreamStatus load_from_store_status,
                             LoadStreamStatus final_status,
+                            bool loaded_new_content_from_network,
+                            base::TimeDelta stored_content_age,
                             std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(LoadStreamStatus final_status);
   virtual void OnLoadMoreBegin(SurfaceId surface_id);
@@ -110,7 +98,6 @@ class MetricsReporter {
   void FinalizeMetrics();
   void FinalizeVisit();
 
-  const base::TickClock* clock_;
   PrefService* profile_prefs_;
   // Persistent data stored in prefs. Data is read in the constructor, and then
   // written back to prefs on backgrounding.

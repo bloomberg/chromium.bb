@@ -8,9 +8,9 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_client_type.h"
@@ -23,11 +23,15 @@ class IndexedDBContextImpl;
 
 // Integrates IndexedDB with the quota management system.
 //
-// This interface is used on the IO thread by the quota manager.
+// Instances are constructed on the UI thread, and then exclusively used on the
+// IO thread by the quota system.
 class IndexedDBQuotaClient : public storage::QuotaClient {
  public:
   CONTENT_EXPORT explicit IndexedDBQuotaClient(
       scoped_refptr<IndexedDBContextImpl> indexed_db_context);
+
+  IndexedDBQuotaClient(const IndexedDBQuotaClient&) = delete;
+  IndexedDBQuotaClient& operator=(const IndexedDBQuotaClient&) = delete;
 
   // QuotaClient implementation:
   void OnQuotaManagerDestroyed() override;
@@ -48,9 +52,9 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
  private:
   ~IndexedDBQuotaClient() override;
 
-  const scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace content

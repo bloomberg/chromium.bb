@@ -239,35 +239,46 @@ class PrimitiveTopologyTest extends GPUTest {
       ],
     });
 
+    let indexFormat = undefined;
+    if (primitiveTopology === 'triangle-strip' || primitiveTopology === 'line-strip') {
+      indexFormat = 'uint32' as const;
+    }
+
     // Draw a primitive using 6 vertices based on the type.
     // Pixels are generated based on vertex position.
     // If point, 1 pixel is generated at each vertex location.
     // Otherwise, >1 pixels could be generated.
-    const vertexModule = this.makeShaderModule('vertex', {
-      glsl: `#version 450
-            layout(location = 0) in vec4 pos;
-            void main() {
-                gl_Position = pos;
-                gl_PointSize = 1.0;
-            }`,
-    });
-
     // Output color is solid green.
-    const fragmentModule = this.makeShaderModule('fragment', {
-      glsl: `#version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-              fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-            }`,
-    });
-
     renderPass.setPipeline(
       this.device.createRenderPipeline({
-        vertexStage: { module: vertexModule, entryPoint: 'main' },
-        fragmentStage: { module: fragmentModule, entryPoint: 'main' },
+        vertexStage: {
+          module: this.device.createShaderModule({
+            code: `
+              [[location(0)]] var<in> pos : vec4<f32>;
+              [[builtin(position)]] var<out> Position : vec4<f32>;
+
+              [[stage(vertex)]] fn main() -> void {
+                Position = pos;
+                return;
+              }`,
+          }),
+          entryPoint: 'main',
+        },
+        fragmentStage: {
+          module: this.device.createShaderModule({
+            code: `
+              [[location(0)]] var<out> fragColor : vec4<f32>;
+              [[stage(fragment)]] fn main() -> void {
+                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+                return;
+              }`,
+          }),
+          entryPoint: 'main',
+        },
         primitiveTopology,
         colorStates: [{ format: kColorFormat }],
         vertexState: {
+          indexFormat,
           vertexBuffers: [
             {
               arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
@@ -295,10 +306,10 @@ class PrimitiveTopologyTest extends GPUTest {
         new Uint32Array([0, 1, 2, -1, 3, 4, 5]),
         GPUBufferUsage.INDEX
       );
-      renderPass.setIndexBuffer(indexBuffer, 0);
-      renderPass.drawIndexed(7, 1, 0, 0, 0); // extra index for restart
+      renderPass.setIndexBuffer(indexBuffer, 'uint32');
+      renderPass.drawIndexed(7); // extra index for restart
     } else {
-      renderPass.draw(6, 1, 0, 0);
+      renderPass.draw(6);
     }
 
     renderPass.endPass();
@@ -321,7 +332,7 @@ export const g = makeTestGroup(PrimitiveTopologyTest);
 // Compute test locations for valid and invalid pixels for each topology.
 // If the primitive covers the pixel, the color value will be |kValidPixelColor|.
 // Otherwise, a non-covered pixel will be |kInvalidPixelColor|.
-g.test('render_pipeline,primitive_topology_point_list').fn(async t => {
+g.test('point_list').fn(async t => {
   // Check valid test locations
   const testLocations = getPointTestLocations(kValidPixelColor);
 
@@ -333,7 +344,7 @@ g.test('render_pipeline,primitive_topology_point_list').fn(async t => {
   t.run('point-list', testLocations, /*usePrimitiveRestart=*/ false);
 });
 
-g.test('render_pipeline,primitive_topology_line_list').fn(async t => {
+g.test('line_list').fn(async t => {
   // Check valid test locations
   const testLocations = getLineTestLocations(kValidPixelColor);
 
@@ -344,7 +355,7 @@ g.test('render_pipeline,primitive_topology_line_list').fn(async t => {
   t.run('line-list', testLocations, /*usePrimitiveRestart=*/ false);
 });
 
-g.test('render_pipeline,primitive_topology_line_strip').fn(async t => {
+g.test('line_strip').fn(async t => {
   // Check valid test locations
   const testLocations = getLineTestLocations(kValidPixelColor);
   testLocations.concat(getLineStripTestLocations(kValidPixelColor));
@@ -356,7 +367,7 @@ g.test('render_pipeline,primitive_topology_line_strip').fn(async t => {
   t.run('line-strip', testLocations, /*usePrimitiveRestart=*/ false);
 });
 
-g.test('render_pipeline,primitive_topology_line_strip,primitive_restart').fn(async t => {
+g.test('line_strip,primitive_restart').fn(async t => {
   // Check valid test locations
   const testLocations = getPrimitiveRestartLineTestLocations(kValidPixelColor);
   testLocations.concat(getLineStripTestLocations(kValidPixelColor));
@@ -368,7 +379,7 @@ g.test('render_pipeline,primitive_topology_line_strip,primitive_restart').fn(asy
   t.run('line-strip', testLocations, /*usePrimitiveRestart=*/ true);
 });
 
-g.test('render_pipeline,primitive_topology_triangle_list').fn(async t => {
+g.test('triangle_list').fn(async t => {
   // Check valid test locations
   const testLocations = getTriangleListTestLocations(kValidPixelColor);
 
@@ -378,7 +389,7 @@ g.test('render_pipeline,primitive_topology_triangle_list').fn(async t => {
   t.run('triangle-list', testLocations, /*usePrimitiveRestart=*/ false);
 });
 
-g.test('render_pipeline,primitive_topology_triangle_strip').fn(async t => {
+g.test('triangle_strip').fn(async t => {
   // Check valid test locations
   const testLocations = getTriangleListTestLocations(kValidPixelColor);
   testLocations.concat(getTriangleStripTestLocations(kValidPixelColor));
@@ -386,7 +397,7 @@ g.test('render_pipeline,primitive_topology_triangle_strip').fn(async t => {
   t.run('triangle-strip', testLocations, /*usePrimitiveRestart=*/ false);
 });
 
-g.test('render_pipeline,primitive_topology_triangle_strip,primitive_restart').fn(async t => {
+g.test('triangle_strip,primitive_restart').fn(async t => {
   // Check valid test locations
   const testLocations = getTriangleListTestLocations(kValidPixelColor);
   testLocations.concat(getTriangleStripTestLocations(kInvalidPixelColor));

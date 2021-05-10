@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 #include <string>
 
@@ -21,6 +22,8 @@ class Widget;
 // via CloseNow().
 class CrostiniForceCloseView : public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(CrostiniForceCloseView);
+
   // Show the "would you like to force-close |app_name|?" dialog, which invokes
   // the |force_close_callback_| if the user chooses to force close. Returns the
   // widget for the force-close dialog. The |cloasble_widget| is used to decide
@@ -35,10 +38,6 @@ class CrostiniForceCloseView : public views::BubbleDialogDelegateView {
                              gfx::NativeWindow closable_window,
                              gfx::NativeView closable_view,
                              base::OnceClosure force_close_callback);
-
-  // BubbleDialogDelegateView overrides.
-  ui::ModalType GetModalType() const override;
-  gfx::Size CalculatePreferredSize() const override;
 
  private:
   CrostiniForceCloseView(const base::string16& app_name,

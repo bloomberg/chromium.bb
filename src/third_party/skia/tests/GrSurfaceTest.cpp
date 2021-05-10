@@ -9,6 +9,7 @@
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/core/SkCompressedDataUtils.h"
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrBitmapTextureMaker.h"
@@ -17,8 +18,8 @@
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTarget.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -267,14 +268,11 @@ DEF_GPUTEST(InitialTextureClear, reporter, baseOptions) {
                                                                      combo.fColorType);
                             GrSurfaceProxyView view(std::move(proxy), kTopLeft_GrSurfaceOrigin,
                                                     swizzle);
-                            auto texCtx = GrSurfaceContext::Make(dContext, std::move(view),
-                                                                 combo.fColorType,
-                                                                 kPremul_SkAlphaType, nullptr);
+                            GrColorInfo info(combo.fColorType, kPremul_SkAlphaType, nullptr);
+                            auto texCtx = GrSurfaceContext::Make(dContext, std::move(view), info);
 
                             readback.erase(kClearColor);
-                            if (texCtx->readPixels(
-                                    dContext, readback.info(), readback.writable_addr(),
-                                    readback.rowBytes(), {0, 0})) {
+                            if (texCtx->readPixels(dContext, readback, {0, 0})) {
                                 for (int i = 0; i < kSize * kSize; ++i) {
                                     if (!checkColor(combo, readback.addr32()[i])) {
                                         break;
@@ -290,24 +288,23 @@ DEF_GPUTEST(InitialTextureClear, reporter, baseOptions) {
                     {
                         std::unique_ptr<GrSurfaceContext> surfCtx;
                         if (renderable == GrRenderable::kYes) {
-                            surfCtx = GrRenderTargetContext::Make(
+                            surfCtx = GrSurfaceDrawContext::Make(
                                     dContext, combo.fColorType, nullptr, fit,
                                     {desc.fWidth, desc.fHeight}, 1, GrMipmapped::kNo,
                                     GrProtected::kNo, kTopLeft_GrSurfaceOrigin);
                         } else {
-                            surfCtx = GrSurfaceContext::Make(
-                                    dContext, {desc.fWidth, desc.fHeight}, combo.fFormat,
-                                    GrRenderable::kNo, 1, GrMipmapped::kNo, GrProtected::kNo,
-                                    kTopLeft_GrSurfaceOrigin, combo.fColorType,
-                                    kUnknown_SkAlphaType, nullptr, fit, SkBudgeted::kYes);
+                            GrImageInfo info(combo.fColorType,
+                                             kUnknown_SkAlphaType,
+                                             nullptr,
+                                             {desc.fHeight, desc.fHeight});
+                            surfCtx = GrSurfaceContext::Make(dContext, info, combo.fFormat, fit);
                         }
                         if (!surfCtx) {
                             continue;
                         }
 
                         readback.erase(kClearColor);
-                        if (surfCtx->readPixels(dContext, readback.info(), readback.writable_addr(),
-                                                readback.rowBytes(), {0, 0})) {
+                        if (surfCtx->readPixels(dContext, readback, {0, 0})) {
                             for (int i = 0; i < kSize * kSize; ++i) {
                                 if (!checkColor(combo, readback.addr32()[i])) {
                                     break;
@@ -360,7 +357,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadOnlyTexture, reporter, context_info) {
     // kRead for the right reason.
     for (auto ioType : {kRead_GrIOType, kRW_GrIOType}) {
         auto mbet = sk_gpu_test::ManagedBackendTexture::MakeWithData(
-                dContext, srcPixmap, GrRenderable::kNo, GrProtected::kNo);
+                dContext, srcPixmap, kTopLeft_GrSurfaceOrigin, GrRenderable::kNo, GrProtected::kNo);
         if (!mbet) {
             ERRORF(reporter, "Could not make texture.");
             return;
@@ -371,15 +368,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadOnlyTexture, reporter, context_info) {
         GrSwizzle swizzle = dContext->priv().caps()->getReadSwizzle(proxy->backendFormat(),
                                                                     GrColorType::kRGBA_8888);
         GrSurfaceProxyView view(proxy, kTopLeft_GrSurfaceOrigin, swizzle);
-        auto surfContext = GrSurfaceContext::Make(dContext, std::move(view), GrColorType::kRGBA_8888,
-                                                  kPremul_SkAlphaType, nullptr);
-
+        auto surfContext = GrSurfaceContext::Make(dContext, std::move(view), ii.colorInfo());
         // Read pixels should work with a read-only texture.
         {
             SkAutoPixmapStorage read;
             read.alloc(srcPixmap.info());
-            auto readResult = surfContext->readPixels(dContext, srcPixmap.info(),
-                                                      read.writable_addr(), 0, { 0, 0 });
+            auto readResult = surfContext->readPixels(dContext, read, {0, 0});
             REPORTER_ASSERT(reporter, readResult);
             if (readResult) {
                 comparePixels(srcPixmap, read, reporter);
@@ -390,8 +384,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadOnlyTexture, reporter, context_info) {
         SkAutoPixmapStorage write;
         write.alloc(srcPixmap.info());
         fillPixels(&write, [&srcPixmap](int x, int y) { return ~*srcPixmap.addr32(); });
-        auto writeResult = surfContext->writePixels(dContext, srcPixmap.info(), write.addr(),
-                                                    0, {0, 0});
+        auto writeResult = surfContext->writePixels(dContext, write, {0, 0});
         REPORTER_ASSERT(reporter, writeResult == (ioType == kRW_GrIOType));
         // Try the low level write.
         dContext->flushAndSubmit();
@@ -410,7 +403,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadOnlyTexture, reporter, context_info) {
         auto copySrc = maker.view(GrMipmapped::kNo);
 
         REPORTER_ASSERT(reporter, copySrc.proxy());
-        auto copyResult = surfContext->testCopy(copySrc.proxy());
+        auto copyResult = surfContext->testCopy(copySrc.refProxy());
         REPORTER_ASSERT(reporter, copyResult == (ioType == kRW_GrIOType));
         // Try the low level copy.
         dContext->flushAndSubmit();
@@ -549,7 +542,7 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 SkImageInfo info =
                         SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
                 auto rt = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, info, 0, nullptr);
-                auto rtc = rt->getCanvas()->internal_private_accessTopLayerRenderTargetContext();
+                auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(rt->getCanvas());
                 auto singleUseLazyCB = [&texture](GrResourceProvider*,
                                                   const GrSurfaceProxy::LazySurfaceDesc&) {
                     auto mode = GrSurfaceProxy::LazyInstantiationKeyMode::kSynced;
@@ -588,7 +581,7 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 GrSwizzle readSwizzle = dContext->priv().caps()->getReadSwizzle(
                         backendFormat, GrColorType::kRGBA_8888);
                 GrSurfaceProxyView view(std::move(proxy), kTopLeft_GrSurfaceOrigin, readSwizzle);
-                rtc->drawTexture(nullptr,
+                sdc->drawTexture(nullptr,
                                  view,
                                  kPremul_SkAlphaType,
                                  GrSamplerState::Filter::kNearest,
@@ -607,11 +600,11 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 REPORTER_ASSERT(reporter, idleIDs.find(2) == idleIDs.end());
                 dContext->flushAndSubmit();
                 REPORTER_ASSERT(reporter, idleIDs.find(2) == idleIDs.end());
-                dContext->priv().getGpu()->testingOnly_flushGpuAndSync();
+                dContext->submit(true);
                 REPORTER_ASSERT(reporter, idleIDs.find(2) == idleIDs.end());
 
                 // This time we move the proxy into the draw.
-                rtc->drawTexture(nullptr,
+                sdc->drawTexture(nullptr,
                                  std::move(view),
                                  kPremul_SkAlphaType,
                                  GrSamplerState::Filter::kNearest,
@@ -626,8 +619,7 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                                  SkMatrix::I(),
                                  nullptr);
                 REPORTER_ASSERT(reporter, idleIDs.find(2) == idleIDs.end());
-                dContext->flushAndSubmit();
-                dContext->priv().getGpu()->testingOnly_flushGpuAndSync();
+                dContext->flushAndSubmit(true);
                 // Now that the draw is fully consumed by the GPU, the texture should be idle.
                 REPORTER_ASSERT(reporter, idleIDs.find(2) != idleIDs.end());
 
@@ -663,15 +655,14 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                                                                  kPremul_SkAlphaType);
                             auto rt = SkSurface::MakeRenderTarget(dContext, SkBudgeted::kNo, info, 0,
                                                                   nullptr);
-                            auto rtc = rt->getCanvas()
-                                            ->internal_private_accessTopLayerRenderTargetContext();
+                            auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(rt->getCanvas());
                             auto proxy = dContext->priv().proxyProvider()->testingOnly_createWrapped(
                                     texture);
                             GrSwizzle swizzle = dContext->priv().caps()->getReadSwizzle(
                                     proxy->backendFormat(), GrColorType::kRGBA_8888);
                             GrSurfaceProxyView view(std::move(proxy), kTopLeft_GrSurfaceOrigin,
                                                     swizzle);
-                            rtc->drawTexture(nullptr,
+                            sdc->drawTexture(nullptr,
                                              std::move(view),
                                              kPremul_SkAlphaType,
                                              GrSamplerState::Filter::kNearest,
@@ -815,12 +806,11 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(TextureIdleStateTest, reporter, contextInfo) {
         SkImageInfo info = SkImageInfo::Make(kSurfSize, kSurfSize, kRGBA_8888_SkColorType,
                                              kPremul_SkAlphaType);
         auto rt = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info, 0, nullptr);
-        auto rtc = rt->getCanvas()->internal_private_accessTopLayerRenderTargetContext();
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(rt->getCanvas());
         auto proxy =
                 context->priv().proxyProvider()->testingOnly_createWrapped(std::move(idleTexture));
         context->flushAndSubmit();
-        SkAssertResult(rtc->testCopy(proxy.get()));
-        proxy.reset();
+        SkAssertResult(sdc->testCopy(std::move(proxy)));
         REPORTER_ASSERT(reporter, !called);
 
         // After a flush we expect idleTexture to have reached the kFlushed state on all backends.

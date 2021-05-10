@@ -30,7 +30,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
 #include <type_traits>
 
@@ -131,7 +130,7 @@ inline int CountLeadingZeros(uint64_t n) {
 #if defined(HAVE_BITSCANREVERSE64)
   const unsigned char bit_set =
       _BitScanReverse64(&first_set_bit, static_cast<unsigned __int64>(n));
-#else  // !defined(HAVE_BITSCANREVERSE64)
+#else   // !defined(HAVE_BITSCANREVERSE64)
   const auto n_hi = static_cast<unsigned long>(n >> 32);  // NOLINT(runtime/int)
   if (n_hi != 0) {
     const unsigned char bit_set = _BitScanReverse(&first_set_bit, n_hi);

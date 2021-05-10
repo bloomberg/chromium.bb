@@ -16,57 +16,56 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include "src/ast/stage_decoration.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using WorkgroupDecorationTest = testing::Test;
+using WorkgroupDecorationTest = TestHelper;
 
 TEST_F(WorkgroupDecorationTest, Creation_1param) {
-  WorkgroupDecoration d{2, Source{}};
+  auto* d = create<WorkgroupDecoration>(2);
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = d.values();
+  std::tie(x, y, z) = d->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 1u);
   EXPECT_EQ(z, 1u);
 }
 TEST_F(WorkgroupDecorationTest, Creation_2param) {
-  WorkgroupDecoration d{2, 4, Source{}};
+  auto* d = create<WorkgroupDecoration>(2, 4);
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = d.values();
+  std::tie(x, y, z) = d->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 4u);
   EXPECT_EQ(z, 1u);
 }
 
 TEST_F(WorkgroupDecorationTest, Creation_3param) {
-  WorkgroupDecoration d{2, 4, 6, Source{}};
+  auto* d = create<WorkgroupDecoration>(2, 4, 6);
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
-  std::tie(x, y, z) = d.values();
+  std::tie(x, y, z) = d->values();
   EXPECT_EQ(x, 2u);
   EXPECT_EQ(y, 4u);
   EXPECT_EQ(z, 6u);
 }
 
 TEST_F(WorkgroupDecorationTest, Is) {
-  WorkgroupDecoration d{2, 4, 6, Source{}};
-  EXPECT_TRUE(d.IsWorkgroup());
-  EXPECT_FALSE(d.IsStage());
+  Decoration* d = create<WorkgroupDecoration>(2, 4, 6);
+  EXPECT_TRUE(d->Is<WorkgroupDecoration>());
+  EXPECT_FALSE(d->Is<StageDecoration>());
 }
 
 TEST_F(WorkgroupDecorationTest, ToStr) {
-  WorkgroupDecoration d{2, 4, 6, Source{}};
-  std::ostringstream out;
-  d.to_str(out);
-  EXPECT_EQ(out.str(), R"(WorkgroupDecoration{2 4 6}
+  auto* d = create<WorkgroupDecoration>(2, 4, 6);
+  EXPECT_EQ(str(d), R"(WorkgroupDecoration{2 4 6}
 )");
 }
 

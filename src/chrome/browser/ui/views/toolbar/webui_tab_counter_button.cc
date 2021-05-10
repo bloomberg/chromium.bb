@@ -54,6 +54,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/native_widget.h"
@@ -93,6 +95,7 @@ base::string16 GetTabCounterLabelText(int num_tabs) {
 // tab counter border, the font shrinks when the count is 10 or higher.
 class NumberLabel : public views::Label {
  public:
+  METADATA_HEADER(NumberLabel);
   NumberLabel() : Label(base::string16(), CONTEXT_TAB_COUNTER) {
     single_digit_font_ = font_list();
     double_digit_font_ = views::style::GetFont(CONTEXT_TAB_COUNTER,
@@ -111,6 +114,9 @@ class NumberLabel : public views::Label {
   gfx::FontList double_digit_font_;
 };
 
+BEGIN_METADATA(NumberLabel, views::Label)
+END_METADATA
+
 ///////////////////////////////////////////////////////////////////////////////
 // InteractionTracker
 
@@ -125,7 +131,7 @@ class InteractionTracker : public ui::EventHandler,
       : native_window_(widget->GetNativeWindow()) {
     if (native_window_)
       native_window_->AddPreTargetHandler(this);
-    scoped_widget_observer_.Add(widget);
+    scoped_widget_observation_.Observe(widget);
   }
 
   InteractionTracker(const InteractionTracker& other) = delete;
@@ -160,7 +166,8 @@ class InteractionTracker : public ui::EventHandler,
   void OnWidgetDestroying(views::Widget* widget) override {
     // Clean up all of our observers and event handlers before the native window
     // disappears.
-    scoped_widget_observer_.Remove(widget);
+    DCHECK(scoped_widget_observation_.IsObservingSource(widget));
+    scoped_widget_observation_.Reset();
     if (widget->GetNativeWindow()) {
       widget->GetNativeWindow()->RemovePreTargetHandler(this);
       native_window_ = nullptr;
@@ -169,8 +176,8 @@ class InteractionTracker : public ui::EventHandler,
 
   base::Optional<gfx::Point> last_interaction_location_;
   gfx::NativeWindow native_window_;
-  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
-      this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      scoped_widget_observation_{this};
 };
 
 //------------------------------------------------------------------------
@@ -437,6 +444,8 @@ class WebUITabCounterButton : public views::Button,
                               public views::ContextMenuController,
                               public ui::SimpleMenuModel::Delegate {
  public:
+  METADATA_HEADER(WebUITabCounterButton);
+
   static constexpr int WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB = 13;
   static constexpr int WEBUI_TAB_COUNTER_CXMENU_NEW_TAB = 14;
 
@@ -486,8 +495,7 @@ class WebUITabCounterButton : public views::Button,
 
   TabStripModel* const tab_strip_model_;
   BrowserView* const browser_view_;
-  BrowserView::OnLinkOpeningFromGestureSubscription
-      link_opened_from_gesture_subscription_;
+  base::CallbackListSubscription link_opened_from_gesture_subscription_;
 };
 
 WebUITabCounterButton::WebUITabCounterButton(PressedCallback pressed_callback,
@@ -545,11 +553,12 @@ void WebUITabCounterButton::Init() {
 
   ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
 
   throbber_ = AddChildView(std::make_unique<views::Throbber>());
+  throbber_->SetCanProcessEventsWithinSubtree(false);
 
   border_view_ = AddChildView(std::make_unique<views::View>());
+  border_view_->SetCanProcessEventsWithinSubtree(false);
 
   appearing_label_ =
       border_view_->AddChildView(std::make_unique<NumberLabel>());
@@ -616,7 +625,9 @@ void WebUITabCounterButton::OnThemeChanged() {
 void WebUITabCounterButton::Layout() {
   const gfx::Rect view_bounds = GetLocalBounds();
 
-  // Position views from the outside in (beacuse it's easier).
+  ink_drop_container_->SetBoundsRect(view_bounds);
+
+  // Position views from the outside in (because it's easier).
   // Start with the throbber.
   const int throbber_height = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   gfx::Rect throbber_rect = view_bounds;
@@ -683,6 +694,9 @@ void WebUITabCounterButton::ExecuteCommand(int command_id, int event_flags) {
       NOTREACHED();
   }
 }
+
+BEGIN_METADATA(WebUITabCounterButton, views::Button)
+END_METADATA
 
 }  // namespace
 

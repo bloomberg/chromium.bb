@@ -5,15 +5,25 @@
 #include "components/feedback/feedback_uploader_factory.h"
 
 #include "base/memory/singleton.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace feedback {
+
+namespace {
+
+// Helper function to create an URLLoaderFactory for the FeedbackUploader from
+// the BrowserContext storage partition. As creating the storage partition can
+// be expensive, this is delayed so that it does not happen during startup.
+scoped_refptr<network::SharedURLLoaderFactory>
+CreateURLLoaderFactoryForBrowserContext(content::BrowserContext* context) {
+  return content::BrowserContext::GetDefaultStoragePartition(context)
+      ->GetURLLoaderFactoryForBrowserProcess();
+}
+
+}  // namespace
 
 // static
 FeedbackUploaderFactory* FeedbackUploaderFactory::GetInstance() {
@@ -27,33 +37,27 @@ FeedbackUploader* FeedbackUploaderFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
-// static
-scoped_refptr<base::SingleThreadTaskRunner>
-FeedbackUploaderFactory::CreateUploaderTaskRunner() {
-  // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
-  // lose reports or corrupt their files.
-  return base::ThreadPool::CreateSingleThreadTaskRunner(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-}
-
 FeedbackUploaderFactory::FeedbackUploaderFactory(const char* service_name)
     : BrowserContextKeyedServiceFactory(
           service_name,
-          BrowserContextDependencyManager::GetInstance()),
-      task_runner_(CreateUploaderTaskRunner()) {}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 FeedbackUploaderFactory::FeedbackUploaderFactory()
     : BrowserContextKeyedServiceFactory(
           "feedback::FeedbackUploader",
-          BrowserContextDependencyManager::GetInstance()),
-      task_runner_(CreateUploaderTaskRunner()) {}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 FeedbackUploaderFactory::~FeedbackUploaderFactory() {}
 
 KeyedService* FeedbackUploaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FeedbackUploader(context, task_runner_);
+  // The returned FeedbackUploader lifetime is bound to that of BrowserContext
+  // by the KeyedServiceFactory infrastructure. The FeedbackUploader will be
+  // destroyed before the BrowserContext, thus base::Unretained() usage is safe.
+  return new FeedbackUploader(
+      context->IsOffTheRecord(), context->GetPath(),
+      base::BindOnce(&CreateURLLoaderFactoryForBrowserContext,
+                     base::Unretained(context)));
 }
 
 content::BrowserContext* FeedbackUploaderFactory::GetBrowserContextToUse(

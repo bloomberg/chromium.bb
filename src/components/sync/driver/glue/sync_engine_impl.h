@@ -47,12 +47,12 @@ class ModelTypeConnector;
 class ProtocolEvent;
 class SyncEngineBackend;
 class SyncInvalidationsService;
-class SyncPrefs;
+class SyncTransportDataPrefs;
 
 // The only real implementation of the SyncEngine. See that interface's
 // definition for documentation of public methods.
 class SyncEngineImpl : public SyncEngine,
-                       public InvalidationHandler,
+                       public invalidation::InvalidationHandler,
                        public InvalidationsListener {
  public:
   using Status = SyncStatus;
@@ -61,9 +61,10 @@ class SyncEngineImpl : public SyncEngine,
                  invalidation::InvalidationService* invalidator,
                  SyncInvalidationsService* sync_invalidations_service,
                  std::unique_ptr<ActiveDevicesProvider> active_devices_provider,
-                 const base::WeakPtr<SyncPrefs>& sync_prefs,
+                 std::unique_ptr<SyncTransportDataPrefs> prefs,
                  const base::FilePath& sync_data_folder,
-                 scoped_refptr<base::SequencedTaskRunner> sync_task_runner);
+                 scoped_refptr<base::SequencedTaskRunner> sync_task_runner,
+                 const base::RepeatingClosure& sync_transport_data_cleared_cb);
   ~SyncEngineImpl() override;
 
   // SyncEngine implementation.
@@ -72,10 +73,15 @@ class SyncEngineImpl : public SyncEngine,
   void TriggerRefresh(const ModelTypeSet& types) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void InvalidateCredentials() override;
+  std::string GetCacheGuid() const override;
+  std::string GetBirthday() const override;
+  base::Time GetLastSyncedTimeForDebugging() const override;
   void StartConfiguration() override;
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
+  void SetEncryptionBootstrapToken(const std::string& token) override;
+  void SetKeystoreEncryptionBootstrapToken(const std::string& token) override;
   void AddTrustedVaultDecryptionKeys(
       const std::vector<std::vector<uint8_t>>& keys,
       base::OnceClosure done_cb) override;
@@ -93,24 +99,24 @@ class SyncEngineImpl : public SyncEngine,
   void RequestBufferedProtocolEventsAndEnableForwarding() override;
   void DisableProtocolEventForwarding() override;
   void OnCookieJarChanged(bool account_mismatch,
-                          bool empty_jar,
                           base::OnceClosure callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
 
   // InvalidationHandler implementation.
-  void OnInvalidatorStateChange(InvalidatorState state) override;
+  void OnInvalidatorStateChange(invalidation::InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const TopicInvalidationMap& invalidation_map) override;
+      const invalidation::TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   void OnInvalidatorClientIdChange(const std::string& client_id) override;
 
   // InvalidationsListener implementation.
   void OnInvalidationReceived(const std::string& payload) override;
 
- protected:
-  // The types and functions below are protected so that test
-  // subclasses can use them.
+  static std::string GenerateCacheGUIDForTest();
+
+ private:
+  friend class SyncEngineBackend;
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(
@@ -144,9 +150,6 @@ class SyncEngineImpl : public SyncEngine,
 
   void HandleSyncStatusChanged(const SyncStatus& status);
 
- private:
-  friend class SyncEngineBackend;
-
   // Handles backend initialization failure.
   void HandleInitializationFailureOnFrontendLoop();
 
@@ -174,11 +177,22 @@ class SyncEngineImpl : public SyncEngine,
   // the same |active_devices|.
   void OnActiveDevicesChanged();
 
+  // Sets the last synced time to the current time.
+  void UpdateLastSyncedTime();
+
+  // Helper function that clears SyncTransportDataPrefs and also notifies
+  // upper layers via |sync_transport_data_cleared_cb_|.
+  void ClearLocalTransportDataAndNotify();
+
   // The task runner where all the sync engine operations happen.
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
+
+  const std::unique_ptr<SyncTransportDataPrefs> prefs_;
+
+  const base::RepeatingClosure sync_transport_data_cleared_cb_;
 
   // Our backend, which communicates directly to the syncapi. Use refptr instead
   // of WeakHandle because |backend_| is created on UI loop but released on
@@ -190,8 +204,6 @@ class SyncEngineImpl : public SyncEngine,
   std::unique_ptr<ModelTypeConnector> model_type_connector_;
 
   bool initialized_ = false;
-
-  const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   // The host which we serve (and are owned by). Set in Initialize() and nulled
   // out in StopSyncingForShutdown().

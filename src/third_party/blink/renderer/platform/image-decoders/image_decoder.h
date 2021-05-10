@@ -79,11 +79,14 @@ class PLATFORM_EXPORT ImagePlanes final {
   void* Plane(cc::YUVIndex);
   size_t RowBytes(cc::YUVIndex) const;
   SkColorType color_type() const { return color_type_; }
+  void SetHasCompleteScan() { has_complete_scan_ = true; }
+  bool HasCompleteScan() const { return has_complete_scan_; }
 
  private:
   void* planes_[cc::kNumYUVPlanes];
   size_t row_bytes_[cc::kNumYUVPlanes];
   SkColorType color_type_;
+  bool has_complete_scan_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ImagePlanes);
 };
@@ -313,9 +316,12 @@ class PLATFORM_EXPORT ImageDecoder {
     return true;
   }
 
-  // Calls DecodeFrameCount() to get the frame count (if possible), without
-  // decoding the individual frames.  Resizes |frame_buffer_cache_| to the
-  // correct size and returns its size.
+  // Calls DecodeFrameCount() to get the current frame count (if possible),
+  // without decoding the individual frames.  Resizes |frame_buffer_cache_| to
+  // the new size and returns that size.
+  //
+  // Note: FrameCount() returns the return value of DecodeFrameCount(). For more
+  // information on the return value, see the comment for DecodeFrameCount().
   size_t FrameCount();
 
   virtual int RepetitionCount() const { return kAnimationNone; }
@@ -420,6 +426,9 @@ class PLATFORM_EXPORT ImageDecoder {
   void SetImagePlanes(std::unique_ptr<ImagePlanes> image_planes) {
     image_planes_ = std::move(image_planes);
   }
+  bool HasDisplayableYUVData() const {
+    return image_planes_ && image_planes_->HasCompleteScan();
+  }
 
   // Indicates if the data contains both an animation and still image.
   virtual bool ImageHasBothStillAndAnimatedSubImages() const { return false; }
@@ -466,6 +475,18 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // Decodes the image sufficiently to determine the number of frames and
   // returns that number.
+  //
+  // If an image format supports images with multiple frames, the decoder must
+  // override this method. FrameCount() calls this method and resizes
+  // |frame_buffer_cache_| to the return value of this method. Therefore, on
+  // failure this method should return |frame_buffer_cache_.size()| (the
+  // existing number of frames) instead of 0 to leave |frame_buffer_cache_|
+  // unchanged.
+  //
+  // This method may return an increasing frame count as frames are received and
+  // parsed. Alternatively, if the total frame count is available in the image
+  // header, this method may return the total frame count without checking how
+  // many frames are received.
   virtual size_t DecodeFrameCount() { return 1; }
 
   // Called to initialize the frame buffer with the given index, based on the

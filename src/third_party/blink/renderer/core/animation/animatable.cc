@@ -73,6 +73,11 @@ Animation* Animatable::animate(
   if (exception_state.HadException())
     return nullptr;
 
+  // Creation of the keyframe effect parses JavaScript, which could result
+  // in destruction of the execution context. Recheck that it is still valid.
+  if (!element->GetExecutionContext())
+    return nullptr;
+
   ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),
                                            *effect->Model());
   if (!options.IsKeyframeAnimationOptions())
@@ -90,6 +95,9 @@ Animation* Animatable::animate(
                                   nullptr, exception_state);
   }
 
+  if (!animation)
+    return nullptr;
+
   animation->setId(options_dict->id());
   return animation;
 }
@@ -105,6 +113,11 @@ Animation* Animatable::animate(ScriptState* script_state,
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes, exception_state);
   if (exception_state.HadException())
+    return nullptr;
+
+  // Creation of the keyframe effect parses JavaScript, which could result
+  // in destruction of the execution context. Recheck that it is still valid.
+  if (!element->GetExecutionContext())
     return nullptr;
 
   ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),

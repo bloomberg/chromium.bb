@@ -9,13 +9,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ash/login/screens/hid_detection_screen.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 
@@ -74,6 +73,10 @@ void HIDDetectionScreenHandler::SetMouseState(const std::string& value) {
   CallJS("login.HIDDetectionScreen.setMouseState", value);
 }
 
+void HIDDetectionScreenHandler::SetTouchscreenDetectedState(bool value) {
+  CallJS("login.HIDDetectionScreen.setTouchscreenDetectedState", value);
+}
+
 void HIDDetectionScreenHandler::SetKeyboardPinCode(const std::string& value) {
   keyboard_pin_code_ = value;
   CallJS("login.HIDDetectionScreen.setKeyboardPinCode", value);
@@ -112,6 +115,8 @@ void HIDDetectionScreenHandler::DeclareLocalizedValues(
   builder->Add("hidDetectionInvitation", IDS_HID_DETECTION_INVITATION_TEXT);
   builder->Add("hidDetectionPrerequisites",
       IDS_HID_DETECTION_PRECONDITION_TEXT);
+  builder->Add("hidDetectionPrerequisitesTouchscreen",
+               IDS_HID_DETECTION_PRECONDITION_TOUCHSCREEN_TEXT);
   builder->Add("hidDetectionMouseSearching", IDS_HID_DETECTION_SEARCHING_MOUSE);
   builder->Add("hidDetectionKeyboardSearching",
       IDS_HID_DETECTION_SEARCHING_KEYBOARD);
@@ -135,6 +140,8 @@ void HIDDetectionScreenHandler::DeclareLocalizedValues(
   builder->Add("hidDetectionBluetoothKeyboardPaired",
                IDS_HID_DETECTION_PAIRED_BLUETOOTH_KEYBOARD);
   builder->Add("oobeModalDialogClose", IDS_CHROMEOS_OOBE_CLOSE_DIALOG);
+  builder->Add("hidDetectionTouchscreenDetected",
+               IDS_HID_DETECTION_DETECTED_TOUCHSCREEN);
 }
 
 void HIDDetectionScreenHandler::Initialize() {

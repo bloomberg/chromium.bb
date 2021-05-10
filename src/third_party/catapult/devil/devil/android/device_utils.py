@@ -45,7 +45,8 @@ from devil.utils import reraiser_thread
 from devil.utils import timeout_retry
 from devil.utils import zip_utils
 
-from py_utils import tempfile_ext
+with devil_env.SysPath(devil_env.PY_UTILS_PATH):
+  from py_utils import tempfile_ext
 
 try:
   from devil.utils import reset_usb
@@ -480,7 +481,6 @@ class DeviceUtils(object):
     self._cache = {}
     self._client_caches = {}
     self._cache_lock = threading.RLock()
-    self._skip_root_user_build = None
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
@@ -1093,6 +1093,10 @@ class DeviceUtils(object):
              retries=None):
     """Reboot the device.
 
+    Note if the device has the root privilege, it will likely lose it after the
+    reboot. When |block| is True, it will try to restore the root status if
+    applicable.
+
     Args:
       block: A boolean indicating if we should wait for the reboot to complete.
       wifi: A boolean indicating if we should wait for wifi to be enabled after
@@ -1112,11 +1116,15 @@ class DeviceUtils(object):
     def device_offline():
       return not self.IsOnline()
 
+    # Only check the root when block is True
+    should_restore_root = self.HasRoot() if block else False
     self.adb.Reboot()
     self.ClearCache()
     timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
       self.WaitUntilFullyBooted(wifi=wifi, decrypt=decrypt)
+      if should_restore_root:
+        self.EnableRoot()
 
   INSTALL_DEFAULT_TIMEOUT = 8 * _DEFAULT_TIMEOUT
   MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
@@ -1313,6 +1321,7 @@ class DeviceUtils(object):
         apks_to_install = apk_paths
 
     if device_apk_paths and apks_to_install and not reinstall:
+      logger.info('Uninstalling package %s', package_name)
       self.Uninstall(package_name)
 
     if apks_to_install:
@@ -1323,6 +1332,8 @@ class DeviceUtils(object):
       streaming = None
       if self.product_name in _NO_STREAMING_DEVICE_LIST:
         streaming = False
+      logger.info('Installing package %s using APKs %s',
+                  package_name, apks_to_install)
       if len(apks_to_install) > 1 or partial:
         self.adb.InstallMultiple(
             apks_to_install,
@@ -1337,6 +1348,7 @@ class DeviceUtils(object):
             streaming=streaming,
             allow_downgrade=allow_downgrade)
     else:
+      logger.info('Skipping installation of package %s', package_name)
       # Running adb install terminates running instances of the app, so to be
       # consistent, we explicitly terminate it when skipping the install.
       self.ForceStop(package_name)
@@ -1538,24 +1550,9 @@ class DeviceUtils(object):
     if run_as:
       cmd = 'run-as %s sh -c %s' % (cmd_helper.SingleQuote(run_as),
                                     cmd_helper.SingleQuote(cmd))
-    if as_root:
-      # Explicitly check the root status as the device may have lost it after
-      # reboot.
-      # For devices with user build, if the first root attempt fails, a warning
-      # will be issued and the following root attempts will be skipped because
-      # some commands that set as_root as True may still work without the root
-      # privilege.
-      if not self.HasRoot() and not self._skip_root_user_build:
-        try:
-          self.EnableRoot()
-        except device_errors.RootUserBuildError as e:
-          logger.warning('%s The adb shell command to run may fail with '
-                         'permission issues.', str(e))
-          self._skip_root_user_build = True
-
-      if (as_root is _FORCE_SU) or self.NeedsSU():
-        # "su -c sh -c" allows using shell features in |cmd|
-        cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
+    if (as_root is _FORCE_SU) or (as_root and self.NeedsSU()):
+      # "su -c sh -c" allows using shell features in |cmd|
+      cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
 
     output = handle_large_output(cmd, large_output)
 
@@ -2226,13 +2223,19 @@ class DeviceUtils(object):
           self.adb, suffix='.zip') as device_temp:
         self.adb.Push(zip_path, device_temp.name)
 
-        quoted_dirs = ' '.join(cmd_helper.SingleQuote(d) for d in dirs)
-        self.RunShellCommand(
-            'unzip %s&&chmod -R 777 %s' % (device_temp.name, quoted_dirs),
-            shell=True,
-            as_root=True,
-            env={'PATH': '%s:$PATH' % install_commands.BIN_DIR},
-            check_return=True)
+        with device_temp_file.DeviceTempFile(self.adb) as dirs_temp:
+          self._WriteFileWithPush(dirs_temp.name, ' '.join(dirs))
+
+          self.RunShellCommand(
+              # Read dirs from temp file to avoid potential errors like
+              # "Argument list too long" (crbug.com/1174331) when the list
+              # is too long.
+              'unzip %s && cat %s | xargs chmod -R 777' % (
+                  device_temp.name, dirs_temp.name),
+              shell=True,
+              as_root=True,
+              env={'PATH': '%s:$PATH' % install_commands.BIN_DIR},
+              check_return=True)
 
     return True
 
@@ -3251,11 +3254,12 @@ class DeviceUtils(object):
         WebViewPackages: Dict of installed WebView providers, mapping "package
             name" to "reason it's valid/invalid."
 
-    It may return an empty dictionary if device does not
-    support the "dumpsys webviewupdate" command.
+    The returned dictionary may not include all of the above keys: this depends
+    on the support of the platform's underlying WebViewUpdateService. This may
+    return an empty dictionary on OS versions which do not support querying the
+    WebViewUpdateService.
 
     Raises:
-      CommandFailedError on failure.
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
@@ -3294,12 +3298,6 @@ class DeviceUtils(object):
         result['MinimumWebViewVersionCode'] = int(match.group(1))
     if webview_packages:
       result['WebViewPackages'] = webview_packages
-
-    missing_fields = set(['CurrentWebViewPackage', 'FallbackLogicEnabled']) - \
-                     set(result.keys())
-    if len(missing_fields) > 0:
-      raise device_errors.CommandFailedError(
-          '%s not found in dumpsys webviewupdate' % str(list(missing_fields)))
     return result
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -3591,21 +3589,21 @@ class DeviceUtils(object):
     return json.dumps(obj, separators=(',', ':'))
 
   @classmethod
-  def parallel(cls, devices, async=False):
+  def parallel(cls, devices, asyn=False):
     """Creates a Parallelizer to operate over the provided list of devices.
 
     Args:
       devices: A list of either DeviceUtils instances or objects from
                from which DeviceUtils instances can be constructed. If None,
                all attached devices will be used.
-      async: If true, returns a Parallelizer that runs operations
+      asyn: If true, returns a Parallelizer that runs operations
              asynchronously.
 
     Returns:
       A Parallelizer operating over |devices|.
     """
     devices = [d if isinstance(d, cls) else cls(d) for d in devices]
-    if async:
+    if asyn:
       return parallelizer.Parallelizer(devices)
     else:
       return parallelizer.SyncParallelizer(devices)

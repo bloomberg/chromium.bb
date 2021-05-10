@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SESSION_H_
 
 #include "content/public/browser/media_player_id.h"
+#include "media/mojo/mojom/media_player.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -31,6 +34,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   PictureInPictureSession(
       PictureInPictureServiceImpl* service,
       const MediaPlayerId& player_id,
+      mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
       mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
           observer);
@@ -44,6 +48,9 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
               bool show_play_pause_button) final;
 
   void NotifyWindowResized(const gfx::Size& size);
+
+  // Return an already bound mojo Remote for the MediaPlayer mojo interface.
+  mojo::AssociatedRemote<media::mojom::MediaPlayer>& GetMediaPlayerRemote();
 
   // Returns the player that is currently in Picture-in-Picture.
   MediaPlayerId player_id() const { return player_id_; }
@@ -93,6 +100,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // the dtor will check that it's stopping.
   bool is_stopping_ = false;
 
+  mojo::AssociatedRemote<media::mojom::MediaPlayer> media_player_remote_;
   mojo::Remote<blink::mojom::PictureInPictureSessionObserver> observer_;
 };
 

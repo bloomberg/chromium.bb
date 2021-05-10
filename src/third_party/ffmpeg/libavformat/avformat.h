@@ -356,7 +356,7 @@ struct AVDeviceCapabilitiesQuery;
  *       sorting will have '-sort' appended. E.g. artist="The Beatles",
  *       artist-sort="Beatles, The".
  * - Some protocols and demuxers support metadata updates. After a successful
- *   call to av_read_packet(), AVFormatContext.event_flags or AVStream.event_flags
+ *   call to av_read_frame(), AVFormatContext.event_flags or AVStream.event_flags
  *   will be updated to indicate if metadata changed. In order to detect metadata
  *   changes on a stream, you need to loop through all streams in the AVFormatContext
  *   and check their individual event_flags.
@@ -534,7 +534,9 @@ typedef struct AVOutputFormat {
 #else
 #define ff_const59 const
 #endif
+#if FF_API_NEXT
     ff_const59 struct AVOutputFormat *next;
+#endif
     /**
      * size of private data so that it can be allocated in the wrapper
      */
@@ -679,7 +681,9 @@ typedef struct AVInputFormat {
      * New public fields should be added right above.
      *****************************************************************
      */
+#if FF_API_NEXT
     ff_const59 struct AVInputFormat *next;
+#endif
 
     /**
      * Raw demuxers store their codec ID here.
@@ -973,12 +977,30 @@ typedef struct AVStream {
     int            nb_side_data;
 
     /**
-     * Flags for the user to detect events happening on the stream. Flags must
-     * be cleared by the user once the event has been handled.
-     * A combination of AVSTREAM_EVENT_FLAG_*.
+     * Flags indicating events happening on the stream, a combination of
+     * AVSTREAM_EVENT_FLAG_*.
+     *
+     * - demuxing: may be set by the demuxer in avformat_open_input(),
+     *   avformat_find_stream_info() and av_read_frame(). Flags must be cleared
+     *   by the user once the event has been handled.
+     * - muxing: may be set by the user after avformat_write_header(). to
+     *   indicate a user-triggered event.  The muxer will clear the flags for
+     *   events it has handled in av_[interleaved]_write_frame().
      */
     int event_flags;
-#define AVSTREAM_EVENT_FLAG_METADATA_UPDATED 0x0001 ///< The call resulted in updated metadata.
+/**
+ * - demuxing: the demuxer read new metadata from the file and updated
+ *     AVStream.metadata accordingly
+ * - muxing: the user updated AVStream.metadata and wishes the muxer to write
+ *     it into the file
+ */
+#define AVSTREAM_EVENT_FLAG_METADATA_UPDATED 0x0001
+/**
+ * - demuxing: new packets for this stream were read from the file. This
+ *   event is informational only and does not guarantee that new packets
+ *   for this stream will necessarily be returned from av_read_frame().
+ */
+#define AVSTREAM_EVENT_FLAG_NEW_PACKETS (1 << 1)
 
     /**
      * Real base framerate of the stream.
@@ -1023,38 +1045,10 @@ typedef struct AVStream {
      *****************************************************************
      */
 
-#define MAX_STD_TIMEBASES (30*12+30+3+6)
-    /**
-     * Stream information used internally by avformat_find_stream_info()
-     */
-    struct {
-        int64_t last_dts;
-        int64_t duration_gcd;
-        int duration_count;
-        int64_t rfps_duration_sum;
-        double (*duration_error)[2][MAX_STD_TIMEBASES];
-        int64_t codec_info_duration;
-        int64_t codec_info_duration_fields;
-        int frame_delay_evidence;
-
-        /**
-         * 0  -> decoder has not been searched for yet.
-         * >0 -> decoder found
-         * <0 -> decoder with codec_id == -found_decoder has not been found
-         */
-        int found_decoder;
-
-        int64_t last_duration;
-
-        /**
-         * Those are used for average framerate estimation.
-         */
-        int64_t fps_first_dts;
-        int     fps_first_dts_idx;
-        int64_t fps_last_dts;
-        int     fps_last_dts_idx;
-
-    } *info;
+#if LIBAVFORMAT_VERSION_MAJOR < 59
+    // kept for ABI compatibility only, do not access in any way
+    void *unused;
+#endif
 
     int pts_wrap_bits; /**< number of bits in pts (used for wrapping control) */
 
@@ -1085,18 +1079,15 @@ typedef struct AVStream {
     enum AVStreamParseType need_parsing;
     struct AVCodecParserContext *parser;
 
-    /**
-     * last packet in packet_buffer for this stream when muxing.
-     */
-    struct AVPacketList *last_in_packet_buffer;
-    AVProbeData probe_data;
-#define MAX_REORDER_DELAY 16
-    int64_t pts_buffer[MAX_REORDER_DELAY+1];
-
-    AVIndexEntry *index_entries; /**< Only used if the format does not
-                                    support seeking natively. */
-    int nb_index_entries;
-    unsigned int index_entries_allocated_size;
+#if LIBAVFORMAT_VERSION_MAJOR < 59
+    // kept for ABI compatibility only, do not access in any way
+    void        *unused7;
+    AVProbeData  unused6;
+    int64_t      unused5[16+1];
+    void         *unused2;
+    int          unused3;
+    unsigned int unused4;
+#endif
 
     /**
      * Stream Identifier
@@ -1111,109 +1102,6 @@ typedef struct AVStream {
     int program_num;
     int pmt_version;
     int pmt_stream_idx;
-
-    int64_t interleaver_chunk_size;
-    int64_t interleaver_chunk_duration;
-
-    /**
-     * stream probing state
-     * -1   -> probing finished
-     *  0   -> no probing requested
-     * rest -> perform probing with request_probe being the minimum score to accept.
-     */
-    int request_probe;
-    /**
-     * Indicates that everything up to the next keyframe
-     * should be discarded.
-     */
-    int skip_to_keyframe;
-
-    /**
-     * Number of samples to skip at the start of the frame decoded from the next packet.
-     */
-    int skip_samples;
-
-    /**
-     * If not 0, the number of samples that should be skipped from the start of
-     * the stream (the samples are removed from packets with pts==0, which also
-     * assumes negative timestamps do not happen).
-     * Intended for use with formats such as mp3 with ad-hoc gapless audio
-     * support.
-     */
-    int64_t start_skip_samples;
-
-    /**
-     * If not 0, the first audio sample that should be discarded from the stream.
-     * This is broken by design (needs global sample count), but can't be
-     * avoided for broken by design formats such as mp3 with ad-hoc gapless
-     * audio support.
-     */
-    int64_t first_discard_sample;
-
-    /**
-     * The sample after last sample that is intended to be discarded after
-     * first_discard_sample. Works on frame boundaries only. Used to prevent
-     * early EOF if the gapless info is broken (considered concatenated mp3s).
-     */
-    int64_t last_discard_sample;
-
-    /**
-     * Number of internally decoded frames, used internally in libavformat, do not access
-     * its lifetime differs from info which is why it is not in that structure.
-     */
-    int nb_decoded_frames;
-
-    /**
-     * Timestamp offset added to timestamps before muxing
-     */
-    int64_t mux_ts_offset;
-
-    /**
-     * Internal data to check for wrapping of the time stamp
-     */
-    int64_t pts_wrap_reference;
-
-    /**
-     * Options for behavior, when a wrap is detected.
-     *
-     * Defined by AV_PTS_WRAP_ values.
-     *
-     * If correction is enabled, there are two possibilities:
-     * If the first time stamp is near the wrap point, the wrap offset
-     * will be subtracted, which will create negative time stamps.
-     * Otherwise the offset will be added.
-     */
-    int pts_wrap_behavior;
-
-    /**
-     * Internal data to prevent doing update_initial_durations() twice
-     */
-    int update_initial_durations_done;
-
-    /**
-     * Internal data to generate dts from pts
-     */
-    int64_t pts_reorder_error[MAX_REORDER_DELAY+1];
-    uint8_t pts_reorder_error_count[MAX_REORDER_DELAY+1];
-
-    /**
-     * Internal data to analyze DTS and detect faulty mpeg streams
-     */
-    int64_t last_dts_for_order_check;
-    uint8_t dts_ordered;
-    uint8_t dts_misordered;
-
-    /**
-     * Internal data to inject global side data
-     */
-    int inject_global_side_data;
-
-    /**
-     * display aspect ratio (0 if unknown)
-     * - encoding: unused
-     * - decoding: Set by libavformat to calculate sample_aspect_ratio internally
-     */
-    AVRational display_aspect_ratio;
 
     /**
      * An opaque field for libavformat internal usage.
@@ -1645,12 +1533,24 @@ typedef struct AVFormatContext {
     int strict_std_compliance;
 
     /**
-     * Flags for the user to detect events happening on the file. Flags must
-     * be cleared by the user once the event has been handled.
-     * A combination of AVFMT_EVENT_FLAG_*.
+     * Flags indicating events happening on the file, a combination of
+     * AVFMT_EVENT_FLAG_*.
+     *
+     * - demuxing: may be set by the demuxer in avformat_open_input(),
+     *   avformat_find_stream_info() and av_read_frame(). Flags must be cleared
+     *   by the user once the event has been handled.
+     * - muxing: may be set by the user after avformat_write_header() to
+     *   indicate a user-triggered event.  The muxer will clear the flags for
+     *   events it has handled in av_[interleaved]_write_frame().
      */
     int event_flags;
-#define AVFMT_EVENT_FLAG_METADATA_UPDATED 0x0001 ///< The call resulted in updated metadata.
+/**
+ * - demuxing: the demuxer read new metadata from the file and updated
+ *   AVFormatContext.metadata accordingly
+ * - muxing: the user updated AVFormatContext.metadata and wishes the muxer to
+ *   write it into the file
+ */
+#define AVFMT_EVENT_FLAG_METADATA_UPDATED 0x0001
 
     /**
      * Maximum number of packets to read while waiting for the first timestamp.

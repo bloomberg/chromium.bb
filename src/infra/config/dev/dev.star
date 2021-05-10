@@ -1,4 +1,3 @@
-#!/usr/bin/env lucicfg
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -50,12 +49,20 @@ luci.realm(
             roles = "role/buildbucket.reader",
             groups = "all",
         ),
+        luci.binding(
+            roles = "role/resultdb.invocationCreator",
+            groups = "luci-resultdb-access",
+        ),
         # Other roles are inherited from @root which grants them to group:all.
     ],
 )
 
-# Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
+luci.builder.defaults.experiments.set({
+    # Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
+    "luci.use_realms": 100,
+    # Enable resultsink for dev swarming tasks.
+    "chromium.resultdb.result_sink": 100,
+})
 
 exec("//dev/swarming.star")
 

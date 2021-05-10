@@ -7,16 +7,14 @@
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -44,7 +42,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCardNumber,
   ItemTypeExpirationMonth,
   ItemTypeExpirationYear,
-  ItemTypeUseCameraButton,
   ItemTypeCardNickname,
 };
 
@@ -59,29 +56,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The card holder name updated with the text in tableview cell.
 @property(nonatomic, strong) NSString* cardHolderName;
 
-// The card number set from the CreditCardConsumer protocol, used to update the
-// UI.
+// The card number in the UI.
 @property(nonatomic, strong) NSString* cardNumber;
 
-// The expiration month set from the CreditCardConsumer protocol, used to update
-// the UI.
+// The expiration month in the UI.
 @property(nonatomic, strong) NSString* expirationMonth;
 
-// The expiration year set from the CreditCardConsumer protocol, used to update
-// the UI.
+// The expiration year in the UI.
 @property(nonatomic, strong) NSString* expirationYear;
 
 // The user provided nickname for the credit card.
 @property(nonatomic, strong) NSString* cardNickname;
-
-// The card number scanned using the credit card scanner.
-@property(nonatomic, strong) NSString* scannedCardNumber;
-
-// The expiration month scanned using the credit card scanner.
-@property(nonatomic, strong) NSString* scannedExpirationMonth;
-
-// The expiration year scanned using the credit card scanner.
-@property(nonatomic, strong) NSString* scannedExpirationYear;
 
 @end
 
@@ -89,10 +74,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithDelegate:
     (id<AddCreditCardViewControllerDelegate>)delegate {
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  self = [super initWithStyle:style];
+  self = [super initWithStyle:ChromeTableViewStyle()];
 
   if (self) {
     _delegate = delegate;
@@ -104,7 +86,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = UIColor.cr_systemGroupedBackgroundColor;
+  self.view.backgroundColor =
+      [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
   self.tableView.accessibilityIdentifier = kAddCreditCardViewID;
 
   self.navigationItem.title = l10n_util::GetNSString(
@@ -135,11 +118,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateCreditCardData];
 
   BOOL hasUserInput = self.cardHolderName.length || self.cardNumber.length ||
-                      self.expirationMonth.length || self.expirationYear.length;
-
-  if ([self isCardNicknameManagementEnabled]) {
-    hasUserInput = hasUserInput || self.cardNickname.length;
-  }
+                      self.expirationMonth.length ||
+                      self.expirationYear.length || self.cardNickname.length;
 
   return hasUserInput;
 }
@@ -155,67 +135,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   AutofillEditItem* expirationMonthItem = [self expirationMonthItem];
   AutofillEditItem* expirationYearItem = [self expirationYearItem];
 
-  if ([self isCardNicknameManagementEnabled]) {
-    [model addSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:cardNumberItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:expirationMonthItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:expirationYearItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:cardHolderNameItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:[self cardNicknameItem]
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-  } else {
-    [model addSectionWithIdentifier:SectionIdentifierName];
-    [model addItem:cardHolderNameItem
-        toSectionWithIdentifier:SectionIdentifierName];
-    [model addSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:cardNumberItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:expirationMonthItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-    [model addItem:expirationYearItem
-        toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-  }
-
-  if (base::FeatureList::IsEnabled(kCreditCardScanner)) {
-    TableViewTextItem* cameraButtonItem =
-        [[TableViewTextItem alloc] initWithType:ItemTypeUseCameraButton];
-    cameraButtonItem.textColor = [UIColor colorNamed:kBlueColor];
-    cameraButtonItem.text = l10n_util::GetNSString(
-        IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
-    cameraButtonItem.textAlignment = NSTextAlignmentCenter;
-    cameraButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
-    if (@available(iOS 13, *)) {
-      [model addSectionWithIdentifier:SectionIdentifierCameraButton];
-      [model addItem:cameraButtonItem
-          toSectionWithIdentifier:SectionIdentifierCameraButton];
-    }
-  }
-}
-
-#pragma mark - UITableViewDelegate
-
-- (void)tableView:(UITableView*)tableView
-    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
-  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
-      ItemTypeUseCameraButton) {
-    [self handleCameraButton];
-  }
-  [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-- (NSIndexPath*)tableView:(UITableView*)tableView
-    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  [super tableView:tableView willSelectRowAtIndexPath:indexPath];
-  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
-      ItemTypeUseCameraButton) {
-    return indexPath;
-  }
-  return nil;
+  [model addSectionWithIdentifier:SectionIdentifierCreditCardDetails];
+  [model addItem:cardNumberItem
+      toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
+  [model addItem:expirationMonthItem
+      toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
+  [model addItem:expirationYearItem
+      toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
+  [model addItem:cardHolderNameItem
+      toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
+  [model addItem:[self cardNicknameItem]
+      toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
 }
 
 #pragma mark - TableViewTextEditItemDelegate
@@ -302,56 +232,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-#pragma mark - CreditCardConsumer
-
-- (void)setCreditCardNumber:(NSString*)cardNumber
-            expirationMonth:(NSString*)expirationMonth
-             expirationYear:(NSString*)expirationYear {
-  if (cardNumber) {
-    self.scannedCardNumber = cardNumber;
-    [self updateCellForItemType:ItemTypeCardNumber
-            inSectionIdentifier:SectionIdentifierCreditCardDetails
-                       withText:cardNumber];
-  }
-
-  if (expirationMonth) {
-    self.scannedExpirationMonth = expirationMonth;
-    [self updateCellForItemType:ItemTypeExpirationMonth
-            inSectionIdentifier:SectionIdentifierCreditCardDetails
-                       withText:expirationMonth];
-  }
-
-  if (expirationYear) {
-    self.scannedExpirationYear = expirationYear;
-    [self updateCellForItemType:ItemTypeExpirationYear
-            inSectionIdentifier:SectionIdentifierCreditCardDetails
-                       withText:expirationYear];
-  }
-}
-
 #pragma mark - Private
 
 // Handles Add button to add a new credit card.
 - (void)didTapAddButton:(id)sender {
   [self updateCreditCardData];
-
-  // Metrics logged if the data scanned using the credit card scanner is
-  // modified by the user.
-  if (self.scannedCardNumber && self.cardNumber != self.scannedCardNumber) {
-    base::RecordAction(base::UserMetricsAction(
-        "MobileCreditCardScannerScannedCardNumberModified"));
-  }
-  if (self.scannedExpirationMonth &&
-      self.expirationMonth != self.scannedExpirationMonth) {
-    base::RecordAction(base::UserMetricsAction(
-        "MobileCreditCardScannerScannedExpiryMonthModified"));
-  }
-  if (self.scannedExpirationYear &&
-      self.expirationYear != self.scannedExpirationYear) {
-    base::RecordAction(base::UserMetricsAction(
-        "MobileCreditCardScannerScannedExpiryYearModified"));
-  }
-
   [self.delegate addCreditCardViewController:self
                  addCreditCardWithHolderName:self.cardHolderName
                                   cardNumber:self.cardNumber
@@ -362,13 +247,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Updates credit card data properties with the text in TableView cells.
 - (void)updateCreditCardData {
-  // TODO: Remove section handling when flag is default and cleaned up.
-  NSInteger cardHolderNameSection = [self isCardNicknameManagementEnabled]
-                                        ? SectionIdentifierCreditCardDetails
-                                        : SectionIdentifierName;
-
-  self.cardHolderName = [self readTextFromItemtype:ItemTypeName
-                                 sectionIdentifier:cardHolderNameSection];
+  self.cardHolderName =
+      [self readTextFromItemtype:ItemTypeName
+               sectionIdentifier:SectionIdentifierCreditCardDetails];
 
   self.cardNumber =
       [self readTextFromItemtype:ItemTypeCardNumber
@@ -382,11 +263,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self readTextFromItemtype:ItemTypeExpirationYear
                sectionIdentifier:SectionIdentifierCreditCardDetails];
 
-  if ([self isCardNicknameManagementEnabled]) {
-    self.cardNickname =
-        [self readTextFromItemtype:ItemTypeCardNickname
-                 sectionIdentifier:SectionIdentifierCreditCardDetails];
-  }
+  self.cardNickname =
+      [self readTextFromItemtype:ItemTypeCardNickname
+               sectionIdentifier:SectionIdentifierCreditCardDetails];
 }
 
 // Reads and returns the data from the item with passed |itemType| and
@@ -439,13 +318,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.textFieldEnabled = YES;
   item.autofillUIType = autofillUIType;
   return item;
-}
-
-// Presents the credit card scanner camera screen.
-- (void)handleCameraButton {
-  base::RecordAction(
-      base::UserMetricsAction("MobileAddCreditCard.UseCameraButton"));
-  [self.delegate addCreditCardViewControllerDidUseCamera:self];
 }
 
 - (AutofillEditItem*)expirationYearItem {
@@ -516,12 +388,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            keyboardType:UIKeyboardTypeDefault
                          autofillUIType:AutofillUITypeUnknown];
   return cardNicknameItem;
-}
-
-// Returns whether card nickname managment feature is enabled.
-- (BOOL)isCardNicknameManagementEnabled {
-  return base::FeatureList::IsEnabled(
-      autofill::features::kAutofillEnableCardNicknameManagement);
 }
 
 @end

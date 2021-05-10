@@ -8,11 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/services/app_service/public/cpp/instance_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/web_contents.h"
@@ -46,9 +46,9 @@ void AppServiceInstanceRegistryHelper::ActiveUserChanged() {
       ProfileManager::GetActiveUserProfile());
 }
 
-void AppServiceInstanceRegistryHelper::AdditionalUserAddedToSession(
-    Profile* profile) {
-  proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
+void AppServiceInstanceRegistryHelper::AdditionalUserAddedToSession() {
+  proxy_ = apps::AppServiceProxyFactory::GetForProfile(
+      ProfileManager::GetActiveUserProfile());
 }
 
 void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
@@ -409,7 +409,8 @@ bool AppServiceInstanceRegistryHelper::IsOpenedInBrowser(
   if (app_id == crostini::kCrostiniTerminalSystemAppId)
     return true;
 
-  if (crostini::IsUnmatchedCrostiniShelfAppId(app_id))
+  // Windows created by exo with app/startup ids are not browser windows.
+  if (exo::GetShellApplicationId(window) || exo::GetShellStartupId(window))
     return false;
 
   for (auto* profile : controller_->GetProfileList()) {

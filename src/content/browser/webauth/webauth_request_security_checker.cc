@@ -8,10 +8,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
 #include "device/fido/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -41,8 +41,9 @@ blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
     return blink::mojom::AuthenticatorStatus::OPAQUE_DOMAIN;
   }
 
+  // TODO(https://crbug.com/1158302): Use IsOriginPotentiallyTrustworthy?
   if (url::HostIsIPAddress(caller_origin.host()) ||
-      !blink::network_utils::IsOriginSecure(caller_origin.GetURL())) {
+      !network::IsUrlPotentiallyTrustworthy(caller_origin.GetURL())) {
     return blink::mojom::AuthenticatorStatus::INVALID_DOMAIN;
   }
 
@@ -50,7 +51,7 @@ blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
   // may be supported in the future but the webauthn relying party is
   // just the domain of the origin so we would have to define how the
   // authority part of other schemes maps to a "domain" without
-  // collisions. Given the |blink::network_utils::IsOriginSecure| check, just
+  // collisions. Given the |network::IsUrlPotentiallyTrustworthy| check, just
   // above, HTTP is effectively restricted to just "localhost".
   if (caller_origin.scheme() != url::kHttpScheme &&
       caller_origin.scheme() != url::kHttpsScheme) {
@@ -110,14 +111,6 @@ WebAuthRequestSecurityChecker::WebAuthRequestSecurityChecker(
     : render_frame_host_(host) {}
 
 WebAuthRequestSecurityChecker::~WebAuthRequestSecurityChecker() = default;
-
-// static
-void WebAuthRequestSecurityChecker::ReportSecurityCheckFailure(
-    RelyingPartySecurityCheckFailure error) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebAuthentication.RelyingPartySecurityCheckFailure", error);
-}
-
 // static
 bool WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
     const url::Origin& origin) {
@@ -142,15 +135,16 @@ WebAuthRequestSecurityChecker::ValidateAncestorOrigins(
     RequestType type,
     bool* is_cross_origin) {
   *is_cross_origin = !IsSameOriginWithAncestors(origin);
-  if ((type == RequestType::kMakeCredential ||
+  if ((type != RequestType::kGetAssertion ||
        !base::FeatureList::IsEnabled(
            device::kWebAuthGetAssertionFeaturePolicy) ||
-       !static_cast<RenderFrameHostImpl*>(render_frame_host_)
-            ->IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::
-                                   kPublicKeyCredentialsGet)) &&
+       !render_frame_host_->IsFeatureEnabled(
+           blink::mojom::FeaturePolicyFeature::kPublicKeyCredentialsGet)) &&
+      (type != RequestType::kMakePaymentCredential ||
+       !base::FeatureList::IsEnabled(features::kSecurePaymentConfirmation) ||
+       !render_frame_host_->IsFeatureEnabled(
+           blink::mojom::FeaturePolicyFeature::kPayment)) &&
       *is_cross_origin) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kCrossOriginMismatch);
     return blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
   }
   return blink::mojom::AuthenticatorStatus::SUCCESS;
@@ -163,16 +157,12 @@ WebAuthRequestSecurityChecker::ValidateDomainAndRelyingPartyID(
   blink::mojom::AuthenticatorStatus domain_validation =
       ValidateEffectiveDomain(caller_origin);
   if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
     return domain_validation;
   }
 
   base::Optional<std::string> valid_rp_id =
       GetRelyingPartyId(relying_party_id, caller_origin);
   if (!valid_rp_id) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
     return blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID;
   }
   return blink::mojom::AuthenticatorStatus::SUCCESS;
@@ -185,19 +175,12 @@ WebAuthRequestSecurityChecker::ValidateAPrioriAuthenticatedUrl(
     return blink::mojom::AuthenticatorStatus::SUCCESS;
 
   if (!url.is_valid()) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kIconUrlInvalid);
     return blink::mojom::AuthenticatorStatus::INVALID_ICON_URL;
   }
 
-  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
-  if (!url.IsAboutSrcdoc() && !url.IsAboutBlank() &&
-      !url.SchemeIs(url::kDataScheme) &&
-      !blink::network_utils::IsOriginSecure(url)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kIconUrlInvalid);
+  // https://w3c.github.io/webappsec-secure-contexts/#is-url-trustworthy
+  if (!network::IsUrlPotentiallyTrustworthy(url))
     return blink::mojom::AuthenticatorStatus::INVALID_ICON_URL;
-  }
 
   return blink::mojom::AuthenticatorStatus::SUCCESS;
 }

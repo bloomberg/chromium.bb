@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/test_tools/frame_parts.h"
+#include "http2/test_tools/frame_parts.h"
 
 #include <type_traits>
 
-#include "net/third_party/quiche/src/http2/http2_structures_test_util.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/http2_structures_test_util.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_string_utils.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "common/platform/api/quiche_test.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
@@ -84,6 +84,7 @@ AssertionResult FrameParts::VerifyEquals(const FrameParts& that) const {
 
   VERIFY_OPTIONAL_FIELD(opt_altsvc_origin_length_) << COMMON_MESSAGE;
   VERIFY_OPTIONAL_FIELD(opt_altsvc_value_length_) << COMMON_MESSAGE;
+  VERIFY_OPTIONAL_FIELD(opt_priority_update_) << COMMON_MESSAGE;
   VERIFY_OPTIONAL_FIELD(opt_goaway_) << COMMON_MESSAGE;
   VERIFY_OPTIONAL_FIELD(opt_missing_length_) << COMMON_MESSAGE;
   VERIFY_OPTIONAL_FIELD(opt_pad_length_) << COMMON_MESSAGE;
@@ -364,6 +365,31 @@ void FrameParts::OnAltSvcEnd() {
   ASSERT_TRUE(EndFrameOfType(Http2FrameType::ALTSVC)) << *this;
 }
 
+void FrameParts::OnPriorityUpdateStart(
+    const Http2FrameHeader& header,
+    const Http2PriorityUpdateFields& priority_update) {
+  HTTP2_VLOG(1) << "OnPriorityUpdateStart: " << header
+                << "    prioritized_stream_id: "
+                << priority_update.prioritized_stream_id;
+  ASSERT_TRUE(StartFrameOfType(header, Http2FrameType::PRIORITY_UPDATE))
+      << *this;
+  ASSERT_FALSE(opt_priority_update_);
+  opt_priority_update_ = priority_update;
+  opt_payload_length_ =
+      header.payload_length - Http2PriorityUpdateFields::EncodedSize();
+}
+
+void FrameParts::OnPriorityUpdatePayload(const char* data, size_t len) {
+  HTTP2_VLOG(1) << "OnPriorityUpdatePayload: len=" << len;
+  ASSERT_TRUE(InFrameOfType(Http2FrameType::PRIORITY_UPDATE)) << *this;
+  payload_.append(data, len);
+}
+
+void FrameParts::OnPriorityUpdateEnd() {
+  HTTP2_VLOG(1) << "OnPriorityUpdateEnd; frame_header_: " << frame_header_;
+  ASSERT_TRUE(EndFrameOfType(Http2FrameType::PRIORITY_UPDATE)) << *this;
+}
+
 void FrameParts::OnUnknownStart(const Http2FrameHeader& header) {
   HTTP2_VLOG(1) << "OnUnknownStart: " << header;
   ASSERT_FALSE(IsSupportedHttp2FrameType(header.type)) << header;
@@ -459,6 +485,9 @@ void FrameParts::OutputTo(std::ostream& out) const {
   }
   if (opt_altsvc_value_length_) {
     out << "  value_length=" << opt_altsvc_value_length_.value() << "\n";
+  }
+  if (opt_priority_update_) {
+    out << "  prioritized_stream_id_=" << opt_priority_update_.value() << "\n";
   }
   if (has_frame_size_error_) {
     out << "  has_frame_size_error\n";

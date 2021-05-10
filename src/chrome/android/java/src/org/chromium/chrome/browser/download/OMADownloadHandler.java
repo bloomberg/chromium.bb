@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.Browser;
@@ -31,7 +32,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -48,7 +48,6 @@ import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
-import org.chromium.ui.UiUtils;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -326,7 +325,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 OfflineContentAggregatorFactory.get().removeItem(mDownloadInfo.getContentId());
             } else {
                 DownloadManagerService.getDownloadManagerService().removeDownload(
-                        mDownloadInfo.getDownloadGuid(), mDownloadInfo.isOffTheRecord(),
+                        mDownloadInfo.getDownloadGuid(), mDownloadInfo.getOTRProfileId(),
                         false /* externallyRemoved */);
             }
 
@@ -578,7 +577,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 activity.startActivity(intent);
             }
         };
-        new UiUtils.CompatibleAlertDialogBuilder(activity)
+        new AlertDialog.Builder(activity)
                 .setTitle(R.string.open_url_post_oma_download)
                 .setPositiveButton(R.string.ok, clickListener)
                 .setNegativeButton(R.string.cancel, clickListener)
@@ -864,7 +863,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
     private void showDownloadOnInfoBar(DownloadItem downloadItem, int downloadStatus) {
         DownloadInfoBarController infobarController =
                 DownloadManagerService.getDownloadManagerService().getInfoBarController(
-                        downloadItem.getDownloadInfo().isOffTheRecord());
+                        downloadItem.getDownloadInfo().getOTRProfileId());
         if (infobarController == null) return;
         OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         offlineItem.id.namespace = LegacyHelpers.LEGACY_ANDROID_DOWNLOAD_NAMESPACE;
@@ -991,7 +990,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 String path = mDownloadInfo.getFilePath();
                 if (!TextUtils.isEmpty(path)) {
                     File fromFile = new File(path);
-                    if (BuildInfo.isAtLeastQ()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         // Copy the downloaded content to the intermediate URI and publish it.
                         String pendingUri =
                                 DownloadCollectionBridge.createIntermediateUriForPublish(
@@ -1023,13 +1022,13 @@ public class OMADownloadHandler extends BroadcastReceiver {
                     }
                     if (!success) {
                         if (fromFile.delete()) {
-                            if (BuildInfo.isAtLeastQ()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 Log.w(TAG, "Failed to publish the downloaded file.");
                             } else {
                                 Log.w(TAG, "Failed to rename the file.");
                             }
                         } else {
-                            if (BuildInfo.isAtLeastQ()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 Log.w(TAG, "Failed to publish and delete the file.");
                             } else {
                                 Log.w(TAG, "Failed to rename and delete the file.");

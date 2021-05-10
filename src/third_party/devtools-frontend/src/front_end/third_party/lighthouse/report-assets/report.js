@@ -66,6 +66,10 @@ class Util {
     if (!clone.configSettings.locale) {
       clone.configSettings.locale = 'en';
     }
+    if (!clone.configSettings.formFactor) {
+      // @ts-expect-error fallback handling for emulatedFormFactor
+      clone.configSettings.formFactor = clone.configSettings.emulatedFormFactor;
+    }
 
     for (const audit of Object.values(clone.audits)) {
       // Turn 'not-applicable' (LHR <4.0) and 'not_applicable' (older proto versions)
@@ -81,6 +85,7 @@ class Util {
         // into 'debugdata' (LHR ≥5.0).
         // @ts-expect-error tsc rightly flags that these values shouldn't occur.
         if (audit.details.type === undefined || audit.details.type === 'diagnostic') {
+          // @ts-expect-error details is of type never.
           audit.details.type = 'debugdata';
         }
 
@@ -423,12 +428,11 @@ class Util {
         networkThrottling = Util.i18n.strings.runtimeUnknown;
     }
 
-    let deviceEmulation = Util.i18n.strings.runtimeNoEmulation;
-    if (settings.emulatedFormFactor === 'mobile') {
-      deviceEmulation = Util.i18n.strings.runtimeMobileEmulation;
-    } else if (settings.emulatedFormFactor === 'desktop') {
-      deviceEmulation = Util.i18n.strings.runtimeDesktopEmulation;
-    }
+    // TODO(paulirish): revise Runtime Settings strings: https://github.com/GoogleChrome/lighthouse/pull/11796
+    const deviceEmulation = {
+      mobile: Util.i18n.strings.runtimeMobileEmulation,
+      desktop: Util.i18n.strings.runtimeDesktopEmulation,
+    }[settings.formFactor] || Util.i18n.strings.runtimeNoEmulation;
 
     return {
       deviceEmulation,
@@ -527,8 +531,6 @@ Util.UIStrings = {
   errorLabel: 'Error!',
   /** This label is shown above a bulleted list of warnings. It is shown directly below an audit that produced warnings. Warnings describe situations the user should be aware of, as Lighthouse was unable to complete all the work required on this audit. For example, The 'Unable to decode image (biglogo.jpg)' warning may show up below an image encoding audit. */
   warningHeader: 'Warnings: ',
-  /** The tooltip text on an expandable chevron icon. Clicking the icon expands a section to reveal a list of audit results that was hidden by default. */
-  auditGroupExpandTooltip: 'Show audits',
   /** Section heading shown above a list of passed audits that contain warnings. Audits under this section do not negatively impact the score, but Lighthouse has generated some potentially actionable suggestions that should be reviewed. This section is expanded by default and displays after the failing audits. */
   warningAuditsGroupTitle: 'Passed audits but with warnings',
   /** Section heading shown above a list of audits that are passing. 'Passed' here refers to a passing grade. This section is collapsed by default, as the user should be focusing on the failed audits instead. Users can click this heading to reveal the list. */
@@ -836,12 +838,11 @@ class DOM {
   /**
    * Guaranteed context.querySelector. Always returns an element or throws if
    * nothing matches query.
-   * @param {string} query
+   * @template {string} T
+   * @param {T} query
    * @param {ParentNode} context
-   * @return {!HTMLElement}
    */
   find(query, context) {
-    /** @type {?HTMLElement} */
     const result = context.querySelector(query);
     if (result === null) {
       throw new Error(`query ${query} not found`);
@@ -851,12 +852,13 @@ class DOM {
 
   /**
    * Helper for context.querySelectorAll. Returns an Array instead of a NodeList.
-   * @param {string} query
+   * @template {string} T
+   * @param {T} query
    * @param {ParentNode} context
-   * @return {!Array<HTMLElement>}
    */
   findAll(query, context) {
-    return Array.from(context.querySelectorAll(query));
+    const elements = Array.from(context.querySelectorAll(query));
+    return elements;
   }
 }
 
@@ -1095,7 +1097,7 @@ const URL_PREFIXES = ['http://', 'https://', 'data:'];
 class DetailsRenderer {
   /**
    * @param {DOM} dom
-   * @param {{fullPageScreenshot?: LH.Audit.Details.FullPageScreenshot}} [options]
+   * @param {{fullPageScreenshot?: LH.Artifacts.FullPageScreenshot}} [options]
    */
   constructor(dom, options = {}) {
     this._dom = dom;
@@ -1207,7 +1209,7 @@ class DetailsRenderer {
 
   /**
    * @param {{text: string, url: string}} details
-   * @return {Element}
+   * @return {HTMLElement}
    */
   _renderLink(details) {
     const allowedProtocols = ['https:', 'http:'];
@@ -1584,19 +1586,20 @@ class DetailsRenderer {
     if (item.selector) element.setAttribute('data-selector', item.selector);
     if (item.snippet) element.setAttribute('data-snippet', item.snippet);
 
-    if (!item.boundingRect || !this._fullPageScreenshot) {
-      return element;
-    }
+    if (!this._fullPageScreenshot) return element;
+
+    const rect = item.lhId && this._fullPageScreenshot.nodes[item.lhId];
+    if (!rect || rect.width === 0 || rect.height === 0) return element;
 
     const maxThumbnailSize = {width: 147, height: 100};
     const elementScreenshot = ElementScreenshotRenderer.render(
       this._dom,
       this._templateContext,
-      this._fullPageScreenshot,
-      item.boundingRect,
+      this._fullPageScreenshot.screenshot,
+      rect,
       maxThumbnailSize
     );
-    element.prepend(elementScreenshot);
+    if (elementScreenshot) element.prepend(elementScreenshot);
 
     return element;
   }
@@ -1612,15 +1615,31 @@ class DetailsRenderer {
     }
 
     // Lines are shown as one-indexed.
-    const line = item.line + 1;
-    const column = item.column;
+    const generatedLocation = `${item.url}:${item.line + 1}:${item.column}`;
+    let sourceMappedOriginalLocation;
+    if (item.original) {
+      const file = item.original.file || '<unmapped>';
+      sourceMappedOriginalLocation = `${file}:${item.original.line + 1}:${item.original.column}`;
+    }
 
+    // We render slightly differently based on presence of source map and provenance of URL.
     let element;
-    if (item.urlProvider === 'network') {
+    if (item.urlProvider === 'network' && sourceMappedOriginalLocation) {
+      element = this._renderLink({
+        url: item.url,
+        text: sourceMappedOriginalLocation,
+      });
+      element.title = `maps to generated location ${generatedLocation}`;
+    } else if (item.urlProvider === 'network' && !sourceMappedOriginalLocation) {
       element = this.renderTextURL(item.url);
-      this._dom.find('.lh-link', element).textContent += `:${line}:${column}`;
+      this._dom.find('.lh-link', element).textContent += `:${item.line + 1}:${item.column}`;
+    } else if (item.urlProvider === 'comment' && sourceMappedOriginalLocation) {
+      element = this._renderText(`${sourceMappedOriginalLocation} (from source map)`);
+      element.title = `${generatedLocation} (from sourceURL)`;
+    } else if (item.urlProvider === 'comment' && !sourceMappedOriginalLocation) {
+      element = this._renderText(`${generatedLocation} (from sourceURL)`);
     } else {
-      element = this._renderText(`${item.url}:${line}:${column} (from sourceURL)`);
+      return null;
     }
 
     element.classList.add('lh-source-location');
@@ -1628,6 +1647,7 @@ class DetailsRenderer {
     // DevTools expects zero-indexed lines.
     element.setAttribute('data-source-line', String(item.line));
     element.setAttribute('data-source-column', String(item.column));
+
     return element;
   }
 
@@ -2263,6 +2283,18 @@ if (typeof module !== 'undefined' && module.exports) {
 /** @typedef {{width: number, height: number}} Size */
 
 /**
+ * @param {LH.Artifacts.FullPageScreenshot['screenshot']} screenshot
+ * @param {LH.Artifacts.Rect} rect
+ * @return {boolean}
+ */
+function screenshotOverlapsRect(screenshot, rect) {
+  return rect.left <= screenshot.width &&
+    0 <= rect.right &&
+    rect.top <= screenshot.height &&
+    0 <= rect.bottom;
+}
+
+/**
  * @param {number} value
  * @param {number} min
  * @param {number} max
@@ -2353,14 +2385,14 @@ class ElementScreenshotRenderer {
   /**
    * Called externally and must be injected to the report in order to use this renderer.
    * @param {DOM} dom
-   * @param {LH.Audit.Details.FullPageScreenshot} fullPageScreenshot
+   * @param {LH.Artifacts.FullPageScreenshot['screenshot']} screenshot
    */
-  static createBackgroundImageStyle(dom, fullPageScreenshot) {
+  static createBackgroundImageStyle(dom, screenshot) {
     const styleEl = dom.createElement('style');
     styleEl.id = 'full-page-screenshot-style';
     styleEl.textContent = `
       .lh-element-screenshot__image {
-        background-image: url(${fullPageScreenshot.data})
+        background-image: url(${screenshot.data})
       }`;
     return styleEl;
   }
@@ -2369,27 +2401,37 @@ class ElementScreenshotRenderer {
    * Installs the lightbox elements and wires up click listeners to all .lh-element-screenshot elements.
    * @param {DOM} dom
    * @param {ParentNode} templateContext
-   * @param {LH.Audit.Details.FullPageScreenshot} fullPageScreenshot
+   * @param {LH.Artifacts.FullPageScreenshot} fullPageScreenshot
    */
   static installOverlayFeature(dom, templateContext, fullPageScreenshot) {
-    const reportEl = dom.find('.lh-report', dom.document());
-    const screenshotOverlayClass = 'lh-feature-screenshot-overlay';
-    if (reportEl.classList.contains(screenshotOverlayClass)) return;
-    reportEl.classList.add(screenshotOverlayClass);
+    const rootEl = dom.find('.lh-root', dom.document());
+    if (!rootEl) {
+      console.warn('No lh-root. Overlay install failed.'); // eslint-disable-line no-console
+      return;
+    }
 
-    const maxLightboxSize = {
-      width: dom.document().documentElement.clientWidth,
-      height: dom.document().documentElement.clientHeight * 0.75,
-    };
+    const screenshotOverlayClass = 'lh-screenshot-overlay--enabled';
+    // Don't install the feature more than once.
+    if (rootEl.classList.contains(screenshotOverlayClass)) return;
+    rootEl.classList.add(screenshotOverlayClass);
 
-    dom.document().addEventListener('click', e => {
+    // Add a single listener to the root element to handle all clicks within (event delegation).
+    rootEl.addEventListener('click', e => {
       const target = /** @type {?HTMLElement} */ (e.target);
       if (!target) return;
-      const el = /** @type {?HTMLElement} */ (target.closest('.lh-element-screenshot'));
+      // Only activate the overlay for clicks on the screenshot *preview* of an element, not the full-size too.
+      const el = /** @type {?HTMLElement} */ (target.closest('.lh-node > .lh-element-screenshot'));
       if (!el) return;
 
-      const overlay = dom.createElement('div');
-      overlay.classList.add('lh-element-screenshot__overlay');
+      const overlay = dom.createElement('div', 'lh-element-screenshot__overlay');
+      rootEl.append(overlay);
+
+      // The newly-added overlay has the dimensions we need.
+      const maxLightboxSize = {
+        width: overlay.clientWidth * 0.95,
+        height: overlay.clientHeight * 0.80,
+      };
+
       const elementRectSC = {
         width: Number(el.dataset['rectWidth']),
         height: Number(el.dataset['rectHeight']),
@@ -2398,18 +2440,22 @@ class ElementScreenshotRenderer {
         top: Number(el.dataset['rectTop']),
         bottom: Number(el.dataset['rectTop']) + Number(el.dataset['rectHeight']),
       };
-      overlay.appendChild(ElementScreenshotRenderer.render(
+      const screenshotElement = ElementScreenshotRenderer.render(
         dom,
         templateContext,
-        fullPageScreenshot,
+        fullPageScreenshot.screenshot,
         elementRectSC,
         maxLightboxSize
-      ));
-      overlay.addEventListener('click', () => {
-        overlay.remove();
-      });
+      );
 
-      reportEl.appendChild(overlay);
+      // This would be unexpected here.
+      // When `screenshotElement` is `null`, there is also no thumbnail element for the user to have clicked to make it this far.
+      if (!screenshotElement) {
+        overlay.remove();
+        return;
+      }
+      overlay.appendChild(screenshotElement);
+      overlay.addEventListener('click', () => overlay.remove());
     });
   }
 
@@ -2433,16 +2479,21 @@ class ElementScreenshotRenderer {
   /**
    * Renders an element with surrounding context from the full page screenshot.
    * Used to render both the thumbnail preview in details tables and the full-page screenshot in the lightbox.
+   * Returns null if element rect is outside screenshot bounds.
    * @param {DOM} dom
    * @param {ParentNode} templateContext
-   * @param {LH.Audit.Details.FullPageScreenshot} fullPageScreenshot
+   * @param {LH.Artifacts.FullPageScreenshot['screenshot']} screenshot
    * @param {LH.Artifacts.Rect} elementRectSC Region of screenshot to highlight.
    * @param {Size} maxRenderSizeDC e.g. maxThumbnailSize or maxLightboxSize.
-   * @return {Element}
+   * @return {Element|null}
    */
-  static render(dom, templateContext, fullPageScreenshot, elementRectSC, maxRenderSizeDC) {
+  static render(dom, templateContext, screenshot, elementRectSC, maxRenderSizeDC) {
+    if (!screenshotOverlapsRect(screenshot, elementRectSC)) {
+      return null;
+    }
+
     const tmpl = dom.cloneTemplate('#tmpl-lh-element-screenshot', templateContext);
-    const containerEl = dom.find('.lh-element-screenshot', tmpl);
+    const containerEl = dom.find('div.lh-element-screenshot', tmpl);
 
     containerEl.dataset['rectWidth'] = elementRectSC.width.toString();
     containerEl.dataset['rectHeight'] = elementRectSC.height.toString();
@@ -2457,7 +2508,7 @@ class ElementScreenshotRenderer {
       width: maxRenderSizeDC.width / zoomFactor,
       height: maxRenderSizeDC.height / zoomFactor,
     };
-    elementPreviewSizeSC.width = Math.min(fullPageScreenshot.width, elementPreviewSizeSC.width);
+    elementPreviewSizeSC.width = Math.min(screenshot.width, elementPreviewSizeSC.width);
     /* This preview size is either the size of the thumbnail or size of the Lightbox */
     const elementPreviewSizeDC = {
       width: elementPreviewSizeSC.width * zoomFactor,
@@ -2467,28 +2518,28 @@ class ElementScreenshotRenderer {
     const positions = ElementScreenshotRenderer.getScreenshotPositions(
       elementRectSC,
       elementPreviewSizeSC,
-      {width: fullPageScreenshot.width, height: fullPageScreenshot.height}
+      {width: screenshot.width, height: screenshot.height}
     );
 
-    const contentEl = dom.find('.lh-element-screenshot__content', containerEl);
+    const contentEl = dom.find('div.lh-element-screenshot__content', containerEl);
     contentEl.style.top = `-${elementPreviewSizeDC.height}px`;
 
-    const imageEl = dom.find('.lh-element-screenshot__image', containerEl);
+    const imageEl = dom.find('div.lh-element-screenshot__image', containerEl);
     imageEl.style.width = elementPreviewSizeDC.width + 'px';
     imageEl.style.height = elementPreviewSizeDC.height + 'px';
 
     imageEl.style.backgroundPositionY = -(positions.screenshot.top * zoomFactor) + 'px';
     imageEl.style.backgroundPositionX = -(positions.screenshot.left * zoomFactor) + 'px';
     imageEl.style.backgroundSize =
-      `${fullPageScreenshot.width * zoomFactor}px ${fullPageScreenshot.height * zoomFactor}px`;
+      `${screenshot.width * zoomFactor}px ${screenshot.height * zoomFactor}px`;
 
-    const markerEl = dom.find('.lh-element-screenshot__element-marker', containerEl);
+    const markerEl = dom.find('div.lh-element-screenshot__element-marker', containerEl);
     markerEl.style.width = elementRectSC.width * zoomFactor + 'px';
     markerEl.style.height = elementRectSC.height * zoomFactor + 'px';
     markerEl.style.left = positions.clip.left * zoomFactor + 'px';
     markerEl.style.top = positions.clip.top * zoomFactor + 'px';
 
-    const maskEl = dom.find('.lh-element-screenshot__mask', containerEl);
+    const maskEl = dom.find('div.lh-element-screenshot__mask', containerEl);
     maskEl.style.width = elementPreviewSizeDC.width + 'px';
     maskEl.style.height = elementPreviewSizeDC.height + 'px';
 
@@ -2579,7 +2630,6 @@ class Logger {
    * @param {Element} element
    */
   constructor(element) {
-    /** @type {Element} */
     this.el = element;
     this._id = undefined;
   }
@@ -2670,6 +2720,15 @@ if (typeof module !== 'undefined' && module.exports) {
  */
 function getTableRows(tableEl) {
   return Array.from(tableEl.tBodies[0].rows);
+}
+
+function getAppsOrigin() {
+  const isVercel = window.location.host.endsWith('.vercel.app');
+  const isDev = new URLSearchParams(window.location.search).has('dev');
+
+  if (isVercel) return `https://${window.location.host}/gh-pages`;
+  if (isDev) return 'http://localhost:8000';
+  return 'https://googlechrome.github.io/lighthouse';
 }
 
 class ReportUIFeatures {
@@ -2775,8 +2834,7 @@ class ReportUIFeatures {
     const hasMetricError = report.categories.performance && report.categories.performance.auditRefs
       .some(audit => Boolean(audit.group === 'metrics' && report.audits[audit.id].errorMessage));
     if (hasMetricError) {
-      const toggleInputEl = /** @type {HTMLInputElement} */ (
-        this._dom.find('.lh-metrics-toggle__input', this._document));
+      const toggleInputEl = this._dom.find('input.lh-metrics-toggle__input', this._document);
       toggleInputEl.checked = true;
     }
 
@@ -2800,7 +2858,7 @@ class ReportUIFeatures {
 
   /**
    * Finds the first scrollable ancestor of `element`. Falls back to the document.
-   * @param {HTMLElement} element
+   * @param {Element} element
    * @return {Node}
    */
   _getScrollParent(element) {
@@ -2856,8 +2914,9 @@ class ReportUIFeatures {
   _setupThirdPartyFilter() {
     // Some audits should not display the third party filter option.
     const thirdPartyFilterAuditExclusions = [
-      // This audit deals explicitly with third party resources.
+      // These audits deal explicitly with third party resources.
       'uses-rel-preconnect',
+      'third-party-facades',
     ];
     // Some audits should hide third party by default.
     const thirdPartyFilterAuditHideByDefault = [
@@ -2866,8 +2925,7 @@ class ReportUIFeatures {
     ];
 
     // Get all tables with a text url column.
-    /** @type {Array<HTMLTableElement>} */
-    const tables = Array.from(this._document.querySelectorAll('.lh-table'));
+    const tables = Array.from(this._document.querySelectorAll('table.lh-table'));
     const tablesWithUrls = tables
       .filter(el =>
         el.querySelector('td.lh-table-column--url, td.lh-table-column--source-location'))
@@ -2883,8 +2941,7 @@ class ReportUIFeatures {
 
       // create input box
       const filterTemplate = this._dom.cloneTemplate('#tmpl-lh-3p-filter', this._templateContext);
-      const filterInput =
-        /** @type {HTMLInputElement} */ (this._dom.find('input', filterTemplate));
+      const filterInput = this._dom.find('input', filterTemplate);
       const id = `lh-3p-filter-label--${index}`;
 
       filterInput.id = id;
@@ -2939,8 +2996,11 @@ class ReportUIFeatures {
 
   _setupElementScreenshotOverlay() {
     const fullPageScreenshot =
-      this.json.audits['full-page-screenshot'] && this.json.audits['full-page-screenshot'].details;
-    if (!fullPageScreenshot || fullPageScreenshot.type !== 'full-page-screenshot') return;
+      this.json.audits['full-page-screenshot'] &&
+      this.json.audits['full-page-screenshot'].details &&
+      this.json.audits['full-page-screenshot'].details.type === 'full-page-screenshot' &&
+      this.json.audits['full-page-screenshot'].details;
+    if (!fullPageScreenshot) return;
 
     ElementScreenshotRenderer.installOverlayFeature(
       this._dom, this._templateContext, fullPageScreenshot);
@@ -2961,8 +3021,7 @@ class ReportUIFeatures {
     for (const rowEl of rowEls) {
       if (rowEl.classList.contains('lh-sub-item-row')) continue;
 
-      /** @type {HTMLElement|null} */
-      const urlItem = rowEl.querySelector('.lh-text__url');
+      const urlItem = rowEl.querySelector('div.lh-text__url');
       if (!urlItem) continue;
 
       const datasetUrl = urlItem.dataset.url;
@@ -2976,19 +3035,10 @@ class ReportUIFeatures {
     return thirdPartyRows;
   }
 
-  /**
-   * From a table, finds and returns URL items.
-   * @param {HTMLTableElement} tableEl
-   * @return {Array<HTMLElement>}
-   */
-  _getUrlItems(tableEl) {
-    return this._dom.findAll('.lh-text__url', tableEl);
-  }
-
   _setupStickyHeaderElements() {
-    this.topbarEl = this._dom.find('.lh-topbar', this._document);
-    this.scoreScaleEl = this._dom.find('.lh-scorescale', this._document);
-    this.stickyHeaderEl = this._dom.find('.lh-sticky-header', this._document);
+    this.topbarEl = this._dom.find('div.lh-topbar', this._document);
+    this.scoreScaleEl = this._dom.find('div.lh-scorescale', this._document);
+    this.stickyHeaderEl = this._dom.find('div.lh-sticky-header', this._document);
 
     // Highlighter will be absolutely positioned at first gauge, then transformed on scroll.
     this.highlightEl = this._dom.createChildOf(this.stickyHeaderEl, 'div', 'lh-highlighter');
@@ -3094,8 +3144,7 @@ class ReportUIFeatures {
         break;
       }
       case 'open-viewer': {
-        const viewerPath = '/lighthouse/viewer/';
-        ReportUIFeatures.openTabAndSendJsonReport(this.json, viewerPath);
+        ReportUIFeatures.openTabAndSendJsonReportToViewer(this.json);
         break;
       }
       case 'save-gist': {
@@ -3129,33 +3178,64 @@ class ReportUIFeatures {
   /**
    * Opens a new tab to the online viewer and sends the local page's JSON results
    * to the online viewer using postMessage.
-   * @param {LH.Result} reportJson
-   * @param {string} viewerPath
+   * @param {LH.Result} json
    * @protected
    */
-  static openTabAndSendJsonReport(reportJson, viewerPath) {
-    const VIEWER_ORIGIN = 'https://googlechrome.github.io';
+  static openTabAndSendJsonReportToViewer(json) {
+    // The popup's window.name is keyed by version+url+fetchTime, so we reuse/select tabs correctly
+    // @ts-ignore - If this is a v2 LHR, use old `generatedTime`.
+    const fallbackFetchTime = /** @type {string} */ (json.generatedTime);
+    const fetchTime = json.fetchTime || fallbackFetchTime;
+    const windowName = `${json.lighthouseVersion}-${json.requestedUrl}-${fetchTime}`;
+    const url = getAppsOrigin() + '/viewer/';
+    ReportUIFeatures.openTabAndSendData({lhr: json}, url, windowName);
+  }
+
+  /**
+   * Opens a new tab to the treemap app and sends the JSON results using postMessage.
+   * @param {LH.Result} json
+   */
+  static openTreemap(json) {
+    const treemapDebugData = /** @type {LH.Audit.Details.DebugData} */ (
+      json.audits['script-treemap-data'].details);
+    if (!treemapDebugData) {
+      throw new Error('no script treemap data found');
+    }
+
+    const windowName = `treemap-${json.requestedUrl}`;
+    /** @type {LH.Treemap.Options} */
+    const treemapOptions = {
+      lhr: json,
+    };
+    const url = getAppsOrigin() + '/treemap/';
+    ReportUIFeatures.openTabAndSendData(treemapOptions, url, windowName);
+  }
+
+  /**
+   * Opens a new tab to an external page and sends data using postMessage.
+   * @param {{lhr: LH.Result} | LH.Treemap.Options} data
+   * @param {string} url
+   * @param {string} windowName
+   * @protected
+   */
+  static openTabAndSendData(data, url, windowName) {
+    const origin = new URL(url).origin;
     // Chrome doesn't allow us to immediately postMessage to a popup right
     // after it's created. Normally, we could also listen for the popup window's
     // load event, however it is cross-domain and won't fire. Instead, listen
     // for a message from the target app saying "I'm open".
-    const json = reportJson;
     window.addEventListener('message', function msgHandler(messageEvent) {
-      if (messageEvent.origin !== VIEWER_ORIGIN) {
+      if (messageEvent.origin !== origin) {
         return;
       }
       if (popup && messageEvent.data.opened) {
-        popup.postMessage({lhresults: json}, VIEWER_ORIGIN);
+        popup.postMessage(data, origin);
         window.removeEventListener('message', msgHandler);
       }
     });
 
     // The popup's window.name is keyed by version+url+fetchTime, so we reuse/select tabs correctly
-    // @ts-expect-error - If this is a v2 LHR, use old `generatedTime`.
-    const fallbackFetchTime = /** @type {string} */ (json.generatedTime);
-    const fetchTime = json.fetchTime || fallbackFetchTime;
-    const windowName = `${json.lighthouseVersion}-${json.requestedUrl}-${fetchTime}`;
-    const popup = window.open(`${VIEWER_ORIGIN}${viewerPath}`, windowName);
+    const popup = window.open(url, windowName);
   }
 
   /**
@@ -3164,8 +3244,7 @@ class ReportUIFeatures {
    * open a `<details>` element.
    */
   expandAllDetails() {
-    const details = /** @type {Array<HTMLDetailsElement>} */ (this._dom.findAll(
-        '.lh-categories details', this._document));
+    const details = this._dom.findAll('.lh-categories details', this._document);
     details.map(detail => detail.open = true);
   }
 
@@ -3174,8 +3253,7 @@ class ReportUIFeatures {
    * open a `<details>` element.
    */
   collapseAllDetails() {
-    const details = /** @type {Array<HTMLDetailsElement>} */ (this._dom.findAll(
-        '.lh-categories details', this._document));
+    const details = this._dom.findAll('.lh-categories details', this._document);
     details.map(detail => detail.open = false);
   }
 
@@ -3188,10 +3266,9 @@ class ReportUIFeatures {
     if ('onbeforeprint' in self) {
       self.addEventListener('afterprint', this.collapseAllDetails);
     } else {
-      const win = /** @type {Window} */ (self);
       // Note: FF implements both window.onbeforeprint and media listeners. However,
       // it doesn't matchMedia doesn't fire when matching 'print'.
-      win.matchMedia('print').addListener(mql => {
+      self.matchMedia('print').addListener(mql => {
         if (mql.matches) {
           this.expandAllDetails();
         } else {
@@ -3313,11 +3390,11 @@ class DropDown {
    * @param {function(MouseEvent): any} menuClickHandler
    */
   setup(menuClickHandler) {
-    this._toggleEl = this._dom.find('.lh-tools__button', this._dom.document());
+    this._toggleEl = this._dom.find('button.lh-tools__button', this._dom.document());
     this._toggleEl.addEventListener('click', this.onToggleClick);
     this._toggleEl.addEventListener('keydown', this.onToggleKeydown);
 
-    this._menuEl = this._dom.find('.lh-tools__dropdown', this._dom.document());
+    this._menuEl = this._dom.find('div.lh-tools__dropdown', this._dom.document());
     this._menuEl.addEventListener('keydown', this.onMenuKeydown);
     this._menuEl.addEventListener('click', menuClickHandler);
   }
@@ -3442,11 +3519,11 @@ class DropDown {
 
   /**
    * @param {Array<Node>} allNodes
-   * @param {?Node=} startNode
-   * @returns {Node}
+   * @param {?HTMLElement=} startNode
+   * @returns {HTMLElement}
    */
   _getNextSelectableNode(allNodes, startNode) {
-    const nodes = allNodes.filter((node) => {
+    const nodes = allNodes.filter(/** @return {node is HTMLElement} */ (node) => {
       if (!(node instanceof HTMLElement)) {
         return false;
       }
@@ -3473,21 +3550,21 @@ class DropDown {
   }
 
   /**
-   * @param {?Element=} startEl
+   * @param {?HTMLElement=} startEl
    * @returns {HTMLElement}
    */
   _getNextMenuItem(startEl) {
     const nodes = Array.from(this._menuEl.childNodes);
-    return /** @type {HTMLElement} */ (this._getNextSelectableNode(nodes, startEl));
+    return this._getNextSelectableNode(nodes, startEl);
   }
 
   /**
-   * @param {?Element=} startEl
+   * @param {?HTMLElement=} startEl
    * @returns {HTMLElement}
    */
   _getPreviousMenuItem(startEl) {
     const nodes = Array.from(this._menuEl.childNodes).reverse();
-    return /** @type {HTMLElement} */ (this._getNextSelectableNode(nodes, startEl));
+    return this._getNextSelectableNode(nodes, startEl);
   }
 }
 
@@ -3599,7 +3676,7 @@ class CategoryRenderer {
       });
     }
 
-    const header = /** @type {HTMLDetailsElement} */ (this.dom.find('details', auditEl));
+    const header = this.dom.find('details', auditEl);
     if (audit.result.details) {
       const elem = this.detailsRenderer.render(audit.result.details);
       if (elem) {
@@ -3643,11 +3720,11 @@ class CategoryRenderer {
   }
 
   /**
-   * @return {HTMLElement}
+   * @return {Element}
    */
   _createChevron() {
     const chevronTmpl = this.dom.cloneTemplate('#tmpl-lh-chevron', this.templateContext);
-    const chevronEl = this.dom.find('.lh-chevron', chevronTmpl);
+    const chevronEl = this.dom.find('svg.lh-chevron', chevronTmpl);
     return chevronEl;
   }
 
@@ -3669,7 +3746,7 @@ class CategoryRenderer {
   /**
    * @param {LH.ReportResult.Category} category
    * @param {Record<string, LH.Result.ReportGroup>} groupDefinitions
-   * @return {Element}
+   * @return {DocumentFragment}
    */
   renderCategoryHeader(category, groupDefinitions) {
     const tmpl = this.dom.cloneTemplate('#tmpl-lh-category-header', this.templateContext);
@@ -3683,7 +3760,7 @@ class CategoryRenderer {
       this.dom.find('.lh-category-header__description', tmpl).appendChild(descEl);
     }
 
-    return /** @type {Element} */ (tmpl.firstElementChild);
+    return tmpl;
   }
 
   /**
@@ -3786,9 +3863,8 @@ class CategoryRenderer {
       clumpElement.setAttribute('open', '');
     }
 
-    const summaryInnerEl = this.dom.find('.lh-audit-group__summary', clumpElement);
-    const chevronEl = summaryInnerEl.appendChild(this._createChevron());
-    chevronEl.title = Util.i18n.strings.auditGroupExpandTooltip;
+    const summaryInnerEl = this.dom.find('div.lh-audit-group__summary', clumpElement);
+    summaryInnerEl.appendChild(this._createChevron());
 
     const headerEl = this.dom.find('.lh-audit-group__header', clumpElement);
     const title = this._clumpTitles[clumpId];
@@ -3825,7 +3901,7 @@ class CategoryRenderer {
    */
   renderScoreGauge(category, groupDefinitions) { // eslint-disable-line no-unused-vars
     const tmpl = this.dom.cloneTemplate('#tmpl-lh-gauge', this.templateContext);
-    const wrapper = /** @type {HTMLAnchorElement} */ (this.dom.find('.lh-gauge__wrapper', tmpl));
+    const wrapper = this.dom.find('a.lh-gauge__wrapper', tmpl);
     wrapper.href = `#${category.id}`;
 
     if (Util.isPluginCategory(category.id)) {
@@ -3835,13 +3911,12 @@ class CategoryRenderer {
     // Cast `null` to 0
     const numericScore = Number(category.score);
     const gauge = this.dom.find('.lh-gauge', tmpl);
-    /** @type {?SVGCircleElement} */
-    const gaugeArc = gauge.querySelector('.lh-gauge-arc');
+    const gaugeArc = this.dom.find('circle.lh-gauge-arc', gauge);
 
     if (gaugeArc) this._setGaugeArc(gaugeArc, numericScore);
 
     const scoreOutOf100 = Math.round(numericScore * 100);
-    const percentageEl = this.dom.find('.lh-gauge__percentage', tmpl);
+    const percentageEl = this.dom.find('div.lh-gauge__percentage', tmpl);
     percentageEl.textContent = scoreOutOf100.toString();
     if (category.score === null) {
       percentageEl.textContent = '?';
@@ -4075,15 +4150,17 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     }
 
     // Overwrite the displayValue with opportunity's wastedMs
-    const displayEl = this.dom.find('.lh-audit__display-text', element);
+    // TODO: normalize this to one tagName.
+    const displayEl =
+      this.dom.find('span.lh-audit__display-text, div.lh-audit__display-text', element);
     const sparklineWidthPct = `${details.overallSavingsMs / scale * 100}%`;
-    this.dom.find('.lh-sparkline__bar', element).style.width = sparklineWidthPct;
+    this.dom.find('div.lh-sparkline__bar', element).style.width = sparklineWidthPct;
     displayEl.textContent = Util.i18n.formatSeconds(details.overallSavingsMs, 0.01);
 
     // Set [title] tooltips
     if (audit.result.displayValue) {
       const displayValue = audit.result.displayValue;
-      this.dom.find('.lh-load-opportunity__sparkline', element).title = displayValue;
+      this.dom.find('div.lh-load-opportunity__sparkline', element).title = displayValue;
       displayEl.title = displayValue;
     }
 
@@ -4155,7 +4232,7 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     const paramPairs = [...metricPairs];
 
     if (Util.reportJson) {
-      paramPairs.push(['device', Util.reportJson.configSettings.emulatedFormFactor]);
+      paramPairs.push(['device', Util.reportJson.configSettings.formFactor]);
       paramPairs.push(['version', Util.reportJson.lighthouseVersion]);
     }
 
@@ -4369,8 +4446,7 @@ class PwaCategoryRenderer extends CategoryRenderer {
     }
 
     const tmpl = this.dom.cloneTemplate('#tmpl-lh-gauge--pwa', this.templateContext);
-    const wrapper = /** @type {HTMLAnchorElement} */ (this.dom.find('.lh-gauge--pwa__wrapper',
-      tmpl));
+    const wrapper = this.dom.find('a.lh-gauge--pwa__wrapper', tmpl);
     wrapper.href = `#${category.id}`;
 
     // Correct IDs in case multiple instances end up in the page.
@@ -4575,7 +4651,7 @@ class ReportRenderer {
    */
   _renderReportTopbar(report) {
     const el = this._dom.cloneTemplate('#tmpl-lh-topbar', this._templateContext);
-    const metadataUrl = /** @type {HTMLAnchorElement} */ (this._dom.find('.lh-topbar__url', el));
+    const metadataUrl = this._dom.find('a.lh-topbar__url', el);
     metadataUrl.href = metadataUrl.textContent = report.finalUrl;
     metadataUrl.title = report.finalUrl;
     return el;
@@ -4588,7 +4664,7 @@ class ReportRenderer {
     const el = this._dom.cloneTemplate('#tmpl-lh-heading', this._templateContext);
     const domFragment = this._dom.cloneTemplate('#tmpl-lh-scores-wrapper', this._templateContext);
     const placeholder = this._dom.find('.lh-scores-wrapper-placeholder', el);
-    /** @type {HTMLDivElement} */ (placeholder.parentNode).replaceChild(domFragment, placeholder);
+    placeholder.replaceWith(domFragment);
     return el;
   }
 
@@ -4654,7 +4730,7 @@ class ReportRenderer {
     const warnings = this._dom.find('ul', container);
     for (const warningString of report.runWarnings) {
       const warning = warnings.appendChild(this._dom.createElement('li'));
-      warning.textContent = warningString;
+      warning.appendChild(this._dom.convertMarkdownLinkSnippets(warningString));
     }
 
     return container;
@@ -4714,7 +4790,8 @@ class ReportRenderer {
       fullPageScreenshot,
     });
     const fullPageScreenshotStyleEl = fullPageScreenshot &&
-      ElementScreenshotRenderer.createBackgroundImageStyle(this._dom, fullPageScreenshot);
+      ElementScreenshotRenderer.createBackgroundImageStyle(
+        this._dom, fullPageScreenshot.screenshot);
 
     const categoryRenderer = new CategoryRenderer(this._dom, detailsRenderer);
     categoryRenderer.setTemplateContext(this._templateContext);
@@ -4833,18 +4910,39 @@ class I18n {
    * @return {string}
    */
   formatBytesToKiB(size, granularity = 0.1) {
-    const kbs = this._numberFormatter.format(Math.round(size / 1024 / granularity) * granularity);
+    const formatter = this._byteFormatterForGranularity(granularity);
+    const kbs = formatter.format(Math.round(size / 1024 / granularity) * granularity);
     return `${kbs}${NBSP2}KiB`;
   }
 
   /**
    * @param {number} size
-   * @param {number=} granularity Controls how coarse the displayed value is, defaults to 0.1
+   * @param {number=} granularity Controls how coarse the displayed value is, defaults to 1
    * @return {string}
    */
   formatBytes(size, granularity = 1) {
-    const kbs = this._numberFormatter.format(Math.round(size / granularity) * granularity);
+    const formatter = this._byteFormatterForGranularity(granularity);
+    const kbs = formatter.format(Math.round(size / granularity) * granularity);
     return `${kbs}${NBSP2}bytes`;
+  }
+
+  /**
+   * Format bytes with a constant number of fractional digits, i.e for a granularity of 0.1, 10 becomes '10.0'
+   * @param {number} granularity Controls how coarse the displayed value is
+   * @return {Intl.NumberFormat}
+   */
+  _byteFormatterForGranularity(granularity) {
+    // assume any granularity above 1 will not contain fractional parts, i.e. will never be 1.5
+    let numberOfFractionDigits = 0;
+    if (granularity < 1) {
+      numberOfFractionDigits = -Math.floor(Math.log10(granularity));
+    }
+
+    return new Intl.NumberFormat(this._numberDateLocale, {
+      ...this._numberFormatter.resolvedOptions(),
+      maximumFractionDigits: numberOfFractionDigits,
+      minimumFractionDigits: numberOfFractionDigits,
+    });
   }
 
   /**
@@ -4908,12 +5006,13 @@ class I18n {
 
     /** @type {Array<string>} */
     const parts = [];
-    const unitLabels = /** @type {Object<string, number>} */ ({
+    /** @type {Record<string, number>} */
+    const unitLabels = {
       d: 60 * 60 * 24,
       h: 60 * 60,
       m: 60,
       s: 1,
-    });
+    };
 
     Object.keys(unitLabels).forEach(label => {
       const unit = unitLabels[label];

@@ -5,13 +5,13 @@
 #include <sys/types.h>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/values_test_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
@@ -133,8 +133,10 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
  protected:
   // InProcessBrowserTest:
   void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 
@@ -218,7 +220,7 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
   AccountId test_account_id_;
 
  private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   policy::PolicyMap current_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPolicyApplicationTest);

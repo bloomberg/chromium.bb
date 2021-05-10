@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -79,6 +80,12 @@ bool IsManagedByPolicy(const NetworkInfo& info) {
          info.source == OncSource::kUserPolicy;
 }
 
+bool ShouldShowActivateCellularNetwork(const NetworkInfo& info) {
+  return NetworkTypeMatchesType(info.type, NetworkType::kCellular) &&
+         info.activation_state == ActivationStateType::kNotActivated &&
+         chromeos::features::IsCellularActivationUiEnabled();
+}
+
 }  // namespace
 
 // NetworkListView:
@@ -142,6 +149,7 @@ void NetworkListView::OnGetNetworkStateList(
       case NetworkType::kCellular:
         activation_state =
             network->type_state->get_cellular()->activation_state;
+        info->activation_state = activation_state;
         // If cellular is not enabled, skip cellular networks with no service.
         if (model()->GetDeviceState(NetworkType::kCellular) !=
                 DeviceStateType::kEnabled &&
@@ -372,10 +380,15 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     network_image = info.image;
   }
   view->AddIconAndLabel(network_image, info.label);
-  if (StateIsConnected(info.connection_state))
+  if (ShouldShowActivateCellularNetwork(info)) {
+    SetupUnactivatedCellularNetworkListItem(
+        view, l10n_util::GetStringUTF16(
+                  IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE));
+  } else if (StateIsConnected(info.connection_state)) {
     SetupConnectedScrollListItem(view);
-  else if (info.connection_state == ConnectionStateType::kConnecting)
+  } else if (info.connection_state == ConnectionStateType::kConnecting) {
     SetupConnectingScrollListItem(view);
+  }
   view->SetTooltipText(info.tooltip);
 
   // Add an additional icon to the right of the label for networks
@@ -396,6 +409,17 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
       GenerateAccessibilityDescription(info));
 
   needs_relayout_ = true;
+}
+
+void NetworkListView::SetupUnactivatedCellularNetworkListItem(
+    HoverHighlightView* view,
+    const base::string16& sub_text) {
+  DCHECK(view->is_populated());
+
+  view->SetSubText(sub_text);
+  view->sub_text_label()->SetEnabledColor(
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorWarning));
 }
 
 base::string16 NetworkListView::GenerateAccessibilityLabel(
@@ -461,6 +485,11 @@ base::string16 NetworkListView::GenerateAccessibilityDescription(
           base::FormatPercent(info.signal_strength));
     }
     case NetworkType::kCellular:
+      if (info.activation_state == ActivationStateType::kNotActivated &&
+          chromeos::features::IsCellularActivationUiEnabled()) {
+        return l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE);
+      }
       if (!connection_status.empty()) {
         if (IsManagedByPolicy(info)) {
           return l10n_util::GetStringFUTF16(

@@ -25,7 +25,7 @@ export const description = `writeTexture + copyBufferToTexture + copyTextureToBu
 
 * TODO:
   - add another initMethod which renders the texture
-  - because of expectContests 4-bytes alignment we don't test CopyT2B with buffer size not divisible by 4
+  - test copyT2B with buffer size not divisible by 4 (not done because expectContents 4-byte alignment)
   - add tests for 1d / 3d textures
 `;
 
@@ -801,7 +801,7 @@ g.test('copy_with_various_origins_and_copy_extents')
 
     const info = kSizedTextureFormatInfo[format];
 
-    const origin = { x: info.blockWidth, y: info.blockHeight, z: 1 };
+    const origin: Required<GPUOrigin3DDict> = { x: info.blockWidth, y: info.blockHeight, z: 1 };
     const copySize = { width: 2 * info.blockWidth, height: 2 * info.blockHeight, depth: 2 };
     const textureSize: [number, number, number] = [3 * info.blockWidth, 3 * info.blockHeight, 3];
 

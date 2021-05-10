@@ -23,16 +23,14 @@ namespace tint {
 namespace ast {
 
 /// A boolean literal
-class BoolLiteral : public Literal {
+class BoolLiteral : public Castable<BoolLiteral, Literal> {
  public:
   /// Constructor
+  /// @param source the input source
   /// @param type the type of the literal
   /// @param value the bool literals value
-  BoolLiteral(ast::type::Type* type, bool value);
+  BoolLiteral(const Source& source, type::Type* type, bool value);
   ~BoolLiteral() override;
-
-  /// @returns true if this is a bool literal
-  bool IsBool() const override;
 
   /// @returns true if the bool literal is true
   bool IsTrue() const { return value_; }
@@ -42,11 +40,18 @@ class BoolLiteral : public Literal {
   /// @returns the name for this literal. This name is unique to this value.
   std::string name() const override;
 
+  /// @param sem the semantic info for the program
   /// @returns the literal as a string
-  std::string to_str() const override;
+  std::string to_str(const semantic::Info& sem) const override;
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  BoolLiteral* Clone(CloneContext* ctx) const override;
 
  private:
-  bool value_;
+  bool const value_;
 };
 
 }  // namespace ast

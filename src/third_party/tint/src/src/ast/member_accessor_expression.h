@@ -16,7 +16,6 @@
 #define SRC_AST_MEMBER_ACCESSOR_EXPRESSION_H_
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "src/ast/expression.h"
@@ -27,58 +26,47 @@ namespace tint {
 namespace ast {
 
 /// A member accessor expression
-class MemberAccessorExpression : public Expression {
+class MemberAccessorExpression
+    : public Castable<MemberAccessorExpression, Expression> {
  public:
-  /// Constructor
-  MemberAccessorExpression();
-  /// Constructor
-  /// @param structure the structure
-  /// @param member the member
-  MemberAccessorExpression(std::unique_ptr<Expression> structure,
-                           std::unique_ptr<IdentifierExpression> member);
   /// Constructor
   /// @param source the member accessor expression source
   /// @param structure the structure
   /// @param member the member
   MemberAccessorExpression(const Source& source,
-                           std::unique_ptr<Expression> structure,
-                           std::unique_ptr<IdentifierExpression> member);
+                           Expression* structure,
+                           IdentifierExpression* member);
   /// Move constructor
   MemberAccessorExpression(MemberAccessorExpression&&);
   ~MemberAccessorExpression() override;
 
-  /// Sets the structure
-  /// @param structure the structure
-  void set_structure(std::unique_ptr<Expression> structure) {
-    struct_ = std::move(structure);
-  }
   /// @returns the structure
-  Expression* structure() const { return struct_.get(); }
-
-  /// Sets the member
-  /// @param member the member
-  void set_member(std::unique_ptr<IdentifierExpression> member) {
-    member_ = std::move(member);
-  }
+  Expression* structure() const { return struct_; }
   /// @returns the member expression
-  IdentifierExpression* member() const { return member_.get(); }
+  IdentifierExpression* member() const { return member_; }
 
-  /// @returns true if this is a member accessor expression
-  bool IsMemberAccessor() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  MemberAccessorExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   MemberAccessorExpression(const MemberAccessorExpression&) = delete;
 
-  std::unique_ptr<Expression> struct_;
-  std::unique_ptr<IdentifierExpression> member_;
+  Expression* const struct_;
+  IdentifierExpression* const member_;
 };
 
 }  // namespace ast

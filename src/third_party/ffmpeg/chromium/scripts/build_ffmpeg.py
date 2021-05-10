@@ -417,8 +417,10 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   # Linux configs is also used on Fuchsia. They are mostly compatible with
   # Fuchsia except that Fuchsia doesn't support sysctl(). On Linux sysctl()
-  # isn't actually used, so it's safe to set HAVE_SYSCTL to 0.
-  if target_os == 'linux':
+  # isn't actually used, so it's safe to set HAVE_SYSCTL to 0. Linux is also
+  # removing <sys/sysctl.h> soon, so this is needed to silence a deprecation
+  # #warning which will be converted to an error via -Werror.
+  if target_os in ['linux', 'linux-noasm']:
     pre_make_rewrites += [
         (r'(#define HAVE_SYSCTL [01])',
          r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */')

@@ -102,7 +102,7 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
     // will be ACK'ed to the browser before being dispatched to the main
     // thread.
     // TODO(bokan): It's not clear that we need a separate status for this
-    // case, why can't we just use the DID_HANDLE_NON_BLOCKING below?
+    // case, why can't we just use the DID_NOT_HANDLE_NON_BLOCKING below?
     DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING,
 
     // Set to indicate that the event needs to be sent to the main thread (e.g.
@@ -111,10 +111,7 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
     // passive). Because it isn't cancellable, the event (and future events)
     // will be sent non-blocking and be acked to the browser before being
     // dispatchehd to the main thread.
-    // TODO(bokan): The semantics of DID/DID_NOT HANDLE are whether the main
-    // thread needs to know about the event. In this case, we expect the event
-    // to be forwarded to the main thread so this should be DID_NOT_HANDLE.
-    DID_HANDLE_NON_BLOCKING,
+    DID_NOT_HANDLE_NON_BLOCKING,
 
     // The compositor didn't handle the event but has determined the main
     // thread doesn't care about the event either (e.g. it's a touch event and
@@ -125,12 +122,6 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
     // browser may choose to use this to avoid forwarding touch events if there
     // isn't a consumer for them (and send only the scroll events).
     DROP_EVENT,
-
-    // The compositor did handle the scroll event (so it wouldn't forward the
-    // event to the main thread.) but it didn't consume the scroll so it should
-    // pass it to the next consumer (either overscrolling or bubbling the event
-    // to the next renderer).
-    DID_HANDLE_SHOULD_BUBBLE,
 
     // Used only in scroll unification; the compositor couldn't determine the
     // scroll node to handle the event and requires a second try with an

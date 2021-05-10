@@ -29,11 +29,11 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/blink/public/common/context_menu_data/media_type.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 
 void FakeWebPushSender::SendMessage(const std::string& fcm_token,
                                     crypto::ECPrivateKey* vapid_key,
@@ -48,9 +48,9 @@ void FakeSharingMessageBridge::SendSharingMessage(
     std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
     CommitFinishedCallback on_commit_callback) {
   specifics_ = std::move(*specifics);
-  sync_pb::SharingMessageCommitError commit_erorr;
-  commit_erorr.set_error_code(sync_pb::SharingMessageCommitError::NONE);
-  std::move(on_commit_callback).Run(commit_erorr);
+  sync_pb::SharingMessageCommitError commit_error;
+  commit_error.set_error_code(sync_pb::SharingMessageCommitError::NONE);
+  std::move(on_commit_callback).Run(commit_error);
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -165,7 +165,7 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
     base::StringPiece selection_text) {
   content::ContextMenuParams params;
   params.selection_text = base::ASCIIToUTF16(selection_text);
-  params.media_type = blink::ContextMenuDataMediaType::kNone;
+  params.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
   params.unfiltered_link_url = url;
   params.link_url = url;
   params.src_url = url;

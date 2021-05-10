@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -9,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -20,11 +22,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -158,5 +160,21 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PendingUpdateScreenTest,
                          testing::Values("update" /* old value */,
                                          "oobe-update" /* actual value */));
+
+// Checks that invalid (not existing) pending screen is handled gracefully.
+class InvalidPendingScreenTest : public OobeBaseTest,
+                                 public LocalStateMixin::Delegate {
+ protected:
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() final {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetString(prefs::kOobeScreenPending, "not_existing_screen");
+  }
+  LocalStateMixin local_state_mixin_{&mixin_host_, this};
+};
+
+IN_PROC_BROWSER_TEST_F(InvalidPendingScreenTest, WelcomeScreenShown) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+}
 
 }  // namespace chromeos

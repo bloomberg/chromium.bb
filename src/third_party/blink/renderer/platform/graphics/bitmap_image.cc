@@ -157,6 +157,11 @@ IntSize BitmapImage::DensityCorrectedSize() const {
   return density_corrected_size_.IsEmpty() ? Size() : density_corrected_size_;
 }
 
+void BitmapImage::RecordDecodedImageType(UseCounter* use_counter) {
+  BitmapImageMetrics::CountDecodedImageType(decoder_->FilenameExtension(),
+                                            use_counter);
+}
+
 IntSize BitmapImage::PreferredDisplaySize() const {
   UpdateSize();
   if (!density_corrected_size_respecting_orientation_.IsEmpty())
@@ -259,6 +264,7 @@ void BitmapImage::Draw(
     const PaintFlags& flags,
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
+    const SkSamplingOptions& sampling,
     RespectImageOrientationEnum should_respect_image_orientation,
     ImageClampingMode clamp_mode,
     ImageDecodingMode decode_mode) {
@@ -317,7 +323,7 @@ void BitmapImage::Draw(
   uint32_t stable_id = image.stable_id();
   bool is_lazy_generated = image.IsLazyGenerated();
   canvas->drawImageRect(std::move(image), adjusted_src_rect, adjusted_dst_rect,
-                        &flags,
+                        sampling, &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 
   if (is_lazy_generated) {
@@ -346,14 +352,8 @@ bool BitmapImage::IsSizeAvailable() {
     return true;
 
   size_available_ = decoder_ && decoder_->IsSizeAvailable();
-  if (size_available_ && HasVisibleImageSize(Size())) {
+  if (size_available_ && HasVisibleImageSize(Size()))
     BitmapImageMetrics::CountDecodedImageType(decoder_->FilenameExtension());
-    if (decoder_->FilenameExtension() == "jpg") {
-      IntSize correctedSize = decoder_->DensityCorrectedSizeAtIndex(0);
-      BitmapImageMetrics::CountImageDensityCorrection(
-        !correctedSize.IsEmpty() && correctedSize != decoder_->Size());
-    }
-  }
 
   return size_available_;
 }

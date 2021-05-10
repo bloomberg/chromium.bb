@@ -6,10 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -64,9 +64,7 @@ class BluetoothLowEnergyApiTestChromeOs : public PlatformAppBrowserTest {
     manager()->SetAppWasAutoLaunchedWithZeroDelay(kTestingAppId);
   }
 
-  chromeos::KioskAppManager* manager() const {
-    return chromeos::KioskAppManager::Get();
-  }
+  ash::KioskAppManager* manager() const { return ash::KioskAppManager::Get(); }
 
   chromeos::FakeChromeUserManager* fake_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

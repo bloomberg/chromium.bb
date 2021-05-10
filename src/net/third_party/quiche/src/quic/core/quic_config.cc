@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "quic/core/quic_config.h"
 
 #include <algorithm>
 #include <cstring>
@@ -12,18 +12,19 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "quic/core/crypto/crypto_handshake_message.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_socket_address_coder.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_uint128.h"
 
 namespace quic {
 
@@ -36,7 +37,7 @@ QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
                          uint32_t default_value,
                          uint32_t* out,
                          std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetUint32(tag, out);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -111,7 +112,7 @@ QuicErrorCode QuicFixedUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   if (tag_ == 0) {
     *error_details =
         "This parameter does not support reading from CryptoHandshakeMessage";
@@ -200,7 +201,7 @@ QuicErrorCode QuicFixedUint62::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   uint32_t receive_value32;
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value32);
   // GetUint32 is guaranteed to always initialize receive_value32.
@@ -268,7 +269,7 @@ QuicErrorCode QuicFixedUint128::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   QuicErrorCode error = peer_hello.GetUint128(tag_, &receive_value_);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -338,7 +339,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   QuicTagVector values;
   QuicErrorCode error = peer_hello.GetTaglist(tag_, &values);
   switch (error) {
@@ -447,7 +448,6 @@ QuicConfig::QuicConfig()
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
       initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
-      support_handshake_done_(0, PRESENCE_OPTIONAL),
       key_update_supported_remotely_(false),
       key_update_supported_locally_(false),
       alternate_server_address_ipv6_(kASAD, PRESENCE_OPTIONAL),
@@ -852,19 +852,6 @@ bool QuicConfig::DisableConnectionMigration() const {
   return connection_migration_disabled_.HasReceivedValue();
 }
 
-void QuicConfig::SetSupportHandshakeDone() {
-  support_handshake_done_.SetSendValue(1);
-}
-
-bool QuicConfig::HandshakeDoneSupported() const {
-  return support_handshake_done_.HasSendValue() &&
-         support_handshake_done_.GetSendValue() > 0;
-}
-
-bool QuicConfig::PeerSupportsHandshakeDone() const {
-  return support_handshake_done_.HasReceivedValue();
-}
-
 void QuicConfig::SetKeyUpdateSupportedLocally() {
   key_update_supported_locally_ = true;
 }
@@ -891,6 +878,20 @@ void QuicConfig::SetIPv6AlternateServerAddressToSend(
   alternate_server_address_ipv6_.SetSendValue(alternate_server_address_ipv6);
 }
 
+void QuicConfig::SetIPv6AlternateServerAddressToSend(
+    const QuicSocketAddress& alternate_server_address_ipv6,
+    const QuicConnectionId& connection_id,
+    QuicUint128 stateless_reset_token) {
+  if (!alternate_server_address_ipv6.host().IsIPv6()) {
+    QUIC_BUG << "Cannot use SetIPv6AlternateServerAddressToSend with "
+             << alternate_server_address_ipv6;
+    return;
+  }
+  alternate_server_address_ipv6_.SetSendValue(alternate_server_address_ipv6);
+  preferred_address_connection_id_and_token_ =
+      std::make_pair(connection_id, stateless_reset_token);
+}
+
 bool QuicConfig::HasReceivedIPv6AlternateServerAddress() const {
   return alternate_server_address_ipv6_.HasReceivedValue();
 }
@@ -910,6 +911,20 @@ void QuicConfig::SetIPv4AlternateServerAddressToSend(
   alternate_server_address_ipv4_.SetSendValue(alternate_server_address_ipv4);
 }
 
+void QuicConfig::SetIPv4AlternateServerAddressToSend(
+    const QuicSocketAddress& alternate_server_address_ipv4,
+    const QuicConnectionId& connection_id,
+    QuicUint128 stateless_reset_token) {
+  if (!alternate_server_address_ipv4.host().IsIPv4()) {
+    QUIC_BUG << "Cannot use SetIPv4AlternateServerAddressToSend with "
+             << alternate_server_address_ipv4;
+    return;
+  }
+  alternate_server_address_ipv4_.SetSendValue(alternate_server_address_ipv4);
+  preferred_address_connection_id_and_token_ =
+      std::make_pair(connection_id, stateless_reset_token);
+}
+
 bool QuicConfig::HasReceivedIPv4AlternateServerAddress() const {
   return alternate_server_address_ipv4_.HasReceivedValue();
 }
@@ -917,6 +932,18 @@ bool QuicConfig::HasReceivedIPv4AlternateServerAddress() const {
 const QuicSocketAddress& QuicConfig::ReceivedIPv4AlternateServerAddress()
     const {
   return alternate_server_address_ipv4_.GetReceivedValue();
+}
+
+bool QuicConfig::HasReceivedPreferredAddressConnectionIdAndToken() const {
+  return (HasReceivedIPv6AlternateServerAddress() ||
+          HasReceivedIPv4AlternateServerAddress()) &&
+         preferred_address_connection_id_and_token_.has_value();
+}
+
+const std::pair<QuicConnectionId, QuicUint128>&
+QuicConfig::ReceivedPreferredAddressConnectionIdAndToken() const {
+  QUICHE_DCHECK(HasReceivedPreferredAddressConnectionIdAndToken());
+  return *preferred_address_connection_id_and_token_;
 }
 
 void QuicConfig::SetOriginalConnectionIdToSend(
@@ -1065,7 +1092,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
 
   QuicErrorCode error = QUIC_NO_ERROR;
   if (error == QUIC_NO_ERROR) {
@@ -1204,7 +1231,6 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
   params->disable_active_migration =
       connection_migration_disabled_.HasSendValue() &&
       connection_migration_disabled_.GetSendValue() != 0;
-  params->support_handshake_done = HandshakeDoneSupported();
 
   if (alternate_server_address_ipv6_.HasSendValue() ||
       alternate_server_address_ipv4_.HasSendValue()) {
@@ -1216,6 +1242,15 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
     if (alternate_server_address_ipv4_.HasSendValue()) {
       preferred_address.ipv4_socket_address =
           alternate_server_address_ipv4_.GetSendValue();
+    }
+    if (preferred_address_connection_id_and_token_) {
+      preferred_address.connection_id =
+          preferred_address_connection_id_and_token_->first;
+      auto* begin = reinterpret_cast<const char*>(
+          &preferred_address_connection_id_and_token_->second);
+      auto* end =
+          begin + sizeof(preferred_address_connection_id_and_token_->second);
+      preferred_address.stateless_reset_token.assign(begin, end);
     }
     params->preferred_address =
         std::make_unique<TransportParameters::PreferredAddress>(
@@ -1335,26 +1370,29 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
         alternate_server_address_ipv4_.SetReceivedValue(
             params.preferred_address->ipv4_socket_address);
       }
-    }
-    if (GetQuicReloadableFlag(quic_record_received_min_ack_delay)) {
-      if (params.min_ack_delay_us.value() != 0) {
-        if (params.min_ack_delay_us.value() >
-            params.max_ack_delay.value() * kNumMicrosPerMilli) {
-          *error_details = "MinAckDelay is greater than MaxAckDelay.";
-          return IETF_QUIC_PROTOCOL_VIOLATION;
-        }
-        QUIC_RELOADABLE_FLAG_COUNT(quic_record_received_min_ack_delay);
-        min_ack_delay_ms_.SetReceivedValue(params.min_ack_delay_us.value() /
-                                           kNumMicrosPerMilli);
+      // TODO(haoyuewang) Treat 0 length connection ID sent in preferred_address
+      // as a connection error of type TRANSPORT_PARAMETER_ERROR when server
+      // fully supports it.
+      if (!params.preferred_address->connection_id.IsEmpty()) {
+        preferred_address_connection_id_and_token_ = std::make_pair(
+            params.preferred_address->connection_id,
+            *reinterpret_cast<const QuicUint128*>(
+                &params.preferred_address->stateless_reset_token.front()));
       }
+    }
+    if (params.min_ack_delay_us.value() != 0) {
+      if (params.min_ack_delay_us.value() >
+          params.max_ack_delay.value() * kNumMicrosPerMilli) {
+        *error_details = "MinAckDelay is greater than MaxAckDelay.";
+        return IETF_QUIC_PROTOCOL_VIOLATION;
+      }
+      min_ack_delay_ms_.SetReceivedValue(params.min_ack_delay_us.value() /
+                                         kNumMicrosPerMilli);
     }
   }
 
   if (params.disable_active_migration) {
     connection_migration_disabled_.SetReceivedValue(1u);
-  }
-  if (params.support_handshake_done) {
-    support_handshake_done_.SetReceivedValue(1u);
   }
   if (!is_resumption && !params.key_update_not_yet_supported) {
     key_update_supported_remotely_ = true;

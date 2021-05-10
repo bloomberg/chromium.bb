@@ -82,10 +82,32 @@ gfx::Transform GetContentTransform(const gfx::RectF& bounds) {
 
 namespace device {
 
+ArCoreGlCreateSessionResult::ArCoreGlCreateSessionResult(
+    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
+    mojom::VRDisplayInfoPtr display_info,
+    mojo::PendingRemote<mojom::XRSessionController> session_controller,
+    mojom::XRPresentationConnectionPtr presentation_connection)
+    : frame_data_provider(std::move(frame_data_provider)),
+      display_info(std::move(display_info)),
+      session_controller(std::move(session_controller)),
+      presentation_connection(std::move(presentation_connection)) {}
+ArCoreGlCreateSessionResult::~ArCoreGlCreateSessionResult() = default;
+ArCoreGlCreateSessionResult::ArCoreGlCreateSessionResult(
+    ArCoreGlCreateSessionResult&& other) = default;
+
+ArCoreGlInitializeResult::ArCoreGlInitializeResult(
+    std::unordered_set<device::mojom::XRSessionFeature> enabled_features,
+    base::Optional<device::mojom::XRDepthConfig> depth_configuration)
+    : enabled_features(enabled_features),
+      depth_configuration(depth_configuration) {}
+ArCoreGlInitializeResult::ArCoreGlInitializeResult(
+    ArCoreGlInitializeResult&& other) = default;
+ArCoreGlInitializeResult::~ArCoreGlInitializeResult() = default;
+
 ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
-      webxr_(std::make_unique<vr::WebXrPresentationState>()),
+      webxr_(std::make_unique<WebXrPresentationState>()),
       average_camera_frametime_(kSampleWindowSize),
       average_animate_time_(kSampleWindowSize),
       average_process_time_(kSampleWindowSize),
@@ -107,7 +129,7 @@ ArCoreGl::~ArCoreGl() {
 }
 
 void ArCoreGl::Initialize(
-    vr::ArCoreSessionUtils* session_utils,
+    ArCoreSessionUtils* session_utils,
     ArCoreFactory* arcore_factory,
     gfx::AcceleratedWidget drawing_widget,
     const gfx::Size& frame_size,
@@ -117,6 +139,7 @@ void ArCoreGl::Initialize(
     const std::unordered_set<device::mojom::XRSessionFeature>&
         optional_features,
     const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images,
+    device::mojom::XRDepthOptionsPtr depth_options,
     ArCoreGlInitializeCallback callback) {
   DVLOG(3) << __func__;
 
@@ -142,10 +165,18 @@ void ArCoreGl::Initialize(
     return;
   }
 
+  base::Optional<ArCore::DepthSensingConfiguration> depth_sensing_config;
+  if (depth_options) {
+    depth_sensing_config = ArCore::DepthSensingConfiguration(
+        depth_options->usage_preferences,
+        depth_options->data_format_preferences);
+  }
+
   arcore_ = arcore_factory->Create();
   base::Optional<ArCore::InitializeResult> maybe_initialize_result =
       arcore_->Initialize(application_context, required_features,
-                          optional_features, tracked_images);
+                          optional_features, tracked_images,
+                          std::move(depth_sensing_config));
   if (!maybe_initialize_result) {
     DLOG(ERROR) << "ARCore failed to initialize";
     std::move(callback).Run(base::nullopt);
@@ -156,6 +187,7 @@ void ArCoreGl::Initialize(
   // behavior of local and unbounded spaces & send appropriate data back in
   // GetFrameData().
   enabled_features_ = maybe_initialize_result->enabled_features;
+  depth_configuration_ = maybe_initialize_result->depth_configuration;
 
   DVLOG(3) << "ar_image_transport_->Initialize()...";
   ar_image_transport_->Initialize(
@@ -174,7 +206,8 @@ void ArCoreGl::OnArImageTransportReady(ArCoreGlInitializeCallback callback) {
   DVLOG(3) << __func__;
   is_initialized_ = true;
   webxr_->NotifyMailboxBridgeReady();
-  std::move(callback).Run(enabled_features_);
+  std::move(callback).Run(
+      ArCoreGlInitializeResult(enabled_features_, depth_configuration_));
 }
 
 void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
@@ -217,11 +250,12 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
 
   display_info_ = std::move(display_info);
 
-  std::move(create_callback)
-      .Run(frame_data_receiver_.BindNewPipeAndPassRemote(),
-           display_info_->Clone(),
-           session_controller_receiver_.BindNewPipeAndPassRemote(),
-           std::move(submit_frame_sink));
+  ArCoreGlCreateSessionResult result(
+      frame_data_receiver_.BindNewPipeAndPassRemote(), display_info_->Clone(),
+      session_controller_receiver_.BindNewPipeAndPassRemote(),
+      std::move(submit_frame_sink));
+
+  std::move(create_callback).Run(std::move(result));
 
   frame_data_receiver_.set_disconnect_handler(base::BindOnce(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
@@ -235,11 +269,18 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
   DCHECK(IsOnGlThread());
   DCHECK(!is_initialized_);
 
+  // ARCore provides the camera image as a native GL texture and doesn't support
+  // ANGLE, so disable it.
+  // TODO(crbug.com/1170580): support ANGLE with cardboard?
+  gl::init::DisableANGLE();
+
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     DLOG(ERROR) << "gl::init::InitializeGLOneOff failed";
     return false;
   }
+
+  DCHECK(gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE);
 
   scoped_refptr<gl::GLSurface> surface =
       gl::init::CreateViewGLSurface(drawing_widget);
@@ -461,7 +502,7 @@ void ArCoreGl::GetFrameData(
   DVLOG(2) << __func__ << " frame=" << frame_data->frame_id;
   TRACE_EVENT1("gpu", __func__, "frame", frame_data->frame_id);
 
-  vr::WebXrFrame* xrframe = webxr_->GetAnimatingFrame();
+  WebXrFrame* xrframe = webxr_->GetAnimatingFrame();
   xrframe->time_pose = now;
   xrframe->bounds_left = viewport_bounds_;
 
@@ -518,7 +559,7 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
   if (!submit_client_.get() || !webxr_->HaveAnimatingFrame())
     return false;
 
-  vr::WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
+  WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
   animating_frame->time_js_submit = base::TimeTicks::Now();
   average_animate_time_.AddSample(animating_frame->time_js_submit -
                                   animating_frame->time_pose);
@@ -678,7 +719,7 @@ void ArCoreGl::RunPendingGetFrameData() {
 
 void ArCoreGl::FinishRenderingFrame() {
   DCHECK(webxr_->HaveRenderingFrame());
-  vr::WebXrFrame* frame = webxr_->GetRenderingFrame();
+  WebXrFrame* frame = webxr_->GetRenderingFrame();
 
   TRACE_EVENT1("gpu", __func__, "frame", frame->index);
 
@@ -699,7 +740,7 @@ void ArCoreGl::FinishFrame(int16_t frame_index) {
   // update statistics.
   if (!webxr_->HaveRenderingFrame())
     return;
-  vr::WebXrFrame* frame = webxr_->GetRenderingFrame();
+  WebXrFrame* frame = webxr_->GetRenderingFrame();
 
   frame->render_completion_fence = gl::GLFence::CreateForGpuFence();
 }
@@ -707,7 +748,7 @@ void ArCoreGl::FinishFrame(int16_t frame_index) {
 void ArCoreGl::GetRenderedFrameStats() {
   DVLOG(2) << __func__;
   DCHECK(webxr_->HaveRenderingFrame());
-  vr::WebXrFrame* frame = webxr_->GetRenderingFrame();
+  WebXrFrame* frame = webxr_->GetRenderingFrame();
 
   DCHECK(frame->render_completion_fence);
   base::TimeTicks completion_time =

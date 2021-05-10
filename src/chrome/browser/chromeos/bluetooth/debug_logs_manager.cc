@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
@@ -29,6 +29,14 @@ constexpr base::TimeDelta kDbusRetryInterval = base::TimeDelta::FromSeconds(3);
 DebugLogsManager::DebugLogsManager(const std::string& primary_user_email,
                                    PrefService* pref_service)
     : primary_user_email_(primary_user_email), pref_service_(pref_service) {
+  // For Googlers, set the default preference of Bluetooth verbose logs to true.
+  if (AreDebugLogsSupported() &&
+      !pref_service->HasPrefPath(kVerboseLoggingEnablePrefName) &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableBluetoothVerboseLogsForGooglers)) {
+    ChangeDebugLogsState(true);
+  }
+
   SetVerboseLogsEnable(GetDebugLogsState() ==
                        DebugLogsState::kSupportedAndEnabled);
 }
@@ -87,8 +95,8 @@ void DebugLogsManager::SendDBusVerboseLogsMessage(bool enable,
   bluez::BluezDBusManager::Get()
       ->GetBluetoothDebugManagerClient()
       ->SetLogLevels(
-          level /* dispatcher */, level /* newblue */, level /* bluez */,
-          level /* kernel */,
+          0 /* dispatcher */, 0 /* newblue */, level /* bluez */,
+          0 /* kernel */,
           base::BindOnce(&DebugLogsManager::OnVerboseLogsEnableSuccess,
                          weak_ptr_factory_.GetWeakPtr(), enable),
           base::BindOnce(&DebugLogsManager::OnVerboseLogsEnableError,

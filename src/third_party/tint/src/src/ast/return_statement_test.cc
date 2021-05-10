@@ -16,81 +16,76 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using ReturnStatementTest = testing::Test;
+using ReturnStatementTest = TestHelper;
 
 TEST_F(ReturnStatementTest, Creation) {
-  auto expr = std::make_unique<IdentifierExpression>("expr");
-  auto* expr_ptr = expr.get();
+  auto* expr = Expr("expr");
 
-  ReturnStatement r(std::move(expr));
-  EXPECT_EQ(r.value(), expr_ptr);
+  auto* r = create<ReturnStatement>(expr);
+  EXPECT_EQ(r->value(), expr);
 }
 
 TEST_F(ReturnStatementTest, Creation_WithSource) {
-  ReturnStatement r(Source{Source::Location{20, 2}});
-  auto src = r.source();
+  auto* r = create<ReturnStatement>(Source{Source::Location{20, 2}});
+  auto src = r->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(ReturnStatementTest, IsReturn) {
-  ReturnStatement r;
-  EXPECT_TRUE(r.IsReturn());
+  auto* r = create<ReturnStatement>();
+  EXPECT_TRUE(r->Is<ReturnStatement>());
 }
 
 TEST_F(ReturnStatementTest, HasValue_WithoutValue) {
-  ReturnStatement r;
-  EXPECT_FALSE(r.has_value());
+  auto* r = create<ReturnStatement>();
+  EXPECT_FALSE(r->has_value());
 }
 
 TEST_F(ReturnStatementTest, HasValue_WithValue) {
-  auto expr = std::make_unique<IdentifierExpression>("expr");
-  ReturnStatement r(std::move(expr));
-  EXPECT_TRUE(r.has_value());
+  auto* expr = Expr("expr");
+  auto* r = create<ReturnStatement>(expr);
+  EXPECT_TRUE(r->has_value());
 }
 
 TEST_F(ReturnStatementTest, IsValid_WithoutValue) {
-  ReturnStatement r;
-  EXPECT_TRUE(r.IsValid());
+  auto* r = create<ReturnStatement>();
+  EXPECT_TRUE(r->IsValid());
 }
 
 TEST_F(ReturnStatementTest, IsValid_WithValue) {
-  auto expr = std::make_unique<IdentifierExpression>("expr");
-  ReturnStatement r(std::move(expr));
-  EXPECT_TRUE(r.IsValid());
+  auto* expr = Expr("expr");
+  auto* r = create<ReturnStatement>(expr);
+  EXPECT_TRUE(r->IsValid());
 }
 
 TEST_F(ReturnStatementTest, IsValid_InvalidValue) {
-  auto expr = std::make_unique<IdentifierExpression>("");
-  ReturnStatement r(std::move(expr));
-  EXPECT_FALSE(r.IsValid());
+  auto* expr = Expr("");
+  auto* r = create<ReturnStatement>(expr);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(ReturnStatementTest, ToStr_WithValue) {
-  auto expr = std::make_unique<IdentifierExpression>("expr");
-  ReturnStatement r(std::move(expr));
-  std::ostringstream out;
-  r.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Return{
-    {
-      Identifier{expr}
-    }
+  auto* expr = Expr("expr");
+  auto* r = create<ReturnStatement>(expr);
+  EXPECT_EQ(str(r), R"(Return{
+  {
+    Identifier[not set]{expr}
   }
+}
 )");
 }
 
 TEST_F(ReturnStatementTest, ToStr_WithoutValue) {
-  ReturnStatement r;
-  std::ostringstream out;
-  r.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Return{}
+  auto* r = create<ReturnStatement>();
+  EXPECT_EQ(str(r), R"(Return{}
 )");
 }
 

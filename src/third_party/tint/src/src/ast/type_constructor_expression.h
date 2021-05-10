@@ -19,19 +19,15 @@
 #include <utility>
 
 #include "src/ast/constructor_expression.h"
-#include "src/ast/type/type.h"
+#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
 /// A type specific constructor
-class TypeConstructorExpression : public ConstructorExpression {
+class TypeConstructorExpression
+    : public Castable<TypeConstructorExpression, ConstructorExpression> {
  public:
-  TypeConstructorExpression();
-  /// Constructor
-  /// @param type the type
-  /// @param values the values
-  explicit TypeConstructorExpression(type::Type* type, ExpressionList values);
   /// Constructor
   /// @param source the constructor source
   /// @param type the type
@@ -43,34 +39,33 @@ class TypeConstructorExpression : public ConstructorExpression {
   TypeConstructorExpression(TypeConstructorExpression&&);
   ~TypeConstructorExpression() override;
 
-  /// @returns true if this is a type constructor
-  bool IsTypeConstructor() const override;
-
-  /// Set the type
-  /// @param type the type
-  void set_type(type::Type* type) { type_ = type; }
   /// @returns the type
   type::Type* type() const { return type_; }
-
-  /// Set the values
-  /// @param values the values
-  void set_values(ExpressionList values) { values_ = std::move(values); }
   /// @returns the values
   const ExpressionList& values() const { return values_; }
+
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  TypeConstructorExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   TypeConstructorExpression(const TypeConstructorExpression&) = delete;
 
-  type::Type* type_ = nullptr;
-  ExpressionList values_;
+  type::Type* const type_;
+  ExpressionList const values_;
 };
 
 }  // namespace ast

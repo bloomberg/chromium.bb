@@ -73,31 +73,82 @@ void ShowCastAction::OnWaitForElement(const Selector& selector,
     return;
   }
 
+  if (proto_.show_cast().has_container()) {
+    Selector container_selector = Selector(proto_.show_cast().container());
+    if (container_selector.empty()) {
+      VLOG(1) << __func__ << ": empty selector for container";
+      EndAction(ClientStatus(INVALID_SELECTOR));
+      return;
+    }
+    delegate_->FindElement(
+        container_selector,
+        base::BindOnce(&ShowCastAction::OnFindContainer,
+                       weak_ptr_factory_.GetWeakPtr(), selector, top_padding));
+  } else {
+    ScrollToElement(selector, top_padding, /* container= */ nullptr);
+  }
+}
+
+void ShowCastAction::OnFindContainer(
+    const Selector& selector,
+    const TopPadding& top_padding,
+    const ClientStatus& element_status,
+    std::unique_ptr<ElementFinder::Result> container) {
+  if (!element_status.ok()) {
+    VLOG(1) << __func__ << " Failed to find container.";
+    EndAction(element_status);
+    return;
+  }
+
+  ScrollToElement(selector, top_padding, std::move(container));
+}
+
+void ShowCastAction::ScrollToElement(
+    const Selector& selector,
+    const TopPadding& top_padding,
+    std::unique_ptr<ElementFinder::Result> container) {
   auto actions = std::make_unique<action_delegate_util::ElementActionVector>();
   actions->emplace_back(base::BindOnce(
-      &ActionDelegate::WaitUntilDocumentIsInReadyState, delegate_->GetWeakPtr(),
-      delegate_->GetSettings().document_ready_check_timeout,
-      DOCUMENT_INTERACTIVE));
+      &ShowCastAction::RunAndIncreaseWaitTimer, weak_ptr_factory_.GetWeakPtr(),
+      base::BindOnce(&ActionDelegate::WaitUntilDocumentIsInReadyState,
+                     delegate_->GetWeakPtr(),
+                     delegate_->GetSettings().document_ready_check_timeout,
+                     DOCUMENT_INTERACTIVE)));
   auto wait_for_stable_element = proto_.show_cast().wait_for_stable_element();
   if (wait_for_stable_element == STEP_UNSPECIFIED) {
     wait_for_stable_element = SKIP_STEP;
   }
   action_delegate_util::AddOptionalStep(
       wait_for_stable_element,
-      base::BindOnce(&ActionDelegate::WaitUntilElementIsStable,
-                     delegate_->GetWeakPtr(),
-                     proto_.show_cast().stable_check_max_rounds(),
-                     base::TimeDelta::FromMilliseconds(
-                         proto_.show_cast().stable_check_interval_ms())),
+      base::BindOnce(
+          &ShowCastAction::RunAndIncreaseWaitTimer,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&ActionDelegate::WaitUntilElementIsStable,
+                         delegate_->GetWeakPtr(),
+                         proto_.show_cast().stable_check_max_rounds(),
+                         base::TimeDelta::FromMilliseconds(
+                             proto_.show_cast().stable_check_interval_ms()))),
       actions.get());
   actions->emplace_back(base::BindOnce(&ActionDelegate::ScrollToElementPosition,
                                        delegate_->GetWeakPtr(), selector,
-                                       top_padding));
+                                       top_padding, std::move(container)));
+
   action_delegate_util::FindElementAndPerform(
       delegate_, selector,
       base::BindOnce(&action_delegate_util::PerformAll, std::move(actions)),
       base::BindOnce(&ShowCastAction::OnScrollToElementPosition,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ShowCastAction::RunAndIncreaseWaitTimer(
+    base::OnceCallback<void(
+        const ElementFinder::Result&,
+        base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>)> action,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> done) {
+  std::move(action).Run(
+      element, base::BindOnce(&ShowCastAction::OnWaitForElementTimed,
+                              weak_ptr_factory_.GetWeakPtr(), std::move(done)));
 }
 
 void ShowCastAction::OnScrollToElementPosition(const ClientStatus& status) {

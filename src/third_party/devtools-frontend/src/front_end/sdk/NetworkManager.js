@@ -30,12 +30,74 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
 
 import {Cookie} from './Cookie.js';
 import {BlockedCookieWithReason, ContentData, Events as NetworkRequestEvents, ExtraRequestInfo, ExtraResponseInfo, MIME_TYPE, MIME_TYPE_TO_RESOURCE_TYPE, NameValue, NetworkRequest} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
 import {Capability, SDKModel, SDKModelObserver, Target, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+
+export const UIStrings = {
+  /**
+  *@description Text to indicate that network throttling is disabled
+  */
+  noThrottling: 'No throttling',
+  /**
+  *@description Text to indicate the network connectivity is offline
+  */
+  offline: 'Offline',
+  /**
+  *@description Text in Network Manager
+  */
+  slowG: 'Slow 3G',
+  /**
+  *@description Text in Network Manager
+  */
+  fastG: 'Fast 3G',
+  /**
+  *@description Text in Network Manager
+  *@example {application} PH1
+  *@example {image} PH2
+  *@example {https://example.com} PH3
+  */
+  resourceInterpretedAsSBut: 'Resource interpreted as {PH1} but transferred with MIME type {PH2}: "{PH3}".',
+  /**
+  *@description Text in Network Manager
+  *@example {https://example.com} PH1
+  */
+  setcookieHeaderIsIgnoredIn:
+      'Set-Cookie header is ignored in response from url: {PH1}. Cookie length should be less than or equal to 4096 characters.',
+  /**
+  *@description Text in Network Manager
+  *@example {https://example.com} PH1
+  */
+  requestWasBlockedByDevtoolsS: 'Request was blocked by DevTools: "{PH1}"',
+  /**
+  *@description Text in Network Manager
+  *@example {https://example.com} PH1
+  *@example {application} PH2
+  */
+  crossoriginReadBlockingCorb:
+      'Cross-Origin Read Blocking (CORB) blocked cross-origin response {PH1} with MIME type {PH2}. See https://www.chromestatus.com/feature/5629709824032768 for more details.',
+  /**
+  *@description Message in Network Manager
+  *@example {XHR} PH1
+  *@example {GET} PH2
+  *@example {https://example.com} PH3
+  */
+  sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
+  /**
+  *@description Message in Network Manager
+  *@example {XHR} PH1
+  *@example {GET} PH2
+  *@example {https://example.com} PH3
+  */
+  sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/NetworkManager.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 /** @type {!WeakMap<!NetworkRequest, !NetworkManager>} */
 const requestToManagerMap = new WeakMap();
@@ -90,7 +152,8 @@ export class NetworkManager extends SDKModel {
    * @return {boolean}
    */
   static canReplayRequest(request) {
-    return !!requestToManagerMap.get(request) && request.resourceType() === Common.ResourceType.resourceTypes.XHR;
+    return Boolean(requestToManagerMap.get(request)) &&
+        request.resourceType() === Common.ResourceType.resourceTypes.XHR;
   }
 
   /**
@@ -157,7 +220,7 @@ export class NetworkManager extends SDKModel {
       }
     }
     console.error('No network manager for request');
-    return /** @type {!Promise<?string>} */ (Promise.resolve(null));
+    return null;
   }
 
   /**
@@ -169,7 +232,8 @@ export class NetworkManager extends SDKModel {
     if (!conditions.download && !conditions.upload) {
       return Protocol.Network.ConnectionType.None;
     }
-    const title = conditions.title.toLowerCase();
+    const title =
+        typeof conditions.title === 'function' ? conditions.title().toLowerCase() : conditions.title.toLowerCase();
     for (const [name, protocolType] of CONNECTION_TYPES) {
       if (title.includes(name)) {
         return protocolType;
@@ -261,7 +325,7 @@ export const Events = {
 
 /** @type {!Conditions} */
 export const NoThrottlingConditions = {
-  title: Common.UIString.UIString('Online'),
+  title: i18nLazyString(UIStrings.noThrottling),
   download: -1,
   upload: -1,
   latency: 0
@@ -269,7 +333,7 @@ export const NoThrottlingConditions = {
 
 /** @type {!Conditions} */
 export const OfflineConditions = {
-  title: Common.UIString.UIString('Offline'),
+  title: i18nLazyString(UIStrings.offline),
   download: 0,
   upload: 0,
   latency: 0,
@@ -277,7 +341,7 @@ export const OfflineConditions = {
 
 /** @type {!Conditions} */
 export const Slow3GConditions = {
-  title: Common.UIString.UIString('Slow 3G'),
+  title: i18nLazyString(UIStrings.slowG),
   download: 500 * 1000 / 8 * .8,
   upload: 500 * 1000 / 8 * .8,
   latency: 400 * 5,
@@ -285,7 +349,7 @@ export const Slow3GConditions = {
 
 /** @type {!Conditions} */
 export const Fast3GConditions = {
-  title: Common.UIString.UIString('Fast 3G'),
+  title: i18nLazyString(UIStrings.fastG),
   download: 1.6 * 1000 * 1000 / 8 * .9,
   upload: 750 * 1000 / 8 * .9,
   latency: 150 * 3.75,
@@ -295,7 +359,6 @@ const MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;  // bytes
 
 /**
  * @implements {ProtocolProxyApi.NetworkDispatcher}
- * @unrestricted
  */
 export class NetworkDispatcher {
   /**
@@ -309,6 +372,16 @@ export class NetworkDispatcher {
     this._inflightRequestsByURL = {};
     /** @type {!Map<string, !RedirectExtraInfoBuilder>} */
     this._requestIdToRedirectExtraInfoBuilder = new Map();
+    /**
+     * In case of an early abort or a cache hit, the Trust Token done event is
+     * reported before the request itself is created in `requestWillBeSent`.
+     * This causes the event to be lost as no `NetworkRequest` instance has been
+     * created yet.
+     * This map caches the events temporarliy and populates the NetworKRequest
+     * once it is created in `requestWillBeSent`.
+     * @type {!Map<string, Protocol.Network.TrustTokenOperationDoneEvent>}
+     */
+    this._requestIdToTrustTokenEvent = new Map();
   }
 
   /**
@@ -333,7 +406,7 @@ export class NetworkDispatcher {
   _updateNetworkRequestWithRequest(networkRequest, request) {
     networkRequest.requestMethod = request.method;
     networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
-    networkRequest.setRequestFormData(!!request.hasPostData, request.postData || null);
+    networkRequest.setRequestFormData(Boolean(request.hasPostData), request.postData || null);
     networkRequest.setInitialPriority(request.initialPriority);
     networkRequest.mixedContentType = request.mixedContentType || Protocol.Security.MixedContentType.None;
     networkRequest.setReferrerPolicy(request.referrerPolicy);
@@ -403,9 +476,9 @@ export class NetworkDispatcher {
     networkRequest.setSecurityState(response.securityState);
 
     if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
-      const message = Common.UIString.UIString(
-          'Resource interpreted as %s but transferred with MIME type %s: "%s".', networkRequest.resourceType().title(),
-          networkRequest.mimeType, networkRequest.url());
+      const message = i18nString(
+          UIStrings.resourceInterpretedAsSBut,
+          {PH1: networkRequest.resourceType().title(), PH2: networkRequest.mimeType, PH3: networkRequest.url()});
       this._manager.dispatchEventToListeners(
           Events.MessageGenerated, {message: message, requestId: networkRequest.requestId(), warning: true});
     }
@@ -532,6 +605,14 @@ export class NetworkDispatcher {
     networkRequest.setIssueTime(timestamp, wallTime);
     networkRequest.setResourceType(
         type ? Common.ResourceType.resourceTypes[type] : Common.ResourceType.resourceTypes.Other);
+    if (request.trustTokenParams) {
+      networkRequest.setTrustTokenParams(request.trustTokenParams);
+    }
+    const maybeTrustTokenEvent = this._requestIdToTrustTokenEvent.get(requestId);
+    if (maybeTrustTokenEvent) {
+      networkRequest.setTrustTokenOperationDoneEvent(maybeTrustTokenEvent);
+      this._requestIdToTrustTokenEvent.delete(requestId);
+    }
 
     this._getExtraInfoBuilder(requestId).addRequest(networkRequest);
 
@@ -584,9 +665,7 @@ export class NetworkDispatcher {
         if (values[i].length <= 4096) {
           continue;
         }
-        const message = Common.UIString.UIString(
-            'Set-Cookie header is ignored in response from url: %s. Cookie length should be less than or equal to 4096 characters.',
-            response.url);
+        const message = i18nString(UIStrings.setcookieHeaderIsIgnoredIn, {PH1: response.url});
         this._manager.dispatchEventToListeners(
             Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
       }
@@ -659,11 +738,11 @@ export class NetworkDispatcher {
 
     networkRequest.failed = true;
     networkRequest.setResourceType(Common.ResourceType.resourceTypes[resourceType]);
-    networkRequest.canceled = !!canceled;
+    networkRequest.canceled = Boolean(canceled);
     if (blockedReason) {
       networkRequest.setBlockedReason(blockedReason);
       if (blockedReason === Protocol.Network.BlockedReason.Inspector) {
-        const message = Common.UIString.UIString('Request was blocked by DevTools: "%s".', networkRequest.url());
+        const message = i18nString(UIStrings.requestWasBlockedByDevtoolsS, {PH1: networkRequest.url()});
         this._manager.dispatchEventToListeners(
             Events.MessageGenerated, {message: message, requestId: requestId, warning: true});
       }
@@ -829,7 +908,7 @@ export class NetworkDispatcher {
    * @override
    * @param {!Protocol.Network.RequestWillBeSentExtraInfoEvent} request
    */
-  requestWillBeSentExtraInfo({requestId, associatedCookies, headers}) {
+  requestWillBeSentExtraInfo({requestId, associatedCookies, headers, clientSecurityState}) {
     /** @type {!Array<!BlockedCookieWithReason>} */
     const blockedRequestCookies = [];
     const includedRequestCookies = [];
@@ -843,7 +922,8 @@ export class NetworkDispatcher {
     const extraRequestInfo = {
       blockedRequestCookies,
       includedRequestCookies,
-      requestHeaders: this._headersMapToHeadersArray(headers)
+      requestHeaders: this._headersMapToHeadersArray(headers),
+      clientSecurityState: clientSecurityState
     };
     this._getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
   }
@@ -852,7 +932,7 @@ export class NetworkDispatcher {
    * @override
    * @param {!Protocol.Network.ResponseReceivedExtraInfoEvent} request
    */
-  responseReceivedExtraInfo({requestId, blockedCookies, headers, headersText}) {
+  responseReceivedExtraInfo({requestId, blockedCookies, headers, headersText, resourceIPAddressSpace}) {
     /** @type {!ExtraResponseInfo} */
     const extraResponseInfo = {
       blockedResponseCookies: blockedCookies.map(blockedCookie => {
@@ -863,7 +943,8 @@ export class NetworkDispatcher {
         };
       }),
       responseHeaders: this._headersMapToHeadersArray(headers),
-      responseHeadersText: headersText
+      responseHeadersText: headersText,
+      resourceIPAddressSpace,
     };
     this._getExtraInfoBuilder(requestId).addResponseExtraInfo(extraResponseInfo);
   }
@@ -980,9 +1061,8 @@ export class NetworkDispatcher {
     MultitargetNetworkManager.instance()._inflightMainResourceRequests.delete(networkRequest.requestId());
 
     if (shouldReportCorbBlocking) {
-      const message = Common.UIString.UIString(
-          'Cross-Origin Read Blocking (CORB) blocked cross-origin response %s with MIME type %s. See https://www.chromestatus.com/feature/5629709824032768 for more details.',
-          networkRequest.url(), networkRequest.mimeType);
+      const message =
+          i18nString(UIStrings.crossoriginReadBlockingCorb, {PH1: networkRequest.url(), PH2: networkRequest.mimeType});
       this._manager.dispatchEventToListeners(
           Events.MessageGenerated, {message: message, requestId: networkRequest.requestId(), warning: true});
     }
@@ -992,13 +1072,13 @@ export class NetworkDispatcher {
       let message;
       const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
       if (failedToLoad) {
-        message = Common.UIString.UIString(
-            '%s failed loading: %s "%s".', networkRequest.resourceType().title(), networkRequest.requestMethod,
-            networkRequest.url());
+        message = i18nString(
+            UIStrings.sFailedLoadingSS,
+            {PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url()});
       } else {
-        message = Common.UIString.UIString(
-            '%s finished loading: %s "%s".', networkRequest.resourceType().title(), networkRequest.requestMethod,
-            networkRequest.url());
+        message = i18nString(
+            UIStrings.sFinishedLoadingSS,
+            {PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url()});
       }
 
       this._manager.dispatchEventToListeners(
@@ -1019,6 +1099,52 @@ export class NetworkDispatcher {
     requestToManagerMap.set(request, this._manager);
     return request;
   }
+
+  /**
+   * @override
+   * @param {!Protocol.Network.WebTransportCreatedEvent} request
+   */
+  webTransportCreated({transportId, url: requestURL, timestamp: time, initiator}) {
+    const networkRequest = new NetworkRequest(transportId, requestURL, '', '', '', initiator || null);
+    networkRequest.hasNetworkData = true;
+    requestToManagerMap.set(networkRequest, this._manager);
+    networkRequest.setResourceType(Common.ResourceType.resourceTypes.WebTransport);
+    networkRequest.setIssueTime(time, 0);
+    // This dummy deltas are needed to show this request as being
+    // downloaded(blue) given typical WebTransport is kept for a while.
+    // TODO(yoichio): Add appropreate events to fix these dummy datas.
+    // TODO(yoichio): Add appropreate events to address abort cases.
+    networkRequest.responseReceivedTime = time + 0.001;
+    networkRequest.endTime = time + 0.002;
+    this._startNetworkRequest(networkRequest, null);
+  }
+
+  webTransportConnectionEstablished() {
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Network.WebTransportClosedEvent} request
+   */
+  webTransportClosed({transportId, timestamp: time}) {
+    const networkRequest = this._inflightRequestsById.get(transportId);
+    if (!networkRequest) {
+      return;
+    }
+
+    networkRequest.endTime = time;
+    this._finishNetworkRequest(networkRequest, time, 0);
+  }
+
+  /** @param {!Protocol.Network.TrustTokenOperationDoneEvent} event */
+  trustTokenOperationDone(event) {
+    const request = this._inflightRequestsById.get(event.requestId);
+    if (!request) {
+      this._requestIdToTrustTokenEvent.set(event.requestId, event);
+      return;
+    }
+    request.setTrustTokenOperationDoneEvent(event);
+  }
 }
 
 /**
@@ -1028,7 +1154,6 @@ let multiTargetNetworkManagerInstance;
 
 /**
  * @implements {SDKModelObserver<!NetworkManager>}
- * @unrestricted
  */
 export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
@@ -1053,8 +1178,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     this._effectiveBlockedURLs = [];
     this._updateBlockedPatterns();
 
-    /** @type {!Platform.Multimap<!RequestInterceptor, !InterceptionPattern>} */
-    this._urlsForRequestInterceptor = new Platform.Multimap();
+    /** @type {!Platform.MapUtilities.Multimap<!RequestInterceptor, !InterceptionPattern>} */
+    this._urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
 
     TargetManager.instance().observeModels(NetworkManager, this);
   }
@@ -1082,56 +1207,6 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
       return chromeMatch[1];
     }
     return '';
-  }
-
-
-  /**
-    * Generate a brand version list for Chrome, including some randomization
-    * to try to ensure proper parsing behavior. See
-    *
-    * https://wicg.github.io/ua-client-hints/#grease
-    *
-    * This implementation matches GenerateBrandVersionList() in
-    * chrome_content_browser_client.cc
-    * @param {number} seed
-    * @param {string} brand
-    * @param {string} majorVersion
-    *
-    * @return {!Array<!Protocol.Emulation.UserAgentBrandVersion>}
-    */
-  static _generateBrandVersionList(seed, brand, majorVersion) {
-    // Pick a stable permutation seeded by major version number. any values here
-    // and in order should be under three.
-    const orders = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
-    const permutation = seed % orders.length;
-    const order = orders[permutation];
-
-    const escapedChars = ['\\', '\"', ';'];
-    const greaseyBrand =
-        escapedChars[order[0]] + 'Not' + escapedChars[order[1]] + 'A' + escapedChars[order[2]] + 'Brand';
-
-    const greasey = {brand: greaseyBrand, version: '99'};
-    const chromium = {brand: 'Chromium', version: majorVersion};
-    const branded = {brand: brand, version: majorVersion};
-
-    const greasedBrandVersionList = /** @type {!Array<!Protocol.Emulation.UserAgentBrandVersion>} */ ([]);
-    greasedBrandVersionList[order[0]] = greasey;
-    greasedBrandVersionList[order[1]] = chromium;
-    greasedBrandVersionList[order[2]] = branded;
-    return greasedBrandVersionList;
-  }
-
-  /**
-   * @return {!Array<!Protocol.Emulation.UserAgentBrandVersion>}
-   */
-  static getChromeBrands() {
-    const chromeVersion = MultitargetNetworkManager.getChromeVersion();
-    if (chromeVersion.length > 0) {
-      const majorVersion = chromeVersion.split('.', 1)[0];
-      return MultitargetNetworkManager._generateBrandVersionList(
-          Number.parseInt(majorVersion, 10), 'Google Chrome', majorVersion);
-    }
-    return [];
   }
 
   /**
@@ -1273,9 +1348,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @param {?Protocol.Emulation.UserAgentMetadata} userAgentMetadataOverride
    */
   setUserAgentOverride(userAgent, userAgentMetadataOverride) {
-    if (this._userAgentOverride === userAgent) {
-      return;
-    }
+    const uaChanged = (this._userAgentOverride !== userAgent);
     this._userAgentOverride = userAgent;
     if (!this._customUserAgent) {
       this._userAgentMetadataOverride = userAgentMetadataOverride;
@@ -1283,7 +1356,10 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     } else {
       this._userAgentMetadataOverride = null;
     }
-    this.dispatchEventToListeners(MultitargetNetworkManager.Events.UserAgentChanged);
+
+    if (uaChanged) {
+      this.dispatchEventToListeners(MultitargetNetworkManager.Events.UserAgentChanged);
+    }
   }
 
   /**
@@ -1321,7 +1397,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @return {boolean}
    */
   isBlocking() {
-    return !!this._effectiveBlockedURLs.length;
+    return Boolean(this._effectiveBlockedURLs.length);
   }
 
   /**
@@ -1368,7 +1444,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @return {boolean}
    */
   isIntercepting() {
-    return !!this._urlsForRequestInterceptor.size;
+    return Boolean(this._urlsForRequestInterceptor.size);
   }
 
   /**
@@ -1399,7 +1475,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   /**
    * @return {!Promise<void>}
    */
-  _updateInterceptionPatterns() {
+  async _updateInterceptionPatterns() {
     if (!Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
       Common.Settings.Settings.instance().moduleSetting('cacheDisabled').set(true);
     }
@@ -1409,7 +1485,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
       promises.push(agent.invoke_setRequestInterception({patterns: this._urlsForRequestInterceptor.valuesArray()}));
     }
     this.dispatchEventToListeners(MultitargetNetworkManager.Events.InterceptorsChanged);
-    return Promise.all(promises).then(values => Promise.resolve());
+    await Promise.all(promises);
   }
 
   /**
@@ -1443,13 +1519,16 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
    * @param {string} origin
    * @return {!Promise<!Array<string>>}
    */
-  getCertificate(origin) {
+  async getCertificate(origin) {
     const target = TargetManager.instance().mainTarget();
     if (!target) {
-      return Promise.resolve([]);
+      return [];
     }
-    return target.networkAgent().invoke_getCertificate({origin}).then(
-        certificate => (certificate && certificate.tableNames) || []);
+    const certificate = await target.networkAgent().invoke_getCertificate({origin});
+    if (!certificate) {
+      return [];
+    }
+    return certificate.tableNames;
   }
 
   /**
@@ -1510,7 +1589,7 @@ export class InterceptedRequest {
     this.frameId = frameId;
     this.resourceType = resourceType;
     this.isNavigationRequest = isNavigationRequest;
-    this.isDownload = !!isDownload;
+    this.isDownload = Boolean(isDownload);
     this.redirectUrl = redirectUrl;
     this.authChallenge = authChallenge;
     this.responseErrorReason = responseErrorReason;
@@ -1678,7 +1757,7 @@ class RedirectExtraInfoBuilder {
 
     if (this._hasExtraInfo) {
       // if we haven't gotten the last responseExtraInfo event, we have to wait for it.
-      const lastItem = this._requests.peekLast();
+      const lastItem = this._requests[this._requests.length - 1];
       if (lastItem && !lastItem.hasExtraResponseInfo()) {
         return;
       }
@@ -1695,7 +1774,7 @@ SDKModel.register(NetworkManager, Capability.Network, true);
   *   download: number,
   *   upload: number,
   *   latency: number,
-  *   title: string,
+  *   title: (() => string) | string,
   * }}
   */
 // @ts-ignore typedef

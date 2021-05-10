@@ -17,43 +17,37 @@
 #include "gtest/gtest.h"
 #include "src/ast/array_accessor_expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
+#include "src/program.h"
+#include "src/type/i32_type.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, EmitExpression_ArrayAccessor) {
-  ast::type::I32Type i32;
-  auto lit = std::make_unique<ast::SintLiteral>(&i32, 5);
-  auto idx = std::make_unique<ast::ScalarConstructorExpression>(std::move(lit));
-  auto ary = std::make_unique<ast::IdentifierExpression>("ary");
+  auto* expr = IndexAccessor(Expr("ary"), 5);
 
-  ast::ArrayAccessorExpression expr(std::move(ary), std::move(idx));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitExpression(&expr)) << g.error();
-  EXPECT_EQ(g.result(), "ary[5]");
+  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
+  EXPECT_EQ(gen.result(), "ary[5]");
 }
 
 TEST_F(MslGeneratorImplTest, EmitArrayAccessor) {
-  auto ary = std::make_unique<ast::IdentifierExpression>("ary");
-  auto idx = std::make_unique<ast::IdentifierExpression>("idx");
+  auto* expr = IndexAccessor(Expr("ary"), Expr("idx"));
 
-  ast::ArrayAccessorExpression expr(std::move(ary), std::move(idx));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  ASSERT_TRUE(g.EmitArrayAccessor(&expr)) << g.error();
-  EXPECT_EQ(g.result(), "ary[idx]");
+  ASSERT_TRUE(gen.EmitArrayAccessor(expr->As<ast::ArrayAccessorExpression>()))
+      << gen.error();
+  EXPECT_EQ(gen.result(), "ary[idx]");
 }
 
 }  // namespace

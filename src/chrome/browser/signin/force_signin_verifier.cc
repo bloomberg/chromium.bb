@@ -131,7 +131,7 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
 
 bool ForceSigninVerifier::ShouldSendRequest() {
   return !has_token_verified_ && access_token_fetcher_.get() == nullptr &&
-         identity_manager_->HasPrimaryAccount();
+         identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 void ForceSigninVerifier::CloseAllBrowserWindows() {
@@ -141,7 +141,6 @@ void ForceSigninVerifier::CloseAllBrowserWindows() {
   if (!primary_account_mutator)
     return;
   primary_account_mutator->ClearPrimaryAccount(
-      signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
       signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }

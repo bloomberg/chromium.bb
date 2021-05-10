@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cimport cpython
-
-import threading
-import time
 
 cdef int _INTERRUPT_CHECK_PERIOD_MS = 200
 
@@ -119,4 +115,4 @@ cdef class CompletionQueue:
             self.c_completion_queue, c_deadline, NULL)
         self._interpret_event(event)
       grpc_completion_queue_destroy(self.c_completion_queue)
-    grpc_shutdown_blocking()
+    grpc_shutdown()

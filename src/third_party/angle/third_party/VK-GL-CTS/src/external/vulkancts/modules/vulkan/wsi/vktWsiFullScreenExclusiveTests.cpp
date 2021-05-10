@@ -332,21 +332,34 @@ std::vector<CommandBufferSp> allocateCommandBuffers (const DeviceInterface&		vkd
 	return buffers;
 }
 
-tcu::TestStatus fullScreenExclusiveTest (Context& context,
-										 TestParams testParams)
+tcu::TestStatus fullScreenExclusiveTest(Context& context,
+	TestParams testParams)
 {
 	if (!de::contains(context.getDeviceExtensions().begin(), context.getDeviceExtensions().end(), "VK_EXT_full_screen_exclusive"))
 		TCU_THROW(NotSupportedError, "Extension VK_EXT_full_screen_exclusive not supported");
 
-	const InstanceHelper						instHelper					(context, testParams.wsiType);
-	const NativeObjects							native						(context, instHelper.supportedExtensions, testParams.wsiType);
-	const Unique<VkSurfaceKHR>					surface						(createSurface(instHelper.vki, instHelper.instance, testParams.wsiType, *native.display, *native.window));
-	const DeviceHelper							devHelper					(context, instHelper.vki, instHelper.instance, *surface);
-	const std::vector<VkExtensionProperties>	deviceExtensions			(enumerateDeviceExtensionProperties(instHelper.vki, devHelper.physicalDevice, DE_NULL));
+	const InstanceHelper						instHelper(context, testParams.wsiType);
+	const NativeObjects							native(context, instHelper.supportedExtensions, testParams.wsiType);
+	const Unique<VkSurfaceKHR>					surface(createSurface(instHelper.vki, instHelper.instance, testParams.wsiType, *native.display, *native.window));
+	const DeviceHelper							devHelper(context, instHelper.vki, instHelper.instance, *surface);
+	const std::vector<VkExtensionProperties>	deviceExtensions(enumerateDeviceExtensionProperties(instHelper.vki, devHelper.physicalDevice, DE_NULL));
 	if (!isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_full_screen_exclusive")))
 		TCU_THROW(NotSupportedError, "Extension VK_EXT_full_screen_exclusive not supported");
 
 	native.window->setVisible(true);
+
+	if (testParams.wsiType == TYPE_WIN32)
+	{
+		native.window->setForeground();
+	}
+
+	// add information about full screen exclusive to VkSwapchainCreateInfoKHR
+	VkSurfaceFullScreenExclusiveInfoEXT			fseInfo =
+	{
+		VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,			// VkStructureType             sType;
+		DE_NULL,															// void*                       pNext;
+		testParams.fseType													// VkFullScreenExclusiveEXT    fullScreenExclusive;
+	};
 
 	// for Win32 - create structure containing HMONITOR value
 #if ( DE_OS == DE_OS_WIN32 )
@@ -378,10 +391,13 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 		DE_NULL,															// const void*        pNext;
 		*surface															// VkSurfaceKHR       surface;
 	};
+
+	surfaceInfo.pNext = &fseInfo;
+
 #if ( DE_OS == DE_OS_WIN32 )
 	if (testParams.wsiType == TYPE_WIN32)
 	{
-		surfaceInfo.pNext = &fseWin32Info;
+		fseInfo.pNext = &fseWin32Info;
 	}
 #endif
 
@@ -399,13 +415,6 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 
 	VkSwapchainCreateInfoKHR					swapchainInfo				= getBasicSwapchainParameters(testParams.wsiType, instHelper.vki, devHelper.physicalDevice, *surface, surfaceFormats[0], native.windowSize, 2);
 
-	// add information about full screen exclusive to VkSwapchainCreateInfoKHR
-	VkSurfaceFullScreenExclusiveInfoEXT			fseInfo						=
-	{
-		VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,			// VkStructureType             sType;
-		DE_NULL,															// void*                       pNext;
-		testParams.fseType													// VkFullScreenExclusiveEXT    fullScreenExclusive;
-	};
 	swapchainInfo.pNext = &fseInfo;
 
 #if ( DE_OS == DE_OS_WIN32 )
@@ -415,7 +424,24 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 	}
 #endif
 
-	const Unique<VkSwapchainKHR>				swapchain					(createSwapchainKHR(vkd, device, &swapchainInfo));
+	Move<VkSwapchainKHR>						swapchain;
+	{
+		VkSwapchainKHR object = 0;
+		VkResult result = vkd.createSwapchainKHR(device, &swapchainInfo, DE_NULL, &object);
+		if (result == VK_ERROR_INITIALIZATION_FAILED && testParams.fseType == VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT)
+		{
+			// In some cases, swapchain creation may fail if exclusive full-screen mode is requested for application control,
+			// but for some implementation-specific reason exclusive full-screen access is unavailable for the particular combination
+			// of parameters provided. If this occurs, VK_ERROR_INITIALIZATION_FAILED will be returned.
+			return  tcu::TestStatus(QP_TEST_RESULT_QUALITY_WARNING, "Failed to create swapchain with exclusive full-screen mode for application control.");
+		}
+		else
+		{
+			VK_CHECK(result);
+		}
+
+		swapchain = Move<VkSwapchainKHR>(check<VkSwapchainKHR>(object), Deleter<VkSwapchainKHR>(vkd, device, DE_NULL));
+	}
 	const std::vector<VkImage>					swapchainImages				= getSwapchainImages(vkd, device, *swapchain);
 
 	const WsiTriangleRenderer					renderer					(vkd,
@@ -448,6 +474,8 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 
 	bool										fullScreenAcquired			= (testParams.fseType != VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT);
 
+	bool										fullScreenLost				= false;
+
 	try
 	{
 		const deUint32	numFramesToRender					= 60;
@@ -471,14 +499,11 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 					}
 					case VK_ERROR_INITIALIZATION_FAILED:
 					{
-						if (frameNdx > 3)
-							throw tcu::TestError("vkAcquireFullScreenExclusiveModeEXT was not able to succeed in first 3 draw frames");
 						break;
 					}
 					case VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT:
 					{
 						context.getTestContext().getLog() << tcu::TestLog::Message << "Got VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT at vkAcquireFullScreenExclusiveModeEXT. Frame " << frameNdx << tcu::TestLog::EndMessage;
-						VK_CHECK(acquireResult);
 						break;
 					}
 					default:
@@ -494,21 +519,28 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 
 			VK_CHECK(vkd.resetFences(device, 1, &imageReadyFence));
 
+			VkResult	acquireResult;
+
 			{
-				const VkResult	acquireResult	= vkd.acquireNextImageKHR(device,
-																		  *swapchain,
-																		  std::numeric_limits<deUint64>::max(),
-																		  imageReadySemaphore,
-																		  (vk::VkFence)0,
-																		  &imageNdx);
+				acquireResult	= vkd.acquireNextImageKHR(device,
+														  *swapchain,
+														  std::numeric_limits<deUint64>::max(),
+														  imageReadySemaphore,
+														  (vk::VkFence)0,
+														  &imageNdx);
 				if (acquireResult == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
+				{
 					context.getTestContext().getLog() << tcu::TestLog::Message << "Got VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT at vkAcquireNextImageKHR" << tcu::TestLog::EndMessage;
-				VK_CHECK(acquireResult);
+
+					fullScreenLost = true;
+				}
+				VK_CHECK_WSI(acquireResult);
 			}
 
-			TCU_CHECK((size_t)imageNdx < swapchainImages.size());
-
+			if (acquireResult != VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
 			{
+				TCU_CHECK((size_t)imageNdx < swapchainImages.size());
+
 				const VkSemaphore			renderingCompleteSemaphore	= **renderingCompleteSemaphores[frameNdx%renderingCompleteSemaphores.size()];
 				const VkCommandBuffer		commandBuffer				= **commandBuffers[frameNdx%commandBuffers.size()];
 				const VkPipelineStageFlags	waitDstStage				= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -540,8 +572,17 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 				VK_CHECK(vkd.queueSubmit(devHelper.queue, 1u, &submitInfo, imageReadyFence));
 				const VkResult presentResult = vkd.queuePresentKHR(devHelper.queue, &presentInfo);
 				if (presentResult == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
+				{
 					context.getTestContext().getLog() << tcu::TestLog::Message << "Got VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT at vkQueuePresentKHR" << tcu::TestLog::EndMessage;
+
+					fullScreenLost = true;
+				}
 				VK_CHECK_WSI(presentResult);
+			}
+			else
+			{
+				// image was not acquired, just roll the synchronization
+				VK_CHECK(vkd.queueSubmit(devHelper.queue, 0u, DE_NULL, imageReadyFence));
 			}
 		}
 
@@ -558,13 +599,31 @@ tcu::TestStatus fullScreenExclusiveTest (Context& context,
 	{
 		const VkResult releaseResult = vkd.releaseFullScreenExclusiveModeEXT(device, *swapchain);
 		if (releaseResult == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
+		{
 			context.getTestContext().getLog() << tcu::TestLog::Message << "Got VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT at vkReleaseFullScreenExclusiveModeEXT" << tcu::TestLog::EndMessage;
-		VK_CHECK(releaseResult);
+
+			fullScreenLost = true;
+		}
+		VK_CHECK_WSI(releaseResult);
 	}
 
 	native.window->setVisible(false);
 
-	return tcu::TestStatus::pass("Rendering tests succeeded");
+	if (fullScreenAcquired && !fullScreenLost)
+	{
+		return tcu::TestStatus::pass("Rendering tests succeeded");
+	}
+	else
+	{
+		if (fullScreenLost)
+		{
+			return  tcu::TestStatus(QP_TEST_RESULT_QUALITY_WARNING, "Full screen exclusive was lost during test, but did not end with an error.");
+		}
+		else
+		{
+			return  tcu::TestStatus(QP_TEST_RESULT_QUALITY_WARNING, "Failed to acquire full screen exclusive, but did not end with an error.");
+		}
+	}
 }
 
 void getBasicRenderPrograms (SourceCollections& dst, TestParams)

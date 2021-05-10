@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/sync/model/entity_data.h"
+#include "components/sync/engine/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 namespace autofill {
@@ -43,8 +43,14 @@ AutofillProfile ConstructCompleteProfile() {
   profile.set_use_date(base::Time::FromTimeT(1423182152));
 
   // Set testing values and statuses for the name.
-  profile.SetRawInfoWithVerificationStatus(
-      NAME_HONORIFIC_PREFIX, ASCIIToUTF16(""), VerificationStatus::kNoStatus);
+  profile.SetRawInfoWithVerificationStatus(NAME_HONORIFIC_PREFIX,
+                                           ASCIIToUTF16("Dr."),
+                                           VerificationStatus::kObserved);
+
+  profile.SetRawInfoWithVerificationStatus(NAME_FULL_WITH_HONORIFIC_PREFIX,
+                                           ASCIIToUTF16("Dr. John K. Doe"),
+                                           VerificationStatus::kFormatted);
+
   profile.SetRawInfoWithVerificationStatus(NAME_FULL,
                                            ASCIIToUTF16("John K. Doe"),
                                            VerificationStatus::kUserVerified);
@@ -65,15 +71,17 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("user@example.com"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1.800.555.1234"));
   profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google, Inc."));
-  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
-                                           ASCIIToUTF16("123 Fake St.\n"
-                                                        "Apt. 42"),
-                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS,
+      ASCIIToUTF16("123 Fake St. Dep Premise\n"
+                   "Apt. 10 Floor 2"),
+      VerificationStatus::kObserved);
 
   // Set testing values and statuses for the address.
-  EXPECT_EQ(ASCIIToUTF16("123 Fake St."),
+  EXPECT_EQ(ASCIIToUTF16("123 Fake St. Dep Premise"),
             profile.GetRawInfo(ADDRESS_HOME_LINE1));
-  EXPECT_EQ(ASCIIToUTF16("Apt. 42"), profile.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(ASCIIToUTF16("Apt. 10 Floor 2"),
+            profile.GetRawInfo(ADDRESS_HOME_LINE2));
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_CITY,
                                            ASCIIToUTF16("Mountain View"),
@@ -98,19 +106,23 @@ AutofillProfile ConstructCompleteProfile() {
                                            VerificationStatus::kObserved);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
-                                           ASCIIToUTF16("Street Name"),
+                                           ASCIIToUTF16("Fake St."),
                                            VerificationStatus::kFormatted);
-  profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_DEPENDENT_STREET_NAME, ASCIIToUTF16("Dependent Street Name"),
-      VerificationStatus::kFormatted);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                                           ASCIIToUTF16("Dep"),
+                                           VerificationStatus::kFormatted);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER,
-                                           ASCIIToUTF16("House Number"),
+                                           ASCIIToUTF16("123"),
                                            VerificationStatus::kFormatted);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SUBPREMISE,
-                                           ASCIIToUTF16("Subpremise"),
-                                           VerificationStatus::kFormatted);
+                                           ASCIIToUTF16("Apt. 10 Floor 2"),
+                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_APT_NUM, ASCIIToUTF16("10"), VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_FLOOR, ASCIIToUTF16("2"), VerificationStatus::kParsed);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_PREMISE_NAME,
                                            ASCIIToUTF16("Premise"),
@@ -133,10 +145,15 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_use_date(1423182152);
 
   // Set values and statuses for the names.
-  specifics.add_name_honorific("");
+  specifics.add_name_honorific("Dr.");
   specifics.add_name_honorific_status(
       AutofillProfileSpecifics::VerificationStatus::
-          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+          AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.add_name_full_with_honorific("Dr. John K. Doe");
+  specifics.add_name_full_with_honorific_status(
+      AutofillProfileSpecifics::VerificationStatus::
+          AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
   specifics.add_name_first("John");
   specifics.add_name_first_status(
@@ -181,31 +198,38 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   // Set values and statuses for the address.
   // Address lines are derived from the home street address and do not have an
   // independent status.
-  specifics.set_address_home_line1("123 Fake St.");
-  specifics.set_address_home_line2("Apt. 42");
+  specifics.set_address_home_line1("123 Fake St. Dep Premise");
+  specifics.set_address_home_line2("Apt. 10 Floor 2");
   specifics.set_address_home_street_address(
-      "123 Fake St.\n"
-      "Apt. 42");
+      "123 Fake St. Dep Premise\n"
+      "Apt. 10 Floor 2");
   specifics.set_address_home_street_address_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus::
           AutofillProfileSpecifics_VerificationStatus_OBSERVED);
 
-  specifics.set_address_home_thoroughfare_name("Street Name");
+  specifics.set_address_home_thoroughfare_name("Fake St.");
   specifics.set_address_home_thoroughfare_name_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
-  specifics.set_address_home_dependent_thoroughfare_name(
-      "Dependent Street Name");
+  specifics.set_address_home_dependent_thoroughfare_name("Dep");
   specifics.set_address_home_dependent_thoroughfare_name_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
-  specifics.set_address_home_thoroughfare_number("House Number");
+  specifics.set_address_home_thoroughfare_number("123");
   specifics.set_address_home_thoroughfare_number_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
-  specifics.set_address_home_subpremise_name("Subpremise");
+  specifics.set_address_home_subpremise_name("Apt. 10 Floor 2");
   specifics.set_address_home_subpremise_name_status(
-      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.set_address_home_apt_num("10");
+  specifics.set_address_home_apt_num_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_floor("2");
+  specifics.set_address_home_floor_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
 
   specifics.set_address_home_premise_name("Premise");
   specifics.set_address_home_premise_name_status(
@@ -258,14 +282,15 @@ class AutofillProfileSyncUtilTest : public testing::Test {
 // the server.
 TEST_F(AutofillProfileSyncUtilTest, CreateEntityDataFromAutofillProfile) {
   base::test::ScopedFeatureList structured_names_feature;
-  // With those two features enabled, the AutofillProfile supports all tokens
+  // With those three features enabled, the AutofillProfile supports all tokens
   // and statuses assignable in the specifics. If one of those features is
   // disabled, for some tokens
   // AutofillProfile::GetRawInfo(AutofillProfile::SetRawInfo()) is not the
   // identify function. The same is true for the verification status.
   structured_names_feature.InitWithFeatures(
       {features::kAutofillEnableSupportForMoreStructureInAddresses,
-       features::kAutofillEnableSupportForMoreStructureInNames},
+       features::kAutofillEnableSupportForMoreStructureInNames,
+       features::kAutofillEnableSupportForHonorificPrefixes},
       {});
 
   AutofillProfile profile = ConstructCompleteProfile();

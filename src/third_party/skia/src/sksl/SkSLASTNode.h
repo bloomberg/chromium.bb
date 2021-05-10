@@ -9,6 +9,7 @@
 #define SKSL_ASTNODE
 
 #include "src/sksl/SkSLLexer.h"
+#include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLString.h"
 #include "src/sksl/ir/SkSLModifiers.h"
 
@@ -53,7 +54,7 @@ struct ASTNode {
     };
 
     enum class Kind {
-        // data: operator(Token), children: left, right
+        // data: operator, children: left, right
         kBinary,
         // children: statements
         kBlock,
@@ -97,9 +98,9 @@ struct ASTNode {
         kNull,
         // data: ParameterData, children: type, arraySize1, arraySize2, ..., value?
         kParameter,
-        // data: operator(Token), children: operand
+        // data: operator, children: operand
         kPostfix,
-        // data: operator(Token), children: operand
+        // data: operator, children: operand
         kPrefix,
         // children: value
         kReturn,
@@ -113,7 +114,7 @@ struct ASTNode {
         kSwitch,
         // children: test, ifTrue, ifFalse
         kTernary,
-        // data: TypeData, children: sizes
+        // data: name(StringFragment), children: sizes
         kType,
         // data: VarData, children: arraySize1, arraySize2, ..., value?
         kVarDeclaration,
@@ -181,41 +182,28 @@ struct ASTNode {
         friend struct ASTNode;
     };
 
-    struct TypeData {
-        TypeData() {}
-
-        TypeData(StringFragment name, bool isStructDeclaration, bool isNullable)
-            : fName(name)
-            , fIsStructDeclaration(isStructDeclaration)
-            , fIsNullable(isNullable) {}
-
-        StringFragment fName;
-        bool fIsStructDeclaration;
-        bool fIsNullable;
-    };
-
     struct ParameterData {
         ParameterData() {}
 
-        ParameterData(Modifiers modifiers, StringFragment name, size_t sizeCount)
+        ParameterData(Modifiers modifiers, StringFragment name, bool isArray)
             : fModifiers(modifiers)
             , fName(name)
-            , fSizeCount(sizeCount) {}
+            , fIsArray(isArray) {}
 
         Modifiers fModifiers;
         StringFragment fName;
-        size_t fSizeCount;
+        bool fIsArray;
     };
 
     struct VarData {
         VarData() {}
 
-        VarData(StringFragment name, size_t sizeCount)
+        VarData(StringFragment name, bool isArray)
             : fName(name)
-            , fSizeCount(sizeCount) {}
+            , fIsArray(isArray) {}
 
         StringFragment fName;
-        size_t fSizeCount;
+        bool fIsArray;
     };
 
     struct FunctionData {
@@ -235,18 +223,18 @@ struct ASTNode {
         InterfaceBlockData() {}
 
         InterfaceBlockData(Modifiers modifiers, StringFragment typeName, size_t declarationCount,
-                           StringFragment instanceName, size_t sizeCount)
+                           StringFragment instanceName, bool isArray)
             : fModifiers(modifiers)
             , fTypeName(typeName)
             , fDeclarationCount(declarationCount)
             , fInstanceName(instanceName)
-            , fSizeCount(sizeCount) {}
+            , fIsArray(isArray) {}
 
         Modifiers fModifiers;
         StringFragment fTypeName;
         size_t fDeclarationCount;
         StringFragment fInstanceName;
-        size_t fSizeCount;
+        bool fIsArray;
     };
 
     struct SectionData {
@@ -263,13 +251,12 @@ struct ASTNode {
     };
 
     struct NodeData {
-        char fBytes[std::max({sizeof(Token),
+        char fBytes[std::max({sizeof(Token::Kind),
                               sizeof(StringFragment),
                               sizeof(bool),
                               sizeof(SKSL_INT),
                               sizeof(SKSL_FLOAT),
                               sizeof(Modifiers),
-                              sizeof(TypeData),
                               sizeof(FunctionData),
                               sizeof(ParameterData),
                               sizeof(VarData),
@@ -277,13 +264,12 @@ struct ASTNode {
                               sizeof(SectionData)})];
 
         enum class Kind {
-            kToken,
+            kOperator,
             kStringFragment,
             kBool,
             kInt,
             kFloat,
             kModifiers,
-            kTypeData,
             kFunctionData,
             kParameterData,
             kVarData,
@@ -293,8 +279,9 @@ struct ASTNode {
 
         NodeData() = default;
 
-        NodeData(Token data)
-            : fKind(Kind::kToken) {
+        NodeData(Operator op)
+            : fKind(Kind::kOperator) {
+            Token::Kind data = op.kind();
             memcpy(fBytes, &data, sizeof(data));
         }
 
@@ -320,11 +307,6 @@ struct ASTNode {
 
         NodeData(Modifiers data)
             : fKind(Kind::kModifiers) {
-            memcpy(fBytes, &data, sizeof(data));
-        }
-
-        NodeData(TypeData data)
-            : fKind(Kind::kTypeData) {
             memcpy(fBytes, &data, sizeof(data));
         }
 
@@ -361,12 +343,13 @@ struct ASTNode {
     ASTNode(std::vector<ASTNode>* nodes, int offset, Kind kind)
         : fNodes(nodes)
         , fOffset(offset)
-            , fKind(kind) {
+        , fKind(kind) {
+
         switch (kind) {
             case Kind::kBinary:
             case Kind::kPostfix:
             case Kind::kPrefix:
-                fData.fKind = NodeData::Kind::kToken;
+                fData.fKind = NodeData::Kind::kOperator;
                 break;
 
             case Kind::kBool:
@@ -381,6 +364,7 @@ struct ASTNode {
             case Kind::kField:
             case Kind::kIdentifier:
             case Kind::kScope:
+            case Kind::kType:
                 fData.fKind = NodeData::Kind::kStringFragment;
                 break;
 
@@ -412,18 +396,14 @@ struct ASTNode {
                 fData.fKind = NodeData::Kind::kVarData;
                 break;
 
-            case Kind::kType:
-                fData.fKind = NodeData::Kind::kTypeData;
-                break;
-
             default:
                 break;
         }
     }
 
-    ASTNode(std::vector<ASTNode>* nodes, int offset, Kind kind, Token t)
+    ASTNode(std::vector<ASTNode>* nodes, int offset, Kind kind, Operator op)
         : fNodes(nodes)
-        , fData(t)
+        , fData(op)
         , fOffset(offset)
         , fKind(kind) {}
 
@@ -463,12 +443,6 @@ struct ASTNode {
         , fOffset(offset)
         , fKind(kind) {}
 
-    ASTNode(std::vector<ASTNode>* nodes, int offset, Kind kind, TypeData td)
-        : fNodes(nodes)
-        , fData(td)
-        , fOffset(offset)
-        , fKind(kind) {}
-
     ASTNode(std::vector<ASTNode>* nodes, int offset, Kind kind, SectionData s)
         : fNodes(nodes)
         , fData(s)
@@ -479,11 +453,11 @@ struct ASTNode {
         return fKind != Kind::kNull;
     }
 
-    Token getToken() const {
-        SkASSERT(fData.fKind == NodeData::Kind::kToken);
-        Token result;
-        memcpy(&result, fData.fBytes, sizeof(result));
-        return result;
+    Operator getOperator() const {
+        SkASSERT(fData.fKind == NodeData::Kind::kOperator);
+        Token::Kind tokenKind;
+        memcpy(&tokenKind, fData.fBytes, sizeof(tokenKind));
+        return Operator{tokenKind};
     }
 
     bool getBool() const {
@@ -523,18 +497,6 @@ struct ASTNode {
 
     void setModifiers(const Modifiers& m) {
         memcpy(fData.fBytes, &m, sizeof(m));
-    }
-
-    TypeData getTypeData() const {
-        SkASSERT(fData.fKind == NodeData::Kind::kTypeData);
-        TypeData result;
-        memcpy(&result, fData.fBytes, sizeof(result));
-        return result;
-    }
-
-    void setTypeData(const ASTNode::TypeData& td) {
-        SkASSERT(fData.fKind == NodeData::Kind::kTypeData);
-        memcpy(fData.fBytes, &td, sizeof(td));
     }
 
     ParameterData getParameterData() const {

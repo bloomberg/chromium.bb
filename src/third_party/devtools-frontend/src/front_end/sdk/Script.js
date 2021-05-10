@@ -24,20 +24,32 @@
  */
 
 import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
 import * as TextUtils from '../text_utils/text_utils.js';
 
-import {DebuggerModel, Location} from './DebuggerModel.js';  // eslint-disable-line no-unused-vars
-import {FrameAssociated} from './FrameAssociated.js';        // eslint-disable-line no-unused-vars
+import {DebuggerModel, Location} from './DebuggerModel.js';         // eslint-disable-line no-unused-vars
+import {FrameAssociated} from './FrameAssociated.js';               // eslint-disable-line no-unused-vars
 import {PageResourceLoadInitiator} from './PageResourceLoader.js';  // eslint-disable-line no-unused-vars
 import {ResourceTreeModel} from './ResourceTreeModel.js';
 import {ExecutionContext} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
 import {Target} from './SDKModel.js';                // eslint-disable-line no-unused-vars
 
+export const UIStrings = {
+  /**
+  *@description Error message for when a script can't be loaded which had been previously
+  */
+  scriptRemovedOrDeleted: 'Script removed or deleted.',
+  /**
+  *@description Error message when failing to load a script source text
+  */
+  unableToFetchScriptSource: 'Unable to fetch script source.',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/Script.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @implements {TextUtils.ContentProvider.ContentProvider}
  * TODO(chromium:1011811): make `implements {FrameAssociated}` annotation work here.
- * @unrestricted
  */
 export class Script {
   /**
@@ -78,10 +90,6 @@ export class Script {
     this._isContentScript = isContentScript;
     this._isLiveEdit = isLiveEdit;
     this.sourceMapURL = sourceMapURL;
-    if (!sourceMapURL && debugSymbols && debugSymbols.type === 'EmbeddedDWARF') {
-      // TODO(chromium:1064248) Remove this once we either drop gimli or support DebugSymbols all the way down.
-      this.sourceMapURL = 'wasm://dwarf';
-    }
     this.debugSymbols = debugSymbols;
     this.hasSourceURL = hasSourceURL;
     this.contentLength = length;
@@ -201,8 +209,8 @@ export class Script {
    * @override
    * @return {!Promise<boolean>}
    */
-  contentEncoded() {
-    return Promise.resolve(false);
+  async contentEncoded() {
+    return false;
   }
 
   /**
@@ -237,7 +245,7 @@ export class Script {
             if (!lazyContentPromise) {
               lazyContentPromise = (async () => {
                 if (!this.scriptId) {
-                  return {content: null, error: ls`Script removed or deleted.`, isEncoded: false};
+                  return {content: null, error: i18nString(UIStrings.scriptRemovedOrDeleted), isEncoded: false};
                 }
                 try {
                   const result = await this.debuggerModel.target().debuggerAgent().invoke_getScriptSource(
@@ -257,7 +265,7 @@ export class Script {
 
                 } catch (err) {
                   // TODO(bmeurer): Propagate errors as exceptions / rejections.
-                  return {content: null, error: ls`Unable to fetch script source.`, isEncoded: false};
+                  return {content: null, error: i18nString(UIStrings.unableToFetchScriptSource), isEncoded: false};
                 }
               })();
             }
@@ -322,7 +330,7 @@ export class Script {
       this._contentPromise = Promise.resolve({content: newSource, isEncoded: false});
     }
 
-    const needsStepIn = !!response.stackChanged;
+    const needsStepIn = Boolean(response.stackChanged);
     callback(
         response.getError() || null, response.exceptionDetails, response.callFrames, response.asyncStackTrace,
         response.asyncStackTraceId, needsStepIn);
@@ -358,7 +366,7 @@ export class Script {
    */
   isInlineScript() {
     const startsAtZero = !this.lineOffset && !this.columnOffset;
-    return !this.isWasm() && !!this.sourceURL && !startsAtZero;
+    return !this.isWasm() && Boolean(this.sourceURL) && !startsAtZero;
   }
 
   /**
@@ -372,7 +380,7 @@ export class Script {
    * @return {boolean}
    */
   isInlineScriptWithSourceURL() {
-    return !!this.hasSourceURL && this.isInlineScript();
+    return Boolean(this.hasSourceURL) && this.isInlineScript();
   }
 
   /**

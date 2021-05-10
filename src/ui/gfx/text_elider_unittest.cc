@@ -13,12 +13,14 @@
 
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -762,31 +764,31 @@ TEST(TextEliderTest, ElideRectangleText) {
     bool truncated_y;
     const char* output;
   } cases[] = {
-    { "", 0, 0, false, NULL },
-    { "", 1, 1, false, NULL },
-    { "Test", test_width, 0, true, NULL },
-    { "Test", test_width, 1, false, "Test" },
-    { "Test", test_width, line_height, false, "Test" },
-    { "Test Test", test_width, line_height, true, "Test" },
-    { "Test Test", test_width, line_height + 1, false, "Test|Test" },
-    { "Test Test", test_width, line_height * 2, false, "Test|Test" },
-    { "Test Test", test_width, line_height * 3, false, "Test|Test" },
-    { "Test Test", test_width * 2, line_height * 2, false, "Test|Test" },
-    { "Test Test", test_width * 3, line_height, false, "Test Test" },
-    { "Test\nTest", test_width * 3, line_height * 2, false, "Test|Test" },
-    { "Te\nst Te", test_width, line_height * 3, false, "Te|st|Te" },
-    { "\nTest", test_width, line_height * 2, false, "|Test" },
-    { "\nTest", test_width, line_height, true, "" },
-    { "\n\nTest", test_width, line_height * 3, false, "||Test" },
-    { "\n\nTest", test_width, line_height * 2, true, "|" },
-    { "Test\n", 2 * test_width, line_height * 5, false, "Test|" },
-    { "Test\n\n", 2 * test_width, line_height * 5, false, "Test||" },
-    { "Test\n\n\n", 2 * test_width, line_height * 5, false, "Test|||" },
-    { "Test\nTest\n\n", 2 * test_width, line_height * 5, false, "Test|Test||" },
-    { "Test\n\nTest\n", 2 * test_width, line_height * 5, false, "Test||Test|" },
-    { "Test\n\n\nTest", 2 * test_width, line_height * 5, false, "Test|||Test" },
-    { "Te ", test_width, line_height, false, "Te" },
-    { "Te  Te Test", test_width, 3 * line_height, false, "Te|Te|Test" },
+      {"", 0, 0, false, nullptr},
+      {"", 1, 1, false, nullptr},
+      {"Test", test_width, 0, true, nullptr},
+      {"Test", test_width, 1, false, "Test"},
+      {"Test", test_width, line_height, false, "Test"},
+      {"Test Test", test_width, line_height, true, "Test"},
+      {"Test Test", test_width, line_height + 1, false, "Test|Test"},
+      {"Test Test", test_width, line_height * 2, false, "Test|Test"},
+      {"Test Test", test_width, line_height * 3, false, "Test|Test"},
+      {"Test Test", test_width * 2, line_height * 2, false, "Test|Test"},
+      {"Test Test", test_width * 3, line_height, false, "Test Test"},
+      {"Test\nTest", test_width * 3, line_height * 2, false, "Test|Test"},
+      {"Te\nst Te", test_width, line_height * 3, false, "Te|st|Te"},
+      {"\nTest", test_width, line_height * 2, false, "|Test"},
+      {"\nTest", test_width, line_height, true, ""},
+      {"\n\nTest", test_width, line_height * 3, false, "||Test"},
+      {"\n\nTest", test_width, line_height * 2, true, "|"},
+      {"Test\n", 2 * test_width, line_height * 5, false, "Test|"},
+      {"Test\n\n", 2 * test_width, line_height * 5, false, "Test||"},
+      {"Test\n\n\n", 2 * test_width, line_height * 5, false, "Test|||"},
+      {"Test\nTest\n\n", 2 * test_width, line_height * 5, false, "Test|Test||"},
+      {"Test\n\nTest\n", 2 * test_width, line_height * 5, false, "Test||Test|"},
+      {"Test\n\n\nTest", 2 * test_width, line_height * 5, false, "Test|||Test"},
+      {"Te ", test_width, line_height, false, "Te"},
+      {"Te  Te Test", test_width, 3 * line_height, false, "Te|Te|Test"},
   };
 
   for (size_t i = 0; i < base::size(cases); ++i) {
@@ -989,7 +991,7 @@ TEST(TextEliderTest, ElideRectangleTextCheckLineWidth) {
   EXPECT_LE(GetStringWidthF(lines[1], font_list), kAvailableWidth);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // This test was created specifically to test a message from crbug.com/415213.
 // It tests that width of concatenation of words equals sum of widths of the
 // words.
@@ -1004,7 +1006,7 @@ TEST(TextEliderTest, ElideRectangleTextCheckConcatWidthEqualsSumOfWidths) {
 #undef WIDTH
   SetFontRenderParamsDeviceScaleFactor(1.0f);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST(TextEliderTest, ElideRectangleString) {
   struct TestData {

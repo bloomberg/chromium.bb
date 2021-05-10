@@ -14,38 +14,42 @@
 
 #include "src/ast/unary_op_expression.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::UnaryOpExpression);
+
 namespace tint {
 namespace ast {
 
-UnaryOpExpression::UnaryOpExpression() : Expression() {}
-
-UnaryOpExpression::UnaryOpExpression(UnaryOp op,
-                                     std::unique_ptr<Expression> expr)
-    : Expression(), op_(op), expr_(std::move(expr)) {}
-
 UnaryOpExpression::UnaryOpExpression(const Source& source,
                                      UnaryOp op,
-                                     std::unique_ptr<Expression> expr)
-    : Expression(source), op_(op), expr_(std::move(expr)) {}
+                                     Expression* expr)
+    : Base(source), op_(op), expr_(expr) {}
 
 UnaryOpExpression::UnaryOpExpression(UnaryOpExpression&&) = default;
 
 UnaryOpExpression::~UnaryOpExpression() = default;
 
-bool UnaryOpExpression::IsUnaryOp() const {
-  return true;
+UnaryOpExpression* UnaryOpExpression::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  auto* e = ctx->Clone(expr());
+  return ctx->dst->create<UnaryOpExpression>(src, op_, e);
 }
 
 bool UnaryOpExpression::IsValid() const {
   return expr_ != nullptr && expr_->IsValid();
 }
 
-void UnaryOpExpression::to_str(std::ostream& out, size_t indent) const {
+void UnaryOpExpression::to_str(const semantic::Info& sem,
+                               std::ostream& out,
+                               size_t indent) const {
   make_indent(out, indent);
-  out << "UnaryOp{" << std::endl;
+  out << "UnaryOp[" << result_type_str(sem) << "]{" << std::endl;
   make_indent(out, indent + 2);
   out << op_ << std::endl;
-  expr_->to_str(out, indent + 2);
+  expr_->to_str(sem, out, indent + 2);
   make_indent(out, indent);
   out << "}" << std::endl;
 }

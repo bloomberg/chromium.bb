@@ -15,7 +15,8 @@
 #include "src/reader/wgsl/parser.h"
 
 #include "gtest/gtest.h"
-#include "src/context.h"
+
+#include "src/ast/module.h"
 
 namespace tint {
 namespace reader {
@@ -25,14 +26,13 @@ namespace {
 using ParserTest = testing::Test;
 
 TEST_F(ParserTest, Empty) {
-  Context ctx;
   Source::File file("test.wgsl", "");
-  Parser p(&ctx, &file);
-  ASSERT_TRUE(p.Parse()) << p.error();
+  auto program = Parse(&file);
+  auto errs = diag::Formatter().format(program.Diagnostics());
+  ASSERT_TRUE(program.IsValid()) << errs;
 }
 
 TEST_F(ParserTest, Parses) {
-  Context ctx;
   Source::File file("test.wgsl", R"(
 [[location(0)]] var<out> gl_FragColor : vec4<f32>;
 
@@ -41,25 +41,29 @@ fn main() -> void {
   gl_FragColor = vec4<f32>(.4, .2, .3, 1);
 }
 )");
-  Parser p(&ctx, &file);
-  ASSERT_TRUE(p.Parse()) << p.error();
+  auto program = Parse(&file);
+  auto errs = diag::Formatter().format(program.Diagnostics());
+  ASSERT_TRUE(program.IsValid()) << errs;
 
-  auto m = p.module();
-  ASSERT_EQ(1u, m.functions().size());
-  ASSERT_EQ(1u, m.global_variables().size());
+  ASSERT_EQ(1u, program.AST().Functions().size());
+  ASSERT_EQ(1u, program.AST().GlobalVariables().size());
 }
 
 TEST_F(ParserTest, HandlesError) {
-  Context ctx;
   Source::File file("test.wgsl", R"(
-fn main() ->  {  # missing return type
+fn main() ->  {  // missing return type
   return;
 })");
-  Parser p(&ctx, &file);
 
-  ASSERT_FALSE(p.Parse());
-  ASSERT_TRUE(p.has_error());
-  EXPECT_EQ(p.error(), "2:15: unable to determine function return type");
+  auto program = Parse(&file);
+  auto errs = diag::Formatter().format(program.Diagnostics());
+  ASSERT_FALSE(program.IsValid()) << errs;
+  EXPECT_EQ(errs,
+            R"(test.wgsl:2:15 error: unable to determine function return type
+fn main() ->  {  // missing return type
+              ^
+
+)");
 }
 
 }  // namespace

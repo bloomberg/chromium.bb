@@ -1628,8 +1628,14 @@ void SkMatrix::dump() const {
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "src/core/SkMatrixUtils.h"
+#include "src/core/SkSamplingPriv.h"
 
-bool SkTreatAsSprite(const SkMatrix& mat, const SkISize& size, const SkPaint& paint) {
+bool SkTreatAsSprite(const SkMatrix& mat, const SkISize& size, const SkSamplingOptions& sampling,
+                     const SkPaint& paint) {
+    if (!SkSamplingPriv::NoChangeWithIdentityMatrix(sampling)) {
+        return false;
+    }
+
     // Our path aa is 2-bits, and our rect aa is 8, so we could use 8,
     // but in practice 4 seems enough (still looks smooth) and allows
     // more slightly fractional cases to fall into the fast (sprite) case.
@@ -1826,37 +1832,6 @@ void SkRSXform::toTriStrip(SkScalar width, SkScalar height, SkPoint strip[4]) co
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-SkFilterQuality SkMatrixPriv::AdjustHighQualityFilterLevel(const SkMatrix& matrix,
-                                                           bool matrixIsInverse) {
-    if (matrix.isIdentity()) {
-        return kNone_SkFilterQuality;
-    }
-
-    auto is_minimizing = [&](SkScalar scale) {
-        return matrixIsInverse ? scale > 1 : scale < 1;
-    };
-
-    SkScalar scales[2];
-    if (!matrix.getMinMaxScales(scales) || is_minimizing(scales[0])) {
-        // Bicubic doesn't handle arbitrary minimization well, as src texels can be skipped
-        // entirely,
-        return kMedium_SkFilterQuality;
-    }
-
-    // At this point if scales[1] == SK_Scalar1 then the matrix doesn't do any scaling.
-    if (scales[1] == SK_Scalar1) {
-        if (matrix.rectStaysRect() && SkScalarIsInt(matrix.getTranslateX()) &&
-                                      SkScalarIsInt(matrix.getTranslateY())) {
-            return kNone_SkFilterQuality;
-        } else {
-            // Use bilerp to handle rotation or fractional translation.
-            return kLow_SkFilterQuality;
-        }
-    }
-
-    return kHigh_SkFilterQuality;
-}
 
 SkScalar SkMatrixPriv::DifferentialAreaScale(const SkMatrix& m, const SkPoint& p) {
     //              [m00 m01 m02]                                 [f(u,v)]

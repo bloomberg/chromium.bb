@@ -6,13 +6,16 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/command_line.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/assistant/assistant_util.h"
-#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -23,7 +26,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
@@ -52,6 +54,13 @@ base::Optional<std::string> ChromeHelpAppUIDelegate::OpenFeedbackDialog() {
 
 void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
+  // Enable accessibility mode (slower balloons) if either spoken feedback
+  // or switch access is enabled.
+  auto* accessibility_manager = ash::AccessibilityManager::Get();
+  source->AddBoolean("accessibility",
+                     accessibility_manager->IsSpokenFeedbackEnabled() ||
+                         accessibility_manager->IsSwitchAccessEnabled());
+
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
@@ -70,12 +79,18 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddString("customizationId", customization_id);
   source->AddString("deviceName", ui::GetChromeOSDeviceName());
   source->AddString("hwid", hwid);
+  source->AddString("deviceHelpContentId",
+                    base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        "device-help-content-id"));
 
   // Add any features that have been enabled.
   source->AddBoolean("HelpAppReleaseNotes", true);
-  source->AddBoolean("HelpAppSearchServiceIntegration",
-                     base::FeatureList::IsEnabled(
-                         chromeos::features::kHelpAppSearchServiceIntegration));
+  source->AddBoolean(
+      "HelpAppSearchServiceIntegration",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kHelpAppSearchServiceIntegration) &&
+          base::FeatureList::IsEnabled(
+              chromeos::features::kEnableLocalSearchService));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();

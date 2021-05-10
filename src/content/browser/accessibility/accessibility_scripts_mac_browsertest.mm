@@ -33,12 +33,12 @@ class AccessibilityScriptsMacBrowserTest : public ContentBrowserTest {
         root_(nullptr),
         line_indexer_(nullptr),
         script_output_(),
-        formatter_(AccessibilityTreeFormatter::Create()),
+        formatter_(AXInspectFactory::CreatePlatformFormatter()),
         helper_("mac") {
     // Set property filters.
     std::vector<ui::AXPropertyFilter> property_filters;
-    formatter_->AddDefaultFilters(&property_filters);
-    formatter_->SetPropertyFilters(property_filters);
+    formatter_->SetPropertyFilters(property_filters,
+                                   ui::AXTreeFormatter::kFiltersDefaultSet);
   }
 
   void LoadFile(const std::string& file);
@@ -132,9 +132,7 @@ void AccessibilityScriptsMacBrowserTest::AssertOutputMatchesExpectations() {
   // Collect the tree dump and script output.
   std::ostringstream output;
   {
-    std::string contents;
-    formatter_->FormatAccessibilityTreeForTesting(root_, &contents);
-    output << contents;
+    output << formatter_->Format(root_);
     output << script_output_.str();
   }
   std::vector<std::string> lines = base::SplitString(

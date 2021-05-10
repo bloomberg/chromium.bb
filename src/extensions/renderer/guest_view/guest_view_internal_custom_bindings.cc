@@ -22,7 +22,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/web/web_custom_element.h"
@@ -61,7 +60,7 @@ content::RenderFrame* GetRenderFrame(v8::Local<v8::Value> value) {
   return content::RenderFrame::FromWebFrame(frame);
 }
 
-class RenderFrameStatus : public content::RenderFrameObserver {
+class RenderFrameStatus final : public content::RenderFrameObserver {
  public:
   explicit RenderFrameStatus(content::RenderFrame* render_frame)
       : content::RenderFrameObserver(render_frame) {}

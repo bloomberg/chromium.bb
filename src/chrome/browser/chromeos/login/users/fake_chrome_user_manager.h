@@ -130,7 +130,8 @@ class FakeChromeUserManager : public ChromeUserManager {
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
   bool IsGuestAccountId(const AccountId& account_id) const override;
   bool IsStubAccountId(const AccountId& account_id) const override;
-  bool IsSupervisedAccountId(const AccountId& account_id) const override;
+  bool IsDeprecatedSupervisedAccountId(
+      const AccountId& account_id) const override;
   bool HasBrowserRestarted() const override;
   const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;
   base::string16 GetResourceStringUTF16(int string_id) const override;
@@ -246,5 +247,10 @@ class FakeChromeUserManager : public ChromeUserManager {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::FakeChromeUserManager;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_CHROME_USER_MANAGER_H_

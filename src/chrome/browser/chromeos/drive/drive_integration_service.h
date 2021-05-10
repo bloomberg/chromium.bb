@@ -99,6 +99,8 @@ class DriveIntegrationService : public KeyedService,
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
   using GetQuickAccessItemsCallback =
       base::OnceCallback<void(drive::FileError, std::vector<QuickAccessItem>)>;
+  using SearchDriveByFileNameCallback =
+      base::OnceCallback<void(drive::FileError, std::vector<base::FilePath>)>;
 
   // test_mount_point_name, test_cache_root and
   // test_drivefs_mojo_listener_factory are used by tests to inject customized
@@ -161,6 +163,13 @@ class DriveIntegrationService : public KeyedService,
 
   void GetQuickAccessItems(int max_number,
                            GetQuickAccessItemsCallback callback);
+
+  void SearchDriveByFileName(
+      std::string query,
+      int max_results,
+      drivefs::mojom::QueryParameters::SortField sort_field,
+      drivefs::mojom::QueryParameters::SortDirection sort_direction,
+      SearchDriveByFileNameCallback callback) const;
 
   // Returns the metadata for Drive file at |local_path|.
   void GetMetadata(const base::FilePath& local_path,
@@ -236,7 +245,7 @@ class DriveIntegrationService : public KeyedService,
 
   // Adds back the drive mount point.
   // Used to implement ClearCacheAndRemountFileSystem().
-  void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
+  void AddBackDriveMountPoint(base::OnceCallback<void(bool)> callback,
                               FileError error);
 
   // Unregisters drive mount point, and if |remount_delay| is specified
@@ -273,10 +282,15 @@ class DriveIntegrationService : public KeyedService,
 
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   void OnGetQuickAccessItems(
       GetQuickAccessItemsCallback callback,
+      drive::FileError error,
+      base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
+
+  void OnSearchDriveByFileName(
+      SearchDriveByFileNameCallback callback,
       drive::FileError error,
       base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
@@ -322,8 +336,8 @@ class DriveIntegrationServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   // Factory function used by tests.
-  typedef base::Callback<DriveIntegrationService*(Profile* profile)>
-      FactoryCallback;
+  using FactoryCallback =
+      base::RepeatingCallback<DriveIntegrationService*(Profile* profile)>;
 
   // Sets and resets a factory function for tests. See below for why we can't
   // use BrowserContextKeyedServiceFactory::SetTestingFactory().

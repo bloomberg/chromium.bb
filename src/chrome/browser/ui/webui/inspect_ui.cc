@@ -24,12 +24,8 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -372,7 +368,7 @@ void DevToolsUIBindingsEnabler::DidFinishNavigation(
 // InspectUI --------------------------------------------------------
 
 InspectUI::InspectUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+    : WebUIController(web_ui), WebContentsObserver(web_ui->GetWebContents()) {
   web_ui->AddMessageHandler(std::make_unique<InspectMessageHandler>(this));
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
@@ -495,14 +491,11 @@ void InspectUI::InspectDevices(Browser* browser) {
   NavigateParams params(GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUIInspectURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  ShowSingletonTabOverwritingNTP(browser, &params);
 }
 
-void InspectUI::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (source == content::Source<WebContents>(web_ui()->GetWebContents()))
-    StopListeningNotifications();
+void InspectUI::WebContentsDestroyed() {
+  StopListeningNotifications();
 }
 
 void InspectUI::StartListeningNotifications() {
@@ -512,7 +505,7 @@ void InspectUI::StartListeningNotifications() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   DevToolsTargetsUIHandler::Callback callback =
-      base::Bind(&InspectUI::PopulateTargets, base::Unretained(this));
+      base::BindRepeating(&InspectUI::PopulateTargets, base::Unretained(this));
 
   PopulateAdditionalTargets(GetUiDevToolsTargets());
 
@@ -525,31 +518,32 @@ void InspectUI::StartListeningNotifications() {
         DevToolsTargetsUIHandler::CreateForAdb(callback, profile));
   }
 
-  port_status_serializer_.reset(
-      new PortForwardingStatusSerializer(
-          base::Bind(&InspectUI::PopulatePortStatus, base::Unretained(this)),
-          profile));
-
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                              content::NotificationService::AllSources());
+  port_status_serializer_ = std::make_unique<PortForwardingStatusSerializer>(
+      base::BindRepeating(&InspectUI::PopulatePortStatus,
+                          base::Unretained(this)),
+      profile);
 
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,
-      base::Bind(&InspectUI::UpdateDiscoverUsbDevicesEnabled,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled,
-      base::Bind(&InspectUI::UpdatePortForwardingEnabled,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kDevToolsPortForwardingConfig,
-      base::Bind(&InspectUI::UpdatePortForwardingConfig,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kDevToolsDiscoverTCPTargetsEnabled,
-      base::Bind(&InspectUI::UpdateTCPDiscoveryEnabled,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kDevToolsTCPDiscoveryConfig,
-      base::Bind(&InspectUI::UpdateTCPDiscoveryConfig,
-                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsDiscoverUsbDevicesEnabled,
+      base::BindRepeating(&InspectUI::UpdateDiscoverUsbDevicesEnabled,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsPortForwardingEnabled,
+      base::BindRepeating(&InspectUI::UpdatePortForwardingEnabled,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsPortForwardingConfig,
+      base::BindRepeating(&InspectUI::UpdatePortForwardingConfig,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsDiscoverTCPTargetsEnabled,
+      base::BindRepeating(&InspectUI::UpdateTCPDiscoveryEnabled,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsTCPDiscoveryConfig,
+      base::BindRepeating(&InspectUI::UpdateTCPDiscoveryConfig,
+                          base::Unretained(this)));
 }
 
 void InspectUI::StopListeningNotifications() {
@@ -560,7 +554,6 @@ void InspectUI::StopListeningNotifications() {
 
   port_status_serializer_.reset();
 
-  notification_registrar_.RemoveAll();
   pref_change_registrar_.RemoveAll();
 }
 

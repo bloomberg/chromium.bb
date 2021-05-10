@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -868,8 +868,8 @@
         result[len] = '\0';
 
         FT_TRACE0(( "sfnt_get_var_ps_name:"
-                    " Shortening variation PS name prefix\n"
-                    "                     "
+                    " Shortening variation PS name prefix\n" ));
+        FT_TRACE0(( "                     "
                     " to %d characters\n", len ));
       }
 
@@ -920,8 +920,8 @@
         if ( !subfamily_name )
         {
           FT_TRACE1(( "sfnt_get_var_ps_name:"
-                      " can't construct named instance PS name;\n"
-                      "                     "
+                      " can't construct named instance PS name;\n" ));
+          FT_TRACE1(( "                     "
                       " trying to construct normal instance PS name\n" ));
           goto construct_instance_name;
         }
@@ -1213,6 +1213,8 @@
 #define PUT_COLOR_LAYERS( a )  NULL
 #endif
 
+#define PUT_COLOR_LAYERS_V1( a )  PUT_COLOR_LAYERS( a )
+
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
 #define PUT_PS_NAMES( a )  a
 #else
@@ -1271,9 +1273,9 @@
                             /* TT_Free_Table_Func      free_eblc       */
 
     PUT_EMBEDDED_BITMAPS( tt_face_set_sbit_strike     ),
-                   /* TT_Set_SBit_Strike_Func      set_sbit_strike     */
+                  /* TT_Set_SBit_Strike_Func      set_sbit_strike      */
     PUT_EMBEDDED_BITMAPS( tt_face_load_strike_metrics ),
-                   /* TT_Load_Strike_Metrics_Func  load_strike_metrics */
+                  /* TT_Load_Strike_Metrics_Func  load_strike_metrics  */
 
     PUT_COLOR_LAYERS( tt_face_load_cpal ),
                             /* TT_Load_Table_Func      load_cpal       */
@@ -1287,6 +1289,16 @@
                             /* TT_Set_Palette_Func     set_palette     */
     PUT_COLOR_LAYERS( tt_face_get_colr_layer ),
                             /* TT_Get_Colr_Layer_Func  get_colr_layer  */
+
+    PUT_COLOR_LAYERS_V1( tt_face_get_colr_glyph_paint ),
+                 /* TT_Get_Colr_Glyph_Paint_Func  get_colr_glyph_paint */
+    PUT_COLOR_LAYERS_V1( tt_face_get_paint_layers ),
+                 /* TT_Get_Paint_Layers_Func      get_paint_layers     */
+    PUT_COLOR_LAYERS_V1( tt_face_get_colorline_stops ),
+                 /* TT_Get_Paint                  get_paint            */
+    PUT_COLOR_LAYERS_V1( tt_face_get_paint ),
+                 /* TT_Get_Colorline_Stops_Func   get_colorline_stops  */
+
     PUT_COLOR_LAYERS( tt_face_colr_blend_layer ),
                             /* TT_Blend_Colr_Func      colr_blend      */
 

@@ -68,6 +68,10 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // request's canonical representation. This allows rendering otherwise valid
   // signatures forwards-incompatible, which is useful in case the signing
   // data's semantics change across protocol versions but its syntax does not.
+  //
+  // NOTE: When changing this constant, please make sure it stays in sync with
+  // the normative source of the domain separator's value (currently the design
+  // doc).
   static constexpr uint8_t kRequestSigningDomainSeparator[] = {
       'T', 'r', 'u', 's', 't', 'T', 'o', 'k', 'e', 'n', 'V', '2'};
 
@@ -214,6 +218,9 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   void Finalize(
       mojom::URLResponseHead* response,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
+
+  mojom::TrustTokenOperationResultPtr CollectOperationResultWithStatus(
+      mojom::TrustTokenOperationStatus status) override;
 
  private:
   // Given issuer-to-redemption-record and issuer-to-signature maps, returns a

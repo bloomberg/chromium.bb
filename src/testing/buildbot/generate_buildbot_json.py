@@ -172,6 +172,25 @@ class JUnitGenerator(BaseGenerator):
     return sorted(tests, key=lambda x: x['test'])
 
 
+class SkylabGenerator(BaseGenerator):
+  def __init__(self, bb_gen):
+    super(SkylabGenerator, self).__init__(bb_gen)
+
+  def generate(self, waterfall, tester_name, tester_config, input_tests):
+    scripts = []
+    for test_name, test_config in sorted(input_tests.iteritems()):
+      for config in test_config:
+        test = self.bb_gen.generate_skylab_test(waterfall, tester_name,
+                                                tester_config, test_name,
+                                                config)
+        if test:
+          scripts.append(test)
+    return scripts
+
+  def sort(self, tests):
+    return sorted(tests, key=lambda x: x['test'])
+
+
 def check_compound_references(other_test_suites=None,
                               sub_suite=None,
                               suite=None,
@@ -679,6 +698,24 @@ class BBJSONGenerator(object):
           'script': '//testing/trigger_scripts/chromeos_device_trigger.py',
         }
 
+  def add_logdog_butler_cipd_package(self, tester_config, result):
+    if not tester_config.get('skip_cipd_packages', False):
+      cipd_packages = result['swarming'].get('cipd_packages', [])
+      already_added = len([
+          package for package in cipd_packages
+          if package.get('cipd_package', "").find('logdog/butler') > 0
+      ]) > 0
+      if not already_added:
+        cipd_packages.append({
+            'cipd_package':
+            'infra/tools/luci/logdog/butler/${platform}',
+            'location':
+            'bin',
+            'revision':
+            'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
+        })
+        result['swarming']['cipd_packages'] = cipd_packages
+
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])
     bucket = tester_config.get('results_bucket', 'chromium-result-details')
@@ -695,16 +732,6 @@ class BBJSONGenerator(object):
         'script': '//build/android/pylib/results/presentation/'
           'test_results_presentation.py',
       }
-    if not tester_config.get('skip_cipd_packages', False):
-      cipd_packages = result['swarming'].get('cipd_packages', [])
-      cipd_packages.append(
-        {
-          'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
-          'location': 'bin',
-          'revision': 'git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c',
-        }
-      )
-      result['swarming']['cipd_packages'] = cipd_packages
     if not tester_config.get('skip_output_links', False):
       result['swarming']['output_links'] = [
         {
@@ -735,10 +762,13 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(
         result, tester_config, additional_arg_keys=['gtest_args'])
     if self.is_android(tester_config) and tester_config.get(
-        'use_swarming',
-        True) and not test_config.get('use_isolated_scripts_api', False):
-      self.add_android_presentation_args(tester_config, test_name, result)
-      result['args'] = result.get('args', []) + ['--recover-devices']
+        'use_swarming', True):
+      if not test_config.get('use_isolated_scripts_api', False):
+        # TODO(https://crbug.com/1137998) make Android presentation work with
+        # isolated scripts in test_results_presentation.py merge script
+        self.add_android_presentation_args(tester_config, test_name, result)
+        result['args'] = result.get('args', []) + ['--recover-devices']
+      self.add_logdog_butler_cipd_package(tester_config, result)
 
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
@@ -769,8 +799,13 @@ class BBJSONGenerator(object):
     result['name'] = result.get('name', test_name)
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
-    if tester_config.get('use_android_presentation', False):
-      self.add_android_presentation_args(tester_config, test_name, result)
+    if self.is_android(tester_config) and tester_config.get(
+        'use_swarming', True):
+      if tester_config.get('use_android_presentation', False):
+        # TODO(https://crbug.com/1137998) make Android presentation work with
+        # isolated scripts in test_results_presentation.py merge script
+        self.add_android_presentation_args(tester_config, test_name, result)
+      self.add_logdog_butler_cipd_package(tester_config, result)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
@@ -818,6 +853,21 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
+    self.substitute_magic_args(result)
+    return result
+
+  def generate_skylab_test(self, waterfall, tester_name, tester_config,
+                           test_name, test_config):
+    if not self.should_run_on_tester(waterfall, tester_name, test_name,
+                                     test_config):
+      return None
+    result = copy.deepcopy(test_config)
+    result.update({
+        'test': test_name,
+    })
+    self.initialize_args_for_test(result, tester_config)
+    result = self.update_and_cleanup_test(result, test_name, tester_name,
+                                          tester_config, waterfall)
     self.substitute_magic_args(result)
     return result
 
@@ -918,6 +968,8 @@ class BBJSONGenerator(object):
             JUnitGenerator(self),
         'scripts':
             ScriptGenerator(self),
+        'skylab_tests':
+            SkylabGenerator(self),
     }
 
   def get_test_type_remapper(self):
@@ -1077,6 +1129,12 @@ class BBJSONGenerator(object):
         # by the variant.
         basic_swarming_def.update(variant_swarming_def)
         cloned_config['swarming'] = basic_swarming_def
+
+        # Copy all skylab fields defined by the variant.
+        skylab_config = cloned_variant.get('skylab')
+        if skylab_config:
+          for k, v in skylab_config.items():
+            cloned_config[k] = v
 
         # The identifier is used to make the name of the test unique.
         # Generators in the recipe uniquely identify a test by it's name, so we
@@ -1439,6 +1497,14 @@ class BBJSONGenerator(object):
         'win32-dbg',
         'win-archive-dbg',
         'win32-archive-dbg',
+        # New LTC isn't created when LTC becomes LTS, so these builders can go
+        # away
+        "chromeos-arm-generic-ltc",
+        "chromeos-betty-pi-arc-chrome-ltc",
+        "chromeos-eve-chrome-ltc",
+        "chromeos-kevin-chrome-ltc",
+        "linux-chromeos-ltc",
+        "linux64-ltc",
         # TODO(https://crbug.com/1127088): remove once LTS version has been set
         "chromeos-arm-generic-lts",
         "chromeos-betty-pi-arc-chrome-lts",
@@ -1446,6 +1512,9 @@ class BBJSONGenerator(object):
         "chromeos-kevin-chrome-lts",
         "linux-chromeos-lts",
         "linux64-lts",
+        # TODO crbug.com/1143924: Remove once experimentation is complete
+        'Linux Builder Robocrop',
+        'Linux Tests Robocrop',
     ]
 
   def get_internal_waterfalls(self):

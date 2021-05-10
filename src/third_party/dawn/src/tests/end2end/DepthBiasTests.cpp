@@ -36,35 +36,47 @@ class DepthBiasTests : public DawnTest {
             case QuadAngle::Flat:
                 // Draw a square at z = 0.25
                 vertexSource = R"(
-    #version 450
-    void main() {
-        const vec2 pos[6] = vec2[6](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f,  1.f),
-                                    vec2(-1.f,  1.f), vec2(1.f, -1.f), vec2( 1.f,  1.f));
-        gl_Position = vec4(pos[gl_VertexIndex], 0.25f, 1.f);
+    [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+    [[builtin(position)]] var<out> Position : vec4<f32>;
+    [[stage(vertex)]] fn main() -> void {
+        const pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+            vec2<f32>(-1.0, -1.0),
+            vec2<f32>( 1.0, -1.0),
+            vec2<f32>(-1.0,  1.0),
+            vec2<f32>(-1.0,  1.0),
+            vec2<f32>( 1.0, -1.0),
+            vec2<f32>( 1.0,  1.0));
+        Position = vec4<f32>(pos[VertexIndex], 0.25, 1.0);
+        return;
     })";
                 break;
 
             case QuadAngle::TiltedX:
                 // Draw a square ranging from 0 to 0.5, bottom to top
                 vertexSource = R"(
-    #version 450
-    void main() {
-        const vec3 pos[6] = vec3[6](vec3(-1.f, -1.f, 0.f ), vec3(1.f, -1.f, 0.f), vec3(-1.f,  1.f, 0.5f),
-                                    vec3(-1.f,  1.f, 0.5f), vec3(1.f, -1.f, 0.f), vec3( 1.f,  1.f, 0.5f));
-        gl_Position = vec4(pos[gl_VertexIndex], 1.f);
+    [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+    [[builtin(position)]] var<out> Position : vec4<f32>;
+    [[stage(vertex)]] fn main() -> void {
+        const pos : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+            vec3<f32>(-1.0, -1.0, 0.0),
+            vec3<f32>( 1.0, -1.0, 0.0),
+            vec3<f32>(-1.0,  1.0, 0.5),
+            vec3<f32>(-1.0,  1.0, 0.5),
+            vec3<f32>( 1.0, -1.0, 0.0),
+            vec3<f32>( 1.0,  1.0, 0.5));
+        Position = vec4<f32>(pos[VertexIndex], 1.0);
+        return;
     })";
                 break;
         }
 
-        wgpu::ShaderModule vertexModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vertexSource);
+        wgpu::ShaderModule vertexModule = utils::CreateShaderModuleFromWGSL(device, vertexSource);
 
-        wgpu::ShaderModule fragmentModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-    #version 450
-    layout(location = 0) out vec4 fragColor;
-    void main() {
-        fragColor = vec4(1.f, 0.f, 0.f, 1.f);
+        wgpu::ShaderModule fragmentModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    [[location(0)]] var<out> fragColor : vec4<f32>;;
+    [[stage(fragment)]] fn main() -> void {
+        fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+        return;
     })");
 
         {
@@ -141,6 +153,7 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloat) {
 
     // OpenGL uses a different scale than the other APIs
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -160,6 +173,7 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloat) {
 TEST_P(DepthBiasTests, PositiveBiasOnFloatWithClamp) {
     // Clamping support in OpenGL is spotty
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias clamped at 0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -201,6 +215,7 @@ TEST_P(DepthBiasTests, NegativeBiasOnFloat) {
 TEST_P(DepthBiasTests, NegativeBiasOnFloatWithClamp) {
     // Clamping support in OpenGL is spotty
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with -0.25 bias clamped at -0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -319,6 +334,7 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bit) {
 TEST_P(DepthBiasTests, PositiveBiasOn24bitWithClamp) {
     // Clamping support in OpenGL is spotty
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias clamped at 0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth24PlusStencil8, 0.4f, QuadAngle::Flat,
@@ -354,4 +370,5 @@ DAWN_INSTANTIATE_TEST(DepthBiasTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

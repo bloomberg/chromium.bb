@@ -29,7 +29,9 @@
  */
 
 import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import {ls} from '../platform/platform.js';
 import * as UI from '../ui/ui.js';
+
 
 // TODO(1096068): remove this feature detection and expose the UI
 // unconditionally once prefers-reduced-data ships unflagged. At that
@@ -45,10 +47,16 @@ const supportsPrefersReducedData = () => {
   return window.matchMedia(query).media === query;
 };
 
+/** @type {!RenderingOptionsView} */
+let renderingOptionsViewInstance;
+
 export class RenderingOptionsView extends UI.Widget.VBox {
+  /**
+     * @private
+     */
   constructor() {
     super(true);
-    this.registerRequiredCSS('inspector_main/renderingOptions.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('inspector_main/renderingOptions.css', {enableLegacyPatching: false});
 
     this._appendCheckbox(
         ls`Paint flashing`,
@@ -75,6 +83,9 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         ls`Hit-test borders`, ls`Shows borders around hit-test regions.`,
         Common.Settings.Settings.instance().moduleSetting('showHitTestBorders'));
     this._appendCheckbox(
+        ls`Core Web Vitals`, ls`Shows an overlay with Core Web Vitals.`,
+        Common.Settings.Settings.instance().moduleSetting('showWebVitals'));
+    this._appendCheckbox(
         ls`Disable local fonts`, ls`Disables local() sources in @font-face rules. Requires a page reload to apply.`,
         Common.Settings.Settings.instance().moduleSetting('localFontsDisabled'));
     this._appendCheckbox(
@@ -96,6 +107,9 @@ export class RenderingOptionsView extends UI.Widget.VBox {
           ls`Forces CSS prefers-reduced-data media feature`,
           Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedData'));
     }
+    this._appendSelect(
+        ls`Forces CSS color-gamut media feature`,
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureColorGamut'));
     this.contentElement.createChild('div').classList.add('panel-section-separator');
 
     this._appendSelect(
@@ -113,6 +127,18 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         Common.Settings.Settings.instance().moduleSetting('webpFormatDisabled'));
 
     this.contentElement.createChild('div').classList.add('panel-section-separator');
+  }
+
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!renderingOptionsViewInstance || forceNew) {
+      renderingOptionsViewInstance = new RenderingOptionsView();
+    }
+
+    return renderingOptionsViewInstance;
   }
 
   /**

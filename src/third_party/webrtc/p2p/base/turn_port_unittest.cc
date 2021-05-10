@@ -335,8 +335,8 @@ class TurnPortTest : public ::testing::Test,
         this, &TurnPortTest::OnTurnRefreshResult);
     turn_port_->SignalTurnPortClosed.connect(this,
                                              &TurnPortTest::OnTurnPortClosed);
-    turn_port_->SignalDestroyed.connect(this,
-                                        &TurnPortTest::OnTurnPortDestroyed);
+    turn_port_->SubscribePortDestroyed(
+        [this](PortInterface* port) { OnTurnPortDestroyed(port); });
   }
 
   void CreateUdpPort() { CreateUdpPort(kLocalAddr2); }
@@ -934,7 +934,7 @@ TEST_F(TurnPortTest,
   EXPECT_TRUE_SIMULATED_WAIT(turn_error_, kSimulatedRtt, fake_clock_);
   EXPECT_EQ_SIMULATED_WAIT(error_event_.error_code, STUN_ERROR_GLOBAL_FAILURE,
                            kSimulatedRtt, fake_clock_);
-  ASSERT_NE(error_event_.error_text.find("."), std::string::npos);
+  ASSERT_NE(error_event_.error_text.find('.'), std::string::npos);
   ASSERT_NE(error_event_.address.find(kLocalAddr2.HostAsSensitiveURIString()),
             std::string::npos);
   ASSERT_NE(error_event_.port, 0);

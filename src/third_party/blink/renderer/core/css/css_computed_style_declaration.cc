@@ -38,6 +38,8 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -46,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -78,6 +81,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kBorderBottomLeftRadius,
     CSSPropertyID::kBorderBottomRightRadius, CSSPropertyID::kBorderBottomStyle,
     CSSPropertyID::kBorderBottomWidth, CSSPropertyID::kBorderCollapse,
+    CSSPropertyID::kBorderEndEndRadius, CSSPropertyID::kBorderEndStartRadius,
     CSSPropertyID::kBorderImageOutset, CSSPropertyID::kBorderImageRepeat,
     CSSPropertyID::kBorderImageSlice, CSSPropertyID::kBorderImageSource,
     CSSPropertyID::kBorderImageWidth, CSSPropertyID::kBorderInlineEndColor,
@@ -87,7 +91,8 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kBorderInlineStartWidth, CSSPropertyID::kBorderLeftColor,
     CSSPropertyID::kBorderLeftStyle, CSSPropertyID::kBorderLeftWidth,
     CSSPropertyID::kBorderRightColor, CSSPropertyID::kBorderRightStyle,
-    CSSPropertyID::kBorderRightWidth, CSSPropertyID::kBorderTopColor,
+    CSSPropertyID::kBorderRightWidth, CSSPropertyID::kBorderStartEndRadius,
+    CSSPropertyID::kBorderStartStartRadius, CSSPropertyID::kBorderTopColor,
     CSSPropertyID::kBorderTopLeftRadius, CSSPropertyID::kBorderTopRightRadius,
     CSSPropertyID::kBorderTopStyle, CSSPropertyID::kBorderTopWidth,
     CSSPropertyID::kBottom, CSSPropertyID::kBoxShadow,
@@ -251,6 +256,21 @@ void LogUnimplementedPropertyID(const CSSProperty& property) {
               << property.GetPropertyName() << "'.";
 }
 
+// TODO(crbug.com/1167696): We probably want to avoid doing this for
+// performance reasons.
+bool InclusiveAncestorMayDependOnContainerQueries(Node* node) {
+  if (!RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
+    return false;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+    const ComputedStyle* style = ancestor.GetComputedStyle();
+    // Since DependsOnContainerQueries is stored on ComputedStyle, we have to
+    // behave as if the flag is set for nullptr-styles (display:none).
+    if (!style || style->DependsOnContainerQueries())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 const Vector<const CSSProperty*>&
@@ -278,20 +298,8 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
 CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() = default;
 
 String CSSComputedStyleDeclaration::cssText() const {
-  StringBuilder result;
-  static const Vector<const CSSProperty*>& properties =
-      ComputableProperties(GetExecutionContext());
-
-  for (unsigned i = 0; i < properties.size(); i++) {
-    if (i)
-      result.Append(' ');
-    result.Append(properties[i]->GetPropertyName());
-    result.Append(": ");
-    result.Append(GetPropertyValue(properties[i]->PropertyID()));
-    result.Append(';');
-  }
-
-  return result.ToString();
+  // CSSStyleDeclaration.cssText should return empty string for computed style.
+  return String();
 }
 
 void CSSComputedStyleDeclaration::setCSSText(const ExecutionContext*,
@@ -438,7 +446,8 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   LayoutObject* layout_object = StyledLayoutObject();
   const ComputedStyle* style = ComputeComputedStyle();
 
-  if (property_class.IsLayoutDependent(style, layout_object)) {
+  if (property_class.IsLayoutDependent(style, layout_object) ||
+      InclusiveAncestorMayDependOnContainerQueries(styled_node)) {
     document.UpdateStyleAndLayoutForNode(styled_node,
                                          DocumentUpdateReason::kJavaScript);
     styled_node = StyledNode();
@@ -535,8 +544,8 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const {
 String CSSComputedStyleDeclaration::getPropertyValue(
     const String& property_name) {
   CSSPropertyID property_id =
-      cssPropertyID(GetExecutionContext(), property_name);
-  if (!isValidCSSPropertyID(property_id))
+      CssPropertyID(GetExecutionContext(), property_name);
+  if (!IsValidCSSPropertyID(property_id))
     return String();
   if (property_id == CSSPropertyID::kVariable) {
     const CSSValue* value = GetPropertyCSSValue(AtomicString(property_name));
@@ -596,7 +605,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     AtomicString custom_property_name) {
   DCHECK_EQ(CSSPropertyID::kVariable,
-            cssPropertyID(GetExecutionContext(), custom_property_name));
+            CssPropertyID(GetExecutionContext(), custom_property_name));
   return GetPropertyCSSValue(custom_property_name);
 }
 

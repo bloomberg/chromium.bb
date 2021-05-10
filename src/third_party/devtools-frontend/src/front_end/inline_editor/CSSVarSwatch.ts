@@ -2,19 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as i18n from '../i18n/i18n.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
+export const UIStrings = {
+  /**
+  *@description Text displayed in a tooltip shown when hovering over a var() CSS function in the Styles pane when the custom property in this function does not exist. The parameter is the name of the property.
+  *@example {--my-custom-property-name} PH1
+  */
+  sIsNotDefined: '{PH1} is not defined',
+};
+const str_ = i18n.i18n.registerUIStrings('inline_editor/CSSVarSwatch.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const {render, html, Directives} = LitHtml;
-const ls = Common.ls;
 
-const VARIABLE_FUNCTION_REGEX = /(var\()(--[^,)]+)(.*)/;
+const VARIABLE_FUNCTION_REGEX = /(var\()(\s*--[^,)]+)(.*)/;
 
 interface SwatchRenderData {
   text: string;
   computedValue: string|null;
   fromFallback: boolean;
-  onLinkClick: (varialeName: string, event: Event) => void;
+  onLinkClick: (varialeName: string, event: MouseEvent) => void;
 }
 
 interface ParsedVariableFunction {
@@ -28,7 +36,7 @@ export class CSSVarSwatch extends HTMLElement {
   private text: string = '';
   private computedValue: string|null = null;
   private fromFallback: boolean = false;
-  private onLinkClick: (varialeName: string, event: Event) => void = () => undefined;
+  private onLinkClick: (varialeName: string, event: MouseEvent) => void = () => undefined;
 
   set data(data: SwatchRenderData) {
     this.text = data.text;
@@ -40,7 +48,10 @@ export class CSSVarSwatch extends HTMLElement {
   }
 
   private parseVariableFunctionParts(): ParsedVariableFunction|null {
-    const result = this.text.match(VARIABLE_FUNCTION_REGEX);
+    // When the value of CSS var() is greater than two spaces, only one is
+    // always displayed, and the actual number of spaces is displayed when
+    // editing is clicked.
+    const result = this.text.replace(/\s{2,}/g, ' ').match(VARIABLE_FUNCTION_REGEX);
     if (!result) {
       return null;
     }
@@ -60,21 +71,22 @@ export class CSSVarSwatch extends HTMLElement {
     return '';
   }
 
-  private renderLink(variableName: string) {
+  private renderLink(variableName: string): LitHtml.TemplateResult {
     const isDefined = this.computedValue && !this.fromFallback;
 
     const classes = Directives.classMap({
       'css-var-link': true,
       'undefined': !isDefined,
     });
-    const title = isDefined ? ls`Jump to definition` : ls`${variableName} is not defined`;
-    const onClick = isDefined ? this.onLinkClick.bind(this, this.variableName) : null;
+    const title = isDefined ? this.computedValue : i18nString(UIStrings.sIsNotDefined, {PH1: variableName});
+    // The this.variableName's space must be removed, otherwise it cannot be triggered when clicked.
+    const onClick = isDefined ? this.onLinkClick.bind(this, this.variableName.trim()) : null;
 
     return html`<span class="${classes}" title="${title}" @mousedown=${onClick} role="link" tabindex="-1">${
         variableName}</span>`;
   }
 
-  private render() {
+  private render(): void {
     const functionParts = this.parseVariableFunctionParts();
     if (!functionParts) {
       render('', this.shadow, {eventContext: this});
@@ -89,8 +101,21 @@ export class CSSVarSwatch extends HTMLElement {
       html`<style>
       .css-var-link:not(.undefined) {
         cursor: pointer;
+        text-underline-offset: 2px;
+        color: var(--link-color);
+      }
+
+      .css-var-link:hover:not(.undefined) {
         text-decoration: underline;
-        text-underline-position: under;
+      }
+
+      .css-var-link:focus:not(:focus-visible) {
+        outline: none;
+      }
+
+      .css-var-link.undefined {
+        /* stylelint-disable-next-line plugin/use_theme_colors */
+        color: hsl(0deg 0% 46%);
       }
       </style><span title="${this.computedValue || ''}">${functionParts.pre}${link}${functionParts.post}</span>`,
       this.shadow, { eventContext: this });
@@ -103,6 +128,7 @@ if (!customElements.get('devtools-css-var-swatch')) {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-css-var-swatch': CSSVarSwatch;
   }

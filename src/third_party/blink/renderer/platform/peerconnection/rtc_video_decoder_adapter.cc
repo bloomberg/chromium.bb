@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -16,7 +17,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -37,7 +37,6 @@
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
-#include "third_party/webrtc/rtc_base/bind.h"
 #include "third_party/webrtc/rtc_base/ref_count.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "ui/gfx/color_space.h"
@@ -70,20 +69,6 @@ const int32_t kMaxDecodeHistory = 32;
 // Maximum number of consecutive frames that can fail to decode before
 // requesting fallback to software decode.
 const int32_t kMaxConsecutiveErrors = 5;
-
-// Map webrtc::VideoCodecType to media::VideoCodec.
-media::VideoCodec ToVideoCodec(webrtc::VideoCodecType video_codec_type) {
-  switch (video_codec_type) {
-    case webrtc::kVideoCodecVP8:
-      return media::kCodecVP8;
-    case webrtc::kVideoCodecVP9:
-      return media::kCodecVP9;
-    case webrtc::kVideoCodecH264:
-      return media::kCodecH264;
-    default:
-      return media::kUnknownVideoCodec;
-  }
-}
 
 // Map webrtc::SdpVideoFormat to a guess for media::VideoCodecProfile.
 media::VideoCodecProfile GuessVideoCodecProfile(
@@ -198,13 +183,13 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     return nullptr;
 
   // Bail early for unknown codecs.
-  if (ToVideoCodec(video_codec_type) == media::kUnknownVideoCodec)
+  if (WebRtcToMediaVideoCodec(video_codec_type) == media::kUnknownVideoCodec)
     return nullptr;
 
   // Avoid the thread hop if the decoder is known not to support the config.
   // TODO(sandersd): Predict size from level.
   media::VideoDecoderConfig config(
-      ToVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
+      WebRtcToMediaVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
       GuessVideoCodecProfile(format),
       media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
       media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
@@ -311,7 +296,7 @@ int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
   // to software decoding. See https://crbug.com/webrtc/9304.
   if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
       input_image.SpatialIndex().value_or(0) > 0) {
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_ASH)
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
     if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
       RecordFallbackReason(config_.codec(), FallbackReason::kSpatialLayers);
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
@@ -319,7 +304,7 @@ int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
 #else
     RecordFallbackReason(config_.codec(), FallbackReason::kSpatialLayers);
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_ASH)
+#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   if (missing_frames) {
@@ -440,8 +425,12 @@ int32_t RTCVideoDecoderAdapter::Release() {
                     : WEBRTC_VIDEO_CODEC_OK;
 }
 
-const char* RTCVideoDecoderAdapter::ImplementationName() const {
-  return "ExternalDecoder";
+webrtc::VideoDecoder::DecoderInfo RTCVideoDecoderAdapter::GetDecoderInfo()
+    const {
+  DecoderInfo info;
+  info.implementation_name = "ExternalDecoder";
+  info.is_hardware_accelerated = true;
+  return info;
 }
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
@@ -627,7 +616,7 @@ void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
   // Send EOS frame for flush.
   video_decoder_->Decode(
       media::DecoderBuffer::CreateEOSBuffer(),
-      WTF::BindRepeating(
+      WTF::Bind(
           [](FlushDoneCB flush_success, FlushDoneCB flush_fail,
              media::Status status) {
             if (status.is_ok())
@@ -635,7 +624,7 @@ void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
             else
               std::move(flush_fail).Run();
           },
-          base::Passed(&flush_success_cb), base::Passed(&flush_fail_cb)));
+          std::move(flush_success_cb), std::move(flush_fail_cb)));
 }
 
 }  // namespace blink

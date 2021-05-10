@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
@@ -30,6 +32,26 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
+
+namespace {
+
+// Enumeration of all actions in the star menu.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class Action {
+  kAddBookmarkButton = 0,
+  kEditBookmarkButton = 1,
+  kAddToReadingListButton = 2,
+  kMarkAsReadButton = 3,
+  kMaxValue = kMarkAsReadButton,
+};
+
+void RecordClick(Action item) {
+  base::UmaHistogramEnumeration("Bookmarks.StarEntryPoint.ClickedAction", item);
+}
+
+}  // namespace
 
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
@@ -75,9 +97,10 @@ void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
 }
 
 void StarView::ExecuteCommand(ExecuteSource source) {
+  OnExecuting(source);
   if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
     menu_model_ = std::make_unique<StarMenuModel>(
-        this, active(), chrome::CanMoveActiveTabToReadLater(browser_),
+        this, GetActive(), chrome::CanMoveActiveTabToReadLater(browser_),
         chrome::IsCurrentTabUnreadInReadLater(browser_));
     menu_runner_ = std::make_unique<views::MenuRunner>(
         menu_model_.get(),
@@ -86,7 +109,6 @@ void StarView::ExecuteCommand(ExecuteSource source) {
                             views::MenuAnchorPosition::kTopRight,
                             ui::MENU_SOURCE_NONE);
   } else {
-    OnExecuting(source);
     chrome::BookmarkCurrentTab(browser_);
   }
 }
@@ -96,16 +118,12 @@ views::BubbleDialogDelegate* StarView::GetBubble() const {
 }
 
 const gfx::VectorIcon& StarView::GetVectorIcon() const {
-  return active() ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
+  return GetActive() ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
 }
 
 base::string16 StarView::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringUTF16(active() ? IDS_TOOLTIP_STARRED
-                                            : IDS_TOOLTIP_STAR);
-}
-
-const char* StarView::GetClassName() const {
-  return "StarView";
+  return l10n_util::GetStringUTF16(GetActive() ? IDS_TOOLTIP_STARRED
+                                               : IDS_TOOLTIP_STAR);
 }
 
 void StarView::EditBookmarksPrefUpdated() {
@@ -115,12 +133,18 @@ void StarView::EditBookmarksPrefUpdated() {
 void StarView::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case StarMenuModel::CommandBookmark:
+      RecordClick(GetActive() ? Action::kEditBookmarkButton
+                              : Action::kAddBookmarkButton);
       chrome::BookmarkCurrentTab(browser_);
       break;
     case StarMenuModel::CommandMoveToReadLater:
+      RecordClick(Action::kAddToReadingListButton);
+      base::RecordAction(base::UserMetricsAction(
+          "DesktopReadingList.AddItem.FromBookmarkIcon"));
       chrome::MoveCurrentTabToReadLater(browser_);
       break;
     case StarMenuModel::CommandMarkAsRead:
+      RecordClick(Action::kMarkAsReadButton);
       chrome::MarkCurrentTabAsReadInReadLater(browser_);
       break;
     default:
@@ -135,3 +159,6 @@ void StarView::MenuClosed(ui::SimpleMenuModel* source) {
   }
   menu_runner_.reset();
 }
+
+BEGIN_METADATA(StarView, PageActionIconView)
+END_METADATA

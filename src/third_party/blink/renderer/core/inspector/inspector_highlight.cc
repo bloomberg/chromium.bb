@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -19,6 +20,8 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
+#include "third_party/blink/renderer/core/inspector/node_content_visibility_state.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Overlay.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -27,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -229,9 +233,26 @@ String ToHEXA(const Color& color) {
                         color.Blue(), color.Alpha());
 }
 
+namespace ContrastAlgorithmEnum = protocol::Overlay::ContrastAlgorithmEnum;
+
+String ContrastAlgorithmToString(const ContrastAlgorithm& contrast_algorithm) {
+  // It reuses the protocol string constants to avoid duplicating the string
+  // values. These string values are sent to the overlay code that is expected
+  // to handle them properly.
+  switch (contrast_algorithm) {
+    case ContrastAlgorithm::AA:
+      return ContrastAlgorithmEnum::Aa;
+    case ContrastAlgorithm::AAA:
+      return ContrastAlgorithmEnum::Aaa;
+    case ContrastAlgorithm::APCA:
+      return ContrastAlgorithmEnum::Apca;
+  }
+}
+
 void AppendStyleInfo(Node* node,
                      protocol::DictionaryValue* element_info,
-                     const InspectorHighlightContrastInfo& node_contrast) {
+                     const InspectorHighlightContrastInfo& node_contrast,
+                     const ContrastAlgorithm& contrast_algorithm) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
   CSSComputedStyleDeclaration* style =
@@ -276,6 +297,9 @@ void AppendStyleInfo(Node* node,
     contrast->setString("fontWeight", node_contrast.font_weight);
     contrast->setString("backgroundColor",
                         ToHEXA(node_contrast.background_color));
+    contrast->setString("contrastAlgorithm",
+                        ContrastAlgorithmToString(contrast_algorithm));
+    contrast->setDouble("textOpacity", node_contrast.text_opacity);
     element_info->setValue("contrast", std::move(contrast));
   }
 }
@@ -324,9 +348,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
 
   // layoutObject the getBoundingClientRect() data in the tooltip
   // to be consistent with the rulers (see http://crbug.com/262338).
-  DOMRect* bounding_box = element->getBoundingClientRect();
-  element_info->setString("nodeWidth", String::Number(bounding_box->width()));
-  element_info->setString("nodeHeight", String::Number(bounding_box->height()));
+
+  DCHECK(element->GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean);
+  FloatRect bounding_box = element->GetBoundingClientRectNoLifecycleUpdate();
+  element_info->setString("nodeWidth", String::Number(bounding_box.Width()));
+  element_info->setString("nodeHeight", String::Number(bounding_box.Height()));
 
   element_info->setBoolean("isKeyboardFocusable",
                            element->IsKeyboardFocusable());
@@ -354,17 +381,35 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
 }
 
 void AppendLineStyleConfig(
-    const std::unique_ptr<LineStyle>& line_style,
+    const base::Optional<LineStyle>& line_style,
     std::unique_ptr<protocol::DictionaryValue>& parent_config,
     String line_name) {
-  if (line_style && line_style->color != Color::kTransparent) {
-    std::unique_ptr<protocol::DictionaryValue> config =
-        protocol::DictionaryValue::create();
-    config->setString("color", line_style->color.Serialized());
-    config->setString("pattern", line_style->pattern);
-
-    parent_config->setValue(line_name, std::move(config));
+  if (!line_style || line_style->IsTransparent()) {
+    return;
   }
+
+  std::unique_ptr<protocol::DictionaryValue> config =
+      protocol::DictionaryValue::create();
+  config->setString("color", line_style->color.Serialized());
+  config->setString("pattern", line_style->pattern);
+
+  parent_config->setValue(line_name, std::move(config));
+}
+
+void AppendBoxStyleConfig(
+    const base::Optional<BoxStyle>& box_style,
+    std::unique_ptr<protocol::DictionaryValue>& parent_config,
+    String box_name) {
+  if (!box_style || box_style->IsTransparent()) {
+    return;
+  }
+
+  std::unique_ptr<protocol::DictionaryValue> config =
+      protocol::DictionaryValue::create();
+  config->setString("fillColor", box_style->fill_color.Serialized());
+  config->setString("hatchColor", box_style->hatch_color.Serialized());
+
+  parent_config->setValue(box_name, std::move(config));
 }
 
 std::unique_ptr<protocol::DictionaryValue>
@@ -379,6 +424,32 @@ BuildFlexContainerHighlightConfigInfo(
                         "lineSeparator");
   AppendLineStyleConfig(flex_config.item_separator, flex_config_info,
                         "itemSeparator");
+
+  AppendBoxStyleConfig(flex_config.main_distributed_space, flex_config_info,
+                       "mainDistributedSpace");
+  AppendBoxStyleConfig(flex_config.cross_distributed_space, flex_config_info,
+                       "crossDistributedSpace");
+  AppendBoxStyleConfig(flex_config.row_gap_space, flex_config_info,
+                       "rowGapSpace");
+  AppendBoxStyleConfig(flex_config.column_gap_space, flex_config_info,
+                       "columnGapSpace");
+  AppendLineStyleConfig(flex_config.cross_alignment, flex_config_info,
+                        "crossAlignment");
+
+  return flex_config_info;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildFlexItemHighlightConfigInfo(
+    const InspectorFlexItemHighlightConfig& flex_config) {
+  std::unique_ptr<protocol::DictionaryValue> flex_config_info =
+      protocol::DictionaryValue::create();
+
+  AppendBoxStyleConfig(flex_config.base_size_box, flex_config_info,
+                       "baseSizeBox");
+  AppendLineStyleConfig(flex_config.base_size_border, flex_config_info,
+                        "baseSizeBorder");
+  AppendLineStyleConfig(flex_config.flexibility_arrow, flex_config_info,
+                        "flexibilityArrow");
 
   return flex_config_info;
 }
@@ -476,13 +547,14 @@ PhysicalOffset LocalToAbsolutePoint(Node* node,
                                     PhysicalOffset local,
                                     float scale) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
-  FloatPoint local_in_frame = FramePointToViewport(
-      node->GetDocument().View(), FloatPoint(local.left, local.top));
-  PhysicalOffset abs_number_pos = layout_grid->LocalToAbsolutePoint(
-      PhysicalOffset::FromFloatPointRound(local_in_frame));
-  abs_number_pos.Scale(scale);
-  return abs_number_pos;
+  auto* layout_grid = To<LayoutGrid>(layout_object);
+  PhysicalOffset abs_point = layout_grid->LocalToAbsolutePoint(local);
+  FloatPoint abs_point_in_viewport = FramePointToViewport(
+      node->GetDocument().View(), FloatPoint(abs_point.left, abs_point.top));
+  PhysicalOffset scaled_abs_point =
+      PhysicalOffset::FromFloatPointRound(abs_point_in_viewport);
+  scaled_abs_point.Scale(scale);
+  return scaled_abs_point;
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildPosition(
@@ -501,7 +573,7 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     LayoutUnit gap,
     const Vector<String>* authored_values) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
   bool is_rtl = direction == kForColumns &&
                 !layout_grid->StyleRef().IsLeftToRightDirection();
 
@@ -545,7 +617,7 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
     GridTrackSizingDirection direction,
     float scale) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
   bool is_rtl = direction == kForColumns &&
                 !layout_grid->StyleRef().IsLeftToRightDirection();
 
@@ -588,7 +660,7 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
     GridTrackSizingDirection direction,
     float scale) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
   bool is_rtl = direction == kForColumns &&
                 !layout_grid->StyleRef().IsLeftToRightDirection();
 
@@ -638,10 +710,21 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
   return number_positions;
 }
 
+bool IsLayoutNGFlexibleBox(const LayoutObject& layout_object) {
+  return layout_object.StyleRef().IsDisplayFlexibleBox() &&
+         layout_object.IsLayoutNGFlexibleBox();
+}
+
+bool IsLayoutNGFlexItem(const LayoutObject& layout_object) {
+  return !layout_object.GetNode()->IsDocumentNode() &&
+         IsLayoutNGFlexibleBox(*layout_object.Parent()) &&
+         To<LayoutBox>(layout_object).IsFlexItemIncludingNG();
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(Node* node,
                                                               float scale) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
   LocalFrameView* containing_view = node->GetDocument().View();
   bool is_rtl = !layout_grid->StyleRef().IsLeftToRightDirection();
 
@@ -697,7 +780,7 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
     GridTrackSizingDirection direction,
     float scale) {
   LayoutObject* layout_object = node->GetLayoutObject();
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
   bool is_rtl = direction == kForColumns &&
                 !layout_grid->StyleRef().IsLeftToRightDirection();
 
@@ -830,14 +913,17 @@ bool IsHorizontalFlex(LayoutObject* layout_flex) {
          layout_flex->StyleRef().ResolvedIsColumnFlexDirection();
 }
 
-Vector<Vector<PhysicalRect>> GetFlexLinesAndItems(LayoutBox* layout_box,
-                                                  bool is_horizontal) {
-  Vector<Vector<PhysicalRect>> flex_lines;
+Vector<Vector<std::pair<PhysicalRect, float>>> GetFlexLinesAndItems(
+    LayoutBox* layout_box,
+    bool is_horizontal,
+    bool is_reverse) {
+  Vector<Vector<std::pair<PhysicalRect, float>>> flex_lines;
 
   // Flex containers can't get fragmented yet, but this may change in the
   // future.
   for (const auto& fragment : layout_box->PhysicalFragments()) {
     LayoutUnit progression;
+
     for (const auto& child : fragment.Children()) {
       const NGPhysicalFragment* child_fragment = child.get();
       if (!child_fragment || child_fragment->IsOutOfFlowPositioned())
@@ -848,6 +934,14 @@ Vector<Vector<PhysicalRect>> GetFlexLinesAndItems(LayoutBox* layout_box,
 
       const LayoutObject* object = child_fragment->GetLayoutObject();
       const auto* box = To<LayoutBox>(object);
+
+      LayoutUnit baseline =
+          NGBoxFragment(box->StyleRef().GetWritingDirection(),
+                        *To<NGPhysicalBoxFragment>(child_fragment))
+              .BaselineOrSynthesize();
+      float adjusted_baseline = AdjustForAbsoluteZoom::AdjustFloat(
+          baseline + box->MarginTop(), box->StyleRef());
+
       PhysicalRect item_rect =
           PhysicalRect(fragment_offset.left - box->MarginLeft(),
                        fragment_offset.top - box->MarginTop(),
@@ -858,29 +952,35 @@ Vector<Vector<PhysicalRect>> GetFlexLinesAndItems(LayoutBox* layout_box,
       LayoutUnit item_end = is_horizontal ? item_rect.X() + item_rect.Width()
                                           : item_rect.Y() + item_rect.Height();
 
-      if (flex_lines.IsEmpty() || item_start < progression) {
+      if (flex_lines.IsEmpty() ||
+          (is_reverse ? item_end > progression : item_start < progression)) {
         flex_lines.emplace_back();
       }
 
-      flex_lines.back().push_back(item_rect);
+      flex_lines.back().push_back(std::make_pair(item_rect, adjusted_baseline));
 
-      progression = item_end;
+      progression = is_reverse ? item_start : item_end;
     }
   }
 
   return flex_lines;
 }
 
-std::unique_ptr<protocol::DictionaryValue> BuildFlexInfo(
+std::unique_ptr<protocol::DictionaryValue> BuildFlexContainerInfo(
     Node* node,
     const InspectorFlexContainerHighlightConfig&
         flex_container_highlight_config,
     float scale) {
+  CSSComputedStyleDeclaration* style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   LocalFrameView* containing_view = node->GetDocument().View();
   LayoutObject* layout_object = node->GetLayoutObject();
   auto* layout_box = To<LayoutBox>(layout_object);
   DCHECK(layout_object);
   bool is_horizontal = IsHorizontalFlex(layout_object);
+  bool is_reverse =
+      layout_object->StyleRef().ResolvedIsRowReverseFlexDirection() ||
+      layout_object->StyleRef().ResolvedIsColumnReverseFlexDirection();
 
   std::unique_ptr<protocol::DictionaryValue> flex_info =
       protocol::DictionaryValue::create();
@@ -893,23 +993,30 @@ std::unique_ptr<protocol::DictionaryValue> BuildFlexInfo(
   container_builder.AppendPath(QuadToPath(content_quad), scale);
 
   // Gather all flex items, sorted by flex line.
-  Vector<Vector<PhysicalRect>> flex_lines =
-      GetFlexLinesAndItems(layout_box, is_horizontal);
+  Vector<Vector<std::pair<PhysicalRect, float>>> flex_lines =
+      GetFlexLinesAndItems(layout_box, is_horizontal, is_reverse);
 
-  // Send the offset information for each item to the frontend.
+  // We send a list of flex lines, each containing a list of flex items, with
+  // their baselines, to the frontend.
   std::unique_ptr<protocol::ListValue> lines_info =
       protocol::ListValue::create();
   for (auto line : flex_lines) {
     std::unique_ptr<protocol::ListValue> items_info =
         protocol::ListValue::create();
-    for (auto item_rect : line) {
+    for (auto item_data : line) {
+      std::unique_ptr<protocol::DictionaryValue> item_info =
+          protocol::DictionaryValue::create();
+
       FloatQuad item_margin_quad =
-          layout_object->LocalRectToAbsoluteQuad(item_rect);
+          layout_object->LocalRectToAbsoluteQuad(item_data.first);
       FrameQuadToViewport(containing_view, item_margin_quad);
       PathBuilder item_builder;
       item_builder.AppendPath(QuadToPath(item_margin_quad), scale);
 
-      items_info->pushValue(item_builder.Release());
+      item_info->setValue("itemBorder", item_builder.Release());
+      item_info->setDouble("baseline", item_data.second);
+
+      items_info->pushValue(std::move(item_info));
     }
     lines_info->pushValue(std::move(items_info));
   }
@@ -917,9 +1024,66 @@ std::unique_ptr<protocol::DictionaryValue> BuildFlexInfo(
   flex_info->setValue("containerBorder", container_builder.Release());
   flex_info->setArray("lines", std::move(lines_info));
   flex_info->setBoolean("isHorizontalFlow", is_horizontal);
+  flex_info->setBoolean("isReverse", is_reverse);
+  flex_info->setString(
+      "alignItemsStyle",
+      style->GetPropertyCSSValue(CSSPropertyID::kAlignItems)->CssText());
+
+  double row_gap_value = 0;
+  const CSSValue* row_gap = style->GetPropertyCSSValue(CSSPropertyID::kRowGap);
+  if (row_gap->IsNumericLiteralValue()) {
+    row_gap_value = To<CSSNumericLiteralValue>(row_gap)->DoubleValue();
+  }
+
+  double column_gap_value = 0;
+  const CSSValue* column_gap =
+      style->GetPropertyCSSValue(CSSPropertyID::kColumnGap);
+  if (column_gap->IsNumericLiteralValue()) {
+    column_gap_value = To<CSSNumericLiteralValue>(column_gap)->DoubleValue();
+  }
+
+  flex_info->setDouble("mainGap",
+                       is_horizontal ? column_gap_value : row_gap_value);
+  flex_info->setDouble("crossGap",
+                       is_horizontal ? row_gap_value : column_gap_value);
+
   flex_info->setValue(
       "flexContainerHighlightConfig",
       BuildFlexContainerHighlightConfigInfo(flex_container_highlight_config));
+
+  return flex_info;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildFlexItemInfo(
+    Node* node,
+    const InspectorFlexItemHighlightConfig& flex_item_highlight_config,
+    float scale) {
+  std::unique_ptr<protocol::DictionaryValue> flex_info =
+      protocol::DictionaryValue::create();
+
+  LayoutObject* layout_object = node->GetLayoutObject();
+  bool is_horizontal = IsHorizontalFlex(layout_object->Parent());
+  Length base_size = Length::Auto();
+
+  const Length& flex_basis = layout_object->StyleRef().FlexBasis();
+  const Length& size = is_horizontal ? layout_object->StyleRef().Width()
+                                     : layout_object->StyleRef().Height();
+
+  if (flex_basis.IsFixed()) {
+    base_size = flex_basis;
+  } else if (flex_basis.IsAuto() && size.IsFixed()) {
+    base_size = size;
+  }
+
+  // For now, we only care about the cases where we can know the base size.
+  if (base_size.IsSpecified()) {
+    flex_info->setDouble("baseSize", base_size.Pixels() * scale);
+    flex_info->setBoolean("isHorizontalFlow", is_horizontal);
+
+    flex_info->setValue(
+        "flexItemHighlightConfig",
+        BuildFlexItemHighlightConfigInfo(flex_item_highlight_config));
+  }
 
   return flex_info;
 }
@@ -932,7 +1096,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   LocalFrameView* containing_view = node->GetDocument().View();
   LayoutObject* layout_object = node->GetLayoutObject();
   DCHECK(layout_object);
-  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  auto* layout_grid = To<LayoutGrid>(layout_object);
 
   std::unique_ptr<protocol::DictionaryValue> grid_info =
       protocol::DictionaryValue::create();
@@ -1190,6 +1354,8 @@ InspectorSourceOrderConfig::InspectorSourceOrderConfig() = default;
 
 LineStyle::LineStyle() = default;
 
+BoxStyle::BoxStyle() = default;
+
 InspectorGridHighlightConfig::InspectorGridHighlightConfig()
     : show_grid_extension_lines(false),
       grid_border_dash(false),
@@ -1203,6 +1369,8 @@ InspectorGridHighlightConfig::InspectorGridHighlightConfig()
 
 InspectorFlexContainerHighlightConfig::InspectorFlexContainerHighlightConfig() =
     default;
+
+InspectorFlexItemHighlightConfig::InspectorFlexItemHighlightConfig() = default;
 
 InspectorHighlightBase::InspectorHighlightBase(float scale)
     : highlight_paths_(protocol::ListValue::create()), scale_(scale) {}
@@ -1364,7 +1532,7 @@ InspectorHighlight::InspectorHighlight(
     const InspectorHighlightContrastInfo& node_contrast,
     bool append_element_info,
     bool append_distance_info,
-    bool is_locked_ancestor)
+    NodeContentVisibilityState content_visibility_state)
     : InspectorHighlightBase(node),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
@@ -1378,15 +1546,27 @@ InspectorHighlight::InspectorHighlight(
     element_info_ = BuildElementInfo(element);
   else if (append_element_info && text_node)
     element_info_ = BuildTextNodeInfo(text_node);
-  if (element_info_ && highlight_config.show_styles)
-    AppendStyleInfo(node, element_info_.get(), node_contrast);
+  if (element_info_ && highlight_config.show_styles) {
+    AppendStyleInfo(node, element_info_.get(), node_contrast,
+                    highlight_config.contrast_algorithm);
+  }
 
-  if (element_info_ && is_locked_ancestor)
-    element_info_->setString("isLockedAncestor", "true");
   if (element_info_) {
+    switch (content_visibility_state) {
+      case NodeContentVisibilityState::kNone:
+        break;
+      case NodeContentVisibilityState::kIsLocked:
+        element_info_->setBoolean("isLocked", true);
+        break;
+      case NodeContentVisibilityState::kIsLockedAncestor:
+        element_info_->setBoolean("isLockedAncestor", true);
+        break;
+    }
+
     element_info_->setBoolean("showAccessibilityInfo",
                               show_accessibility_info_);
   }
+
   if (append_distance_info)
     AppendDistanceInfo(node);
 }
@@ -1410,7 +1590,7 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   for (size_t i = 0; i < style->length(); ++i) {
     AtomicString name(style->item(i));
     const CSSValue* value = style->GetPropertyCSSValue(
-        cssPropertyID(node->GetExecutionContext(), name));
+        CssPropertyID(node->GetExecutionContext(), name));
     if (!value)
       continue;
     if (value->IsColorValue()) {
@@ -1555,6 +1735,7 @@ void InspectorHighlight::AppendNodeHighlight(
   if (highlight_config.css_grid != Color::kTransparent ||
       highlight_config.grid_highlight_config) {
     grid_info_ = protocol::ListValue::create();
+    // TODO(crbug.com/1045599): Implement |BuildGridInfo| for GridNG.
     if (layout_object->IsLayoutGrid()) {
       grid_info_->pushValue(
           BuildGridInfo(node, highlight_config, scale_, true));
@@ -1562,13 +1743,20 @@ void InspectorHighlight::AppendNodeHighlight(
   }
 
   if (highlight_config.flex_container_highlight_config) {
-    flex_info_ = protocol::ListValue::create();
+    flex_container_info_ = protocol::ListValue::create();
     // Some objects are flexible boxes even though display:flex is not set, we
     // need to avoid those.
-    if (layout_object->StyleRef().IsDisplayFlexibleBox() &&
-        layout_object->IsFlexibleBoxIncludingNG()) {
-      flex_info_->pushValue(BuildFlexInfo(
+    if (IsLayoutNGFlexibleBox(*layout_object)) {
+      flex_container_info_->pushValue(BuildFlexContainerInfo(
           node, *(highlight_config.flex_container_highlight_config), scale_));
+    }
+  }
+
+  if (highlight_config.flex_item_highlight_config) {
+    flex_item_info_ = protocol::ListValue::create();
+    if (IsLayoutNGFlexItem(*layout_object)) {
+      flex_item_info_->pushValue(BuildFlexItemInfo(
+          node, *(highlight_config.flex_item_highlight_config), scale_));
     }
   }
 }
@@ -1616,8 +1804,10 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
     object->setValue("elementInfo", element_info_->clone());
   if (grid_info_ && grid_info_->size() > 0)
     object->setValue("gridInfo", grid_info_->clone());
-  if (flex_info_ && flex_info_->size() > 0)
-    object->setValue("flexInfo", flex_info_->clone());
+  if (flex_container_info_ && flex_container_info_->size() > 0)
+    object->setValue("flexInfo", flex_container_info_->clone());
+  if (flex_item_info_ && flex_item_info_->size() > 0)
+    object->setValue("flexItemInfo", flex_item_info_->clone());
   return object;
 }
 
@@ -1762,6 +1952,28 @@ std::unique_ptr<protocol::DictionaryValue> InspectorGridHighlight(
   return grid_info;
 }
 
+std::unique_ptr<protocol::DictionaryValue> InspectorFlexContainerHighlight(
+    Node* node,
+    const InspectorFlexContainerHighlightConfig& config) {
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // Skip if node is part of display locked tree.
+    return nullptr;
+  }
+
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return nullptr;
+
+  float scale = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
+                          &frame_view->GetFrame(), 1.f);
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !IsLayoutNGFlexibleBox(*layout_object)) {
+    return nullptr;
+  }
+
+  return BuildFlexContainerInfo(node, config, scale);
+}
+
 // static
 InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   InspectorHighlightConfig config;
@@ -1784,6 +1996,9 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   config.flex_container_highlight_config =
       std::make_unique<InspectorFlexContainerHighlightConfig>(
           InspectorHighlight::DefaultFlexContainerConfig());
+  config.flex_item_highlight_config =
+      std::make_unique<InspectorFlexItemHighlightConfig>(
+          InspectorHighlight::DefaultFlexItemConfig());
   return config;
 }
 
@@ -1816,11 +2031,33 @@ InspectorFlexContainerHighlightConfig
 InspectorHighlight::DefaultFlexContainerConfig() {
   InspectorFlexContainerHighlightConfig config;
   config.container_border =
-      std::make_unique<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.line_separator =
-      std::make_unique<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   config.item_separator =
-      std::make_unique<LineStyle>(InspectorHighlight::DefaultLineStyle());
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+  config.main_distributed_space =
+      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+  config.cross_distributed_space =
+      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+  config.row_gap_space =
+      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+  config.column_gap_space =
+      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+  config.cross_alignment =
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+  return config;
+}
+
+// static
+InspectorFlexItemHighlightConfig InspectorHighlight::DefaultFlexItemConfig() {
+  InspectorFlexItemHighlightConfig config;
+  config.base_size_box =
+      base::Optional<BoxStyle>(InspectorHighlight::DefaultBoxStyle());
+  config.base_size_border =
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
+  config.flexibility_arrow =
+      base::Optional<LineStyle>(InspectorHighlight::DefaultLineStyle());
   return config;
 }
 
@@ -1829,6 +2066,14 @@ LineStyle InspectorHighlight::DefaultLineStyle() {
   LineStyle style;
   style.color = Color(255, 0, 0, 0);
   style.pattern = "solid";
+  return style;
+}
+
+// static
+BoxStyle InspectorHighlight::DefaultBoxStyle() {
+  BoxStyle style;
+  style.fill_color = Color(255, 0, 0, 0);
+  style.hatch_color = Color(255, 0, 0, 0);
   return style;
 }
 

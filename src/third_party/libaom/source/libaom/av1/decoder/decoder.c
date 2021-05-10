@@ -187,7 +187,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   aom_free(pbi->lf_worker.data1);
 
   if (pbi->thread_data) {
-    for (int worker_idx = 0; worker_idx < pbi->max_threads - 1; worker_idx++) {
+    for (int worker_idx = 1; worker_idx < pbi->max_threads; worker_idx++) {
       DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
       av1_free_mc_tmp_buf(thread_data->td);
       aom_free(thread_data->td);

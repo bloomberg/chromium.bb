@@ -63,7 +63,7 @@ std::unique_ptr<SctpTransportFactoryInterface> MaybeCreateSctpFactory(
   if (factory) {
     return factory;
   }
-#ifdef HAVE_SCTP
+#ifdef WEBRTC_HAVE_SCTP
   return std::make_unique<cricket::SctpTransportFactory>(network_thread);
 #else
   return nullptr;
@@ -125,6 +125,14 @@ ConnectionContext::ConnectionContext(
       worker_thread(), network_thread());
 
   channel_manager_->SetVideoRtxEnabled(true);
+  // Set warning levels on the threads, to give warnings when response
+  // may be slower than is expected of the thread.
+  // Since some of the threads may be the same, start with the least
+  // restrictive limits and end with the least permissive ones.
+  // This will give warnings for all cases.
+  signaling_thread_->SetDispatchWarningMs(100);
+  worker_thread_->SetDispatchWarningMs(30);
+  network_thread_->SetDispatchWarningMs(10);
 }
 
 ConnectionContext::~ConnectionContext() {

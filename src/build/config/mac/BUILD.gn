@@ -15,22 +15,21 @@ config("compiler") {
 
   # CPU architecture.
   if (current_cpu == "x64") {
-    common_mac_flags += [
-      "-arch",
-      "x86_64",
-    ]
+    clang_arch = "x86_64"
   } else if (current_cpu == "x86") {
-    common_mac_flags += [
-      "-arch",
-      "i386",
-    ]
+    clang_arch = "i386"
   } else if (current_cpu == "arm64") {
-    common_mac_flags += [
-      "-arch",
-      current_cpu,
-    ]
+    clang_arch = current_cpu
   } else {
     assert(false, "unknown current_cpu $current_cpu")
+  }
+  if (host_os == "mac") {
+    common_mac_flags += [
+      "-arch",
+      clang_arch,
+    ]
+  } else {
+    common_mac_flags += [ "--target=$clang_arch-apple-macos" ]
   }
 
   # This is here so that all files get recompiled after an Xcode update.
@@ -103,5 +102,31 @@ config("mac_dynamic_flags") {
 config("strip_all") {
   if (enable_stripping) {
     ldflags = [ "-Wcrl,strip,-x,-S" ]
+  }
+}
+
+# When building with Goma, all inputs must be relative to the build directory.
+# If using the system Xcode, which typically resides outside the build root, a
+# symlink to the SDK is created in the build directory, and the path to that
+# link is stored in $mac_sdk_path. If an action references a file in the SDK as
+# an input, GN will complain that no target generates the file because it is
+# below the $root_build_dir. The below action lists as outputs the files in the
+# SDK that are referenced as inputs to actions, so that GN thinks a target has
+# generated them. The list is centralized here, as multiple targets need to
+# reference the same files, and an output can only be generated once.
+#
+# The symbolic link for $mac_sdk_path is set up by
+# //build/config/mac/sdk_info.py in //build/config/mac/mac_sdk.gni.
+if (use_system_xcode && use_goma && target_os == "mac") {
+  action("sdk_inputs") {
+    script = "//build/noop.py"
+    outputs = [
+      "$mac_sdk_path/usr/include/mach/exc.defs",
+      "$mac_sdk_path/usr/include/mach/mach_exc.defs",
+      "$mac_sdk_path/usr/include/mach/notify.defs",
+    ]
+  }
+} else {
+  group("sdk_inputs") {
   }
 }

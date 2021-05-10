@@ -14,16 +14,16 @@ import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.signin.SigninPromoController;
-import org.chromium.chrome.browser.signin.SigninPromoUtil;
-import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.signin.SigninActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
+import org.chromium.chrome.browser.signin.services.SigninManager.SignInAllowedObserver;
+import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.signin.ui.SigninPromoController;
+import org.chromium.chrome.browser.signin.ui.SigninPromoUtil;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -40,19 +40,21 @@ import java.lang.annotation.RetentionPolicy;
  * A preference that displays Personalized Sync Promo when the user is not syncing.
  */
 // TODO(https://crbug.com/1110889): Move all promos from SigninPreference to this class.
-public class SyncPromoPreference extends Preference
-        implements ProfileDataCache.Observer, AndroidSyncSettings.AndroidSyncSettingsObserver,
-                   SyncStateChangedListener, AccountsChangeObserver {
+public class SyncPromoPreference
+        extends Preference implements SignInAllowedObserver, ProfileDataCache.Observer,
+                                      SyncStateChangedListener, AccountsChangeObserver {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({State.PROMO_HIDDEN, State.PERSONALIZED_SYNC_PROMO})
+    @IntDef({State.PROMO_HIDDEN, State.PERSONALIZED_SIGNIN_PROMO, State.PERSONALIZED_SYNC_PROMO})
     public @interface State {
         int PROMO_HIDDEN = 0;
-        int PERSONALIZED_SYNC_PROMO = 1;
+        int PERSONALIZED_SIGNIN_PROMO = 1;
+        int PERSONALIZED_SYNC_PROMO = 2;
     }
 
     private final ProfileDataCache mProfileDataCache;
     private final AccountManagerFacade mAccountManagerFacade;
     private @SignInPreference.State int mState;
+    private Runnable mStateChangedCallback;
     private @Nullable SigninPromoController mSigninPromoController;
 
     /**
@@ -60,11 +62,12 @@ public class SyncPromoPreference extends Preference
      */
     public SyncPromoPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setLayoutResource(R.layout.personalized_signin_promo_view_settings);
 
-        mProfileDataCache = ProfileDataCache.createProfileDataCache(context);
+        mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(context);
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
 
-        // State will be updated in registerForUpdates.
+        // State will be updated in onAttached.
         mState = State.PROMO_HIDDEN;
         setVisible(false);
     }
@@ -72,10 +75,13 @@ public class SyncPromoPreference extends Preference
     @Override
     public void onAttached() {
         super.onAttached();
+
         mAccountManagerFacade.addObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
-        AndroidSyncSettings.get().registerObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
@@ -87,9 +93,12 @@ public class SyncPromoPreference extends Preference
     @Override
     public void onDetached() {
         super.onDetached();
+
         mAccountManagerFacade.removeObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
-        AndroidSyncSettings.get().unregisterObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
@@ -112,46 +121,62 @@ public class SyncPromoPreference extends Preference
         return mState;
     }
 
+    /** Sets callback to be notified of changes to the preference state. See {@link #getState}. */
+    public void setOnStateChangedCallback(Runnable stateChangedCallback) {
+        mStateChangedCallback = stateChangedCallback;
+    }
+
+    private void setState(@State int state) {
+        if (mState == state) return;
+        mState = state;
+        assert mStateChangedCallback != null;
+        mStateChangedCallback.run();
+    }
+
     /** Updates the title, summary, and image based on the current sign-in state. */
     private void update() {
-        // If feature is not enabled keep the preference at the default PROMO_NONE state.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+        if (IdentityServicesProvider.get()
+                        .getSigninManager(Profile.getLastUsedRegularProfile())
+                        .isSigninDisabledByPolicy()) {
+            setupPromoHidden();
             return;
         }
+
         boolean personalizedPromoDismissed = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED, false);
-        if (isSignedInButNotSyncing() && !personalizedPromoDismissed
+        if (!personalizedPromoDismissed
                 && SigninPromoController.hasNotReachedImpressionLimit(SigninAccessPoint.SETTINGS)) {
-            setupPersonalizedSyncPromo();
-            return;
+            IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                    Profile.getLastUsedRegularProfile());
+            if (identityManager.getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED) == null) {
+                setupPersonalizedPromo(State.PERSONALIZED_SIGNIN_PROMO);
+                return;
+            } else if (identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC) == null) {
+                setupPersonalizedPromo(State.PERSONALIZED_SYNC_PROMO);
+                return;
+            }
         }
 
         setupPromoHidden();
     }
 
-    private void setupPersonalizedSyncPromo() {
-        mState = State.PERSONALIZED_SYNC_PROMO;
-        setLayoutResource(R.layout.personalized_signin_promo_view_settings);
+    private void setupPersonalizedPromo(@State int state) {
+        setState(state);
+        setSelectable(false);
         setVisible(true);
 
         if (mSigninPromoController == null) {
-            mSigninPromoController = new SigninPromoController(SigninAccessPoint.SETTINGS);
+            mSigninPromoController = new SigninPromoController(
+                    SigninAccessPoint.SETTINGS, SigninActivityLauncherImpl.get());
         }
 
         notifyChanged();
     }
 
     private void setupPromoHidden() {
-        mState = State.PROMO_HIDDEN;
+        setState(State.PROMO_HIDDEN);
         mSigninPromoController = null;
         setVisible(false);
-    }
-
-    private boolean isSignedInButNotSyncing() {
-        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
-                Profile.getLastUsedRegularProfile());
-        return !identityManager.hasPrimaryAccount()
-                && identityManager.getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED) != null;
     }
 
     @Override
@@ -164,13 +189,25 @@ public class SyncPromoPreference extends Preference
 
         PersonalizedSigninPromoView syncPromoView =
                 (PersonalizedSigninPromoView) holder.findViewById(R.id.signin_promo_view_container);
-        SigninPromoUtil.setupSyncPromoViewFromCache(
-                mSigninPromoController, mProfileDataCache, syncPromoView, () -> {
-                    SharedPreferencesManager.getInstance().writeBoolean(
-                            ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
-                            true);
-                    setupPromoHidden();
-                });
+        if (mState == State.PERSONALIZED_SIGNIN_PROMO) {
+            SigninPromoUtil.setupSigninPromoViewFromCache(mSigninPromoController, mProfileDataCache,
+                    syncPromoView, this::onPromoDismissClicked);
+        } else {
+            SigninPromoUtil.setupSyncPromoViewFromCache(mSigninPromoController, mProfileDataCache,
+                    syncPromoView, this::onPromoDismissClicked);
+        }
+    }
+
+    public void onPromoDismissClicked() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED, true);
+        setupPromoHidden();
+    }
+
+    // SignInAllowedObserver implementation.
+    @Override
+    public void onSignInAllowedChanged() {
+        update();
     }
 
     // ProfileSyncServiceListener implementation.
@@ -181,13 +218,7 @@ public class SyncPromoPreference extends Preference
 
     // ProfileDataCache.Observer implementation.
     @Override
-    public void onProfileDataUpdated(String accountId) {
-        update();
-    }
-
-    // AndroidSyncSettings.AndroidSyncSettingsObserver implementation.
-    @Override
-    public void androidSyncSettingsChanged() {
+    public void onProfileDataUpdated(String accountEmail) {
         update();
     }
 

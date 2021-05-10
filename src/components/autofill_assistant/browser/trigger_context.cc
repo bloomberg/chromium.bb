@@ -3,97 +3,73 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/trigger_context.h"
+
 #include "base/strings/string_split.h"
 
 namespace autofill_assistant {
 
-// Parameter that allows setting the color of the overlay.
-const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
+TriggerContext::TriggerContext()
+    : script_parameters_(std::make_unique<ScriptParameters>()) {}
 
-// Parameter that contains the current session username. Should be synced with
-// |SESSION_USERNAME_PARAMETER| from
-// .../password_manager/PasswordChangeLauncher.java
-// TODO(b/151401974): Eliminate duplicate parameter definitions.
-const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
+TriggerContext::TriggerContext(
+    std::unique_ptr<ScriptParameters> script_parameters,
+    const Options& options)
+    : TriggerContext(std::move(script_parameters),
+                     options.experiment_ids,
+                     options.is_cct,
+                     options.onboarding_shown,
+                     options.is_direct_action,
+                     options.caller_account_hash) {}
 
-// Legacy, remove as soon as possible.
-// Parameter that contains the path of the lite script that was used to trigger
-// this flow (may be empty).
-const char kLiteScriptPathParamaterName[] = "TRIGGER_SCRIPT_USED";
+TriggerContext::TriggerContext(
+    std::unique_ptr<ScriptParameters> script_parameters,
+    const std::string& experiment_ids,
+    bool is_cct,
+    bool onboarding_shown,
+    bool is_direct_action,
+    const std::string& caller_account_hash)
+    : script_parameters_(std::move(script_parameters)),
+      experiment_ids_(std::move(experiment_ids)),
+      cct_(is_cct),
+      onboarding_shown_(onboarding_shown),
+      direct_action_(is_direct_action),
+      caller_account_hash_(caller_account_hash) {}
 
-// Parameter that contains a base64-encoded GetTriggerScriptsResponseProto
-// message. This allows callers to directly inject trigger scripts, rather than
-// fetching them from a remote backend.
-const char kBase64TriggerScriptsResponseProtoParameterName[] =
-    "TRIGGER_SCRIPTS_BASE64";
+TriggerContext::TriggerContext(std::vector<const TriggerContext*> contexts)
+    : TriggerContext() {
+  for (const TriggerContext* context : contexts) {
+    std::string context_experiment_ids = context->GetExperimentIds();
+    if (context_experiment_ids.empty())
+      continue;
 
-// static
-std::unique_ptr<TriggerContext> TriggerContext::CreateEmpty() {
-  return std::make_unique<TriggerContextImpl>();
+    if (!experiment_ids_.empty())
+      experiment_ids_.append(1, ',');
+
+    experiment_ids_.append(context_experiment_ids);
+  }
+
+  for (const TriggerContext* context : contexts) {
+    script_parameters_->MergeWith(context->GetScriptParameters());
+    cct_ |= context->GetCCT();
+    onboarding_shown_ |= context->GetOnboardingShown();
+    direct_action_ |= context->GetDirectAction();
+    if (caller_account_hash_.empty()) {
+      caller_account_hash_ = context->GetCallerAccountHash();
+    }
+  }
 }
 
-// static
-std::unique_ptr<TriggerContext> TriggerContext::Create(
-    std::map<std::string, std::string> params,
-    const std::string& exp) {
-  return std::make_unique<TriggerContextImpl>(params, exp);
+TriggerContext::~TriggerContext() = default;
+
+const ScriptParameters& TriggerContext::GetScriptParameters() const {
+  return *script_parameters_.get();
 }
 
-// static
-std::unique_ptr<TriggerContext> TriggerContext::Merge(
-    std::vector<const TriggerContext*> contexts) {
-  return std::make_unique<MergedTriggerContext>(contexts);
-}
-
-TriggerContext::TriggerContext() {}
-TriggerContext::~TriggerContext() {}
-
-base::Optional<std::string> TriggerContext::GetOverlayColors() const {
-  return GetParameter(kOverlayColorParameterName);
-}
-
-base::Optional<std::string> TriggerContext::GetPasswordChangeUsername() const {
-  return GetParameter(kPasswordChangeUsernameParameterName);
-}
-
-bool TriggerContext::WasStartedByLegacyTriggerScript() const {
-  return GetParameter(kLiteScriptPathParamaterName).has_value();
-}
-
-base::Optional<std::string>
-TriggerContext::GetBase64TriggerScriptsResponseProto() const {
-  return GetParameter(kBase64TriggerScriptsResponseProtoParameterName);
-}
-
-TriggerContextImpl::TriggerContextImpl() {}
-
-TriggerContextImpl::TriggerContextImpl(
-    std::map<std::string, std::string> parameters,
-    const std::string& experiment_ids)
-    : parameters_(std::move(parameters)),
-      experiment_ids_(std::move(experiment_ids)) {}
-
-TriggerContextImpl::~TriggerContextImpl() = default;
-
-std::map<std::string, std::string> TriggerContextImpl::GetParameters() const {
-  return parameters_;
-}
-
-base::Optional<std::string> TriggerContextImpl::GetParameter(
-    const std::string& name) const {
-  auto iter = parameters_.find(name);
-  if (iter == parameters_.end())
-    return base::nullopt;
-
-  return iter->second;
-}
-
-std::string TriggerContextImpl::experiment_ids() const {
+std::string TriggerContext::GetExperimentIds() const {
   return experiment_ids_;
 }
 
-bool TriggerContextImpl::HasExperimentId(
-    const std::string& experiment_id) const {
+bool TriggerContext::HasExperimentId(const std::string& experiment_id) const {
   std::vector<std::string> experiments = base::SplitString(
       experiment_ids_, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
       base::SplitResult::SPLIT_WANT_NONEMPTY);
@@ -101,103 +77,20 @@ bool TriggerContextImpl::HasExperimentId(
          experiments.end();
 }
 
-bool TriggerContextImpl::is_cct() const {
+bool TriggerContext::GetCCT() const {
   return cct_;
 }
 
-bool TriggerContextImpl::is_onboarding_shown() const {
+bool TriggerContext::GetOnboardingShown() const {
   return onboarding_shown_;
 }
 
-bool TriggerContextImpl::is_direct_action() const {
+bool TriggerContext::GetDirectAction() const {
   return direct_action_;
 }
 
-std::string TriggerContextImpl::get_caller_account_hash() const {
+std::string TriggerContext::GetCallerAccountHash() const {
   return caller_account_hash_;
-}
-
-MergedTriggerContext::MergedTriggerContext(
-    std::vector<const TriggerContext*> contexts)
-    : contexts_(contexts) {}
-
-MergedTriggerContext::~MergedTriggerContext() {}
-
-std::map<std::string, std::string> MergedTriggerContext::GetParameters() const {
-  std::map<std::string, std::string> merged_parameters;
-  for (const TriggerContext* context : contexts_) {
-    for (const auto& parameter : context->GetParameters()) {
-      merged_parameters.insert(parameter);
-    }
-  }
-  return merged_parameters;
-}
-
-base::Optional<std::string> MergedTriggerContext::GetParameter(
-    const std::string& name) const {
-  for (const TriggerContext* context : contexts_) {
-    auto opt_value = context->GetParameter(name);
-    if (opt_value)
-      return opt_value;
-  }
-  return base::nullopt;
-}
-
-std::string MergedTriggerContext::experiment_ids() const {
-  std::string experiment_ids;
-  for (const TriggerContext* context : contexts_) {
-    std::string context_experiment_ids = context->experiment_ids();
-    if (context_experiment_ids.empty())
-      continue;
-
-    if (!experiment_ids.empty())
-      experiment_ids.append(1, ',');
-
-    experiment_ids.append(context->experiment_ids());
-  }
-  return experiment_ids;
-}
-
-bool MergedTriggerContext::HasExperimentId(
-    const std::string& experiment_id) const {
-  for (const TriggerContext* context : contexts_) {
-    if (context->HasExperimentId(experiment_id)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool MergedTriggerContext::is_cct() const {
-  for (const TriggerContext* context : contexts_) {
-    if (context->is_cct())
-      return true;
-  }
-  return false;
-}
-
-bool MergedTriggerContext::is_onboarding_shown() const {
-  for (const TriggerContext* context : contexts_) {
-    if (context->is_onboarding_shown())
-      return true;
-  }
-  return false;
-}
-
-bool MergedTriggerContext::is_direct_action() const {
-  for (const TriggerContext* context : contexts_) {
-    if (context->is_direct_action())
-      return true;
-  }
-  return false;
-}
-
-std::string MergedTriggerContext::get_caller_account_hash() const {
-  for (const TriggerContext* context : contexts_) {
-    if (!context->get_caller_account_hash().empty())
-      return context->get_caller_account_hash();
-  }
-  return "";
 }
 
 }  // namespace autofill_assistant

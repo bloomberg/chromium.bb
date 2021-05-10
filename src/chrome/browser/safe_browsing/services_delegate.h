@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
-#include "components/safe_browsing/content/password_protection/password_protection_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 class Profile;
@@ -38,9 +37,6 @@ namespace safe_browsing {
 class DownloadProtectionService;
 #endif
 class IncidentReportingService;
-class PasswordProtectionService;
-class ResourceRequestDetector;
-struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
 struct V4ProtocolConfig;
@@ -64,7 +60,6 @@ class ServicesDelegate {
     virtual bool CanCreateDownloadProtectionService() = 0;
 #endif
     virtual bool CanCreateIncidentReportingService() = 0;
-    virtual bool CanCreateResourceRequestDetector() = 0;
 
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
@@ -73,7 +68,6 @@ class ServicesDelegate {
     virtual DownloadProtectionService* CreateDownloadProtectionService() = 0;
 #endif
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
-    virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
   };
 
   // Creates the ServicesDelegate using its's default ServicesCreator.
@@ -106,7 +100,6 @@ class ServicesDelegate {
   virtual void RefreshState(bool enable) = 0;
 
   // See the SafeBrowsingService methods of the same name.
-  virtual void ProcessResourceRequest(const ResourceRequestInfo* request) = 0;
   virtual std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
   CreatePreferenceValidationDelegate(Profile* profile) = 0;
   virtual void RegisterDelayedAnalysisCallback(
@@ -127,11 +120,6 @@ class ServicesDelegate {
       const V4ProtocolConfig& v4_config) = 0;
   virtual void StopOnIOThread(bool shutdown) = 0;
 
-  void CreatePasswordProtectionService(Profile* profile);
-  void RemovePasswordProtectionService(Profile* profile);
-  PasswordProtectionService* GetPasswordProtectionService(
-      Profile* profile) const;
-
   virtual void CreateTelemetryService(Profile* profile) {}
   virtual void RemoveTelemetryService(Profile* profile) {}
 
@@ -151,12 +139,6 @@ class ServicesDelegate {
   ServicesCreator* const services_creator_;
 
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
-
-  // Tracks existing Profiles, and their corresponding
-  // ChromePasswordProtectionService instances.
-  // Accessed on UI thread.
-  base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
-      password_protection_service_map_;
 
   // Tracks existing Profiles, and their corresponding
   // SafeBrowsingNetworkContexts. Accessed on UI thread.

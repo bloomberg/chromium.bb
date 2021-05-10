@@ -29,6 +29,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -54,6 +55,7 @@ WebAppConfirmationView::WebAppConfirmationView(
   DCHECK(web_app_info_);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
+  SetModalType(ui::MODAL_TYPE_CHILD);
   SetTitle(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
@@ -154,10 +156,6 @@ views::View* WebAppConfirmationView::GetInitiallyFocusedView() {
   return title_tf_;
 }
 
-ui::ModalType WebAppConfirmationView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 bool WebAppConfirmationView::ShouldShowCloseButton() const {
   return false;
 }
@@ -204,6 +202,10 @@ base::string16 WebAppConfirmationView::GetTrimmedTitle() const {
   base::TrimWhitespace(title, base::TRIM_ALL, &title);
   return title;
 }
+
+BEGIN_METADATA(WebAppConfirmationView, views::DialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(base::string16, TrimmedTitle)
+END_METADATA
 
 namespace chrome {
 

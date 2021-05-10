@@ -199,7 +199,14 @@ Error Surface::initialize(const Display *display)
     {
         GLenum internalFormat =
             static_cast<GLenum>(mState.attributes.get(EGL_TEXTURE_INTERNAL_FORMAT_ANGLE));
-        GLenum type  = static_cast<GLenum>(mState.attributes.get(EGL_TEXTURE_TYPE_ANGLE));
+        GLenum type = static_cast<GLenum>(mState.attributes.get(EGL_TEXTURE_TYPE_ANGLE));
+
+        // GL_RGBA + GL_HALF_FLOAT is not a valid format/type combination in GLES like it is in
+        // desktop GL. Adjust the frontend format to be sized RGBA16F.
+        if (internalFormat == GL_RGBA && type == GL_HALF_FLOAT)
+        {
+            internalFormat = GL_RGBA16F;
+        }
         mColorFormat = gl::Format(internalFormat, type);
     }
     if (mBuftype == EGL_D3D_TEXTURE_ANGLE)
@@ -290,8 +297,11 @@ Error Surface::swap(const gl::Context *context)
     return NoError();
 }
 
-Error Surface::swapWithDamage(const gl::Context *context, EGLint *rects, EGLint n_rects)
+Error Surface::swapWithDamage(const gl::Context *context, const EGLint *rects, EGLint n_rects)
 {
+    ANGLE_TRACE_EVENT0("gpu.angle", "egl::Surface::swapWithDamage");
+    context->onPreSwap();
+
     context->getState().getOverlay()->onSwap();
 
     ANGLE_TRY(mImplementation->swapWithDamage(context, rects, n_rects));
@@ -301,6 +311,9 @@ Error Surface::swapWithDamage(const gl::Context *context, EGLint *rects, EGLint 
 
 Error Surface::swapWithFrameToken(const gl::Context *context, EGLFrameTokenANGLE frameToken)
 {
+    ANGLE_TRACE_EVENT0("gpu.angle", "egl::Surface::swapWithFrameToken");
+    context->onPreSwap();
+
     context->getState().getOverlay()->onSwap();
 
     ANGLE_TRY(mImplementation->swapWithFrameToken(context, frameToken));
@@ -559,6 +572,12 @@ bool Surface::isRenderable(const gl::Context *context,
                            const gl::ImageIndex &imageIndex) const
 {
     return true;
+}
+
+bool Surface::isYUV() const
+{
+    // EGL_EXT_yuv_surface is not implemented.
+    return false;
 }
 
 GLuint Surface::getId() const

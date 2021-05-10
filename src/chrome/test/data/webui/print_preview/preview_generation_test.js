@@ -8,6 +8,10 @@ import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js'
 import {getCddTemplate, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
 import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 
+// <if expr="chromeos">
+import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
+// </if>
+
 window.preview_generation_test = {};
 preview_generation_test.suiteName = 'PreviewGenerationTest';
 /** @enum {string} */
@@ -57,6 +61,9 @@ suite(preview_generation_test.suiteName, function() {
   setup(function() {
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.instance_ = nativeLayer;
+    // <if expr="chromeos">
+    setNativeLayerCrosInstance();
+    // </if>
     document.body.innerHTML = '';
   });
 
@@ -68,8 +75,8 @@ suite(preview_generation_test.suiteName, function() {
    */
   function initialize() {
     nativeLayer.setInitialSettings(initialSettings);
-    nativeLayer.setLocalDestinationCapabilities(
-        getCddTemplate(initialSettings.printerName));
+    nativeLayer.setLocalDestinations(
+        [{deviceName: initialSettings.printerName, printerName: 'FooName'}]);
     nativeLayer.setPageCount(3);
     const pluginProxy = new TestPluginProxy();
     PluginProxyImpl.instance_ = pluginProxy;

@@ -84,7 +84,7 @@ bool Isolate::is_catchable_by_wasm(Object exception) {
   if (!is_catchable_by_javascript(exception)) return false;
   if (!exception.IsJSObject()) return true;
   // We don't allocate, but the LookupIterator interface expects a handle.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   HandleScope handle_scope(this);
   LookupIterator it(this, handle(JSReceiver::cast(exception), this),
                     factory()->wasm_uncatchable_symbol(),
@@ -112,6 +112,11 @@ Isolate::ExceptionScope::ExceptionScope(Isolate* isolate)
 
 Isolate::ExceptionScope::~ExceptionScope() {
   isolate_->set_pending_exception(*pending_exception_);
+}
+
+bool Isolate::IsAnyInitialArrayPrototype(JSArray array) {
+  DisallowGarbageCollection no_gc;
+  return IsInAnyContext(array, Context::INITIAL_ARRAY_PROTOTYPE_INDEX);
 }
 
 #define NATIVE_CONTEXT_FIELD_ACCESSOR(index, type, name)    \

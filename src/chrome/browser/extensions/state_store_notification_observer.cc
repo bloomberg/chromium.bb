@@ -15,9 +15,9 @@ StateStoreNotificationObserver::StateStoreNotificationObserver(
     StateStore* state_store)
     : state_store_(state_store) {
   on_session_restored_callback_subscription_ =
-      SessionRestore::RegisterOnSessionRestoredCallback(
-          base::Bind(&StateStoreNotificationObserver::OnSessionRestoreDone,
-                     base::Unretained(this)));
+      SessionRestore::RegisterOnSessionRestoredCallback(base::BindRepeating(
+          &StateStoreNotificationObserver::OnSessionRestoreDone,
+          base::Unretained(this)));
 }
 
 StateStoreNotificationObserver::~StateStoreNotificationObserver() {
@@ -25,7 +25,7 @@ StateStoreNotificationObserver::~StateStoreNotificationObserver() {
 
 void StateStoreNotificationObserver::OnSessionRestoreDone(
     int /* num_tabs_restored */) {
-  on_session_restored_callback_subscription_.reset();
+  on_session_restored_callback_subscription_ = {};
   state_store_->RequestInitAfterDelay();
 }
 

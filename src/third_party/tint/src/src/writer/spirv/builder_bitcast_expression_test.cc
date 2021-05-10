@@ -15,38 +15,31 @@
 #include "gtest/gtest.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/float_literal.h"
-#include "src/ast/module.h"
 #include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type/f32_type.h"
-#include "src/ast/type/u32_type.h"
-#include "src/context.h"
+#include "src/program.h"
+#include "src/type/f32_type.h"
+#include "src/type/u32_type.h"
 #include "src/type_determiner.h"
 #include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
+#include "src/writer/spirv/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace spirv {
 namespace {
 
-using BuilderTest = testing::Test;
+using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Bitcast) {
-  ast::type::U32Type u32;
-  ast::type::F32Type f32;
+  auto* bitcast = create<ast::BitcastExpression>(ty.u32(), Expr(2.4f));
 
-  ast::BitcastExpression bitcast(
-      &u32, std::make_unique<ast::ScalarConstructorExpression>(
-                std::make_unique<ast::FloatLiteral>(&f32, 2.4)));
+  WrapInFunction(bitcast);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&bitcast)) << td.error();
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateBitcastExpression(&bitcast), 1u);
+  EXPECT_EQ(b.GenerateBitcastExpression(bitcast), 1u);
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 0
 %3 = OpTypeFloat 32
@@ -58,20 +51,14 @@ TEST_F(BuilderTest, Bitcast) {
 }
 
 TEST_F(BuilderTest, Bitcast_DuplicateType) {
-  ast::type::F32Type f32;
+  auto* bitcast = create<ast::BitcastExpression>(ty.f32(), Expr(2.4f));
 
-  ast::BitcastExpression bitcast(
-      &f32, std::make_unique<ast::ScalarConstructorExpression>(
-                std::make_unique<ast::FloatLiteral>(&f32, 2.4)));
+  WrapInFunction(bitcast);
 
-  Context ctx;
-  ast::Module mod;
-  TypeDeterminer td(&ctx, &mod);
-  ASSERT_TRUE(td.DetermineResultType(&bitcast)) << td.error();
+  spirv::Builder& b = Build();
 
-  Builder b(&mod);
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateBitcastExpression(&bitcast), 1u);
+  EXPECT_EQ(b.GenerateBitcastExpression(bitcast), 1u);
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeFloat 32
 %3 = OpConstant %2 2.4000001

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -56,13 +57,17 @@ void LogMetricsOnReportSend(ConversionReport* report) {
   // time since the report was originally scheduled, for reports at startup
   // whose |report_time| changes due to additional startup delay.
   base::Time now = base::Time::Now();
-  base::TimeDelta delay = (now - report->report_time) + report->extra_delay;
-  base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay", delay,
+  base::TimeDelta time_since_original_report_time =
+      (now - report->report_time) + report->extra_delay;
+  base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay",
+                                time_since_original_report_time,
                                 base::TimeDelta::FromSeconds(1),
                                 base::TimeDelta::FromDays(7), /*buckets=*/100);
 
-  // TODO(csharrison): We should thread the conversion time alongside the
-  // ConversionReport to log the effective time since conversion.
+  base::TimeDelta time_from_conversion_to_report_send =
+      report->report_time - report->conversion_time;
+  UMA_HISTOGRAM_COUNTS_1000("Conversions.TimeFromConversionToReportSend",
+                            time_from_conversion_to_report_send.InHours());
 }
 
 GURL GetReportUrl(const content::ConversionReport& report) {
@@ -97,7 +102,8 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetReportUrl(*report);
-  resource_request->referrer = report->impression.conversion_origin().GetURL();
+  resource_request->referrer =
+      GURL(report->impression.ConversionDestination().Serialize());
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->load_flags =
@@ -138,6 +144,15 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
   auto it = loaders_in_progress_.insert(loaders_in_progress_.begin(),
                                         std::move(simple_url_loader));
   simple_url_loader_ptr->SetTimeoutDuration(base::TimeDelta::FromSeconds(30));
+
+  // Retry once on network change. A network change during DNS resolution
+  // results in a DNS error rather than a network change error, so retry in
+  // those cases as well.
+  // TODO(http://crbug.com/1181106): Consider logging metrics for how often this
+  // retry succeeds/fails.
+  int retry_mode = network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
+                   network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED;
+  simple_url_loader_ptr->SetRetryOptions(1 /* max_retries */, retry_mode);
 
   // Unretained is safe because the URLLoader is owned by |this| and will be
   // deleted before |this|.

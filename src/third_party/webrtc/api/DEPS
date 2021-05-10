@@ -45,7 +45,6 @@ specific_include_rules = {
     "+rtc_base/system/rtc_export.h",
     "+rtc_base/system/rtc_export_template.h",
     "+rtc_base/units/unit_base.h",
-    "+rtc_base/deprecation.h",
   ],
 
   "array_view\.h": [
@@ -118,10 +117,6 @@ specific_include_rules = {
   "packet_socket_factory\.h": [
     "+rtc_base/proxy_info.h",
     "+rtc_base/async_packet_socket.h",
-  ],
-
-  "peer_connection_factory_proxy\.h": [
-    "+rtc_base/bind.h",
   ],
 
   "peer_connection_interface\.h": [
@@ -279,6 +274,11 @@ specific_include_rules = {
 
   "video_encoder_config\.h": [
     "+rtc_base/ref_count.h",
+  ],
+
+  "sequence_checker\.h": [
+    "+rtc_base/synchronization/sequence_checker_internal.h",
+    "+rtc_base/thread_annotations.h",
   ],
 
   # .cc files in api/ should not be restricted in what they can #include,

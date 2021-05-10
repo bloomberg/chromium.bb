@@ -235,7 +235,7 @@ static uint32_t pack_v68(const SkPaint& paint, unsigned flatFlags) {
     packed |= shift_bits(paint.getStrokeCap(),     16, 2);
     packed |= shift_bits(paint.getStrokeJoin(),    18, 2);
     packed |= shift_bits(paint.getStyle(),         20, 2);
-    packed |= shift_bits(paint.getFilterQuality(), 22, 2);
+    packed |= shift_bits(SkPaintPriv::GetFQ(paint), 22, 2);
     packed |= shift_bits(flatFlags,                24, 8);
     return packed;
 }
@@ -252,7 +252,9 @@ static uint32_t unpack_v68(SkPaint* paint, uint32_t packed, SkSafeRange& safe) {
     packed >>= 2;
     paint->setStyle(safe.checkLE(packed & 0x3, SkPaint::kStrokeAndFill_Style));
     packed >>= 2;
+#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
     paint->setFilterQuality(safe.checkLE(packed & 0x3, kLast_SkFilterQuality));
+#endif
     packed >>= 2;
     return packed;
 }
@@ -305,7 +307,7 @@ SkReadPaintResult SkPaintPriv::Unflatten(SkPaint* paint, SkReadBuffer& buffer, S
         paint->setShader(buffer.readShader());
         paint->setMaskFilter(buffer.readMaskFilter());
         paint->setColorFilter(buffer.readColorFilter());
-        (void)buffer.readDrawLooper();
+        (void)buffer.read32();  // was drawLooper (zero)
         paint->setImageFilter(buffer.readImageFilter());
     } else {
         paint->setPathEffect(nullptr);

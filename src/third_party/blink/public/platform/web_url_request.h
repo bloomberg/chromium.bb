@@ -216,6 +216,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT network::mojom::RequestMode GetMode() const;
   BLINK_PLATFORM_EXPORT void SetMode(network::mojom::RequestMode);
 
+  // True if the request is for a favicon.
+  BLINK_PLATFORM_EXPORT bool GetFavicon() const;
+  BLINK_PLATFORM_EXPORT void SetFavicon(bool);
+
   // The credentials mode which will be passed to the ServiceWorker.
   BLINK_PLATFORM_EXPORT network::mojom::CredentialsMode GetCredentialsMode()
       const;
@@ -316,6 +320,10 @@ class WebURLRequest {
   // Specifies a Trust Tokens protocol operation to execute alongside the
   // request's load (https://github.com/wicg/trust-token-api).
   BLINK_PLATFORM_EXPORT network::OptionalTrustTokenParams TrustTokenParams()
+      const;
+
+  BLINK_PLATFORM_EXPORT base::Optional<WebURL> WebBundleUrl() const;
+  BLINK_PLATFORM_EXPORT base::Optional<base::UnguessableToken> WebBundleToken()
       const;
 
 #if INSIDE_BLINK

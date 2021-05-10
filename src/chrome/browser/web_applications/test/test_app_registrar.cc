@@ -8,8 +8,8 @@
 
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -122,6 +122,11 @@ const apps::ShareTarget* TestAppRegistrar::GetAppShareTarget(
   return nullptr;
 }
 
+blink::mojom::CaptureLinks TestAppRegistrar::GetAppCaptureLinks(
+    const web_app::AppId& app_id) const {
+  return blink::mojom::CaptureLinks::kUndefined;
+}
+
 base::Optional<GURL> TestAppRegistrar::GetAppScopeInternal(
     const AppId& app_id) const {
   const auto& result = installed_apps_.find(app_id);
@@ -145,6 +150,17 @@ std::vector<DisplayMode> TestAppRegistrar::GetAppDisplayModeOverride(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return std::vector<DisplayMode>();
+}
+
+apps::UrlHandlers TestAppRegistrar::GetAppUrlHandlers(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return std::vector<apps::UrlHandlerInfo>();
+}
+
+GURL TestAppRegistrar::GetAppManifestUrl(const web_app::AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return GURL::EmptyGURL();
 }
 
 base::Time TestAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
@@ -185,7 +201,7 @@ TestAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
 RunOnOsLoginMode TestAppRegistrar::GetAppRunOnOsLoginMode(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return RunOnOsLoginMode::kUndefined;
+  return RunOnOsLoginMode::kNotRun;
 }
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {

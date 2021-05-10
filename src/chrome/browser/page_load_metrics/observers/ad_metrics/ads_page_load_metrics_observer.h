@@ -18,24 +18,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/page_ad_density_tracker.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom-forward.h"
-#include "components/performance_manager/public/v8_memory/v8_detailed_memory.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
-using MeasurementMode =
-    performance_manager::v8_memory::V8DetailedMemoryRequest::MeasurementMode;
-
 namespace features {
 extern const base::Feature kRestrictedNavigationAdTagging;
-extern const base::Feature kV8PerAdFrameMemoryMonitoring;
-extern const base::FeatureParam<int> kMemoryPollInterval;
-extern const base::FeatureParam<MeasurementMode>::Option memory_poll_modes[];
-extern const base::FeatureParam<MeasurementMode> kMemoryPollMode;
 }
 
 class HeavyAdBlocklist;
@@ -44,7 +37,6 @@ class HeavyAdBlocklist;
 // relevant per-frame and whole-page byte statistics.
 class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
-      public performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq,
       public subresource_filter::SubresourceFilterObserver {
  public:
   using AggregateFrameData = ad_metrics::AggregateFrameData;
@@ -135,12 +127,8 @@ class AdsPageLoadMetricsObserver
     heavy_ad_threshold_noise_provider_ = std::move(noise_provider);
   }
 
-  // performance_manager::v8_memory::V8DetailedMemoryObserverAnySeq
-  void OnV8MemoryMeasurementAvailable(
-      performance_manager::RenderProcessHostId render_process_host_id,
-      const performance_manager::v8_memory::V8DetailedMemoryProcessData&
-          process_data,
-      const V8DetailedMemoryObserverAnySeq::FrameDataMap& frame_data) override;
+  void OnV8MemoryChanged(const std::vector<page_load_metrics::MemoryUpdate>&
+                             memory_updates) override;
 
   void UpdateAggregateMemoryUsage(int64_t bytes,
                                   ad_metrics::FrameVisibility visibility);
@@ -188,7 +176,8 @@ class AdsPageLoadMetricsObserver
 
   // subresource_filter::SubresourceFilterObserver:
   void OnAdSubframeDetected(
-      content::RenderFrameHost* render_frame_host) override;
+      content::RenderFrameHost* render_frame_host,
+      const subresource_filter::FrameAdEvidence& ad_evidence) override;
   void OnSubresourceFilterGoingAway() override;
   void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
@@ -206,14 +195,6 @@ class AdsPageLoadMetricsObserver
   int GetUnaccountedAdBytes(
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) const;
-
-  // Looks up the |frame_node_id| in the current memory usage map, updates it
-  // with the current bytes (or removes it), and returns the
-  // difference between the new value (0 if removed) and the old one, or the
-  // delta in the amount of memory the frame is using.
-  int64_t UpdateMemoryUsageForFrame(FrameTreeNodeId frame_node_id,
-                                    uint64_t current_bytes);
-  int64_t RemoveMemoryUsageForFrame(FrameTreeNodeId frame_node_id);
 
   // Updates page level counters for resource loads.
   void ProcessResourceForPage(
@@ -253,6 +234,10 @@ class AdsPageLoadMetricsObserver
   // |ad_frames_data_storage_|.
   FrameTreeData* FindFrameData(FrameTreeNodeId id);
 
+  // When a page has reached its limit of heavy ads interventions, will trigger
+  // ads interventions for all ads on the page if appropriate.
+  void MaybeTriggerStrictHeavyAdIntervention();
+
   // Triggers the heavy ad intervention page in the target frame if it is safe
   // to do so on this origin, and the frame meets the criteria to be considered
   // a heavy ad. This first sends an intervention report to every affected
@@ -261,7 +246,7 @@ class AdsPageLoadMetricsObserver
       content::RenderFrameHost* render_frame_host,
       FrameTreeData* frame_data);
 
-  bool IsBlocklisted();
+  bool IsBlocklisted(bool report);
   HeavyAdBlocklist* GetHeavyAdBlocklist();
 
   // Maps a frame (by id) to the corresponding FrameInstance. Multiple frame ids
@@ -311,7 +296,7 @@ class AdsPageLoadMetricsObserver
   // on the URL of this page. Incognito Profiles will cause this to be set to
   // true. Used as a cache to avoid checking the blocklist once the page is
   // blocklisted. Once blocklisted, a page load cannot be unblocklisted.
-  bool heavy_ads_blocklist_blocklisted_ = false;
+  base::Optional<blocklist::BlocklistReason> heavy_ads_blocklist_reason_;
 
   // Pointer to the blocklist used to throttle the heavy ad intervention. Can
   // be replaced by tests.
@@ -334,17 +319,8 @@ class AdsPageLoadMetricsObserver
   // The maximum ad density measurements for the page during its lifecycle.
   PageAdDensityTracker page_ad_density_tracker_;
 
-  // Tracks per ad-frame V8 memory measurements for the page during its
-  // lifecycle. Lazily initialized when the first ad is detected.
-  std::unique_ptr<performance_manager::v8_memory::V8DetailedMemoryRequestAnySeq>
-      memory_request_;
-
   // Tracks number of memory updates received.
-  int num_memory_updates_ = 0;
-
-  // Tracks number of per-frame memory measurements missed due to receipt
-  // after the corresponding RenderFrameHost has been destroyed.
-  int num_missed_memory_measurements_ = 0;
+  int memory_update_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

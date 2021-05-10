@@ -19,11 +19,9 @@ content_app_deps = [
   "//content:export",
   "//content:sandbox_helper_win",
   "//content/public/common:common_sources",
-  "//content/public/common:service_names",
   "//crypto",
   "//mojo/core/embedder",
   "//ppapi/buildflags",
-  "//services/service_manager/public/mojom",
   "//services/tracing/public/cpp",
   "//ui/base",
   "//ui/gfx",
@@ -69,10 +67,13 @@ source_set("content_main_runner_app") {
   sources = [
     "content_main_runner_impl.cc",
     "content_main_runner_impl.h",
+    "partition_alloc_support.cc",
+    "partition_alloc_support.h",
   ]
 
   configs += extra_configs
   deps = content_app_deps + [
+           "//components/power_scheduler",
            "//content/browser",
            "//content/gpu:gpu_sources",
            "//content/public/browser:browser_sources",
@@ -94,8 +95,8 @@ source_set("app") {
     "content_main.cc",
     "mojo/mojo_init.cc",
     "mojo/mojo_init.h",
-    "service_manager_environment.cc",
-    "service_manager_environment.h",
+    "mojo_ipc_support.cc",
+    "mojo_ipc_support.h",
   ]
 
   configs += extra_configs

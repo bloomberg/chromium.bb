@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ImageCache} from './cache.m.js';
+// #import {ImageLoaderUtil} from './image_loader_util.m.js';
+// #import {ImageOrientation} from '../file_manager/foreground/js/metadata/image_orientation.m.js';
+// #import {PiexLoader} from './piex_loader.m.js';
+// #import {FileType} from '../file_manager/common/js/file_type.m.js';
+// #import {LoadImageRequest, LoadImageResponse, LoadImageResponseStatus} from './load_image_request.m.js';
+// #import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
+// clang-format on
+
 /**
  * Creates and starts downloading and then resizing of the image. Finally,
  * returns the image using the callback.
@@ -12,7 +22,7 @@
  * @param {function(!LoadImageResponse)} callback Response handler.
  * @constructor
  */
-function ImageRequestTask(id, cache, request, callback) {
+/* #export */ function ImageRequestTask(id, cache, request, callback) {
   /**
    * Global ID (concatenated client ID and client request ID).
    * @type {string}
@@ -81,6 +91,11 @@ function ImageRequestTask(id, cache, request, callback) {
    */
   this.context_ =
       /** @type {CanvasRenderingContext2D} */ (this.canvas_.getContext('2d'));
+
+  /**
+   * @type {ImageOrientation|null}
+   */
+  this.renderOrientation_ = null;
 
   /**
    * Callback to be called once downloading is finished.
@@ -391,7 +406,7 @@ ImageRequestTask.prototype.downloadThumbnail_ = function(onSuccess, onFailure) {
     PiexLoader.load(this.request_.url, chrome.runtime.reload)
         .then(
             function(data) {
-              this.request_.orientation =
+              this.renderOrientation_ =
                   ImageOrientation.fromExifOrientation(data.orientation);
               this.ifd_ = data.ifd;
               this.contentType_ = data.mimeType;
@@ -422,6 +437,9 @@ ImageRequestTask.prototype.downloadThumbnail_ = function(onSuccess, onFailure) {
   this.load(this.request_.url, (contentType, blob) => {
     this.image_.src = blob ? URL.createObjectURL(blob) : '!';
     this.contentType_ = contentType || null;
+    if (this.contentType_ === 'image/jpeg') {
+      this.renderOrientation_ = ImageOrientation.fromExifOrientation(1);
+    }
   }, onFailure);
 };
 
@@ -619,6 +637,13 @@ ImageRequestTask.prototype.sendImageData_ = function(width, height, data) {
  * @private
  */
 ImageRequestTask.prototype.onImageLoad_ = function() {
+  const requestOrientation = this.request_.orientation;
+
+  // Override the request orientation before processing if needed.
+  if (this.renderOrientation_) {
+    this.request_.orientation = this.renderOrientation_;
+  }
+
   // Perform processing if the url is not a data url, or if there are some
   // operations requested.
   let imageChanged = false;
@@ -630,6 +655,12 @@ ImageRequestTask.prototype.onImageLoad_ = function() {
     imageChanged = true;  // The image is now on the <canvas>.
   }
 
+  // Restore the request orientation after processing.
+  if (this.renderOrientation_) {
+    this.request_.orientation = requestOrientation;
+  }
+
+  // Finalize the request.
   this.sendImage_(imageChanged);
   this.cleanup_();
   this.downloadCallback_();

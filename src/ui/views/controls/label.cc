@@ -108,6 +108,19 @@ void Label::SetText(const base::string16& new_text) {
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
+void Label::SetAccessibleName(const base::string16& name) {
+  if (name == accessible_name_)
+    return;
+  accessible_name_ = name;
+  OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+}
+
+const base::string16& Label::GetAccessibleName() const {
+  return accessible_name_.empty() ? full_text_->GetDisplayText()
+                                  : accessible_name_;
+}
+
 int Label::GetTextContext() const {
   return text_context_;
 }
@@ -116,8 +129,11 @@ void Label::SetTextContext(int text_context) {
   if (text_context == text_context_)
     return;
   text_context_ = text_context;
+  full_text_->SetFontList(style::GetFont(text_context_, text_style_));
+  full_text_->SetMinLineHeight(GetLineHeight());
+  ClearDisplayText();
   UpdateColorsFromTheme();
-  OnPropertyChanged(&text_context_, views::kPropertyEffectsPaint);
+  OnPropertyChanged(&text_context_, kPropertyEffectsPreferredSizeChanged);
 }
 
 int Label::GetTextStyle() const {
@@ -129,10 +145,28 @@ void Label::SetTextStyle(int style) {
     return;
 
   text_style_ = style;
-  // TODO(pkasting): Seems like potentially |full_text_|'s font list and line
-  // height should be updated here?
+  full_text_->SetFontList(style::GetFont(text_context_, text_style_));
+  full_text_->SetMinLineHeight(GetLineHeight());
+  ClearDisplayText();
   UpdateColorsFromTheme();
   OnPropertyChanged(&text_style_, kPropertyEffectsPreferredSizeChanged);
+}
+
+void Label::SetTextStyleRange(int style, const gfx::Range& range) {
+  if (style == text_style_ || !range.IsValid() || range.is_empty() ||
+      !gfx::Range(0, GetText().size()).Contains(range))
+    return;
+
+  const auto details = style::GetFontDetails(text_context_, style);
+  // This function is not prepared to handle style requests that vary by
+  // anything other than weight.
+  DCHECK_EQ(details.typeface,
+            style::GetFontDetails(text_context_, text_style_).typeface);
+  DCHECK_EQ(details.size_delta,
+            style::GetFontDetails(text_context_, text_style_).size_delta);
+  full_text_->ApplyWeight(details.weight, range);
+  ClearDisplayText();
+  PreferredSizeChanged();
 }
 
 bool Label::GetAutoColorReadabilityEnabled() const {
@@ -370,6 +404,7 @@ void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   if (elide_behavior_ == elide_behavior)
     return;
   elide_behavior_ = elide_behavior;
+  UpdateFullTextElideBehavior();
   ClearDisplayText();
   OnPropertyChanged(&elide_behavior_, kPropertyEffectsPreferredSizeChanged);
 }
@@ -415,6 +450,16 @@ void Label::SetMaximumWidth(int max_width) {
     return;
   max_width_ = max_width;
   OnPropertyChanged(&max_width_, kPropertyEffectsPreferredSizeChanged);
+}
+
+void Label::SetMaximumWidthSingleLine(int max_width) {
+  DCHECK(!GetMultiLine());
+  if (max_width_single_line_ == max_width)
+    return;
+  max_width_single_line_ = max_width;
+  UpdateFullTextElideBehavior();
+  OnPropertyChanged(&max_width_single_line_,
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetCollapseWhenHidden() const {
@@ -504,7 +549,7 @@ std::vector<gfx::Rect> Label::GetSubstringBounds(const gfx::Range& range) {
   return substring_bounds;
 }
 
-views::PropertyChangedSubscription Label::AddTextChangedCallback(
+base::CallbackListSubscription Label::AddTextChangedCallback(
     views::PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&full_text_ + kLabelText,
                                     std::move(callback));
@@ -619,7 +664,7 @@ void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   else
     node_data->role = ax::mojom::Role::kStaticText;
 
-  node_data->SetName(full_text_->GetDisplayText());
+  node_data->SetName(GetAccessibleName());
 }
 
 base::string16 Label::GetTooltipText(const gfx::Point& p) const {
@@ -642,17 +687,13 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
                                                            : elide_behavior_;
 
   std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateRenderText();
+      full_text_->CreateInstanceOfSameStyle(GetText());
   render_text->SetHorizontalAlignment(GetHorizontalAlignment());
   render_text->SetVerticalAlignment(GetVerticalAlignment());
-  render_text->SetDirectionalityMode(full_text_->directionality_mode());
   render_text->SetElideBehavior(elide_behavior);
   render_text->SetObscured(GetObscured());
   render_text->SetMinLineHeight(GetLineHeight());
-  render_text->SetFontList(font_list());
   render_text->set_shadows(GetShadows());
-  render_text->SetCursorEnabled(false);
-  render_text->SetText(GetText());
   const bool multiline = GetMultiLine();
   render_text->SetMultiline(multiline);
   render_text->SetMaxLines(multiline ? GetMaxLines() : 0);
@@ -684,7 +725,8 @@ void Label::PaintText(gfx::Canvas* canvas) {
   if (display_text_)
     display_text_->Draw(canvas);
 
-#if DCHECK_IS_ON() && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
+#if DCHECK_IS_ON() && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(crbug.com/1139395): Enable this DCHECK on ChromeOS and LaCrOS by
   // fixing either this check (to correctly idenfify more paints-on-opaque
   // cases), refactoring parents to use background() or by fixing
@@ -773,7 +815,9 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
     GetFocusManager()->SetFocusedView(this);
   }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (event.IsOnlyMiddleMouseButton() && GetFocusManager() && !had_focus)
     GetFocusManager()->SetFocusedView(this);
 #endif
@@ -960,7 +1004,9 @@ bool Label::PasteSelectionClipboard() {
 }
 
 void Label::UpdateSelectionClipboard() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (!GetObscured()) {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
         .WriteText(GetSelectedText());
@@ -1031,9 +1077,7 @@ void Label::Init(const base::string16& text,
   full_text_->SetCursorEnabled(false);
   full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
   full_text_->SetMinLineHeight(GetLineHeight());
-  // NOTE: |full_text_| should not be elided at all. This is used to keep
-  // some properties and to compute the size of the string.
-  full_text_->SetElideBehavior(gfx::NO_ELIDE);
+  UpdateFullTextElideBehavior();
   full_text_->SetDirectionalityMode(directionality_mode);
 
   SetText(text);
@@ -1067,6 +1111,15 @@ gfx::Size Label::GetTextSize() const {
   gfx::Size size;
   if (GetText().empty()) {
     size = gfx::Size(0, GetLineHeight());
+  } else if (max_width_single_line_ > 0) {
+    DCHECK(!GetMultiLine());
+    // Enable eliding during text width calculation. This allows the RenderText
+    // to report an accurate width given the constraints and how it determines
+    // to elide the text. If we simply clamp the width to the max after the
+    // fact, then there may be some empty space left over *after* an ellipsis.
+    full_text_->SetDisplayRect(
+        gfx::Rect(0, 0, max_width_single_line_ - GetInsets().width(), 0));
+    size = full_text_->GetStringSize();
   } else {
     // Cancel the display rect of |full_text_|. The display rect may be
     // specified in GetHeightForWidth(), and specifying empty Rect cancels
@@ -1181,16 +1234,25 @@ void Label::BuildContextMenuContents() {
                                              IDS_APP_SELECT_ALL);
 }
 
+void Label::UpdateFullTextElideBehavior() {
+  // In single line mode when a max width has been set, |full_text_| uses
+  // elision to properly calculate the text size. Otherwise, it is not elided.
+  full_text_->SetElideBehavior(max_width_single_line_ > 0 ? elide_behavior_
+                                                          : gfx::NO_ELIDE);
+}
+
 BEGIN_METADATA(Label, View)
 ADD_PROPERTY_METADATA(base::string16, Text)
 ADD_PROPERTY_METADATA(int, TextContext)
 ADD_PROPERTY_METADATA(int, TextStyle)
 ADD_PROPERTY_METADATA(bool, AutoColorReadabilityEnabled)
-ADD_PROPERTY_METADATA(SkColor, EnabledColor)
+ADD_PROPERTY_METADATA(SkColor, EnabledColor, metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(gfx::ElideBehavior, ElideBehavior)
-ADD_PROPERTY_METADATA(SkColor, BackgroundColor)
-ADD_PROPERTY_METADATA(SkColor, SelectionTextColor)
-ADD_PROPERTY_METADATA(SkColor, SelectionBackgroundColor)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor, metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, SelectionTextColor, metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor,
+                      SelectionBackgroundColor,
+                      metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, SubpixelRenderingEnabled)
 ADD_PROPERTY_METADATA(bool, SkipSubpixelRenderingOpacityCheck)
 ADD_PROPERTY_METADATA(gfx::ShadowValues, Shadows)
@@ -1205,6 +1267,7 @@ ADD_PROPERTY_METADATA(base::string16, TooltipText)
 ADD_PROPERTY_METADATA(bool, HandlesTooltips)
 ADD_PROPERTY_METADATA(bool, CollapseWhenHidden)
 ADD_PROPERTY_METADATA(int, MaximumWidth)
+ADD_PROPERTY_METADATA(base::string16, AccessibleName)
 END_METADATA
 
 }  // namespace views

@@ -114,7 +114,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   // of deleting itself when done.
   content::BrowsingDataRemover* cookies_remover_;
 
-  std::unique_ptr<TemplateURLService::Subscription> template_url_service_sub_;
+  base::CallbackListSubscription template_url_service_subscription_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -127,7 +127,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
 };
 
 // Path to shortcut and command line arguments.
-typedef std::pair<base::FilePath, base::string16> ShortcutCommand;
+typedef std::pair<base::FilePath, std::wstring> ShortcutCommand;
 
 typedef base::RefCountedData<base::AtomicFlag> SharedCancellationFlag;
 

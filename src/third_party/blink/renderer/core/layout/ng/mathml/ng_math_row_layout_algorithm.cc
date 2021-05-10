@@ -145,7 +145,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   auto block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(),
       max_row_size.block_size + BorderScrollbarPadding().BlockSum(),
-      border_box_size.inline_size);
+      border_box_size.inline_size, Node().ShouldBeConsideredAsReplaced());
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -188,8 +188,7 @@ MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
 
   DCHECK_LE(sizes.min_size, sizes.max_size);
   sizes += BorderScrollbarPadding().InlineSum();
-
-  return {sizes, depends_on_percentage_block_size};
+  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
 }
 
 }  // namespace blink

@@ -32,8 +32,8 @@ LayoutUnit NGUnpositionedListMarker::InlineOffset(
   LayoutObject* list_item =
       marker_layout_object_->Marker().ListItem(*marker_layout_object_);
   auto margins = ListMarker::InlineMarginsForOutside(
-      marker_layout_object_->StyleRef(), list_item->StyleRef(),
-      marker_inline_size);
+      list_item->GetDocument(), marker_layout_object_->StyleRef(),
+      list_item->StyleRef(), marker_inline_size);
   return margins.first;
 }
 
@@ -65,7 +65,7 @@ base::Optional<LayoutUnit> NGUnpositionedListMarker::ContentAlignmentBaseline(
     // If this child is an empty line-box, the list marker should be aligned
     // with the next non-empty line box produced. (This can occur with floats
     // producing empty line-boxes).
-    if (line_box.IsEmptyLineBox() && !line_box.BreakToken()->IsFinished())
+    if (line_box.IsEmptyLineBox() && line_box.BreakToken())
       return base::nullopt;
 
     return line_box.Metrics().ascent;

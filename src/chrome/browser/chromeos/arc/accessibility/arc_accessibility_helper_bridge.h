@@ -12,7 +12,7 @@
 #include <tuple>
 
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -20,9 +20,9 @@
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_action_handler.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 class PrefService;
 class Profile;
@@ -49,7 +49,7 @@ class ArcAccessibilityHelperBridge
     : public KeyedService,
       public mojom::AccessibilityHelperHost,
       public ConnectionObserver<mojom::AccessibilityHelperInstance>,
-      public wm::ActivationChangeObserver,
+      public aura::client::FocusChangeObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
       public arc::ArcInputMethodManagerService::Observer,
@@ -112,10 +112,9 @@ class ArcAccessibilityHelperBridge
   void OnNotificationSurfaceRemoved(
       ash::ArcNotificationSurface* surface) override {}
 
-  // wm::ActivationChangeObserver overrides.
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  // aura::client::FocusChangeObserver overrides.
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
 
   // aura::WindowObserver overrides.
   void OnWindowPropertyChanged(aura::Window* window,
@@ -139,7 +138,7 @@ class ArcAccessibilityHelperBridge
 
  private:
   // virtual for testing.
-  virtual aura::Window* GetActiveWindow();
+  virtual aura::Window* GetFocusedArcWindow() const;
   virtual extensions::EventRouter* GetEventRouter() const;
   virtual arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(
       Profile* profile);
@@ -156,7 +155,7 @@ class ArcAccessibilityHelperBridge
       const base::Optional<gfx::Rect>& result_rect) const;
 
   void OnAccessibilityStatusChanged(
-      const chromeos::AccessibilityStatusEventDetails& event_details);
+      const ash::AccessibilityStatusEventDetails& event_details);
   void UpdateEnabledFeature();
   void UpdateWindowProperties(aura::Window* window);
   void SetExploreByTouchEnabled(bool enabled);
@@ -172,11 +171,11 @@ class ArcAccessibilityHelperBridge
       mojom::AccessibilityEventData* event_data) const;
   void DispatchCustomSpokenFeedbackToggled(bool enabled) const;
 
-  AXTreeSourceArc* CreateFromKey(TreeKey, aura::Window* window);
+  AXTreeSourceArc* CreateFromKey(TreeKey);
   AXTreeSourceArc* GetFromKey(const TreeKey&);
   AXTreeSourceArc* GetFromTreeId(ui::AXTreeID tree_id) const;
 
-  bool activation_observer_added_ = false;
+  bool focus_observer_added_ = false;
   bool is_focus_event_enabled_ = false;
   bool use_full_focus_mode_ = false;
   Profile* const profile_;
@@ -185,8 +184,7 @@ class ArcAccessibilityHelperBridge
 
   std::map<int32_t, int32_t> window_id_to_task_id_;
 
-  std::unique_ptr<chromeos::AccessibilityStatusSubscription>
-      accessibility_status_subscription_;
+  base::CallbackListSubscription accessibility_status_subscription_;
 
   arc::mojom::AccessibilityFilterType filter_type_ =
       arc::mojom::AccessibilityFilterType::OFF;

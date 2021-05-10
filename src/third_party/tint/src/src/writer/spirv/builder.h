@@ -18,23 +18,51 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "spirv/unified1/spirv.h"
+#include "src/ast/array_accessor_expression.h"
+#include "src/ast/assignment_statement.h"
+#include "src/ast/binary_expression.h"
+#include "src/ast/bitcast_expression.h"
+#include "src/ast/break_statement.h"
 #include "src/ast/builtin.h"
+#include "src/ast/call_expression.h"
+#include "src/ast/continue_statement.h"
+#include "src/ast/discard_statement.h"
 #include "src/ast/else_statement.h"
+#include "src/ast/identifier_expression.h"
+#include "src/ast/if_statement.h"
 #include "src/ast/literal.h"
-#include "src/ast/module.h"
+#include "src/ast/loop_statement.h"
+#include "src/ast/member_accessor_expression.h"
+#include "src/ast/return_statement.h"
 #include "src/ast/struct_member.h"
-#include "src/ast/type/access_control_type.h"
-#include "src/ast/type/storage_texture_type.h"
+#include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
-#include "src/namer.h"
+#include "src/ast/unary_op_expression.h"
+#include "src/ast/variable_decl_statement.h"
+#include "src/program_builder.h"
 #include "src/scope_stack.h"
+#include "src/type/access_control_type.h"
+#include "src/type/array_type.h"
+#include "src/type/matrix_type.h"
+#include "src/type/pointer_type.h"
+#include "src/type/storage_texture_type.h"
+#include "src/type/struct_type.h"
+#include "src/type/type_manager.h"
+#include "src/type/vector_type.h"
 #include "src/writer/spirv/function.h"
 #include "src/writer/spirv/instruction.h"
 
 namespace tint {
+
+// Forward declarations
+namespace semantic {
+class Call;
+}  // namespace semantic
+
 namespace writer {
 namespace spirv {
 
@@ -54,18 +82,18 @@ class Builder {
     uint32_t source_id;
     /// The type of the current chain source. This type matches the deduced
     /// result_type of the current source defined above.
-    ast::type::Type* source_type;
+    type::Type* source_type;
     /// A list of access chain indices to emit. Note, we _only_ have access
     /// chain indices if the source is pointer.
     std::vector<uint32_t> access_chain_indices;
   };
 
   /// Constructor
-  /// @param mod the module to generate from
-  explicit Builder(ast::Module* mod);
+  /// @param program the program
+  explicit Builder(const Program* program);
   ~Builder();
 
-  /// Generates the SPIR-V instructions for the given module
+  /// Generates the SPIR-V instructions for the given program
   /// @returns true if the SPIR-V was successfully built
   bool Build();
 
@@ -77,7 +105,7 @@ class Builder {
   /// @returns the number of uint32_t's needed to make up the results
   uint32_t total_size() const;
 
-  /// @returns the id bound for this module
+  /// @returns the id bound for this program
   uint32_t id_bound() const { return next_id_; }
 
   /// @returns the next id to be used
@@ -92,7 +120,8 @@ class Builder {
   /// @param cb the callback to execute
   void iterate(std::function<void(const Instruction&)> cb) const;
 
-  /// Adds an instruction to the list of capabilities
+  /// Adds an instruction to the list of capabilities, if the capability
+  /// hasn't already been added.
   /// @param cap the capability to set
   void push_capability(uint32_t cap);
   /// @returns the capabilities
@@ -170,15 +199,16 @@ class Builder {
   }
   /// @returns the functions
   const std::vector<Function>& functions() const { return functions_; }
-  /// Pushes an instruction to the current function
+  /// Pushes an instruction to the current function. If we're outside
+  /// a function then issue an internal error and return false.
   /// @param op the operation
   /// @param operands the operands
-  void push_function_inst(spv::Op op, const OperandList& operands) {
-    functions_.back().push_inst(op, operands);
-  }
+  /// @returns true if we succeeded
+  bool push_function_inst(spv::Op op, const OperandList& operands);
   /// Pushes a variable to the current function
   /// @param operands the variable operands
   void push_function_var(const OperandList& operands) {
+    assert(!functions_.empty());
     functions_.back().push_var(operands);
   }
 
@@ -186,14 +216,16 @@ class Builder {
   /// @param klass the storage class to convert
   /// @returns the SPIR-V storage class or SpvStorageClassMax on error.
   SpvStorageClass ConvertStorageClass(ast::StorageClass klass) const;
-  /// Converts a builtin to a SPIR-V builtin
+  /// Converts a builtin to a SPIR-V builtin and pushes a capability if needed.
   /// @param builtin the builtin to convert
   /// @returns the SPIR-V builtin or SpvBuiltInMax on error.
-  SpvBuiltIn ConvertBuiltin(ast::Builtin builtin) const;
+  SpvBuiltIn ConvertBuiltin(ast::Builtin builtin);
 
-  /// Generates a label for the given id
+  /// Generates a label for the given id. Emits an error and returns false if
+  /// we're currently outside a function.
   /// @param id the id to use for the label
-  void GenerateLabel(uint32_t id);
+  /// @returns true on success.
+  bool GenerateLabel(uint32_t id);
   /// Generates a uint32_t literal.
   /// @param val the value to generate
   /// @returns the ID of the generated literal
@@ -230,7 +262,7 @@ class Builder {
   bool GenerateExecutionModes(ast::Function* func, uint32_t id);
   /// Generates an expression
   /// @param expr the expression to generate
-  /// @returns the resulting ID of the exp = {};ression or 0 on error
+  /// @returns the resulting ID of the expression or 0 on error
   uint32_t GenerateExpression(ast::Expression* expr);
   /// Generates the instructions for a function
   /// @param func the function to generate
@@ -244,7 +276,7 @@ class Builder {
   /// @param type the type to generate for
   /// @param struct_id the struct id
   /// @param member_idx the member index
-  void GenerateMemberAccessControlIfNeeded(ast::type::Type* type,
+  void GenerateMemberAccessControlIfNeeded(type::Type* type,
                                            uint32_t struct_id,
                                            uint32_t member_idx);
   /// Generates a function variable
@@ -326,36 +358,39 @@ class Builder {
   /// @returns the expression ID on success or 0 otherwise
   uint32_t GenerateCallExpression(ast::CallExpression* expr);
   /// Generates an intrinsic call
-  /// @param ident the intrinsic expression
   /// @param call the call expression
+  /// @param intrinsic the semantic information for the intrinsic
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateIntrinsic(ast::IdentifierExpression* ident,
-                             ast::CallExpression* call);
-  /// Generates a texture intrinsic call
-  /// @param ident the texture intrinsic
+  uint32_t GenerateIntrinsic(ast::CallExpression* call,
+                             const semantic::Intrinsic* intrinsic);
+  /// Generates a texture intrinsic call. Emits an error and returns false if
+  /// we're currently outside a function.
   /// @param call the call expression
-  /// @param result_id result ID of the texture instruction
-  /// @param wgsl_params SPIR-V arguments for WGSL-specific intrinsic's call
+  /// @param intrinsic the semantic information for the texture intrinsic
+  /// @param result_type result type operand of the texture instruction
+  /// @param result_id result identifier operand of the texture instruction
   /// parameters
-  /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateTextureIntrinsic(ast::IdentifierExpression* ident,
-                                    ast::CallExpression* call,
-                                    uint32_t result_id,
-                                    OperandList wgsl_params);
+  /// @returns true on success
+  bool GenerateTextureIntrinsic(ast::CallExpression* call,
+                                const semantic::Intrinsic* intrinsic,
+                                spirv::Operand result_type,
+                                spirv::Operand result_id);
   /// Generates a sampled image
   /// @param texture_type the texture type
   /// @param texture_operand the texture operand
   /// @param sampler_operand the sampler operand
   /// @returns the expression ID
-  uint32_t GenerateSampledImage(ast::type::Type* texture_type,
+  uint32_t GenerateSampledImage(type::Type* texture_type,
                                 Operand texture_operand,
                                 Operand sampler_operand);
-  /// Generates a cast or object copy for the expression result
+  /// Generates a cast or object copy for the expression result,
+  /// or return the ID generated the expression if it is already
+  /// of the right type.
   /// @param to_type the type we're casting too
   /// @param from_expr the expression to cast
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateCastOrCopy(ast::type::Type* to_type,
-                              ast::Expression* from_expr);
+  uint32_t GenerateCastOrCopyOrPassthrough(type::Type* to_type,
+                                           ast::Expression* from_expr);
   /// Generates a loop statement
   /// @param stmt the statement to generate
   /// @returns true on successful generation
@@ -385,43 +420,44 @@ class Builder {
   /// Geneates an OpLoad
   /// @param type the type to load
   /// @param id the variable id to load
-  /// @returns the ID of the loaded value or |id| if type is not a pointer
-  uint32_t GenerateLoadIfNeeded(ast::type::Type* type, uint32_t id);
-  /// Geneates an OpStore
+  /// @returns the ID of the loaded value or `id` if type is not a pointer
+  uint32_t GenerateLoadIfNeeded(type::Type* type, uint32_t id);
+  /// Generates an OpStore. Emits an error and returns false if we're
+  /// currently outside a function.
   /// @param to the ID to store too
   /// @param from the ID to store from
-  void GenerateStore(uint32_t to, uint32_t from);
+  /// @returns true on success
+  bool GenerateStore(uint32_t to, uint32_t from);
   /// Generates a type if not already created
   /// @param type the type to create
   /// @returns the ID to use for the given type. Returns 0 on unknown type.
-  uint32_t GenerateTypeIfNeeded(ast::type::Type* type);
+  uint32_t GenerateTypeIfNeeded(type::Type* type);
   /// Generates a texture type declaration
   /// @param texture the texture to generate
   /// @param result the result operand
   /// @returns true if the texture was successfully generated
-  bool GenerateTextureType(ast::type::TextureType* texture,
-                           const Operand& result);
+  bool GenerateTextureType(type::Texture* texture, const Operand& result);
   /// Generates an array type declaration
   /// @param ary the array to generate
   /// @param result the result operand
   /// @returns true if the array was successfully generated
-  bool GenerateArrayType(ast::type::ArrayType* ary, const Operand& result);
+  bool GenerateArrayType(type::Array* ary, const Operand& result);
   /// Generates a matrix type declaration
   /// @param mat the matrix to generate
   /// @param result the result operand
   /// @returns true if the matrix was successfully generated
-  bool GenerateMatrixType(ast::type::MatrixType* mat, const Operand& result);
+  bool GenerateMatrixType(type::Matrix* mat, const Operand& result);
   /// Generates a pointer type declaration
   /// @param ptr the pointer type to generate
   /// @param result the result operand
   /// @returns true if the pointer was successfully generated
-  bool GeneratePointerType(ast::type::PointerType* ptr, const Operand& result);
+  bool GeneratePointerType(type::Pointer* ptr, const Operand& result);
   /// Generates a vector type declaration
   /// @param struct_type the vector to generate
   /// @param access_control the access controls to assign to the struct
   /// @param result the result operand
   /// @returns true if the vector was successfully generated
-  bool GenerateStructType(ast::type::StructType* struct_type,
+  bool GenerateStructType(type::Struct* struct_type,
                           ast::AccessControl access_control,
                           const Operand& result);
   /// Generates a struct member
@@ -440,13 +476,12 @@ class Builder {
   /// @param vec the vector to generate
   /// @param result the result operand
   /// @returns true if the vector was successfully generated
-  bool GenerateVectorType(ast::type::VectorType* vec, const Operand& result);
+  bool GenerateVectorType(type::Vector* vec, const Operand& result);
 
   /// Converts AST image format to SPIR-V and pushes an appropriate capability.
   /// @param format AST image format type
   /// @returns SPIR-V image format type
-  SpvImageFormat convert_image_format_to_spv(
-      const ast::type::ImageFormat format);
+  SpvImageFormat convert_image_format_to_spv(const type::ImageFormat format);
 
   /// Determines if the given type constructor is created from constant values
   /// @param expr the expression to check
@@ -459,19 +494,14 @@ class Builder {
   /// automatically.
   Operand result_op();
 
-  /// Retrives the id for the given function name
-  /// @param name the function name to search for
-  /// @returns the id for the given name or 0 on failure
-  uint32_t id_for_func_name(const std::string& name) {
-    if (func_name_to_id_.count(name) == 0) {
-      return 0;
-    }
-    return func_name_to_id_[name];
+  /// @returns the resolved type of the ast::Expression `expr`
+  /// @param expr the expression
+  type::Type* TypeOf(ast::Expression* expr) const {
+    return builder_.TypeOf(expr);
   }
 
-  ast::Module* mod_;
+  ProgramBuilder builder_;
   std::string error_;
-  Namer namer_;
   uint32_t next_id_ = 1;
   uint32_t current_label_id_ = 0;
   InstructionList capabilities_;
@@ -486,8 +516,7 @@ class Builder {
   std::vector<Function> functions_;
 
   std::unordered_map<std::string, uint32_t> import_name_to_id_;
-  std::unordered_map<std::string, uint32_t> func_name_to_id_;
-  std::unordered_map<std::string, ast::Function*> func_name_to_func_;
+  std::unordered_map<Symbol, uint32_t> func_symbol_to_id_;
   std::unordered_map<std::string, uint32_t> type_name_to_id_;
   std::unordered_map<std::string, uint32_t> const_to_id_;
   std::unordered_map<std::string, uint32_t>
@@ -496,6 +525,7 @@ class Builder {
   std::unordered_map<uint32_t, ast::Variable*> spirv_id_to_variable_;
   std::vector<uint32_t> merge_stack_;
   std::vector<uint32_t> continue_stack_;
+  std::unordered_set<uint32_t> capability_set_;
 };
 
 }  // namespace spirv

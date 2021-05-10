@@ -13,17 +13,16 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -37,7 +36,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -75,6 +73,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/app_sorting.h"
@@ -130,7 +129,7 @@ const int kWebAppIconSmallNonDefault = 16;
 
 // These Run on OS Login mode strings need to be in sync with
 // chrome/browser/resources/ntp4/apps_page.js:RUN_ON_OS_LOGIN_MODE enum.
-const char kRunOnOsLoginModeNone[] = "run_on_os_login_mode_none";
+const char kRunOnOsLoginModeNotRun[] = "run_on_os_login_mode_not_run";
 const char kRunOnOsLoginModeWindowed[] = "run_on_os_login_mode_windowed";
 
 // The Youtube app is incorrectly harded to be a 'bookmark app'. However, it is
@@ -279,15 +278,22 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
   }
   value->SetString("app_launch_ordinal", app_launch_ordinal.ToInternalValue());
 
-  // Run on OS Login can be changed only for locally installed web apps
+  // Only show the Run on OS Login menu item for locally installed web apps
   value->SetBoolean(
-      "mayChangeRunOnOsLoginMode",
+      "mayShowRunOnOsLoginMode",
       base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
           is_locally_installed);
+
+  value->SetBoolean(
+      "mayToggleRunOnOsLoginMode",
+      web_app_provider_->policy_manager().GetUrlRunOnOsLoginPolicy(
+          policy_installed_apps_[app_id]) ==
+          web_app::RunOnOsLoginPolicy::kAllowed);
+
   std::string runOnOsLoginModeString =
       (registrar.GetAppRunOnOsLoginMode(app_id) ==
-       web_app::RunOnOsLoginMode::kUndefined)
-          ? kRunOnOsLoginModeNone
+       web_app::RunOnOsLoginMode::kNotRun)
+          ? kRunOnOsLoginModeNotRun
           : kRunOnOsLoginModeWindowed;
   value->SetString("runOnOsLoginMode", runOnOsLoginModeString);
 }
@@ -400,15 +406,17 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
   value->SetString("app_launch_ordinal", app_launch_ordinal.ToInternalValue());
 
   // Run on OS Login is not implemented for extension/bookmark apps.
-  value->SetBoolean("mayChangeRunOnOsLoginMode", false);
+  value->SetBoolean("mayShowRunOnOsLoginMode", false);
+  value->SetBoolean("mayToggleRunOnOsLoginMode", false);
 }
 
 // static
-void AppLauncherHandler::GetLocalizedValues(Profile* profile,
-                                            base::DictionaryValue* values) {
+void AppLauncherHandler::RegisterLoadTimeData(
+    Profile* profile,
+    content::WebUIDataSource* source) {
   PrefService* prefs = profile->GetPrefs();
   int shown_page = prefs->GetInteger(prefs::kNtpShownPage);
-  values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
+  source->AddInteger("shown_page_index", shown_page & INDEX_MASK);
 }
 
 // static
@@ -569,19 +577,41 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
 
-void AppLauncherHandler::OnWebAppUninstalled(const web_app::AppId& app_id) {
+void AppLauncherHandler::OnWebAppWillBeUninstalled(
+    const web_app::AppId& app_id) {
   std::unique_ptr<base::DictionaryValue> app_info =
       std::make_unique<base::DictionaryValue>();
-  app_info->SetString(kInfoIdKey, app_id);
-  // Since |isUninstaLL| is true below, the only item needed in the app_info
+  // Since |isUninstall| is true below, the only item needed in the app_info
   // dictionary is the id.
+  app_info->SetString(kInfoIdKey, app_id);
   web_ui()->CallJavascriptFunctionUnsafe(
       "ntp.appRemoved", *app_info, /*isUninstall=*/base::Value(true),
       base::Value(!extension_id_prompting_.empty()));
 }
 
+void AppLauncherHandler::OnWebAppUninstalled(const web_app::AppId& app_id) {
+  // This can be redundant in most cases, however it is not uncommon for the
+  // chrome://apps page to be loaded, or reloaded, during the uninstallation of
+  // an app. In this state, the app is still in the registry, but the
+  // |OnWebAppWillBeUninstalled| event has already been sent. Thus we also
+  // listen to this event, to ensure that the app is removed.
+  std::unique_ptr<base::DictionaryValue> app_info =
+      std::make_unique<base::DictionaryValue>();
+  // Since |isUninstall| is true below, the only item needed in the app_info
+  // dictionary is the id.
+  app_info->SetString(kInfoIdKey, app_id);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ntp.appRemoved", *app_info, /*isUninstall=*/base::Value(true),
+      base::Value(!extension_id_prompting_.empty()));
+}
+
+void AppLauncherHandler::OnPolicyChanged() {
+  HandleGetApps(nullptr);
+}
+
 void AppLauncherHandler::OnAppRegistrarDestroyed() {
-  web_apps_observer_.RemoveAll();
+  web_apps_observation_.Reset();
+  web_apps_policy_manager_observation_.Reset();
 }
 
 void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
@@ -690,6 +720,10 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     }
   }
 
+  policy_installed_apps_ =
+      web_app_provider_->registrar().GetExternallyInstalledApps(
+          web_app::ExternalInstallSource::kExternalPolicy);
+
   SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.getAppsCallback", dictionary);
@@ -697,9 +731,9 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
   if (!has_loaded_apps_) {
-    base::Closure callback = base::Bind(
-        &AppLauncherHandler::OnExtensionPreferenceChanged,
-        base::Unretained(this));
+    base::RepeatingClosure callback =
+        base::BindRepeating(&AppLauncherHandler::OnExtensionPreferenceChanged,
+                            base::Unretained(this));
     extension_pref_change_registrar_.Init(
         ExtensionPrefs::Get(profile)->pref_service());
     extension_pref_change_registrar_.Add(
@@ -710,7 +744,9 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(
                        ExtensionSystem::Get(profile)->app_sorting()));
-    web_apps_observer_.Add(&web_app_provider_->registrar());
+    web_apps_observation_.Observe(&web_app_provider_->registrar());
+    web_apps_policy_manager_observation_.Observe(
+        &web_app_provider_->policy_manager());
   }
 
   has_loaded_apps_ = true;
@@ -955,7 +991,7 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
         chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
     chrome::ShowCreateChromeAppShortcutsDialog(
         browser->window()->GetNativeWindow(), browser->profile(), app_id,
-        base::BindRepeating([](bool success) {
+        base::BindOnce([](bool success) {
           base::UmaHistogramBoolean(
               "Apps.AppInfoDialog.CreateWebAppShortcutSuccess", success);
         }));
@@ -976,7 +1012,7 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
         web_ui()->GetWebContents());
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
-      base::BindRepeating([](bool success) {
+      base::BindOnce([](bool success) {
         base::UmaHistogramBoolean(
             "Apps.AppInfoDialog.CreateExtensionShortcutSuccess", success);
       }));
@@ -1025,13 +1061,9 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
     return;
   DCHECK(!FromBookmark(extension));
 
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
-                            AppInfoLaunchSource::FROM_APPS_PAGE,
-                            AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
-
   ShowAppInfoInNativeDialog(web_ui()->GetWebContents(),
                             Profile::FromWebUI(web_ui()), extension,
-                            base::Closure());
+                            base::DoNothing());
 }
 
 void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
@@ -1097,7 +1129,9 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   std::string url;
   CHECK(args->GetString(0, &url));
   GURL launch_url(url);
-
+  // Do not install app for invalid url.
+  if (!launch_url.SchemeIsHTTPOrHTTPS())
+    return;
   // Can only install one app at a time.
   if (attempting_web_app_install_page_ordinal_.has_value())
     return;
@@ -1130,7 +1164,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   favicon_service->GetFaviconImageForPageURL(
       launch_url,
       base::BindOnce(&AppLauncherHandler::OnFaviconForAppInstallFromLink,
-                     base::Unretained(this), base::Passed(&install_info)),
+                     base::Unretained(this), std::move(install_info)),
       &cancelable_task_tracker_);
 }
 
@@ -1154,8 +1188,8 @@ void AppLauncherHandler::HandleRunOnOsLogin(const base::ListValue* args) {
   CHECK(args->GetString(0, &app_id));
   CHECK(args->GetString(1, &mode_string));
 
-  if (mode_string == kRunOnOsLoginModeNone) {
-    mode = web_app::RunOnOsLoginMode::kUndefined;
+  if (mode_string == kRunOnOsLoginModeNotRun) {
+    mode = web_app::RunOnOsLoginMode::kNotRun;
   } else if (mode_string == kRunOnOsLoginModeWindowed) {
     mode = web_app::RunOnOsLoginMode::kWindowed;
   } else {
@@ -1168,7 +1202,7 @@ void AppLauncherHandler::HandleRunOnOsLogin(const base::ListValue* args) {
 
   web_app_provider_->registry_controller().SetAppRunOnOsLoginMode(app_id, mode);
 
-  if (mode == web_app::RunOnOsLoginMode::kUndefined) {
+  if (mode == web_app::RunOnOsLoginMode::kNotRun) {
     web_app::OsHooksResults os_hooks;
     os_hooks[web_app::OsHookType::kRunOnOsLogin] = true;
     web_app_provider_->os_integration_manager().UninstallOsHooks(
@@ -1221,7 +1255,7 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
 
   web_app_provider_->install_manager().InstallWebAppFromInfo(
       std::move(web_app), web_app::ForInstallableSite::kUnknown,
-      WebappInstallSource::SYNC, std::move(install_complete_callback));
+      webapps::WebappInstallSource::SYNC, std::move(install_complete_callback));
 }
 
 void AppLauncherHandler::SetAppToBeHighlighted() {
@@ -1359,6 +1393,13 @@ void AppLauncherHandler::InstallOsHooks(const web_app::AppId& app_id) {
   options.os_hooks[web_app::OsHookType::kShortcutsMenu] = true;
   options.os_hooks[web_app::OsHookType::kFileHandlers] = true;
   options.os_hooks[web_app::OsHookType::kRunOnOsLogin] = false;
+  options.os_hooks[web_app::OsHookType::kUninstallationViaOsSettings] = true;
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+  options.os_hooks[web_app::OsHookType::kUrlHandlers] = true;
+#else
+  options.os_hooks[web_app::OsHookType::kUrlHandlers] = false;
+#endif
 
   web_app_provider_->os_integration_manager().InstallOsHooks(
       app_id,

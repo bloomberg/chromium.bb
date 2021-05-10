@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "include/v8-profiler.h"
+#include "src/base/lazy-instance.h"
 #include "src/codegen/source-position.h"
 #include "src/objects/shared-function-info-inl.h"
 #include "src/profiler/cpu-profiler.h"
@@ -71,7 +73,6 @@ void SourcePositionTable::print() const {
   }
 }
 
-const char* const CodeEntry::kWasmResourceNamePrefix = "wasm ";
 const char* const CodeEntry::kEmptyResourceName = "";
 const char* const CodeEntry::kEmptyBailoutReason = "";
 const char* const CodeEntry::kNoDeoptReason = "";
@@ -82,49 +83,58 @@ const char* const CodeEntry::kGarbageCollectorEntryName = "(garbage collector)";
 const char* const CodeEntry::kUnresolvedFunctionName = "(unresolved function)";
 const char* const CodeEntry::kRootEntryName = "(root)";
 
-base::LazyDynamicInstance<CodeEntry, CodeEntry::ProgramEntryCreateTrait>::type
-    CodeEntry::kProgramEntry = LAZY_DYNAMIC_INSTANCE_INITIALIZER;
-
-base::LazyDynamicInstance<CodeEntry, CodeEntry::IdleEntryCreateTrait>::type
-    CodeEntry::kIdleEntry = LAZY_DYNAMIC_INSTANCE_INITIALIZER;
-
-base::LazyDynamicInstance<CodeEntry, CodeEntry::GCEntryCreateTrait>::type
-    CodeEntry::kGCEntry = LAZY_DYNAMIC_INSTANCE_INITIALIZER;
-
-base::LazyDynamicInstance<CodeEntry,
-                          CodeEntry::UnresolvedEntryCreateTrait>::type
-    CodeEntry::kUnresolvedEntry = LAZY_DYNAMIC_INSTANCE_INITIALIZER;
-
-base::LazyDynamicInstance<CodeEntry, CodeEntry::RootEntryCreateTrait>::type
-    CodeEntry::kRootEntry = LAZY_DYNAMIC_INSTANCE_INITIALIZER;
-
-CodeEntry* CodeEntry::ProgramEntryCreateTrait::Create() {
-  return new CodeEntry(CodeEventListener::FUNCTION_TAG,
-                       CodeEntry::kProgramEntryName);
+// static
+CodeEntry* CodeEntry::program_entry() {
+  static base::LeakyObject<CodeEntry> kProgramEntry(
+      CodeEventListener::FUNCTION_TAG, CodeEntry::kProgramEntryName,
+      CodeEntry::kEmptyResourceName, v8::CpuProfileNode::kNoLineNumberInfo,
+      v8::CpuProfileNode::kNoColumnNumberInfo, nullptr, false,
+      CodeEntry::CodeType::OTHER);
+  return kProgramEntry.get();
 }
 
-CodeEntry* CodeEntry::IdleEntryCreateTrait::Create() {
-  return new CodeEntry(CodeEventListener::FUNCTION_TAG,
-                       CodeEntry::kIdleEntryName);
+// static
+CodeEntry* CodeEntry::idle_entry() {
+  static base::LeakyObject<CodeEntry> kIdleEntry(
+      CodeEventListener::FUNCTION_TAG, CodeEntry::kIdleEntryName,
+      CodeEntry::kEmptyResourceName, v8::CpuProfileNode::kNoLineNumberInfo,
+      v8::CpuProfileNode::kNoColumnNumberInfo, nullptr, false,
+      CodeEntry::CodeType::OTHER);
+  return kIdleEntry.get();
 }
 
-CodeEntry* CodeEntry::GCEntryCreateTrait::Create() {
-  return new CodeEntry(CodeEventListener::BUILTIN_TAG,
-                       CodeEntry::kGarbageCollectorEntryName);
+// static
+CodeEntry* CodeEntry::gc_entry() {
+  static base::LeakyObject<CodeEntry> kGcEntry(
+      CodeEventListener::BUILTIN_TAG, CodeEntry::kGarbageCollectorEntryName,
+      CodeEntry::kEmptyResourceName, v8::CpuProfileNode::kNoLineNumberInfo,
+      v8::CpuProfileNode::kNoColumnNumberInfo, nullptr, false,
+      CodeEntry::CodeType::OTHER);
+  return kGcEntry.get();
 }
 
-CodeEntry* CodeEntry::UnresolvedEntryCreateTrait::Create() {
-  return new CodeEntry(CodeEventListener::FUNCTION_TAG,
-                       CodeEntry::kUnresolvedFunctionName);
+// static
+CodeEntry* CodeEntry::unresolved_entry() {
+  static base::LeakyObject<CodeEntry> kUnresolvedEntry(
+      CodeEventListener::FUNCTION_TAG, CodeEntry::kUnresolvedFunctionName,
+      CodeEntry::kEmptyResourceName, v8::CpuProfileNode::kNoLineNumberInfo,
+      v8::CpuProfileNode::kNoColumnNumberInfo, nullptr, false,
+      CodeEntry::CodeType::OTHER);
+  return kUnresolvedEntry.get();
 }
 
-CodeEntry* CodeEntry::RootEntryCreateTrait::Create() {
-  return new CodeEntry(CodeEventListener::FUNCTION_TAG,
-                       CodeEntry::kRootEntryName);
+// static
+CodeEntry* CodeEntry::root_entry() {
+  static base::LeakyObject<CodeEntry> kRootEntry(
+      CodeEventListener::FUNCTION_TAG, CodeEntry::kRootEntryName,
+      CodeEntry::kEmptyResourceName, v8::CpuProfileNode::kNoLineNumberInfo,
+      v8::CpuProfileNode::kNoColumnNumberInfo, nullptr, false,
+      CodeEntry::CodeType::OTHER);
+  return kRootEntry.get();
 }
 
 uint32_t CodeEntry::GetHash() const {
-  uint32_t hash = ComputeUnseededHash(tag());
+  uint32_t hash = 0;
   if (script_id_ != v8::UnboundScript::kNoScriptId) {
     hash ^= ComputeUnseededHash(static_cast<uint32_t>(script_id_));
     hash ^= ComputeUnseededHash(static_cast<uint32_t>(position_));
@@ -222,6 +232,25 @@ CodeEntry::RareData* CodeEntry::EnsureRareData() {
   return rare_data_.get();
 }
 
+void CodeEntry::ReleaseStrings(StringsStorage& strings) {
+  if (name_) {
+    strings.Release(name_);
+    name_ = nullptr;
+  }
+  if (resource_name_) {
+    strings.Release(resource_name_);
+    resource_name_ = nullptr;
+  }
+
+  if (rare_data_) {
+    // All inline entries are exclusively owned by the CodeEntry. They'll be
+    // deallocated when the CodeEntry is deallocated.
+    for (auto& entry : rare_data_->inline_entries_) {
+      entry->ReleaseStrings(strings);
+    }
+  }
+}
+
 void CodeEntry::print() const {
   base::OS::Print("CodeEntry: at %p\n", this);
 
@@ -267,6 +296,49 @@ void CodeEntry::print() const {
     }
   }
   base::OS::Print("\n");
+}
+
+CpuProfileNode::SourceType ProfileNode::source_type() const {
+  // Handle metadata and VM state code entry types.
+  if (entry_ == CodeEntry::program_entry() ||
+      entry_ == CodeEntry::idle_entry() || entry_ == CodeEntry::gc_entry() ||
+      entry_ == CodeEntry::root_entry()) {
+    return CpuProfileNode::kInternal;
+  }
+  if (entry_ == CodeEntry::unresolved_entry())
+    return CpuProfileNode::kUnresolved;
+
+  // Otherwise, resolve based on logger tag.
+  switch (entry_->tag()) {
+    case CodeEventListener::EVAL_TAG:
+    case CodeEventListener::SCRIPT_TAG:
+    case CodeEventListener::LAZY_COMPILE_TAG:
+    case CodeEventListener::FUNCTION_TAG:
+    case CodeEventListener::INTERPRETED_FUNCTION_TAG:
+      return CpuProfileNode::kScript;
+    case CodeEventListener::BUILTIN_TAG:
+    case CodeEventListener::HANDLER_TAG:
+    case CodeEventListener::BYTECODE_HANDLER_TAG:
+    case CodeEventListener::NATIVE_FUNCTION_TAG:
+    case CodeEventListener::NATIVE_SCRIPT_TAG:
+    case CodeEventListener::NATIVE_LAZY_COMPILE_TAG:
+      return CpuProfileNode::kBuiltin;
+    case CodeEventListener::CALLBACK_TAG:
+      return CpuProfileNode::kCallback;
+    case CodeEventListener::REG_EXP_TAG:
+    case CodeEventListener::STUB_TAG:
+    case CodeEventListener::CODE_CREATION_EVENT:
+    case CodeEventListener::CODE_DISABLE_OPT_EVENT:
+    case CodeEventListener::CODE_MOVE_EVENT:
+    case CodeEventListener::CODE_DELETE_EVENT:
+    case CodeEventListener::CODE_MOVING_GC:
+    case CodeEventListener::SHARED_FUNC_MOVE_EVENT:
+    case CodeEventListener::SNAPSHOT_CODE_NAME_EVENT:
+    case CodeEventListener::TICK_EVENT:
+    case CodeEventListener::BYTECODE_FLUSH_EVENT:
+    case CodeEventListener::NUMBER_OF_LOG_EVENTS:
+      return CpuProfileNode::kInternal;
+  }
 }
 
 void ProfileNode::CollectDeoptInfo(CodeEntry* entry) {
@@ -468,9 +540,11 @@ using v8::tracing::TracedValue;
 std::atomic<uint32_t> CpuProfile::last_id_;
 
 CpuProfile::CpuProfile(CpuProfiler* profiler, const char* title,
-                       CpuProfilingOptions options)
+                       CpuProfilingOptions options,
+                       std::unique_ptr<DiscardedSamplesDelegate> delegate)
     : title_(title),
       options_(options),
+      delegate_(std::move(delegate)),
       start_time_(base::TimeTicks::HighResolutionNow()),
       top_down_(profiler->isolate()),
       profiler_(profiler),
@@ -517,8 +591,19 @@ void CpuProfile::AddPath(base::TimeTicks timestamp,
       (options_.max_samples() == CpuProfilingOptions::kNoSampleLimit ||
        samples_.size() < options_.max_samples());
 
-  if (should_record_sample)
+  if (should_record_sample) {
     samples_.push_back({top_frame_node, timestamp, src_line});
+  }
+
+  if (!should_record_sample && delegate_ != nullptr) {
+    const auto task_runner = V8::GetCurrentPlatform()->GetForegroundTaskRunner(
+        reinterpret_cast<v8::Isolate*>(profiler_->isolate()));
+
+    task_runner->PostTask(std::make_unique<CpuProfileMaxSamplesCallbackTask>(
+        std::move(delegate_)));
+    // std::move ensures that the delegate_ will be null on the next sample,
+    // so we don't post a task multiple times.
+  }
 
   const int kSamplesFlushCount = 100;
   const int kNodesFlushCount = 10;
@@ -544,6 +629,7 @@ void BuildNodeValue(const ProfileNode* node, TracedValue* value) {
   if (entry->column_number()) {
     value->SetInteger("columnNumber", entry->column_number() - 1);
   }
+  value->SetString("codeType", entry->code_type_string());
   value->EndDictionary();
   value->SetInteger("id", node->id());
   if (node->parent()) {
@@ -642,30 +728,36 @@ void CpuProfile::Print() const {
   ProfilerStats::Instance()->Clear();
 }
 
-CodeMap::CodeMap() = default;
+CodeMap::CodeMap(StringsStorage& function_and_resource_names)
+    : function_and_resource_names_(function_and_resource_names) {}
 
 CodeMap::~CodeMap() { Clear(); }
 
 void CodeMap::Clear() {
-  // First clean the free list as it's otherwise impossible to tell
-  // the slot type.
-  unsigned free_slot = free_list_head_;
-  while (free_slot != kNoFreeSlot) {
-    unsigned next_slot = code_entries_[free_slot].next_free_slot;
-    code_entries_[free_slot].entry = nullptr;
-    free_slot = next_slot;
+  for (auto& slot : code_map_) {
+    if (CodeEntry* entry = slot.second.entry) {
+      entry->ReleaseStrings(function_and_resource_names_);
+      delete entry;
+    } else {
+      // We expect all entries in the code mapping to contain a CodeEntry.
+      UNREACHABLE();
+    }
   }
-  for (auto slot : code_entries_) delete slot.entry;
 
-  code_entries_.clear();
+  // Free all CodeEntry objects that are no longer in the map, but in a profile.
+  // TODO(acomminos): Remove this deque after we refcount CodeEntry objects.
+  for (CodeEntry* entry : used_entries_) {
+    DCHECK(entry->used());
+    DeleteCodeEntry(entry);
+  }
+
   code_map_.clear();
-  free_list_head_ = kNoFreeSlot;
+  used_entries_.clear();
 }
 
 void CodeMap::AddCode(Address addr, CodeEntry* entry, unsigned size) {
   ClearCodesInRange(addr, addr + size);
-  unsigned index = AddCodeEntry(addr, entry);
-  code_map_.emplace(addr, CodeEntryMapInfo{index, size});
+  code_map_.emplace(addr, CodeEntryMapInfo{entry, size});
 }
 
 void CodeMap::ClearCodesInRange(Address start, Address end) {
@@ -676,8 +768,10 @@ void CodeMap::ClearCodesInRange(Address start, Address end) {
   }
   auto right = left;
   for (; right != code_map_.end() && right->first < end; ++right) {
-    if (!entry(right->second.index)->used()) {
-      DeleteCodeEntry(right->second.index);
+    if (!right->second.entry->used()) {
+      DeleteCodeEntry(right->second.entry);
+    } else {
+      used_entries_.push_back(right->second.entry);
     }
   }
   code_map_.erase(left, right);
@@ -689,7 +783,7 @@ CodeEntry* CodeMap::FindEntry(Address addr, Address* out_instruction_start) {
   --it;
   Address start_address = it->first;
   Address end_address = start_address + it->second.size;
-  CodeEntry* ret = addr < end_address ? entry(it->second.index) : nullptr;
+  CodeEntry* ret = addr < end_address ? it->second.entry : nullptr;
   DCHECK(!ret || (addr >= start_address && addr < end_address));
   if (ret && out_instruction_start) *out_instruction_start = start_address;
   return ret;
@@ -706,27 +800,15 @@ void CodeMap::MoveCode(Address from, Address to) {
   code_map_.emplace(to, info);
 }
 
-unsigned CodeMap::AddCodeEntry(Address start, CodeEntry* entry) {
-  if (free_list_head_ == kNoFreeSlot) {
-    code_entries_.push_back(CodeEntrySlotInfo{entry});
-    return static_cast<unsigned>(code_entries_.size()) - 1;
-  }
-  unsigned index = free_list_head_;
-  free_list_head_ = code_entries_[index].next_free_slot;
-  code_entries_[index].entry = entry;
-  return index;
-}
-
-void CodeMap::DeleteCodeEntry(unsigned index) {
-  delete code_entries_[index].entry;
-  code_entries_[index].next_free_slot = free_list_head_;
-  free_list_head_ = index;
+void CodeMap::DeleteCodeEntry(CodeEntry* entry) {
+  entry->ReleaseStrings(function_and_resource_names_);
+  delete entry;
 }
 
 void CodeMap::Print() {
   for (const auto& pair : code_map_) {
     base::OS::Print("%p %5d %s\n", reinterpret_cast<void*>(pair.first),
-                    pair.second.size, entry(pair.second.index)->name());
+                    pair.second.size, pair.second.entry->name());
   }
 }
 
@@ -734,7 +816,8 @@ CpuProfilesCollection::CpuProfilesCollection(Isolate* isolate)
     : profiler_(nullptr), current_profiles_semaphore_(1) {}
 
 CpuProfilingStatus CpuProfilesCollection::StartProfiling(
-    const char* title, CpuProfilingOptions options) {
+    const char* title, CpuProfilingOptions options,
+    std::unique_ptr<DiscardedSamplesDelegate> delegate) {
   current_profiles_semaphore_.Wait();
 
   if (static_cast<int>(current_profiles_.size()) >= kMaxSimultaneousProfiles) {
@@ -750,7 +833,9 @@ CpuProfilingStatus CpuProfilesCollection::StartProfiling(
       return CpuProfilingStatus::kAlreadyStarted;
     }
   }
-  current_profiles_.emplace_back(new CpuProfile(profiler_, title, options));
+
+  current_profiles_.emplace_back(
+      new CpuProfile(profiler_, title, options, std::move(delegate)));
   current_profiles_semaphore_.Signal();
   return CpuProfilingStatus::kStarted;
 }

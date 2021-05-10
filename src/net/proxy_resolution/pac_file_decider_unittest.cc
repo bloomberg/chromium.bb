@@ -15,6 +15,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "net/base/address_family.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -331,10 +333,12 @@ TEST(PacFileDeciderTest, AutodetectSuccess) {
   EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
 }
 
-class PacFileDeciderQuickCheckTest : public TestWithTaskEnvironment {
+class PacFileDeciderQuickCheckTest : public ::testing::Test,
+                                     public WithTaskEnvironment {
  public:
   PacFileDeciderQuickCheckTest()
-      : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
         fetcher_(&rules_) {}
 
   void SetUp() override {
@@ -351,7 +355,7 @@ class PacFileDeciderQuickCheckTest : public TestWithTaskEnvironment {
   }
 
  protected:
-  MockHostResolver resolver_;
+  MockHostResolver resolver_{/*require_matching_rule=*/true};
   Rules rules_;
   Rules::Rule rule_;
   TestCompletionCallback callback_;
@@ -367,7 +371,8 @@ class PacFileDeciderQuickCheckTest : public TestWithTaskEnvironment {
 // Fails if a synchronous DNS lookup success for wpad causes QuickCheck to fail.
 TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
   resolver_.set_synchronous_mode(true);
-  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("wpad", "1.2.3.4");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRuleWithFlags(
+      "wpad", "1.2.3.4", HOST_RESOLVER_AVOID_MULTICAST);
 
   EXPECT_THAT(StartDecider(), IsOk());
   EXPECT_EQ(rule_.text(), decider_->script_data().data->utf16());
@@ -381,7 +386,8 @@ TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
 // fail.
 TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
   resolver_.set_ondemand_mode(true);
-  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("wpad", "1.2.3.4");
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRuleWithFlags(
+      "wpad", "1.2.3.4", HOST_RESOLVER_AVOID_MULTICAST);
 
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
@@ -399,7 +405,7 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
 TEST_F(PacFileDeciderQuickCheckTest, AsyncFail) {
   resolver_.set_ondemand_mode(true);
   resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
-      "wpad");
+      "wpad", HOST_RESOLVER_AVOID_MULTICAST);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
   resolver_.ResolveAllPending();
@@ -413,6 +419,7 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncTimeout) {
   resolver_.set_ondemand_mode(true);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   ASSERT_TRUE(resolver_.has_pending_requests());
+  FastForwardUntilNoTasksRemain();
   callback_.WaitForResult();
   EXPECT_FALSE(resolver_.has_pending_requests());
   EXPECT_FALSE(decider_->effective_config().value().has_pac_url());
@@ -439,8 +446,6 @@ TEST_F(PacFileDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
 TEST_F(PacFileDeciderQuickCheckTest, QuickCheckDisabled) {
   const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
   resolver_.set_synchronous_mode(true);
-  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
-      "wpad");
   MockPacFileFetcher fetcher;
   decider_.reset(new PacFileDecider(&fetcher, &dhcp_fetcher_, nullptr));
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
@@ -453,9 +458,9 @@ TEST_F(PacFileDeciderQuickCheckTest, ExplicitPacUrl) {
   config_.set_pac_url(GURL(kCustomUrl));
   Rules::Rule rule = rules_.AddSuccessRule(kCustomUrl);
   resolver_.rules_map()[HostResolverSource::SYSTEM]->AddSimulatedFailure(
-      "wpad");
-  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRule("custom",
-                                                             "1.2.3.4");
+      "wpad", HOST_RESOLVER_AVOID_MULTICAST);
+  resolver_.rules_map()[HostResolverSource::SYSTEM]->AddRuleWithFlags(
+      "custom", "1.2.3.4", HOST_RESOLVER_AVOID_MULTICAST);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   callback_.WaitForResult();
   EXPECT_TRUE(decider_->effective_config().value().has_pac_url());

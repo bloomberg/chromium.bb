@@ -5,7 +5,6 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/WebContextFetcher_jni.h"
@@ -18,28 +17,6 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
-
-// The JS execution function returns the JSON object as a quoted string literal.
-// Remove the surrounding quotes and the internal escaping, to convert it into a
-// JSON object that can be parsed. E.g.:
-// "{\"foo\":\"bar\"}" --> {"foo":"bar"}
-static std::string ConvertJavascriptOutputToValidJson(std::string& json) {
-  // Remove trailing and leading double quotation characters.
-  std::string trimmed_json = json.substr(1, json.size() - 2);
-
-  // Remove escape slash from before quotations.
-  std::string substring_to_search = "\\\"";
-  std::string replace_str = "\"";
-  size_t pos = trimmed_json.find(substring_to_search);
-  // Repeat till end is reached.
-  while (pos != std::string::npos) {
-    // Remove occurrence of the escape character before quotes.
-    trimmed_json.replace(pos, substring_to_search.size(), replace_str);
-    // Get the next occurrence from the current position.
-    pos = trimmed_json.find(substring_to_search, pos + replace_str.size());
-  }
-  return trimmed_json;
-}
 
 static void OnContextFetchComplete(
     const ScopedJavaGlobalRef<jobject>& scoped_jcallback,
@@ -54,10 +31,7 @@ static void OnContextFetchComplete(
     DVLOG(1) << "WebContextFetcher.JavaScriptRunner.ExecutionTime = "
              << javascript_time;
   }
-  std::string json;
-  base::JSONWriter::Write(result, &json);
-  base::android::RunStringCallbackAndroid(
-      scoped_jcallback, ConvertJavascriptOutputToValidJson(json));
+  base::android::RunStringCallbackAndroid(scoped_jcallback, result.GetString());
 }
 
 // IMPORTANT: The output of this fetch should only be handled in memory safe

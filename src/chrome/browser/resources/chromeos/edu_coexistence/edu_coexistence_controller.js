@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PostMessageAPIServer} from '../../chromeos/add_supervision/post_message_api.m.js';
+import {PostMessageAPIServer} from '../../chromeos/add_supervision/post_message_api.js';
 import {AuthCompletedCredentials, Authenticator, AuthParams} from '../../gaia_auth_host/authenticator.m.js';
 import {EduCoexistenceBrowserProxyImpl} from './edu_coexistence_browser_proxy.js';
 
@@ -10,10 +10,16 @@ import {EduCoexistenceBrowserProxyImpl} from './edu_coexistence_browser_proxy.js
  * The methods to expose to the hosted content via the PostMessageAPI.
  */
 const METHOD_LIST = [
-  'consentValid', 'consentLogged', 'requestClose', 'saveGuestFlowState',
-  'fetchGuestFlowState', 'error'
+  'consentValid',
+  'consentLogged',
+  'requestClose',
+  'saveGuestFlowState',
+  'fetchGuestFlowState',
+  'error',
+  'getTimeDeltaSinceSigninSeconds',
 ];
 
+const MILLISECONDS_PER_SECOND = 1000;
 
 /**
  * @typedef {{
@@ -29,6 +35,7 @@ const METHOD_LIST = [
  *   deviceId: (string),
  *   email: (string|undefined),
  *   readOnlyEmail: (string|undefined),
+ *   signinTime: (number),
  * }}
  */
 export let EduCoexistenceParams;
@@ -82,13 +89,16 @@ export class EduCoexistenceController extends PostMessageAPIServer {
     this.authCompletedReceived_ = false;
     this.browserProxy_ = EduCoexistenceBrowserProxyImpl.getInstance();
     this.eduCoexistenceAccessToken_ = params.eduCoexistenceAccessToken;
+    this.signinTime_ = new Date(params.signinTime);
 
     this.webview_.request.onBeforeSendHeaders.addListener(
         (details) => {
-          details.requestHeaders.push({
-            name: 'Authorization',
-            value: 'Bearer ' + this.eduCoexistenceAccessToken_,
-          });
+          if (this.originMatchesFilter(details.url)) {
+            details.requestHeaders.push({
+              name: 'Authorization',
+              value: 'Bearer ' + this.eduCoexistenceAccessToken_,
+            });
+          }
 
           return {requestHeaders: details.requestHeaders};
         },
@@ -124,6 +134,12 @@ export class EduCoexistenceController extends PostMessageAPIServer {
     }
   }
 
+  /** @override */
+  onInitializationError(origin) {
+    this.reportError_(
+        ['Error initializing communication channel with origin:' + origin]);
+  }
+
   /**
    * Returns the hostname of the origin of the flow's URL (the one it was
    * initialized with, not its current URL).
@@ -145,6 +161,11 @@ export class EduCoexistenceController extends PostMessageAPIServer {
         'saveGuestFlowState', this.saveGuestFlowState_.bind(this));
     this.registerMethod(
         'fetchGuestFlowState', this.fetchGuestFlowState_.bind(this));
+    this.registerMethod(
+        'getEduAccountEmail', this.getEduAccountEmail_.bind(this));
+    this.registerMethod(
+        'getTimeDeltaSinceSigninSeconds',
+        this.getTimeDeltaSinceSigninSeconds_.bind(this));
 
     // Add listeners for Authenticator.
     this.addAuthExtHostListeners_();
@@ -204,14 +225,13 @@ export class EduCoexistenceController extends PostMessageAPIServer {
     this.userInfo_ = e.detail;
     this.browserProxy_.completeLogin(e.detail);
 
-    // GAIA pages don't allow localhost as a "continue" URL, so we have to
-    // manually update the src when doing development against a localhost-hosted
-    // test server.
-    if (this.flowURL_.hostname === 'localhost') {
-      let finishURL = this.flowURL_;
-      finishURL.pathname = '/supervision/coexistence/finish';
-      this.webview_.src = finishURL.toString();
-    }
+    // The EDU Signin page doesn't appear to use the "continue" URL, so we have
+    // to manually update the src to continue to the last page of the flow.
+    // TODO(crbug.com/1160166): Investigate why the "continue" parameter doesn't
+    // work for EDU signin on accounts.google.com.
+    let finishURL = this.flowURL_;
+    finishURL.pathname = '/supervision/coexistence/finish';
+    this.webview_.src = finishURL.toString();
   }
 
   /**
@@ -260,6 +280,15 @@ export class EduCoexistenceController extends PostMessageAPIServer {
   }
 
   /**
+   * @param {!Array} unused Placeholder unused empty parameter.
+   * @return {!String}  The edu-account email that is being added to the device.
+   */
+  getEduAccountEmail_(unused) {
+    console.assert(this.userInfo_);
+    return this.userInfo_.email;
+  }
+
+  /**
    * @private
    * Notifies the API that there was an unrecoverable error during the flow.
    * @param {!Array<string>} error An array that contains the error message at
@@ -271,5 +300,14 @@ export class EduCoexistenceController extends PostMessageAPIServer {
 
     // Send the error strings to C++ handler so they are logged.
     this.browserProxy_.onError(error);
+  }
+
+  /**
+   * @private
+   * @return {number} Returns the number of seconds that have elapsed since
+   * the user's initial signin.
+   */
+  getTimeDeltaSinceSigninSeconds_() {
+    return (Date.now() - this.signinTime_) / MILLISECONDS_PER_SECOND;
   }
 }

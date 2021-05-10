@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -9,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -17,8 +18,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/no_state_prefetch/browser/prerender_handle.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -109,7 +110,7 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
     cross_origin_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(cross_origin_server_.Start());
 
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         [](uint16_t cross_origin_port,
            const net::test_server::HttpRequest& request)
             -> std::unique_ptr<net::test_server::HttpResponse> {
@@ -380,15 +381,15 @@ IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, ImagesIgnored) {
   UseHttpsSrcServer();
 
   std::unique_ptr<prerender::test_utils::TestPrerender> test_prerender =
-      prerender_contents_factory()->ExpectPrerenderContents(
+      no_state_prefetch_contents_factory()->ExpectNoStatePrefetchContents(
           prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
-  std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
-      GetPrerenderManager()->AddPrerenderFromOmnibox(
+  std::unique_ptr<prerender::NoStatePrefetchHandle> no_state_prefetch_handle =
+      GetNoStatePrefetchManager()->AddPrerenderFromOmnibox(
           src_server()->GetURL("/lazyload/img.html"),
           GetSessionStorageNamespace(), gfx::Size(640, 480));
 
-  ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
+  ASSERT_EQ(no_state_prefetch_handle->contents(), test_prerender->contents());
 
   test_prerender->WaitForStop();
   for (const auto* url :

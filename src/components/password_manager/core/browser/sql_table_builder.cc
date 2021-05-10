@@ -8,18 +8,22 @@
 #include <set>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "sql/database.h"
+#include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace password_manager {
 
 namespace {
+
+// Implicit index name create for faster lookups by a foreign key.
+constexpr char kForeignKeyIndex[] = "foreign_key_index";
 
 // Appends |name| to |list_of_names|, separating items with ", ".
 void Append(const std::string& name, std::string* list_of_names) {
@@ -27,6 +31,37 @@ void Append(const std::string& name, std::string* list_of_names) {
     *list_of_names = name;
   else
     *list_of_names += ", " + name;
+}
+
+// Returns true iff the foreign keys can be safely re-enabled on the database.
+bool CheckForeignKeyConstraints(sql::Database& db) {
+  sql::Statement stmt(db.GetUniqueStatement("PRAGMA foreign_key_check"));
+
+  bool ret = true;
+  while (stmt.Step()) {
+    ret = false;
+    LOG(ERROR) << "Foreign key violation "
+               << stmt.ColumnString(0) + ", " + stmt.ColumnString(1) + ", " +
+                      stmt.ColumnString(2) + ", " + stmt.ColumnString(3);
+  }
+  return ret;
+}
+
+std::string ComputeColumnSuffix(bool is_primary_key,
+                                const std::string& parent_table) {
+  DCHECK(!is_primary_key || parent_table.empty());
+  if (is_primary_key) {
+    return " PRIMARY KEY AUTOINCREMENT";
+  }
+  std::string suffix;
+  if (!parent_table.empty()) {
+    DCHECK(!is_primary_key);
+    suffix += " REFERENCES ";
+    suffix += parent_table;
+    suffix +=
+        " ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
+  }
+  return suffix;
 }
 
 }  // namespace
@@ -37,6 +72,9 @@ unsigned constexpr SQLTableBuilder::kInvalidVersion;
 struct SQLTableBuilder::Column {
   std::string name;
   std::string type;
+  // If not empty, the column is a foreign key to the primary key of
+  // 'parent_table'.
+  std::string parent_table;
   // Whether this column is the table's PRIMARY KEY.
   bool is_primary_key;
   // Whether this column is part of the table's UNIQUE constraint.
@@ -74,8 +112,11 @@ SQLTableBuilder::~SQLTableBuilder() = default;
 
 void SQLTableBuilder::AddColumn(std::string name, std::string type) {
   DCHECK(FindLastColumnByName(name) == columns_.rend());
-  columns_.push_back({std::move(name), std::move(type), false, false,
-                      sealed_version_ + 1, kInvalidVersion, false});
+  columns_.push_back({std::move(name), std::move(type),
+                      /*parent_table=*/std::string(),
+                      /*is_primary_key=*/false, /*part_of_unique_key=*/false,
+                      sealed_version_ + 1, kInvalidVersion,
+                      /*gets_previous_data=*/false});
 }
 
 void SQLTableBuilder::AddPrimaryKeyColumn(std::string name) {
@@ -86,9 +127,15 @@ void SQLTableBuilder::AddPrimaryKeyColumn(std::string name) {
   columns_.back().is_primary_key = true;
 }
 
-void SQLTableBuilder::AddColumnToUniqueKey(std::string name, std::string type) {
+void SQLTableBuilder::AddColumnToUniqueKey(std::string name,
+                                           std::string type,
+                                           std::string parent_table) {
   AddColumn(std::move(name), std::move(type));
   columns_.back().part_of_unique_key = true;
+  if (!parent_table.empty()) {
+    columns_.back().parent_table = std::move(parent_table);
+    AddIndex(kForeignKeyIndex, {columns_.back().name});
+  }
 }
 
 void SQLTableBuilder::RenameColumn(const std::string& old_name,
@@ -104,6 +151,9 @@ void SQLTableBuilder::RenameColumn(const std::string& old_name,
     return index.max_version == kInvalidVersion &&
            base::Contains(index.columns, old_name);
   }));
+  // Migrating a foreign key can be supported but the index on it is to be
+  // updated.
+  DCHECK_EQ(old_column->parent_table, std::string());
 
   if (sealed_version_ != kInvalidVersion &&
       old_column->min_version <= sealed_version_) {
@@ -111,11 +161,12 @@ void SQLTableBuilder::RenameColumn(const std::string& old_name,
     // just replaced, it needs to be kept for generating the migration code.
     Column new_column = {new_name,
                          old_column->type,
+                         old_column->parent_table,
                          old_column->is_primary_key,
                          old_column->part_of_unique_key,
                          sealed_version_ + 1,
                          kInvalidVersion,
-                         true};
+                         /*gets_previous_data=*/true};
     old_column->max_version = sealed_version_;
     auto past_old =
         old_column.base();  // Points one element after |old_column|.
@@ -221,10 +272,9 @@ bool SQLTableBuilder::CreateTable(sql::Database* db) const {
   std::string names;  // Names and types of the current columns.
   for (const Column& column : columns_) {
     if (IsColumnInLastVersion(column)) {
-      std::string suffix;
-      if (column.is_primary_key)
-        suffix = " PRIMARY KEY AUTOINCREMENT";
-      Append(column.name + " " + column.type + suffix, &names);
+      std::string suffix =
+          ComputeColumnSuffix(column.is_primary_key, column.parent_table);
+      Append(column.name + " " + column.type + std::move(suffix), &names);
     }
   }
 
@@ -295,7 +345,7 @@ std::vector<base::StringPiece> SQLTableBuilder::AllPrimaryKeyNames() const {
       result.emplace_back(column.name);
     }
   }
-  DCHECK(result.size() < 2);
+  DCHECK_LT(result.size(), 2u);
   return result;
 }
 
@@ -337,6 +387,7 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
       if (next_column != columns_.end() && next_column->gets_previous_data) {
         // (1) The column is being renamed.
         DCHECK_EQ(column->type, next_column->type);
+        DCHECK_EQ(column->parent_table, next_column->parent_table);
         DCHECK_NE(column->name, next_column->name);
         Append(column->name, &old_names_of_existing_columns_without_types);
         Append(next_column->name + " " + next_column->type,
@@ -350,24 +401,22 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
       // This column was added after old_version.
       if (column->is_primary_key || column->part_of_unique_key)
         needs_temp_table = true;
-      std::string suffix;
-      if (column->is_primary_key) {
-        suffix = " PRIMARY KEY AUTOINCREMENT";
+      if (column->is_primary_key)
         has_primary_key = true;
-      }
+      std::string suffix =
+          ComputeColumnSuffix(column->is_primary_key, column->parent_table);
       names_of_new_columns_list.push_back(column->name + " " + column->type +
-                                          suffix);
+                                          std::move(suffix));
     } else if (column->min_version <= old_version &&
                (column->max_version == kInvalidVersion ||
                 column->max_version > old_version)) {
-      std::string suffix;
-      if (column->is_primary_key) {
-        suffix = " PRIMARY KEY AUTOINCREMENT";
+      if (column->is_primary_key)
         has_primary_key = true;
-      }
+      std::string suffix =
+          ComputeColumnSuffix(column->is_primary_key, column->parent_table);
       // This column stays.
       Append(column->name, &old_names_of_existing_columns_without_types);
-      Append(column->name + " " + column->type + suffix,
+      Append(column->name + " " + column->type + std::move(suffix),
              &new_names_of_existing_columns);
       Append(column->name, &new_names_of_existing_columns_without_types);
     }
@@ -390,14 +439,15 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
     std::string constraints = ComputeConstraints(old_version + 1);
     DCHECK(has_primary_key || !constraints.empty());
 
-    // Foreign key constraints are not enabled for the login database, so no
-    // PRAGMA foreign_keys=off needed.
     const std::string temp_table_name = "temp_" + table_name_;
 
     std::string names_of_all_columns = new_names_of_existing_columns;
     for (const std::string& new_column : names_of_new_columns_list) {
       Append(new_column, &names_of_all_columns);
     }
+
+    if (!db->Execute("PRAGMA foreign_keys = OFF"))
+      return false;
 
     std::string create_table_statement =
         constraints.empty()
@@ -407,7 +457,6 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
             : base::StringPrintf(
                   "CREATE TABLE %s (%s, %s)", temp_table_name.c_str(),
                   names_of_all_columns.c_str(), constraints.c_str());
-
     sql::Transaction transaction(db);
     if (!(transaction.Begin() && db->Execute(create_table_statement.c_str()) &&
           db->Execute(base::StringPrintf(
@@ -423,7 +472,8 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
                                          temp_table_name.c_str(),
                                          table_name_.c_str())
                           .c_str()) &&
-          transaction.Commit())) {
+          CheckForeignKeyConstraints(*db) && transaction.Commit() &&
+          db->Execute("PRAGMA foreign_keys = ON"))) {
       return false;
     }
   } else if (!names_of_new_columns_list.empty()) {

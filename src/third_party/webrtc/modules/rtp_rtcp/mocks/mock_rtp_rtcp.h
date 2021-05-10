@@ -149,8 +149,6 @@ class MockRtpRtcpInterface : public RtpRtcpInterface {
               GetLatestReportBlockData,
               (),
               (const, override));
-  MOCK_METHOD(void, SetRtcpXrRrtrStatus, (bool enable), (override));
-  MOCK_METHOD(bool, RtcpXrRrtrStatus, (), (const, override));
   MOCK_METHOD(void,
               SetRemb,
               (int64_t bitrate, std::vector<uint32_t> ssrcs),
@@ -168,7 +166,6 @@ class MockRtpRtcpInterface : public RtpRtcpInterface {
               SetStorePacketsStatus,
               (bool enable, uint16_t number_to_store),
               (override));
-  MOCK_METHOD(bool, StorePackets, (), (const, override));
   MOCK_METHOD(void,
               SendCombinedRtcpPacket,
               (std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets),

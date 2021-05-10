@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/uber_received_packet_manager.h"
+#include "quic/core/uber_received_packet_manager.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -189,7 +189,7 @@ bool UberReceivedPacketManager::IsAckFrameEmpty(
 
 QuicPacketNumber UberReceivedPacketManager::peer_least_packet_awaiting_ack()
     const {
-  DCHECK(!supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(!supports_multiple_packet_number_spaces_);
   return received_packet_managers_[0].peer_least_packet_awaiting_ack();
 }
 
@@ -211,13 +211,13 @@ void UberReceivedPacketManager::set_ack_frequency(size_t new_value) {
 }
 
 const QuicAckFrame& UberReceivedPacketManager::ack_frame() const {
-  DCHECK(!supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(!supports_multiple_packet_number_spaces_);
   return received_packet_managers_[0].ack_frame();
 }
 
 const QuicAckFrame& UberReceivedPacketManager::GetAckFrame(
     PacketNumberSpace packet_number_space) const {
-  DCHECK(supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(supports_multiple_packet_number_spaces_);
   return received_packet_managers_[packet_number_space].ack_frame();
 }
 

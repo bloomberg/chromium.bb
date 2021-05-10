@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+
+import {IssuesModel} from './IssuesModel.js';  // eslint-disable-line no-unused-vars
 
 /** @enum {symbol} */
 export const IssueCategory = {
@@ -11,6 +14,9 @@ export const IssueCategory = {
   SameSiteCookie: Symbol('SameSiteCookie'),
   HeavyAd: Symbol('HeavyAd'),
   ContentSecurityPolicy: Symbol('ContentSecurityPolicy'),
+  TrustedWebActivity: Symbol('TrustedWebActivity'),
+  LowTextContrast: Symbol('LowTextContrast'),
+  Cors: Symbol('Cors'),
   Other: Symbol('Other')
 };
 
@@ -25,15 +31,29 @@ export function getShowThirdPartyIssuesSetting() {
 }
 
 /**
- * @typedef {{
-  *            title:string,
-  *            message: (function():!Element),
-  *            issueKind: !IssueKind,
-  *            links: !Array<!{link: string, linkTitle: string}>
-  *          }}
-  */
-// @ts-ignore typedef
-export let IssueDescription;  // eslint-disable-line no-unused-vars
+ * @param {LazyMarkdownIssueDescription | undefined} lazyDescription
+ */
+export function resolveLazyDescription(lazyDescription) {
+  /**
+     * @param {!{link: string, linkTitle: () => string}} currentLink
+     */
+  function linksMap(currentLink) {
+    return {link: currentLink.link, linkTitle: currentLink.linkTitle()};
+  }
+
+  const substitutionMap = new Map();
+  lazyDescription?.substitutions?.forEach((value, key) => {
+    substitutionMap.set(key, value());
+  });
+
+  const description =
+      Object.assign([], lazyDescription, {links: lazyDescription?.links.map(linksMap), substitutions: substitutionMap});
+
+  if (!description) {
+    return null;
+  }
+  return description;
+}
 
 /**
  * @typedef {{
@@ -45,6 +65,17 @@ export let IssueDescription;  // eslint-disable-line no-unused-vars
   */
 // @ts-ignore typedef
 export let MarkdownIssueDescription;  // eslint-disable-line no-unused-vars
+
+/**
+  * @typedef {{
+  *             file: string,
+  *             substitutions: (!Map<string, () => string>|undefined),
+  *             issueKind: !IssueKind,
+  *             links: !Array<!{link: string, linkTitle: () => string}>
+  *          }}
+  */
+// @ts-ignore typedef
+export let LazyMarkdownIssueDescription;  // eslint-disable-line no-unused-vars
 
 /**
  * @typedef {{
@@ -70,12 +101,15 @@ export let AffectedSource;  // eslint-disable-line no-unused-vars
  */
 export class Issue extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {string} code
+   * @param {string|{code:string, umaCode:string}} code
+   * @param {IssuesModel|null} issuesModel
    */
-  constructor(code) {
+  constructor(code, issuesModel = null) {
     super();
     /** @type {string} */
-    this._code = code;
+    this._code = typeof code === 'string' ? code : code.code;
+    this._issuesModel = issuesModel;
+    Host.userMetrics.issueCreated(typeof code === 'string' ? code : code.umaCode);
   }
 
   /**
@@ -95,7 +129,7 @@ export class Issue extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @return {!Iterable<!Protocol.Audits.BlockedByResponseIssueDetails>}
    */
-  blockedByResponseDetails() {
+  getBlockedByResponseDetails() {
     return [];
   }
 
@@ -117,13 +151,6 @@ export class Issue extends Common.ObjectWrapper.ObjectWrapper {
    * @returns {!Iterable<!Protocol.Audits.HeavyAdIssueDetails>}
    */
   heavyAds() {
-    return [];
-  }
-
-  /**
-   * @returns {!Iterable<!Protocol.Audits.MixedContentIssueDetails>}
-   */
-  mixedContents() {
     return [];
   }
 
@@ -155,7 +182,15 @@ export class Issue extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   /**
-   * @return {?(!IssueDescription|!MarkdownIssueDescription)}
+   * The model might be unavailable or belong to a target that has already been disposed.
+   * @returns {IssuesModel|null}
+   */
+  model() {
+    return this._issuesModel;
+  }
+
+  /**
+   * @return {?MarkdownIssueDescription}
    */
   getDescription() {
     throw new Error('Not implemented');

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequence_checker.h"
+#include "media/base/supported_video_decoder_config.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -24,11 +25,14 @@ class MediaLog;
 
 class MEDIA_EXPORT Dav1dVideoDecoder : public OffloadableVideoDecoder {
  public:
+  static SupportedVideoDecoderConfigs SupportedConfigs();
+
   Dav1dVideoDecoder(MediaLog* media_log,
                     OffloadState offload_state = OffloadState::kNormal);
   ~Dav1dVideoDecoder() override;
 
   // VideoDecoder implementation.
+  VideoDecoderType GetDecoderType() const override;
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,

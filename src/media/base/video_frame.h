@@ -346,6 +346,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                              size_t plane,
                              const gfx::Size& coded_size);
 
+  // Returns the plane gfx::Size (in samples) for a plane of the given coded
+  // size and format.
+  static gfx::Size PlaneSizeInSamples(VideoPixelFormat format,
+                                      size_t plane,
+                                      const gfx::Size& coded_size);
+
   // Returns horizontal bits per pixel for given |plane| and |format|.
   static int PlaneHorizontalBitsPerPixel(VideoPixelFormat format, size_t plane);
 
@@ -559,10 +565,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   //
   // TODO(miu): Move some of the "extra" members of VideoFrame (below) into
   // here as a later clean-up step.
-  //
-  // TODO(https://crbug.com/1096727): change the return type to const&.
-  const VideoFrameMetadata* metadata() const { return &metadata_; }
-  VideoFrameMetadata* metadata() { return &metadata_; }
+  const VideoFrameMetadata& metadata() const { return metadata_; }
+  VideoFrameMetadata& metadata() { return metadata_; }
   void set_metadata(const VideoFrameMetadata& metadata) {
     metadata_ = metadata;
   }

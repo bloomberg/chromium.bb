@@ -38,7 +38,7 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
+#include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
 #include "third_party/blink/renderer/controller/performance_manager/renderer_resource_coordinator_impl.h"
 #include "third_party/blink/renderer/controller/performance_manager/v8_detailed_memory_reporter_impl.h"
-#include "third_party/blink/renderer/controller/performance_manager/v8_worker_memory_reporter.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -167,7 +166,6 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
   // Initialize performance manager.
   RendererResourceCoordinatorImpl::MaybeInitialize();
-  V8WorkerMemoryReporter::RegisterWebMemoryReporter();
 }
 
 }  // namespace

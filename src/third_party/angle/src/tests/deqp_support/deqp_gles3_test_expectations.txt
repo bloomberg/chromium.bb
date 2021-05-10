@@ -162,10 +162,6 @@
 2323 WIN D3D11 : dEQP-GLES3.functional.texture.units.2_units.only_cube.7 = FAIL
 
 // Blit related failures on D3D11
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_x = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_y = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_x = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_y = FAIL
 3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_linear = FAIL
 3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_dst_x_linear = FAIL
 3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_dst_y_linear = FAIL
@@ -299,10 +295,6 @@
 1324 LINUX OPENGL : dEQP-GLES3.functional.shaders.loops.do_while_dynamic_iterations.mixed_break_continue_vertex = FAIL
 1324 LINUX OPENGL : dEQP-GLES3.functional.shaders.loops.do_while_dynamic_iterations.mixed_break_continue_fragment = FAIL
 
-// Polygon offset failures
-3304 LINUX OPENGL : dEQP-GLES3.functional.polygon_offset.float32_factor_1_slope = FAIL
-3304 LINUX OPENGL : dEQP-GLES3.functional.polygon_offset.float32_result_depth_clamp = FAIL
-
 // Flaky test
 3305 LINUX OPENGL : dEQP-GLES3.functional.shaders.builtin_functions.common.uintbitstofloat.uint_highp_vertex = FAIL
 
@@ -422,11 +414,6 @@
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_src_x = FAIL
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_dst_x = FAIL
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_src_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_dst_y = FAIL
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.2d_array.combinations.linear_nearest_* = FAIL
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.2d.combinations.linear_nearest_* = FAIL
 3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.3d.combinations.linear_nearest_* = FAIL
@@ -501,8 +488,6 @@
 // Nexus 5x failures
 3308 NEXUS5X GLES : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond* = FAIL
 3308 NEXUS5X GLES : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond* = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.polygon_offset.default_result_depth_clamp = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.polygon_offset.fixed24_result_depth_clamp = FAIL
 3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.lines.3 = FAIL
 3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.triangles.8 = FAIL
 3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.triangles.10 = FAIL
@@ -518,6 +503,7 @@
 // Fails on Windows + Linux.
 2222 OPENGL NVIDIA : dEQP-GLES3.functional.fbo.completeness.samples.rbo2_rbo2_rbo0 = FAIL
 2222 OPENGL NVIDIA : dEQP-GLES3.functional.fbo.completeness.samples.rbo1_rbo2_rbo0 = FAIL
+5661 OPENGL NVIDIA : dEQP-GLES3.functional.ubo.single_nested_struct_mixed_matrix_packing.* = FAIL
 
 // Low memory warnings when run multi-process.
 5162 OPENGL NVIDIA WIN : dEQP-GLES3.functional.multisample.fbo_8_samples.constancy* = SKIP
@@ -533,14 +519,11 @@
 3677 VULKAN : dEQP-GLES3.functional.fragment_out.random.* = FAIL
 
 // NVIDIA Depth/Stencil textures:
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth_component32f = FAIL
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth32f_stencil8 = FAIL
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.fbo.depth.depth_test_clamp.depth_component32f = FAIL
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.fbo.depth.depth_test_clamp.depth32f_stencil8 = FAIL
-
-// Polygon offset:
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.polygon_offset.float32_result_depth_clamp = FAIL
-3970 VULKAN NVIDIA : dEQP-GLES3.functional.polygon_offset.float32_factor_1_slope = FAIL
+// Fails on Quadro P400, driver 418.56, Linux
+3970 VULKAN NVIDIA LINUX : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth_component32f = FAIL
+3970 VULKAN NVIDIA LINUX : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth32f_stencil8 = FAIL
+3970 VULKAN NVIDIA LINUX : dEQP-GLES3.functional.fbo.depth.depth_test_clamp.depth_component32f = FAIL
+3970 VULKAN NVIDIA LINUX : dEQP-GLES3.functional.fbo.depth.depth_test_clamp.depth32f_stencil8 = FAIL
 
 // Transform Feedback
 4666 VULKAN NVIDIA : dEQP-GLES3.functional.transform_feedback.array_element.interleaved.* = SKIP
@@ -642,7 +625,6 @@
 // 161540999 PIXEL2ORXL VULKAN : dEQP-GLES3.functional.fragment_ops.random.35 = FAIL
 4344 VULKAN ANDROID : dEQP-GLES3.functional.fragment_ops.random.73 = FAIL
 
-
 // Fails only with SwiftShader:
 
 // These only fail for a 565 config
@@ -652,6 +634,82 @@
 // Fails on SwANGLE bots
 4418 SWIFTSHADER : dEQP-GLES3.functional.negative_api.buffer.framebuffer_texture_layer = FAIL
 
+// AddressSanitizer:DEADLYSIGNAL on Nexus 5X
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond_mat3_offset_1 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond_mat4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond_mat4_offset_1 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond_vec3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond_vec4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond_float = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond_mat2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond_mat3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond_vec3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.2_samples.rg32f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.4_samples.rg32f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.depth_component32f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.r11f_g11f_b10f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.r32f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.r8 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgb10_a2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgb5_a1 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgb8 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgba16f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgba32f = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.rgba8 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.msaa.8_samples.stencil_index8 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.fbo.multiview.samples_1 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.common_edge_small_quads = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.constancy_alpha_to_coverage = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.depth = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.num_samples_line = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.proportionality_alpha_to_coverage = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.proportionality_sample_coverage = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.sample_coverage_invert = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.default_framebuffer.stencil = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.fbo_8_samples.common_edge_big_quad = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.multisample.fbo_8_samples.num_samples_polygon = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d_array.formats.srgb_r8_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d_array.formats.srgb_r8_linear_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d_array.formats.srgb_r8_nearest_mipmap_nearest = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d.formats.srgb_r8_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d.formats.srgb_r8_linear_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d.formats.srgb_r8_linear_mipmap_nearest = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d.formats.srgb_r8_nearest_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.2d.formats.srgb_r8_nearest_mipmap_nearest = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.3d.formats.srgb_r8_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.3d.formats.srgb_r8_linear_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.3d.formats.srgb_r8_nearest_mipmap_nearest = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.cube.formats.srgb_r8_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.cube.formats.srgb_r8_linear_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.cube.formats.srgb_r8_linear_mipmap_nearest = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.filtering.cube.formats.srgb_r8_nearest_mipmap_linear = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.2d_array.srgb_r8_npot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.2d.srgb_r8_npot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.2d.srgb_r8_pot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.3d.srgb_r8_npot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.cube.srgb_r8_npot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.texture.format.sized.cube.srgb_r8_pot = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.array.separate.points.highp_vec4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.array.separate.points.lowp_mat2x4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.array.separate.points.mediump_float = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.highp_mat3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.lowp_mat2x3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.lowp_mat2x4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.lowp_mat3x2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.lowp_mat4x2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.lines.mediump_mat3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.highp_mat2x3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.highp_mat3x2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat2x3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat2x4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat3x2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat4x2 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.lowp_mat4x3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.mediump_mat2x3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.points.mediump_mat2x4 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.triangles.lowp_mat3 = SKIP
+5665 NEXUS5X : dEQP-GLES3.functional.transform_feedback.basic_types.separate.triangles.lowp_mat3x4 = SKIP
 
 ///////// Metal ////////////////
 
@@ -872,6 +930,10 @@
 4235 METAL AMD : dEQP-GLES3.functional.texture.vertex.cube.wrap.mirror_clamp = FAIL
 4235 METAL AMD : dEQP-GLES3.functional.texture.vertex.cube.wrap.mirror_repeat = FAIL
 4235 METAL AMD : dEQP-GLES3.functional.texture.vertex.cube.wrap.mirror_mirror = FAIL
+
+// Fails after a test fix in VK-GL-CTS
+5666 METAL AMD : dEQP-GLES3.functional.texture.filtering.2d_array.formats.rgb9_e5_linear_mipmap_linear = FAIL
+5666 METAL AMD : dEQP-GLES3.functional.texture.filtering.2d_array.formats.rgb9_e5_nearest_mipmap_linear = FAIL
 
 // Globally disable Metal testing on Intel & NVIDIA for now
 4235 METAL INTEL : dEQP-GLES3.* = SKIP

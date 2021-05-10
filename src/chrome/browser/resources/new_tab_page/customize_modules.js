@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './mini_page.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -13,6 +14,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {ModuleRegistry} from './modules/module_registry.js';
 
 /** Element that lets the user configure modules settings. */
 class CustomizeModulesElement extends PolymerElement {
@@ -26,23 +28,36 @@ class CustomizeModulesElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private */
-      hide_: {
+      /**
+       * If true, modules are customizable. If false, all modules are hidden.
+       * @private
+       */
+      show_: {
         type: Boolean,
-        reflectToAttribute: true,
+        observer: 'onShowChange_',
       },
 
       /** @private */
-      hideManagedByPolicy_: {
+      showManagedByPolicy_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('modulesVisibleManagedByPolicy'),
       },
 
-      /** @private */
-      selected_: {
-        type: Boolean,
-        reflectToAttribute: true,
-        computed: 'computeSelected_(hide_, hideManagedByPolicy_)',
+      /**
+       * @private {
+       *   !Array<{
+       *     name: string,
+       *     id: string,
+       *     checked: boolean,
+       *     initiallyChecked: boolean,
+       *     disabled: boolean,
+       *   }>
+       * }
+       */
+      modules_: {
+        type: Array,
+        value: () => ModuleRegistry.getInstance().getDescriptors().map(
+            d => ({name: d.name, id: d.id, checked: true, hidden: false})),
       },
     };
   }
@@ -50,25 +65,31 @@ class CustomizeModulesElement extends PolymerElement {
   constructor() {
     super();
     /** @private {?number} */
-    this.setModulesVisibleListenerId_ = null;
+    this.setDisabledModulesListenerId_ = null;
   }
 
   /** @override */
   connectedCallback() {
     super.connectedCallback();
-    this.setModulesVisibleListenerId_ =
-        BrowserProxy.getInstance().callbackRouter.setModulesVisible.addListener(
-            visible => {
-              this.hide_ = !visible;
+    this.setDisabledModulesListenerId_ =
+        BrowserProxy.getInstance()
+            .callbackRouter.setDisabledModules.addListener((all, ids) => {
+              this.show_ = !all;
+              this.modules_.forEach(({id}, i) => {
+                const checked = !all && !ids.includes(id);
+                this.set(`modules_.${i}.checked`, checked);
+                this.set(`modules_.${i}.initiallyChecked`, checked);
+                this.set(`modules_.${i}.disabled`, ids.includes(id));
+              });
             });
-    BrowserProxy.getInstance().handler.updateModulesVisible();
+    BrowserProxy.getInstance().handler.updateDisabledModules();
   }
 
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
     BrowserProxy.getInstance().callbackRouter.removeListener(
-        assert(this.setModulesVisibleListenerId_));
+        assert(this.setDisabledModulesListenerId_));
   }
 
   /** @override */
@@ -85,23 +106,50 @@ class CustomizeModulesElement extends PolymerElement {
   }
 
   apply() {
-    BrowserProxy.getInstance().handler.setModulesVisible(!this.hide_);
+    const handler = BrowserProxy.getInstance().handler;
+    handler.setModulesVisible(this.show_);
+    this.modules_
+        .filter(({checked, initiallyChecked}) => checked !== initiallyChecked)
+        .forEach(({id, checked}) => {
+          // Don't set disabled status of a module if we are in hide all mode to
+          // preserve the status for the next time we go into customize mode.
+          if (this.show_) {
+            handler.setModuleDisabled(id, !checked);
+          }
+          const base = `NewTabPage.Modules.${checked ? 'Enabled' : 'Disabled'}`;
+          chrome.metricsPrivate.recordSparseHashable(base, id);
+          chrome.metricsPrivate.recordSparseHashable(`${base}.Customize`, id);
+        });
+  }
+
+  /**
+   * @param {!CustomEvent<{value: string}>} e
+   * @private
+   */
+  onShowRadioSelectionChanged_(e) {
+    this.show_ = e.detail.value === 'customize';
+  }
+
+  /** @private */
+  onShowChange_() {
+    this.modules_.forEach(
+        (m, i) => this.set(`modules_.${i}.checked`, this.show_ && !m.disabled));
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  radioSelection_() {
+    return this.show_ ? 'customize' : 'hide';
   }
 
   /**
    * @return {boolean}
    * @private
    */
-  computeSelected_() {
-    return this.hide_ && !this.hideManagedByPolicy_;
-  }
-
-  /**
-   * @param {!CustomEvent<boolean>} e
-   * @private
-   */
-  onHideChange_(e) {
-    this.hide_ = e.detail;
+  moduleToggleDisabled_() {
+    return this.showManagedByPolicy_ || !this.show_;
   }
 }
 

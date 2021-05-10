@@ -223,7 +223,7 @@ bool MenuButtonController::Activate(const ui::Event* event) {
     // mouse target during the mouse press we explicitly set the mouse handler
     // to NULL.
     static_cast<internal::RootView*>(button()->GetWidget()->GetRootView())
-        ->SetMouseHandler(nullptr);
+        ->SetMouseAndGestureHandler(nullptr);
 
     DCHECK(increment_pressed_lock_called_ == nullptr);
     // Observe if IncrementPressedLocked() was called so we can trigger the
@@ -319,7 +319,7 @@ void MenuButtonController::DecrementPressedLocked() {
   // If this was the last lock, manually reset state to the desired state.
   if (pressed_lock_count_ == 0) {
     menu_closed_time_ = TimeTicks::Now();
-    state_changed_subscription_.reset();
+    state_changed_subscription_ = {};
     LabelButton::ButtonState desired_state = Button::STATE_NORMAL;
     if (should_disable_after_press_) {
       desired_state = Button::STATE_DISABLED;

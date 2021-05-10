@@ -76,7 +76,7 @@ NativeThemeAura::NativeThemeAura(bool use_overlay_scrollbars,
     : NativeThemeBase(should_only_use_dark_colors),
       use_overlay_scrollbars_(use_overlay_scrollbars) {
 // We don't draw scrollbar buttons.
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   set_scrollbar_button_length(0);
 #endif
 
@@ -332,7 +332,7 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     else
       thumb_rect.Inset(extra_padding, kThumbPadding);
 
-    if (UsesHighContrastColors() && features::IsForcedColorsEnabled()) {
+    if (InForcedColorsMode() && features::IsForcedColorsEnabled()) {
       thumb_alpha = 0xFF;
       thumb_color = GetControlColor(color_id, color_scheme);
     } else {

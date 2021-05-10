@@ -14,22 +14,22 @@
 
 #include "src/ast/struct_member_offset_decoration.h"
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using StructMemberOffsetDecorationTest = testing::Test;
+using StructMemberOffsetDecorationTest = TestHelper;
 
 TEST_F(StructMemberOffsetDecorationTest, Creation) {
-  StructMemberOffsetDecoration d{2, Source{}};
-  EXPECT_EQ(2u, d.offset());
+  auto* d = create<StructMemberOffsetDecoration>(2);
+  EXPECT_EQ(2u, d->offset());
 }
 
 TEST_F(StructMemberOffsetDecorationTest, Is) {
-  StructMemberOffsetDecoration d{2, Source{}};
-  EXPECT_TRUE(d.IsOffset());
+  auto* d = create<StructMemberOffsetDecoration>(2);
+  EXPECT_TRUE(d->Is<StructMemberOffsetDecoration>());
 }
 
 }  // namespace

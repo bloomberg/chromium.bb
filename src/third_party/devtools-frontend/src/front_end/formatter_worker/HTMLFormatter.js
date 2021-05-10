@@ -9,9 +9,6 @@ import {FormattedContentBuilder} from './FormattedContentBuilder.js';  // eslint
 import {AbortTokenization, createTokenizer} from './FormatterWorker.js';
 import {JavaScriptFormatter} from './JavaScriptFormatter.js';
 
-/**
- * @unrestricted
- */
 export class HTMLFormatter {
   /**
    * @param {!FormattedContentBuilder} builder
@@ -133,7 +130,7 @@ export class HTMLFormatter {
     if (Platform.StringUtilities.isWhitespace(token.value)) {
       return;
     }
-    if (token.type.has('comment') || token.type.has('meta')) {
+    if (hasTokenInSet(token.type, 'comment') || hasTokenInSet(token.type, 'meta')) {
       this._builder.addNewLine();
       this._builder.addToken(token.value.trim(), token.startOffset);
       this._builder.addNewLine();
@@ -166,7 +163,7 @@ export class HTMLFormatter {
       return;
     }
 
-    if (!isBodyToken && token.type.has('attribute')) {
+    if (!isBodyToken && hasTokenInSet(token.type, 'attribute')) {
       this._builder.addSoftSpace();
     }
 
@@ -208,8 +205,17 @@ HTMLFormatter.SupportedJavaScriptMimeTypes = new Set([
 ]);
 
 /**
- * @unrestricted
+ * @param {!Set<string>} tokenTypes
+ * @param {string} type
  */
+function hasTokenInSet(tokenTypes, type) {
+  // We prefix the CodeMirror HTML tokenizer with the xml- prefix
+  // in a full version. When running in a worker context, this
+  // prefix is not appended, as the global is only overridden
+  // in CodeMirrorTextEditor.js.
+  return tokenTypes.has(type) || tokenTypes.has(`xml-${type}`);
+}
+
 export class HTMLModel {
   /**
    * @param {string} text
@@ -247,7 +253,7 @@ export class HTMLModel {
       if (lastOffset >= text.length) {
         break;
       }
-      const element = this._stack.peekLast();
+      const element = this._stack[this._stack.length - 1];
       if (!element) {
         break;
       }
@@ -268,7 +274,7 @@ export class HTMLModel {
     }
 
     while (this._stack.length > 1) {
-      const element = this._stack.peekLast();
+      const element = this._stack[this._stack.length - 1];
       if (!element) {
         break;
       }
@@ -295,7 +301,7 @@ export class HTMLModel {
       this._tokens.push(token);
       this._updateDOM(token);
 
-      const element = this._stack.peekLast();
+      const element = this._stack[this._stack.length - 1];
       if (element && (element.name === 'script' || element.name === 'style') && element.openTag &&
           element.openTag.endOffset === lastOffset) {
         return AbortTokenization;
@@ -314,19 +320,19 @@ export class HTMLModel {
     const type = token.type;
     switch (this._state) {
       case S.Initial:
-        if (type.has('bracket') && (value === '<' || value === '</')) {
+        if (hasTokenInSet(type, 'bracket') && (value === '<' || value === '</')) {
           this._onStartTag(token);
           this._state = S.Tag;
         }
         return;
       case S.Tag:
-        if (type.has('tag') && !type.has('bracket')) {
+        if (hasTokenInSet(type, 'tag') && !hasTokenInSet(type, 'bracket')) {
           this._tagName = value.trim().toLowerCase();
-        } else if (type.has('attribute')) {
+        } else if (hasTokenInSet(type, 'attribute')) {
           this._attributeName = value.trim().toLowerCase();
           this._attributes.set(this._attributeName, '');
           this._state = S.AttributeName;
-        } else if (type.has('bracket') && (value === '>' || value === '/>')) {
+        } else if (hasTokenInSet(type, 'bracket') && (value === '>' || value === '/>')) {
           this._onEndTag(token);
           this._state = S.Initial;
         }
@@ -334,16 +340,16 @@ export class HTMLModel {
       case S.AttributeName:
         if (!type.size && value === '=') {
           this._state = S.AttributeValue;
-        } else if (type.has('bracket') && (value === '>' || value === '/>')) {
+        } else if (hasTokenInSet(type, 'bracket') && (value === '>' || value === '/>')) {
           this._onEndTag(token);
           this._state = S.Initial;
         }
         return;
       case S.AttributeValue:
-        if (type.has('string')) {
+        if (hasTokenInSet(type, 'string')) {
           this._attributes.set(this._attributeName, value);
           this._state = S.Tag;
-        } else if (type.has('bracket') && (value === '>' || value === '/>')) {
+        } else if (hasTokenInSet(type, 'bracket') && (value === '>' || value === '/>')) {
           this._onEndTag(token);
           this._state = S.Initial;
         }
@@ -381,7 +387,7 @@ export class HTMLModel {
    */
   _onTagComplete(tag) {
     if (tag.isOpenTag) {
-      const topElement = this._stack.peekLast();
+      const topElement = this._stack[this._stack.length - 1];
       if (topElement) {
         const tagSet = AutoClosingTags.get(topElement.name);
         if (topElement !== this._document && topElement.openTag && topElement.openTag.selfClosingTag) {
@@ -394,10 +400,10 @@ export class HTMLModel {
       return;
     }
 
-    let lastTag = this._stack.peekLast();
+    let lastTag = this._stack[this._stack.length - 1];
     while (this._stack.length > 1 && lastTag && lastTag.name !== tag.name) {
       this._popElement(autocloseTag(lastTag, tag.startOffset));
-      lastTag = this._stack.peekLast();
+      lastTag = this._stack[this._stack.length - 1];
     }
     if (this._stack.length === 1) {
       return;
@@ -429,7 +435,7 @@ export class HTMLModel {
    * @param {!Tag} openTag
    */
   _pushElement(openTag) {
-    const topElement = this._stack.peekLast();
+    const topElement = this._stack[this._stack.length - 1];
     const newElement = new FormatterElement(openTag.name);
     if (topElement) {
       newElement.parent = topElement;
@@ -502,9 +508,6 @@ const ParseState = {
   AttributeValue: 'AttributeValue'
 };
 
-/**
- * @unrestricted
- */
 const Token = class {
   /**
    * @param {string} value
@@ -520,9 +523,6 @@ const Token = class {
   }
 };
 
-/**
- * @unrestricted
- */
 const Tag = class {
   /**
    * @param {string} name
@@ -543,9 +543,6 @@ const Tag = class {
 };
 
 
-/**
- * @unrestricted
- */
 const FormatterElement = class {
   /**
    * @param {string} name

@@ -50,6 +50,10 @@ public:
     void waitUntilCompleted() {
         [fCmdBuffer waitUntilCompleted];
     }
+    bool isCompleted() {
+        return fCmdBuffer.status == MTLCommandBufferStatusCompleted ||
+               fCmdBuffer.status == MTLCommandBufferStatusError;
+    }
     void callFinishedCallbacks() { fFinishedCallbacks.reset(); }
 
 private:
@@ -57,6 +61,8 @@ private:
 
     GrMtlCommandBuffer(id<MTLCommandBuffer> cmdBuffer)
         : fCmdBuffer(cmdBuffer)
+        , fActiveBlitCommandEncoder(nil)
+        , fActiveRenderCommandEncoder(nil)
         , fPreviousRenderPassDescriptor(nil)
         , fHasWork(false) {}
 

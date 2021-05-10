@@ -569,6 +569,19 @@ class ExtractHistogramsTest(unittest.TestCase):
         histogram_with_enum_and_unit, {})
     self.assertTrue(have_errors)
 
+  def testEmptyEnum(self):
+    empty_enum = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<enums>
+  <enum name="MyEnumType">
+    <summary>This is an empty enum</summary>
+  </enum>
+</enums>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms.ExtractEnumsFromXmlTree(empty_enum)
+    self.assertTrue(have_errors)
+
   def testNewHistogramWithEnum(self):
     histogram_with_enum = xml.dom.minidom.parseString("""
 <histogram-configuration>
@@ -893,6 +906,37 @@ class ExtractHistogramsTest(unittest.TestCase):
         histogram_without_corresponding_variants, {})
     self.assertTrue(have_errors)
 
+  def testSuffixCanExtendPatternedHistograms(self):
+    patterned_suffix = ("""
+        <histogram-configuration>
+        <histograms>
+          <histogram name="Test{Version}" units="things"
+            expires_after="2017-10-16">
+            <owner>chrome-metrics-team@google.com</owner>
+            <summary>
+              Sample description.
+            </summary>
+            <token key="Version">
+              <variant name=".First"/>
+              <variant name=".Last"/>
+            </token>
+          </histogram>
+        </histograms>
+        <histogram_suffixes_list>
+          <histogram_suffixes name="ExtendPatternedHist" separator=".">
+            <suffix name="Found" label="Extending patterned histograms."/>
+            <affected-histogram name="Test.First"/>
+            <affected-histogram name="Test.Last"/>
+          </histogram_suffixes>
+        </histogram_suffixes_list>
+        </histogram-configuration>""")
+    # Only when the histogram is first extended by the token, can the
+    # histogram_suffixes find those affected histograms.
+    histograms_dict, had_errors = extract_histograms.ExtractHistogramsFromDom(
+        xml.dom.minidom.parseString(patterned_suffix))
+    self.assertFalse(had_errors)
+    self.assertIn('Test.First.Found', histograms_dict)
+    self.assertIn('Test.Last.Found', histograms_dict)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.ERROR + 1)

@@ -133,18 +133,30 @@ const char* const kDisplayNamesBlockedForMediaFoundation[] = {
 const std::vector<
     std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>&
 GetMFAttributes() {
+  if (base::FeatureList::IsEnabled(
+          media::kIncludeIRCamerasInDeviceEnumeration)) {
+    static const base::NoDestructor<std::vector<
+        std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>>
+        mf_attributes({{{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
+                         {
+                             {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                              MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                         }},
+                        {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
+                         {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                          {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
+                           KSCATEGORY_SENSOR_CAMERA}}}}});
+    return *mf_attributes;
+  }
+
   static const base::NoDestructor<std::vector<
       std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>>
-      mf_attributes({{{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
-                       {
-                           {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                       }},
-                      {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
-                       {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                         MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                        {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
-                         KSCATEGORY_SENSOR_CAMERA}}}}});
+      mf_attributes({{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
+                      {
+                          {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                      }}});
   return *mf_attributes;
 }
 
@@ -312,6 +324,8 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
           base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
+      use_d3d11_with_media_foundation_(base::FeatureList::IsEnabled(
+          media::kMediaFoundationD3D11VideoCapture)),
       com_thread_("Windows Video Capture COM Thread") {
   if (use_media_foundation_ && !PlatformSupportsMediaFoundation()) {
     use_media_foundation_ = false;
@@ -705,7 +719,7 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoMediaFoundation() {
   DevicesInfo devices_info;
 
   if (use_d3d11_with_media_foundation_ && !dxgi_device_manager_) {
-    dxgi_device_manager_ = VideoCaptureDXGIDeviceManager::Create();
+    dxgi_device_manager_ = DXGIDeviceManager::Create();
   }
 
   // Recent non-RGB (depth, IR) cameras could be marked as sensor cameras in

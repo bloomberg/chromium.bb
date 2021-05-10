@@ -9,7 +9,7 @@
 // declarations instead of including more headers. If that is infeasible, adjust
 // the limit. For more info, see
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 910000
+#pragma clang max_tokens_here 850000
 
 #include <utility>
 
@@ -20,11 +20,14 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -42,17 +45,19 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "sandbox/policy/sandbox_type.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/service_manager/public/cpp/manifest.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/federated_learning/floc.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
@@ -426,8 +431,17 @@ std::string ContentBrowserClient::GetWebBluetoothBlocklist() {
   return std::string();
 }
 
-bool ContentBrowserClient::AllowConversionMeasurement(
+bool ContentBrowserClient::IsConversionMeasurementAllowed(
     content::BrowserContext* browser_context) {
+  return true;
+}
+
+bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
+    content::BrowserContext* browser_context,
+    ConversionMeasurementOperation operation,
+    const url::Origin* impression_origin,
+    const url::Origin* conversion_origin,
+    const url::Origin* reporting_origin) {
   return true;
 }
 
@@ -485,6 +499,11 @@ ContentBrowserClient::GetSystemNetworkContext() {
 
 std::string ContentBrowserClient::GetGeolocationApiKey() {
   return std::string();
+}
+
+device::GeolocationSystemPermissionManager*
+ContentBrowserClient::GetLocationPermissionManager() {
+  return nullptr;
 }
 
 #if defined(OS_ANDROID)
@@ -555,7 +574,7 @@ ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return nullptr;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
   return nullptr;
 }
@@ -696,17 +715,19 @@ std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
 }
 
 #if defined(OS_WIN)
-bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                            RendererSpawnFlags flags) {
+bool ContentBrowserClient::PreSpawnChild(
+    sandbox::TargetPolicy* policy,
+    sandbox::policy::SandboxType sandbox_type,
+    ChildSpawnFlags flags) {
   return true;
 }
 
-base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
+std::wstring ContentBrowserClient::GetAppContainerSidForSandboxType(
     sandbox::policy::SandboxType sandbox_type) {
   // Embedders should override this method and return different SIDs for each
   // sandbox type. Note: All content level tests will run child processes in the
   // same AppContainer.
-  return base::string16(
+  return std::wstring(
       L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
       L"924012148-129201922");
 }
@@ -715,30 +736,11 @@ bool ContentBrowserClient::IsRendererCodeIntegrityEnabled() {
   return false;
 }
 
+bool ContentBrowserClient::ShouldEnableAudioProcessHighPriority() {
+  return base::FeatureList::IsEnabled(features::kAudioProcessHighPriorityWin);
+}
+
 #endif  // defined(OS_WIN)
-
-void ContentBrowserClient::RunServiceInstance(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
-
-bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
-    const service_manager::Identity& id) {
-  return false;
-}
-
-base::Optional<service_manager::Manifest>
-ContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  return base::nullopt;
-}
-
-std::vector<service_manager::Manifest>
-ContentBrowserClient::GetExtraServiceManifests() {
-  return std::vector<service_manager::Manifest>();
-}
-
-std::vector<std::string> ContentBrowserClient::GetStartupServices() {
-  return std::vector<std::string>();
-}
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
@@ -812,8 +814,7 @@ bool ContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     BrowserContext* browser_context,
     const url::Origin& origin,
-    const net::SiteForCookies& site_for_cookies,
-    const url::Origin& top_frame_origin,
+    const net::IsolationInfo& isolation_info,
     bool is_service_worker,
     int process_id,
     int frame_id,
@@ -830,6 +831,13 @@ ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   return std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>();
 }
 
+ContentBrowserClient::URLLoaderRequestHandler
+ContentBrowserClient::CreateURLLoaderHandlerForServiceWorkerNavigationPreload(
+    int frame_tree_node_id,
+    const network::ResourceRequest& resource_request) {
+  return ContentBrowserClient::URLLoaderRequestHandler();
+}
+
 void ContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {}
 
@@ -838,7 +846,8 @@ void ContentBrowserClient::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+    cert_verifier::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   network_context_params->user_agent = GetUserAgent();
   network_context_params->accept_language = "en-us,en";
 }
@@ -882,6 +891,10 @@ void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {}
 
+void ContentBrowserClient::CreateDeviceInfoService(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver) {}
+
 #if !defined(OS_ANDROID)
 SerialDelegate* ContentBrowserClient::GetSerialDelegate() {
   return nullptr;
@@ -896,6 +909,10 @@ BluetoothDelegate* ContentBrowserClient::GetBluetoothDelegate() {
   return nullptr;
 }
 
+FontAccessDelegate* ContentBrowserClient::GetFontAccessDelegate() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,
@@ -904,7 +921,8 @@ bool ContentBrowserClient::ShowPaymentHandlerWindow(
   return false;
 }
 
-bool ContentBrowserClient::ShouldCreateThreadPool() {
+bool ContentBrowserClient::CreateThreadPool(base::StringPiece name) {
+  base::ThreadPoolInstance::Create(name);
   return true;
 }
 
@@ -1046,16 +1064,16 @@ ContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
 }
 
 void ContentBrowserClient::AugmentNavigationDownloadPolicy(
-    const WebContents* web_contents,
-    const RenderFrameHost* frame_host,
+    WebContents* web_contents,
+    RenderFrameHost* frame_host,
     bool user_gesture,
-    NavigationDownloadPolicy* download_policy) {}
+    blink::NavigationDownloadPolicy* download_policy) {}
 
-std::string ContentBrowserClient::GetInterestCohortForJsApi(
-    content::BrowserContext* browser_context,
-    const url::Origin& requesting_origin,
-    const net::SiteForCookies& site_for_cookies) {
-  return std::string();
+blink::mojom::InterestCohortPtr ContentBrowserClient::GetInterestCohortForJsApi(
+    WebContents* web_contents,
+    const GURL& url,
+    const base::Optional<url::Origin>& top_frame_origin) {
+  return blink::mojom::InterestCohort::New();
 }
 
 bool ContentBrowserClient::IsBluetoothScanningBlocked(
@@ -1087,13 +1105,18 @@ void ContentBrowserClient::FetchRemoteSms(
     const url::Origin& origin,
     base::OnceCallback<void(base::Optional<std::string>)> callback) {}
 
-void ContentBrowserClient::IsClipboardPasteAllowed(
+bool ContentBrowserClient::IsClipboardPasteAllowed(
+    content::RenderFrameHost* render_frame_host) {
+  return true;
+}
+
+void ContentBrowserClient::IsClipboardPasteContentAllowed(
     content::WebContents* web_contents,
     const GURL& url,
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
-    IsClipboardPasteAllowedCallback callback) {
-  std::move(callback).Run(ClipboardPasteAllowed(true));
+    IsClipboardPasteContentAllowedCallback callback) {
+  std::move(callback).Run(ClipboardPasteContentAllowed(true));
 }
 
 bool ContentBrowserClient::CanEnterFullscreenWithoutUserActivation() {
@@ -1133,7 +1156,7 @@ bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
 
 bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
-    const GURL& url) {
+    const url::Origin& origin) {
   return false;
 }
 
@@ -1141,7 +1164,7 @@ ukm::UkmService* ContentBrowserClient::GetUkmService() {
   return nullptr;
 }
 
-void ContentBrowserClient::OnKeepaliveRequestStarted() {}
+void ContentBrowserClient::OnKeepaliveRequestStarted(BrowserContext*) {}
 
 void ContentBrowserClient::OnKeepaliveRequestFinished() {}
 
@@ -1158,6 +1181,17 @@ void ContentBrowserClient::GetHyphenationDictionary(
 
 bool ContentBrowserClient::HasErrorPage(int http_status_code) {
   return false;
+}
+
+std::unique_ptr<IdentityRequestDialogController>
+ContentBrowserClient::CreateIdentityRequestDialogController() {
+  return nullptr;
+}
+
+bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
+    BrowserContext* browser_context) {
+  return base::FeatureList::IsEnabled(
+      features::kSuppressDifferentOriginSubframeJSDialogs);
 }
 
 }  // namespace content

@@ -26,21 +26,18 @@ class DrawIndexedIndirectTest : public DawnTest {
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                layout(location = 0) in vec4 pos;
-                void main() {
-                    gl_Position = pos;
-                })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<in> pos : vec4<f32>;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[stage(vertex)]] fn main() -> void {
+                Position = pos;
+            })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
+        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            [[location(0)]] var<out> fragColor : vec4<f32>;
+            [[stage(fragment)]] fn main() -> void {
+                fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            })");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.vertexStage.module = vsModule;
@@ -89,7 +86,7 @@ class DrawIndexedIndirectTest : public DawnTest {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
             pass.SetPipeline(pipeline);
             pass.SetVertexBuffer(0, vertexBuffer);
-            pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32, indexOffset);
+            pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, indexOffset);
             pass.DrawIndexedIndirect(indirectBuffer, indirectOffset);
             pass.EndPass();
         }
@@ -125,6 +122,7 @@ TEST_P(DrawIndexedIndirectTest, BaseVertex) {
     // TODO(crbug.com/dawn/161): add workaround for OpenGL index buffer offset (could be compute
     // shader that adds it to the draw calls)
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
@@ -166,4 +164,5 @@ DAWN_INSTANTIATE_TEST(DrawIndexedIndirectTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_WEB_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_WEB_TRANSPORT_H_
 
-#include "base/util/type_safety/pass_key.h"
+#include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -23,7 +24,7 @@ class MODULES_EXPORT WebTransport final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using PassKey = util::PassKey<WebTransport>;
+  using PassKey = base::PassKey<WebTransport>;
   static WebTransport* Create(ScriptState*,
                               const String& url,
                               QuicTransportOptions*,
@@ -72,6 +73,11 @@ class MODULES_EXPORT WebTransport final
 
   ExecutionContext* GetExecutionContext() const {
     return quic_transport_->GetExecutionContext();
+  }
+
+  void setDatagramWritableQueueExpirationDuration(double ms) {
+    return quic_transport_->SetDatagramWritableQueueExpirationDuration(
+        base::TimeDelta::FromMillisecondsD(ms));
   }
 
  private:

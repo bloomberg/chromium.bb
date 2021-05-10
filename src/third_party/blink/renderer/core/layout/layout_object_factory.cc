@@ -250,11 +250,8 @@ LayoutObject* LayoutObjectFactory::CreateButton(Node& node,
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
                                                  const ComputedStyle& style,
                                                  LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFieldSet);
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
-      node, style, legacy, disable_ng_for_type);
+      node, style, legacy);
 }
 
 LayoutBlockFlow* LayoutObjectFactory::CreateFileUploadControl(
@@ -351,13 +348,15 @@ LayoutObject* LayoutObjectFactory::CreateRubyText(Node* node,
 }
 
 LayoutBox* LayoutObjectFactory::CreateAnonymousTableWithParent(
-    const LayoutObject& parent) {
+    const LayoutObject& parent,
+    bool child_forces_legacy) {
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(
           parent.StyleRef(),
           parent.IsLayoutInline() ? EDisplay::kInlineTable : EDisplay::kTable);
-  LegacyLayout legacy =
-      parent.ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
+  LegacyLayout legacy = parent.ForceLegacyLayout() || child_forces_legacy
+                            ? LegacyLayout::kForce
+                            : LegacyLayout::kAuto;
 
   LayoutBlock* new_table =
       CreateTable(parent.GetDocument(), *new_style, legacy);

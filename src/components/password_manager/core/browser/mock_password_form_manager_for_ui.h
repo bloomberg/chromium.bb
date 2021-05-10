@@ -6,7 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_FORM_MANAGER_FOR_UI_H_
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,12 +37,12 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
               GetInteractionsStats,
               (),
               (const override));
-  MOCK_METHOD(base::span<const CompromisedCredentials>,
-              GetCompromisedCredentials,
+  MOCK_METHOD(base::span<const InsecureCredential>,
+              GetInsecureCredentials,
               (),
               (const override));
-  MOCK_METHOD(bool, IsBlacklisted, (), (const override));
-  MOCK_METHOD(bool, WasUnblacklisted, (), (const override));
+  MOCK_METHOD(bool, IsBlocklisted, (), (const override));
+  MOCK_METHOD(bool, WasUnblocklisted, (), (const override));
   MOCK_METHOD(bool, IsMovableToAccountStore, (), (const override));
   MOCK_METHOD(void, Save, (), (override));
   MOCK_METHOD(void, Update, (const PasswordForm&), (override));
@@ -57,7 +57,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_METHOD(void, OnNopeUpdateClicked, (), (override));
   MOCK_METHOD(void, OnNeverClicked, (), (override));
   MOCK_METHOD(void, OnNoInteraction, (bool), (override));
-  MOCK_METHOD(void, PermanentlyBlacklist, (), (override));
+  MOCK_METHOD(void, Blocklist, (), (override));
   MOCK_METHOD(void, OnPasswordsRevealed, (), (override));
   MOCK_METHOD(void, MoveCredentialsToAccountStore, (), (override));
   MOCK_METHOD(void, BlockMovingCredentialsToAccountStore, (), (override));

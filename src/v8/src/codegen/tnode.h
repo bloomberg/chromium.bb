@@ -265,6 +265,10 @@ struct is_subtype<UnionT<T1, T2>, UnionT<U1, U2>> {
       (is_subtype<T1, U1>::value || is_subtype<T1, U2>::value) &&
       (is_subtype<T2, U1>::value || is_subtype<T2, U2>::value);
 };
+template <>
+struct is_subtype<ExternalReference, RawPtrT> {
+  static const bool value = true;
+};
 
 template <class T, class U>
 struct types_have_common_values {
@@ -364,7 +368,7 @@ class TNode {
 // SloppyTNode<T> is a variant of TNode<T> and allows implicit casts from
 // Node*. It is intended for function arguments as long as some call sites
 // still use untyped Node* arguments.
-// TODO(tebbi): Delete this class once transition is finished.
+// TODO(turbofan): Delete this class once transition is finished.
 template <class T>
 class SloppyTNode : public TNode<T> {
  public:

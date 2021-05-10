@@ -115,12 +115,8 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     if (exception_state.HadException())
       return nullptr;
 
-    if (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled()) {
-      return CreateVideoCapturePermissionDescriptor(
-          camera_device_permission->panTiltZoom());
-    }
-
-    return CreateVideoCapturePermissionDescriptor(false /* pan_tilt_zoom */);
+    return CreateVideoCapturePermissionDescriptor(
+        camera_device_permission->panTiltZoom());
   }
   if (name == "microphone")
     return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
@@ -243,6 +239,14 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
       return nullptr;
     }
     return CreatePermissionDescriptor(PermissionName::FONT_ACCESS);
+  }
+  if (name == "display-capture") {
+    if (!RuntimeEnabledFeatures::DisplayCapturePermissionPolicyEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Display Capture is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::DISPLAY_CAPTURE);
   }
   return nullptr;
 }

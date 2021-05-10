@@ -20,17 +20,10 @@ namespace tint {
 namespace writer {
 namespace hlsl {
 
-Generator::Generator(ast::Module module)
-    : Text(std::move(module)),
-      impl_(std::make_unique<GeneratorImpl>(&module_)) {}
+Generator::Generator(const Program* program)
+    : impl_(std::make_unique<GeneratorImpl>(program)) {}
 
 Generator::~Generator() = default;
-
-void Generator::Reset() {
-  set_error("");
-  out_ = std::ostringstream();
-  impl_ = std::make_unique<GeneratorImpl>(&module_);
-}
 
 bool Generator::Generate() {
   auto ret = impl_->Generate(out_);

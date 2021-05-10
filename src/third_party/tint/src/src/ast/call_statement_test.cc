@@ -14,57 +14,54 @@
 
 #include "src/ast/call_statement.h"
 
-#include "gtest/gtest.h"
 #include "src/ast/call_expression.h"
 #include "src/ast/identifier_expression.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using CallStatementTest = testing::Test;
+using CallStatementTest = TestHelper;
 
 TEST_F(CallStatementTest, Creation) {
-  auto expr = std::make_unique<ast::CallExpression>(
-      std::make_unique<ast::IdentifierExpression>("func"), ExpressionList{});
-  auto* expr_ptr = expr.get();
+  auto* expr = create<CallExpression>(Expr("func"), ExpressionList{});
 
-  CallStatement c(std::move(expr));
-  EXPECT_EQ(c.expr(), expr_ptr);
+  auto* c = create<CallStatement>(expr);
+  EXPECT_EQ(c->expr(), expr);
 }
 
 TEST_F(CallStatementTest, IsCall) {
-  CallStatement c;
-  EXPECT_TRUE(c.IsCall());
+  auto* c = create<CallStatement>(nullptr);
+  EXPECT_TRUE(c->Is<CallStatement>());
 }
 
 TEST_F(CallStatementTest, IsValid) {
-  CallStatement c(std::make_unique<ast::CallExpression>(
-      std::make_unique<ast::IdentifierExpression>("func"), ExpressionList{}));
-  EXPECT_TRUE(c.IsValid());
+  auto* c = create<CallStatement>(
+      create<CallExpression>(Expr("func"), ExpressionList{}));
+  EXPECT_TRUE(c->IsValid());
 }
 
 TEST_F(CallStatementTest, IsValid_MissingExpr) {
-  CallStatement c;
-  EXPECT_FALSE(c.IsValid());
+  auto* c = create<CallStatement>(nullptr);
+  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(CallStatementTest, IsValid_InvalidExpr) {
-  CallStatement c(std::make_unique<ast::CallExpression>());
-  EXPECT_FALSE(c.IsValid());
+  auto* c = create<CallStatement>(
+      create<CallExpression>(nullptr, ast::ExpressionList{}));
+  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(CallStatementTest, ToStr) {
-  CallStatement c(std::make_unique<ast::CallExpression>(
-      std::make_unique<ast::IdentifierExpression>("func"), ExpressionList{}));
+  auto* c = create<CallStatement>(
+      create<CallExpression>(Expr("func"), ExpressionList{}));
 
-  std::ostringstream out;
-  c.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Call{
-    Identifier{func}
-    (
-    )
-  }
+  EXPECT_EQ(str(c), R"(Call[not set]{
+  Identifier[not set]{func}
+  (
+  )
+}
 )");
 }
 

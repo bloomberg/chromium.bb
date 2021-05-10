@@ -30,6 +30,7 @@
 #include "tools/ipc_fuzzer/message_lib/message_cracker.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/latency/latency_info.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -1066,13 +1067,13 @@ struct FuzzTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
 };
 
 template <>
-struct FuzzTraits<util::StrongAlias<extensions::ActivationSequenceTag, int>> {
-  static bool Fuzz(util::StrongAlias<extensions::ActivationSequenceTag, int>* p,
+struct FuzzTraits<base::StrongAlias<extensions::ActivationSequenceTag, int>> {
+  static bool Fuzz(base::StrongAlias<extensions::ActivationSequenceTag, int>* p,
                    Fuzzer* fuzzer) {
     int value;
     if (!FuzzParam(&value, fuzzer))
       return false;
-    *p = util::StrongAlias<extensions::ActivationSequenceTag, int>(value);
+    *p = base::StrongAlias<extensions::ActivationSequenceTag, int>(value);
     return true;
   }
 };
@@ -1656,51 +1657,6 @@ struct FuzzTraits<SkBitmap> {
   static bool Fuzz(SkBitmap* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): This should actually do something.
     return true;
-  }
-};
-
-template <>
-struct FuzzTraits<network::DataElement> {
-  static bool Fuzz(network::DataElement* p, Fuzzer* fuzzer) {
-    // TODO(mbarbella): Support mutation.
-    if (!fuzzer->ShouldGenerate())
-      return true;
-
-    switch (RandInRange(2)) {
-      case 0: {
-        // network::DataElement::Type::TYPE_BYTES
-        if (RandEvent(2)) {
-          p->SetToEmptyBytes();
-        } else {
-          char data[256];
-          int data_len = RandInRange(sizeof(data));
-          fuzzer->FuzzBytes(&data[0], data_len);
-          p->SetToBytes(&data[0], data_len);
-        }
-        return true;
-      }
-      case 1: {
-        // network::DataElement::Type::TYPE_FILE
-        base::FilePath path;
-        uint64_t offset;
-        uint64_t length;
-        base::Time modification_time;
-        if (!FuzzParam(&path, fuzzer))
-          return false;
-        if (!FuzzParam(&offset, fuzzer))
-          return false;
-        if (!FuzzParam(&length, fuzzer))
-          return false;
-        if (!FuzzParam(&modification_time, fuzzer))
-          return false;
-        p->SetToFilePathRange(path, offset, length, modification_time);
-        return true;
-      }
-      default: {
-        NOTREACHED();
-        return false;
-      }
-    }
   }
 };
 

@@ -64,6 +64,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // ScriptWrappable
   v8::Local<v8::Value> Wrap(v8::Isolate*,
                             v8::Local<v8::Object> creation_context) final;
+  v8::MaybeLocal<v8::Value> WrapV2(ScriptState*) final;
   v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
@@ -140,7 +141,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   WorkerOrWorkletScriptController* ScriptController() {
     return script_controller_.Get();
   }
-  mojom::blink::V8CacheOptions GetV8CacheOptions() const {
+  mojom::blink::V8CacheOptions GetV8CacheOptions() const override {
     return v8_cache_options_;
   }
 
@@ -150,21 +151,27 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
-  void ApplySandboxFlags(network::mojom::blink::WebSandboxFlags mask);
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags mask);
 
   void SetDefersLoadingForResourceFetchers(WebURLLoader::DeferType defers);
 
   virtual int GetOutstandingThrottledLimit() const;
+
+  // TODO(crbug.com/1146824): Remove this once PlzDedicatedWorker and
+  // PlzServiceWorker ship.
+  virtual bool IsInitialized() const = 0;
 
   Deprecation& GetDeprecation() { return deprecation_; }
 
  protected:
   // Sets outside's CSP used for off-main-thread top-level worker script
   // fetch.
-  void SetOutsideContentSecurityPolicyHeaders(const Vector<CSPHeaderAndType>&);
+  void SetOutsideContentSecurityPolicies(
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr>);
 
   // Initializes inside's CSP used for subresource fetch etc.
-  void InitContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>&);
+  void InitContentSecurityPolicyFromVector(
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
   void FetchModuleScript(const KURL& module_url_record,
@@ -176,8 +183,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*);
 
-  const Vector<CSPHeaderAndType>& OutsideContentSecurityPolicyHeaders() const {
-    return outside_content_security_policy_headers_;
+  const Vector<network::mojom::blink::ContentSecurityPolicyPtr>&
+  OutsideContentSecurityPolicies() const {
+    return outside_content_security_policies_;
   }
 
   void SetIsOfflineMode(bool is_offline_mode) {
@@ -236,7 +244,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // TODO(hiroshige): Pass outsideSettings-CSP via
   // outsideSettings-FetchClientSettingsObject.
-  Vector<CSPHeaderAndType> outside_content_security_policy_headers_;
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+      outside_content_security_policies_;
 
   WorkerReportingProxy& reporting_proxy_;
 

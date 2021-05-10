@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/marketing_backend_connector.h"
+
 #include <cstddef>
 
+#include "ash/constants/ash_switches.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -95,8 +95,8 @@ void MarketingBackendConnector::UpdateEmailPreferences(
   scoped_refptr<MarketingBackendConnector> ref =
       new MarketingBackendConnector(profile);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MarketingBackendConnector::PerformRequest, ref,
-                            country_code));
+      FROM_HERE, base::BindOnce(&MarketingBackendConnector::PerformRequest, ref,
+                                country_code));
 }
 
 MarketingBackendConnector::MarketingBackendConnector(Profile* profile)

@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Availability.v2" enum="BluetoothAvailability"
-    expires_after="2020-12-31">
+    expires_after="2021-12-31">
   <owner>kenrb@chromium.org</owner>
   <owner>kpaulhamus@chromium.org</owner>
   <summary>
@@ -104,7 +104,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.Pairing.Result" enum="BooleanSuccess"
-    expires_after="2021-05-09">
+    expires_after="2021-07-11">
 <!-- Name completed by histogram_suffixes name="BluetoothTransportTypes" -->
 
   <owner>hansberry@chromium.org</owner>
@@ -121,7 +121,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.Pairing.Result.FailureReason"
-    enum="BluetoothConnectionFailureReason" expires_after="2021-03-05">
+    enum="BluetoothConnectionFailureReason" expires_after="2021-07-11">
 <!-- Name completed by histogram_suffixes name="BluetoothTransportTypes" -->
 
   <owner>hansberry@chromium.org</owner>
@@ -148,7 +148,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result"
-    enum="BooleanSuccess" expires_after="2021-05-09">
+    enum="BooleanSuccess" expires_after="2021-07-11">
 <!-- Name completed by histogram_suffixes name="BluetoothUISurfaces" -->
 
   <owner>hansberry@chromium.org</owner>
@@ -183,7 +183,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.ConnectedDeviceCount" units="devices"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
   <owner>adlr@chromium.org</owner>
   <summary>
     Counts the number of simulataneously connected Bluetooth devices. Used to
@@ -212,6 +212,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the outcome of calls to BluetoothDiscoverySession::Stop. Used to
     prioritize efforts to fix failures of this function.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Linux.ConnectToServiceInsecurelyResult"
+    enum="BluetoothAdapterConnectToServiceInsecurelyResult"
+    expires_after="2022-01-01">
+  <owner>alainm@chromium.org</owner>
+  <owner>nearby-share-chromeos-eng@google.com</owner>
+  <summary>
+    Result of attempting a call to mojom::Adapter::ConnectToServiceInsecurely().
+    Emitted when function completes.
   </summary>
 </histogram>
 
@@ -312,7 +323,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.ChooserInteraction" enum="BooleanInvalid"
-    expires_after="2021-01-31">
+    expires_after="2021-07-18">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -322,7 +333,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.ConnectGATT.Outcome"
-    enum="WebBluetoothConnectGATTOutcome" expires_after="2021-03-15">
+    enum="WebBluetoothConnectGATTOutcome" expires_after="2021-07-18">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -610,7 +621,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.Outcome"
-    enum="WebBluetoothRequestDeviceOutcome" expires_after="2021-01-31">
+    enum="WebBluetoothRequestDeviceOutcome" expires_after="2021-07-18">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>
@@ -663,7 +674,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.UnionOfServices.Services"
-    enum="GATTServiceHash" expires_after="2021-04-04">
+    enum="GATTServiceHash" expires_after="2021-08-15">
   <owner>ortuno@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>
   <summary>

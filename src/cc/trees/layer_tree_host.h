@@ -39,6 +39,7 @@
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/web_vital_metrics.h"
 #include "cc/paint/node_id.h"
 #include "cc/trees/browser_controls_params.h"
 #include "cc/trees/compositor_mode.h"
@@ -64,25 +65,27 @@ struct PresentationFeedback;
 
 namespace cc {
 
-class RasterDarkModeFilter;
+class DocumentTransitionRequest;
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
 class LayerTreeMutator;
-class PaintWorkletLayerPainter;
 class MutatorEvents;
 class MutatorHost;
-struct PendingPageScaleAnimation;
+class PaintWorkletLayerPainter;
+class RasterDarkModeFilter;
 class RenderFrameMetadataObserver;
 class RenderingStatsInstrumentation;
-struct OverscrollBehavior;
 class TaskGraphRunner;
 class UIResourceManager;
 class UkmRecorderFactory;
-struct RenderingStats;
+
 struct CompositorCommitData;
+struct OverscrollBehavior;
+struct PendingPageScaleAnimation;
+struct RenderingStats;
 
 // Returned from LayerTreeHost::DeferMainFrameUpdate. Automatically un-defers on
 // destruction.
@@ -402,7 +405,22 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       float device_scale_factor,
       const viz::LocalSurfaceId& local_surface_id_from_parent);
 
-  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
+  // VisualDeviceViewportIntersectionRect is the intersection of this
+  // compositor's viewport with the "visible size", aka this compositor's
+  // viewport intersection with the global viewport (i.e.
+  // VisualDeviceViewportSize). It is also specified in the device viewport
+  // coordinate space.
+  void SetVisualDeviceViewportIntersectionRect(
+      const gfx::Rect& intersection_rect);
+
+  // VisualDeviceViewportSize is the size of the global viewport across all
+  // compositors that are part of the scene that this compositor contributes to
+  // (i.e. the visual viewport), allowing for that scene to be broken up into
+  // multiple compositors that each contribute to the whole (e.g. cross-origin
+  // iframes are isolated from each other). This is a size instead of a rect
+  // because each compositor doesn't know its position relative to other
+  // compositors. This is specified in device viewport coordinate space.
+  void SetVisualDeviceViewportSize(const gfx::Size&);
 
   gfx::Rect device_viewport_rect() const { return device_viewport_rect_; }
 
@@ -662,15 +680,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                  ElementListType list_type,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state) override;
-  void AnimationScalesChanged(ElementId element_id,
-                              ElementListType list_type,
-                              float maximum_scale,
-                              float starting_scale) override;
+  void MaximumScaleChanged(ElementId element_id,
+                           ElementListType list_type,
+                           float maximum_scale) override;
 
   void OnCustomPropertyMutated(
-      ElementId element_id,
-      const std::string& custom_property_name,
-      PaintWorkletInput::PropertyValue custom_property_value) override {}
+      PaintWorkletInput::PropertyKey property_key,
+      PaintWorkletInput::PropertyValue property_value) override {}
 
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(
@@ -711,15 +727,19 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
 
   void SetDelegatedInkMetadata(
-      std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
-    delegated_ink_metadata_ = std::move(metadata);
-  }
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata);
   viz::DelegatedInkMetadata* DelegatedInkMetadataForTesting() {
     return delegated_ink_metadata_.get();
   }
 
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
                                   base::TimeTicks first_scroll_timestamp);
+
+  void AddDocumentTransitionRequest(
+      std::unique_ptr<DocumentTransitionRequest> request);
+
+  std::vector<std::unique_ptr<DocumentTransitionRequest>>
+  TakeDocumentTransitionRequestsForTesting();
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
@@ -764,9 +784,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
   void ApplyViewportChanges(const CompositorCommitData& commit_data);
-  void RecordManipulationTypeCounts(const CompositorCommitData& commit_data);
-  void SendOverscrollAndScrollEndEventsFromImplSide(
-      const CompositorCommitData& commit_data);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 
@@ -862,8 +879,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   LayerSelection selection_;
 
   gfx::Rect device_viewport_rect_;
-
-  gfx::Rect viewport_visible_rect_;
+  gfx::Rect visual_device_viewport_intersection_rect_;
+  gfx::Size visual_device_viewport_size_;
 
   bool have_scroll_event_handlers_ = false;
   EventListenerProperties event_listener_properties_
@@ -947,6 +964,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // as it is forwarded along the pipeline to avoid old information incorrectly
   // sticking around and potentially being reused.
   std::unique_ptr<viz::DelegatedInkMetadata> delegated_ink_metadata_;
+
+  // A list of document transitions that need to be transported from Blink to
+  // Viz, as a CompositorFrameTransitionDirective.
+  std::vector<std::unique_ptr<DocumentTransitionRequest>>
+      document_transition_requests_;
+
+  // A list of callbacks that need to be invoked in commit callback,
+  // representing document transitions that have been committed to
+  // LayerTreeImpl.
+  std::vector<base::OnceClosure> committed_document_transition_callbacks_;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

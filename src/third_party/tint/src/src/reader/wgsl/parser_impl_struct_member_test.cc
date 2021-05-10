@@ -14,10 +14,9 @@
 
 #include "gtest/gtest.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type/i32_type.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type_manager.h"
+#include "src/type/i32_type.h"
 
 namespace tint {
 namespace reader {
@@ -25,9 +24,11 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, StructMember_Parses) {
-  auto* i32 = tm()->Get(std::make_unique<ast::type::I32Type>());
+  auto p = parser("a : i32;");
 
-  auto* p = parser("a : i32;");
+  auto& builder = p->builder();
+  auto* i32 = builder.create<type::I32>();
+
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -38,7 +39,7 @@ TEST_F(ParserImplTest, StructMember_Parses) {
   ASSERT_FALSE(m.errored);
   ASSERT_NE(m.value, nullptr);
 
-  EXPECT_EQ(m->name(), "a");
+  EXPECT_EQ(m->symbol(), builder.Symbols().Get("a"));
   EXPECT_EQ(m->type(), i32);
   EXPECT_EQ(m->decorations().size(), 0u);
 
@@ -49,9 +50,11 @@ TEST_F(ParserImplTest, StructMember_Parses) {
 }
 
 TEST_F(ParserImplTest, StructMember_ParsesWithDecoration) {
-  auto* i32 = tm()->Get(std::make_unique<ast::type::I32Type>());
+  auto p = parser("[[offset(2)]] a : i32;");
 
-  auto* p = parser("[[offset(2)]] a : i32;");
+  auto& builder = p->builder();
+  auto* i32 = builder.create<type::I32>();
+
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
@@ -62,11 +65,13 @@ TEST_F(ParserImplTest, StructMember_ParsesWithDecoration) {
   ASSERT_FALSE(m.errored);
   ASSERT_NE(m.value, nullptr);
 
-  EXPECT_EQ(m->name(), "a");
+  EXPECT_EQ(m->symbol(), builder.Symbols().Get("a"));
   EXPECT_EQ(m->type(), i32);
   EXPECT_EQ(m->decorations().size(), 1u);
-  EXPECT_TRUE(m->decorations()[0]->IsOffset());
-  EXPECT_EQ(m->decorations()[0]->AsOffset()->offset(), 2u);
+  EXPECT_TRUE(m->decorations()[0]->Is<ast::StructMemberOffsetDecoration>());
+  EXPECT_EQ(
+      m->decorations()[0]->As<ast::StructMemberOffsetDecoration>()->offset(),
+      2u);
 
   ASSERT_EQ(m->source().range.begin.line, 1u);
   ASSERT_EQ(m->source().range.begin.column, 15u);
@@ -75,10 +80,12 @@ TEST_F(ParserImplTest, StructMember_ParsesWithDecoration) {
 }
 
 TEST_F(ParserImplTest, StructMember_ParsesWithMultipleDecorations) {
-  auto* i32 = tm()->Get(std::make_unique<ast::type::I32Type>());
-
-  auto* p = parser(R"([[offset(2)]]
+  auto p = parser(R"([[offset(2)]]
 [[offset(4)]] a : i32;)");
+
+  auto& builder = p->builder();
+  auto* i32 = builder.create<type::I32>();
+
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
@@ -89,13 +96,17 @@ TEST_F(ParserImplTest, StructMember_ParsesWithMultipleDecorations) {
   ASSERT_FALSE(m.errored);
   ASSERT_NE(m.value, nullptr);
 
-  EXPECT_EQ(m->name(), "a");
+  EXPECT_EQ(m->symbol(), builder.Symbols().Get("a"));
   EXPECT_EQ(m->type(), i32);
   EXPECT_EQ(m->decorations().size(), 2u);
-  EXPECT_TRUE(m->decorations()[0]->IsOffset());
-  EXPECT_EQ(m->decorations()[0]->AsOffset()->offset(), 2u);
-  EXPECT_TRUE(m->decorations()[1]->IsOffset());
-  EXPECT_EQ(m->decorations()[1]->AsOffset()->offset(), 4u);
+  EXPECT_TRUE(m->decorations()[0]->Is<ast::StructMemberOffsetDecoration>());
+  EXPECT_EQ(
+      m->decorations()[0]->As<ast::StructMemberOffsetDecoration>()->offset(),
+      2u);
+  EXPECT_TRUE(m->decorations()[1]->Is<ast::StructMemberOffsetDecoration>());
+  EXPECT_EQ(
+      m->decorations()[1]->As<ast::StructMemberOffsetDecoration>()->offset(),
+      4u);
 
   ASSERT_EQ(m->source().range.begin.line, 2u);
   ASSERT_EQ(m->source().range.begin.column, 15u);
@@ -104,7 +115,7 @@ TEST_F(ParserImplTest, StructMember_ParsesWithMultipleDecorations) {
 }
 
 TEST_F(ParserImplTest, StructMember_InvalidDecoration) {
-  auto* p = parser("[[offset(nan)]] a : i32;");
+  auto p = parser("[[offset(nan)]] a : i32;");
   auto decos = p->decoration_list();
   EXPECT_TRUE(decos.errored);
   EXPECT_FALSE(decos.matched);
@@ -119,7 +130,7 @@ TEST_F(ParserImplTest, StructMember_InvalidDecoration) {
 }
 
 TEST_F(ParserImplTest, StructMember_InvalidVariable) {
-  auto* p = parser("[[offset(4)]] a : B;");
+  auto p = parser("[[offset(4)]] a : B;");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_TRUE(decos.matched);
@@ -132,7 +143,7 @@ TEST_F(ParserImplTest, StructMember_InvalidVariable) {
 }
 
 TEST_F(ParserImplTest, StructMember_MissingSemicolon) {
-  auto* p = parser("a : i32");
+  auto p = parser("a : i32");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);

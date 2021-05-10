@@ -23,7 +23,7 @@ class Profile;
 
 namespace ui {
 class IMEEngineHandlerInterface;
-class InputMethodKeyboardController;
+class VirtualKeyboardController;
 }  // namespace ui
 
 namespace chromeos {
@@ -287,12 +287,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
       CandidateWindowObserver* observer) = 0;
   virtual void RemoveImeMenuObserver(ImeMenuObserver* observer) = 0;
 
-  // Returns all input methods that are supported, including ones not active.
-  // This function never returns NULL. Note that input method extensions are NOT
-  // included in the result.
-  virtual std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
-      const = 0;
-
   // Activates the input method property specified by the |key|.
   virtual void ActivateInputMethodMenuItem(const std::string& key) = 0;
 
@@ -360,8 +354,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
   virtual void NotifyObserversImeExtraInputStateChange() = 0;
 
   // Gets the implementation of the keyboard controller.
-  virtual ui::InputMethodKeyboardController*
-  GetInputMethodKeyboardController() = 0;
+  virtual ui::VirtualKeyboardController* GetVirtualKeyboardController() = 0;
 
   // Notifies an input method extension is added or removed.
   virtual void NotifyInputMethodExtensionAdded(

@@ -1,8 +1,22 @@
-#!/usr/bin/env python3
+#!/usr/bin/env vpython
 
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# [VPYTHON:BEGIN]
+# python_version: "2.7"
+# wheel: <
+#   name: "infra/python/wheels/protobuf-py2_py3"
+#   version: "version:3.13.0"
+# >
+#
+# wheel: <
+#   name: "infra/python/wheels/six-py2_py3"
+#   version: "version:1.11.0"
+# >
+#
+# [VPYTHON:END]
 """
 Generate a database of Blink APIs.
 
@@ -40,6 +54,9 @@ def parse_options():
     parser.add_argument("--web_idl_database",
                         type=str,
                         help="filepath of the input database")
+    parser.add_argument("--web_feature_mojom",
+                        type=str,
+                        help="path of web_feature.mojom")
     parser.add_argument("--output", type=str, help="filepath of output file")
     parser.add_argument("--path", type=str, help="Additions to sys.path")
     parser.add_argument(
@@ -48,7 +65,7 @@ def parse_options():
         help="Chromium revision (git hash) for the source of Blink WebIDL DB")
     args = parser.parse_args()
 
-    required_option_names = ("web_idl_database", "output")
+    required_option_names = ("web_idl_database", "output", "web_feature_mojom")
     for opt_name in required_option_names:
         if getattr(args, opt_name) is None:
             parser.error("--{} is a required option.".format(opt_name))
@@ -64,8 +81,10 @@ def main():
     args = parse_options()
 
     from blink_api_proto import BlinkApiProto
+    from web_feature import WebFeature
+    w = WebFeature(args.web_feature_mojom)
     p = BlinkApiProto(args.web_idl_database, args.output,
-                      args.chromium_revision)
+                      args.chromium_revision, w)
     p.Parse()
     p.WriteTo(args.output)
 

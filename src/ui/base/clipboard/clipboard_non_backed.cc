@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -20,6 +21,7 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "build/chromeos_buildflags.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -30,6 +32,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/buildflags.h"
 
@@ -37,12 +40,13 @@ namespace ui {
 
 namespace {
 
+using InstanceRegistry = std::set<const ClipboardNonBacked*, std::less<>>;
 // Returns the registry which tracks all instances of ClipboardNonBacked in
 // existence. This allows us to determine if any arbitrary Clipboard pointer in
 // fact points to a ClipboardNonBacked instance. Only if a pointer exists in
 // this registry is it safe to cast to ClipboardNonBacked*.
-std::set<const ClipboardNonBacked*>* GetInstanceRegistry() {
-  static base::NoDestructor<std::set<const ClipboardNonBacked*>> registry;
+InstanceRegistry* GetInstanceRegistry() {
+  static base::NoDestructor<InstanceRegistry> registry;
   return registry.get();
 }
 
@@ -204,6 +208,11 @@ class ClipboardInternal {
                           data->custom_data_data().size(), type, result);
   }
 
+  // Reads filenames from the ClipboardData.
+  const std::vector<ui::FileInfo>& ReadFilenames() const {
+    return GetData()->filenames();
+  }
+
   // Reads bookmark from the ClipboardData.
   void ReadBookmark(base::string16* title, std::string* url) const {
     if (title)
@@ -246,7 +255,7 @@ class ClipboardInternal {
     auto* data = GetData();
     if (!policy_controller || !data)
       return true;
-    return policy_controller->IsDataReadAllowed(data->source(), data_dst);
+    return policy_controller->IsClipboardReadAllowed(data->source(), data_dst);
   }
 
  private:
@@ -302,6 +311,11 @@ class ClipboardDataBuilder {
     data->SetRTFData(std::string(rtf_data, rtf_len));
   }
 
+  static void WriteFilenames(std::vector<ui::FileInfo> filenames) {
+    ClipboardData* data = GetCurrentData();
+    data->set_filenames(std::move(filenames));
+  }
+
   static void WriteBookmark(const char* title_data,
                             size_t title_len,
                             const char* url_data,
@@ -349,7 +363,7 @@ ClipboardData* ClipboardDataBuilder::current_data_ = nullptr;
 
 // linux-chromeos uses non-backed clipboard by default, but supports ozone x11
 // with flag --use-system-clipbboard.
-#if !defined(OS_CHROMEOS) || !BUILDFLAG(OZONE_PLATFORM_X11)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) || !BUILDFLAG(OZONE_PLATFORM_X11)
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
   return new ClipboardNonBacked;
@@ -359,7 +373,11 @@ Clipboard* Clipboard::Create() {
 // static
 ClipboardNonBacked* ClipboardNonBacked::GetForCurrentThread() {
   auto* clipboard = Clipboard::GetForCurrentThread();
-  CHECK(IsRegisteredInstance(clipboard));  // Ensure type safety.
+
+  // Ensure type safety. In tests the instance may not be registered.
+  if (!IsRegisteredInstance(clipboard))
+    return nullptr;
+
   return static_cast<ClipboardNonBacked*>(clipboard);
 }
 
@@ -392,6 +410,12 @@ std::unique_ptr<ClipboardData> ClipboardNonBacked::WriteClipboardData(
 }
 
 void ClipboardNonBacked::OnPreShutdown() {}
+
+DataTransferEndpoint* ClipboardNonBacked::GetSource(
+    ClipboardBuffer buffer) const {
+  const ClipboardData* data = clipboard_internal_->GetData();
+  return data ? data->source() : nullptr;
+}
 
 uint64_t ClipboardNonBacked::GetSequenceNumber(ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
@@ -427,6 +451,11 @@ bool ClipboardNonBacked::IsFormatAvailable(
   if (format == ClipboardFormatType::GetWebKitSmartPasteType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kWeb);
+  // Only support filenames if chrome://flags#clipboard-filenames is enabled.
+  if (format == ClipboardFormatType::GetFilenamesType() &&
+      base::FeatureList::IsEnabled(features::kClipboardFilenames))
+    return clipboard_internal_->IsFormatAvailable(
+        ClipboardInternalFormat::kFilenames);
   const ClipboardData* data = clipboard_internal_->GetData();
   return data && data->custom_data_format() == format.GetName();
 }
@@ -460,6 +489,9 @@ void ClipboardNonBacked::ReadAvailableTypes(
         base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
+  if (IsFormatAvailable(ClipboardFormatType::GetFilenamesType(), buffer,
+                        data_dst))
+    types->push_back(base::UTF8ToUTF16(kMimeTypeURIList));
 
   if (clipboard_internal_->IsFormatAvailable(
           ClipboardInternalFormat::kCustom) &&
@@ -514,7 +546,7 @@ void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadText(result);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -530,7 +562,7 @@ void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadAsciiText(result);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -549,7 +581,7 @@ void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kHtml);
   clipboard_internal_->ReadHTML(markup, src_url, fragment_start, fragment_end);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -577,7 +609,7 @@ void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kRtf);
   clipboard_internal_->ReadRTF(result);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -595,7 +627,7 @@ void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(clipboard_internal_->ReadImage());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -612,7 +644,24 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kCustomData);
   clipboard_internal_->ReadCustomData(type, result);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
+}
+
+void ClipboardNonBacked::ReadFilenames(
+    ClipboardBuffer buffer,
+    const DataTransferEndpoint* data_dst,
+    std::vector<ui::FileInfo>* result) const {
+  DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
+  RecordRead(ClipboardFormatMetric::kFilenames);
+  *result = clipboard_internal_->ReadFilenames();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -628,7 +677,7 @@ void ClipboardNonBacked::ReadBookmark(const DataTransferEndpoint* data_dst,
   RecordRead(ClipboardFormatMetric::kBookmark);
   clipboard_internal_->ReadBookmark(title, url);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
@@ -644,13 +693,13 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
   RecordRead(ClipboardFormatMetric::kData);
   clipboard_internal_->ReadData(format.GetName(), result);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
 #endif
 }
 
 bool ClipboardNonBacked::IsSelectionBufferAvailable() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 #else
   return true;
@@ -699,6 +748,10 @@ void ClipboardNonBacked::WriteSvg(const char* markup_data, size_t markup_len) {
 
 void ClipboardNonBacked::WriteRTF(const char* rtf_data, size_t data_len) {
   ClipboardDataBuilder::WriteRTF(rtf_data, data_len);
+}
+
+void ClipboardNonBacked::WriteFilenames(std::vector<ui::FileInfo> filenames) {
+  ClipboardDataBuilder::WriteFilenames(std::move(filenames));
 }
 
 void ClipboardNonBacked::WriteBookmark(const char* title_data,

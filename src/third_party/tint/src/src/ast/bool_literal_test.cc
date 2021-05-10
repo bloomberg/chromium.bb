@@ -14,49 +14,53 @@
 
 #include "src/ast/bool_literal.h"
 
-#include "gtest/gtest.h"
-#include "src/ast/type/bool_type.h"
+#include "src/ast/float_literal.h"
+#include "src/ast/null_literal.h"
+#include "src/ast/sint_literal.h"
+#include "src/ast/test_helper.h"
+#include "src/ast/uint_literal.h"
+#include "src/type/bool_type.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using BoolLiteralTest = testing::Test;
+using BoolLiteralTest = TestHelper;
 
 TEST_F(BoolLiteralTest, True) {
-  ast::type::BoolType bool_type;
-  BoolLiteral b{&bool_type, true};
-  ASSERT_TRUE(b.IsBool());
-  ASSERT_TRUE(b.IsTrue());
-  ASSERT_FALSE(b.IsFalse());
+  type::Bool bool_type;
+  auto* b = create<BoolLiteral>(&bool_type, true);
+  ASSERT_TRUE(b->Is<BoolLiteral>());
+  ASSERT_TRUE(b->IsTrue());
+  ASSERT_FALSE(b->IsFalse());
 }
 
 TEST_F(BoolLiteralTest, False) {
-  ast::type::BoolType bool_type;
-  BoolLiteral b{&bool_type, false};
-  ASSERT_TRUE(b.IsBool());
-  ASSERT_FALSE(b.IsTrue());
-  ASSERT_TRUE(b.IsFalse());
+  type::Bool bool_type;
+  auto* b = create<BoolLiteral>(&bool_type, false);
+  ASSERT_TRUE(b->Is<BoolLiteral>());
+  ASSERT_FALSE(b->IsTrue());
+  ASSERT_TRUE(b->IsFalse());
 }
 
 TEST_F(BoolLiteralTest, Is) {
-  ast::type::BoolType bool_type;
-  BoolLiteral b{&bool_type, false};
-  EXPECT_TRUE(b.IsBool());
-  EXPECT_FALSE(b.IsSint());
-  EXPECT_FALSE(b.IsFloat());
-  EXPECT_FALSE(b.IsUint());
-  EXPECT_FALSE(b.IsInt());
-  EXPECT_FALSE(b.IsNull());
+  type::Bool bool_type;
+  ast::Literal* l = create<BoolLiteral>(&bool_type, false);
+  EXPECT_TRUE(l->Is<BoolLiteral>());
+  EXPECT_FALSE(l->Is<SintLiteral>());
+  EXPECT_FALSE(l->Is<FloatLiteral>());
+  EXPECT_FALSE(l->Is<UintLiteral>());
+  EXPECT_FALSE(l->Is<IntLiteral>());
+  EXPECT_FALSE(l->Is<NullLiteral>());
 }
 
 TEST_F(BoolLiteralTest, ToStr) {
-  ast::type::BoolType bool_type;
-  BoolLiteral t{&bool_type, true};
-  BoolLiteral f{&bool_type, false};
+  type::Bool bool_type;
+  auto* t = create<BoolLiteral>(&bool_type, true);
+  auto* f = create<BoolLiteral>(&bool_type, false);
 
-  EXPECT_EQ(t.to_str(), "true");
-  EXPECT_EQ(f.to_str(), "false");
+  EXPECT_EQ(str(t), "true");
+  EXPECT_EQ(str(f), "false");
 }
 
 }  // namespace

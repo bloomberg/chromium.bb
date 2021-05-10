@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "build/branding_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -24,10 +26,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -223,22 +225,39 @@ TEST_F(AppMenuModelTest, GlobalError) {
   EXPECT_EQ(1, error1->execute_count());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests settings menu items is disabled in the app menu when
 // kSystemFeaturesDisableList is set.
 TEST_F(AppMenuModelTest, DisableSettingsItem) {
   AppMenuModel model(this, browser());
   model.Init();
-  int index = model.GetIndexOfCommandId(IDC_OPTIONS);
-  EXPECT_TRUE(model.IsEnabledAt(index));
+  const int options_index = model.GetIndexOfCommandId(IDC_OPTIONS);
+  EXPECT_TRUE(model.IsEnabledAt(options_index));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  const int help_menu_index = model.GetIndexOfCommandId(IDC_HELP_MENU);
+  ui::SimpleMenuModel* help_menu = static_cast<ui::SimpleMenuModel*>(
+      model.GetSubmenuModelAt(help_menu_index));
+  const int about_index = help_menu->GetIndexOfCommandId(IDC_ABOUT);
+  EXPECT_TRUE(help_menu->IsEnabledAt(about_index));
+#else
+  const int about_index = model.GetIndexOfCommandId(IDC_ABOUT);
+  EXPECT_TRUE(model.IsEnabledAt(about_index));
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::ListValue* list = update.Get();
-    list->Append(policy::SystemFeature::BROWSER_SETTINGS);
+    list->Append(policy::SystemFeature::kBrowserSettings);
   }
-  EXPECT_FALSE(model.IsEnabledAt(index));
+  EXPECT_FALSE(model.IsEnabledAt(options_index));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_FALSE(help_menu->IsEnabledAt(about_index));
+#else
+  EXPECT_FALSE(model.IsEnabledAt(about_index));
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
@@ -246,6 +265,13 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
     base::ListValue* list = update.Get();
     list->Clear();
   }
-  EXPECT_TRUE(model.IsEnabledAt(index));
+  EXPECT_TRUE(model.IsEnabledAt(options_index));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_TRUE(help_menu->IsEnabledAt(about_index));
+#else
+  EXPECT_TRUE(model.IsEnabledAt(about_index));
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
-#endif  // defined(OS_CHROMEOS)
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

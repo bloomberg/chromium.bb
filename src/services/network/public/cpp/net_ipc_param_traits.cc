@@ -11,30 +11,6 @@
 
 namespace IPC {
 
-void ParamTraits<net::AuthChallengeInfo>::Write(base::Pickle* m,
-                                                const param_type& p) {
-  WriteParam(m, p.is_proxy);
-  WriteParam(m, p.challenger);
-  WriteParam(m, p.scheme);
-  WriteParam(m, p.realm);
-  WriteParam(m, p.challenge);
-  WriteParam(m, p.path);
-}
-
-bool ParamTraits<net::AuthChallengeInfo>::Read(const base::Pickle* m,
-                                               base::PickleIterator* iter,
-                                               param_type* r) {
-  return ReadParam(m, iter, &r->is_proxy) &&
-         ReadParam(m, iter, &r->challenger) && ReadParam(m, iter, &r->scheme) &&
-         ReadParam(m, iter, &r->realm) && ReadParam(m, iter, &r->challenge) &&
-         ReadParam(m, iter, &r->path);
-}
-
-void ParamTraits<net::AuthChallengeInfo>::Log(const param_type& p,
-                                              std::string* l) {
-  l->append("<AuthChallengeInfo>");
-}
-
 void ParamTraits<net::AuthCredentials>::Write(base::Pickle* m,
                                               const param_type& p) {
   WriteParam(m, p.username());
@@ -472,6 +448,7 @@ void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
   WriteParam(m, p.send_end);
   WriteParam(m, p.receive_headers_start);
   WriteParam(m, p.receive_headers_end);
+  WriteParam(m, p.receive_non_informational_headers_start);
   WriteParam(m, p.first_early_hints_time);
   WriteParam(m, p.push_start);
   WriteParam(m, p.push_end);
@@ -503,6 +480,7 @@ bool ParamTraits<net::LoadTimingInfo>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->send_end) &&
          ReadParam(m, iter, &r->receive_headers_start) &&
          ReadParam(m, iter, &r->receive_headers_end) &&
+         ReadParam(m, iter, &r->receive_non_informational_headers_start) &&
          ReadParam(m, iter, &r->first_early_hints_time) &&
          ReadParam(m, iter, &r->push_start) && ReadParam(m, iter, &r->push_end);
 }
@@ -542,6 +520,8 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.receive_headers_end, l);
   l->append(", ");
+  LogParam(p.receive_non_informational_headers_start, l);
+  l->append(", ");
   LogParam(p.first_early_hints_time, l);
   l->append(", ");
   LogParam(p.push_start, l);
@@ -552,23 +532,19 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
 
 void ParamTraits<net::SiteForCookies>::Write(base::Pickle* m,
                                              const param_type& p) {
-  WriteParam(m, p.scheme());
-  WriteParam(m, p.registrable_domain());
+  WriteParam(m, p.site());
   WriteParam(m, p.schemefully_same());
 }
 
 bool ParamTraits<net::SiteForCookies>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             param_type* r) {
-  std::string scheme, registrable_domain;
+  net::SchemefulSite site;
   bool schemefully_same;
-  if (!ReadParam(m, iter, &scheme) ||
-      !ReadParam(m, iter, &registrable_domain) ||
-      !ReadParam(m, iter, &schemefully_same))
+  if (!ReadParam(m, iter, &site) || !ReadParam(m, iter, &schemefully_same))
     return false;
 
-  return net::SiteForCookies::FromWire(scheme, registrable_domain,
-                                       schemefully_same, r);
+  return net::SiteForCookies::FromWire(site, schemefully_same, r);
 }
 
 void ParamTraits<net::SiteForCookies>::Log(const param_type& p,
@@ -615,6 +591,26 @@ bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
+  l->append(p.Serialize());
+}
+
+void ParamTraits<net::SchemefulSite>::Write(base::Pickle* m,
+                                            const net::SchemefulSite& p) {
+  WriteParam(m, p.site_as_origin_);
+}
+
+bool ParamTraits<net::SchemefulSite>::Read(const base::Pickle* m,
+                                           base::PickleIterator* iter,
+                                           net::SchemefulSite* p) {
+  url::Origin site_as_origin;
+  if (!ReadParam(m, iter, &site_as_origin))
+    return false;
+
+  return net::SchemefulSite::FromWire(site_as_origin, p);
+}
+
+void ParamTraits<net::SchemefulSite>::Log(const net::SchemefulSite& p,
+                                          std::string* l) {
   l->append(p.Serialize());
 }
 

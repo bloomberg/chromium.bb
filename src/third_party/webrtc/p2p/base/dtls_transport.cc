@@ -816,11 +816,11 @@ void DtlsTransport::set_dtls_state(DtlsTransportState state) {
   RTC_LOG(LS_VERBOSE) << ToString() << ": set_dtls_state from:" << dtls_state_
                       << " to " << state;
   dtls_state_ = state;
-  SignalDtlsState(this, state);
+  SendDtlsState(this, state);
 }
 
 void DtlsTransport::OnDtlsHandshakeError(rtc::SSLHandshakeError error) {
-  SignalDtlsHandshakeError(error);
+  SendDtlsHandshakeError(error);
 }
 
 void DtlsTransport::ConfigureHandshakeTimeout() {

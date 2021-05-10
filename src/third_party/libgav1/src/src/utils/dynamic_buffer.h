@@ -28,6 +28,7 @@ template <typename T>
 class DynamicBuffer {
  public:
   T* get() { return buffer_.get(); }
+  const T* get() const { return buffer_.get(); }
 
   // Resizes the buffer so that it can hold at least |size| elements. Existing
   // contents will be destroyed when resizing to a larger size.

@@ -16,46 +16,44 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using DiscardStatementTest = testing::Test;
+using DiscardStatementTest = TestHelper;
 
 TEST_F(DiscardStatementTest, Creation) {
-  DiscardStatement stmt;
-  EXPECT_EQ(stmt.source().range.begin.line, 0u);
-  EXPECT_EQ(stmt.source().range.begin.column, 0u);
-  EXPECT_EQ(stmt.source().range.end.line, 0u);
-  EXPECT_EQ(stmt.source().range.end.column, 0u);
+  auto* stmt = create<DiscardStatement>();
+  EXPECT_EQ(stmt->source().range.begin.line, 0u);
+  EXPECT_EQ(stmt->source().range.begin.column, 0u);
+  EXPECT_EQ(stmt->source().range.end.line, 0u);
+  EXPECT_EQ(stmt->source().range.end.column, 0u);
 }
 
 TEST_F(DiscardStatementTest, Creation_WithSource) {
-  DiscardStatement stmt(
+  auto* stmt = create<DiscardStatement>(
       Source{Source::Range{Source::Location{20, 2}, Source::Location{20, 5}}});
-  EXPECT_EQ(stmt.source().range.begin.line, 20u);
-  EXPECT_EQ(stmt.source().range.begin.column, 2u);
-  EXPECT_EQ(stmt.source().range.end.line, 20u);
-  EXPECT_EQ(stmt.source().range.end.column, 5u);
+  EXPECT_EQ(stmt->source().range.begin.line, 20u);
+  EXPECT_EQ(stmt->source().range.begin.column, 2u);
+  EXPECT_EQ(stmt->source().range.end.line, 20u);
+  EXPECT_EQ(stmt->source().range.end.column, 5u);
 }
 
 TEST_F(DiscardStatementTest, IsDiscard) {
-  DiscardStatement stmt;
-  EXPECT_TRUE(stmt.IsDiscard());
+  auto* stmt = create<DiscardStatement>();
+  EXPECT_TRUE(stmt->Is<DiscardStatement>());
 }
 
 TEST_F(DiscardStatementTest, IsValid) {
-  DiscardStatement stmt;
-  EXPECT_TRUE(stmt.IsValid());
+  auto* stmt = create<DiscardStatement>();
+  EXPECT_TRUE(stmt->IsValid());
 }
 
 TEST_F(DiscardStatementTest, ToStr) {
-  DiscardStatement stmt;
-  std::ostringstream out;
-  stmt.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Discard{}
+  auto* stmt = create<DiscardStatement>();
+  EXPECT_EQ(str(stmt), R"(Discard{}
 )");
 }
 

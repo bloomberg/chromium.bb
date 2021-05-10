@@ -11,6 +11,9 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {assertEquals, assertTrue} from '../chai_assert.js';
 import {eventToPromise, flushTasks} from '../test_util.m.js';
 
+// <if expr="chromeos">
+import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
+// </if>
 import {NativeLayerStub} from './native_layer_stub.js';
 import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from './print_preview_test_utils.js';
 import {TestPluginProxy} from './test_plugin_proxy.js';
@@ -43,11 +46,16 @@ suite(key_event_test.suiteName, function() {
     const initialSettings = getDefaultInitialSettings();
     nativeLayer = new NativeLayerStub();
     nativeLayer.setInitialSettings(initialSettings);
+    nativeLayer.setLocalDestinations(
+        [{deviceName: initialSettings.printerName, printerName: 'FooName'}]);
     // Use advanced settings so that we can test with the cr-button.
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplateWithAdvancedSettings(1, initialSettings.printerName));
     nativeLayer.setPageCount(3);
     NativeLayerImpl.instance_ = nativeLayer;
+    // <if expr="chromeos">
+    setNativeLayerCrosInstance();
+    // </if>
     const pluginProxy = new TestPluginProxy();
     PluginProxyImpl.instance_ = pluginProxy;
 

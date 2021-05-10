@@ -21,6 +21,13 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
   return new BrowserAccessibilityManagerAuraLinux(initial_tree, delegate);
 }
 
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerAuraLinux(
+      BrowserAccessibilityManagerAuraLinux::GetEmptyDocument(), delegate);
+}
+
 BrowserAccessibilityManagerAuraLinux*
 BrowserAccessibilityManager::ToBrowserAccessibilityManagerAuraLinux() {
   return static_cast<BrowserAccessibilityManagerAuraLinux*>(this);
@@ -93,6 +100,11 @@ void BrowserAccessibilityManagerAuraLinux::FireExpandedEvent(
 void BrowserAccessibilityManagerAuraLinux::FireInvalidStatusChangedEvent(
     BrowserAccessibility* node) {
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnInvalidStatusChanged();
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireAriaCurrentChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnAriaCurrentChanged();
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireEvent(BrowserAccessibility* node,
@@ -172,7 +184,7 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       FireDescriptionChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
-      ui::AXNode::AXID focus_id =
+      ui::AXNodeID focus_id =
           ax_tree()->GetUnignoredSelection().focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
       if (focus_object)
@@ -190,6 +202,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       FireInvalidStatusChangedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
+      FireAriaCurrentChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireLoadingEvent(node, false);

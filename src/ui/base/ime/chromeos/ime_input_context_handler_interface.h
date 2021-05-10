@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -23,10 +24,14 @@ struct SurroundingTextInfo {
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
-  virtual void CommitText(const std::string& text) = 0;
+  virtual void CommitText(
+      const std::string& text,
+      TextInputClient::InsertTextCursorBehavior cursor_behavior) = 0;
 
   // Called when the engine changes the composition range.
   // Returns true if the operation was successful.
+  // If |text_spans| is empty, then this function uses a default span that
+  // spans across the new composition range.
   virtual bool SetCompositionRange(
       uint32_t before,
       uint32_t after,
@@ -37,10 +42,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) IMEInputContextHandlerInterface {
       const std::vector<ui::ImeTextSpan>& text_spans) = 0;
   virtual gfx::Range GetAutocorrectRange() = 0;
   virtual gfx::Rect GetAutocorrectCharacterBounds() = 0;
-  // Set the autocorrect range with text.
-  virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                                   uint32_t start,
-                                   uint32_t end) = 0;
+  // Sets the autocorrect range to be `range`.
+  virtual bool SetAutocorrectRange(const gfx::Range& range) = 0;
 
   // Called when the engine changes the selection range.
   // Returns true if the operation was successful.

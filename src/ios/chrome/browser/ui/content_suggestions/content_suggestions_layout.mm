@@ -5,25 +5,40 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+@interface ContentSuggestionsLayout ()
+
+// YES if the Discover Feed is currently visible.
+@property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
+
+@end
+
 @implementation ContentSuggestionsLayout
 
-- (instancetype)initWithOffset:(CGFloat)offset {
+- (instancetype)initWithOffset:(CGFloat)offset feedVisible:(BOOL)visible {
   if (self = [super init]) {
+    _feedVisible = visible;
     _offset = offset;
   }
   return self;
 }
 
 - (CGSize)collectionViewContentSize {
+  if (IsRefactoredNTP() && [self isFeedVisible]) {
+    // In the refactored NTP and when the Feed is visible, we don't want to
+    // extend the view height beyond its content.
+    return [super collectionViewContentSize];
+  }
   CGFloat collectionViewHeight = self.collectionView.bounds.size.height;
   CGFloat headerHeight = [self firstHeaderHeight];
 
@@ -108,23 +123,38 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 
   if ([kind isEqualToString:UICollectionElementKindSectionHeader] &&
       indexPath.section == 0) {
-    UICollectionView* collectionView = self.collectionView;
-    CGPoint contentOffset = collectionView.contentOffset;
+    CGFloat contentOffset;
+    if (IsRefactoredNTP() && [self isFeedVisible]) {
+      contentOffset = self.parentCollectionView.contentOffset.y +
+                      self.collectionView.contentSize.height;
+    } else {
+      contentOffset = self.collectionView.contentOffset.y;
+    }
+
     CGFloat headerHeight = CGRectGetHeight(attributes.frame);
     CGPoint origin = attributes.frame.origin;
 
     // Keep the header in front of all other views.
     attributes.zIndex = NSIntegerMax;
 
-    // Prevent the fake omnibox from scrolling up off of the screen.
-    CGFloat topSafeArea = self.collectionView.safeAreaInsets.top;
+    // TODO(crbug.com/1114792): Remove this and only use omniboxPositioner after
+    // refactoring is complete.
     CGFloat minY =
         headerHeight - ntp_header::kFakeOmniboxScrolledToTopMargin -
         ToolbarExpandedHeight(
             [UIApplication sharedApplication].preferredContentSizeCategory) -
-        topSafeArea;
-    if (contentOffset.y > minY)
-      origin.y = contentOffset.y - minY;
+        self.collectionView.safeAreaInsets.top;
+
+    if (IsRefactoredNTP() && [self isFeedVisible]) {
+      minY = [self.omniboxPositioner stickyOmniboxHeight];
+    }
+    // TODO(crbug.com/1114792): Remove mentioned of "refactored" from the
+    // variable name once this launches.
+    BOOL hasScrolledIntoRefactoredDiscoverFeed =
+        [self isFeedVisible] && self.isScrolledIntoFeed && IsRefactoredNTP();
+    if (contentOffset > minY && !hasScrolledIntoRefactoredDiscoverFeed) {
+      origin.y = contentOffset - minY;
+    }
     attributes.frame = {origin, attributes.frame.size};
   }
   return attributes;

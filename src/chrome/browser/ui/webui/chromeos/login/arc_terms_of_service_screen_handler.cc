@@ -4,23 +4,23 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
+#include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -83,7 +83,12 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
   if (!ignore_network_state && !default_network)
     return;
   const std::string country_code = base::CountryCodeForCurrentTimezone();
-  CallJS("login.ArcTermsOfServiceScreen.loadPlayStoreToS", country_code);
+  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
+  if (IsSafeToCallJavascript()) {
+    CallJS("login.ArcTermsOfServiceScreen.loadPlayStoreToS", country_code);
+  } else {
+    LOG(ERROR) << "Silently dropping MaybeLoadPlayStoreToS request.";
+  }
 }
 
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
@@ -112,7 +117,8 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTermsOfServiceScreenDescription",
       IDS_ARC_OOBE_TERMS_DESCRIPTION);
   builder->Add("arcTermsOfServiceLoading", IDS_ARC_OOBE_TERMS_LOADING);
-  builder->Add("arcTermsOfServiceError", IDS_ARC_OOBE_TERMS_LOAD_ERROR);
+  builder->Add("arcTermsOfServiceErrorTitle", IDS_OOBE_GENERIC_FATAL_ERROR_TITLE);
+  builder->Add("arcTermsOfServiceErrorMessage", IDS_ARC_OOBE_TERMS_LOAD_ERROR);
   builder->Add("arcTermsOfServiceRetryButton", IDS_ARC_OOBE_TERMS_BUTTON_RETRY);
   builder->Add("arcTermsOfServiceAcceptButton",
                IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
@@ -295,6 +301,7 @@ void ArcTermsOfServiceScreenHandler::Bind(ArcTermsOfServiceScreen* screen) {
 }
 
 void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
+  // TODO(crbug.com/1180291) - Clean up work. Fix this logic.
   if (network_time_zone_observing_)
     return;
 

@@ -24,8 +24,8 @@ namespace securemessage {
 std::unique_ptr<std::string> SecureMessageWrapper::ParseHeaderIv(
     const std::string& header_and_body_bytes) {
   HeaderAndBody header_and_body;
-  header_and_body.ParseFromString(header_and_body_bytes);
-  if (header_and_body.has_header() && header_and_body.header().has_iv()) {
+  if (header_and_body.ParseFromString(header_and_body_bytes) &&
+      header_and_body.has_header() && header_and_body.header().has_iv()) {
     return std::unique_ptr<std::string>(
         new std::string(header_and_body.header().iv()));
   } else {
@@ -36,8 +36,8 @@ std::unique_ptr<std::string> SecureMessageWrapper::ParseHeaderIv(
 std::unique_ptr<std::string> SecureMessageWrapper::ParseHeader(
     const std::string& header_and_body_bytes) {
   HeaderAndBody header_and_body;
-  header_and_body.ParseFromString(header_and_body_bytes);
-  if (header_and_body.has_header()) {
+  if (header_and_body.ParseFromString(header_and_body_bytes) &&
+      header_and_body.has_header()) {
     return std::unique_ptr<std::string>(
         new std::string(header_and_body.header().SerializeAsString()));
   } else {
@@ -48,8 +48,8 @@ std::unique_ptr<std::string> SecureMessageWrapper::ParseHeader(
 std::unique_ptr<std::string> SecureMessageWrapper::ParseInternalHeader(
     const std::string& header_and_body_bytes) {
   HeaderAndBodyInternal header_and_body;
-  header_and_body.ParseFromString(header_and_body_bytes);
-  if (header_and_body.has_header()) {
+  if (header_and_body.ParseFromString(header_and_body_bytes) &&
+      header_and_body.has_header()) {
     return std::unique_ptr<std::string>(
         new std::string(header_and_body.header()));
   } else {
@@ -60,8 +60,8 @@ std::unique_ptr<std::string> SecureMessageWrapper::ParseInternalHeader(
 std::unique_ptr<std::string> SecureMessageWrapper::ParseBody(
     const std::string& header_and_body_bytes) {
   HeaderAndBody header_and_body;
-  header_and_body.ParseFromString(header_and_body_bytes);
-  if (header_and_body.has_body()) {
+  if (header_and_body.ParseFromString(header_and_body_bytes) &&
+      header_and_body.has_body()) {
     return std::unique_ptr<std::string>(
         new std::string(header_and_body.body()));
   } else {

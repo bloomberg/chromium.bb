@@ -49,6 +49,8 @@
 #include "version.h"
 #include "xvmc_internal.h"
 
+#define A53_MAX_CC_COUNT 2000
+
 typedef struct Mpeg1Context {
     MpegEncContext mpeg_enc_ctx;
     int mpeg_enc_ctx_allocated; /* true if decoding context allocated */
@@ -489,8 +491,6 @@ static inline int mpeg2_decode_block_intra(MpegEncContext *s,
         component    = (n & 1) + 1;
     }
     diff = decode_dc(&s->gb, component);
-    if (diff >= 0xffff)
-        return AVERROR_INVALIDDATA;
     dc  = s->last_dc[component];
     dc += diff;
     s->last_dc[component] = dc;
@@ -525,10 +525,9 @@ static inline int mpeg2_decode_block_intra(MpegEncContext *s,
             } else {
                 /* escape */
                 run = SHOW_UBITS(re, &s->gb, 6) + 1;
-                LAST_SKIP_BITS(re, &s->gb, 6);
-                UPDATE_CACHE(re, &s->gb);
+                SKIP_BITS(re, &s->gb, 6);
                 level = SHOW_SBITS(re, &s->gb, 12);
-                SKIP_BITS(re, &s->gb, 12);
+                LAST_SKIP_BITS(re, &s->gb, 12);
                 i += run;
                 if (i > MAX_INDEX)
                     break;
@@ -577,8 +576,6 @@ static inline int mpeg2_fast_decode_block_intra(MpegEncContext *s,
         component    = (n & 1) + 1;
     }
     diff = decode_dc(&s->gb, component);
-    if (diff >= 0xffff)
-        return AVERROR_INVALIDDATA;
     dc = s->last_dc[component];
     dc += diff;
     s->last_dc[component] = dc;
@@ -609,10 +606,9 @@ static inline int mpeg2_fast_decode_block_intra(MpegEncContext *s,
             } else {
                 /* escape */
                 run = SHOW_UBITS(re, &s->gb, 6) + 1;
-                LAST_SKIP_BITS(re, &s->gb, 6);
-                UPDATE_CACHE(re, &s->gb);
+                SKIP_BITS(re, &s->gb, 6);
                 level = SHOW_SBITS(re, &s->gb, 12);
-                SKIP_BITS(re, &s->gb, 12);
+                LAST_SKIP_BITS(re, &s->gb, 12);
                 i += run;
                 j = scantable[i];
                 if (level < 0) {
@@ -2245,7 +2241,7 @@ static int mpeg_decode_a53_cc(AVCodecContext *avctx,
                                             * UINT64_C(3));
             int ret;
 
-            if (new_size > INT_MAX)
+            if (new_size > 3*A53_MAX_CC_COUNT)
                 return AVERROR(EINVAL);
 
             ret = av_buffer_realloc(&s1->a53_buf_ref, new_size);
@@ -2268,7 +2264,7 @@ static int mpeg_decode_a53_cc(AVCodecContext *avctx,
             int old_size = s1->a53_buf_ref ? s1->a53_buf_ref->size : 0;
             const uint64_t new_size = (old_size + cc_count
                                             * UINT64_C(3));
-            if (new_size > INT_MAX)
+            if (new_size > 3*A53_MAX_CC_COUNT)
                 return AVERROR(EINVAL);
 
             ret = av_buffer_realloc(&s1->a53_buf_ref, new_size);
@@ -2338,7 +2334,7 @@ static int mpeg_decode_a53_cc(AVCodecContext *avctx,
             int old_size = s1->a53_buf_ref ? s1->a53_buf_ref->size : 0;
             const uint64_t new_size = (old_size + cc_count
                                             * UINT64_C(6));
-            if (new_size > INT_MAX)
+            if (new_size > 3*A53_MAX_CC_COUNT)
                 return AVERROR(EINVAL);
 
             ret = av_buffer_realloc(&s1->a53_buf_ref, new_size);

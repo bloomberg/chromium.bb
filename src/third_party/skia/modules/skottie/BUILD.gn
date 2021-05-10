@@ -55,13 +55,15 @@ if (skia_enable_skottie) {
         sources = [
           "src/SkottieTest.cpp",
           "tests/AudioLayer.cpp",
+          "tests/Image.cpp",
           "tests/Keyframe.cpp",
+          "tests/Text.cpp",
         ]
 
         deps = [
           ":skottie",
-          "../..:gpu_tool_utils",
           "../..:skia",
+          "../..:test",
           "../skshaper",
         ]
       }

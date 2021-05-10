@@ -11,14 +11,16 @@ import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 enum PointerType {
-  kPointerFirstType                         = 1,  // 1 << 0
-  kPointerCoarseType                        = 2,  // 1 << 1
-  kPointerFineType                          = 4   // 1 << 2
+  kPointerNone                              = 1,             // 1 << 0
+  kPointerFirstType                         = kPointerNone,
+  kPointerCoarseType                        = 2,             // 1 << 1
+  kPointerFineType                          = 4              // 1 << 2
 };
 
 enum HoverType {
-  kHoverFirstType                            = 1,  // 1 << 0
-  kHoverHoverType                            = 2   // 1 << 1
+  kHoverNone                                 = 1,            // 1 << 0
+  kHoverFirstType                            = kHoverNone,
+  kHoverHoverType                            = 2             // 1 << 1
 };
 
 // There are multiple editing details that are different on Windows than
@@ -90,6 +92,9 @@ enum EffectiveConnectionType {
   // Effective connection type reported when the network has the quality of a 4G
   // connection.
   kEffectiveConnection4GType,
+
+  // Last value of the effective connection type. This value is unused.
+  kEffectiveConnectionTypeLast,
 };
 
 struct WebPreferences {
@@ -184,6 +189,7 @@ struct WebPreferences {
   bool barrel_button_for_drag_enabled;
   bool sync_xhr_in_documents_enabled;
   bool target_blank_implies_no_opener_enabled_will_be_removed;
+  bool allow_non_empty_navigator_plugins;
   int32 number_of_cpu_cores;
   EditingBehavior editing_behavior;
   bool supports_multiple_windows;
@@ -399,11 +405,12 @@ struct WebPreferences {
   // See https://github.com/dtapuska/html-translate
   bool translate_service_available;
 
-  // A value other than net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN implies that the
-  // network quality estimate related Web APIs are in the holdback mode. When
-  // the holdback is enabled, the related Web APIs return network quality
-  // estimate corresponding to |network_quality_estimator_web_holdback|
-  // regardless of the actual quality.
+  // A value other than
+  // mojom::blink::EffectiveConnectionType::kEffectiveConnectionUnknownType
+  // implies that the network quality estimate related Web APIs are in the
+  // holdback mode. When the holdback is enabled, the related Web APIs return
+  // network quality estimate corresponding to
+  // |network_quality_estimator_web_holdback| regardless of the actual quality.
   EffectiveConnectionType network_quality_estimator_web_holdback;
 
   // Whether lazy loading of frames and images is enabled.
@@ -430,4 +437,7 @@ struct WebPreferences {
   // Whether touch input can trigger HTML drag-and-drop operations. The
   // default value depends on the platform.
   bool touch_drag_drop_enabled;
+
+  // Controls whether WebXR's immersive-ar is allowed.
+  bool webxr_immersive_ar_allowed;
 };

@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/svg/svg_clip_path_element.h"
@@ -44,7 +45,7 @@ enum class ClipStrategy { kNone, kMask, kPath };
 ClipStrategy ModifyStrategyForClipPath(const ComputedStyle& style,
                                        ClipStrategy strategy) {
   // If the shape in the clip-path gets clipped too then fallback to masking.
-  if (strategy != ClipStrategy::kPath || !style.ClipPath())
+  if (strategy != ClipStrategy::kPath || !style.HasClipPath())
     return strategy;
   return ClipStrategy::kMask;
 }
@@ -116,8 +117,7 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache() {
   clip_content_path_.Clear();
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
-  MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
-                                SVGResourceClient::kPaintInvalidation);
+  MarkAllClientsForInvalidation(kClipCacheInvalidation | kPaintInvalidation);
 }
 
 base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
@@ -131,7 +131,7 @@ base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
   clip_content_path_validity_ = kClipContentPathInvalid;
   // If the current clip-path gets clipped itself, we have to fallback to
   // masking.
-  if (StyleRef().ClipPath())
+  if (StyleRef().HasClipPath())
     return base::nullopt;
 
   unsigned op_count = 0;
@@ -177,14 +177,14 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
   if (cached_paint_record_)
     return cached_paint_record_;
 
-  PaintRecordBuilder builder(nullptr, nullptr);
+  PaintRecordBuilder builder;
   // Switch to a paint behavior where all children of this <clipPath> will be
   // laid out using special constraints:
   // - fill-opacity/stroke-opacity/opacity set to 1
   // - masker/filter not applied when laying out the children
   // - fill is set to the initial fill paint server (solid, black)
   // - stroke is set to the initial stroke paint server (none)
-  PaintInfo info(builder.Context(), LayoutRect::InfiniteIntRect(),
+  PaintInfo info(builder.Context(), CullRect::Infinite(),
                  PaintPhase::kForeground, kGlobalPaintNormalPhase,
                  kPaintLayerPaintingRenderingClipPathAsMask |
                      kPaintLayerPaintingRenderingResourceSubtree);
@@ -278,21 +278,27 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
   return CalculateClipTransform(reference_box).MapRect(local_clip_bounds_);
 }
 
+bool LayoutSVGResourceClipper::FindCycleFromSelf() const {
+  NOT_DESTROYED();
+  // Check nested clip-path.
+  if (auto* reference_clip =
+          DynamicTo<ReferenceClipPathOperation>(StyleRef().ClipPath())) {
+    // The resource can be null if the reference is external but external
+    // references are not allowed.
+    if (SVGResource* resource = reference_clip->Resource()) {
+      if (resource->FindCycle(*SVGResources::GetClient(*this)))
+        return true;
+    }
+  }
+  return LayoutSVGResourceContainer::FindCycleFromSelf();
+}
+
 void LayoutSVGResourceClipper::StyleDidChange(StyleDifference diff,
                                               const ComputedStyle* old_style) {
   NOT_DESTROYED();
   LayoutSVGResourceContainer::StyleDidChange(diff, old_style);
-  if (diff.TransformChanged()) {
-    MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
-                                  SVGResourceClient::kPaintInvalidation);
-  }
-}
-
-void LayoutSVGResourceClipper::WillBeDestroyed() {
-  NOT_DESTROYED();
-  MarkAllClientsForInvalidation(SVGResourceClient::kClipCacheInvalidation |
-                                SVGResourceClient::kPaintInvalidation);
-  LayoutSVGResourceContainer::WillBeDestroyed();
+  if (diff.TransformChanged())
+    MarkAllClientsForInvalidation(kClipCacheInvalidation | kPaintInvalidation);
 }
 
 }  // namespace blink

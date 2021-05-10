@@ -101,6 +101,7 @@
         for(var i = 0; i < keys.length; ++i) {
           let eventSenderKeys = keys[i];
           let charCode = keys.charCodeAt(i);
+          let modifierValue;
           // See https://w3c.github.io/webdriver/#keyboard-actions and
           // EventSender::KeyDown().
           if (charCode == 0xE004) {
@@ -115,11 +116,31 @@
             eventSenderKeys = "ArrowRight";
           } else if (charCode == 0xE015) {
             eventSenderKeys = "ArrowDown";
+          } else if (charCode == 0xE00C) {
+            eventSenderKeys = "Escape";
+          } else if (charCode == 0xE003) {
+            eventSenderKeys = "Backspace";
+          } else if (charCode == 0xE009) {
+            eventSenderKeys = "ControlLeft";
+            modifierValue = "ctrlKey";
+          } else if (charCode == 0xE00A) {
+            eventSenderKeys = "AltLeft";
+            modifierValue = "altKey";
+          } else if (charCode == 0xE03D) {
+            eventSenderKeys = "MetaLeft";
+            modifierValue = "metaKey";
+          } else if (charCode == 0xE008) {
+            eventSenderKeys = "ShiftLeft";
+            modifierValue = "shiftKey";
+          } else if (charCode == 0xE006) {
+            eventSenderKeys = "Enter";
+            modifierValue = "enter";
           } else if (charCode >= 0xE000 && charCode <= 0xF8FF) {
             reject(new Error("No support for this code: U+" + charCode.toString(16)));
             return;
           }
-          window.eventSender.keyDown(eventSenderKeys);
+
+          window.eventSender.keyDown(eventSenderKeys, modifierValue);
         }
         resolve();
       });
@@ -150,7 +171,7 @@
 
   window.test_driver_internal.action_sequence = function(actions) {
     if (window.top !== window) {
-      return Promise.reject(new Error("can only send keys in top-level window"));
+      return Promise.reject(new Error("can only send actions in top-level window"));
     }
 
     var didScrollIntoView = false;
@@ -159,6 +180,12 @@
       var last_y_position = 0;
       var first_pointer_down = false;
       for (let j = 0; j < actions[i].actions.length; j++) {
+        if (actions[i].actions[j].type == "keyDown" ||
+            actions[i].actions[j].type == "keyUp") {
+          return Promise.reject(new Error("we do not support keydown and keyup actions, " +
+                                          "please use test_driver.send_keys"));
+        }
+
         if ('origin' in actions[i].actions[j]) {
           if (typeof(actions[i].actions[j].origin) === 'string') {
              if (actions[i].actions[j].origin == "viewport") {
@@ -204,7 +231,9 @@
           }
         }
 
-        if (actions[i].actions[j].type == "pointerDown" || actions[i].actions[j].type == "pointerMove") {
+        if (actions[i].actions[j].type == "pointerDown" ||
+            actions[i].actions[j].type == "pointerMove" ||
+            actions[i].actions[j].type == "scroll") {
           actions[i].actions[j].x = last_x_position;
           actions[i].actions[j].y = last_y_position;
         }
@@ -247,30 +276,13 @@
     return foundAuthenticator;
   }
 
-  function loadVirtualAuthenticatorManager() {
-    if (virtualAuthenticatorManager_) {
-      return Promise.resolve(virtualAuthenticatorManager_);
+  async function loadVirtualAuthenticatorManager() {
+    if (!virtualAuthenticatorManager_) {
+      const {VirtualAuthenticatorManager} = await import(
+          '/gen/third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.m.js');
+      virtualAuthenticatorManager_ = VirtualAuthenticatorManager.getRemote();
     }
-
-    return Promise.all([
-      "/gen/layout_test_data/mojo/public/js/mojo_bindings_lite.js",
-      "/gen/mojo/public/mojom/base/time.mojom-lite.js",
-      "/gen/url/mojom/url.mojom-lite.js",
-      "/gen/third_party/blink/public/mojom/webauthn/authenticator.mojom-lite.js",
-      "/gen/third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-lite.js",
-    ].map(dependency => new Promise((resolve, reject) => {
-      let script = document.createElement("script");
-      script.src = dependency;
-      script.async = false;
-      script.onload = resolve;
-      document.head.appendChild(script);
-    }))).then(() => {
-      virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
-      Mojo.bindInterface(
-          blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
-          virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle);
-      return virtualAuthenticatorManager_;
-    });
+    return virtualAuthenticatorManager_;
   }
 
   function urlSafeBase64ToUint8Array(base64url) {
@@ -295,6 +307,11 @@
   window.test_driver_internal.add_virtual_authenticator = async function(options) {
     let manager = await loadVirtualAuthenticatorManager();
 
+    const {AuthenticatorAttachment, AuthenticatorTransport} = await import(
+        '/gen/third_party/blink/public/mojom/webauthn/authenticator.mojom.m.js');
+    const {ClientToAuthenticatorProtocol, Ctap2Version} = await import(
+        '/gen/third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.m.js');
+
     options = Object.assign({
       hasResidentKey: false,
       hasUserVerification: false,
@@ -305,35 +322,35 @@
     let mojoOptions = {};
     switch (options.protocol) {
       case "ctap1/u2f":
-        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.U2F;
+        mojoOptions.protocol = ClientToAuthenticatorProtocol.U2F;
         break;
       case "ctap2":
-        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2;
-        mojoOptions.ctap2Version = blink.test.mojom.Ctap2Version.CTAP2_0;
+        mojoOptions.protocol = ClientToAuthenticatorProtocol.CTAP2;
+        mojoOptions.ctap2Version = Ctap2Version.CTAP2_0;
         break;
       case "ctap2_1":
-        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2;
-        mojoOptions.ctap2Version = blink.test.mojom.Ctap2Version.CTAP2_1;
+        mojoOptions.protocol = ClientToAuthenticatorProtocol.CTAP2;
+        mojoOptions.ctap2Version = Ctap2Version.CTAP2_1;
         break;
       default:
         throw "Unknown protocol "  + options.protocol;
     }
     switch (options.transport) {
       case "usb":
-        mojoOptions.transport = blink.mojom.AuthenticatorTransport.USB;
-        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        mojoOptions.transport = AuthenticatorTransport.USB;
+        mojoOptions.attachment = AuthenticatorAttachment.CROSS_PLATFORM;
         break;
       case "nfc":
-        mojoOptions.transport = blink.mojom.AuthenticatorTransport.NFC;
-        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        mojoOptions.transport = AuthenticatorTransport.NFC;
+        mojoOptions.attachment = AuthenticatorAttachment.CROSS_PLATFORM;
         break;
       case "ble":
-        mojoOptions.transport = blink.mojom.AuthenticatorTransport.BLE;
-        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        mojoOptions.transport = AuthenticatorTransport.BLE;
+        mojoOptions.attachment = AuthenticatorAttachment.CROSS_PLATFORM;
         break;
       case "internal":
-        mojoOptions.transport = blink.mojom.AuthenticatorTransport.INTERNAL;
-        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.PLATFORM;
+        mojoOptions.transport = AuthenticatorTransport.INTERNAL;
+        mojoOptions.attachment = AuthenticatorAttachment.PLATFORM;
         break;
       default:
         throw "Unknown transport "  + options.transport;

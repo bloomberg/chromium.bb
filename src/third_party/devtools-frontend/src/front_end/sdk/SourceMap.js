@@ -29,14 +29,29 @@
  */
 
 import * as Common from '../common/common.js';
-import * as Root from '../root/root.js';
+import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import {CompilerSourceMappingContentProvider} from './CompilerSourceMappingContentProvider.js';
 import {PageResourceLoader, PageResourceLoadInitiator} from './PageResourceLoader.js';  // eslint-disable-line no-unused-vars
-import {Script} from './Script.js';  // eslint-disable-line no-unused-vars
-import initWasm, {Resolver as WasmResolver} from './wasm_source_map/pkg/wasm_source_map.js';
 
+export const UIStrings = {
+  /**
+  *@description Error message when failing to load a source map text via the network
+  *@example {https://example.com/sourcemap.map} PH1
+  *@example {A certificate error occurred} PH2
+  */
+  couldNotLoadContentForSS: 'Could not load content for {PH1}: {PH2}',
+  /**
+  *@description Error message when failing to load a script source text via the network
+  *@example {https://example.com} PH1
+  *@example {Unexpected token} PH2
+  */
+  couldNotParseContentForSS: 'Could not parse content for {PH1}: {PH2}',
+};
+const str_ = i18n.i18n.registerUIStrings('sdk/SourceMap.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * @interface
  */
@@ -103,9 +118,6 @@ export class SourceMap {
    */
   mappings() {
     throw new Error('Not implemented');
-  }
-
-  dispose() {
   }
 }
 
@@ -226,7 +238,7 @@ export class TextSourceMap {
     /** @type {!Map<string, !TextSourceMap.SourceInfo>} */
     this._sourceInfos = new Map();
     if (this._json.sections) {
-      const sectionWithURL = !!this._json.sections.find(section => !!section.url);
+      const sectionWithURL = Boolean(this._json.sections.find(section => Boolean(section.url)));
       if (sectionWithURL) {
         Common.Console.Console.instance().warn(
             `SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
@@ -252,14 +264,14 @@ export class TextSourceMap {
         updatedContent = content.substring(content.indexOf('\n'));
       }
     } catch (error) {
-      throw new Error(ls`Could not load content for ${sourceMapURL}: ${error.message}`);
+      throw new Error(i18nString(UIStrings.couldNotLoadContentForSS, {PH1: sourceMapURL, PH2: error.message}));
     }
 
     try {
       const payload = /** @type {!SourceMapV3} */ (JSON.parse(updatedContent));
       return new TextSourceMap(compiledURL, sourceMapURL, payload, initiator);
     } catch (error) {
-      throw new Error(ls`Could not parse content for ${sourceMapURL}: ${error.message}`);
+      throw new Error(i18nString(UIStrings.couldNotParseContentForSS, {PH1: sourceMapURL, PH2: error.message}));
     }
   }
 
@@ -322,8 +334,8 @@ export class TextSourceMap {
    */
   findEntry(lineNumber, columnNumber) {
     const mappings = this.mappings();
-    const index = mappings.upperBound(
-        undefined, (unused, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
+    const index = Platform.ArrayUtilities.upperBound(
+        mappings, undefined, (unused, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
     return index ? mappings[index - 1] : null;
   }
 
@@ -336,8 +348,8 @@ export class TextSourceMap {
    */
   sourceLineMapping(sourceURL, lineNumber, columnNumber) {
     const mappings = this._reversedMappings(sourceURL);
-    const first = mappings.lowerBound(lineNumber, lineComparator);
-    const last = mappings.upperBound(lineNumber, lineComparator);
+    const first = Platform.ArrayUtilities.lowerBound(mappings, lineNumber, lineComparator);
+    const last = Platform.ArrayUtilities.upperBound(mappings, lineNumber, lineComparator);
     if (first >= mappings.length || mappings[first].sourceLineNumber !== lineNumber) {
       return null;
     }
@@ -345,8 +357,8 @@ export class TextSourceMap {
     if (!columnMappings.length) {
       return null;
     }
-    const index =
-        columnMappings.lowerBound(columnNumber, (columnNumber, mapping) => columnNumber - mapping.sourceColumnNumber);
+    const index = Platform.ArrayUtilities.lowerBound(
+        columnMappings, columnNumber, (columnNumber, mapping) => columnNumber - mapping.sourceColumnNumber);
     return index >= columnMappings.length ? columnMappings[columnMappings.length - 1] : columnMappings[index];
 
     /**
@@ -367,8 +379,9 @@ export class TextSourceMap {
    */
   findReverseEntries(sourceURL, lineNumber, columnNumber) {
     const mappings = this._reversedMappings(sourceURL);
-    const endIndex = mappings.upperBound(
-        undefined, (unused, entry) => lineNumber - entry.sourceLineNumber || columnNumber - entry.sourceColumnNumber);
+    const endIndex = Platform.ArrayUtilities.upperBound(
+        mappings, undefined,
+        (unused, entry) => lineNumber - entry.sourceLineNumber || columnNumber - entry.sourceColumnNumber);
     let startIndex = endIndex;
     while (startIndex > 0 && mappings[startIndex - 1].sourceLineNumber === mappings[endIndex - 1].sourceLineNumber &&
            mappings[startIndex - 1].sourceColumnNumber === mappings[endIndex - 1].sourceColumnNumber) {
@@ -458,7 +471,7 @@ export class TextSourceMap {
       let url = Common.ParsedURL.ParsedURL.completeURL(this._baseURL, href) || href;
       const source = sourceMap.sourcesContent && sourceMap.sourcesContent[i];
       if (url === this._compiledURL && source) {
-        url += Common.UIString.UIString('? [sm]');
+        url += '? [sm]';
       }
       this._sourceInfos.set(url, new TextSourceMap.SourceInfo(source || null, null));
       sourcesList.push(url);
@@ -584,21 +597,15 @@ export class TextSourceMap {
     if (!mappings.length) {
       return null;
     }
-    const startIndex =
-        mappings.lowerBound({lineNumber: textRange.startLine, columnNumber: textRange.startColumn}, comparator);
-    const endIndex =
-        mappings.upperBound({lineNumber: textRange.endLine, columnNumber: textRange.endColumn}, comparator);
+    const startIndex = Platform.ArrayUtilities.lowerBound(
+        mappings, {lineNumber: textRange.startLine, columnNumber: textRange.startColumn}, comparator);
+    const endIndex = Platform.ArrayUtilities.upperBound(
+        mappings, {lineNumber: textRange.endLine, columnNumber: textRange.endColumn}, comparator);
 
     const startMapping = mappings[startIndex];
     const endMapping = mappings[endIndex];
     return new TextUtils.TextRange.TextRange(
         startMapping.lineNumber, startMapping.columnNumber, endMapping.lineNumber, endMapping.columnNumber);
-  }
-
-  /**
-   * @override
-   */
-  dispose() {
   }
 }
 
@@ -649,139 +656,3 @@ TextSourceMap.SourceInfo = class {
     this.reverseMappings = reverseMappings;
   }
 };
-
-/** @type {?Promise<typeof WasmResolver>} */
-let asyncResolver;
-
-/**
- * @implements {SourceMap}
- */
-export class WasmSourceMap {
-  /**
-   * Implements SourceMap interface for DWARF information in Wasm.
-   * @param {string} wasmUrl
-   * @param {!WasmResolver} resolver
-   * @param {!PageResourceLoadInitiator} initiator
-   */
-  constructor(wasmUrl, resolver, initiator) {
-    this._wasmUrl = wasmUrl;
-    this._resolver = resolver;
-    this._initiator = initiator;
-  }
-
-  /**
-   * @private
-   */
-  static async _loadBindings() {
-    const arrayBuffer = await Root.Runtime.Runtime.instance().loadBinaryResourcePromise(
-        './sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm');
-    await initWasm(arrayBuffer);
-    return WasmResolver;
-  }
-
-  /**
-   * @private
-   */
-  static _loadBindingsOnce() {
-    if (!asyncResolver) {
-      asyncResolver = WasmSourceMap._loadBindings();
-    }
-    return asyncResolver;
-  }
-
-  /**
-   *
-   * @param {!Script} script
-   * @param {string} wasmUrl
-   * @returns {!Promise<!WasmSourceMap>}
-   */
-  static async load(script, wasmUrl) {
-    const [Resolver, wasm] = await Promise.all([WasmSourceMap._loadBindingsOnce(), script.getWasmBytecode()]);
-    return new WasmSourceMap(wasmUrl, new Resolver(new Uint8Array(wasm)), script.createPageResourceLoadInitiator());
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  compiledURL() {
-    return this._wasmUrl;
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  url() {
-    return WasmSourceMap.FAKE_URL;
-  }
-
-  /**
-   * @override
-   * @return {!Array.<string>}
-   */
-  sourceURLs() {
-    return this._resolver.listFiles();
-  }
-
-  /**
-   * @override
-   * @param {string} sourceURL
-   * @param {!Common.ResourceType.ResourceType} contentType
-   * @return {!TextUtils.ContentProvider.ContentProvider}
-   */
-  sourceContentProvider(sourceURL, contentType) {
-    return new CompilerSourceMappingContentProvider(sourceURL, contentType, this._initiator);
-  }
-
-  /**
-   * @override
-   * @param {string} sourceURL
-   * @return {?string}
-   */
-  embeddedContentByURL(sourceURL) {
-    return null;
-  }
-
-  /**
-   * @override
-   * @param {number} lineNumber in compiled resource
-   * @param {number} columnNumber in compiled resource
-   * @return {?SourceMapEntry}
-   */
-  findEntry(lineNumber, columnNumber) {
-    if (lineNumber !== 0) {
-      console.warn(new Error('Invalid non-zero line number.'));
-    }
-    return this._resolver.resolve(columnNumber) || null;
-  }
-
-  /**
-   * @override
-   * @param {string} sourceURL
-   * @param {number} lineNumber
-   * @param {number} columnNumber
-   * @return {?SourceMapEntry}
-   */
-  sourceLineMapping(sourceURL, lineNumber, columnNumber) {
-    return this._resolver.resolveReverse(sourceURL, lineNumber, columnNumber) || null;
-  }
-
-  /**
-   * @override
-   * @return {!Array<!SourceMapEntry>}
-   */
-  mappings() {
-    return this._resolver.listMappings();
-  }
-
-  /**
-   * @override
-   */
-  dispose() {
-    this._resolver.free();
-  }
-}
-
-/* Special URL that should be kept in sync with one in V8 */
-WasmSourceMap.FAKE_URL = 'wasm://dwarf';

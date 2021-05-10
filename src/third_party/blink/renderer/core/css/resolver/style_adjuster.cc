@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -264,7 +263,9 @@ static void AdjustStyleForMarker(ComputedStyle& style,
        !parent_style.IsInsideListElement());
 
   if (is_inside) {
-    auto margins = ListMarker::InlineMarginsForInside(style, parent_style);
+    Document& document = parent_element.GetDocument();
+    auto margins =
+        ListMarker::InlineMarginsForInside(document, style, parent_style);
     style.SetMarginStart(Length::Fixed(margins.first));
     style.SetMarginEnd(Length::Fixed(margins.second));
   } else {
@@ -394,7 +395,8 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsA<HTMLSummaryElement>(element)) {
+  if (IsA<HTMLSummaryElement>(element) &&
+      !RuntimeEnabledFeatures::SummaryListItemEnabled()) {
     // <summary> should be a list item by default, but currently it's a block
     // and the disclosure symbol is not a ::marker (bug 590014). If an author
     // specifies 'display: list-item', the <summary> would seem to have two
@@ -418,7 +420,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 }
 
-void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
+void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
@@ -454,6 +456,11 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
       style.SetOverflowY(EOverflow::kAuto);
     else if (style.OverflowY() == EOverflow::kClip)
       style.SetOverflowY(EOverflow::kHidden);
+  }
+  if (element && (style.OverflowX() == EOverflow::kClip ||
+                  style.OverflowY() == EOverflow::kClip)) {
+    UseCounter::Count(element->GetDocument(),
+                      WebFeature::kOverflowClipAlongEitherAxis);
   }
 }
 
@@ -636,6 +643,17 @@ static void AdjustStateForContentVisibility(ComputedStyle& style,
   context->AdjustElementStyle(&style);
 }
 
+void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style) {
+  if (!style.InForcedColorsMode() ||
+      style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+    return;
+
+  style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
+  style.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
+  if (!style.HasUrlBackgroundImage())
+    style.ClearBackgroundImage();
+}
+
 void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                                         Element* element) {
   DCHECK(state.LayoutParentStyle());
@@ -688,20 +706,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForDisplay(style, layout_parent_style, element,
                           element ? &element->GetDocument() : nullptr);
 
-    // TOOD(crbug.com/1146925): Sticky content in a scrollable FIELDSET triggers
-    // a DHCECK failure in |StickyPositionScrollingConstraints::
-    // AncestorContainingBlockOffset()|. We disable it until the root cause is
-    // fixed.
-    if (style.GetPosition() == EPosition::kSticky && element) {
-      for (const Node& ancestor : FlatTreeTraversal::AncestorsOf(*element)) {
-        if (const auto* fieldset = DynamicTo<HTMLFieldSetElement>(ancestor)) {
-          if (!fieldset->ComputedStyleRef().IsOverflowVisibleAlongBothAxes())
-            style.SetPosition(EPosition::kStatic);
-          break;
-        }
-      }
-    }
-
     // If this is a child of a LayoutNGCustom, we need the name of the parent
     // layout function for invalidation purposes.
     if (layout_parent_style.IsDisplayLayoutCustomBox()) {
@@ -734,13 +738,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   if (style.OverflowX() != EOverflow::kVisible ||
       style.OverflowY() != EOverflow::kVisible)
-    AdjustOverflow(style);
+    AdjustOverflow(style, element);
 
   // overflow-clip-margin only applies if 'overflow: clip' is set along both
-  // axis.
-  if (style.OverflowX() != EOverflow::kClip ||
-      style.OverflowY() != EOverflow::kClip) {
-    style.SetOverflowClipMargin(LayoutUnit());
+  // axis or 'contain: paint'.
+  if (!style.ContainsPaint() && !(style.OverflowX() == EOverflow::kClip &&
+                                  style.OverflowY() == EOverflow::kClip)) {
+    style.SetOverflowClipMargin(
+        ComputedStyleInitialValues::InitialOverflowClipMargin());
   }
 
   if (StopPropagateTextDecorations(style, element))
@@ -755,6 +760,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // layers.
   style.AdjustBackgroundLayers();
   style.AdjustMaskLayers();
+
+  // A subset of CSS properties should be forced at computed value time:
+  // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties.
+  AdjustForForcedColorsMode(style);
 
   // Let the theme also have a crack at adjusting the style.
   LayoutTheme::GetTheme().AdjustStyle(element, style);

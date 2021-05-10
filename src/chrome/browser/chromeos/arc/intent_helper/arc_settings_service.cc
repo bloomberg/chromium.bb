@@ -16,19 +16,17 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/ash/settings/stats_reporting_controller.h"
+#include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
-#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -224,13 +222,11 @@ class ArcSettingsServiceImpl
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
 
-  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
-      reporting_consent_subscription_;
+  base::CallbackListSubscription reporting_consent_subscription_;
 
   // Subscription for preference change of default zoom level. Subscription
   // automatically unregisters a callback when it's destructed.
-  std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
-      default_zoom_level_subscription_;
+  base::CallbackListSubscription default_zoom_level_subscription_;
 
   // Name of the default network. Used to keep track of whether the default
   // network has changed.
@@ -377,7 +373,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
 
 void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
   registrar_.RemoveAll();
-  reporting_consent_subscription_.reset();
+  reporting_consent_subscription_ = {};
 
   TimezoneSettings::GetInstance()->RemoveObserver(this);
   chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(

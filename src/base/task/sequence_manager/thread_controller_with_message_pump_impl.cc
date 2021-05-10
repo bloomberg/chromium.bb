@@ -43,10 +43,6 @@ ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
     const SequenceManager::Settings& settings)
     : associated_thread_(AssociatedThreadId::CreateUnbound()),
       work_deduplicator_(associated_thread_),
-#if DCHECK_IS_ON()
-      log_runloop_quit_and_quit_when_idle_(
-          settings.log_runloop_quit_and_quit_when_idle),
-#endif
       time_source_(settings.clock) {
 }
 
@@ -336,17 +332,15 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
     // [OnTaskStarted(), OnTaskEnded()] must outscope all other tracing calls
     // so that the "ThreadController active" trace event lives on top of all
-    // "run task" events. It must also encompass DidRunTask() to cover
-    // microtasks.
+    // "run task" events.
     main_thread_only().run_level_tracker.OnTaskStarted();
     {
       // Execute the task and assume the worst: it is probably not reentrant.
-      main_thread_only().task_execution_allowed = false;
+      AutoReset<bool> ban_nested_application_tasks(
+          &main_thread_only().task_execution_allowed, false);
 
       // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
       // to determine long tasks.
-      // The event scope must span across DidRunTask call below to make sure
-      // it covers RunMicrotasks event.
       // See https://crbug.com/681863 and https://crbug.com/874982
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RunTask");
 
@@ -357,15 +351,8 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
         task_annotator_.RunTask("SequenceManager RunTask", task);
       }
 
-#if DCHECK_IS_ON()
-      if (log_runloop_quit_and_quit_when_idle_ && !quit_when_idle_requested_ &&
-          ShouldQuitWhenIdle()) {
-        DVLOG(1) << "ThreadControllerWithMessagePumpImpl::QuitWhenIdle";
-        quit_when_idle_requested_ = true;
-      }
-#endif
-
-      main_thread_only().task_execution_allowed = true;
+      // This processes microtasks, hence all scoped operations above must end
+      // after it.
       main_thread_only().task_source->DidRunTask();
     }
     main_thread_only().run_level_tracker.OnTaskEnded();
@@ -456,10 +443,6 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
       (timeout == TimeDelta::Max()) ? TimeTicks::Max()
                                     : time_source_->NowTicks() + timeout);
 
-#if DCHECK_IS_ON()
-  AutoReset<bool> quit_when_idle_requested(&quit_when_idle_requested_, false);
-#endif
-
   main_thread_only().run_level_tracker.OnRunLoopStarted(
       RunLevelTracker::kSelectingNextTask);
 
@@ -476,11 +459,6 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
   } else {
     pump_->Run(this);
   }
-
-#if DCHECK_IS_ON()
-  if (log_runloop_quit_and_quit_when_idle_)
-    DVLOG(1) << "ThreadControllerWithMessagePumpImpl::Quit";
-#endif
 
   main_thread_only().run_level_tracker.OnRunLoopEnded();
   main_thread_only().quit_pending = false;

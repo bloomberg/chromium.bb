@@ -11,14 +11,32 @@
 #ifndef PC_RTP_TRANSCEIVER_H_
 #define PC_RTP_TRANSCEIVER_H_
 
+#include <stddef.h>
+
+#include <algorithm>
+#include <functional>
 #include <string>
 #include <vector>
 
+#include "absl/types/optional.h"
+#include "api/array_view.h"
+#include "api/media_types.h"
+#include "api/proxy.h"
+#include "api/rtc_error.h"
+#include "api/rtp_parameters.h"
+#include "api/rtp_receiver_interface.h"
+#include "api/rtp_sender_interface.h"
+#include "api/rtp_transceiver_direction.h"
 #include "api/rtp_transceiver_interface.h"
+#include "api/scoped_refptr.h"
+#include "api/task_queue/task_queue_base.h"
 #include "pc/channel_interface.h"
 #include "pc/channel_manager.h"
 #include "pc/rtp_receiver.h"
 #include "pc/rtp_sender.h"
+#include "rtc_base/ref_counted_object.h"
+#include "rtc_base/third_party/sigslot/sigslot.h"
+#include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
 
@@ -207,6 +225,8 @@ class RtpTransceiver final
   }
   std::vector<RtpHeaderExtensionCapability> HeaderExtensionsToOffer()
       const override;
+  std::vector<RtpHeaderExtensionCapability> HeaderExtensionsNegotiated()
+      const override;
   RTCError SetOfferedRtpHeaderExtensions(
       rtc::ArrayView<const RtpHeaderExtensionCapability>
           header_extensions_to_offer) override;
@@ -245,6 +265,7 @@ class RtpTransceiver final
 };
 
 BEGIN_SIGNALING_PROXY_MAP(RtpTransceiver)
+
 PROXY_SIGNALING_THREAD_DESTRUCTOR()
 BYPASS_PROXY_CONSTMETHOD0(cricket::MediaType, media_type)
 PROXY_CONSTMETHOD0(absl::optional<std::string>, mid)
@@ -264,6 +285,8 @@ PROXY_METHOD1(webrtc::RTCError,
 PROXY_CONSTMETHOD0(std::vector<RtpCodecCapability>, codec_preferences)
 PROXY_CONSTMETHOD0(std::vector<RtpHeaderExtensionCapability>,
                    HeaderExtensionsToOffer)
+PROXY_CONSTMETHOD0(std::vector<RtpHeaderExtensionCapability>,
+                   HeaderExtensionsNegotiated)
 PROXY_METHOD1(webrtc::RTCError,
               SetOfferedRtpHeaderExtensions,
               rtc::ArrayView<const RtpHeaderExtensionCapability>)

@@ -12,6 +12,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/Display.h"
 #include "libANGLE/Surface.h"
+#include "libANGLE/renderer/driver_utils.h"
 #include "libANGLE/renderer/glslang_wrapper_utils.h"
 #include "libANGLE/renderer/metal/ContextMtl.h"
 #include "libANGLE/renderer/metal/SurfaceMtl.h"
@@ -24,7 +25,6 @@
 
 namespace rx
 {
-
 bool IsMetalDisplayAvailable()
 {
     // We only support macos 10.13+ and 11 for now. Since they are requirements for Metal 2.0.
@@ -138,25 +138,34 @@ egl::Error DisplayMtl::restoreLostDevice(const egl::Display *display)
     return egl::NoError();
 }
 
-std::string DisplayMtl::getVendorString() const
+std::string DisplayMtl::getRendererDescription()
 {
     ANGLE_MTL_OBJC_SCOPE
     {
-        std::string vendorString = "Google Inc.";
+        std::string desc = "Metal Renderer";
+
         if (mMetalDevice)
         {
-            vendorString += " Metal Renderer: ";
-            vendorString += mMetalDevice.get().name.UTF8String;
+            desc += ": ";
+            desc += mMetalDevice.get().name.UTF8String;
         }
 
-        return vendorString;
+        return desc;
     }
 }
 
-DeviceImpl *DisplayMtl::createDevice()
+std::string DisplayMtl::getVendorString()
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    return GetVendorString(mMetalDeviceVendorId);
+}
+
+std::string DisplayMtl::getVersionString()
+{
+    ANGLE_MTL_OBJC_SCOPE
+    {
+        NSProcessInfo *procInfo = [NSProcessInfo processInfo];
+        return procInfo.operatingSystemVersionString.UTF8String;
+    }
 }
 
 egl::Error DisplayMtl::waitClient(const gl::Context *context)
@@ -429,22 +438,6 @@ egl::Error DisplayMtl::validateClientBuffer(const egl::Config *configuration,
     return egl::NoError();
 }
 
-std::string DisplayMtl::getRendererDescription() const
-{
-    ANGLE_MTL_OBJC_SCOPE
-    {
-        std::string desc = "Metal Renderer";
-
-        if (mMetalDevice)
-        {
-            desc += ": ";
-            desc += mMetalDevice.get().name.UTF8String;
-        }
-
-        return desc;
-    }
-}
-
 gl::Caps DisplayMtl::getNativeCaps() const
 {
     ensureCapsInitialized();
@@ -634,7 +627,7 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.textureStorage         = true;
     mNativeExtensions.drawBuffers            = true;
     mNativeExtensions.fragDepth              = true;
-    mNativeExtensions.framebufferBlit        = true;
+    mNativeExtensions.framebufferBlitANGLE   = true;
     mNativeExtensions.framebufferMultisample = true;
     mNativeExtensions.copyTexture            = true;
     mNativeExtensions.copyCompressedTexture  = false;

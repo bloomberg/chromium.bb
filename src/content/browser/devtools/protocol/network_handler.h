@@ -117,6 +117,9 @@ class NetworkHandler : public DevToolsDomainHandler,
                  Maybe<std::string> same_site,
                  Maybe<double> expires,
                  Maybe<std::string> priority,
+                 Maybe<bool> same_party,
+                 Maybe<std::string> source_scheme,
+                 Maybe<int> source_port,
                  std::unique_ptr<SetCookieCallback> callback) override;
   void SetCookies(
       std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
@@ -177,6 +180,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                    const network::ResourceRequest& request,
                    const char* initiator_type,
                    const base::Optional<GURL>& initiator_url,
+                   const std::string& initiator_devtools_request_id,
                    base::TimeTicks timestamp);
   void ResponseReceived(const std::string& request_id,
                         const std::string& loader_id,
@@ -206,12 +210,17 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnRequestWillBeSentExtraInfo(
       const std::string& devtools_request_id,
       const net::CookieAccessResultList& request_cookie_list,
-      const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers);
+      const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers,
+      const network::mojom::ClientSecurityStatePtr& security_state);
   void OnResponseReceivedExtraInfo(
       const std::string& devtools_request_id,
       const net::CookieAndLineAccessResultList& response_cookie_list,
       const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
-      const base::Optional<std::string>& response_headers_text);
+      const base::Optional<std::string>& response_headers_text,
+      network::mojom::IPAddressSpace resource_address_space);
+  void OnTrustTokenOperationDone(
+      const std::string& devtools_request_id,
+      const network::mojom::TrustTokenOperationResult& result);
 
   bool enabled() const { return enabled_; }
 
@@ -227,6 +236,15 @@ class NetworkHandler : public DevToolsDomainHandler,
       const String& url,
       std::unique_ptr<protocol::Network::LoadNetworkResourceOptions> options,
       std::unique_ptr<LoadNetworkResourceCallback> callback) override;
+
+  // Protocol builders.
+  static String BuildPrivateNetworkRequestPolicy(
+      network::mojom::PrivateNetworkRequestPolicy policy);
+  static protocol::Network::IPAddressSpace BuildIpAddressSpace(
+      network::mojom::IPAddressSpace space);
+  static Maybe<protocol::Network::ClientSecurityState>
+  MaybeBuildClientSecurityState(
+      const network::mojom::ClientSecurityStatePtr& state);
 
  private:
   void OnLoadNetworkResourceFinished(DevToolsNetworkResourceLoader* loader,

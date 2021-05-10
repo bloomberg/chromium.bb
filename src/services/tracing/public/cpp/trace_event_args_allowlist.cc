@@ -28,9 +28,6 @@ const char* const kScopedBlockingCallAllowedArgs[] = {
     "file_name", "function_name", "source_location", nullptr};
 const char* const kPeekMessageAllowedArgs[] = {"sent_messages_in_queue",
                                                "chrome_message_pump", nullptr};
-const char* const kFallbackFontAllowedArgs[] = {"font_name",
-                                                "primary_font_name", nullptr};
-const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {
@@ -50,6 +47,7 @@ const char* const kMemoryPressureEventsAllowedArgs[] = {
     "level", "listener_creation_info", nullptr};
 
 const AllowlistEntry kEventArgsAllowlist[] = {
+    // Thread and process names are now recorded in perfetto.
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
     {"__metadata", "process_uptime_seconds", nullptr},
@@ -70,15 +68,11 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
     {"base", "ScopedMayLoadLibraryAtBackgroundPriority",
      kScopedBlockingCallAllowedArgs},
-    {"benchmark", "TestAllowlist*", nullptr},
     {"blink", "MemoryPressureListenerRegistry::onMemoryPressure",
      kMemoryPressureEventsAllowedArgs},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"browser", "TabLoader::OnMemoryPressure",
      kMemoryPressureEventsAllowedArgs},
-    {"fonts", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
-    {"fonts", "QueryLinkedFontsFromRegistry", nullptr},
-    {"fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs", nullptr},
     {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
@@ -87,8 +81,10 @@ const AllowlistEntry kEventArgsAllowlist[] = {
      kMemoryPressureEventsAllowedArgs},
     {"renderer_host", "*", kRendererHostAllowedArgs},
     {"shutdown", "*", nullptr},
+    // Now recorded in perfetto proto:
+    // perfetto/trace/track_event/chrome_content_settings_event_info.proto.
     {"startup", "PrefProvider::PrefProvider", nullptr},
-    {"task_scheduler", "*", nullptr},
+    {"startup", "TestAllowlist*", nullptr},
     {"toplevel", "*", nullptr},
     {"toplevel.ipc", "TaskAnnotator::RunTask", kTopLevelIpcRunTaskAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
@@ -99,9 +95,6 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
     {"ui", "HWNDMessageHandler::OnWndProc", kUIAllowedArgs},
     {"ui", "HWNDMessageHandler::OnDwmCompositionChanged", kUIAllowedArgs},
-    {"ui", "RenderTextHarfBuzz::FallbackFont", kFallbackFontAllowedArgs},
-    {"ui", "RenderTextHarfBuzz::GetFallbackFonts",
-     kGetFallbackFontsAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction", nullptr},
     {"toplevel.flow", "SequenceManager::PostTask", kTopLevelFlowAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("lifecycles"), "task_posted_to_disabled_queue",

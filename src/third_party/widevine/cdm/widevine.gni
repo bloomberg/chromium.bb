@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//media/media_options.gni")
 
 declare_args() {
@@ -15,7 +16,7 @@ declare_args() {
 }
 
 # Disable Widevine when running linux-chromeos.
-if (is_ash && !is_chromeos_device) {
+if (is_chromeos_ash && !is_chromeos_device) {
   enable_widevine = false
 }
 
@@ -23,8 +24,9 @@ if (is_ash && !is_chromeos_device) {
 # architectures. Notably on Android library CDM is not used and Widevine is
 # supported via Android MediaDrm API.
 library_widevine_cdm_available =
-    (is_chromeos && (target_cpu == "x64" || target_cpu == "arm")) ||
-    (is_linux && (target_cpu == "x86" || target_cpu == "x64")) ||
+    (is_chromeos_ash && (target_cpu == "x64" || target_cpu == "arm")) ||
+    ((is_linux || is_chromeos_lacros) &&
+     (target_cpu == "x86" || target_cpu == "x64")) ||
     (is_mac && (target_cpu == "x64" || target_cpu == "arm64")) ||
     (is_win && (target_cpu == "x86" || target_cpu == "x64"))
 
@@ -39,15 +41,11 @@ enable_library_widevine_cdm =
 # it's a component. See below.
 # Note: Not enabled on ChromeOS. See https://crbug.com/971433
 enable_widevine_cdm_component =
-    enable_library_widevine_cdm && (is_win || is_mac || is_linux)
+    enable_library_widevine_cdm &&
+    (is_win || is_mac || is_linux || is_chromeos_lacros)
 
 # Widevine CDM is bundled as part of Google Chrome builds.
 bundle_widevine_cdm = enable_library_widevine_cdm && is_chrome_branded
-
-# TODO(crbug.com/1111381): Remove this when MacOS ARM64 CDM is checked in.
-if (is_mac && target_cpu == "arm64") {
-  bundle_widevine_cdm = false
-}
 
 # Enable Widevine CDM host verification, which will sign additional binaries
 # with Widevine certs and copy signature files as needed.

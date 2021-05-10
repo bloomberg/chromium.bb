@@ -70,14 +70,14 @@ Polymer({
     },
 
     /**
-     * The value of the Nearby Share feature flag which controls if the
-     * Nearby Share settings and subpage are accessible.
+     * Whether or not Nearby Share is supported which controls if the Nearby
+     * Share settings and subpage are accessible.
      * @private {boolean}
      */
-    nearbySharingFeatureEnabled_: {
+    isNearbyShareSupported_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('nearbySharingFeatureFlag');
+        return loadTimeData.getBoolean('isNearbyShareSupported');
       }
     },
 
@@ -132,17 +132,6 @@ Polymer({
     }
 
     this.attemptDeepLink();
-  },
-
-  /**
-   * CSS class for the <div> containing all the text in the multidevice-item
-   * <div>, i.e. the label and sublabel. If the host is set, the Better Together
-   * icon appears so before the text (i.e. text div is 'middle' class).
-   * @return {string}
-   * @private
-   */
-  getMultiDeviceItemLabelBlockCssClass_() {
-    return this.isHostSet() ? 'middle' : 'start';
   },
 
   /**
@@ -521,5 +510,13 @@ Polymer({
   /** @private */
   onHideNotificationSetupAccessDialog_() {
     this.showNotificationAccessSetupDialog_ = false;
+  },
+
+  /** @private */
+  handleNearbySetUpClick_() {
+    const params = new URLSearchParams();
+    params.set('onboarding', '');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NEARBY_SHARE, params);
   },
 });

@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -69,10 +70,24 @@
 
 #if defined(USE_OZONE)
 #include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace content {
 namespace {
+
+#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+bool GetGmbConfigFromGpu() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .fetch_buffer_formats_for_gmb_on_gpu;
+  }
+#endif
+  return true;
+}
+#endif
 
 WebUIDataSource* CreateGpuHTMLSource() {
   WebUIDataSource* source = WebUIDataSource::Create(kChromeUIGpuHost);
@@ -84,9 +99,14 @@ WebUIDataSource* CreateGpuHTMLSource() {
       "trusted-types jstemplate;");
 
   source->UseStringsJs();
+  source->AddResourcePath("browser_bridge.js", IDR_GPU_BROWSER_BRIDGE_JS);
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
-  source->AddResourcePath("vulkan_info.mojom.js", IDR_VULKAN_INFO_MOJO_JS);
-  source->AddResourcePath("vulkan_types.mojom.js", IDR_VULKAN_TYPES_MOJO_JS);
+  source->AddResourcePath("info_view.js", IDR_GPU_INFO_VIEW_JS);
+  source->AddResourcePath("vulkan_info.js", IDR_GPU_VULKAN_INFO_JS);
+  source->AddResourcePath("vulkan_info.mojom-webui.js",
+                          IDR_VULKAN_INFO_MOJO_JS);
+  source->AddResourcePath("vulkan_types.mojom-webui.js",
+                          IDR_VULKAN_TYPES_MOJO_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
   return source;
 }
@@ -142,11 +162,14 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string rt = base::StringPrintf("VENDOR= %s, DEVICE=%s", vendor.c_str(),
                                       device.c_str());
 #if defined(OS_WIN)
-  if (gpu.sub_sys_id || gpu.revision) {
-    rt += base::StringPrintf(", SUBSYS=0x%08x, REV=%u", gpu.sub_sys_id,
-                             gpu.revision);
-  }
-
+  if (gpu.sub_sys_id)
+    rt += base::StringPrintf(", SUBSYS=0x%08x", gpu.sub_sys_id);
+#endif
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  if (gpu.revision)
+    rt += base::StringPrintf(", REV=%u", gpu.revision);
+#endif
+#if defined(OS_WIN)
   rt += base::StringPrintf(", LUID={%ld,%lu}", gpu.luid.HighPart,
                            gpu.luid.LowPart);
 #endif
@@ -393,8 +416,8 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo(
   gpu::GpuMemoryBufferSupport gpu_memory_buffer_support;
 
   gpu::GpuMemoryBufferConfigurationSet native_config;
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform()) {
+#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+  if (GetGmbConfigFromGpu()) {
     for (const auto& config : gpu_extra_info.gpu_memory_buffer_support_x11) {
       native_config.emplace(config);
     }
@@ -808,8 +831,13 @@ std::unique_ptr<base::DictionaryValue> GpuMessageHandler::OnRequestClientInfo(
   auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("version", GetContentClient()->browser()->GetProduct());
-  dict->SetString("command_line",
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+  base::CommandLine::StringType command_line =
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+#if defined(OS_WIN)
+  dict->SetString("command_line", base::WideToUTF8(command_line));
+#else
+  dict->SetString("command_line", command_line);
+#endif
   dict->SetString("operating_system",
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
@@ -846,28 +874,30 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   feature_status->Set("workarounds", std::move(workarounds));
   gpu_info_val->Set("featureStatus", std::move(feature_status));
   if (!GpuDataManagerImpl::GetInstance()->IsGpuProcessUsingHardwareGpu()) {
-    auto feature_status_for_hardware_gpu =
-        std::make_unique<base::DictionaryValue>();
-    feature_status_for_hardware_gpu->Set("featureStatus",
-                                         GetFeatureStatusForHardwareGpu());
-    feature_status_for_hardware_gpu->Set("problems",
-                                         GetProblemsForHardwareGpu());
-    auto workarounds_for_hardware_gpu = std::make_unique<base::ListValue>();
-    for (const auto& workaround : GetDriverBugWorkaroundsForHardwareGpu())
-      workarounds_for_hardware_gpu->AppendString(workaround);
-    feature_status_for_hardware_gpu->Set(
-        "workarounds", std::move(workarounds_for_hardware_gpu));
-    gpu_info_val->Set("featureStatusForHardwareGpu",
-                      std::move(feature_status_for_hardware_gpu));
     const gpu::GPUInfo gpu_info_for_hardware_gpu =
         GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu();
-    const gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu =
-        GpuDataManagerImpl::GetInstance()->GetGpuFeatureInfoForHardwareGpu();
-    auto gpu_info_for_hardware_gpu_val = BasicGpuInfoAsListValue(
-        gpu_info_for_hardware_gpu, gpu_feature_info_for_hardware_gpu,
-        gfx::GpuExtraInfo{});
-    gpu_info_val->Set("basicInfoForHardwareGpu",
-                      std::move(gpu_info_for_hardware_gpu_val));
+    if (gpu_info_for_hardware_gpu.IsInitialized()) {
+      auto feature_status_for_hardware_gpu =
+          std::make_unique<base::DictionaryValue>();
+      feature_status_for_hardware_gpu->Set("featureStatus",
+                                           GetFeatureStatusForHardwareGpu());
+      feature_status_for_hardware_gpu->Set("problems",
+                                           GetProblemsForHardwareGpu());
+      auto workarounds_for_hardware_gpu = std::make_unique<base::ListValue>();
+      for (const auto& workaround : GetDriverBugWorkaroundsForHardwareGpu())
+        workarounds_for_hardware_gpu->AppendString(workaround);
+      feature_status_for_hardware_gpu->Set(
+          "workarounds", std::move(workarounds_for_hardware_gpu));
+      gpu_info_val->Set("featureStatusForHardwareGpu",
+                        std::move(feature_status_for_hardware_gpu));
+      const gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu =
+          GpuDataManagerImpl::GetInstance()->GetGpuFeatureInfoForHardwareGpu();
+      auto gpu_info_for_hardware_gpu_val = BasicGpuInfoAsListValue(
+          gpu_info_for_hardware_gpu, gpu_feature_info_for_hardware_gpu,
+          gfx::GpuExtraInfo{});
+      gpu_info_val->Set("basicInfoForHardwareGpu",
+                        std::move(gpu_info_for_hardware_gpu_val));
+    }
   }
   gpu_info_val->Set("compositorInfo", CompositorInfo());
   gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo(gpu_extra_info));

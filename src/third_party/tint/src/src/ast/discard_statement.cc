@@ -14,24 +14,33 @@
 
 #include "src/ast/discard_statement.h"
 
+#include "src/clone_context.h"
+#include "src/program_builder.h"
+
+TINT_INSTANTIATE_CLASS_ID(tint::ast::DiscardStatement);
+
 namespace tint {
 namespace ast {
 
-DiscardStatement::DiscardStatement() : Statement() {}
+DiscardStatement::DiscardStatement(const Source& source) : Base(source) {}
 
-DiscardStatement::DiscardStatement(const Source& source) : Statement(source) {}
+DiscardStatement::DiscardStatement(DiscardStatement&&) = default;
 
 DiscardStatement::~DiscardStatement() = default;
 
-bool DiscardStatement::IsDiscard() const {
-  return true;
+DiscardStatement* DiscardStatement::Clone(CloneContext* ctx) const {
+  // Clone arguments outside of create() call to have deterministic ordering
+  auto src = ctx->Clone(source());
+  return ctx->dst->create<DiscardStatement>(src);
 }
 
 bool DiscardStatement::IsValid() const {
   return true;
 }
 
-void DiscardStatement::to_str(std::ostream& out, size_t indent) const {
+void DiscardStatement::to_str(const semantic::Info&,
+                              std::ostream& out,
+                              size_t indent) const {
   make_indent(out, indent);
   out << "Discard{}" << std::endl;
 }

@@ -20,16 +20,10 @@ namespace tint {
 namespace writer {
 namespace msl {
 
-Generator::Generator(ast::Module module)
-    : Text(std::move(module)),
-      impl_(std::make_unique<GeneratorImpl>(&module_)) {}
+Generator::Generator(const Program* program)
+    : impl_(std::make_unique<GeneratorImpl>(program)) {}
 
 Generator::~Generator() = default;
-
-void Generator::Reset() {
-  set_error("");
-  impl_ = std::make_unique<GeneratorImpl>(&module_);
-}
 
 bool Generator::Generate() {
   auto ret = impl_->Generate();

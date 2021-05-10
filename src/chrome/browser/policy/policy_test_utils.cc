@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -39,7 +40,7 @@
 #include "net/http/transport_security_state.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
@@ -102,6 +103,8 @@ void PolicyTest::SetUpInProcessBrowserTestFixture() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(provider_, IsFirstPolicyLoadComplete(_))
+      .WillRepeatedly(Return(true));
   BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
@@ -143,7 +146,7 @@ void PolicyTest::SetRequireCTForTesting(bool required) {
                      required));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class QuitMessageLoopAfterScreenshot
     : public ChromeScreenshotGrabberTestObserver {
  public:
@@ -173,7 +176,7 @@ void PolicyTest::TestScreenshotFile(bool enabled) {
 
   grabber->test_observer_ = nullptr;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 scoped_refptr<const extensions::Extension> PolicyTest::LoadUnpackedExtension(
     const base::FilePath::StringType& name) {
@@ -186,7 +189,7 @@ scoped_refptr<const extensions::Extension> PolicyTest::LoadUnpackedExtension(
 void PolicyTest::UpdateProviderPolicy(const PolicyMap& policy) {
   PolicyMap policy_with_defaults;
   policy_with_defaults.CopyFrom(policy);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SetEnterpriseUsersDefaults(&policy_with_defaults);
 #endif
   provider_.UpdateChromePolicy(policy_with_defaults);
@@ -205,11 +208,14 @@ void PolicyTest::PerformClick(int x, int y) {
   click_event.button = blink::WebMouseEvent::Button::kLeft;
   click_event.click_count = 1;
   click_event.SetPositionInWidget(x, y);
-  contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
+  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      click_event);
   click_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
+  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      click_event);
 }
 
+// static
 void PolicyTest::SetPolicy(PolicyMap* policies,
                            const char* key,
                            base::Optional<base::Value> value) {
@@ -231,7 +237,7 @@ void PolicyTest::ApplySafeSearchPolicy(
   UpdateProviderPolicy(policies);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void PolicyTest::SetEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   keyboard_client->SetEnableFlag(flag);
@@ -241,7 +247,7 @@ void PolicyTest::ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   keyboard_client->ClearEnableFlag(flag);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // static
 GURL PolicyTest::GetExpectedSearchURL(bool expect_safe_search) {
@@ -338,30 +344,6 @@ bool PolicyTest::IsShowingInterstitial(content::WebContents* tab) {
 void PolicyTest::WaitForInterstitial(content::WebContents* tab) {
   ASSERT_TRUE(IsShowingInterstitial(tab));
   ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
-}
-
-int PolicyTest::IsExtendedReportingCheckboxVisibleOnInterstitial() {
-  const std::string command = base::StringPrintf(
-      "var node = document.getElementById('extended-reporting-opt-in');"
-      "if (node) {"
-      "  window.domAutomationController.send(node.offsetWidth > 0 || "
-      "      node.offsetHeight > 0 ? %d : %d);"
-      "} else {"
-      // The node should be present but not visible, so trigger an error
-      // by sending false if it's not present.
-      "  window.domAutomationController.send(%d);"
-      "}",
-      security_interstitials::CMD_TEXT_FOUND,
-      security_interstitials::CMD_TEXT_NOT_FOUND,
-      security_interstitials::CMD_ERROR);
-
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
-  int result = 0;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(tab->GetMainFrame(), command,
-                                                  &result));
-  return result;
 }
 
 void PolicyTest::SendInterstitialCommand(

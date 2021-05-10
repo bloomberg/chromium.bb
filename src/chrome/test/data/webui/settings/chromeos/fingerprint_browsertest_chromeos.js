@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {FingerprintBrowserProxyImpl, FingerprintSetupStep, FingerprintResultType, FingerprintLocation, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+// clang-format on
+
 /** @implements {settings.FingerprintBrowserProxy} */
 class TestFingerprintBrowserProxy extends TestBrowserProxy {
   constructor() {
@@ -397,17 +407,44 @@ suite('settings-fingerprint-list', function() {
         });
   });
 
-  test('Deep link to remove fingerprint', async () => {
+  test('Deep link to add fingerprint', async () => {
     loadTimeData.overrideValues({
       isDeepLinkingEnabled: true,
     });
+    const settingId =
+        fingerprintList.isAccountManagementFlowsV2Enabled_ ? '1111' : '313';
 
     browserProxy.setFingerprints(['Label 1', 'Label 2']);
     fingerprintList.updateFingerprintsList_();
     await browserProxy.whenCalled('getFingerprintsList');
 
     const params = new URLSearchParams;
-    params.append('settingId', '314');
+    params.append('settingId', settingId);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.FINGERPRINT, params);
+
+    Polymer.dom.flush();
+
+    const deepLinkElement = fingerprintList.$$('#addFingerprint');
+    await test_util.waitAfterNextRender(deepLinkElement);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Add button should be focused for settingId=' + settingId);
+  });
+
+  test('Deep link to remove fingerprint', async () => {
+    loadTimeData.overrideValues({
+      isDeepLinkingEnabled: true,
+    });
+    const settingId =
+        fingerprintList.isAccountManagementFlowsV2Enabled_ ? '1112' : '314';
+
+    browserProxy.setFingerprints(['Label 1', 'Label 2']);
+    fingerprintList.updateFingerprintsList_();
+    await browserProxy.whenCalled('getFingerprintsList');
+
+    const params = new URLSearchParams;
+    params.append('settingId', settingId);
     settings.Router.getInstance().navigateTo(
         settings.routes.FINGERPRINT, params);
 
@@ -418,7 +455,7 @@ suite('settings-fingerprint-list', function() {
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
-        'Trash can button should be focused for settingId=314.');
+        'Trash can button should be focused for settingId=' + settingId);
   });
 
   test('ChangeFingerprintLabel', function() {

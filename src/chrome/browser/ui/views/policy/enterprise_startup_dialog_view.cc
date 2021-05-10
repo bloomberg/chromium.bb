@@ -30,6 +30,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 #if defined(OS_MAC)
 #include "base/task/current_thread.h"
@@ -95,6 +96,7 @@ EnterpriseStartupDialogView::EnterpriseStartupDialogView(
   set_draggable(true);
   SetButtons(ui::DIALOG_BUTTON_OK);
   SetExtraView(CreateLogoView());
+  SetModalType(ui::MODAL_TYPE_NONE);
   SetAcceptCallback(
       base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
                      base::Unretained(this), true));
@@ -190,10 +192,6 @@ bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {
   return false;
 }
 
-ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_NONE;
-}
-
 gfx::Size EnterpriseStartupDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogContentWidth, kDialogContentHeight);
 }
@@ -236,6 +234,9 @@ void EnterpriseStartupDialogView::SetupLayout(
   GetWidget()->GetRootView()->Layout();
   GetWidget()->GetRootView()->SchedulePaint();
 }
+
+BEGIN_METADATA(EnterpriseStartupDialogView, views::DialogDelegateView)
+END_METADATA
 
 /*
  * EnterpriseStartupDialogImpl

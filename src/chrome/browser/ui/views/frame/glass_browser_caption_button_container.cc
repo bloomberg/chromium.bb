@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -102,9 +103,16 @@ void GlassBrowserCaptionButtonContainer::ResetWindowControls() {
 
 void GlassBrowserCaptionButtonContainer::AddedToWidget() {
   views::Widget* const widget = GetWidget();
-  if (!widget_observer_.IsObserving(widget))
-    widget_observer_.Add(widget);
+
+  DCHECK(!widget_observation_.IsObserving());
+  widget_observation_.Observe(widget);
+
   UpdateButtons();
+}
+
+void GlassBrowserCaptionButtonContainer::RemovedFromWidget() {
+  DCHECK(widget_observation_.IsObserving());
+  widget_observation_.Reset();
 }
 
 void GlassBrowserCaptionButtonContainer::OnWidgetBoundsChanged(
@@ -125,3 +133,6 @@ void GlassBrowserCaptionButtonContainer::UpdateButtons() {
   maximize_button_->SetEnabled(!is_touch);
   InvalidateLayout();
 }
+
+BEGIN_METADATA(GlassBrowserCaptionButtonContainer, views::View)
+END_METADATA

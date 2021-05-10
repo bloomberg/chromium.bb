@@ -5,9 +5,12 @@
 #ifndef CHROMEOS_DBUS_CROS_HEALTHD_FAKE_CROS_HEALTHD_CLIENT_H_
 #define CHROMEOS_DBUS_CROS_HEALTHD_FAKE_CROS_HEALTHD_CLIENT_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
@@ -104,6 +107,18 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // Calls the lid event OnLidOpened on all registered lid observers.
   void EmitLidOpenedEventForTesting();
 
+  // Calls the network event OnConnectionStateChangedEvent on all registered
+  // network observers.
+  void EmitConnectionStateChangedEventForTesting(
+      const std::string& network_guid,
+      chromeos::network_health::mojom::NetworkState state);
+
+  // Calls the network event OnSignalStrengthChangedEvent on all registered
+  // network observers.
+  void EmitSignalStrengthChangedEventForTesting(
+      const std::string& network_guid,
+      chromeos::network_health::mojom::UInt32ValuePtr signal_strength);
+
   // Requests the network health state using the NetworkHealthService remote.
   void RequestNetworkHealthForTesting(
       chromeos::network_health::mojom::NetworkHealthService::
@@ -114,6 +129,11 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   void RunLanConnectivityRoutineForTesting(
       chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
           LanConnectivityCallback);
+
+  // Returns the parameters passed for the most recent call to
+  // `GetRoutineUpdate`.
+  base::Optional<FakeCrosHealthdService::RoutineUpdateParams>
+  GetRoutineUpdateParams();
 
  private:
   FakeCrosHealthdService fake_service_;

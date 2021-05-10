@@ -20,8 +20,6 @@
 #include "components/sync/protocol/experiments_specifics.pb.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
-#include "components/sync/protocol/favicon_image_specifics.pb.h"
-#include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/managed_user_setting_specifics.pb.h"
 #include "components/sync/protocol/managed_user_whitelist_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
@@ -59,7 +57,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(39 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -78,8 +76,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary)
 DEFINE_SPECIFICS_TO_VALUE_TEST(experiments)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting)
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_image)
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_tracking)
 DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist)
@@ -103,24 +99,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(user_event)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata)
 DEFINE_SPECIFICS_TO_VALUE_TEST(web_app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_configuration)
-
-TEST(ProtoValueConversionsTest, PasswordSpecifics) {
-  sync_pb::PasswordSpecifics specifics;
-  specifics.mutable_client_only_encrypted_data();
-  auto value = PasswordSpecificsToValue(specifics);
-  EXPECT_FALSE(value->Get("client_only_encrypted_data", nullptr));
-}
-
-TEST(ProtoValueConversionsTest, PasswordSpecificsData) {
-  sync_pb::PasswordSpecificsData specifics;
-  specifics.set_password_value("secret");
-  std::unique_ptr<base::DictionaryValue> value(
-      PasswordSpecificsDataToValue(specifics));
-  EXPECT_FALSE(value->empty());
-  std::string password_value;
-  EXPECT_TRUE(value->GetString("password_value", &password_value));
-  EXPECT_EQ("<redacted>", password_value);
-}
 
 TEST(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
   sync_pb::AppNotificationSettings specifics;

@@ -5,12 +5,11 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "url/gurl.h"
@@ -33,23 +31,21 @@ namespace chrome {
 namespace {
 
 bool g_force_deprecated_settings_window_for_testing = false;
-
-// This method handles the case of resurfacing the user's OS Settings
-// standalone window that may be at the time located on another user's desktop.
-void ShowSettingsOnCurrentDesktop(Browser* browser) {
-  auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
-  if (window_manager && browser) {
-    window_manager->ShowWindowForUser(browser->window()->GetNativeWindow(),
-                                      window_manager->CurrentAccountId());
-    browser->window()->Show();
-  }
-}
+SettingsWindowManager* g_settings_window_manager_for_testing = nullptr;
 
 }  // namespace
 
 // static
 SettingsWindowManager* SettingsWindowManager::GetInstance() {
-  return base::Singleton<SettingsWindowManager>::get();
+  return g_settings_window_manager_for_testing
+             ? g_settings_window_manager_for_testing
+             : base::Singleton<SettingsWindowManager>::get();
+}
+
+// static
+void SettingsWindowManager::SetInstanceForTesting(
+    SettingsWindowManager* manager) {
+  g_settings_window_manager_for_testing = manager;
 }
 
 // static
@@ -82,20 +78,22 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   if (!profile->IsGuestSession() && profile->IsOffTheRecord())
     profile = profile->GetOriginalProfile();
 
+  // If this profile isn't allowed to create browser windows (e.g. the login
+  // screen profile) then bail out. Neither the new SWA code path nor the legacy
+  // code path can successfully open the window for these profiles.
+  if (Browser::GetCreationStatusForProfile(profile) !=
+      Browser::CreationStatus::kOk) {
+    LOG(ERROR) << "Unable to open settings for this profile, url "
+               << gurl.spec();
+    return;
+  }
+
   // TODO(crbug.com/1067073): Remove legacy Settings Window.
   if (!UseDeprecatedSettingsWindow(profile)) {
-    bool did_create;
-    Browser* browser = web_app::LaunchSystemWebApp(
-        profile, web_app::SystemAppType::SETTINGS, gurl,
-        /*params=*/base::nullopt, &did_create);
-    ShowSettingsOnCurrentDesktop(browser);
-    // Only notify if we created a new browser.
-    if (!did_create || !browser)
-      return;
-
-    for (SettingsWindowManagerObserver& observer : observers_)
-      observer.OnNewSettingsWindow(browser);
-
+    web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::SETTINGS,
+                                     {.url = gurl});
+    // SWA OS Settings don't use SettingsWindowManager to manage windows, don't
+    // notify SettingsWindowObservers.
     return;
   }
 
@@ -126,6 +124,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   Navigate(&params);
   browser = params.browser;
+  CHECK(browser);  // See https://crbug.com/1174525
 
   // operator[] not used because SessionID has no default constructor.
   settings_session_map_.emplace(profile, SessionID::InvalidValue())

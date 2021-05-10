@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/automation_internal/chrome_automation_internal_api_delegate.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -66,7 +67,8 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/file_handlers/non_native_file_system_delegate_chromeos.h"
 #include "chrome/browser/extensions/api/media_perception_private/media_perception_api_delegate_chromeos.h"
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
@@ -310,8 +312,8 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     RulesCacheDelegate* cache_delegate) const {
   return base::MakeRefCounted<ChromeContentRulesRegistry>(
       browser_context, cache_delegate,
-      base::Bind(&CreateDefaultContentPredicateEvaluators,
-                 base::Unretained(browser_context)));
+      base::BindOnce(&CreateDefaultContentPredicateEvaluators,
+                     base::Unretained(browser_context)));
 }
 
 std::unique_ptr<DevicePermissionsPrompt>
@@ -320,10 +322,28 @@ ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
   return std::make_unique<ChromeDevicePermissionsPrompt>(web_contents);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool ChromeExtensionsAPIClient::ShouldAllowDetachingUsb(int vid,
+                                                        int pid) const {
+  const base::ListValue* policy_list;
+  if (chromeos::CrosSettings::Get()->GetList(chromeos::kUsbDetachableAllowlist,
+                                             &policy_list)) {
+    for (const auto& entry : *policy_list) {
+      if (entry.FindIntKey(chromeos::kUsbDetachableAllowlistKeyVid) == vid &&
+          entry.FindIntKey(chromeos::kUsbDetachableAllowlistKeyPid) == pid) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 std::unique_ptr<VirtualKeyboardDelegate>
 ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
     content::BrowserContext* browser_context) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<ChromeVirtualKeyboardDelegate>(browser_context);
 #else
   return nullptr;
@@ -357,7 +377,7 @@ MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {
 
 NetworkingCastPrivateDelegate*
 ChromeExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
   if (!networking_cast_private_delegate_)
     networking_cast_private_delegate_ =
         ChromeNetworkingCastPrivateDelegate::Create();
@@ -386,7 +406,7 @@ ChromeExtensionsAPIClient::GetFeedbackPrivateDelegate() {
   return feedback_private_delegate_.get();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 MediaPerceptionAPIDelegate*
 ChromeExtensionsAPIClient::GetMediaPerceptionAPIDelegate() {
   if (!media_perception_api_delegate_) {

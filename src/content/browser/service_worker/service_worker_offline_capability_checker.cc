@@ -131,11 +131,11 @@ void ServiceWorkerOfflineCapabilityChecker::OnFetchResult(
     blink::mojom::ServiceWorkerFetchEventTimingPtr /* timing */,
     scoped_refptr<ServiceWorkerVersion> version) {
   // The sites are considered as "offline capable" when the response finished
-  // successfully and returns 200 or the timeout happens.
+  // successfully and returns successful responses (200–299) or redirects
+  // (300–399). Also considered as "offline capable" when the timeout happens.
   if ((status == blink::ServiceWorkerStatusCode::kOk &&
        result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse &&
-       // TODO(hayato): Investigate whether any 2xx should be accepted or not.
-       response->status_code == 200) ||
+       (200 <= response->status_code && response->status_code <= 399)) ||
       status == blink::ServiceWorkerStatusCode::kErrorTimeout) {
     std::move(callback_).Run(OfflineCapability::kSupported,
                              version->registration_id());

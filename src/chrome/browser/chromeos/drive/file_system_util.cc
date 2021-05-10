@@ -10,16 +10,16 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_switches.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chromeos/constants/chromeos_constants.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -66,13 +66,13 @@ base::FilePath GetCacheRootPath(Profile* profile) {
   base::FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
   base::FilePath cache_root_path =
-      cache_base_path.Append(chromeos::kDriveCacheDirname);
+      cache_base_path.Append(ash::kDriveCacheDirname);
   static const base::FilePath::CharType kFileCacheVersionDir[] =
       FILE_PATH_LITERAL("v1");
   return cache_root_path.Append(kFileCacheVersionDir);
 }
 
-bool IsDriveEnabledForProfile(Profile* profile) {
+bool IsDriveAvailableForProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Disable Drive for non-Gaia accounts.
@@ -90,17 +90,21 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   if (!user || !user->HasGaiaAccount())
     return false;
 
-  // Disable Drive if preference is set. This can happen with commandline flag
-  // --disable-drive or enterprise policy, or with user settings.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableDrive))
-    return false;
-
   // Disable drive if sync is disabled by command line flag. Outside tests, this
   // only occurs in cases already handled by the gaia account check above.
   if (!switches::IsSyncAllowedByFlag())
     return false;
 
   return true;
+}
+
+bool IsDriveEnabledForProfile(Profile* profile) {
+  // Disable Drive if preference is set. This can happen with commandline flag
+  // --disable-drive or enterprise policy, or with user settings.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableDrive))
+    return false;
+
+  return IsDriveAvailableForProfile(profile);
 }
 
 ConnectionStatusType GetDriveConnectionStatus(Profile* profile) {

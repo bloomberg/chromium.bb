@@ -13,15 +13,16 @@
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1289742167380433257">Per ridurre il consumo di dati, le immagini di questa pagina sono state ottimizzate da Google.</translation>
 <translation id="129382876167171263">I file salvati dai siti web vengono mostrati qui</translation>
+<translation id="1317194122196776028">Elimina questo sito</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
 <translation id="1415402041810619267">URL troncato</translation>
-<translation id="1431402976894535801">Impedisci ai siti di sapere quando sei presente</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
 <translation id="1509960214886564027">Le funzionalità su molti siti potrebbero non essere disponibili</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
+<translation id="1644574205037202324">Cronologia</translation>
 <translation id="1660204651932907780">Consenti ai siti di riprodurre l'audio (opzione consigliata)</translation>
 <translation id="1677097821151855053">I cookie e altri dati dei siti vengono utilizzati per ricordare attività e informazioni dell'utente, ad esempio per l'esecuzione dell'accesso o per personalizzare gli annunci. Per gestire i cookie per tutti i siti, consulta le <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Cancellare i dati del sito?</translation>
@@ -39,7 +40,6 @@
 <translation id="1994173015038366702">URL sito</translation>
 <translation id="2025115093177348061">Realtà aumentata</translation>
 <translation id="2030769033451695672">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2054665754582400095">La tua presenza</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2091887806945687916">Audio</translation>
 <translation id="2107397443965016585">Chiedi prima di consentire ai siti di riprodurre contenuti protetti (opzione consigliata)</translation>
@@ -82,7 +82,6 @@
 <translation id="3114012059975132928">Video player</translation>
 <translation id="3115898365077584848">Mostra informazioni</translation>
 <translation id="3123473560110926937">Bloccati su alcuni siti</translation>
-<translation id="3165371858310906303">Chiedi conferma quando un sito vuole sapere quando sei presente</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
 <translation id="321187648315454507">Per consentire all'app <ph name="APP_NAME" /> di inviarti notifiche, devi attivare le notifiche anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfono</translation>
@@ -101,6 +100,7 @@
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3763247130972274048">Tocca due volte il video a sinistra o a destra per saltare di 10 secondi</translation>
 <translation id="381841723434055211">Numeri di telefono</translation>
+<translation id="3835233591525155343">Utilizzo del tuo dispositivo</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
@@ -117,6 +117,7 @@
 <translation id="429312253194641664">Un sito sta riproducendo contenuti multimediali</translation>
 <translation id="42981349822642051">Espandi</translation>
 <translation id="4336434711095810371">Cancella tutti i dati</translation>
+<translation id="4402755511846832236">Impedisci ai siti di sapere quando usi attivamente questo dispositivo</translation>
 <translation id="4433925000917964731">Pagina Lite fornita da Google</translation>
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
 <translation id="445467742685312942">Consenti ai siti di riprodurre contenuti protetti</translation>
@@ -129,6 +130,7 @@
 <translation id="4670064810192446073">Realtà virtuale</translation>
 <translation id="4708011789095599544">Vuoi cancellare i cookie e altri dati del sito per questo sito web?</translation>
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
+<translation id="4836046166855586901">Chiedi conferma quando un sito vuole sapere quando usi attivamente questo dispositivo</translation>
 <translation id="4883854917563148705">Le impostazioni gestite non possono essere reimpostate</translation>
 <translation id="4887024562049524730">Chiedi conferma prima di consentire ai siti di usare i dati e i dispositivi della realtà virtuale (opzione consigliata)</translation>
 <translation id="4962975101802056554">Revoca tutte le autorizzazioni per il dispositivo</translation>
@@ -140,6 +142,7 @@
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5123685120097942451">Scheda di navigazione in incognito</translation>
+<translation id="5186036860380548585">Opzione disponibile nella parte superiore dello schermo</translation>
 <translation id="5197729504361054390">I contatti che selezioni verranno condivisi con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -278,6 +281,7 @@
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}other{# cookie in uso}}</translation>
 <translation id="8463851957836045671">Il sito è veloce</translation>
+<translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>

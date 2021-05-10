@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_manager.h"
+#include "quic/core/http/quic_spdy_stream_body_manager.h"
 
 #include <algorithm>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -15,7 +15,7 @@ QuicSpdyStreamBodyManager::QuicSpdyStreamBodyManager()
     : total_body_bytes_received_(0) {}
 
 size_t QuicSpdyStreamBodyManager::OnNonBody(QuicByteCount length) {
-  DCHECK_NE(0u, length);
+  QUICHE_DCHECK_NE(0u, length);
 
   if (fragments_.empty()) {
     // Non-body bytes can be consumed immediately, because all previously
@@ -29,7 +29,7 @@ size_t QuicSpdyStreamBodyManager::OnNonBody(QuicByteCount length) {
 }
 
 void QuicSpdyStreamBodyManager::OnBody(absl::string_view body) {
-  DCHECK(!body.empty());
+  QUICHE_DCHECK(!body.empty());
 
   fragments_.push_back({body, 0});
   total_body_bytes_received_ += body.length();
@@ -66,8 +66,8 @@ size_t QuicSpdyStreamBodyManager::OnBodyConsumed(size_t num_bytes) {
 }
 
 int QuicSpdyStreamBodyManager::PeekBody(iovec* iov, size_t iov_len) const {
-  DCHECK(iov);
-  DCHECK_GT(iov_len, 0u);
+  QUICHE_DCHECK(iov);
+  QUICHE_DCHECK_GT(iov_len, 0u);
 
   // TODO(bnc): Is this really necessary?
   if (fragments_.empty()) {

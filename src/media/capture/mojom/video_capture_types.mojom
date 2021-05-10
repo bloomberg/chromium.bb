@@ -43,6 +43,7 @@ enum VideoCapturePixelFormat {
   XR30,
   XB30,
   BGRA,
+  RGBAF16,
 };
 
 enum ResolutionChangePolicy {
@@ -230,6 +231,8 @@ enum VideoCaptureError {
   kFuchsiaUnsupportedPixelFormat,
   kFuchsiaFailedToMapSysmemBuffer,
   kCrosHalV3DeviceContextDuplicatedClient,
+  kDesktopCaptureDeviceMacFailedStreamCreate,
+  kDesktopCaptureDeviceMacFailedStreamStart,
 };
 
 enum VideoCaptureFrameDropReason {
@@ -320,6 +323,13 @@ struct VideoFrameInfo{
   // Optionally, stride information can be provided.
   // If not provided, it is assumed that frame data is tightly packed.
   PlaneStrides? strides;
+};
+
+// Represents a buffer that is ready for consumption. |buffer_id| has video
+// capture data and |info| contains the associated VideoFrame constituent parts.
+struct ReadyBuffer {
+  int32 buffer_id;
+  VideoFrameInfo info;
 };
 
 // Represents information about a capture device.

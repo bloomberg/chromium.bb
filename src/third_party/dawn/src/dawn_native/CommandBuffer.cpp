@@ -77,10 +77,9 @@ namespace dawn_native {
                                                    const Extent3D& copySize) {
         switch (copy.texture->GetDimension()) {
             case wgpu::TextureDimension::e2D:
-                return {copy.mipLevel, 1, copy.origin.z, copySize.depth, copy.aspect};
+                return {copy.aspect, {copy.origin.z, copySize.depth}, {copy.mipLevel, 1}};
             default:
                 UNREACHABLE();
-                return {};
         }
     }
 
@@ -89,7 +88,7 @@ namespace dawn_native {
              IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
             auto& attachmentInfo = renderPass->colorAttachments[i];
             TextureViewBase* view = attachmentInfo.view.Get();
-            bool hasResolveTarget = attachmentInfo.resolveTarget.Get() != nullptr;
+            bool hasResolveTarget = attachmentInfo.resolveTarget != nullptr;
 
             ASSERT(view->GetLayerCount() == 1);
             ASSERT(view->GetLevelCount() == 1);

@@ -20,6 +20,8 @@
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -40,6 +42,8 @@ bool g_supports_overlays = false;
 bool g_decode_swap_chain_disabled = false;
 // Whether to force the nv12 overlay support.
 bool g_force_nv12_overlay_support = false;
+// Whether software overlays have been disabled.
+bool g_disable_sw_overlays = false;
 
 // The lock to guard g_overlay_caps_valid and g_supports_overlays.
 base::Lock& GetOverlayLock() {
@@ -55,6 +59,12 @@ bool SupportsOverlays() {
 void SetSupportsOverlays(bool support) {
   base::AutoLock auto_lock(GetOverlayLock());
   g_supports_overlays = support;
+}
+
+bool SupportsSoftwareOverlays() {
+  return base::FeatureList::IsEnabled(
+             features::kDirectCompositionSoftwareOverlays) &&
+         !g_disable_sw_overlays;
 }
 
 bool OverlayCapsValid() {
@@ -251,8 +261,7 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
   base::UmaHistogramBoolean("GPU.DirectComposition.HardwareOverlaysSupported",
                             *supports_overlays);
 
-  if (*supports_overlays || !base::FeatureList::IsEnabled(
-                                features::kDirectCompositionSoftwareOverlays)) {
+  if (*supports_overlays || !SupportsSoftwareOverlays()) {
     return;
   }
 
@@ -359,10 +368,9 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
           settings.use_angle_texture_offset,
           settings.max_pending_frames,
           settings.force_root_surface_full_damage)),
-      layer_tree_(std::make_unique<DCLayerTree>(
-          settings.disable_nv12_dynamic_textures,
-          settings.disable_vp_scaling,
-          settings.reset_vp_when_colorspace_changes)) {
+      layer_tree_(
+          std::make_unique<DCLayerTree>(settings.disable_nv12_dynamic_textures,
+                                        settings.disable_vp_scaling)) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
@@ -464,6 +472,11 @@ void DirectCompositionSurfaceWin::DisableOverlays() {
 }
 
 // static
+void DirectCompositionSurfaceWin::DisableSoftwareOverlays() {
+  g_disable_sw_overlays = true;
+}
+
+// static
 void DirectCompositionSurfaceWin::InvalidateOverlayCaps() {
   SetOverlayCapsValid(false);
 }
@@ -473,9 +486,7 @@ bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
   UpdateOverlaySupport();
   if (g_overlay_format_used == DXGI_FORMAT_NV12) {
     return (g_nv12_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING) ||
-           (SupportsOverlays() &&
-            base::FeatureList::IsEnabled(
-                features::kDirectCompositionSoftwareOverlays));
+           (SupportsOverlays() && SupportsSoftwareOverlays());
   } else if (g_overlay_format_used == DXGI_FORMAT_YUY2) {
     return !!(g_yuy2_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
   } else {
@@ -653,8 +664,7 @@ bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
 // static
 bool DirectCompositionSurfaceWin::AllowTearing() {
   // Swap chain tearing is used only if vsync is disabled explicitly.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableGpuVsync) &&
+  return !features::UseGpuVsync() &&
          DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
 }
 
@@ -858,6 +868,10 @@ void DirectCompositionSurfaceWin::OnDisplayRemoved() {
 
 void DirectCompositionSurfaceWin::OnDisplayMetricsChanged() {
   UpdateMonitorInfo();
+}
+
+bool DirectCompositionSurfaceWin::SupportsDelegatedInk() {
+  return layer_tree_->SupportsDelegatedInk();
 }
 
 scoped_refptr<base::TaskRunner>

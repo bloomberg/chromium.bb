@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/quick_answers/controller/quick_answers_controller.h"
 #include "base/metrics/histogram_functions.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -69,12 +69,14 @@ QuickAnswersMenuObserver::~QuickAnswersMenuObserver() = default;
 void QuickAnswersMenuObserver::OnContextMenuShown(
     const content::ContextMenuParams& params,
     const gfx::Rect& bounds_in_screen) {
+  menu_shown_time_ = base::TimeTicks::Now();
+
   if (!quick_answers_controller_ || !is_eligible_)
     return;
 
   // Skip password input field.
   if (params.input_field_type ==
-      blink::ContextMenuDataInputFieldType::kPassword) {
+      blink::mojom::ContextMenuDataInputFieldType::kPassword) {
     return;
   }
 
@@ -112,6 +114,17 @@ void QuickAnswersMenuObserver::OnContextMenuViewBoundsChanged(
 }
 
 void QuickAnswersMenuObserver::OnMenuClosed() {
+  const base::TimeDelta time_since_request_sent =
+      base::TimeTicks::Now() - menu_shown_time_;
+  if (is_other_command_executed_) {
+    base::UmaHistogramTimes("QuickAnswers.ContextMenu.Close.DurationWithClick",
+                            time_since_request_sent);
+  } else {
+    base::UmaHistogramTimes(
+        "QuickAnswers.ContextMenu.Close.DurationWithoutClick",
+        time_since_request_sent);
+  }
+
   base::UmaHistogramBoolean("QuickAnswers.ContextMenu.Close",
                             is_other_command_executed_);
 

@@ -18,12 +18,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -55,6 +55,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 using chromeos::AutoEnrollmentController;
@@ -87,10 +88,6 @@ class ScopedArrowKeyTraversal {
 }  // namespace
 
 namespace chromeos {
-
-// static
-const char WebUILoginView::kViewClassName[] =
-    "browser/chromeos/login/WebUILoginView";
 
 // WebUILoginView public: ------------------------------------------------------
 
@@ -192,10 +189,6 @@ void WebUILoginView::Init() {
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(this);
   web_contents->SetDelegate(this);
-}
-
-const char* WebUILoginView::GetClassName() const {
-  return kViewClassName;
 }
 
 void WebUILoginView::RequestFocus() {
@@ -301,9 +294,11 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   GetWidget()->Activate();
   web_view_->web_contents()->Focus();
 
-  content::WebUI* web_ui = GetWebUI();
-  if (web_ui)
-    web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.focusReturned");
+  if (!GetOobeUI())
+    return;
+  CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
+  if (view)
+    view->FocusReturned(reverse);
 }
 
 void WebUILoginView::Observe(int type,
@@ -341,7 +336,8 @@ void WebUILoginView::OnKeyboardVisibilityChanged(bool visible) {
   if (!GetOobeUI())
     return;
   CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
-  view->SetVirtualKeyboardShown(visible);
+  if (view)
+    view->SetVirtualKeyboardShown(visible);
 }
 
 // WebUILoginView private: -----------------------------------------------------
@@ -372,10 +368,10 @@ bool WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
   // Make sure error bubble is cleared on keyboard event. This is needed
   // when the focus is inside an iframe. Only clear on KeyDown to prevent hiding
   // an immediate authentication error (See crbug.com/103643).
-  if (event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
-    content::WebUI* web_ui = GetWebUI();
-    if (web_ui)
-      web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
+  if (GetOobeUI() && event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
+    CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
+    if (view)
+      view->ClearErrors();
   }
   return handled;
 }
@@ -387,8 +383,10 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
     return false;
 
   // FocusLoginShelf focuses either system tray or login shelf buttons.
-  ash::LoginScreen::Get()->FocusLoginShelf(reverse);
-  return true;
+  // Only do this if the login shelf is enabled.
+  if (shelf_enabled_)
+    ash::LoginScreen::Get()->FocusLoginShelf(reverse);
+  return shelf_enabled_;
 }
 
 void WebUILoginView::RequestMediaAccessPermission(
@@ -438,5 +436,8 @@ void WebUILoginView::OnLoginPromptVisible() {
 
   webui_visible_ = true;
 }
+
+BEGIN_METADATA(WebUILoginView, views::View)
+END_METADATA
 
 }  // namespace chromeos

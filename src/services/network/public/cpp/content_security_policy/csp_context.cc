@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
-#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 
-#include "url/origin.h"
+#include "base/containers/contains.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "url/url_util.h"
 
 namespace network {
 
@@ -53,34 +54,16 @@ bool CSPContext::IsAllowedByCsp(mojom::CSPDirectiveName directive_name,
   return allow;
 }
 
-void CSPContext::SetSelf(const url::Origin& origin) {
-  self_source_.reset();
-
-  // When the origin is unique, no URL should match with 'self'. That's why
-  // |self_source_| stays undefined here.
-  if (origin.opaque())
-    return;
-
-  if (origin.scheme() == url::kFileScheme) {
-    self_source_ = mojom::CSPSource::New(
-        url::kFileScheme, "", url::PORT_UNSPECIFIED, "", false, false);
-    return;
-  }
-
-  self_source_ = mojom::CSPSource::New(
-      origin.scheme(), origin.host(),
-      origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(), "", false,
-      false);
-
-  DCHECK_NE("", self_source_->scheme);
-}
-
-void CSPContext::SetSelf(mojom::CSPSourcePtr self_source) {
-  self_source_ = std::move(self_source);
-}
-
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
-  return false;
+  // Blink uses its SchemeRegistry to check if a scheme should be bypassed.
+  // It can't be used on the browser process. It is used for two things:
+  // 1) Bypassing the "chrome-extension" scheme when chrome is built with the
+  //    extensions support.
+  // 2) Bypassing arbitrary scheme for testing purpose only in blink and in V8.
+  // TODO(arthursonzogni): url::GetBypassingCSPScheme() is used instead of the
+  // blink::SchemeRegistry. It contains 1) but not 2).
+  const auto& bypassing_schemes = url::GetCSPBypassingSchemes();
+  return base::Contains(bypassing_schemes, scheme);
 }
 
 void CSPContext::SanitizeDataForUseInCspViolation(

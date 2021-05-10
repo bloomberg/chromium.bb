@@ -50,6 +50,16 @@
       },
 
       /**
+       * Whether this element should trigger periodic Wi-Fi scans to update the
+       * list of networks. If true, a background scan is performed every 10
+       * seconds.
+       */
+      enableWifiScans: {
+        type: Boolean,
+        value: true,
+      },
+
+      /**
        * Whether to show technology badge on mobile network icons.
        * @private
        */
@@ -114,6 +124,7 @@
       var items = [];
       if (this.isOfflineDemoModeSetup) {
         items.push({
+          customItemType: NetworkList.CustomItemType.OOBE,
           customItemName: 'offlineDemoSetupListItemName',
           polymerIcon: 'oobe-network-20:offline-demo-setup',
           showBeforeNetworksList: true,
@@ -124,6 +135,7 @@
       }
       if (this.isNetworkConnected) {
         items.push({
+          customItemType: NetworkList.CustomItemType.OOBE,
           customItemName: 'proxySettingsListItemName',
           polymerIcon: 'oobe-network-20:add-proxy',
           showBeforeNetworksList: false,
@@ -133,6 +145,7 @@
         });
       }
       items.push({
+        customItemType: NetworkList.CustomItemType.OOBE,
         customItemName: 'addWiFiListItemName',
         polymerIcon: 'oobe-network-20:add-wifi',
         showBeforeNetworksList: false,

@@ -396,6 +396,36 @@ class HistoryBackendTest : public HistoryBackendTestBase {
       *transition2 = GetTransition(url2);
   }
 
+  // Adds SERVER_REDIRECT page transition.
+  // |url1| is the source URL and |url2| is the destination.
+  // |did_replace| is true if the transition is non-user initiated and the
+  // navigation entry for |url2| has replaced that for |url1|. The possibly
+  // updated transition code of the visit records for |url1| and |url2| is
+  // returned by filling in |*transition1| and |*transition2|, respectively,
+  // unless null. |time| is a time of the redirect.
+  void AddServerRedirect(const GURL& url1,
+                         const GURL& url2,
+                         bool did_replace,
+                         base::Time time,
+                         const base::string16& page2_title,
+                         int& transition1,
+                         int& transition2) {
+    ContextID dummy_context_id = reinterpret_cast<ContextID>(0x87654321);
+    history::RedirectList redirects;
+    redirects.push_back(url1);
+    redirects.push_back(url2);
+    ui::PageTransition redirect_transition = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_FORM_SUBMIT | ui::PAGE_TRANSITION_SERVER_REDIRECT);
+    HistoryAddPageArgs request(
+        url2, time, dummy_context_id, 0, url1, redirects, redirect_transition,
+        false, history::SOURCE_BROWSED, did_replace, true, false,
+        base::Optional<base::string16>(page2_title));
+    backend_->AddPage(request);
+
+    transition1 = GetTransition(url1);
+    transition2 = GetTransition(url2);
+  }
+
   int GetTransition(const GURL& url) {
     if (!url.is_valid())
       return 0;
@@ -972,6 +1002,45 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
   EXPECT_TRUE(transition2 & ui::PAGE_TRANSITION_CHAIN_END);
 }
 
+// Do not update original URL on form submission redirect
+TEST_F(HistoryBackendTest, FormSubmitRedirect) {
+  ASSERT_TRUE(backend_.get());
+  const base::string16 page1_title = base::UTF8ToUTF16("Form");
+  const base::string16 page2_title = base::UTF8ToUTF16("New Page");
+
+  // User goes to form page.
+  GURL url_a("http://www.google.com/a");
+  HistoryAddPageArgs request(url_a, base::Time::Now(), nullptr, 0, GURL(),
+                             history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
+                             false, history::SOURCE_BROWSED, false, true, false,
+                             base::Optional<base::string16>(page1_title));
+  backend_->AddPage(request);
+
+  // Check that URL was added.
+  ASSERT_EQ(1, num_url_visited_notifications());
+  const URLVisitedList& visited_url_list = url_visited_notifications();
+  ASSERT_EQ(1u, visited_url_list.size());
+  const URLRow& visited_url = visited_url_list[0].second;
+  EXPECT_EQ(page1_title, visited_url.title());
+  ClearBroadcastedNotifications();
+
+  // User submits form and is redirected.
+  int transition1;
+  int transition2;
+  GURL url_b("http://google.com/b");
+  AddServerRedirect(url_a, url_b, false, base::Time::Now(), page2_title,
+                    transition1, transition2);
+  EXPECT_TRUE(transition1 & ui::PAGE_TRANSITION_CHAIN_START);
+  EXPECT_TRUE(transition2 & ui::PAGE_TRANSITION_CHAIN_END);
+
+  // Check that first URL did not change, but the second did.
+  ASSERT_EQ(1, num_url_visited_notifications());
+  const URLVisitedList& visited_url_list2 = url_visited_notifications();
+  ASSERT_EQ(1u, visited_url_list2.size());
+  const URLRow& visited_url2 = visited_url_list2[0].second;
+  EXPECT_EQ(page2_title, visited_url2.title());
+}
+
 TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   ASSERT_TRUE(backend_.get());
 
@@ -1463,6 +1532,36 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(1U, visit_sources.size());
   EXPECT_EQ(history::SOURCE_SYNCED, visit_sources.begin()->second);
+}
+
+TEST_F(HistoryBackendTest, SetFlocAllowed) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://test-set-floc-allowed.com");
+  ContextID context_id = reinterpret_cast<ContextID>(1);
+  int nav_entry_id = 1;
+
+  HistoryAddPageArgs request(url, base::Time::Now(), context_id, nav_entry_id,
+                             GURL(), history::RedirectList(),
+                             ui::PAGE_TRANSITION_TYPED, false,
+                             history::SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request);
+
+  VisitVector visits;
+  URLRow row;
+  URLID id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  VisitRow visit = visits[0];
+  EXPECT_FALSE(visit.floc_allowed);
+
+  backend_->SetFlocAllowed(context_id, nav_entry_id, url);
+
+  id = backend_->db()->GetRowForURL(url, &row);
+  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+  ASSERT_EQ(1U, visits.size());
+  visit = visits[0];
+  EXPECT_TRUE(visit.floc_allowed);
 }
 
 TEST_F(HistoryBackendTest, AddVisitsSource) {
@@ -2616,14 +2715,14 @@ TEST_F(HistoryBackendTest, ClientRedirectScoring) {
   EXPECT_EQ(0, url_row.typed_count());
 }
 
-TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
+TEST_F(HistoryBackendTest, FlocAllowedColumn) {
   const GURL url1("http://foo1.com");
   const GURL url2("http://foo2.com");
   const GURL url3("http://foo3.com");
   const GURL url4("http://foo4.com");
   const GURL url5("http://foo5.com");
 
-  // Add a page visit to url1 that has a private IP address.
+  // Add a page visit to url1 that is disallowed for floc.
   HistoryAddPageArgs request1(url1, base::Time::FromDoubleT(1), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, false);
@@ -2634,9 +2733,9 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_TRUE(backend_->GetURL(url1, &url_row1));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row1.id(), &visits1));
   ASSERT_EQ(1u, visits1.size());
-  ASSERT_FALSE(visits1[0].publicly_routable);
+  ASSERT_FALSE(visits1[0].floc_allowed);
 
-  // Add a page visit to url2 that has a publicly routable IP address.
+  // Add a page visit to url2 that is allowed for floc.
   HistoryAddPageArgs request2(url2, base::Time::FromDoubleT(2), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, true);
@@ -2647,10 +2746,10 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_TRUE(backend_->GetURL(url2, &url_row2));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row2.id(), &visits2));
   ASSERT_EQ(1u, visits2.size());
-  ASSERT_TRUE(visits2[0].publicly_routable);
+  ASSERT_TRUE(visits2[0].floc_allowed);
 
-  // Add a page visit to url5 that has a publicly routable IP address, with
-  // direct chain url3->url4->url5.
+  // Add a page visit to url5 that is allowed for floc, with direct chain
+  // url3->url4->url5.
   HistoryAddPageArgs request3(url5, base::Time::FromDoubleT(3), nullptr, 0,
                               GURL(), {url3, url4, url5},
                               ui::PAGE_TRANSITION_TYPED, false,
@@ -2662,23 +2761,23 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_TRUE(backend_->GetURL(url3, &url_row3));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row3.id(), &visits3));
   ASSERT_EQ(1u, visits3.size());
-  ASSERT_FALSE(visits3[0].publicly_routable);
+  ASSERT_FALSE(visits3[0].floc_allowed);
 
   URLRow url_row4;
   VisitVector visits4;
   ASSERT_TRUE(backend_->GetURL(url4, &url_row4));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row4.id(), &visits4));
   ASSERT_EQ(1u, visits4.size());
-  ASSERT_FALSE(visits4[0].publicly_routable);
+  ASSERT_FALSE(visits4[0].floc_allowed);
 
   URLRow url_row5;
   VisitVector visits5;
   ASSERT_TRUE(backend_->GetURL(url5, &url_row5));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row5.id(), &visits5));
   ASSERT_EQ(1u, visits5.size());
-  ASSERT_TRUE(visits5[0].publicly_routable);
+  ASSERT_TRUE(visits5[0].floc_allowed);
 
-  // Add a page visit to url1 that has a publicly routable IP address.
+  // Add a page visit to url1 that is allowed for floc.
   HistoryAddPageArgs request4(url1, base::Time::FromDoubleT(4), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, true);
@@ -2687,11 +2786,11 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_TRUE(backend_->GetURL(url1, &url_row1));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row1.id(), &visits1));
   ASSERT_EQ(2u, visits1.size());
-  ASSERT_FALSE(visits1[0].publicly_routable);
-  ASSERT_TRUE(visits1[1].publicly_routable);
+  ASSERT_FALSE(visits1[0].floc_allowed);
+  ASSERT_TRUE(visits1[1].floc_allowed);
 
-  // Add a page visit to url3 that has a publicly routable IP address, with
-  // direct chain url5->url4->url3.
+  // Add a page visit to url3 that is allowed for floc, with direct chain
+  // url5->url4->url3.
   HistoryAddPageArgs request5(url3, base::Time::FromDoubleT(5), nullptr, 0,
                               GURL(), {url5, url4, url3},
                               ui::PAGE_TRANSITION_TYPED, false,
@@ -2701,39 +2800,39 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_TRUE(backend_->GetURL(url3, &url_row3));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row3.id(), &visits3));
   ASSERT_EQ(2u, visits3.size());
-  ASSERT_FALSE(visits3[0].publicly_routable);
-  ASSERT_TRUE(visits3[1].publicly_routable);
+  ASSERT_FALSE(visits3[0].floc_allowed);
+  ASSERT_TRUE(visits3[1].floc_allowed);
 
   ASSERT_TRUE(backend_->GetURL(url4, &url_row4));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row4.id(), &visits4));
   ASSERT_EQ(2u, visits4.size());
-  ASSERT_FALSE(visits4[0].publicly_routable);
-  ASSERT_FALSE(visits4[1].publicly_routable);
+  ASSERT_FALSE(visits4[0].floc_allowed);
+  ASSERT_FALSE(visits4[1].floc_allowed);
 
   ASSERT_TRUE(backend_->GetURL(url5, &url_row5));
   ASSERT_TRUE(backend_->GetVisitsForURL(url_row5.id(), &visits5));
   ASSERT_EQ(2u, visits5.size());
-  ASSERT_TRUE(visits5[0].publicly_routable);
-  ASSERT_FALSE(visits5[1].publicly_routable);
+  ASSERT_TRUE(visits5[0].floc_allowed);
+  ASSERT_FALSE(visits5[1].floc_allowed);
 }
 
-TEST_F(HistoryBackendTest, PubliclyRoutableFieldInQueryResult) {
+TEST_F(HistoryBackendTest, FlocAllowedFieldInQueryResult) {
   const GURL url1("http://foo1.com");
   const GURL url2("http://foo2.com");
 
-  // Add a page visit to url1 that has a private IP address.
+  // Add a page visit to url1 that is disallowed for floc.
   HistoryAddPageArgs request1(url1, base::Time::FromDoubleT(1), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request1);
 
-  // Add a page visit to url2 that has a publicly routable IP address.
+  // Add a page visit to url2 that is allowed for floc.
   HistoryAddPageArgs request2(url2, base::Time::FromDoubleT(2), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, true);
   backend_->AddPage(request2);
 
-  // Add a page visit to url1 that has a publicly routable IP address.
+  // Add a page visit to url1 that is allowed for floc.
   HistoryAddPageArgs request3(url1, base::Time::FromDoubleT(3), nullptr, 0,
                               GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
                               history::SOURCE_BROWSED, false, true, true);
@@ -2747,21 +2846,21 @@ TEST_F(HistoryBackendTest, PubliclyRoutableFieldInQueryResult) {
   results = backend_->QueryHistory(text_query, options);
   ASSERT_EQ(results.size(), 3u);
   EXPECT_EQ(results[0].url(), url1);
-  EXPECT_TRUE(results[0].publicly_routable());
+  EXPECT_TRUE(results[0].floc_allowed());
   EXPECT_EQ(results[1].url(), url2);
-  EXPECT_TRUE(results[1].publicly_routable());
+  EXPECT_TRUE(results[1].floc_allowed());
   EXPECT_EQ(results[2].url(), url1);
-  EXPECT_FALSE(results[2].publicly_routable());
+  EXPECT_FALSE(results[2].floc_allowed());
 
   text_query = base::UTF8ToUTF16("foo");
   results = backend_->QueryHistory(text_query, options);
   ASSERT_EQ(results.size(), 3u);
   EXPECT_EQ(results[0].url(), url1);
-  EXPECT_TRUE(results[0].publicly_routable());
+  EXPECT_TRUE(results[0].floc_allowed());
   EXPECT_EQ(results[1].url(), url2);
-  EXPECT_TRUE(results[1].publicly_routable());
+  EXPECT_TRUE(results[1].floc_allowed());
   EXPECT_EQ(results[2].url(), url1);
-  EXPECT_FALSE(results[2].publicly_routable());
+  EXPECT_FALSE(results[2].floc_allowed());
 }
 
 // Common implementation for the two tests below, given that the only difference

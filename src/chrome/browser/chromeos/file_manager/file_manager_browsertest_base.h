@@ -82,9 +82,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether Drive should act as if offline.
     bool offline = false;
 
-    // Whether test needs the files-ng feature.
-    bool files_ng = true;
-
     // Whether test needs the files-swa feature.
     bool files_swa = false;
 
@@ -97,9 +94,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test needs smbfs for native SMB integration.
     bool smbfs = false;
 
-    // Whether test needs trash.
-    bool trash = false;
-
     // Whether test needs the unified media view feature.
     bool unified_media_view = false;
 
@@ -110,10 +104,16 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     bool observe_file_tasks = true;
 
     // Whether test should enable sharesheet.
-    bool enable_sharesheet = false;
+    bool enable_sharesheet = true;
 
     // Whether test needs the single partition format feature.
     bool single_partition_format = false;
+
+    // Whether test should enable holding space.
+    bool enable_holding_space = false;
+
+    // Whether test should run Files app UI as JS modules.
+    bool enable_js_modules = true;
   };
 
  protected:
@@ -221,7 +221,7 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   base::HistogramTester histograms_;
   base::UserActionTester user_actions_;
 
-  bool devtools_code_coverage_ = false;
+  base::FilePath devtools_code_coverage_dir_;
   std::map<content::DevToolsAgentHost*, std::unique_ptr<DevToolsListener>>
       devtools_agent_;
   uint32_t process_id_ = 0;

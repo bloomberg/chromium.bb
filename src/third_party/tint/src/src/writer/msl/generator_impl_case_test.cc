@@ -19,95 +19,89 @@
 #include "src/ast/case_statement.h"
 #include "src/ast/fallthrough_statement.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/type/i32_type.h"
+#include "src/program.h"
+#include "src/type/i32_type.h"
 #include "src/writer/msl/generator_impl.h"
+#include "src/writer/msl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
 namespace {
 
-using MslGeneratorImplTest = testing::Test;
+using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Case) {
-  ast::type::I32Type i32;
-
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  ast::CaseStatement c(std::move(lit), std::move(body));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  auto* c = create<ast::CaseStatement>(lit, body);
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5: {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5: {
     break;
   }
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Case_BreaksByDefault) {
-  ast::type::I32Type i32;
-
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  ast::CaseStatement c(std::move(lit), std::make_unique<ast::BlockStatement>());
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  auto* c = create<ast::CaseStatement>(
+      lit, create<ast::BlockStatement>(ast::StatementList{}));
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5: {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5: {
     break;
   }
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Case_WithFallthrough) {
-  ast::type::I32Type i32;
-
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::FallthroughStatement>());
-
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::FallthroughStatement>(),
+  });
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  ast::CaseStatement c(std::move(lit), std::move(body));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  auto* c = create<ast::CaseStatement>(lit, body);
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5: {
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5: {
     /* fallthrough */
   }
 )");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Case_MultipleSelectors) {
-  ast::type::I32Type i32;
-
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
   ast::CaseSelectorList lit;
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 5));
-  lit.push_back(std::make_unique<ast::SintLiteral>(&i32, 6));
-  ast::CaseStatement c(std::move(lit), std::move(body));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 5));
+  lit.push_back(create<ast::SintLiteral>(ty.i32(), 6));
+  auto* c = create<ast::CaseStatement>(lit, body);
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  case 5:
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  case 5:
   case 6: {
     break;
   }
@@ -115,18 +109,17 @@ TEST_F(MslGeneratorImplTest, Emit_Case_MultipleSelectors) {
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Case_Default) {
-  ast::CaseStatement c;
+  auto* body = create<ast::BlockStatement>(ast::StatementList{
+      create<ast::BreakStatement>(),
+  });
+  auto* c = create<ast::CaseStatement>(ast::CaseSelectorList{}, body);
 
-  auto body = std::make_unique<ast::BlockStatement>();
-  body->append(std::make_unique<ast::BreakStatement>());
-  c.set_body(std::move(body));
+  GeneratorImpl& gen = Build();
 
-  ast::Module m;
-  GeneratorImpl g(&m);
-  g.increment_indent();
+  gen.increment_indent();
 
-  ASSERT_TRUE(g.EmitCase(&c)) << g.error();
-  EXPECT_EQ(g.result(), R"(  default: {
+  ASSERT_TRUE(gen.EmitCase(c)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  default: {
     break;
   }
 )");

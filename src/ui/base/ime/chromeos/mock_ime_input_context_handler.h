@@ -33,7 +33,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEInputContextHandler
   MockIMEInputContextHandler();
   virtual ~MockIMEInputContextHandler();
 
-  void CommitText(const std::string& text) override;
+  void CommitText(
+      const std::string& text,
+      TextInputClient::InsertTextCursorBehavior cursor_behavior) override;
   void UpdateCompositionText(const CompositionText& text,
                              uint32_t cursor_pos,
                              bool visible) override;
@@ -48,9 +50,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEInputContextHandler
       const std::vector<ui::ImeTextSpan>& text_spans) override;
   gfx::Range GetAutocorrectRange() override;
   gfx::Rect GetAutocorrectCharacterBounds() override;
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           uint32_t start,
-                           uint32_t end) override;
+  bool SetAutocorrectRange(const gfx::Range& range) override;
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
   SurroundingTextInfo GetSurroundingTextInfo() override;
@@ -99,6 +99,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEInputContextHandler
   std::vector<ui::KeyEvent> sent_key_events_;
   UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
+  gfx::Range autocorrect_range_;
 };
 }  // namespace ui
 

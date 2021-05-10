@@ -15,6 +15,7 @@
 namespace chromeos {
 namespace phonehub {
 class Notification;
+class NotificationInteractionHandler;
 class PhoneHubManager;
 class PhoneModel;
 }  // namespace phonehub
@@ -73,28 +74,36 @@ class ASH_EXPORT PhoneHubNotificationController
   // Callbacks for user interactions.
   void OpenSettings();
   void DismissNotification(int64_t notification_id);
+  void HandleNotificationBodyClick(int64_t notification_id);
   void SendInlineReply(int64_t notification_id,
                        const base::string16& inline_reply_text);
 
   // Logs the number of PhoneHub notifications.
   void LogNotificationCount();
 
-  // Creates or updates a ChromeOS notification for the given PhoneHub
-  // notification data.
-  void CreateOrUpdateNotification(
-      const chromeos::phonehub::Notification* notification);
+  // Shows a Chrome OS notification for the provided phonehub::Notification.
+  // If |is_update| is true, this function updates an existing notification;
+  // otherwise, a new notification is created.
+  void SetNotification(const chromeos::phonehub::Notification* notification,
+                       bool is_update);
 
   // Creates a message_center::Notification from the PhoneHub notification data.
   std::unique_ptr<message_center::Notification> CreateNotification(
       const chromeos::phonehub::Notification* notification,
       const std::string& cros_id,
-      NotificationDelegate* delegate);
+      NotificationDelegate* delegate,
+      bool is_update);
+  int GetSystemPriorityForNotification(
+      const chromeos::phonehub::Notification* notification,
+      bool is_update);
 
   static std::unique_ptr<message_center::MessageView>
   CreateCustomNotificationView(
       base::WeakPtr<PhoneHubNotificationController> notification_controller,
       const message_center::Notification& notification);
 
+  chromeos::phonehub::NotificationInteractionHandler*
+      notification_interaction_handler_ = nullptr;
   chromeos::phonehub::NotificationManager* manager_ = nullptr;
   chromeos::phonehub::FeatureStatusProvider* feature_status_provider_ = nullptr;
   chromeos::phonehub::TetherController* tether_controller_ = nullptr;

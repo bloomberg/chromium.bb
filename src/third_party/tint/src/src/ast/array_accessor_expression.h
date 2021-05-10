@@ -25,61 +25,48 @@ namespace tint {
 namespace ast {
 
 /// An array accessor expression
-class ArrayAccessorExpression : public Expression {
+class ArrayAccessorExpression
+    : public Castable<ArrayAccessorExpression, Expression> {
  public:
-  /// Constructor
-  ArrayAccessorExpression();
-  /// Constructor
-  /// @param array the array
-  /// @param idx_expr the index expression
-  ArrayAccessorExpression(std::unique_ptr<Expression> array,
-                          std::unique_ptr<Expression> idx_expr);
   /// Constructor
   /// @param source the array accessor source
   /// @param array the array
   /// @param idx_expr the index expression
   ArrayAccessorExpression(const Source& source,
-                          std::unique_ptr<Expression> array,
-                          std::unique_ptr<Expression> idx_expr);
+                          Expression* array,
+                          Expression* idx_expr);
   /// Move constructor
   ArrayAccessorExpression(ArrayAccessorExpression&&);
   ~ArrayAccessorExpression() override;
 
-  /// Sets the array
-  /// @param array the array
-  void set_array(std::unique_ptr<Expression> array) {
-    array_ = std::move(array);
-  }
   /// @returns the array
-  Expression* array() const { return array_.get(); }
+  Expression* array() const { return array_; }
 
-  /// Sets the index expression
-  /// @param idx_expr the index expression
-  void set_idx_expr(std::unique_ptr<Expression> idx_expr) {
-    idx_expr_ = std::move(idx_expr);
-  }
   /// @returns the index expression
-  Expression* idx_expr() const { return idx_expr_.get(); }
-  /// Removes the index expression from the array accessor
-  /// @returns the unique pointer to the index expression
-  std::unique_ptr<Expression> take_idx_expr() { return std::move(idx_expr_); }
+  Expression* idx_expr() const { return idx_expr_; }
 
-  /// @returns true if this is an array accessor expression
-  bool IsArrayAccessor() const override;
+  /// Clones this node and all transitive child nodes using the `CloneContext`
+  /// `ctx`.
+  /// @param ctx the clone context
+  /// @return the newly cloned node
+  ArrayAccessorExpression* Clone(CloneContext* ctx) const override;
 
   /// @returns true if the node is valid
   bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
+  /// @param sem the semantic info for the program
   /// @param out the stream to write to
   /// @param indent number of spaces to indent the node when writing
-  void to_str(std::ostream& out, size_t indent) const override;
+  void to_str(const semantic::Info& sem,
+              std::ostream& out,
+              size_t indent) const override;
 
  private:
   ArrayAccessorExpression(const ArrayAccessorExpression&) = delete;
 
-  std::unique_ptr<Expression> array_;
-  std::unique_ptr<Expression> idx_expr_;
+  Expression* const array_;
+  Expression* const idx_expr_;
 };
 
 }  // namespace ast

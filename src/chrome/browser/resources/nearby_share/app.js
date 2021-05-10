@@ -71,9 +71,9 @@ Polymer({
 
     /**
      * Preview info of attachment to be sent, set by the nearby-discovery-page.
-     * @private {?nearbyShare.mojom.SendPreview}
+     * @private {?nearbyShare.mojom.PayloadPreview}
      */
-    sendPreview_: {
+    payloadPreview_: {
       type: Object,
       value: null,
     },
@@ -94,10 +94,17 @@ Polymer({
   },
 
   /**
-   * Called when all settings values have been retrieved.
+   * Called when component is attached and all settings values have been
+   * retrieved.
    */
   onSettingsRetrieved() {
-    if (this.settings.enabled) {
+    if (this.settings.isOnboardingComplete) {
+      if (!this.settings.enabled) {
+        // When a new share is triggered, if the user has completed onboarding
+        // previously, then silently enable the feature and continue to
+        // discovery page directly.
+        this.set('settings.enabled', true);
+      }
       this.getViewManager_().switchView(Page.DISCOVERY);
     } else {
       this.getViewManager_().switchView(Page.ONBOARDING);

@@ -26,7 +26,8 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
     kSmartlock = 2,
     kFingerprint = 3,
     kChallengeResponse = 4,
-    kMaxValue = kChallengeResponse,
+    kNothing = 5,
+    kMaxValue = kNothing,
   };
 
   // The type of switching between auth methods. This enum is used to back an
@@ -46,7 +47,24 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
     kFingerprintToPin = 10,
     kFingerprintToSmartlock = 11,
     kPasswordToChallengeResponse = 12,
-    kMaxValue = kPasswordToChallengeResponse,
+    kNothingToPassword = 13,
+    kNothingToPin = 14,
+    kNothingToSmartlock = 15,
+    kNothingToFingerprint = 16,
+    kNothingToChallengeResponse = 17,
+    kMaxValue = kNothingToChallengeResponse,
+  };
+
+  // The result of fingerprint auth attempt on the lock screen. These values are
+  // persisted to logs. Entries should not be renumbered and numeric values
+  // should never be reused.
+  enum class FingerprintUnlockResult {
+    kSuccess = 0,
+    kFingerprintUnavailable = 1,
+    kAuthTemporarilyDisabled = 2,
+    kMatchFailed = 3,
+    kMatchNotForPrimaryUser = 4,
+    kMaxValue = kMatchNotForPrimaryUser,
   };
 
   LoginAuthRecorder();
@@ -55,16 +73,16 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
   // Called when user attempts authentication using AuthMethod `type`.
   void RecordAuthMethod(AuthMethod type);
 
-  // Called after a fingerprint attempt to record the auth result.
+  // Called after a fingerprint unlock attempt to record the result.
   // `num_attempts`:  Only valid when auth success to record number of attempts.
-  void RecordFingerprintAuthSuccess(bool success,
-                                    const base::Optional<int>& num_attempts);
+  void RecordFingerprintUnlockResult(FingerprintUnlockResult result,
+                                     const base::Optional<int>& num_attempts);
 
   // session_manager::SessionManagerObserver
   void OnSessionStateChanged() override;
 
  private:
-  AuthMethod last_auth_method_ = AuthMethod::kPassword;
+  AuthMethod last_auth_method_ = AuthMethod::kNothing;
 
   DISALLOW_COPY_AND_ASSIGN(LoginAuthRecorder);
 };

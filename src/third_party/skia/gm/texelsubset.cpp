@@ -22,9 +22,8 @@
 #include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrSamplerState.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "tools/Resources.h"
@@ -87,7 +86,7 @@ protected:
         SkASSERT(fBitmap.dimensions() == kImageSize);
     }
 
-    DrawResult onDraw(GrRecordingContext* context, GrRenderTargetContext* renderTargetContext,
+    DrawResult onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
                       SkCanvas* canvas, SkString* errorMsg) override {
         GrMipmapped mipmapped = (fMipmapMode != MipmapMode::kNone) ? GrMipmapped::kYes
                                                                    : GrMipmapped::kNo;
@@ -117,11 +116,11 @@ protected:
         SkRect a = SkRect::Make(texelSubset);
         SkRect b = fUpscale ? a.makeInset (.31f * a.width(), .31f * a.height())
                             : a.makeOutset(.25f * a.width(), .25f * a.height());
-        textureMatrices.push_back().setRectToRect(a, b, SkMatrix::kFill_ScaleToFit);
+        textureMatrices.push_back() = SkMatrix::RectToRect(a, b);
 
         b = fUpscale ? a.makeInset (.25f * a.width(), .35f * a.height())
                      : a.makeOutset(.20f * a.width(), .35f * a.height());
-        textureMatrices.push_back().setRectToRect(a, b, SkMatrix::kFill_ScaleToFit);
+        textureMatrices.push_back() = SkMatrix::RectToRect(a, b);
         textureMatrices.back().preRotate(45.f, a.centerX(), a.centerY());
         textureMatrices.back().postSkew(.05f, -.05f);
 
@@ -169,7 +168,7 @@ protected:
                                                                   drawRect,
                                                                   localRect.makeOffset(kT),
                                                                   SkMatrix::Translate(-kT))) {
-                        renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+                        surfaceDrawContext->addDrawOp(std::move(op));
                     }
 
                     x += localRect.width() + kTestPad;
@@ -187,7 +186,7 @@ protected:
                                                      caps);
                     if (auto op = sk_gpu_test::test_ops::MakeRect(context, std::move(fp2), drawRect,
                                                                   localRect)) {
-                        renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
+                        surfaceDrawContext->addDrawOp(std::move(op));
                     }
 
                     if (mx < GrSamplerState::kWrapModeCount - 1) {

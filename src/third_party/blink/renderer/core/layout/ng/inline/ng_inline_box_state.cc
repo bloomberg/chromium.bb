@@ -8,8 +8,6 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
@@ -681,28 +679,15 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       continue;
     }
 
-    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      // Propagate any OOF-positioned descendants from any atomic-inlines, etc.
-      if (child.layout_result) {
-        box.PropagateChildData(child.layout_result->PhysicalFragment(),
-                               child.rect.offset - rect.offset);
-      }
-
-      // |NGFragmentItems| has a flat list of all descendants, except
-      // OOF-positioned descendants.
-      // We still create a |NGPhysicalBoxFragment|, but don't add children to
-      // it and keep them in the flat list.
-      continue;
-    }
-
+    // Propagate any OOF-positioned descendants from any atomic-inlines, etc.
     if (child.layout_result) {
-      box.AddChild(child.layout_result->PhysicalFragment(),
-                   child.rect.offset - rect.offset);
-      child.layout_result.reset();
-    } else if (child.text_fragment) {
-      box.AddChild(std::move(child.text_fragment),
-                   child.rect.offset - rect.offset);
+      box.PropagateChildData(child.layout_result->PhysicalFragment(),
+                             child.rect.offset - rect.offset);
     }
+
+    // |NGFragmentItems| has a flat list of all descendants, except
+    // OOF-positioned descendants. We still create a |NGPhysicalBoxFragment|,
+    // but don't add children to it and keep them in the flat list.
   }
 
   // Inline boxes that produce DisplayItemClient should do full paint

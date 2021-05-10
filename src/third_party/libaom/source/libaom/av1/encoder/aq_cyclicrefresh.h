@@ -102,12 +102,9 @@ struct CYCLIC_REFRESH {
   int rate_boost_fac;
 
   /*!\cond */
-  double low_content_avg;
   int qindex_delta[3];
   double weight_segment;
   int apply_cyclic_refresh;
-  int cnt_zeromv;
-  double avg_frame_low_motion;
   /*!\endcond */
 };
 

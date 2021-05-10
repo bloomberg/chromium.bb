@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
 
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
@@ -44,9 +44,9 @@ ScopedCanConfigureNetwork::ScopedCanConfigureNetwork(bool can_configure,
     : can_configure_(can_configure),
       needs_owner_auth_(needs_owner_auth),
       can_configure_network_callback_(
-          base::Bind(&ScopedCanConfigureNetwork::CanConfigureNetwork,
-                     base::Unretained(this))),
-      needs_owner_auth_callback_(base::Bind(
+          base::BindRepeating(&ScopedCanConfigureNetwork::CanConfigureNetwork,
+                              base::Unretained(this))),
+      needs_owner_auth_callback_(base::BindRepeating(
           &ScopedCanConfigureNetwork::NeedsOwnerAuthToConfigureNetwork,
           base::Unretained(this))) {
   KioskLaunchController::SetCanConfigureNetworkCallbackForTesting(

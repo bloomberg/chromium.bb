@@ -19,11 +19,11 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #include "url/gurl.h"
 
@@ -34,12 +34,6 @@
 using base::RecordAction;
 using base::UserMetricsAction;
 
-namespace {
-
-const char kManagementPageURL[] = "chrome://management";
-
-}  // namespace
-
 @implementation PopupMenuActionHandler
 
 #pragma mark - PopupMenuTableViewControllerDelegate
@@ -48,17 +42,17 @@ const char kManagementPageURL[] = "chrome://management";
                        didSelectItem:(TableViewItem<PopupMenuItem>*)item
                               origin:(CGPoint)origin {
   DCHECK(self.dispatcher);
-  DCHECK(self.commandHandler);
+  DCHECK(self.delegate);
 
   PopupMenuAction identifier = item.actionIdentifier;
   switch (identifier) {
     case PopupMenuActionReload:
       RecordAction(UserMetricsAction("MobileMenuReload"));
-      [self.dispatcher reload];
+      self.navigationAgent->Reload();
       break;
     case PopupMenuActionStop:
       RecordAction(UserMetricsAction("MobileMenuStop"));
-      [self.dispatcher stopLoading];
+      self.navigationAgent->StopLoading();
       break;
     case PopupMenuActionOpenNewTab:
       RecordAction(UserMetricsAction("MobileMenuNewTab"));
@@ -74,7 +68,7 @@ const char kManagementPageURL[] = "chrome://management";
       break;
     case PopupMenuActionReadLater:
       RecordAction(UserMetricsAction("MobileMenuReadLater"));
-      [self.commandHandler readPageLater];
+      [self.delegate readPageLater];
       break;
     case PopupMenuActionPageBookmark:
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
@@ -98,13 +92,7 @@ const char kManagementPageURL[] = "chrome://management";
       break;
     case PopupMenuActionSiteInformation:
       RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
-      if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
-        [self.dispatcher showPageInfo];
-      } else {
-        [self.dispatcher
-            legacyShowPageInfoForOriginPoint:self.baseViewController.view
-                                                 .center];
-      }
+      [self.dispatcher showPageInfo];
       break;
     case PopupMenuActionReportIssue:
       RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
@@ -122,6 +110,7 @@ const char kManagementPageURL[] = "chrome://management";
     case PopupMenuActionOpenDownloads:
       RecordAction(
           UserMetricsAction("MobileDownloadFolderUIShownFromToolsMenu"));
+      [self.delegate recordDownloadsMetricsPerProfile];
       [self.dispatcher showDownloadsFolder];
       break;
     case PopupMenuActionTextZoom:
@@ -156,6 +145,7 @@ const char kManagementPageURL[] = "chrome://management";
       break;
     case PopupMenuActionSettings:
       RecordAction(UserMetricsAction("MobileMenuSettings"));
+      [self.delegate recordSettingsMetricsPerProfile];
       [self.dispatcher showSettingsFromViewController:self.baseViewController];
       break;
     case PopupMenuActionCloseTab:
@@ -164,7 +154,7 @@ const char kManagementPageURL[] = "chrome://management";
       break;
     case PopupMenuActionNavigate:
       // No metrics for this item.
-      [self.commandHandler navigateToPageForItem:item];
+      [self.delegate navigateToPageForItem:item];
       break;
     case PopupMenuActionVoiceSearch:
       RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
@@ -194,6 +184,12 @@ const char kManagementPageURL[] = "chrome://management";
           ClipboardRecentContent::GetInstance();
       clipboardRecentContent->GetRecentImageFromClipboard(
           base::BindOnce(^(base::Optional<gfx::Image> image) {
+            // Sometimes, the image can be nil even though the clipboard said it
+            // had an image. This most likely a UIKit issue, but practice
+            // defensive coding.
+            if (!image) {
+              return;
+            }
             [self.dispatcher searchByImage:[image.value().ToUIImage() copy]];
           }));
       break;
@@ -231,7 +227,7 @@ const char kManagementPageURL[] = "chrome://management";
     case PopupMenuActionEnterpriseInfoMessage:
       [self.dispatcher
           openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:
-                                                 GURL(kManagementPageURL)]];
+                                                 GURL(kChromeUIManagementURL)]];
       break;
     default:
       NOTREACHED() << "Unexpected identifier";

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "src/ast/discard_statement.h"
 #include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
@@ -22,7 +23,7 @@ namespace wgsl {
 namespace {
 
 TEST_F(ParserImplTest, BodyStmt) {
-  auto* p = parser(R"({
+  auto p = parser(R"({
   discard;
   return 1 + b / 2;
 })");
@@ -30,12 +31,12 @@ TEST_F(ParserImplTest, BodyStmt) {
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
   ASSERT_EQ(e->size(), 2u);
-  EXPECT_TRUE(e->get(0)->IsDiscard());
-  EXPECT_TRUE(e->get(1)->IsReturn());
+  EXPECT_TRUE(e->get(0)->Is<ast::DiscardStatement>());
+  EXPECT_TRUE(e->get(1)->Is<ast::ReturnStatement>());
 }
 
 TEST_F(ParserImplTest, BodyStmt_Empty) {
-  auto* p = parser("{}");
+  auto p = parser("{}");
   auto e = p->expect_body_stmt();
   ASSERT_FALSE(p->has_error()) << p->error();
   ASSERT_FALSE(e.errored);
@@ -43,7 +44,7 @@ TEST_F(ParserImplTest, BodyStmt_Empty) {
 }
 
 TEST_F(ParserImplTest, BodyStmt_InvalidStmt) {
-  auto* p = parser("{fn main() -> void {}}");
+  auto p = parser("{fn main() -> void {}}");
   auto e = p->expect_body_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);
@@ -51,7 +52,7 @@ TEST_F(ParserImplTest, BodyStmt_InvalidStmt) {
 }
 
 TEST_F(ParserImplTest, BodyStmt_MissingRightParen) {
-  auto* p = parser("{return;");
+  auto p = parser("{return;");
   auto e = p->expect_body_stmt();
   ASSERT_TRUE(p->has_error());
   ASSERT_TRUE(e.errored);

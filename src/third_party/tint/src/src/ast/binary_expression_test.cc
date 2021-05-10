@@ -16,106 +16,100 @@
 
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "src/ast/identifier_expression.h"
+#include "src/ast/test_helper.h"
 
 namespace tint {
 namespace ast {
 namespace {
 
-using BinaryExpressionTest = testing::Test;
+using BinaryExpressionTest = TestHelper;
 
 TEST_F(BinaryExpressionTest, Creation) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  auto* lhs_ptr = lhs.get();
-  auto* rhs_ptr = rhs.get();
-
-  BinaryExpression r(BinaryOp::kEqual, std::move(lhs), std::move(rhs));
-  EXPECT_EQ(r.lhs(), lhs_ptr);
-  EXPECT_EQ(r.rhs(), rhs_ptr);
-  EXPECT_EQ(r.op(), BinaryOp::kEqual);
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_EQ(r->lhs(), lhs);
+  EXPECT_EQ(r->rhs(), rhs);
+  EXPECT_EQ(r->op(), BinaryOp::kEqual);
 }
 
 TEST_F(BinaryExpressionTest, Creation_WithSource) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r(Source{Source::Location{20, 2}}, BinaryOp::kEqual,
-                     std::move(lhs), std::move(rhs));
-  auto src = r.source();
+  auto* r = create<BinaryExpression>(Source{Source::Location{20, 2}},
+                                     BinaryOp::kEqual, lhs, rhs);
+  auto src = r->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
-TEST_F(BinaryExpressionTest, IsBinaryal) {
-  BinaryExpression r;
-  EXPECT_TRUE(r.IsBinary());
+TEST_F(BinaryExpressionTest, IsBinary) {
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
+
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_TRUE(r->Is<BinaryExpression>());
 }
 
 TEST_F(BinaryExpressionTest, IsValid) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r(BinaryOp::kEqual, std::move(lhs), std::move(rhs));
-  EXPECT_TRUE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_TRUE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, IsValid_Null_LHS) {
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r;
-  r.set_op(BinaryOp::kEqual);
-  r.set_rhs(std::move(rhs));
-  EXPECT_FALSE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, nullptr, rhs);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, IsValid_Invalid_LHS) {
-  auto lhs = std::make_unique<IdentifierExpression>("");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r(BinaryOp::kEqual, std::move(lhs), std::move(rhs));
-  EXPECT_FALSE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, IsValid_Null_RHS) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
+  auto* lhs = Expr("lhs");
 
-  BinaryExpression r;
-  r.set_op(BinaryOp::kEqual);
-  r.set_lhs(std::move(lhs));
-  EXPECT_FALSE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, nullptr);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, IsValid_Invalid_RHS) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("");
 
-  BinaryExpression r(BinaryOp::kEqual, std::move(lhs), std::move(rhs));
-  EXPECT_FALSE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, IsValid_Binary_None) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r(BinaryOp::kNone, std::move(lhs), std::move(rhs));
-  EXPECT_FALSE(r.IsValid());
+  auto* r = create<BinaryExpression>(BinaryOp::kNone, lhs, rhs);
+  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(BinaryExpressionTest, ToStr) {
-  auto lhs = std::make_unique<IdentifierExpression>("lhs");
-  auto rhs = std::make_unique<IdentifierExpression>("rhs");
+  auto* lhs = Expr("lhs");
+  auto* rhs = Expr("rhs");
 
-  BinaryExpression r(BinaryOp::kEqual, std::move(lhs), std::move(rhs));
-  std::ostringstream out;
-  r.to_str(out, 2);
-  EXPECT_EQ(out.str(), R"(  Binary{
-    Identifier{lhs}
-    equal
-    Identifier{rhs}
-  }
+  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
+  EXPECT_EQ(str(r), R"(Binary[not set]{
+  Identifier[not set]{lhs}
+  equal
+  Identifier[not set]{rhs}
+}
 )");
 }
 

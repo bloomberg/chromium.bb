@@ -10,16 +10,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -29,12 +28,14 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#if defined(OS_CHROMEOS)
+#include "ui/chromeos/devicetype_utils.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
-#endif  // defined(OS_CHROMEOS)
+#include "chrome/common/url_constants.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace settings {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 // Generates a Google Help URL which includes a "board type" parameter. Some
@@ -86,7 +87,7 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
       {"captionsEnableLiveCaptionSubtitle",
        IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean("enableLiveCaption",
                           base::FeatureList::IsEnabled(media::kLiveCaption));
@@ -99,7 +100,7 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
     {"urlKeyedAnonymizedDataCollectionDesc",
      IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
     {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
     {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
 #endif
@@ -113,7 +114,7 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
     {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
     {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
@@ -134,7 +135,7 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
       {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
       {"syncData", IDS_SETTINGS_SYNC_DATA},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
@@ -152,10 +153,10 @@ void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
       {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
       {"syncAdvancedPageTitle", IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void AddPasswordPromptDialogStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"passwordPromptTitle", IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE},
@@ -164,7 +165,7 @@ void AddPasswordPromptDialogStrings(content::WebUIDataSource* html_source) {
       {"passwordPromptPasswordLabel",
        IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 #endif
 
@@ -205,7 +206,7 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"manageSyncedDataTitle",
        IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
@@ -232,24 +233,32 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       "encryptWithSyncPassphraseLabel",
       l10n_util::GetStringFUTF8(
           IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
           GetHelpUrlWithBoard(chrome::kSyncEncryptionHelpURL)));
 #else
           base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
 #endif
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void AddNearbyShareData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"nearbyShareTitle", IDS_SETTINGS_NEARBY_SHARE_TITLE},
+      {"nearbyShareSetUpButtonTitle",
+       IDS_SETTINGS_NEARBY_SHARE_SET_UP_BUTTON_TITLE},
       {"nearbyShareDeviceNameRowTitle",
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ROW_TITLE},
       {"nearbyShareDeviceNameDialogTitle",
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_TITLE},
+      {"nearbyShareDeviceNameFieldLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_FIELD_LABEL},
       {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
       {"nearbyShareDeviceNameAriaDescription",
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
+      {"nearbyShareManageContactsLabel",
+       IDS_SETTINGS_NEARBY_SHARE_MANAGE_CONTACTS_LABEL},
+      {"nearbyShareManageContactsRowTitle",
+       IDS_SETTINGS_NEARBY_SHARE_MANAGE_CONTACTS_ROW_TITLE},
       {"nearbyShareEditDataUsage", IDS_SETTINGS_NEARBY_SHARE_EDIT_DATA_USAGE},
       {"nearbyShareUpdateDataUsage",
        IDS_SETTINGS_NEARBY_SHARE_UPDATE_DATA_USAGE},
@@ -260,9 +269,11 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
       {"nearbyShareDataUsageWifiOnlyDescription",
        IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_WIFI_ONLY_DESCRIPTION},
       {"nearbyShareDataUsageDataLabel",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_LABEL},
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_LABEL},
       {"nearbyShareDataUsageDataDescription",
-       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_DATA_DESCRIPTION},
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_DESCRIPTION},
+      {"nearbyShareDataUsageDataTooltip",
+       IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_MOBILE_DATA_TOOLTIP},
       {"nearbyShareDataUsageOfflineLabel",
        IDS_SETTINGS_NEARBY_SHARE_DATA_USAGE_OFFLINE_LABEL},
       {"nearbyShareDataUsageOfflineDescription",
@@ -277,13 +288,16 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_NEARBY_SHARE_CONTACT_VISIBILITY_ROW_TITLE},
       {"nearbyShareEditVisibility", IDS_SETTINGS_NEARBY_SHARE_EDIT_VISIBILITY},
       {"nearbyShareVisibilityDialogTitle",
-       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_TITLE}};
+       IDS_SETTINGS_NEARBY_SHARE_VISIBILITY_DIALOG_TITLE},
+      {"nearbyShareDescription", IDS_SETTINGS_NEARBY_SHARE_DESCRIPTION},
+      {"nearbyShareHighVisibilityTitle",
+       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_TITLE},
+      {"nearbyShareHighVisibilityOn",
+       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_ON},
+      {"nearbyShareHighVisibilityOff",
+       IDS_SETTINGS_NEARBY_SHARE_HIGH_VISIBILITY_OFF}};
 
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  html_source->AddBoolean(
-      "nearbySharingFeatureFlag",
-      base::FeatureList::IsEnabled(features::kNearbySharing));
+  html_source->AddLocalizedStrings(kLocalizedStrings);
 
   // To use lottie, the worker-src CSP needs to be updated for the web ui that
   // is using it. Since as of now there are only a couple of webuis using
@@ -293,6 +307,6 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace settings

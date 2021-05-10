@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/font_pref_change_notifier_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -99,15 +98,15 @@ void MaybeUnlocalizeFontName(std::string* font_name) {
 
 FontSettingsEventRouter::FontSettingsEventRouter(Profile* profile)
     : profile_(profile) {
-  TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor")
+  TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor");
 
   registrar_.Init(profile_->GetPrefs());
 
   // Unretained is safe here because the registrar is owned by this class.
   font_change_registrar_.Register(
       FontPrefChangeNotifierFactory::GetForProfile(profile),
-      base::Bind(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
+                          base::Unretained(this)));
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
                    events::FONT_SETTINGS_ON_DEFAULT_FIXED_FONT_SIZE_CHANGED,
@@ -128,10 +127,10 @@ void FontSettingsEventRouter::AddPrefToObserve(
     events::HistogramValue histogram_value,
     const char* event_name,
     const char* key) {
-  registrar_.Add(
-      pref_name,
-      base::Bind(&FontSettingsEventRouter::OnFontPrefChanged,
-                 base::Unretained(this), histogram_value, event_name, key));
+  registrar_.Add(pref_name,
+                 base::BindRepeating(
+                     &FontSettingsEventRouter::OnFontPrefChanged,
+                     base::Unretained(this), histogram_value, event_name, key));
 }
 
 void FontSettingsEventRouter::OnFontFamilyMapPrefChanged(

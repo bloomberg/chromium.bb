@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
-#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
@@ -20,16 +19,10 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
+#include "base/allocator/partition_allocator/pcscan.h"
+#include "base/partition_alloc_buildflags.h"
 
 namespace base {
-
-#if ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
-namespace internal {
-BASE_EXPORT PartitionTagWrapper g_checked_ptr_single_tag = {{},
-                                                            kFixedTagValue,
-                                                            {}};
-}
-#endif
 
 void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
   // This is from page_allocator_constants.h and doesn't really fit here, but
@@ -63,11 +56,7 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
       "maximum direct mapped allocation");
 
   // Check that some of our zanier calculations worked out as expected.
-#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
-  static_assert(kSmallestBucket >= kAlignment, "generic smallest bucket");
-#else
   static_assert(kSmallestBucket == kAlignment, "generic smallest bucket");
-#endif
   static_assert(kMaxBucketed == 983040, "generic max bucketed");
   STATIC_ASSERT_OR_PA_CHECK(
       MaxSystemPagesPerSlotSpan() < (1 << 8),
@@ -87,6 +76,8 @@ void PartitionAllocGlobalUninitForTesting() {
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
   }
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  internal::PCScan<internal::ThreadSafe>::Instance()
+      .ClearRootsForTesting();  // IN-TEST
   internal::g_oom_handling_function = nullptr;
 }
 
@@ -105,6 +96,7 @@ void PartitionAllocator<thread_safe>::init(PartitionOptions opts) {
       << "Cannot use a thread cache when PartitionAlloc is malloc().";
 #endif
   partition_root_.Init(opts);
+  partition_root_.ConfigureLazyCommit();
   PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
       &partition_root_);
 }
@@ -115,39 +107,15 @@ template PartitionAllocator<internal::NotThreadSafe>::~PartitionAllocator();
 template void PartitionAllocator<internal::NotThreadSafe>::init(
     PartitionOptions);
 
-#if DCHECK_IS_ON()
-void DCheckIfManagedByPartitionAllocNormalBuckets(const void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
+#if DCHECK_IS_ON() && BUILDFLAG(USE_BACKUP_REF_PTR)
+void DCheckGetSlotOffsetIsZero(void* ptr) {
+  // Add kPartitionPastAllocationAdjustment, because PartitionAllocGetSlotStart
+  // will subtract it.
+  PA_DCHECK(PartitionAllocGetSlotStart(reinterpret_cast<char*>(ptr) +
+                                       kPartitionPastAllocationAdjustment) ==
+            ptr);
 }
 #endif
-
-// Gets the offset from the beginning of the allocated slot, adjusted for cookie
-// (if any).
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
-//
-// This function is not a template, and can be used on either variant
-// (thread-safe or not) of the allocator. This relies on the two PartitionRoot<>
-// having the same layout, which is enforced by static_assert().
-BASE_EXPORT size_t PartitionAllocGetSlotOffset(void* ptr) {
-  internal::DCheckIfManagedByPartitionAllocNormalBuckets(ptr);
-  // The only allocations that don't use tag are allocated outside of GigaCage,
-  // hence we'd never get here in the use_tag=false case.
-  ptr = internal::PartitionPointerAdjustSubtract(true /* use_tag */, ptr);
-  auto* slot_span =
-      internal::PartitionAllocGetSlotSpanForSizeQuery<internal::ThreadSafe>(
-          ptr);
-  PA_DCHECK(PartitionRoot<internal::ThreadSafe>::FromSlotSpan(slot_span)
-                ->allow_extras);
-
-  // Get the offset from the beginning of the slot span.
-  uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
-  uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
-      internal::SlotSpanMetadata<internal::ThreadSafe>::ToPointer(slot_span));
-  size_t offset_in_slot_span = ptr_addr - slot_span_start;
-
-  return slot_span->bucket->GetSlotOffset(offset_in_slot_span);
-}
 
 }  // namespace internal
 

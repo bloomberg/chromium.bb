@@ -12,17 +12,16 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -44,6 +43,8 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/webapps/browser/installable/installable_manager.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -57,15 +58,15 @@
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
@@ -76,11 +77,11 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kPlayIntentPrefix[] =
     "https://play.google.com/store/apps/details?id=";
 const char kChromeWebStoreReferrer[] = "&referrer=chrome_web_store";
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using InstallAndroidAppCallback =
     extensions::ManagementAPIDelegate::InstallAndroidAppCallback;
@@ -92,7 +93,7 @@ using InstallOrLaunchWebAppResult =
     extensions::ManagementAPIDelegate::InstallOrLaunchWebAppResult;
 using InstallableCheckResult = web_app::InstallManager::InstallableCheckResult;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void OnDidCheckForIntentToPlayStore(const std::string& intent,
                                     InstallAndroidAppCallback callback,
                                     bool installable) {
@@ -117,7 +118,7 @@ void OnDidCheckForIntentToPlayStore(const std::string& intent,
   instance->HandleUrl(intent, arc::kPlayStorePackage);
   std::move(callback).Run(true);
 }
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class ManagementSetEnabledFunctionInstallPromptDelegate
     : public extensions::InstallPromptDelegate {
@@ -126,16 +127,16 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
       content::WebContents* web_contents,
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      const base::Callback<void(bool)>& callback)
+      base::OnceCallback<void(bool)> callback)
       : install_prompt_(new ExtensionInstallPrompt(web_contents)),
-        callback_(callback) {
+        callback_(std::move(callback)) {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             browser_context, extension);
     install_prompt_->ShowDialog(
-        base::Bind(&ManagementSetEnabledFunctionInstallPromptDelegate::
-                       OnInstallPromptDone,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&ManagementSetEnabledFunctionInstallPromptDelegate::
+                           OnInstallPromptDone,
+                       weak_factory_.GetWeakPtr()),
         extension, nullptr,
         std::make_unique<ExtensionInstallPrompt::Prompt>(type),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
@@ -151,7 +152,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   // Used for prompting to re-enable items with permissions escalation updates.
   std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 
-  base::Callback<void(bool)> callback_;
+  base::OnceCallback<void(bool)> callback_;
 
   base::WeakPtrFactory<ManagementSetEnabledFunctionInstallPromptDelegate>
       weak_factory_{this};
@@ -251,7 +252,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
 
     provider->install_manager().InstallWebAppFromInfo(
         std::move(web_app_info), web_app::ForInstallableSite::kNo,
-        WebappInstallSource::MANAGEMENT_API,
+        webapps::WebappInstallSource::MANAGEMENT_API,
         base::BindOnce(OnGenerateAppForLinkCompleted,
                        base::RetainedRef(function)));
   }
@@ -372,7 +373,7 @@ void OnWebAppInstallabilityChecked(
           WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect());
       web_app::CreateWebAppFromManifest(
           containing_contents, /*bypass_service_worker_check=*/true,
-          WebappInstallSource::MANAGEMENT_API,
+          webapps::WebappInstallSource::MANAGEMENT_API,
           base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
       return;
   }
@@ -405,7 +406,7 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceManagementApi));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
       chromeos::DemoSession::AppLaunchSource::kExtensionApi);
 #endif
@@ -442,10 +443,9 @@ ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
     content::WebContents* web_contents,
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    const base::Callback<void(bool)>& callback) const {
-  return std::unique_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
-      new ManagementSetEnabledFunctionInstallPromptDelegate(
-          web_contents, browser_context, extension, callback));
+    base::OnceCallback<void(bool)> callback) const {
+  return std::make_unique<ManagementSetEnabledFunctionInstallPromptDelegate>(
+      web_contents, browser_context, extension, std::move(callback));
 }
 
 std::unique_ptr<extensions::UninstallDialogDelegate>
@@ -472,9 +472,9 @@ bool ChromeManagementAPIDelegate::CreateAppShortcutFunctionDelegate(
 
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
-      base::Bind(&extensions::ManagementCreateAppShortcutFunction::
-                     OnCloseShortcutPrompt,
-                 function));
+      base::BindOnce(&extensions::ManagementCreateAppShortcutFunction::
+                         OnCloseShortcutPrompt,
+                     function));
 
   return true;
 }
@@ -525,24 +525,24 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
   }
 
   provider->install_manager().LoadWebAppAndCheckManifest(
-      web_app_url, WebappInstallSource::MANAGEMENT_API,
+      web_app_url, webapps::WebappInstallSource::MANAGEMENT_API,
       base::BindOnce(&OnWebAppInstallabilityChecked, profile,
                      std::move(callback)));
 }
 
 bool ChromeManagementAPIDelegate::CanContextInstallAndroidApps(
     content::BrowserContext* context) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context));
 #else
   return false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeManagementAPIDelegate::CheckAndroidAppInstallStatus(
     const std::string& package_name,
     AndroidAppInstallStatusCallback callback) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
     std::move(callback).Run(false);
@@ -559,13 +559,13 @@ void ChromeManagementAPIDelegate::CheckAndroidAppInstallStatus(
   instance->IsInstallable(package_name, std::move(callback));
 #else
   std::move(callback).Run(false);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeManagementAPIDelegate::InstallReplacementAndroidApp(
     const std::string& package_name,
     InstallAndroidAppCallback callback) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string intent =
       base::StrCat({kPlayIntentPrefix, package_name, kChromeWebStoreReferrer});
 
@@ -587,7 +587,7 @@ void ChromeManagementAPIDelegate::InstallReplacementAndroidApp(
                                    std::move(callback)));
 #else
   std::move(callback).Run(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeManagementAPIDelegate::EnableExtension(
@@ -657,4 +657,12 @@ GURL ChromeManagementAPIDelegate::GetIconURL(
     bool grayscale) const {
   return extensions::ExtensionIconSource::GetIconURL(extension, icon_size,
                                                      match, grayscale);
+}
+
+GURL ChromeManagementAPIDelegate::GetEffectiveUpdateURL(
+    const extensions::Extension& extension,
+    content::BrowserContext* context) const {
+  extensions::ExtensionManagement* extension_management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(context);
+  return extension_management->GetEffectiveUpdateURL(extension);
 }

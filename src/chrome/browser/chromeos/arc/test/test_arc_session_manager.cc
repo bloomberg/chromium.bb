@@ -46,19 +46,8 @@ std::unique_ptr<ArcSessionManager> CreateTestArcSessionManager(
   return manager;
 }
 
-bool ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager,
-                                   const base::FilePath& temp_dir) {
-  // For browser_tests, do the actual prop file expansion to make it more
-  // similar to production. Calling ExpandPropertyFiles() here is fine as long
-  // as the caller doesn't explicitly call ArcServiceLauncher::Initialize()
-  // after recreating ASM with ArcServiceLauncher::ResetForTesting().
-  base::FilePath source_dir, dest_dir;
-  if (!CreateFilesAndDirectories(temp_dir, &source_dir, &dest_dir))
-    return false;
-  arc_session_manager->set_property_files_source_dir_for_testing(source_dir);
-  arc_session_manager->set_property_files_dest_dir_for_testing(dest_dir);
-  arc_session_manager->ExpandPropertyFilesAndReadSalt();
-  return true;
+void ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager) {
+  arc_session_manager->OnExpandPropertyFilesAndReadSaltForTesting(true);
 }
 
 }  // namespace arc

@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
+#include "components/autofill/core/common/language_code.h"
 
 namespace autofill {
 
@@ -25,16 +26,9 @@ class LogManager;
 class AddressField : public FormField {
  public:
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
-                                          const std::string& page_language,
+                                          const LanguageCode& page_language,
                                           LogManager* log_manager);
 
-#if defined(UNIT_TEST)
-  // Assign types to the fields for the testing purposes.
-  void AddClassificationsForTesting(
-      FieldCandidatesMap* field_candidates_for_testing) const {
-    AddClassifications(field_candidates_for_testing);
-  }
-#endif
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -51,47 +45,47 @@ class AddressField : public FormField {
   static const int kZipCodeMatchType;
   static const int kCityMatchType;
   static const int kStateMatchType;
+  static const int kDependentLocalityMatchType;
 
   explicit AddressField(LogManager* log_manager);
 
-  bool ParseCompany(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseCompany(AutofillScanner* scanner,
+                    const LanguageCode& page_language);
 
-  bool ParseAddress(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseAddress(AutofillScanner* scanner,
+                    const LanguageCode& page_language);
 
   bool ParseAddressFieldSequence(AutofillScanner* scanner,
-                                 const std::string& page_language);
+                                 const LanguageCode& page_language);
 
   bool ParseAddressLines(AutofillScanner* scanner,
-                         const std::string& page_language);
+                         const LanguageCode& page_language);
 
-  bool ParseCountry(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseCountry(AutofillScanner* scanner,
+                    const LanguageCode& page_language);
 
-  bool ParseZipCode(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseZipCode(AutofillScanner* scanner,
+                    const LanguageCode& page_language);
 
-  bool ParseCity(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseDependentLocality(AutofillScanner* scanner,
+                              const LanguageCode& page_language);
 
-  bool ParseState(AutofillScanner* scanner, const std::string& page_language);
+  bool ParseCity(AutofillScanner* scanner, const LanguageCode& page_language);
+
+  bool ParseState(AutofillScanner* scanner, const LanguageCode& page_language);
 
   // Parses the current field pointed to by |scanner|, if it exists, and tries
-  // to figure out whether the field's type: city, state, country, zip, or
-  // none of those.
-  bool ParseCityStateCountryZipCode(AutofillScanner* scanner,
-                                    const std::string& page_language);
+  // to determine if the field's type corresponds to one of the following:
+  // dependent locality, city, state, country, zip, or none of those.
+  bool ParseDependentLocalityCityStateCountryZipCode(
+      AutofillScanner* scanner,
+      const LanguageCode& page_language);
 
   // Like ParseFieldSpecifics(), but applies |pattern| against the name and
   // label of the current field separately. If the return value is
   // RESULT_MATCH_NAME_LABEL, then |scanner| advances and |match| is filled if
   // it is non-NULL. Otherwise |scanner| does not advance and |match| does not
   // change.
-  // ParseNameLabelResult ParseNameAndLabelSeparately(
-  //     AutofillScanner* scanner,
-  //     const base::string16& pattern,
-  //     int match_type,
-  //     AutofillField** match,
-  //     const RegExLogging& logging);
-
-  // New version of function above using new structure MatchingPattern and
-  // PatternProvider.
   ParseNameLabelResult ParseNameAndLabelSeparately(
       AutofillScanner* scanner,
       const base::string16& pattern,
@@ -105,19 +99,23 @@ class AddressField : public FormField {
   // Otherwise |scanner| rewinds and the field is cleared.
   ParseNameLabelResult ParseNameAndLabelForZipCode(
       AutofillScanner* scanner,
-      const std::string& page_language);
+      const LanguageCode& page_language);
+
+  ParseNameLabelResult ParseNameAndLabelForDependentLocality(
+      AutofillScanner* scanner,
+      const LanguageCode& page_language);
 
   ParseNameLabelResult ParseNameAndLabelForCity(
       AutofillScanner* scanner,
-      const std::string& page_language);
+      const LanguageCode& page_language);
 
   ParseNameLabelResult ParseNameAndLabelForCountry(
       AutofillScanner* scanner,
-      const std::string& page_language);
+      const LanguageCode& page_language);
 
   ParseNameLabelResult ParseNameAndLabelForState(
       AutofillScanner* scanner,
-      const std::string& page_language);
+      const LanguageCode& page_language);
 
   LogManager* log_manager_;
   AutofillField* company_ = nullptr;
@@ -127,6 +125,8 @@ class AddressField : public FormField {
   AutofillField* address2_ = nullptr;
   AutofillField* address3_ = nullptr;
   AutofillField* street_address_ = nullptr;
+  AutofillField* apartment_number_ = nullptr;
+  AutofillField* dependent_locality_ = nullptr;
   AutofillField* city_ = nullptr;
   AutofillField* state_ = nullptr;
   AutofillField* zip_ = nullptr;

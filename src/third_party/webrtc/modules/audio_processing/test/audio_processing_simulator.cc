@@ -59,7 +59,6 @@ EchoCanceller3Config ReadAec3ConfigFromJsonFile(const std::string& filename) {
   return cfg;
 }
 
-
 std::string GetIndexedOutputWavFilename(const std::string& wav_name,
                                         int counter) {
   rtc::StringBuilder ss;
@@ -123,7 +122,16 @@ AudioProcessingSimulator::AudioProcessingSimulator(
           settings_.simulate_mic_gain ? *settings.simulated_mic_kind : 0),
       worker_queue_("file_writer_task_queue") {
   RTC_CHECK(!settings_.dump_internal_data || WEBRTC_APM_DEBUG_DUMP == 1);
-  ApmDataDumper::SetActivated(settings_.dump_internal_data);
+  if (settings_.dump_start_frame || settings_.dump_end_frame) {
+    ApmDataDumper::SetActivated(!settings_.dump_start_frame);
+  } else {
+    ApmDataDumper::SetActivated(settings_.dump_internal_data);
+  }
+
+  if (settings_.dump_set_to_use) {
+    ApmDataDumper::SetDumpSetToUse(*settings_.dump_set_to_use);
+  }
+
   if (settings_.dump_internal_data_output_dir.has_value()) {
     ApmDataDumper::SetOutputDirectory(
         settings_.dump_internal_data_output_dir.value());
@@ -260,8 +268,8 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
     for (size_t k = 0; k < linear_aec_output_buf_[0].size(); ++k) {
       for (size_t ch = 0; ch < linear_aec_output_buf_.size(); ++ch) {
         RTC_CHECK_EQ(linear_aec_output_buf_[ch].size(), 160);
-        linear_aec_output_file_writer_->WriteSamples(
-            &linear_aec_output_buf_[ch][k], 1);
+        float sample = FloatToFloatS16(linear_aec_output_buf_[ch][k]);
+        linear_aec_output_file_writer_->WriteSamples(&sample, 1);
       }
     }
   }
@@ -356,6 +364,28 @@ void AudioProcessingSimulator::SetupBuffersConfigsOutputs(
   }
 
   SetupOutput();
+}
+
+void AudioProcessingSimulator::SelectivelyToggleDataDumping(
+    int init_index,
+    int capture_frames_since_init) const {
+  if (!(settings_.dump_start_frame || settings_.dump_end_frame)) {
+    return;
+  }
+
+  if (settings_.init_to_process && *settings_.init_to_process != init_index) {
+    return;
+  }
+
+  if (settings_.dump_start_frame &&
+      *settings_.dump_start_frame == capture_frames_since_init) {
+    ApmDataDumper::SetActivated(true);
+  }
+
+  if (settings_.dump_end_frame &&
+      *settings_.dump_end_frame == capture_frames_since_init) {
+    ApmDataDumper::SetActivated(false);
+  }
 }
 
 void AudioProcessingSimulator::SetupOutput() {
@@ -497,11 +527,6 @@ void AudioProcessingSimulator::ConfigureAudioProcessor() {
   if (settings_.use_analog_agc) {
     apm_config.gain_controller1.analog_gain_controller.enabled =
         *settings_.use_analog_agc;
-  }
-  if (settings_.use_analog_agc_agc2_level_estimator) {
-    apm_config.gain_controller1.analog_gain_controller
-        .enable_agc2_level_estimator =
-        *settings_.use_analog_agc_agc2_level_estimator;
   }
   if (settings_.analog_agc_disable_digital_adaptive) {
     apm_config.gain_controller1.analog_gain_controller.enable_digital_adaptive =

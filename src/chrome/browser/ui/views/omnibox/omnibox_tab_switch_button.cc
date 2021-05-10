@@ -20,7 +20,9 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 // static
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
@@ -86,7 +88,7 @@ void OmniboxTabSwitchButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   MdTextButton::StateChanged(old_state);
   if (GetState() == STATE_NORMAL && old_state == STATE_PRESSED) {
-    SetMouseHandler(parent());
+    SetMouseAndGestureHandler(parent());
     if (popup_contents_view_->model()->selected_line_state() ==
         OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)
       popup_contents_view_->UnselectButton();
@@ -140,7 +142,10 @@ void OmniboxTabSwitchButton::UpdateBackground() {
 
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
-  return result_view_->IsMatchSelected() &&
+  return result_view_->GetMatchSelected() &&
          popup_contents_view_->model()->selected_line_state() ==
              OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH;
 }
+
+BEGIN_METADATA(OmniboxTabSwitchButton, views::MdTextButton)
+END_METADATA
